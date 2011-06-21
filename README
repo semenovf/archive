@@ -1,6 +1,6 @@
 Validator-Var
 
-The Validator-Var module allows you to validate variable value.
+The Validator-Var module allows you to validate variable value by rules named 'checkers'.
 
 INSTALLATION
 
