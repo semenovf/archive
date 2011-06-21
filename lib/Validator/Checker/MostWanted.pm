@@ -35,22 +35,19 @@ sub Length  { [\&_length,  'Length',  'has length equal to' ] }
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
-    use Validator::Checker::MostWanted;
-
-    my $foo = Validator::Checker::MostWanted->new();
-    ...
+see Validator::Var
 
 =head1 EXPORT
 
-This package exports most wanted checkers for Validator::Var.
+This package exports "most wanted" checkers for Validator::Var.
 
 =head2 Ref
 
+variable is reference to one from list
+
 =head2 Type
+
+equivalent to C<Ref> checker
 
 =head2 Can
 

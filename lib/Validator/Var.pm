@@ -20,13 +20,31 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
     use Validator::Var;
+    my $var;
+    
+    ...
 
-    my $foo = Validator::Var->new();
+    my $num_bitween = Validator::Var->new();
+    $foo->checker(Between, 0, 100);
+    unless ( $foo->is_valid( $var ) ) {
+        warn "variable is not bitween 0 an 100";
+    }
+
+    my $number = Validator::Var->new();
+    $number->checker(Regexp, '^d+$');
+    
+    unless ( $bar->is_valid( $var ) ) {
+        warn "variable is not a number";
+    }
+    
+    my $ref_validator = Validator::Var->new();
+    $ref_validator->checker(Ref, qw(REF Foo Bar));
+    unless ( $bar->is_valid( $var ) ) {
+        warn "variable is not a number";
+    }
+
+ 
     ...
 
 =cut
@@ -37,9 +55,12 @@ sub _warn  { warn @_; }
 sub _Def { [undef,  'Def',  'var is defined' ] }
 
 
-=head1 SUBROUTINES/METHODS
+=head1 METHODS
 
-=head2 new
+=head2 new( [at_least_one] )
+
+Creates new variable validator.
+If C<at_least_one> is provided and it is true ...
 
 =cut
 
@@ -55,7 +76,9 @@ sub new
     return $self;
 }
 
-=head2 is_empty()
+=head2 is_empty( )
+
+Checks if variable validator has not any checker.
 
 =cut
 
@@ -65,7 +88,7 @@ sub is_empty
 }
 
 
-=head2 at_least_one(boolean)
+=head2 at_least_one( boolean )
 
 =cut
 
@@ -90,7 +113,7 @@ sub checker
 }
 
 
-=head2 checkers_not_passed()
+=head2 checkers_not_passed( )
 
 =cut
 
@@ -107,6 +130,9 @@ sub checkers_not_passed
 }
 
 =head2 is_valid( var [, do_trace]  )
+
+Checks if variable value is valid according to specified checkers.
+If C<do_trace> is provided and it is true ...
 
 =cut
 
