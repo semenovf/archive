@@ -7,7 +7,7 @@ use Scalar::Util qw(blessed);
 
 =head1 NAME
 
-Validator::Checker::MostWanted - The great new Validator::Checker::MostWanted!
+Validator::Checker::MostWanted - "most wanted" checkers for Validator::Var.
 
 =head1 VERSION
 
@@ -41,27 +41,41 @@ see Validator::Var
 
 This package exports "most wanted" checkers for Validator::Var.
 
-=head2 Ref
+=head2 Ref @refs
 
-variable is reference to one from list
+variable is a reference to one of listed in @refs
 
 =head2 Type
 
 equivalent to C<Ref> checker
 
-=head2 Can
+=head2 Can @methods
 
-=head2 Base
+variable is blessed and has methods listed in @methods
 
-=head2 Min
+=head2 Base @base_classes
 
-=head2 Max
+variable is an object and inherited from all classes listed in @base_classes
 
-=head2 Between
+=head2 Min $min_val
 
-=head2 Regexp
+varibale is a scalar and it's value is grater or equal to $min_val
 
-=head2 Length
+=head2 Max $max_val
+
+varibale is a scalar and it's value is less or equal to $max_val
+
+=head2 Between $min_val $max_val
+
+varibale is a scalar and it's value is bitween $min_val and $max_val (inclusive)
+
+=head2 Regexp $re
+
+varibale is a scalar and matches regexp $re
+
+=head2 Length $len_val
+
+varibale is a scalar and it's length is equal to $len_val
 
 =cut
 
