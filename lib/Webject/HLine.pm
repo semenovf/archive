@@ -1,13 +1,18 @@
 package Webject::HLine;
-use base Webject;
-
-use 5.006;
-use strict;
-use warnings;
-
-sub render { my $self = $_[0]; $self->render_file(*DATA); }
-
+use base 'Webject';
 1;
 
 __DATA__
-<hr <% my $hello = "Hello from Web::Webject::HLine" %> />
+
+<!--html{
+
+<hr <%
+    $self->render_attrs();
+%> />
+
+}html-->
+
+
+<!--json{
+    
+}json-->

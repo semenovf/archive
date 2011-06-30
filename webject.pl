@@ -1,30 +1,32 @@
 #!/usr/bin/perl -w
 use strict;
 use lib './lib';
-use Webject;
+use Webject::Window;
 use Webject::HLine;
 
-#print Webject->new->render, "\n";
-#print Webject->new->render, "\n";
-print Webject::HLine->new->render, "\n";
+#print 'Start '. &{sub { my $str = 'middle'; $str; }} . ' End';
 
-local $/;
-my $pos = tell DATA;
-#print "pos=$pos\n";
-my $wt = '\''.<DATA>.'\'';
-die unless $wt;
-$wt =~ s/<%(.*?)%>/\'\.\($1\)\.\'/sg;
-#print $wt, "\n";
-print eval $wt;
+my $win = Webject::Window->new;
+my $hr = Webject::HLine->new->id("id0");
+#$win->add( $hr );
+$win->add( $hr );
+#$win->add( Webject::HLine->new->id("id0") );
+#$win->add( Webject::HLine->new->id("id1")->class("class1") );
+#$w->add( Webject::HLine->new->id("id2") );
+#$w->add( Webject::HLine->new->id("id3") );
+print $win->render;
+
+#local $/;
+#my $pos = tell DATA;
+#my $wt = '\''.<DATA>.'\'';
+#die unless $wt;
+#$wt =~ s/<%(.*?)%>/\'\.\($1\)\.\'/sg;
+#print eval $wt;
 
 
 #my $text = '';
 #$text.=<<EOT;
 #Hello, World 0!
-#EOT
-#
-#$text.=<<EOT;
-#Hello, World 1!
 #EOT
 #
 #$text .= foo();

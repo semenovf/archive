@@ -1,5 +1,6 @@
 package Webject;
-use base 'Class::Accessor';
+use Carp;
+use base 'Webject::Accessor';
 
 use 5.006;
 use strict;
@@ -7,7 +8,7 @@ use warnings;
 
 =head1 NAME
 
-Webject (Web [Ob]ject) - web objects 
+Webject (Web [Ob]ject) - base class for Web[Ob]jects 
 
 =head1 VERSION
 
@@ -15,7 +16,22 @@ Version 0.01
 
 =cut
 
+my @rw_attrs = qw(
+    id
+    class
+);
+
+__PACKAGE__->mk_accessors(@rw_attrs);
+
 our $VERSION = '0.01';
+my $_media = 'html';
+
+sub media
+{
+    my $m = shift;
+    return $_media unless defined $m;
+    $_media = lc $m;
+}
 
 =head1 SYNOPSIS
 
@@ -24,7 +40,10 @@ Base class for web objects (Webjects).
     use Webject;
 
     my $webj = Webject->new();
+    $webj->add( Webject::Foo->new );
+    $webj->add( Webject::Bar->new );
     ...
+    $webj->render;
 
 =head1 SUBROUTINES/METHODS
 
@@ -34,17 +53,10 @@ Base class for web objects (Webjects).
 
 sub new {
     my $class = shift;
-#    my %attrs = @_;
     my $self = bless {
+        -parent => undef,       # parent webject reference
         -children => []
     }, $class;
-    #$self->ctor();
-    #$self->units('px');
-    #if( %attrs ) {
-    #    $self->id( $attrs{'id'} );
-    #    $self->class( $attrs{'class'} );
-    #    $self->style( $attrs{'style'} );
-    #}
     return $self;
 }
 
@@ -58,7 +70,17 @@ sub add
     my @what = @_;
 
     foreach( @what ) {
-        $self->{-children} = () unless defined $self->{-children};
+        if( ref $_ && $_->isa(__PACKAGE__) ) {
+            if( defined $_->{-parent} ) {
+                carp sprintf(q(Unable to add webject(type=%s, id=%s) as child to webject(type=%s, id=%s): it is already a child for webject(type=%s, id=%s)),
+                    ref $_, defined $_->id ? $_->id : '<unset>',
+                    ref $self, defined $self->id ? $self->id : '<unset>',
+                    ref ${$_->{-parent}}, defined ${$_->{-parent}}->id ? ${$_->{-parent}}->id : '<unset>');
+                next;
+            }
+            $_->{-parent} = \$self;
+        } 
+        
         push @{$self->{-children}}, $_;
     }
     return $self;
@@ -71,36 +93,68 @@ sub add
 
 sub render
 {
-    return $_[0]->render_file(*DATA);
+    my $self = $_[0];
+    my $data_fh = ref($self).'::DATA';
+    return $self->render_file( eval "*$data_fh" );
 }
 
 
-sub render_file
+=head2 render_attrs [protected method]
+
+=cut
+
+sub render_attrs
+{
+    my $self = shift or die;
+    
+    my $attrs = '';
+    
+    foreach (sort @rw_attrs) {
+        $attrs .= ' '.$_.'="'. $self->$_ .'"' if defined $self->$_();
+    }
+    
+    return $attrs;
+}
+
+=head2 render_file [protected method]
+
+=cut
+
+sub render_file 
 {
     my ($self, $fh) = @_;
     local $/;
     my $pos = tell $fh;
-    $_ = '\''.<$fh>.'\'';
-    $_ =~ s/<%(.*?)%>/\'\.\($1\)\.\'/sg;
+    #my $m = $_media;
+    my $text = '';
+    $_ = <$fh>;
+    $text =~ /<!--html\{\s*(.*?)\s*\}html-->/sg and do { $text = '\''.$1.'\''; };
+    print $text, "\n";
+    $text =~ s/<%\s*(.*?)\s*%>/\'\.\&\{sub\{ $1 \}\}\.\'/sg;
     seek $fh, $pos, 0;
-    return eval $_;
+    #print $_, "\n";
+    return eval $text;
 }
 
 
-# 
+
+=head2 render_children [protected method]
+
+=cut
+
 sub render_children
 {
     my $self = $_[0];
-    my $html = '';
+    my $text = '';
 
     foreach ( @{$self->{-children}} ) {
         if( ref $_ && $_->isa(__PACKAGE__) ) {
-            $html .= $_->render();
+            $text .= $_->render();
         } else {
-            $html .= $_;
+            $text .= $_;
         }
     }
-    return $html;
+    return $text;
 }
 
 
@@ -113,9 +167,6 @@ Fedor Semenov, C<< <fedor.v.semenov at gmail.com> >>
 Please report any bugs or feature requests to C<bug-web-webject at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Web-Webject>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-
-
 
 =head1 SUPPORT
 
@@ -138,11 +189,11 @@ L<http://annocpan.org/dist/Webject>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/d/Web-Webject>
+L<http://cpanratings.perl.org/d/Webject>
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/Web-Webject/>
+L<http://search.cpan.org/dist/Webject/>
 
 =back
 
@@ -163,7 +214,6 @@ See http://dev.perl.org/licenses/ for more information.
 
 =cut
 
-1; # End of Web::Webject
+1; # End of Webject
 
 __DATA__
-<% $self->render_children %>
