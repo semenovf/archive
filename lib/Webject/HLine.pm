@@ -5,14 +5,15 @@ use base 'Webject';
 __DATA__
 
 <!--html{
-
-<hr <%
-    $self->render_attrs();
-%> />
-
+<!--This is a comment -->
+<hr <%=$self->render_atts %> />
 }html-->
 
 
 <!--json{
-    
+{
+    "hr": {
+        <%=$self->render_atts %>
+    }
+}
 }json-->

@@ -1,4 +1,5 @@
 package Webject;
+use Webject::Media::Functions;
 use Carp;
 use base 'Webject::Accessor';
 
@@ -16,22 +17,14 @@ Version 0.01
 
 =cut
 
-my @rw_attrs = qw(
+my @rw_atts = qw(
     id
     class
 );
 
-__PACKAGE__->mk_accessors(@rw_attrs);
+__PACKAGE__->mk_accessors(@rw_atts);
 
 our $VERSION = '0.01';
-my $_media = 'html';
-
-sub media
-{
-    my $m = shift;
-    return $_media unless defined $m;
-    $_media = lc $m;
-}
 
 =head1 SYNOPSIS
 
@@ -78,9 +71,11 @@ sub add
                     ref ${$_->{-parent}}, defined ${$_->{-parent}}->id ? ${$_->{-parent}}->id : '<unset>');
                 next;
             }
-            $_->{-parent} = \$self;
-        } 
-        
+        } else {
+            require Webject::Text;
+            $_ = Webject::Text->new->value($_);
+        }
+        $_->{-parent} = \$self;
         push @{$self->{-children}}, $_;
     }
     return $self;
@@ -95,46 +90,62 @@ sub render
 {
     my $self = $_[0];
     my $data_fh = ref($self).'::DATA';
-    return $self->render_file( eval "*$data_fh" );
+    $data_fh  = eval "*$data_fh";
+    croak $@ if $@;
+    
+    return $self->render_file( $data_fh );
 }
 
 
-=head2 render_attrs [protected method]
+=head2 render_atts [protected method]
 
 =cut
 
-sub render_attrs
+sub render_atts
 {
-    my $self = shift or die;
-    
-    my $attrs = '';
-    
-    foreach (sort @rw_attrs) {
-        $attrs .= ' '.$_.'="'. $self->$_ .'"' if defined $self->$_();
-    }
-    
-    return $attrs;
+    my $self = shift;
+    my %atts = ();
+    foreach( @rw_atts ) {
+        $atts{$_}=$self->$_ if defined $self->$_;
+    } ;
+    return stringify_atts(%atts);
 }
+
+
+=head2 render_text [protected method]
+
+=cut
+
+sub render_text
+{
+    my $self = shift;
+    my $text = 'my $__text__ = ""';
+    my $m = Webject::Media->media;
+    $_ = join('', @_);
+    $_ =~ /<!--${m}\{\s*(.*?)\}${m}-->/sg and do { $text = '\''.$1.'\''; };
+    $text =~ s/<%=\s*(.*?)\s*%>/\'\.\(\&\{sub\{ $1 \}\}\|\|''\)\.\'/sg;
+    $text =~ s/<%\s*(.*?)\s*%>/$1/sg;
+    $text .= '$__text__;';
+    $text = eval $text || '';
+    croak $@ if $@;
+    return $text;
+}
+
 
 =head2 render_file [protected method]
 
 =cut
 
-sub render_file 
+sub render_file
 {
     my ($self, $fh) = @_;
     local $/;
     my $pos = tell $fh;
-    #my $m = $_media;
-    my $text = '';
     $_ = <$fh>;
-    $text =~ /<!--html\{\s*(.*?)\s*\}html-->/sg and do { $text = '\''.$1.'\''; };
-    print $text, "\n";
-    $text =~ s/<%\s*(.*?)\s*%>/\'\.\&\{sub\{ $1 \}\}\.\'/sg;
     seek $fh, $pos, 0;
-    #print $_, "\n";
-    return eval $text;
+    return $self->render_text($_);
 }
+
 
 
 
@@ -151,7 +162,7 @@ sub render_children
         if( ref $_ && $_->isa(__PACKAGE__) ) {
             $text .= $_->render();
         } else {
-            $text .= $_;
+            carp "Invalid child, ignored";
         }
     }
     return $text;
