@@ -119,14 +119,23 @@ sub render_atts
 sub render_text
 {
     my $self = shift;
-    my $text = 'my $__text__ = ""';
     my $m = Webject::Media->media;
     $_ = join('', @_);
-    $_ =~ /<!--${m}\{\s*(.*?)\}${m}-->/sg and do { $text = '\''.$1.'\''; };
-    $text =~ s/<%=\s*(.*?)\s*%>/\'\.\(\&\{sub\{ $1 \}\}\|\|''\)\.\'/sg;
-    $text =~ s/<%\s*(.*?)\s*%>/$1/sg;
-    $text .= '$__text__;';
-    $text = eval $text || '';
+    $_ =~ /<!--${m}\{\s*(.*?)\}${m}-->/sg and do { $_ = $1 };
+    my @text = split(/(<%=?\s*.*?)\s*%>/s, $_);
+
+    my @code = ();
+    foreach( @text ) {
+        if( /^<%=(.+)/s ) {
+            push @code, "push \@__text__, (&{sub{ $1 }} || '');\n";
+        } elsif( /^<%(.+)/s ) {
+            push @code, $1;
+        } else {
+            push @code, "push \@__text__, q($_);\n";
+        }
+    }
+#    print join("\n", 'my @__text__;', @code, q(join('', @__text__);));
+    my $text = eval( join("\n", 'my @__text__;', @code, q(join('', @__text__);)) ) || '';
     croak $@ if $@;
     return $text;
 }
@@ -168,6 +177,25 @@ sub render_children
     return $text;
 }
 
+
+sub _children
+{
+    return wantarray ? @{$_[0]->{-children}} : $_[0]->{-children};
+}
+
+
+sub _children_count
+{
+    return scalar @{$_[0]->{-children}};
+}
+
+sub _child_at
+{
+    my( $self, $index) = @_;
+    return undef unless defined $index;
+    return undef if( $index < 0 || $index >= $self->_children_count);
+    return $self->{-children}->[$index];
+}
 
 =head1 AUTHOR
 

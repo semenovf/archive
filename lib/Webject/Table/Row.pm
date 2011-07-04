@@ -5,18 +5,14 @@ use base 'Webject';
 sub new {
     my $class = shift;
     my $self = bless $class->SUPER::new(@_), $class;
-    $self->{-cells} = [];
+#    $self->{-cells} = [];
     return $self;
 }
 
-sub get_cell_content
+sub cell_at
 {
-    my $self = shift or die;
-    my $col = shift;
-
-    return undef unless defined $col;
-    return undef if( $col < 0 || $col >= scalar(@{$self->{-cells}}) );
-    return $self->{-cells}->[$col];
+    my ($self, $index) = @_;
+    return $self->_child_at($index);
 }
 
 sub new_cell
@@ -31,10 +27,7 @@ sub new_cell
 sub add
 {
     my $self = shift or die;
-    my $cell = Webject::Table::Cell->new;
-    $cell->SUPER::add(@_);
-
-    push @{$self->{-cells}}, $cell;
+    $self->SUPER::add(@_);
     return $self;
 }
 
@@ -55,14 +48,8 @@ sub count
 __DATA__
 
 <!--html{
-<tr <%=$self->render_atts %>>
-    <%=
-        my $cells = '';
-        foreach( @{$self->cells} ) {
-            $cells .= $_->render;
-        }
-        $cells;
-    %>
+<tr <%= $self->render_atts %>>
+    <%= $self->render_children %>
 </tr>
 }html-->
 

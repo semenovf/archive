@@ -4,23 +4,19 @@ use base 'Webject';
 sub BEFORE { 0 }
 sub AFTER  { 1 }
 
-#my @rw_atts = qw(
-#);
-
 my @rw_accessors = qw(
     value
     where
 );
 
-#__PACKAGE__->mk_accessors(@rw_atts);
 __PACKAGE__->mk_accessors(@rw_accessors);
 
 sub new {
     my $class = shift;
-    my $self = bless $class->SUPER::new(@_), $class;
+    my $self = $class->SUPER::new(@_);
     $self->value('');
     $self->where(BEFORE);
-    return $self;
+    return bless $self, $class;
 }
 
 1;

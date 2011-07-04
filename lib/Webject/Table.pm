@@ -1,7 +1,5 @@
 package Webject::Table;
-package Webject::Table::Section;
-#package Webject::Table::Footer;
-#package Webject::Table::Body;
+use Webject::Table::Section;
 use base 'Webject';
 
 # section types
@@ -9,14 +7,10 @@ sub BODY   {0}
 sub HEADER {1}
 sub FOOTER {2}
 
-sub REGULAR      {0}
-sub AUTOCOMPLETE {1}
-sub PASSWORD     {2}
-
-my @rw_accessors = qw(
-);
-
-__PACKAGE__->mk_accessors(@rw_accessors);
+#my @rw_accessors = qw(
+#);
+#
+#__PACKAGE__->mk_accessors(@rw_accessors);
 
 sub new {
     my $class = shift;
@@ -55,7 +49,7 @@ sub footer
 __DATA__
 
 <!--html{
-<table <%=$self->render_atts %>
+<table <%=$self->render_atts %>>
     <%= $self->header->render %>
     <%= $self->body->render %>
     <%= $self->footer->render %>
