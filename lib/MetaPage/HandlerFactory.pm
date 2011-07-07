@@ -7,7 +7,7 @@
 package MetaPage::HandlerFactory;
 use Carp;
 use MetaPage;
-#use Text::Simplify;
+use Text::Simplify;
 
 use strict;
 use warnings;
@@ -22,7 +22,6 @@ my %_handlers = (
     Start        => \&_on_start_elem,
     End          => \&_on_end_elem,
     Char         => \&_on_text,
-    Comment      => \&_on_comment
 );
 
 my %_mp_handlers = (
@@ -36,61 +35,109 @@ sub handlersFor {
     return $parser;
 }
 
+
+# replace Webejct::Media::html::stringify_atts whith function
+# _stringify_atts(HASHREF)
+sub _stringify_atts
+{
+    my @pairs = ();
+    while( my ($k,$v) = each(%{$_[0]}) ) {
+        push @pairs, "$k=\"$v\"";
+    }
+    return join( ' ', @pairs);
+}
+
+
 sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
 {
     my ($parser, $elem, %atts) = @_;
-
-    if( $elem =~ /^mp:(.+)$/ ) {
+    
+    # root elem
+    if( $parser->_is_root_elem($elem) ) {
+        $parser->_append(MetaPage::PREFIX,
+            'use Webject;',
+            'use Webject::Text;'
+        );
+        $parser->_append(MetaPage::TEXT, 
+            '{',
+            'local $_;',
+            '$_ = Webject->new()'
+        );
+    } elsif ( $elem =~ /^mp:(.+)$/ ) {
         my $mpt = $1;
         
         if( exists $_mp_handlers{$mpt} ) {
-            $_mp_handlers{$mpt}->($parser, \%atts);
+            $_mp_handlers{$mpt}->($parser, 1, \%atts);
         } else {
+            my $class = $parser->_aliases->{$mpt};
             
+            croak sprintf( q(%s: unknown alias, use 'use' tag for define it!), $mpt )
+                unless $class;
+            
+            $parser->_append(MetaPage::TEXT, 
+                sprintf q'->add(%s->new()', $class);
+            
+            if( %atts ) {
+                $parser->_append(MetaPage::TEXT, 
+                    sprintf(q'->atts(%s)', join(',', %atts)));
+            }
         }
     } else {
-        $parser->_append(MetaPage::TEXT, "<$elem>"); # TODO: need to add attributes
+        $parser->_append(MetaPage::TEXT,
+            sprintf( q!->add(Webject::Text->new('<%s %s>'))!,
+                $elem, _stringify_atts(\%atts)));
     }
 }
 
 sub _on_end_elem # (Expat, Element)
 {
     my ($parser, $elem) = @_;
-    if( $elem =~ /^mp:(.+)$/ ) {
+    if( $parser->_is_root_elem($elem) ) {
+        $parser->_append(MetaPage::TEXT,
+            ';',
+            '$_->render;',
+            '}'
+        );
+    } elsif( $elem =~ /^mp:(.+)$/ ) {
         my $mpt = $1;
+        unless( exists $_mp_handlers{$mpt} ) {
+            $parser->_append(MetaPage::TEXT,')');
+        }
     } else {
-        $parser->_append(MetaPage::TEXT, "</$elem>");
+        $parser->_append(MetaPage::TEXT,
+            "->add(Webject::Text->new('</$elem>'))"
+        );
     }
 }
 
 sub _on_text # (Expat, String)
 {
     my ($parser, $text) = @_;
-    #simplify($text);
-    $parser->_append(MetaPage::TEXT, $text);
+    simplify($text);
+    if( $text ) { # text is not empty
+        $parser->_append(MetaPage::TEXT,
+            "->add(Webject::Text->new('$text'))"
+        );
+    }
 }
 
-sub _on_comment # (Expat, Data)
+sub _on_mp_use # (parser, 0|1, HASHREF)
 {
-    my ($parser, $data) = @_;
-    $parser->_append(MetaPage::TEXT, $data);
-}
-
-
-sub _on_mp_use # (parser, HASHREF)
-{
-    my ($parser, $atts) = @_;
+    my ($parser, $start, $atts) = @_;
     my $webject = $atts->{'webject'};
     my $as = $atts->{'as'};
     
-    while(1) {
-        last if $webject;
-        last if $as;
-        croak q(incomplete 'use' tag, use like this: <mp:use webject="SomeWebjectClass" as="Alias" />);
-        return;
+    if( $start ) {
+        while(1) {
+            last if $webject;
+            last if $as;
+            croak q(incomplete 'use' tag, use like this: <mp:use webject="SomeWebjectClass" as="Alias" />!);
+            return;
+        }
     }
     
-    $parser->_append(MetaPage::PREFIX, "use $webject;\n");
+    $parser->_aliases->{$as} = $webject;
+    $parser->_append(MetaPage::PREFIX, "use $webject;");
 }
 
 1;

@@ -7,9 +7,10 @@
 # modify it under the same terms as Perl itself.
 #
 
-use lib qw(../lib ../../Webject/lib);
+use lib qw(../lib ../../Webject/lib ../../Text-Simplify/lib);
 use MetaPage;
 use MetaPage::HandlerFactory;
+#use Perl::Tidy;
 use strict;
 
 my $mp = MetaPage->new;
@@ -17,6 +18,9 @@ MetaPage::HandlerFactory->handlersFor($mp);
 
 local $/;
 $mp->parse_text(<DATA>);
+#Perl::Tidy::perltidy(
+#    source=>$mp->to_string
+#);
 $mp->render;
 
 __DATA__
@@ -25,11 +29,12 @@ __DATA__
     <mp:use webject="Webject::Window" as="Window" />
     <mp:use webject="Webject::HLine" as="HLine" />
     <mp:use webject="Webject::Table" as="Table" />
-    <mp:use webject="Webject::Section" as="Section" />
-    <mp:use webject="Webject::Row" as="Row" />
-    <mp:use webject="Webject::Cell" as="Cell" />
+    <mp:use webject="Webject::Table::Section" as="Section" />
+    <mp:use webject="Webject::Table::Row" as="Row" />
+    <mp:use webject="Webject::Table::Cell" as="Cell" />
     
     <mp:Window title="first - MetaPage example">
+    <div id="content">
         <mp:Table>
             <mp:Section>
                 <mp:Row>
@@ -40,6 +45,9 @@ __DATA__
             </mp:Section>
         </mp:Table>
         
-        <mp:Hline />
+        This is text
+        
+        <mp:HLine />
+    </div>
     </mp:Window>
 </metapage>
