@@ -4,7 +4,7 @@
 # Met@Page is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
-package MetaPage::HandlerFactory;
+package MetaPage::HandlerFactory::Tree;
 use Carp;
 use MetaPage;
 use Text::Simplify;
@@ -75,7 +75,7 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
                 unless $class;
             
             $parser->_append(MetaPage::TEXT, 
-                sprintf q'->add(%s->new()', $class);
+                sprintf q!->add(%s->new()!, $class);
             
             if( %atts ) {
                 $parser->_append(MetaPage::TEXT, 

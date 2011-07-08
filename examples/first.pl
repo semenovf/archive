@@ -9,12 +9,12 @@
 
 use lib qw(../lib ../../Webject/lib ../../Text-Simplify/lib);
 use MetaPage;
-use MetaPage::HandlerFactory;
+use MetaPage::HandlerFactory::Plain;
 #use Perl::Tidy;
 use strict;
 
 my $mp = MetaPage->new;
-MetaPage::HandlerFactory->handlersFor($mp);
+MetaPage::HandlerFactory::Plain->handlersFor($mp);
 
 local $/;
 $mp->parse_text(<DATA>);
@@ -26,6 +26,7 @@ $mp->render;
 __DATA__
 
 <metapage>
+    <mp:use webject="Webject::Text" as="Text" /> <!-- Text is a mandatory definition (Text) -->
     <mp:use webject="Webject::Window" as="Window" />
     <mp:use webject="Webject::HLine" as="HLine" />
     <mp:use webject="Webject::Table" as="Table" />

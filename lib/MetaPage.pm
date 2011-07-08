@@ -12,10 +12,11 @@ use base qw(XML::Parser::Expat);
 use strict;
 use warnings;
 
-sub PREFIX  {'.prefix'}
-sub TEXT    {'.text'}
-sub ALIASES {'.aliases'}
-sub ROOT    {'metapage'}
+sub _INCLUDES_  {'.includes'}
+sub _TEXT_      {'.text'}
+sub _ALIASES_   {'.aliases'}
+
+sub ROOT      {'metapage'}
 
 sub parse_text
 {
@@ -48,7 +49,7 @@ sub _append # [protected]
 
 sub _aliases # [protected]
 {
-    my $aliases = &ALIASES;
+    my $aliases = &_ALIASES_;
     $_[0]->{$aliases} = {} unless defined $_[0]->{$aliases};
     return $_[0]->{$aliases};
 }
@@ -56,14 +57,9 @@ sub _aliases # [protected]
 sub render
 {
     my $self = $_[0];
-    foreach( @{$self->{&PREFIX}} ) {
+    foreach( @{$self->{&_INCLUDES_}}, @{$self->{&_TEXT_}} ) {
         print $_, "\n"; 
     }
-
-    foreach( @{$self->{&TEXT}} ) {
-        print $_, "\n"; 
-    }
-
 }
 
 1;
