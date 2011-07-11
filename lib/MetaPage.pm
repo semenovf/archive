@@ -18,6 +18,17 @@ sub _ALIASES_   {'.aliases'}
 
 sub ROOT      {'metapage'}
 
+
+sub media
+{
+    my ($self, $media) = @_;
+    $media = 'html' unless defined $media;
+    $self->{'.media'} = 'html' unless defined $self->{'.media'};
+    return $self->{'.media'} if( @_ < 2 );
+    $self->{'.media'} = $media;
+    return $self;
+}
+
 sub parse_text
 {
     shift->SUPER::parse(join '', @_);
@@ -54,12 +65,17 @@ sub _aliases # [protected]
     return $_[0]->{$aliases};
 }
 
+#sub render
+#{
+#    my $self = $_[0];
+#    foreach( @{$self->{&_INCLUDES_}}, @{$self->{&_TEXT_}} ) {
+#        print $_, "\n"; 
+#    }
+#}
+
 sub render
 {
-    my $self = $_[0];
-    foreach( @{$self->{&_INCLUDES_}}, @{$self->{&_TEXT_}} ) {
-        print $_, "\n"; 
-    }
+    return join("\n", @{$_[0]->{&_INCLUDES_}}, @{$_[0]->{&_TEXT_}});
 }
 
 1;

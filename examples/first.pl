@@ -21,7 +21,11 @@ $mp->parse_text(<DATA>);
 #Perl::Tidy::perltidy(
 #    source=>$mp->to_string
 #);
-$mp->render;
+
+#$mp->media('html');
+print $mp->render, "\n----------------------\n\n";
+eval $mp->render;
+print $@ if $@;
 
 __DATA__
 
@@ -37,7 +41,14 @@ __DATA__
     <mp:Window title="first - MetaPage example">
     <div id="content">
         <mp:Table>
-            <mp:Section>
+            <mp:Section type="body">
+                <mp:Row>
+                    <mp:Cell>One</mp:Cell>
+                    <mp:Cell>Two</mp:Cell>
+                    <mp:Cell>Three</mp:Cell>
+                </mp:Row>
+            </mp:Section>
+            <mp:Section type="footer">
                 <mp:Row>
                     <mp:Cell>One</mp:Cell>
                     <mp:Cell>Two</mp:Cell>
