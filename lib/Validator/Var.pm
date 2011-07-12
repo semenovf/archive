@@ -11,11 +11,11 @@ Validator::Var - variable validator with expandable list of checkers.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.03
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 
 =head1 SYNOPSIS
@@ -57,10 +57,11 @@ sub _Def { [undef,  'Def',  'var is defined' ] }
 
 =head1 METHODS
 
-=head2 new( [at_least_one] )
+=head2 new( [$at_least_one] )
 
 Creates new variable validator.
-If C<at_least_one> is provided and it is true ...
+If C<at_least_one> is provided and it is true validation will be
+passed if passed through at least one checker.
 
 =cut
 
@@ -76,9 +77,9 @@ sub new
     return $self;
 }
 
-=head2 is_empty( )
+=head2 is_empty
 
-Checks if variable validator has not any checker.
+Checks if variable validator has no any checker.
 
 =cut
 
@@ -88,7 +89,7 @@ sub is_empty
 }
 
 
-=head2 at_least_one( boolean )
+=head2 at_least_one( $bool )
 
 =cut
 
@@ -100,7 +101,9 @@ sub at_least_one
 
 
 
-=head2 checker( checker-spec )
+=head2 checker( $checker[, $checker_args] )
+
+Set (append) new checker.
 
 =cut
 
@@ -113,7 +116,7 @@ sub checker
 }
 
 
-=head2 checkers_not_passed( )
+=head2 checkers_not_passed
 
 =cut
 
@@ -129,10 +132,10 @@ sub checkers_not_passed
     return wantarray ? @checkers_not_passed_spec : \@checkers_not_passed_spec;
 }
 
-=head2 is_valid( var [, do_trace]  )
+=head2 is_valid( $var [, $do_trace]  )
 
 Checks if variable value is valid according to specified checkers.
-If C<do_trace> is provided and it is true ...
+Trace data will be gathered if C<do_trace> is provided and it is true.
 
 =cut
 
@@ -178,7 +181,33 @@ sub is_valid
 }
 
 
-=head2 print_trace( [format]  )
+=head2 print_trace( [$format]  )
+
+Print trace of variable checking.
+C<format> specifies format string of trace messages.
+Recognizes the following macro:
+
+=over 4
+
+=item %name%
+
+Replaced by checker's name.
+
+=item %args%
+
+Replaced by checker's arguments.
+
+=item %desc%
+
+Replaced by checker's description.
+
+=item %result%
+
+Replaced by 'passed' or 'failed'.
+
+=back
+
+Default format string is C<"Checker %name%(%args%) - %desc% ... %result%">.
 
 =cut
 
@@ -188,7 +217,7 @@ sub print_trace
     my $format = shift || 'Checker %name%(%args%) - %desc% ... %result%';
 
     if( @{$self->{'checkers_not_passed'}} == 0 ) {
-        croak 'no trace info, may be you forgot to make trace via is_valid whith trace flag enabled', "\n";
+        carp 'no trace info, may be you forgot to make trace via is_valid whith trace flag enabled', "\n";
     } else {
         my $res_str = $self->{'at_least_one'} ? 'passed' : 'failed';
         my $output = $self->{'at_least_one'} ? \&_print : \&_warn;

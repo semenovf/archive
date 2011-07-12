@@ -1,8 +1,9 @@
 package Validator::Group;
+use Validator::Var;
+
 use 5.006;
 use strict;
 use warnings;
-use Validator::Var;
 
 =head1 NAME
 
@@ -10,18 +11,14 @@ Validator::Group - The great new Validator::Group!
 
 =head1 VERSION
 
-Version 0.01
+Version 0.03
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 
 =head1 SYNOPSIS
-
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
 
     use Validator::Group;
 
@@ -30,7 +27,9 @@ Perhaps a little code snippet.
 
 =head1 SUBROUTINES/METHODS
 
-=head2 new()
+=head2 new
+
+Creates new variables validation group
 
 =cut
 
@@ -42,30 +41,30 @@ sub new
 }
 
 
-=head2 exists( entry_id )
+=head2 exists( $entry_id )
 
-    Returns true if Validator::Var instance specified by I<entry_id>
-    exists in the group
+Returns true if Validator::Var instance specified by I<entry_id>
+exists in the group.
 
 =cut
 
-sub exists($$)
+sub exists
 {
     my ($self, $vv_id) = @_;
     return defined $self->{$vv_id} ? 1 : 0;
 }
 
 
-=head2 entry( entry_id )
+=head2 entry( $entry_id )
 
-    Returns Validator::Var instance specified by I<entry_id>.
-    If entry does not exist it will be created without any checker functions.
+Returns Validator::Var instance specified by I<entry_id>.
+If entry does not exist it will be created without any checker functions.
 
     my $entry = $validator->entry('entry_id');
 
 =cut
 
-sub entry($$)
+sub entry
 {
     my ($self, $vv_id) = @_;
     $self->{$vv_id} = Validator::Var->new unless defined $self->{$vv_id};
@@ -82,9 +81,6 @@ Fedor Semenov, C<< <fedor.v.semenov at gmail.com> >>
 Please report any bugs or feature requests to C<bug-validator-var at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Validator-Var>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-
-
 
 =head1 SUPPORT
 

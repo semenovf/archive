@@ -11,11 +11,11 @@ Validator::Checker::MostWanted - "most wanted" checkers for Validator::Var.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.03
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 
 require Exporter;
@@ -45,7 +45,7 @@ This package exports "most wanted" checkers for Validator::Var.
 
 variable is a reference to one of listed in @refs
 
-=head2 Type
+=head2 Type @types
 
 equivalent to C<Ref> checker
 
@@ -59,23 +59,23 @@ variable is an object and inherited from all classes listed in @base_classes
 
 =head2 Min $min_val
 
-varibale is a scalar and it's value is grater or equal to $min_val
+variable is a scalar and it's value is grater or equal to $min_val
 
 =head2 Max $max_val
 
-varibale is a scalar and it's value is less or equal to $max_val
+variable is a scalar and it's value is less or equal to $max_val
 
 =head2 Between $min_val $max_val
 
-varibale is a scalar and it's value is bitween $min_val and $max_val (inclusive)
+variable is a scalar and it's value is bitween $min_val and $max_val (inclusive)
 
 =head2 Regexp $re
 
-varibale is a scalar and matches regexp $re
+variable is a scalar and matches regexp $re
 
 =head2 Length $len_val
 
-varibale is a scalar and it's length is equal to $len_val
+variable is a scalar and it's length is equal to $len_val
 
 =cut
 
@@ -157,9 +157,6 @@ Fedor Semenov, C<< <fedor.v.semenov at gmail.com> >>
 Please report any bugs or feature requests to C<bug-validator-var at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Validator-Var>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-
-
 
 =head1 SUPPORT
 
