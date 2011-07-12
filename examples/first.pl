@@ -23,9 +23,9 @@ $mp->parse_text(<DATA>);
 #);
 
 #$mp->media('html');
-print $mp->render, "\n----------------------\n\n";
-eval $mp->render;
-print $@ if $@;
+#print $mp->render_code, "\n----------------------\n\n";
+$mp->render;
+warn $@ if $@;
 
 __DATA__
 

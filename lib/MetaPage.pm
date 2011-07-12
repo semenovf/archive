@@ -39,9 +39,10 @@ sub parse_file
 {
     my ($self, $path) = @_;
     
-    open my $fh, '>', $path or croak sprintf('%s: %s', $path, $!);
+    open( my $fh, '>', $path ) or croak sprintf('%s: %s', $path, $!);
     local $/;
-    $self->SUPER::parse(<$fh>);
+    $_ = <$fh>;
+    $self->SUPER::parse($_);
     close $fh;
 }
 
@@ -65,17 +66,15 @@ sub _aliases # [protected]
     return $_[0]->{$aliases};
 }
 
-#sub render
-#{
-#    my $self = $_[0];
-#    foreach( @{$self->{&_INCLUDES_}}, @{$self->{&_TEXT_}} ) {
-#        print $_, "\n"; 
-#    }
-#}
+sub render_code
+{
+    join("\n", @{$_[0]->{&_INCLUDES_}}, @{$_[0]->{&_TEXT_}});
+}
+
 
 sub render
 {
-    return join("\n", @{$_[0]->{&_INCLUDES_}}, @{$_[0]->{&_TEXT_}});
+    eval join("\n", @{$_[0]->{&_INCLUDES_}}, @{$_[0]->{&_TEXT_}});
 }
 
 1;
@@ -107,6 +106,7 @@ $mp->parse_file('/path/to/file');
 
 ...
 
-$mp->render;
+$mp->render_code; # render intermediate perl-code
+$mp->render;      # deep render
 
 =cut
