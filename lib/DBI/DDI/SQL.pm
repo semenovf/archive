@@ -1,17 +1,18 @@
-package JQ::DDI::SQL;
+package DBI::DDI::SQL;
+use Carp;
 use strict;
 
 
 # Launched by JQ::DBI::ddi
-sub specForDeploy
+sub spec_for_deploy
 {
-    die __PACKAGE__.'::specForDeploy() must be implemented';
+    croak __PACKAGE__.'::spec_for_deploy() must be implemented';
 }
 
 
-sub specForRecall
+sub spec_for_recall
 {
-    die __PACKAGE__.'::specForRecall(): must be implemented';
+    croak __PACKAGE__.'::spec_for_recall(): must be implemented';
 }
 
 1;

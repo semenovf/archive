@@ -1,6 +1,8 @@
-package JQ::DDI::Const;
-use strict;
+package DBI::DDI::Const;
 use base 'Exporter';
+use strict;
+use warnings;
+
 our @EXPORT = qw(
     DDI_TYPE_INT
     DDI_TYPE_FLOAT

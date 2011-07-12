@@ -1,57 +1,48 @@
-package JQ::DDI::MySQL;
+package DBI::DDI::MySQL;
 use Carp;
-use Params::Validate;
-use JQ::DDI::Const;
-use JQ::DDI::SQL;
+use DBI::DDI::Const;
+
 use strict;
+use warnings;
 
-use constant MYSQL_DEFAULT_CHARSET        => 'utf8';
-use constant MYSQL_DEFAULT_DB_ENGINE      => 'InnoDB';
+sub MYSQL_DEFAULT_CHARSET        { 'utf8' }
+sub MYSQL_DEFAULT_DB_ENGINE      { 'InnoDB' }
 
-use constant MYSQL_MAX_TINYINT_UNSIGNED   =>                   255;
-use constant MYSQL_MAX_TINYINT            =>                   127;
-use constant MYSQL_MIN_TINYINT            =>                  -128;
-use constant MYSQL_MAX_SMALLINT_UNSIGNED  =>                 65535;
-use constant MYSQL_MAX_SMALLINT           =>                 32767;
-use constant MYSQL_MIN_SMALLINT           =>                -32768;
-use constant MYSQL_MAX_MEDIUMINT_UNSIGNED =>              16777215;
-use constant MYSQL_MAX_MEDIUMINT          =>               8388607;
-use constant MYSQL_MIN_MEDIUMINT          =>              -8388608;
-use constant MYSQL_MAX_INT_UNSIGNED       =>            4294967295;
-use constant MYSQL_MAX_INT                =>            2147483647;
-use constant MYSQL_MIN_INT                =>           -2147483648;
-use constant MYSQL_MAX_BIGINT_UNSIGNED    =>  18446744073709551615;
-use constant MYSQL_MAX_BIGINT             =>   9223372036854775807;
-use constant MYSQL_MIN_BIGINT             =>  -9223372036854775808;
+sub MYSQL_MAX_TINYINT_UNSIGNED   {                  255 }
+sub MYSQL_MAX_TINYINT            {                  127 }
+sub MYSQL_MIN_TINYINT            {                 -128 }
+sub MYSQL_MAX_SMALLINT_UNSIGNED  {                65535 }
+sub MYSQL_MAX_SMALLINT           {                32767 }
+sub MYSQL_MIN_SMALLINT           {               -32768 }
+sub MYSQL_MAX_MEDIUMINT_UNSIGNED {             16777215 }
+sub MYSQL_MAX_MEDIUMINT          {              8388607 }
+sub MYSQL_MIN_MEDIUMINT          {             -8388608 }
+sub MYSQL_MAX_INT_UNSIGNED       {           4294967295 }
+sub MYSQL_MAX_INT                {           2147483647 }
+sub MYSQL_MIN_INT                {          -2147483648 }
+sub MYSQL_MAX_BIGINT_UNSIGNED    { 18446744073709551615 }
+sub MYSQL_MAX_BIGINT             {  9223372036854775807 }
+sub MYSQL_MIN_BIGINT             { -9223372036854775808 }
 
-sub specForDeploy
+sub spec_for_deploy
 {
-    my $self = shift or die;
-    my %args = @_;
-    my $ns = $args{-NS} or die;
-    my $ddi = $args{-DDI} or die;
+    my ($self, %args) = @_;
+    my $ns = $args{-NS} or croak 'namespace expected';
+    my $ddi = $args{-DDI} or croak 'ddi exepcted';
     my $charset = $args{-Charset} || MYSQL_DEFAULT_CHARSET;
 
-    #my ($self, $ddiInfo, $ddiNs) = validate_pos(@_, 1, 1, 0);
     my @ddiSQL = ();
     my @ddiForeignKeys = ();
     my @ddiConstraints = ();
     my @ddiIndices = ();
     my %ddiConstraintsColumns = (); # use for generate unique constraints names
 
-#    unless( defined $ddiNs ) {
-#        $ddiNs = $ddiInfo->{-NS} or die 'Namespace must be specified for DDI (use -NS key)';
-#    }
-#    my $ddiClass   = $ddiInfo->{-CLASS} or die 'Classes must be specified for DDI (use -CLASS key)';
-#    my $ddiCharset = $ddiInfo->{-CHARSET} || MYSQL_DEFAULT_CHARSET;
     my $dbEngine   = MYSQL_DEFAULT_DB_ENGINE;
 
     push @ddiSQL, sprintf('CREATE DATABASE IF NOT EXISTS `%s`', $ns);
     push @ddiSQL, sprintf('USE `%s`',$ns);
 
     foreach my $table ( keys %{$ddi} ) {
-
-#        push @ddiSQL, sprintf('DROP TABLE IF EXISTS `%s`',$table);
 
         my @columnDefs = ();
         my $pk = '';
@@ -174,12 +165,11 @@ sub specForDeploy
 
 
 
-sub specForRecall
+sub spec_for_recall
 {
-    my $self = shift;
-    my %args = @_;
-    my $ns = $args{-NS} or die;
-    my $ddi = $args{-DDI} or die;
+    my ($self, %args) = @_;
+    my $ns = $args{-NS} or croak 'namespace expected';
+    my $ddi = $args{-DDI} or croak 'ddi exepcted';
 
     my @ddiSQL = ();
     my @ddiSQLDropFK = ();
@@ -194,10 +184,6 @@ sub specForRecall
             my $colType = $ddi->{$table}->{$colName}->{-type};
 
             SWITCH: {
-                #$colType == DDI_TYPE_PK && do {
-                #    last SWITCH;
-                #};
-
                 $colType == DDI_TYPE_REF && do {
                     unless ( exists $ddiConstraintsColumns{ $colName } ) {
                         $ddiConstraintsColumns{$colName} = 0;
@@ -219,7 +205,7 @@ sub specForRecall
 }
 
 
-sub find_ref_pk($)
+sub find_ref_pk
 {
     my $tabSpec = shift;
 
@@ -231,16 +217,7 @@ sub find_ref_pk($)
 }
 
 
-#sub map_ddi_pk($$)
-#{
-#    my ($min, $max) = @_;
-#
-#    my $spec = map_ddi_int($min, $max);
-#    $spec .= ' AUTO_INCREMENT';
-#    return $spec;
-#}
-
-sub map_ddi_int($$)
+sub map_ddi_int
 {
     my ($min, $max) = @_;
 
@@ -287,7 +264,7 @@ sub map_ddi_int($$)
 }
 
 
-sub map_ddi_text($)
+sub map_ddi_text
 {
     my $len = shift;
     my $spec;
