@@ -1,4 +1,5 @@
 package Webject::Native;
+use Webject::Media::Functions;
 use base 'Webject';
 
 my @rw_accessors = qw(
@@ -7,10 +8,27 @@ my @rw_accessors = qw(
 
 __PACKAGE__->mk_accessors(@rw_accessors);
 
-sub new {
-    my $class = shift;
-    my $self = bless $class->SUPER::new(@_), $class;
-    $self->value('');
+sub render_atts
+{
+    my $self = shift;
+    my $t = '';
+    if( defined $self->{'atts'} ) {
+        $t .= ' ';
+        $t = stringify_atts(%{$self->{'atts'}});
+    }
+
+    return ($self->SUPER::render_atts() . $t);
+}
+
+
+sub add_atts
+{
+    my ($self, %atts) = @_;
+    $self->{'atts'} = {} unless defined $self->{'atts'};
+    
+    while ( my($k, $v) = each %atts ) {
+        $self->{'atts'}->{$k} = $v;
+    }
     return $self;
 }
 
@@ -19,6 +37,8 @@ sub new {
 __DATA__
 
 <!--html{
-<%=$self->value %>
+<<%=$self->tag%> <%=$self->render_atts %>>
+    <%=$self->render_children %>
+</<%=$self->tag%>>
 }html-->
 

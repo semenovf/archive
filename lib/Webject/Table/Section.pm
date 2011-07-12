@@ -59,8 +59,8 @@ __DATA__
 
 <!--html{
 <% if( $self->count ) {
-    my $tag = (($self->type == Webject::Table::BODY) ? 'tbody'
-        : (($self->type == Webject::Table::HEADER) ? 'thead' : 'tfoot'));
+    my $tag = (($self->type eq Webject::Table::BODY) ? 'tbody'
+        : (($self->type eq Webject::Table::HEADER) ? 'thead' : 'tfoot'));
 %>
 <<%=$tag%> <%= $self->render_atts %>>
     <%= $self->render_children %>

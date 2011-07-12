@@ -28,9 +28,6 @@ sub stringify_atts
     while( my ($k,$v) = each(%atts) ) {
 	$atts_str .= ' '. $k .'="'. $v .'"';
     }
-    #foreach (sort @_) {
-    #    $attrs .= ' '.$_.'="'. $webject->$_ .'"' if defined $webject->$_();
-    #}
     
     return $atts_str;
 }

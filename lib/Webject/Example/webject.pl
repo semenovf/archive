@@ -12,6 +12,7 @@ use Webject::Link;
 use Webject::Button;
 #use Webject::Table::Row;
 
+
 my $win    = Webject::Window->new;
 my $label0 = Webject::Label->new->value('<BEFORE>')->where(Webject::Label::BEFORE);
 my $label1 = Webject::Label->new->value('<AFTER>')->where(Webject::Label::AFTER);

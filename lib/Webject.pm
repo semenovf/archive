@@ -134,7 +134,6 @@ sub render_text
             push @code, "push \@__text__, q($_);\n";
         }
     }
-#    print join("\n", 'my @__text__;', @code, q(join('', @__text__);));
     my $text = eval( join("\n", 'my @__text__;', @code, q(join('', @__text__);)) ) || '';
     croak $@ if $@;
     return $text;
@@ -256,3 +255,7 @@ See http://dev.perl.org/licenses/ for more information.
 1; # End of Webject
 
 __DATA__
+
+<!--html{
+<%=$self->render_children %>
+}html-->
