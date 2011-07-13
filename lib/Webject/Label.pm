@@ -24,12 +24,12 @@ sub new {
 
 __DATA__
 
-html{
+<!--html{
 <label <%=$self->render_atts %>>
     <%=$self->value if $self->where eq Webject::Label::BEFORE%>
     <%=$self->render_children %>
     <%=$self->value if $self->where eq Webject::Label::AFTER%>
 </label>
-}html
+}html-->
 
 
