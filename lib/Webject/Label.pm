@@ -1,8 +1,8 @@
 package Webject::Label;
 use base 'Webject';
 
-sub BEFORE { 0 }
-sub AFTER  { 1 }
+sub BEFORE { 'before' }
+sub AFTER  { 'after' }
 
 my @rw_accessors = qw(
     value
@@ -10,6 +10,7 @@ my @rw_accessors = qw(
 );
 
 __PACKAGE__->mk_accessors(@rw_accessors);
+
 
 sub new {
     my $class = shift;
@@ -23,12 +24,12 @@ sub new {
 
 __DATA__
 
-<!--html{
-<label <%=$self->render_atts %> >
-    <%=encode $self->value if $self->where == Webject::Label::BEFORE %>
+html{
+<label <%=$self->render_atts %>>
+    <%=$self->value if $self->where eq Webject::Label::BEFORE%>
     <%=$self->render_children %>
-    <%=encode $self->value if $self->where == Webject::Label::AFTER %>
+    <%=$self->value if $self->where eq Webject::Label::AFTER%>
 </label>
-}html-->
+}html
 
 

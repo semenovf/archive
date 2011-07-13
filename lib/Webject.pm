@@ -44,6 +44,7 @@ Base class for web objects (Webjects).
 
 =cut
 
+
 sub new {
     my $class = shift;
     my $self = bless {
