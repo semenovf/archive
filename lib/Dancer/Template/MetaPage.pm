@@ -26,26 +26,31 @@ our $VERSION = '0.01';
 
 my $_engine;
 
-sub init {
+sub default_tmpl_ext { 'mp.xml' }
+
+sub init
+{
     my $self = shift;
     my $settings = $self->config;
     my $class = 'MetaPage';
 
     my ($rc, $emsg) = Dancer::ModuleLoader->load($class);
-    $rc or croak sprintf( q(Loading '%s' for 'Dancer::Template::MetaPage' failed: %s),
+    $rc or croak sprintf( q(Loading '%s' class for 'Dancer::Template::MetaPage' failed: %s),
         $class, $emsg);
 
     $_engine = $class->new;
 }
 
-sub render {
+sub render
+{
     my ($self, $template) = @_;
 
     if ( ! ref $template ) {
         -f $template or croak sprintf(q('%s' doesn't exist or not a regular file), $template);
+        return $_engine->render($template);
     }
 
-    return $_engine->parse_file($template) or croak $_engine->error;
+    return $_engine->render($template);
 }
 
 
@@ -57,15 +62,14 @@ Fedor Semenov, C<< <fedor.v.semenov at gmail.com> >>
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-dancer-template-metapage at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Dancer-Template-MetaPage>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Dancer-Template-MetaPage>.
+I will be notified, and then you'll automatically be notified of progress on your bug as I make changes.
 
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
     perldoc Dancer::Template::MetaPage
-
 
 You can also look for information at:
 
