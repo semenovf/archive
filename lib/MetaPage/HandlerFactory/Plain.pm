@@ -7,7 +7,7 @@
 package MetaPage::HandlerFactory::Plain;
 use Carp;
 use Text::Simplify;
-use MetaPage::Const;
+use MetaPage::Parser;
 
 use strict;
 use warnings;
@@ -51,7 +51,7 @@ sub _stringify_args
 {
     my @args = ();
     foreach( @_ ) {
-        push @args, '\''. quotemeta($_) .'\'';
+        push @args, "'$_'";
     }
     return join( ',', @args);
 }
@@ -65,12 +65,13 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
         $parser->{'webject_counter'} = 0;
         $parser->{&_PARENTS_} = [];
         
-        $parser->_append(_INCLUDES_,
+        $parser->_append(MetaPage::Parser::_INCLUDES_,
             sprintf(q(use Webject::Media '%s';), $parser->media),
             'use Webject;',
-            'use Webject::Native;'
+            'use Webject::Native;',
+            'use Webject::Text;'
         );
-        $parser->_append(_TEXT_, 
+        $parser->_append(MetaPage::Parser::_TEXT_, 
             '{',
             'local $_;',
             '$_ = Webject->new();'
@@ -95,17 +96,17 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
             if( %atts ) {
                 my @setters = ();
                 while( my ($k,$v) = each(%atts) ) {
-                    push @setters, "->$k(" . '\''. quotemeta($v) . '\')';
+                    push @setters, "->$k('$v')";
                 }
                 my $setters = @setters ? join('', @setters) : '';
-                $parser->_append(_TEXT_, 
+                $parser->_append(MetaPage::Parser::_TEXT_, 
                     sprintf('my %s = %s->new()%s;', $vname, $class, $setters));
             } else {
-                $parser->_append(_TEXT_, sprintf('my %s = %s->new();', $vname, $class));
+                $parser->_append(MetaPage::Parser::_TEXT_, sprintf('my %s = %s->new();', $vname, $class));
             }
             my $parents = $parser->{&_PARENTS_};
             my $parent = $parents->[scalar(@$parents)-1];
-            $parser->_append(_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
+            $parser->_append(MetaPage::Parser::_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
             push @{$parents}, $vname;
         }
     } else {
@@ -115,18 +116,18 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
         my $vname = sprintf('$_%d_Native', ++$parser->{'webject_counter'} );
             
         if( %atts ) {
-            $parser->_append(_TEXT_, 
+            $parser->_append(MetaPage::Parser::_TEXT_, 
                 sprintf('my %s = %s->new()->tag(\'%s\')->add_atts(%s);',
                     $vname, $class, $elem, _stringify_args(%atts)));
         } else {
-            $parser->_append(_TEXT_, 
+            $parser->_append(MetaPage::Parser::_TEXT_, 
                 sprintf('my %s = %s->new()->tag(\'%s\');',
                     $vname, $class, $elem));
         }
 
         my $parents = $parser->{&_PARENTS_};
         my $parent = $parents->[scalar(@$parents)-1];
-        $parser->_append(_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
+        $parser->_append(MetaPage::Parser::_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
         push @{$parser->{&_PARENTS_}}, $vname;
     }
 }
@@ -135,7 +136,7 @@ sub _on_end_elem # (Expat, Element)
 {
     my ($parser, $elem) = @_;
     if( $parser->_is_root_elem($elem) ) {
-        $parser->_append(_TEXT_,
+        $parser->_append(MetaPage::Parser::_TEXT_,
             'return $_->render;',
             '}'
         );
@@ -157,11 +158,11 @@ sub _on_text # (Expat, String)
     if( $text ) { # text is not empty
         my $vname = sprintf('$_%d_Text', ++$parser->{'webject_counter'} );
         my $class = $parser->_aliases->{'Text'};
-        $parser->_append(_TEXT_, 
+        $parser->_append(MetaPage::Parser::_TEXT_, 
             sprintf('my %s = %s->new()->value(\'%s\');', $vname, $class, $text));
         my $parents = $parser->{&_PARENTS_};
         my $parent = $parents->[scalar(@$parents)-1];
-        $parser->_append(_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
+        $parser->_append(MetaPage::Parser::_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
     }
 }
 
@@ -179,7 +180,7 @@ sub _on_mp_use # (parser, 0|1, HASHREF)
             return;
         }
         $parser->_aliases->{$as} = $webject;
-        $parser->_append(_INCLUDES_, "use $webject;");
+        $parser->_append(MetaPage::Parser::_INCLUDES_, "use $webject;");
     }
 }
 

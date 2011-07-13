@@ -7,71 +7,33 @@
 
 package MetaPage;
 use Carp;
+use MetaPage::Parser;
 use MetaPage::HandlerFactory::Plain;
-use MetaPage::Const;
-use base 'XML::Parser::Expat';
 use strict;
 use warnings;
 
 
-sub _is_root_elem # [protected]
+sub new
 {
-    my ($self, $elem) = @_;
-    return (lc $elem eq _ROOT_);
+    my $class = shift;
+    return bless {}, (ref $class ? ref $class : $class);
 }
-
-sub _append # [protected]
-{
-    my ($self, $what, @data) = @_;
-    $self->{$what} = [] unless defined $self->{$what};
-    push @{$self->{$what}}, @data;
-}
-
-sub _aliases # [protected]
-{
-    my $self = shift;
-    $self->{&_ALIASES_} = {} unless defined $self->{&_ALIASES_};
-    return $self->{&_ALIASES_};
-}
-
-sub media
-{
-    my ($self, $media) = @_;
-    $media = 'html' unless defined $media;
-    $self->{'.media'} = 'html' unless defined $self->{'.media'};
-    return $self->{'.media'} if( @_ < 2 );
-    $self->{'.media'} = $media;
-    return $self;
-}
-
-sub parse_text
-{
-    return $_[0]->parse(join '', @_);
-}
-
-
-sub parse_file
-{
-    my ($self, $path) = @_;
-    
-    open( my $fh, '<', $path ) or croak sprintf('%s: %s', $path, $!);
-    local $/;
-    $self->parse(<$fh>);
-    close $fh;
-}
-
-
-sub render_code
-{
-    join("\n", @{$_[0]->{&_INCLUDES_}}, @{$_[0]->{&_TEXT_}});
-}
-
 
 sub render
 {
-    eval join("\n", @{$_[0]->{&_INCLUDES_}}, @{$_[0]->{&_TEXT_}});
+    my ($self, $data) = @_;
+    my $parser = MetaPage::Parser->new;
+    $parser->media('html');
+    MetaPage::HandlerFactory::Plain->handlersFor($parser);
+    if( ref $data ) {
+        $parser->parse_text($data);
+    } else {
+        -f $data or croak sprintf('File not found: %s', $data);
+        $parser->parse_file($data);
+    }
+    $parser->release;
+    return $parser->render;
 }
-
 
 1;
 
@@ -79,30 +41,12 @@ __END__
 
 =head1
 
-use MetaPage;
-use MetaPage::HandlerFactory;
+    use MetaPage;
+    
+    my $mp = MetaPage->new;
 
-my $mp = MetaPage->new;
-MetaPage::HandlerFactory->handlersFor($mp);
-
-or
-
-my $mp = MetaPage::HandlerFactory->handlersFor(MetaPage->new);
-
-...
-
-local $/;
-open my $fh, '<', '/path/to/file' or die;
-$mp->parse_text(<$fh>);
-close $fh;
-
-or
-
-$mp->parse_file('/path/to/file');
-
-...
-
-$mp->render_code; # render intermediate perl-code
-$mp->render;      # deep render
+    my $content = $mp->render('path/to/template');
+    -or-
+    my $content = $mp->render(\$text);
 
 =cut
