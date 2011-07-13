@@ -7,17 +7,32 @@
 
 package MetaPage;
 use Carp;
-use base qw(XML::Parser::Expat);
-
+use MetaPage::HandlerFactory::Plain;
+use MetaPage::Const;
+use base 'XML::Parser::Expat';
 use strict;
 use warnings;
 
-sub _INCLUDES_  {'.includes'}
-sub _TEXT_      {'.text'}
-sub _ALIASES_   {'.aliases'}
 
-sub ROOT      {'metapage'}
+sub _is_root_elem # [protected]
+{
+    my ($self, $elem) = @_;
+    return (lc $elem eq _ROOT_);
+}
 
+sub _append # [protected]
+{
+    my ($self, $what, @data) = @_;
+    $self->{$what} = [] unless defined $self->{$what};
+    push @{$self->{$what}}, @data;
+}
+
+sub _aliases # [protected]
+{
+    my $self = shift;
+    $self->{&_ALIASES_} = {} unless defined $self->{&_ALIASES_};
+    return $self->{&_ALIASES_};
+}
 
 sub media
 {
@@ -31,7 +46,7 @@ sub media
 
 sub parse_text
 {
-    shift->SUPER::parse(join '', @_);
+    return $_[0]->parse(join '', @_);
 }
 
 
@@ -39,32 +54,12 @@ sub parse_file
 {
     my ($self, $path) = @_;
     
-    open( my $fh, '>', $path ) or croak sprintf('%s: %s', $path, $!);
+    open( my $fh, '<', $path ) or croak sprintf('%s: %s', $path, $!);
     local $/;
-    $_ = <$fh>;
-    $self->SUPER::parse($_);
+    $self->parse(<$fh>);
     close $fh;
 }
 
-sub _is_root_elem # [protected]
-{
-    my ($self, $elem) = @_;
-    return (lc $elem eq ROOT);
-}
-
-sub _append # [protected]
-{
-    my ($self, $what, @data) = @_;
-    $self->{$what} = [] unless defined $self->{$what};
-    push @{$self->{$what}}, @data;
-}
-
-sub _aliases # [protected]
-{
-    my $aliases = &_ALIASES_;
-    $_[0]->{$aliases} = {} unless defined $_[0]->{$aliases};
-    return $_[0]->{$aliases};
-}
 
 sub render_code
 {
@@ -76,6 +71,7 @@ sub render
 {
     eval join("\n", @{$_[0]->{&_INCLUDES_}}, @{$_[0]->{&_TEXT_}});
 }
+
 
 1;
 

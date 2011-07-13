@@ -6,8 +6,8 @@
 #
 package MetaPage::HandlerFactory::Plain;
 use Carp;
-use MetaPage;
 use Text::Simplify;
+use MetaPage::Const;
 
 use strict;
 use warnings;
@@ -38,13 +38,11 @@ sub handlersFor {
 }
 
 
-# replace Webject::Media::html::stringify_atts whith function
-# _stringify_atts(HASHREF)
 sub _stringify_atts
 {
     my @pairs = ();
     while( my ($k,$v) = each(%{$_[0]}) ) {
-        push @pairs, $k. '=\"' . quotemeta($v) . '"';
+        push @pairs, $k. "=\"$v\"";
     }
     return join( ' ', @pairs);
 }
@@ -63,23 +61,22 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
 {
     my ($parser, $elem, %atts) = @_;
     
-    # root elem
     if( $parser->_is_root_elem($elem) ) {
         $parser->{'webject_counter'} = 0;
-        $parser->{__PARENTS__} = [];
+        $parser->{&_PARENTS_} = [];
         
-        $parser->_append(MetaPage::_INCLUDES_,
+        $parser->_append(_INCLUDES_,
             sprintf(q(use Webject::Media '%s';), $parser->media),
             'use Webject;',
             'use Webject::Native;'
         );
-        $parser->_append(MetaPage::_TEXT_, 
+        $parser->_append(_TEXT_, 
             '{',
             'local $_;',
             '$_ = Webject->new();'
         );
         
-        push @{$parser->{__PARENTS__}}, '$_';
+        push @{$parser->{&_PARENTS_}}, '$_';
 
     } elsif ( $elem =~ /^mp:(.+)$/ ) {
         my $mpt = $1;
@@ -101,14 +98,14 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
                     push @setters, "->$k(" . '\''. quotemeta($v) . '\')';
                 }
                 my $setters = @setters ? join('', @setters) : '';
-                $parser->_append(MetaPage::_TEXT_, 
+                $parser->_append(_TEXT_, 
                     sprintf('my %s = %s->new()%s;', $vname, $class, $setters));
             } else {
-                $parser->_append(MetaPage::_TEXT_, sprintf('my %s = %s->new();', $vname, $class));
+                $parser->_append(_TEXT_, sprintf('my %s = %s->new();', $vname, $class));
             }
-            my $parents = $parser->{__PARENTS__};
+            my $parents = $parser->{&_PARENTS_};
             my $parent = $parents->[scalar(@$parents)-1];
-            $parser->_append(MetaPage::_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
+            $parser->_append(_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
             push @{$parents}, $vname;
         }
     } else {
@@ -118,19 +115,19 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
         my $vname = sprintf('$_%d_Native', ++$parser->{'webject_counter'} );
             
         if( %atts ) {
-            $parser->_append(MetaPage::_TEXT_, 
+            $parser->_append(_TEXT_, 
                 sprintf('my %s = %s->new()->tag(\'%s\')->add_atts(%s);',
                     $vname, $class, $elem, _stringify_args(%atts)));
         } else {
-            $parser->_append(MetaPage::_TEXT_, 
+            $parser->_append(_TEXT_, 
                 sprintf('my %s = %s->new()->tag(\'%s\');',
                     $vname, $class, $elem));
         }
 
-        my $parents = $parser->{__PARENTS__};
+        my $parents = $parser->{&_PARENTS_};
         my $parent = $parents->[scalar(@$parents)-1];
-        $parser->_append(MetaPage::_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
-        push @{$parser->{__PARENTS__}}, $vname;
+        $parser->_append(_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
+        push @{$parser->{&_PARENTS_}}, $vname;
     }
 }
 
@@ -138,18 +135,18 @@ sub _on_end_elem # (Expat, Element)
 {
     my ($parser, $elem) = @_;
     if( $parser->_is_root_elem($elem) ) {
-        $parser->_append(MetaPage::_TEXT_,
-            'print $_->render;',
+        $parser->_append(_TEXT_,
+            'return $_->render;',
             '}'
         );
     } elsif ( $elem =~ /^mp:(.+)$/ ) {
         if ( exists $_mp_handlers{$1} ) {
             $_mp_handlers{$1}->($parser, 0);
         } else {
-            pop @{$parser->{__PARENTS__}};
+            pop @{$parser->{&_PARENTS_}};
         }
     } else {
-        pop @{$parser->{__PARENTS__}};
+        pop @{$parser->{&_PARENTS_}};
     }
 }
 
@@ -160,13 +157,11 @@ sub _on_text # (Expat, String)
     if( $text ) { # text is not empty
         my $vname = sprintf('$_%d_Text', ++$parser->{'webject_counter'} );
         my $class = $parser->_aliases->{'Text'};
-        $parser->_append(MetaPage::_TEXT_, 
-            sprintf('my %s = %s->new()->value(\'%s\');',
-                $vname, $class, $text));
-        my $parents = $parser->{__PARENTS__};
+        $parser->_append(_TEXT_, 
+            sprintf('my %s = %s->new()->value(\'%s\');', $vname, $class, $text));
+        my $parents = $parser->{&_PARENTS_};
         my $parent = $parents->[scalar(@$parents)-1];
-        $parser->_append(MetaPage::_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
-#        push @{$parents}, $vname;
+        $parser->_append(_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
     }
 }
 
@@ -184,7 +179,7 @@ sub _on_mp_use # (parser, 0|1, HASHREF)
             return;
         }
         $parser->_aliases->{$as} = $webject;
-        $parser->_append(MetaPage::_INCLUDES_, "use $webject;");
+        $parser->_append(_INCLUDES_, "use $webject;");
     }
 }
 
