@@ -7,7 +7,8 @@
 
 package MetaPage::Parser;
 use Carp;
-use base 'XML::Parser::Expat';
+#use Class::Accessor;
+use base qw(XML::Parser::Expat Class::Accessor);
 use strict;
 use warnings;
 
@@ -16,6 +17,11 @@ sub _TEXT_      {'.text'}
 sub _ALIASES_   {'.aliases'}
 sub _ROOT_      {'metapage'}
 
+
+__PACKAGE__->mk_accessors(qw(
+    metapage
+    media
+));
 
 sub _is_root_elem # [protected]
 {
@@ -37,14 +43,19 @@ sub _aliases # [protected]
     return $self->{&_ALIASES_};
 }
 
-sub media
+sub var
 {
-    my ($self, $media) = @_;
-    $self->{'.media'} = 'html' unless defined $self->{'.media'};
-    return $self->{'.media'} if( @_ < 2 );
-    $self->{'.media'} = $media || 'html';
-    return $self;
+    shift->metapage->var(@_);
 }
+
+#sub media
+#{
+#    my ($self, $media) = @_;
+#    $self->{'.media'} = 'html' unless defined $self->{'.media'};
+#    return $self->{'.media'} if( @_ < 2 );
+#    $self->{'.media'} = $media || 'html';
+#    return $self;
+#}
 
 # $mp->parse_text
 # $mp->parse_text( \$text )
@@ -75,10 +86,12 @@ sub parse_file
 sub _render_IL
 {
     my $self = $_[0];
-    join("\n",
+    my $il_code = join("\n",
          @{$_[0]->{&_INCLUDES_}},
          @{$_[0]->{&_TEXT_}}
     );
+    #print $il_code;
+    return $il_code;
 }
 
 
