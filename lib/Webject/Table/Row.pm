@@ -12,7 +12,7 @@ sub new {
 sub cell_at
 {
     my ($self, $index) = @_;
-    return $self->_child_at($index);
+    return $self->child_at($index);
 }
 
 sub new_cell

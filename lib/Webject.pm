@@ -1,6 +1,7 @@
 package Webject;
 use Webject::Media::Functions;
 use Carp;
+use Text::Trim;
 use base 'Webject::Accessor';
 
 use 5.006;
@@ -128,10 +129,12 @@ sub render_text
     my @code = ();
     foreach( @text ) {
         if( /^<%=(.+)/s ) {
-            push @code, "push \@__text__, (&{sub{ $1 }} || '');\n";
+            $_ = $1;
+            push @code, "push \@__text__, (&{sub{ $_ }} || '');\n";
         } elsif( /^<%(.+)/s ) {
             push @code, $1;
         } else {
+            trim($_);
             push @code, "push \@__text__, q($_);\n";
         }
     }
@@ -184,16 +187,16 @@ sub _children
 }
 
 
-sub _children_count
+sub children_count
 {
     return scalar @{$_[0]->{-children}};
 }
 
-sub _child_at
+sub child_at
 {
     my( $self, $index) = @_;
     return undef unless defined $index;
-    return undef if( $index < 0 || $index >= $self->_children_count);
+    return undef if( $index < 0 || $index >= $self->children_count);
     return $self->{-children}->[$index];
 }
 

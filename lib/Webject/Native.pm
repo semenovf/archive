@@ -37,8 +37,13 @@ sub add_atts
 __DATA__
 
 <!--html{
-<<%=$self->tag%> <%=$self->render_atts %>>
-    <%=$self->render_children %>
-</<%=$self->tag%>>
+<<%=$self->tag%> <%=$self->render_atts %>
+    <% if( $self->children_count ) { %>
+        >
+        <%=$self->render_children %>
+        </<%=$self->tag%>>
+    <% } else { %>
+    />
+    <% } %>
 }html-->
 
