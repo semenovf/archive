@@ -41,16 +41,22 @@ sub init
     $_engine = $class->new;
 }
 
+#sub layout
+#{
+#    my ($self, $layout, $tokens, $content) = @_;
+#    $_engine->set_vars(%$tokens, 'content'=>$content);
+#}
+
 sub render
 {
-    my ($self, $template) = @_;
+    my ($self, $template, $tokens) = @_;
 
     if ( ! ref $template ) {
         -f $template or croak sprintf(q('%s' doesn't exist or not a regular file), $template);
-        return $_engine->render($template);
+        return $_engine->render($template, $tokens);
     }
 
-    return $_engine->render($template);
+    return $_engine->render($template, $tokens);
 }
 
 
