@@ -125,7 +125,7 @@ whitespaces with a single space.
 sub simplify {
     @_ = @_ ? @_ : $_ if defined wantarray;
 
-    for (@_ ? @_ : $_) { next unless defined; s/\A\s+//; s/\s+\z//; s/\s+/ /; }
+    for (@_ ? @_ : $_) { next unless defined; s/\A\s+//; s/\s+\z//; s/\s+/ /g; }
 
     return @_ if wantarray || !defined wantarray;
 
