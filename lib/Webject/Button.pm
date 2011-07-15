@@ -2,12 +2,12 @@ package Webject::Button;
 use base 'Webject';
 use strict;
 
-sub REGULAR { 0 }
-sub SUBMIT  { 1 }
-sub RESET   { 2 }
+sub REGULAR { 'button' }
+sub SUBMIT  { 'submit' }
+sub RESET   { 'reset' }
 
 my @rw_accessors = qw(
-    caption
+    value
     type
 );
 
@@ -23,12 +23,10 @@ sub new
     return bless $self, $class;
 }
 
-sub stringify_type
+# synonim to 'value' method
+sub caption
 {
-    my $self = shift;
-    return 'submit' if $self->type == SUBMIT;
-    return 'reset'  if $self->type == RESET;
-    return 'button';
+    return shift->value(@_);
 }
 
 1;
@@ -36,5 +34,5 @@ sub stringify_type
 __DATA__
 
 <!--html{
-<input type="<%=$self->stringify_type%>" value="<%=$self->caption%>" <%=$self->render_atts %> />
+<input type="<%=$self->type%>" value="<%=$self->caption%>" <%=$self->render_atts%> />
 }html-->

@@ -1,11 +1,12 @@
 package Webject::TextBox;
 use base 'Webject';
 
-sub REGULAR      {0}
+sub REGULAR      {'text'}
 sub AUTOCOMPLETE {1}
-sub PASSWORD     {2}
+sub PASSWORD     {'password'}
 
 my @rw_accessors = qw(
+    name
     type
     value
     maxlength
@@ -20,19 +21,13 @@ sub new {
     return $self;
 }
 
-sub stringify_type
-{
-    return 'password' if $_[0]->type == PASSWORD;
-    return 'text';
-}
-
-
 1;
 
 __DATA__
 
 <!--html{
-<input type="<%=$self->stringify_type%>" <%=$self->render_atts %>
-    <%=stringify_att( $self, 'maxlength' ) %>
-    <%=stringify_att( $self, 'value' ) %> />
+<input type="<%=$self->type%>" <%=$self->render_atts %>
+    <%=stringify_att( $self, 'name' )%>
+    <%=stringify_att( $self, 'maxlength' )%>
+    <%=stringify_att( $self, 'value' )%> />
 }html-->
