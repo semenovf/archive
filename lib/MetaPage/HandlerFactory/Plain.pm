@@ -20,6 +20,23 @@ use warnings;
 
 sub _PARENTS_   {'.parents'}
 
+my %_LOGIC_OPTS_ = (
+    '!'   =>1,
+    'ne'  =>1,
+    'eq'  =>1,
+    'cmp' =>1,
+    'lt'  =>1,
+    'gt'  =>1,
+    'le'  =>1,
+    'ge'  =>1,
+    'and' =>1,
+    'or'  =>1,
+    '=='  =>1,
+    '&&'  =>1,
+    '||'  =>1
+);
+
+
 my %_handlers = (
     Start        => \&_on_start_elem,
     End          => \&_on_end_elem,
@@ -28,7 +45,8 @@ my %_handlers = (
 
 my %_mp_handlers = (
     'use' => \&_on_mp_use,
-    'var' => \&_on_mp_var
+    'var' => \&_on_mp_var,
+    'if'  => \&_on_mp_if,
 );
 
 
@@ -91,6 +109,7 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
         $parser->_append(MetaPage::Parser::_TEXT_, 
             '{',
             'local $_;',
+            'my $__vars = shift @ARGV || {};',
             '$_ = Webject->new();'
         );
         
@@ -104,7 +123,7 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
         } else {
             my $class = $parser->_aliases->{$alias};
             
-            croak sprintf( q(%s: unknown alias, use 'use' tag for define it!), $alias )
+            $parser->xpcroak(sprintf( q(%s: unknown alias, use 'use' tag for define it!), $alias ))
                 unless $class;
             
             my $setters = '';
@@ -150,13 +169,16 @@ sub _on_end_elem # (Expat, Element)
 
 sub _on_text # (Expat, String)
 {
-    my ($parser, $text) = @_;
+    my ($parser, $text, $not_quoted) = @_;
     simplify($text);
     if( $text ) { # text is not empty
         my $vname = sprintf('$_%d_Text', ++$parser->{'webject_counter'} );
         my $class = $parser->_aliases->{'Text'};
+        
+        $text = "'$text'" unless $not_quoted;
+        
         $parser->_append(MetaPage::Parser::_TEXT_, 
-            sprintf('my %s = %s->new()->value(\'%s\');', $vname, $class, $text));
+            sprintf('my %s = %s->new()->value(%s);', $vname, $class, $text));
         my $parents = $parser->{&_PARENTS_};
         my $parent = $parents->[scalar(@$parents)-1];
         $parser->_append(MetaPage::Parser::_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
@@ -173,7 +195,7 @@ sub _on_mp_use # (parser, 0|1, HASHREF)
         while(1) {
             last if $webject;
             last if $as;
-            croak q(incomplete 'use' tag, use like this: <mp:use webject="SomeWebjectClass" as="Alias" />!);
+            $parser->xpcroak(q(incomplete 'use' tag, use like this: <mp:use webject="SomeWebjectClass" as="Alias" />!));
             return;
         }
         $parser->_aliases->{$as} = $webject;
@@ -182,7 +204,6 @@ sub _on_mp_use # (parser, 0|1, HASHREF)
 }
 
 
-#TODO
 sub _on_mp_var # (parser, 0|1, HASHREF)
 {
     my ($parser, $start, $atts) = @_;
@@ -191,10 +212,62 @@ sub _on_mp_var # (parser, 0|1, HASHREF)
         my $name = $atts->{'name'};
         my $val  = $atts->{'set'};
         unless( defined $val ) {
-            _on_text($parser, $parser->var($name));
+            _on_text($parser, "(\$__vars->{'$name'} || '')", 1);
         } else {
-            $parser->var($name, $val);
+            $parser->_append(MetaPage::Parser::_TEXT_, "\$__vars->{'$name'} = \"$val\";");
         }
+    }
+}
+
+
+sub _on_mp_if # (parser, 0|1, HASHREF)
+{
+    my ($parser, $start, $atts) = @_;
+    
+    if( $start ) {
+        my $test = $atts->{'test'};
+        my $vars = $parser->metapage->vars;
+        $parser->xpcroak("'test' attribute for 'if' statement expected and it must be not empty") unless $test;
+        
+        my @tokens = split(/\s+/, $test);
+
+        for( my $i = 0; $i < @tokens; $i++ ) {
+            $_ = $tokens[$i];
+            
+            next if exists $_LOGIC_OPTS_{$_};
+           
+            if( exists $vars->{$_} ) {
+                $tokens[$i] = "\$__vars->{'$_'}";
+                next;
+            }
+
+            /^!(.+)/    and do {
+                if( exists $vars->{$1} ) {
+                    $tokens[$i] = "!\$__vars->{'$1'}";
+                    next;
+                }
+            };
+            /^\((.+)/   and do {
+                if( exists $vars->{$1} ) {
+                    $tokens[$i] = "(\$__vars->{'$1'}";
+                    next;
+                }
+            };
+            /^(.+?)\)$/ and do {
+                if(exists $vars->{$1} ) {
+                    $tokens[$i] = "\$__vars->{'$1'})";
+                    next;
+                }
+            };
+            
+            $parser->xpcroak(sprintf q(Bad expression near token '%s'), $_);
+        }
+        
+        $parser->_append(MetaPage::Parser::_TEXT_,
+            sprintf('if(%s) {', join(' ', @tokens)));
+                         
+    } else { # end
+        $parser->_append( MetaPage::Parser::_TEXT_, '}' );
     }
 }
 

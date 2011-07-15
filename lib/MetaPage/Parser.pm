@@ -43,20 +43,6 @@ sub _aliases # [protected]
     return $self->{&_ALIASES_};
 }
 
-sub var
-{
-    shift->metapage->var(@_);
-}
-
-#sub media
-#{
-#    my ($self, $media) = @_;
-#    $self->{'.media'} = 'html' unless defined $self->{'.media'};
-#    return $self->{'.media'} if( @_ < 2 );
-#    $self->{'.media'} = $media || 'html';
-#    return $self;
-#}
-
 # $mp->parse_text
 # $mp->parse_text( \$text )
 # $mp->parse_text( @lines )
@@ -97,7 +83,10 @@ sub _render_IL
 
 sub render
 {
-    my $content = eval $_[0]->_render_IL;
+    my $self = shift;
+    local @ARGV;
+    $ARGV[0] = $self->metapage->vars;
+    my $content = eval $self->_render_IL;
     croak $@ if $@;
     return $content;
 }

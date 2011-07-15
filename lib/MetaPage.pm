@@ -9,6 +9,7 @@ package MetaPage;
 use Carp;
 use MetaPage::Parser;
 use MetaPage::HandlerFactory::Plain;
+use MetaPage::Var;
 use strict;
 use warnings;
 
@@ -28,43 +29,14 @@ sub import
 sub new
 {
     my $class = shift;
-    return bless {}, (ref $class ? ref $class : $class);
+    return bless {
+        'vars'=>MetaPage::Var->new
+    }, (ref $class ? ref $class : $class);
 }
 
-sub var
+sub vars
 {
-    my ($self, $name, $val) = @_;
-    $self->{'vars'} = {} unless defined $self->{'vars'};
-    
-    return (exists $self->{'vars'}->{$name} ? $self->{'vars'}->{$name} : '')
-        unless defined $val;
-    $self->{'vars'}->{$name} = $val;
-    return $self;
-}
-
-#
-# set bulk of vars
-#
-sub set_vars
-{
-    my $self = shift;
-    
-    return $self unless @_ > 0;
-    
-    my $vars;
-    if( @_ > 2 ) {
-        my %vars = @_ if @_ > 2;
-        $vars = \%vars;
-    } else {
-        $vars = $_[0];
-    }
-    
-    $self->{'vars'} = {} unless defined $self->{'vars'};
-
-    while( my ($name,$val) = each %$vars ) {
-        $self->{'vars'}->{$name} = $val;
-    }
-    return $self;
+    return $_[0]->{'vars'};
 }
 
 sub render
@@ -75,7 +47,7 @@ sub render
     $parser->metapage($self);
     MetaPage::HandlerFactory::Plain->handlersFor($parser);
 
-    $self->set_vars($vars) if $vars && ref $vars && ref $vars eq 'HASH';
+    $self->vars->set_vars($vars) if $vars && ref $vars && ref $vars eq 'HASH';
     
     if( ref $data ) {
         $parser->parse_text($data);
