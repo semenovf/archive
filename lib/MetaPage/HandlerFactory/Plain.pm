@@ -20,23 +20,6 @@ use warnings;
 
 sub _PARENTS_   {'.parents'}
 
-my %_LOGIC_OPTS_ = (
-    '!'   =>1,
-    'ne'  =>1,
-    'eq'  =>1,
-    'cmp' =>1,
-    'lt'  =>1,
-    'gt'  =>1,
-    'le'  =>1,
-    'ge'  =>1,
-    'and' =>1,
-    'or'  =>1,
-    '=='  =>1,
-    '&&'  =>1,
-    '||'  =>1
-);
-
-
 my %_handlers = (
     Start        => \&_on_start_elem,
     End          => \&_on_end_elem,
@@ -57,23 +40,49 @@ sub handlersFor {
 }
 
 
-sub _stringify_atts
+#sub _stringify_atts
+#{
+#    my @pairs = ();
+#    while( my ($k,$v) = each(%{$_[0]}) ) {
+#        push @pairs, $k. "=\"$v\"";
+#    }
+#    return join( ' ', @pairs);
+#}
+
+
+# 
+sub _parse_expr
 {
-    my @pairs = ();
-    while( my ($k,$v) = each(%{$_[0]}) ) {
-        push @pairs, $k. "=\"$v\"";
-    }
-    return join( ' ', @pairs);
+    local $_ = (@_ ?  $_[0] : $_ );
+    s/([^\\]?)\$([\w_][\w\d_]+)/$1\$__vars->\{'$2'\}/sg;
+    return $_;
 }
 
 sub _stringify_args
 {
     my @args = ();
     foreach( @_ ) {
-        push @args, "'$_'";
+        $_ = _parse_expr;
+        push @args, qq("$_");
     }
     return join( ',', @args);
 }
+
+
+sub _atts_to_webject_setters
+{
+    my $atts = $_[0];
+    if( %$atts ) {
+        my @setters = ();
+        while( my ($k,$v) = each( %$atts ) ) {
+            $v = _parse_expr($v);
+            push @setters, "->$k(\"$v\")";
+        }
+        return @setters ? join('', @setters) : '';
+    }
+    return '';
+}
+
 
 sub _append_vname
 {
@@ -126,14 +135,14 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
             $parser->xpcroak(sprintf( q(%s: unknown alias, use 'use' tag for define it!), $alias ))
                 unless $class;
             
-            my $setters = '';
-            if( %atts ) {
-                my @setters = ();
-                while( my ($k,$v) = each(%atts) ) {
-                    push @setters, "->$k('$v')";
-                }
-                $setters = @setters ? join('', @setters) : '';
-            }
+            my $setters = _atts_to_webject_setters(\%atts);
+            #if( %atts ) {
+            #    my @setters = ();
+            #    while( my ($k,$v) = each(%atts) ) {
+            #        push @setters, "->$k('$v')";
+            #    }
+            #    $setters = @setters ? join('', @setters) : '';
+            #}
             _append_vname($parser, $class, $alias, $setters);
         }
     } else {
@@ -225,46 +234,13 @@ sub _on_mp_if # (parser, 0|1, HASHREF)
     my ($parser, $start, $atts) = @_;
     
     if( $start ) {
-        my $test = $atts->{'test'};
+        local $_ = $atts->{'test'};
         my $vars = $parser->metapage->vars;
-        $parser->xpcroak("'test' attribute for 'if' statement expected and it must be not empty") unless $test;
+        $parser->xpcroak("'test' attribute for 'if' statement expected and it must be not empty") unless $_;
         
-        my @tokens = split(/\s+/, $test);
-
-        for( my $i = 0; $i < @tokens; $i++ ) {
-            $_ = $tokens[$i];
-            
-            next if exists $_LOGIC_OPTS_{$_};
-           
-            if( exists $vars->{$_} ) {
-                $tokens[$i] = "\$__vars->{'$_'}";
-                next;
-            }
-
-            /^!(.+)/    and do {
-                if( exists $vars->{$1} ) {
-                    $tokens[$i] = "!\$__vars->{'$1'}";
-                    next;
-                }
-            };
-            /^\((.+)/   and do {
-                if( exists $vars->{$1} ) {
-                    $tokens[$i] = "(\$__vars->{'$1'}";
-                    next;
-                }
-            };
-            /^(.+?)\)$/ and do {
-                if(exists $vars->{$1} ) {
-                    $tokens[$i] = "\$__vars->{'$1'})";
-                    next;
-                }
-            };
-            
-            $parser->xpcroak(sprintf q(Bad expression near token '%s'), $_);
-        }
+        $_ = _parse_expr($_);
         
-        $parser->_append(MetaPage::Parser::_TEXT_,
-            sprintf('if(%s) {', join(' ', @tokens)));
+        $parser->_append(MetaPage::Parser::_TEXT_, "if( $_ ) {");
                          
     } else { # end
         $parser->_append( MetaPage::Parser::_TEXT_, '}' );

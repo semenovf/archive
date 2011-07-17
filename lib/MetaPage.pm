@@ -10,10 +10,17 @@ use Carp;
 use MetaPage::Parser;
 use MetaPage::HandlerFactory::Plain;
 use MetaPage::Var;
+use base 'Class::Accessor';
 use strict;
 use warnings;
 
 my $_post_render = sub {$_[0]};
+
+__PACKAGE__->mk_accessors(qw(
+    vars
+    dump_code
+));
+
 
 #
 #@TODO: need modification for implement dynamic post renderer
@@ -29,14 +36,10 @@ sub import
 sub new
 {
     my $class = shift;
-    return bless {
-        'vars'=>MetaPage::Var->new
-    }, (ref $class ? ref $class : $class);
-}
-
-sub vars
-{
-    return $_[0]->{'vars'};
+    my $self = bless $class->SUPER::new, (ref $class ? ref $class : $class);
+    $self->vars( MetaPage::Var->new );
+    $self->dump_code(undef);
+    return $self;
 }
 
 sub render

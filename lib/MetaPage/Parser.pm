@@ -76,7 +76,10 @@ sub _render_IL
          @{$_[0]->{&_INCLUDES_}},
          @{$_[0]->{&_TEXT_}}
     );
-    #print $il_code;
+    if( $self->metapage->dump_code ) {
+        my $out = $self->metapage->dump_code;
+        print $out $il_code;
+    }
     return $il_code;
 }
 
