@@ -9,6 +9,7 @@ sub RESET   { 'reset' }
 my @rw_accessors = qw(
     value
     type
+    accesskey
 );
 
 __PACKAGE__->mk_accessors(@rw_accessors);
@@ -34,5 +35,7 @@ sub caption
 __DATA__
 
 <!--html{
-<input type="<%=$self->type%>" value="<%=$self->caption%>" <%=$self->render_atts%> />
+<input type="<%=$self->type%>" value="<%=$self->caption%>" <%=$self->render_atts%>
+<% if( $self->accesskey) {%> accesskey="<%=$self->accesskey%>" <% } %>
+/>
 }html-->

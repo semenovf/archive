@@ -13,6 +13,7 @@ use warnings;
 
 my @rw_accessors = qw(
     title
+    charset
 );
 
 __PACKAGE__->mk_accessors(@rw_accessors);
@@ -21,6 +22,7 @@ sub new {
     my $class = shift;
     my $self = bless $class->SUPER::new(@_), $class;
     $self->title('<untitled>');
+    $self->charset('utf-8');
     return $self;
 }
 
@@ -34,7 +36,8 @@ __DATA__
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-<title><%=encode $self->title %></title>
+<meta http-equiv="Content-Type" content="text/html; charset=<%=$self->charset%>" /> 
+<title><%=$self->title %></title>
 </head>
 <body>
 
