@@ -14,6 +14,7 @@ use warnings;
 my @rw_accessors = qw(
     title
     charset
+    stylesheet
 );
 
 __PACKAGE__->mk_accessors(@rw_accessors);
@@ -36,10 +37,26 @@ __DATA__
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=<%=$self->charset%>" /> 
-<title><%=$self->title %></title>
+    <title><%=$self->title %></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=<%=$self->charset%>" />
+    <link rel="icon" href="/images/favicon.ico" type="image/ico" />
+    
+<%
+    my @ss = split('\s+', $self->stylesheet || '');
+    foreach ( @ss ) {
+%>
+    <link rel="stylesheet" href="<%=$_%>" type="text/css" />
+<%  }%>
+
+    <!--[if lte IE 7]>
+    <!-- <link rel="stylesheet" href="/css/ie.css" type="text/css" /> -->
+    <![endif]--> 
+    <!--[if lte IE 6]>
+    <!-- <link rel="stylesheet" href="/css/ie6.css" type="text/css" /> -->
+    <![endif]--> 
+    
 </head>
-<body>
+<body <%=$self->render_atts%>>
 
 <%=$self->render_children %>
 

@@ -21,6 +21,7 @@ Version 0.01
 my @rw_atts = qw(
     id
     class
+    style
 );
 
 __PACKAGE__->mk_accessors(@rw_atts);

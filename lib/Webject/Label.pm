@@ -7,6 +7,7 @@ sub AFTER  { 'after' }
 my @rw_accessors = qw(
     value
     where
+    for
 );
 
 __PACKAGE__->mk_accessors(@rw_accessors);
@@ -25,7 +26,9 @@ sub new {
 __DATA__
 
 <!--html{
-<label <%=$self->render_atts %>>
+<label <%=$self->render_atts %>
+    <%=$self->for ? 'for="' . $self->for .'"' : '' %>
+    >
     <%=$self->value if $self->where eq Webject::Label::BEFORE%>
     <%=$self->render_children %>
     <%=$self->value if $self->where eq Webject::Label::AFTER%>
