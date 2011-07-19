@@ -39,6 +39,16 @@ sub init
         $class, $emsg);
 
     $_engine = $class->new;
+
+    #if( (my $dump_code = $self->config->{'dump_code'}) ) {
+    #    if( $dump_code eq 'STDOUT' ) {
+    #        $_engine->dump_code(*STDOUT);
+    #    } elsif( $dump_code eq 'STDERR' ) {
+    #        $_engine->dump_code(*STDERR);
+    #    } else {
+    #        $_engine->dump_code(*STDOUT);
+    #    }
+    #}
 }
 
 #sub layout
