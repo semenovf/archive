@@ -15,19 +15,25 @@ use warnings;
 sub _INCLUDES_  {'.includes'}
 sub _TEXT_      {'.text'}
 sub _ALIASES_   {'.aliases'}
-sub _ROOT_      {'metapage'}
 
 
 __PACKAGE__->mk_accessors(qw(
     metapage
     media
+    unit
+    root
 ));
 
-sub _is_root_elem # [protected]
+
+sub release
 {
-    my ($self, $elem) = @_;
-    return (lc $elem eq _ROOT_);
+    my $self = shift;
+    $self->SUPER::release;
+    $self->{&_ALIASES_}  = undef;
+    $self->{&_INCLUDES_} = undef;
+    $self->{&_TEXT_} = undef;
 }
+
 
 sub _append # [protected]
 {
@@ -53,7 +59,6 @@ sub parse_text
     return '' if @_ == 0;
     return $self->parse( ${$_[0]} ) if @_ == 1 && ref $_[0];
     return $self->parse(join '', @_);
-    $self->release;
 }
 
 
@@ -69,30 +74,14 @@ sub parse_file
 }
 
 
-sub _render_IL
+sub render_il_code
 {
     my $self = $_[0];
-    my $il_code = join("\n",
+    my $code = join("\n",
          @{$_[0]->{&_INCLUDES_}},
          @{$_[0]->{&_TEXT_}}
     );
-    if( $self->metapage->dump_code ) {
-        my $out = $self->metapage->dump_code;
-        print $out $il_code;
-    }
-    return $il_code;
+    return $code;
 }
-
-
-sub render
-{
-    my $self = shift;
-    local @ARGV;
-    $ARGV[0] = $self->metapage->vars;
-    my $content = eval $self->_render_IL;
-    croak $@ if $@;
-    return $content;
-}
-
 
 1;

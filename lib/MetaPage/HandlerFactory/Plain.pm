@@ -18,7 +18,7 @@ use warnings;
     
 =cut
 
-sub _PARENTS_   {'.parents'}
+sub _PARENTS_  {'.parents'}
 
 my %_handlers = (
     Start        => \&_on_start_elem,
@@ -27,9 +27,10 @@ my %_handlers = (
 );
 
 my %_mp_handlers = (
-    'use' => \&_on_mp_use,
-    'var' => \&_on_mp_var,
-    'if'  => \&_on_mp_if,
+    'use'      => \&_on_mp_use,
+    'var'      => \&_on_mp_var,
+    'if'       => \&_on_mp_if,
+    'include'  => \&_on_mp_include
 );
 
 
@@ -50,6 +51,11 @@ sub handlersFor {
 #}
 
 
+sub _is_root_elem
+{
+    return (lc $_[0] eq 'metapage');
+}
+
 # 
 sub _parse_expr
 {
@@ -57,6 +63,20 @@ sub _parse_expr
     s/([^\\]?)\$([\w_][\w\d_]+)/$1\$__vars->\{'$2'\}/sg;
     return $_;
 }
+
+sub _parse_val
+{
+    my ($_, $vars_href) = @_;
+    s/([^\\]?)\$([\w_][\w\d_]+)/$1$vars_href->{$2}/sg;
+    return $_;
+}
+
+sub _unit_to_package
+{
+    my $unit = shift;
+    return defined $unit ? $unit : 'main';
+}
+
 
 sub _stringify_args
 {
@@ -75,8 +95,15 @@ sub _atts_to_webject_setters
     if( %$atts ) {
         my @setters = ();
         while( my ($k,$v) = each( %$atts ) ) {
-            $v = _parse_expr($v);
-            push @setters, "->$k(\"$v\")";
+            $_ = _parse_expr($v);
+            #push @setters, "->$k(\"$v\")";
+            
+            if( $_ ne $v ) {
+                push @setters, "->$k($_)";
+            } else {
+                push @setters, "->$k('$_')";
+            }
+
         }
         return @setters ? join('', @setters) : '';
     }
@@ -103,22 +130,23 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
 {
     my ($parser, $elem, %atts) = @_;
     
-    if( $parser->_is_root_elem($elem) ) {
+    if( _is_root_elem($elem) ) {
         $parser->{'webject_counter'} = 0;
         $parser->{&_PARENTS_} = [];
-        
+        $parser->unit(exists $atts{'unit'} ? $atts{'unit'} : 'main');
         $parser->_aliases->{'Native'} = 'Webject::Native';
         $parser->_aliases->{'Text'} = 'Webject::Text';
         $parser->_append(MetaPage::Parser::_INCLUDES_,
-            sprintf(q(use Webject::Media '%s';), $parser->media),
+            sprintf('package %s;', _unit_to_package($parser->unit)),
+            sprintf('use Webject::Media \'%s\';', $parser->media),
             'use Webject;',
             'use Webject::Native;',
             'use Webject::Text;'
         );
-        $parser->_append(MetaPage::Parser::_TEXT_, 
-            '{',
+        $parser->_append(MetaPage::Parser::_TEXT_,
+            'sub _process {',
             'local $_;',
-            'my $__vars = shift @ARGV || {};',
+            'my $__vars = $ARGV[0] || {};',
             '$_ = Webject->new();'
         );
         
@@ -135,15 +163,7 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
             $parser->xpcroak(sprintf( q(%s: unknown alias, use 'use' tag for define it!), $alias ))
                 unless $class;
             
-            my $setters = _atts_to_webject_setters(\%atts);
-            #if( %atts ) {
-            #    my @setters = ();
-            #    while( my ($k,$v) = each(%atts) ) {
-            #        push @setters, "->$k('$v')";
-            #    }
-            #    $setters = @setters ? join('', @setters) : '';
-            #}
-            _append_vname($parser, $class, $alias, $setters);
+            _append_vname($parser, $class, $alias, _atts_to_webject_setters(\%atts));
         }
     } else {
         my $alias = 'Native';
@@ -160,10 +180,13 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
 sub _on_end_elem # (Expat, Element)
 {
     my ($parser, $elem) = @_;
-    if( $parser->_is_root_elem($elem) ) {
+    if( _is_root_elem($elem) ) {
+        $parser->_append(MetaPage::Parser::_INCLUDES_, 'use strict;', 'use warnings;');
         $parser->_append(MetaPage::Parser::_TEXT_,
             'return $_->render;',
-            '}'
+            '}',
+            $parser->root ? '_process();' : '',
+            "\n"
         );
     } elsif ( $elem =~ /^mp:(.+)$/ ) {
         if ( exists $_mp_handlers{$1} ) {
@@ -235,15 +258,48 @@ sub _on_mp_if # (parser, 0|1, HASHREF)
     
     if( $start ) {
         local $_ = $atts->{'test'};
-        my $vars = $parser->metapage->vars;
+        #my $vars = $parser->metapage->vars;
         $parser->xpcroak("'test' attribute for 'if' statement expected and it must be not empty") unless $_;
         
         $_ = _parse_expr($_);
         
-        $parser->_append(MetaPage::Parser::_TEXT_, "if( $_ ) {");
-                         
+        $parser->_append(MetaPage::Parser::_TEXT_, "\n", "if( $_ ) {");
     } else { # end
-        $parser->_append( MetaPage::Parser::_TEXT_, '}' );
+        $parser->_append( MetaPage::Parser::_TEXT_, '}', "\n" );
+    }
+}
+
+sub _on_mp_include # (parser, 0|1, HASHREF)
+{
+    my ($parser, $start, $atts) = @_;
+    
+    if( $start ) {
+        local $_ = $atts->{'path'};
+        my $vars = $parser->metapage->vars;
+        $parser->xpcroak("'path' attribute for 'include' statement expected and it must be not empty") unless $_;
+        
+        my $file = _parse_val($_, $vars);
+        
+        my $inner_parser = MetaPage::Parser->new(ErrorContext=>4);
+        $inner_parser->media($parser->media());
+        $inner_parser->metapage($parser->metapage());
+        $inner_parser->root(0);
+        __PACKAGE__->handlersFor($inner_parser);
+    
+        -f $file or croak sprintf('%s: File not found', $file);
+        $inner_parser->parse_file($file);
+        
+        $parser->_append(MetaPage::Parser::_INCLUDES_,
+            $inner_parser->render_il_code);
+        $parser->_append(MetaPage::Parser::_INCLUDES_,
+            sprintf('package %s;', _unit_to_package($parser->unit)));
+        
+        my $parents = $parser->{&_PARENTS_};
+        my $parent = $parents->[scalar(@$parents)-1];
+        $parser->_append(MetaPage::Parser::_TEXT_,
+            sprintf('%s->add(%s::_process());', $parent, _unit_to_package($inner_parser->unit)));
+        $inner_parser->release;
+        $inner_parser = undef;
     }
 }
 
