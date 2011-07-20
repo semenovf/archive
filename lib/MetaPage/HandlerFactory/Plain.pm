@@ -181,7 +181,11 @@ sub _on_end_elem # (Expat, Element)
 {
     my ($parser, $elem) = @_;
     if( _is_root_elem($elem) ) {
-        $parser->_append(MetaPage::Parser::_INCLUDES_, 'use strict;', 'use warnings;');
+        $parser->_append(MetaPage::Parser::_INCLUDES_,
+            'use strict;',
+            'use warnings;',
+            'no warnings qw( redefine );'
+            );
         $parser->_append(MetaPage::Parser::_TEXT_,
             'return $_->render;',
             '}',
