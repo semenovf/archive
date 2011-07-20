@@ -14,25 +14,19 @@ sub decode
     return $_[0];
 }
 
-
+# @TODO
 sub stringify_atts
 {
     my $self = shift or die;
-    my %atts = @_;
     my $atts_str = '';
-
-    while( my ($k,$v) = each(%atts) ) {
-	$atts_str .= ' '. $k .'="'. $v .'"';
-    }
-    
     return $atts_str;
 }
 
 
-sub stringify_att
-{
-    my ($self, $webject, $att_name, $method) = @_;
-    return '';
-}
+#sub stringify_att
+#{
+#    my ($self, $webject, $att_name, $method) = @_;
+#    return '';
+#}
 
 1;

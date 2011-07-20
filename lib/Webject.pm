@@ -47,14 +47,28 @@ Base class for web objects (Webjects).
 =cut
 
 
-sub new {
+sub new
+{
     my $class = shift;
     my $self = bless {
         -parent => undef,       # parent webject reference
-        -children => []
+        -children => [],
     }, $class;
+    $self->ctor;
     return $self;
 }
+
+sub ctor
+{}
+
+
+sub set_attributes
+{
+    my ($self, @atts) = @_;
+    ref($self)->mk_accessors(@atts);
+    return $self;
+}
+
 
 =head2 add
 
@@ -100,18 +114,14 @@ sub render
 }
 
 
-=head2 render_atts [protected method]
+=head2 render_atts
 
 =cut
 
 sub render_atts
 {
     my $self = shift;
-    my %atts = ();
-    foreach( @rw_atts ) {
-        $atts{$_}=$self->$_ if defined $self->$_;
-    } ;
-    return stringify_atts(%atts);
+    return stringify_atts($self->{-atts}, $self);
 }
 
 

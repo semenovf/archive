@@ -1,37 +1,27 @@
 package Webject::Label;
 use base 'Webject';
 
-sub BEFORE { 'before' }
-sub AFTER  { 'after' }
-
-my @rw_accessors = qw(
-    value
-    where
+my @rw_atts = qw(
     for
 );
 
-__PACKAGE__->mk_accessors(@rw_accessors);
+my @rw_accessors = qw();
 
+__PACKAGE__->mk_accessors(@rw_accessors, @rw_atts);
 
-sub new {
-    my $class = shift;
-    my $self = $class->SUPER::new(@_);
-    $self->value('');
-    $self->where(BEFORE);
-    return bless $self, $class;
-}
+#sub new {
+#    my $class = shift;
+#    my $self = $class->SUPER::new(@_);
+#    return bless $self, $class;
+#}
 
 1;
 
 __DATA__
 
 <!--html{
-<label <%=$self->render_atts %>
-    <%=$self->for ? 'for="' . $self->for .'"' : '' %>
-    >
-    <%=$self->value if $self->where eq Webject::Label::BEFORE%>
+<label <%=$self->render_atts(\@Webject::Label::rw_atts)%>>
     <%=$self->render_children %>
-    <%=$self->value if $self->where eq Webject::Label::AFTER%>
 </label>
 }html-->
 

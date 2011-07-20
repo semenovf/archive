@@ -8,18 +8,18 @@ my @rw_accessors = qw(
 
 __PACKAGE__->mk_accessors(@rw_accessors);
 
-sub render_atts
-{
-    my $self = shift;
-    my $t = '';
-    if( defined $self->{'atts'} ) {
-        $t .= ' ';
-        $t = stringify_atts(%{$self->{'atts'}});
-    }
-
-    return ($self->SUPER::render_atts() . $t);
-}
-
+#sub render_atts
+#{
+#    my $self = shift;
+#    my $t = '';
+#    if( defined $self->{'atts'} ) {
+#        $t .= ' ';
+#        $t = stringify_atts(%{$self->{'atts'}});
+#    }
+#
+#    return ($self->SUPER::render_atts() . $t);
+#}
+#
 
 sub add_atts
 {
@@ -37,7 +37,7 @@ sub add_atts
 __DATA__
 
 <!--html{
-<<%=$self->tag%> <%=$self->render_atts %>
+<<%=$self->tag%> <%=$self->render_atts($self->{'atts'}) %>
     <% if( $self->children_count ) { %>
         >
         <%=$self->render_children %>

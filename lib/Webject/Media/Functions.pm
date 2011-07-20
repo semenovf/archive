@@ -10,7 +10,6 @@ require Exporter;
 @EXPORT = qw(
     media
     stringify_atts
-    stringify_att
     encode
     decode
 );
@@ -21,7 +20,8 @@ require Exporter;
 foreach (@EXPORT) {
     my $sub = Webject::Media->can($_);
     no strict 'refs';
-    *{$_} = sub {&$sub('Webject::Media', @_)};
+    #*{$_} = sub {&$sub('Webject::Media', @_)};
+    *{$_} = sub { &$sub(@_) };
 }
 
 

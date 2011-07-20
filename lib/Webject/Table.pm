@@ -7,49 +7,12 @@ sub BODY   {'body'}
 sub HEADER {'header'}
 sub FOOTER {'footer'}
 
-#my @rw_accessors = qw(
-#);
-#
-#__PACKAGE__->mk_accessors(@rw_accessors);
-
-#sub new {
-#    my $class = shift;
-#    my $self = $class->SUPER::new(@_);
-#    #$self->{'header'} = undef;
-#    #$self->{'body'}   = undef;
-#    #$self->{'footer'} = undef;
-#    return bless $self, $class;
-#}
-
-
-#sub header
-#{
-#    $_[0]->{'header'} = Webject::Table::Section->new->type(HEADER)
-#        unless defined $_[0]->{'header'};
-#    return $_[0]->{'header'};
-#}
-#
-#sub body
-#{
-#    $_[0]->{'body'} = Webject::Table::Section->new->type(BODY)
-#        unless defined $_[0]->{'body'};
-#    return $_[0]->{'body'};
-#}
-#
-#sub footer
-#{
-#    $_[0]->{'footer'} = Webject::Table::Section->new->type(FOOTER)
-#        unless defined $_[0]->{'footer'};
-#    return $_[0]->{'footer'};
-#}
-
-
 1;
 
 __DATA__
 
 <!--html{
-<table <%=$self->render_atts %>>
+<table <%=$self->render_atts%>>
     <%= $self->render_children %>
 </table>
 }html-->

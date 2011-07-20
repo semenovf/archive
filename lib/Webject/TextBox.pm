@@ -5,14 +5,17 @@ sub REGULAR      {'text'}
 sub AUTOCOMPLETE {1}
 sub PASSWORD     {'password'}
 
-my @rw_accessors = qw(
+my @rw_atts = qw(
     name
     type
     value
     maxlength
 );
 
-__PACKAGE__->mk_accessors(@rw_accessors);
+my @rw_accessors = qw(
+);
+
+__PACKAGE__->mk_accessors(@rw_accessors, @rw_atts);
 
 sub new {
     my $class = shift;
@@ -26,8 +29,5 @@ sub new {
 __DATA__
 
 <!--html{
-<input type="<%=$self->type%>" <%=$self->render_atts %>
-    <%=stringify_att( $self, 'name' )%>
-    <%=stringify_att( $self, 'maxlength' )%>
-    <%=stringify_att( $self, 'value' )%> />
+<input type="<%=$self->type%>" <%=$self->render_atts(\@Webject::TextBox::rw_atts) %> />
 }html-->

@@ -6,22 +6,15 @@ sub REGULAR { 'button' }
 sub SUBMIT  { 'submit' }
 sub RESET   { 'reset' }
 
-my @rw_accessors = qw(
-    value
-    type
-    accesskey
-);
-
-__PACKAGE__->mk_accessors(@rw_accessors);
+__PACKAGE__->mk_accessors(@rw_accessors, @rw_atts);
 
 
-sub new
+sub ctor
 {
-    my $class = shift;
-    my $self = $class->SUPER::new(@_);
-    $self->caption('ok');
+    my $self = shift;
+    $self->caption('Ok');
     $self->type(SUBMIT);
-    return bless $self, $class;
+    $self->set_attributes( qw(value type accesskey) );
 }
 
 # synonim to 'value' method
@@ -35,7 +28,5 @@ sub caption
 __DATA__
 
 <!--html{
-<input type="<%=$self->type%>" value="<%=$self->caption%>" <%=$self->render_atts%>
-<% if( $self->accesskey) {%> accesskey="<%=$self->accesskey%>" <% } %>
-/>
+<input <%=$self->render_atts%> />
 }html-->

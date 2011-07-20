@@ -2,7 +2,14 @@ package Webject::HRef;
 use base Webject;
 use strict;
 
-__PACKAGE__->mk_accessors(qw(href));
+
+my @rw_atts = qw(
+    href
+);
+
+my @rw_accessors = qw();
+
+__PACKAGE__->mk_accessors(@rw_accessors, @rw_atts);
 
 sub new {
     my $class = shift;
@@ -17,7 +24,7 @@ sub new {
 __DATA__
 
 <!--html{
-<a href="<%=$self->href%>" <%=$self->render_atts %> >
+<a <%=$self->render_atts(\@Webject::HRef::rw_atts) %> >
     <%=$self->render_children %>
 </a>
 }html-->
