@@ -78,15 +78,15 @@ sub _unit_to_package
 }
 
 
-sub _stringify_args
-{
-    my @args = ();
-    foreach( @_ ) {
-        $_ = _parse_expr;
-        push @args, qq("$_");
-    }
-    return join( ',', @args);
-}
+#sub _stringify_args
+#{
+#    my @args = ();
+#    foreach( @_ ) {
+#        $_ = _parse_expr;
+#        push @args, qq("$_");
+#    }
+#    return join( ',', @args);
+#}
 
 
 sub _atts_to_webject_setters
@@ -171,8 +171,10 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
         
         my $setters = "->tag('$elem')";
         if( %atts ) {
-            $setters .= '->add_atts(' . _stringify_args(%atts) .')';
-        } 
+            $setters .= '->set_attributes(qw(' . join(' ', keys %atts) . '))';
+            #$setters .= '->add_atts(' . _stringify_args(%atts) .')';
+            $setters .= _atts_to_webject_setters(\%atts);
+        }
         _append_vname($parser, $class, $alias, $setters);
     }
 }
@@ -185,7 +187,7 @@ sub _on_end_elem # (Expat, Element)
             'use strict;',
             'use warnings;',
             'no warnings qw( redefine );'
-            );
+        );
         $parser->_append(MetaPage::Parser::_TEXT_,
             'return $_->render;',
             '}',
@@ -276,6 +278,13 @@ sub _on_mp_if # (parser, 0|1, HASHREF)
 sub _on_mp_include # (parser, 0|1, HASHREF)
 {
     my ($parser, $start, $atts) = @_;
+    
+    if( exists $atts->{'var'} ) {
+        my %tmp_atts = ('name'=>$atts->{'var'});
+        _on_mp_var($parser, 1, \%tmp_atts);
+        return;    
+    }
+    
     
     if( $start ) {
         local $_ = $atts->{'path'};
