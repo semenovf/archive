@@ -34,7 +34,7 @@ my $dbh;
 my $ddi = DBI::DDI::Class->new;
 $ddi->dbh($dbh);
 $ddi->ddi($ddi_auth);
-$ddi->class('DBI::DDI::MySQL');
+$ddi->impl('DBI::DDI::MySQL');
 $ddi->ns('auth_db');
 $ddi->charset('utf8');
 $ddi->prepare(-Prefix=>'auth_', -Suffix=>'_t');
@@ -46,13 +46,13 @@ prepare($ddi_auth, -Prefix=>'auth_', -Suffix=>'_t');
 deploy(
     -DBH=>$dbh,
     -DDI=>$ddi_auth,
-    -Class=>'DBI::DDI::MySQL',
+    -Impl=>'DBI::DDI::MySQL',
     -NS=>'auth_db',
     -Charset=>'utf8');
 
 recall(
     -DBH=>$dbh,
     -DDI=>$ddi_auth,
-    -Class=>'DBI::DDI::MySQL',
+    -Impl=>'DBI::DDI::MySQL',
     -NS=>'auth_db',
     -DropDB=>1);

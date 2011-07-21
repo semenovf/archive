@@ -22,10 +22,12 @@ my @_ddi_tags = qw(
     DDI_UNIQUE
 );
 
-our @EXPORT = qw(prepare deploy recall);
+my @_ddi_subs = qw(prepare deploy recall);
+#our @EXPORT = qw(prepare deploy recall);
 our @EXPORT_OK = @_ddi_tags;
 our %EXPORT_TAGS = (
-    ddi=>[@_ddi_tags]
+    ddi=>[@_ddi_tags],
+    subs=>[@_ddi_subs]
 );
 
 
@@ -70,7 +72,7 @@ sub deploy
     # After the next commit or rollback, AutoCommit will automatically be turned on again.
     $dbh->begin_work or croak sprintf('transaction start: %s',$dbh->errstr);
     foreach ( @sql ) {
-        print $_, "\n";
+        #print $_, "\n";
         $dbh->do($_);
         if ( $dbh->err ) {
             my $err = $dbh->err;
@@ -96,7 +98,7 @@ sub recall
     my $ddi      = $args{-DDI} or die;
     my $ns       = $args{-NS} or die;
     my $dbh      = $args{-DBH} or die;
-    my $ddiImpl = $args{-Class} or die;
+    my $ddiImpl  = $args{-Class} or die;
     my $drop_db  = $args{-DropDb} || 0;
 
     load $ddiImpl;

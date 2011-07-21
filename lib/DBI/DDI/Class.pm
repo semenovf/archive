@@ -10,6 +10,7 @@ sub set {
 }
 
 package DBI::DDI::Class;
+use DBI::DDI;
 use base 'DBI::DDI::Class::Accessor';
 use strict;
 use warnings;
@@ -53,19 +54,31 @@ sub new {
 
 sub prepare
 {
-    my $self = shift or die;
-    my %args     = @_;
-    my $ddi      = $args{-DDI} or die;
-    my $prefix   = $args{-Prefix} || '';
-    my $suffix   = $args{-Suffix} || '';
-
-    # rename all table names with $prefix and $suffix
-    foreach my $key ( keys %{$ddi} ) {
-        $ddi->{$prefix.$key.$suffix} = delete $ddi->{$key};
-    }
+    DBI::DDI::prepare(-DDI=>$_[0]->ddi, @_);
 }
 
 
+sub deploy
+{
+    my $self = shift or die;
+    DBI::DDI::deploy(
+        -DDI=>$self->ddi,
+        -DBH=>$self->dbh,
+        -Impl=>$self->impl,
+        -NS=>$self->ns,
+        -Charset=>$self->charset);
+}
+
+sub recall
+{
+    my $self = shift or die;
+    DBI::DDI::deploy(
+        -DDI=>$self->ddi,
+        -DBH=>$self->dbh,
+        -Impl=>$self->impl,
+        -NS=>$self->ns,
+        @_);
+}
 
 1;
 
