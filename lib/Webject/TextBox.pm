@@ -5,23 +5,13 @@ sub REGULAR      {'text'}
 sub AUTOCOMPLETE {1}
 sub PASSWORD     {'password'}
 
-my @rw_atts = qw(
-    name
-    type
-    value
-    maxlength
-);
 
-my @rw_accessors = qw(
-);
-
-__PACKAGE__->mk_accessors(@rw_accessors, @rw_atts);
-
-sub new {
-    my $class = shift;
-    my $self = bless $class->SUPER::new(@_), $class;
+sub ctor
+{
+    my $self = shift;
+    $self->SUPER::ctor();
+    $self->set_attributes( qw(name type value maxlength) );
     $self->type(REGULAR); 
-    return $self;
 }
 
 1;
@@ -29,5 +19,5 @@ sub new {
 __DATA__
 
 <!--html{
-<input type="<%=$self->type%>" <%=$self->render_atts(\@Webject::TextBox::rw_atts) %> />
+<input <%=$self->render_atts%> />
 }html-->

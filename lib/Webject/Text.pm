@@ -1,17 +1,14 @@
 package Webject::Text;
 use base 'Webject';
 
-my @rw_accessors = qw(
-    value
-);
+__PACKAGE__->mk_accessors(qw(value));
 
-__PACKAGE__->mk_accessors(@rw_accessors);
 
-sub new {
-    my $class = shift;
-    my $self = bless $class->SUPER::new(@_), $class;
+sub ctor
+{
+    my $self = shift;
+    $self->SUPER::ctor();
     $self->value('');
-    return $self;
 }
 
 1;

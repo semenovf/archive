@@ -18,14 +18,6 @@ Version 0.01
 
 =cut
 
-my @rw_atts = qw(
-    id
-    class
-    style
-);
-
-__PACKAGE__->mk_accessors(@rw_atts);
-
 our $VERSION = '0.01';
 
 =head1 SYNOPSIS
@@ -53,19 +45,31 @@ sub new
     my $self = bless {
         -parent => undef,       # parent webject reference
         -children => [],
+        -atts => []
     }, $class;
     $self->ctor;
     return $self;
 }
 
 sub ctor
-{}
+{
+    $_[0]->set_attributes(qw(
+        id
+        class
+        style
+    ));
+}
 
+#sub clear_attributes
+#{
+#    $_[0]->{-atts} = [];
+#}
 
 sub set_attributes
 {
     my ($self, @atts) = @_;
     ref($self)->mk_accessors(@atts);
+    push @{$self->{-atts}}, @atts;
     return $self;
 }
 
@@ -145,10 +149,10 @@ sub render_text
         } elsif( /^<%(.+)/s ) {
             push @code, $1;
         } else {
-            trim($_);
             push @code, "push \@__text__, q($_);\n";
         }
     }
+    #print join("\n", 'my @__text__;', @code, q(join('', @__text__);));
     my $text = eval( join("\n", 'my @__text__;', @code, q(join('', @__text__);)) ) || '';
     croak $@ if $@;
     return $text;

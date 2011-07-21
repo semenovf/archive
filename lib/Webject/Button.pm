@@ -6,15 +6,13 @@ sub REGULAR { 'button' }
 sub SUBMIT  { 'submit' }
 sub RESET   { 'reset' }
 
-__PACKAGE__->mk_accessors(@rw_accessors, @rw_atts);
-
-
 sub ctor
 {
     my $self = shift;
+    $self->SUPER::ctor();
+    $self->set_attributes( qw(value type accesskey) );
     $self->caption('Ok');
     $self->type(SUBMIT);
-    $self->set_attributes( qw(value type accesskey) );
 }
 
 # synonim to 'value' method
