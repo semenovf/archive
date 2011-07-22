@@ -42,7 +42,7 @@ __DATA__
     <link rel="icon" href="/images/favicon.ico" type="image/ico" />
     
 <%
-    my @ss = split('\s+', $self->stylesheet || '');
+    my @ss = split(';', $self->stylesheet || '');
     foreach ( @ss ) {
 %>
     <link rel="stylesheet" href="<%=$_%>" type="text/css" />

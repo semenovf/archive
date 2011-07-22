@@ -13,13 +13,12 @@ sub ctor {}
 __DATA__
 
 <!--html{
-<<%=$self->tag%> <%=$self->render_atts %>
-    <% if( $self->children_count ) { %>
-        >
+<% if( exists { 'br'=>1, 'hr'=>1 }->{$self->tag} ) { %>
+    <<%=$self->tag%> <%=$self->render_atts %> />
+<% } else { %>
+    <<%=$self->tag%> <%=$self->render_atts %>>
         <%=$self->render_children %>
-        </<%=$self->tag%>>
-    <% } else { %>
-    />
-    <% } %>
+    </<%=$self->tag%>>
+<% } %>
 }html-->
 
