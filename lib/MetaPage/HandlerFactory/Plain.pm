@@ -40,17 +40,6 @@ sub handlersFor {
     return $parser;
 }
 
-
-#sub _stringify_atts
-#{
-#    my @pairs = ();
-#    while( my ($k,$v) = each(%{$_[0]}) ) {
-#        push @pairs, $k. "=\"$v\"";
-#    }
-#    return join( ' ', @pairs);
-#}
-
-
 sub _is_root_elem
 {
     return (lc $_[0] eq 'metapage');
@@ -78,17 +67,6 @@ sub _unit_to_package
 }
 
 
-#sub _stringify_args
-#{
-#    my @args = ();
-#    foreach( @_ ) {
-#        $_ = _parse_expr;
-#        push @args, qq("$_");
-#    }
-#    return join( ',', @args);
-#}
-
-
 sub _atts_to_webject_setters
 {
     my $atts = $_[0];
@@ -96,10 +74,9 @@ sub _atts_to_webject_setters
         my @setters = ();
         while( my ($k,$v) = each( %$atts ) ) {
             $_ = _parse_expr($v);
-            #push @setters, "->$k(\"$v\")";
             
             if( $_ ne $v ) {
-                push @setters, "->$k($_)";
+                push @setters, "->$k(\"$_\")";
             } else {
                 push @setters, "->$k('$_')";
             }
@@ -172,7 +149,6 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
         my $setters = "->tag('$elem')";
         if( %atts ) {
             $setters .= '->set_attributes(qw(' . join(' ', keys %atts) . '))';
-            #$setters .= '->add_atts(' . _stringify_args(%atts) .')';
             $setters .= _atts_to_webject_setters(\%atts);
         }
         _append_vname($parser, $class, $alias, $setters);
