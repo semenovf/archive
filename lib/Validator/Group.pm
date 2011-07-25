@@ -7,16 +7,9 @@ use warnings;
 
 =head1 NAME
 
-Validator::Group - The great new Validator::Group!
-
-=head1 VERSION
-
-Version 0.03
+Validator::Group - group of variables' validators.
 
 =cut
-
-our $VERSION = '0.03';
-
 
 =head1 SYNOPSIS
 
