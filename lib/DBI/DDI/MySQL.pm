@@ -1,5 +1,6 @@
 package DBI::DDI::MySQL;
 use Carp;
+use DBI::DDI qw(:flags);
 use DBI::DDI::Const;
 
 use strict;
@@ -29,6 +30,7 @@ sub spec_for_deploy
     my ($self, %args) = @_;
     my $ns = $args{-NS} or croak 'namespace expected';
     my $ddi = $args{-DDI} or croak 'ddi exepcted';
+    my $flags = $args{-Flags};
     my $charset = $args{-Charset} || MYSQL_DEFAULT_CHARSET;
 
     my @ddiSQL = ();
@@ -39,7 +41,7 @@ sub spec_for_deploy
 
     my $dbEngine   = MYSQL_DEFAULT_DB_ENGINE;
 
-    push @ddiSQL, sprintf('CREATE DATABASE IF NOT EXISTS `%s`', $ns);
+    push @ddiSQL, sprintf('CREATE DATABASE IF NOT EXISTS `%s`', $ns) unless ( $flags & DO_NOT_CREATE_DB );
     push @ddiSQL, sprintf('USE `%s`',$ns);
 
     foreach my $table ( keys %{$ddi} ) {
@@ -148,8 +150,8 @@ sub spec_for_deploy
             }
         }
 
-
-        push @ddiSQL, sprintf('CREATE TABLE `%s` (%s %s) ENGINE=%s AUTO_INCREMENT=5 DEFAULT CHARSET=%s',
+        push @ddiSQL, sprintf('CREATE TABLE %s `%s` (%s %s) ENGINE=%s AUTO_INCREMENT=5 DEFAULT CHARSET=%s',
+            ( $flags & CREATE_TAB_IF_NOT_EXISTS ) ? 'IF NOT EXISTS' : '',
             $table,
             join( ',', @columnDefs),
             $pk,
@@ -169,7 +171,8 @@ sub spec_for_recall
 {
     my ($self, %args) = @_;
     my $ns = $args{-NS} or croak 'namespace expected';
-    my $ddi = $args{-DDI} or croak 'ddi exepcted';
+    my $ddi = $args{-DDI} or croak 'ddi expected';
+    my $flags = $args{-Flags};
 
     my @ddiSQL = ();
     my @ddiSQLDropFK = ();

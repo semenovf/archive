@@ -5,31 +5,50 @@ use DBI::DDI::Const;
 use strict;
 use warnings;
 
-use base 'Exporter';
+   
+our (@ISA, @EXPORT_OK, %EXPORT_TAGS);
+BEGIN {
+    require Exporter;
+    @ISA = qw(Exporter);
 
-my @_ddi_tags = qw(
-    DDI_PK
-    DDI_INT
-    DDI_BOOL
-    DDI_TIME
-    DDI_DATE
-    DDI_DATETIME
-    DDI_TIMESTAMP
-    DDI_TEXT
-    DDI_REF
-    DDI_AUTOINC
-    DDI_NOTNULL
-    DDI_UNIQUE
-);
+    my @_ddi_tags = qw(
+        DDI_PK
+        DDI_INT
+        DDI_BOOL
+        DDI_TIME
+        DDI_DATE
+        DDI_DATETIME
+        DDI_TIMESTAMP
+        DDI_TEXT
+        DDI_REF
+        DDI_AUTOINC
+        DDI_NOTNULL
+        DDI_UNIQUE
+    );
 
-my @_ddi_subs = qw(prepare deploy recall);
-#our @EXPORT = qw(prepare deploy recall);
-our @EXPORT_OK = @_ddi_tags;
-our %EXPORT_TAGS = (
-    ddi=>[@_ddi_tags],
-    subs=>[@_ddi_subs]
-);
+    my @_ddi_subs = qw(prepare deploy recall);
+    my @_ddi_flags = qw(
+        NO_FLAGS
+        CREATE_TAB_IF_NOT_EXISTS
+        DO_NOT_CREATE_DB
+        DROP_DB
+    );
 
+    @EXPORT_OK = (@_ddi_tags, @_ddi_subs, @_ddi_flags);
+    %EXPORT_TAGS = (
+        'flags' => [@_ddi_flags],
+        'ddi'   => [@_ddi_tags],
+        'subs'  => [@_ddi_subs],
+    );
+}
+
+#
+# Flags
+#
+sub NO_FLAGS                 {0x0000} # all:    no flags, this is default value
+sub CREATE_TAB_IF_NOT_EXISTS {0x0001} # deploy: create table if it does not exist
+sub DO_NOT_CREATE_DB         {0x0002} # deploy: do not create database if it does not exist
+sub DROP_DB                  {0x0004} # recall: drop database
 
 =head2 prepare(-DDI=>$ddi [,-Prefix=>$prefix] [,-Suffix=>$suffix])
 
@@ -50,7 +69,7 @@ sub prepare
     }
 }
 
-=head2 deploy (-DDI=>$ddi, -DBH=>$dbh, -Impl=>$ddiImplPackage, -NS=>$ns [,-Charset=>$charset])
+=head2 deploy (-DDI=>$ddi, -DBH=>$dbh, -Impl=>$ddiImplPackage, -NS=>$ns [,-Flags=>$flags ] [,-Charset=>$charset])
 
 Deploy database
 
@@ -63,10 +82,11 @@ sub deploy
     my $ns       = $args{-NS} or die;
     my $dbh      = $args{-DBH} or die;
     my $ddiImpl  = $args{-Impl} or die;
+    my $flags    = $args{-Flags}   || NO_FLAGS;
     my $charset  = $args{-Charset} || 'utf8';
 
     load $ddiImpl;
-    my @sql = $ddiImpl->spec_for_deploy(-DDI=>$ddi, -NS=>$ns, -Charset=>$charset);
+    my @sql = $ddiImpl->spec_for_deploy(-DDI=>$ddi, -NS=>$ns, -Flags=>$flags, -Charset=>$charset);
 
     # Enable transactions (by turning AutoCommit off) until the next call to commit or rollback.
     # After the next commit or rollback, AutoCommit will automatically be turned on again.
@@ -85,10 +105,10 @@ sub deploy
     1;
 }
 
-=head2 recall(-DDI=>$ddi, -DBH=>$dbh, -Impl=>$ddiImplPackage, -NS=>$ns [,-DropDB=>0|1)
+=head2 recall(-DDI=>$ddi, -DBH=>$dbh, -Impl=>$ddiImplPackage, -NS=>$ns [,-Flags=>$flags])
 
 Recall (destroys) namespace (database) content and database itself
-if -DropDB specified and is not equal to 0 and database has no tables in turn.
+if flag DROP_DB is set and database has no tables in turn.
 
 =cut
 
@@ -99,7 +119,7 @@ sub recall
     my $ns       = $args{-NS} or die;
     my $dbh      = $args{-DBH} or die;
     my $ddiImpl  = $args{-Class} or die;
-    my $drop_db  = $args{-DropDb} || 0;
+    my $flags    = $args{-Flags} || NO_FLAGS;
 
     load $ddiImpl;
     my @sql = $ddiImpl->spec_for_recall(-DDI=>$ddi, -NS=>$ns);
@@ -119,7 +139,7 @@ sub recall
     $dbh->commit;
 
     my $tab_names = get_tables($dbh, $ns);
-    if( scalar(@{$tab_names}) == 0 && $drop_db ) {
+    if( scalar(@{$tab_names}) == 0 && ($flags & DROP_DB) ) {
         $dbh->do(sprintf('DROP DATABASE IF EXISTS %s', $ns));
         croak sprintf('%s while dropping database \'%s\'', $dbh->errstr, $ns) if $dbh->err;
     }
@@ -215,6 +235,10 @@ sub DDI_UNIQUE
     };
 }
 
+
+#
+# get_tables($dbh, $ns)
+#
 sub get_tables
 {
     my $dbh = shift or die;

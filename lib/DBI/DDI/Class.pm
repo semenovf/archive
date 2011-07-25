@@ -61,23 +61,33 @@ sub prepare
 sub deploy
 {
     my $self = shift or die;
+    my $flags = shift || DBI::DDI::NO_FLAGS;
     DBI::DDI::deploy(
         -DDI=>$self->ddi,
         -DBH=>$self->dbh,
         -Impl=>$self->impl,
         -NS=>$self->ns,
+        -Flags=>$flags,
         -Charset=>$self->charset);
 }
 
 sub recall
 {
     my $self = shift or die;
-    DBI::DDI::deploy(
+    my $flags = shift || DBI::DDI::NO_FLAGS;
+    DBI::DDI::recall(
         -DDI=>$self->ddi,
         -DBH=>$self->dbh,
         -Impl=>$self->impl,
         -NS=>$self->ns,
-        @_);
+        -Flags=>$flags);
+}
+
+
+sub get_tables
+{
+    my $self = shift or die;
+    return DBI::DDI::get_tables($self->dbh, $self->ns);
 }
 
 1;
