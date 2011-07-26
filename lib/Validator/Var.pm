@@ -11,11 +11,11 @@ Validator::Var - variable validator with expandable list of checkers.
 
 =head1 VERSION
 
-Version 0.03
+Version 0.10
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.10';
 
 
 =head1 SYNOPSIS
@@ -76,6 +76,22 @@ sub new
     $self->checker(_Def);
     return $self;
 }
+
+
+=head2 default( $default_value )
+
+Sets/gets default value for variable.
+
+=cut
+
+sub default
+{
+    my ($self, $val) = @_;
+    return $self->{'default'} unless defined $val;
+    $self->{'default'} = $val;
+    return $self;
+}
+
 
 =head2 is_empty
 

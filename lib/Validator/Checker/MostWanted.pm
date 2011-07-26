@@ -23,7 +23,7 @@ sub Min     { [\&_min,     'Min',     'is grater than'] }
 sub Max     { [\&_max,     'Max',     'is less than'] }
 sub Between { [\&_between, 'Between', 'is between'] }
 sub Regexp  { [\&_regexp,  'Regexp',  'match regexp'] }
-sub Length  { [\&_length,  'Length',  'has length equal to' ] }
+sub Length  { [\&_length,  'Length',  'has length less or equal to' ] }
 
 
 =head1 SYNOPSIS
@@ -138,7 +138,7 @@ sub _regexp($$)
 
 sub _length($$) {
     return 0 if ref $_[0];
-    return length $_[0] == $_[1];
+    return length $_[0] <= $_[1];
 }
 
 =head1 AUTHOR
