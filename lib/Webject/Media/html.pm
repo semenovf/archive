@@ -49,16 +49,4 @@ sub stringify_atts
     return @atts_arr ? join(' ', @atts_arr) : '';
 }
 
-
-#sub stringify_att
-#{
-#    my ($self, $webject, $att_name, $method) = @_;
-#    $method = $att_name unless defined $method;
-#    if( $webject->can( $method ) ) {
-#	return sprintf(q(%s="%s"), $att_name, $self->encode($webject->$method()))
-#	    if defined $webject->$method();
-#    }
-#    return '';
-#}
-
 1;

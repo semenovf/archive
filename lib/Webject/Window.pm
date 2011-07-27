@@ -11,21 +11,17 @@ use warnings;
 #my $XHTML_1_0_Mobile       = '<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">';
 #my $XHTML_1_1              = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">';
 
-my @rw_accessors = qw(
-    title
-    charset
-    stylesheet
-);
+__PACKAGE__->mk_accessors(qw(title charset));
 
-__PACKAGE__->mk_accessors(@rw_accessors);
-
-sub new {
-    my $class = shift;
-    my $self = bless $class->SUPER::new(@_), $class;
+sub ctor
+{
+    my $self = shift;
+    $self->SUPER::ctor();
+    #$self->set_attributes( qw() );
     $self->title('<untitled>');
     $self->charset('utf-8');
-    return $self;
 }
+
 
 1;
 
@@ -40,21 +36,8 @@ __DATA__
     <title><%=$self->title %></title>
     <meta http-equiv="Content-Type" content="text/html; charset=<%=$self->charset%>" />
     <link rel="icon" href="/images/favicon.ico" type="image/ico" />
-    
-<%
-    my @ss = split(';', $self->stylesheet || '');
-    foreach ( @ss ) {
-%>
-    <link rel="stylesheet" href="<%=$_%>" type="text/css" />
-<%  }%>
-
-    <!--[if lte IE 7]>
-    <!-- <link rel="stylesheet" href="/css/ie.css" type="text/css" /> -->
-    <![endif]--> 
-    <!--[if lte IE 6]>
-    <!-- <link rel="stylesheet" href="/css/ie6.css" type="text/css" /> -->
-    <![endif]--> 
-    
+<%= join("\n", $self->fetch_clipboard('STYLE')) %>
+<%= join("\n", $self->fetch_clipboard('SCRIPT')) %>
 </head>
 <body <%=$self->render_atts%>>
 

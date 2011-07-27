@@ -1,7 +1,8 @@
 package Webject;
-use Webject::Media::Functions;
+use Webject::Media::Functions qw(!media);
 use Carp;
 use Text::Trim;
+use Webject::Clipboard;
 use base 'Webject::Accessor';
 
 use 5.006;
@@ -18,7 +19,9 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
+my $CLIPBOARDS = {};
+
 
 =head1 SYNOPSIS
 
@@ -58,6 +61,11 @@ sub ctor
         class
         style
     ));
+}
+
+sub media
+{
+    return Webject::Media->media;
 }
 
 #sub clear_attributes
@@ -103,21 +111,6 @@ sub add
 }
 
 
-=head2 render
-
-=cut
-
-sub render
-{
-    my $self = $_[0];
-    my $data_fh = ref($self).'::DATA';
-    $data_fh  = eval "*$data_fh";
-    croak $@ if $@;
-    
-    return $self->render_file( $data_fh );
-}
-
-
 =head2 render_atts
 
 =cut
@@ -129,15 +122,64 @@ sub render_atts
 }
 
 
+=head2 render
+
+=cut
+
+sub render
+{
+    my $self = shift;
+    return $self->_render_text( $self->_render_source );
+}
+
+
+# _render_source
+sub _render_source
+{
+    my $self = shift;
+    
+    my $is_a = '@'. ref($self) .'::ISA';
+    my @bases = eval "$is_a";
+    my $data_fh;
+    
+    if( ref($self) eq __PACKAGE__) {
+        $data_fh = __PACKAGE__.'::DATA';
+        $data_fh  = eval "*$data_fh";
+        confess $@ if $@;
+    } else {
+        for my $pkg ( (ref($self), @bases) ) {
+            last if $pkg eq __PACKAGE__;
+            
+            $data_fh = $pkg.'::DATA';
+            #eval "require $pkg";
+            $data_fh  = eval "*$data_fh";
+            confess $@ if $@;
+            
+            last if defined fileno($data_fh);
+            undef $data_fh;
+        }
+    }
+    
+    croak 'no source found for render' unless defined $data_fh;  # no DATA section found
+
+    local $/;
+    my $pos = tell $data_fh;
+    $_ = <$data_fh>;
+    seek $data_fh, $pos, 0;
+    return $_;
+}
+
+
 =head2 render_text [protected method]
 
 =cut
 
-sub render_text
+sub _render_text
 {
     my $self = shift;
     my $m = Webject::Media->media;
-    $_ = join('', @_);
+    
+    $_ = join('', map { defined $_ ? $_ : '' } @_);
     $_ =~ /<!--${m}\{\s*(.*?)\}${m}-->/sg and do { $_ = $1 };
     my @text = split(/(<%=?\s*.*?)\s*%>/s, $_);
 
@@ -153,8 +195,11 @@ sub render_text
         }
     }
     #print join("\n", 'my @__text__;', @code, q(join('', @__text__);));
+    
     my $text = eval( join("\n", 'my @__text__;', @code, q(join('', @__text__);)) ) || '';
-    croak $@ if $@;
+    confess $@ if $@;
+    
+    #$self->clear_clipboards;
     return $text;
 }
 
@@ -163,15 +208,15 @@ sub render_text
 
 =cut
 
-sub render_file
-{
-    my ($self, $fh) = @_;
-    local $/;
-    my $pos = tell $fh;
-    $_ = <$fh>;
-    seek $fh, $pos, 0;
-    return $self->render_text($_);
-}
+#sub render_file
+#{
+#    my ($self, $fh) = @_;
+#    local $/;
+#    my $pos = tell $fh;
+#    $_ = <$fh>;
+#    seek $fh, $pos, 0;
+#    return $self->render_text($_);
+#}
 
 
 
@@ -213,6 +258,40 @@ sub child_at
     return undef unless defined $index;
     return undef if( $index < 0 || $index >= $self->children_count);
     return $self->{-children}->[$index];
+}
+
+sub push_clipboard
+{
+    my $self = shift;
+    my $name = shift;
+    
+    $CLIPBOARDS->{$name} = Webject::Clipboard->new unless exists $CLIPBOARDS->{$name};
+    $CLIPBOARDS->{$name}->push(@_);
+}
+
+sub fetch_clipboard
+{
+    my $self = shift;
+    my $name = shift;
+    return $CLIPBOARDS->{$name}->fetch;
+}
+
+sub clear_clipboard
+{
+    my $self = shift;
+    my $name = shift;
+    $CLIPBOARDS->{$name}->clear;
+    undef $CLIPBOARDS->{$name};
+}
+
+
+sub clear_clipboards
+{
+    my $self = shift;
+    for my $name ( keys %{$CLIPBOARDS} ) {
+        $CLIPBOARDS->{$name}->clear;
+    }
+    $CLIPBOARDS = {};
 }
 
 =head1 AUTHOR
