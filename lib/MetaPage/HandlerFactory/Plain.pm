@@ -49,7 +49,7 @@ sub _is_root_elem
 sub _parse_expr
 {
     local $_ = (@_ ?  $_[0] : $_ );
-    s/([^\\]?)\$([\w_][\w\d_]+)/$1\$__vars->\{'$2'\}/sg;
+    s/([^\\]?)\$([\w_][\w\d_]+)/$1\$_vars->\{'$2'\}/sg;
     return $_;
 }
 
@@ -76,7 +76,7 @@ sub _atts_to_webject_setters
             $_ = _parse_expr($v);
             
             if( $_ ne $v ) {
-                push @setters, "->$k(\"$_\")";
+                push @setters, "->$k(qq($_))";
             } else {
                 push @setters, "->$k('$_')";
             }
@@ -123,7 +123,7 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
         $parser->_append(MetaPage::Parser::_TEXT_,
             'sub _process {',
             'local $_;',
-            'my $__vars = $ARGV[0] || {};',
+            'my $_vars = $ARGV[0] || {};',
             '$_ = Webject->new();'
         );
         
@@ -226,9 +226,9 @@ sub _on_mp_var # (parser, 0|1, HASHREF)
         my $name = $atts->{'name'};
         my $val  = $atts->{'set'};
         unless( defined $val ) {
-            _on_text($parser, "(\$__vars->{'$name'} || '')", 1);
+            _on_text($parser, "(\$_vars->{'$name'} || '')", 1);
         } else {
-            $parser->_append(MetaPage::Parser::_TEXT_, "\$__vars->{'$name'} = \"$val\";");
+            $parser->_append(MetaPage::Parser::_TEXT_, "\$_vars->{'$name'} = \"$val\";");
         }
     }
 }
