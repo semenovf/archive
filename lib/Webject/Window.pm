@@ -35,9 +35,7 @@ __DATA__
 <head>
     <title><%=$self->title %></title>
     <meta http-equiv="Content-Type" content="text/html; charset=<%=$self->charset%>" />
-    <link rel="icon" href="/images/favicon.ico" type="image/ico" />
-<%= join("\n", $self->fetch_clipboard('STYLE')) %>
-<%= join("\n", $self->fetch_clipboard('SCRIPT')) %>
+<%= join('', $self->fetch_clipboard('HEAD')) %>
 </head>
 <body <%=$self->render_atts%>>
 

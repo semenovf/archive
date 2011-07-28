@@ -1,6 +1,9 @@
 package Webject::TextBox;
 use base 'Webject';
 
+#
+# Types
+#
 sub REGULAR      {'text'}
 sub AUTOCOMPLETE {1}
 sub PASSWORD     {'password'}

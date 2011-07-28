@@ -15,13 +15,20 @@ Webject (Web [Ob]ject) - base class for Web[Ob]jects
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
 our $VERSION = '0.02';
-my $CLIPBOARDS = {};
 
+my $_CLIPBOARDS = {};
+
+__PACKAGE__->mk_accessors(qw(mode));
+#
+# Modes
+#
+sub MODE_VIEW {'view'}
+sub MODE_EDIT {'edit'}
 
 =head1 SYNOPSIS
 
@@ -56,11 +63,13 @@ sub new
 
 sub ctor
 {
-    $_[0]->set_attributes(qw(
+    my $self = shift;
+    $self->set_attributes(qw(
         id
         class
         style
     ));
+    $self->mode(MODE_VIEW);
 }
 
 sub media
@@ -265,33 +274,34 @@ sub push_clipboard
     my $self = shift;
     my $name = shift;
     
-    $CLIPBOARDS->{$name} = Webject::Clipboard->new unless exists $CLIPBOARDS->{$name};
-    $CLIPBOARDS->{$name}->push(@_);
+    $_CLIPBOARDS->{$name} = Webject::Clipboard->new unless exists $_CLIPBOARDS->{$name};
+    $_CLIPBOARDS->{$name}->push(@_);
 }
 
 sub fetch_clipboard
 {
     my $self = shift;
     my $name = shift;
-    return $CLIPBOARDS->{$name}->fetch;
+    return $_CLIPBOARDS->{$name} ? $_CLIPBOARDS->{$name}->fetch : '';
 }
 
 sub clear_clipboard
 {
     my $self = shift;
     my $name = shift;
-    $CLIPBOARDS->{$name}->clear;
-    undef $CLIPBOARDS->{$name};
+    return unless exists $_CLIPBOARDS->{$name};
+    $_CLIPBOARDS->{$name}->clear;
+    undef $_CLIPBOARDS->{$name};
 }
 
 
 sub clear_clipboards
 {
     my $self = shift;
-    for my $name ( keys %{$CLIPBOARDS} ) {
-        $CLIPBOARDS->{$name}->clear;
+    for my $name ( keys %{$_CLIPBOARDS} ) {
+        $_CLIPBOARDS->{$name}->clear;
     }
-    $CLIPBOARDS = {};
+    $_CLIPBOARDS = {};
 }
 
 =head1 AUTHOR
