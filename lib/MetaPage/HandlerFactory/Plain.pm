@@ -66,36 +66,41 @@ sub _unit_to_package
     return defined $unit ? $unit : 'main';
 }
 
-
-sub _atts_to_webject_setters
+#
+# _process_webject_atts(ARRAYREF, HASHREF)
+#
+sub _process_webject_atts
 {
-    my $atts = $_[0];
+    my ($setters, $atts) = @_;
     if( %$atts ) {
-        my @setters = ();
         while( my ($k,$v) = each( %$atts ) ) {
             $_ = _parse_expr($v);
             
             if( $_ ne $v ) {
-                push @setters, "->$k(qq($_))";
+                push @$setters, "$k(\"$_\")";
             } else {
-                push @setters, "->$k('$_')";
+                push @$setters, qq($k('$_'));
             }
-
         }
-        return @setters ? join('', @setters) : '';
     }
-    return '';
 }
 
-
-sub _append_vname
+#
+# _process_new_webject( OBJECT, STRING, STRING, ARRAYREF )
+#
+sub _process_new_webject
 {
     my ($parser, $class, $alias, $setters) = @_;
     
     my $vname = sprintf('$_%d_%s', ++$parser->{'webject_counter'}, $alias );
 
     $parser->_append(MetaPage::Parser::_TEXT_, 
-        sprintf('my %s = %s->new()%s;', $vname, $class, $setters || ''));
+        sprintf('my %s = %s->new();', $vname, $class));
+
+    for my $setter ( @$setters ) {
+        $parser->_append(MetaPage::Parser::_TEXT_, 
+            sprintf('%s->%s;', $vname, $setter));
+    }
     
     my $parents = $parser->{&_PARENTS_};
     my $parent = $parents->[scalar(@$parents)-1];
@@ -140,18 +145,20 @@ sub _on_start_elem # (Expat, Element [, Attr, Val [,...]])
             $parser->xpcroak(sprintf( q(%s: unknown alias, use 'use' tag for define it!), $alias ))
                 unless $class;
             
-            _append_vname($parser, $class, $alias, _atts_to_webject_setters(\%atts));
+            my @setters = ();
+            _process_webject_atts(\@setters, \%atts);
+            _process_new_webject($parser, $class, $alias, \@setters);
         }
     } else {
         my $alias = 'Native';
         my $class = 'Webject::Native';
         
-        my $setters = "->tag('$elem')";
+        my @setters = ("tag('$elem')");
         if( %atts ) {
-            $setters .= '->set_attributes(qw(' . join(' ', keys %atts) . '))';
-            $setters .= _atts_to_webject_setters(\%atts);
+            push @setters, 'set_attributes(qw(' . join(' ', keys %atts) . '))';
+            _process_webject_atts(\@setters, \%atts);
         }
-        _append_vname($parser, $class, $alias, $setters);
+        _process_new_webject($parser, $class, $alias, \@setters);
     }
 }
 
@@ -192,10 +199,11 @@ sub _on_text # (Expat, String)
         $text = "'$text'" unless $not_quoted;
         
         $parser->_append(MetaPage::Parser::_TEXT_, 
-            sprintf('my %s = %s->new()->value(%s);', $vname, $class, $text));
+            "my ${vname} = ${class}->new();",
+            "${vname}->value(${text});");
         my $parents = $parser->{&_PARENTS_};
         my $parent = $parents->[scalar(@$parents)-1];
-        $parser->_append(MetaPage::Parser::_TEXT_, sprintf('%s->add(%s);', $parent, $vname));
+        $parser->_append(MetaPage::Parser::_TEXT_, "${parent}->add(${vname});");
     }
 }
 
