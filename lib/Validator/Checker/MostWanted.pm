@@ -25,7 +25,6 @@ sub Between { [\&_between, 'Between', 'is between'] }
 sub Regexp  { [\&_regexp,  'Regexp',  'match regexp'] }
 sub Length  { [\&_length,  'Length',  'has length less or equal to' ] }
 
-
 =head1 SYNOPSIS
 
 see Validator::Var
