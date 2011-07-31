@@ -21,7 +21,8 @@ Version 0.02
 
 our $VERSION = '0.02';
 
-my $_CLIPBOARDS = {};
+#my $_CLIPBOARDS = {};
+my $_SETTINGS = {};
 
 __PACKAGE__->mk_accessors(qw(mode));
 #
@@ -72,6 +73,8 @@ sub ctor
     $self->mode(MODE_VIEW);
 }
 
+sub settings { $_SETTINGS }
+
 sub media
 {
     return Webject::Media->media;
@@ -90,6 +93,14 @@ sub set_attributes
     return $self;
 }
 
+
+sub set_attributes_with_validators
+{
+    my ($self, %atts) = @_;
+    ref($self)->mk_accessors_with_validators(%atts);
+    push @{$self->{-atts}}, keys %atts;
+    return $self;
+}
 
 =head2 add
 
@@ -269,40 +280,40 @@ sub child_at
     return $self->{-children}->[$index];
 }
 
-sub push_clipboard
-{
-    my $self = shift;
-    my $name = shift;
-    
-    $_CLIPBOARDS->{$name} = Webject::Clipboard->new unless exists $_CLIPBOARDS->{$name};
-    $_CLIPBOARDS->{$name}->push(@_);
-}
-
-sub fetch_clipboard
-{
-    my $self = shift;
-    my $name = shift;
-    return $_CLIPBOARDS->{$name} ? $_CLIPBOARDS->{$name}->fetch : '';
-}
-
-sub clear_clipboard
-{
-    my $self = shift;
-    my $name = shift;
-    return unless exists $_CLIPBOARDS->{$name};
-    $_CLIPBOARDS->{$name}->clear;
-    undef $_CLIPBOARDS->{$name};
-}
-
-
-sub clear_clipboards
-{
-    my $self = shift;
-    for my $name ( keys %{$_CLIPBOARDS} ) {
-        $_CLIPBOARDS->{$name}->clear;
-    }
-    $_CLIPBOARDS = {};
-}
+#sub push_clipboard
+#{
+#    my $self = shift;
+#    my $name = shift;
+#    
+#    $_CLIPBOARDS->{$name} = Webject::Clipboard->new unless exists $_CLIPBOARDS->{$name};
+#    $_CLIPBOARDS->{$name}->push(@_);
+#}
+#
+#sub fetch_clipboard
+#{
+#    my $self = shift;
+#    my $name = shift;
+#    return $_CLIPBOARDS->{$name} ? $_CLIPBOARDS->{$name}->fetch : '';
+#}
+#
+#sub clear_clipboard
+#{
+#    my $self = shift;
+#    my $name = shift;
+#    return unless exists $_CLIPBOARDS->{$name};
+#    $_CLIPBOARDS->{$name}->clear;
+#    undef $_CLIPBOARDS->{$name};
+#}
+#
+#
+#sub clear_clipboards
+#{
+#    my $self = shift;
+#    for my $name ( keys %{$_CLIPBOARDS} ) {
+#        $_CLIPBOARDS->{$name}->clear;
+#    }
+#    $_CLIPBOARDS = {};
+#}
 
 =head1 AUTHOR
 
