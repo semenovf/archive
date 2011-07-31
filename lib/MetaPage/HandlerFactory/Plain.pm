@@ -276,6 +276,8 @@ sub _on_mp_include # (parser, 0|1, HASHREF)
         $parser->xpcroak("'path' attribute for 'include' statement expected and it must be not empty") unless $_;
         
         my $file = _parse_val($_, $vars);
+
+        -f $file or croak sprintf('%s: File not found', $_);
         
         my $inner_parser = MetaPage::Parser->new(ErrorContext=>4);
         $inner_parser->media($parser->media());
@@ -283,7 +285,6 @@ sub _on_mp_include # (parser, 0|1, HASHREF)
         $inner_parser->root(0);
         __PACKAGE__->handlersFor($inner_parser);
     
-        -f $file or croak sprintf('%s: File not found', $file);
         $inner_parser->parse_file($file);
         
         $parser->_append(MetaPage::Parser::_INCLUDES_,

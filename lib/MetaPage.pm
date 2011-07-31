@@ -53,7 +53,7 @@ sub render
     if( ref $data ) {
         $parser->parse_text($data);
     } else {
-        -f $data or croak sprintf('%s: File not found', $data);
+        -f $data or croak sprintf('[%s] %s: File not found', __PACKAGE__, $data);
         $parser->parse_file($data);
     }
    
