@@ -2,12 +2,29 @@ package Webject::Accessor;
 use Carp;
 use base Class::Accessor;
 
+
+sub make_accessor {
+    my ($class, $field) = @_;
+
+    return sub {
+        my $self = shift;
+
+        if(@_) {
+            return $self->set($field, @_);
+        } else {
+            return $self->get($field);
+        }
+    };
+}
+
+
 sub mk_accessors_with_validators
 {
     my $self = shift;
     my %args = @_;
     
     $self->mk_accessors( keys %args );
+    
     while ( my ($k, $v) = each %args ) {
         $self->{'-validators'}->{$k} = $v;
     }
