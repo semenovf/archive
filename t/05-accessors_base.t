@@ -1,6 +1,11 @@
 #!perl
+
+#
+# 
+#
+
 use strict;
-use Test::More tests => 42;
+use Test::More tests => 15;
 
 for my $class (qw(Class::Accessor::Validated)) {
     require_ok($class);
@@ -10,9 +15,9 @@ for my $class (qw(Class::Accessor::Validated)) {
         @{"${silly}::ISA"} = ($class);
         *{"${silly}::car"} = sub { shift->_car_accessor(@_); };
         *{"${silly}::mar"} = sub { return "Overloaded"; };
-        $silly->mk_accessors(qw( foo bar yar car mar ));
-        $silly->mk_ro_accessors(qw(static unchanged));
-        $silly->mk_wo_accessors(qw(sekret double_sekret));
+        $silly->mk_accessors(foo=>sub{1}, bar=>sub{1}, yar=>sub{1}, car=>sub{1}, mar=>sub{1});
+        $silly->mk_ro_accessors(static=>sub{1}, unchanged=>sub{1});
+        $silly->mk_wo_accessors(sekret=>sub{1}, double_sekret=>sub{1});
     }
 
     my $test = $silly->new({
