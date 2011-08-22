@@ -12,13 +12,10 @@ t/02-manifest.t
 t/03-pod-coverage.t
 t/04-pod.t
 t/05-accessors-base.t
-t/05-accessors_base.t
 t/05-aliases-base.t
-t/05-aliases_base.t
 t/05-antlers-base.t
 t/05-bestpractice-base.t
 t/05-caller.t
 t/05-croak.t
 t/05-getset.t
 t/05-manifest.t
-t/05-pod-coverage.t

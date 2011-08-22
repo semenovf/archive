@@ -33,7 +33,7 @@ sub mk_ro_accessors
             if (/^(?:antlers|moose-?like)$/i) {
                 *{"${caller}::has"} = sub {
                     my ($f, %args) = @_;
-                    $caller->_mk_accessors(($args{is}||"rw"), $f, ($args{validator}||sub{}));
+                    $caller->_mk_accessors(($args{is}||"rw"), {$f =>$args{validator}||sub{1}});
                 };
                 *{"${caller}::extends"} = sub {
                     @{"${caller}::ISA"} = @_;
@@ -49,7 +49,7 @@ sub mk_ro_accessors
     }
 
     sub _mk_accessors {
-        my($self, $access, $specs) = @_; # spec := ( field => validator_function, ... )
+        my($self, $access, $specs) = @_; # spec := { field => validator_function, ... }
         my $class = ref $self || $self;
         my $ra = $access eq 'rw' || $access eq 'ro';
         my $wa = $access eq 'rw' || $access eq 'wo';

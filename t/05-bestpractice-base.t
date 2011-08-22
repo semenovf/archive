@@ -1,17 +1,17 @@
 #!perl
 use strict;
-use Test::More tests => 36;
+use Test::More tests => 12;
 
-for my $class (qw(Class::Accessor Class::Accessor::Fast Class::Accessor::Faster)) {
+for my $class (qw(Class::Accessor::Validated)) {
     require_ok($class);
     my $silly = "Silly::$class";
     {
         no strict 'refs';
         @{"${silly}::ISA"} = ($class);
         $silly->follow_best_practice;
-        $silly->mk_accessors(qw( foo ));
-        $silly->mk_ro_accessors(qw(roro));
-        $silly->mk_wo_accessors(qw(wowo));
+        $silly->mk_accessors(foo=>sub{1});
+        $silly->mk_ro_accessors(roro=>sub{1});
+        $silly->mk_wo_accessors(wowo=>sub{1});
     }
 
     for my $f (qw/foo roro /) {

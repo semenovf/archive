@@ -8,14 +8,15 @@ use Class::Accessor::Validated;
 
 package Silly::Hands;
 use Class::Accessor::Validated "antlers";
-::ok defined &has, "I iz in ur module";
+::ok defined &has, "I am in ur module";
 
 has "foo";
-has rwrw => ( is => "rw", isa => "Int" );
-has roro => ( is => "ro", isa => "Str" );
-has wowo => ( is => "wo", isa => "Str" );
+has rwrw => ( is => "rw", isa => "Int", validator=>sub{1} );
+has roro => ( is => "ro", isa => "Str", validator=>sub{1} );
+has wowo => ( is => "wo", isa => "Str", validator=>sub{1} );
 
 package main;
+
 for my $f (qw/foo roro wowo rwrw/) {
     ok +Silly::Hands->can($f), "'$f' method exists";
 }
@@ -49,7 +50,7 @@ package Silly::Hands;
 {
     my $eeek;
     local $SIG{__WARN__} = sub { $eeek = shift };
-    has DESTROY => (is => "rw");
+    has DESTROY => (is => "rw", validator=>sub{1});
     ::like($eeek,
         qr/a data accessor named DESTROY/i,
         'mk DESTROY accessor warning');
