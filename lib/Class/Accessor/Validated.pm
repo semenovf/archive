@@ -26,6 +26,28 @@ sub mk_ro_accessors
 {
     no strict 'refs';
 
+    sub import {
+        my ($class, @what) = @_;
+        my $caller = caller;
+        for (@what) {
+            if (/^(?:antlers|moose-?like)$/i) {
+                *{"${caller}::has"} = sub {
+                    my ($f, %args) = @_;
+                    $caller->_mk_accessors(($args{is}||"rw"), $f, ($args{validator}||sub{}));
+                };
+                *{"${caller}::extends"} = sub {
+                    @{"${caller}::ISA"} = @_;
+                    unless (grep $_->can("_mk_accessors"), @_) {
+                        push @{"${caller}::ISA"}, $class;
+                    }
+                };
+                # we'll use their @ISA as a default, in case it happens to be
+                # set already
+                &{"${caller}::extends"}(@{"${caller}::ISA"});
+            }
+        }
+    }
+
     sub _mk_accessors {
         my($self, $access, $specs) = @_; # spec := ( field => validator_function, ... )
         my $class = ref $self || $self;

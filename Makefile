@@ -39,7 +39,7 @@ FULL_AR = /usr/bin/ar
 LD = cc
 LDDLFLAGS = -shared -O2 -g -L/usr/local/lib -fstack-protector
 LDFLAGS =  -fstack-protector -L/usr/local/lib
-LIBC = /lib/libc-2.11.1.so
+LIBC = 
 LIB_EXT = .a
 OBJ_EXT = .o
 OSNAME = linux
@@ -184,16 +184,13 @@ PERL_ARCHIVE       =
 PERL_ARCHIVE_AFTER = 
 
 
-TO_INST_PM = lib/Class/Accessor/Validated.pm \
-	lib/aliases_base.pl \
-	lib/tmpJHQtgj.html
+TO_INST_PM = lib/05-antlers-base.pl \
+	lib/Class/Accessor/Validated.pm
 
-PM_TO_BLIB = lib/tmpJHQtgj.html \
-	blib/lib/tmpJHQtgj.html \
-	lib/Class/Accessor/Validated.pm \
+PM_TO_BLIB = lib/Class/Accessor/Validated.pm \
 	blib/lib/Class/Accessor/Validated.pm \
-	lib/aliases_base.pl \
-	blib/lib/aliases_base.pl
+	lib/05-antlers-base.pl \
+	blib/lib/05-antlers-base.pl
 
 
 # --- MakeMaker platform_constants section:
@@ -775,7 +772,7 @@ ppd :
 	$(NOECHO) $(ECHO) '    <AUTHOR>Fedor Semenov &lt;fedor.v.semenov@gmail.com&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Test::More" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="i486-linux-gnu-thread-multi-5.10" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="i686-linux-gnu-thread-multi-5.10" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    </IMPLEMENTATION>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '</SOFTPKG>' >> $(DISTNAME).ppd
@@ -785,9 +782,8 @@ ppd :
 
 pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
 	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', q[$(PM_FILTER)], '\''$(PERM_DIR)'\'')' -- \
-	  lib/tmpJHQtgj.html blib/lib/tmpJHQtgj.html \
 	  lib/Class/Accessor/Validated.pm blib/lib/Class/Accessor/Validated.pm \
-	  lib/aliases_base.pl blib/lib/aliases_base.pl 
+	  lib/05-antlers-base.pl blib/lib/05-antlers-base.pl 
 	$(NOECHO) $(TOUCH) pm_to_blib
 
 
