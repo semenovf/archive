@@ -2,10 +2,10 @@
 use strict;
 use Test::More tests => 3;
 
-require_ok("Class::Accessor");
+require_ok("Class::Accessor::Validated");
 
-@Foo::ISA = qw(Class::Accessor);
-Foo->mk_accessors(qw( foo ));
+@Foo::ISA = qw(Class::Accessor::Validated);
+Foo->mk_accessors(foo=>sub{1});
 
 my $test = Foo->new({ foo => 49 });
 

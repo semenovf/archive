@@ -1,8 +1,8 @@
 use strict;
 use Test::More tests => 2;
-require Class::Accessor::Fast;
+require Class::Accessor::Validated;
 
-@Frog::ISA = ('Class::Accessor::Fast');
+@Frog::ISA = ('Class::Accessor::Validated');
 my $croaked = 0;
 sub Frog::_croak { ++$croaked }
 Frog->mk_ro_accessors('test_ro');

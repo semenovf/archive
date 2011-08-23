@@ -1,7 +1,15 @@
 package Class::Accessor::Validated;
 use base 'Class::Accessor';
+use Carp;
 use strict;
 our $VERSION = '0.01';
+
+sub new {
+    my $proto = shift;
+    my $class = ref $proto || $proto; 
+    warn "arguments passed to constructor are ignored" if @_;
+    bless {}, $class;
+}
 
 sub mk_accessors
 {
@@ -22,6 +30,9 @@ sub mk_ro_accessors
     $self->_mk_accessors('ro', \%specs);
 }
 
+if (eval { require Sub::Name }) {
+    Sub::Name->import;
+}
 
 {
     no strict 'refs';
@@ -109,8 +120,12 @@ sub make_accessor {
         my $self = shift;
 
         if(@_) {
-            $func->(@_) or $self->_croak('Invalid value');
-            return $self->set($field, @_);
+            if( $func->(@_) ) {
+                return $self->set($field, @_);
+            } else {
+                $self->_croak('Invalid value');
+                return undef;
+            }
         } else {
             return $self->get($field);
         }
