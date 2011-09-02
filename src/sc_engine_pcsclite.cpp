@@ -20,17 +20,20 @@ static const char_type* __E_SC_CHSTATUS   = _Tr("SCardGetStatusChange: unable to
 static const char_type* __E_SC_CANCEL     = _Tr("SCardCancel: fail to cancel all pending blocking requests");
 static const char_type* __E_SC_READFEATURES = _Tr("SCardControl: reading of features failed");
 
-#define __NO_RETURN
-#define __CHECK_VALID_CONTEXT(pContext,ret)      \
-	JQ_ASSERT(pContext);                         \
-	if( (pContext)->isError() ) {                \
-		return ret;                              \
-	}                                            \
-	if( !(pContext)->isValid() ) {               \
-		(pContext)->setError(__E_SC_BADCONTEXT); \
-        return ret;                              \
-	}
+#define __CHECK_CONTEXT(pContext) if(__IS_INVALID_CONTEXT(pContext)){return;}
+#define __CHECK_CONTEXT_RV(pContext,rv) if(__IS_INVALID_CONTEXT(pContext)){return (rv);}
 
+bool __IS_INVALID_CONTEXT(jq::SmartCardContext* pContext)
+{
+	JQ_ASSERT(pContext);
+	if( pContext->isError() )
+		return true;
+	if( !pContext->isValid() ) {
+		pContext->setError(__E_SC_BADCONTEXT);
+        return true;
+	}
+	return false;
+}
 
 JQ_NS_BEGIN
 
@@ -89,7 +92,7 @@ bool SmartCardContext::isValid()
 
 void SmartCardContext::updateReaders()
 {
-	__CHECK_VALID_CONTEXT(this,__NO_RETURN);
+	__CHECK_CONTEXT(this);
 
 	char* readersBuf = NULL;
 	u_int32_t readersBufSz = SCARD_AUTOALLOCATE;  // Size of multi-string buffer of readers including NULL's.
@@ -134,7 +137,7 @@ void SmartCardContext::updateReaders()
  */
 bool SmartCardContext::waitAnyReader(ulong millis, bool *timedout)
 {
-	__CHECK_VALID_CONTEXT(this, false);
+	__CHECK_CONTEXT_RV(this, false);
 	SCARD_READERSTATE readerStates[1];
 
 	if( timedout ) {
@@ -172,7 +175,7 @@ bool SmartCardContext::waitAnyReader(ulong millis, bool *timedout)
  */
 bool SmartCardContext::cancel()
 {
-	__CHECK_VALID_CONTEXT(this, false);
+	__CHECK_CONTEXT_RV(this, false);
 	LONG rv = SCardCancel(m_context);
 	 if (rv != SCARD_S_SUCCESS) {
 		 __set_smartcard_error(this, rv, __E_SC_CANCEL );
@@ -189,7 +192,7 @@ bool SmartCardContext::cancel()
  */
 bool SmartCard::connect(ShareMode smode, Protocol preferred)
 {
-	__CHECK_VALID_CONTEXT(m_pContext, false);
+	__CHECK_CONTEXT_RV(m_pContext, false);
 
 	DWORD sm = (smode == SM_Exclusive)
 		?  SCARD_SHARE_EXCLUSIVE
@@ -224,7 +227,7 @@ static const char_type* __act_str[] = { _Tr("disconnect"), _Tr("reset"), _Tr("un
  */
 bool SmartCard::disconnect(Action act)
 {
-	__CHECK_VALID_CONTEXT(m_pContext, false);
+	__CHECK_CONTEXT_RV(m_pContext, false);
 
 	JQ_ASSERT( act >= Act_Leave && act <= Act_Eject );
 	LONG rv = SCardDisconnect(m_handle, __act_mapping[act]);
@@ -240,7 +243,7 @@ bool SmartCard::disconnect(Action act)
 
 bool SmartCard::reconnect(Action act, bool shared)
 {
-	__CHECK_VALID_CONTEXT(m_pContext, false);
+	__CHECK_CONTEXT_RV(m_pContext, false);
 	JQ_ASSERT( act >= Act_Leave && act <= Act_Eject );
 
 	DWORD smode = shared ? SCARD_SHARE_SHARED : SCARD_SHARE_EXCLUSIVE;
@@ -262,7 +265,7 @@ bool SmartCard::reconnect(Action act, bool shared)
  */
 bool SmartCard::status(SmartCardStatus& sc_status) const
 {
-	__CHECK_VALID_CONTEXT(m_pContext, false);
+	__CHECK_CONTEXT_RV(m_pContext, false);
 
 	char* readerName = NULL;
 	DWORD readerLen = SCARD_AUTOALLOCATE;
@@ -323,7 +326,7 @@ bool SmartCard::status(SmartCardStatus& sc_status) const
 
 bool SmartCard::features(SmartCardFeatures& features) const
 {
-	__CHECK_VALID_CONTEXT(m_pContext, false);
+	__CHECK_CONTEXT_RV(m_pContext, false);
 
 	BYTE buf[MAX_BUFFER_SIZE];
 	DWORD nfeatures = 0;
@@ -364,7 +367,7 @@ bool SmartCard::features(SmartCardFeatures& features) const
  */
 bool SmartCard::cmd(SmartCard::Cmd /*code*/)
 {
-	__CHECK_VALID_CONTEXT(m_pContext, false);
+	__CHECK_CONTEXT_RV(m_pContext, false);
 #if 0
 	LONG rv = SCardControl( m_handle
 		, // DWORD  	dwControlCode,
@@ -384,7 +387,7 @@ bool SmartCard::cmd(SmartCard::Cmd /*code*/)
  */
 bool SmartCard::verifyPIN()
 {
-	__CHECK_VALID_CONTEXT(m_pContext, false);
+	__CHECK_CONTEXT_RV(m_pContext, false);
 
 	LONG rv;
 	unsigned char bSendBuffer[MAX_BUFFER_SIZE];

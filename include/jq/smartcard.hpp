@@ -1,5 +1,5 @@
 /*
- * SmartCard.hpp
+ * smartcard.hpp
  *
  *  Created on: Aug 25, 2011
  *      Author: wladt
@@ -12,6 +12,7 @@
 #include <map>
 #include <jq/global.h>
 #include <jq/errorable.hpp>
+#include <jq/dl.hpp>
 
 #ifdef _WIN32
 #	error "Not implemented yet"
@@ -19,11 +20,12 @@
 #	include <winscard.h>
 #endif
 
-namespace jq {
+JQ_NS_BEGIN
 
 class SmartCard;
 struct SmartCardStatus;
 class SmartCardFeatures;
+class P11;
 
 class SmartCardContext : public Errorable
 {
@@ -96,7 +98,8 @@ public:
 	SmartCard( SmartCardContext& context, const String& reader )
 		: m_pContext( &context )
 		, m_readerName(reader)
-		, m_preferredProto(Proto_Undefined) { }
+		, m_preferredProto(Proto_Undefined)
+	{ }
 
 	~SmartCard() { disconnect(); }
 
@@ -107,6 +110,10 @@ public:
 	bool eject()   { return disconnect(Act_Eject); }
 	bool status(SmartCardStatus& status) const;
 	bool features(SmartCardFeatures& features) const;
+
+//  PKCS11 supporting
+	P11* p11Create(char_type *path) const;
+	void p11Destroy(P11*) const;
 
 	bool verifyPIN();
 
@@ -154,6 +161,24 @@ private:
 	feature_list_type m_features;
 };
 
-} /* namespace jq */
+
+class P11
+{
+	friend class SmartCard;
+
+private:
+	P11(Dl *mod, void* api) : m_module(mod), m_api(api) {}
+	~P11();
+
+public:
+	void version(uchar_t &major, uchar_t &minor);
+
+private:
+	Dl   *m_module;
+	void *m_api;
+};
+
+JQ_NS_END
+
 
 #endif /* _JQ_SMARTCARD_HPP_ */
