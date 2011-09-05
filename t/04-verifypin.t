@@ -27,9 +27,6 @@ JQ_TEST_DEF(verifypin)
 			JQ_TEST_INLINE2(sc_card.verifyPIN(), _Tr("PIN verification successful"));
 		JQ_TEST_ENDIF
 
-		if( sc_context.isError() ) {
-			JQ_ERROR(sc_context.getLastErrorText().c_str());
-		}
 	JQ_TEST_ENDIF
 
 JQ_TEST_END

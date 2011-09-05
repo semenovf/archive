@@ -11,8 +11,7 @@
 #include <vector>
 #include <map>
 #include <jq/global.h>
-#include <jq/errorable.hpp>
-#include <jq/dl.hpp>
+#include <jq/string.hpp>
 
 #ifdef _WIN32
 #	error "Not implemented yet"
@@ -22,16 +21,16 @@
 
 JQ_NS_BEGIN
 
-class SmartCard;
 struct SmartCardStatus;
+class SmartCard;
 class SmartCardFeatures;
-class P11;
 
-class SmartCardContext : public Errorable
+class SmartCardContext
 {
 	friend class SmartCard;
-public:
-	typedef std::vector<String>      reader_list_type;
+
+private:
+	typedef std::vector<String> reader_list_type;
 
 public:
 	SmartCardContext();
@@ -41,7 +40,7 @@ public:
 
 	/*void updateReaderGroups();*/
 	void updateReaders();
-	const std::vector<String>& readers() const { return m_readers; }
+	//const reader_list_type& readers() const { return m_readers; }
 
 	int readersCount() const { return m_readers.size(); }
 	const String& readerAt(uint index) {
@@ -111,10 +110,6 @@ public:
 	bool status(SmartCardStatus& status) const;
 	bool features(SmartCardFeatures& features) const;
 
-//  PKCS11 supporting
-	P11* p11Create(char_type *path) const;
-	void p11Destroy(P11*) const;
-
 	bool verifyPIN();
 
 	static String protocolToString(SmartCard::Protocol proto);
@@ -161,24 +156,6 @@ private:
 	feature_list_type m_features;
 };
 
-
-class P11
-{
-	friend class SmartCard;
-
-private:
-	P11(Dl *mod, void* api) : m_module(mod), m_api(api) {}
-	~P11();
-
-public:
-	void version(uchar_t &major, uchar_t &minor);
-
-private:
-	Dl   *m_module;
-	void *m_api;
-};
-
 JQ_NS_END
-
 
 #endif /* _JQ_SMARTCARD_HPP_ */

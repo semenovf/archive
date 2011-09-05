@@ -7,18 +7,20 @@
 
 #include <jq/smartcard.hpp>
 #include <PCSC/reader.h>
+#include <jq/errorable.hpp>
 
 
 static const char* __NTFYREADER = "\\\\?PnP?\\Notification";
 
-static const char_type* __E_SC_INIT       = _Tr("SCardEstablishContext: cannot connect to resource manager");
-static const char_type* __E_SC_BADCONTEXT = _Tr("SCardReleaseContext: context is invalid");
-static const char_type* __E_SC_CONN       = _Tr("SCardConnect: connection failed");
-static const char_type* __E_SC_FREEMEM    = _Tr("SCardFreeMemory: memory deallocation failed");
-static const char_type* __E_SC_STATUS     = _Tr("SCardStatus: unable to fetch card status");
-static const char_type* __E_SC_CHSTATUS   = _Tr("SCardGetStatusChange: unable to get status change");
-static const char_type* __E_SC_CANCEL     = _Tr("SCardCancel: fail to cancel all pending blocking requests");
-static const char_type* __E_SC_READFEATURES = _Tr("SCardControl: reading of features failed");
+static const char_type* __E_SC_INIT       = _Tr("cannot connect to resource manager");
+static const char_type* __E_SC_BADCONTEXT = _Tr("context is invalid");
+static const char_type* __E_SC_CONN       = _Tr("connection failed");
+static const char_type* __E_SC_FREEMEM    = _Tr("memory deallocation failed");
+static const char_type* __E_SC_STATUS     = _Tr("unable to fetch card status");
+static const char_type* __E_SC_CHSTATUS   = _Tr("unable to get status change");
+static const char_type* __E_SC_CANCEL     = _Tr("fail to cancel all pending blocking requests");
+static const char_type* __E_SC_READFEATURES = _Tr("reading of features failed");
+static const char_type* __E_SC_RECONNECT  = _Tr("reconnection failed");
 
 #define __CHECK_CONTEXT(pContext) if(__IS_INVALID_CONTEXT(pContext)){return;}
 #define __CHECK_CONTEXT_RV(pContext,rv) if(__IS_INVALID_CONTEXT(pContext)){return (rv);}
@@ -26,10 +28,12 @@ static const char_type* __E_SC_READFEATURES = _Tr("SCardControl: reading of feat
 bool __IS_INVALID_CONTEXT(jq::SmartCardContext* pContext)
 {
 	JQ_ASSERT(pContext);
+/*
 	if( pContext->isError() )
 		return true;
+*/
 	if( !pContext->isValid() ) {
-		pContext->setError(__E_SC_BADCONTEXT);
+		jq_emitError(__E_SC_BADCONTEXT);
         return true;
 	}
 	return false;
@@ -37,11 +41,11 @@ bool __IS_INVALID_CONTEXT(jq::SmartCardContext* pContext)
 
 JQ_NS_BEGIN
 
-static void __set_smartcard_error(Errorable *eobj, LONG rv, const String& msg)
+static void __set_smartcard_error(LONG rv, const String& msg)
 {
 	String emsg;
-	emsg.sprintf("%s: %s (0x%lX)")(msg)(pcsc_stringify_error(rv))(rv);
-	eobj->setError(rv, emsg);
+	emsg.sprintf("%s: %s (0x%0lX)")(msg)(pcsc_stringify_error(rv))(rv);
+	jq_emitError(emsg);
 }
 
 static SmartCard::Protocol __fromNativeProto(DWORD proto)
@@ -62,7 +66,7 @@ SmartCardContext::SmartCardContext() : m_context(0L)
 	JQ_DEBUG("SmartCardContext::SmartCardContext()");
 	LONG rv = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &m_context);
 	if (rv != SCARD_S_SUCCESS) {
-		__set_smartcard_error(this, rv, __E_SC_INIT);
+		__set_smartcard_error(rv, __E_SC_INIT);
 	} else {
 		updateReaders();
 	}
@@ -73,7 +77,7 @@ SmartCardContext::~SmartCardContext()
 	JQ_DEBUG("SmartCardContext::~SmartCardContext()");
 	LONG rv = SCardReleaseContext(m_context);
 	if (rv != SCARD_S_SUCCESS) {
-		__set_smartcard_error(this, rv, _Tr("SCardReleaseContext: releasing smart card context failed"));
+		__set_smartcard_error(rv, _Tr("SCardReleaseContext: releasing smart card context failed"));
 	}
 }
 
@@ -104,7 +108,7 @@ void SmartCardContext::updateReaders()
 	while( true ) {
 		rv = SCardListReaders(m_context, NULL, (char*)&readersBuf, (DWORD*)&readersBufSz);
 		if (rv != SCARD_S_SUCCESS) {
-			__set_smartcard_error(this, rv, "SCardListReaders: fetching available readers list failed");
+			__set_smartcard_error(rv, "SCardListReaders: fetching available readers list failed");
 			break;
 		}
 
@@ -121,7 +125,7 @@ void SmartCardContext::updateReaders()
 	if( readersBuf /*m_readers.size()*/ ) {
 		 rv = SCardFreeMemory(m_context, readersBuf);
 		 if (rv != SCARD_S_SUCCESS) {
-			 __set_smartcard_error(this, rv, __E_SC_FREEMEM);
+			 __set_smartcard_error(rv, __E_SC_FREEMEM);
 		 }
 	}
 }
@@ -151,7 +155,7 @@ bool SmartCardContext::waitAnyReader(ulong millis, bool *timedout)
 		 if( rv == SCARD_E_TIMEOUT && timedout ) {
 			 *timedout = true;
 		 } else {
-			 __set_smartcard_error(this, rv, __E_SC_CHSTATUS );
+			 __set_smartcard_error(rv, __E_SC_CHSTATUS );
 		 }
 		 return false;
 	 }
@@ -178,7 +182,7 @@ bool SmartCardContext::cancel()
 	__CHECK_CONTEXT_RV(this, false);
 	LONG rv = SCardCancel(m_context);
 	 if (rv != SCARD_S_SUCCESS) {
-		 __set_smartcard_error(this, rv, __E_SC_CANCEL );
+		 __set_smartcard_error(rv, __E_SC_CANCEL );
 		 return false;
 	 }
 	 return true;
@@ -206,13 +210,13 @@ bool SmartCard::connect(ShareMode smode, Protocol preferred)
 	m_preferredProto |= (preferred & Proto_Raw ? SCARD_PROTOCOL_RAW : 0);
 
 	if( m_preferredProto == 0 && sm != SCARD_SHARE_DIRECT ) {
-		m_pContext->setError(_Tr("invalid value for preferred protocol"));
+		jq_emitError(_Tr("invalid value for preferred protocol"));
 		return false;
 	}
 
 	LONG rv = SCardConnect(m_pContext->m_context, m_readerName.c_str(), sm, m_preferredProto, &m_handle, &proto);
 	if (rv != SCARD_S_SUCCESS) {
-		__set_smartcard_error(m_pContext, rv, __E_SC_CONN);
+		__set_smartcard_error(rv, __E_SC_CONN);
 		return false;
 	}
 	return true;
@@ -234,7 +238,7 @@ bool SmartCard::disconnect(Action act)
 	if (rv != SCARD_S_SUCCESS) {
 		String emsg;
 		emsg.sprintf("SCardDisconnect: '%s' action failed")(__act_str[act]);
-		__set_smartcard_error(m_pContext, rv, emsg);
+		jq_emitError(emsg);
 		return false;
 	}
 	return true;
@@ -251,7 +255,7 @@ bool SmartCard::reconnect(Action act, bool shared)
 	LONG rv = SCardReconnect(m_handle, smode, m_preferredProto, __act_mapping[act], &proto);
 
 	if (rv != SCARD_S_SUCCESS) {
-		__set_smartcard_error(m_pContext, rv, "SCardReconnect: reconnection failed");
+		jq_emitError(__E_SC_RECONNECT);
 		return false;
 	}
 	return true;
@@ -267,6 +271,7 @@ bool SmartCard::status(SmartCardStatus& sc_status) const
 {
 	__CHECK_CONTEXT_RV(m_pContext, false);
 
+	bool ok = true;
 	char* readerName = NULL;
 	DWORD readerLen = SCARD_AUTOALLOCATE;
 	DWORD status;
@@ -283,17 +288,18 @@ bool SmartCard::status(SmartCardStatus& sc_status) const
 		&status, &proto, (LPBYTE)&attrPtr, &attrCount);
 
 	if (rv != SCARD_S_SUCCESS) {
-		__set_smartcard_error(m_pContext, rv, __E_SC_STATUS);
+		__set_smartcard_error(rv, __E_SC_STATUS);
+		ok = false;
 	}
 
 	if( rv == SCARD_S_SUCCESS ) {
 		sc_status.readerName = readerName;
-		sc_status.status    |= status & SCARD_ABSENT ? Stat_Absent : 0;
-		sc_status.status    |= status & SCARD_PRESENT ? Stat_Present : 0;
-		sc_status.status    |= status & SCARD_SWALLOWED ? Stat_Swallowed : 0;
-		sc_status.status    |= status & SCARD_POWERED ? Stat_Powered : 0;
-		sc_status.status    |= status & SCARD_NEGOTIABLE ? Stat_Negotiable : 0;
-		sc_status.status    |= status & SCARD_SPECIFIC ? Stat_Specific : 0;
+		sc_status.status |= status & SCARD_ABSENT ? Stat_Absent : 0;
+		sc_status.status |= status & SCARD_PRESENT ? Stat_Present : 0;
+		sc_status.status |= status & SCARD_SWALLOWED ? Stat_Swallowed : 0;
+		sc_status.status |= status & SCARD_POWERED ? Stat_Powered : 0;
+		sc_status.status |= status & SCARD_NEGOTIABLE ? Stat_Negotiable : 0;
+		sc_status.status |= status & SCARD_SPECIFIC ? Stat_Specific : 0;
 
 		// status also contains a number of events in the upper 16 bits (*pdwState & 0xFFFF0000).
 		// This number of events is incremented for each card insertion or removal in the specified reader.
@@ -309,18 +315,20 @@ bool SmartCard::status(SmartCardStatus& sc_status) const
 	if( readerName ) {
 		 rv = SCardFreeMemory(m_pContext->m_context, readerName);
 		 if (rv != SCARD_S_SUCCESS) {
-			 __set_smartcard_error(m_pContext, rv, __E_SC_FREEMEM);
+			 __set_smartcard_error(rv, __E_SC_FREEMEM);
+			 ok = false;
 		 }
 	}
 
 	if( attrPtr ) {
 		 rv = SCardFreeMemory(m_pContext->m_context, attrPtr);
 		 if (rv != SCARD_S_SUCCESS) {
-			 __set_smartcard_error(m_pContext, rv, __E_SC_FREEMEM);
+			 __set_smartcard_error(rv, __E_SC_FREEMEM);
+			 ok = false;
 		 }
 	}
 
-	return m_pContext->isError() ? false : true;
+	return ok;
 }
 
 
@@ -345,7 +353,7 @@ bool SmartCard::features(SmartCardFeatures& features) const
 	JQ_DEBUGF( "Length of response: %ld", nfeatures );
 
 	if (rv != SCARD_S_SUCCESS) {
-		__set_smartcard_error(m_pContext, rv, __E_SC_READFEATURES);
+		__set_smartcard_error(rv, __E_SC_READFEATURES);
 		return false;
 	}
 
@@ -387,6 +395,7 @@ bool SmartCard::cmd(SmartCard::Cmd /*code*/)
  */
 bool SmartCard::verifyPIN()
 {
+#ifdef __COMMENT__
 	__CHECK_CONTEXT_RV(m_pContext, false);
 
 	LONG rv;
@@ -467,7 +476,7 @@ bool SmartCard::verifyPIN()
 		__set_smartcard_error(m_pContext, rv, _Tr("PIN verification failed"));
 		return false;
 	}
-
+#endif
 	return false;
 }
 

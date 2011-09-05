@@ -26,11 +26,13 @@ JQ_TEST_DEF(features)
 			JQ_TEST_ENDIF
 		}
 
+/*
 		if( sc_context.isError() ) {
 			int nerrors = sc_context.errorCount();
 			for( int i = 0; i < nerrors; i++ )
 				JQ_ERROR(sc_context.errorTextAt(i).c_str());
 		}
+*/
 	JQ_TEST_ENDIF
 
 JQ_TEST_END

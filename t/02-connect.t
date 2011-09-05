@@ -38,8 +38,4 @@ JQ_TEST_DEF(connect)
 		delete[] sc_cards;
 	}
 
-	if( sc_context.isError() ) {
-		JQ_ERROR(sc_context.getLastErrorText().c_str());
-	}
-
 JQ_TEST_END
