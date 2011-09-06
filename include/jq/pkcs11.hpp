@@ -36,27 +36,30 @@ public:
 	static Pkcs11* open(char_type *path);
 	static void close(Pkcs11*);
 
-	void version(uchar_t &major, uchar_t &minor);
+	void version(uchar_t &major, uchar_t &minor) const;
 	bool info( uchar_t* cryptokiMajor
 		, uchar_t* cryptokiMinor
 		, String* manufacturerId
 		, String* libDesc
 		, uchar_t* libMajor
-		, uchar_t* libMinor);
+		, uchar_t* libMinor) const;
 
 	void updateSlots(bool tokenPresent = true);
 	int slotsCount() const { return m_slots.size(); }
-	const CK_SLOT_ID* slotAt(uint_t index) {
+	const CK_SLOT_ID* slotAt(uint_t index) const {
 		return index < m_slots.size() ? &m_slots[index] : NULL; }
-	bool slotInfo(uint_t index, CK_SLOT_INFO& info);
+	bool slotInfo(uint_t index, CK_SLOT_INFO& info) const;
 
 	Pkcs11Session* openSession(uint_t slotIndex) const;
-	void closeSession(Pkcs11Session*) const;
+	void closeSession(Pkcs11Session*&) const;
+
+	bool waitForSlot(uint_t slotIndex, bool *statusChanged, bool nonblocking = false);
+	bool isTokenPresent(uint_t slotIndex);
 
 private:
-	Dl *m_module;
+	Dl               *m_module;
 	CK_FUNCTION_LIST *m_api;
-	slot_list_type m_slots;
+	slot_list_type    m_slots;
 };
 
 
@@ -64,26 +67,18 @@ class Pkcs11Session
 {
 	friend class Pkcs11;
 
-	Pkcs11Session(CK_SESSION_HANDLE h) : m_session(h) {}
-
-private:
-	CK_SESSION_HANDLE m_session;
-};
-
-/*
-class Pkcs11Session
-{
-	friend class Pkcs11;
-
-	Pkcs11Session() {}
-	~Pkcs11Session() {}
+	Pkcs11Session(CK_FUNCTION_LIST *api, CK_SESSION_HANDLE h)
+		: m_api(api)
+		, m_session(h) {}
 
 public:
-	bool login();
-//	bool setPin();
-};
-*/
+	bool login(const String& pin) const;
+	void logout() const;
 
+private:
+	CK_FUNCTION_LIST *m_api;
+	CK_SESSION_HANDLE m_session;
+};
 
 JQ_NS_END
 

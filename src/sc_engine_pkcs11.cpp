@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#include <jq/errorable.hpp>
 #include <jq/pkcs11.hpp>
+#include <jq/logger.hpp>
 
 static const char_type* __E_SC_PKCS11_LOADMODULE   = _Tr("unable to load PKCS11 module: %s");
 static const char_type* __E_SC_PKCS11_GETFUNCLIST  = _Tr("failed to retrieve 'C_GetFunctionList'");
@@ -18,6 +18,9 @@ static const char_type* __E_SC_PKSC11_SLOTLIST     = _Tr("failed to get slot lis
 static const char_type* __E_SC_PKCS11_SLOTINFO     = _Tr("failed to get slot info");
 static const char_type* __E_SC_PKCS11_OPENSESSION  = _Tr("failed to open session");
 static const char_type* __E_SC_PKCS11_CLOSESESSION = _Tr("unable to close session");
+static const char_type* __E_SC_PKCS11_LOGIN        = _Tr("login failed");
+static const char_type* __E_SC_PKCS11_LOGOUT       = _Tr("logout failed");
+static const char_type* __E_SC_PKCS11_WAITSLOT     = _Tr("waiting slot event failed");
 
 //extern bool __IS_INVALID_CONTEXT(jq::SmartCardContext*);
 /*
@@ -121,7 +124,7 @@ bool Pkcs11::info( uchar_t* cryptokiMajor
 	, String* manufacturerId
 	, String* libDesc
 	, uchar_t* libMajor
-	, uchar_t* libMinor)
+	, uchar_t* libMinor) const
 {
 	JQ_ASSERT(m_api);
 	CK_INFO info;
@@ -146,7 +149,7 @@ bool Pkcs11::info( uchar_t* cryptokiMajor
 }
 
 
-void Pkcs11::version(uchar_t &major, uchar_t &minor)
+void Pkcs11::version(uchar_t &major, uchar_t &minor) const
 {
 	JQ_ASSERT(m_api);
 	major = m_api->version.major;
@@ -190,7 +193,7 @@ void Pkcs11::updateSlots(bool tokenPresent)
 }
 
 
-bool Pkcs11::slotInfo(uint_t index, CK_SLOT_INFO& info)
+bool Pkcs11::slotInfo(uint_t index, CK_SLOT_INFO& info) const
 {
 	if( index >= m_slots.size() ) {
 		jq_emitError(__E_SC_PKCS11_OOBSLOTINDEX);
@@ -206,7 +209,27 @@ bool Pkcs11::slotInfo(uint_t index, CK_SLOT_INFO& info)
 	return true;
 }
 
+/**
+ *
+ * @param slotIndex
+ * @return @c false if error or if the token is not present in the slot,
+ *         @c true if the token is present in the slot.
+ */
+bool Pkcs11::isTokenPresent(uint_t slotIndex)
+{
+	CK_SLOT_INFO info;
+	if( !slotInfo(slotIndex, info) )
+		return false;
+	return (info.flags & CKF_TOKEN_PRESENT);
+}
 
+
+/**
+ * Open new PKCS11 session
+ *
+ * @param slotIndex slot index
+ * @return new session
+ */
 Pkcs11Session* Pkcs11::openSession(uint_t slotIndex) const
 {
 	if( slotIndex >= m_slots.size() ) {
@@ -226,11 +249,11 @@ Pkcs11Session* Pkcs11::openSession(uint_t slotIndex) const
 		__set_pkcs11_error(rv, __E_SC_PKCS11_OPENSESSION);
 		return NULL;
 	}
-	return new Pkcs11Session(session);
+	return new Pkcs11Session(m_api, session);
 }
 
 
-void Pkcs11::closeSession(Pkcs11Session* session) const
+void Pkcs11::closeSession(Pkcs11Session*& session) const
 {
 	if( session ) {
 		CK_RV rv = m_api->C_CloseSession( session->m_session );
@@ -238,8 +261,64 @@ void Pkcs11::closeSession(Pkcs11Session* session) const
 			__set_pkcs11_error(rv, __E_SC_PKCS11_CLOSESESSION);
 		}
 		delete session;
+		session = NULL;
 	}
 }
+
+bool Pkcs11::waitForSlot(uint_t slotIndex, bool *statusChanged, bool nonblocking)
+{
+	CK_FLAGS flags = 0;
+	if( nonblocking ) {
+		flags = CKF_DONT_BLOCK;
+	}
+
+	if( statusChanged ) {
+		*statusChanged = false;
+	}
+
+	CK_RV rv = m_api->C_WaitForSlotEvent(flags, &m_slots[slotIndex], NULL /*void *reserved*/);
+	if( rv == CKR_NO_EVENT ) {
+		return true;
+	}
+
+	if( rv == CKR_OK ) {
+		if( statusChanged ) {
+			*statusChanged = true;
+		}
+		return true;
+	}
+
+	__set_pkcs11_error(rv, __E_SC_PKCS11_WAITSLOT);
+	return false;
+}
+
+
+bool Pkcs11Session::login(const String& pin) const
+{
+	CK_USER_TYPE userType = CKU_USER;
+	const char_type* pinChars = pin.c_str();
+	int nchars = pin.size() * JQ_SIZEOF(char_type);
+	char* pinCharsCopy = new char[nchars];
+
+	JQ_ASSERT(pinCharsCopy);
+	JQ_MEMCOPY(pinCharsCopy, (char*)pinChars, nchars);
+
+	CK_RV rv = m_api->C_Login( m_session, userType, (uchar_t*)pinCharsCopy, nchars );
+	if( rv != CKR_OK ) {
+		__set_pkcs11_error(rv, __E_SC_PKCS11_LOGIN);
+		return false;
+	}
+	return true;
+}
+
+void Pkcs11Session::logout() const
+{
+	CK_RV rv = m_api->C_Logout(m_session);
+	if( rv != CKR_OK ) {
+		__set_pkcs11_error(rv, __E_SC_PKCS11_LOGOUT);
+	}
+}
+
 
 
 const char* __ckrvToString(CK_RV res)
@@ -324,7 +403,7 @@ const char* __ckrvToString(CK_RV res)
 	case CKR_OPERATION_NOT_INITIALIZED:
 		return "CKR_OPERATION_NOT_INITIALIZED";
 	case CKR_PIN_INCORRECT:
-		return "CKR_PIN_INCORRECT";
+		return _Tr("PIN is incorrect");
 	case CKR_PIN_INVALID:
 		return "CKR_PIN_INVALID";
 	case CKR_PIN_LEN_RANGE:
@@ -372,7 +451,7 @@ const char* __ckrvToString(CK_RV res)
 	case CKR_USER_ALREADY_LOGGED_IN:
 		return "CKR_USER_ALREADY_LOGGED_IN";
 	case CKR_USER_NOT_LOGGED_IN:
-		return "CKR_USER_NOT_LOGGED_IN";
+		return _Tr("user is not logged in");
 	case CKR_USER_PIN_NOT_INITIALIZED:
 		return "CKR_USER_PIN_NOT_INITIALIZED";
 	case CKR_USER_TYPE_INVALID:

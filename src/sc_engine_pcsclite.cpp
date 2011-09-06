@@ -7,7 +7,7 @@
 
 #include <jq/smartcard.hpp>
 #include <PCSC/reader.h>
-#include <jq/errorable.hpp>
+#include <jq/logger.hpp>
 
 
 static const char* __NTFYREADER = "\\\\?PnP?\\Notification";

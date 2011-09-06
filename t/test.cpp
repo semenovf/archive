@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <jq/test.h>
+#include <jq/logger.hpp>
 #include <jq/smartcard.hpp>
 #include <jq/pkcs11.hpp>
 
@@ -17,7 +18,8 @@
 #include "05-features.t"
 #include "06-pkcs11.t"
 #include "07-pkcs11_slots.t"
-#include "08-pkcs11_session.t"
+#include "08-pkcs11_waitforslot.t"
+#include "09-pkcs11_login.t"
 
 using namespace jq;
 
@@ -29,5 +31,6 @@ JQ_TEST_BEGIN
 	//JQ_TEST(verifypin);
 	//JQ_TEST(pkcs11);
 	//JQ_TEST(pkcs11_slots);
-	JQ_TEST(pkcs11_session);
+	//JQ_TEST(pkcs11_waitforslot);
+	JQ_TEST(pkcs11_login);
 JQ_TEST_FINISH
