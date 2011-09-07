@@ -24,7 +24,7 @@
 using namespace jq;
 
 JQ_TEST_BEGIN
-	//JQ_TEST(context);
+	JQ_TEST(context);
 	//JQ_TEST(features);
 	//JQ_TEST(connect);
 	//JQ_TEST(waitanyreader);

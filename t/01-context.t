@@ -7,6 +7,7 @@
 JQ_TEST_DEF(context)
 
 	jq::SmartCardContext sc_context;
+
 	sc_context.updateReaders();
 
 	int nreaders = sc_context.readersCount();

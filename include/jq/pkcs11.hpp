@@ -30,10 +30,10 @@ private:
 		: m_module(mod)
 		, m_api(api) {}
 
-		~Pkcs11();
+	~Pkcs11();
 public:
 
-	static Pkcs11* open(char_type *path);
+	static Pkcs11* open(const char_type *path);
 	static void close(Pkcs11*);
 
 	void version(uchar_t &major, uchar_t &minor) const;
@@ -45,7 +45,7 @@ public:
 		, uchar_t* libMinor) const;
 
 	void updateSlots(bool tokenPresent = true);
-	int slotsCount() const { return m_slots.size(); }
+	size_t slotsCount() const { return m_slots.size(); }
 	const CK_SLOT_ID* slotAt(uint_t index) const {
 		return index < m_slots.size() ? &m_slots[index] : NULL; }
 	bool slotInfo(uint_t index, CK_SLOT_INFO& info) const;

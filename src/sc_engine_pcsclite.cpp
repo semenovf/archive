@@ -64,7 +64,9 @@ static SmartCard::Protocol __fromNativeProto(DWORD proto)
 SmartCardContext::SmartCardContext() : m_context(0L)
 {
 	JQ_DEBUG("SmartCardContext::SmartCardContext()");
-	LONG rv = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &m_context);
+//	LONG rv = SCardCheckDaemonAvailability();
+
+	rv = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &m_context);
 	if (rv != SCARD_S_SUCCESS) {
 		__set_smartcard_error(rv, __E_SC_INIT);
 	} else {

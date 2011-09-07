@@ -40,7 +40,7 @@ static void __set_pkcs11_error(CK_RV rv, const String& msg)
 }
 
 
-Pkcs11* Pkcs11::open(char_type *path)
+Pkcs11* Pkcs11::open(const char_type *path)
 {
 //	__CHECK_CONTEXT_RV(m_pContext, false);
 
