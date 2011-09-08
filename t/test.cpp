@@ -24,13 +24,15 @@
 using namespace jq;
 
 JQ_TEST_BEGIN
-	JQ_TEST(context);
-	//JQ_TEST(features);
-	//JQ_TEST(connect);
-	//JQ_TEST(waitanyreader);
-	//JQ_TEST(verifypin);
-	//JQ_TEST(pkcs11);
-	//JQ_TEST(pkcs11_slots);
-	//JQ_TEST(pkcs11_waitforslot);
-	JQ_TEST(pkcs11_login);
+	JQ_TEST_INLINE_IF(jq::SmartCardContext::serviceAvailable())
+		JQ_TEST(context);
+		//JQ_TEST(features);
+		//JQ_TEST(connect);
+		//JQ_TEST(waitanyreader);
+		//JQ_TEST(verifypin);
+		//JQ_TEST(pkcs11);
+		//JQ_TEST(pkcs11_slots);
+		//JQ_TEST(pkcs11_waitforslot);
+		JQ_TEST(pkcs11_login);
+	JQ_TEST_ENDIF
 JQ_TEST_FINISH

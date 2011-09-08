@@ -49,6 +49,8 @@ public:
 	bool waitAnyReader(ulong millis, bool *timedout = NULL);
 	bool cancel();
 
+	static bool serviceAvailable(void* data=NULL);
+
 private:
 	SCARDCONTEXT m_context;
 	reader_list_type m_readers;

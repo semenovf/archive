@@ -5,6 +5,7 @@
  *      Author: wladt
  */
 
+#include <sys/stat.h>
 #include <jq/smartcard.hpp>
 #include <PCSC/reader.h>
 #include <jq/logger.hpp>
@@ -66,7 +67,7 @@ SmartCardContext::SmartCardContext() : m_context(0L)
 	JQ_DEBUG("SmartCardContext::SmartCardContext()");
 //	LONG rv = SCardCheckDaemonAvailability();
 
-	rv = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &m_context);
+	LONG rv = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &m_context);
 	if (rv != SCARD_S_SUCCESS) {
 		__set_smartcard_error(rv, __E_SC_INIT);
 	} else {
@@ -81,6 +82,59 @@ SmartCardContext::~SmartCardContext()
 	if (rv != SCARD_S_SUCCESS) {
 		__set_smartcard_error(rv, _Tr("SCardReleaseContext: releasing smart card context failed"));
 	}
+}
+
+
+/**
+ * Checks if the service is available
+ *
+ * @param data as for PCSC lite daemon this parameter specifies non-standard path to daemon socket
+ * @return @c true if the service is available, @c false if otherwise
+ */
+bool SmartCardContext::serviceAvailable(void* data) // [static]1
+{
+#ifdef PCSCD
+	struct stat statBuffer;
+	//static char socketName[sizeof(struct sockaddr_un)];
+	static std::string socketName;
+
+	if( socketName.length() == 0 ) {
+		/* socket name not yet initialized */
+		char *socketNameEnv;
+
+		if( data ) {
+			socketName = static_cast<char*>(data);
+		} else {
+			socketNameEnv = getenv("PCSCLITE_CSOCK_NAME");
+			if (socketNameEnv) {
+				socketName = socketNameEnv;
+			} else {
+#ifdef PCSCLITE_CSOCK_NAME
+				socketName = PCSCLITE_CSOCK_NAME;
+#else
+				socketName = "<PCSCLITE_daemon_not_found>";
+#endif
+			}
+		}
+	}
+
+	int rv = stat(socketName.c_str(), &statBuffer);
+
+	if (rv != 0) {
+/*
+		jq::String emsg;
+		emsg.sprintf(_Tr("PCSC service is unavailable: %s: %s"))(socketName)(JQ_STRERROR(errno));
+		jq_emitError(emsg);
+*/
+		return false;
+	}
+
+
+#else
+#	error "Need implementation of SmartCardContext::serviceAvailable() for this platform"
+	return false;
+#endif
+	return true;
 }
 
 /**
