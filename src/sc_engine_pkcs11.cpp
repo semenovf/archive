@@ -8,34 +8,29 @@
 #include <jq/pkcs11.hpp>
 #include <jq/logger.hpp>
 
-static const char_type* __E_SC_PKCS11_LOADMODULE   = _Tr("unable to load PKCS11 module: %s");
-static const char_type* __E_SC_PKCS11_GETFUNCLIST  = _Tr("failed to retrieve 'C_GetFunctionList'");
-static const char_type* __E_SC_PKCS11_APILOAD      = _Tr("failed to obtain the table of PKCS11 API functions");
-static const char_type* __E_SC_PKCS11_INITIALIZE   = _Tr("failed to initialize PKCS11");
-static const char_type* __E_SC_PKCS11_GETINFO      = _Tr("failed to get PKCS11 info");
-static const char_type* __E_SC_PKCS11_OOBSLOTINDEX = _Tr("slot index is out of bounds");
-static const char_type* __E_SC_PKSC11_SLOTLIST     = _Tr("failed to get slot list");
-static const char_type* __E_SC_PKCS11_SLOTINFO     = _Tr("failed to get slot info");
-static const char_type* __E_SC_PKCS11_OPENSESSION  = _Tr("failed to open session");
-static const char_type* __E_SC_PKCS11_CLOSESESSION = _Tr("unable to close session");
-static const char_type* __E_SC_PKCS11_LOGIN        = _Tr("login failed");
-static const char_type* __E_SC_PKCS11_LOGOUT       = _Tr("logout failed");
-static const char_type* __E_SC_PKCS11_WAITSLOT     = _Tr("waiting slot event failed");
-
-//extern bool __IS_INVALID_CONTEXT(jq::SmartCardContext*);
-/*
-#define __CHECK_CONTEXT(pContext) if(__IS_INVALID_CONTEXT(pContext)){return;}
-#define __CHECK_CONTEXT_RV(pContext,rv) if(__IS_INVALID_CONTEXT(pContext)){return (rv);}
-*/
+static const char_type
+	*E_SC_PKCS11_LoadModule   = _Tr("unable to load PKCS11 module: %s"),
+	*E_SC_PKCS11_GetFuncList  = _Tr("failed to retrieve 'C_GetFunctionList'"),
+	*E_SC_PKCS11_ApiLoad      = _Tr("failed to obtain the table of PKCS11 API functions"),
+	*E_SC_PKCS11_Initialize   = _Tr("failed to initialize PKCS11"),
+	*E_SC_PKCS11_GetInfo      = _Tr("failed to get PKCS11 info"),
+	*E_SC_PKCS11_SlotIndexOutOfBounds = _Tr("slot index is out of bounds"),
+	*E_SC_PKSC11_SlotList     = _Tr("failed to get slot list"),
+	*E_SC_PKCS11_SlotInfo     = _Tr("failed to get slot info"),
+	*E_SC_PKCS11_OpenSession  = _Tr("failed to open session"),
+	*E_SC_PKCS11_CloseSession = _Tr("unable to close session"),
+	*E_SC_PKCS11_Login        = _Tr("login failed"),
+	*E_SC_PKCS11_Logout       = _Tr("logout failed"),
+	*E_SC_PKCS11_WaitSlot     = _Tr("waiting slot event failed");
 
 JQ_NS_BEGIN
 
-static const char* __ckrvToString(CK_RV res);
+static const char* _ckrvToString(CK_RV res);
 
-static void __set_pkcs11_error(CK_RV rv, const String& msg)
+static void _set_pkcs11_error(CK_RV rv, const String& msg)
 {
 	String emsg;
-	emsg.sprintf("%s: %s (0x%0lX)")(msg)(__ckrvToString(rv))(rv);
+	emsg.sprintf("%s: %s (0x%0lX)")(msg)(_ckrvToString(rv))(rv);
 	jq_emitError(emsg);
 }
 
@@ -55,7 +50,7 @@ Pkcs11* Pkcs11::open(const char_type *path)
 	do {
 		if( !module->open(path) ) {
 			String emsg;
-			emsg.sprintf(__E_SC_PKCS11_LOADMODULE)(path);
+			emsg.sprintf(E_SC_PKCS11_LoadModule)(path);
 			jq_emitError(emsg.c_str());
 			break;
 		}
@@ -65,19 +60,19 @@ Pkcs11* Pkcs11::open(const char_type *path)
 			module->symbol("C_GetFunctionList");
 
 		if( !c_get_function_list ) {
-			jq_emitError(__E_SC_PKCS11_GETFUNCLIST);
+			jq_emitError(E_SC_PKCS11_GetFuncList);
 			break;
 		}
 
 		rv = c_get_function_list( &api );
 		if ( rv != CKR_OK ) {
-			jq_emitError(__E_SC_PKCS11_APILOAD);
+			jq_emitError(E_SC_PKCS11_ApiLoad);
 			break;
 		}
 
 		rv = ((CK_FUNCTION_LIST_PTR)api)->C_Initialize(NULL);
 		if(rv != CKR_OK) {
-			jq_emitError(__E_SC_PKCS11_INITIALIZE);
+			jq_emitError(E_SC_PKCS11_Initialize);
 			break;
 		}
 
@@ -130,7 +125,7 @@ bool Pkcs11::info( uchar_t* cryptokiMajor
 	CK_INFO info;
 	CK_RV rv = m_api->C_GetInfo(&info);
 	if(rv != CKR_OK) {
-		__set_pkcs11_error(rv, __E_SC_PKCS11_GETINFO);
+		_set_pkcs11_error(rv, E_SC_PKCS11_GetInfo);
 		return false;
 	}
 	if( cryptokiMajor )
@@ -170,7 +165,7 @@ void Pkcs11::updateSlots(bool tokenPresent)
 	CK_RV rv = m_api->C_GetSlotList(tokenPresent, NULL, &nslots);
 
 	if( rv != CKR_OK ) {
-		__set_pkcs11_error(rv, __E_SC_PKSC11_SLOTLIST);
+		_set_pkcs11_error(rv, E_SC_PKSC11_SlotList);
 		return;
 	}
 
@@ -179,7 +174,7 @@ void Pkcs11::updateSlots(bool tokenPresent)
 
 	rv = m_api->C_GetSlotList(tokenPresent, pslots, &nslots);
 	if( rv != CKR_OK ) {
-		__set_pkcs11_error(rv, __E_SC_PKSC11_SLOTLIST);
+		_set_pkcs11_error(rv, E_SC_PKSC11_SlotList);
 	} else {
 		for( uint_t i = 0; i < nslots; i++ ) {
 			m_slots.push_back(pslots[i]);
@@ -196,13 +191,13 @@ void Pkcs11::updateSlots(bool tokenPresent)
 bool Pkcs11::slotInfo(uint_t index, CK_SLOT_INFO& info) const
 {
 	if( index >= m_slots.size() ) {
-		jq_emitError(__E_SC_PKCS11_OOBSLOTINDEX);
+		jq_emitError(E_SC_PKCS11_SlotIndexOutOfBounds);
 		return false;
 	}
 
 	CK_RV rv = m_api->C_GetSlotInfo(m_slots[index], &info);
 	if( rv != CKR_OK ) {
-		__set_pkcs11_error(rv, __E_SC_PKCS11_SLOTINFO);
+		_set_pkcs11_error(rv, E_SC_PKCS11_SlotInfo);
 		return false;
 	}
 
@@ -233,7 +228,7 @@ bool Pkcs11::isTokenPresent(uint_t slotIndex)
 Pkcs11Session* Pkcs11::openSession(uint_t slotIndex) const
 {
 	if( slotIndex >= m_slots.size() ) {
-		jq_emitError(__E_SC_PKCS11_OOBSLOTINDEX);
+		jq_emitError(E_SC_PKCS11_SlotIndexOutOfBounds);
 		return false;
 	}
 
@@ -246,7 +241,7 @@ Pkcs11Session* Pkcs11::openSession(uint_t slotIndex) const
 		, NULL/*ck_notify_t notify*/
 	    , &session);
 	if( rv != CKR_OK ) {
-		__set_pkcs11_error(rv, __E_SC_PKCS11_OPENSESSION);
+		_set_pkcs11_error(rv, E_SC_PKCS11_OpenSession);
 		return NULL;
 	}
 	return new Pkcs11Session(m_api, session);
@@ -258,7 +253,7 @@ void Pkcs11::closeSession(Pkcs11Session*& session) const
 	if( session ) {
 		CK_RV rv = m_api->C_CloseSession( session->m_session );
 		if( rv != CKR_OK ) {
-			__set_pkcs11_error(rv, __E_SC_PKCS11_CLOSESESSION);
+			_set_pkcs11_error(rv, E_SC_PKCS11_CloseSession);
 		}
 		delete session;
 		session = NULL;
@@ -288,7 +283,7 @@ bool Pkcs11::waitForSlot(uint_t slotIndex, bool *statusChanged, bool nonblocking
 		return true;
 	}
 
-	__set_pkcs11_error(rv, __E_SC_PKCS11_WAITSLOT);
+	_set_pkcs11_error(rv, E_SC_PKCS11_WaitSlot);
 	return false;
 }
 
@@ -305,7 +300,7 @@ bool Pkcs11Session::login(const String& pin) const
 
 	CK_RV rv = m_api->C_Login( m_session, userType, (uchar_t*)pinCharsCopy, nchars );
 	if( rv != CKR_OK ) {
-		__set_pkcs11_error(rv, __E_SC_PKCS11_LOGIN);
+		_set_pkcs11_error(rv, E_SC_PKCS11_Login);
 		return false;
 	}
 	return true;
@@ -315,13 +310,13 @@ void Pkcs11Session::logout() const
 {
 	CK_RV rv = m_api->C_Logout(m_session);
 	if( rv != CKR_OK ) {
-		__set_pkcs11_error(rv, __E_SC_PKCS11_LOGOUT);
+		_set_pkcs11_error(rv, E_SC_PKCS11_Logout);
 	}
 }
 
 
 
-const char* __ckrvToString(CK_RV res)
+const char* _ckrvToString(CK_RV res)
 {
 	switch (res) {
 	case CKR_OK:
