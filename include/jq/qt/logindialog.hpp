@@ -57,7 +57,7 @@ protected:
 	virtual void closeEvent(QCloseEvent* e);
 	virtual bool event(QEvent* e);
 
-public __signals:
+public /*signals*/:
 	sigslot::signal3<jq::String&, jq::String&, bool&> emitValidate; // user, password, ok
 
 private slots:
@@ -80,7 +80,7 @@ public:
 	LoginDialogAppender(LoginDialog *loginDialog)
 		: m_loginDialog(loginDialog) {}
 
-public __slots:
+public /*slots*/:
 	void warn(const jq::String& m)  { if(m_loginDialog) m_loginDialog->showLoginFailedWarning(m); }
 	void error(const jq::String& m) { if(m_loginDialog) m_loginDialog->showLoginFailedWarning(m); }
 private:
