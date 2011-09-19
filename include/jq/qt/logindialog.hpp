@@ -28,20 +28,20 @@ class PasswordInput : public QLineEdit
 {
 	Q_OBJECT
 public:
-	PasswordInput( QWidget* parent )
+	DLL_API PasswordInput( QWidget* parent )
 		: QLineEdit(parent)
 	{
 		this->setEchoMode(QLineEdit::Password);
 	}
 
-	virtual ~PasswordInput() {}
-	virtual bool event(QEvent* e);
+	virtual DLL_API ~PasswordInput() {}
+	virtual DLL_API bool event(QEvent* e);
 
 signals:
-	void gotFocus();
+	DLL_API void gotFocus();
 };
 
-class LoginDialog : public QDialog/*, public sigslot::has_slots<>*/
+class DLL_API LoginDialog : public QDialog/*, public sigslot::has_slots<>*/
 {
 	Q_OBJECT
 public:
@@ -74,7 +74,7 @@ private:
     QPlainTextEdit   *m_warnText;
 };
 
-class LoginDialogAppender : public jq::LogAppender
+class DLL_API LoginDialogAppender : public jq::LogAppender
 {
 public:
 	LoginDialogAppender(LoginDialog *loginDialog)

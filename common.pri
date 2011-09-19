@@ -1,20 +1,18 @@
-QT = gui
 CONFIG += qt debug warn_on
 OBJECTS_DIR = obj
-CONFIG += qt
+QT += gui
 
 INCLUDEPATH += ../include
+INCLUDEPATH += ../../jq/include
 
 unix {
-	INCLUDEPATH += $$(HOME)/projects/ws-jq/jq/include
-	LIBS +=  -L$$(HOME)/lib
-	LIBS += -ljq-sc
+	#INCLUDEPATH += $$(HOME)/projects/ws-jq/jq/include
 	DESTDIR=../build
 	QMAKE_CXXFLAGS += -O0
 }
 win32 {
 	DESTDIR=../build-win32
-	DEFINES += UNICODE DLL_EXPORTS
+	DEFINES += UNICODE
 	QMAKE_CXXFLAGS += /Od /EHs /EHc 
 }
 

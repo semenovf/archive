@@ -20,7 +20,7 @@ LoginDialog::LoginDialog(validator_f validator, bool loopMode, QWidget* parent)
 	, m_loginOk(false)
 {
 	this->setModal(true);
-	this->setWindowTitle(_Tr("Login"));
+	this->setWindowTitle(QSTRING_FROM_CHARARRAY(_Tr("Login")));
 
 	m_pass = new PasswordInput(this);
     m_pass->setMinimumWidth(200);
@@ -74,7 +74,7 @@ LoginDialog::~LoginDialog()
 
 void LoginDialog::showLoginFailedWarning(const jq::String& msg)
 {
-	m_warnText->setPlainText(msg.c_str());
+	m_warnText->setPlainText(QSTRING_FROM_CHARARRAY(msg.c_str()));
 	m_warnImg->show();
 	m_warnText->show();
 }
@@ -95,7 +95,7 @@ void LoginDialog::closeEvent(QCloseEvent* e)
 void LoginDialog::accept()
 {
 	jq::String user(_T(""));
-	jq::String pass(qPrintable(m_pass->text()));
+	jq::String pass( QSTRING_TO_STDSTRING(m_pass->text()));
 
 	LoginDialogAppender logger(this);
 	logger.connect();
