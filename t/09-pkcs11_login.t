@@ -18,7 +18,7 @@ JQ_TEST_DEF(pkcs11_login)
 		path[127] = '\0';
 		JQ_DEBUGF(_Tr("PKCS11 module path is %s"), path);
 
-		jq::Pkcs11* p11 = jq::Pkcs11::open(path);
+		jq::Pkcs11* p11 = jq::Pkcs11::open( jq::String(path).c_str());
 
 		JQ_TEST_INLINE_IF(p11)
 

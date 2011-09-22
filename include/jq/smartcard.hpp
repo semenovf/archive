@@ -13,8 +13,11 @@
 #include <jq/global.h>
 #include <jq/string.hpp>
 
-#ifdef _WIN32
-#	error "Not implemented yet"
+#ifdef JQ_WIN32
+#	include <winscard.h>
+#	ifndef MAX_ATR_SIZE
+#		define MAX_ATR_SIZE 36 // =36 - for windows, =33 as defined in pcsclite.h
+#	endif
 #else
 #	include <winscard.h>
 #endif
@@ -25,7 +28,7 @@ struct SmartCardStatus;
 class SmartCard;
 class SmartCardFeatures;
 
-class SmartCardContext
+class DLL_API SmartCardContext
 {
 	friend class SmartCard;
 
@@ -43,13 +46,13 @@ public:
 	//const reader_list_type& readers() const { return m_readers; }
 
 	int readersCount() const { return m_readers.size(); }
-	const String& readerAt(uint index) {
-		return index < m_readers.size() ? m_readers[index] : String::Empty; }
+	const String& readerAt(uint_t index) {
+		return index < m_readers.size() ? m_readers[index] : String::emptyString(); }
 
-	bool waitAnyReader(ulong millis, bool *timedout = NULL);
+	bool waitAnyReader(ulong_t millis, bool *timedout = NULL);
 	bool cancel();
 
-	static bool serviceAvailable(void* data=NULL);
+	static bool serviceAvailable(const void* data=NULL);
 
 private:
 	SCARDCONTEXT m_context;
@@ -58,10 +61,10 @@ private:
 };
 
 
-class SmartCard
+class DLL_API SmartCard
 {
 public:
-	typedef ulong Cmd;
+	typedef ulong_t Cmd;
 	//static const Cmd_;
 
 	typedef enum {
@@ -110,7 +113,9 @@ public:
 	bool unpower() { return disconnect(Act_Unpower); }
 	bool eject()   { return disconnect(Act_Eject); }
 	bool status(SmartCardStatus& status) const;
+#ifdef __NOT_IMPLEMETED_YET__
 	bool features(SmartCardFeatures& features) const;
+#endif
 
 	bool verifyPIN();
 
@@ -125,11 +130,11 @@ private:
 	SmartCardContext*   m_pContext;
 	String              m_readerName;
 	SCARDHANDLE         m_handle;	      // card handle
-	uint                m_preferredProto; // for internal use only
+	uint_t              m_preferredProto; // for internal use only
 };
 
 
-struct SmartCardStatus
+struct DLL_API SmartCardStatus
 {
 	String              readerName;
 	int                 status;
@@ -141,7 +146,7 @@ struct SmartCardStatus
 	void dump(ostream_type& out);
 };
 
-class SmartCardFeatures
+class DLL_API SmartCardFeatures
 {
 	friend class SmartCard;
 	typedef std::map<uint8_t, uint32_t> feature_list_type;

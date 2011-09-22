@@ -20,7 +20,7 @@ JQ_TEST_DEF(verifypin)
 		scanf("%d", &index);
 
 		JQ_TEST_INLINE_IF( index >= 0 && index < nreaders )
-			JQ_DEBUGF("Your choice is %d", index);
+			JQ_DEBUGF(_T("Your choice is %d"), index);
 			jq::SmartCard sc_card(sc_context, sc_context.readerAt(index));
 			sc_card.connect(jq::SmartCard::SM_Shared, jq::SmartCard::Proto_Any);
 

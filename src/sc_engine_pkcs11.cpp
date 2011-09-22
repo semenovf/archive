@@ -49,9 +49,7 @@ Pkcs11* Pkcs11::open(const char_type *path)
 
 	do {
 		if( !module->open(path) ) {
-			String emsg;
-			emsg.sprintf(E_SC_PKCS11_LoadModule)(path);
-			jq_emitError(emsg.c_str());
+			jq_emitError(String().sprintf(E_SC_PKCS11_LoadModule)(path)());
 			break;
 		}
 
@@ -398,7 +396,7 @@ const char* _ckrvToString(CK_RV res)
 	case CKR_OPERATION_NOT_INITIALIZED:
 		return "CKR_OPERATION_NOT_INITIALIZED";
 	case CKR_PIN_INCORRECT:
-		return _Tr("PIN is incorrect");
+		return "PIN is incorrect";
 	case CKR_PIN_INVALID:
 		return "CKR_PIN_INVALID";
 	case CKR_PIN_LEN_RANGE:
@@ -446,7 +444,7 @@ const char* _ckrvToString(CK_RV res)
 	case CKR_USER_ALREADY_LOGGED_IN:
 		return "CKR_USER_ALREADY_LOGGED_IN";
 	case CKR_USER_NOT_LOGGED_IN:
-		return _Tr("user is not logged in");
+		return "user is not logged in";
 	case CKR_USER_PIN_NOT_INITIALIZED:
 		return "CKR_USER_PIN_NOT_INITIALIZED";
 	case CKR_USER_TYPE_INVALID:
@@ -490,7 +488,7 @@ const char* _ckrvToString(CK_RV res)
 	case CKR_VENDOR_DEFINED:
 		return "CKR_VENDOR_DEFINED";
 	}
-	return _Tr("unknown PKCS11 error");
+	return "unknown PKCS11 error";
 }
 
 JQ_NS_END

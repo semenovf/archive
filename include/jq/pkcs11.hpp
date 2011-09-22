@@ -20,7 +20,7 @@ JQ_NS_BEGIN
 
 class Pkcs11Session;
 
-class Pkcs11
+class DLL_API Pkcs11
 {
 private:
 	typedef std::vector<CK_SLOT_ID> slot_list_type;
@@ -72,8 +72,8 @@ class Pkcs11Session
 		, m_session(h) {}
 
 public:
-	bool login(const String& pin) const;
-	void logout() const;
+	DLL_API bool login(const String& pin) const;
+	DLL_API void logout() const;
 
 private:
 	CK_FUNCTION_LIST *m_api;
