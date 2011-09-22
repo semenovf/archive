@@ -8,7 +8,7 @@ unix {
 }
 
 win32 {
-	CONFIG += windows # Windows GUI application
+	CONFIG += console #windows # Windows GUI application
 	LIBS += /LIBPATH:..\\..\\jq\\build-win32
     LIBS += ../../jq/build-win32/jq.lib
 	LIBS += /LIBPATH:..\\build-win32

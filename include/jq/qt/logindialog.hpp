@@ -34,24 +34,24 @@ public:
 		this->setEchoMode(QLineEdit::Password);
 	}
 
-	virtual DLL_API ~PasswordInput() {}
-	virtual DLL_API bool event(QEvent* e);
+	DLL_API virtual ~PasswordInput() {}
+	virtual bool event(QEvent* e);
 
 signals:
-	DLL_API void gotFocus();
+	void gotFocus();
 };
 
-class DLL_API LoginDialog : public QDialog/*, public sigslot::has_slots<>*/
+class LoginDialog : public QDialog/*, public sigslot::has_slots<>*/
 {
 	Q_OBJECT
 public:
 	typedef bool (*validator_f)(const jq::String& user, const jq::String& pass);
 
 public:
-	LoginDialog( validator_f validator, bool loopMode = false, QWidget* parent = NULL );
-	virtual ~LoginDialog();
-	bool result() const { return m_loginOk; }
-	void showLoginFailedWarning(const jq::String& msg);
+	DLL_API LoginDialog( validator_f validator, bool loopMode = false, QWidget* parent = NULL );
+	DLL_API virtual ~LoginDialog();
+	DLL_API bool result() const { return m_loginOk; }
+	DLL_API void showLoginFailedWarning(const jq::String& msg);
 
 protected:
 	virtual void closeEvent(QCloseEvent* e);
@@ -62,7 +62,7 @@ public /*signals*/:
 
 private slots:
 	void accept();
-	void clearLoginFailedWarning();
+	DLL_API void clearLoginFailedWarning();
 
 private:
 	validator_f       m_validator;
