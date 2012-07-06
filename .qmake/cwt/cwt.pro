@@ -18,14 +18,14 @@ unix {
     HEADERS += ../../include/cwt/stylex/*.h
     HEADERS += ../../include/cwt/net/*.h
 
-    SOURCES += ../../*.c
-    SOURCES += ../../algo/*.c
-    SOURCES += ../../event/*.c
-    SOURCES += ../../io/*.c
-    SOURCES += ../../stylex/*.c
-    SOURCES += ../../dbi/*.c
-#    SOURCES += ../../net/*.c
-    SOURCES += ../../net/linux/*.c
+    SOURCES += ../../src/*.c
+    SOURCES += ../../src/algo/*.c
+    SOURCES += ../../src/event/*.c
+    SOURCES += ../../src/io/*.c
+    SOURCES += ../../src/stylex/*.c
+    SOURCES += ../../src/dbi/*.c
+#    SOURCES += ../../src/net/*.c
+    SOURCES += ../../src/net/linux/*.c
 
     LIBS += -ldl
     LIBS += -lmysql
@@ -40,16 +40,16 @@ win32 {
     HEADERS += ..\\..\\include\\cwt\\dbi\\*.h
     HEADERS += ..\\..\\include\\cwt\\net\\*.h
 
-    SOURCES += ..\\..\\*.c
-    SOURCES += ..\\..\\algo\\*.c
-    SOURCES += ..\\..\\event\\*.c
-    SOURCES += ..\\..\\io\\*.c
-    SOURCES += ..\\..\\io\\serial\\*.c
-    SOURCES += ..\\..\\io\\serial\\win\\*.c
-    SOURCES += ..\\..\\stylex\\*.c
-    SOURCES += ..\\..\\dbi\\*.c
-#    SOURCES += ..\\..\\net\\*.c
-    SOURCES += ..\\..\\net\\win\\*.c
+    SOURCES += ..\\..\\src\\*.c
+    SOURCES += ..\\..\\src\\algo\\*.c
+    SOURCES += ..\\..\\src\\event\\*.c
+    SOURCES += ..\\..\\src\\io\\*.c
+    SOURCES += ..\\..\\src\\io\\serial\\*.c
+    SOURCES += ..\\..\\src\\io\\serial\\win\\*.c
+    SOURCES += ..\\..\\src\\stylex\\*.c
+    SOURCES += ..\\..\\src\\dbi\\*.c
+#    SOURCES += ..\\..\\src\\net\\*.c
+    SOURCES += ..\\..\\src\\net\\win\\*.c
 
     LIBS += Advapi32.lib
     LIBS += ws2_32.lib
