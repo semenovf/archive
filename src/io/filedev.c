@@ -35,6 +35,48 @@ typedef struct CwtFileDevice
 	off_t read_pos_saved;
 } CwtFileDevice, *CwtFileDevicePtr;
 
+
+DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CHAR *path, int mode)
+{
+	CwtFileDevicePtr fd;
+	int fh;
+
+	if( path ) {
+		fh = cwtOpen(path, mode, 0);
+		if( fh < 0 ) {
+			printf_error(_Tr("unable to open input file: %s: %s"), path, strerror(errno));
+			return (CwtIODevicePtr)NULL;
+		}
+	}
+
+	fd = CWT_MALLOC(CwtFileDevice);
+	fd->in  = -1;
+	fd->out = -1;
+
+	if( (mode & O_RDWR) || (mode & O_RDONLY) )
+		fd->in  = fh;
+
+	if( (mode & O_RDWR) || (mode & O_WRONLY) )
+		fd->out = fh;
+
+	if( fh > 0 )
+		CWT_ASSERT(cwtLseek(fh, 0L, SEEK_SET) >= 0L);
+
+	fd->read_pos = 0L;
+	fd->read_pos_saved = 0L;
+
+	fd->base.close          = __cwtFileClose;
+	fd->base.bytesAvailable = __cwtFileBytesAvailable;
+	fd->base.read           = __cwtFileRead;
+	fd->base.write          = __cwtFileWrite;
+
+	fd->base.readBegin      = __cwtFileReadBegin;
+	fd->base.readCommit     = __cwtFileReadCommit;
+	fd->base.readRollback   = __cwtFileReadRollback;
+
+	return (CwtIODevicePtr)fd;
+}
+
 /**
  * Opens file device consists of two parts: file for read and file for write
  *
@@ -43,7 +85,7 @@ typedef struct CwtFileDevice
  * @param master if @c true files will be created and/or truncated
  * @return
  */
-CwtIODevicePtr cwtFileDeviceOpen(const char* infilename, const char* outfilename, BOOL master)
+DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const char* infilename, const char* outfilename, BOOL master)
 {
 	CwtFileDevicePtr fd;
 	int imode = O_RDWR | O_BINARY;
@@ -110,9 +152,10 @@ void __cwtFileClose(CwtIODevicePtr dev)
 	if( fd->in > 0 )
 		cwtClose(fd->in);
 
-	if( fd->out > 0 )
+	if( fd->in != fd->out && fd->out > 0 )
 		cwtClose(fd->out);
 
+	fd->in = fd->out = -1;
 	CWT_FREE(fd);
 }
 
@@ -125,7 +168,7 @@ size_t __cwtFileBytesAvailable(CwtIODevicePtr dev)
 	fd = (CwtFileDevicePtr)dev;
 
 	if( fd->in < 0 ) {
-		print_error("file device does not support read operations");
+		print_error(_Tr("file device does not support read operations"));
 		return (size_t)0;
 	}
 
@@ -144,7 +187,7 @@ ssize_t __cwtFileRead(CwtIODevicePtr dev, BYTE* buf, size_t sz)
 	fd = (CwtFileDevicePtr)dev;
 
 	if( fd->in < 0 ) {
-		print_error("file device does not support read operations");
+		print_error(_Tr("file device does not support read operations"));
 		return (size_t)-1;
 	}
 
@@ -167,7 +210,7 @@ ssize_t __cwtFileWrite(CwtIODevicePtr dev, const BYTE* buf, size_t sz)
 	fd = (CwtFileDevicePtr)dev;
 
 	if( fd->out < 0 ) {
-		print_error("file device does not support write operations");
+		print_error(_Tr("file device does not support write operations"));
 		return (size_t)-1;
 	}
 

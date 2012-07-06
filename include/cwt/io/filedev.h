@@ -12,7 +12,8 @@
 
 EXTERN_C_BEGIN
 
-DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const char* infilename, const char* outfilename, BOOL master);
+DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CHAR *path, int mode);
+DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const char* infilename, const char* outfilename, BOOL master);
 
 EXTERN_C_END
 

@@ -105,4 +105,18 @@ EXTERN_C_END
 		exit(EXIT_FAILURE);                                                   \
 	}
 
+#define CWT_TEST_FAIL2(exp,desc) if( (exp) ) {        	                      \
+		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
+		__cwtTestContextPtr__->m_run_tests++; 					              \
+		__cwtTestContextPtr__->m_ok_tests++;						          \
+		printf("TEST: %s => ok\n", #exp);                                     \
+	} else {                              	                                  \
+		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
+		__cwtTestContextPtr__->m_run_tests++; 					              \
+		__cwtTestContextPtr__->m_failed_tests++;					          \
+		printf("TEST: failed at %s:%d, %s\n", __FILE__, __LINE__, desc);      \
+		CWT_END_TESTS;                                                        \
+		exit(EXIT_FAILURE);                                                   \
+	}
+
 #endif /* __CWT_TEST_H__ */

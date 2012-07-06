@@ -6,7 +6,7 @@
 
 struct _LOGGER_CONTEXT {
 	CHAR* prefix;
-	StringBufferPtr sbuf;
+	CwtStringBufferPtr sbuf;
 	void (*printer)(const CHAR* msg);
 } LOGGER_CONTEXT[LOGGER_COUNT] = {
 	  {NULL, NULL, NULL}
@@ -39,7 +39,7 @@ void set_printer(LOGGER_TYPE type
 		LOGGER_CONTEXT[type].prefix = cwtStrDup(prefix);
 
 	if( !LOGGER_CONTEXT[type].sbuf ) {
-		LOGGER_CONTEXT[type].sbuf = strbuf_new_defaults();
+		LOGGER_CONTEXT[type].sbuf = cwtStringBufferNS()->create();
 	}
 
 	if( printer )
@@ -90,16 +90,18 @@ void init_loggers(void)
 
 static void _print(LOGGER_TYPE type, const CHAR* msg)
 {
+	CwtStringBufferNS *sbns = cwtStringBufferNS();
+
 	if( ! LOGGER_CONTEXT[type].printer )
 		init_loggers();
 
-	strbuf_clear(LOGGER_CONTEXT[type].sbuf);
+	sbns->clear(LOGGER_CONTEXT[type].sbuf);
 	if( LOGGER_CONTEXT[type].prefix )
-		strbuf_append(LOGGER_CONTEXT[type].sbuf, LOGGER_CONTEXT[type].prefix);
+		sbns->append(LOGGER_CONTEXT[type].sbuf, LOGGER_CONTEXT[type].prefix);
 	if( msg )
-		strbuf_append(LOGGER_CONTEXT[type].sbuf, msg);
+		sbns->append(LOGGER_CONTEXT[type].sbuf, msg);
 	/*strbuf_append(LOGGER_CONTEXT[type].sbuf, "\n");*/
-	LOGGER_CONTEXT[type].printer(strbuf_cstr(LOGGER_CONTEXT[type].sbuf));
+	LOGGER_CONTEXT[type].printer(sbns->cstr(LOGGER_CONTEXT[type].sbuf));
 }
 
 

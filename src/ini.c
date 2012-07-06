@@ -12,7 +12,9 @@
 #include <cwt/string.h>
 #include <cwt/unistd.h>
 #include <cwt/logger.h>
-#include <cwt/ringbuf.h>
+#include <cwt/strbuf.h>
+#include <cwt/io/channel.h>
+#include <cwt/io/filedev.h>
 #include <cwt/ini.h>
 
 #ifndef _NASSYNC
@@ -31,7 +33,7 @@ typedef struct CwtIniHandler {
 	CwtIniRule *rules;
 } CwtIniHandler;
 
-static BOOL __cwtIniParseLine(RingBufferPtr rb, size_t len, CwtIniHandlerBase* handlers);
+static BOOL __cwtIniParseLine(CwtStringBufferPtr sb, size_t len, CwtIniHandlerBase* handlers);
 
 static void __cwtIniOnDebugStartDocument(CwtIniHandlerBase* h);
 static void __cwtIniOnDebugEndDocument(CwtIniHandlerBase* h);
@@ -139,16 +141,21 @@ BOOL cwtLoadIniStd(const char* path, CWT_INI_STD_HANDLER h)
 BOOL cwtLoadIni(const char* path, CwtIniHandlerBase* handler)
 {
 	int ini;
-	RingBufferPtr rb;
+	CwtIODevicePtr file;
+	CwtStringBufferPtr sb;
+/*	RingBufferPtr rb;*/
 	ssize_t bw;
 
-	ini = cwtOpen(path, O_RDONLY | O_TEXT);
+	file = cwtFileDeviceOpen(path, NULL, TRUE);
+
+	/*ini = cwtOpen(path, O_RDONLY | O_TEXT);*/
 
 	if( ini < 0 ) {
-		printf_error("%s: unable to open INI file: %s", path, strerror(errno));
+		printf_error(_Tr("%s: unable to open INI file: %s"), path, strerror(errno));
 		return FALSE;
 	}
 
+	sb = cwtStringBuffer
 	rb = rb_new_defaults();
 	CWT_ASSERT(rb);
 
@@ -230,14 +237,15 @@ static void __on_token(RingBufferPtr rb, void* extra)
 	}
 }
 
-BOOL __cwtIniParseLine(RingBufferPtr rb, size_t len, CwtIniHandlerBase* handler)
+BOOL __cwtIniParseLine(CwtStringBufferPtr sb, size_t len, CwtIniHandlerBase* handler)
 {
 	int rc = rb_split((BYTE)' ', rb, len, 0, __on_token, handler);
+
 	if( rc < 0 ) {
 		if( rc == RBE_QUOTE_CHAR_UNBALANCED ) {
-			handler->on_error(handler, "unbalanced quote char");
+			handler->on_error(handler, _Tr("unbalanced quote char"));
 		} else {
-			handler->on_error(handler, "line is incorrect");
+			handler->on_error(handler, _Tr("line is incorrect"));
 		}
 	}
 
@@ -273,7 +281,7 @@ static void __cwtIniOnRuleEndLine(CwtIniHandlerBase* h)
 
 		while( rule_ptr->cmd ) {
 			if( cwtStrEq(dh->instruction[0], rule_ptr->cmd)
-					&& dh->nitems >= rule_ptr->argc) {
+					&& dh->nitems >= rule_ptr->min_argc) {
 				rule_accepted = TRUE;
 				rule_ptr->callback(h, dh->nitems, dh->instruction);
 				break;
@@ -282,7 +290,7 @@ static void __cwtIniOnRuleEndLine(CwtIniHandlerBase* h)
 		}
 
 		if( !rule_accepted ) {
-			dh->base.on_error((CwtIniHandlerBase*)dh, "bad instruction or incomplete arguments");
+			dh->base.on_error((CwtIniHandlerBase*)dh, _Tr("bad instruction or incomplete arguments"));
 		}
 	}
 

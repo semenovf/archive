@@ -13,19 +13,84 @@
 static const size_t __default_initial_size = 64;
 static const size_t __default_max_size = CWT_SIZE_T_MAX;
 
+static CwtStringBufferPtr __createSized(size_t initial_size, size_t max_size);
+static CwtStringBufferPtr __create(void);
+static void __init(CwtStringBufferPtr sb);
+static void __initSized(CwtStringBufferPtr sb, size_t initial_size, size_t max_size);
+static void __destroy(CwtStringBufferPtr sb);
+static void __free(CwtStringBufferPtr sb);
+static CwtStringBufferPtr __clone(CwtStringBufferPtr sb);
+static BOOL __reserve(CwtStringBufferPtr sb, size_t n);
+static BOOL __lreserve(CwtStringBufferPtr sb, size_t n);
+static BOOL __mreserve(CwtStringBufferPtr sb, size_t n, size_t pos);
+static size_t __capacity(CwtStringBufferPtr sb);
+static BOOL __isEmpty(CwtStringBufferPtr sb);
+static void __clear(CwtStringBufferPtr sb);
+static size_t __size(CwtStringBufferPtr sb);
+static void __appendChar(CwtStringBufferPtr sb, CHAR ch);
+static void __appendChars(CwtStringBufferPtr sb, const CHAR *s, size_t n);
+static void __append(CwtStringBufferPtr sb, const CHAR *s);
+static void __prependChar(CwtStringBufferPtr sb, CHAR ch);
+static void __insertChar(CwtStringBufferPtr sb, CHAR ch, size_t pos);
+static void __insert(CwtStringBufferPtr sb, const CHAR *chars, size_t nchars, size_t pos);
+static void __removeChar(CwtStringBufferPtr sb, size_t pos);
+static const CHAR* __cstr(CwtStringBufferPtr sb);
+static CHAR* __substr(CwtStringBufferPtr sb, size_t start, size_t nchars);
+static BOOL __find(CwtStringBufferPtr sb, CHAR ch, size_t *offset);
 
-StringBufferPtr strbuf_new_defaults(void)
+static CwtStringBufferNS __cwtStringBufferNS = {
+		 0
+		, __create
+		, __createSized
+		, __init
+		, __destroy
+		, __free
+		, __clone
+		, __reserve
+		, __lreserve
+		, __mreserve
+		, __capacity
+		, __isEmpty
+		, __clear
+		, __size
+		, __size
+		, __appendChar
+		, __appendChars
+		, __append
+		, __prependChar
+		, __insertChar
+		, __insert
+		, __removeChar
+		, __cstr
+		, __substr
+		, __find
+};
+
+
+DLL_API_EXPORT CwtStringBufferNS* cwtStringBufferNS(void)
 {
-	return strbuf_new((size_t)0, (size_t)0);
+	return &__cwtStringBufferNS;
 }
 
-StringBufferPtr strbuf_new(size_t initial_size, size_t max_size)
+
+static CwtStringBufferPtr __create(void)
 {
-	StringBufferPtr sb;
+	return __createSized((size_t)0, (size_t)0);
+}
 
-	sb = CWT_MALLOC(StringBuffer);
+static CwtStringBufferPtr __createSized(size_t initial_size, size_t max_size)
+{
+	CwtStringBufferPtr sb;
+
+	sb = CWT_MALLOC(CwtStringBuffer);
 	CWT_ASSERT(sb);
+	__initSized(sb, initial_size, max_size);
+	__cwtStringBufferNS.refs++;
+	return sb;
+}
 
+static void __initSized(CwtStringBufferPtr sb, size_t initial_size, size_t max_size)
+{
 	if( !initial_size ) {
 		initial_size = __default_initial_size;
 	}
@@ -44,26 +109,36 @@ StringBufferPtr strbuf_new(size_t initial_size, size_t max_size)
 	sb->m_capacity = initial_size;
 	sb->m_count = 0;
 	sb->m_max_capacity = max_size;
-
-	return sb;
 }
 
-void strbuf_delete(StringBufferPtr sb)
+static void __init(CwtStringBufferPtr sb)
 {
-	if( sb ) {
-		if( sb->m_buffer )
-			CWT_FREE(sb->m_buffer);
-		CWT_FREE(sb);
+	__initSized(sb, 0, 0);
+}
+
+
+static void __destroy(CwtStringBufferPtr sb)
+{
+	if( sb && sb->m_buffer ) {
+		CWT_FREE(sb->m_buffer);
+		sb->m_buffer = NULL;
 	}
 }
 
+static void __free(CwtStringBufferPtr sb)
+{
+	__destroy(sb);
+	CWT_FREE(sb);
+	__cwtStringBufferNS.refs--;
+}
 
-StringBufferPtr strbuf_clone(StringBufferPtr sb)
+
+static CwtStringBufferPtr __clone(CwtStringBufferPtr sb)
 {
 	if( sb ) {
-		StringBufferPtr clone = strbuf_new(sb->m_count, __default_max_size);
+		CwtStringBufferPtr clone = __createSized(sb->m_count, __default_max_size);
 		if( sb->m_count > 0 ) {
-			memcpy(clone->m_buffer, sb->m_buffer/* + sb->m_head*/, sb->m_count);
+			cwtMemCpy(clone->m_buffer, sb->m_buffer, sb->m_count);
 			clone->m_count = sb->m_count;
 		}
 		return clone;
@@ -72,7 +147,7 @@ StringBufferPtr strbuf_clone(StringBufferPtr sb)
 }
 
 
-BOOL strbuf_reserve(StringBufferPtr sb, size_t n)
+static BOOL __reserve(CwtStringBufferPtr sb, size_t n)
 {
 	size_t available;
 	size_t inc;
@@ -93,11 +168,10 @@ BOOL strbuf_reserve(StringBufferPtr sb, size_t n)
 
 		buffer = CWT_MALLOCA(CHAR, capacity);
 
-		memcpy(buffer, sb->m_buffer/* + sb->m_head*/, sb->m_count);
+		cwtMemCpy(buffer, sb->m_buffer, sb->m_count);
 
 		CWT_FREE(sb->m_buffer);
 		sb->m_buffer = buffer;
-		/*sb->m_head = 0;*/
 		sb->m_capacity = capacity;
 	}
 
@@ -112,7 +186,7 @@ BOOL strbuf_reserve(StringBufferPtr sb, size_t n)
  * @param n
  * @return
  */
-BOOL strbuf_lreserve(StringBufferPtr sb, size_t n)
+static BOOL __lreserve(CwtStringBufferPtr sb, size_t n)
 {
 	size_t inc;
 	CHAR *buffer;
@@ -120,23 +194,20 @@ BOOL strbuf_lreserve(StringBufferPtr sb, size_t n)
 
 	CWT_ASSERT(sb);
 
-/*	if( sb->m_head < n ) {*/
+	inc = n;
 
-		inc = n/* - sb->m_head*/;
+	capacity = sb->m_capacity + inc;
 
-		capacity = sb->m_capacity + inc;
+	if( capacity > sb->m_max_capacity )
+		return FALSE;
 
-		if( capacity > sb->m_max_capacity )
-			return FALSE;
+	buffer = CWT_MALLOCA(CHAR, capacity);
 
-		buffer = CWT_MALLOCA(CHAR, capacity);
+	cwtMemCpy(buffer + n, sb->m_buffer, sb->m_count);
 
-		memcpy(buffer + n, sb->m_buffer/* + sb->m_head*/, sb->m_count);
-
-		CWT_FREE(sb->m_buffer);
-		sb->m_buffer = buffer;
-		sb->m_capacity = capacity;
-/*	}*/
+	CWT_FREE(sb->m_buffer);
+	sb->m_buffer = buffer;
+	sb->m_capacity = capacity;
 
 	return TRUE;
 }
@@ -149,7 +220,7 @@ BOOL strbuf_lreserve(StringBufferPtr sb, size_t n)
  * @param n
  * @return
  */
-BOOL strbuf_mreserve(StringBufferPtr sb, size_t n, size_t pos)
+static BOOL __mreserve(CwtStringBufferPtr sb, size_t n, size_t pos)
 {
 	size_t inc;
 	CHAR *buffer;
@@ -158,10 +229,10 @@ BOOL strbuf_mreserve(StringBufferPtr sb, size_t n, size_t pos)
 	CWT_ASSERT(sb);
 
 	if( pos >= sb->m_count )
-		return strbuf_reserve(sb, n);
+		return __reserve(sb, n);
 
 	if( pos == 0 )
-		return strbuf_lreserve(sb, n);
+		return __lreserve(sb, n);
 
 	inc = n;
 
@@ -172,8 +243,8 @@ BOOL strbuf_mreserve(StringBufferPtr sb, size_t n, size_t pos)
 
 	buffer = CWT_MALLOCA(CHAR, capacity);
 
-	memcpy(buffer, sb->m_buffer/* + sb->m_head*/, pos);
-	memcpy(buffer+pos+n, sb->m_buffer /*+ sb->m_head*/ + pos, sb->m_count - pos);
+	cwtMemCpy(buffer, sb->m_buffer, pos);
+	cwtMemCpy(buffer+pos+n, sb->m_buffer + pos, sb->m_count - pos);
 
 	CWT_FREE(sb->m_buffer);
 	sb->m_buffer = buffer;
@@ -182,91 +253,89 @@ BOOL strbuf_mreserve(StringBufferPtr sb, size_t n, size_t pos)
 	return TRUE;
 }
 
-size_t strbuf_capacity(StringBufferPtr sb)
+static size_t __capacity(CwtStringBufferPtr sb)
 {
 	CWT_ASSERT(sb);
 	return sb->m_capacity;
 }
 
 
-BOOL strbuf_is_empty(StringBufferPtr sb)
+static BOOL __isEmpty(CwtStringBufferPtr sb)
 {
 	CWT_ASSERT(sb);
 	return (sb->m_count == 0 ? TRUE : FALSE);
 }
 
 
-void strbuf_clear(StringBufferPtr sb)
+static void __clear(CwtStringBufferPtr sb)
 {
 	CWT_ASSERT(sb);
-/*	sb->m_head = 0;*/
 	sb->m_count = 0;
 }
 
-size_t strbuf_size(StringBufferPtr sb)
+static size_t __size(CwtStringBufferPtr sb)
 {
 	CWT_ASSERT(sb);
 	return sb->m_count;
 }
 
 
-void strbuf_append_char(StringBufferPtr sb, CHAR ch)
+static void __appendChar(CwtStringBufferPtr sb, CHAR ch)
 {
 	CWT_ASSERT(sb);
-	CWT_ASSERT(strbuf_reserve(sb, 1));
+	CWT_ASSERT(__reserve(sb, 1));
 
-	sb->m_buffer[/*sb->m_head + */sb->m_count] = ch;
+	sb->m_buffer[sb->m_count] = ch;
 	sb->m_count++;
 }
 
 
-void strbuf_append_chars(StringBufferPtr sb, const CHAR *s, size_t n)
+static void __appendChars(CwtStringBufferPtr sb, const CHAR *s, size_t n)
 {
-	CWT_ASSERT(strbuf_reserve(sb, n));
+	CWT_ASSERT(__reserve(sb, n));
 
-	memcpy(sb->m_buffer/* + sb->m_head*/ + sb->m_count, s, n);
+	cwtMemCpy(sb->m_buffer + sb->m_count, s, n);
 	sb->m_count += n;
 }
 
-void strbuf_append(StringBufferPtr sb, const CHAR *s)
+static void __append(CwtStringBufferPtr sb, const CHAR *s)
 {
-	strbuf_append_chars(sb, s, strlen(s));
+	__appendChars(sb, s, cwtStrLen(s));
 }
 
-void strbuf_prepend_char(StringBufferPtr sb, CHAR ch)
+static void __prependChar(CwtStringBufferPtr sb, CHAR ch)
 {
 	CWT_ASSERT(sb);
 
-	CWT_ASSERT(strbuf_lreserve(sb, 1));
-/*	sb->m_head--;*/
+	CWT_ASSERT(__lreserve(sb, 1));
 	sb->m_buffer[0] = ch;
 	sb->m_count++;
 }
 
 
-void strbuf_insert_char(StringBufferPtr sb, CHAR ch, size_t pos)
+static void __insertChar(CwtStringBufferPtr sb, CHAR ch, size_t pos)
 {
 	CWT_ASSERT(sb);
 
-	CWT_ASSERT(strbuf_mreserve(sb, 1, pos));
-	sb->m_buffer[/*sb->m_head + */pos] = ch;
+	CWT_ASSERT(__mreserve(sb, 1, pos));
+	sb->m_buffer[pos] = ch;
 	sb->m_count++;
 }
 
-void strbuf_insert(StringBufferPtr sb, const CHAR *chars, size_t nchars, size_t pos)
+static void __insert(CwtStringBufferPtr sb, const CHAR *chars, size_t nchars, size_t pos)
 {
 	size_t i;
 	CWT_ASSERT(sb);
 
-	CWT_ASSERT(strbuf_mreserve(sb, nchars, pos));
+	CWT_ASSERT(__mreserve(sb, nchars, pos));
 
 	/* TODO replace this code by memcpy function call */
 	for( i = 0; i < nchars; i++ )
-		sb->m_buffer[/*sb->m_head + */pos + i] = chars[i];
+		sb->m_buffer[pos + i] = chars[i];
 	sb->m_count += nchars;
 }
 
-void strbuf_remove_char(StringBufferPtr sb, size_t pos)
+static void __removeChar(CwtStringBufferPtr sb, size_t pos)
 {
 	CWT_ASSERT(sb);
 
@@ -275,7 +344,7 @@ void strbuf_remove_char(StringBufferPtr sb, size_t pos)
 
 	if( pos < sb->m_count ) {
 		sb->m_count--;
-		memmove(&sb->m_buffer[/*sb->m_head + */pos], &sb->m_buffer[/*sb->m_head + */pos + 1], sb->m_count * sizeof(CHAR) );
+		cwtMemMove(&sb->m_buffer[pos], &sb->m_buffer[pos + 1], sb->m_count * sizeof(CHAR) );
 	}
 }
 
@@ -301,22 +370,22 @@ void strbuf_remove(StringBufferPtr sb, size_t nchars, size_t pos)
 
 
 
-const CHAR* strbuf_cstr(StringBufferPtr sb)
+static const CHAR* __cstr(CwtStringBufferPtr sb)
 {
-	strbuf_append_char(sb, '\x0');
+	__appendChar(sb, '\x0');
 	sb->m_count--;
 	return sb->m_buffer;
 }
 
 
-CHAR* strbuf_substr(StringBufferPtr sb, size_t start, size_t nchars)
+static CHAR* __substr(CwtStringBufferPtr sb, size_t start, size_t nchars)
 {
 	CHAR *chars = NULL;
 
 	if( start < sb->m_count ) {
 		nchars = CWT_MIN(nchars, sb->m_count - start);
 		chars = CWT_MALLOCA(CHAR, nchars+1);
-		strncpy(chars, sb->m_buffer/* + sb->m_head*/ + start, nchars);
+		cwtStrNcpy(chars, sb->m_buffer + start, nchars);
 		chars[nchars] = '\x0';
 	}
 
@@ -333,7 +402,7 @@ CHAR* strbuf_substr(StringBufferPtr sb, size_t start, size_t nchars)
  * @param offset starting position
  * @return @c true if found and *offset is set to a valid position, or @c false
  */
-BOOL strbuf_find(StringBufferPtr sb, CHAR ch, size_t *offset)
+static BOOL __find(CwtStringBufferPtr sb, CHAR ch, size_t *offset)
 {
 	CHAR *ptr;
 	size_t off;

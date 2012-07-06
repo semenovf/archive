@@ -24,6 +24,7 @@ typedef struct CwtMySqlStatement {
 	MYSQL_STMT *m_stmt;
 	MYSQL_BIND *m_bind_params;
 	size_t      m_nbind_params;
+	BOOL        m_is_bind; /* TRUE if parameters already bind */
 } *CwtMySqlStatement;
 
 
@@ -59,6 +60,7 @@ static ULONGLONG    __mysqlAffectedRows(CwtDBHandler dbh);
 static void         __mysqlStmtClose(CwtStatement sth);
 static BOOL         __mysqlStmtExecute(CwtStatement sth);
 static BOOL         __mysqlStmtBind(CwtStatement sth, size_t index, CwtTypeId type_id, void *value, size_t *plength);
+static BOOL         __mysqlStmtBindArray(CwtStatement sth, CwtBindEntry bindArray[]);
 static ULONGLONG    __mysqlStmtAffectedRows(CwtStatement sth);
 static CwtDBI_RC    __mysqlStmtErr(CwtStatement sth);
 static const CHAR*  __mysqlStmtErrstr(CwtStatement sth);
@@ -259,7 +261,7 @@ CwtDBHandler __mysqlConnect(const CHAR *driverDSN, const CHAR *username, const C
         dbh->__base.query          = __mysqlQuery;
         dbh->__base.queryBin       = __mysqlQueryBin;
         dbh->__base.prepare        = __mysqlPrepare;
-        dbh->__base.nrows          = __mysqlAffectedRows;
+        dbh->__base.rows          = __mysqlAffectedRows;
 
         dbh->m_conn = conn;
         dbh->m_auto_commit = TRUE;
@@ -643,16 +645,18 @@ static CwtStatement __mysqlPrepare(CwtDBHandler dbh, const CHAR *stmt_str)
 	nbind_params = mysql_stmt_param_count(stmt);
 
 	sth = CWT_MALLOC(struct CwtMySqlStatement);
-	sth->__base.close   = __mysqlStmtClose;
-	sth->__base.execute = __mysqlStmtExecute;
-	sth->__base.err     = __mysqlStmtErr;
-	sth->__base.errstr  = __mysqlStmtErrstr;
-	sth->__base.bind    = __mysqlStmtBind;
-	sth->__base.nrows   = __mysqlStmtAffectedRows;
+	sth->__base.close     = __mysqlStmtClose;
+	sth->__base.execute   = __mysqlStmtExecute;
+	sth->__base.err       = __mysqlStmtErr;
+	sth->__base.errstr    = __mysqlStmtErrstr;
+	sth->__base.bind      = __mysqlStmtBind;
+	sth->__base.bindArray = __mysqlStmtBindArray;
+	sth->__base.rows      = __mysqlStmtAffectedRows;
 
 	sth->m_stmt = stmt;
 	sth->m_bind_params  = NULL;
 	sth->m_nbind_params = nbind_params;
+	sth->m_is_bind      = FALSE;
 
 	if( nbind_params > 0UL ) {
 		sth->m_bind_params = CWT_MALLOCA(MYSQL_BIND, nbind_params);
@@ -734,15 +738,63 @@ static BOOL __mysqlStmtBind(CwtStatement sth, size_t index, CwtTypeId type_id, v
 }
 
 
+static BOOL __mysqlStmtBindArray(CwtStatement sth, CwtBindEntry bindArray[])
+{
+	CwtMySqlStatement msth = (CwtMySqlStatement)sth;
+	size_t i;
+
+	CWT_ASSERT(sth);
+
+	for( i = 0; i < msth->m_nbind_params; i++ ) {
+		if( !__mysqlStmtBind(sth, i, bindArray[i].type_id, bindArray[i].value, bindArray[i].plength) )
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+/*
+ * TODO
+ *
+ * In case when between statement executions occurred lost connection with server,
+ * the connection will recovered gracefully, but stmt will no-longer
+ * be valid after the call - most likely causing you a segfault
+ * if you try to do anything with it. The code below resolves this problem
+ *
+ * block
+ *   int __dbi_stmt_execute_ntries__ = 5;
+ *   	while( __dbi_stmt_execute_ntries__-- )
+ *   		sth = dbh->prepare();
+ *   		sth->bind()
+ *   		sth->bind()
+ *   		...
+ *   		sth->bind()
+ *
+ *   		if( !sth->execute() && stmt->err == CR_SERVER_LOST ) {
+ *   			sth->close();
+ *   			continue;
+ *   		}
+ *
+ *   		break;
+ *   	end while
+ *   end block
+ *
+ * Source: http://dev.mysql.com/doc/refman/5.6/en/mysql-stmt-execute.html
+ *
+ */
+
 static BOOL __mysqlStmtExecute(CwtStatement sth)
 {
 	CwtMySqlStatement msth = (CwtMySqlStatement)sth;
 
 	CWT_ASSERT(sth);
 
-	if (mysql_stmt_bind_param(__STH(sth), msth->m_bind_params) != 0 ) {
-		printf_error( __LOG_PREFIX "bind parameters failed: %s\n", mysql_stmt_error(__STH(sth)));
-		return FALSE;
+	if( !msth->m_is_bind ) {
+		if( mysql_stmt_bind_param(__STH(sth), msth->m_bind_params) != 0 ) {
+			printf_error( __LOG_PREFIX "bind parameters failed: %s\n", mysql_stmt_error(__STH(sth)));
+			return FALSE;
+		}
+		msth->m_is_bind = TRUE;
 	}
 
 	if( mysql_stmt_execute(__STH(sth)) != 0 ) {

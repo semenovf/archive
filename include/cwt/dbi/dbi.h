@@ -39,13 +39,20 @@ typedef struct CwtSqlTimeStamp {
 } CwtSqlTimeStamp;
 
 
+typedef struct CwtBindEntry {
+	CwtTypeId type_id;
+	void *value;
+	size_t *plength;
+} CwtBindEntry;
+
 typedef struct CwtStatementBase {
 	void        (*close)(struct CwtStatementBase*);
 	BOOL        (*execute)(struct CwtStatementBase*);
 	CwtDBI_RC   (*err)(struct CwtStatementBase*);
 	const CHAR* (*errstr)(struct CwtStatementBase*);
 	BOOL        (*bind)(struct CwtStatementBase*, size_t index, CwtTypeId type_id, void *value, size_t *plength);
-	ULONGLONG   (*nrows)(struct CwtStatementBase*);
+	BOOL        (*bindArray)(struct CwtStatementBase*, CwtBindEntry bindArray[]);
+	ULONGLONG   (*rows)(struct CwtStatementBase*);
 } *CwtStatement;
 
 typedef struct CwtDBHandlerBase
@@ -61,7 +68,7 @@ typedef struct CwtDBHandlerBase
 	BOOL         (*query)(struct CwtDBHandlerBase*, const CHAR *sql);   /* cannot be used for statements that contain binary data */
 	BOOL         (*queryBin)(struct CwtDBHandlerBase*, const CHAR *sql, size_t length); /* can be used for statements that contain binary data */
 	CwtStatement (*prepare)(struct CwtDBHandlerBase*, const CHAR *sql);
-	ULONGLONG    (*nrows)(struct CwtDBHandlerBase*);
+	ULONGLONG    (*rows)(struct CwtDBHandlerBase*);
 
 	/*INT32       (*doStatement)(struct CwtDBHandlerBase*);*/
 } *CwtDBHandler;

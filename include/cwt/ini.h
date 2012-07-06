@@ -33,7 +33,7 @@ typedef struct CwtIniHandlerBase {
 
 typedef struct CwtIniRule {
 	const CHAR *cmd;
-	int argc;
+	int min_argc;
 	void (*callback)(CWT_INI_DECL_ARGS);
 } CwtIniRule;
 

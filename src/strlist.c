@@ -299,21 +299,24 @@ void cwtStringListSplitAny(CwtStringListPtr sl, const CHAR *str, const CHAR *del
  */
 CHAR* cwtStringListCatDelim(CwtStringListPtr sl, const CHAR *delim)
 {
-	StringBufferPtr sbuf;
+	CwtStringBufferNS *sbns = cwtStringBufferNS();
+	CwtStringBufferPtr sbuf;
 	CHAR *str;
 	CwtStringListIterator it;
 
-	sbuf = strbuf_new_defaults();
+
+	sbuf = sbns->create();
 
 	cwtStringListBegin(sl, &it);
+
 	while(cwtStringListHasMore(&it)) {
-		if( delim && strbuf_length(sbuf) > 0 )
-			strbuf_append(sbuf, delim);
-		strbuf_append(sbuf, (CHAR*)cwtStringListNext(&it));
+		if( delim && sbns->length(sbuf) > 0 )
+			sbns->append(sbuf, delim);
+		sbns->append(sbuf, (CHAR*)cwtStringListNext(&it));
 	}
 
-	str = cwtStrDup(strbuf_cstr(sbuf));
-	strbuf_delete(sbuf);
+	str = cwtStrDup(sbns->cstr(sbuf));
+	sbns->free(sbuf);
 
 	return str;
 }

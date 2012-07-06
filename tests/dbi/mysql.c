@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(19);
+	CWT_BEGIN_TESTS(25);
 
 	cwtDBIParseDSN(__dsn_with_flags, &scheme, &driver, &driverDSN);
 	CWT_TEST_OK(cwtStrEq("DBI", scheme));
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 	CWT_FREE(driverDSN);
 
 	dbh = cwtDBIConnect(__dsn_with_flags, __username, __password);
-	CWT_TEST_FAIL(dbh);
+	CWT_TEST_FAIL2(dbh, "May be you forgot to start MySQL service?");
 
 /* Attributes of database handle */
 	dbh->attr(dbh, "hostinfo",      (void*)&__hostinfo);
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 	str_length = cwtStrLen(str_data);
 
 	CWT_TEST_FAIL(sth->execute(sth));
-	CWT_TEST_OK(sth->nrows(sth) == 1UL);
+	CWT_TEST_OK(sth->rows(sth) == 1UL);
 
 	CWT_TEST_OK(dbh->err(dbh) == 0);
 
