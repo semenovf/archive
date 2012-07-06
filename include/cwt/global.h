@@ -1,0 +1,242 @@
+#ifndef __CWT_GLOBAL_H__
+#define __CWT_GLOBAL_H__
+
+#include <stdlib.h>
+
+#ifdef __BORLANDC__
+#	define CWT_CC_BORLAND
+#endif
+
+/* Watcom C compiler */
+#ifdef __WATCOMC__
+#	define CWT_CC_WATCOM
+#endif
+
+/* Microsoft C compiler */
+#ifdef _MSC_VER
+#   define WIN32_LEAN_AND_MEAN
+#	include <windows.h>
+#	define CWT_CC_MSC
+#endif
+
+#if defined(MSDOS) || defined(__MSDOS__) || defined(_MSDOS) || defined(__DOS__)
+#	define CWT_OS_DOS
+#endif
+
+#if defined(linux) && linux
+#	define CWT_OS_LINUX
+#endif
+
+#if (defined(unix) && unix) || defined(CWT_OS_LINUX)
+#	define CWT_OS_UNIX
+#endif
+
+#if defined(_UNICODE) || defined(UNICODE)
+#	define CWT_UNICODE
+#endif
+
+#if defined(_WIN32) || defined(WIN32)
+#	define CWT_WIN32
+#endif
+
+
+/* http://support.microsoft.com/default.aspx?scid=KB;EN-US;168958 */
+#ifdef DLL_API
+#	undef DLL_API
+#endif
+#if defined(CWT_CC_MSC)
+#	define DLL_API_EXPORT __declspec(dllexport)
+#	define DLL_API_IMPORT __declspec(dllimport)
+#	ifdef DLL_EXPORTS
+#		define DLL_API DLL_API_EXPORT
+#    	define DLL_TEMPLATE
+#	else
+#		define DLL_API DLL_API_IMPORT
+#    	define DLL_TEMPLATE extern
+#	endif
+/*#	define _UNICODE*/
+#else
+#	define DLL_API_EXPORT
+#	define DLL_API_IMPORT
+#	define DLL_API
+#	define DLL_TEMPLATE
+#endif
+
+
+#ifdef EXTERN_C_BEGIN
+#	undef EXTERN_C_BEGIN
+#endif
+#ifdef __cplusplus
+#	ifndef	EXTERN_C_BEGIN
+#		define EXTERN_C_BEGIN extern "C" {
+#	endif
+#	define EXTERN_C_END }
+#else
+#	ifndef	EXTERN_C_BEGIN
+#		define EXTERN_C_BEGIN
+#	endif
+#	define EXTERN_C_END
+#endif
+
+/* TODO depricated */
+#ifdef __cplusplus
+#	define CWT_NS_BEGIN          namespace jq {
+#	define CWT_NS_END            }
+#	define CWT_NS_PREFIXED(name) jq::name
+#else
+#	define CWT_NS_BEGIN
+#	define CWT_NS_END
+#	define CWT_NS_PREFIXED(name) name
+#endif
+
+#ifdef __cplusplus
+#	define CWT_NS_BEGIN          namespace cwt {
+#	define CWT_NS_END            }
+#	define CWT_NS_PREFIXED(name) cwt::name
+#else
+#	define CWT_NS_BEGIN
+#	define CWT_NS_END
+#	define CWT_NS_PREFIXED(name) name
+#endif
+
+
+#if defined(_MSC_VER)/* && defined(__cplusplus)*/
+/* for suppressing warning 'C4996' in MSVC
+ * warning : 'posix_name': The POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name: _posix_name. See online help for details.
+ */
+#	define CWT_ISO_CPP_NAME(posix_name) _##posix_name
+#else
+#	define CWT_ISO_CPP_NAME(posix_name) posix_name
+#endif
+
+
+#define WORD_LOW_BYTE(WORD) ((char)((WORD)&0x00FF))
+#define WORD_HI_BYTE(WORD)  ((char)(((WORD)>>8)&0x00FF))
+
+
+#ifdef CWT_CC_WATCOM
+#   ifndef inportb
+#       include <conio.h>
+#       define inportb inp
+#       define outportb outp
+#   endif
+#   define getvect _dos_getvect
+#   define setvect _dos_setvect
+#   define enable  _enable
+#   define disable _disable
+#	define bioskey _bios_keybrd
+#endif
+
+#undef __interrupt__
+#ifdef CWT_CC_BORLAND
+#	define __interrupt__ void interrupt
+#else
+#	define __interrupt__ void
+#endif
+
+/* Признак строки, поддерживающей i18n */
+#ifdef CWT_USE_GNU_GETTEXT
+#	include <libintl.h>
+#	define _T(s)         s
+#	define _Trc(s)       s
+#	define _Tr(s)        gettext (s)
+#	define _Trn(s1,s2,n) ngettext (s1, s2, n)
+#else
+#	define _T(s)   s
+#	define _Trc(s) s
+#	define _Tr(s)  s
+#	define _Trn(s) s
+#endif
+
+
+#ifdef CWT_UNICODE
+/*
+#	define _T(s)  L##s
+#	define _Tr(s)  jq::String().fromUtf8(s)
+*/
+#	define _WIDEN(x) _T(x) /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
+#	define _TFILE_ _WIDEN(__FILE__)
+#else
+/*
+#	define _T(s)  s
+#	define _Tr(s) s
+*/
+#	define _TFILE_	__FILE__
+#endif
+
+
+
+/*
+#ifndef CWT_ASSERT
+#	include <assert.h>
+#	define CWT_ASSERT(exp) assert(exp)
+#	define CWT_ASSERT_TRACE(exp,trace_exp) if( !exp ) { trace_exp; assert(exp); }
+#endif
+*/
+
+#define CWT_MIN(a,b)  (((a) < (b)) ? (a) : (b))
+#define CWT_MAX(a,b)  (((a) > (b)) ? (a) : (b))
+
+#ifndef NDEBUG
+#	define CWT_FPRINT(stream,prefix,str) _std_fprintf(stream, _Tr("%s (%s[%d]): %s\n"), prefix, _TFILE_, __LINE__, str)
+#	define CWT_PRINT(prefix,str) CWT_FPRINT(stdout,prefix,str)
+#	define CWT_TRACE(str) CWT_FPRINT(stdout,_Tr("TRACE"),str)
+#	define CWT_INFO(str) CWT_FPRINT(stdout,_Tr("INFO"),str)
+#	define CWT_WARN(str) CWT_FPRINT(stderr,_Tr("WARN"),str)
+#	define CWT_ERROR(str) CWT_FPRINT(stderr,_Tr("ERROR"),str)
+#	define CWT_FATAL(str) { CWT_FPRINT(stderr,_Tr("FATAL"),str); abort(); }
+#	include <assert.h>
+#	define CWT_ASSERT(p) assert(p)
+#   ifndef _ENDL
+#		define _ENDL "\n"
+# 	 endif
+
+#	if defined(__GRAPHICS_H) && defined(CWT_CC_BORLAND)
+#		define CWT_ASSERT_TRACE(p,trace_exp) if( !(p) ) { (void)trace_exp; \
+			(void) __assertfail( \
+					_Tr("Assertion failed: %s, file %s, line %d") _ENDL, \
+                    #p, __FILE__, __LINE__ ); }
+#	elif defined(__dj_include_assert_h_)
+#		define CWT_ASSERT_TRACE(p,trace_exp) if( !(p) ) { (void)trace_exp; \
+			(void) __dj_assert(#p,__FILE__,__LINE__); }
+#	else
+#		define CWT_ASSERT_TRACE(p,trace_exp) if( !(p) ) { (void)trace_exp; assert(p); }
+#	endif
+
+#else
+#	define CWT_FPRINT(stream,prefix,str)
+#	define CWT_PRINT(prefix,str)
+#	define CWT_TRACE(str)
+#	define CWT_INFO(str)
+#	define CWT_WARN(str)
+#	define CWT_ERROR(str)
+#	define CWT_FATAL(str)
+#	define CWT_ASSERT(exp)
+#	define CWT_ASSERT_TRACE(exp,trace_exp)
+
+#endif /* !NDEBUG */
+
+#if !defined(__cplusplus)
+#	if !defined(inline)
+#		define inline __inline
+#	endif
+#endif
+
+#define CWT_UNUSED(x) ((void)(x))
+
+#ifndef NDEBUG
+EXTERN_C_BEGIN
+DLL_API_EXPORT void* cwtMalloc(size_t size);
+DLL_API_EXPORT void  cwtFree(void*);
+EXTERN_C_END
+#else
+#	define cwtMalloc malloc
+#	define cwtFree   free
+#endif
+
+#define CWT_MALLOC(T)     ((T*)cwtMalloc(sizeof(T)))
+#define CWT_MALLOCA(T,sz) ((T*)cwtMalloc(sizeof(T)*(sz)))
+#define CWT_FREE(v)       cwtFree(v)
+
+#endif /* __CWT_GLOBAL_H__ */
+
