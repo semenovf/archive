@@ -1,9 +1,14 @@
 .settings/
+debug/
+release/
 
 # Compiled Object files
 *.slo
 *.lo
 *.o
+*.obj
+*.pdb
+*.idb
 
 # Compiled Dynamic libraries
 *.so
