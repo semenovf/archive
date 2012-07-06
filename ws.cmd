@@ -24,6 +24,7 @@ cd %PROJECT%
 mkdir .qmake
 mkdir .msvc
 mkdir include
+mkdir src
 mkdir tests
 
 cd include 
