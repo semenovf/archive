@@ -16,7 +16,7 @@
 static HashTable *__cwt_color_table = NULL;
 
 static struct {
-	const CHAR *name;
+	const CWT_CHAR *name;
 	Cwt_Color color;
 } __cwt_color_names[] = {
 	  { "Transparent",          CWT_Transparent          }
@@ -180,7 +180,7 @@ void _cwt_colorx_init(void)
 
 	n = sizeof(__cwt_color_names)/sizeof(__cwt_color_names[0]);
 	for( i = 0; i < n; i++  ) {
-		CHAR *key = cwtStrDup(__cwt_color_names[i].name);
+		CWT_CHAR *key = cwtStrDup(__cwt_color_names[i].name);
 		str_tolower(key, key, cwtStrLen(key));
 		CWT_ASSERT(hash_table_insert(__cwt_color_table
 			, key, &__cwt_color_names[i].color));
@@ -194,9 +194,9 @@ void _cwt_colorx_release(void)
 }
 
 
-Cwt_Color cwt_stylex_colorByName(const CHAR *name)
+Cwt_Color cwt_stylex_colorByName(const CWT_CHAR *name)
 {
-	CHAR *key;
+	CWT_CHAR *key;
 	Cwt_Color *pcolor;
 
 	CWT_ASSERT(name);
@@ -226,7 +226,7 @@ Cwt_Color cwt_stylex_colorByName(const CHAR *name)
  * @param pval
  * @return
  */
-BOOL cwt_stylex_parseColor(const CHAR *str, Cwt_Color *pcolor)
+BOOL cwt_stylex_parseColor(const CWT_CHAR *str, Cwt_Color *pcolor)
 {
 	BOOL ok = FALSE;
 	Cwt_Color color;

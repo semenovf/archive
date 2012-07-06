@@ -94,7 +94,7 @@ static void _serialport_read_byte(int portnum)
 		return;
 	}
 
-	rb_put(__SP_CONTEXT[portindex].msr, (CHAR)COMGetModemStatus(portindex));
+	rb_put(__SP_CONTEXT[portindex].msr, (CWT_CHAR)COMGetModemStatus(portindex));
 }
 END_OF_FUNCTION(_serialport_read_byte)
 

@@ -145,7 +145,7 @@ void _cwt_render_button(CWT_WIDGET_PTR widget)
 	}
 }
 
-void cwt_button_set_text(CWT_WIDGET_PTR widget, const CHAR *text)
+void cwt_button_set_text(CWT_WIDGET_PTR widget, const CWT_CHAR *text)
 {
 	CWT_BUTTON_PTR button = (CWT_BUTTON_PTR)widget;
 
@@ -172,7 +172,7 @@ void cwt_button_set_painter(CWT_WIDGET_PTR widget, void (*painter)(CWT_WIDGET_PT
 }
 
 
-CHAR* cwt_button_text(CWT_WIDGET_PTR widget)
+CWT_CHAR* cwt_button_text(CWT_WIDGET_PTR widget)
 {
 	CWT_BUTTON_PTR button = (CWT_BUTTON_PTR)widget;
 

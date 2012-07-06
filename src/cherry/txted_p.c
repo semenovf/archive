@@ -90,7 +90,7 @@ void _cwt_delete_textdoc(CwtTextDocumentPtr doc)
  * @param len text length
  * @param pos insertion position
  */
-void _cwt_textdoc_insert_plaintext(CwtTextDocumentPtr doc, const CHAR *text, size_t len, size_t pos)
+void _cwt_textdoc_insert_plaintext(CwtTextDocumentPtr doc, const CWT_CHAR *text, size_t len, size_t pos)
 {
 	JQ_UNUSED(doc);
 	JQ_UNUSED(text) ;
@@ -167,7 +167,7 @@ void _cwt_textdoc_insert_plaintext(CwtTextDocumentPtr doc, const CHAR *text, siz
 }
 
 
-void _cwt_textdoc_set_plaintext(CwtTextDocumentPtr doc, const CHAR *text, size_t len)
+void _cwt_textdoc_set_plaintext(CwtTextDocumentPtr doc, const CWT_CHAR *text, size_t len)
 {
 	JQ_ASSERT(doc);
 	JQ_ASSERT(text);

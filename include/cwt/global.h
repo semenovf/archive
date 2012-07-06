@@ -17,6 +17,7 @@
 #   define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
 #	define CWT_CC_MSC
+#	define CWT_OS_WIN
 #endif
 
 #if defined(MSDOS) || defined(__MSDOS__) || defined(_MSDOS) || defined(__DOS__)
@@ -135,36 +136,20 @@
 #endif
 
 /* Признак строки, поддерживающей i18n */
+#if 0
 #ifdef CWT_USE_GNU_GETTEXT
 #	include <libintl.h>
-#	define _T(s)         s
+/*#	define _T(s)         s*/
 #	define _Trc(s)       s
 #	define _Tr(s)        gettext (s)
 #	define _Trn(s1,s2,n) ngettext (s1, s2, n)
 #else
-#	define _T(s)   s
+/*#	define _T(s)   s*/
 #	define _Trc(s) s
 #	define _Tr(s)  s
 #	define _Trn(s) s
 #endif
-
-
-#ifdef CWT_UNICODE
-/*
-#	define _T(s)  L##s
-#	define _Tr(s)  jq::String().fromUtf8(s)
-*/
-#	define _WIDEN(x) _T(x) /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
-#	define _TFILE_ _WIDEN(__FILE__)
-#else
-/*
-#	define _T(s)  s
-#	define _Tr(s) s
-*/
-#	define _TFILE_	__FILE__
 #endif
-
-
 
 /*
 #ifndef CWT_ASSERT

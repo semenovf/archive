@@ -129,12 +129,12 @@ BOOL cwt_checkbox_checked(CWT_WIDGET_PTR widget)
 	return CWT_CAST(widget, CWT_CHECKBOX_PTR)->checked;
 }
 
-void cwt_checkbox_set_text(CWT_WIDGET_PTR widget, const CHAR *text)
+void cwt_checkbox_set_text(CWT_WIDGET_PTR widget, const CWT_CHAR *text)
 {
 	cwt_button_set_text(widget, text);
 }
 
-CHAR* cwt_checkbox_text(CWT_WIDGET_PTR widget)
+CWT_CHAR* cwt_checkbox_text(CWT_WIDGET_PTR widget)
 {
 	return cwt_button_text(widget);
 }

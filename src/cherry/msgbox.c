@@ -15,7 +15,7 @@ static void _on_btn_cancel(CWT_WIDGET_PTR w);
 static void _on_btn_yes(CWT_WIDGET_PTR w);
 static void _on_btn_no(CWT_WIDGET_PTR w);
 
-static const CHAR* __BUTTON_CAPTIONS[] = {
+static const CWT_CHAR* __BUTTON_CAPTIONS[] = {
 	  "Ok"
 	, "Cancel"
 	, "Yes"
@@ -184,11 +184,11 @@ void _cwt_render_msgbox(CWT_WIDGET_PTR widget)
  * @param widget
  * @param msg
  */
-void cwt_msgbox_set_msg(CWT_WIDGET_PTR widget, const CHAR* msg)
+void cwt_msgbox_set_msg(CWT_WIDGET_PTR widget, const CWT_CHAR* msg)
 {
 	if( msg ) {
 		CWT_WIDGET_PTR label;
-		const CHAR *ptr = msg;
+		const CWT_CHAR *ptr = msg;
 		StringBufferPtr sb;
 
 		sb = strbuf_new_defaults();

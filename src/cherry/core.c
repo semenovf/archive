@@ -283,7 +283,7 @@ void _cwt_get_line_style(int *style, unsigned int *pattern, int *thickness)
 		*thickness = lst.thickness;
 }
 
-void _cwt_outtext_xy(int left, int top, const CHAR* text)
+void _cwt_outtext_xy(int left, int top, const CWT_CHAR* text)
 {
 	/* top - <correction> for valid positioning of text */
 #if defined(TEXT_CORRECTION_DIR) && TEXT_CORRECTION_DIR
@@ -296,11 +296,11 @@ void _cwt_outtext_xy(int left, int top, const CHAR* text)
 }
 
 #if 0
-void _cwt_outtext_xy_n(int left, int top, const CHAR* text, int n)
+void _cwt_outtext_xy_n(int left, int top, const CWT_CHAR* text, int n)
 {
 	if( text && n > 0 ) {
 		CWT_FONT font;
-		CHAR *text_pie = jq_strndup(text, (size_t)n);
+		CWT_CHAR *text_pie = jq_strndup(text, (size_t)n);
 
 		/* top - <correction> for valid positioning of text */
 #if USE_TEXT_CORRECTION
@@ -334,7 +334,7 @@ void _cwt_layout_box(CWT_RECT *bounds, CWT_RECT *rect, UINT16 align)
 	else if( align & CWT_VALIGN_CENTER ) rect->top = bounds->top +(bounds->height - rect->height)/2;
 }
 
-void _cwt_outtext_box(const CHAR* text, CWT_RECT *bounds, CWT_FONT* font, UINT16 align, CWT_COLOR color, CWT_COLOR bgcolor)
+void _cwt_outtext_box(const CWT_CHAR* text, CWT_RECT *bounds, CWT_FONT* font, UINT16 align, CWT_COLOR color, CWT_COLOR bgcolor)
 {
 	CWT_SIZE sz;
 	CWT_RECT rect;
@@ -355,7 +355,7 @@ void _cwt_outtext_box(const CHAR* text, CWT_RECT *bounds, CWT_FONT* font, UINT16
 	_cwt_outtext_xy(rect.left, rect.top, text);
 }
 
-void _cwt_outtext(const CHAR* text)
+void _cwt_outtext(const CWT_CHAR* text)
 {
 	outtext(text);
 }
@@ -418,10 +418,10 @@ void _cwt_set_textjustify(UINT16 align)
  * @param width
  * @param height
  */
-void _cwt_text_size_wh(const CWT_FONT *font, const CHAR *text, int *width, int *height)
+void _cwt_text_size_wh(const CWT_FONT *font, const CWT_CHAR *text, int *width, int *height)
 {
 	CWT_FONT tmp_font;
-	const CHAR* t = "Wj";
+	const CWT_CHAR* t = "Wj";
 
 	if( font ) {
 		_cwt_get_font(&tmp_font); /* save font */
@@ -440,20 +440,20 @@ void _cwt_text_size_wh(const CWT_FONT *font, const CHAR *text, int *width, int *
 		_cwt_set_font(&tmp_font); /* restore font */
 }
 
-void _cwt_text_size(const CWT_FONT *font, const CHAR *text, CWT_SIZE *psize)
+void _cwt_text_size(const CWT_FONT *font, const CWT_CHAR *text, CWT_SIZE *psize)
 {
 	JQ_ASSERT(psize);
 	_cwt_text_size_wh(font, text, &psize->width, &psize->height);
 }
 
-int _cwt_text_width(const CWT_FONT *font, const CHAR *text)
+int _cwt_text_width(const CWT_FONT *font, const CWT_CHAR *text)
 {
 	int width;
 	_cwt_text_size_wh(font, text, &width, NULL);
 	return width;
 }
 
-int _cwt_text_height(const CWT_FONT *font, const CHAR *text)
+int _cwt_text_height(const CWT_FONT *font, const CWT_CHAR *text)
 {
 	int height;
 	if( !text )

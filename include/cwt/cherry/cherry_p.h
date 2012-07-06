@@ -90,7 +90,7 @@ struct CWT_INPUT
 	size_t start_pos;            /* start position (start character ) */
 	size_t pos;                  /* current position (current character) */
 	size_t limit;
-	BOOL (*validate)(const CHAR*);
+	BOOL (*validate)(const CWT_CHAR*);
 };
 typedef struct CWT_INPUT CWT_INPUT;
 typedef struct CWT_INPUT* CWT_INPUT_PTR;
@@ -113,7 +113,7 @@ struct CWT_SPINBOX_ITEM
 {
 	DListNode base;
 	UINT16 id;
-	CHAR *text;
+	CWT_CHAR *text;
 };
 typedef struct CWT_SPINBOX_ITEM CWT_SPINBOX_ITEM;
 
@@ -196,7 +196,7 @@ void _cwt_widget_focus_out(CwtWidgetPtr widget);
 void _cwt_widget_focus_in(CwtWidgetPtr widget, CWT_FOCUS_REASON reason);
 
 /*BOOL _cwt_widget_has_focused(CwtWidgetPtr widget);*/
-void _cwt_widget_dump(CwtWidgetPtr widget, const CHAR* prefix);
+void _cwt_widget_dump(CwtWidgetPtr widget, const CWT_CHAR* prefix);
 
 void _cwt_widget_change_state(CwtWidgetPtr widget, CWT_STATE state);
 BOOL _cwt_handle_events(CWT_EVENT_PTR evt);
@@ -234,9 +234,9 @@ CWT_TEXTBLK_PTR _cwt_clone_textblk(CWT_TEXTBLK_PTR orig, CWT_TEXTBLK_PTR clone);
 void _cwt_render_textblk(CWT_TEXTBLK_PTR tb, CWT_SIZE *sz);
 void _cwt_size_min_textblk(CWT_TEXTBLK_PTR tb, CWT_SIZE *sz);
 void _cwt_textblk_clear(CWT_TEXTBLK_PTR tb);
-void _cwt_textblk_append_text(CWT_TEXTBLK_PTR tb, const CHAR *text);
-void _cwt_textblk_prepend_text(CWT_TEXTBLK_PTR tb, const CHAR *text);
-void _cwt_textblk_set_text(CWT_TEXTBLK_PTR tb, const CHAR *text);
+void _cwt_textblk_append_text(CWT_TEXTBLK_PTR tb, const CWT_CHAR *text);
+void _cwt_textblk_prepend_text(CWT_TEXTBLK_PTR tb, const CWT_CHAR *text);
+void _cwt_textblk_set_text(CWT_TEXTBLK_PTR tb, const CWT_CHAR *text);
 void _cwt_textblk_remove_first(CWT_TEXTBLK_PTR tb);
 void _cwt_textblk_remove_last(CWT_TEXTBLK_PTR tb);
 void _cwt_textblk_scroll_top(CWT_TEXTBLK_PTR tb);

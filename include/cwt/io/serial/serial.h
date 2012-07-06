@@ -68,8 +68,8 @@ typedef enum CwtSerialParity {
 #define cwtSerialFlushRx          serialport_flush_rx
 #define cwtSerialCarrierDetected  serialport_carrier_detected
 
-DLL_API_EXPORT const CHAR* serialport_strerror(CwtSerialRC rc);
-DLL_API_EXPORT const CHAR* serialport_parity_str(CwtSerialParity parity);
+DLL_API_EXPORT const CWT_CHAR* serialport_strerror(CwtSerialRC rc);
+DLL_API_EXPORT const CWT_CHAR* serialport_parity_str(CwtSerialParity parity);
 DLL_API_EXPORT void serialport_dump(int portnum);
 DLL_API_EXPORT CwtSerialRC serialport_init(void);
 DLL_API_EXPORT void serialport_release(void);

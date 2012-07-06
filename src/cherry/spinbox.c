@@ -282,7 +282,7 @@ void _cwt_render_spinbox(CWT_WIDGET_PTR widget)
 }
 
 
-void cwt_spinbox_add_item(CWT_WIDGET_PTR widget, UINT16 id, const CHAR* text)
+void cwt_spinbox_add_item(CWT_WIDGET_PTR widget, UINT16 id, const CWT_CHAR* text)
 {
 	CWT_SPINBOX_PTR spb = CWT_CAST(widget, CWT_SPINBOX_PTR);
 	CWT_SPINBOX_ITEM *item = JQ_MALLOC(CWT_SPINBOX_ITEM);
@@ -306,7 +306,7 @@ void cwt_spinbox_add_item(CWT_WIDGET_PTR widget, UINT16 id, const CHAR* text)
  * @param widget SpinBox widget
  * @return current item's text
  */
-const CHAR* cwt_spinbox_text(CWT_WIDGET_PTR widget)
+const CWT_CHAR* cwt_spinbox_text(CWT_WIDGET_PTR widget)
 {
 	CWT_SPINBOX_PTR spb = CWT_CAST(widget, CWT_SPINBOX_PTR);
 	JQ_ASSERT(widget);

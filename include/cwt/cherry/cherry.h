@@ -313,20 +313,20 @@ void cwt_dialog_set_hook(CwtWidgetPtr dialog, void (*hook)(CwtWidgetPtr));
 
 
 /* Label */
-void cwt_label_set_text(CwtWidgetPtr widget, const CHAR *text);
+void cwt_label_set_text(CwtWidgetPtr widget, const CWT_CHAR *text);
 const StringListPtr cwt_label_text(CwtWidgetPtr widget);
 
 /* Button */
-void cwt_button_set_text(CwtWidgetPtr widget, const CHAR *text);
+void cwt_button_set_text(CwtWidgetPtr widget, const CWT_CHAR *text);
 void cwt_button_set_painter(CwtWidgetPtr widget, void (*painter)(CwtWidgetPtr));
-CHAR* cwt_button_text(CwtWidgetPtr widget);
+CWT_CHAR* cwt_button_text(CwtWidgetPtr widget);
 void* cwt_button_painter(CwtWidgetPtr widget);
 
 /* TextView */
 void cwt_textview_clear(CwtWidgetPtr widget);
-void cwt_textview_prepend_text(CwtWidgetPtr widget, const CHAR *text);
-void cwt_textview_append_text(CwtWidgetPtr widget, const CHAR *text);
-void cwt_textview_set_text(CwtWidgetPtr widget, const CHAR *text);
+void cwt_textview_prepend_text(CwtWidgetPtr widget, const CWT_CHAR *text);
+void cwt_textview_append_text(CwtWidgetPtr widget, const CWT_CHAR *text);
+void cwt_textview_set_text(CwtWidgetPtr widget, const CWT_CHAR *text);
 void cwt_textview_remove_first(CwtWidgetPtr widget);
 void cwt_textview_remove_last(CwtWidgetPtr widget);
 void cwt_textview_scroll_top(CwtWidgetPtr widget);
@@ -338,9 +338,9 @@ CwtTextBlkPtr cwt_reachview_prepend_block(CwtWidgetPtr widget);
 CwtTextBlkPtr cwt_reachview_append_block(CwtWidgetPtr widget);
 
 /* Input */
-void cwt_input_set_text(CwtWidgetPtr widget, const CHAR *text);
-const CHAR* cwt_input_text(CwtWidgetPtr widget);
-void cwt_input_set_validator(CwtWidgetPtr widget, BOOL (*validate)(const CHAR*));
+void cwt_input_set_text(CwtWidgetPtr widget, const CWT_CHAR *text);
+const CWT_CHAR* cwt_input_text(CwtWidgetPtr widget);
+void cwt_input_set_validator(CwtWidgetPtr widget, BOOL (*validate)(const CWT_CHAR*));
 void cwt_input_set_limit(CwtWidgetPtr widget, int limit);
 
 /* Checkbox */
@@ -348,13 +348,13 @@ void cwt_checkbox_set_checked_style(CwtWidgetPtr widget, CwtStylePtr style);
 void cwt_checkbox_set_checked(CwtWidgetPtr widget, BOOL checked);
 BOOL cwt_checkbox_checked(CwtWidgetPtr widget);
 void cwt_checkbox_toggle(CwtWidgetPtr widget);
-void cwt_checkbox_set_text(CwtWidgetPtr widget, const CHAR *text);
-CHAR* cwt_checkbox_text(CwtWidgetPtr widget);
+void cwt_checkbox_set_text(CwtWidgetPtr widget, const CWT_CHAR *text);
+CWT_CHAR* cwt_checkbox_text(CwtWidgetPtr widget);
 
 
 /* SpinBox */
-void cwt_spinbox_add_item(CwtWidgetPtr widget, UINT16 id, const CHAR* text);
-const CHAR* cwt_spinbox_text(CwtWidgetPtr widget);
+void cwt_spinbox_add_item(CwtWidgetPtr widget, UINT16 id, const CWT_CHAR* text);
+const CWT_CHAR* cwt_spinbox_text(CwtWidgetPtr widget);
 UINT16 cwt_spinbox_id(CwtWidgetPtr widget);
 
 /* Menu */
@@ -400,6 +400,6 @@ void cwt_canvas_set_painter(CwtWidgetPtr w, void (*painter)(CwtWidgetPtr));
 void* cwt_canvas_painter(CwtWidgetPtr w);
 
 /* MsgBox */
-void cwt_msgbox_set_msg(CwtWidgetPtr widget, const CHAR* msg);
+void cwt_msgbox_set_msg(CwtWidgetPtr widget, const CWT_CHAR* msg);
 void cwt_msgbox_set_buttons(CwtWidgetPtr widget, UINT16 buttons, CWT_ALIGN align, UINT16 default_button);
 #endif

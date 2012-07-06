@@ -1266,7 +1266,7 @@ void _cwt_widget_raise(CwtWidgetPtr widget)
 */
 
 
-void _cwt_widget_dump(CwtWidgetPtr widget, const CHAR* prefix)
+void _cwt_widget_dump(CwtWidgetPtr widget, const CWT_CHAR* prefix)
 {
 	printf_trace("%s ptr=%p; wtype=%d; id=%d; flags=%04X; parent=%p; state=%d; visible=%s; nchilds=%d; focus_policy=%d; geometry=(%d, %d, %d, %d); abs=(%d, %d)"
 		, prefix ? prefix : ""

@@ -124,7 +124,7 @@ void _cwt_render_textedit(CwtWidgetPtr widget)
 
 	if( tb->lines->count == 1 ) {
 		CWT_RECT bounds;
-		CHAR *text;
+		CWT_CHAR *text;
 
 		bounds.left = 0;
 		bounds.top = 0;
@@ -158,7 +158,7 @@ void _cwt_render_textedit(CwtWidgetPtr widget)
 		}
 
 		while( strlist_has_more(&it) ) {
-			const CHAR* text;
+			const CWT_CHAR* text;
 			StringListElemPtr node = strlist_node(&it);
 			CWT_RECT line_rect;
 			int text_height;
@@ -261,7 +261,7 @@ void cwt_textedit_move_cursor(CwtWidgetPtr widget, CwtCursorMoveOp op, CwtCursor
  * @param widget
  * @param text
  */
-void cwt_textedit_insert_text(CwtWidgetPtr widget, const CHAR *text)
+void cwt_textedit_insert_text(CwtWidgetPtr widget, const CWT_CHAR *text)
 {
 	CwtTextEditPtr tedit = CWT_CAST(widget, CwtTextEditPtr);
 
@@ -279,12 +279,12 @@ void cwt_textedit_insert_text(CwtWidgetPtr widget, const CHAR *text)
 }
 
 
-void cwt_textedit_set_text(CwtWidgetPtr widget, const CHAR *text)
+void cwt_textedit_set_text(CwtWidgetPtr widget, const CWT_CHAR *text)
 {
 	cwt_textedit_set_plaintext(widget, text);
 }
 
-void cwt_textedit_set_plaintext(CwtWidgetPtr widget, const CHAR *text)
+void cwt_textedit_set_plaintext(CwtWidgetPtr widget, const CWT_CHAR *text)
 {
 	CwtTextEditPtr tedit = CWT_CAST(widget, CwtTextEditPtr);
     JQ_UNUSED(tedit);

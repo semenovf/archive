@@ -134,14 +134,14 @@ void cwt_textview_clear(CWT_WIDGET_PTR widget)
 }
 
 
-void cwt_textview_prepend_text(CWT_WIDGET_PTR widget, const CHAR *text)
+void cwt_textview_prepend_text(CWT_WIDGET_PTR widget, const CWT_CHAR *text)
 {
 	JQ_ASSERT(widget);
 	_cwt_textblk_prepend_text(CWT_CAST(widget, CWT_TEXTVIEW_PTR)->textblock, text);
 	cwt_widget_update(widget);
 }
 
-void cwt_textview_append_text(CWT_WIDGET_PTR widget, const CHAR *text)
+void cwt_textview_append_text(CWT_WIDGET_PTR widget, const CWT_CHAR *text)
 {
 	JQ_ASSERT(widget);
 	_cwt_textblk_append_text(CWT_CAST(widget, CWT_TEXTVIEW_PTR)->textblock, text);
@@ -149,7 +149,7 @@ void cwt_textview_append_text(CWT_WIDGET_PTR widget, const CHAR *text)
 }
 
 
-void cwt_textview_set_text(CWT_WIDGET_PTR widget, const CHAR *text)
+void cwt_textview_set_text(CWT_WIDGET_PTR widget, const CWT_CHAR *text)
 {
 	JQ_ASSERT(widget);
 	_cwt_textblk_set_text(CWT_CAST(widget, CWT_TEXTVIEW_PTR)->textblock, text);

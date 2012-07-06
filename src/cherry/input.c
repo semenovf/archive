@@ -19,7 +19,7 @@ enum _CWT_MOVE_CURSOR {
 typedef enum _CWT_MOVE_CURSOR _CWT_MOVE_CURSOR;
 
 /* Input private methods */
-static void _cwt_input_insert_char(CWT_WIDGET_PTR widget, CHAR ch);
+static void _cwt_input_insert_char(CWT_WIDGET_PTR widget, CWT_CHAR ch);
 /*static void _cwt_input_insert(CWT_WIDGET_PTR widget, const CHAR *chars, size_t nchars);*/
 static void _cwt_input_remove_char(CWT_WIDGET_PTR widget);
 static void _cwt_input_bs_char(CWT_WIDGET_PTR widget);
@@ -136,7 +136,7 @@ void _cwt_size_min_input(CWT_WIDGET_PTR widget, CWT_SIZE *sz)
 }
 
 
-void cwt_input_set_text(CWT_WIDGET_PTR widget, const CHAR *text)
+void cwt_input_set_text(CWT_WIDGET_PTR widget, const CWT_CHAR *text)
 {
 	CWT_INPUT_PTR input = (CWT_INPUT_PTR)widget;
 
@@ -147,7 +147,7 @@ void cwt_input_set_text(CWT_WIDGET_PTR widget, const CHAR *text)
 	if( strlen(text) <= input->limit ) {
 		strbuf_append(input->strbuf, text);
 	} else {
-		CHAR *tmp = jq_strndup(text, input->limit);
+		CWT_CHAR *tmp = jq_strndup(text, input->limit);
 		strbuf_append(input->strbuf, tmp);
 		JQ_FREE(tmp);
 	}
@@ -155,14 +155,14 @@ void cwt_input_set_text(CWT_WIDGET_PTR widget, const CHAR *text)
 	cwt_widget_update(widget);
 }
 
-void cwt_input_set_validator(CWT_WIDGET_PTR widget, BOOL (*validator)(const CHAR*))
+void cwt_input_set_validator(CWT_WIDGET_PTR widget, BOOL (*validator)(const CWT_CHAR*))
 {
 	JQ_ASSERT(widget);
 	CWT_CAST(widget, CWT_INPUT_PTR)->validate = validator;
 }
 
 
-const CHAR* cwt_input_text(CWT_WIDGET_PTR widget)
+const CWT_CHAR* cwt_input_text(CWT_WIDGET_PTR widget)
 {
 	CWT_INPUT_PTR input = (CWT_INPUT_PTR)widget;
 	JQ_ASSERT(widget);
@@ -179,7 +179,7 @@ void cwt_input_set_limit(CWT_WIDGET_PTR widget, int limit)
 }
 
 
-void _cwt_input_insert_char(CWT_WIDGET_PTR widget, CHAR ch)
+void _cwt_input_insert_char(CWT_WIDGET_PTR widget, CWT_CHAR ch)
 {
 	CWT_INPUT_PTR input = (CWT_INPUT_PTR)widget;
 	if( strbuf_size(input->strbuf) < input->limit ) {
@@ -276,7 +276,7 @@ void _cwt_render_input(CWT_WIDGET_PTR widget)
 	CWT_VIEWPORT vp;
 	CWT_STYLE_PTR style;
 	CWT_RECT text_rect;
-	const CHAR* text = strbuf_cstr(input->strbuf);
+	const CWT_CHAR* text = strbuf_cstr(input->strbuf);
 
 	_cwt_get_viewport(&vp);
 
@@ -294,7 +294,7 @@ void _cwt_render_input(CWT_WIDGET_PTR widget)
 
 	if( cwt_widget_is_focused(widget) ) {
 		int cursor_left = 0;
-		CHAR *left_text;
+		CWT_CHAR *left_text;
 
 		left_text = strbuf_substr(input->strbuf, input->start_pos, input->pos);
 		if( left_text ) {

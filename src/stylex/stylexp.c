@@ -10,7 +10,7 @@
 #include <cwt/stylex/stylex.h>
 #include <ctype.h>
 
-static const CHAR* __attr_names[] = {
+static const CWT_CHAR* __attr_names[] = {
 	  "bg_color"
 	, "bg_left_width"
 	, "bg_left_color"
@@ -91,9 +91,9 @@ enum _parse_states {
 	, _STATE_ATTR_VALUE
 };
 
-void cwt_stylex_loadFromString(const CHAR *stylexStr)
+void cwt_stylex_loadFromString(const CWT_CHAR *stylexStr)
 {
-	const CHAR *ptr;
+	const CWT_CHAR *ptr;
 	int state = _STATE_BEGIN;
 
 
@@ -125,7 +125,7 @@ void cwt_stylex_loadFromString(const CHAR *stylexStr)
 /**
  * Загружает стили из файла
  */
-void cwt_stylex_loadFromFile(const CHAR *stylexPath)
+void cwt_stylex_loadFromFile(const CWT_CHAR *stylexPath)
 {
 	CWT_ASSERT(stylexPath);
 }

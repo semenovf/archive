@@ -78,7 +78,7 @@ void _cwt_raw_render_label(CwtWidgetPtr widget)
 	_cwt_restore_settings(&settings);
 }
 
-void cwt_label_set_text(CWT_WIDGET_PTR widget, const CHAR *text)
+void cwt_label_set_text(CWT_WIDGET_PTR widget, const CWT_CHAR *text)
 {
 	CWT_LABEL_PTR label = CWT_CAST(widget, CWT_LABEL_PTR);
 	_cwt_textblk_set_text(label->textblock, text);

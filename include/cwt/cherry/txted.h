@@ -77,9 +77,9 @@ typedef struct CwtTextEdit* CwtTextEditPtr;
 EXTERN_C_BEGIN
 
 void cwt_textedit_move_cursor(CwtWidgetPtr widget, CwtCursorMoveOp op, CwtCursorMoveMode mode);
-void cwt_textedit_insert_text(CwtWidgetPtr widget, const CHAR *text);
-void cwt_textedit_set_text(CwtWidgetPtr widget, const CHAR *text);
-void cwt_textedit_set_plaintext(CwtWidgetPtr widget, const CHAR *text);
+void cwt_textedit_insert_text(CwtWidgetPtr widget, const CWT_CHAR *text);
+void cwt_textedit_set_text(CwtWidgetPtr widget, const CWT_CHAR *text);
+void cwt_textedit_set_plaintext(CwtWidgetPtr widget, const CWT_CHAR *text);
 CwtTextDocumentPtr cwt_textedit_textdoc(CwtWidgetPtr widget);
 
 EXTERN_C_END

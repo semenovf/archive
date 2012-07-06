@@ -27,12 +27,12 @@ CwtIODevicePtr cwtLocalSocketDeviceOpen(void);
 CwtIODevicePtr cwtTcpSocketDeviceOpen(const CHAR *hostName, UINT16 port);
 */
 
-CwtIODevicePtr cwtUdpSocketDeviceOpen(const CHAR *inetAddr, UINT16 port);
+CwtIODevicePtr cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port);
 
 DLL_API_EXPORT CwtIODevicePtr cwtMulticastSocketDeviceOpen(
-	  const CHAR *inetAddr
+	  const CWT_CHAR *inetAddr
 	, UINT16 port
-	, const CHAR *inetMCastAddr
+	, const CWT_CHAR *inetMCastAddr
 	, BOOL isSender);
 
 EXTERN_C_END

@@ -8,7 +8,7 @@ extern void cwt_test_crc64(void);
 
 int main(int argc, char *argv[])
 {
-	CHAR chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+	CWT_CHAR chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 	BYTE bytes[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 	BYTE bytes256[256];
 	int i = 0;

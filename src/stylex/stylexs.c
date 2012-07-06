@@ -10,21 +10,21 @@
 #include <cwt/string.h>
 #include <cwt/strutils.h>
 
-static BOOL __cwtStylexParseColor(const CHAR *str, void *pval);        /* Cwt_Color */
-static BOOL __cwtStylexParseUINT32(const CHAR *str, void *pval);         /* UINT32 */
-static BOOL __cwtStylexParseINT32(const CHAR *str, void *pval);          /* INT32 */
-static BOOL __cwtStylexParseBorderStyle(const CHAR *str, void *pval);  /* Cwt_BorderStyle */
-static BOOL __cwtStylexParseString(const CHAR *str, void *pval);       /* string */
-static BOOL __cwtStylexParseFontStyle(const CHAR *str, void *pval);    /* Cwt_FontStyle */
-static BOOL __cwtStylexParseFontWeight(const CHAR *str, void *pval);   /* Cwt_FontWeight */
-static BOOL __cwtStylexParseOpacity(const CHAR *str, void *pval);      /* float: [0.0, 1.0] */
-static BOOL __cwtStylexParsePosition(const CHAR *str, void *pval);     /* Cwt_Position */
-static BOOL __cwtStylexParseVAlign(const CHAR *str, void *pval); 	  /* Cwt_Style_VAlign */
-static BOOL __cwtStylexParseHAlign(const CHAR *str, void *pval);       /* Cwt_Style_HAlign */
+static BOOL __cwtStylexParseColor(const CWT_CHAR *str, void *pval);        /* Cwt_Color */
+static BOOL __cwtStylexParseUINT32(const CWT_CHAR *str, void *pval);         /* UINT32 */
+static BOOL __cwtStylexParseINT32(const CWT_CHAR *str, void *pval);          /* INT32 */
+static BOOL __cwtStylexParseBorderStyle(const CWT_CHAR *str, void *pval);  /* Cwt_BorderStyle */
+static BOOL __cwtStylexParseString(const CWT_CHAR *str, void *pval);       /* string */
+static BOOL __cwtStylexParseFontStyle(const CWT_CHAR *str, void *pval);    /* Cwt_FontStyle */
+static BOOL __cwtStylexParseFontWeight(const CWT_CHAR *str, void *pval);   /* Cwt_FontWeight */
+static BOOL __cwtStylexParseOpacity(const CWT_CHAR *str, void *pval);      /* float: [0.0, 1.0] */
+static BOOL __cwtStylexParsePosition(const CWT_CHAR *str, void *pval);     /* Cwt_Position */
+static BOOL __cwtStylexParseVAlign(const CWT_CHAR *str, void *pval); 	  /* Cwt_Style_VAlign */
+static BOOL __cwtStylexParseHAlign(const CWT_CHAR *str, void *pval);       /* Cwt_Style_HAlign */
 
 struct _cwt_stylex_helper {
 	Cwt_StyleAttrType attrType;
-	BOOL (*validator)(const CHAR *str, void *pval);
+	BOOL (*validator)(const CWT_CHAR *str, void *pval);
 } __cwt_stylex_helpers[Cwt_StyleAttr_Count] = {
 	  { Cwt_StyleAttr_BackgroundColor,   __cwtStylexParseColor }	/* Cwt_Color */
 	, { Cwt_StyleAttr_BorderLeftWidth,   __cwtStylexParseUINT32 } /* unsigned integer */
@@ -70,12 +70,12 @@ struct _cwt_stylex_helper {
 
 
 
-static BOOL __cwtStylexParseColor(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseColor(const CWT_CHAR *str, void *pval)
 {
 	return cwt_stylex_parseColor(str, (Cwt_Color*)pval);
 }
 
-static BOOL __cwtStylexParseUINT32(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseUINT32(const CWT_CHAR *str, void *pval)
 {
 	BOOL ok = FALSE;
 	UINT n;
@@ -86,7 +86,7 @@ static BOOL __cwtStylexParseUINT32(const CHAR *str, void *pval)
 	return ok;
 }
 
-static BOOL __cwtStylexParseINT32(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseINT32(const CWT_CHAR *str, void *pval)
 {
 	BOOL ok = FALSE;
 	INT n;
@@ -97,9 +97,9 @@ static BOOL __cwtStylexParseINT32(const CHAR *str, void *pval)
 	return ok;
 }
 
-static BOOL __cwtStylexParseBorderStyle(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseBorderStyle(const CWT_CHAR *str, void *pval)
 {
-	CHAR *borderStyleStr = cwtStrDup(str);
+	CWT_CHAR *borderStyleStr = cwtStrDup(str);
 	int borderStyle = -1;
 
 	str_tolower(borderStyleStr, borderStyleStr, cwtStrLen(borderStyleStr));
@@ -140,18 +140,18 @@ static BOOL __cwtStylexParseBorderStyle(const CHAR *str, void *pval)
 	return TRUE;
 }
 
-static BOOL __cwtStylexParseString(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseString(const CWT_CHAR *str, void *pval)
 {
 	if( !str )
 		return FALSE;
 
 	if( pval )
-		(CHAR*)pval = cwtStrDup(str);
+		(CWT_CHAR*)pval = cwtStrDup(str);
 
 	return TRUE;
 }
 
-static BOOL __cwtStylexParseFontStyle(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseFontStyle(const CWT_CHAR *str, void *pval)
 {
 	/* Cwt_FontStyle */
 	CWT_UNUSED(str);
@@ -159,7 +159,7 @@ static BOOL __cwtStylexParseFontStyle(const CHAR *str, void *pval)
 	return TRUE;
 }
 
-static BOOL __cwtStylexParseFontWeight(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseFontWeight(const CWT_CHAR *str, void *pval)
 {
 	/* Cwt_FontWeight */
 	CWT_UNUSED(str);
@@ -167,7 +167,7 @@ static BOOL __cwtStylexParseFontWeight(const CHAR *str, void *pval)
 	return TRUE;
 }
 
-static BOOL __cwtStylexParseOpacity(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseOpacity(const CWT_CHAR *str, void *pval)
 {
 	/* float: [0.0, 1.0] */
 	CWT_UNUSED(str);
@@ -175,7 +175,7 @@ static BOOL __cwtStylexParseOpacity(const CHAR *str, void *pval)
 	return TRUE;
 }
 
-static BOOL __cwtStylexParsePosition(const CHAR *str, void *pval)
+static BOOL __cwtStylexParsePosition(const CWT_CHAR *str, void *pval)
 {
 	/* Cwt_Position */
 	CWT_UNUSED(str);
@@ -183,7 +183,7 @@ static BOOL __cwtStylexParsePosition(const CHAR *str, void *pval)
 	return TRUE;
 }
 
-static BOOL __cwtStylexParseVAlign(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseVAlign(const CWT_CHAR *str, void *pval)
 {
 	/* Cwt_Style_VAlign */
 	CWT_UNUSED(str);
@@ -191,7 +191,7 @@ static BOOL __cwtStylexParseVAlign(const CHAR *str, void *pval)
 	return TRUE;
 }
 
-static BOOL __cwtStylexParseHAlign(const CHAR *str, void *pval)
+static BOOL __cwtStylexParseHAlign(const CWT_CHAR *str, void *pval)
 {
 	/* Cwt_Style_HAlign */
 	CWT_UNUSED(str);
@@ -203,7 +203,7 @@ static BOOL __cwtStylexParseHAlign(const CHAR *str, void *pval)
 #include <cwt/test.h>
 void cwt_stylex_test_parse_attrs(void)
 {
-	CHAR buf[32];
+	CWT_CHAR buf[32];
 	ULONG ulongNum;
 
 	CWT_TEST_OK(__cwtStylexParseColor("#123456", NULL));

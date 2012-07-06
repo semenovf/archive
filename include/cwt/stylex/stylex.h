@@ -196,7 +196,7 @@ union Cwt_StyleAttrValue {
 
 	Cwt_Color           color;
 
-	CHAR*               font_family;
+	CWT_CHAR*               font_family;
 	UINT                font_size;
 	Cwt_FontStyle       font_style;
 	Cwt_FontWeight      font_weight;
@@ -263,22 +263,22 @@ EXTERN_C_BEGIN
 
 void cwt_stylex_init(void);
 void cwt_stylex_release(void);
-void cwt_stylex_loadFromString(const CHAR *stylexStr);
-void cwt_stylex_loadFromFile(const CHAR *stylexPath);
+void cwt_stylex_loadFromString(const CWT_CHAR *stylexStr);
+void cwt_stylex_loadFromFile(const CWT_CHAR *stylexPath);
 
 void cwt_stylex_cloneStyle(Cwt_StylePtr clone, Cwt_StyleConstPtr orig);
-Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByMedia(const CHAR *media, BOOL create);
-Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetById(const CHAR *id, BOOL create);
-Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByClass(const CHAR *cls, BOOL create);
-Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByWType(const CHAR *wtype, BOOL create);
+Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByMedia(const CWT_CHAR *media, BOOL create);
+Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetById(const CWT_CHAR *id, BOOL create);
+Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByClass(const CWT_CHAR *cls, BOOL create);
+Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByWType(const CWT_CHAR *wtype, BOOL create);
 
 Cwt_StyleAttrSetPtr cwt_stylex_newStyleAttrSet(void);
 
 void cwt_stylex_assembly(Cwt_StylePtr pstyle
-	, const CHAR *media
-	, const CHAR *wtype
-	, const CHAR *cls
-	, const CHAR *id
+	, const CWT_CHAR *media
+	, const CWT_CHAR *wtype
+	, const CWT_CHAR *cls
+	, const CWT_CHAR *id
 	, Cwt_StateType state);
 
 

@@ -10,30 +10,22 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <cwt/string.h>
-#include <cwt/strutils.h>
 #include <cwt/strbuf.h>
 
 #define _cwtStrtoul strtoul
 #define _cwtStrtol  strtol
 
-#ifdef CWT_CC_MSC
-#	define _cwtStrtoull _strtoui64
-#	define _cwtStrtoll  _strtoi64
-#else
-#	define _cwtStrtoull strtoull
-#	define _cwtStrtoll  strtoll
-#endif
-
 #define __CWT_STR_TO_LONGTYPE(_LongType,_strToLongFunc,_maxLong,_minLong) \
-DLL_API_EXPORT _LongType cwtStrTo##_LongType(const CHAR *str, int radix, BOOL *ok) { \
+DLL_API_EXPORT _LongType __to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) { \
 	_LongType val;                                                            \
-	CHAR *endptr;                                                             \
+	CWT_CHAR *endptr;                                                         \
+	CwtStringNS* stringNS = cwtStringNS();                                    \
 																		      \
 	if( radix <= 0 ) {                                                        \
-		if( cwtStrNcmp("0x", str, 2) == 0 ) {                                 \
+		if( stringNS->strncmp(_T("0x"), str, 2) == 0 ) {                      \
 			radix = 16;                                                       \
 			str += 2;                                                         \
-		} else if( cwtStrNcmp("0", str, 1) == 0 ) {                           \
+		} else if( stringNS->strncmp(_T("0"), str, 1) == 0 ) {                \
 			radix = 8;                                                        \
 			str++;                                                            \
 		}                                                                     \
@@ -47,7 +39,7 @@ DLL_API_EXPORT _LongType cwtStrTo##_LongType(const CHAR *str, int radix, BOOL *o
 	if((errno == ERANGE	&& (val == _maxLong || val == _minLong))		      \
             || (errno != 0 && val == (_LongType)0)						      \
             || endptr == str												  \
-            || *endptr != '\0' ) {											  \
+            || *endptr != (CWT_CHAR)0 ) {	     							  \
 																              \
 		if( ok ) {														      \
 			*ok = FALSE;													  \
@@ -64,9 +56,10 @@ DLL_API_EXPORT _LongType cwtStrTo##_LongType(const CHAR *str, int radix, BOOL *o
 
 
 #define __CWT_STR_TO_INTTYPE(_IntType,_LongType,_maxInt,_minInt)              \
-DLL_API_EXPORT _IntType cwtStrTo##_IntType(const CHAR *str, int radix, BOOL *ok) {       \
+DLL_API_EXPORT _IntType __to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {\
 	BOOL okk = TRUE;                                                          \
-	_LongType val = cwtStrTo##_LongType(str, radix, &okk);                    \
+	CwtStringNS* stringNS = cwtStringNS();                                    \
+	_LongType val = stringNS->to##_LongType(str, radix, &okk);                \
                                                                               \
 	if( !okk || val > _maxInt || val < _minInt ) {                            \
 		okk = FALSE;                                                          \
@@ -82,10 +75,10 @@ DLL_API_EXPORT _IntType cwtStrTo##_IntType(const CHAR *str, int radix, BOOL *ok)
 
 /*TODO remove this block */
 #ifdef __COMMENT__
-DLL_API_EXPORT LONG cwtStrToLONG_DEBUG(const CHAR *str, int radix, BOOL *ok)
+DLL_API_EXPORT LONG cwtStrToLONG_DEBUG(const CWT_CHAR *str, int radix, BOOL *ok)
 {
 	LONG val;
-	CHAR *endptr;
+	CWT_CHAR *endptr;
 
 	if( radix <= 0 ) {
 		if( cwtStrNcmp("0x", str, 2) == 0 ) {
@@ -118,10 +111,10 @@ DLL_API_EXPORT LONG cwtStrToLONG_DEBUG(const CHAR *str, int radix, BOOL *ok)
 	return val;
 }
 
-DLL_API_EXPORT LONGLONG cwtStrToLONGLONG_DEBUG(const CHAR *str, int radix, BOOL *ok)
+DLL_API_EXPORT LONGLONG cwtStrToLONGLONG_DEBUG(const CWT_CHAR *str, int radix, BOOL *ok)
 {
 	LONGLONG val;
-	CHAR *endptr;
+	CWT_CHAR *endptr;
 	int errn;
 
 	if( radix <= 0 ) {
@@ -158,96 +151,16 @@ DLL_API_EXPORT LONGLONG cwtStrToLONGLONG_DEBUG(const CHAR *str, int radix, BOOL 
 }
 #endif
 
-__CWT_STR_TO_LONGTYPE(ULONGLONG, _cwtStrtoull, CWT_ULONGLONG_MAX, 0LL)
-__CWT_STR_TO_LONGTYPE(LONGLONG, _cwtStrtoll, CWT_LONGLONG_MAX, CWT_LONGLONG_MIN)
-__CWT_STR_TO_LONGTYPE(ULONG, _cwtStrtoul, CWT_ULONG_MAX, 0L)
-__CWT_STR_TO_LONGTYPE(LONG, _cwtStrtol, CWT_LONG_MAX, CWT_LONG_MIN)
+__CWT_STR_TO_LONGTYPE(ULONGLONG, cwtStringNS()->strtoull, CWT_ULONGLONG_MAX, 0LL)
+__CWT_STR_TO_LONGTYPE(LONGLONG, cwtStringNS()->strtoll, CWT_LONGLONG_MAX, CWT_LONGLONG_MIN)
+__CWT_STR_TO_LONGTYPE(ULONG, cwtStringNS()->strtoul, CWT_ULONG_MAX, 0L)
+__CWT_STR_TO_LONGTYPE(LONG, cwtStringNS()->strtol, CWT_LONG_MAX, CWT_LONG_MIN)
 __CWT_STR_TO_INTTYPE(INT, LONG, CWT_INT_MAX, CWT_INT_MIN)
 __CWT_STR_TO_INTTYPE(UINT, ULONG, CWT_UINT_MAX, 0)
 __CWT_STR_TO_INTTYPE(SHORT, LONG, CWT_SHORT_MAX, CWT_SHORT_MIN)
 __CWT_STR_TO_INTTYPE(USHORT, ULONG, CWT_USHORT_MAX, 0);
 __CWT_STR_TO_INTTYPE(SBYTE, LONG, CWT_SBYTE_MAX, CWT_SBYTE_MIN)
 __CWT_STR_TO_INTTYPE(BYTE, ULONG, CWT_BYTE_MAX, 0);
-
-
-/** TODO must be released
- * @brief Finds the last occurrence of a substring in another string
- *
- * @c rstrstr scan @c s1 for the last occurrence of a substring @c s2
- *
- * @param s1
- * @param s2
- * @return pointer to the last element in s1 where s2 begins
- * 		   or @c null if @c s2 does not occur in @c s1
- */
-CHAR* rstrstr(const CHAR *s1, const CHAR *s2)
-{
-	CHAR *ptr;
-	size_t s2_len;
-
-	if( !s1 )
-		return NULL;
-
-	if( !s2 )
-		return NULL;
-
-	s2_len = cwtStrLen(s2);
-	ptr = (CHAR*)(s1 + cwtStrLen(s1));
-
-	while( ptr >= s1 ) {
-		if( cwtStrNcmp(ptr, s2, s2_len) == 0 )
-			return ptr;
-		ptr--;
-	}
-
-	return NULL;
-}
-
-
-void chomp( CHAR *s )
-{
-	CHAR *ptr;
-
-	ptr = s + cwtStrLen(s) - 1;
-	while( ptr >= s && *ptr == '\n' ) {
-		*ptr = '\0';
-		ptr--;
-	}
-}
-
-
-/**
- * Return character from @c s at position @c i.
- *
- * @param s string.
- * @param i character position.
- * @return (CHAR)0 if @c i is out of string bounds or character from string @c at position @c i.
- */
-CHAR str_char_at(const CHAR *s, size_t i)
-{
-	if( i >= cwtStrLen(s) )
-		return (CHAR)0;
-	return s[i];
-}
-
-
-void str_toupper(CHAR *dest, const CHAR *src, size_t n)
-{
-	size_t i;
-
-	for( i = 0; i < n; i++ ) {
-		dest[i] = toupper(src[i]);
-	}
-}
-
-void str_tolower(CHAR *dest, const CHAR *src, size_t n)
-{
-	size_t i;
-
-	for( i = 0; i < n; i++ ) {
-		dest[i] = tolower(src[i]);
-	}
-}
 
 
 #if 0
@@ -272,12 +185,12 @@ void str_tolower(CHAR *dest, const CHAR *src, size_t n)
  * */
 #define _ST_CHAR       0
 #define _ST_SPEC_CHAR  1
-size_t strftime(CHAR *s, size_t max, const CHAR *format, const struct tm *tm)
+size_t strftime(CWT_CHAR *s, size_t max, const CWT_CHAR *format, const struct tm *tm)
 {
-	const CHAR *ptrf = format;
+	const CWT_CHAR *ptrf = format;
 	size_t sz = 0;
 	int state  = _ST_CHAR;
-	CHAR chars[16];
+	CWT_CHAR chars[16];
 	StringBufferPtr sb;
 
 	sb = strbuf_new_defaults();

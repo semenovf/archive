@@ -1,13 +1,13 @@
-#include <stdio.h>
+#include <cwt/logger.h>
 #include <stdlib.h>
+#include <cwt/stdio.h>
 #include <cwt/string.h>
 #include <cwt/strbuf.h>
-#include <cwt/logger.h>
 
 struct _LOGGER_CONTEXT {
-	CHAR* prefix;
+	CWT_CHAR* prefix;
 	CwtStringBufferPtr sbuf;
-	void (*printer)(const CHAR* msg);
+	void (*printer)(const CWT_CHAR* msg);
 } LOGGER_CONTEXT[LOGGER_COUNT] = {
 	  {NULL, NULL, NULL}
 	, {NULL, NULL, NULL}
@@ -16,17 +16,17 @@ struct _LOGGER_CONTEXT {
 	, {NULL, NULL, NULL}
 };
 
-static CHAR* __default_prefix[LOGGER_COUNT] = {
-	  "Trace: "
-	, "Debug: "
-	, "Info : "
-	, "Warn : "
-	, "Error: "
+static CWT_CHAR* __default_prefix[LOGGER_COUNT] = {
+	  _Tr("Trace: ")
+	, _Tr("Debug: ")
+	, _Tr("Info : ")
+	, _Tr("Warn : ")
+	, _Tr("Error: ")
 };
 
 void set_printer(LOGGER_TYPE type
-	, void (*printer)(const CHAR* msg)
-	, const CHAR* prefix)
+	, void (*printer)(const CWT_CHAR* msg)
+	, const CWT_CHAR* prefix)
 {
 	CWT_ASSERT(printer);
 
@@ -36,7 +36,7 @@ void set_printer(LOGGER_TYPE type
 	}
 
 	if( prefix )
-		LOGGER_CONTEXT[type].prefix = cwtStrDup(prefix);
+		LOGGER_CONTEXT[type].prefix = cwtStringNS()->strdup(prefix);
 
 	if( !LOGGER_CONTEXT[type].sbuf ) {
 		LOGGER_CONTEXT[type].sbuf = cwtStringBufferNS()->create();
@@ -47,19 +47,19 @@ void set_printer(LOGGER_TYPE type
 }
 
 
-static void _print_trace(const CHAR* msg)
+static void _print_trace(const CWT_CHAR* msg)
 { fprintf(stdout, "%s\n", msg); }
 
-static void _print_debug(const CHAR* msg)
+static void _print_debug(const CWT_CHAR* msg)
 { fprintf(stdout, "%s\n", msg); }
 
-static void _print_info(const CHAR* msg)
+static void _print_info(const CWT_CHAR* msg)
 { fprintf(stdout, "%s\n", msg); }
 
-static void _print_warn(const CHAR* msg)
+static void _print_warn(const CWT_CHAR* msg)
 { fprintf(stderr, "%s\n", msg); }
 
-static void _print_error(const CHAR* msg)
+static void _print_error(const CWT_CHAR* msg)
 { fprintf(stderr, "%s\n", msg); }
 
 
@@ -88,7 +88,7 @@ void init_loggers(void)
 	set_default_printers();
 }
 
-static void _print(LOGGER_TYPE type, const CHAR* msg)
+static void _print(LOGGER_TYPE type, const CWT_CHAR* msg)
 {
 	CwtStringBufferNS *sbns = cwtStringBufferNS();
 
@@ -105,21 +105,21 @@ static void _print(LOGGER_TYPE type, const CHAR* msg)
 }
 
 
-void print_trace(const CHAR* msg) { _print(LOGGER_TRACE, msg); }
-void print_debug(const CHAR* msg) { _print(LOGGER_DEBUG, msg); }
-void print_info(const CHAR* msg)  { _print(LOGGER_INFO, msg); }
-void print_warn(const CHAR* msg)  { _print(LOGGER_WARN, msg); }
-void print_error(const CHAR* msg) { _print(LOGGER_ERROR, msg); }
+void print_trace(const CWT_CHAR* msg) { _print(LOGGER_TRACE, msg); }
+void print_debug(const CWT_CHAR* msg) { _print(LOGGER_DEBUG, msg); }
+void print_info(const CWT_CHAR* msg)  { _print(LOGGER_INFO, msg); }
+void print_warn(const CWT_CHAR* msg)  { _print(LOGGER_WARN, msg); }
+void print_error(const CWT_CHAR* msg) { _print(LOGGER_ERROR, msg); }
 
 
-static void _printf(LOGGER_TYPE type, const CHAR* format, va_list args)
+static void _printf(LOGGER_TYPE type, const CWT_CHAR* format, va_list args)
 {
-	CHAR msg[512];
-	vsprintf(msg, format, args);
+	CWT_CHAR msg[512];
+	cwtStdioNS()->vsprintf(msg, format, args);
 	_print(type, msg);
 }
 
-void printf_trace(const CHAR* format, ...)
+void printf_trace(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -127,7 +127,7 @@ void printf_trace(const CHAR* format, ...)
 	va_end(args);
 }
 
-void printf_debug(const CHAR* format, ...)
+void printf_debug(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -135,7 +135,7 @@ void printf_debug(const CHAR* format, ...)
 	va_end(args);
 }
 
-void printf_info(const CHAR* format, ...)
+void printf_info(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -143,7 +143,7 @@ void printf_info(const CHAR* format, ...)
 	va_end(args);
 }
 
-void printf_warn(const CHAR* format, ...)
+void printf_warn(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -151,7 +151,7 @@ void printf_warn(const CHAR* format, ...)
 	va_end(args);
 }
 
-void printf_error(const CHAR* format, ...)
+void printf_error(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);

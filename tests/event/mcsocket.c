@@ -9,8 +9,8 @@
 #include <cwt/io/sockdev.h>
 
 
-const CHAR *text = "This is a test message";
-const CHAR *cmdQuit = "quit";
+const CWT_CHAR *text = "This is a test message";
+const CWT_CHAR *cmdQuit = "quit";
 
 static BOOL on_multicast_receiver(CwtEventPtr pevt)
 {
@@ -25,7 +25,7 @@ static BOOL on_multicast_receiver(CwtEventPtr pevt)
 	br = cwtChannelRead(chan, buf, 255);
 	buf[(size_t)br] = '\x0';
 
-	if( cwtStrStr((CHAR*)buf, cmdQuit) ) {
+	if( cwtStrStr((CWT_CHAR*)buf, cmdQuit) ) {
 		printf_trace("finishing event by command, received from channel");
 		cwtChannelReadCommit(chan);
 		cwtEventQuit();

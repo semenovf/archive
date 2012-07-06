@@ -95,7 +95,7 @@ static BOOL __cwtAllowSockets(void)
  * @param port port. If equals to 0 any available port selected
  * @return UDP socket device instance or NULL if error occured
  */
-CwtIODevicePtr cwtUdpSocketDeviceOpen(const CHAR *inetAddr, UINT16 port)
+CwtIODevicePtr cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
 {
 	SOCKET sockfd;
 	struct sockaddr_in sockaddr;
@@ -148,9 +148,9 @@ CwtIODevicePtr cwtUdpSocketDeviceOpen(const CHAR *inetAddr, UINT16 port)
 
 
 CwtIODevicePtr cwtMulticastSocketDeviceOpen(
-	  const CHAR *inetAddr
+	  const CWT_CHAR *inetAddr
 	, UINT16 port
-	, const CHAR *inetMCastAddr
+	, const CWT_CHAR *inetMCastAddr
 	, BOOL isSender)
 {
 	SOCKET sockfd;

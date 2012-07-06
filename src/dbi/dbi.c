@@ -15,12 +15,12 @@
 
 #define __LOG_PREFIX "dbi: "
 
-extern CwtDBHandler __mysqlConnect(const CHAR *driverDSN, const CHAR *username, const CHAR *password);
+extern CwtDBHandler __connect(const CWT_CHAR *driverDSN, const CWT_CHAR *username, const CWT_CHAR *password);
 
-DLL_API_EXPORT void cwtDBIParseDSN(const CHAR *dsn, CHAR **scheme, CHAR **driver, CHAR **driverDSN)
+DLL_API_EXPORT void cwtDBIParseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
 {
 	CwtStringListPtr opts;
-	CHAR *opt;
+	CWT_CHAR *opt;
 
     opts = cwtNewStringList();
     cwtStringListSplit(opts, dsn, ":");
@@ -41,18 +41,18 @@ DLL_API_EXPORT void cwtDBIParseDSN(const CHAR *dsn, CHAR **scheme, CHAR **driver
 }
 
 
-DLL_API_EXPORT CwtDBHandler cwtDBIConnect(const CHAR *dsn, const CHAR *username, const CHAR *password)
+DLL_API_EXPORT CwtDBHandler cwtDBIConnect(const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password)
 {
-	CHAR *scheme;
-	CHAR *driver;
-	CHAR *driverDSN;
+	CWT_CHAR *scheme;
+	CWT_CHAR *driver;
+	CWT_CHAR *driverDSN;
 	CwtDBHandler dbh;
 
 	cwtDBIParseDSN(dsn, &scheme, &driver, &driverDSN);
 
 	if( cwtStrEqi("dbi", scheme) ) {
 		if( cwtStrEqi("mysql", driver) ) {
-			dbh = __mysqlConnect(driverDSN, username, password);
+			dbh = __connect(driverDSN, username, password);
 		} else {
 			printf_error(__LOG_PREFIX "unsupported driver: %s", driver);
 		}

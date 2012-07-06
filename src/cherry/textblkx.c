@@ -50,10 +50,10 @@ void _cwt_textblk_clear(CwtTextBlkPtr tb)
 }
 
 static void _cwt_textblock_insert_helper(CwtTextBlkPtr tb,
-	void (*insert_func)(StringListPtr, StringListElemPtr, const CHAR*)
-	, StringListElemPtr elem, const CHAR *text)
+	void (*insert_func)(StringListPtr, StringListElemPtr, const CWT_CHAR*)
+	, StringListElemPtr elem, const CWT_CHAR *text)
 {
-	const CHAR *ptr, *ptr_begin, *ptr_end;
+	const CWT_CHAR *ptr, *ptr_begin, *ptr_end;
 	int n;
 
 	JQ_ASSERT(tb);
@@ -66,7 +66,7 @@ static void _cwt_textblock_insert_helper(CwtTextBlkPtr tb,
 
 	while( ptr < ptr_end ) {
 		if( *ptr == '\n' || *ptr == '\x0' ) {
-			CHAR *tmp = jq_strndup(ptr_begin, (size_t)(ptr - ptr_begin));
+			CWT_CHAR *tmp = jq_strndup(ptr_begin, (size_t)(ptr - ptr_begin));
 
 			insert_func(tb->lines, elem, tmp);
 			if( insert_func == cwtStringListInsertAfter ) {
@@ -84,7 +84,7 @@ static void _cwt_textblock_insert_helper(CwtTextBlkPtr tb,
 
 	/* tail */
 	if( ptr_begin < ptr ) {
-		CHAR *tmp = jq_strndup(ptr_begin, (size_t)(ptr - ptr_begin));
+		CWT_CHAR *tmp = jq_strndup(ptr_begin, (size_t)(ptr - ptr_begin));
 		insert_func(tb->lines, elem, tmp);
 		JQ_FREE(tmp);
 	}
@@ -93,19 +93,19 @@ static void _cwt_textblock_insert_helper(CwtTextBlkPtr tb,
 		tb->top_line = tb->lines->strings.first;
 }
 
-void _cwt_textblk_prepend_text(CwtTextBlkPtr tb, const CHAR *text)
+void _cwt_textblk_prepend_text(CwtTextBlkPtr tb, const CWT_CHAR *text)
 {
 	JQ_ASSERT(tb);
 	_cwt_textblock_insert_helper(tb, cwtStringListInsertBefore, tb->lines->strings.first, text);
 }
 
-void _cwt_textblk_append_text(CwtTextBlkPtr tb, const CHAR *text)
+void _cwt_textblk_append_text(CwtTextBlkPtr tb, const CWT_CHAR *text)
 {
 	JQ_ASSERT(tb);
 	_cwt_textblock_insert_helper(tb, cwtStringListInsertAfter, tb->lines->strings.last, text);
 }
 
-void _cwt_textblk_set_text(CwtTextBlkPtr tb, const CHAR *text)
+void _cwt_textblk_set_text(CwtTextBlkPtr tb, const CWT_CHAR *text)
 {
 	JQ_ASSERT(tb);
 	_cwt_textblk_clear(tb);
@@ -148,7 +148,7 @@ void _cwt_render_textblk(CwtTextBlkPtr tb, CWT_SIZE *sz)
 
 	if( tb->lines->count == 1 ) {
 		CWT_RECT bounds;
-		CHAR *text;
+		CWT_CHAR *text;
 
 		bounds.left = 0;
 		bounds.top = 0;
@@ -182,7 +182,7 @@ void _cwt_render_textblk(CwtTextBlkPtr tb, CWT_SIZE *sz)
 		}
 
 		while( strlist_has_more(&it) ) {
-			const CHAR* text;
+			const CWT_CHAR* text;
 			StringListElemPtr node = strlist_node(&it);
 			CWT_RECT line_rect;
 			int text_height;
@@ -240,7 +240,7 @@ void _cwt_size_min_textblk(CwtTextBlkPtr tb, CWT_SIZE *sz)
 		strlist_begin(tb->lines, &it);
 
 		while( strlist_has_more(&it) ) {
-			const CHAR* text = strlist_next(&it);
+			const CWT_CHAR* text = strlist_next(&it);
 			CWT_SIZE text_sz;
 
 			_cwt_text_size(&tb->style->font, text, &text_sz);

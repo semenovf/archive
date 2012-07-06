@@ -91,32 +91,32 @@ void cwt_stylex_cloneStyle(Cwt_StylePtr clone, Cwt_StyleConstPtr orig)
 }
 
 
-static Cwt_StyleAttrSetPtr _cwt_stylex_styleAttrSet(HashTable* hashTable, const CHAR *name, BOOL create)
+static Cwt_StyleAttrSetPtr _cwt_stylex_styleAttrSet(HashTable* hashTable, const CWT_CHAR *name, BOOL create)
 {
-	Cwt_StyleAttrSetPtr attrSet = (Cwt_StyleAttrSetPtr)hash_table_lookup(hashTable, (CHAR*)name);
+	Cwt_StyleAttrSetPtr attrSet = (Cwt_StyleAttrSetPtr)hash_table_lookup(hashTable, (CWT_CHAR*)name);
 	if( NULL == attrSet && create ) {
 		attrSet = cwt_stylex_newStyleAttrSet();
-		CWT_ASSERT(hash_table_insert(__cwt_media_table, (CHAR*)name, attrSet));
+		CWT_ASSERT(hash_table_insert(__cwt_media_table, (CWT_CHAR*)name, attrSet));
 	}
 	return attrSet;
 }
 
-Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByMedia(const CHAR *name, BOOL create)
+Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByMedia(const CWT_CHAR *name, BOOL create)
 {
 	return _cwt_stylex_styleAttrSet(__cwt_media_table, name, create);
 }
 
-Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByWType(const CHAR *name, BOOL create)
+Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByWType(const CWT_CHAR *name, BOOL create)
 {
 	return _cwt_stylex_styleAttrSet(__cwt_wtype_table, name, create);
 }
 
-Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByClass(const CHAR *name, BOOL create)
+Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetByClass(const CWT_CHAR *name, BOOL create)
 {
 	return _cwt_stylex_styleAttrSet(__cwt_class_table, name, create);
 }
 
-Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetById(const CHAR *name, BOOL create)
+Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetById(const CWT_CHAR *name, BOOL create)
 {
 	return _cwt_stylex_styleAttrSet(__cwt_id_table, name, create);
 }
@@ -135,10 +135,10 @@ Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetById(const CHAR *name, BOOL create)
  * @note Поддержка media только all или screen.
  */
 void cwt_stylex_assembly(Cwt_StylePtr pstyle
-	, const CHAR *media
-	, const CHAR *wtype
-	, const CHAR *cls
-	, const CHAR *id
+	, const CWT_CHAR *media
+	, const CWT_CHAR *wtype
+	, const CWT_CHAR *cls
+	, const CWT_CHAR *id
 	, Cwt_StateType state)
 {
 	CWT_UNUSED(pstyle);

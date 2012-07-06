@@ -1,8 +1,8 @@
 /*
- * loadini.c
+ * ini.c
  *
  *  Created on: 05.12.2011
- *      Author: user
+ *      Author: wladt
  */
 
 
@@ -23,6 +23,7 @@
 
 #define _BUFSZ 256
 
+#ifdef __COMMENT__
 
 typedef struct CwtIniHandler {
 	CwtIniHandlerBase base;
@@ -146,7 +147,7 @@ BOOL cwtLoadIni(const char* path, CwtIniHandlerBase* handler)
 /*	RingBufferPtr rb;*/
 	ssize_t bw;
 
-	file = cwtFileDeviceOpen(path, NULL, TRUE);
+	file = cwtFileDeviceOpen(path, O_RDONLY);
 
 	/*ini = cwtOpen(path, O_RDONLY | O_TEXT);*/
 
@@ -155,7 +156,6 @@ BOOL cwtLoadIni(const char* path, CwtIniHandlerBase* handler)
 		return FALSE;
 	}
 
-	sb = cwtStringBuffer
 	rb = rb_new_defaults();
 	CWT_ASSERT(rb);
 
@@ -355,3 +355,5 @@ DLL_API_EXPORT BOOL cwtLoadIniByRules(const CHAR* path, CwtIniRule *rules, void 
 		return cwtIniHandler.base.error == TRUE ? FALSE : TRUE;
 	return FALSE;
 }
+
+#endif

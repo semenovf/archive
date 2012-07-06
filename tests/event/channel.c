@@ -7,8 +7,8 @@
 #include <cwt/event/channel.h>
 #include <cwt/io/bufdev.h>
 
-const CHAR *text = "This is a test message";
-const CHAR *cmdQuit = "quit";
+const CWT_CHAR *text = "This is a test message";
+const CWT_CHAR *cmdQuit = "quit";
 
 static BOOL quit_event(CwtEventPtr pevt)
 {
@@ -23,7 +23,7 @@ static BOOL quit_event(CwtEventPtr pevt)
 	br = cwtChannelRead(chan, buf, 255);
 	buf[(size_t)br] = '\x0';
 
-	if( cwtStrStr((CHAR*)buf, cmdQuit) ) {
+	if( cwtStrStr((CWT_CHAR*)buf, cmdQuit) ) {
 		printf_trace("finishing event by command, received from channel");
 		cwtChannelReadCommit(chan);
 		cwtEventQuit();
@@ -48,7 +48,7 @@ static BOOL echo(CwtEventPtr pevt)
 		buf[(size_t)br] = '\x0';
 		printf("Received: %s\n", buf);
 
-		CWT_TEST_OK(cwtStrEq((CHAR*)buf, text));
+		CWT_TEST_OK(cwtStrEq((CWT_CHAR*)buf, text));
 
 		cwtChannelWrite(chan, buf, (size_t)br);
 	}

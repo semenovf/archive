@@ -164,8 +164,8 @@ typedef UINT32 Cwt_Color;
 #define CWT_MaxColor               CWT_White
 
 
-Cwt_Color cwt_stylex_colorByName(const CHAR *name);
-BOOL cwt_stylex_parseColor(const CHAR *str, Cwt_Color *pcolor);
+Cwt_Color cwt_stylex_colorByName(const CWT_CHAR *name);
+BOOL cwt_stylex_parseColor(const CWT_CHAR *str, Cwt_Color *pcolor);
 
 #ifdef CWT_USE_TESTS
 #	include <cwt/test.h>

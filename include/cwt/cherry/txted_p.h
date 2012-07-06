@@ -15,8 +15,8 @@ void _cwt_delete_textblockx(CwtTextBlockXPtr block);
 
 CwtTextDocumentPtr _cwt_new_textdoc(void);
 void _cwt_delete_textdoc(CwtTextDocumentPtr doc);
-void _cwt_textdoc_set_plaintext(CwtTextDocumentPtr doc, const CHAR *text, size_t len);
-void _cwt_textdoc_insert_plaintext(CwtTextDocumentPtr doc, const CHAR *text, size_t len, size_t pos);
+void _cwt_textdoc_set_plaintext(CwtTextDocumentPtr doc, const CWT_CHAR *text, size_t len);
+void _cwt_textdoc_insert_plaintext(CwtTextDocumentPtr doc, const CWT_CHAR *text, size_t len, size_t pos);
 CwtTextBlockXPtr _cwt_textdoc_first_block(const CwtTextDocumentPtr doc);
 CwtTextBlockXPtr _cwt_textdoc_last_block(const CwtTextDocumentPtr doc);
 CwtTextBlockXPtr _cwt_textdoc_find_block(const CwtTextDocumentPtr doc, size_t pos);

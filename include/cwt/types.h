@@ -8,7 +8,20 @@
 	typedef enum BOOL { FALSE, TRUE } BOOL;
 #endif
 
-typedef char                   CHAR;
+#ifdef CWT_UNICODE
+#	ifdef CWT_CC_MSC
+#		include <tchar.h>
+#		ifdef __cplusplus
+#			include <xstring>
+#		endif
+#	endif
+#	include <wchar.h>
+#	include <wctype.h>
+	typedef wchar_t 		   CWT_CHAR;
+#else
+	typedef char 		       CWT_CHAR;
+#endif
+
 typedef unsigned char          UCHAR;
 typedef char                   SBYTE;
 typedef unsigned char          BYTE;
@@ -116,5 +129,22 @@ typedef enum CwtTypeId {
 #define CWT_ULONGLONG_MAX 18446744073709551615ULL
 
 #define CWT_SIZE_T_MAX UINT_MAX
+
+#if defined(_T)
+#	undef _T
+#endif
+#ifdef CWT_UNICODE
+#	define _T(s)   L##s
+#	define _Tr(s)  L##s
+/*
+#	define _Tr(s)  jq::String().fromUtf8(s)
+*/
+#	define _WIDEN(x) _T(x) /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
+#	define _TFILE_ _WIDEN(__FILE__)
+#else
+#	define _T(s)  s
+#	define _Tr(s)  s
+#	define _TFILE_	__FILE__
+#endif
 
 #endif /* ! __CWT_TYPES_H__ */

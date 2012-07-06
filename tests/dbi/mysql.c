@@ -12,33 +12,33 @@
 #include <cwt/string.h>
 #include <cwt/dbi/dbi.h>
 
-static const CHAR *__username = "root";
-static const CHAR *__password = "rdflhfnehf";
-static const CHAR *__dsn_with_flags = "DBI:mysql:database=stk;host=localhost;port=3306;mysql_flags=COMPRESS,FOUND_ROWS,IGNORE_SIGPIPE,IGNORE_SPACE,INTERACTIVE,LOCAL_FILES,MULTI_RESULTS,MULTI_STATEMENTS";
-static const CHAR *__dsn      = "DBI:mysql:host=localhost;port=3306";
+static const CWT_CHAR *__username = "root";
+static const CWT_CHAR *__password = "rdflhfnehf";
+static const CWT_CHAR *__dsn_with_flags = "DBI:mysql:database=stk;host=localhost;port=3306;mysql_flags=COMPRESS,FOUND_ROWS,IGNORE_SIGPIPE,IGNORE_SPACE,INTERACTIVE,LOCAL_FILES,MULTI_RESULTS,MULTI_STATEMENTS";
+static const CWT_CHAR *__dsn      = "DBI:mysql:host=localhost;port=3306";
 
-static const CHAR *__admin_func = "admin";
-static CHAR       *__createdb_argv[] = {"createdb", "cwt_test_db", NULL};
-static CHAR       *__dropdb_argv[]   = {"dropdb", "cwt_test_db", NULL};
+static const CWT_CHAR *__admin_func = "admin";
+static CWT_CHAR       *__createdb_argv[] = {"createdb", "cwt_test_db", NULL};
+static CWT_CHAR       *__dropdb_argv[]   = {"dropdb", "cwt_test_db", NULL};
 
-static const CHAR* __hostinfo;
-static const CHAR* __info;
+static const CWT_CHAR* __hostinfo;
+static const CWT_CHAR* __info;
 static UINT        __protoinfo;
-static const CHAR* __serverinfo;
+static const CWT_CHAR* __serverinfo;
 static ULONG       __serverversion;
-static const CHAR* __clientinfo;
+static const CWT_CHAR* __clientinfo;
 static ULONG       __clientversion;
 static ULONG       __thread_id;
-static const CHAR* __stat;
+static const CWT_CHAR* __stat;
 
 
-static const CHAR *__sql_use_db       = "USE cwt_test_db";
-static const CHAR *__sql_drop_table   = "DROP TABLE IF EXISTS test_table";
-static const CHAR *__sql_create_table = "CREATE TABLE cwt_test_table(col1 INT,\
+static const CWT_CHAR *__sql_use_db       = "USE cwt_test_db";
+static const CWT_CHAR *__sql_drop_table   = "DROP TABLE IF EXISTS test_table";
+static const CWT_CHAR *__sql_create_table = "CREATE TABLE cwt_test_table(col1 INT,\
                                                  col2 VARCHAR(40),\
                                                  col3 SMALLINT,\
                                                  col4 TIMESTAMP)";
-static const CHAR *__sql_insert = "INSERT INTO \
+static const CWT_CHAR *__sql_insert = "INSERT INTO \
                        cwt_test_table(col1,col2,col3) \
                        VALUES(?,?,?)";
 
@@ -46,12 +46,12 @@ int main(int argc, char *argv[])
 {
 	CwtDBHandler dbh;
 	CwtStatement sth;
-	CHAR *scheme;
-	CHAR *driver;
-	CHAR *driverDSN;
+	CWT_CHAR *scheme;
+	CWT_CHAR *driver;
+	CWT_CHAR *driverDSN;
 
 	INT int_data;
-	CHAR str_data[50];
+	CWT_CHAR str_data[50];
 	size_t str_length;
 	SHORT short_data;
 

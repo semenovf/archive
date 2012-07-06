@@ -50,7 +50,7 @@ static int _strlist_dup_data(void *data, void *extra)
 	DListNode *node = CWT_MALLOC(DListNode);
 
 	if( data )
-		node->data = cwtStrDup((const CHAR*)data);
+		node->data = cwtStrDup((const CWT_CHAR*)data);
 	else
 		node->data = NULL;
 
@@ -71,7 +71,7 @@ size_t cwtStringListSize(CwtStringListPtr sl)
 	return sl->count;
 }
 
-void cwtStringListInsertAfter(CwtStringListPtr sl, CwtStringListElemPtr elem, const CHAR *text)
+void cwtStringListInsertAfter(CwtStringListPtr sl, CwtStringListElemPtr elem, const CWT_CHAR *text)
 {
 	CwtStringListElemPtr e =  CWT_MALLOC(CwtStringListElem);
 	e->data = cwtStrDup(text);
@@ -83,7 +83,7 @@ void cwtStringListInsertAfter(CwtStringListPtr sl, CwtStringListElemPtr elem, co
 	sl->count++;
 }
 
-void cwtStringListInsertBefore(CwtStringListPtr sl, CwtStringListElemPtr elem, const CHAR *text)
+void cwtStringListInsertBefore(CwtStringListPtr sl, CwtStringListElemPtr elem, const CWT_CHAR *text)
 {
 	CwtStringListElemPtr e =  CWT_MALLOC(CwtStringListElem);
 	e->data = cwtStrDup(text);
@@ -96,7 +96,7 @@ void cwtStringListInsertBefore(CwtStringListPtr sl, CwtStringListElemPtr elem, c
 	sl->count++;
 }
 
-void cwtStringListInsertFirst(CwtStringListPtr sl, const CHAR *text)
+void cwtStringListInsertFirst(CwtStringListPtr sl, const CWT_CHAR *text)
 {
 	CwtStringListElemPtr e =  CWT_MALLOC(CwtStringListElem);
 	e->data = cwtStrDup(text);
@@ -104,7 +104,7 @@ void cwtStringListInsertFirst(CwtStringListPtr sl, const CHAR *text)
 	sl->count++;
 }
 
-void cwtStringListInsertLast(CwtStringListPtr sl, const CHAR *text)
+void cwtStringListInsertLast(CwtStringListPtr sl, const CWT_CHAR *text)
 {
 	CwtStringListElemPtr e =  CWT_MALLOC(CwtStringListElem);
 	e->data = cwtStrDup(text);
@@ -113,12 +113,12 @@ void cwtStringListInsertLast(CwtStringListPtr sl, const CHAR *text)
 }
 
 
-void cwtStringListAppend(CwtStringListPtr sl, const CHAR* text)
+void cwtStringListAppend(CwtStringListPtr sl, const CWT_CHAR* text)
 {
 	cwtStringListInsertLast(sl, text);
 }
 
-void cwtStringListPrepend(CwtStringListPtr sl, const CHAR* text)
+void cwtStringListPrepend(CwtStringListPtr sl, const CWT_CHAR* text)
 {
 	cwtStringListInsertFirst(sl, text);
 }
@@ -175,7 +175,7 @@ BOOL cwtStringListHasMore(CwtStringListIterator *si)
 	return si->node ? TRUE : FALSE;
 }
 
-CHAR* cwtStringListNext(CwtStringListIterator *si)
+CWT_CHAR* cwtStringListNext(CwtStringListIterator *si)
 {
 	CwtStringListElem *node = si->node;
 	if( si->forward ) {
@@ -183,7 +183,7 @@ CHAR* cwtStringListNext(CwtStringListIterator *si)
 	} else {
 		si->node = si->node->prev;
 	}
-	return (CHAR*)node->data;
+	return (CWT_CHAR*)node->data;
 }
 
 /* call this function before strlist_next
@@ -205,9 +205,9 @@ CwtStringListElemPtr cwtStringListNode(CwtStringListIterator *si)
  * if @c delim is null or is empty string @c sl appends entire @c str
  *
  */
-void cwtStringListSplit(CwtStringListPtr sl, const CHAR *str, const CHAR *delim)
+void cwtStringListSplit(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_CHAR *delim)
 {
-	const CHAR *ptr_begin, *ptr_end, *ptr;
+	const CWT_CHAR *ptr_begin, *ptr_end, *ptr;
 	size_t delim_len = 0;
 
 	if( !str )
@@ -227,7 +227,7 @@ void cwtStringListSplit(CwtStringListPtr sl, const CHAR *str, const CHAR *delim)
 
 	while( ptr < ptr_end ) {
 		if( ptr == cwtStrStr(ptr, delim) ) {
-			CHAR *s = cwtStrNdup(ptr_begin, (size_t)(ptr-ptr_begin));
+			CWT_CHAR *s = cwtStrNdup(ptr_begin, (size_t)(ptr-ptr_begin));
 			cwtStringListAppend(sl, s);
 			CWT_FREE(s);
 			ptr += delim_len;
@@ -243,9 +243,9 @@ void cwtStringListSplit(CwtStringListPtr sl, const CHAR *str, const CHAR *delim)
 	}
 }
 
-void cwtStringListSplitAny(CwtStringListPtr sl, const CHAR *str, const CHAR *delims)
+void cwtStringListSplitAny(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_CHAR *delims)
 {
-	const CHAR *ptr_begin, *ptr_end, *ptr;
+	const CWT_CHAR *ptr_begin, *ptr_end, *ptr;
 	size_t delims_len = 0;
 	size_t i;
 	BOOL delim_ok = FALSE;
@@ -269,7 +269,7 @@ void cwtStringListSplitAny(CwtStringListPtr sl, const CHAR *str, const CHAR *del
 		for( i = 0; i < delims_len; i++ ) {
 			if( *ptr == delims[i] ) {
 				if( !delim_ok ) {
-					CHAR *s = cwtStrNdup(ptr_begin, (size_t)(ptr-ptr_begin));
+					CWT_CHAR *s = cwtStrNdup(ptr_begin, (size_t)(ptr-ptr_begin));
 					delim_ok = TRUE;
 					cwtStringListAppend(sl, s);
 					CWT_FREE(s);
@@ -297,11 +297,11 @@ void cwtStringListSplitAny(CwtStringListPtr sl, const CHAR *str, const CHAR *del
  * @param sl string list
  * @return new allocated concatenated string
  */
-CHAR* cwtStringListCatDelim(CwtStringListPtr sl, const CHAR *delim)
+CWT_CHAR* cwtStringListCatDelim(CwtStringListPtr sl, const CWT_CHAR *delim)
 {
 	CwtStringBufferNS *sbns = cwtStringBufferNS();
 	CwtStringBufferPtr sbuf;
-	CHAR *str;
+	CWT_CHAR *str;
 	CwtStringListIterator it;
 
 
@@ -312,7 +312,7 @@ CHAR* cwtStringListCatDelim(CwtStringListPtr sl, const CHAR *delim)
 	while(cwtStringListHasMore(&it)) {
 		if( delim && sbns->length(sbuf) > 0 )
 			sbns->append(sbuf, delim);
-		sbns->append(sbuf, (CHAR*)cwtStringListNext(&it));
+		sbns->append(sbuf, (CWT_CHAR*)cwtStringListNext(&it));
 	}
 
 	str = cwtStrDup(sbns->cstr(sbuf));
@@ -321,20 +321,20 @@ CHAR* cwtStringListCatDelim(CwtStringListPtr sl, const CHAR *delim)
 	return str;
 }
 
-CHAR* cwtStringListCat(CwtStringListPtr sl)
+CWT_CHAR* cwtStringListCat(CwtStringListPtr sl)
 {
 	return cwtStringListCatDelim(sl, NULL);
 }
 
 
-CHAR* cwtStringListAt(CwtStringListPtr sl, size_t index)
+CWT_CHAR* cwtStringListAt(CwtStringListPtr sl, size_t index)
 {
 	size_t i;
 	CwtStringListIterator it;
-	CHAR *str = NULL;
+	CWT_CHAR *str = NULL;
 
 	if( index >= sl->count )
-		return (CHAR*)NULL;
+		return (CWT_CHAR*)NULL;
 
 	cwtStringListBegin(sl, &it);
 	i = 0;

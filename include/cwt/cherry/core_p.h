@@ -79,16 +79,16 @@ void _cwt_fill_polygon(CWT_POINT points[], int npoints);
 void _cwt_moveto(int x, int y);
 void _cwt_line(int x1, int y1, int x2, int y2);
 void _cwt_lineto(int x, int y);
-void _cwt_outtext(const CHAR* text);
-void _cwt_outtext_xy(int left, int top, const CHAR* text);
+void _cwt_outtext(const CWT_CHAR* text);
+void _cwt_outtext_xy(int left, int top, const CWT_CHAR* text);
 /*void _cwt_outtext_xy_n(int left, int top, const CHAR* text, int n);*/
 /*void _cwt_outtext_box(const CHAR* text, CWT_RECT *rect, CWT_STYLE_PTR pstyle);*/
-void _cwt_outtext_box(const CHAR* text, CWT_RECT *bounds, CWT_FONT* font, UINT16 align, CWT_COLOR color, CWT_COLOR bgcolor);
+void _cwt_outtext_box(const CWT_CHAR* text, CWT_RECT *bounds, CWT_FONT* font, UINT16 align, CWT_COLOR color, CWT_COLOR bgcolor);
 void _cwt_layout_box(CWT_RECT *bounds, CWT_RECT *rect, UINT16 align);
-int  _cwt_text_width(const CWT_FONT *font, const CHAR *text);
-int  _cwt_text_height(const CWT_FONT *font, const CHAR *text);
-void _cwt_text_size_wh(const CWT_FONT *font, const CHAR *text, int *width, int *height);
-void _cwt_text_size(const CWT_FONT *font, const CHAR *text, CWT_SIZE *psize);
+int  _cwt_text_width(const CWT_FONT *font, const CWT_CHAR *text);
+int  _cwt_text_height(const CWT_FONT *font, const CWT_CHAR *text);
+void _cwt_text_size_wh(const CWT_FONT *font, const CWT_CHAR *text, int *width, int *height);
+void _cwt_text_size(const CWT_FONT *font, const CWT_CHAR *text, CWT_SIZE *psize);
 
 void _cwt_save_settings(CWT_SETTINGS *settings);
 void _cwt_restore_settings(CWT_SETTINGS *settings);

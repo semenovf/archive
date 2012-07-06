@@ -11,7 +11,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <cwt/string.h>
-#include <cwt/strutils.h>
 #include <cwt/logger.h>
 #include <cwt/io/serial/config.h>
 #include <cwt/io/seriadev.h>
@@ -49,7 +48,7 @@ int cwtSerialDevicePort(CwtIODevicePtr dev)
  * Open serial device
  * port=5 speed=9600 parity=none stop=1 uart_base=0xd800 irq=0x0A
  */
-CwtIODevicePtr serial_device_open(CHAR *attrs[], int nattrs)
+CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 {
 	CwtSerialDevicePtr spd;
 	int i;

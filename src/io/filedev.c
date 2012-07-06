@@ -36,7 +36,7 @@ typedef struct CwtFileDevice
 } CwtFileDevice, *CwtFileDevicePtr;
 
 
-DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CHAR *path, int mode)
+DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
 {
 	CwtFileDevicePtr fd;
 	int fh;
