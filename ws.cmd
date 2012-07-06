@@ -22,7 +22,6 @@ cd %CWT_HOME%
 mkdir %PROJECT%
 cd %PROJECT%
 mkdir .qmake
-mkdir .msvc
 mkdir include
 mkdir src
 mkdir tests
@@ -55,6 +54,24 @@ echo del ^/S ^*.obj    >> clear.cmd
 echo del ^/S ^*.exe    >> clear.cmd
 echo del ^/S ^*.swp    >> clear.cmd
 echo del ^/S ^*.sdf    >> clear.cmd
+
+#
+# Prepare .girignore
+#
+echo .settings/  > .gitignore
+echo debug/     >> .gitignore
+echo release/   >> .gitignore
+echo *.slo      >> .gitignore
+echo *.lo       >> .gitignore
+echo *.o        >> .gitignore
+echo *.obj      >> .gitignore
+echo *.pdb      >> .gitignore
+echo *.idb      >> .gitignore
+echo *.so       >> .gitignore
+echo *.lai      >> .gitignore
+echo *.la       >> .gitignore
+echo *.a        >> .gitignore
+
 
 
 echo Project %PROJECT% live in %CWT_HOME%%PROJECT% directory
