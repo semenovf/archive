@@ -29,9 +29,6 @@ mkdir tests
 cd include 
 mkdir %PROJECT%
 
-cd ..\.msvc
-mkdir %PROJECT%
-
 cd ..\.qmake
 mkdir tests
 mkdir %PROJECT%
@@ -55,9 +52,9 @@ echo del ^/S ^*.exe    >> clear.cmd
 echo del ^/S ^*.swp    >> clear.cmd
 echo del ^/S ^*.sdf    >> clear.cmd
 
-#
-# Prepare .girignore
-#
+::
+:: Prepare .girignore
+::
 echo .settings/  > .gitignore
 echo debug/     >> .gitignore
 echo release/   >> .gitignore
@@ -65,12 +62,27 @@ echo *.slo      >> .gitignore
 echo *.lo       >> .gitignore
 echo *.o        >> .gitignore
 echo *.obj      >> .gitignore
+echo *.OBJ      >> .gitignore
 echo *.pdb      >> .gitignore
 echo *.idb      >> .gitignore
 echo *.so       >> .gitignore
 echo *.lai      >> .gitignore
 echo *.la       >> .gitignore
 echo *.a        >> .gitignore
+echo ^~*        >> .gitignore
+echo *^~        >> .gitignore
+echo *.bak      >> .gitignore
+echo *.BAK      >> .gitignore
+echo *.map      >> .gitignore
+echo *.MAP      >> .gitignore
+echo *.exe      >> .gitignore
+echo *.EXE      >> .gitignore
+echo *.err      >> .gitignore
+echo *.lk*      >> .gitignore
+echo *.sym      >> .gitignore
+echo *.swp      >> .gitignore
+echo *.SWP      >> .gitignore
+echo ^!.gitignore     >> .gitignore
 
 
 
