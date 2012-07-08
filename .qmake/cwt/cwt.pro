@@ -32,6 +32,9 @@ unix {
 }
 
 win32 {
+    # see cwt/src/stdio.c for description
+    DEFINES += _CRT_NON_CONFORMING_SWPRINTFS
+
     HEADERS += ..\\..\\include\\cwt\\*.h
     HEADERS += ..\\..\\include\\cwt\\algo\\*.h
     HEADERS += ..\\..\\include\\cwt\\algo\\*.h

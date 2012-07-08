@@ -18,6 +18,7 @@
 #	include <dlfcn.h>
 #endif
 
+#include <cwt/string.h>
 
 #ifdef CWT_CC_MSC
 	typedef HMODULE DlHandle;
@@ -32,9 +33,9 @@
 typedef struct CwtDlNS
 {
 	DlHandle (*open)            (const CWT_CHAR *path, BOOL global, BOOL resolve);
-	DlSymbol (*symbol)          (DlHandle h, const CWT_CHAR *name);
+	DlSymbol (*symbol)          (DlHandle h, const char *name);
 	void     (*close)           (DlHandle h);
-	BOOL     (*buildDlFileName) (const CWT_CHAR *name, CWT_CHAR libname[], int *psz);
+	void     (*buildDlFileName) (const CWT_CHAR *name, CwtString *libname);
 } CwtDlNS;
 
 EXTERN_C_BEGIN

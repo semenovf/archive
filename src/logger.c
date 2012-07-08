@@ -1,12 +1,12 @@
 #include <cwt/logger.h>
 #include <stdlib.h>
 #include <cwt/stdio.h>
+#include <cwt/str.h>
 #include <cwt/string.h>
-#include <cwt/strbuf.h>
 
 struct _LOGGER_CONTEXT {
 	CWT_CHAR* prefix;
-	CwtStringBufferPtr sbuf;
+	CwtString *sbuf;
 	void (*printer)(const CWT_CHAR* msg);
 } LOGGER_CONTEXT[LOGGER_COUNT] = {
 	  {NULL, NULL, NULL}
@@ -36,10 +36,10 @@ void set_printer(LOGGER_TYPE type
 	}
 
 	if( prefix )
-		LOGGER_CONTEXT[type].prefix = cwtStringNS()->strdup(prefix);
+		LOGGER_CONTEXT[type].prefix = cwtStrNS()->strdup(prefix);
 
 	if( !LOGGER_CONTEXT[type].sbuf ) {
-		LOGGER_CONTEXT[type].sbuf = cwtStringBufferNS()->create();
+		LOGGER_CONTEXT[type].sbuf = cwtStringNS()->create();
 	}
 
 	if( printer )
@@ -48,19 +48,19 @@ void set_printer(LOGGER_TYPE type
 
 
 static void _print_trace(const CWT_CHAR* msg)
-{ fprintf(stdout, "%s\n", msg); }
+{ cwtStdioNS()->fprintf(stdout, _T("%s\n"), msg); }
 
 static void _print_debug(const CWT_CHAR* msg)
-{ fprintf(stdout, "%s\n", msg); }
+{ cwtStdioNS()->fprintf(stdout, _T("%s\n"), msg); }
 
 static void _print_info(const CWT_CHAR* msg)
-{ fprintf(stdout, "%s\n", msg); }
+{ cwtStdioNS()->fprintf(stdout, _T("%s\n"), msg); }
 
 static void _print_warn(const CWT_CHAR* msg)
-{ fprintf(stderr, "%s\n", msg); }
+{ cwtStdioNS()->fprintf(stderr, _T("%s\n"), msg); }
 
 static void _print_error(const CWT_CHAR* msg)
-{ fprintf(stderr, "%s\n", msg); }
+{ cwtStdioNS()->fprintf(stderr, _T("%s\n"), msg); }
 
 
 /*
@@ -90,7 +90,7 @@ void init_loggers(void)
 
 static void _print(LOGGER_TYPE type, const CWT_CHAR* msg)
 {
-	CwtStringBufferNS *sbns = cwtStringBufferNS();
+	CwtStringNS *sbns = cwtStringNS();
 
 	if( ! LOGGER_CONTEXT[type].printer )
 		init_loggers();

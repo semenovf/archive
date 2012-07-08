@@ -5,14 +5,15 @@
  *      Author: user
  */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdlib.h>
+#include <share.h> /* file sharing modes */
 #include <fcntl.h>
 #include <errno.h>
-#include <string.h>
-#include <share.h> /* file sharing modes */
+#include <cwt/stdio.h>
+#include <cwt/string.h>
+#include <cwt/str.h>
 #include <cwt/unistd.h>
 #include <cwt/io/filedev.h>
 #include <cwt/logger.h>
@@ -39,10 +40,11 @@ typedef struct CwtFileDevice
 DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
 {
 	CwtFileDevicePtr fd;
+	CwtUnistdNS *ns = cwtUnistdNS();
 	int fh;
 
 	if( path ) {
-		fh = cwtOpen(path, mode, 0);
+		fh = ns->open(path, mode, 0);
 		if( fh < 0 ) {
 			printf_error(_Tr("unable to open input file: %s: %s"), path, strerror(errno));
 			return (CwtIODevicePtr)NULL;
@@ -60,7 +62,7 @@ DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
 		fd->out = fh;
 
 	if( fh > 0 )
-		CWT_ASSERT(cwtLseek(fh, 0L, SEEK_SET) >= 0L);
+		CWT_ASSERT(ns->lseek(fh, 0L, SEEK_SET) >= 0L);
 
 	fd->read_pos = 0L;
 	fd->read_pos_saved = 0L;
@@ -85,9 +87,11 @@ DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
  * @param master if @c true files will be created and/or truncated
  * @return
  */
-DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const char* infilename, const char* outfilename, BOOL master)
+DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, const CWT_CHAR* outfilename, BOOL master)
 {
 	CwtFileDevicePtr fd;
+	CwtUnistdNS *ns = cwtUnistdNS();
+
 	int imode = O_RDWR | O_BINARY;
 	int omode = O_RDWR | O_BINARY;
 
@@ -101,20 +105,20 @@ DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const char* infilename, co
 	fd->out = -1;
 
 	if( infilename ) {
-			fd->in = cwtSopen(infilename, imode, SH_DENYNO, S_IREAD | S_IWRITE);
+			fd->in = ns->sopen(infilename, imode, SH_DENYNO, S_IREAD | S_IWRITE);
 			if( fd->in < 0 ) {
-					printf_error("unable to open input file: %s: %s", infilename, strerror(errno));
+					printf_error(_Tr("unable to open input file: %s: %s"), infilename, cwtStrNS()->strerror(errno));
 					CWT_FREE(fd);
 					return (CwtIODevicePtr)NULL;
 			}
 	}
 
 	if( outfilename ) {
-		fd->out = cwtSopen(outfilename, omode, SH_DENYNO, S_IREAD | S_IWRITE);
+		fd->out = ns->sopen(outfilename, omode, SH_DENYNO, S_IREAD | S_IWRITE);
 		if( fd->out < 0 ) {
-			printf_error("unable to open output file: %s: %s", infilename, strerror(errno));
+			printf_error(_Tr("unable to open output file: %s: %s"), infilename, cwtStrNS()->strerror(errno));
 			if( fd->in > 0 ) {
-					cwtClose(fd->in);
+					ns->close(fd->in);
 			}
 			CWT_FREE(fd);
 			return (CwtIODevicePtr)NULL;
@@ -122,10 +126,10 @@ DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const char* infilename, co
 	}
 
 	if( fd->in > 0 )
-		CWT_ASSERT(cwtLseek(fd->in, 0L, SEEK_SET) >= 0L);
+		CWT_ASSERT(ns->lseek(fd->in, 0L, SEEK_SET) >= 0L);
 
 	if( fd->out > 0 )
-		CWT_ASSERT(cwtLseek(fd->out, 0L, SEEK_SET) >= 0L);
+		CWT_ASSERT(ns->lseek(fd->out, 0L, SEEK_SET) >= 0L);
 
 	fd->read_pos = 0L;
 	fd->read_pos_saved = 0L;
@@ -146,14 +150,16 @@ DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const char* infilename, co
 void __cwtFileClose(CwtIODevicePtr dev)
 {
 	CwtFileDevicePtr fd;
+	CwtUnistdNS *ns = cwtUnistdNS();
+
 	CWT_ASSERT(dev);
 	fd = (CwtFileDevicePtr)dev;
 
 	if( fd->in > 0 )
-		cwtClose(fd->in);
+		ns->close(fd->in);
 
 	if( fd->in != fd->out && fd->out > 0 )
-		cwtClose(fd->out);
+		ns->close(fd->out);
 
 	fd->in = fd->out = -1;
 	CWT_FREE(fd);
@@ -161,6 +167,7 @@ void __cwtFileClose(CwtIODevicePtr dev)
 
 size_t __cwtFileBytesAvailable(CwtIODevicePtr dev)
 {
+	CwtUnistdNS *ns = cwtUnistdNS();
 	CwtFileDevicePtr fd;
 	off_t total;
 
@@ -172,7 +179,7 @@ size_t __cwtFileBytesAvailable(CwtIODevicePtr dev)
 		return (size_t)0;
 	}
 
-	total = cwtLseek(fd->in, 0L, SEEK_END);
+	total = ns->lseek(fd->in, 0L, SEEK_END);
 	CWT_ASSERT(total >= 0L);
 
 	return (size_t)(total - fd->read_pos);
@@ -180,6 +187,7 @@ size_t __cwtFileBytesAvailable(CwtIODevicePtr dev)
 
 ssize_t __cwtFileRead(CwtIODevicePtr dev, BYTE* buf, size_t sz)
 {
+	CwtUnistdNS *ns = cwtUnistdNS();
 	CwtFileDevicePtr fd;
 	ssize_t br;
 
@@ -192,9 +200,11 @@ ssize_t __cwtFileRead(CwtIODevicePtr dev, BYTE* buf, size_t sz)
 	}
 
 	sz = CWT_MIN(sz, __cwtFileBytesAvailable(dev));
-	CWT_ASSERT(cwtLseek(fd->in, fd->read_pos, SEEK_SET) >= 0L);
+	CWT_ASSERT(ns->lseek(fd->in, fd->read_pos, SEEK_SET) >= 0L);
 
-	br = cwtRead(fd->in, buf, sz);
+	/*FIXME: warning C4267: 'function' : conversion from 'size_t' to 'UINT', possible loss of data */
+	br = ns->read(fd->in, buf, (UINT)sz);
+
 	CWT_ASSERT(br >= 0);
 	fd->read_pos += br;
 
@@ -203,6 +213,7 @@ ssize_t __cwtFileRead(CwtIODevicePtr dev, BYTE* buf, size_t sz)
 
 ssize_t __cwtFileWrite(CwtIODevicePtr dev, const BYTE* buf, size_t sz)
 {
+	CwtUnistdNS *ns = cwtUnistdNS();
 	CwtFileDevicePtr fd;
 	ssize_t bw;
 
@@ -214,10 +225,10 @@ ssize_t __cwtFileWrite(CwtIODevicePtr dev, const BYTE* buf, size_t sz)
 		return (size_t)-1;
 	}
 
-	CWT_ASSERT(cwtLseek(fd->out, 0L, SEEK_END) >= 0L);
+	CWT_ASSERT(ns->lseek(fd->out, 0L, SEEK_END) >= 0L);
 	CWT_ASSERT(sz > CWT_INT_MAX);
 
-	bw = cwtWrite(fd->out, buf, (int)sz);
+	bw = ns->write(fd->out, buf, (int)sz);
 	CWT_ASSERT(bw >= 0);
 
 	return bw;

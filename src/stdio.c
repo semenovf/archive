@@ -7,15 +7,28 @@
 
 
 #include <cwt/stdio.h>
-#include <stdio.h>
 
 static CwtStdioNS __cwtStdioNS = {
 #ifdef CWT_UNICODE
-	vswprintf
-#else
-	vsprintf
-#endif
+	  wprintf
+	, wsprintf
+	, fwprintf
 
+     /* Note: warning C4996: '_vswprintf': swprintf has been changed to conform with the ISO C standard,
+	  * adding an extra character count parameter. To use traditional Microsoft swprintf,
+	  * set _CRT_NON_CONFORMING_SWPRINTFS (before including <stdio.h>).
+	  * Need for compatibly with vsprintf for single-byte characters */
+	, _vswprintf /* vswprintf defers for C and C++ */
+	#ifdef CWT_CC_MSC
+	#	define _CRT_NON_CONFORMING_SWPRINTFS 1
+	#endif
+
+#else
+	  printf
+	, sprintf
+	, fprintf
+	, vsprintf
+#endif
 };
 
 

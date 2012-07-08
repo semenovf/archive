@@ -11,56 +11,56 @@
 #include <ctype.h>
 
 static const CWT_CHAR* __attr_names[] = {
-	  "bg_color"
-	, "bg_left_width"
-	, "bg_left_color"
-	, "bg_left_style"
+	  _T("bg_color")
+	, _T("bg_left_width")
+	, _T("bg_left_color")
+	, _T("bg_left_style")
 
-	, "bg_top_width"
-	, "bg_top_color"
-	, "bg_top_style"
+	, _T("bg_top_width")
+	, _T("bg_top_color")
+	, _T("bg_top_style")
 
-	, "bg_right_width"
-	, "bg_right_color"
-	, "bg_right_style"
+	, _T("bg_right_width")
+	, _T("bg_right_color")
+	, _T("bg_right_style")
 
-	, "bg_bottom_width"
-	, "bg_bottom_color"
-	, "bg_bottom_style"
+	, _T("bg_bottom_width")
+	, _T("bg_bottom_color")
+	, _T("bg_bottom_style")
 
-	, "left"
-	, "top"
-	, "width"
-	, "height"
+	, _T("left")
+	, _T("top")
+	, _T("width")
+	, _T("height")
 
-	, "color"
+	, _T("color")
 
-	, "font_family"
-	, "font_size"
-	, "font_style"
-	, "font_weight"
+	, _T("font_family")
+	, _T("font_size")
+	, _T("font_style")
+	, _T("font_weight")
 
-	, "margin_left"
-	, "margin_top"
-	, "margin_right"
-	, "margin_bottom"
+	, _T("margin_left")
+	, _T("margin_top")
+	, _T("margin_right")
+	, _T("margin_bottom")
 
-	, "padding_left"
-	, "padding_top"
-	, "padding_right"
-	, "padding_bottom"
+	, _T("padding_left")
+	, _T("padding_top")
+	, _T("padding_right")
+	, _T("padding_bottom")
 
-	, "max_width"
-	, "max_height"
-	, "min_width"
-	, "min_height"
+	, _T("max_width")
+	, _T("max_height")
+	, _T("min_width")
+	, _T("min_height")
 
-	, "opacity"
-	, "position"
-	, "text_indent"
-	, "text_align"
-	, "valign"
-	, "halign"
+	, _T("opacity")
+	, _T("position")
+	, _T("text_indent")
+	, _T("text_align")
+	, _T("valign")
+	, _T("halign")
 };
 
 /**

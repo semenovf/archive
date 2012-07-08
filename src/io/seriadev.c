@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <cwt/string.h>
+#include <cwt/str.h>
 #include <cwt/logger.h>
 #include <cwt/io/serial/config.h>
 #include <cwt/io/seriadev.h>
@@ -50,6 +51,7 @@ int cwtSerialDevicePort(CwtIODevicePtr dev)
  */
 CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 {
+	CwtStrNS *strNS = cwtStrNS();
 	CwtSerialDevicePtr spd;
 	int i;
 	BOOL is_error = FALSE;
@@ -66,68 +68,69 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 
 	for( i = 0; i < nattrs; i++ ) {
 		BOOL ok;
-		if( cwtStrNcmp("port=", attrs[i], 5) == 0 ) {
-			portnum = cwtStrToUINT(attrs[i]+5, 0, &ok);
+		if( strNS->strncmp(_T("port="), attrs[i], 5) == 0 ) {
+			portnum = strNS->toUINT(attrs[i]+5, 0, &ok);
 			if( !ok || portnum < 1 || portnum > SERIALPORT_MAX ) {
-				printf_error("bad serial port number or it is out of bounds (must be between 1 and %d)", SERIALPORT_MAX);
+				printf_error(_T("bad serial port number or it is out of bounds (must be between 1 and %d)")
+					, SERIALPORT_MAX);
 				is_error = TRUE;
 			}
-		} else if( cwtStrNcmp("speed=", attrs[i], 6) == 0 ) {
-			speed = cwtStrToLONG(attrs[i]+6, 0, &ok);
+		} else if( strNS->strncmp(_T("speed="), attrs[i], 6) == 0 ) {
+			speed = strNS->toLONG(attrs[i]+6, 0, &ok);
 			if( !ok ) {
-				print_error("bad serial port speed");
+				print_error(_Tr("bad serial port speed"));
 				is_error = TRUE;
 			}
-		} else if( cwtStrNcmp("parity=", attrs[i], 7) == 0 ) {
-			if( cwtStrEq("none", attrs[i] + 7) ) {
+		} else if( strNS->strncmp(_T("parity="), attrs[i], 7) == 0 ) {
+			if( strNS->streq(_T("none"), attrs[i] + 7) ) {
 				parity = SP_ParityNone;
-			} else if( cwtStrEq("odd", attrs[i] + 7) ) {
+			} else if( strNS->streq(_T("odd"), attrs[i] + 7) ) {
 				parity = SP_ParityOdd;
-			} else if( cwtStrEq("even", attrs[i] + 7) ) {
+			} else if( strNS->streq(_T("even"), attrs[i] + 7) ) {
 				parity = SP_ParityEven;
 			} else {
-				print_error("bad serial port parity");
+				print_error(_Tr("bad serial port parity"));
 				is_error = TRUE;
 			}
-		} else if( cwtStrNcmp("data=", attrs[i], 5) == 0 ) {
-			if( cwtStrEq("5", attrs[i] + 5) ) {
+		} else if( strNS->strncmp(_T("data="), attrs[i], 5) == 0 ) {
+			if( strNS->streq(_T("5"), attrs[i] + 5) ) {
 				db = SP_DB5;
-			} else if( cwtStrEq("6", attrs[i] + 5) ) {
+			} else if( strNS->streq(_T("6"), attrs[i] + 5) ) {
 				db = SP_DB6;
-			} else if( cwtStrEq("7", attrs[i] + 5) ) {
+			} else if( strNS->streq(_T("7"), attrs[i] + 5) ) {
 				db = SP_DB7;
-			} else if( cwtStrEq("8", attrs[i] + 5) ) {
+			} else if( strNS->streq(_T("8"), attrs[i] + 5) ) {
 				db = SP_DB8;
 			} else {
-				print_error("bad serial port stop bits");
+				print_error(_Tr("bad serial port stop bits"));
 				is_error = TRUE;
 			}
-		} else if( cwtStrNcmp("stop=", attrs[i], 5) == 0 ) {
-			if( cwtStrEq("1", attrs[i] + 5) ) {
+		} else if( strNS->strncmp(_T("stop="), attrs[i], 5) == 0 ) {
+			if( strNS->streq(_T("1"), attrs[i] + 5) ) {
 				sb = SP_SB1;
-			} else if( cwtStrEq("2", attrs[i] + 5) ) {
+			} else if( strNS->streq(_T("2"), attrs[i] + 5) ) {
 				sb = SP_SB2;
 			} else {
-				print_error("bad serial port stop bits");
+				print_error(_Tr("bad serial port stop bits"));
 				is_error = TRUE;
 			}
-		} else if( cwtStrNcmp("uart_base=", attrs[i], 10) == 0 ) {
-			uart_base = cwtStrToUINT(attrs[i] + 10, 0, &ok);
+		} else if( strNS->strncmp(_T("uart_base="), attrs[i], 10) == 0 ) {
+			uart_base = strNS->toUINT(attrs[i] + 10, 0, &ok);
 			if( !ok ) {
-				print_error("bad serial port uart base address");
+				print_error(_Tr("bad serial port uart base address"));
 				is_error = TRUE;
 			}
-		} else if( cwtStrNcmp("irq=", attrs[i], 4) == 0 ) {
-			irq = cwtStrToUINT(attrs[i] + 4, 0, &ok);
+		} else if( strNS->strncmp(_T("irq="), attrs[i], 4) == 0 ) {
+			irq = strNS->toUINT(attrs[i] + 4, 0, &ok);
 			if( !ok || irq < 1 || irq > 15 ) {
-				print_error("bad serial port IRQ");
+				print_error(_Tr("bad serial port IRQ"));
 				is_error = TRUE;
 			}
-		} else if( cwtStrEq("hispeed", attrs[i]) ) {
+		} else if( strNS->streq(_T("hispeed"), attrs[i]) ) {
 			hispeed = TRUE;
 		} else {
-			printf_warn("%s: invalid serial port attribute, ignored"
-				, attrs[i] != NULL ? attrs[i] : "<null>");
+			printf_warn(_Tr("%s: invalid serial port attribute, ignored")
+				, attrs[i] != NULL ? attrs[i] : CWT_CONST_NULLSTR);
 		}
 	}
 
@@ -135,7 +138,7 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 		return (CwtIODevicePtr)NULL;
 
 	if( portnum < 0) {
-		print_error("serial port number must be specified");
+		print_error(_Tr("serial port number must be specified"));
 		return (CwtIODevicePtr)NULL;
 	}
 
@@ -150,7 +153,7 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 			case 4: uart_base = 0x2E8;
 				break;
 			default:
-				print_error("serial port uart base address must be specified");
+				print_error(_Tr("serial port uart base address must be specified"));
 				return (CwtIODevicePtr)NULL;
 		}
 	}
@@ -162,7 +165,7 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 			case 2:
 			case 4: irq = 3/*0x0B*/; break;
 			default:
-				print_error("serial port IRQ must be specified");
+				print_error(_Tr("serial port IRQ must be specified"));
 				return (CwtIODevicePtr)NULL;
 		}
 	}
@@ -171,14 +174,14 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 
 	if( rc != E_SP_NOERROR ) {
 /*		serialport_close(portnum);*/
-		printf_error("serialport_set_settings: %s", serialport_strerror(rc));
+		printf_error(_Tr("serialport_set_settings: %s"), serialport_strerror(rc));
 		return (CwtIODevicePtr)NULL;
 	}
 
 	rc = serialport_open(portnum, speed, hispeed, db, parity, sb);
 
 	if( rc != E_SP_NOERROR ) {
-		printf_error("serialport_open: %s", serialport_strerror(rc));
+		printf_error(_Tr("serialport_open: %s"), serialport_strerror(rc));
 		return (CwtIODevicePtr)NULL;
 	}
 

@@ -320,21 +320,22 @@ ssize_t rb_write_from_file(RingBufferPtr rb, int fd, size_t n)
 {
 	BYTE ibuf[256];
 	size_t total_br = 0;
+	CwtUnistdNS *ns = cwtUnistdNS();
 
 	if( fd < 0 ) {
-		print_error("invalid file descriptor");
+		print_error(_Tr("invalid file descriptor"));
 		return 0;
 	}
 
 	while( total_br < n ) {
 		/* TODO fix unsigned int cast */
-		ssize_t br = cwtRead(fd, ibuf, (unsigned int)(n - total_br));
+		ssize_t br = ns->read(fd, ibuf, (UINT)(n - total_br));
 
 		if( br == 0 ) /* end of file */
 			break;
 
 		if( br < 0 ) {
-			printf_error("read file error: %s", strerror(errno));
+			printf_error(_Tr("read file error: %s"), strerror(errno));
 			return (ssize_t)-1;
 		}
 

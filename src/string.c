@@ -1,265 +1,458 @@
 /*
- * string.c
+ * strbuf.c
  *
- *  Created on: 18.06.2012
+ *  Created on: 13.01.2012
  *      Author: wladt
  */
 
 
+#include <stdlib.h>
 #include <cwt/string.h>
+#include <cwt/str.h>
 
-const CWT_CHAR* CWT_CONST_EMPTYSTR = _T("");
-const CWT_CHAR* CWT_CONST_NULLSTR  = _T("<null>");
+static CwtStringNS __CwtStringNS;
 
-static BOOL      __streq(const CWT_CHAR *s1, const CWT_CHAR *s2);
-static BOOL      __strieq(const CWT_CHAR *s1, const CWT_CHAR *s2);
-static void*     __bzero(void *block, size_t sz);
-static CWT_CHAR* __strndup(const CWT_CHAR *s, size_t n);
-static CWT_CHAR  __toupper(CWT_CHAR ch);
-static CWT_CHAR  __tolower(CWT_CHAR ch);
-static void      __toupperStr   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
-static void      __tolowerStr   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
-static CWT_CHAR* __strrstr(const CWT_CHAR *s, const CWT_CHAR *substr);
-static void      __chomp(CWT_CHAR *s);
-static CWT_CHAR  __charAt(const CWT_CHAR *s, size_t i);
+static void            __append(CwtString *s, const CWT_CHAR *str);
+static const CWT_CHAR* __cstr(CwtString *s);
 
-EXTERN_C_BEGIN
-extern LONGLONG   __toLONGLONG   (const CWT_CHAR *str, int radix, BOOL *ok);
-extern ULONGLONG  __toULONGLONG  (const CWT_CHAR *str, int radix, BOOL *ok);
-extern LONG       __toLONG       (const CWT_CHAR *str, int radix, BOOL *ok);
-extern ULONG      __toULONG      (const CWT_CHAR *str, int radix, BOOL *ok);
-extern INT        __toINT        (const CWT_CHAR *str, int radix, BOOL *ok);
-extern UINT       __toUINT       (const CWT_CHAR *str, int radix, BOOL *ok);
-extern SHORT      __toSHORT      (const CWT_CHAR *str, int radix, BOOL *ok);
-extern USHORT     __toUSHORT     (const CWT_CHAR *str, int radix, BOOL *ok);
-extern SBYTE      __toSBYTE      (const CWT_CHAR *str, int radix, BOOL *ok);
-extern BYTE       __toBYTE       (const CWT_CHAR *str, int radix, BOOL *ok);
-EXTERN_C_END
-
-static CwtStringNS __cwtStringNS = {
-#ifdef CWT_UNICODE
-		  wcsftime
-		, wcslen
-		, wcscpy
-		, wcsncpy
-		, wcschr
-		, wcsstr
-		, __strrstr
-		, __streq
-		, __strieq
-		, wcscmp
-		, wcsncmp
-		, CWT_ISO_CPP_NAME(wcsicmp)
-		, CWT_ISO_CPP_NAME(wcsnicmp)
-		, CWT_ISO_CPP_NAME(wcsdup)
-		, __strndup
-		, wcscat
-		, wcsncat
-		, wcstok
-		, CWT_ISO_CPP_NAME(wcserror)
-		, wcstol
-		, wcstoul
-#	ifdef CWT_CC_MSC
-		, _wcstoi64
-		, _wcstoui64
-#	else
-		, wcstoll
-		, wcstoull
-#	endif
-		, iswalpha
-#else
-		  strftime
-		, strlen
-		, strcpy
-		, strncpy
-		, strchr
-		, strstr
-		, __strrstr
-		, __streq
-		, __strieq
-		, strcmp
-		, strncmp
-		, CWT_ISO_CPP_NAME(stricmp)
-		, CWT_ISO_CPP_NAME(strnicmp)
-		, CWT_ISO_CPP_NAME(strdup)
-		, __strndup
-		, strcat
-		, strncat
-		, strtok
-		, strerror
-		, strtol
-		, strtoul
-#	ifdef CWT_CC_MSC
-		, _strtoi64
-		, _strtoui64
-#	else
-		, strtoull
-		, strtoll
-#	endif
-		, isalpha
-#endif
-		, memcpy
-		, memmove
-		, memset
-		, __bzero
-
-		, __toLONGLONG
-		, __toULONGLONG
-		, __toLONG
-		, __toULONG
-		, __toINT
-		, __toUINT
-		, __toSHORT
-		, __toUSHORT
-		, __toSBYTE
-		, __toBYTE
-
-		, __toSBYTE
-		, __toBYTE
-		, __toSHORT
-		, __toUSHORT
-		, __toINT
-		, __toUINT
-		, __toLONGLONG
-		, __toULONGLONG
-
-		, __toupper
-		, __tolower
-		, __toupperStr
-		, __tolowerStr
-		, __chomp
-		, __charAt
-};
+CWT_BEGIN_DEF_VECTOR_NS(CwtStringNS, CwtString, CWT_CHAR)
+	, __appendElem
+	, __appendElems
+	, __prependElem
+	, __insertElem
+	, __removeElem
+    , __append
+	, __cstr
+CWT_END_DEF_VECTOR_NS(CwtStringNS)
 
 
 DLL_API_EXPORT CwtStringNS* cwtStringNS(void)
 {
-	return &__cwtStringNS;
+	return &__CwtStringNS;
+}
+
+CWT_VECTOR_METHODS(CwtString,CWT_CHAR)
+
+
+static void __append(CwtString *s, const CWT_CHAR *str)
+{
+	__appendElems(s, str, cwtStrNS()->strlen(str));
 }
 
 
-static BOOL __streq(const CWT_CHAR *s1, const CWT_CHAR *s2)
+static const CWT_CHAR* __cstr(CwtString *sb)
 {
-	return __cwtStringNS.strcmp(s1, s2) == 0 ? TRUE : FALSE;
-}
-
-static BOOL __strieq(const CWT_CHAR *s1, const CWT_CHAR *s2)
-{
-	return __cwtStringNS.stricmp(s1, s2) == 0 ? TRUE : FALSE;
-}
-
-static void* __bzero(void *block, size_t sz)
-{
-	return __cwtStringNS.memset(block, 0, sz);
+	__appendElem(sb, _T('\x0'));
+	sb->m_count--;
+	return sb->m_buffer;
 }
 
 
-static CWT_CHAR* __strndup(const CWT_CHAR *s, size_t n)
+#ifdef __COMMENT__
+static const size_t __default_initial_size = 64;
+static const size_t __default_max_size = CWT_SIZE_T_MAX;
+
+static CwtStringBufferPtr __createSized(size_t initial_size, size_t max_size);
+static CwtStringBufferPtr __create(void);
+static void               __init(CwtStringBufferPtr sb);
+static void               __initSized(CwtStringBufferPtr sb, size_t initial_size, size_t max_size);
+static void               __destroy(CwtStringBufferPtr sb);
+static void               __free(CwtStringBufferPtr sb);
+static CwtStringBufferPtr __clone(CwtStringBufferPtr sb);
+static BOOL               __reserve(CwtStringBufferPtr sb, size_t n);
+static BOOL               __lreserve(CwtStringBufferPtr sb, size_t n);
+static BOOL               __mreserve(CwtStringBufferPtr sb, size_t n, size_t pos);
+static size_t             __capacity(CwtStringBufferPtr sb);
+static BOOL               __isEmpty(CwtStringBufferPtr sb);
+static void               __clear(CwtStringBufferPtr sb);
+static size_t             __size(CwtStringBufferPtr sb);
+static void               __appendChar(CwtStringBufferPtr sb, CWT_CHAR ch);
+static void               __appendChars(CwtStringBufferPtr sb, const CWT_CHAR *s, size_t n);
+static void               __append(CwtStringBufferPtr sb, const CWT_CHAR *s);
+static void               __prependChar(CwtStringBufferPtr sb, CWT_CHAR ch);
+static void               __insertChar(CwtStringBufferPtr sb, CWT_CHAR ch, size_t pos);
+static void               __insert(CwtStringBufferPtr sb, const CWT_CHAR *chars, size_t nchars, size_t pos);
+static void               __removeChar(CwtStringBufferPtr sb, size_t pos);
+static const CWT_CHAR*    __cstr(CwtStringBufferPtr sb);
+static CWT_CHAR*          __substr(CwtStringBufferPtr sb, size_t start, size_t nchars);
+static BOOL               __find(CwtStringBufferPtr sb, CWT_CHAR ch, size_t *offset);
+
+static CwtStringNS  __cwtStringBufferNS = {
+	  0
+	, __create
+	, __createSized
+	, __init
+	, __destroy
+	, __free
+	, __clone
+	, __reserve
+	, __lreserve
+	, __mreserve
+	, __capacity
+	, __isEmpty
+	, __clear
+	, __size
+	, __size
+	, __appendChar
+	, __appendChars
+	, __append
+	, __prependChar
+	, __insertChar
+	, __insert
+	, __removeChar
+	, __cstr
+	, __substr
+	, __find
+};
+
+
+static CwtStringBufferPtr __create(void)
 {
-	CWT_CHAR *s0 = NULL;
-
-	s0 = CWT_MALLOCA(CWT_CHAR, n+1);
-	__cwtStringNS.strncpy(s0, s, n);
-	s0[n] = (CWT_CHAR)0;
-
-	return s0;
+	return __createSized((size_t)0, (size_t)0);
 }
 
-static CWT_CHAR  __toupper(CWT_CHAR ch)
+static CwtStringBufferPtr __createSized(size_t initial_size, size_t max_size)
 {
-#ifdef CWT_UNICODE
-	return (CWT_CHAR)towupper(ch);
-#else
-	return (CWT_CHAR)toupper((int)ch);
-#endif
+	CwtStringBufferPtr sb;
+
+	sb = CWT_MALLOC(CwtStringBuffer);
+	CWT_ASSERT(sb);
+	__initSized(sb, initial_size, max_size);
+	__cwtStringBufferNS.refs++;
+	return sb;
 }
 
-static CWT_CHAR  __tolower(CWT_CHAR ch)
+static void __initSized(CwtStringBufferPtr sb, size_t initial_size, size_t max_size)
 {
-#ifdef CWT_UNICODE
-	return (CWT_CHAR)towlower(ch);
-#else
-	return (CWT_CHAR)tolower(ch);
-#endif
-}
-
-
-/**
- * @brief Finds the last occurrence of a substring in another string
- *
- * @c rstrstr scan @c s1 for the last occurrence of a substring @c s2
- *
- * @param s1
- * @param s2
- * @return pointer to the last element in s1 where s2 begins
- * 		   or @c null if @c s2 does not occur in @c s1
- */
-static CWT_CHAR* __strrstr(const CWT_CHAR *s1, const CWT_CHAR *s2)
-{
-	CWT_CHAR *ptr;
-	size_t s2_len;
-
-	if( !s1 )
-		return NULL;
-
-	if( !s2 )
-		return NULL;
-
-	s2_len = __cwtStringNS.strlen(s2);
-	ptr = (CWT_CHAR*)(s1 + __cwtStringNS.strlen(s1));
-
-	while( ptr >= s1 ) {
-		if( __cwtStringNS.strncmp(ptr, s2, s2_len) == 0 )
-			return ptr;
-		ptr--;
+	if( !initial_size ) {
+		initial_size = __default_initial_size;
 	}
 
+	if( !max_size ) {
+		max_size = __default_max_size;
+	}
+
+	if( initial_size > max_size ) {
+		initial_size = max_size;
+	}
+
+	sb->m_buffer = CWT_MALLOCA(CWT_CHAR, initial_size);
+	CWT_ASSERT(sb->m_buffer);
+
+	sb->m_capacity = initial_size;
+	sb->m_count = 0;
+	sb->m_max_capacity = max_size;
+}
+
+static void __init(CwtStringBufferPtr sb)
+{
+	__initSized(sb, 0, 0);
+}
+
+
+static void __destroy(CwtStringBufferPtr sb)
+{
+	if( sb && sb->m_buffer ) {
+		CWT_FREE(sb->m_buffer);
+		sb->m_buffer = NULL;
+	}
+}
+
+static void __free(CwtStringBufferPtr sb)
+{
+	__destroy(sb);
+	CWT_FREE(sb);
+	__cwtStringBufferNS.refs--;
+}
+
+
+static CwtStringBufferPtr __clone(CwtStringBufferPtr sb)
+{
+	if( sb ) {
+		CwtStringBufferPtr clone = __createSized(sb->m_count, __default_max_size);
+		if( sb->m_count > 0 ) {
+			CwtStrNS *stringNS = cwtStrNS();
+			cwtStrNS()->memcpy(clone->m_buffer, sb->m_buffer, sb->m_count * sizeof(CWT_CHAR));
+			clone->m_count = sb->m_count;
+		}
+		return clone;
+	}
 	return NULL;
 }
 
 
-static void __toupperStr(CWT_CHAR *dest, const CWT_CHAR *src, size_t n)
+static BOOL __reserve(CwtStringBufferPtr sb, size_t n)
 {
-	size_t i;
+	size_t available;
+	size_t inc;
 
-	for( i = 0; i < n; i++ ) {
-		dest[i] = __cwtStringNS.toupper(src[i]);
+	CWT_ASSERT(sb);
+
+	available = sb->m_capacity - sb->m_count;
+	inc = n - available;
+
+	if( available < n ) {
+		CWT_CHAR *buffer;
+		size_t capacity;
+
+		capacity = sb->m_capacity + inc;
+
+		if( capacity > sb->m_max_capacity )
+			return FALSE;
+
+		buffer = CWT_MALLOCA(CWT_CHAR, capacity);
+
+		cwtStrNS()->memcpy(buffer, sb->m_buffer, sb->m_count * sizeof(CWT_CHAR));
+
+		CWT_FREE(sb->m_buffer);
+		sb->m_buffer = buffer;
+		sb->m_capacity = capacity;
 	}
+
+	return TRUE;
 }
 
-static void __tolowerStr(CWT_CHAR *dest, const CWT_CHAR *src, size_t n)
-{
-	size_t i;
-
-	for( i = 0; i < n; i++ ) {
-		dest[i] = __cwtStringNS.tolower(src[i]);
-	}
-}
-
-
-static void __chomp(CWT_CHAR *s)
-{
-	CWT_CHAR *ptr;
-
-	ptr = s + __cwtStringNS.strlen(s) - 1;
-	while( ptr >= s && *ptr == _T('\n') ) {
-		*ptr = (CWT_CHAR)0;
-		ptr--;
-	}
-}
 
 /**
- * Return character from @c s at position @c i.
+ * Reserve space from leftmost side of string buffer's head
  *
- * @param s string.
- * @param i character position.
- * @return (CHAR)0 if @c i is out of string bounds or character from string @c at position @c i.
+ * @param sb
+ * @param n
+ * @return
  */
-static CWT_CHAR __charAt(const CWT_CHAR *s, size_t i)
+static BOOL __lreserve(CwtStringBufferPtr sb, size_t n)
 {
-	if( i >= cwtStrLen(s) )
-		return (CWT_CHAR)0;
-	return s[i];
+	size_t inc;
+	CWT_CHAR *buffer;
+	size_t capacity;
+
+	CWT_ASSERT(sb);
+
+	inc = n;
+
+	capacity = sb->m_capacity + inc;
+
+	if( capacity > sb->m_max_capacity )
+		return FALSE;
+
+	buffer = CWT_MALLOCA(CWT_CHAR, capacity);
+
+	cwtStrNS()->memcpy(buffer + n, sb->m_buffer, sb->m_count * sizeof(CWT_CHAR));
+
+	CWT_FREE(sb->m_buffer);
+	sb->m_buffer = buffer;
+	sb->m_capacity = capacity;
+
+	return TRUE;
 }
 
 
+/**
+ * Reserve specified space in the middle of string buffer
+ *
+ * @param sb
+ * @param n
+ * @return
+ */
+static BOOL __mreserve(CwtStringBufferPtr sb, size_t n, size_t pos)
+{
+	size_t inc;
+	CWT_CHAR *buffer;
+	size_t capacity;
+	CwtStrNS *stringNS = cwtStrNS();
+
+	CWT_ASSERT(sb);
+
+	if( pos >= sb->m_count )
+		return __reserve(sb, n);
+
+	if( pos == 0 )
+		return __lreserve(sb, n);
+
+	inc = n;
+
+	capacity = sb->m_capacity + inc;
+
+	if( capacity > sb->m_max_capacity )
+		return FALSE;
+
+	buffer = CWT_MALLOCA(CWT_CHAR, capacity);
+
+	stringNS->memcpy(buffer, sb->m_buffer, pos * sizeof(CWT_CHAR));
+	stringNS->memcpy(buffer+pos+n, sb->m_buffer + pos, (sb->m_count - pos) * sizeof(CWT_CHAR));
+
+	CWT_FREE(sb->m_buffer);
+	sb->m_buffer = buffer;
+	sb->m_capacity = capacity;
+
+	return TRUE;
+}
+
+static size_t __capacity(CwtStringBufferPtr sb)
+{
+	CWT_ASSERT(sb);
+	return sb->m_capacity;
+}
+
+
+static BOOL __isEmpty(CwtStringBufferPtr sb)
+{
+	CWT_ASSERT(sb);
+	return (sb->m_count == 0 ? TRUE : FALSE);
+}
+
+
+static void __clear(CwtStringBufferPtr sb)
+{
+	CWT_ASSERT(sb);
+	sb->m_count = 0;
+}
+
+static size_t __size(CwtStringBufferPtr sb)
+{
+	CWT_ASSERT(sb);
+	return sb->m_count;
+}
+
+
+static void __appendChar(CwtStringBufferPtr sb, CWT_CHAR ch)
+{
+	CWT_ASSERT(sb);
+	CWT_ASSERT(__reserve(sb, 1));
+
+	sb->m_buffer[sb->m_count] = ch;
+	sb->m_count++;
+}
+
+
+static void __appendChars(CwtStringBufferPtr sb, const CWT_CHAR *s, size_t n)
+{
+	CWT_ASSERT(__reserve(sb, n));
+
+	cwtStrNS()->memcpy(sb->m_buffer + sb->m_count, s, n * sizeof(CWT_CHAR));
+	sb->m_count += n;
+}
+
+static void __append(CwtStringBufferPtr sb, const CWT_CHAR *s)
+{
+	__appendChars(sb, s, cwtStrLen(s));
+}
+
+static void __prependChar(CwtStringBufferPtr sb, CWT_CHAR ch)
+{
+	CWT_ASSERT(sb);
+
+	CWT_ASSERT(__lreserve(sb, 1));
+	sb->m_buffer[0] = ch;
+	sb->m_count++;
+}
+
+
+static void __insertChar(CwtStringBufferPtr sb, CWT_CHAR ch, size_t pos)
+{
+	CWT_ASSERT(sb);
+
+	CWT_ASSERT(__mreserve(sb, 1, pos));
+	sb->m_buffer[pos] = ch;
+	sb->m_count++;
+}
+
+static void __insert(CwtStringBufferPtr sb, const CWT_CHAR *chars, size_t nchars, size_t pos)
+{
+	size_t i;
+	CWT_ASSERT(sb);
+
+	CWT_ASSERT(__mreserve(sb, nchars, pos));
+
+	/* TODO replace this code by memcpy function call */
+	for( i = 0; i < nchars; i++ )
+		sb->m_buffer[pos + i] = chars[i];
+	sb->m_count += nchars;
+}
+
+static void __removeChar(CwtStringBufferPtr sb, size_t pos)
+{
+	CWT_ASSERT(sb);
+
+	if( !sb->m_count ) /* empty buffer */
+		return;
+
+	if( pos < sb->m_count ) {
+		sb->m_count--;
+		cwtStrNS()->memmove(&sb->m_buffer[pos], &sb->m_buffer[pos + 1], sb->m_count * sizeof(CWT_CHAR) );
+	}
+}
+
+
+
+/* TODO
+void strbuf_remove(StringBufferPtr sb, size_t nchars, size_t pos)
+{
+	CWT_ASSERT(sb);
+
+	if( !sb->m_count )  empty buffer
+		return;
+
+	nchars = CWT_MIN(nchars, sb->m_count - pos);
+
+	if( pos >= sb->m_count - 1 ) {  remove last char
+		sb->m_count--;
+	} else {
+		memmove(&sb->m_buffer[sb->m_head + pos], &sb->m_buffer[sb->m_head + pos + 1], sizeof(CHAR) );
+	}
+}
+*/
+
+
+
+
+static CWT_CHAR* __substr(CwtStringBufferPtr sb, size_t start, size_t nchars)
+{
+	CWT_CHAR *chars = NULL;
+
+	if( start < sb->m_count ) {
+		nchars = CWT_MIN(nchars, sb->m_count - start);
+		chars = CWT_MALLOCA(CWT_CHAR, nchars+1);
+		cwtStrNS()->strncpy(chars, sb->m_buffer + start, nchars);
+		chars[nchars] = '\x0';
+	}
+
+	return chars;
+}
+
+
+/**
+ * @brief Searches first occurrence of character @c ch in string buffer
+ * starting from the position @c offset
+ *
+ * @param sb string buffer
+ * @param ch character to search
+ * @param offset starting position
+ * @return @c true if found and *offset is set to a valid position, or @c false
+ */
+static BOOL __find(CwtStringBufferPtr sb, CWT_CHAR ch, size_t *offset)
+{
+	CWT_CHAR *ptr;
+	size_t off;
+
+	CWT_ASSERT(sb);
+	CWT_ASSERT(offset);
+
+	if( *offset >= sb->m_count )
+		return FALSE;
+
+	off = *offset;
+	ptr = sb->m_buffer + off;
+
+	while( off < sb->m_count ) {
+		if( *ptr == ch ) {
+			*offset = off;
+			return TRUE;
+		}
+		ptr++;
+		off++;
+	}
+
+	return FALSE;
+}
+#endif

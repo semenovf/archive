@@ -9,10 +9,10 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <cwt/str.h>
 #include <cwt/string.h>
 #include <cwt/unistd.h>
 #include <cwt/logger.h>
-#include <cwt/strbuf.h>
 #include <cwt/io/channel.h>
 #include <cwt/io/filedev.h>
 #include <cwt/ini.h>

@@ -8,6 +8,7 @@
 
 #include <cwt/stylex/stylex.h>
 #include <cwt/string.h>
+#include <cwt/str.h>
 #include <cwt/algo/hash_tab.h>
 #include <cwt/algo/hash_int.h>
 #include <cwt/algo/hash_str.h>
@@ -87,7 +88,7 @@ void cwt_stylex_cloneStyle(Cwt_StylePtr clone, Cwt_StyleConstPtr orig)
 {
 	CWT_ASSERT(orig);
 	CWT_ASSERT(clone);
-	cwtMemCpy(clone, orig, sizeof(Cwt_Style));
+	cwtStrNS()->memcpy(clone, orig, sizeof(Cwt_Style));
 }
 
 

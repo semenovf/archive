@@ -11,11 +11,10 @@
 #include <mysql/mysql.h>
 #include <cwt/logger.h>
 #include <cwt/string.h>
+#include <cwt/str.h>
 #include <cwt/strlist.h>
-#include <cwt/strutils.h>
-#include <cwt/strbuf.h>
 
-#define __LOG_PREFIX "mysql: "
+#define __LOG_PREFIX _T("mysql: ")
 #define __DBH(dbh)  (((CwtMySqlDBHandler)(dbh))->m_conn)
 #define __STH(sth)  (((CwtMySqlStatement)(sth))->m_stmt)
 
@@ -68,8 +67,8 @@ static const CWT_CHAR*  __stmtErrstr(CwtStatement sth);
 
 
 /* local helper functions */
-static BOOL __buildSqlCreateDB(CwtStringBufferPtr sql, CWT_CHAR *argv[]);
-static BOOL __buildSqlDropDB(CwtStringBufferPtr sql, CWT_CHAR *argv[]);
+static BOOL __buildSqlCreateDB(CwtString *sql, CWT_CHAR *argv[]);
+static BOOL __buildSqlDropDB(CwtString *sql, CWT_CHAR *argv[]);
 
 
 static BOOL __nConnections = 0; /* number of connections */
@@ -139,8 +138,13 @@ static void __mysqlCleanup(void)
  * @param password user password
  * @return DBI handle or NULL if error
  */
-CwtDBHandler __connect(const CWT_CHAR *driverDSN, const CWT_CHAR *username, const CWT_CHAR *password)
+CwtDBHandler __connect(const CWT_CHAR *driverDSN
+	, const CWT_CHAR *username
+	, const CWT_CHAR *password
+	, const CWT_CHAR *csname)
 {
+	CwtStrNS *strNS = cwtStrNS();
+
 	CwtMySqlDBHandler dbh = NULL;
 	CwtStringListPtr opts = NULL;
 	CwtStringListIterator itOpts;
@@ -157,7 +161,7 @@ CwtDBHandler __connect(const CWT_CHAR *driverDSN, const CWT_CHAR *username, cons
 		if( !__nConnections ) {
 		    /* initialize client library */
 		    if( mysql_library_init(0, NULL, NULL) ) {
-		        printf_error(__LOG_PREFIX "failed to initialize MySQL library");
+		        printf_error(__LOG_PREFIX _Tr("failed to initialize MySQL library"));
 		        break;
 		    }
 		}
@@ -165,42 +169,43 @@ CwtDBHandler __connect(const CWT_CHAR *driverDSN, const CWT_CHAR *username, cons
 	    conn = mysql_init(NULL);
 
 	    if( conn == NULL ) {
-	    	printf_error(__LOG_PREFIX "unable to initialize MySQL connection handler (probably out of memory)");
+	    	printf_error(__LOG_PREFIX _Tr("unable to initialize MySQL connection handler (probably out of memory)"));
 	    	break;
 	    }
 
 	    opts = cwtNewStringList();
-	    cwtStringListSplit(opts, driverDSN, ";");
+	    cwtStringListSplit(opts, driverDSN, _T(";"));
 	    cwtStringListBegin(opts, &itOpts);
 
 	    ok = TRUE;
 
 	    while( cwtStringListHasMore(&itOpts) ) {
 	    	CWT_CHAR* opt = cwtStringListNext(&itOpts);
-	    	printf_debug(__LOG_PREFIX "option: %s", opt);
-	    	if( cwtStrNcmp("host=", opt, 5) == 0 ) {
+	    	printf_debug(__LOG_PREFIX _Tr("option: %s"), opt);
+
+	    	if( strNS->strncmp(_T("host="), opt, 5) == 0 ) {
 	    		host = &opt[5];
-	    	} else if(cwtStrNcmp("database=", opt, 9) == 0) {
+	    	} else if( strNS->strncmp(_T("database="), opt, 9) == 0) {
 	    		dbname = &opt[9];
-	    	} else if(cwtStrNcmp("port=", opt, 5) == 0) {
+	    	} else if( strNS->strncmp(_T("port="), opt, 5) == 0) {
 	    		port = cwtStrToUINT(&opt[5], 0, &ok);
 	    		if( !ok ) {
-	    			print_error(__LOG_PREFIX "bad port value");
+	    			print_error(__LOG_PREFIX _Tr("bad port value"));
 	    			break;
 	    		}
-	    	} else if(cwtStrNcmp("mysql_socket=", opt, 13) == 0) {
+	    	} else if( strNS->strncmp(_T("mysql_socket="), opt, 13) == 0) {
 	    		sockname = &opt[13];
-	    	} else if(cwtStrNcmp("mysql_flags=", opt, 12) == 0) {
+	    	} else if( strNS->strncmp(_T("mysql_flags="), opt, 12) == 0) {
 	    	    CWT_CHAR *flagstr = &opt[12];
 
-	    	    if( cwtStrStr(flagstr, "COMPRESS") )         flags |= CLIENT_COMPRESS;
-	    	    if( cwtStrStr(flagstr, "FOUND_ROWS") )       flags |= CLIENT_FOUND_ROWS;
-	    	    if( cwtStrStr(flagstr, "IGNORE_SIGPIPE") )   flags |= CLIENT_IGNORE_SIGPIPE;
-	    	    if( cwtStrStr(flagstr, "IGNORE_SPACE") )     flags |= CLIENT_IGNORE_SPACE;
-	    	    if( cwtStrStr(flagstr, "INTERACTIVE") )      flags |= CLIENT_INTERACTIVE;
-	    	    if( cwtStrStr(flagstr, "LOCAL_FILES") )      flags |= CLIENT_LOCAL_FILES;
-	    	    if( cwtStrStr(flagstr, "MULTI_RESULTS") )    flags |= CLIENT_MULTI_RESULTS;
-	    	    if( cwtStrStr(flagstr, "MULTI_STATEMENTS") ) flags |= CLIENT_MULTI_STATEMENTS;
+	    	    if( cwtStrStr(flagstr, _T("COMPRESS")) )         flags |= CLIENT_COMPRESS;
+	    	    if( cwtStrStr(flagstr, _T("FOUND_ROWS")) )       flags |= CLIENT_FOUND_ROWS;
+	    	    if( cwtStrStr(flagstr, _T("IGNORE_SIGPIPE")) )   flags |= CLIENT_IGNORE_SIGPIPE;
+	    	    if( cwtStrStr(flagstr, _T("IGNORE_SPACE")) )     flags |= CLIENT_IGNORE_SPACE;
+	    	    if( cwtStrStr(flagstr, _T("INTERACTIVE")) )      flags |= CLIENT_INTERACTIVE;
+	    	    if( cwtStrStr(flagstr, _T("LOCAL_FILES")) )      flags |= CLIENT_LOCAL_FILES;
+	    	    if( cwtStrStr(flagstr, _T("MULTI_RESULTS")) )    flags |= CLIENT_MULTI_RESULTS;
+	    	    if( cwtStrStr(flagstr, _T("MULTI_STATEMENTS")) ) flags |= CLIENT_MULTI_STATEMENTS;
 	    	}
 	    }
 
@@ -209,12 +214,12 @@ CwtDBHandler __connect(const CWT_CHAR *driverDSN, const CWT_CHAR *username, cons
 
 	    ok = FALSE;
 
-	    print_trace(__LOG_PREFIX "Connecting...");
-	    printf_debug(__LOG_PREFIX "host:     %s", CWT_STRING_OR_NULLSTR(host));
-	    printf_debug(__LOG_PREFIX "dbname:   %s", CWT_STRING_OR_NULLSTR(dbname));
-	    printf_debug(__LOG_PREFIX "port:     %u", port);
-	    printf_debug(__LOG_PREFIX "sockname: %s", CWT_STRING_OR_NULLSTR(sockname));
-	    printf_debug(__LOG_PREFIX "flags:    %lu (0x%X)", flags, flags);
+	    print_trace(__LOG_PREFIX _T("Connecting..."));
+	    printf_debug(__LOG_PREFIX _T("host:     %s"), CWT_STRING_OR_NULLSTR(host));
+	    printf_debug(__LOG_PREFIX _T("dbname:   %s"), CWT_STRING_OR_NULLSTR(dbname));
+	    printf_debug(__LOG_PREFIX _T("port:     %u"), port);
+	    printf_debug(__LOG_PREFIX _T("sockname: %s"), CWT_STRING_OR_NULLSTR(sockname));
+	    printf_debug(__LOG_PREFIX _T("flags:    %lu (0x%X)"), flags, flags);
 
 	    if( mysql_real_connect(
 	    		  conn
@@ -225,12 +230,12 @@ CwtDBHandler __connect(const CWT_CHAR *driverDSN, const CWT_CHAR *username, cons
 	    		, port
 	    		, sockname
 	    		, flags) == NULL) {
-	    	printf_error(__LOG_PREFIX "failed to connect the database: %s", mysql_error(conn));
+	    	printf_error(__LOG_PREFIX _Tr("failed to connect the database: %s"), mysql_error(conn));
 	        break;
 	    }
 
 	    if( mysql_autocommit(conn, 1) != 0 ) {
-	    	printf_error(__LOG_PREFIX "unable to set autocommit on");
+	    	printf_error(__LOG_PREFIX _Tr("unable to set autocommit on"));
 	        break;
 	    }
 
@@ -300,29 +305,31 @@ static void __disconnect(CwtDBHandler dbh)
 
 
 
-static BOOL __buildSqlCreateDB(CwtStringBufferPtr sql, CWT_CHAR *argv[])
+static BOOL __buildSqlCreateDB(CwtString *sql, CWT_CHAR *argv[])
 {
+	CwtStringNS *stringNS = cwtStringNS();
+	CwtStrNS *strNS = cwtStrNS();
 	int i = 0;
 	BOOL usage = FALSE;
 
-	cwtStringBufferAppend(sql, "CREATE DATABASE IF NOT EXISTS ");
+	stringNS->append(sql, _T("CREATE DATABASE IF NOT EXISTS "));
 
 	if( argv[i] ) {
-		cwtStringBufferAppend(sql, argv[i]);
+		stringNS->append(sql, argv[i]);
 		i++;
 
 		while( argv[i] )  {
-			if( cwtStrEqi("CHARACTER SET", argv[i]) && argv[i+1] ) {
-				cwtStringBufferAppendChar(sql, ' ');
-				cwtStringBufferAppend(sql, "CHARACTER SET");
-				cwtStringBufferAppendChar(sql, ' ');
-				cwtStringBufferAppend(sql, argv[i+1]);
+			if( strNS->strieq(_T("CHARACTER SET"), argv[i]) && argv[i+1] ) {
+				stringNS->appendChar(sql, _T(' '));
+				stringNS->append(sql, _T("CHARACTER SET"));
+				stringNS->appendChar(sql, _T(' '));
+				stringNS->append(sql, argv[i+1]);
 				i += 2;
-			} else if( cwtStrEqi("COLLATE", argv[i]) && argv[i+1] ) {
-				cwtStringBufferAppendChar(sql, ' ');
-				cwtStringBufferAppend(sql, "COLLATE");
-				cwtStringBufferAppendChar(sql, ' ');
-				cwtStringBufferAppend(sql, argv[i+1]);
+			} else if( cwtStrEqi(_T("COLLATE"), argv[i]) && argv[i+1] ) {
+				stringNS->appendChar(sql, _T(' '));
+				stringNS->append(sql, _T("COLLATE"));
+				stringNS->appendChar(sql, _T(' '));
+				stringNS->append(sql, argv[i+1]);
 				i += 2;
 			} else {
 				usage = TRUE;
@@ -334,7 +341,7 @@ static BOOL __buildSqlCreateDB(CwtStringBufferPtr sql, CWT_CHAR *argv[])
 	}
 
 	if( usage ) {
-		printf_warn(__LOG_PREFIX "usage: dbh->func: createdb dbname ['CHARACTER SET' charset_name] ['COLLATE' collation_name]");
+		printf_warn(__LOG_PREFIX _Tr("usage: dbh->func: createdb dbname ['CHARACTER SET' charset_name] ['COLLATE' collation_name]"));
 		return FALSE;
 	}
 
@@ -342,24 +349,25 @@ static BOOL __buildSqlCreateDB(CwtStringBufferPtr sql, CWT_CHAR *argv[])
 }
 
 
-static BOOL __buildSqlDropDB(CwtStringBufferPtr sql, CWT_CHAR *argv[])
+static BOOL __buildSqlDropDB(CwtString *sql, CWT_CHAR *argv[])
 {
+	CwtStringNS *stringNS = cwtStringNS();
 	int i = 0;
 	BOOL usage = FALSE;
 
-	cwtStringBufferAppend(sql, "DROP DATABASE IF EXISTS ");
+	cwtStringBufferAppend(sql, _T("DROP DATABASE IF EXISTS "));
 
 	if( argv[i] ) {
-		cwtStringBufferAppendChar(sql, '`');
-		cwtStringBufferAppend(sql, argv[i]);
-		cwtStringBufferAppendChar(sql, '`');
+		stringNS->appendChar(sql, _T('`'));
+		stringNS->append(sql, argv[i]);
+		stringNS->appendChar(sql, _T('`'));
 		i++;
 	} else {
 		usage = TRUE;
 	}
 
 	if( usage ) {
-		printf_warn(__LOG_PREFIX "usage: dbh->func: dropdb dbname");
+		printf_warn(__LOG_PREFIX _Tr("usage: dbh->func: dropdb dbname"));
 		return FALSE;
 	}
 
@@ -382,7 +390,10 @@ static BOOL __buildSqlDropDB(CwtStringBufferPtr sql, CWT_CHAR *argv[])
  */
 static BOOL __func(CwtDBHandler dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[])
 {
-	CwtStringBufferPtr sql;
+	CwtStrNS *strNS = cwtStrNS();
+	CwtStringNS *stringNS = cwtStringNS();
+
+	CwtString *sql;
 	BOOL rv = FALSE;
 	BOOL usage = FALSE;
 
@@ -390,23 +401,23 @@ static BOOL __func(CwtDBHandler dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[]
 	CWT_ASSERT(argv);
 	CWT_ASSERT(argv[0]);
 
-	sql = cwtNewStringBuffer();
+	sql = stringNS->create();
 
-	if( cwtStrEqi("admin", func_name) ) {
-		if( cwtStrEqi("createdb", argv[0]) ) {
+	if( strNS->strieq(_T("admin"), func_name) ) {
+		if( strNS->strieq(_T("createdb"), argv[0]) ) {
 			if( __buildSqlCreateDB(sql, &argv[1])
-					&& mysql_real_query(__DBH(dbh), cwtStringBufferCstr(sql), cwtStringBufferSize(sql)) == 0 )
+					&& mysql_real_query(__DBH(dbh), stringNS->cstr(sql), stringNS->length(sql)) == 0 )
 				rv = TRUE;
-		} else if( cwtStrEqi("dropdb", argv[0]) ) {
+		} else if( strNS->strieq(_T("dropdb"), argv[0]) ) {
 			if( __buildSqlDropDB(sql, &argv[1])
-					&& mysql_real_query(__DBH(dbh), cwtStringBufferCstr(sql), cwtStringBufferSize(sql)) == 0)
+					&& mysql_real_query(__DBH(dbh), stringNS->cstr(sql), stringNS->length(sql)) == 0)
 				rv = TRUE;
 		}
 	} else {
-		printf_warn(__LOG_PREFIX "unsupported function name: %s", CWT_STRING_OR_NULLSTR(func_name));
+		printf_warn(__LOG_PREFIX _Tr("unsupported function name: %s"), CWT_STRING_OR_NULLSTR(func_name));
 	}
 
-	cwtDeleteStringBuffer(sql);
+	stringNS->free(sql);
 	return rv;
 }
 
@@ -460,59 +471,61 @@ static BOOL __func(CwtDBHandler dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[]
  */
 static void __attr(CwtDBHandler dbh, const CWT_CHAR *attr_name, void *attr_value)
 {
+	CwtStrNS *strNS = cwtStrNS();
+
 	CWT_ASSERT(dbh);
 	CWT_ASSERT(attr_name);
 	CWT_ASSERT(attr_value);
 
-	if( cwtStrEqi("errno", attr_name) ) {
+	if( strNS->strieq(_T("errno"), attr_name) ) {
 
 		*((UINT*)attr_value) = mysql_errno(((CwtMySqlDBHandler)dbh)->m_conn);
 
-	} else if(cwtStrEqi("error", attr_name)) {
+	} else if(strNS->strieq(_T("error"), attr_name)) {
 
 		*((const CWT_CHAR**)attr_value)
 			= CWT_STRING_OR_NULLSTR(mysql_error(((CwtMySqlDBHandler)dbh)->m_conn));
 
-	} else if(cwtStrEqi("hostinfo", attr_name)) {
+	} else if(strNS->strieq(_T("hostinfo"), attr_name)) {
 
 		*((const CWT_CHAR**)attr_value)
 			= CWT_STRING_OR_NULLSTR(mysql_get_host_info(((CwtMySqlDBHandler)dbh)->m_conn));
 
-	} else if(cwtStrEqi("info", attr_name)) {
+	} else if(strNS->strieq(_T("info"), attr_name)) {
 
 		*((const CWT_CHAR**)attr_value)
 			= CWT_STRING_OR_NULLSTR(mysql_info(((CwtMySqlDBHandler)dbh)->m_conn));
 
-	} else if(cwtStrEqi("insertid", attr_name)) {
+	} else if(strNS->strieq("insertid", attr_name)) {
 
 		*((ULONGLONG*)attr_value) = mysql_insert_id(((CwtMySqlDBHandler)dbh)->m_conn);
 
-	} else if(cwtStrEqi("protoinfo", attr_name)) {
+	} else if(strNS->strieq("protoinfo", attr_name)) {
 
 		*((UINT*)attr_value) = mysql_get_proto_info(((CwtMySqlDBHandler)dbh)->m_conn);
 
-	} else if(cwtStrEqi("serverinfo", attr_name)) {
+	} else if(strNS->strieq("serverinfo", attr_name)) {
 
 		*((const CWT_CHAR**)attr_value)
 			= CWT_STRING_OR_NULLSTR(mysql_get_server_info(((CwtMySqlDBHandler)dbh)->m_conn));
 
-	} else if(cwtStrEqi("serverversion", attr_name)) {
+	} else if(strNS->strieq("serverversion", attr_name)) {
 
 		*((ULONG*)attr_value) = mysql_get_server_version(((CwtMySqlDBHandler)dbh)->m_conn);
 
-	} else if(cwtStrEqi("clientinfo", attr_name)) {
+	} else if(strNS->strieq("clientinfo", attr_name)) {
 
 		*((const CWT_CHAR**)attr_value) = CWT_STRING_OR_NULLSTR(mysql_get_client_info());
 
-	} else if(cwtStrEqi("clientversion", attr_name)) {
+	} else if(strNS->strieq("clientversion", attr_name)) {
 
 		*((ULONG*)attr_value) = mysql_get_client_version();
 
-	} else if(cwtStrEqi("thread_id", attr_name)) {
+	} else if(strNS->strieq("thread_id", attr_name)) {
 
 		*((ULONG*)attr_value) = mysql_thread_id(((CwtMySqlDBHandler)dbh)->m_conn);
 
-	} else if(cwtStrEqi("stat", attr_name)) {
+	} else if(strNS->strieq("stat", attr_name)) {
 
 		*((const CWT_CHAR**)attr_value) = CWT_STRING_OR_NULLSTR(mysql_stat(((CwtMySqlDBHandler)dbh)->m_conn));
 
@@ -598,7 +611,7 @@ static BOOL __query(CwtDBHandler dbh, const CWT_CHAR *sql)
 	CWT_ASSERT(dbh);
 
 	if( mysql_real_query(__DBH(dbh), sql, cwtStrLen(sql)) != 0 ) {
-		printf_error(__LOG_PREFIX "failed to query: %s", mysql_error(__DBH(dbh)));
+		printf_error(__LOG_PREFIX _Tr("failed to query: %s"), mysql_error(__DBH(dbh)));
 		return FALSE;
 	}
 	return TRUE;
@@ -609,7 +622,7 @@ static BOOL __queryBin(CwtDBHandler dbh, const CWT_CHAR *sql, size_t length)
 	CWT_ASSERT(dbh);
 
 	if( mysql_real_query(__DBH(dbh), sql, length) != 0 ) {
-		printf_error(__LOG_PREFIX "failed to query: %s", mysql_error(__DBH(dbh)));
+		printf_error(__LOG_PREFIX _Tr("failed to query: %s"), mysql_error(__DBH(dbh)));
 		return FALSE;
 	}
 	return TRUE;
@@ -632,12 +645,12 @@ static CwtStatement __prepare(CwtDBHandler dbh, const CWT_CHAR *stmt_str)
 	stmt = mysql_stmt_init(__DBH(dbh));
 
 	if( !stmt ) {
-		printf_error(__LOG_PREFIX "failed to prepare statement: %s", mysql_error(__DBH(dbh)));
+		printf_error(__LOG_PREFIX _Tr("failed to prepare statement: %s"), mysql_error(__DBH(dbh)));
 		return NULL;
 	}
 
 	if( mysql_stmt_prepare(stmt, stmt_str, (ULONG)cwtStrLen(stmt_str)) != 0 ) {
-		printf_error(__LOG_PREFIX "failed to prepare statement: %s", mysql_error(__DBH(dbh)));
+		printf_error(__LOG_PREFIX _Tr("failed to prepare statement: %s"), mysql_error(__DBH(dbh)));
 		mysql_stmt_close(stmt);
 		return NULL;
 	}
@@ -685,7 +698,7 @@ static void __stmtClose(CwtStatement sth)
 			CWT_FREE(((CwtMySqlStatement)sth)->m_bind_params);
 
 		if( mysql_stmt_close(__STH(sth)) != 0 ) {
-			printf_error(__LOG_PREFIX "failed to close statement: %s", mysql_stmt_error(__STH(sth)));
+			printf_error(__LOG_PREFIX _Tr("failed to close statement: %s"), mysql_stmt_error(__STH(sth)));
 		}
 
 		__STH(sth) = NULL;
@@ -713,7 +726,7 @@ static BOOL __stmtBind(CwtStatement sth, size_t index, CwtTypeId type_id, void *
 	CWT_ASSERT(sth);
 
 	if( index >= msth->m_nbind_params ) {
-		print_error(__LOG_PREFIX "bind parameter index is out of bounds");
+		print_error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
 		return FALSE;
 	}
 
@@ -791,14 +804,14 @@ static BOOL __stmtExecute(CwtStatement sth)
 
 	if( !msth->m_is_bind ) {
 		if( mysql_stmt_bind_param(__STH(sth), msth->m_bind_params) != 0 ) {
-			printf_error( __LOG_PREFIX "bind parameters failed: %s\n", mysql_stmt_error(__STH(sth)));
+			printf_error( __LOG_PREFIX _Tr("bind parameters failed: %s\n"), mysql_stmt_error(__STH(sth)));
 			return FALSE;
 		}
 		msth->m_is_bind = TRUE;
 	}
 
 	if( mysql_stmt_execute(__STH(sth)) != 0 ) {
-		printf_error( __LOG_PREFIX "executing statement error: %s\n", mysql_stmt_error(__STH(sth)));
+		printf_error( __LOG_PREFIX _Tr("executing statement error: %s\n"), mysql_stmt_error(__STH(sth)));
 		return FALSE;
 	}
 

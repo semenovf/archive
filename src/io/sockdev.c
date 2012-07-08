@@ -13,19 +13,28 @@
 #include <errno.h>
 #include <cwt/unistd.h>
 #include <cwt/logger.h>
+#include <cwt/str.h>
 #include <cwt/io/sockdev.h>
 
 #if defined(CWT_CC_MSC)
 #	include <winsock2.h>
 #	include <ws2tcpip.h>
 #	define __sockdev_errno WSAGetLastError()
+#	define __closesocket closesocket
 #elif defined(CWT_OS_UNIX)
 #	include <sys/socket.h>
 #	error __sockdev_errno must be defined
+#	define __closesocket CWT_ISO_CPP_NAME(close)
 #else
 #	error "Not implemented"
 #endif
 
+
+#ifndef CWT_CC_MSC
+
+#else
+
+#endif
 
 static size_t __cwt_nsockets_opened = (size_t)0;
 static BOOL   __cwt_is_sockets_allowed = FALSE;
@@ -97,6 +106,10 @@ static BOOL __cwtAllowSockets(void)
  */
 CwtIODevicePtr cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
 {
+	CwtStrNS *strNS = cwtStrNS();
+	CwtByteArrayNS *baNS = cwtByteArrayNS();
+	CwtByteArray latin1InetAddr;
+
 	SOCKET sockfd;
 	struct sockaddr_in sockaddr;
 	CwtSocketDevicePtr sockdev;
@@ -112,18 +125,22 @@ CwtIODevicePtr cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
 		return NULL;
     }
 
+    baNS->init(&latin1InetAddr);
+
     /* The sockaddr_in structure specifies the address family,
      * IP address, and port for the socket that is being bound.
      */
     sockaddr.sin_family = AF_INET;
-    sockaddr.sin_addr.s_addr = inetAddr != NULL ? inet_addr(inetAddr) : INADDR_ANY;
+    sockaddr.sin_addr.s_addr = inetAddr != NULL
+    	? inet_addr(strNS->toLatin1(inetAddr, &latin1InetAddr)) : INADDR_ANY;
     sockaddr.sin_port = port;
 
+    baNS->destroy(&latin1InetAddr);
 
     /* Bind the socket. */
 	if( bind(sockfd, (SOCKADDR*)&sockaddr, sizeof(sockaddr)) < 0 ) {
 		print_error(_Tr("bind failed")); /*, WSAGetLastError());*/
-		cwtCloseSocket(sockfd);
+		__closesocket(sockfd);
 		return NULL;
 	}
 
@@ -153,6 +170,10 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 	, const CWT_CHAR *inetMCastAddr
 	, BOOL isSender)
 {
+	CwtStrNS *strNS = cwtStrNS();
+	CwtByteArrayNS *baNS = cwtByteArrayNS();
+	CwtByteArray latins1;
+
 	SOCKET sockfd;
 	CwtMulticastSocketDevicePtr sockdev;
 
@@ -173,21 +194,25 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 
 		sockdev = CWT_MALLOC(CwtMulticastSocketDevice);
 
+	    baNS->init(&latins1);
+
 	    /* Initialize the group sockaddr structure with a */
 	    /* group address of 225.1.1.1 and port 5555. */
 	    memset((char *) &sockdev->group.sockaddr, 0, sizeof(sockdev->group.sockaddr));
 	    sockdev->group.sockaddr.sin_family = AF_INET;
-	    sockdev->group.sockaddr.sin_addr.s_addr = inet_addr(inetMCastAddr); /*inet_addr("226.1.1.1");*/
+	    sockdev->group.sockaddr.sin_addr.s_addr = inet_addr(strNS->toLatin1(inetMCastAddr, &latins1)); /*inet_addr("226.1.1.1");*/
 	    sockdev->group.sockaddr.sin_port = htons(port);
 
 	    /* Set local interface for outbound multicast datagrams. */
 	    /* The IP address specified must be associated with a local, */
 	    /* multicast capable interface. */
-	    localInterface.s_addr = inet_addr(inetAddr); /*inet_addr("192.168.0.198");*/
+	    localInterface.s_addr = inet_addr(strNS->toLatin1(inetAddr, &latins1)); /*inet_addr("192.168.0.198");*/
+
+	    baNS->destroy(&latins1);
 
 	    if(setsockopt(sockfd, IPPROTO_IP, IP_MULTICAST_IF, (char *)&localInterface, sizeof(localInterface)) < 0) {
 	        printf_error(_Tr("setting local interface error (%d)"), __sockdev_errno);
-	        cwtCloseSocket(sockfd);
+	        __closesocket(sockfd);
 	        CWT_FREE(sockdev);
 	        return NULL;
 	    }
@@ -200,7 +225,7 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 
 		if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
 			printf_error(_Tr("setting SO_REUSEADDR error (%d)"), __sockdev_errno);
-			cwtCloseSocket(sockfd);
+			__closesocket(sockfd);
 			return NULL;
 		}
 
@@ -213,7 +238,7 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 
 		if(bind(sockfd, (struct sockaddr*)&localSock, sizeof(localSock))) {
 	        printf_error(_Tr("binding datagram socket error (%d)"), __sockdev_errno);
-	        cwtCloseSocket(sockfd);
+	        __closesocket(sockfd);
 	        return NULL;
 	    }
 
@@ -223,12 +248,16 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 	    /* datagrams are to be received. */
 		sockdev = CWT_MALLOC(CwtMulticastSocketDevice);
 
-	    sockdev->group.mreq.imr_multiaddr.s_addr = inet_addr(inetMCastAddr);
-	    sockdev->group.mreq.imr_interface.s_addr = inet_addr(inetAddr);
+		baNS->init(&latins1);
+
+	    sockdev->group.mreq.imr_multiaddr.s_addr = inet_addr(strNS->toLatin1(inetMCastAddr, &latins1));
+	    sockdev->group.mreq.imr_interface.s_addr = inet_addr(strNS->toLatin1(inetAddr, &latins1));
+
+	    baNS->destroy(&latins1);
 
 	    if(setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&sockdev->group.mreq, sizeof(sockdev->group.mreq)) < 0) {
 	        printf_error(_Tr("adding multicast group error (%d)"), __sockdev_errno);
-	        cwtCloseSocket(sockfd);
+	        __closesocket(sockfd);
 	        CWT_FREE(sockdev);
 	        return NULL;
 	    }
@@ -271,7 +300,7 @@ static void __cwtSocketClose(CwtIODevicePtr dev)
 		}
 
 		CWT_ASSERT(__cwt_nsockets_opened > 0 );
-		cwtCloseSocket(sockdev->sockfd);
+		__closesocket(sockdev->sockfd);
 		sockdev->sockfd = -1;
 		__cwt_nsockets_opened--;
 	}

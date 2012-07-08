@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <cwt/str.h>
 #include <cwt/string.h>
-#include <cwt/strbuf.h>
 
 #define _cwtStrtoul strtoul
 #define _cwtStrtol  strtol
@@ -19,13 +19,13 @@
 DLL_API_EXPORT _LongType __to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) { \
 	_LongType val;                                                            \
 	CWT_CHAR *endptr;                                                         \
-	CwtStringNS* stringNS = cwtStringNS();                                    \
+	CwtStrNS* strNS = cwtStrNS();                                             \
 																		      \
 	if( radix <= 0 ) {                                                        \
-		if( stringNS->strncmp(_T("0x"), str, 2) == 0 ) {                      \
+		if( strNS->strncmp(_T("0x"), str, 2) == 0 ) {                         \
 			radix = 16;                                                       \
 			str += 2;                                                         \
-		} else if( stringNS->strncmp(_T("0"), str, 1) == 0 ) {                \
+		} else if( strNS->strncmp(_T("0"), str, 1) == 0 ) {                   \
 			radix = 8;                                                        \
 			str++;                                                            \
 		}                                                                     \
@@ -58,8 +58,8 @@ DLL_API_EXPORT _LongType __to##_LongType(const CWT_CHAR *str, int radix, BOOL *o
 #define __CWT_STR_TO_INTTYPE(_IntType,_LongType,_maxInt,_minInt)              \
 DLL_API_EXPORT _IntType __to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {\
 	BOOL okk = TRUE;                                                          \
-	CwtStringNS* stringNS = cwtStringNS();                                    \
-	_LongType val = stringNS->to##_LongType(str, radix, &okk);                \
+	CwtStrNS* strNS = cwtStrNS();                                             \
+	_LongType val = strNS->to##_LongType(str, radix, &okk);                   \
                                                                               \
 	if( !okk || val > _maxInt || val < _minInt ) {                            \
 		okk = FALSE;                                                          \
@@ -71,90 +71,10 @@ DLL_API_EXPORT _IntType __to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok)
 	return (_IntType)val;                                                     \
 }
 
-
-
-/*TODO remove this block */
-#ifdef __COMMENT__
-DLL_API_EXPORT LONG cwtStrToLONG_DEBUG(const CWT_CHAR *str, int radix, BOOL *ok)
-{
-	LONG val;
-	CWT_CHAR *endptr;
-
-	if( radix <= 0 ) {
-		if( cwtStrNcmp("0x", str, 2) == 0 ) {
-			radix = 16;
-			str += 2;
-		} else if( cwtStrNcmp("0", str, 1) == 0 ) {
-			radix = 8;
-			str++;
-		}
-	}
-
-	val = _cwtStrtol(str, &endptr, radix);
-
-	if((errno == ERANGE
-			&& (val == CWT_LONG_MAX || val == CWT_LONG_MIN))
-            || (errno != 0 && val == 0)
-            || endptr == str
-            || *endptr != '\0' ) {
-		if( ok ) {
-			*ok = FALSE;
-		}
-		val = 0L;
-     } else {
- 		if( ok ) {
- 			*ok = TRUE;
- 		}
-     }
-
-
-	return val;
-}
-
-DLL_API_EXPORT LONGLONG cwtStrToLONGLONG_DEBUG(const CWT_CHAR *str, int radix, BOOL *ok)
-{
-	LONGLONG val;
-	CWT_CHAR *endptr;
-	int errn;
-
-	if( radix <= 0 ) {
-		if( cwtStrNcmp("0x", str, 2) == 0 ) {
-			radix = 16;
-			str += 2;
-		} else if( cwtStrNcmp("0", str, 1) == 0 ) {
-			radix = 8;
-			str++;
-		}
-	}
-
-	val = _cwtStrtoll(str, &endptr, radix);
-
-	errn = errno;
-
-	if((errno == ERANGE
-			&& (val == CWT_LONGLONG_MAX || val == CWT_LONGLONG_MIN))
-            || (errno != 0 && val == (LONGLONG)0)
-            || endptr == str
-            || *endptr != '\0' ) {
-		if( ok ) {
-			*ok = FALSE;
-		}
-		val = (LONGLONG)0;
-     } else {
- 		if( ok ) {
- 			*ok = TRUE;
- 		}
-     }
-
-
-	return val;
-}
-#endif
-
-__CWT_STR_TO_LONGTYPE(ULONGLONG, cwtStringNS()->strtoull, CWT_ULONGLONG_MAX, 0LL)
-__CWT_STR_TO_LONGTYPE(LONGLONG, cwtStringNS()->strtoll, CWT_LONGLONG_MAX, CWT_LONGLONG_MIN)
-__CWT_STR_TO_LONGTYPE(ULONG, cwtStringNS()->strtoul, CWT_ULONG_MAX, 0L)
-__CWT_STR_TO_LONGTYPE(LONG, cwtStringNS()->strtol, CWT_LONG_MAX, CWT_LONG_MIN)
+__CWT_STR_TO_LONGTYPE(ULONGLONG, cwtStrNS()->strtoull, CWT_ULONGLONG_MAX, 0LL)
+__CWT_STR_TO_LONGTYPE(LONGLONG, cwtStrNS()->strtoll, CWT_LONGLONG_MAX, CWT_LONGLONG_MIN)
+__CWT_STR_TO_LONGTYPE(ULONG, cwtStrNS()->strtoul, CWT_ULONG_MAX, 0L)
+__CWT_STR_TO_LONGTYPE(LONG, cwtStrNS()->strtol, CWT_LONG_MAX, CWT_LONG_MIN)
 __CWT_STR_TO_INTTYPE(INT, LONG, CWT_INT_MAX, CWT_INT_MIN)
 __CWT_STR_TO_INTTYPE(UINT, ULONG, CWT_UINT_MAX, 0)
 __CWT_STR_TO_INTTYPE(SHORT, LONG, CWT_SHORT_MAX, CWT_SHORT_MIN)

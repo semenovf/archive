@@ -1,11 +1,11 @@
 #include <cwt/dl.h>
-#include <cwt/strbuf.h>
+#include <cwt/string.h>
 #include <cwt/logger.h>
 
 static DlHandle __open(const CWT_CHAR *path, BOOL global, BOOL resolve);
-static DlSymbol __symbol(DlHandle h, const CWT_CHAR *name);
+static DlSymbol __symbol(DlHandle h, const char *name);
 static void     __close(DlHandle h);
-static BOOL     __buildDlFileName(const CWT_CHAR *name, CWT_CHAR libname[], int *psz);
+static void     __buildDlFileName(const CWT_CHAR *name, CwtString *libname);
 
 static CwtDlNS __cwtDlNS = {
 	  __open
@@ -49,7 +49,7 @@ DlHandle __open( const CWT_CHAR *path, BOOL global, BOOL resolve )
 }
 
 
-static DlSymbol __symbol(DlHandle h, const CWT_CHAR *sym_name)
+static DlSymbol __symbol(DlHandle h, const char *sym_name)
 {
 	DlSymbol sym = NULL;
 
@@ -90,39 +90,21 @@ void __close(DlHandle h)
  *
  * @param name base name of dynamic lubrary
  * @param libname full library name to store
- * @param psz size of buffer @c libname
- * @return @c TRUE if building is successfull, or @c FALSE if buffer too small
  */
-static BOOL __buildDlFileName(const CWT_CHAR *name, CWT_CHAR libname[], int *psz)
+static void __buildDlFileName(const CWT_CHAR *name, CwtString *libname)
 {
-	CwtStringBufferNS *sbns = cwtStringBufferNS();
-	CwtStringBuffer sb;
-
-	CWT_ASSERT(psz);
-
-	sbns->init(&sb);
+	CwtStringNS *srtns = cwtStringNS();
 
 #ifdef CWT_OS_WIN
-	sbns->append(&sb, name);
-	sbns->append(&sb, _T(".dll"));
+	srtns->append(libname, name);
+	srtns->append(libname, _T(".dll"));
 #elif defined(CWT_OS_LINUX)
-	sbns->append(&sb, _T(".lib"));
-	sbns->append(&sb, name);
-	sbns->append(&sb, _T(".so"));
+	srtns->append(libname, _T(".lib"));
+	srtns->append(libname, name);
+	srtns->append(libname, _T(".so"));
 #else
 #	error OS not supported
 #endif
-
-	if( sbns->size(&sb) + 1 >  *psz ) {
-		*psz = sbns->size(&sb) + 1;
-		sbns->destroy(&sb);
-		return FALSE;
-	}
-
-	cwtStrNcpy(libname, sbns->cstr(&sb), sbns->size(&sb));
-	*psz = sbns->size(&sb);
-	sbns->destroy(&sb);
-	return TRUE;
 }
 
 

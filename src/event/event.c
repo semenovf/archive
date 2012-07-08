@@ -79,7 +79,7 @@ static BOOL __cwtEventDispatchEvents(void)
 		if( __cwtEventIdleProcess ) {
 			__cwtEventIdleProcess();
 		} else {
-			cwtMsleep(50);
+			cwtUnistdNS()->msleep(50);
 		}
 	} else {
 		while( pevt_node ) {
