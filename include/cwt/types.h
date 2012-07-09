@@ -35,12 +35,11 @@ typedef long long              LONGLONG;
 typedef unsigned long long     ULONGLONG;
 typedef char*                  TEXT;
 
-typedef char                   INT8;
-typedef unsigned char          UINT8;
-typedef short int              INT16;
-typedef unsigned short int     UINT16;
-
 #ifndef CWT_CC_MSC
+	typedef char               INT8;
+	typedef unsigned char      UINT8;
+	typedef short int          INT16;
+	typedef unsigned short int UINT16;
 	typedef long               INT32;
 	typedef unsigned long      UINT32;
 	typedef long long          INT64;

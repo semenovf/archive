@@ -93,15 +93,15 @@ void __close(DlHandle h)
  */
 static void __buildDlFileName(const CWT_CHAR *name, CwtString *libname)
 {
-	CwtStringNS *srtns = cwtStringNS();
+	CwtStringNS *stringNS = cwtStringNS();
 
 #ifdef CWT_OS_WIN
-	srtns->append(libname, name);
-	srtns->append(libname, _T(".dll"));
+	stringNS->append(libname, name);
+	stringNS->append(libname, _T(".dll"));
 #elif defined(CWT_OS_LINUX)
-	srtns->append(libname, _T(".lib"));
-	srtns->append(libname, name);
-	srtns->append(libname, _T(".so"));
+	stringNS->append(libname, _T(".lib"));
+	stringNS->append(libname, name);
+	stringNS->append(libname, _T(".so"));
 #else
 #	error OS not supported
 #endif

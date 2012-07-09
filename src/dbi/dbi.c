@@ -9,60 +9,96 @@
 #include <cwt/string.h>
 #include <cwt/strlist.h>
 #include <cwt/str.h>
+#include <cwt/dl.h>
 
 #define __LOG_PREFIX _Tr("dbi: ")
 
-extern CwtDBHandler __connect(const CWT_CHAR *driverDSN, const CWT_CHAR *username, const CWT_CHAR *password);
+static void            __parseDSN      (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
+static CwtDBIDriver*   __load          (const CWT_CHAR *dsn);
 
-DLL_API_EXPORT void cwtDBIParseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
+
+static CwtDBI __cwtDBI = {
+	  __parseDSN
+	, __load
+};
+
+
+DLL_API_EXPORT CwtDBI* cwtDBI(void)
 {
-	CwtStrNS *strNS = cwtStrNS();
-	CwtStringListPtr opts;
-	CWT_CHAR *opt;
-
-    opts = cwtNewStringList();
-    cwtStringListSplit(opts, dsn, _T(":"));
-
-    opt = cwtStringListAt(opts, 0);
-    if( scheme && opt )
-    	*scheme = strNS->strdup(opt);
-
-    opt = cwtStringListAt(opts, 1);
-    if( driver && opt )
-    	*driver = strNS->strdup(opt);
-
-    opt = cwtStringListAt(opts, 2);
-    if( driverDSN && opt )
-    	*driverDSN = strNS->strdup(opt);
-
-    cwtDeleteStringList(opts);
+	return &__cwtDBI;
 }
 
 
-DLL_API_EXPORT CwtDBHandler cwtDBIConnect(const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password)
+static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
 {
 	CwtStrNS *strNS = cwtStrNS();
-	CWT_CHAR *scheme;
-	CWT_CHAR *driver;
-	CWT_CHAR *driverDSN;
-	CwtDBHandler dbh;
+	CwtStrListNS *strListNS = cwtStrListNS();
+	CwtStrList opts;
+	CWT_CHAR *opt;
 
-	cwtDBIParseDSN(dsn, &scheme, &driver, &driverDSN);
+    strListNS->init(&opts);
+    strListNS->split(&opts, dsn, _T(":"));
+
+    opt = strListNS->at(&opts, 0);
+    if( scheme && opt )
+    	*scheme = strNS->strdup(opt);
+
+    opt = strListNS->at(&opts, 1);
+    if( driver && opt )
+    	*driver = strNS->strdup(opt);
+
+    opt = strListNS->at(&opts, 2);
+    if( driverDSN && opt )
+    	*driverDSN = strNS->strdup(opt);
+
+    strListNS->destroy(&opts);
+}
+
+
+static CwtDBIDriver* __load(const CWT_CHAR *dsn)
+{
+	CwtStrNS *strNS = cwtStrNS();
+	CwtDlNS  *dl    = cwtDlNS();
+	CWT_CHAR *scheme;
+	CWT_CHAR *driverName;
+	CWT_CHAR *driverDSN;
+	CwtDBIDriver *driver = (CwtDBIDriver*)NULL;
+
+	__parseDSN(dsn, &scheme, &driverName, &driverDSN);
 
 	if( strNS->strieq(_T("dbi"), scheme) ) {
-		if( strNS->strieq(_T("mysql"), driver) ) {
-			dbh = __connect(driverDSN, username, password);
-		} else {
-			printf_error(__LOG_PREFIX _Tr("unsupported driver: %s"), driver);
+		DlHandle dlHandle;
+		CwtStringNS *stringNS = cwtStringNS();
+		CwtString driverPath;
+
+		stringNS->init(&driverPath);
+		stringNS->append(&driverPath, _T("cwt-"));
+		stringNS->append(&driverPath, driverName);
+
+		CWT_FREE(driverName);
+		driverName = strNS->strdup(stringNS->cstr(&driverPath));
+		stringNS->clear(&driverPath);
+
+		dl->buildDlFileName(driverName, &driverPath);
+		dlHandle = dl->open(stringNS->cstr(&driverPath), TRUE, TRUE);
+
+		if( dlHandle ) {
+			DlSymbol driverImpl = dl->symbol(dlHandle, "cwtDBIDriverImpl");
+
+			if( driverImpl ) {
+				driver = (CwtDBIDriver*)driverImpl();
+			}
 		}
+
+		stringNS->destroy(&driverPath);
 	} else {
 		printf_error(__LOG_PREFIX _Tr("unsupported scheme: %s, only 'dbi' acceptable "), scheme);
 	}
 
 	CWT_FREE(scheme);
-	CWT_FREE(driver);
+	CWT_FREE(driverName);
 	CWT_FREE(driverDSN);
 
-	return dbh;
+	return driver;
 
 }

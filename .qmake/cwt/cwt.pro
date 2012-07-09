@@ -3,7 +3,7 @@ include(/qmake/common-dll.pri)
 TARGET = cwt
 
 INCLUDEPATH += ../../include
-INCLUDEPATH += /include/mysql
+#INCLUDEPATH += /include/mysql
 
 # comment this in production mode
 DEFINES += CWT_USE_TESTS
@@ -28,7 +28,7 @@ unix {
     SOURCES += ../../src/net/linux/*.c
 
     LIBS += -ldl
-    LIBS += -lmysql
+#    LIBS += -lmysql
 }
 
 win32 {
@@ -55,8 +55,9 @@ win32 {
     SOURCES += ..\\..\\src\\net\\win\\*.c
 
     LIBS += Advapi32.lib
+    LIBS += user32.lib
     LIBS += ws2_32.lib
-    LIBS += libmysql.lib
+#    LIBS += libmysql.lib
     LIBS += iphlpapi.lib
 }
 

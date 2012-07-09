@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  =         \
     cwt            \
+    cwt-mysql      \
     tests/event    \
     tests/echannel \
     tests/eclock   \

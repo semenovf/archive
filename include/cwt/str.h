@@ -1,8 +1,9 @@
 #ifndef __CWT_STR_H__
 #define __CWT_STR_H__
 
-#include <cwt/types.h>
 #include <string.h>
+#include <cwt/types.h>
+#include <cwt/string.h>
 #include <cwt/bytearr.h>
 
 
@@ -55,7 +56,7 @@ typedef struct CwtStrNS {
 	INT32             (*toINT32)      (const CWT_CHAR *str, int radix, BOOL *ok);
 	UINT32            (*toUINT32)     (const CWT_CHAR *str, int radix, BOOL *ok);
 	INT64             (*toINT64)      (const CWT_CHAR *str, int radix, BOOL *ok);
-	UINT64            (*strToUINT64)  (const CWT_CHAR *str, int radix, BOOL *ok);
+	UINT64            (*toUINT64)     (const CWT_CHAR *str, int radix, BOOL *ok);
 
 	CWT_CHAR          (*toupper)      (CWT_CHAR ch);
 	CWT_CHAR          (*tolower)      (CWT_CHAR ch);
@@ -63,6 +64,9 @@ typedef struct CwtStrNS {
 	void              (*tolowerStr)   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 	void              (*chomp)        (CWT_CHAR *s);
 	const char*       (*toLatin1)     (const CWT_CHAR *s, CwtByteArray *latins1);
+
+	/*const char*       (*toUtf8)       (const CWT_CHAR *s, CwtByteArray *latins1);*/
+	/*const CWT_CHAR*   (*fromUtf8)     (const char *utf8, CwtString *s);*/
 } CwtStrNS;
 
 EXTERN_C_BEGIN

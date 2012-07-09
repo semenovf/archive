@@ -11,41 +11,105 @@
 #include <cwt/strlist.h>
 #include <cwt/str.h>
 
-/*
-struct string_list_t
-{
-	int count;
-	dlist_t strings;
+static CwtStrList*     __create       (void);
+static void            __init         (CwtStrList *psl);
+static void            __destroy      (CwtStrList *psl);
+static void            __free         (CwtStrList *psl);
+static CwtStrList*     __clone        (CwtStrList *psl);
+static void            __clear        (CwtStrList *psl);
+static size_t          __size         (CwtStrList *psl);
+static void            __insertAfter  (CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text);
+static void            __insertBefore (CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text);
+static void            __insertFirst  (CwtStrList *psl, const CWT_CHAR *s);
+static void            __insertLast   (CwtStrList *psl, const CWT_CHAR *s);
+static void            __append       (CwtStrList *psl, const CWT_CHAR *s);
+static void            __prepend      (CwtStrList *psl, const CWT_CHAR *s);
+static void            __remove       (CwtStrList *psl, CwtStrListElem *pelem);
+static void            __removeFirst  (CwtStrList *psl);
+static void            __removeLast   (CwtStrList *psl);
+static CWT_CHAR*       __cat          (CwtStrList *psl);
+static CWT_CHAR*       __catDelim     (CwtStrList *psl, const CWT_CHAR *delim);
+static void 		   __split        (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim);
+static void 		   __splitAny     (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims);
+static CWT_CHAR*	   __at           (CwtStrList *psl, size_t i);
+static void            __begin        (CwtStrList *psl, CwtStrListIterator *iter);
+static void            __beginFrom    (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);
+static void            __rbegin       (CwtStrList *psl, CwtStrListIterator *iter);
+static void            __rbeginFrom   (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);
+static BOOL            __hasMore      (CwtStrListIterator *iter);
+static CWT_CHAR*       __next         (CwtStrListIterator *iter);
+static CwtStrListElem* __elem         (CwtStrListIterator *iter);
+
+static CwtStrListNS __cwtStrListNS = {
+	  __create
+	, __init
+	, __destroy
+	, __free
+	, __clone
+	, __clear
+	, __size
+	, __insertAfter
+	, __insertBefore
+	, __insertFirst
+	, __insertLast
+	, __append
+	, __append
+	, __prepend
+	, __remove
+	, __removeFirst
+	, __removeLast
+	, __cat
+	, __catDelim
+	, __split
+	, __splitAny
+	, __at
+	, __begin
+	, __beginFrom
+	, __rbegin
+	, __rbeginFrom
+	, __hasMore
+	, __next
+	, __elem
 };
-*/
 
-
-CwtStringListPtr cwtNewStringList(void)
+DLL_API_EXPORT CwtStrListNS* cwtStrListNS(void)
 {
-	CwtStringListPtr sl;
-
-	sl = CWT_MALLOC(CwtStringList);
-	CWT_ASSERT(sl);
-
-	sl->strings.first = NULL;
-	sl->strings.last = NULL;
-	sl->count = 0;
-	return sl;
+	return &__cwtStrListNS;
 }
 
-void cwtDeleteStringList(CwtStringListPtr sl)
+
+static CwtStrList* __create(void)
 {
-	cwtDListClear(&sl->strings, cwtFree, cwtFree);
-	CWT_FREE(sl);
+	CwtStrList *psl;
+
+	psl = CWT_MALLOC(CwtStrList);
+	__init(psl);
+	return psl;
 }
 
-void cwtStringListClear(CwtStringListPtr sl)
+static void __init(CwtStrList *psl)
 {
-	cwtDListClear(&sl->strings, cwtFree, cwtFree);
-	sl->count = 0;
+	CWT_ASSERT(psl);
+	psl->strings.first = NULL;
+	psl->strings.last = NULL;
+	psl->count = 0;
 }
 
-static int _strlist_dup_data(void *data, void *extra)
+static void __destroy(CwtStrList *psl)
+{
+	CWT_ASSERT(psl);
+	__clear(psl);
+}
+
+
+static void __free(CwtStrList *psl)
+{
+	__destroy(psl);
+	CWT_FREE(psl);
+}
+
+
+static int __strlist_dup_data_helper(void *data, void *extra)
 {
 	DListNode *node = CWT_MALLOC(DListNode);
 
@@ -58,141 +122,158 @@ static int _strlist_dup_data(void *data, void *extra)
 	return 0;
 }
 
-CwtStringListPtr cwtStringListClone(CwtStringListPtr orig)
+static CwtStrList* __clone(CwtStrList *psl)
 {
-	CwtStringListPtr clone = cwtNewStringList();
-	dlist_traverse(&orig->strings, _strlist_dup_data, &clone->strings);
-	clone->count = orig->count;
+	CwtStrList *clone = __create();
+
+	CWT_ASSERT(psl);
+	dlist_traverse(&psl->strings, __strlist_dup_data_helper, &clone->strings);
+	clone->count = psl->count;
 	return clone;
 }
 
-size_t cwtStringListSize(CwtStringListPtr sl)
+
+static void __clear(CwtStrList *psl)
 {
-	return sl->count;
+	CWT_ASSERT(psl);
+	cwtDListClear(&psl->strings, cwtFree, cwtFree);
+	psl->count = 0;
+
 }
 
-void cwtStringListInsertAfter(CwtStringListPtr sl, CwtStringListElemPtr elem, const CWT_CHAR *text)
+
+static size_t __size(CwtStrList *psl)
 {
-	CwtStringListElemPtr e =  CWT_MALLOC(CwtStringListElem);
-	e->data = cwtStrNS()->strdup(text);
-	if( !elem ) {
-		dlist_insert_first(&sl->strings, e);
+	CWT_ASSERT(psl);
+	return psl->count;
+}
+
+
+static void __insertAfter  (CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *s)
+{
+	CwtStrListElem *e =  CWT_MALLOC(CwtStrListElem);
+
+	CWT_ASSERT(psl);
+	e->data = cwtStrNS()->strdup(s);
+	if( !pelem ) {
+		dlist_insert_first(&psl->strings, e);
 	} else {
-		dlist_insert_after(&sl->strings, elem, e);
+		dlist_insert_after(&psl->strings, pelem, e);
 	}
-	sl->count++;
+	psl->count++;
 }
 
-void cwtStringListInsertBefore(CwtStringListPtr sl, CwtStringListElemPtr elem, const CWT_CHAR *text)
-{
-	CwtStringListElemPtr e =  CWT_MALLOC(CwtStringListElem);
-	e->data = cwtStrNS()->strdup(text);
 
-	if( !elem ) {
-		dlist_insert_first(&sl->strings, e);
+static void __insertBefore (CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *s)
+{
+	CwtStrListElem *e =  CWT_MALLOC(CwtStrListElem);
+
+	CWT_ASSERT(psl);
+
+	e->data = cwtStrNS()->strdup(s);
+
+	if( !pelem ) {
+		dlist_insert_first(&psl->strings, e);
 	} else {
-		dlist_insert_before(&sl->strings, elem, e);
+		dlist_insert_before(&psl->strings, pelem, e);
 	}
-	sl->count++;
-}
-
-void cwtStringListInsertFirst(CwtStringListPtr sl, const CWT_CHAR *text)
-{
-	CwtStringListElemPtr e =  CWT_MALLOC(CwtStringListElem);
-	e->data = cwtStrNS()->strdup(text);
-	dlist_insert_first(&sl->strings, e);
-	sl->count++;
-}
-
-void cwtStringListInsertLast(CwtStringListPtr sl, const CWT_CHAR *text)
-{
-	CwtStringListElemPtr e =  CWT_MALLOC(CwtStringListElem);
-	e->data = cwtStrNS()->strdup(text);
-	dlist_insert_last(&sl->strings, e);
-	sl->count++;
+	psl->count++;
 }
 
 
-void cwtStringListAppend(CwtStringListPtr sl, const CWT_CHAR* text)
+static void __insertFirst(CwtStrList *psl, const CWT_CHAR *s)
 {
-	cwtStringListInsertLast(sl, text);
-}
+	CwtStrListElem *e =  CWT_MALLOC(CwtStrListElem);
 
-void cwtStringListPrepend(CwtStringListPtr sl, const CWT_CHAR* text)
-{
-	cwtStringListInsertFirst(sl, text);
-}
+	CWT_ASSERT(psl);
 
-void cwtStringListRemove(CwtStringListPtr sl, CwtStringListElemPtr elem)
-{
-	dlist_remove(&sl->strings, elem);
-	CWT_FREE(elem->data);
-	CWT_FREE(elem);
-}
-
-void cwtStringListRemoveFirst(CwtStringListPtr sl)
-{
-	cwtStringListRemove(sl, sl->strings.first);
-}
-
-void cwtStringListRemoveLast(CwtStringListPtr sl)
-{
-	cwtStringListRemove(sl, sl->strings.last);
+	e->data = cwtStrNS()->strdup(s);
+	dlist_insert_first(&psl->strings, e);
+	psl->count++;
 }
 
 
-void cwtStringListBegin(CwtStringList *sl, CwtStringListIterator *si)
+static void __insertLast(CwtStrList *psl, const CWT_CHAR *s)
 {
-	si->sl = sl;
-	si->node = sl->strings.first;
-	si->forward = TRUE;
-}
+	CwtStrListElem *e =  CWT_MALLOC(CwtStrListElem);
 
-void cwtStringListBeginFrom(CwtStringList *sl, CwtStringListElemPtr node, CwtStringListIterator *si)
-{
-	si->sl = sl;
-	si->node = node;
-	si->forward = TRUE;
-}
+	CWT_ASSERT(psl);
 
-void cwtStringListRbegin(CwtStringList *sl, CwtStringListIterator *si)
-{
-	si->sl = sl;
-	si->node = sl->strings.last;
-	si->forward = FALSE;
-}
-
-void cwtStringListRbeginFrom(CwtStringList *sl, CwtStringListElemPtr node, CwtStringListIterator *si)
-{
-	si->sl = sl;
-	si->node = node;
-	si->forward = FALSE;
+	e->data = cwtStrNS()->strdup(s);
+	dlist_insert_last(&psl->strings, e);
+	psl->count++;
 }
 
 
-BOOL cwtStringListHasMore(CwtStringListIterator *si)
+static void __append(CwtStrList *psl, const CWT_CHAR *s)
 {
-	return si->node ? TRUE : FALSE;
+	__insertLast(psl, s);
 }
 
-CWT_CHAR* cwtStringListNext(CwtStringListIterator *si)
+static void __prepend(CwtStrList *psl, const CWT_CHAR *s)
 {
-	CwtStringListElem *node = si->node;
-	if( si->forward ) {
-		si->node = si->node->next;
-	} else {
-		si->node = si->node->prev;
+	__insertFirst(psl, s);
+}
+
+static void __remove(CwtStrList *psl, CwtStrListElem *pelem)
+{
+	CWT_ASSERT(psl);
+	dlist_remove(&psl->strings, pelem);
+	CWT_FREE(pelem->data);
+	CWT_FREE(pelem);
+}
+
+static void __removeFirst(CwtStrList *psl)
+{
+	CWT_ASSERT(psl);
+	__remove(psl, psl->strings.first);
+}
+
+static void __removeLast(CwtStrList *psl)
+{
+	__remove(psl, psl->strings.last);
+}
+
+
+static CWT_CHAR* __cat(CwtStrList *psl)
+{
+	CWT_ASSERT(psl);
+	return __catDelim(psl, NULL);
+}
+
+
+/**
+ * Concatenates strings into one.
+ *
+ * @param sl string list
+ * @return new allocated concatenated string
+ */
+static CWT_CHAR* __catDelim(CwtStrList *psl, const CWT_CHAR *delim)
+{
+	CwtStringNS *stringNS = cwtStringNS();
+	CwtStrNS *strNS = cwtStrNS();
+	CwtString *sbuf;
+	CWT_CHAR *str;
+	CwtStrListIterator it;
+
+	CWT_ASSERT(psl);
+
+	sbuf = stringNS->create();
+
+	__begin(psl, &it);
+
+	while( __hasMore(&it)) {
+		if( delim && stringNS->length(sbuf) > 0 )
+			stringNS->append(sbuf, delim);
+		stringNS->append(sbuf, (CWT_CHAR*)__next(&it));
 	}
-	return (CWT_CHAR*)node->data;
+
+	str = strNS->strdup(stringNS->cstr(sbuf));
+	stringNS->free(sbuf);
+
+	return str;
 }
 
-/* call this function before strlist_next
- * */
-CwtStringListElemPtr cwtStringListNode(CwtStringListIterator *si)
-{
-	CWT_ASSERT(si);
-	return si->node;
-}
 
 /**
  * Split string with delimiters into tokens
@@ -205,11 +286,13 @@ CwtStringListElemPtr cwtStringListNode(CwtStringListIterator *si)
  * if @c delim is null or is empty string @c sl appends entire @c str
  *
  */
-void cwtStringListSplit(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_CHAR *delim)
+static void __split(CwtStrList *psl, const CWT_CHAR *str, const CWT_CHAR *delim)
 {
 	const CWT_CHAR *ptr_begin, *ptr_end, *ptr;
 	size_t delim_len = 0;
 	CwtStrNS *strNS = cwtStrNS();
+
+	CWT_ASSERT(psl);
 
 	if( !str )
 		return;
@@ -218,7 +301,7 @@ void cwtStringListSplit(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_CHAR
 		delim_len = strNS->strlen(delim);
 
 	if( delim_len == 0 ) {
-		cwtStringListAppend(sl, str);
+		__append(psl, str);
 		return;
 	}
 
@@ -229,7 +312,7 @@ void cwtStringListSplit(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_CHAR
 	while( ptr < ptr_end ) {
 		if( ptr == strNS->strstr(ptr, delim) ) {
 			CWT_CHAR *s = strNS->strndup(ptr_begin, (size_t)(ptr-ptr_begin));
-			cwtStringListAppend(sl, s);
+			__append(psl, s);
 			CWT_FREE(s);
 			ptr += delim_len;
 			ptr_begin = ptr;
@@ -240,17 +323,20 @@ void cwtStringListSplit(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_CHAR
 	}
 
 	if( ptr > ptr_begin ) {
-		cwtStringListAppend(sl, ptr_begin);
+		__append(psl, ptr_begin);
 	}
 }
 
-void cwtStringListSplitAny(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_CHAR *delims)
+
+static void __splitAny(CwtStrList *psl, const CWT_CHAR *str, const CWT_CHAR *delims)
 {
 	const CWT_CHAR *ptr_begin, *ptr_end, *ptr;
 	size_t delims_len = 0;
 	size_t i;
 	BOOL delim_ok = FALSE;
 	CwtStrNS *ns = cwtStrNS();
+
+	CWT_ASSERT(psl);
 
 	if( !str )
 		return;
@@ -259,7 +345,7 @@ void cwtStringListSplitAny(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_C
 		delims_len = ns->strlen(delims);
 
 	if( delims_len == 0 ) {
-		cwtStringListAppend(sl, str);
+		__append(psl, str);
 		return;
 	}
 
@@ -273,7 +359,7 @@ void cwtStringListSplitAny(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_C
 				if( !delim_ok ) {
 					CWT_CHAR *s = ns->strndup(ptr_begin, (size_t)(ptr-ptr_begin));
 					delim_ok = TRUE;
-					cwtStringListAppend(sl, s);
+					__append(psl, s);
 					CWT_FREE(s);
 				}
 				break;
@@ -289,62 +375,91 @@ void cwtStringListSplitAny(CwtStringListPtr sl, const CWT_CHAR *str, const CWT_C
 	}
 
 	if( ptr > ptr_begin ) {
-		cwtStringListAppend(sl, ptr_begin);
+		__append(psl, ptr_begin);
 	}
 }
 
-/**
- * Concatenates strings into one.
- *
- * @param sl string list
- * @return new allocated concatenated string
- */
-CWT_CHAR* cwtStringListCatDelim(CwtStringListPtr sl, const CWT_CHAR *delim)
-{
-	CwtStringNS *stringNS = cwtStringNS();
-	CwtStrNS *strNS = cwtStrNS();
-	CwtString *sbuf;
-	CWT_CHAR *str;
-	CwtStringListIterator it;
 
-
-	sbuf = stringNS->create();
-
-	cwtStringListBegin(sl, &it);
-
-	while(cwtStringListHasMore(&it)) {
-		if( delim && stringNS->length(sbuf) > 0 )
-			stringNS->append(sbuf, delim);
-		stringNS->append(sbuf, (CWT_CHAR*)cwtStringListNext(&it));
-	}
-
-	str = strNS->strdup(stringNS->cstr(sbuf));
-	stringNS->free(sbuf);
-
-	return str;
-}
-
-CWT_CHAR* cwtStringListCat(CwtStringListPtr sl)
-{
-	return cwtStringListCatDelim(sl, NULL);
-}
-
-
-CWT_CHAR* cwtStringListAt(CwtStringListPtr sl, size_t index)
+static CWT_CHAR* __at(CwtStrList *psl, size_t index)
 {
 	size_t i;
-	CwtStringListIterator it;
+	CwtStrListIterator it;
 	CWT_CHAR *str = NULL;
 
-	if( index >= sl->count )
+	CWT_ASSERT(psl);
+
+	if( index >= psl->count )
 		return (CWT_CHAR*)NULL;
 
-	cwtStringListBegin(sl, &it);
+	__begin(psl, &it);
 	i = 0;
 
-	while( cwtStringListHasMore(&it) && i++ <= index ) {
-		str = cwtStringListNext(&it);
+	while( __hasMore(&it) && i++ <= index ) {
+		str = __next(&it);
 	}
 
 	return str;
+}
+
+
+static void __begin(CwtStrList *psl, CwtStrListIterator *iter)
+{
+	CWT_ASSERT(psl);
+
+	iter->sl = psl;
+	iter->node = psl->strings.first;
+	iter->forward = TRUE;
+}
+
+static void __beginFrom(CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter)
+{
+	CWT_ASSERT(psl);
+
+	iter->sl = psl;
+	iter->node = pelem;
+	iter->forward = TRUE;
+}
+
+static void __rbegin(CwtStrList *psl, CwtStrListIterator *iter)
+{
+	CWT_ASSERT(psl);
+
+	iter->sl = psl;
+	iter->node = psl->strings.last;
+	iter->forward = FALSE;
+}
+
+static void __rbeginFrom(CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter)
+{
+	CWT_ASSERT(psl);
+
+	iter->sl = psl;
+	iter->node = pelem;
+	iter->forward = FALSE;
+}
+
+
+static BOOL __hasMore(CwtStrListIterator *iter)
+{
+	return iter->node ? TRUE : FALSE;
+}
+
+static CWT_CHAR* __next(CwtStrListIterator *iter)
+{
+	CwtStrListElem *node = iter->node;
+	if( iter->forward ) {
+		iter->node = iter->node->next;
+	} else {
+		iter->node = iter->node->prev;
+	}
+	return (CWT_CHAR*)node->data;
+}
+
+
+/* call this function before strlist_next
+ * */
+static CwtStrListElem* __elem(CwtStrListIterator *iter)
+{
+	CWT_ASSERT(iter);
+	return iter->node;
 }

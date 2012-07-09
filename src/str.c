@@ -131,6 +131,7 @@ static CwtStrNS __cwtStrNS = {
 	, __tolowerStr
 	, __chomp
 	, __toLatin1
+
 };
 
 
@@ -225,7 +226,7 @@ static void __toupperStr(CWT_CHAR *dest, const CWT_CHAR *src, size_t n)
 	size_t i;
 
 	for( i = 0; i < n; i++ ) {
-		dest[i] = __cwtStrNS.toupper(src[i]);
+		dest[i] = __toupper(src[i]);
 	}
 }
 
@@ -234,7 +235,7 @@ static void __tolowerStr(CWT_CHAR *dest, const CWT_CHAR *src, size_t n)
 	size_t i;
 
 	for( i = 0; i < n; i++ ) {
-		dest[i] = __cwtStrNS.tolower(src[i]);
+		dest[i] = __tolower(src[i]);
 	}
 }
 

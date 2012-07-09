@@ -46,34 +46,41 @@ typedef struct CwtBindEntry {
 } CwtBindEntry;
 
 
-typedef void *CwtStatement;
+typedef struct CwtStatement {
+	CHAR unused;
+} CwtStatement;
 
-typedef struct CwtDBHandlerBase {
-	void            (*close)         (CwtStatement);
-	BOOL            (*execute)       (CwtStatement);
-	CwtDBI_RC       (*err)           (CwtStatement);
-	const CWT_CHAR* (*errstr)        (CwtStatement);
-	BOOL            (*bind)          (CwtStatement, size_t index, CwtTypeId type_id, void *value, size_t *plength);
-	BOOL            (*bindArray)     (CwtStatement, CwtBindEntry bindArray[]);
-	ULONGLONG       (*rows)          (CwtStatement);
-} *CwtDBHandler;
+typedef struct CwtDBHandler {
+	void            (*close)         (CwtStatement*);
+	BOOL            (*execute)       (CwtStatement*);
+	CwtDBI_RC       (*err)           (CwtStatement*);
+	const CWT_CHAR* (*errstr)        (CwtStatement*);
+	BOOL            (*bind)          (CwtStatement*, size_t index, CwtTypeId type_id, void *value, size_t *plength);
+	BOOL            (*bindArray)     (CwtStatement*, CwtBindEntry bindArray[]);
+	ULONGLONG       (*rows)          (CwtStatement*);
+} CwtDBHandler;
+
+typedef struct CwtDBIDriver
+{
+	CwtDBHandler*   (*connect)       (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
+	void            (*disconnect)    (CwtDBHandler* dbh);
+	BOOL            (*func)          (CwtDBHandler*, const CWT_CHAR*, CWT_CHAR**);
+	void            (*attr)          (CwtDBHandler*, const CWT_CHAR*, void*);
+	BOOL            (*setAutoCommit) (CwtDBHandler*, BOOL);
+	BOOL            (*autoCommit)    (CwtDBHandler*);
+	CwtDBI_RC       (*err)           (CwtDBHandler*);
+	const CWT_CHAR* (*errstr)        (CwtDBHandler*);
+	const CWT_CHAR* (*state)         (CwtDBHandler*);
+	BOOL            (*query)         (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
+	BOOL            (*queryBin)      (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
+	CwtStatement*   (*prepare)       (CwtDBHandler*, const CWT_CHAR *sql);
+	ULONGLONG       (*rows)          (CwtDBHandler*);
+} CwtDBIDriver;
 
 typedef struct CwtDBI
 {
 	void            (*parseDSN)      (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
-	CwtDBHandler    (*connect)       (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
-	void            (*disconnect)    (CwtDBHandler dbh);
-	BOOL            (*func)          (CwtDBHandler, const CWT_CHAR*, CWT_CHAR**);
-	void            (*attr)          (CwtDBHandler, const CWT_CHAR*, void*);
-	BOOL            (*setAutoCommit) (CwtDBHandler, BOOL);
-	BOOL            (*autoCommit)    (CwtDBHandler);
-	CwtDBI_RC       (*err)           (CwtDBHandler);
-	const CWT_CHAR* (*errstr)        (CwtDBHandler);
-	const CWT_CHAR* (*state)         (CwtDBHandler);
-	BOOL            (*query)         (CwtDBHandler, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
-	BOOL            (*queryBin)      (CwtDBHandler, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
-	CwtStatement    (*prepare)       (CwtDBHandler, const CWT_CHAR *sql);
-	ULONGLONG       (*rows)          (CwtDBHandler);
+	CwtDBIDriver*   (*load)          (const CWT_CHAR *dsn);
 } CwtDBI;
 
 EXTERN_C_BEGIN

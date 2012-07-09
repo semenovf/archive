@@ -13,52 +13,57 @@
 #include <cwt/dlist.h>
 
 
-typedef struct CwtStringList
+typedef struct CwtStrList
 {
 	size_t count;
 	DList strings;
-} CwtStringList, *CwtStringListPtr;
+} CwtStrList;
 
-typedef struct DListNode  CwtStringListElem;
-typedef struct DListNode* CwtStringListElemPtr;
+typedef struct DListNode  CwtStrListElem;
 
-struct CwtStringListIterator
+typedef struct CwtStrListIterator
 {
-	CwtStringList *sl;
-	CwtStringListElem *node; /* current node */
+	CwtStrList *sl;
+	CwtStrListElem *node; /* current node */
 	BOOL forward;
-};
-typedef struct CwtStringListIterator CwtStringListIterator;
+} CwtStrListIterator;
+
+
+typedef struct CwtStrListNS {
+	CwtStrList*     (*create)      (void);
+	void            (*init)        (CwtStrList *psl);
+	void            (*destroy)     (CwtStrList *psl);
+	void            (*free)        (CwtStrList *psl);
+	CwtStrList*     (*clone)       (CwtStrList *psl);
+	void            (*clear)       (CwtStrList *psl);
+	size_t          (*size)        (CwtStrList *psl);
+	void            (*insertAfter) (CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text);
+	void            (*insertBefore)(CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text);
+	void            (*insertFirst) (CwtStrList *psl, const CWT_CHAR *s);
+	void            (*insertLast)  (CwtStrList *psl, const CWT_CHAR *s);
+	void            (*append)      (CwtStrList *psl, const CWT_CHAR *s);
+	void            (*add)         (CwtStrList *psl, const CWT_CHAR *s);
+	void            (*prepend)     (CwtStrList *psl, const CWT_CHAR *s);
+	void            (*remove)      (CwtStrList *psl, CwtStrListElem *pelem);
+	void            (*removeFirst) (CwtStrList *psl);
+	void            (*removeLast)  (CwtStrList *psl);
+	CWT_CHAR*       (*cat)         (CwtStrList *psl);
+	CWT_CHAR*       (*catDelim)    (CwtStrList *psl, const CWT_CHAR *delim);
+	void 		    (*split)       (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim);
+	void 		    (*splitAny)    (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims);
+	CWT_CHAR*	    (*at)          (CwtStrList *psl, size_t i);
+	void            (*begin)       (CwtStrList *psl, CwtStrListIterator *iter);
+	void            (*beginFrom)   (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);
+	void            (*rbegin)      (CwtStrList *psl, CwtStrListIterator *iter);
+	void            (*rbeginFrom)  (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);
+	BOOL            (*hasMore)     (CwtStrListIterator *iter);
+	CWT_CHAR*       (*next)        (CwtStrListIterator *iter);
+	CwtStrListElem* (*elem)        (CwtStrListIterator *iter);
+} CwtStrListNS;
 
 EXTERN_C_BEGIN
 
-DLL_API_EXPORT CwtStringListPtr     cwtNewStringList(void);
-DLL_API_EXPORT void                 cwtDeleteStringList(CwtStringListPtr sl);
-DLL_API_EXPORT void                 cwtStringListClear(CwtStringListPtr sl);
-DLL_API_EXPORT CwtStringListPtr     cwtStringListClone(CwtStringListPtr sl);
-DLL_API_EXPORT size_t               cwtStringListSize(CwtStringListPtr sl);
-DLL_API_EXPORT void                 cwtStringListInsertAfter(CwtStringListPtr sl, CwtStringListElemPtr elem, const CWT_CHAR *text);
-DLL_API_EXPORT void                 cwtStringListInsertBefore(CwtStringListPtr sl, CwtStringListElemPtr elem, const CWT_CHAR *text);
-DLL_API_EXPORT void                 cwtStringListInsertFirst(CwtStringListPtr sl, const CWT_CHAR *text);
-DLL_API_EXPORT void                 cwtStringListInsertLast(CwtStringListPtr sl, const CWT_CHAR *text);
-DLL_API_EXPORT void                 cwtStringListAppend(CwtStringListPtr sl, const CWT_CHAR* str);
-#define cwtStringListAdd(sl,str)    cwtStringListAppend(sl, str)
-DLL_API_EXPORT void                 cwtStringListPrepend(CwtStringListPtr sl, const CWT_CHAR* str);
-DLL_API_EXPORT void                 cwtStringListRemove(CwtStringListPtr sl, CwtStringListElemPtr s);
-DLL_API_EXPORT void                 cwtStringListRemoveFirst(CwtStringListPtr sl);
-DLL_API_EXPORT void                 cwtStringListRemoveLast(CwtStringListPtr sl);
-DLL_API_EXPORT CWT_CHAR*                cwtStringListCat(CwtStringListPtr sl);
-DLL_API_EXPORT CWT_CHAR*                cwtStringListCatDelim(CwtStringListPtr sl, const CWT_CHAR *delim);
-DLL_API_EXPORT void 		        cwtStringListSplit(CwtStringListPtr sl, const CWT_CHAR *s, const CWT_CHAR *delim);
-DLL_API_EXPORT void 		        cwtStringListSplitAny(CwtStringListPtr sl, const CWT_CHAR *s, const CWT_CHAR *delims);
-DLL_API_EXPORT CWT_CHAR*		        cwtStringListAt(CwtStringListPtr sl, size_t i);
-DLL_API_EXPORT void                 cwtStringListBegin(CwtStringList *sl, CwtStringListIterator *si);
-DLL_API_EXPORT void                 cwtStringListBeginFrom(CwtStringList *sl, CwtStringListElemPtr node, CwtStringListIterator *si);
-DLL_API_EXPORT void                 cwtStringListRbegin(CwtStringList *sl, CwtStringListIterator *si);
-DLL_API_EXPORT void                 cwtStringListRbeginFrom(CwtStringList *sl, CwtStringListElemPtr node, CwtStringListIterator *si);
-DLL_API_EXPORT BOOL                 cwtStringListHasMore(CwtStringListIterator *si);
-DLL_API_EXPORT CWT_CHAR*                cwtStringListNext(CwtStringListIterator *si);
-DLL_API_EXPORT CwtStringListElemPtr cwtStringListNode(CwtStringListIterator *si);
+DLL_API_EXPORT CwtStrListNS* cwtStrListNS();
 
 EXTERN_C_END
 
