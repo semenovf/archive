@@ -69,7 +69,7 @@ typedef struct CwtDBIDriver
 	BOOL            (*setAutoCommit) (CwtDBHandler*, BOOL);
 	BOOL            (*autoCommit)    (CwtDBHandler*);
 	CwtDBI_RC       (*err)           (CwtDBHandler*);
-	const CWT_CHAR* (*errstr)        (CwtDBHandler*);
+	const CWT_CHAR* (*strerror)      (CwtDBHandler*);
 	const CWT_CHAR* (*state)         (CwtDBHandler*);
 	BOOL            (*query)         (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
 	BOOL            (*queryBin)      (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */

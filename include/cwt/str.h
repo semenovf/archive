@@ -8,6 +8,7 @@
 
 
 typedef struct CwtStrNS {
+	const CWT_CHAR*   (*strerror)     (int);
 	size_t            (*strftime)     (CWT_CHAR *buf, size_t sz, const CWT_CHAR *format, const struct tm* ptm);
 	size_t            (*strlen)       (const CWT_CHAR*);
 	CWT_CHAR*         (*strcpy)       (CWT_CHAR *dest, const CWT_CHAR *src);
@@ -26,7 +27,6 @@ typedef struct CwtStrNS {
 	CWT_CHAR*         (*strcat)       (CWT_CHAR *dest, const CWT_CHAR *src);
 	CWT_CHAR*         (*strncat)      (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 	CWT_CHAR*		  (*strtok)       (CWT_CHAR *tok, const CWT_CHAR *delim);
-	CWT_CHAR*         (*strerror)     (int);
 	LONG              (*strtol)       (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 	LONG              (*strtoul)      (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 	LONGLONG          (*strtoll)      (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
@@ -63,21 +63,22 @@ typedef struct CwtStrNS {
 	void              (*toupperStr)   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 	void              (*tolowerStr)   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 	void              (*chomp)        (CWT_CHAR *s);
-	const char*       (*toLatin1)     (const CWT_CHAR *s, CwtByteArray *latins1);
-
-	/*const char*       (*toUtf8)       (const CWT_CHAR *s, CwtByteArray *latins1);*/
-	/*const CWT_CHAR*   (*fromUtf8)     (const char *utf8, CwtString *s);*/
+	char*             (*toLatin1)     (const CWT_CHAR *s);
+	CWT_CHAR*         (*fromLatin1)   (const char *s);
+	char*             (*toUtf8)       (const CWT_CHAR *s);
+	CWT_CHAR*         (*fromUtf8)     (const char *s);
+	char*             (*toMBCS)       (const CWT_CHAR *s, const CWT_CHAR *csname);
+	CWT_CHAR*         (*fromMBCS)     (const char *s, const CWT_CHAR *csname);
+	const CWT_CHAR*   (*constEmptyStr)(void);
+	const CWT_CHAR*   (*constNullStr) (void);
 } CwtStrNS;
 
 EXTERN_C_BEGIN
 DLL_API_EXPORT CwtStrNS* cwtStrNS(void);
 EXTERN_C_END
 
-extern const CWT_CHAR* CWT_CONST_EMPTYSTR;
-extern const CWT_CHAR* CWT_CONST_NULLSTR;
-
-#define CWT_STRING_OR_EMPTYSTR(s) ((s) ? (s) : CWT_CONST_EMPTYSTR)
-#define CWT_STRING_OR_NULLSTR(s) ((s) ? (s) : CWT_CONST_NULLSTR)
+#define CWT_STRING_OR_EMPTYSTR(s) ((s) ? (s) : cwtStrNS()->constEmptyStr())
+#define CWT_STRING_OR_NULLSTR(s) ((s) ? (s) : cwtStrNS()->constNullStr())
 
 
 #ifdef __COMMENT__

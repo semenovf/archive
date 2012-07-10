@@ -7,10 +7,13 @@
 
 
 #include <cwt/str.h>
+#include <cwt/logger.h>
 
-const CWT_CHAR* CWT_CONST_EMPTYSTR = _T("");
-const CWT_CHAR* CWT_CONST_NULLSTR  = _T("<null>");
+const CWT_CHAR* __CONST_EMPTYSTR = _T("");
+const CWT_CHAR* __CONST_NULLSTR  = _T("<null>");
+CWT_CHAR*       __errorstr = NULL; /* TODO must be freed when program finishing */
 
+static const CWT_CHAR* __strerror(int errn);
 static BOOL      __streq(const CWT_CHAR *s1, const CWT_CHAR *s2);
 static BOOL      __strieq(const CWT_CHAR *s1, const CWT_CHAR *s2);
 static void*     __bzero(void *block, size_t sz);
@@ -36,11 +39,21 @@ extern SBYTE      __toSBYTE      (const CWT_CHAR *str, int radix, BOOL *ok);
 extern BYTE       __toBYTE       (const CWT_CHAR *str, int radix, BOOL *ok);
 EXTERN_C_END
 
-static const char* __toLatin1(const CWT_CHAR *s, CwtByteArray *latins1);
+static char*      __toLatin1     (const CWT_CHAR *s);
+static CWT_CHAR*  __fromLatin1   (const char *s);
+static char*      __toUtf8       (const CWT_CHAR *s);
+static CWT_CHAR*  __fromUtf8     (const char *utf8);
+static char*      __toMBCS       (const CWT_CHAR *s, const CWT_CHAR *csname);
+static CWT_CHAR*  __fromMBCS     (const char *s, const CWT_CHAR *csname);
+
+static const CWT_CHAR* __constEmptyStr(void);
+static const CWT_CHAR* __constNullStr(void);
+
 
 static CwtStrNS __cwtStrNS = {
+	__strerror
 #ifdef CWT_UNICODE
-	  wcsftime
+	, wcsftime
 	, wcslen
 	, wcscpy
 	, wcsncpy
@@ -58,7 +71,6 @@ static CwtStrNS __cwtStrNS = {
 	, wcscat
 	, wcsncat
 	, wcstok
-	, CWT_ISO_CPP_NAME(wcserror)
 	, wcstol
 	, wcstoul
 #	ifdef CWT_CC_MSC
@@ -70,7 +82,7 @@ static CwtStrNS __cwtStrNS = {
 #	endif
 	, iswalpha
 #else
-	  strftime
+	, strftime
 	, strlen
 	, strcpy
 	, strncpy
@@ -88,7 +100,6 @@ static CwtStrNS __cwtStrNS = {
 	, strcat
 	, strncat
 	, strtok
-	, strerror
 	, strtol
 	, strtoul
 #	ifdef CWT_CC_MSC
@@ -130,14 +141,59 @@ static CwtStrNS __cwtStrNS = {
 	, __toupperStr
 	, __tolowerStr
 	, __chomp
-	, __toLatin1
 
+	, __toLatin1
+	, __fromLatin1
+	, __toUtf8
+	, __fromUtf8
+	, __toMBCS
+	, __fromMBCS
+
+	, __constEmptyStr
+	, __constNullStr
 };
 
 
 DLL_API_EXPORT CwtStrNS* cwtStrNS(void)
 {
 	return &__cwtStrNS;
+}
+
+
+static const CWT_CHAR* __strerror(int errn)
+{
+	if( __errorstr ) {
+		CWT_FREE(__errorstr);
+		__errorstr = NULL;
+	}
+
+#ifdef CWT_UNICODE
+#	ifdef CWT_CC_MSC
+	{
+    LPVOID lpMsgBuf;
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        (DWORD)errn,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR) &lpMsgBuf,
+        0, NULL );
+
+    __errorstr = __cwtStrNS.strdup((CWT_CHAR*)lpMsgBuf);
+    LocalFree(lpMsgBuf);
+	__chomp(__errorstr);
+	}
+#	else
+	__errorstr = __cwtStrNS.strdup(CWT_ISO_CPP_NAME(wcserror)(errn));
+#	endif
+#else
+	__errorstr = __cwtStrNS.strdup(strerror(errn));
+#endif
+
+	return __errorstr;
 }
 
 
@@ -270,24 +326,206 @@ static CWT_CHAR __charAt(const CWT_CHAR *s, size_t i)
 /**
   @return converted string, or empty string if error occured or source string was empty
 */
-static const char* __toLatin1( const CWT_CHAR *s, CwtByteArray *latins1 )
+static char* __toLatin1( const CWT_CHAR *s )
 {
-	CwtStrNS *strNS = cwtStrNS();
-	CwtByteArrayNS *baNS = cwtByteArrayNS();
-	size_t length = strNS->strlen(s);
+	char *latins1 = NULL;
 
-	baNS->clear(latins1);
+#ifdef CWT_UNICODE
+	CwtStrNS *strNS = cwtStrNS();
+	size_t length = strNS->strlen(s);
 
 	if( length ) {
 		const CWT_CHAR *src = s;
-		BYTE *dst = latins1->m_buffer;
+		char *ptr;
 
-		baNS->resize(latins1, length);
+		latins1 = CWT_MALLOCA(char, length+1);
+		ptr = latins1;
 
         while (length--) {
-            *dst++ = (*src > 0xff) ? '?' : (BYTE)*src;
+            *ptr++ = (*src > 0xff) ? '?' : (char)*src;
             ++src;
         }
+        latins1[length] = '\0';
 	}
-	return baNS->cstr(latins1);
+#else
+	latins1 = strdup(s);
+#endif
+
+	return latins1;
+}
+
+
+static CWT_CHAR* __fromLatin1(const char *s)
+{
+	CWT_CHAR *str;
+#ifdef CWT_UNICODE
+	/*CwtStrNS *strNS = cwtStrNS();*/
+	size_t length = strlen(s);
+
+	if( length ) {
+		const char *src = s;
+		CWT_CHAR *ptr;
+
+		str = CWT_MALLOCA(CWT_CHAR, length+1);
+		ptr = str;
+
+        while( length-- ) {
+            *ptr++ = (CWT_CHAR)(*src++);
+        }
+        str[length] = _T('\0');
+	}
+#else
+	return str = strdup(s);
+#endif
+	return str;
+}
+
+static char* __toUtf8(const CWT_CHAR *s)
+{
+	char *utf8 = NULL;
+
+	if( !s ) {
+
+#ifdef CWT_UNICODE
+#	ifdef CWT_CC_MSC
+		int length = __cwtStrNS.strlen(s);
+		/*Get length (in chars) of resulting UTF-8 string*/
+		const int utf8_length = WideCharToMultiByte(
+			CP_UTF8,               /*convert to UTF-8*/
+			0,                     /*default flags*/
+			s,                     /*source UTF-16 string*/
+			length,                /*source string length, in wchar_t's */
+			NULL,                  /*unused - no conversion required in this step*/
+			0,                     /*request buffer size*/
+			NULL, NULL);           /*unused*/
+
+		if( utf8_length == 0 ) {
+			printf_error(_Tr("getting length of result utf8 string failed: %s"), __cwtStrNS.strerror(GetLastError()));
+			return NULL;
+		}
+
+		/*Allocate destination buffer for UTF-8 string*/
+		utf8 = CWT_MALLOCA(char, utf8_length+1);
+
+		/*Do the conversion from UTF-16 to UTF-8*/
+		if ( ! WideCharToMultiByte(
+				CP_UTF8,
+				0,
+				s,
+				length,
+				&utf8[0],
+				utf8_length,
+				NULL, NULL )) {
+			printf_error(_Tr("converting string to utf8 failed: %s"), __cwtStrNS.strerror(GetLastError()));
+			CWT_FREE(utf8);
+			return NULL;
+		}
+		utf8[utf8_length] = '\0';
+#	else
+#		error __toUtf8 is not implemented yet
+#	endif
+#else
+	utf8 = strdup(s);
+#endif
+
+	} /* !s */
+
+	return utf8;
+}
+
+
+/**
+ *
+ * @param utf8
+ * @return
+ *
+ * Note: Return value must be deallocated.
+ */
+static CWT_CHAR* __fromUtf8(const char *utf8)
+{
+	CwtStrNS *strNS = cwtStrNS();
+	CWT_CHAR *str = NULL;
+	int utf8_length;
+
+	if( !utf8 ) {
+		return NULL;
+	}
+
+	utf8_length = strlen(utf8);
+
+#ifdef CWT_UNICODE
+#	ifdef CWT_CC_MSC
+
+	if( utf8_length ) {
+		/*Get length (in wchar_t's) of resulting UTF-16 string*/
+		const int length = MultiByteToWideChar(
+			CP_UTF8,           /*convert from UTF-8*/
+			0,                 /*default flags*/
+			utf8,              /*source UTF-8 string*/
+			utf8_length,       /*length (in chars) of source UTF-8 string*/
+			NULL,              /*unused - no conversion done in this step*/
+			0);                /*request size of destination buffer, in wchar_t's*/
+
+		if( length == 0 ) {
+			printf_error(_Tr("getting length of result string failed %s"), __cwtStrNS.strerror(GetLastError()));
+			return NULL;
+		}
+
+		str = CWT_MALLOCA(CWT_CHAR, length+1);
+
+		/*Do the conversion from UTF-8 to UTF-16*/
+		if( ! MultiByteToWideChar(
+				CP_UTF8,
+				0,
+				utf8,
+				utf8_length,
+				&str[0],
+				length )) {
+			printf_error(_Tr("converting string from_utf8_failed: %s"), __cwtStrNS.strerror(GetLastError()));
+			CWT_FREE(str);
+			return NULL;
+		}
+	}
+#	else
+#		error __toUtf8 is not implemented yet
+#	endif
+#else
+#endif
+
+	return str;
+}
+
+
+static char* __toMBCS(const CWT_CHAR *s, const CWT_CHAR *csname)
+{
+	if( __cwtStrNS.streq(_T("utf8"), csname))
+		return __cwtStrNS.toUtf8(s);
+	if( __cwtStrNS.streq(_T("latin1"), csname))
+		return __cwtStrNS.toLatin1(s);
+
+	printf_warn(_Tr("CwtStrNS::toMBCS(): no text codec is attached, converting to MBCS"));
+	return __cwtStrNS.toLatin1(s);
+}
+
+
+static CWT_CHAR* __fromMBCS(const char *s, const CWT_CHAR *csname)
+{
+	if( __cwtStrNS.streq(_T("utf8"), csname))
+		return __cwtStrNS.fromUtf8(s);
+	if( __cwtStrNS.streq(_T("latin1"), csname))
+		return __cwtStrNS.fromLatin1(s);
+
+	printf_warn(_Tr("CwtStrNS::fromMBCS(): no text codec is attached, converting from MBCS"));
+	return __cwtStrNS.fromLatin1(s);
+}
+
+
+static const CWT_CHAR* __constEmptyStr(void)
+{
+	return __CONST_EMPTYSTR;
+}
+
+static const CWT_CHAR* __constNullStr(void)
+{
+	return __CONST_NULLSTR;
 }

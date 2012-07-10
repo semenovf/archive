@@ -107,8 +107,6 @@ static BOOL __cwtAllowSockets(void)
 CwtIODevicePtr cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
 {
 	CwtStrNS *strNS = cwtStrNS();
-	CwtByteArrayNS *baNS = cwtByteArrayNS();
-	CwtByteArray latin1InetAddr;
 
 	SOCKET sockfd;
 	struct sockaddr_in sockaddr;
@@ -125,17 +123,17 @@ CwtIODevicePtr cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
 		return NULL;
     }
 
-    baNS->init(&latin1InetAddr);
 
     /* The sockaddr_in structure specifies the address family,
      * IP address, and port for the socket that is being bound.
      */
-    sockaddr.sin_family = AF_INET;
-    sockaddr.sin_addr.s_addr = inetAddr != NULL
-    	? inet_addr(strNS->toLatin1(inetAddr, &latin1InetAddr)) : INADDR_ANY;
-    sockaddr.sin_port = port;
-
-    baNS->destroy(&latin1InetAddr);
+    {
+		char *inetAddr_ = strNS->toLatin1(inetAddr);
+		sockaddr.sin_family = AF_INET;
+		sockaddr.sin_addr.s_addr = inetAddr != NULL ? inet_addr(inetAddr_) : INADDR_ANY;
+		sockaddr.sin_port = port;
+		CWT_FREE(inetAddr_);
+    }
 
     /* Bind the socket. */
 	if( bind(sockfd, (SOCKADDR*)&sockaddr, sizeof(sockaddr)) < 0 ) {
@@ -171,8 +169,6 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 	, BOOL isSender)
 {
 	CwtStrNS *strNS = cwtStrNS();
-	CwtByteArrayNS *baNS = cwtByteArrayNS();
-	CwtByteArray latins1;
 
 	SOCKET sockfd;
 	CwtMulticastSocketDevicePtr sockdev;
@@ -191,24 +187,26 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 
 	if( isSender ) {
 		struct in_addr localInterface;
+		char *inetAddr_      = strNS->toLatin1(inetAddr);
+		char *inetMCastAddr_ = strNS->toLatin1(inetMCastAddr);
 
 		sockdev = CWT_MALLOC(CwtMulticastSocketDevice);
 
-	    baNS->init(&latins1);
 
-	    /* Initialize the group sockaddr structure with a */
-	    /* group address of 225.1.1.1 and port 5555. */
-	    memset((char *) &sockdev->group.sockaddr, 0, sizeof(sockdev->group.sockaddr));
-	    sockdev->group.sockaddr.sin_family = AF_INET;
-	    sockdev->group.sockaddr.sin_addr.s_addr = inet_addr(strNS->toLatin1(inetMCastAddr, &latins1)); /*inet_addr("226.1.1.1");*/
-	    sockdev->group.sockaddr.sin_port = htons(port);
+		/* Initialize the group sockaddr structure with a */
+		/* group address of 225.1.1.1 and port 5555. */
+		memset((char *) &sockdev->group.sockaddr, 0, sizeof(sockdev->group.sockaddr));
+		sockdev->group.sockaddr.sin_family = AF_INET;
+		sockdev->group.sockaddr.sin_addr.s_addr = inet_addr(inetMCastAddr_); /*inet_addr("226.1.1.1");*/
+		sockdev->group.sockaddr.sin_port = htons(port);
 
-	    /* Set local interface for outbound multicast datagrams. */
-	    /* The IP address specified must be associated with a local, */
-	    /* multicast capable interface. */
-	    localInterface.s_addr = inet_addr(strNS->toLatin1(inetAddr, &latins1)); /*inet_addr("192.168.0.198");*/
+		/* Set local interface for outbound multicast datagrams. */
+		/* The IP address specified must be associated with a local, */
+		/* multicast capable interface. */
+		localInterface.s_addr = inet_addr(inetAddr_); /*inet_addr("192.168.0.198");*/
 
-	    baNS->destroy(&latins1);
+		CWT_FREE(inetAddr_);
+		CWT_FREE(inetMCastAddr_);
 
 	    if(setsockopt(sockfd, IPPROTO_IP, IP_MULTICAST_IF, (char *)&localInterface, sizeof(localInterface)) < 0) {
 	        printf_error(_Tr("setting local interface error (%d)"), __sockdev_errno);
@@ -221,7 +219,10 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 	    /* application to receive copies of the multicast datagrams. */
 		int reuse = 1;
 		struct sockaddr_in localSock;
-		/*struct ip_mreq group;*/
+
+		char *inetAddr_      = strNS->toLatin1(inetAddr);
+		char *inetMCastAddr_ = strNS->toLatin1(inetMCastAddr);
+
 
 		if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
 			printf_error(_Tr("setting SO_REUSEADDR error (%d)"), __sockdev_errno);
@@ -248,12 +249,11 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 	    /* datagrams are to be received. */
 		sockdev = CWT_MALLOC(CwtMulticastSocketDevice);
 
-		baNS->init(&latins1);
+	    sockdev->group.mreq.imr_multiaddr.s_addr = inet_addr(inetMCastAddr_);
+	    sockdev->group.mreq.imr_interface.s_addr = inet_addr(inetAddr_);
 
-	    sockdev->group.mreq.imr_multiaddr.s_addr = inet_addr(strNS->toLatin1(inetMCastAddr, &latins1));
-	    sockdev->group.mreq.imr_interface.s_addr = inet_addr(strNS->toLatin1(inetAddr, &latins1));
-
-	    baNS->destroy(&latins1);
+		CWT_FREE(inetAddr_);
+		CWT_FREE(inetMCastAddr_);
 
 	    if(setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&sockdev->group.mreq, sizeof(sockdev->group.mreq)) < 0) {
 	        printf_error(_Tr("adding multicast group error (%d)"), __sockdev_errno);

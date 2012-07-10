@@ -130,7 +130,7 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 			hispeed = TRUE;
 		} else {
 			printf_warn(_Tr("%s: invalid serial port attribute, ignored")
-				, attrs[i] != NULL ? attrs[i] : CWT_CONST_NULLSTR);
+				, CWT_STRING_OR_NULLSTR(attrs[i]));
 		}
 	}
 
