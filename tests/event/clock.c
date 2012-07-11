@@ -22,7 +22,7 @@ static BOOL on_clock_time(CwtEventPtr pevt)
 	cwtEventPeekClockTime(pevt, &hour, &min, &sec);
 
 	ntimes++;
-	printf_info("Clock time event: %02d:%02d:%02d", hour, min, sec);
+	printf_info(_T("Clock time event: %02d:%02d:%02d"), hour, min, sec);
 	return FALSE;
 }
 
@@ -32,7 +32,7 @@ static BOOL on_clock_date(CwtEventPtr pevt)
 
 	cwtEventPeekClockDate(pevt, &day, &mon, &year);
 
-	printf_info("Clock date event: %02d:%02d:%02d", day, mon, year);
+	printf_info(_T("Clock date event: %02d:%02d:%02d"), day, mon, year);
 	return FALSE;
 }
 

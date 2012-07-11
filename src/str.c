@@ -330,27 +330,28 @@ static char* __toLatin1( const CWT_CHAR *s )
 {
 	char *latins1 = NULL;
 
+	if( s ) {
 #ifdef CWT_UNICODE
-	CwtStrNS *strNS = cwtStrNS();
-	size_t length = strNS->strlen(s);
+		CwtStrNS *strNS = cwtStrNS();
+		size_t length = strNS->strlen(s);
 
-	if( length ) {
-		const CWT_CHAR *src = s;
-		char *ptr;
+		if( length ) {
+			const CWT_CHAR *src = s;
+			char *ptr;
 
-		latins1 = CWT_MALLOCA(char, length+1);
-		ptr = latins1;
+			latins1 = CWT_MALLOCA(char, length+1);
+			ptr = latins1;
+			latins1[length] = '\0';
 
-        while (length--) {
-            *ptr++ = (*src > 0xff) ? '?' : (char)*src;
-            ++src;
-        }
-        latins1[length] = '\0';
-	}
+			while( length-- ) {
+				*ptr++ = (*src > 0xff) ? '?' : (char)*src;
+				++src;
+			}
+		}
 #else
-	latins1 = strdup(s);
+		latins1 = strdup(s);
 #endif
-
+	} /* if s */
 	return latins1;
 }
 
@@ -368,11 +369,11 @@ static CWT_CHAR* __fromLatin1(const char *s)
 
 		str = CWT_MALLOCA(CWT_CHAR, length+1);
 		ptr = str;
+        str[length] = _T('\0');
 
         while( length-- ) {
             *ptr++ = (CWT_CHAR)(*src++);
         }
-        str[length] = _T('\0');
 	}
 #else
 	return str = strdup(s);
@@ -384,7 +385,7 @@ static char* __toUtf8(const CWT_CHAR *s)
 {
 	char *utf8 = NULL;
 
-	if( !s ) {
+	if( s ) {
 
 #ifdef CWT_UNICODE
 #	ifdef CWT_CC_MSC
@@ -428,7 +429,7 @@ static char* __toUtf8(const CWT_CHAR *s)
 	utf8 = strdup(s);
 #endif
 
-	} /* !s */
+	} /* s */
 
 	return utf8;
 }

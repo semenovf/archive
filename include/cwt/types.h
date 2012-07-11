@@ -135,9 +135,6 @@ typedef enum CwtTypeId {
 #ifdef CWT_UNICODE
 #	define _T(s)   L##s
 #	define _Tr(s)  L##s
-/*
-#	define _Tr(s)  jq::String().fromUtf8(s)
-*/
 #	define _WIDEN(x) _T(x) /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
 #	define _TFILE_ _WIDEN(__FILE__)
 #else

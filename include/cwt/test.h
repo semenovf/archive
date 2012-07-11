@@ -45,7 +45,7 @@ EXTERN_C_END
         , __cwtTestContextPtr__->m_ok_tests                                   \
         , __cwtTestContextPtr__->m_failed_tests); 	                          \
 	if( __cwtTestContextPtr__->m_total_tests != __cwtTestContextPtr__->m_run_tests )   \
-		print_warn("Incomplete tests");                                       \
+		print_warn(_Tr("Incomplete tests"));                                  \
 	printf("TEST: Total result: %s\n",                                        \
 		(__cwtTestContextPtr__->m_run_tests                                   \
         == __cwtTestContextPtr__->m_ok_tests ? "success" : "failure"));       \

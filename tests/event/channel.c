@@ -2,13 +2,13 @@
 #include <cwt/logger.h>
 #include <cwt/types.h>
 #include <cwt/test.h>
-#include <cwt/string.h>
+#include <cwt/str.h>
 #include <cwt/event/event.h>
 #include <cwt/event/channel.h>
 #include <cwt/io/bufdev.h>
 
-const CWT_CHAR *text = "This is a test message";
-const CWT_CHAR *cmdQuit = "quit";
+const char *text    = "This is a test message";
+const char *cmdQuit = "quit";
 
 static BOOL quit_event(CwtEventPtr pevt)
 {
@@ -23,8 +23,8 @@ static BOOL quit_event(CwtEventPtr pevt)
 	br = cwtChannelRead(chan, buf, 255);
 	buf[(size_t)br] = '\x0';
 
-	if( cwtStrStr((CWT_CHAR*)buf, cmdQuit) ) {
-		printf_trace("finishing event by command, received from channel");
+	if( strstr((char*)buf, cmdQuit) ) {
+		printf_trace(_T("finishing event by command, received from channel"));
 		cwtChannelReadCommit(chan);
 		cwtEventQuit();
 		return TRUE;
@@ -48,11 +48,11 @@ static BOOL echo(CwtEventPtr pevt)
 		buf[(size_t)br] = '\x0';
 		printf("Received: %s\n", buf);
 
-		CWT_TEST_OK(cwtStrEq((CWT_CHAR*)buf, text));
+		CWT_TEST_OK(strcmp((char*)buf, text) == 0);
 
 		cwtChannelWrite(chan, buf, (size_t)br);
 	}
-	cwtChannelWrite(chan, (BYTE*)cmdQuit, cwtStrLen(cmdQuit));
+	cwtChannelWrite(chan, (BYTE*)cmdQuit, strlen(cmdQuit));
 
 	return FALSE;
 }
@@ -74,7 +74,7 @@ static void cwt_evt_test_0(void)
 	cwtEventChannelAddListener(chan_writer, echo);
 	cwtEventChannelAddListener(chan_writer, quit_event);
 
-	cwtChannelWrite(chan_writer, (BYTE*)text, cwtStrLen(text));
+	cwtChannelWrite(chan_writer, (BYTE*)text, strlen(text));
 
 	cwtEventLoop();
 

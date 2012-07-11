@@ -32,7 +32,6 @@ DLL_API_EXPORT void* cwtMalloc(size_t size)
 
 DLL_API_EXPORT void cwtFree(void *block)
 {
-	CWT_ASSERT(block);
-/*	printf_trace("FREE: %p", block);*/
-	free(block);
+	if( block )
+		free(block);
 }
