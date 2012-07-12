@@ -12,39 +12,17 @@
 #define __CWT_DBI_H__
 
 #include <cwt/types.h>
+#include <cwt/strlist.h>
 
 typedef INT32 CwtDBI_RC;
 
-typedef struct CwtSqlDate {
-	UINT  year
-		, month
-		, day;
-} CwtSqlDate;
-
-typedef struct CwtSqlTime {
-	UINT  hour
-		, minute
-		, second;
-	ULONG second_part;
-} CwtSqlTime;
-
-typedef struct CwtSqlTimeStamp {
-	UINT  year
-		, month
-		, day;
-	UINT  hour
-		, minute
-		, second;
-	ULONG second_part;
-} CwtSqlTimeStamp;
-
-
+/*
 typedef struct CwtBindEntry {
 	CwtTypeId type_id;
-	void *value;
-	size_t *plength;
+	void     *value;
+	size_t   *plength;
 } CwtBindEntry;
-
+*/
 
 typedef struct CwtStatement {
 	CHAR unused;
@@ -55,9 +33,12 @@ typedef struct CwtDBHandler {
 	BOOL            (*execute)       (CwtStatement*);
 	CwtDBI_RC       (*err)           (CwtStatement*);
 	const CWT_CHAR* (*strerror)      (CwtStatement*);
-	BOOL            (*bind)          (CwtStatement*, size_t index, CwtTypeId type_id, void *value, size_t *plength);
-	BOOL            (*bindArray)     (CwtStatement*, CwtBindEntry bindArray[]);
+	BOOL            (*bind)          (CwtStatement *sth, size_t index, CwtTypeId type_id, void *value, size_t *plength);
+	BOOL            (*bindScalar)    (CwtStatement *sth, size_t index, CwtTypeId type_id, void *value);
+	BOOL            (*bindNull)      (CwtStatement *sth, size_t index);
 	ULONGLONG       (*rows)          (CwtStatement*);
+	void            (*fetchFirstRow) (CwtStatement*);
+	void            (*fetchNextRow)  (CwtStatement*);
 } CwtDBHandler;
 
 typedef struct CwtDBIDriver
@@ -75,8 +56,14 @@ typedef struct CwtDBIDriver
 	BOOL            (*queryBin)      (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
 	CwtStatement*   (*prepare)       (CwtDBHandler*, const CWT_CHAR *sql);
 	ULONGLONG       (*rows)          (CwtDBHandler*);
+	BOOL            (*tables)        (CwtDBHandler*, CwtStrList *tables);
 	char*           (*encode)        (CwtDBHandler*, const CWT_CHAR *s);
 	CWT_CHAR*       (*decode)        (CwtDBHandler*, const char *s);
+	CWT_DATETIME*   (*createDateTime)(void);
+	void            (*freeDateTime)  (CWT_DATETIME*);
+	BOOL            (*begin)         (CwtDBHandler*); /* begin transaction */
+	BOOL            (*commit)        (CwtDBHandler*);
+	BOOL            (*rollback)      (CwtDBHandler*);
 } CwtDBIDriver;
 
 typedef struct CwtDBI

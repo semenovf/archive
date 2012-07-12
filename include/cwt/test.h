@@ -55,66 +55,68 @@ EXTERN_C_END
 
 #define CWT_TEST_OK(exp) if( (exp) ) {        	                              \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
+		; 					                                                  \
 		__cwtTestContextPtr__->m_ok_tests++;						          \
-		printf("TEST: %s => ok\n", #exp);                                     \
+		printf("TEST[%03u]: %s => ok\n"                                       \
+        	, ++__cwtTestContextPtr__->m_run_tests, #exp);                    \
 	} else {                              	                                  \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
 		__cwtTestContextPtr__->m_failed_tests++;					          \
-		printf("TEST: %s => failed at %s:%d\n", #exp, __FILE__, __LINE__);    \
+		printf("TEST[%03u]: %s => failed at %s:%d\n"                          \
+			, ++__cwtTestContextPtr__->m_run_tests                            \
+			, #exp, __FILE__, __LINE__);                                      \
 	}
 
 #define CWT_TEST_OK2(exp,desc) if( (exp) ) {   	                              \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
 		__cwtTestContextPtr__->m_ok_tests++;						          \
-		printf("TEST: %s => ok\n", desc);                                     \
+		printf("TEST[%03u]: %s => ok\n"                                       \
+        	, ++__cwtTestContextPtr__->m_run_tests, desc);                    \
 	} else {                              	                                  \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
 		__cwtTestContextPtr__->m_failed_tests++;					          \
-		printf("TEST: %s => failed at %s:%d\n", desc __FILE__, __LINE__);     \
+		printf("TEST[%03u]: %s => failed at %s:%d\n"                          \
+			, ++__cwtTestContextPtr__->m_run_tests, desc __FILE__, __LINE__); \
 	}
 
 
 #define CWT_TEST_NOK(exp) if( !(exp) ) {        	                          \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
 		__cwtTestContextPtr__->m_ok_tests++;						          \
-		printf("TEST: ! %s => ok\n", #exp);                                   \
+		printf("TEST[%03u]: ! %s => ok\n"                                     \
+			, ++__cwtTestContextPtr__->m_run_tests, #exp);                    \
 	} else {                              	                                  \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
 		__cwtTestContextPtr__->m_failed_tests++;					          \
-		printf("TEST: ! %s => failed at %s:%d\n", #exp, __FILE__, __LINE__);  \
+		printf("TEST[%03u]: ! %s => failed at %s:%d\n"                        \
+			, ++__cwtTestContextPtr__->m_run_tests, #exp, __FILE__, __LINE__);\
 	}
 
 
 #define CWT_TEST_FAIL(exp) if( (exp) ) {        	                          \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
 		__cwtTestContextPtr__->m_ok_tests++;						          \
-		printf("TEST: %s => ok\n", #exp);                                     \
+		printf("TEST[%03u]: %s => ok\n"                                       \
+			, ++__cwtTestContextPtr__->m_run_tests, #exp);                    \
 	} else {                              	                                  \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
 		__cwtTestContextPtr__->m_failed_tests++;					          \
-		printf("TEST: %s => failed at %s:%d\n", #exp, __FILE__, __LINE__);    \
+		printf("TEST[%03u]: %s => failed at %s:%d\n"                          \
+			, ++__cwtTestContextPtr__->m_run_tests, #exp, __FILE__, __LINE__);\
 		CWT_END_TESTS;                                                        \
 		exit(EXIT_FAILURE);                                                   \
 	}
 
 #define CWT_TEST_FAIL2(exp,desc) if( (exp) ) {        	                      \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
 		__cwtTestContextPtr__->m_ok_tests++;						          \
-		printf("TEST: %s => ok\n", #exp);                                     \
+		printf("TEST[%03u]: %s => ok\n"                                       \
+			, ++__cwtTestContextPtr__->m_run_tests, #exp);                    \
 	} else {                              	                                  \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
-		__cwtTestContextPtr__->m_run_tests++; 					              \
 		__cwtTestContextPtr__->m_failed_tests++;					          \
-		printf("TEST: failed at %s:%d, %s\n", __FILE__, __LINE__, desc);      \
+		printf("TEST[%03u]: failed at %s:%d, %s\n"                            \
+			, ++__cwtTestContextPtr__->m_run_tests, __FILE__, __LINE__, desc);\
 		CWT_END_TESTS;                                                        \
 		exit(EXIT_FAILURE);                                                   \
 	}

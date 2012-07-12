@@ -10,6 +10,7 @@
 #include <cwt/types.h>
 #include <cwt/test.h>
 #include <cwt/str.h>
+#include <cwt/stdio.h>
 #include <cwt/dbi/dbi.h>
 
 static const CWT_CHAR *__username = _T("root");
@@ -32,23 +33,36 @@ static ULONG       __thread_id;
 static const char* __stat;
 static const char* __charset;
 
+#define TABLE_NAME  _T("cwt_test_table")
+#define TABLE0_NAME _T("cwt_test_table0")
 
 static const CWT_CHAR *__sql_use_db       = _T("USE cwt_test_db");
-static const CWT_CHAR *__sql_drop_table   = _T("DROP TABLE IF EXISTS test_table");
-static const CWT_CHAR *__sql_create_table = _T("CREATE TABLE cwt_test_table(col1 INT,\
+static const CWT_CHAR *__sql_drop_table   = _T("DROP TABLE IF EXISTS ") TABLE_NAME;
+static const CWT_CHAR *__sql_create_table = _T("CREATE TABLE ") TABLE_NAME _T("(\
+		                                           col1 INT\
+                                                 , col2 SMALLINT\
+                                                 , col3 VARCHAR(100)\
+		                                         , col4 DATE\
+		                                         , col5 TIME\
+                                                 , col6 DATETIME\
+		                                         , col7 TIMESTAMP)");
+
+static const CWT_CHAR *__sql_create_table0 = _T("CREATE TABLE ") TABLE0_NAME _T("(col1 INT,\
                                                  col2 VARCHAR(100),\
                                                  col3 SMALLINT,\
                                                  col4 TIMESTAMP)");
+
 static const CWT_CHAR *__sql_insert = _T("INSERT INTO \
-                       cwt_test_table(col1,col2,col3) \
-                       VALUES(?,?,?)");
+                       cwt_test_table(col1,col2,col3,col4,col5,col6) \
+                       VALUES(?,?,?,?,?,?)");
 
 static const CWT_CHAR *__sql_select = _T("SELECT * from `cwt_test_table`");
 
 int main(int argc, char *argv[])
 {
-	CwtDBI   *dbi   = cwtDBI();
-	CwtStrNS *strNS = cwtStrNS();
+	CwtDBI     *dbi   = cwtDBI();
+	CwtStrNS   *strNS = cwtStrNS();
+	CwtStdioNS *stdioNS = cwtStdioNS();
 
 	CwtDBIDriver *dbd;
 	CwtDBHandler *dbh;
@@ -57,15 +71,10 @@ int main(int argc, char *argv[])
 	CWT_CHAR *driver;
 	CWT_CHAR *driverDSN;
 
-	INT    int_data;
-	char   str_data[100];
-	size_t str_length = 100;
-	SHORT  short_data;
-
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(25);
+	CWT_BEGIN_TESTS(33);
 
 	dbi->parseDSN(__dsn_with_flags, &scheme, &driver, &driverDSN);
 	CWT_TEST_OK(strNS->streq(_T("DBI"), scheme));
@@ -127,42 +136,96 @@ int main(int argc, char *argv[])
 	CWT_TEST_FAIL(dbd->query(dbh, __sql_use_db));
 	CWT_TEST_FAIL(dbd->query(dbh, __sql_drop_table));
 	CWT_TEST_FAIL(dbd->query(dbh, __sql_create_table));
+	CWT_TEST_FAIL(dbd->query(dbh, __sql_create_table0));
 
-	CWT_TEST_FAIL((sth = dbd->prepare(dbh, __sql_insert)));
-	CWT_TEST_FAIL(dbh->bind(sth, 0, CwtType_INT, &int_data, NULL))
-	CWT_TEST_FAIL(dbh->bind(sth, 1, CwtType_STRING, str_data, &str_length));
-	CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_SHORT, &short_data, NULL));
+
+	/* Show tables */
+	{
+		CwtStrListNS *strlistNS = cwtStrListNS();
+		CwtStrList tables;
+
+		strlistNS->init(&tables);
+
+		CWT_TEST_OK(dbd->tables(dbh, &tables));
+
+		CWT_TEST_FAIL(tables.count == 2);
+
+		stdioNS->printf(_T("Table [0]: %s\n"),  strlistNS->at(&tables, 0));
+		stdioNS->printf(_T("Table [1]: %s\n"),  strlistNS->at(&tables, 1));
+
+		CWT_TEST_OK(
+				strNS->streq(TABLE_NAME, strlistNS->at(&tables, 0))
+			||  strNS->streq(TABLE0_NAME, strlistNS->at(&tables, 0)));
+
+		CWT_TEST_OK(strNS->streq(TABLE_NAME, strlistNS->at(&tables, 1))
+			|| strNS->streq(TABLE0_NAME, strlistNS->at(&tables, 1)));
+		strlistNS->destroy(&tables);
+	}
 
 
 	{
-		char *str_data_ = dbd->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));
+/*
+      col1 INT
+      col2 SMALLINT
+      col3 VARCHAR(100)
+      col4 DATE
+      col5 TIME
+      col6 DATETIME
+      col7 TIMESTAMP
+*/
+
+
+		SHORT  short_data;
+		INT    int_data;
+		CWT_TIME *cwtTime;
+		CWT_TIME *cwtDate;
+		CWT_TIME *cwtDateTime;
+		char   *str_data = dbd->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));
+		size_t str_length = strlen(str_data);
+
+		CWT_TEST_FAIL((sth = dbd->prepare(dbh, __sql_insert)));
+
+		cwtTime = dbd->createTime();
+		cwtDate = dbd->createDate();
+		cwtDateTime = dbd->createDateTime();
+
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 0, CwtType_INT, &int_data))
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 1, CwtType_SHORT, &short_data));
+		CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_STRING, str_data, &str_length));
+		CWT_TEST_FAIL(dbh->bindNull(sth, 3));
+		CWT_TEST_FAIL(dbh->bindNull(sth, 4));
+		CWT_TEST_FAIL(dbh->bindNull(sth, 5));
+
 		int_data = CWT_INT_MAX;
 		short_data = CWT_SHORT_MAX;
-		strNS->bzero(str_data, 100);
-		strncpy(str_data, str_data_, strlen(str_data_));
+
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
-		CWT_FREE(str_data_);
+		CWT_FREE(str_data);
+
+		CWT_TEST_OK(dbd->err(dbh) == 0);
+
+		str_data = dbd->encode(dbh, _T("—ъешь ещЄ этих м€гких французских булок"));
+		str_length = strlen(str_data);
+
+		CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_STRING, str_data, &str_length));
+		CWT_TEST_FAIL(dbh->execute(sth));
+		CWT_TEST_OK(dbh->rows(sth) == 1UL);
+		CWT_FREE(str_data);
+
+		dbd->freeTime(cwtTime);
+		dbd->freeDate(cwtDate);
+		dbd->freeDateTime(cwtDateTime);
+
+		CWT_TEST_OK(dbd->err(dbh) == 0);
+
 	}
 
 	CWT_TEST_OK(dbd->err(dbh) == 0);
 
 	{
-		char *str_data_ = dbd->encode(dbh, _T("—ъешь ещЄ этих м€гких французских булок"));
-		strNS->bzero(str_data, 100);
-		strncpy(str_data, str_data_, strlen(str_data_));
-		CWT_TEST_FAIL(dbh->execute(sth));
-		CWT_TEST_OK(dbh->rows(sth) == 1UL);
-		CWT_FREE(str_data_);
-	}
-
-	CWT_TEST_OK(dbd->err(dbh) == 0);
-
-	{
 
 	}
-
-
 
 
 	dbd->disconnect(dbh);

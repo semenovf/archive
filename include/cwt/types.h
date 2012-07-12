@@ -46,6 +46,22 @@ typedef char*                  TEXT;
 	typedef unsigned long long UINT64;
 #endif
 
+
+/*
+ * year <= 9999,month <= 12, day <= 31, hour <= 23, hour <= 59, hour <= 59.
+ *
+ * Compatible with MYSQL_TIME
+*/
+typedef struct CWT_DATETIME {
+	UINT  year
+		, month
+		, day;
+	UINT  hour
+		, minute
+		, second;
+	ULONG second_part;
+} CWT_DATETIME;
+
 typedef enum CwtTypeId {
 	  CwtType_NULL
 	, CwtType_CHAR
@@ -63,9 +79,7 @@ typedef enum CwtTypeId {
 	, CwtType_STRING
 	, CwtType_TEXT
 	, CwtType_BLOB
-	, CwtType_TIME
-	, CwtType_DATE
-	, CwtType_TIMESTAMP
+	, CwtType_DATETIME
 	, CwtType_SBYTE  = CwtType_CHAR
 	, CwtType_BYTE   = CwtType_UCHAR
 	, CwtType_INT8   = CwtType_SBYTE

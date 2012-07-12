@@ -486,6 +486,8 @@ static CWT_CHAR* __fromUtf8(const char *utf8)
 			CWT_FREE(str);
 			return NULL;
 		}
+
+		str[length] = _T('\0');
 	}
 #	else
 #		error __toUtf8 is not implemented yet

@@ -63,6 +63,10 @@ typedef struct CwtMySqlBindParam {
 } CwtMySqlBindParam;
 
 
+typedef struct CwtMySqlTime {
+	CWT_DATETIME __base;
+};
+
 /* DBI API functions implementations */
 CwtDBHandler*           __connect(const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
 static void             __disconnect(CwtDBHandler *dbh);
@@ -77,17 +81,23 @@ static BOOL             __query(CwtDBHandler *dbh, const CWT_CHAR *sql);
 static BOOL             __queryBin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_t length);
 static CwtStatement*    __prepare(CwtDBHandler *dbh, const CWT_CHAR *statement);
 static ULONGLONG        __affectedRows(CwtDBHandler *dbh);
+static BOOL             __tables(CwtDBHandler *dbh, CwtStrList *tables);
 static char*            __encode(CwtDBHandler *dbh, const CWT_CHAR *s);
 static CWT_CHAR*        __decode(CwtDBHandler *dbh, const char *s);
-
+static CWT_DATETIME*    __createDateTime(void);
+static void             __freeDateTime(CWT_DATETIME*);
+static BOOL             __begin(CwtDBHandler *dbh);
+static BOOL             __commit(CwtDBHandler *dbh);
+static BOOL             __rollback(CwtDBHandler *dbh);
 
 static void             __stmtClose(CwtStatement *sth);
 static BOOL             __stmtExecute(CwtStatement *sth);
-static BOOL             __stmtBind(CwtStatement *sth, size_t index, CwtTypeId type_id, void *value, size_t *plength);
-static BOOL             __stmtBindArray(CwtStatement *sth, CwtBindEntry bindArray[]);
 static ULONGLONG        __stmtAffectedRows(CwtStatement *sth);
 static CwtDBI_RC        __stmtErr(CwtStatement *sth);
 static const CWT_CHAR*  __stmtStrerror(CwtStatement *sth);
+static BOOL             __stmtBind(CwtStatement *sth, size_t index, CwtTypeId type_id, void *value, size_t *plength);
+static BOOL             __stmtBindScalar(CwtStatement *sth, size_t index, CwtTypeId type_id, void *value);
+static BOOL             __stmtBindNull(CwtStatement *sth, size_t index);
 
 
 
@@ -137,8 +147,12 @@ static CwtDBIDriver __cwtDBIDriver = {
 	, __queryBin
 	, __prepare
 	, __affectedRows
+	, __tables
 	, __encode
 	, __decode
+	, __begin
+    , __commit
+    , __rollback
 };
 
 
@@ -182,6 +196,17 @@ static CWT_CHAR* __decode(CwtDBHandler *dbh, const char *s)
 	return strNS->fromMBCS(s, mdbh->m_csname);
 }
 
+static CWT_DATETIME* __createDateTime(void)
+{
+
+}
+
+static void __freeDateTime(CWT_DATETIME*)
+{
+
+}
+
+
 static int __realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR *stmt_str, ULONG length)
 {
 	CwtStrNS *strNS = cwtStrNS();
@@ -197,6 +222,7 @@ static int __realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR *stmt_str, ULONG l
 
 	return rc;
 }
+
 
 static void __mysqlCleanup(void)
 {
@@ -281,17 +307,18 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
 	}
 
     dbh = CWT_MALLOC(CwtMySqlDBHandler);
-    dbh->__base.close     = __stmtClose;
-    dbh->__base.execute   = __stmtExecute;
-    dbh->__base.err       = __stmtErr;
-    dbh->__base.strerror  = __stmtStrerror;
-    dbh->__base.bind      = __stmtBind;
-    dbh->__base.bindArray = __stmtBindArray;
-    dbh->__base.rows      = __stmtAffectedRows;
-	dbh->m_auto_commit    = FALSE;
-	dbh->m_csname         = NULL;
-	dbh->m_errorstr       = NULL;
-	dbh->m_sqlstate       = NULL;
+    dbh->__base.close         = __stmtClose;
+    dbh->__base.execute       = __stmtExecute;
+    dbh->__base.err           = __stmtErr;
+    dbh->__base.strerror      = __stmtStrerror;
+	dbh->__base.bind          = __stmtBind;
+	dbh->__base.bindScalar    = __stmtBindScalar;
+	dbh->__base.bindNull      = __stmtBindNull;
+    dbh->__base.rows          = __stmtAffectedRows;
+	dbh->m_auto_commit        = FALSE;
+	dbh->m_csname             = NULL;
+	dbh->m_errorstr           = NULL;
+	dbh->m_sqlstate           = NULL;
 
     csname_   = strNS->toLatin1(csname);
     username_ = strNS->toLatin1(username);
@@ -867,6 +894,79 @@ static ULONGLONG __affectedRows(CwtDBHandler *dbh)
 	return (ULONGLONG)mysql_affected_rows(__DBH(dbh));
 }
 
+
+static BOOL __tables(CwtDBHandler *dbh, CwtStrList *tables)
+{
+	CwtStrListNS *strlistNS = cwtStrListNS();
+
+	CwtMySqlDBHandler *mdbh = (CwtMySqlDBHandler*)dbh;
+	MYSQL_RES* res;
+	MYSQL_ROW row;
+	int i = 0;
+	BOOL ok = TRUE;
+
+	CWT_ASSERT(mdbh);
+	CWT_ASSERT(mdbh->m_conn);
+	CWT_ASSERT(tables);
+
+	res = mysql_list_tables(mdbh->m_conn, NULL);
+
+	if( !res ) {
+		printf_error(__LOG_PREFIX _Tr("failed to list tables: %s"), __cwtDBIDriver.strerror(dbh));
+		return FALSE;
+	}
+
+	while( res ) {
+		mysql_data_seek(res, i);
+
+		row = mysql_fetch_row(res);
+
+		if( !row ) {
+			break;
+		}
+
+		strlistNS->append( tables, __decode(dbh, row[0]) );
+
+		i++;
+	}
+
+	mysql_free_result(res);
+
+	return ok;
+}
+
+
+
+static BOOL __begin(CwtDBHandler *dbh)
+{
+	CwtMySqlDBHandler *mdbh = (CwtMySqlDBHandler*)dbh;
+
+	CWT_ASSERT(mdbh);
+	CWT_ASSERT(mdbh->m_conn);
+
+	if( mdbh->m_auto_commit ) {
+		if( ! __setAutoCommit(dbh, FALSE) )
+			return FALSE;
+	}
+
+	return __query(dbh, _T("BEGIN WORK"));
+}
+
+static BOOL __commit(CwtDBHandler *dbh)
+{
+	CWT_ASSERT(dbh);
+	CWT_ASSERT(((CwtMySqlDBHandler*)dbh)->m_conn);
+	return __query(dbh, _T("COMMIT"));
+}
+
+static BOOL __rollback(CwtDBHandler *dbh)
+{
+	CWT_ASSERT(dbh);
+	CWT_ASSERT(((CwtMySqlDBHandler*)dbh)->m_conn);
+	return __query(dbh, _T("ROLLBACK"));
+}
+
+
 static void __stmtClose(CwtStatement *sth)
 {
 	if( !sth )
@@ -887,41 +987,8 @@ static void __stmtClose(CwtStatement *sth)
  * @param len Value buffer length. Not matter if value is a numeric.
  */
 
-/* TODO need is_null support */
-/* TODO need TIME/DATE/TIMESTAMP support */
-static BOOL __stmtBind(CwtStatement *sth, size_t index, CwtTypeId type_id, void *value, size_t *plength)
-{
-	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
-	MYSQL_BIND *bind_param;
 
-	CWT_ASSERT(sth);
-
-	if( index >= msth->m_nbind_params ) {
-		print_error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
-		return FALSE;
-	}
-
-	bind_param = (MYSQL_BIND*)&msth->m_bind_params[index];
-	bind_param->buffer_type = __mySqlTypesMapping[type_id].field_type;
-	/*bind_param->is_null    = 0;*/
-
-	if( cwtIsNumberTypeId(type_id) ) {
-		/* This is a number type, so there is no need to specify buffer_length */
-		bind_param->buffer  = value;
-		bind_param->length  = 0;
-		bind_param->is_unsigned  = __mySqlTypesMapping[type_id].is_unsigned;
-	} else if ( type_id == CwtType_TIME || type_id == CwtType_DATE || type_id == CwtType_TIMESTAMP ) {
-
-	} else { /* STRING, TEXT or BLOB */
-		bind_param->buffer        = value;
-		bind_param->buffer_length = *plength;
-		bind_param->length        = plength;
-	}
-
-	return TRUE;
-}
-
-
+/*
 static BOOL __stmtBindArray(CwtStatement *sth, CwtBindEntry bindArray[])
 {
 	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
@@ -936,6 +1003,7 @@ static BOOL __stmtBindArray(CwtStatement *sth, CwtBindEntry bindArray[])
 
 	return TRUE;
 }
+*/
 
 /*
  * TODO
@@ -972,13 +1040,22 @@ static BOOL __stmtExecute(CwtStatement *sth)
 	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
 
 	CWT_ASSERT(sth);
+	CWT_ASSERT(msth->m_stmt);
 
-	if( !msth->m_is_bind ) {
-		if( mysql_stmt_bind_param(__STH(sth), msth->m_bind_params) != 0 ) {
-			printf_error( __LOG_PREFIX _Tr("bind parameters failed: %s\n"), msth->m_dbh->strerror(sth));
-			return FALSE;
+
+	if( msth->m_nbind_params > 0 ) {
+		if( !msth->m_is_bind ) {
+			if( mysql_stmt_bind_param(__STH(sth), msth->m_bind_params) != 0 ) {
+				printf_error( __LOG_PREFIX _Tr("bind parameters failed: %s\n"), msth->m_dbh->strerror(sth));
+				return FALSE;
+			}
+			msth->m_is_bind = TRUE;
+		} else {
+			if( mysql_stmt_reset(msth->m_stmt) != 0 ) {
+				printf_error( __LOG_PREFIX _Tr("unable to reset statement: %s\n"), msth->m_dbh->strerror(sth));
+				return FALSE;
+			}
 		}
-		msth->m_is_bind = TRUE;
 	}
 
 	if( mysql_stmt_execute(__STH(sth)) != 0 ) {
@@ -1017,3 +1094,51 @@ static const CWT_CHAR* __stmtStrerror(CwtStatement *sth)
 	msth->m_errorstr = __cwtDBIDriver.decode(msth->m_dbh, mysql_stmt_error(msth->m_stmt));
 	return msth->m_errorstr;
 }
+
+/* TODO need TIME/DATE/TIMESTAMP support */
+static BOOL __stmtBind(CwtStatement *sth, size_t index, CwtTypeId type_id, void *value, size_t *plength)
+{
+	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
+	MYSQL_BIND *bind_param;
+
+	CWT_ASSERT(sth);
+
+	if( index >= msth->m_nbind_params ) {
+		print_error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
+		return FALSE;
+	}
+
+	bind_param = (MYSQL_BIND*)&msth->m_bind_params[index];
+	bind_param->buffer_type = __mySqlTypesMapping[type_id].field_type;
+	/*bind_param->is_null    = 0;*/
+
+	if( CwtType_NULL == type_id ) {
+		;
+    } else if( cwtIsNumberTypeId(type_id) ) {
+		/* This is a number type, so there is no need to specify buffer_length */
+		bind_param->buffer  = value;
+		bind_param->length  = 0;
+		bind_param->is_unsigned  = __mySqlTypesMapping[type_id].is_unsigned;
+	} else if ( type_id == CwtType_TIME || type_id == CwtType_DATE || type_id == CwtType_TIMESTAMP ) {
+		MYSQL_TIME *t;
+	} else { /* STRING, TEXT or BLOB */
+		bind_param->buffer        = value;
+		bind_param->buffer_length = *plength;
+		bind_param->length        = plength;
+	}
+
+	msth->m_is_bind = FALSE;
+	return TRUE;
+}
+
+static BOOL __stmtBindScalar(CwtStatement *sth, size_t index, CwtTypeId type_id, void *value)
+{
+	CWT_ASSERT(cwtIsNumberTypeId(type_id));
+	return __stmtBind(sth, index, type_id, value, NULL);
+}
+
+static BOOL __stmtBindNull(CwtStatement *sth, size_t index)
+{
+	return __stmtBind(sth, index, CwtType_NULL, NULL, NULL);
+}
+
