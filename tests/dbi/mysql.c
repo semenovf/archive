@@ -11,6 +11,7 @@
 #include <cwt/test.h>
 #include <cwt/str.h>
 #include <cwt/stdio.h>
+#include <cwt/utils.h>
 #include <cwt/dbi/dbi.h>
 
 static const CWT_CHAR *__username = _T("root");
@@ -177,24 +178,28 @@ int main(int argc, char *argv[])
 
 		SHORT  short_data;
 		INT    int_data;
-		CWT_TIME *cwtTime;
 		CWT_TIME *cwtDate;
+		CWT_TIME *cwtTime;
 		CWT_TIME *cwtDateTime;
 		char   *str_data = dbd->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));
 		size_t str_length = strlen(str_data);
 
 		CWT_TEST_FAIL((sth = dbd->prepare(dbh, __sql_insert)));
 
+		cwtDate = dbd->createTime();
 		cwtTime = dbd->createTime();
-		cwtDate = dbd->createDate();
-		cwtDateTime = dbd->createDateTime();
+		cwtDateTime = dbd->createTime();
+
+		cwtUtilsNS()->now(cwtDate);
+		cwtUtilsNS()->now(cwtTime);
+		cwtUtilsNS()->now(cwtDateTime);
 
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 0, CwtType_INT, &int_data))
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 1, CwtType_SHORT, &short_data));
 		CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_STRING, str_data, &str_length));
-		CWT_TEST_FAIL(dbh->bindNull(sth, 3));
-		CWT_TEST_FAIL(dbh->bindNull(sth, 4));
-		CWT_TEST_FAIL(dbh->bindNull(sth, 5));
+		CWT_TEST_FAIL(dbh->bindTime(sth, 3, CwtType_DATE, cwtDate));
+		CWT_TEST_FAIL(dbh->bindTime(sth, 4, CwtType_TIME, cwtTime));
+		CWT_TEST_FAIL(dbh->bindTime(sth, 5, CwtType_DATETIME, cwtDateTime));
 
 		int_data = CWT_INT_MAX;
 		short_data = CWT_SHORT_MAX;
@@ -214,8 +219,8 @@ int main(int argc, char *argv[])
 		CWT_FREE(str_data);
 
 		dbd->freeTime(cwtTime);
-		dbd->freeDate(cwtDate);
-		dbd->freeDateTime(cwtDateTime);
+		dbd->freeTime(cwtDate);
+		dbd->freeTime(cwtDateTime);
 
 		CWT_TEST_OK(dbd->err(dbh) == 0);
 

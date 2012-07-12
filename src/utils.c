@@ -6,28 +6,73 @@
  */
 
 #include <cwt/utils.h>
+#include <time.h>
+#include <cwt/str.h>
 
-DLL_API_EXPORT void cwtSwapPtr(void **p1, void **p2)
+extern INT64 __calculateCRC64(const void *pdata, size_t nbytes, INT64 crc64);
+static void  __swapPtr       (void **p1, void **p2);
+static void  __now           (CWT_TIME *dt);
+static void  __int16ToBytes  (INT16 i, BYTE bytes[2]);
+static INT16 __bytesToInt16  (BYTE bytes[2]);
+static void  __int32ToBytes  (INT32 i, BYTE bytes[4]);
+static INT32 __bytesToInt32  (BYTE bytes[4]);
+static void  __int64ToBytes  (INT64 i, BYTE bytes[8]);
+static INT64 __bytesToInt64  (BYTE bytes[8]);
+
+
+static CwtUtilsNS __cwtUtilsNS = {
+	  __calculateCRC64
+	, __swapPtr
+	, __now
+	, __int16ToBytes
+	, __bytesToInt16
+	, __int32ToBytes
+	, __bytesToInt32
+	, __int64ToBytes
+	, __bytesToInt64
+};
+
+DLL_API_EXPORT CwtUtilsNS* cwtUtilsNS(void)
+{
+	return &__cwtUtilsNS;
+}
+
+static void __swapPtr(void **p1, void **p2)
 {
 	void *p = *p1;
 	*p1 = *p2;
 	*p2 = p;
 }
 
-DLL_API_EXPORT void cwtInt16ToBytes(INT16 i, BYTE bytes[2])
+static void  __now(CWT_TIME *dt)
+{
+	struct tm tm_;
+
+	CWT_ASSERT(dt);
+	cwtStrNS()->memcpy(&tm_, localtime(NULL), sizeof(struct tm));
+	dt->year     = tm_.tm_year + 1970;
+	dt->mon      = tm_.tm_mon + 1;
+	dt->day      = tm_.tm_mday;
+	dt->hour     = tm_.tm_hour;
+	dt->min      = tm_.tm_min;
+	dt->sec      = tm_.tm_sec;
+	dt->sec_part = 0L;
+}
+
+static void __int16ToBytes(INT16 i, BYTE bytes[2])
 {
 	bytes[0] = (BYTE)(((UINT16)i) >> 8);
 	bytes[1] = (BYTE)((UINT16)i);
 }
 
-DLL_API_EXPORT INT16 cwtBytesToInt16(BYTE bytes[2])
+static INT16 __bytesToInt16(BYTE bytes[2])
 {
 	return ((bytes[0] & 0xFF) << 8)
 		| (bytes[1] & 0xFF);
 }
 
 
-DLL_API_EXPORT void cwtInt32ToBytes(INT32 i, BYTE bytes[4])
+static void __int32ToBytes(INT32 i, BYTE bytes[4])
 {
 	bytes[0] = (BYTE)(((UINT32)i) >> 24);
 	bytes[1] = (BYTE)(((UINT32)i) >> 16);
@@ -36,7 +81,7 @@ DLL_API_EXPORT void cwtInt32ToBytes(INT32 i, BYTE bytes[4])
 }
 
 
-DLL_API_EXPORT INT32 cwtBytesToInt32(BYTE bytes[4])
+static INT32 __bytesToInt32(BYTE bytes[4])
 {
 	return (bytes[0] << 24)
 		| ((bytes[1] & 0xFF) << 16)
@@ -44,7 +89,7 @@ DLL_API_EXPORT INT32 cwtBytesToInt32(BYTE bytes[4])
 		| (bytes[3] & 0xFF);
 }
 
-DLL_API_EXPORT void cwtInt64ToBytes(INT64 i, BYTE bytes[8])
+static void __int64ToBytes(INT64 i, BYTE bytes[8])
 {
 	bytes[0] = (BYTE)(((UINT64)i) >> 56);
 	bytes[1] = (BYTE)(((UINT64)i) >> 48);
@@ -57,7 +102,7 @@ DLL_API_EXPORT void cwtInt64ToBytes(INT64 i, BYTE bytes[8])
 }
 
 
-DLL_API_EXPORT INT64 cwtBytesToInt64(BYTE bytes[8])
+static INT64 __bytesToInt64(BYTE bytes[8])
 {
 	UINT64 i0, i1, i2, i3, i4, i5, i6, i7, i;
 	i0 = bytes[0] & 0xFF;

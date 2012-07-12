@@ -389,13 +389,13 @@ static char* __toUtf8(const CWT_CHAR *s)
 
 #ifdef CWT_UNICODE
 #	ifdef CWT_CC_MSC
-		int length = __cwtStrNS.strlen(s);
+		size_t length = (size_t)__cwtStrNS.strlen(s);
 		/*Get length (in chars) of resulting UTF-8 string*/
 		const int utf8_length = WideCharToMultiByte(
 			CP_UTF8,               /*convert to UTF-8*/
 			0,                     /*default flags*/
 			s,                     /*source UTF-16 string*/
-			length,                /*source string length, in wchar_t's */
+			(int)length,           /*source string length, in wchar_t's */ /*FIXME need to check*/
 			NULL,                  /*unused - no conversion required in this step*/
 			0,                     /*request buffer size*/
 			NULL, NULL);           /*unused*/
@@ -413,7 +413,7 @@ static char* __toUtf8(const CWT_CHAR *s)
 				CP_UTF8,
 				0,
 				s,
-				length,
+				(int)length, /*FIXME need to check*/
 				&utf8[0],
 				utf8_length,
 				NULL, NULL )) {
@@ -446,7 +446,7 @@ static CWT_CHAR* __fromUtf8(const char *utf8)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CWT_CHAR *str = NULL;
-	int utf8_length;
+	size_t utf8_length;
 
 	if( !utf8 ) {
 		return NULL;
@@ -463,7 +463,7 @@ static CWT_CHAR* __fromUtf8(const char *utf8)
 			CP_UTF8,           /*convert from UTF-8*/
 			0,                 /*default flags*/
 			utf8,              /*source UTF-8 string*/
-			utf8_length,       /*length (in chars) of source UTF-8 string*/
+			(int)utf8_length,  /*length (in chars) of source UTF-8 string*/ /*FIXME need to check*/
 			NULL,              /*unused - no conversion done in this step*/
 			0);                /*request size of destination buffer, in wchar_t's*/
 
@@ -479,7 +479,7 @@ static CWT_CHAR* __fromUtf8(const char *utf8)
 				CP_UTF8,
 				0,
 				utf8,
-				utf8_length,
+				(int)utf8_length, /*FIXME need to check*/
 				&str[0],
 				length )) {
 			printf_error(_Tr("converting string from_utf8_failed: %s"), __cwtStrNS.strerror(GetLastError()));

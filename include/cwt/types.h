@@ -46,53 +46,20 @@ typedef char*                  TEXT;
 	typedef unsigned long long UINT64;
 #endif
 
-
 /*
  * year <= 9999,month <= 12, day <= 31, hour <= 23, hour <= 59, hour <= 59.
  *
  * Compatible with MYSQL_TIME
 */
-typedef struct CWT_DATETIME {
+typedef struct CWT_TIME {
 	UINT  year
-		, month
+		, mon
 		, day;
 	UINT  hour
-		, minute
-		, second;
-	ULONG second_part;
-} CWT_DATETIME;
-
-typedef enum CwtTypeId {
-	  CwtType_NULL
-	, CwtType_CHAR
-	, CwtType_UCHAR
-	, CwtType_SHORT
-	, CwtType_USHORT
-	, CwtType_INT
-	, CwtType_UINT
-	, CwtType_LONG
-	, CwtType_ULONG
-	, CwtType_LONGLONG
-	, CwtType_ULONGLONG
-	, CwtType_FLOAT
-	, CwtType_DOUBLE
-	, CwtType_STRING
-	, CwtType_TEXT
-	, CwtType_BLOB
-	, CwtType_DATETIME
-	, CwtType_SBYTE  = CwtType_CHAR
-	, CwtType_BYTE   = CwtType_UCHAR
-	, CwtType_INT8   = CwtType_SBYTE
-	, CwtType_UINT8  = CwtType_BYTE
-	, CwtType_INT16  = CwtType_SHORT
-	, CwtType_UINT16 = CwtType_USHORT
-	, CwtType_INT32  = CwtType_LONG
-	, CwtType_UINT32 = CwtType_ULONG
-	, CwtType_INT64  = CwtType_LONGLONG
-	, CwtType_UINT64 = CwtType_ULONGLONG
-} CwtTypeId;
-
-#define cwtIsNumberTypeId(tid) (((tid) > CwtType_NULL && (tid) < CwtType_STRING) ? TRUE : FALSE)
+		, min
+		, sec;
+	ULONG sec_part;
+} CWT_TIME;
 
 #if !(defined(_SIZE_T_DEFINED) || defined(__DJ_size_t) )
 	typedef unsigned int size_t;

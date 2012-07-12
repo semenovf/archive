@@ -24,6 +24,41 @@ typedef struct CwtBindEntry {
 } CwtBindEntry;
 */
 
+typedef enum CwtTypeId {
+	  CwtType_NULL
+	, CwtType_CHAR
+	, CwtType_UCHAR
+	, CwtType_SHORT
+	, CwtType_USHORT
+	, CwtType_INT
+	, CwtType_UINT
+	, CwtType_LONG
+	, CwtType_ULONG
+	, CwtType_LONGLONG
+	, CwtType_ULONGLONG
+	, CwtType_FLOAT
+	, CwtType_DOUBLE
+	, CwtType_STRING
+	, CwtType_TEXT
+	, CwtType_BLOB
+	, CwtType_TIME
+	, CwtType_DATE
+	, CwtType_DATETIME
+	, CwtType_SBYTE  = CwtType_CHAR
+	, CwtType_BYTE   = CwtType_UCHAR
+	, CwtType_INT8   = CwtType_SBYTE
+	, CwtType_UINT8  = CwtType_BYTE
+	, CwtType_INT16  = CwtType_SHORT
+	, CwtType_UINT16 = CwtType_USHORT
+	, CwtType_INT32  = CwtType_LONG
+	, CwtType_UINT32 = CwtType_ULONG
+	, CwtType_INT64  = CwtType_LONGLONG
+	, CwtType_UINT64 = CwtType_ULONGLONG
+} CwtTypeId;
+
+#define CWT_TYPEID_IS_NUMBER(tid) (((tid) > CwtType_NULL && (tid) < CwtType_STRING) ? TRUE : FALSE)
+
+
 typedef struct CwtStatement {
 	CHAR unused;
 } CwtStatement;
@@ -35,6 +70,7 @@ typedef struct CwtDBHandler {
 	const CWT_CHAR* (*strerror)      (CwtStatement*);
 	BOOL            (*bind)          (CwtStatement *sth, size_t index, CwtTypeId type_id, void *value, size_t *plength);
 	BOOL            (*bindScalar)    (CwtStatement *sth, size_t index, CwtTypeId type_id, void *value);
+	BOOL            (*bindTime)      (CwtStatement *sth, size_t index, CwtTypeId type_id, void *value);
 	BOOL            (*bindNull)      (CwtStatement *sth, size_t index);
 	ULONGLONG       (*rows)          (CwtStatement*);
 	void            (*fetchFirstRow) (CwtStatement*);
@@ -59,8 +95,8 @@ typedef struct CwtDBIDriver
 	BOOL            (*tables)        (CwtDBHandler*, CwtStrList *tables);
 	char*           (*encode)        (CwtDBHandler*, const CWT_CHAR *s);
 	CWT_CHAR*       (*decode)        (CwtDBHandler*, const char *s);
-	CWT_DATETIME*   (*createDateTime)(void);
-	void            (*freeDateTime)  (CWT_DATETIME*);
+	CWT_TIME*       (*createTime)    (void);
+	void            (*freeTime)      (CWT_TIME*);
 	BOOL            (*begin)         (CwtDBHandler*); /* begin transaction */
 	BOOL            (*commit)        (CwtDBHandler*);
 	BOOL            (*rollback)      (CwtDBHandler*);

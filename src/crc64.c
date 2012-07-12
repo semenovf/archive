@@ -114,7 +114,7 @@ static INT64 __crc64_lookup_table[] = {
 #define CRC64(oldcrc, curByte) (m_crc64table[BYTE(oldcrc)^BYTE(curByte)]^(QWORD(oldcrc)>>8))
 */
 
-DLL_API_EXPORT INT64 cwtCalculateCRC64(const void *pdata, size_t nbytes, INT64 crc64)
+INT64 __calculateCRC64(const void *pdata, size_t nbytes, INT64 crc64)
 {
 	const BYTE *pbytes = (const BYTE*)pdata;
 	while( nbytes-- )
