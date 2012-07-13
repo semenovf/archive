@@ -73,8 +73,8 @@ typedef struct CwtDBHandler {
 	BOOL            (*bindTime)      (CwtStatement *sth, size_t index, CwtTypeId type_id, void *value);
 	BOOL            (*bindNull)      (CwtStatement *sth, size_t index);
 	ULONGLONG       (*rows)          (CwtStatement*);
-	void            (*fetchFirstRow) (CwtStatement*);
-	void            (*fetchNextRow)  (CwtStatement*);
+	ULONGLONG       (*size)          (CwtStatement*);
+	BOOL            (*fetchNext)     (CwtStatement*);
 } CwtDBHandler;
 
 typedef struct CwtDBIDriver

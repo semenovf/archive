@@ -37,11 +37,16 @@
 
 typedef struct CwtMySqlStatement {
 	CwtStatement __base;
-	MYSQL_STMT   *stmt;
 	CwtDBHandler *dbh;
+	MYSQL_STMT   *stmt;
 	MYSQL_BIND   *bind_params;
 	size_t        nbind_params;
-	BOOL          is_bind; /* TRUE if parameters already bind */
+	BOOL          is_bind; /* TRUE if parameters already bind for output */
+
+	MYSQL_RES    *meta;
+	MYSQL_BIND   *bindr_params;
+	size_t        nbindr_params;
+
 	CWT_CHAR     *errorstr;
 } CwtMySqlStatement;
 
@@ -60,11 +65,15 @@ typedef struct CwtMySqlDBHandler
 typedef struct CwtMySqlBindParam {
 	enum enum_field_types field_type;
 	my_bool               is_unsigned;
+	size_t                sz;  /* for NULL - 0,
+	                              for scalars - sizeof(type),
+	                              for date and time - sizeof(MYSQL_TIME),
+	                              for STRING, VAR STRING and BLOB - zero */
 } CwtMySqlBindParam;
 
 
 typedef struct CwtMySqlTime {
-	CWT_TIME __base;
+	CWT_TIME     __base;
 	MYSQL_TIME   mysql_time;
 } CwtMySqlTime;
 
@@ -94,6 +103,8 @@ static BOOL             __rollback(CwtDBHandler *dbh);
 static void             __stmtClose(CwtStatement *sth);
 static BOOL             __stmtExecute(CwtStatement *sth);
 static ULONGLONG        __stmtAffectedRows(CwtStatement *sth);
+static ULONGLONG        __stmtNumRows(CwtStatement*);
+static BOOL             __stmtFetchNext(CwtStatement*);
 static CwtDBI_RC        __stmtErr(CwtStatement *sth);
 static const CWT_CHAR*  __stmtStrerror(CwtStatement *sth);
 static BOOL             __stmtBind(CwtStatement *sth, size_t index, CwtTypeId type_id, void *value, size_t *plength);
@@ -113,25 +124,25 @@ static int       __realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR *stmt_str, s
 static BOOL __nConnections = 0; /* number of connections */
 
 static CwtMySqlBindParam __mySqlTypesMapping[] = {
-	  { MYSQL_TYPE_NULL,       0 }   /* CwtType_NULL */
-	, { MYSQL_TYPE_TINY,       0 }   /* CwtType_CHAR */
-	, { MYSQL_TYPE_TINY,       0 }   /* CwtType_UCHAR */
-	, { MYSQL_TYPE_SHORT,      0 }   /* CwtType_SHORT */
-	, { MYSQL_TYPE_SHORT,      1 }   /* CwtType_USHORT */
-	, { MYSQL_TYPE_LONG,       0 }   /* CwtType_INT */
-	, { MYSQL_TYPE_LONG,       1 }   /* CwtType_UINT */
-	, { MYSQL_TYPE_LONG,       0 }   /* CwtType_LONG */
-	, { MYSQL_TYPE_LONG,       1 }   /* CwtType_ULONG */
-	, { MYSQL_TYPE_LONGLONG,   0 }   /* CwtType_LONGLONG */
-	, { MYSQL_TYPE_LONGLONG,   1 }   /* CwtType_ULONGLONG */
-	, { MYSQL_TYPE_FLOAT,      0 }   /* CwtType_FLOAT */
-	, { MYSQL_TYPE_DOUBLE,     0 }   /* CwtType_DOUBLE */
-	, { MYSQL_TYPE_VAR_STRING, 0 }   /* CwtType_STRING */
-	, { MYSQL_TYPE_BLOB,       0 }   /* CwtType_TEXT */
-	, { MYSQL_TYPE_BLOB,       0 }   /* CwtType_BLOB */
-	, { MYSQL_TYPE_TIME,       0 }   /* CwtType_TIME */
-	, { MYSQL_TYPE_DATE,       0 }   /* CwtType_DATE */
-	, { MYSQL_TYPE_TIMESTAMP,  0 }   /* CwtType_TIMESTAMP */
+	  { MYSQL_TYPE_NULL,       0, 0 }                    /* CwtType_NULL */
+	, { MYSQL_TYPE_TINY,       0, sizeof(CHAR) }         /* CwtType_CHAR */
+	, { MYSQL_TYPE_TINY,       0, sizeof(UCHAR) }        /* CwtType_UCHAR */
+	, { MYSQL_TYPE_SHORT,      0, sizeof(SHORT) }        /* CwtType_SHORT */
+	, { MYSQL_TYPE_SHORT,      1, sizeof(USHORT) }       /* CwtType_USHORT */
+	, { MYSQL_TYPE_LONG,       0, sizeof(INT) }          /* CwtType_INT */
+	, { MYSQL_TYPE_LONG,       1, sizeof(UINT) }         /* CwtType_UINT */
+	, { MYSQL_TYPE_LONG,       0, sizeof(LONG) }         /* CwtType_LONG */
+	, { MYSQL_TYPE_LONG,       1, sizeof(ULONG) }        /* CwtType_ULONG */
+	, { MYSQL_TYPE_LONGLONG,   0, sizeof(LONGLONG) }     /* CwtType_LONGLONG */
+	, { MYSQL_TYPE_LONGLONG,   1, sizeof(ULONGLONG) }    /* CwtType_ULONGLONG */
+	, { MYSQL_TYPE_FLOAT,      0, sizeof(float) }        /* CwtType_FLOAT */
+	, { MYSQL_TYPE_DOUBLE,     0, sizeof(double) }       /* CwtType_DOUBLE */
+	, { MYSQL_TYPE_STRING,     0, 0 }                    /* CwtType_STRING */
+	, { MYSQL_TYPE_VAR_STRING, 0, 0 }                    /* CwtType_TEXT */
+	, { MYSQL_TYPE_BLOB,       0, 0 }                    /* CwtType_BLOB */
+	, { MYSQL_TYPE_TIME,       0, sizeof(MYSQL_TIME) }   /* CwtType_TIME */
+	, { MYSQL_TYPE_DATE,       0, sizeof(MYSQL_TIME) }   /* CwtType_DATE */
+	, { MYSQL_TYPE_TIMESTAMP,  0, sizeof(MYSQL_TIME) }   /* CwtType_TIMESTAMP */
 };
 
 
@@ -322,6 +333,8 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
 	dbh->__base.bindTime   = __stmtBindTime;
 	dbh->__base.bindNull   = __stmtBindNull;
     dbh->__base.rows       = __stmtAffectedRows;
+    dbh->__base.size       = __stmtNumRows;
+    dbh->__base.fetchNext  = __stmtFetchNext;
 	dbh->auto_commit       = FALSE;
 	dbh->csname            = NULL;
 	dbh->errorstr          = NULL;
@@ -489,13 +502,31 @@ static void __stmtDestroy(CwtMySqlStatement *sth)
 		if( sth->bind_params )
 			CWT_FREE(sth->bind_params);
 
+		if( sth->meta ) {
+			/* Free previously prepared result metadata */
+			mysql_free_result(sth->meta);
+			sth->meta = NULL;
+		}
+
+		if( sth->bindr_params ) {
+			size_t i;
+			for( i = 0; i < sth->nbindr_params; i++ ) {
+				CWT_FREE(sth->bindr_params[i].is_null);
+				CWT_FREE(sth->bindr_params[i].length);
+				CWT_FREE(sth->bindr_params[i].error);
+				CWT_FREE(sth->bindr_params[i].buffer);
+			}
+			CWT_FREE(sth->bindr_params);
+			sth->bindr_params = NULL;
+		}
+
+
 		if( mysql_stmt_close(sth->stmt) != 0 ) {
 			printf_error(__LOG_PREFIX _Tr("failed to close statement: %s"), mysql_stmt_error(__STH(sth)));
 		}
 
 		sth->stmt = NULL;
 		CWT_FREE(sth->errorstr);
-		CWT_FREE(sth);
 	}
 }
 
@@ -857,7 +888,6 @@ static CwtStatement* __prepare(CwtDBHandler *dbh, const CWT_CHAR *stmt_str)
 
 	MYSQL_STMT *stmt;
 	CwtMySqlStatement *sth;
-	size_t nbind_params;
 	char *stmt_str_ = NULL;
 
 	CWT_ASSERT(dbh);
@@ -877,22 +907,22 @@ static CwtStatement* __prepare(CwtDBHandler *dbh, const CWT_CHAR *stmt_str)
 	}
 	CWT_FREE(stmt_str_);
 
-	nbind_params = mysql_stmt_param_count(stmt);
-
 	sth = CWT_MALLOC(CwtMySqlStatement);
 
-	sth->stmt         = stmt;
-	sth->dbh          = dbh;
-	sth->bind_params  = NULL;
-	sth->nbind_params = nbind_params;
-	sth->is_bind      = FALSE;
-	sth->errorstr     = NULL;
+	sth->stmt          = stmt;
+	sth->dbh           = dbh;
+	sth->bind_params   = NULL;
+	sth->nbind_params  = mysql_stmt_param_count(stmt);
+	sth->is_bind       = FALSE;
+	sth->meta          = NULL;
+	sth->bindr_params  = NULL;
+	sth->nbindr_params = 0;
+	sth->errorstr      = NULL;
 
-	if( nbind_params > 0UL ) {
-		sth->bind_params = CWT_MALLOCA(MYSQL_BIND, nbind_params);
-		strNS->bzero(sth->bind_params, sizeof(MYSQL_BIND) * nbind_params);
+	if( sth->nbind_params > 0UL ) {
+		sth->bind_params = CWT_MALLOCA(MYSQL_BIND, sth->nbind_params);
+		strNS->bzero(sth->bind_params, sizeof(MYSQL_BIND) * sth->nbind_params);
 	}
-
 
 	return (CwtStatement*)sth;
 }
@@ -984,6 +1014,7 @@ static void __stmtClose(CwtStatement *sth)
 
 	if( __STH(sth) ) {
 		__stmtDestroy((CwtMySqlStatement*)sth);
+		CWT_FREE(sth);
 	}
 }
 
@@ -1052,7 +1083,6 @@ static BOOL __stmtExecute(CwtStatement *sth)
 	CWT_ASSERT(sth);
 	CWT_ASSERT(msth->stmt);
 
-
 	if( msth->nbind_params > 0 ) {
 		if( !msth->is_bind ) {
 			if( mysql_stmt_bind_param(__STH(sth), msth->bind_params) != 0 ) {
@@ -1068,9 +1098,59 @@ static BOOL __stmtExecute(CwtStatement *sth)
 		}
 	}
 
+
+	if( msth->meta ) {
+		/* Free previously prepared result metadata */
+		mysql_free_result(msth->meta);
+	}
+
+	msth->meta          = mysql_stmt_result_metadata(__STH(msth));
+	msth->nbindr_params = msth->meta != NULL ? mysql_num_fields(msth->meta) : 0;
+
+	if( msth->nbindr_params > 0UL && msth->bindr_params == NULL ) {
+		msth->bindr_params = CWT_MALLOCA(MYSQL_BIND, msth->nbindr_params);
+		cwtStrNS()->bzero(msth->bindr_params, sizeof(MYSQL_BIND) * msth->nbindr_params);
+	}
+
+
 	if( mysql_stmt_execute(__STH(sth)) != 0 ) {
 		printf_error( __LOG_PREFIX _Tr("executing statement error: %s\n"), msth->dbh->strerror(sth));
 		return FALSE;
+	}
+
+	if( msth->nbindr_params > 0 ) {
+		size_t i;
+		for( i = 0; i < msth->nbindr_params; i++ ) {
+			/*MYSQL_RES r;*/
+			MYSQL_FIELD *field = mysql_fetch_field_direct(msth->meta, i);
+
+			msth->bindr_params[i].buffer_type = field->type;
+			msth->bindr_params[i].is_null = CWT_MALLOC(my_bool);
+			msth->bindr_params[i].length  = CWT_MALLOC(ULONG);
+			msth->bindr_params[i].error   = CWT_MALLOC(my_bool);
+
+			if( field->type == MYSQL_TYPE_NULL ) {
+				msth->bindr_params[i].buffer = NULL;
+			} else if( field->type == MYSQL_TYPE_STRING || field->type == MYSQL_TYPE_VAR_STRING || field->type == MYSQL_TYPE_BLOB ) {
+				msth->bindr_params[i].buffer = CWT_MALLOCA(char, field->length+1);
+				msth->bindr_params[i].buffer_length = field->length;
+			} else {
+				msth->bindr_params[i].buffer = CWT_MALLOCA(char, __mySqlTypesMapping[i].sz);
+			}
+		}
+
+		if( mysql_stmt_bind_result(__STH(sth), msth->bindr_params) != 0 ) {
+			printf_error( __LOG_PREFIX _Tr("failed to bind result: %s\n"), msth->dbh->strerror(sth));
+			return FALSE;
+		}
+
+		/* TODO uncomment if want to cache result on client side */
+/*
+		if( mysql_stmt_store_result(__STH(sth)) != 0 ) {
+		    printf_error( __LOG_PREFIX _Tr("failed to cache (buffer) the result: %s\n"), msth->dbh->strerror(sth));
+			return FALSE;
+		}
+*/
 	}
 
 	return TRUE;
@@ -1080,6 +1160,41 @@ static ULONGLONG __stmtAffectedRows(CwtStatement *sth)
 {
 	CWT_ASSERT(sth);
 	return (ULONGLONG)mysql_stmt_affected_rows(__STH(sth));
+}
+
+static ULONGLONG __stmtNumRows(CwtStatement *sth)
+{
+	CWT_ASSERT(sth);
+	return (ULONGLONG)mysql_stmt_num_rows(__STH(sth));
+}
+
+
+static BOOL __stmtFetchNext(CwtStatement *sth)
+{
+	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
+	int rv;
+
+	CWT_ASSERT(msth);
+	CWT_ASSERT(msth->stmt);
+	CWT_ASSERT(msth->dbh);
+
+	rv = mysql_stmt_fetch(msth->stmt);
+
+	if( rv != 0 ) {
+		switch(rv) {
+		case 1: /*error*/
+			printf_error( __LOG_PREFIX _Tr("failed to fetch result: %s"), msth->dbh->strerror(sth));
+			break;
+		case MYSQL_NO_DATA:
+			break;
+		case MYSQL_DATA_TRUNCATED:
+			print_warn( __LOG_PREFIX _Tr("data truncated"));
+			break;
+		}
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 static CwtDBI_RC __stmtErr(CwtStatement *sth)
@@ -1105,7 +1220,7 @@ static const CWT_CHAR* __stmtStrerror(CwtStatement *sth)
 	return msth->errorstr;
 }
 
-/* TODO need TIME/DATE/TIMESTAMP support */
+
 static BOOL __stmtBind(CwtStatement *sth, size_t index, CwtTypeId type_id, void *value, size_t *plength)
 {
 	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
@@ -1131,13 +1246,19 @@ static BOOL __stmtBind(CwtStatement *sth, size_t index, CwtTypeId type_id, void 
 		bind_param->is_unsigned  = __mySqlTypesMapping[type_id].is_unsigned;
 	} else if ( type_id == CwtType_TIME || type_id == CwtType_DATE || type_id == CwtType_DATETIME ) {
 		CwtMySqlTime *tm = (CwtMySqlTime*)value;
-		tm->mysql_time.year  = tm->__base.year;
-		tm->mysql_time.month = tm->__base.mon;
-		tm->mysql_time.day   = tm->__base.day;
-		tm->mysql_time.hour  = tm->__base.hour;
-		tm->mysql_time.minute= tm->__base.min;
-		tm->mysql_time.second= tm->__base.sec;
-		tm->mysql_time.second_part = tm->__base.sec_part;
+
+		if( type_id == CwtType_DATE || type_id == CwtType_DATETIME ) {
+			tm->mysql_time.year  = tm->__base.year;
+			tm->mysql_time.month = tm->__base.mon;
+			tm->mysql_time.day   = tm->__base.day;
+		}
+
+		if( type_id == CwtType_TIME || type_id == CwtType_DATETIME ) {
+			tm->mysql_time.hour  = tm->__base.hour;
+			tm->mysql_time.minute= tm->__base.min;
+			tm->mysql_time.second= tm->__base.sec;
+			tm->mysql_time.second_part = tm->__base.sec_part;
+		}
 
 		bind_param->buffer        = &tm->mysql_time;
 	} else { /* STRING, TEXT or BLOB */

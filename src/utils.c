@@ -47,10 +47,11 @@ static void __swapPtr(void **p1, void **p2)
 static void  __now(CWT_TIME *dt)
 {
 	struct tm tm_;
+	time_t now = time(NULL);
 
 	CWT_ASSERT(dt);
-	cwtStrNS()->memcpy(&tm_, localtime(NULL), sizeof(struct tm));
-	dt->year     = tm_.tm_year + 1970;
+	cwtStrNS()->memcpy(&tm_, localtime(&now), sizeof(struct tm));
+	dt->year     = tm_.tm_year + 1900;
 	dt->mon      = tm_.tm_mon + 1;
 	dt->day      = tm_.tm_mday;
 	dt->hour     = tm_.tm_hour;

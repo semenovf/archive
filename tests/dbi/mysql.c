@@ -57,6 +57,7 @@ static const CWT_CHAR *__sql_insert = _T("INSERT INTO \
                        cwt_test_table(col1,col2,col3,col4,col5,col6) \
                        VALUES(?,?,?,?,?,?)");
 
+
 static const CWT_CHAR *__sql_select = _T("SELECT * from `cwt_test_table`");
 
 int main(int argc, char *argv[])
@@ -75,7 +76,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(33);
+	CWT_BEGIN_TESTS(38);
 
 	dbi->parseDSN(__dsn_with_flags, &scheme, &driver, &driverDSN);
 	CWT_TEST_OK(strNS->streq(_T("DBI"), scheme));
@@ -176,13 +177,13 @@ int main(int argc, char *argv[])
 */
 
 
-		SHORT  short_data;
-		INT    int_data;
+		SHORT     short_data;
+		INT       int_data;
 		CWT_TIME *cwtDate;
 		CWT_TIME *cwtTime;
 		CWT_TIME *cwtDateTime;
-		char   *str_data = dbd->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));
-		size_t str_length = strlen(str_data);
+		char     *str_data = dbd->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));
+		size_t    str_length = strlen(str_data);
 
 		CWT_TEST_FAIL((sth = dbd->prepare(dbh, __sql_insert)));
 
@@ -193,6 +194,12 @@ int main(int argc, char *argv[])
 		cwtUtilsNS()->now(cwtDate);
 		cwtUtilsNS()->now(cwtTime);
 		cwtUtilsNS()->now(cwtDateTime);
+
+		printf("Date    : %04d-%02d-%02d\n", cwtDate->year, cwtDate->mon, cwtDate->day);
+		printf("Time    : %02d:%02d:%02d\n", cwtDate->hour, cwtDate->min, cwtDate->sec);
+		printf("DateTime: %04d-%02d-%02d %02d:%02d:%02d\n"
+			, cwtDate->year, cwtDate->mon, cwtDate->day
+			, cwtDate->hour, cwtDate->min, cwtDate->sec);
 
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 0, CwtType_INT, &int_data))
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 1, CwtType_SHORT, &short_data));
@@ -218,12 +225,25 @@ int main(int argc, char *argv[])
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
 		CWT_FREE(str_data);
 
+		CWT_TEST_OK(dbd->err(dbh) == 0);
+
+		dbh->close(sth);
+
+		/* Make selection */
+		CWT_TEST_FAIL((sth = dbd->prepare(dbh, __sql_select)));
+		CWT_TEST_FAIL(dbh->execute(sth));
+		CWT_TEST_OK(dbh->size(sth) == 2UL);
+		printf("Returned rows: %lu\n", dbh->size(sth));
+
+		while( dbh->fetchNext(sth) ) {
+			;
+		}
+
+		dbh->close(sth);
+
 		dbd->freeTime(cwtTime);
 		dbd->freeTime(cwtDate);
 		dbd->freeTime(cwtDateTime);
-
-		CWT_TEST_OK(dbd->err(dbh) == 0);
-
 	}
 
 	CWT_TEST_OK(dbd->err(dbh) == 0);
