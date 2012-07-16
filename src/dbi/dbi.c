@@ -178,6 +178,53 @@ static CwtTypeEnum __toCwtTypeEnum (CwtSqlTypeEnum sqlType)
 
 static CwtSqlTypeEnum __toSqlTypeEnum (CwtTypeEnum cwtType)
 {
+	CwtSqlTypeEnum sqlType;
 
+	switch(cwtType) {
+	case CwtType_SBYTE:
+	case CwtType_BYTE:
+		sqlType = CwtSql_TINYINT;
+		break;
+	case CwtType_SHORT:
+	case CwtType_USHORT:
+		sqlType = CwtSql_SMALLINT;
+		break;
+	case CwtType_INT:
+	case CwtType_UINT:
+	case CwtType_LONG:
+	case CwtType_ULONG:
+		sqlType = CwtSql_INT;
+		break;
+	case CwtType_LONGLONG:
+	case CwtType_ULONGLONG:
+		sqlType = CwtSql_BIGINT;
+		break;
+	case CwtType_FLOAT:
+		sqlType = CwtSql_FLOAT;
+		break;
+	case CwtType_DOUBLE:
+		sqlType = CwtSql_DOUBLE;
+		break;
+	case CwtType_TIME:
+		sqlType = CwtSql_TIME;
+		break;
+	case CwtType_DATE:
+		sqlType = CwtSql_DATE;
+		break;
+	case CwtType_DATETIME:
+		sqlType = CwtSql_DATETIME;
+		break;
+
+	case CwtType_BLOB:
+		sqlType = CwtSql_BLOB;
+		break;
+
+	default:
+	case CwtType_TEXT:
+		sqlType = CwtSql_TEXT;
+		break;
+	}
+
+	return sqlType;
 }
 

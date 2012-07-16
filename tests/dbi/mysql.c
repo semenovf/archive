@@ -16,8 +16,8 @@
 
 static const CWT_CHAR *__username = _T("root");
 static const CWT_CHAR *__password = _T("rdflhfnehf");
-static const CWT_CHAR *__dsn_with_flags = _T("DBI:mysql:database=stk;host=localhost;port=3306;mysql_flags=COMPRESS,FOUND_ROWS,IGNORE_SIGPIPE,IGNORE_SPACE,INTERACTIVE,LOCAL_FILES,MULTI_RESULTS,MULTI_STATEMENTS");
-static const CWT_CHAR *__dsn      = _T("DBI:mysql:host=localhost;port=3306");
+static const CWT_CHAR *__dsn_with_flags = _T("DBI:mysql:database=stk;host=127.0.0.1;port=3306;mysql_flags=COMPRESS,FOUND_ROWS,IGNORE_SIGPIPE,IGNORE_SPACE,INTERACTIVE,LOCAL_FILES,MULTI_RESULTS,MULTI_STATEMENTS");
+static const CWT_CHAR *__dsn      = _T("DBI:mysql:host=127.0.0.1;port=3306");
 
 static const CWT_CHAR *__admin_func = _T("admin");
 static CWT_CHAR       *__createdb_argv[] = {_T("createdb"), _T("cwt_test_db"), NULL};
@@ -100,10 +100,10 @@ int main(int argc, char *argv[])
 	CWT_FREE(driver);
 	CWT_FREE(driverDSN);
 
-	dbd = dbi->load(__dsn_with_flags);
+	dbd = dbi->load(__dsn/*_with_flags*/);
 	CWT_TEST_FAIL2(dbd, "Unable to load driver represented by DSN");
 
-	dbi->parseDSN(__dsn_with_flags, NULL, NULL, &driverDSN);
+	dbi->parseDSN(__dsn/*_with_flags*/, NULL, NULL, &driverDSN);
 	dbh = dbd->connect(driverDSN, __username, __password, NULL);
 	CWT_FREE(driverDSN);
 	CWT_TEST_FAIL2(dbh, "May be you forgot to start MySQL service?");
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
 
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 0, CwtType_INT, &int_data))
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 1, CwtType_SHORT, &short_data));
-		CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_STRING, str_data, &str_length));
+		CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_TEXT, str_data, &str_length, FALSE));
 		CWT_TEST_FAIL(dbh->bindTime(sth, 3, CwtType_DATE, cwtDate));
 		CWT_TEST_FAIL(dbh->bindTime(sth, 4, CwtType_TIME, cwtTime));
 		CWT_TEST_FAIL(dbh->bindTime(sth, 5, CwtType_DATETIME, cwtDateTime));
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 		str_data = dbd->encode(dbh, _T("—ъешь ещЄ этих м€гких французских булок"));
 		str_length = strlen(str_data);
 
-		CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_STRING, str_data, &str_length));
+		CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_TEXT, str_data, &str_length, FALSE));
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
 		CWT_FREE(str_data);
@@ -231,6 +231,8 @@ int main(int argc, char *argv[])
 		printf("Returned rows: %lu\n", dbh->size(sth));
 
 		while( dbh->fetchNext(sth) ) {
+			;
+/*
 			INT int_val;
 			INT small_val;
 			char *varchars;
@@ -238,6 +240,7 @@ int main(int argc, char *argv[])
 			CWT_TIME time_val;
 			CWT_TIME datetime_val;
 			CWT_TIME timestamp_val;
+*/
 
 
 			/*
@@ -250,6 +253,7 @@ int main(int argc, char *argv[])
 				 , col7 TIMESTAMP)");
 			*/
 
+/*
 			dbh->fetchColumn(sth, _T("col1"), &int_val, NULL);
 			dbh->fetchColumn(sth, _T("col2"), &small_val, NULL);
 			dbh->fetchColumn(sth, _T("col3"), &varchars, NULL);
@@ -257,10 +261,13 @@ int main(int argc, char *argv[])
 			dbh->fetchColumn(sth, _T("col5"), &time_val, NULL);
 			dbh->fetchColumn(sth, _T("col6"), &datetime_val, NULL);
 			dbh->fetchColumn(sth, _T("col7"), &timestamp_val, NULL);
+*/
 
+/*
 			printf_debug(_T("int_val   = %d\n"), int_val);
 			printf_debug(_T("small_val = %d\n"), small_val);
 			printf_debug(_T("date_val  = %04u-%02u-%02u\n"), date_val.year, date_val.mon, date_val.day);
+*/
 
 		}
 

@@ -84,7 +84,7 @@ typedef enum CwtTypeEnum {
 	, CwtType_DATETIME
 } CwtTypeEnum;
 
-#define CWT_TYPEID_IS_NUMBER(tid) (((tid) >= CwtType_CHAR && (tid) < CwtType_STRING) ? TRUE : FALSE)
+#define CWT_TYPEID_IS_NUMBER(tid) (((tid) >= CwtType_CHAR && (tid) < CwtType_TEXT) ? TRUE : FALSE)
 
 
 typedef struct CwtStatement {
@@ -96,10 +96,10 @@ typedef struct CwtDBHandler {
 	BOOL            (*execute)       (CwtStatement*);
 	CwtDBI_RC       (*err)           (CwtStatement*);
 	const CWT_CHAR* (*strerror)      (CwtStatement*);
-	BOOL            (*bind)          (CwtStatement *sth, size_t index, CwtTypeId type_id, void *value, size_t *plength);
-	BOOL            (*bindScalar)    (CwtStatement *sth, size_t index, CwtTypeId type_id, void *value);
-	BOOL            (*bindTime)      (CwtStatement *sth, size_t index, CwtTypeId type_id, void *value);
-	BOOL            (*bindNull)      (CwtStatement *sth, size_t index);
+	BOOL            (*bind)          (CwtStatement *sth, size_t index, CwtTypeEnum type_id, void *value, size_t *plength, BOOL is_null);
+	BOOL            (*bindScalar)    (CwtStatement *sth, size_t index, CwtTypeEnum type_id, void *value);
+	BOOL            (*bindTime)      (CwtStatement *sth, size_t index, CwtTypeEnum type_id, void *value);
+	BOOL            (*bindNull)      (CwtStatement *sth, size_t index, CwtTypeEnum type_id);
 	ULONGLONG       (*rows)          (CwtStatement*);
 	ULONGLONG       (*size)          (CwtStatement*);
 	BOOL            (*fetchNext)     (CwtStatement*);
