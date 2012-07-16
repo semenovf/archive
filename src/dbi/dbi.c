@@ -15,11 +15,15 @@
 
 static void            __parseDSN      (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
 static CwtDBIDriver*   __load          (const CWT_CHAR *dsn);
+static CwtTypeEnum     __toCwtTypeEnum (CwtSqlTypeEnum sqlType);
+static CwtSqlTypeEnum  __toSqlTypeEnum (CwtTypeEnum cwtType);
 
 
 static CwtDBI __cwtDBI = {
 	  __parseDSN
 	, __load
+	, __toCwtTypeEnum
+	, __toSqlTypeEnum
 };
 
 
@@ -102,3 +106,78 @@ static CwtDBIDriver* __load(const CWT_CHAR *dsn)
 	return driver;
 
 }
+
+
+static CwtTypeEnum __toCwtTypeEnum (CwtSqlTypeEnum sqlType)
+{
+	CwtTypeEnum cwtType;
+
+	switch(sqlType) {
+	case CwtSql_TINYINT:
+		cwtType = CwtType_CHAR;
+		break;
+	case CwtSql_SMALLINT:
+		cwtType = CwtType_SHORT;
+		break;
+	case CwtSql_MEDIUMINT:
+	case CwtSql_INT:
+		cwtType = CwtType_INT;
+		break;
+	case CwtSql_BIGINT:
+		cwtType = CwtType_LONGLONG;
+		break;
+	case CwtSql_FLOAT:
+		cwtType = CwtType_FLOAT;
+		break;
+	case CwtSql_DOUBLE:
+		cwtType = CwtType_DOUBLE;
+		break;
+	case CwtSql_DECIMAL:
+		cwtType = CwtType_TEXT;
+		break;
+	case CwtSql_YEAR:
+		cwtType = CwtType_SHORT;
+		break;
+	case CwtSql_TIME:
+		cwtType = CwtType_TIME;
+		break;
+	case CwtSql_DATE:
+		cwtType = CwtType_DATE;
+		break;
+	case CwtSql_DATETIME:
+	case CwtSql_TIMESTAMP:
+		cwtType = CwtType_DATETIME;
+		break;
+
+	case CwtSql_CHAR:
+	case CwtSql_VARCHAR:
+	case CwtSql_TINYTEXT:
+	case CwtSql_TEXT:
+	case CwtSql_MEDIUMTEXT:
+	case CwtSql_LONGTEXT:
+		cwtType = CwtType_TEXT;
+		break;
+
+	case CwtSql_BINARY:
+	case CwtSql_VARBINARY:
+	case CwtSql_TINYBLOB:
+	case CwtSql_BLOB:
+	case CwtSql_MEDIUMBLOB:
+	case CwtSql_LONGBLOB:
+		cwtType = CwtType_BLOB;
+		break;
+
+	default:
+	case CwtSql_BIT:
+		cwtType = CwtType_TEXT;
+		break;
+	}
+
+	return cwtType;
+}
+
+static CwtSqlTypeEnum __toSqlTypeEnum (CwtTypeEnum cwtType)
+{
+
+}
+

@@ -28,6 +28,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef ALGORITHM_HASH_STRING_H
 #define ALGORITHM_HASH_STRING_H
 
+#include <cwt/types.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -39,7 +41,7 @@ extern "C" {
  * @return                 A hash key for the string.
  */
 
-unsigned long string_hash(void *string);
+DLL_API_EXPORT unsigned long string_hash(void *string);
 
 /**
  * Generate a hash key from a string, ignoring the case of letters.
@@ -48,7 +50,7 @@ unsigned long string_hash(void *string);
  * @return                 A hash key for the string.
  */
 
-unsigned long string_nocase_hash(void *string);
+DLL_API_EXPORT unsigned long string_nocase_hash(void *string);
 
 #ifdef __cplusplus
 }

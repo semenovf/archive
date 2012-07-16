@@ -24,7 +24,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /* String hash function */
 
-unsigned long string_hash(void *string)
+DLL_API_EXPORT unsigned long string_hash(void *string)
 {
 	/* This is the djb2 string hash function */
 
@@ -44,7 +44,7 @@ unsigned long string_hash(void *string)
 /* The same function, with a tolower on every character so that 
  * case is ignored.  This code is duplicated for performance. */
 
-unsigned long string_nocase_hash(void *string)
+DLL_API_EXPORT unsigned long string_nocase_hash(void *string)
 {
 	unsigned long result = 5381;
 	unsigned char *p;

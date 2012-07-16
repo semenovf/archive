@@ -98,7 +98,7 @@ static void hash_table_free_entry(HashTable *hash_table, HashTableEntry *entry)
 	free(entry);
 }
 
-HashTable *hash_table_new(HashTableHashFunc hash_func, 
+DLL_API_EXPORT HashTable *hash_table_new(HashTableHashFunc hash_func,
                           HashTableEqualFunc equal_func)
 {
 	HashTable *hash_table;
@@ -129,7 +129,7 @@ HashTable *hash_table_new(HashTableHashFunc hash_func,
 	return hash_table;
 }
 
-void hash_table_free(HashTable *hash_table)
+DLL_API_EXPORT void hash_table_free(HashTable *hash_table)
 {
 	HashTableEntry *rover;
 	HashTableEntry *next;
@@ -155,7 +155,7 @@ void hash_table_free(HashTable *hash_table)
 	free(hash_table);
 }
 
-void hash_table_register_free_functions(HashTable *hash_table,
+DLL_API_EXPORT void hash_table_register_free_functions(HashTable *hash_table,
                                         HashTableKeyFreeFunc key_free_func,
                                         HashTableValueFreeFunc value_free_func)
 {
@@ -225,7 +225,7 @@ static int hash_table_enlarge(HashTable *hash_table)
 	return 1;
 }
 
-int hash_table_insert(HashTable *hash_table, HashTableKey key, HashTableValue value) 
+DLL_API_EXPORT int hash_table_insert(HashTable *hash_table, HashTableKey key, HashTableValue value)
 {
 	HashTableEntry *rover;
 	HashTableEntry *newentry;
@@ -309,7 +309,7 @@ int hash_table_insert(HashTable *hash_table, HashTableKey key, HashTableValue va
 	return 1;
 }
 
-HashTableValue hash_table_lookup(HashTable *hash_table, HashTableKey key)
+DLL_API_EXPORT HashTableValue hash_table_lookup(HashTable *hash_table, HashTableKey key)
 {
 	HashTableEntry *rover;
 	unsigned int index;
@@ -338,7 +338,7 @@ HashTableValue hash_table_lookup(HashTable *hash_table, HashTableKey key)
 	return HASH_TABLE_NULL;
 }
 
-int hash_table_remove(HashTable *hash_table, HashTableKey key)
+DLL_API_EXPORT int hash_table_remove(HashTable *hash_table, HashTableKey key)
 {
 	HashTableEntry **rover;
 	HashTableEntry *entry;
@@ -390,12 +390,12 @@ int hash_table_remove(HashTable *hash_table, HashTableKey key)
 	return result;
 }
 
-int hash_table_num_entries(HashTable *hash_table)
+DLL_API_EXPORT int hash_table_num_entries(HashTable *hash_table)
 {
 	return hash_table->entries;
 }
 
-void hash_table_iterate(HashTable *hash_table, HashTableIterator *iterator)
+DLL_API_EXPORT void hash_table_iterate(HashTable *hash_table, HashTableIterator *iterator)
 {
 	int chain;
 	
@@ -417,12 +417,12 @@ void hash_table_iterate(HashTable *hash_table, HashTableIterator *iterator)
 	}
 }
 
-int hash_table_iter_has_more(HashTableIterator *iterator)
+DLL_API_EXPORT int hash_table_iter_has_more(HashTableIterator *iterator)
 {
 	return iterator->next_entry != NULL;
 }
 
-HashTableValue hash_table_iter_next(HashTableIterator *iterator)
+DLL_API_EXPORT HashTableValue hash_table_iter_next(HashTableIterator *iterator)
 {
 	HashTableEntry *current_entry;
 	HashTable *hash_table;

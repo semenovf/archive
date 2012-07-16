@@ -58,7 +58,13 @@ static const CWT_CHAR *__sql_insert = _T("INSERT INTO \
                        VALUES(?,?,?,?,?,?)");
 
 
-static const CWT_CHAR *__sql_select = _T("SELECT * from `cwt_test_table`");
+static const CWT_CHAR *__sql_select = _T("SELECT col1 \
+										 , col2 \
+										 , col3 \
+										 , col4 \
+										 , col5 \
+										 , col6 \
+										 , col7 from `cwt_test_table`");
 
 int main(int argc, char *argv[])
 {
@@ -166,17 +172,6 @@ int main(int argc, char *argv[])
 
 
 	{
-/*
-      col1 INT
-      col2 SMALLINT
-      col3 VARCHAR(100)
-      col4 DATE
-      col5 TIME
-      col6 DATETIME
-      col7 TIMESTAMP
-*/
-
-
 		SHORT     short_data;
 		INT       int_data;
 		CWT_TIME *cwtDate;
@@ -236,7 +231,37 @@ int main(int argc, char *argv[])
 		printf("Returned rows: %lu\n", dbh->size(sth));
 
 		while( dbh->fetchNext(sth) ) {
-			;
+			INT int_val;
+			INT small_val;
+			char *varchars;
+			CWT_TIME date_val;
+			CWT_TIME time_val;
+			CWT_TIME datetime_val;
+			CWT_TIME timestamp_val;
+
+
+			/*
+				   col1 INT\
+				 , col2 SMALLINT\
+				 , col3 VARCHAR(100)\
+				 , col4 DATE\
+				 , col5 TIME\
+				 , col6 DATETIME\
+				 , col7 TIMESTAMP)");
+			*/
+
+			dbh->fetchColumn(sth, _T("col1"), &int_val, NULL);
+			dbh->fetchColumn(sth, _T("col2"), &small_val, NULL);
+			dbh->fetchColumn(sth, _T("col3"), &varchars, NULL);
+			dbh->fetchColumn(sth, _T("col4"), &date_val, NULL);
+			dbh->fetchColumn(sth, _T("col5"), &time_val, NULL);
+			dbh->fetchColumn(sth, _T("col6"), &datetime_val, NULL);
+			dbh->fetchColumn(sth, _T("col7"), &timestamp_val, NULL);
+
+			printf_debug(_T("int_val   = %d\n"), int_val);
+			printf_debug(_T("small_val = %d\n"), small_val);
+			printf_debug(_T("date_val  = %04u-%02u-%02u\n"), date_val.year, date_val.mon, date_val.day);
+
 		}
 
 		dbh->close(sth);

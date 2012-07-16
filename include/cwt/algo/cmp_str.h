@@ -34,6 +34,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef ALGORITHM_COMPARE_STRING_H
 #define ALGORITHM_COMPARE_STRING_H
 
+#include <cwt/types.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,7 +49,7 @@ extern "C" {
  *                        not equal.
  */
 
-int string_equal(void *string1, void *string2);
+DLL_API_EXPORT int string_equal(void *string1, void *string2);
 
 /**
  * Compare two strings.
@@ -60,7 +62,7 @@ int string_equal(void *string1, void *string2);
  *                        zero if the two strings are equal.
  */
 
-int string_compare(void *string1, void *string2);
+DLL_API_EXPORT int string_compare(void *string1, void *string2);
 
 /**
  * Compare two strings to determine if they are equal, ignoring the 
@@ -72,7 +74,7 @@ int string_compare(void *string1, void *string2);
  *                        not equal.
  */
 
-int string_nocase_equal(void *string1, void *string2);
+DLL_API_EXPORT int string_nocase_equal(void *string1, void *string2);
 
 /**
  * Compare two strings, ignoring the case of letters.
@@ -85,7 +87,7 @@ int string_nocase_equal(void *string1, void *string2);
  *                        zero if the two strings are equal.
  */
 
-int string_nocase_compare(void *string1, void *string2);
+DLL_API_EXPORT int string_nocase_compare(void *string1, void *string2);
 
 #ifdef __cplusplus
 }

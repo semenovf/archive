@@ -163,7 +163,7 @@ struct _HashTableIterator {
  *                             table.
  */
 
-HashTable *hash_table_new(HashTableHashFunc hash_func, 
+DLL_API_EXPORT HashTable *hash_table_new(HashTableHashFunc hash_func,
                           HashTableEqualFunc equal_func);
 
 /**
@@ -172,7 +172,7 @@ HashTable *hash_table_new(HashTableHashFunc hash_func,
  * @param hash_table           The hash table to destroy.
  */
 
-void hash_table_free(HashTable *hash_table);
+DLL_API_EXPORT void hash_table_free(HashTable *hash_table);
 
 /**
  * Register functions used to free the key and value when an entry is
@@ -183,7 +183,7 @@ void hash_table_free(HashTable *hash_table);
  * @param value_free_func      Function used to free values.
  */
 
-void hash_table_register_free_functions(HashTable *hash_table,
+DLL_API_EXPORT void hash_table_register_free_functions(HashTable *hash_table,
                                         HashTableKeyFreeFunc key_free_func,
                                         HashTableValueFreeFunc value_free_func);
 
@@ -199,7 +199,7 @@ void hash_table_register_free_functions(HashTable *hash_table,
  *                             memory for the new entry.
  */
 
-int hash_table_insert(HashTable *hash_table, 
+DLL_API_EXPORT int hash_table_insert(HashTable *hash_table,
                       HashTableKey key, 
                       HashTableValue value);
 
@@ -212,7 +212,7 @@ int hash_table_insert(HashTable *hash_table,
  *                            is no value with that key in the hash table.
  */
 
-HashTableValue hash_table_lookup(HashTable *hash_table, 
+DLL_API_EXPORT HashTableValue hash_table_lookup(HashTable *hash_table,
                                  HashTableKey key);
 
 /**
@@ -224,7 +224,7 @@ HashTableValue hash_table_lookup(HashTable *hash_table,
  *                            specified key was not found in the hash table.
  */
 
-int hash_table_remove(HashTable *hash_table, HashTableKey key);
+DLL_API_EXPORT int hash_table_remove(HashTable *hash_table, HashTableKey key);
 
 /** 
  * Retrieve the number of entries in a hash table.
@@ -233,7 +233,7 @@ int hash_table_remove(HashTable *hash_table, HashTableKey key);
  * @return                    The number of entries in the hash table.
  */
 
-int hash_table_num_entries(HashTable *hash_table);
+DLL_API_EXPORT int hash_table_num_entries(HashTable *hash_table);
 
 /**
  * Initialise a @ref HashTableIterator to iterate over a hash table.
@@ -243,7 +243,7 @@ int hash_table_num_entries(HashTable *hash_table);
  *                            initialise.
  */
 
-void hash_table_iterate(HashTable *hash_table, HashTableIterator *iter);
+DLL_API_EXPORT void hash_table_iterate(HashTable *hash_table, HashTableIterator *iter);
 
 /**
  * Determine if there are more keys in the hash table to iterate
@@ -255,7 +255,7 @@ void hash_table_iterate(HashTable *hash_table, HashTableIterator *iter);
  *                            iterate over.
  */
 
-int hash_table_iter_has_more(HashTableIterator *iterator);
+DLL_API_EXPORT int hash_table_iter_has_more(HashTableIterator *iterator);
 
 /**
  * Using a hash table iterator, retrieve the next key.
@@ -266,7 +266,7 @@ int hash_table_iter_has_more(HashTableIterator *iterator);
  *                            keys to iterate over.
  */
 
-HashTableValue hash_table_iter_next(HashTableIterator *iterator);
+DLL_API_EXPORT HashTableValue hash_table_iter_next(HashTableIterator *iterator);
 
 #ifdef __cplusplus
 }
