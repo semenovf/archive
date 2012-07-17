@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(38);
+	CWT_BEGIN_TESTS(107);
 
 	dbi->parseDSN(__dsn_with_flags, &scheme, &driver, &driverDSN);
 	CWT_TEST_OK(strNS->streq(_T("DBI"), scheme));
@@ -133,10 +133,10 @@ int main(int argc, char *argv[])
 	CWT_FREE(driver);
 	CWT_FREE(driverDSN);
 
-	dbd = dbi->load(__dsn/*_with_flags*/);
+	dbd = dbi->load(__dsn_with_flags);
 	CWT_TEST_FAIL2(dbd, "Unable to load driver represented by DSN");
 
-	dbi->parseDSN(__dsn/*_with_flags*/, NULL, NULL, &driverDSN);
+	dbi->parseDSN(__dsn_with_flags, NULL, NULL, &driverDSN);
 	dbh = dbd->connect(driverDSN, __username, __password, NULL);
 	CWT_FREE(driverDSN);
 	CWT_TEST_FAIL2(dbh, "May be you forgot to start MySQL service?");
@@ -229,13 +229,10 @@ int main(int argc, char *argv[])
 		cwtTime = dbd->createTime();
 		cwtDateTime = dbd->createTime();
 
-/*
-		printf("Date    : %04d-%02d-%02d\n", cwtDate->year, cwtDate->mon, cwtDate->day);
-		printf("Time    : %02d:%02d:%02d\n", cwtDate->hour, cwtDate->min, cwtDate->sec);
-		printf("DateTime: %04d-%02d-%02d %02d:%02d:%02d\n"
-			, cwtDate->year, cwtDate->mon, cwtDate->day
-			, cwtDate->hour, cwtDate->min, cwtDate->sec);
-*/
+		/* Times, dates, blobs and texts must be initialized before they are binding */
+		cwtUtilsNS()->now(cwtDate);
+		cwtUtilsNS()->now(cwtTime);
+		cwtUtilsNS()->now(cwtDateTime);
 
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 0, CwtType_SBYTE, &sbyte_val));
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 1, CwtType_BYTE,  &byte_val));
@@ -264,10 +261,6 @@ int main(int argc, char *argv[])
 		ulong_val   = CWT_ULONG_MAX;
 		llong_val   = CWT_LONGLONG_MAX;
 		ullong_val  = CWT_ULONGLONG_MAX;
-
-		cwtUtilsNS()->now(cwtDate);
-		cwtUtilsNS()->now(cwtTime);
-		cwtUtilsNS()->now(cwtDateTime);
 
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
@@ -350,12 +343,22 @@ int main(int argc, char *argv[])
 			CWT_TEST_OK(ullong_val.data.ullong_val == CWT_ULONGLONG_MAX);
 
 			dbd->convertTime(&cwtTimeTmp, date_val.data.ptr);
-			CWT_TEST_OK(cwtTimeTmp.year == cwtTime->year);
-			CWT_TEST_OK(cwtTimeTmp.mon == cwtTime->mon);
-			CWT_TEST_OK(cwtTimeTmp.day == cwtTime->day);
+			CWT_TEST_OK(cwtTimeTmp.year == cwtDate->year);
+			CWT_TEST_OK(cwtTimeTmp.mon  == cwtDate->mon);
+			CWT_TEST_OK(cwtTimeTmp.day  == cwtDate->day);
 
 			dbd->convertTime(&cwtTimeTmp, time_val.data.ptr);
+			CWT_TEST_OK(cwtTimeTmp.hour == cwtTime->hour);
+			CWT_TEST_OK(cwtTimeTmp.min == cwtTime->min);
+			CWT_TEST_OK(cwtTimeTmp.sec == cwtTime->sec);
+
 			dbd->convertTime(&cwtTimeTmp, dt_val.data.ptr);
+			CWT_TEST_OK(cwtTimeTmp.year == cwtDateTime->year);
+			CWT_TEST_OK(cwtTimeTmp.mon  == cwtDateTime->mon);
+			CWT_TEST_OK(cwtTimeTmp.day  == cwtDateTime->day);
+			CWT_TEST_OK(cwtTimeTmp.hour == cwtDateTime->hour);
+			CWT_TEST_OK(cwtTimeTmp.min == cwtDateTime->min);
+			CWT_TEST_OK(cwtTimeTmp.sec == cwtDateTime->sec);
 
 			/* fetch second row */
 			CWT_TEST_FAIL( dbh->fetchNext(sth) );
