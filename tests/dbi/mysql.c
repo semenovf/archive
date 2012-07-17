@@ -39,32 +39,65 @@ static const char* __charset;
 
 static const CWT_CHAR *__sql_use_db       = _T("USE cwt_test_db");
 static const CWT_CHAR *__sql_drop_table   = _T("DROP TABLE IF EXISTS ") TABLE_NAME;
-static const CWT_CHAR *__sql_create_table = _T("CREATE TABLE ") TABLE_NAME _T("(\
-		                                           col1 INT\
-                                                 , col2 SMALLINT\
-                                                 , col3 VARCHAR(100)\
-		                                         , col4 DATE\
-		                                         , col5 TIME\
-                                                 , col6 DATETIME\
-		                                         , col7 TIMESTAMP)");
-
 static const CWT_CHAR *__sql_create_table0 = _T("CREATE TABLE ") TABLE0_NAME _T("(col1 INT,\
                                                  col2 VARCHAR(100),\
                                                  col3 SMALLINT,\
                                                  col4 TIMESTAMP)");
 
-static const CWT_CHAR *__sql_insert = _T("INSERT INTO \
-                       cwt_test_table(col1,col2,col3,col4,col5,col6) \
-                       VALUES(?,?,?,?,?,?)");
+static const CWT_CHAR *__sql_create_table =
+	_T("CREATE TABLE ") TABLE_NAME
+	_T("(sbyte_val TINYINT\
+	, byte_val    TINYINT UNSIGNED\
+    , short_val   SMALLINT\
+	, ushort_val  SMALLINT UNSIGNED\
+	, int_val     INT\
+	, uint_val    INT UNSIGNED\
+	, long_val    INT\
+	, ulong_val   INT UNSIGNED\
+	, llong_val   BIGINT\
+	, ullong_val  BIGINT UNSIGNED\
+	, date_val    DATE\
+	, time_val    TIME\
+    , dt_val      DATETIME\
+    , ts_val      TIMESTAMP\
+	, vchar_val   VARCHAR(100))");
 
+static const CWT_CHAR *__sql_insert
+	= _T("INSERT INTO\
+     cwt_test_table(\
+	  sbyte_val\
+	, byte_val\
+	, short_val\
+	, ushort_val\
+	, int_val\
+	, uint_val\
+	, long_val\
+	, ulong_val\
+	, llong_val\
+	, ullong_val\
+	, date_val\
+	, time_val\
+	, dt_val\
+	, vchar_val)\
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
-static const CWT_CHAR *__sql_select = _T("SELECT col1 \
-										 , col2 \
-										 , col3 \
-										 , col4 \
-										 , col5 \
-										 , col6 \
-										 , col7 from `cwt_test_table`");
+static const CWT_CHAR *__sql_select =
+	_T("SELECT\
+	  sbyte_val\
+	, byte_val\
+	, short_val\
+	, ushort_val\
+	, int_val\
+	, uint_val\
+	, long_val\
+	, ulong_val\
+	, llong_val\
+	, ullong_val\
+	, date_val\
+	, time_val\
+	, dt_val\
+	, vchar_val\
+	from `cwt_test_table`");
 
 int main(int argc, char *argv[])
 {
@@ -172,11 +205,21 @@ int main(int argc, char *argv[])
 
 
 	{
-		SHORT     short_data;
-		INT       int_data;
+		SBYTE     sbyte_val;
+		BYTE      byte_val;
+		SHORT     short_val;
+		USHORT    ushort_val;
+		INT       int_val;
+		UINT      uint_val;
+		LONG      long_val;
+		ULONG     ulong_val;
+		LONGLONG  llong_val;
+		ULONGLONG ullong_val;
+
 		CWT_TIME *cwtDate;
 		CWT_TIME *cwtTime;
 		CWT_TIME *cwtDateTime;
+
 		char     *str_data = dbd->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));
 		size_t    str_length = strlen(str_data);
 
@@ -186,25 +229,45 @@ int main(int argc, char *argv[])
 		cwtTime = dbd->createTime();
 		cwtDateTime = dbd->createTime();
 
-		cwtUtilsNS()->now(cwtDate);
-		cwtUtilsNS()->now(cwtTime);
-		cwtUtilsNS()->now(cwtDateTime);
-
+/*
 		printf("Date    : %04d-%02d-%02d\n", cwtDate->year, cwtDate->mon, cwtDate->day);
 		printf("Time    : %02d:%02d:%02d\n", cwtDate->hour, cwtDate->min, cwtDate->sec);
 		printf("DateTime: %04d-%02d-%02d %02d:%02d:%02d\n"
 			, cwtDate->year, cwtDate->mon, cwtDate->day
 			, cwtDate->hour, cwtDate->min, cwtDate->sec);
+*/
 
-		CWT_TEST_FAIL(dbh->bindScalar(sth, 0, CwtType_INT, &int_data))
-		CWT_TEST_FAIL(dbh->bindScalar(sth, 1, CwtType_SHORT, &short_data));
-		CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_TEXT, str_data, &str_length, FALSE));
-		CWT_TEST_FAIL(dbh->bindTime(sth, 3, CwtType_DATE, cwtDate));
-		CWT_TEST_FAIL(dbh->bindTime(sth, 4, CwtType_TIME, cwtTime));
-		CWT_TEST_FAIL(dbh->bindTime(sth, 5, CwtType_DATETIME, cwtDateTime));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 0, CwtType_SBYTE, &sbyte_val));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 1, CwtType_BYTE,  &byte_val));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 2, CwtType_SHORT, &short_val));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 3, CwtType_USHORT, &ushort_val));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 4, CwtType_INT, &int_val));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 5, CwtType_UINT,  &uint_val));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 6, CwtType_LONG, &long_val));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 7, CwtType_ULONG, &ulong_val));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 8, CwtType_LONGLONG, &llong_val));
+		CWT_TEST_FAIL(dbh->bindScalar(sth, 9, CwtType_ULONGLONG, &ullong_val));
 
-		int_data = CWT_INT_MAX;
-		short_data = CWT_SHORT_MAX;
+		CWT_TEST_FAIL(dbh->bindTime(sth, 10, CwtType_DATE, cwtDate));
+		CWT_TEST_FAIL(dbh->bindTime(sth, 11, CwtType_TIME, cwtTime));
+		CWT_TEST_FAIL(dbh->bindTime(sth, 12, CwtType_DATETIME, cwtDateTime));
+		CWT_TEST_FAIL(dbh->bind(sth, 13, CwtType_TEXT, str_data, &str_length, FALSE));
+
+		/* insert first row */
+		sbyte_val   = CWT_SBYTE_MAX;
+		byte_val    = CWT_BYTE_MAX;
+		short_val   = CWT_SHORT_MAX;
+		ushort_val  = CWT_USHORT_MAX;
+		int_val     = CWT_INT_MAX;
+		uint_val    = CWT_UINT_MAX;
+		long_val    = CWT_LONG_MAX;
+		ulong_val   = CWT_ULONG_MAX;
+		llong_val   = CWT_LONGLONG_MAX;
+		ullong_val  = CWT_ULONGLONG_MAX;
+
+		cwtUtilsNS()->now(cwtDate);
+		cwtUtilsNS()->now(cwtTime);
+		cwtUtilsNS()->now(cwtDateTime);
 
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
@@ -212,10 +275,23 @@ int main(int argc, char *argv[])
 
 		CWT_TEST_OK(dbd->err(dbh) == 0);
 
+		/* insert second row */
 		str_data = dbd->encode(dbh, _T("—ъешь ещЄ этих м€гких французских булок"));
 		str_length = strlen(str_data);
 
-		CWT_TEST_FAIL(dbh->bind(sth, 2, CwtType_TEXT, str_data, &str_length, FALSE));
+		sbyte_val   = CWT_SBYTE_MIN;
+		byte_val    = 0;
+		short_val   = CWT_SHORT_MIN;
+		ushort_val  = 0;
+		int_val     = CWT_INT_MIN;
+		uint_val    = 0U;
+		long_val    = CWT_LONG_MIN;
+		ulong_val   = 0UL;
+		llong_val   = CWT_LONGLONG_MIN;
+		ullong_val  = 0ULL;
+
+		CWT_TEST_FAIL(dbh->bind(sth, 13, CwtType_TEXT, str_data, &str_length, FALSE));
+
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
 		CWT_FREE(str_data);
@@ -228,47 +304,83 @@ int main(int argc, char *argv[])
 		CWT_TEST_FAIL((sth = dbd->prepare(dbh, __sql_select)));
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->size(sth) == 2UL);
-		printf("Returned rows: %lu\n", dbh->size(sth));
+		/*printf("Returned rows: %lu\n", dbh->size(sth));*/
 
-		while( dbh->fetchNext(sth) ) {
-			;
-/*
-			INT int_val;
-			INT small_val;
-			char *varchars;
-			CWT_TIME date_val;
-			CWT_TIME time_val;
-			CWT_TIME datetime_val;
-			CWT_TIME timestamp_val;
-*/
+		{
+			CWT_UNITYPE sbyte_val;
+			CWT_UNITYPE byte_val;
+			CWT_UNITYPE short_val;
+			CWT_UNITYPE ushort_val;
+			CWT_UNITYPE int_val;
+			CWT_UNITYPE uint_val;
+			CWT_UNITYPE long_val;
+			CWT_UNITYPE ulong_val;
+			CWT_UNITYPE llong_val;
+			CWT_UNITYPE ullong_val;
+			CWT_UNITYPE date_val;
+			CWT_UNITYPE time_val;
+			CWT_UNITYPE dt_val;
 
+			CWT_TIME cwtTimeTmp;
 
-			/*
-				   col1 INT\
-				 , col2 SMALLINT\
-				 , col3 VARCHAR(100)\
-				 , col4 DATE\
-				 , col5 TIME\
-				 , col6 DATETIME\
-				 , col7 TIMESTAMP)");
-			*/
+			/* fetch first row */
+			CWT_TEST_FAIL( dbh->fetchNext(sth) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("sbyte_val"), &sbyte_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("byte_val"), &byte_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("short_val"), &short_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("ushort_val"), &ushort_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("int_val"), &int_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("uint_val"), &uint_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("long_val"), &long_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("ulong_val"), &ulong_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("llong_val"), &llong_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("ullong_val"), &ullong_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("date_val"), &date_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("time_val"), &time_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("dt_val"), &dt_val) );
+			CWT_TEST_OK(sbyte_val.data.sbyte_val == CWT_SBYTE_MAX);
+			CWT_TEST_OK(byte_val.data.byte_val == CWT_BYTE_MAX);
+			CWT_TEST_OK(short_val.data.short_val == CWT_SHORT_MAX);
+			CWT_TEST_OK(ushort_val.data.ushort_val == CWT_USHORT_MAX);
+			CWT_TEST_OK(int_val.data.int_val == CWT_INT_MAX);
+			CWT_TEST_OK(uint_val.data.uint_val == CWT_UINT_MAX);
+			CWT_TEST_OK(long_val.data.long_val == CWT_LONG_MAX);
+			CWT_TEST_OK(ulong_val.data.ulong_val == CWT_ULONG_MAX);
+			CWT_TEST_OK(llong_val.data.llong_val == CWT_LONGLONG_MAX);
+			CWT_TEST_OK(ullong_val.data.ullong_val == CWT_ULONGLONG_MAX);
 
-/*
-			dbh->fetchColumn(sth, _T("col1"), &int_val, NULL);
-			dbh->fetchColumn(sth, _T("col2"), &small_val, NULL);
-			dbh->fetchColumn(sth, _T("col3"), &varchars, NULL);
-			dbh->fetchColumn(sth, _T("col4"), &date_val, NULL);
-			dbh->fetchColumn(sth, _T("col5"), &time_val, NULL);
-			dbh->fetchColumn(sth, _T("col6"), &datetime_val, NULL);
-			dbh->fetchColumn(sth, _T("col7"), &timestamp_val, NULL);
-*/
+			dbd->convertTime(&cwtTimeTmp, date_val.data.ptr);
+			CWT_TEST_OK(cwtTimeTmp.year == cwtTime->year);
+			CWT_TEST_OK(cwtTimeTmp.mon == cwtTime->mon);
+			CWT_TEST_OK(cwtTimeTmp.day == cwtTime->day);
 
-/*
-			printf_debug(_T("int_val   = %d\n"), int_val);
-			printf_debug(_T("small_val = %d\n"), small_val);
-			printf_debug(_T("date_val  = %04u-%02u-%02u\n"), date_val.year, date_val.mon, date_val.day);
-*/
+			dbd->convertTime(&cwtTimeTmp, time_val.data.ptr);
+			dbd->convertTime(&cwtTimeTmp, dt_val.data.ptr);
 
+			/* fetch second row */
+			CWT_TEST_FAIL( dbh->fetchNext(sth) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("sbyte_val"), &sbyte_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("byte_val"), &byte_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("short_val"), &short_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("ushort_val"), &ushort_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("int_val"), &int_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("uint_val"), &uint_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("long_val"), &long_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("ulong_val"), &ulong_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("llong_val"), &llong_val) );
+			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("ullong_val"), &ullong_val) );
+			CWT_TEST_OK(sbyte_val.data.sbyte_val == CWT_SBYTE_MIN);
+			CWT_TEST_OK(byte_val.data.byte_val == 0);
+			CWT_TEST_OK(short_val.data.short_val == CWT_SHORT_MIN);
+			CWT_TEST_OK(ushort_val.data.ushort_val == 0);
+			CWT_TEST_OK(int_val.data.int_val == CWT_INT_MIN);
+			CWT_TEST_OK(uint_val.data.uint_val == 0);
+			CWT_TEST_OK(long_val.data.long_val == CWT_LONG_MIN);
+			CWT_TEST_OK(ulong_val.data.ulong_val == 0UL);
+			CWT_TEST_OK(llong_val.data.llong_val == CWT_LONGLONG_MIN);
+			CWT_TEST_OK(ullong_val.data.ullong_val == 0ULL);
+
+			CWT_TEST_NOK( dbh->fetchNext(sth) ); /* no more records */
 		}
 
 		dbh->close(sth);
@@ -279,11 +391,6 @@ int main(int argc, char *argv[])
 	}
 
 	CWT_TEST_OK(dbd->err(dbh) == 0);
-
-	{
-
-	}
-
 
 	dbd->disconnect(dbh);
 

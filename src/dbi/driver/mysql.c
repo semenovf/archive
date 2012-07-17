@@ -51,7 +51,8 @@ typedef struct CwtMySqlStatement {
 	MYSQL_RES    *meta;
 	MYSQL_BIND   *rbind_params;
 	size_t        nrbind_params;
-	HashTable    *res_map;
+	HashTable    *rbind_map;
+	HashTable    *meta_map;
 	CWT_CHAR     *errorstr;
 } CwtMySqlStatement;
 
@@ -97,6 +98,7 @@ static char*            __encode(CwtDBHandler *dbh, const CWT_CHAR *s);
 static CWT_CHAR*        __decode(CwtDBHandler *dbh, const char *s);
 static CWT_TIME*        __createTime(void);
 static void             __freeTime(CWT_TIME*);
+static void             __convertTime(CWT_TIME *cwtTime, void *nativeTime);
 static BOOL             __begin(CwtDBHandler *dbh);
 static BOOL             __commit(CwtDBHandler *dbh);
 static BOOL             __rollback(CwtDBHandler *dbh);
@@ -106,7 +108,7 @@ static BOOL             __stmtExecute(CwtStatement *sth);
 static ULONGLONG        __stmtAffectedRows(CwtStatement *sth);
 static ULONGLONG        __stmtNumRows(CwtStatement*);
 static BOOL             __stmtFetchNext(CwtStatement*);
-static BOOL             __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, void *value, BOOL *is_null);
+static BOOL             __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CWT_UNITYPE *value);
 static CwtDBI_RC        __stmtErr(CwtStatement *sth);
 static const CWT_CHAR*  __stmtStrerror(CwtStatement *sth);
 static BOOL             __stmtBind(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value, size_t *plength, BOOL is_null);
@@ -119,8 +121,8 @@ static BOOL             __mysqlIsBlob(int mysqltype);
 static BOOL             __mysqlIsInteger(int mysqltype);
 static BOOL             __mysqlIsTime(int mysqltype);
 static enum enum_field_types __toMysqlType(CwtTypeEnum cwtType);
+static CwtTypeEnum      __fromMysqlType( enum enum_field_types mysqlType, UINT field_flags);
 static BOOL             __isUnsigned(CwtTypeEnum cwtType);
-/*static CwtTypeEnum      __toCwtTypeId(enum enum_field_types mysqltype, uint flags);*/
 static void             __destroy(CwtMySqlDBHandler *dbh);
 static void             __stmtDestroy(CwtMySqlStatement *sth);
 static BOOL             __buildSqlCreateDB(CwtString *sql, CWT_CHAR *argv[]);
@@ -148,6 +150,7 @@ static CwtDBIDriver __cwtDBIDriver = {
 	, __decode
 	, __createTime
 	, __freeTime
+	, __convertTime
 	, __begin
     , __commit
     , __rollback
@@ -268,45 +271,45 @@ static BOOL __isUnsigned(CwtTypeEnum cwtType)
 	return is_unsigned;
 }
 
-#ifdef __COMMENT__
-static CwtTypeEnum __toCwtTypeId(enum enum_field_types mysqltype, uint flags)
+static CwtTypeEnum __fromMysqlType( enum enum_field_types mysqlType, UINT field_flags )
 {
-	CwtTypeEnum typeid;
-	switch( mysqltype ) {
+	CwtTypeEnum cwtType;
+
+	switch( mysqlType ) {
 	case MYSQL_TYPE_TINY:
-		typeid = (flags & UNSIGNED_FLAG) ? CwtType_BYTE : CwtType_SBYTE;
+		cwtType = field_flags & UNSIGNED_FLAG ? CwtType_BYTE : CwtType_SBYTE;
 		break;
 	case MYSQL_TYPE_SHORT:
-		typeid = (flags & UNSIGNED_FLAG) ? CwtType_USHORT : CwtType_SHORT;
+		cwtType = field_flags & UNSIGNED_FLAG ? CwtType_USHORT : CwtType_SHORT;
 		break;
 	case MYSQL_TYPE_INT24:
-		typeid = (flags & UNSIGNED_FLAG) ? CwtType_UINT : CwtType_INT;
+		cwtType = field_flags & UNSIGNED_FLAG ? CwtType_UINT : CwtType_INT;
 		break;
 	case MYSQL_TYPE_LONG:
-		typeid = (flags & UNSIGNED_FLAG) ? CwtType_ULONG : CwtType_LONG;
+		cwtType = field_flags & UNSIGNED_FLAG ? CwtType_ULONG : CwtType_LONG;
 		break;
     case MYSQL_TYPE_YEAR:
-    	typeid = CwtType_INT;
+    	cwtType = CwtType_INT;
         break;
     case MYSQL_TYPE_LONGLONG:
-    	typeid = (flags & UNSIGNED_FLAG) ? CwtType_ULONGLONG : CwtType_LONGLONG;
+    	cwtType = field_flags & UNSIGNED_FLAG ? CwtType_ULONGLONG : CwtType_LONGLONG;
         break;
     case MYSQL_TYPE_FLOAT:
     case MYSQL_TYPE_DOUBLE:
     case MYSQL_TYPE_DECIMAL:
     case MYSQL_TYPE_NEWDECIMAL:
-        typeid = CwtType_DOUBLE;
+        cwtType = CwtType_DOUBLE;
         break;
     case MYSQL_TYPE_DATE:
     case MYSQL_TYPE_NEWDATE:
-        typeid = CwtType_DATE;
+        cwtType = CwtType_DATE;
         break;
     case MYSQL_TYPE_TIME:
-    	typeid = CwtType_TIME;
+    	cwtType = CwtType_TIME;
         break;
     case MYSQL_TYPE_DATETIME:
     case MYSQL_TYPE_TIMESTAMP:
-    	typeid = CwtType_DATETIME;
+    	cwtType = CwtType_DATETIME;
         break;
     case MYSQL_TYPE_STRING:
     case MYSQL_TYPE_VAR_STRING:
@@ -314,7 +317,7 @@ static CwtTypeEnum __toCwtTypeId(enum enum_field_types mysqltype, uint flags)
     case MYSQL_TYPE_TINY_BLOB:
     case MYSQL_TYPE_MEDIUM_BLOB:
     case MYSQL_TYPE_LONG_BLOB:
-    	typeid = (flags & BINARY_FLAG) ? CwtType_BLOB : CwtType_TEXT;
+    	cwtType = field_flags & BINARY_FLAG ? CwtType_BLOB : CwtType_TEXT;
         break;
 
     default:
@@ -323,13 +326,12 @@ static CwtTypeEnum __toCwtTypeId(enum enum_field_types mysqltype, uint flags)
     case MYSQL_TYPE_VARCHAR:
     case MYSQL_TYPE_BIT:
     case MYSQL_TYPE_GEOMETRY:
-    	typeid = CwtType_STRING;
+    	cwtType = CwtType_TEXT;
         break;
 	}
 
-    return typeid;
+	return cwtType;
 }
-#endif
 
 
 static char* __encode(CwtDBHandler *dbh, const CWT_CHAR *s)
@@ -378,6 +380,19 @@ static void __freeTime(CWT_TIME *dt)
 	CWT_FREE(dt);
 }
 
+
+static void __convertTime(CWT_TIME *cwtTime, void *nativeTime)
+{
+	MYSQL_TIME *mysqlTime = (MYSQL_TIME*)nativeTime;
+
+	cwtTime->year     = mysqlTime->year;
+	cwtTime->mon      = mysqlTime->month;
+	cwtTime->day      = mysqlTime->day;
+	cwtTime->hour     = mysqlTime->hour;
+	cwtTime->min      = mysqlTime->minute;
+	cwtTime->sec      = mysqlTime->second;
+	cwtTime->sec_part = mysqlTime->second_part;
+}
 
 static int __realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR *stmt_str, size_t length)
 {
@@ -672,9 +687,7 @@ static void __stmtDestroy(CwtMySqlStatement *sth)
 				CWT_FREE(sth->rbind_params[i].length);
 				CWT_FREE(sth->rbind_params[i].error);
 
-				printf_debug(_T("Buffer dealocation: 0x%p [i=%u]"), sth->rbind_params[i].buffer, i);
-
-				/*FIXME HEAP CORRUPTION DETECTED */
+				/*printf_debug(_T("Buffer dealocation: 0x%p [i=%u]"), sth->rbind_params[i].buffer, i);*/
 				CWT_FREE(sth->rbind_params[i].buffer);
 			}
 			CWT_FREE(sth->rbind_params);
@@ -687,9 +700,13 @@ static void __stmtDestroy(CwtMySqlStatement *sth)
 			sth->meta = NULL;
 		}
 
-		if( sth->res_map ) {
-			hash_table_free(sth->res_map);
-			sth->res_map = NULL;
+		if( sth->rbind_map ) {
+			hash_table_free(sth->rbind_map);
+			sth->rbind_map = NULL;
+		}
+		if( sth->meta_map ) {
+			hash_table_free(sth->meta_map);
+			sth->meta_map = NULL;
 		}
 
 
@@ -1049,9 +1066,11 @@ static BOOL __queryBin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_t length)
 }
 
 /**
+ * @brief Prepares statement for execution
  *
- * @param dbh
- * @param statement
+ *
+ * @param dbh Database handle
+ * @param stmt_str
  * @return
  */
 static CwtStatement* __prepare(CwtDBHandler *dbh, const CWT_CHAR *stmt_str)
@@ -1075,6 +1094,7 @@ static CwtStatement* __prepare(CwtDBHandler *dbh, const CWT_CHAR *stmt_str)
 	if( mysql_stmt_prepare(stmt, stmt_str_, (ULONG)strlen(stmt_str_)) != 0 ) { /*FIXME type cast problems*/
 		printf_error(__LOG_PREFIX _Tr("failed to prepare statement: %s"), __cwtDBIDriver.strerror(dbh));
 		mysql_stmt_close(stmt);
+		CWT_FREE(stmt_str_);
 		return NULL;
 	}
 	CWT_FREE(stmt_str_);
@@ -1091,7 +1111,8 @@ static CwtStatement* __prepare(CwtDBHandler *dbh, const CWT_CHAR *stmt_str)
 	sth->rbind_params  = NULL;
 	sth->nrbind_params = 0;
 	sth->errorstr      = NULL;
-	sth->res_map       = NULL;
+	sth->rbind_map     = NULL;
+	sth->meta_map      = NULL;
 
 	if( sth->nbind_params > 0UL ) {
 		sth->bind_params = CWT_MALLOCA(MYSQL_BIND, sth->nbind_params);
@@ -1196,33 +1217,6 @@ static void __stmtClose(CwtStatement *sth)
 }
 
 
-/**
- * @brief Used to prepare bind input data for the parameter marker in the SQL statement.
- *
- * @param mysql_bind Target MYSQL_BIND value
- * @param type_id Value type
- * @param value Pointer to value
- * @param len Value buffer length. Not matter if value is a numeric.
- */
-
-
-/*
-static BOOL __stmtBindArray(CwtStatement *sth, CwtBindEntry bindArray[])
-{
-	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
-	size_t i;
-
-	CWT_ASSERT(sth);
-
-	for( i = 0; i < msth->m_nbind_params; i++ ) {
-		if( !__stmtBind(sth, i, bindArray[i].type_id, bindArray[i].value, bindArray[i].plength) )
-			return FALSE;
-	}
-
-	return TRUE;
-}
-*/
-
 /*
  * TODO
  *
@@ -1291,9 +1285,13 @@ static BOOL __stmtExecute(CwtStatement *sth)
 		strNS->bzero(msth->rbind_params, sizeof(MYSQL_BIND) * msth->nrbind_params);
 	}
 
-	if( msth->res_map ) {
-		hash_table_free(msth->res_map);
-		msth->res_map = NULL;
+	if( msth->rbind_map ) {
+		hash_table_free(msth->rbind_map);
+		msth->rbind_map = NULL;
+	}
+	if( msth->meta_map ) {
+		hash_table_free(msth->meta_map);
+		msth->meta_map = NULL;
 	}
 
 
@@ -1305,8 +1303,10 @@ static BOOL __stmtExecute(CwtStatement *sth)
 	if( msth->nrbind_params > 0 ) {
 		UINT i;
 
-		msth->res_map = hash_table_new(string_hash, string_equal);
-		hash_table_register_free_functions(msth->res_map, NULL/*cwtFree*/, NULL);
+		msth->rbind_map = hash_table_new(string_hash, string_equal);
+		msth->meta_map = hash_table_new(string_hash, string_equal);
+		hash_table_register_free_functions(msth->rbind_map, NULL/*cwtFree*/, NULL);
+		hash_table_register_free_functions(msth->meta_map, NULL/*cwtFree*/, NULL);
 
 		for( i = 0; i < msth->nrbind_params; i++ ) {
 			MYSQL_FIELD *field = mysql_fetch_field_direct(msth->meta, i);
@@ -1334,10 +1334,11 @@ static BOOL __stmtExecute(CwtStatement *sth)
 				msth->rbind_params[i].buffer = CWT_MALLOCA(char, field->length + 1);
 				strNS->bzero(msth->rbind_params[i].buffer, 0);
 
-				printf_debug(_T("Buffer allocated: 0x%p [i=%u][sz=%lu]"), msth->rbind_params[i].buffer, i, field->length + 1);
+				/*printf_debug(_T("Buffer allocated: 0x%p [i=%u][sz=%lu]"), msth->rbind_params[i].buffer, i, field->length + 1);*/
 			}
 
-			CWT_ASSERT(hash_table_insert(msth->res_map, field->name, &msth->rbind_params[i]));
+			CWT_ASSERT(hash_table_insert(msth->rbind_map, field->name, &msth->rbind_params[i]));
+			CWT_ASSERT(hash_table_insert(msth->meta_map,  field->name, field));
 
 		}
 
@@ -1411,46 +1412,117 @@ static BOOL __stmtFetchNext(CwtStatement *sth)
 		switch(rv) {
 		case 1: /*error*/
 			printf_error( __LOG_PREFIX _Tr("failed to fetch result: %s"), msth->dbh->strerror(sth));
-			break;
+			return FALSE;
 		case MYSQL_NO_DATA:
-			break;
+			return FALSE;
 		case MYSQL_DATA_TRUNCATED:
 			print_warn( __LOG_PREFIX _Tr("data truncated"));
 			break;
 		}
-		return FALSE;
 	}
-
 
 	return TRUE;
 }
 
-static BOOL __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, void *value, BOOL *is_null)
+static BOOL __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CWT_UNITYPE *value)
 {
 	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
-	/*CwtTypeEnum cwtType;*/
+	CwtTypeEnum cwtType;
 	MYSQL_BIND *rbind;
+	MYSQL_FIELD *field;
 	char *col_;
 
 	CWT_ASSERT(msth);
 	CWT_ASSERT(msth->stmt);
-	CWT_ASSERT(msth->res_map);
+	CWT_ASSERT(msth->rbind_map);
+	CWT_ASSERT(msth->meta_map);
 	CWT_ASSERT(value);
 
 	col_ = __encode(msth->dbh, col);
-	rbind = (MYSQL_BIND*)hash_table_lookup(msth->res_map, col_);
+	rbind = (MYSQL_BIND*)hash_table_lookup(msth->rbind_map, col_);
+	field = (MYSQL_FIELD*)hash_table_lookup(msth->meta_map, col_);
 	CWT_FREE(col_);
 
 	if( !rbind ) {
 		printf_error(_T("column '%s' not found"), col);
 		return FALSE;
 	}
+	CWT_ASSERT(field);
+
+
+	if( rbind->is_null && *rbind->is_null ) {
+		value->is_null = 1;
+		return TRUE;
+	} else {
+		value->is_null = 0;
+	}
+
+
+	cwtType  = __fromMysqlType(rbind->buffer_type, field->flags);
+	value->type = cwtType;
+
+	switch(cwtType) {
+		case CwtType_CHAR:
+			value->data.sbyte_val = *((char*)rbind->buffer);
+			break;
+		case CwtType_UCHAR:
+			value->data.byte_val = *((UCHAR*)rbind->buffer);
+			break;
+		case CwtType_SHORT:
+			value->data.short_val = *((SHORT*)rbind->buffer);
+			break;
+		case CwtType_USHORT:
+			value->data.ushort_val = *((USHORT*)rbind->buffer);
+			break;
+		case CwtType_INT:
+			value->data.int_val = *((INT*)rbind->buffer);
+			break;
+		case CwtType_UINT:
+			value->data.uint_val = *((UINT*)rbind->buffer);
+			break;
+		case CwtType_LONG:
+			value->data.long_val = *((LONG*)rbind->buffer);
+			break;
+		case CwtType_ULONG:
+			value->data.ulong_val = *((ULONG*)rbind->buffer);
+			break;
+		case CwtType_LONGLONG:
+			value->data.llong_val = *((LONGLONG*)rbind->buffer);
+			break;
+		case CwtType_ULONGLONG:
+			value->data.ullong_val = *((ULONGLONG*)rbind->buffer);
+			break;
+		case CwtType_FLOAT:
+			value->data.float_val = *((float*)rbind->buffer);
+			break;
+		case CwtType_DOUBLE:
+			value->data.double_val = *((double*)rbind->buffer);
+			break;
+
+		/* must be converted by convertTime function */
+		case CwtType_TIME:
+		case CwtType_DATE:
+		case CwtType_DATETIME:
+			value->data.ptr = rbind->buffer;
+			value->length   = *rbind->length;
+			break;
+
+		case CwtType_BLOB:
+			CWT_ASSERT(rbind->length);
+			value->data.ptr = rbind->buffer;
+			value->length   = *rbind->length;
+			break;
+
+		default:
+		case CwtType_TEXT:
+			CWT_ASSERT(rbind->length);
+			value->data.ptr = rbind->buffer;
+			value->length   = *rbind->length;
+			((char*)value->data.ptr)[value->length] = (char)0;
+			break;
+	}
 
 #ifdef __COMMENT__
-	cwtType = __toCwtTypeId(rbind->buffer_type, 0);
-
-	if( is_null )
-		*is_null = FALSE;
 
 	switch(cwtType) {
 	case CwtType_SBYTE:
@@ -1480,18 +1552,6 @@ static BOOL __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, void *value, BOO
     case CwtType_DATE:
     case CwtType_TIME:
     case CwtType_DATETIME: {
-    		MYSQL_TIME *mysqlTime = (MYSQL_TIME*)rbind->buffer;
-    		CWT_TIME *cwtTime = (CWT_TIME*)value;
-
-    		cwtTime->year = mysqlTime->year;
-    		cwtTime->mon  = mysqlTime->month;
-    		cwtTime->day  = mysqlTime->day;
-			cwtTime->hour = mysqlTime->hour;
-			cwtTime->min  = mysqlTime->minute;
-			cwtTime->sec  = mysqlTime->second;
-			cwtTime->sec_part = mysqlTime->second_part;
-		}
-        break;
 
     case CwtType_BLOB:
     	break;

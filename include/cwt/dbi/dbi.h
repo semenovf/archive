@@ -54,35 +54,7 @@ typedef enum CwtSqlTypeEnum {
 } CwtSqlTypeEnum;
 
 
-typedef enum CwtTypeEnum {
-	  CwtType_CHAR
-	, CwtType_SBYTE  = CwtType_CHAR
-	, CwtType_INT8   = CwtType_SBYTE
-	, CwtType_UCHAR
-	, CwtType_BYTE   = CwtType_UCHAR
-	, CwtType_UINT8  = CwtType_BYTE
-	, CwtType_SHORT
-	, CwtType_INT16  = CwtType_SHORT
-	, CwtType_USHORT
-	, CwtType_UINT16 = CwtType_USHORT
-	, CwtType_INT
-	, CwtType_INT32  = CwtType_INT
-	, CwtType_UINT
-	, CwtType_UINT32 = CwtType_UINT
-	, CwtType_LONG
-	, CwtType_ULONG
-	, CwtType_LONGLONG
-	, CwtType_INT64  = CwtType_LONGLONG
-	, CwtType_ULONGLONG
-	, CwtType_UINT64 = CwtType_ULONGLONG
-	, CwtType_FLOAT
-	, CwtType_DOUBLE
-	, CwtType_TEXT
-	, CwtType_BLOB
-	, CwtType_TIME
-	, CwtType_DATE
-	, CwtType_DATETIME
-} CwtTypeEnum;
+
 
 #define CWT_TYPEID_IS_NUMBER(tid) (((tid) >= CwtType_CHAR && (tid) < CwtType_TEXT) ? TRUE : FALSE)
 
@@ -103,7 +75,7 @@ typedef struct CwtDBHandler {
 	ULONGLONG       (*rows)          (CwtStatement*);
 	ULONGLONG       (*size)          (CwtStatement*);
 	BOOL            (*fetchNext)     (CwtStatement*);
-	BOOL            (*fetchColumn)   (CwtStatement*, CWT_CHAR *col, void *value, BOOL *is_null);
+	BOOL            (*fetchColumn)   (CwtStatement*, CWT_CHAR *col, CWT_UNITYPE *value);
 } CwtDBHandler;
 
 typedef struct CwtDBIDriver
@@ -126,6 +98,7 @@ typedef struct CwtDBIDriver
 	CWT_CHAR*       (*decode)        (CwtDBHandler*, const char *s);
 	CWT_TIME*       (*createTime)    (void);
 	void            (*freeTime)      (CWT_TIME*);
+	void            (*convertTime)   (CWT_TIME *cwtTime, void *nativeTime);
 	BOOL            (*begin)         (CwtDBHandler*); /* begin transaction */
 	BOOL            (*commit)        (CwtDBHandler*);
 	BOOL            (*rollback)      (CwtDBHandler*);

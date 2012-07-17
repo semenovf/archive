@@ -61,6 +61,63 @@ typedef struct CWT_TIME {
 	ULONG sec_part;
 } CWT_TIME;
 
+
+
+typedef enum CwtTypeEnum {
+	  CwtType_CHAR
+	, CwtType_SBYTE  = CwtType_CHAR
+	, CwtType_INT8   = CwtType_SBYTE
+	, CwtType_UCHAR
+	, CwtType_BYTE   = CwtType_UCHAR
+	, CwtType_UINT8  = CwtType_BYTE
+	, CwtType_SHORT
+	, CwtType_INT16  = CwtType_SHORT
+	, CwtType_USHORT
+	, CwtType_UINT16 = CwtType_USHORT
+	, CwtType_INT
+	, CwtType_INT32  = CwtType_INT
+	, CwtType_UINT
+	, CwtType_UINT32 = CwtType_UINT
+	, CwtType_LONG
+	, CwtType_ULONG
+	, CwtType_LONGLONG
+	, CwtType_INT64  = CwtType_LONGLONG
+	, CwtType_ULONGLONG
+	, CwtType_UINT64 = CwtType_ULONGLONG
+	, CwtType_FLOAT
+	, CwtType_DOUBLE
+	, CwtType_TEXT
+	, CwtType_BLOB
+	, CwtType_TIME
+	, CwtType_DATE
+	, CwtType_DATETIME
+	, CwtType_CWT_CHAR
+	, CwtType_CWT_STRING
+	, CwtType_BOOL
+} CwtTypeEnum;
+
+typedef struct CWT_UNITYPE {
+	union data {
+        SBYTE     sbyte_val;
+        BYTE      byte_val;
+        SHORT     short_val;
+        USHORT    ushort_val;
+        INT       int_val;
+        UINT      uint_val;
+        LONG      long_val;
+        ULONG     ulong_val;
+        LONGLONG  llong_val;
+        ULONGLONG ullong_val;
+        BOOL      bool_val;
+        double    double_val;
+        float     float_val;
+        void     *ptr;
+	} data;
+    UINT type    : 31;
+    UINT is_null : 1;
+    UINT length;
+} CWT_UNITYPE;
+
 #if !(defined(_SIZE_T_DEFINED) || defined(__DJ_size_t) )
 	typedef unsigned int size_t;
 #	define _SIZE_T_DEFINED
