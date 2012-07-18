@@ -8,6 +8,8 @@ OBJECTS_DIR = $$CWT_CONFIG/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU
 unix {
 
 # CXX flags
+    QMAKE_CFLAGS += -O0
+#     -Werror
     QMAKE_CXXFLAGS += -O0
 
 # linker flags

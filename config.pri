@@ -11,10 +11,11 @@ CWT_TARGET_CPU=$$(CWT_TARGET_CPU)
 isEmpty(CWT_CONFIG) { CWT_CONFIG = debug }
 
 #
-# TARGET_PLATFOEM variable is set in WinSDK's SetEnv
+# TARGET_PLATFORM variable is set in WinSDK's SetEnv
 #
 isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=$$(TARGET_PLATFORM) }
-isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=win7 }
+win32: isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=win7 }
+unix: isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=linux }
 
 #
 # TARGET_CPU variable is set in WinSDK's SetEnv
@@ -22,6 +23,9 @@ isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=win7 }
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=$$(TARGET_CPU) }
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=x86 }
 
+# qmake internal variables
+QT=
+QMAKE_LINK = $$QMAKE_LINK_C
 CONFIG = $$CWT_CONFIG
 CONFIG += warn_on
 CONFIG += $$CWT_TARGET_CPU
@@ -29,7 +33,7 @@ CONFIG += $$CWT_TARGET_PLATFORM
 
 DEFINES += CWT_LANG=ru
 DEFINES += CWT_TARGET_PLATFORM=$$CWT_TARGET_PLATFORM
-unix: CWT_ROOT_DIR = $$HOME/projects
+unix: CWT_ROOT_DIR = $$(HOME)/ws
 win32: CWT_ROOT_DIR = \
 
 unix {
@@ -46,6 +50,8 @@ win32 {
 
 
 message(Target Platform: $${CWT_TARGET_PLATFORM})
-message(Target CPU     : $${CWT_TARGET_CPU})
-message(Configuration  : $${CWT_CONFIG})
+message(Target CPU      : $${CWT_TARGET_CPU})
+message(Configuration   : $${CWT_CONFIG})
+message(Workspace folder: $${CWT_ROOT_DIR})
+#message(qmake CONFIG   : ${CONFIG})
 message(Processed config.pri)
