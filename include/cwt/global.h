@@ -20,6 +20,11 @@
 #	define CWT_OS_WIN
 #endif
 
+/* GNU C compiler */
+#ifdef __GNUC__
+#	define CWT_CC_GNUC
+#endif
+
 #if defined(MSDOS) || defined(__MSDOS__) || defined(_MSDOS) || defined(__DOS__)
 #	define CWT_OS_DOS
 #endif
@@ -135,7 +140,7 @@
 #	define __interrupt__ void
 #endif
 
-/* Признак строки, поддерживающей i18n */
+/* я┐╜ризя┐╜я┐╜я┐╜ я┐╜я┐╜рокя┐╜, я┐╜я┐╜я┐╜я┐╜я┐╜ржия┐╜я┐╜я┐╜щей i18n */
 #if 0
 #ifdef CWT_USE_GNU_GETTEXT
 #	include <libintl.h>

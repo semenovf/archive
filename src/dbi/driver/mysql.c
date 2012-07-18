@@ -5,10 +5,10 @@
  *      Author: wladt
  */
 
-#include <cwt/dbi/dbi.h>
 #include <mysql/my_global.h>
 #include <mysql/my_sys.h>
 #include <mysql/mysql.h>
+#include <cwt/dbi/dbi.h>
 #include <cwt/algo/hash_tab.h>
 #include <cwt/algo/hash_str.h>
 #include <cwt/algo/cmp_str.h>
@@ -33,6 +33,7 @@
 #include <cwt/string.h>
 #include <cwt/strlist.h>
 #include <cwt/str.h>
+#include <string.h>
 
 
 #define __LOG_PREFIX _T("mysql: ")
@@ -396,7 +397,6 @@ static void __convertTime(CWT_TIME *cwtTime, void *nativeTime)
 
 static int __realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR *stmt_str, size_t length)
 {
-	CwtStrNS *strNS = cwtStrNS();
 	char *stmt_str_;
 	int rc;
 
@@ -404,7 +404,7 @@ static int __realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR *stmt_str, size_t 
 	CWT_ASSERT(dbh->conn);
 
 	stmt_str_ = __cwtDBIDriver.encode((CwtDBHandler*)dbh, stmt_str);
-	rc = mysql_real_query(dbh->conn, stmt_str_, (ULONG)strlen(stmt_str_));
+	rc = mysql_real_query(dbh->conn, stmt_str_, (ULONG)length/*strlen(stmt_str_)*/);
 	CWT_FREE(stmt_str_);
 
 	return rc;
@@ -809,7 +809,7 @@ static BOOL __func(CwtDBHandler *dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[
 
 	CwtString *sql;
 	BOOL rv = FALSE;
-	BOOL usage = FALSE;
+	/*BOOL usage = FALSE;*/
 
 	CWT_ASSERT(dbh);
 	CWT_ASSERT(argv);
@@ -1640,7 +1640,7 @@ static BOOL __stmtBind(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, voi
 
 static BOOL __stmtBindScalar(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value)
 {
-	CWT_ASSERT(CWT_TYPEID_IS_NUMBER(cwtType));
+	CWT_ASSERT(CWT_IS_SCALAR(cwtType));
 	return __stmtBind(sth, index, cwtType, value, NULL, FALSE);
 }
 

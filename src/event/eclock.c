@@ -6,6 +6,7 @@
  */
 
 
+#include <string.h>
 #include <cwt/event/clock.h>
 #include <time.h>
 #include <cwt/string.h>
@@ -36,7 +37,14 @@ static CwtStack __cwt_evt_date_handlers = { NULL };
 static void     __cwtEventClockPoll(void);
 
 static CwtEventSource __cwt_evt_clock_source = { __cwtEventClockPoll };
-static struct tm __tm = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static struct tm __tm = {
+	0, 0, 0, 0, 0, 0, 0, 0
+#ifdef CWT_CC_GNUC
+	, 0     /* tm_isdst - DST.[-1/0/1] */
+	, 0L    /* long int tm_gmtoff - Seconds east of UTC */
+	, NULL  /* __const char *tm_zone */
+#endif
+};
 
 CwtEventSourcePtr cwtEventClockSource(void)
 {
@@ -137,7 +145,7 @@ void cwtEventPostClockDate(int day, int mon, int year)
 
 
 /**
- * ˆ­¨æ¨¨àã¥â £¥­¥à æ¨î á®¡¨â¨© ®â ç á®¢
+ * ï¿½ï¿½ï¿½æ¨¨ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ á®¡ï¿½â¨© ï¿½ï¿½ ï¿½á®¢
  *
  */
 void cwtEventClockRefresh(void)

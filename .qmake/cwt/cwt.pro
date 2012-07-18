@@ -1,4 +1,5 @@
-include(/qmake/common-dll.pri)
+win32: include(/qmake/common-dll.pri)
+unix: include($$(HOME)/ws/qmake/common-dll.pri)
 
 TARGET = cwt
 
@@ -21,6 +22,8 @@ unix {
     SOURCES += ../../src/algo/*.c
     SOURCES += ../../src/event/*.c
     SOURCES += ../../src/io/*.c
+    SOURCES += ../../src/io/serial/*.c
+    SOURCES += ../../src/io/serial/linux/*.c
     SOURCES += ../../src/stylex/*.c
     SOURCES += ../../src/dbi/*.c
 #    SOURCES += ../../src/net/*.c

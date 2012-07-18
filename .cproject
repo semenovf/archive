@@ -7,7 +7,8 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.base.1495917659" moduleId="org.eclipse.cdt.core.settings" name="Default">
 				<externalSettings/>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.PE" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -20,28 +21,26 @@
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 				<configuration artifactName="cwt" buildProperties="" description="" errorParsers="org.eclipse.cdt.core.VCErrorParser;org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.CWDLocator;org.eclipse.cdt.autotools.core.ErrorParser;org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.toolchain.gnu.base.1495917659" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1495917659.1898899449" name="/" resourcePath="">
-						<toolChain errorParsers="" id="org.eclipse.cdt.msvc.toolchain.dll.debug.1409010931" name="Microsoft Visual C++" superClass="org.eclipse.cdt.msvc.toolchain.dll.debug">
-							<targetPlatform id="org.eclipse.cdt.msvc.targetPlatform.dll.debug.37498754" superClass="org.eclipse.cdt.msvc.targetPlatform.dll.debug"/>
-							<builder buildPath="${workspace_loc:/cwt/.qmake}" command="\qmake\make.cmd" errorParsers="org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.CWDLocator" id="cdt.managedbuild.builder.gnu.cross.201735806" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
-							<tool errorParsers="org.eclipse.cdt.core.VCErrorParser" id="org.eclipse.cdt.msvc.cl.c.dll.debug.75798032" name="C Compiler (cl)" superClass="org.eclipse.cdt.msvc.cl.c.dll.debug">
-								<option id="org.eclipse.cdt.msvc.cl.option.includes.509587028" name="Include Path (/I)" superClass="org.eclipse.cdt.msvc.cl.option.includes" valueType="includePath">
+						<toolChain id="org.eclipse.linuxtools.cdt.autotools.core.toolChain.1453199114" name="GNU Autotools Toolchain" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolChain">
+							<targetPlatform id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.targetPlatform.904534597" isAbstract="false" name="GNU Autotools Target Platform" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.targetPlatform"/>
+							<builder buildPath="${workspace_loc:/cwt/.qmake}" cleanBuildTarget="clean" id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.builder.1036320784" keepEnvironmentInBuildfile="false" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.builder"/>
+							<tool id="org.eclipse.linuxtools.cdt.autotools.core.gnu.toolchain.tool.configure.298392185" name="configure" superClass="org.eclipse.linuxtools.cdt.autotools.core.gnu.toolchain.tool.configure">
+								<option id="org.eclipse.linuxtools.cdt.autotools.core.option.configure.name.585326151" name="Name" superClass="org.eclipse.linuxtools.cdt.autotools.core.option.configure.name" value="cdt.managedbuild.toolchain.gnu.base.1495917659" valueType="string"/>
+							</tool>
+							<tool id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.autogen.1639817760" name="autogen.sh" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.autogen"/>
+							<tool id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gcc.663549803" name="GCC C Compiler" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gcc">
+								<option id="gnu.c.compiler.option.include.paths.1775753798" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="W:/include"/>
+									<listOptionValue builtIn="false" value="/home/wladt/ws/include"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.560936569" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gpp.730205529" name="GCC C++ Compiler" superClass="org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gpp">
+								<option id="gnu.cpp.compiler.option.include.paths.365520730" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="W:/include"/>
 								</option>
-								<inputType id="org.eclipse.cdt.msvc.cl.inputType.c.1166233525" superClass="org.eclipse.cdt.msvc.cl.inputType.c"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1329094525" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
-							<tool errorParsers="org.eclipse.cdt.core.VCErrorParser" id="org.eclipse.cdt.msvc.cl.dll.debug.2079937549" name="C++ Compiler (cl)" superClass="org.eclipse.cdt.msvc.cl.dll.debug">
-								<option id="org.eclipse.cdt.msvc.cl.option.includes.389062629" name="Include Path (/I)" superClass="org.eclipse.cdt.msvc.cl.option.includes" valueType="includePath">
-									<listOptionValue builtIn="false" value="W:/include"/>
-								</option>
-								<inputType id="org.eclipse.cdt.msvc.cl.inputType.1335630352" superClass="org.eclipse.cdt.msvc.cl.inputType"/>
-							</tool>
-							<tool errorParsers="org.eclipse.cdt.core.VCErrorParser" id="org.eclipse.cdt.msvc.rc.dll.debug.2089816114" name="Resource Compiler (rc)" superClass="org.eclipse.cdt.msvc.rc.dll.debug">
-								<inputType id="org.eclipse.cdt.msvc.rc.inputType.2000722318" superClass="org.eclipse.cdt.msvc.rc.inputType"/>
-							</tool>
-							<tool errorParsers="org.eclipse.cdt.core.VCErrorParser" id="org.eclipse.cdt.msvc.link.dll.debug.58457986" name="Linker (link)" superClass="org.eclipse.cdt.msvc.link.dll.debug">
-								<inputType id="org.eclipse.cdt.msvc.link.inputType.422651111" superClass="org.eclipse.cdt.msvc.link.inputType"/>
-							</tool>
-							<tool id="org.eclipse.cdt.msvc.lib.1617585077" name="Library Manager (lib)" superClass="org.eclipse.cdt.msvc.lib"/>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
@@ -66,9 +65,15 @@
 		</doc-comment-owner>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+		<buildTargets/>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1495917659;cdt.managedbuild.toolchain.gnu.base.1495917659.1898899449;cdt.managedbuild.tool.gnu.c.compiler.base.1605715409;cdt.managedbuild.tool.gnu.c.compiler.input.1561303633">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1495917659;cdt.managedbuild.toolchain.gnu.base.1495917659.1898899449;org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gcc.663549803;cdt.managedbuild.tool.gnu.c.compiler.input.560936569">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1495917659;cdt.managedbuild.toolchain.gnu.base.1495917659.1898899449;org.eclipse.cdt.msvc.cl.c.dll.debug.75798032;org.eclipse.cdt.msvc.cl.inputType.c.1166233525">
@@ -80,14 +85,14 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1495917659;cdt.managedbuild.toolchain.gnu.base.1495917659.1898899449;org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gcc.1646448481;cdt.managedbuild.tool.gnu.c.compiler.input.1310394654">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1495917659;cdt.managedbuild.toolchain.gnu.base.1495917659.1898899449;org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gpp.730205529;cdt.managedbuild.tool.gnu.cpp.compiler.input.1329094525">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1495917659;cdt.managedbuild.toolchain.gnu.base.1495917659.1898899449;org.eclipse.linuxtools.cdt.autotools.core.toolchain.tool.gpp.181147701;cdt.managedbuild.tool.gnu.cpp.compiler.input.631492811">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1495917659;cdt.managedbuild.toolchain.gnu.base.1495917659.1898899449;org.eclipse.cdt.msvc.cl.dll.debug.2079937549;org.eclipse.cdt.msvc.cl.inputType.1335630352">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.msw.build.clScannerInfo"/>
 		</scannerConfigBuildInfo>
-	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
-		<buildTargets/>
 	</storageModule>
 </cproject>

@@ -6,7 +6,7 @@
  */
 #include <cwt/net/inet.h>
 
-#error Is not implemeted yet
+/*#error Is not implemeted yet*/
 
 
 

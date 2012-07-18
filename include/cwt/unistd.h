@@ -10,8 +10,11 @@
 
 #include <cwt/types.h>
 
-#ifdef __GNUC__
+#ifdef CWT_CC_GNUC
 #	include <unistd.h>
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#	include <fcntl.h>
 #else
 #	include <io.h>
 #	if defined(CWT_OS_DOS)
@@ -26,7 +29,9 @@ typedef struct CwtUnistdNS {
 	INT  (*read)     (int fd, void *buffer, UINT count );
 	INT  (*write)    (int fd, const void *buffer, UINT count );
 	LONG (*lseek)    (int fd, LONG offset, INT origin);
+#ifdef __SUPPORT_SHARING__
 	INT  (*sopen)    (const CWT_CHAR *filename, INT oflag, INT shflag, ...);
+#endif
 
 	void (*sleep)(UINT sec);
 	void (*msleep)(UINT msec);

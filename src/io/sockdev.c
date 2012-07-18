@@ -15,16 +15,22 @@
 #include <cwt/logger.h>
 #include <cwt/str.h>
 #include <cwt/io/sockdev.h>
+#include <string.h> /* TODO include after <cwt/str.h> to avoid function/methods conflicts */
 
 #if defined(CWT_CC_MSC)
 #	include <winsock2.h>
 #	include <ws2tcpip.h>
 #	define __sockdev_errno WSAGetLastError()
 #	define __closesocket closesocket
-#elif defined(CWT_OS_UNIX)
+#elif defined(CWT_CC_GNUC)
+#	include <sys/ioctl.h>
 #	include <sys/socket.h>
-#	error __sockdev_errno must be defined
+#	include <netinet/in.h>
+#	include <arpa/inet.h>
+#	define __sockdev_errno errno
 #	define __closesocket CWT_ISO_CPP_NAME(close)
+    typedef int SOCKET;
+	typedef struct sockaddr SOCKADDR;
 #else
 #	error "Not implemented"
 #endif

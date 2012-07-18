@@ -35,8 +35,9 @@ void set_printer(LOGGER_TYPE type
 		LOGGER_CONTEXT[type].prefix = NULL;
 	}
 
-	if( prefix )
+	if( prefix ) {
 		LOGGER_CONTEXT[type].prefix = cwtStrNS()->strdup(prefix);
+	}
 
 	if( !LOGGER_CONTEXT[type].sbuf ) {
 		LOGGER_CONTEXT[type].sbuf = cwtStringNS()->create();

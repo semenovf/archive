@@ -53,14 +53,8 @@ typedef enum CwtSqlTypeEnum {
 	, CwtSql_BIT
 } CwtSqlTypeEnum;
 
-
-
-
-#define CWT_TYPEID_IS_NUMBER(tid) (((tid) >= CwtType_CHAR && (tid) < CwtType_TEXT) ? TRUE : FALSE)
-
-
 typedef struct CwtStatement {
-	CHAR unused;
+	char unused;
 } CwtStatement;
 
 typedef struct CwtDBHandler {

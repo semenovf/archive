@@ -99,14 +99,14 @@ static INT64 __crc64_lookup_table[] = {
 
 /**
  * @brief Calculates the CRC64 checksum for the given array of bytes
- *        using табличного алгоритма crc64 с полиномом x^64 + x^4 + x^3 + x + 1.
+ *        using табя┐╜я┐╜чноя┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜тма crc64 я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ x^64 + x^4 + x^3 + x + 1.
  *
  * @param pdata data for checksum calculation
  * @param nbytes data length in bytes
  * @param crc64 initial value for checksum
  * @return CRC64 checksum value
  *
- * @see Пояснительная записка ЕРКФ.466535.003 ПЗ
+ * @see я┐╜я┐╜я┐╜снительная┐╜ я┐╜я┐╜я┐╜я┐╜ска я┐╜я┐╜я┐╜я┐╜.466535.003 я┐╜я┐╜
  * @see http://en.wikipedia.org/wiki/Cyclic_redundancy_check
  */
 /*
@@ -149,12 +149,12 @@ DLL_API_EXPORT void cwt_test_crc64(void)
 {
 	int i;
 	INT64 tab[256];
-	CHAR teststr[256];
+	char teststr[256];
 
 	__cwtCrc64GenLookupTable(tab);
 
 	for( i = 0; i < 256; i++ ) {
-		sprintf(teststr, "Element %d in static crc64_lookup_table[%d] == generated_table[%d]", i, i);
+		sprintf(teststr, "Element %d in static crc64_lookup_table[%d] == generated_table[%d]", i, i, i);
 		CWT_TEST_OK2(__crc64_lookup_table[i] == tab[i], "teststr");
 	}
 }

@@ -6,7 +6,6 @@
  */
 
 
-#include <string.h>
 #include <cwt/string.h>
 #include <cwt/strlist.h>
 #include <cwt/str.h>

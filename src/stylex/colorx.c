@@ -217,11 +217,11 @@ Cwt_Color cwt_stylex_colorByName(const CWT_CHAR *name)
 
 
 /**
- * ‚ë¯®«­ï¥â à §¡®à áâà®ª¨, ®¯à¥¤¥«ïîé¨¥© æ¢¥â
+ * ï¿½ë¯®ï¿½ï¿½ï¿½ï¿½ à §ï¿½ï¿½ï¿½ ï¿½ï¿½à®ªï¿½, ï¿½ï¿½à¥¤ï¿½ï¿½ï¿½ï¿½é¨¥ï¿½ æ¢¥ï¿½
  *
- * ‘âà®ª , ®¯à¥¤¥«ïîé ï æ¢¥â ¨¬¥¥â ¢¨¤:
- *   - '#'RRGGBB (£¤¥ R, G ¨ B è¥áâ­ ¤æ â¨à¨ç­ë¥ ç¨á« )
- *   - ­ §¢ ­¨¥, ­ ¯à¨¬¥à, "blue", "red", "green" ¨ â.¤.
+ * ï¿½ï¿½à®ªï¿½, ï¿½ï¿½à¥¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ æ¢¥ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½:
+ *   - '#'RRGGBB (ï¿½ï¿½ï¿½ R, G ï¿½ B ï¿½ï¿½â­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½á« )
+ *   - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½à¨¬ï¿½ï¿½, "blue", "red", "green" ï¿½ ï¿½.ï¿½.
  *
  *
  * @param str
@@ -232,7 +232,7 @@ BOOL cwt_stylex_parseColor(const CWT_CHAR *str, Cwt_Color *pcolor)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	BOOL ok = FALSE;
-	Cwt_Color color;
+	Cwt_Color color = (Cwt_Color)0;
 
 	if( str && strNS->strlen(str) > 0 ) {
 		if( *str == _T('#') ) {

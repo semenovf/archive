@@ -13,6 +13,7 @@
 #include <cwt/stdio.h>
 #include <cwt/utils.h>
 #include <cwt/dbi/dbi.h>
+#include <string.h>
 
 static const CWT_CHAR *__username = _T("root");
 static const CWT_CHAR *__password = _T("rdflhfnehf");
@@ -269,7 +270,7 @@ int main(int argc, char *argv[])
 		CWT_TEST_OK(dbd->err(dbh) == 0);
 
 		/* insert second row */
-		str_data = dbd->encode(dbh, _T("Съешь ещё этих мягких французских булок"));
+		str_data = dbd->encode(dbh, _T("пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ"));
 		str_length = strlen(str_data);
 
 		sbyte_val   = CWT_SBYTE_MIN;

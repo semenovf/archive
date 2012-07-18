@@ -3,6 +3,7 @@
 #include <cwt/test.h>
 #include <cwt/utils.h>
 #include <cwt/str.h>
+#include <string.h>
 
 extern void cwt_test_crc64(void);
 

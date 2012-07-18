@@ -12,11 +12,13 @@
 #include <cwt/str.h>
 #include <cwt/string.h>
 
+/*
 #define _cwtStrtoul strtoul
 #define _cwtStrtol  strtol
+*/
 
 #define __CWT_STR_TO_LONGTYPE(_LongType,_strToLongFunc,_maxLong,_minLong) \
-DLL_API_EXPORT _LongType __to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) { \
+DLL_API_EXPORT _LongType __cwt_to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) { \
 	_LongType val;                                                            \
 	CWT_CHAR *endptr;                                                         \
 	CwtStrNS* strNS = cwtStrNS();                                             \
@@ -56,11 +58,10 @@ DLL_API_EXPORT _LongType __to##_LongType(const CWT_CHAR *str, int radix, BOOL *o
 
 
 #define __CWT_STR_TO_INTTYPE(_IntType,_LongType,_maxInt,_minInt)              \
-DLL_API_EXPORT _IntType __to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {\
+DLL_API_EXPORT _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {\
 	BOOL okk = TRUE;                                                          \
 	CwtStrNS* strNS = cwtStrNS();                                             \
 	_LongType val = strNS->to##_LongType(str, radix, &okk);                   \
-                                                                              \
 	if( !okk || val > _maxInt || val < _minInt ) {                            \
 		okk = FALSE;                                                          \
 	}                                                                         \

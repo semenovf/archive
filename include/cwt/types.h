@@ -5,6 +5,10 @@
 #include <cwt/global.h>
 
 #ifndef _WINDEF_
+#	ifdef TRUE
+#		undef TRUE
+#		undef FALSE
+#	endif
 	typedef enum BOOL { FALSE, TRUE } BOOL;
 #endif
 
@@ -19,6 +23,7 @@
 #	include <wctype.h>
 	typedef wchar_t 		   CWT_CHAR;
 #else
+#	include <ctype.h>
 	typedef char 		       CWT_CHAR;
 #endif
 
@@ -40,8 +45,13 @@ typedef char*                  TEXT;
 	typedef unsigned char      UINT8;
 	typedef short int          INT16;
 	typedef unsigned short int UINT16;
+#ifdef CWT_OS_DOS
 	typedef long               INT32;
 	typedef unsigned long      UINT32;
+#else
+	typedef int                INT32;
+	typedef unsigned int       UINT32;
+#endif
 	typedef long long          INT64;
 	typedef unsigned long long UINT64;
 #endif
@@ -64,7 +74,9 @@ typedef struct CWT_TIME {
 
 
 typedef enum CwtTypeEnum {
-	  CwtType_CHAR
+	  CwtType_BOOL
+	, CwtType_CHAR
+	, CwtType_CWT_CHAR
 	, CwtType_SBYTE  = CwtType_CHAR
 	, CwtType_INT8   = CwtType_SBYTE
 	, CwtType_UCHAR
@@ -91,10 +103,10 @@ typedef enum CwtTypeEnum {
 	, CwtType_TIME
 	, CwtType_DATE
 	, CwtType_DATETIME
-	, CwtType_CWT_CHAR
 	, CwtType_CWT_STRING
-	, CwtType_BOOL
 } CwtTypeEnum;
+
+#define CWT_IS_SCALAR(tid) ((((int)(tid)) >= CwtType_BOOL && (tid) < CwtType_TEXT) ? TRUE : FALSE)
 
 typedef struct CWT_UNITYPE {
 	union data {
@@ -124,13 +136,13 @@ typedef struct CWT_UNITYPE {
 #	define __DJ_size_t
 #endif
 
-#if !(defined(_SSIZE_T_DEFINED) || defined(__DJ_ssize_t))
+#if !(defined(_SSIZE_T_DEFINED) || defined(__DJ_ssize_t) || defined(__ssize_t_defined) )
 	typedef long int ssize_t;
 #define 	_SSIZE_T_DEFINED
 #define 	__DJ_ssize_t
 #endif
 
-#ifndef CWT_CC_WATCOM
+#if !( defined(CWT_CC_WATCOM) || defined(__off_t_defined) )
 	typedef ssize_t off_t;
 #endif
 

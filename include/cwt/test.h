@@ -76,7 +76,7 @@ EXTERN_C_END
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
 		__cwtTestContextPtr__->m_failed_tests++;					          \
 		printf("TEST[%03u]: %s => failed at %s:%d\n"                          \
-			, ++__cwtTestContextPtr__->m_run_tests, desc __FILE__, __LINE__); \
+			, ++__cwtTestContextPtr__->m_run_tests, desc, __FILE__, __LINE__); \
 	}
 
 

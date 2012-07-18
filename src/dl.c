@@ -41,7 +41,7 @@ DlHandle __open( const CWT_CHAR *path, BOOL global, BOOL resolve )
 #else
 	dlerror(); // clear error
 	h = dlopen( path, (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ) );
-	if( !m_handle ) {
+	if( !h ) {
 		printf_error( _Tr("%s: failed to open dynamic library: %s"), path, dlerror() );
 	}
 #endif
@@ -63,7 +63,7 @@ static DlSymbol __symbol(DlHandle h, const char *sym_name)
 	}
 #else
 	dlerror(); /*clear error*/
-	DlSymbol sym = dlsym( h, sym_name );
+	sym = dlsym( h, sym_name );
 	if( !sym ) {
 		printf_error(_Tr("%s: symbol not found: error code=%lu"), sym_name, dlerror());
 	}

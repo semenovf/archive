@@ -1,4 +1,7 @@
-include(/qmake/common-app.pri)
+win32: include(/qmake/common-app.pri)
+unix: include($$(HOME)/ws/qmake/common-app.pri)
+
+
 
 TARGET = test_dbi_mysql
 

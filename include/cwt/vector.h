@@ -65,7 +65,7 @@ typedef struct _NS {                                                          \
 	static BOOL          __isEmpty     (_CollectionT* p);                     \
 	static void          __clear       (_CollectionT* p);                     \
 	static size_t        __size        (_CollectionT* p);                     \
-	static size_t        __length      (_CollectionT* p);                     \
+	/*static size_t        __length      (_CollectionT* p);*/                 \
 	static void          __appendElem  (_CollectionT* p, _ElemT ch);          \
 	static void          __appendElems (_CollectionT* p, const _ElemT *elems, size_t n); \
 	static void          __prependElem (_CollectionT* p, _ElemT ch);          \

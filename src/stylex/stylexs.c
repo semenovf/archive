@@ -147,7 +147,7 @@ static BOOL __parseString(const CWT_CHAR *str, void *pval)
 		return FALSE;
 
 	if( pval )
-		(CWT_CHAR*)pval = cwtStrNS()->strdup(str);
+		*((CWT_CHAR**)pval) = cwtStrNS()->strdup(str);
 
 	return TRUE;
 }
@@ -246,7 +246,7 @@ void cwt_stylex_test_parse_attrs(void)
 	CWT_TEST_NOK(__parseINT32(buf, NULL));
 
 	stdioNS->sprintf(buf, _T("-2147483649"));
-	stdioNS->printf(_Tr("Parse less than INT MIN = %ë\n"), buf);
+	stdioNS->printf(_Tr("Parse less than INT MIN = %ï¿½\n"), buf);
 	CWT_TEST_NOK(__parseINT32(buf, NULL));
 
 

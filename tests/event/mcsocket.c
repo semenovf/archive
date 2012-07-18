@@ -7,7 +7,7 @@
 #include <cwt/event/event.h>
 #include <cwt/event/channel.h>
 #include <cwt/io/sockdev.h>
-
+#include <string.h>
 
 const char *text = "This is a test message";
 const char *cmdQuit = "quit";

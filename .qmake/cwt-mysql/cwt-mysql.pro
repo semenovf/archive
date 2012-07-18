@@ -1,9 +1,11 @@
-include(/qmake/common-dll.pri)
+win32: include(/qmake/common-dll.pri)
+unix: include($$(HOME)/ws/qmake/common-dll.pri)
+
 
 TARGET = cwt-mysql
 
 INCLUDEPATH += ../../include
-INCLUDEPATH += /include/mysql
+INCLUDEPATH += $$CWT_ROOT_DIR/include/mysql
 
 # comment this in production mode
 DEFINES += CWT_USE_TESTS

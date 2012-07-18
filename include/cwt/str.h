@@ -1,11 +1,13 @@
 #ifndef __CWT_STR_H__
 #define __CWT_STR_H__
 
-#include <string.h>
+#ifdef _STRING_H
+#	error do not need to mix <cwt/str.h> and <string.h>
+#endif
+#include <time.h>
 #include <cwt/types.h>
 #include <cwt/string.h>
 #include <cwt/bytearr.h>
-
 
 typedef struct CwtStrNS {
 	const CWT_CHAR*   (*strerror)     (int);
@@ -28,9 +30,9 @@ typedef struct CwtStrNS {
 	CWT_CHAR*         (*strncat)      (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 	CWT_CHAR*		  (*strtok)       (CWT_CHAR *tok, const CWT_CHAR *delim);
 	LONG              (*strtol)       (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
-	LONG              (*strtoul)      (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+	ULONG             (*strtoul)      (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 	LONGLONG          (*strtoll)      (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
-	LONGLONG          (*strtoull)     (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+	ULONGLONG         (*strtoull)     (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 	int               (*isalpha)      (CWT_CHAR);
 
 	void*             (*memcpy)       (void *to, const void *from, size_t sz);

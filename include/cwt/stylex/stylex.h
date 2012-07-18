@@ -15,7 +15,7 @@
 #include <cwt/list.h>
 #include <cwt/stylex/colorx.h>
 
-enum Cwt_StateType {
+typedef enum Cwt_StateType {
 	  Cwt_State_Normal
 	, Cwt_State_Hover
 	, Cwt_State_Focus
@@ -23,10 +23,10 @@ enum Cwt_StateType {
 
 	, CWT_State_Count
 	, Cwt_State_Default = Cwt_State_Normal
-};
-typedef enum Cwt_StateType Cwt_StateType;
+} Cwt_StateType;
 
-enum Cwt_StyleAttrType {
+
+typedef enum Cwt_StyleAttrType {
 	/* Background */
 	  Cwt_StyleAttr_BackgroundColor /* Cwt_Color */
 
@@ -98,42 +98,37 @@ enum Cwt_StyleAttrType {
 	, Cwt_StyleAttr_HAlign 			/* Cwt_Style_HAlign */
 
 	, Cwt_StyleAttr_Count
-};
-typedef enum Cwt_StyleAttrType Cwt_StyleAttrType;
+} Cwt_StyleAttrType;
 
-enum Cwt_VAlign {
+typedef enum Cwt_VAlign {
 	  Cwt_VAlign_Inherit
 	, Cwt_VAlign_Top
 	, Cwt_VAlign_Middle
 	, Cwt_VAlign_Bottom
-};
-typedef enum Cwt_Style_VAlign Cwt_Style_VAlign;
+} Cwt_Style_VAlign;
 
-enum Cwt_HAlign {
+typedef enum Cwt_HAlign {
 	  Cwt_HAlign_Inherit
 	, Cwt_HAlign_Left
 	, Cwt_HAlign_Center
 	, Cwt_HAlign_Right
-};
-typedef enum Cwt_Style_HAlign Cwt_Style_HAlign;
-typedef enum Cwt_Style_HAlign Cwt_Style_TextAlign;
+} Cwt_Style_HAlign, Cwt_Style_TextAlign;
 
-enum Cwt_Position {
+typedef enum Cwt_Position {
 	  Cwt_Position_Inherit
 	, Cwt_Position_Absolute
 	, Cwt_Position_Fixed
 	, Cwt_Position_Relative
 	, Cwt_Position_Static
-};
-typedef enum Cwt_Position Cwt_Position;
+} Cwt_Position;
 
-enum Cwt_FontStyle {
+
+typedef enum Cwt_FontStyle {
 	Cwt_FontStyle_Inherit
 	, Cwt_FontStyle_Normal
 	, Cwt_FontStyle_Italic
 	, Cwt_FontStyle_Oblique
-};
-typedef enum Cwt_FontStyle Cwt_FontStyle;
+} Cwt_FontStyle;
 
 enum Cwt_FontWeight {
 	  Cwt_FontWeight_Inherit
@@ -154,7 +149,7 @@ enum Cwt_FontWeight {
 };
 typedef enum Cwt_FontWeight Cwt_FontWeight;
 
-enum Cwt_BorderStyle {
+typedef enum Cwt_BorderStyle {
 	  Cwt_BorderStyle_Inherit
 	, Cwt_BorderStyle_None
 	, Cwt_BorderStyle_Hidden
@@ -166,11 +161,10 @@ enum Cwt_BorderStyle {
 	, Cwt_BorderStyle_Ridge
 	, Cwt_BorderStyle_Inset
 	, Cwt_BorderStyle_Outset
-};
-typedef enum Cwt_BorderStyle Cwt_BorderStyle;
+} Cwt_BorderStyle;
 
 
-union Cwt_StyleAttrValue {
+typedef union Cwt_StyleAttrValue {
 	Cwt_Color			bg_color;
 
 	UINT				bg_left_width;
@@ -222,41 +216,33 @@ union Cwt_StyleAttrValue {
 	Cwt_Style_TextAlign text_align;
 	Cwt_Style_VAlign    valign;
 	Cwt_Style_HAlign    halign;
-};
-typedef union Cwt_StyleAttrValue Cwt_StyleAttrValue;
+} Cwt_StyleAttrValue;
 
 
-struct Cwt_StyleAttr {
+typedef struct Cwt_StyleAttr {
 	ListNode           m_base;
 	Cwt_StyleAttrType  m_type;
 	Cwt_StyleAttrValue m_value;
-};
-typedef struct Cwt_StyleAttr  Cwt_StyleAttr;
-typedef struct Cwt_StyleAttr* Cwt_StyleAttrPtr;
+} Cwt_StyleAttr, *Cwt_StyleAttrPtr;
 
-
-struct Cwt_StyleAttrSet {
+typedef struct Cwt_StyleAttrSet {
 	List m_states[CWT_State_Count];
-};
-typedef struct Cwt_StyleAttrSet Cwt_StyleAttrSet;
-typedef struct Cwt_StyleAttrSet* Cwt_StyleAttrSetPtr;
+} Cwt_StyleAttrSet, *Cwt_StyleAttrSetPtr;
 
 
-enum CwtStyleSetType {
+typedef enum CwtStyleSetType {
 	  Cwt_StyleSet_Id
 	, Cwt_StyleSet_Class
 	, Cwt_StyleSet_State
 	, Cwt_StyleSet_WType
 	, Cwt_StyleSet_Count
-};
-typedef enum CwtStyleSetType CwtStyleSetType;
+} CwtStyleSetType;
 
-struct Cwt_Style {
+
+typedef struct Cwt_Style {
 	Cwt_StyleAttr m_attrs[Cwt_StyleAttr_Count];
-};
-typedef struct Cwt_Style  Cwt_Style;
-typedef struct Cwt_Style* Cwt_StylePtr;
-typedef const struct Cwt_Style* Cwt_StyleConstPtr;
+} Cwt_Style, *Cwt_StylePtr;
+typedef const Cwt_Style* Cwt_StyleConstPtr;
 
 
 EXTERN_C_BEGIN

@@ -29,7 +29,7 @@ typedef struct CwtIniHandlerBase {
 } CwtIniHandlerBase;
 
 
-#define CWT_INI_DECL_ARGS CwtIniHandlerBase* h, int argc, const CHAR* argv[]
+#define CWT_INI_DECL_ARGS CwtIniHandlerBase* h, int argc, const CWT_CHAR* argv[]
 
 typedef struct CwtIniRule {
 	const CWT_CHAR *cmd;

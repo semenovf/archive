@@ -8,7 +8,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#ifdef __SUPPORT_SHARING__
 #include <share.h> /* file sharing modes */
+#endif
 #include <fcntl.h>
 #include <errno.h>
 #include <cwt/stdio.h>
@@ -41,14 +43,17 @@ DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
 {
 	CwtFileDevicePtr fd;
 	CwtUnistdNS *ns = cwtUnistdNS();
-	int fh;
+	int fh = -1;
 
 	if( path ) {
 		fh = ns->open(path, mode, 0);
 		if( fh < 0 ) {
-			printf_error(_Tr("unable to open input file: %s: %s"), path, strerror(errno));
+			printf_error(_Tr("unable to open input file: %s: %s"), path, cwtStrNS()->strerror(errno));
 			return (CwtIODevicePtr)NULL;
 		}
+	} else {
+		print_error(_Tr("unspecified path"));
+		return (CwtIODevicePtr)NULL;
 	}
 
 	fd = CWT_MALLOC(CwtFileDevice);
@@ -79,6 +84,7 @@ DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
 	return (CwtIODevicePtr)fd;
 }
 
+#ifdef __SUPPORT_SHARING__
 /**
  * Opens file device consists of two parts: file for read and file for write
  *
@@ -145,7 +151,7 @@ DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const CWT_CHAR* infilename
 
 	return (CwtIODevicePtr)fd;
 }
-
+#endif
 
 void __cwtFileClose(CwtIODevicePtr dev)
 {
