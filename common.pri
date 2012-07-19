@@ -8,12 +8,14 @@ OBJECTS_DIR = $$CWT_CONFIG/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU
 unix {
 
 # CXX flags
-    QMAKE_CFLAGS += -O0
-#     -Werror
-    QMAKE_CXXFLAGS += -O0
+    QMAKE_CFLAGS += -O0 -Werror
+    QMAKE_CXXFLAGS += -O0 -Werror
 
 # linker flags
     LIBS += -L$$CWT_DESTDIR_LIB
+# add current directory to shared files search path
+#    LIBS += -R ./
+    LIBS += -Xlinker -rpath=.
 }
 
 win32 {
@@ -26,9 +28,12 @@ win32 {
     QMAKE_CXXFLAGS += /EHs /EHc 
 
 
-# Параметр /ZI доступен только при компиляции для целевой архитектуры x86; 
-# этот параметр компилятора недоступен в компиляторах 
-# для целевых платформ x64 или семейства процессоров Itanium (IPF).
+# en: /ZI parameter applied only for x86 target architecture while compiling
+# and it is not applied for x64 and Itanium (IPF).
+#
+# ru: РџР°СЂР°РјРµС‚СЂ /ZI РґРѕСЃС‚СѓРїРµРЅ С‚РѕР»СЊРєРѕ РїСЂРё РєРѕРјРїРёР»СЏС†РёРё РґР»СЏ С†РµР»РµРІРѕР№ Р°СЂС…РёС‚РµРєС‚СѓСЂС‹ x86; 
+# СЌС‚РѕС‚ РїР°СЂР°РјРµС‚СЂ РєРѕРјРїРёР»СЏС‚РѕСЂР° РЅРµРґРѕСЃС‚СѓРїРµРЅ РІ РєРѕРјРїРёР»СЏС‚РѕСЂР°С… 
+# РґР»СЏ С†РµР»РµРІС‹С… РїР»Р°С‚С„РѕСЂРј x64 РёР»Рё СЃРµРјРµР№СЃС‚РІР° РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ Itanium (IPF).
 
 #   !!!Overidde value provided by qmake.conf
 #    QMAKE_CXXFLAGS_DEBUG  = -Zi # /ZI
