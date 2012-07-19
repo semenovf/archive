@@ -589,7 +589,8 @@ static CWT_CHAR* __cwt_fromUtf8(const char *utf8, size_t n)
 static char* __cwt_toMBCS(const CWT_CHAR *s, const CWT_CHAR *csname)
 {
 	if( __cwtStrNS.streq(_T("utf8"), csname))
-		return __cwtStrNS.toUtf8(s);
+		return __cwtStrNS.toUtf8(s, __cwtStrNS.strlen(s));
+
 	if( __cwtStrNS.streq(_T("latin1"), csname))
 		return __cwtStrNS.toLatin1(s);
 
@@ -601,7 +602,7 @@ static char* __cwt_toMBCS(const CWT_CHAR *s, const CWT_CHAR *csname)
 static CWT_CHAR* __cwt_fromMBCS(const char *s, const CWT_CHAR *csname)
 {
 	if( __cwtStrNS.streq(_T("utf8"), csname))
-		return __cwtStrNS.fromUtf8(s);
+		return __cwtStrNS.fromUtf8(s, strlen(s));
 	if( __cwtStrNS.streq(_T("latin1"), csname))
 		return __cwtStrNS.fromLatin1(s);
 

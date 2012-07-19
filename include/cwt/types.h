@@ -142,7 +142,7 @@ typedef struct CWT_UNITYPE {
 #define 	__DJ_ssize_t
 #endif
 
-#if !( defined(CWT_CC_WATCOM) || defined(__off_t_defined) )
+#if !( defined(CWT_CC_WATCOM) || defined(__off_t_defined) || defined(CWT_CC_MSC) )
 	typedef ssize_t off_t;
 #endif
 

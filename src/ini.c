@@ -22,25 +22,9 @@
 typedef struct CwtIniHandlerImpl {
 	CwtChannel *pchan;
 	size_t      line;
-	void (*on_error)(CwtIniHandler, const CWT_CHAR*);
-
-/*
-	BOOL error;
-	void (*on_start_document)(struct CwtIniHandlerBase* h);
-	void (*on_end_document)(struct CwtIniHandlerBase* h);
-	void (*on_start_line)(struct CwtIniHandlerBase* h);
-	void (*on_end_line)(struct CwtIniHandlerBase* h);
-	void (*on_token)(struct CwtIniHandlerBase* h, const CWT_CHAR* token);
-*/
+	void       (*on_error)(CwtIniHandler, const CWT_CHAR*);
 } CwtIniHandlerImpl;
 
-/*
-#ifndef _NASSYNC
-#	include <cwt/event/event.h>
-#endif
-
-#define _BUFSZ 256
-*/
 static CwtIniHandler __create  (void);
 static void          __init    (CwtIniHandler);
 static void          __destroy (CwtIniHandler);
@@ -48,7 +32,6 @@ static void          __free    (CwtIniHandler);
 static BOOL          __parse   (CwtIniHandler, CwtChannel*);
 static void          __onError (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
 static void          __addRule (CwtIniHandler, CwtIniCallback resolver, CwtIniCallback handler);
-
 
 static CwtIniNS __cwtIniNS = {
 	  __create
@@ -98,7 +81,6 @@ static void __free(CwtIniHandler h)
 	}
 }
 
-
 static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
 {
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
@@ -129,12 +111,14 @@ static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
 
 			off = CWT_MIN(off_cr, off_lf);
 			str = strNS->fromUtf8(ba.m_buffer, off);
+
 			if( str && strNS->strlen(str) > 0 ) {
 
 			}
 			CWT_FREE(str);
 			ph->line++;
 		}
+	}
 
 #ifdef __COMMENT__
 		while( baNS->find(&ba, (BYTE)'\n') )
@@ -391,3 +375,20 @@ DLL_API_EXPORT BOOL cwtLoadIniByRules(const CHAR* path, CwtIniRule *rules, void 
 }
 
 #endif
+
+
+static void __addRule (CwtIniHandler *h, CwtIniCallback resolver, CwtIniCallback handler)
+{
+	CWT_UNUSED(h);
+	CWT_UNUSED(resolver);
+	CWT_UNUSED(handler);
+}
+
+static void __onError(CwtIniHandler *h, void (*callback)(CwtIniHandler, const CWT_CHAR*))
+{
+	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
+
+	CWT_ASSERT(h);
+	ph->on_error = callback;
+
+}

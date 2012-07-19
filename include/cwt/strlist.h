@@ -13,6 +13,11 @@
 #include <cwt/dlist.h>
 
 
+typedef struct CwtQuotePair {
+	CWT_CHAR begin;
+	CWT_CHAR end;
+} CwtQuotePair;
+
 typedef struct CwtStrList
 {
 	size_t count;
@@ -37,20 +42,23 @@ typedef struct CwtStrListNS {
 	CwtStrList*     (*clone)       (CwtStrList *psl);
 	void            (*clear)       (CwtStrList *psl);
 	size_t          (*size)        (CwtStrList *psl);
-	void            (*insertAfter) (CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text);
-	void            (*insertBefore)(CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text);
-	void            (*insertFirst) (CwtStrList *psl, const CWT_CHAR *s);
-	void            (*insertLast)  (CwtStrList *psl, const CWT_CHAR *s);
-	void            (*append)      (CwtStrList *psl, const CWT_CHAR *s);
-	void            (*add)         (CwtStrList *psl, const CWT_CHAR *s);
-	void            (*prepend)     (CwtStrList *psl, const CWT_CHAR *s);
+	void            (*insertAfter) (CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text, size_t n);
+	void            (*insertBefore)(CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text, size_t n);
+	void            (*insertFirst) (CwtStrList *psl, const CWT_CHAR *s, size_t n);
+	void            (*insertLast)  (CwtStrList *psl, const CWT_CHAR *s, size_t n);
+	void            (*append)      (CwtStrList *psl, const CWT_CHAR *s, size_t n);
+	void            (*add)         (CwtStrList *psl, const CWT_CHAR *s, size_t n);
+	void            (*prepend)     (CwtStrList *psl, const CWT_CHAR *s, size_t n);
 	void            (*remove)      (CwtStrList *psl, CwtStrListElem *pelem);
 	void            (*removeFirst) (CwtStrList *psl);
 	void            (*removeLast)  (CwtStrList *psl);
 	CWT_CHAR*       (*cat)         (CwtStrList *psl);
 	CWT_CHAR*       (*catDelim)    (CwtStrList *psl, const CWT_CHAR *delim);
-	void 		    (*split)       (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim);
-	void 		    (*splitAny)    (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims);
+	int             (*splitSkip)   (CwtStrList *psl, const CWT_CHAR *str
+                                   , size_t (*skip)(const CWT_CHAR *tail, size_t tail_len, void *delim)
+                                   , void *delim, CwtQuotePair *qpairs);
+	int 		    (*split)       (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim, CwtQuotePair *qpairs);
+	int 		    (*splitAny)    (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims, CwtQuotePair *qpairs);
 	CWT_CHAR*	    (*at)          (CwtStrList *psl, size_t i);
 	void            (*begin)       (CwtStrList *psl, CwtStrListIterator *iter);
 	void            (*beginFrom)   (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);
@@ -62,7 +70,9 @@ typedef struct CwtStrListNS {
 } CwtStrListNS;
 
 EXTERN_C_BEGIN
-
+extern CwtQuotePair *CWT_QP_SINGLEQUOTES; /* ' */
+extern CwtQuotePair *CWT_QP_DOUBLEQUOTES; /* " */
+extern CwtQuotePair *CWT_QP_QUOTES;       /* ", ' */
 DLL_API_EXPORT CwtStrListNS* cwtStrListNS();
 
 EXTERN_C_END

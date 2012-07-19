@@ -9,5 +9,6 @@ SUBDIRS  =         \
     tests/emcsock  \
     tests/crc64    \
     tests/utils    \
+    tests/strlist  \
     tests/strutils \
     tests/dbi

@@ -534,7 +534,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
 
         /* Parse driver DSN */
         strlistNS->init(&opts);
-        strlistNS->split(&opts, driverDSN, _T(";"));
+        strlistNS->split(&opts, driverDSN, _T(";"), NULL);
         strlistNS->begin(&opts, &itOpts);
 
         ok = TRUE;
@@ -1135,7 +1135,8 @@ static ULONGLONG __affectedRows(CwtDBHandler *dbh)
 
 static BOOL __tables(CwtDBHandler *dbh, CwtStrList *tables)
 {
-	CwtStrListNS *strlistNS = cwtStrListNS();
+	CwtStrNS     *strNS = cwtStrNS();
+	CwtStrListNS *slNS  = cwtStrListNS();
 
 	CwtMySqlDBHandler *mdbh = (CwtMySqlDBHandler*)dbh;
 	MYSQL_RES* res;
@@ -1155,6 +1156,8 @@ static BOOL __tables(CwtDBHandler *dbh, CwtStrList *tables)
 	}
 
 	while( res ) {
+		CWT_CHAR* decoded;
+
 		mysql_data_seek(res, i);
 
 		row = mysql_fetch_row(res);
@@ -1163,7 +1166,8 @@ static BOOL __tables(CwtDBHandler *dbh, CwtStrList *tables)
 			break;
 		}
 
-		strlistNS->append( tables, __decode(dbh, row[0]) );
+		decoded = __decode(dbh, row[0]);
+		slNS->append( tables, decoded, strNS->strlen(decoded) );
 
 		i++;
 	}

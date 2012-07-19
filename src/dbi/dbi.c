@@ -41,7 +41,7 @@ static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver
 	CWT_CHAR *opt;
 
     strListNS->init(&opts);
-    strListNS->split(&opts, dsn, _T(":"));
+    strListNS->splitAny(&opts, dsn, _T(":"), CWT_QP_QUOTES);
 
     opt = strListNS->at(&opts, 0);
     if( scheme && opt )
