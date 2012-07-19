@@ -100,7 +100,7 @@ static void __buildDlFileName(const CWT_CHAR *name, CwtString *libname)
 	stringNS->append(libname, name);
 	stringNS->append(libname, _T(".dll"));
 #elif defined(CWT_OS_LINUX)
-	stringNS->append(libname, _T(".lib"));
+	stringNS->append(libname, _T("lib"));
 	stringNS->append(libname, name);
 	stringNS->append(libname, _T(".so"));
 #else

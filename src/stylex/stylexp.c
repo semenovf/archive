@@ -10,6 +10,7 @@
 #include <cwt/stylex/stylex.h>
 #include <ctype.h>
 
+/*
 static const CWT_CHAR* __attr_names[] = {
 	  _T("bg_color")
 	, _T("bg_left_width")
@@ -62,11 +63,11 @@ static const CWT_CHAR* __attr_names[] = {
 	, _T("valign")
 	, _T("halign")
 };
-
+*/
 /**
- * Загружает стили из строки
+ * я┐╜я┐╜я┐╜я┐╜ужая┐╜я┐╜ я┐╜тиля┐╜ я┐╜я┐╜ я┐╜я┐╜рокя┐╜
  *
- * Формат строки стилей:
+ * я┐╜я┐╜рмая┐╜ я┐╜я┐╜рокя┐╜ я┐╜тиля┐╜я┐╜:
  *
  * style-defs := style-def+
  * style-def  := selector '{' attr-defs '}'
@@ -123,7 +124,7 @@ void cwt_stylex_loadFromString(const CWT_CHAR *stylexStr)
 }
 
 /**
- * Загружает стили из файла
+ * я┐╜я┐╜я┐╜я┐╜ужая┐╜я┐╜ я┐╜тиля┐╜ я┐╜я┐╜ файя┐╜я┐╜
  */
 void cwt_stylex_loadFromFile(const CWT_CHAR *stylexPath)
 {

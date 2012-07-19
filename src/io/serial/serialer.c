@@ -31,7 +31,7 @@ static const CWT_CHAR* __parity_strings[3] = {
 
 const CWT_CHAR* serialport_strerror(CwtSerialRC rc)
 {
-	CWT_ASSERT( rc >= 0 && rc < E_SP_COUNT );
+	CWT_ASSERT( /*rc >= 0 && */rc < E_SP_COUNT );
 	return __serialport_error_strings[rc];
 }
 

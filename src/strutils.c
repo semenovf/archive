@@ -72,16 +72,32 @@ DLL_API_EXPORT _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL 
 	return (_IntType)val;                                                     \
 }
 
+#define __CWT_STR_TO_UINTTYPE(_IntType,_LongType,_maxInt)                     \
+DLL_API_EXPORT _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {\
+	BOOL okk = TRUE;                                                          \
+	CwtStrNS* strNS = cwtStrNS();                                             \
+	_LongType val = strNS->to##_LongType(str, radix, &okk);                   \
+	if( !okk || val > _maxInt ) {                                             \
+		okk = FALSE;                                                          \
+	}                                                                         \
+                                                                              \
+	if( ok )                                                                  \
+		*ok = okk;                                                            \
+                                                                              \
+	return (_IntType)val;                                                     \
+}
+
+
 __CWT_STR_TO_LONGTYPE(ULONGLONG, cwtStrNS()->strtoull, CWT_ULONGLONG_MAX, 0LL)
 __CWT_STR_TO_LONGTYPE(LONGLONG, cwtStrNS()->strtoll, CWT_LONGLONG_MAX, CWT_LONGLONG_MIN)
 __CWT_STR_TO_LONGTYPE(ULONG, cwtStrNS()->strtoul, CWT_ULONG_MAX, 0L)
 __CWT_STR_TO_LONGTYPE(LONG, cwtStrNS()->strtol, CWT_LONG_MAX, CWT_LONG_MIN)
 __CWT_STR_TO_INTTYPE(INT, LONG, CWT_INT_MAX, CWT_INT_MIN)
-__CWT_STR_TO_INTTYPE(UINT, ULONG, CWT_UINT_MAX, 0)
+__CWT_STR_TO_UINTTYPE(UINT, ULONG, CWT_UINT_MAX)
 __CWT_STR_TO_INTTYPE(SHORT, LONG, CWT_SHORT_MAX, CWT_SHORT_MIN)
-__CWT_STR_TO_INTTYPE(USHORT, ULONG, CWT_USHORT_MAX, 0);
+__CWT_STR_TO_UINTTYPE(USHORT, ULONG, CWT_USHORT_MAX);
 __CWT_STR_TO_INTTYPE(SBYTE, LONG, CWT_SBYTE_MAX, CWT_SBYTE_MIN)
-__CWT_STR_TO_INTTYPE(BYTE, ULONG, CWT_BYTE_MAX, 0);
+__CWT_STR_TO_UINTTYPE(BYTE, ULONG, CWT_BYTE_MAX);
 
 
 #if 0
