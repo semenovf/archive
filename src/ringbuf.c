@@ -79,10 +79,10 @@ RingBufferPtr rb_clone(RingBufferPtr rb)
 	if( rb ) {
 		RingBufferPtr clone = rb_new(rb->m_count, default_max_size);
 		if( rb->m_count > 0 ) {
-			/* 'å¢®áâ' ­ å®¤¨âáï ¯à ¢¥¥ '£®«®¢ë' */
+			/* 'å¢®ï¿½ï¿½' ï¿½ï¿½å®¤ï¿½ï¿½ï¿½ï¿½ ï¿½à ¢ï¿½ï¿½ 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½' */
 			if( rb->m_capacity - rb->m_head >= rb->m_count ) {
 				memcpy(clone->m_buffer, rb->m_buffer + rb->m_head, rb->m_count);
-			} else { /* 'å¢®áâ' ­ å®¤¨âáï «¥¢¥¥ '£®«®¢ë' */
+			} else { /* 'å¢®ï¿½ï¿½' ï¿½ï¿½å®¤ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½' */
 				memcpy(clone->m_buffer, rb->m_buffer + rb->m_head, rb->m_capacity - rb->m_head);
 				memcpy(clone->m_buffer + rb->m_capacity - rb->m_head, rb->m_buffer, rb->m_count - (rb->m_capacity - rb->m_head));
 			}
@@ -142,10 +142,10 @@ BOOL rb_reserve(RingBufferPtr rb, size_t n )
 
 		buffer = CWT_MALLOCA(BYTE, capacity);
 
-		/* 'å¢®áâ' ­ å®¤¨âáï ¯à ¢¥¥ '£®«®¢ë' */
+		/* 'å¢®ï¿½ï¿½' ï¿½ï¿½å®¤ï¿½ï¿½ï¿½ï¿½ ï¿½à ¢ï¿½ï¿½ 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½' */
 		if( rb->m_capacity - rb->m_head >= rb->m_count ) {
 			memcpy(buffer, rb->m_buffer + rb->m_head, rb->m_count);
-		} else { /* 'å¢®áâ' ­ å®¤¨âáï «¥¢¥¥ '£®«®¢ë' */
+		} else { /* 'å¢®ï¿½ï¿½' ï¿½ï¿½å®¤ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½' */
 			memcpy(buffer, rb->m_buffer + rb->m_head, rb->m_capacity - rb->m_head);
 			memcpy(buffer + rb->m_capacity - rb->m_head, rb->m_buffer, rb->m_count - (rb->m_capacity - rb->m_head));
 		}
@@ -428,7 +428,7 @@ BOOL rb_find(RingBufferPtr rb, const BYTE* bytes, size_t n, size_t from, size_t*
 	return FALSE;
 }
 
-
+/* obsolete */
 int rb_split(
       BYTE delim
 	, RingBufferPtr rb

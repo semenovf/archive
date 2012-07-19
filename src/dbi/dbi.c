@@ -87,9 +87,12 @@ static CwtDBIDriver* __load(const CWT_CHAR *dsn)
 		dlHandle = dl->open(stringNS->cstr(&driverPath), TRUE, TRUE);
 
 		if( dlHandle ) {
+#ifdef CWT_CC_MSC
+			DlSymbol driverImpl = dl->symbol(dlHandle, "cwtDBIDriverImpl");
+#else
 			CwtDBIDriver* (*driverImpl)(void);
-			/*DlSymbol */driverImpl = dl->symbol(dlHandle, "cwtDBIDriverImpl");
-
+			driverImpl = dl->symbol(dlHandle, "cwtDBIDriverImpl");
+#endif
 			if( driverImpl ) {
 				driver = (CwtDBIDriver*)driverImpl();
 			}

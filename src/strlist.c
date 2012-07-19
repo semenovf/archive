@@ -327,6 +327,97 @@ static void __split(CwtStrList *psl, const CWT_CHAR *str, const CWT_CHAR *delim)
 }
 
 
+
+ssssssssss
+int __cwt_split(CWT_CHAR *s, CWT_CHAR delim
+	, CWTRingBufferPtr rb
+	, size_t len
+	, int maxcount
+	, void (*on_token)(RingBufferPtr, void*)
+	, void* extra)
+{
+	size_t i;
+	BOOL esc = FALSE;       /* escape char */
+	BOOL qq_opened = FALSE; /* TRUE if double quote opened */
+	BOOL q_opened = FALSE;  /* TRUE if single quote opened */
+	RingBufferPtr token;
+	int n = 0;
+
+	if( maxcount <= 0 )
+		maxcount = CWT_INT_MAX;
+
+	token = rb_new_defaults();
+
+	for( i = 0; i < len; i++ ) {
+		BYTE ch = rb_at(rb, i);
+
+		if( esc && delim != '\\' ) {
+			rb_put(token, ch);
+			esc = FALSE;
+			continue;
+		}
+
+		/* 'ch' is a delimiter and it is not inside quotes */
+		if( ch == delim && !(q_opened || qq_opened) ) {
+
+			if( !rb_size(token) )
+				continue;
+
+			/* risk of buffer overflow, break the 'for' loop */
+			if( n >= maxcount ) {
+				i = len;
+				rb_clear(token);
+				continue;
+			}
+
+			if( on_token ) {
+				on_token(token, extra);
+			}
+			rb_clear(token);
+			n++;
+			continue;
+		}
+
+		switch( ch ) {
+		case '\\':
+			esc = TRUE;
+			continue;
+
+		case '"':
+			if( !q_opened ) {
+				qq_opened = qq_opened ? FALSE : TRUE;
+				continue;
+			}
+			break;
+
+		case '\'':
+			if( !qq_opened ) {
+				q_opened = q_opened ? FALSE : TRUE;
+				continue;
+			}
+			break;
+
+		default:
+			break;
+		}
+		rb_put(token, ch);
+	}
+
+	if( q_opened || qq_opened ) {
+		n = RBE_QUOTE_CHAR_UNBALANCED;
+	} else {
+		if( rb_size(token) > 0 && n < maxcount ) {
+			if( on_token )
+				on_token(token, extra);
+			n++;
+		}
+	}
+
+	rb_delete(token);
+	return n;
+}
+
+
 static void __splitAny(CwtStrList *psl, const CWT_CHAR *str, const CWT_CHAR *delims)
 {
 	const CWT_CHAR *ptr_begin, *ptr_end, *ptr;

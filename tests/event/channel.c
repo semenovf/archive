@@ -13,25 +13,27 @@ const char *cmdQuit = "quit";
 
 static BOOL quit_event(CwtEventPtr pevt)
 {
-	CwtChannelPtr chan;
+	CwtChannelNS *cns = cwtChannelNS();
+
+	CwtChannel *pchan;
 	ssize_t br;
 	BYTE buf[256];
 
-	cwtEventPeekChannel(pevt, &chan);
+	cwtEventPeekChannel(pevt, &pchan);
 
-	cwtChannelReadBegin(chan);
+	cns->readBegin(pchan);
 
-	br = cwtChannelRead(chan, buf, 255);
+	br = cns->read(pchan, buf, 255);
 	buf[(size_t)br] = '\x0';
 
 	if( strstr((char*)buf, cmdQuit) ) {
 		printf_trace(_T("finishing event by command, received from channel"));
-		cwtChannelReadCommit(chan);
+		cns->readCommit(pchan);
 		cwtEventQuit();
 		return TRUE;
 	}
 
-	cwtChannelReadRollback(chan);
+	cns->readRollback(pchan);
 
 	return FALSE;
 }
@@ -39,51 +41,55 @@ static BOOL quit_event(CwtEventPtr pevt)
 
 static BOOL echo(CwtEventPtr pevt)
 {
+	CwtChannelNS *cns = cwtChannelNS();
+
 	CwtChannelPtr chan;
 	ssize_t br;
 	BYTE buf[256];
 
 	cwtEventPeekChannel(pevt, &chan);
 
-	while( (br = cwtChannelRead(chan, buf, 255)) > 0 ) {
+	while( (br = cns->read(chan, buf, 255)) > 0 ) {
 		buf[(size_t)br] = '\x0';
 		printf("Received: %s\n", buf);
 
 		CWT_TEST_OK(strcmp((char*)buf, text) == 0);
 
-		cwtChannelWrite(chan, buf, (size_t)br);
+		cns->write(chan, buf, (size_t)br);
 	}
-	cwtChannelWrite(chan, (BYTE*)cmdQuit, strlen(cmdQuit));
+	cns->write(chan, (BYTE*)cmdQuit, strlen(cmdQuit));
 
 	return FALSE;
 }
 
 static void cwt_evt_test_0(void)
 {
-	CwtChannelPtr chan_reader;
-	CwtChannelPtr chan_writer;
+	CwtChannelNS *cns = cwtChannelNS();
+
+	CwtChannel  *pchan_reader;
+	CwtChannel  *pchan_writer;
 	CwtEventSourcePtr event_src;
 
-	chan_reader = cwtNewChannel(cwtBufferDeviceOpen());
-	chan_writer = cwtNewChannel(cwtBufferDeviceOpenPeer(cwtChannelDevice(chan_reader)));
+	pchan_reader = cns->create(cwtBufferDeviceOpen());
+	pchan_writer = cns->create(cwtBufferDeviceOpenPeer(cns->device(pchan_reader)));
 	event_src   = cwtEventChannelSource();
 
 	CWT_TEST_OK(cwtEventRegisterSource(event_src));
 
-	cwtEventChannelAddListener(chan_reader, echo);
-	cwtEventChannelAddListener(chan_reader, quit_event);
-	cwtEventChannelAddListener(chan_writer, echo);
-	cwtEventChannelAddListener(chan_writer, quit_event);
+	cwtEventChannelAddListener(pchan_reader, echo);
+	cwtEventChannelAddListener(pchan_reader, quit_event);
+	cwtEventChannelAddListener(pchan_writer, echo);
+	cwtEventChannelAddListener(pchan_writer, quit_event);
 
-	cwtChannelWrite(chan_writer, (BYTE*)text, strlen(text));
+	cns->write(pchan_writer, (BYTE*)text, strlen(text));
 
 	cwtEventLoop();
 
 	cwtEventUnregisterAllSources();
 
-	cwtEventChannelRemoveListener(chan_reader);
-	cwtDeleteChannel(chan_reader);
-	cwtDeleteChannel(chan_writer);
+	cwtEventChannelRemoveListener(pchan_reader);
+	cns->free(pchan_reader);
+	cns->free(pchan_writer);
 }
 
 int main(int argc, char *argv[])

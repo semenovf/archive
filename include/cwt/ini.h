@@ -9,6 +9,29 @@
 #define __CWT_INI_H__
 
 #include <cwt/types.h>
+#include <cwt/io/channel.h>
+
+typedef void* CwtIniHandler;
+typedef BOOL (*CwtIniCallback)(CwtIniHandler, int argc, const CWT_CHAR* argv[]);
+
+typedef struct CwtIniNS {
+	CwtIniHandler (*create)  (void);
+	void          (*init)    (CwtIniHandler);
+	void          (*destroy) (CwtIniHandler);
+	void          (*free)    (CwtIniHandler);
+	BOOL          (*parse)   (CwtIniHandler, CwtChannel*);
+	void          (*onError) (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
+	void          (*addRule) (CwtIniHandler, CwtIniCallback resolver, CwtIniCallback handler);
+} CwtIniNS;
+
+
+EXTERN_C_BEGIN
+DLL_API_EXPORT CwtIniNS* cwtIniNS(void);
+EXTERN_C_END
+
+
+
+#ifdef __COMMENT__
 
 typedef enum CWT_INI_STD_HANDLER
 {
@@ -46,8 +69,10 @@ EXTERN_C_BEGIN
 
 DLL_API_EXPORT BOOL cwtLoadIni(const CWT_CHAR* path, CwtIniHandlerBase* handler);
 DLL_API_EXPORT BOOL cwtLoadIniStd(const CWT_CHAR* path, CWT_INI_STD_HANDLER handler);
-DLL_API_EXPORT BOOL cwtLoadIniByRules(const CWT_CHAR* path, CwtIniRule *rules, void (*on_error)(CwtIniHandlerBase*, const char*));
+DLL_API_EXPORT BOOL cwtLoadIniByRules(const CWT_CHAR* path, CwtIniRule *rules, void (*on_error)(CwtIniHandlerBase*, const CWT_CHAR*));
 
 EXTERN_C_END
+
+#endif
 
 #endif /* __CWT_INI_H__ */

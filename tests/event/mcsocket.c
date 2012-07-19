@@ -14,24 +14,26 @@ const char *cmdQuit = "quit";
 
 static BOOL on_multicast_receiver(CwtEventPtr pevt)
 {
-	CwtChannelPtr chan;
+	CwtChannelNS *cns = cwtChannelNS();
+
+	CwtChannel *pchan;
 	ssize_t br;
 	BYTE buf[256];
 
-	cwtEventPeekChannel(pevt, &chan);
+	cwtEventPeekChannel(pevt, &pchan);
 
-	cwtChannelReadBegin(chan);
+	cns->readBegin(pchan);
 
-	br = cwtChannelRead(chan, buf, 255);
+	br = cns->read(pchan, buf, 255);
 	buf[(size_t)br] = '\x0';
 
 	if( strstr((char*)buf, cmdQuit) ) {
 		printf("finishing event by command, received from channel");
-		cwtChannelReadCommit(chan);
+		cns->readCommit(pchan);
 		cwtEventQuit();
 		return TRUE;
 	}
-	cwtChannelReadCommit(chan);
+	cns->readCommit(pchan);
 	printf("Received: \"%s\"", buf);
 
 	return TRUE;
@@ -40,8 +42,10 @@ static BOOL on_multicast_receiver(CwtEventPtr pevt)
 
 int main(int argc, char *argv[])
 {
-	CwtChannelPtr chan_reader;
-	CwtChannelPtr chan_writer;
+	CwtChannelNS *cns = cwtChannelNS();
+
+	CwtChannel *pchan_reader;
+	CwtChannel *pchan_writer;
 	CwtEventSourcePtr chan_src;
 
 	CWT_UNUSED(argc);
@@ -49,20 +53,20 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(5);
 
-	chan_writer = cwtNewChannel(cwtMulticastSocketDeviceOpen(
+	pchan_writer = cns->create(cwtMulticastSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")
 			, CWT_MCSOCKET_SENDER));
 
-	chan_reader = cwtNewChannel(cwtMulticastSocketDeviceOpen(
+	pchan_reader = cns->create(cwtMulticastSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")
 			, CWT_MCSOCKET_RECEIVER));
 
 
-	CWT_TEST_FAIL(chan_reader);
+	CWT_TEST_FAIL(pchan_reader);
 #ifdef __COMMENT__
 	{
 		char databuf[1024];
@@ -70,7 +74,7 @@ int main(int argc, char *argv[])
 		/*CwtIODevicePtr sockdev = cwtChannelDevice(chan_reader);*/
 
 		while( TRUE ) {
-			if( cwtChannelRead(chan_reader, (BYTE*)databuf, datalen) < 0 ) {
+			if( cwtChannelRead(pchan_reader, (BYTE*)databuf, datalen) < 0 ) {
 				print_error("Reading datagram message error");
 				return;
 			} else {
@@ -84,23 +88,23 @@ int main(int argc, char *argv[])
 
 	chan_src = cwtEventChannelSource();
 
-	CWT_TEST_OK(chan_writer)
+	CWT_TEST_OK(pchan_writer)
 	CWT_TEST_OK(chan_src)
 	CWT_TEST_OK(cwtEventRegisterSource(chan_src));
 	CWT_TEST_OK(cwtEventIsRegisteredSource(chan_src));
 
-	cwtEventChannelAddListener(chan_reader, on_multicast_receiver);
+	cwtEventChannelAddListener(pchan_reader, on_multicast_receiver);
 
-	cwtChannelWrite(chan_writer, (BYTE*)text, strlen(text));
-	cwtChannelWrite(chan_writer, (BYTE*)cmdQuit, strlen(cmdQuit));
+	cns->write(pchan_writer, (BYTE*)text, strlen(text));
+	cns->write(pchan_writer, (BYTE*)cmdQuit, strlen(cmdQuit));
 
 	cwtEventLoop();
 
 	cwtEventUnregisterAllSources();
 
-	cwtEventChannelRemoveListener(chan_reader);
-	cwtDeleteChannel(chan_reader);
-	cwtDeleteChannel(chan_writer);
+	cwtEventChannelRemoveListener(pchan_reader);
+	cns->free(pchan_reader);
+	cns->free(pchan_writer);
 
 	CWT_END_TESTS;
 }

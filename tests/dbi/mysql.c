@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
 		CWT_TEST_OK(dbd->err(dbh) == 0);
 
 		/* insert second row */
-		str_data = dbd->encode(dbh, _T("����� �� ���� ������ ����������� �����"));
+		str_data = dbd->encode(dbh, _T("Съешь ещё этих мягких французских булок, да выпей чаю"));
 		str_length = strlen(str_data);
 
 		sbyte_val   = CWT_SBYTE_MIN;

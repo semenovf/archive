@@ -6,22 +6,176 @@
  */
 
 
+/*
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+*/
 #include <cwt/str.h>
 #include <cwt/string.h>
 #include <cwt/unistd.h>
 #include <cwt/logger.h>
+#include <cwt/bytearr.h>
 #include <cwt/io/channel.h>
-#include <cwt/io/filedev.h>
 #include <cwt/ini.h>
 
+typedef struct CwtIniHandlerImpl {
+	CwtChannel *pchan;
+	size_t      line;
+	void (*on_error)(CwtIniHandler, const CWT_CHAR*);
+
+/*
+	BOOL error;
+	void (*on_start_document)(struct CwtIniHandlerBase* h);
+	void (*on_end_document)(struct CwtIniHandlerBase* h);
+	void (*on_start_line)(struct CwtIniHandlerBase* h);
+	void (*on_end_line)(struct CwtIniHandlerBase* h);
+	void (*on_token)(struct CwtIniHandlerBase* h, const CWT_CHAR* token);
+*/
+} CwtIniHandlerImpl;
+
+/*
 #ifndef _NASSYNC
 #	include <cwt/event/event.h>
 #endif
 
 #define _BUFSZ 256
+*/
+static CwtIniHandler __create  (void);
+static void          __init    (CwtIniHandler);
+static void          __destroy (CwtIniHandler);
+static void          __free    (CwtIniHandler);
+static BOOL          __parse   (CwtIniHandler, CwtChannel*);
+static void          __onError (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
+static void          __addRule (CwtIniHandler, CwtIniCallback resolver, CwtIniCallback handler);
+
+
+static CwtIniNS __cwtIniNS = {
+	  __create
+	, __init
+	, __destroy
+	, __free
+	, __parse
+	, __onError
+	, __addRule
+};
+
+
+DLL_API_EXPORT CwtIniNS* cwtIniNS(void)
+{
+	return &__cwtIniNS;
+}
+
+static CwtIniHandler __create(void)
+{
+	CwtIniHandlerImpl *h;
+
+	h = CWT_MALLOC(CwtIniHandlerImpl);
+	__init(h);
+	return (CwtIniHandler)h;
+}
+
+static void __init(CwtIniHandler h)
+{
+	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
+
+	CWT_ASSERT(h);
+	ph->pchan = NULL;
+	ph->line = 0;
+	ph->on_error = NULL;
+}
+
+static void __destroy(CwtIniHandler h)
+{
+	CWT_UNUSED(h);
+}
+
+static void __free(CwtIniHandler h)
+{
+	if( h ) {
+		__destroy(h);
+		CWT_FREE(h);
+	}
+}
+
+
+static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
+{
+	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
+	CwtStrNS       *strNS    = cwtStrNS();
+	CwtStringNS    *stringNS = cwtStringNS();
+	CwtChannelNS   *chanNS   = cwtChannelNS();
+	CwtByteArrayNS *baNS     = cwtByteArrayNS();
+	CwtByteArray ba;
+	size_t sz;
+
+	CWT_ASSERT(h);
+
+	baNS->init(&ba);
+
+	baNS->destroy(&ba);
+
+	while( (sz = chanNS->bytesAvailable(pchan)) > 0 ) {
+		size_t bsz = baNS->size(&ba);
+		size_t off, off_cr, off_lf;
+
+		baNS->resize(&ba, sz + bsz);
+		chanNS->read(pchan, ba.m_buffer + bsz, sz);
+
+		off_cr = 0;
+		off_lf = 0;
+		if( baNS->find(&ba, (BYTE)'\r', &off_cr) || baNS->find(&ba, (BYTE)'\n', &off_lf) ) {
+			CWT_CHAR *str;
+
+			off = CWT_MIN(off_cr, off_lf);
+			str = strNS->fromUtf8(ba.m_buffer, off);
+			if( str && strNS->strlen(str) > 0 ) {
+
+			}
+			CWT_FREE(str);
+			ph->line++;
+		}
+
+#ifdef __COMMENT__
+		while( baNS->find(&ba, (BYTE)'\n') )
+
+		while( rb_find_byte(rb, (BYTE)'\n', nl_pos, &nl_pos) && !handler->error ) {
+
+			handler->on_start_line(handler);
+			handler->line++;
+
+			if( __cwtIniParseLine(rb, nl_pos, handler) ) {
+				handler->on_end_line(handler);
+				rb_pop_front(rb, nl_pos+1);
+				nl_pos = 0;
+			}
+		}
+
+		if( handler->error )
+			break;
+	}
+
+	if( !handler->error ) {
+		if( bw < 0 ) {
+			handler->error = TRUE;
+		} else {
+			if( rb_size(rb) > 0 ) {
+				__cwtIniParseLine(rb, rb_size(rb), handler); /* last line*/
+			}
+		}
+	}
+
+	handler->on_end_document(handler);
+
+	rb_delete(rb);
+	cwtClose(ini);
+
+	return handler->error ? FALSE : TRUE;
+#endif
+
+	return FALSE;
+}
+
 
 #ifdef __COMMENT__
 
@@ -33,110 +187,6 @@ typedef struct CwtIniHandler {
 	CHAR *instruction[CWT_INI_MAX_TOKENS];
 	CwtIniRule *rules;
 } CwtIniHandler;
-
-static BOOL __cwtIniParseLine(CwtStringBufferPtr sb, size_t len, CwtIniHandlerBase* handlers);
-
-static void __cwtIniOnDebugStartDocument(CwtIniHandlerBase* h);
-static void __cwtIniOnDebugEndDocument(CwtIniHandlerBase* h);
-static void __cwtIniOnDebugStartLine(CwtIniHandlerBase* h);
-static void __cwtIniOnDebugEndLine(CwtIniHandlerBase* h);
-static void __cwtIniOnDebugToken(CwtIniHandlerBase* h, const char* token);
-static void __cwtIniOnDebugError(CwtIniHandlerBase* h, const char* errstr);
-
-static void __cwtIniOnNullStartDocument(CwtIniHandlerBase* h) {CWT_UNUSED(h);}
-static void __cwtIniOnNullEndDocument(CwtIniHandlerBase* h) {CWT_UNUSED(h);}
-static void __cwtIniOnNullStartLine(CwtIniHandlerBase* h) {CWT_UNUSED(h);}
-static void __cwtIniOnNullEndLine(CwtIniHandlerBase* h) {CWT_UNUSED(h);}
-static void __cwtIniOnNullToken(CwtIniHandlerBase* h, const char* token) {CWT_UNUSED(h); CWT_UNUSED(token);}
-static void __cwtIniOnNullError(CwtIniHandlerBase* h, const char* errstr) {CWT_UNUSED(h); CWT_UNUSED(errstr);}
-
-static void __cwtIniOnRuleStartDocument(CwtIniHandlerBase* h);
-static void __cwtIniOnRuleEndDocument(CwtIniHandlerBase* h);
-static void __cwtIniOnRuleStartLine(CwtIniHandlerBase* h);
-static void __cwtIniOnRuleEndLine(CwtIniHandlerBase* h);
-static void __cwtIniOnRuleToken(CwtIniHandlerBase* h, const char* token);
-static void __cwtIniOnRuleError(CwtIniHandlerBase* h, const char* errstr);
-
-
-static CwtIniHandlerBase __cwtDebugHandler = {
-	  NULL
-	, 0
-	, FALSE
-	, __cwtIniOnDebugStartDocument
-	, __cwtIniOnDebugEndDocument
-	, __cwtIniOnDebugStartLine
-	, __cwtIniOnDebugEndLine
-	, __cwtIniOnDebugToken
-	, __cwtIniOnDebugError
-};
-
-static CwtIniHandlerBase __cwtNullHandler = {
-	  NULL
-	, 0
-	, FALSE
-	, __cwtIniOnNullStartDocument
-	, __cwtIniOnNullEndDocument
-	, __cwtIniOnNullStartLine
-	, __cwtIniOnNullEndLine
-	, __cwtIniOnNullToken
-	, __cwtIniOnNullError
-};
-
-void __cwtIniOnDebugStartDocument(CwtIniHandlerBase* h)
-{
-	CWT_UNUSED(h);
-	print_trace("--START DOCUMENT");
-}
-
-void __cwtIniOnDebugEndDocument(CwtIniHandlerBase* h)
-{
-	CWT_UNUSED(h);
-	print_trace("--END DOCUMENT");
-}
-
-void __cwtIniOnDebugStartLine(CwtIniHandlerBase* h)
-{
-	CWT_UNUSED(h);
-	print_trace("--START LINE");
-}
-
-void __cwtIniOnDebugEndLine(CwtIniHandlerBase* h)
-{
-	CWT_UNUSED(h);
-	print_trace("--END LINE");
-}
-
-void __cwtIniOnDebugToken(CwtIniHandlerBase* h, const char* token)
-{
-	CWT_UNUSED(h);
-	CWT_UNUSED(token);
-	printf_debug("token: %s", token);
-}
-
-void __cwtIniOnDebugError(CwtIniHandlerBase* h, const char* errstr)
-{
-	h->error = TRUE;
-	printf_error("%s at %s line %u", errstr, h->file, h->line);
-}
-
-
-BOOL cwtLoadIniStd(const char* path, CWT_INI_STD_HANDLER h)
-{
-	CwtIniHandlerBase* handler = &__cwtNullHandler;
-
-	switch(h) {
-	case INI_HANDLER_NULL:
-		handler = &__cwtNullHandler;
-		break;
-	case INI_HANDLER_DEBUG:
-		handler = &__cwtDebugHandler;
-		break;
-	default:
-		break;
-	}
-	return cwtLoadIni(path, handler);
-}
-
 
 
 BOOL cwtLoadIni(const char* path, CwtIniHandlerBase* handler)
@@ -253,22 +303,6 @@ BOOL __cwtIniParseLine(CwtStringBufferPtr sb, size_t len, CwtIniHandlerBase* han
 }
 
 
-
-static void __cwtIniOnRuleStartDocument(CwtIniHandlerBase* h)
-{
-	CWT_UNUSED(h);
-}
-
-static void __cwtIniOnRuleEndDocument(CwtIniHandlerBase* h)
-{
-	CWT_UNUSED(h);
-}
-
-static void __cwtIniOnRuleStartLine(CwtIniHandlerBase* h)
-{
-	((CwtIniHandler*)h)->first_token  = TRUE;
-	((CwtIniHandler*)h)->comment_line = FALSE;
-}
 
 static void __cwtIniOnRuleEndLine(CwtIniHandlerBase* h)
 {

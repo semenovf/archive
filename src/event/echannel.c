@@ -45,13 +45,14 @@ static CwtDListNode* __cwtChannelFindListenerNode(CwtChannelPtr chan)
 
 static void __cwtEventChannelPoll(void)
 {
+	CwtChannelNS *cns = cwtChannelNS();
 	CwtDListIterator it;
 	cwtDListBegin(&__cwtChannelListeners, &it);
 
 	while( cwtDListHasMore(&it) ) {
 		CwtChannelListener *plistener = (CwtChannelListener*)cwtDListNext(&it);
 
-	    if( cwtChannelBytesAvailable(plistener->channel) > 0 ) {
+	    if( cns->bytesAvailable(plistener->channel) > 0 ) {
 	    	CwtEventChannel *pevt = CWT_MALLOC(CwtEventChannel);
 	    	pevt->channel = plistener->channel;
 
@@ -69,9 +70,9 @@ CwtEventSourcePtr cwtEventChannelSource(void)
 
 
 /**
- * @brief Добавляет "слушателя" @c reader для канала @c chan
+ * @brief я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ "я┐╜я┐╜я┐╜теля┐╜" @c reader я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ @c chan
  *
- * Последний добавленный "слушатель" будет первым в цепочке обработки сообытия от канала
+ * я┐╜я┐╜слея┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ "я┐╜я┐╜я┐╜теля┐╜" я┐╜удея┐╜ я┐╜я┐╜я┐╜я┐╜ я┐╜ цепя┐╜чке я┐╜я┐╜рабя┐╜тки сооя┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜
  *
  * @param chan
  * @param reader

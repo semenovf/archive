@@ -65,6 +65,8 @@ static CWT_CHAR* __cwt_strdup(const CWT_CHAR *s) { return __strdup_builtin(s); }
 static int       __cwt_strcmp(const CWT_CHAR *s1, const CWT_CHAR *s2) { return __strcmp_builtin(s1,s2); }
 static int       __cwt_strncmp(const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n) { return __strncmp_builtin(s1,s2,n); }
 static CWT_CHAR* __cwt_strncpy(CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return __strncpy_builtin(dest,src,n); }
+static CWT_CHAR* __cwt_strchr       (CWT_CHAR *s, CWT_CHAR ch);
+static CWT_CHAR* __cwt_strstr       (const CWT_CHAR *s, const CWT_CHAR *substr);
 #endif
 
 const CWT_CHAR* __CONST_EMPTYSTR = _T("");
@@ -83,8 +85,6 @@ static CWT_CHAR  __cwt_toupper      (CWT_CHAR ch);
 static CWT_CHAR  __cwt_tolower      (CWT_CHAR ch);
 static void      __cwt_toupperStr   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 static void      __cwt_tolowerStr   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
-static CWT_CHAR* __cwt_strchr       (CWT_CHAR *s, CWT_CHAR ch);
-static CWT_CHAR* __cwt_strstr       (const CWT_CHAR *s, const CWT_CHAR *substr);
 static CWT_CHAR* __cwt_strrstr(const CWT_CHAR *s, const CWT_CHAR *substr);
 static void      __cwt_chomp(CWT_CHAR *s);
 
@@ -103,8 +103,8 @@ EXTERN_C_END
 
 static char*      __cwt_toLatin1     (const CWT_CHAR *s);
 static CWT_CHAR*  __cwt_fromLatin1   (const char *s);
-static char*      __cwt_toUtf8       (const CWT_CHAR *s);
-static CWT_CHAR*  __cwt_fromUtf8     (const char *utf8);
+static char*      __cwt_toUtf8       (const CWT_CHAR *s, size_t n);
+static CWT_CHAR*  __cwt_fromUtf8     (const char *utf8, size_t n);
 static char*      __cwt_toMBCS       (const CWT_CHAR *s, const CWT_CHAR *csname);
 static CWT_CHAR*  __cwt_fromMBCS     (const char *s, const CWT_CHAR *csname);
 
@@ -317,6 +317,7 @@ static CWT_CHAR  __cwt_tolower(CWT_CHAR ch)
 #endif
 }
 
+#ifndef CWT_UNICODE
 static CWT_CHAR* __cwt_strchr(CWT_CHAR *s, CWT_CHAR ch)
 {
 	return strchr(s, ch);
@@ -326,6 +327,7 @@ static CWT_CHAR* __cwt_strstr (const CWT_CHAR *s, const CWT_CHAR *substr)
 {
 	return strstr(s, substr);
 }
+#endif
 
 /**
  * @brief Finds the last occurrence of a substring in another string
@@ -412,7 +414,7 @@ static CWT_CHAR __charAt(const CWT_CHAR *s, size_t i)
 */
 static char* __cwt_toLatin1( const CWT_CHAR *s )
 {
-	char *latins1 = NULL;
+	char *str = NULL;
 
 	if( s ) {
 #ifdef CWT_UNICODE
@@ -422,9 +424,9 @@ static char* __cwt_toLatin1( const CWT_CHAR *s )
 			const CWT_CHAR *src = s;
 			char *ptr;
 
-			latins1 = CWT_MALLOCA(char, length+1);
-			ptr = latins1;
-			latins1[length] = '\0';
+			str = CWT_MALLOCA(char, length+1);
+			ptr = str;
+			str[length] = '\0';
 
 			while( length-- ) {
 				*ptr++ = (*src > 0xff) ? '?' : (char)*src;
@@ -432,16 +434,17 @@ static char* __cwt_toLatin1( const CWT_CHAR *s )
 			}
 		}
 #else
-		latins1 = strdup(s);
+		str = strdup(s);
 #endif
 	} /* if s */
-	return latins1;
+	return str;
 }
 
 
 static CWT_CHAR* __cwt_fromLatin1(const char *s)
 {
-	CWT_CHAR *str;
+	CWT_CHAR *str = NULL;
+
 #ifdef CWT_UNICODE
 	size_t length = strlen(s);
 
@@ -458,12 +461,13 @@ static CWT_CHAR* __cwt_fromLatin1(const char *s)
         }
 	}
 #else
-	return str = strdup(s);
+	str = strdup(s);
 #endif
+
 	return str;
 }
 
-static char* __cwt_toUtf8(const CWT_CHAR *s)
+static char* __cwt_toUtf8(const CWT_CHAR *s, size_t n)
 {
 	char *utf8 = NULL;
 
@@ -471,13 +475,13 @@ static char* __cwt_toUtf8(const CWT_CHAR *s)
 
 #ifdef CWT_UNICODE
 #	ifdef CWT_CC_MSC
-		size_t length = (size_t)__cwtStrNS.strlen(s);
+		/*size_t length = n; *//*(size_t)__cwtStrNS.strlen(s)*/
 		/*Get length (in chars) of resulting UTF-8 string*/
 		const int utf8_length = WideCharToMultiByte(
 			CP_UTF8,               /*convert to UTF-8*/
 			0,                     /*default flags*/
 			s,                     /*source UTF-16 string*/
-			(int)length,           /*source string length, in wchar_t's */ /*FIXME need to check*/
+			(int)n,                /*source string length, in wchar_t's */ /*FIXME need to check*/
 			NULL,                  /*unused - no conversion required in this step*/
 			0,                     /*request buffer size*/
 			NULL, NULL);           /*unused*/
@@ -495,7 +499,7 @@ static char* __cwt_toUtf8(const CWT_CHAR *s)
 				CP_UTF8,
 				0,
 				s,
-				(int)length, /*FIXME need to check*/
+				(int)n, /*FIXME need to check*/
 				&utf8[0],
 				utf8_length,
 				NULL, NULL )) {
@@ -508,7 +512,8 @@ static char* __cwt_toUtf8(const CWT_CHAR *s)
 #		error __toUtf8 is not implemented yet
 #	endif
 #else
-	utf8 = strdup(s);
+#	error __toUtf8 is not implemented yet
+		/*utf8 = strdup(s);*/
 #endif
 
 	} /* s */
@@ -524,7 +529,7 @@ static char* __cwt_toUtf8(const CWT_CHAR *s)
  *
  * Note: Return value must be deallocated.
  */
-static CWT_CHAR* __cwt_fromUtf8(const char *utf8)
+static CWT_CHAR* __cwt_fromUtf8(const char *utf8, size_t n)
 {
 	CWT_CHAR *str = NULL;
 	size_t utf8_length;
@@ -533,14 +538,14 @@ static CWT_CHAR* __cwt_fromUtf8(const char *utf8)
 		return NULL;
 	}
 
-	utf8_length = strlen(utf8);
+	utf8_length = n;
 
 #ifdef CWT_UNICODE
 #	ifdef CWT_CC_MSC
 
 	if( utf8_length ) {
 		/*Get length (in wchar_t's) of resulting UTF-16 string*/
-		const int length = MultiByteToWideChar(
+		int length = MultiByteToWideChar(
 			CP_UTF8,           /*convert from UTF-8*/
 			0,                 /*default flags*/
 			utf8,              /*source UTF-8 string*/
@@ -574,6 +579,7 @@ static CWT_CHAR* __cwt_fromUtf8(const char *utf8)
 #		error __toUtf8 is not implemented yet
 #	endif
 #else
+#		error __toUtf8 is not implemented yet
 #endif
 
 	return str;
