@@ -36,26 +36,26 @@ DLL_API_EXPORT CwtDBI* cwtDBI(void)
 static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
 {
 	CwtStrNS *strNS = cwtStrNS();
-	CwtStrListNS *strListNS = cwtStrListNS();
+	CwtStrListNS *slNS = cwtStrListNS();
 	CwtStrList opts;
 	CWT_CHAR *opt;
 
-    strListNS->init(&opts);
-    strListNS->splitAny(&opts, dsn, _T(":"), CWT_QP_QUOTES);
+    slNS->init(&opts);
+    slNS->splitAny(&opts, dsn, _T(":"), CWT_QUOTES_BOTH);
 
-    opt = strListNS->at(&opts, 0);
+    opt = slNS->at(&opts, 0);
     if( scheme && opt )
     	*scheme = strNS->strdup(opt);
 
-    opt = strListNS->at(&opts, 1);
+    opt = slNS->at(&opts, 1);
     if( driver && opt )
     	*driver = strNS->strdup(opt);
 
-    opt = strListNS->at(&opts, 2);
+    opt = slNS->at(&opts, 2);
     if( driverDSN && opt )
     	*driverDSN = strNS->strdup(opt);
 
-    strListNS->destroy(&opts);
+    slNS->destroy(&opts);
 }
 
 

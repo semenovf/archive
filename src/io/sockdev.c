@@ -45,16 +45,16 @@
 static size_t __cwt_nsockets_opened = (size_t)0;
 static BOOL   __cwt_is_sockets_allowed = FALSE;
 
-static void    __cwtSocketClose(CwtIODevicePtr);
-static size_t  __cwtSocketBytesAvailable(CwtIODevicePtr);
-static ssize_t __cwtSocketRead(CwtIODevicePtr, BYTE*, size_t);
-static ssize_t __cwtSocketWrite(CwtIODevicePtr, const BYTE*, size_t);
+static void    __cwtSocketClose(CwtIODevice*);
+static size_t  __cwtSocketBytesAvailable(CwtIODevice*);
+static ssize_t __cwtSocketRead(CwtIODevice*, BYTE*, size_t);
+static ssize_t __cwtSocketWrite(CwtIODevice*, const BYTE*, size_t);
 
 typedef struct CwtSocketDevice {
 	CwtIODevice   base;
 	CwtSocketType type;
 	SOCKET sockfd;
-} CwtSocketDevice, *CwtSocketDevicePtr;
+} CwtSocketDevice;
 
 typedef struct CwtMulticastSocketDevice {
 	CwtSocketDevice sockbase;
@@ -62,7 +62,7 @@ typedef struct CwtMulticastSocketDevice {
 		struct sockaddr_in sockaddr;  /* group sockaddr for sender */
 		struct ip_mreq     mreq;      /* multicast group for receiver */
 	} group;
-} CwtMulticastSocketDevice, *CwtMulticastSocketDevicePtr;
+} CwtMulticastSocketDevice;
 
 
 static BOOL __cwtAllowSockets(void)
@@ -110,13 +110,13 @@ static BOOL __cwtAllowSockets(void)
  * @param port port. If equals to 0 any available port selected
  * @return UDP socket device instance or NULL if error occured
  */
-CwtIODevicePtr cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
+CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
 {
 	CwtStrNS *strNS = cwtStrNS();
 
 	SOCKET sockfd;
 	struct sockaddr_in sockaddr;
-	CwtSocketDevicePtr sockdev;
+	CwtSocketDevice *sockdev;
 
 	if( !__cwtAllowSockets() )
 		return NULL;
@@ -163,12 +163,12 @@ CwtIODevicePtr cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
 
 	__cwt_nsockets_opened++;
 
-	return (CwtIODevicePtr)sockdev;
+	return (CwtIODevice*)sockdev;
 }
 
 
 
-CwtIODevicePtr cwtMulticastSocketDeviceOpen(
+CwtIODevice* cwtMulticastSocketDeviceOpen(
 	  const CWT_CHAR *inetAddr
 	, UINT16 port
 	, const CWT_CHAR *inetMCastAddr
@@ -177,7 +177,7 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 	CwtStrNS *strNS = cwtStrNS();
 
 	SOCKET sockfd;
-	CwtMulticastSocketDevicePtr sockdev;
+	CwtMulticastSocketDevice *sockdev;
 
 	if( !__cwtAllowSockets() )
 		return NULL;
@@ -271,7 +271,7 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 
 
 	sockdev->sockbase.sockfd              = sockfd;
-	((CwtSocketDevicePtr)sockdev)->type   = isSender ? Cwt_MCSocket_Sender : Cwt_MCSocket_Receiver;
+	((CwtSocketDevice*)sockdev)->type   = isSender ? Cwt_MCSocket_Sender : Cwt_MCSocket_Receiver;
 	sockdev->sockbase.base.close          = __cwtSocketClose;
 	sockdev->sockbase.base.bytesAvailable = __cwtSocketBytesAvailable;
 	sockdev->sockbase.base.read           = __cwtSocketRead;
@@ -283,23 +283,23 @@ CwtIODevicePtr cwtMulticastSocketDeviceOpen(
 
 	__cwt_nsockets_opened++;
 
-	return (CwtIODevicePtr)sockdev;
+	return (CwtIODevice*)sockdev;
 }
 
 
 
-static void __cwtSocketClose(CwtIODevicePtr dev)
+static void __cwtSocketClose(CwtIODevice *dev)
 {
-	CwtSocketDevicePtr sockdev;
+	CwtSocketDevice *sockdev;
 
 	CWT_ASSERT(dev);
-	sockdev = (CwtSocketDevicePtr)dev;
+	sockdev = (CwtSocketDevice*)dev;
 
 	if( sockdev->sockfd > 0 ) {
 
 		/* leave multicast socket group */
 		if( sockdev->type == Cwt_MCSocket_Receiver ) {
-			CwtMulticastSocketDevicePtr mcsockdev = (CwtMulticastSocketDevicePtr)sockdev;
+			CwtMulticastSocketDevice *mcsockdev = (CwtMulticastSocketDevice*)sockdev;
 			if( setsockopt (sockdev->sockfd, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&mcsockdev->group.mreq, sizeof(mcsockdev->group.mreq)) < 0 ) {
 		        printf_error(_Tr("dropping multicast group error (%d)"), __sockdev_errno);
 			}
@@ -321,15 +321,15 @@ static void __cwtSocketClose(CwtIODevicePtr dev)
 	CWT_FREE(sockdev);
 }
 
-static size_t __cwtSocketBytesAvailable(CwtIODevicePtr dev)
+static size_t __cwtSocketBytesAvailable(CwtIODevice *dev)
 {
-	CwtSocketDevicePtr sockdev;
+	CwtSocketDevice *sockdev;
 	size_t nbytes = 0;
 	/*BYTE buf[64];*/
 
 	CWT_ASSERT(dev);
 
-	sockdev = (CwtSocketDevicePtr)dev;
+	sockdev = (CwtSocketDevice*)dev;
 
 #ifdef CWT_CC_MSC
 	ioctlsocket(sockdev->sockfd, FIONREAD, (u_long*)&nbytes);
@@ -341,14 +341,14 @@ static size_t __cwtSocketBytesAvailable(CwtIODevicePtr dev)
 	return nbytes;
 }
 
-static ssize_t __cwtSocketRead(CwtIODevicePtr dev, BYTE* buf, size_t sz)
+static ssize_t __cwtSocketRead(CwtIODevice *dev, BYTE* buf, size_t sz)
 {
-	CwtSocketDevicePtr sockdev;
+	CwtSocketDevice *sockdev;
 	ssize_t br;
 
 	CWT_ASSERT(dev);
 
-	sockdev = (CwtSocketDevicePtr)dev;
+	sockdev = (CwtSocketDevice*)dev;
 
 	sz = CWT_MIN(sz, __cwtSocketBytesAvailable(dev));
 	CWT_ASSERT(sz <= CWT_INT_MAX);
@@ -364,17 +364,17 @@ static ssize_t __cwtSocketRead(CwtIODevicePtr dev, BYTE* buf, size_t sz)
 	return (ssize_t)br;
 }
 
-static ssize_t __cwtSocketWrite(CwtIODevicePtr dev, const BYTE* buf, size_t sz)
+static ssize_t __cwtSocketWrite(CwtIODevice *dev, const BYTE* buf, size_t sz)
 {
-	CwtSocketDevicePtr sockdev;
+	CwtSocketDevice *sockdev;
 	ssize_t bw;
 
 	CWT_ASSERT(dev);
 	CWT_ASSERT(sz <= CWT_INT_MAX);
 
-	sockdev = (CwtSocketDevicePtr)dev;
+	sockdev = (CwtSocketDevice*)dev;
 	if( sockdev->type == Cwt_MCSocket_Sender ) {
-		CwtMulticastSocketDevicePtr mcsockdev = (CwtMulticastSocketDevicePtr)dev;
+		CwtMulticastSocketDevice *mcsockdev = (CwtMulticastSocketDevice*)dev;
 		bw = sendto(sockdev->sockfd, buf, (int)sz, 0
 			, (struct sockaddr*)&mcsockdev->group.sockaddr
 			, sizeof(mcsockdev->group.sockaddr));

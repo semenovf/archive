@@ -17,7 +17,64 @@ static const size_t default_initial_size = 64;
 static const size_t default_max_size = CWT_SIZE_T_MAX;
 
 
-static size_t _get_bare_index(RingBufferPtr rb, size_t index)
+static CwtRingBuf*   __create     (void);
+static CwtRingBuf*   __createSized(size_t initial_size, size_t max_size);
+static void          __free       (CwtRingBuf*);
+static CwtRingBuf*   __clone      (CwtRingBuf*);
+static BOOL          __reserve    (CwtRingBuf*, size_t n);
+static size_t        __capacity   (CwtRingBuf*);
+static BOOL          __isEmpty    (CwtRingBuf*);
+static void          __clear      (CwtRingBuf*);
+static size_t        __size       (CwtRingBuf*);
+static BYTE          __at         (CwtRingBuf*, size_t index);
+static BYTE          __atFront    (CwtRingBuf*);
+/*static BYTE          __first      (CwtRingBuf*);*/
+static BYTE          __atBack     (CwtRingBuf*);
+/*static BYTE          __last       (CwtRingBuf*);*/
+static ssize_t       __read       (CwtRingBuf*, BYTE* bytes, size_t n);
+static ssize_t       __write      (CwtRingBuf*, const BYTE* chars, size_t n);
+static BYTE          __get        (CwtRingBuf*);
+static void          __popFront   (CwtRingBuf*, size_t n);
+static void          __popBack    (CwtRingBuf*, size_t n);
+static BOOL          __put        (CwtRingBuf*, BYTE b);
+static BOOL          __pushBack   (CwtRingBuf*, const BYTE* bytes, size_t n);
+static BOOL          __find       (CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, size_t* index);
+static BOOL          __findAny    (CwtRingBuf*, const BYTE* bytes, size_t n, size_t from, size_t* index);
+
+static CwtRingBufNS __cwtRingBufNS  = {
+	  __create
+	, __createSized
+	, __free
+	, __clone
+	, __reserve
+	, __capacity
+	, __isEmpty
+	, __clear
+	, __size
+	, __at
+	, __atFront
+	, __atFront
+	, __atBack
+	, __atBack
+	, __read
+	, __write
+	, __get
+	, __popFront
+	, __popBack
+	, __put
+	, __pushBack
+	, __find
+	, __findAny
+};
+
+
+DLL_API_EXPORT CwtRingBufNS* cwtRingBufNS(void)
+{
+	return &__cwtRingBufNS;
+}
+
+
+static size_t __get_bare_index(CwtRingBuf* rb, size_t index)
 {
 	CWT_ASSERT(index < rb->m_count);
 
@@ -29,16 +86,17 @@ static size_t _get_bare_index(RingBufferPtr rb, size_t index)
 }
 
 
-RingBufferPtr rb_new_defaults(void)
+static CwtRingBuf* __create(void)
 {
-	return rb_new((size_t)0, (size_t)0);
+	return __createSized((size_t)0, (size_t)0);
 }
 
-RingBufferPtr rb_new(size_t initial_size, size_t max_size)
-{
-	RingBufferPtr rb;
 
-	rb = CWT_MALLOC(RingBuffer);
+static CwtRingBuf* __createSized(size_t initial_size, size_t max_size)
+{
+	CwtRingBuf* rb;
+
+	rb = CWT_MALLOC(CwtRingBuf);
 	CWT_ASSERT(rb);
 
 	if( !initial_size ) {
@@ -64,7 +122,8 @@ RingBufferPtr rb_new(size_t initial_size, size_t max_size)
 	return rb;
 }
 
-void rb_delete(RingBufferPtr rb)
+
+static void __free(CwtRingBuf* rb)
 {
 	if( rb ) {
 		if( rb->m_buffer )
@@ -74,10 +133,10 @@ void rb_delete(RingBufferPtr rb)
 }
 
 
-RingBufferPtr rb_clone(RingBufferPtr rb)
+static CwtRingBuf* __clone(CwtRingBuf *rb)
 {
 	if( rb ) {
-		RingBufferPtr clone = rb_new(rb->m_count, default_max_size);
+		CwtRingBuf *clone = __createSized(rb->m_count, default_max_size);
 		if( rb->m_count > 0 ) {
 			/* '墮��' ��室���� �ࠢ�� '������' */
 			if( rb->m_capacity - rb->m_head >= rb->m_count ) {
@@ -93,35 +152,9 @@ RingBufferPtr rb_clone(RingBufferPtr rb)
 	return NULL;
 }
 
-size_t rb_capacity(RingBufferPtr rb)
-{
-	CWT_ASSERT(rb);
-	return rb->m_capacity;
-}
 
 
-BOOL rb_is_empty(RingBufferPtr rb)
-{
-	CWT_ASSERT(rb);
-	return (rb->m_count == 0 ? TRUE : FALSE);
-}
-
-void rb_clear(RingBufferPtr rb)
-{
-	CWT_ASSERT(rb);
-	rb->m_head = 0;
-	rb->m_count = 0;
-}
-
-size_t rb_size(RingBufferPtr rb)
-{
-	CWT_ASSERT(rb);
-	return rb->m_count;
-}
-
-
-
-BOOL rb_reserve(RingBufferPtr rb, size_t n )
+static BOOL __reserve(CwtRingBuf *rb, size_t n )
 {
 	size_t available;
 	size_t inc;
@@ -160,114 +193,68 @@ BOOL rb_reserve(RingBufferPtr rb, size_t n )
 }
 
 
-BYTE rb_at(RingBufferPtr rb, size_t index )
+static size_t __capacity(CwtRingBuf *rb)
 {
 	CWT_ASSERT(rb);
-	return rb->m_buffer[_get_bare_index(rb, index)];
+	return rb->m_capacity;
 }
 
-BYTE rb_at_front(RingBufferPtr rb)
+
+static BOOL __isEmpty(CwtRingBuf *rb)
 {
 	CWT_ASSERT(rb);
-	return rb->m_buffer[_get_bare_index(rb, 0)];
+	return (rb->m_count == 0 ? TRUE : FALSE);
 }
 
-BYTE rb_first(RingBufferPtr rb)
+
+static void __clear(CwtRingBuf *rb)
 {
 	CWT_ASSERT(rb);
-	return rb->m_buffer[_get_bare_index(rb, 0)];
+	rb->m_head = 0;
+	rb->m_count = 0;
 }
 
-BYTE rb_at_back(RingBufferPtr rb)
+
+static size_t __size(CwtRingBuf *rb)
+{
+	CWT_ASSERT(rb);
+	return rb->m_count;
+}
+
+
+static BYTE __at(CwtRingBuf *rb, size_t index )
+{
+	CWT_ASSERT(rb);
+	return rb->m_buffer[__get_bare_index(rb, index)];
+}
+
+static BYTE __atFront(CwtRingBuf *rb)
+{
+	CWT_ASSERT(rb);
+	return rb->m_buffer[__get_bare_index(rb, 0)];
+}
+
+static BYTE __atBack(CwtRingBuf *rb)
 {
 	CWT_ASSERT(rb);
 	CWT_ASSERT(rb->m_count > 0);
-	return rb->m_buffer[_get_bare_index(rb, rb->m_count-1)];
-}
-
-BYTE rb_last(RingBufferPtr rb)
-{
-	CWT_ASSERT(rb);
-	CWT_ASSERT(rb->m_count > 0);
-	return rb->m_buffer[_get_bare_index(rb, rb->m_count-1)];
-}
-
-
-BOOL rb_push_back(RingBufferPtr rb, const BYTE* bytes, size_t n)
-{
-	size_t tail;
-
-	CWT_ASSERT(rb);
-
-	if( !rb_reserve(rb, n) )
-		return FALSE;
-
-	tail = (rb->m_head + rb->m_count) % rb->m_capacity;
-
-	if( n > 0 ) {
-/*
-		if( tail + n <= rb->m_capacity ) {
-			memcpy(rb->m_buffer + tail, bytes, n);
-		} else {
-*/
-			size_t nn = CWT_MIN(n, rb->m_capacity - tail);
-			memcpy(rb->m_buffer + tail, bytes, nn);
-			if( nn < n )
-				memcpy(rb->m_buffer, bytes + nn, n - nn);
-/*		}*/
-		rb->m_count += n;
-	}
-
-	return TRUE;
-}
-
-
-/* TODO need to optimize */
-void rb_pop_front(RingBufferPtr rb, size_t n)
-{
-	CWT_ASSERT(rb);
-
-	if( !n )
-		return;
-
-	if( rb->m_count > 0 ) {
-		n = CWT_MIN(n, rb->m_count);
-		while( n-- ) {
-			rb->m_count--;
-			rb->m_head++;
-			if( rb->m_head >= rb->m_capacity )
-				rb->m_head = 0;
-		}
-	}
-}
-
-void rb_pop_back(RingBufferPtr rb, size_t n)
-{
-	CWT_ASSERT(rb);
-
-	if( !n )
-		return;
-
-	if( rb->m_count > 0 ) {
-		n = CWT_MIN(n, rb->m_count);
-		rb->m_count -= n;
-	}
+	return rb->m_buffer[__get_bare_index(rb, rb->m_count-1)];
 }
 
 
 /**
  * Read bytes from ring buffer w/o removing header position.
- * Use @c rb_pop_front to move header position.
+ * Use @c popFront to move header position.
  *
  * @param rb
  * @param bytes
  * @param n
  * @return
  *
- * @see rb_pop
- * @see rb_pop_front
+ * @see pop
+ * @see popFront
  */
-ssize_t rb_read(RingBufferPtr rb, BYTE* bytes, size_t n)
+static ssize_t __read(CwtRingBuf *rb, BYTE* bytes, size_t n)
 {
 
 	CWT_ASSERT(rb);
@@ -293,20 +280,162 @@ ssize_t rb_read(RingBufferPtr rb, BYTE* bytes, size_t n)
 	return (ssize_t)n;
 }
 
-ssize_t rb_write(RingBufferPtr rb, const BYTE* bytes, size_t n)
+
+static ssize_t __write(CwtRingBuf *rb, const BYTE* bytes, size_t n)
 {
 	CWT_ASSERT(rb);
 
 	if( !n )
 		return (ssize_t)0;
 
-	if( !rb_push_back(rb, bytes, (size_t)n) ) {
+	if( !__pushBack(rb, bytes, (size_t)n) ) {
 		return (ssize_t)-1;
 	}
 
 	return (ssize_t)n;
 }
 
+
+static BYTE __get(CwtRingBuf *rb)
+{
+	BYTE ch;
+	CWT_ASSERT(rb);
+
+	ch = __atFront(rb);
+	__popFront(rb, 1);
+	return ch;
+}
+
+
+/* TODO need to optimize */
+static void __popFront(CwtRingBuf* rb, size_t n)
+{
+	CWT_ASSERT(rb);
+
+	if( !n )
+		return;
+
+	if( rb->m_count > 0 ) {
+		n = CWT_MIN(n, rb->m_count);
+		while( n-- ) {
+			rb->m_count--;
+			rb->m_head++;
+			if( rb->m_head >= rb->m_capacity )
+				rb->m_head = 0;
+		}
+	}
+}
+
+
+static void __popBack(CwtRingBuf* rb, size_t n)
+{
+	CWT_ASSERT(rb);
+
+	if( !n )
+		return;
+
+	if( rb->m_count > 0 ) {
+		n = CWT_MIN(n, rb->m_count);
+		rb->m_count -= n;
+	}
+}
+
+
+static BOOL __put(CwtRingBuf* rb, BYTE b)
+{
+	CWT_ASSERT(rb);
+
+	if( !__reserve(rb, 1) )
+		return FALSE;
+
+	rb->m_count++;
+	rb->m_buffer[__get_bare_index(rb, rb->m_count-1)] = b;
+	return TRUE;
+}
+
+
+static BOOL __pushBack(CwtRingBuf* rb, const BYTE* bytes, size_t n)
+{
+	size_t tail;
+
+	CWT_ASSERT(rb);
+
+	if( !__reserve(rb, n) )
+		return FALSE;
+
+	tail = (rb->m_head + rb->m_count) % rb->m_capacity;
+
+	if( n > 0 ) {
+		size_t nn = CWT_MIN(n, rb->m_capacity - tail);
+		memcpy(rb->m_buffer + tail, bytes, nn);
+		if( nn < n )
+			memcpy(rb->m_buffer, bytes + nn, n - nn);
+		rb->m_count += n;
+	}
+
+	return TRUE;
+}
+
+
+static BOOL __find(CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, size_t* index)
+{
+	size_t i = 0;
+	size_t j = 0;
+
+	CWT_ASSERT(rb);
+
+	for( i = from; i < rb->m_count; i++ ) {
+		if( __at(rb, i) == bytes[0] ) {
+
+			if( i + n > rb->m_count ) {
+				return FALSE;
+			}
+
+			for( j = 1; j < n; j++ ) {
+				if( __at(rb, i+j) != bytes[j] )
+					break;
+			}
+
+			if( j == n ) {
+				if( index )
+					*index = i;
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+
+/* TODO can be optimized */
+/**
+ * @brief Finds first occurrence of any character from @c bytes
+ *
+ * @param rb
+ * @param bytes
+ * @param n
+ * @param from
+ * @param index
+ * @return
+ */
+static BOOL __findAny(CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, size_t* index)
+{
+	size_t i = 0, j = 0;
+
+	CWT_ASSERT(rb);
+
+	for( i = from; i < rb->m_count; i++ ) {
+		for( j = 0; j < n; j++ ) {
+			if( __at(rb, i) == bytes[j] ) {
+				if( index )
+					*index = i;
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+
+#ifdef __COMMENT__
 
 /**
  * Write bytes from file into ring buffer
@@ -316,7 +445,7 @@ ssize_t rb_write(RingBufferPtr rb, const BYTE* bytes, size_t n)
  * @param n max bytes to write
  * @return bytes written into the ring buffer, or -1 if error
  */
-ssize_t rb_write_from_file(RingBufferPtr rb, int fd, size_t n)
+ssize_t rb_write_from_file(CwtRingBuf* rb, int fd, size_t n)
 {
 	BYTE ibuf[256];
 	size_t total_br = 0;
@@ -349,171 +478,6 @@ ssize_t rb_write_from_file(RingBufferPtr rb, int fd, size_t n)
 	return (ssize_t)total_br;
 }
 
-BYTE rb_get(RingBufferPtr rb)
-{
-	BYTE ch;
-	CWT_ASSERT(rb);
-
-	ch = rb_first(rb);
-	rb_pop_front(rb, 1);
-	return ch;
-}
-
-BOOL rb_put(RingBufferPtr rb, BYTE b)
-{
-	CWT_ASSERT(rb);
-
-	if( !rb_reserve(rb, 1) )
-		return FALSE;
-
-	rb->m_count++;
-	rb->m_buffer[_get_bare_index(rb, rb->m_count-1)] = b;
-	return TRUE;
-}
 
 
-/* TODO can be optimized */
-/**
- * Searches @c ch in the ring buffer started from @c *index.
- * Returns the position of the char @c ch found in @c *index.
- *
- * @param rb
- * @param ch
- * @param index
- * @return TRUE if @c ch found in the ring buffer or FALSE if @c ch occurance not found.
- * 	If search is successful position of the character stores in @c *index.
- */
-BOOL rb_find_byte(RingBufferPtr rb, BYTE ch, size_t from, size_t* index)
-{
-	size_t i = 0;
-
-	CWT_ASSERT(rb);
-
-	for( i = from; i < rb->m_count; i++ ) {
-		if( rb_at(rb, i) == ch ) {
-			if( index )
-				*index = i;
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-BOOL rb_find(RingBufferPtr rb, const BYTE* bytes, size_t n, size_t from, size_t* index)
-{
-	size_t i = 0;
-	size_t j = 0;
-
-	CWT_ASSERT(rb);
-
-	for( i = from; i < rb->m_count; i++ ) {
-		if( rb_at(rb, i) == bytes[0] ) {
-
-			if( i + n > rb->m_count ) {
-				return FALSE;
-			}
-
-			for( j = 1; j < n; j++ ) {
-				if( rb_at(rb, i+j) != bytes[j] )
-					break;
-			}
-
-			if( j == n ) {
-				if( index )
-					*index = i;
-				return TRUE;
-			}
-		}
-	}
-	return FALSE;
-}
-
-/* obsolete */
-int rb_split(
-      BYTE delim
-	, RingBufferPtr rb
-	, size_t len
-	, int maxcount
-	, void (*on_token)(RingBufferPtr, void*)
-	, void* extra)
-{
-	size_t i;
-	BOOL esc = FALSE;       /* escape char */
-	BOOL qq_opened = FALSE; /* TRUE if double quote opened */
-	BOOL q_opened = FALSE;  /* TRUE if single quote opened */
-	RingBufferPtr token;
-	int n = 0;
-
-	if( maxcount <= 0 )
-		maxcount = CWT_INT_MAX;
-
-	token = rb_new_defaults();
-
-	for( i = 0; i < len; i++ ) {
-		BYTE ch = rb_at(rb, i);
-
-		if( esc && delim != '\\' ) {
-			rb_put(token, ch);
-			esc = FALSE;
-			continue;
-		}
-
-		/* 'ch' is a delimiter and it is not inside quotes */
-		if( ch == delim && !(q_opened || qq_opened) ) {
-
-			if( !rb_size(token) )
-				continue;
-
-			/* risk of buffer overflow, break the 'for' loop */
-			if( n >= maxcount ) {
-				i = len;
-				rb_clear(token);
-				continue;
-			}
-
-			if( on_token ) {
-				on_token(token, extra);
-			}
-			rb_clear(token);
-			n++;
-			continue;
-		}
-
-		switch( ch ) {
-		case '\\':
-			esc = TRUE;
-			continue;
-
-		case '"':
-			if( !q_opened ) {
-				qq_opened = qq_opened ? FALSE : TRUE;
-				continue;
-			}
-			break;
-
-		case '\'':
-			if( !qq_opened ) {
-				q_opened = q_opened ? FALSE : TRUE;
-				continue;
-			}
-			break;
-
-		default:
-			break;
-		}
-		rb_put(token, ch);
-	}
-
-	if( q_opened || qq_opened ) {
-		n = RBE_QUOTE_CHAR_UNBALANCED;
-	} else {
-		if( rb_size(token) > 0 && n < maxcount ) {
-			if( on_token )
-				on_token(token, extra);
-			n++;
-		}
-	}
-
-	rb_delete(token);
-	return n;
-}
+#endif

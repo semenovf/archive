@@ -11,4 +11,5 @@ SUBDIRS  =         \
     tests/utils    \
     tests/strlist  \
     tests/strutils \
-    tests/dbi
+    tests/dbi      \
+    tests/io/channel

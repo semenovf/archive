@@ -19,7 +19,7 @@ static CwtUnistdNS __cwtUnistdNS = {
 	, CWT_ISO_CPP_NAME(read)
 	, CWT_ISO_CPP_NAME(write)
 	, CWT_ISO_CPP_NAME(lseek)
-#ifdef __SUPPORT_SHARING__
+#ifdef CWT_CC_MSC
 	, CWT_ISO_CPP_NAME(wsopen)
 #endif
 #else
@@ -28,7 +28,7 @@ static CwtUnistdNS __cwtUnistdNS = {
 	, CWT_ISO_CPP_NAME(read)
 	, CWT_ISO_CPP_NAME(write)
 	, CWT_ISO_CPP_NAME(lseek)
-#ifdef __SUPPORT_SHARING__
+#ifdef CWT_CC_MSC
 	, CWT_ISO_CPP_NAME(sopen)
 #endif
 #endif

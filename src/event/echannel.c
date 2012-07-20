@@ -10,24 +10,24 @@
 #include <cwt/dlist.h>
 
 typedef struct CwtEventChannel {
-	CwtEvent base;
-	CwtChannelPtr channel;
+	CwtEvent __base;
+	CwtChannel *channel;
 } CwtEventChannel;
 
 
 typedef struct CwtChannelListener {
-	CwtChannelPtr channel;
-	CwtStack      readers;
+	CwtChannel  *channel;
+	CwtStack     readers;
 } CwtChannelListener;
 
-static CwtDListNode* __cwtChannelFindListenerNode(CwtChannelPtr chan);
+static CwtDListNode* __cwtChannelFindListenerNode(CwtChannel *pchan);
 static void __cwtEventChannelPoll(void);
 
 static CwtDList       __cwtChannelListeners = {NULL, NULL};
 static CwtEventSource __cwtEventChannelSource = { __cwtEventChannelPoll };
 
 
-static CwtDListNode* __cwtChannelFindListenerNode(CwtChannelPtr chan)
+static CwtDListNode* __cwtChannelFindListenerNode(CwtChannel *chan)
 {
 	CwtDListIterator it;
 	cwtDListBegin(&__cwtChannelListeners, &it);
@@ -77,7 +77,7 @@ CwtEventSourcePtr cwtEventChannelSource(void)
  * @param chan
  * @param reader
  */
-void cwtEventChannelAddListener( CwtChannelPtr chan, BOOL (*reader)(CwtEventPtr) )
+void cwtEventChannelAddListener( CwtChannel *chan, BOOL (*reader)(CwtEventPtr) )
 {
 	CwtDListNode* pnode;
 
@@ -101,7 +101,7 @@ void cwtEventChannelAddListener( CwtChannelPtr chan, BOOL (*reader)(CwtEventPtr)
 	}
 }
 
-void cwtEventChannelRemoveListener( CwtChannelPtr chan )
+void cwtEventChannelRemoveListener( CwtChannel *chan )
 {
 	CwtDListNode* pnode = __cwtChannelFindListenerNode(chan);
 
@@ -113,7 +113,7 @@ void cwtEventChannelRemoveListener( CwtChannelPtr chan )
 }
 
 
-void cwtEventPeekChannel(CwtEventPtr pevt, CwtChannelPtr *pchan)
+void cwtEventPeekChannel(CwtEventPtr pevt, CwtChannel **pchan)
 {
 	CwtEventChannel *pevt_chan = (CwtEventChannel*)pevt;
 

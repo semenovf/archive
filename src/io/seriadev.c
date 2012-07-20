@@ -17,29 +17,26 @@
 #include <cwt/io/seriadev.h>
 
 
-static void    __cwtSerialClose(CwtIODevicePtr);
-static size_t  __cwtSerialBytesAvailable(CwtIODevicePtr);
-static ssize_t __cwtSerialRead(CwtIODevicePtr, BYTE*, size_t);
-static ssize_t __cwtSerialWrite(CwtIODevicePtr, const BYTE*, size_t);
+static void    __cwtSerialClose(CwtIODevice*);
+static size_t  __cwtSerialBytesAvailable(CwtIODevice*);
+static ssize_t __cwtSerialRead(CwtIODevice*, BYTE*, size_t);
+static ssize_t __cwtSerialWrite(CwtIODevice*, const BYTE*, size_t);
 /*
 static void    serial_read_begin(CwtIODevicePtr);
 static void    serial_read_commit(CwtIODevicePtr);
 static void    serial_read_rollback(CwtIODevicePtr);
 */
 
-struct CwtSerialDevice
+typedef struct CwtSerialDevice
 {
 	CwtIODevice base;
 	int portnum;
-};
-
-typedef struct CwtSerialDevice  CwtSerialDevice;
-typedef struct CwtSerialDevice* CwtSerialDevicePtr;
+} CwtSerialDevice;
 
 
-int cwtSerialDevicePort(CwtIODevicePtr dev)
+int cwtSerialDevicePort(CwtIODevice *dev)
 {
-	CwtSerialDevicePtr spd = (CwtSerialDevicePtr)dev;
+	CwtSerialDevice *spd = (CwtSerialDevice*)dev;
 	CWT_ASSERT(dev);
 
 	return spd->portnum;
@@ -49,10 +46,10 @@ int cwtSerialDevicePort(CwtIODevicePtr dev)
  * Open serial device
  * port=5 speed=9600 parity=none stop=1 uart_base=0xd800 irq=0x0A
  */
-CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
+CwtIODevice* serial_device_open(CWT_CHAR *attrs[], int nattrs)
 {
 	CwtStrNS *strNS = cwtStrNS();
-	CwtSerialDevicePtr spd;
+	CwtSerialDevice *spd;
 	int i;
 	BOOL is_error = FALSE;
 
@@ -135,11 +132,11 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 	}
 
 	if( is_error )
-		return (CwtIODevicePtr)NULL;
+		return (CwtIODevice*)NULL;
 
 	if( portnum < 0) {
 		print_error(_Tr("serial port number must be specified"));
-		return (CwtIODevicePtr)NULL;
+		return (CwtIODevice*)NULL;
 	}
 
 	if( !uart_base ) {
@@ -154,7 +151,7 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 				break;
 			default:
 				print_error(_Tr("serial port uart base address must be specified"));
-				return (CwtIODevicePtr)NULL;
+				return (CwtIODevice*)NULL;
 		}
 	}
 
@@ -166,7 +163,7 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 			case 4: irq = 3/*0x0B*/; break;
 			default:
 				print_error(_Tr("serial port IRQ must be specified"));
-				return (CwtIODevicePtr)NULL;
+				return (CwtIODevice*)NULL;
 		}
 	}
 
@@ -175,14 +172,14 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 	if( rc != E_SP_NOERROR ) {
 /*		serialport_close(portnum);*/
 		printf_error(_Tr("serialport_set_settings: %s"), serialport_strerror(rc));
-		return (CwtIODevicePtr)NULL;
+		return (CwtIODevice*)NULL;
 	}
 
 	rc = serialport_open(portnum, speed, hispeed, db, parity, sb);
 
 	if( rc != E_SP_NOERROR ) {
 		printf_error(_Tr("serialport_open: %s"), serialport_strerror(rc));
-		return (CwtIODevicePtr)NULL;
+		return (CwtIODevice*)NULL;
 	}
 
 	serialport_dump(portnum);
@@ -209,32 +206,32 @@ CwtIODevicePtr serial_device_open(CWT_CHAR *attrs[], int nattrs)
 	spd->base.readRollback   = NULL;
 
 	spd->portnum = portnum;
-	return (CwtIODevicePtr)spd;
+	return (CwtIODevice*)spd;
 }
 
 
-void __cwtSerialClose(CwtIODevicePtr dev)
+void __cwtSerialClose(CwtIODevice *dev)
 {
-	CwtSerialDevicePtr spd = (CwtSerialDevicePtr)dev;
+	CwtSerialDevice *spd = (CwtSerialDevice*)dev;
 	CWT_ASSERT(dev);
 	cwtSerialClose(spd->portnum);
 	CWT_FREE(spd);
 }
 
-size_t __cwtSerialBytesAvailable(CwtIODevicePtr dev)
+size_t __cwtSerialBytesAvailable(CwtIODevice *dev)
 {
 	CWT_ASSERT(dev);
-	return cwtSerialBytesAvailable(((CwtSerialDevicePtr)dev)->portnum);
+	return cwtSerialBytesAvailable(((CwtSerialDevice*)dev)->portnum);
 }
 
-ssize_t __cwtSerialRead(CwtIODevicePtr dev, BYTE* buf, size_t sz)
+ssize_t __cwtSerialRead(CwtIODevice *dev, BYTE* buf, size_t sz)
 {
 	CWT_ASSERT(dev);
-	return cwtSerialRead(((CwtSerialDevicePtr)dev)->portnum, buf, sz);
+	return cwtSerialRead(((CwtSerialDevice*)dev)->portnum, buf, sz);
 }
 
-ssize_t __cwtSerialWrite(CwtIODevicePtr dev, const BYTE* buf, size_t sz)
+ssize_t __cwtSerialWrite(CwtIODevice *dev, const BYTE* buf, size_t sz)
 {
 	CWT_ASSERT(dev);
-	return cwtSerialWrite(((CwtSerialDevicePtr)dev)->portnum, buf, sz);
+	return cwtSerialWrite(((CwtSerialDevice*)dev)->portnum, buf, sz);
 }

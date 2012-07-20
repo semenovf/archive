@@ -14,9 +14,9 @@
 EXTERN_C_BEGIN
 
 DLL_API_EXPORT CwtEventSourcePtr cwtEventChannelSource(void);
-DLL_API_EXPORT void cwtEventChannelAddListener(CwtChannelPtr chan, BOOL (*reader)(CwtEventPtr));
-DLL_API_EXPORT void cwtEventChannelRemoveListener(CwtChannelPtr chan);
-DLL_API_EXPORT void cwtEventPeekChannel(CwtEventPtr pevt, CwtChannelPtr *pchan);
+DLL_API_EXPORT void cwtEventChannelAddListener(CwtChannel *pchan, BOOL (*reader)(CwtEventPtr));
+DLL_API_EXPORT void cwtEventChannelRemoveListener(CwtChannel *pchan);
+DLL_API_EXPORT void cwtEventPeekChannel(CwtEventPtr pevt, CwtChannel **pchan);
 
 EXTERN_C_END
 

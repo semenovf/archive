@@ -12,9 +12,9 @@
 
 EXTERN_C_BEGIN
 
-DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode);
+DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, int mode);
 #ifdef __SUPPORT_SHARING__
-DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, const CWT_CHAR* outfilename, BOOL master);
+DLL_API_EXPORT CwtIODevice* cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, const CWT_CHAR* outfilename, BOOL master);
 #endif
 
 EXTERN_C_END

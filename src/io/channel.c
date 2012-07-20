@@ -3,14 +3,17 @@
 #include <cwt/logger.h>
 #include <cwt/io/channel.h>
 
+
 static CwtChannel*  __create  (CwtIODevice *pdev);
-static void         __init    (CwtChannel*, CwtIODevice *pdev);
-static void         __destroy (CwtChannel*);
 static void         __free    (CwtChannel*);
 static BOOL         __canRead (CwtChannel*);
 static BOOL         __canWrite(CwtChannel*);
 static CwtIODevice* __device  (CwtChannel*);
 
+static BOOL         __atEnd     (CwtChannel*);
+static BOOL         __canReadLine (CwtChannel*);
+static BOOL         __readLine  (CwtChannel*, CwtByteArray *ba);
+static ssize_t      __poll      (CwtChannel*);
 static ssize_t      __read      (CwtChannel*, BYTE *buf, size_t sz);
 static ssize_t      __write     (CwtChannel*, const BYTE *buf, size_t sz);
 static ssize_t      __writeByte (CwtChannel*, BYTE ch);
@@ -21,16 +24,25 @@ static void         __readBegin     (CwtChannel*);
 static void         __readCommit    (CwtChannel*);
 static void         __readRollback  (CwtChannel*);
 
+/* helper functions */
+static void         __init    (CwtChannel*, CwtIODevice *pdev);
+static void         __destroy (CwtChannel*);
 
 static CwtChannelNS __cwtChannelNS = {
 	  __create
+/*
 	, __init
 	, __destroy
+*/
 	, __free
 	, __canRead
 	, __canWrite
 	, __device
 
+	, __atEnd
+	, __canReadLine
+	, __readLine
+	, __poll
 	, __read
 	, __write
 	, __writeByte
@@ -43,24 +55,12 @@ static CwtChannelNS __cwtChannelNS = {
 };
 
 
+static CwtRingBufNS *__rbNS = NULL;
+static CwtByteArrayNS *__baNS = NULL;
+
 DLL_API_EXPORT CwtChannelNS* cwtChannelNS(void)
 {
 	return &__cwtChannelNS;
-}
-
-
-static CwtChannel* __create(CwtIODevice *pdev)
-{
-	CwtChannel* chan;
-
-	if( !pdev ) {
-		printf_error(_Tr("device is null"));
-		return (CwtChannel*)NULL;
-	}
-
-	chan = CWT_MALLOC(CwtChannel);
-	__init(chan, pdev);
-	return chan;
 }
 
 
@@ -71,6 +71,7 @@ static void __init(CwtChannel *pchan, CwtIODevice *pdev)
 	pchan->dev = pdev;
 	pchan->total_br = 0L;
 	pchan->total_bw = 0L;
+	pchan->rb = __rbNS->create();
 }
 
 static void __destroy(CwtChannel *pchan)
@@ -79,7 +80,31 @@ static void __destroy(CwtChannel *pchan)
         if( pchan->dev ) {
 			pchan->dev->close(pchan->dev);
         }
+
+        cwtRingBufNS()->free(pchan->rb);
+        pchan->rb = NULL;
 	}
+}
+
+static CwtChannel* __create(CwtIODevice *pdev)
+{
+	CwtChannel* pchan;
+
+	if( !pdev ) {
+		printf_error(_Tr("device is null"));
+		return (CwtChannel*)NULL;
+	}
+
+	if( !__rbNS )
+		__rbNS = cwtRingBufNS();
+
+	if( !__baNS )
+		__baNS = cwtByteArrayNS();
+
+	pchan = CWT_MALLOC(CwtChannel);
+	__init((CwtChannel*)pchan, pdev);
+
+	return pchan;
 }
 
 static void __free(CwtChannel *pchan)
@@ -118,18 +143,117 @@ static CwtIODevice* __device(CwtChannel *pchan)
 static size_t __bytesAvailable(CwtChannel *pchan)
 {
 	CWT_ASSERT(pchan && pchan->dev);
-	return pchan->dev->bytesAvailable(pchan->dev);
+	__poll(pchan);
+	return __rbNS->size(pchan->rb); /*pchan->dev->bytesAvailable(pchan->dev);*/
 }
+
+
+/**
+ * @brief Checks ending of reading.
+ *
+ * @param pchan
+ * @return
+ */
+static BOOL __atEnd( CwtChannel *pchan )
+{
+	return (__rbNS->size(pchan->rb) == 0 && __poll(pchan) == 0)
+			? TRUE : FALSE;
+}
+
+
+
+static BOOL __canReadLine(CwtChannel *pchan)
+{
+	CWT_ASSERT(pchan && pchan->dev);
+
+	__poll(pchan);
+	return __rbNS->findAny(pchan->rb, "\n\r", 2, 0, NULL)
+		|| (__atEnd(pchan) && __rbNS->size(pchan->rb) > 0);
+}
+
+
+/**
+ *
+ *
+ * @param pchan
+ * @param ba
+ * @return @c TRUE if line successfully read
+ */
+static BOOL __readLine(CwtChannel *pchan, CwtByteArray *ba)
+{
+	size_t index;
+
+	CWT_ASSERT(pchan);
+	CWT_ASSERT(ba);
+
+	__baNS->clear(ba);
+
+	if( __rbNS->findAny(pchan->rb, "\r\n", 2, 0, &index) ) {
+		__baNS->resize(ba, index);
+		__rbNS->read(pchan->rb, ba->m_buffer, index);
+
+		__rbNS->popFront(pchan->rb, index+1);
+
+		/* may be \r\n or \n\r delimiter */
+		if( __rbNS->size(pchan->rb) > 0 ) {
+			if(__rbNS->first(pchan->rb) == '\n' || __rbNS->first(pchan->rb) == '\r' ) {
+				__rbNS->popFront(pchan->rb, 1);
+			}
+		}
+
+		return TRUE;
+	} else if( __poll(pchan) == 0 && __rbNS->size(pchan->rb) > 0 ) {
+		__baNS->resize(ba, __rbNS->size(pchan->rb));
+		__rbNS->read(pchan->rb, ba->m_buffer, __rbNS->size(pchan->rb));
+		__rbNS->clear(pchan->rb);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+#define __DATA_CHUNK_SZ 256
+static ssize_t __poll(CwtChannel *pchan)
+{
+	BYTE buf[__DATA_CHUNK_SZ];
+	int n = 5;
+	ssize_t br, tbr = 0;
+	CWT_ASSERT(pchan && pchan->dev);
+
+	while( n-- ) {
+		br = pchan->dev->read(pchan->dev, buf, __DATA_CHUNK_SZ);
+		if( br > 0 ) {
+			__rbNS->pushBack(pchan->rb, buf, br);
+			tbr += br;
+
+			if( br < __DATA_CHUNK_SZ )
+				break;
+		} else {
+			if( br < 0 )
+				tbr = br;
+			break;
+		}
+	}
+	return tbr;
+}
+
 
 static ssize_t __read(CwtChannel *pchan, BYTE *buf, size_t sz)
 {
-	ssize_t br;
+	ssize_t br = 0;
 	CWT_ASSERT(pchan && pchan->dev);
-	br = pchan->dev->read(pchan->dev, buf, sz);
+
+	__poll(pchan);
+
+	if( __rbNS->size(pchan->rb) > 0 )
+		br = __rbNS->read(pchan->rb, buf, sz);
+
 	if( br > 0 )
 		pchan->total_br += br;
 	return br;
 }
+
 
 static ssize_t __write(CwtChannel *pchan, const BYTE *buf, size_t sz)
 {
@@ -167,8 +291,6 @@ static void __readBegin(CwtChannel *pchan)
 
 	if( pchan->dev->readBegin ) {
 		pchan->dev->readBegin(pchan->dev);
-	} else {
-		/* TODO must be implemented */
 	}
 }
 
@@ -177,9 +299,7 @@ static void __readCommit(CwtChannel *pchan)
 	CWT_ASSERT(pchan && pchan->dev);
 
 	if( pchan->dev->readCommit ) {
-			pchan->dev->readCommit(pchan->dev);
-	} else {
-			/* TODO must be implemented */
+		pchan->dev->readCommit(pchan->dev);
 	}
 }
 
@@ -188,9 +308,7 @@ static void __readRollback(CwtChannel *pchan)
 	CWT_ASSERT(pchan && pchan->dev);
 
 	if( pchan->dev->readRollback ) {
-			pchan->dev->readRollback(pchan->dev);
-	} else {
-			/* TODO must be implemented */
+		pchan->dev->readRollback(pchan->dev);
 	}
 }
 

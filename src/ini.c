@@ -31,7 +31,7 @@ static void          __destroy (CwtIniHandler);
 static void          __free    (CwtIniHandler);
 static BOOL          __parse   (CwtIniHandler, CwtChannel*);
 static void          __onError (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
-static void          __addRule (CwtIniHandler, CwtIniCallback resolver, CwtIniCallback handler);
+static void          __addRule (CwtIniHandler, const CWT_CHAR *anchor, CwtIniCallback handler);
 
 static CwtIniNS __cwtIniNS = {
 	  __create
@@ -377,10 +377,10 @@ DLL_API_EXPORT BOOL cwtLoadIniByRules(const CHAR* path, CwtIniRule *rules, void 
 #endif
 
 
-static void __addRule (CwtIniHandler *h, CwtIniCallback resolver, CwtIniCallback handler)
+static void __addRule (CwtIniHandler *h, const CWT_CHAR *anchor, CwtIniCallback handler)
 {
 	CWT_UNUSED(h);
-	CWT_UNUSED(resolver);
+	CWT_UNUSED(anchor);
 	CWT_UNUSED(handler);
 }
 

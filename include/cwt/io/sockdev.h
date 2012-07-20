@@ -27,9 +27,9 @@ CwtIODevicePtr cwtLocalSocketDeviceOpen(void);
 CwtIODevicePtr cwtTcpSocketDeviceOpen(const CHAR *hostName, UINT16 port);
 */
 
-CwtIODevicePtr cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port);
+CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port);
 
-DLL_API_EXPORT CwtIODevicePtr cwtMulticastSocketDeviceOpen(
+DLL_API_EXPORT CwtIODevice* cwtMulticastSocketDeviceOpen(
 	  const CWT_CHAR *inetAddr
 	, UINT16 port
 	, const CWT_CHAR *inetMCastAddr

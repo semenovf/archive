@@ -13,8 +13,8 @@
 
 EXTERN_C_BEGIN
 
-DLL_API_EXPORT CwtIODevicePtr cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs);
-DLL_API_EXPORT int            cwtSerialDevicePort(CwtIODevicePtr dev);
+DLL_API_EXPORT CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs);
+DLL_API_EXPORT int          cwtSerialDevicePort(CwtIODevice *pdev);
 
 EXTERN_C_END
 

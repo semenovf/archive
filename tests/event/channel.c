@@ -43,7 +43,7 @@ static BOOL echo(CwtEventPtr pevt)
 {
 	CwtChannelNS *cns = cwtChannelNS();
 
-	CwtChannelPtr chan;
+	CwtChannel *chan;
 	ssize_t br;
 	BYTE buf[256];
 

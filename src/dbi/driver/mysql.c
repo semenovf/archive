@@ -5,7 +5,12 @@
  *      Author: wladt
  */
 
+
 #include <mysql/my_global.h>
+/*to avoid warning C4005: 'ETIMEDOUT' : macro redefinition*/
+#ifdef ETIMEDOUT
+#	undef ETIMEDOUT
+#endif
 #include <mysql/my_sys.h>
 #include <mysql/mysql.h>
 #include <cwt/dbi/dbi.h>

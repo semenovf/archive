@@ -21,7 +21,7 @@ typedef struct CwtIniNS {
 	void          (*free)    (CwtIniHandler);
 	BOOL          (*parse)   (CwtIniHandler, CwtChannel*);
 	void          (*onError) (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
-	void          (*addRule) (CwtIniHandler, CwtIniCallback resolver, CwtIniCallback handler);
+	void          (*addRule) (CwtIniHandler, const CWT_CHAR *anchor, CwtIniCallback handler);
 } CwtIniNS;
 
 

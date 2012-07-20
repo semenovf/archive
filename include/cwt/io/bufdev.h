@@ -12,8 +12,8 @@
 
 EXTERN_C_BEGIN
 
-DLL_API_EXPORT CwtIODevicePtr cwtBufferDeviceOpen(void);
-DLL_API_EXPORT CwtIODevicePtr cwtBufferDeviceOpenPeer(CwtIODevicePtr bufd);
+DLL_API_EXPORT CwtIODevice* cwtBufferDeviceOpen(void);
+DLL_API_EXPORT CwtIODevice* cwtBufferDeviceOpenPeer(CwtIODevice *bufd);
 
 EXTERN_C_END
 

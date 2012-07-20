@@ -29,7 +29,7 @@ typedef struct CwtUnistdNS {
 	INT  (*read)     (int fd, void *buffer, UINT count );
 	INT  (*write)    (int fd, const void *buffer, UINT count );
 	LONG (*lseek)    (int fd, LONG offset, INT origin);
-#ifdef __SUPPORT_SHARING__
+#ifdef CWT_CC_MSC
 	INT  (*sopen)    (const CWT_CHAR *filename, INT oflag, INT shflag, ...);
 #endif
 

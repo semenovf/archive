@@ -8,9 +8,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#ifdef __SUPPORT_SHARING__
-#include <share.h> /* file sharing modes */
-#endif
 #include <fcntl.h>
 #include <errno.h>
 #include <cwt/stdio.h>
@@ -19,14 +16,17 @@
 #include <cwt/unistd.h>
 #include <cwt/io/filedev.h>
 #include <cwt/logger.h>
+#ifdef CWT_CC_MSC
+#	include <share.h> /* file sharing modes */
+#endif
 
-static void    __cwtFileClose(CwtIODevicePtr);
-static size_t  __cwtFileBytesAvailable(CwtIODevicePtr);
-static ssize_t __cwtFileRead(CwtIODevicePtr, BYTE*, size_t);
-static ssize_t __cwtFileWrite(CwtIODevicePtr, const BYTE*, size_t);
-static void    __cwtFileReadBegin(CwtIODevicePtr);
-static void    __cwtFileReadCommit(CwtIODevicePtr);
-static void    __cwtFileReadRollback(CwtIODevicePtr);
+static void    __cwtFileClose(CwtIODevice*);
+static size_t  __cwtFileBytesAvailable(CwtIODevice*);
+static ssize_t __cwtFileRead(CwtIODevice*, BYTE*, size_t);
+static ssize_t __cwtFileWrite(CwtIODevice*, const BYTE*, size_t);
+static void    __cwtFileReadBegin(CwtIODevice*);
+static void    __cwtFileReadCommit(CwtIODevice*);
+static void    __cwtFileReadRollback(CwtIODevice*);
 
 typedef struct CwtFileDevice
 {
@@ -36,12 +36,12 @@ typedef struct CwtFileDevice
 	int out; /* output file handler */
 	off_t read_pos;
 	off_t read_pos_saved;
-} CwtFileDevice, *CwtFileDevicePtr;
+} CwtFileDevice;
 
 
-DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
+DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
 {
-	CwtFileDevicePtr fd;
+	CwtFileDevice *fd;
 	CwtUnistdNS *ns = cwtUnistdNS();
 	int fh = -1;
 
@@ -49,11 +49,11 @@ DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
 		fh = ns->open(path, mode, 0);
 		if( fh < 0 ) {
 			printf_error(_Tr("unable to open input file: %s: %s"), path, cwtStrNS()->strerror(errno));
-			return (CwtIODevicePtr)NULL;
+			return (CwtIODevice*)NULL;
 		}
 	} else {
 		print_error(_Tr("unspecified path"));
-		return (CwtIODevicePtr)NULL;
+		return (CwtIODevice*)NULL;
 	}
 
 	fd = CWT_MALLOC(CwtFileDevice);
@@ -81,10 +81,10 @@ DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
 	fd->base.readCommit     = __cwtFileReadCommit;
 	fd->base.readRollback   = __cwtFileReadRollback;
 
-	return (CwtIODevicePtr)fd;
+	return (CwtIODevice*)fd;
 }
 
-#ifdef __SUPPORT_SHARING__
+#ifdef CWT_CC_MSC
 /**
  * Opens file device consists of two parts: file for read and file for write
  *
@@ -93,9 +93,9 @@ DLL_API_EXPORT CwtIODevicePtr cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
  * @param master if @c true files will be created and/or truncated
  * @return
  */
-DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, const CWT_CHAR* outfilename, BOOL master)
+DLL_API_EXPORT CwtIODevice* cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, const CWT_CHAR* outfilename, BOOL master)
 {
-	CwtFileDevicePtr fd;
+	CwtFileDevice* fd;
 	CwtUnistdNS *ns = cwtUnistdNS();
 
 	int imode = O_RDWR | O_BINARY;
@@ -115,7 +115,7 @@ DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const CWT_CHAR* infilename
 			if( fd->in < 0 ) {
 					printf_error(_Tr("unable to open input file: %s: %s"), infilename, cwtStrNS()->strerror(errno));
 					CWT_FREE(fd);
-					return (CwtIODevicePtr)NULL;
+					return (CwtIODevice*)NULL;
 			}
 	}
 
@@ -127,7 +127,7 @@ DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const CWT_CHAR* infilename
 					ns->close(fd->in);
 			}
 			CWT_FREE(fd);
-			return (CwtIODevicePtr)NULL;
+			return (CwtIODevice*)NULL;
 		}
 	}
 
@@ -149,17 +149,17 @@ DLL_API_EXPORT CwtIODevicePtr cwtSharedFileDeviceOpen(const CWT_CHAR* infilename
 	fd->base.readCommit     = __cwtFileReadCommit;
 	fd->base.readRollback   = __cwtFileReadRollback;
 
-	return (CwtIODevicePtr)fd;
+	return (CwtIODevice*)fd;
 }
 #endif
 
-void __cwtFileClose(CwtIODevicePtr dev)
+void __cwtFileClose(CwtIODevice *dev)
 {
-	CwtFileDevicePtr fd;
+	CwtFileDevice *fd;
 	CwtUnistdNS *ns = cwtUnistdNS();
 
 	CWT_ASSERT(dev);
-	fd = (CwtFileDevicePtr)dev;
+	fd = (CwtFileDevice*)dev;
 
 	if( fd->in > 0 )
 		ns->close(fd->in);
@@ -171,14 +171,14 @@ void __cwtFileClose(CwtIODevicePtr dev)
 	CWT_FREE(fd);
 }
 
-size_t __cwtFileBytesAvailable(CwtIODevicePtr dev)
+size_t __cwtFileBytesAvailable(CwtIODevice *dev)
 {
 	CwtUnistdNS *ns = cwtUnistdNS();
-	CwtFileDevicePtr fd;
+	CwtFileDevice *fd;
 	off_t total;
 
 	CWT_ASSERT(dev);
-	fd = (CwtFileDevicePtr)dev;
+	fd = (CwtFileDevice*)dev;
 
 	if( fd->in < 0 ) {
 		print_error(_Tr("file device does not support read operations"));
@@ -191,14 +191,14 @@ size_t __cwtFileBytesAvailable(CwtIODevicePtr dev)
 	return (size_t)(total - fd->read_pos);
 }
 
-ssize_t __cwtFileRead(CwtIODevicePtr dev, BYTE* buf, size_t sz)
+ssize_t __cwtFileRead(CwtIODevice *dev, BYTE* buf, size_t sz)
 {
 	CwtUnistdNS *ns = cwtUnistdNS();
-	CwtFileDevicePtr fd;
+	CwtFileDevice *fd;
 	ssize_t br;
 
 	CWT_ASSERT(dev);
-	fd = (CwtFileDevicePtr)dev;
+	fd = (CwtFileDevice*)dev;
 
 	if( fd->in < 0 ) {
 		print_error(_Tr("file device does not support read operations"));
@@ -217,14 +217,14 @@ ssize_t __cwtFileRead(CwtIODevicePtr dev, BYTE* buf, size_t sz)
 	return br;
 }
 
-ssize_t __cwtFileWrite(CwtIODevicePtr dev, const BYTE* buf, size_t sz)
+ssize_t __cwtFileWrite(CwtIODevice *dev, const BYTE* buf, size_t sz)
 {
 	CwtUnistdNS *ns = cwtUnistdNS();
-	CwtFileDevicePtr fd;
+	CwtFileDevice *fd;
 	ssize_t bw;
 
 	CWT_ASSERT(dev);
-	fd = (CwtFileDevicePtr)dev;
+	fd = (CwtFileDevice*)dev;
 
 	if( fd->out < 0 ) {
 		print_error(_Tr("file device does not support write operations"));
@@ -240,30 +240,30 @@ ssize_t __cwtFileWrite(CwtIODevicePtr dev, const BYTE* buf, size_t sz)
 	return bw;
 }
 
-void __cwtFileReadBegin(CwtIODevicePtr dev)
+void __cwtFileReadBegin(CwtIODevice *dev)
 {
-	CwtFileDevicePtr fd;
+	CwtFileDevice *fd;
 	CWT_ASSERT(dev);
 
-	fd = (CwtFileDevicePtr)dev;
+	fd = (CwtFileDevice*)dev;
 	fd->read_pos_saved = fd->read_pos;
 }
 
-void __cwtFileReadCommit(CwtIODevicePtr dev)
+void __cwtFileReadCommit(CwtIODevice *dev)
 {
-	CwtFileDevicePtr fd;
+	CwtFileDevice *fd;
 	CWT_ASSERT(dev);
 
-	fd = (CwtFileDevicePtr)dev;
+	fd = (CwtFileDevice*)dev;
 	fd->read_pos_saved = fd->read_pos;
 }
 
-void __cwtFileReadRollback(CwtIODevicePtr dev)
+void __cwtFileReadRollback(CwtIODevice *dev)
 {
-	CwtFileDevicePtr fd;
+	CwtFileDevice *fd;
 	CWT_ASSERT(dev);
 
-	fd = (CwtFileDevicePtr)dev;
+	fd = (CwtFileDevice*)dev;
 	fd->read_pos = fd->read_pos_saved;
 }
 

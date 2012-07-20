@@ -271,7 +271,7 @@ static BOOL __mreserve(_CollectionT* sb, size_t n, size_t pos)                \
 static BOOL __resize(_CollectionT* sb, size_t sz)                             \
 {                                                                             \
 	CWT_ASSERT(sb);                                                           \
-	if( __reserve(sb, sz) )                                                   \
+	if( !__reserve(sb, sz) )                                                  \
 		return FALSE;                                                         \
 	sb->m_count = sz;                                                         \
 	return TRUE;                                                              \
