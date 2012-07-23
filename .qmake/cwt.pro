@@ -3,11 +3,13 @@ CONFIG  += ordered
 SUBDIRS  =         \
     cwt            \
     cwt-mysql      \
+    tests/bytearr  \
     tests/event    \
     tests/echannel \
     tests/eclock   \
     tests/emcsock  \
     tests/crc64    \
+    tests/ini      \
     tests/utils    \
     tests/strlist  \
     tests/strutils \

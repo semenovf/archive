@@ -89,6 +89,69 @@ DLL_API_EXPORT int string_nocase_equal(void *string1, void *string2);
 
 DLL_API_EXPORT int string_nocase_compare(void *string1, void *string2);
 
+
+/**
+ * Compare two strings to determine if they are equal.
+ *
+ * @param string1         The first string.
+ * @param string2         The second string.
+ * @return                Non-zero if the strings are equal, zero if they are
+ *                        not equal.
+ */
+
+DLL_API_EXPORT int wstring_equal(void *string1, void *string2);
+
+/**
+ * Compare two strings.
+ *
+ * @param string1         The first string.
+ * @param string2         The second string.
+ * @return                A negative value if the first string should be
+ *                        sorted before the second, a positive value if the
+ *                        first string should be sorted after the second,
+ *                        zero if the two strings are equal.
+ */
+
+DLL_API_EXPORT int wstring_compare(void *string1, void *string2);
+
+/**
+ * Compare two strings to determine if they are equal, ignoring the
+ * case of letters.
+ *
+ * @param string1         The first string.
+ * @param string2         The second string.
+ * @return                Non-zero if the strings are equal, zero if they are
+ *                        not equal.
+ */
+
+DLL_API_EXPORT int wstring_nocase_equal(void *string1, void *string2);
+
+/**
+ * Compare two strings, ignoring the case of letters.
+ *
+ * @param string1         The first string.
+ * @param string2         The second string.
+ * @return                A negative value if the first string should be
+ *                        sorted before the second, a positive value if the
+ *                        first string should be sorted after the second,
+ *                        zero if the two strings are equal.
+ */
+
+DLL_API_EXPORT int wstring_nocase_compare(void *string1, void *string2);
+
+
+#ifdef CWT_UNICODE
+#	define cwt_string_equal          wstring_equal
+#	define cwt_string_compare        wstring_compare
+#	define cwt_string_nocase_equal   wstring_nocase_equal
+#	define cwt_string_nocase_compare wstring_nocase_compare
+#else
+#	define cwt_string_equal          string_equal
+#	define cwt_string_compare        string_compare
+#	define cwt_string_nocase_equal   string_nocase_equal
+#	define cwt_string_nocase_compare string_nocase_compare
+#endif
+
 #ifdef __cplusplus
 }
 #endif

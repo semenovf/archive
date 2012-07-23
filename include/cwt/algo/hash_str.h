@@ -52,6 +52,34 @@ DLL_API_EXPORT unsigned long string_hash(void *string);
 
 DLL_API_EXPORT unsigned long string_nocase_hash(void *string);
 
+
+/**
+ * Generate a hash key from a string.
+ *
+ * @param string           The string.
+ * @return                 A hash key for the string.
+ */
+
+DLL_API_EXPORT unsigned long wstring_hash(void *string);
+
+/**
+ * Generate a hash key from a string, ignoring the case of letters.
+ *
+ * @param string           The string.
+ * @return                 A hash key for the string.
+ */
+
+DLL_API_EXPORT unsigned long wstring_nocase_hash(void *string);
+
+#ifdef CWT_UNICODE
+#	define cwt_string_hash        wstring_hash
+#	define cwt_string_nocase_hash wstring_nocase_hash
+#else
+#	define cwt_string_hash        string_hash
+#	define cwt_string_nocase_hash string_nocase_hash
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif

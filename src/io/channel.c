@@ -173,7 +173,7 @@ static BOOL __canReadLine(CwtChannel *pchan)
 
 
 /**
- *
+ * @brief Reads line of bytes from channel and appends it into byte array
  *
  * @param pchan
  * @param ba
@@ -182,15 +182,17 @@ static BOOL __canReadLine(CwtChannel *pchan)
 static BOOL __readLine(CwtChannel *pchan, CwtByteArray *ba)
 {
 	size_t index;
+	size_t ba_off;
 
 	CWT_ASSERT(pchan);
 	CWT_ASSERT(ba);
 
-	__baNS->clear(ba);
+	/*__baNS->clear(ba);*/
+	ba_off = __baNS->size(ba);
 
 	if( __rbNS->findAny(pchan->rb, "\r\n", 2, 0, &index) ) {
-		__baNS->resize(ba, index);
-		__rbNS->read(pchan->rb, ba->m_buffer, index);
+		__baNS->resize(ba, ba_off + index);
+		__rbNS->read(pchan->rb, ba->m_buffer + ba_off, index);
 
 		__rbNS->popFront(pchan->rb, index+1);
 
@@ -203,8 +205,8 @@ static BOOL __readLine(CwtChannel *pchan, CwtByteArray *ba)
 
 		return TRUE;
 	} else if( __poll(pchan) == 0 && __rbNS->size(pchan->rb) > 0 ) {
-		__baNS->resize(ba, __rbNS->size(pchan->rb));
-		__rbNS->read(pchan->rb, ba->m_buffer, __rbNS->size(pchan->rb));
+		__baNS->resize(ba, ba_off + __rbNS->size(pchan->rb));
+		__rbNS->read(pchan->rb, ba->m_buffer + ba_off, __rbNS->size(pchan->rb));
 		__rbNS->clear(pchan->rb);
 
 		return TRUE;

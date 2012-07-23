@@ -184,24 +184,24 @@ int main(int argc, char *argv[])
 	/* Show tables */
 	{
 		CwtStrListNS *strlistNS = cwtStrListNS();
-		CwtStrList tables;
+		CwtStrList *tables;
 
-		strlistNS->init(&tables);
+		tables = strlistNS->create();
 
-		CWT_TEST_OK(dbd->tables(dbh, &tables));
+		CWT_TEST_OK(dbd->tables(dbh, tables));
 
-		CWT_TEST_FAIL(tables.count == 2);
+		CWT_TEST_FAIL(tables->count == 2);
 
-		stdioNS->printf(_T("Table [0]: %s\n"),  strlistNS->at(&tables, 0));
-		stdioNS->printf(_T("Table [1]: %s\n"),  strlistNS->at(&tables, 1));
+		stdioNS->printf(_T("Table [0]: %s\n"),  strlistNS->at(tables, 0));
+		stdioNS->printf(_T("Table [1]: %s\n"),  strlistNS->at(tables, 1));
 
 		CWT_TEST_OK(
-				strNS->streq(TABLE_NAME, strlistNS->at(&tables, 0))
-			||  strNS->streq(TABLE0_NAME, strlistNS->at(&tables, 0)));
+				strNS->streq(TABLE_NAME, strlistNS->at(tables, 0))
+			||  strNS->streq(TABLE0_NAME, strlistNS->at(tables, 0)));
 
-		CWT_TEST_OK(strNS->streq(TABLE_NAME, strlistNS->at(&tables, 1))
-			|| strNS->streq(TABLE0_NAME, strlistNS->at(&tables, 1)));
-		strlistNS->destroy(&tables);
+		CWT_TEST_OK(strNS->streq(TABLE_NAME, strlistNS->at(tables, 1))
+			|| strNS->streq(TABLE0_NAME, strlistNS->at(tables, 1)));
+		strlistNS->free(tables);
 	}
 
 

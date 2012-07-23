@@ -36,8 +36,8 @@ typedef struct CwtStrListIterator
 
 typedef struct CwtStrListNS {
 	CwtStrList*     (*create)      (void);
-	void            (*init)        (CwtStrList *psl);
-	void            (*destroy)     (CwtStrList *psl);
+/*	void            (*init)        (CwtStrList *psl);*/
+/*	void            (*destroy)     (CwtStrList *psl);*/
 	void            (*free)        (CwtStrList *psl);
 	CwtStrList*     (*clone)       (CwtStrList *psl);
 	void            (*clear)       (CwtStrList *psl);
@@ -67,17 +67,19 @@ typedef struct CwtStrListNS {
 	BOOL            (*hasMore)     (CwtStrListIterator *iter);
 	CWT_CHAR*       (*next)        (CwtStrListIterator *iter);
 	CwtStrListElem* (*elem)        (CwtStrListIterator *iter);
+	void            (*toArray)     (CwtStrList*, CWT_CHAR *argv[], size_t *argc);
 
 	const CwtQuotePair*   (*singleQuotesPair)(void);
 	const CwtQuotePair*   (*doubleQuotesPair)(void);
 	const CwtQuotePair*   (*quotesPair)(void);
-
+	const CWT_CHAR*       (*whitespaces)(void);
 } CwtStrListNS;
 
 
 #define CWT_QUOTES_SINGLE cwtStrListNS()->singleQuotesPair()
 #define CWT_QUOTES_DOUBLE cwtStrListNS()->doubleQuotesPair()
 #define CWT_QUOTES_BOTH   cwtStrListNS()->quotesPair()
+#define CWT_WHITESPACES   cwtStrListNS()->whitespaces() /* ' ', '\t', '\n', '\v', '\f', '\r' */
 
 /*
 #define CWT_QP_SINGLEQUOTES {{_T('\''), _T('\'')}, {0, 0}}

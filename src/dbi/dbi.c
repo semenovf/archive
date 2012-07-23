@@ -37,25 +37,25 @@ static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CwtStrListNS *slNS = cwtStrListNS();
-	CwtStrList opts;
+	CwtStrList *opts;
 	CWT_CHAR *opt;
 
-    slNS->init(&opts);
-    slNS->splitAny(&opts, dsn, _T(":"), CWT_QUOTES_BOTH);
+    opts = slNS->create();
+    slNS->splitAny(opts, dsn, _T(":"), CWT_QUOTES_BOTH);
 
-    opt = slNS->at(&opts, 0);
+    opt = slNS->at(opts, 0);
     if( scheme && opt )
     	*scheme = strNS->strdup(opt);
 
-    opt = slNS->at(&opts, 1);
+    opt = slNS->at(opts, 1);
     if( driver && opt )
     	*driver = strNS->strdup(opt);
 
-    opt = slNS->at(&opts, 2);
+    opt = slNS->at(opts, 2);
     if( driverDSN && opt )
     	*driverDSN = strNS->strdup(opt);
 
-    slNS->destroy(&opts);
+    slNS->free(opts);
 }
 
 

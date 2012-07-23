@@ -11,68 +11,28 @@
 #include <cwt/types.h>
 #include <cwt/io/channel.h>
 
+
+/* maximum number of tokens in INI file instruction line */
+#ifndef CWT_INI_MAX_TOKENS
+#	define CWT_INI_MAX_TOKENS 128
+#endif
+
 typedef void* CwtIniHandler;
-typedef BOOL (*CwtIniCallback)(CwtIniHandler, int argc, const CWT_CHAR* argv[]);
+typedef BOOL (*CwtIniCallback)(CwtIniHandler, const CWT_CHAR* argv[], int argc);
 
 typedef struct CwtIniNS {
 	CwtIniHandler (*create)  (void);
-	void          (*init)    (CwtIniHandler);
-	void          (*destroy) (CwtIniHandler);
 	void          (*free)    (CwtIniHandler);
 	BOOL          (*parse)   (CwtIniHandler, CwtChannel*);
+	void          (*error)   (CwtIniHandler, const CWT_CHAR *errstr);
 	void          (*onError) (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
-	void          (*addRule) (CwtIniHandler, const CWT_CHAR *anchor, CwtIniCallback handler);
+	void          (*addDirective) (CwtIniHandler, const CWT_CHAR *directive, CwtIniCallback handler);
+	size_t        (*line)    (CwtIniHandler);
 } CwtIniNS;
 
 
 EXTERN_C_BEGIN
 DLL_API_EXPORT CwtIniNS* cwtIniNS(void);
 EXTERN_C_END
-
-
-
-#ifdef __COMMENT__
-
-typedef enum CWT_INI_STD_HANDLER
-{
-	  INI_HANDLER_NULL
-	, INI_HANDLER_DEBUG
-} CWT_INI_STD_HANDLER;
-
-typedef struct CwtIniHandlerBase {
-	const CWT_CHAR* file;
-	size_t line;
-	BOOL error;
-	void (*on_start_document)(struct CwtIniHandlerBase* h);
-	void (*on_end_document)(struct CwtIniHandlerBase* h);
-	void (*on_start_line)(struct CwtIniHandlerBase* h);
-	void (*on_end_line)(struct CwtIniHandlerBase* h);
-	void (*on_token)(struct CwtIniHandlerBase* h, const CWT_CHAR* token);
-	void (*on_error)(struct CwtIniHandlerBase* h, const CWT_CHAR* errstr);
-} CwtIniHandlerBase;
-
-
-#define CWT_INI_DECL_ARGS CwtIniHandlerBase* h, int argc, const CWT_CHAR* argv[]
-
-typedef struct CwtIniRule {
-	const CWT_CHAR *cmd;
-	int min_argc;
-	void (*callback)(CWT_INI_DECL_ARGS);
-} CwtIniRule;
-
-/* maximum number of tokens in INI file instruction line */
-#ifndef CWT_INI_MAX_TOKENS
-#	define CWT_INI_MAX_TOKENS 64
-#endif
-
-EXTERN_C_BEGIN
-
-DLL_API_EXPORT BOOL cwtLoadIni(const CWT_CHAR* path, CwtIniHandlerBase* handler);
-DLL_API_EXPORT BOOL cwtLoadIniStd(const CWT_CHAR* path, CWT_INI_STD_HANDLER handler);
-DLL_API_EXPORT BOOL cwtLoadIniByRules(const CWT_CHAR* path, CwtIniRule *rules, void (*on_error)(CwtIniHandlerBase*, const CWT_CHAR*));
-
-EXTERN_C_END
-
-#endif
 
 #endif /* __CWT_INI_H__ */

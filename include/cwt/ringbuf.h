@@ -47,9 +47,6 @@ typedef struct CwtRingBufNS {
 	BOOL          (*pushBack)   (CwtRingBuf*, const BYTE* bytes, size_t n);
 	BOOL          (*find)       (CwtRingBuf*, const BYTE* bytes, size_t n, size_t from, size_t* index);
 	BOOL          (*findAny)    (CwtRingBuf*, const BYTE* bytes, size_t n, size_t from, size_t* index);
-/*
-	BOOL          (*findByte)   (CwtRingBuf*, BYTE ch, size_t from, size_t* index);
-*/
 	/*ssize_t       rb_write_from_file(CwtRingBuf*, int fd, size_t n);*/
 } CwtRingBufNS;
 

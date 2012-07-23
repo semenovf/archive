@@ -62,27 +62,27 @@ int main(int argc, char *argv[])
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CwtStrListNS *slNS = cwtStrListNS();
-	CwtStrList strList;
+	CwtStrList *sl;
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
 	CWT_BEGIN_TESTS(8);
 
-	slNS->init(&strList);
+	sl = slNS->create();
 
-	CWT_TEST_OK(slNS->splitAny(&strList, loremipsum, _T(" "), NULL) == 172);
-	CWT_TEST_OK(strNS->streq(_T("Lorem"), slNS->at(&strList, 0)));
-	CWT_TEST_OK(strNS->streq(_T("ullamcorper"), slNS->at(&strList, 31)));
-	CWT_TEST_OK(strNS->streq(_T("futurum."), slNS->at(&strList, 171)));
+	CWT_TEST_OK(slNS->splitAny(sl, loremipsum, _T(" "), NULL) == 172);
+	CWT_TEST_OK(strNS->streq(_T("Lorem"), slNS->at(sl, 0)));
+	CWT_TEST_OK(strNS->streq(_T("ullamcorper"), slNS->at(sl, 31)));
+	CWT_TEST_OK(strNS->streq(_T("futurum."), slNS->at(sl, 171)));
 
-	slNS->clear(&strList);
-	CWT_TEST_OK(slNS->splitAny(&strList, loremipsum_doublequoted, _T(" "), CWT_QUOTES_DOUBLE) == 35);
-	CWT_TEST_OK(strNS->streq(_T("Lorem"), slNS->at(&strList, 0)));
-	CWT_TEST_OK(strNS->streq(_T("Eodem"), slNS->at(&strList, 22)));
+	slNS->clear(sl);
+	CWT_TEST_OK(slNS->size(sl) == 0);
+	CWT_TEST_OK(slNS->splitAny(sl, loremipsum_doublequoted, _T(" "), CWT_QUOTES_DOUBLE) == 35);
+	CWT_TEST_OK(strNS->streq(_T("Lorem"), slNS->at(sl, 0)));
+	CWT_TEST_OK(strNS->streq(_T("Eodem"), slNS->at(sl, 22)));
 
-	slNS->destroy(&strList);
-	CWT_TEST_OK(slNS->size(&strList) == 0);
+	slNS->free(sl);
 
 	CWT_END_TESTS;
 }

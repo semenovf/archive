@@ -29,6 +29,14 @@ decima et quinta decima. Eodem modo typi, qui nunc nobis      \n\
 videntur parum clari, fiant sollemnes in futurum.";
 
 
+const char *loremipsum1 =
+"Lorem ipsum dolor sit amet, consectetuer adipiscing elit,\n\
+sed diam nonummy nibh euismod tincidunt ut laoreet dolore\n\
+magna aliquam erat volutpat. Ut wisi enim ad minim veniam,\n\
+quis nostrud exerci tation ullamcorper suscipit lobortis\n\
+nisl ut aliquip ex ea commodo consequat. Duis autem vel eum";
+
+
 int main(int argc, char *argv[])
 {
 	CwtChannelNS   *chNS = cwtChannelNS();
@@ -41,7 +49,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(1);
+	CWT_BEGIN_TESTS(2);
 
 	CWT_ASSERT(pchan0 = chNS->create(cwtBufferDeviceOpen()));
 	CWT_ASSERT(pchan1 = chNS->create(cwtBufferDeviceOpenPeer(chNS->device(pchan0))));
@@ -57,6 +65,7 @@ int main(int argc, char *argv[])
 
 	nlines = 0;
 	while( !chNS->atEnd(pchan1) ) {
+		baNS->clear(ba);
 		if( chNS->readLine(pchan1, ba) ) {
 			printf("length=%lu: \"%s\"\n", baNS->size(ba), baNS->cstr(ba));
 		}
@@ -64,6 +73,19 @@ int main(int argc, char *argv[])
 	}
 
 	CWT_TEST_OK(nlines == 26);
+
+	baNS->clear(ba);
+	chNS->write(pchan0, loremipsum1, strlen(loremipsum1));
+	while( !chNS->atEnd(pchan1) ) {
+		if( chNS->readLine(pchan1, ba) ) {
+			baNS->appendElem(ba, '\n');
+		}
+	}
+
+	/* Remove trailing new line symbol */
+	baNS->resize(ba, baNS->size(ba)-1);
+	CWT_TEST_OK(strcmp(baNS->cstr(ba), loremipsum1) == 0);
+	printf("%s\n", baNS->cstr(ba));
 
 	baNS->free(ba);
 	chNS->free(pchan0);

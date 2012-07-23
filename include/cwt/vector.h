@@ -42,7 +42,10 @@ typedef struct _NS {                                                          \
 	void          (*insert)      (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
 	void          (*removeElem)  (_CollectionT* p, size_t pos);               \
 	_ElemT*       (*substr)      (_CollectionT* p, size_t start, size_t nelems); \
-	BOOL          (*find)        (_CollectionT* p, _ElemT ch, size_t *offset);
+	BOOL          (*find)        (_CollectionT* p, _ElemT ch, size_t *offset);\
+	_ElemT        (*at)          (_CollectionT* p, size_t index);             \
+    _ElemT        (*first)       (_CollectionT* p);                           \
+    _ElemT        (*last)        (_CollectionT* p);
 
 #define CWT_END_DECL_VECTOR_NS(_NS) } _NS;
 
@@ -74,6 +77,9 @@ typedef struct _NS {                                                          \
 	static void          __removeElem  (_CollectionT* p, size_t pos);          \
 	static _ElemT*       __substr      (_CollectionT* p, size_t start, size_t nelems); \
 	static BOOL          __find        (_CollectionT* p, _ElemT ch, size_t *offset); \
+	static _ElemT        __at          (_CollectionT* p, size_t index);       \
+    static _ElemT        __first       (_CollectionT* p);                     \
+    static _ElemT        __last        (_CollectionT* p);                     \
                                                                               \
 static _NS  __##_NS = {                                                       \
 	  __create                                                                \
@@ -98,7 +104,10 @@ static _NS  __##_NS = {                                                       \
 	, __insert                                                                \
 	, __removeElem                                                            \
 	, __substr                                                                \
-	, __find
+	, __find                                                                  \
+    , __at                                                                    \
+    , __first                                                                 \
+    , __last
 
 #define CWT_END_DEF_VECTOR_NS(_NS) };
 
@@ -403,6 +412,27 @@ static BOOL __find(_CollectionT* sb, _ElemT ch, size_t *offset)               \
 	}                                                                         \
                                                                               \
 	return FALSE;                                                             \
+}                                                                             \
+                                                                              \
+static _ElemT __at(_CollectionT* p, size_t index)                             \
+{                                                                             \
+	CWT_ASSERT(p);                                                            \
+	CWT_ASSERT(index >= 0 && index < p->m_count);                             \
+	return p->m_buffer[index];                                                \
+}                                                                             \
+                                                                              \
+static _ElemT __first(_CollectionT* p)                                        \
+{                                                                             \
+	CWT_ASSERT(p);                                                            \
+	CWT_ASSERT(p->m_count > 0);                                               \
+	return p->m_buffer[0];                                                    \
+}                                                                             \
+                                                                              \
+static _ElemT __last(_CollectionT* p)                                         \
+{                                                                             \
+	CWT_ASSERT(p);                                                            \
+	CWT_ASSERT(p->m_count > 0);                                               \
+	return p->m_buffer[p->m_count-1];                                         \
 }
 
 #endif /* __CWT_VECTOR_H__ */

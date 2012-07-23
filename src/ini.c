@@ -6,41 +6,46 @@
  */
 
 
-/*
-#include <errno.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-*/
 #include <cwt/str.h>
 #include <cwt/string.h>
 #include <cwt/unistd.h>
 #include <cwt/logger.h>
 #include <cwt/bytearr.h>
+#include <cwt/string.h>
+#include <cwt/strlist.h>
 #include <cwt/io/channel.h>
 #include <cwt/ini.h>
+#include <cwt/algo/hash_tab.h>
+#include <cwt/algo/hash_str.h>
+#include <cwt/algo/cmp_str.h>
+
 
 typedef struct CwtIniHandlerImpl {
 	CwtChannel *pchan;
 	size_t      line;
+	HashTable  *directives;
 	void       (*on_error)(CwtIniHandler, const CWT_CHAR*);
 } CwtIniHandlerImpl;
 
 static CwtIniHandler __create  (void);
-static void          __init    (CwtIniHandler);
-static void          __destroy (CwtIniHandler);
 static void          __free    (CwtIniHandler);
 static BOOL          __parse   (CwtIniHandler, CwtChannel*);
+static void          __error   (CwtIniHandler, const CWT_CHAR *errstr);
 static void          __onError (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
-static void          __addRule (CwtIniHandler, const CWT_CHAR *anchor, CwtIniCallback handler);
+static void          __addDirective (CwtIniHandler, const CWT_CHAR *directive, CwtIniCallback handler);
+static size_t        __line    (CwtIniHandler);
+
+static void          __init    (CwtIniHandler);
+static void          __destroy (CwtIniHandler);
 
 static CwtIniNS __cwtIniNS = {
 	  __create
-	, __init
-	, __destroy
 	, __free
 	, __parse
+	, __error
 	, __onError
-	, __addRule
+	, __addDirective
+	, __line
 };
 
 
@@ -66,11 +71,20 @@ static void __init(CwtIniHandler h)
 	ph->pchan = NULL;
 	ph->line = 0;
 	ph->on_error = NULL;
+
+	ph->directives = hash_table_new(cwt_string_hash, cwt_string_equal);
+	hash_table_register_free_functions(ph->directives, cwtFree, NULL);
 }
 
 static void __destroy(CwtIniHandler h)
 {
+	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 	CWT_UNUSED(h);
+	if( ph->directives ) {
+		hash_table_free(ph->directives);
+		ph->directives = NULL;
+	}
+
 }
 
 static void __free(CwtIniHandler h)
@@ -86,309 +100,128 @@ static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 	CwtStrNS       *strNS    = cwtStrNS();
 	CwtStringNS    *stringNS = cwtStringNS();
-	CwtChannelNS   *chanNS   = cwtChannelNS();
+	CwtStrListNS   *slNS     = cwtStrListNS();
+	CwtChannelNS   *chNS     = cwtChannelNS();
 	CwtByteArrayNS *baNS     = cwtByteArrayNS();
-	CwtByteArray ba;
-	size_t sz;
+	CwtByteArray   *ba;
+	CwtStrList     *tokens;
+	BOOL esc = FALSE;
+	BOOL ok = TRUE;
 
 	CWT_ASSERT(h);
 
-	baNS->init(&ba);
+	ba = baNS->create();
+	tokens = slNS->create();
 
-	baNS->destroy(&ba);
-
-	while( (sz = chanNS->bytesAvailable(pchan)) > 0 ) {
-		size_t bsz = baNS->size(&ba);
-		size_t off, off_cr, off_lf;
-
-		baNS->resize(&ba, sz + bsz);
-		chanNS->read(pchan, ba.m_buffer + bsz, sz);
-
-		off_cr = 0;
-		off_lf = 0;
-		if( baNS->find(&ba, (BYTE)'\r', &off_cr) || baNS->find(&ba, (BYTE)'\n', &off_lf) ) {
+	while( !chNS->atEnd(pchan) ) {
+		if( chNS->readLine(pchan, ba) ) {
 			CWT_CHAR *str;
 
-			off = CWT_MIN(off_cr, off_lf);
-			str = strNS->fromUtf8(ba.m_buffer, off);
+			if( baNS->last(ba) == '\\' ) {
+				baNS->resize(ba, baNS->size(ba)-1); /* remove backslash */
+				baNS->appendElem(ba, ' ');
+				esc = TRUE;
+				continue;
+			} else {
+				esc = FALSE;
+			}
+
+
+			baNS->trim(ba);
+			str = strNS->fromUtf8(baNS->cstr(ba), baNS->size(ba)); /* TODO need apply text codec insteed of fromUtf8 call */
 
 			if( str && strNS->strlen(str) > 0 ) {
 
+				/* not a comment */
+				if( str[0] != _T('#')) {
+					int rc = slNS->splitAny(tokens, str, CWT_WHITESPACES, CWT_QUOTES_BOTH);
+					if( rc > 0 ) {
+						CwtIniCallback cb;
+						CWT_CHAR **argv;
+						size_t argc = 0;
+
+						argc = slNS->size(tokens);
+
+						if( argc <= CWT_INI_MAX_TOKENS ) {
+							argv = CWT_MALLOCA(CWT_CHAR*, argc);
+
+							slNS->toArray(tokens, argv, &argc);
+							cb  = (CwtIniCallback)hash_table_lookup(ph->directives, argv[0]);
+
+							if( cb ) {
+								ok = cb(h, argv, argc);
+							} else {
+								__error(h, _Tr("unsupported directive"));
+								ok = FALSE;
+							}
+						} else {
+							__error(h, _Tr("maximum tokens in directive line are exceeded"));
+							ok = FALSE;
+						}
+
+						CWT_FREE(argv);
+					} else if( rc < 0 ) {
+						__error(h, _Tr("quotes are unbalanced"));
+						ok = FALSE;
+					}
+				}
 			}
 			CWT_FREE(str);
+
 			ph->line++;
-		}
-	}
+			baNS->clear(ba);
+			slNS->clear(tokens);
 
-#ifdef __COMMENT__
-		while( baNS->find(&ba, (BYTE)'\n') )
-
-		while( rb_find_byte(rb, (BYTE)'\n', nl_pos, &nl_pos) && !handler->error ) {
-
-			handler->on_start_line(handler);
-			handler->line++;
-
-			if( __cwtIniParseLine(rb, nl_pos, handler) ) {
-				handler->on_end_line(handler);
-				rb_pop_front(rb, nl_pos+1);
-				nl_pos = 0;
-			}
-		}
-
-		if( handler->error )
-			break;
-	}
-
-	if( !handler->error ) {
-		if( bw < 0 ) {
-			handler->error = TRUE;
-		} else {
-			if( rb_size(rb) > 0 ) {
-				__cwtIniParseLine(rb, rb_size(rb), handler); /* last line*/
-			}
-		}
-	}
-
-	handler->on_end_document(handler);
-
-	rb_delete(rb);
-	cwtClose(ini);
-
-	return handler->error ? FALSE : TRUE;
-#endif
-
-	return FALSE;
-}
-
-
-#ifdef __COMMENT__
-
-typedef struct CwtIniHandler {
-	CwtIniHandlerBase base;
-	BOOL first_token;
-	BOOL comment_line;
-	int nitems;
-	CHAR *instruction[CWT_INI_MAX_TOKENS];
-	CwtIniRule *rules;
-} CwtIniHandler;
-
-
-BOOL cwtLoadIni(const char* path, CwtIniHandlerBase* handler)
-{
-	int ini;
-	CwtIODevicePtr file;
-	CwtStringBufferPtr sb;
-/*	RingBufferPtr rb;*/
-	ssize_t bw;
-
-	file = cwtFileDeviceOpen(path, O_RDONLY);
-
-	/*ini = cwtOpen(path, O_RDONLY | O_TEXT);*/
-
-	if( ini < 0 ) {
-		printf_error(_Tr("%s: unable to open INI file: %s"), path, strerror(errno));
-		return FALSE;
-	}
-
-	rb = rb_new_defaults();
-	CWT_ASSERT(rb);
-
-	if( !handler )
-		handler = &__cwtNullHandler;
-
-	handler->file = path;
-	handler->on_start_document(handler);
-	handler->line = 0;
-	handler->error = FALSE;
-
-	while( (bw = rb_write_from_file(rb, ini, _BUFSZ)) > 0 ) {
-		size_t nl_pos = 0;
-
-		if( bw < _BUFSZ && rb_size(rb) > 0 ) { /* end-of-file */
-			rb_put(rb, (BYTE)'\n');
-		}
-
-		while( rb_find_byte(rb, (BYTE)'\n', nl_pos, &nl_pos) && !handler->error ) {
-
-			handler->on_start_line(handler);
-			handler->line++;
-
-			if( __cwtIniParseLine(rb, nl_pos, handler) ) {
-				handler->on_end_line(handler);
-				rb_pop_front(rb, nl_pos+1);
-				nl_pos = 0;
-			}
-
-/*
-#ifndef _NASSYNC
-			process_events();
-#endif
-*/
-		}
-
-		if( handler->error )
-			break;
-	}
-
-	if( !handler->error ) {
-		if( bw < 0 ) {
-			handler->error = TRUE;
-		} else {
-			if( rb_size(rb) > 0 ) {
-				__cwtIniParseLine(rb, rb_size(rb), handler); /* last line*/
-			}
-		}
-	}
-
-	handler->on_end_document(handler);
-
-	rb_delete(rb);
-	cwtClose(ini);
-
-	return handler->error ? FALSE : TRUE;
-}
-
-
-
-
-static void __on_token(RingBufferPtr rb, void* extra)
-{
-
-	CwtIniHandlerBase* h = (CwtIniHandlerBase*)extra;
-
-	if( rb_size(rb) > 0 ) {
-		CHAR* token;
-		size_t len = rb_size(rb);
-
-		token = CWT_MALLOCA(CHAR, len + 1);
-		rb_read(rb, (BYTE*)token, len);
-		token[len] = '\0';
-		h->on_token(h, token);
-		CWT_FREE(token);
-
-	} else {
-		h->on_token(h, "");
-	}
-}
-
-BOOL __cwtIniParseLine(CwtStringBufferPtr sb, size_t len, CwtIniHandlerBase* handler)
-{
-	int rc = rb_split((BYTE)' ', rb, len, 0, __on_token, handler);
-
-	if( rc < 0 ) {
-		if( rc == RBE_QUOTE_CHAR_UNBALANCED ) {
-			handler->on_error(handler, _Tr("unbalanced quote char"));
-		} else {
-			handler->on_error(handler, _Tr("line is incorrect"));
-		}
-	}
-
-	return handler->error == TRUE ? FALSE : TRUE;
-}
-
-
-
-static void __cwtIniOnRuleEndLine(CwtIniHandlerBase* h)
-{
-	int i;
-	CwtIniHandler *dh = (CwtIniHandler*)h;
-
-	if( dh->nitems > 0 ) {
-		CwtIniRule *rule_ptr = dh->rules;
-		BOOL rule_accepted = FALSE;
-
-		while( rule_ptr->cmd ) {
-			if( cwtStrEq(dh->instruction[0], rule_ptr->cmd)
-					&& dh->nitems >= rule_ptr->min_argc) {
-				rule_accepted = TRUE;
-				rule_ptr->callback(h, dh->nitems, dh->instruction);
+			if( !ok )
 				break;
-			}
-			rule_ptr++;
-		}
-
-		if( !rule_accepted ) {
-			dh->base.on_error((CwtIniHandlerBase*)dh, _Tr("bad instruction or incomplete arguments"));
 		}
 	}
 
-	for( i = 0; i < dh->nitems; i++ ) {
-		if( dh->instruction[i] )
-			CWT_FREE(dh->instruction[i]);
-		dh->instruction[i] = NULL;
-	}
-	dh->nitems = 0;
-}
+	slNS->free(tokens);
+	baNS->free(ba);
 
-static void __cwtIniOnRuleToken(CwtIniHandlerBase* h, const char* token)
-{
-	CwtIniHandler *dh = (CwtIniHandler*)h;
-
-	if( cwtStrLen(token) == 0 )
-		return;
-
-	if( dh->first_token && token[0] == '#' ) { /* comment */
-		dh->comment_line = TRUE;
+	if( esc ) {
+		__cwtIniNS.error(h, _T("unexpected end-of-file"));
+		ok = FALSE;
 	}
 
-	if( dh->comment_line != TRUE ) {
-		CWT_ASSERT(dh->nitems < CWT_INI_MAX_TOKENS);
-		dh->instruction[dh->nitems++] = cwtStrDup(token);
+	return ok;
+}
+
+
+static void __error(CwtIniHandler h, const CWT_CHAR *errstr)
+{
+	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
+
+	CWT_ASSERT(h);
+
+	if( ph->on_error )
+		ph->on_error(h, errstr);
+}
+
+
+static void __addDirective (CwtIniHandler h, const CWT_CHAR *directive, CwtIniCallback handler)
+{
+	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
+
+	CWT_ASSERT(h);
+
+	if( directive && handler ) {
+		CWT_CHAR *dir = cwtStrNS()->strdup(directive);
+		CWT_ASSERT(hash_table_insert(ph->directives, dir, handler));
 	}
-
-	dh->first_token = FALSE;
 }
 
-/*
-static void __cwtIniOnRuleError(CwtIniHandlerBase* h, const char* errstr)
+static size_t __line(CwtIniHandler h)
 {
-	h->error = TRUE;
-	printf_error("%s at %s line %u", errstr, h->file, h->line);
-}
-*/
-
-
-DLL_API_EXPORT BOOL cwtLoadIniByRules(const CHAR* path, CwtIniRule *rules, void (*on_error)(CwtIniHandlerBase*, const char*))
-{
-	CwtIniHandler cwtIniHandler = {
-		{
-			   NULL /* file */
-			,  0
-			, FALSE
-			, __cwtIniOnRuleStartDocument
-			, __cwtIniOnRuleEndDocument
-			, __cwtIniOnRuleStartLine
-			, __cwtIniOnRuleEndLine
-			, __cwtIniOnRuleToken
-			, on_error
-		}     /* base */
-		, TRUE  /* first_token */
-		, FALSE /* comment_line */
-		, 0 /* nitems */
-		, {NULL} /*instruction*/
-		, rules
-	};
-
-	if( cwtLoadIni(path, (CwtIniHandlerBase*)&cwtIniHandler) )
-		return cwtIniHandler.base.error == TRUE ? FALSE : TRUE;
-	return FALSE;
+	CWT_ASSERT(h);
+	return ((CwtIniHandlerImpl*)h)->line;
 }
 
-#endif
-
-
-static void __addRule (CwtIniHandler *h, const CWT_CHAR *anchor, CwtIniCallback handler)
-{
-	CWT_UNUSED(h);
-	CWT_UNUSED(anchor);
-	CWT_UNUSED(handler);
-}
-
-static void __onError(CwtIniHandler *h, void (*callback)(CwtIniHandler, const CWT_CHAR*))
+static void __onError(CwtIniHandler h, void (*callback)(CwtIniHandler, const CWT_CHAR*))
 {
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 
 	CWT_ASSERT(h);
 	ph->on_error = callback;
-
 }

@@ -25,12 +25,12 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /* Comparison functions for strings */
 
-DLL_API_EXPORT int string_equal(void *string1, void *string2)
+int string_equal(void *string1, void *string2)
 {
 	return strcmp((char *) string1, (char *) string2) == 0;
 }
 
-DLL_API_EXPORT int string_compare(void *string1, void *string2)
+int string_compare(void *string1, void *string2)
 {
 	int result;
 
@@ -47,7 +47,7 @@ DLL_API_EXPORT int string_compare(void *string1, void *string2)
 
 /* Comparison functions for strings, which ignore the case of letters. */
 
-DLL_API_EXPORT int string_nocase_equal(void *string1, void *string2)
+int string_nocase_equal(void *string1, void *string2)
 {
 	return string_nocase_compare((char *) string1, (char *) string2) == 0;
 }
@@ -56,7 +56,7 @@ DLL_API_EXPORT int string_nocase_equal(void *string1, void *string2)
  * as this function.  However, it is non-standard and cannot be relied
  * on to be present. */
 
-DLL_API_EXPORT int string_nocase_compare(void *string1, void *string2)
+int string_nocase_compare(void *string1, void *string2)
 {
 	char *p1;
 	char *p2;

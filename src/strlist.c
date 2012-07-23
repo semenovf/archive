@@ -11,8 +11,6 @@
 #include <cwt/str.h>
 
 static CwtStrList*     __create       (void);
-static void            __init         (CwtStrList *psl);
-static void            __destroy      (CwtStrList *psl);
 static void            __free         (CwtStrList *psl);
 static CwtStrList*     __clone        (CwtStrList *psl);
 static void            __clear        (CwtStrList *psl);
@@ -41,17 +39,18 @@ static void            __rbeginFrom   (CwtStrList *psl, CwtStrListElem *pelem, C
 static BOOL            __hasMore      (CwtStrListIterator *iter);
 static CWT_CHAR*       __next         (CwtStrListIterator *iter);
 static CwtStrListElem* __elem         (CwtStrListIterator *iter);
-
+static void            __toArray      (CwtStrList *psl, CWT_CHAR *argv[], size_t *argc);
 
 static const CwtQuotePair*   __singleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('\''), _T('\'')}, {0, 0}}; return qp; }
 static const CwtQuotePair*   __doubleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('"'), _T('"')}, {0, 0}} ; return qp; }
 static const CwtQuotePair*   __quotesPair(void) { static const CwtQuotePair qp[] = {{_T('\''), _T('\'')}, {_T('"'), _T('"')}, {0, 0}} ; return qp; }
+static const CWT_CHAR*       __whitespaces(void) { static const CWT_CHAR *ws = _T(" \t\n\v\f\r"); return ws; }
 
+static void            __init         (CwtStrList *psl);
+static void            __destroy      (CwtStrList *psl);
 
 static CwtStrListNS __cwtStrListNS = {
 	  __create
-	, __init
-	, __destroy
 	, __free
 	, __clone
 	, __clear
@@ -79,11 +78,12 @@ static CwtStrListNS __cwtStrListNS = {
 	, __hasMore
 	, __next
 	, __elem
+	, __toArray
 
 	, __singleQuotesPair
 	, __doubleQuotesPair
 	, __quotesPair
-
+	, __whitespaces
 };
 
 
@@ -92,15 +92,6 @@ DLL_API_EXPORT CwtStrListNS* cwtStrListNS(void)
 	return &__cwtStrListNS;
 }
 
-
-static CwtStrList* __create(void)
-{
-	CwtStrList *psl;
-
-	psl = CWT_MALLOC(CwtStrList);
-	__init(psl);
-	return psl;
-}
 
 static void __init(CwtStrList *psl)
 {
@@ -116,6 +107,15 @@ static void __destroy(CwtStrList *psl)
 	__clear(psl);
 }
 
+
+static CwtStrList* __create(void)
+{
+	CwtStrList *psl;
+
+	psl = CWT_MALLOC(CwtStrList);
+	__init(psl);
+	return psl;
+}
 
 static void __free(CwtStrList *psl)
 {
@@ -366,7 +366,7 @@ static size_t __skip_anychar_delim(const CWT_CHAR *tail, size_t tail_len, void *
  * @param qpairs    Array quote character pair. It must be terminated with empty element {0, 0}
  * @return 			0 If str is @c NULL
  * 					> 0 number of tokens
- * 					< -1 if string @c str has unbalanced quotes
+ * 					-1 if string @c str has unbalanced quotes
  */
 static int __splitSkip(CwtStrList *psl, const CWT_CHAR *str
 		, size_t (*skip)(const CWT_CHAR *tail, size_t tail_len, void *delim)
@@ -532,4 +532,28 @@ static CwtStrListElem* __elem(CwtStrListIterator *iter)
 {
 	CWT_ASSERT(iter);
 	return iter->node;
+}
+
+
+static void __toArray(CwtStrList *psl, CWT_CHAR *argv[], size_t *argc)
+{
+	size_t i;
+	CwtStrListIterator it;
+
+	CWT_ASSERT(psl);
+	CWT_ASSERT(argc);
+	CWT_ASSERT(argv);
+
+	if( *argc == 0 )
+		return;
+
+	__begin(psl, &it);
+	i = 0;
+
+	while( __hasMore(&it) && i < *argc ) {
+		argv[i] = __next(&it);
+		i++;
+	}
+
+	*argc = i;
 }

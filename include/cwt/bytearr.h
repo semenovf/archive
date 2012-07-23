@@ -13,6 +13,9 @@
 
 CWT_BEGIN_DECL_VECTOR_NS(CwtByteArrayNS, CwtByteArray, BYTE)
 const char*    (*cstr)        (CwtByteArray *ba);
+void           (*ltrim)       (CwtByteArray *ba);
+void           (*rtrim)       (CwtByteArray *ba);
+void           (*trim)        (CwtByteArray *ba);
 CWT_END_DECL_VECTOR_NS(CwtByteArrayNS)
 
 EXTERN_C_BEGIN

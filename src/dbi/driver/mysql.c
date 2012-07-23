@@ -470,7 +470,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
 
 	CwtMySqlDBHandler *dbh = NULL;
 	BOOL ok = FALSE;
-	CwtStrList opts;
+	CwtStrList *opts;
 	CwtStrListIterator itOpts;
 
 	char   *host = NULL;
@@ -538,9 +538,9 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
         dbh->csname = strNS->strdup(csname); /* TODO need to free*/
 
         /* Parse driver DSN */
-        strlistNS->init(&opts);
-        strlistNS->split(&opts, driverDSN, _T(";"), NULL);
-        strlistNS->begin(&opts, &itOpts);
+        opts = strlistNS->create();
+        strlistNS->split(opts, driverDSN, _T(";"), NULL);
+        strlistNS->begin(opts, &itOpts);
 
         ok = TRUE;
 
@@ -587,7 +587,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
         	    printf_debug(__LOG_PREFIX _T("flags:    %lu (0x%X)"), flags, flags);
         	}
         }
-        strlistNS->destroy(&opts);
+        strlistNS->free(opts);
 
         if( !ok )
         	break;
