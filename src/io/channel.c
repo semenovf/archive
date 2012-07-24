@@ -156,7 +156,7 @@ static size_t __bytesAvailable(CwtChannel *pchan)
  */
 static BOOL __atEnd( CwtChannel *pchan )
 {
-	return (__rbNS->size(pchan->rb) == 0 && __poll(pchan) == 0)
+	return ( __poll(pchan) == 0 && __rbNS->size(pchan->rb) == 0 )
 			? TRUE : FALSE;
 }
 
@@ -183,28 +183,33 @@ static BOOL __readLine(CwtChannel *pchan, CwtByteArray *ba)
 {
 	size_t index;
 	size_t ba_off;
+	ssize_t br;
 
 	CWT_ASSERT(pchan);
 	CWT_ASSERT(ba);
 
-	/*__baNS->clear(ba);*/
 	ba_off = __baNS->size(ba);
 
+	br = __poll(pchan);
+
 	if( __rbNS->findAny(pchan->rb, "\r\n", 2, 0, &index) ) {
+		BYTE nl;
 		__baNS->resize(ba, ba_off + index);
 		__rbNS->read(pchan->rb, ba->m_buffer + ba_off, index);
 
-		__rbNS->popFront(pchan->rb, index+1);
+		__rbNS->popFront(pchan->rb, index);
+		nl = __rbNS->first(pchan->rb);
+		__rbNS->popFront(pchan->rb, 1);
 
-		/* may be \r\n or \n\r delimiter */
+		/* may be \r\n delimiter */
 		if( __rbNS->size(pchan->rb) > 0 ) {
-			if(__rbNS->first(pchan->rb) == '\n' || __rbNS->first(pchan->rb) == '\r' ) {
+			if( nl == '\r' && __rbNS->first(pchan->rb) == '\n' /*|| __rbNS->first(pchan->rb) == '\r'*/ ) {
 				__rbNS->popFront(pchan->rb, 1);
 			}
 		}
 
 		return TRUE;
-	} else if( __poll(pchan) == 0 && __rbNS->size(pchan->rb) > 0 ) {
+	} else if( br == 0 && __rbNS->size(pchan->rb) > 0 ) {
 		__baNS->resize(ba, ba_off + __rbNS->size(pchan->rb));
 		__rbNS->read(pchan->rb, ba->m_buffer + ba_off, __rbNS->size(pchan->rb));
 		__rbNS->clear(pchan->rb);

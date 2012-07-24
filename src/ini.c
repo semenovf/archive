@@ -21,6 +21,8 @@
 
 
 typedef struct CwtIniHandlerImpl {
+	size_t      max_tokens; /* maximum number of tokens in INI file instruction line */
+	UINT        flags;
 	CwtChannel *pchan;
 	size_t      line;
 	HashTable  *directives;
@@ -28,6 +30,7 @@ typedef struct CwtIniHandlerImpl {
 } CwtIniHandlerImpl;
 
 static CwtIniHandler __create  (void);
+static CwtIniHandler __createWithFlags(UINT flags, size_t max_tokens);
 static void          __free    (CwtIniHandler);
 static BOOL          __parse   (CwtIniHandler, CwtChannel*);
 static void          __error   (CwtIniHandler, const CWT_CHAR *errstr);
@@ -35,11 +38,9 @@ static void          __onError (CwtIniHandler, void (*callback)(CwtIniHandler, c
 static void          __addDirective (CwtIniHandler, const CWT_CHAR *directive, CwtIniCallback handler);
 static size_t        __line    (CwtIniHandler);
 
-static void          __init    (CwtIniHandler);
-static void          __destroy (CwtIniHandler);
-
 static CwtIniNS __cwtIniNS = {
 	  __create
+	, __createWithFlags
 	, __free
 	, __parse
 	, __error
@@ -56,42 +57,41 @@ DLL_API_EXPORT CwtIniNS* cwtIniNS(void)
 
 static CwtIniHandler __create(void)
 {
-	CwtIniHandlerImpl *h;
+	return  __createWithFlags(0, 0);
+}
 
+
+static CwtIniHandler __createWithFlags(UINT flags, size_t max_tokens)
+{
+	CwtIniHandlerImpl *h;
 	h = CWT_MALLOC(CwtIniHandlerImpl);
-	__init(h);
+
+	h->max_tokens = max_tokens > 0 ? max_tokens : 128;
+	h->flags      = flags;
+	h->pchan      = NULL;
+	h->line       = 0;
+	h->on_error   = NULL;
+
+	if( flags & Cwt_IniFlag_DirectiveIgnoreCase ) {
+		h->directives = hash_table_new(cwt_string_nocase_hash, cwt_string_nocase_equal);
+	} else {
+		h->directives = hash_table_new(cwt_string_hash, cwt_string_equal);
+	}
+	hash_table_register_free_functions(h->directives, cwtFree, NULL);
+
 	return (CwtIniHandler)h;
 }
 
-static void __init(CwtIniHandler h)
-{
-	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
-
-	CWT_ASSERT(h);
-	ph->pchan = NULL;
-	ph->line = 0;
-	ph->on_error = NULL;
-
-	ph->directives = hash_table_new(cwt_string_hash, cwt_string_equal);
-	hash_table_register_free_functions(ph->directives, cwtFree, NULL);
-}
-
-static void __destroy(CwtIniHandler h)
-{
-	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
-	CWT_UNUSED(h);
-	if( ph->directives ) {
-		hash_table_free(ph->directives);
-		ph->directives = NULL;
-	}
-
-}
 
 static void __free(CwtIniHandler h)
 {
+	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 	if( h ) {
-		__destroy(h);
-		CWT_FREE(h);
+		if( ph->directives ) {
+			hash_table_free(ph->directives);
+			ph->directives = NULL;
+		}
+		CWT_FREE(ph);
 	}
 }
 
@@ -112,22 +112,29 @@ static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
 
 	ba = baNS->create();
 	tokens = slNS->create();
+	ph->line = 0;
 
-	while( !chNS->atEnd(pchan) ) {
-		if( chNS->readLine(pchan, ba) ) {
-			CWT_CHAR *str;
+	while( !chNS->atEnd(pchan) && chNS->readLine(pchan, ba) ) {
+		CWT_CHAR *str;
 
-			if( baNS->last(ba) == '\\' ) {
-				baNS->resize(ba, baNS->size(ba)-1); /* remove backslash */
-				baNS->appendElem(ba, ' ');
-				esc = TRUE;
-				continue;
-			} else {
-				esc = FALSE;
-			}
+		ph->line++;
+
+		/* empty line */
+		if( baNS->size(ba) == 0 )
+			continue;
+
+		if( baNS->last(ba) == '\\' ) {
+			baNS->resize(ba, baNS->size(ba)-1); /* remove backslash */
+			baNS->appendElem(ba, ' ');
+			esc = TRUE;
+			continue;
+		} else {
+			esc = FALSE;
+		}
 
 
-			baNS->trim(ba);
+		baNS->trim(ba);
+		if( baNS->size(ba) > 0 ) {
 			str = strNS->fromUtf8(baNS->cstr(ba), baNS->size(ba)); /* TODO need apply text codec insteed of fromUtf8 call */
 
 			if( str && strNS->strlen(str) > 0 ) {
@@ -142,7 +149,7 @@ static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
 
 						argc = slNS->size(tokens);
 
-						if( argc <= CWT_INI_MAX_TOKENS ) {
+						if( argc <= ph->max_tokens ) {
 							argv = CWT_MALLOCA(CWT_CHAR*, argc);
 
 							slNS->toArray(tokens, argv, &argc);
@@ -166,15 +173,14 @@ static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
 					}
 				}
 			}
-			CWT_FREE(str);
-
-			ph->line++;
-			baNS->clear(ba);
-			slNS->clear(tokens);
-
-			if( !ok )
-				break;
 		}
+		CWT_FREE(str);
+
+		baNS->clear(ba);
+		slNS->clear(tokens);
+
+		if( !ok )
+			break;
 	}
 
 	slNS->free(tokens);

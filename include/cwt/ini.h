@@ -12,16 +12,16 @@
 #include <cwt/io/channel.h>
 
 
-/* maximum number of tokens in INI file instruction line */
-#ifndef CWT_INI_MAX_TOKENS
-#	define CWT_INI_MAX_TOKENS 128
-#endif
+typedef enum CwtIniFlag {
+	Cwt_IniFlag_DirectiveIgnoreCase = 0x01
+};
 
 typedef void* CwtIniHandler;
 typedef BOOL (*CwtIniCallback)(CwtIniHandler, const CWT_CHAR* argv[], int argc);
 
 typedef struct CwtIniNS {
 	CwtIniHandler (*create)  (void);
+	CwtIniHandler (*createWithFlags) (UINT flags, size_t max_tokens);
 	void          (*free)    (CwtIniHandler);
 	BOOL          (*parse)   (CwtIniHandler, CwtChannel*);
 	void          (*error)   (CwtIniHandler, const CWT_CHAR *errstr);

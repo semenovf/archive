@@ -39,14 +39,39 @@ typedef struct CwtFileDevice
 } CwtFileDevice;
 
 
-DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
+/**
+ *
+ * @param path
+ * @param mode
+ * @return
+ */
+DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, CwtOpenMode mode)
 {
 	CwtFileDevice *fd;
 	CwtUnistdNS *ns = cwtUnistdNS();
+	int oflags = 0;
 	int fh = -1;
 
+
+	if( mode & Cwt_OM_Read )
+		oflags |= O_RDONLY;
+	if( mode & Cwt_OM_Write )
+		oflags |= O_WRONLY;
+	if( mode & Cwt_OM_ReadWrite )
+		oflags |= O_RDWR;
+
+	if( mode & Cwt_OM_Create )
+		oflags |= O_CREAT;
+	else
+		oflags |= O_APPEND;
+
+#ifdef CWT_CC_GNUC
+	if( mode & Cwt_OM_NonBlocking )
+		oflags |= O_NONBLOCK;
+#endif
+
 	if( path ) {
-		fh = ns->open(path, mode, 0);
+		fh = ns->open(path, oflags, 0);
 		if( fh < 0 ) {
 			printf_error(_Tr("unable to open input file: %s: %s"), path, cwtStrNS()->strerror(errno));
 			return (CwtIODevice*)NULL;
@@ -60,10 +85,10 @@ DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, int mode)
 	fd->in  = -1;
 	fd->out = -1;
 
-	if( (mode & O_RDWR) || (mode & O_RDONLY) )
+	if( (mode & Cwt_OM_ReadWrite) || (mode & Cwt_OM_Read) )
 		fd->in  = fh;
 
-	if( (mode & O_RDWR) || (mode & O_WRONLY) )
+	if( (mode & Cwt_OM_ReadWrite) || (mode & Cwt_OM_Write) )
 		fd->out = fh;
 
 	if( fh > 0 )
@@ -209,7 +234,7 @@ ssize_t __cwtFileRead(CwtIODevice *dev, BYTE* buf, size_t sz)
 	CWT_ASSERT(ns->lseek(fd->in, fd->read_pos, SEEK_SET) >= 0L);
 
 	/*FIXME: warning C4267: 'function' : conversion from 'size_t' to 'UINT', possible loss of data */
-	br = ns->read(fd->in, buf, (UINT)sz);
+	br = ns->read(fd->in, buf, /*(UINT)*/sz);
 
 	CWT_ASSERT(br >= 0);
 	fd->read_pos += br;
