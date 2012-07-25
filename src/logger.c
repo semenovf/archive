@@ -113,11 +113,41 @@ void print_warn(const CWT_CHAR* msg)  { _print(LOGGER_WARN, msg); }
 void print_error(const CWT_CHAR* msg) { _print(LOGGER_ERROR, msg); }
 
 
+#define __MSG_SZ 512
+#define __MSG_MAX_SZ 1024
+#define __MSG_INC_SZ 256
 static void _printf(LOGGER_TYPE type, const CWT_CHAR* format, va_list args)
 {
-	CWT_CHAR msg[512];
-	cwtStdioNS()->vsprintf(msg, format, args);
-	_print(type, msg);
+	int n;
+	size_t sz = __MSG_SZ;
+	CWT_CHAR msg[__MSG_SZ+1];
+	CWT_CHAR *amsg = NULL;
+
+	n = cwtStdioNS()->vsnprintf(msg, __MSG_SZ, format, args);
+
+	while( n < 0 ) {
+		sz += __MSG_INC_SZ;
+
+		if( sz > __MSG_MAX_SZ ) {
+			printf_error(_T("log string to0 big"));
+			break;
+		}
+
+		if( amsg )
+			CWT_FREE(amsg);
+
+		amsg = CWT_MALLOCA(CWT_CHAR, sz+1);
+		n = cwtStdioNS()->vsnprintf(amsg, sz, format, args);
+	}
+
+	if( sz <= __MSG_MAX_SZ) {
+		if( amsg ) {
+			_print(type, amsg);
+			CWT_FREE(amsg);
+		} else {
+			_print(type, msg);
+		}
+	}
 }
 
 void printf_trace(const CWT_CHAR* format, ...)

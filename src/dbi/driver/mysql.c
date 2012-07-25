@@ -100,6 +100,7 @@ static BOOL             __queryBin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_
 static CwtStatement*    __prepare(CwtDBHandler *dbh, const CWT_CHAR *statement);
 static ULONGLONG        __affectedRows(CwtDBHandler *dbh);
 static BOOL             __tables(CwtDBHandler *dbh, CwtStrList *tables);
+static BOOL             __tableExists(CwtDBHandler*, const CWT_CHAR *tname);
 static char*            __encode(CwtDBHandler *dbh, const CWT_CHAR *s);
 static CWT_CHAR*        __decode(CwtDBHandler *dbh, const char *s);
 static CWT_TIME*        __createTime(void);
@@ -152,6 +153,7 @@ static CwtDBIDriver __cwtDBIDriver = {
 	, __prepare
 	, __affectedRows
 	, __tables
+	, __tableExists
 	, __encode
 	, __decode
 	, __createTime
@@ -546,16 +548,13 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
 
         while( strlistNS->hasMore(&itOpts) ) {
         	CWT_CHAR* opt = strlistNS->next(&itOpts);
-        	printf_debug(__LOG_PREFIX _Tr("option: %s"), opt);
 
         	if( strNS->strncmp(_T("host="), opt, 5) == 0 ) {
 
-        		printf_debug(__LOG_PREFIX _T("host: %s"), &opt[5]);
         		host = __cwtDBIDriver.encode((CwtDBHandler*)dbh, &opt[5]);
 
         	} else if( strNS->strncmp(_T("database="), opt, 9) == 0) {
 
-        		printf_debug(__LOG_PREFIX _T("database: %s"), &opt[9]);
         		dbname = __cwtDBIDriver.encode((CwtDBHandler*)dbh, &opt[9]);
 
         	} else if( strNS->strncmp(_T("port="), opt, 5) == 0) {
@@ -564,12 +563,10 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
         			print_error(__LOG_PREFIX _Tr("bad port value"));
         			break;
         		}
-        		printf_debug(__LOG_PREFIX _T("port:     %u"), port);
 
         	} else if( strNS->strncmp(_T("mysql_socket="), opt, 13) == 0) {
 
         		sockname = __cwtDBIDriver.encode((CwtDBHandler*)dbh, &opt[13]);
-        		printf_debug(__LOG_PREFIX _T("sockname: %s"), &opt[13]);
 
         	} else if( strNS->strncmp(_T("mysql_flags="), opt, 12) == 0) {
         	    CWT_CHAR *flagstr = &opt[12];
@@ -584,7 +581,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
         	    if( strNS->strstr(flagstr, _T("MULTI_RESULTS")) )    flags |= CLIENT_MULTI_RESULTS;
         	    if( strNS->strstr(flagstr, _T("MULTI_STATEMENTS")) ) flags |= CLIENT_MULTI_STATEMENTS;
 
-        	    printf_debug(__LOG_PREFIX _T("flags:    %lu (0x%X)"), flags, flags);
+        	    /*printf_debug(__LOG_PREFIX _T("flags:    %lu (0x%X)"), flags, flags);*/
         	}
         }
         strlistNS->free(opts);
@@ -1053,7 +1050,7 @@ static BOOL __query(CwtDBHandler *dbh, const CWT_CHAR *sql)
 	CWT_ASSERT(dbh);
 
 	if( __realQuery((CwtMySqlDBHandler*)dbh, sql, cwtStrNS()->strlen(sql)) != 0 ) {
-		printf_error(__LOG_PREFIX _Tr("failed to query: %s"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh));
+		printf_error(__LOG_PREFIX _Tr("failed to query: %s [%s]"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh), sql);
 		return FALSE;
 	}
 	return TRUE;
@@ -1064,7 +1061,7 @@ static BOOL __queryBin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_t length)
 	CWT_ASSERT(dbh);
 
 	if( __realQuery((CwtMySqlDBHandler*)dbh, sql, length) != 0 ) {
-		printf_error(__LOG_PREFIX _Tr("failed to query: %s"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh));
+		printf_error(__LOG_PREFIX _Tr("failed to query: %s [%s]"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh), sql);
 		return FALSE;
 	}
 	return TRUE;
@@ -1182,6 +1179,54 @@ static BOOL __tables(CwtDBHandler *dbh, CwtStrList *tables)
 	return ok;
 }
 
+
+static BOOL __tableExists(CwtDBHandler *dbh, const CWT_CHAR *tname)
+{
+	CwtStrNS     *strNS = cwtStrNS();
+
+	CwtMySqlDBHandler *mdbh = (CwtMySqlDBHandler*)dbh;
+	MYSQL_RES* res;
+	MYSQL_ROW row;
+	int i = 0;
+	BOOL ok;
+
+	CWT_ASSERT(mdbh);
+	CWT_ASSERT(mdbh->conn);
+
+	res = mysql_list_tables(mdbh->conn, NULL);
+
+	if( !res ) {
+		printf_error(__LOG_PREFIX _Tr("failed to list tables: %s"), __cwtDBIDriver.strerror(dbh));
+		return FALSE;
+	}
+
+	ok = FALSE;
+
+	while( res ) {
+		CWT_CHAR* decoded;
+
+		mysql_data_seek(res, i);
+
+		row = mysql_fetch_row(res);
+
+		if( !row ) {
+			break;
+		}
+
+		decoded = __decode(dbh, row[0]);
+		if( strNS->strieq( tname, decoded ) ) {
+			ok = TRUE;
+			break;
+		}
+
+
+		i++;
+	}
+
+	mysql_free_result(res);
+
+	return ok;
+}
 
 
 static BOOL __begin(CwtDBHandler *dbh)

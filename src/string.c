@@ -12,8 +12,10 @@
 
 static CwtStringNS __CwtStringNS;
 
-static void            __append(CwtString *s, const CWT_CHAR *str);
+static append_string_f __append(CwtString *s, const CWT_CHAR *str);
 static const CWT_CHAR* __cstr(CwtString *s);
+
+/*static append_string_f __append_ptr = __append;*/
 
 CWT_BEGIN_DEF_VECTOR_NS(CwtStringNS, CwtString, CWT_CHAR)
 	, __appendElem
@@ -34,9 +36,10 @@ DLL_API_EXPORT CwtStringNS* cwtStringNS(void)
 CWT_VECTOR_METHODS(CwtString,CWT_CHAR)
 
 
-static void __append(CwtString *s, const CWT_CHAR *str)
+static append_string_f __append(CwtString *s, const CWT_CHAR *str)
 {
 	__appendElems(s, str, cwtStrNS()->strlen(str));
+	return &__append;
 }
 
 

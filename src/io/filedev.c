@@ -70,6 +70,8 @@ DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, CwtOpenMode 
 		oflags |= O_NONBLOCK;
 #endif
 
+	oflags |= O_BINARY;
+
 	if( path ) {
 		fh = ns->open(path, oflags, 0);
 		if( fh < 0 ) {

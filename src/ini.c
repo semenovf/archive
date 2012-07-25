@@ -26,6 +26,7 @@ typedef struct CwtIniHandlerImpl {
 	CwtChannel *pchan;
 	size_t      line;
 	HashTable  *directives;
+	CwtIniCallback defaultCallback;
 	void       (*on_error)(CwtIniHandler, const CWT_CHAR*);
 } CwtIniHandlerImpl;
 
@@ -36,6 +37,7 @@ static BOOL          __parse   (CwtIniHandler, CwtChannel*);
 static void          __error   (CwtIniHandler, const CWT_CHAR *errstr);
 static void          __onError (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
 static void          __addDirective (CwtIniHandler, const CWT_CHAR *directive, CwtIniCallback handler);
+static void          __setDefaultDirective (CwtIniHandler, CwtIniCallback handler);
 static size_t        __line    (CwtIniHandler);
 
 static CwtIniNS __cwtIniNS = {
@@ -46,9 +48,9 @@ static CwtIniNS __cwtIniNS = {
 	, __error
 	, __onError
 	, __addDirective
+	, __setDefaultDirective
 	, __line
 };
-
 
 DLL_API_EXPORT CwtIniNS* cwtIniNS(void)
 {
@@ -69,6 +71,7 @@ static CwtIniHandler __createWithFlags(UINT flags, size_t max_tokens)
 	h->max_tokens = max_tokens > 0 ? max_tokens : 128;
 	h->flags      = flags;
 	h->pchan      = NULL;
+	h->defaultCallback = NULL;
 	h->line       = 0;
 	h->on_error   = NULL;
 
@@ -158,8 +161,12 @@ static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
 							if( cb ) {
 								ok = cb(h, argv, argc);
 							} else {
-								__error(h, _Tr("unsupported directive"));
-								ok = FALSE;
+								if( ph->defaultCallback ) {
+									ok = ph->defaultCallback(h, argv, argc);
+								} else {
+									__error(h, _Tr("unsupported directive"));
+									ok = FALSE;
+								}
 							}
 						} else {
 							__error(h, _Tr("maximum tokens in directive line are exceeded"));
@@ -215,6 +222,18 @@ static void __addDirective (CwtIniHandler h, const CWT_CHAR *directive, CwtIniCa
 	if( directive && handler ) {
 		CWT_CHAR *dir = cwtStrNS()->strdup(directive);
 		CWT_ASSERT(hash_table_insert(ph->directives, dir, handler));
+	}
+}
+
+
+static void __setDefaultDirective (CwtIniHandler h, CwtIniCallback handler)
+{
+	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
+
+	CWT_ASSERT(h);
+
+	if( handler ) {
+		ph->defaultCallback = handler;
 	}
 }
 

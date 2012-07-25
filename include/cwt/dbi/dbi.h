@@ -88,6 +88,7 @@ typedef struct CwtDBIDriver
 	CwtStatement*   (*prepare)       (CwtDBHandler*, const CWT_CHAR *sql);
 	ULONGLONG       (*rows)          (CwtDBHandler*);
 	BOOL            (*tables)        (CwtDBHandler*, CwtStrList *tables);
+	BOOL            (*tableExists)   (CwtDBHandler*, const CWT_CHAR *tname);
 	char*           (*encode)        (CwtDBHandler*, const CWT_CHAR *s);
 	CWT_CHAR*       (*decode)        (CwtDBHandler*, const char *s);
 	CWT_TIME*       (*createTime)    (void);

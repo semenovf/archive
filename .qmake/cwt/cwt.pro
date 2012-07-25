@@ -37,6 +37,11 @@ win32 {
     # see cwt/src/stdio.c for description
     DEFINES += _CRT_NON_CONFORMING_SWPRINTFS
 
+    # compile as C sources
+    QMAKE_CFLAGS += /TC
+    QMAKE_CXXFLAGS += /TC
+
+
     HEADERS += ..\\..\\include\\cwt\\*.h
     HEADERS += ..\\..\\include\\cwt\\algo\\*.h
     HEADERS += ..\\..\\include\\cwt\\io\\*.h

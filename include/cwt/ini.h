@@ -27,6 +27,7 @@ typedef struct CwtIniNS {
 	void          (*error)   (CwtIniHandler, const CWT_CHAR *errstr);
 	void          (*onError) (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
 	void          (*addDirective) (CwtIniHandler, const CWT_CHAR *directive, CwtIniCallback handler);
+	void          (*setDefaultDirective) (CwtIniHandler, CwtIniCallback handler);
 	size_t        (*line)    (CwtIniHandler);
 } CwtIniNS;
 

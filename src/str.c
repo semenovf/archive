@@ -13,6 +13,7 @@
 #	include <stdlib.h>
 #endif
 #include <string.h>
+#include <stdarg.h>
 
 
 #ifdef strdup
@@ -89,16 +90,16 @@ static CWT_CHAR* __cwt_strrstr(const CWT_CHAR *s, const CWT_CHAR *substr);
 static void      __cwt_chomp(CWT_CHAR *s);
 
 EXTERN_C_BEGIN
-extern LONGLONG   __cwt_toLONGLONG   (const CWT_CHAR *str, int radix, BOOL *ok);
-extern ULONGLONG  __cwt_toULONGLONG  (const CWT_CHAR *str, int radix, BOOL *ok);
-extern LONG       __cwt_toLONG       (const CWT_CHAR *str, int radix, BOOL *ok);
-extern ULONG      __cwt_toULONG      (const CWT_CHAR *str, int radix, BOOL *ok);
-extern INT        __cwt_toINT        (const CWT_CHAR *str, int radix, BOOL *ok);
-extern UINT       __cwt_toUINT       (const CWT_CHAR *str, int radix, BOOL *ok);
-extern SHORT      __cwt_toSHORT      (const CWT_CHAR *str, int radix, BOOL *ok);
-extern USHORT     __cwt_toUSHORT     (const CWT_CHAR *str, int radix, BOOL *ok);
-extern SBYTE      __cwt_toSBYTE      (const CWT_CHAR *str, int radix, BOOL *ok);
-extern BYTE       __cwt_toBYTE       (const CWT_CHAR *str, int radix, BOOL *ok);
+extern LONGLONG  __cwt_toLONGLONG   (const CWT_CHAR *str, int radix, BOOL *ok);
+extern ULONGLONG __cwt_toULONGLONG  (const CWT_CHAR *str, int radix, BOOL *ok);
+extern LONG      __cwt_toLONG       (const CWT_CHAR *str, int radix, BOOL *ok);
+extern ULONG     __cwt_toULONG      (const CWT_CHAR *str, int radix, BOOL *ok);
+extern INT       __cwt_toINT        (const CWT_CHAR *str, int radix, BOOL *ok);
+extern UINT      __cwt_toUINT       (const CWT_CHAR *str, int radix, BOOL *ok);
+extern SHORT     __cwt_toSHORT      (const CWT_CHAR *str, int radix, BOOL *ok);
+extern USHORT    __cwt_toUSHORT     (const CWT_CHAR *str, int radix, BOOL *ok);
+extern SBYTE     __cwt_toSBYTE      (const CWT_CHAR *str, int radix, BOOL *ok);
+extern BYTE      __cwt_toBYTE       (const CWT_CHAR *str, int radix, BOOL *ok);
 EXTERN_C_END
 
 static char*      __cwt_toLatin1     (const CWT_CHAR *s);
@@ -143,7 +144,7 @@ static CwtStrNS __cwtStrNS = {
 	, wcstoull
 #	endif
 	, iswalpha
-#else
+#else /*CWT_UNICODE*/
 	, strftime
 	, strlen
 	, strcpy
@@ -177,7 +178,7 @@ static CwtStrNS __cwtStrNS = {
 	, strtoull
 #	endif
 	, __cwt_isalpha
-#endif
+#endif /*!CWT_UNICODE*/
 	, memcpy
 	, memmove
 	, memset
