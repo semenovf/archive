@@ -30,26 +30,26 @@ typedef struct CwtIniHandlerImpl {
 	void       (*on_error)(CwtIniHandler, const CWT_CHAR*);
 } CwtIniHandlerImpl;
 
-static CwtIniHandler __create  (void);
-static CwtIniHandler __createWithFlags(UINT flags, size_t max_tokens);
-static void          __free    (CwtIniHandler);
-static BOOL          __parse   (CwtIniHandler, CwtChannel*);
-static void          __error   (CwtIniHandler, const CWT_CHAR *errstr);
-static void          __onError (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
-static void          __addDirective (CwtIniHandler, const CWT_CHAR *directive, CwtIniCallback handler);
-static void          __setDefaultDirective (CwtIniHandler, CwtIniCallback handler);
-static size_t        __line    (CwtIniHandler);
+static CwtIniHandler __ini_create  (void);
+static CwtIniHandler __ini_createWithFlags(UINT flags, size_t max_tokens);
+static void          __ini_free    (CwtIniHandler);
+static BOOL          __ini_parse   (CwtIniHandler, CwtChannel*);
+static void          __ini_error   (CwtIniHandler, const CWT_CHAR *errstr);
+static void          __ini_onError (CwtIniHandler, void (*callback)(CwtIniHandler, const CWT_CHAR*));
+static void          __ini_addDirective (CwtIniHandler, const CWT_CHAR *directive, CwtIniCallback handler);
+static void          __ini_setDefaultDirective (CwtIniHandler, CwtIniCallback handler);
+static size_t        __ini_line    (CwtIniHandler);
 
 static CwtIniNS __cwtIniNS = {
-	  __create
-	, __createWithFlags
-	, __free
-	, __parse
-	, __error
-	, __onError
-	, __addDirective
-	, __setDefaultDirective
-	, __line
+	  __ini_create
+	, __ini_createWithFlags
+	, __ini_free
+	, __ini_parse
+	, __ini_error
+	, __ini_onError
+	, __ini_addDirective
+	, __ini_setDefaultDirective
+	, __ini_line
 };
 
 DLL_API_EXPORT CwtIniNS* cwtIniNS(void)
@@ -57,13 +57,13 @@ DLL_API_EXPORT CwtIniNS* cwtIniNS(void)
 	return &__cwtIniNS;
 }
 
-static CwtIniHandler __create(void)
+static CwtIniHandler __ini_create(void)
 {
-	return  __createWithFlags(0, 0);
+	return  __ini_createWithFlags(0, 0);
 }
 
 
-static CwtIniHandler __createWithFlags(UINT flags, size_t max_tokens)
+static CwtIniHandler __ini_createWithFlags(UINT flags, size_t max_tokens)
 {
 	CwtIniHandlerImpl *h;
 	h = CWT_MALLOC(CwtIniHandlerImpl);
@@ -86,7 +86,7 @@ static CwtIniHandler __createWithFlags(UINT flags, size_t max_tokens)
 }
 
 
-static void __free(CwtIniHandler h)
+static void __ini_free(CwtIniHandler h)
 {
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 	if( h ) {
@@ -98,7 +98,7 @@ static void __free(CwtIniHandler h)
 	}
 }
 
-static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
+static BOOL __ini_parse(CwtIniHandler h, CwtChannel *pchan)
 {
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 	CwtStrNS       *strNS    = cwtStrNS();
@@ -164,18 +164,18 @@ static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
 								if( ph->defaultCallback ) {
 									ok = ph->defaultCallback(h, argv, argc);
 								} else {
-									__error(h, _Tr("unsupported directive"));
+									__ini_error(h, _Tr("unsupported directive"));
 									ok = FALSE;
 								}
 							}
 						} else {
-							__error(h, _Tr("maximum tokens in directive line are exceeded"));
+							__ini_error(h, _Tr("maximum tokens in directive line are exceeded"));
 							ok = FALSE;
 						}
 
 						CWT_FREE(argv);
 					} else if( rc < 0 ) {
-						__error(h, _Tr("quotes are unbalanced"));
+						__ini_error(h, _Tr("quotes are unbalanced"));
 						ok = FALSE;
 					}
 				}
@@ -202,7 +202,7 @@ static BOOL __parse(CwtIniHandler h, CwtChannel *pchan)
 }
 
 
-static void __error(CwtIniHandler h, const CWT_CHAR *errstr)
+static void __ini_error(CwtIniHandler h, const CWT_CHAR *errstr)
 {
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 
@@ -213,7 +213,7 @@ static void __error(CwtIniHandler h, const CWT_CHAR *errstr)
 }
 
 
-static void __addDirective (CwtIniHandler h, const CWT_CHAR *directive, CwtIniCallback handler)
+static void __ini_addDirective (CwtIniHandler h, const CWT_CHAR *directive, CwtIniCallback handler)
 {
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 
@@ -226,7 +226,7 @@ static void __addDirective (CwtIniHandler h, const CWT_CHAR *directive, CwtIniCa
 }
 
 
-static void __setDefaultDirective (CwtIniHandler h, CwtIniCallback handler)
+static void __ini_setDefaultDirective (CwtIniHandler h, CwtIniCallback handler)
 {
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 
@@ -237,13 +237,13 @@ static void __setDefaultDirective (CwtIniHandler h, CwtIniCallback handler)
 	}
 }
 
-static size_t __line(CwtIniHandler h)
+static size_t __ini_line(CwtIniHandler h)
 {
 	CWT_ASSERT(h);
 	return ((CwtIniHandlerImpl*)h)->line;
 }
 
-static void __onError(CwtIniHandler h, void (*callback)(CwtIniHandler, const CWT_CHAR*))
+static void __ini_onError(CwtIniHandler h, void (*callback)(CwtIniHandler, const CWT_CHAR*))
 {
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 

@@ -4,6 +4,7 @@ SUBDIRS  =         \
     cwt            \
     cwt-mysql      \
     tests/bytearr  \
+    tests/csv      \
     tests/event    \
     tests/echannel \
     tests/eclock   \

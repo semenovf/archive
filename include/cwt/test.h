@@ -49,7 +49,7 @@ EXTERN_C_END
 	printf("TEST: Total result: %s\n",                                        \
 		(__cwtTestContextPtr__->m_run_tests                                   \
         == __cwtTestContextPtr__->m_ok_tests ? "success" : "failure"));       \
-	return (__cwtTestContextPtr__->m_run_tests                                \
+	exit (__cwtTestContextPtr__->m_run_tests                                \
         == __cwtTestContextPtr__->m_ok_tests ? EXIT_SUCCESS : EXIT_FAILURE);  \
 }
 
