@@ -8,16 +8,20 @@
 
 #include <cwt/unistd.h>
 
-static void __cwt_sleep(UINT sec);
-static void __cwt_msleep(UINT msec);
-static void __cwt_usleep(UINT usec);
+
+static ssize_t  __read (int fd, void *buffer, size_t count );
+static ssize_t  __write(int fd, const void *buffer, size_t count );
+static void     __cwt_sleep(UINT sec);
+static void     __cwt_msleep(UINT msec);
+static void     __cwt_usleep(UINT usec);
+
 
 static CwtUnistdNS __cwtUnistdNS = {
 #ifdef CWT_UNICODE
 	  CWT_ISO_CPP_NAME(wopen)
 	, CWT_ISO_CPP_NAME(close)
-	, CWT_ISO_CPP_NAME(read)
-	, CWT_ISO_CPP_NAME(write)
+	, __read
+	, __write
 	, CWT_ISO_CPP_NAME(lseek)
 #ifdef CWT_CC_MSC
 	, CWT_ISO_CPP_NAME(wsopen)
@@ -25,8 +29,8 @@ static CwtUnistdNS __cwtUnistdNS = {
 #else
 	  CWT_ISO_CPP_NAME(open)
 	, CWT_ISO_CPP_NAME(close)
-	, CWT_ISO_CPP_NAME(read)
-	, CWT_ISO_CPP_NAME(write)
+	, __read
+	, __write
 	, CWT_ISO_CPP_NAME(lseek)
 #ifdef CWT_CC_MSC
 	, CWT_ISO_CPP_NAME(sopen)
@@ -42,6 +46,19 @@ static CwtUnistdNS __cwtUnistdNS = {
 DLL_API_EXPORT CwtUnistdNS* cwtUnistdNS(void)
 {
 	return &__cwtUnistdNS;
+}
+
+static ssize_t  __read (int fd, void *buffer, size_t count )
+{
+	CWT_ASSERT(sizeof(size_t) <= sizeof(UINT) && count <= UINT_MAX);
+	return (ssize_t)CWT_ISO_CPP_NAME(read)(fd, buffer, (UINT)count);
+}
+
+static ssize_t  __write(int fd, const void *buffer, size_t count )
+{
+	CWT_ASSERT(sizeof(size_t) <= sizeof(UINT) && count <= UINT_MAX);
+	return (ssize_t)CWT_ISO_CPP_NAME(write)(fd, buffer, (UINT)count);
+
 }
 
 

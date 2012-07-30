@@ -55,7 +55,7 @@ static size_t        __csv_line     (CwtCsvHandler);
 static void          __csv_begin   (CwtCsvHandler, CwtChannel*);
 static size_t        __csv_header  (CwtCsvHandler);
 static BOOL          __csv_next    (CwtCsvHandler);
-static BOOL          __csv_columnsCount (CwtCsvHandler);
+static size_t        __csv_columnsCount (CwtCsvHandler);
 static size_t        __csv_row     (CwtCsvHandler, CWT_CHAR* argv[], size_t argc);
 static CWT_CHAR*     __csv_column  (CwtCsvHandler, const CWT_CHAR* name);
 
@@ -458,7 +458,7 @@ static BOOL __csv_next(CwtCsvHandler h)
  * @param h CSV handler
  * @return number of columns (fields) in the row
  */
-static BOOL __csv_columnsCount(CwtCsvHandler h)
+static size_t __csv_columnsCount(CwtCsvHandler h)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	CWT_ASSERT(h);

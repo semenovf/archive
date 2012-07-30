@@ -24,13 +24,13 @@
 
 
 typedef struct CwtUnistdNS {
-	INT  (*open)     (const CWT_CHAR *filename, INT oflag, ...);
-	INT  (*close)    (int fd);
-	INT  (*read)     (int fd, void *buffer, UINT count );
-	INT  (*write)    (int fd, const void *buffer, UINT count );
-	LONG (*lseek)    (int fd, LONG offset, INT origin);
+	INT      (*open)     (const CWT_CHAR *filename, INT oflag, ...);
+	INT      (*close)    (int fd);
+	ssize_t  (*read)     (int fd, void *buffer, size_t count );
+	ssize_t  (*write)    (int fd, const void *buffer, size_t count );
+	LONG     (*lseek)    (int fd, LONG offset, INT origin);
 #ifdef CWT_CC_MSC
-	INT  (*sopen)    (const CWT_CHAR *filename, INT oflag, INT shflag, ...);
+	INT      (*sopen)    (const CWT_CHAR *filename, INT oflag, INT shflag, ...);
 #endif
 
 	void (*sleep)(UINT sec);

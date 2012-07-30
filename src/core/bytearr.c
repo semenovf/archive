@@ -71,7 +71,7 @@ static void __rtrim(CwtByteArray *ba)
 
 	CWT_ASSERT(ba);
 
-	i = ba->m_count;
+	i = (ssize_t)ba->m_count;
 
 	while( --i >= 0
 			&& ( ba->m_buffer[i] == ' '

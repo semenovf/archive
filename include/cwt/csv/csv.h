@@ -12,7 +12,7 @@
 #include <cwt/io/channel.h>
 
 typedef void* CwtCsvHandler;
-typedef BOOL (*CwtCsvCallback)(CwtCsvHandler, const CWT_CHAR* argv[], int argc);
+typedef BOOL (*CwtCsvCallback)(CwtCsvHandler, const CWT_CHAR* argv[], size_t argc);
 
 typedef struct CwtCsvNS {
 	CwtCsvHandler (*create)  (void);
@@ -29,7 +29,7 @@ typedef struct CwtCsvNS {
 	void          (*begin)   (CwtCsvHandler, CwtChannel*);
 	size_t        (*header)  (CwtCsvHandler);
 	BOOL          (*next)    (CwtCsvHandler);
-	BOOL          (*columnsCount) (CwtCsvHandler);
+	size_t        (*columnsCount) (CwtCsvHandler);
 	size_t        (*row)     (CwtCsvHandler, CWT_CHAR* argv[], size_t argc);
 	CWT_CHAR*     (*column)  (CwtCsvHandler, const CWT_CHAR* name);
 } CwtCsvNS;

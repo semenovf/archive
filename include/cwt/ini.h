@@ -17,7 +17,7 @@ typedef enum CwtIniFlag {
 };
 
 typedef void* CwtIniHandler;
-typedef BOOL (*CwtIniCallback)(CwtIniHandler, const CWT_CHAR* argv[], int argc);
+typedef BOOL (*CwtIniCallback)(CwtIniHandler, const CWT_CHAR* argv[], size_t argc);
 
 typedef struct CwtIniNS {
 	CwtIniHandler (*create)  (void);
