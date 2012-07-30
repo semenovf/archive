@@ -28,6 +28,7 @@ typedef struct CwtCsvNS {
 	/* Simple API for CSV (SAC) */
 	void          (*begin)   (CwtCsvHandler, CwtChannel*);
 	size_t        (*header)  (CwtCsvHandler);
+	void          (*titles)  (CwtCsvHandler, CWT_CHAR* argv[], size_t argc);
 	BOOL          (*next)    (CwtCsvHandler);
 	size_t        (*columnsCount) (CwtCsvHandler);
 	size_t        (*row)     (CwtCsvHandler, CWT_CHAR* argv[], size_t argc);

@@ -54,6 +54,7 @@ static size_t        __csv_line     (CwtCsvHandler);
 /* Simple API for CSV (SAC) */
 static void          __csv_begin   (CwtCsvHandler, CwtChannel*);
 static size_t        __csv_header  (CwtCsvHandler);
+static void          __csv_titles  (CwtCsvHandler, CWT_CHAR* argv[], size_t argc);
 static BOOL          __csv_next    (CwtCsvHandler);
 static size_t        __csv_columnsCount (CwtCsvHandler);
 static size_t        __csv_row     (CwtCsvHandler, CWT_CHAR* argv[], size_t argc);
@@ -76,6 +77,7 @@ static CwtCsvNS __cwtCsvNS = {
 
 	, __csv_begin
 	, __csv_header
+	, __csv_titles
 	, __csv_next
 	, __csv_columnsCount
 	, __csv_row
@@ -366,6 +368,28 @@ static size_t __csv_header(CwtCsvHandler h)
 		return __slNS->size(ph->csvData.tokens);
 	}
 	return (size_t)0;
+}
+
+
+static void __csv_titles(CwtCsvHandler h, CWT_CHAR* argv[], size_t argc)
+{
+	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
+	size_t count;
+	size_t i;
+
+	CWT_ASSERT(h);
+
+	count = (size_t)hash_table_num_entries(ph->csvData.columns);
+
+	if( argv && count > 0 ) {
+		HashTableIterator it;
+
+		hash_table_iterate(ph->csvData.columns, &it);
+
+		while( hash_table_iter_has_more(&it) && i < argc ) {
+			argv[i++] = (CWT_CHAR*)hash_table_iter_next(&it);
+		}
+	}
 }
 
 static BOOL __csv_next(CwtCsvHandler h)

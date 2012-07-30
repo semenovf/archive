@@ -23,7 +23,7 @@ typedef struct CwtRingBuf
 } CwtRingBuf;
 
 
-typedef struct CwtRingBufNS {
+typedef struct _CwtRingBufNS {
 	CwtRingBuf*   (*create)     (void);
 	CwtRingBuf*   (*createSized)(size_t initial_size, size_t max_size);
 	void          (*free)       (CwtRingBuf*);

@@ -16,15 +16,156 @@
 #endif
 
 
-void list_init(List *list)
+static CwtList*      __list_create      (void);
+static void          __list_registerCleanup (CwtList *list, void (*free_node)(void*), void (*free_data)(void*));
+static void          __list_init        (CwtList*);
+static void          __list_free        (CwtList*);
+static void          __list_insertAfter (CwtListNode *node, CwtListNode *new_node);
+static void          __list_insertFirst (CwtList *list, CwtListNode *new_node);
+static CwtListNode*  __list_removeFirst (CwtList *list);
+static CwtListNode*  __list_removeAfter (CwtListNode *node);
+static void          __list_traverse    (CwtList *list, int (*callback)(void *data, void *extra), void *extra);
+static CwtListNode*  __list_find        (CwtList *list, void *data);
+static void          __list_clear       (CwtList *list, void (*free_node)(void*), void (*free_data)(void*));
+static void          __list_begin       (CwtList *list, CwtListIterator *it);
+static BOOL          __list_hasMore     (CwtListIterator *it);
+static void*         __list_next        (CwtListIterator *it);
+
+static CwtStack*     __stack_create      (void);
+static void          __stack_registerCleanup(CwtStack*, void (*free_data)(void*));
+static void          __stack_init        (CwtStack*);
+static void          __stack_push        (CwtStack*, void *data);
+static void*         __stack_pop         (CwtStack*);
+static void*         __stack_peek        (CwtStack*);
+static BOOL          __stack_isEmpty     (CwtStack*);
+static void          __stack_begin       (CwtStack*, CwtStackIterator *it);
+static BOOL          __stack_hasMore     (CwtStackIterator *it);
+static void*         __stack_next        (CwtStackIterator *it);
+
+
+static CwtListNS __cwtListNS = {
+	  __list_create
+	, __list_registerCleanup
+	, __list_init
+	, __list_free
+	, __list_insertAfter
+	, __list_insertFirst
+	, __list_removeFirst
+	, __list_removeAfter
+	, __list_traverse
+	, __list_find
+	, __list_clear
+	, __list_begin
+	, __list_hasMore
+	, __list_next
+};
+
+static CwtStackNS __cwtStackNS = {
+	  __stack_create
+	, __stack_registerCleanup
+	, __stack_init
+	, __list_free
+	, __list_clear
+	, __stack_push
+	, __stack_pop
+	, __stack_peek
+	, __stack_isEmpty
+	, __stack_begin
+	, __stack_hasMore
+	, __stack_next
+};
+
+
+DLL_API_EXPORT CwtListNS* cwtListNS(void)
+{
+	return &__cwtListNS;
+}
+
+DLL_API_EXPORT CwtStackNS* cwtStackNS(void)
+{
+	return &__cwtStackNS;
+}
+
+
+static CwtList* __list_create(void)
+{
+	CwtList *list = CWT_MALLOC(CwtList);
+	__list_init(list);
+	return list;
+}
+
+static void __list_registerCleanup (CwtList *list, void (*free_node)(void*), void (*free_data)(void*))
+{
+	CWT_ASSERT(list);
+	list->free_node = free_node;
+	list->free_data = free_data;
+}
+
+static void __list_init(CwtList *list)
 {
 	CWT_ASSERT(list);
 	list->first = NULL;
+	list->free_node = NULL;
+	list->free_data = NULL;
 }
 
-void list_traverse(List *list, int (*callback)(void *data, void *extra), void *extra)
+
+static void __list_free(CwtList *list)
 {
-	ListNode *node = list->first;
+	if( list ) {
+		__list_clear(list);
+		CWT_FREE(list);
+	}
+}
+
+static void __list_insertAfter(CwtListNode *node, CwtListNode *new_node)
+{
+	CWT_ASSERT(node);
+	CWT_ASSERT(new_node);
+    new_node->next = node->next;
+    node->next     = new_node;
+}
+
+
+static void __list_insertFirst(CwtList *list, CwtListNode *new_node)
+{
+	CWT_ASSERT(list);
+	CWT_ASSERT(new_node);
+	new_node->next = list->first;
+	list->first = new_node;
+}
+
+
+static CwtListNode* __list_removeFirst(CwtList *list)
+{
+	CwtListNode *obsolete;
+	CWT_ASSERT(list);
+    obsolete = list->first;
+
+	if( obsolete )
+		list->first = list->first->next;
+    return obsolete;
+}
+
+static CwtListNode* __list_removeAfter(CwtListNode *node)
+{
+	CwtListNode *obsolete;
+	CWT_ASSERT(node);
+
+	obsolete = node->next;
+
+    if( obsolete )
+    	node->next = node->next->next;
+    return obsolete;
+}
+
+static void __list_traverse(CwtList *list, int (*callback)(void *data, void *extra), void *extra)
+{
+	CwtListNode *node;
+
+	CWT_ASSERT(list);
+
+	node = list->first;
 
 	while( node ) {
 	    if( callback(node->data, extra) )
@@ -33,37 +174,14 @@ void list_traverse(List *list, int (*callback)(void *data, void *extra), void *e
 	}
 }
 
-void list_insert_after(ListNode *node, ListNode *new_node)
-{
-    new_node->next = node->next;
-    node->next     = new_node;
-}
 
-void list_insert_first(List *list, ListNode *new_node)
+static CwtListNode* __list_find(CwtList *list, void *data)
 {
-     new_node->next = list->first;
-     list->first = new_node;
-}
+	CwtListNode *node;
 
-ListNode* list_remove_after(ListNode *node)
-{
-    ListNode *obsolete = node->next;
-    if( obsolete )
-    	node->next = node->next->next;
-    return obsolete;
-}
+	CWT_ASSERT(list);
 
-ListNode* list_remove_first(List *list)
-{
-    ListNode *obsolete = list->first;
-	if( obsolete )
-		list->first = list->first->next;
-    return obsolete;
-}
-
-ListNode* list_find(List *list, void *data)
-{
-	ListNode *node = list->first;
+	node = list->first;
 
 	while( node ) {
 	    if( node->data == data )
@@ -73,18 +191,18 @@ ListNode* list_find(List *list, void *data)
 	return NULL;
 }
 
-void list_clear(List *list, void (*free_node)(void*), void (*free_data)(void*))
+static void __list_clear(CwtList *list)
 {
-	ListNode *node = list->first;
+	CwtListNode *node = list->first;
 
 	while( node ) {
-		if( node->data && free_data )
-			free_data(node->data);
+		if( node->data && list->free_data )
+			list->free_data(node->data);
 
 		list_remove_first(list);
 
-		if( free_node )
-			free_node(node);
+		if( list->free_node )
+			list->free_node(node);
 
 	    node = list->first;
 	}
@@ -93,20 +211,25 @@ void list_clear(List *list, void (*free_node)(void*), void (*free_data)(void*))
 }
 
 
-void list_begin(List *list, ListIterator *it)
+static void __list_begin(CwtList *list, CwtListIterator *it)
 {
+	CWT_ASSERT(list);
+	CWT_ASSERT(it);
 	it->list = list;
 	it->node = list->first;
 }
 
-BOOL list_has_more(ListIterator *it)
+static BOOL __list_hasMore(CwtListIterator *it)
 {
+	CWT_ASSERT(it);
 	return it->node ? TRUE : FALSE;
 }
 
-void* list_next(ListIterator *it)
+static void* __list_next(CwtListIterator *it)
 {
-	ListNode *node = it->node;
+	CwtListNode *node;
+	CWT_ASSERT(it);
+	node = it->node;
 	it->node = it->node->next;
 	return node->data;
 }
@@ -306,25 +429,48 @@ void* dlist_next(DListIterator *dt)
 }
 
 
-void  stack_init(Stack *stack)
+
+
+static CwtStack* __stack_create(void)
 {
-	CWT_ASSERT(stack);
-	stack->first = NULL;
+	CwtStack *stack = CWT_MALLOC(CwtStack);
+	__stack_init(stack);
+	return stack;
 }
 
-void stack_push(Stack *stack, void *data)
+static void __stack_registerCleanup(CwtStack *stack, void (*free_data)(void*))
 {
-	StackNode *node = CWT_MALLOC(StackNode);
+	CWT_ASSERT(stack);
+	stack->free_node = cwtFree;
+	stack->free_data = free_data;
+}
+
+
+static void __stack_init(CwtStack *stack)
+{
+	CWT_ASSERT(stack);
+	__list_init(stack);
+	stack->free_node = cwtFree;
+}
+
+
+static void __stack_push(CwtStack *stack, void *data)
+{
+	CwtStackNode *node = CWT_MALLOC(CwtStackNode);
 	node->data = data;
 	list_insert_first(stack, node);
 }
 
-void* stack_pop(Stack *stack)
+
+
+static void* __stack_pop(CwtStack *stack)
 {
 	void *data = NULL;
 
-	if( !stack_empty(stack) ) {
-		StackNode *node = list_remove_first(stack);
+	CWT_ASSERT(stack);
+
+	if( !__stack_isEmpty(stack) ) {
+		CwtStackNode *node = __list_removeFirst(stack);
 
 		data = node->data;
 		CWT_FREE(node);
@@ -332,37 +478,41 @@ void* stack_pop(Stack *stack)
 	return data;
 }
 
-void* stack_peek(Stack *stack)
+static void* __stack_peek(CwtStack *stack)
 {
 	void *data = NULL;
 
-	if( !stack_empty(stack) ) {
-		StackNode *node = stack->first;
+	CWT_ASSERT(stack);
+
+	if( !__stack_isEmpty(stack) ) {
+		CwtStackNode *node = stack->first;
 		data = node->data;
 	}
 	return data;
 }
 
-BOOL stack_empty(Stack *stack)
+static BOOL __stack_isEmpty(CwtStack *stack)
 {
+	CWT_ASSERT(stack);
 	return stack->first == NULL ? TRUE : FALSE;
 }
 
-void stack_begin(Stack *stack, StackIterator *si)
+static void __stack_begin(CwtStack *stack, CwtStackIterator *it)
 {
-	si->stack = stack;
-	si->node = stack->first;
+	CWT_ASSERT(stack);
+	it->stack = stack;
+	it->node = stack->first;
 }
 
-BOOL stack_has_more(StackIterator *si)
+static BOOL __stack_hasMore(CwtStackIterator *it)
 {
-	return si->node ? TRUE : FALSE;
+	return it->node ? TRUE : FALSE;
 }
 
-void *stack_next(StackIterator *si)
+static void *__stack_next(CwtStackIterator *it)
 {
-	StackNode *node = si->node;
-	si->node = si->node->next;
+	CwtStackNode *node = it->node;
+	it->node = it->node->next;
 	return node->data;
 }
 

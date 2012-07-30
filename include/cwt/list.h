@@ -14,58 +14,46 @@
 /* Single linked list */
 /* Double linked list */
 
-struct ListNode
+typedef struct _CwtListNode
 {
-	struct ListNode* next;
+	struct _CwtListNode* next;
 	void *data;
-};
+} CwtListNode;
 
 
-struct List {
-	struct ListNode* first;
-};
+typedef struct _CwtList {
+	struct _CwtListNode* first;
+	void (*free_node)(void*);
+	void (*free_data)(void*);
+} CwtList;
 
 
-struct ListIterator
+typedef struct _CwtListIterator
 {
-	struct List *list;
-	struct ListNode *node; /* current node */
-};
+	struct _CwtList *list;
+	struct _CwtListNode *node; /* current node */
+} CwtListIterator;
 
 
-typedef struct ListNode ListNode;
-typedef struct ListNode CwtListNode;
-typedef struct List List;
-typedef struct List CwtList;
-typedef struct ListIterator ListIterator;
-typedef struct ListIterator CwtListIterator;
+typedef struct _CwtListNS {
+	CwtList*      (*create)      (void);
+	void          (*registerCleanup) (CwtList *list, void (*free_node)(void*), void (*free_data)(void*));
+	void          (*init)        (CwtList*);
+	void          (*free)        (CwtList*);
+	void          (*insertAfter) (CwtListNode *node, CwtListNode *new_node);
+	void          (*insertFirst) (CwtList *list, CwtListNode *new_node);
+	CwtListNode*  (*removeFirst) (CwtList *list);
+	CwtListNode*  (*removeAfter) (CwtListNode *node);
+	void          (*traverse)    (CwtList *list, int (*callback)(void *data, void *extra), void *extra);
+	CwtListNode*  (*find)        (CwtList *list, void *data);
+	void          (*clear)       (CwtList *list);
+	void          (*begin)       (CwtList *list, CwtListIterator *it);
+	BOOL          (*hasMore)     (CwtListIterator *it);
+	void*         (*next)        (CwtListIterator *it);
+} CwtListNS;
 
 EXTERN_C_BEGIN
-
-DLL_API_EXPORT void       list_init(List *list);
-DLL_API_EXPORT void       list_insert_after(ListNode *node, ListNode *new_node);
-DLL_API_EXPORT void       list_insert_first(List *list, ListNode *new_node);
-DLL_API_EXPORT ListNode*  list_remove_first(List *list);
-DLL_API_EXPORT ListNode*  list_remove_after(ListNode *node);
-DLL_API_EXPORT void       list_traverse(List *list, int (*callback)(void *data, void *extra), void *extra);
-DLL_API_EXPORT ListNode*  list_find(List *list, void *data);
-DLL_API_EXPORT void       list_clear(List *list, void (*free_node)(void*), void (*free_data)(void*));
-DLL_API_EXPORT void       list_begin(List *list, ListIterator *it);
-DLL_API_EXPORT BOOL       list_has_more(ListIterator *it);
-DLL_API_EXPORT void*      list_next(ListIterator *it);
-
-#define cwtListInit            list_init
-#define cwtListInsertAfter     list_insert_after
-#define cwtListListInsertFirst list_insert_first
-#define cwtListRemoveFirst     list_remove_first
-#define cwtListRemoveAfter     list_remove_after
-#define cwtListTraverse        list_traverse
-#define cwtListFind            list_find
-#define cwtListClear           list_clear
-#define cwtListBegin           list_begin
-#define cwtListHasMore         list_has_more
-#define cwtListNext            list_next
-
+DLL_API_EXPORT CwtListNS* cwtListNS(void);
 EXTERN_C_END
 
 #endif /* __CWT_LIST_H__ */

@@ -13,6 +13,7 @@
 
 #include <cwt/types.h>
 #include <cwt/strlist.h>
+#include <cwt/dbi/ddi.h>
 
 typedef INT32 CwtDBI_RC;
 
@@ -97,6 +98,9 @@ typedef struct CwtDBIDriver
 	BOOL            (*begin)         (CwtDBHandler*); /* begin transaction */
 	BOOL            (*commit)        (CwtDBHandler*);
 	BOOL            (*rollback)      (CwtDBHandler*);
+
+	void            (*specForDeploy) (CwtStrList *sql);
+	void            (*specForRecall) (CwtStrList *sql);
 } CwtDBIDriver;
 
 typedef struct CwtDBI
@@ -105,6 +109,13 @@ typedef struct CwtDBI
 	CwtDBIDriver*   (*load)          (const CWT_CHAR *dsn);
 	CwtTypeEnum     (*toCwtTypeEnum) (CwtSqlTypeEnum sqlType);
 	CwtSqlTypeEnum  (*toSqlTypeEnum) (CwtTypeEnum cwtType);
+
+	CwtDDI*         (*createDDI)     (void);
+	void            (*freeDDI)       (CwtDDI *ddi);
+	CwtDDITable*    (*addTable)      (CwtDDI *ddi, const CWT_CHAR *name);
+	CwtDDIColumn*   (*addColumn)     (CwtDDITable *table, const CWT_CHAR *name);
+	BOOL            (*deploy)        (CwtDBHandler*, CwtDDI *ddi);
+	BOOL            (*recall)        (CwtDBHandler*, CwtDDI *ddi);
 } CwtDBI;
 
 EXTERN_C_BEGIN
