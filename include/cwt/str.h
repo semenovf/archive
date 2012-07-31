@@ -39,6 +39,7 @@ typedef struct CwtStrNS {
 	void*             (*memmove)      (void *to, const void *from, size_t sz);
 	void*             (*memset)       (void *block, int c, size_t sz);
 	void*             (*bzero)        (void *block, size_t sz);
+	int               (*memcmp)       (const void *m1, const void *m2, size_t n);
 
 	LONGLONG          (*toLONGLONG)   (const CWT_CHAR *str, int radix, BOOL *ok);
 	ULONGLONG         (*toULONGLONG)  (const CWT_CHAR *str, int radix, BOOL *ok);

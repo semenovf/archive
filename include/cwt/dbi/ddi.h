@@ -33,11 +33,14 @@ typedef enum _CwtDDI_Flag {
 } CwtDDI_Flag;
 
 
+struct _CwtDDITable;
+
 typedef struct _CwtDDIColumn {
-	CWT_CHAR   *name;
-	CwtDDI_Type type;
-	int         autoinc; /* AUTO_INCREMENT value, 0 - no auto increment */
-	int         is_null    : 1;
+	struct _CwtDDITable *table;
+	CWT_CHAR            *name;
+	CwtDDI_Type          type;
+	int                  autoinc; /* AUTO_INCREMENT value, 0 - no auto increment */
+	int                  is_null    : 1;
 } CwtDDIColumn;
 
 typedef struct _CwtDDITable {

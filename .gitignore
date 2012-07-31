@@ -1,6 +1,9 @@
 .settings/
 debug/
 release/
+Makefile
+makefile
+*.mk
 
 # Compiled Object files
 *.slo

@@ -110,10 +110,13 @@ typedef struct CwtDBI
 	CwtTypeEnum     (*toCwtTypeEnum) (CwtSqlTypeEnum sqlType);
 	CwtSqlTypeEnum  (*toSqlTypeEnum) (CwtTypeEnum cwtType);
 
+	/* DDI specific methods */
 	CwtDDI*         (*createDDI)     (void);
-	void            (*freeDDI)       (CwtDDI *ddi);
-	CwtDDITable*    (*addTable)      (CwtDDI *ddi, const CWT_CHAR *name);
-	CwtDDIColumn*   (*addColumn)     (CwtDDITable *table, const CWT_CHAR *name);
+	void            (*freeDDI)       (CwtDDI*);
+	CwtDDITable*    (*newTable)      (CwtDDI*, const CWT_CHAR *name);
+	CwtDDIColumn*   (*newColumn)     (CwtDDITable*, const CWT_CHAR *name);
+	void            (*deleteTable)   (CwtDDITable*);
+	void            (*deleteColumn)  (CwtDDIColumn*);
 	BOOL            (*deploy)        (CwtDBHandler*, CwtDDI *ddi);
 	BOOL            (*recall)        (CwtDBHandler*, CwtDDI *ddi);
 } CwtDBI;

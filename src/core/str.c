@@ -183,6 +183,7 @@ static CwtStrNS __cwtStrNS = {
 	, memmove
 	, memset
 	, __cwt_bzero
+	, memcmp
 
 	, __cwt_toLONGLONG
 	, __cwt_toULONGLONG

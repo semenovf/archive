@@ -16,46 +16,50 @@
 #endif
 
 
-static CwtList*      __list_create      (void);
-static void          __list_registerCleanup (CwtList *list, void (*free_node)(void*), void (*free_data)(void*));
-static void          __list_init        (CwtList*);
+static CwtList*      __list_create      (size_t sizeofData, void (*data_cleanup)(void*));
+static void          __list_init        (CwtList*, size_t sizeofData, void (*data_cleanup)(void*));
 static void          __list_free        (CwtList*);
-static void          __list_insertAfter (CwtListNode *node, CwtListNode *new_node);
-static void          __list_insertFirst (CwtList *list, CwtListNode *new_node);
-static CwtListNode*  __list_removeFirst (CwtList *list);
-static CwtListNode*  __list_removeAfter (CwtListNode *node);
+static void          __list_clear       (CwtList*);
+static BOOL          __list_isEmpty     (CwtList*);
+static void          __list_insert      (CwtListIterator *before, void *data);
+static void          __list_prepend     (CwtList *list, void *data);
+static void          __list_append      (CwtList *list, void *data);
+static void          __list_removeFirst (CwtList *list);
+static void          __list_removeLast  (CwtList *list);
 static void          __list_traverse    (CwtList *list, int (*callback)(void *data, void *extra), void *extra);
-static CwtListNode*  __list_find        (CwtList *list, void *data);
-static void          __list_clear       (CwtList *list, void (*free_node)(void*), void (*free_data)(void*));
+static void          __list_rtraverse   (CwtList*, int (*callback)(void *data, void *extra), void *extra);
+static BOOL          __list_find        (CwtList *list, void *data, CwtListIterator *it);
+
+static void*         __list_first       (CwtList*);
+static void*         __list_last        (CwtList*);
+
 static void          __list_begin       (CwtList *list, CwtListIterator *it);
+static void          __list_rbegin      (CwtList *list, CwtListIterator *it);
 static BOOL          __list_hasMore     (CwtListIterator *it);
 static void*         __list_next        (CwtListIterator *it);
 
-static CwtStack*     __stack_create      (void);
-static void          __stack_registerCleanup(CwtStack*, void (*free_data)(void*));
-static void          __stack_init        (CwtStack*);
-static void          __stack_push        (CwtStack*, void *data);
-static void*         __stack_pop         (CwtStack*);
-static void*         __stack_peek        (CwtStack*);
-static BOOL          __stack_isEmpty     (CwtStack*);
-static void          __stack_begin       (CwtStack*, CwtStackIterator *it);
-static BOOL          __stack_hasMore     (CwtStackIterator *it);
-static void*         __stack_next        (CwtStackIterator *it);
 
 
 static CwtListNS __cwtListNS = {
 	  __list_create
-	, __list_registerCleanup
 	, __list_init
 	, __list_free
-	, __list_insertAfter
-	, __list_insertFirst
-	, __list_removeFirst
-	, __list_removeAfter
-	, __list_traverse
-	, __list_find
 	, __list_clear
+	, __list_isEmpty
+	, __list_insert
+	, __list_prepend
+	, __list_append
+	, __list_removeFirst
+	, __list_removeLast
+	, __list_traverse
+	, __list_rtraverse
+	, __list_find
+
+	, __list_first
+	, __list_last
+
 	, __list_begin
+	, __list_rbegin
 	, __list_hasMore
 	, __list_next
 };
@@ -75,41 +79,61 @@ static CwtStackNS __cwtStackNS = {
 	, __stack_next
 };
 
+static CwtStrNS *__strNS = NULL;
 
+/**
+ *
+ */
 DLL_API_EXPORT CwtListNS* cwtListNS(void)
 {
+	if( !__strNS ) {
+		__strNS = cwtStrNS();
+	}
 	return &__cwtListNS;
 }
 
+/**
+ *
+ */
 DLL_API_EXPORT CwtStackNS* cwtStackNS(void)
 {
 	return &__cwtStackNS;
 }
 
 
-static CwtList* __list_create(void)
+/**
+ *
+ * @param sizeofData
+ * @param data_cleanup
+ * @return
+ */
+static CwtList* __list_create(size_t sizeofData, void (*data_cleanup)(void*))
 {
 	CwtList *list = CWT_MALLOC(CwtList);
-	__list_init(list);
+	__list_init(list, sizeofData, data_cleanup);
 	return list;
 }
 
-static void __list_registerCleanup (CwtList *list, void (*free_node)(void*), void (*free_data)(void*))
+
+/**
+ *
+ * @param list
+ * @param sizeofData
+ * @param data_cleanup
+ */
+static void __list_init(CwtList *list, size_t sizeofData, void (*data_cleanup)(void*))
 {
 	CWT_ASSERT(list);
-	list->free_node = free_node;
-	list->free_data = free_data;
-}
-
-static void __list_init(CwtList *list)
-{
-	CWT_ASSERT(list);
-	list->first = NULL;
-	list->free_node = NULL;
-	list->free_data = NULL;
+	cwtStrNS()->bzero(list, sizeof(CwtList));
+	list->datasz = sizeofData;
+	list->data_cleanup = data_cleanup;
 }
 
 
+/**
+ *
+ * @param list
+ */
 static void __list_free(CwtList *list)
 {
 	if( list ) {
@@ -118,315 +142,308 @@ static void __list_free(CwtList *list)
 	}
 }
 
-static void __list_insertAfter(CwtListNode *node, CwtListNode *new_node)
+/**
+ *
+ * @param list
+ */
+static void __list_clear(CwtList *list)
 {
-	CWT_ASSERT(node);
-	CWT_ASSERT(new_node);
-    new_node->next = node->next;
-    node->next     = new_node;
+	CwtListNode *node = list->f;
+
+	while( node ) {
+		if( node->d && list->data_cleanup)
+			list->data_cleanup(node->d);
+
+		list->f = node->n;
+		CWT_FREE(node);
+	    node = list->f;
+	}
+
+	list->f = NULL;
+	list->l = NULL;
+	list->count = 0;
 }
 
 
-static void __list_insertFirst(CwtList *list, CwtListNode *new_node)
+static BOOL __list_isEmpty(CwtList *list)
 {
-	CWT_ASSERT(list);
-	CWT_ASSERT(new_node);
-	new_node->next = list->first;
-	list->first = new_node;
+	return list->count > 0 ? TRUE : FALSE;
+}
+
+/**
+ * @brief Inserts @c data in front of the item pointed to by the iterator @c before.
+ * @param before Iterator pointed to the item before that @c data will be inserted.
+ * @param data Value will be inserted.
+ */
+static void __list_insert (CwtListIterator *before, void *data)
+{
+	CwtListNode *n;
+	CwtListNode *bnode;
+	CwtListNode *anode;
+	CwtList     *list;
+
+	list = before->list;
+
+	n = (cwtMalloc*)(sizeof(CwtListNode) * 2 + list->datasz);
+	__strNS->memcpy(n->d, data, list->datasz);
+
+	bnode = before->node;
+	anode = before->node->n;
+
+	n->p = bnode;
+	n->n = anode;
+	bnode->n = n;
+
+	if( list->l == bnode ) { /* before points to the last node */
+		list->l = n;
+	} else {
+		anode->p = n;
+	}
+
+	list->count++;
 }
 
 
-static CwtListNode* __list_removeFirst(CwtList *list)
+/**
+ * @brief Inserts @c data at the beginning of the list.
+ *
+ * @param list
+ * @param data
+ */
+static void __list_prepend(CwtList *list, void *data)
 {
-	CwtListNode *obsolete;
-	CWT_ASSERT(list);
-    obsolete = list->first;
+	CwtListNode *n;
 
-	if( obsolete )
-		list->first = list->first->next;
-    return obsolete;
+	n = (cwtMalloc*)(sizeof(CwtListNode) * 2 + list->datasz);
+	__strNS->memcpy(n->d, data, list->datasz);
+
+	if( list->f ) {
+		n->n = list->f;
+	}
+
+	list->f = n;
+
+	if( !list->l ) {
+		list->l = n;
+	}
+
+	list->count++;
 }
 
-static CwtListNode* __list_removeAfter(CwtListNode *node)
+/**
+ * @brief Inserts @ data at the end of the list.
+ *
+ * @param list
+ * @param data
+ */
+static void __list_append(CwtList *list, void *data)
 {
-	CwtListNode *obsolete;
-	CWT_ASSERT(node);
+	CwtListNode *n;
 
-	obsolete = node->next;
+	n = (cwtMalloc*)(sizeof(CwtListNode) * 2 + list->datasz);
+	__strNS->memcpy(n->d, data, list->datasz);
 
-    if( obsolete )
-    	node->next = node->next->next;
-    return obsolete;
+	if( list->l ) {
+		n->p = list->l;
+	}
+
+	list->l = n;
+
+	if( !list->f ) {
+		list->f = n;
+	}
+
+	list->count++;
+
 }
 
+/**
+ *
+ * @param list
+ */
+static void __list_removeFirst(CwtList *list)
+{
+	CwtListNode *n;
+
+	/* List is empty */
+	if( !list->f )
+		return;
+
+	n = list->f;
+	list->f = n->n;
+
+	if( list->l == n )
+		list->l = NULL;
+
+	if( n->d && list->data_cleanup)
+		list->data_cleanup(n->d);
+
+	CWT_FREE(n);
+
+	list->count--;
+}
+
+
+/**
+ *
+ * @param list
+ */
+static void __list_removeLast(CwtList *list)
+{
+	CwtListNode *n;
+
+	/* List is empty */
+	if( !list->l )
+		return;
+
+	n = list->l;
+	list->l = n->p;
+
+	if( list->f == n )
+		list->f = NULL;
+
+	if( n->d && list->data_cleanup)
+		list->data_cleanup(n->d);
+
+	CWT_FREE(n);
+
+	list->count--;
+}
+
+
+/**
+ *
+ * @param list
+ * @param callback
+ * @param extra
+ */
 static void __list_traverse(CwtList *list, int (*callback)(void *data, void *extra), void *extra)
 {
 	CwtListNode *node;
 
-	CWT_ASSERT(list);
-
-	node = list->first;
+	node = list->f;
 
 	while( node ) {
-	    if( callback(node->data, extra) )
+	    if( callback(node->d, extra) )
 	    	break;
-	    node = node->next;
+	    node = node->n;
 	}
 }
 
 
-static CwtListNode* __list_find(CwtList *list, void *data)
+/**
+ *
+ * @param list
+ * @param callback
+ * @param extra
+ */
+static void __list_rtraverse(CwtList *list, int (*callback)(void *data, void *extra), void *extra)
 {
 	CwtListNode *node;
 
-	CWT_ASSERT(list);
-
-	node = list->first;
+	node = list->l;
 
 	while( node ) {
-	    if( node->data == data )
-	    	return node;
-	    node = node->next;
+	    if( callback(node->d, extra) )
+	    	break;
+	    node = node->p;
 	}
-	return NULL;
 }
 
-static void __list_clear(CwtList *list)
+
+static void* __list_first(CwtList *list)
 {
-	CwtListNode *node = list->first;
+	if( !list->f )
+		return NULL;
 
-	while( node ) {
-		if( node->data && list->free_data )
-			list->free_data(node->data);
-
-		list_remove_first(list);
-
-		if( list->free_node )
-			list->free_node(node);
-
-	    node = list->first;
-	}
-
-	list->first = NULL;
+	return list->f->d;
 }
 
+static void* __list_last(CwtList *list)
+{
+	if( !list->l )
+		return NULL;
 
+	return list->l->d;
+}
+
+/**
+ *
+ * @param list
+ * @param data
+ * @param it
+ * @return
+ */
+static BOOL __list_find(CwtList *list, void *data, CwtListIterator *it)
+{
+	CwtListNode *node;
+
+	node = list->f;
+
+	while( node ) {
+	    if( __strNS->memcmp(data, node->d, list->datasz) == 0 ) {
+	    	it->forward = TRUE;
+	    	it->list = list;
+	    	it->node = node;
+	    	return TRUE;
+	    }
+	    node = node->n;
+	}
+	return FALSE;
+}
+
+/**
+ *
+ * @param list
+ * @param it
+ */
 static void __list_begin(CwtList *list, CwtListIterator *it)
 {
-	CWT_ASSERT(list);
-	CWT_ASSERT(it);
 	it->list = list;
-	it->node = list->first;
+	it->node = list->f;
+	it->forward = TRUE;
 }
 
+/**
+ *
+ * @param list
+ * @param it
+ */
+static void __list_rbegin(CwtList *list, CwtListIterator *it)
+{
+	it->list = list;
+	it->node = list->l;
+	it->forward = FALSE;
+}
+
+/**
+ *
+ * @param it
+ * @return
+ */
 static BOOL __list_hasMore(CwtListIterator *it)
 {
-	CWT_ASSERT(it);
 	return it->node ? TRUE : FALSE;
 }
 
+/**
+ *
+ * @param it
+ */
 static void* __list_next(CwtListIterator *it)
 {
-	CwtListNode *node;
-	CWT_ASSERT(it);
-	node = it->node;
-	it->node = it->node->next;
-	return node->data;
-}
+	CwtListNode *node = it->node;
 
-
-/*--- Double linked list functions ---*/
-void dlist_init(DList *dlist)
-{
-	CWT_ASSERT(dlist);
-	dlist->first = NULL;
-	dlist->last = NULL;
-}
-
-void dlist_insert_after(DList *list, DListNode *node, DListNode *new_node)
-{
-	new_node->prev = node;
-    new_node->next = node->next;
-    if( !node->next )
-        list->last = new_node;
-    else
-        node->next->prev = new_node;
-    node->next = new_node;
-}
-
-void dlist_insert_before(DList *list, DListNode *node, DListNode *new_node)
-{
-    new_node->prev = node->prev;
-    new_node->next = node;
-    if( !node->prev )
-        list->first = new_node;
-    else
-        node->prev->next = new_node;
-    node->prev = new_node;
-}
-
-
-void dlist_insert_first(DList *list, DListNode *new_node)
-{
-	if( !list->first ) {
-        list->first = new_node;
-        list->last  = new_node;
-        new_node->prev = NULL;
-        new_node->next = NULL;
-    } else {
-    	dlist_insert_before(list, list->first, new_node);
-    }
-}
-
-void dlist_insert_last(DList *list, DListNode *new_node)
-{
-    if( !list->last )
-		dlist_insert_first(list, new_node);
-	else
-		dlist_insert_after(list, list->last, new_node);
-}
-
-
-DListNode* dlist_remove(DList *list, DListNode *node)
-{
-	if( !node->prev )
-		list->first = node->next;
-	else
-		node->prev->next = node->next;
-
-	if( !node->next )
-		list->last = node->prev;
-	else
-		node->next->prev = node->prev;
-
-	return node;
-}
-
-
-DListNode* dlist_remove_first(DList *dlist)
-{
-    DListNode *obsolete = dlist->first;
-	if( obsolete )
-		dlist->first = dlist->first->next;
-    return obsolete;
-}
-
-DListNode* dlist_remove_last(DList *dlist)
-{
-    DListNode *obsolete = dlist->last;
-
-	if( obsolete ) {
-		DListNode *before_obsolete = obsolete->prev;
-		if( before_obsolete ) {
-			before_obsolete->next = NULL;
-		}
-
-		dlist->last = before_obsolete;
-	}
-    return obsolete;
-}
-
-
-void dlist_traverse(DList *list, int (*callback)(void *data, void *extra), void *extra)
-{
-	DListNode *node = list->first;
-
-	while( node ) {
-	    if( callback(node->data, extra) )
-	    	break;
-	    node = node->next;
-	}
-
-}
-
-void dlist_back_traverse(DList *list, int (*callback)(void *data, void *extra), void *extra)
-{
-	DListNode *node = list->last;
-	while( node ) {
-		 if( callback(node->data, extra) )
-			 break;
-		 node = node->prev;
-	}
-}
-
-DListNode* dlist_find(DList *list, void *data)
-{
-	DListNode *node = list->first;
-
-	while( node ) {
-	    if( node->data == data )
-	    	return node;
-	    node = node->next;
-	}
-	return NULL;
-}
-
-void dlist_clear(DList *list, void (*free_node)(void*), void (*free_data)(void*))
-{
-	DListNode *node = list->first;
-
-	while( node ) {
-		if( node->data && free_data )
-			free_data(node->data);
-
-		dlist_remove_first(list);
-
-		if( free_node )
-			free_node(node);
-
-	    node = list->first;
-	}
-
-	list->first = NULL;
-	list->last = NULL;
-}
-
-
-DListNode* dlist_at(DList *list, size_t index)
-{
-	DListNode* node = list->first;
-	size_t i = 0;
-
-	while( node && i++ < index ) {
-		node = node->next;
-	}
-
-	if( i < index )
-		return NULL;
-
-	return node;
-}
-
-void dlist_begin(DList *dlist, DListIterator *dt)
-{
-	dt->list = dlist;
-	dt->node = dlist->first;
-	dt->forward = TRUE;
-}
-
-void dlist_rbegin(DList *dlist, DListIterator *dt)
-{
-	dt->list = dlist;
-	dt->node = dlist->first;
-	dt->forward = FALSE;
-}
-
-
-BOOL dlist_has_more(DListIterator *dt)
-{
-	return dt->node ? TRUE : FALSE;
-}
-
-void* dlist_next(DListIterator *dt)
-{
-	DListNode *node = dt->node;
-	if( dt->forward ) {
-		dt->node = dt->node->next;
+	if( it->forward ) {
+		it->node = it->node->n;
 	} else {
-		dt->node = dt->node->prev;
+		it->node = it->node->p;
 	}
-	return node->data;
+	return node->d;
 }
+
+
+
 
 
 
@@ -485,7 +502,7 @@ static void* __stack_peek(CwtStack *stack)
 	CWT_ASSERT(stack);
 
 	if( !__stack_isEmpty(stack) ) {
-		CwtStackNode *node = stack->first;
+		CwtStackNode *node = stack->f;
 		data = node->data;
 	}
 	return data;
@@ -494,14 +511,14 @@ static void* __stack_peek(CwtStack *stack)
 static BOOL __stack_isEmpty(CwtStack *stack)
 {
 	CWT_ASSERT(stack);
-	return stack->first == NULL ? TRUE : FALSE;
+	return stack->f == NULL ? TRUE : FALSE;
 }
 
 static void __stack_begin(CwtStack *stack, CwtStackIterator *it)
 {
 	CWT_ASSERT(stack);
 	it->stack = stack;
-	it->node = stack->first;
+	it->node = stack->f;
 }
 
 static BOOL __stack_hasMore(CwtStackIterator *it)

@@ -18,12 +18,12 @@ static CwtDBIDriver*   __load          (const CWT_CHAR *dsn);
 static CwtTypeEnum     __toCwtTypeEnum (CwtSqlTypeEnum sqlType);
 static CwtSqlTypeEnum  __toSqlTypeEnum (CwtTypeEnum cwtType);
 
-extern CwtDDI*         __dbi_createDDI     (void);
-extern void            __dbi_freeDDI       (CwtDDI *ddi);
-extern CwtDDITable*    __dbi_addTable      (CwtDDI *ddi, const CWT_CHAR *name);
-extern CwtDDIColumn*   __dbi_addColumn     (CwtDDITable *table, const CWT_CHAR *name);
-extern BOOL            __dbi_deploy        (CwtDBHandler*, CwtDDI *ddi);
-extern BOOL            __dbi_recall        (CwtDBHandler*, CwtDDI *ddi);
+extern CwtDDI*         __ddi_createDDI     (void);
+extern void            __ddi_freeDDI       (CwtDDI *ddi);
+extern CwtDDITable*    __ddi_newTable      (CwtDDI *ddi, const CWT_CHAR *name);
+extern CwtDDIColumn*   __ddi_newColumn     (CwtDDITable *table, const CWT_CHAR *name);
+extern BOOL            __ddi_deploy        (CwtDBHandler*, CwtDDI *ddi);
+extern BOOL            __ddi_recall        (CwtDBHandler*, CwtDDI *ddi);
 
 static CwtDBI __cwtDBI = {
 	  __parseDSN
@@ -31,12 +31,12 @@ static CwtDBI __cwtDBI = {
 	, __toCwtTypeEnum
 	, __toSqlTypeEnum
 
-	, __dbi_createDDI
-	, __dbi_freeDDI
-	, __dbi_addTable
-	, __dbi_addColumn
-	, __dbi_deploy
-	, __dbi_recall
+	, __ddi_createDDI
+	, __ddi_freeDDI
+	, __ddi_newTable
+	, __ddi_newColumn
+	, __ddi_deploy
+	, __ddi_recall
 };
 
 

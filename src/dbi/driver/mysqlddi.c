@@ -150,7 +150,7 @@ void __specForDeploy(CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, 
         }
 
         stringNS->sprintf(sbuf, _T("CREATE TABLE %s `%s` (%s %s) ENGINE=%s AUTO_INCREMENT=5 DEFAULT CHARSET=%s")
-        	, ( ddiflags & CWT_DDI_CREATE_TAB_IF_NOT_EXISTS ) ? "IF NOT EXISTS" : ""
+        	, ( ddiflags & CWT_DDI_CREATE_TAB_IF_NOT_EXISTS ) ? _T("IF NOT EXISTS") : _T("")
         	, $table
         	, join( ',', @columnDefs)
         	, $pk
