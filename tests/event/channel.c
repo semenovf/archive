@@ -11,93 +11,96 @@
 const char *text    = "This is a test message";
 const char *cmdQuit = "quit";
 
-static BOOL quit_event(CwtEventPtr pevt)
-{
-	CwtChannelNS *cns = cwtChannelNS();
+static CwtChannelNS      *__channelNS = NULL;
+static CwtEventNS        *__eventNS = NULL;
+static CwtEventChannelNS *__eventChannelNS = NULL;
 
+
+static BOOL quit_event(CwtEvent *pevt)
+{
 	CwtChannel *pchan;
 	ssize_t br;
 	BYTE buf[256];
 
-	cwtEventPeekChannel(pevt, &pchan);
+	__eventChannelNS->peekChannel(pevt, &pchan);
 
-	cns->readBegin(pchan);
+	__channelNS->readBegin(pchan);
 
-	br = cns->read(pchan, buf, 255);
+	br = __channelNS->read(pchan, buf, 255);
 	buf[(size_t)br] = '\x0';
 
 	if( strstr((char*)buf, cmdQuit) ) {
 		printf_trace(_T("finishing event by command, received from channel"));
-		cns->readCommit(pchan);
-		cwtEventQuit();
+		__channelNS->readCommit(pchan);
+		__eventNS->quit();
 		return TRUE;
 	}
 
-	cns->readRollback(pchan);
+	__channelNS->readRollback(pchan);
 
 	return FALSE;
 }
 
 
-static BOOL echo(CwtEventPtr pevt)
+static BOOL echo(CwtEvent *pevt)
 {
-	CwtChannelNS *cns = cwtChannelNS();
-
 	CwtChannel *chan;
 	ssize_t br;
 	BYTE buf[256];
 
-	cwtEventPeekChannel(pevt, &chan);
+	__eventChannelNS->peekChannel(pevt, &chan);
 
-	while( (br = cns->read(chan, buf, 255)) > 0 ) {
+	while( (br = __channelNS->read(chan, buf, 255)) > 0 ) {
 		buf[(size_t)br] = '\x0';
 		printf("Received: %s\n", buf);
 
 		CWT_TEST_OK(strcmp((char*)buf, text) == 0);
 
-		cns->write(chan, buf, (size_t)br);
+		__channelNS->write(chan, buf, (size_t)br);
 	}
-	cns->write(chan, (BYTE*)cmdQuit, strlen(cmdQuit));
+	__channelNS->write(chan, (BYTE*)cmdQuit, strlen(cmdQuit));
 
 	return FALSE;
 }
 
 static void cwt_evt_test_0(void)
 {
-	CwtChannelNS *cns = cwtChannelNS();
-
 	CwtChannel  *pchan_reader;
 	CwtChannel  *pchan_writer;
-	CwtEventSourcePtr event_src;
+	CwtEventSource *event_src;
 
-	pchan_reader = cns->create(cwtBufferDeviceOpen());
-	pchan_writer = cns->create(cwtBufferDeviceOpenPeer(cns->device(pchan_reader)));
-	event_src   = cwtEventChannelSource();
+	pchan_reader = __channelNS->create(cwtBufferDeviceOpen());
+	pchan_writer = __channelNS->create(cwtBufferDeviceOpenPeer(__channelNS->device(pchan_reader)));
+	event_src    = __eventChannelNS->source();
 
-	CWT_TEST_OK(cwtEventRegisterSource(event_src));
+	__eventNS->registerSource(event_src);
 
-	cwtEventChannelAddListener(pchan_reader, echo);
-	cwtEventChannelAddListener(pchan_reader, quit_event);
-	cwtEventChannelAddListener(pchan_writer, echo);
-	cwtEventChannelAddListener(pchan_writer, quit_event);
+	__eventChannelNS->addListener(pchan_reader, echo);
+	__eventChannelNS->addListener(pchan_reader, quit_event);
+	__eventChannelNS->addListener(pchan_writer, echo);
+	__eventChannelNS->addListener(pchan_writer, quit_event);
 
-	cns->write(pchan_writer, (BYTE*)text, strlen(text));
+	__channelNS->write(pchan_writer, (BYTE*)text, strlen(text));
 
-	cwtEventLoop();
+	__eventNS->loop();
 
-	cwtEventUnregisterAllSources();
+	__eventNS->unregisterAllSources();
 
-	cwtEventChannelRemoveListener(pchan_reader);
-	cns->free(pchan_reader);
-	cns->free(pchan_writer);
+	__eventChannelNS->removeListener(pchan_reader);
+	__channelNS->free(pchan_reader);
+	__channelNS->free(pchan_writer);
 }
 
 int main(int argc, char *argv[])
 {
+	__channelNS = cwtChannelNS();
+	__eventNS = cwtEventNS();
+	__eventChannelNS = cwtEventChannelNS();
+
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(2);
+	CWT_BEGIN_TESTS(1);
 
 	cwt_evt_test_0();
 

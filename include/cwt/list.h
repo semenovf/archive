@@ -18,7 +18,7 @@ typedef struct _CwtListNode
 {
 	struct _CwtListNode *n;
 	struct _CwtListNode *p;
-	void                *d;
+	char                 d[1];
 } CwtListNode;
 
 
@@ -41,15 +41,17 @@ typedef struct _CwtListIterator
 
 typedef struct _CwtListNS {
 	CwtList*         (*create)      (size_t sizeofData, void (*data_cleanup)(void*));
-	void             (*init)        (CwtList*, size_t sizeofData, void (*data_cleanup)(void*));
+	/*void             (*init)        (CwtList*, size_t sizeofData, void (*data_cleanup)(void*));*/
 	void             (*free)        (CwtList*);
 	void             (*clear)       (CwtList*);
+	size_t           (*size)        (CwtList*);
 	BOOL             (*isEmpty)     (CwtList*);
 
 	void             (*insert)      (CwtListIterator *before, void *data);
 	void             (*prepend)     (CwtList*, void *data);
 	void             (*append)      (CwtList*, void *data);
 
+	void             (*remove)      (CwtListIterator *before);
 	void             (*removeFirst) (CwtList*);
 	void             (*removeLast)  (CwtList*);
 
@@ -57,12 +59,14 @@ typedef struct _CwtListNS {
 	void             (*rtraverse)   (CwtList*, int (*callback)(void *data, void *extra), void *extra);
 	BOOL             (*find)        (CwtList*, void *data, CwtListIterator *it);
 
+	void*	         (*at)          (CwtList*, size_t index);
 	void*            (*first)       (CwtList*);
 	void*            (*last)        (CwtList*);
 	void             (*begin)       (CwtList *list, CwtListIterator *it);
 	void             (*rbegin)      (CwtList *list, CwtListIterator *it);
 	BOOL             (*hasMore)     (CwtListIterator *it);
 	void*            (*next)        (CwtListIterator *it);
+	void*            (*data)        (CwtListIterator *it);
 } CwtListNS;
 
 EXTERN_C_BEGIN

@@ -7,117 +7,154 @@
 #include <cwt/event/channel.h>
 #include <cwt/event/kbd.h>
 #include <cwt/event/event.h>
-#include <cwt/dlist.h>
+#include <cwt/list.h>
 
-typedef struct CwtEventChannel {
+typedef struct _CwtEventChannel {
 	CwtEvent __base;
 	CwtChannel *channel;
 } CwtEventChannel;
 
 
-typedef struct CwtChannelListener {
+typedef struct _CwtChannelListener {
 	CwtChannel  *channel;
-	CwtStack     readers;
+	CwtList     *readers;
 } CwtChannelListener;
 
-static CwtDListNode* __cwtChannelFindListenerNode(CwtChannel *pchan);
-static void __cwtEventChannelPoll(void);
+static void __pollChannel(void);
+static void __finish(CwtEventSource*);
+static void __cleanupListener(void*);
+static BOOL __findListener(CwtChannel *pchan, CwtListIterator *it);
 
-static CwtDList       __cwtChannelListeners = {NULL, NULL};
-static CwtEventSource __cwtEventChannelSource = { __cwtEventChannelPoll };
+static CwtList        *__listeners = NULL;
+static CwtEventSource  __channel_source = { __pollChannel, __finish };
 
+static CwtEventSource* __source        (void);
+static void            __addListener   (CwtChannel *pchan, BOOL (*reader)(CwtEventPtr));
+static void 		   __removeListener(CwtChannel *pchan);
+static void            __peekChannel   (CwtEvent *pevt, CwtChannel **pchan);
 
-static CwtDListNode* __cwtChannelFindListenerNode(CwtChannel *chan)
+static CwtEventChannelNS __cwtEventChannelNS = {
+	  __source
+	, __addListener
+	, __removeListener
+	, __peekChannel
+};
+
+static CwtListNS    *__listNS = NULL;
+static CwtChannelNS *__channelNS = NULL;
+static CwtEventNS   *__eventNS = NULL;
+
+DLL_API_EXPORT CwtEventChannelNS* cwtEventChannelNS(void)
 {
-	CwtDListIterator it;
-	cwtDListBegin(&__cwtChannelListeners, &it);
+	if( !__listNS ) {
+		__listNS = cwtListNS();
+		__channelNS = cwtChannelNS();
+		__eventNS = cwtEventNS();
+	}
+	if( !__listeners ) {
+		__listeners = __listNS->create(sizeof(CwtChannelListener), __cleanupListener);
+	}
+	return &__cwtEventChannelNS;
+}
 
-	while( cwtDListHasMore(&it) ) {
-		CwtDListNode *pnode = it.node;
-		CwtChannelListener *plistener = (CwtChannelListener*)cwtDListNext(&it);
-		if( plistener->channel == chan )
-			return pnode;
+
+static void __cleanupListener(void *pl)
+{
+	CwtChannelListener *plistener = (CwtChannelListener*)pl;
+	/*__channelNS->free(plistener->channel);*/
+	__listNS->free(plistener->readers);
+}
+
+static BOOL __findListener(CwtChannel *pchan, CwtListIterator *it)
+{
+	__listNS->begin(__listeners, it);
+
+	while( __listNS->hasMore(it) ) {
+		CwtChannelListener *l = (CwtChannelListener*)__listNS->data(it);
+
+		if( l->channel == pchan )
+			return TRUE;
+
+		(void*)__listNS->next(it);
 	}
 
-	return NULL;
+	return FALSE;
+}
+
+static CwtEventSource* __source(void)
+{
+	return &__channel_source;
 }
 
 
-static void __cwtEventChannelPoll(void)
+static void __addListener(CwtChannel *pchan, BOOL (*reader)(CwtEventPtr))
 {
-	CwtChannelNS *cns = cwtChannelNS();
-	CwtDListIterator it;
-	cwtDListBegin(&__cwtChannelListeners, &it);
+	CwtListIterator it;
 
-	while( cwtDListHasMore(&it) ) {
-		CwtChannelListener *plistener = (CwtChannelListener*)cwtDListNext(&it);
-
-	    if( cns->bytesAvailable(plistener->channel) > 0 ) {
-	    	CwtEventChannel *pevt = CWT_MALLOC(CwtEventChannel);
-	    	pevt->channel = plistener->channel;
-
-	    	__cwtEventInitEvent((CwtEventPtr)pevt, &plistener->readers, cwtEventDefaultDestructor);
-	    	cwtEventPost((CwtEventPtr)pevt);
-	    }
-	}
-}
-
-
-CwtEventSourcePtr cwtEventChannelSource(void)
-{
-	return &__cwtEventChannelSource;
-}
-
-
-/**
- * @brief �������� "���⥫�" @c reader ��� ������ @c chan
- *
- * ��᫥���� ���������� "���⥫�" �㤥� ���� � 楯�窥 ��ࠡ�⪨ ᮮ���� �� ������
- *
- * @param chan
- * @param reader
- */
-void cwtEventChannelAddListener( CwtChannel *chan, BOOL (*reader)(CwtEventPtr) )
-{
-	CwtDListNode* pnode;
-
-	CWT_ASSERT(chan);
+	CWT_ASSERT(pchan);
 	CWT_ASSERT(reader);
 
-	pnode = __cwtChannelFindListenerNode(chan);
-	if( pnode ) {
-		CwtChannelListener *plistener = (CwtChannelListener*)pnode->data;
-		cwtStackPush(&plistener->readers, reader);
+	if( __findListener(pchan, &it) ) {
+		CwtChannelListener *plistener = (CwtChannelListener*)__listNS->data(&it);
+		__listNS->append(plistener->readers, reader);
 	} else {
-		CwtChannelListener *plistener = CWT_MALLOC(CwtChannelListener);
-		pnode = CWT_MALLOC(CwtDListNode);
-
-		plistener->channel = chan;
-		cwtStackInit(&plistener->readers);
-		cwtStackPush(&plistener->readers, reader);
-
-		pnode->data = plistener;
-		cwtDListInsertLast(&__cwtChannelListeners, pnode);
+		CwtChannelListener listener;
+		listener.channel = pchan;
+		listener.readers = __listNS->create(sizeof(void*), NULL);
+		__listNS->append(listener.readers, reader);
+		__listNS->append(__listeners, &listener);
 	}
 }
 
-void cwtEventChannelRemoveListener( CwtChannel *chan )
+
+static void __removeListener(CwtChannel *pchan)
 {
-	CwtDListNode* pnode = __cwtChannelFindListenerNode(chan);
+	CwtListIterator it;
 
-	if( pnode ) {
-		cwtDListRemove(&__cwtChannelListeners, pnode);
-		CWT_FREE(pnode->data);
-		CWT_FREE(pnode);
+	if( __findListener(pchan, &it) ) {
+		__listNS->remove(&it);
 	}
 }
 
-
-void cwtEventPeekChannel(CwtEventPtr pevt, CwtChannel **pchan)
+static void __peekChannel(CwtEvent *pevt, CwtChannel **pchan)
 {
 	CwtEventChannel *pevt_chan = (CwtEventChannel*)pevt;
 
 	CWT_ASSERT(pevt);
 
-	if( pchan ) *pchan = pevt_chan->channel;
+	if( pchan )
+		*pchan = pevt_chan->channel;
 }
+
+
+static void __pollChannel(void)
+{
+	CwtListIterator it;
+
+	if( !__listeners )
+		return;
+
+	__listNS->begin(__listeners, &it);
+
+	while( __listNS->hasMore(&it) ) {
+		CwtChannelListener *plistener = (CwtChannelListener*)__listNS->next(&it);
+
+	    if( __channelNS->bytesAvailable(plistener->channel) > 0 ) {
+	    	CwtEventChannel *pevt = CWT_MALLOC(CwtEventChannel);
+	    	pevt->channel = plistener->channel;
+
+	    	__eventNS->initEvent((CwtEvent*)pevt, plistener->readers, __eventNS->defaultDestructor);
+	    	__eventNS->post((CwtEvent*)pevt);
+	    }
+	}
+}
+
+
+static void __finish(CwtEventSource *source)
+{
+	/* TODO need to cleanup channel event resources */
+	CWT_UNUSED(source);
+}
+
+
+

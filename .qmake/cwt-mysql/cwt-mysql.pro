@@ -12,13 +12,13 @@ DEFINES += CWT_USE_TESTS
 
 
 unix {
-    SOURCES += ../../src/dbi/driver/mysql.c
+    SOURCES += ../../src/dbi/driver/mysql/mysql.c
     LIBS += -lcwt
     LIBS += -lmysql
 }
 
 win32 {
-    SOURCES += ..\\..\\src\\dbi\\driver\\mysql.c
+    SOURCES += ..\\..\\src\\dbi\\driver\\mysql\\mysql.c
 
 #    LIBS += Advapi32.lib
     LIBS += cwt.lib

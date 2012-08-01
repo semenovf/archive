@@ -16,7 +16,7 @@ unix {
     HEADERS += ../../include/cwt/csv/*.h
     HEADERS += ../../include/cwt/io/*.h
     HEADERS += ../../include/cwt/dbi/*.h
-    HEADERS += ../../include/cwt/stylex/*.h
+#    HEADERS += ../../include/cwt/stylex/*.h
     HEADERS += ../../include/cwt/net/*.h
 
     SOURCES += ../../src/core/*.c
@@ -26,7 +26,7 @@ unix {
     SOURCES += ../../src/io/*.c
     SOURCES += ../../src/io/serial/*.c
     SOURCES += ../../src/io/serial/linux/*.c
-    SOURCES += ../../src/stylex/*.c
+#    SOURCES += ../../src/stylex/*.c
     SOURCES += ../../src/dbi/*.c
 #    SOURCES += ../../src/net/*.c
     SOURCES += ../../src/net/linux/*.c
@@ -48,7 +48,7 @@ win32 {
     HEADERS += ..\\..\\include\\cwt\\algo\\*.h
     HEADERS += ..\\..\\include\\cwt\\csv\\*.h
     HEADERS += ..\\..\\include\\cwt\\io\\*.h
-    HEADERS += ..\\..\\include\\cwt\\stylex\\*.h
+#    HEADERS += ..\\..\\include\\cwt\\stylex\\*.h
     HEADERS += ..\\..\\include\\cwt\\dbi\\*.h
     HEADERS += ..\\..\\include\\cwt\\net\\*.h
 
@@ -59,7 +59,7 @@ win32 {
     SOURCES += ..\\..\\src\\io\\*.c
     SOURCES += ..\\..\\src\\io\\serial\\*.c
     SOURCES += ..\\..\\src\\io\\serial\\win\\*.c
-    SOURCES += ..\\..\\src\\stylex\\*.c
+#    SOURCES += ..\\..\\src\\stylex\\*.c
     SOURCES += ..\\..\\src\\dbi\\*.c
 #    SOURCES += ..\\..\\src\\net\\*.c
     SOURCES += ..\\..\\src\\net\\win\\*.c

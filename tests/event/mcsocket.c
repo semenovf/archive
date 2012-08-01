@@ -12,7 +12,12 @@
 const char *text = "This is a test message";
 const char *cmdQuit = "quit";
 
-static BOOL on_multicast_receiver(CwtEventPtr pevt)
+static CwtChannelNS      *__channelNS = NULL;
+static CwtEventNS        *__eventNS = NULL;
+static CwtEventChannelNS *__eventChannelNS = NULL;
+
+
+static BOOL on_multicast_receiver(CwtEvent *pevt)
 {
 	CwtChannelNS *cns = cwtChannelNS();
 
@@ -20,7 +25,7 @@ static BOOL on_multicast_receiver(CwtEventPtr pevt)
 	ssize_t br;
 	BYTE buf[256];
 
-	cwtEventPeekChannel(pevt, &pchan);
+	__eventChannelNS->peekChannel(pevt, &pchan);
 
 	cns->readBegin(pchan);
 
@@ -29,8 +34,8 @@ static BOOL on_multicast_receiver(CwtEventPtr pevt)
 
 	if( strstr((char*)buf, cmdQuit) ) {
 		printf("finishing event by command, received from channel");
-		cns->readCommit(pchan);
-		cwtEventQuit();
+		__channelNS->readCommit(pchan);
+		__eventNS->quit();
 		return TRUE;
 	}
 	cns->readCommit(pchan);
@@ -42,24 +47,26 @@ static BOOL on_multicast_receiver(CwtEventPtr pevt)
 
 int main(int argc, char *argv[])
 {
-	CwtChannelNS *cns = cwtChannelNS();
+	CwtChannel     *pchan_reader;
+	CwtChannel     *pchan_writer;
+	CwtEventSource *chan_src;
 
-	CwtChannel *pchan_reader;
-	CwtChannel *pchan_writer;
-	CwtEventSourcePtr chan_src;
+	__channelNS = cwtChannelNS();
+	__eventNS = cwtEventNS();
+	__eventChannelNS = cwtEventChannelNS();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(5);
+	CWT_BEGIN_TESTS(4);
 
-	pchan_writer = cns->create(cwtMulticastSocketDeviceOpen(
+	pchan_writer = __channelNS->create(cwtMulticastSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")
 			, CWT_MCSOCKET_SENDER));
 
-	pchan_reader = cns->create(cwtMulticastSocketDeviceOpen(
+	pchan_reader = __channelNS->create(cwtMulticastSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")
@@ -86,25 +93,25 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	chan_src = cwtEventChannelSource();
+	chan_src = __eventChannelNS->source();
 
 	CWT_TEST_OK(pchan_writer)
 	CWT_TEST_OK(chan_src)
-	CWT_TEST_OK(cwtEventRegisterSource(chan_src));
-	CWT_TEST_OK(cwtEventIsRegisteredSource(chan_src));
+	__eventNS->registerSource(chan_src);
+	CWT_TEST_OK(__eventNS->isRegisteredSource(chan_src));
 
-	cwtEventChannelAddListener(pchan_reader, on_multicast_receiver);
+	__eventChannelNS->addListener(pchan_reader, on_multicast_receiver);
 
-	cns->write(pchan_writer, (BYTE*)text, strlen(text));
-	cns->write(pchan_writer, (BYTE*)cmdQuit, strlen(cmdQuit));
+	__channelNS->write(pchan_writer, (BYTE*)text, strlen(text));
+	__channelNS->write(pchan_writer, (BYTE*)cmdQuit, strlen(cmdQuit));
 
-	cwtEventLoop();
+	__eventNS->loop();
 
-	cwtEventUnregisterAllSources();
+	__eventNS->unregisterAllSources();
 
-	cwtEventChannelRemoveListener(pchan_reader);
-	cns->free(pchan_reader);
-	cns->free(pchan_writer);
+	__eventChannelNS->removeListener(pchan_reader);
+	__channelNS->free(pchan_reader);
+	__channelNS->free(pchan_writer);
 
 	CWT_END_TESTS;
 }

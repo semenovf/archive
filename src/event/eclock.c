@@ -7,36 +7,38 @@
 
 
 #include <string.h>
-#include <cwt/event/clock.h>
 #include <time.h>
 #include <cwt/string.h>
-#include <cwt/stack.h>
 #include <cwt/event/event.h>
+#include <cwt/event/clock.h>
 
 
-struct CwtEventClockTime
+typedef struct _CwtEventClockTime
 {
-	CwtEvent base;
+	CwtEvent __base;
 	int hour;
 	int min;
 	int sec;
-};
-typedef struct CwtEventClockTime CwtEventClockTime;
+} CwtEventClockTime;
 
-struct CwtEventClockDate
+
+typedef struct _CwtEventClockDate
 {
-	CwtEvent base;
+	CwtEvent __base;
 	int day;
 	int mon;
 	int year;
-};
-typedef struct CwtEventClockDate CwtEventClockDate;
+} CwtEventClockDate;
 
-static CwtStack __cwt_evt_time_handlers = { NULL };
-static CwtStack __cwt_evt_date_handlers = { NULL };
-static void     __cwtEventClockPoll(void);
 
-static CwtEventSource __cwt_evt_clock_source = { __cwtEventClockPoll };
+static CwtList *__time_handlers = NULL;
+static CwtList *__date_handlers = NULL;
+
+static void __pollClock(void);
+static void __finish(CwtEventSource *source);
+
+static CwtEventSource  __clock_source = { __pollClock, __finish };
+
 static struct tm __tm = {
 	0, 0, 0, 0, 0, 0, 0, 0
 #ifdef CWT_CC_GNUC
@@ -46,22 +48,114 @@ static struct tm __tm = {
 #endif
 };
 
-CwtEventSourcePtr cwtEventClockSource(void)
+static CwtEventSource* __source (void);
+static void     __refresh       (void);
+static CwtList* __timeHandler   (void);
+static CwtList* __dateHandler   (void);
+static void     __peekTime      (CwtEvent *pevt, int *phour, int *pmin, int *psec);
+static void 	__peekDate      (CwtEvent *pevt, int *pday, int *pmon, int *pyear);
+static void     __postTime      (int hour, int min, int sec);
+static void     __postDate      (int day, int mon, int year);
+
+static CwtEventClockNS __cwtEventClockNS = {
+	  __source
+	, __refresh
+	, __timeHandler
+	, __dateHandler
+	, __peekTime
+	, __peekDate
+	, __postTime
+	, __postDate
+};
+
+static CwtListNS    *__listNS = NULL;
+static CwtEventNS   *__eventNS = NULL;
+
+DLL_API_EXPORT CwtEventClockNS* cwtEventClockNS(void)
 {
-	return &__cwt_evt_clock_source;
+	if( !__listNS ) {
+		__listNS = cwtListNS();
+		__eventNS = cwtEventNS();
+	}
+
+	if( !__time_handlers ) {
+		__time_handlers = __listNS->create(sizeof(void*), NULL);
+		__date_handlers = __listNS->create(sizeof(void*), NULL);
+	}
+	return &__cwtEventClockNS;
 }
 
-Stack* cwtEventClockTimeHandler(void)
+
+static inline CwtEventSource* __source(void)
 {
-	return &__cwt_evt_time_handlers;
+	return &__clock_source;
 }
 
-Stack* cwtEventClockDateHandler(void)
+
+static void __refresh(void)
 {
-	return &__cwt_evt_date_handlers;
+	__tm.tm_hour = -1;
+	__tm.tm_mday = -1;
+	__pollClock();
 }
 
-static void __cwtEventClockPoll(void)
+
+static inline CwtList* __timeHandler(void)
+{
+	return __time_handlers;
+}
+
+static inline CwtList* __dateHandler(void)
+{
+	return __date_handlers;
+}
+
+static void __peekTime(CwtEvent *pevt, int *phour, int *pmin, int *psec)
+{
+	CwtEventClockTime *pevt_time = (CwtEventClockTime*)pevt;
+	CWT_ASSERT(pevt);
+
+	if( phour ) *phour = pevt_time->hour;
+	if( pmin ) *pmin = pevt_time->min;
+	if( psec ) *psec = pevt_time->sec;
+}
+
+static void __peekDate(CwtEvent *pevt, int *pday, int *pmon, int *pyear)
+{
+	CwtEventClockDate *pevt_time = (CwtEventClockDate*)pevt;
+	CWT_ASSERT(pevt);
+
+	if( pday ) *pday = pevt_time->day;
+	if( pmon ) *pmon = pevt_time->mon;
+	if( pyear ) *pyear = pevt_time->year;
+}
+
+
+static void __postTime(int hour, int min, int sec)
+{
+	CwtEventClockTime *pevt = CWT_MALLOC(CwtEventClockTime);
+	pevt->hour = hour;
+	pevt->min  = min;
+	pevt->sec  = sec;
+
+	__eventNS->initEvent((CwtEvent*)pevt, __time_handlers, __eventNS->defaultDestructor);
+	__eventNS->post((CwtEvent*)pevt);
+}
+
+
+static void __postDate(int day, int mon, int year)
+{
+	CwtEventClockDate *pevt = CWT_MALLOC(CwtEventClockDate);
+	pevt->year = year;
+	pevt->mon  = mon;
+	pevt->day  = day;
+
+	__eventNS->initEvent((CwtEvent*)pevt, __date_handlers, __eventNS->defaultDestructor);
+	__eventNS->post((CwtEvent*)pevt);
+}
+
+
+static void __pollClock(void)
 {
 	struct tm *time_now;
 	time_t secs_now;
@@ -89,69 +183,27 @@ static void __cwtEventClockPoll(void)
 		memcpy(&__tm, time_now, sizeof(struct tm));
 
 		if( update_time ) {
-			cwtEventPostClockTime(__tm.tm_hour, __tm.tm_min, __tm.tm_sec);
+			__postTime(__tm.tm_hour, __tm.tm_min, __tm.tm_sec);
 		}
 
 		if( update_date ) {
-			cwtEventPostClockDate(__tm.tm_year + 1900, __tm.tm_mon + 1, __tm.tm_mday);
+			__postDate(__tm.tm_year + 1900, __tm.tm_mon + 1, __tm.tm_mday);
 		}
 	}
 }
 
 
-void cwtEventPeekClockTime(CwtEventPtr pevt, int *phour, int *pmin, int *psec)
+static void __finish(CwtEventSource *source)
 {
-	CwtEventClockTime *pevt_time = (CwtEventClockTime*)pevt;
-	CWT_ASSERT(pevt);
+	CWT_UNUSED(source);
 
-	if( phour ) *phour = pevt_time->hour;
-	if( pmin ) *pmin = pevt_time->min;
-	if( psec ) *psec = pevt_time->sec;
+	if( !__time_handlers ) {
+		 __listNS->free(__time_handlers);
+		 __time_handlers = NULL;
+	}
+
+	if( !__date_handlers ) {
+		 __listNS->free(__date_handlers);
+		 __date_handlers = NULL;
+	}
 }
-
-void cwtEventPeekClockDate(CwtEventPtr pevt, int *pday, int *pmon, int *pyear)
-{
-	CwtEventClockDate *pevt_time = (CwtEventClockDate*)pevt;
-	CWT_ASSERT(pevt);
-
-	if( pday ) *pday = pevt_time->day;
-	if( pmon ) *pmon = pevt_time->mon;
-	if( pyear ) *pyear = pevt_time->year;
-}
-
-
-void cwtEventPostClockTime(int hour, int min, int sec)
-{
-	CwtEventClockTime *pevt = CWT_MALLOC(CwtEventClockTime);
-	pevt->hour = hour;
-	pevt->min  = min;
-	pevt->sec  = sec;
-
-	__cwtEventInitEvent((CwtEventPtr)pevt, &__cwt_evt_time_handlers, cwtEventDefaultDestructor);
-	cwtEventPost((CwtEventPtr)pevt);
-}
-
-
-void cwtEventPostClockDate(int day, int mon, int year)
-{
-	CwtEventClockDate *pevt = CWT_MALLOC(CwtEventClockDate);
-	pevt->year = year;
-	pevt->mon  = mon;
-	pevt->day  = day;
-
-	__cwtEventInitEvent((CwtEventPtr)pevt, &__cwt_evt_date_handlers, cwtEventDefaultDestructor);
-	cwtEventPost((CwtEventPtr)pevt);
-}
-
-
-/**
- * ���樨��� ������� ᮡ�⨩ �� �ᮢ
- *
- */
-void cwtEventClockRefresh(void)
-{
-	__tm.tm_hour = -1;
-	__tm.tm_mday = -1;
-	__cwtEventClockPoll();
-}
-

@@ -115,8 +115,10 @@ typedef struct CwtDBI
 	void            (*freeDDI)       (CwtDDI*);
 	CwtDDITable*    (*newTable)      (CwtDDI*, const CWT_CHAR *name);
 	CwtDDIColumn*   (*newColumn)     (CwtDDITable*, const CWT_CHAR *name);
-	void            (*deleteTable)   (CwtDDITable*);
-	void            (*deleteColumn)  (CwtDDIColumn*);
+	BOOL            (*cType)         (CwtDDIColumn*, CwtDDI_Type);  /* use cType or cRef */
+	BOOL            (*cRef)          (CwtDDIColumn*, CwtDDITable*); /* use cType or cRef */
+	BOOL            (*cAutoinc)      (CwtDDIColumn*, int inc);
+	BOOL            (*cNull)         (CwtDDIColumn*, BOOL yes);
 	BOOL            (*deploy)        (CwtDBHandler*, CwtDDI *ddi);
 	BOOL            (*recall)        (CwtDBHandler*, CwtDDI *ddi);
 } CwtDBI;

@@ -10,7 +10,7 @@
 
 #include <cwt/global.h>
 #include <cwt/types.h>
-#include <cwt/dlist.h>
+#include <cwt/list.h>
 
 
 typedef struct CwtQuotePair {
@@ -18,40 +18,26 @@ typedef struct CwtQuotePair {
 	CWT_CHAR end;
 } CwtQuotePair;
 
-typedef struct CwtStrList
-{
-	size_t count;
-	DList strings;
-} CwtStrList;
 
-typedef struct DListNode  CwtStrListElem;
-
-typedef struct CwtStrListIterator
-{
-	CwtStrList *sl;
-	CwtStrListElem *node; /* current node */
-	BOOL forward;
-} CwtStrListIterator;
+typedef CwtList CwtStrList;
+typedef CwtListIterator CwtStrListIterator;
 
 
 typedef struct CwtStrListNS {
 	CwtStrList*     (*create)      (void);
-/*	void            (*init)        (CwtStrList *psl);*/
-/*	void            (*destroy)     (CwtStrList *psl);*/
 	void            (*free)        (CwtStrList *psl);
-	CwtStrList*     (*clone)       (CwtStrList *psl);
 	void            (*clear)       (CwtStrList *psl);
 	size_t          (*size)        (CwtStrList *psl);
-	void            (*insertAfter) (CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text, size_t n);
-	void            (*insertBefore)(CwtStrList *psl, CwtStrListElem *pelem, const CWT_CHAR *text, size_t n);
-	void            (*insertFirst) (CwtStrList *psl, const CWT_CHAR *s, size_t n);
-	void            (*insertLast)  (CwtStrList *psl, const CWT_CHAR *s, size_t n);
+
+	void            (*insert)      (CwtStrListIterator *before, const CWT_CHAR *s, size_t n);
+	void            (*prepend)     (CwtStrList *psl, const CWT_CHAR *s, size_t n);
 	void            (*append)      (CwtStrList *psl, const CWT_CHAR *s, size_t n);
 	void            (*add)         (CwtStrList *psl, const CWT_CHAR *s, size_t n);
-	void            (*prepend)     (CwtStrList *psl, const CWT_CHAR *s, size_t n);
-	void            (*remove)      (CwtStrList *psl, CwtStrListElem *pelem);
+
+	void            (*remove)      (CwtStrListIterator *before);
 	void            (*removeFirst) (CwtStrList *psl);
 	void            (*removeLast)  (CwtStrList *psl);
+
 	CWT_CHAR*       (*cat)         (CwtStrList *psl);
 	CWT_CHAR*       (*catDelim)    (CwtStrList *psl, const CWT_CHAR *delim);
 	int             (*splitSkip)   (CwtStrList *psl, const CWT_CHAR *str
@@ -59,14 +45,15 @@ typedef struct CwtStrListNS {
                                    , void *delim, const CwtQuotePair *qpairs);
 	int 		    (*split)       (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim, const CwtQuotePair *qpairs);
 	int 		    (*splitAny)    (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims, const CwtQuotePair *qpairs);
-	CWT_CHAR*	    (*at)          (CwtStrList *psl, size_t i);
+
+	CWT_CHAR*	    (*at)          (CwtStrList *psl, size_t index);
 	void            (*begin)       (CwtStrList *psl, CwtStrListIterator *iter);
-	void            (*beginFrom)   (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);
+/*	void            (*beginFrom)   (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);*/
 	void            (*rbegin)      (CwtStrList *psl, CwtStrListIterator *iter);
-	void            (*rbeginFrom)  (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);
+/*	void            (*rbeginFrom)  (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);*/
 	BOOL            (*hasMore)     (CwtStrListIterator *iter);
 	CWT_CHAR*       (*next)        (CwtStrListIterator *iter);
-	CwtStrListElem* (*elem)        (CwtStrListIterator *iter);
+/*	CwtStrListElem* (*elem)        (CwtStrListIterator *iter);*/
 	void            (*toArray)     (CwtStrList*, CWT_CHAR *argv[], size_t *argc);
 
 	const CwtQuotePair*   (*singleQuotesPair)(void);

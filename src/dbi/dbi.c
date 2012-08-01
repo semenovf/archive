@@ -22,6 +22,11 @@ extern CwtDDI*         __ddi_createDDI     (void);
 extern void            __ddi_freeDDI       (CwtDDI *ddi);
 extern CwtDDITable*    __ddi_newTable      (CwtDDI *ddi, const CWT_CHAR *name);
 extern CwtDDIColumn*   __ddi_newColumn     (CwtDDITable *table, const CWT_CHAR *name);
+extern BOOL            __ddi_cType         (CwtDDIColumn*, CwtDDI_Type);
+extern BOOL            __ddi_cRef          (CwtDDIColumn*, CwtDDITable*);
+extern BOOL            __ddi_cAutoinc      (CwtDDIColumn*, int inc);
+extern BOOL            __ddi_cNull         (CwtDDIColumn*, BOOL yes);
+
 extern BOOL            __ddi_deploy        (CwtDBHandler*, CwtDDI *ddi);
 extern BOOL            __ddi_recall        (CwtDBHandler*, CwtDDI *ddi);
 
@@ -35,6 +40,11 @@ static CwtDBI __cwtDBI = {
 	, __ddi_freeDDI
 	, __ddi_newTable
 	, __ddi_newColumn
+    , __ddi_cType
+    , __ddi_cRef
+    , __ddi_cAutoinc
+    , __ddi_cNull
+
 	, __ddi_deploy
 	, __ddi_recall
 };

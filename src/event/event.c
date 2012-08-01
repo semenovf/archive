@@ -6,48 +6,164 @@
  */
 #include <cwt/event/event.h>
 #include <cwt/logger.h>
-#include <cwt/dlist.h>
-#include <cwt/stack.h>
 #include <cwt/unistd.h>
 
-typedef CwtDList CwtEventQueue;
+static CwtList *__registered_sources;
+static CwtList *__queue_pair[2];
+static CwtList *__output_queue;
+static CwtList *__input_queue;
 
-static CwtDList       __cwt_evt_registered;
-static CwtEventQueue  __cwt_evt_queue_pair[2];
-static CwtEventQueue* __cwt_evt_output_queue;
-static CwtEventQueue* __cwt_evt_input_queue;
-static void         (*__cwtEventIdleProcess)(void) = NULL;
+static void         (*__idle_process)(void) = NULL;
 static CwtEvent       __cwt_evtQuit;
 
 
-static void __cwtEventInit(void);
-static BOOL __cwtEventProcessSources(void);
-static BOOL __cwtEventDispatchEvents(void);
+static BOOL __processSources(void);
+static BOOL __dispatchEvents(void);
+
+static void __initEvent(CwtEvent*, CwtList *handlers, void (*destructor)(CwtEvent*));
+static void __registerSource(CwtEventSource*);
+static void __unregisterSource(CwtEventSource*);
+static void __unregisterAllSources(void);
+static BOOL __isRegisteredSource(CwtEventSource*);
+static void __setIdleProccess(void (*idle_process)(void));
+static void __pushHandler(CwtList *handlers, BOOL (*handler)(CwtEvent *pevt));
+static void __popHandler(CwtList *handlers);
+static void __postEvent(CwtEvent*);
+static void __quit(void);
+static void __loop(void);
+static void __defaultDestructor(CwtEvent*);
 
 
-static void __cwtEventInit(void)
+static CwtEventNS __cwtEventNS  = {
+	  __initEvent
+	, __registerSource
+	, __unregisterSource
+	, __unregisterAllSources
+	, __isRegisteredSource
+	, __setIdleProccess
+	, __pushHandler
+	, __popHandler
+	, __postEvent
+	, __quit
+	, __loop
+	, __defaultDestructor
+};
+
+static CwtListNS *__listNS = NULL;
+
+DLL_API_EXPORT CwtEventNS* cwtEventNS(void)
 {
-	dlist_init(&__cwt_evt_registered);
-	dlist_init(&__cwt_evt_queue_pair[0]);
-	dlist_init(&__cwt_evt_queue_pair[1]);
-	__cwt_evt_output_queue = &__cwt_evt_queue_pair[0];
-	__cwt_evt_input_queue  = &__cwt_evt_queue_pair[1];
+	if( !__listNS ) {
+		__listNS = cwtListNS();
+	}
+
+	if( !__registered_sources ) {
+		__registered_sources = __listNS->create(sizeof(CwtEventSource*), NULL);
+		__queue_pair[0] = __listNS->create(sizeof(CwtEventSource*), NULL);
+		__queue_pair[1] = __listNS->create(sizeof(CwtEventSource*), NULL);
+		__output_queue = __queue_pair[0];
+		__input_queue  = __queue_pair[1];
+	}
+
+
+	return &__cwtEventNS;
 }
 
 
-/**
- * Выполняет опрос всех зарегистрированных источников событий
- *
- * @return
- */
-static BOOL __cwtEventProcessSources(void)
+static void __initEvent(CwtEvent *pevt, CwtList *handlers, void (*destructor)(CwtEvent*))
 {
-	if( __cwt_evt_registered.first ) {
-		DListIterator it;
-		dlist_begin(&__cwt_evt_registered, &it);
+	CWT_ASSERT(pevt);
+	pevt->handler_stack = handlers;
+	pevt->destructor = destructor;
+}
 
-		while( dlist_has_more(&it) ) {
-			CwtEventSource *source = (CwtEventSource*)dlist_next(&it);
+
+static inline void __registerSource(CwtEventSource *source)
+{
+	if( !__isRegisteredSource(source) ) {
+		__listNS->append(__registered_sources, source);
+	}
+}
+
+static inline void __unregisterSource(CwtEventSource *source)
+{
+	CwtListIterator it;
+	if( __listNS->find(__registered_sources, source, &it) ) {
+		CwtEventSource *source = (CwtEventSource*)__listNS->first(__registered_sources);
+		source->finish(source);
+		__listNS->remove(&it);
+	}
+}
+
+
+static inline void __unregisterAllSources(void)
+{
+	while( __listNS->size(__registered_sources) ) {
+		CwtEventSource *source = (CwtEventSource*)__listNS->first(__registered_sources);
+		source->finish(source);
+		__listNS->removeFirst(__registered_sources);
+	}
+}
+
+
+static inline BOOL __isRegisteredSource(CwtEventSource *source)
+{
+	return __listNS->find(__registered_sources, source, NULL);
+}
+
+
+static inline void __setIdleProccess(void (*idle_process)(void))
+{
+	__idle_process = idle_process;
+}
+
+static inline void __pushHandler(CwtList *handlers, BOOL (*handler)(CwtEvent *pevt))
+{
+	CWT_ASSERT(handlers);
+	CWT_ASSERT(handler);
+	__listNS->prepend(handlers, handler);
+}
+
+static inline void __popHandler(CwtList *handlers)
+{
+	CWT_ASSERT(handlers);
+	__listNS->removeFirst(handlers);
+}
+
+static inline void __postEvent(CwtEvent *pevt)
+{
+	__listNS->append(__output_queue, pevt);
+}
+
+static inline void __quit(void)
+{
+	__initEvent(&__cwt_evtQuit, NULL, NULL);
+	__postEvent(&__cwt_evtQuit);
+}
+
+static void __loop(void)
+{
+//	cwt_mouse_init();
+	while( __processSources() ) {
+		;
+	}
+}
+
+static void __defaultDestructor(CwtEvent *pevt)
+{
+	CWT_FREE(pevt);
+}
+
+
+
+static BOOL __processSources(void)
+{
+	if( __listNS->size(__registered_sources) ) {
+		CwtListIterator it;
+		__listNS->begin(__registered_sources, &it);
+
+		while( __listNS->hasMore(&it) ) {
+			CwtEventSource *source = (CwtEventSource*)__listNS->next(&it);
 
 			CWT_ASSERT(source->poll);
 			source->poll();
@@ -55,48 +171,49 @@ static BOOL __cwtEventProcessSources(void)
 	}
 
 	//__cwt_evt_translate_events();
-	return __cwtEventDispatchEvents();
+	return __dispatchEvents();
 }
 
 
-static BOOL __cwtEventDispatchEvents(void)
+static BOOL __dispatchEvents(void)
 {
-	DListNode *pevt_node;
+	/*DListNode *pevt_node;*/
 	BOOL quit = FALSE; /* TRUE if need to stop event loop */
 
-	if( __cwt_evt_output_queue == &__cwt_evt_queue_pair[0] ) {
-		__cwt_evt_input_queue  = &__cwt_evt_queue_pair[0];
-		__cwt_evt_output_queue = &__cwt_evt_queue_pair[1];
+	if( __output_queue == __queue_pair[0] ) {
+		__input_queue  = __queue_pair[0];
+		__output_queue = __queue_pair[1];
 	} else {
-		__cwt_evt_input_queue  = &__cwt_evt_queue_pair[1];
-		__cwt_evt_output_queue = &__cwt_evt_queue_pair[0];
+		__input_queue  = __queue_pair[1];
+		__output_queue = __queue_pair[0];
 	}
-	CWT_ASSERT(__cwt_evt_output_queue->first == NULL);
+	/*CWT_ASSERT(__output_queue->first == NULL);*/
 
-	pevt_node = __cwt_evt_input_queue->first;
+	/*pevt_node = __input_queue->first;*/
 
-	if( !pevt_node ) {
-		if( __cwtEventIdleProcess ) {
-			__cwtEventIdleProcess();
+	if( __listNS->size(__input_queue) ) {
+		if( __idle_process ) {
+			__idle_process();
 		} else {
 			cwtUnistdNS()->msleep(50);
 		}
 	} else {
-		while( pevt_node ) {
-			CwtStackIterator hit;
-			CwtEventPtr pevt = pevt_node->data;
+		while( __listNS->size(__input_queue) ) {
+			CwtListIterator it;
+			CwtEvent *pevt;
 
-			cwtDListRemove(__cwt_evt_input_queue, pevt_node);
+			pevt = __listNS->first(__input_queue);
+			__listNS->removeFirst(__input_queue);
 
 			if( pevt == &__cwt_evtQuit) {
 				quit = TRUE;
 				break;
 			}
 
-			cwtStackBegin(pevt->handler_stack, &hit);
+			__listNS->begin(pevt->handler_stack, &it);
 
-			while( cwtStackHasMore(&hit) ) {
-				CwtEventHandler event_handler = (CwtEventHandler)cwtStackNext(&hit);
+			while( __listNS->hasMore(&it) ) {
+				CwtEventHandler event_handler = (CwtEventHandler)__listNS->next(&it);
 				if( event_handler(pevt) )
 					break;
 			}
@@ -104,162 +221,8 @@ static BOOL __cwtEventDispatchEvents(void)
 			if( pevt->destructor ) {
 				pevt->destructor(pevt);
 			}
-
-			CWT_FREE(pevt_node);
-			pevt_node = __cwt_evt_input_queue->first;
 		}
 	}
 
 	return quit ? FALSE : TRUE;
 }
-
-
-void __cwtEventInitEvent(CwtEventPtr pevt, CwtStack *handlers, void (*destructor)(struct CwtEvent*))
-{
-	CWT_ASSERT(pevt);
-	pevt->handler_stack = handlers;
-	pevt->destructor = destructor;
-}
-
-/**
- * @brief Регистрирует источник событий
- *
- * @param source источник событий
- * @return @c true, если источник событий зарегистрирован, иначе @c false
- */
-BOOL cwtEventRegisterSource(CwtEventSourcePtr source)
-{
-	DListNode *src_node;
-
-	if( !__cwt_evt_registered.first ) {
-		__cwtEventInit();
-	}
-
-	if( cwtEventIsRegisteredSource(source) )
-		return TRUE;
-
-	src_node = CWT_MALLOC(DListNode);
-	src_node->data = source;
-
-	cwtDListInsertLast(&__cwt_evt_registered, src_node);
-	return TRUE;
-}
-
-/**
- * @brief Отменить регистрацию источника событий
- *
- * @param source source источник событий
- * @return @c true, если требуемый источник найден и его регистрация отменена, илие @c false
- * 	, если источник событий ранее не был зарегистрирован
- */
-BOOL cwtEventUnregisterSource(CwtEventSourcePtr source)
-{
-	if( __cwt_evt_registered.first ) {
-		CwtDListIterator it;
-		cwtDListBegin(&__cwt_evt_registered, &it);
-
-		while( cwtDListHasMore(&it) ) {
-			CwtDListNode *src_node = it.node;
-
-			if( cwtDListNext(&it) == source ) {
-				src_node  = cwtDListRemove(&__cwt_evt_registered, src_node);
-				CWT_FREE(src_node);
-				return TRUE;
-			}
-		}
-	}
-
-	return FALSE;
-}
-
-/**
- * @brief Проверить регистрацию источника событий
- *
- * @param source источник событий
- * @return @c true, если источник событий зарегисрирован, иначе @c false
- */
-BOOL cwtEventIsRegisteredSource(CwtEventSourcePtr source)
-{
-	if( __cwt_evt_registered.first ) {
-		CwtDListIterator it;
-
-		cwtDListBegin(&__cwt_evt_registered, &it);
-
-		while( cwtDListHasMore(&it) ) {
-			if( cwtDListNext(&it) == source )
-				return TRUE;
-		}
-	}
-
-	return FALSE;
-}
-
-/**
- * @brief Отменить регистрацию всех зарегистрированных ранее источников событий
- *
- */
-void cwtEventUnregisterAllSources(void)
-{
-	cwtDListClear(&__cwt_evt_registered, cwtFree, NULL);
-}
-
-void cwtEventQuit(void)
-{
-	__cwtEventInitEvent(&__cwt_evtQuit, NULL, NULL);
-	cwtEventPost(&__cwt_evtQuit);
-}
-
-
-
-void cwtEventPost(CwtEventPtr pevt)
-{
-	CwtDListNode *pevt_node = CWT_MALLOC(CwtDListNode);
-	pevt_node->data = pevt;
-	cwtDListInsertLast(__cwt_evt_output_queue, pevt_node);
-}
-
-
-void cwtEventSetIdleProccess(void (*idle_process)(void))
-{
-	__cwtEventIdleProcess = idle_process;
-}
-
-
-
-void cwtEventPushHandler(CwtStack *handlers, BOOL (*handler)(CwtEventPtr pevt))
-{
-	CWT_ASSERT(handlers);
-	CWT_ASSERT(handler);
-	cwtStackPush(handlers, handler);
-}
-
-void cwtEventPopHandler(Stack *handlers)
-{
-	CWT_ASSERT(handlers);
-	cwtStackPop(handlers);
-}
-
-
-void cwtEventDefaultDestructor(CwtEventPtr pevt)
-{
-	CWT_FREE(pevt);
-}
-
-/**
- * Event loop
- */
-void cwtEventLoop(void)
-{
-//	cwt_mouse_init();
-	while( __cwtEventProcessSources() ) {
-		;
-	}
-}
-
-
-/*
-void cwtEventChannelStub(void)
-{
-;
-}
-*/

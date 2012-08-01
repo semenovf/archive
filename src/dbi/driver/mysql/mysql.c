@@ -109,8 +109,10 @@ static void             __convertTime(CWT_TIME *cwtTime, void *nativeTime);
 static BOOL             __begin(CwtDBHandler *dbh);
 static BOOL             __commit(CwtDBHandler *dbh);
 static BOOL             __rollback(CwtDBHandler *dbh);
+/*
 extern __specForDeploy;
 extern __specForRecall;
+*/
 
 static void             __stmtClose(CwtStatement *sth);
 static BOOL             __stmtExecute(CwtStatement *sth);
@@ -165,8 +167,10 @@ static CwtDBIDriver __cwtDBIDriver = {
     , __commit
     , __rollback
 
+/*
     , __specForDeploy
     , __specForRecall
+*/
 };
 
 

@@ -11,15 +11,16 @@
 #include <cwt/event/types.h>
 #include <cwt/io/channel.h>
 
+typedef struct _CwtEventChannelNS {
+	CwtEventSource* (*source)        (void);
+	void            (*addListener)   (CwtChannel *pchan, BOOL (*reader)(CwtEventPtr));
+	void 			(*removeListener)(CwtChannel *pchan);
+	void 			(*peekChannel)   (CwtEvent *pevt, CwtChannel **pchan);
+} CwtEventChannelNS;
+
+
 EXTERN_C_BEGIN
-
-DLL_API_EXPORT CwtEventSourcePtr cwtEventChannelSource(void);
-DLL_API_EXPORT void cwtEventChannelAddListener(CwtChannel *pchan, BOOL (*reader)(CwtEventPtr));
-DLL_API_EXPORT void cwtEventChannelRemoveListener(CwtChannel *pchan);
-DLL_API_EXPORT void cwtEventPeekChannel(CwtEventPtr pevt, CwtChannel **pchan);
-
+DLL_API_EXPORT CwtEventChannelNS* cwtEventChannelNS(void);
 EXTERN_C_END
-
-
 
 #endif /* __CWT_EVENT_CHANNEL_H__ */

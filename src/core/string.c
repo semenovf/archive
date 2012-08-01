@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <cwt/string.h>
 #include <cwt/str.h>
+#include <cwt/stdio.h>
 
 static CwtStringNS __CwtStringNS;
 
@@ -54,8 +55,8 @@ static const CWT_CHAR* __cstr(CwtString *sb)
 
 static int  __sprintf(CwtString *s, const CWT_CHAR *format, ...)
 {
-	CwtStrNS *strNS  = cwtStrNS();
-	CwtStdioNS stdioNS = cwtStdioNS();
+	CwtStrNS   *strNS   = cwtStrNS();
+	CwtStdioNS *stdioNS = cwtStdioNS();
 	va_list args;
 	size_t sz;
 	int n;

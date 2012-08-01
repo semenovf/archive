@@ -20,8 +20,8 @@ typedef struct _CwtStackNS {
 	void      (*clear)  (CwtStack*);
 	BOOL      (*isEmpty)(CwtStack*);
 	void      (*push)   (CwtStack *stack, void *data);
-	void*     (*pop)    (CwtStack *stack);
-	void*     (*peek)   (CwtStack *stack);
+	BOOL      (*pop)    (CwtStack *stack, void *data);
+	BOOL      (*peek)   (CwtStack *stack, void *data);
 } CwtStackNS;
 
 

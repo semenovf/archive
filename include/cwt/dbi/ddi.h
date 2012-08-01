@@ -13,7 +13,8 @@
 
 
 typedef enum _CwtDDI_Type {
-	  CWT_DDI_TYPE_BOOL = 1
+	  CWT_DDI_TYPE_UNKNOWN
+	, CWT_DDI_TYPE_BOOL = 1
 	, CWT_DDI_TYPE_INT
     , CWT_DDI_TYPE_FLOAT
     , CWT_DDI_TYPE_TIME
@@ -21,8 +22,7 @@ typedef enum _CwtDDI_Type {
     , CWT_DDI_TYPE_DATETIME
     , CWT_DDI_TYPE_TIMESTAMP
     , CWT_DDI_TYPE_TEXT
-    , CWT_DDI_TYPE_REF
-    , CWT_DDI_TYPE_INDEX_UNIQUE
+    , CWT_DDI_TYPE_REF   /* reference (foreign key) to another table */
 } CwtDDI_Type;
 
 typedef enum _CwtDDI_Flag {
@@ -39,8 +39,10 @@ typedef struct _CwtDDIColumn {
 	struct _CwtDDITable *table;
 	CWT_CHAR            *name;
 	CwtDDI_Type          type;
+	struct _CwtDDITable *ref;
 	int                  autoinc; /* AUTO_INCREMENT value, 0 - no auto increment */
 	int                  is_null    : 1;
+	/*int                  is_uniq    : 1;*/
 } CwtDDIColumn;
 
 typedef struct _CwtDDITable {

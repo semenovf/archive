@@ -8,6 +8,7 @@
 
 
 #include <cwt/stack.h>
+#include <cwt/str.h>
 
 #ifndef NULL
 #	define NULL ((void*)0)
@@ -18,8 +19,8 @@ static void          __stack_free    (CwtStack*);
 static void          __stack_clear   (CwtStack*);
 static BOOL          __stack_isEmpty (CwtStack*);
 static void          __stack_push    (CwtStack*, void *data);
-static void*         __stack_pop     (CwtStack*);
-static void*         __stack_peek    (CwtStack*);
+static BOOL          __stack_pop     (CwtStack*, void *data);
+static BOOL          __stack_peek    (CwtStack*, void *data);
 
 static CwtStackNS __cwtStackNS = {
 	  __stack_create

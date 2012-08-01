@@ -9,10 +9,33 @@
 #define __CWT_EVENT_EVENT_H__
 
 #include <cwt/event/types.h>
-#include <cwt/stack.h>
+#include <cwt/list.h>
+
+typedef struct _CwtEventNS {
+	void (*initEvent)(CwtEvent *pevt, CwtList *handlers, void (*destructor)(CwtEvent*));
+	void (*registerSource)(CwtEventSource*);
+	void (*unregisterSource)(CwtEventSource*);
+	void (*unregisterAllSources)(void);
+	BOOL (*isRegisteredSource)(CwtEventSource*);
+
+	void (*setIdleProccess)(void (*idle_process)(void));
+
+	void (*pushHandler)(CwtList *handlers, BOOL (*handler)(CwtEvent *pevt));
+	void (*popHandler)(CwtList *handlers);
+	void (*post)(CwtEvent*);
+	void (*quit)(void);
+	void (*loop)(void);
+
+	void (*defaultDestructor)(CwtEvent*);
+} CwtEventNS;
 
 EXTERN_C_BEGIN
+DLL_API_EXPORT CwtEventNS* cwtEventNS(void);
+EXTERN_C_END
 
+/*EXTERN_C_BEGIN*/
+
+/*
 DLL_API_EXPORT BOOL cwtEventRegisterSource(CwtEventSourcePtr source);
 DLL_API_EXPORT BOOL cwtEventUnregisterSource(CwtEventSourcePtr source);
 DLL_API_EXPORT void cwtEventUnregisterAllSources(void);
@@ -29,6 +52,7 @@ DLL_API_EXPORT void cwtEventQuit(void);
 DLL_API_EXPORT void cwtEventLoop(void);
 
 DLL_API_EXPORT void cwtEventDefaultDestructor(CwtEventPtr pevt);
+*/
 
 #ifdef __COMMENT__
 
@@ -155,6 +179,6 @@ void cwt_start_timer(UINT16 id, long interval);
 
 #endif
 
-EXTERN_C_END
+/*EXTERN_C_END*/
 
 #endif /* __CWT_EVENT_EVENT_H__ */

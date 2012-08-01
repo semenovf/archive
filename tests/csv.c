@@ -16,12 +16,12 @@
 #include <cwt/io/bufdev.h>
 
 
-static void __csvOnError(CwtCsvHandler ini, const CWT_CHAR *errstr)
+static void __csvOnError(CwtCsvHandler *csv, const CWT_CHAR *errstr)
 {
-	printf_error(_T("%s at line %lu"), errstr, cwtCsvNS()->line(ini));
+	printf_error(_T("%s at line %lu"), errstr, cwtCsvNS()->line(csv));
 }
 
-static BOOL __csvOnRow(CwtCsvHandler h, const CWT_CHAR* argv[], int argc)
+static BOOL __csvOnRow(CwtCsvHandler *h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_TEST_FAIL(argc == 10);
 	CWT_TEST_OK(cwtStrNS()->streq(_T("Two"), argv[1]));

@@ -10,7 +10,7 @@
 
 #include <cwt/global.h>
 #include <cwt/types.h>
-#include <cwt/stack.h>
+#include <cwt/list.h>
 
 #ifdef __COMMENT__
 enum CwtEventType {
@@ -39,21 +39,17 @@ typedef enum CwtEventType CwtEventType;
 #endif
 
 
-struct CwtEvent {
-	CwtStack *handler_stack;
-	void (*destructor)(struct CwtEvent*);
-};
-typedef struct CwtEvent CwtEvent;
-typedef struct CwtEvent* CwtEventPtr;
+typedef struct _CwtEvent {
+	CwtList *handler_stack;
+	void (*destructor)(struct _CwtEvent*);
+} CwtEvent;
 
-struct CwtEventSource {
+typedef struct _CwtEventSource {
 	 void (*poll)(void);
-};
-typedef struct CwtEventSource CwtEventSource;
-typedef struct CwtEventSource* CwtEventSourcePtr;
+	 void (*finish)(struct _CwtEventSource*);
+} CwtEventSource;
 
-
-typedef BOOL (*CwtEventHandler)(CwtEventPtr);
+typedef BOOL (*CwtEventHandler)(CwtEvent*);
 
 
 #endif /* __CWT_EVENT_TYPES_H__ */

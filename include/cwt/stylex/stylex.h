@@ -220,7 +220,7 @@ typedef union Cwt_StyleAttrValue {
 
 
 typedef struct Cwt_StyleAttr {
-	ListNode           m_base;
+	CwtListNode        __base;
 	Cwt_StyleAttrType  m_type;
 	Cwt_StyleAttrValue m_value;
 } Cwt_StyleAttr, *Cwt_StyleAttrPtr;
