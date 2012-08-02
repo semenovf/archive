@@ -10,6 +10,7 @@ SUBDIRS  =         \
     tests/eclock   \
     tests/emcsock  \
     tests/crc64    \
+    tests/ddi      \
     tests/ini      \
     tests/list     \
     tests/utils    \

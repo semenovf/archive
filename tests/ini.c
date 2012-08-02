@@ -12,6 +12,7 @@
 #include <cwt/ini.h>
 #include <cwt/logger.h>
 #include <cwt/str.h>
+#include <cwt/txtcodec.h>
 #include <cwt/io/channel.h>
 #include <cwt/io/bufdev.h>
 
@@ -79,6 +80,7 @@ int main(int argc, char *argv[])
 	CwtChannelNS *chNS = cwtChannelNS();
 	CwtStrNS     *strNS = cwtStrNS();
 	CwtIniNS     *iniNS = cwtIniNS();
+	CwtTextCodecNS *codecNS = cwtTextCodecNS();
 	CwtIniHandler *ini;
 	CwtChannel   *pchan0;
 	CwtChannel   *pchan1;
@@ -100,7 +102,7 @@ int main(int argc, char *argv[])
 	iniNS->addDirective(ini, _T("directive6"), __onIniDirective6);
 
 	for( i = 0; i < sizeof(directives)/sizeof(directives[0]); i++ ) {
-		char *str = strNS->toUtf8(directives[i], strNS->strlen(directives[i]));
+		char *str = codecNS->toUtf8(directives[i], strNS->strlen(directives[i]));
 		chNS->write(pchan0, str, strlen(str));
 		CWT_FREE(str);
 	}

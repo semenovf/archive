@@ -8,6 +8,7 @@
 
 #include <cwt/str.h>
 #include <cwt/string.h>
+#include <cwt/txtcodec.h>
 #include <cwt/unistd.h>
 #include <cwt/logger.h>
 #include <cwt/bytearr.h>
@@ -89,6 +90,7 @@ static CwtStringNS    *__stringNS = NULL;
 static CwtStrListNS   *__slNS     = NULL;
 static CwtChannelNS   *__chNS     = NULL;
 static CwtByteArrayNS *__baNS     = NULL;
+static CwtTextCodecNS *__codecNS  = NULL;
 
 
 DLL_API_EXPORT CwtCsvNS* cwtCsvNS(void)
@@ -99,6 +101,7 @@ DLL_API_EXPORT CwtCsvNS* cwtCsvNS(void)
 		__slNS     = cwtStrListNS();
 		__chNS     = cwtChannelNS();
 		__baNS     = cwtByteArrayNS();
+		__codecNS  = cwtTextCodecNS();
 	}
 
 	return &__cwtCsvNS;
@@ -186,7 +189,7 @@ static void __csv_write(CwtCsvHandler *h, CwtChannel *pchan, const CWT_CHAR* arg
 
 	if( __stringNS->length(s) > 0 ) {
 		char *utf8;
-		utf8 = __strNS->toUtf8(__stringNS->cstr(s), __stringNS->length(s));
+		utf8 = __codecNS->toUtf8(__stringNS->cstr(s), __stringNS->length(s));
 		__chNS->write(pchan, (BYTE*)utf8, strlen(utf8));
 		CWT_FREE(utf8);
 	}
@@ -232,7 +235,7 @@ static BOOL __csv_parse(CwtCsvHandler *h, CwtChannel *pchan)
 		/*__baNS->trim(ba);*/
 
 		if( __baNS->size(ba) > 0 ) {
-			str = __strNS->fromUtf8(__baNS->cstr(ba), __baNS->size(ba)); /* TODO need apply text codec insteed of fromUtf8 call */
+			str = __codecNS->fromUtf8(__baNS->cstr(ba), __baNS->size(ba)); /* TODO need apply text codec insteed of fromUtf8 call */
 
 			if( str && __strNS->strlen(str) > 0 ) {
 
@@ -430,7 +433,7 @@ static BOOL __csv_next(CwtCsvHandler *h)
 		if( __baNS->size(ph->csvData.ba) > 0 ) {
 
 			/* TODO need apply text codec insteed of fromUtf8 call */
-			str = __strNS->fromUtf8(__baNS->cstr(ph->csvData.ba), __baNS->size(ph->csvData.ba));
+			str = __codecNS->fromUtf8(__baNS->cstr(ph->csvData.ba), __baNS->size(ph->csvData.ba));
 
 			if( str && __strNS->strlen(str) > 0 ) {
 

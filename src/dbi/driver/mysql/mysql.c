@@ -13,6 +13,7 @@
 #endif
 #include <mysql/my_sys.h>
 #include <mysql/mysql.h>
+#include <cwt/txtcodec.h>
 #include <cwt/dbi/dbi.h>
 #include <cwt/algo/hash_tab.h>
 #include <cwt/algo/hash_str.h>
@@ -109,6 +110,7 @@ static void             __convertTime(CWT_TIME *cwtTime, void *nativeTime);
 static BOOL             __begin(CwtDBHandler *dbh);
 static BOOL             __commit(CwtDBHandler *dbh);
 static BOOL             __rollback(CwtDBHandler *dbh);
+
 /*
 extern __specForDeploy;
 extern __specForRecall;
@@ -119,7 +121,7 @@ static BOOL             __stmtExecute(CwtStatement *sth);
 static ULONGLONG        __stmtAffectedRows(CwtStatement *sth);
 static ULONGLONG        __stmtNumRows(CwtStatement*);
 static BOOL             __stmtFetchNext(CwtStatement*);
-static BOOL             __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CWT_UNITYPE *value);
+static BOOL             __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *value);
 static CwtDBI_RC        __stmtErr(CwtStatement *sth);
 static const CWT_CHAR*  __stmtStrerror(CwtStatement *sth);
 static BOOL             __stmtBind(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value, size_t *plength, BOOL is_null);
@@ -353,7 +355,7 @@ static CwtTypeEnum __fromMysqlType( enum enum_field_types mysqlType, UINT field_
 
 static char* __encode(CwtDBHandler *dbh, const CWT_CHAR *s)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtTextCodecNS *codecNS = cwtTextCodecNS();
 	CwtMySqlDBHandler *mdbh = (CwtMySqlDBHandler*)dbh;
 
 	CWT_ASSERT(mdbh);
@@ -363,14 +365,14 @@ static char* __encode(CwtDBHandler *dbh, const CWT_CHAR *s)
 		return NULL;
 
 	if( !mdbh->csname )
-		mdbh->csname = strNS->fromLatin1(mysql_character_set_name(mdbh->conn));
+		mdbh->csname = codecNS->fromLatin1(mysql_character_set_name(mdbh->conn));
 
-	return strNS->toMBCS(s, mdbh->csname);
+	return codecNS->toMBCS(s, mdbh->csname);
 }
 
 static CWT_CHAR* __decode(CwtDBHandler *dbh, const char *s)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtTextCodecNS *codecNS = cwtTextCodecNS();
 	CwtMySqlDBHandler *mdbh = (CwtMySqlDBHandler*)dbh;
 
 	CWT_ASSERT(mdbh);
@@ -380,9 +382,9 @@ static CWT_CHAR* __decode(CwtDBHandler *dbh, const char *s)
 		return NULL;
 
 	if( !mdbh->csname )
-		mdbh->csname = strNS->fromLatin1(mysql_character_set_name(mdbh->conn));
+		mdbh->csname = codecNS->fromLatin1(mysql_character_set_name(mdbh->conn));
 
-	return strNS->fromMBCS(s, mdbh->csname);
+	return codecNS->fromMBCS(s, mdbh->csname);
 }
 
 static CWT_TIME* __createTime(void)
@@ -475,6 +477,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
 	, const CWT_CHAR *csname)
 {
 	CwtStrNS     *strNS     = cwtStrNS();
+	CwtTextCodecNS *codecNS = cwtTextCodecNS();
 	CwtStrListNS *strlistNS = cwtStrListNS();
 
 	static const CWT_CHAR *csname_default = _T("utf8");
@@ -527,9 +530,9 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
 	dbh->errorstr          = NULL;
 	dbh->sqlstate          = NULL;
 
-    csname_   = strNS->toLatin1(csname);
-    username_ = strNS->toLatin1(username);
-    password_ = strNS->toLatin1(password);
+    csname_   = codecNS->toLatin1(csname);
+    username_ = codecNS->toLatin1(username);
+    password_ = codecNS->toLatin1(password);
 
     while( TRUE ) {
         /* initialize connection handler */
@@ -1487,7 +1490,7 @@ static BOOL __stmtFetchNext(CwtStatement *sth)
 	return TRUE;
 }
 
-static BOOL __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CWT_UNITYPE *value)
+static BOOL __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *value)
 {
 	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
 	CwtTypeEnum cwtType;
@@ -1526,62 +1529,62 @@ static BOOL __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CWT_UNITYPE *val
 
 	switch(cwtType) {
 		case CwtType_CHAR:
-			value->data.sbyte_val = *((char*)rbind->buffer);
+			value->value.sbyte_val = *((char*)rbind->buffer);
 			break;
 		case CwtType_UCHAR:
-			value->data.byte_val = *((UCHAR*)rbind->buffer);
+			value->value.byte_val = *((UCHAR*)rbind->buffer);
 			break;
 		case CwtType_SHORT:
-			value->data.short_val = *((SHORT*)rbind->buffer);
+			value->value.short_val = *((SHORT*)rbind->buffer);
 			break;
 		case CwtType_USHORT:
-			value->data.ushort_val = *((USHORT*)rbind->buffer);
+			value->value.ushort_val = *((USHORT*)rbind->buffer);
 			break;
 		case CwtType_INT:
-			value->data.int_val = *((INT*)rbind->buffer);
+			value->value.int_val = *((INT*)rbind->buffer);
 			break;
 		case CwtType_UINT:
-			value->data.uint_val = *((UINT*)rbind->buffer);
+			value->value.uint_val = *((UINT*)rbind->buffer);
 			break;
 		case CwtType_LONG:
-			value->data.long_val = *((LONG*)rbind->buffer);
+			value->value.long_val = *((LONG*)rbind->buffer);
 			break;
 		case CwtType_ULONG:
-			value->data.ulong_val = *((ULONG*)rbind->buffer);
+			value->value.ulong_val = *((ULONG*)rbind->buffer);
 			break;
 		case CwtType_LONGLONG:
-			value->data.llong_val = *((LONGLONG*)rbind->buffer);
+			value->value.llong_val = *((LONGLONG*)rbind->buffer);
 			break;
 		case CwtType_ULONGLONG:
-			value->data.ullong_val = *((ULONGLONG*)rbind->buffer);
+			value->value.ullong_val = *((ULONGLONG*)rbind->buffer);
 			break;
 		case CwtType_FLOAT:
-			value->data.float_val = *((float*)rbind->buffer);
+			value->value.float_val = *((float*)rbind->buffer);
 			break;
 		case CwtType_DOUBLE:
-			value->data.double_val = *((double*)rbind->buffer);
+			value->value.double_val = *((double*)rbind->buffer);
 			break;
 
 		/* must be converted by convertTime function */
 		case CwtType_TIME:
 		case CwtType_DATE:
 		case CwtType_DATETIME:
-			value->data.ptr = rbind->buffer;
+			value->value.ptr = rbind->buffer;
 			value->length   = *rbind->length;
 			break;
 
 		case CwtType_BLOB:
 			CWT_ASSERT(rbind->length);
-			value->data.ptr = rbind->buffer;
+			value->value.ptr = rbind->buffer;
 			value->length   = *rbind->length;
 			break;
 
 		default:
 		case CwtType_TEXT:
 			CWT_ASSERT(rbind->length);
-			value->data.ptr = rbind->buffer;
+			value->value.ptr = rbind->buffer;
 			value->length   = *rbind->length;
-			((char*)value->data.ptr)[value->length] = (char)0;
+			((char*)value->value.ptr)[value->length] = (char)0;
 			break;
 	}
 
@@ -1703,7 +1706,7 @@ static BOOL __stmtBind(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, voi
 
 static BOOL __stmtBindScalar(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value)
 {
-	CWT_ASSERT(CWT_IS_SCALAR(cwtType));
+	CWT_ASSERT(CWT_TYPE_IS_SCALAR(cwtType));
 	return __stmtBind(sth, index, cwtType, value, NULL, FALSE);
 }
 

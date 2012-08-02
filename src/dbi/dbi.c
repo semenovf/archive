@@ -18,13 +18,19 @@ static CwtDBIDriver*   __load          (const CWT_CHAR *dsn);
 static CwtTypeEnum     __toCwtTypeEnum (CwtSqlTypeEnum sqlType);
 static CwtSqlTypeEnum  __toSqlTypeEnum (CwtTypeEnum cwtType);
 
-extern CwtDDI*         __ddi_createDDI     (void);
+extern CwtDDI*         __ddi_createDDI     (const CWT_CHAR *name);
 extern void            __ddi_freeDDI       (CwtDDI *ddi);
 extern CwtDDITable*    __ddi_newTable      (CwtDDI *ddi, const CWT_CHAR *name);
 extern CwtDDIColumn*   __ddi_newColumn     (CwtDDITable *table, const CWT_CHAR *name);
-extern BOOL            __ddi_cType         (CwtDDIColumn*, CwtDDI_Type);
-extern BOOL            __ddi_cRef          (CwtDDIColumn*, CwtDDITable*);
-extern BOOL            __ddi_cAutoinc      (CwtDDIColumn*, int inc);
+
+extern BOOL            __ddi_cTypeBool     (CwtDDIColumn*);
+extern BOOL            __ddi_cTypeInt      (CwtDDIColumn*, LONGLONG min, ULONGLONG max);
+extern BOOL            __ddi_cTypeFloat    (CwtDDIColumn*, UINT prec, UINT scale);
+extern BOOL            __ddi_cTypeText     (CwtDDIColumn*, ULONGLONG maxlen);
+extern BOOL            __ddi_cTypeBlob     (CwtDDIColumn*, ULONGLONG maxlen);
+extern BOOL            __ddi_cTypeTime     (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stmap);
+extern BOOL            __ddi_cTypeRef      (CwtDDIColumn*, CwtDDITable*);
+extern BOOL            __ddi_cAutoinc      (CwtDDIColumn*, UINT inc);
 extern BOOL            __ddi_cNull         (CwtDDIColumn*, BOOL yes);
 
 extern BOOL            __ddi_deploy        (CwtDBHandler*, CwtDDI *ddi);
@@ -40,8 +46,14 @@ static CwtDBI __cwtDBI = {
 	, __ddi_freeDDI
 	, __ddi_newTable
 	, __ddi_newColumn
-    , __ddi_cType
-    , __ddi_cRef
+
+	, __ddi_cTypeBool
+    , __ddi_cTypeInt
+    , __ddi_cTypeFloat
+    , __ddi_cTypeText
+    , __ddi_cTypeBlob
+    , __ddi_cTypeTime
+    , __ddi_cTypeRef
     , __ddi_cAutoinc
     , __ddi_cNull
 

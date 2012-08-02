@@ -11,9 +11,16 @@
 #include <cwt/test.h>
 #include <cwt/logger.h>
 #include <cwt/str.h>
+#include <cwt/txtcodec.h>
 #include <cwt/csv/csv.h>
 #include <cwt/io/channel.h>
 #include <cwt/io/bufdev.h>
+
+
+static CwtChannelNS   *__chNS  = NULL;
+static CwtStrNS       *__strNS = NULL;
+static CwtCsvNS       *__csvNS = NULL;
+static CwtTextCodecNS *__codecNS = NULL;
 
 
 static void __csvOnError(CwtCsvHandler *csv, const CWT_CHAR *errstr)
@@ -24,17 +31,17 @@ static void __csvOnError(CwtCsvHandler *csv, const CWT_CHAR *errstr)
 static BOOL __csvOnRow(CwtCsvHandler *h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_TEST_FAIL(argc == 10);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("Two"), argv[1]));
-	CWT_TEST_OK(cwtStrNS()->streq(_T("Three"), argv[2]));
+	CWT_TEST_OK(__strNS->streq(_T("Two"), argv[1]));
+	CWT_TEST_OK(__strNS->streq(_T("Three"), argv[2]));
 
-	if( cwtStrNS()->streq(_T("Fox"), argv[0]) ) {
+	if( __strNS->streq(_T("Fox"), argv[0]) ) {
 		printf_debug(_T("%s"), argv[7]);
-		CWT_TEST_OK(cwtStrNS()->streq(_T("\"Eight;The quick brown; fox jumps over ;the lazy dog\""), argv[7]));
+		CWT_TEST_OK(__strNS->streq(_T("\"Eight;The quick brown; fox jumps over ;the lazy dog\""), argv[7]));
 	}
 
-	if( cwtStrNS()->streq(_T("Quo"), argv[0]) ) {
+	if( __strNS->streq(_T("Quo"), argv[0]) ) {
 		printf_debug(_T("%s"), argv[7]);
-		CWT_TEST_OK(cwtStrNS()->streq(_T("\"Eight\nEight\""), argv[7]));
+		CWT_TEST_OK(__strNS->streq(_T("\"Eight\nEight\""), argv[7]));
 	}
 
 
@@ -53,30 +60,27 @@ static void test_00(void)
 	};
 
 	size_t i;
-	CwtChannelNS  *chNS  = cwtChannelNS();
-	CwtStrNS      *strNS = cwtStrNS();
-	CwtCsvNS      *csvNS = cwtCsvNS();
 	CwtCsvHandler *csv;
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 
-	CWT_ASSERT(pchan0 = chNS->create(cwtBufferDeviceOpen()));
-	CWT_ASSERT(pchan1 = chNS->create(cwtBufferDeviceOpenPeer(chNS->device(pchan0))));
-	CWT_ASSERT(csv = csvNS->createWithArgs(_T(";"), 32));
-	csvNS->setOnRow(csv, __csvOnRow);
-	csvNS->setOnError(csv, __csvOnError);
+	CWT_ASSERT(pchan0 = __chNS->create(cwtBufferDeviceOpen()));
+	CWT_ASSERT(pchan1 = __chNS->create(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
+	CWT_ASSERT(csv = __csvNS->createWithArgs(_T(";"), 32));
+	__csvNS->setOnRow(csv, __csvOnRow);
+	__csvNS->setOnError(csv, __csvOnError);
 
 	for( i = 0; i < sizeof(__rows)/sizeof(__rows[0]); i++ ) {
-		char *str = strNS->toUtf8(__rows[i], strNS->strlen(__rows[i]));
-		chNS->write(pchan0, str, strlen(str));
+		char *str = __codecNS->toUtf8(__rows[i], __strNS->strlen(__rows[i]));
+		__chNS->write(pchan0, str, strlen(str));
 		CWT_FREE(str);
 	}
 
-	csvNS->parse(csv, pchan1);
+	__csvNS->parse(csv, pchan1);
 
-	csvNS->free(csv);
-	chNS->free(pchan0);
-	chNS->free(pchan1);
+	__csvNS->free(csv);
+	__chNS->free(pchan0);
+	__chNS->free(pchan1);
 }
 
 
@@ -94,47 +98,44 @@ static void test_01(void)
 
 	size_t i;
 	size_t nrows;
-	CwtChannelNS  *chNS  = cwtChannelNS();
-	CwtStrNS      *strNS = cwtStrNS();
-	CwtCsvNS      *csvNS = cwtCsvNS();
 	CwtCsvHandler *csv;
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 
 
-	CWT_ASSERT(pchan0 = chNS->create(cwtBufferDeviceOpen()));
-	CWT_ASSERT(pchan1 = chNS->create(cwtBufferDeviceOpenPeer(chNS->device(pchan0))));
-	CWT_ASSERT(csv = csvNS->createWithArgs(_T(";"), 32));
+	CWT_ASSERT(pchan0 = __chNS->create(cwtBufferDeviceOpen()));
+	CWT_ASSERT(pchan1 = __chNS->create(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
+	CWT_ASSERT(csv = __csvNS->createWithArgs(_T(";"), 32));
 
-	csvNS->setOnError(csv, __csvOnError);
+	__csvNS->setOnError(csv, __csvOnError);
 
 	for( i = 0; i < sizeof(__rows)/sizeof(__rows[0]); i++ ) {
-		char *str = strNS->toUtf8(__rows[i], strNS->strlen(__rows[i]));
-		chNS->write(pchan0, str, strlen(str));
+		char *str = __codecNS->toUtf8(__rows[i], __strNS->strlen(__rows[i]));
+		__chNS->write(pchan0, str, strlen(str));
 		CWT_FREE(str);
 	}
 
-	csvNS->begin(csv, pchan1);
+	__csvNS->begin(csv, pchan1);
 	nrows = 0;
-	while( csvNS->next(csv) ) {
+	while( __csvNS->next(csv) ) {
 		CWT_CHAR *argv[NCOLUMNS];
 
-		CWT_TEST_FAIL(csvNS->columnsCount(csv) == NCOLUMNS);
-		CWT_TEST_FAIL(csvNS->row(csv, argv, NCOLUMNS) == NCOLUMNS);
+		CWT_TEST_FAIL(__csvNS->columnsCount(csv) == NCOLUMNS);
+		CWT_TEST_FAIL(__csvNS->row(csv, argv, NCOLUMNS) == NCOLUMNS);
 
-		CWT_TEST_OK( strNS->streq(argv[0], _T("One")));
-		CWT_TEST_OK( strNS->streq(argv[1], _T("Two")));
-		CWT_TEST_OK( strNS->streq(argv[2], _T("Three")));
-		CWT_TEST_OK( strNS->streq(argv[3], _T("Four")));
-		CWT_TEST_OK( strNS->streq(argv[4], _T("Five")));
+		CWT_TEST_OK( __strNS->streq(argv[0], _T("One")));
+		CWT_TEST_OK( __strNS->streq(argv[1], _T("Two")));
+		CWT_TEST_OK( __strNS->streq(argv[2], _T("Three")));
+		CWT_TEST_OK( __strNS->streq(argv[3], _T("Four")));
+		CWT_TEST_OK( __strNS->streq(argv[4], _T("Five")));
 		nrows++;
 	}
 
 	CWT_TEST_OK(nrows == sizeof(__rows)/sizeof(__rows[0]));
 
-	csvNS->free(csv);
-	chNS->free(pchan0);
-	chNS->free(pchan1);
+	__csvNS->free(csv);
+	__chNS->free(pchan0);
+	__chNS->free(pchan1);
 }
 
 
@@ -151,51 +152,53 @@ static void test_02(void)
 
 	size_t i;
 	size_t nrows;
-	CwtChannelNS  *chNS  = cwtChannelNS();
-	CwtStrNS      *strNS = cwtStrNS();
-	CwtCsvNS      *csvNS = cwtCsvNS();
 	CwtCsvHandler *csv;
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 
-	CWT_ASSERT(pchan0 = chNS->create(cwtBufferDeviceOpen()));
-	CWT_ASSERT(pchan1 = chNS->create(cwtBufferDeviceOpenPeer(chNS->device(pchan0))));
-	CWT_ASSERT(csv = csvNS->createWithArgs(_T(";"), 32));
+	CWT_ASSERT(pchan0 = __chNS->create(cwtBufferDeviceOpen()));
+	CWT_ASSERT(pchan1 = __chNS->create(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
+	CWT_ASSERT(csv = __csvNS->createWithArgs(_T(";"), 32));
 
-	csvNS->setOnError(csv, __csvOnError);
+	__csvNS->setOnError(csv, __csvOnError);
 
 	for( i = 0; i < sizeof(__rows)/sizeof(__rows[0]); i++ ) {
-		char *str = strNS->toUtf8(__rows[i], strNS->strlen(__rows[i]));
-		chNS->write(pchan0, str, strlen(str));
+		char *str = __codecNS->toUtf8(__rows[i], __strNS->strlen(__rows[i]));
+		__chNS->write(pchan0, str, strlen(str));
 		CWT_FREE(str);
 	}
 
-	csvNS->begin(csv, pchan1);
+	__csvNS->begin(csv, pchan1);
 
-	CWT_TEST_FAIL(csvNS->header(csv) == NCOLUMNS);
+	CWT_TEST_FAIL(__csvNS->header(csv) == NCOLUMNS);
 	nrows = 1;
 
-	while( csvNS->next(csv) ) {
-		CWT_TEST_OK(csvNS->columnsCount(csv) == NCOLUMNS);
+	while( __csvNS->next(csv) ) {
+		CWT_TEST_OK(__csvNS->columnsCount(csv) == NCOLUMNS);
 
-		CWT_TEST_OK(strNS->streq(csvNS->column(csv, _T("One")),  _T("11")));
-		CWT_TEST_OK(strNS->streq(csvNS->column(csv, _T("Two")),  _T("22")));
-		CWT_TEST_OK(strNS->streq(csvNS->column(csv, _T("Three")),_T("33")));
-		CWT_TEST_OK(strNS->streq(csvNS->column(csv, _T("Four")), _T("44")));
-		CWT_TEST_OK(strNS->streq(csvNS->column(csv, _T("Five")), _T("55")));
+		CWT_TEST_OK(__strNS->streq(__csvNS->column(csv, _T("One")),  _T("11")));
+		CWT_TEST_OK(__strNS->streq(__csvNS->column(csv, _T("Two")),  _T("22")));
+		CWT_TEST_OK(__strNS->streq(__csvNS->column(csv, _T("Three")),_T("33")));
+		CWT_TEST_OK(__strNS->streq(__csvNS->column(csv, _T("Four")), _T("44")));
+		CWT_TEST_OK(__strNS->streq(__csvNS->column(csv, _T("Five")), _T("55")));
 		nrows++;
 	}
 
 	CWT_TEST_OK(nrows == sizeof(__rows)/sizeof(__rows[0]));
 
-	csvNS->free(csv);
-	chNS->free(pchan0);
-	chNS->free(pchan1);
+	__csvNS->free(csv);
+	__chNS->free(pchan0);
+	__chNS->free(pchan1);
 
 }
 
 int main(int argc, char *argv[])
 {
+	__chNS  = cwtChannelNS();
+	__strNS = cwtStrNS();
+	__csvNS = cwtCsvNS();
+	__codecNS = cwtTextCodecNS();
+
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 

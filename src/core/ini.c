@@ -8,10 +8,10 @@
 
 #include <cwt/str.h>
 #include <cwt/string.h>
+#include <cwt/txtcodec.h>
 #include <cwt/unistd.h>
 #include <cwt/logger.h>
 #include <cwt/bytearr.h>
-#include <cwt/string.h>
 #include <cwt/strlist.h>
 #include <cwt/io/channel.h>
 #include <cwt/ini.h>
@@ -106,6 +106,7 @@ static BOOL __ini_parse(CwtIniHandler h, CwtChannel *pchan)
 	CwtStrListNS   *slNS     = cwtStrListNS();
 	CwtChannelNS   *chNS     = cwtChannelNS();
 	CwtByteArrayNS *baNS     = cwtByteArrayNS();
+	CwtTextCodecNS *codecNS  = cwtTextCodecNS();
 	CwtByteArray   *ba;
 	CwtStrList     *tokens;
 	BOOL esc = FALSE;
@@ -138,7 +139,7 @@ static BOOL __ini_parse(CwtIniHandler h, CwtChannel *pchan)
 
 		baNS->trim(ba);
 		if( baNS->size(ba) > 0 ) {
-			str = strNS->fromUtf8(baNS->cstr(ba), baNS->size(ba)); /* TODO need apply text codec insteed of fromUtf8 call */
+			str = codecNS->fromUtf8(baNS->cstr(ba), baNS->size(ba)); /* TODO need apply text codec insteed of fromUtf8 call */
 
 			if( str && strNS->strlen(str) > 0 ) {
 

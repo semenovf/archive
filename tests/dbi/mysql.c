@@ -301,19 +301,19 @@ int main(int argc, char *argv[])
 		/*printf("Returned rows: %lu\n", dbh->size(sth));*/
 
 		{
-			CWT_UNITYPE sbyte_val;
-			CWT_UNITYPE byte_val;
-			CWT_UNITYPE short_val;
-			CWT_UNITYPE ushort_val;
-			CWT_UNITYPE int_val;
-			CWT_UNITYPE uint_val;
-			CWT_UNITYPE long_val;
-			CWT_UNITYPE ulong_val;
-			CWT_UNITYPE llong_val;
-			CWT_UNITYPE ullong_val;
-			CWT_UNITYPE date_val;
-			CWT_UNITYPE time_val;
-			CWT_UNITYPE dt_val;
+			CwtUniType sbyte_val;
+			CwtUniType byte_val;
+			CwtUniType short_val;
+			CwtUniType ushort_val;
+			CwtUniType int_val;
+			CwtUniType uint_val;
+			CwtUniType long_val;
+			CwtUniType ulong_val;
+			CwtUniType llong_val;
+			CwtUniType ullong_val;
+			CwtUniType date_val;
+			CwtUniType time_val;
+			CwtUniType dt_val;
 
 			CWT_TIME cwtTimeTmp;
 
@@ -332,28 +332,28 @@ int main(int argc, char *argv[])
 			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("date_val"), &date_val) );
 			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("time_val"), &time_val) );
 			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("dt_val"), &dt_val) );
-			CWT_TEST_OK(sbyte_val.data.sbyte_val == CWT_SBYTE_MAX);
-			CWT_TEST_OK(byte_val.data.byte_val == CWT_BYTE_MAX);
-			CWT_TEST_OK(short_val.data.short_val == CWT_SHORT_MAX);
-			CWT_TEST_OK(ushort_val.data.ushort_val == CWT_USHORT_MAX);
-			CWT_TEST_OK(int_val.data.int_val == CWT_INT_MAX);
-			CWT_TEST_OK(uint_val.data.uint_val == CWT_UINT_MAX);
-			CWT_TEST_OK(long_val.data.long_val == CWT_LONG_MAX);
-			CWT_TEST_OK(ulong_val.data.ulong_val == CWT_ULONG_MAX);
-			CWT_TEST_OK(llong_val.data.llong_val == CWT_LONGLONG_MAX);
-			CWT_TEST_OK(ullong_val.data.ullong_val == CWT_ULONGLONG_MAX);
+			CWT_TEST_OK(sbyte_val.value.sbyte_val == CWT_SBYTE_MAX);
+			CWT_TEST_OK(byte_val.value.byte_val == CWT_BYTE_MAX);
+			CWT_TEST_OK(short_val.value.short_val == CWT_SHORT_MAX);
+			CWT_TEST_OK(ushort_val.value.ushort_val == CWT_USHORT_MAX);
+			CWT_TEST_OK(int_val.value.int_val == CWT_INT_MAX);
+			CWT_TEST_OK(uint_val.value.uint_val == CWT_UINT_MAX);
+			CWT_TEST_OK(long_val.value.long_val == CWT_LONG_MAX);
+			CWT_TEST_OK(ulong_val.value.ulong_val == CWT_ULONG_MAX);
+			CWT_TEST_OK(llong_val.value.llong_val == CWT_LONGLONG_MAX);
+			CWT_TEST_OK(ullong_val.value.ullong_val == CWT_ULONGLONG_MAX);
 
-			dbd->convertTime(&cwtTimeTmp, date_val.data.ptr);
+			dbd->convertTime(&cwtTimeTmp, date_val.value.ptr);
 			CWT_TEST_OK(cwtTimeTmp.year == cwtDate->year);
 			CWT_TEST_OK(cwtTimeTmp.mon  == cwtDate->mon);
 			CWT_TEST_OK(cwtTimeTmp.day  == cwtDate->day);
 
-			dbd->convertTime(&cwtTimeTmp, time_val.data.ptr);
+			dbd->convertTime(&cwtTimeTmp, time_val.value.ptr);
 			CWT_TEST_OK(cwtTimeTmp.hour == cwtTime->hour);
 			CWT_TEST_OK(cwtTimeTmp.min == cwtTime->min);
 			CWT_TEST_OK(cwtTimeTmp.sec == cwtTime->sec);
 
-			dbd->convertTime(&cwtTimeTmp, dt_val.data.ptr);
+			dbd->convertTime(&cwtTimeTmp, dt_val.value.ptr);
 			CWT_TEST_OK(cwtTimeTmp.year == cwtDateTime->year);
 			CWT_TEST_OK(cwtTimeTmp.mon  == cwtDateTime->mon);
 			CWT_TEST_OK(cwtTimeTmp.day  == cwtDateTime->day);
@@ -373,16 +373,16 @@ int main(int argc, char *argv[])
 			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("ulong_val"), &ulong_val) );
 			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("llong_val"), &llong_val) );
 			CWT_TEST_FAIL( dbh->fetchColumn(sth, _T("ullong_val"), &ullong_val) );
-			CWT_TEST_OK(sbyte_val.data.sbyte_val == CWT_SBYTE_MIN);
-			CWT_TEST_OK(byte_val.data.byte_val == 0);
-			CWT_TEST_OK(short_val.data.short_val == CWT_SHORT_MIN);
-			CWT_TEST_OK(ushort_val.data.ushort_val == 0);
-			CWT_TEST_OK(int_val.data.int_val == CWT_INT_MIN);
-			CWT_TEST_OK(uint_val.data.uint_val == 0);
-			CWT_TEST_OK(long_val.data.long_val == CWT_LONG_MIN);
-			CWT_TEST_OK(ulong_val.data.ulong_val == 0UL);
-			CWT_TEST_OK(llong_val.data.llong_val == CWT_LONGLONG_MIN);
-			CWT_TEST_OK(ullong_val.data.ullong_val == 0ULL);
+			CWT_TEST_OK(sbyte_val.value.sbyte_val == CWT_SBYTE_MIN);
+			CWT_TEST_OK(byte_val.value.byte_val == 0);
+			CWT_TEST_OK(short_val.value.short_val == CWT_SHORT_MIN);
+			CWT_TEST_OK(ushort_val.value.ushort_val == 0);
+			CWT_TEST_OK(int_val.value.int_val == CWT_INT_MIN);
+			CWT_TEST_OK(uint_val.value.uint_val == 0);
+			CWT_TEST_OK(long_val.value.long_val == CWT_LONG_MIN);
+			CWT_TEST_OK(ulong_val.value.ulong_val == 0UL);
+			CWT_TEST_OK(llong_val.value.llong_val == CWT_LONGLONG_MIN);
+			CWT_TEST_OK(ullong_val.value.ullong_val == 0ULL);
 
 			CWT_TEST_NOK( dbh->fetchNext(sth) ); /* no more records */
 		}

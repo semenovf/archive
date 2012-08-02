@@ -73,8 +73,9 @@ typedef struct CWT_TIME {
 
 
 
-typedef enum CwtTypeEnum {
-	  CwtType_BOOL
+typedef enum _CwtTypeEnum {
+	  CwtType_UNKNOWN
+	, CwtType_BOOL
 	, CwtType_CHAR
 	, CwtType_CWT_CHAR
 	, CwtType_SBYTE  = CwtType_CHAR
@@ -106,29 +107,9 @@ typedef enum CwtTypeEnum {
 	, CwtType_CWT_STRING
 } CwtTypeEnum;
 
-#define CWT_IS_SCALAR(tid) ((((int)(tid)) >= CwtType_BOOL && (tid) < CwtType_TEXT) ? TRUE : FALSE)
-
-typedef struct CWT_UNITYPE {
-	union data {
-        SBYTE     sbyte_val;
-        BYTE      byte_val;
-        SHORT     short_val;
-        USHORT    ushort_val;
-        INT       int_val;
-        UINT      uint_val;
-        LONG      long_val;
-        ULONG     ulong_val;
-        LONGLONG  llong_val;
-        ULONGLONG ullong_val;
-        BOOL      bool_val;
-        double    double_val;
-        float     float_val;
-        void     *ptr;
-	} data;
-    UINT type    : 31;
-    UINT is_null : 1;
-    UINT length;
-} CWT_UNITYPE;
+#define CWT_TYPE_IS_SCALAR(tid)  (((tid) >= CwtType_BOOL && (tid) < CwtType_TEXT) ? TRUE : FALSE)
+#define CWT_TYPE_IS_INTEGER(tid) (((tid) >= CwtType_CHAR && (tid) < CwtType_FLOAT) ? TRUE : FALSE)
+#define CWT_TYPE_IS_FLOAT(tid)   (((tid) >= CwtType_FLOAT && (tid) <= CwtType_DOUBLE) ? TRUE : FALSE)
 
 #if !(defined(_SIZE_T_DEFINED) || defined(__DJ_size_t) )
 	typedef unsigned int size_t;
@@ -154,6 +135,9 @@ typedef struct CWT_UNITYPE {
 #define CWT_INT16_MAX  32767
 #define	CWT_INT16_MIN  (-32768)
 #define	CWT_UINT16_MAX 65535
+#define	CWT_INT24_MAX  8388607
+#define	CWT_INT24_MIN  (-8388608)
+#define	CWT_UINT24_MAX 16777215
 #define CWT_INT32_MAX  2147483647
 #define	CWT_INT32_MIN (-2147483647-1)
 #define	CWT_UINT32_MAX 4294967295

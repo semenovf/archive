@@ -11,6 +11,13 @@
 #include <cwt/strlist.h>
 
 
+extern CWT_CHAR* __boolTypeToString(void);
+extern CWT_CHAR* __intTypeToString(LONGLONG min, ULONGLONG max);
+extern CWT_CHAR* __floatTypeToString(CwtTypeEnum float_type);
+extern CWT_CHAR* __textTypeToString(ULONGLONG maxlen);
+extern CWT_CHAR* __blobTypeToString(ULONGLONG maxlen);
+extern CWT_CHAR* __timeTypeToString(CwtTypeEnum time_type, BOOL stamp);
+
 static const CWT_CHAR *__MYSQL_DEFAULT_CHARSET   = _T("utf8");
 static const CWT_CHAR *__MYSQL_DEFAULT_DB_ENGINE = _T("InnoDB");
 

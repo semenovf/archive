@@ -66,12 +66,7 @@ typedef struct CwtStrNS {
 	void              (*toupperStr)   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 	void              (*tolowerStr)   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 	void              (*chomp)        (CWT_CHAR *s);
-	char*             (*toLatin1)     (const CWT_CHAR *s);
-	CWT_CHAR*         (*fromLatin1)   (const char *s);
-	char*             (*toUtf8)       (const CWT_CHAR *s, size_t n);
-	CWT_CHAR*         (*fromUtf8)     (const char *s, size_t n);
-	char*             (*toMBCS)       (const CWT_CHAR *s, const CWT_CHAR *csname);
-	CWT_CHAR*         (*fromMBCS)     (const char *s, const CWT_CHAR *csname);
+
 	const CWT_CHAR*   (*constEmptyStr)(void);
 	const CWT_CHAR*   (*constNullStr) (void);
 } CwtStrNS;

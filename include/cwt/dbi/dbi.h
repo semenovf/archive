@@ -12,6 +12,7 @@
 #define __CWT_DBI_H__
 
 #include <cwt/types.h>
+#include <cwt/unitype.h>
 #include <cwt/strlist.h>
 #include <cwt/dbi/ddi.h>
 
@@ -70,7 +71,7 @@ typedef struct CwtDBHandler {
 	ULONGLONG       (*rows)          (CwtStatement*);
 	ULONGLONG       (*size)          (CwtStatement*);
 	BOOL            (*fetchNext)     (CwtStatement*);
-	BOOL            (*fetchColumn)   (CwtStatement*, CWT_CHAR *col, CWT_UNITYPE *value);
+	BOOL            (*fetchColumn)   (CwtStatement*, CWT_CHAR *col, CwtUniType *value);
 } CwtDBHandler;
 
 typedef struct CwtDBIDriver
@@ -111,14 +112,21 @@ typedef struct CwtDBI
 	CwtSqlTypeEnum  (*toSqlTypeEnum) (CwtTypeEnum cwtType);
 
 	/* DDI specific methods */
-	CwtDDI*         (*createDDI)     (void);
+	CwtDDI*         (*createDDI)     (const CWT_CHAR *name);
 	void            (*freeDDI)       (CwtDDI*);
 	CwtDDITable*    (*newTable)      (CwtDDI*, const CWT_CHAR *name);
 	CwtDDIColumn*   (*newColumn)     (CwtDDITable*, const CWT_CHAR *name);
-	BOOL            (*cType)         (CwtDDIColumn*, CwtDDI_Type);  /* use cType or cRef */
-	BOOL            (*cRef)          (CwtDDIColumn*, CwtDDITable*); /* use cType or cRef */
-	BOOL            (*cAutoinc)      (CwtDDIColumn*, int inc);
+
+	BOOL            (*cTypeBool)     (CwtDDIColumn*);
+	BOOL            (*cTypeInt)      (CwtDDIColumn*, LONGLONG min, ULONGLONG max);
+	BOOL            (*cTypeFloat)    (CwtDDIColumn*, UINT prec, UINT scale);
+	BOOL            (*cTypeText)     (CwtDDIColumn*, ULONGLONG maxlen);
+	BOOL            (*cTypeBlob)     (CwtDDIColumn*, ULONGLONG maxlen);
+	BOOL            (*cTypeTime)     (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stamp);
+	BOOL            (*cTypeRef)      (CwtDDIColumn*, CwtDDITable*);
+	BOOL            (*cAutoinc)      (CwtDDIColumn*, UINT inc);
 	BOOL            (*cNull)         (CwtDDIColumn*, BOOL yes);
+
 	BOOL            (*deploy)        (CwtDBHandler*, CwtDDI *ddi);
 	BOOL            (*recall)        (CwtDBHandler*, CwtDDI *ddi);
 } CwtDBI;
