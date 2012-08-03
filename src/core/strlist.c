@@ -95,7 +95,7 @@ DLL_API_EXPORT CwtStrListNS* cwtStrListNS(void)
 
 static inline CwtStrList* __create(void)
 {
-	return (CwtStrList*)__listNS->create(sizeof(CWT_CHAR*), cwtFree);
+	return (CwtStrList*)__listNS->createPtr(cwtFree);
 }
 
 static inline void __free(CwtStrList *psl)
@@ -141,21 +141,24 @@ static inline size_t __size(CwtStrList *psl)
 	return __listNS->size(psl);
 }
 
-static inline void __insert(CwtStrListIterator *before, const CWT_CHAR *s, size_t n)
+static inline void __insert(CwtStrListIterator *before, const CWT_CHAR *str, size_t n)
 {
-	__listNS->insert(before, __strNS->strndup(s, n));
+	CWT_CHAR *s = __strNS->strndup(str, n);
+	__listNS->insert(before, s);
 }
 
 
-static inline void __prepend(CwtStrList *psl, const CWT_CHAR *s, size_t n)
+static inline void __prepend(CwtStrList *psl, const CWT_CHAR *str, size_t n)
 {
-	__listNS->prepend(psl, __strNS->strndup(s, n));
+	CWT_CHAR *s = __strNS->strndup(str, n);
+	__listNS->prepend(psl, s);
 }
 
 
-static void __append(CwtStrList *psl, const CWT_CHAR *s, size_t n)
+static void __append(CwtStrList *psl, const CWT_CHAR *str, size_t n)
 {
-	__listNS->append(psl, __strNS->strndup(s, n));
+	CWT_CHAR *s = __strNS->strndup(str, n);
+	__listNS->append(psl, s);
 }
 
 

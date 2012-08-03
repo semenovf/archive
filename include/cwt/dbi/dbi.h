@@ -59,7 +59,10 @@ typedef struct CwtStatement {
 	char unused;
 } CwtStatement;
 
-typedef struct CwtDBHandler {
+
+struct _CwtDBIDriver;
+
+typedef struct _CwtDBHandler {
 	void            (*close)         (CwtStatement*);
 	BOOL            (*execute)       (CwtStatement*);
 	CwtDBI_RC       (*err)           (CwtStatement*);
@@ -72,9 +75,10 @@ typedef struct CwtDBHandler {
 	ULONGLONG       (*size)          (CwtStatement*);
 	BOOL            (*fetchNext)     (CwtStatement*);
 	BOOL            (*fetchColumn)   (CwtStatement*, CWT_CHAR *col, CwtUniType *value);
+	struct _CwtDBIDriver* (*driver)   (void);
 } CwtDBHandler;
 
-typedef struct CwtDBIDriver
+typedef struct _CwtDBIDriver
 {
 	CwtDBHandler*   (*connect)       (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
 	void            (*disconnect)    (CwtDBHandler*);
@@ -100,8 +104,8 @@ typedef struct CwtDBIDriver
 	BOOL            (*commit)        (CwtDBHandler*);
 	BOOL            (*rollback)      (CwtDBHandler*);
 
-	void            (*specForDeploy) (CwtStrList *sql);
-	void            (*specForRecall) (CwtStrList *sql);
+	CwtStrList*     (*specForDeploy) (CwtDDI*, int flags);
+	CwtStrList*     (*specForRecall) (CwtDDI*, int flags);
 } CwtDBIDriver;
 
 typedef struct CwtDBI
@@ -112,7 +116,7 @@ typedef struct CwtDBI
 	CwtSqlTypeEnum  (*toSqlTypeEnum) (CwtTypeEnum cwtType);
 
 	/* DDI specific methods */
-	CwtDDI*         (*createDDI)     (const CWT_CHAR *name);
+	CwtDDI*         (*createDDI)     (const CWT_CHAR *name, const CWT_CHAR *charset);
 	void            (*freeDDI)       (CwtDDI*);
 	CwtDDITable*    (*newTable)      (CwtDDI*, const CWT_CHAR *name);
 	CwtDDIColumn*   (*newColumn)     (CwtDDITable*, const CWT_CHAR *name);
@@ -126,9 +130,11 @@ typedef struct CwtDBI
 	BOOL            (*cTypeRef)      (CwtDDIColumn*, CwtDDITable*);
 	BOOL            (*cAutoinc)      (CwtDDIColumn*, UINT inc);
 	BOOL            (*cNull)         (CwtDDIColumn*, BOOL yes);
+	BOOL            (*cIndex)        (CwtDDIColumn*, BOOL yes);
+	BOOL            (*cPK)           (CwtDDIColumn*);
 
-	BOOL            (*deploy)        (CwtDBHandler*, CwtDDI *ddi);
-	BOOL            (*recall)        (CwtDBHandler*, CwtDDI *ddi);
+	BOOL            (*deploy)        (CwtDBHandler*, CwtDDI *ddi, int flags);
+	BOOL            (*recall)        (CwtDBHandler*, CwtDDI *ddi, int flags);
 } CwtDBI;
 
 EXTERN_C_BEGIN

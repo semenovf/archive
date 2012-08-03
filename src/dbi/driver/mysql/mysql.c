@@ -111,6 +111,8 @@ static BOOL             __begin(CwtDBHandler *dbh);
 static BOOL             __commit(CwtDBHandler *dbh);
 static BOOL             __rollback(CwtDBHandler *dbh);
 
+extern CwtStrList*      __specForDeploy(CwtDDI *ddi, int flags);
+extern CwtStrList*      __specForRecall(CwtDDI *ddi, int flags);
 /*
 extern __specForDeploy;
 extern __specForRecall;
@@ -169,10 +171,8 @@ static CwtDBIDriver __cwtDBIDriver = {
     , __commit
     , __rollback
 
-/*
     , __specForDeploy
     , __specForRecall
-*/
 };
 
 
@@ -525,6 +525,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
     dbh->__base.size       = __stmtNumRows;
     dbh->__base.fetchNext  = __stmtFetchNext;
     dbh->__base.fetchColumn= __stmtFetchColumn;
+    dbh->__base.driver     = cwtDBIDriverImpl;
 	dbh->auto_commit       = FALSE;
 	dbh->csname            = NULL;
 	dbh->errorstr          = NULL;
@@ -1719,4 +1720,3 @@ static BOOL __stmtBindTime(CwtStatement *sth, size_t index, CwtTypeEnum cwtType,
 {
 	return __stmtBind(sth, index, cwtType, value, NULL, FALSE);
 }
-

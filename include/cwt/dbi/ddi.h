@@ -13,10 +13,10 @@
 
 
 typedef enum _CwtDDI_Flag {
-	  CWT_DDI_NO_FLAGS                  = 0x0000 /*all: no flags, this is default value*/
-	, CWT_DDI_CREATE_TAB_IF_NOT_EXISTS  = 0x0001 /*deploy: create table if it does not exist*/
-	, CWT_DDI_DO_NOT_CREATE_DB          = 0x0002 /*deploy: do not create database if it does not exist*/
-	, CWT_DDI_DROP_DB                   = 0x0004 /*recall: drop database*/
+	  CWT_DDI_NO_FLAGS         = 0x0000 /*all: no flags, this is default value*/
+	, CWT_DDI_DEPLOY_DROP_DB   = 0x0001 /*deploy: drop database before creation*/
+	, CWT_DDI_DEPLOY_DROP_TAB  = 0x0002 /*deploy: drop table before creation*/
+	, CWT_DDI_RECALL_DROP_DB   = 0x0004 /*recall: drop database*/
 } CwtDDI_Flag;
 
 
@@ -36,7 +36,8 @@ typedef struct _CwtDDIColumn {
 	} opts;
 
 	UINT autoinc; /* AUTO_INCREMENT value, valid for integer or floating point number, 0 - no auto increment */
-	int  is_null : 1;
+	int  is_null  : 1;
+	int  is_index : 1;
 	/*int                  is_uniq    : 1;*/
 } CwtDDIColumn;
 
@@ -50,6 +51,7 @@ typedef struct _CwtDDITable {
 
 typedef struct _CwtDDI {
 	CWT_CHAR     *name;
+	CWT_CHAR     *charset;
 	CwtList      *tables;
 } CwtDDI;
 

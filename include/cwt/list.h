@@ -28,6 +28,7 @@ typedef struct _CwtList {
 	size_t count;
 	size_t datasz;
 	void (*data_cleanup)(void*);
+	BOOL   is_ptr;
 } CwtList;
 
 
@@ -41,6 +42,7 @@ typedef struct _CwtListIterator
 
 typedef struct _CwtListNS {
 	CwtList*         (*create)      (size_t sizeofData, void (*data_cleanup)(void*));
+	CwtList*         (*createPtr)   (void (*data_cleanup)(void*));
 	/*void             (*init)        (CwtList*, size_t sizeofData, void (*data_cleanup)(void*));*/
 	void             (*free)        (CwtList*);
 	void             (*clear)       (CwtList*);

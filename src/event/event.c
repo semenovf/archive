@@ -58,9 +58,9 @@ DLL_API_EXPORT CwtEventNS* cwtEventNS(void)
 	}
 
 	if( !__registered_sources ) {
-		__registered_sources = __listNS->create(sizeof(CwtEventSource*), NULL);
-		__queue_pair[0] = __listNS->create(sizeof(CwtEventSource*), NULL);
-		__queue_pair[1] = __listNS->create(sizeof(CwtEventSource*), NULL);
+		__registered_sources = __listNS->createPtr(NULL);
+		__queue_pair[0] = __listNS->createPtr(NULL);
+		__queue_pair[1] = __listNS->createPtr(NULL);
 		__output_queue = __queue_pair[0];
 		__input_queue  = __queue_pair[1];
 	}
@@ -202,7 +202,7 @@ static BOOL __dispatchEvents(void)
 			CwtListIterator it;
 			CwtEvent *pevt;
 
-			pevt = __listNS->first(__input_queue);
+			pevt = (CwtEvent*)__listNS->first(__input_queue);
 			__listNS->removeFirst(__input_queue);
 
 			if( pevt == &__cwt_evtQuit) {

@@ -8,286 +8,270 @@
 
 #include <cwt/dbi/dbi.h>
 #include <cwt/dbi/ddi.h>
+#include <cwt/str.h>
+#include <cwt/string.h>
 #include <cwt/strlist.h>
+#include <cwt/logger.h>
 
 
-extern CWT_CHAR* __boolTypeToString(void);
-extern CWT_CHAR* __intTypeToString(LONGLONG min, ULONGLONG max);
-extern CWT_CHAR* __floatTypeToString(CwtTypeEnum float_type);
-extern CWT_CHAR* __textTypeToString(ULONGLONG maxlen);
-extern CWT_CHAR* __blobTypeToString(ULONGLONG maxlen);
-extern CWT_CHAR* __timeTypeToString(CwtTypeEnum time_type, BOOL stamp);
+extern CWT_CHAR* __stringifyBoolType(void);
+extern CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max);
+extern CWT_CHAR* __stringifyFloatType(UINT prec, UINT scale);
+extern CWT_CHAR* __stringifyTextType(ULONGLONG maxlen);
+extern CWT_CHAR* __stringifyBlobType(ULONGLONG maxlen);
+extern CWT_CHAR* __stringifyTimeType(CwtTypeEnum time_type, BOOL stamp);
 
 static const CWT_CHAR *__MYSQL_DEFAULT_CHARSET   = _T("utf8");
 static const CWT_CHAR *__MYSQL_DEFAULT_DB_ENGINE = _T("InnoDB");
 
 
-void __specForDeploy(CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, const CWT_CHAR *charset, UINT ddiflags)
+
+static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtString *tmpbuf, CWT_CHAR comma)
+{
+	CwtStringNS  *stringNS = cwtStringNS();
+	CwtStrListNS *slNS     = cwtStrListNS();
+
+	CWT_CHAR *typestr = NULL;
+	BOOL is_ref       = FALSE;
+
+/*
+	col_name data_type
+		[NOT NULL | NULL]
+		[DEFAULT default_value] - TODO not supported yet
+	    [AUTO_INCREMENT]
+	    [UNIQUE [KEY] | [PRIMARY] KEY]
+	    [COMMENT 'string']                      - not supported yet
+	    [COLUMN_FORMAT {FIXED|DYNAMIC|DEFAULT}] - not supported yet
+*/
+	/*stringNS->clear(tmpbuf);*/
+	stringNS->appendChar(tmpbuf, comma);
+	stringNS->append(tmpbuf, col->name);
+	stringNS->appendChar(tmpbuf, _T(' '));
+
+	if( col->pRef ) {
+		int n = slNS->size(ddi->tables);
+		while( col->pRef && n-- ) {
+			col = col->pRef->pPK;
+		}
+
+		if( n <= 0 ) {
+			return FALSE;
+		}
+
+		is_ref = TRUE;
+	}
+
+	if( col->type != CwtType_UNKNOWN ) {
+		if( CWT_TYPE_IS_INTEGER(col->type) ) {
+			typestr = __stringifyIntType(col->opts.int_opts.min, col->opts.int_opts.max);
+		} else if(CWT_TYPE_IS_FLOAT(col->type)) {
+			typestr = __stringifyFloatType(col->opts.float_opts.prec, col->opts.float_opts.scale);
+		} else if( CwtType_TEXT == col->type || CwtType_CWT_STRING == col->type ) {
+			typestr = __stringifyTextType(col->opts.maxlen);
+		} else if( CwtType_BLOB == col->type ) {
+			typestr = __stringifyBlobType(col->opts.maxlen);
+		} else if( CwtType_TIME == col->type
+				|| CwtType_DATE == col->type
+				|| CwtType_DATETIME == col->type ) {
+			typestr = __stringifyTimeType(col->type, col->opts.stamp);
+		} else {
+			CWT_ASSERT(FALSE);
+		}
+	}
+
+	stringNS->append(tmpbuf, typestr);
+
+	CWT_FREE(typestr);
+
+	if( !col->is_null ) {
+		stringNS->append(tmpbuf, _T(" NOT NULL"));
+	}
+
+	if( col->autoinc && !is_ref )
+		stringNS->append(tmpbuf, _T(" AUTO_INCREMENT"));
+
+	return TRUE;
+}
+
+CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, const CWT_CHAR *charset, UINT ddiflags*/)
 {
 	CwtStrNS     *strNS    = cwtStrNS();
 	CwtStringNS  *stringNS = cwtStringNS();
 	CwtStrListNS *slNS     = cwtStrListNS();
+	CwtString    *tmpbuf   = stringNS->create();
+	BOOL          ok       = TRUE;
+	CWT_CHAR     *charset  = (CWT_CHAR*)__MYSQL_DEFAULT_DB_ENGINE;
 
-	CwtString  *sbuf = stringNS->create();
-    CwtStrList *ddiForeignKeys; /* @ddiForeignKeys = ();*/
-    CwtStrList *ddiConstraints; /* @ddiConstraints = ();*/
-    CwtStrList *ddiIndices;     /* @ddiIndices = ();*/
-/*    my %ddiConstraintsColumns = (); # use for generate unique constraints names*/
-    CWT_CHAR *dbEngine = __MYSQL_DEFAULT_DB_ENGINE;
+	CwtStrList   *spec         = NULL;
+	CwtString    *columnSpecs  = NULL; /* column definitions */
+	CwtString    *indexSpecs   = NULL;
+	CwtString    *constraintSpecs = NULL;
 
-    CWT_ASSERT(ns);
-    CWT_ASSERT(ddi);
 
-    if( !charset )
-    	charset = __MYSQL_DEFAULT_CHARSET;
+	CwtListIterator tabIt;
+	CwtListIterator colIt;
 
-    sbuf           = stringNS->create();
-    ddiForeignKeys = slNS->create();
-    ddiConstraints = slNS->create();
-    ddiIndices     = slNS->create();
+	tmpbuf = stringNS->create();
+	spec = slNS->create();
+	columnSpecs = stringNS->create();
+	indexSpecs = stringNS->create();
+	constraintSpecs = stringNS->create();
 
-    if( ddiflags & CWT_DDI_DO_NOT_CREATE_DB ) {
-    	stringNS->sprintf(sbuf, _T("CREATE DATABASE IF NOT EXISTS `%s`"), ns);
-    	slNS->add(ddiSql, stringNS->cstr(sbuf));
-    }
+	if( ddi->charset )
+		charset = ddi->charset;
 
-    stringNS->sprintf(sbuf, _T("USE `%s`"), ns);
-    slNS->add(ddiSql, stringNS->cstr(sbuf));
+	if( flags & CWT_DDI_DEPLOY_DROP_DB ) {
+		stringNS->sprintf(tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
+    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+	}
 
-    for(;;) { /*foreach my $table ( keys %{$ddi} ) {*/
+	stringNS->sprintf(tmpbuf, _T("CREATE DATABASE IF NOT EXISTS `%s`"), ddi->name);
+	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
 
-    	CwtStrList *columnDefs; /* @columnDefs = () */
-        my $pk = '';
-        BOOL hasAutoinc = FALSE;
+    stringNS->sprintf(tmpbuf, _T("USE `%s`"), ddi->name);
+    slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
 
-        columnDefs = slNS->create();
+	slNS->begin(ddi->tables, &tabIt);
+	while( slNS->hasMore(&tabIt)) {
+		CwtDDITable *tab = (CwtDDITable*)slNS->next(&tabIt);
+		CWT_CHAR comma = _T(' ');
 
-        for(;;) { /*foreach my $colName ( sort keys %{$ddi->{$table}} ) {*/
-            my $colDef = $ddi->{$table}->{$colName};
-            CwtDDI_Type colType = $colDef->{-type};
+		if( flags & CWT_DDI_DEPLOY_DROP_TAB ) {
+			stringNS->sprintf(tmpbuf, _T("DROP TABLE IF EXISTS `%s`"), tab->name);
+	    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+		}
 
-            my $notnull = '';
-            my $autoinc = '';
+		stringNS->clear(indexSpecs);
+		stringNS->clear(columnSpecs);
+		stringNS->clear(constraintSpecs);
 
-            if( defined $colDef->{-notnull} && $colDef->{-notnull} ) {
-                $notnull = ' NOT NULL';
-            }
+		stringNS->sprintf(columnSpecs, _T("CREATE TABLE IF NOT EXISTS `%s` ("), tab->name);
 
-            if( defined $colDef->{-pk} && $colDef->{-pk} ) {
-                croak "Only one PRIMARY KEY is supported" if $pk;
-                $pk = sprintf(', PRIMARY KEY (`%s`)', $colName);
-            }
+		slNS->begin(tab->columns, &colIt);
 
-            if( defined $colDef->{-autoinc} && $colDef->{-autoinc} ) {
-                croak "Only for one column AUTO_INCREMENT is supported" if $hasAutoinc;
-                $autoinc = ' AUTO_INCREMENT';
-                hasAutoinc = TRUE;
-            }
+		while( slNS->hasMore(&colIt) ) {
+			CwtDDIColumn *col = (CwtDDIColumn*)slNS->next(&colIt);
+			if( !__collect_column_definitions(ddi, col, columnSpecs, comma) ) {
+				ok = FALSE;
+				break;
+			}
 
-            switch(colType) {
-            case CWT_DDI_TYPE_BOOL:
-				stringNS->sprintf(sbuf, _T(" `%s` BOOLEAN NOT NULL"), colName);
-				slNS->add(columnDefs, stringNS->cstr(sbuf));
-                break;
+			comma = _T(',');
 
-            case CWT_DDI_TYPE_INT
-                    my $min = $colDef->{-min};
-                    my $max = $colDef->{-max};
-                    push @columnDefs, sprintf(' `%s` %s%s%s' , $colName, map_ddi_int($min, $max), $notnull, $autoinc);
-                    break;
+			if( col->is_index ) {
+				if( stringNS->size(indexSpecs) > 0 )
+					stringNS->appendChar(indexSpecs, _T(','));
+				stringNS->append(indexSpecs, _T("INDEX ("));
+				stringNS->append(indexSpecs, col->name);
+				stringNS->appendChar(indexSpecs, _T(')'));
+			}
 
-            case CWT_DDI_TYPE_TIME:
-                    push @columnDefs, sprintf(' `%s` TIME NOT NULL', $colName);
-                    break;
+			if( col->pRef ) {
+				if( stringNS->size(constraintSpecs) > 0 )
+					stringNS->append(constraintSpecs, _T(", "));
 
-            case CWT_DDI_TYPE_DATE:
-                    push @columnDefs, sprintf(' `%s` DATE NOT NULL', $colName);
-                    break;
+				stringNS->sprintf(tmpbuf, _T("CONSTRAINT `FK_%s__%s` FOREIGN KEY (`%s`) REFERENCES `%s` (`%s`)")
+					, tab->name, col->name, col->name, col->pRef->name, col->pRef->pPK->name);
+				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
+			}
+		}
 
-            case CWT_DDI_TYPE_DATETIME:
-                    push @columnDefs, sprintf(' `%s` DATETIME NOT NULL', $colName);
-                    break;
+		if( !ok )
+			break;
 
-            case CWT_DDI_TYPE_TIMESTAMP:
-                    push @columnDefs, sprintf(' `%s` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP', $colName);
-                    break;
+		if( tab->pPK ) {
+			stringNS->append(columnSpecs, _T(", "));
+			stringNS->append(columnSpecs, _T("PRIMARY KEY ("));
+			stringNS->append(columnSpecs, tab->pPK->name);
+			stringNS->appendChar(columnSpecs, _T(')'));
+		}
 
-            case CWT_DDI_TYPE_FLOAT:
-                	break;
+		if( stringNS->size(indexSpecs) > 0 ) {
+			stringNS->append(columnSpecs, _T(", "));
+			stringNS->append(columnSpecs, stringNS->cstr(indexSpecs));
+		}
 
-            case CWT_DDI_TYPE_TEXT:
-                    my $len = $colDef->{-length};
-                    push @columnDefs, sprintf(' `%s` %s%s%s', $colName, map_ddi_text($len), $notnull, $autoinc);
-                    break;
+		if( stringNS->size(constraintSpecs) > 0 ) {
+			stringNS->append(columnSpecs, _T(", "));
+			stringNS->append(columnSpecs, stringNS->cstr(constraintSpecs));
+		}
 
-            case CWT_DDI_TYPE_REF:
-                    my $refTab = $colDef->{-ref};
+		stringNS->appendChar(columnSpecs, _T(')'));
+		stringNS->append(columnSpecs, _T(" ENGINE="));
+		stringNS->append(columnSpecs, __MYSQL_DEFAULT_DB_ENGINE);
+		if( tab->pAutoinc ) {
+			stringNS->sprintf(tmpbuf, _T(" AUTO_INCREMENT=%d"), tab->pAutoinc->autoinc);
+			stringNS->append(columnSpecs, stringNS->cstr(tmpbuf));
+		}
 
-                    die sprintf('Referenced class \'%s\' not found in namespace \'%s\'', $refTab, $ns) unless defined $ddi->{$refTab};
+		stringNS->append(columnSpecs, _T(" DEFAULT CHARSET="));
+		stringNS->append(columnSpecs, charset);
 
-                    my $refPk = find_ref_pk( $ddi->{$refTab} );
+		slNS->add(spec, stringNS->cstr(columnSpecs), stringNS->size(columnSpecs));
+	}
 
-                    croak sprintf('PK not found in referenced class \'%s\' of namespace \'%s\'', $refTab, $ns) unless $refPk;
-                    my $min = $ddi->{$refTab}->{$refPk}->{-min};
-                    my $max = $ddi->{$refTab}->{$refPk}->{-max};
-                    push @columnDefs, sprintf(' `%s` %s' , $colName, map_ddi_int($min, $max));
-                    push @ddiForeignKeys, sprintf('ALTER TABLE %s ADD KEY `FK_%s` (`%s`)', $table, $colName, $colName);
+	 stringNS->free(tmpbuf);
+	 stringNS->free(columnSpecs);
+	 stringNS->free(indexSpecs);
+	 stringNS->free(constraintSpecs);
 
-                    /* http://dev.mysql.com/doc/refman/5.0/en/innodb-foreign-key-constraints.html
-                      if the CONSTRAINT symbol clause is given, the symbol value must be unique
-                      in the database. If the clause is not given, InnoDB creates the name automatically. */
-                    unless ( exists $ddiConstraintsColumns{ $colName } ) {
-                        $ddiConstraintsColumns{$colName} = 0;
-                    } else {
-                        $ddiConstraintsColumns{$colName}++;
-                    }
-                    push @ddiConstraints, sprintf('ALTER TABLE `%s` ADD CONSTRAINT `FK_%s_%d` FOREIGN KEY (`%s`) REFERENCES `%s` (`%s`)',
-                        $table, $colName, $ddiConstraintsColumns{$colName}, $colName, $refTab, $refPk );
-                    break;
+	 if( !ok ) {
+		 slNS->free(spec);
+		 spec = NULL;
+	 }
 
-            case CWT_DDI_TYPE_INDEX_UNIQUE:
-                    push @ddiIndices, sprintf('ALTER TABLE `%s` ADD UNIQUE INDEX `%s` (%s)',
-                        $table, $colName, join(',', map { '`'.$_.'`'} @{$colDef->{-columns}} ) );
-                    break;
-
-            default:
-                croak sprintf('Invalid data type for column in table `%s`', $table) ;
-                break;
-            } /* switch(colType) */
-        }
-
-        stringNS->sprintf(sbuf, _T("CREATE TABLE %s `%s` (%s %s) ENGINE=%s AUTO_INCREMENT=5 DEFAULT CHARSET=%s")
-        	, ( ddiflags & CWT_DDI_CREATE_TAB_IF_NOT_EXISTS ) ? _T("IF NOT EXISTS") : _T("")
-        	, $table
-        	, join( ',', @columnDefs)
-        	, $pk
-        	, $dbEngine
-        	, $charset);
-        slNS->add(ddiSql, stringNS->cstr(sbuf));
-
-        slNS->free(columnDefs);
-    }
-
-    push @ddiSQL, @ddiForeignKeys if @ddiForeignKeys > 0;
-    push @ddiSQL, @ddiConstraints if @ddiConstraints > 0;
-    push @ddiSQL, @ddiIndices if @ddiIndices > 0;
-
-    slNS->free(ddiForeignKeys);
-    slNS->free(ddiConstraints);
-    slNS->free(ddiIndices);
-    stringNS->free(sbuf);
+    return spec;
 }
 
-void __specForRecall(CwtStrList *sql)
+CwtStrList* __specForRecall(CwtDDI *ddi, int flags)
 {
-    my ($self, %args) = @_;
-    my $ns = $args{-NS} or croak 'namespace expected';
-    my $ddi = $args{-DDI} or croak 'ddi expected';
-    my $flags = $args{-Flags};
+	CwtStrNS     *strNS    = cwtStrNS();
+	CwtStringNS  *stringNS = cwtStringNS();
+	CwtStrListNS *slNS     = cwtStrListNS();
+	CwtString    *tmpbuf   = stringNS->create();
+	BOOL          ok       = TRUE;
 
-    my @ddiSQL = ();
-    my @ddiSQLDropFK = ();
-    my @ddiSQLDropTables = ();
-    my %ddiConstraintsColumns = (); # use for generate unique constraints names
+	CwtStrList   *spec         = NULL;
 
-    push @ddiSQL, sprintf('USE `%s`',$ns);
+	tmpbuf = stringNS->create();
+	spec = slNS->create();
 
-    foreach my $table ( keys %{$ddi} ) {
-        foreach my $colName ( sort keys %{ $ddi->{$table} } ) {
+	if( flags & CWT_DDI_RECALL_DROP_DB ) {
+		stringNS->sprintf(tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
+    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+	} else {
+		CwtListIterator tabIt;
+		CwtListIterator colIt;
 
-            my $colType = $ddi->{$table}->{$colName}->{-type};
-
-            SWITCH: {
-                $colType == DDI_TYPE_REF && do {
-                    unless ( exists $ddiConstraintsColumns{ $colName } ) {
-                        $ddiConstraintsColumns{$colName} = 0;
-                    } else {
-                        $ddiConstraintsColumns{$colName}++;
-                    }
-                    push @ddiSQLDropFK, sprintf('ALTER TABLE %s DROP FOREIGN KEY `FK_%s_%d`',
-                        $table, $colName, $ddiConstraintsColumns{$colName} );
-                    last;
-                };
-            }
-        }
-        push @ddiSQLDropTables, sprintf('DROP TABLE IF EXISTS `%s`',$table);
-    }
-
-    push @ddiSQL, @ddiSQLDropFK;
-    push @ddiSQL, @ddiSQLDropTables;
-    return wantarray ? @ddiSQL : join(";\n", @ddiSQL);
-}
+		stringNS->sprintf(tmpbuf, _T("USE `%s`"), ddi->name);
+    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
 
 
-sub find_ref_pk
-{
-    my $tabSpec = shift;
+		slNS->begin(ddi->tables, &tabIt);
+		while( slNS->hasMore(&tabIt)) {
+			CwtDDITable *tab = (CwtDDITable*)slNS->next(&tabIt);
 
-    foreach my $colName ( keys ( %{$tabSpec} ) ) {
-        return $colName if defined $tabSpec->{$colName}->{-pk} && $tabSpec->{$colName}->{-pk};
-    }
+			slNS->begin(tab->columns, &colIt);
 
-    return 0;
-}
+			while( slNS->hasMore(&colIt) ) {
+				CwtDDIColumn *col = (CwtDDIColumn*)slNS->next(&colIt);
 
+				if( col->pRef ) {
+					stringNS->sprintf(tmpbuf, _T("ALTER TABLE `%s` DROP FOREIGN KEY `FK_%s__%s`")
+						, tab->name, tab->name, col->name );
+					slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+				}
+			}
+		}
 
-static map_ddi_int(ssize_t min, ssize_t max)
-{
-    my $spec;
-    BOOL isUnsigned = FALSE;
+		slNS->begin(ddi->tables, &tabIt);
+		while( slNS->hasMore(&tabIt)) {
+			CwtDDITable *tab = (CwtDDITable*)slNS->next(&tabIt);
+			stringNS->sprintf(tmpbuf, _T("DROP TABLE IF EXISTS `%s`"), tab->name);
+	    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+		}
 
-    if( ref $min && ref $min eq 'CODE' ) {
-        die "Invalid value for minimum for integer" unless( &$min eq &{&DDI_MIN_INT} );
-        $min = MYSQL_MIN_BIGINT;
-    }
+	}
 
-    if( ref $max && ref $max eq 'CODE' ) {
-        die "Invalid value for maximum for integer" unless( &$max eq &{&DDI_MAX_INT} );
-        $max = MYSQL_MAX_BIGINT;
-    }
-
-    die "Maximum value is less or equal than minimum for integer" if( $min >= $max );
-
-    if( min >= 0 )
-    	isUnsigned = TRUE;
-
-    if( ($isUnsigned && $max <= MYSQL_MAX_TINYINT_UNSIGNED) ||
-        ($min >= MYSQL_MIN_TINYINT && $max <= MYSQL_MAX_TINYINT) ) {
-        $spec = 'TINYINT';
-    } elsif ( ($isUnsigned && $max <= MYSQL_MAX_SMALLINT_UNSIGNED) ||
-        ($min >= MYSQL_MIN_SMALLINT && $max <= MYSQL_MAX_SMALLINT) ) {
-        $spec = 'SMALLINT';
-    } elsif ( ($isUnsigned && $max <= MYSQL_MAX_MEDIUMINT_UNSIGNED) ||
-        ($min >= MYSQL_MIN_MEDIUMINT && $max <= MYSQL_MAX_MEDIUMINT) ) {
-        $spec = 'MEDIUMINT';
-    } elsif ( ($isUnsigned && $max <= MYSQL_MAX_INT_UNSIGNED) ||
-        ($min >= MYSQL_MIN_INT && $max <= MYSQL_MAX_INT) ) {
-        $spec = 'INTEGER';
-    } elsif ( ($isUnsigned && $max <= MYSQL_MAX_BIGINT_UNSIGNED) ||
-        ($min >= MYSQL_MIN_BIGINT && $max <= MYSQL_MAX_BIGINT) ) {
-        $spec = 'BIGINT';
-    } else {
-        warn "Expected valid range for integer. Cast to BIGINT";
-        $spec = 'BIGINT';
-    }
-
-    $spec .= ' UNSIGNED' if $isUnsigned;
-    $spec .= ' NOT NULL';
-    return $spec;
-}
-
-
-sub map_ddi_text
-{
-    my $len = shift;
-    my $spec;
-
-    if( ref $len eq 'CODE' ) {
-        croak "Invalid length for text" unless &$len eq &{&DDI_TEXT_MAXLEN};
-        $spec = 'TEXT';
-    } else {
-        croak "Invalid length for text" if $len <= 0;
-        $spec = sprintf('VARCHAR(%d)', $len);
-    }
-    return $spec;
+    return spec;
 }

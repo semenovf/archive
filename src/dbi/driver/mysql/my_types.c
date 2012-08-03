@@ -17,13 +17,13 @@
  *
  * @return
  */
-CWT_CHAR* __boolTypeToString(void)
+CWT_CHAR* __stringifyBoolType(void)
 {
 	return cwtStrNS()->strdup(_T("BOOLEAN"));
 }
 
 
-CWT_CHAR* __intTypeToString(LONGLONG min, ULONGLONG max)
+CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CWT_CHAR *s = NULL;
@@ -65,7 +65,7 @@ CWT_CHAR* __intTypeToString(LONGLONG min, ULONGLONG max)
  * A precision from 0 to 23 results in a 4-byte single-precision FLOAT column.
  * A precision from 24 to 53 results in an 8-byte double-precision DOUBLE column.
  */
-CWT_CHAR* __floatTypeToString(UINT prec, UINT scale)
+CWT_CHAR* __stringifyFloatType(UINT prec, UINT scale)
 {
 	CwtStrNS *strNS = cwtStrNS();
 
@@ -88,13 +88,17 @@ CWT_CHAR* __floatTypeToString(UINT prec, UINT scale)
 	return NULL;
 }
 
-CWT_CHAR* __textTypeToString(ULONGLONG maxlen)
+CWT_CHAR* __stringifyTextType(ULONGLONG maxlen)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CWT_CHAR *s = NULL;
 
 	if( maxlen == 0ULL ) {
 		s = strNS->strdup(_T("TEXT"));
+	} else if( maxlen < 64 ) {
+		CWT_CHAR buf[64];
+		CWT_ASSERT(cwtStdioNS()->snprintf(buf, 63, _T("CHAR(%lu)"), maxlen) > 0);
+		s = strNS->strdup(buf);
 	} else if( maxlen < 256 ) {
 		CWT_CHAR buf[64];
 		CWT_ASSERT(cwtStdioNS()->snprintf(buf, 63, _T("VARCHAR(%lu)"), maxlen) > 0);
@@ -110,7 +114,7 @@ CWT_CHAR* __textTypeToString(ULONGLONG maxlen)
 	return s;
 }
 
-CWT_CHAR* __blobTypeToString(ULONGLONG maxlen)
+CWT_CHAR* __stringifyBlobType(ULONGLONG maxlen)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CWT_CHAR *s = NULL;
@@ -130,12 +134,12 @@ CWT_CHAR* __blobTypeToString(ULONGLONG maxlen)
 	return s;
 }
 
-CWT_CHAR* __timeTypeToString(CwtTypeEnum time_type, BOOL stamp)
+CWT_CHAR* __stringifyTimeType(CwtTypeEnum time_type, BOOL stamp)
 {
 	CwtStrNS *strNS = cwtStrNS();
 
 	if( stamp ) {
-		return strNS->strdup(_T("TIMESTAMP"));
+		return strNS->strdup(_T("TIMESTAMP DEFAULT CURRENT_TIMESTAMP"));
 	}
 
 	switch(time_type) {
