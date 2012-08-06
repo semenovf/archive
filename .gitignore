@@ -3,6 +3,8 @@ debug/
 release/
 Makefile
 makefile
+doxygen/html
+doc/
 *.mk
 
 # Compiled Object files

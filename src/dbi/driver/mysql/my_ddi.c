@@ -83,8 +83,17 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 
 	CWT_FREE(typestr);
 
-	if( !col->is_null ) {
-		stringNS->append(tmpbuf, _T(" NOT NULL"));
+	if( col->is_null ) {
+		stringNS->append(tmpbuf, _T(" DEFAULT NULL"));
+	} else {
+		if( col->defaultValue ) {
+			stringNS->append(tmpbuf, _T(" DEFAULT "));
+			stringNS->appendChar(tmpbuf, _T('\''));
+			stringNS->append(tmpbuf, col->defaultValue);
+			stringNS->appendChar(tmpbuf, _T('\''));
+		} else {
+			stringNS->append(tmpbuf, _T(" NOT NULL"));
+		}
 	}
 
 	if( col->autoinc && !is_ref )
@@ -104,7 +113,7 @@ CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const C
 
 	CwtStrList   *spec         = NULL;
 	CwtString    *columnSpecs  = NULL; /* column definitions */
-	CwtString    *indexSpecs   = NULL;
+/*	CwtString    *indexSpecs   = NULL;*/
 	CwtString    *constraintSpecs = NULL;
 
 
@@ -114,7 +123,7 @@ CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const C
 	tmpbuf = stringNS->create();
 	spec = slNS->create();
 	columnSpecs = stringNS->create();
-	indexSpecs = stringNS->create();
+	/*indexSpecs = stringNS->create();*/
 	constraintSpecs = stringNS->create();
 
 	if( ddi->charset )
@@ -141,7 +150,7 @@ CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const C
 	    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
 		}
 
-		stringNS->clear(indexSpecs);
+		/*stringNS->clear(indexSpecs);*/
 		stringNS->clear(columnSpecs);
 		stringNS->clear(constraintSpecs);
 
@@ -159,11 +168,17 @@ CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const C
 			comma = _T(',');
 
 			if( col->is_index ) {
-				if( stringNS->size(indexSpecs) > 0 )
-					stringNS->appendChar(indexSpecs, _T(','));
-				stringNS->append(indexSpecs, _T("INDEX ("));
-				stringNS->append(indexSpecs, col->name);
-				stringNS->appendChar(indexSpecs, _T(')'));
+				stringNS->sprintf(tmpbuf, _T("INDEX (`%s`)"), col->name);
+				if( stringNS->size(constraintSpecs) > 0 )
+					stringNS->appendChar(constraintSpecs, _T(','));
+				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
+			}
+
+			if( col->is_uniq ) {
+				stringNS->sprintf(tmpbuf, _T("UNIQUE KEY `%s` (`%s`)"), col->name, col->name);
+				if( stringNS->size(constraintSpecs) > 0 )
+					stringNS->appendChar(constraintSpecs, _T(','));
+				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
 			}
 
 			if( col->pRef ) {
@@ -186,10 +201,12 @@ CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const C
 			stringNS->appendChar(columnSpecs, _T(')'));
 		}
 
+/*
 		if( stringNS->size(indexSpecs) > 0 ) {
 			stringNS->append(columnSpecs, _T(", "));
 			stringNS->append(columnSpecs, stringNS->cstr(indexSpecs));
 		}
+*/
 
 		if( stringNS->size(constraintSpecs) > 0 ) {
 			stringNS->append(columnSpecs, _T(", "));
@@ -212,7 +229,7 @@ CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const C
 
 	 stringNS->free(tmpbuf);
 	 stringNS->free(columnSpecs);
-	 stringNS->free(indexSpecs);
+	 /*stringNS->free(indexSpecs);*/
 	 stringNS->free(constraintSpecs);
 
 	 if( !ok ) {

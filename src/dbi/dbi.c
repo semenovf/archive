@@ -30,9 +30,11 @@ extern BOOL            __ddi_cTypeText     (CwtDDIColumn*, ULONGLONG maxlen);
 extern BOOL            __ddi_cTypeBlob     (CwtDDIColumn*, ULONGLONG maxlen);
 extern BOOL            __ddi_cTypeTime     (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stmap);
 extern BOOL            __ddi_cTypeRef      (CwtDDIColumn*, CwtDDITable*);
+extern BOOL            __ddi_cDefault      (CwtDDIColumn*, const CWT_CHAR *defaultValue);
 extern BOOL            __ddi_cAutoinc      (CwtDDIColumn*, UINT inc);
 extern BOOL            __ddi_cNull         (CwtDDIColumn*, BOOL yes);
 extern BOOL            __ddi_cIndex        (CwtDDIColumn*, BOOL yes);
+extern BOOL            __ddi_cUniq         (CwtDDIColumn*, BOOL yes);
 extern BOOL            __ddi_cPK           (CwtDDIColumn*);
 
 extern BOOL            __ddi_deploy        (CwtDBHandler *dbh, CwtDDI *ddi, int flags);
@@ -56,9 +58,11 @@ static CwtDBI __cwtDBI = {
     , __ddi_cTypeBlob
     , __ddi_cTypeTime
     , __ddi_cTypeRef
+    , __ddi_cDefault
     , __ddi_cAutoinc
     , __ddi_cNull
     , __ddi_cIndex
+    , __ddi_cUniq
     , __ddi_cPK
 
 	, __ddi_deploy

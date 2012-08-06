@@ -238,8 +238,9 @@ static void test_01(void)
 	ddi = __create_ddi();
 
 	CWT_TEST_OK(__dbi->deploy(dbh, ddi, CWT_DDI_DEPLOY_DROP_DB | CWT_DDI_DEPLOY_DROP_TAB));
-	CWT_TEST_OK(__dbi->recall(dbh, ddi, 0 /*CWT_DDI_RECALL_DROP_DB*/));
+	CWT_TEST_OK(__dbi->recall(dbh, ddi, 0)); /*CWT_DDI_RECALL_DROP_DB*/
 
+	dbd->disconnect(dbh);
 	__dbi->freeDDI(ddi);
 }
 

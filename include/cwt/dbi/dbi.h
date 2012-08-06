@@ -128,9 +128,11 @@ typedef struct CwtDBI
 	BOOL            (*cTypeBlob)     (CwtDDIColumn*, ULONGLONG maxlen);
 	BOOL            (*cTypeTime)     (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stamp);
 	BOOL            (*cTypeRef)      (CwtDDIColumn*, CwtDDITable*);
+	BOOL            (*cDefault)      (CwtDDIColumn*, const CWT_CHAR *defaultValue);
 	BOOL            (*cAutoinc)      (CwtDDIColumn*, UINT inc);
 	BOOL            (*cNull)         (CwtDDIColumn*, BOOL yes);
 	BOOL            (*cIndex)        (CwtDDIColumn*, BOOL yes);
+	BOOL            (*cUniq)         (CwtDDIColumn*, BOOL yes);
 	BOOL            (*cPK)           (CwtDDIColumn*);
 
 	BOOL            (*deploy)        (CwtDBHandler*, CwtDDI *ddi, int flags);

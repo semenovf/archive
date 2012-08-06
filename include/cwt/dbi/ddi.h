@@ -35,10 +35,11 @@ typedef struct _CwtDDIColumn {
 		BOOL stamp;       /* for time */
 	} opts;
 
+	CWT_CHAR *defaultValue;
 	UINT autoinc; /* AUTO_INCREMENT value, valid for integer or floating point number, 0 - no auto increment */
 	int  is_null  : 1;
 	int  is_index : 1;
-	/*int                  is_uniq    : 1;*/
+	int  is_uniq  : 1;
 } CwtDDIColumn;
 
 typedef struct _CwtDDITable {

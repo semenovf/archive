@@ -52,7 +52,12 @@ static void __ddi_cleanupTable(void *tab)
 static void __ddi_cleanupColumn(void *col)
 {
 	CwtDDIColumn *c = (CwtDDIColumn*)col;
-	CWT_FREE(c->name);
+
+	if( c->name )
+		CWT_FREE(c->name);
+	if( c->defaultValue )
+		CWT_FREE(c->defaultValue);
+
 	/*CWT_FREE(c);*/
 }
 
@@ -209,6 +214,15 @@ BOOL __ddi_cTypeRef(CwtDDIColumn *col, CwtDDITable *ref)
 	return TRUE;
 }
 
+BOOL __ddi_cDefault(CwtDDIColumn *col, const CWT_CHAR *defaultValue)
+{
+	CWT_ASSERT(col);
+	if( col->defaultValue )
+		CWT_FREE(col->defaultValue);
+	col->defaultValue = cwtStrNS()->strdup(defaultValue);
+	return TRUE;
+}
+
 BOOL __ddi_cAutoinc (CwtDDIColumn *col, UINT inc)
 {
 	CWT_ASSERT(col);
@@ -236,6 +250,13 @@ BOOL __ddi_cIndex(CwtDDIColumn *col, BOOL yes)
 	return TRUE;
 }
 
+
+BOOL __ddi_cUniq(CwtDDIColumn *col, BOOL yes)
+{
+	CWT_ASSERT(col);
+	col->is_uniq = yes ? 1 : 0;
+	return TRUE;
+}
 
 BOOL __ddi_cPK(CwtDDIColumn *col)
 {
