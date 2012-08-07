@@ -80,5 +80,5 @@ static int  __sprintf(CwtString *s, const CWT_CHAR *format, ...)
 
 	__resize(s, (size_t)n);
 
-	return __size(s);
+	return (int)__size(s);
 }

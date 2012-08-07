@@ -54,6 +54,7 @@ static BOOL              __ht_hasMore   (CwtHashTableIterator *it);
 static CwtHashTableValue __ht_next      (CwtHashTableIterator *it);
 static ULONG             __ht_intHash   (void *vlocation);
 static ULONG             __ht_uint16Hash(void *vlocation);
+static ULONG             __ht_ptrHash   (void *vlocation);
 static ULONG             __ht_cstrHash  (void *string);
 static ULONG             __ht_cstriHash (void *string);
 static ULONG             __ht_wstrHash  (void *string);
@@ -85,6 +86,7 @@ static CwtHashTableNS __cwtHashTableNS = {
 	, __ht_next
 	, __ht_intHash
 	, __ht_uint16Hash
+	, __ht_ptrHash
 	, __ht_cstrHash
 	, __ht_cstriHash
 	, __ht_wstrHash
@@ -576,6 +578,19 @@ static ULONG __ht_uint16Hash(void *vlocation)
 	location = (SHORT*) vlocation;
 
 	return (ULONG) *location;
+}
+
+
+/**
+ * Generate a hash key for a pointer.  The value pointed at by the pointer
+ * is not used, only the pointer itself.
+ *
+ * @param location        The pointer
+ * @return                A hash key for the pointer.
+ */
+static ULONG __ht_ptrHash(void *plocation)
+{
+	return (ULONG)plocation;
 }
 
 /**

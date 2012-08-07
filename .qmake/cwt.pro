@@ -11,6 +11,7 @@ SUBDIRS  =         \
     tests/emcsock  \
     tests/crc64    \
     tests/ddi      \
+    tests/hashtab  \
     tests/ini      \
     tests/list     \
     tests/utils    \

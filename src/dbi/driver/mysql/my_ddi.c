@@ -49,7 +49,7 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 	stringNS->appendChar(tmpbuf, _T(' '));
 
 	if( col->pRef ) {
-		int n = slNS->size(ddi->tables);
+		int n = (int)slNS->size(ddi->tables);
 		while( col->pRef && n-- ) {
 			col = col->pRef->pPK;
 		}
@@ -62,7 +62,9 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 	}
 
 	if( col->type != CwtType_UNKNOWN ) {
-		if( CWT_TYPE_IS_INTEGER(col->type) ) {
+		if( col->type == CwtType_BOOL ) {
+			typestr = __stringifyBoolType();
+		} else if( CWT_TYPE_IS_INTEGER(col->type) ) {
 			typestr = __stringifyIntType(col->opts.int_opts.min, col->opts.int_opts.max);
 		} else if(CWT_TYPE_IS_FLOAT(col->type)) {
 			typestr = __stringifyFloatType(col->opts.float_opts.prec, col->opts.float_opts.scale);
@@ -109,7 +111,7 @@ CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const C
 	CwtStrListNS *slNS     = cwtStrListNS();
 	CwtString    *tmpbuf   = stringNS->create();
 	BOOL          ok       = TRUE;
-	CWT_CHAR     *charset  = (CWT_CHAR*)__MYSQL_DEFAULT_DB_ENGINE;
+	CWT_CHAR     *charset  = (CWT_CHAR*)__MYSQL_DEFAULT_CHARSET;
 
 	CwtStrList   *spec         = NULL;
 	CwtString    *columnSpecs  = NULL; /* column definitions */

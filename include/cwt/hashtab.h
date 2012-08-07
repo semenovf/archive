@@ -125,7 +125,7 @@ typedef struct _CwtHashTable {
 typedef struct _CwtHashTableIterator {
 	CwtHashTable *hash_table;
 	CwtHashTableEntry *next_entry;
-	int next_chain;
+	size_t next_chain;
 } CwtHashTableIterator;
 
 
@@ -143,6 +143,7 @@ typedef struct _CwtHashTableNS {
 
 	ULONG             (*intHash)   (void *location);
 	ULONG             (*uint16Hash)(void *location);
+	ULONG             (*ptrHash)   (void *location);
 
 	ULONG             (*cstrHash) (void *string);
 	ULONG             (*cstriHash)(void *string);
@@ -150,9 +151,7 @@ typedef struct _CwtHashTableNS {
 	ULONG             (*wstriHash)(void *string);
 	BOOL              (*inteq)    (void *plocation1, void *plocation2);
 	BOOL              (*cstreq)   (void *string1, void *string2);
-	/*int               (*cstrcmp)  (void *string1, void *string2);*/
 	BOOL              (*cstrieq)  (void *string1, void *string2);
-	/*int               (*cstricmp) (void *string1, void *string2);*/
 	BOOL              (*wstreq)   (void *string1, void *string2);
 	BOOL              (*wstrieq)  (void *string1, void *string2);
 
