@@ -16,9 +16,7 @@
 #include <cwt/strlist.h>
 #include <cwt/io/channel.h>
 #include <cwt/csv/csv.h>
-#include <cwt/algo/hash_tab.h>
-#include <cwt/algo/hash_str.h>
-#include <cwt/algo/cmp_str.h>
+#include <cwt/hashtab.h>
 
 
 static CWT_CHAR *__csv_default_separator = _T(",");
@@ -28,7 +26,7 @@ static CWT_CHAR *__csv_default_separator = _T(",");
 typedef struct _CsvData {
 	CwtByteArray   *ba;
 	CwtStrList     *tokens;
-	HashTable      *columns;
+	CwtHashTable   *columns;
 	CwtChannel     *pchan;
 } CsvData;
 
@@ -91,6 +89,7 @@ static CwtStrListNS   *__slNS     = NULL;
 static CwtChannelNS   *__chNS     = NULL;
 static CwtByteArrayNS *__baNS     = NULL;
 static CwtTextCodecNS *__codecNS  = NULL;
+static CwtHashTableNS *__htNS     = NULL;
 
 
 DLL_API_EXPORT CwtCsvNS* cwtCsvNS(void)
@@ -102,6 +101,7 @@ DLL_API_EXPORT CwtCsvNS* cwtCsvNS(void)
 		__chNS     = cwtChannelNS();
 		__baNS     = cwtByteArrayNS();
 		__codecNS  = cwtTextCodecNS();
+		__htNS     = cwtHashTableNS();
 	}
 
 	return &__cwtCsvNS;
@@ -124,7 +124,7 @@ static void __csv_destroyCsvData(CsvData *data)
 	}
 
 	if( data->columns ) {
-		hash_table_free(data->columns);
+		__htNS->free(data->columns);
 		data->columns = NULL;
 	}
 }
@@ -347,8 +347,7 @@ static void __csv_begin(CwtCsvHandler *h, CwtChannel *pchan)
 	ph->csvData.pchan   = pchan;
 	ph->line            = 0;
 
-	ph->csvData.columns = hash_table_new(cwt_string_hash, cwt_string_equal);
-	hash_table_register_free_functions(ph->csvData.columns, cwtFree, cwtFree);
+	ph->csvData.columns = __htNS->create(__htNS->strHash, __htNS->streq, cwtFree, cwtFree);
 }
 
 static size_t __csv_header(CwtCsvHandler *h)
@@ -366,7 +365,7 @@ static size_t __csv_header(CwtCsvHandler *h)
 
 			*index = i++;
 
-			CWT_ASSERT(hash_table_insert(ph->csvData.columns, column, index));
+			CWT_ASSERT(__htNS->insert(ph->csvData.columns, column, index));
 		}
 		return __slNS->size(ph->csvData.tokens);
 	}
@@ -382,15 +381,15 @@ static void __csv_titles(CwtCsvHandler *h, CWT_CHAR* argv[], size_t argc)
 
 	CWT_ASSERT(h);
 
-	count = (size_t)hash_table_num_entries(ph->csvData.columns);
+	count = __htNS->size(ph->csvData.columns);
 
 	if( argv && count > 0 ) {
-		HashTableIterator it;
+		CwtHashTableIterator it;
 
-		hash_table_iterate(ph->csvData.columns, &it);
+		__htNS->begin(ph->csvData.columns, &it);
 
-		while( hash_table_iter_has_more(&it) && i < argc ) {
-			argv[i++] = (CWT_CHAR*)hash_table_iter_next(&it);
+		while( __htNS->hasMore(&it) && i < argc ) {
+			argv[i++] = (CWT_CHAR*)__htNS->next(&it);
 		}
 	}
 }
@@ -540,7 +539,7 @@ static CWT_CHAR* __csv_column(CwtCsvHandler *h, const CWT_CHAR* name)
 
 	CWT_ASSERT(h);
 
-	index = hash_table_lookup(ph->csvData.columns, (void*)name);
+	index = __htNS->lookup(ph->csvData.columns, (void*)name);
 
 	if( index ) {
 		if( *index < __slNS->size(ph->csvData.tokens) ) {

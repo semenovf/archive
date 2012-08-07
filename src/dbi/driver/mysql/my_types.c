@@ -69,9 +69,9 @@ CWT_CHAR* __stringifyFloatType(UINT prec, UINT scale)
 {
 	CwtStrNS *strNS = cwtStrNS();
 
-	if( scale >= 0 ) {
+	if( scale > 0 ) {
 		CWT_CHAR buf[64];
-		strNS->bzero(buf, 64);
+		strNS->bzero(buf, 64 * sizeof(CWT_CHAR));
 
 		if( scale < 0 )
 			scale = 0;

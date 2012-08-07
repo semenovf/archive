@@ -15,9 +15,7 @@
 #include <cwt/strlist.h>
 #include <cwt/io/channel.h>
 #include <cwt/ini.h>
-#include <cwt/algo/hash_tab.h>
-#include <cwt/algo/hash_str.h>
-#include <cwt/algo/cmp_str.h>
+#include <cwt/hashtab.h>
 
 
 typedef struct CwtIniHandlerImpl {
@@ -25,7 +23,7 @@ typedef struct CwtIniHandlerImpl {
 	UINT        flags;
 	CwtChannel *pchan;
 	size_t      line;
-	HashTable  *directives;
+	CwtHashTable  *directives;
 	CwtIniCallback defaultCallback;
 	void       (*on_error)(CwtIniHandler, const CWT_CHAR*);
 } CwtIniHandlerImpl;
@@ -52,8 +50,13 @@ static CwtIniNS __cwtIniNS = {
 	, __ini_line
 };
 
+CwtHashTableNS *__htNS = NULL;
+
 DLL_API_EXPORT CwtIniNS* cwtIniNS(void)
 {
+	if( !__htNS ) {
+		__htNS = cwtHashTableNS();
+	}
 	return &__cwtIniNS;
 }
 
@@ -76,11 +79,10 @@ static CwtIniHandler __ini_createWithFlags(UINT flags, size_t max_tokens)
 	h->on_error   = NULL;
 
 	if( flags & Cwt_IniFlag_DirectiveIgnoreCase ) {
-		h->directives = hash_table_new(cwt_string_nocase_hash, cwt_string_nocase_equal);
+		h->directives = __htNS->create(__htNS->striHash, __htNS->strieq, cwtFree, NULL);
 	} else {
-		h->directives = hash_table_new(cwt_string_hash, cwt_string_equal);
+		h->directives = __htNS->create(__htNS->strHash, __htNS->streq, cwtFree, NULL);
 	}
-	hash_table_register_free_functions(h->directives, cwtFree, NULL);
 
 	return (CwtIniHandler)h;
 }
@@ -91,7 +93,7 @@ static void __ini_free(CwtIniHandler h)
 	CwtIniHandlerImpl *ph = (CwtIniHandlerImpl*)h;
 	if( h ) {
 		if( ph->directives ) {
-			hash_table_free(ph->directives);
+			__htNS->free(ph->directives);
 			ph->directives = NULL;
 		}
 		CWT_FREE(ph);
@@ -157,7 +159,7 @@ static BOOL __ini_parse(CwtIniHandler h, CwtChannel *pchan)
 							argv = CWT_MALLOCA(CWT_CHAR*, argc);
 
 							slNS->toArray(tokens, argv, &argc);
-							cb  = (CwtIniCallback)hash_table_lookup(ph->directives, argv[0]);
+							cb  = (CwtIniCallback)__htNS->lookup(ph->directives, argv[0]);
 
 							if( cb ) {
 								ok = cb(h, argv, argc);
@@ -222,7 +224,7 @@ static void __ini_addDirective (CwtIniHandler h, const CWT_CHAR *directive, CwtI
 
 	if( directive && handler ) {
 		CWT_CHAR *dir = cwtStrNS()->strdup(directive);
-		CWT_ASSERT(hash_table_insert(ph->directives, dir, handler));
+		CWT_ASSERT(__htNS->insert(ph->directives, dir, handler));
 	}
 }
 

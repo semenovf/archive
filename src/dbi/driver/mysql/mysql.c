@@ -15,9 +15,7 @@
 #include <mysql/mysql.h>
 #include <cwt/txtcodec.h>
 #include <cwt/dbi/dbi.h>
-#include <cwt/algo/hash_tab.h>
-#include <cwt/algo/hash_str.h>
-#include <cwt/algo/cmp_str.h>
+#include <cwt/hashtab.h>
 
 
 /* Macros INT8 INT16 and INT32 defined in my_global.h are conflicts with same data types
@@ -58,8 +56,8 @@ typedef struct CwtMySqlStatement {
 	MYSQL_RES    *meta;
 	MYSQL_BIND   *rbind_params;
 	size_t        nrbind_params;
-	HashTable    *rbind_map;
-	HashTable    *meta_map;
+	CwtHashTable *rbind_map;
+	CwtHashTable *meta_map;
 	CWT_CHAR     *errorstr;
 } CwtMySqlStatement;
 
@@ -176,8 +174,13 @@ static CwtDBIDriver __cwtDBIDriver = {
 };
 
 
+static CwtHashTableNS *__htNS = NULL;
+
 DLL_API_EXPORT CwtDBIDriver* cwtDBIDriverImpl(void)
 {
+	if( !__htNS ) {
+		__htNS = cwtHashTableNS();
+	}
 	return &__cwtDBIDriver;
 }
 
@@ -716,11 +719,11 @@ static void __stmtDestroy(CwtMySqlStatement *sth)
 		}
 
 		if( sth->rbind_map ) {
-			hash_table_free(sth->rbind_map);
+			__htNS->free(sth->rbind_map);
 			sth->rbind_map = NULL;
 		}
 		if( sth->meta_map ) {
-			hash_table_free(sth->meta_map);
+			__htNS->free(sth->meta_map);
 			sth->meta_map = NULL;
 		}
 
@@ -1353,11 +1356,11 @@ static BOOL __stmtExecute(CwtStatement *sth)
 	}
 
 	if( msth->rbind_map ) {
-		hash_table_free(msth->rbind_map);
+		__htNS->free(msth->rbind_map);
 		msth->rbind_map = NULL;
 	}
 	if( msth->meta_map ) {
-		hash_table_free(msth->meta_map);
+		__htNS->free(msth->meta_map);
 		msth->meta_map = NULL;
 	}
 
@@ -1370,10 +1373,8 @@ static BOOL __stmtExecute(CwtStatement *sth)
 	if( msth->nrbind_params > 0 ) {
 		UINT i;
 
-		msth->rbind_map = hash_table_new(string_hash, string_equal);
-		msth->meta_map = hash_table_new(string_hash, string_equal);
-		hash_table_register_free_functions(msth->rbind_map, NULL/*cwtFree*/, NULL);
-		hash_table_register_free_functions(msth->meta_map, NULL/*cwtFree*/, NULL);
+		msth->rbind_map = __htNS->create(__htNS->strHash, __htNS->streq, NULL/*cwtFree*/, NULL);
+		msth->meta_map = __htNS->create(__htNS->strHash, __htNS->streq, NULL/*cwtFree*/, NULL);
 
 		for( i = 0; i < msth->nrbind_params; i++ ) {
 			MYSQL_FIELD *field = mysql_fetch_field_direct(msth->meta, i);
@@ -1399,13 +1400,13 @@ static BOOL __stmtExecute(CwtStatement *sth)
 			if( field->length > 0 ) {
 				msth->rbind_params[i].buffer_length = field->length + 1;
 				msth->rbind_params[i].buffer = CWT_MALLOCA(char, field->length + 1);
-				strNS->bzero(msth->rbind_params[i].buffer, 0);
+				strNS->bzero(msth->rbind_params[i].buffer, sizeof(char) * (field->length + 1));
 
 				/*printf_debug(_T("Buffer allocated: 0x%p [i=%u][sz=%lu]"), msth->rbind_params[i].buffer, i, field->length + 1);*/
 			}
 
-			CWT_ASSERT(hash_table_insert(msth->rbind_map, field->name, &msth->rbind_params[i]));
-			CWT_ASSERT(hash_table_insert(msth->meta_map,  field->name, field));
+			CWT_ASSERT(__htNS->insert(msth->rbind_map, field->name, &msth->rbind_params[i]));
+			CWT_ASSERT(__htNS->insert(msth->meta_map,  field->name, field));
 
 		}
 
@@ -1506,8 +1507,8 @@ static BOOL __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *valu
 	CWT_ASSERT(value);
 
 	col_ = __encode(msth->dbh, col);
-	rbind = (MYSQL_BIND*)hash_table_lookup(msth->rbind_map, col_);
-	field = (MYSQL_FIELD*)hash_table_lookup(msth->meta_map, col_);
+	rbind = (MYSQL_BIND*)__htNS->lookup(msth->rbind_map, col_);
+	field = (MYSQL_FIELD*)__htNS->lookup(msth->meta_map, col_);
 	CWT_FREE(col_);
 
 	if( !rbind ) {

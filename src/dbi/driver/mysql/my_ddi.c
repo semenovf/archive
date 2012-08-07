@@ -185,6 +185,10 @@ CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const C
 				if( stringNS->size(constraintSpecs) > 0 )
 					stringNS->append(constraintSpecs, _T(", "));
 
+				stringNS->sprintf(tmpbuf, _T("KEY `FK_%s__%s` (`%s`), ")
+					, tab->name, col->name, col->name);
+				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
+
 				stringNS->sprintf(tmpbuf, _T("CONSTRAINT `FK_%s__%s` FOREIGN KEY (`%s`) REFERENCES `%s` (`%s`)")
 					, tab->name, col->name, col->name, col->pRef->name, col->pRef->pPK->name);
 				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
