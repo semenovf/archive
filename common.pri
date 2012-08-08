@@ -35,13 +35,16 @@ win32 {
 # этот параметр компилятора недоступен в компиляторах 
 # для целевых платформ x64 или семейства процессоров Itanium (IPF).
 
+# /Za - compatible with either ANSI C or ANSI C++
+# disable it because it cause the "warning error C2008: '$' : unexpected in macro definition"
+#
 #   !!!Overidde value provided by qmake.conf
 #    QMAKE_CXXFLAGS_DEBUG  = -Zi # /ZI
 
-    debug: QMAKE_CFLAGS_DEBUG = /ZI /MDd 
+    debug: QMAKE_CFLAGS_DEBUG = /ZI /MDd
     release: QMAKE_CFLAGS_DEBUG = /ZI /MD
 
-    debug: QMAKE_CXXFLAGS_DEBUG = /ZI /MDd 
+    debug: QMAKE_CXXFLAGS_DEBUG = /ZI /MDd
     release: QMAKE_CXXFLAGS_DEBUG = /ZI /MD
 
 
@@ -55,9 +58,9 @@ win32 {
 
 
 x64 {
-    debug: QMAKE_CFLAGS_DEBUG = /Zi /MDd 
+    debug: QMAKE_CFLAGS_DEBUG = /Zi /MDd
     release: QMAKE_CFLAGS_DEBUG = /Zi /MD
     
-    debug: QMAKE_CXXFLAGS_DEBUG = /Zi /MDd 
+    debug: QMAKE_CXXFLAGS_DEBUG = /Zi /MDd
     release: QMAKE_CXXFLAGS_DEBUG = /Zi /MD
 }
