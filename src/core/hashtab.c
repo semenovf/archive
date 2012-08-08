@@ -43,27 +43,27 @@ static const size_t hash_table_num_primes
 	= sizeof(hash_table_primes) / sizeof(int);
 
 
-static CwtHashTable*     __ht_create    (CwtHashTableHashFunc hash_func, CwtHashTableEqualFunc equal_func, CwtHashTableKeyFreeFunc key_free_func, CwtHashTableValueFreeFunc value_free_func);
-static void              __ht_free      (CwtHashTable *hash_table);
-static BOOL              __ht_insert    (CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value);
-static CwtHashTableValue __ht_lookup    (CwtHashTable *hash_table, CwtHashTableKey key);
-static BOOL              __ht_remove    (CwtHashTable *hash_table, CwtHashTableKey key);
-static size_t            __ht_size      (CwtHashTable *hash_table);
-static void              __ht_begin     (CwtHashTable *hash_table, CwtHashTableIterator *it);
-static BOOL              __ht_hasMore   (CwtHashTableIterator *it);
-static CwtHashTableValue __ht_next      (CwtHashTableIterator *it);
-static ULONG             __ht_intHash   (void *vlocation);
-static ULONG             __ht_uint16Hash(void *vlocation);
-static ULONG             __ht_ptrHash   (void *vlocation);
-static ULONG             __ht_cstrHash  (void *string);
-static ULONG             __ht_cstriHash (void *string);
-static ULONG             __ht_wstrHash  (void *string);
-static ULONG             __ht_wstriHash (void *string);
-static BOOL              __ht_inteq     (void *plocation1, void *plocation2);
-static BOOL              __ht_cstreq    (void *string1, void *string2);
-static BOOL              __ht_cstrieq   (void *string1, void *string2);
-static BOOL              __ht_wstreq    (void *string1, void *string2);
-static BOOL              __ht_wstrieq   (void *string1, void *string2);
+static CwtHashTable*      __ht_create    (CwtHashTableHashFunc hash_func, CwtHashTableEqualFunc equal_func, CwtHashTableKeyFreeFunc key_free_func, CwtHashTableValueFreeFunc value_free_func);
+static void               __ht_free      (CwtHashTable *hash_table);
+static BOOL               __ht_insert    (CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value);
+static CwtHashTableValue  __ht_lookup    (CwtHashTable *hash_table, CwtHashTableKey key);
+static BOOL               __ht_remove    (CwtHashTable *hash_table, CwtHashTableKey key);
+static size_t             __ht_size      (CwtHashTable *hash_table);
+static void               __ht_begin     (CwtHashTable *hash_table, CwtHashTableIterator *it);
+static BOOL               __ht_hasMore   (CwtHashTableIterator *it);
+static CwtHashTableEntry* __ht_next      (CwtHashTableIterator *it);
+static ULONG              __ht_intHash   (void *vlocation);
+static ULONG              __ht_uint16Hash(void *vlocation);
+static ULONG              __ht_ptrHash   (void *vlocation);
+static ULONG              __ht_cstrHash  (void *string);
+static ULONG              __ht_cstriHash (void *string);
+static ULONG              __ht_wstrHash  (void *string);
+static ULONG              __ht_wstriHash (void *string);
+static BOOL               __ht_inteq     (void *plocation1, void *plocation2);
+static BOOL               __ht_cstreq    (void *string1, void *string2);
+static BOOL               __ht_cstrieq   (void *string1, void *string2);
+static BOOL               __ht_wstreq    (void *string1, void *string2);
+static BOOL               __ht_wstrieq   (void *string1, void *string2);
 
 /* internal functions */
 static BOOL              __ht_allocate_table (CwtHashTable *hash_table);
@@ -596,18 +596,19 @@ static ULONG __ht_ptrHash(void *plocation)
 /**
  * @fn CwtHashTableNS::next(CwtHashTableIterator *it)
  *
- * @brief Using a hash table iterator, retrieve the next key.
+ * @brief Using a hash table iterator, retrieve the next entry.
  *
  * @param iterator            The hash table iterator.
- * @return                    The next key from the hash table, or
+ * @return                    The next entry from the hash table, or
  *                            @ref HASH_TABLE_NULL if there are no more
  *                            keys to iterate over.
  */
-static CwtHashTableValue __ht_next(CwtHashTableIterator *it)
+static CwtHashTableEntry* __ht_next(CwtHashTableIterator *it)
 {
 	CwtHashTableEntry *current_entry;
+	CwtHashTableEntry *result;
 	CwtHashTable *hash_table;
-	CwtHashTableValue result;
+	/*CwtHashTableValue result;*/
 	size_t chain;
 
 	hash_table = it->hash_table;
@@ -619,7 +620,7 @@ static CwtHashTableValue __ht_next(CwtHashTableIterator *it)
 	
 	/* Result is immediately available */
 	current_entry = it->next_entry;
-	result = current_entry->value;
+	result = current_entry;
 
 	/* Find the next entry */
 	if (current_entry->next != NULL) {

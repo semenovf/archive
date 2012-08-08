@@ -305,7 +305,7 @@ void test_hash_table_iterating_remove(void)
 	while( __htNS->hasMore(&iterator) ) {
 
 		/* Read the next value */
-		val = __htNS->next(&iterator);
+		val = __htNS->next(&iterator)->value;
 
 		/* Remove every hundredth entry */
 		if ((atoi(val) % 100) == 0) {

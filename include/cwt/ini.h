@@ -13,7 +13,8 @@
 
 
 typedef enum CwtIniFlag {
-	Cwt_IniFlag_DirectiveIgnoreCase = 0x01
+	  Cwt_IniFlag_DirectiveIgnoreCase    = 0x01
+	, Cwt_IniFlag_DirectiveIgnoreUnknown = 0x02
 };
 
 typedef void* CwtIniHandler;

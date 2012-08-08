@@ -71,6 +71,7 @@ typedef struct _CwtDBHandler {
 	BOOL            (*bindScalar)    (CwtStatement *sth, size_t index, CwtTypeEnum type_id, void *value);
 	BOOL            (*bindTime)      (CwtStatement *sth, size_t index, CwtTypeEnum type_id, void *value);
 	BOOL            (*bindNull)      (CwtStatement *sth, size_t index, CwtTypeEnum type_id);
+	BOOL            (*bindUniType)   (CwtStatement *sth, size_t index, CwtUniType *ut);
 	ULONGLONG       (*rows)          (CwtStatement*);
 	ULONGLONG       (*size)          (CwtStatement*);
 	BOOL            (*fetchNext)     (CwtStatement*);
@@ -120,6 +121,8 @@ typedef struct CwtDBI
 	void            (*freeDDI)       (CwtDDI*);
 	CwtDDITable*    (*newTable)      (CwtDDI*, const CWT_CHAR *name);
 	CwtDDIColumn*   (*newColumn)     (CwtDDITable*, const CWT_CHAR *name);
+	CwtDDITable*    (*findTable)      (CwtDDI*, const CWT_CHAR *name);
+	CwtDDIColumn*   (*findColumn)     (CwtDDITable*, const CWT_CHAR *name);
 
 	BOOL            (*cTypeBool)     (CwtDDIColumn*);
 	BOOL            (*cTypeInt)      (CwtDDIColumn*, LONGLONG min, ULONGLONG max);

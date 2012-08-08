@@ -131,35 +131,35 @@ typedef struct _CwtHashTableIterator {
 
 
 typedef struct _CwtHashTableNS {
-	CwtHashTable*     (*create) (CwtHashTableHashFunc hash_func, CwtHashTableEqualFunc equal_func, CwtHashTableKeyFreeFunc key_free_func, CwtHashTableValueFreeFunc value_free_func);
-	void              (*free)   (CwtHashTable *hash_table);
-	BOOL              (*insert) (CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value);
-	CwtHashTableValue (*lookup) (CwtHashTable *hash_table, CwtHashTableKey key);
-	BOOL              (*remove) (CwtHashTable *hash_table, CwtHashTableKey key);
-	size_t            (*size)   (CwtHashTable *hash_table);
-	void              (*begin)  (CwtHashTable *hash_table, CwtHashTableIterator *it);
-	BOOL              (*hasMore)(CwtHashTableIterator *it);
-	CwtHashTableValue (*next)   (CwtHashTableIterator *it);
+	CwtHashTable*      (*create) (CwtHashTableHashFunc hash_func, CwtHashTableEqualFunc equal_func, CwtHashTableKeyFreeFunc key_free_func, CwtHashTableValueFreeFunc value_free_func);
+	void               (*free)   (CwtHashTable *hash_table);
+	BOOL               (*insert) (CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value);
+	CwtHashTableValue  (*lookup) (CwtHashTable *hash_table, CwtHashTableKey key);
+	BOOL               (*remove) (CwtHashTable *hash_table, CwtHashTableKey key);
+	size_t             (*size)   (CwtHashTable *hash_table);
+	void               (*begin)  (CwtHashTable *hash_table, CwtHashTableIterator *it);
+	BOOL               (*hasMore)(CwtHashTableIterator *it);
+	CwtHashTableEntry* (*next)   (CwtHashTableIterator *it);
 
-	ULONG             (*intHash)   (void *location);
-	ULONG             (*uint16Hash)(void *location);
-	ULONG             (*ptrHash)   (void *location);
+	ULONG              (*intHash)   (void *location);
+	ULONG              (*uint16Hash)(void *location);
+	ULONG              (*ptrHash)   (void *location);
 
-	ULONG             (*cstrHash) (void *string);
-	ULONG             (*cstriHash)(void *string);
-	ULONG             (*wstrHash) (void *string);
-	ULONG             (*wstriHash)(void *string);
-	BOOL              (*inteq)    (void *plocation1, void *plocation2);
-	BOOL              (*cstreq)   (void *string1, void *string2);
-	BOOL              (*cstrieq)  (void *string1, void *string2);
-	BOOL              (*wstreq)   (void *string1, void *string2);
-	BOOL              (*wstrieq)  (void *string1, void *string2);
+	ULONG              (*cstrHash) (void *string);
+	ULONG              (*cstriHash)(void *string);
+	ULONG              (*wstrHash) (void *string);
+	ULONG              (*wstriHash)(void *string);
+	BOOL               (*inteq)    (void *plocation1, void *plocation2);
+	BOOL               (*cstreq)   (void *string1, void *string2);
+	BOOL               (*cstrieq)  (void *string1, void *string2);
+	BOOL               (*wstreq)   (void *string1, void *string2);
+	BOOL               (*wstrieq)  (void *string1, void *string2);
 
 	/* depends on CWT_UNICODE definition */
-	ULONG             (*strHash)  (void *string);
-	ULONG             (*striHash) (void *string);
-	BOOL              (*streq)    (void *string1, void *string2);
-	BOOL              (*strieq)   (void *string1, void *string2);
+	ULONG              (*strHash)  (void *string);
+	ULONG              (*striHash) (void *string);
+	BOOL               (*streq)    (void *string1, void *string2);
+	BOOL               (*strieq)   (void *string1, void *string2);
 } CwtHashTableNS;
 
 EXTERN_C_BEGIN

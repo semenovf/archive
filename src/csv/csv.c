@@ -389,7 +389,7 @@ static void __csv_titles(CwtCsvHandler *h, CWT_CHAR* argv[], size_t argc)
 		__htNS->begin(ph->csvData.columns, &it);
 
 		while( __htNS->hasMore(&it) && i < argc ) {
-			argv[i++] = (CWT_CHAR*)__htNS->next(&it);
+			argv[i++] = (CWT_CHAR*)__htNS->next(&it)->key;
 		}
 	}
 }

@@ -12,8 +12,10 @@
 
 typedef struct _CwtUniType {
 	union {
+		char      char_val;
         SBYTE     sbyte_val;
         BYTE      byte_val;
+        CWT_CHAR  cwt_char_val;
         SHORT     short_val;
         USHORT    ushort_val;
         INT       int_val;
@@ -27,10 +29,61 @@ typedef struct _CwtUniType {
         float     float_val;
         void     *ptr;
 	} value;
-    UINT type    : 31;
+    CwtTypeEnum type;
     UINT is_null : 1;
-    ULONGLONG length; /* for pointer */
+    size_t length; /* for pointer (in bytes) */
 } CwtUniType;
 
+typedef struct _CwtUniTypeNS {
+	void      (*init)        (CwtUniType *ut);
+	void      (*set)         (CwtUniType *ut, CwtTypeEnum type, void *copy);
+	void      (*setBool)     (CwtUniType *ut, BOOL b);
+	void      (*setChar)     (CwtUniType *ut, char ch);
+	void      (*setCwtChar)  (CwtUniType *ut, CWT_CHAR ch);
+	void      (*setSByte)    (CwtUniType *ut, SBYTE n);
+	void      (*setByte)     (CwtUniType *ut, BYTE n);
+	void      (*setShort)    (CwtUniType *ut, SHORT n);
+	void      (*setUShort)   (CwtUniType *ut, USHORT n);
+	void      (*setInt)      (CwtUniType *ut, INT n);
+	void      (*setUInt)     (CwtUniType *ut, UINT n);
+	void      (*setLong)     (CwtUniType *ut, LONG n);
+	void      (*setULong)    (CwtUniType *ut, ULONG n);
+	void      (*setLongLong) (CwtUniType *ut, LONGLONG n);
+	void      (*setULongLong)(CwtUniType *ut, ULONGLONG n);
+	void      (*setFloat)    (CwtUniType *ut, float n);
+	void      (*setDouble)   (CwtUniType *ut, double n);
+	void      (*setText)     (CwtUniType *ut, char *s);
+	void      (*setBlob)     (CwtUniType *ut, void *p, size_t sz);
+	void      (*setTime)     (CwtUniType *ut, CWT_TIME *tm);
+	void      (*setDate)     (CwtUniType *ut, CWT_TIME *tm);
+	void      (*setDateTime) (CwtUniType *ut, CWT_TIME *tm);
+	void      (*setCwtText)  (CwtUniType *ut, CWT_CHAR *s);
+
+	BOOL      (*toBool)      (CwtUniType*);
+	char      (*toChar)      (CwtUniType*);
+	CWT_CHAR  (*toCwtChar)   (CwtUniType*);
+	SBYTE     (*toSByte)     (CwtUniType*);
+	BYTE      (*toByte)      (CwtUniType*);
+	SHORT     (*toShort)     (CwtUniType*);
+	USHORT    (*toUShort)    (CwtUniType*);
+	INT       (*toInt)       (CwtUniType*);
+	UINT      (*toUInt)      (CwtUniType*);
+	LONG      (*toLong)      (CwtUniType*);
+	ULONG     (*toULong)     (CwtUniType*);
+	LONGLONG  (*toLongLong)  (CwtUniType*);
+	ULONGLONG (*toULongLong) (CwtUniType*);
+	float     (*toFloat)     (CwtUniType*);
+	double    (*toDouble)    (CwtUniType*);
+	char*     (*toText)      (CwtUniType*);
+	void*     (*toBlob)      (CwtUniType*);
+	CWT_TIME* (*toTime)      (CwtUniType*);
+	CWT_TIME* (*toDate)      (CwtUniType*);
+	CWT_TIME* (*toDateTime)  (CwtUniType*);
+	CWT_CHAR* (*toCwtText)   (CwtUniType*);
+} CwtUniTypeNS;
+
+EXTERN_C_BEGIN
+DLL_API_EXPORT CwtUniTypeNS* cwtUniTypeNS(void);
+EXTERN_C_END
 
 #endif /* __CWT_UNITYPE_H__ */

@@ -78,7 +78,7 @@ typedef enum _CwtTypeEnum {
 	, CwtType_BOOL
 	, CwtType_CHAR
 	, CwtType_CWT_CHAR
-	, CwtType_SBYTE  = CwtType_CHAR
+	, CwtType_SBYTE
 	, CwtType_INT8   = CwtType_SBYTE
 	, CwtType_UCHAR
 	, CwtType_BYTE   = CwtType_UCHAR

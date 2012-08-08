@@ -116,18 +116,19 @@ extern __specForDeploy;
 extern __specForRecall;
 */
 
-static void             __stmtClose(CwtStatement *sth);
-static BOOL             __stmtExecute(CwtStatement *sth);
+static void             __stmtClose       (CwtStatement *sth);
+static BOOL             __stmtExecute     (CwtStatement *sth);
 static ULONGLONG        __stmtAffectedRows(CwtStatement *sth);
-static ULONGLONG        __stmtNumRows(CwtStatement*);
-static BOOL             __stmtFetchNext(CwtStatement*);
-static BOOL             __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *value);
-static CwtDBI_RC        __stmtErr(CwtStatement *sth);
-static const CWT_CHAR*  __stmtStrerror(CwtStatement *sth);
-static BOOL             __stmtBind(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value, size_t *plength, BOOL is_null);
-static BOOL             __stmtBindScalar(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value);
-static BOOL             __stmtBindTime(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value);
-static BOOL             __stmtBindNull(CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
+static ULONGLONG        __stmtNumRows     (CwtStatement*);
+static BOOL             __stmtFetchNext   (CwtStatement*);
+static BOOL             __stmtFetchColumn (CwtStatement *sth, CWT_CHAR *col, CwtUniType *value);
+static CwtDBI_RC        __stmtErr         (CwtStatement *sth);
+static const CWT_CHAR*  __stmtStrerror    (CwtStatement *sth);
+static BOOL             __stmtBind        (CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value, size_t *plength, BOOL is_null);
+static BOOL             __stmtBindScalar  (CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value);
+static BOOL             __stmtBindTime    (CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value);
+static BOOL             __stmtBindNull    (CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
+static BOOL             __stmtBindUniType (CwtStatement *sth, size_t index, CwtUniType *ut);
 
 /* local helper functions */
 static BOOL             __mysqlIsBlob(int mysqltype);
@@ -524,6 +525,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
 	dbh->__base.bindScalar = __stmtBindScalar;
 	dbh->__base.bindTime   = __stmtBindTime;
 	dbh->__base.bindNull   = __stmtBindNull;
+	dbh->__base.bindUniType= __stmtBindUniType;
     dbh->__base.rows       = __stmtAffectedRows;
     dbh->__base.size       = __stmtNumRows;
     dbh->__base.fetchNext  = __stmtFetchNext;
@@ -1712,12 +1714,32 @@ static BOOL __stmtBindScalar(CwtStatement *sth, size_t index, CwtTypeEnum cwtTyp
 	return __stmtBind(sth, index, cwtType, value, NULL, FALSE);
 }
 
+static BOOL __stmtBindTime(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value)
+{
+	return __stmtBind(sth, index, cwtType, value, NULL, FALSE);
+}
+
 static BOOL __stmtBindNull(CwtStatement *sth, size_t index, CwtTypeEnum cwtType)
 {
 	return __stmtBind(sth, index, cwtType, NULL, NULL, FALSE);
 }
 
-static BOOL __stmtBindTime(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, void *value)
+static BOOL __stmtBindUniType (CwtStatement *sth, size_t index, CwtUniType *ut)
 {
-	return __stmtBind(sth, index, cwtType, value, NULL, FALSE);
+	size_t length;
+
+	CWT_ASSERT(ut);
+
+	if( ut->is_null && ut->type == CwtType_UNKNOWN ) {
+		return __stmtBindNull(sth, index, CwtType_UNKNOWN);
+	}
+
+	if( CWT_TYPE_IS_SCALAR(ut->type) ) {
+		return __stmtBindScalar(sth, index, ut->type, &ut->value);
+	} else if( ut->type == CwtType_TIME || ut->type == CwtType_DATE || ut->type == CwtType_DATETIME ) {
+		return __stmtBindTime(sth, index, ut->type, ut->value.ptr);
+	}
+
+	length = (size_t)ut->length;
+	return __stmtBind(sth, index, ut->type, ut->value.ptr, &length, FALSE);
 }

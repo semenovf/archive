@@ -128,6 +128,44 @@ CwtDDIColumn* __ddi_newColumn(CwtDDITable *tab, const CWT_CHAR *name)
 }
 
 
+CwtDDITable* __ddi_findTable(CwtDDI *ddi, const CWT_CHAR *name)
+{
+	CwtListIterator it;
+
+	CWT_ASSERT(ddi);
+
+	if( ddi->tables ) {
+		__listNS->begin(ddi->tables, &it);
+		while( __listNS->hasMore(&it) ) {
+			CwtDDITable *t = __listNS->next(&it);
+			if( t && __strNS->streq(name, t->name) ) {
+				return t;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+CwtDDIColumn* __ddi_findColumn(CwtDDITable *tab, const CWT_CHAR *name)
+{
+	CwtListIterator it;
+
+	CWT_ASSERT(tab);
+
+	if( tab->columns ) {
+		__listNS->begin(tab->columns, &it);
+		while( __listNS->hasMore(&it) ) {
+			CwtDDIColumn *c = __listNS->next(&it);
+			if( c && __strNS->streq(name, c->name) ) {
+				return c;
+			}
+		}
+	}
+
+	return NULL;
+}
+
 BOOL __ddi_cTypeBool(CwtDDIColumn *col)
 {
 	__clear_type(col);

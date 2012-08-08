@@ -167,8 +167,10 @@ static BOOL __ini_parse(CwtIniHandler h, CwtChannel *pchan)
 								if( ph->defaultCallback ) {
 									ok = ph->defaultCallback(h, argv, argc);
 								} else {
-									__ini_error(h, _Tr("unsupported directive"));
-									ok = FALSE;
+									if( !(ph->flags & Cwt_IniFlag_DirectiveIgnoreUnknown) ) {
+										__ini_error(h, _Tr("unsupported directive"));
+										ok = FALSE;
+									}
 								}
 							}
 						} else {
