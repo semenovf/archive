@@ -29,15 +29,15 @@ static int             __splitSkip    (CwtStrList *psl, const CWT_CHAR *str
 		                              , void *delim, const CwtQuotePair *qpairs);
 static int  		   __split        (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim, const CwtQuotePair *qpairs);
 static int  		   __splitAny     (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims, const CwtQuotePair *qpairs);
-static CWT_CHAR*	   __at           (CwtStrList *psl, size_t i);
+static const CWT_CHAR* __at           (CwtStrList *psl, size_t i);
 static void            __begin        (CwtStrList *psl, CwtStrListIterator *iter);
 /*static void            __beginFrom    (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);*/
 static void            __rbegin       (CwtStrList *psl, CwtStrListIterator *iter);
 /*static void            __rbeginFrom   (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);*/
 static BOOL            __hasMore      (CwtStrListIterator *iter);
-static CWT_CHAR*       __next         (CwtStrListIterator *iter);
+static const CWT_CHAR* __next         (CwtStrListIterator *iter);
 /*static CwtStrListElem* __elem         (CwtStrListIterator *iter);*/
-static void            __toArray      (CwtStrList *psl, CWT_CHAR *argv[], size_t *argc);
+static void            __toArray      (CwtStrList *psl, const CWT_CHAR *argv[], size_t *argc);
 
 static const CwtQuotePair*   __singleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('\''), _T('\'')}, {0, 0}}; return qp; }
 static const CwtQuotePair*   __doubleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('"'), _T('"')}, {0, 0}} ; return qp; }
@@ -377,7 +377,7 @@ static int __splitAny(CwtStrList *psl, const CWT_CHAR *str, const CWT_CHAR *deli
 }
 
 
-static inline CWT_CHAR* __at(CwtStrList *psl, size_t index)
+static inline const CWT_CHAR* __at(CwtStrList *psl, size_t index)
 {
 	return (CWT_CHAR*)__listNS->at(psl, index);
 }
@@ -421,7 +421,7 @@ static inline BOOL __hasMore(CwtStrListIterator *it)
 	return __listNS->hasMore(it);
 }
 
-static inline CWT_CHAR* __next(CwtStrListIterator *it)
+static inline const CWT_CHAR* __next(CwtStrListIterator *it)
 {
 	return (CWT_CHAR*)__listNS->next(it);
 }
@@ -447,7 +447,7 @@ static CwtStrListElem* __elem(CwtStrListIterator *iter)
  * @param argc On input contains size of array @c argv. On output contains actual number of stored strings
  *             (less or equal to @c *argc on input).
  */
-static void __toArray(CwtStrList *psl, CWT_CHAR *argv[], size_t *argc)
+static void __toArray(CwtStrList *psl, const CWT_CHAR *argv[], size_t *argc)
 {
 	size_t i;
 	CwtStrListIterator it;

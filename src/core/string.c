@@ -13,9 +13,10 @@
 
 static CwtStringNS __CwtStringNS;
 
-static void __append  (CwtString *s, const CWT_CHAR *str);
+static void __append   (CwtString *s, const CWT_CHAR *str);
 static const CWT_CHAR* __cstr(CwtString *s);
-static int  __sprintf (CwtString *s, const CWT_CHAR *format, ...);
+static int  __sprintf  (CwtString *s, const CWT_CHAR *format, ...);
+static int  __vsprintf (CwtString *s, const CWT_CHAR *format, va_list args);
 
 /*static append_string_f __append_ptr = __append;*/
 
@@ -55,14 +56,25 @@ static const CWT_CHAR* __cstr(CwtString *sb)
 
 static int  __sprintf(CwtString *s, const CWT_CHAR *format, ...)
 {
+	int n;
+	va_list args;
+	va_start(args, format);
+
+	n = __vsprintf(s, format, args);
+
+	va_end(args);
+	return n;
+}
+
+
+static int  __vsprintf (CwtString *s, const CWT_CHAR *format, va_list args)
+{
 	CwtStrNS   *strNS   = cwtStrNS();
 	CwtStdioNS *stdioNS = cwtStdioNS();
-	va_list args;
 	size_t sz;
 	int n;
 
 	CWT_ASSERT(s);
-	va_start(args, format);
 
 	sz = strNS->strlen(format);
 
@@ -75,8 +87,6 @@ static int  __sprintf(CwtString *s, const CWT_CHAR *format, ...)
 		__resize(s, sz+1);
 		n = stdioNS->vsnprintf(s->m_buffer, sz, format, args);
 	} while( n < 0 || n == sz );
-
-	va_end(args);
 
 	__resize(s, (size_t)n);
 

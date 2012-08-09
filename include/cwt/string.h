@@ -21,6 +21,7 @@ void               (*removeChar)  (CwtString *s, size_t pos);
 void               (*append)      (CwtString *s, const CWT_CHAR *str);
 const CWT_CHAR*    (*cstr)        (CwtString *s);
 int                (*sprintf)     (CwtString *s, const CWT_CHAR *format, ...);
+int                (*vsprintf)    (CwtString *s, const CWT_CHAR *format, va_list args);
 CWT_END_DECL_VECTOR_NS(CwtStringNS)
 
 EXTERN_C_BEGIN

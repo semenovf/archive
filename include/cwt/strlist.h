@@ -46,15 +46,15 @@ typedef struct CwtStrListNS {
 	int 		    (*split)       (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim, const CwtQuotePair *qpairs);
 	int 		    (*splitAny)    (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims, const CwtQuotePair *qpairs);
 
-	CWT_CHAR*	    (*at)          (CwtStrList *psl, size_t index);
+	const CWT_CHAR*	(*at)          (CwtStrList *psl, size_t index);
 	void            (*begin)       (CwtStrList *psl, CwtStrListIterator *iter);
 /*	void            (*beginFrom)   (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);*/
 	void            (*rbegin)      (CwtStrList *psl, CwtStrListIterator *iter);
 /*	void            (*rbeginFrom)  (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);*/
 	BOOL            (*hasMore)     (CwtStrListIterator *iter);
-	CWT_CHAR*       (*next)        (CwtStrListIterator *iter);
+	const CWT_CHAR* (*next)        (CwtStrListIterator *iter);
 /*	CwtStrListElem* (*elem)        (CwtStrListIterator *iter);*/
-	void            (*toArray)     (CwtStrList*, CWT_CHAR *argv[], size_t *argc);
+	void            (*toArray)     (CwtStrList*, const CWT_CHAR *argv[], size_t *argc);
 
 	const CwtQuotePair*   (*singleQuotesPair)(void);
 	const CwtQuotePair*   (*doubleQuotesPair)(void);

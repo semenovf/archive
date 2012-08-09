@@ -80,7 +80,8 @@ static BOOL      __cwt_strieq       (const CWT_CHAR *s1, const CWT_CHAR *s2);
 static void*     __cwt_bzero        (void *block, size_t sz);
 static CWT_CHAR* __cwt_strndup      (const CWT_CHAR *s, size_t n);
 #ifndef CWT_UNICODE
-static int       __cwt_isalpha      (CWT_CHAR);
+static int       __cwt_isalpha      (CWT_CHAR ch) { return isalpha(ch); }
+static int       __cwt_isdigit      (CWT_CHAR ch) { return isdigit(ch); }
 #endif
 static CWT_CHAR  __cwt_toupper      (CWT_CHAR ch);
 static CWT_CHAR  __cwt_tolower      (CWT_CHAR ch);
@@ -100,7 +101,13 @@ extern SHORT     __cwt_toSHORT      (const CWT_CHAR *str, int radix, BOOL *ok);
 extern USHORT    __cwt_toUSHORT     (const CWT_CHAR *str, int radix, BOOL *ok);
 extern SBYTE     __cwt_toSBYTE      (const CWT_CHAR *str, int radix, BOOL *ok);
 extern BYTE      __cwt_toBYTE       (const CWT_CHAR *str, int radix, BOOL *ok);
+extern double    __cwt_toDouble     (const CWT_CHAR *str, BOOL *ok);
+extern float     __cwt_toFloat      (const CWT_CHAR *str, BOOL *ok);
 EXTERN_C_END
+
+static void      __cwt_toTime       (const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
+static void      __cwt_toDate       (const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
+static void      __cwt_toDateTime   (const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
 
 static const CWT_CHAR* __cwt_constEmptyStr(void);
 static const CWT_CHAR* __cwt_constNullStr(void);
@@ -136,7 +143,9 @@ static CwtStrNS __cwtStrNS = {
 	, wcstoll
 	, wcstoull
 #	endif
+	, wcstod
 	, iswalpha
+	, iswdigit
 #else /*CWT_UNICODE*/
 	, strftime
 	, strlen
@@ -170,7 +179,9 @@ static CwtStrNS __cwtStrNS = {
 	, strtoll
 	, strtoull
 #	endif
+	, strtod
 	, __cwt_isalpha
+	, __cwt_isdigit
 #endif /*!CWT_UNICODE*/
 	, memcpy
 	, memmove
@@ -188,6 +199,11 @@ static CwtStrNS __cwtStrNS = {
 	, __cwt_toUSHORT
 	, __cwt_toSBYTE
 	, __cwt_toBYTE
+	, __cwt_toDouble
+	, __cwt_toFloat
+	, __cwt_toTime
+	, __cwt_toDate
+	, __cwt_toDateTime
 
 	, __cwt_toSBYTE
 	, __cwt_toBYTE
@@ -278,14 +294,6 @@ static CWT_CHAR* __cwt_strndup(const CWT_CHAR *s, size_t n)
 
 	return s0;
 }
-
-#ifndef CWT_UNICODE
-static int __cwt_isalpha(CWT_CHAR ch)
-{
-	return isalpha(ch);
-}
-#endif
-
 
 static CWT_CHAR  __cwt_toupper(CWT_CHAR ch)
 {
@@ -380,6 +388,126 @@ static void __cwt_chomp(CWT_CHAR *s)
 		ptr--;
 	}
 }
+
+
+/**
+ * @fn CwtStrNS::toTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok)
+ *
+ * @brief Converts string representation of time into CWT_TIME structure.
+ *
+ * @param str String representation of time
+ * @param tm Time structure to store result.
+ * @param format Format of string that specifies time.
+ * @param ok Pointer to store result of conversion.
+ *
+ * @note There is restriction in this function: only predefined formats are supported:
+ * @arg [H]H:[M]M[:[S]S[.sss]]
+ *
+ * TODO format support must be implemented
+ */
+static void __cwt_toTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok)
+{
+#ifdef __COMMENT__
+	#define _ST_HOUR  0
+	#define _ST_MIN   1
+	#define _ST_SEC   2
+	#define _ST_PSEC  3
+
+	CwtStrNS *strNS = cwtStrNS();
+	int state = _ST_HOUR;
+	size_t i = 0;
+	int n = 0;
+	size_t len = strNS->strlen(str);
+	BOOL okk = TRUE;
+
+	CWT_UNUSED(format);
+
+	while( i < len ) {
+		switch( state ) {
+		case _ST_HOUR:
+			if( str[i] == _T(':') ) {
+				if( !n || n > 2 ) {
+					okk = FALSE;
+					break;
+				}
+				n = -1;
+				state = _ST_MIN;
+			} else if( !strNS->isdigit(str[i]) ) {
+				okk = FALSE;
+			}
+			break;
+
+		case _ST_MIN:
+			if( str[i] == _T(':') ) {
+				begi = i + 1;
+				state = _ST_SEC;
+			}
+			break;
+
+		case _ST_SEC:
+			if( str[i] == _T('.') ) {
+				begi = i + 1;
+				state = _ST_PSEC;
+			}
+			break;
+
+		case _ST_PSEC:
+		default: break;
+		}
+
+		if(!okk )
+			break;
+		i++;
+		n++;
+	}
+
+	if( ok )
+		*ok = okk;
+#endif
+}
+
+/**
+ * @fn CwtStrNS::toDate(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok)
+ *
+ * @param str
+ * @param tm
+ * @param format
+ * @param ok
+ *
+ * @note There is restriction in this function: only predefined formats are supported:
+ * @arg [d]d.[m]m[.[yy]yy]
+ * @arg [d]d/[m]m[/[yy]yy]
+ * @arg yyyy.[m]m.[d]d
+ * @arg yyyy/[m]m/[d]d
+ *
+ * TODO format support must be implemented
+ */
+static void __cwt_toDate(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok)
+{
+
+}
+
+/**
+ * @fn CwtStrNS::toDateTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok)
+ *
+ * @param str
+ * @param tm
+ * @param format
+ * @param ok
+ *
+ * @note There is restriction in this function: only predefined formats are supported
+ * 	     ( for date-format and time-format see @ref CwtStrNS::toDate and @ref CwtStrNS::toTime)
+ * @arg date-format time-format
+ * @arg time-format date-format
+ *
+ * TODO format support must be implemented
+ */
+static void __cwt_toDateTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok)
+{
+
+}
+
+
 
 /**
  * Return character from @c s at position @c i.

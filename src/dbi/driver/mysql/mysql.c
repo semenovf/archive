@@ -565,7 +565,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
         ok = TRUE;
 
         while( strlistNS->hasMore(&itOpts) ) {
-        	CWT_CHAR* opt = strlistNS->next(&itOpts);
+        	const CWT_CHAR* opt = strlistNS->next(&itOpts);
 
         	if( strNS->strncmp(_T("host="), opt, 5) == 0 ) {
 
@@ -587,7 +587,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
         		sockname = __cwtDBIDriver.encode((CwtDBHandler*)dbh, &opt[13]);
 
         	} else if( strNS->strncmp(_T("mysql_flags="), opt, 12) == 0) {
-        	    CWT_CHAR *flagstr = &opt[12];
+        	    const CWT_CHAR *flagstr = &opt[12];
 
         	    flags |= CLIENT_REMEMBER_OPTIONS;
         	    if( strNS->strstr(flagstr, _T("COMPRESS")) )         flags |= CLIENT_COMPRESS;

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <math.h>
 #include <cwt/str.h>
 #include <cwt/string.h>
 
@@ -17,8 +18,8 @@
 #define _cwtStrtol  strtol
 */
 
-#define __CWT_STR_TO_LONGTYPE(_LongType,_strToLongFunc,_maxLong,_minLong) \
-DLL_API_EXPORT _LongType __cwt_to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) { \
+#define __CWT_STR_TO_LONGTYPE(_LongType,_strToLongFunc,_maxLong,_minLong)     \
+_LongType __cwt_to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) {     \
 	_LongType val;                                                            \
 	CWT_CHAR *endptr;                                                         \
 	CwtStrNS* strNS = cwtStrNS();                                             \
@@ -58,7 +59,7 @@ DLL_API_EXPORT _LongType __cwt_to##_LongType(const CWT_CHAR *str, int radix, BOO
 
 
 #define __CWT_STR_TO_INTTYPE(_IntType,_LongType,_maxInt,_minInt)              \
-DLL_API_EXPORT _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {\
+_IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {       \
 	BOOL okk = TRUE;                                                          \
 	CwtStrNS* strNS = cwtStrNS();                                             \
 	_LongType val = strNS->to##_LongType(str, radix, &okk);                   \
@@ -73,7 +74,7 @@ DLL_API_EXPORT _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL 
 }
 
 #define __CWT_STR_TO_UINTTYPE(_IntType,_LongType,_maxInt)                     \
-DLL_API_EXPORT _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {\
+_IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {       \
 	BOOL okk = TRUE;                                                          \
 	CwtStrNS* strNS = cwtStrNS();                                             \
 	_LongType val = strNS->to##_LongType(str, radix, &okk);                   \
@@ -98,6 +99,53 @@ __CWT_STR_TO_INTTYPE(SHORT, LONG, CWT_SHORT_MAX, CWT_SHORT_MIN)
 __CWT_STR_TO_UINTTYPE(USHORT, ULONG, CWT_USHORT_MAX);
 __CWT_STR_TO_INTTYPE(SBYTE, LONG, CWT_SBYTE_MAX, CWT_SBYTE_MIN)
 __CWT_STR_TO_UINTTYPE(BYTE, ULONG, CWT_BYTE_MAX);
+
+
+double __cwt_toDouble(const CWT_CHAR *str, BOOL *ok)
+{
+	double val;
+	CWT_CHAR *endptr;
+	CwtStrNS* strNS = cwtStrNS();
+
+   /* Need to reset errno because it will not reset */
+   /* in the subsequent call if error will not occurred */
+	errno = 0;
+	val = strNS->strtod(str, &endptr);
+
+	if((errno == ERANGE	&& (val == HUGE_VAL || val == -HUGE_VAL))
+            || (errno != 0 && val == (double)0.0)
+            || endptr == str
+            || *endptr != (CWT_CHAR)0 ) {
+
+		if( ok ) {
+			*ok = FALSE;
+		}
+		val = (double)0.0;
+     } else {
+ 		if( ok ) {
+ 			*ok = TRUE;
+ 		}
+     }
+
+	return val;
+}
+
+float __cwt_toFloat(const CWT_CHAR *str, BOOL *ok)
+{
+	BOOL okk = TRUE;
+    double d = __cwt_toDouble(str, &okk);
+
+    if(!okk || d > CWT_FLOAT_MAX || d < -CWT_FLOAT_MAX) {
+        if( ok != 0 )
+            *ok = FALSE;
+        return 0.0;
+    }
+    if( ok != 0 )
+        *ok = TRUE;
+
+    return (float)d;
+
+}
 
 
 #if 0

@@ -5,7 +5,7 @@ unix: include($$(HOME)/ws/qmake/common-dll.pri)
 TARGET = cwt-mysql
 
 INCLUDEPATH += ../../include
-INCLUDEPATH += $$CWT_ROOT_DIR/include/mysql
+INCLUDEPATH += ../../include/mysql
 
 # comment this in production mode
 DEFINES += CWT_USE_TESTS

@@ -85,7 +85,7 @@ static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver
 	CwtStrNS *strNS = cwtStrNS();
 	CwtStrListNS *slNS = cwtStrListNS();
 	CwtStrList *opts;
-	CWT_CHAR *opt;
+	const CWT_CHAR *opt;
 
     opts = slNS->create();
     slNS->splitAny(opts, dsn, _T(":"), CWT_QUOTES_BOTH);
