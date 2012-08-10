@@ -22,9 +22,11 @@
 #	include <wchar.h>
 #	include <wctype.h>
 	typedef wchar_t 		   CWT_CHAR;
+	typedef wchar_t            CWT_UCHAR;
 #else
 #	include <ctype.h>
 	typedef char 		       CWT_CHAR;
+	typedef unsigned char 	   CWT_UCHAR;
 #endif
 
 typedef unsigned char          UCHAR;

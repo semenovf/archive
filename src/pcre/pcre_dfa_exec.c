@@ -1972,8 +1972,7 @@ for (;;)
       /* Handle callouts */
 
       case OP_CALLOUT:
-      if (pcre_callout != NULL)
-        {
+      if( cwtPCRENS()->callout != NULL ) {
         int rrc;
         pcre_callout_block cb;
         cb.version          = 1;   /* Version 1 of the callout block */
@@ -1988,7 +1987,7 @@ for (;;)
         cb.capture_top      = 1;
         cb.capture_last     = -1;
         cb.callout_data     = md->callout_data;
-        if ((rrc = (*pcre_callout)(&cb)) < 0) return rrc;   /* Abandon */
+        if ((rrc = cwtPCRENS()->callout(&cb)) < 0) return rrc;   /* Abandon */
         if (rrc == 0) { ADD_ACTIVE(state_offset + 2 + 2*LINK_SIZE, 0); }
         }
       break;
@@ -2073,10 +2072,9 @@ Returns:          > 0 => number of match offset pairs placed in offsets
                  < -1 => some kind of unexpected problem
 */
 
-PCRE_DATA_SCOPE int
-pcre_dfa_exec(const pcre *argument_re, const pcre_extra *extra_data,
-  const char *subject, int length, int start_offset, int options, int *offsets,
-  int offsetcount, int *workspace, int wscount)
+int pcre_dfa_exec(const pcre *argument_re, const pcre_extra *extra_data,
+	const char *subject, int length, int start_offset, int options, int *offsets,
+	int offsetcount, int *workspace, int wscount)
 {
 real_pcre *re = (real_pcre *)argument_re;
 dfa_match_data match_block;

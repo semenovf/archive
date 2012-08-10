@@ -61,9 +61,7 @@ Arguments:
 Returns:           0 if data returned, negative on error
 */
 
-PCRE_DATA_SCOPE int
-pcre_fullinfo(const pcre *argument_re, const pcre_extra *extra_data, int what,
-  void *where)
+int pcre_fullinfo(const pcre *argument_re, const pcre_extra *extra_data, int what, void *where)
 {
 real_pcre internal_re;
 pcre_study_data internal_study;

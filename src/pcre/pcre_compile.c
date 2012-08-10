@@ -5021,35 +5021,8 @@ return c;
 *        Compile a Regular Expression            *
 *************************************************/
 
-/* This function takes a string and returns a pointer to a block of store
-holding a compiled version of the expression. The original API for this
-function had no error code return variable; it is retained for backwards
-compatibility. The new function is given a new name.
-
-Arguments:
-  pattern       the regular expression
-  options       various option bits
-  errorcodeptr  pointer to error code variable (pcre_compile2() only)
-                  can be NULL if you don't want a code value
-  errorptr      pointer to pointer to error text
-  erroroffset   ptr offset in pattern where error was detected
-  tables        pointer to character tables or NULL
-
-Returns:        pointer to compiled data block, or NULL on error,
-                with errorptr and erroroffset set
-*/
-
-PCRE_DATA_SCOPE pcre *
-pcre_compile(const char *pattern, int options, const char **errorptr,
-  int *erroroffset, const unsigned char *tables)
-{
-return pcre_compile2(pattern, options, NULL, errorptr, erroroffset, tables);
-}
-
-
-PCRE_DATA_SCOPE pcre *
-pcre_compile2(const char *pattern, int options, int *errorcodeptr,
-  const char **errorptr, int *erroroffset, const unsigned char *tables)
+pcre* pcre_compile2(const char *pattern, int options, int *errorcodeptr,
+		const char **errorptr, int *erroroffset, const unsigned char *tables)
 {
 real_pcre *re;
 int length = 1;  /* For final END opcode */
@@ -5226,7 +5199,7 @@ because nowadays we limit the maximum value of cd->names_found and
 cd->name_entry_size. */
 
 size = length + sizeof(real_pcre) + cd->names_found * (cd->name_entry_size + 3);
-re = (real_pcre *)(pcre_malloc)(size);
+re = (real_pcre *)cwtMalloc(size);
 
 if (re == NULL)
   {
@@ -5318,7 +5291,7 @@ if (errorcode == 0 && re->top_backref > re->top_bracket) errorcode = ERR15;
 
 if (errorcode != 0)
   {
-  (pcre_free)(re);
+  CWT_FREE(re);
   PCRE_EARLY_ERROR_RETURN:
   *erroroffset = ptr - (const uschar *)pattern;
 #ifdef SUPPORT_UTF8
@@ -5430,5 +5403,31 @@ if (code - codestart > length)
 
 return (pcre *)re;
 }
+
+
+/* This function takes a string and returns a pointer to a block of store
+holding a compiled version of the expression. The original API for this
+function had no error code return variable; it is retained for backwards
+compatibility. The new function is given a new name.
+
+Arguments:
+  pattern       the regular expression
+  options       various option bits
+  errorcodeptr  pointer to error code variable (pcre_compile2() only)
+                  can be NULL if you don't want a code value
+  errorptr      pointer to pointer to error text
+  erroroffset   ptr offset in pattern where error was detected
+  tables        pointer to character tables or NULL
+
+Returns:        pointer to compiled data block, or NULL on error,
+                with errorptr and erroroffset set
+*/
+
+pcre* pcre_compile(const char *pattern, int options, const char **errorptr,
+		int *erroroffset, const unsigned char *tables)
+{
+	return pcre_compile2(pattern, options, NULL, errorptr, erroroffset, tables);
+}
+
 
 /* End of pcre_compile.c */

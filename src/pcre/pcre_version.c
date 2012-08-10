@@ -53,7 +53,11 @@ string that identifies the PCRE version that is in use. */
 They allow macros like PCRE_MAJOR to be defined without quotes, which is
 convenient for user programs that want to test its value. */
 
-#define STRING(a)  # a
+#ifdef CWT_UNICODE
+#	define STRING(a) L# a
+#else
+#	define STRING(a)  # a
+#endif
 #define XSTRING(s) STRING(s)
 
 /* A problem turned up with PCRE_PRERELEASE, which is defined empty for
@@ -75,12 +79,11 @@ I could find no way of detecting that a macro is defined as an empty string at
 pre-processor time. This hack uses a standard trick for avoiding calling
 the STRING macro with an empty argument when doing the test. */
 
-PCRE_DATA_SCOPE const char *
-pcre_version(void)
+const CWT_CHAR* pcre_version(void)
 {
 return (XSTRING(Z PCRE_PRERELEASE)[1] == 0)?
-  XSTRING(PCRE_MAJOR.PCRE_MINOR PCRE_DATE) :
-  XSTRING(PCRE_MAJOR.PCRE_MINOR) XSTRING(PCRE_PRERELEASE PCRE_DATE);
+	XSTRING(PCRE_MAJOR.PCRE_MINOR PCRE_DATE) :
+	XSTRING(PCRE_MAJOR.PCRE_MINOR) XSTRING(PCRE_PRERELEASE PCRE_DATE);
 }
 
 /* End of pcre_version.c */

@@ -43,8 +43,9 @@ from the subject string after a regex match has succeeded. The original idea
 for these functions came from Scott Wimer. */
 
 
-#include "cwt/pcre/pcre_internal.h"
+#include "pcre_internal.h"
 
+extern int pcre_fullinfo(const pcre *argument_re, const pcre_extra *extra_data, int what, void *where);
 
 /*************************************************
 *           Find number for named string         *
@@ -61,8 +62,7 @@ Returns:      the number of the named parentheses, or a negative number
                 (PCRE_ERROR_NOSUBSTRING) if not found
 */
 
-int
-pcre_get_stringnumber(const pcre *code, const char *stringname)
+int pcre_get_stringnumber(const pcre *code, const char *stringname)
 {
 int rc;
 int entrysize;
@@ -110,8 +110,7 @@ Returns:      the length of each entry, or a negative number
                 (PCRE_ERROR_NOSUBSTRING) if not found
 */
 
-int
-pcre_get_stringtable_entries(const pcre *code, const char *stringname,
+int pcre_get_stringtable_entries(const pcre *code, const char *stringname,
   char **firstptr, char **lastptr)
 {
 int rc;
@@ -181,20 +180,27 @@ Returns:       the number of the first that is set,
 static int
 get_first_set(const pcre *code, const char *stringname, int *ovector)
 {
-const real_pcre *re = (const real_pcre *)code;
-int entrysize;
-char *first, *last;
-uschar *entry;
-if ((re->options & (PCRE_DUPNAMES | PCRE_JCHANGED)) == 0)
-  return pcre_get_stringnumber(code, stringname);
-entrysize = pcre_get_stringtable_entries(code, stringname, &first, &last);
-if (entrysize <= 0) return entrysize;
-for (entry = (uschar *)first; entry <= (uschar *)last; entry += entrysize)
-  {
-  int n = (entry[0] << 8) + entry[1];
-  if (ovector[n*2] >= 0) return n;
-  }
-return (first[0] << 8) + first[1];
+	const real_pcre *re = (const real_pcre *)code;
+	int entrysize;
+	char *first, *last;
+	uschar *entry;
+
+	if( (re->options & (PCRE_DUPNAMES | PCRE_JCHANGED)) == 0 )
+		return pcre_get_stringnumber(code, stringname);
+
+	entrysize = pcre_get_stringtable_entries(code, stringname, &first, &last);
+
+	if( entrysize <= 0 )
+		return entrysize;
+
+	for( entry = (uschar *)first; entry <= (uschar *)last; entry += entrysize ) {
+		int n = (entry[0] << 8) + entry[1];
+
+		if (ovector[n*2] >= 0)
+			return n;
+	}
+
+	return (first[0] << 8) + first[1];
 }
 
 
@@ -227,19 +233,23 @@ Returns:         if successful:
                    PCRE_ERROR_NOSUBSTRING (-7) no such captured substring
 */
 
-int
-pcre_copy_substring(const char *subject, int *ovector, int stringcount,
-  int stringnumber, char *buffer, int size)
+int pcre_copy_substring(const char *subject, int *ovector, int stringcount,
+	int stringnumber, char *buffer, int size)
 {
-int yield;
-if (stringnumber < 0 || stringnumber >= stringcount)
-  return PCRE_ERROR_NOSUBSTRING;
-stringnumber *= 2;
-yield = ovector[stringnumber+1] - ovector[stringnumber];
-if (size < yield + 1) return PCRE_ERROR_NOMEMORY;
-memcpy(buffer, subject + ovector[stringnumber], yield);
-buffer[yield] = 0;
-return yield;
+	int yield;
+
+	if (stringnumber < 0 || stringnumber >= stringcount)
+		return PCRE_ERROR_NOSUBSTRING;
+
+	stringnumber *= 2;
+	yield = ovector[stringnumber+1] - ovector[stringnumber];
+
+	if( size < yield + 1 )
+		return PCRE_ERROR_NOMEMORY;
+	memcpy(buffer, subject + ovector[stringnumber], yield);
+
+	buffer[yield] = 0;
+	return yield;
 }
 
 
@@ -272,13 +282,13 @@ Returns:         if successful:
                    PCRE_ERROR_NOSUBSTRING (-7) no such captured substring
 */
 
-int
-pcre_copy_named_substring(const pcre *code, const char *subject, int *ovector,
-  int stringcount, const char *stringname, char *buffer, int size)
+int pcre_copy_named_substring(const pcre *code, const char *subject, int *ovector,
+	int stringcount, const char *stringname, char *buffer, int size)
 {
-int n = get_first_set(code, stringname, ovector);
-if (n <= 0) return n;
-return pcre_copy_substring(subject, ovector, stringcount, n, buffer, size);
+	int n = get_first_set(code, stringname, ovector);
+	if( n <= 0 )
+		return n;
+	return pcre_copy_substring(subject, ovector, stringcount, n, buffer, size);
 }
 
 
@@ -304,9 +314,8 @@ Returns:         if successful: 0
                    PCRE_ERROR_NOMEMORY (-6) failed to get store
 */
 
-int
-pcre_get_substring_list(const char *subject, int *ovector, int stringcount,
-  const char ***listptr)
+int pcre_get_substring_list(const char *subject, int *ovector, int stringcount,
+	const char ***listptr)
 {
 int i;
 int size = sizeof(char *);
@@ -317,7 +326,7 @@ char *p;
 for (i = 0; i < double_count; i += 2)
   size += sizeof(char *) + ovector[i+1] - ovector[i] + 1;
 
-stringlist = (char **)(pcre_malloc)(size);
+stringlist = (char **)cwtMalloc(size);
 if (stringlist == NULL) return PCRE_ERROR_NOMEMORY;
 
 *listptr = (const char **)stringlist;
@@ -349,10 +358,9 @@ Argument:   the result of a previous pcre_get_substring_list()
 Returns:    nothing
 */
 
-void
-pcre_free_substring_list(const char **pointer)
+void pcre_free_substring_list(const char **pointer)
 {
-(pcre_free)((void *)pointer);
+	CWT_FREE((void *)pointer);
 }
 
 
@@ -382,9 +390,8 @@ Returns:         if successful:
                    PCRE_ERROR_NOSUBSTRING (-7) substring not present
 */
 
-int
-pcre_get_substring(const char *subject, int *ovector, int stringcount,
-  int stringnumber, const char **stringptr)
+int pcre_get_substring(const char *subject, int *ovector, int stringcount,
+	int stringnumber, const char **stringptr)
 {
 int yield;
 char *substring;
@@ -392,7 +399,7 @@ if (stringnumber < 0 || stringnumber >= stringcount)
   return PCRE_ERROR_NOSUBSTRING;
 stringnumber *= 2;
 yield = ovector[stringnumber+1] - ovector[stringnumber];
-substring = (char *)(pcre_malloc)(yield + 1);
+substring = (char *)cwtMalloc(yield + 1);
 if (substring == NULL) return PCRE_ERROR_NOMEMORY;
 memcpy(substring, subject + ovector[stringnumber], yield);
 substring[yield] = 0;
@@ -429,13 +436,15 @@ Returns:         if successful:
                    PCRE_ERROR_NOSUBSTRING (-7) no such captured substring
 */
 
-int
-pcre_get_named_substring(const pcre *code, const char *subject, int *ovector,
-  int stringcount, const char *stringname, const char **stringptr)
+int pcre_get_named_substring(const pcre *code, const char *subject, int *ovector,
+	int stringcount, const char *stringname, const char **stringptr)
 {
-int n = get_first_set(code, stringname, ovector);
-if (n <= 0) return n;
-return pcre_get_substring(subject, ovector, stringcount, n, stringptr);
+	int n = get_first_set(code, stringname, ovector);
+
+	if( n <= 0 )
+		return n;
+
+	return pcre_get_substring(subject, ovector, stringcount, n, stringptr);
 }
 
 
@@ -452,10 +461,9 @@ Argument:   the result of a previous pcre_get_substring()
 Returns:    nothing
 */
 
-void
-pcre_free_substring(const char *pointer)
+void pcre_free_substring(const char *pointer)
 {
-(pcre_free)((void *)pointer);
+	CWT_FREE((void *)pointer);
 }
 
 /* End of pcre_get.c */

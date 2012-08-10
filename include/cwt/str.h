@@ -11,6 +11,7 @@
 
 typedef struct CwtStrNS {
 	const CWT_CHAR*   (*strerror)     (int);
+	CWT_CHAR*         (*strptime)     (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
 	size_t            (*strftime)     (CWT_CHAR *buf, size_t sz, const CWT_CHAR *format, const struct tm* ptm);
 	size_t            (*strlen)       (const CWT_CHAR*);
 	CWT_CHAR*         (*strcpy)       (CWT_CHAR *dest, const CWT_CHAR *src);
@@ -36,6 +37,7 @@ typedef struct CwtStrNS {
 	double            (*strtod)       (const CWT_CHAR *s, CWT_CHAR **endptr);
 	int               (*isalpha)      (CWT_CHAR);
 	int               (*isdigit)      (CWT_CHAR);
+	int               (*isspace)      (CWT_CHAR);
 
 	void*             (*memcpy)       (void *to, const void *from, size_t sz);
 	void*             (*memmove)      (void *to, const void *from, size_t sz);

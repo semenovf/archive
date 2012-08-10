@@ -16,8 +16,10 @@ SUBDIRS  =            \
     tests/hashtab     \
     tests/ini         \
     tests/list        \
+    tests/pcre        \
     tests/utils       \
     tests/strlist     \
+    tests/strptime    \
     tests/strutils    \
     tests/dbi         \
     tests/io/channel

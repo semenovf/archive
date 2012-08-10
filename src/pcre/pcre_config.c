@@ -58,8 +58,7 @@ Arguments:
 Returns:           0 if data returned, negative on error
 */
 
-PCRE_DATA_SCOPE int
-pcre_config(int what, void *where)
+int pcre_config(int what, void *where)
 {
 switch (what)
   {

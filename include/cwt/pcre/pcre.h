@@ -39,6 +39,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef _PCRE_H
 #define _PCRE_H
 
+#include <cwt/types.h>
+#include <cwt/pcre/pcre_internal.h>
+#include <cwt/pcre/pcreposix.h>
+
 /* The current PCRE version information. */
 
 /* NOTES FOR FUTURE MAINTAINERS: Do not use numbers with leading zeros, because
@@ -56,6 +60,8 @@ circumstance. */
 #define PCRE_MINOR          0
 #define PCRE_PRERELEASE
 #define PCRE_DATE           18-Dec-2006
+
+#ifdef __COMMENT__
 
 /* Win32 uses DLL by default; it needs special stuff for exported functions
 when building PCRE. */
@@ -82,16 +88,12 @@ when building PCRE. */
 #  endif
 #endif
 
+#endif
+
 /* Have to include stdlib.h in order to ensure that size_t is defined;
 it is needed here for malloc. */
 
 #include <stdlib.h>
-
-/* Allow for C++ users */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* Options */
 
@@ -216,21 +218,21 @@ without changing the API of the function, thereby allowing old clients to work
 without modification. */
 
 typedef struct pcre_callout_block {
-  int          version;           /* Identifies version of block */
-  /* ------------------------ Version 0 ------------------------------- */
-  int          callout_number;    /* Number compiled into pattern */
-  int         *offset_vector;     /* The offset vector */
-  PCRE_SPTR    subject;           /* The subject being matched */
-  int          subject_length;    /* The length of the subject */
-  int          start_match;       /* Offset to start of this match attempt */
-  int          current_position;  /* Where we currently are in the subject */
-  int          capture_top;       /* Max current capture */
-  int          capture_last;      /* Most recently closed capture */
-  void        *callout_data;      /* Data passed in with the call */
-  /* ------------------- Added for Version 1 -------------------------- */
-  int          pattern_position;  /* Offset to next item in the pattern */
-  int          next_item_length;  /* Length of next item in the pattern */
-  /* ------------------------------------------------------------------ */
+	int          version;           /* Identifies version of block */
+	/* ------------------------ Version 0 ------------------------------- */
+	int          callout_number;    /* Number compiled into pattern */
+	int         *offset_vector;     /* The offset vector */
+	PCRE_SPTR    subject;           /* The subject being matched */
+	int          subject_length;    /* The length of the subject */
+	int          start_match;       /* Offset to start of this match attempt */
+	int          current_position;  /* Where we currently are in the subject */
+	int          capture_top;       /* Max current capture */
+	int          capture_last;      /* Most recently closed capture */
+	void        *callout_data;      /* Data passed in with the call */
+	/* ------------------- Added for Version 1 -------------------------- */
+	int          pattern_position;  /* Offset to next item in the pattern */
+	int          next_item_length;  /* Length of next item in the pattern */
+	/* ------------------------------------------------------------------ */
 } pcre_callout_block;
 
 /* Indirection for store get and free functions. These can be set to
@@ -239,56 +241,59 @@ non-recursive case for "frames". There is also an optional callout function
 that is triggered by the (?) regex item. For Virtual Pascal, these definitions
 have to take another form. */
 
+
+typedef struct _CwtPCRENS
+{
+	pcre*           (*compile)            (const char*, int, const char**, int*, const unsigned char*);
+	pcre*           (*compile2)           (const char*, int, int*, const char**, int*, const unsigned char*);
+	int             (*config)             (int, void*);
+	int             (*copyNamedSubstring) (const pcre*, const char*, int*, int, const char*, char*, int);
+	int             (*copySubstring)      (const char*, int*, int, int, char*, int);
+	int             (*dfaExec)            (const pcre*, const pcre_extra*, const char*, int, int, int, int*, int , int*, int);
+	int             (*exec)               (const pcre*, const pcre_extra*, PCRE_SPTR, int, int, int, int*, int);
+	void            (*freeSubstring)      (const char*);
+	void            (*freeSubstringList)  (const char**);
+	int             (*fullinfo)           (const pcre*, const pcre_extra*, int, void*);
+	int             (*namedSubstring)     (const pcre*, const char*, int*, int, const char*, const char**);
+	int             (*stringnumber)       (const pcre*, const char *);
+	int             (*stringtableEntries) (const pcre*, const char*, char**, char**);
+	int             (*substring)          (const char*, int*, int, int, const char**);
+	int             (*substringList)      (const char*, int*, int, const char***);
+	int             (*info)               (const pcre*, int*, int*);
+	const UCHAR*    (*maketables)         (void);
+	int             (*refcount)           (pcre*, int);
+	pcre_extra*     (*study)              (const pcre*, int, const char**);
+	const CWT_CHAR* (*version)            (void);
+
+/* POSIX-like functions */
+	size_t          (*regerror)           (int errcode, const regex_t *preg, char *errbuf, size_t errbuf_size);
+	void            (*regfree)            (regex_t *preg);
+	int             (*regcomp)            (regex_t *preg, const char *pattern, int cflags);
+	int             (*regexec)            (const regex_t *preg, const char *string, size_t nmatch, regmatch_t pmatch[], int eflags);
+
+	int             (*callout)            (pcre_callout_block *);
+} CwtPCRENS;
+
+EXTERN_C_BEGIN
+
+#ifdef __COMMENT__
 #ifndef VPCOMPAT
-PCRE_DATA_SCOPE void *(*pcre_malloc)(size_t);
-PCRE_DATA_SCOPE void  (*pcre_free)(void *);
-PCRE_DATA_SCOPE void *(*pcre_stack_malloc)(size_t);
-PCRE_DATA_SCOPE void  (*pcre_stack_free)(void *);
-PCRE_DATA_SCOPE int   (*pcre_callout)(pcre_callout_block *);
+DLL_API_EXPORT void *(*pcre_malloc)(size_t);
+DLL_API_EXPORT void  (*pcre_free)(void *);
+DLL_API_EXPORT void *(*pcre_stack_malloc)(size_t);
+DLL_API_EXPORT void  (*pcre_stack_free)(void *);
+DLL_API_EXPORT int   (*pcre_callout)(pcre_callout_block *);
 #else   /* VPCOMPAT */
-PCRE_DATA_SCOPE void *pcre_malloc(size_t);
-PCRE_DATA_SCOPE void  pcre_free(void *);
-PCRE_DATA_SCOPE void *pcre_stack_malloc(size_t);
-PCRE_DATA_SCOPE void  pcre_stack_free(void *);
-PCRE_DATA_SCOPE int   pcre_callout(pcre_callout_block *);
+DLL_API_EXPORT void *pcre_malloc(size_t);
+DLL_API_EXPORT void  pcre_free(void *);
+DLL_API_EXPORT void *pcre_stack_malloc(size_t);
+DLL_API_EXPORT void  pcre_stack_free(void *);
+DLL_API_EXPORT int   pcre_callout(pcre_callout_block *);
 #endif  /* VPCOMPAT */
-
-/* Exported PCRE functions */
-
-PCRE_DATA_SCOPE pcre *pcre_compile(const char *, int, const char **, int *,
-                  const unsigned char *);
-PCRE_DATA_SCOPE pcre *pcre_compile2(const char *, int, int *, const char **,
-                  int *, const unsigned char *);
-PCRE_DATA_SCOPE int  pcre_config(int, void *);
-PCRE_DATA_SCOPE int  pcre_copy_named_substring(const pcre *, const char *,
-                  int *, int, const char *, char *, int);
-PCRE_DATA_SCOPE int  pcre_copy_substring(const char *, int *, int, int, char *,
-                  int);
-PCRE_DATA_SCOPE int  pcre_dfa_exec(const pcre *, const pcre_extra *,
-                  const char *, int, int, int, int *, int , int *, int);
-PCRE_DATA_SCOPE int  pcre_exec(const pcre *, const pcre_extra *, PCRE_SPTR,
-                   int, int, int, int *, int);
-PCRE_DATA_SCOPE void pcre_free_substring(const char *);
-PCRE_DATA_SCOPE void pcre_free_substring_list(const char **);
-PCRE_DATA_SCOPE int  pcre_fullinfo(const pcre *, const pcre_extra *, int,
-                  void *);
-PCRE_DATA_SCOPE int  pcre_get_named_substring(const pcre *, const char *,
-                  int *, int, const char *, const char **);
-PCRE_DATA_SCOPE int  pcre_get_stringnumber(const pcre *, const char *);
-PCRE_DATA_SCOPE int  pcre_get_stringtable_entries(const pcre *, const char *,
-                  char **, char **);
-PCRE_DATA_SCOPE int  pcre_get_substring(const char *, int *, int, int,
-                  const char **);
-PCRE_DATA_SCOPE int  pcre_get_substring_list(const char *, int *, int,
-                  const char ***);
-PCRE_DATA_SCOPE int  pcre_info(const pcre *, int *, int *);
-PCRE_DATA_SCOPE const unsigned char *pcre_maketables(void);
-PCRE_DATA_SCOPE int  pcre_refcount(pcre *, int);
-PCRE_DATA_SCOPE pcre_extra *pcre_study(const pcre *, int, const char **);
-PCRE_DATA_SCOPE const char *pcre_version(void);
-
-#ifdef __cplusplus
-}  /* extern "C" */
 #endif
+
+DLL_API_EXPORT CwtPCRENS* cwtPCRENS(void);
+
+EXTERN_C_END
 
 #endif /* End of pcre.h */

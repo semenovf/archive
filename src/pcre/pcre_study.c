@@ -49,6 +49,7 @@ supporting functions. */
 
 enum { SSB_FAIL, SSB_DONE, SSB_CONTINUE };
 
+extern int pcre_fullinfo(const pcre *argument_re, const pcre_extra *extra_data, int what, void *where);
 
 /*************************************************
 *      Set a bit and maybe its alternate case    *
@@ -487,8 +488,7 @@ Returns:    pointer to a pcre_extra block, with study_data filled in and the
             NULL on error or if no optimization possible
 */
 
-PCRE_DATA_SCOPE pcre_extra *
-pcre_study(const pcre *external_re, int options, const char **errorptr)
+pcre_extra * pcre_study(const pcre *external_re, int options, const char **errorptr)
 {
 uschar start_bits[32];
 pcre_extra *extra;
@@ -547,7 +547,7 @@ pcre_study_data is fixed. We nevertheless save it in a field for returning via
 the pcre_fullinfo() function so that if it becomes variable in the future, we
 don't have to change that code. */
 
-extra = (pcre_extra *)(pcre_malloc)
+extra = (pcre_extra *)cwtMalloc
   (sizeof(pcre_extra) + sizeof(pcre_study_data));
 
 if (extra == NULL)

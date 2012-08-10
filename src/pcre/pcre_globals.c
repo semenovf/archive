@@ -49,7 +49,7 @@ differently, and global variables are not used (see pcre.in). */
 
 #include "cwt/pcre/pcre_internal.h"
 
-
+#ifdef __COMMENT__
 #ifndef VPCOMPAT
 
 /**************************************************************************
@@ -77,6 +77,7 @@ void  (*pcre_free)(void *) = free;
 void *(*pcre_stack_malloc)(size_t) = malloc;
 void  (*pcre_stack_free)(void *) = free;
 int   (*pcre_callout)(pcre_callout_block *) = NULL;
+#endif
 #endif
 
 /* End of pcre_globals.c */

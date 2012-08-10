@@ -866,7 +866,7 @@ for (;;)
     function is able to force a failure. */
 
     case OP_CALLOUT:
-    if (pcre_callout != NULL)
+    if( cwtPCRENS()->callout != NULL )
       {
       pcre_callout_block cb;
       cb.version          = 1;   /* Version 1 of the callout block */
@@ -881,7 +881,7 @@ for (;;)
       cb.capture_top      = offset_top/2;
       cb.capture_last     = md->capture_last;
       cb.callout_data     = md->callout_data;
-      if ((rrc = (*pcre_callout)(&cb)) > 0) RRETURN(MATCH_NOMATCH);
+      if ((rrc = cwtPCRENS()->callout(&cb)) > 0) RRETURN(MATCH_NOMATCH);
       if (rrc < 0) RRETURN(rrc);
       }
     ecode += 2 + 2*LINK_SIZE;
@@ -930,7 +930,7 @@ for (;;)
       else
         {
         new_recursive.offset_save =
-          (int *)(pcre_malloc)(new_recursive.saved_max * sizeof(int));
+          (int *)cwtMalloc(new_recursive.saved_max * sizeof(int));
         if (new_recursive.offset_save == NULL) RRETURN(PCRE_ERROR_NOMEMORY);
         }
 
@@ -953,7 +953,7 @@ for (;;)
           DPRINTF(("Recursion matched\n"));
           md->recursive = new_recursive.prevrec;
           if (new_recursive.offset_save != stacksave)
-            (pcre_free)(new_recursive.offset_save);
+            CWT_FREE(new_recursive.offset_save);
           RRETURN(MATCH_MATCH);
           }
         else if (rrc != MATCH_NOMATCH)
@@ -972,7 +972,7 @@ for (;;)
       DPRINTF(("Recursion didn't match\n"));
       md->recursive = new_recursive.prevrec;
       if (new_recursive.offset_save != stacksave)
-        (pcre_free)(new_recursive.offset_save);
+        CWT_FREE(new_recursive.offset_save);
       RRETURN(MATCH_NOMATCH);
       }
     /* Control never reaches here */
@@ -3686,10 +3686,9 @@ Returns:          > 0 => success; value is the number of elements filled in
                  < -1 => some kind of unexpected problem
 */
 
-PCRE_DATA_SCOPE int
-pcre_exec(const pcre *argument_re, const pcre_extra *extra_data,
-  PCRE_SPTR subject, int length, int start_offset, int options, int *offsets,
-  int offsetcount)
+int pcre_exec(const pcre *argument_re, const pcre_extra *extra_data,
+	PCRE_SPTR subject, int length, int start_offset, int options, int *offsets,
+	int offsetcount)
 {
 int rc, resetcount, ocount;
 int first_byte = -1;
@@ -3879,7 +3878,7 @@ ocount = offsetcount - (offsetcount % 3);
 if (re->top_backref > 0 && re->top_backref >= ocount/3)
   {
   ocount = re->top_backref * 3 + 3;
-  md->offset_vector = (int *)(pcre_malloc)(ocount * sizeof(int));
+  md->offset_vector = (int *)cwtMalloc(ocount * sizeof(int));
   if (md->offset_vector == NULL) return PCRE_ERROR_NOMEMORY;
   using_temporary_offsets = TRUE;
   DPRINTF(("Got memory to hold back references\n"));
@@ -4150,7 +4149,7 @@ if (rc == MATCH_MATCH)
       }
     if (md->end_offset_top > offsetcount) md->offset_overflow = TRUE;
     DPRINTF(("Freeing temporary memory\n"));
-    (pcre_free)(md->offset_vector);
+    CWT_FREE(md->offset_vector);
     }
 
   /* Set the return code to the number of captured strings, or 0 if there are
@@ -4173,11 +4172,10 @@ if (rc == MATCH_MATCH)
 /* Control gets here if there has been an error, or if the overall match
 attempt has failed at all permitted starting positions. */
 
-if (using_temporary_offsets)
-  {
-  DPRINTF(("Freeing temporary memory\n"));
-  (pcre_free)(md->offset_vector);
-  }
+	if (using_temporary_offsets) {
+		DPRINTF(("Freeing temporary memory\n"));
+		CWT_FREE(md->offset_vector);
+	}
 
 if (rc != MATCH_NOMATCH)
   {

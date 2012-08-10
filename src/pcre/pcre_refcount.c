@@ -63,8 +63,7 @@ Returns:        the (possibly updated) count value (a non-negative number), or
                 a negative error number
 */
 
-PCRE_DATA_SCOPE int
-pcre_refcount(pcre *argument_re, int adjust)
+int pcre_refcount(pcre *argument_re, int adjust)
 {
 real_pcre *re = (real_pcre *)argument_re;
 if (re == NULL) return PCRE_ERROR_NULL;

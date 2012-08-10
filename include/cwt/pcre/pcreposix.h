@@ -43,12 +43,10 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Have to include stdlib.h in order to ensure that size_t is defined. */
 
 #include <stdlib.h>
-
+#include <cwt/types.h>
 /* Allow for C++ users */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /* Options, mostly defined by POSIX, but with a couple of extras. */
 
@@ -105,6 +103,8 @@ typedef struct {
   regoff_t rm_eo;
 } regmatch_t;
 
+
+#ifdef __COMMENT__
 /* Win32 uses DLL by default; it needs special stuff for exported functions
 when building PCRE. */
 
@@ -139,9 +139,8 @@ PCRE_DATA_SCOPE int regexec(const regex_t *, const char *, size_t,
                   regmatch_t *, int);
 PCRE_DATA_SCOPE size_t regerror(int, const regex_t *, char *, size_t);
 PCRE_DATA_SCOPE void regfree(regex_t *);
-
-#ifdef __cplusplus
-}   /* extern "C" */
 #endif
+
+EXTERN_C_END
 
 #endif /* End of pcreposix.h */

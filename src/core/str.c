@@ -82,6 +82,7 @@ static CWT_CHAR* __cwt_strndup      (const CWT_CHAR *s, size_t n);
 #ifndef CWT_UNICODE
 static int       __cwt_isalpha      (CWT_CHAR ch) { return isalpha(ch); }
 static int       __cwt_isdigit      (CWT_CHAR ch) { return isdigit(ch); }
+static int       __cwt_isspace      (CWT_CHAR ch) { return isspace(ch); }
 #endif
 static CWT_CHAR  __cwt_toupper      (CWT_CHAR ch);
 static CWT_CHAR  __cwt_tolower      (CWT_CHAR ch);
@@ -91,6 +92,7 @@ static CWT_CHAR* __cwt_strrstr(const CWT_CHAR *s, const CWT_CHAR *substr);
 static void      __cwt_chomp(CWT_CHAR *s);
 
 EXTERN_C_BEGIN
+extern CWT_CHAR* __cwt_strptime     (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
 extern LONGLONG  __cwt_toLONGLONG   (const CWT_CHAR *str, int radix, BOOL *ok);
 extern ULONGLONG __cwt_toULONGLONG  (const CWT_CHAR *str, int radix, BOOL *ok);
 extern LONG      __cwt_toLONG       (const CWT_CHAR *str, int radix, BOOL *ok);
@@ -115,6 +117,7 @@ static const CWT_CHAR* __cwt_constNullStr(void);
 
 static CwtStrNS __cwtStrNS = {
 	__cwt_strerror
+	, __cwt_strptime
 #ifdef CWT_UNICODE
 	, wcsftime
 	, wcslen
@@ -146,6 +149,7 @@ static CwtStrNS __cwtStrNS = {
 	, wcstod
 	, iswalpha
 	, iswdigit
+	, iswspace
 #else /*CWT_UNICODE*/
 	, strftime
 	, strlen
@@ -182,6 +186,7 @@ static CwtStrNS __cwtStrNS = {
 	, strtod
 	, __cwt_isalpha
 	, __cwt_isdigit
+	, __cwt_isspace
 #endif /*!CWT_UNICODE*/
 	, memcpy
 	, memmove
@@ -402,68 +407,32 @@ static void __cwt_chomp(CWT_CHAR *s)
  *
  * @note There is restriction in this function: only predefined formats are supported:
  * @arg [H]H:[M]M[:[S]S[.sss]]
+ * @arg HHMMSS
+ * @arg HHMMSSsss
  *
  * TODO format support must be implemented
  */
 static void __cwt_toTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok)
 {
-#ifdef __COMMENT__
-	#define _ST_HOUR  0
-	#define _ST_MIN   1
-	#define _ST_SEC   2
-	#define _ST_PSEC  3
+	struct tm tm_;
+	CWT_CHAR *ptr;
 
-	CwtStrNS *strNS = cwtStrNS();
-	int state = _ST_HOUR;
-	size_t i = 0;
-	int n = 0;
-	size_t len = strNS->strlen(str);
-	BOOL okk = TRUE;
+	if( !format )
+		format = _T("%H:%M:%S");
 
-	CWT_UNUSED(format);
+	ptr = __cwtStrNS.strptime(str, format, &tm_);
 
-	while( i < len ) {
-		switch( state ) {
-		case _ST_HOUR:
-			if( str[i] == _T(':') ) {
-				if( !n || n > 2 ) {
-					okk = FALSE;
-					break;
-				}
-				n = -1;
-				state = _ST_MIN;
-			} else if( !strNS->isdigit(str[i]) ) {
-				okk = FALSE;
-			}
-			break;
+	if( ptr || *ptr == _T('\0') ) {
+		if( ok )
+			*ok = TRUE;
 
-		case _ST_MIN:
-			if( str[i] == _T(':') ) {
-				begi = i + 1;
-				state = _ST_SEC;
-			}
-			break;
-
-		case _ST_SEC:
-			if( str[i] == _T('.') ) {
-				begi = i + 1;
-				state = _ST_PSEC;
-			}
-			break;
-
-		case _ST_PSEC:
-		default: break;
-		}
-
-		if(!okk )
-			break;
-		i++;
-		n++;
+		tm->hour = tm_.tm_hour;
+		tm->min  = tm_.tm_min;
+		tm->sec  = tm_.tm_sec;
+	} else {
+		if( ok )
+			*ok = FALSE;
 	}
-
-	if( ok )
-		*ok = okk;
-#endif
 }
 
 /**
@@ -479,12 +448,31 @@ static void __cwt_toTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *form
  * @arg [d]d/[m]m[/[yy]yy]
  * @arg yyyy.[m]m.[d]d
  * @arg yyyy/[m]m/[d]d
+ * @arg yyyymmdd
  *
  * TODO format support must be implemented
  */
 static void __cwt_toDate(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok)
 {
+	struct tm tm_;
+	CWT_CHAR *ptr;
 
+	if( !format )
+		format = _T("%d.%m.%Y");
+
+	ptr = __cwtStrNS.strptime(str, format, &tm_);
+
+	if( ptr || *ptr == _T('\0') ) {
+		if( ok )
+			*ok = TRUE;
+
+		tm->year = tm_.tm_year + 1900;
+		tm->mon  = tm_.tm_mon + 1;
+		tm->day  = tm_.tm_mday;
+	} else {
+		if( ok )
+			*ok = FALSE;
+	}
 }
 
 /**
@@ -524,6 +512,14 @@ static CWT_CHAR __charAt(const CWT_CHAR *s, size_t i)
 	return s[i];
 }
 */
+
+
+
+
+
+
+
+
 
 static const CWT_CHAR* __cwt_constEmptyStr(void)
 {

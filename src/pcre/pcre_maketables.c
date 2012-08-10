@@ -63,14 +63,13 @@ Arguments:   none
 Returns:     pointer to the contiguous block of data
 */
 
-const unsigned char *
-pcre_maketables(void)
+const unsigned char* pcre_maketables(void)
 {
 unsigned char *yield, *p;
 int i;
 
 #ifndef DFTABLES
-yield = (unsigned char*)(pcre_malloc)(tables_length);
+yield = (unsigned char*)cwtMalloc(tables_length);
 #else
 yield = (unsigned char*)malloc(tables_length);
 #endif

@@ -68,8 +68,7 @@ Returns:        number of capturing subpatterns
                 or negative values on error
 */
 
-PCRE_DATA_SCOPE int
-pcre_info(const pcre *argument_re, int *optptr, int *first_byte)
+int pcre_info(const pcre *argument_re, int *optptr, int *first_byte)
 {
 real_pcre internal_re;
 const real_pcre *re = (const real_pcre *)argument_re;

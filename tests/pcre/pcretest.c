@@ -37,12 +37,12 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 #include <ctype.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 #include <locale.h>
 #include <errno.h>
+#include <cwt/stdio.h>
 
 
 /* A number of things vary for Windows builds. Originally, pcretest opened its
@@ -74,7 +74,7 @@ the results of pcre_study() and we also need to know about the internal
 macros, structures, and other internal data values; pcretest has "inside
 information" compared to a program that strictly follows the PCRE API. */
 
-#include "cwt/pcre/pcre_internal.h"
+#include <cwt/pcre/pcre.h>
 
 /* We need access to the data tables that PCRE uses. So as not to have to keep
 two copies, we include the source file here, changing the names of the external
@@ -89,7 +89,7 @@ symbols to prevent clashes. */
 #define _pcre_utt_size         utt_size
 #define _pcre_OP_lengths       OP_lengths
 
-#include "pcre_tables.c"
+#include "../../src/pcre/pcre_tables.c"
 
 /* We also need the pcre_printint() function for printing out compiled
 patterns. This function is in a separate file so that it can be included in
@@ -101,7 +101,7 @@ contained in this file. We uses it here also, in cases when the locale has not
 been explicitly changed, so as to get consistent output from systems that
 differ in their output from isprint() even in the "C" locale. */
 
-#include "pcre_printint.src"
+#include "../../src/pcre/pcre_printint.src"
 
 #define PRINTHEX(c) (locale_set? isprint(c) : PRINTABLE(c))
 
@@ -156,6 +156,7 @@ static uschar *dbuffer = NULL;
 static uschar *pbuffer = NULL;
 
 
+static CwtPCRENS *__pcreNS = NULL;
 
 /*************************************************
 *        Read or extend an input line            *
@@ -530,6 +531,7 @@ return (cb->callout_number != callout_fail_id)? 0 :
 /* Alternative malloc function, to test functionality and show the size of the
 compiled re. */
 
+/*
 static void *new_malloc(size_t size)
 {
 void *block = malloc(size);
@@ -538,7 +540,9 @@ if (show_malloc)
   fprintf(outfile, "malloc       %3d %p\n", (int)size, block);
 return block;
 }
+*/
 
+/*
 static void new_free(void *block)
 {
 if (show_malloc)
@@ -546,9 +550,11 @@ if (show_malloc)
 free(block);
 }
 
+*/
 
 /* For recursion malloc/free, to test stacking calls */
 
+/*
 static void *stack_malloc(size_t size)
 {
 void *block = malloc(size);
@@ -556,13 +562,16 @@ if (show_malloc)
   fprintf(outfile, "stack_malloc %3d %p\n", (int)size, block);
 return block;
 }
+*/
 
+/*
 static void stack_free(void *block)
 {
 if (show_malloc)
   fprintf(outfile, "stack_free       %p\n", block);
 free(block);
 }
+*/
 
 
 /*************************************************
@@ -573,9 +582,9 @@ free(block);
 
 static void new_info(pcre *re, pcre_extra *study, int option, void *ptr)
 {
-int rc;
-if ((rc = pcre_fullinfo(re, study, option, ptr)) < 0)
-  fprintf(outfile, "Error %d from pcre_fullinfo(%d)\n", rc, option);
+	int rc;
+	if( (rc = __pcreNS->fullinfo(re, study, option, ptr)) < 0 )
+	  fprintf(outfile, "Error %d from pcre_fullinfo(%d)\n", rc, option);
 }
 
 
@@ -617,7 +626,7 @@ for (;;)
   {
   *limit = mid;
 
-  count = pcre_exec(re, extra, (char *)bptr, len, start_offset, options,
+  count = __pcreNS->exec(re, extra, (char *)bptr, len, start_offset, options,
     use_offsets, use_size_offsets);
 
   if (count == errnumber)
@@ -747,6 +756,9 @@ uschar getnames[1024];
 uschar *copynamesptr;
 uschar *getnamesptr;
 
+
+__pcreNS = cwtPCRENS();
+
 /* Get buffers from malloc() so that Electric Fence will check their misuse
 when I am debugging. They grow automatically when very long lines are read. */
 
@@ -831,25 +843,28 @@ while (argc > 1 && argv[op][0] == '-')
   else if (strcmp(argv[op], "-C") == 0)
     {
     int rc;
-    printf("PCRE version %s\n", pcre_version());
+    cwtStdioNS()->printf(_T("PCRE version %s\n"), __pcreNS->version());
+
     printf("Compiled with\n");
-    (void)pcre_config(PCRE_CONFIG_UTF8, &rc);
+    (void)__pcreNS->config(PCRE_CONFIG_UTF8, &rc);
+
     printf("  %sUTF-8 support\n", rc? "" : "No ");
-    (void)pcre_config(PCRE_CONFIG_UNICODE_PROPERTIES, &rc);
+    (void)__pcreNS->config(PCRE_CONFIG_UNICODE_PROPERTIES, &rc);
+
     printf("  %sUnicode properties support\n", rc? "" : "No ");
-    (void)pcre_config(PCRE_CONFIG_NEWLINE, &rc);
+    (void)__pcreNS->config(PCRE_CONFIG_NEWLINE, &rc);
     printf("  Newline sequence is %s\n", (rc == '\r')? "CR" :
       (rc == '\n')? "LF" : (rc == ('\r'<<8 | '\n'))? "CRLF" :
       (rc == -1)? "ANY" : "???");
-    (void)pcre_config(PCRE_CONFIG_LINK_SIZE, &rc);
+    (void)__pcreNS->config(PCRE_CONFIG_LINK_SIZE, &rc);
     printf("  Internal link size = %d\n", rc);
-    (void)pcre_config(PCRE_CONFIG_POSIX_MALLOC_THRESHOLD, &rc);
+    (void)__pcreNS->config(PCRE_CONFIG_POSIX_MALLOC_THRESHOLD, &rc);
     printf("  POSIX malloc threshold = %d\n", rc);
-    (void)pcre_config(PCRE_CONFIG_MATCH_LIMIT, &rc);
+    (void)__pcreNS->config(PCRE_CONFIG_MATCH_LIMIT, &rc);
     printf("  Default match limit = %d\n", rc);
-    (void)pcre_config(PCRE_CONFIG_MATCH_LIMIT_RECURSION, &rc);
+    (void)__pcreNS->config(PCRE_CONFIG_MATCH_LIMIT_RECURSION, &rc);
     printf("  Default recursion depth limit = %d\n", rc);
-    (void)pcre_config(PCRE_CONFIG_STACKRECURSE, &rc);
+    (void)__pcreNS->config(PCRE_CONFIG_STACKRECURSE, &rc);
     printf("  Match recursion uses %s\n", rc? "stack" : "heap");
     exit(0);
     }
@@ -907,15 +922,18 @@ if (argc > 2)
   }
 
 /* Set alternative malloc function */
+/*
 
 pcre_malloc = new_malloc;
 pcre_free = new_free;
 pcre_stack_malloc = stack_malloc;
 pcre_stack_free = stack_free;
+*/
 
 /* Heading line unless quiet, then prompt for first regex if stdin */
 
-if (!quiet) fprintf(outfile, "PCRE version %s\n\n", pcre_version());
+if( !quiet )
+	cwtStdioNS()->fprintf(outfile, _T("PCRE version %s\n\n"), __pcreNS->version());
 
 /* Main loop */
 
@@ -982,7 +1000,7 @@ while (!done)
     true_study_size =
       (sbuf[4] << 24) | (sbuf[5] << 16) | (sbuf[6] << 8) | sbuf[7];
 
-    re = (real_pcre *)new_malloc(true_size);
+    re = (real_pcre *)cwtMalloc(true_size);
     regex_gotten_store = gotten_store;
 
     if (fread(re, 1, true_size, f) != true_size) goto FAIL_READ;
@@ -1016,7 +1034,7 @@ while (!done)
       {
       pcre_study_data *psd;
 
-      extra = (pcre_extra *)new_malloc(sizeof(pcre_extra) + true_study_size);
+      extra = (pcre_extra *)cwtMalloc(sizeof(pcre_extra) + true_study_size);
       extra->flags = PCRE_EXTRA_STUDY_DATA;
 
       psd = (pcre_study_data *)(((char *)extra) + sizeof(pcre_extra));
@@ -1026,8 +1044,13 @@ while (!done)
         {
         FAIL_READ:
         fprintf(outfile, "Failed to read data from %s\n", p);
-        if (extra != NULL) new_free(extra);
-        if (re != NULL) new_free(re);
+
+        if( extra != NULL )
+        	CWT_FREE(extra);
+
+        if( re != NULL )
+        	CWT_FREE(re);
+
         fclose(f);
         continue;
         }
@@ -1142,7 +1165,7 @@ while (!done)
         goto SKIP_DATA;
         }
       locale_set = 1;
-      tables = pcre_maketables();
+      tables = __pcreNS->maketables();
       pp = ppp;
       break;
 
@@ -1189,14 +1212,14 @@ while (!done)
     if ((options & PCRE_NO_AUTO_CAPTURE) != 0) cflags |= REG_NOSUB;
     if ((options & PCRE_UTF8) != 0) cflags |= REG_UTF8;
 
-    rc = regcomp(&preg, (char *)p, cflags);
+    rc = __pcreNS->regcomp(&preg, (char *)p, cflags);
 
     /* Compilation failed; go back for another re, skipping to blank line
     if non-interactive. */
 
     if (rc != 0)
       {
-      (void)regerror(rc, &preg, (char *)buffer, buffer_size);
+      (void)__pcreNS->regerror(rc, &preg, (char *)buffer, buffer_size);
       fprintf(outfile, "Failed: POSIX code %d: %s\n", rc, buffer);
       goto SKIP_DATA;
       }
@@ -1215,7 +1238,7 @@ while (!done)
       clock_t start_time = clock();
       for (i = 0; i < timeit; i++)
         {
-        re = pcre_compile((char *)p, options, &error, &erroroffset, tables);
+        re = __pcreNS->compile((char *)p, options, &error, &erroroffset, tables);
         if (re != NULL) free(re);
         }
       time_taken = clock() - start_time;
@@ -1224,7 +1247,7 @@ while (!done)
           (double)CLOCKS_PER_SEC);
       }
 
-    re = pcre_compile((char *)p, options, &error, &erroroffset, tables);
+    re = __pcreNS->compile((char *)p, options, &error, &erroroffset, tables);
 
     /* Compilation failed; go back for another re, skipping to blank line
     if non-interactive. */
@@ -1278,14 +1301,14 @@ while (!done)
         clock_t time_taken;
         clock_t start_time = clock();
         for (i = 0; i < timeit; i++)
-          extra = pcre_study(re, study_options, &error);
+          extra = __pcreNS->study(re, study_options, &error);
         time_taken = clock() - start_time;
         if (extra != NULL) free(extra);
         fprintf(outfile, "  Study time %.4f milliseconds\n",
           (((double)time_taken * 1000.0) / (double)timeit) /
             (double)CLOCKS_PER_SEC);
         }
-      extra = pcre_study(re, study_options, &error);
+      extra = __pcreNS->study(re, study_options, &error);
       if (error != NULL)
         fprintf(outfile, "Failed to study: %s\n", error);
       else if (extra != NULL)
@@ -1297,29 +1320,27 @@ while (!done)
     possible to test PCRE's handling of byte-flipped patterns, e.g. those
     compiled on a different architecture. */
 
-    if (do_flip)
-      {
-      real_pcre *rre = (real_pcre *)re;
-      rre->magic_number = byteflip(rre->magic_number, sizeof(rre->magic_number));
-      rre->size = byteflip(rre->size, sizeof(rre->size));
-      rre->options = byteflip(rre->options, sizeof(rre->options));
-      rre->top_bracket = byteflip(rre->top_bracket, sizeof(rre->top_bracket));
-      rre->top_backref = byteflip(rre->top_backref, sizeof(rre->top_backref));
-      rre->first_byte = byteflip(rre->first_byte, sizeof(rre->first_byte));
-      rre->req_byte = byteflip(rre->req_byte, sizeof(rre->req_byte));
-      rre->name_table_offset = byteflip(rre->name_table_offset,
-        sizeof(rre->name_table_offset));
-      rre->name_entry_size = byteflip(rre->name_entry_size,
-        sizeof(rre->name_entry_size));
-      rre->name_count = byteflip(rre->name_count, sizeof(rre->name_count));
+	if (do_flip) {
+		real_pcre *rre = (real_pcre *)re;
+		rre->magic_number = byteflip(rre->magic_number, sizeof(rre->magic_number));
+		rre->size = byteflip(rre->size, sizeof(rre->size));
+		rre->options = byteflip(rre->options, sizeof(rre->options));
+		rre->top_bracket = (pcre_uint16)byteflip(rre->top_bracket, sizeof(rre->top_bracket));
+		rre->top_backref = (pcre_uint16)byteflip(rre->top_backref, sizeof(rre->top_backref));
+		rre->first_byte = (pcre_uint16)byteflip(rre->first_byte, sizeof(rre->first_byte));
+		rre->req_byte = (pcre_uint16)byteflip(rre->req_byte, sizeof(rre->req_byte));
+		rre->name_table_offset = (pcre_uint16)byteflip(rre->name_table_offset,
+			sizeof(rre->name_table_offset));
+		rre->name_entry_size = (pcre_uint16)byteflip(rre->name_entry_size,
+			sizeof(rre->name_entry_size));
+		rre->name_count = (pcre_uint16)byteflip(rre->name_count, sizeof(rre->name_count));
 
-      if (extra != NULL)
-        {
-        pcre_study_data *rsd = (pcre_study_data *)(extra->study_data);
-        rsd->size = byteflip(rsd->size, sizeof(rsd->size));
-        rsd->options = byteflip(rsd->options, sizeof(rsd->options));
-        }
-      }
+		if (extra != NULL) {
+			pcre_study_data *rsd = (pcre_study_data *)(extra->study_data);
+			rsd->size = byteflip(rsd->size, sizeof(rsd->size));
+			rsd->options = byteflip(rsd->options, sizeof(rsd->options));
+		}
+	}
 
     /* Extract information from the compiled data if required */
 
@@ -1352,7 +1373,7 @@ while (!done)
       new_info(re, NULL, PCRE_INFO_NAMETABLE, (void *)&nametable);
 
 #if !defined NOINFOCHECK
-      old_count = pcre_info(re, &old_options, &old_first_char);
+      old_count = __pcreNS->info(re, &old_options, &old_first_char);
       if (count < 0) fprintf(outfile,
         "Error %d from pcre_info()\n", count);
       else
@@ -1570,9 +1591,9 @@ while (!done)
         fclose(f);
         }
 
-      new_free(re);
-      if (extra != NULL) new_free(extra);
-      if (tables != NULL) new_free((void *)tables);
+      CWT_FREE(re);
+      if (extra != NULL) CWT_FREE(extra);
+      if (tables != NULL) CWT_FREE((void *)tables);
       continue;  /* With next regex */
       }
     }        /* End of non-POSIX compile */
@@ -1605,7 +1626,7 @@ while (!done)
     copynamesptr = copynames;
     getnamesptr = getnames;
 
-    pcre_callout = callout;
+    __pcreNS->callout = callout;
     first_callout = 1;
     callout_extra = 0;
     callout_count = 0;
@@ -1736,7 +1757,8 @@ while (!done)
           while (isalnum(*p)) *npp++ = *p++;
           *npp++ = 0;
           *npp = 0;
-          n = pcre_get_stringnumber(re, (char *)copynamesptr);
+          n = __pcreNS->stringnumber(re, (char *)copynamesptr);
+
           if (n < 0)
             fprintf(outfile, "no parentheses with name \"%s\"\n", copynamesptr);
           copynamesptr = npp;
@@ -1748,7 +1770,7 @@ while (!done)
           }
         else if (*p == '-')
           {
-          pcre_callout = NULL;
+          __pcreNS->callout = NULL;
           p++;
           }
         else if (*p == '!')
@@ -1804,7 +1826,7 @@ while (!done)
           while (isalnum(*p)) *npp++ = *p++;
           *npp++ = 0;
           *npp = 0;
-          n = pcre_get_stringnumber(re, (char *)getnamesptr);
+          n = __pcreNS->stringnumber(re, (char *)getnamesptr);
           if (n < 0)
             fprintf(outfile, "no parentheses with name \"%s\"\n", getnamesptr);
           getnamesptr = npp;
@@ -1920,11 +1942,11 @@ while (!done)
       if ((options & PCRE_NOTBOL) != 0) eflags |= REG_NOTBOL;
       if ((options & PCRE_NOTEOL) != 0) eflags |= REG_NOTEOL;
 
-      rc = regexec(&preg, (const char *)bptr, use_size_offsets, pmatch, eflags);
+      rc = __pcreNS->regexec(&preg, (const char *)bptr, use_size_offsets, pmatch, eflags);
 
       if (rc != 0)
         {
-        (void)regerror(rc, &preg, (char *)buffer, buffer_size);
+        (void)__pcreNS->regerror(rc, &preg, (char *)buffer, buffer_size);
         fprintf(outfile, "No match: POSIX code %d: %s\n", rc, buffer);
         }
       else if ((((const pcre *)preg.re_pcre)->options & PCRE_NO_AUTO_CAPTURE)
@@ -1974,7 +1996,7 @@ while (!done)
           {
           int workspace[1000];
           for (i = 0; i < timeitm; i++)
-            count = pcre_dfa_exec(re, NULL, (char *)bptr, len, start_offset,
+            count = __pcreNS->dfaExec(re, NULL, (char *)bptr, len, start_offset,
               options | g_notempty, use_offsets, use_size_offsets, workspace,
               sizeof(workspace)/sizeof(int));
           }
@@ -1982,7 +2004,7 @@ while (!done)
 #endif
 
         for (i = 0; i < timeitm; i++)
-          count = pcre_exec(re, extra, (char *)bptr, len,
+          count = __pcreNS->exec(re, extra, (char *)bptr, len,
             start_offset, options | g_notempty, use_offsets, use_size_offsets);
 
         time_taken = clock() - start_time;
@@ -2025,7 +2047,7 @@ while (!done)
           }
         extra->flags |= PCRE_EXTRA_CALLOUT_DATA;
         extra->callout_data = &callout_data;
-        count = pcre_exec(re, extra, (char *)bptr, len, start_offset,
+        count = __pcreNS->exec(re, extra, (char *)bptr, len, start_offset,
           options | g_notempty, use_offsets, use_size_offsets);
         extra->flags &= ~PCRE_EXTRA_CALLOUT_DATA;
         }
@@ -2037,7 +2059,7 @@ while (!done)
       else if (all_use_dfa || use_dfa)
         {
         int workspace[1000];
-        count = pcre_dfa_exec(re, NULL, (char *)bptr, len, start_offset,
+        count = __pcreNS->dfaExec(re, NULL, (char *)bptr, len, start_offset,
           options | g_notempty, use_offsets, use_size_offsets, workspace,
           sizeof(workspace)/sizeof(int));
         if (count == 0)
@@ -2050,7 +2072,7 @@ while (!done)
 
       else
         {
-        count = pcre_exec(re, extra, (char *)bptr, len,
+        count = __pcreNS->exec(re, extra, (char *)bptr, len,
           start_offset, options | g_notempty, use_offsets, use_size_offsets);
         if (count == 0)
           {
@@ -2113,7 +2135,7 @@ while (!done)
           if ((copystrings & (1 << i)) != 0)
             {
             char copybuffer[256];
-            int rc = pcre_copy_substring((char *)bptr, use_offsets, count,
+            int rc = __pcreNS->copySubstring((char *)bptr, use_offsets, count,
               i, copybuffer, sizeof(copybuffer));
             if (rc < 0)
               fprintf(outfile, "copy substring %d failed %d\n", i, rc);
@@ -2127,7 +2149,7 @@ while (!done)
              copynamesptr += (int)strlen((char*)copynamesptr) + 1)
           {
           char copybuffer[256];
-          int rc = pcre_copy_named_substring(re, (char *)bptr, use_offsets,
+          int rc = __pcreNS->copyNamedSubstring(re, (char *)bptr, use_offsets,
             count, (char *)copynamesptr, copybuffer, sizeof(copybuffer));
           if (rc < 0)
             fprintf(outfile, "copy substring %s failed %d\n", copynamesptr, rc);
@@ -2140,14 +2162,14 @@ while (!done)
           if ((getstrings & (1 << i)) != 0)
             {
             const char *substring;
-            int rc = pcre_get_substring((char *)bptr, use_offsets, count,
+            int rc = __pcreNS->substring((char *)bptr, use_offsets, count,
               i, &substring);
             if (rc < 0)
               fprintf(outfile, "get substring %d failed %d\n", i, rc);
             else
               {
               fprintf(outfile, "%2dG %s (%d)\n", i, substring, rc);
-              pcre_free_substring(substring);
+              __pcreNS->freeSubstring(substring);
               }
             }
           }
@@ -2157,21 +2179,21 @@ while (!done)
              getnamesptr += (int)strlen((char*)getnamesptr) + 1)
           {
           const char *substring;
-          int rc = pcre_get_named_substring(re, (char *)bptr, use_offsets,
+          int rc = __pcreNS->namedSubstring(re, (char *)bptr, use_offsets,
             count, (char *)getnamesptr, &substring);
           if (rc < 0)
             fprintf(outfile, "copy substring %s failed %d\n", getnamesptr, rc);
           else
             {
             fprintf(outfile, "  G %s (%d) %s\n", substring, rc, getnamesptr);
-            pcre_free_substring(substring);
+            __pcreNS->freeSubstring(substring);
             }
           }
 
         if (getlist)
           {
           const char **stringlist;
-          int rc = pcre_get_substring_list((char *)bptr, use_offsets, count,
+          int rc = __pcreNS->substringList((char *)bptr, use_offsets, count,
             &stringlist);
           if (rc < 0)
             fprintf(outfile, "get substring list failed %d\n", rc);
@@ -2182,7 +2204,7 @@ while (!done)
             if (stringlist[i] != NULL)
               fprintf(outfile, "string list not terminated by NULL\n");
             /* free((void *)stringlist); */
-            pcre_free_substring_list(stringlist);
+            __pcreNS->freeSubstringList(stringlist);
             }
           }
         }
@@ -2274,16 +2296,20 @@ while (!done)
   CONTINUE:
 
 #if !defined NOPOSIX
-  if (posix || do_posix) regfree(&preg);
+	if( posix || do_posix )
+		__pcreNS->regfree(&preg);
 #endif
 
-  if (re != NULL) new_free(re);
-  if (extra != NULL) new_free(extra);
-  if (tables != NULL)
-    {
-    new_free((void *)tables);
-    setlocale(LC_CTYPE, "C");
-    locale_set = 0;
+  if( re != NULL )
+	  CWT_FREE(re);
+
+  if( extra != NULL )
+	  CWT_FREE(extra);
+
+  if( tables != NULL ) {
+		CWT_FREE((void *)tables);
+		setlocale(LC_CTYPE, "C");
+		locale_set = 0;
     }
   }
 
@@ -2294,10 +2320,10 @@ EXIT:
 if (infile != NULL && infile != stdin) fclose(infile);
 if (outfile != NULL && outfile != stdout) fclose(outfile);
 
-free(buffer);
-free(dbuffer);
-free(pbuffer);
-free(offsets);
+CWT_FREE(buffer);
+CWT_FREE(dbuffer);
+CWT_FREE(pbuffer);
+CWT_FREE(offsets);
 
 return yield;
 }

@@ -47,6 +47,13 @@ functions. */
 #include "stdlib.h"
 
 
+extern pcre* pcre_compile2(const char *pattern, int options, int *errorcodeptr,
+		const char **errorptr, int *erroroffset, const unsigned char *tables);
+extern int pcre_info(const pcre *argument_re, int *optptr, int *first_byte);
+extern int pcre_exec(const pcre *argument_re, const pcre_extra *extra_data,
+		PCRE_SPTR subject, int length, int start_offset, int options, int *offsets,
+		int offsetcount);
+
 
 /* Table to translate PCRE compile time error codes into POSIX error codes. */
 
@@ -141,8 +148,7 @@ static const char *const pstring[] = {
 *          Translate error code to string        *
 *************************************************/
 
-PCRE_DATA_SCOPE size_t
-regerror(int errcode, const regex_t *preg, char *errbuf, size_t errbuf_size)
+size_t pcre_regerror(int errcode, const regex_t *preg, char *errbuf, size_t errbuf_size)
 {
 const char *message, *addmessage;
 size_t length, addlength;
@@ -175,11 +181,9 @@ return length + addlength;
 /*************************************************
 *           Free store held by a regex           *
 *************************************************/
-
-PCRE_DATA_SCOPE void
-regfree(regex_t *preg)
+void pcre_regfree(regex_t *preg)
 {
-(pcre_free)(preg->re_pcre);
+	CWT_FREE(preg->re_pcre);
 }
 
 
@@ -199,8 +203,7 @@ Returns:      0 on success
               various non-zero codes on failure
 */
 
-PCRE_DATA_SCOPE int
-regcomp(regex_t *preg, const char *pattern, int cflags)
+int pcre_regcomp(regex_t *preg, const char *pattern, int cflags)
 {
 const char *errorptr;
 int erroffset;
@@ -241,8 +244,7 @@ If REG_NOSUB was specified at compile time, the PCRE_NO_AUTO_CAPTURE flag will
 be set. When this is the case, the nmatch and pmatch arguments are ignored, and
 the only result is yes/no/error. */
 
-PCRE_DATA_SCOPE int
-regexec(const regex_t *preg, const char *string, size_t nmatch,
+int pcre_regexec(const regex_t *preg, const char *string, size_t nmatch,
   regmatch_t pmatch[], int eflags)
 {
 int rc;
