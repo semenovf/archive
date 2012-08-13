@@ -219,28 +219,23 @@ int main(int argc, char *argv[])
 		CWT_CHAR *str_data1 = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
 
 		CWT_TEST_FAIL((sth = dbi->prepare(dbh, __sql_insert)));
-		dbi->startBindings(sth);
-		ut[0] = dbi->bind(sth, CwtType_SBYTE);
-		ut[1] = dbi->bind(sth, CwtType_BYTE);
-		ut[2] = dbi->bind(sth, CwtType_SHORT);
-		ut[3] = dbi->bind(sth, CwtType_USHORT);
-		ut[4] = dbi->bind(sth, CwtType_INT);
-		ut[5] = dbi->bind(sth, CwtType_UINT);
-		ut[6] = dbi->bind(sth, CwtType_LONG);
-		ut[7] = dbi->bind(sth, CwtType_ULONG);
-		ut[8] = dbi->bind(sth, CwtType_LONGLONG);
-		ut[9] = dbi->bind(sth, CwtType_ULONGLONG);
-		ut[10] = dbi->bind(sth, CwtType_DATE);
-		ut[11] = dbi->bind(sth, CwtType_TIME);
-		ut[12] = dbi->bind(sth, CwtType_DATETIME);
-		ut[13] = dbi->bindText(sth, 255);
-		dbi->finishBindings(sth);
+		ut[0] = dbi->bind(sth, 0, CwtType_SBYTE);
+		ut[1] = dbi->bind(sth, 1, CwtType_BYTE);
+		ut[2] = dbi->bind(sth, 2, CwtType_SHORT);
+		ut[3] = dbi->bind(sth, 3, CwtType_USHORT);
+		ut[4] = dbi->bind(sth, 4, CwtType_INT);
+		ut[5] = dbi->bind(sth, 5, CwtType_UINT);
+		ut[6] = dbi->bind(sth, 6, CwtType_LONG);
+		ut[7] = dbi->bind(sth, 7, CwtType_ULONG);
+		ut[8] = dbi->bind(sth, 8, CwtType_LONGLONG);
+		ut[9] = dbi->bind(sth, 9, CwtType_ULONGLONG);
+		ut[10] = dbi->bind(sth, 10, CwtType_DATE);
+		ut[11] = dbi->bind(sth, 11, CwtType_TIME);
+		ut[12] = dbi->bind(sth, 12, CwtType_DATETIME);
+		ut[13] = dbi->bindText(sth, 13, 255);
 
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
-
-		/*...*/
-		dbi->cleanupBindings(sth);
 
 
 /*

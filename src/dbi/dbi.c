@@ -34,17 +34,10 @@ static BOOL            __dbi_begin         (CwtDBHandler *dbh);
 static BOOL            __dbi_commit        (CwtDBHandler *dbh);
 static BOOL            __dbi_rollback      (CwtDBHandler *dbh);
 
-/*static void            __dbi_cleanupBindings(CwtStatement *sth);*/
 static void            __dbi_close         (CwtStatement *sth);
 static CwtUniType*     __dbi_bind          (CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
 static CwtUniType*     __dbi_bindText      (CwtStatement *sth, size_t index, size_t length);
 static CwtUniType*     __dbi_bindBlob      (CwtStatement *sth, size_t index, size_t sz);
-/*
-static BOOL            __dbi_bind          (CwtStatement *sth, size_t index, CwtUniType *ut);*/
-/*
-static CwtDBIBindGroup* __dbi_createBindGroup(void);
-static void             __dbi_freeBindGroup(CwtDBIBindGroup *bg);
-*/
 
 static CwtTypeEnum     __toCwtTypeEnum (CwtSqlTypeEnum sqlType);
 static CwtSqlTypeEnum  __toSqlTypeEnum (CwtTypeEnum cwtType);
@@ -373,27 +366,9 @@ static BOOL __dbi_rollback(CwtDBHandler *dbh)
 }
 
 
-static void __dbi_cleanupUniType(CwtStatement *sth, CwtUniType *ut)
-{
-	CWT_ASSERT(ut);
-
-	if( CwtType_TIME == ut->type || CwtType_DATE == ut->type || CwtType_DATETIME == ut->type ) {
-		if( ut->value.ptr ) {
-			sth->dbh->driver()->freeTime((CWT_TIME*)ut->value.ptr);
-			ut->value.ptr = NULL;
-		}
-	} else if( CwtType_TEXT == ut->type || CwtType_BLOB == ut->type ) {
-		if( ut->length > 0 && ut->value.ptr ) {
-			CWT_FREE(ut->value.ptr);
-			ut->value.ptr = NULL;
-		}
-	}
-
-	cwtUniTypeNS()->init(ut);
-}
-
 static void __dbi_close(CwtStatement *sth)
 {
+	CwtUniTypeNS *utNS = cwtUniTypeNS();
 	size_t nbind_params;
 	CWT_ASSERT(sth);
 
@@ -402,8 +377,7 @@ static void __dbi_close(CwtStatement *sth)
 	if( nbind_params > 0 && sth->bind_params ) {
 		size_t i;
 		for( i = 0; i < nbind_params; i++ ) {
-			__dbi_cleanupUniType(sth, sth->bind_params[i]);
-			CWT_FREE(sth->bind_params[i]);
+			utNS->free(sth->bind_params[i]);
 			sth->bind_params[i] = NULL;
 		}
 
@@ -418,8 +392,6 @@ static CwtUniType* __dbi_bind_helper(CwtStatement *sth, size_t index, CwtTypeEnu
 	CwtUniType *ut;
 
 	CWT_ASSERT(sth);
-	CWT_ASSERT(cwtType != CwtType_TEXT);
-	CWT_ASSERT(cwtType != CwtType_BLOB);
 
 	nbind_params = sth->dbh->bindParamsCount(sth);
 
@@ -429,8 +401,6 @@ static CwtUniType* __dbi_bind_helper(CwtStatement *sth, size_t index, CwtTypeEnu
 	}
 
 	ut = sth->bind_params[index];
-
-	__dbi_cleanupUniType(ut);
 
 	if( CwtType_TEXT == cwtType ) {
 		char *s;
