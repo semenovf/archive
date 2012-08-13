@@ -54,11 +54,13 @@ typedef struct _CwtUniTypeNS {
 	void      (*setFloat)      (CwtUniType *ut, float n);
 	void      (*setDouble)     (CwtUniType *ut, double n);
 	void      (*setText)       (CwtUniType *ut, char *s);
+	void      (*setTextSized)  (CwtUniType *ut, char *s, size_t sz);
+	void      (*setCwtText)     (CwtUniType *ut, CWT_CHAR *s);
+	void      (*setCwtTextSized)(CwtUniType *ut, CWT_CHAR *s, size_t sz);
 	void      (*setBlob)       (CwtUniType *ut, void *p, size_t sz);
 	void      (*setTime)       (CwtUniType *ut, CWT_TIME *tm);
 	void      (*setDate)       (CwtUniType *ut, CWT_TIME *tm);
 	void      (*setDateTime)   (CwtUniType *ut, CWT_TIME *tm);
-	void      (*setCwtText)    (CwtUniType *ut, CWT_CHAR *s);
 
 	BOOL      (*toBool)        (CwtUniType*);
 	char      (*toChar)        (CwtUniType*);
@@ -76,11 +78,12 @@ typedef struct _CwtUniTypeNS {
 	float     (*toFloat)       (CwtUniType*);
 	double    (*toDouble)      (CwtUniType*);
 	char*     (*toText)        (CwtUniType*);
+	CWT_CHAR* (*toCwtText)     (CwtUniType*);
 	void*     (*toBlob)        (CwtUniType*);
 	CWT_TIME* (*toTime)        (CwtUniType*);
 	CWT_TIME* (*toDate)        (CwtUniType*);
 	CWT_TIME* (*toDateTime)    (CwtUniType*);
-	CWT_CHAR* (*toCwtText)     (CwtUniType*);
+/*	CWT_CHAR* (*toCwtText)     (CwtUniType*);*/
 } CwtUniTypeNS;
 
 EXTERN_C_BEGIN

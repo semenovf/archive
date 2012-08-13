@@ -55,23 +55,22 @@ typedef enum CwtSqlTypeEnum {
 	, CwtSql_BIT
 } CwtSqlTypeEnum;
 
-typedef struct CwtStatement {
-	char unused;
-} CwtStatement;
-
 
 struct _CwtDBIDriver;
+struct _CwtDBHandler;
+
+typedef struct CwtStatement {
+	struct _CwtDBHandler *dbh;
+	CwtUniType          **bind_params;
+} CwtStatement;
 
 typedef struct _CwtDBHandler {
 	void            (*close)         (CwtStatement*);
 	BOOL            (*execute)       (CwtStatement*);
 	CwtDBI_RC       (*err)           (CwtStatement*);
 	const CWT_CHAR* (*strerror)      (CwtStatement*);
-	BOOL            (*bind)          (CwtStatement *sth, size_t index, CwtTypeEnum type_id, void *value, size_t *plength, BOOL is_null);
-	BOOL            (*bindScalar)    (CwtStatement *sth, size_t index, CwtTypeEnum type_id, void *value);
-	BOOL            (*bindTime)      (CwtStatement *sth, size_t index, CwtTypeEnum type_id, void *value);
-	BOOL            (*bindNull)      (CwtStatement *sth, size_t index, CwtTypeEnum type_id);
-	BOOL            (*bindUniType)   (CwtStatement *sth, size_t index, CwtUniType *ut);
+	BOOL            (*bind)          (CwtStatement *sth, size_t index, CwtUniType *ut);
+	size_t          (*bindParamsCount) (CwtStatement *sth);
 	ULONGLONG       (*rows)          (CwtStatement*);
 	ULONGLONG       (*size)          (CwtStatement*);
 	BOOL            (*fetchNext)     (CwtStatement*);
@@ -109,10 +108,48 @@ typedef struct _CwtDBIDriver
 	CwtStrList*     (*specForRecall) (CwtDDI*, int flags);
 } CwtDBIDriver;
 
+
+/*
+typedef struct _CwtDBIBindGroup {
+
+} CwtDBIBindGroup;
+*/
+
 typedef struct CwtDBI
 {
-	void            (*parseDSN)      (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
-	CwtDBIDriver*   (*load)          (const CWT_CHAR *dsn);
+	CwtDBHandler*   (*connect)       (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
+	void            (*disconnect)    (CwtDBHandler*);
+	BOOL            (*func)          (CwtDBHandler*, const CWT_CHAR*, CWT_CHAR**);
+	void            (*attr)          (CwtDBHandler*, const CWT_CHAR*, void*);
+	BOOL            (*setAutoCommit) (CwtDBHandler*, BOOL);
+	BOOL            (*autoCommit)    (CwtDBHandler*);
+	CwtDBI_RC       (*err)           (CwtDBHandler*);
+	const CWT_CHAR* (*strerror)      (CwtDBHandler*);
+	const CWT_CHAR* (*state)         (CwtDBHandler*);
+	BOOL            (*query)         (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
+	BOOL            (*queryBin)      (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
+	CwtStatement*   (*prepare)       (CwtDBHandler*, const CWT_CHAR *sql);
+	ULONGLONG       (*rows)          (CwtDBHandler*);
+	BOOL            (*tables)        (CwtDBHandler*, CwtStrList *tables);
+	BOOL            (*tableExists)   (CwtDBHandler*, const CWT_CHAR *tname);
+	char*           (*encode)        (CwtDBHandler*, const CWT_CHAR *s);
+	CWT_CHAR*       (*decode)        (CwtDBHandler*, const char *s);
+	BOOL            (*begin)         (CwtDBHandler*); /* begin transaction */
+	BOOL            (*commit)        (CwtDBHandler*);
+	BOOL            (*rollback)      (CwtDBHandler*);
+
+	void            (*close)         (CwtStatement *sth);
+	CwtUniType*     (*bind)          (CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
+	CwtUniType*     (*bindText)      (CwtStatement *sth, size_t index, size_t length);
+	CwtUniType*     (*bindBlob)      (CwtStatement *sth, size_t index, size_t sz);
+
+/*
+	CwtDBIBindGroup* (*createBindGroup)(void);
+	void             (*freeBindGroup)(CwtDBIBindGroup*);
+	void             (*addBind)      (CwtDBIBindGroup*, CwtUniType *ut);
+*/
+
+
 	CwtTypeEnum     (*toCwtTypeEnum) (CwtSqlTypeEnum sqlType);
 	CwtSqlTypeEnum  (*toSqlTypeEnum) (CwtTypeEnum cwtType);
 

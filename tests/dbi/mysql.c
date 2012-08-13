@@ -105,54 +105,30 @@ int main(int argc, char *argv[])
 	CwtDBI     *dbi   = cwtDBI();
 	CwtStrNS   *strNS = cwtStrNS();
 	CwtStdioNS *stdioNS = cwtStdioNS();
+	CwtUniTypeNS *utNS = cwtUniTypeNS();
 
-	CwtDBIDriver *dbd;
 	CwtDBHandler *dbh;
 	CwtStatement *sth;
-	CWT_CHAR *scheme;
-	CWT_CHAR *driver;
-	CWT_CHAR *driverDSN;
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
 	CWT_BEGIN_TESTS(107);
 
-	dbi->parseDSN(__dsn_with_flags, &scheme, &driver, &driverDSN);
-	CWT_TEST_OK(strNS->streq(_T("DBI"), scheme));
-	CWT_TEST_OK(strNS->streq(_T("mysql"), driver));
-	CWT_TEST_OK(strNS->streq(&__dsn_with_flags[10], driverDSN));
-	CWT_FREE(scheme);
-	CWT_FREE(driver);
-	CWT_FREE(driverDSN);
-
-	dbi->parseDSN(__dsn, &scheme, &driver, &driverDSN);
-	CWT_TEST_OK(strNS->streq(_T("DBI"), scheme));
-	CWT_TEST_OK(strNS->streq(_T("mysql"), driver));
-	CWT_TEST_OK(strNS->streq(&__dsn[10], driverDSN));
-	CWT_FREE(scheme);
-	CWT_FREE(driver);
-	CWT_FREE(driverDSN);
-
-	dbd = dbi->load(__dsn_with_flags);
-	CWT_TEST_FAIL2(dbd, "Unable to load driver represented by DSN");
-
-	dbi->parseDSN(__dsn_with_flags, NULL, NULL, &driverDSN);
-	dbh = dbd->connect(driverDSN, __username, __password, NULL);
-	CWT_FREE(driverDSN);
+	dbh = dbi->connect(__dsn_with_flags, __username, __password, NULL);
 	CWT_TEST_FAIL2(dbh, "May be you forgot to start MySQL service?");
 
 /* Attributes of database handle */
-	dbd->attr(dbh, _T("hostinfo"),      (void*)&__hostinfo);
-	dbd->attr(dbh, _T("info"),          (void*)&__info);
-	dbd->attr(dbh, _T("protoinfo"),     (void*)&__protoinfo);
-	dbd->attr(dbh, _T("serverinfo"),    (void*)&__serverinfo);
-	dbd->attr(dbh, _T("serverversion"), (void*)&__serverversion);
-	dbd->attr(dbh, _T("clientinfo"),    (void*)&__clientinfo);
-	dbd->attr(dbh, _T("clientversion"), (void*)&__clientversion);
-	dbd->attr(dbh, _T("thread_id"),     (void*)&__thread_id);
-	dbd->attr(dbh, _T("stat"),          (void*)&__stat);
-	dbd->attr(dbh, _T("charset"),       (void*)&__charset);
+	dbi->attr(dbh, _T("hostinfo"),      (void*)&__hostinfo);
+	dbi->attr(dbh, _T("info"),          (void*)&__info);
+	dbi->attr(dbh, _T("protoinfo"),     (void*)&__protoinfo);
+	dbi->attr(dbh, _T("serverinfo"),    (void*)&__serverinfo);
+	dbi->attr(dbh, _T("serverversion"), (void*)&__serverversion);
+	dbi->attr(dbh, _T("clientinfo"),    (void*)&__clientinfo);
+	dbi->attr(dbh, _T("clientversion"), (void*)&__clientversion);
+	dbi->attr(dbh, _T("thread_id"),     (void*)&__thread_id);
+	dbi->attr(dbh, _T("stat"),          (void*)&__stat);
+	dbi->attr(dbh, _T("charset"),       (void*)&__charset);
 
 	printf("Attributes of database handle---\n");
 	printf("Host info:      %s\n",  __hostinfo);
@@ -167,18 +143,18 @@ int main(int argc, char *argv[])
 	printf("Character set:  %s\n",  __charset);
 	printf("---\n");
 
-	CWT_TEST_OK(dbd->autoCommit(dbh));
-	CWT_TEST_OK(dbd->setAutoCommit(dbh, FALSE));
-	CWT_TEST_NOK(dbd->autoCommit(dbh));
-	CWT_TEST_OK(dbd->setAutoCommit(dbh, TRUE));
-	CWT_TEST_OK(dbd->autoCommit(dbh));
-	CWT_TEST_FAIL(dbd->func(dbh, __admin_func, __dropdb_argv));
-	CWT_TEST_FAIL(dbd->func(dbh, __admin_func, __createdb_argv));
+	CWT_TEST_OK(dbi->autoCommit(dbh));
+	CWT_TEST_OK(dbi->setAutoCommit(dbh, FALSE));
+	CWT_TEST_NOK(dbi->autoCommit(dbh));
+	CWT_TEST_OK(dbi->setAutoCommit(dbh, TRUE));
+	CWT_TEST_OK(dbi->autoCommit(dbh));
+	CWT_TEST_FAIL(dbi->func(dbh, __admin_func, __dropdb_argv));
+	CWT_TEST_FAIL(dbi->func(dbh, __admin_func, __createdb_argv));
 
-	CWT_TEST_FAIL(dbd->query(dbh, __sql_use_db));
-	CWT_TEST_FAIL(dbd->query(dbh, __sql_drop_table));
-	CWT_TEST_FAIL(dbd->query(dbh, __sql_create_table));
-	CWT_TEST_FAIL(dbd->query(dbh, __sql_create_table0));
+	CWT_TEST_FAIL(dbi->query(dbh, __sql_use_db));
+	CWT_TEST_FAIL(dbi->query(dbh, __sql_drop_table));
+	CWT_TEST_FAIL(dbi->query(dbh, __sql_create_table));
+	CWT_TEST_FAIL(dbi->query(dbh, __sql_create_table0));
 
 
 	/* Show tables */
@@ -188,7 +164,7 @@ int main(int argc, char *argv[])
 
 		tables = strlistNS->create();
 
-		CWT_TEST_OK(dbd->tables(dbh, tables));
+		CWT_TEST_OK(dbi->tables(dbh, tables));
 
 		CWT_TEST_FAIL(tables->count == 2);
 
@@ -206,35 +182,68 @@ int main(int argc, char *argv[])
 
 
 	{
-		SBYTE     sbyte_val;
-		BYTE      byte_val;
-		SHORT     short_val;
-		USHORT    ushort_val;
-		INT       int_val;
-		UINT      uint_val;
-		LONG      long_val;
-		ULONG     ulong_val;
-		LONGLONG  llong_val;
-		ULONGLONG ullong_val;
+		CwtUniType *ut[14];
+		CWT_TIME cwtDate;
+		CWT_TIME cwtTime;
+		CWT_TIME cwtDateTime;
 
-		CWT_TIME *cwtDate;
-		CWT_TIME *cwtTime;
-		CWT_TIME *cwtDateTime;
-
-		char     *str_data = dbd->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));
-		size_t    str_length = strlen(str_data);
-
-		CWT_TEST_FAIL((sth = dbd->prepare(dbh, __sql_insert)));
-
-		cwtDate = dbd->createTime();
-		cwtTime = dbd->createTime();
-		cwtDateTime = dbd->createTime();
+/*
+		cwtDate = dbi->createTime(dbh);
+		cwtTime = dbi->createTime(dbh);
+		cwtDateTime = dbi->createTime(dbh);
+*/
 
 		/* Times, dates, blobs and texts must be initialized before they are binding */
-		cwtUtilsNS()->now(cwtDate);
-		cwtUtilsNS()->now(cwtTime);
-		cwtUtilsNS()->now(cwtDateTime);
+		cwtUtilsNS()->now(&cwtDate);
+		cwtUtilsNS()->now(&cwtTime);
+		cwtUtilsNS()->now(&cwtDateTime);
 
+		/* insert first row */
+		utNS->setSByte    (&ut[0], CWT_SBYTE_MAX);
+		utNS->setByte     (&ut[1], CWT_BYTE_MAX);
+		utNS->setShort    (&ut[2], CWT_SHORT_MAX);
+		utNS->setUShort   (&ut[3], CWT_USHORT_MAX);
+		utNS->setInt      (&ut[4], CWT_INT_MAX);
+		utNS->setUInt     (&ut[5], CWT_UINT_MAX);
+		utNS->setLong     (&ut[6], CWT_LONG_MAX);
+		utNS->setULong    (&ut[7], CWT_ULONG_MAX);
+		utNS->setLongLong (&ut[8], CWT_LONGLONG_MAX);
+		utNS->setULongLong(&ut[9], CWT_ULONGLONG_MAX);
+		utNS->setTime     (&ut[10], cwtDate);
+		utNS->setTime     (&ut[11], cwtTime);
+		utNS->setTime     (&ut[12], cwtDateTime);
+		utNS->setText     (&ut[13], _T("The quick brown fox jumps over the lazy dog"));
+
+		CWT_CHAR *str_data  = _T("The quick brown fox jumps over the lazy dog"); /*dbi->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));*/
+		size_t   str_length = strNS->strlen(str_data);
+		CWT_CHAR *str_data1 = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
+
+		CWT_TEST_FAIL((sth = dbi->prepare(dbh, __sql_insert)));
+		dbi->startBindings(sth);
+		ut[0] = dbi->bind(sth, CwtType_SBYTE);
+		ut[1] = dbi->bind(sth, CwtType_BYTE);
+		ut[2] = dbi->bind(sth, CwtType_SHORT);
+		ut[3] = dbi->bind(sth, CwtType_USHORT);
+		ut[4] = dbi->bind(sth, CwtType_INT);
+		ut[5] = dbi->bind(sth, CwtType_UINT);
+		ut[6] = dbi->bind(sth, CwtType_LONG);
+		ut[7] = dbi->bind(sth, CwtType_ULONG);
+		ut[8] = dbi->bind(sth, CwtType_LONGLONG);
+		ut[9] = dbi->bind(sth, CwtType_ULONGLONG);
+		ut[10] = dbi->bind(sth, CwtType_DATE);
+		ut[11] = dbi->bind(sth, CwtType_TIME);
+		ut[12] = dbi->bind(sth, CwtType_DATETIME);
+		ut[13] = dbi->bindText(sth, 255);
+		dbi->finishBindings(sth);
+
+		CWT_TEST_FAIL(dbh->execute(sth));
+		CWT_TEST_OK(dbh->rows(sth) == 1UL);
+
+		/*...*/
+		dbi->cleanupBindings(sth);
+
+
+/*
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 0, CwtType_SBYTE, &sbyte_val));
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 1, CwtType_BYTE,  &byte_val));
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 2, CwtType_SHORT, &short_val));
@@ -250,28 +259,15 @@ int main(int argc, char *argv[])
 		CWT_TEST_FAIL(dbh->bindTime(sth, 11, CwtType_TIME, cwtTime));
 		CWT_TEST_FAIL(dbh->bindTime(sth, 12, CwtType_DATETIME, cwtDateTime));
 		CWT_TEST_FAIL(dbh->bind(sth, 13, CwtType_TEXT, str_data, &str_length, FALSE));
+*/
 
-		/* insert first row */
-		sbyte_val   = CWT_SBYTE_MAX;
-		byte_val    = CWT_BYTE_MAX;
-		short_val   = CWT_SHORT_MAX;
-		ushort_val  = CWT_USHORT_MAX;
-		int_val     = CWT_INT_MAX;
-		uint_val    = CWT_UINT_MAX;
-		long_val    = CWT_LONG_MAX;
-		ulong_val   = CWT_ULONG_MAX;
-		llong_val   = CWT_LONGLONG_MAX;
-		ullong_val  = CWT_ULONGLONG_MAX;
-
-		CWT_TEST_FAIL(dbh->execute(sth));
-		CWT_TEST_OK(dbh->rows(sth) == 1UL);
 		CWT_FREE(str_data);
 
 		CWT_TEST_OK(dbd->err(dbh) == 0);
 
 		/* insert second row */
-		str_data = dbd->encode(dbh, _T("Съешь ещё этих мягких французских булок, да выпей чаю"));
-		str_length = strlen(str_data);
+		str_data   = str_data1;
+		str_length = strNS->strlen(str_data);
 
 		sbyte_val   = CWT_SBYTE_MIN;
 		byte_val    = 0;

@@ -22,8 +22,6 @@ typedef struct _CollectionT                                                   \
 typedef struct _NS {                                                          \
 	_CollectionT* (*create)      (void);                                      \
 	_CollectionT* (*createSized) (size_t initial_size, size_t max_size);      \
-	void          (*init)        (_CollectionT* p);                           \
-	void          (*destroy)     (_CollectionT* p);                           \
 	void          (*free)        (_CollectionT* p);                           \
 	_CollectionT* (*clone)       (_CollectionT* p);                           \
 	BOOL          (*reserve)     (_CollectionT* p, size_t n);                 \
@@ -84,8 +82,6 @@ typedef struct _NS {                                                          \
 static _NS  __##_NS = {                                                       \
 	  __create                                                                \
 	, __createSized                                                           \
-	, __init                                                                  \
-	, __destroy                                                               \
 	, __free                                                                  \
 	, __clone                                                                 \
 	, __reserve                                                               \

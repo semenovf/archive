@@ -102,11 +102,11 @@ typedef enum _CwtTypeEnum {
 	, CwtType_FLOAT
 	, CwtType_DOUBLE
 	, CwtType_TEXT
+	, CwtType_CWT_TEXT
 	, CwtType_BLOB
 	, CwtType_TIME
 	, CwtType_DATE
 	, CwtType_DATETIME
-	, CwtType_CWT_STRING
 } CwtTypeEnum;
 
 #define CWT_TYPE_IS_SCALAR(tid)  (((tid) >= CwtType_BOOL && (tid) < CwtType_TEXT) ? TRUE : FALSE)
