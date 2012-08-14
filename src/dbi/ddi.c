@@ -73,8 +73,8 @@ CwtDDI* __ddi_createDDI(const CWT_CHAR *name, const CWT_CHAR *charset)
 	}
 
 	__strNS->bzero(ddi, sizeof(CwtDDI));
-	ddi->name = __strNS->dup(name);
-	ddi->charset = __strNS->dup(charset);
+	ddi->name = __strNS->strdup(name);
+	ddi->charset = __strNS->strdup(charset);
 	ddi->tables = __listNS->create(sizeof(CwtDDITable), __ddi_cleanupTable);
 	return ddi;
 }
@@ -103,7 +103,7 @@ CwtDDITable* __ddi_newTable(CwtDDI *ddi, const CWT_CHAR *name)
 	CWT_ASSERT(ddi->tables);
 
 	__strNS->bzero(&tab, sizeof(CwtDDITable));
-	tab.name = __strNS->dup(name);
+	tab.name = __strNS->strdup(name);
 	tab.columns = __listNS->create(sizeof(CwtDDIColumn), __ddi_cleanupColumn);
 
 	__listNS->append(ddi->tables, &tab);
@@ -120,7 +120,7 @@ CwtDDIColumn* __ddi_newColumn(CwtDDITable *tab, const CWT_CHAR *name)
 
 	__strNS->bzero(&col, sizeof(CwtDDIColumn));
 	col.pOwner = tab;
-	col.name  = __strNS->dup(name);
+	col.name  = __strNS->strdup(name);
 
 	__listNS->append(tab->columns, &col);
 
@@ -138,7 +138,7 @@ CwtDDITable* __ddi_findTable(CwtDDI *ddi, const CWT_CHAR *name)
 		__listNS->begin(ddi->tables, &it);
 		while( __listNS->hasMore(&it) ) {
 			CwtDDITable *t = __listNS->next(&it);
-			if( t && __strNS->eq(name, t->name) ) {
+			if( t && __strNS->streq(name, t->name) ) {
 				return t;
 			}
 		}
@@ -157,7 +157,7 @@ CwtDDIColumn* __ddi_findColumn(CwtDDITable *tab, const CWT_CHAR *name)
 		__listNS->begin(tab->columns, &it);
 		while( __listNS->hasMore(&it) ) {
 			CwtDDIColumn *c = __listNS->next(&it);
-			if( c && __strNS->eq(name, c->name) ) {
+			if( c && __strNS->streq(name, c->name) ) {
 				return c;
 			}
 		}
@@ -194,7 +194,7 @@ BOOL __ddi_cTypeFloat(CwtDDIColumn *col, UINT prec, UINT scale)
 BOOL __ddi_cTypeText(CwtDDIColumn *col, ULONGLONG maxlen)
 {
 	__clear_type(col);
-	col->type = CwtType_TEXT;
+	col->type = CwtType_CWT_TEXT;
 	col->opts.maxlen = maxlen;
 	return TRUE;
 }
@@ -257,7 +257,7 @@ BOOL __ddi_cDefault(CwtDDIColumn *col, const CWT_CHAR *defaultValue)
 	CWT_ASSERT(col);
 	if( col->defaultValue )
 		CWT_FREE(col->defaultValue);
-	col->defaultValue = cwtStrNS()->dup(defaultValue);
+	col->defaultValue = cwtStrNS()->strdup(defaultValue);
 	return TRUE;
 }
 

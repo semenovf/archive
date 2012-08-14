@@ -25,10 +25,10 @@ _LongType __cwt_to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) {     \
 	CwtStrNS* strNS = cwtStrNS();                                             \
 																		      \
 	if( radix <= 0 ) {                                                        \
-		if( strNS->ncmp(_T("0x"), str, 2) == 0 ) {                            \
+		if( strNS->strncmp(_T("0x"), str, 2) == 0 ) {                         \
 			radix = 16;                                                       \
 			str += 2;                                                         \
-		} else if( strNS->ncmp(_T("0"), str, 1) == 0 ) {                      \
+		} else if( strNS->strncmp(_T("0"), str, 1) == 0 ) {                   \
 			radix = 8;                                                        \
 			str++;                                                            \
 		}                                                                     \

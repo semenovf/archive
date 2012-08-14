@@ -143,7 +143,7 @@ static BOOL __ini_parse(CwtIniHandler h, CwtChannel *pchan)
 		if( baNS->size(ba) > 0 ) {
 			str = codecNS->fromUtf8(baNS->cstr(ba), baNS->size(ba)); /* TODO need apply text codec insteed of fromUtf8 call */
 
-			if( str && strNS->len(str) > 0 ) {
+			if( str && strNS->strlen(str) > 0 ) {
 
 				/* not a comment */
 				if( str[0] != _T('#')) {
@@ -225,7 +225,7 @@ static void __ini_addDirective (CwtIniHandler h, const CWT_CHAR *directive, CwtI
 	CWT_ASSERT(h);
 
 	if( directive && handler ) {
-		CWT_CHAR *dir = cwtStrNS()->dup(directive);
+		CWT_CHAR *dir = cwtStrNS()->strdup(directive);
 		CWT_ASSERT(__htNS->insert(ph->directives, dir, handler));
 	}
 }

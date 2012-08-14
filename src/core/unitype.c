@@ -17,49 +17,45 @@ static inline CwtTypeEnum __type       (CwtUniType *ut) { CWT_ASSERT(ut); return
 /*static BOOL             __canCast      (CwtUniType *ut, CwtTypeEnum type);*/
 static BOOL             __setType      (CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz);
 static BOOL             __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s);
-static inline BOOL      __setBool      (CwtUniType *ut, BOOL b)       { return __setType(ut, CwtType_BOOL, &b, 0); }
-static inline BOOL      __setChar      (CwtUniType *ut, char ch)      { return __setType(ut, CwtType_CHAR, &ch, 0); }
+static inline BOOL      __setBOOL      (CwtUniType *ut, BOOL b)       { return __setType(ut, CwtType_BOOL, &b, 0); }
 static inline BOOL      __setCwtChar   (CwtUniType *ut, CWT_CHAR ch)  { return __setType(ut, CwtType_CWT_CHAR, &ch, 0); }
-static inline BOOL      __setSByte     (CwtUniType *ut, SBYTE n)      { return __setType(ut, CwtType_SBYTE, &n, 0); }
-static inline BOOL      __setByte      (CwtUniType *ut, BYTE n)       { return __setType(ut, CwtType_BYTE, &n, 0); }
-static inline BOOL      __setShort     (CwtUniType *ut, SHORT n)      { return __setType(ut, CwtType_SHORT, &n, 0); }
-static inline BOOL      __setUShort    (CwtUniType *ut, USHORT n)     { return __setType(ut, CwtType_USHORT, &n, 0); }
-static inline BOOL      __setInt       (CwtUniType *ut, int n)        { return __setType(ut, CwtType_INT, &n, 0); }
-static inline BOOL      __setUInt      (CwtUniType *ut, UINT n)       { return __setType(ut, CwtType_UINT, &n, 0); }
-static inline BOOL      __setLong      (CwtUniType *ut, LONG n)       { return __setType(ut, CwtType_LONG, &n, 0); }
-static inline BOOL      __setULong     (CwtUniType *ut, ULONG n)      { return __setType(ut, CwtType_ULONG, &n, 0); }
-static inline BOOL      __setLongLong  (CwtUniType *ut, LONGLONG n)   { return __setType(ut, CwtType_LONGLONG, &n, 0); }
-static inline BOOL      __setULongLong (CwtUniType *ut, ULONGLONG n)  { return __setType(ut, CwtType_ULONGLONG, &n, 0); }
+static inline BOOL      __setSBYTE     (CwtUniType *ut, SBYTE n)      { return __setType(ut, CwtType_SBYTE, &n, 0); }
+static inline BOOL      __setBYTE      (CwtUniType *ut, BYTE n)       { return __setType(ut, CwtType_BYTE, &n, 0); }
+static inline BOOL      __setSHORT     (CwtUniType *ut, SHORT n)      { return __setType(ut, CwtType_SHORT, &n, 0); }
+static inline BOOL      __setUSHORT    (CwtUniType *ut, USHORT n)     { return __setType(ut, CwtType_USHORT, &n, 0); }
+static inline BOOL      __setINT       (CwtUniType *ut, int n)        { return __setType(ut, CwtType_INT, &n, 0); }
+static inline BOOL      __setUINT      (CwtUniType *ut, UINT n)       { return __setType(ut, CwtType_UINT, &n, 0); }
+static inline BOOL      __setLONG      (CwtUniType *ut, LONG n)       { return __setType(ut, CwtType_LONG, &n, 0); }
+static inline BOOL      __setULONG     (CwtUniType *ut, ULONG n)      { return __setType(ut, CwtType_ULONG, &n, 0); }
+static inline BOOL      __setLONGLONG  (CwtUniType *ut, LONGLONG n)   { return __setType(ut, CwtType_LONGLONG, &n, 0); }
+static inline BOOL      __setULONGLONG (CwtUniType *ut, ULONGLONG n)  { return __setType(ut, CwtType_ULONGLONG, &n, 0); }
 static inline BOOL      __setFloat     (CwtUniType *ut, float n)      { return __setType(ut, CwtType_FLOAT, &n, 0); }
 static inline BOOL      __setDouble    (CwtUniType *ut, double n)     { return __setType(ut, CwtType_DOUBLE, &n, 0); }
-static inline BOOL      __setText      (CwtUniType *ut, const char *p, size_t length)     { return __setType(ut, CwtType_TEXT, p, length+1); }
-static inline BOOL      __setCwtText   (CwtUniType *ut, const CWT_CHAR *p, size_t length) { return __setType(ut, CwtType_CWT_TEXT, p, (length + 1)*sizeof(CWT_CHAR)); }
-static inline BOOL      __setBlob      (CwtUniType *ut, const void *p, size_t sz)         { return __setType(ut, CwtType_BLOB, p, sz); }
-static inline BOOL      __setTime      (CwtUniType *ut, const CWT_TIME *p, size_t sz)     { return __setType(ut, CwtType_TIME, p, sz ? sz : sizeof(CWT_TIME)); }
-static inline BOOL      __setDate      (CwtUniType *ut, const CWT_TIME *p, size_t sz)     { return __setType(ut, CwtType_DATE, p, sz ? sz : sizeof(CWT_TIME)); }
-static inline BOOL      __setDateTime  (CwtUniType *ut, const CWT_TIME *p, size_t sz)     { return __setType(ut, CwtType_DATETIME, p, sz ? sz : sizeof(CWT_TIME)); }
+static inline BOOL      __setCwtText   (CwtUniType *ut, const CWT_CHAR *p, size_t length) { return __setType(ut, CwtType_CWT_TEXT, p, length ? length : cwtStrNS()->strlen(p)); }
+static inline BOOL      __setBLOB      (CwtUniType *ut, const void *p, size_t sz)         { return __setType(ut, CwtType_BLOB, p, sz); }
+static inline BOOL      __setTIME      (CwtUniType *ut, const CWT_TIME *p, size_t sz)     { return __setType(ut, CwtType_TIME, p, sz ? sz : sizeof(CWT_TIME)); }
+static inline BOOL      __setDATE      (CwtUniType *ut, const CWT_TIME *p, size_t sz)     { return __setType(ut, CwtType_DATE, p, sz ? sz : sizeof(CWT_TIME)); }
+static inline BOOL      __setDATETIME  (CwtUniType *ut, const CWT_TIME *p, size_t sz)     { return __setType(ut, CwtType_DATETIME, p, sz ? sz : sizeof(CWT_TIME)); }
 
-static BOOL             __toBool       (CwtUniType *ut, BOOL *ok);
-static char             __toChar       (CwtUniType *ut, BOOL *ok);
-static inline CWT_CHAR  __toCwtChar    (CwtUniType *ut, BOOL *ok);
-static inline SBYTE     __toSByte      (CwtUniType *ut, BOOL *ok);
-static inline BYTE      __toByte       (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.llong_val; }
-static inline SHORT     __toShort      (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.llong_val; }
-static inline USHORT    __toUShort     (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.llong_val; }
-static inline INT       __toInt        (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.llong_val; }
-static inline UINT      __toUInt       (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.llong_val; }
-static inline LONG      __toLong       (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.llong_val; }
-static inline ULONG     __toULong      (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.llong_val; }
-static inline LONGLONG  __toLongLong   (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.llong_val; }
-static inline ULONGLONG __toULongLong  (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.llong_val; }
-static inline float     __toFloat      (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.double_val; }
-static inline double    __toDouble     (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.double_val; }
-static inline char*     __toText       (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return (char*)ut->value.ptr; }
-static inline CWT_CHAR* __toCwtText    (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return (CWT_CHAR*)ut->value.ptr; }
-static inline void*     __toBlob       (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return ut->value.ptr; }
-static inline CWT_TIME* __toTime       (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return (CWT_TIME*)ut->value.ptr; }
-static inline CWT_TIME* __toDate       (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return (CWT_TIME*)ut->value.ptr; }
-static inline CWT_TIME* __toDateTime   (CwtUniType *ut, BOOL *ok) { CWT_ASSERT(ut); return (CWT_TIME*)ut->value.ptr; }
+static BOOL             __toBOOL       (CwtUniType *ut, BOOL *ok);
+static CWT_CHAR         __toCwtChar    (CwtUniType *ut, BOOL *ok);
+static SBYTE            __toSBYTE      (CwtUniType *ut, BOOL *ok);
+static BYTE             __toBYTE       (CwtUniType *ut, BOOL *ok);
+static SHORT            __toSHORT      (CwtUniType *ut, BOOL *ok);
+static USHORT           __toUSHORT     (CwtUniType *ut, BOOL *ok);
+static INT              __toINT        (CwtUniType *ut, BOOL *ok);
+static UINT             __toUINT       (CwtUniType *ut, BOOL *ok);
+static LONG             __toLONG       (CwtUniType *ut, BOOL *ok);
+static ULONG            __toULONG      (CwtUniType *ut, BOOL *ok);
+static LONGLONG         __toLONGLONG   (CwtUniType *ut, BOOL *ok);
+static ULONGLONG        __toULONGLONG  (CwtUniType *ut, BOOL *ok);
+static float            __toFloat      (CwtUniType *ut, BOOL *ok);
+static double           __toDouble     (CwtUniType *ut, BOOL *ok);
+static CWT_CHAR*        __toCwtText    (CwtUniType *ut, BOOL *ok);
+static void*            __toBLOB       (CwtUniType *ut, BOOL *ok);
+static CWT_TIME*        __toTIME       (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
+static CWT_TIME*        __toDATE       (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
+static CWT_TIME*        __toDATETIME   (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
 
 /* Helper function */
 static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size_t sz);
@@ -72,49 +68,45 @@ static CwtUniTypeNS __cwtUniTypeNS = {
 /*	, __canCast*/
 	, __setType
 	, __setFromString
-	, __setBool
-	, __setChar
+	, __setBOOL
 	, __setCwtChar
-	, __setSByte
-	, __setByte
-	, __setShort
-	, __setUShort
-	, __setInt
-	, __setUInt
-	, __setLong
-	, __setULong
-	, __setLongLong
-	, __setULongLong
+	, __setSBYTE
+	, __setBYTE
+	, __setSHORT
+	, __setUSHORT
+	, __setINT
+	, __setUINT
+	, __setLONG
+	, __setULONG
+	, __setLONGLONG
+	, __setULONGLONG
 	, __setFloat
 	, __setDouble
-	, __setText
 	, __setCwtText
-	, __setBlob
-	, __setTime
-	, __setDate
-	, __setDateTime
+	, __setBLOB
+	, __setTIME
+	, __setDATE
+	, __setDATETIME
 
-	, __toBool
-	, __toChar
+	, __toBOOL
 	, __toCwtChar
-	, __toSByte
-	, __toByte
-	, __toShort
-	, __toUShort
-	, __toInt
-	, __toUInt
-	, __toLong
-	, __toULong
-	, __toLongLong
-	, __toULongLong
+	, __toSBYTE
+	, __toBYTE
+	, __toSHORT
+	, __toUSHORT
+	, __toINT
+	, __toUINT
+	, __toLONG
+	, __toULONG
+	, __toLONGLONG
+	, __toULONGLONG
 	, __toFloat
 	, __toDouble
-	, __toText
 	, __toCwtText
-	, __toBlob
-	, __toTime
-	, __toDate
-	, __toDateTime
+	, __toBLOB
+	, __toTIME
+	, __toDATE
+	, __toDATETIME
 };
 
 CwtStrNS *__strNS = NULL;
@@ -214,14 +206,11 @@ static BOOL __setType(CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t
 	}
 
 	ut->is_null = FALSE;
-	ut->type = CwtType_CHAR;
+	ut->type = type;
 
 	switch(type) {
 	case CwtType_BOOL:
 		ut->value.llong_val = *((BOOL*)copy);
-		break;
-	case CwtType_CHAR:
-		ut->value.llong_val = *((char*)copy);
 		break;
 	case CwtType_CWT_CHAR:
 		ut->value.llong_val = *((CWT_CHAR*)copy);
@@ -262,9 +251,6 @@ static BOOL __setType(CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t
 	case CwtType_DOUBLE:
 		ut->value.double_val = *((double*)copy);
 		break;
-	case CwtType_TEXT:
-		__setBuffer(ut, CwtType_TEXT, copy, sz);
-		break;
 	case CwtType_CWT_TEXT:
 		__setBuffer(ut, CwtType_CWT_TEXT, copy, sz);
 		break;
@@ -301,21 +287,22 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	if( !s )
 		return TRUE;
 
-	if( !__strNS->len(s) )
+	if( !__strNS->strlen(s) )
 		return TRUE;
 
 	switch(type) {
 	case CwtType_BOOL:
-		if( __strNS->eqcase(_T("true"), s) || __strNS->eq(_T("1"), s) ) {
-			__setBool(ut, TRUE);
+		if( __strNS->strieq(_T("true"), s) || __strNS->streq(_T("1"), s) ) {
+			__setBOOL(ut, TRUE);
 			return TRUE;
 		}
-		if( __strNS->eqcase(_T("false"), s) || __strNS->eq(_T("0"), s) ) {
-			__setBool(ut, FALSE);
+		if( __strNS->strieq(_T("false"), s) || __strNS->streq(_T("0"), s) ) {
+			__setBOOL(ut, FALSE);
 			return TRUE;
 		}
 		break;
 
+/*
 	case CwtType_CHAR: {
 			char *latin1;
 			CWT_CHAR buf[2] = {_T('\0'), _T('\0') };
@@ -326,6 +313,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 			CWT_FREE(latin1);
 		}
 		break;
+*/
 
 	case CwtType_CWT_CHAR:
 		__setCwtChar(ut, s[0]);
@@ -334,7 +322,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_SBYTE: {
 			SBYTE n = __strNS->toSBYTE(s, 10, &ok);
 			if( ok ) {
-				__setSByte(ut, n);
+				__setSBYTE(ut, n);
 				return TRUE;
 			}
 		}
@@ -343,7 +331,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_BYTE: {
 			BYTE n = __strNS->toBYTE(s, 10, &ok);
 			if( ok ) {
-				__setByte(ut, n);
+				__setBYTE(ut, n);
 				return TRUE;
 			}
 		}
@@ -352,7 +340,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_SHORT: {
 			SHORT n = __strNS->toSHORT(s, 10, &ok);
 			if( ok ) {
-				__setShort(ut, n);
+				__setSHORT(ut, n);
 				return TRUE;
 			}
 		}
@@ -361,7 +349,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_USHORT: {
 			USHORT n = __strNS->toUSHORT(s, 10, &ok);
 			if( ok ) {
-				__setUShort(ut, n);
+				__setUSHORT(ut, n);
 				return TRUE;
 			}
 		}
@@ -370,7 +358,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_INT: {
 			INT n = __strNS->toINT(s, 10, &ok);
 			if( ok ) {
-				__setInt(ut, n);
+				__setINT(ut, n);
 				return TRUE;
 			}
 		}
@@ -379,7 +367,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_UINT: {
 			UINT n = __strNS->toUINT(s, 10, &ok);
 			if( ok ) {
-				__setUInt(ut, n);
+				__setUINT(ut, n);
 				return TRUE;
 			}
 		}
@@ -388,7 +376,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_LONG: {
 			UINT n = __strNS->toLONG(s, 10, &ok);
 			if( ok ) {
-				__setLong(ut, n);
+				__setLONG(ut, n);
 				return TRUE;
 			}
 		}
@@ -397,7 +385,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_ULONG: {
 			ULONG n = __strNS->toULONG(s, 10, &ok);
 			if( ok ) {
-				__setULong(ut, n);
+				__setULONG(ut, n);
 				return TRUE;
 			}
 		}
@@ -406,7 +394,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_LONGLONG: {
 			LONGLONG n = __strNS->toLONGLONG(s, 10, &ok);
 			if( ok ) {
-				__setLongLong(ut, n);
+				__setLONGLONG(ut, n);
 				return TRUE;
 			}
 		}
@@ -415,7 +403,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	case CwtType_ULONGLONG: {
 			ULONGLONG n = __strNS->toULONGLONG(s, 10, &ok);
 			if( ok ) {
-				__setULongLong(ut, n);
+				__setULONGLONG(ut, n);
 				return TRUE;
 			}
 		}
@@ -439,6 +427,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 		}
 		break;
 
+/*
 	case CwtType_TEXT: {
 			char *latin1;
 			latin1 = cwtTextCodecNS()->toLatin1(s);
@@ -446,17 +435,18 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 			CWT_FREE(latin1);
 		}
 		return TRUE;
+*/
 
 	case CwtType_CWT_TEXT:
-		__setCwtText(ut, s, __strNS->len(s));
+		__setCwtText(ut, s, __strNS->strlen(s));
 		return TRUE;
 
 
 	case CwtType_TIME: {
 			CWT_TIME tm;
-			__strNS->toTime(s, &tm, NULL, &ok);
+			__strNS->toTIME(s, &tm, NULL, &ok);
 			if( ok ) {
-				__setTime(ut, &tm, sizeof(CWT_TIME));
+				__setTIME(ut, &tm, sizeof(CWT_TIME));
 				return TRUE;
 			}
 		}
@@ -464,9 +454,9 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 
 	case CwtType_DATE: {
 			CWT_TIME tm;
-			__strNS->toDate(s, &tm, NULL, &ok);
+			__strNS->toDATE(s, &tm, NULL, &ok);
 			if( ok ) {
-				__setDate(ut, &tm, sizeof(CWT_TIME));
+				__setDATE(ut, &tm, sizeof(CWT_TIME));
 				return TRUE;
 			}
 		}
@@ -474,9 +464,9 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 
 	case CwtType_DATETIME: {
 			CWT_TIME tm;
-			__strNS->toDateTime(s, &tm, NULL, &ok);
+			__strNS->toDATETIME(s, &tm, NULL, &ok);
 			if( ok ) {
-				__setDateTime(ut, &tm, sizeof(CWT_TIME));
+				__setDATETIME(ut, &tm, sizeof(CWT_TIME));
 				return TRUE;
 			}
 		}
@@ -504,7 +494,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
  * @param ut unitype value.
  * @return unitype as a BOOL.
  */
-static inline BOOL __toBool(CwtUniType *ut, BOOL *ok)
+static inline BOOL __toBOOL(CwtUniType *ut, BOOL *ok)
 {
 	CWT_ASSERT(ut);
 
@@ -520,20 +510,7 @@ static inline BOOL __toBool(CwtUniType *ut, BOOL *ok)
 	if( CWT_TYPE_IS_FLOAT(ut->type) )
 		return ut->value.double_val != 0.0f ? TRUE : FALSE;
 
-	if( CwtType_TEXT == ut->type ) {
-		if( ut->length > 0 ) {
-			char *s = (char*)ut->value.ptr;
-			CWT_ASSERT(ut->value.ptr);
-
-			if( ut->length == 1 && s[0] == '0' )
-				return FALSE;
-
-			if( ut->length == 5 && strncasecmp("false", s, 5) == 0 )
-				return FALSE;
-
-			return TRUE;
-		}
-	} else if( CwtType_CWT_TEXT == ut->type ) {
+	if( CwtType_CWT_TEXT == ut->type ) {
 		if( ut->length > 0 ) {
 			CWT_CHAR *s = (CWT_CHAR*)ut->value.ptr;
 			CWT_ASSERT(ut->value.ptr);
@@ -541,7 +518,7 @@ static inline BOOL __toBool(CwtUniType *ut, BOOL *ok)
 			if( ut->length == 1 && s[0] == _T('0') )
 				return FALSE;
 
-			if( ut->length == 5 && __strNS->ncasecmp(_T("false"), s, 5) == 0 )
+			if( ut->length == 5 && __strNS->strnicmp(_T("false"), s, 5) == 0 )
 				return FALSE;
 
 			return TRUE;
@@ -568,6 +545,7 @@ static inline BOOL __toBool(CwtUniType *ut, BOOL *ok)
  * @param ut
  * @return
  */
+/*
 static char __toChar(CwtUniType *ut, BOOL *ok)
 {
 	CWT_ASSERT(ut);
@@ -588,6 +566,7 @@ static char __toChar(CwtUniType *ut, BOOL *ok)
 
 	return (char)0;
 }
+*/
 
 
 
@@ -602,8 +581,8 @@ static inline CWT_CHAR __toCwtChar(CwtUniType *ut, BOOL *ok)
 		return (CWT_CHAR)ut->value.llong_val;
 
 	if( CWT_TYPE_IS_INTEGER(ut->type)
-			&& ut->value.llong_val >= CWT_CWT_CHAR_MIN
-			&& ut->value.llong_val <= CWT_CWT_CHAR_MAX )
+			&& ut->value.llong_val >= (LONGLONG)CWT_CWT_CHAR_MIN
+			&& ut->value.llong_val <= (LONGLONG)CWT_CWT_CHAR_MAX )
 		return (CWT_CHAR)ut->value.llong_val;
 
 	if( ok )
@@ -612,29 +591,64 @@ static inline CWT_CHAR __toCwtChar(CwtUniType *ut, BOOL *ok)
 	return (CWT_CHAR)0;
 }
 
-static inline SBYTE __toSByte(CwtUniType *ut, BOOL *ok)
+
+#define CWT_UNITYPE_TO_INTEGER(_IntType,_Min,_Max)                            \
+		static _IntType __to##_IntType(CwtUniType *ut, BOOL *ok)              \
+		{                                                                     \
+			CWT_ASSERT(ut);                                                   \
+                                                                              \
+			if( ok )                                                          \
+				*ok = TRUE;                                                   \
+                                                                              \
+			if( CwtType_##_IntType == ut->type )                              \
+				return (_IntType)ut->value.llong_val;                         \
+                                                                              \
+            else if( CWT_TYPE_IS_INTEGER(ut->type)                            \
+					&& ut->value.llong_val >= (LONGLONG)_Min                  \
+					&& ut->value.llong_val <= (LONGLONG)_Max )                \
+				return (_IntType)ut->value.llong_val;                         \
+                                                                              \
+            else if( CwtType_CWT_TEXT == ut->type && ut->length > 0) {        \
+				BOOL okk;                                                     \
+				_IntType n = __strNS->to##_IntType(                           \
+					(const CWT_CHAR*)ut->value.ptr, 0, &okk);                 \
+				if( okk )                                                     \
+					return n;                                                 \
+			}                                                                 \
+                                                                              \
+			if( ok )                                                          \
+				*ok = FALSE;                                                  \
+                                                                              \
+			return (_IntType)0;                                               \
+		}
+
+
+CWT_UNITYPE_TO_INTEGER(SBYTE,  CWT_SBYTE_MIN, CWT_SBYTE_MAX)
+CWT_UNITYPE_TO_INTEGER(BYTE,   0,             CWT_BYTE_MAX)
+CWT_UNITYPE_TO_INTEGER(SHORT,  CWT_SHORT_MIN, CWT_SHORT_MAX)
+CWT_UNITYPE_TO_INTEGER(USHORT, 0,             CWT_BYTE_MAX)
+CWT_UNITYPE_TO_INTEGER(INT,    CWT_INT_MIN,   CWT_INT_MAX)
+CWT_UNITYPE_TO_INTEGER(UINT,   0,             CWT_UINT_MAX)
+CWT_UNITYPE_TO_INTEGER(LONG,   CWT_LONG_MIN,  CWT_LONG_MAX)
+CWT_UNITYPE_TO_INTEGER(ULONG,  0,             CWT_ULONG_MAX)
+CWT_UNITYPE_TO_INTEGER(LONGLONG,   CWT_LONGLONG_MIN,  CWT_LONGLONG_MAX)
+
+static ULONGLONG __toULONGLONG(CwtUniType *ut, BOOL *ok)
 {
 	CWT_ASSERT(ut);
 
 	if( ok )
 		*ok = TRUE;
 
-	if( CwtType_SBYTE == ut->type )
-		return (SBYTE)ut->value.llong_val;
+	if( CwtType_ULONGLONG == ut->type )
+		return (ULONGLONG)ut->value.llong_val;
 
-	if( CWT_TYPE_IS_INTEGER(ut->type)
-			&& ut->value.llong_val >= CWT_SBYTE_MIN
-			&& ut->value.llong_val <= CWT_SBYTE_MAX )
-		return (SBYTE)ut->value.llong_val;
+	else if( CWT_TYPE_IS_INTEGER(ut->type) )
+		return (ULONGLONG)ut->value.llong_val;
 
-	if( CwtType_TEXT == ut->type && ut->length > 0 ) {
+	else if( CwtType_CWT_TEXT == ut->type && ut->length > 0) {
 		BOOL okk;
-		SBYTE n = __strNS->toSBYTE((const char*)ut->value.ptr, 0, &okk);
-		if( okk )
-			return n;
-	} else if( CwtType_CWT_TEXT == ut->type && ut->length > 0) {
-		BOOL okk;
-		SBYTE n = __strNS->toSBYTE((const CWT_CHAR *)ut->value.ptr, 0, &okk);
+		ULONGLONG n = __strNS->toULONGLONG((const CWT_CHAR*)ut->value.ptr, 0, &okk);
 		if( okk )
 			return n;
 	}
@@ -642,8 +656,92 @@ static inline SBYTE __toSByte(CwtUniType *ut, BOOL *ok)
 	if( ok )
 		*ok = FALSE;
 
-	return (SBYTE)0;
+	return (ULONGLONG)0;
 }
+
+
+static float __toFloat(CwtUniType *ut, BOOL *ok)
+{
+	CWT_ASSERT(ut);
+
+	if( ok )
+		*ok = TRUE;
+
+	if( CwtType_FLOAT == ut->type ) {
+		double d = ut->value.double_val;
+		if( ut->value.double_val >= (double)CWT_FLOAT_MIN
+				&& ut->value.double_val <= (double)CWT_FLOAT_MAX )
+			return (float)ut->value.double_val;
+	} else if( CWT_TYPE_IS_INTEGER(ut->type) ) {
+		return (float)ut->value.llong_val;
+	} else if( CwtType_CWT_TEXT == ut->type && ut->length > 0) {
+		BOOL okk;
+		float n = __strNS->toFloat((const CWT_CHAR*)ut->value.ptr, &okk);
+		if( okk )
+			return n;
+	}
+
+	if( ok )
+		*ok = FALSE;
+
+	return (float)0.0f;
+}
+
+static double __toDouble (CwtUniType *ut, BOOL *ok)
+{
+	CWT_ASSERT(ut);
+
+	if( ok )
+		*ok = TRUE;
+
+	if( CwtType_DOUBLE == ut->type ) {
+		return ut->value.double_val;
+	} else if( CWT_TYPE_IS_INTEGER(ut->type) ) {
+		return (double)ut->value.llong_val;
+	} else if( CwtType_CWT_TEXT == ut->type && ut->length > 0) {
+		BOOL okk;
+		float n = __strNS->toDouble((const CWT_CHAR*)ut->value.ptr, &okk);
+		if( okk )
+			return n;
+	}
+
+	if( ok )
+		*ok = FALSE;
+
+	return (float)0.0f;
+}
+
+static CWT_CHAR* __toCwtText (CwtUniType *ut, BOOL *ok)
+{
+	CWT_ASSERT(ut);
+	return (CWT_CHAR*)ut->value.ptr;
+}
+
+static void* __toBLOB (CwtUniType *ut, BOOL *ok)
+{
+	CWT_ASSERT(ut);
+	return ut->value.ptr;
+}
+
+static CWT_TIME* __toTIME (CwtUniType *ut, CWT_TIME *tm, BOOL *ok)
+{
+	CWT_ASSERT(ut);
+	return (CWT_TIME*)ut->value.ptr;
+}
+
+static CWT_TIME* __toDATE (CwtUniType *ut, CWT_TIME *tm, BOOL *ok)
+{
+	CWT_ASSERT(ut);
+	return (CWT_TIME*)ut->value.ptr;
+}
+
+static CWT_TIME* __toDATETIME (CwtUniType *ut, CWT_TIME *tm, BOOL *ok)
+{
+	CWT_ASSERT(ut);
+	return (CWT_TIME*)ut->value.ptr;
+}
+
+
 /* Helper function.
  * For CwtType_TEXT and CwtType_CWT_TEXT sz is number of chars.
  * For other types sz is number of bytes.
@@ -660,8 +758,6 @@ static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size
 	if( sz > 0 ) {
 		if( CwtType_CWT_TEXT == cwtType ) {
 			nbytes = (sz + 1) * sizeof(CWT_CHAR);
-		} else if( CwtType_TEXT == cwtType ) {
-			nbytes = (sz + 1) * sizeof(char);
 		}
 	}
 

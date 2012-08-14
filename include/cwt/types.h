@@ -78,12 +78,10 @@ typedef struct CWT_TIME {
 typedef enum _CwtTypeEnum {
 	  CwtType_UNKNOWN
 	, CwtType_BOOL
-	, CwtType_CHAR
 	, CwtType_CWT_CHAR
 	, CwtType_SBYTE
 	, CwtType_INT8   = CwtType_SBYTE
-	, CwtType_UCHAR
-	, CwtType_BYTE   = CwtType_UCHAR
+	, CwtType_BYTE
 	, CwtType_UINT8  = CwtType_BYTE
 	, CwtType_SHORT
 	, CwtType_INT16  = CwtType_SHORT
@@ -101,7 +99,6 @@ typedef enum _CwtTypeEnum {
 	, CwtType_UINT64 = CwtType_ULONGLONG
 	, CwtType_FLOAT
 	, CwtType_DOUBLE
-	, CwtType_TEXT
 	, CwtType_CWT_TEXT
 	, CwtType_BLOB
 	, CwtType_TIME
@@ -110,7 +107,7 @@ typedef enum _CwtTypeEnum {
 } CwtTypeEnum;
 
 #define CWT_TYPE_IS_SCALAR(tid)  (((tid) >= CwtType_BOOL && (tid) < CwtType_TEXT) ? TRUE : FALSE)
-#define CWT_TYPE_IS_INTEGER(tid) (((tid) >= CwtType_CHAR && (tid) < CwtType_FLOAT) ? TRUE : FALSE)
+#define CWT_TYPE_IS_INTEGER(tid) (((tid) >= CwtType_CWT_CHAR && (tid) < CwtType_FLOAT) ? TRUE : FALSE)
 #define CWT_TYPE_IS_FLOAT(tid)   (((tid) >= CwtType_FLOAT && (tid) <= CwtType_DOUBLE) ? TRUE : FALSE)
 
 #if !(defined(_SIZE_T_DEFINED) || defined(__DJ_size_t) )
@@ -147,14 +144,12 @@ typedef enum _CwtTypeEnum {
 #define CWT_INT64_MAX  9223372036854775807LL
 #define CWT_UINT64_MAX 18446744073709551615ULL
 
-#define CWT_CHAR_MAX   127
-#define CWT_CHAR_MIN   (-127-1)
 #ifdef CWT_UNICODE
 #	define CWT_CWT_CHAR_MIN WCHAR_MIN
 #	define CWT_CWT_CHAR_MAX WCHAR_MAX
 #else
-#	define CWT_CWT_CHAR_MIN CWT_CHAR_MIN
-#	define CWT_CWT_CHAR_MAX CWT_CHAR_MAX
+#	define CWT_CWT_CHAR_MIN CWT_127
+#	define CWT_CWT_CHAR_MAX CWT_(-127-1)
 #endif
 #define CWT_SBYTE_MAX  127
 #define CWT_SBYTE_MIN  (-127-1)
@@ -171,7 +166,12 @@ typedef enum _CwtTypeEnum {
 #define CWT_LONGLONG_MIN (-9223372036854775807LL-1LL)
 #define CWT_LONGLONG_MAX  9223372036854775807LL
 #define CWT_ULONGLONG_MAX 18446744073709551615ULL
-#define CWT_FLOAT_MAX     3.4028234663852886e+38
+
+#include <float.h>
+#define CWT_FLOAT_MIN  FLT_MIN /* 1.175494351e-38F */
+#define CWT_FLOAT_MAX  FLT_MAX /* 3.402823466e+38F */
+#define CWT_DOUBLE_MIN DBL_MIN /* 2.2250738585072014e-308 */
+#define CWT_DOUBLE_MAX DBL_MAX /* 1.7976931348623158e+308 */
 
 #define CWT_SIZE_T_MAX UINT_MAX
 

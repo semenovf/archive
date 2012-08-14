@@ -142,6 +142,8 @@ static BOOL             __buildSqlCreateDB(CwtString *sql, CWT_CHAR *argv[]);
 static BOOL             __buildSqlDropDB(CwtString *sql, CWT_CHAR *argv[]);
 static int              __realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR *stmt_str, size_t length);
 
+static void             __convertTime(CWT_TIME *cwtTime, void *nativeTime);
+
 static BOOL __nConnections = 0; /* number of connections */
 
 static CwtDBIDriver __cwtDBIDriver = {
@@ -220,8 +222,7 @@ static enum enum_field_types __toMysqlType(CwtTypeEnum cwtType)
 	enum enum_field_types mysqlType;
 
 	switch( cwtType ) {
-	case CwtType_CHAR:
-	case CwtType_UCHAR:
+	case CwtType_BYTE:
 		mysqlType = MYSQL_TYPE_TINY;
 		break;
 	case CwtType_SHORT:
@@ -264,7 +265,7 @@ static enum enum_field_types __toMysqlType(CwtTypeEnum cwtType)
 		mysqlType = MYSQL_TYPE_DATETIME;
 		break;
 
-	case CwtType_TEXT:
+	case CwtType_CWT_TEXT:
 		mysqlType = MYSQL_TYPE_STRING;
 		break;
 
@@ -281,7 +282,7 @@ static BOOL __isUnsigned(CwtTypeEnum cwtType)
 	BOOL is_unsigned;
 
 	switch(cwtType) {
-	case CwtType_UCHAR:
+	case CwtType_SBYTE:
 	case CwtType_USHORT:
 	case CwtType_UINT:
 	case CwtType_ULONG:
@@ -342,7 +343,7 @@ static CwtTypeEnum __fromMysqlType( enum enum_field_types mysqlType, UINT field_
     case MYSQL_TYPE_TINY_BLOB:
     case MYSQL_TYPE_MEDIUM_BLOB:
     case MYSQL_TYPE_LONG_BLOB:
-    	cwtType = field_flags & BINARY_FLAG ? CwtType_BLOB : CwtType_TEXT;
+    	cwtType = field_flags & BINARY_FLAG ? CwtType_BLOB : CwtType_CWT_TEXT;
         break;
 
     default:
@@ -351,7 +352,7 @@ static CwtTypeEnum __fromMysqlType( enum enum_field_types mysqlType, UINT field_
     case MYSQL_TYPE_VARCHAR:
     case MYSQL_TYPE_BIT:
     case MYSQL_TYPE_GEOMETRY:
-    	cwtType = CwtType_TEXT;
+    	cwtType = CwtType_CWT_TEXT;
         break;
 	}
 
@@ -407,6 +408,7 @@ static void __freeTime(CWT_TIME *dt)
 	CWT_FREE(dt);
 }
 
+#endif
 
 static void __convertTime(CWT_TIME *cwtTime, void *nativeTime)
 {
@@ -421,7 +423,7 @@ static void __convertTime(CWT_TIME *cwtTime, void *nativeTime)
 	cwtTime->sec_part = mysqlTime->second_part;
 }
 
-#endif
+
 
 static int __realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR *stmt_str, size_t length)
 {
@@ -509,7 +511,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
 	if( !csname )
 		csname = csname_default;
 
-	if( !(strNS->eq(_T("latin1"), csname) || strNS->eq(_T("utf8"), csname)) ) {
+	if( !(strNS->streq(_T("latin1"), csname) || strNS->streq(_T("utf8"), csname)) ) {
 		print_error(__LOG_PREFIX _Tr("only Latin1 or UTF-8 character set is supported now"));
 		return NULL;
 	}
@@ -558,7 +560,7 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
         	break;
         }
 
-        dbh->csname = strNS->dup(csname); /* TODO need to free*/
+        dbh->csname = strNS->strdup(csname); /* TODO need to free*/
 
         /* Parse driver DSN */
         opts = strlistNS->create();
@@ -570,37 +572,37 @@ CwtDBHandler* __connect(const CWT_CHAR *driverDSN
         while( strlistNS->hasMore(&itOpts) ) {
         	const CWT_CHAR* opt = strlistNS->next(&itOpts);
 
-        	if( strNS->ncmp(_T("host="), opt, 5) == 0 ) {
+        	if( strNS->strncmp(_T("host="), opt, 5) == 0 ) {
 
         		host = __cwtDBIDriver.encode((CwtDBHandler*)dbh, &opt[5]);
 
-        	} else if( strNS->ncmp(_T("database="), opt, 9) == 0) {
+        	} else if( strNS->strncmp(_T("database="), opt, 9) == 0) {
 
         		dbname = __cwtDBIDriver.encode((CwtDBHandler*)dbh, &opt[9]);
 
-        	} else if( strNS->ncmp(_T("port="), opt, 5) == 0) {
+        	} else if( strNS->strncmp(_T("port="), opt, 5) == 0) {
         		port = strNS->toUINT(&opt[5], 0, &ok);
         		if( !ok ) {
         			print_error(__LOG_PREFIX _Tr("bad port value"));
         			break;
         		}
 
-        	} else if( strNS->ncmp(_T("mysql_socket="), opt, 13) == 0) {
+        	} else if( strNS->strncmp(_T("mysql_socket="), opt, 13) == 0) {
 
         		sockname = __cwtDBIDriver.encode((CwtDBHandler*)dbh, &opt[13]);
 
-        	} else if( strNS->ncmp(_T("mysql_flags="), opt, 12) == 0) {
+        	} else if( strNS->strncmp(_T("mysql_flags="), opt, 12) == 0) {
         	    const CWT_CHAR *flagstr = &opt[12];
 
         	    flags |= CLIENT_REMEMBER_OPTIONS;
-        	    if( strNS->substr(flagstr, _T("COMPRESS")) )         flags |= CLIENT_COMPRESS;
-        	    if( strNS->substr(flagstr, _T("FOUND_ROWS")) )       flags |= CLIENT_FOUND_ROWS;
-        	    if( strNS->substr(flagstr, _T("IGNORE_SIGPIPE")) )   flags |= CLIENT_IGNORE_SIGPIPE;
-        	    if( strNS->substr(flagstr, _T("IGNORE_SPACE")) )     flags |= CLIENT_IGNORE_SPACE;
-        	    if( strNS->substr(flagstr, _T("INTERACTIVE")) )      flags |= CLIENT_INTERACTIVE;
-        	    if( strNS->substr(flagstr, _T("LOCAL_FILES")) )      flags |= CLIENT_LOCAL_FILES;
-        	    if( strNS->substr(flagstr, _T("MULTI_RESULTS")) )    flags |= CLIENT_MULTI_RESULTS;
-        	    if( strNS->substr(flagstr, _T("MULTI_STATEMENTS")) ) flags |= CLIENT_MULTI_STATEMENTS;
+        	    if( strNS->strstr(flagstr, _T("COMPRESS")) )         flags |= CLIENT_COMPRESS;
+        	    if( strNS->strstr(flagstr, _T("FOUND_ROWS")) )       flags |= CLIENT_FOUND_ROWS;
+        	    if( strNS->strstr(flagstr, _T("IGNORE_SIGPIPE")) )   flags |= CLIENT_IGNORE_SIGPIPE;
+        	    if( strNS->strstr(flagstr, _T("IGNORE_SPACE")) )     flags |= CLIENT_IGNORE_SPACE;
+        	    if( strNS->strstr(flagstr, _T("INTERACTIVE")) )      flags |= CLIENT_INTERACTIVE;
+        	    if( strNS->strstr(flagstr, _T("LOCAL_FILES")) )      flags |= CLIENT_LOCAL_FILES;
+        	    if( strNS->strstr(flagstr, _T("MULTI_RESULTS")) )    flags |= CLIENT_MULTI_RESULTS;
+        	    if( strNS->strstr(flagstr, _T("MULTI_STATEMENTS")) ) flags |= CLIENT_MULTI_STATEMENTS;
 
         	    /*printf_debug(__LOG_PREFIX _T("flags:    %lu (0x%X)"), flags, flags);*/
         	}
@@ -756,13 +758,13 @@ static BOOL __buildSqlCreateDB(CwtString *sql, CWT_CHAR *argv[])
 		i++;
 
 		while( argv[i] )  {
-			if( strNS->eqcase(_T("CHARACTER SET"), argv[i]) && argv[i+1] ) {
+			if( strNS->strieq(_T("CHARACTER SET"), argv[i]) && argv[i+1] ) {
 				stringNS->appendChar(sql, _T(' '));
 				stringNS->append(sql, _T("CHARACTER SET"));
 				stringNS->appendChar(sql, _T(' '));
 				stringNS->append(sql, argv[i+1]);
 				i += 2;
-			} else if( strNS->eqcase(_T("COLLATE"), argv[i]) && argv[i+1] ) {
+			} else if( strNS->strieq(_T("COLLATE"), argv[i]) && argv[i+1] ) {
 				stringNS->appendChar(sql, _T(' '));
 				stringNS->append(sql, _T("COLLATE"));
 				stringNS->appendChar(sql, _T(' '));
@@ -840,12 +842,12 @@ static BOOL __func(CwtDBHandler *dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[
 
 	sql = stringNS->create();
 
-	if( strNS->eqcase(_T("admin"), func_name) ) {
-		if( strNS->eqcase(_T("createdb"), argv[0]) ) {
+	if( strNS->strieq(_T("admin"), func_name) ) {
+		if( strNS->strieq(_T("createdb"), argv[0]) ) {
 			if( __buildSqlCreateDB(sql, &argv[1])
 					&& __realQuery((CwtMySqlDBHandler*)dbh, stringNS->cstr(sql), stringNS->length(sql)) == 0 )
 				rv = TRUE;
-		} else if( strNS->eqcase(_T("dropdb"), argv[0]) ) {
+		} else if( strNS->strieq(_T("dropdb"), argv[0]) ) {
 			if( __buildSqlDropDB(sql, &argv[1])
 					&& __realQuery((CwtMySqlDBHandler*)dbh, stringNS->cstr(sql), stringNS->length(sql)) == 0)
 				rv = TRUE;
@@ -916,55 +918,55 @@ static void __attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr_valu
 	CWT_ASSERT(attr_name);
 	CWT_ASSERT(attr_value);
 
-	if( strNS->eqcase(_T("errno"), attr_name) ) {
+	if( strNS->strieq(_T("errno"), attr_name) ) {
 
 		*((UINT*)attr_value) = mysql_errno(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("error"), attr_name)) {
+	} else if(strNS->strieq(_T("error"), attr_name)) {
 
 		*((const char**)attr_value) = mysql_error(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("hostinfo"), attr_name)) {
+	} else if(strNS->strieq(_T("hostinfo"), attr_name)) {
 
 		*((const char**)attr_value) = mysql_get_host_info(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("info"), attr_name)) {
+	} else if(strNS->strieq(_T("info"), attr_name)) {
 
 		*((const char**)attr_value) = mysql_info(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("insertid"), attr_name)) {
+	} else if(strNS->strieq(_T("insertid"), attr_name)) {
 
 		*((ULONGLONG*)attr_value) = mysql_insert_id(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("protoinfo"), attr_name)) {
+	} else if(strNS->strieq(_T("protoinfo"), attr_name)) {
 
 		*((UINT*)attr_value) = mysql_get_proto_info(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("serverinfo"), attr_name)) {
+	} else if(strNS->strieq(_T("serverinfo"), attr_name)) {
 
 		*((const char**)attr_value) = mysql_get_server_info(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("serverversion"), attr_name)) {
+	} else if(strNS->strieq(_T("serverversion"), attr_name)) {
 
 		*((ULONG*)attr_value) = mysql_get_server_version(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("clientinfo"), attr_name)) {
+	} else if(strNS->strieq(_T("clientinfo"), attr_name)) {
 
 		*((const char**)attr_value) = mysql_get_client_info();
 
-	} else if(strNS->eqcase(_T("clientversion"), attr_name)) {
+	} else if(strNS->strieq(_T("clientversion"), attr_name)) {
 
 		*((ULONG*)attr_value) = mysql_get_client_version();
 
-	} else if(strNS->eqcase(_T("thread_id"), attr_name)) {
+	} else if(strNS->strieq(_T("thread_id"), attr_name)) {
 
 		*((ULONG*)attr_value) = mysql_thread_id(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("stat"), attr_name)) {
+	} else if(strNS->strieq(_T("stat"), attr_name)) {
 
 		*((const char**)attr_value) = mysql_stat(__DBH(dbh));
 
-	} else if(strNS->eqcase(_T("charset"), attr_name)) {
+	} else if(strNS->strieq(_T("charset"), attr_name)) {
 
 		*((const char**)attr_value) = mysql_character_set_name(__DBH(dbh));
 
@@ -1070,7 +1072,7 @@ static BOOL __query(CwtDBHandler *dbh, const CWT_CHAR *sql)
 {
 	CWT_ASSERT(dbh);
 
-	if( __realQuery((CwtMySqlDBHandler*)dbh, sql, cwtStrNS()->len(sql)) != 0 ) {
+	if( __realQuery((CwtMySqlDBHandler*)dbh, sql, cwtStrNS()->strlen(sql)) != 0 ) {
 		printf_error(__LOG_PREFIX _Tr("failed to query: %s [%s]"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh), sql);
 		return FALSE;
 	}
@@ -1189,7 +1191,7 @@ static BOOL __tables(CwtDBHandler *dbh, CwtStrList *tables)
 		}
 
 		decoded = __decode(dbh, row[0]);
-		slNS->append( tables, decoded, strNS->len(decoded) );
+		slNS->append( tables, decoded, strNS->strlen(decoded) );
 
 		i++;
 	}
@@ -1234,7 +1236,7 @@ static BOOL __tableExists(CwtDBHandler *dbh, const CWT_CHAR *tname)
 		}
 
 		decoded = __decode(dbh, row[0]);
-		if( strNS->eqcase( tname, decoded ) ) {
+		if( strNS->strieq( tname, decoded ) ) {
 			ok = TRUE;
 			break;
 		}
@@ -1499,6 +1501,7 @@ static BOOL __stmtFetchNext(CwtStatement *sth)
 
 static BOOL __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *value)
 {
+	CwtUniTypeNS *utNS = cwtUniTypeNS();
 	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
 	CwtTypeEnum cwtType;
 	MYSQL_BIND *rbind;
@@ -1535,61 +1538,73 @@ static BOOL __stmtFetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *valu
 	value->type = cwtType;
 
 	switch(cwtType) {
-		case CwtType_CHAR:
-			value->value.sbyte_val = *((char*)rbind->buffer);
+		case CwtType_SBYTE:
+			utNS->setSBYTE(value, *((SBYTE*)rbind->buffer));
 			break;
-		case CwtType_UCHAR:
-			value->value.byte_val = *((UCHAR*)rbind->buffer);
+		case CwtType_BYTE:
+			utNS->setBYTE(value, *((BYTE*)rbind->buffer));
 			break;
 		case CwtType_SHORT:
-			value->value.short_val = *((SHORT*)rbind->buffer);
+			utNS->setSHORT(value, *((SHORT*)rbind->buffer));
 			break;
 		case CwtType_USHORT:
-			value->value.ushort_val = *((USHORT*)rbind->buffer);
+			utNS->setUSHORT(value, *((USHORT*)rbind->buffer));
 			break;
 		case CwtType_INT:
-			value->value.int_val = *((INT*)rbind->buffer);
+			utNS->setINT(value, *((INT*)rbind->buffer));
 			break;
 		case CwtType_UINT:
-			value->value.uint_val = *((UINT*)rbind->buffer);
+			utNS->setUINT(value, *((UINT*)rbind->buffer));
 			break;
 		case CwtType_LONG:
-			value->value.long_val = *((LONG*)rbind->buffer);
+			utNS->setLONG(value, *((LONG*)rbind->buffer));
 			break;
 		case CwtType_ULONG:
-			value->value.ulong_val = *((ULONG*)rbind->buffer);
+			utNS->setULONG(value, *((ULONG*)rbind->buffer));
 			break;
 		case CwtType_LONGLONG:
-			value->value.llong_val = *((LONGLONG*)rbind->buffer);
+			utNS->setLONGLONG(value, *((LONGLONG*)rbind->buffer));
 			break;
 		case CwtType_ULONGLONG:
-			value->value.ullong_val = *((ULONGLONG*)rbind->buffer);
+			utNS->setULONGLONG(value, *((ULONGLONG*)rbind->buffer));
 			break;
 		case CwtType_FLOAT:
-			value->value.float_val = *((float*)rbind->buffer);
+			utNS->setFloat(value, *((float*)rbind->buffer));
 			break;
 		case CwtType_DOUBLE:
-			value->value.double_val = *((double*)rbind->buffer);
+			utNS->setDouble(value, *((double*)rbind->buffer));
 			break;
 
 		/* must be converted by convertTime function */
-		case CwtType_TIME:
-		case CwtType_DATE:
-		case CwtType_DATETIME:
-			value->value.ptr = rbind->buffer;
-			value->length   = *rbind->length;
+		case CwtType_TIME: {
+				CWT_TIME tm;
+				__convertTime(&tm, rbind->buffer);
+				utNS->setTIME(value, &tm, 0);
+			}
+			break;
+		case CwtType_DATE: {
+				CWT_TIME tm;
+				__convertTime(&tm, rbind->buffer);
+				utNS->setDATE(value, &tm, 0);
+			}
+			break;
+		case CwtType_DATETIME: {
+				CWT_TIME tm;
+				__convertTime(&tm, rbind->buffer);
+				utNS->setDATETIME(value, &tm, 0);
+			}
 			break;
 
 		case CwtType_BLOB:
 			CWT_ASSERT(rbind->length);
-			value->value.ptr = rbind->buffer;
-			value->length   = *rbind->length;
+			utNS->setBLOB(value, rbind->buffer, *rbind->length);
 			break;
 
 		/* must be decoded by CwtDBIDriver::decode */
-		case CwtType_TEXT:
+		case CwtType_CWT_TEXT:
 		default:
 			CWT_ASSERT(rbind->length);
+
 			value->value.ptr = rbind->buffer;
 			value->length   = *rbind->length;
 /*			((char*)value->value.ptr)[value->length] = (char)0;*/

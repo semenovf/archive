@@ -258,15 +258,15 @@ static const CWT_CHAR* __cwt_strerror(int errn)
         (LPTSTR) &lpMsgBuf,
         0, NULL );
 
-    __errorstr = __cwtStrNS.dup((CWT_CHAR*)lpMsgBuf);
+    __errorstr = __cwtStrNS.strdup((CWT_CHAR*)lpMsgBuf);
     LocalFree(lpMsgBuf);
     __cwtStrNS.chomp(__errorstr);
 	}
 #	else
-	__errorstr = __cwtStrNS.dup(CWT_ISO_CPP_NAME(wcserror)(errn));
+	__errorstr = __cwtStrNS.strdup(CWT_ISO_CPP_NAME(wcserror)(errn));
 #	endif
 #else
-	__errorstr = __cwtStrNS.dup(strerror(errn));
+	__errorstr = __cwtStrNS.strdup(strerror(errn));
 #endif
 
 	return __errorstr;
@@ -275,12 +275,12 @@ static const CWT_CHAR* __cwt_strerror(int errn)
 
 static BOOL __cwt_streq(const CWT_CHAR *s1, const CWT_CHAR *s2)
 {
-	return __cwtStrNS.cmp(s1, s2) == 0 ? TRUE : FALSE;
+	return __cwtStrNS.strcmp(s1, s2) == 0 ? TRUE : FALSE;
 }
 
 static BOOL __cwt_strieq(const CWT_CHAR *s1, const CWT_CHAR *s2)
 {
-	return __cwtStrNS.casecmp(s1, s2) == 0 ? TRUE : FALSE;
+	return __cwtStrNS.stricmp(s1, s2) == 0 ? TRUE : FALSE;
 }
 
 static void* __cwt_bzero(void *block, size_t sz)
@@ -294,7 +294,7 @@ static CWT_CHAR* __cwt_strndup(const CWT_CHAR *s, size_t n)
 	CWT_CHAR *s0 = NULL;
 
 	s0 = CWT_MALLOCA(CWT_CHAR, n+1);
-	__cwtStrNS.ncpy(s0, s, n);
+	__cwtStrNS.strncpy(s0, s, n);
 	s0[n] = (CWT_CHAR)0;
 
 	return s0;
@@ -351,11 +351,11 @@ static CWT_CHAR* __cwt_strrstr(const CWT_CHAR *s1, const CWT_CHAR *s2)
 	if( !s2 )
 		return NULL;
 
-	s2_len = __cwtStrNS.len(s2);
-	ptr = (CWT_CHAR*)(s1 + __cwtStrNS.len(s1));
+	s2_len = __cwtStrNS.strlen(s2);
+	ptr = (CWT_CHAR*)(s1 + __cwtStrNS.strlen(s1));
 
 	while( ptr >= s1 ) {
-		if( __cwtStrNS.ncmp(ptr, s2, s2_len) == 0 )
+		if( __cwtStrNS.strncmp(ptr, s2, s2_len) == 0 )
 			return ptr;
 		ptr--;
 	}
@@ -387,7 +387,7 @@ static void __cwt_chomp(CWT_CHAR *s)
 {
 	CWT_CHAR *ptr;
 
-	ptr = s + __cwtStrNS.len(s) - 1;
+	ptr = s + __cwtStrNS.strlen(s) - 1;
 	while( ptr >= s && *ptr == _T('\n') ) {
 		*ptr = (CWT_CHAR)0;
 		ptr--;
@@ -419,7 +419,7 @@ static void __cwt_toTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *form
 	if( !format )
 		format = _T("%H:%M:%S");
 
-	ptr = __cwtStrNS.ptime(str, format, &tm_);
+	ptr = __cwtStrNS.strptime(str, format, &tm_);
 
 	if( ptr || *ptr == _T('\0') ) {
 		if( ok )
@@ -458,7 +458,7 @@ static void __cwt_toDate(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *form
 	if( !format )
 		format = _T("%d.%m.%Y");
 
-	ptr = __cwtStrNS.ptime(str, format, &tm_);
+	ptr = __cwtStrNS.strptime(str, format, &tm_);
 
 	if( ptr || *ptr == _T('\0') ) {
 		if( ok )
@@ -496,7 +496,7 @@ static void __cwt_toDateTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *
 	if( !format )
 		format = _T("%H:%M:%S %d.%m.%Y");
 
-	ptr = __cwtStrNS.ptime(str, format, &tm_);
+	ptr = __cwtStrNS.strptime(str, format, &tm_);
 
 	if( ptr || *ptr == _T('\0') ) {
 		if( ok )
