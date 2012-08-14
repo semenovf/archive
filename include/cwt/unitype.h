@@ -12,6 +12,7 @@
 
 typedef struct _CwtUniType {
 	union {
+/*
 		char      char_val;
         SBYTE     sbyte_val;
         BYTE      byte_val;
@@ -22,11 +23,12 @@ typedef struct _CwtUniType {
         UINT      uint_val;
         LONG      long_val;
         ULONG     ulong_val;
-        LONGLONG  llong_val;
-        ULONGLONG ullong_val;
-        BOOL      bool_val;
+*/
+		LONGLONG  llong_val;
+/*        ULONGLONG ullong_val;*/
+/*        BOOL      bool_val;*/
         double    double_val;
-        float     float_val;
+/*        float     float_val;*/
         void     *ptr;
 	} value;
     CwtTypeEnum type;
@@ -37,8 +39,9 @@ typedef struct _CwtUniType {
 
 typedef struct _CwtUniTypeNS {
 	CwtUniType* (*create)        (void);
-	void        (*free)          (CwtUniType*);
-	/*void        (*cleanup)       (CwtUniType*);*/
+	void        (*free)          (CwtUniType *ut);
+	CwtTypeEnum (*type)          (CwtUniType *ut);
+/*	BOOL        (*canCast)       (CwtUniType *ut, CwtTypeEnum type);*/
 	BOOL        (*set)           (CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz);
 	BOOL        (*setFromString) (CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s);
 	BOOL        (*setBool)       (CwtUniType *ut, BOOL b);

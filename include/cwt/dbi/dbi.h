@@ -75,7 +75,7 @@ typedef struct _CwtDBHandler {
 	ULONGLONG       (*size)          (CwtStatement*);
 	BOOL            (*fetchNext)     (CwtStatement*);
 	BOOL            (*fetchColumn)   (CwtStatement*, CWT_CHAR *col, CwtUniType *value);
-	struct _CwtDBIDriver* (*driver)   (void);
+	struct _CwtDBIDriver* (*driver)  (void);
 } CwtDBHandler;
 
 typedef struct _CwtDBIDriver
@@ -84,6 +84,7 @@ typedef struct _CwtDBIDriver
 	void            (*disconnect)    (CwtDBHandler*);
 	BOOL            (*func)          (CwtDBHandler*, const CWT_CHAR*, CWT_CHAR**);
 	void            (*attr)          (CwtDBHandler*, const CWT_CHAR*, void*);
+	size_t          (*sizeofTime)    (void);
 	BOOL            (*setAutoCommit) (CwtDBHandler*, BOOL);
 	BOOL            (*autoCommit)    (CwtDBHandler*);
 	CwtDBI_RC       (*err)           (CwtDBHandler*);
@@ -97,9 +98,6 @@ typedef struct _CwtDBIDriver
 	BOOL            (*tableExists)   (CwtDBHandler*, const CWT_CHAR *tname);
 	char*           (*encode)        (CwtDBHandler*, const CWT_CHAR *s);
 	CWT_CHAR*       (*decode)        (CwtDBHandler*, const char *s);
-	CWT_TIME*       (*createTime)    (void);
-	void            (*freeTime)      (CWT_TIME*);
-	void            (*convertTime)   (CWT_TIME *cwtTime, void *nativeTime);
 	BOOL            (*begin)         (CwtDBHandler*); /* begin transaction */
 	BOOL            (*commit)        (CwtDBHandler*);
 	BOOL            (*rollback)      (CwtDBHandler*);
@@ -117,6 +115,7 @@ typedef struct _CwtDBIBindGroup {
 
 typedef struct CwtDBI
 {
+	CwtDBIDriver*   (*load)          (const CWT_CHAR *scheme, const CWT_CHAR *driver);
 	CwtDBHandler*   (*connect)       (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
 	void            (*disconnect)    (CwtDBHandler*);
 	BOOL            (*func)          (CwtDBHandler*, const CWT_CHAR*, CWT_CHAR**);
@@ -143,13 +142,6 @@ typedef struct CwtDBI
 	CwtUniType*     (*bindText)      (CwtStatement *sth, size_t index, size_t length);
 	CwtUniType*     (*bindBlob)      (CwtStatement *sth, size_t index, size_t sz);
 
-/*
-	CwtDBIBindGroup* (*createBindGroup)(void);
-	void             (*freeBindGroup)(CwtDBIBindGroup*);
-	void             (*addBind)      (CwtDBIBindGroup*, CwtUniType *ut);
-*/
-
-
 	CwtTypeEnum     (*toCwtTypeEnum) (CwtSqlTypeEnum sqlType);
 	CwtSqlTypeEnum  (*toSqlTypeEnum) (CwtTypeEnum cwtType);
 
@@ -158,8 +150,8 @@ typedef struct CwtDBI
 	void            (*freeDDI)       (CwtDDI*);
 	CwtDDITable*    (*newTable)      (CwtDDI*, const CWT_CHAR *name);
 	CwtDDIColumn*   (*newColumn)     (CwtDDITable*, const CWT_CHAR *name);
-	CwtDDITable*    (*findTable)      (CwtDDI*, const CWT_CHAR *name);
-	CwtDDIColumn*   (*findColumn)     (CwtDDITable*, const CWT_CHAR *name);
+	CwtDDITable*    (*findTable)     (CwtDDI*, const CWT_CHAR *name);
+	CwtDDIColumn*   (*findColumn)    (CwtDDITable*, const CWT_CHAR *name);
 
 	BOOL            (*cTypeBool)     (CwtDDIColumn*);
 	BOOL            (*cTypeInt)      (CwtDDIColumn*, LONGLONG min, ULONGLONG max);

@@ -172,11 +172,11 @@ int main(int argc, char *argv[])
 		stdioNS->printf(_T("Table [1]: %s\n"),  strlistNS->at(tables, 1));
 
 		CWT_TEST_OK(
-				strNS->streq(TABLE_NAME, strlistNS->at(tables, 0))
-			||  strNS->streq(TABLE0_NAME, strlistNS->at(tables, 0)));
+				strNS->eq(TABLE_NAME, strlistNS->at(tables, 0))
+			||  strNS->eq(TABLE0_NAME, strlistNS->at(tables, 0)));
 
-		CWT_TEST_OK(strNS->streq(TABLE_NAME, strlistNS->at(tables, 1))
-			|| strNS->streq(TABLE0_NAME, strlistNS->at(tables, 1)));
+		CWT_TEST_OK(strNS->eq(TABLE_NAME, strlistNS->at(tables, 1))
+			|| strNS->eq(TABLE0_NAME, strlistNS->at(tables, 1)));
 		strlistNS->free(tables);
 	}
 
@@ -199,6 +199,7 @@ int main(int argc, char *argv[])
 		cwtUtilsNS()->now(&cwtDateTime);
 
 		/* insert first row */
+/*
 		utNS->setSByte    (&ut[0], CWT_SBYTE_MAX);
 		utNS->setByte     (&ut[1], CWT_BYTE_MAX);
 		utNS->setShort    (&ut[2], CWT_SHORT_MAX);
@@ -213,22 +214,25 @@ int main(int argc, char *argv[])
 		utNS->setTime     (&ut[11], cwtTime);
 		utNS->setTime     (&ut[12], cwtDateTime);
 		utNS->setText     (&ut[13], _T("The quick brown fox jumps over the lazy dog"));
+*/
 
-		CWT_CHAR *str_data  = _T("The quick brown fox jumps over the lazy dog"); /*dbi->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));*/
+		/*CWT_CHAR *str_data  = _T("The quick brown fox jumps over the lazy dog"); *//*dbi->encode(dbh, _T("The quick brown fox jumps over the lazy dog"));*/
+/*
 		size_t   str_length = strNS->strlen(str_data);
 		CWT_CHAR *str_data1 = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
+*/
 
 		CWT_TEST_FAIL((sth = dbi->prepare(dbh, __sql_insert)));
-		ut[0] = dbi->bind(sth, 0, CwtType_SBYTE);
-		ut[1] = dbi->bind(sth, 1, CwtType_BYTE);
-		ut[2] = dbi->bind(sth, 2, CwtType_SHORT);
-		ut[3] = dbi->bind(sth, 3, CwtType_USHORT);
-		ut[4] = dbi->bind(sth, 4, CwtType_INT);
-		ut[5] = dbi->bind(sth, 5, CwtType_UINT);
-		ut[6] = dbi->bind(sth, 6, CwtType_LONG);
-		ut[7] = dbi->bind(sth, 7, CwtType_ULONG);
-		ut[8] = dbi->bind(sth, 8, CwtType_LONGLONG);
-		ut[9] = dbi->bind(sth, 9, CwtType_ULONGLONG);
+		ut[0]  = dbi->bind(sth, 0, CwtType_SBYTE);
+		ut[1]  = dbi->bind(sth, 1, CwtType_BYTE);
+		ut[2]  = dbi->bind(sth, 2, CwtType_SHORT);
+		ut[3]  = dbi->bind(sth, 3, CwtType_USHORT);
+		ut[4]  = dbi->bind(sth, 4, CwtType_INT);
+		ut[5]  = dbi->bind(sth, 5, CwtType_UINT);
+		ut[6]  = dbi->bind(sth, 6, CwtType_LONG);
+		ut[7]  = dbi->bind(sth, 7, CwtType_ULONG);
+		ut[8]  = dbi->bind(sth, 8, CwtType_LONGLONG);
+		ut[9]  = dbi->bind(sth, 9, CwtType_ULONGLONG);
 		ut[10] = dbi->bind(sth, 10, CwtType_DATE);
 		ut[11] = dbi->bind(sth, 11, CwtType_TIME);
 		ut[12] = dbi->bind(sth, 12, CwtType_DATETIME);
@@ -236,7 +240,7 @@ int main(int argc, char *argv[])
 
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
-
+		CWT_TEST_OK(dbi->err(dbh) == 0);
 
 /*
 		CWT_TEST_FAIL(dbh->bindScalar(sth, 0, CwtType_SBYTE, &sbyte_val));
@@ -256,11 +260,14 @@ int main(int argc, char *argv[])
 		CWT_TEST_FAIL(dbh->bind(sth, 13, CwtType_TEXT, str_data, &str_length, FALSE));
 */
 
+/*
 		CWT_FREE(str_data);
 
-		CWT_TEST_OK(dbd->err(dbh) == 0);
+*/
+
 
 		/* insert second row */
+/*
 		str_data   = str_data1;
 		str_length = strNS->strlen(str_data);
 
@@ -284,7 +291,9 @@ int main(int argc, char *argv[])
 		CWT_TEST_OK(dbd->err(dbh) == 0);
 
 		dbh->close(sth);
+*/
 
+#ifdef __COMMENT__
 		/* Make selection */
 		CWT_TEST_FAIL((sth = dbd->prepare(dbh, __sql_select)));
 		CWT_TEST_FAIL(dbh->execute(sth));
@@ -383,11 +392,12 @@ int main(int argc, char *argv[])
 		dbd->freeTime(cwtTime);
 		dbd->freeTime(cwtDate);
 		dbd->freeTime(cwtDateTime);
+#endif
 	}
 
-	CWT_TEST_OK(dbd->err(dbh) == 0);
+	CWT_TEST_OK(dbi->err(dbh) == 0);
 
-	dbd->disconnect(dbh);
+	dbi->disconnect(dbh);
 
 	CWT_END_TESTS;
 }

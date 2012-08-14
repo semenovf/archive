@@ -34,7 +34,7 @@ DlHandle __open( const CWT_CHAR *path, BOOL global, BOOL resolve )
 	h = LoadLibraryEx(path, NULL, dwFlags);
 
 	if( !h ) {
-		printf_error( _Tr("%s: failed to open dynamic library: %s"), path, cwtStrNS()->strerror(GetLastError()) );
+		printf_error( _Tr("%s: failed to open dynamic library: %s"), path, cwtStrNS()->error(GetLastError()) );
 	} else {
 	   // use the result in a call to GetProcAddress
 	}

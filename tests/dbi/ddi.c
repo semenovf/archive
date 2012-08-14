@@ -16,6 +16,7 @@ static CwtStrListNS* __slNS = NULL;
 
 static const CWT_CHAR *__username = _T("root");
 static const CWT_CHAR *__password = _T("rdflhfnehf");
+static const CWT_CHAR *__driver   = _T("mysql");
 static const CWT_CHAR *__dsn      = _T("DBI:mysql:host=127.0.0.1;port=3306");
 
 /*
@@ -188,7 +189,7 @@ static void test_00(void)
 	CwtStrList   *deploySpec;
 	CwtStrList   *recallSpec;
 
-	dbd = __dbi->load(__dsn);
+	dbd = __dbi->load(_T("DBI"), __driver);
 	CWT_TEST_FAIL2(dbd, "Unable to load driver represented by DSN");
 
 	ddi = __create_ddi();
@@ -221,26 +222,19 @@ static void test_00(void)
 
 static void test_01(void)
 {
-	CwtDBIDriver *dbd;
 	CwtDDI       *ddi;
 	CwtDBHandler *dbh;
-	CWT_CHAR *driverDSN;
 
-	dbd = __dbi->load(__dsn);
-	CWT_TEST_FAIL2(dbd, "Unable to load driver represented by DSN");
+	dbh = __dbi->connect(__dsn, __username, __password, NULL);
 
-	__dbi->parseDSN(__dsn, NULL, NULL, &driverDSN);
-	dbh = dbd->connect(driverDSN, __username, __password, NULL);
-	CWT_FREE(driverDSN);
 	CWT_TEST_FAIL2(dbh, "May be you forgot to start MySQL service?");
-
 
 	ddi = __create_ddi();
 
 	CWT_TEST_OK(__dbi->deploy(dbh, ddi, CWT_DDI_DEPLOY_DROP_DB | CWT_DDI_DEPLOY_DROP_TAB));
 	CWT_TEST_OK(__dbi->recall(dbh, ddi, 0)); /*CWT_DDI_RECALL_DROP_DB*/
 
-	dbd->disconnect(dbh);
+	__dbi->disconnect(dbh);
 	__dbi->freeDDI(ddi);
 }
 

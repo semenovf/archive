@@ -13,8 +13,9 @@
 
 #define __LOG_PREFIX _Tr("dbi: ")
 
-static CwtDBHandler*   __dbi_connect   (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
-static void            __dbi_disconnect(CwtDBHandler*);
+CwtDBIDriver*          __dbi_load          (const CWT_CHAR *scheme, const CWT_CHAR *driver);
+static CwtDBHandler*   __dbi_connect       (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
+static void            __dbi_disconnect    (CwtDBHandler*);
 static BOOL            __dbi_func          (CwtDBHandler*, const CWT_CHAR*, CWT_CHAR**);
 static void            __dbi_attr          (CwtDBHandler*, const CWT_CHAR*, void*);
 static BOOL            __dbi_setAutoCommit (CwtDBHandler*, BOOL);
@@ -69,11 +70,11 @@ extern BOOL            __ddi_recall        (CwtDBHandler *dbh, CwtDDI *ddi, int 
 
 /* helper functions */
 static void            __parseDSN      (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
-static CwtDBIDriver*   __load          (const CWT_CHAR *scheme, const CWT_CHAR *driver);
 
 
 static CwtDBI __cwtDBI = {
-	  __dbi_connect
+	  __dbi_load
+	, __dbi_connect
 	, __dbi_disconnect
 	, __dbi_func
 	, __dbi_attr
@@ -146,28 +147,28 @@ static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver
 
     opt = slNS->at(opts, 0);
     if( scheme && opt )
-    	*scheme = strNS->strdup(opt);
+    	*scheme = strNS->dup(opt);
 
     opt = slNS->at(opts, 1);
     if( driver && opt )
-    	*driver = strNS->strdup(opt);
+    	*driver = strNS->dup(opt);
 
     opt = slNS->at(opts, 2);
     if( driverDSN && opt )
-    	*driverDSN = strNS->strdup(opt);
+    	*driverDSN = strNS->dup(opt);
 
     slNS->free(opts);
 }
 
 
-static CwtDBIDriver* __load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
+static CwtDBIDriver* __dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CwtDlNS  *dl    = cwtDlNS();
 
 	CwtDBIDriver *dbd = (CwtDBIDriver*)NULL;
 
-	if( strNS->strieq(_T("dbi"), scheme) ) {
+	if( strNS->eqcase(_T("dbi"), scheme) ) {
 		DlHandle dlHandle;
 		CwtStringNS *stringNS = cwtStringNS();
 		CwtString   *driverName;
@@ -217,7 +218,7 @@ static CwtDBHandler* __dbi_connect(const CWT_CHAR *dsn, const CWT_CHAR *username
 
 	__parseDSN(dsn, &scheme, &driver, &driverDSN);
 
-	dbd = __load(dsn, driver);
+	dbd = __dbi_load(dsn, driver);
 
 	if( dbd ) {
 		dbh = dbd->connect(driverDSN, username, password, csname);
@@ -296,7 +297,8 @@ static inline BOOL __dbi_queryBin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_t
 
 static inline CwtStatement* __dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS     *strNS = cwtStrNS();
+	CwtUniTypeNS *utNS  = cwtUniTypeNS();
 	CwtStatement* sth;
 
 	CWT_ASSERT(dbh);
@@ -304,6 +306,7 @@ static inline CwtStatement* __dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql
 	sth = dbh->driver()->prepare(dbh, sql);
 	if( sth ) {
 		size_t nbind_params;
+		size_t i;
 		sth->dbh    = dbh;
 		sth->bind_params = NULL;
 
@@ -312,7 +315,9 @@ static inline CwtStatement* __dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql
 		sth->bind_params = CWT_MALLOCA(CwtUniType*, nbind_params);
 		strNS->bzero(sth->bind_params, sizeof(CwtUniType*) * nbind_params);
 
-
+		for( i = 0; i < nbind_params; i++ ) {
+			sth->bind_params[i] = utNS->create();
+		}
 	}
 	return sth;
 }
@@ -386,65 +391,50 @@ static void __dbi_close(CwtStatement *sth)
 	}
 }
 
-static CwtUniType* __dbi_bind_helper(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, size_t length)
+static CwtUniType* __dbi_bind_helper(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, size_t sz)
 {
-	size_t nbind_params;
-	CwtUniType *ut;
+	/*CwtUniTypeNS *utNS = cwtUniTypeNS();*/
+	/*size_t nbind_params;*/
+	CwtUniType    *ut;
+/*
+	CwtDBIDriver *dbd;
+	CwtDBHandler *dbh;
+*/
 
 	CWT_ASSERT(sth);
+	CWT_ASSERT(sth->dbh);
 
-	nbind_params = sth->dbh->bindParamsCount(sth);
+/*
+	dbh = sth->dbh;
+	dbd = dbh->driver();
+*/
+	/*nbind_params = sth->dbh->bindParamsCount(sth);*/
 
-	if( index >= nbind_params ) {
+	if( index >= sth->dbh->bindParamsCount(sth) ) {
 		print_error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
 		return NULL;
 	}
 
 	ut = sth->bind_params[index];
-
-	if( CwtType_TEXT == cwtType ) {
-		char *s;
-		s = CWT_MALLOCA(char, length);
-		cwtUniTypeNS()->setTextSized(ut, s, length);
-	} else if( CwtType_BLOB == cwtType ) {
-		char *p;
-		p = CWT_MALLOCA(char, length);
-		cwtUniTypeNS()->setBlob(ut, p, length);
-	} else if( CwtType_TIME == cwtType || CwtType_DATE == cwtType || CwtType_DATETIME == cwtType ) {
-		CWT_TIME *tm = sth->dbh->driver()->createTime();
-		cwtUniTypeNS()->setDate(ut, tm);
-		sth->dbh->bind(sth, index, ut);
-	} else {
-		cwtUniTypeNS()->set(ut, cwtType, void *copy);
-	}
+	cwtUniTypeNS()->set(ut, cwtType, NULL, sz);
+	sth->dbh->bind(sth, index, ut);
 
 	return ut;
 }
 
 static CwtUniType* __dbi_bind(CwtStatement *sth, size_t index, CwtTypeEnum cwtType)
 {
-	size_t nbind_params;
-	CwtUniType *ut;
+	CwtUniType *ut = NULL;
 
 	CWT_ASSERT(sth);
 	CWT_ASSERT(cwtType != CwtType_TEXT);
+	CWT_ASSERT(cwtType != CwtType_CWT_TEXT);
 	CWT_ASSERT(cwtType != CwtType_BLOB);
 
-	nbind_params = sth->dbh->bindParamsCount(sth);
-
-	if( index >= nbind_params ) {
-		print_error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
-		return NULL;
-	}
-
-	ut = sth->bind_params[index];
-
-	__dbi_cleanupUniType(ut);
-
 	if( CwtType_TIME == cwtType || CwtType_DATE == cwtType || CwtType_DATETIME == cwtType ) {
-		CWT_TIME *tm = sth->dbh->driver()->createTime();
-		cwtUniTypeNS()->setDate(ut, tm);
-		sth->dbh->bind(sth, index, ut);
+		ut = __dbi_bind_helper(sth, index, cwtType, sth->dbh->driver()->sizeofTime());
+	} else {
+		ut = __dbi_bind_helper(sth, index, cwtType, 0);
 	}
 
 	return ut;
@@ -452,52 +442,13 @@ static CwtUniType* __dbi_bind(CwtStatement *sth, size_t index, CwtTypeEnum cwtTy
 
 static CwtUniType* __dbi_bindText(CwtStatement *sth, size_t index, size_t length)
 {
-	size_t nbind_params;
-	CwtUniType *ut;
-
-	CWT_ASSERT(sth);
-
-	nbind_params = sth->dbh->bindParamsCount(sth);
-
-	if( index >= nbind_params ) {
-		print_error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
-		return NULL;
-	}
-
-	ut = sth->bind_params[index];
-
-	__dbi_cleanupUniType(ut);
+	return __dbi_bind_helper(sth, index, CwtType_TEXT, length);
 }
 
 static CwtUniType* __dbi_bindBlob( CwtStatement *sth, size_t index, size_t sz )
 {
-
+	return __dbi_bind_helper(sth, index, CwtType_BLOB, sz);
 }
-
-
-static BOOL __dbi_bind(CwtStatement *sth, size_t index, CwtUniType *ut)
-{
-	CWT_ASSERT(sth);
-	CWT_ASSERT(ut);
-	return sth->dbh->bind(sth, index, ut);
-}
-/*
-
-static CwtDBIBindGroup* __dbi_createBindGroup(void)
-{
-	CwtDBIBindGroup *bg;
-	bg = CWT_MALLOC(CwtDBIBindGroup);
-
-	return bg;
-}
-
-static void __dbi_freeBindGroup(CwtDBIBindGroup *bg)
-{
-	if( bg ) {
-		CWT_FREE(bg);
-	}
-}
-*/
 
 
 static CwtTypeEnum __toCwtTypeEnum (CwtSqlTypeEnum sqlType)

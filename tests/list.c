@@ -93,7 +93,7 @@ static void cleanup_01(void *data)
 {
 	struct_01 *d = (struct_01*)data;
 	if( d->text ) {
-		CWT_TEST_OK(__strNS->streq(d->text, text_01[d->index]));
+		CWT_TEST_OK(__strNS->eq(d->text, text_01[d->index]));
 		CWT_FREE(d->text);
 		d->text = NULL;
 	}
@@ -110,7 +110,7 @@ static void test_01(void)
 	for(i = 0; i < sizeof(text_01)/sizeof(text_01[0]); i++) {
 		struct_01 d;
 		d.index = i;
-		d.text = __strNS->strdup(text_01[i]);
+		d.text = __strNS->dup(text_01[i]);
 		__listNS->append(list, &d);
 	}
 	__listNS->free(list);

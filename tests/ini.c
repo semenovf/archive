@@ -34,42 +34,42 @@ static void __iniOnError(CwtIniHandler ini, const CWT_CHAR *errstr)
 static BOOL __onIniDirective1(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_TEST_OK(argc == 6);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive1"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->eq(_T("directive1"), argv[0]));
 	return TRUE;
 }
 
 static BOOL __onIniDirective2(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_TEST_OK(argc == 5);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive2"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->eq(_T("directive2"), argv[0]));
 	return TRUE;
 }
 
 static BOOL __onIniDirective3(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_TEST_OK(argc == 4);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive3"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->eq(_T("directive3"), argv[0]));
 	return TRUE;
 }
 
 static BOOL __onIniDirective4(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_TEST_OK(argc == 3);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive4"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->eq(_T("directive4"), argv[0]));
 	return TRUE;
 }
 
 static BOOL __onIniDirective5(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_TEST_OK(argc == 2);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive5"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->eq(_T("directive5"), argv[0]));
 	return TRUE;
 }
 
 static BOOL __onIniDirective6(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_TEST_OK(argc == 1);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive6"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->eq(_T("directive6"), argv[0]));
 	return TRUE;
 }
 
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 	iniNS->addDirective(ini, _T("directive6"), __onIniDirective6);
 
 	for( i = 0; i < sizeof(directives)/sizeof(directives[0]); i++ ) {
-		char *str = codecNS->toUtf8(directives[i], strNS->strlen(directives[i]));
+		char *str = codecNS->toUtf8(directives[i], strNS->len(directives[i]));
 		chNS->write(pchan0, str, strlen(str));
 		CWT_FREE(str);
 	}

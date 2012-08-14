@@ -22,4 +22,5 @@ SUBDIRS  =            \
     tests/strptime    \
     tests/strutils    \
     tests/dbi         \
+    tests/unitype     \
     tests/io/channel

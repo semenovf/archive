@@ -381,7 +381,7 @@ literal:
 
 		case _T('Z'):
 			CWT_ISO_CPP_NAME(tzset)();
-			if( __strNS->strncmp((const CWT_CHAR*)bp, __gmt, 3) == 0) {
+			if( __strNS->ncmp((const CWT_CHAR*)bp, __gmt, 3) == 0) {
 				tm->tm_isdst = 0;
 #ifdef TM_GMTOFF
 				tm->TM_GMTOFF = 0;
@@ -589,8 +589,8 @@ static const CWT_UCHAR* __find_string(const CWT_CHAR *bp, int *tgt, const CWT_CH
 	/* check full name - then abbreviated ones */
 	for (; n1 != NULL; n1 = n2, n2 = NULL) {
 		for (i = 0; i < c; i++, n1++) {
-			len = __strNS->strlen(*n1);
-			if (__strNS->strnicmp(*n1, (const CWT_CHAR*)bp, len) == 0) {
+			len = __strNS->len(*n1);
+			if (__strNS->ncasecmp(*n1, (const CWT_CHAR*)bp, len) == 0) {
 				*tgt = i;
 				return bp + len;
 			}

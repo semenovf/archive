@@ -36,7 +36,7 @@ void set_printer(LOGGER_TYPE type
 	}
 
 	if( prefix ) {
-		LOGGER_CONTEXT[type].prefix = cwtStrNS()->strdup(prefix);
+		LOGGER_CONTEXT[type].prefix = cwtStrNS()->dup(prefix);
 	}
 
 	if( !LOGGER_CONTEXT[type].sbuf ) {
