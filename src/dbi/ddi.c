@@ -194,7 +194,7 @@ BOOL __ddi_cTypeFloat(CwtDDIColumn *col, UINT prec, UINT scale)
 BOOL __ddi_cTypeText(CwtDDIColumn *col, ULONGLONG maxlen)
 {
 	__clear_type(col);
-	col->type = CwtType_CWT_TEXT;
+	col->type = CwtType_TEXT;
 	col->opts.maxlen = maxlen;
 	return TRUE;
 }

@@ -29,6 +29,8 @@ static CwtStatement*   __dbi_prepare       (CwtDBHandler*, const CWT_CHAR *sql);
 static ULONGLONG       __dbi_rows          (CwtDBHandler*);
 static BOOL            __dbi_tables        (CwtDBHandler*, CwtStrList *tables);
 static BOOL            __dbi_tableExists   (CwtDBHandler*, const CWT_CHAR *tname);
+static char*           __dbi_encode_n      (CwtDBHandler*, const CWT_CHAR *s, size_t n);
+static CWT_CHAR*       __dbi_decode_n      (CwtDBHandler*, const char *s, size_t n);
 static char*           __dbi_encode        (CwtDBHandler*, const CWT_CHAR *s);
 static CWT_CHAR*       __dbi_decode        (CwtDBHandler*, const char *s);
 static BOOL            __dbi_begin         (CwtDBHandler *dbh);
@@ -40,8 +42,8 @@ static CwtUniType*     __dbi_bind          (CwtStatement *sth, size_t index, Cwt
 static CwtUniType*     __dbi_bindText      (CwtStatement *sth, size_t index, size_t length);
 static CwtUniType*     __dbi_bindBlob      (CwtStatement *sth, size_t index, size_t sz);
 
-static CwtTypeEnum     __toCwtTypeEnum (CwtSqlTypeEnum sqlType);
-static CwtSqlTypeEnum  __toSqlTypeEnum (CwtTypeEnum cwtType);
+static CwtTypeEnum     __toCwtTypeEnum     (CwtSqlTypeEnum sqlType);
+static CwtSqlTypeEnum  __toSqlTypeEnum     (CwtTypeEnum cwtType);
 
 extern CwtDDI*         __ddi_createDDI     (const CWT_CHAR *name, const CWT_CHAR *charset);
 extern void            __ddi_freeDDI       (CwtDDI *ddi);
@@ -89,6 +91,8 @@ static CwtDBI __cwtDBI = {
 	, __dbi_rows
 	, __dbi_tables
 	, __dbi_tableExists
+	, __dbi_encode_n
+	, __dbi_decode_n
 	, __dbi_encode
 	, __dbi_decode
 	, __dbi_begin
@@ -340,6 +344,18 @@ static inline BOOL __dbi_tableExists(CwtDBHandler *dbh, const CWT_CHAR *tname)
 	return dbh->driver()->tableExists(dbh, tname);
 }
 
+static inline char* __dbi_encode_n(CwtDBHandler *dbh, const CWT_CHAR *s, size_t n)
+{
+	CWT_ASSERT(dbh);
+	return dbh->driver()->encode_n(dbh, s, n);
+}
+
+static inline CWT_CHAR* __dbi_decode_n(CwtDBHandler *dbh, const char *s, size_t n)
+{
+	CWT_ASSERT(dbh);
+	return dbh->driver()->decode_n(dbh, s, n);
+}
+
 static inline char* __dbi_encode(CwtDBHandler *dbh, const CWT_CHAR *s)
 {
 	CWT_ASSERT(dbh);
@@ -351,6 +367,7 @@ static inline CWT_CHAR* __dbi_decode(CwtDBHandler *dbh, const char *s)
 	CWT_ASSERT(dbh);
 	return dbh->driver()->decode(dbh, s);
 }
+
 
 static inline BOOL __dbi_begin(CwtDBHandler *dbh)
 {
@@ -427,7 +444,7 @@ static CwtUniType* __dbi_bind(CwtStatement *sth, size_t index, CwtTypeEnum cwtTy
 	CwtUniType *ut = NULL;
 
 	CWT_ASSERT(sth);
-	CWT_ASSERT(cwtType != CwtType_CWT_TEXT);
+	CWT_ASSERT(cwtType != CwtType_TEXT);
 	CWT_ASSERT(cwtType != CwtType_BLOB);
 
 	if( CwtType_TIME == cwtType || CwtType_DATE == cwtType || CwtType_DATETIME == cwtType ) {
@@ -441,7 +458,7 @@ static CwtUniType* __dbi_bind(CwtStatement *sth, size_t index, CwtTypeEnum cwtTy
 
 static CwtUniType* __dbi_bindText(CwtStatement *sth, size_t index, size_t length)
 {
-	return __dbi_bind_helper(sth, index, CwtType_CWT_TEXT, length);
+	return __dbi_bind_helper(sth, index, CwtType_TEXT, length);
 }
 
 static CwtUniType* __dbi_bindBlob( CwtStatement *sth, size_t index, size_t sz )
@@ -456,7 +473,7 @@ static CwtTypeEnum __toCwtTypeEnum (CwtSqlTypeEnum sqlType)
 
 	switch(sqlType) {
 	case CwtSql_TINYINT:
-		cwtType = CwtType_CWT_CHAR;
+		cwtType = CwtType_CHAR;
 		break;
 	case CwtSql_SMALLINT:
 		cwtType = CwtType_SHORT;
@@ -475,7 +492,7 @@ static CwtTypeEnum __toCwtTypeEnum (CwtSqlTypeEnum sqlType)
 		cwtType = CwtType_DOUBLE;
 		break;
 	case CwtSql_DECIMAL:
-		cwtType = CwtType_CWT_TEXT;
+		cwtType = CwtType_TEXT;
 		break;
 	case CwtSql_YEAR:
 		cwtType = CwtType_SHORT;
@@ -497,7 +514,7 @@ static CwtTypeEnum __toCwtTypeEnum (CwtSqlTypeEnum sqlType)
 	case CwtSql_TEXT:
 	case CwtSql_MEDIUMTEXT:
 	case CwtSql_LONGTEXT:
-		cwtType = CwtType_CWT_TEXT;
+		cwtType = CwtType_TEXT;
 		break;
 
 	case CwtSql_BINARY:
@@ -511,7 +528,7 @@ static CwtTypeEnum __toCwtTypeEnum (CwtSqlTypeEnum sqlType)
 
 	default:
 	case CwtSql_BIT:
-		cwtType = CwtType_CWT_TEXT;
+		cwtType = CwtType_TEXT;
 		break;
 	}
 
@@ -562,7 +579,7 @@ static CwtSqlTypeEnum __toSqlTypeEnum (CwtTypeEnum cwtType)
 		break;
 
 	default:
-	case CwtType_CWT_TEXT:
+	case CwtType_TEXT:
 		sqlType = CwtSql_TEXT;
 		break;
 	}

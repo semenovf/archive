@@ -1,3 +1,5 @@
+CWT_CONFIG=debug
+
 win32: include(/qmake/common-dll.pri)
 unix: include($$(HOME)/ws/qmake/common-dll.pri)
 

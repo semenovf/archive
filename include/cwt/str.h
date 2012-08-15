@@ -19,12 +19,12 @@ typedef struct CwtStrNS {
 	CWT_CHAR*         (*strchr)       (CWT_CHAR *s, CWT_CHAR ch);
 	CWT_CHAR*         (*strstr)       (const CWT_CHAR *s, const CWT_CHAR *substr);
 	CWT_CHAR*         (*strrstr)      (const CWT_CHAR *s, const CWT_CHAR *substr);
-	BOOL              (*streq)        (const CWT_CHAR *s1, const CWT_CHAR *s2);
-	BOOL              (*strieq)       (const CWT_CHAR *s1, const CWT_CHAR *s2);
 	int               (*strcmp)       (const CWT_CHAR *s1, const CWT_CHAR *s2);
 	int               (*strncmp)      (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
 	int 			  (*stricmp)      (const CWT_CHAR *s1, const CWT_CHAR *s2);
 	int               (*strnicmp)     (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
+	BOOL              (*streq)        (const CWT_CHAR *s1, const CWT_CHAR *s2);
+	BOOL              (*strieq)       (const CWT_CHAR *s1, const CWT_CHAR *s2);
 	CWT_CHAR*         (*strdup)       (const CWT_CHAR *s);
 	CWT_CHAR*         (*strndup)      (const CWT_CHAR *s, size_t n);
 	CWT_CHAR*         (*strcat)       (CWT_CHAR *dest, const CWT_CHAR *src);
@@ -42,8 +42,8 @@ typedef struct CwtStrNS {
 	void*             (*memcpy)       (void *to, const void *from, size_t sz);
 	void*             (*memmove)      (void *to, const void *from, size_t sz);
 	void*             (*memset)       (void *block, int c, size_t sz);
-	void*             (*bzero)        (void *block, size_t sz);
 	int               (*memcmp)       (const void *m1, const void *m2, size_t n);
+	void*             (*bzero)        (void *block, size_t sz);
 
 	LONGLONG          (*toLONGLONG)   (const CWT_CHAR *str, int radix, BOOL *ok);
 	ULONGLONG         (*toULONGLONG)  (const CWT_CHAR *str, int radix, BOOL *ok);

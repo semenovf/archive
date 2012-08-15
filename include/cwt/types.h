@@ -29,6 +29,21 @@
 	typedef unsigned char 	   CWT_UCHAR;
 #endif
 
+#if defined(_T)
+#	undef _T
+#endif
+#ifdef CWT_UNICODE
+#	define _T(s)   L##s
+#	define _Tr(s)  L##s
+#	define __WIDEN(x) _T(x) /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
+#	define __TFILE__ __WIDEN(__FILE__)
+#else
+#	define _T(s)  s
+#	define _Tr(s)  s
+#	define __TFILE__ __FILE__
+#endif
+
+
 typedef unsigned char          UCHAR;
 typedef char                   SBYTE;
 typedef unsigned char          BYTE;
@@ -78,7 +93,7 @@ typedef struct CWT_TIME {
 typedef enum _CwtTypeEnum {
 	  CwtType_UNKNOWN
 	, CwtType_BOOL
-	, CwtType_CWT_CHAR
+	, CwtType_CHAR
 	, CwtType_SBYTE
 	, CwtType_INT8   = CwtType_SBYTE
 	, CwtType_BYTE
@@ -99,7 +114,7 @@ typedef enum _CwtTypeEnum {
 	, CwtType_UINT64 = CwtType_ULONGLONG
 	, CwtType_FLOAT
 	, CwtType_DOUBLE
-	, CwtType_CWT_TEXT
+	, CwtType_TEXT
 	, CwtType_BLOB
 	, CwtType_TIME
 	, CwtType_DATE
@@ -107,7 +122,7 @@ typedef enum _CwtTypeEnum {
 } CwtTypeEnum;
 
 #define CWT_TYPE_IS_SCALAR(tid)  (((tid) >= CwtType_BOOL && (tid) < CwtType_TEXT) ? TRUE : FALSE)
-#define CWT_TYPE_IS_INTEGER(tid) (((tid) >= CwtType_CWT_CHAR && (tid) < CwtType_FLOAT) ? TRUE : FALSE)
+#define CWT_TYPE_IS_INTEGER(tid) (((tid) >= CwtType_CHAR && (tid) < CwtType_FLOAT) ? TRUE : FALSE)
 #define CWT_TYPE_IS_FLOAT(tid)   (((tid) >= CwtType_FLOAT && (tid) <= CwtType_DOUBLE) ? TRUE : FALSE)
 
 #if !(defined(_SIZE_T_DEFINED) || defined(__DJ_size_t) )
@@ -145,11 +160,11 @@ typedef enum _CwtTypeEnum {
 #define CWT_UINT64_MAX 18446744073709551615ULL
 
 #ifdef CWT_UNICODE
-#	define CWT_CWT_CHAR_MIN WCHAR_MIN
-#	define CWT_CWT_CHAR_MAX WCHAR_MAX
+#	define CWT_CHAR_MIN WCHAR_MIN
+#	define CWT_CHAR_MAX WCHAR_MAX
 #else
-#	define CWT_CWT_CHAR_MIN CWT_127
-#	define CWT_CWT_CHAR_MAX CWT_(-127-1)
+#	define CWT_CHAR_MIN 127
+#	define CWT_CHAR_MAX (-127-1)
 #endif
 #define CWT_SBYTE_MAX  127
 #define CWT_SBYTE_MIN  (-127-1)
@@ -174,19 +189,5 @@ typedef enum _CwtTypeEnum {
 #define CWT_DOUBLE_MAX DBL_MAX /* 1.7976931348623158e+308 */
 
 #define CWT_SIZE_T_MAX UINT_MAX
-
-#if defined(_T)
-#	undef _T
-#endif
-#ifdef CWT_UNICODE
-#	define _T(s)   L##s
-#	define _Tr(s)  L##s
-#	define _WIDEN(x) _T(x) /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
-#	define _TFILE_ _WIDEN(__FILE__)
-#else
-#	define _T(s)  s
-#	define _Tr(s)  s
-#	define _TFILE_	__FILE__
-#endif
 
 #endif /* ! __CWT_TYPES_H__ */

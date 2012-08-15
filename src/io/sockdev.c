@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <cwt/unistd.h>
 #include <cwt/logger.h>
-/*#include <cwt/str.h>*/
+#include <cwt/str.h>
 #include <cwt/txtcodec.h>
 #include <cwt/io/sockdev.h>
 #include <string.h> /* TODO include after <cwt/str.h> to avoid function/methods conflicts */
@@ -113,6 +113,7 @@ static BOOL __cwtAllowSockets(void)
  */
 CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
 {
+	CwtStrNS *strNS = cwtStrNS();
 	SOCKET sockfd;
 	struct sockaddr_in sockaddr;
 	CwtSocketDevice *sockdev;
@@ -133,7 +134,7 @@ CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port)
      * IP address, and port for the socket that is being bound.
      */
     {
-		char *inetAddr_ = cwtTextCodecNS()->toLatin1(inetAddr);
+		char *inetAddr_ = cwtTextCodecNS()->toLatin1(inetAddr, strNS->strlen(inetAddr));
 		sockaddr.sin_family = AF_INET;
 		sockaddr.sin_addr.s_addr = inetAddr != NULL ? inet_addr(inetAddr_) : INADDR_ANY;
 		sockaddr.sin_port = port;
@@ -173,6 +174,7 @@ CwtIODevice* cwtMulticastSocketDeviceOpen(
 	, const CWT_CHAR *inetMCastAddr
 	, BOOL isSender)
 {
+	CwtStrNS *strNS = cwtStrNS();
 	SOCKET sockfd;
 	CwtMulticastSocketDevice *sockdev;
 
@@ -190,8 +192,8 @@ CwtIODevice* cwtMulticastSocketDeviceOpen(
 
 	if( isSender ) {
 		struct in_addr localInterface;
-		char *inetAddr_      = cwtTextCodecNS()->toLatin1(inetAddr);
-		char *inetMCastAddr_ = cwtTextCodecNS()->toLatin1(inetMCastAddr);
+		char *inetAddr_      = cwtTextCodecNS()->toLatin1(inetAddr, strNS->strlen(inetAddr));
+		char *inetMCastAddr_ = cwtTextCodecNS()->toLatin1(inetMCastAddr, strNS->strlen(inetMCastAddr));
 
 		sockdev = CWT_MALLOC(CwtMulticastSocketDevice);
 
@@ -223,8 +225,8 @@ CwtIODevice* cwtMulticastSocketDeviceOpen(
 		int reuse = 1;
 		struct sockaddr_in localSock;
 
-		char *inetAddr_      = cwtTextCodecNS()->toLatin1(inetAddr);
-		char *inetMCastAddr_ = cwtTextCodecNS()->toLatin1(inetMCastAddr);
+		char *inetAddr_      = cwtTextCodecNS()->toLatin1(inetAddr, strNS->strlen(inetAddr));
+		char *inetMCastAddr_ = cwtTextCodecNS()->toLatin1(inetMCastAddr, strNS->strlen(inetMCastAddr));
 
 
 		if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {

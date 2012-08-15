@@ -12,29 +12,14 @@
 
 typedef struct _CwtUniType {
 	union {
-/*
-		char      char_val;
-        SBYTE     sbyte_val;
-        BYTE      byte_val;
-        CWT_CHAR  cwt_char_val;
-        SHORT     short_val;
-        USHORT    ushort_val;
-        INT       int_val;
-        UINT      uint_val;
-        LONG      long_val;
-        ULONG     ulong_val;
-*/
 		LONGLONG  llong_val;
-/*        ULONGLONG ullong_val;*/
-/*        BOOL      bool_val;*/
         double    double_val;
-/*        float     float_val;*/
         void     *ptr;
 	} value;
     CwtTypeEnum type;
     UINT is_null : 1;
-    size_t sz;     /* size of buffer pointed by ptr */
-    size_t length; /* length in chars for CwtType_TEXT and CwtType_CWT_TEXT */
+    size_t capacity;    /* size of buffer pointed by ptr */
+    size_t length;      /* length in chars for CwtType_TEXT, or BLOB size */
 } CwtUniType;
 
 typedef struct _CwtUniTypeNS {
@@ -45,7 +30,7 @@ typedef struct _CwtUniTypeNS {
 	BOOL        (*set)           (CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz);
 	BOOL        (*setFromString) (CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s);
 	BOOL        (*setBOOL)       (CwtUniType *ut, BOOL b);
-	BOOL        (*setCwtChar)    (CwtUniType *ut, CWT_CHAR ch);
+	BOOL        (*setCHAR)       (CwtUniType *ut, CWT_CHAR ch);
 	BOOL        (*setSBYTE)      (CwtUniType *ut, SBYTE n);
 	BOOL        (*setBYTE)       (CwtUniType *ut, BYTE n);
 	BOOL        (*setSHORT)      (CwtUniType *ut, SHORT n);
@@ -56,16 +41,16 @@ typedef struct _CwtUniTypeNS {
 	BOOL        (*setULONG)      (CwtUniType *ut, ULONG n);
 	BOOL        (*setLONGLONG)   (CwtUniType *ut, LONGLONG n);
 	BOOL        (*setULONGLONG)  (CwtUniType *ut, ULONGLONG n);
-	BOOL        (*setFloat)      (CwtUniType *ut, float n);
-	BOOL        (*setDouble)     (CwtUniType *ut, double n);
-	BOOL        (*setCwtText)    (CwtUniType *ut, const CWT_CHAR *p, size_t length);
+	BOOL        (*setFLOAT)      (CwtUniType *ut, float n);
+	BOOL        (*setDOUBLE)     (CwtUniType *ut, double n);
+	BOOL        (*setTEXT)       (CwtUniType *ut, const CWT_CHAR *p, size_t length);
 	BOOL        (*setBLOB)       (CwtUniType *ut, const void *p, size_t sz);
 	BOOL        (*setTIME)       (CwtUniType *ut, const CWT_TIME *p, size_t sz);
 	BOOL        (*setDATE)       (CwtUniType *ut, const CWT_TIME *p, size_t sz);
 	BOOL        (*setDATETIME)   (CwtUniType *ut, const CWT_TIME *p, size_t sz);
 
 	BOOL        (*toBOOL)        (CwtUniType *ut, BOOL *ok);
-	CWT_CHAR    (*toCwtChar)     (CwtUniType *ut, BOOL *ok);
+	CWT_CHAR    (*toCHAR)        (CwtUniType *ut, BOOL *ok);
 	SBYTE       (*toSBYTE)       (CwtUniType *ut, BOOL *ok);
 	BYTE        (*toBYTE)        (CwtUniType *ut, BOOL *ok);
 	SHORT       (*toSHORT)       (CwtUniType *ut, BOOL *ok);
@@ -76,10 +61,10 @@ typedef struct _CwtUniTypeNS {
 	ULONG       (*toULONG)       (CwtUniType *ut, BOOL *ok);
 	LONGLONG    (*toLONGLONG)    (CwtUniType *ut, BOOL *ok);
 	ULONGLONG   (*toULONGLONG)   (CwtUniType *ut, BOOL *ok);
-	float       (*toFloat)       (CwtUniType *ut, BOOL *ok);
-	double      (*toDouble)      (CwtUniType *ut, BOOL *ok);
-	CWT_CHAR*   (*toCwtText)     (CwtUniType *ut, BOOL *ok);
-	void*       (*toBLOB)        (CwtUniType *ut, BOOL *ok);
+	float       (*toFLOAT)       (CwtUniType *ut, BOOL *ok);
+	double      (*toDOUBLE)      (CwtUniType *ut, BOOL *ok);
+	CWT_CHAR*   (*toTEXT)        (CwtUniType *ut, BOOL *ok);
+	const void* (*toBLOB)        (CwtUniType *ut, size_t *sz);
 	CWT_TIME*   (*toTIME)        (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
 	CWT_TIME*   (*toDATE)        (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
 	CWT_TIME*   (*toDATETIME)    (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);

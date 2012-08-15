@@ -140,7 +140,6 @@
 #	define __interrupt__ void
 #endif
 
-/* �ਧ��� ��ப�, �����ন���饩 i18n */
 #if 0
 #ifdef CWT_USE_GNU_GETTEXT
 #	include <libintl.h>

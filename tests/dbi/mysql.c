@@ -172,11 +172,11 @@ int main(int argc, char *argv[])
 		stdioNS->printf(_T("Table [1]: %s\n"),  strlistNS->at(tables, 1));
 
 		CWT_TEST_OK(
-				strNS->eq(TABLE_NAME, strlistNS->at(tables, 0))
-			||  strNS->eq(TABLE0_NAME, strlistNS->at(tables, 0)));
+				strNS->streq(TABLE_NAME, strlistNS->at(tables, 0))
+			||  strNS->streq(TABLE0_NAME, strlistNS->at(tables, 0)));
 
-		CWT_TEST_OK(strNS->eq(TABLE_NAME, strlistNS->at(tables, 1))
-			|| strNS->eq(TABLE0_NAME, strlistNS->at(tables, 1)));
+		CWT_TEST_OK(strNS->streq(TABLE_NAME, strlistNS->at(tables, 1))
+			|| strNS->streq(TABLE0_NAME, strlistNS->at(tables, 1)));
 		strlistNS->free(tables);
 	}
 

@@ -15,84 +15,75 @@
 #include <string.h>
 #include <stdarg.h>
 
-
-#ifdef strdup
-#	define __strdup_builtin strdup
-#	undef strdup
-#else
-#	define __strdup_builtin CWT_ISO_CPP_NAME(strdup)
-#endif
-
-#ifdef strcmp
-#	define __strcmp_builtin strcmp
-#	undef strcmp
-#else
-#	define __strcmp_builtin strcmp
-#endif
-
-#ifdef strncmp
-#	define __strncmp_builtin strncmp
-#	undef strncmp
-#else
-#	define __strncmp_builtin strncmp
-#endif
-
-
-#ifdef strncpy
-#	define __strncpy_builtin strncpy
-#	undef strncpy
-#else
-#	define __strncpy_builtin strncpy
-#endif
-
-
-#ifdef toupper
-#	define __toupper_builtin toupper
-#	undef toupper
-#else
-#	define __toupper_builtin toupper
-#endif
-
-#ifdef tolower
-#	define __tolower_builtin tolower
-#	undef tolower
-#else
-#	define __tolower_builtin tolower
-#endif
-
-
-#ifndef CWT_UNICODE
-static CWT_CHAR* __cwt_strdup(const CWT_CHAR *s) { return __strdup_builtin(s); }
-static int       __cwt_strcmp(const CWT_CHAR *s1, const CWT_CHAR *s2) { return __strcmp_builtin(s1,s2); }
-static int       __cwt_strncmp(const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n) { return __strncmp_builtin(s1,s2,n); }
-static CWT_CHAR* __cwt_strncpy(CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return __strncpy_builtin(dest,src,n); }
-static CWT_CHAR* __cwt_strchr       (CWT_CHAR *s, CWT_CHAR ch);
-static CWT_CHAR* __cwt_strstr       (const CWT_CHAR *s, const CWT_CHAR *substr);
-#endif
-
 const CWT_CHAR* __CONST_EMPTYSTR = _T("");
 const CWT_CHAR* __CONST_NULLSTR  = _T("<null>");
 CWT_CHAR*       __errorstr = NULL; /* TODO must be freed when program finishing */
 
+#ifdef CWT_UNICODE
+
+static size_t    __cwt_strftime(CWT_CHAR *buf, size_t sz, const CWT_CHAR *format, const struct tm* ptm) { return wcsftime(buf, sz, format, ptm); }
+static size_t    __cwt_strlen  (const CWT_CHAR *s) { return wcslen(s); }
+static CWT_CHAR* __cwt_strcpy  (CWT_CHAR *dest, const CWT_CHAR *src) { return wcscpy(dest, src); }
+static CWT_CHAR* __cwt_strncpy (CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return wcsncpy(dest,src,n); }
+static CWT_CHAR* __cwt_strchr  (CWT_CHAR *s, CWT_CHAR ch) { return wcschr(s, ch); }
+static CWT_CHAR* __cwt_strstr  (const CWT_CHAR *s, const CWT_CHAR *substr) { return wcsstr(s, substr); }
+static int       __cwt_strcmp  (const CWT_CHAR *s1, const CWT_CHAR *s2) { return wcscmp(s1, s2); }
+static int       __cwt_strncmp (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n) { return wcsncmp(s1, s2, n); }
+static CWT_CHAR* __cwt_strdup  (const CWT_CHAR *s) { return CWT_ISO_CPP_NAME(wcsdup)(s); }
+static CWT_CHAR* __cwt_strcat  (CWT_CHAR *dest, const CWT_CHAR *src) { return wcscat(dest, src); }
+static CWT_CHAR* __cwt_strncat (CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return wcsncat(dest, src, n); }
+static CWT_CHAR* __cwt_strtok  (CWT_CHAR *tok, const CWT_CHAR *delim) { return wcstok(tok, delim); }
+static LONG      __cwt_strtol  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return wcstol(s, endptr, radix); }
+static ULONG     __cwt_strtoul (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return wcstoul(s, endptr, radix); }
+static double    __cwt_strtod  (const CWT_CHAR *s, CWT_CHAR **endptr) { return wcstod(s, endptr); }
+static int       __cwt_isalpha (CWT_CHAR ch) { return iswalpha(ch); }
+static int       __cwt_isdigit (CWT_CHAR ch) { return iswdigit(ch); }
+static int       __cwt_isspace (CWT_CHAR ch) { return iswspace(ch); }
+static CWT_CHAR  __cwt_toupper(CWT_CHAR ch) { return (CWT_CHAR)towupper(ch); }
+static CWT_CHAR  __cwt_tolower(CWT_CHAR ch) { return (CWT_CHAR)towlower(ch); }
+
+#else
+
+static size_t    __cwt_strftime(CWT_CHAR *buf, size_t sz, const CWT_CHAR *format, const struct tm* ptm) { return strftime(buf, sz, format, ptm); }
+static size_t    __cwt_strlen  (const CWT_CHAR *s) { return strlen(s); }
+static CWT_CHAR* __cwt_strcpy  (CWT_CHAR *dest, const CWT_CHAR *src) { return strcpy(dest, src); }
+static CWT_CHAR* __cwt_strncpy(CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return strncpy(dest,src,n); }
+static CWT_CHAR* __cwt_strchr  (CWT_CHAR *s, CWT_CHAR ch) { return strchr(s, ch); }
+static CWT_CHAR* __cwt_strstr  (const CWT_CHAR *s, const CWT_CHAR *substr) { return strstr(s, substr); }
+static int       __cwt_strcmp  (const CWT_CHAR *s1, const CWT_CHAR *s2) { return strcmp(s1,s2); }
+static int       __cwt_strncmp (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n) { return strncmp(s1,s2,n); }
+static CWT_CHAR* __cwt_strdup  (const CWT_CHAR *s) { return CWT_ISO_CPP_NAME(strdup)(s); }
+static CWT_CHAR* __cwt_strcat  (CWT_CHAR *dest, const CWT_CHAR *src) { return strcat(dest, src); }
+static CWT_CHAR* __cwt_strncat (CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return strncat(dest, src, n); }
+static CWT_CHAR* __cwt_strtok  (CWT_CHAR *tok, const CWT_CHAR *delim) { return strtok(tok, delim); }
+static LONG      __cwt_strtol  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return strtol(s, endptr, radix); }
+static ULONG     __cwt_strtoul (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return strtoul(s, endptr, radix); }
+static double    __cwt_strtod  (const CWT_CHAR *s, CWT_CHAR **endptr) { return strtod(s, endptr); }
+static int       __cwt_isalpha (CWT_CHAR ch) { return isalpha(ch); }
+static int       __cwt_isdigit (CWT_CHAR ch) { return isdigit(ch); }
+static int       __cwt_isspace (CWT_CHAR ch) { return isspace(ch); }
+static CWT_CHAR  __cwt_toupper(CWT_CHAR ch)  { return (CWT_CHAR)toupper((int)ch); }
+static CWT_CHAR  __cwt_tolower(CWT_CHAR ch)  { return (CWT_CHAR)tolower(ch); }
+
+#endif /* !CWT_UNICODE */
+
 static const CWT_CHAR* __cwt_strerror(int errn);
-static BOOL      __cwt_streq        (const CWT_CHAR *s1, const CWT_CHAR *s2);
-static BOOL      __cwt_strieq       (const CWT_CHAR *s1, const CWT_CHAR *s2);
-static void*     __cwt_bzero        (void *block, size_t sz);
-static CWT_CHAR* __cwt_strndup      (const CWT_CHAR *s, size_t n);
-#ifndef CWT_UNICODE
-static int       __cwt_isalpha      (CWT_CHAR ch) { return isalpha(ch); }
-static int       __cwt_isdigit      (CWT_CHAR ch) { return isdigit(ch); }
-static int       __cwt_isspace      (CWT_CHAR ch) { return isspace(ch); }
-#endif
-static CWT_CHAR  __cwt_toupper      (CWT_CHAR ch);
-static CWT_CHAR  __cwt_tolower      (CWT_CHAR ch);
+extern CWT_CHAR* __cwt_strptime (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
+static CWT_CHAR* __cwt_strrstr (const CWT_CHAR *s, const CWT_CHAR *substr);
+static int		 __cwt_stricmp  (const CWT_CHAR *s1, const CWT_CHAR *s2);
+static int       __cwt_strnicmp (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
+static BOOL      __cwt_streq    (const CWT_CHAR *s1, const CWT_CHAR *s2) { return __cwt_strcmp(s1, s2) == 0 ? TRUE : FALSE; }
+static BOOL      __cwt_strieq   (const CWT_CHAR *s1, const CWT_CHAR *s2) { return __cwt_stricmp(s1, s2) == 0 ? TRUE : FALSE; }
+static CWT_CHAR* __cwt_strndup  (const CWT_CHAR *s, size_t n);
+static LONGLONG  __cwt_strtoll  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+static ULONGLONG __cwt_strtoull (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+
+static void*     __cwt_bzero    (void *block, size_t sz) { return memset(block, 0, sz); }
+
 static void      __cwt_toupperStr   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 static void      __cwt_tolowerStr   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
-static CWT_CHAR* __cwt_strrstr(const CWT_CHAR *s, const CWT_CHAR *substr);
 static void      __cwt_chomp(CWT_CHAR *s);
 
-EXTERN_C_BEGIN
-extern CWT_CHAR* __cwt_strptime     (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
 extern LONGLONG  __cwt_toLONGLONG   (const CWT_CHAR *str, int radix, BOOL *ok);
 extern ULONGLONG __cwt_toULONGLONG  (const CWT_CHAR *str, int radix, BOOL *ok);
 extern LONG      __cwt_toLONG       (const CWT_CHAR *str, int radix, BOOL *ok);
@@ -105,7 +96,6 @@ extern SBYTE     __cwt_toSBYTE      (const CWT_CHAR *str, int radix, BOOL *ok);
 extern BYTE      __cwt_toBYTE       (const CWT_CHAR *str, int radix, BOOL *ok);
 extern double    __cwt_toDouble     (const CWT_CHAR *str, BOOL *ok);
 extern float     __cwt_toFloat      (const CWT_CHAR *str, BOOL *ok);
-EXTERN_C_END
 
 static void      __cwt_toTime       (const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
 static void      __cwt_toDate       (const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
@@ -116,83 +106,40 @@ static const CWT_CHAR* __cwt_constNullStr(void);
 
 
 static CwtStrNS __cwtStrNS = {
-	__cwt_strerror
+	  __cwt_strerror
 	, __cwt_strptime
-#ifdef CWT_UNICODE
-	, wcsftime
-	, wcslen
-	, wcscpy
-	, wcsncpy
-	, wcschr
-	, wcsstr
-	, __cwt_strrstr
-	, __cwt_streq
-	, __cwt_strieq
-	, wcscmp
-	, wcsncmp
-	, CWT_ISO_CPP_NAME(wcsicmp)
-	, CWT_ISO_CPP_NAME(wcsnicmp)
-	, CWT_ISO_CPP_NAME(wcsdup)
-	, __cwt_strndup
-	, wcscat
-	, wcsncat
-	, wcstok
-	, wcstol
-	, wcstoul
-#	ifdef CWT_CC_MSC
-	, _wcstoi64
-	, _wcstoui64
-#	else
-	, wcstoll
-	, wcstoull
-#	endif
-	, wcstod
-	, iswalpha
-	, iswdigit
-	, iswspace
-#else /*CWT_UNICODE*/
-	, strftime
-	, strlen
-	, strcpy
+	, __cwt_strftime
+	, __cwt_strlen
+	, __cwt_strcpy
 	, __cwt_strncpy
 	, __cwt_strchr
 	, __cwt_strstr
 	, __cwt_strrstr
-	, __cwt_streq
-	, __cwt_strieq
 	, __cwt_strcmp
 	, __cwt_strncmp
-#	ifdef CWT_CC_MSC
-	, CWT_ISO_CPP_NAME(stricmp)
-	, CWT_ISO_CPP_NAME(strnicmp)
-#	else
-	, strcasecmp
-	, strncasecmp
-#	endif
+	, __cwt_stricmp
+	, __cwt_strnicmp
+	, __cwt_streq
+	, __cwt_strieq
 	, __cwt_strdup
 	, __cwt_strndup
-	, strcat
-	, strncat
-	, strtok
-	, strtol
-	, strtoul
-#	ifdef CWT_CC_MSC
-	, _strtoi64
-	, _strtoui64
-#	else
-	, strtoll
-	, strtoull
-#	endif
-	, strtod
+	, __cwt_strcat
+	, __cwt_strncat
+	, __cwt_strtok
+	, __cwt_strtol
+	, __cwt_strtoul
+	, __cwt_strtoll
+	, __cwt_strtoull
+	, __cwt_strtod
 	, __cwt_isalpha
 	, __cwt_isdigit
 	, __cwt_isspace
-#endif /*!CWT_UNICODE*/
+
 	, memcpy
 	, memmove
 	, memset
-	, __cwt_bzero
 	, memcmp
+	, __cwt_bzero
 
 	, __cwt_toLONGLONG
 	, __cwt_toULONGLONG
@@ -273,62 +220,77 @@ static const CWT_CHAR* __cwt_strerror(int errn)
 }
 
 
-static BOOL __cwt_streq(const CWT_CHAR *s1, const CWT_CHAR *s2)
+static int __cwt_stricmp (const CWT_CHAR *s1, const CWT_CHAR *s2)
 {
-	return __cwtStrNS.strcmp(s1, s2) == 0 ? TRUE : FALSE;
+#ifdef CWT_UNICODE
+	return CWT_ISO_CPP_NAME(wcsicmp)(s1, s2);
+#else
+#	ifdef CWT_CC_MSC
+	return CWT_ISO_CPP_NAME(stricmp)(s1, s2);
+#	else
+	return strcasecmp(s1, s2);
+#	endif
+#endif
 }
 
-static BOOL __cwt_strieq(const CWT_CHAR *s1, const CWT_CHAR *s2)
+static int __cwt_strnicmp(const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n)
 {
-	return __cwtStrNS.stricmp(s1, s2) == 0 ? TRUE : FALSE;
+#ifdef CWT_UNICODE
+	return CWT_ISO_CPP_NAME(wcsnicmp)(s1, s2, n);
+#else
+#	ifdef CWT_CC_MSC
+	return CWT_ISO_CPP_NAME(strnicmp)(s1, s2, n);
+#	else
+	return strncasecmp(s1, s2, n);
+#	endif
+#endif
 }
-
-static void* __cwt_bzero(void *block, size_t sz)
-{
-	return __cwtStrNS.memset(block, 0, sz);
-}
-
 
 static CWT_CHAR* __cwt_strndup(const CWT_CHAR *s, size_t n)
 {
 	CWT_CHAR *s0 = NULL;
 
 	s0 = CWT_MALLOCA(CWT_CHAR, n+1);
-	__cwtStrNS.strncpy(s0, s, n);
+	__cwt_strncpy(s0, s, n);
 	s0[n] = (CWT_CHAR)0;
 
 	return s0;
 }
 
-static CWT_CHAR  __cwt_toupper(CWT_CHAR ch)
+
+static LONGLONG  __cwt_strtoll (const CWT_CHAR *s, CWT_CHAR **endptr, int radix)
 {
 #ifdef CWT_UNICODE
-	return (CWT_CHAR)towupper(ch);
+#	ifdef CWT_CC_MSC
+	return _wcstoi64(s, endptr, radix);
+#	else
+	return wcstoll(s, endptr, radix);
+#	endif
 #else
-	return (CWT_CHAR)__toupper_builtin((int)ch);
+#	ifdef CWT_CC_MSC
+	return _strtoi64(s, endptr, radix);
+#	else
+	return strtoll(s, endptr, radix);
+#	endif
 #endif
 }
 
-static CWT_CHAR  __cwt_tolower(CWT_CHAR ch)
+static ULONGLONG __cwt_strtoull(const CWT_CHAR *s, CWT_CHAR **endptr, int radix)
 {
 #ifdef CWT_UNICODE
-	return (CWT_CHAR)towlower(ch);
+#	ifdef CWT_CC_MSC
+	return _wcstoui64(s, endptr, radix);
+#	else
+	return wcstoull(s, endptr, radix);
+#	endif
 #else
-	return (CWT_CHAR)__tolower_builtin(ch);
+#	ifdef CWT_CC_MSC
+	return _strtoui64(s, endptr, radix);
+#	else
+	return strtoull(s, endptr, radix);
+#	endif
 #endif
 }
-
-#ifndef CWT_UNICODE
-static CWT_CHAR* __cwt_strchr(CWT_CHAR *s, CWT_CHAR ch)
-{
-	return strchr(s, ch);
-}
-
-static CWT_CHAR* __cwt_strstr (const CWT_CHAR *s, const CWT_CHAR *substr)
-{
-	return strstr(s, substr);
-}
-#endif
 
 /**
  * @brief Finds the last occurrence of a substring in another string

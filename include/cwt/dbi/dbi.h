@@ -96,6 +96,8 @@ typedef struct _CwtDBIDriver
 	ULONGLONG       (*rows)          (CwtDBHandler*);
 	BOOL            (*tables)        (CwtDBHandler*, CwtStrList *tables);
 	BOOL            (*tableExists)   (CwtDBHandler*, const CWT_CHAR *tname);
+	char*           (*encode_n)      (CwtDBHandler*, const CWT_CHAR *s, size_t n);
+	CWT_CHAR*       (*decode_n)      (CwtDBHandler*, const char *s, size_t n);
 	char*           (*encode)        (CwtDBHandler*, const CWT_CHAR *s);
 	CWT_CHAR*       (*decode)        (CwtDBHandler*, const char *s);
 	BOOL            (*begin)         (CwtDBHandler*); /* begin transaction */
@@ -131,6 +133,8 @@ typedef struct CwtDBI
 	ULONGLONG       (*rows)          (CwtDBHandler*);
 	BOOL            (*tables)        (CwtDBHandler*, CwtStrList *tables);
 	BOOL            (*tableExists)   (CwtDBHandler*, const CWT_CHAR *tname);
+	char*           (*encode_n)      (CwtDBHandler*, const CWT_CHAR *s, size_t n);
+	CWT_CHAR*       (*decode_n)      (CwtDBHandler*, const char *s, size_t n);
 	char*           (*encode)        (CwtDBHandler*, const CWT_CHAR *s);
 	CWT_CHAR*       (*decode)        (CwtDBHandler*, const char *s);
 	BOOL            (*begin)         (CwtDBHandler*); /* begin transaction */

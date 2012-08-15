@@ -39,16 +39,10 @@ videntur parum clari, fiant sollemnes in futurum.";
 
 void test_00(void)
 {
-	const char *text0 = "The quick brown fox jumps over the lazy dog";
-	const char *text1 = "Съешь ещё этих мягких французских булок, да выпей чаю";
-	const CWT_CHAR *text2 = _T("The quick brown fox jumps over the lazy dog");
-	const CWT_CHAR *text3 = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
-
-	CWT_TIME tm;
+	BOOL ok;
 
 	CwtUniType *bool_val    = __utNS->create();
 	CwtUniType *char_val    = __utNS->create();
-	CwtUniType *cwtchar_val = __utNS->create();
 	CwtUniType *sbyte_val   = __utNS->create();
 	CwtUniType *byte_val    = __utNS->create();
 	CwtUniType *short_val   = __utNS->create();
@@ -62,112 +56,148 @@ void test_00(void)
 	CwtUniType *float_val   = __utNS->create();
 	CwtUniType *double_val  = __utNS->create();
 	CwtUniType *text_val    = __utNS->create();
-	CwtUniType *cwttext_val = __utNS->create();
 	CwtUniType *blob_val    = __utNS->create();
 	CwtUniType *time_val    = __utNS->create();
 	CwtUniType *date_val    = __utNS->create();
 	CwtUniType *datetime_val= __utNS->create();
 
-	__utNS->setBool(bool_val, TRUE);
-	CWT_TEST_OK(__utNS->toBool(bool_val) == TRUE);
+	__utNS->setBOOL(bool_val, TRUE);
+	__utNS->toBOOL(bool_val, &ok);
+	CWT_TEST_OK2(ok, _T("bool_val == TRUE"));
 
-	__utNS->setBool(bool_val, FALSE);
-	CWT_TEST_OK(__utNS->toBool(bool_val) == FALSE);
+	__utNS->setBOOL(bool_val, FALSE);
+	__utNS->toBOOL(bool_val, &ok);
+	CWT_TEST_OK2(ok, _T("bool_val == FALSE"));
 
-	__utNS->setChar(char_val, 'W');
-	CWT_TEST_OK(__utNS->toChar(char_val) == 'W');
+	__utNS->setCHAR(char_val, _T('W'));
+	__utNS->toCHAR(char_val, &ok);
+	CWT_TEST_OK2(ok, _T("char_val == 'W'"));
 
-	__utNS->setCwtChar(cwtchar_val, _T('W'));
-	CWT_TEST_OK(__utNS->toCwtChar(cwtchar_val) == _T('W'));
+	__utNS->setSBYTE(sbyte_val, CWT_SBYTE_MIN);
+	__utNS->toSBYTE(sbyte_val, &ok);
+	CWT_TEST_OK2(ok, _T("sbyte_val == CWT_SBYTE_MIN"));
 
-	__utNS->setSByte(sbyte_val, CWT_SBYTE_MIN);
-	CWT_TEST_OK(__utNS->toSByte(sbyte_val) == CWT_SBYTE_MIN);
+	__utNS->setSBYTE(sbyte_val, CWT_SBYTE_MAX);
+	__utNS->toSBYTE(sbyte_val, &ok);
+	CWT_TEST_OK2(ok, _T("sbyte_val == CWT_SBYTE_MAX"));
 
-	__utNS->setSByte(sbyte_val, CWT_SBYTE_MAX);
-	CWT_TEST_OK(__utNS->toSByte(sbyte_val) == CWT_SBYTE_MAX);
+	__utNS->setBYTE(byte_val, CWT_BYTE_MAX);
+	__utNS->toBYTE(byte_val, &ok);
+	CWT_TEST_OK2(ok, _T("byte_val == CWT_BYTE_MAX"));
 
-	__utNS->setByte(byte_val, CWT_BYTE_MAX);
-	CWT_TEST_OK(__utNS->toByte(byte_val) == CWT_BYTE_MAX);
+	__utNS->setSHORT(short_val, CWT_SHORT_MIN);
+	__utNS->toSHORT(short_val, &ok);
+	CWT_TEST_OK2(ok, _T("short_val == CWT_SHORT_MIN"));
 
-	__utNS->setShort(short_val, CWT_SHORT_MIN);
-	CWT_TEST_OK(__utNS->toShort(short_val) == CWT_SHORT_MIN);
+	__utNS->setSHORT(short_val, CWT_SHORT_MAX);
+	__utNS->toSHORT(short_val, &ok);
+	CWT_TEST_OK2(ok, _T("short_val == CWT_SHORT_MAX"));
 
-	__utNS->setShort(short_val, CWT_SHORT_MAX);
-	CWT_TEST_OK(__utNS->toShort(short_val) == CWT_SHORT_MAX);
+	__utNS->setUSHORT(ushort_val, CWT_USHORT_MAX);
+	__utNS->toUSHORT(ushort_val, &ok);
+	CWT_TEST_OK2(ok, _T("ushort_val == CWT_USHORT_MAX"));
 
-	__utNS->setUShort(ushort_val, CWT_USHORT_MAX);
-	CWT_TEST_OK(__utNS->toUShort(ushort_val) == CWT_USHORT_MAX);
+	__utNS->setINT(int_val, CWT_INT_MIN);
+	__utNS->toINT(int_val, &ok);
+	CWT_TEST_OK2(ok, _T("int_val == CWT_INT_MIN"));
 
-	__utNS->setInt(int_val, CWT_INT_MIN);
-	CWT_TEST_OK(__utNS->toInt(int_val) == CWT_INT_MIN);
+	__utNS->setINT(int_val, CWT_INT_MAX);
+	__utNS->toINT(int_val, &ok);
+	CWT_TEST_OK2(ok, _T("int_val == CWT_INT_MAX"));
 
-	__utNS->setInt(int_val, CWT_INT_MAX);
-	CWT_TEST_OK(__utNS->toInt(int_val) == CWT_INT_MAX);
+	__utNS->setUINT(uint_val, CWT_UINT_MAX);
+	__utNS->toUINT(uint_val, &ok);
+	CWT_TEST_OK2(ok, _T("uint_val == CWT_UINT_MAX"));
 
-	__utNS->setUInt(uint_val, CWT_UINT_MAX);
-	CWT_TEST_OK(__utNS->toUInt(uint_val) == CWT_UINT_MAX);
+	__utNS->setLONG(long_val, CWT_LONG_MIN);
+	__utNS->toLONG(long_val, &ok);
+	CWT_TEST_OK2(ok, _T("long_val  == CWT_LONG_MIN"));
 
-	__utNS->setLong(long_val, CWT_LONG_MIN);
-	CWT_TEST_OK(__utNS->toLong(long_val) == CWT_LONG_MIN);
+	__utNS->setLONG(long_val, CWT_LONG_MAX);
+	__utNS->toLONG(long_val, &ok);
+	CWT_TEST_OK2(ok, _T("long_val == CWT_LONG_MAX"));
 
-	__utNS->setLong(long_val, CWT_LONG_MAX);
-	CWT_TEST_OK(__utNS->toLong(long_val) == CWT_LONG_MAX);
+	__utNS->setULONG(ulong_val, CWT_ULONG_MAX);
+	__utNS->toULONG(ulong_val, &ok);
+	CWT_TEST_OK2(ok, _T("ulong_val == CWT_ULONG_MAX"));
 
-	__utNS->setULong(ulong_val, CWT_ULONG_MAX);
-	CWT_TEST_OK(__utNS->toULong(ulong_val) == CWT_ULONG_MAX);
+	__utNS->setLONGLONG(llong_val, CWT_LONGLONG_MIN);
+	__utNS->toLONGLONG(llong_val, &ok);
+	CWT_TEST_OK2(ok, _T("llong_val  == CWT_LONGLONG_MIN"));
 
-	__utNS->setLongLong(llong_val, CWT_LONGLONG_MIN);
-	CWT_TEST_OK(__utNS->toLongLong(llong_val) == CWT_LONGLONG_MIN);
+	__utNS->setLONGLONG(llong_val, CWT_LONGLONG_MAX);
+	__utNS->toLONGLONG(llong_val, &ok);
+	CWT_TEST_OK2(ok, _T("llong_val == CWT_LONGLONG_MAX"));
 
-	__utNS->setLongLong(llong_val, CWT_LONGLONG_MAX);
-	CWT_TEST_OK(__utNS->toLongLong(llong_val) == CWT_LONGLONG_MAX);
+	__utNS->setULONGLONG(ullong_val, CWT_ULONGLONG_MAX);
+	__utNS->toULONGLONG(ullong_val, &ok);
+	CWT_TEST_OK2(ok, _T("ullong_val == CWT_ULONGLONG_MAX"));
 
-	__utNS->setULongLong(ullong_val, CWT_ULONGLONG_MAX);
-	CWT_TEST_OK(__utNS->toULongLong(ullong_val) == CWT_ULONGLONG_MAX);
+	__utNS->setFLOAT(float_val, CWT_FLOAT_MAX);
+	__utNS->toFLOAT(float_val, &ok);
+	CWT_TEST_OK2(ok, _T("float_val == CWT_FLOAT_MAX"));
 
-	__utNS->setFloat(float_val, CWT_FLOAT_MAX);
-	CWT_TEST_OK(__utNS->toFloat(float_val) == CWT_FLOAT_MAX);
+	__utNS->setDOUBLE(double_val, CWT_FLOAT_MAX);
+	__utNS->toDOUBLE(double_val, &ok);
+	CWT_TEST_OK2(ok, _T("double_val == CWT_FLOAT_MAX"));
 
-	__utNS->setDouble(double_val, CWT_FLOAT_MAX);
-	CWT_TEST_OK(__utNS->toDouble(double_val) == CWT_FLOAT_MAX);
+	{
+		const CWT_CHAR *text_en = _T("The quick brown fox jumps over the lazy dog");
+		const CWT_CHAR *text_ru = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
+		CWT_CHAR *text;
 
-	__utNS->setText(text_val, text0, strlen(text0));
-	CWT_TEST_OK(strcmp(text0, __utNS->toText(text_val)) == 0);
+		__utNS->setTEXT(text_val, text_en, __strNS->strlen(text_en));
+		text = __utNS->toTEXT(text_val, &ok);
+		CWT_TEST_OK(ok && __strNS->strcmp(text_en, text) == 0);
+		CWT_FREE(text);
 
-	__utNS->setText(text_val, text1, strlen(text1));
-	CWT_TEST_OK(strcmp(text1, __utNS->toText(text_val)) == 0);
+		__utNS->setTEXT(text_val, text_ru, __strNS->strlen(text_ru));
+		text = __utNS->toTEXT(text_val, &ok);
+		CWT_TEST_OK(ok && __strNS->strcmp(text_ru, text) == 0);
+		CWT_FREE(text);
+	}
 
-	__utNS->setCwtText(cwttext_val, text2, __strNS->len(text2));
-	CWT_TEST_OK(__strNS->cmp(text2, __utNS->toCwtText(cwttext_val)) == 0);
+	{
+		const char *blob;
+		size_t sz;
+		__utNS->setBLOB(blob_val, loremipsum, strlen(loremipsum));
+		blob = (const char*)__utNS->toBLOB(blob_val, &sz);
+		CWT_TEST_OK(sz == strlen(loremipsum));
+		CWT_TEST_OK(strncmp(loremipsum, blob, strlen(loremipsum)) == 0);
+	}
 
-	__utNS->setCwtText(cwttext_val, text3, __strNS->len(text3));
-	CWT_TEST_OK(__strNS->cmp(text3, __utNS->toCwtText(cwttext_val)) == 0);
+	{
+		CWT_TIME tm1;
+		CWT_TIME tm2;
 
-	__utNS->setBlob(blob_val, loremipsum, strlen(loremipsum)+1);
-	CWT_TEST_OK(strcmp(loremipsum, (const char*) __utNS->toBlob(blob_val)) == 0);
+		__utilsNS->now(&tm1);
+		__utNS->setTIME(time_val, &tm1, sizeof(CWT_TIME));
+		__utNS->toTIME(time_val, &tm2, &ok);
+		CWT_TEST_OK(ok && tm2.hour == tm1.hour);
+		CWT_TEST_OK(ok && tm2.min == tm1.min);
+		CWT_TEST_OK(ok && tm2.sec == tm1.sec);
 
-	__utilsNS->now(&tm);
-	__utNS->setTime(time_val, &tm, sizeof(CWT_TIME));
-	CWT_TEST_OK(__utNS->toTime(time_val)->hour == tm.hour);
-	CWT_TEST_OK(__utNS->toTime(time_val)->min == tm.min);
-	CWT_TEST_OK(__utNS->toTime(time_val)->sec == tm.sec);
+		__utilsNS->now(&tm1);
+		__utNS->setDATE(date_val, &tm1, sizeof(CWT_TIME));
+		__utNS->toDATE(date_val, &tm2, &ok);
+		CWT_TEST_OK(ok && tm2.year == tm1.year);
+		CWT_TEST_OK(ok && tm2.mon == tm1.mon);
+		CWT_TEST_OK(ok && tm2.day == tm1.day);
 
-	__utNS->setDate(date_val, &tm, sizeof(CWT_TIME));
-	CWT_TEST_OK(__utNS->toTime(date_val)->year == tm.year);
-	CWT_TEST_OK(__utNS->toTime(date_val)->mon == tm.mon);
-	CWT_TEST_OK(__utNS->toTime(date_val)->day == tm.day);
 
-	__utNS->setDateTime(datetime_val, &tm, sizeof(CWT_TIME));
-	CWT_TEST_OK(__utNS->toTime(datetime_val)->hour == tm.hour);
-	CWT_TEST_OK(__utNS->toTime(datetime_val)->min == tm.min);
-	CWT_TEST_OK(__utNS->toTime(datetime_val)->sec == tm.sec);
-	CWT_TEST_OK(__utNS->toTime(datetime_val)->year == tm.year);
-	CWT_TEST_OK(__utNS->toTime(datetime_val)->mon == tm.mon);
-	CWT_TEST_OK(__utNS->toTime(datetime_val)->day == tm.day);
+		__utilsNS->now(&tm1);
+		__utNS->setDATETIME(datetime_val, &tm1, sizeof(CWT_TIME));
+		__utNS->toDATETIME(datetime_val, &tm2, &ok);
+		CWT_TEST_OK(ok && tm2.hour == tm1.hour);
+		CWT_TEST_OK(ok && tm2.min == tm1.min);
+		CWT_TEST_OK(ok && tm2.sec == tm1.sec);
+		CWT_TEST_OK(ok && tm2.year == tm1.year);
+		CWT_TEST_OK(ok && tm2.mon == tm1.mon);
+		CWT_TEST_OK(ok && tm2.day == tm1.day);
+	}
 
 	__utNS->free(bool_val);
 	__utNS->free(char_val);
-	__utNS->free(cwtchar_val);
 	__utNS->free(sbyte_val);
 	__utNS->free(byte_val);
 	__utNS->free(short_val);
@@ -181,7 +211,6 @@ void test_00(void)
 	__utNS->free(float_val);
 	__utNS->free(double_val);
 	__utNS->free(text_val);
-	__utNS->free(cwttext_val);
 	__utNS->free(blob_val);
 	__utNS->free(time_val);
 	__utNS->free(date_val);
@@ -191,111 +220,123 @@ void test_00(void)
 
 void test_01(void)
 {
-	const char *text0 = "The quick brown fox jumps over the lazy dog";
-	const char *text1 = "Съешь ещё этих мягких французских булок, да выпей чаю";
-	const CWT_CHAR *text2 = _T("The quick brown fox jumps over the lazy dog");
-	const CWT_CHAR *text3 = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
-
-	CWT_TIME tm;
-
+	BOOL ok;
 	CwtUniType *uval    = __utNS->create();
 
-	__utNS->setBool(uval, TRUE);
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+	__utNS->setBOOL(uval, TRUE);
+	CWT_TEST_OK(__utNS->toBOOL(uval, &ok) == TRUE && ok);
 
-	__utNS->setBool(uval, FALSE);
-	CWT_TEST_OK(__utNS->toBool(uval) == FALSE);
+	__utNS->setBOOL(uval, FALSE);
+	CWT_TEST_OK(__utNS->toBOOL(uval, &ok) == FALSE && ok);
 
-	__utNS->setChar(uval, 'W');
-	CWT_TEST_OK(__utNS->toChar(uval) == 'W');
+	__utNS->setCHAR(uval, _T('W'));
+	CWT_TEST_OK(__utNS->toCHAR(uval, &ok) == _T('W') && ok);
 
-	__utNS->setCwtChar(uval, _T('W'));
-	CWT_TEST_OK(__utNS->toCwtChar(uval) == _T('W'));
+	__utNS->setSBYTE(uval, CWT_SBYTE_MIN);
+	CWT_TEST_OK(__utNS->toSBYTE(uval, &ok) == CWT_SBYTE_MIN && ok);
 
-	__utNS->setSByte(uval, CWT_SBYTE_MIN);
-	CWT_TEST_OK(__utNS->toSByte(uval) == CWT_SBYTE_MIN);
+	__utNS->setSBYTE(uval, CWT_SBYTE_MAX);
+	CWT_TEST_OK(__utNS->toSBYTE(uval, &ok) == CWT_SBYTE_MAX && ok);
 
-	__utNS->setSByte(uval, CWT_SBYTE_MAX);
-	CWT_TEST_OK(__utNS->toSByte(uval) == CWT_SBYTE_MAX);
+	__utNS->setBYTE(uval, CWT_BYTE_MAX);
+	CWT_TEST_OK(__utNS->toBYTE(uval, &ok) == CWT_BYTE_MAX && ok);
 
-	__utNS->setByte(uval, CWT_BYTE_MAX);
-	CWT_TEST_OK(__utNS->toByte(uval) == CWT_BYTE_MAX);
+	__utNS->setSHORT(uval, CWT_SHORT_MIN);
+	CWT_TEST_OK(__utNS->toSHORT(uval, &ok) == CWT_SHORT_MIN && ok);
 
-	__utNS->setShort(uval, CWT_SHORT_MIN);
-	CWT_TEST_OK(__utNS->toShort(uval) == CWT_SHORT_MIN);
+	__utNS->setSHORT(uval, CWT_SHORT_MAX);
+	CWT_TEST_OK(__utNS->toSHORT(uval, &ok) == CWT_SHORT_MAX && ok);
 
-	__utNS->setShort(uval, CWT_SHORT_MAX);
-	CWT_TEST_OK(__utNS->toShort(uval) == CWT_SHORT_MAX);
+	__utNS->setUSHORT(uval, CWT_USHORT_MAX);
+	CWT_TEST_OK(__utNS->toUSHORT(uval, &ok) == CWT_USHORT_MAX && ok);
 
-	__utNS->setUShort(uval, CWT_USHORT_MAX);
-	CWT_TEST_OK(__utNS->toUShort(uval) == CWT_USHORT_MAX);
+	__utNS->setINT(uval, CWT_INT_MIN);
+	CWT_TEST_OK(__utNS->toINT(uval, &ok) == CWT_INT_MIN && ok);
 
-	__utNS->setInt(uval, CWT_INT_MIN);
-	CWT_TEST_OK(__utNS->toInt(uval) == CWT_INT_MIN);
+	__utNS->setINT(uval, CWT_INT_MAX);
+	CWT_TEST_OK(__utNS->toINT(uval, &ok) == CWT_INT_MAX && ok);
 
-	__utNS->setInt(uval, CWT_INT_MAX);
-	CWT_TEST_OK(__utNS->toInt(uval) == CWT_INT_MAX);
+	__utNS->setUINT(uval, CWT_UINT_MAX);
+	CWT_TEST_OK(__utNS->toUINT(uval, &ok) == CWT_UINT_MAX && ok);
 
-	__utNS->setUInt(uval, CWT_UINT_MAX);
-	CWT_TEST_OK(__utNS->toUInt(uval) == CWT_UINT_MAX);
+	__utNS->setLONG(uval, CWT_LONG_MIN);
+	CWT_TEST_OK(__utNS->toLONG(uval, &ok) == CWT_LONG_MIN && ok);
 
-	__utNS->setLong(uval, CWT_LONG_MIN);
-	CWT_TEST_OK(__utNS->toLong(uval) == CWT_LONG_MIN);
+	__utNS->setLONG(uval, CWT_LONG_MAX);
+	CWT_TEST_OK(__utNS->toLONG(uval, &ok) == CWT_LONG_MAX && ok);
 
-	__utNS->setLong(uval, CWT_LONG_MAX);
-	CWT_TEST_OK(__utNS->toLong(uval) == CWT_LONG_MAX);
+	__utNS->setULONG(uval, CWT_ULONG_MAX);
+	CWT_TEST_OK(__utNS->toULONG(uval, &ok) == CWT_ULONG_MAX && ok);
 
-	__utNS->setULong(uval, CWT_ULONG_MAX);
-	CWT_TEST_OK(__utNS->toULong(uval) == CWT_ULONG_MAX);
+	__utNS->setLONGLONG(uval, CWT_LONGLONG_MIN);
+	CWT_TEST_OK(__utNS->toLONGLONG(uval, &ok) == CWT_LONGLONG_MIN && ok);
 
-	__utNS->setLongLong(uval, CWT_LONGLONG_MIN);
-	CWT_TEST_OK(__utNS->toLongLong(uval) == CWT_LONGLONG_MIN);
+	__utNS->setLONGLONG(uval, CWT_LONGLONG_MAX);
+	CWT_TEST_OK(__utNS->toLONGLONG(uval, &ok) == CWT_LONGLONG_MAX && ok);
 
-	__utNS->setLongLong(uval, CWT_LONGLONG_MAX);
-	CWT_TEST_OK(__utNS->toLongLong(uval) == CWT_LONGLONG_MAX);
+	__utNS->setULONGLONG(uval, CWT_ULONGLONG_MAX);
+	CWT_TEST_OK(__utNS->toULONGLONG(uval, &ok) == CWT_ULONGLONG_MAX && ok);
 
-	__utNS->setULongLong(uval, CWT_ULONGLONG_MAX);
-	CWT_TEST_OK(__utNS->toULongLong(uval) == CWT_ULONGLONG_MAX);
+	__utNS->setFLOAT(uval, CWT_FLOAT_MAX);
+	CWT_TEST_OK(__utNS->toFLOAT(uval, &ok) == CWT_FLOAT_MAX && ok);
 
-	__utNS->setFloat(uval, CWT_FLOAT_MAX);
-	CWT_TEST_OK(__utNS->toFloat(uval) == CWT_FLOAT_MAX);
+	__utNS->setDOUBLE(uval, CWT_FLOAT_MAX);
+	CWT_TEST_OK(__utNS->toDOUBLE(uval, &ok) == CWT_FLOAT_MAX && ok);
 
-	__utNS->setDouble(uval, CWT_FLOAT_MAX);
-	CWT_TEST_OK(__utNS->toDouble(uval) == CWT_FLOAT_MAX);
+	{
+		const CWT_CHAR *text_en = _T("The quick brown fox jumps over the lazy dog");
+		const CWT_CHAR *text_ru = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
+		CWT_CHAR *text;
 
-	__utNS->setText(uval, text0, strlen(text0));
-	CWT_TEST_OK(strcmp(text0, __utNS->toText(uval)) == 0);
+		__utNS->setTEXT(uval, text_en, __strNS->strlen(text_en));
+		text = __utNS->toTEXT(uval, &ok);
+		CWT_TEST_OK(ok && __strNS->strcmp(text_en, text) == 0);
+		CWT_FREE(text);
 
-	__utNS->setText(uval, text1, strlen(text1));
-	CWT_TEST_OK(strcmp(text1, __utNS->toText(uval)) == 0);
+		__utNS->setTEXT(uval, text_ru, __strNS->strlen(text_ru));
+		text = __utNS->toTEXT(uval, &ok);
+		CWT_TEST_OK(ok && __strNS->strcmp(text_ru, text) == 0);
+		CWT_FREE(text);
+	}
 
-	__utNS->setCwtText(uval, text2, __strNS->len(text2));
-	CWT_TEST_OK(__strNS->cmp(text2, __utNS->toCwtText(uval)) == 0);
+	{
+		const char *blob;
+		size_t sz;
+		__utNS->setBLOB(uval, loremipsum, strlen(loremipsum));
+		blob = (const char*)__utNS->toBLOB(uval, &sz);
+		CWT_TEST_OK(sz == strlen(loremipsum));
+		CWT_TEST_OK(strncmp(loremipsum, blob, strlen(loremipsum)) == 0);
+	}
 
-	__utNS->setCwtText(uval, text3, __strNS->len(text3));
-	CWT_TEST_OK(__strNS->cmp(text3, __utNS->toCwtText(uval)) == 0);
+	{
+		CWT_TIME tm1;
+		CWT_TIME tm2;
 
-	__utNS->setBlob(uval, loremipsum, strlen(loremipsum)+1);
-	CWT_TEST_OK(strcmp(loremipsum, (const char*) __utNS->toBlob(uval)) == 0);
+		__utilsNS->now(&tm1);
+		__utNS->setTIME(uval, &tm1, sizeof(CWT_TIME));
+		__utNS->toTIME(uval, &tm2, &ok);
+		CWT_TEST_OK(ok && tm2.hour == tm1.hour);
+		CWT_TEST_OK(ok && tm2.min == tm1.min);
+		CWT_TEST_OK(ok && tm2.sec == tm1.sec);
 
-	__utilsNS->now(&tm);
-	__utNS->setTime(uval, &tm, sizeof(CWT_TIME));
-	CWT_TEST_OK(__utNS->toTime(uval)->hour == tm.hour);
-	CWT_TEST_OK(__utNS->toTime(uval)->min == tm.min);
-	CWT_TEST_OK(__utNS->toTime(uval)->sec == tm.sec);
+		__utilsNS->now(&tm1);
+		__utNS->setDATE(uval, &tm1, sizeof(CWT_TIME));
+		__utNS->toDATE(uval, &tm2, &ok);
+		CWT_TEST_OK(ok && tm2.year == tm1.year);
+		CWT_TEST_OK(ok && tm2.mon == tm1.mon);
+		CWT_TEST_OK(ok && tm2.day == tm1.day);
 
-	__utNS->setDate(uval, &tm, sizeof(CWT_TIME));
-	CWT_TEST_OK(__utNS->toTime(uval)->year == tm.year);
-	CWT_TEST_OK(__utNS->toTime(uval)->mon == tm.mon);
-	CWT_TEST_OK(__utNS->toTime(uval)->day == tm.day);
 
-	__utNS->setDateTime(uval, &tm, sizeof(CWT_TIME));
-	CWT_TEST_OK(__utNS->toTime(uval)->hour == tm.hour);
-	CWT_TEST_OK(__utNS->toTime(uval)->min == tm.min);
-	CWT_TEST_OK(__utNS->toTime(uval)->sec == tm.sec);
-	CWT_TEST_OK(__utNS->toTime(uval)->year == tm.year);
-	CWT_TEST_OK(__utNS->toTime(uval)->mon == tm.mon);
-	CWT_TEST_OK(__utNS->toTime(uval)->day == tm.day);
+		__utilsNS->now(&tm1);
+		__utNS->setDATETIME(uval, &tm1, sizeof(CWT_TIME));
+		__utNS->toDATETIME(uval, &tm2, &ok);
+		CWT_TEST_OK(ok && tm2.hour == tm1.hour);
+		CWT_TEST_OK(ok && tm2.min == tm1.min);
+		CWT_TEST_OK(ok && tm2.sec == tm1.sec);
+		CWT_TEST_OK(ok && tm2.year == tm1.year);
+		CWT_TEST_OK(ok && tm2.mon == tm1.mon);
+		CWT_TEST_OK(ok && tm2.day == tm1.day);
+	}
 
 	__utNS->free(uval);
 }
@@ -303,123 +344,160 @@ void test_01(void)
 
 void test_bool(void)
 {
-	const char *text0 = "The quick brown fox jumps over the lazy dog";
-	const char *text1 = "Съешь ещё этих мягких французских булок, да выпей чаю";
-	const CWT_CHAR *text2 = _T("The quick brown fox jumps over the lazy dog");
-	const CWT_CHAR *text3 = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
-
-	CWT_TIME tm;
-
+	BOOL ok;
 	CwtUniType *uval = __utNS->create();
 
-	__utNS->setBool(uval, TRUE);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'BOOL' equality to TRUE");
-	__utNS->setBool(uval, FALSE);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'BOOL' equality to FALSE");
+	__utNS->setBOOL(uval, TRUE);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'BOOL' equality to TRUE"));
+	__utNS->setBOOL(uval, FALSE);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'BOOL' equality to FALSE"));
 
-	__utNS->setChar(uval, 'W');
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'char' equality to TRUE");
-	__utNS->setChar(uval, '\0');
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'char' equality to FALSE");
+	__utNS->setCHAR(uval, _T('W'));
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'CWT_CHAR' equality to TRUE"));
+	__utNS->setCHAR(uval, _T('\0'));
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'CWT_CHAR' equality to FALSE"));
 
-	__utNS->setCwtChar(uval, _T('W'));
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'CWT_CHAR' equality to TRUE");
-	__utNS->setCwtChar(uval, _T('\0'));
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'CWT_CHAR' equality to FALSE");
+	__utNS->setSBYTE(uval, CWT_SBYTE_MIN);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'SBYTE' equality to TRUE"));
+	__utNS->setSBYTE(uval, CWT_SBYTE_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'SBYTE' equality to TRUE"));
+	__utNS->setSBYTE(uval, 0);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'SBYTE' equality to FALSE"));
 
+	__utNS->setBYTE(uval, CWT_BYTE_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'BYTE' equality to TRUE"));
+	__utNS->setBYTE(uval, 0);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'BYTE' equality to FALSE"));
 
-	__utNS->setSByte(uval, CWT_SBYTE_MIN);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'SBYTE' equality to TRUE");
-	__utNS->setSByte(uval, CWT_SBYTE_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'SBYTE' equality to TRUE");
-	__utNS->setSByte(uval, 0);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'SBYTE' equality to FALSE");
+	__utNS->setSHORT(uval, CWT_SHORT_MIN);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'SHORT' equality to TRUE"));
+	__utNS->setSHORT(uval, CWT_SHORT_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'SHORT' equality to TRUE"));
+	__utNS->setSHORT(uval, 0);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'SHORT' equality to FALSE"));
 
-	__utNS->setByte(uval, CWT_BYTE_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'BYTE' equality to TRUE");
-	__utNS->setByte(uval, 0);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'BYTE' equality to FALSE");
+	__utNS->setUSHORT(uval, CWT_USHORT_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'USHORT' equality to TRUE"));
+	__utNS->setUSHORT(uval, 0);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'USHORT' equality to FALSE"));
 
-	__utNS->setShort(uval, CWT_SHORT_MIN);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'SHORT' equality to TRUE");
-	__utNS->setShort(uval, CWT_SHORT_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'SHORT' equality to TRUE");
-	__utNS->setShort(uval, 0);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'SHORT' equality to FALSE");
+	__utNS->setINT(uval, CWT_INT_MIN);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'INT' equality to TRUE"));
+	__utNS->setINT(uval, CWT_INT_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'INT' equality to TRUE"));
+	__utNS->setINT(uval, 0);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'INT' equality to FALSE"));
 
-	__utNS->setUShort(uval, CWT_USHORT_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'USHORT' equality to TRUE");
-	__utNS->setUShort(uval, 0);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'USHORT' equality to FALSE");
+	__utNS->setUINT(uval, CWT_UINT_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'UINT' equality to TRUE"));
+	__utNS->setUINT(uval, 0);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'UINT' equality to FALSE"));
 
-	__utNS->setInt(uval, CWT_INT_MIN);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'INT' equality to TRUE");
-	__utNS->setInt(uval, CWT_INT_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'INT' equality to TRUE");
-	__utNS->setInt(uval, 0);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'INT' equality to FALSE");
+	__utNS->setLONG(uval, CWT_LONG_MIN);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'LONG' equality to TRUE"));
+	__utNS->setLONG(uval, CWT_LONG_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'LONG' equality to TRUE"));
+	__utNS->setLONG(uval, 0L);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'LONG' equality to FALSE"));
 
-	__utNS->setUInt(uval, CWT_UINT_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'UINT' equality to TRUE");
-	__utNS->setUInt(uval, 0);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'UINT' equality to FALSE");
+	__utNS->setULONG(uval, CWT_ULONG_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'ULONG' equality to TRUE"));
+	__utNS->setULONG(uval, 0UL);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'ULONG' equality to FALSE"));
 
-	__utNS->setLong(uval, CWT_LONG_MIN);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'LONG' equality to TRUE");
-	__utNS->setLong(uval, CWT_LONG_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'LONG' equality to TRUE");
-	__utNS->setLong(uval, 0L);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'LONG' equality to FALSE");
+	__utNS->setLONGLONG(uval, CWT_LONGLONG_MIN);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'LONGLONG' equality to TRUE"));
+	__utNS->setLONGLONG(uval, CWT_LONGLONG_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'LONGLONG' equality to TRUE"));
+	__utNS->setLONGLONG(uval, 0LL);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'LONGLONG' equality to FALSE"));
 
-	__utNS->setULong(uval, CWT_ULONG_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'ULONG' equality to TRUE");
-	__utNS->setULong(uval, 0UL);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'ULONG' equality to FALSE");
+	__utNS->setULONGLONG(uval, CWT_ULONGLONG_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'ULONGLONG' equality to TRUE"));
+	__utNS->setULONGLONG(uval, 0ULL);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'ULONGLONG' equality to FALSE"));
 
-	__utNS->setLongLong(uval, CWT_LONGLONG_MIN);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'LONGLONG' equality to TRUE");
-	__utNS->setLongLong(uval, CWT_LONGLONG_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'LONGLONG' equality to TRUE");
-	__utNS->setLongLong(uval, 0LL);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'LONGLONG' equality to FALSE");
+	__utNS->setFLOAT(uval, CWT_FLOAT_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'FLOAT' equality to TRUE"));
 
-	__utNS->setULongLong(uval, CWT_ULONGLONG_MAX);
-	CWT_TEST_OK2(__utNS->toBool(uval) == TRUE, "'ULONGLONG' equality to TRUE");
-	__utNS->setULongLong(uval, 0ULL);
-	CWT_TEST_OK2(__utNS->toBool(uval) == FALSE, "'ULONGLONG' equality to FALSE");
+	__utNS->setFLOAT(uval, 0.0f);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'FLOAT' equality to FALSE"));
 
-	__utNS->setFloat(uval, CWT_FLOAT_MAX);
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+	__utNS->setDOUBLE(uval, CWT_DOUBLE_MAX);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("'DOUBLE' equality to TRUE"));
 
-	__utNS->setDouble(uval, CWT_FLOAT_MAX);
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+	__utNS->setDOUBLE(uval, 0.0f);
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'DOUBLE' equality to FALSE"));
 
-	__utNS->setText(uval, text0, strlen(text0));
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+	{
+		const CWT_CHAR *text_empty = _T("");
+		const CWT_CHAR *text_false = _T("false");
+		const CWT_CHAR *text_FALSE = _T("FALSE");
+		const CWT_CHAR *text_FaLsE = _T("FaLsE");
+		const CWT_CHAR *text_0     = _T("0");
+		const CWT_CHAR *text_true  = _T("text");
 
-	__utNS->setText(uval, text1, strlen(text1));
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+		__utNS->setTEXT(uval, text_empty, __strNS->strlen(text_empty));
+		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("<empty text> == FALSE"));
 
-	__utNS->setCwtText(uval, text2, __strNS->len(text2));
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+		__utNS->setTEXT(uval, text_false, __strNS->strlen(text_false));
+		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'false' == FALSE"));
 
-	__utNS->setCwtText(uval, text3, __strNS->len(text3));
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+		__utNS->setTEXT(uval, text_FALSE, __strNS->strlen(text_FALSE));
+		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'FALSE' == FALSE"));
 
-	__utNS->setBlob(uval, loremipsum, strlen(loremipsum)+1);
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+		__utNS->setTEXT(uval, text_FaLsE, __strNS->strlen(text_FaLsE));
+		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'FaLsE' == FALSE"));
 
-	__utilsNS->now(&tm);
-	__utNS->setTime(uval, &tm, sizeof(CWT_TIME));
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+		__utNS->setTEXT(uval, text_0, __strNS->strlen(text_0));
+		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'0' == FALSE"));
 
-	__utNS->setDate(uval, &tm, sizeof(CWT_TIME));
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+		__utNS->setTEXT(uval, text_true, __strNS->strlen(text_true));
+		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("<any other text> is TRUE"));
+	}
 
-	__utNS->setDateTime(uval, &tm, sizeof(CWT_TIME));
-	CWT_TEST_OK(__utNS->toBool(uval) == TRUE);
+	__utNS->setBLOB(uval, loremipsum, strlen(loremipsum));
+	CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && !ok, _T("BLOB does not cast to BOOL"));
+
+	{
+	    CWT_TIME tm;
+
+		__utilsNS->now(&tm);
+		__utNS->setTIME(uval, &tm, sizeof(CWT_TIME));
+		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && !ok, _T("TIME does not cast to BOOL"));
+
+		__utNS->setDATE(uval, &tm, sizeof(CWT_TIME));
+		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && !ok, _T("DATE does not cast to BOOL"));
+
+		__utNS->setDATETIME(uval, &tm, sizeof(CWT_TIME));
+		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && !ok, _T("DATETIME does not cast to BOOL"));
+	}
 
 	__utNS->free(uval);
+}
+
+/* TODO need to implement */
+void test_scalar(void)
+{
+
+}
+
+/* TODO need to implement */
+void test_text(void)
+{
+
+}
+
+/* TODO need to implement */
+void test_blob(void)
+{
+
+}
+
+/* TODO need to implement */
+void test_time(void)
+{
+
 }
 
 
@@ -432,11 +510,15 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(76);
+	CWT_BEGIN_TESTS(115);
 
 	test_00();
 	test_01();
 	test_bool();
+	test_scalar();
+	test_text();
+	test_blob();
+	test_time();
 
 	CWT_END_TESTS;
 }
