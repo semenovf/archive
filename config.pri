@@ -1,4 +1,3 @@
-CWT_CONFIG=$$(CWT_CONFIG)
 #CWT_CONFIG = release
 #CWT_CONFIG = debug
 
