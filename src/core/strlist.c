@@ -38,6 +38,7 @@ static BOOL            __hasMore      (CwtStrListIterator *iter);
 static const CWT_CHAR* __next         (CwtStrListIterator *iter);
 /*static CwtStrListElem* __elem         (CwtStrListIterator *iter);*/
 static void            __toArray      (CwtStrList *psl, const CWT_CHAR *argv[], size_t *argc);
+static BOOL            __find         (CwtStrList *psl, const CWT_CHAR *s, size_t *index);
 
 static const CwtQuotePair*   __singleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('\''), _T('\'')}, {0, 0}}; return qp; }
 static const CwtQuotePair*   __doubleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('"'), _T('"')}, {0, 0}} ; return qp; }
@@ -73,6 +74,7 @@ static CwtStrListNS __cwtStrListNS = {
 	, __next
 /*	, __elem*/
 	, __toArray
+	, __find
 
 	, __singleQuotesPair
 	, __doubleQuotesPair
@@ -468,4 +470,27 @@ static void __toArray(CwtStrList *psl, const CWT_CHAR *argv[], size_t *argc)
 	}
 
 	*argc = i;
+}
+
+
+static BOOL __find(CwtStrList *psl, const CWT_CHAR *s, size_t *index)
+{
+	size_t i = 0;
+	CwtStrListIterator it;
+
+	CWT_ASSERT(psl);
+
+	__begin(psl, &it);
+
+	while( __hasMore(&it) ) {
+		if( __strNS->streq(s, __next(&it)) ) {
+			if( index ) {
+				*index = i;
+				return TRUE;
+			}
+		}
+		i++;
+	}
+
+	return FALSE;
 }

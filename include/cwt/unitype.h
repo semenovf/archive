@@ -17,7 +17,6 @@ typedef struct _CwtUniType {
         void     *ptr;
 	} value;
     CwtTypeEnum type;
-    UINT is_null : 1;
     size_t capacity;    /* size of buffer pointed by ptr */
     size_t length;      /* length in chars for CwtType_TEXT, or BLOB size */
 } CwtUniType;
@@ -45,9 +44,9 @@ typedef struct _CwtUniTypeNS {
 	BOOL        (*setDOUBLE)     (CwtUniType *ut, double n);
 	BOOL        (*setTEXT)       (CwtUniType *ut, const CWT_CHAR *p, size_t length);
 	BOOL        (*setBLOB)       (CwtUniType *ut, const void *p, size_t sz);
-	BOOL        (*setTIME)       (CwtUniType *ut, const CWT_TIME *p, size_t sz);
-	BOOL        (*setDATE)       (CwtUniType *ut, const CWT_TIME *p, size_t sz);
-	BOOL        (*setDATETIME)   (CwtUniType *ut, const CWT_TIME *p, size_t sz);
+	BOOL        (*setTIME)       (CwtUniType *ut, const CWT_TIME *p);
+	BOOL        (*setDATE)       (CwtUniType *ut, const CWT_TIME *p);
+	BOOL        (*setDATETIME)   (CwtUniType *ut, const CWT_TIME *p);
 
 	BOOL        (*toBOOL)        (CwtUniType *ut, BOOL *ok);
 	CWT_CHAR    (*toCHAR)        (CwtUniType *ut, BOOL *ok);

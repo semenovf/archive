@@ -104,7 +104,7 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 	return TRUE;
 }
 
-CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, const CWT_CHAR *charset, UINT ddiflags*/)
+CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, const CWT_CHAR *charset, UINT ddiflags*/)
 {
 	CwtStrNS     *strNS    = cwtStrNS();
 	CwtStringNS  *stringNS = cwtStringNS();
@@ -246,7 +246,7 @@ CwtStrList* __specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const C
     return spec;
 }
 
-CwtStrList* __specForRecall(CwtDDI *ddi, int flags)
+CwtStrList* __dbd_specForRecall(CwtDDI *ddi, int flags)
 {
 	CwtStrNS     *strNS    = cwtStrNS();
 	CwtStringNS  *stringNS = cwtStringNS();

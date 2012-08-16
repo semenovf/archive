@@ -33,10 +33,10 @@ static inline BOOL      __setULONGLONG (CwtUniType *ut, ULONGLONG n)  { return _
 static inline BOOL      __setFLOAT     (CwtUniType *ut, float n)      { return __setType(ut, CwtType_FLOAT, &n, 0); }
 static inline BOOL      __setDOUBLE    (CwtUniType *ut, double n)     { return __setType(ut, CwtType_DOUBLE, &n, 0); }
 static inline BOOL      __setTEXT      (CwtUniType *ut, const CWT_CHAR *p, size_t length) { return __setType(ut, CwtType_TEXT, p, length ? length : cwtStrNS()->strlen(p)); }
-static inline BOOL      __setBLOB      (CwtUniType *ut, const void *p, size_t sz)         { return __setType(ut, CwtType_BLOB, p, sz); }
-static inline BOOL      __setTIME      (CwtUniType *ut, const CWT_TIME *p, size_t sz)     { return __setType(ut, CwtType_TIME, p, sz ? sz : sizeof(CWT_TIME)); }
-static inline BOOL      __setDATE      (CwtUniType *ut, const CWT_TIME *p, size_t sz)     { return __setType(ut, CwtType_DATE, p, sz ? sz : sizeof(CWT_TIME)); }
-static inline BOOL      __setDATETIME  (CwtUniType *ut, const CWT_TIME *p, size_t sz)     { return __setType(ut, CwtType_DATETIME, p, sz ? sz : sizeof(CWT_TIME)); }
+static inline BOOL      __setBLOB      (CwtUniType *ut, const void *p, size_t sz) { return __setType(ut, CwtType_BLOB, p, sz); }
+static inline BOOL      __setTIME      (CwtUniType *ut, const CWT_TIME *p) { return __setType(ut, CwtType_TIME, p, sizeof(CWT_TIME)); }
+static inline BOOL      __setDATE      (CwtUniType *ut, const CWT_TIME *p) { return __setType(ut, CwtType_DATE, p, sizeof(CWT_TIME)); }
+static inline BOOL      __setDATETIME  (CwtUniType *ut, const CWT_TIME *p) { return __setType(ut, CwtType_DATETIME, p, sizeof(CWT_TIME)); }
 
 static BOOL             __toBOOL       (CwtUniType *ut, BOOL *ok);
 static CWT_CHAR         __toCHAR       (CwtUniType *ut, BOOL *ok);
@@ -130,7 +130,6 @@ static CwtUniType* __create(void)
 
 	ut = CWT_MALLOC(CwtUniType);
 	__strNS->bzero(ut, sizeof(CwtUniType));
-	ut->is_null = TRUE;
 	ut->type = CwtType_UNKNOWN;
 
 	return ut;
@@ -194,8 +193,6 @@ static BOOL __setType(CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t
 	BOOL ok = FALSE;
 
 	CWT_ASSERT(ut);
-	CWT_ASSERT(copy);
-
 
 	if( type != ut->type ) {
 		if( ut->length && ut->value.ptr ) {
@@ -206,8 +203,24 @@ static BOOL __setType(CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t
 		}
 	}
 
-	ut->is_null = FALSE;
+
 	ut->type = type;
+
+	if( !copy ) { /* only reserve */
+
+		switch(type) {
+		case CwtType_TEXT:
+		case CwtType_BLOB:
+		case CwtType_TIME:
+		case CwtType_DATE:
+		case CwtType_DATETIME:
+			__setBuffer(ut, type, NULL, sz);
+			break;
+		default:
+			break;
+		}
+		return TRUE;
+	}
 
 	switch(type) {
 	case CwtType_BOOL:
@@ -966,8 +979,10 @@ static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size
 			ut->capacity = nbytes;
 		}
 
-		cwtStrNS()->memcpy(ut->value.ptr, p, nbytes);
-		ut->length = length;
+		if( p ) {
+			cwtStrNS()->memcpy(ut->value.ptr, p, nbytes);
+			ut->length = length;
+		}
 	}
 
 	ut->type = cwtType;

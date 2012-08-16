@@ -55,6 +55,7 @@ typedef struct CwtStrListNS {
 	const CWT_CHAR* (*next)        (CwtStrListIterator *iter);
 /*	CwtStrListElem* (*elem)        (CwtStrListIterator *iter);*/
 	void            (*toArray)     (CwtStrList*, const CWT_CHAR *argv[], size_t *argc);
+	BOOL            (*find)        (CwtStrList*, const CWT_CHAR *s, size_t *index);
 
 	const CwtQuotePair*   (*singleQuotesPair)(void);
 	const CwtQuotePair*   (*doubleQuotesPair)(void);

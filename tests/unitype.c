@@ -61,6 +61,10 @@ void test_00(void)
 	CwtUniType *date_val    = __utNS->create();
 	CwtUniType *datetime_val= __utNS->create();
 
+	CWT_TEST_OK((void*)&bool_val->value == (void*)&bool_val->value.llong_val);
+	CWT_TEST_OK((void*)&bool_val->value == (void*)&bool_val->value.double_val);
+	CWT_TEST_OK((void*)&bool_val->value == (void*)&bool_val->value.ptr);
+
 	__utNS->setBOOL(bool_val, TRUE);
 	__utNS->toBOOL(bool_val, &ok);
 	CWT_TEST_OK2(ok, _T("bool_val == TRUE"));
@@ -171,14 +175,14 @@ void test_00(void)
 		CWT_TIME tm2;
 
 		__utilsNS->now(&tm1);
-		__utNS->setTIME(time_val, &tm1, sizeof(CWT_TIME));
+		__utNS->setTIME(time_val, &tm1);
 		__utNS->toTIME(time_val, &tm2, &ok);
 		CWT_TEST_OK(ok && tm2.hour == tm1.hour);
 		CWT_TEST_OK(ok && tm2.min == tm1.min);
 		CWT_TEST_OK(ok && tm2.sec == tm1.sec);
 
 		__utilsNS->now(&tm1);
-		__utNS->setDATE(date_val, &tm1, sizeof(CWT_TIME));
+		__utNS->setDATE(date_val, &tm1);
 		__utNS->toDATE(date_val, &tm2, &ok);
 		CWT_TEST_OK(ok && tm2.year == tm1.year);
 		CWT_TEST_OK(ok && tm2.mon == tm1.mon);
@@ -186,7 +190,7 @@ void test_00(void)
 
 
 		__utilsNS->now(&tm1);
-		__utNS->setDATETIME(datetime_val, &tm1, sizeof(CWT_TIME));
+		__utNS->setDATETIME(datetime_val, &tm1);
 		__utNS->toDATETIME(datetime_val, &tm2, &ok);
 		CWT_TEST_OK(ok && tm2.hour == tm1.hour);
 		CWT_TEST_OK(ok && tm2.min == tm1.min);
@@ -313,14 +317,14 @@ void test_01(void)
 		CWT_TIME tm2;
 
 		__utilsNS->now(&tm1);
-		__utNS->setTIME(uval, &tm1, sizeof(CWT_TIME));
+		__utNS->setTIME(uval, &tm1);
 		__utNS->toTIME(uval, &tm2, &ok);
 		CWT_TEST_OK(ok && tm2.hour == tm1.hour);
 		CWT_TEST_OK(ok && tm2.min == tm1.min);
 		CWT_TEST_OK(ok && tm2.sec == tm1.sec);
 
 		__utilsNS->now(&tm1);
-		__utNS->setDATE(uval, &tm1, sizeof(CWT_TIME));
+		__utNS->setDATE(uval, &tm1);
 		__utNS->toDATE(uval, &tm2, &ok);
 		CWT_TEST_OK(ok && tm2.year == tm1.year);
 		CWT_TEST_OK(ok && tm2.mon == tm1.mon);
@@ -328,7 +332,7 @@ void test_01(void)
 
 
 		__utilsNS->now(&tm1);
-		__utNS->setDATETIME(uval, &tm1, sizeof(CWT_TIME));
+		__utNS->setDATETIME(uval, &tm1);
 		__utNS->toDATETIME(uval, &tm2, &ok);
 		CWT_TEST_OK(ok && tm2.hour == tm1.hour);
 		CWT_TEST_OK(ok && tm2.min == tm1.min);
@@ -463,13 +467,13 @@ void test_bool(void)
 	    CWT_TIME tm;
 
 		__utilsNS->now(&tm);
-		__utNS->setTIME(uval, &tm, sizeof(CWT_TIME));
+		__utNS->setTIME(uval, &tm);
 		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && !ok, _T("TIME does not cast to BOOL"));
 
-		__utNS->setDATE(uval, &tm, sizeof(CWT_TIME));
+		__utNS->setDATE(uval, &tm);
 		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && !ok, _T("DATE does not cast to BOOL"));
 
-		__utNS->setDATETIME(uval, &tm, sizeof(CWT_TIME));
+		__utNS->setDATETIME(uval, &tm);
 		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && !ok, _T("DATETIME does not cast to BOOL"));
 	}
 
@@ -510,7 +514,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(115);
+	CWT_BEGIN_TESTS(118);
 
 	test_00();
 	test_01();

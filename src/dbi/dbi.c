@@ -41,6 +41,26 @@ static void            __dbi_close         (CwtStatement *sth);
 static CwtUniType*     __dbi_bind          (CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
 static CwtUniType*     __dbi_bindText      (CwtStatement *sth, size_t index, size_t length);
 static CwtUniType*     __dbi_bindBlob      (CwtStatement *sth, size_t index, size_t sz);
+static BOOL            __dbi_setBOOL       (CwtStatement *sth, CwtUniType *ut, BOOL b)      { return sth->dbh->setParm(ut, &b, 0); }
+static BOOL            __dbi_setCHAR       (CwtStatement *sth, CwtUniType *ut, CWT_CHAR ch) { return sth->dbh->setParm(ut, &ch, 0); }
+static BOOL            __dbi_setSBYTE      (CwtStatement *sth, CwtUniType *ut, SBYTE n)     { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setBYTE       (CwtStatement *sth, CwtUniType *ut, BYTE n)      { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setSHORT      (CwtStatement *sth, CwtUniType *ut, SHORT n)     { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setUSHORT     (CwtStatement *sth, CwtUniType *ut, USHORT n)    { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setINT        (CwtStatement *sth, CwtUniType *ut, INT n)       { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setUINT       (CwtStatement *sth, CwtUniType *ut, UINT n)      { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setLONG       (CwtStatement *sth, CwtUniType *ut, LONG n)      { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setULONG      (CwtStatement *sth, CwtUniType *ut, ULONG n)     { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setLONGLONG   (CwtStatement *sth, CwtUniType *ut, LONGLONG n)  { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setULONGLONG  (CwtStatement *sth, CwtUniType *ut, ULONGLONG n) { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setFLOAT      (CwtStatement *sth, CwtUniType *ut, float n)     { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setDOUBLE     (CwtStatement *sth, CwtUniType *ut, double n)    { return sth->dbh->setParm(ut, &n, 0); }
+static BOOL            __dbi_setTEXT       (CwtStatement *sth, CwtUniType *ut, const CWT_CHAR *p, size_t length) { return sth->dbh->setParm(ut, p, length); }
+static BOOL            __dbi_setBLOB       (CwtStatement *sth, CwtUniType *ut, const void *p, size_t sz) { return sth->dbh->setParm(ut, p, sz); }
+static BOOL            __dbi_setTIME       (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p)        { return sth->dbh->setParm(ut, p, 0); }
+static BOOL            __dbi_setDATE       (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p)        { return sth->dbh->setParm(ut, p, 0); }
+static BOOL            __dbi_setDATETIME   (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p)        { return sth->dbh->setParm(ut, p, 0); }
+
 
 static CwtTypeEnum     __toCwtTypeEnum     (CwtSqlTypeEnum sqlType);
 static CwtSqlTypeEnum  __toSqlTypeEnum     (CwtTypeEnum cwtType);
@@ -103,6 +123,25 @@ static CwtDBI __cwtDBI = {
 	, __dbi_bind
 	, __dbi_bindText
 	, __dbi_bindBlob
+	, __dbi_setBOOL
+	, __dbi_setCHAR
+	, __dbi_setSBYTE
+	, __dbi_setBYTE
+	, __dbi_setSHORT
+	, __dbi_setUSHORT
+	, __dbi_setINT
+	, __dbi_setUINT
+	, __dbi_setLONG
+	, __dbi_setULONG
+	, __dbi_setLONGLONG
+	, __dbi_setULONGLONG
+	, __dbi_setFLOAT
+	, __dbi_setDOUBLE
+	, __dbi_setTEXT
+	, __dbi_setBLOB
+	, __dbi_setTIME
+	, __dbi_setDATE
+	, __dbi_setDATETIME
 
 	, __toCwtTypeEnum
 	, __toSqlTypeEnum
@@ -222,7 +261,7 @@ static CwtDBHandler* __dbi_connect(const CWT_CHAR *dsn, const CWT_CHAR *username
 
 	__parseDSN(dsn, &scheme, &driver, &driverDSN);
 
-	dbd = __dbi_load(dsn, driver);
+	dbd = __dbi_load(scheme, driver);
 
 	if( dbd ) {
 		dbh = dbd->connect(driverDSN, username, password, csname);
@@ -314,7 +353,7 @@ static inline CwtStatement* __dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql
 		sth->dbh    = dbh;
 		sth->bind_params = NULL;
 
-		nbind_params = dbh->bindParamsCount(sth);
+		nbind_params = dbh->bindParmsCount(sth);
 
 		sth->bind_params = CWT_MALLOCA(CwtUniType*, nbind_params);
 		strNS->bzero(sth->bind_params, sizeof(CwtUniType*) * nbind_params);
@@ -392,9 +431,10 @@ static void __dbi_close(CwtStatement *sth)
 {
 	CwtUniTypeNS *utNS = cwtUniTypeNS();
 	size_t nbind_params;
+
 	CWT_ASSERT(sth);
 
-	nbind_params = sth->dbh->bindParamsCount(sth);
+	nbind_params = sth->dbh->bindParmsCount(sth);
 
 	if( nbind_params > 0 && sth->bind_params ) {
 		size_t i;
@@ -406,35 +446,25 @@ static void __dbi_close(CwtStatement *sth)
 		CWT_FREE(sth->bind_params);
 		sth->bind_params = NULL;
 	}
+
+	sth->dbh->close(sth);
 }
 
 static CwtUniType* __dbi_bind_helper(CwtStatement *sth, size_t index, CwtTypeEnum cwtType, size_t sz)
 {
-	/*CwtUniTypeNS *utNS = cwtUniTypeNS();*/
-	/*size_t nbind_params;*/
-	CwtUniType    *ut;
-/*
-	CwtDBIDriver *dbd;
-	CwtDBHandler *dbh;
-*/
+	CwtUniType *ut;
 
 	CWT_ASSERT(sth);
 	CWT_ASSERT(sth->dbh);
 
-/*
-	dbh = sth->dbh;
-	dbd = dbh->driver();
-*/
-	/*nbind_params = sth->dbh->bindParamsCount(sth);*/
-
-	if( index >= sth->dbh->bindParamsCount(sth) ) {
+	if( index >= sth->dbh->bindParmsCount(sth) ) {
 		print_error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
 		return NULL;
 	}
 
 	ut = sth->bind_params[index];
 	cwtUniTypeNS()->set(ut, cwtType, NULL, sz);
-	sth->dbh->bind(sth, index, ut);
+	sth->dbh->bindByIndex(sth, index, ut);
 
 	return ut;
 }
@@ -447,12 +477,7 @@ static CwtUniType* __dbi_bind(CwtStatement *sth, size_t index, CwtTypeEnum cwtTy
 	CWT_ASSERT(cwtType != CwtType_TEXT);
 	CWT_ASSERT(cwtType != CwtType_BLOB);
 
-	if( CwtType_TIME == cwtType || CwtType_DATE == cwtType || CwtType_DATETIME == cwtType ) {
-		ut = __dbi_bind_helper(sth, index, cwtType, sth->dbh->driver()->sizeofTime());
-	} else {
-		ut = __dbi_bind_helper(sth, index, cwtType, 0);
-	}
-
+	ut = __dbi_bind_helper(sth, index, cwtType, 0);
 	return ut;
 }
 
@@ -461,7 +486,7 @@ static CwtUniType* __dbi_bindText(CwtStatement *sth, size_t index, size_t length
 	return __dbi_bind_helper(sth, index, CwtType_TEXT, length);
 }
 
-static CwtUniType* __dbi_bindBlob( CwtStatement *sth, size_t index, size_t sz )
+static CwtUniType* __dbi_bindBlob( CwtStatement *sth, size_t index, size_t sz)
 {
 	return __dbi_bind_helper(sth, index, CwtType_BLOB, sz);
 }
