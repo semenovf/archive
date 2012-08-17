@@ -37,6 +37,39 @@ anteposuerit litterarum formas humanitatis per seacula quarta \
 decima et quinta decima. Eodem modo typi, qui nunc nobis      \
 videntur parum clari, fiant sollemnes in futurum.";
 
+
+void test_size_of(void)
+{
+	CWT_TEST_OK(cwt_sizeof(CwtType_BOOL)      == CWT_SIZEOF(CwtType_BOOL));
+    CWT_TEST_OK(cwt_sizeof(CwtType_CHAR)      == CWT_SIZEOF(CwtType_CHAR));
+    CWT_TEST_OK(cwt_sizeof(CwtType_SBYTE)     == CWT_SIZEOF(CwtType_SBYTE));
+    CWT_TEST_OK(cwt_sizeof(CwtType_INT8)      == CWT_SIZEOF(CwtType_INT8));
+    CWT_TEST_OK(cwt_sizeof(CwtType_BYTE)      == CWT_SIZEOF(CwtType_BYTE));
+    CWT_TEST_OK(cwt_sizeof(CwtType_UINT8)     == CWT_SIZEOF(CwtType_UINT8));
+    CWT_TEST_OK(cwt_sizeof(CwtType_SHORT)     == CWT_SIZEOF(CwtType_SHORT));
+    CWT_TEST_OK(cwt_sizeof(CwtType_INT16)     == CWT_SIZEOF(CwtType_INT16));
+    CWT_TEST_OK(cwt_sizeof(CwtType_USHORT)    == CWT_SIZEOF(CwtType_USHORT));
+    CWT_TEST_OK(cwt_sizeof(CwtType_UINT16)    == CWT_SIZEOF(CwtType_UINT16));
+    CWT_TEST_OK(cwt_sizeof(CwtType_INT)       == CWT_SIZEOF(CwtType_INT));
+    CWT_TEST_OK(cwt_sizeof(CwtType_INT32)     == CWT_SIZEOF(CwtType_INT32));
+    CWT_TEST_OK(cwt_sizeof(CwtType_UINT)      == CWT_SIZEOF(CwtType_UINT));
+    CWT_TEST_OK(cwt_sizeof(CwtType_UINT32)    == CWT_SIZEOF(CwtType_UINT32));
+    CWT_TEST_OK(cwt_sizeof(CwtType_LONG)      == CWT_SIZEOF(CwtType_LONG));
+    CWT_TEST_OK(cwt_sizeof(CwtType_ULONG)     == CWT_SIZEOF(CwtType_ULONG));
+    CWT_TEST_OK(cwt_sizeof(CwtType_LONGLONG)  == CWT_SIZEOF(CwtType_LONGLONG));
+    CWT_TEST_OK(cwt_sizeof(CwtType_INT64)     == CWT_SIZEOF(CwtType_INT64));
+    CWT_TEST_OK(cwt_sizeof(CwtType_ULONGLONG) == CWT_SIZEOF(CwtType_ULONGLONG));
+    CWT_TEST_OK(cwt_sizeof(CwtType_UINT64)    == CWT_SIZEOF(CwtType_UINT64));
+    CWT_TEST_OK(cwt_sizeof(CwtType_FLOAT)     == CWT_SIZEOF(CwtType_FLOAT));
+    CWT_TEST_OK(cwt_sizeof(CwtType_DOUBLE)    == CWT_SIZEOF(CwtType_DOUBLE));
+    CWT_TEST_OK(cwt_sizeof(CwtType_TEXT)      == CWT_SIZEOF(CwtType_TEXT));
+    CWT_TEST_OK(cwt_sizeof(CwtType_BLOB)      == CWT_SIZEOF(CwtType_BLOB));
+    CWT_TEST_OK(cwt_sizeof(CwtType_TIME)      == CWT_SIZEOF(CwtType_TIME));
+    CWT_TEST_OK(cwt_sizeof(CwtType_DATE)      == CWT_SIZEOF(CwtType_DATE));
+    CWT_TEST_OK(cwt_sizeof(CwtType_DATETIME)  == CWT_SIZEOF(CwtType_DATETIME));
+
+}
+
 void test_00(void)
 {
 	BOOL ok;
@@ -514,8 +547,9 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(118);
+	CWT_BEGIN_TESTS(145);
 
+	test_size_of();
 	test_00();
 	test_01();
 	test_bool();

@@ -486,8 +486,8 @@ static BOOL __find(CwtStrList *psl, const CWT_CHAR *s, size_t *index)
 		if( __strNS->streq(s, __next(&it)) ) {
 			if( index ) {
 				*index = i;
-				return TRUE;
 			}
+			return TRUE;
 		}
 		i++;
 	}

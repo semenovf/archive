@@ -37,8 +37,10 @@ static const char* __charset;
 
 #define TABLE_NAME      _T("cwt_test_table")
 #define TABLE0_NAME     _T("cwt_test_table0")
-#define TABLE_DATE_NAME _T("cwt_test_date")
-#define TABLE_TIME_NAME _T("cwt_test_time")
+#define TABLE_DATE      _T("cwt_test_date")
+#define TABLE_TIME      _T("cwt_test_time")
+#define TABLE_INT       _T("cwt_test_int")
+#define TABLE_TEXT      _T("cwt_test_text")
 
 static const CWT_CHAR *__sql_use_db       = _T("USE cwt_test_db");
 static const CWT_CHAR *__sql_drop_table   = _T("DROP TABLE IF EXISTS ") TABLE_NAME;
@@ -49,12 +51,31 @@ static const CWT_CHAR *__sql_create_table0 = _T("CREATE TABLE ") TABLE0_NAME _T(
 
 
 static const CWT_CHAR *__sql_create_table_date =
-	_T("CREATE TABLE ") TABLE_DATE_NAME
+	_T("CREATE TABLE ") TABLE_DATE
 	_T("(date_val DATE)");
 
 static const CWT_CHAR *__sql_create_table_time =
-	_T("CREATE TABLE ") TABLE_TIME_NAME
+	_T("CREATE TABLE ") TABLE_TIME
 	_T("(time_val TIME)");
+
+static const CWT_CHAR *__sql_create_table_int =
+	_T("CREATE TABLE ") TABLE_INT
+	_T("(bool_val TINYINT\
+	, sbyte_val TINYINT\
+	, byte_val    TINYINT UNSIGNED\
+    , short_val   SMALLINT\
+	, ushort_val  SMALLINT UNSIGNED\
+	, int_val     INT\
+	, uint_val    INT UNSIGNED\
+	, long_val    INT\
+	, ulong_val   INT UNSIGNED\
+	, llong_val   BIGINT\
+	, ullong_val  BIGINT UNSIGNED)");
+
+
+static const CWT_CHAR *__sql_create_table_text =
+	_T("CREATE TABLE ") TABLE_TEXT
+	_T("(vchar_val  VARCHAR(100))");
 
 static const CWT_CHAR *__sql_create_table =
 	_T("CREATE TABLE ") TABLE_NAME
@@ -168,59 +189,74 @@ int main(int argc, char *argv[])
 	CWT_TEST_FAIL(dbi->query(dbh, __sql_create_table0));
 	CWT_TEST_FAIL(dbi->query(dbh, __sql_create_table_date));
 	CWT_TEST_FAIL(dbi->query(dbh, __sql_create_table_time));
+	CWT_TEST_FAIL(dbi->query(dbh, __sql_create_table_int));
+	CWT_TEST_FAIL(dbi->query(dbh, __sql_create_table_text));
 
 	/* Show tables */
 	{
 		CwtStrListNS *strlistNS = cwtStrListNS();
 		CwtStrList *tables;
+		size_t i;
 
 		tables = strlistNS->create();
 
 		CWT_TEST_OK(dbi->tables(dbh, tables));
 
-		CWT_TEST_FAIL(tables->count == 4);
+		CWT_TEST_FAIL(tables->count == 6);
 
-		stdioNS->printf(_T("Table [0]: %s\n"),  strlistNS->at(tables, 0));
-		stdioNS->printf(_T("Table [1]: %s\n"),  strlistNS->at(tables, 1));
-		stdioNS->printf(_T("Table [2]: %s\n"),  strlistNS->at(tables, 2));
-		stdioNS->printf(_T("Table [2]: %s\n"),  strlistNS->at(tables, 3));
+		for( i = 0; i < tables->count; i++ ) {
+			stdioNS->printf(_T("Table [%d]: %s\n"), i, strlistNS->at(tables, 0));
+		}
 
 		CWT_TEST_OK(strlistNS->find(tables, TABLE_NAME, NULL));
 		CWT_TEST_OK(strlistNS->find(tables, TABLE0_NAME, NULL));
-		CWT_TEST_OK(strlistNS->find(tables, TABLE_DATE_NAME, NULL));
-		CWT_TEST_OK(strlistNS->find(tables, TABLE_TIME_NAME, NULL));
+		CWT_TEST_OK(strlistNS->find(tables, TABLE_DATE, NULL));
+		CWT_TEST_OK(strlistNS->find(tables, TABLE_TIME, NULL));
+		CWT_TEST_OK(strlistNS->find(tables, TABLE_INT, NULL));
+		CWT_TEST_OK(strlistNS->find(tables, TABLE_TEXT, NULL));
 		strlistNS->free(tables);
 	}
 
-
 	{
 		CwtUniType *ut;
-		CWT_TIME cwtm;
-		static const CWT_CHAR *__sql_insert_table_time =
-			_T("INSERT INTO ") TABLE_TIME_NAME
-			_T("(time_val) VALUES(?)");
+		const CWT_CHAR *sql_insert =
+			_T("INSERT INTO ") TABLE_TEXT
+			_T("(vchar_val) VALUES(?)");
+		const CWT_CHAR *text0 = _T("The quick brown fox jumps over the lazy dog");
+		const CWT_CHAR *text1 = _T("The quick brown fox jumps over the lazy dog")
+		_T("The quick brown fox jumps over the lazy dog")
+		_T("The quick brown fox jumps over the lazy dog")
+		_T("The quick brown fox jumps over the lazy dog")
+		_T("The quick brown fox jumps over the lazy dog")
+		_T("The quick brown fox jumps over the lazy dog")
+		_T("The quick brown fox jumps over the lazy dog")
+		_T("The quick brown fox jumps over the lazy dog");
+		const CWT_CHAR* text_ru = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
 
-		CWT_TEST_FAIL((sth = dbi->prepare(dbh, __sql_insert_table_time)));
-		ut = dbi->bindByIndex(sth, 0, CwtType_TIME);
+		CWT_TEST_FAIL((sth = dbi->prepare(dbh, sql_insert)));
+		ut = dbi->bindTextByIndex(sth, 0, 100);
 
-		cwtUtilsNS()->now(&cwtm);
-		CWT_TEST_FAIL(dbi->setTIME(sth, ut, &cwtm));
-
+		CWT_TEST_FAIL(dbi->setTEXT(sth, ut, text0, strNS->strlen(text0)));
 		CWT_TEST_FAIL(dbh->execute(sth));
+
+		CWT_TEST_FAIL(!dbi->setTEXT(sth, ut, text1, strNS->strlen(text1)));
+
+		CWT_TEST_FAIL(dbi->setTEXT(sth, ut, text_ru, strNS->strlen(text_ru)));
+		CWT_TEST_FAIL(dbh->execute(sth));
+
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
 		CWT_TEST_OK(dbi->err(dbh) == 0);
 		dbi->close(sth);
 	}
 
-
 	{
 		CwtUniType *ut;
 		CWT_TIME cwtm;
-		static const CWT_CHAR *__sql_insert_table_date =
-			_T("INSERT INTO ") TABLE_DATE_NAME
+		const CWT_CHAR *sql_insert =
+			_T("INSERT INTO ") TABLE_DATE
 			_T("(date_val) VALUES(?)");
 
-		CWT_TEST_FAIL((sth = dbi->prepare(dbh, __sql_insert_table_date)));
+		CWT_TEST_FAIL((sth = dbi->prepare(dbh, sql_insert)));
 		ut = dbi->bindByIndex(sth, 0, CwtType_DATE);
 
 		cwtUtilsNS()->now(&cwtm);
@@ -232,123 +268,98 @@ int main(int argc, char *argv[])
 		dbi->close(sth);
 	}
 
+
+
 	{
-		CwtUniType *ut[14];
-/*
-		CWT_TIME cwtDate;
-		CWT_TIME cwtTime;
-		CWT_TIME cwtDateTime;
-*/
+		const CWT_CHAR *sql_insert =
+			_T("INSERT INTO ") TABLE_INT
+			_T(" (bool_val, sbyte_val, byte_val, short_val, ushort_val, int_val, uint_val, long_val, ulong_val, llong_val, ullong_val)")
+            _T(" VALUES(?,?,?,?,?,?,?,?,?,?,?)");
 
-/*
-		cwtDate = dbi->createTime(dbh);
-		cwtTime = dbi->createTime(dbh);
-		cwtDateTime = dbi->createTime(dbh);
-*/
+		int i;
+		CwtUniType *ut[11];
 
-		/* Times, dates, blobs and texts must be initialized before they are binding */
-/*
-		cwtUtilsNS()->now(&cwtDate);
-		cwtUtilsNS()->now(&cwtTime);
-		cwtUtilsNS()->now(&cwtDateTime);
-*/
+		CWT_TEST_FAIL((sth = dbi->prepare(dbh, sql_insert)));
+		ut[0]  = dbi->bindByIndex(sth, 0, CwtType_BOOL);
+		ut[1]  = dbi->bindByIndex(sth, 1, CwtType_SBYTE);
+		ut[2]  = dbi->bindByIndex(sth, 2, CwtType_BYTE);
+		ut[3]  = dbi->bindByIndex(sth, 3, CwtType_SHORT);
+		ut[4]  = dbi->bindByIndex(sth, 4, CwtType_USHORT);
+		ut[5]  = dbi->bindByIndex(sth, 5, CwtType_INT);
+		ut[6]  = dbi->bindByIndex(sth, 6, CwtType_UINT);
+		ut[7]  = dbi->bindByIndex(sth, 7, CwtType_LONG);
+		ut[8]  = dbi->bindByIndex(sth, 8, CwtType_ULONG);
+		ut[9]  = dbi->bindByIndex(sth, 9, CwtType_LONGLONG);
+		ut[10]  = dbi->bindByIndex(sth, 10, CwtType_ULONGLONG);
 
-		CWT_TEST_FAIL((sth = dbi->prepare(dbh, __sql_insert)));
-
-/*
-
-		dbi->beginBind();
-		dbi->bind(sth, 0, CwtType_SBYTE, &int_val);
-		dbi->finishBind();
-		dbi->releaseBind();
-*/
-
-		ut[0]  = dbi->bindByIndex(sth, 0, CwtType_SBYTE);
-		ut[1]  = dbi->bindByIndex(sth, 1, CwtType_BYTE);
-		ut[2]  = dbi->bindByIndex(sth, 2, CwtType_SHORT);
-		ut[3]  = dbi->bindByIndex(sth, 3, CwtType_USHORT);
-		ut[4]  = dbi->bindByIndex(sth, 4, CwtType_INT);
-		ut[5]  = dbi->bindByIndex(sth, 5, CwtType_UINT);
-		ut[6]  = dbi->bindByIndex(sth, 6, CwtType_LONG);
-		ut[7]  = dbi->bindByIndex(sth, 7, CwtType_ULONG);
-		ut[8]  = dbi->bindByIndex(sth, 8, CwtType_LONGLONG);
-		ut[9]  = dbi->bindByIndex(sth, 9, CwtType_ULONGLONG);
-		ut[10] = dbi->bindByIndex(sth, 10, CwtType_DATE);
-		ut[11] = dbi->bindByIndex(sth, 11, CwtType_TIME);
-		ut[12] = dbi->bindByIndex(sth, 12, CwtType_DATETIME);
-		ut[13] = dbi->bindTextByIndex(sth, 13, 255);
-
-		/* insert first row */
-		{
-			const CWT_CHAR *text = _T("The quick brown fox jumps over the lazy dog");
-			/*
-					size_t   str_length = strNS->strlen(str_data);
-					CWT_CHAR *str_data1 = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
-			*/
-			dbi->setSBYTE    (sth, ut[0], CWT_SBYTE_MAX);
-			dbi->setBYTE     (sth, ut[1], CWT_BYTE_MAX);
-			dbi->setSHORT    (sth, ut[2], CWT_SHORT_MAX);
-			dbi->setUSHORT   (sth, ut[3], CWT_USHORT_MAX);
-			dbi->setINT      (sth, ut[4], CWT_INT_MAX);
-			dbi->setUINT     (sth, ut[5], CWT_UINT_MAX);
-			dbi->setLONG     (sth, ut[6], CWT_LONG_MAX);
-			dbi->setULONG    (sth, ut[7], CWT_ULONG_MAX);
-			dbi->setLONGLONG (sth, ut[8], CWT_LONGLONG_MAX);
-			dbi->setULONGLONG(sth, ut[9], CWT_ULONGLONG_MAX);
-/*
-			utNS->setDATE     (ut[10], cwtDate);
-			utNS->setTIME     (ut[11], cwtTime);
-			utNS->setDATETIME (ut[12], cwtDateTime);
-*/
-			utNS->setTEXT(ut[13], text, strNS->strlen(text));
-		}
+		dbi->setBOOL     (sth, ut[0],  TRUE);
+		dbi->setSBYTE    (sth, ut[1],  CWT_SBYTE_MAX);
+		dbi->setBYTE     (sth, ut[2],  CWT_BYTE_MAX);
+		dbi->setSHORT    (sth, ut[3],  CWT_SHORT_MAX);
+		dbi->setUSHORT   (sth, ut[4],  CWT_USHORT_MAX);
+		dbi->setINT      (sth, ut[5],  CWT_INT_MAX);
+		dbi->setUINT     (sth, ut[6],  CWT_UINT_MAX);
+		dbi->setLONG     (sth, ut[7],  CWT_LONG_MAX);
+		dbi->setULONG    (sth, ut[8],  CWT_ULONG_MAX);
+		dbi->setLONGLONG (sth, ut[9],  CWT_LONGLONG_MAX);
+		dbi->setULONGLONG(sth, ut[10], CWT_ULONGLONG_MAX);
 
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
 		CWT_TEST_OK(dbi->err(dbh) == 0);
 
+		print_info(_T("inserting 1000 records, please wait ..."));
 
-		/* insert second row */
-/*
-		str_data   = str_data1;
-		str_length = strNS->strlen(str_data);
+		for( i = 0; i < 1/*1000*/; i++ ) {
+			if( !dbh->execute(sth) )
+				break;
 
-		sbyte_val   = CWT_SBYTE_MIN;
-		byte_val    = 0;
-		short_val   = CWT_SHORT_MIN;
-		ushort_val  = 0;
-		int_val     = CWT_INT_MIN;
-		uint_val    = 0U;
-		long_val    = CWT_LONG_MIN;
-		ulong_val   = 0UL;
-		llong_val   = CWT_LONGLONG_MIN;
-		ullong_val  = 0ULL;
+			if( i % 50 == 0 ) {
+				printf("%4d records inserted\r", i);
+			}
+		}
+		printf("%4d records inserted\n", i);
 
-		CWT_TEST_FAIL(dbh->bind(sth, 13, CwtType_TEXT, str_data, &str_length, FALSE));
+		CWT_TEST_OK2(i == 1000, _T("1000 records inserted"));
+
+		CWT_TEST_OK(dbi->err(dbh) == 0);
+		dbi->close(sth);
+	}
+
+	{
+		CwtUniType *ut;
+		CWT_TIME cwtm;
+		const CWT_CHAR *sql_insert =
+			_T("INSERT INTO ") TABLE_TIME
+			_T("(time_val) VALUES(?)");
+		const CWT_CHAR *sql_select = _T("SELECT time_val FROM ") TABLE_TIME;
+
+		CWT_TEST_FAIL((sth = dbi->prepare(dbh, sql_insert)));
+		ut = dbi->bindByIndex(sth, 0, CwtType_TIME);
+
+		cwtUtilsNS()->now(&cwtm);
+		CWT_TEST_FAIL(dbi->setTIME(sth, ut, &cwtm));
 
 		CWT_TEST_FAIL(dbh->execute(sth));
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
-		CWT_FREE(str_data);
-
-		CWT_TEST_OK(dbd->err(dbh) == 0);
-
-		dbh->close(sth);
-*/
-
-		/* insert 1000 rows */
-		{
-			int i;
-			for( i = 0; i < 1000; i++ ) {
-				if( !dbh->execute(sth) )
-					break;
-			}
-
-			CWT_TEST_OK2(i == 998, _T("1000 rows inserted"));
-		}
-
+		CWT_TEST_OK(dbi->err(dbh) == 0);
 		dbi->close(sth);
 
 
+		/* Fetching time */
+		CWT_TEST_FAIL((sth = dbi->prepare(dbh, sql_select)));
+		CWT_TEST_FAIL(dbh->execute(sth));
+		CWT_TEST_OK(dbh->size(sth) == 1UL);
+
+		ut = utNS->create();
+		CWT_TEST_FAIL( dbi->fetchNext(sth) );
+		CWT_TEST_FAIL( dbi->fetchColumn(sth, _T("time_val"), ut) );
+
+		utNS->free(ut);
+
+	}
+
+	if( 0 ) {
 #ifdef __COMMENT__
 		/* Make selection */
 		CWT_TEST_FAIL((sth = dbd->prepare(dbh, __sql_select)));
@@ -444,10 +455,6 @@ int main(int argc, char *argv[])
 		}
 
 		dbh->close(sth);
-
-		dbd->freeTime(cwtTime);
-		dbd->freeTime(cwtDate);
-		dbd->freeTime(cwtDateTime);
 #endif
 	}
 

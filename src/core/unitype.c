@@ -437,7 +437,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 			CWT_TIME tm;
 			__strNS->toTIME(s, &tm, NULL, &ok);
 			if( ok ) {
-				__setTIME(ut, &tm, sizeof(CWT_TIME));
+				__setTIME(ut, &tm);
 				return TRUE;
 			}
 		}
@@ -447,7 +447,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 			CWT_TIME tm;
 			__strNS->toDATE(s, &tm, NULL, &ok);
 			if( ok ) {
-				__setDATE(ut, &tm, sizeof(CWT_TIME));
+				__setDATE(ut, &tm);
 				return TRUE;
 			}
 		}
@@ -457,7 +457,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 			CWT_TIME tm;
 			__strNS->toDATETIME(s, &tm, NULL, &ok);
 			if( ok ) {
-				__setDATETIME(ut, &tm, sizeof(CWT_TIME));
+				__setDATETIME(ut, &tm);
 				return TRUE;
 			}
 		}
@@ -946,25 +946,16 @@ static CWT_TIME* __toDATETIME (CwtUniType *ut, CWT_TIME *tm, BOOL *ok)
 
 
 /* Helper function.
- * For CwtType_TEXT and CwtType_CWT_TEXT sz is number of chars.
+ * For CwtType_TEXT sz is number of chars.
  * For other types sz is number of bytes.
  *
  * If sz > 0 buffer will be (re)allocated (if previously did not allocated or buffer size is insufficient)
  * */
 static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size_t sz)
 {
-	size_t nbytes = sz;
-	size_t length = sz;
-
 	CWT_ASSERT(ut);
 
-	if( sz > 0 ) {
-		if( CwtType_TEXT == cwtType ) {
-			nbytes = (sz + 1) * sizeof(CWT_CHAR);
-		}
-	}
-
-	if( ut->capacity < nbytes ) {
+	if( ut->capacity < sz ) {
 		if( ut->capacity > 0 && ut->value.ptr ) {
 			CWT_FREE(ut->value.ptr);
 			ut->value.ptr = NULL;
@@ -973,7 +964,12 @@ static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size
 		}
 	}
 
-	if( nbytes > 0 ) {
+	if( sz > 0 ) {
+		size_t nbytes
+			= (CwtType_TEXT == cwtType)
+			? sz * sizeof(CWT_CHAR)
+			: sz;
+
 		if( !ut->capacity ) {
 			ut->value.ptr = CWT_MALLOCA(char, nbytes);
 			ut->capacity = nbytes;
@@ -981,7 +977,7 @@ static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size
 
 		if( p ) {
 			cwtStrNS()->memcpy(ut->value.ptr, p, nbytes);
-			ut->length = length;
+			ut->length = sz;
 		}
 	}
 

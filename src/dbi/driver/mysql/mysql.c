@@ -121,7 +121,7 @@ static CwtDBI_RC        __stmt_err         (CwtStatement *sth);
 static const CWT_CHAR*  __stmt_strerror    (CwtStatement *sth);
 static BOOL             __stmt_bindByIndex (CwtStatement *sth, size_t index, CwtUniType *ut);
 static inline size_t    __stmt_bindParmsCount(CwtStatement *sth) { CWT_ASSERT(sth); return ((CwtMySqlStatement*)sth)->nbind_params; }
-static BOOL             __stmt_setParm     (CwtUniType *ut, const void *copy, size_t sz);
+static BOOL             __stmt_setParm     (CwtStatement *sth, CwtUniType *ut, const void *copy, size_t sz);
 
 /* local helper functions */
 static BOOL             __mysql_isBlob(int mysqltype);
@@ -1447,9 +1447,9 @@ static BOOL __stmt_fetchNext(CwtStatement *sth)
 	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
 	int rv;
 
-	CWT_ASSERT(msth);
+	CWT_ASSERT(sth);
+	CWT_ASSERT(sth->dbh);
 	CWT_ASSERT(msth->stmt);
-	CWT_ASSERT(msth->__base.dbh);
 
 	rv = mysql_stmt_fetch(msth->stmt);
 
@@ -1510,9 +1510,17 @@ static BOOL __stmt_fetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *ut)
 	CWT_ASSERT(rbind->length);
 
 	if( CwtType_TIME == cwtType || CwtType_DATE == cwtType || CwtType_DATETIME == cwtType ) {
-		CWT_TIME tm;
-		/*__convertTime(&tm, rbind->buffer);*/
-		ok = __utNS->set(ut, cwtType, &tm, 0);
+		CWT_TIME cwtm;
+		MYSQL_TIME *mytm = (MYSQL_TIME*)rbind->buffer;
+
+		cwtm.hour     = mytm->hour;
+		cwtm.min      = mytm->minute;
+		cwtm.sec      = mytm->second;
+		cwtm.sec_part = mytm->second_part;
+		cwtm.year     = mytm->year;
+		cwtm.mon      = mytm->month;
+		cwtm.day      = mytm->day;
+		ok = __utNS->set(ut, cwtType, &cwtm, 0);
 	} else if( CwtType_TEXT == cwtType ) {
 		CWT_CHAR *s = sth->dbh->driver()->decode_n(sth->dbh, (const char*)rbind->buffer, *rbind->length);
 		ok = __utNS->setTEXT(ut, s, *rbind->length);
@@ -1567,14 +1575,17 @@ static BOOL __stmt_bindByIndex (CwtStatement *sth, size_t index, CwtUniType *ut)
 		/* need to correct size of date/time value buffer */
 		__utNS->set(ut, ut->type, NULL, CWT_MAX(sizeof(CWT_TIME), sizeof(MYSQL_TIME)));
 		bind_param->buffer_length = sizeof(MYSQL_TIME);
-		bind_param->length        = 0;
+
 	} else {
 		bind_param->buffer_length = CWT_TYPE_IS_SCALAR(ut->type) ? (ULONG)0 : ut->capacity;
-		bind_param->length        = CWT_TYPE_IS_SCALAR(ut->type) ? (ULONG)0 : &ut->length;
 	}
 
+	bind_param->length        = &ut->length;
 	bind_param->buffer_type   = __mysql_toMysqlType(ut->type);
-	bind_param->buffer        = CWT_TYPE_IS_SCALAR(ut->type) ? &ut->value : ut->value.ptr;
+	bind_param->buffer        = CWT_TYPE_IS_SCALAR(ut->type)
+		? (char*)&ut->value.llong_val
+		: (char*)ut->value.ptr;
+
 	bind_param->is_null       = &msth->is_null[index];
 	bind_param->is_unsigned   = __mysql_isUnsigned(ut->type) ? 1 : 0;
 
@@ -1586,7 +1597,7 @@ static BOOL __stmt_bindByIndex (CwtStatement *sth, size_t index, CwtUniType *ut)
 }
 
 
-static BOOL __stmt_setParm(CwtUniType *ut, const void *copy, size_t sz)
+static BOOL __stmt_setParm(CwtStatement *sth, CwtUniType *ut, const void *copy, size_t sz)
 {
 	BOOL ok = FALSE;
 
@@ -1598,6 +1609,8 @@ static BOOL __stmt_setParm(CwtUniType *ut, const void *copy, size_t sz)
 	case CwtType_DATETIME: {
 			CWT_TIME *cwtm   = (CWT_TIME*)copy;
 			MYSQL_TIME *mytm = (MYSQL_TIME*)ut->value.ptr;
+
+			__strNS->bzero(mytm, sizeof(MYSQL_TIME));
 
 			mytm->time_type = MYSQL_TIMESTAMP_DATETIME;
 
@@ -1622,8 +1635,29 @@ static BOOL __stmt_setParm(CwtUniType *ut, const void *copy, size_t sz)
 		ok = TRUE;
 		break;
 
+	case CwtType_TEXT: {
+			CwtDBIDriver *dbd = sth->dbh->driver();
+			const CWT_CHAR *text = (const CWT_CHAR*)copy;
+			char *encoded;
+			size_t encoded_len;
+
+			encoded = dbd->encode_n(sth->dbh, text, sz);
+			encoded_len = strlen(encoded);
+
+			if( encoded_len > ut->capacity ) {
+				printf_error(_T("string too long"));
+				ok = FALSE;
+			} else {
+				strncpy((char*)ut->value.ptr, encoded, encoded_len);
+				ut->length = encoded_len;
+				ok = TRUE;
+			}
+
+			CWT_FREE(encoded);
+	    }
+		break;
+
 	case CwtType_CHAR:
-	case CwtType_TEXT:
 	case CwtType_BLOB:
 	default:
 		ok = __utNS->set(ut, ut->type, copy, sz);

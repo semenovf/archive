@@ -125,6 +125,40 @@ typedef enum _CwtTypeEnum {
 #define CWT_TYPE_IS_INTEGER(tid) (((tid) >= CwtType_CHAR && (tid) < CwtType_FLOAT) ? TRUE : FALSE)
 #define CWT_TYPE_IS_FLOAT(tid)   (((tid) >= CwtType_FLOAT && (tid) <= CwtType_DOUBLE) ? TRUE : FALSE)
 
+#define sizeof_CwtType_BOOL      sizeof(BOOL)
+#define sizeof_CwtType_CHAR      sizeof(CWT_CHAR)
+#define sizeof_CwtType_SBYTE     sizeof(SBYTE)
+#define sizeof_CwtType_INT8      sizeof(INT8)
+#define sizeof_CwtType_BYTE      sizeof(BYTE)
+#define sizeof_CwtType_UINT8     sizeof(UINT8)
+#define sizeof_CwtType_SHORT     sizeof(SHORT)
+#define sizeof_CwtType_INT16     sizeof(INT16)
+#define sizeof_CwtType_USHORT    sizeof(USHORT)
+#define sizeof_CwtType_UINT16    sizeof(UINT16)
+#define sizeof_CwtType_INT       sizeof(INT)
+#define sizeof_CwtType_INT32     sizeof(INT32)
+#define sizeof_CwtType_UINT      sizeof(UINT)
+#define sizeof_CwtType_UINT32    sizeof(UINT32)
+#define sizeof_CwtType_LONG      sizeof(LONG)
+#define sizeof_CwtType_ULONG     sizeof(ULONG)
+#define sizeof_CwtType_LONGLONG  sizeof(LONGLONG)
+#define sizeof_CwtType_INT64     sizeof(INT64)
+#define sizeof_CwtType_ULONGLONG sizeof(ULONGLONG)
+#define sizeof_CwtType_UINT64    sizeof(UINT64)
+#define sizeof_CwtType_FLOAT     sizeof(float)
+#define sizeof_CwtType_DOUBLE    sizeof(double)
+#define sizeof_CwtType_TEXT      sizeof(CWT_CHAR*)
+#define sizeof_CwtType_BLOB      sizeof(void*)
+#define sizeof_CwtType_TIME      sizeof(CWT_TIME)
+#define sizeof_CwtType_DATE      sizeof(CWT_TIME)
+#define sizeof_CwtType_DATETIME  sizeof(CWT_TIME)
+
+#define CWT_SIZEOF(cwt_type_enum) sizeof_##cwt_type_enum
+EXTERN_C_BEGIN
+DLL_API_EXPORT size_t cwt_sizeof(CwtTypeEnum t);
+EXTERN_C_END
+
+
 #if !(defined(_SIZE_T_DEFINED) || defined(__DJ_size_t) )
 	typedef unsigned int size_t;
 #	define _SIZE_T_DEFINED

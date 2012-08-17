@@ -69,9 +69,9 @@ typedef struct _CwtDBHandler {
 	BOOL            (*execute)       (CwtStatement*);
 	CwtDBI_RC       (*err)           (CwtStatement*);
 	const CWT_CHAR* (*strerror)      (CwtStatement*);
-	BOOL            (*bindByIndex)   (CwtStatement *sth, size_t index, CwtUniType *ut);
-	size_t          (*bindParmsCount)(CwtStatement *sth);
-	BOOL            (*setParm)       (CwtUniType *ut, const void *copy, size_t sz);
+	BOOL            (*bindByIndex)   (CwtStatement*, size_t index, CwtUniType *ut);
+	size_t          (*bindParmsCount)(CwtStatement*);
+	BOOL            (*setParm)       (CwtStatement*, CwtUniType *ut, const void *copy, size_t sz);
 	ULONGLONG       (*rows)          (CwtStatement*);
 	ULONGLONG       (*size)          (CwtStatement*);
 	BOOL            (*fetchNext)     (CwtStatement*);
@@ -164,6 +164,9 @@ typedef struct CwtDBI
 	BOOL            (*setTIME)        (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p);
 	BOOL            (*setDATE)        (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p);
 	BOOL            (*setDATETIME)    (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p);
+
+	BOOL            (*fetchNext)     (CwtStatement*);
+	BOOL            (*fetchColumn)   (CwtStatement*, CWT_CHAR *col, CwtUniType *ut);
 
 	CwtTypeEnum     (*toCwtTypeEnum)  (CwtSqlTypeEnum sqlType);
 	CwtSqlTypeEnum  (*toSqlTypeEnum)  (CwtTypeEnum cwtType);
