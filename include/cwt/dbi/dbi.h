@@ -145,6 +145,7 @@ typedef struct CwtDBI
 	CwtUniType*     (*bindByIndex)    (CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
 	CwtUniType*     (*bindTextByIndex)(CwtStatement *sth, size_t index, size_t length);
 	CwtUniType*     (*bindBlobByIndex)(CwtStatement *sth, size_t index, size_t sz);
+	BOOL            (*setUniType)     (CwtStatement *sth, CwtUniType *ut, CwtUniType *val);
 	BOOL            (*setBOOL)        (CwtStatement *sth, CwtUniType *ut, BOOL b);
 	BOOL            (*setCHAR)        (CwtStatement *sth, CwtUniType *ut, CWT_CHAR ch);
 	BOOL            (*setSBYTE)       (CwtStatement *sth, CwtUniType *ut, SBYTE n);

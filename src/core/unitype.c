@@ -729,7 +729,7 @@ static CWT_CHAR* __toTEXT (CwtUniType *ut, BOOL *ok)
 
 	if( CwtType_TEXT == ut->type ) {
 		if( ut->length > 0 )
-			s = __strNS->strdup((CWT_CHAR*)ut->value.ptr);
+			s = __strNS->strndup((CWT_CHAR*)ut->value.ptr, ut->length);
 		else
 			s = __strNS->strdup(_T(""));
 
@@ -953,9 +953,14 @@ static CWT_TIME* __toDATETIME (CwtUniType *ut, CWT_TIME *tm, BOOL *ok)
  * */
 static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size_t sz)
 {
-	CWT_ASSERT(ut);
+	size_t nbytes;
 
-	if( ut->capacity < sz ) {
+	CWT_ASSERT(ut);
+	nbytes = (CwtType_TEXT == cwtType)
+			? sz * sizeof(CWT_CHAR)
+			: sz;
+
+	if( ut->capacity < nbytes ) {
 		if( ut->capacity > 0 && ut->value.ptr ) {
 			CWT_FREE(ut->value.ptr);
 			ut->value.ptr = NULL;
@@ -964,11 +969,7 @@ static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size
 		}
 	}
 
-	if( sz > 0 ) {
-		size_t nbytes
-			= (CwtType_TEXT == cwtType)
-			? sz * sizeof(CWT_CHAR)
-			: sz;
+	if( nbytes > 0 ) {
 
 		if( !ut->capacity ) {
 			ut->value.ptr = CWT_MALLOCA(char, nbytes);

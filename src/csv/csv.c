@@ -235,7 +235,7 @@ static BOOL __csv_parse(CwtCsvHandler *h, CwtChannel *pchan)
 		/*__baNS->trim(ba);*/
 
 		if( __baNS->size(ba) > 0 ) {
-			str = __codecNS->fromUtf8(__baNS->cstr(ba), __baNS->size(ba)); /* TODO need apply text codec insteed of fromUtf8 call */
+			str = __codecNS->fromUtf8(__baNS->cstr(ba), __baNS->size(ba));
 
 			if( str && __strNS->strlen(str) > 0 ) {
 
@@ -373,6 +373,28 @@ static size_t __csv_header(CwtCsvHandler *h)
 }
 
 
+
+
+/**
+ * @fn void CwtCsvNS::titles(CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
+ *
+ * @param h CSV descriptor
+ * @param argv
+ * @param argc
+ *
+ * @code
+ * CwtCsvNS      *csvNS = cwtCsvNS();
+ * CwtCsvHandler *csv;
+ * size_t         ncolumns;
+ * CWT_CHAR     **titles;
+ * ...
+ * titles = CWT_MALLOCA(CWT_CHAR*, ncolumns);
+ * ncolumns = csvNS->header(csv);
+ * csvNS->titles(csv, titles, ncolumns);
+ * ...
+ * CWT_FREE(titles);
+ * @endcode
+ */
 static void __csv_titles(CwtCsvHandler *h, const CWT_CHAR* argv[], size_t argc)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;

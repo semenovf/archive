@@ -141,7 +141,7 @@ static BOOL __ini_parse(CwtIniHandler h, CwtChannel *pchan)
 
 		baNS->trim(ba);
 		if( baNS->size(ba) > 0 ) {
-			str = codecNS->fromUtf8(baNS->cstr(ba), baNS->size(ba)); /* TODO need apply text codec insteed of fromUtf8 call */
+			str = codecNS->fromUtf8(baNS->cstr(ba), baNS->size(ba));
 
 			if( str && strNS->strlen(str) > 0 ) {
 

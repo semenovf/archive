@@ -155,7 +155,7 @@ DLL_API_EXPORT void cwt_test_crc64(void)
 
 	for( i = 0; i < 256; i++ ) {
 		sprintf(teststr, "Element %d in static crc64_lookup_table[%d] == generated_table[%d]", i, i, i);
-		CWT_TEST_OK2(__crc64_lookup_table[i] == tab[i], "teststr");
+		CWT_TEST_OK2(__crc64_lookup_table[i] == tab[i], _T("teststr"));
 	}
 }
 #endif

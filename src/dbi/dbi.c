@@ -41,6 +41,7 @@ static void            __dbi_close         (CwtStatement *sth);
 static CwtUniType*     __dbi_bind          (CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
 static CwtUniType*     __dbi_bindText      (CwtStatement *sth, size_t index, size_t length);
 static CwtUniType*     __dbi_bindBlob      (CwtStatement *sth, size_t index, size_t sz);
+static BOOL            __dbi_setUniType    (CwtStatement *sth, CwtUniType *ut, CwtUniType *val);
 static BOOL            __dbi_setBOOL       (CwtStatement *sth, CwtUniType *ut, BOOL b)      { return sth->dbh->setParm(sth, ut, &b, 0); }
 static BOOL            __dbi_setCHAR       (CwtStatement *sth, CwtUniType *ut, CWT_CHAR ch) { return sth->dbh->setParm(sth, ut, &ch, 0); }
 static BOOL            __dbi_setSBYTE      (CwtStatement *sth, CwtUniType *ut, SBYTE n)     { return sth->dbh->setParm(sth, ut, &n, 0); }
@@ -126,6 +127,7 @@ static CwtDBI __cwtDBI = {
 	, __dbi_bind
 	, __dbi_bindText
 	, __dbi_bindBlob
+	, __dbi_setUniType
 	, __dbi_setBOOL
 	, __dbi_setCHAR
 	, __dbi_setSBYTE
@@ -438,7 +440,8 @@ static void __dbi_close(CwtStatement *sth)
 	CwtUniTypeNS *utNS = cwtUniTypeNS();
 	size_t nbind_params;
 
-	CWT_ASSERT(sth);
+	if( !sth )
+		return;
 
 	nbind_params = sth->dbh->bindParmsCount(sth);
 
@@ -497,6 +500,33 @@ static CwtUniType* __dbi_bindBlob( CwtStatement *sth, size_t index, size_t sz)
 	return __dbi_bind_helper(sth, index, CwtType_BLOB, sz);
 }
 
+static BOOL __dbi_setUniType(CwtStatement *sth, CwtUniType *ut, CwtUniType *val)
+{
+	CWT_ASSERT(sth);
+	CWT_ASSERT(sth->dbh);
+	CWT_ASSERT(ut);
+	CWT_ASSERT(val);
+
+	switch( val->type ) {
+	case CwtType_TIME:
+	case CwtType_DATE:
+	case CwtType_DATETIME:
+		return sth->dbh->setParm(sth, ut, val->value.ptr, 0);
+
+	case CwtType_TEXT:
+	case CwtType_BLOB:
+		return sth->dbh->setParm(sth, ut, val->value.ptr, val->length);
+
+	case CwtType_FLOAT:
+	case CwtType_DOUBLE:
+		return sth->dbh->setParm(sth, ut, &val->value.double_val, 0);
+
+	default:
+		return sth->dbh->setParm(sth, ut, &val->value.llong_val, 0);
+	}
+
+	return FALSE;
+}
 
 static CwtTypeEnum __toCwtTypeEnum (CwtSqlTypeEnum sqlType)
 {

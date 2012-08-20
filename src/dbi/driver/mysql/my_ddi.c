@@ -32,7 +32,8 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 	CwtStrListNS *slNS     = cwtStrListNS();
 
 	CWT_CHAR *typestr = NULL;
-	BOOL is_ref       = FALSE;
+	/*BOOL is_ref       = FALSE;*/
+	CwtDDIColumn *refcol = NULL;
 
 /*
 	col_name data_type
@@ -50,6 +51,9 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 
 	if( col->pRef ) {
 		int n = (int)slNS->size(ddi->tables);
+
+		refcol = col;
+
 		while( col->pRef && n-- ) {
 			col = col->pRef->pPK;
 		}
@@ -58,7 +62,7 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 			return FALSE;
 		}
 
-		is_ref = TRUE;
+		/*is_ref = TRUE;*/
 	}
 
 	if( col->type != CwtType_UNKNOWN ) {
@@ -85,6 +89,10 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 
 	CWT_FREE(typestr);
 
+	if( refcol )
+		col = refcol;
+
+
 	if( col->is_null ) {
 		stringNS->append(tmpbuf, _T(" DEFAULT NULL"));
 	} else {
@@ -98,7 +106,7 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 		}
 	}
 
-	if( col->autoinc && !is_ref )
+	if( col->autoinc && !refcol )
 		stringNS->append(tmpbuf, _T(" AUTO_INCREMENT"));
 
 	return TRUE;
