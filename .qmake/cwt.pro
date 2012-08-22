@@ -3,6 +3,7 @@ CONFIG  += ordered
 SUBDIRS  =            \
 #    cwt-pcre-dftables \
     cwt               \
+    cwt-csv           \
     cwt-mysql         \
     cwt-pcre          \
     tests/bytearr     \

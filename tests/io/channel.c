@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 		nlines++;
 	}
 
-	CWT_TEST_OK(nlines == 26);
+	CWT_TEST_OK(nlines == 28);
 
 	baNS->clear(ba);
 	chNS->write(pchan0, loremipsum1, strlen(loremipsum1));

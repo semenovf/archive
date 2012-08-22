@@ -147,7 +147,7 @@ static BOOL __ini_parse(CwtIniHandler h, CwtChannel *pchan)
 
 				/* not a comment */
 				if( str[0] != _T('#')) {
-					int rc = slNS->splitAny(tokens, str, CWT_WHITESPACES, CWT_QUOTES_BOTH);
+					int rc = slNS->splitAny(tokens, str, CWT_WHITESPACES, CWT_QUOTES_BOTH, 0);
 					if( rc > 0 ) {
 						CwtIniCallback cb;
 						CWT_CHAR **argv;

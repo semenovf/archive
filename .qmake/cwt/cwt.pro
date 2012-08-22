@@ -14,14 +14,12 @@ DEFINES += CWT_USE_TESTS
 
 unix {
     HEADERS += ../../include/cwt/*.h
-    HEADERS += ../../include/cwt/csv/*.h
     HEADERS += ../../include/cwt/io/*.h
     HEADERS += ../../include/cwt/dbi/*.h
 #    HEADERS += ../../include/cwt/stylex/*.h
     HEADERS += ../../include/cwt/net/*.h
 
     SOURCES += ../../src/core/*.c
-    SOURCES += ../../src/csv/*.c
     SOURCES += ../../src/event/*.c
     SOURCES += ../../src/io/*.c
     SOURCES += ../../src/io/serial/*.c
@@ -45,14 +43,12 @@ win32 {
 
 
     HEADERS += ..\\..\\include\\cwt\\*.h
-    HEADERS += ..\\..\\include\\cwt\\csv\\*.h
     HEADERS += ..\\..\\include\\cwt\\io\\*.h
 #    HEADERS += ..\\..\\include\\cwt\\stylex\\*.h
     HEADERS += ..\\..\\include\\cwt\\dbi\\*.h
     HEADERS += ..\\..\\include\\cwt\\net\\*.h
 
     SOURCES += ..\\..\\src\\core\\*.c
-    SOURCES += ..\\..\\src\\csv\\*.c
     SOURCES += ..\\..\\src\\event\\*.c
     SOURCES += ..\\..\\src\\io\\*.c
     SOURCES += ..\\..\\src\\io\\serial\\*.c

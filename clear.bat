@@ -5,3 +5,5 @@ del /S *.exe
 del /S *.swp
 del /S *.sdf
 del /S *.bak
+del /S Makefile
+del /S makefile

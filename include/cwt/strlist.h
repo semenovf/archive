@@ -10,13 +10,12 @@
 
 #include <cwt/global.h>
 #include <cwt/types.h>
+#include <cwt/str.h>
 #include <cwt/list.h>
 
-
-typedef struct CwtQuotePair {
-	CWT_CHAR begin;
-	CWT_CHAR end;
-} CwtQuotePair;
+/* Flags for split-family functions */
+#define CWT_TRIM_WHITESPACES      0x0001 /* trim bounding whitespaces */
+#define CWT_STRIP_BOUNDING_QUOTES 0x0002 /* strip bounding quotes */
 
 
 typedef CwtList CwtStrList;
@@ -42,9 +41,9 @@ typedef struct CwtStrListNS {
 	CWT_CHAR*       (*catDelim)    (CwtStrList *psl, const CWT_CHAR *delim);
 	int             (*splitSkip)   (CwtStrList *psl, const CWT_CHAR *str
                                    , size_t (*skip)(const CWT_CHAR *tail, size_t tail_len, void *delim)
-                                   , void *delim, const CwtQuotePair *qpairs);
-	int 		    (*split)       (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim, const CwtQuotePair *qpairs);
-	int 		    (*splitAny)    (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims, const CwtQuotePair *qpairs);
+                                   , void *delim, const CwtQuotePair *qpairs, UINT flags);
+	int 		    (*split)       (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim, const CwtQuotePair *qpairs, UINT flags);
+	int 		    (*splitAny)    (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims, const CwtQuotePair *qpairs, UINT flags);
 
 	const CWT_CHAR*	(*at)          (CwtStrList *psl, size_t index);
 	void            (*begin)       (CwtStrList *psl, CwtStrListIterator *iter);
@@ -56,24 +55,8 @@ typedef struct CwtStrListNS {
 /*	CwtStrListElem* (*elem)        (CwtStrListIterator *iter);*/
 	void            (*toArray)     (CwtStrList*, const CWT_CHAR *argv[], size_t *argc);
 	BOOL            (*find)        (CwtStrList*, const CWT_CHAR *s, size_t *index);
-
-	const CwtQuotePair*   (*singleQuotesPair)(void);
-	const CwtQuotePair*   (*doubleQuotesPair)(void);
-	const CwtQuotePair*   (*quotesPair)(void);
-	const CWT_CHAR*       (*whitespaces)(void);
 } CwtStrListNS;
 
-
-#define CWT_QUOTES_SINGLE cwtStrListNS()->singleQuotesPair()
-#define CWT_QUOTES_DOUBLE cwtStrListNS()->doubleQuotesPair()
-#define CWT_QUOTES_BOTH   cwtStrListNS()->quotesPair()
-#define CWT_WHITESPACES   cwtStrListNS()->whitespaces() /* ' ', '\t', '\n', '\v', '\f', '\r' */
-
-/*
-#define CWT_QP_SINGLEQUOTES {{_T('\''), _T('\'')}, {0, 0}}
-#define CWT_QP_DOUBLEQUOTES {{_T('"'), _T('"')}, {0, 0}}
-#define CWT_QP_QUOTES       {{_T('\''), _T('\'')}, {_T('"'), _T('"')}, {0, 0}}
-*/
 
 EXTERN_C_BEGIN
 DLL_API_EXPORT CwtStrListNS* cwtStrListNS();

@@ -26,9 +26,9 @@ static CWT_CHAR*       __cat          (CwtStrList *psl);
 static CWT_CHAR*       __catDelim     (CwtStrList *psl, const CWT_CHAR *delim);
 static int             __splitSkip    (CwtStrList *psl, const CWT_CHAR *str
 		                              , size_t (*skip)(const CWT_CHAR *tail, size_t tail_len, void *delim)
-		                              , void *delim, const CwtQuotePair *qpairs);
-static int  		   __split        (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim, const CwtQuotePair *qpairs);
-static int  		   __splitAny     (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims, const CwtQuotePair *qpairs);
+		                              , void *delim, const CwtQuotePair *qpairs, UINT flags);
+static int  		   __split        (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delim, const CwtQuotePair *qpairs, UINT flags);
+static int  		   __splitAny     (CwtStrList *psl, const CWT_CHAR *s, const CWT_CHAR *delims, const CwtQuotePair *qpairs, UINT flags);
 static const CWT_CHAR* __at           (CwtStrList *psl, size_t i);
 static void            __begin        (CwtStrList *psl, CwtStrListIterator *iter);
 /*static void            __beginFrom    (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);*/
@@ -39,11 +39,6 @@ static const CWT_CHAR* __next         (CwtStrListIterator *iter);
 /*static CwtStrListElem* __elem         (CwtStrListIterator *iter);*/
 static void            __toArray      (CwtStrList *psl, const CWT_CHAR *argv[], size_t *argc);
 static BOOL            __find         (CwtStrList *psl, const CWT_CHAR *s, size_t *index);
-
-static const CwtQuotePair*   __singleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('\''), _T('\'')}, {0, 0}}; return qp; }
-static const CwtQuotePair*   __doubleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('"'), _T('"')}, {0, 0}} ; return qp; }
-static const CwtQuotePair*   __quotesPair(void) { static const CwtQuotePair qp[] = {{_T('\''), _T('\'')}, {_T('"'), _T('"')}, {0, 0}} ; return qp; }
-static const CWT_CHAR*       __whitespaces(void) { static const CWT_CHAR *ws = _T(" \t\n\v\f\r"); return ws; }
 
 static CwtStrListNS __cwtStrListNS = {
 	  __create
@@ -75,11 +70,6 @@ static CwtStrListNS __cwtStrListNS = {
 /*	, __elem*/
 	, __toArray
 	, __find
-
-	, __singleQuotesPair
-	, __doubleQuotesPair
-	, __quotesPair
-	, __whitespaces
 };
 
 static CwtStrNS  *__strNS  = NULL;
@@ -240,16 +230,54 @@ static CWT_CHAR __find_end_quote(CWT_CHAR qbegin, const CwtQuotePair *qpairs)
 }
 
 /*
+ * Helper function for @c splitSkip function
+ *
+ * @param q
+ * @param qpairs
+ * @return
+ */
+static BOOL __is_begin_quote(CWT_CHAR q, const CwtQuotePair *qpairs)
+{
+	const CwtQuotePair *qpair = qpairs;
+
+	while( qpair->begin != 0 ) {
+		if( qpair->begin == q ) {
+			return TRUE;
+		}
+		qpair++;
+	}
+
+	return FALSE;
+}
+
+/*
+static BOOL __is_end_quote(CWT_CHAR q, const CwtQuotePair *qpairs)
+{
+	const CwtQuotePair *qpair = qpairs;
+
+	while( qpair->end != 0 ) {
+		if( qpair->end == q ) {
+			return TRUE;
+		}
+		qpair++;
+	}
+
+	return FALSE;
+}
+*/
+
+
+
+/*
  *  Helper function for skip function
  * */
 static size_t __skip_string_delim(const CWT_CHAR *tail, size_t tail_len, void *delim)
 {
-	CwtStrNS *strNS = cwtStrNS();
 	const CWT_CHAR *delim_str = (const CWT_CHAR*)delim;
-	size_t delim_len = strNS->strlen(delim_str);
+	size_t delim_len = __strNS->strlen(delim_str);
 
 	if( tail[0] == delim_str[0] && tail_len >= delim_len ) {
-		if( tail == strNS->strstr(tail, delim) ) {
+		if( tail == __strNS->strstr(tail, delim) ) {
 			return delim_len;
 		}
 	}
@@ -262,9 +290,8 @@ static size_t __skip_string_delim(const CWT_CHAR *tail, size_t tail_len, void *d
  * */
 static size_t __skip_anychar_delim(const CWT_CHAR *tail, size_t tail_len, void *delim)
 {
-	CwtStrNS *strNS = cwtStrNS();
 	CWT_CHAR *delim_str = (CWT_CHAR*)delim;
-	size_t delim_len = strNS->strlen(delim_str);
+	size_t delim_len = __strNS->strlen(delim_str);
 	size_t i, j;
 	size_t nskip = 0;
 
@@ -286,6 +313,35 @@ static size_t __skip_anychar_delim(const CWT_CHAR *tail, size_t tail_len, void *
 	return nskip;
 }
 
+/*
+ *  Helper function for split function
+ * */
+static void __append_with_flags(CwtStrList *psl, const CWT_CHAR *str, size_t n, const CwtQuotePair *qpairs, UINT flags)
+{
+	size_t i = 0;
+	size_t j = n - 1;
+
+	if( (flags & CWT_TRIM_WHITESPACES) ) {
+		while( i < n && __strNS->isspace(str[i]) )
+			i++;
+
+		while( j > i && __strNS->isspace(str[j]) )
+			j--;
+	}
+
+	if( (flags & CWT_STRIP_BOUNDING_QUOTES) && __is_begin_quote(str[i], qpairs) ) {
+		CWT_CHAR q = __find_end_quote(str[i], qpairs);
+		CWT_ASSERT(q);
+		CWT_ASSERT(q == str[j]);
+		j--;
+		i++;
+	}
+
+	CWT_ASSERT((j - i + 1) >= 0);
+
+	__append(psl, &str[i], j - i + 1);
+}
+
 /**
  * @brief Splits string with delimiters into tokens
  *
@@ -299,7 +355,7 @@ static size_t __skip_anychar_delim(const CWT_CHAR *tail, size_t tail_len, void *
  */
 static int __splitSkip(CwtStrList *psl, const CWT_CHAR *str
 		, size_t (*skip)(const CWT_CHAR *tail, size_t tail_len, void *delim)
-		, void *delim, const CwtQuotePair *qpairs)
+		, void *delim, const CwtQuotePair *qpairs, UINT flags)
 {
 	CwtStrNS *strNS = cwtStrNS();
 
@@ -346,8 +402,10 @@ static int __splitSkip(CwtStrList *psl, const CWT_CHAR *str
 
 		/* may be delimiter begins */
 		skip_len = skip(&str[i], str_len - i, delim);
+
+
 		if( skip_len > 0  ) {
-			__append(psl, &str[ibegin], i - ibegin);
+			__append_with_flags(psl, &str[ibegin], i - ibegin, qpairs, flags);
 			i += skip_len;
 			ibegin = i;
 			i--;
@@ -361,21 +419,21 @@ static int __splitSkip(CwtStrList *psl, const CWT_CHAR *str
 	}
 
 	if( i > ibegin ) {
-		__append(psl, &str[ibegin], i - ibegin);
+		__append_with_flags(psl, &str[ibegin], i - ibegin, qpairs, flags);
 	}
 
 	return (int)__size(psl);
 }
 
-static int __split(CwtStrList *psl, const CWT_CHAR *str, const CWT_CHAR *delim, const CwtQuotePair *qpairs)
+static int __split(CwtStrList *psl, const CWT_CHAR *str, const CWT_CHAR *delim, const CwtQuotePair *qpairs, UINT flags)
 {
-	return __splitSkip(psl, str, __skip_string_delim, (void*)delim, qpairs);
+	return __splitSkip(psl, str, __skip_string_delim, (void*)delim, qpairs, flags);
 }
 
 
-static int __splitAny(CwtStrList *psl, const CWT_CHAR *str, const CWT_CHAR *delims, const CwtQuotePair *qpairs)
+static int __splitAny(CwtStrList *psl, const CWT_CHAR *str, const CWT_CHAR *delims, const CwtQuotePair *qpairs, UINT flags)
 {
-	return __splitSkip(psl, str, __skip_anychar_delim, (void*)delims, qpairs);
+	return __splitSkip(psl, str, __skip_anychar_delim, (void*)delims, qpairs, flags);
 }
 
 

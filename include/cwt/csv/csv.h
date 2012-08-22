@@ -10,6 +10,8 @@
 
 #include <cwt/types.h>
 #include <cwt/io/channel.h>
+#include <cwt/dbi/dbi.h>
+#include <cwt/dbi/ddi.h>
 
 
 typedef struct _CwtCsvHandler {
@@ -30,21 +32,20 @@ typedef struct CwtCsvNS {
 	size_t          (*line)       (CwtCsvHandler*);
 
 	/* Simple API for CSV (SAC) */
-	void            (*begin)   (CwtCsvHandler*, CwtChannel*);
-	size_t          (*header)  (CwtCsvHandler*);
-	void            (*titles)  (CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
-	BOOL            (*next)    (CwtCsvHandler*);
+	void            (*begin)      (CwtCsvHandler*, CwtChannel*);
+	size_t          (*header)     (CwtCsvHandler*);
+	void            (*titles)     (CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
+	BOOL            (*next)       (CwtCsvHandler*);
 	size_t          (*columnsCount) (CwtCsvHandler*);
-	size_t          (*row)     (CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
-	const CWT_CHAR* (*column)  (CwtCsvHandler*, const CWT_CHAR* name);
+	size_t          (*row)        (CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
+	const CWT_CHAR* (*column)     (CwtCsvHandler*, const CWT_CHAR* name);
+
+	BOOL            (*persist)    (CwtCsvHandler*, CwtDBHandler *dbh, CwtDDITable *table);
 } CwtCsvNS;
 
 
 EXTERN_C_BEGIN
 DLL_API_EXPORT CwtCsvNS* cwtCsvNS(void);
 EXTERN_C_END
-
-
-
 
 #endif /* __CWT_CSV_H__ */

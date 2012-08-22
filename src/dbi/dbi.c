@@ -41,6 +41,7 @@ static void            __dbi_close         (CwtStatement *sth);
 static CwtUniType*     __dbi_bind          (CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
 static CwtUniType*     __dbi_bindText      (CwtStatement *sth, size_t index, size_t length);
 static CwtUniType*     __dbi_bindBlob      (CwtStatement *sth, size_t index, size_t sz);
+static BOOL            __dbi_setFromString (CwtStatement *sth, CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s);
 static BOOL            __dbi_setUniType    (CwtStatement *sth, CwtUniType *ut, CwtUniType *val);
 static BOOL            __dbi_setBOOL       (CwtStatement *sth, CwtUniType *ut, BOOL b)      { return sth->dbh->setParm(sth, ut, &b, 0); }
 static BOOL            __dbi_setCHAR       (CwtStatement *sth, CwtUniType *ut, CWT_CHAR ch) { return sth->dbh->setParm(sth, ut, &ch, 0); }
@@ -127,6 +128,7 @@ static CwtDBI __cwtDBI = {
 	, __dbi_bind
 	, __dbi_bindText
 	, __dbi_bindBlob
+	, __dbi_setFromString
 	, __dbi_setUniType
 	, __dbi_setBOOL
 	, __dbi_setCHAR
@@ -194,7 +196,7 @@ static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver
 	const CWT_CHAR *opt;
 
     opts = slNS->create();
-    slNS->splitAny(opts, dsn, _T(":"), CWT_QUOTES_BOTH);
+    slNS->splitAny(opts, dsn, _T(":"), CWT_QUOTES_BOTH, 0);
 
     opt = slNS->at(opts, 0);
     if( scheme && opt )
@@ -499,6 +501,22 @@ static CwtUniType* __dbi_bindBlob( CwtStatement *sth, size_t index, size_t sz)
 {
 	return __dbi_bind_helper(sth, index, CwtType_BLOB, sz);
 }
+
+
+static BOOL __dbi_setFromString(CwtStatement *sth, CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
+{
+	CwtUniTypeNS *utNS = cwtUniTypeNS();
+	CwtUniType *val;
+	BOOL ok = TRUE;
+
+	val = utNS->create();
+	ok = utNS->setFromString(val, type, s);
+	__dbi_setUniType(sth, ut, val);
+	utNS->free(val);
+
+	return ok;
+}
+
 
 static BOOL __dbi_setUniType(CwtStatement *sth, CwtUniType *ut, CwtUniType *val)
 {

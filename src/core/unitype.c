@@ -110,7 +110,7 @@ static CwtUniTypeNS __cwtUniTypeNS = {
 	, __toDATETIME
 };
 
-CwtStrNS *__strNS = NULL;
+static CwtStrNS *__strNS = NULL;
 
 
 DLL_API_EXPORT CwtUniTypeNS* cwtUniTypeNS(void)

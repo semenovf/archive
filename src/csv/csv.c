@@ -59,6 +59,8 @@ static size_t          __csv_columnsCount (CwtCsvHandler*);
 static size_t          __csv_row     (CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
 static const CWT_CHAR* __csv_column  (CwtCsvHandler*, const CWT_CHAR* name);
 
+static BOOL            __csv_persist (CwtCsvHandler*, CwtDBHandler *dbh, CwtDDITable *table);
+
 /* helper functions */
 static void          __csv_destroyCsvData(CsvData*);
 
@@ -81,6 +83,8 @@ static CwtCsvNS __cwtCsvNS = {
 	, __csv_columnsCount
 	, __csv_row
 	, __csv_column
+
+	, __csv_persist
 };
 
 static CwtStrNS       *__strNS    = NULL;
@@ -239,35 +243,33 @@ static BOOL __csv_parse(CwtCsvHandler *h, CwtChannel *pchan)
 
 			if( str && __strNS->strlen(str) > 0 ) {
 
-				/* not a comment */
-				if( str[0] != _T('#')) {
-					int rc = __slNS->split(tokens, str, ph->separator, CWT_QUOTES_BOTH);
+				int rc = __slNS->split(tokens, str, ph->separator, CWT_QUOTES_BOTH
+						, CWT_TRIM_WHITESPACES | CWT_STRIP_BOUNDING_QUOTES);
 
-					if( rc > 0 ) {
-						CWT_CHAR **argv;
-						size_t argc = 0;
+				if( rc > 0 ) {
+					CWT_CHAR **argv;
+					size_t argc = 0;
 
-						argc = __slNS->size(tokens);
+					argc = __slNS->size(tokens);
 
-						if( argc <= ph->max_tokens ) {
-							argv = CWT_MALLOCA(CWT_CHAR*, argc);
+					if( argc <= ph->max_tokens ) {
+						argv = CWT_MALLOCA(CWT_CHAR*, argc);
 
-							__slNS->toArray(tokens, argv, &argc);
+						__slNS->toArray(tokens, argv, &argc);
 
-							if( ph->on_row ) {
-								ok = ph->on_row(h, argv, argc);
-							}
-						} else {
-							__csv_error(h, _Tr("maximum tokens in row are exceeded"));
-							ok = FALSE;
+						if( ph->on_row ) {
+							ok = ph->on_row(h, argv, argc);
 						}
-
-						CWT_FREE(argv);
-					} else if( rc < 0 ) { /* quotes are unbalanced */
-						/*__csv_error(h, _Tr("quotes are unbalanced"));*/
-						/*ok = FALSE;*/
-						quoted = TRUE;
+					} else {
+						__csv_error(h, _Tr("maximum tokens in row are exceeded"));
+						ok = FALSE;
 					}
+
+					CWT_FREE(argv);
+				} else if( rc < 0 ) { /* quotes are unbalanced */
+					/*__csv_error(h, _Tr("quotes are unbalanced"));*/
+					/*ok = FALSE;*/
+					quoted = TRUE;
 				}
 			}
 		}
@@ -388,8 +390,8 @@ static size_t __csv_header(CwtCsvHandler *h)
  * size_t         ncolumns;
  * CWT_CHAR     **titles;
  * ...
- * titles = CWT_MALLOCA(CWT_CHAR*, ncolumns);
  * ncolumns = csvNS->header(csv);
+ * titles = CWT_MALLOCA(CWT_CHAR*, ncolumns);
  * csvNS->titles(csv, titles, ncolumns);
  * ...
  * CWT_FREE(titles);
@@ -460,7 +462,8 @@ static BOOL __csv_next(CwtCsvHandler *h)
 
 				/* not a comment */
 				if( str[0] != _T('#')) {
-					int rc = __slNS->split(ph->csvData.tokens, str, ph->separator, CWT_QUOTES_BOTH);
+					int rc = __slNS->split(ph->csvData.tokens, str, ph->separator, CWT_QUOTES_BOTH
+							, CWT_TRIM_WHITESPACES | CWT_STRIP_BOUNDING_QUOTES);
 
 					if( rc > 0 ) {
 						if( __slNS->size(ph->csvData.tokens) > ph->max_tokens ) {
@@ -569,5 +572,124 @@ static const CWT_CHAR* __csv_column(CwtCsvHandler *h, const CWT_CHAR* name)
 			return __slNS->at(ph->csvData.tokens, *index);
 		}
 	}
+
+	{
+		CwtString    *tmpbuf;
+		tmpbuf = __stringNS->create();
+		__stringNS->sprintf(tmpbuf, _Tr("'%s': invalid column specified"), name);
+		__cwtCsvNS.error(h, __stringNS->cstr(tmpbuf));
+		__stringNS->free(tmpbuf);
+	}
 	return NULL;
+}
+
+static BOOL __csv_persist (CwtCsvHandler *csv, CwtDBHandler *dbh, CwtDDITable *table)
+{
+	CwtUniTypeNS *utNS = cwtUniTypeNS();
+	CwtDBI       *dbi  = cwtDBI();
+
+	BOOL ok = TRUE;
+	size_t ncolumns;
+	CwtString    *tmpbuf = NULL;
+	CWT_CHAR    **titles;
+	CwtString    *sql;
+	CwtStatement *sth;
+	CwtUniType  **uts;
+	size_t i;
+
+	ncolumns = __cwtCsvNS.header(csv);
+
+	if( !ncolumns )
+		return FALSE;
+
+	titles = CWT_MALLOCA(CWT_CHAR*, ncolumns);
+	uts    = CWT_MALLOCA(CwtUniType*, ncolumns);
+	tmpbuf = __stringNS->create();
+
+	__cwtCsvNS.titles(csv, titles, ncolumns);
+	sql = __stringNS->create();
+
+	/* Prepare statement for INSERT VALUES */
+	__stringNS->append(sql, _T("INSERT INTO "));
+	__stringNS->append(sql, table->name);
+	__stringNS->appendChar(sql, _T('('));
+	__stringNS->append(sql, titles[0]);
+	for( i = 1; i < ncolumns; i++ ) {
+		__stringNS->appendChar(sql, _T(','));
+		__stringNS->append(sql, titles[i]);
+	}
+
+	__stringNS->append(sql, _T(") VALUES("));
+	__stringNS->appendChar(sql, _T('?'));
+	for( i = 1; i < ncolumns; i++ ) {
+		__stringNS->append(sql, _T(",?"));
+	}
+	__stringNS->appendChar(sql, _T(')'));
+
+	sth = dbi->prepare(dbh, __stringNS->cstr(sql));
+
+	if( !sth ) {
+		ok = FALSE;
+	} else {
+		CwtUniType *ut = utNS->create();
+
+		/* Bind values */
+		for( i = 0; i < ncolumns; i++ ) {
+			CwtDDIColumn   *col;
+			col = dbi->findColumn(table, titles[i]);
+
+			if( !col ) {
+				__stringNS->sprintf(tmpbuf, _Tr("'%s': column not found"), titles[i]);
+				__cwtCsvNS.error(csv, __stringNS->cstr(tmpbuf));
+				ok = FALSE;
+				break;
+			}
+
+			if(col->type == CwtType_TEXT)
+				uts[i] = dbi->bindTextByIndex(sth, i, 256);
+			else if(col->type == CwtType_BLOB)
+				uts[i] = dbi->bindBlobByIndex(sth, i, 256);
+			else
+				uts[i] = dbi->bindByIndex(sth, i, col->type);
+		}
+
+
+		while( ok && __cwtCsvNS.next(csv) ) {
+			if( __cwtCsvNS.columnsCount(csv) != ncolumns ) {
+				__cwtCsvNS.error(csv, _T("invalid number of columns"));
+				ok = FALSE;
+				break;
+			}
+
+			for( i = 0; i < ncolumns; i++ ) {
+				const CWT_CHAR *value;
+
+				value = __cwtCsvNS.column(csv, titles[i]);
+
+				ok = utNS->setFromString(ut, uts[i]->type, value);
+				if( ok ) {
+					ok = dbi->setUniType(sth, uts[i], ut);
+				}
+
+				if( !ok ) {
+					__stringNS->sprintf(tmpbuf, _Tr("invalid value for column '%s'"), titles[i]);
+					__cwtCsvNS.error(csv, __stringNS->cstr(tmpbuf));
+					break;
+				}
+			}
+
+			if( ok )
+				ok = dbh->execute(sth);
+		}
+
+		utNS->free(ut);
+	}
+
+	__stringNS->free(sql);
+	__stringNS->free(tmpbuf);
+	CWT_FREE(titles);
+	CWT_FREE(uts);
+	dbi->close(sth);
+
+	return ok;
 }

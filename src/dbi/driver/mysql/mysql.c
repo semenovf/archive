@@ -13,10 +13,6 @@
 #endif
 #include <mysql/my_sys.h>
 #include <mysql/mysql.h>
-#include <cwt/txtcodec.h>
-#include <cwt/dbi/dbi.h>
-#include <cwt/hashtab.h>
-
 
 /* Macros INT8 INT16 and INT32 defined in my_global.h are conflicts with same data types
  * Avoid it.
@@ -33,11 +29,14 @@
 #	undef INT32
 #endif
 
+#include <cwt/txtcodec.h>
+#include <cwt/dbi/dbi.h>
+#include <cwt/hashtab.h>
 #include <cwt/logger.h>
 #include <cwt/string.h>
 #include <cwt/strlist.h>
-#include <cwt/str.h>
-#include <string.h>
+/*#include <cwt/str.h>*/
+/*#include <string.h>*/
 
 
 #define __LOG_PREFIX _T("mysql: ")
@@ -530,7 +529,7 @@ CwtDBHandler* __dbd_connect(const CWT_CHAR *driverDSN
 
         /* Parse driver DSN */
         opts = strlistNS->create();
-        strlistNS->split(opts, driverDSN, _T(";"), NULL);
+        strlistNS->split(opts, driverDSN, _T(";"), NULL, 0);
         strlistNS->begin(opts, &itOpts);
 
         ok = TRUE;

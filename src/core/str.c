@@ -15,6 +15,14 @@
 #include <string.h>
 #include <stdarg.h>
 
+/**
+ * @fn CwtStrNS::strtod(const CWT_CHAR *s, CWT_CHAR **endptr)
+ *
+ * @note The radix is defined by the program's locale, category LC_NUMERIC.
+ * In a locale where the radix is not defined or in the POSIX locale,
+ * the radix defaults to a period (.).
+ */
+
 const CWT_CHAR* __CONST_EMPTYSTR = _T("");
 const CWT_CHAR* __CONST_NULLSTR  = _T("<null>");
 CWT_CHAR*       __errorstr = NULL; /* TODO must be freed when program finishing */
@@ -104,6 +112,11 @@ static void      __cwt_toDateTime   (const CWT_CHAR *str, CWT_TIME *tm, const CW
 static const CWT_CHAR* __cwt_constEmptyStr(void);
 static const CWT_CHAR* __cwt_constNullStr(void);
 
+static const CwtQuotePair*   __singleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('\''), _T('\'')}, {0, 0}}; return qp; }
+static const CwtQuotePair*   __doubleQuotesPair(void) { static const CwtQuotePair qp[] = {{_T('"'), _T('"')}, {0, 0}} ; return qp; }
+static const CwtQuotePair*   __quotesPair(void) { static const CwtQuotePair qp[] = {{_T('\''), _T('\'')}, {_T('"'), _T('"')}, {0, 0}} ; return qp; }
+static const CWT_CHAR*       __whitespaces(void) { static const CWT_CHAR *ws = _T(" \t\n\v\f\r"); return ws; }
+
 
 static CwtStrNS __cwtStrNS = {
 	  __cwt_strerror
@@ -174,6 +187,11 @@ static CwtStrNS __cwtStrNS = {
 
 	, __cwt_constEmptyStr
 	, __cwt_constNullStr
+
+	, __singleQuotesPair
+	, __doubleQuotesPair
+	, __quotesPair
+	, __whitespaces
 };
 
 
@@ -504,3 +522,16 @@ static const CWT_CHAR* __cwt_constNullStr(void)
 {
 	return __CONST_NULLSTR;
 }
+
+#ifdef CWT_CC_MSC
+DLL_API_EXPORT char* strndup(const char *s, size_t n)
+{
+	char *s0 = NULL;
+
+	s0 = CWT_MALLOCA(char, n+1);
+	strncpy(s0, s, n);
+	s0[n] = (char)0;
+
+	return s0;
+}
+#endif
