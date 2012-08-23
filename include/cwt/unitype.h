@@ -13,6 +13,7 @@
 typedef struct _CwtUniType {
 	union {
 		LONGLONG  llong_val;
+		float     float_val;
         double    double_val;
         void     *ptr;
 	} value;

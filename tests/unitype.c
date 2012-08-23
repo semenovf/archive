@@ -174,9 +174,9 @@ void test_00(void)
 	__utNS->toFLOAT(float_val, &ok);
 	CWT_TEST_OK2(ok, _T("float_val == CWT_FLOAT_MAX"));
 
-	__utNS->setDOUBLE(double_val, CWT_FLOAT_MAX);
+	__utNS->setDOUBLE(double_val, CWT_DOUBLE_MAX);
 	__utNS->toDOUBLE(double_val, &ok);
-	CWT_TEST_OK2(ok, _T("double_val == CWT_FLOAT_MAX"));
+	CWT_TEST_OK2(ok, _T("double_val == CWT_DOUBLE_MAX"));
 
 	{
 		const CWT_CHAR *text_en = _T("The quick brown fox jumps over the lazy dog");
@@ -317,8 +317,8 @@ void test_01(void)
 	__utNS->setFLOAT(uval, CWT_FLOAT_MAX);
 	CWT_TEST_OK(__utNS->toFLOAT(uval, &ok) == CWT_FLOAT_MAX && ok);
 
-	__utNS->setDOUBLE(uval, CWT_FLOAT_MAX);
-	CWT_TEST_OK(__utNS->toDOUBLE(uval, &ok) == CWT_FLOAT_MAX && ok);
+	__utNS->setDOUBLE(uval, CWT_DOUBLE_MAX);
+	CWT_TEST_OK(__utNS->toDOUBLE(uval, &ok) == CWT_DOUBLE_MAX && ok);
 
 	{
 		const CWT_CHAR *text_en = _T("The quick brown fox jumps over the lazy dog");
@@ -513,10 +513,91 @@ void test_bool(void)
 	__utNS->free(uval);
 }
 
-/* TODO need to implement */
-void test_scalar(void)
-{
 
+void test_integer(void)
+{
+	BOOL ok;
+	SHORT    s = 10;
+	INT      d = 10;
+	LONG     ld = 10L;
+	LONGLONG lld = 10LL;
+	CwtUniType *short_val  = __utNS->create();
+	CwtUniType *int_val  = __utNS->create();
+
+	__utNS->setSHORT(short_val, s);
+	CWT_TEST_OK(__utNS->toSHORT(short_val, &ok) == s && ok);
+
+	__utNS->setFromString(short_val, CwtType_SHORT, _T("10"));
+	CWT_TEST_OK(__utNS->toINT(short_val, &ok) == 10 && ok);
+
+	__utNS->set(short_val, CwtType_SHORT, &ld, 0);
+	CWT_TEST_OK(__utNS->toSHORT(short_val, &ok) == (SHORT)ld && ok);
+
+	__utNS->set(short_val, CwtType_SHORT, &lld, 0);
+	CWT_TEST_OK(__utNS->toSHORT(short_val, &ok) == (SHORT)lld && ok);
+
+
+	__utNS->setINT(int_val, d);
+	CWT_TEST_OK(__utNS->toINT(int_val, &ok) == d && ok);
+
+	__utNS->setFromString(int_val, CwtType_INT, _T("10"));
+	CWT_TEST_OK(__utNS->toINT(int_val, &ok) == 10 && ok);
+
+	__utNS->set(int_val, CwtType_INT, &ld, 0);
+	CWT_TEST_OK(__utNS->toINT(int_val, &ok) == (INT)ld && ok);
+
+	__utNS->set(int_val, CwtType_INT, &lld, 0);
+	CWT_TEST_OK(__utNS->toINT(int_val, &ok) == (INT)lld && ok);
+
+	__utNS->free(short_val);
+	__utNS->free(int_val);
+}
+
+void test_float(void)
+{
+	BOOL ok;
+	double d = 10.0f;
+	float  f = 10.0f;
+	double *pd;
+
+	CwtUniType *float_val  = __utNS->create();
+	CwtUniType *double_val = __utNS->create();
+
+
+	pd = &d;
+	CWT_TEST_OK(*(float*)pd == f);
+	CWT_TEST_OK(*pd == d);
+
+	__utNS->setFLOAT(float_val, f);
+	CWT_TEST_OK(__utNS->toFLOAT(float_val, &ok) == f && ok);
+
+	__utNS->setFromString(float_val, CwtType_FLOAT, _T("10.0"));
+	CWT_TEST_OK(__utNS->toFLOAT(float_val, &ok) == 10.0f && ok);
+
+	__utNS->set(float_val, CwtType_FLOAT, &f, 0);
+	CWT_TEST_OK(__utNS->toFLOAT(float_val, &ok) == f && ok);
+
+	/* Failed */
+	__utNS->set(float_val, CwtType_FLOAT, (float*)&d, 0);
+	CWT_TEST_OK(__utNS->toFLOAT(float_val, &ok) == (float)d && ok);
+
+
+	__utNS->setDOUBLE(double_val, d);
+	CWT_TEST_OK(__utNS->toDOUBLE(double_val, &ok) == f && ok);
+
+	__utNS->setFromString(double_val, CwtType_DOUBLE, _T("10.0"));
+	CWT_TEST_OK(__utNS->toDOUBLE(double_val, &ok) == 10.0f && ok);
+
+	__utNS->set(double_val, CwtType_DOUBLE, &d, 0);
+	CWT_TEST_OK(__utNS->toDOUBLE(double_val, &ok) == d && ok);
+
+	/* Failed */
+	__utNS->set(double_val, CwtType_DOUBLE, (double*)&f, 0);
+	CWT_TEST_OK(__utNS->toDOUBLE(double_val, &ok) == (double)f && ok);
+
+
+	__utNS->free(float_val);
+	__utNS->free(double_val);
 }
 
 /* TODO need to implement */
@@ -547,13 +628,14 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(145);
+	CWT_BEGIN_TESTS(152);
 
 	test_size_of();
 	test_00();
 	test_01();
 	test_bool();
-	test_scalar();
+	test_integer();
+	test_float();
 	test_text();
 	test_blob();
 	test_time();

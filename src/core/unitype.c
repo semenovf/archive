@@ -187,6 +187,9 @@ static BOOL __canCast(CwtUniType *ut, CwtTypeEnum type)
  * @param ut unitype value
  * @param type value type
  * @param copy value
+ *
+ * @note for CwtType_FLOAT and CwtType_DOUBLE types @c copy must points to float and
+ * double values. There is no correct way to cast float* to double* and vice versa.
  */
 static BOOL __setType(CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz)
 {
@@ -260,7 +263,7 @@ static BOOL __setType(CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t
 		ut->value.llong_val = *((ULONGLONG*)copy);
 		break;
 	case CwtType_FLOAT:
-		ut->value.double_val = *((float*)copy);
+		ut->value.float_val = *((float*)copy);
 		break;
 	case CwtType_DOUBLE:
 		ut->value.double_val = *((double*)copy);
@@ -498,7 +501,10 @@ static BOOL __toBOOL(CwtUniType *ut, BOOL *ok)
 	if( CWT_TYPE_IS_INTEGER(ut->type) )
 		return ut->value.llong_val ? TRUE : FALSE;
 
-	if( CWT_TYPE_IS_FLOAT(ut->type) )
+	if( CwtType_FLOAT == ut->type )
+		return ut->value.float_val != 0.0f ? TRUE : FALSE;
+
+	if( CwtType_DOUBLE == ut->type )
 		return ut->value.double_val != 0.0f ? TRUE : FALSE;
 
 	if( CwtType_TEXT == ut->type ) {
@@ -527,42 +533,13 @@ static BOOL __toBOOL(CwtUniType *ut, BOOL *ok)
 
 
 /**
- * @fn CwtUniTypeNS::toChar(CwtUniType *ut)
+ * @fn CwtUniTypeNS::toCHAR(CwtUniType *ut)
  *
- * @brief Returns the unitype as a @c char.
- *
- * Returns the unitype as a @c char if the unitype has type @c char, @c SBYTE or @c BYTE.
- * Returns the unitype as a @c char if the unitype is scalar in unsigned range from 0 to 255;
- * otherwise returns null-char.
+ * @brief Returns the unitype as a @c CWT_CHAR.
  *
  * @param ut
  * @return
  */
-/*
-static char __toChar(CwtUniType *ut, BOOL *ok)
-{
-	CWT_ASSERT(ut);
-
-	if( ok )
-		*ok = TRUE;
-
-	if( CwtType_CHAR == ut->type || CwtType_SBYTE == ut->type || CwtType_BYTE == ut->type )
-		return (char)ut->value.llong_val;
-
-	if( CWT_TYPE_IS_INTEGER(ut->type)
-			&& ut->value.llong_val >= CWT_CHAR_MIN
-			&& ut->value.llong_val <= CWT_CHAR_MAX )
-		return (char)ut->value.llong_val;
-
-	if( ok )
-		*ok = FALSE;
-
-	return (char)0;
-}
-*/
-
-
-
 static inline CWT_CHAR __toCHAR(CwtUniType *ut, BOOL *ok)
 {
 	CWT_ASSERT(ut);
@@ -661,10 +638,7 @@ static float __toFLOAT(CwtUniType *ut, BOOL *ok)
 		*ok = TRUE;
 
 	if( CwtType_FLOAT == ut->type ) {
-		double d = ut->value.double_val;
-		if( ut->value.double_val >= (double)CWT_FLOAT_MIN
-				&& ut->value.double_val <= (double)CWT_FLOAT_MAX )
-			return (float)ut->value.double_val;
+		return ut->value.float_val;
 	} else if( CWT_TYPE_IS_INTEGER(ut->type) ) {
 		return (float)ut->value.llong_val;
 	} else if( CwtType_TEXT == ut->type && ut->length > 0) {

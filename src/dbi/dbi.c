@@ -536,6 +536,8 @@ static BOOL __dbi_setUniType(CwtStatement *sth, CwtUniType *ut, CwtUniType *val)
 		return sth->dbh->setParm(sth, ut, val->value.ptr, val->length);
 
 	case CwtType_FLOAT:
+		return sth->dbh->setParm(sth, ut, &val->value.float_val, 0);
+
 	case CwtType_DOUBLE:
 		return sth->dbh->setParm(sth, ut, &val->value.double_val, 0);
 

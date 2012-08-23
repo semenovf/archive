@@ -4,6 +4,16 @@
 #include <cwt/str.h>
 #include <cwt/string.h>
 
+static CwtLoggerNS __cwtLoggerNS = {
+	  printf_trace
+	, printf_debug
+	, printf_info
+	, printf_warn
+	, printf_error
+	, set_printer
+	, set_default_printers
+};
+
 struct _LOGGER_CONTEXT {
 	CWT_CHAR* prefix;
 	CwtString *sbuf;
@@ -23,6 +33,19 @@ static CWT_CHAR* __default_prefix[LOGGER_COUNT] = {
 	, _Tr("Warn : ")
 	, _Tr("Error: ")
 };
+
+static BOOL __is_logger_init = FALSE;
+
+
+DLL_API_EXPORT CwtLoggerNS* cwtLoggerNS(void)
+{
+	if( !__is_logger_init ) {
+		init_loggers();
+		__is_logger_init = TRUE;
+	}
+	return &__cwtLoggerNS;
+}
+
 
 void set_printer(LOGGER_TYPE type
 	, void (*printer)(const CWT_CHAR* msg)

@@ -329,6 +329,8 @@ int main(int argc, char *argv[])
 	{
 		CwtUniType *ut;
 		CWT_TIME cwtm;
+		CWT_TIME res;
+		BOOL ok;
 		const CWT_CHAR *sql_insert =
 			_T("INSERT INTO ") TABLE_TIME
 			_T("(time_val) VALUES(?)");
@@ -354,6 +356,11 @@ int main(int argc, char *argv[])
 		ut = utNS->create();
 		CWT_TEST_FAIL( dbi->fetchNext(sth) );
 		CWT_TEST_FAIL( dbi->fetchColumn(sth, _T("time_val"), ut) );
+
+		CWT_TEST_OK(utNS->toTIME(ut, &res, &ok) && ok);
+		CWT_TEST_OK(res.hour == cwtm.hour);
+		CWT_TEST_OK(res.min  == cwtm.min);
+		CWT_TEST_OK(res.sec  == cwtm.sec);
 
 		utNS->free(ut);
 

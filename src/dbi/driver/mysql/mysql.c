@@ -1349,8 +1349,8 @@ static BOOL __stmt_execute(CwtStatement *sth)
 	if( msth->nrbind_params > 0 ) {
 		UINT i;
 
-		msth->rbind_map = __htNS->create(__htNS->strHash, __htNS->streq, NULL/*cwtFree*/, NULL);
-		msth->meta_map = __htNS->create(__htNS->strHash, __htNS->streq, NULL/*cwtFree*/, NULL);
+		msth->rbind_map = __htNS->create(__htNS->strHash, __htNS->streq, cwtFree, NULL);
+		msth->meta_map = __htNS->create(__htNS->strHash, __htNS->streq, cwtFree, NULL);
 
 		for( i = 0; i < msth->nrbind_params; i++ ) {
 			MYSQL_FIELD *field = mysql_fetch_field_direct(msth->meta, i);
@@ -1381,9 +1381,10 @@ static BOOL __stmt_execute(CwtStatement *sth)
 				/*printf_debug(_T("Buffer allocated: 0x%p [i=%u][sz=%lu]"), msth->rbind_params[i].buffer, i, field->length + 1);*/
 			}
 
-			CWT_ASSERT(__htNS->insert(msth->rbind_map, field->name, &msth->rbind_params[i]));
-			CWT_ASSERT(__htNS->insert(msth->meta_map,  field->name, field));
+			CWT_ASSERT(__htNS->insert(msth->rbind_map, __dbd_decode(sth->dbh, field->name), &msth->rbind_params[i]));
+			CWT_ASSERT(__htNS->insert(msth->meta_map,  __dbd_decode(sth->dbh, field->name), field));
 
+			/*CWT_ASSERT(__htNS->lookup(msth->rbind_map, __dbd_decode(sth->dbh, field->name)));*/
 		}
 
 		if( mysql_stmt_bind_result(__STH(sth), msth->rbind_params) != 0 ) {
@@ -1475,7 +1476,7 @@ static BOOL __stmt_fetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *ut)
 	MYSQL_BIND *rbind;
 	MYSQL_FIELD *field;
 	CwtTypeEnum cwtType;
-	char *colname;
+	/*char *colname;*/
 	BOOL ok = FALSE;
 
 	CWT_ASSERT(msth);
@@ -1484,10 +1485,10 @@ static BOOL __stmt_fetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *ut)
 	CWT_ASSERT(msth->meta_map);
 	CWT_ASSERT(ut);
 
-	colname = __dbd_encode(msth->__base.dbh, col);
-	rbind = (MYSQL_BIND*)__htNS->lookup(msth->rbind_map, colname);
-	field = (MYSQL_FIELD*)__htNS->lookup(msth->meta_map, colname);
-	CWT_FREE(colname);
+	/*colname = __dbd_encode(msth->__base.dbh, col);*/
+	rbind = (MYSQL_BIND*)__htNS->lookup(msth->rbind_map, col /*colname*/);
+	field = (MYSQL_FIELD*)__htNS->lookup(msth->meta_map, col /*colname*/);
+	/*CWT_FREE(colname);*/
 
 	if( !rbind ) {
 		printf_error(_T("column '%s' not found"), col);
@@ -1519,7 +1520,7 @@ static BOOL __stmt_fetchColumn(CwtStatement *sth, CWT_CHAR *col, CwtUniType *ut)
 		cwtm.year     = mytm->year;
 		cwtm.mon      = mytm->month;
 		cwtm.day      = mytm->day;
-		ok = __utNS->set(ut, cwtType, &cwtm, 0);
+		ok = __utNS->set(ut, cwtType, &cwtm, sizeof(CWT_TIME));
 	} else if( CwtType_TEXT == cwtType ) {
 		CWT_CHAR *s = sth->dbh->driver()->decode_n(sth->dbh, (const char*)rbind->buffer, *rbind->length);
 		ok = __utNS->setTEXT(ut, s, *rbind->length);
