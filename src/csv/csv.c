@@ -22,6 +22,12 @@
 static CWT_CHAR *__csv_default_separator = _T(",");
 
 
+typedef struct _CsvColumn {
+	size_t index;
+	BOOL (*validate)(const CWT_CHAR *val);
+} CsvColumn;
+
+
 /* Temporary data for row-by-row parsing */
 typedef struct _CsvData {
 	CwtByteArray   *ba;
@@ -60,10 +66,10 @@ static size_t          __csv_row     (CwtCsvHandler*, const CWT_CHAR* argv[], si
 static const CWT_CHAR* __csv_column  (CwtCsvHandler*, const CWT_CHAR* name);
 
 static BOOL            __csv_persist (CwtCsvHandler*, CwtDBHandler *dbh, CwtDDITable *table);
+static BOOL            __csv_setValidator (CwtCsvHandler*, const CWT_CHAR* name, BOOL (*)(const CWT_CHAR*));
 
 /* helper functions */
 static void          __csv_destroyCsvData(CsvData*);
-
 
 static CwtCsvNS __cwtCsvNS = {
 	  __csv_create
@@ -85,6 +91,8 @@ static CwtCsvNS __cwtCsvNS = {
 	, __csv_column
 
 	, __csv_persist
+
+	, __csv_setValidator
 };
 
 static CwtStrNS       *__strNS    = NULL;
@@ -362,12 +370,13 @@ static size_t __csv_header(CwtCsvHandler *h)
 		__slNS->begin(ph->csvData.tokens, &it);
 
 		while( __slNS->hasMore(&it) ) {
-			CWT_CHAR *column = __strNS->strdup(__slNS->next(&it));
-			size_t *index = CWT_MALLOC(size_t);
+			CsvColumn *column = CWT_MALLOC(CsvColumn);
+			CWT_CHAR *key = __strNS->strdup(__slNS->next(&it));
 
-			*index = i++;
+			column->index = i++;
+			column->validate = NULL;
 
-			CWT_ASSERT(__htNS->insert(ph->csvData.columns, column, index));
+			CWT_ASSERT(__htNS->insert(ph->csvData.columns, key, column));
 		}
 		return __slNS->size(ph->csvData.tokens);
 	}
@@ -561,26 +570,36 @@ static size_t __csv_row(CwtCsvHandler *h, const CWT_CHAR* argv[], size_t argc)
 static const CWT_CHAR* __csv_column(CwtCsvHandler *h, const CWT_CHAR* name)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
-	size_t *index;
+	CsvColumn  *column;
+	CwtString  *tmpbuf = NULL;
+	const CWT_CHAR *val = NULL;
 
 	CWT_ASSERT(h);
 
-	index = __htNS->lookup(ph->csvData.columns, (void*)name);
+	column = __htNS->lookup(ph->csvData.columns, (void*)name);
 
-	if( index ) {
-		if( *index < __slNS->size(ph->csvData.tokens) ) {
-			return __slNS->at(ph->csvData.tokens, *index);
+
+	if( column && column->index < __slNS->size(ph->csvData.tokens) ) {
+		val = __slNS->at(ph->csvData.tokens, column->index);
+
+		if( column->validate ) {
+			if( !column->validate(val) ) {
+				tmpbuf = __stringNS->create();
+				__stringNS->sprintf(tmpbuf, _Tr("'%s': bad value"), name);
+				__cwtCsvNS.error(h, __stringNS->cstr(tmpbuf));
+				val = NULL;
+			}
 		}
-	}
-
-	{
-		CwtString    *tmpbuf;
+	} else {
 		tmpbuf = __stringNS->create();
 		__stringNS->sprintf(tmpbuf, _Tr("'%s': invalid column specified"), name);
 		__cwtCsvNS.error(h, __stringNS->cstr(tmpbuf));
-		__stringNS->free(tmpbuf);
 	}
-	return NULL;
+
+	if( tmpbuf )
+		__stringNS->free(tmpbuf);
+
+	return val;
 }
 
 static BOOL __csv_persist (CwtCsvHandler *csv, CwtDBHandler *dbh, CwtDDITable *table)
@@ -692,4 +711,27 @@ static BOOL __csv_persist (CwtCsvHandler *csv, CwtDBHandler *dbh, CwtDDITable *t
 	dbi->close(sth);
 
 	return ok;
+}
+
+
+static BOOL __csv_setValidator (CwtCsvHandler *h, const CWT_CHAR* name, BOOL (*validator)(const CWT_CHAR*))
+{
+	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
+	CsvColumn  *column;
+
+	CWT_ASSERT(h);
+
+	column = __htNS->lookup(ph->csvData.columns, (void*)name);
+
+	if( column && column->index < __slNS->size(ph->csvData.tokens) ) {
+		column->validate = validator;
+		return TRUE;
+	} else {
+		CwtString *tmpbuf = __stringNS->create();
+		__stringNS->sprintf(tmpbuf, _Tr("'%s': invalid column specified"), name);
+		__cwtCsvNS.error(h, __stringNS->cstr(tmpbuf));
+		__stringNS->free(tmpbuf);
+	}
+
+	return FALSE;
 }

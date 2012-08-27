@@ -112,6 +112,7 @@ extern CwtStrList*      __dbd_specForRecall(CwtDDI *ddi, int flags);
 
 static void             __stmt_close       (CwtStatement *sth);
 static BOOL             __stmt_execute     (CwtStatement *sth);
+static ULONGLONG        __stmt_lastId      (CwtStatement *sth);
 static ULONGLONG        __stmt_affectedRows(CwtStatement *sth);
 static ULONGLONG        __stmt_numRows     (CwtStatement*);
 static BOOL             __stmt_fetchNext   (CwtStatement*);
@@ -491,6 +492,7 @@ CwtDBHandler* __dbd_connect(const CWT_CHAR *driverDSN
     dbh = CWT_MALLOC(CwtMySqlDBHandler);
     dbh->__base.close      = __stmt_close;
     dbh->__base.execute    = __stmt_execute;
+    dbh->__base.lastId     = __stmt_lastId;
     dbh->__base.err        = __stmt_err;
     dbh->__base.strerror   = __stmt_strerror;
 	dbh->__base.bindByIndex     = __stmt_bindByIndex;
@@ -1427,6 +1429,13 @@ static BOOL __stmt_execute(CwtStatement *sth)
 	}
 
 	return TRUE;
+}
+
+
+static ULONGLONG __stmt_lastId (CwtStatement *sth)
+{
+	CWT_ASSERT(sth);
+	return (ULONGLONG)mysql_stmt_insert_id(__STH(sth));
 }
 
 static ULONGLONG __stmt_affectedRows(CwtStatement *sth)

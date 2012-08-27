@@ -41,6 +41,8 @@ typedef struct CwtCsvNS {
 	const CWT_CHAR* (*column)     (CwtCsvHandler*, const CWT_CHAR* name);
 
 	BOOL            (*persist)    (CwtCsvHandler*, CwtDBHandler *dbh, CwtDDITable *table);
+
+	BOOL            (*setValidator) (CwtCsvHandler*, const CWT_CHAR* name, BOOL (*)(const CWT_CHAR*));
 } CwtCsvNS;
 
 

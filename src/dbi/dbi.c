@@ -26,6 +26,8 @@ static const CWT_CHAR* __dbi_state         (CwtDBHandler*);
 static BOOL            __dbi_query         (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
 static BOOL            __dbi_queryBin      (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
 static CwtStatement*   __dbi_prepare       (CwtDBHandler*, const CWT_CHAR *sql);
+static BOOL            __dbi_execute       (CwtStatement*);
+static ULONGLONG       __dbi_lastId        (CwtStatement*);
 static ULONGLONG       __dbi_rows          (CwtDBHandler*);
 static BOOL            __dbi_tables        (CwtDBHandler*, CwtStrList *tables);
 static BOOL            __dbi_tableExists   (CwtDBHandler*, const CWT_CHAR *tname);
@@ -79,7 +81,9 @@ extern CwtDDIColumn*   __ddi_findColumn    (CwtDDITable*, const CWT_CHAR *name);
 
 extern BOOL            __ddi_cTypeBool     (CwtDDIColumn*);
 extern BOOL            __ddi_cTypeInt      (CwtDDIColumn*, LONGLONG min, ULONGLONG max);
-extern BOOL            __ddi_cTypeFloat    (CwtDDIColumn*, UINT prec, UINT scale);
+extern BOOL            __ddi_cTypeFloat    (CwtDDIColumn*);
+extern BOOL            __ddi_cTypeDouble   (CwtDDIColumn*);
+extern BOOL            __ddi_cTypeDecimal  (CwtDDIColumn*, UINT prec, UINT scale);
 extern BOOL            __ddi_cTypeText     (CwtDDIColumn*, ULONGLONG maxlen);
 extern BOOL            __ddi_cTypeBlob     (CwtDDIColumn*, ULONGLONG maxlen);
 extern BOOL            __ddi_cTypeTime     (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stmap);
@@ -113,6 +117,8 @@ static CwtDBI __cwtDBI = {
 	, __dbi_query
 	, __dbi_queryBin
 	, __dbi_prepare
+	, __dbi_execute
+	, __dbi_lastId
 	, __dbi_rows
 	, __dbi_tables
 	, __dbi_tableExists
@@ -166,6 +172,8 @@ static CwtDBI __cwtDBI = {
 	, __ddi_cTypeBool
     , __ddi_cTypeInt
     , __ddi_cTypeFloat
+    , __ddi_cTypeDouble
+    , __ddi_cTypeDecimal
     , __ddi_cTypeText
     , __ddi_cTypeBlob
     , __ddi_cTypeTime
@@ -373,6 +381,21 @@ static inline CwtStatement* __dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql
 		}
 	}
 	return sth;
+}
+
+
+static BOOL __dbi_execute(CwtStatement *sth)
+{
+	CWT_ASSERT(sth);
+	CWT_ASSERT(sth->dbh);
+	return sth->dbh->execute(sth);
+}
+
+static ULONGLONG __dbi_lastId(CwtStatement *sth)
+{
+	CWT_ASSERT(sth);
+	CWT_ASSERT(sth->dbh);
+	return sth->dbh->lastId(sth);
 }
 
 static inline ULONGLONG __dbi_rows(CwtDBHandler *dbh)

@@ -5,18 +5,19 @@
  *      Author: wladt
  */
 
-#include <dos.h>
 #include <cwt/logger.h>
 #include <cwt/cherry/mouse.h>
 
-static union REGS __regs_in, __regs_out;
 static BOOL __mouse_ready = FALSE;
 
 BOOL cwt_mouse_init(void)
 {
-	__regs_in.x.ax = 0x00;
-    int86( 0x33, &__regs_in, &__regs_out );
-    if( __regs_out.x.ax == 0x00 ) {
+	JQ_REGS_TYPE regs;
+
+	regs.x.ax = 0;
+	JQ_INT86(0x33, &regs);
+
+    if( regs.x.ax == 0 ) {
     	print_error("mouse not found");
     	__mouse_ready = FALSE;
     	return FALSE;
@@ -34,14 +35,17 @@ BOOL cwt_mouse_ready(void)
 
 void cwt_mouse_show(void)
 {
-	__regs_in.x.ax = 1;
-	int86(0x33, &__regs_in, &__regs_out);
+	JQ_REGS_TYPE regs;
+
+	regs.x.ax = 1;
+	JQ_INT86(0x33, &regs);
 }
 
 void cwt_mouse_hide(void)
 {
-	__regs_in.x.ax = 2;
-	int86(0x33, &__regs_in, &__regs_out);
+	JQ_REGS_TYPE regs;
+	regs.x.ax = 2;
+	JQ_INT86(0x33, &regs);
 }
 
 
@@ -57,36 +61,42 @@ void cwt_mouse_hide(void)
  */
 void cwt_mouse_stat(int *buttons, int *x, int *y)
 {
-	__regs_in.x.ax = 3;
-	int86(0x33, &__regs_in, &__regs_out);
+	JQ_REGS_TYPE regs;
+
+	regs.x.ax = 3;
+	JQ_INT86(0x33, &regs);
 
 	if( buttons )
-		*buttons = __regs_out.x.bx;
+		*buttons = regs.x.bx;
 
 	if( x )
-		*x = __regs_out.x.cx;
+		*x = regs.x.cx;
 
 	if( y )
-		*y = __regs_out.x.dx;
+		*y = regs.x.dx;
 }
 
 void cwt_mouse_setxy(int x, int y)
 {
-	__regs_in.x.ax = 4;
-	__regs_in.x.cx = x;
-	__regs_in.x.dx = y;
-	int86( 0x33, &__regs_in, &__regs_out);
+	JQ_REGS_TYPE regs;
+
+	regs.x.ax = 4;
+	regs.x.cx = x;
+	regs.x.dx = y;
+	JQ_INT86(0x33, &regs);
 }
 
 void cwt_mouse_region(int x1, int y1, int x2, int y2 )
 {
-	__regs_in.x.ax = 7;
-	__regs_in.x.cx = x1;
-	__regs_in.x.dx = x2;
-	int86( 0x33, &__regs_in, &__regs_out);
+	JQ_REGS_TYPE regs;
 
-	__regs_in.x.ax = 8;
-	__regs_in.x.cx = y1;
-	__regs_in.x.dx = y2;
-	int86( 0x33, &__regs_in, &__regs_out );
+	regs.x.ax = 7;
+	regs.x.cx = x1;
+	regs.x.dx = x2;
+	JQ_INT86( 0x33, &regs);
+
+	regs.x.ax = 8;
+	regs.x.cx = y1;
+	regs.x.dx = y2;
+	JQ_INT86( 0x33, &regs );
 }

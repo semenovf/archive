@@ -67,6 +67,7 @@ typedef struct CwtStatement {
 typedef struct _CwtDBHandler {
 	void            (*close)         (CwtStatement*);
 	BOOL            (*execute)       (CwtStatement*);
+	ULONGLONG       (*lastId)        (CwtStatement*);
 	CwtDBI_RC       (*err)           (CwtStatement*);
 	const CWT_CHAR* (*strerror)      (CwtStatement*);
 	BOOL            (*bindByIndex)   (CwtStatement*, size_t index, CwtUniType *ut);
@@ -130,6 +131,8 @@ typedef struct CwtDBI
 	BOOL            (*query)          (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
 	BOOL            (*queryBin)       (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
 	CwtStatement*   (*prepare)        (CwtDBHandler*, const CWT_CHAR *sql);
+	BOOL            (*execute)        (CwtStatement*);
+	ULONGLONG       (*lastId)         (CwtStatement*);
 	ULONGLONG       (*rows)           (CwtDBHandler*);
 	BOOL            (*tables)         (CwtDBHandler*, CwtStrList *tables);
 	BOOL            (*tableExists)    (CwtDBHandler*, const CWT_CHAR *tname);
@@ -167,8 +170,8 @@ typedef struct CwtDBI
 	BOOL            (*setDATE)        (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p);
 	BOOL            (*setDATETIME)    (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p);
 
-	BOOL            (*fetchNext)     (CwtStatement*);
-	BOOL            (*fetchColumn)   (CwtStatement*, CWT_CHAR *col, CwtUniType *ut);
+	BOOL            (*fetchNext)      (CwtStatement*);
+	BOOL            (*fetchColumn)    (CwtStatement*, CWT_CHAR *col, CwtUniType *ut);
 
 	CwtTypeEnum     (*toCwtTypeEnum)  (CwtSqlTypeEnum sqlType);
 	CwtSqlTypeEnum  (*toSqlTypeEnum)  (CwtTypeEnum cwtType);
@@ -183,7 +186,9 @@ typedef struct CwtDBI
 
 	BOOL            (*cTypeBool)      (CwtDDIColumn*);
 	BOOL            (*cTypeInt)       (CwtDDIColumn*, LONGLONG min, ULONGLONG max);
-	BOOL            (*cTypeFloat)     (CwtDDIColumn*, UINT prec, UINT scale);
+	BOOL            (*cTypeFloat)     (CwtDDIColumn*);
+	BOOL            (*cTypeDouble)    (CwtDDIColumn*);
+	BOOL            (*cTypeDecimal)   (CwtDDIColumn*, UINT prec, UINT scale);
 	BOOL            (*cTypeText)      (CwtDDIColumn*, ULONGLONG maxlen);
 	BOOL            (*cTypeBlob)      (CwtDDIColumn*, ULONGLONG maxlen);
 	BOOL            (*cTypeTime)      (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stamp);

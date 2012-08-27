@@ -182,10 +182,28 @@ BOOL __ddi_cTypeInt(CwtDDIColumn *col, LONGLONG min, ULONGLONG max)
 	return TRUE;
 }
 
-BOOL __ddi_cTypeFloat(CwtDDIColumn *col, UINT prec, UINT scale)
+BOOL __ddi_cTypeFloat(CwtDDIColumn *col)
 {
 	__clear_type(col);
 	col->type = CwtType_FLOAT;
+	col->opts.float_opts.prec = 0;
+	col->opts.float_opts.scale = 0;
+	return TRUE;
+}
+
+BOOL __ddi_cTypeDouble(CwtDDIColumn *col)
+{
+	__clear_type(col);
+	col->type = CwtType_DOUBLE;
+	col->opts.float_opts.prec = 0;
+	col->opts.float_opts.scale = 0;
+	return TRUE;
+}
+
+BOOL __ddi_cTypeDecimal(CwtDDIColumn *col, UINT prec, UINT scale)
+{
+	__clear_type(col);
+	col->type = CwtType_DOUBLE;
 	col->opts.float_opts.prec = prec;
 	col->opts.float_opts.scale = scale;
 	return TRUE;

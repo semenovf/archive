@@ -16,7 +16,7 @@
 
 extern CWT_CHAR* __stringifyBoolType(void);
 extern CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max);
-extern CWT_CHAR* __stringifyFloatType(UINT prec, UINT scale);
+extern CWT_CHAR* __stringifyFloatType(CwtTypeEnum time_type, UINT prec, UINT scale);
 extern CWT_CHAR* __stringifyTextType(ULONGLONG maxlen);
 extern CWT_CHAR* __stringifyBlobType(ULONGLONG maxlen);
 extern CWT_CHAR* __stringifyTimeType(CwtTypeEnum time_type, BOOL stamp);
@@ -71,7 +71,7 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 		} else if( CWT_TYPE_IS_INTEGER(col->type) ) {
 			typestr = __stringifyIntType(col->opts.int_opts.min, col->opts.int_opts.max);
 		} else if(CWT_TYPE_IS_FLOAT(col->type)) {
-			typestr = __stringifyFloatType(col->opts.float_opts.prec, col->opts.float_opts.scale);
+			typestr = __stringifyFloatType(col->type, col->opts.float_opts.prec, col->opts.float_opts.scale);
 		} else if( CwtType_TEXT == col->type ) {
 			typestr = __stringifyTextType(col->opts.maxlen);
 		} else if( CwtType_BLOB == col->type ) {

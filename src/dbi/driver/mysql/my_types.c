@@ -65,27 +65,32 @@ CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max)
  * A precision from 0 to 23 results in a 4-byte single-precision FLOAT column.
  * A precision from 24 to 53 results in an 8-byte double-precision DOUBLE column.
  */
-CWT_CHAR* __stringifyFloatType(UINT prec, UINT scale)
+CWT_CHAR* __stringifyFloatType(CwtTypeEnum type, UINT prec, UINT scale)
 {
 	CwtStrNS *strNS = cwtStrNS();
+	CWT_CHAR *fstr = NULL;
 
-	if( scale > 0 ) {
+	CWT_ASSERT(type == CwtType_FLOAT || type == CwtType_DOUBLE);
+
+	if( prec == 0 && scale == 0 ) {
+		switch(type) {
+		case CwtType_FLOAT:
+			fstr = strNS->strdup(_T("FLOAT"));
+			break;
+		case CwtType_DOUBLE:
+		default:
+			fstr = strNS->strdup(_T("DOUBLE"));
+			break;
+		}
+	} else {
 		CWT_CHAR buf[64];
 		strNS->bzero(buf, 64 * sizeof(CWT_CHAR));
 
-		if( scale < 0 )
-			scale = 0;
-
 		CWT_ASSERT(cwtStdioNS()->snprintf(buf, 31, _T("DECIMAL(%d,%d)"), prec, scale) > 0);
-		return strNS->strdup(buf);
-	} else if( prec < 24 ) {
-		return strNS->strdup(_T("FLOAT"));
-	} else if( prec < 54 ) {
-		return strNS->strdup(_T("DOUBLE"));
+		fstr = strNS->strdup(buf);
 	}
 
-	printf_error(_Tr("bounds for floating point number is illegal"));
-	return NULL;
+	return fstr;
 }
 
 CWT_CHAR* __stringifyTextType(ULONGLONG maxlen)
