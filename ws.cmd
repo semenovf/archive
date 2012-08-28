@@ -51,6 +51,24 @@ echo del ^/S ^*.obj    >> clear.cmd
 echo del ^/S ^*.exe    >> clear.cmd
 echo del ^/S ^*.swp    >> clear.cmd
 echo del ^/S ^*.sdf    >> clear.cmd
+echo del /S *.bak      >> clear.cmd
+echo del /S Makefile   >> clear.cmd
+echo del /S makefile   >> clear.cmd
+
+echo ^@echo off         > make.cmd
+echo cd .qmake          >> make.cmd
+echo call \qmake\make.cmd clean >> make.cmd
+echo call \qmake\make.cmd all >> make.cmd
+
+echo del ^/S ^*.o      >> clear.cmd
+echo del ^/S ^*.obj    >> clear.cmd
+echo del ^/S ^*.exe    >> clear.cmd
+echo del ^/S ^*.swp    >> clear.cmd
+echo del ^/S ^*.sdf    >> clear.cmd
+echo del /S *.bak      >> clear.cmd
+echo del /S Makefile   >> clear.cmd
+echo del /S makefile   >> clear.cmd
+
 
 ::
 :: Prepare .girignore
@@ -82,8 +100,9 @@ echo *.lk*      >> .gitignore
 echo *.sym      >> .gitignore
 echo *.swp      >> .gitignore
 echo *.SWP      >> .gitignore
+echo makefile   >> .gitignore
+echo doxygen/html >> .gitignore
 echo ^!.gitignore     >> .gitignore
-
 
 
 echo Project %PROJECT% live in %CWT_HOME%%PROJECT% directory

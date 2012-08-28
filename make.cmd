@@ -1,6 +1,5 @@
 @echo off
-rem %comspec% /k ""C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" x86
-rem call "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" x86
+@rem %comspec% /k ""C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" x86
 
 :: --------------------------------------------------------------------------------------------
 :: File : SetEnv.cmd
@@ -25,23 +24,31 @@ rem call "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" x86
 :: of the current expansion which happens when a line of text is read , not when it is executed.
 :: For more information about delayed expansion type: SET /? from the command line
 :: --------------------------------------------------------------------------------------------
-call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /Debug /x64 /win7
 
+@call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /Debug /x32 /win7 > nul 2>&1
+if %ERRORLEVEL% EQU 0 goto begin
+call "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" x86 > nul 2>&1
+if %ERRORLEVEL% GTR 0 goto error_SetEnv
 
-if "%1" == "clean" goto clean
-if exist "Makefile" goto make
+:begin
+if "%1" == "clean" goto makeclean
+if "%1" == "all" goto makeall
 
-goto exit
+goto end
 
-:clean
+:makeclean
 nmake distclean
 del Makefile
 qmake -makefile -r -o Makefile
-goto exit
+goto end
 
 
-:make
-rem qmake -r -makefile -o Makefile
+:makeall
 nmake %1
+goto end
 
-:exit
+:error_SetEnv
+echo Error: failed to set environment 1>&2
+goto end
+
+:end
