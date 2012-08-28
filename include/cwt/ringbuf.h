@@ -39,6 +39,7 @@ typedef struct _CwtRingBufNS {
 	BYTE          (*atBack)     (CwtRingBuf*);
 	BYTE          (*last)       (CwtRingBuf*);
 	ssize_t       (*read)       (CwtRingBuf*, BYTE* bytes, size_t n);
+	ssize_t       (*peek)       (CwtRingBuf*, BYTE* bytes, size_t n);
 	ssize_t       (*write)      (CwtRingBuf*, const BYTE* chars, size_t n);
 	BYTE          (*get)        (CwtRingBuf*);
 	void          (*popFront)   (CwtRingBuf*, size_t n);

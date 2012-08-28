@@ -14,9 +14,11 @@ static size_t  __bytesAvailable(CwtIODevice *pdev);
 static ssize_t __read(CwtIODevice*, BYTE*, size_t);
 static ssize_t __write(CwtIODevice*, const BYTE*, size_t);
 
+/*
 static void    __readBegin(CwtIODevice*);
 static void    __readCommit(CwtIODevice*);
 static void    __readRollback(CwtIODevice*);
+*/
 
 typedef struct CwtBufferDevice
 {
@@ -25,8 +27,6 @@ typedef struct CwtBufferDevice
 	BOOL master;
 	CwtRingBuf *in;
 	CwtRingBuf *out;
-	size_t   head_saved;
-	size_t   count_saved;
 } CwtBufferDevice;
 
 
@@ -39,17 +39,15 @@ CwtIODevice* cwtBufferDeviceOpen()
 	bufd->master = TRUE;
 	bufd->in = cwtRingBufNS()->create();
 	bufd->out = cwtRingBufNS()->create();
-	bufd->head_saved  = 0;
-	bufd->count_saved = 0;
 
 	bufd->base.close = __сlose;
 	bufd->base.bytesAvailable = __bytesAvailable;
 	bufd->base.read  = __read;
 	bufd->base.write = __write;
 
-	bufd->base.readBegin      = __readBegin;
-	bufd->base.readCommit     = __readCommit;
-	bufd->base.readRollback   = __readRollback;
+	bufd->base.readBegin      = NULL;
+	bufd->base.readCommit     = NULL;
+	bufd->base.readRollback   = NULL;
 
 	return (CwtIODevice*)bufd;
 }
@@ -64,9 +62,6 @@ CwtIODevice* cwtBufferDeviceOpenPeer(CwtIODevice *bufd)
 	peer_bufd->master = FALSE;
 	peer_bufd->in = ((CwtBufferDevice*)bufd)->out;
 	peer_bufd->out =((CwtBufferDevice*)bufd)->in;
-	peer_bufd->head_saved  = 0;
-	peer_bufd->count_saved = 0;
-
 
 	peer_bufd->base.close = bufd->close;
 	peer_bufd->base.bytesAvailable = bufd->bytesAvailable;
@@ -106,18 +101,8 @@ size_t __bytesAvailable(CwtIODevice *dev)
 
 ssize_t __read(CwtIODevice *dev, BYTE* buf, size_t sz)
 {
-	CwtBufferDevice *bufd;
-	ssize_t br;
-
 	CWT_ASSERT(dev);
-
-	bufd = (CwtBufferDevice*)dev;
-	br = cwtRingBufNS()->read(bufd->in, buf, sz);
-
-	if( br > 0 ) {
-		cwtRingBufNS()->popFront(bufd->in, (size_t)br);
-	}
-	return br;
+	return cwtRingBufNS()->read(((CwtBufferDevice*)dev)->in, buf, sz);
 }
 
 ssize_t __write(CwtIODevice *dev, const BYTE* buf, size_t sz)
@@ -128,31 +113,4 @@ ssize_t __write(CwtIODevice *dev, const BYTE* buf, size_t sz)
 
 	bufd = (CwtBufferDevice*)dev;
 	return cwtRingBufNS()->write(bufd->out, buf, sz);
-}
-
-
-static void __readBegin(CwtIODevice *dev)
-{
-	CwtBufferDevice *bufd;
-	CWT_ASSERT(dev);
-
-	bufd = (CwtBufferDevice*)dev;
-	bufd->head_saved = bufd->in->m_head;
-	bufd->count_saved = bufd->in->m_count;
-}
-
-static void __readCommit(CwtIODevice *dev)
-{
-	CWT_UNUSED(dev);
-}
-
-static void __readRollback(CwtIODevice *dev)
-{
-	CwtBufferDevice *bufd;
-	CWT_ASSERT(dev);
-
-	bufd = (CwtBufferDevice*)dev;
-
-	bufd->in->m_head  = bufd->head_saved;
-	bufd->in->m_count = bufd->count_saved;
 }

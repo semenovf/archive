@@ -59,7 +59,7 @@ typedef struct _CwtListNS {
 
 	void             (*traverse)    (CwtList*, int (*callback)(void *data, void *extra), void *extra);
 	void             (*rtraverse)   (CwtList*, int (*callback)(void *data, void *extra), void *extra);
-	BOOL             (*find)        (CwtList*, void *data, CwtListIterator *it);
+	BOOL             (*find)        (CwtListIterator *it, const void *data);
 
 	void*	         (*at)          (CwtList*, size_t index);
 	void*            (*first)       (CwtList*);

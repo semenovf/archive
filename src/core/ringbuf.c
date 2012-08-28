@@ -32,6 +32,7 @@ static BYTE          __atFront    (CwtRingBuf*);
 static BYTE          __atBack     (CwtRingBuf*);
 /*static BYTE          __last       (CwtRingBuf*);*/
 static ssize_t       __read       (CwtRingBuf*, BYTE* bytes, size_t n);
+static ssize_t       __peek       (CwtRingBuf*, BYTE* bytes, size_t n);
 static ssize_t       __write      (CwtRingBuf*, const BYTE* chars, size_t n);
 static BYTE          __get        (CwtRingBuf*);
 static void          __popFront   (CwtRingBuf*, size_t n);
@@ -57,6 +58,7 @@ static CwtRingBufNS __cwtRingBufNS  = {
 	, __atBack
 	, __atBack
 	, __read
+	, __peek
 	, __write
 	, __get
 	, __popFront
@@ -242,6 +244,14 @@ static BYTE __atBack(CwtRingBuf *rb)
 }
 
 
+static ssize_t __read(CwtRingBuf *rb, BYTE* bytes, size_t n)
+{
+	ssize_t br = __peek(rb, bytes, n);
+	if( br > 0 )
+		__popFront(rb, br);
+	return br;
+}
+
 /**
  * Read bytes from ring buffer w/o removing header position.
  * Use @c popFront to move header position.
@@ -254,7 +264,7 @@ static BYTE __atBack(CwtRingBuf *rb)
  * @see pop
  * @see popFront
  */
-static ssize_t __read(CwtRingBuf *rb, BYTE* bytes, size_t n)
+static ssize_t __peek(CwtRingBuf *rb, BYTE* bytes, size_t n)
 {
 
 	CWT_ASSERT(rb);
@@ -279,6 +289,7 @@ static ssize_t __read(CwtRingBuf *rb, BYTE* bytes, size_t n)
 
 	return (ssize_t)n;
 }
+
 
 
 static ssize_t __write(CwtRingBuf *rb, const BYTE* bytes, size_t n)

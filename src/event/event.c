@@ -21,10 +21,10 @@ static BOOL __processSources(void);
 static BOOL __dispatchEvents(void);
 
 static void __initEvent(CwtEvent*, CwtList *handlers, void (*destructor)(CwtEvent*));
-static void __registerSource(CwtEventSource*);
+static BOOL __registerSource(CwtEventSource*);
 static void __unregisterSource(CwtEventSource*);
 static void __unregisterAllSources(void);
-static BOOL __isRegisteredSource(CwtEventSource*);
+static BOOL __isRegisteredSource(const CwtEventSource*);
 static void __setIdleProccess(void (*idle_process)(void));
 static void __pushHandler(CwtList *handlers, BOOL (*handler)(CwtEvent *pevt));
 static void __popHandler(CwtList *handlers);
@@ -78,19 +78,29 @@ static void __initEvent(CwtEvent *pevt, CwtList *handlers, void (*destructor)(Cw
 }
 
 
-static inline void __registerSource(CwtEventSource *source)
+static inline BOOL __registerSource(CwtEventSource *source)
 {
 	if( !__isRegisteredSource(source) ) {
+		if( !source->poll ) {
+			cwtLoggerNS()->error(_T("registration source failed: 'poll' method is not specified"));
+			return FALSE;
+		}
 		__listNS->append(__registered_sources, source);
+	} else {
+		cwtLoggerNS()->error(_T("source already registered"));
+		return FALSE;
 	}
+
+	return TRUE;
 }
 
 static inline void __unregisterSource(CwtEventSource *source)
 {
 	CwtListIterator it;
-	if( __listNS->find(__registered_sources, source, &it) ) {
-		CwtEventSource *source = (CwtEventSource*)__listNS->first(__registered_sources);
-		source->finish(source);
+	__listNS->begin(__registered_sources, &it);
+	if( __listNS->find(&it, source) ) {
+		if( source->finish )
+			source->finish(source);
 		__listNS->remove(&it);
 	}
 }
@@ -100,15 +110,18 @@ static inline void __unregisterAllSources(void)
 {
 	while( __listNS->size(__registered_sources) ) {
 		CwtEventSource *source = (CwtEventSource*)__listNS->first(__registered_sources);
-		source->finish(source);
+		if( source->finish )
+			source->finish(source);
 		__listNS->removeFirst(__registered_sources);
 	}
 }
 
 
-static inline BOOL __isRegisteredSource(CwtEventSource *source)
+static inline BOOL __isRegisteredSource(const CwtEventSource *source)
 {
-	return __listNS->find(__registered_sources, source, NULL);
+	CwtListIterator it;
+	__listNS->begin(__registered_sources, &it);
+	return __listNS->find(&it, source);
 }
 
 
@@ -191,7 +204,7 @@ static BOOL __dispatchEvents(void)
 
 	/*pevt_node = __input_queue->first;*/
 
-	if( __listNS->size(__input_queue) ) {
+	if( !__listNS->size(__input_queue) ) {
 		if( __idle_process ) {
 			__idle_process();
 		} else {

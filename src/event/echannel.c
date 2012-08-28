@@ -61,7 +61,6 @@ DLL_API_EXPORT CwtEventChannelNS* cwtEventChannelNS(void)
 static void __cleanupListener(void *pl)
 {
 	CwtChannelListener *plistener = (CwtChannelListener*)pl;
-	/*__channelNS->free(plistener->channel);*/
 	__listNS->free(plistener->readers);
 }
 
@@ -100,7 +99,7 @@ static void __addListener(CwtChannel *pchan, BOOL (*reader)(CwtEventPtr))
 	} else {
 		CwtChannelListener listener;
 		listener.channel = pchan;
-		listener.readers = __listNS->create(sizeof(void*), NULL);
+		listener.readers = __listNS->createPtr(NULL);
 		__listNS->append(listener.readers, reader);
 		__listNS->append(__listeners, &listener);
 	}

@@ -195,7 +195,7 @@ static BOOL __readLine(CwtChannel *pchan, CwtByteArray *ba)
 	if( __rbNS->findAny(pchan->rb, "\r\n", 2, 0, &index) ) {
 		BYTE nl;
 		__baNS->resize(ba, ba_off + index);
-		__rbNS->read(pchan->rb, ba->m_buffer + ba_off, index);
+		__rbNS->peek(pchan->rb, ba->m_buffer + ba_off, index);
 
 		__rbNS->popFront(pchan->rb, index);
 		nl = __rbNS->first(pchan->rb);
@@ -211,7 +211,7 @@ static BOOL __readLine(CwtChannel *pchan, CwtByteArray *ba)
 		return TRUE;
 	} else if( br == 0 && __rbNS->size(pchan->rb) > 0 ) {
 		__baNS->resize(ba, ba_off + __rbNS->size(pchan->rb));
-		__rbNS->read(pchan->rb, ba->m_buffer + ba_off, __rbNS->size(pchan->rb));
+		__rbNS->peek(pchan->rb, ba->m_buffer + ba_off, __rbNS->size(pchan->rb));
 		__rbNS->clear(pchan->rb);
 
 		return TRUE;

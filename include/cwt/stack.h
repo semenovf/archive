@@ -15,13 +15,14 @@ typedef CwtList CwtStack;
 EXTERN_C_END
 
 typedef struct _CwtStackNS {
-	CwtStack* (*create) (size_t sizeofData, void (*data_cleanup)(void*));
-	void      (*free)   (CwtStack*);
-	void      (*clear)  (CwtStack*);
-	BOOL      (*isEmpty)(CwtStack*);
-	void      (*push)   (CwtStack *stack, void *data);
-	BOOL      (*pop)    (CwtStack *stack, void *data);
-	BOOL      (*peek)   (CwtStack *stack, void *data);
+	CwtStack* (*create)    (size_t sizeofData, void (*data_cleanup)(void*));
+	CwtStack* (*createPtr) (void (*data_cleanup)(void*));
+	void      (*free)      (CwtStack*);
+	void      (*clear)     (CwtStack*);
+	BOOL      (*isEmpty)   (CwtStack*);
+	void      (*push)      (CwtStack *stack, void *data);
+	BOOL      (*pop)       (CwtStack *stack, void *data);
+	BOOL      (*peek)      (CwtStack *stack, void *data);
 } CwtStackNS;
 
 

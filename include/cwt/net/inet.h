@@ -10,16 +10,19 @@
 
 #include <cwt/types.h>
 
-typedef struct CwtInetAddressIterator {
+typedef struct CwtInetAddrIterator {
 	int nothing;
-} CwtInetAddressIterator;
+} CwtInetAddrIterator;
+
+typedef struct _CwtInetNS {
+	void (*addrBegin)   (CwtInetAddrIterator *it);
+	BOOL (*addrHasMore) (CwtInetAddrIterator *it);
+	BOOL (*addrNext)    (CwtInetAddrIterator *it);
+} CwtInetNS;
+
 
 EXTERN_C_BEGIN
-
-DLL_API_EXPORT void cwtInetAddressBegin(CwtInetAddressIterator* it);
-DLL_API_EXPORT BOOL cwtInetAddressHasMore(CwtInetAddressIterator* it);
-DLL_API_EXPORT BOOL cwtInetAddressNext(CwtInetAddressIterator* it);
-
+DLL_API_EXPORT CwtInetNS* cwtInetNS(void);
 EXTERN_C_END
 
 

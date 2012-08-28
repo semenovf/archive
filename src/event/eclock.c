@@ -79,8 +79,8 @@ DLL_API_EXPORT CwtEventClockNS* cwtEventClockNS(void)
 	}
 
 	if( !__time_handlers ) {
-		__time_handlers = __listNS->create(sizeof(void*), NULL);
-		__date_handlers = __listNS->create(sizeof(void*), NULL);
+		__time_handlers = __listNS->createPtr(NULL);
+		__date_handlers = __listNS->createPtr(NULL);
 	}
 	return &__cwtEventClockNS;
 }

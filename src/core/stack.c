@@ -15,6 +15,7 @@
 #endif
 
 static CwtStack*     __stack_create  (size_t sizeofData, void (*data_cleanup)(void*));
+static CwtStack*     __stack_createPtr(void (*data_cleanup)(void*));
 static void          __stack_free    (CwtStack*);
 static void          __stack_clear   (CwtStack*);
 static BOOL          __stack_isEmpty (CwtStack*);
@@ -24,6 +25,7 @@ static BOOL          __stack_peek    (CwtStack*, void *data);
 
 static CwtStackNS __cwtStackNS = {
 	  __stack_create
+	, __stack_createPtr
 	, __stack_free
 	, __stack_clear
 	, __stack_isEmpty
@@ -53,6 +55,11 @@ DLL_API_EXPORT CwtStackNS* cwtStackNS(void)
 static CwtStack* __stack_create(size_t sizeofData, void (*data_cleanup)(void*))
 {
 	return (CwtStack*)__listNS->create(sizeofData, data_cleanup);
+}
+
+static CwtStack* __stack_createPtr(void (*data_cleanup)(void*))
+{
+	return (CwtStack*)__listNS->createPtr(data_cleanup);
 }
 
 static void __stack_free(CwtStack *stack)

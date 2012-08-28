@@ -13,10 +13,10 @@
 
 typedef struct _CwtEventNS {
 	void (*initEvent)(CwtEvent *pevt, CwtList *handlers, void (*destructor)(CwtEvent*));
-	void (*registerSource)(CwtEventSource*);
+	BOOL (*registerSource)(CwtEventSource*);
 	void (*unregisterSource)(CwtEventSource*);
 	void (*unregisterAllSources)(void);
-	BOOL (*isRegisteredSource)(CwtEventSource*);
+	BOOL (*isRegisteredSource)(const CwtEventSource*);
 
 	void (*setIdleProccess)(void (*idle_process)(void));
 

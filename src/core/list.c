@@ -14,7 +14,6 @@
 #	define NULL ((void*)0)
 #endif
 
-
 static CwtList*      __list_create      (size_t sizeofData, void (*data_cleanup)(void*));
 static CwtList*      __list_createPtr   (void (*data_cleanup)(void*));
 static void          __list_free        (CwtList*);
@@ -29,7 +28,7 @@ static void          __list_removeFirst (CwtList *list);
 static void          __list_removeLast  (CwtList *list);
 static void          __list_traverse    (CwtList *list, int (*callback)(void *data, void *extra), void *extra);
 static void          __list_rtraverse   (CwtList*, int (*callback)(void *data, void *extra), void *extra);
-static BOOL          __list_find        (CwtList *list, void *data, CwtListIterator *it);
+static BOOL          __list_find        (CwtListIterator *it, const void *data);
 
 static void*	     __list_at          (CwtList*, size_t index);
 static void*         __list_first       (CwtList*);
@@ -183,7 +182,7 @@ static void __list_insert (CwtListIterator *before, void *data)
 
 	list = before->list;
 
-	n = (CwtListNode*)cwtMalloc(sizeof(CwtListNode) * 2 + list->datasz);
+	n = (CwtListNode*)cwtMalloc(sizeof(CwtListNode*) * 2 + list->datasz);
 
 	if( list->is_ptr )
 		__strNS->memcpy(n->d, &data, list->datasz);
@@ -217,7 +216,7 @@ static void __list_prepend(CwtList *list, void *data)
 {
 	CwtListNode *n;
 
-	n = (CwtListNode*)cwtMalloc(sizeof(CwtListNode) * 2 + list->datasz);
+	n = (CwtListNode*)cwtMalloc(sizeof(CwtListNode*) * 2 + list->datasz);
 	if( list->is_ptr )
 		__strNS->memcpy(n->d, &data, list->datasz);
 	else
@@ -250,7 +249,7 @@ static void __list_append(CwtList *list, void *data)
 {
 	CwtListNode *n;
 
-	n = (CwtListNode*)cwtMalloc(sizeof(CwtListNode) * 2 + list->datasz);
+	n = (CwtListNode*)cwtMalloc(sizeof(CwtListNode*) * 2 + list->datasz);
 	__strNS->memcpy(n->d, list->is_ptr ? &data : data, list->datasz);
 
 	n->n = NULL;
@@ -272,25 +271,33 @@ static void __list_append(CwtList *list, void *data)
 }
 
 
-static void __list_remove(CwtListIterator *before)
+static void __list_remove(CwtListIterator *it)
 {
 	CwtList     *list;
 	CwtListNode *n;
 	CwtListNode *nbefore;
 	CwtListNode *nafter;
 
-	list = before->list;
-	nbefore = before->node;
-	n = nbefore->n;
+	list = it->list;
+	n = it->node;
 
 	if( !n )
 		return;
 
-	nafter = n->n;
-	nbefore->n = nafter;
+	nbefore = n->p;
+	nafter  = n->n;
+
+	if( nbefore )
+		nbefore->n = nafter;
 
 	if( nafter )
 		nafter->p = nbefore;
+
+	if( list->f == n )
+		list->f = nafter;
+
+	if( list->l == n )
+		list->l = nbefore;
 
 	if( n->d && list->data_cleanup) {
 		list->data_cleanup(list->is_ptr ? *(void**)n->d : n->d);
@@ -423,21 +430,27 @@ static void* __list_last(CwtList *list)
  * @param it List iterator, may be NULL.
  * @return
  */
-static BOOL __list_find(CwtList *list, void *data, CwtListIterator *it)
+static BOOL __list_find(CwtListIterator *it, const void *data)
 {
+	CwtList *list;
 	CwtListNode *node;
 
-	node = list->f;
+	CWT_ASSERT(it);
+
+	list = it->list;
+	node = it->node;
 
 	while( node ) {
 
-	    if( __strNS->memcmp(data, list->is_ptr ? *(void**)node->d : node->d, list->datasz) == 0 ) {
-	    	if( it ) {
-	    		it->forward = TRUE;
-	    		it->list = list;
-	    		it->node = node;
-	    	}
-	    	return TRUE;
+	    if( list->is_ptr
+	    		? *(const void**)node->d == data
+	    		: __strNS->memcmp(data, node->d, list->datasz) == 0 ) {
+
+			it->forward = TRUE;
+			it->list = list;
+			it->node = node;
+
+			return TRUE;
 	    }
 	    node = node->n;
 	}
