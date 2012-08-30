@@ -27,18 +27,14 @@ static BOOL on_multicast_receiver(CwtEvent *pevt)
 
 	__eventChannelNS->peekChannel(pevt, &pchan);
 
-	cns->readBegin(pchan);
-
 	br = cns->read(pchan, buf, 255);
 	buf[(size_t)br] = '\x0';
 
 	if( strstr((char*)buf, cmdQuit) ) {
 		printf("finishing event by command, received from channel");
-		__channelNS->readCommit(pchan);
 		__eventNS->quit();
 		return TRUE;
 	}
-	cns->readCommit(pchan);
 	printf("Received: \"%s\"", buf);
 
 	return TRUE;
@@ -60,13 +56,13 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(4);
 
-	pchan_writer = __channelNS->create(cwtMulticastSocketDeviceOpen(
+	pchan_writer = __channelNS->create(cwtMSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")
 			, CWT_MCSOCKET_SENDER));
 
-	pchan_reader = __channelNS->create(cwtMulticastSocketDeviceOpen(
+	pchan_reader = __channelNS->create(cwtMSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")

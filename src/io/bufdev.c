@@ -9,10 +9,10 @@
 #include <cwt/logger.h>
 #include <cwt/io/bufdev.h>
 
-static void    __сlose(CwtIODevice*);
-static size_t  __bytesAvailable(CwtIODevice *pdev);
-static ssize_t __read(CwtIODevice*, BYTE*, size_t);
-static ssize_t __write(CwtIODevice*, const BYTE*, size_t);
+static void    __dev_сlose(CwtIODevice*);
+static size_t  __dev_bytesAvailable(CwtIODevice *pdev);
+static ssize_t __dev_read(CwtIODevice*, BYTE*, size_t);
+static ssize_t __dev_write(CwtIODevice*, const BYTE*, size_t);
 
 /*
 static void    __readBegin(CwtIODevice*);
@@ -22,7 +22,7 @@ static void    __readRollback(CwtIODevice*);
 
 typedef struct CwtBufferDevice
 {
-	CwtIODevice base;
+	CwtIODevice __base;
 
 	BOOL master;
 	CwtRingBuf *in;
@@ -40,14 +40,10 @@ CwtIODevice* cwtBufferDeviceOpen()
 	bufd->in = cwtRingBufNS()->create();
 	bufd->out = cwtRingBufNS()->create();
 
-	bufd->base.close = __сlose;
-	bufd->base.bytesAvailable = __bytesAvailable;
-	bufd->base.read  = __read;
-	bufd->base.write = __write;
-
-	bufd->base.readBegin      = NULL;
-	bufd->base.readCommit     = NULL;
-	bufd->base.readRollback   = NULL;
+	bufd->__base.close = __dev_сlose;
+	bufd->__base.bytesAvailable = __dev_bytesAvailable;
+	bufd->__base.read  = __dev_read;
+	bufd->__base.write = __dev_write;
 
 	return (CwtIODevice*)bufd;
 }
@@ -63,20 +59,16 @@ CwtIODevice* cwtBufferDeviceOpenPeer(CwtIODevice *bufd)
 	peer_bufd->in = ((CwtBufferDevice*)bufd)->out;
 	peer_bufd->out =((CwtBufferDevice*)bufd)->in;
 
-	peer_bufd->base.close = bufd->close;
-	peer_bufd->base.bytesAvailable = bufd->bytesAvailable;
-	peer_bufd->base.read  = bufd->read;
-	peer_bufd->base.write = bufd->write;
-
-	peer_bufd->base.readBegin      = bufd->readBegin;
-	peer_bufd->base.readCommit     = bufd->readCommit;
-	peer_bufd->base.readRollback   = bufd->readRollback;
+	peer_bufd->__base.close = bufd->close;
+	peer_bufd->__base.bytesAvailable = bufd->bytesAvailable;
+	peer_bufd->__base.read  = bufd->read;
+	peer_bufd->__base.write = bufd->write;
 
 	return (CwtIODevice*)peer_bufd;
 }
 
 
-void __сlose(CwtIODevice *dev)
+void __dev_сlose(CwtIODevice *dev)
 {
 	CwtBufferDevice *bufd;
 
@@ -91,7 +83,7 @@ void __сlose(CwtIODevice *dev)
 }
 
 
-size_t __bytesAvailable(CwtIODevice *dev)
+size_t __dev_bytesAvailable(CwtIODevice *dev)
 {
 	CwtBufferDevice *bufd;
 	CWT_ASSERT(dev);
@@ -99,13 +91,13 @@ size_t __bytesAvailable(CwtIODevice *dev)
 	return cwtRingBufNS()->size(bufd->in);
 }
 
-ssize_t __read(CwtIODevice *dev, BYTE* buf, size_t sz)
+ssize_t __dev_read(CwtIODevice *dev, BYTE* buf, size_t sz)
 {
 	CWT_ASSERT(dev);
 	return cwtRingBufNS()->read(((CwtBufferDevice*)dev)->in, buf, sz);
 }
 
-ssize_t __write(CwtIODevice *dev, const BYTE* buf, size_t sz)
+ssize_t __dev_write(CwtIODevice *dev, const BYTE* buf, size_t sz)
 {
 	CwtBufferDevice *bufd;
 

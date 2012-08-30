@@ -19,10 +19,12 @@ static ssize_t      __write     (CwtChannel*, const BYTE *buf, size_t sz);
 static ssize_t      __writeByte (CwtChannel*, BYTE ch);
 static size_t       __bytesAvailable (CwtChannel*);
 
+/*
 static BOOL         __canReadTransaq(CwtChannel*);
 static void         __readBegin     (CwtChannel*);
 static void         __readCommit    (CwtChannel*);
 static void         __readRollback  (CwtChannel*);
+*/
 
 /* helper functions */
 static void         __init    (CwtChannel*, CwtIODevice *pdev);
@@ -47,11 +49,6 @@ static CwtChannelNS __cwtChannelNS = {
 	, __write
 	, __writeByte
 	, __bytesAvailable
-
-	, __canReadTransaq
-	, __readBegin
-	, __readCommit
-	, __readRollback
 };
 
 
@@ -280,6 +277,7 @@ static ssize_t __writeByte(CwtChannel *pchan, BYTE ch)
 }
 
 
+/*
 static BOOL __canReadTransaq(CwtChannel *pchan)
 {
 	CWT_ASSERT(pchan && pchan->dev);
@@ -320,3 +318,4 @@ static void __readRollback(CwtChannel *pchan)
 }
 
 
+*/

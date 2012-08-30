@@ -12,11 +12,7 @@ typedef struct CwtIODevice
 	size_t  (*bytesAvailable)(struct CwtIODevice*);
 	ssize_t (*read)(struct CwtIODevice*, BYTE*, size_t);
 	ssize_t (*write)(struct CwtIODevice*, const BYTE*, size_t);
-
-	void    (*readBegin)(struct CwtIODevice*);    /* may be NULL, so CHANNEL implements this feature */
-	void    (*readCommit)(struct CwtIODevice*);   /* may be NULL, so CHANNEL implements this feature */
-	void    (*readRollback)(struct CwtIODevice*); /* may be NULL, so CHANNEL implements this feature */
-} CwtIODevice/*, *CwtIODevicePtr*/;
+} CwtIODevice;
 
 typedef struct CwtChannel
 {
@@ -43,10 +39,10 @@ typedef struct CwtChannelNS {
 	ssize_t      (*writeByte)      (CwtChannel*, BYTE ch);
 	size_t       (*bytesAvailable) (CwtChannel*);
 
-	BOOL         (*canReadTransaq) (CwtChannel*); /* TODO obsolete */
-	void         (*readBegin)      (CwtChannel*); /* TODO obsolete */
-	void         (*readCommit)     (CwtChannel*); /* TODO obsolete */
-	void         (*readRollback)   (CwtChannel*); /* TODO obsolete */
+	/*BOOL         (*canReadTransaq) (CwtChannel*);*/ /* TODO obsolete */
+	/*void         (*readBegin)      (CwtChannel*); *//* TODO obsolete */
+	/*void         (*readCommit)     (CwtChannel*); *//* TODO obsolete */
+	/*void         (*readRollback)   (CwtChannel*); *//* TODO obsolete */
 } CwtChannelNS;
 
 EXTERN_C_BEGIN

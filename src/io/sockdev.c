@@ -5,143 +5,162 @@
  *      Author: user
  */
 
-#include "sockdev_p.h"
+#include <cwt/io/sockdev.h>
+#include <cwt/net/socket.h>
 
-size_t __cwt_nsockets_opened = (size_t)0;
-static BOOL   __cwt_is_sockets_allowed = FALSE;
+static void    __dev_close(CwtIODevice *dev);
+static size_t  __dev_bytesAvailable(CwtIODevice *dev);
+static ssize_t __dev_read(CwtIODevice *dev, BYTE* buf, size_t sz);
+static ssize_t __dev_write(CwtIODevice *dev, const BYTE* buf, size_t sz);
 
-BOOL __cwtAllowSockets(void)
+typedef struct CwtSocketDevice {
+	CwtIODevice   __base;
+	struct _CwtSocket *sockfd;
+} CwtSocketDevice;
+
+
+
+static CwtIODevice* __dev_createSocketDevice (struct _CwtSocket *sd)
 {
-	if( !__cwt_is_sockets_allowed ) {
+	CwtSocketNS *socketNS = cwtSocketNS();
+	CwtSocketDevice *sdev = NULL;
 
-#ifdef CWT_CC_MSC
-		WORD version;
-		WSADATA wsaData;
-		int res;
+	if( !sd )
+		return NULL;
 
-		version = MAKEWORD(2, 2);
-		res = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	sdev = CWT_MALLOC(CwtSocketDevice);
 
-		if( res != NO_ERROR ) {
-			printf_error(_Tr("WSAStartup(): %d"), res);
-			return FALSE;
-		}
+	sdev->__base.close          = __dev_close;
+	sdev->__base.bytesAvailable = __dev_bytesAvailable;
+	sdev->__base.read           = __dev_read;
+	sdev->__base.write          = __dev_write;
+	sdev->sockfd                = sd;
 
-		/* Confirm that the WinSock DLL supports 2.2.*/
-		/* Note that if the DLL supports versions greater    */
-		/* than 2.2 in addition to 2.2, it will still return */
-		/* 2.2 in wVersion since that is the version we      */
-		/* requested.                                        */
-
-		if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2) {
-			/* Tell the user that we could not find a usable */
-			/* WinSock DLL.                                  */
-			printf_error(_Tr("could not find a usable version of Winsock.dll, required version 2.2 or greater"));
-			WSACleanup();
-			return FALSE;
-		}
-#endif
-	}
-
-	__cwt_is_sockets_allowed = TRUE;
-	return TRUE;
+	return (CwtIODevice*)sdev;
 }
 
 
-void __cwtSocketClose(CwtIODevice *dev)
+static CwtIODevice* __dev_UdpTcpSocketDeviceOpen(struct _CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port, BOOL is_listener)
 {
-	CwtSocketDevice *sockdev;
+	BOOL ok;
 
-	CWT_ASSERT(dev);
-	sockdev = (CwtSocketDevice*)dev;
+	if (!sd)
+		return NULL;
 
-	if( sockdev->sockfd > 0 ) {
+	if( is_listener )
+		ok = cwtSocketNS()->listen(sd, inetAddr, port);
+	else
+		ok = cwtSocketNS()->connect(sd, inetAddr, port);
 
-		/* leave multicast socket group */
-		if( sockdev->type == Cwt_MCSocket_Receiver ) {
-			CwtMulticastSocketDevice *mcsockdev = (CwtMulticastSocketDevice*)sockdev;
-			if( setsockopt (sockdev->sockfd, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&mcsockdev->group.mreq, sizeof(mcsockdev->group.mreq)) < 0 ) {
-		        printf_error(_Tr("dropping multicast group error (%d)"), __sockdev_errno);
-			}
-		}
+	if (ok)
+		return __dev_createSocketDevice(sd);
 
-		CWT_ASSERT(__cwt_nsockets_opened > 0 );
-		__closesocket(sockdev->sockfd);
-		sockdev->sockfd = -1;
-		__cwt_nsockets_opened--;
-	}
-
-	if( __cwt_nsockets_opened == 0 && __cwt_is_sockets_allowed ) {
-#ifdef CWT_CC_MSC
-		WSACleanup();
-#endif
-		__cwt_is_sockets_allowed = FALSE;
-	}
-
-	CWT_FREE(sockdev);
+	return NULL;
 }
 
-size_t __cwtSocketBytesAvailable(CwtIODevice *dev)
+/**
+ * @fn CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_listener)
+ *
+ * @brief Opens UDP socket device.
+ *
+ * @details Opens UDP socket device in non-blocking mode.
+ *
+ * @param inetAddr
+ * @param port
+ * @param is_listener
+ * @return
+ */
+DLL_API_EXPORT CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_listener)
 {
-	CwtSocketDevice *sockdev;
-	size_t nbytes = 0;
-	/*BYTE buf[64];*/
-
-	CWT_ASSERT(dev);
-
-	sockdev = (CwtSocketDevice*)dev;
-
-#ifdef CWT_CC_MSC
-	ioctlsocket(sockdev->sockfd, FIONREAD, (u_long*)&nbytes);
-#else
-	ioctl(sockdev->sockfd, FIONREAD, (char*)&nbytes);
-#endif
-
-	/*printf_debug("bytes available: %ul", nbytes);*/
-	return nbytes;
+	return __dev_UdpTcpSocketDeviceOpen(cwtSocketNS()->openUdpSocket(TRUE)
+			, inetAddr
+			, port
+			, is_listener);
 }
 
-ssize_t __cwtSocketRead(CwtIODevice *dev, BYTE* buf, size_t sz)
+/**
+ * @fn CwtIODevice* cwtTcpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_listener)
+ *
+ * @brief Opens TCP socket device.
+ *
+ * @details Opens TCP socket device in non-blocking mode.
+ *
+ * @param inetAddr
+ * @param port
+ * @param is_listener
+ * @return
+ */
+DLL_API_EXPORT CwtIODevice* cwtTcpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_listener)
 {
-	CwtSocketDevice *sockdev;
-	ssize_t br;
-
-	CWT_ASSERT(dev);
-
-	sockdev = (CwtSocketDevice*)dev;
-
-	sz = CWT_MIN(sz, __cwtSocketBytesAvailable(dev));
-	CWT_ASSERT(sz <= CWT_INT_MAX);
-
-	br = recv(sockdev->sockfd, buf, (int)sz, 0);
-
-#ifdef CWT_CC_MSC
-	if( br == SOCKET_ERROR ) {
-		printf_error(_Tr("receiving data error: %d (0x%0X)"), __sockdev_errno, __sockdev_errno);
-	}
-#endif
-
-	return (ssize_t)br;
-}
-
-ssize_t __cwtSocketWrite(CwtIODevice *dev, const BYTE* buf, size_t sz)
-{
-	CwtSocketDevice *sockdev;
-	ssize_t bw;
-
-	CWT_ASSERT(dev);
-	CWT_ASSERT(sz <= CWT_INT_MAX);
-
-	sockdev = (CwtSocketDevice*)dev;
-	if( sockdev->type == Cwt_MCSocket_Sender ) {
-		CwtMulticastSocketDevice *mcsockdev = (CwtMulticastSocketDevice*)dev;
-		bw = sendto(sockdev->sockfd, buf, (int)sz, 0
-			, (struct sockaddr*)&mcsockdev->group.sockaddr
-			, sizeof(mcsockdev->group.sockaddr));
-	} else {
-		bw = send(sockdev->sockfd, buf, (int)sz, 0);
-	}
-    return bw;
+	return __dev_UdpTcpSocketDeviceOpen(cwtSocketNS()->openTcpSocket(TRUE)
+			, inetAddr
+			, port
+			, is_listener);
 }
 
 
+/**
+ * @fn CwtIODevice* cwtMSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_listener)
+ *
+ * @brief Opens Multicast (UDP) socket device.
+ *
+ * @details Opens Multicast (UDP) socket device in non-blocking mode.
+ *
+ * @param inetAddr
+ * @param port
+ * @param inetMCastAddr
+ * @param is_listener
+ * @return
+ */
+DLL_API_EXPORT CwtIODevice* cwtMSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_listener)
+{
+	CwtSocketNS *socketNS = cwtSocketNS();
+	struct _CwtSocket *sd;
+	BOOL ok;
+
+	sd = cwtSocketNS()->openMSocket(TRUE);
+
+	if (!sd)
+		return NULL;
+
+	if( is_listener )
+		ok = socketNS->listenMSocket(sd, inetAddr, port, inetMCastAddr);
+	else
+		ok = socketNS->connectMSocket(sd, inetAddr, port, inetMCastAddr);
+
+	if (ok)
+		return __dev_createSocketDevice(sd);
+
+	return NULL;
+}
+
+
+static void __dev_close(CwtIODevice *dev)
+{
+	CwtSocketDevice *sd = (CwtSocketDevice*)dev;
+	if (sd) {
+		cwtSocketNS()->close(sd->sockfd);
+		CWT_FREE(sd);
+	}
+}
+
+static size_t __dev_bytesAvailable(CwtIODevice *dev)
+{
+	CwtSocketDevice *sd = (CwtSocketDevice*)dev;
+	CWT_ASSERT(sd);
+	return cwtSocketNS()->bytesAvailable(sd->sockfd);
+}
+
+static ssize_t __dev_read(CwtIODevice *dev, BYTE *buf, size_t sz)
+{
+	CwtSocketDevice *sd = (CwtSocketDevice*)dev;
+	CWT_ASSERT(sd);
+	return cwtSocketNS()->read(sd->sockfd, buf, sz);
+}
+
+static ssize_t __dev_write(CwtIODevice *dev, const BYTE *buf, size_t sz)
+{
+	CwtSocketDevice *sd = (CwtSocketDevice*)dev;
+	CWT_ASSERT(sd);
+	return cwtSocketNS()->write(sd->sockfd, buf, sz);
+}

@@ -3,6 +3,9 @@
  *
  *  Created on: 04.07.2012
  *      Author: wladt
+ *
+ *
+ * IPv4 internet protocol subsystem
  */
 
 #ifndef __CWT_NET_INET_H__
@@ -10,14 +13,13 @@
 
 #include <cwt/types.h>
 
-typedef struct CwtInetAddrIterator {
-	int nothing;
-} CwtInetAddrIterator;
+
+struct _CwtInetAddrIterator;
 
 typedef struct _CwtInetNS {
-	void (*addrBegin)   (CwtInetAddrIterator *it);
-	BOOL (*addrHasMore) (CwtInetAddrIterator *it);
-	BOOL (*addrNext)    (CwtInetAddrIterator *it);
+	void   (*addrBegin)   (struct _CwtInetAddrIterator *it);
+	BOOL   (*addrHasMore) (struct _CwtInetAddrIterator *it);
+	BOOL   (*addrNext)    (struct _CwtInetAddrIterator *it);
 } CwtInetNS;
 
 

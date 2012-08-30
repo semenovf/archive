@@ -20,22 +20,20 @@
 #	include <share.h> /* file sharing modes */
 #endif
 
-static void    __cwtFileClose(CwtIODevice*);
-static size_t  __cwtFileBytesAvailable(CwtIODevice*);
-static ssize_t __cwtFileRead(CwtIODevice*, BYTE*, size_t);
-static ssize_t __cwtFileWrite(CwtIODevice*, const BYTE*, size_t);
-static void    __cwtFileReadBegin(CwtIODevice*);
-static void    __cwtFileReadCommit(CwtIODevice*);
-static void    __cwtFileReadRollback(CwtIODevice*);
+static void    __dev_close(CwtIODevice*);
+static size_t  __dev_bytesAvailable(CwtIODevice*);
+static ssize_t __dev_read(CwtIODevice*, BYTE*, size_t);
+static ssize_t __dev_write(CwtIODevice*, const BYTE*, size_t);
 
 typedef struct CwtFileDevice
 {
-	CwtIODevice base;
+	CwtIODevice __base;
 
 	int in;  /* input file handler */
 	int out; /* output file handler */
+
 	off_t read_pos;
-	off_t read_pos_saved;
+	/*off_t read_pos_saved;*/
 } CwtFileDevice;
 
 
@@ -96,17 +94,14 @@ DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, CwtOpenMode 
 	if( fh > 0 )
 		CWT_ASSERT(ns->lseek(fh, 0L, SEEK_SET) >= 0L);
 
+
 	fd->read_pos = 0L;
-	fd->read_pos_saved = 0L;
+	/*fd->read_pos_saved = 0L;*/
 
-	fd->base.close          = __cwtFileClose;
-	fd->base.bytesAvailable = __cwtFileBytesAvailable;
-	fd->base.read           = __cwtFileRead;
-	fd->base.write          = __cwtFileWrite;
-
-	fd->base.readBegin      = __cwtFileReadBegin;
-	fd->base.readCommit     = __cwtFileReadCommit;
-	fd->base.readRollback   = __cwtFileReadRollback;
+	fd->__base.close          = __dev_close;
+	fd->__base.bytesAvailable = __dev_bytesAvailable;
+	fd->__base.read           = __dev_read;
+	fd->__base.write          = __dev_write;
 
 	return (CwtIODevice*)fd;
 }
@@ -165,22 +160,17 @@ DLL_API_EXPORT CwtIODevice* cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, 
 		CWT_ASSERT(ns->lseek(fd->out, 0L, SEEK_SET) >= 0L);
 
 	fd->read_pos = 0L;
-	fd->read_pos_saved = 0L;
 
-	fd->base.close          = __cwtFileClose;
-	fd->base.bytesAvailable = __cwtFileBytesAvailable;
-	fd->base.read           = __cwtFileRead;
-	fd->base.write          = __cwtFileWrite;
-
-	fd->base.readBegin      = __cwtFileReadBegin;
-	fd->base.readCommit     = __cwtFileReadCommit;
-	fd->base.readRollback   = __cwtFileReadRollback;
+	fd->__base.close          = __dev_close;
+	fd->__base.bytesAvailable = __dev_bytesAvailable;
+	fd->__base.read           = __dev_read;
+	fd->__base.write          = __dev_write;
 
 	return (CwtIODevice*)fd;
 }
 #endif
 
-void __cwtFileClose(CwtIODevice *dev)
+void __dev_close(CwtIODevice *dev)
 {
 	CwtFileDevice *fd;
 	CwtUnistdNS *ns = cwtUnistdNS();
@@ -198,7 +188,7 @@ void __cwtFileClose(CwtIODevice *dev)
 	CWT_FREE(fd);
 }
 
-size_t __cwtFileBytesAvailable(CwtIODevice *dev)
+size_t __dev_bytesAvailable(CwtIODevice *dev)
 {
 	CwtUnistdNS *ns = cwtUnistdNS();
 	CwtFileDevice *fd;
@@ -218,7 +208,7 @@ size_t __cwtFileBytesAvailable(CwtIODevice *dev)
 	return (size_t)(total - fd->read_pos);
 }
 
-ssize_t __cwtFileRead(CwtIODevice *dev, BYTE* buf, size_t sz)
+ssize_t __dev_read(CwtIODevice *dev, BYTE* buf, size_t sz)
 {
 	CwtUnistdNS *ns = cwtUnistdNS();
 	CwtFileDevice *fd;
@@ -232,7 +222,7 @@ ssize_t __cwtFileRead(CwtIODevice *dev, BYTE* buf, size_t sz)
 		return (size_t)-1;
 	}
 
-	sz = CWT_MIN(sz, __cwtFileBytesAvailable(dev));
+	sz = CWT_MIN(sz, __dev_bytesAvailable(dev));
 	CWT_ASSERT(ns->lseek(fd->in, fd->read_pos, SEEK_SET) >= 0L);
 
 	/*FIXME: warning C4267: 'function' : conversion from 'size_t' to 'UINT', possible loss of data */
@@ -244,7 +234,7 @@ ssize_t __cwtFileRead(CwtIODevice *dev, BYTE* buf, size_t sz)
 	return br;
 }
 
-ssize_t __cwtFileWrite(CwtIODevice *dev, const BYTE* buf, size_t sz)
+ssize_t __dev_write(CwtIODevice *dev, const BYTE* buf, size_t sz)
 {
 	CwtUnistdNS *ns = cwtUnistdNS();
 	CwtFileDevice *fd;
@@ -267,6 +257,7 @@ ssize_t __cwtFileWrite(CwtIODevice *dev, const BYTE* buf, size_t sz)
 	return bw;
 }
 
+/*
 void __cwtFileReadBegin(CwtIODevice *dev)
 {
 	CwtFileDevice *fd;
@@ -293,4 +284,5 @@ void __cwtFileReadRollback(CwtIODevice *dev)
 	fd = (CwtFileDevice*)dev;
 	fd->read_pos = fd->read_pos_saved;
 }
+*/
 

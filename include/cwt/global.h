@@ -212,6 +212,8 @@
 #endif
 
 #define CWT_UNUSED(x) ((void)(x))
+#define CWT_UNUSED2(x1,x2) ((void)(x1));((void)(x2))
+#define CWT_UNUSED3(x1,x2,x3) ((void)(x1));((void)(x2));((void)(x3))
 
 #ifndef NDEBUG
 EXTERN_C_BEGIN
