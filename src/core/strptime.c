@@ -84,7 +84,7 @@ __weak_alias(strptime,_strptime)
 #define	LEGAL_ALT(x)	{ if (alt_format & ~(x)) return NULL; }
 
 static CWT_CHAR __gmt[] = { _T("GMT") };
-static CWT_CHAR __utc[] = { _T("UTC") };
+/*static CWT_CHAR __utc[] = { _T("UTC") };*/
 
 /* RFC-822/RFC-2822 */
 static const CWT_CHAR* const nast[5] = {
@@ -120,8 +120,8 @@ CWT_CHAR* __cwt_strptime(const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm
 		i = 0;
 
 		/* Eat up white-space. */
-		if( __strNS->isspace(c) ) {
-			while( __strNS->isspace(*bp) )
+		if( __strNS->isSpace(c) ) {
+			while( __strNS->isSpace(*bp) )
 				bp++;
 			continue;
 		}
@@ -298,7 +298,7 @@ literal:
 					sse *= 10;
 					sse += *bp++ - _T('0');
 					rulim /= 10;
-				} while ((sse * 10 <= TIME_MAX) &&
+				} while (((UINT64)(sse * 10) <= TIME_MAX) &&
 					 rulim && *bp >= _T('0') && *bp <= _T('9'));
 
 				if (sse < 0 || (UINT64)sse > TIME_MAX) {
@@ -348,7 +348,7 @@ literal:
 				 */
 			do
 				bp++;
-			while (__strNS->isdigit(*bp));
+			while (__strNS->isDigit(*bp));
 			continue;
 
 		case _T('V'):	/* The ISO 8601:1988 week number as decimal */
@@ -381,7 +381,7 @@ literal:
 
 		case _T('Z'):
 			CWT_ISO_CPP_NAME(tzset)();
-			if( __strNS->strncmp((const CWT_CHAR*)bp, __gmt, 3) == 0) {
+			if( __strNS->strNCmp((const CWT_CHAR*)bp, __gmt, 3) == 0) {
 				tm->tm_isdst = 0;
 #ifdef TM_GMTOFF
 				tm->TM_GMTOFF = 0;
@@ -423,7 +423,7 @@ literal:
 			 * [A-IL-M] = -1 ... -9 (J not used)
 			 * [N-Y]  = +1 ... +12
 			 */
-			while( __strNS->isspace(*bp) )
+			while( __strNS->isSpace(*bp) )
 				bp++;
 
 			switch (*bp++) {
@@ -498,7 +498,7 @@ literal:
 			}
 			offs = 0;
 			for (i = 0; i < 4; ) {
-				if( __strNS->isdigit(*bp) ) {
+				if( __strNS->isDigit(*bp) ) {
 					offs = offs * 10 + (*bp++ - _T('0'));
 					i++;
 					continue;
@@ -539,7 +539,7 @@ literal:
 		 */
 		case _T('n'):	/* Any kind of white-space. */
 		case _T('t'):
-			while (__strNS->isspace(*bp))
+			while (__strNS->isSpace(*bp))
 				bp++;
 			LEGAL_ALT(0);
 			continue;
@@ -554,7 +554,7 @@ literal:
 }
 
 
-static const CWT_UCHAR* __conv_num(const CWT_CHAR *buf, int *dest, UINT llim, UINT ulim)
+static const CWT_UCHAR* __conv_num(const CWT_UCHAR *buf, int *dest, UINT llim, UINT ulim)
 {
 	UINT result = 0;
 	CWT_UCHAR ch;
@@ -580,7 +580,7 @@ static const CWT_UCHAR* __conv_num(const CWT_CHAR *buf, int *dest, UINT llim, UI
 	return buf;
 }
 
-static const CWT_UCHAR* __find_string(const CWT_CHAR *bp, int *tgt, const CWT_CHAR* const *n1,
+static const CWT_UCHAR* __find_string(const CWT_UCHAR *bp, int *tgt, const CWT_CHAR* const *n1,
 		const CWT_CHAR* const *n2, int c)
 {
 	int i;
@@ -590,7 +590,7 @@ static const CWT_UCHAR* __find_string(const CWT_CHAR *bp, int *tgt, const CWT_CH
 	for (; n1 != NULL; n1 = n2, n2 = NULL) {
 		for (i = 0; i < c; i++, n1++) {
 			len = __strNS->strlen(*n1);
-			if (__strNS->strnicmp(*n1, (const CWT_CHAR*)bp, len) == 0) {
+			if (__strNS->strNCaseCmp(*n1, (const CWT_CHAR*)bp, len) == 0) {
 				*tgt = i;
 				return bp + len;
 			}

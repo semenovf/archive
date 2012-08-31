@@ -45,16 +45,13 @@ typedef enum CWT_EVENT_TYPE CWT_EVENT_TYPE;
 
 typedef DList CWT_EVENT_QUEUE;
 
-struct CWT_EVENT {
+typedef struct _CwtEvent {
 	CWT_EVENT_TYPE ev_type;
 	void          *ev_data;
 	void (*delete_data_func)(void*);
-};
-typedef struct CWT_EVENT CWT_EVENT;
-typedef struct CWT_EVENT* CWT_EVENT_PTR;
-typedef struct CWT_EVENT* CwtEventPtr;
+} CwtEvent;
 
-typedef BOOL (*CWT_EVENT_HANDLER)(CWT_EVENT_PTR);
+typedef BOOL (*CWT_EVENT_HANDLER)(CwtEvent*);
 
 struct CWT_TIMER_EVENT
 {

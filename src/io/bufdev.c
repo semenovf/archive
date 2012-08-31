@@ -9,10 +9,10 @@
 #include <cwt/logger.h>
 #include <cwt/io/bufdev.h>
 
-static void    __dev_сlose(CwtIODevice*);
-static size_t  __dev_bytesAvailable(CwtIODevice *pdev);
-static ssize_t __dev_read(CwtIODevice*, BYTE*, size_t);
-static ssize_t __dev_write(CwtIODevice*, const BYTE*, size_t);
+static void    __dev_close          (CwtIODevice*);
+static size_t  __dev_bytesAvailable (CwtIODevice *pdev);
+static ssize_t __dev_read           (CwtIODevice*, BYTE*, size_t);
+static ssize_t __dev_write          (CwtIODevice*, const BYTE*, size_t);
 
 /*
 static void    __readBegin(CwtIODevice*);
@@ -40,7 +40,7 @@ CwtIODevice* cwtBufferDeviceOpen()
 	bufd->in = cwtRingBufNS()->create();
 	bufd->out = cwtRingBufNS()->create();
 
-	bufd->__base.close = __dev_сlose;
+	bufd->__base.close = __dev_close;
 	bufd->__base.bytesAvailable = __dev_bytesAvailable;
 	bufd->__base.read  = __dev_read;
 	bufd->__base.write = __dev_write;
@@ -68,7 +68,7 @@ CwtIODevice* cwtBufferDeviceOpenPeer(CwtIODevice *bufd)
 }
 
 
-void __dev_сlose(CwtIODevice *dev)
+void __dev_close(CwtIODevice *dev)
 {
 	CwtBufferDevice *bufd;
 

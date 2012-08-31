@@ -11,6 +11,7 @@
 #include <cwt/global.h>
 #include <cwt/types.h>
 #include <cwt/vector.h>
+#include <stdarg.h>
 
 CWT_BEGIN_DECL_VECTOR_NS(CwtStringNS, CwtString, CWT_CHAR)
 void               (*appendChar)  (CwtString *s, CWT_CHAR ch);

@@ -6,6 +6,7 @@
  */
 
 #include "socket_p.h"
+#include <string.h>
 #include <cwt/str.h>
 #include <cwt/logger.h>
 #include <cwt/txtcodec.h>
@@ -86,7 +87,6 @@ static BOOL __socket_listenOrConnect(CwtSocket *sd, const CWT_CHAR *inetAddr, UI
 	} else {
 		do {
 			struct in_addr localInterface;
-			int reuse = 1;
 
 			/* Initialize the group sockaddr structure with a */
 			/* group address of 225.1.1.1 and port 5555. */

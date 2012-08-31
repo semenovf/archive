@@ -5,7 +5,8 @@
  *      Author: wladt
  */
 
-
+#include <cwt/csv/csv.h>
+#include <string.h>
 #include <cwt/str.h>
 #include <cwt/string.h>
 #include <cwt/txtcodec.h>
@@ -15,7 +16,6 @@
 #include <cwt/string.h>
 #include <cwt/strlist.h>
 #include <cwt/io/channel.h>
-#include <cwt/csv/csv.h>
 #include <cwt/hashtab.h>
 
 
@@ -49,7 +49,7 @@ typedef struct _CwtCsvHandlerImpl {
 static CwtCsvHandler*  __csv_create   (void);
 static CwtCsvHandler*  __csv_createWithArgs (const CWT_CHAR *separator, size_t max_tokens);
 static void            __csv_free     (CwtCsvHandler*);
-static void            __csv_write    (CwtCsvHandler*, CwtChannel*, const CWT_CHAR* argv[], size_t argc);
+static void            __csv_write    (CwtCsvHandler*, CwtChannel*, const CWT_CHAR *argv[], size_t argc);
 static BOOL            __csv_parse    (CwtCsvHandler*, CwtChannel*);
 static void            __csv_setOnRow (CwtCsvHandler*, CwtCsvCallback cb);
 static void            __csv_error    (CwtCsvHandler*, const CWT_CHAR *errstr);
@@ -59,14 +59,14 @@ static size_t          __csv_line     (CwtCsvHandler*);
 /* Simple API for CSV (SAC) */
 static void            __csv_begin   (CwtCsvHandler*, CwtChannel*);
 static size_t          __csv_header  (CwtCsvHandler*);
-static void            __csv_titles  (CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
+static void            __csv_titles  (CwtCsvHandler*, CWT_CHAR **argv, size_t argc);
 static BOOL            __csv_next    (CwtCsvHandler*);
 static size_t          __csv_columnsCount (CwtCsvHandler*);
-static size_t          __csv_row     (CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
-static const CWT_CHAR* __csv_column  (CwtCsvHandler*, const CWT_CHAR* name);
+static size_t          __csv_row     (CwtCsvHandler*, const CWT_CHAR **argv, size_t argc);
+static const CWT_CHAR* __csv_column  (CwtCsvHandler*, const CWT_CHAR *name);
 
 static BOOL            __csv_persist (CwtCsvHandler*, CwtDBHandler *dbh, CwtDDITable *table);
-static BOOL            __csv_setValidator (CwtCsvHandler*, const CWT_CHAR* name, BOOL (*)(const CWT_CHAR*));
+static BOOL            __csv_setValidator (CwtCsvHandler*, const CWT_CHAR *name, BOOL (*)(const CWT_CHAR*));
 
 /* helper functions */
 static void          __csv_destroyCsvData(CsvData*);
@@ -266,7 +266,7 @@ static BOOL __csv_parse(CwtCsvHandler *h, CwtChannel *pchan)
 						__slNS->toArray(tokens, argv, &argc);
 
 						if( ph->on_row ) {
-							ok = ph->on_row(h, argv, argc);
+							ok = ph->on_row(h, (const CWT_CHAR**)argv, argc);
 						}
 					} else {
 						__csv_error(h, _Tr("maximum tokens in row are exceeded"));
@@ -406,7 +406,7 @@ static size_t __csv_header(CwtCsvHandler *h)
  * CWT_FREE(titles);
  * @endcode
  */
-static void __csv_titles(CwtCsvHandler *h, const CWT_CHAR* argv[], size_t argc)
+static void __csv_titles(CwtCsvHandler *h, CWT_CHAR **argv, size_t argc)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	size_t count;
@@ -533,7 +533,7 @@ static size_t __csv_columnsCount(CwtCsvHandler *h)
  * @param argc
  * @return actual Number of columns.
  */
-static size_t __csv_row(CwtCsvHandler *h, const CWT_CHAR* argv[], size_t argc)
+static size_t __csv_row(CwtCsvHandler *h, const CWT_CHAR **argv, size_t argc)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	size_t count;

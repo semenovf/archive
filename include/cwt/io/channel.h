@@ -6,15 +6,15 @@
 #include <cwt/ringbuf.h>
 #include <cwt/bytearr.h>
 
-typedef struct CwtIODevice
+typedef struct _CwtIODevice
 {
-	void    (*close)(struct CwtIODevice*);
-	size_t  (*bytesAvailable)(struct CwtIODevice*);
-	ssize_t (*read)(struct CwtIODevice*, BYTE*, size_t);
-	ssize_t (*write)(struct CwtIODevice*, const BYTE*, size_t);
+	void    (*close)(struct _CwtIODevice*);
+	size_t  (*bytesAvailable)(struct _CwtIODevice*);
+	ssize_t (*read)(struct _CwtIODevice*, BYTE*, size_t);
+	ssize_t (*write)(struct _CwtIODevice*, const BYTE*, size_t);
 } CwtIODevice;
 
-typedef struct CwtChannel
+typedef struct _CwtChannel
 {
 	CwtIODevice  *dev;
     unsigned long total_br; /* total bytes read */
@@ -23,7 +23,7 @@ typedef struct CwtChannel
 } CwtChannel;
 
 
-typedef struct CwtChannelNS {
+typedef struct _CwtChannelNS {
 	CwtChannel*  (*create)         (CwtIODevice *pdev);
 	void         (*free)           (CwtChannel*);
 	BOOL         (*canRead)        (CwtChannel*);

@@ -7,6 +7,7 @@
 
 
 #include <cwt/test.h>
+#include <string.h>
 #include <cwt/str.h>
 #include <cwt/utils.h>
 #include <cwt/unitype.h>
@@ -185,12 +186,12 @@ void test_00(void)
 
 		__utNS->setTEXT(text_val, text_en, __strNS->strlen(text_en));
 		text = __utNS->toTEXT(text_val, &ok);
-		CWT_TEST_OK(ok && __strNS->strcmp(text_en, text) == 0);
+		CWT_TEST_OK(ok && __strNS->strCmp(text_en, text) == 0);
 		CWT_FREE(text);
 
 		__utNS->setTEXT(text_val, text_ru, __strNS->strlen(text_ru));
 		text = __utNS->toTEXT(text_val, &ok);
-		CWT_TEST_OK(ok && __strNS->strcmp(text_ru, text) == 0);
+		CWT_TEST_OK(ok && __strNS->strCmp(text_ru, text) == 0);
 		CWT_FREE(text);
 	}
 
@@ -327,12 +328,12 @@ void test_01(void)
 
 		__utNS->setTEXT(uval, text_en, __strNS->strlen(text_en));
 		text = __utNS->toTEXT(uval, &ok);
-		CWT_TEST_OK(ok && __strNS->strcmp(text_en, text) == 0);
+		CWT_TEST_OK(ok && __strNS->strCmp(text_en, text) == 0);
 		CWT_FREE(text);
 
 		__utNS->setTEXT(uval, text_ru, __strNS->strlen(text_ru));
 		text = __utNS->toTEXT(uval, &ok);
-		CWT_TEST_OK(ok && __strNS->strcmp(text_ru, text) == 0);
+		CWT_TEST_OK(ok && __strNS->strCmp(text_ru, text) == 0);
 		CWT_FREE(text);
 	}
 

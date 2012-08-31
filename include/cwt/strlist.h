@@ -53,7 +53,7 @@ typedef struct CwtStrListNS {
 	BOOL            (*hasMore)     (CwtStrListIterator *iter);
 	const CWT_CHAR* (*next)        (CwtStrListIterator *iter);
 /*	CwtStrListElem* (*elem)        (CwtStrListIterator *iter);*/
-	void            (*toArray)     (CwtStrList*, const CWT_CHAR *argv[], size_t *argc);
+	void            (*toArray)     (CwtStrList*, CWT_CHAR **argv, size_t *argc);
 	BOOL            (*find)        (CwtStrList*, const CWT_CHAR *s, size_t *index);
 } CwtStrListNS;
 

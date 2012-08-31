@@ -51,29 +51,31 @@ DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, CwtOpenMode 
 	int fh = -1;
 
 
-	if( mode & Cwt_OM_Read )
+	if( mode & Cwt_FileRead )
 		oflags |= O_RDONLY;
-	if( mode & Cwt_OM_Write )
+	if( mode & Cwt_FileWrite )
 		oflags |= O_WRONLY;
-	if( mode & Cwt_OM_ReadWrite )
+	if( mode & Cwt_FileReadWrite )
 		oflags |= O_RDWR;
 
-	if( mode & Cwt_OM_Create )
+	if( mode & Cwt_FileCreate )
 		oflags |= O_CREAT;
 	else
 		oflags |= O_APPEND;
 
 #ifdef CWT_CC_GNUC
-	if( mode & Cwt_OM_NonBlocking )
+	if( mode & Cwt_FileNonBlocking )
 		oflags |= O_NONBLOCK;
 #endif
 
+#ifdef CWT_CC_MSC
 	oflags |= O_BINARY;
+#endif
 
 	if( path ) {
 		fh = ns->open(path, oflags, 0);
 		if( fh < 0 ) {
-			printf_error(_Tr("unable to open input file: %s: %s"), path, cwtStrNS()->strerror(errno));
+			printf_error(_Tr("unable to open input file: %s: %s"), path, cwtStrNS()->strError(errno));
 			return (CwtIODevice*)NULL;
 		}
 	} else {
@@ -85,10 +87,10 @@ DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, CwtOpenMode 
 	fd->in  = -1;
 	fd->out = -1;
 
-	if( (mode & Cwt_OM_ReadWrite) || (mode & Cwt_OM_Read) )
+	if( (mode & Cwt_FileReadWrite) || (mode & Cwt_FileRead) )
 		fd->in  = fh;
 
-	if( (mode & Cwt_OM_ReadWrite) || (mode & Cwt_OM_Write) )
+	if( (mode & Cwt_FileReadWrite) || (mode & Cwt_FileWrite) )
 		fd->out = fh;
 
 	if( fh > 0 )
@@ -135,7 +137,7 @@ DLL_API_EXPORT CwtIODevice* cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, 
 	if( infilename ) {
 			fd->in = ns->sopen(infilename, imode, SH_DENYNO, S_IREAD | S_IWRITE);
 			if( fd->in < 0 ) {
-					printf_error(_Tr("unable to open input file: %s: %s"), infilename, cwtStrNS()->strerror(errno));
+					printf_error(_Tr("unable to open input file: %s: %s"), infilename, cwtStrNS()->strError(errno));
 					CWT_FREE(fd);
 					return (CwtIODevice*)NULL;
 			}
@@ -144,7 +146,7 @@ DLL_API_EXPORT CwtIODevice* cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, 
 	if( outfilename ) {
 		fd->out = ns->sopen(outfilename, omode, SH_DENYNO, S_IREAD | S_IWRITE);
 		if( fd->out < 0 ) {
-			printf_error(_Tr("unable to open output file: %s: %s"), infilename, cwtStrNS()->strerror(errno));
+			printf_error(_Tr("unable to open output file: %s: %s"), infilename, cwtStrNS()->strError(errno));
 			if( fd->in > 0 ) {
 					ns->close(fd->in);
 			}

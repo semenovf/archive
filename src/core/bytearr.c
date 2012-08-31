@@ -8,6 +8,7 @@
 
 #include <cwt/bytearr.h>
 #include <cwt/str.h>
+#include <string.h>
 
 static const char*    __cstr(CwtByteArray *ba);
 static void           __ltrim(CwtByteArray *ba);

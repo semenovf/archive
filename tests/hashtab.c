@@ -40,6 +40,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 
+#include <string.h>
 #include <cwt/test.h>
 #include <cwt/hashtab.h>
 /*
@@ -289,8 +290,8 @@ void test_hash_table_iterating_remove(void)
 	CwtHashTableIterator iterator;
 	char buf[10];
 	char *val;
-	int count;
-	int removed;
+	size_t count;
+	size_t removed;
 	int i;
 
 	hash_table = generate_hash_table();

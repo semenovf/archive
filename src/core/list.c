@@ -304,8 +304,8 @@ static void __list_remove(CwtListIterator *it)
 	}
 
 	CWT_FREE(n);
+	CWT_ASSERT(list->count > 0);
 	list->count--;
-	CWT_ASSERT(list->count >= 0);
 }
 
 /**
@@ -331,9 +331,9 @@ static void __list_removeFirst(CwtList *list)
 	}
 
 	CWT_FREE(n);
+	CWT_ASSERT(list->count > 0);
 
 	list->count--;
-	CWT_ASSERT(list->count >= 0);
 }
 
 
@@ -360,9 +360,9 @@ static void __list_removeLast(CwtList *list)
 	}
 
 	CWT_FREE(n);
+	CWT_ASSERT(list->count > 0);
 
 	list->count--;
-	CWT_ASSERT(list->count >= 0);
 }
 
 

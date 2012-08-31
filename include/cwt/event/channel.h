@@ -13,7 +13,7 @@
 
 typedef struct _CwtEventChannelNS {
 	CwtEventSource* (*source)        (void);
-	void            (*addListener)   (CwtChannel *pchan, BOOL (*reader)(CwtEventPtr));
+	void            (*addListener)   (CwtChannel *pchan, BOOL (*reader)(CwtEvent*));
 	void 			(*removeListener)(CwtChannel *pchan);
 	void 			(*peekChannel)   (CwtEvent *pevt, CwtChannel **pchan);
 } CwtEventChannelNS;

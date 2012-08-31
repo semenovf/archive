@@ -7,6 +7,7 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include <cwt/types.h>
 #include <cwt/test.h>
 #include <cwt/bytearr.h>
@@ -29,19 +30,19 @@ int main(int argc, char *argv[])
 	CWT_BEGIN_TESTS(6);
 
 	ba = baNS->create();
-	baNS->appendElems(ba, loremipsum_orig, strlen(loremipsum_orig));
+	baNS->appendElems(ba, (BYTE*)loremipsum_orig, strlen(loremipsum_orig));
 	baNS->ltrim(ba);
 	CWT_TEST_OK(strcmp(baNS->cstr(ba), loremipsum_ltrimmed) == 0);
 	CWT_TEST_OK(strlen(loremipsum_ltrimmed) == baNS->size(ba) );
 
 	baNS->clear(ba);
-	baNS->appendElems(ba, loremipsum_orig, strlen(loremipsum_orig));
+	baNS->appendElems(ba, (BYTE*)loremipsum_orig, strlen(loremipsum_orig));
 	baNS->rtrim(ba);
 	CWT_TEST_OK(strcmp(baNS->cstr(ba), loremipsum_rtrimmed) == 0);
 	CWT_TEST_OK(strlen(loremipsum_rtrimmed) == baNS->size(ba) );
 
 	baNS->clear(ba);
-	baNS->appendElems(ba, loremipsum_orig, strlen(loremipsum_orig));
+	baNS->appendElems(ba, (BYTE*)loremipsum_orig, strlen(loremipsum_orig));
 	baNS->trim(ba);
 	CWT_TEST_OK(strcmp(baNS->cstr(ba), loremipsum_trimmed) == 0);
 	CWT_TEST_OK(strlen(loremipsum_trimmed) == baNS->size(ba) );

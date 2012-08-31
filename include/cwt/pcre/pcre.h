@@ -249,8 +249,8 @@ typedef struct _CwtPCRENS
 	int             (*config)             (int, void*);
 	int             (*copyNamedSubstring) (const pcre*, const char*, int*, int, const char*, char*, int);
 	int             (*copySubstring)      (const char*, int*, int, int, char*, int);
-	int             (*dfaExec)            (const pcre*, const pcre_extra*, const char*, int, int, int, int*, int , int*, int);
-	int             (*exec)               (const pcre*, const pcre_extra*, PCRE_SPTR, int, int, int, int*, int);
+	int             (*dfaExec)            (const pcre*, const pcre_extra*, const char*, int, int, unsigned int, int*, int , int*, int);
+	int             (*exec)               (const pcre*, const pcre_extra*, PCRE_SPTR, int, int, unsigned int, int*, int);
 	void            (*freeSubstring)      (const char*);
 	void            (*freeSubstringList)  (const char**);
 	int             (*fullinfo)           (const pcre*, const pcre_extra*, int, void*);

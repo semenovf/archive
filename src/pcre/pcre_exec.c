@@ -3687,7 +3687,7 @@ Returns:          > 0 => success; value is the number of elements filled in
 */
 
 int pcre_exec(const pcre *argument_re, const pcre_extra *extra_data,
-	PCRE_SPTR subject, int length, int start_offset, int options, int *offsets,
+	PCRE_SPTR subject, int length, int start_offset, unsigned int options, int *offsets,
 	int offsetcount)
 {
 int rc, resetcount, ocount;
@@ -3804,7 +3804,7 @@ md->ctypes = tables + ctypes_offset;
 /* Handle different types of newline. The two bits give four cases. If nothing
 is set at run time, whatever was used at compile time applies. */
 
-switch ((((options & PCRE_NEWLINE_BITS) == 0)? re->options : options) &
+switch ((((options & PCRE_NEWLINE_BITS) == 0)? (unsigned int)re->options : options) &
        PCRE_NEWLINE_BITS)
   {
   case 0: newline = NEWLINE; break;   /* Compile-time default */

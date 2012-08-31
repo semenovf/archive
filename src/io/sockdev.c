@@ -22,7 +22,6 @@ typedef struct CwtSocketDevice {
 
 static CwtIODevice* __dev_createSocketDevice (struct _CwtSocket *sd)
 {
-	CwtSocketNS *socketNS = cwtSocketNS();
 	CwtSocketDevice *sdev = NULL;
 
 	if( !sd )

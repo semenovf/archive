@@ -29,7 +29,7 @@ static CwtList        *__listeners = NULL;
 static CwtEventSource  __channel_source = { __pollChannel, __finish };
 
 static CwtEventSource* __source        (void);
-static void            __addListener   (CwtChannel *pchan, BOOL (*reader)(CwtEventPtr));
+static void            __addListener   (CwtChannel *pchan, BOOL (*reader)(CwtEvent*));
 static void 		   __removeListener(CwtChannel *pchan);
 static void            __peekChannel   (CwtEvent *pevt, CwtChannel **pchan);
 
@@ -86,7 +86,7 @@ static CwtEventSource* __source(void)
 }
 
 
-static void __addListener(CwtChannel *pchan, BOOL (*reader)(CwtEventPtr))
+static void __addListener(CwtChannel *pchan, BOOL (*reader)(CwtEvent*))
 {
 	CwtListIterator it;
 

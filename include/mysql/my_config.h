@@ -141,7 +141,7 @@
 #define HAVE_STRPBRK 1
 /* #undef HAVE_STRSEP */
 #define HAVE_STRSTR 1
-/* #undef HAVE_STRTOK_R */
+/*#define HAVE_STRTOK_R 1*/
 /* #undef HAVE_STRTOK_R */
 #define HAVE_STRTOL 1
 /* #undef HAVE_STRTOLL */

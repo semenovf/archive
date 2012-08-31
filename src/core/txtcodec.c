@@ -6,6 +6,7 @@
  */
 
 
+#include <string.h>
 #include <cwt/txtcodec.h>
 #include <cwt/str.h>
 #include <cwt/logger.h>
@@ -148,8 +149,8 @@ static char* __cwt_toUtf8(const CWT_CHAR *s, size_t n)
 #		error __toUtf8 is not implemented yet
 #	endif
 #else
-#	error __toUtf8 is not implemented yet
-		/*utf8 = strdup(s);*/
+		/* FIXME need to convert Local8Bit chars into UTF8 */
+		utf8 = strndup(s, n);
 #endif
 
 	} /* s */
@@ -215,7 +216,8 @@ static CWT_CHAR* __cwt_fromUtf8(const char *utf8, size_t n)
 #		error __toUtf8 is not implemented yet
 #	endif
 #else
-#		error __toUtf8 is not implemented yet
+	/* FIXME need to convert UTF8 to Local8Bit chars */
+	str = strndup(utf8, n);
 #endif
 
 	return str;
@@ -224,10 +226,10 @@ static CWT_CHAR* __cwt_fromUtf8(const char *utf8, size_t n)
 
 static char* __cwt_toMBCS(const CWT_CHAR *s, const CWT_CHAR *csname, size_t n)
 {
-	if( __cwtStrNS->streq(_T("utf8"), csname))
+	if( __cwtStrNS->strEq(_T("utf8"), csname))
 		return __cwt_toUtf8(s, n);
 
-	if( __cwtStrNS->streq(_T("latin1"), csname))
+	if( __cwtStrNS->strEq(_T("latin1"), csname))
 		return __cwt_toLatin1(s, n);
 
 	printf_warn(_Tr("CwtStrNS::toMBCS(): no text codec is attached, converting to MBCS"));
@@ -237,9 +239,9 @@ static char* __cwt_toMBCS(const CWT_CHAR *s, const CWT_CHAR *csname, size_t n)
 
 static CWT_CHAR* __cwt_fromMBCS(const char *s, const CWT_CHAR *csname, size_t n)
 {
-	if( __cwtStrNS->streq(_T("utf8"), csname))
+	if( __cwtStrNS->strEq(_T("utf8"), csname))
 		return __cwt_fromUtf8(s, n);
-	if( __cwtStrNS->streq(_T("latin1"), csname))
+	if( __cwtStrNS->strEq(_T("latin1"), csname))
 		return __cwt_fromLatin1(s, n);
 
 	printf_warn(_Tr("CwtStrNS::fromMBCS(): no text codec is attached, converting from MBCS"));

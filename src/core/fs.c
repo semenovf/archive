@@ -9,7 +9,7 @@
 #include <cwt/fs.h>
 #include <cwt/str.h>
 
-const CWT_CHAR __fs_separator(void);
+CWT_CHAR       __fs_separator(void);
 CWT_CHAR*      __fs_buildPath(const CWT_CHAR *arg0, ...);
 CWT_CHAR*      __fs_buildPathArgv(const CWT_CHAR *argv[], size_t n);
 
@@ -43,7 +43,7 @@ DLL_API_EXPORT CwtFileSystemNS* cwtFileSystemNS(void)
 }
 
 
-const CWT_CHAR __fs_separator(void)
+CWT_CHAR __fs_separator(void)
 {
 	return __fs_separator_char;
 }

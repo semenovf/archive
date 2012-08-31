@@ -17,7 +17,6 @@ static CwtEventChannelNS *__eventChannelNS = NULL;
 
 static BOOL quit_event(CwtEvent *pevt)
 {
-	CwtLoggerNS *logger = cwtLoggerNS();
 	CwtChannel *pchan;
 	ssize_t br;
 	BYTE buf[256];

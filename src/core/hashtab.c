@@ -21,6 +21,10 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* Hash table implementation */
 
 #include <stdlib.h>
+#include <ctype.h>
+#include <wctype.h>
+#include <wchar.h>
+#include <string.h>
 #include <cwt/string.h>
 #include <cwt/str.h>
 #include <cwt/hashtab.h>
@@ -754,7 +758,7 @@ static ULONG __ht_wstriHash(void *string)
  *
  * @param location1       Pointer to the first value to compare.
  * @param location2       Pointer to the second value to compare.
- * @return                Non-zero if the two values are equal, zero if the
+ * @return                @c TRUE if the two values are equal, @c FALSE if the
  *                        two values are not equal.
  */
 
@@ -801,7 +805,7 @@ int int_compare(void *plocation1, void *plocation2)
  *
  * @param string1         The first string.
  * @param string2         The second string.
- * @return                Non-zero if the strings are equal, zero if they are
+ * @return                @c TRUE if the strings are equal, @c FALSE if they are
  *                        not equal.
  */
 static BOOL __ht_cstreq(void *string1, void *string2)
@@ -844,7 +848,7 @@ static int __ht_cstrcmp(void *string1, void *string2)
  *
  * @param string1         The first string.
  * @param string2         The second string.
- * @return                Non-zero if the strings are equal, zero if they are
+ * @return                @c TRUE if the strings are equal, @c FALSE if they are
  *                        not equal.
  */
 static BOOL __ht_cstrieq(void *string1, void *string2)
@@ -915,7 +919,7 @@ static int __ht_cstricmp(void *string1, void *string2)
  *
  * @param string1         The first string.
  * @param string2         The second string.
- * @return                Non-zero if the strings are equal, zero if they are
+ * @return                @c TRUE if the strings are equal, @c FALSE if they are
  *                        not equal.
  */
 static BOOL __ht_wstreq(void *string1, void *string2)
@@ -958,12 +962,12 @@ static int __ht_wstrcmp(void *string1, void *string2)
  *
  * @param string1         The first string.
  * @param string2         The second string.
- * @return                Non-zero if the strings are equal, zero if they are
+ * @return                @c TRUE if the strings are equal, @c FALSE if they are
  *                        not equal.
  */
-static int __ht_wstrieq(void *string1, void *string2)
+static BOOL __ht_wstrieq(void *string1, void *string2)
 {
-	return __ht_wstricmp((wchar_t *) string1, (wchar_t *) string2) == 0;
+	return __ht_wstricmp((wchar_t *) string1, (wchar_t *) string2) == 0 ? TRUE : FALSE;
 }
 
 /* On many systems, strcasecmp or stricmp will give the same functionality

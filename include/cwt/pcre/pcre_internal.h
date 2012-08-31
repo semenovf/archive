@@ -479,11 +479,12 @@ variable-length repeat, or a anything other than literal characters. */
 #define REQ_VARY     0x0200    /* reqbyte followed non-literal item */
 
 /* Miscellaneous definitions */
-
+#ifndef __CWT_TYPES_H__
 typedef int BOOL;
 
 #define FALSE   0
 #define TRUE    1
+#endif
 
 /* Escape items that are just an encoding of a particular data value. */
 

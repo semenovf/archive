@@ -37,7 +37,7 @@ static void            __rbegin       (CwtStrList *psl, CwtStrListIterator *iter
 static BOOL            __hasMore      (CwtStrListIterator *iter);
 static const CWT_CHAR* __next         (CwtStrListIterator *iter);
 /*static CwtStrListElem* __elem         (CwtStrListIterator *iter);*/
-static void            __toArray      (CwtStrList *psl, const CWT_CHAR *argv[], size_t *argc);
+static void            __toArray      (CwtStrList *psl, CWT_CHAR **argv, size_t *argc);
 static BOOL            __find         (CwtStrList *psl, const CWT_CHAR *s, size_t *index);
 
 static CwtStrListNS __cwtStrListNS = {
@@ -321,11 +321,12 @@ static void __append_with_flags(CwtStrList *psl, const CWT_CHAR *str, size_t n, 
 	size_t i = 0;
 	size_t j = n - 1;
 
-	if( (flags & CWT_TRIM_WHITESPACES) ) {
-		while( i < n && __strNS->isspace(str[i]) )
+	if (flags & CWT_TRIM_WHITESPACES) {
+
+		while ((i < n) && __strNS->isSpace(str[i]))
 			i++;
 
-		while( j > i && __strNS->isspace(str[j]) )
+		while ((j > i) && __strNS->isSpace(str[j]))
 			j--;
 	}
 
@@ -337,7 +338,7 @@ static void __append_with_flags(CwtStrList *psl, const CWT_CHAR *str, size_t n, 
 		i++;
 	}
 
-	CWT_ASSERT((j - i + 1) >= 0);
+	CWT_ASSERT(j >= i + 1);
 
 	__append(psl, &str[i], j - i + 1);
 }
@@ -507,7 +508,7 @@ static CwtStrListElem* __elem(CwtStrListIterator *iter)
  * @param argc On input contains size of array @c argv. On output contains actual number of stored strings
  *             (less or equal to @c *argc on input).
  */
-static void __toArray(CwtStrList *psl, const CWT_CHAR *argv[], size_t *argc)
+static void __toArray(CwtStrList *psl, CWT_CHAR **argv, size_t *argc)
 {
 	size_t i;
 	CwtStrListIterator it;
@@ -523,7 +524,7 @@ static void __toArray(CwtStrList *psl, const CWT_CHAR *argv[], size_t *argc)
 	i = 0;
 
 	while( __hasMore(&it) && i < *argc ) {
-		argv[i] = __next(&it);
+		argv[i] = (CWT_CHAR*)__next(&it);
 		i++;
 	}
 
@@ -541,7 +542,7 @@ static BOOL __find(CwtStrList *psl, const CWT_CHAR *s, size_t *index)
 	__begin(psl, &it);
 
 	while( __hasMore(&it) ) {
-		if( __strNS->streq(s, __next(&it)) ) {
+		if( __strNS->strEq(s, __next(&it)) ) {
 			if( index ) {
 				*index = i;
 			}

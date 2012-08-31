@@ -13,7 +13,7 @@
 
 #define __LOG_PREFIX _Tr("dbi: ")
 
-CwtDBIDriver*          __dbi_load          (const CWT_CHAR *scheme, const CWT_CHAR *driver);
+static CwtDBIDriver*   __dbi_load          (const CWT_CHAR *scheme, const CWT_CHAR *driver);
 static CwtDBHandler*   __dbi_connect       (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
 static void            __dbi_disconnect    (CwtDBHandler*);
 static BOOL            __dbi_func          (CwtDBHandler*, const CWT_CHAR*, CWT_CHAR**);
@@ -229,7 +229,7 @@ static CwtDBIDriver* __dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
 
 	CwtDBIDriver *dbd = (CwtDBIDriver*)NULL;
 
-	if( strNS->strieq(_T("dbi"), scheme) ) {
+	if( strNS->strCaseEq(_T("dbi"), scheme) ) {
 		DlHandle dlHandle;
 		CwtStringNS *stringNS = cwtStringNS();
 		CwtString   *driverName;
@@ -268,8 +268,6 @@ static CwtDBIDriver* __dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
 
 static CwtDBHandler* __dbi_connect(const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname)
 {
-	CwtStrNS   *strNS = cwtStrNS();
-
 	CwtDBIDriver *dbd = NULL;
 	CwtDBHandler *dbh = NULL;
 

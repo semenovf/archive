@@ -27,7 +27,6 @@ CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CWT_CHAR *s = NULL;
-	BOOL isUnsigned = FALSE;
 
 	if( max > CWT_LONGLONG_MAX && ! (min >= 0) ) {
 		print_error(_Tr("bounds for integer is illegal"));

@@ -1782,6 +1782,10 @@ check_auto_possessive(int op_code, int item, BOOL utf8, uschar *utf8_char,
 {
 int next;
 
+#ifndef SUPPORT_UTF8
+	CWT_UNUSED(utf8_char);
+#endif
+
 /* Skip whitespace and comments in extended mode */
 
 if ((options & PCRE_EXTENDED) != 0)

@@ -161,10 +161,11 @@ static BOOL __atEnd( CwtChannel *pchan )
 
 static BOOL __canReadLine(CwtChannel *pchan)
 {
+	BYTE eolChars[] = "\n\r";
 	CWT_ASSERT(pchan && pchan->dev);
 
 	__poll(pchan);
-	return __rbNS->findAny(pchan->rb, "\n\r", 2, 0, NULL)
+	return __rbNS->findAny(pchan->rb, eolChars, 2, 0, NULL)
 		|| (__atEnd(pchan) && __rbNS->size(pchan->rb) > 0);
 }
 
@@ -178,6 +179,7 @@ static BOOL __canReadLine(CwtChannel *pchan)
  */
 static BOOL __readLine(CwtChannel *pchan, CwtByteArray *ba)
 {
+	BYTE eolChars[] = "\r\n";
 	size_t index;
 	size_t ba_off;
 	ssize_t br;
@@ -189,7 +191,7 @@ static BOOL __readLine(CwtChannel *pchan, CwtByteArray *ba)
 
 	br = __poll(pchan);
 
-	if( __rbNS->findAny(pchan->rb, "\r\n", 2, 0, &index) ) {
+	if( __rbNS->findAny(pchan->rb, eolChars, 2, 0, &index) ) {
 		BYTE nl;
 		__baNS->resize(ba, ba_off + index);
 		__rbNS->peek(pchan->rb, ba->m_buffer + ba_off, index);

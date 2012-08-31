@@ -43,7 +43,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Have to include stdlib.h in order to ensure that size_t is defined. */
 
 #include <stdlib.h>
-#include <cwt/types.h>
+#include <cwt/global.h>
 /* Allow for C++ users */
 
 EXTERN_C_BEGIN

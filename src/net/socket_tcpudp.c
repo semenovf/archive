@@ -6,6 +6,7 @@
  */
 
 #include "socket_p.h"
+#include <string.h>
 #include <cwt/str.h>
 #include <cwt/logger.h>
 #include <cwt/txtcodec.h>
@@ -195,7 +196,7 @@ CwtSocket* __socket_accept(CwtSocket *sd)
 		ssize_t rc;
 		int flags;
 		struct sockaddr_in senderAddr;
-		int senderSize = sizeof(senderAddr);
+		UINT senderSize = sizeof(senderAddr);
 		BYTE buf[1];
 
 		/* Peeks at the incoming data. The data is copied into the buffer
@@ -255,7 +256,7 @@ ssize_t __socket_readUdpSocket(CwtSocket *sd, BYTE *buf, size_t sz)
 {
 	ssize_t br;
 	struct sockaddr_in senderAddr;
-	int senderSize = sizeof(senderAddr);
+	UINT senderSize = sizeof(senderAddr);
 
 	br = recvfrom(sd->sockfd, buf, sz, 0,
 			(struct sockaddr *)&senderAddr,

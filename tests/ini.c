@@ -7,6 +7,7 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include <cwt/types.h>
 #include <cwt/test.h>
 #include <cwt/ini.h>
@@ -26,50 +27,56 @@ static CWT_CHAR *directives[] = {
 	, _T("directive6\n")
 };
 
-static void __iniOnError(CwtIniHandler ini, const CWT_CHAR *errstr)
+static void __iniOnError(CwtIniHandler *h, const CWT_CHAR *errstr)
 {
-	printf_error(_T("%s at line %lu"), errstr, cwtIniNS()->line(ini));
+	printf_error(_T("%s at line %lu"), errstr, cwtIniNS()->line(h));
 }
 
-static BOOL __onIniDirective1(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective1(CwtIniHandler *h, const CWT_CHAR **argv, size_t argc)
 {
+	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 6);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive1"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->strEq(_T("directive1"), argv[0]));
 	return TRUE;
 }
 
-static BOOL __onIniDirective2(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective2(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
 {
+	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 5);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive2"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->strEq(_T("directive2"), argv[0]));
 	return TRUE;
 }
 
-static BOOL __onIniDirective3(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective3(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
 {
+	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 4);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive3"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->strEq(_T("directive3"), argv[0]));
 	return TRUE;
 }
 
-static BOOL __onIniDirective4(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective4(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
 {
+	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 3);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive4"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->strEq(_T("directive4"), argv[0]));
 	return TRUE;
 }
 
-static BOOL __onIniDirective5(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective5(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
 {
+	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 2);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive5"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->strEq(_T("directive5"), argv[0]));
 	return TRUE;
 }
 
-static BOOL __onIniDirective6(CwtIniHandler h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective6(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
 {
+	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 1);
-	CWT_TEST_OK(cwtStrNS()->streq(_T("directive6"), argv[0]));
+	CWT_TEST_OK(cwtStrNS()->strEq(_T("directive6"), argv[0]));
 	return TRUE;
 }
 
@@ -103,7 +110,7 @@ int main(int argc, char *argv[])
 
 	for( i = 0; i < sizeof(directives)/sizeof(directives[0]); i++ ) {
 		char *str = codecNS->toUtf8(directives[i], strNS->strlen(directives[i]));
-		chNS->write(pchan0, str, strlen(str));
+		chNS->write(pchan0, (BYTE*)str, strlen(str));
 		CWT_FREE(str);
 	}
 

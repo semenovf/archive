@@ -103,29 +103,29 @@ static BOOL __parseBorderStyle(const CWT_CHAR *str, void *pval)
 	CWT_CHAR *borderStyleStr = strNS->strdup(str);
 	int borderStyle = -1;
 
-	strNS->tolowerStr(borderStyleStr, borderStyleStr, strNS->strlen(borderStyleStr));
+	strNS->toLowerStr(borderStyleStr, borderStyleStr, strNS->strlen(borderStyleStr));
 
-	if( strNS->streq(_T("inherit"), borderStyleStr) ) {
+	if( strNS->strEq(_T("inherit"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Inherit;
-	} else if( strNS->streq(_T("none"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("none"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_None;
-	} else if( strNS->streq(_T("hidden"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("hidden"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Hidden;
-	} else if( strNS->streq(_T("dotted"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("dotted"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Dotted;
-	} else if( strNS->streq(_T("dashed"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("dashed"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Dashed;
-	} else if( strNS->streq(_T("solid"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("solid"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Solid;
-	} else if( strNS->streq(_T("double"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("double"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Double;
-	} else if( strNS->streq(_T("groove"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("groove"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Groove;
-	} else if( strNS->streq(_T("ridge"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("ridge"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Ridge;
-	} else if( strNS->streq(_T("inset"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("inset"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Inset;
-	} else if( strNS->streq(_T("outset"), borderStyleStr) ) {
+	} else if( strNS->strEq(_T("outset"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Outset;
 	}
 

@@ -18,13 +18,13 @@ typedef struct _CwtCsvHandler {
 	CWT_CHAR      *separator;
 } CwtCsvHandler;
 
-typedef BOOL (*CwtCsvCallback)(CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
+typedef BOOL (*CwtCsvCallback)(CwtCsvHandler*, const CWT_CHAR **argv, size_t argc);
 
 typedef struct CwtCsvNS {
 	CwtCsvHandler*  (*create)  (void);
 	CwtCsvHandler*  (*createWithArgs) (const CWT_CHAR *separator, size_t max_tokens);
 	void            (*free)       (CwtCsvHandler*);
-	void            (*write)      (CwtCsvHandler*, CwtChannel*, const CWT_CHAR* argv[], size_t argc);
+	void            (*write)      (CwtCsvHandler*, CwtChannel*, const CWT_CHAR *argv[], size_t argc);
 	BOOL            (*parse)      (CwtCsvHandler*, CwtChannel*);
 	void            (*setOnRow)   (CwtCsvHandler*, CwtCsvCallback cb);
 	void            (*error)      (CwtCsvHandler*, const CWT_CHAR *format);
@@ -34,15 +34,15 @@ typedef struct CwtCsvNS {
 	/* Simple API for CSV (SAC) */
 	void            (*begin)      (CwtCsvHandler*, CwtChannel*);
 	size_t          (*header)     (CwtCsvHandler*);
-	void            (*titles)     (CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
+	void            (*titles)     (CwtCsvHandler*, CWT_CHAR **argv, size_t argc);
 	BOOL            (*next)       (CwtCsvHandler*);
 	size_t          (*columnsCount) (CwtCsvHandler*);
-	size_t          (*row)        (CwtCsvHandler*, const CWT_CHAR* argv[], size_t argc);
-	const CWT_CHAR* (*column)     (CwtCsvHandler*, const CWT_CHAR* name);
+	size_t          (*row)        (CwtCsvHandler*, const CWT_CHAR **argv, size_t argc);
+	const CWT_CHAR* (*column)     (CwtCsvHandler*, const CWT_CHAR *name);
 
 	BOOL            (*persist)    (CwtCsvHandler*, CwtDBHandler *dbh, CwtDDITable *table);
 
-	BOOL            (*setValidator) (CwtCsvHandler*, const CWT_CHAR* name, BOOL (*)(const CWT_CHAR*));
+	BOOL            (*setValidator) (CwtCsvHandler*, const CWT_CHAR *name, BOOL (*)(const CWT_CHAR*));
 } CwtCsvNS;
 
 

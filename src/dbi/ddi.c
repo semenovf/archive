@@ -138,7 +138,7 @@ CwtDDITable* __ddi_findTable(CwtDDI *ddi, const CWT_CHAR *name)
 		__listNS->begin(ddi->tables, &it);
 		while( __listNS->hasMore(&it) ) {
 			CwtDDITable *t = __listNS->next(&it);
-			if( t && __strNS->streq(name, t->name) ) {
+			if( t && __strNS->strEq(name, t->name) ) {
 				return t;
 			}
 		}
@@ -157,7 +157,7 @@ CwtDDIColumn* __ddi_findColumn(CwtDDITable *tab, const CWT_CHAR *name)
 		__listNS->begin(tab->columns, &it);
 		while( __listNS->hasMore(&it) ) {
 			CwtDDIColumn *c = __listNS->next(&it);
-			if( c && __strNS->streq(name, c->name) ) {
+			if( c && __strNS->strEq(name, c->name) ) {
 				return c;
 			}
 		}

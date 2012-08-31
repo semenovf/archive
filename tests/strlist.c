@@ -72,15 +72,15 @@ int main(int argc, char *argv[])
 	sl = slNS->create();
 
 	CWT_TEST_OK(slNS->splitAny(sl, loremipsum, _T(" "), NULL, 0) == 172);
-	CWT_TEST_OK(strNS->streq(_T("Lorem"), slNS->at(sl, 0)));
-	CWT_TEST_OK(strNS->streq(_T("ullamcorper"), slNS->at(sl, 31)));
-	CWT_TEST_OK(strNS->streq(_T("futurum."), slNS->at(sl, 171)));
+	CWT_TEST_OK(strNS->strEq(_T("Lorem"), slNS->at(sl, 0)));
+	CWT_TEST_OK(strNS->strEq(_T("ullamcorper"), slNS->at(sl, 31)));
+	CWT_TEST_OK(strNS->strEq(_T("futurum."), slNS->at(sl, 171)));
 
 	slNS->clear(sl);
 	CWT_TEST_OK(slNS->size(sl) == 0);
 	CWT_TEST_OK(slNS->splitAny(sl, loremipsum_doublequoted, _T(" "), CWT_QUOTES_DOUBLE, 0) == 35);
-	CWT_TEST_OK(strNS->streq(_T("Lorem"), slNS->at(sl, 0)));
-	CWT_TEST_OK(strNS->streq(_T("Eodem"), slNS->at(sl, 22)));
+	CWT_TEST_OK(strNS->strEq(_T("Lorem"), slNS->at(sl, 0)));
+	CWT_TEST_OK(strNS->strEq(_T("Eodem"), slNS->at(sl, 22)));
 
 	slNS->free(sl);
 

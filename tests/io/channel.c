@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <cwt/types.h>
 #include <cwt/test.h>
 #include <cwt/bytearr.h>
@@ -56,18 +57,18 @@ int main(int argc, char *argv[])
 	CWT_ASSERT(ba = baNS->create());
 
 
-	chNS->write(pchan0, "Line 1\n", 7);
-	chNS->write(pchan0, "Line 2\r", 7);
-	chNS->write(pchan0, "Line 3\n\r", 8);
-	chNS->write(pchan0, "Line 4\r\n", 8);
-	chNS->write(pchan0, "Line 5", 6);
-	chNS->write(pchan0, loremipsum, strlen(loremipsum));
+	chNS->write(pchan0, (BYTE*)"Line 1\n", 7);
+	chNS->write(pchan0, (BYTE*)"Line 2\r", 7);
+	chNS->write(pchan0, (BYTE*)"Line 3\n\r", 8);
+	chNS->write(pchan0, (BYTE*)"Line 4\r\n", 8);
+	chNS->write(pchan0, (BYTE*)"Line 5", 6);
+	chNS->write(pchan0, (BYTE*)loremipsum, strlen(loremipsum));
 
 	nlines = 0;
 	while( !chNS->atEnd(pchan1) ) {
 		baNS->clear(ba);
 		if( chNS->readLine(pchan1, ba) ) {
-			printf("length=%lu: \"%s\"\n", baNS->size(ba), baNS->cstr(ba));
+			printf("length=%u: \"%s\"\n", baNS->size(ba), baNS->cstr(ba));
 		}
 		nlines++;
 	}
@@ -75,7 +76,7 @@ int main(int argc, char *argv[])
 	CWT_TEST_OK(nlines == 28);
 
 	baNS->clear(ba);
-	chNS->write(pchan0, loremipsum1, strlen(loremipsum1));
+	chNS->write(pchan0, (BYTE*)loremipsum1, strlen(loremipsum1));
 	while( !chNS->atEnd(pchan1) ) {
 		if( chNS->readLine(pchan1, ba) ) {
 			baNS->appendElem(ba, '\n');

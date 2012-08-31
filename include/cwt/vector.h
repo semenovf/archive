@@ -53,7 +53,6 @@ typedef struct _NS {                                                          \
                                                                               \
 	static _CollectionT* __create      (void);                                \
 	static _CollectionT* __createSized (size_t initial_size, size_t max_size);\
-	static void          __init        (_CollectionT* p);                     \
 	static void          __initSized   (_CollectionT* p, size_t initial_size, size_t max_size); \
 	static void          __destroy     (_CollectionT* p);                     \
 	static void          __free        (_CollectionT* p);                     \
@@ -144,11 +143,6 @@ static void __initSized(_CollectionT* sb, size_t initial_size, size_t max_size)\
 	sb->m_capacity = initial_size;                                            \
 	sb->m_count = 0;                                                          \
 	sb->m_max_capacity = max_size;                                            \
-}                                                                             \
-                                                                              \
-static void __init(_CollectionT* sb)                                          \
-{                                                                             \
-	__initSized(sb, 0, 0);                                                    \
 }                                                                             \
                                                                               \
 static void __destroy(_CollectionT* sb)                                       \
@@ -413,7 +407,7 @@ static BOOL __find(_CollectionT* sb, _ElemT ch, size_t *offset)               \
 static _ElemT __at(_CollectionT* p, size_t index)                             \
 {                                                                             \
 	CWT_ASSERT(p);                                                            \
-	CWT_ASSERT(index >= 0 && index < p->m_count);                             \
+	CWT_ASSERT(index < p->m_count);                                           \
 	return p->m_buffer[index];                                                \
 }                                                                             \
                                                                               \

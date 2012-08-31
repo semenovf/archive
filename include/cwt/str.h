@@ -1,9 +1,11 @@
 #ifndef __CWT_STR_H__
 #define __CWT_STR_H__
 
+/*
 #ifdef _STRING_H
 #	error do not need to mix <cwt/str.h> and <string.h>
 #endif
+*/
 #include <time.h>
 #include <cwt/types.h>
 #include <cwt/string.h>
@@ -16,7 +18,7 @@ typedef struct CwtQuotePair {
 
 
 typedef struct CwtStrNS {
-	const CWT_CHAR*   (*strerror)     (int);
+	const CWT_CHAR*   (*strError)     (int);
 	CWT_CHAR*         (*strptime)     (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
 	size_t            (*strftime)     (CWT_CHAR *buf, size_t sz, const CWT_CHAR *format, const struct tm* ptm);
 	size_t            (*strlen)       (const CWT_CHAR*);
@@ -25,25 +27,25 @@ typedef struct CwtStrNS {
 	CWT_CHAR*         (*strchr)       (CWT_CHAR *s, CWT_CHAR ch);
 	CWT_CHAR*         (*strstr)       (const CWT_CHAR *s, const CWT_CHAR *substr);
 	CWT_CHAR*         (*strrstr)      (const CWT_CHAR *s, const CWT_CHAR *substr);
-	int               (*strcmp)       (const CWT_CHAR *s1, const CWT_CHAR *s2);
-	int               (*strncmp)      (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
-	int 			  (*stricmp)      (const CWT_CHAR *s1, const CWT_CHAR *s2);
-	int               (*strnicmp)     (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
-	BOOL              (*streq)        (const CWT_CHAR *s1, const CWT_CHAR *s2);
-	BOOL              (*strieq)       (const CWT_CHAR *s1, const CWT_CHAR *s2);
+	int               (*strCmp)       (const CWT_CHAR *s1, const CWT_CHAR *s2);
+	int               (*strNCmp)      (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
+	int 			  (*strCaseCmp)   (const CWT_CHAR *s1, const CWT_CHAR *s2);
+	int               (*strNCaseCmp)  (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
+	BOOL              (*strEq)        (const CWT_CHAR *s1, const CWT_CHAR *s2);
+	BOOL              (*strCaseEq)       (const CWT_CHAR *s1, const CWT_CHAR *s2);
 	CWT_CHAR*         (*strdup)       (const CWT_CHAR *s);
 	CWT_CHAR*         (*strndup)      (const CWT_CHAR *s, size_t n);
-	CWT_CHAR*         (*strcat)       (CWT_CHAR *dest, const CWT_CHAR *src);
-	CWT_CHAR*         (*strncat)      (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
-	CWT_CHAR*		  (*strtok)       (CWT_CHAR *tok, const CWT_CHAR *delim);
-	LONG              (*strtol)       (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
-	ULONG             (*strtoul)      (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
-	LONGLONG          (*strtoll)      (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
-	ULONGLONG         (*strtoull)     (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
-	double            (*strtod)       (const CWT_CHAR *s, CWT_CHAR **endptr);
-	int               (*isalpha)      (CWT_CHAR);
-	int               (*isdigit)      (CWT_CHAR);
-	int               (*isspace)      (CWT_CHAR);
+	CWT_CHAR*         (*strCat)       (CWT_CHAR *dest, const CWT_CHAR *src);
+	CWT_CHAR*         (*strNCat)      (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
+	CWT_CHAR*		  (*strTok)       (CWT_CHAR *tok, const CWT_CHAR *delim);
+	LONG              (*strToLong)    (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+	ULONG             (*strToULong)   (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+	LONGLONG          (*strToLLONG)   (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+	ULONGLONG         (*strToULLong)  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+	double            (*strToDouble)  (const CWT_CHAR *s, CWT_CHAR **endptr);
+	int               (*isAlpha)      (CWT_CHAR);
+	int               (*isDigit)      (CWT_CHAR);
+	int               (*isSpace)      (CWT_CHAR);
 
 	void*             (*memcpy)       (void *to, const void *from, size_t sz);
 	void*             (*memmove)      (void *to, const void *from, size_t sz);
@@ -51,35 +53,35 @@ typedef struct CwtStrNS {
 	int               (*memcmp)       (const void *m1, const void *m2, size_t n);
 	void*             (*bzero)        (void *block, size_t sz);
 
-	LONGLONG          (*toLONGLONG)   (const CWT_CHAR *str, int radix, BOOL *ok);
-	ULONGLONG         (*toULONGLONG)  (const CWT_CHAR *str, int radix, BOOL *ok);
-	LONG              (*toLONG)       (const CWT_CHAR *str, int radix, BOOL *ok);
-	ULONG             (*toULONG)      (const CWT_CHAR *str, int radix, BOOL *ok);
-	INT               (*toINT)        (const CWT_CHAR *str, int radix, BOOL *ok);
-	UINT              (*toUINT)       (const CWT_CHAR *str, int radix, BOOL *ok);
-	SHORT             (*toSHORT)      (const CWT_CHAR *str, int radix, BOOL *ok);
-	USHORT            (*toUSHORT)     (const CWT_CHAR *str, int radix, BOOL *ok);
-	SBYTE             (*toSBYTE)      (const CWT_CHAR *str, int radix, BOOL *ok);
-	BYTE              (*toBYTE)       (const CWT_CHAR *str, int radix, BOOL *ok);
-	double            (*toDouble)     (const CWT_CHAR *str, BOOL *ok);
-	float             (*toFloat)      (const CWT_CHAR *str, BOOL *ok);
-	void              (*toTIME)       (const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
-	void              (*toDATE)       (const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
-	void              (*toDATETIME)   (const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
+	LONGLONG          (*toLONGLONG)   (const CWT_CHAR*, int radix, BOOL *ok);
+	ULONGLONG         (*toULONGLONG)  (const CWT_CHAR*, int radix, BOOL *ok);
+	LONG              (*toLONG)       (const CWT_CHAR*, int radix, BOOL *ok);
+	ULONG             (*toULONG)      (const CWT_CHAR*, int radix, BOOL *ok);
+	INT               (*toINT)        (const CWT_CHAR*, int radix, BOOL *ok);
+	UINT              (*toUINT)       (const CWT_CHAR*, int radix, BOOL *ok);
+	SHORT             (*toSHORT)      (const CWT_CHAR*, int radix, BOOL *ok);
+	USHORT            (*toUSHORT)     (const CWT_CHAR*, int radix, BOOL *ok);
+	SBYTE             (*toSBYTE)      (const CWT_CHAR*, int radix, BOOL *ok);
+	BYTE              (*toBYTE)       (const CWT_CHAR*, int radix, BOOL *ok);
+	double            (*toDouble)     (const CWT_CHAR*, BOOL *ok);
+	float             (*toFloat)      (const CWT_CHAR*, BOOL *ok);
+	void              (*toTIME)       (const CWT_CHAR*, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
+	void              (*toDATE)       (const CWT_CHAR*, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
+	void              (*toDATETIME)   (const CWT_CHAR*, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
 
-	INT8              (*toINT8)       (const CWT_CHAR *str, int radix, BOOL *ok);
-	UINT8             (*toUINT8)      (const CWT_CHAR *str, int radix, BOOL *ok);
-	INT16             (*toINT16)      (const CWT_CHAR *str, int radix, BOOL *ok);
-	UINT16            (*toUINT16)     (const CWT_CHAR *str, int radix, BOOL *ok);
-	INT32             (*toINT32)      (const CWT_CHAR *str, int radix, BOOL *ok);
-	UINT32            (*toUINT32)     (const CWT_CHAR *str, int radix, BOOL *ok);
-	INT64             (*toINT64)      (const CWT_CHAR *str, int radix, BOOL *ok);
-	UINT64            (*toUINT64)     (const CWT_CHAR *str, int radix, BOOL *ok);
+	INT8              (*toINT8)       (const CWT_CHAR*, int radix, BOOL *ok);
+	UINT8             (*toUINT8)      (const CWT_CHAR*, int radix, BOOL *ok);
+	INT16             (*toINT16)      (const CWT_CHAR*, int radix, BOOL *ok);
+	UINT16            (*toUINT16)     (const CWT_CHAR*, int radix, BOOL *ok);
+	INT32             (*toINT32)      (const CWT_CHAR*, int radix, BOOL *ok);
+	UINT32            (*toUINT32)     (const CWT_CHAR*, int radix, BOOL *ok);
+	INT64             (*toINT64)      (const CWT_CHAR*, int radix, BOOL *ok);
+	UINT64            (*toUINT64)     (const CWT_CHAR*, int radix, BOOL *ok);
 
-	CWT_CHAR          (*toupper)      (CWT_CHAR ch);
-	CWT_CHAR          (*tolower)      (CWT_CHAR ch);
-	void              (*toupperStr)   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
-	void              (*tolowerStr)   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
+	CWT_CHAR          (*toUpper)      (CWT_CHAR ch);
+	CWT_CHAR          (*toLower)      (CWT_CHAR ch);
+	void              (*toUpperStr)   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
+	void              (*toLowerStr)   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 	void              (*chomp)        (CWT_CHAR *s);
 
 	const CWT_CHAR*   (*constEmptyStr)(void);

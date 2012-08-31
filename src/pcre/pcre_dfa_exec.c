@@ -2073,7 +2073,7 @@ Returns:          > 0 => number of match offset pairs placed in offsets
 */
 
 int pcre_dfa_exec(const pcre *argument_re, const pcre_extra *extra_data,
-	const char *subject, int length, int start_offset, int options, int *offsets,
+	const char *subject, int length, int start_offset, unsigned int options, int *offsets,
 	int offsetcount, int *workspace, int wscount)
 {
 real_pcre *re = (real_pcre *)argument_re;
@@ -2164,7 +2164,7 @@ md->poptions = re->options;
 /* Handle different types of newline. The two bits give four cases. If nothing
 is set at run time, whatever was used at compile time applies. */
 
-switch ((((options & PCRE_NEWLINE_BITS) == 0)? re->options : options) &
+switch ( (((options & PCRE_NEWLINE_BITS) == 0) ? re->options : options) &
          PCRE_NEWLINE_BITS)
   {
   case 0: newline = NEWLINE; break;   /* Compile-time default */

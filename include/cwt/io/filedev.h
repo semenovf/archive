@@ -11,12 +11,12 @@
 #include <cwt/io/channel.h>
 
 
-typedef enum CwtOpenMode {
-	  Cwt_OM_Read        = 0x01
-	, Cwt_OM_Write       = 0x02
-	, Cwt_OM_ReadWrite   = Cwt_OM_Read | Cwt_OM_Write
-	, Cwt_OM_Create      = 0x04
-	, Cwt_OM_NonBlocking = 0x80 /* only for CWT_CC_GNUC */
+typedef enum CwtOpenFileMode {
+	  Cwt_FileRead        = 0x01
+	, Cwt_FileWrite       = 0x02
+	, Cwt_FileReadWrite   = Cwt_FileRead | Cwt_FileWrite
+	, Cwt_FileCreate      = 0x04
+	, Cwt_FileNonBlocking = 0x80 /* only for CWT_CC_GNUC */
 } CwtOpenMode;
 
 EXTERN_C_BEGIN

@@ -114,17 +114,16 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 
 CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, const CWT_CHAR *charset, UINT ddiflags*/)
 {
-	CwtStrNS     *strNS    = cwtStrNS();
 	CwtStringNS  *stringNS = cwtStringNS();
 	CwtStrListNS *slNS     = cwtStrListNS();
 	CwtString    *tmpbuf   = stringNS->create();
-	BOOL          ok       = TRUE;
 	CWT_CHAR     *charset  = (CWT_CHAR*)__MYSQL_DEFAULT_CHARSET;
 
 	CwtStrList   *spec         = NULL;
 	CwtString    *columnSpecs  = NULL; /* column definitions */
 /*	CwtString    *indexSpecs   = NULL;*/
 	CwtString    *constraintSpecs = NULL;
+	BOOL ok = TRUE;
 
 
 	CwtListIterator tabIt;
@@ -256,13 +255,10 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 
 CwtStrList* __dbd_specForRecall(CwtDDI *ddi, int flags)
 {
-	CwtStrNS     *strNS    = cwtStrNS();
 	CwtStringNS  *stringNS = cwtStringNS();
 	CwtStrListNS *slNS     = cwtStrListNS();
 	CwtString    *tmpbuf   = stringNS->create();
-	BOOL          ok       = TRUE;
-
-	CwtStrList   *spec         = NULL;
+	CwtStrList   *spec     = NULL;
 
 	tmpbuf = stringNS->create();
 	spec = slNS->create();

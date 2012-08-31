@@ -8,9 +8,11 @@
 
 #include <cwt/locale.h>
 #include <locale.h>
+/*
 #ifdef CWT_OS_UNIX
 #include <sys/localedef.h>
 #endif
+*/
 
 
 static const CWT_CHAR* __loc_timeFormat(void);

@@ -15,7 +15,6 @@
 static CwtUniType*      __create       (void);
 static void             __free         (CwtUniType *ut);
 static inline CwtTypeEnum __type       (CwtUniType *ut) { CWT_ASSERT(ut); return ut->type; }
-/*static BOOL             __canCast      (CwtUniType *ut, CwtTypeEnum type);*/
 static BOOL             __setType      (CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz);
 static BOOL             __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s);
 static inline BOOL      __setBOOL      (CwtUniType *ut, BOOL b)       { return __setType(ut, CwtType_BOOL, &b, 0); }
@@ -151,34 +150,6 @@ static void __free(CwtUniType *ut)
 }
 
 
-static BOOL __canCast(CwtUniType *ut, CwtTypeEnum type)
-{
-
-/* CwtType_UNKNOWN  */
-/* CwtType_BOOL     */
-/* CwtType_CHAR     */
-/* CwtType_CWT_CHAR */
-/* CwtType_SBYTE    */
-/* CwtType_UCHAR    */
-/* CwtType_SHORT    */
-/* CwtType_USHORT   */
-/* CwtType_INT      */
-/* CwtType_UINT     */
-/* CwtType_LONG     */
-/* CwtType_ULONG    */
-/* CwtType_LONGLONG */
-/* CwtType_ULONGLONG*/
-/* CwtType_FLOAT    */
-/* CwtType_DOUBLE   */
-/* CwtType_TEXT     */
-/* CwtType_CWT_TEXT */
-/* CwtType_BLOB     */
-/* CwtType_TIME     */
-/* CwtType_DATE     */
-/* CwtType_DATETIME */
-	return FALSE;
-}
-
 /**
  * @fn CwtUniTypeNS::set(CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz)
  *
@@ -193,8 +164,6 @@ static BOOL __canCast(CwtUniType *ut, CwtTypeEnum type)
  */
 static BOOL __setType(CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz)
 {
-	BOOL ok = FALSE;
-
 	CWT_ASSERT(ut);
 
 	if( type != ut->type ) {
@@ -309,11 +278,11 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 
 	switch(type) {
 	case CwtType_BOOL:
-		if( __strNS->strieq(_T("true"), s) || __strNS->streq(_T("1"), s) ) {
+		if( __strNS->strCaseEq(_T("true"), s) || __strNS->strEq(_T("1"), s) ) {
 			__setBOOL(ut, TRUE);
 			return TRUE;
 		}
-		if( __strNS->strieq(_T("false"), s) || __strNS->streq(_T("0"), s) ) {
+		if( __strNS->strCaseEq(_T("false"), s) || __strNS->strEq(_T("0"), s) ) {
 			__setBOOL(ut, FALSE);
 			return TRUE;
 		}
@@ -515,7 +484,7 @@ static BOOL __toBOOL(CwtUniType *ut, BOOL *ok)
 			if( ut->length == 1 && s[0] == _T('0') )
 				return FALSE;
 
-			if( ut->length == 5 && __strNS->strnicmp(_T("false"), s, 5) == 0 )
+			if( ut->length == 5 && __strNS->strNCaseCmp(_T("false"), s, 5) == 0 )
 				return FALSE;
 
 			return TRUE;

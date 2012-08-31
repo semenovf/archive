@@ -25,10 +25,10 @@ _LongType __cwt_to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) {     \
 	CwtStrNS* strNS = cwtStrNS();                                             \
 																		      \
 	if( radix <= 0 ) {                                                        \
-		if( strNS->strncmp(_T("0x"), str, 2) == 0 ) {                         \
+		if( strNS->strNCmp(_T("0x"), str, 2) == 0 ) {                         \
 			radix = 16;                                                       \
 			str += 2;                                                         \
-		} else if( strNS->strncmp(_T("0"), str, 1) == 0 ) {                   \
+		} else if( strNS->strNCmp(_T("0"), str, 1) == 0 ) {                   \
 			radix = 8;                                                        \
 			str++;                                                            \
 		}                                                                     \
@@ -89,10 +89,10 @@ _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {       \
 }
 
 
-__CWT_STR_TO_LONGTYPE(ULONGLONG, cwtStrNS()->strtoull, CWT_ULONGLONG_MAX, 0LL)
-__CWT_STR_TO_LONGTYPE(LONGLONG, cwtStrNS()->strtoll, CWT_LONGLONG_MAX, CWT_LONGLONG_MIN)
-__CWT_STR_TO_LONGTYPE(ULONG, cwtStrNS()->strtoul, CWT_ULONG_MAX, 0L)
-__CWT_STR_TO_LONGTYPE(LONG, cwtStrNS()->strtol, CWT_LONG_MAX, CWT_LONG_MIN)
+__CWT_STR_TO_LONGTYPE(ULONGLONG, cwtStrNS()->strToULLong, CWT_ULONGLONG_MAX, 0LL)
+__CWT_STR_TO_LONGTYPE(LONGLONG, cwtStrNS()->strToLLONG, CWT_LONGLONG_MAX, CWT_LONGLONG_MIN)
+__CWT_STR_TO_LONGTYPE(ULONG, cwtStrNS()->strToULong, CWT_ULONG_MAX, 0L)
+__CWT_STR_TO_LONGTYPE(LONG, cwtStrNS()->strToLong, CWT_LONG_MAX, CWT_LONG_MIN)
 __CWT_STR_TO_INTTYPE(INT, LONG, CWT_INT_MAX, CWT_INT_MIN)
 __CWT_STR_TO_UINTTYPE(UINT, ULONG, CWT_UINT_MAX)
 __CWT_STR_TO_INTTYPE(SHORT, LONG, CWT_SHORT_MAX, CWT_SHORT_MIN)
@@ -110,7 +110,7 @@ double __cwt_toDouble(const CWT_CHAR *str, BOOL *ok)
    /* Need to reset errno because it will not reset */
    /* in the subsequent call if error will not occurred */
 	errno = 0;
-	val = strNS->strtod(str, &endptr);
+	val = strNS->strToDouble(str, &endptr);
 
 	if((errno == ERANGE	&& (val == HUGE_VAL || val == -HUGE_VAL))
             || (errno != 0 && val == (double)0.0)

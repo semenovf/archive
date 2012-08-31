@@ -29,6 +29,7 @@ CWT_BEGIN_DEF_VECTOR_NS(CwtStringNS, CwtString, CWT_CHAR)
     , __append
 	, __cstr
 	, __sprintf
+	, __vsprintf
 CWT_END_DEF_VECTOR_NS(CwtStringNS)
 
 
@@ -86,7 +87,7 @@ static int  __vsprintf (CwtString *s, const CWT_CHAR *format, va_list args)
 		__clear(s);
 		__resize(s, sz+1);
 		n = stdioNS->vsnprintf(s->m_buffer, sz, format, args);
-	} while( n < 0 || n == sz );
+	} while( n < 0 || (size_t)n == sz );
 
 	__resize(s, (size_t)n);
 

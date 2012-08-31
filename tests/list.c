@@ -20,8 +20,8 @@ static CwtListNS *__listNS = NULL;
 static void test_00(void)
 {
 	CwtList *list;
-	int i;
-	int count = 10000;
+	size_t i;
+	size_t count = 10000;
 
 	list = __listNS->create(sizeof(int), NULL);
 
@@ -93,7 +93,7 @@ static void cleanup_01(void *data)
 {
 	struct_01 *d = (struct_01*)data;
 	if( d->text ) {
-		CWT_TEST_OK(__strNS->streq(d->text, text_01[d->index]));
+		CWT_TEST_OK(__strNS->strEq(d->text, text_01[d->index]));
 		CWT_FREE(d->text);
 		d->text = NULL;
 	}
@@ -102,8 +102,7 @@ static void cleanup_01(void *data)
 static void test_01(void)
 {
 	CwtList *list;
-	int i;
-	int count = 10000;
+	size_t i;
 
 	list = __listNS->create(sizeof(struct_01), cleanup_01);
 

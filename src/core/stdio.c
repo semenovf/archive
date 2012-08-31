@@ -74,6 +74,6 @@ static int __cwt_vsnprintf(CWT_CHAR *buffer, size_t count, const CWT_CHAR *forma
 #	endif
 #else
 	int len = CWT_ISO_CPP_NAME(vsnprintf)(buffer, count, format, args);
-	return (len > -1 && len < count) ? len : -1;
+	return (len > -1 && (size_t)len < count) ? len : -1;
 #endif
 }

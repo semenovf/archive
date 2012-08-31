@@ -182,7 +182,7 @@ void _cwt_colorx_init(void)
 	n = sizeof(__cwt_color_names)/sizeof(__cwt_color_names[0]);
 	for( i = 0; i < n; i++  ) {
 		CWT_CHAR *key = strNS->strdup(__cwt_color_names[i].name);
-		strNS->tolowerStr(key, key, strNS->strlen(key));
+		strNS->toLowerStr(key, key, strNS->strlen(key));
 		CWT_ASSERT(hash_table_insert(__cwt_color_table
 			, key, &__cwt_color_names[i].color));
 	}
@@ -203,7 +203,7 @@ Cwt_Color cwt_stylex_colorByName(const CWT_CHAR *name)
 
 	CWT_ASSERT(name);
 	key = strNS->strdup(name);
-	strNS->tolowerStr(key, key, strNS->strlen(key));
+	strNS->toLowerStr(key, key, strNS->strlen(key));
 
 	pcolor = (Cwt_Color*)hash_table_lookup(__cwt_color_table, key);
 

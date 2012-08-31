@@ -335,7 +335,7 @@ static CWT_CHAR* __cwt_strrstr(const CWT_CHAR *s1, const CWT_CHAR *s2)
 	ptr = (CWT_CHAR*)(s1 + __cwtStrNS.strlen(s1));
 
 	while( ptr >= s1 ) {
-		if( __cwtStrNS.strncmp(ptr, s2, s2_len) == 0 )
+		if( __cwtStrNS.strNCmp(ptr, s2, s2_len) == 0 )
 			return ptr;
 		ptr--;
 	}
@@ -349,7 +349,7 @@ static void __cwt_toupperStr(CWT_CHAR *dest, const CWT_CHAR *src, size_t n)
 	size_t i;
 
 	for( i = 0; i < n; i++ ) {
-		dest[i] = __cwtStrNS.toupper(src[i]);
+		dest[i] = __cwtStrNS.toUpper(src[i]);
 	}
 }
 
@@ -358,7 +358,7 @@ static void __cwt_tolowerStr(CWT_CHAR *dest, const CWT_CHAR *src, size_t n)
 	size_t i;
 
 	for( i = 0; i < n; i++ ) {
-		dest[i] = __cwtStrNS.tolower(src[i]);
+		dest[i] = __cwtStrNS.toLower(src[i]);
 	}
 }
 

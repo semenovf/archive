@@ -18,7 +18,7 @@
 static const CWT_CHAR *__username = _T("root");
 static const CWT_CHAR *__password = _T("rdflhfnehf");
 static const CWT_CHAR *__dsn_with_flags = _T("DBI:mysql:host=127.0.0.1;port=3306;mysql_flags=COMPRESS,FOUND_ROWS,IGNORE_SIGPIPE,IGNORE_SPACE,INTERACTIVE,LOCAL_FILES,MULTI_RESULTS,MULTI_STATEMENTS");
-static const CWT_CHAR *__dsn      = _T("DBI:mysql:host=127.0.0.1;port=3306");
+/*static const CWT_CHAR *__dsn      = _T("DBI:mysql:host=127.0.0.1;port=3306");*/
 
 static const CWT_CHAR *__admin_func = _T("admin");
 static CWT_CHAR       *__createdb_argv[] = {_T("createdb"), _T("cwt_test_db"), NULL};
@@ -95,6 +95,7 @@ static const CWT_CHAR *__sql_create_table =
     , ts_val      TIMESTAMP\
 	, vchar_val   VARCHAR(100))");
 
+/*
 static const CWT_CHAR *__sql_insert
 	= _T("INSERT INTO\
      cwt_test_table(\
@@ -113,8 +114,9 @@ static const CWT_CHAR *__sql_insert
 	, dt_val\
 	, vchar_val)\
     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+*/
 
-static const CWT_CHAR *__sql_select =
+/*static const CWT_CHAR *__sql_select =
 	_T("SELECT\
 	  sbyte_val\
 	, byte_val\
@@ -130,7 +132,7 @@ static const CWT_CHAR *__sql_select =
 	, time_val\
 	, dt_val\
 	, vchar_val\
-	from `cwt_test_table`");
+	from `cwt_test_table`");*/
 
 int main(int argc, char *argv[])
 {

@@ -16,10 +16,13 @@
 #	define __socket_errno WSAGetLastError() /* FIXME need multi-threaded support */
 #	define __socket_closeNative closesocket
 #elif defined(CWT_CC_GNUC)
+#   include <errno.h>
+#   include <unistd.h> /* for close() */
 #	include <sys/ioctl.h>
 #	include <sys/socket.h>
 #	include <netinet/in.h>
 #	include <arpa/inet.h>
+#   include <netdb.h>
 #	define __socket_errno errno  /* FIXME need multi-threaded support */
 #	define __socket_closeNative CWT_ISO_CPP_NAME(close)
     typedef int SOCKET;
@@ -29,10 +32,12 @@
 #endif
 
 
+/*
 #ifdef CWT_CC_MSC
 #else
 	typedef int SOCKET;
 #endif
+*/
 
 
 #define _SOCKET_BASE 	                          \
