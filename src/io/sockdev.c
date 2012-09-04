@@ -46,7 +46,7 @@ static CwtIODevice* __dev_UdpTcpSocketDeviceOpen(struct _CwtSocket *sd, const CW
 	if (!sd)
 		return NULL;
 
-	if( is_listener )
+	if (is_listener)
 		ok = cwtSocketNS()->listen(sd, inetAddr, port);
 	else
 		ok = cwtSocketNS()->connect(sd, inetAddr, port);
@@ -69,12 +69,14 @@ static CwtIODevice* __dev_UdpTcpSocketDeviceOpen(struct _CwtSocket *sd, const CW
  * @param is_listener
  * @return
  */
-DLL_API_EXPORT CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_listener)
+DLL_API_EXPORT CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, UINT32 flags)
 {
-	return __dev_UdpTcpSocketDeviceOpen(cwtSocketNS()->openUdpSocket(TRUE)
+	return __dev_UdpTcpSocketDeviceOpen(
+			cwtSocketNS()->openUdpSocket(
+					CWT_CAST_BOOL(flags & Cwt_SocketDevice_NonBlocking))
 			, inetAddr
 			, port
-			, is_listener);
+			, CWT_CAST_BOOL(flags & Cwt_SocketDevice_Listener));
 }
 
 /**
@@ -89,12 +91,14 @@ DLL_API_EXPORT CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UIN
  * @param is_listener
  * @return
  */
-DLL_API_EXPORT CwtIODevice* cwtTcpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_listener)
+DLL_API_EXPORT CwtIODevice* cwtTcpSocketDeviceOpen (const CWT_CHAR *inetAddr, UINT16 port, UINT32 flags)
 {
-	return __dev_UdpTcpSocketDeviceOpen(cwtSocketNS()->openTcpSocket(TRUE)
+	return __dev_UdpTcpSocketDeviceOpen(
+			cwtSocketNS()->openTcpSocket(
+				CWT_CAST_BOOL(flags & Cwt_SocketDevice_NonBlocking))
 			, inetAddr
 			, port
-			, is_listener);
+			, CWT_CAST_BOOL(flags & Cwt_SocketDevice_Listener));
 }
 
 

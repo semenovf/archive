@@ -27,6 +27,7 @@
 
 
 #include "socket_p.h"
+#include <cwt/str.h>
 #include <cwt/net/socket.h>
 #include <cwt/logger.h>
 
@@ -105,7 +106,9 @@ static void __socket_close (CwtSocket *sd)
 		if( sd->type == Cwt_MSocket && sd->is_listener ) {
 			CwtMSocket *msd = (CwtMSocket*)sd;
 			if( setsockopt (msd->sockfd, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&msd->group.mreq, sizeof(msd->group.mreq)) < 0 ) {
-		        __logger->error(_Tr("dropping multicast group error (%d)"), __socket_errno);
+		        __logger->error(_Tr("dropping multicast group")
+		        	_CWT_SOCKET_LOG_FMTSUFFIX
+		        	, _CWT_SOCKET_LOG_ARGS);
 			}
 		}
 

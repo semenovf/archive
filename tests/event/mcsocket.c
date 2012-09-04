@@ -60,13 +60,13 @@ int main(int argc, char *argv[])
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")
-			, CWT_MCSOCKET_SENDER));
+			, Cwt_SocketDevice_MSender));
 
 	pchan_reader = __channelNS->create(cwtMSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")
-			, CWT_MCSOCKET_RECEIVER));
+			, Cwt_SocketDevice_MReceiver));
 
 
 	CWT_TEST_FAIL(pchan_reader);

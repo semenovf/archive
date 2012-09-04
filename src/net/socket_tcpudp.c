@@ -27,14 +27,16 @@ static BOOL __socket_bindNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 
 	inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, strNS->strlen(inetAddr));
 	memset(&sockaddr, 0, sizeof(sockaddr));
 	sockaddr.sin_family      = AF_INET;
-	sockaddr.sin_addr.s_addr = htonl(inetAddr != NULL ? inet_addr(inetAddrLatin1) : INADDR_ANY);
-	sockaddr.sin_port        = htons(port);
+	sockaddr.sin_addr.s_addr = /*htonl(*/inetAddr != NULL ? inet_addr(inetAddrLatin1) : INADDR_ANY/*)*/;
+	sockaddr.sin_port        = /*htons(*/port/*)*/;
 	CWT_FREE(inetAddrLatin1);
 
 	/* Bind the socket. */
 	rc = bind(sd->sockfd, (SOCKADDR*)&sockaddr, sizeof(sockaddr));
 	if( rc < 0 ) {
-		cwtLoggerNS()->error(_Tr("bind failed")); /* TODO WSAGetLastError());*/
+		cwtLoggerNS()->error(_Tr("bind failed")
+			_CWT_SOCKET_LOG_FMTSUFFIX
+			, _CWT_SOCKET_LOG_ARGS);
 		return FALSE;
 	}
 
@@ -49,21 +51,24 @@ static BOOL __socket_bindNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 
 static BOOL __socket_connectNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 {
 	CwtStrNS *strNS = cwtStrNS();
+	CwtTcpSocket *sd_tcp;
 	int rc;
 
     /* The sockaddr_in structure specifies the address family,
      * IP address, and port for the socket that is being bound.
      */
 	char *inetAddrLatin1;
-	struct sockaddr_in serveraddr;
+	/*struct sockaddr_in serveraddr;*/
+
+	sd_tcp = (CwtTcpSocket *)sd;
 
 	inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, strNS->strlen(inetAddr));
-	memset(&serveraddr, 0, sizeof(serveraddr));
-	serveraddr.sin_family      = AF_INET;
-	serveraddr.sin_addr.s_addr = htonl(inetAddr != NULL ? inet_addr(inetAddrLatin1) : INADDR_ANY);
-	serveraddr.sin_port        = htons(port);
+	cwtStrNS()->bzero(&sd_tcp->sockaddr, sizeof(sd_tcp->sockaddr));
+	sd_tcp->sockaddr.sin_family      = AF_INET;
+	sd_tcp->sockaddr.sin_addr.s_addr = /*htonl(*/inetAddr != NULL ? inet_addr(inetAddrLatin1) : INADDR_ANY/*)*/;
+	sd_tcp->sockaddr.sin_port        = /*htons(*/port/*)*/;
 
-	if (serveraddr.sin_addr.s_addr == (unsigned long)INADDR_NONE) {
+	if (sd_tcp->sockaddr.sin_addr.s_addr == (unsigned long)INADDR_NONE) {
 		struct hostent *phost;
 
 		phost = gethostbyname(inetAddrLatin1);
@@ -75,21 +80,39 @@ static BOOL __socket_connectNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT
 			return FALSE;
 		}
 
-		memcpy(&serveraddr.sin_addr, phost->h_addr, sizeof(serveraddr.sin_addr));
+		memcpy(&sd_tcp->sockaddr.sin_addr, phost->h_addr, sizeof(sd_tcp->sockaddr.sin_addr));
 	}
 	CWT_FREE(inetAddrLatin1);
 
 	if( Cwt_TcpSocket == sd->type ) {
-		rc = connect(sd->sockfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
+		rc = connect(sd->sockfd, (struct sockaddr *)&sd_tcp->sockaddr, sizeof(sd_tcp->sockaddr));
+
+		/*
+			rc == EINPROGRESS:
+			The socket is nonblocking and the connection cannot be completed immediately.
+			It is possible to select(2) or poll(2) for completion by selecting
+			the socket for writing. After select(2) indicates writability,
+			use getsockopt(2) to read the SO_ERROR option at level SOL_SOCKET
+			to determine whether connect() completed successfully (SO_ERROR is zero) or
+			unsuccessfully (SO_ERROR is one of the usual error codes listed here,
+			explaining the reason for the failure).
+		*/
+		if (rc == EINPROGRESS) {
+#if CWT_HAVE_POLL
+			;
+#endif
+		}
+
 		if (rc < 0) {
-			cwtLoggerNS()->error(_Tr("connection to %s:%u failed"), inetAddr, port);
+			cwtLoggerNS()->error(_Tr("connection to %s:%u failed")
+				_CWT_SOCKET_LOG_FMTSUFFIX
+				, inetAddr
+				, port
+				, _CWT_SOCKET_LOG_ARGS);
 			return FALSE;
 		}
 	}
 
-	/* It is not important to what socket to cast.
-	 * CwtTcpSocket and CwtUdpSocket both have sockaddr member */
-	memcpy(&((CwtTcpSocket*)sd)->sockaddr, &serveraddr, sizeof(serveraddr));
 	return TRUE;
 }
 
@@ -99,7 +122,9 @@ static SOCKET __socket_acceptNative(SOCKET listener)
 
 	client = accept(listener, NULL, NULL);
 	if (client < 0) {
-		cwtLoggerNS()->error(_Tr("accepting connection failed"));
+		cwtLoggerNS()->error(_Tr("accepting connection failed")
+			_CWT_SOCKET_LOG_FMTSUFFIX
+			, _CWT_SOCKET_LOG_ARGS);
 	}
 
 	return client;
@@ -150,7 +175,9 @@ BOOL __socket_listen(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 		int reuse = 1;
 		rc = setsockopt(sd->sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse));
 		if (rc < 0)	{
-			cwtLoggerNS()->error(_Tr("setting the socket to reusable address mode (SO_REUSEADDR) failed"));
+			cwtLoggerNS()->error(_Tr("setting the socket to reusable address mode (SO_REUSEADDR) failed")
+				_CWT_SOCKET_LOG_FMTSUFFIX
+				, _CWT_SOCKET_LOG_ARGS);
 			return FALSE;
 		}
 	}
@@ -163,7 +190,9 @@ BOOL __socket_listen(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 	if (Cwt_TcpSocket == sd->type) {
 		rc = listen(sd->sockfd, 10);
 		if (rc < 0) {
-			cwtLoggerNS()->error(_Tr("changing socket state to listening mode failed"));
+			cwtLoggerNS()->error(_Tr("changing socket state to listening mode failed")
+				_CWT_SOCKET_LOG_FMTSUFFIX
+				, _CWT_SOCKET_LOG_ARGS);
 			return FALSE;
 		}
 	}
@@ -210,7 +239,9 @@ CwtSocket* __socket_accept(CwtSocket *sd)
 				&senderSize);
 
 		if( rc < 0 ) {
-			printf_error(_Tr("failed to accept UDP socket: %d (0x%0X)"), __socket_errno, __socket_errno);
+			printf_error(_Tr("failed to accept UDP socket")
+				_CWT_SOCKET_LOG_FMTSUFFIX
+				, _CWT_SOCKET_LOG_ARGS);
 		} else {
 			CwtUdpSocket *sd_udp;
 
@@ -239,14 +270,9 @@ CwtSocket* __socket_accept(CwtSocket *sd)
  * @param is_nonblocking
  * @return
  */
-BOOL __socket_connect(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking)
+BOOL __socket_connect(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 {
 	CWT_ASSERT(sd);
-
-	if (!__socket_setNonBlockingNative(sd->sockfd, is_nonblocking)) {
-		cwtLoggerNS()->error(_Tr("set/unset socket non-blocking mode failed"));
-		return FALSE;
-	}
 
 	return __socket_connectNative(sd, inetAddr, port);
 }
@@ -263,7 +289,9 @@ ssize_t __socket_readUdpSocket(CwtSocket *sd, BYTE *buf, size_t sz)
 			&senderSize);
 
 	if( br < 0 ) {
-		printf_error(_Tr("receiving data error: %d (0x%0X)"), __socket_errno, __socket_errno);
+		cwtLoggerNS()->error(_Tr("receiving data error")
+			_CWT_SOCKET_LOG_FMTSUFFIX
+			, _CWT_SOCKET_LOG_ARGS);
 	}
 
 	return br;
@@ -281,7 +309,9 @@ ssize_t __socket_readTcpSocket(CwtSocket *sd, BYTE *buf, size_t sz)
 	br = recv(sd->sockfd, buf, (int)sz, 0);
 
 	if( br < 0 ) {
-		printf_error(_Tr("receiving data error: %d (0x%0X)"), __socket_errno, __socket_errno);
+		printf_error(_Tr("receiving data error")
+			_CWT_SOCKET_LOG_FMTSUFFIX
+			, _CWT_SOCKET_LOG_ARGS);
 	}
 	return (ssize_t)br;
 }
@@ -296,7 +326,9 @@ ssize_t __socket_writeUdpSocket(CwtSocket *sd, const BYTE *buf, size_t sz)
 		sizeof(sd_udp->sockaddr));
 
 	if( bw < 0 ) {
-		printf_error(_Tr("sending data error: %d (0x%0X)"), __socket_errno, __socket_errno);
+		cwtLoggerNS()->error(_Tr("sending data error")
+			_CWT_SOCKET_LOG_FMTSUFFIX
+			, _CWT_SOCKET_LOG_ARGS);
 	}
 
 	return bw;

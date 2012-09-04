@@ -9,6 +9,8 @@
 #include <cwt/io/sockdev.h>
 #include <string.h>
 
+#ifdef __COMMENT__
+
 const char *text = "This is a test message";
 const char *cmdQuit = "quit";
 
@@ -39,10 +41,11 @@ static BOOL on_multicast_receiver(CwtEvent *pevt)
 
 	return TRUE;
 }
-
+#endif
 
 int main(int argc, char *argv[])
 {
+#ifdef __COMMENT__
 	CwtChannel     *pchan_reader;
 	CwtChannel     *pchan_writer;
 	CwtEventSource *chan_src;
@@ -50,12 +53,15 @@ int main(int argc, char *argv[])
 	__channelNS = cwtChannelNS();
 	__eventNS = cwtEventNS();
 	__eventChannelNS = cwtEventChannelNS();
+#endif
+
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
 	CWT_BEGIN_TESTS(4);
 
+#ifdef __COMMENT__
 	pchan_writer = __channelNS->create(cwtMSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
@@ -90,7 +96,7 @@ int main(int argc, char *argv[])
 	__eventChannelNS->removeListener(pchan_reader);
 	__channelNS->free(pchan_reader);
 	__channelNS->free(pchan_writer);
-
+#endif
 	CWT_END_TESTS;
 }
 

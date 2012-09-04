@@ -25,4 +25,6 @@ SUBDIRS  =            \
     tests/strutils    \
     tests/dbi         \
     tests/unitype     \
-    tests/io/channel
+    tests/net/udp     \
+    tests/io/channel  \
+    tests/io/channel_tcp_socket

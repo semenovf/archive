@@ -50,14 +50,14 @@ BOOL setNonblocking(int fd)
     }
 
 	if( is_nonblocking )
-		flags |= O_NONBLOCK
+		flags |= O_NONBLOCK;
 	else
 		flags &= ~((int)O_NONBLOCK);
 
-    return fcntl(sockfd, F_SETFL, flags);
+    return fcntl(sockfd, F_SETFL, flags) == 0 ? TRUE : FALSE;
 #else
     /* Otherwise, use the old way of doing it */
     flags = is_nonblocking ? 1 : 0;
-    return ioctl(sockfd, FIONBIO, &flags);
+    return ioctl(sockfd, FIONBIO, &flags) == 0 ? TRUE : FALSE;
 #endif
 }

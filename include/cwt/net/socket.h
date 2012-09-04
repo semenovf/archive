@@ -13,6 +13,13 @@
 
 #include <cwt/types.h>
 
+#if defined(CWT_CC_MSC)
+#elif defined(CWT_CC_GNUC)
+    typedef int SOCKET;
+#else
+#	error "Not implemented"
+#endif
+
 typedef enum CwtSocketType {
 	  Cwt_LocalSocket
 	, Cwt_TcpSocket
@@ -20,23 +27,31 @@ typedef enum CwtSocketType {
 	, Cwt_MSocket
 } CwtSocketType;
 
-struct _CwtSocket;
+#define _CWT_SOCKET_BASE 	                      \
+	CwtSocketType type;                           \
+	SOCKET        sockfd; /* socket descriptor */ \
+	BOOL          is_listener;
+
+
+typedef struct _CwtSocket {
+	_CWT_SOCKET_BASE
+} CwtSocket;
 
 typedef struct _CwtSocketNS {
 	struct _CwtSocket*       (*openUdpSocket)  (BOOL is_nonblocking);
 	struct _CwtSocket*       (*openTcpSocket)  (BOOL is_nonblocking);
 	struct _CwtSocket*       (*openMSocket)    (BOOL is_nonblocking);
-	BOOL                     (*listen)         (struct _CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port);
-	BOOL                     (*listenMSocket)  (struct _CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);
-	BOOL                     (*connect)        (struct _CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port);
-	BOOL                     (*connectMSocket) (struct _CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);
-	struct _CwtSocket*       (*accept)         (struct _CwtSocket*);
-	void                     (*close)          (struct _CwtSocket*);
-	BOOL                     (*setNonBlocking) (struct _CwtSocket*, BOOL is_nonblocking);
+	BOOL                     (*listen)         (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port);
+	BOOL                     (*listenMSocket)  (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);
+	BOOL                     (*connect)        (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port);
+	BOOL                     (*connectMSocket) (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);
+	struct _CwtSocket*       (*accept)         (CwtSocket*);
+	void                     (*close)          (CwtSocket*);
+	BOOL                     (*setNonBlocking) (CwtSocket*, BOOL is_nonblocking);
 
-	size_t                   (*bytesAvailable) (struct _CwtSocket*);
-	ssize_t                  (*read)           (struct _CwtSocket*, BYTE* buf, size_t sz);
-	ssize_t                  (*write)          (struct _CwtSocket*, const BYTE *buf, size_t sz);
+	size_t                   (*bytesAvailable) (CwtSocket*);
+	ssize_t                  (*read)           (CwtSocket*, BYTE* buf, size_t sz);
+	ssize_t                  (*write)          (CwtSocket*, const BYTE *buf, size_t sz);
 } CwtSocketNS;
 
 

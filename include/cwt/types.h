@@ -225,4 +225,6 @@ EXTERN_C_END
 
 #define CWT_SIZE_T_MAX UINT_MAX
 
+#define CWT_CAST_BOOL(exp) ((exp) ? TRUE : FALSE)
+
 #endif /* ! __CWT_TYPES_H__ */

@@ -45,6 +45,12 @@
 #	define CWT_WIN32
 #endif
 
+#if _POSIX_C_SOURCE >= 200112L
+#	define CWT_HAVE_POLL 1
+#endif
+
+
+
 
 /* http://support.microsoft.com/default.aspx?scid=KB;EN-US;168958 */
 #ifdef DLL_API
