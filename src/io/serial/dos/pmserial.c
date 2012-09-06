@@ -57,7 +57,7 @@ static void _serialport_write_bytes(int portnum)
 		return;
 
 	sz = JQ_MIN(sz, _OUTBUF_SZ);     /* how many characters we can send at once */
-	sz = rb_read(__SP_CONTEXT[portnum-1].out, buf, sz); /* how many characters we can send at once actually */
+	sz = rb_peek(__SP_CONTEXT[portnum-1].out, buf, sz); /* how many characters we can send at once actually */
 
 	if( sz > 0) {
 		int count = 0;
@@ -452,7 +452,7 @@ ssize_t serialport_read(int portnum, BYTE *buf, size_t count)
 
 	JQ_ASSERT(__serialport_init);
 	JQ_ASSERT(portnum > 0);
-	br = rb_read(__SP_CONTEXT[portnum-1].in, buf, count);
+	br = rb_peek(__SP_CONTEXT[portnum-1].in, buf, count);
 	if( br > 0 ) {
 		rb_pop_front(__SP_CONTEXT[portnum-1].in, (size_t)br);
 		rb_pop_front(__SP_CONTEXT[portnum-1].msr, (size_t)br);
@@ -466,8 +466,8 @@ ssize_t serialport_read_msr(int portnum, BYTE *buf, BYTE *msr_buf, size_t count)
 
 	JQ_ASSERT(__serialport_init);
 	JQ_ASSERT(portnum > 0);
-	br = rb_read(__SP_CONTEXT[portnum-1].in, buf, count);
-	br = rb_read(__SP_CONTEXT[portnum-1].msr, msr_buf, count);
+	br = rb_peek(__SP_CONTEXT[portnum-1].in, buf, count);
+	br = rb_peek(__SP_CONTEXT[portnum-1].msr, msr_buf, count);
 	if( br > 0 ) {
 		rb_pop_front(__SP_CONTEXT[portnum-1].in, (size_t)br);
 		rb_pop_front(__SP_CONTEXT[portnum-1].msr, (size_t)br);

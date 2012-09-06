@@ -273,6 +273,7 @@ static ssize_t __peek(CwtRingBuf *rb, BYTE* bytes, size_t n)
 		return (ssize_t)0;
 
 	n = CWT_MIN(n, rb->m_count);
+	n = CWT_MIN(n, JQ_SSIZE_T_MAX);
 
 	if( rb->m_capacity - rb->m_head >= n ) {
 		memcpy(bytes, rb->m_buffer + rb->m_head, n);
