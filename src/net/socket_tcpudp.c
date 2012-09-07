@@ -13,23 +13,51 @@
 
 extern size_t __socket_bytesAvailable (CwtSocket *sd);
 
+static BOOL __initSockAddrIn(struct sockaddr_in *saddr, const CWT_CHAR *inetAddr, UINT16 port)
+{
+	char *inetAddrLatin1;
+	BOOL ok = TRUE;
+
+	inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strlen(inetAddr));
+	cwtStrNS()->bzero(saddr, sizeof(*saddr));
+	saddr->sin_family      = AF_INET;
+	saddr->sin_addr.s_addr = /*htonl(*/inetAddr != NULL ? inet_addr(inetAddrLatin1) : INADDR_ANY/*)*/;
+	saddr->sin_port        = /*htons(*/port/*)*/;
+
+	if (saddr->sin_addr.s_addr == (unsigned long)INADDR_NONE) {
+		do {
+			struct hostent *phost;
+
+			phost = gethostbyname(inetAddrLatin1);
+
+			if (phost == (struct hostent *)NULL) {
+				cwtLoggerNS()->error(_Tr("%s: host not found"), inetAddr);
+				/*printf("h_errno = %d\n", h_errno);*/
+				ok = FALSE;
+				break;
+			}
+
+			memcpy(&saddr->sin_addr, phost->h_addr, sizeof(saddr->sin_addr));
+
+		} while(FALSE);
+	}
+
+	CWT_FREE(inetAddrLatin1);
+
+	return TRUE;
+}
+
 static BOOL __socket_bindNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 {
-	CwtStrNS *strNS = cwtStrNS();
 	int rc;
 
     /* The sockaddr_in structure specifies the address family,
      * IP address, and port for the socket that is being bound.
      */
-	char *inetAddrLatin1;
 	struct sockaddr_in sockaddr;
 
-	inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, strNS->strlen(inetAddr));
-	memset(&sockaddr, 0, sizeof(sockaddr));
-	sockaddr.sin_family      = AF_INET;
-	sockaddr.sin_addr.s_addr = /*htonl(*/inetAddr != NULL ? inet_addr(inetAddrLatin1) : INADDR_ANY/*)*/;
-	sockaddr.sin_port        = /*htons(*/port/*)*/;
-	CWT_FREE(inetAddrLatin1);
+	if (!__initSockAddrIn(&sockaddr, inetAddr, port))
+		return FALSE;
 
 	/* Bind the socket. */
 	rc = bind(sd->sockfd, (SOCKADDR*)&sockaddr, sizeof(sockaddr));
@@ -50,18 +78,21 @@ static BOOL __socket_bindNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 
 
 static BOOL __socket_connectNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 {
-	CwtStrNS *strNS = cwtStrNS();
 	CwtTcpSocket *sd_tcp;
 	int rc;
 
     /* The sockaddr_in structure specifies the address family,
      * IP address, and port for the socket that is being bound.
      */
-	char *inetAddrLatin1;
+	/*char *inetAddrLatin1;*/
 	/*struct sockaddr_in serveraddr;*/
 
 	sd_tcp = (CwtTcpSocket *)sd;
 
+	if (!__initSockAddrIn(&sd_tcp->sockaddr, inetAddr, port))
+		return FALSE;
+
+#ifdef __DELETEIT__
 	inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, strNS->strlen(inetAddr));
 	cwtStrNS()->bzero(&sd_tcp->sockaddr, sizeof(sd_tcp->sockaddr));
 	sd_tcp->sockaddr.sin_family      = AF_INET;
@@ -83,6 +114,7 @@ static BOOL __socket_connectNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT
 		memcpy(&sd_tcp->sockaddr.sin_addr, phost->h_addr, sizeof(sd_tcp->sockaddr.sin_addr));
 	}
 	CWT_FREE(inetAddrLatin1);
+#endif
 
 	if( Cwt_TcpSocket == sd->type ) {
 		rc = connect(sd->sockfd, (struct sockaddr *)&sd_tcp->sockaddr, sizeof(sd_tcp->sockaddr));

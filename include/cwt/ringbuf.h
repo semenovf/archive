@@ -15,9 +15,9 @@
 
 typedef struct CwtRingBuf
 {
-	BYTE*    m_buffer;   /* �������᪨� ���ᨢ ?���⮢ ���� */
-    size_t   m_head;     /* ������ ��ࢮ�� ?���� */
-    size_t   m_count;    /* ������⢮ ?���⮢, ����㯭�� ��� �⥭�� */
+	BYTE*    m_buffer;
+    size_t   m_head;
+    size_t   m_count;
     size_t   m_capacity;
     size_t   m_max_capacity;
 } CwtRingBuf;

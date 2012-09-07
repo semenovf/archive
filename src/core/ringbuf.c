@@ -76,7 +76,7 @@ DLL_API_EXPORT CwtRingBufNS* cwtRingBufNS(void)
 }
 
 
-static size_t __get_bare_index(CwtRingBuf* rb, size_t index)
+static inline size_t __get_bare_index(CwtRingBuf* rb, size_t index)
 {
 	CWT_ASSERT(index < rb->m_count);
 
@@ -140,10 +140,9 @@ static CwtRingBuf* __clone(CwtRingBuf *rb)
 	if( rb ) {
 		CwtRingBuf *clone = __createSized(rb->m_count, default_max_size);
 		if( rb->m_count > 0 ) {
-			/* '墮��' ��室���� �ࠢ�� '������' */
 			if( rb->m_capacity - rb->m_head >= rb->m_count ) {
 				memcpy(clone->m_buffer, rb->m_buffer + rb->m_head, rb->m_count);
-			} else { /* '墮��' ��室���� ����� '������' */
+			} else {
 				memcpy(clone->m_buffer, rb->m_buffer + rb->m_head, rb->m_capacity - rb->m_head);
 				memcpy(clone->m_buffer + rb->m_capacity - rb->m_head, rb->m_buffer, rb->m_count - (rb->m_capacity - rb->m_head));
 			}
@@ -177,10 +176,9 @@ static BOOL __reserve(CwtRingBuf *rb, size_t n )
 
 		buffer = CWT_MALLOCA(BYTE, capacity);
 
-		/* '墮��' ��室���� �ࠢ�� '������' */
 		if( rb->m_capacity - rb->m_head >= rb->m_count ) {
 			memcpy(buffer, rb->m_buffer + rb->m_head, rb->m_count);
-		} else { /* '墮��' ��室���� ����� '������' */
+		} else {
 			memcpy(buffer, rb->m_buffer + rb->m_head, rb->m_capacity - rb->m_head);
 			memcpy(buffer + rb->m_capacity - rb->m_head, rb->m_buffer, rb->m_count - (rb->m_capacity - rb->m_head));
 		}
@@ -258,8 +256,9 @@ static ssize_t __read(CwtRingBuf *rb, BYTE* bytes, size_t n)
  *
  * @param rb
  * @param bytes
- * @param n
- * @return
+ * @param n Number of bytes to read, must be less or equal CWT_SSIZE_T_MAX.
+ *          If n > CWT_SSIZE_T_MAX.
+ * @return No more than MIN(n,CWT_SSIZE_T_MAX,rb_size) bytes from buffer.
  *
  * @see pop
  * @see popFront
@@ -273,7 +272,7 @@ static ssize_t __peek(CwtRingBuf *rb, BYTE* bytes, size_t n)
 		return (ssize_t)0;
 
 	n = CWT_MIN(n, rb->m_count);
-	n = CWT_MIN(n, JQ_SSIZE_T_MAX);
+	n = CWT_MIN(n, CWT_SSIZE_T_MAX);
 
 	if( rb->m_capacity - rb->m_head >= n ) {
 		memcpy(bytes, rb->m_buffer + rb->m_head, n);

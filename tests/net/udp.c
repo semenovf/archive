@@ -54,25 +54,30 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(2);
 
-	CWT_TEST_FAIL(server = socketNS->openUdpSocket(FALSE));
+	CWT_TEST_FAIL(server = socketNS->openUdpSocket(TRUE));
 	CWT_TEST_FAIL(client = socketNS->openUdpSocket(FALSE));
 
 	CWT_TEST_FAIL(socketNS->listen(server, _T("localhost"), 12012));
 	CWT_TEST_FAIL(socketNS->connect(client, _T("localhost"), 12012));
 
 	loremipsum_len = cwtStrNS()->strlen(loremipsum);
-	CWT_TEST_FAIL(socketNS->write(client, (BYTE*)loremipsum, loremipsum_len))
+	CWT_TEST_FAIL(socketNS->write(client, (BYTE*)loremipsum, loremipsum_len) > 0);
 
 	br = 0;
 	counter = 0;
+	CWT_TEST_FAIL((br = socketNS->read(server, buf+counter, 2048-counter)) >= 0);
 
 	while( br >= 0 ) {
-		CWT_TEST_FAIL(br = socketNS->read(server, buf+counter, 2048-counter));
+		br = socketNS->read(server, buf+counter, 2048-counter);
 		if( br <= 0 )
 			break;
 		counter += (size_t)br;
 	}
 
+	CWT_TEST_OK(br >= 0);
+
+	socketNS->close(client);
+	socketNS->close(server);
 	CWT_END_TESTS;
 }
 

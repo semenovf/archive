@@ -19,6 +19,7 @@ SUBDIRS  =            \
     tests/ini         \
     tests/list        \
     tests/pcre        \
+    tests/ringbuf     \
     tests/utils       \
     tests/strlist     \
     tests/strptime    \
