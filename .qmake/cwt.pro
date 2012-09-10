@@ -27,5 +27,6 @@ SUBDIRS  =            \
     tests/dbi         \
     tests/unitype     \
     tests/net/udp     \
+    tests/net/tcp     \
     tests/io/channel  \
     tests/io/channel_tcp_socket

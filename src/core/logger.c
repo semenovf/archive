@@ -137,7 +137,7 @@ void print_error(const CWT_CHAR* msg) { _print(LOGGER_ERROR, msg); }
 
 
 #define __MSG_SZ 512
-#define __MSG_MAX_SZ 1024
+#define __MSG_MAX_SZ 2048
 #define __MSG_INC_SZ 256
 static void _printf(LOGGER_TYPE type, const CWT_CHAR* format, va_list args)
 {
@@ -152,7 +152,7 @@ static void _printf(LOGGER_TYPE type, const CWT_CHAR* format, va_list args)
 		sz += __MSG_INC_SZ;
 
 		if( sz > __MSG_MAX_SZ ) {
-			printf_error(_T("log string to0 big"));
+			printf_error(_T("log string too big"));
 			break;
 		}
 

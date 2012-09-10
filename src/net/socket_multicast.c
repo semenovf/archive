@@ -14,7 +14,7 @@
 
 CwtSocket* __socket_openMSocket (BOOL is_nonblocking)
 {
-	return __socket_openTypified(Cwt_MSocket, is_nonblocking);
+	return __socket_openTypified(Cwt_McastSocket, is_nonblocking);
 }
 
 
@@ -24,13 +24,13 @@ static BOOL __socket_listenOrConnect(CwtSocket *sd, const CWT_CHAR *inetAddr, UI
 
 	char *inetAddrLatin1;
 	char *inetMCastAddrLatin1;
-	CwtMSocket *msd;
+	CwtMcastSocket *msd;
 
 	CWT_ASSERT(sd);
 
-	msd = (CwtMSocket*)sd;
+	msd = (CwtMcastSocket*)sd;
 
-	if( Cwt_MSocket != sd->type ) {
+	if( Cwt_McastSocket != sd->type ) {
 		cwtLoggerNS()->error(_Tr("expected multicast socket for listen"));
 		return FALSE;
 	}
@@ -59,7 +59,7 @@ static BOOL __socket_listenOrConnect(CwtSocket *sd, const CWT_CHAR *inetAddr, UI
 			memset((char *) &localSock, 0, sizeof(localSock));
 			localSock.sin_family = AF_INET;
 			localSock.sin_port = htons(port);
-			localSock.sin_addr.s_addr = INADDR_ANY;
+			localSock.sin_addr.s_addr = htonl(INADDR_ANY);
 
 			rc = bind(msd->sockfd, (struct sockaddr*)&localSock, sizeof(localSock));
 			if (rc < 0) {
@@ -129,16 +129,16 @@ BOOL __socket_connectMSocket (CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 po
 }
 
 
-ssize_t __socket_readMSocket(CwtSocket *sd, BYTE *buf, size_t sz)
+ssize_t __socket_readMcastSocket(CwtSocket *sd, BYTE *buf, size_t sz)
 {
 	CWT_UNUSED3(sd, buf, sz);
 	/* FIXME need to implement */
 	return -1;
 }
 
-ssize_t __socket_writeMSocket(CwtSocket *sd, const BYTE *buf, size_t sz)
+ssize_t __socket_writeMcastSocket(CwtSocket *sd, const BYTE *buf, size_t sz)
 {
-	CwtMSocket *msd = (CwtMSocket*)sd;
+	CwtMcastSocket *msd = (CwtMcastSocket*)sd;
 	ssize_t bw;
 
 	CWT_ASSERT(sd);

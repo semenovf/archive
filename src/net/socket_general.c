@@ -7,6 +7,7 @@
 
 #include "socket_p.h"
 #include <string.h>
+#include <unistd.h>
 #include <cwt/str.h>
 #include <cwt/logger.h>
 #include <cwt/txtcodec.h>
@@ -15,39 +16,64 @@ extern size_t __socket_bytesAvailable (CwtSocket *sd);
 
 static BOOL __initSockAddrIn(struct sockaddr_in *saddr, const CWT_CHAR *inetAddr, UINT16 port)
 {
-	char *inetAddrLatin1;
 	BOOL ok = TRUE;
 
-	inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strlen(inetAddr));
 	cwtStrNS()->bzero(saddr, sizeof(*saddr));
 	saddr->sin_family      = AF_INET;
-	saddr->sin_addr.s_addr = /*htonl(*/inetAddr != NULL ? inet_addr(inetAddrLatin1) : INADDR_ANY/*)*/;
-	saddr->sin_port        = /*htons(*/port/*)*/;
+	saddr->sin_port        = htons(port);
 
-	if (saddr->sin_addr.s_addr == (unsigned long)INADDR_NONE) {
-		do {
-			struct hostent *phost;
+	if (!inetAddr) {
+		saddr->sin_addr.s_addr = htonl(INADDR_ANY);
+	} else {
+		char *inetAddrLatin1;
+		inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strlen(inetAddr));
 
-			phost = gethostbyname(inetAddrLatin1);
+		if( !inet_aton(inetAddrLatin1, &saddr->sin_addr) ) {
+			do {
+				struct hostent *phost;
 
-			if (phost == (struct hostent *)NULL) {
-				cwtLoggerNS()->error(_Tr("%s: host not found"), inetAddr);
-				/*printf("h_errno = %d\n", h_errno);*/
-				ok = FALSE;
-				break;
-			}
+				phost = gethostbyname(inetAddrLatin1);
 
-			memcpy(&saddr->sin_addr, phost->h_addr, sizeof(saddr->sin_addr));
+				if (phost == (struct hostent *)NULL) {
+					cwtLoggerNS()->error(_Tr("%s: host not found"), inetAddr);
+					/*printf("h_errno = %d\n", h_errno);*/
+					ok = FALSE;
+					break;
+				}
 
-		} while(FALSE);
+				memcpy(&saddr->sin_addr, phost->h_addr, sizeof(saddr->sin_addr));
+
+			} while(FALSE);
+		}
+		CWT_FREE(inetAddrLatin1);
 	}
 
-	CWT_FREE(inetAddrLatin1);
-
-	return TRUE;
+	return ok;
 }
 
-static BOOL __socket_bindNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
+
+static BOOL __initSockAddrUn(struct sockaddr_un *saddr, const CWT_CHAR *path)
+{
+	char *pathLatin1;
+	BOOL ok = FALSE;
+
+	if( !path || cwtStrNS()->strlen(path) == 0 ) {
+		cwtLoggerNS()->error(_Tr("local socket path is empty"));
+		return FALSE;
+	}
+
+	pathLatin1 = cwtTextCodecNS()->toLatin1(path, cwtStrNS()->strlen(path));
+
+	if( strlen(pathLatin1) >= sizeof(saddr->sun_path)) {
+		cwtLoggerNS()->error(_Tr("local socket path long"));
+	} else {
+		ok = TRUE;
+	}
+	CWT_FREE(pathLatin1);
+	return ok;
+}
+
+static BOOL __socket_bindTcpUdpSocket(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 {
 	int rc;
 
@@ -75,46 +101,101 @@ static BOOL __socket_bindNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 
 	return TRUE;
 }
 
-
-static BOOL __socket_connectNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
+static BOOL __socket_bindLocalSocket(CwtSocket *sd, const CWT_CHAR *path)
 {
-	CwtTcpSocket *sd_tcp;
 	int rc;
+	size_t len;
 
     /* The sockaddr_in structure specifies the address family,
      * IP address, and port for the socket that is being bound.
      */
-	/*char *inetAddrLatin1;*/
-	/*struct sockaddr_in serveraddr;*/
+	struct sockaddr_un sockaddr;
+
+	if (!__initSockAddrUn(&sockaddr, path))
+		return FALSE;
+
+	/* Bind the socket. */
+	len = strlen(sd_local->sockaddr.sun_path) + sizeof(sd_local->sockaddr.sun_family);
+	/*rc = connect(sd_local->sockfd, (struct sockaddr *)&sd_local->sockaddr, len);*/
+	rc = bind(sd->sockfd, (SOCKADDR*)&sockaddr, sizeof(sockaddr));
+	if( rc < 0 ) {
+		cwtLoggerNS()->error(_Tr("bind failed")
+			_CWT_SOCKET_LOG_FMTSUFFIX
+			, _CWT_SOCKET_LOG_ARGS);
+		return FALSE;
+	}
+
+	/* It is not important to what socket to cast.
+	 * CwtTcpSocket and CwtUdpSocket both have sockaddr member
+	 */
+	memcpy(&((CwtTcpSocket*)sd)->sockaddr, &sockaddr, sizeof(sockaddr));
+	return TRUE;
+}
+
+static BOOL __socket_connectLocalSocket(CwtSocket *sd, const CWT_CHAR *path)
+{
+	CwtLocalSocket *sd_local;
+	size_t len;
+	int rc;
+
+	sd_local = (CwtLocalSocket *)sd;
+	CWT_ASSERT(Cwt_LocalSocket == sd->type);
+
+	if( __initSockAddrUn(&sd_local->sockaddr, path) ) {
+		len = strlen(sd_local->sockaddr.sun_path) + sizeof(sd_local->sockaddr.sun_family);
+		rc = connect(sd_local->sockfd, (struct sockaddr *)&sd_local->sockaddr, len);
+
+		if (rc == EINPROGRESS) {
+#if CWT_HAVE_POLL
+			;
+#endif
+		}
+
+		if (rc < 0) {
+			cwtLoggerNS()->error(_Tr("connection to '%s' failed")
+				_CWT_SOCKET_LOG_FMTSUFFIX
+				, path
+				, _CWT_SOCKET_LOG_ARGS);
+			return FALSE;
+		}
+
+	}
+
+	return TRUE;
+}
+
+static BOOL __socket_listenLocalSocket(CwtSocket *sd, const CWT_CHAR *path)
+{
+	int rc;
+
+	CWT_ASSERT(sd);
+
+	CWT_ASSERT(Cwt_LocalSocket == sd->type);
+
+	if (!__socket_bindLocalSocket(sd, path))
+		return FALSE;
+
+	rc = listen(sd->sockfd, 10);
+	if (rc < 0) {
+		cwtLoggerNS()->error(_Tr("changing socket state to listening mode failed")
+			_CWT_SOCKET_LOG_FMTSUFFIX
+			, _CWT_SOCKET_LOG_ARGS);
+		return FALSE;
+	}
+
+	sd->is_listener = TRUE;
+	return TRUE;
+}
+
+static BOOL __socket_connectTcpUdpSocket(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
+{
+	CwtTcpSocket *sd_tcp;
+	int rc;
 
 	sd_tcp = (CwtTcpSocket *)sd;
 
 	if (!__initSockAddrIn(&sd_tcp->sockaddr, inetAddr, port))
 		return FALSE;
-
-#ifdef __DELETEIT__
-	inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, strNS->strlen(inetAddr));
-	cwtStrNS()->bzero(&sd_tcp->sockaddr, sizeof(sd_tcp->sockaddr));
-	sd_tcp->sockaddr.sin_family      = AF_INET;
-	sd_tcp->sockaddr.sin_addr.s_addr = /*htonl(*/inetAddr != NULL ? inet_addr(inetAddrLatin1) : INADDR_ANY/*)*/;
-	sd_tcp->sockaddr.sin_port        = /*htons(*/port/*)*/;
-
-	if (sd_tcp->sockaddr.sin_addr.s_addr == (unsigned long)INADDR_NONE) {
-		struct hostent *phost;
-
-		phost = gethostbyname(inetAddrLatin1);
-
-		if (phost == (struct hostent *)NULL) {
-			cwtLoggerNS()->error(_Tr("%s: host not found"), inetAddr);
-			/*printf("h_errno = %d\n", h_errno);*/
-			CWT_FREE(inetAddrLatin1);
-			return FALSE;
-		}
-
-		memcpy(&sd_tcp->sockaddr.sin_addr, phost->h_addr, sizeof(sd_tcp->sockaddr.sin_addr));
-	}
-	CWT_FREE(inetAddrLatin1);
-#endif
 
 	if( Cwt_TcpSocket == sd->type ) {
 		rc = connect(sd->sockfd, (struct sockaddr *)&sd_tcp->sockaddr, sizeof(sd_tcp->sockaddr));
@@ -148,33 +229,7 @@ static BOOL __socket_connectNative(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT
 	return TRUE;
 }
 
-static SOCKET __socket_acceptNative(SOCKET listener)
-{
-	SOCKET client;
-
-	client = accept(listener, NULL, NULL);
-	if (client < 0) {
-		cwtLoggerNS()->error(_Tr("accepting connection failed")
-			_CWT_SOCKET_LOG_FMTSUFFIX
-			, _CWT_SOCKET_LOG_ARGS);
-	}
-
-	return client;
-}
-
-
-CwtSocket* __socket_openUdpSocket (BOOL is_nonblocking)
-{
-	return __socket_openTypified(Cwt_UdpSocket, is_nonblocking);
-}
-
-CwtSocket* __socket_openTcpSocket (BOOL is_nonblocking)
-{
-	return __socket_openTypified(Cwt_TcpSocket, is_nonblocking);
-}
-
-
-/**
+/*
  * @fn BOOL CwtSocket::listen(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
  *
  * @brief Changes socket state into listening mode.
@@ -184,7 +239,7 @@ CwtSocket* __socket_openTcpSocket (BOOL is_nonblocking)
  * @param port Socket port. If equals to 0 any available port selected.
  * @return
  */
-BOOL __socket_listen(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
+static BOOL __socket_listenTcpUdpSocket(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 {
 	int rc;
 
@@ -215,7 +270,7 @@ BOOL __socket_listen(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 	}
 /*#endif*/
 
-	if (!__socket_bindNative(sd, inetAddr, port))
+	if (!__socket_bindTcpUdpSocket(sd, inetAddr, port))
 		return FALSE;
 
 
@@ -233,14 +288,124 @@ BOOL __socket_listen(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 	return TRUE;
 }
 
+static CwtSocket* __socket_openSocketHelper(CwtSocketType socketType, const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking)
+{
+	CwtSocket *sd;
+	BOOL ok;
+	sd = __socket_openTypified(socketType, is_nonblocking);
+
+	if( sd ) {
+		switch(socketType) {
+		case Cwt_LocalSocket:
+			ok = __socket_connectLocalSocket(sd, inetAddr);
+			break;
+		case Cwt_TcpSocket:
+		case Cwt_UdpSocket:
+			ok = __socket_connectTcpUdpSocket(sd, inetAddr, port);
+			break;
+		default:
+			CWT_ASSERT(FALSE);
+			break;
+		}
+	}
+
+	if (!ok) {
+		cwtSocketNS()->close(sd);
+		sd = NULL;
+	}
+
+	return sd;
+}
+
+
+static CwtSocket* __socket_openServerSocketHelper(CwtSocketType socketType, const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking)
+{
+/*
+	CwtSocket *sd;
+	sd = __socket_openTypified(Cwt_LocalSocket, is_nonblocking);
+	if( sd ) {
+		if( !__socket_listenLocalSocket(sd, path) ) {
+			cwtSocketNS()->close(sd);
+			sd = NULL;
+		}
+	}
+	return sd;
+*/
+
+	CwtSocket *sd;
+	BOOL ok;
+	sd = __socket_openTypified(socketType, is_nonblocking);
+
+	if( sd ) {
+		switch(socketType) {
+		case Cwt_LocalSocket:
+			ok = __socket_listenLocalSocket(sd, inetAddr);
+			break;
+		case Cwt_TcpSocket:
+		case Cwt_UdpSocket:
+			ok = __socket_listenTcpUdpSocket(sd, inetAddr, port);
+			break;
+		default:
+			CWT_ASSERT(FALSE);
+			break;
+		}
+	}
+
+	if (!ok) {
+		cwtSocketNS()->close(sd);
+		sd = NULL;
+	}
+	return sd;
+}
+
+
+CwtSocket* __socket_openLocalSocket(const CWT_CHAR *path, BOOL is_nonblocking)
+{
+	return __socket_openSocketHelper(Cwt_LocalSocket, path, 0, is_nonblocking);
+}
+
+CwtSocket* __socket_openTcpSocket(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking)
+{
+	return __socket_openSocketHelper(Cwt_TcpSocket, inetAddr, port, is_nonblocking);
+}
+
+CwtSocket* __socket_openUdpSocket(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking)
+{
+	return __socket_openSocketHelper(Cwt_UdpSocket, inetAddr, port, is_nonblocking);
+}
+
+
+CwtSocket* __socket_openLocalServerSocket(const CWT_CHAR *path, BOOL is_nonblocking)
+{
+	return __socket_openServerSocketHelper(Cwt_LocalSocket, path, 0, is_nonblocking);
+}
+
+
+CwtSocket* __socket_openTcpServerSocket(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking)
+{
+	return __socket_openServerSocketHelper(Cwt_TcpSocket, inetAddr, port, is_nonblocking);
+}
+
+CwtSocket* __socket_openUdpServerSocket(const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking)
+{
+	return __socket_openServerSocketHelper(Cwt_UdpSocket, inetAddr, port, is_nonblocking);
+}
+
+
 
 CwtSocket* __socket_accept(CwtSocket *sd)
 {
 	CWT_ASSERT(sd);
 	if (Cwt_TcpSocket == sd->type) {
 		SOCKET client;
-		client = __socket_acceptNative(sd->sockfd);
-		if( client ) {
+
+		client = accept(sd->sockfd, NULL, NULL);
+
+		if (client < 0) {
+			cwtLoggerNS()->error(_Tr("accepting connection failed")
+				_CWT_SOCKET_LOG_FMTSUFFIX
+				, _CWT_SOCKET_LOG_ARGS);
+		} else {
 			CwtTcpSocket *sd_tcp;
 
 			sd_tcp = CWT_MALLOC(CwtTcpSocket);
@@ -278,7 +443,7 @@ CwtSocket* __socket_accept(CwtSocket *sd)
 			CwtUdpSocket *sd_udp;
 
 			sd_udp = CWT_MALLOC(CwtUdpSocket);
-			sd_udp->sockfd      = sd->sockfd;
+			sd_udp->sockfd      = dup(sd->sockfd);
 			sd_udp->type        = sd->type;
 			sd_udp->is_listener = FALSE;
 
@@ -302,12 +467,14 @@ CwtSocket* __socket_accept(CwtSocket *sd)
  * @param is_nonblocking
  * @return
  */
+/*
 BOOL __socket_connect(CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port)
 {
 	CWT_ASSERT(sd);
 
-	return __socket_connectNative(sd, inetAddr, port);
+	return __socket_connectTcpUdpSocket(sd, inetAddr, port);
 }
+*/
 
 
 ssize_t __socket_readUdpSocket(CwtSocket *sd, BYTE *buf, size_t sz)

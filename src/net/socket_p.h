@@ -22,6 +22,7 @@
 #	include <sys/fcntl.h>
 #	include <sys/socket.h>
 #	include <netinet/in.h>
+#	include <sys/un.h>
 #	include <arpa/inet.h>
 #   include <netdb.h>
 #	define __socket_errno errno  /* FIXME need multi-threaded support */
@@ -39,6 +40,12 @@
 #endif
 */
 
+
+typedef struct _CwtLocalSocket {
+	_CWT_SOCKET_BASE
+	struct sockaddr_un sockaddr;
+} CwtLocalSocket;
+
 typedef struct _CwtTcpSocket {
 	_CWT_SOCKET_BASE
 	struct sockaddr_in sockaddr; /* for client socket - server address */
@@ -55,14 +62,14 @@ typedef struct _CwtUdpSocket {
 
 
 /* Multicast socket */
-typedef struct _CwtMSocket {
+typedef struct _CwtMcastSocket {
 	_CWT_SOCKET_BASE
 
 	union {
 		struct sockaddr_in sockaddr;  /* group sockaddr for sender */
 		struct ip_mreq     mreq;      /* multicast group for receiver */
 	} group;
-} CwtMSocket;
+} CwtMcastSocket;
 
 extern size_t __socket_nsockets_opened;
 extern BOOL   __socket_is_sockets_allowed;
@@ -73,10 +80,10 @@ extern SOCKET     __socket_openNative(CwtSocketType socketType);
 extern CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking);
 extern ssize_t    __socket_readUdpSocket(CwtSocket*, BYTE *buf, size_t sz);
 extern ssize_t    __socket_readTcpSocket(CwtSocket*, BYTE *buf, size_t sz);
-extern ssize_t    __socket_readMSocket(CwtSocket*, BYTE *buf, size_t sz);
+extern ssize_t    __socket_readMcastSocket(CwtSocket*, BYTE *buf, size_t sz);
 extern ssize_t    __socket_writeUdpSocket(CwtSocket*, const BYTE *buf, size_t sz);
 extern ssize_t    __socket_writeTcpSocket(CwtSocket*, const BYTE *buf, size_t sz);
-extern ssize_t    __socket_writeMSocket(CwtSocket*, const BYTE *buf, size_t sz);
+extern ssize_t    __socket_writeMcastSocket(CwtSocket*, const BYTE *buf, size_t sz);
 
 #define _CWT_SOCKET_LOG_FMTSUFFIX _T(": %s (errno=%d)")
 #define _CWT_SOCKET_LOG_ARGS      cwtStrNS()->strError(__socket_errno), __socket_errno

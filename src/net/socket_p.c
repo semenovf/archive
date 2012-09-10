@@ -12,14 +12,23 @@
 SOCKET __socket_openNative(CwtSocketType socketType)
 {
 	SOCKET sockfd;
+	int nativeType;
+	int domain = AF_INET;
 
 	if( !__socket_allowSockets() ) {
 		cwtLoggerNS()->error(_Tr("network sockets not allowed in this system"));
 		return -1;
 	}
 
-    /* Create a datagram socket on which to send. */
-	sockfd = socket(AF_INET, socketType == Cwt_TcpSocket ? SOCK_STREAM : SOCK_DGRAM , 0);
+	domain = socketType != Cwt_LocalSocket
+			? AF_INET
+			: AF_UNIX;
+
+	nativeType == (socketType == Cwt_TcpSocket || socketType == Cwt_LocalSocket)
+			? SOCK_STREAM
+			: SOCK_DGRAM;
+
+	sockfd = socket(domain, nativeType, 0);
     if( sockfd < 0 ) {
     	cwtLoggerNS()->error(_Tr("failed to open socket [%d]"), __socket_errno);
 		return -1;
@@ -48,9 +57,13 @@ CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 	}
 
 	switch(socketType) {
-	case Cwt_MSocket:
-		sd = (CwtSocket*)CWT_MALLOC(CwtMSocket);
-		cwtStrNS()->bzero(sd, sizeof(CwtMSocket));
+	case Cwt_LocalSocket:
+		sd = (CwtSocket*)CWT_MALLOC(CwtLocalSocket);
+		cwtStrNS()->bzero(sd, sizeof(CwtLocalSocket));
+		break;
+	case Cwt_McastSocket:
+		sd = (CwtSocket*)CWT_MALLOC(CwtMcastSocket);
+		cwtStrNS()->bzero(sd, sizeof(CwtMcastSocket));
 		break;
 	case Cwt_UdpSocket:
 		sd = (CwtSocket*)CWT_MALLOC(CwtUdpSocket);

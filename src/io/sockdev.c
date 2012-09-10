@@ -121,15 +121,15 @@ DLL_API_EXPORT CwtIODevice* cwtMSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT1
 	struct _CwtSocket *sd;
 	BOOL ok;
 
-	sd = cwtSocketNS()->openMSocket(TRUE);
+	sd = cwtSocketNS()->openMcastSocket(TRUE);
 
 	if (!sd)
 		return NULL;
 
 	if( is_listener )
-		ok = socketNS->listenMSocket(sd, inetAddr, port, inetMCastAddr);
+		ok = socketNS->listenMcastSocket(sd, inetAddr, port, inetMCastAddr);
 	else
-		ok = socketNS->connectMSocket(sd, inetAddr, port, inetMCastAddr);
+		ok = socketNS->connectMcastSocket(sd, inetAddr, port, inetMCastAddr);
 
 	if (ok)
 		return __dev_createSocketDevice(sd);

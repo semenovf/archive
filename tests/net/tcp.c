@@ -29,65 +29,67 @@ decima et quinta decima. Eodem modo typi, qui nunc nobis      \n\
 videntur parum clari, fiant sollemnes in futurum.";
 
 
-/*
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-*/
 #define NPACK 10
-
+#define _BUFSZ 2048
 
 static int __server(void)
 {
-  CwtSocketNS *socketNS = cwtSocketNS();
-  CwtSocket *server;
-  int i;
-  BYTE buf[2048];
+	CwtSocketNS *socketNS = cwtSocketNS();
 
-  CWT_TEST_FAIL(server = socketNS->openUdpSocket(FALSE));
-  CWT_TEST_FAIL(socketNS->listen(server, NULL, 12012));
+	int        i;
+	CwtSocket *server;
+	BYTE       buf[_BUFSZ];
+	CwtSocket *peer;
+	CWT_CHAR  *inetAddr;
+	UINT16     inetPort;
+	ssize_t    br;
 
-  for (i = 0; i < NPACK; i++) {
-	  CwtSocket *peer;
-	  ssize_t br;
-	  peer = socketNS->accept(server);
+	CWT_TEST_FAIL(server = socketNS->openTcpSocket(FALSE));
+	CWT_TEST_FAIL(socketNS->listen(server, NULL, 12012));
 
-	  CWT_TEST_FAIL(peer);
+	CWT_TEST_FAIL(peer = socketNS->accept(server));
 
-	  if( peer ) {
-		  CWT_CHAR *inetAddr = socketNS->inetAddr(peer);
-		  UINT16    inetPort = socketNS->inetPort(peer);
+	inetAddr = socketNS->inetAddr(peer);
+	inetPort = socketNS->inetPort(peer);
 
-		  br = socketNS->read(server, buf, 2048);
+	for( i = 0; i < NPACK; i++ ) {
+		while( !socketNS->bytesAvailable(peer) )
+			{;}
+		CWT_TEST_FAIL((br = socketNS->read(peer, buf, _BUFSZ)) > 0);
+		cwtLoggerNS()->debug(_Tr("Received packet from %s:%u\nData: %s\n\n"), inetAddr, inetPort, buf);
+		CWT_TEST_OK(strcmp(loremipsum, (char*)buf) == 0);
+		CWT_TEST_FAIL(socketNS->write(peer, buf, _BUFSZ) > 0);
+	}
 
-		  cwtLoggerNS()->debug(_Tr("Received packet from %s:%u\nData: %s\n\n"), inetAddr, inetPort, buf);
-		  socketNS->close(peer);
-		  CWT_TEST_OK(strcmp(loremipsum, (char*)buf) == 0);
-		  CWT_FREE(inetAddr);
-	  }
-  }
-
-  socketNS->close(server);
-  return 0;
+	CWT_FREE(inetAddr);
+	socketNS->close(peer);
+	socketNS->close(server);
+	return 0;
 }
 
 static int __client(void)
 {
 	CwtSocketNS *socketNS = cwtSocketNS();
-	CwtSocket *client;
-	size_t loremipsum_len;
-	int i;
 
-	CWT_TEST_FAIL(client = socketNS->openUdpSocket(FALSE));
+	int        i;
+	CwtSocket *client;
+	BYTE       buf[_BUFSZ];
+	size_t     loremipsum_len;
+	ssize_t    bw;
+
+	CWT_TEST_FAIL(client = socketNS->openTcpSocket(FALSE));
 	CWT_TEST_FAIL(socketNS->connect(client, _T("localhost"), 12012));
 
 	loremipsum_len = cwtStrNS()->strlen(loremipsum);
 
+	for( i = 0; i < NPACK; i++ ) {
+		cwtLoggerNS()->debug("Sending packet...");
+		CWT_TEST_FAIL(socketNS->write(client, (BYTE*)loremipsum, loremipsum_len+1) > 0);
 
-	for (i = 0; i < NPACK; i++) {
-		cwtLoggerNS()->debug("Sending packet %d\n", i);
-		CWT_TEST_FAIL(socketNS->write(client, (BYTE*)loremipsum, loremipsum_len) > 0);
+		while( !socketNS->bytesAvailable(client) )
+			{;}
+		CWT_TEST_FAIL((bw = socketNS->read(client, buf, _BUFSZ)) > 0);
+		cwtLoggerNS()->debug(_Tr("Received packet\nData: %s\n\n"), buf);
 	}
 
 	socketNS->close(client);
@@ -101,10 +103,10 @@ int main(int argc, char *argv[])
 {
 	if( argc > 1 ) {
 		if( strcmp(argv[1], "-server") == 0) {
-			CWT_BEGIN_TESTS(22);
+			CWT_BEGIN_TESTS(33);
 			__server();
 		} else {
-			CWT_BEGIN_TESTS(12);
+			CWT_BEGIN_TESTS(22);
 			__client();
 		}
 		CWT_END_TESTS;
