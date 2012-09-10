@@ -40,8 +40,8 @@ extern CwtSocket* __socket_openUdpSocket        (const CWT_CHAR *inetAddr, UINT1
 extern CwtSocket* __socket_openUdpServerSocket  (const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking);
 extern CwtSocket* __socket_openTcpSocket        (const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking);
 extern CwtSocket* __socket_openTcpServerSocket  (const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking);
-extern CwtSocket* __socket_openMcastSocket      (BOOL is_nonblocking);
-extern CwtSocket* __socket_openMcastServerSocket(BOOL is_nonblocking);
+extern CwtSocket* __socket_openMcastSocket      (const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_nonblocking);
+extern CwtSocket* __socket_openMcastServerSocket(const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_nonblocking);
 /*
 
 extern CwtSocket* __socket_openLocalSocket(BOOL is_nonblocking);
@@ -64,18 +64,26 @@ static CWT_CHAR*  __socket_inetAddr       (CwtSocket*);
 static UINT16     __socket_inetPort       (CwtSocket*);
 
 
-typedef ssize_t  (*_socket_write_f)(CwtSocket*, const BYTE *buf, size_t sz);
-typedef ssize_t  (*_socket_read_f) (CwtSocket*, BYTE *buf, size_t sz);
+typedef CwtSocket* (*_socket_accept_f)(CwtSocket*);
+typedef ssize_t    (*_socket_write_f)(CwtSocket*, const BYTE *buf, size_t sz);
+typedef ssize_t    (*_socket_read_f) (CwtSocket*, BYTE *buf, size_t sz);
+
+static _socket_accept_f __socket_acceptTypified[] = {
+	  __socket_acceptLocalSocket
+	, __socket_acceptTcpSocket
+	, __socket_acceptUdpSocket
+	, __socket_acceptMcastSocket
+};
 
 static _socket_write_f __socket_writeTypified[] = {
-	  __socket_writeTcpSocket
+	  __socket_writeLocalSocket
 	, __socket_writeTcpSocket
 	, __socket_writeUdpSocket
 	, __socket_writeMcastSocket
 };
 
 static _socket_read_f __socket_readTypified[] = {
-	  __socket_readTcpSocket
+	  __socket_readLocalSocket
 	, __socket_readTcpSocket
 	, __socket_readUdpSocket
 	, __socket_readMcastSocket

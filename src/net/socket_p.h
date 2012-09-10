@@ -74,16 +74,22 @@ typedef struct _CwtMcastSocket {
 extern size_t __socket_nsockets_opened;
 extern BOOL   __socket_is_sockets_allowed;
 
-extern BOOL       __socket_allowSockets (void);
+extern BOOL       __socket_allowSockets     (void);
 extern BOOL       __socket_setNonBlockingNative (SOCKET, BOOL is_nonblocking);
-extern SOCKET     __socket_openNative(CwtSocketType socketType);
-extern CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking);
-extern ssize_t    __socket_readUdpSocket(CwtSocket*, BYTE *buf, size_t sz);
-extern ssize_t    __socket_readTcpSocket(CwtSocket*, BYTE *buf, size_t sz);
-extern ssize_t    __socket_readMcastSocket(CwtSocket*, BYTE *buf, size_t sz);
-extern ssize_t    __socket_writeUdpSocket(CwtSocket*, const BYTE *buf, size_t sz);
-extern ssize_t    __socket_writeTcpSocket(CwtSocket*, const BYTE *buf, size_t sz);
-extern ssize_t    __socket_writeMcastSocket(CwtSocket*, const BYTE *buf, size_t sz);
+extern CwtSocket* __socket_openTypified     (CwtSocketType socketType, BOOL is_nonblocking);
+extern BOOL       __socket_initSockAddrIn   (struct sockaddr_in *saddr, const CWT_CHAR *inetAddr, UINT16 port);
+extern CwtSocket* __socket_acceptLocalSocket(CwtSocket*);
+extern CwtSocket* __socket_acceptTcpSocket  (CwtSocket*);
+extern CwtSocket* __socket_acceptUdpSocket  (CwtSocket*);
+extern CwtSocket* __socket_acceptMcastSocket(CwtSocket*);
+extern ssize_t    __socket_readLocalSocket  (CwtSocket*, BYTE *buf, size_t sz);
+extern ssize_t    __socket_readTcpSocket    (CwtSocket*, BYTE *buf, size_t sz);
+extern ssize_t    __socket_readUdpSocket    (CwtSocket*, BYTE *buf, size_t sz);
+extern ssize_t    __socket_readMcastSocket  (CwtSocket*, BYTE *buf, size_t sz);
+extern ssize_t    __socket_writeLocalSocket (CwtSocket*, const BYTE *buf, size_t sz);
+extern ssize_t    __socket_writeTcpSocket   (CwtSocket*, const BYTE *buf, size_t sz);
+extern ssize_t    __socket_writeUdpSocket   (CwtSocket*, const BYTE *buf, size_t sz);
+extern ssize_t    __socket_writeMcastSocket (CwtSocket*, const BYTE *buf, size_t sz);
 
 #define _CWT_SOCKET_LOG_FMTSUFFIX _T(": %s (errno=%d)")
 #define _CWT_SOCKET_LOG_ARGS      cwtStrNS()->strError(__socket_errno), __socket_errno

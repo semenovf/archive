@@ -56,13 +56,13 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(4);
 
-	pchan_writer = __channelNS->create(cwtMSocketDeviceOpen(
+	pchan_writer = __channelNS->create(cwtMcastSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")
 			, Cwt_SocketDevice_MSender));
 
-	pchan_reader = __channelNS->create(cwtMSocketDeviceOpen(
+	pchan_reader = __channelNS->create(cwtMcastSocketDeviceOpen(
 			  _T("192.168.0.198")
 			, 4321
 			, _T("226.1.1.1")

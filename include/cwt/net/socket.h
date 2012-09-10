@@ -14,6 +14,7 @@
 #include <cwt/types.h>
 
 #if defined(CWT_CC_MSC)
+#	include <winsock2.h>
 #elif defined(CWT_CC_GNUC)
     typedef int SOCKET;
 #else
@@ -27,9 +28,9 @@ typedef enum CwtSocketType {
 	, Cwt_McastSocket
 } CwtSocketType;
 
-#define _CWT_SOCKET_BASE 	                      \
-	CwtSocketType type;                           \
-	SOCKET        sockfd; /* socket descriptor */ \
+#define _CWT_SOCKET_BASE 	    \
+	CwtSocketType type;         \
+	SOCKET        sockfd;       \
 	BOOL          is_listener;
 
 
@@ -44,10 +45,10 @@ typedef struct _CwtSocketNS {
 	CwtSocket*       (*openUdpServerSocket)  (const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking);
 	CwtSocket*       (*openTcpSocket)        (const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking);
 	CwtSocket*       (*openTcpServerSocket)  (const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking);
-	CwtSocket*       (*openMcastSocket)      (BOOL is_nonblocking);
-	CwtSocket*       (*openMcastServerSocket)(BOOL is_nonblocking);
+	CwtSocket*       (*openMcastSocket)      (const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_nonblocking);
+	CwtSocket*       (*openMcastServerSocket)(const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_nonblocking);
 	/*BOOL             (*listen)               (CwtSocket*);*/
-	/*BOOL             (*listenMcastSocket)(CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);*/
+	/*BOOL             (*listenMcastSocket)(CwtSocket*, );*/
 	/*BOOL             (*connect)        (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port);*/
 	/*BOOL             (*connectMcastSocket)(CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);*/
 	CwtSocket*       (*accept)         (CwtSocket*);

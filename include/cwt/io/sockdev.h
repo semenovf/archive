@@ -27,10 +27,10 @@ typedef enum _CwtSocketDeviceFlag {
 
 
 EXTERN_C_BEGIN
-/* CwtIODevicePtr cwtLocalSocketDeviceOpen(void); */
+DLL_API_EXPORT CwtIODevice* cwtLocalSocketDeviceOpen(const CWT_CHAR *path, UINT32 flags);
 DLL_API_EXPORT CwtIODevice* cwtUdpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, UINT32 flags);
 DLL_API_EXPORT CwtIODevice* cwtTcpSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, UINT32 flags);
-DLL_API_EXPORT CwtIODevice* cwtMSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, UINT32 flags);
+DLL_API_EXPORT CwtIODevice* cwtMcastSocketDeviceOpen(const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMcastAddr, UINT32 flags);
 
 EXTERN_C_END
 

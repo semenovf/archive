@@ -9,9 +9,11 @@
 #include <cwt/logger.h>
 #include <cwt/str.h>
 
-SOCKET __socket_openNative(CwtSocketType socketType)
+CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 {
 	SOCKET sockfd;
+	CwtSocket *sd;
+
 	int nativeType;
 	int domain = AF_INET;
 
@@ -30,23 +32,11 @@ SOCKET __socket_openNative(CwtSocketType socketType)
 
 	sockfd = socket(domain, nativeType, 0);
     if( sockfd < 0 ) {
-    	cwtLoggerNS()->error(_Tr("failed to open socket [%d]"), __socket_errno);
-		return -1;
-    }
-
-    return sockfd;
-}
-
-
-CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
-{
-	SOCKET sockfd;
-	CwtSocket *sd;
-
-	sockfd = __socket_openNative(socketType);
-
-	if( !sockfd )
+    	cwtLoggerNS()->error(_Tr("failed to open socket")
+    			_CWT_SOCKET_LOG_FMTSUFFIX
+    			, _CWT_SOCKET_LOG_ARGS);
 		return NULL;
+    }
 
 	if( is_nonblocking ) {
 		if (!__socket_setNonBlockingNative(sockfd, is_nonblocking)) {
@@ -87,4 +77,40 @@ CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 }
 
 
+BOOL __socket_initSockAddrIn(struct sockaddr_in *saddr, const CWT_CHAR *inetAddr, UINT16 port)
+{
+	BOOL ok = TRUE;
+
+	cwtStrNS()->bzero(saddr, sizeof(*saddr));
+	saddr->sin_family      = AF_INET;
+	saddr->sin_port        = htons(port);
+
+	if (!inetAddr) {
+		saddr->sin_addr.s_addr = htonl(INADDR_ANY);
+	} else {
+		char *inetAddrLatin1;
+		inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strlen(inetAddr));
+
+		if( !inet_aton(inetAddrLatin1, &saddr->sin_addr) ) {
+			do {
+				struct hostent *phost;
+
+				phost = gethostbyname(inetAddrLatin1);
+
+				if (phost == (struct hostent *)NULL) {
+					cwtLoggerNS()->error(_Tr("%s: host not found"), inetAddr);
+					/*printf("h_errno = %d\n", h_errno);*/
+					ok = FALSE;
+					break;
+				}
+
+				memcpy(&saddr->sin_addr, phost->h_addr, sizeof(saddr->sin_addr));
+
+			} while(FALSE);
+		}
+		CWT_FREE(inetAddrLatin1);
+	}
+
+	return ok;
+}
 
