@@ -14,7 +14,7 @@
 
 static BOOL __initSockAddrUn(struct sockaddr_un *saddr, const CWT_CHAR *path)
 {
-	char *pathLatin1;
+	char *utf8Path;
 	BOOL ok = FALSE;
 
 	if( !path || cwtStrNS()->strlen(path) == 0 ) {
@@ -22,22 +22,24 @@ static BOOL __initSockAddrUn(struct sockaddr_un *saddr, const CWT_CHAR *path)
 		return FALSE;
 	}
 
-	pathLatin1 = cwtTextCodecNS()->toLatin1(path, cwtStrNS()->strlen(path));
+	utf8Path = cwtTextCodecNS()->toUtf8(path, cwtStrNS()->strlen(path));
 
-	if( strlen(pathLatin1) >= sizeof(saddr->sun_path)) {
+	if( strlen(utf8Path) >= sizeof(saddr->sun_path)) {
 		cwtLoggerNS()->error(_Tr("local socket path too long"));
 	} else {
+		saddr->sun_family = AF_UNIX;
+		strcpy(saddr->sun_path, utf8Path);
 		ok = TRUE;
 	}
-	CWT_FREE(pathLatin1);
+	CWT_FREE(utf8Path);
 	return ok;
 }
 
 static BOOL __initListener(CwtLocalSocket *sd_local
-		, const char *path)
+		, const CWT_CHAR *path)
 {
 	int rc;
-	size_t len;
+	socklen_t len;
 
 	if (!__initSockAddrUn(&sd_local->sockaddr, path))
 		return FALSE;
@@ -68,7 +70,7 @@ static BOOL __initListener(CwtLocalSocket *sd_local
 
 
 static BOOL __initClient(CwtLocalSocket *sd_local
-		, const char *path)
+		, const CWT_CHAR *path)
 {
 	size_t len;
 	int rc;
@@ -108,16 +110,9 @@ static CwtSocket* __socket_openLocalSocketHelper(
 	sd = __socket_openTypified(Cwt_LocalSocket, is_nonblocking);
 
 	if (sd) {
-		char *pathLatin1;
-
-		pathLatin1      = cwtTextCodecNS()->toLatin1(path, cwtStrNS()->strlen(path));
-
-		if( is_listener ) {
-			ok = __initListener((CwtLocalSocket *)sd, pathLatin1);
-		} else {
-			ok = __initClient((CwtLocalSocket *)sd, pathLatin1);
-		}
-		CWT_FREE(pathLatin1);
+		ok = is_listener
+			? __initListener((CwtLocalSocket *)sd, path)
+			: __initClient((CwtLocalSocket *)sd, path);
 
 		if (!ok) {
 			cwtSocketNS()->close(sd);
@@ -145,6 +140,39 @@ CwtSocket* __socket_openLocalServerSocket(const CWT_CHAR *path, BOOL is_nonblock
 			path
 			, TRUE
 			, is_nonblocking);
+}
+
+
+CwtSocket* __socket_acceptLocalSocket(CwtSocket *sd)
+{
+	SOCKET client;
+	CwtLocalSocket *sd_local;
+	socklen_t socklen;
+
+	CWT_ASSERT(sd);
+	CWT_ASSERT(Cwt_LocalSocket == sd->type);
+
+	sd_local = CWT_MALLOC(CwtLocalSocket);
+	socklen = sizeof(sd_local->sockaddr);
+
+	client = accept(sd->sockfd, (struct sockaddr*)&sd_local->sockaddr, &socklen);
+
+	if (client > 0) {
+		sd_local->sockfd      = client;
+		sd_local->type        = sd->type;
+		sd_local->is_listener = FALSE;
+
+		__socket_nsockets_opened++;
+
+		return (CwtSocket*)sd_local;
+	}
+
+	CWT_FREE(sd_local);
+	cwtLoggerNS()->error(_Tr("accepting connection failed")
+		_CWT_SOCKET_LOG_FMTSUFFIX
+		, _CWT_SOCKET_LOG_ARGS);
+
+	return NULL;
 }
 
 ssize_t __socket_readLocalSocket(CwtSocket *sd, BYTE *buf, size_t sz)

@@ -32,6 +32,8 @@ videntur parum clari, fiant sollemnes in futurum.";
 #define NPACK 10
 #define _BUFSZ 2048
 
+#define SOCK_PATH _T("/tmp/cwt-local-socket")
+
 static int __server(void)
 {
 	CwtSocketNS *socketNS = cwtSocketNS();
@@ -40,26 +42,24 @@ static int __server(void)
 	CwtSocket *server;
 	BYTE       buf[_BUFSZ];
 	CwtSocket *peer;
-	CWT_CHAR  *inetAddr;
-	UINT16     inetPort;
+	CWT_CHAR  *localPath;
 	ssize_t    br;
 
-	CWT_TEST_FAIL(server = socketNS->openTcpServerSocket(NULL, 12012, FALSE));
+	CWT_TEST_FAIL(server = socketNS->openLocalServerSocket(SOCK_PATH, FALSE));
 	CWT_TEST_FAIL(peer = socketNS->accept(server));
 
-	inetAddr = socketNS->inetAddr(peer);
-	inetPort = socketNS->inetPort(peer);
+	localPath = socketNS->localPath(peer);
 
 	for( i = 0; i < NPACK; i++ ) {
 		while( !socketNS->bytesAvailable(peer) )
 			{;}
 		CWT_TEST_FAIL((br = socketNS->read(peer, buf, _BUFSZ)) > 0);
-		cwtLoggerNS()->debug(_Tr("Received packet from %s:%u\nData: %s\n\n"), inetAddr, inetPort, buf);
+		cwtLoggerNS()->debug(_Tr("Received packet from %s\nData: %s\n\n"), localPath, buf);
 		CWT_TEST_OK(strcmp(loremipsum, (char*)buf) == 0);
 		CWT_TEST_FAIL(socketNS->write(peer, buf, _BUFSZ) > 0);
 	}
 
-	CWT_FREE(inetAddr);
+	CWT_FREE(localPath);
 	socketNS->close(peer);
 	socketNS->close(server);
 	return 0;
@@ -75,7 +75,7 @@ static int __client(void)
 	size_t     loremipsum_len;
 	ssize_t    bw;
 
-	CWT_TEST_FAIL(client = socketNS->openTcpSocket(_T("localhost"), 12012, FALSE));
+	CWT_TEST_FAIL(client = socketNS->openLocalSocket(SOCK_PATH, FALSE));
 
 	loremipsum_len = cwtStrNS()->strlen(loremipsum);
 

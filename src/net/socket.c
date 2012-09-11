@@ -31,6 +31,7 @@
 #include <cwt/net/socket.h>
 #include <cwt/logger.h>
 #include <cwt/txtcodec.h>
+#include <cwt/fs.h>
 #include <string.h>
 
 
@@ -53,7 +54,7 @@ extern BOOL       __socket_listenMSocket  (CwtSocket*, const CWT_CHAR *inetAddr,
 extern BOOL       __socket_connect        (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port);
 extern BOOL       __socket_connectMSocket (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);
 */
-extern CwtSocket* __socket_accept         (CwtSocket*);
+static CwtSocket* __socket_accept         (CwtSocket*);
 static void       __socket_close          (CwtSocket*);
 static BOOL       __socket_setNonBlocking (CwtSocket*, BOOL is_nonblocking);
 
@@ -62,6 +63,7 @@ static ssize_t    __socket_read           (CwtSocket*, BYTE *buf, size_t sz);
 static ssize_t    __socket_write          (CwtSocket*, const BYTE *buf, size_t sz);
 static CWT_CHAR*  __socket_inetAddr       (CwtSocket*);
 static UINT16     __socket_inetPort       (CwtSocket*);
+static CWT_CHAR*  __socket_localPath      (CwtSocket*);
 
 
 typedef CwtSocket* (*_socket_accept_f)(CwtSocket*);
@@ -109,6 +111,7 @@ static CwtSocketNS __cwtSocketNS = {
 
 	, __socket_inetAddr
 	, __socket_inetPort
+	, __socket_localPath
 };
 
 BOOL   __socket_is_sockets_allowed = FALSE;
@@ -125,6 +128,11 @@ DLL_API_EXPORT CwtSocketNS* cwtSocketNS(void)
 	return &__cwtSocketNS;
 }
 
+static CwtSocket* __socket_accept(CwtSocket *sd)
+{
+	CWT_ASSERT(sd);
+	return __socket_acceptTypified[sd->type](sd);
+}
 
 /**
  * @fn void CwtSocketNS::close(CwtSocket *sd)
@@ -160,6 +168,17 @@ static void __socket_close (CwtSocket *sd)
 		CWT_ASSERT(__socket_nsockets_opened > 0 );
 		__socket_closeNative(sd->sockfd);
 		sd->sockfd = -1;
+
+		if (sd->type == Cwt_LocalSocket && sd->is_listener) {
+			CWT_CHAR *localPath = __cwtSocketNS.localPath(sd);
+			if( !cwtFileSystemNS()->unlink(localPath) ) {
+				__logger->error(_Tr("unable to unlink local socket: %s")
+					_CWT_SOCKET_LOG_FMTSUFFIX
+					, localPath
+					, _CWT_SOCKET_LOG_ARGS);
+			}
+			CWT_FREE(localPath);
+		}
 		__socket_nsockets_opened--;
 	}
 
@@ -270,7 +289,6 @@ static UINT16 __socket_inetPort(CwtSocket *sd)
 		/* FIXME must be implemented */
 		return 0;
 	case Cwt_LocalSocket:
-		/* FIXME must be implemented */
 		return 0;
 	default:
 		CWT_ASSERT(FALSE);
@@ -278,4 +296,20 @@ static UINT16 __socket_inetPort(CwtSocket *sd)
 	}
 
 	return port;
+}
+
+static CWT_CHAR*  __socket_localPath(CwtSocket *sd)
+{
+	if( Cwt_LocalSocket == sd->type ) {
+		CwtLocalSocket *sd_local = (CwtLocalSocket *)sd;
+		size_t socklen = strlen(sd_local->sockaddr.sun_path);
+
+		if( socklen >= sizeof(sd_local->sockaddr.sun_path) ) {
+			cwtLoggerNS()->error(_Tr("local socket is invalid or it's path is wrong"));
+			return NULL;
+		}
+		return cwtTextCodecNS()->fromUtf8(sd_local->sockaddr.sun_path, socklen);
+	}
+
+	return NULL;
 }

@@ -45,8 +45,7 @@ static int __server(void)
   int i;
   BYTE buf[2048];
 
-  CWT_TEST_FAIL(server = socketNS->openUdpSocket(FALSE));
-  CWT_TEST_FAIL(socketNS->listen(server, NULL, 12012));
+  CWT_TEST_FAIL(server = socketNS->openUdpServerSocket(NULL, 12012, FALSE));
 
   for (i = 0; i < NPACK; i++) {
 	  CwtSocket *peer;
@@ -79,15 +78,14 @@ static int __client(void)
 	size_t loremipsum_len;
 	int i;
 
-	CWT_TEST_FAIL(client = socketNS->openUdpSocket(FALSE));
-	CWT_TEST_FAIL(socketNS->connect(client, _T("localhost"), 12012));
+	CWT_TEST_FAIL(client = socketNS->openUdpSocket(_T("localhost"), 12012, FALSE));
 
 	loremipsum_len = cwtStrNS()->strlen(loremipsum);
 
 
 	for (i = 0; i < NPACK; i++) {
 		cwtLoggerNS()->debug("Sending packet %d\n", i);
-		CWT_TEST_FAIL(socketNS->write(client, (BYTE*)loremipsum, loremipsum_len) > 0);
+		CWT_TEST_FAIL(socketNS->write(client, (BYTE*)loremipsum, loremipsum_len+1) > 0);
 	}
 
 	socketNS->close(client);
@@ -101,10 +99,10 @@ int main(int argc, char *argv[])
 {
 	if( argc > 1 ) {
 		if( strcmp(argv[1], "-server") == 0) {
-			CWT_BEGIN_TESTS(22);
+			CWT_BEGIN_TESTS(21);
 			__server();
 		} else {
-			CWT_BEGIN_TESTS(12);
+			CWT_BEGIN_TESTS(11);
 			__client();
 		}
 		CWT_END_TESTS;

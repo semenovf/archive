@@ -60,6 +60,7 @@ typedef struct _CwtSocketNS {
 	ssize_t          (*write)          (CwtSocket*, const BYTE *buf, size_t sz);
 	CWT_CHAR*        (*inetAddr)       (CwtSocket*);
 	UINT16           (*inetPort)       (CwtSocket*);
+	CWT_CHAR*        (*localPath)      (CwtSocket*);
 } CwtSocketNS;
 
 

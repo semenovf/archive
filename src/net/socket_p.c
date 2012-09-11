@@ -8,6 +8,7 @@
 #include "socket_p.h"
 #include <cwt/logger.h>
 #include <cwt/str.h>
+#include <cwt/txtcodec.h>
 
 CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 {
@@ -19,14 +20,14 @@ CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 
 	if( !__socket_allowSockets() ) {
 		cwtLoggerNS()->error(_Tr("network sockets not allowed in this system"));
-		return -1;
+		return NULL;
 	}
 
 	domain = socketType != Cwt_LocalSocket
 			? AF_INET
 			: AF_UNIX;
 
-	nativeType == (socketType == Cwt_TcpSocket || socketType == Cwt_LocalSocket)
+	nativeType = (socketType == Cwt_TcpSocket || socketType == Cwt_LocalSocket)
 			? SOCK_STREAM
 			: SOCK_DGRAM;
 

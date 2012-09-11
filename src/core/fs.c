@@ -6,17 +6,21 @@
  */
 
 #include <stdarg.h>
+#include <unistd.h>
 #include <cwt/fs.h>
 #include <cwt/str.h>
+#include <cwt/txtcodec.h>
 
-CWT_CHAR       __fs_separator(void);
-CWT_CHAR*      __fs_buildPath(const CWT_CHAR *arg0, ...);
+CWT_CHAR       __fs_separator    (void);
+CWT_CHAR*      __fs_buildPath    (const CWT_CHAR *arg0, ...);
 CWT_CHAR*      __fs_buildPathArgv(const CWT_CHAR *argv[], size_t n);
+BOOL           __fs_unlink       (const CWT_CHAR *pathname);
 
 static CwtFileSystemNS __cwtFileSystemNS = {
 	  __fs_separator
 	, __fs_buildPath
 	, __fs_buildPathArgv
+	, __fs_unlink
 };
 
 static CwtStrNS *__strNS = NULL;
@@ -95,4 +99,26 @@ CWT_CHAR* __fs_buildPathArgv(const CWT_CHAR *argv[], size_t n)
 	}
 
 	return s;
+}
+
+BOOL __fs_unlink(const CWT_CHAR *pathname)
+{
+	char *utf8Pathname;
+	BOOL ok = FALSE;
+
+#if defined(CWT_OS_LINUX)
+	utf8Pathname = cwtTextCodecNS()->toUtf8(pathname, cwtStrNS()->strlen(pathname));
+	ok = unlink(utf8Pathname) == 0 ? TRUE : FALSE;
+	CWT_FREE(utf8Pathname);
+#elif defined(CWT_OS_WIN)
+#	ifdef CWT_UNICODE
+	ok = _wremove(pathname) == 0 ? TRUE : FALSE;
+#	else
+	ok = remove(pathname) == 0 ? TRUE : FALSE;
+#	endif
+#else
+#	error 'unlink' is not implemented yet for this OS
+#endif
+
+	return ok;
 }

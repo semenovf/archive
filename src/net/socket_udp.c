@@ -10,7 +10,6 @@
 #include <unistd.h>
 #include <cwt/str.h>
 #include <cwt/logger.h>
-#include <cwt/txtcodec.h>
 
 static BOOL __initListener(CwtTcpSocket *sd_tcp
 		, const CWT_CHAR *inetAddr
@@ -18,7 +17,7 @@ static BOOL __initListener(CwtTcpSocket *sd_tcp
 {
 	int rc;
 
-	if (!__initSockAddrIn(&sd_tcp->sockaddr, inetAddr, port))
+	if (!__socket_initSockAddrIn(&sd_tcp->sockaddr, inetAddr, port))
 		return FALSE;
 
 	/* Bind the socket. */
@@ -58,16 +57,9 @@ static CwtSocket* __socket_openUdpSocketHelper(
 	sd = __socket_openTypified(Cwt_UdpSocket, is_nonblocking);
 
 	if (sd) {
-		char *inetAddrLatin1;
-
-		inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strlen(inetAddr));
-
-		if( is_listener ) {
-			ok = __initListener((CwtTcpSocket *)sd, inetAddrLatin1, port);
-		} else {
-			ok = __initClient((CwtTcpSocket *)sd, inetAddrLatin1, port);
-		}
-		CWT_FREE(inetAddrLatin1);
+		ok = is_listener
+			? __initListener((CwtTcpSocket *)sd, inetAddr, port)
+			: __initClient((CwtTcpSocket *)sd, inetAddr, port);
 
 		if (!ok) {
 			cwtSocketNS()->close(sd);
@@ -107,15 +99,16 @@ CwtSocket* __socket_openUdpServerSocket(
 
 CwtSocket* __socket_acceptUdpSocket(CwtSocket *sd)
 {
-	SOCKET client;
 	ssize_t rc;
 	int flags;
-	struct sockaddr_in senderAddr;
-	UINT senderSize = sizeof(senderAddr);
+	socklen_t socklen = sizeof(struct sockaddr_in);
 	BYTE buf[1];
+	CwtUdpSocket *sd_udp;
 
 	CWT_ASSERT(sd);
 	CWT_ASSERT(Cwt_UdpSocket == sd->type);
+
+	sd_udp = CWT_MALLOC(CwtUdpSocket);
 
 	/* Peeks at the incoming data. The data is copied into the buffer
 	 * but is not removed from the input queue.
@@ -124,27 +117,23 @@ CwtSocket* __socket_acceptUdpSocket(CwtSocket *sd)
 	 */
 	flags = MSG_PEEK;
 	rc = recvfrom(sd->sockfd, buf, sizeof(buf), flags,
-			(struct sockaddr *)&senderAddr,
-			&senderSize);
+			(struct sockaddr *)&sd_udp->sockaddr,
+			&socklen);
 
-	if( rc < 0 ) {
-		cwtLoggerNS()->error(_Tr("failed to accept UDP socket")
-			_CWT_SOCKET_LOG_FMTSUFFIX
-			, _CWT_SOCKET_LOG_ARGS);
-	} else {
-		CwtUdpSocket *sd_udp;
-
-		sd_udp = CWT_MALLOC(CwtUdpSocket);
+	if( rc >= 0 ) {
 		sd_udp->sockfd      = dup(sd->sockfd);
 		sd_udp->type        = sd->type;
 		sd_udp->is_listener = FALSE;
-
-		cwtStrNS()->memcpy(&sd_udp->sockaddr, &senderAddr, sizeof(senderAddr));
 
 		__socket_nsockets_opened++;
 
 		return (CwtSocket*)sd_udp;
 	}
+
+	CWT_FREE(sd_udp);
+	cwtLoggerNS()->error(_Tr("failed to accept UDP socket")
+		_CWT_SOCKET_LOG_FMTSUFFIX
+		, _CWT_SOCKET_LOG_ARGS);
 
 	return NULL;
 }

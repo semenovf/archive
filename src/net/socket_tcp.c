@@ -10,8 +10,6 @@
 #include <unistd.h>
 #include <cwt/str.h>
 #include <cwt/logger.h>
-#include <cwt/txtcodec.h>
-
 
 static BOOL __initListener(CwtTcpSocket *sd_tcp
 		, const CWT_CHAR *inetAddr
@@ -35,7 +33,7 @@ static BOOL __initListener(CwtTcpSocket *sd_tcp
 	}
 
 
-	if (!__initSockAddrIn(&sd_tcp->sockaddr, inetAddr, port))
+	if (!__socket_initSockAddrIn(&sd_tcp->sockaddr, inetAddr, port))
 		return FALSE;
 
 	/* Bind the socket. */
@@ -65,7 +63,7 @@ static BOOL __initClient(CwtTcpSocket *sd_tcp
 {
 	int rc;
 
-	if (!__initSockAddrIn(&sd_tcp->sockaddr, inetAddr, port))
+	if (!__socket_initSockAddrIn(&sd_tcp->sockaddr, inetAddr, port))
 		return FALSE;
 
 	rc = connect(sd_tcp->sockfd, (struct sockaddr *)&sd_tcp->sockaddr, sizeof(sd_tcp->sockaddr));
@@ -111,16 +109,9 @@ static CwtSocket* __socket_openTcpSocketHelper(
 	sd = __socket_openTypified(Cwt_TcpSocket, is_nonblocking);
 
 	if (sd) {
-		char *inetAddrLatin1;
-
-		inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strlen(inetAddr));
-
-		if( is_listener ) {
-			ok = __initListener((CwtTcpSocket *)sd, inetAddrLatin1, port);
-		} else {
-			ok = __initClient((CwtTcpSocket *)sd, inetAddrLatin1, port);
-		}
-		CWT_FREE(inetAddrLatin1);
+		ok = is_listener
+			? __initListener((CwtTcpSocket *)sd, inetAddr, port)
+			: __initClient((CwtTcpSocket *)sd, inetAddr, port);
 
 		if (!ok) {
 			cwtSocketNS()->close(sd);
@@ -161,21 +152,18 @@ CwtSocket* __socket_openTcpServerSocket(
 CwtSocket* __socket_acceptTcpSocket(CwtSocket *sd)
 {
 	SOCKET client;
+	CwtTcpSocket *sd_tcp;
+	socklen_t socklen;
 
 	CWT_ASSERT(sd);
 	CWT_ASSERT(Cwt_TcpSocket == sd->type);
 
-	client = accept(sd->sockfd, NULL, NULL);
+	sd_tcp = CWT_MALLOC(CwtTcpSocket);
+	socklen = sizeof(sd_tcp->sockaddr);
 
-	if (client < 0) {
-		cwtLoggerNS()->error(_Tr("accepting connection failed")
-			_CWT_SOCKET_LOG_FMTSUFFIX
-			, _CWT_SOCKET_LOG_ARGS);
-	} else {
-		CwtTcpSocket *sd_tcp;
+	client = accept(sd->sockfd, (struct sockaddr*)&sd_tcp->sockaddr, &socklen);
 
-		sd_tcp = CWT_MALLOC(CwtTcpSocket);
-
+	if (client > 0) {
 		sd_tcp->sockfd      = client;
 		sd_tcp->type        = sd->type;
 		sd_tcp->is_listener = FALSE;
@@ -184,6 +172,11 @@ CwtSocket* __socket_acceptTcpSocket(CwtSocket *sd)
 
 		return (CwtSocket*)sd_tcp;
 	}
+
+	CWT_FREE(sd_tcp);
+	cwtLoggerNS()->error(_Tr("accepting connection failed")
+		_CWT_SOCKET_LOG_FMTSUFFIX
+		, _CWT_SOCKET_LOG_ARGS);
 
 	return NULL;
 }

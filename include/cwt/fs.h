@@ -14,6 +14,7 @@ typedef struct _CwtFileSystemNS {
 	CWT_CHAR       (*separator)(void);
 	CWT_CHAR*      (*buildPath)(const CWT_CHAR *arg0, ...);
 	CWT_CHAR*      (*buildPathArgv)(const CWT_CHAR *argv[], size_t n);
+	BOOL           (*unlink)(const CWT_CHAR *pathname);
 } CwtFileSystemNS;
 
 

@@ -99,6 +99,8 @@ static BOOL __initClient(
 				, _CWT_SOCKET_LOG_ARGS);
 		return FALSE;
 	}
+
+	return TRUE;
 }
 
 static CwtSocket* __socket_openMcastSocketHelper(
@@ -170,6 +172,51 @@ CwtSocket* __socket_openMcastServerSocket(
 			, inetMcastAddr
 			, TRUE
 			, is_nonblocking);
+}
+
+
+CwtSocket* __socket_acceptMcastSocket(CwtSocket *sd)
+{
+	/* FIXME need to implement */
+	CWT_UNUSED(sd);
+/*	SOCKET client;
+	ssize_t rc;
+	int flags;
+	UINT senderSize = sizeof(struct sockaddr_in);
+	BYTE buf[1];
+	CwtUdpSocket *sd_udp;
+
+	CWT_ASSERT(sd);
+	CWT_ASSERT(Cwt_UdpSocket == sd->type);
+
+	sd_udp = CWT_MALLOC(CwtUdpSocket);
+
+	 Peeks at the incoming data. The data is copied into the buffer
+	 * but is not removed from the input queue.
+	 *
+	 * See http://msdn.microsoft.com/en-us/library/windows/desktop/ms740120%28v=vs.85%29.aspx
+
+	flags = MSG_PEEK;
+	rc = recvfrom(sd->sockfd, buf, sizeof(buf), flags,
+			(struct sockaddr *)&sd_udp->sockaddr,
+			&senderSize);
+
+	if( rc >= 0 ) {
+		sd_udp->sockfd      = dup(sd->sockfd);
+		sd_udp->type        = sd->type;
+		sd_udp->is_listener = FALSE;
+
+		__socket_nsockets_opened++;
+
+		return (CwtSocket*)sd_udp;
+	}
+
+	CWT_FREE(sd_udp);
+	cwtLoggerNS()->error(_Tr("failed to accept UDP socket")
+		_CWT_SOCKET_LOG_FMTSUFFIX
+		, _CWT_SOCKET_LOG_ARGS);*/
+
+	return NULL;
 }
 
 
