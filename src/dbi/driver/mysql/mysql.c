@@ -113,7 +113,7 @@ static BOOL             __dbd_tables(CwtDBHandler *dbh, CwtStrList *tables);
 static BOOL             __dbd_tableExists(CwtDBHandler*, const CWT_CHAR *tname);
 static char*            __dbd_encode_n(CwtDBHandler *dbh, const CWT_CHAR *s, size_t n);
 static CWT_CHAR*        __dbd_decode_n(CwtDBHandler *dbh, const char *s, size_t n);
-static char*            __dbd_encode(CwtDBHandler *dbh, const CWT_CHAR *s) { return __dbd_encode_n(dbh, s, __strNS->strlen(s)); }
+static char*            __dbd_encode(CwtDBHandler *dbh, const CWT_CHAR *s) { return __dbd_encode_n(dbh, s, __strNS->strLen(s)); }
 static CWT_CHAR*        __dbd_decode(CwtDBHandler *dbh, const char *s) { return __dbd_decode_n(dbh, s, strlen(s)); }
 
 static BOOL             __dbd_begin(CwtDBHandler *dbh);
@@ -521,9 +521,9 @@ CwtDBHandler* __dbd_connect(const CWT_CHAR *driverDSN
 	dbh->errorstr          = NULL;
 	dbh->sqlstate          = NULL;
 
-    csname_   = codecNS->toLatin1(csname, __strNS->strlen(csname));
-    username_ = codecNS->toLatin1(username, __strNS->strlen(username));
-    password_ = codecNS->toLatin1(password, __strNS->strlen(password));
+    csname_   = codecNS->toLatin1(csname, __strNS->strLen(csname));
+    username_ = codecNS->toLatin1(username, __strNS->strLen(username));
+    password_ = codecNS->toLatin1(password, __strNS->strLen(password));
 
     while( TRUE ) {
         /* initialize connection handler */
@@ -540,7 +540,7 @@ CwtDBHandler* __dbd_connect(const CWT_CHAR *driverDSN
         	break;
         }
 
-        dbh->csname = strNS->strdup(csname); /* TODO need to free*/
+        dbh->csname = strNS->strDup(csname); /* TODO need to free*/
 
         /* Parse driver DSN */
         opts = strlistNS->create();
@@ -575,14 +575,14 @@ CwtDBHandler* __dbd_connect(const CWT_CHAR *driverDSN
         	    const CWT_CHAR *flagstr = &opt[12];
 
         	    flags |= CLIENT_REMEMBER_OPTIONS;
-        	    if( strNS->strstr(flagstr, _T("COMPRESS")) )         flags |= CLIENT_COMPRESS;
-        	    if( strNS->strstr(flagstr, _T("FOUND_ROWS")) )       flags |= CLIENT_FOUND_ROWS;
-        	    if( strNS->strstr(flagstr, _T("IGNORE_SIGPIPE")) )   flags |= CLIENT_IGNORE_SIGPIPE;
-        	    if( strNS->strstr(flagstr, _T("IGNORE_SPACE")) )     flags |= CLIENT_IGNORE_SPACE;
-        	    if( strNS->strstr(flagstr, _T("INTERACTIVE")) )      flags |= CLIENT_INTERACTIVE;
-        	    if( strNS->strstr(flagstr, _T("LOCAL_FILES")) )      flags |= CLIENT_LOCAL_FILES;
-        	    if( strNS->strstr(flagstr, _T("MULTI_RESULTS")) )    flags |= CLIENT_MULTI_RESULTS;
-        	    if( strNS->strstr(flagstr, _T("MULTI_STATEMENTS")) ) flags |= CLIENT_MULTI_STATEMENTS;
+        	    if( strNS->strStr(flagstr, _T("COMPRESS")) )         flags |= CLIENT_COMPRESS;
+        	    if( strNS->strStr(flagstr, _T("FOUND_ROWS")) )       flags |= CLIENT_FOUND_ROWS;
+        	    if( strNS->strStr(flagstr, _T("IGNORE_SIGPIPE")) )   flags |= CLIENT_IGNORE_SIGPIPE;
+        	    if( strNS->strStr(flagstr, _T("IGNORE_SPACE")) )     flags |= CLIENT_IGNORE_SPACE;
+        	    if( strNS->strStr(flagstr, _T("INTERACTIVE")) )      flags |= CLIENT_INTERACTIVE;
+        	    if( strNS->strStr(flagstr, _T("LOCAL_FILES")) )      flags |= CLIENT_LOCAL_FILES;
+        	    if( strNS->strStr(flagstr, _T("MULTI_RESULTS")) )    flags |= CLIENT_MULTI_RESULTS;
+        	    if( strNS->strStr(flagstr, _T("MULTI_STATEMENTS")) ) flags |= CLIENT_MULTI_STATEMENTS;
 
         	    /*printf_debug(__LOG_PREFIX _T("flags:    %lu (0x%X)"), flags, flags);*/
         	}
@@ -1051,7 +1051,7 @@ static BOOL __dbd_query(CwtDBHandler *dbh, const CWT_CHAR *sql)
 {
 	CWT_ASSERT(dbh);
 
-	if( __mysql_realQuery((CwtMySqlDBHandler*)dbh, sql, cwtStrNS()->strlen(sql)) != 0 ) {
+	if( __mysql_realQuery((CwtMySqlDBHandler*)dbh, sql, cwtStrNS()->strLen(sql)) != 0 ) {
 		printf_error(__LOG_PREFIX _Tr("failed to query: %s [%s]"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh), sql);
 		return FALSE;
 	}
@@ -1171,7 +1171,7 @@ static BOOL __dbd_tables(CwtDBHandler *dbh, CwtStrList *tables)
 		}
 
 		decoded = __dbd_decode(dbh, row[0]);
-		slNS->append( tables, decoded, strNS->strlen(decoded) );
+		slNS->append( tables, decoded, strNS->strLen(decoded) );
 
 		i++;
 	}

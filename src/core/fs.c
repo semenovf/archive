@@ -71,7 +71,7 @@ CWT_CHAR* __fs_buildPath(const CWT_CHAR *arg0, ...)
 
 	va_end(args);
 
-	s = __strNS->strdup(__stringNS->cstr(sbuf));
+	s = __strNS->strDup(__stringNS->cstr(sbuf));
 	__stringNS->free(sbuf);
 
 	return s;
@@ -94,7 +94,7 @@ CWT_CHAR* __fs_buildPathArgv(const CWT_CHAR *argv[], size_t n)
 			__stringNS->append(sbuf, argv[i]);
 		}
 
-		s = __strNS->strdup(__stringNS->cstr(sbuf));
+		s = __strNS->strDup(__stringNS->cstr(sbuf));
 		__stringNS->free(sbuf);
 	}
 
@@ -107,7 +107,7 @@ BOOL __fs_unlink(const CWT_CHAR *pathname)
 	BOOL ok = FALSE;
 
 #if defined(CWT_OS_LINUX)
-	utf8Pathname = cwtTextCodecNS()->toUtf8(pathname, cwtStrNS()->strlen(pathname));
+	utf8Pathname = cwtTextCodecNS()->toUtf8(pathname, cwtStrNS()->strLen(pathname));
 	ok = unlink(utf8Pathname) == 0 ? TRUE : FALSE;
 	CWT_FREE(utf8Pathname);
 #elif defined(CWT_OS_WIN)

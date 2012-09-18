@@ -43,7 +43,7 @@ CWT_VECTOR_METHODS(CwtString,CWT_CHAR)
 
 static void __append(CwtString *s, const CWT_CHAR *str)
 {
-	__appendElems(s, str, cwtStrNS()->strlen(str));
+	__appendElems(s, str, cwtStrNS()->strLen(str));
 }
 
 
@@ -77,7 +77,7 @@ static int  __vsprintf (CwtString *s, const CWT_CHAR *format, va_list args)
 
 	CWT_ASSERT(s);
 
-	sz = strNS->strlen(format);
+	sz = strNS->strLen(format);
 
 	do {
 		CWT_ASSERT(sz < CWT_SIZE_T_MAX/2 );

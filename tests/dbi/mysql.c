@@ -238,12 +238,12 @@ int main(int argc, char *argv[])
 		CWT_TEST_FAIL((sth = dbi->prepare(dbh, sql_insert)));
 		ut = dbi->bindTextByIndex(sth, 0, 100);
 
-		CWT_TEST_FAIL(dbi->setTEXT(sth, ut, text0, strNS->strlen(text0)));
+		CWT_TEST_FAIL(dbi->setTEXT(sth, ut, text0, strNS->strLen(text0)));
 		CWT_TEST_FAIL(dbh->execute(sth));
 
-		CWT_TEST_FAIL(!dbi->setTEXT(sth, ut, text1, strNS->strlen(text1)));
+		CWT_TEST_FAIL(!dbi->setTEXT(sth, ut, text1, strNS->strLen(text1)));
 
-		CWT_TEST_FAIL(dbi->setTEXT(sth, ut, text_ru, strNS->strlen(text_ru)));
+		CWT_TEST_FAIL(dbi->setTEXT(sth, ut, text_ru, strNS->strLen(text_ru)));
 		CWT_TEST_FAIL(dbh->execute(sth));
 
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);

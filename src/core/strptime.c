@@ -589,7 +589,7 @@ static const CWT_UCHAR* __find_string(const CWT_UCHAR *bp, int *tgt, const CWT_C
 	/* check full name - then abbreviated ones */
 	for (; n1 != NULL; n1 = n2, n2 = NULL) {
 		for (i = 0; i < c; i++, n1++) {
-			len = __strNS->strlen(*n1);
+			len = __strNS->strLen(*n1);
 			if (__strNS->strNCaseCmp(*n1, (const CWT_CHAR*)bp, len) == 0) {
 				*tgt = i;
 				return bp + len;
@@ -614,10 +614,10 @@ static const CWT_CHAR* const* __cwt_tzname(void)
 		extern char* tzname[2];
 #	endif
 		if( tzname[0] ) {
-			__cwt_tznames[0] = tcNS->fromLatin1(tzname[0], strlen(tzname[0]));
+			__cwt_tznames[0] = tcNS->fromLatin1(tzname[0], strLen(tzname[0]));
 		}
 		if( tzname[1] ) {
-			__cwt_tznames[1] = tcNS->fromLatin1(tzname[1], strlen(tzname[1]));
+			__cwt_tznames[1] = tcNS->fromLatin1(tzname[1], strLen(tzname[1]));
 		}
 		__cwt_tznames_is_set = TRUE;
 	}

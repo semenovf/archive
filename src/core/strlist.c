@@ -135,21 +135,21 @@ static inline size_t __size(CwtStrList *psl)
 
 static inline void __insert(CwtStrListIterator *before, const CWT_CHAR *str, size_t n)
 {
-	CWT_CHAR *s = __strNS->strndup(str, n);
+	CWT_CHAR *s = __strNS->strNdup(str, n);
 	__listNS->insert(before, s);
 }
 
 
 static inline void __prepend(CwtStrList *psl, const CWT_CHAR *str, size_t n)
 {
-	CWT_CHAR *s = __strNS->strndup(str, n);
+	CWT_CHAR *s = __strNS->strNdup(str, n);
 	__listNS->prepend(psl, s);
 }
 
 
 static void __append(CwtStrList *psl, const CWT_CHAR *str, size_t n)
 {
-	CWT_CHAR *s = __strNS->strndup(str, n);
+	CWT_CHAR *s = __strNS->strNdup(str, n);
 	__listNS->append(psl, s);
 }
 
@@ -202,7 +202,7 @@ static CWT_CHAR* __catDelim(CwtStrList *psl, const CWT_CHAR *delim)
 		stringNS->append(sbuf, (CWT_CHAR*)__next(&it));
 	}
 
-	str = __strNS->strdup(stringNS->cstr(sbuf));
+	str = __strNS->strDup(stringNS->cstr(sbuf));
 	stringNS->free(sbuf);
 
 	return str;
@@ -274,10 +274,10 @@ static BOOL __is_end_quote(CWT_CHAR q, const CwtQuotePair *qpairs)
 static size_t __skip_string_delim(const CWT_CHAR *tail, size_t tail_len, void *delim)
 {
 	const CWT_CHAR *delim_str = (const CWT_CHAR*)delim;
-	size_t delim_len = __strNS->strlen(delim_str);
+	size_t delim_len = __strNS->strLen(delim_str);
 
 	if( tail[0] == delim_str[0] && tail_len >= delim_len ) {
-		if( tail == __strNS->strstr(tail, delim) ) {
+		if( tail == __strNS->strStr(tail, delim) ) {
 			return delim_len;
 		}
 	}
@@ -291,7 +291,7 @@ static size_t __skip_string_delim(const CWT_CHAR *tail, size_t tail_len, void *d
 static size_t __skip_anychar_delim(const CWT_CHAR *tail, size_t tail_len, void *delim)
 {
 	CWT_CHAR *delim_str = (CWT_CHAR*)delim;
-	size_t delim_len = __strNS->strlen(delim_str);
+	size_t delim_len = __strNS->strLen(delim_str);
 	size_t i, j;
 	size_t nskip = 0;
 
@@ -371,7 +371,7 @@ static int __splitSkip(CwtStrList *psl, const CWT_CHAR *str
 	if( !str )
 		return 0;
 
-	str_len = strNS->strlen(str);
+	str_len = strNS->strLen(str);
 
 	for( i = 0, ibegin = 0; i < str_len; i++ ) {
 

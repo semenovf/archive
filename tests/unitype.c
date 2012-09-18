@@ -184,12 +184,12 @@ void test_00(void)
 		const CWT_CHAR *text_ru = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
 		CWT_CHAR *text;
 
-		__utNS->setTEXT(text_val, text_en, __strNS->strlen(text_en));
+		__utNS->setTEXT(text_val, text_en, __strNS->strLen(text_en));
 		text = __utNS->toTEXT(text_val, &ok);
 		CWT_TEST_OK(ok && __strNS->strCmp(text_en, text) == 0);
 		CWT_FREE(text);
 
-		__utNS->setTEXT(text_val, text_ru, __strNS->strlen(text_ru));
+		__utNS->setTEXT(text_val, text_ru, __strNS->strLen(text_ru));
 		text = __utNS->toTEXT(text_val, &ok);
 		CWT_TEST_OK(ok && __strNS->strCmp(text_ru, text) == 0);
 		CWT_FREE(text);
@@ -326,12 +326,12 @@ void test_01(void)
 		const CWT_CHAR *text_ru = _T("Съешь ещё этих мягких французских булок, да выпей чаю");
 		CWT_CHAR *text;
 
-		__utNS->setTEXT(uval, text_en, __strNS->strlen(text_en));
+		__utNS->setTEXT(uval, text_en, __strNS->strLen(text_en));
 		text = __utNS->toTEXT(uval, &ok);
 		CWT_TEST_OK(ok && __strNS->strCmp(text_en, text) == 0);
 		CWT_FREE(text);
 
-		__utNS->setTEXT(uval, text_ru, __strNS->strlen(text_ru));
+		__utNS->setTEXT(uval, text_ru, __strNS->strLen(text_ru));
 		text = __utNS->toTEXT(uval, &ok);
 		CWT_TEST_OK(ok && __strNS->strCmp(text_ru, text) == 0);
 		CWT_FREE(text);
@@ -475,22 +475,22 @@ void test_bool(void)
 		const CWT_CHAR *text_0     = _T("0");
 		const CWT_CHAR *text_true  = _T("text");
 
-		__utNS->setTEXT(uval, text_empty, __strNS->strlen(text_empty));
+		__utNS->setTEXT(uval, text_empty, __strNS->strLen(text_empty));
 		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("<empty text> == FALSE"));
 
-		__utNS->setTEXT(uval, text_false, __strNS->strlen(text_false));
+		__utNS->setTEXT(uval, text_false, __strNS->strLen(text_false));
 		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'false' == FALSE"));
 
-		__utNS->setTEXT(uval, text_FALSE, __strNS->strlen(text_FALSE));
+		__utNS->setTEXT(uval, text_FALSE, __strNS->strLen(text_FALSE));
 		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'FALSE' == FALSE"));
 
-		__utNS->setTEXT(uval, text_FaLsE, __strNS->strlen(text_FaLsE));
+		__utNS->setTEXT(uval, text_FaLsE, __strNS->strLen(text_FaLsE));
 		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'FaLsE' == FALSE"));
 
-		__utNS->setTEXT(uval, text_0, __strNS->strlen(text_0));
+		__utNS->setTEXT(uval, text_0, __strNS->strLen(text_0));
 		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == FALSE && ok, _T("'0' == FALSE"));
 
-		__utNS->setTEXT(uval, text_true, __strNS->strlen(text_true));
+		__utNS->setTEXT(uval, text_true, __strNS->strLen(text_true));
 		CWT_TEST_OK2(__utNS->toBOOL(uval, &ok) == TRUE && ok, _T("<any other text> is TRUE"));
 	}
 

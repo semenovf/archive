@@ -31,7 +31,7 @@ static inline BOOL      __setLONGLONG  (CwtUniType *ut, LONGLONG n)   { return _
 static inline BOOL      __setULONGLONG (CwtUniType *ut, ULONGLONG n)  { return __setType(ut, CwtType_ULONGLONG, &n, 0); }
 static inline BOOL      __setFLOAT     (CwtUniType *ut, float n)      { return __setType(ut, CwtType_FLOAT, &n, 0); }
 static inline BOOL      __setDOUBLE    (CwtUniType *ut, double n)     { return __setType(ut, CwtType_DOUBLE, &n, 0); }
-static inline BOOL      __setTEXT      (CwtUniType *ut, const CWT_CHAR *p, size_t length) { return __setType(ut, CwtType_TEXT, p, length ? length : cwtStrNS()->strlen(p)); }
+static inline BOOL      __setTEXT      (CwtUniType *ut, const CWT_CHAR *p, size_t length) { return __setType(ut, CwtType_TEXT, p, length ? length : cwtStrNS()->strLen(p)); }
 static inline BOOL      __setBLOB      (CwtUniType *ut, const void *p, size_t sz) { return __setType(ut, CwtType_BLOB, p, sz); }
 static inline BOOL      __setTIME      (CwtUniType *ut, const CWT_TIME *p) { return __setType(ut, CwtType_TIME, p, sizeof(CWT_TIME)); }
 static inline BOOL      __setDATE      (CwtUniType *ut, const CWT_TIME *p) { return __setType(ut, CwtType_DATE, p, sizeof(CWT_TIME)); }
@@ -273,7 +273,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 	if( !s )
 		return TRUE;
 
-	if( !__strNS->strlen(s) )
+	if( !__strNS->strLen(s) )
 		return TRUE;
 
 	switch(type) {
@@ -401,7 +401,7 @@ static BOOL __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 		break;
 
 	case CwtType_TEXT:
-		__setTEXT(ut, s, __strNS->strlen(s));
+		__setTEXT(ut, s, __strNS->strLen(s));
 		return TRUE;
 
 
@@ -672,9 +672,9 @@ static CWT_CHAR* __toTEXT (CwtUniType *ut, BOOL *ok)
 
 	if( CwtType_TEXT == ut->type ) {
 		if( ut->length > 0 )
-			s = __strNS->strndup((CWT_CHAR*)ut->value.ptr, ut->length);
+			s = __strNS->strNdup((CWT_CHAR*)ut->value.ptr, ut->length);
 		else
-			s = __strNS->strdup(_T(""));
+			s = __strNS->strDup(_T(""));
 
 		return s;
 	} else {
@@ -744,7 +744,7 @@ static CWT_CHAR* __toTEXT (CwtUniType *ut, BOOL *ok)
 		}
 
 		if( stringNS->length(buf) > 0 ) {
-			s = __strNS->strdup(stringNS->cstr(buf));
+			s = __strNS->strDup(stringNS->cstr(buf));
 		}
 
 		stringNS->free(buf);

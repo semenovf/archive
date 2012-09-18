@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 	iniNS->addDirective(ini, _T("directive6"), __onIniDirective6);
 
 	for( i = 0; i < sizeof(directives)/sizeof(directives[0]); i++ ) {
-		char *str = codecNS->toUtf8(directives[i], strNS->strlen(directives[i]));
+		char *str = codecNS->toUtf8(directives[i], strNS->strLen(directives[i]));
 		chNS->write(pchan0, (BYTE*)str, strlen(str));
 		CWT_FREE(str);
 	}

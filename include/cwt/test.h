@@ -114,7 +114,7 @@ EXTERN_C_END
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
 		__cwtTestContextPtr__->m_ok_tests++;						          \
 		printf_trace(_Tr("TEST[%03u]: %s => ok")                              \
-			, ++__cwtTestContextPtr__->m_run_tests, __WIDEN(#exp));           \
+			, ++__cwtTestContextPtr__->m_run_tests, desc);                    \
 	} else {                              	                                  \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
 		__cwtTestContextPtr__->m_failed_tests++;					          \

@@ -77,7 +77,7 @@ static int __client(void)
 
 	CWT_TEST_FAIL(client = socketNS->openLocalSocket(SOCK_PATH, FALSE));
 
-	loremipsum_len = cwtStrNS()->strlen(loremipsum);
+	loremipsum_len = cwtStrNS()->strLen(loremipsum);
 
 	for( i = 0; i < NPACK; i++ ) {
 		cwtLoggerNS()->debug("Sending packet...");

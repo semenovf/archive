@@ -152,9 +152,9 @@ static CwtCsvHandler* __csv_createWithArgs(const CWT_CHAR *separator, size_t max
 	h = CWT_MALLOC(CwtCsvHandlerImpl);
 
 	if( separator ) {
-		h->separator = __strNS->strdup(separator);
+		h->separator = __strNS->strDup(separator);
 	} else {
-		h->separator = __strNS->strdup(__csv_default_separator);
+		h->separator = __strNS->strDup(__csv_default_separator);
 	}
 	h->max_tokens = max_tokens > 0 ? max_tokens : 128;
 	h->line       = 0;
@@ -249,7 +249,7 @@ static BOOL __csv_parse(CwtCsvHandler *h, CwtChannel *pchan)
 		if( __baNS->size(ba) > 0 ) {
 			str = __codecNS->fromUtf8(__baNS->cstr(ba), __baNS->size(ba));
 
-			if( str && __strNS->strlen(str) > 0 ) {
+			if( str && __strNS->strLen(str) > 0 ) {
 
 				int rc = __slNS->split(tokens, str, ph->separator, CWT_QUOTES_BOTH
 						, CWT_TRIM_WHITESPACES | CWT_STRIP_BOUNDING_QUOTES);
@@ -371,7 +371,7 @@ static size_t __csv_header(CwtCsvHandler *h)
 
 		while( __slNS->hasMore(&it) ) {
 			CsvColumn *column = CWT_MALLOC(CsvColumn);
-			CWT_CHAR *key = __strNS->strdup(__slNS->next(&it));
+			CWT_CHAR *key = __strNS->strDup(__slNS->next(&it));
 
 			column->index = i++;
 			column->validate = NULL;
@@ -467,7 +467,7 @@ static BOOL __csv_next(CwtCsvHandler *h)
 			/* TODO need apply text codec insteed of fromUtf8 call */
 			str = __codecNS->fromUtf8(__baNS->cstr(ph->csvData.ba), __baNS->size(ph->csvData.ba));
 
-			if( str && __strNS->strlen(str) > 0 ) {
+			if( str && __strNS->strLen(str) > 0 ) {
 
 				/* not a comment */
 				if( str[0] != _T('#')) {

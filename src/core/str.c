@@ -56,7 +56,7 @@ static size_t    __cwt_strftime(CWT_CHAR *buf, size_t sz, const CWT_CHAR *format
 static size_t    __cwt_strlen  (const CWT_CHAR *s) { return strlen(s); }
 static CWT_CHAR* __cwt_strcpy  (CWT_CHAR *dest, const CWT_CHAR *src) { return strcpy(dest, src); }
 static CWT_CHAR* __cwt_strncpy(CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return strncpy(dest,src,n); }
-static CWT_CHAR* __cwt_strchr  (CWT_CHAR *s, CWT_CHAR ch) { return strchr(s, ch); }
+static CWT_CHAR* __cwt_strchr  (const CWT_CHAR *s, CWT_CHAR ch) { return strchr(s, ch); }
 static CWT_CHAR* __cwt_strstr  (const CWT_CHAR *s, const CWT_CHAR *substr) { return strstr(s, substr); }
 static int       __cwt_strcmp  (const CWT_CHAR *s1, const CWT_CHAR *s2) { return strcmp(s1,s2); }
 static int       __cwt_strncmp (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n) { return strncmp(s1,s2,n); }
@@ -76,15 +76,16 @@ static CWT_CHAR  __cwt_tolower(CWT_CHAR ch)  { return (CWT_CHAR)tolower(ch); }
 #endif /* !CWT_UNICODE */
 
 static const CWT_CHAR* __cwt_strerror(int errn);
-extern CWT_CHAR* __cwt_strptime (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
-static CWT_CHAR* __cwt_strrstr (const CWT_CHAR *s, const CWT_CHAR *substr);
-static int		 __cwt_stricmp  (const CWT_CHAR *s1, const CWT_CHAR *s2);
-static int       __cwt_strnicmp (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
-static BOOL      __cwt_streq    (const CWT_CHAR *s1, const CWT_CHAR *s2) { return __cwt_strcmp(s1, s2) == 0 ? TRUE : FALSE; }
-static BOOL      __cwt_strieq   (const CWT_CHAR *s1, const CWT_CHAR *s2) { return __cwt_stricmp(s1, s2) == 0 ? TRUE : FALSE; }
-static CWT_CHAR* __cwt_strndup  (const CWT_CHAR *s, size_t n);
-static LONGLONG  __cwt_strtoll  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
-static ULONGLONG __cwt_strtoull (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+extern CWT_CHAR* __cwt_strptime   (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
+static CWT_CHAR* __cwt_strrstr    (const CWT_CHAR *s, const CWT_CHAR *substr);
+static int		 __cwt_stricmp    (const CWT_CHAR *s1, const CWT_CHAR *s2);
+static int       __cwt_strnicmp   (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
+static BOOL      __cwt_streq      (const CWT_CHAR *s1, const CWT_CHAR *s2) { return __cwt_strcmp(s1, s2) == 0 ? TRUE : FALSE; }
+static BOOL      __cwt_strieq     (const CWT_CHAR *s1, const CWT_CHAR *s2) { return __cwt_stricmp(s1, s2) == 0 ? TRUE : FALSE; }
+static BOOL      __cwt_startsWith (const CWT_CHAR *s1, const CWT_CHAR *s2) { return __cwt_strstr(s1, s2) == s1 ? TRUE : FALSE; }
+static CWT_CHAR* __cwt_strndup    (const CWT_CHAR *s, size_t n);
+static LONGLONG  __cwt_strtoll    (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
+static ULONGLONG __cwt_strtoull   (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 
 static void*     __cwt_bzero    (void *block, size_t sz) { return memset(block, 0, sz); }
 
@@ -134,6 +135,7 @@ static CwtStrNS __cwtStrNS = {
 	, __cwt_strnicmp
 	, __cwt_streq
 	, __cwt_strieq
+	, __cwt_startsWith
 	, __cwt_strdup
 	, __cwt_strndup
 	, __cwt_strcat
@@ -223,15 +225,15 @@ static const CWT_CHAR* __cwt_strerror(int errn)
         (LPTSTR) &lpMsgBuf,
         0, NULL );
 
-    __errorstr = __cwtStrNS.strdup((CWT_CHAR*)lpMsgBuf);
+    __errorstr = __cwtStrNS.strDup((CWT_CHAR*)lpMsgBuf);
     LocalFree(lpMsgBuf);
     __cwtStrNS.chomp(__errorstr);
 	}
 #	else
-	__errorstr = __cwtStrNS.strdup(CWT_ISO_CPP_NAME(wcserror)(errn));
+	__errorstr = __cwtStrNS.strDup(CWT_ISO_CPP_NAME(wcserror)(errn));
 #	endif
 #else
-	__errorstr = __cwtStrNS.strdup(strerror(errn));
+	__errorstr = __cwtStrNS.strDup(strerror(errn));
 #endif
 
 	return __errorstr;
@@ -263,6 +265,7 @@ static int __cwt_strnicmp(const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n)
 #	endif
 #endif
 }
+
 
 static CWT_CHAR* __cwt_strndup(const CWT_CHAR *s, size_t n)
 {
@@ -331,8 +334,8 @@ static CWT_CHAR* __cwt_strrstr(const CWT_CHAR *s1, const CWT_CHAR *s2)
 	if( !s2 )
 		return NULL;
 
-	s2_len = __cwtStrNS.strlen(s2);
-	ptr = (CWT_CHAR*)(s1 + __cwtStrNS.strlen(s1));
+	s2_len = __cwtStrNS.strLen(s2);
+	ptr = (CWT_CHAR*)(s1 + __cwtStrNS.strLen(s1));
 
 	while( ptr >= s1 ) {
 		if( __cwtStrNS.strNCmp(ptr, s2, s2_len) == 0 )
@@ -367,7 +370,7 @@ static void __cwt_chomp(CWT_CHAR *s)
 {
 	CWT_CHAR *ptr;
 
-	ptr = s + __cwtStrNS.strlen(s) - 1;
+	ptr = s + __cwtStrNS.strLen(s) - 1;
 	while( ptr >= s && *ptr == _T('\n') ) {
 		*ptr = (CWT_CHAR)0;
 		ptr--;
@@ -399,7 +402,7 @@ static void __cwt_toTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *form
 	if( !format )
 		format = _T("%H:%M:%S");
 
-	ptr = __cwtStrNS.strptime(str, format, &tm_);
+	ptr = __cwtStrNS.strPtime(str, format, &tm_);
 
 	if( ptr || *ptr == _T('\0') ) {
 		if( ok )
@@ -438,7 +441,7 @@ static void __cwt_toDate(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *form
 	if( !format )
 		format = _T("%d.%m.%Y");
 
-	ptr = __cwtStrNS.strptime(str, format, &tm_);
+	ptr = __cwtStrNS.strPtime(str, format, &tm_);
 
 	if( ptr || *ptr == _T('\0') ) {
 		if( ok )
@@ -476,7 +479,7 @@ static void __cwt_toDateTime(const CWT_CHAR *str, CWT_TIME *tm, const CWT_CHAR *
 	if( !format )
 		format = _T("%H:%M:%S %d.%m.%Y");
 
-	ptr = __cwtStrNS.strptime(str, format, &tm_);
+	ptr = __cwtStrNS.strPtime(str, format, &tm_);
 
 	if( ptr || *ptr == _T('\0') ) {
 		if( ok )

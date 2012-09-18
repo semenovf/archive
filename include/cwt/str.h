@@ -19,22 +19,23 @@ typedef struct CwtQuotePair {
 
 typedef struct CwtStrNS {
 	const CWT_CHAR*   (*strError)     (int);
-	CWT_CHAR*         (*strptime)     (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
-	size_t            (*strftime)     (CWT_CHAR *buf, size_t sz, const CWT_CHAR *format, const struct tm* ptm);
-	size_t            (*strlen)       (const CWT_CHAR*);
-	CWT_CHAR*         (*strcpy)       (CWT_CHAR *dest, const CWT_CHAR *src);
-	CWT_CHAR*         (*strncpy)      (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
-	CWT_CHAR*         (*strchr)       (CWT_CHAR *s, CWT_CHAR ch);
-	CWT_CHAR*         (*strstr)       (const CWT_CHAR *s, const CWT_CHAR *substr);
-	CWT_CHAR*         (*strrstr)      (const CWT_CHAR *s, const CWT_CHAR *substr);
+	CWT_CHAR*         (*strPtime)     (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
+	size_t            (*strFtime)     (CWT_CHAR *buf, size_t sz, const CWT_CHAR *format, const struct tm* ptm);
+	size_t            (*strLen)       (const CWT_CHAR*);
+	CWT_CHAR*         (*strCpy)       (CWT_CHAR *dest, const CWT_CHAR *src);
+	CWT_CHAR*         (*strNcpy)      (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
+	CWT_CHAR*         (*strChr)       (const CWT_CHAR *s, CWT_CHAR ch);
+	CWT_CHAR*         (*strStr)       (const CWT_CHAR *s, const CWT_CHAR *substr);
+	CWT_CHAR*         (*strRstr)      (const CWT_CHAR *s, const CWT_CHAR *substr);
 	int               (*strCmp)       (const CWT_CHAR *s1, const CWT_CHAR *s2);
 	int               (*strNCmp)      (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
 	int 			  (*strCaseCmp)   (const CWT_CHAR *s1, const CWT_CHAR *s2);
 	int               (*strNCaseCmp)  (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n);
 	BOOL              (*strEq)        (const CWT_CHAR *s1, const CWT_CHAR *s2);
-	BOOL              (*strCaseEq)       (const CWT_CHAR *s1, const CWT_CHAR *s2);
-	CWT_CHAR*         (*strdup)       (const CWT_CHAR *s);
-	CWT_CHAR*         (*strndup)      (const CWT_CHAR *s, size_t n);
+	BOOL              (*strCaseEq)    (const CWT_CHAR *s1, const CWT_CHAR *s2);
+	BOOL              (*startsWith)   (const CWT_CHAR *s1, const CWT_CHAR *s2);
+	CWT_CHAR*         (*strDup)       (const CWT_CHAR *s);
+	CWT_CHAR*         (*strNdup)      (const CWT_CHAR *s, size_t n);
 	CWT_CHAR*         (*strCat)       (CWT_CHAR *dest, const CWT_CHAR *src);
 	CWT_CHAR*         (*strNCat)      (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
 	CWT_CHAR*		  (*strTok)       (CWT_CHAR *tok, const CWT_CHAR *delim);
@@ -117,7 +118,7 @@ DLL_API_EXPORT CwtStrNS* cwtStrNS(void);
 #ifdef CWT_CC_MSC
 #	define strcasecmp  CWT_ISO_CPP_NAME(stricmp)
 #	define strncasecmp CWT_ISO_CPP_NAME(strnicmp)
-DLL_API_EXPORT char* strndup(const char *s, size_t n);
+DLL_API_EXPORT char* strNdup(const char *s, size_t n);
 #else
 #	define stricmp  CWT_ISO_CPP_NAME(strcasecmp)
 #	define strnicmp CWT_ISO_CPP_NAME(strncasecmp)

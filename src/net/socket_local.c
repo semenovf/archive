@@ -17,12 +17,12 @@ static BOOL __initSockAddrUn(struct sockaddr_un *saddr, const CWT_CHAR *path)
 	char *utf8Path;
 	BOOL ok = FALSE;
 
-	if( !path || cwtStrNS()->strlen(path) == 0 ) {
+	if( !path || cwtStrNS()->strLen(path) == 0 ) {
 		cwtLoggerNS()->error(_Tr("local socket path is empty"));
 		return FALSE;
 	}
 
-	utf8Path = cwtTextCodecNS()->toUtf8(path, cwtStrNS()->strlen(path));
+	utf8Path = cwtTextCodecNS()->toUtf8(path, cwtStrNS()->strLen(path));
 
 	if( strlen(utf8Path) >= sizeof(saddr->sun_path)) {
 		cwtLoggerNS()->error(_Tr("local socket path too long"));

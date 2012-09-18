@@ -80,7 +80,7 @@ static int __client(void)
 
 	CWT_TEST_FAIL(client = socketNS->openUdpSocket(_T("localhost"), 12012, FALSE));
 
-	loremipsum_len = cwtStrNS()->strlen(loremipsum);
+	loremipsum_len = cwtStrNS()->strLen(loremipsum);
 
 
 	for (i = 0; i < NPACK; i++) {

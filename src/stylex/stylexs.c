@@ -100,10 +100,10 @@ static BOOL __parseINT32(const CWT_CHAR *str, void *pval)
 static BOOL __parseBorderStyle(const CWT_CHAR *str, void *pval)
 {
 	CwtStrNS *strNS = cwtStrNS();
-	CWT_CHAR *borderStyleStr = strNS->strdup(str);
+	CWT_CHAR *borderStyleStr = strNS->strDup(str);
 	int borderStyle = -1;
 
-	strNS->toLowerStr(borderStyleStr, borderStyleStr, strNS->strlen(borderStyleStr));
+	strNS->toLowerStr(borderStyleStr, borderStyleStr, strNS->strLen(borderStyleStr));
 
 	if( strNS->strEq(_T("inherit"), borderStyleStr) ) {
 		borderStyle = Cwt_BorderStyle_Inherit;
@@ -147,7 +147,7 @@ static BOOL __parseString(const CWT_CHAR *str, void *pval)
 		return FALSE;
 
 	if( pval )
-		*((CWT_CHAR**)pval) = cwtStrNS()->strdup(str);
+		*((CWT_CHAR**)pval) = cwtStrNS()->strDup(str);
 
 	return TRUE;
 }

@@ -208,15 +208,15 @@ static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver
 
     opt = slNS->at(opts, 0);
     if( scheme && opt )
-    	*scheme = strNS->strdup(opt);
+    	*scheme = strNS->strDup(opt);
 
     opt = slNS->at(opts, 1);
     if( driver && opt )
-    	*driver = strNS->strdup(opt);
+    	*driver = strNS->strDup(opt);
 
     opt = slNS->at(opts, 2);
     if( driverDSN && opt )
-    	*driverDSN = strNS->strdup(opt);
+    	*driverDSN = strNS->strDup(opt);
 
     slNS->free(opts);
 }

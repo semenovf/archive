@@ -141,6 +141,8 @@ typedef struct _CwtHashTableNS {
 	BOOL               (*hasMore)(CwtHashTableIterator *it);
 	CwtHashTableEntry* (*next)   (CwtHashTableIterator *it);
 
+	ULONG              (*ccharHash) (void *location);
+	ULONG              (*wcharHash) (void *location);
 	ULONG              (*intHash)   (void *location);
 	ULONG              (*uint16Hash)(void *location);
 	ULONG              (*ptrHash)   (void *location);
@@ -149,6 +151,8 @@ typedef struct _CwtHashTableNS {
 	ULONG              (*cstriHash)(void *string);
 	ULONG              (*wstrHash) (void *string);
 	ULONG              (*wstriHash)(void *string);
+	BOOL               (*cchareq)   (void *plocation1, void *plocation2);
+	BOOL               (*wchareq)  (void *plocation1, void *plocation2);
 	BOOL               (*inteq)    (void *plocation1, void *plocation2);
 	BOOL               (*cstreq)   (void *string1, void *string2);
 	BOOL               (*cstrieq)  (void *string1, void *string2);
@@ -156,8 +160,10 @@ typedef struct _CwtHashTableNS {
 	BOOL               (*wstrieq)  (void *string1, void *string2);
 
 	/* depends on CWT_UNICODE definition */
+	ULONG              (*charHash) (void *location);
 	ULONG              (*strHash)  (void *string);
 	ULONG              (*striHash) (void *string);
+	BOOL               (*chareq)   (void *plocation1, void *plocation2);
 	BOOL               (*streq)    (void *string1, void *string2);
 	BOOL               (*strieq)   (void *string1, void *string2);
 } CwtHashTableNS;

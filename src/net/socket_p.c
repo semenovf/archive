@@ -90,7 +90,7 @@ BOOL __socket_initSockAddrIn(struct sockaddr_in *saddr, const CWT_CHAR *inetAddr
 		saddr->sin_addr.s_addr = htonl(INADDR_ANY);
 	} else {
 		char *inetAddrLatin1;
-		inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strlen(inetAddr));
+		inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strLen(inetAddr));
 
 		if( !inet_aton(inetAddrLatin1, &saddr->sin_addr) ) {
 			do {

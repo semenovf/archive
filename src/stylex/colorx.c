@@ -181,8 +181,8 @@ void _cwt_colorx_init(void)
 
 	n = sizeof(__cwt_color_names)/sizeof(__cwt_color_names[0]);
 	for( i = 0; i < n; i++  ) {
-		CWT_CHAR *key = strNS->strdup(__cwt_color_names[i].name);
-		strNS->toLowerStr(key, key, strNS->strlen(key));
+		CWT_CHAR *key = strNS->strDup(__cwt_color_names[i].name);
+		strNS->toLowerStr(key, key, strNS->strLen(key));
 		CWT_ASSERT(hash_table_insert(__cwt_color_table
 			, key, &__cwt_color_names[i].color));
 	}
@@ -202,8 +202,8 @@ Cwt_Color cwt_stylex_colorByName(const CWT_CHAR *name)
 	Cwt_Color *pcolor;
 
 	CWT_ASSERT(name);
-	key = strNS->strdup(name);
-	strNS->toLowerStr(key, key, strNS->strlen(key));
+	key = strNS->strDup(name);
+	strNS->toLowerStr(key, key, strNS->strLen(key));
 
 	pcolor = (Cwt_Color*)hash_table_lookup(__cwt_color_table, key);
 
@@ -234,7 +234,7 @@ BOOL cwt_stylex_parseColor(const CWT_CHAR *str, Cwt_Color *pcolor)
 	BOOL ok = FALSE;
 	Cwt_Color color = (Cwt_Color)0;
 
-	if( str && strNS->strlen(str) > 0 ) {
+	if( str && strNS->strLen(str) > 0 ) {
 		if( *str == _T('#') ) {
 			str++;
 			color = strNS->toUINT32(str, 16, &ok);

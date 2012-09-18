@@ -109,7 +109,7 @@ static void test_01(void)
 	for(i = 0; i < sizeof(text_01)/sizeof(text_01[0]); i++) {
 		struct_01 d;
 		d.index = i;
-		d.text = __strNS->strdup(text_01[i]);
+		d.text = __strNS->strDup(text_01[i]);
 		__listNS->append(list, &d);
 	}
 	__listNS->free(list);

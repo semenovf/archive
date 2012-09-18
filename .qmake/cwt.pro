@@ -18,6 +18,7 @@ SUBDIRS  =            \
     tests/hashtab     \
     tests/ini         \
     tests/list        \
+    tests/options     \
     tests/pcre        \
     tests/ringbuf     \
     tests/utils       \

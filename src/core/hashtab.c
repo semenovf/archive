@@ -56,6 +56,8 @@ static size_t             __ht_size      (CwtHashTable *hash_table);
 static void               __ht_begin     (CwtHashTable *hash_table, CwtHashTableIterator *it);
 static BOOL               __ht_hasMore   (CwtHashTableIterator *it);
 static CwtHashTableEntry* __ht_next      (CwtHashTableIterator *it);
+static ULONG              __ht_ccharHash (void *vlocation);
+static ULONG              __ht_wcharHash (void *vlocation);
 static ULONG              __ht_intHash   (void *vlocation);
 static ULONG              __ht_uint16Hash(void *vlocation);
 static ULONG              __ht_ptrHash   (void *vlocation);
@@ -63,6 +65,8 @@ static ULONG              __ht_cstrHash  (void *string);
 static ULONG              __ht_cstriHash (void *string);
 static ULONG              __ht_wstrHash  (void *string);
 static ULONG              __ht_wstriHash (void *string);
+static BOOL               __ht_cchareq   (void *plocation1, void *plocation2);
+static BOOL               __ht_wchareq   (void *plocation1, void *plocation2);
 static BOOL               __ht_inteq     (void *plocation1, void *plocation2);
 static BOOL               __ht_cstreq    (void *string1, void *string2);
 static BOOL               __ht_cstrieq   (void *string1, void *string2);
@@ -88,6 +92,8 @@ static CwtHashTableNS __cwtHashTableNS = {
 	, __ht_begin
 	, __ht_hasMore
 	, __ht_next
+	, __ht_ccharHash
+	, __ht_wcharHash
 	, __ht_intHash
 	, __ht_uint16Hash
 	, __ht_ptrHash
@@ -95,6 +101,8 @@ static CwtHashTableNS __cwtHashTableNS = {
 	, __ht_cstriHash
 	, __ht_wstrHash
 	, __ht_wstriHash
+	, __ht_cchareq
+	, __ht_wchareq
 	, __ht_inteq
 	, __ht_cstreq
 	/*, __ht_cstrcmp*/
@@ -104,13 +112,17 @@ static CwtHashTableNS __cwtHashTableNS = {
 	, __ht_wstrieq
 
 #ifdef CWT_UNICODE
+	, __ht_wcharHash
 	, __ht_wstrHash
 	, __ht_wstriHash
+	, __ht_wchareq
 	, __ht_wstreq
 	, __ht_wstrieq
 #else
+	, __ht_ccharHash
 	, __ht_cstrHash
 	, __ht_cstriHash
+	, __ht_cchareq
 	, __ht_cstreq
 	, __ht_cstrieq
 #endif
@@ -552,7 +564,22 @@ static void __ht_begin(CwtHashTable *hash_table, CwtHashTableIterator *it)
  */
 static BOOL __ht_hasMore(CwtHashTableIterator *it)
 {
-	return it->next_entry != NULL;
+	return it->next_entry != NULL ? TRUE : FALSE;
+}
+
+
+static ULONG __ht_ccharHash(void *vlocation)
+{
+	char *location;
+	location = (char*)vlocation;
+	return (ULONG)*location;
+}
+
+static ULONG __ht_wcharHash(void *vlocation)
+{
+	wchar_t *location;
+	location = (wchar_t*)vlocation;
+	return (ULONG)*location;
 }
 
 
@@ -577,9 +604,9 @@ static ULONG __ht_intHash(void *vlocation)
 
 static ULONG __ht_uint16Hash(void *vlocation)
 {
-	SHORT *location;
+	UINT16 *location;
 
-	location = (SHORT*) vlocation;
+	location = (UINT16*) vlocation;
 
 	return (ULONG) *location;
 }
@@ -751,6 +778,16 @@ static ULONG __ht_wstriHash(void *string)
 }
 
 
+
+static BOOL __ht_cchareq (void *plocation1, void *plocation2)
+{
+	return (*(char*)plocation1) == (*(char*)plocation2) ?  TRUE : FALSE;
+}
+
+static BOOL __ht_wchareq (void *plocation1, void *plocation2)
+{
+	return (*(wchar_t*)plocation1) == (*(wchar_t*)plocation2) ?  TRUE : FALSE;
+}
 
 /**
  * Compare the integer values pointed at by two pointers to determine
