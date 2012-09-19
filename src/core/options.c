@@ -15,47 +15,7 @@
        - если argType == CwtOpt_INT,  то arg - указатель на long
        - если argType == CwtOpt_REAL, то arg - указатель на double
 
-	Пример использования класса Options для разбора командной строки
-
-	BOOL help           = FALSE;
-	BOOL man            = FALSE;
-	BOOL isInteractive  = FALSE;
-	BOOL isServer       = FALSE;
-	LONGLONG speed      = 9600L;
-	LONGLONG databits   = 8L;
-	LONGLONG stopbits   = 1L;
-	CWT_CHAR *parityStr = _T("none");
-	double num          = 1234.56789f;
-	CwtOptionsHandler   *hopt;
-
-
-	Option optset[] = {
-          longname      shortname  hasArg     arg            validator          desc
-        ------------------------------------------------------------------------------------
-		{ _T("help",    _T('h'), CwtOpt_BOOL, &help,         NULL,              _Tr("output help info") },
-		{ _T("man",     0,       CwtOpt_BOOL, &man,          NULL,              _Tr("output help info in man style") },
-		{ NULL,         _T('i'), CwtOpt_BOOL, &isInteractive,NULL,              _Tr("interactive mode") },
-		{ _T("server"), 0,       CwtOpt_BOOL, &isServer,     NULL,              _Tr("start this application as server") },
-		{ _T("speed"),  _T('b'), CwtOpt_INT,  &speed,        __IsSpeedValid,    _Tr("speed (bitrate) for serial port") },
-		{ _T("db"),     _T('d'), CwtOpt_INT,  &databits,     __IsDatabitsValid, _Tr("number of data bits for serial port") },
-		{ _T("sb"),     _T('s'), CwtOpt_INT,  &stopbits,     __IsStopbitsValid, _Tr("number of stop bits for serial port") },
-		{ _T("parity"), _T('p'), CwtOpt_TEXT, &parityStr,    __IsParityValid,   _Tr("parity for serial port") },
-		{ _T("num"),    _T('n'), CwtOpt_REAL, &num,          NULL,              _Tr("number") },
-		JQ_END_OPTIONS
-	};
-
-	hopt = cwtDefaultOptionsHandler();
-    cwtOptionsNS()->parse(argc, argv, optset, hopt);
-    hopt->free(hopt);
-
-	if( help ) {
-		// Help output
-		// jq::Options::Help( Argv()[0], optset, std::cout );
-	}
-
-	if( man ) {
-		// Manual page output
-	}
+	For example see tests/options.c
  */
 
 #include <cwt/options.h>
@@ -66,103 +26,73 @@
 #include <cwt/txtcodec.h>
 #include <cwt/hashtab.h>
 
-static void        __printUsage(const CWT_CHAR *progname, const CwtOption *optset, FILE *out);
-static BOOL        __parse     (int argc, char **argv, CwtOption *options, CwtOptionsHandler *handler);
-static void        __begin     (CwtOptionIterator *it, int argc, char **argv);
-static BOOL        __hasMore   (CwtOptionIterator *it);
-static CwtArgvType __next      (CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg);
+static CwtOptionIterator* __createIterator (CwtOptionIteratorType itType);
+static void  __printUsage(const CWT_CHAR *copyright, const CWT_CHAR *progname, const CwtOption *optset, FILE *out);
+static BOOL  __parse      (int argc, char **argv, CwtOption *options, CwtStrList *args, CwtOptionIteratorType itType);
+static BOOL  __parseWithIterator (CwtOption *options, CwtStrList *args, CwtOptionIterator *it);
+
+/*BOOL (*parseWithIterator) (CwtOption *options, CwtOptionIterator *it);*/
+
+static void        __it_default_begin     (CwtOptionIterator *it, int argc, char **argv);
+static BOOL        __it_default_hasMore   (CwtOptionIterator *it);
+static CwtArgvType __it_default_next      (CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg);
+static void        __it_default_free      (CwtOptionIterator *it) { if (it) CWT_FREE(it); }
+
+static void        __it_on_error(const CWT_CHAR *errstr) { cwtLoggerNS()->error(errstr); }
 
 static CwtOptionsNS __cwtOptionsNS = {
-	  __printUsage
+	  __createIterator
+	, __printUsage
 	, __parse
-	, __begin
-	, __hasMore
-	, __next
+	, __parseWithIterator
 };
 
-/*
-static void __debug_option     (CwtOption *option, const CWT_CHAR *arg);
-static void __debug_doubleDash (void);
-static void __debug_singleDash (void);
-static void __debug_argument   (const CWT_CHAR *arg);
+typedef struct _CwtDefaultOptionIterator {
+	struct _CwtOptionIterator __base;
+	char **argv;
+	int    argc;
+	int    argi;
+} CwtDefaultOptionIterator;
 
-static void __default_option     (CwtOption *option, const CWT_CHAR *arg);
-static void __default_doubleDash (void);
-static void __default_singleDash (void);
-static void __default_argument   (const CWT_CHAR *arg);
 
-static void __on_error(const CWT_CHAR *errstr) { cwtLoggerNS()->error(errstr); }
-*/
-
-/* helper function */
-/*static BOOL __assign_optarg(CwtOption *o, const CWT_CHAR *arg);*/
-
-/*
-static CwtOptionsHandler __debugOptionsHandler =
-{
-	  __debug_option
-    , __debug_doubleDash
-	, __debug_singleDash
-	, __debug_argument
-	, __on_error
-};
-
-static CwtOptionsHandler __defaultOptionsHandler =
-{
-	  __default_option
-	, __default_doubleDash
-	, __default_singleDash
-	, __default_argument
-	, __on_error
-};
-
-*/
+/* helper functions */
+static BOOL __getOptarg(CwtOptionIterator *it, CWT_CHAR **arg);
+static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg);
 
 
 DLL_API_EXPORT CwtOptionsNS* cwtOptionsNS(void)
 {
 	return &__cwtOptionsNS;
 }
-/*
 
-DLL_API_EXPORT CwtOptionsHandler* cwtDebugOptionsHandler(void)
+static CwtOptionIterator* __createIterator (CwtOptionIteratorType itType)
 {
-	return &__debugOptionsHandler;
-}
+	switch(itType) {
+	case CwtOptIt_Default:
+	default: {
+		CwtDefaultOptionIterator *it;
+		it = CWT_MALLOC(CwtDefaultOptionIterator);
+		it->__base.begin        = __it_default_begin;
+		it->__base.hasMore      = __it_default_hasMore;
+		it->__base.next         = __it_default_next;
+		it->__base.free         = __it_default_free;
+		it->__base.onError      = __it_on_error;
+		it->__base.onOption     = NULL;
+		it->__base.onSingleDash = NULL;
+		it->__base.onDoubleDash = NULL;
+		it->__base.onArgument   = NULL;
+		it->argv = NULL;
+		it->argc = 0;
+		it->argi = 0;
 
-DLL_API_EXPORT CwtOptionsHandler* cwtDefaultOptionsHandler(void)
-{
-	return &__defaultOptionsHandler;
-}
-
-DLL_API_EXPORT CwtOptionsHandler* cwtShortOptionsOnlyHandler(void);
-DLL_API_EXPORT CwtOptionsHandler* cwtLongOptionsOnlyHandler(void);
-*/
-
-
-/*
-static CWT_CHAR* __buildOptionAltName(const CwtOption *opt)
-{
-	CwtStringNS *stringNS = cwtStringNS();
-	CwtString *s;
-	CWT_CHAR *chars;
-
-	s = stringNS->create();
-
-	if( opt->shortname )
-		stringNS->appendChar(s, opt->shortname);
-
-	if( !opt->longname ) {
-		if( stringNS->size(s) > 0 )
-			stringNS->appendChar(s, _T('|'));
-		stringNS->append(s, opt.longname);
+		return (CwtOptionIterator *)it;
+	}
+		break;
 	}
 
-	chars = cwtStrNS()->strDup(stringNS->cstr(s));
-	stringNS->free(s);
-	return chars;
+	return NULL;
 }
-*/
+
 
 static void __splitLongOptWithArg(const CWT_CHAR *token, CWT_CHAR **popt, CWT_CHAR **parg)
 {
@@ -183,24 +113,27 @@ static void __splitLongOptWithArg(const CWT_CHAR *token, CWT_CHAR **popt, CWT_CH
 }
 
 
-static void __begin (CwtOptionIterator *it, int argc, char **argv)
+static void __it_default_begin (CwtOptionIterator *it, int argc, char **argv)
 {
+	CwtDefaultOptionIterator *it_ = (CwtDefaultOptionIterator *)it;
 	CWT_ASSERT(it);
-	it->argv = argv;
-	it->argc = argc;
-	it->argi = 0;
+	it_->argv = argv;
+	it_->argc = argc;
+	it_->argi = 0;
 }
 
-static BOOL __hasMore (CwtOptionIterator *it)
+static BOOL __it_default_hasMore (CwtOptionIterator *it)
 {
+	CwtDefaultOptionIterator *it_ = (CwtDefaultOptionIterator *)it;
 	CWT_ASSERT(it);
-	return it->argi < it->argc ? TRUE : FALSE;
+	return it_->argi < it_->argc ? TRUE : FALSE;
 }
 
 
 
-static CwtArgvType __next (CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg)
+static CwtArgvType __it_default_next (CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg)
 {
+	CwtDefaultOptionIterator *it_ = (CwtDefaultOptionIterator *)it;
 	CwtStrNS        *strNS   = cwtStrNS();
 	CwtTextCodecNS  *codecNS = cwtTextCodecNS();
 	CWT_CHAR        *optStr;
@@ -211,7 +144,7 @@ static CwtArgvType __next (CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg
 	popt = NULL;
 	parg = NULL;
 
-	optStr = codecNS->fromUtf8(it->argv[it->argi], strlen(it->argv[it->argi]));
+	optStr = codecNS->fromUtf8(it_->argv[it_->argi], strlen(it_->argv[it_->argi]));
 
 	if (strNS->startsWith(optStr, _T("-"))) {
 		/* Single dash '-' */
@@ -263,44 +196,18 @@ static CwtArgvType __next (CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg
 			CWT_FREE(parg);
 	}
 
-	it->argi++;
+	it_->argi++;
 	return argvType;
 }
 
-
-/* helper function */
-#ifdef __COMMENT__
-
-static void __debug_option(CwtOption *option, const CWT_CHAR *arg)
-{
-	cwtLoggerNS()->debug(_Tr("option: %s"), __optionName(option));
-}
-
-
-static void __debug_doubleDash(void)
-{
-	cwtLoggerNS()->debug(_Tr("double dash"));
-}
-
-static void __debug_singleDash(void)
-{
-	cwtLoggerNS()->debug(_Tr("single dash"));
-}
-
-static void __debug_argument(const CWT_CHAR *arg)
-{
-	cwtLoggerNS()->debug(_Tr("argument: \"%s\""), arg);
-}
-#endif
 
 static BOOL __getOptarg(CwtOptionIterator *it, CWT_CHAR **arg)
 {
 	CWT_ASSERT(it);
 	CWT_ASSERT(arg);
 
-	if (__hasMore(it)) {
-		/*cwtStringNS()->sprintf(errStr, _T("'%s': argument expected"), optName);*/
-		if (CwtArgv_Arg == __next(it, NULL, arg)) {
+	if (it->hasMore(it)) {
+		if (CwtArgv_Arg == it->next(it, NULL, arg)) {
 			return TRUE;
 		}
 
@@ -314,11 +221,12 @@ static BOOL __getOptarg(CwtOptionIterator *it, CWT_CHAR **arg)
 
 static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 {
-/*	BOOL good;*/
 	BOOL ok;
 
 	CWT_ASSERT(popt);
-	CWT_ASSERT(arg);
+
+	if (!popt->arg)
+		return TRUE;
 
 	switch(popt->optType) {
 	case CwtOpt_BOOL:
@@ -326,6 +234,7 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 		break;
 	case CwtOpt_INT: {
 		LONGLONG v;
+		CWT_ASSERT(arg);
 
 		v = cwtStrNS()->toLONGLONG(arg, 0, &ok);
 		if (!ok)
@@ -341,6 +250,8 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 	case CwtOpt_REAL: {
 		double v;
 		BOOL ok;
+		CWT_ASSERT(arg);
+
 		v = cwtStrNS()->toDouble(arg, &ok);
 		if (!ok)
 			return FALSE;
@@ -354,13 +265,33 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 
 	case CwtOpt_TEXT:
 	default:
+		CWT_ASSERT(arg);
 		if(popt->validator && !popt->validator(arg))
 			return FALSE;
-		popt->arg = (void*)cwtStrNS()->strDup(arg);
+		*(CWT_CHAR**)popt->arg = cwtStrNS()->strDup(arg);
 		break;
 	}
 
 	return TRUE;
+}
+
+
+static BOOL  __parse (int argc, char **argv, CwtOption *options, CwtStrList *args, CwtOptionIteratorType itType)
+{
+	CwtOptionIterator *it;
+	BOOL ok;
+
+	CWT_ASSERT(argv);
+	CWT_ASSERT(options);
+
+	it = __createIterator(itType);
+	CWT_ASSERT(it);
+
+	it->begin(it, argc, argv);
+	it->next(it, NULL, NULL); /* skip program name */
+	ok = __parseWithIterator(options, args, it);
+	it->free(it);
+	return ok;
 }
 
 /**
@@ -374,22 +305,20 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
  * -long=arg | --long=arg |
  * -long arg | --long arg   Long option
  */
-static BOOL __parse(int argc, char **argv, CwtOption *options, CwtOptionsHandler *handler)
+static BOOL __parseWithIterator(CwtOption *options, CwtStrList *args, CwtOptionIterator *it)
 {
-	CwtHashTableNS  *htNS    = cwtHashTableNS();
-	CwtStringNS     *stringNS= cwtStringNS();
+	CwtHashTableNS  *htNS     = cwtHashTableNS();
+	CwtStringNS     *stringNS = cwtStringNS();
+	CwtStrListNS    *slNS     = cwtStrListNS();
 
 	BOOL             rc;
     CwtHashTable    *shortOptsHash;
 	CwtHashTable    *longOptsHash;
 	CwtString       *errStr;
 	CwtOption       *popt;
-	CwtOptionIterator it;
 
-	CWT_ASSERT(argc);
-	CWT_ASSERT(argv);
 	CWT_ASSERT(options);
-	CWT_ASSERT(handler);
+	CWT_ASSERT(it);
 
 	longOptsHash = htNS->create(htNS->strHash, htNS->streq, NULL, NULL);
 	shortOptsHash = htNS->create(htNS->charHash, htNS->chareq, NULL, NULL);
@@ -409,15 +338,14 @@ static BOOL __parse(int argc, char **argv, CwtOption *options, CwtOptionsHandler
 	}
 
 	rc = TRUE;
-	__begin(&it, argc, argv);
 
-	while (__hasMore(&it)) {
+	while (it->hasMore(it)) {
 		CwtArgvType argvType;
 		CWT_CHAR *optStr = NULL;
 		CWT_CHAR *argStr = NULL;
 
 		popt = NULL;
-		argvType = __next(&it, &optStr, &argStr);
+		argvType = it->next(it, &optStr, &argStr);
 
 		switch(argvType) {
 		case CwtArgv_ShortOpt:
@@ -438,43 +366,52 @@ static BOOL __parse(int argc, char **argv, CwtOption *options, CwtOptionsHandler
 			break;
 
 		case CwtArgv_SingleDash:
-			if(handler->singleDash)
-				handler->singleDash();
+			if (it->onSingleDash)
+				it->onSingleDash();
 			break;
 
 		case CwtArgv_DoubleDash:
-			if(handler->doubleDash)
-				handler->doubleDash();
+			if (it->onDoubleDash)
+				it->onDoubleDash();
 			break;
 
 		case CwtArgv_Arg:
 		default:
-			if (handler->argument)
-				handler->argument(argStr);
+			if (it->onArgument)
+				it->onArgument(argStr);
+
+			if (args)
+				slNS->append(args, argStr);
 			break;
 		}
 
 		if( rc
 				&& (CwtArgv_ShortOpt == argvType
-				|| CwtArgv_LongOpt == argvType)) {
+				|| CwtArgv_LongOpt == argvType
+				|| CwtArgv_LongOptWithArg == argvType)) {
 
 			CWT_ASSERT(popt);
 			if (CwtOpt_BOOL != popt->optType) {
-				CWT_CHAR *parg = NULL;
-				if (__getOptarg(&it, &parg)) {
-					if (!__assignOptarg(popt, parg)) {
+
+				if (!argStr)
+					__getOptarg(it, &argStr);
+
+				if (argStr) {
+					if (!__assignOptarg(popt, argStr)) {
 						cwtStringNS()->sprintf(errStr, _T("'%s': invalid value"), optStr);
 						rc = FALSE;
+					} else {
+						if (it->onOption)
+							it->onOption(popt);
 					}
 				} else {
 					cwtStringNS()->sprintf(errStr, _T("'%s': argument expected"), optStr);
 					rc = FALSE;
 				}
-
-				if (parg)
-					CWT_FREE(parg);
 			} else {
 				__assignOptarg(popt, NULL);
+				if (it->onOption)
+					it->onOption(popt);
 			}
 		}
 
@@ -490,10 +427,15 @@ static BOOL __parse(int argc, char **argv, CwtOption *options, CwtOptionsHandler
 			argStr = NULL;
 		}
 
-		if (!rc) {
+		if (!rc)
 			break;
-		}
 	}
+
+	if (!rc) {
+		if (it->onError)
+			it->onError(stringNS->cstr(errStr));
+	}
+
 
 	stringNS->free(errStr);
 	htNS->free(longOptsHash);
@@ -508,11 +450,12 @@ static BOOL __parse(int argc, char **argv, CwtOption *options, CwtOptionsHandler
  * @param optset
  * @param out
  */
-static void __printUsage(const CWT_CHAR *progname, const CwtOption *optset, FILE *out)
+static void __printUsage(const CWT_CHAR *copyright, const CWT_CHAR *progname, const CwtOption *optset, FILE *out)
 {
 	CwtStdioNS *stdioNS = cwtStdioNS();
 	const CwtOption *popt = optset;
 
+	stdioNS->fprintf(out, _T("%s\n\n"), copyright);
 	stdioNS->fprintf(out, _Tr("Usage: %s OPTIONS\n\n"), progname);
 	stdioNS->fprintf(out, _Tr("Options:\n"));
 

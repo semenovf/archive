@@ -1139,7 +1139,6 @@ static ULONGLONG __dbd_affectedRows(CwtDBHandler *dbh)
 
 static BOOL __dbd_tables(CwtDBHandler *dbh, CwtStrList *tables)
 {
-	CwtStrNS     *strNS = cwtStrNS();
 	CwtStrListNS *slNS  = cwtStrListNS();
 
 	CwtMySqlDBHandler *mdbh = (CwtMySqlDBHandler*)dbh;
@@ -1171,7 +1170,7 @@ static BOOL __dbd_tables(CwtDBHandler *dbh, CwtStrList *tables)
 		}
 
 		decoded = __dbd_decode(dbh, row[0]);
-		slNS->append( tables, decoded, strNS->strLen(decoded) );
+		slNS->append( tables, decoded);
 
 		i++;
 	}

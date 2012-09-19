@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 	CWT_ASSERT(pchan0 = chNS->create(cwtBufferDeviceOpen()));
 	CWT_ASSERT(pchan1 = chNS->create(cwtBufferDeviceOpenPeer(chNS->device(pchan0))));
 	CWT_ASSERT(ini = iniNS->create());
-	iniNS->onError(ini, __iniOnError);
+	ini->onError = __iniOnError;
 	iniNS->addDirective(ini, _T("directive1"), __onIniDirective1);
 	iniNS->addDirective(ini, _T("directive2"), __onIniDirective2);
 	iniNS->addDirective(ini, _T("directive3"), __onIniDirective3);

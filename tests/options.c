@@ -38,11 +38,12 @@ static void test_iterate_options(void)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CwtStringNS *stringNS = cwtStringNS();
-	CwtOptionIterator it;
+	CwtOptionIterator *it;
 	CwtString *desc;
 	int i;
 	char *argv[] = {
-		  "-c"
+		  "prog-name"
+		, "-c"
 		, "-S"
 		, "-E"
 		, "-std=standard"
@@ -56,6 +57,8 @@ static void test_iterate_options(void)
 		, "arg2"
 		, "-opt1=arg3"
 		, "--"
+		, "--opt2=arg4"
+		, "--longopt"
 	};
 
 	struct {
@@ -77,39 +80,136 @@ static void test_iterate_options(void)
 		, { CwtArgv_Arg, NULL, _T("arg2") }
 		, { CwtArgv_LongOptWithArg, _T("opt1"), _T("arg3") }
 		, { CwtArgv_DoubleDash,  NULL, NULL }
+		, { CwtArgv_LongOptWithArg, _T("opt2"), _T("arg4") }
+		, { CwtArgv_LongOpt,  _T("longopt"), NULL }
 	};
 
 	int argc;
+	int nopts; /* number of options */
+	int nargs; /* number of arguments (optargs and free args)*/
 
 	desc = stringNS->create();
 	argc = sizeof(argv)/sizeof(argv[0]);
 	i = 0;
-	__optNS->begin(&it, argc, argv);
+	nopts = 0;
+	nargs = 0;
+	it = __optNS->createIterator(CwtOptIt_Default);
+	it->begin(it, argc, argv);
+	it->next(it, NULL, NULL); /* skip program name */
 
-	while(__optNS->hasMore(&it)) {
+	while(it->hasMore(it)) {
 		CWT_CHAR *opt, *arg;
 		CwtArgvType argvType;
 
-		argvType = __optNS->next(&it, &opt, &arg);
+		argvType = it->next(it, &opt, &arg);
 
 		CWT_TEST_OK2(argvType == argv_check[i].argvType, argvTypeStr(argvType));
 
 		if (argv_check[i].opt) {
 			stringNS->sprintf(desc, _T("Option: '%s'"), opt);
 			CWT_TEST_FAIL2(strNS->strEq(argv_check[i].opt, opt), stringNS->cstr(desc));
+			nopts++;
 		}
 
 		if (argv_check[i].arg) {
 			stringNS->sprintf(desc, _T("Argument: '%s'"), arg);
 			CWT_TEST_FAIL2(strNS->strEq(argv_check[i].arg, arg), stringNS->cstr(desc));
+			nargs++;
 		}
 
 		CWT_FREE(opt);
 		CWT_FREE(arg);
 		i++;
 	}
+
+	CWT_TEST_OK(nopts==11);
+	CWT_TEST_OK(nargs==6);
+	it->free(it);
 	stringNS->free(desc);
 }
+
+
+static void test_options_general(void)
+{
+	CwtStrNS *strNS = cwtStrNS();
+	CwtStrListNS *slNS = cwtStrListNS();
+	CwtOptionIterator *it;
+
+	CwtStrList *args;
+	BOOL help           = FALSE;
+	BOOL man            = FALSE;
+	BOOL isInteractive  = FALSE;
+	BOOL isServer       = FALSE;
+	LONGLONG speed      = 9600L;
+	LONGLONG databits   = 8L;
+	LONGLONG stopbits   = 1L;
+	CWT_CHAR *parityStr = _T("none");
+	double num          = 1234.56789f;
+	CwtOption optset[]  = {
+/*          longname      shortname  hasArg     arg            validator desc*/
+/*        ------------------------------------------------------------------------------------*/
+		  { _T("help"),   _T('h'), CwtOpt_BOOL, &help,         NULL,     _Tr("output help info") }
+		, { _T("man"),     0,      CwtOpt_BOOL, &man,          NULL,     _Tr("output help info in man style") }
+		, { NULL,         _T('i'), CwtOpt_BOOL, &isInteractive,NULL,     _Tr("interactive mode") }
+		, { _T("server"),  0,      CwtOpt_BOOL, &isServer,     NULL,     _Tr("start this application as server") }
+		, { _T("speed"),  _T('b'), CwtOpt_INT,  &speed,        NULL,     _Tr("speed (bitrate) for serial port") }
+		, { _T("db"),     _T('d'), CwtOpt_INT,  &databits,     NULL,     _Tr("number of data bits for serial port") }
+		, { _T("sb"),     _T('s'), CwtOpt_INT,  &stopbits,     NULL,     _Tr("number of stop bits for serial port") }
+		, { _T("parity"), _T('p'), CwtOpt_TEXT, &parityStr,    NULL,     _Tr("parity for serial port") }
+		, { _T("num"),    _T('n'), CwtOpt_REAL, &num,          NULL,     _Tr("number") }
+		, CWT_END_OPTIONS
+	};
+	char *argv[] = {
+		"prog-name"
+		, "-h"
+		, "--man"
+		, "-i"
+		, "-server"
+		, "--speed=36600"
+		, "-db"
+		, "7"
+		, "arg1"
+		, "--sb=2"
+		, "--parity=\"even\""
+		, "arg2"
+		, "-num"
+		, "4321.9876"
+		, "arg3"
+	};
+
+	int argc;
+
+	argc = sizeof(argv)/sizeof(argv[0]);
+	args = slNS->create();
+
+	it = __optNS->createIterator(CwtOptIt_Default);
+	it->begin(it, argc, argv);
+	it->next(it, NULL, NULL); /* skip program name */
+
+	CWT_TEST_FAIL(__optNS->parseWithIterator(optset, args, it));
+	CWT_TEST_OK(help == TRUE);
+	CWT_TEST_OK(man == TRUE);
+	CWT_TEST_OK(isInteractive == TRUE);
+	CWT_TEST_OK(isServer == TRUE);
+	CWT_TEST_OK(speed == 36600L);
+	CWT_TEST_OK(databits == 7L);
+	CWT_TEST_OK(stopbits == 2L);
+	CWT_TEST_OK(strNS->strEq(parityStr, _T("\"even\"")));
+	CWT_TEST_OK(num >= 4321.9875f && num <= 4321.9877f);
+
+	CWT_TEST_FAIL(slNS->size(args) == 3);
+	CWT_TEST_OK(strNS->strEq(slNS->at(args, 0), _T("arg1")));
+	CWT_TEST_OK(strNS->strEq(slNS->at(args, 1), _T("arg2")));
+	CWT_TEST_OK(strNS->strEq(slNS->at(args, 2), _T("arg3")));
+
+	/* free memory allocated for text option argument */
+	if( strNS->strEq(parityStr, _T("\"even\"")) )
+		CWT_FREE(parityStr);
+
+	it->free(it);
+	slNS->free(args);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -118,9 +218,11 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(28);
+	CWT_BEGIN_TESTS(49);
 
 	test_iterate_options();
+	test_options_general();
+	/*test_options_with_validator();*/
 
 	CWT_END_TESTS;
 }

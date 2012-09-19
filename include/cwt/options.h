@@ -10,8 +10,9 @@
 
 #include <cwt/types.h>
 #include <cwt/stdio.h>
+#include <cwt/strlist.h>
 
-#define CWT_END_OPTIONS { _T(""), 0, CwtOpt_BOOL, NULL, NULL, _T("") }
+#define CWT_END_OPTIONS { NULL, 0, CwtOpt_BOOL, NULL, NULL, NULL }
 
 typedef enum _CwtArgvType {
 	  CwtArgv_ShortOpt
@@ -29,49 +30,41 @@ typedef enum _CwtOptionType {
 	, CwtOpt_TEXT
 } CwtOptionType;
 
+typedef enum _CwtOptionIteratorType {
+	  CwtOptIt_Default
+	/*, CwtOptIt_Alternative*/
+} CwtOptionIteratorType;
 
 typedef struct _CwtOption {
-	CWT_CHAR     *longname;  /* "длинная" опция или NULL */
-	CWT_CHAR      shortname; /* "короткая" опция или 0 */
-	CwtOptionType optType;   /* тип аргумента (см. CwtOptType) */
-	void         *arg;       /* указатель на значение аргумента опции или NULL, если аргумент не используется */
-	CWT_CHAR     *desc;      /* описание опции (используется при автоматической генерации справки) */
-	BOOL        (*validator)(const void*);  /* функция-валидатор аргумента опции */
+	CWT_CHAR     *longname;  /* long option or NULL */
+	CWT_CHAR      shortname; /* short option or 0 */
+	CwtOptionType optType;   /* option's argument type (see CwtOptType) */
+	void         *arg;       /* pointer to opttion's argument value or NULL if option has no argument */
+	BOOL        (*validator)(const void*);  /* validation function for option argument */
+	CWT_CHAR     *desc;      /* option's description (for automatically generated usage) */
 } CwtOption;
 
 typedef struct _CwtOptionIterator {
-	char **argv;
-	int    argc;
-	int    argi;
+	void        (*begin)        (struct _CwtOptionIterator *it, int argc, char **argv);
+	BOOL        (*hasMore)      (struct _CwtOptionIterator *it);
+	CwtArgvType (*next)         (struct _CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg);
+	void        (*free)         (struct _CwtOptionIterator *it);
+	void        (*onError)      (const CWT_CHAR *errstr);
+	void        (*onOption)     (CwtOption *popt);
+	void        (*onSingleDash) (void);
+	void        (*onDoubleDash) (void);
+	void        (*onArgument)   (const CWT_CHAR *s);
 } CwtOptionIterator;
 
-
-typedef struct _CwtOptionsHandler
-{
-	void (*option)     (CwtOption *opt);
-	void (*doubleDash) (void);
-	void (*singleDash) (void);
-	void (*argument)   (const CWT_CHAR *arg);
-	void (*on_error)   (const CWT_CHAR *errstr);
-} CwtOptionsHandler;
-
 typedef struct _CwtOptionsNS {
-	void (*printUsage)(const CWT_CHAR *progname, const CwtOption *optset, FILE *out);
-	BOOL (*parse)(int argc, char **argv, CwtOption *options, CwtOptionsHandler *handler);
-	void (*begin)(CwtOptionIterator *it, int argc, char **argv);
-	BOOL (*hasMore)(CwtOptionIterator *it);
-	CwtArgvType (*next)(CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg);
+	CwtOptionIterator* (*createIterator)(CwtOptionIteratorType itType);
+	void (*printUsage) (const CWT_CHAR *copyright, const CWT_CHAR *progname, const CwtOption *optset, FILE *out);
+	BOOL (*parse)      (int argc, char **argv, CwtOption *options, CwtStrList *args, CwtOptionIteratorType itType);
+	BOOL (*parseWithIterator) (CwtOption *options, CwtStrList *args, CwtOptionIterator *it);
 } CwtOptionsNS;
-
 
 EXTERN_C_BEGIN
 DLL_API_EXPORT CwtOptionsNS* cwtOptionsNS(void);
-/*
-DLL_API_EXPORT CwtOptionsHandler* cwtDebugOptionsHandler(void);
-DLL_API_EXPORT CwtOptionsHandler* cwtDefaultOptionsHandler(void);
-DLL_API_EXPORT CwtOptionsHandler* cwtShortOptionsOnlyHandler(void);
-DLL_API_EXPORT CwtOptionsHandler* cwtLongOptionsOnlyHandler(void);
-*/
 EXTERN_C_END
 
 

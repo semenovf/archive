@@ -28,10 +28,14 @@ typedef struct CwtStrListNS {
 	void            (*clear)       (CwtStrList *psl);
 	size_t          (*size)        (CwtStrList *psl);
 
-	void            (*insert)      (CwtStrListIterator *before, const CWT_CHAR *s, size_t n);
-	void            (*prepend)     (CwtStrList *psl, const CWT_CHAR *s, size_t n);
-	void            (*append)      (CwtStrList *psl, const CWT_CHAR *s, size_t n);
-	void            (*add)         (CwtStrList *psl, const CWT_CHAR *s, size_t n);
+	void            (*insert)      (CwtStrListIterator *before, const CWT_CHAR *s);
+	void            (*prepend)     (CwtStrList *psl, const CWT_CHAR *s);
+	void            (*append)      (CwtStrList *psl, const CWT_CHAR *s);
+	void            (*add)         (CwtStrList *psl, const CWT_CHAR *s);
+	void            (*insert_n)    (CwtStrListIterator *before, const CWT_CHAR *s, size_t n);
+	void            (*prepend_n)   (CwtStrList *psl, const CWT_CHAR *s, size_t n);
+	void            (*append_n)    (CwtStrList *psl, const CWT_CHAR *s, size_t n);
+	void            (*add_n)       (CwtStrList *psl, const CWT_CHAR *s, size_t n);
 
 	void            (*remove)      (CwtStrListIterator *before);
 	void            (*removeFirst) (CwtStrList *psl);

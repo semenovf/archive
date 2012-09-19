@@ -21,7 +21,6 @@ static CwtIniHandler* __ini_createWithFlags(UINT flags, size_t max_tokens);
 static void           __ini_free    (CwtIniHandler*);
 static BOOL           __ini_parse   (CwtIniHandler*, CwtChannel*);
 static void           __ini_error   (CwtIniHandler*, const CWT_CHAR *errstr);
-static void           __ini_onError (CwtIniHandler*, void (*callback)(CwtIniHandler*, const CWT_CHAR*));
 static void           __ini_addDirective (CwtIniHandler*, const CWT_CHAR *directive, CwtIniCallback handler);
 static void           __ini_setDefaultDirective (CwtIniHandler*, CwtIniCallback handler);
 static size_t         __ini_line    (CwtIniHandler*);
@@ -32,7 +31,6 @@ static CwtIniNS __cwtIniNS = {
 	, __ini_free
 	, __ini_parse
 	, __ini_error
-	, __ini_onError
 	, __ini_addDirective
 	, __ini_setDefaultDirective
 	, __ini_line
@@ -53,7 +51,6 @@ static CwtIniHandler* __ini_create(void)
 	return  __ini_createWithFlags(0, 0);
 }
 
-
 static CwtIniHandler* __ini_createWithFlags(UINT flags, size_t max_tokens)
 {
 	CwtIniHandler *h;
@@ -64,7 +61,7 @@ static CwtIniHandler* __ini_createWithFlags(UINT flags, size_t max_tokens)
 	h->pchan      = NULL;
 	h->defaultCallback = NULL;
 	h->line       = 0;
-	h->on_error   = NULL;
+	h->onError    = NULL;
 
 	if( flags & Cwt_IniFlag_DirectiveIgnoreCase ) {
 		h->directives = __htNS->create(__htNS->striHash, __htNS->strieq, cwtFree, NULL);
@@ -196,8 +193,8 @@ static void __ini_error(CwtIniHandler *h, const CWT_CHAR *errstr)
 {
 	CWT_ASSERT(h);
 
-	if (h->on_error)
-		h->on_error(h, errstr);
+	if (h->onError)
+		h->onError(h, errstr);
 }
 
 
@@ -227,8 +224,3 @@ static size_t __ini_line(CwtIniHandler *h)
 	return h->line;
 }
 
-static void __ini_onError(CwtIniHandler *h, void (*callback)(CwtIniHandler*, const CWT_CHAR*))
-{
-	CWT_ASSERT(h);
-	h->on_error = callback;
-}

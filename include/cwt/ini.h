@@ -25,7 +25,7 @@ typedef struct _CwtIniHandler {
 	size_t        line;
 	CwtHashTable *directives;
 	BOOL        (*defaultCallback)(struct _CwtIniHandler*, const CWT_CHAR **argv, size_t argc);
-	void        (*on_error)(struct _CwtIniHandler*, const CWT_CHAR*);
+	void        (*onError)(struct _CwtIniHandler*, const CWT_CHAR*);
 } CwtIniHandler;
 
 typedef BOOL (*CwtIniCallback)(struct _CwtIniHandler*, const CWT_CHAR **argv, size_t argc);
@@ -36,7 +36,6 @@ typedef struct CwtIniNS {
 	void          (*free)    (struct _CwtIniHandler*);
 	BOOL          (*parse)   (struct _CwtIniHandler*, CwtChannel*);
 	void          (*error)   (struct _CwtIniHandler*, const CWT_CHAR *errstr);
-	void          (*onError) (struct _CwtIniHandler*, void (*callback)(struct _CwtIniHandler*, const CWT_CHAR*));
 	void          (*addDirective) (struct _CwtIniHandler*, const CWT_CHAR *directive, CwtIniCallback handler);
 	void          (*setDefaultDirective) (struct _CwtIniHandler*, CwtIniCallback handler);
 	size_t        (*line)    (struct _CwtIniHandler*);

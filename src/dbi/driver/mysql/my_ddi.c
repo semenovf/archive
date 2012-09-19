@@ -140,14 +140,14 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 
 	if( flags & CWT_DDI_DEPLOY_DROP_DB ) {
 		stringNS->sprintf(tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
-    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+    	slNS->add(spec, stringNS->cstr(tmpbuf));
 	}
 
 	stringNS->sprintf(tmpbuf, _T("CREATE DATABASE IF NOT EXISTS `%s`"), ddi->name);
-	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+	slNS->add(spec, stringNS->cstr(tmpbuf));
 
     stringNS->sprintf(tmpbuf, _T("USE `%s`"), ddi->name);
-    slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+    slNS->add(spec, stringNS->cstr(tmpbuf));
 
 	slNS->begin(ddi->tables, &tabIt);
 	while( slNS->hasMore(&tabIt)) {
@@ -156,7 +156,7 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 
 		if( flags & CWT_DDI_DEPLOY_DROP_TAB ) {
 			stringNS->sprintf(tmpbuf, _T("DROP TABLE IF EXISTS `%s`"), tab->name);
-	    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+	    	slNS->add(spec, stringNS->cstr(tmpbuf));
 		}
 
 		/*stringNS->clear(indexSpecs);*/
@@ -237,7 +237,7 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 		stringNS->append(columnSpecs, _T(" DEFAULT CHARSET="));
 		stringNS->append(columnSpecs, charset);
 
-		slNS->add(spec, stringNS->cstr(columnSpecs), stringNS->size(columnSpecs));
+		slNS->add(spec, stringNS->cstr(columnSpecs));
 	}
 
 	 stringNS->free(tmpbuf);
@@ -265,13 +265,13 @@ CwtStrList* __dbd_specForRecall(CwtDDI *ddi, int flags)
 
 	if( flags & CWT_DDI_RECALL_DROP_DB ) {
 		stringNS->sprintf(tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
-    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+    	slNS->add(spec, stringNS->cstr(tmpbuf));
 	} else {
 		CwtListIterator tabIt;
 		CwtListIterator colIt;
 
 		stringNS->sprintf(tmpbuf, _T("USE `%s`"), ddi->name);
-    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+    	slNS->add(spec, stringNS->cstr(tmpbuf));
 
 
 		slNS->begin(ddi->tables, &tabIt);
@@ -286,7 +286,7 @@ CwtStrList* __dbd_specForRecall(CwtDDI *ddi, int flags)
 				if( col->pRef ) {
 					stringNS->sprintf(tmpbuf, _T("ALTER TABLE `%s` DROP FOREIGN KEY `FK_%s__%s`")
 						, tab->name, tab->name, col->name );
-					slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+					slNS->add(spec, stringNS->cstr(tmpbuf));
 				}
 			}
 		}
@@ -295,7 +295,7 @@ CwtStrList* __dbd_specForRecall(CwtDDI *ddi, int flags)
 		while( slNS->hasMore(&tabIt)) {
 			CwtDDITable *tab = (CwtDDITable*)slNS->next(&tabIt);
 			stringNS->sprintf(tmpbuf, _T("DROP TABLE IF EXISTS `%s`"), tab->name);
-	    	slNS->add(spec, stringNS->cstr(tmpbuf), stringNS->size(tmpbuf));
+	    	slNS->add(spec, stringNS->cstr(tmpbuf));
 		}
 
 	}
