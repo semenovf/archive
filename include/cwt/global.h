@@ -49,7 +49,9 @@
 #	define CWT_HAVE_POLL 1
 #endif
 
-
+#if _POSIX_C_SOURCE >= 1 || defined(_XOPEN_SOURCE) || defined(_POSIX_SOURCE)
+#	define CWT_HAVE_SIGACTION 1
+#endif
 
 
 /* http://support.microsoft.com/default.aspx?scid=KB;EN-US;168958 */

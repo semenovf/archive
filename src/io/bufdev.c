@@ -13,12 +13,7 @@ static void    __dev_close          (CwtIODevice*);
 static size_t  __dev_bytesAvailable (CwtIODevice *pdev);
 static ssize_t __dev_read           (CwtIODevice*, BYTE*, size_t);
 static ssize_t __dev_write          (CwtIODevice*, const BYTE*, size_t);
-
-/*
-static void    __readBegin(CwtIODevice*);
-static void    __readCommit(CwtIODevice*);
-static void    __readRollback(CwtIODevice*);
-*/
+/*static CwtIODevice* __dev_accept    (CwtIODevice *);*/
 
 typedef struct CwtBufferDevice
 {
@@ -44,7 +39,9 @@ CwtIODevice* cwtBufferDeviceOpen()
 	bufd->__base.bytesAvailable = __dev_bytesAvailable;
 	bufd->__base.read  = __dev_read;
 	bufd->__base.write = __dev_write;
+	/*bufd->__base.accept = __dev_accept;*/
 
+	/*CWT_SHARED_INC(bufd);*/
 	return (CwtIODevice*)bufd;
 }
 
@@ -106,3 +103,15 @@ ssize_t __dev_write(CwtIODevice *dev, const BYTE* buf, size_t sz)
 	bufd = (CwtBufferDevice*)dev;
 	return cwtRingBufNS()->write(bufd->out, buf, sz);
 }
+
+/*
+static CwtIODevice* __dev_accept (CwtIODevice *dev)
+{
+	CWT_ASSERT(dev);
+	if (__dev_bytesAvailable(dev) > 0) {
+		CWT_SHARED_INC(dev);
+		return dev;
+	}
+	return NULL;
+}
+*/

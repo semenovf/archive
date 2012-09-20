@@ -39,26 +39,6 @@ static CwtIODevice* __dev_createSocketDevice (struct _CwtSocket *sd)
 }
 
 
-/*
-static CwtIODevice* __dev_UdpTcpSocketDeviceOpen(struct _CwtSocket *sd, const CWT_CHAR *inetAddr, UINT16 port, BOOL is_listener)
-{
-	BOOL ok;
-
-	if (!sd)
-		return NULL;
-
-	if (is_listener)
-		ok = cwtSocketNS()->listen(sd, inetAddr, port);
-	else
-		ok = cwtSocketNS()->connect(sd, inetAddr, port);
-
-	if (ok)
-		return __dev_createSocketDevice(sd);
-
-	return NULL;
-}
-*/
-
 DLL_API_EXPORT CwtIODevice* cwtLocalSocketDeviceOpen(const CWT_CHAR *path, UINT32 flags)
 {
 	CwtSocket *sd;
@@ -167,27 +147,6 @@ DLL_API_EXPORT CwtIODevice* cwtMcastSocketDeviceOpen(const CWT_CHAR *inetAddr, U
 	}
 
 	return sd ? __dev_createSocketDevice(sd) : NULL;
-
-/*
-	CwtSocketNS *socketNS = cwtSocketNS();
-	struct _CwtSocket *sd;
-	BOOL ok;
-
-	sd = cwtSocketNS()->openMcastSocket(TRUE);
-
-	if (!sd)
-		return NULL;
-
-	if( is_listener )
-		ok = socketNS->listenMcastSocket(sd, inetAddr, port, inetMCastAddr);
-	else
-		ok = socketNS->connectMcastSocket(sd, inetAddr, port, inetMCastAddr);
-
-	if (ok)
-		return __dev_createSocketDevice(sd);
-
-	return NULL;
-*/
 }
 
 

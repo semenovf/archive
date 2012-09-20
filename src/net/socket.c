@@ -43,17 +43,7 @@ extern CwtSocket* __socket_openTcpSocket        (const CWT_CHAR *inetAddr, UINT1
 extern CwtSocket* __socket_openTcpServerSocket  (const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking);
 extern CwtSocket* __socket_openMcastSocket      (const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_nonblocking);
 extern CwtSocket* __socket_openMcastServerSocket(const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_nonblocking);
-/*
 
-extern CwtSocket* __socket_openLocalSocket(BOOL is_nonblocking);
-extern CwtSocket* __socket_openUdpSocket  (BOOL is_nonblocking);
-extern CwtSocket* __socket_openTcpSocket  (BOOL is_nonblocking);
-extern CwtSocket* __socket_openMSocket    (BOOL is_nonblocking);
-extern BOOL       __socket_listen         (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port);
-extern BOOL       __socket_listenMSocket  (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);
-extern BOOL       __socket_connect        (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port);
-extern BOOL       __socket_connectMSocket (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);
-*/
 static CwtSocket* __socket_accept         (CwtSocket*);
 static void       __socket_close          (CwtSocket*);
 static BOOL       __socket_setNonBlocking (CwtSocket*, BOOL is_nonblocking);

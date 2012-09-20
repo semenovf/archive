@@ -18,17 +18,17 @@ static CwtOptionsNS *__optNS = NULL;
 
 static const CWT_CHAR *argvTypeStr(CwtArgvType argvType)
 {
-    return CwtArgv_ShortOpt == argvType
+    return Cwt_Argv_ShortOpt == argvType
 		? _Tr("Short option")
-		: CwtArgv_LongOpt == argvType
+		: Cwt_Argv_LongOpt == argvType
 		? _Tr("Long option")
-		: CwtArgv_LongOptWithArg == argvType
+		: Cwt_Argv_LongOptWithArg == argvType
 		? _Tr("Long option with argument")
-		: CwtArgv_SingleDash == argvType
+		: Cwt_Argv_SingleDash == argvType
 		? _Tr("Single dash")
-		: CwtArgv_DoubleDash == argvType
+		: Cwt_Argv_DoubleDash == argvType
 		? _Tr("Double dash")
-		: CwtArgv_Arg == argvType
+		: Cwt_Argv_Arg == argvType
 		? _Tr("Argument")
 		: _Tr("UNKNOWN option");
 }
@@ -66,22 +66,22 @@ static void test_iterate_options(void)
 		CWT_CHAR *opt;
 		CWT_CHAR *arg;
 	} argv_check[] = {
-		  { CwtArgv_ShortOpt, _T("c"), NULL }
-		, { CwtArgv_ShortOpt, _T("S"), NULL }
-		, { CwtArgv_ShortOpt, _T("E"), NULL }
-		, { CwtArgv_LongOptWithArg, _T("std"), _T("standard") }
-		, { CwtArgv_ShortOpt, _T("g"), NULL }
-		, { CwtArgv_LongOpt,  _T("pg"), NULL }
-		, { CwtArgv_LongOpt,  _T("l"), NULL }
-		, { CwtArgv_SingleDash,  NULL, NULL }
-		, { CwtArgv_ShortOpt, _T("o"), NULL }
-		, { CwtArgv_Arg, NULL, _T("outfile") }
-		, { CwtArgv_Arg, NULL, _T("arg1") }
-		, { CwtArgv_Arg, NULL, _T("arg2") }
-		, { CwtArgv_LongOptWithArg, _T("opt1"), _T("arg3") }
-		, { CwtArgv_DoubleDash,  NULL, NULL }
-		, { CwtArgv_LongOptWithArg, _T("opt2"), _T("arg4") }
-		, { CwtArgv_LongOpt,  _T("longopt"), NULL }
+		  { Cwt_Argv_ShortOpt, _T("c"), NULL }
+		, { Cwt_Argv_ShortOpt, _T("S"), NULL }
+		, { Cwt_Argv_ShortOpt, _T("E"), NULL }
+		, { Cwt_Argv_LongOptWithArg, _T("std"), _T("standard") }
+		, { Cwt_Argv_ShortOpt, _T("g"), NULL }
+		, { Cwt_Argv_LongOpt,  _T("pg"), NULL }
+		, { Cwt_Argv_LongOpt,  _T("l"), NULL }
+		, { Cwt_Argv_SingleDash,  NULL, NULL }
+		, { Cwt_Argv_ShortOpt, _T("o"), NULL }
+		, { Cwt_Argv_Arg, NULL, _T("outfile") }
+		, { Cwt_Argv_Arg, NULL, _T("arg1") }
+		, { Cwt_Argv_Arg, NULL, _T("arg2") }
+		, { Cwt_Argv_LongOptWithArg, _T("opt1"), _T("arg3") }
+		, { Cwt_Argv_DoubleDash,  NULL, NULL }
+		, { Cwt_Argv_LongOptWithArg, _T("opt2"), _T("arg4") }
+		, { Cwt_Argv_LongOpt,  _T("longopt"), NULL }
 	};
 
 	int argc;
@@ -93,7 +93,7 @@ static void test_iterate_options(void)
 	i = 0;
 	nopts = 0;
 	nargs = 0;
-	it = __optNS->createIterator(CwtOptIt_Default);
+	it = __optNS->createIterator(Cwt_OptIt_Default);
 	it->begin(it, argc, argv);
 	it->next(it, NULL, NULL); /* skip program name */
 
@@ -148,15 +148,15 @@ static void test_options_general(void)
 	CwtOption optset[]  = {
 /*          longname      shortname  hasArg     arg            validator desc*/
 /*        ------------------------------------------------------------------------------------*/
-		  { _T("help"),   _T('h'), CwtOpt_BOOL, &help,         NULL,     _Tr("output help info") }
-		, { _T("man"),     0,      CwtOpt_BOOL, &man,          NULL,     _Tr("output help info in man style") }
-		, { NULL,         _T('i'), CwtOpt_BOOL, &isInteractive,NULL,     _Tr("interactive mode") }
-		, { _T("server"),  0,      CwtOpt_BOOL, &isServer,     NULL,     _Tr("start this application as server") }
-		, { _T("speed"),  _T('b'), CwtOpt_INT,  &speed,        NULL,     _Tr("speed (bitrate) for serial port") }
-		, { _T("db"),     _T('d'), CwtOpt_INT,  &databits,     NULL,     _Tr("number of data bits for serial port") }
-		, { _T("sb"),     _T('s'), CwtOpt_INT,  &stopbits,     NULL,     _Tr("number of stop bits for serial port") }
-		, { _T("parity"), _T('p'), CwtOpt_TEXT, &parityStr,    NULL,     _Tr("parity for serial port") }
-		, { _T("num"),    _T('n'), CwtOpt_REAL, &num,          NULL,     _Tr("number") }
+		  { _T("help"),   _T('h'), Cwt_Opt_BOOL, &help,         NULL,     _Tr("output help info") }
+		, { _T("man"),     0,      Cwt_Opt_BOOL, &man,          NULL,     _Tr("output help info in man style") }
+		, { NULL,         _T('i'), Cwt_Opt_BOOL, &isInteractive,NULL,     _Tr("interactive mode") }
+		, { _T("server"),  0,      Cwt_Opt_BOOL, &isServer,     NULL,     _Tr("start this application as server") }
+		, { _T("speed"),  _T('b'), Cwt_Opt_INT,  &speed,        NULL,     _Tr("speed (bitrate) for serial port") }
+		, { _T("db"),     _T('d'), Cwt_Opt_INT,  &databits,     NULL,     _Tr("number of data bits for serial port") }
+		, { _T("sb"),     _T('s'), Cwt_Opt_INT,  &stopbits,     NULL,     _Tr("number of stop bits for serial port") }
+		, { _T("parity"), _T('p'), Cwt_Opt_TEXT, &parityStr,    NULL,     _Tr("parity for serial port") }
+		, { _T("num"),    _T('n'), Cwt_Opt_REAL, &num,          NULL,     _Tr("number") }
 		, CWT_END_OPTIONS
 	};
 	char *argv[] = {
@@ -182,7 +182,7 @@ static void test_options_general(void)
 	argc = sizeof(argv)/sizeof(argv[0]);
 	args = slNS->create();
 
-	it = __optNS->createIterator(CwtOptIt_Default);
+	it = __optNS->createIterator(Cwt_OptIt_Default);
 	it->begin(it, argc, argv);
 	it->next(it, NULL, NULL); /* skip program name */
 

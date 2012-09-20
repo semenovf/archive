@@ -47,20 +47,16 @@ typedef struct _CwtSocketNS {
 	CwtSocket*       (*openTcpServerSocket)  (const CWT_CHAR *inetAddr, UINT16 port, BOOL is_nonblocking);
 	CwtSocket*       (*openMcastSocket)      (const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_nonblocking);
 	CwtSocket*       (*openMcastServerSocket)(const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr, BOOL is_nonblocking);
-	/*BOOL             (*listen)               (CwtSocket*);*/
-	/*BOOL             (*listenMcastSocket)(CwtSocket*, );*/
-	/*BOOL             (*connect)        (CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port);*/
-	/*BOOL             (*connectMcastSocket)(CwtSocket*, const CWT_CHAR *inetAddr, UINT16 port, const CWT_CHAR *inetMCastAddr);*/
-	CwtSocket*       (*accept)         (CwtSocket*);
-	void             (*close)          (CwtSocket*);
-	BOOL             (*setNonBlocking) (CwtSocket*, BOOL is_nonblocking);
+	CwtSocket*       (*accept)        (CwtSocket*);
+	void             (*close)         (CwtSocket*);
+	BOOL             (*setNonBlocking)(CwtSocket*, BOOL is_nonblocking);
 
-	size_t           (*bytesAvailable) (CwtSocket*);
-	ssize_t          (*read)           (CwtSocket*, BYTE* buf, size_t sz);
-	ssize_t          (*write)          (CwtSocket*, const BYTE *buf, size_t sz);
-	CWT_CHAR*        (*inetAddr)       (CwtSocket*);
-	UINT16           (*inetPort)       (CwtSocket*);
-	CWT_CHAR*        (*localPath)      (CwtSocket*);
+	size_t           (*bytesAvailable)(CwtSocket*);
+	ssize_t          (*read)          (CwtSocket*, BYTE* buf, size_t sz);
+	ssize_t          (*write)         (CwtSocket*, const BYTE *buf, size_t sz);
+	CWT_CHAR*        (*inetAddr)      (CwtSocket*);
+	UINT16           (*inetPort)      (CwtSocket*);
+	CWT_CHAR*        (*localPath)     (CwtSocket*);
 } CwtSocketNS;
 
 

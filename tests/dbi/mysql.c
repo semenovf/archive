@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(107);
+	CWT_BEGIN_TESTS(58);
 
 	dbh = dbi->connect(__dsn_with_flags, __username, __password, NULL);
 	CWT_TEST_FAIL2(dbh, _T("May be you forgot to start MySQL service?"));
@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
 
 		print_info(_T("inserting 1000 records, please wait ..."));
 
-		for( i = 0; i < 1/*1000*/; i++ ) {
+		for( i = 0; i < 1000; i++ ) {
 			if( !dbh->execute(sth) )
 				break;
 

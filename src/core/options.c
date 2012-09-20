@@ -27,7 +27,11 @@
 #include <cwt/hashtab.h>
 
 static CwtOptionIterator* __createIterator (CwtOptionIteratorType itType);
-static void  __printUsage(const CWT_CHAR *copyright, const CWT_CHAR *progname, const CwtOption *optset, FILE *out);
+static void  __printUsage(const CWT_CHAR *progname
+		, const CWT_CHAR *copyright
+		, const CWT_CHAR *usageSummary
+		, const CwtOption *optset
+		, FILE *out);
 static BOOL  __parse      (int argc, char **argv, CwtOption *options, CwtStrList *args, CwtOptionIteratorType itType);
 static BOOL  __parseWithIterator (CwtOption *options, CwtStrList *args, CwtOptionIterator *it);
 
@@ -68,7 +72,7 @@ DLL_API_EXPORT CwtOptionsNS* cwtOptionsNS(void)
 static CwtOptionIterator* __createIterator (CwtOptionIteratorType itType)
 {
 	switch(itType) {
-	case CwtOptIt_Default:
+	case Cwt_OptIt_Default:
 	default: {
 		CwtDefaultOptionIterator *it;
 		it = CWT_MALLOC(CwtDefaultOptionIterator);
@@ -149,15 +153,15 @@ static CwtArgvType __it_default_next (CwtOptionIterator *it, CWT_CHAR **opt, CWT
 	if (strNS->startsWith(optStr, _T("-"))) {
 		/* Single dash '-' */
 		if (strNS->strLen(optStr) == 1)  {
-			argvType = CwtArgv_SingleDash;
+			argvType = Cwt_Argv_SingleDash;
 		}
 		/* Double dash '--'*/
 		else if (strNS->strLen(optStr) == 2 && optStr[1] == _T('-')) {
-			argvType = CwtArgv_DoubleDash;
+			argvType = Cwt_Argv_DoubleDash;
 		}
 		/* Short option */
 		else if (strNS->strLen(optStr) == 2) {
-			argvType = CwtArgv_ShortOpt;
+			argvType = Cwt_Argv_ShortOpt;
 			popt = strNS->strNdup(&optStr[1], 1);
 		}
 		/* Long option */
@@ -168,15 +172,15 @@ static CwtArgvType __it_default_next (CwtOptionIterator *it, CWT_CHAR **opt, CWT
 				++popt;
 
 			if (strNS->strChr(optStr, _T('='))) {
-				argvType = CwtArgv_LongOptWithArg;
+				argvType = Cwt_Argv_LongOptWithArg;
 				__splitLongOptWithArg(popt, &popt, &parg);
 			} else {
-				argvType = CwtArgv_LongOpt;
+				argvType = Cwt_Argv_LongOpt;
 				popt = strNS->strDup(popt);
 			}
 		}
 	} else {
-		argvType = CwtArgv_Arg;
+		argvType = Cwt_Argv_Arg;
 		parg = strNS->strDup(optStr);
 	}
 
@@ -207,7 +211,7 @@ static BOOL __getOptarg(CwtOptionIterator *it, CWT_CHAR **arg)
 	CWT_ASSERT(arg);
 
 	if (it->hasMore(it)) {
-		if (CwtArgv_Arg == it->next(it, NULL, arg)) {
+		if (Cwt_Argv_Arg == it->next(it, NULL, arg)) {
 			return TRUE;
 		}
 
@@ -229,10 +233,10 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 		return TRUE;
 
 	switch(popt->optType) {
-	case CwtOpt_BOOL:
+	case Cwt_Opt_BOOL:
 		*((BOOL*)popt->arg) = TRUE;
 		break;
-	case CwtOpt_INT: {
+	case Cwt_Opt_INT: {
 		LONGLONG v;
 		CWT_ASSERT(arg);
 
@@ -247,7 +251,7 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 		}
 		break;
 
-	case CwtOpt_REAL: {
+	case Cwt_Opt_REAL: {
 		double v;
 		BOOL ok;
 		CWT_ASSERT(arg);
@@ -263,7 +267,7 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 		}
 		break;
 
-	case CwtOpt_TEXT:
+	case Cwt_Opt_TEXT:
 	default:
 		CWT_ASSERT(arg);
 		if(popt->validator && !popt->validator(arg))
@@ -348,7 +352,7 @@ static BOOL __parseWithIterator(CwtOption *options, CwtStrList *args, CwtOptionI
 		argvType = it->next(it, &optStr, &argStr);
 
 		switch(argvType) {
-		case CwtArgv_ShortOpt:
+		case Cwt_Argv_ShortOpt:
 			popt = (CwtOption*)htNS->lookup(shortOptsHash, &optStr[0]);
 			if (!popt) {
 				stringNS->sprintf(errStr, _T("'%s': bad option"), optStr);
@@ -356,8 +360,8 @@ static BOOL __parseWithIterator(CwtOption *options, CwtStrList *args, CwtOptionI
 			}
 			break;
 
-		case CwtArgv_LongOpt:
-		case CwtArgv_LongOptWithArg:
+		case Cwt_Argv_LongOpt:
+		case Cwt_Argv_LongOptWithArg:
 			popt = (CwtOption*)htNS->lookup(longOptsHash, optStr);
 			if (!popt) {
 				stringNS->sprintf(errStr, _T("'%s': bad option"), optStr);
@@ -365,17 +369,17 @@ static BOOL __parseWithIterator(CwtOption *options, CwtStrList *args, CwtOptionI
 			}
 			break;
 
-		case CwtArgv_SingleDash:
+		case Cwt_Argv_SingleDash:
 			if (it->onSingleDash)
 				it->onSingleDash();
 			break;
 
-		case CwtArgv_DoubleDash:
+		case Cwt_Argv_DoubleDash:
 			if (it->onDoubleDash)
 				it->onDoubleDash();
 			break;
 
-		case CwtArgv_Arg:
+		case Cwt_Argv_Arg:
 		default:
 			if (it->onArgument)
 				it->onArgument(argStr);
@@ -386,12 +390,12 @@ static BOOL __parseWithIterator(CwtOption *options, CwtStrList *args, CwtOptionI
 		}
 
 		if( rc
-				&& (CwtArgv_ShortOpt == argvType
-				|| CwtArgv_LongOpt == argvType
-				|| CwtArgv_LongOptWithArg == argvType)) {
+				&& (Cwt_Argv_ShortOpt == argvType
+				|| Cwt_Argv_LongOpt == argvType
+				|| Cwt_Argv_LongOptWithArg == argvType)) {
 
 			CWT_ASSERT(popt);
-			if (CwtOpt_BOOL != popt->optType) {
+			if (Cwt_Opt_BOOL != popt->optType) {
 
 				if (!argStr)
 					__getOptarg(it, &argStr);
@@ -445,18 +449,66 @@ static BOOL __parseWithIterator(CwtOption *options, CwtStrList *args, CwtOptionI
 }
 
 /**
+ * @fn void CwtOptionsNS::printUsage(const CWT_CHAR *progname
+ * 		, const CWT_CHAR *copyright
+ * 		, const CWT_CHAR *usageSummary
+ * 		, const CwtOption *optset
+ * 		, FILE *out)
  *
- * @param progname
- * @param optset
- * @param out
+ * @brief Prints out program usage.
+ *
+ * @param progname Program name. If NULL nothing will be printed out.
+ * @param copyright Copyright text. May be NULL.
+ * @param usageSummary Usage summary. May be NULL.
+ * @param optset List of options terminated by @c CWT_END_OPTIONS.
+ * @param out Output stream to print out the usage.
+ *
+ * @code{.c}
+ * optionsNS->printUsage(_T("amazing-program")
+ *		, _Tr("Copyright (R) 2012 CherrySW")
+ *		, _Tr("[OPTIONS] file1 [file2] ...")
+ *		, optset
+ *		, stdout);
+ * @endcode
+ *
+ * will print out to standard output stream:
+ *
+ * @verbatim
+ * Copyright (R) 2012 CherrySW
+ *
+ * Usage: amazing-program [OPTIONS] file1 [file2] ...
+ *
+ * Options:
+ * ...
+ * <options and descriptions>
+ * ...
+ * @endverbatim
  */
-static void __printUsage(const CWT_CHAR *copyright, const CWT_CHAR *progname, const CwtOption *optset, FILE *out)
+static void __printUsage(const CWT_CHAR *progname
+		, const CWT_CHAR *copyright
+		, const CWT_CHAR *usageSummary
+		, const CwtOption *optset
+		, FILE *out)
 {
 	CwtStdioNS *stdioNS = cwtStdioNS();
 	const CwtOption *popt = optset;
 
-	stdioNS->fprintf(out, _T("%s\n\n"), copyright);
-	stdioNS->fprintf(out, _Tr("Usage: %s OPTIONS\n\n"), progname);
+	if (!progname)
+		return;
+
+	if (copyright)
+		stdioNS->fprintf(out, _T("%s\n\n"), copyright);
+
+	if (usageSummary) {
+		stdioNS->fprintf(out, _Tr("Usage: %s %s\n\n"), progname, usageSummary);
+	} else {
+		stdioNS->fprintf(out, _Tr("Usage: %s OPTIONS [ARGS]\n\n"), progname);
+	}
+
+	if (!optset) {
+		return;
+	}
+
 	stdioNS->fprintf(out, _Tr("Options:\n"));
 
 	while (popt && !(!popt->longname && popt->shortname == (CWT_CHAR)0)) {
@@ -471,7 +523,7 @@ static void __printUsage(const CWT_CHAR *copyright, const CWT_CHAR *progname, co
 			stdioNS->fprintf(out, _T("--%s"), popt->longname);
 		}
 
-		if (popt->optType != CwtOpt_BOOL) {
+		if (popt->optType != Cwt_Opt_BOOL) {
 			if (popt->longname)
 				stdioNS->fprintf(out, _Tr("=ARG"));
 			else

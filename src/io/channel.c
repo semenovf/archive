@@ -5,26 +5,21 @@
 
 
 static CwtChannel*  __create  (CwtIODevice *pdev);
-static void         __free    (CwtChannel*);
-static BOOL         __canRead (CwtChannel*);
-static BOOL         __canWrite(CwtChannel*);
-static CwtIODevice* __device  (CwtChannel*);
+static void         __free    (CwtChannel *);
+static BOOL         __canRead (CwtChannel *);
+static BOOL         __canWrite(CwtChannel *);
+static CwtIODevice* __device  (CwtChannel *);
 
-static BOOL         __atEnd     (CwtChannel*);
-static BOOL         __canReadLine (CwtChannel*);
-static BOOL         __readLine  (CwtChannel*, CwtByteArray *ba);
-static ssize_t      __poll      (CwtChannel*);
-static ssize_t      __read      (CwtChannel*, BYTE *buf, size_t sz);
-static ssize_t      __write     (CwtChannel*, const BYTE *buf, size_t sz);
-static ssize_t      __writeByte (CwtChannel*, BYTE ch);
-static size_t       __bytesAvailable (CwtChannel*);
+static BOOL         __atEnd     (CwtChannel *);
+static BOOL         __canReadLine (CwtChannel *);
+static BOOL         __readLine  (CwtChannel *, CwtByteArray *ba);
+static ssize_t      __poll      (CwtChannel *);
+static ssize_t      __read      (CwtChannel *, BYTE *buf, size_t sz);
+static ssize_t      __write     (CwtChannel *, const BYTE *buf, size_t sz);
+static ssize_t      __writeByte (CwtChannel *, BYTE ch);
+static size_t       __bytesAvailable (CwtChannel *);
+/*static CwtIODevice* __accept    (CwtChannel *);*/
 
-/*
-static BOOL         __canReadTransaq(CwtChannel*);
-static void         __readBegin     (CwtChannel*);
-static void         __readCommit    (CwtChannel*);
-static void         __readRollback  (CwtChannel*);
-*/
 
 /* helper functions */
 static void         __init    (CwtChannel*, CwtIODevice *pdev);
@@ -49,6 +44,7 @@ static CwtChannelNS __cwtChannelNS = {
 	, __write
 	, __writeByte
 	, __bytesAvailable
+	/*, __accept*/
 };
 
 
@@ -144,6 +140,14 @@ static size_t __bytesAvailable(CwtChannel *pchan)
 	return __rbNS->size(pchan->rb); /*pchan->dev->bytesAvailable(pchan->dev);*/
 }
 
+
+/*
+static CwtIODevice* __accept (CwtChannel *pchan)
+{
+	CWT_ASSERT(pchan && pchan->dev);
+	return pchan->dev->accept(pchan->dev);
+}
+*/
 
 /**
  * @brief Checks ending of reading.
@@ -277,47 +281,3 @@ static ssize_t __writeByte(CwtChannel *pchan, BYTE ch)
 	buf[0] = ch;
 	return __write(pchan, buf, 1);
 }
-
-
-/*
-static BOOL __canReadTransaq(CwtChannel *pchan)
-{
-	CWT_ASSERT(pchan && pchan->dev);
-
-	if( pchan->dev->readBegin
-			&& pchan->dev->readCommit
-			&& pchan->dev->readRollback )
-		return TRUE;
-
-	return FALSE;
-}
-
-static void __readBegin(CwtChannel *pchan)
-{
-	CWT_ASSERT(pchan && pchan->dev);
-
-	if( pchan->dev->readBegin ) {
-		pchan->dev->readBegin(pchan->dev);
-	}
-}
-
-static void __readCommit(CwtChannel *pchan)
-{
-	CWT_ASSERT(pchan && pchan->dev);
-
-	if( pchan->dev->readCommit ) {
-		pchan->dev->readCommit(pchan->dev);
-	}
-}
-
-static void __readRollback(CwtChannel *pchan)
-{
-	CWT_ASSERT(pchan && pchan->dev);
-
-	if( pchan->dev->readRollback ) {
-		pchan->dev->readRollback(pchan->dev);
-	}
-}
-
-
-*/

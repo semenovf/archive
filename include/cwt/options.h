@@ -12,26 +12,26 @@
 #include <cwt/stdio.h>
 #include <cwt/strlist.h>
 
-#define CWT_END_OPTIONS { NULL, 0, CwtOpt_BOOL, NULL, NULL, NULL }
+#define CWT_END_OPTIONS { NULL, 0, Cwt_Opt_BOOL, NULL, NULL, NULL }
 
 typedef enum _CwtArgvType {
-	  CwtArgv_ShortOpt
-	, CwtArgv_LongOpt
-	, CwtArgv_LongOptWithArg
-	, CwtArgv_SingleDash
-	, CwtArgv_DoubleDash
-	, CwtArgv_Arg
+	  Cwt_Argv_ShortOpt
+	, Cwt_Argv_LongOpt
+	, Cwt_Argv_LongOptWithArg
+	, Cwt_Argv_SingleDash
+	, Cwt_Argv_DoubleDash
+	, Cwt_Argv_Arg
 } CwtArgvType;
 
 typedef enum _CwtOptionType {
-	  CwtOpt_BOOL
-	, CwtOpt_INT
-	, CwtOpt_REAL
-	, CwtOpt_TEXT
+	  Cwt_Opt_BOOL
+	, Cwt_Opt_INT
+	, Cwt_Opt_REAL
+	, Cwt_Opt_TEXT
 } CwtOptionType;
 
 typedef enum _CwtOptionIteratorType {
-	  CwtOptIt_Default
+	  Cwt_OptIt_Default
 	/*, CwtOptIt_Alternative*/
 } CwtOptionIteratorType;
 
@@ -58,7 +58,11 @@ typedef struct _CwtOptionIterator {
 
 typedef struct _CwtOptionsNS {
 	CwtOptionIterator* (*createIterator)(CwtOptionIteratorType itType);
-	void (*printUsage) (const CWT_CHAR *copyright, const CWT_CHAR *progname, const CwtOption *optset, FILE *out);
+	void (*printUsage) (const CWT_CHAR *progname
+			, const CWT_CHAR *copyright
+			, const CWT_CHAR *usageSummary
+			, const CwtOption *optset
+			, FILE *out);
 	BOOL (*parse)      (int argc, char **argv, CwtOption *options, CwtStrList *args, CwtOptionIteratorType itType);
 	BOOL (*parseWithIterator) (CwtOption *options, CwtStrList *args, CwtOptionIterator *it);
 } CwtOptionsNS;

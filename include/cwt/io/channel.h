@@ -6,12 +6,21 @@
 #include <cwt/ringbuf.h>
 #include <cwt/bytearr.h>
 
+/*
+#define CWT_SHARED_DATA struct { size_t nrefs; } d
+#define CWT_SHARED_INC(p) ((CwtIODevice*)p)->d.nrefs++
+#define CWT_SHARED_DEC(p) ((CwtIODevice*)p)->d.nrefs--
+#define CWT_SHARED_NUL(p) (((CwtIODevice*)p)->d.nrefs==0)
+*/
+
 typedef struct _CwtIODevice
 {
+/*	CWT_SHARED_DATA;*/
 	void    (*close)(struct _CwtIODevice*);
 	size_t  (*bytesAvailable)(struct _CwtIODevice*);
 	ssize_t (*read)(struct _CwtIODevice*, BYTE*, size_t);
 	ssize_t (*write)(struct _CwtIODevice*, const BYTE*, size_t);
+	/*struct _CwtIODevice* (*accept) (struct _CwtIODevice*);*/
 } CwtIODevice;
 
 typedef struct _CwtChannel
@@ -38,11 +47,7 @@ typedef struct _CwtChannelNS {
 	ssize_t      (*write)          (CwtChannel*, const BYTE *buf, size_t sz);
 	ssize_t      (*writeByte)      (CwtChannel*, BYTE ch);
 	size_t       (*bytesAvailable) (CwtChannel*);
-
-	/*BOOL         (*canReadTransaq) (CwtChannel*);*/ /* TODO obsolete */
-	/*void         (*readBegin)      (CwtChannel*); *//* TODO obsolete */
-	/*void         (*readCommit)     (CwtChannel*); *//* TODO obsolete */
-	/*void         (*readRollback)   (CwtChannel*); *//* TODO obsolete */
+	/*CwtIODevice* (*accept)         (CwtChannel*);*/
 } CwtChannelNS;
 
 EXTERN_C_BEGIN
