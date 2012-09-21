@@ -19,7 +19,7 @@ typedef struct CwtSocketDevice {
 } CwtSocketDevice;
 
 
-
+#ifdef __OBSOLETE__
 static CwtIODevice* __dev_createSocketDevice (struct _CwtSocket *sd)
 {
 	CwtSocketDevice *sdev = NULL;
@@ -37,8 +37,35 @@ static CwtIODevice* __dev_createSocketDevice (struct _CwtSocket *sd)
 
 	return (CwtIODevice*)sdev;
 }
+#endif
 
+/**
+ * @fn CwtIODevice* cwtSocketDeviceOpen(CwtSocket *sockfd)
+ *
+ * @brief Opens socket device.
+ *
+ * @param sockfd Socket descriptor.
+ * @return Socket device associated with socket descriptor.
+ */
+DLL_API_EXPORT CwtIODevice* cwtSocketDeviceOpen(CwtSocket *sockfd)
+{
+	CwtSocketDevice *sdev = NULL;
 
+	if( !sockfd )
+		return NULL;
+
+	sdev = CWT_MALLOC(CwtSocketDevice);
+
+	sdev->__base.close          = __dev_close;
+	sdev->__base.bytesAvailable = __dev_bytesAvailable;
+	sdev->__base.read           = __dev_read;
+	sdev->__base.write          = __dev_write;
+	sdev->sockfd                = sockfd;
+
+	return (CwtIODevice*)sdev;
+}
+
+#ifdef __OBSOLETE__
 DLL_API_EXPORT CwtIODevice* cwtLocalSocketDeviceOpen(const CWT_CHAR *path, UINT32 flags)
 {
 	CwtSocket *sd;
@@ -148,7 +175,7 @@ DLL_API_EXPORT CwtIODevice* cwtMcastSocketDeviceOpen(const CWT_CHAR *inetAddr, U
 
 	return sd ? __dev_createSocketDevice(sd) : NULL;
 }
-
+#endif
 
 static void __dev_close(CwtIODevice *dev)
 {

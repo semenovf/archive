@@ -6,12 +6,14 @@
 #include <cwt/unistd.h>
 #include <cwt/event/event.h>
 #include <cwt/event/channel.h>
+#include <cwt/net/socket.h>
 #include <cwt/io/sockdev.h>
 #include <string.h>
 
 const char *text = "This is a test message";
 const char *cmdQuit = "quit";
 
+static CwtSocketNS       *__socketNS = NULL;
 static CwtChannelNS      *__channelNS = NULL;
 static CwtEventNS        *__eventNS = NULL;
 static CwtEventChannelNS *__eventChannelNS = NULL;
@@ -47,8 +49,9 @@ int main(int argc, char *argv[])
 	CwtChannel     *pchan_writer;
 	CwtEventSource *chan_src;
 
+	__socketNS  = cwtSocketNS();
 	__channelNS = cwtChannelNS();
-	__eventNS = cwtEventNS();
+	__eventNS   = cwtEventNS();
 	__eventChannelNS = cwtEventChannelNS();
 
 	CWT_UNUSED(argc);
@@ -56,17 +59,21 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(4);
 
-	pchan_writer = __channelNS->create(cwtMcastSocketDeviceOpen(
-			  _T("192.168.0.198")
-			, 4321
-			, _T("226.1.1.1")
-			, Cwt_SocketDevice_MSender));
+	pchan_writer = __channelNS->open(
+		cwtSocketDeviceOpen(
+			__socketNS->openMcastSocket(
+				_T("192.168.0.198")
+				, 4321
+				, _T("226.1.1.1")
+				, TRUE)));
 
-	pchan_reader = __channelNS->create(cwtMcastSocketDeviceOpen(
-			  _T("192.168.0.198")
-			, 4321
-			, _T("226.1.1.1")
-			, Cwt_SocketDevice_MReceiver));
+	pchan_reader = __channelNS->open(
+		cwtSocketDeviceOpen(
+			__socketNS->openMcastServerSocket(
+				_T("192.168.0.198")
+				, 4321
+				, _T("226.1.1.1")
+				, TRUE)));
 
 
 	CWT_TEST_FAIL(pchan_reader);
@@ -88,8 +95,8 @@ int main(int argc, char *argv[])
 	__eventNS->unregisterAllSources();
 
 	__eventChannelNS->removeListener(pchan_reader);
-	__channelNS->free(pchan_reader);
-	__channelNS->free(pchan_writer);
+	__channelNS->close(pchan_reader);
+	__channelNS->close(pchan_writer);
 
 	CWT_END_TESTS;
 }

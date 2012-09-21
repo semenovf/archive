@@ -97,8 +97,8 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(12);
 
-	CWT_ASSERT(pchan0 = chNS->create(cwtBufferDeviceOpen()));
-	CWT_ASSERT(pchan1 = chNS->create(cwtBufferDeviceOpenPeer(chNS->device(pchan0))));
+	CWT_ASSERT(pchan0 = chNS->open(cwtBufferDeviceOpen()));
+	CWT_ASSERT(pchan1 = chNS->open(cwtBufferDeviceOpenPeer(chNS->device(pchan0))));
 	CWT_ASSERT(ini = iniNS->create());
 	ini->onError = __iniOnError;
 	iniNS->addDirective(ini, _T("directive1"), __onIniDirective1);
@@ -117,8 +117,8 @@ int main(int argc, char *argv[])
 	iniNS->parse(ini, pchan1);
 
 	iniNS->free(ini);
-	chNS->free(pchan0);
-	chNS->free(pchan1);
+	chNS->close(pchan0);
+	chNS->close(pchan1);
 
 	CWT_END_TESTS;
 }

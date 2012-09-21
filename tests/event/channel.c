@@ -67,8 +67,8 @@ static void cwt_evt_test_0(void)
 	CwtChannel  *pchan_writer;
 	CwtEventSource *event_src;
 
-	pchan_reader = __channelNS->create(cwtBufferDeviceOpen());
-	pchan_writer = __channelNS->create(cwtBufferDeviceOpenPeer(__channelNS->device(pchan_reader)));
+	pchan_reader = __channelNS->open(cwtBufferDeviceOpen());
+	pchan_writer = __channelNS->open(cwtBufferDeviceOpenPeer(__channelNS->device(pchan_reader)));
 	event_src    = __eventChannelNS->source();
 
 	__eventNS->registerSource(event_src);
@@ -83,8 +83,8 @@ static void cwt_evt_test_0(void)
 	__eventNS->unregisterAllSources();
 
 	__eventChannelNS->removeListener(pchan_reader);
-	__channelNS->free(pchan_reader);
-	__channelNS->free(pchan_writer);
+	__channelNS->close(pchan_reader);
+	__channelNS->close(pchan_writer);
 }
 
 int main(int argc, char *argv[])

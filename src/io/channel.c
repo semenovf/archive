@@ -4,8 +4,8 @@
 #include <cwt/io/channel.h>
 
 
-static CwtChannel*  __create  (CwtIODevice *pdev);
-static void         __free    (CwtChannel *);
+static CwtChannel*  __open    (CwtIODevice *pdev);
+static void         __close   (CwtChannel *);
 static BOOL         __canRead (CwtChannel *);
 static BOOL         __canWrite(CwtChannel *);
 static CwtIODevice* __device  (CwtChannel *);
@@ -26,12 +26,12 @@ static void         __init    (CwtChannel*, CwtIODevice *pdev);
 static void         __destroy (CwtChannel*);
 
 static CwtChannelNS __cwtChannelNS = {
-	  __create
+	  __open
 /*
 	, __init
 	, __destroy
 */
-	, __free
+	, __close
 	, __canRead
 	, __canWrite
 	, __device
@@ -79,7 +79,7 @@ static void __destroy(CwtChannel *pchan)
 	}
 }
 
-static CwtChannel* __create(CwtIODevice *pdev)
+static CwtChannel* __open(CwtIODevice *pdev)
 {
 	CwtChannel* pchan;
 
@@ -100,7 +100,7 @@ static CwtChannel* __create(CwtIODevice *pdev)
 	return pchan;
 }
 
-static void __free(CwtChannel *pchan)
+static void __close(CwtChannel *pchan)
 {
 	if( pchan ) {
 		__destroy(pchan);
@@ -254,10 +254,13 @@ static ssize_t __read(CwtChannel *pchan, BYTE *buf, size_t sz)
 	ssize_t br = 0;
 	CWT_ASSERT(pchan && pchan->dev);
 
-	__poll(pchan);
-
-	if( __rbNS->size(pchan->rb) > 0 )
+	if (__rbNS->size(pchan->rb) > 0) {
 		br = __rbNS->read(pchan->rb, buf, sz);
+	} else {
+		__poll(pchan);
+		if( __rbNS->size(pchan->rb) > 0 )
+			br = __rbNS->read(pchan->rb, buf, sz);
+	}
 
 	if( br > 0 )
 		pchan->total_br += br;

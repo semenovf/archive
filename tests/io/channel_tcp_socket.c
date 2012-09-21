@@ -5,6 +5,7 @@
 #include <cwt/bytearr.h>
 #include <cwt/io/channel.h>
 #include <cwt/io/sockdev.h>
+#include <cwt/net/socket.h>
 
 
 const char *loremipsum =
@@ -40,8 +41,11 @@ nisl ut aliquip ex ea commodo consequat. Duis autem vel eum";
 
 int main(int argc, char *argv[])
 {
+	CwtSocketNS    *socketNS = cwtSocketNS();
 	CwtChannelNS   *chNS = cwtChannelNS();
 	CwtByteArrayNS *baNS = cwtByteArrayNS();
+	CwtSocket     *sockfdServer;
+	CwtSocket     *sockfdClient;
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 	CwtIODevice   *pdev_server_socket;
@@ -55,11 +59,14 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(2);
 
-	CWT_TEST_FAIL(pdev_server_socket = cwtUdpSocketDeviceOpen(_T("127.0.0.1"), 12012, Cwt_SocketDevice_Listener));
-	CWT_TEST_FAIL(pdev_client_socket = cwtUdpSocketDeviceOpen(_T("127.0.0.1"), 12012, Cwt_SocketDevice_Client));
+	CWT_TEST_FAIL(sockfdServer = socketNS->openTcpServerSocket(_T("127.0.0.1"), 12012, TRUE));
+	CWT_TEST_FAIL(sockfdClient = socketNS->openTcpSocket(_T("127.0.0.1"), 12012, TRUE));
 
-	CWT_TEST_FAIL(pchan0 = chNS->create(pdev_client_socket));
-	CWT_TEST_FAIL(pchan1 = chNS->create(pdev_server_socket));
+	CWT_TEST_FAIL(pdev_server_socket = cwtSocketDeviceOpen(sockfdServer));
+	CWT_TEST_FAIL(pdev_client_socket = cwtSocketDeviceOpen(sockfdClient));
+
+	CWT_TEST_FAIL(pchan0 = chNS->open(pdev_client_socket));
+	CWT_TEST_FAIL(pchan1 = chNS->open(pdev_server_socket));
 	CWT_TEST_FAIL(ba = baNS->create());
 
 
@@ -100,8 +107,8 @@ int main(int argc, char *argv[])
 	printf("%s\n", baNS->cstr(ba));
 
 	baNS->free(ba);
-	chNS->free(pchan0);
-	chNS->free(pchan1);
+	chNS->close(pchan0);
+	chNS->close(pchan1);
 
 	CWT_END_TESTS;
 }

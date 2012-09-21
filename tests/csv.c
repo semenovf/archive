@@ -73,8 +73,8 @@ static void test_00(void)
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 
-	CWT_ASSERT(pchan0 = __chNS->create(cwtBufferDeviceOpen()));
-	CWT_ASSERT(pchan1 = __chNS->create(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
+	CWT_ASSERT(pchan0 = __chNS->open(cwtBufferDeviceOpen()));
+	CWT_ASSERT(pchan1 = __chNS->open(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
 	CWT_ASSERT(csv = __csvNS->createWithArgs(_T(";"), 32));
 	__csvNS->setOnRow(csv, __csvOnRow);
 	__csvNS->setOnError(csv, __csvOnError);
@@ -88,8 +88,8 @@ static void test_00(void)
 	__csvNS->parse(csv, pchan1);
 
 	__csvNS->free(csv);
-	__chNS->free(pchan0);
-	__chNS->free(pchan1);
+	__chNS->close(pchan0);
+	__chNS->close(pchan1);
 }
 
 
@@ -112,8 +112,8 @@ static void test_01(void)
 	CwtChannel    *pchan1;
 
 
-	CWT_ASSERT(pchan0 = __chNS->create(cwtBufferDeviceOpen()));
-	CWT_ASSERT(pchan1 = __chNS->create(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
+	CWT_ASSERT(pchan0 = __chNS->open(cwtBufferDeviceOpen()));
+	CWT_ASSERT(pchan1 = __chNS->open(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
 	CWT_ASSERT(csv = __csvNS->createWithArgs(_T(";"), 32));
 
 	__csvNS->setOnError(csv, __csvOnError);
@@ -143,8 +143,8 @@ static void test_01(void)
 	CWT_TEST_OK(nrows == sizeof(__rows)/sizeof(__rows[0]));
 
 	__csvNS->free(csv);
-	__chNS->free(pchan0);
-	__chNS->free(pchan1);
+	__chNS->close(pchan0);
+	__chNS->close(pchan1);
 }
 
 static void test_02(void)
@@ -166,8 +166,8 @@ static void test_02(void)
 	CwtChannel    *pchan1;
 
 
-	CWT_ASSERT(pchan0 = __chNS->create(cwtBufferDeviceOpen()));
-	CWT_ASSERT(pchan1 = __chNS->create(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
+	CWT_ASSERT(pchan0 = __chNS->open(cwtBufferDeviceOpen()));
+	CWT_ASSERT(pchan1 = __chNS->open(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
 	CWT_ASSERT(csv = __csvNS->createWithArgs(_T(";"), 32));
 
 	__csvNS->setOnError(csv, __csvOnError);
@@ -197,8 +197,8 @@ static void test_02(void)
 	CWT_TEST_OK(nrows == sizeof(__rows)/sizeof(__rows[0]));
 
 	__csvNS->free(csv);
-	__chNS->free(pchan0);
-	__chNS->free(pchan1);
+	__chNS->close(pchan0);
+	__chNS->close(pchan1);
 }
 
 static void test_03(void)
@@ -218,8 +218,8 @@ static void test_03(void)
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 
-	CWT_ASSERT(pchan0 = __chNS->create(cwtBufferDeviceOpen()));
-	CWT_ASSERT(pchan1 = __chNS->create(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
+	CWT_ASSERT(pchan0 = __chNS->open(cwtBufferDeviceOpen()));
+	CWT_ASSERT(pchan1 = __chNS->open(cwtBufferDeviceOpenPeer(__chNS->device(pchan0))));
 	CWT_ASSERT(csv = __csvNS->createWithArgs(_T(";"), 32));
 
 	__csvNS->setOnError(csv, __csvOnError);
@@ -249,8 +249,8 @@ static void test_03(void)
 	CWT_TEST_OK(nrows == sizeof(__rows)/sizeof(__rows[0]));
 
 	__csvNS->free(csv);
-	__chNS->free(pchan0);
-	__chNS->free(pchan1);
+	__chNS->close(pchan0);
+	__chNS->close(pchan1);
 
 }
 

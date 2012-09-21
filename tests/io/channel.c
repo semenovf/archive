@@ -52,8 +52,8 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(2);
 
-	CWT_ASSERT(pchan0 = chNS->create(cwtBufferDeviceOpen()));
-	CWT_ASSERT(pchan1 = chNS->create(cwtBufferDeviceOpenPeer(chNS->device(pchan0))));
+	CWT_ASSERT(pchan0 = chNS->open(cwtBufferDeviceOpen()));
+	CWT_ASSERT(pchan1 = chNS->open(cwtBufferDeviceOpenPeer(chNS->device(pchan0))));
 	CWT_ASSERT(ba = baNS->create());
 
 
@@ -89,8 +89,8 @@ int main(int argc, char *argv[])
 	printf("%s\n", baNS->cstr(ba));
 
 	baNS->free(ba);
-	chNS->free(pchan0);
-	chNS->free(pchan1);
+	chNS->close(pchan0);
+	chNS->close(pchan1);
 
 	CWT_END_TESTS;
 }
