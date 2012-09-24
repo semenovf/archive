@@ -131,9 +131,15 @@ CwtSocket* __socket_acceptUdpSocket(CwtSocket *sd)
 	}
 
 	CWT_FREE(sd_udp);
-	cwtLoggerNS()->error(_Tr("failed to accept UDP socket")
-		_CWT_SOCKET_LOG_FMTSUFFIX
-		, _CWT_SOCKET_LOG_ARGS);
+
+	/*FIXME MT unsafe*/
+	if (EINTR == errno) {
+		cwtLoggerNS()->warn(_Tr("UDP socket acception interrupted by signal"));
+	} else {
+		cwtLoggerNS()->error(_Tr("accepting connection failed")
+			_CWT_SOCKET_LOG_FMTSUFFIX
+			, _CWT_SOCKET_LOG_ARGS);
+	}
 
 	return NULL;
 }
