@@ -237,5 +237,10 @@ EXTERN_C_END
 #define CWT_MALLOCA(T,sz) ((T*)cwtMalloc(sizeof(T)*(sz)))
 #define CWT_FREE(v)       cwtFree(v)
 
+
+#ifdef CWT_MT
+#	include <cwt/mt.h>
+#endif
+
 #endif /* __CWT_GLOBAL_H__ */
 
