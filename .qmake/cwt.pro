@@ -13,6 +13,7 @@ SUBDIRS  =            \
     tests/eclock      \
     tests/emcsock     \
     tests/esocket     \
+    tests/crc32       \    
     tests/crc64       \
     tests/ddi         \
     tests/hashtab     \

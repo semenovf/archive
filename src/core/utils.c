@@ -9,6 +9,7 @@
 #include <time.h>
 #include <cwt/str.h>
 
+extern INT32 __calculateCRC32(const void *pdata, size_t nbytes, INT32 crc32);
 extern INT64 __calculateCRC64(const void *pdata, size_t nbytes, INT64 crc64);
 static void  __swapPtr       (void **p1, void **p2);
 static void  __now           (CWT_TIME *dt);
@@ -21,7 +22,8 @@ static INT64 __bytesToInt64  (BYTE bytes[8]);
 
 
 static CwtUtilsNS __cwtUtilsNS = {
-	  __calculateCRC64
+	  __calculateCRC32
+	, __calculateCRC64
 	, __swapPtr
 	, __now
 	, __int16ToBytes

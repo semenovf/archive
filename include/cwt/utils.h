@@ -11,7 +11,8 @@
 #include <cwt/types.h>
 
 typedef struct CwtUtilsNS {
-	INT64  (*calculateCRC64) (const void *pdata, size_t nbytes, INT64 crc64);
+	INT32  (*calculateCRC32) (const void *pdata, size_t nbytes, INT32 initial);
+	INT64  (*calculateCRC64) (const void *pdata, size_t nbytes, INT64 initial);
 	void   (*swapPtr)        (void **p1, void **p2);
 	void   (*now)            (CWT_TIME *dt);
 
