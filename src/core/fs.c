@@ -5,9 +5,13 @@
  *      Author: user
  */
 
-#include <stdarg.h>
-#include <unistd.h>
 #include <cwt/fs.h>
+#include <stdarg.h>
+#if defined(CWT_CC_MSC)
+#	include <io.h>
+#else
+#	include <unistd.h>
+#endif
 #include <cwt/str.h>
 #include <cwt/txtcodec.h>
 
@@ -103,10 +107,10 @@ CWT_CHAR* __fs_buildPathArgv(const CWT_CHAR *argv[], size_t n)
 
 BOOL __fs_unlink(const CWT_CHAR *pathname)
 {
-	char *utf8Pathname;
 	BOOL ok = FALSE;
 
-#if defined(CWT_OS_LINUX)
+#if defined(CWT_OS_UNIX)
+	char *utf8Pathname;
 	utf8Pathname = cwtTextCodecNS()->toUtf8(pathname, cwtStrNS()->strLen(pathname));
 	ok = unlink(utf8Pathname) == 0 ? TRUE : FALSE;
 	CWT_FREE(utf8Pathname);

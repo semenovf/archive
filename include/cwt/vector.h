@@ -38,12 +38,14 @@ typedef struct _NS {                                                          \
 	void          (*prependElem) (_CollectionT* p, _ElemT ch);                \
 	void          (*insertElem)  (_CollectionT* p, _ElemT ch, size_t pos);    \
 	void          (*insert)      (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
+	void          (*replace)     (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
 	void          (*removeElem)  (_CollectionT* p, size_t pos);               \
 	_ElemT*       (*substr)      (_CollectionT* p, size_t start, size_t nelems); \
 	BOOL          (*find)        (_CollectionT* p, _ElemT ch, size_t *offset);\
 	_ElemT        (*at)          (_CollectionT* p, size_t index);             \
     _ElemT        (*first)       (_CollectionT* p);                           \
-    _ElemT        (*last)        (_CollectionT* p);
+    _ElemT        (*last)        (_CollectionT* p);                           \
+    const _ElemT* (*data)        (_CollectionT* p);
 
 #define CWT_END_DECL_VECTOR_NS(_NS) } _NS;
 
@@ -71,12 +73,14 @@ typedef struct _NS {                                                          \
 	static void          __prependElem (_CollectionT* p, _ElemT ch);          \
 	static void          __insertElem  (_CollectionT* p, _ElemT ch, size_t pos);\
 	static void          __insert      (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
+	static void          __replace     (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
 	static void          __removeElem  (_CollectionT* p, size_t pos);          \
 	static _ElemT*       __substr      (_CollectionT* p, size_t start, size_t nelems); \
 	static BOOL          __find        (_CollectionT* p, _ElemT ch, size_t *offset); \
 	static _ElemT        __at          (_CollectionT* p, size_t index);       \
     static _ElemT        __first       (_CollectionT* p);                     \
     static _ElemT        __last        (_CollectionT* p);                     \
+    static const _ElemT* __data        (_CollectionT* p);                     \
                                                                               \
 static _NS  __##_NS = {                                                       \
 	  __create                                                                \
@@ -97,12 +101,14 @@ static _NS  __##_NS = {                                                       \
 	, __prependElem                                                           \
 	, __insertElem                                                            \
 	, __insert                                                                \
+	, __replace                                                               \
 	, __removeElem                                                            \
 	, __substr                                                                \
 	, __find                                                                  \
     , __at                                                                    \
     , __first                                                                 \
-    , __last
+    , __last                                                                  \
+    , __data
 
 #define CWT_END_DEF_VECTOR_NS(_NS) };
 
@@ -336,17 +342,31 @@ static void __insertElem(_CollectionT* sb, _ElemT ch, size_t pos)             \
 	sb->m_count++;                                                            \
 }                                                                             \
                                                                               \
-static void __insert(_CollectionT* sb, const _ElemT *chars, size_t nelems, size_t pos)\
+static void __insert(_CollectionT* sb, const _ElemT *elems, size_t nelems, size_t pos)\
 {                                                                             \
 	size_t i;                                                                 \
 	CWT_ASSERT(sb);                                                           \
-                                                                              \
 	CWT_ASSERT(__mreserve(sb, nelems, pos));                                  \
                                                                               \
 	/* TODO replace this code by memcpy function call */                      \
 	for( i = 0; i < nelems; i++ )                                             \
-		sb->m_buffer[pos + i] = chars[i];                                     \
+		sb->m_buffer[pos + i] = elems[i];                                     \
 	sb->m_count += nelems;                                                    \
+}                                                                             \
+                                                                              \
+static void  __replace (_CollectionT* p                                       \
+	, const _ElemT *elems                                                     \
+	, size_t nelems                                                           \
+	, size_t pos)                                                             \
+{                                                                             \
+    size_t i;                                                                 \
+    CWT_ASSERT(p);                                                            \
+	CWT_ASSERT(pos <= p->m_count);                                            \
+    if (p->m_count - pos < nelems)                                            \
+    	__resize(p, pos + nelems);                                            \
+	/* TODO replace this code by memcpy function call */                      \
+	for( i = 0; i < nelems; i++ )                                             \
+		p->m_buffer[pos + i] = elems[i];                                      \
 }                                                                             \
                                                                               \
 static void __removeElem(_CollectionT* sb, size_t pos)                        \
@@ -423,6 +443,12 @@ static _ElemT __last(_CollectionT* p)                                         \
 	CWT_ASSERT(p);                                                            \
 	CWT_ASSERT(p->m_count > 0);                                               \
 	return p->m_buffer[p->m_count-1];                                         \
+}                                                                             \
+                                                                              \
+static const _ElemT* __data (_CollectionT* p)                                 \
+{                                                                             \
+	CWT_ASSERT(p);                                                            \
+	return p->m_count > 0 ? p->m_buffer : NULL;                               \
 }
 
 #endif /* __CWT_VECTOR_H__ */

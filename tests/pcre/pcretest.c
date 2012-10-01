@@ -180,57 +180,53 @@ Returns:       pointer to the start of new data
                NULL if no data read and EOF reached
 */
 
-static uschar *
-extend_inputline(FILE *f, uschar *start)
+static uschar* extend_inputline(FILE *f, uschar *start)
 {
-uschar *here = start;
+	uschar *here = start;
 
-for (;;)
-  {
-  int rlen = buffer_size - (here - buffer);
+	for (;;) {
+		int rlen = buffer_size - (here - buffer);
 
-  if (rlen > 1000)
-    {
-    int dlen;
-    if (fgets((char *)here, rlen,  f) == NULL)
-      return (here == start)? NULL : start;
-    dlen = (int)strlen((char *)here);
-    if (dlen > 0 && here[dlen - 1] == '\n') return start;
-    here += dlen;
-    }
+		if (rlen > 1000) {
+			int dlen;
 
-  else
-    {
-    int new_buffer_size = 2*buffer_size;
-    uschar *new_buffer = (unsigned char *)malloc(new_buffer_size);
-    uschar *new_dbuffer = (unsigned char *)malloc(new_buffer_size);
-    uschar *new_pbuffer = (unsigned char *)malloc(new_buffer_size);
+			if (fgets((char *)here, rlen,  f) == NULL)
+				return (here == start)? NULL : start;
+			dlen = (int)strlen((char *)here);
 
-    if (new_buffer == NULL || new_dbuffer == NULL || new_pbuffer == NULL)
-      {
-      fprintf(stderr, "pcretest: malloc(%d) failed\n", new_buffer_size);
-      exit(1);
-      }
+			if (dlen > 0 && here[dlen - 1] == '\n')
+				return start;
+			here += dlen;
+		} else {
+			int new_buffer_size = 2*buffer_size;
+			uschar *new_buffer = (unsigned char *)malloc(new_buffer_size);
+			uschar *new_dbuffer = (unsigned char *)malloc(new_buffer_size);
+			uschar *new_pbuffer = (unsigned char *)malloc(new_buffer_size);
 
-    memcpy(new_buffer, buffer, buffer_size);
-    memcpy(new_pbuffer, pbuffer, buffer_size);
+			if (new_buffer == NULL || new_dbuffer == NULL || new_pbuffer == NULL) {
+				fprintf(stderr, "pcretest: malloc(%d) failed\n", new_buffer_size);
+				exit(1);
+			}
 
-    buffer_size = new_buffer_size;
+			memcpy(new_buffer, buffer, buffer_size);
+			memcpy(new_pbuffer, pbuffer, buffer_size);
 
-    start = new_buffer + (start - buffer);
-    here = new_buffer + (here - buffer);
+			buffer_size = new_buffer_size;
 
-    free(buffer);
-    free(dbuffer);
-    free(pbuffer);
+			start = new_buffer + (start - buffer);
+			here = new_buffer + (here - buffer);
 
-    buffer = new_buffer;
-    dbuffer = new_dbuffer;
-    pbuffer = new_pbuffer;
-    }
-  }
+			free(buffer);
+			free(dbuffer);
+			free(pbuffer);
 
-return NULL;  /* Control never gets here */
+			buffer = new_buffer;
+			dbuffer = new_dbuffer;
+			pbuffer = new_pbuffer;
+		}
+	}
+
+	return NULL;  /* Control never gets here */
 }
 
 

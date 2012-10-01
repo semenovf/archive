@@ -339,7 +339,7 @@ static void __append_with_flags(CwtStrList *psl, const CWT_CHAR *str, size_t n, 
 		CWT_ASSERT(j + 1 >= i);
 		__append_n(psl, &str[i], j - i + 1);
 	} else {
-		__append(psl, "");
+		__append(psl, _T(""));
 	}
 }
 

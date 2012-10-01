@@ -50,4 +50,3 @@ BOOL __socket_setNonBlockingNative (SOCKET sockfd, BOOL is_nonblocking)
 {
 	return ioctlsocket(sockfd, FIONBIO, (u_long*)&is_nonblocking) < 0 ? FALSE : TRUE;
 }
-

@@ -53,7 +53,7 @@ static ssize_t    __socket_read           (CwtSocket*, BYTE *buf, size_t sz);
 static ssize_t    __socket_write          (CwtSocket*, const BYTE *buf, size_t sz);
 static CWT_CHAR*  __socket_inetAddr       (CwtSocket*);
 static UINT16     __socket_inetPort       (CwtSocket*);
-static CWT_CHAR*  __socket_localPath      (CwtSocket*);
+extern CWT_CHAR*  __socket_localPath      (CwtSocket*);
 
 
 typedef CwtSocket* (*_socket_accept_f)(CwtSocket*);
@@ -156,7 +156,10 @@ static void __socket_close (CwtSocket *sd)
 		}
 
 		CWT_ASSERT(__socket_nsockets_opened > 0 );
-		__socket_closeNative(sd->sockfd);
+
+		if ( !(sd->type == Cwt_UdpSocket && ((CwtUdpSocket*)sd)->is_master) )
+			__socket_closeNative(sd->sockfd);
+
 		sd->sockfd = -1;
 
 		if (sd->type == Cwt_LocalSocket && sd->is_listener) {
@@ -286,20 +289,4 @@ static UINT16 __socket_inetPort(CwtSocket *sd)
 	}
 
 	return port;
-}
-
-static CWT_CHAR*  __socket_localPath(CwtSocket *sd)
-{
-	if( Cwt_LocalSocket == sd->type ) {
-		CwtLocalSocket *sd_local = (CwtLocalSocket *)sd;
-		size_t socklen = strlen(sd_local->sockaddr.sun_path);
-
-		if( socklen >= sizeof(sd_local->sockaddr.sun_path) ) {
-			cwtLoggerNS()->error(_Tr("local socket is invalid or it's path is wrong"));
-			return NULL;
-		}
-		return cwtTextCodecNS()->fromUtf8(sd_local->sockaddr.sun_path, socklen);
-	}
-
-	return NULL;
 }

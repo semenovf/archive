@@ -283,26 +283,26 @@ else if (nmatch > 0)
 rc = pcre_exec((const pcre *)preg->re_pcre, NULL, string, (int)strlen(string),
   0, options, ovector, nmatch * 3);
 
-if (rc == 0) rc = nmatch;    /* All captured slots were filled in */
+if (rc == 0)
+	rc = nmatch;    /* All captured slots were filled in */
 
-if (rc >= 0)
-  {
-  size_t i;
-  if (!nosub)
-    {
-    for (i = 0; i < (size_t)rc; i++)
-      {
-      pmatch[i].rm_so = ovector[i*2];
-      pmatch[i].rm_eo = ovector[i*2+1];
-      }
-    if (allocated_ovector) free(ovector);
-    for (; i < nmatch; i++) pmatch[i].rm_so = pmatch[i].rm_eo = -1;
+if (rc >= 0) {
+	size_t i;
+	if (!nosub) {
+		for (i = 0; i < (size_t)rc; i++) {
+			pmatch[i].rm_so = ovector[i*2];
+			pmatch[i].rm_eo = ovector[i*2+1];
+		}
+
+		if (allocated_ovector)
+			free(ovector);
+
+		for (; i < nmatch; i++)
+			pmatch[i].rm_so = pmatch[i].rm_eo = -1;
     }
-  return 0;
-  }
 
-else
-  {
+	return 0;
+} else {
   if (allocated_ovector) free(ovector);
   switch(rc)
     {

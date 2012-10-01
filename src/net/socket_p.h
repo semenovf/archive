@@ -15,6 +15,11 @@
 #	include <ws2tcpip.h>
 #	define __socket_errno WSAGetLastError() /* FIXME need multi-threaded support */
 #	define __socket_closeNative closesocket
+#   define SHUT_READ  SD_RECEIVE
+#   define SHUT_WRITE SD_SEND
+#   define SHUT_RDWR  SD_BOTH
+#	define EINPROGRESS        WSAEINPROGRESS
+#	define EINTR              WSAEINTR /* The blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall. */
 #elif defined(CWT_CC_GNUC)
 #   include <errno.h>
 #   include <unistd.h> /* for close() */
@@ -28,6 +33,9 @@
 #	define __socket_errno errno  /* FIXME need multi-threaded support */
 #	define __socket_closeNative CWT_ISO_CPP_NAME(close)
 	typedef struct sockaddr SOCKADDR;
+#   define CWT_SHUTDOWN_READ  SHUT_READ
+#   define CWT_SHUTDOWN_WRITE SHUT_WRITE
+#   define CWT_SHUTDOWN_RDWR  SHUT_RDWR
 #else
 #	error "Not implemented"
 #endif
@@ -43,7 +51,11 @@
 
 typedef struct _CwtLocalSocket {
 	_CWT_SOCKET_BASE
+#if defined(CWT_CC_MSC)
+
+#elif defined(CWT_CC_GNUC)
 	struct sockaddr_un sockaddr;
+#endif
 } CwtLocalSocket;
 
 typedef struct _CwtTcpSocket {
@@ -58,6 +70,7 @@ typedef struct _CwtUdpSocket {
 	struct sockaddr_in sockaddr; /* for client socket      - server address */
 	                             /* for server socket      - home address */
 	                             /* for accepted client socket - client address */
+	BOOL is_master;              /*  */
 } CwtUdpSocket;
 
 
@@ -73,6 +86,8 @@ typedef struct _CwtMcastSocket {
 
 extern size_t __socket_nsockets_opened;
 extern BOOL   __socket_is_sockets_allowed;
+
+EXTERN_C_BEGIN
 
 extern BOOL       __socket_allowSockets     (void);
 extern BOOL       __socket_setNonBlockingNative (SOCKET, BOOL is_nonblocking);
@@ -93,5 +108,11 @@ extern ssize_t    __socket_writeMcastSocket (CwtSocket*, const BYTE *buf, size_t
 
 #define _CWT_SOCKET_LOG_FMTSUFFIX _T(": %s (errno=%d)")
 #define _CWT_SOCKET_LOG_ARGS      cwtStrNS()->strError(__socket_errno), __socket_errno
+
+#ifdef CWT_CC_MSC
+extern int inet_aton(const char *cp, struct in_addr *inp);
+#endif
+
+EXTERN_C_END
 
 #endif /* __CWT_SOCKET_P_H__ */

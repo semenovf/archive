@@ -33,7 +33,7 @@ static size_t    __cwt_strftime(CWT_CHAR *buf, size_t sz, const CWT_CHAR *format
 static size_t    __cwt_strlen  (const CWT_CHAR *s) { return wcslen(s); }
 static CWT_CHAR* __cwt_strcpy  (CWT_CHAR *dest, const CWT_CHAR *src) { return wcscpy(dest, src); }
 static CWT_CHAR* __cwt_strncpy (CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return wcsncpy(dest,src,n); }
-static CWT_CHAR* __cwt_strchr  (CWT_CHAR *s, CWT_CHAR ch) { return wcschr(s, ch); }
+static CWT_CHAR* __cwt_strchr  (const CWT_CHAR *s, CWT_CHAR ch) { return wcschr(s, ch); }
 static CWT_CHAR* __cwt_strstr  (const CWT_CHAR *s, const CWT_CHAR *substr) { return wcsstr(s, substr); }
 static int       __cwt_strcmp  (const CWT_CHAR *s1, const CWT_CHAR *s2) { return wcscmp(s1, s2); }
 static int       __cwt_strncmp (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n) { return wcsncmp(s1, s2, n); }

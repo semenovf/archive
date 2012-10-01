@@ -7,21 +7,21 @@
 
 #include "socket_p.h"
 #include <string.h>
-#include <unistd.h>
+#include <cwt/unistd.h>
 #include <cwt/str.h>
 #include <cwt/logger.h>
 
-static BOOL __initListener(CwtTcpSocket *sd_tcp
+static BOOL __initListener(CwtUdpSocket *sd_udp
 		, const CWT_CHAR *inetAddr
 		, UINT16 port)
 {
 	int rc;
 
-	if (!__socket_initSockAddrIn(&sd_tcp->sockaddr, inetAddr, port))
+	if (!__socket_initSockAddrIn(&sd_udp->sockaddr, inetAddr, port))
 		return FALSE;
 
 	/* Bind the socket. */
-	rc = bind(sd_tcp->sockfd, (SOCKADDR*)&sd_tcp->sockaddr, sizeof(sd_tcp->sockaddr));
+	rc = bind(sd_udp->sockfd, (SOCKADDR*)&sd_udp->sockaddr, sizeof(sd_udp->sockaddr));
 	if( rc < 0 ) {
 		cwtLoggerNS()->error(_Tr("bind failed")
 			_CWT_SOCKET_LOG_FMTSUFFIX
@@ -29,12 +29,12 @@ static BOOL __initListener(CwtTcpSocket *sd_tcp
 		return FALSE;
 	}
 
-	sd_tcp->is_listener = TRUE;
+	sd_udp->is_listener = TRUE;
 	return TRUE;
 }
 
 
-static BOOL __initClient(CwtTcpSocket *sd_udp
+static BOOL __initClient(CwtUdpSocket *sd_udp
 		, const CWT_CHAR *inetAddr
 		, UINT16 port)
 {
@@ -58,12 +58,14 @@ static CwtSocket* __socket_openUdpSocketHelper(
 
 	if (sd) {
 		ok = is_listener
-			? __initListener((CwtTcpSocket *)sd, inetAddr, port)
-			: __initClient((CwtTcpSocket *)sd, inetAddr, port);
+			? __initListener((CwtUdpSocket *)sd, inetAddr, port)
+			: __initClient((CwtUdpSocket *)sd, inetAddr, port);
 
 		if (!ok) {
 			cwtSocketNS()->close(sd);
 			sd = NULL;
+		} else {
+			((CwtUdpSocket*)sd)->is_master = TRUE;
 		}
 	}
 
@@ -121,7 +123,8 @@ CwtSocket* __socket_acceptUdpSocket(CwtSocket *sd)
 			&socklen);
 
 	if( rc >= 0 ) {
-		sd_udp->sockfd      = dup(sd->sockfd);
+		sd_udp->sockfd      = sd->sockfd;
+		sd_udp->is_master   = FALSE;
 		sd_udp->type        = sd->type;
 		sd_udp->is_listener = FALSE;
 
@@ -151,7 +154,13 @@ ssize_t __socket_readUdpSocket(CwtSocket *sd, BYTE *buf, size_t sz)
 	struct sockaddr_in senderAddr;
 	UINT senderSize = sizeof(senderAddr);
 
-	br = recvfrom(sd->sockfd, buf, sz, 0,
+	br = recvfrom(sd->sockfd, buf
+#ifdef CWT_CC_MSC
+			, (int)CWT_MIN(sz, CWT_INT_MAX)
+#else
+			, sz
+#endif
+			, 0,
 			(struct sockaddr *)&senderAddr,
 			&senderSize);
 
@@ -170,8 +179,18 @@ ssize_t __socket_writeUdpSocket(CwtSocket *sd, const BYTE *buf, size_t sz)
 	ssize_t bw;
 	CwtUdpSocket *sd_udp = (CwtUdpSocket*)sd;
 
-	bw = sendto(sd->sockfd, buf, sz, 0,
-		(struct sockaddr *)&sd_udp->sockaddr,
+#ifdef CWT_CC_MSC
+	CWT_ASSERT(sz <= (size_t)CWT_INT_MAX);
+#endif
+
+	bw = sendto(sd->sockfd, buf
+#ifdef CWT_CC_MSC
+		, (int)sz
+#else
+		, sz
+#endif
+		, 0
+		, (struct sockaddr *)&sd_udp->sockaddr,
 		sizeof(sd_udp->sockaddr));
 
 	if( bw < 0 ) {

@@ -80,11 +80,11 @@ static int __client(void)
 
 	CWT_TEST_FAIL(client = socketNS->openUdpSocket(_T("localhost"), 12012, FALSE));
 
-	loremipsum_len = cwtStrNS()->strLen(loremipsum);
+	loremipsum_len = strlen(loremipsum);
 
 
 	for (i = 0; i < NPACK; i++) {
-		cwtLoggerNS()->debug("Sending packet %d\n", i);
+		cwtLoggerNS()->debug(_Tr("Sending packet %d\n"), i);
 		CWT_TEST_FAIL(socketNS->write(client, (BYTE*)loremipsum, loremipsum_len+1) > 0);
 	}
 

@@ -7,7 +7,10 @@
 
 #include "socket_p.h"
 #include <string.h>
-#include <unistd.h>
+#if defined(CWT_CC_MSC)
+#elif defined(CWT_CC_GNUC)
+#	include <unistd.h>
+#endif
 #include <cwt/str.h>
 #include <cwt/logger.h>
 
