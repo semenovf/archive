@@ -17,11 +17,11 @@ typedef struct CwtUtilsNS {
 	void   (*now)            (CWT_TIME *dt);
 
 	void   (*int16ToBytes)   (INT16 i, BYTE bytes[2]);
-	INT16  (*bytesToInt16)   (BYTE bytes[2]);
+	INT16  (*bytesToInt16)   (const BYTE bytes[2]);
 	void   (*int32ToBytes)   (INT32 i, BYTE bytes[4]);
-	INT32  (*bytesToInt32)   (BYTE bytes[4]);
+	INT32  (*bytesToInt32)   (const BYTE bytes[4]);
 	void   (*int64ToBytes)   (INT64 i, BYTE bytes[8]);
-	INT64  (*bytesToInt64)   (BYTE bytes[8]);
+	INT64  (*bytesToInt64)   (const BYTE bytes[8]);
 } CwtUtilsNS;
 
 

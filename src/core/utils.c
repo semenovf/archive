@@ -14,11 +14,11 @@ extern INT64 __calculateCRC64(const void *pdata, size_t nbytes, INT64 crc64);
 static void  __swapPtr       (void **p1, void **p2);
 static void  __now           (CWT_TIME *dt);
 static void  __int16ToBytes  (INT16 i, BYTE bytes[2]);
-static INT16 __bytesToInt16  (BYTE bytes[2]);
+static INT16 __bytesToInt16  (const BYTE bytes[2]);
 static void  __int32ToBytes  (INT32 i, BYTE bytes[4]);
-static INT32 __bytesToInt32  (BYTE bytes[4]);
+static INT32 __bytesToInt32  (const BYTE bytes[4]);
 static void  __int64ToBytes  (INT64 i, BYTE bytes[8]);
-static INT64 __bytesToInt64  (BYTE bytes[8]);
+static INT64 __bytesToInt64  (const BYTE bytes[8]);
 
 
 static CwtUtilsNS __cwtUtilsNS = {
@@ -68,7 +68,7 @@ static void __int16ToBytes(INT16 i, BYTE bytes[2])
 	bytes[1] = (BYTE)((UINT16)i);
 }
 
-static INT16 __bytesToInt16(BYTE bytes[2])
+static INT16 __bytesToInt16(const BYTE bytes[2])
 {
 	return ((bytes[0] & 0xFF) << 8)
 		| (bytes[1] & 0xFF);
@@ -84,7 +84,7 @@ static void __int32ToBytes(INT32 i, BYTE bytes[4])
 }
 
 
-static INT32 __bytesToInt32(BYTE bytes[4])
+static INT32 __bytesToInt32(const BYTE bytes[4])
 {
 	return (bytes[0] << 24)
 		| ((bytes[1] & 0xFF) << 16)
@@ -105,7 +105,7 @@ static void __int64ToBytes(INT64 i, BYTE bytes[8])
 }
 
 
-static INT64 __bytesToInt64(BYTE bytes[8])
+static INT64 __bytesToInt64(const BYTE bytes[8])
 {
 	UINT64 i0, i1, i2, i3, i4, i5, i6, i7, i;
 	i0 = bytes[0] & 0xFF;
