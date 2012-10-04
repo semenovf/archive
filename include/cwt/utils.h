@@ -22,6 +22,8 @@ typedef struct CwtUtilsNS {
 	INT32  (*bytesToInt32)   (const BYTE bytes[4]);
 	void   (*int64ToBytes)   (INT64 i, BYTE bytes[8]);
 	INT64  (*bytesToInt64)   (const BYTE bytes[8]);
+	void   (*floatToBytes)   (float f, BYTE bytes[4]);
+	float  (*bytesToFloat)   (const BYTE bytes[4]);
 } CwtUtilsNS;
 
 

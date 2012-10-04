@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(9);
+	CWT_BEGIN_TESTS(12);
 
 	/* INT16 <=> bytes transformations */
 	{
@@ -73,6 +73,22 @@ int main(int argc, char *argv[])
 		CWT_TEST_OK2(i64 == utilsNS->bytesToInt64(bytes), _T("0 => To Bytes => From Bytes => 0"));
 	}
 
+	/* float <=> bytes transformations */
+	{
+		float f = CWT_FLOAT_MAX;
+		BYTE bytes[4];
+
+		utilsNS->floatToBytes(f, bytes);
+		CWT_TEST_OK2(f == utilsNS->bytesToFloat(bytes), _T("CWT_FLOAT_MAX => To Bytes => From Bytes => CWT_FLOAT_MAX"));
+
+		f = CWT_FLOAT_MIN;
+		utilsNS->floatToBytes(f, bytes);
+		CWT_TEST_OK2(f == utilsNS->bytesToFloat(bytes), _T("CWT_FLOAT_MIN => To Bytes => From Bytes => CWT_FLOAT_MIN"));
+
+		f = 0.0;
+		utilsNS->floatToBytes(f, bytes);
+		CWT_TEST_OK2(f == utilsNS->bytesToFloat(bytes), _T("0.0 => To Bytes => From Bytes => 0.0"));
+	}
 
 	CWT_END_TESTS;
 }

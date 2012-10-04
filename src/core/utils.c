@@ -19,6 +19,8 @@ static void  __int32ToBytes  (INT32 i, BYTE bytes[4]);
 static INT32 __bytesToInt32  (const BYTE bytes[4]);
 static void  __int64ToBytes  (INT64 i, BYTE bytes[8]);
 static INT64 __bytesToInt64  (const BYTE bytes[8]);
+static void  __floatToBytes  (float f, BYTE bytes[4]);
+static float __bytesToFloat  (const BYTE bytes[4]);
 
 
 static CwtUtilsNS __cwtUtilsNS = {
@@ -32,6 +34,8 @@ static CwtUtilsNS __cwtUtilsNS = {
 	, __bytesToInt32
 	, __int64ToBytes
 	, __bytesToInt64
+	, __floatToBytes
+	, __bytesToFloat
 };
 
 DLL_API_EXPORT CwtUtilsNS* cwtUtilsNS(void)
@@ -134,4 +138,33 @@ static INT64 __bytesToInt64(const BYTE bytes[8])
 	i = i0 | i1 | i2 | i3 | i4 | i5 | i6 | i7;
 
 	return (INT64)i;
+}
+
+/**
+ */
+static void  __floatToBytes (float f, BYTE bytes[4])
+{
+	union { float fl; INT32 i32; } _f;
+
+	_f.fl = f;
+	__int32ToBytes(_f.i32, bytes);
+}
+
+
+/**
+ *
+ * @param bytes
+ * @return
+ */
+static float __bytesToFloat (const BYTE bytes[4])
+{
+	union { float fl; INT32 i32; } _f;
+	_f.i32 = __bytesToInt32(bytes);
+	return _f.fl;
+	/*
+		int s = ( f.dw >> 31) ? -1 : 1;
+		int e = ( f.dw >> 23) & 0xff;
+		int m = ( e == 0) ? ( f.dw & 0x7fffff) << 1 : ( f.dw & 0x7fffff) | 0x800000;
+		    e = (e - 127);
+	*/
 }
