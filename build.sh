@@ -1,7 +1,4 @@
 #!/bin/sh
-cd .qmake
-make distclean
-del Makefile
-qmake -makefile -r -o Makefile
-make all
-
+cd .gbs
+/home/wladt/ws/gbs/make.sh clean
+/home/wladt/ws/gbs/make.sh all

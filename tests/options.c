@@ -93,7 +93,7 @@ static void test_iterate_options(void)
 	i = 0;
 	nopts = 0;
 	nargs = 0;
-	it = __optNS->createIterator(Cwt_OptIt_Default);
+	it = __optNS->createIterator(Cwt_OptionIterator_Default);
 	it->begin(it, argc, argv);
 	it->next(it, NULL, NULL); /* skip program name */
 
@@ -182,7 +182,7 @@ static void test_options_general(void)
 	argc = sizeof(argv)/sizeof(argv[0]);
 	args = slNS->create();
 
-	it = __optNS->createIterator(Cwt_OptIt_Default);
+	it = __optNS->createIterator(Cwt_OptionIterator_Default);
 	it->begin(it, argc, argv);
 	it->next(it, NULL, NULL); /* skip program name */
 

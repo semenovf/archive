@@ -31,7 +31,7 @@ typedef enum _CwtOptionType {
 } CwtOptionType;
 
 typedef enum _CwtOptionIteratorType {
-	  Cwt_OptIt_Default
+	  Cwt_OptionIterator_Default
 	/*, CwtOptIt_Alternative*/
 } CwtOptionIteratorType;
 

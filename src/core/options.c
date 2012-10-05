@@ -72,7 +72,7 @@ DLL_API_EXPORT CwtOptionsNS* cwtOptionsNS(void)
 static CwtOptionIterator* __createIterator (CwtOptionIteratorType itType)
 {
 	switch(itType) {
-	case Cwt_OptIt_Default:
+	case Cwt_OptionIterator_Default:
 	default: {
 		CwtDefaultOptionIterator *it;
 		it = CWT_MALLOC(CwtDefaultOptionIterator);
