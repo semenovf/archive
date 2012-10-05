@@ -1,5 +1,10 @@
 #/bin/sh
 
+if [ -z $GBS_HOME ]; then
+    echo "Error: GBS_HOME is not set, point it to the correct path of Griotte build system" >&2
+    exit 1
+fi
+
 CMDLINE="$0 $*"
 # Save current working directory
 CWD=`pwd`
@@ -11,10 +16,6 @@ GBS_HOME=`pwd`
 # Restore current working directory
 cd $CWD
 
-#if [ -z $GBS_HOME ]; then
-#    echo "Error: GBS_HOME is not set, point it to the correct path of Griotte build system" >&2
-#    exit 1
-#fi
 
 cat $GBS_HOME/template/gitignore  >/dev/null
 if [ $? -ne 0 ]; then
@@ -80,7 +81,7 @@ create() {
 
     # Prepare make.sh (for use from IDE, e.g. Eclipse)
     echo "#!/bin/sh"          > make.sh
-    echo "$GBS_HOME/make.sh" >> make.sh
+    echo "$GBS_HOME/make.sh \$*" >> make.sh
     chmod +x make.sh
 
     # Prepare clean.sh
