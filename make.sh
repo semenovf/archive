@@ -10,7 +10,7 @@ usage()
 case $1 in
   clean)
     make distclean
-    del Makefile
+    rm Makefile
     qmake -makefile -r -o Makefile
     ;;
   all)

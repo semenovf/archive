@@ -44,66 +44,15 @@ echo TEMPLATE = subdirs                                            >> %PROJECT%.
 echo CONFIG  += ordered                                            >> %PROJECT%.pro
 echo SUBDIRS  = %PROJECT%                                          >> %PROJECT%.pro
 
-cd ..
-echo ^@echo off         > clear.cmd
-echo del ^/S ^*.o      >> clear.cmd
-echo del ^/S ^*.obj    >> clear.cmd
-echo del ^/S ^*.exe    >> clear.cmd
-echo del ^/S ^*.swp    >> clear.cmd
-echo del ^/S ^*.sdf    >> clear.cmd
-echo del /S *.bak      >> clear.cmd
-echo del /S Makefile   >> clear.cmd
-echo del /S makefile   >> clear.cmd
+:: Prepare clean.bat
+:: (TODO see clean.lst)
 
-echo ^@echo off         > make.cmd
-echo cd .qmake          >> make.cmd
-echo call \qmake\make.cmd clean >> make.cmd
-echo call \qmake\make.cmd all >> make.cmd
+:: Prepare build.bat
+copy %CWT_HOME%\template\build.bat build.bat
 
-echo del ^/S ^*.o      >> clear.cmd
-echo del ^/S ^*.obj    >> clear.cmd
-echo del ^/S ^*.exe    >> clear.cmd
-echo del ^/S ^*.swp    >> clear.cmd
-echo del ^/S ^*.sdf    >> clear.cmd
-echo del /S *.bak      >> clear.cmd
-echo del /S Makefile   >> clear.cmd
-echo del /S makefile   >> clear.cmd
-
-
-::
-:: Prepare .girignore
-::
-echo .settings/  > .gitignore
-echo debug/     >> .gitignore
-echo release/   >> .gitignore
-echo *.slo      >> .gitignore
-echo *.lo       >> .gitignore
-echo *.o        >> .gitignore
-echo *.obj      >> .gitignore
-echo *.OBJ      >> .gitignore
-echo *.pdb      >> .gitignore
-echo *.idb      >> .gitignore
-echo *.so       >> .gitignore
-echo *.lai      >> .gitignore
-echo *.la       >> .gitignore
-echo *.a        >> .gitignore
-echo ^~*        >> .gitignore
-echo *^~        >> .gitignore
-echo *.bak      >> .gitignore
-echo *.BAK      >> .gitignore
-echo *.map      >> .gitignore
-echo *.MAP      >> .gitignore
-echo *.exe      >> .gitignore
-echo *.EXE      >> .gitignore
-echo *.err      >> .gitignore
-echo *.lk*      >> .gitignore
-echo *.sym      >> .gitignore
-echo *.swp      >> .gitignore
-echo *.SWP      >> .gitignore
-echo makefile   >> .gitignore
-echo doxygen/html >> .gitignore
-echo ^!.gitignore     >> .gitignore
-
+:: Prepare .gitignore
+copy %CWT_HOME%\template\gitignore + %CWT_HOME%\template\clean.lst .gitignore
+echo ^!.gitignore >> .gitignore
 
 echo Project %PROJECT% live in %CWT_HOME%%PROJECT% directory
 echo Modyfy .qmake^\%PROJECT%.pro to add new subprojects
