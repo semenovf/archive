@@ -8,10 +8,11 @@
 #ifndef __CWT_SYS_H__
 #define __CWT_SYS_H__
 
-#include <cwt/types.h>
+#include <cwt/dl.h>
 
 typedef struct _CwtSysNS {
-	int unused;
+	void (*parseDSN)(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverSN);
+	BOOL (*loadNS)(const CWT_CHAR *dsn);
 } CwtSysNS;
 
 

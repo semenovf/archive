@@ -4,6 +4,7 @@ SUBDIRS  =            \
 #    cwt-pcre-dftables \
     cwt               \
     cwt-csv           \
+    cwt-event-signal-posix \
     cwt-mysql         \
     cwt-pcre          \
     tests/bytearr     \
@@ -13,6 +14,7 @@ SUBDIRS  =            \
     tests/eclock      \
     tests/emcsock     \
     tests/esocket     \
+    tests/esignal     \
     tests/crc32       \    
     tests/crc64       \
     tests/ddi         \

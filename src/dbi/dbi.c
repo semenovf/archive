@@ -9,6 +9,7 @@
 #include <cwt/string.h>
 #include <cwt/strlist.h>
 #include <cwt/str.h>
+#include <cwt/sys.h>
 #include <cwt/dl.h>
 
 #define __LOG_PREFIX _Tr("dbi: ")
@@ -100,7 +101,7 @@ extern BOOL            __ddi_recall        (CwtDBHandler *dbh, CwtDDI *ddi, int 
 
 
 /* helper functions */
-static void            __parseDSN      (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
+/*static void            __parseDSN      (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);*/
 
 
 static CwtDBI __cwtDBI = {
@@ -196,7 +197,7 @@ DLL_API_EXPORT CwtDBI* cwtDBI(void)
 }
 
 
-static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
+/*static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CwtStrListNS *slNS = cwtStrListNS();
@@ -219,7 +220,7 @@ static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver
     	*driverDSN = strNS->strDup(opt);
 
     slNS->free(opts);
-}
+}*/
 
 
 static CwtDBIDriver* __dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
@@ -262,7 +263,6 @@ static CwtDBIDriver* __dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
 	}
 
 	return dbd;
-
 }
 
 
@@ -275,7 +275,7 @@ static CwtDBHandler* __dbi_connect(const CWT_CHAR *dsn, const CWT_CHAR *username
 	CWT_CHAR *driver = NULL;
 	CWT_CHAR *driverDSN = NULL;
 
-	__parseDSN(dsn, &scheme, &driver, &driverDSN);
+	cwtSysNS()->parseDSN(dsn, &scheme, &driver, &driverDSN);
 
 	dbd = __dbi_load(scheme, driver);
 

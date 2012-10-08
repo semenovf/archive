@@ -94,6 +94,7 @@ static inline BOOL __registerSource(CwtEventSource *source)
 	return TRUE;
 }
 
+
 static inline void __unregisterSource(CwtEventSource *source)
 {
 	CwtListIterator it;

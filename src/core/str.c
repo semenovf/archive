@@ -1,5 +1,5 @@
 /*
- * string.c
+ * str.c
  *
  *  Created on: 18.06.2012
  *      Author: wladt

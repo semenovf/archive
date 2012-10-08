@@ -17,11 +17,21 @@ typedef enum _CwtSignal {
 	, Cwt_Sig_Ill  = SIGILL  /* Illegal Instruction */
 	, Cwt_Sig_Abrt = SIGABRT /* Abort signal from abort(3) */
 	, Cwt_Sig_Fpe  = SIGFPE  /* Floating point exception */
-	, Cwt_Sig_Kill = SIGKILL /* Kill signal */
+	, Cwt_Sig_Last
 } CwtSignal;
 
+typedef struct _CwtEventSignal
+{
+	CwtEvent __base;
+	CwtSignal signum;
+} CwtEventSignal;
+
 typedef struct _CwtEventSignalNS {
-	CwtEventSource* (*source)        (void);
+	CwtEventSource* (*source)  (void);
+	CwtList*        (*handlers)(void);
+	BOOL            (*accept)  (CwtSignal signum);
+	BOOL            (*raise)   (CwtSignal signum);
+	int             (*signum)  (CwtEvent *pevt);
 } CwtEventSignalNS;
 
 

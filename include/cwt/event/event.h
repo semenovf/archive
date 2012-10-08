@@ -33,26 +33,6 @@ EXTERN_C_BEGIN
 DLL_API_EXPORT CwtEventNS* cwtEventNS(void);
 EXTERN_C_END
 
-/*EXTERN_C_BEGIN*/
-
-/*
-DLL_API_EXPORT BOOL cwtEventRegisterSource(CwtEventSourcePtr source);
-DLL_API_EXPORT BOOL cwtEventUnregisterSource(CwtEventSourcePtr source);
-DLL_API_EXPORT void cwtEventUnregisterAllSources(void);
-DLL_API_EXPORT BOOL cwtEventIsRegisteredSource(CwtEventSourcePtr source);
-
-DLL_API_EXPORT void cwtEventSetIdleProccess(void (*idle_process)(void));
-
-DLL_API_EXPORT void cwtEventPushHandler(CwtStack *handlers, BOOL (*handler)(CwtEventPtr pevt));
-DLL_API_EXPORT void cwtEventPopHandler(CwtStack *handlers);
-
-void __cwtEventInitEvent(CwtEventPtr pevt, CwtStack *handlers, void (*destructor)(struct CwtEvent*));
-DLL_API_EXPORT void cwtEventPost(CwtEventPtr pevt);
-DLL_API_EXPORT void cwtEventQuit(void);
-DLL_API_EXPORT void cwtEventLoop(void);
-
-DLL_API_EXPORT void cwtEventDefaultDestructor(CwtEventPtr pevt);
-*/
 
 #ifdef __COMMENT__
 

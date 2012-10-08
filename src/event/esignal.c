@@ -5,53 +5,81 @@
  *      Author: wladt
  */
 
-
+#include <cwt/unistd.h>
+#include <cwt/logger.h>
 #include <cwt/event/event.h>
 #include <cwt/event/signal.h>
 
-typedef struct _CwtEventSignal
-{
-	CwtEvent __base;
-	CwtSignal sig;
-} CwtEventSignal;
+static void __finish(CwtEventSource *source);
 
-static CwtEventSource  __signal_source = { NULL, NULL };
+static CwtEventSource  __signal_source = { NULL, __finish };
+static CwtList *__signal_handlers = NULL;
 
 static CwtEventSource* __source (void);
-static void     __postSignal    (CwtSignal sig);
+static CwtList* __handlers(void);
+static BOOL     __accept (CwtSignal signum);
+static BOOL     __raise  (CwtSignal signum);
+static int      __signum(CwtEvent *pevt) { return ((CwtEventSignal*)pevt)->signum; }
 
-
-static CwtEventClockNS __cwtEventClockNS = {
+static CwtEventSignalNS __cwtEventSignalNS = {
 	  __source
-	, __postSignal
+	, __handlers
+	, __accept
+	, __raise
+	, __signum
 };
 
 static CwtListNS    *__listNS = NULL;
 static CwtEventNS   *__eventNS = NULL;
 
 
-DLL_API_EXPORT CwtEventClockNS* cwtEventSignalNS(void)
+DLL_API_EXPORT CwtEventSignalNS* cwtEventSignalNS(void)
 {
-	return &__cwtEventClockNS;
-}
+	if( !__listNS ) {
+		__listNS = cwtListNS();
+		__eventNS = cwtEventNS();
+	}
 
+	return &__cwtEventSignalNS;
+}
 
 static inline CwtEventSource* __source(void)
 {
 	return &__signal_source;
 }
 
-static void __postSignal(CwtSignal sig)
+static CwtList* __handlers(void)
 {
-	CwtEventSignal *pevt = CWT_MALLOC(CwtEventSignal);
-	pevt->sig = sig;
-	__eventNS->initEvent((CwtEvent*)pevt, __date_handlers, __eventNS->defaultDestructor);
-	pevt->year = year;
-	pevt->mon  = mon;
-	pevt->day  = day;
-/*
-
-	__eventNS->post((CwtEvent*)pevt);
-*/
+	if( !__signal_handlers ) {
+		__signal_handlers = __listNS->createPtr(NULL);
+	}
+	return __signal_handlers;
 }
 
+static BOOL __accept (CwtSignal signum)
+{
+	CWT_UNUSED(signum);
+	return TRUE;
+}
+
+
+static BOOL __raise(CwtSignal signum)
+{
+	CwtEventSignal *pevt = CWT_MALLOC(CwtEventSignal);
+	pevt->signum = signum;
+	__eventNS->initEvent((CwtEvent*)pevt, __signal_handlers, __eventNS->defaultDestructor);
+	__eventNS->post((CwtEvent*)pevt);
+	return TRUE;
+}
+
+
+
+static void __finish(CwtEventSource *source)
+{
+	CWT_UNUSED(source);
+
+	if( !__signal_handlers ) {
+		 __listNS->free(__signal_handlers);
+		 __signal_handlers = NULL;
+	}
+}

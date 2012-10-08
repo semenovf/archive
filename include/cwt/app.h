@@ -11,20 +11,18 @@
 #include <cwt/types.h>
 #include <cwt/event/event.h>
 
-
-
 typedef enum _CwtEventType {
 	  Cwt_Event_Kbd         = 0x0001
 	, Cwt_Event_PosixSignal = 0x0002
 	, Cwt_Event_Clock       = 0x0004
 	, Cwt_Event_Timer       = 0x0008
 	, Cwt_Event_Channel     = 0x0010
-};
+} CwtEventType;
 
 typedef struct _CwtApp {
 	void (*main)(void);
 	BOOL (*selectEvents)(UINT acceptEvents);
-	BOOL (*registerEventSource)(UINT acceptEvents);
+	BOOL (*registerEventSource)(CwtEventSource*);
 } CwtApp;
 
 EXTERN_C_BEGIN

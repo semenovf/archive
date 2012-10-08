@@ -43,21 +43,24 @@ static void __app_main (void)
 static BOOL __app_selectEvents(UINT acceptEvents)
 {
 	do {
-		if( acceptEvents & Cwt_Event_Kbd )
+		if( (acceptEvents & Cwt_Event_Kbd) ) {}
+/*
 			__eventNS->registerSource(&__event_source_0);
 
 		if( acceptEvents & Cwt_Event_PosixSignal) ;
 		if( acceptEvents & Cwt_Event_Clock ) ;
 		if( acceptEvents & Cwt_Event_Timer ) ;
 		if( acceptEvents & Cwt_Event_Channel ) ;
+*/
 
 		return TRUE;
-	}
+	} while(FALSE);
 
 	return FALSE;
 }
 
-static BOOL __app_registerEventSource(CwtEventSource*)
+static BOOL __app_registerEventSource(CwtEventSource *source)
 {
-
+	CWT_UNUSED(source);
+	return FALSE;
 }

@@ -34,7 +34,7 @@ DlHandle __open( const CWT_CHAR *path, BOOL global, BOOL resolve )
 	h = LoadLibraryEx(path, NULL, dwFlags);
 
 	if( !h ) {
-		printf_error( _Tr("%s: failed to open dynamic library: %s"), path, cwtStrNS()->strError(GetLastError()) );
+		cwtLoggerNS()->error( _Tr("%s: failed to open dynamic library: %s"), path, cwtStrNS()->strError(GetLastError()) );
 	} else {
 	   // use the result in a call to GetProcAddress
 	}
@@ -42,7 +42,7 @@ DlHandle __open( const CWT_CHAR *path, BOOL global, BOOL resolve )
 	dlerror(); // clear error
 	h = dlopen( path, (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ) );
 	if( !h ) {
-		printf_error( _Tr("%s: failed to open dynamic library: %s"), path, dlerror() );
+		cwtLoggerNS()->error( _Tr("%s: failed to open dynamic library: %s"), path, dlerror() );
 	}
 #endif
 
@@ -59,13 +59,13 @@ static DlSymbol __symbol(DlHandle h, const char *sym_name)
 #ifdef CWT_CC_MSC
 	sym = GetProcAddress(h, sym_name);
 	if( !sym ) {
-		printf_error(_Tr("%s: symbol not found: error code=%lu"), sym_name, GetLastError());
+		cwtLoggerNS()->error(_Tr("%s: symbol not found: error code=%lu"), sym_name, GetLastError());
 	}
 #else
 	dlerror(); /*clear error*/
 	sym = dlsym( h, sym_name );
 	if( !sym ) {
-		printf_error(_Tr("%s: symbol not found: error code=%lu"), sym_name, dlerror());
+		cwtLoggerNS()->error(_Tr("%s: symbol not found: error code=%lu"), sym_name, dlerror());
 	}
 #endif
 	return sym;
