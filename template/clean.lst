@@ -22,3 +22,4 @@ makefile
 *.lai
 *.la
 *.a
+*.log

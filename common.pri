@@ -23,9 +23,14 @@ win32 {
     INCLUDEPATH   += $$CWT_ROOT_DIR\\include
 
 # CXX flags
-    DEFINES += _CRT_SECURE_NO_WARNINGS # disbale 'depricated' warning
+    # disbale 'depricated' warning
+    DEFINES += _CRT_SECURE_NO_WARNINGS 
+
     debug: QMAKE_CXXFLAGS += /Od
-    QMAKE_CXXFLAGS += /EHs /EHc 
+    QMAKE_CXXFLAGS += /EHs /EHc
+
+   # Treat all compiler warnings as errors.
+    QMAKE_CXXFLAGS += /WX  
 
 
 # en: /ZI parameter applied only for x86 target architecture while compiling
@@ -58,9 +63,9 @@ win32 {
 
 
 x64 {
-    debug: QMAKE_CFLAGS_DEBUG = /Zi /MDd
-    release: QMAKE_CFLAGS_DEBUG = /Zi /MD
+    debug: QMAKE_CFLAGS_DEBUG = /Zi /MDd /WX
+    release: QMAKE_CFLAGS_DEBUG = /Zi /MD /WX
     
-    debug: QMAKE_CXXFLAGS_DEBUG = /Zi /MDd
-    release: QMAKE_CXXFLAGS_DEBUG = /Zi /MD
+    debug: QMAKE_CXXFLAGS_DEBUG = /Zi /MDd /WX
+    release: QMAKE_CXXFLAGS_DEBUG = /Zi /MD /WX
 }
