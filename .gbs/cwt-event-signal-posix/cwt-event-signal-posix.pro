@@ -8,6 +8,3 @@ unix {
     SOURCES += ../../src/event/posix/esignal-posix.c
     LIBS += -lcwt
 }
-
-win32 {
-}

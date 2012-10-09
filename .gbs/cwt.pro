@@ -4,9 +4,7 @@ SUBDIRS  =            \
 #    cwt-pcre-dftables \
     cwt               \
     cwt-csv           \
-    cwt-event-signal-posix \
     cwt-mysql         \
-    cwt-pcre          \
     tests/bytearr     \
     tests/csv         \
     tests/event       \
@@ -14,7 +12,6 @@ SUBDIRS  =            \
     tests/eclock      \
     tests/emcsock     \
     tests/esocket     \
-    tests/esignal     \
     tests/crc32       \    
     tests/crc64       \
     tests/ddi         \
@@ -22,7 +19,6 @@ SUBDIRS  =            \
     tests/ini         \
     tests/list        \
     tests/options     \
-    tests/pcre        \
     tests/ringbuf     \
     tests/utils       \
     tests/strlist     \
@@ -36,3 +32,12 @@ SUBDIRS  =            \
     tests/io/channel  \
     tests/io/channel_tcp_socket \
     examples/app
+
+#    cwt-pcre          \
+#    tests/pcre        \
+
+
+unix {
+    SUBDIRS  +=  cwt-event-signal-posix \
+        tests/esignal
+}

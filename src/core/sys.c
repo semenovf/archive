@@ -34,7 +34,8 @@ static BOOL __loadDriver(const CWT_CHAR *dsn, const char *bootstrapNameLatin1)
 	CWT_CHAR *params = NULL;
 	CWT_CHAR *bootstrapName;
 
-	__parseDSN(dsn, &scheme, &driver, &params);
+	/*FIXME replace with URI*/
+	/*__parseDSN(dsn, &scheme, &driver, &params);*/
 
 	if( scheme && driver ) {
 		DlHandle dlHandle;
@@ -52,7 +53,7 @@ static BOOL __loadDriver(const CWT_CHAR *dsn, const char *bootstrapNameLatin1)
 
 		if( dlHandle ) {
 			bootstrapName = cwtTextCodecNS()->fromLatin1(bootstrapNameLatin1, strlen(bootstrapNameLatin1));
-
+#ifdef __COMMENT__
 #ifdef CWT_CC_MSC
 			DlSymbol bootstrap = dl->symbol(dlHandle, bootstrapNameLatin1);
 #else
@@ -69,7 +70,7 @@ static BOOL __loadDriver(const CWT_CHAR *dsn, const char *bootstrapNameLatin1)
 			} else {
 				cwtLoggerNS()->warn(_Tr("%s: '%s' function must be provided by CWT namespace (NS) driver"), bootstrapName);
 			}
-
+#endif
 			CWT_FREE(bootstrapName);
 		}
 

@@ -85,7 +85,7 @@ const CWT_CHAR* text_01[] = {
 };
 typedef struct _struct_01
 {
-	int       index;
+	size_t    index;
 	CWT_CHAR *text;
 } struct_01;
 

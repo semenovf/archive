@@ -1598,10 +1598,11 @@ static BOOL __stmt_bindByIndex (CwtStatement *sth, size_t index, CwtUniType *ut)
 		bind_param->buffer_length = sizeof(MYSQL_TIME);
 
 	} else {
-		bind_param->buffer_length = CWT_TYPE_IS_SCALAR(ut->type) ? (ULONG)0 : ut->capacity;
+		/*FIXME MSVC warning C4267: '=' : conversion from 'size_t' to 'unsigned long', possible loss of data */
+		bind_param->buffer_length = (ULONG)(CWT_TYPE_IS_SCALAR(ut->type) ? 0 : ut->capacity);
 	}
 
-	bind_param->length        = (unsigned long*)&ut->length;
+	bind_param->length        = (ULONG*)&ut->length;
 	bind_param->buffer_type   = __mysql_toMysqlType(ut->type);
 	bind_param->buffer        = CWT_TYPE_IS_SCALAR(ut->type)
 		? (char*)&ut->value.llong_val

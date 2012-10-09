@@ -11,12 +11,12 @@
 #include <signal.h>
 
 typedef enum _CwtSignal {
-	  Cwt_Sig_Hup  = SIGHUP  /* Hangup detected on controlling terminal or death of controlling process */
-	, Cwt_Sig_Int  = SIGINT  /* Interrupt from keyboard */
-	, Cwt_Sig_Quit = SIGQUIT /* Quit from keyboard */
-	, Cwt_Sig_Ill  = SIGILL  /* Illegal Instruction */
-	, Cwt_Sig_Abrt = SIGABRT /* Abort signal from abort(3) */
-	, Cwt_Sig_Fpe  = SIGFPE  /* Floating point exception */
+	  Cwt_Sig_Hup       /* Hangup detected on controlling terminal or death of controlling process */
+	, Cwt_Sig_Int       /* Interrupt from keyboard */
+	, Cwt_Sig_Quit      /* Quit from keyboard */
+	, Cwt_Sig_Ill       /* Illegal Instruction */
+	, Cwt_Sig_Abrt      /* Abort signal from abort(3) */
+	, Cwt_Sig_Fpe       /* Floating point exception */
 	, Cwt_Sig_Last
 } CwtSignal;
 

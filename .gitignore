@@ -8,6 +8,7 @@ makefile
 doxygen/html
 doc/
 *.mk
+*.log
 
 # Compiled Object files
 *.slo

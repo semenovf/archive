@@ -157,12 +157,14 @@ inet_aton(const char *cp, struct in_addr *addr)
 	if (c != '\0' && (!isascii(c) || !isspace(c)))
 		return (0);
 	/*
-	 * Concoct the address according to
+	 * Concat the address according to
 	 * the number of parts specified.
+	 *
+	 * FIXME MSVC warning C4244: '=' : conversion from '__int64' to 'int', possible loss of data
 	 */
-	n = pp - parts + 1;
-	switch (n) {
+	n = (int)(pp - parts + 1);
 
+	switch (n) {
 	case 0:
 		return (0);		/* initial nondigit */
 

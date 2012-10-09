@@ -67,12 +67,12 @@ static CwtStringNS *__stringNS = NULL;
 #define _ST_URI_QUERY_END     7
 #define _ST_URI_FRAGMENT      8
 #define _ST_URI_FRAGMENT_END  9
+#define _ST_URI_SLASH        10
 
 BOOL __utils_parseURI(const CWT_CHAR *uri_string, CwtUri *uri)
 {
 	BOOL ok = FALSE;
 	CwtString *buf;
-	const CWT_CHAR *ptr;
 	size_t len, i;
 	int state;
 
@@ -92,13 +92,12 @@ BOOL __utils_parseURI(const CWT_CHAR *uri_string, CwtUri *uri)
 	buf = __stringNS->create();
 	i = 0;
 
-
 	state = _ST_URI_BEGIN;
 
 	while(i < len) {
 		switch(state) {
 		case _ST_URI_BEGIN:
-			if( __is_first_scheme_char(ptr[i]) ) {
+			if( __is_first_scheme_char(uri_string[i]) ) {
 				i++;
 			} else {
 				state = _ST_URI_ERROR;
@@ -109,10 +108,10 @@ BOOL __utils_parseURI(const CWT_CHAR *uri_string, CwtUri *uri)
 			return FALSE;
 
 		case _ST_URI_SCHEME:
-			if(ptr[i] == _T(':')) {
+			if(uri_string[i] == _T(':')) {
 				state = _ST_URI_END_SCHEME;
 				i++;
-			} else if( __is_scheme_char(ptr[i]) ) {
+			} else if( __is_scheme_char(uri_string[i]) ) {
 				i++;
 			} else {
 				state = _ST_URI_ERROR;
@@ -138,6 +137,11 @@ BOOL __utils_parseURI(const CWT_CHAR *uri_string, CwtUri *uri)
 		case _ST_URI_FRAGMENT_END:
 			break;
 
+		case _ST_URI_SLASH:
+			if( uri_string[i] == _T('/') ) {
+
+			}
+			break;
 		}
 	};
 /*

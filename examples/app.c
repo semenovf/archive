@@ -29,10 +29,12 @@ int main(int argc, char *argv[])
 */
 
 	app = cwtApp();
+/*
 	if( !app->selectEvents(Cwt_Event_Kbd
 			| Cwt_Event_PosixSignal
 			| Cwt_Event_Clock ) )
 		return -1;
+*/
 
 	app->main();
 

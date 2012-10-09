@@ -1671,14 +1671,14 @@ Arguments:
 Returns:         new code pointer
 */
 
-static uschar *
+static uschar*
 auto_callout(uschar *code, const uschar *ptr, compile_data *cd)
 {
-*code++ = OP_CALLOUT;
-*code++ = 255;
-PUT(code, 0, ptr - cd->start_pattern);  /* Pattern offset */
-PUT(code, LINK_SIZE, 0);                /* Default length */
-return code + 2*LINK_SIZE;
+	*code++ = OP_CALLOUT;
+	*code++ = 255;
+	PUT(code, 0, ptr - cd->start_pattern);  /* Pattern offset */
+	PUT(code, LINK_SIZE, 0);                /* Default length */
+	return code + 2*LINK_SIZE;
 }
 
 
@@ -1702,8 +1702,8 @@ Returns:             nothing
 static void
 complete_callout(uschar *previous_callout, const uschar *ptr, compile_data *cd)
 {
-int length = ptr - cd->start_pattern - GET(previous_callout, 2);
-PUT(previous_callout, 2 + LINK_SIZE, length);
+	int length = ptr - cd->start_pattern - GET(previous_callout, 2);
+	PUT(previous_callout, 2 + LINK_SIZE, length);
 }
 
 

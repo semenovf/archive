@@ -33,6 +33,17 @@ static BOOL __raise  (CwtSignal signum);
 static CwtListNS    *__listNS = NULL;
 static CwtEventNS   *__eventNS = NULL;
 
+static int __mapping_CwtSig_SIG[] = {
+	  SIGHUP
+	, SIGINT
+	, SIGQUIT
+	, SIGILL
+	, SIGABRT
+	, SIGFPE
+};
+
+#define _SIGMAP(sn) __mapping_CwtSig_SIG[sn]
+
 static BOOL __accept (CwtSignal signum)
 {
 	struct sigaction sa;
@@ -41,9 +52,9 @@ static BOOL __accept (CwtSignal signum)
 	sa.sa_flags = 0;
 	sa.sa_restorer = 0;
 	sigemptyset(&sa.sa_mask);
-	sigaddset(&sa.sa_mask, signum);
+	sigaddset(&sa.sa_mask, _SIGMAP(signum));
 
-	if (sigaction(signum, &sa, NULL) != 0) {
+	if (sigaction(_SIGMAP(signum), &sa, NULL) != 0) {
 		cwtLoggerNS()->error(_Tr("Failed to set handler for signal: %d"), signum);
 		return FALSE;
 	} else {
@@ -55,7 +66,7 @@ static BOOL __accept (CwtSignal signum)
 
 static BOOL __raise(CwtSignal signum)
 {
-	return raise(signum) == 0 ? TRUE : FALSE;
+	return raise(_SIGMAP(signum)) == 0 ? TRUE : FALSE;
 }
 
 
