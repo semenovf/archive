@@ -14,6 +14,7 @@
 
 #define __LOG_PREFIX _Tr("dbi: ")
 
+static void            __dbi_parseDSN      (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
 static CwtDBIDriver*   __dbi_load          (const CWT_CHAR *scheme, const CWT_CHAR *driver);
 static CwtDBHandler*   __dbi_connect       (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
 static void            __dbi_disconnect    (CwtDBHandler*);
@@ -100,12 +101,9 @@ extern BOOL            __ddi_deploy        (CwtDBHandler *dbh, CwtDDI *ddi, int 
 extern BOOL            __ddi_recall        (CwtDBHandler *dbh, CwtDDI *ddi, int flags);
 
 
-/* helper functions */
-/*static void            __parseDSN      (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);*/
-
-
 static CwtDBI __cwtDBI = {
-	  __dbi_load
+	  __dbi_parseDSN
+	, __dbi_load
 	, __dbi_connect
 	, __dbi_disconnect
 	, __dbi_func
@@ -197,7 +195,17 @@ DLL_API_EXPORT CwtDBI* cwtDBI(void)
 }
 
 
-/*static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
+/**
+ * @fn void CwtSysNS::parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **params)
+ *
+ * @brief Parses data source name (DSN).
+ *
+ * @param dsn [in] Data source name.
+ * @param scheme [out] Scheme name.
+ * @param driver [out] Database driver.
+ * @param arams [out] Parameters passed to database driver.
+ */
+static void __dbi_parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
 {
 	CwtStrNS *strNS = cwtStrNS();
 	CwtStrListNS *slNS = cwtStrListNS();
@@ -220,7 +228,7 @@ DLL_API_EXPORT CwtDBI* cwtDBI(void)
     	*driverDSN = strNS->strDup(opt);
 
     slNS->free(opts);
-}*/
+}
 
 
 static CwtDBIDriver* __dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
@@ -275,7 +283,7 @@ static CwtDBHandler* __dbi_connect(const CWT_CHAR *dsn, const CWT_CHAR *username
 	CWT_CHAR *driver = NULL;
 	CWT_CHAR *driverDSN = NULL;
 
-	cwtSysNS()->parseDSN(dsn, &scheme, &driver, &driverDSN);
+	__dbi_parseDSN(dsn, &scheme, &driver, &driverDSN);
 
 	dbd = __dbi_load(scheme, driver);
 

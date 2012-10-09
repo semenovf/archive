@@ -11,7 +11,6 @@
 #include <cwt/dl.h>
 
 typedef struct _CwtSysNS {
-	void (*parseDSN)(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverSN);
 	BOOL (*loadNS)(const CWT_CHAR *dsn);
 } CwtSysNS;
 

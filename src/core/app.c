@@ -13,12 +13,10 @@
 #include <cwt/event/channel.h>
 
 static void __app_main (void);
-static BOOL __app_selectEvents(UINT acceptEvents);
 static BOOL __app_registerEventSource(CwtEventSource*);
 
 static CwtApp __app = {
 	  __app_main
-	, __app_selectEvents
 	, __app_registerEventSource
 };
 
@@ -39,25 +37,6 @@ static void __app_main (void)
 	__eventNS->unregisterAllSources();
 }
 
-
-static BOOL __app_selectEvents(UINT acceptEvents)
-{
-	do {
-		if( (acceptEvents & Cwt_Event_Kbd) ) {}
-/*
-			__eventNS->registerSource(&__event_source_0);
-
-		if( acceptEvents & Cwt_Event_PosixSignal) ;
-		if( acceptEvents & Cwt_Event_Clock ) ;
-		if( acceptEvents & Cwt_Event_Timer ) ;
-		if( acceptEvents & Cwt_Event_Channel ) ;
-*/
-
-		return TRUE;
-	} while(FALSE);
-
-	return FALSE;
-}
 
 static BOOL __app_registerEventSource(CwtEventSource *source)
 {

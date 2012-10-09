@@ -118,6 +118,7 @@ typedef struct _CwtDBIBindGroup {
 
 typedef struct CwtDBI
 {
+	void            (*parseDSN)       (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
 	CwtDBIDriver*   (*load)           (const CWT_CHAR *scheme, const CWT_CHAR *driver);
 	CwtDBHandler*   (*connect)        (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
 	void            (*disconnect)     (CwtDBHandler*);

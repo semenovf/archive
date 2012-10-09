@@ -13,13 +13,10 @@
 #include <cwt/strlist.h>
 #include <cwt/txtcodec.h>
 
-
-static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverSN);
 static BOOL __loadNS(const CWT_CHAR *dsn);
 
 static CwtSysNS __cwtSysNS = {
-	  __parseDSN
-	, __loadNS
+	__loadNS
 };
 
 
@@ -27,45 +24,6 @@ DLL_API_EXPORT CwtSysNS* cwtSysNS(void)
 {
 	return &__cwtSysNS;
 }
-
-
-/**
- * @fn void CwtSysNS::parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **params)
- *
- * @brief Parses driver source name (DSN).
- *
- * @details Driver is a dynamically loadable module.
- *
- * @param dsn [in] Driver source name.
- * @param pscheme [out] Scheme name.
- * @param pdriver [out] driver name.
- * @param params [out] Parameters to driver.
- */
-static void __parseDSN(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **params)
-{
-	CwtStrNS *strNS = cwtStrNS();
-	CwtStrListNS *slNS = cwtStrListNS();
-	CwtStrList *opts;
-	const CWT_CHAR *opt;
-
-    opts = slNS->create();
-    slNS->splitAny(opts, dsn, _T(":"), CWT_QUOTES_BOTH, 0);
-
-    opt = slNS->at(opts, 0);
-    if( scheme && opt )
-    	*scheme = strNS->strDup(opt);
-
-    opt = slNS->at(opts, 1);
-    if( driver && opt )
-    	*driver = strNS->strDup(opt);
-
-    opt = slNS->at(opts, 2);
-    if( params && opt )
-    	*params = strNS->strDup(opt);
-
-    slNS->free(opts);
-}
-
 
 static BOOL __loadDriver(const CWT_CHAR *dsn, const char *bootstrapNameLatin1)
 {
