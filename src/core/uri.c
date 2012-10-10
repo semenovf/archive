@@ -6,40 +6,41 @@
  */
 
 #include <cwt/utils.h>
-#include <cwt/str.h>
-#include <cwt/string.h>
+#include <string.h>
+#include <cwt/bytearr.h>
 #include <cwt/logger.h>
 
-#define _PERCENT_CHAR _T('%')
-static CWT_CHAR *__hex_digits = _T("01234567890abcdefABCDEF");
-static CWT_CHAR *__gen_delims = _T(":/?#[]@:");
-static CWT_CHAR *__sub_delims = _T("!$&'()*+,;=");
-static CWT_CHAR *__alphas     = _T("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-static CWT_CHAR *__digits     = _T("0123456789");
+#define _PERCENT_CHAR '%'
+/*
+static const char *__hex_digits = "01234567890abcdefABCDEF";
+static const char *__gen_delims = ":/?#[]@:";
+static const char *__sub_delims = "!$&'()*+,;=";
+static const char *__alphas     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+static const char *__digits     = "0123456789";
+*/
 
-static CwtStrNS *__strNS = NULL;
-static CwtStringNS *__stringNS = NULL;
+/*static CwtByteArrayNS *__baNS = NULL;*/
 
-#define __is_hex_digit(ch) (__strNS->strChr(__hex_digits, ch) != NULL ? TRUE : FALSE)
-#define __is_gen_delim(ch) (__strNS->strChr(__gen_delims, ch) != NULL ? TRUE : FALSE)
-#define __is_sub_delim(ch) (__strNS->strChr(__sub_delims, ch) != NULL ? TRUE : FALSE)
-#define __is_reserved(ch)  (__is_gen_delim(ch) || __is_sub_delim(ch) ?  TRUE : FALSE)
-#define __is_alpha(ch)     (__strNS->strChr(__alphas, ch) != NULL ? TRUE : FALSE)
-#define __is_digit(ch)     (__strNS->strChr(__digits, ch) != NULL ? TRUE : FALSE)
-#define __is_unreserved    (__is_alpha(ch)     \
-		                    || __is_digit(ch)  \
-		                    || (ch) == _T('-') \
-		                    || (ch) == _T('.') \
-		                    || (ch) == _T('_') \
-		                    || (ch) == _T('~') \
+#define _IS_HEX_DIGIT(ch) (strchr(__hex_digits, ch) != NULL ? TRUE : FALSE)
+#define _IS_GEN_DELIM(ch) (strchr(__gen_delims, ch) != NULL ? TRUE : FALSE)
+#define _IS_SUB_DELIM(ch) (strchr(__sub_delims, ch) != NULL ? TRUE : FALSE)
+#define _IS_RESERVED(ch)  (_IS_GEN_DELIM(ch) || _IS_SUB_DELIM(ch) ?  TRUE : FALSE)
+#define _IS_ALPHA(ch)     (strstr(__alphas, ch) != NULL ? TRUE : FALSE)
+#define _IS_DIGIT(ch)     (strstr(__digits, ch) != NULL ? TRUE : FALSE)
+#define _IS_UNRESERVED    (_IS_ALPHA(ch)       \
+		                    || _IS_DIGIT(ch)   \
+		                    || (ch) == '-'     \
+		                    || (ch) == '.'     \
+		                    || (ch) == '_'     \
+		                    || (ch) == '~'     \
 							? TRUE : FALSE)
 
-#define __is_first_scheme_char(ch) __is_alpha(ch)
-#define __is_scheme_char(ch)  (__is_alpha(ch)  \
-                            || __is_digit(ch)  \
-                            || (ch) == _T('+') \
-                            || (ch) == _T('-') \
-                            || (ch) == _T('.'))
+#define _IS_FIRST_SCHEME_CHAR(ch) _IS_ALPHA(ch)
+#define _IS_SCHEME_CHAR(ch)  (_IS_ALPHA(ch)    \
+                            || _IS_DIGIT(ch)   \
+                            || (ch) == '+'     \
+                            || (ch) == '-'     \
+                            || (ch) == '.')
 
 
 /**
@@ -69,27 +70,30 @@ static CwtStringNS *__stringNS = NULL;
 #define _ST_URI_FRAGMENT_END  9
 #define _ST_URI_SLASH        10
 
-BOOL __utils_parseURI(const CWT_CHAR *uri_string, CwtUri *uri)
+BOOL __utils_parseURI(const char *uri_string, CwtUri *uri)
 {
 	BOOL ok = FALSE;
-	CwtString *buf;
+
+	CWT_UNUSED(uri_string);
+	CWT_UNUSED(uri);
+#ifdef __COMMENT__
+	CwtByteArray *buf;
 	size_t len, i;
 	int state;
 
 	CWT_ASSERT(uri);
 
-	if( !__strNS ) {
-		__strNS = cwtStrNS();
-		__stringNS = cwtStringNS();
+	if( !__baNS ) {
+		__baNS = cwtByteArrayNS();
 	}
 
-	len = __strNS->strLen(uri_string);
+	len = strlen(uri_string);
 	if( !len ) {
 		cwtLoggerNS()->warn(_Tr("empty URI string"));
 		return FALSE;
 	}
 
-	buf = __stringNS->create();
+	buf = __baNS->create();
 	i = 0;
 
 	state = _ST_URI_BEGIN;
@@ -157,8 +161,8 @@ BOOL __utils_parseURI(const CWT_CHAR *uri_string, CwtUri *uri)
 	} while(TRUE);
 */
 
-	__stringNS->free(buf);
-
+	__baNS->free(buf);
+#endif
 	return ok;
 }
 
@@ -198,3 +202,14 @@ BOOL __utils_parseURI(const CWT_CHAR *uri_string, CwtUri *uri)
 
     slNS->free(opts);
 }*/
+
+void __utils_initURI (CwtUri *uri)
+{
+	CWT_UNUSED(uri);
+}
+
+void __utils_destroyURI (CwtUri *uri)
+{
+	CWT_UNUSED(uri);
+}
+

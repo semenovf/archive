@@ -31,6 +31,7 @@ SUBDIRS  =            \
     tests/net/tcp     \
     tests/io/channel  \
     tests/io/channel_tcp_socket \
+    tests/fsm         \
     examples/app
 
 #    cwt-pcre          \

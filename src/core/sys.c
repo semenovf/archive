@@ -37,6 +37,8 @@ static BOOL __loadDriver(const CWT_CHAR *dsn, const char *bootstrapNameLatin1)
 	/*FIXME replace with URI*/
 	/*__parseDSN(dsn, &scheme, &driver, &params);*/
 
+	CWT_UNUSED(dsn);
+
 	if( scheme && driver ) {
 		DlHandle dlHandle;
 		CwtStringNS *stringNS = cwtStringNS();

@@ -29,7 +29,9 @@ typedef struct CwtUtilsNS {
 	void   (*floatToBytes)   (float f, BYTE bytes[4]);
 	float  (*bytesToFloat)   (const BYTE bytes[4]);
 
-	BOOL   (*parseURI)       (const CWT_CHAR *uri_string, CwtUri *uri);
+	BOOL   (*parseURI)       (const char *uri_string, CwtUri *uri);
+	void   (*initURI)        (CwtUri *uri);
+	void   (*destroyURI)     (CwtUri *uri);
 } CwtUtilsNS;
 
 
