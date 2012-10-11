@@ -44,9 +44,9 @@ static CWT_CHAR* __cwt_strtok  (CWT_CHAR *tok, const CWT_CHAR *delim) { return w
 static LONG      __cwt_strtol  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return wcstol(s, endptr, radix); }
 static ULONG     __cwt_strtoul (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return wcstoul(s, endptr, radix); }
 static double    __cwt_strtod  (const CWT_CHAR *s, CWT_CHAR **endptr) { return wcstod(s, endptr); }
-static int       __cwt_isalpha (CWT_CHAR ch) { return iswalpha(ch); }
-static int       __cwt_isdigit (CWT_CHAR ch) { return iswdigit(ch); }
-static int       __cwt_isspace (CWT_CHAR ch) { return iswspace(ch); }
+static BOOL      __cwt_isalpha (CWT_CHAR ch) { return iswalpha(ch) ? TRUE : FALSE; }
+static BOOL      __cwt_isdigit (CWT_CHAR ch) { return iswdigit(ch) ? TRUE : FALSE; }
+static BOOL      __cwt_isspace (CWT_CHAR ch) { return iswspace(ch) ? TRUE : FALSE; }
 static CWT_CHAR  __cwt_toupper(CWT_CHAR ch) { return (CWT_CHAR)towupper(ch); }
 static CWT_CHAR  __cwt_tolower(CWT_CHAR ch) { return (CWT_CHAR)towlower(ch); }
 
@@ -67,9 +67,9 @@ static CWT_CHAR* __cwt_strtok  (CWT_CHAR *tok, const CWT_CHAR *delim) { return s
 static LONG      __cwt_strtol  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return strtol(s, endptr, radix); }
 static ULONG     __cwt_strtoul (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return strtoul(s, endptr, radix); }
 static double    __cwt_strtod  (const CWT_CHAR *s, CWT_CHAR **endptr) { return strtod(s, endptr); }
-static int       __cwt_isalpha (CWT_CHAR ch) { return isalpha(ch); }
-static int       __cwt_isdigit (CWT_CHAR ch) { return isdigit(ch); }
-static int       __cwt_isspace (CWT_CHAR ch) { return isspace(ch); }
+static BOOL      __cwt_isalpha (CWT_CHAR ch) { return isalpha(ch) ? TRUE : FALSE; }
+static BOOL      __cwt_isdigit (CWT_CHAR ch) { return isdigit(ch) ? TRUE : FALSE; }
+static BOOL      __cwt_isspace (CWT_CHAR ch) { return isspace(ch) ? TRUE : FALSE; }
 static CWT_CHAR  __cwt_toupper(CWT_CHAR ch)  { return (CWT_CHAR)toupper((int)ch); }
 static CWT_CHAR  __cwt_tolower(CWT_CHAR ch)  { return (CWT_CHAR)tolower(ch); }
 

@@ -44,9 +44,9 @@ typedef struct CwtStrNS {
 	LONGLONG          (*strToLLONG)   (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 	ULONGLONG         (*strToULLong)  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 	double            (*strToDouble)  (const CWT_CHAR *s, CWT_CHAR **endptr);
-	int               (*isAlpha)      (CWT_CHAR);
-	int               (*isDigit)      (CWT_CHAR);
-	int               (*isSpace)      (CWT_CHAR);
+	BOOL              (*isAlpha)      (CWT_CHAR);
+	BOOL              (*isDigit)      (CWT_CHAR);
+	BOOL              (*isSpace)      (CWT_CHAR);
 
 	void*             (*memcpy)       (void *to, const void *from, size_t sz);
 	void*             (*memmove)      (void *to, const void *from, size_t sz);
@@ -66,6 +66,7 @@ typedef struct CwtStrNS {
 	BYTE              (*toBYTE)       (const CWT_CHAR*, int radix, BOOL *ok);
 	double            (*toDouble)     (const CWT_CHAR*, BOOL *ok);
 	float             (*toFloat)      (const CWT_CHAR*, BOOL *ok);
+
 	void              (*toTIME)       (const CWT_CHAR*, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
 	void              (*toDATE)       (const CWT_CHAR*, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);
 	void              (*toDATETIME)   (const CWT_CHAR*, CWT_TIME *tm, const CWT_CHAR *format, BOOL *ok);

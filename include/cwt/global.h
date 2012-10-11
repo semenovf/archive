@@ -237,6 +237,10 @@ EXTERN_C_END
 #define CWT_MALLOCA(T,sz) ((T*)cwtMalloc(sizeof(T)*(sz)))
 #define CWT_FREE(v)       cwtFree(v)
 
+/* Two-dimensional array macros */
+#define CWT_A2_NCOLS(a)          sizeof(a[0])/sizeof(a[0][0])
+#define CWT_A2_NROWS(a)          sizeof(a)/sizeof(a[0])
+#define CWT_A2_ELEM(a,ncols,i,j) a[(i) * (ncols) + (j)]
 
 #ifdef CWT_MT
 #	include <cwt/mt.h>

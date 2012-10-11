@@ -80,6 +80,22 @@ EXTERN_C_END
             , __TFILE__, __LINE__);                                           \
 	}
 
+/*
+#define CWT_TEST_OK3(exp,fmt,args) if( (exp) ) {   	                          \
+		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
+		__cwtTestContextPtr__->m_ok_tests++;						          \
+		printf_trace(_Tr("TEST[%03u]: " fmt " => ok")                         \
+        	, ++__cwtTestContextPtr__->m_run_tests, args);                    \
+	} else {                              	                                  \
+		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
+		__cwtTestContextPtr__->m_failed_tests++;					          \
+		printf_trace(_Tr("TEST[%03u]: %s => failed at %s:%d")                 \
+			, ++__cwtTestContextPtr__->m_run_tests, desc                      \
+            , __TFILE__, __LINE__);                                           \
+	}
+*/
+
+
 
 #define CWT_TEST_NOK(exp) if( !(exp) ) {        	                          \
 		CwtTestContext* __cwtTestContextPtr__ = cwtTestContext();             \
