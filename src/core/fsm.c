@@ -111,13 +111,13 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 				CwtFsm inner_fsm;
 
 				memcpy(&inner_fsm, fsm, sizeof(inner_fsm));
-				inner_fsm.trans_tab = trans->condition.trans_tab;
+				inner_fsm.trans_tab = trans->condition.trans_tab.tab;
 				nchars_processed = __fsm_exec(&inner_fsm, 0, ptr, len);
 			}
 			break;
 
 		case Cwt_Fsm_Match_Func:
-			nchars_processed = trans->condition.trans_fn(fsm->context, ptr, len);
+			nchars_processed = trans->condition.trans_fn.fn(fsm->context, ptr, len);
 			break;
 
 		case Cwt_Fsm_Match_Nothing:
@@ -127,7 +127,12 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 
 		/* accepted */
 		if( nchars_processed >= 0 ) {
+			((const char*)ptr) += (fsm->sizeof_char * nchars_processed);
+/*
+#else
 			ptr += nchars_processed;
+#endif
+*/
 			len -= nchars_processed;
 			nchars_total_processed += nchars_processed;
 			state_cur = trans->state_next;

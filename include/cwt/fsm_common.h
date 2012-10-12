@@ -14,11 +14,11 @@
 #endif
 
 static CwtFsmTransition ALPHA_FSM[] = {
-	{ 0, FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52), FSM_TERM, NULL, NULL }
+	{ -1, FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52), FSM_TERM, NULL, NULL }
  };
 
 static CwtFsmTransition DIGIT_FSM[] = {
-	{ 0, FSM_MATCH_CHAR(_T("0123456789"), 10), FSM_TERM, NULL, NULL }
+	{ -1, FSM_MATCH_CHAR(_T("0123456789"), 10), FSM_TERM, NULL, NULL }
 };
 
 static CwtFsmTransition HEXDIG_FSM[] = {

@@ -242,6 +242,10 @@ EXTERN_C_END
 #define CWT_A2_NROWS(a)          sizeof(a)/sizeof(a[0])
 #define CWT_A2_ELEM(a,ncols,i,j) a[(i) * (ncols) + (j)]
 
+#ifndef NULL
+#	define NULL ((void*)0)
+#endif
+
 #ifdef CWT_MT
 #	include <cwt/mt.h>
 #endif

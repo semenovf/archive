@@ -16,8 +16,8 @@
 static const char *__alpha_chars     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static const char *__digit_chars     = "0123456789";
 
-static const char *__alpha_cwt_chars = _T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-static const char *__digit_cwt_chars = _T("0123456789");
+static const CWT_CHAR *__alpha_cwt_chars = _T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+static const CWT_CHAR *__digit_cwt_chars = _T("0123456789");
 
 static int __ints[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
@@ -108,19 +108,19 @@ size_t parse_seq(const CWT_CHAR *data, size_t len, size_t from, size_t to, BOOL 
 static void set_weekday(const void *data, size_t len, void *context, void *action_args)
 {
 	struct set_weekday_args *swa = (struct set_weekday_args*)action_args;
-	struct tm *tmp = (struct tm*)context;
+	struct tm *tm = (struct tm*)context;
 	CWT_UNUSED(data);
 	CWT_UNUSED(len);
-	tmp->tm_wday = swa->wday;
+	tm->tm_wday = swa->wday;
 }
 
 static void set_month(const void *data, size_t len, void *context, void *action_args)
 {
 	struct set_month_args *sma = (struct set_month_args*)action_args;
-	struct tm *tmp = (struct tm*)context;
+	struct tm *tm = (struct tm*)context;
 	CWT_UNUSED(data);
 	CWT_UNUSED(len);
-	tmp->tm_mon = sma->mon;
+	tm->tm_mon = sma->mon;
 }
 
 
@@ -162,7 +162,7 @@ static ssize_t parse_mday(void *context, const void *data, size_t len)
 		if( parse_uint_digits(ptr, len, 10, &mday)
 				&& mday < 32 ) {
 			tm->tm_mday = (int)mday;
-			return len;
+			return (ssize_t)len;
 		}
 	}
 	return (ssize_t)-1;
@@ -229,34 +229,56 @@ static ssize_t parse_year(void *context, const void *data, size_t len)
 }
 
 
+static struct set_weekday_args sun = {0};
+static struct set_weekday_args mon = {1};
+static struct set_weekday_args tue = {2};
+static struct set_weekday_args wed = {3};
+static struct set_weekday_args thu = {4};
+static struct set_weekday_args fri = {5};
+static struct set_weekday_args sat = {6};
+
 static CwtFsmTransition wday_fsm[] = {
-	  {-1, FSM_MATCH_STR("Mon",3), FSM_CHAINED, set_weekday, (void*)&(struct set_weekday_args){1} }
-	, {-1, FSM_MATCH_STR("Tue",3), FSM_CHAINED, set_weekday, (void*)&(struct set_weekday_args){2} }
-	, {-1, FSM_MATCH_STR("Wed",3), FSM_CHAINED, set_weekday, (void*)&(struct set_weekday_args){3} }
-	, {-1, FSM_MATCH_STR("Thu",3), FSM_CHAINED, set_weekday, (void*)&(struct set_weekday_args){4} }
-	, {-1, FSM_MATCH_STR("Fri",3), FSM_CHAINED, set_weekday, (void*)&(struct set_weekday_args){5} }
-	, {-1, FSM_MATCH_STR("Sat",3), FSM_CHAINED, set_weekday, (void*)&(struct set_weekday_args){6} }
-	, {-1, FSM_MATCH_STR("Sun",3), FSM_TERM, set_weekday, (void*)&(struct set_weekday_args){0} }
+	  {-1, FSM_MATCH_STR(_T("Mon"),3), FSM_CHAINED, set_weekday, &mon }
+	, {-1, FSM_MATCH_STR(_T("Tue"),3), FSM_CHAINED, set_weekday, &tue }
+	, {-1, FSM_MATCH_STR(_T("Wed"),3), FSM_CHAINED, set_weekday, &wed }
+	, {-1, FSM_MATCH_STR(_T("Thu"),3), FSM_CHAINED, set_weekday, &thu }
+	, {-1, FSM_MATCH_STR(_T("Fri"),3), FSM_CHAINED, set_weekday, &fri }
+	, {-1, FSM_MATCH_STR(_T("Sat"),3), FSM_CHAINED, set_weekday, &sat }
+	, {-1, FSM_MATCH_STR(_T("Sun"),3), FSM_TERM, set_weekday,    &sun }
 };
+
 
 
 /*
 month   = "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun"
  	 	 | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec"
 */
+static struct set_month_args jan = {0};
+static struct set_month_args feb = {1};
+static struct set_month_args mar = {2};
+static struct set_month_args apr = {3};
+static struct set_month_args may = {4};
+static struct set_month_args jun = {5};
+static struct set_month_args jul = {6};
+static struct set_month_args aug = {7};
+static struct set_month_args sep = {8};
+static struct set_month_args oct = {9};
+static struct set_month_args nov = {10};
+static struct set_month_args dec = {11};
+
 static CwtFsmTransition month_fsm[] = {
-	  {-1, FSM_MATCH_STR("Jan",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){0} }
-	, {-1, FSM_MATCH_STR("Feb",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){1} }
-	, {-1, FSM_MATCH_STR("Mar",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){2} }
-	, {-1, FSM_MATCH_STR("Apr",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){3} }
-	, {-1, FSM_MATCH_STR("May",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){4} }
-	, {-1, FSM_MATCH_STR("Jun",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){5} }
-	, {-1, FSM_MATCH_STR("Jul",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){6} }
-	, {-1, FSM_MATCH_STR("Aug",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){7} }
-	, {-1, FSM_MATCH_STR("Sep",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){8} }
-	, {-1, FSM_MATCH_STR("Oct",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){9} }
-	, {-1, FSM_MATCH_STR("Nov",3), FSM_CHAINED, set_month, (void*)&(struct set_month_args){10} }
-	, {-1, FSM_MATCH_STR("Dec",3), FSM_TERM,    set_month, (void*)&(struct set_month_args){11} }
+	  {-1, FSM_MATCH_STR(_T("Jan"),3), FSM_CHAINED, set_month, &jan}
+	, {-1, FSM_MATCH_STR(_T("Feb"),3), FSM_CHAINED, set_month, &feb}
+	, {-1, FSM_MATCH_STR(_T("Mar"),3), FSM_CHAINED, set_month, &mar}
+	, {-1, FSM_MATCH_STR(_T("Apr"),3), FSM_CHAINED, set_month, &apr}
+	, {-1, FSM_MATCH_STR(_T("May"),3), FSM_CHAINED, set_month, &may}
+	, {-1, FSM_MATCH_STR(_T("Jun"),3), FSM_CHAINED, set_month, &jun}
+	, {-1, FSM_MATCH_STR(_T("Jul"),3), FSM_CHAINED, set_month, &jul}
+	, {-1, FSM_MATCH_STR(_T("Aug"),3), FSM_CHAINED, set_month, &aug}
+	, {-1, FSM_MATCH_STR(_T("Sep"),3), FSM_CHAINED, set_month, &sep}
+	, {-1, FSM_MATCH_STR(_T("Oct"),3), FSM_CHAINED, set_month, &oct}
+	, {-1, FSM_MATCH_STR(_T("Nov"),3), FSM_CHAINED, set_month, &nov}
+	, {-1, FSM_MATCH_STR(_T("Dec"),3), FSM_TERM,    set_month, &dec}
 };
 
 
@@ -292,14 +314,14 @@ static CwtFsmTransition datetime_fsm[] = {
 static void test_parse_date(void)
 {
 	CwtFsmNS *fsmNS = cwtFsmNS();
-	const char *date_str = _T("Sat Apr 29 12:34:56 1972");
-	const char *date_str_incorrect_0 = _T("Sat Apt 29 12:34:56 1972"); /* invalid month */
-	const char *date_str_incorrect_1 = _T("Sat Apr 29 32:34:56 1972"); /* invalid hour */
-	const char *date_str_incorrect_2 = _T("Sat Apr 29 12:34:56  1972"); /* extra space char before year */
+	const CWT_CHAR *date_str = _T("Sat Apr 29 12:34:56 1972");
+	const CWT_CHAR *date_str_incorrect_0 = _T("Sat Apt 29 12:34:56 1972"); /* invalid month */
+	const CWT_CHAR *date_str_incorrect_1 = _T("Sat Apr 29 32:34:56 1972"); /* invalid hour */
+	const CWT_CHAR *date_str_incorrect_2 = _T("Sat Apr 29 12:34:56  1972"); /* extra space char before year */
 	struct tm tm;
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, datetime_fsm, &tm, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, datetime_fsm, &tm, cwtBelongCwtChar, cwtExactCwtChar);
 
 	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str, cwtStrNS()->strLen(date_str)) >= 0);
 

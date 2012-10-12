@@ -19,14 +19,22 @@ typedef enum _CwtFsmMatchType {
 	, Cwt_Fsm_Match_Func
 } CwtFsmMatchType;
 
-#define FSM_MATCH_STR(s,n)      Cwt_Fsm_Match_Str,  { .str = {n, s} }
-#define FSM_MATCH_CHAR(s,n)     Cwt_Fsm_Match_Char, { .str = {n, s} }
-#define FSM_MATCH_FSM(f)        Cwt_Fsm_Match_Fsm,  { .trans_tab = f }
-#define FSM_MATCH_FUNC(f)       Cwt_Fsm_Match_Func, { .trans_fn = f }
-#define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { .str = {0, NULL} }
+/* MSC does not support such union initializer
+#	define FSM_MATCH_STR(s,n)      Cwt_Fsm_Match_Str,  { .str = {n, s} }
+#	define FSM_MATCH_CHAR(s,n)     Cwt_Fsm_Match_Char, { .str = {n, s} }
+#	define FSM_MATCH_FSM(f)        Cwt_Fsm_Match_Fsm,  { .trans_tab = f }
+#	define FSM_MATCH_FUNC(f)       Cwt_Fsm_Match_Func, { .trans_fn = f }
+#	define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { .str = {0, NULL} }
+*/
+#define FSM_MATCH_STR(s,n)      Cwt_Fsm_Match_Str,  { {n, s} }
+#define FSM_MATCH_CHAR(s,n)     Cwt_Fsm_Match_Char, { {n, s} }
+#define FSM_MATCH_FSM(f)        Cwt_Fsm_Match_Fsm,  { {0, (void*)f} }
+#define FSM_MATCH_FUNC(f)       Cwt_Fsm_Match_Func, { {0, (void*)f} }
+#define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { {0, NULL} }
 
-#define FSM_INIT(fsm, tab, pcontext, belong_fn, exact_fn) \
+#define FSM_INIT(fsm, char_type, tab, pcontext, belong_fn, exact_fn) \
 		(fsm).trans_tab = tab;                            \
+		(fsm).sizeof_char = sizeof(char_type);            \
 		(fsm).context   = pcontext;                       \
 		(fsm).belong    = belong_fn;                      \
 		(fsm).exact     = exact_fn;
@@ -34,15 +42,17 @@ typedef enum _CwtFsmMatchType {
 #define FSM_CHAINED FALSE
 #define FSM_TERM    TRUE
 
+typedef union _CwtFsmCondition {
+	struct { size_t len; void *chars; } str;
+	struct { size_t unused; struct _CwtFsmTransition *tab; } trans_tab;
+	struct { size_t unused; ssize_t (*fn)(void *context, const void *data, size_t len); } trans_fn;
+} CwtFsmCondition;
+
 typedef struct _CwtFsmTransition {
 	int state_next;
 
 	CwtFsmMatchType match_type;
-	union {
-		struct { size_t len; void *chars; } str;
-		struct _CwtFsmTransition *trans_tab;
-		ssize_t (*trans_fn)(void *context, const void *data, size_t len);
-	} condition;
+	CwtFsmCondition condition;
 
 	BOOL is_term; /* last entry in the chain of ...*/
 
@@ -52,6 +62,7 @@ typedef struct _CwtFsmTransition {
 
 typedef struct _CwtFsm {
 	CwtFsmTransition *trans_tab; /* 2-dimensional transition table */
+	int   sizeof_char;           /* sizeof character */
 	void *context;               /* result context */
 
 	/* checks if character ch belongs to the set of characters subset */

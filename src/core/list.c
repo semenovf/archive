@@ -10,10 +10,6 @@
 #include <cwt/list.h>
 #include <cwt/str.h>
 
-#ifndef NULL
-#	define NULL ((void*)0)
-#endif
-
 static CwtList*      __list_create      (size_t sizeofData, void (*data_cleanup)(void*));
 static CwtList*      __list_createPtr   (void (*data_cleanup)(void*));
 static void          __list_free        (CwtList*);
