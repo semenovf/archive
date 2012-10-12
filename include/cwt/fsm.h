@@ -12,7 +12,7 @@
 #include <cwt/types.h>
 
 typedef enum _CwtFsmMatchType {
-	  Cwt_Fsm_Match_Nil
+	  Cwt_Fsm_Match_Nothing
 	, Cwt_Fsm_Match_Str
 	, Cwt_Fsm_Match_Char
 	, Cwt_Fsm_Match_Fsm
@@ -23,7 +23,7 @@ typedef enum _CwtFsmMatchType {
 #define FSM_MATCH_CHAR(s,n)     Cwt_Fsm_Match_Char, { .str = {n, s} }
 #define FSM_MATCH_FSM(f)        Cwt_Fsm_Match_Fsm,  { .trans_tab = f }
 #define FSM_MATCH_FUNC(f)       Cwt_Fsm_Match_Func, { .trans_fn = f }
-#define FSM_NIL_ENTRY           {-1, Cwt_Fsm_Match_Nil, { .str = {0, NULL} }, NULL, NULL}
+#define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { .str = {0, NULL} }
 
 #define FSM_INIT(fsm, tab, pcontext, belong_fn, exact_fn) \
 		(fsm).trans_tab = tab;                            \
@@ -31,8 +31,8 @@ typedef enum _CwtFsmMatchType {
 		(fsm).belong    = belong_fn;                      \
 		(fsm).exact     = exact_fn;
 
-#define FSM_ACCEPT TRUE
-#define FSM_REJECT FALSE
+#define FSM_CHAINED FALSE
+#define FSM_TERM    TRUE
 
 typedef struct _CwtFsmTransition {
 	int state_next;
@@ -41,11 +41,12 @@ typedef struct _CwtFsmTransition {
 	union {
 		struct { size_t len; void *chars; } str;
 		struct _CwtFsmTransition *trans_tab;
-		size_t (*trans_fn)(void *context, const void *data, size_t len);
+		ssize_t (*trans_fn)(void *context, const void *data, size_t len);
 	} condition;
-	BOOL is_accept;
 
-	void (*action)(void *context, void *action_args);
+	BOOL is_term; /* last entry in the chain of ...*/
+
+	void (*action)(const void *data, size_t len, void *context, void *action_args);
 	void *action_args;
 } CwtFsmTransition;
 
@@ -61,7 +62,7 @@ typedef struct _CwtFsm {
 } CwtFsm;
 
 typedef struct CwtFsmNS {
-	size_t (*exec)(CwtFsm *fsm, int state_cur, const void *data, size_t len);
+	ssize_t (*exec)(CwtFsm *fsm, int state_cur, const void *data, size_t len);
 } CwtFsmNS;
 
 EXTERN_C_BEGIN

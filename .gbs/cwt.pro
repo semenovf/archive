@@ -33,6 +33,7 @@ SUBDIRS  =            \
     tests/io/channel_tcp_socket \
     tests/fsm         \
     tests/mdarr       \
+    tests/uri         \
     examples/app
 
 #    cwt-pcre          \

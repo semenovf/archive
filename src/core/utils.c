@@ -22,7 +22,7 @@ static INT64 __bytesToInt64  (const BYTE bytes[8]);
 static void  __floatToBytes  (float f, BYTE bytes[4]);
 static float __bytesToFloat  (const BYTE bytes[4]);
 
-extern BOOL  __utils_parseURI(const char *uri_string, CwtUri *uri);
+extern BOOL  __utils_parseURI(const CWT_CHAR *uri_string, CwtUri *uri);
 extern void  __utils_initURI    (CwtUri *uri);
 extern void  __utils_destroyURI (CwtUri *uri);
 

@@ -12,6 +12,11 @@
 
 typedef struct _CwtUri {
 	CWT_CHAR *scheme;
+	CWT_CHAR *host;
+	UINT16    port;
+	BOOL      host_is_ip;
+	CWT_CHAR *path;
+	CWT_CHAR *query;
 } CwtUri;
 
 typedef struct CwtUtilsNS {
@@ -29,7 +34,7 @@ typedef struct CwtUtilsNS {
 	void   (*floatToBytes)   (float f, BYTE bytes[4]);
 	float  (*bytesToFloat)   (const BYTE bytes[4]);
 
-	BOOL   (*parseURI)       (const char *uri_string, CwtUri *uri);
+	BOOL   (*parseURI)       (const CWT_CHAR *uri_string, CwtUri *uri);
 	void   (*initURI)        (CwtUri *uri);
 	void   (*destroyURI)     (CwtUri *uri);
 } CwtUtilsNS;
