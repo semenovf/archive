@@ -238,13 +238,13 @@ static struct set_weekday_args fri = {5};
 static struct set_weekday_args sat = {6};
 
 static CwtFsmTransition wday_fsm[] = {
-	  {-1, FSM_MATCH_STR(_T("Mon"),3), FSM_CHAINED, set_weekday, &mon }
-	, {-1, FSM_MATCH_STR(_T("Tue"),3), FSM_CHAINED, set_weekday, &tue }
-	, {-1, FSM_MATCH_STR(_T("Wed"),3), FSM_CHAINED, set_weekday, &wed }
-	, {-1, FSM_MATCH_STR(_T("Thu"),3), FSM_CHAINED, set_weekday, &thu }
-	, {-1, FSM_MATCH_STR(_T("Fri"),3), FSM_CHAINED, set_weekday, &fri }
-	, {-1, FSM_MATCH_STR(_T("Sat"),3), FSM_CHAINED, set_weekday, &sat }
-	, {-1, FSM_MATCH_STR(_T("Sun"),3), FSM_TERM, set_weekday,    &sun }
+	  {-1, FSM_MATCH_STR(_T("Mon"),3), FSM_OPT, set_weekday, &mon }
+	, {-1, FSM_MATCH_STR(_T("Tue"),3), FSM_OPT, set_weekday, &tue }
+	, {-1, FSM_MATCH_STR(_T("Wed"),3), FSM_OPT, set_weekday, &wed }
+	, {-1, FSM_MATCH_STR(_T("Thu"),3), FSM_OPT, set_weekday, &thu }
+	, {-1, FSM_MATCH_STR(_T("Fri"),3), FSM_OPT, set_weekday, &fri }
+	, {-1, FSM_MATCH_STR(_T("Sat"),3), FSM_OPT, set_weekday, &sat }
+	, {-1, FSM_MATCH_STR(_T("Sun"),3), FSM_ACCEPT, set_weekday,    &sun }
 };
 
 
@@ -267,46 +267,46 @@ static struct set_month_args nov = {10};
 static struct set_month_args dec = {11};
 
 static CwtFsmTransition month_fsm[] = {
-	  {-1, FSM_MATCH_STR(_T("Jan"),3), FSM_CHAINED, set_month, &jan}
-	, {-1, FSM_MATCH_STR(_T("Feb"),3), FSM_CHAINED, set_month, &feb}
-	, {-1, FSM_MATCH_STR(_T("Mar"),3), FSM_CHAINED, set_month, &mar}
-	, {-1, FSM_MATCH_STR(_T("Apr"),3), FSM_CHAINED, set_month, &apr}
-	, {-1, FSM_MATCH_STR(_T("May"),3), FSM_CHAINED, set_month, &may}
-	, {-1, FSM_MATCH_STR(_T("Jun"),3), FSM_CHAINED, set_month, &jun}
-	, {-1, FSM_MATCH_STR(_T("Jul"),3), FSM_CHAINED, set_month, &jul}
-	, {-1, FSM_MATCH_STR(_T("Aug"),3), FSM_CHAINED, set_month, &aug}
-	, {-1, FSM_MATCH_STR(_T("Sep"),3), FSM_CHAINED, set_month, &sep}
-	, {-1, FSM_MATCH_STR(_T("Oct"),3), FSM_CHAINED, set_month, &oct}
-	, {-1, FSM_MATCH_STR(_T("Nov"),3), FSM_CHAINED, set_month, &nov}
-	, {-1, FSM_MATCH_STR(_T("Dec"),3), FSM_TERM,    set_month, &dec}
+	  {-1, FSM_MATCH_STR(_T("Jan"),3), FSM_OPT, set_month, &jan}
+	, {-1, FSM_MATCH_STR(_T("Feb"),3), FSM_OPT, set_month, &feb}
+	, {-1, FSM_MATCH_STR(_T("Mar"),3), FSM_OPT, set_month, &mar}
+	, {-1, FSM_MATCH_STR(_T("Apr"),3), FSM_OPT, set_month, &apr}
+	, {-1, FSM_MATCH_STR(_T("May"),3), FSM_OPT, set_month, &may}
+	, {-1, FSM_MATCH_STR(_T("Jun"),3), FSM_OPT, set_month, &jun}
+	, {-1, FSM_MATCH_STR(_T("Jul"),3), FSM_OPT, set_month, &jul}
+	, {-1, FSM_MATCH_STR(_T("Aug"),3), FSM_OPT, set_month, &aug}
+	, {-1, FSM_MATCH_STR(_T("Sep"),3), FSM_OPT, set_month, &sep}
+	, {-1, FSM_MATCH_STR(_T("Oct"),3), FSM_OPT, set_month, &oct}
+	, {-1, FSM_MATCH_STR(_T("Nov"),3), FSM_OPT, set_month, &nov}
+	, {-1, FSM_MATCH_STR(_T("Dec"),3), FSM_OPTEND, set_month, &dec}
 };
 
 
 /* date = month SP ( 2DIGIT | ( SP 1DIGIT )) */
 static CwtFsmTransition date_fsm[] = {
-	  { 1, FSM_MATCH_FSM(month_fsm), FSM_TERM, NULL, NULL }
-	, { 2, FSM_MATCH_STR(" ", 1), FSM_TERM, NULL, NULL }
-	, {-1, FSM_MATCH_FUNC(parse_mday), FSM_TERM, NULL, NULL }
+	  { 1, FSM_MATCH_FSM(month_fsm),   FSM_ACCEPT, NULL, NULL }
+	, { 2, FSM_MATCH_STR(" ", 1),      FSM_ACCEPT, NULL, NULL }
+	, {-1, FSM_MATCH_FUNC(parse_mday), FSM_ACCEPT, NULL, NULL }
 };
 
 
 static CwtFsmTransition time_fsm[] = {
-	  { 1, FSM_MATCH_FUNC(parse_hour), FSM_TERM, NULL, NULL }
-	, { 2, FSM_MATCH_CHAR(":",1), FSM_TERM, NULL, NULL }
-	, { 3, FSM_MATCH_FUNC(parse_min), FSM_TERM, NULL, NULL }
-	, { 4, FSM_MATCH_CHAR(":",1), FSM_TERM, NULL, NULL }
-	, {-1, FSM_MATCH_FUNC(parse_sec), FSM_TERM, NULL, NULL }
+	  { 1, FSM_MATCH_FUNC(parse_hour), FSM_ACCEPT, NULL, NULL }
+	, { 2, FSM_MATCH_CHAR(":",1),      FSM_ACCEPT, NULL, NULL }
+	, { 3, FSM_MATCH_FUNC(parse_min),  FSM_ACCEPT, NULL, NULL }
+	, { 4, FSM_MATCH_CHAR(":",1),      FSM_ACCEPT, NULL, NULL }
+	, {-1, FSM_MATCH_FUNC(parse_sec),  FSM_ACCEPT, NULL, NULL }
 };
 
 
 static CwtFsmTransition datetime_fsm[] = {
-	  { 1, FSM_MATCH_FSM(wday_fsm), FSM_TERM, NULL, NULL }
-	, { 2, FSM_MATCH_STR(" ", 1), FSM_TERM, NULL, NULL }
-	, { 3, FSM_MATCH_FSM(date_fsm), FSM_TERM, NULL, NULL }
-	, { 4, FSM_MATCH_STR(" ", 1), FSM_TERM, NULL, NULL }
-	, { 5, FSM_MATCH_FSM(time_fsm), FSM_TERM, NULL, NULL }
-	, { 6, FSM_MATCH_STR(" ", 1), FSM_TERM, NULL, NULL }
-	, {-1, FSM_MATCH_FUNC(parse_year), FSM_TERM, NULL, NULL }
+	  { 1, FSM_MATCH_FSM(wday_fsm),    FSM_ACCEPT, NULL, NULL }
+	, { 2, FSM_MATCH_STR(" ", 1),      FSM_ACCEPT, NULL, NULL }
+	, { 3, FSM_MATCH_FSM(date_fsm),    FSM_ACCEPT, NULL, NULL }
+	, { 4, FSM_MATCH_STR(" ", 1),      FSM_ACCEPT, NULL, NULL }
+	, { 5, FSM_MATCH_FSM(time_fsm),    FSM_ACCEPT, NULL, NULL }
+	, { 6, FSM_MATCH_STR(" ", 1),      FSM_ACCEPT, NULL, NULL }
+	, {-1, FSM_MATCH_FUNC(parse_year), FSM_ACCEPT, NULL, NULL }
 };
 
 

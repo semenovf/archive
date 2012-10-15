@@ -39,8 +39,15 @@ typedef enum _CwtFsmMatchType {
 		(fsm).belong    = belong_fn;                      \
 		(fsm).exact     = exact_fn;
 
-#define FSM_CHAINED FALSE
-#define FSM_TERM    TRUE
+#define FSM_NORMAL  0
+#define FSM_REJECT  1
+#define FSM_ACCEPT  2
+
+
+#define FSM_OPT     1
+#define FSM_OPTEND  2
+#define FSM_SEQ     3
+#define FSM_SEQEND  4
 
 typedef union _CwtFsmCondition {
 	struct { size_t len; void *chars; } str;
@@ -54,7 +61,7 @@ typedef struct _CwtFsmTransition {
 	CwtFsmMatchType match_type;
 	CwtFsmCondition condition;
 
-	BOOL is_term; /* last entry in the chain of ...*/
+	int status; /* last entry in the chain of ...*/
 
 	void (*action)(const void *data, size_t len, void *context, void *action_args);
 	void *action_args;

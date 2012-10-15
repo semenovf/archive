@@ -13,23 +13,25 @@
 #	error include <cwt/fsm.h> before using this header file
 #endif
 
+/* %x41-5A / %x61-7A   ; A-Z / a-z */
 static CwtFsmTransition ALPHA_FSM[] = {
-	{ -1, FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52), FSM_TERM, NULL, NULL }
+	{ -1, FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52), FSM_ACCEPT, NULL, NULL }
  };
 
+/* %x30-39 ; 0-9 */
 static CwtFsmTransition DIGIT_FSM[] = {
-	{ -1, FSM_MATCH_CHAR(_T("0123456789"), 10), FSM_TERM, NULL, NULL }
+	{ -1, FSM_MATCH_CHAR(_T("0123456789"), 10), FSM_ACCEPT, NULL, NULL }
 };
 
+/* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
 static CwtFsmTransition HEXDIG_FSM[] = {
-      {-1, FSM_MATCH_FSM(DIGIT_FSM), FSM_CHAINED, NULL, NULL  }
-    , {-1, FSM_MATCH_CHAR(_T("ABCDEFabcdef"), 12), FSM_TERM, NULL, NULL }
+      { 1, FSM_MATCH_FSM(DIGIT_FSM),               FSM_ACCEPT, NULL, NULL }
+    , { 2, FSM_MATCH_CHAR(_T("ABCDEFabcdef"), 12), FSM_ACCEPT, NULL, NULL }
+    , {-1, FSM_MATCH_NOTHING,                      FSM_REJECT, NULL, NULL }
 };
 
 /*
   RFC 2234
-
-     ALPHA          =  %x41-5A / %x61-7A   ; A-Z / a-z
 
         BIT            =  "0" / "1"
 
@@ -46,13 +48,9 @@ static CwtFsmTransition HEXDIG_FSM[] = {
         CTL            =  %x00-1F / %x7F
                                ; controls
 
-        DIGIT          =  %x30-39
-                               ; 0-9
 
         DQUOTE         =  %x22
                                ; " (Double Quote)
-
-        HEXDIG         =  DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
 
         HTAB           =  %x09
                                ; horizontal tab
