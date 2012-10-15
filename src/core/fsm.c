@@ -146,7 +146,7 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 
 	CWT_ASSERT(nchars_total_processed <= CWT_SSIZE_T_MAX);
 
-	if( trans->status == FSM_REJECT ) {
+	if( trans->status != FSM_ACCEPT ) {
 		nchars_processed = (ssize_t)-1;
 	}
 
