@@ -5,13 +5,68 @@
  *      Author: wladt
  */
 
-#include <cwt/utils.h>
+#include <cwt/uri.h>
 #include <cwt/fsm.h>
 #include <cwt/str.h>
 
+static CwtStrNS *__strNS = NULL; /* declare before header file 'uri-rfc3986.h' will be included */
+
 #include "../src/core/uri-rfc3986.h"
 
-static CwtUtilsNS *__utilsNS = NULL;
+static CwtUri*  __uri_create  (void);
+static void     __uri_free    (CwtUri *uri);
+static void     __uri_init    (CwtUri *uri);
+static void     __uri_destroy (CwtUri *uri);
+static BOOL     __uri_parse   (const CWT_CHAR *uri_string, CwtUri *uri);
+
+static CwtUriNS __cwtUriNS = {
+	  __uri_create
+	, __uri_free
+	, __uri_init
+	, __uri_destroy
+	, __uri_parse
+};
+
+DLL_API_EXPORT CwtUriNS* cwtUriNS(void)
+{
+	if( __strNS ) {
+		__strNS = cwtStrNS();
+	}
+	return &__cwtUriNS;
+}
+
+static CwtUri*  __uri_create (void)
+{
+	CwtUri *uri;
+	uri = CWT_MALLOC(CwtUri);
+	__uri_init(uri);
+	return uri;
+}
+
+static void __uri_free (CwtUri *uri)
+{
+	if( uri ) {
+		__uri_destroy(uri);
+		CWT_FREE(uri);
+	}
+}
+
+static inline void __uri_init (CwtUri *uri)
+{
+	if( uri )
+		cwtStrNS()->bzero(uri, sizeof(*uri));
+}
+
+static void __uri_destroy (CwtUri *uri)
+{
+	if( uri ) {
+		CWT_FREE(uri->scheme);
+		CWT_FREE(uri->path);
+		CWT_FREE(uri->host);
+		CWT_FREE(uri->query);
+	}
+}
+
 
 /**
  * @fn void CwtUtilsNS::parseURI(const CWT_CHAR *uri_string, CwtUri *uri)
@@ -24,38 +79,23 @@ static CwtUtilsNS *__utilsNS = NULL;
  * @param uri_string URI represented by a string
  * @param uri URI represented by it's components
  */
-BOOL __utils_parseURI(const CWT_CHAR *uri_string, CwtUri *uri)
+static BOOL __uri_parse(const CWT_CHAR *uri_string, CwtUri *uri)
 {
 	CwtFsm fsm;
 
-	if( !__utilsNS ) {
-		__utilsNS = cwtUtilsNS();
-		__strNS = cwtStrNS();
-	}
+	fsm_common_unused();
 
-	if( !uri_string || __strNS->strLen(uri_string) == 0 )
+	if( !uri_string || cwtStrNS()->strLen(uri_string) == 0 )
 		return FALSE;
 
-	FSM_INIT(fsm, CWT_CHAR, uri_reference_fsm, uri, cwtBelongCwtChar, cwtExactCwtChar);
-	return cwtFsmNS()->exec(&fsm, 0, uri_string, __strNS->strLen(uri_string)) >= 0
+
+	/* TODO remove this after successful testing URI namespace */
+	CWT_UNUSED(unreserved_fsm);
+
+	FSM_INIT(fsm, CWT_CHAR, NULL/* uri_reference_fsm*/, uri, cwtBelongCwtChar, cwtExactCwtChar);
+	return cwtFsmNS()->exec(&fsm, 0, uri_string, cwtStrNS()->strLen(uri_string)) >= 0
 			? TRUE
 			: FALSE;
 }
 
-void __utils_initURI (CwtUri *uri)
-{
-	if( uri )
-		cwtStrNS()->bzero(uri, sizeof(*uri));
-}
-
-void __utils_destroyURI (CwtUri *uri)
-{
-	if( uri ) {
-		CWT_FREE(uri->scheme);
-		CWT_FREE(uri->path);
-		CWT_FREE(uri->host);
-		CWT_FREE(uri->query);
-		__utils_initURI(uri);
-	}
-}
 

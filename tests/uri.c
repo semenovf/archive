@@ -6,12 +6,14 @@
  * @brief URI testing
  */
 #include <cwt/test.h>
-#include <cwt/utils.h>
+#include <cwt/uri.h>
 #include <cwt/str.h>
 #include <cwt/fsm.h>
 #include <cwt/logger.h>
 
 static CwtFsm __fsm;
+
+static CwtStrNS *__strNS = NULL; /* declare before header file 'uri-rfc3986.h' will be included */
 
 #include "../src/core/uri-rfc3986.h"
 
@@ -29,11 +31,10 @@ static void test_unreserved_fsm(void)
 	for( i = 0; i < n; i++ )
 		CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, &s[i], 1) >= 0);
 
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("?"), 1) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("+"), 1) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("/"), 1) >= 0) );
+	CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, _T("?"), 1) < 0 );
+	CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, _T("+"), 1) < 0 );
+	CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, _T("/"), 1) < 0 );
 }
-
 
 /* "%" HEXDIG HEXDIG */
 static void test_pct_encoded_fsm(void)
@@ -49,11 +50,11 @@ static void test_pct_encoded_fsm(void)
 	for( i = 0; i < n ; i++ )
 		CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, s[i], __strNS->strLen(s[i])) >= 0);
 
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 1) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 2) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 3) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("}{"), 2) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%%A9"), 4) >= 0) );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 1) < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 2) < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 3) < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("}{"), 2)  < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%%A9"), 4) < 0 );
 }
 
 /* "!" / "$" / "&" / "'" / "(" / ")"
@@ -72,9 +73,9 @@ static void test_sub_delims_fsm(void)
 	for( i = 0; i < n; i++ )
 		CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, &s[i], 1) >= 0);
 
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T(":"), 1) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("~"), 1) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("\\"), 1) >= 0) );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T(":"), 1) < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("~"), 1) < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("\\"), 1) < 0 );
 }
 
 static void test_pchar_fsm(void)
@@ -90,9 +91,9 @@ static void test_pchar_fsm(void)
 	for( i = 0; i < n; i++ )
 		CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, s[i], __strNS->strLen(s[i])) >= 0);
 
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 1) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 2) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 3) >= 0) );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 1) < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 2) < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 3) < 0 );
 }
 
 /* 1*pchar */
@@ -109,44 +110,41 @@ static void test_segment_nz_fsm(void)
 	for( i = 0; i < n; i++ )
 		CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, s[i], __strNS->strLen(s[i])) >= 0);
 
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("}"), 1) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 1) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 2) >= 0) );
-	CWT_TEST_FAIL(! (cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 3) >= 0) );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%BE%AR"), 6) == 3 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("}"), 1)   < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 1) < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 2) < 0 );
+	CWT_TEST_FAIL( cwtFsmNS()->exec(&__fsm, 0, _T("%AR"), 3) < 0 );
 }
-
 
 int main(int argc, char *argv[])
 {
-	CwtUtilsNS *utilsNS = cwtUtilsNS();
+/*
+	CwtUriNS *uriNS = cwtUriNS();
 	CwtUri uri;
-	/*const CWT_CHAR *uri_string = _T("https://192.168.1.1");*/
+*/
 
-	__strNS = cwtStrNS(); /* declared in ../src/core/uri-rfc3986.h */
-	FSM_INIT(__fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	__strNS = cwtStrNS();
+	/*const CWT_CHAR *uri_string = _T("https://192.168.1.1");*/
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
-	CWT_UNUSED(uri_reference_fsm);
+	fsm_common_unused();
 
-	CWT_BEGIN_TESTS(8);
+	FSM_INIT(__fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+
+	CWT_BEGIN_TESTS(110);
 
 	test_unreserved_fsm();
 	test_pct_encoded_fsm();
-
 	test_sub_delims_fsm();
 	test_pchar_fsm();
 	test_segment_nz_fsm();
 
-	utilsNS->initURI(&uri);
-
 /*
-	CWT_TEST_OK(utilsNS->parseURI(uri_string, &uri));
-	CWT_TEST_OK(__strNS->strEq(_T("https"), uri.scheme));
-	CWT_TEST_OK(__strNS->strEq(_T("192.168.1.1"), uri.host));
+	uriNS->init(&uri);
+	uriNS->destroy(&uri);
 */
-
-	utilsNS->destroyURI(&uri);
 
 	CWT_END_TESTS;
 }

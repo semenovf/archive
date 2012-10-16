@@ -43,12 +43,6 @@ typedef enum _CwtFsmMatchType {
 #define FSM_REJECT  1
 #define FSM_ACCEPT  2
 
-
-#define FSM_OPT     1
-#define FSM_OPTEND  2
-#define FSM_SEQ     3
-#define FSM_SEQEND  4
-
 typedef union _CwtFsmCondition {
 	struct { size_t len; void *chars; } str;
 	struct { size_t unused; struct _CwtFsmTransition *tab; } trans_tab;
@@ -57,6 +51,7 @@ typedef union _CwtFsmCondition {
 
 typedef struct _CwtFsmTransition {
 	int state_next;
+	int state_fail;
 
 	CwtFsmMatchType match_type;
 	CwtFsmCondition condition;

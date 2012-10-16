@@ -67,16 +67,22 @@ DLL_API_EXPORT BOOL cwtExactInt(const void *s, size_t n1, const void *seq, size_
 }
 
 
-static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len)
+static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len_orig)
 {
 	const char *ptr;
+	BOOL accepted = FALSE;
 	ssize_t nchars_processed;
 	size_t nchars_total_processed;
 	CwtFsmTransition *trans;
+	size_t len;
+
+	if( len_orig == 0 )
+		return (ssize_t)0;
 
 	ptr = (const char*)data;
-	nchars_processed = 0/*(ssize_t)-1*/;
-	nchars_total_processed = 0;
+	len = len_orig;
+	nchars_processed = (ssize_t)-1;
+	nchars_total_processed = (size_t)0;
 
 	trans = &fsm->trans_tab[state_cur];
 
@@ -94,8 +100,6 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 		case Cwt_Fsm_Match_Char:
 			if( fsm->belong(ptr, trans->condition.str.chars, trans->condition.str.len) ) {
 				nchars_processed = 1;
-			} else {
-				nchars_processed = (ssize_t)-1;
 			}
 			break;
 
@@ -113,44 +117,53 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			break;
 
 		case Cwt_Fsm_Match_Nothing:
-			if( trans->state_next >= 0 )
-				nchars_processed = 0;
-			else
-				nchars_processed = (ssize_t)-1;
+			nchars_processed = 0;
 			break;
 		}
 
-		/* accepted */
 		if( nchars_processed >= 0 ) {
 			ptr += (fsm->sizeof_char * nchars_processed);
 			len -= nchars_processed;
 			nchars_total_processed += nchars_processed;
 
-			if( trans->action && trans->status == FSM_ACCEPT )
-				trans->action(data, (size_t)nchars_processed, fsm->context, trans->action_args);
+			if( trans->status == FSM_ACCEPT ) {
+				accepted = TRUE;
 
-			if( trans->status == FSM_ACCEPT )
+				if( trans->action )
+					trans->action(data, (size_t)nchars_processed, fsm->context, trans->action_args);
+			}
+
+			state_cur = trans->state_next;
+		} else {
+			 /*1 repetition failed */
+/*
+			if( trans->status != FSM_ACCEPT )
+				accepted = FALSE;
+*/
+
+			 /*2 repetition stopped*/
+/*
+			if( trans->status == FSM_ACCEPT && trans->state_next >= 0 ) {
 				break;
+			}
+*/
+
+			state_cur = trans->state_fail;
 		}
-
-		if( trans->status == FSM_REJECT )
-			break;
-
-		state_cur = trans->state_next;
 
 		if( state_cur < 0 )
 			break;
 
 		trans = &fsm->trans_tab[state_cur];
+		nchars_processed = (ssize_t)-1;
+
+		if( trans->status == FSM_REJECT )
+			return (ssize_t)-1;
 	}
 
 	CWT_ASSERT(nchars_total_processed <= CWT_SSIZE_T_MAX);
 
-	if( trans->status != FSM_ACCEPT ) {
-		nchars_processed = (ssize_t)-1;
-	}
-
-	return (nchars_processed >= 0)
+	return accepted
 			? (ssize_t)nchars_total_processed
 			: (ssize_t)-1;
 }

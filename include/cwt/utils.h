@@ -10,16 +10,7 @@
 
 #include <cwt/types.h>
 
-typedef struct _CwtUri {
-	CWT_CHAR *scheme;
-	CWT_CHAR *host;
-	UINT16    port;
-	BOOL      host_is_ip;
-	CWT_CHAR *path;
-	CWT_CHAR *query;
-} CwtUri;
-
-typedef struct CwtUtilsNS {
+typedef struct _CwtUtilsNS {
 	INT32  (*calculateCRC32) (const void *pdata, size_t nbytes, INT32 initial);
 	INT64  (*calculateCRC64) (const void *pdata, size_t nbytes, INT64 initial);
 	void   (*swapPtr)        (void **p1, void **p2);
@@ -33,10 +24,6 @@ typedef struct CwtUtilsNS {
 	INT64  (*bytesToInt64)   (const BYTE bytes[8]);
 	void   (*floatToBytes)   (float f, BYTE bytes[4]);
 	float  (*bytesToFloat)   (const BYTE bytes[4]);
-
-	BOOL   (*parseURI)       (const CWT_CHAR *uri_string, CwtUri *uri);
-	void   (*initURI)        (CwtUri *uri);
-	void   (*destroyURI)     (CwtUri *uri);
 } CwtUtilsNS;
 
 

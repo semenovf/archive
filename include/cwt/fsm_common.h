@@ -13,22 +13,37 @@
 #	error include <cwt/fsm.h> before using this header file
 #endif
 
+static void fsm_common_unused(void);
+
 /* %x41-5A / %x61-7A   ; A-Z / a-z */
 static CwtFsmTransition ALPHA_FSM[] = {
-	{ -1, FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52), FSM_ACCEPT, NULL, NULL }
+	  { -1,-1, FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52), FSM_ACCEPT, NULL, NULL }
  };
 
 /* %x30-39 ; 0-9 */
 static CwtFsmTransition DIGIT_FSM[] = {
-	{ -1, FSM_MATCH_CHAR(_T("0123456789"), 10), FSM_ACCEPT, NULL, NULL }
+	  {-1,-1, FSM_MATCH_CHAR(_T("0123456789"), 10), FSM_ACCEPT, NULL, NULL }
 };
 
 /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
 static CwtFsmTransition HEXDIG_FSM[] = {
-      { 1, FSM_MATCH_FSM(DIGIT_FSM),               FSM_ACCEPT, NULL, NULL }
-    , { 2, FSM_MATCH_CHAR(_T("ABCDEFabcdef"), 12), FSM_ACCEPT, NULL, NULL }
-    , {-1, FSM_MATCH_NOTHING,                      FSM_REJECT, NULL, NULL }
+	  {-1, 1, FSM_MATCH_FSM(DIGIT_FSM),               FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_CHAR(_T("ABCDEFabcdef"), 12), FSM_ACCEPT, NULL, NULL }
 };
+
+
+/* %x20  ; space */
+static CwtFsmTransition SP_FSM[] = {
+	  {-1,-1, FSM_MATCH_STR(_T(" "), 1), FSM_ACCEPT, NULL, NULL }
+};
+
+static void fsm_common_unused(void)
+{
+	CWT_UNUSED(ALPHA_FSM);
+	CWT_UNUSED(DIGIT_FSM);
+	CWT_UNUSED(HEXDIG_FSM);
+	CWT_UNUSED(SP_FSM);
+}
 
 /*
   RFC 2234
@@ -63,9 +78,6 @@ static CwtFsmTransition HEXDIG_FSM[] = {
 
         OCTET          =  %x00-FF
                                ; 8 bits of data
-
-        SP             =  %x20
-                               ; space
 
         VCHAR          =  %x21-7E
                                ; visible (printing) characters

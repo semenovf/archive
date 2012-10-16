@@ -13,6 +13,8 @@
 #include <cwt/str.h>
 #include <cwt/test.h>
 
+static CwtFsmNS *__fsmNS = NULL;
+
 static const char *__alpha_chars     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static const char *__digit_chars     = "0123456789";
 
@@ -77,267 +79,155 @@ static void test_int_helpers(void)
 	CWT_TEST_NOK(cwtExactInt(&__ints, nints, NULL, 0));
 }
 
-
-/*
- datetime = wday SP date SP time SP 4DIGIT
- date    = month SP ( 2DIGIT | ( SP 1DIGIT ))
- time    = 2DIGIT ":" 2DIGIT ":" 2DIGIT
- wday    = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
- month   = "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun"
- 	 	 | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec"
-*/
-
-struct set_weekday_args {
-	int wday;
+static CwtFsmTransition DIGIT_FSM[] = {
+	  {-1,-1, FSM_MATCH_CHAR(_T("0123456789"), 10), FSM_ACCEPT, NULL, NULL }
 };
 
-struct set_month_args {
-	int mon;
+static CwtFsmTransition HEXDIG_FSM[] = {
+	  {-1, 1, FSM_MATCH_FSM(DIGIT_FSM),               FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_CHAR(_T("ABCDEFabcdef"), 12), FSM_ACCEPT, NULL, NULL }
 };
 
 
-size_t parse_seq(const CWT_CHAR *data, size_t len, size_t from, size_t to, BOOL (*is_elem_fn)(CWT_CHAR) )
+static void test_alternatives_simple(void)
 {
-	size_t n = 0;
-	while( n <= to && len-- && is_elem_fn(*data++) ) {
-		n++;
-	}
-	return n >= from && n <= to	? n	: 0;
-}
-
-static void set_weekday(const void *data, size_t len, void *context, void *action_args)
-{
-	struct set_weekday_args *swa = (struct set_weekday_args*)action_args;
-	struct tm *tm = (struct tm*)context;
-	CWT_UNUSED(data);
-	CWT_UNUSED(len);
-	tm->tm_wday = swa->wday;
-}
-
-static void set_month(const void *data, size_t len, void *context, void *action_args)
-{
-	struct set_month_args *sma = (struct set_month_args*)action_args;
-	struct tm *tm = (struct tm*)context;
-	CWT_UNUSED(data);
-	CWT_UNUSED(len);
-	tm->tm_mon = sma->mon;
-}
-
-
-static BOOL parse_uint_digits(const CWT_CHAR *s, size_t len, int radix, UINT *d)
-{
-	CwtStrNS *strNS = cwtStrNS();
-	BOOL ok;
-	CWT_CHAR buf[64];
-	UINT n;
-	size_t i;
-
-	strNS->strNcpy(buf, s, len);
-	buf[len] = 0;
-
-	for( i = 0; i < len; i++ )
-		if( !strNS->isDigit(buf[i]) )
-			return FALSE;
-
-	n = strNS->toUINT(buf, radix, &ok);
-
-	if( ok && d )
-		*d = n;
-	return ok;
-}
-
-static ssize_t parse_mday(void *context, const void *data, size_t len)
-{
-	if( len >= 2 ) {
-		struct tm *tm = (struct tm*)context;
-		const CWT_CHAR *ptr = (const CWT_CHAR *)data;
-		UINT mday;
-		len = 2;
-
-		if( cwtStrNS()->isSpace(ptr[0]) ) {
-			ptr++;
-			len--;
-		}
-
-		if( parse_uint_digits(ptr, len, 10, &mday)
-				&& mday < 32 ) {
-			tm->tm_mday = (int)mday;
-			return (ssize_t)len;
-		}
-	}
-	return (ssize_t)-1;
-}
-
-
-static ssize_t parse_hour(void *context, const void *data, size_t len)
-{
-	if( len >= 2 ) {
-		struct tm *tm = (struct tm*)context;
-		UINT hour;
-
-		if( parse_uint_digits((const CWT_CHAR *)data, 2, 10, &hour)
-				&& hour < 24 ) {
-			tm->tm_hour = (int)hour;
-			return 2;
-		}
-	}
-	return (ssize_t)-1;
-}
-
-static ssize_t parse_min(void *context, const void *data, size_t len)
-{
-	if( len >= 2 ) {
-		struct tm *tm = (struct tm*)context;
-		UINT min;
-
-		if( parse_uint_digits((const CWT_CHAR *)data, 2, 10, &min)
-				&& min < 60 ) {
-			tm->tm_min = (int)min;
-			return 2;
-		}
-	}
-	return (ssize_t)-1;
-}
-
-static ssize_t parse_sec(void *context, const void *data, size_t len)
-{
-	if( len >= 2 ) {
-		struct tm *tm = (struct tm*)context;
-		UINT sec;
-
-		if( parse_uint_digits((const CWT_CHAR *)data, 2, 10, &sec)
-				&& sec < 60 ) {
-			tm->tm_sec = (int)sec;
-			return 2;
-		}
-	}
-	return (ssize_t)-1;
-}
-
-static ssize_t parse_year(void *context, const void *data, size_t len)
-{
-	if( len >= 4 ) {
-		struct tm *tm = (struct tm*)context;
-		UINT year;
-
-		if( parse_uint_digits((const CWT_CHAR *)data, 4, 10, &year) ) {
-			tm->tm_year = ((int)year) - 1900;
-			return 4;
-		}
-	}
-	return (ssize_t)-1;
-}
-
-
-static struct set_weekday_args sun = {0};
-static struct set_weekday_args mon = {1};
-static struct set_weekday_args tue = {2};
-static struct set_weekday_args wed = {3};
-static struct set_weekday_args thu = {4};
-static struct set_weekday_args fri = {5};
-static struct set_weekday_args sat = {6};
-
-static CwtFsmTransition wday_fsm[] = {
-	  {-1, FSM_MATCH_STR(_T("Mon"),3), FSM_OPT, set_weekday, &mon }
-	, {-1, FSM_MATCH_STR(_T("Tue"),3), FSM_OPT, set_weekday, &tue }
-	, {-1, FSM_MATCH_STR(_T("Wed"),3), FSM_OPT, set_weekday, &wed }
-	, {-1, FSM_MATCH_STR(_T("Thu"),3), FSM_OPT, set_weekday, &thu }
-	, {-1, FSM_MATCH_STR(_T("Fri"),3), FSM_OPT, set_weekday, &fri }
-	, {-1, FSM_MATCH_STR(_T("Sat"),3), FSM_OPT, set_weekday, &sat }
-	, {-1, FSM_MATCH_STR(_T("Sun"),3), FSM_ACCEPT, set_weekday,    &sun }
-};
-
-
-
-/*
-month   = "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun"
- 	 	 | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec"
-*/
-static struct set_month_args jan = {0};
-static struct set_month_args feb = {1};
-static struct set_month_args mar = {2};
-static struct set_month_args apr = {3};
-static struct set_month_args may = {4};
-static struct set_month_args jun = {5};
-static struct set_month_args jul = {6};
-static struct set_month_args aug = {7};
-static struct set_month_args sep = {8};
-static struct set_month_args oct = {9};
-static struct set_month_args nov = {10};
-static struct set_month_args dec = {11};
-
-static CwtFsmTransition month_fsm[] = {
-	  {-1, FSM_MATCH_STR(_T("Jan"),3), FSM_OPT, set_month, &jan}
-	, {-1, FSM_MATCH_STR(_T("Feb"),3), FSM_OPT, set_month, &feb}
-	, {-1, FSM_MATCH_STR(_T("Mar"),3), FSM_OPT, set_month, &mar}
-	, {-1, FSM_MATCH_STR(_T("Apr"),3), FSM_OPT, set_month, &apr}
-	, {-1, FSM_MATCH_STR(_T("May"),3), FSM_OPT, set_month, &may}
-	, {-1, FSM_MATCH_STR(_T("Jun"),3), FSM_OPT, set_month, &jun}
-	, {-1, FSM_MATCH_STR(_T("Jul"),3), FSM_OPT, set_month, &jul}
-	, {-1, FSM_MATCH_STR(_T("Aug"),3), FSM_OPT, set_month, &aug}
-	, {-1, FSM_MATCH_STR(_T("Sep"),3), FSM_OPT, set_month, &sep}
-	, {-1, FSM_MATCH_STR(_T("Oct"),3), FSM_OPT, set_month, &oct}
-	, {-1, FSM_MATCH_STR(_T("Nov"),3), FSM_OPT, set_month, &nov}
-	, {-1, FSM_MATCH_STR(_T("Dec"),3), FSM_OPTEND, set_month, &dec}
-};
-
-
-/* date = month SP ( 2DIGIT | ( SP 1DIGIT )) */
-static CwtFsmTransition date_fsm[] = {
-	  { 1, FSM_MATCH_FSM(month_fsm),   FSM_ACCEPT, NULL, NULL }
-	, { 2, FSM_MATCH_STR(" ", 1),      FSM_ACCEPT, NULL, NULL }
-	, {-1, FSM_MATCH_FUNC(parse_mday), FSM_ACCEPT, NULL, NULL }
-};
-
-
-static CwtFsmTransition time_fsm[] = {
-	  { 1, FSM_MATCH_FUNC(parse_hour), FSM_ACCEPT, NULL, NULL }
-	, { 2, FSM_MATCH_CHAR(":",1),      FSM_ACCEPT, NULL, NULL }
-	, { 3, FSM_MATCH_FUNC(parse_min),  FSM_ACCEPT, NULL, NULL }
-	, { 4, FSM_MATCH_CHAR(":",1),      FSM_ACCEPT, NULL, NULL }
-	, {-1, FSM_MATCH_FUNC(parse_sec),  FSM_ACCEPT, NULL, NULL }
-};
-
-
-static CwtFsmTransition datetime_fsm[] = {
-	  { 1, FSM_MATCH_FSM(wday_fsm),    FSM_ACCEPT, NULL, NULL }
-	, { 2, FSM_MATCH_STR(" ", 1),      FSM_ACCEPT, NULL, NULL }
-	, { 3, FSM_MATCH_FSM(date_fsm),    FSM_ACCEPT, NULL, NULL }
-	, { 4, FSM_MATCH_STR(" ", 1),      FSM_ACCEPT, NULL, NULL }
-	, { 5, FSM_MATCH_FSM(time_fsm),    FSM_ACCEPT, NULL, NULL }
-	, { 6, FSM_MATCH_STR(" ", 1),      FSM_ACCEPT, NULL, NULL }
-	, {-1, FSM_MATCH_FUNC(parse_year), FSM_ACCEPT, NULL, NULL }
-};
-
-
-
-static void test_parse_date(void)
-{
-	CwtFsmNS *fsmNS = cwtFsmNS();
-	const CWT_CHAR *date_str = _T("Sat Apr 29 12:34:56 1972");
-	const CWT_CHAR *date_str_incorrect_0 = _T("Sat Apt 29 12:34:56 1972"); /* invalid month */
-	const CWT_CHAR *date_str_incorrect_1 = _T("Sat Apr 29 32:34:56 1972"); /* invalid hour */
-	const CWT_CHAR *date_str_incorrect_2 = _T("Sat Apr 29 12:34:56  1972"); /* extra space char before year */
-	struct tm tm;
+	const CWT_CHAR *hexdig = _T("F");
+	const CWT_CHAR *digit = _T("9");
+	const CWT_CHAR *notdigit = _T("w");
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, datetime_fsm, &tm, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, HEXDIG_FSM, NULL, cwtBelongCwtChar, cwtExactCwtChar);
 
-	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str, cwtStrNS()->strLen(date_str)) >= 0);
-
-	CWT_TEST_OK(tm.tm_wday == 6);
-	CWT_TEST_OK(tm.tm_mon == 3);
-	CWT_TEST_OK(tm.tm_hour == 12);
-	CWT_TEST_OK(tm.tm_min == 34);
-	CWT_TEST_OK(tm.tm_sec == 56);
-	CWT_TEST_OK(tm.tm_year + 1900 == 1972);
-
-	CWT_TEST_NOK(fsmNS->exec(&fsm, 0, date_str_incorrect_0, cwtStrNS()->strLen(date_str_incorrect_0)) >= 0);
-	CWT_TEST_NOK(fsmNS->exec(&fsm, 0, date_str_incorrect_1, cwtStrNS()->strLen(date_str_incorrect_1)) >= 0);
-	CWT_TEST_NOK(fsmNS->exec(&fsm, 0, date_str_incorrect_2, cwtStrNS()->strLen(date_str_incorrect_2)) >= 0);
-
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hexdig, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hexdig, 1) == 1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, digit, 1) == 1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdigit, 1) < 0);
 }
 
+
+/* 0*DIGIT */
+static CwtFsmTransition decimal0more_fsm[] = {
+	  { 0, 1, FSM_MATCH_FSM(DIGIT_FSM), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,        FSM_ACCEPT, NULL, NULL }
+};
+
+static void test_repetition_0more(void) {
+	CwtFsm fsm;
+	const CWT_CHAR *dec = _T("1972");
+	const CWT_CHAR *notdec = _T("x1972");
+
+	FSM_INIT(fsm, CWT_CHAR, decimal0more_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 1) == 1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 2) == 2);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 3) == 3);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 4) == 4);
+
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 1) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 2) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 3) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 4) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 5) == 0);
+}
+
+
+/* 1*DIGIT */
+static CwtFsmTransition decimal_fsm[] = {
+	  { 0,-1, FSM_MATCH_FSM(DIGIT_FSM), FSM_ACCEPT, NULL, NULL }
+};
+
+/* 2*DIGIT */
+static CwtFsmTransition decimal2_fsm[] = {
+	  { 1,-1, FSM_MATCH_FSM(DIGIT_FSM), FSM_NORMAL, NULL, NULL }
+	, { 1,-1, FSM_MATCH_FSM(DIGIT_FSM), FSM_ACCEPT, NULL, NULL }
+};
+
+
+/* 1*HEXDIG_FSM */
+static CwtFsmTransition hex_fsm[] = {
+      { 0,-1, FSM_MATCH_FSM(HEXDIG_FSM), FSM_ACCEPT, NULL, NULL }
+};
+
+static void test_repetition_1more(void)
+{
+	CwtFsm fsm;
+	const CWT_CHAR *dec =    _T("1972");
+	const CWT_CHAR *notdec = _T("x1972");
+	const CWT_CHAR *hex =    _T("BEAF");
+	const CWT_CHAR *nothex = _T("BEAR");
+
+	FSM_INIT(fsm, CWT_CHAR, decimal_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 1) == 1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 2) == 2);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 3) == 3);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 4) == 4);
+
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 1) < 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 2) < 0);
+
+	fsm.trans_tab = decimal2_fsm;
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 1) == -1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 2) == 2);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 3) == 3);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 4) == 4);
+
+
+	fsm.trans_tab = hex_fsm;
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 1) == 1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 2) == 2);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 3) == 3);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 4) == 4);
+
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 1) == 1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 2) == 2);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 3) == 3);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 4) == 3);
+}
+
+
+/* ( "0" ("x" / "X") hex ) / decimal */
+static CwtFsmTransition number_fsm[] = {
+	  { 1, 3, FSM_MATCH_STR(_T("0"), 1),   FSM_NORMAL, NULL, NULL }
+	, { 2, 3, FSM_MATCH_CHAR(_T("xX"), 2), FSM_NORMAL, NULL, NULL }
+	, {-1, 3, FSM_MATCH_FSM(hex_fsm),      FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(decimal_fsm),  FSM_ACCEPT, NULL, NULL }
+};
+
+
+static void test_alternatives(void)
+{
+	const CWT_CHAR *hex = _T("0xDEAD");
+	const CWT_CHAR *decimal = _T("1972");
+	const CWT_CHAR *notnumber = _T("[number]");
+	CwtFsm fsm;
+
+	FSM_INIT(fsm, CWT_CHAR, number_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 1) < 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 2) < 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 3) == 3);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 4) == 4);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 5) == 5);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 6) == 6);
+
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 1) == 1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 2) == 2);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 3) == 3);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 4) == 4);
+
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notnumber, 1) < 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notnumber, 2) < 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notnumber, 3) < 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notnumber, 8) < 0);
+}
 
 
 int main(int argc, char *argv[])
@@ -345,12 +235,18 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(186);
+	__fsmNS = cwtFsmNS();
+
+	CWT_BEGIN_TESTS(230);
 
 	test_char_helpers();
 	test_cwt_char_helpers();
 	test_int_helpers();
-	test_parse_date();
+
+	test_alternatives_simple();
+	test_repetition_0more();
+	test_repetition_1more();
+	test_alternatives();
 
 	CWT_END_TESTS;
 }
