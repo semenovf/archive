@@ -91,6 +91,7 @@ static BOOL __uri_parse(const CWT_CHAR *uri_string, CwtUri *uri)
 
 	/* TODO remove this after successful testing URI namespace */
 	CWT_UNUSED(unreserved_fsm);
+	CWT_UNUSED(segment_nz_fsm);
 
 	FSM_INIT(fsm, CWT_CHAR, NULL/* uri_reference_fsm*/, uri, cwtBelongCwtChar, cwtExactCwtChar);
 	return cwtFsmNS()->exec(&fsm, 0, uri_string, cwtStrNS()->strLen(uri_string)) >= 0

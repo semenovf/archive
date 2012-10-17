@@ -135,19 +135,6 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 
 			state_cur = trans->state_next;
 		} else {
-			 /*1 repetition failed */
-/*
-			if( trans->status != FSM_ACCEPT )
-				accepted = FALSE;
-*/
-
-			 /*2 repetition stopped*/
-/*
-			if( trans->status == FSM_ACCEPT && trans->state_next >= 0 ) {
-				break;
-			}
-*/
-
 			state_cur = trans->state_fail;
 		}
 
