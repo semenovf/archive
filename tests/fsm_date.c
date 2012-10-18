@@ -109,10 +109,11 @@ static ssize_t parse_mday(void *context, const void *data, size_t len)
 }
 
 /* 2DIGIT */
-static ssize_t parse_hour(void *context, const void *data, size_t len)
+static ssize_t parse_hour(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
 {
+	CWT_UNUSED(fn_context);
 	if( len >= 2 ) {
-		struct tm *tm = (struct tm*)context;
+		struct tm *tm = (struct tm*)fsm->context;
 		UINT hour;
 
 		if( parse_uint_digits((const CWT_CHAR *)data, 2, 10, &hour)
@@ -125,10 +126,11 @@ static ssize_t parse_hour(void *context, const void *data, size_t len)
 }
 
 /* 2DIGIT */
-static ssize_t parse_min(void *context, const void *data, size_t len)
+static ssize_t parse_min(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
 {
+	CWT_UNUSED(fn_context);
 	if( len >= 2 ) {
-		struct tm *tm = (struct tm*)context;
+		struct tm *tm = (struct tm*)fsm->context;
 		UINT min;
 
 		if( parse_uint_digits((const CWT_CHAR *)data, 2, 10, &min)
@@ -141,10 +143,11 @@ static ssize_t parse_min(void *context, const void *data, size_t len)
 }
 
 /* 2DIGIT */
-static ssize_t parse_sec(void *context, const void *data, size_t len)
+static ssize_t parse_sec(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
 {
+	CWT_UNUSED(fn_context);
 	if( len >= 2 ) {
-		struct tm *tm = (struct tm*)context;
+		struct tm *tm = (struct tm*)fsm->context;
 		UINT sec;
 
 		if( parse_uint_digits((const CWT_CHAR *)data, 2, 10, &sec)
@@ -157,10 +160,11 @@ static ssize_t parse_sec(void *context, const void *data, size_t len)
 }
 
 /* 4DIGIT */
-static ssize_t parse_year(void *context, const void *data, size_t len)
+static ssize_t parse_year(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
 {
+	CWT_UNUSED(fn_context);
 	if( len >= 4 ) {
-		struct tm *tm = (struct tm*)context;
+		struct tm *tm = (struct tm*)fsm->context;
 		UINT year;
 
 		if( parse_uint_digits((const CWT_CHAR *)data, 4, 10, &year) ) {
@@ -227,16 +231,16 @@ static CwtFsmTransition month_fsm[] = {
 static CwtFsmTransition date_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(month_fsm),   FSM_NORMAL, NULL, NULL }
 	, { 2,-1, FSM_MATCH_FSM(SP_FSM),      FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FUNC(parse_mday), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FUNC(parse_mday,NULL), FSM_ACCEPT, NULL, NULL }
 };
 
 /* 2DIGIT ":" 2DIGIT ":" 2DIGIT */
 static CwtFsmTransition time_fsm[] = {
-	  { 1,-1, FSM_MATCH_FUNC(parse_hour), FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FUNC(parse_hour,NULL), FSM_NORMAL, NULL, NULL }
 	, { 2,-1, FSM_MATCH_CHAR(":",1),      FSM_NORMAL, NULL, NULL }
-	, { 3,-1, FSM_MATCH_FUNC(parse_min),  FSM_NORMAL, NULL, NULL }
+	, { 3,-1, FSM_MATCH_FUNC(parse_min,NULL),  FSM_NORMAL, NULL, NULL }
 	, { 4,-1, FSM_MATCH_CHAR(":",1),      FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FUNC(parse_sec),  FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FUNC(parse_sec,NULL),  FSM_ACCEPT, NULL, NULL }
 };
 
 
@@ -248,7 +252,7 @@ static CwtFsmTransition datetime_fsm[] = {
 	, { 4,-1, FSM_MATCH_FSM(SP_FSM),      FSM_NORMAL, NULL, NULL }
 	, { 5,-1, FSM_MATCH_FSM(time_fsm),    FSM_NORMAL, NULL, NULL }
 	, { 6,-1, FSM_MATCH_FSM(SP_FSM),      FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FUNC(parse_year), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FUNC(parse_year,NULL), FSM_ACCEPT, NULL, NULL }
 };
 
 

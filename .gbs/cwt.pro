@@ -33,6 +33,7 @@ SUBDIRS  =            \
     tests/io/channel_tcp_socket \
     tests/fsm         \
     tests/fsm_date    \
+    tests/fsm_rep     \
     tests/mdarr       \
     tests/uri         \
     examples/app

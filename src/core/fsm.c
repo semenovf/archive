@@ -14,7 +14,7 @@
 static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len);
 
 static CwtFsmNS __cwtFsmNS = {
-	__fsm_exec
+	  __fsm_exec
 };
 
 
@@ -67,6 +67,77 @@ DLL_API_EXPORT BOOL cwtExactInt(const void *s, size_t n1, const void *seq, size_
 }
 
 
+/**
+ *
+ * @param fsm
+ * @param fn_context
+ * @param data
+ * @param len
+ * @return
+ */
+ssize_t cwtFsmRepetition(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
+{
+	CwtFsmRepetitionContext *rep_context = (CwtFsmRepetitionContext*)fn_context;
+	CwtFsm rep_fsm;
+	const char *ptr;
+	int i, j;
+	int limits[2];
+	ssize_t nchars_processed;
+	size_t nchars_total_processed;
+
+	CWT_ASSERT(fn_context);
+	CWT_ASSERT(fsm);
+
+	ptr = (const char*)data;
+
+	if( !ptr )
+		return 0;
+
+	if( rep_context->from < 0 )
+		rep_context->from = 0;
+
+	if( rep_context->count < 0 )
+		rep_context->count = CWT_INT_MAX - rep_context->from;
+
+	if( rep_context->count == 0 )
+		return (ssize_t)0;
+
+	memcpy(&rep_fsm, fsm, sizeof(CwtFsm));
+	rep_fsm.trans_tab = rep_context->trans_tab;
+
+	nchars_processed = (ssize_t)-1;
+	nchars_total_processed = 0;
+
+	limits[0] = rep_context->from;
+	limits[1] = rep_context->from + rep_context->count;
+
+	for( j = 0, i = 0; j < 2; j++ ) {
+		for( ; i < limits[j] && len > 0; i++ ) {
+
+			nchars_processed = __fsm_exec(&rep_fsm, 0, ptr, len);
+
+			if( j == 0 && nchars_processed < 0 ) {
+				return (ssize_t)-1;
+			}
+
+			if( nchars_processed >= 0) {
+				len -= nchars_processed;
+				ptr += (rep_fsm.sizeof_char * nchars_processed);
+
+				if( j > 0 ) {
+					nchars_total_processed += (size_t)nchars_processed;
+				}
+			}
+		}
+	}
+
+	CWT_ASSERT(nchars_total_processed <= CWT_SSIZE_T_MAX);
+
+	return i >= rep_context->from
+			? (ssize_t)nchars_total_processed
+			: (ssize_t)-1;
+}
+
 static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len_orig)
 {
 	const char *ptr;
@@ -113,7 +184,7 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			break;
 
 		case Cwt_Fsm_Match_Func:
-			nchars_processed = trans->condition.trans_fn.fn(fsm->context, ptr, len);
+			nchars_processed = trans->condition.trans_fn.fn(fsm, trans->condition.trans_fn.fn_context, ptr, len);
 			break;
 
 		case Cwt_Fsm_Match_Nothing:
@@ -136,6 +207,13 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			state_cur = trans->state_next;
 		} else {
 			state_cur = trans->state_fail;
+/* {{{ */
+			if( !accepted && state_cur >= 0 ) {
+				ptr = (const char*)data;
+				len = len_orig;
+				nchars_total_processed = (size_t)0;
+			}
+/*}}}*/
 		}
 
 		if( state_cur < 0 )

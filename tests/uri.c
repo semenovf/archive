@@ -41,6 +41,12 @@ static struct _FsmTestEntry {
 	const CWT_CHAR *const valid_str[5];
 	struct _FsmInvalidEntry invalid_entries[5];
 } __fsmTestEntries[] = {
+		/* *2( h16 ":" ) h16 */
+/*
+		{ VHEADER(ipv6address_fsm_5_1)
+			, {_T("AB:CD"), VNULL }
+			, { INULL }}
+*/
 
 		/* ALPHA / DIGIT / "-" / "." / "_" / "~" */
 		{ VHEADER(unreserved_fsm)
@@ -137,19 +143,28 @@ static struct _FsmTestEntry {
 		, { VHEADER(ipv6address_fsm_4_1)
 			, { _T("AB"), _T("AB:CD"), VNULL }
 			, {   {-1, _T(":AB") }
-			    , {-1, _T("AB:??") }
+			    , { 2, _T("AB:??") }
 				, INULL }}
 
 		/* [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32 */
 		, { VHEADER(ipv6address_fsm_4)
-			, { _T("::1B:2C:3D:192.168.1.1"), _T("AB:BC::1B:2C:3D:192.168.1.1"), VNULL }
+			, {   _T("::1B:2C:3D:192.168.1.1")
+				, _T("AB::01:23:45:192.168.1.1")
+				, _T("AB:CD::1B:2C:3D:192.168.1.1"), VNULL }
 			, {   { -1, _T("AR::1B:2C:3D:4E:192.168.1.1") }
 			 	, { -1, _T("AB:BC::1B:2C:192.168.1.1") }
 				, INULL } }
 
+
 		/* *2( h16 ":" ) h16 */
 		, { VHEADER(ipv6address_fsm_5_1)
 			, {_T("AB"), _T("AB:CD"), _T("AB:CD:EF"), VNULL }
+			, { {-1, _T("$F") }
+				, INULL }}
+
+		/* *3( h16 ":" ) h16 */
+		, { VHEADER(ipv6address_fsm_6_1)
+			, {_T("AB"), _T("AB:CD"), _T("AB:CD:EF"), _T("AB:CD:EF:01"), VNULL }
 			, { {-1, _T("$F") }
 				, INULL }}
 
@@ -171,7 +186,6 @@ static struct _FsmTestEntry {
 				, VNULL }
 			, { INULL }
 		}
-
 
 };
 
@@ -216,7 +230,7 @@ int main(int argc, char *argv[])
 
 	FSM_INIT(__fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar);
 
-	CWT_BEGIN_TESTS(89);
+	CWT_BEGIN_TESTS(95);
 
 	for( i = 0; i < nentries; i++ )
 		test_fsm_valid_entries(i);

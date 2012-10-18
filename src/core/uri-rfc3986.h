@@ -173,7 +173,6 @@ static CwtFsmTransition path_absolute_fsm[] = {
 	, {-1,-1, FSM_MATCH_NOTHING,             FSM_ACCEPT, NULL, NULL }
 };
 
-
 /* 1*( unreserved / pct-encoded / sub-delims / "@" )
    		; non-zero-length segment without any colon ":"
 */
@@ -193,6 +192,7 @@ static CwtFsmTransition path_noscheme_fsm[] = {
 };
 
 #ifdef __COMMENT__
+
 /* 0<pchar> */
 static CwtFsmTransition path_empty_fsm[] = {
     {-1,-1, FSM_MATCH_NOTHING, FSM_ACCEPT, NULL, NULL }
@@ -323,57 +323,54 @@ static CwtFsmTransition ipv6address_fsm_3[] = {
     , {-1,-1, FSM_MATCH_FSM(ls32_fsm),     FSM_ACCEPT, NULL, NULL }
 };
 
+static CwtFsmRepetitionContext ipv6address_rep_01 = { h16_semi_fsm, 0, 1 };
+
 /* *1( h16 ":" ) h16 */
 static CwtFsmTransition ipv6address_fsm_4_1[] = {
-	  { 1, 1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
+	  { 1, 1, FSM_MATCH_REP(&ipv6address_rep_01), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 };
 
 /* *2( h16 ":" ) h16 */
+static CwtFsmRepetitionContext ipv6address_rep_02 = { h16_semi_fsm, 0, 2 };
 static CwtFsmTransition ipv6address_fsm_5_1[] = {
-      { 1, 2, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , { 2, 2, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
+	  { 1, 1, FSM_MATCH_REP(&ipv6address_rep_02), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 };
 
 /* *3( h16 ":" ) h16 */
+static CwtFsmRepetitionContext ipv6address_rep_03 = { h16_semi_fsm, 0, 3 };
 static CwtFsmTransition ipv6address_fsm_6_1[] = {
-	  { 1, 3, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 2, 3, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 3, 3, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
+	  { 1, 1, FSM_MATCH_REP(&ipv6address_rep_03), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 };
 
 /* *4( h16 ":" ) h16 */
+static CwtFsmRepetitionContext ipv6address_rep_04 = { h16_semi_fsm, 0, 4 };
 static CwtFsmTransition ipv6address_fsm_7_1[] = {
-	  { 1, 4, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 2, 4, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 3, 4, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 4, 4, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
+	  { 1, 1, FSM_MATCH_REP(&ipv6address_rep_04), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 };
 
 /* *5( h16 ":" ) h16 */
+static CwtFsmRepetitionContext ipv6address_rep_05 = { h16_semi_fsm, 0, 5 };
 static CwtFsmTransition ipv6address_fsm_8_1[] = {
-	  { 1, 5, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 2, 5, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 3, 5, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 4, 5, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 5, 5, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
+	  { 1, 1, FSM_MATCH_REP(&ipv6address_rep_05), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 };
 
 /* *6( h16 ":" ) h16 */
+static CwtFsmRepetitionContext ipv6address_rep_06 = { h16_semi_fsm, 0, 6 };
 static CwtFsmTransition ipv6address_fsm_9_1[] = {
-	  { 1, 6, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 2, 6, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 3, 6, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 4, 6, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 5, 6, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 6, 6, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
+	  { 1, 1, FSM_MATCH_REP(&ipv6address_rep_06), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm),      FSM_ACCEPT, NULL, NULL }
 };
-
 
 /* [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32 */
 static CwtFsmTransition ipv6address_fsm_4[] = {
@@ -466,7 +463,7 @@ static CwtFsmTransition ipv6address_fsm[] = {
 	, {-1, 6, FSM_MATCH_FSM(ipv6address_fsm_6), FSM_ACCEPT, NULL, NULL }
 	, {-1, 7, FSM_MATCH_FSM(ipv6address_fsm_7), FSM_ACCEPT, NULL, NULL }
 	, {-1, 8, FSM_MATCH_FSM(ipv6address_fsm_8), FSM_ACCEPT, NULL, NULL }
-	, {-1, 9, FSM_MATCH_FSM(ipv6address_fsm_9), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(ipv6address_fsm_9), FSM_ACCEPT, NULL, NULL }
 };
 
 #ifdef __COMMENT__

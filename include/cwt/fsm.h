@@ -26,11 +26,15 @@ typedef enum _CwtFsmMatchType {
 #	define FSM_MATCH_FUNC(f)       Cwt_Fsm_Match_Func, { .trans_fn = f }
 #	define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { .str = {0, NULL} }
 */
-#define FSM_MATCH_STR(s,n)      Cwt_Fsm_Match_Str,  { {n, s} }
-#define FSM_MATCH_CHAR(s,n)     Cwt_Fsm_Match_Char, { {n, s} }
-#define FSM_MATCH_FSM(f)        Cwt_Fsm_Match_Fsm,  { {0, (void*)f} }
-#define FSM_MATCH_FUNC(f)       Cwt_Fsm_Match_Func, { {0, (void*)f} }
-#define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { {0, NULL} }
+#define FSM_MATCH_STR(s,n)      Cwt_Fsm_Match_Str,  { {n, s, NULL} }
+#define FSM_MATCH_CHAR(s,n)     Cwt_Fsm_Match_Char, { {n, s, NULL} }
+#define FSM_MATCH_FSM(f)        Cwt_Fsm_Match_Fsm,  { {0, (void*)f, NULL} }
+#define FSM_MATCH_FUNC(f,pcont) Cwt_Fsm_Match_Func, { {0, (void*)f, pcont} }
+#define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { {0, NULL, NULL} }
+
+/* repetition
+ * 'repcont' is a pointer to CwtFsmRepetitionContext instance */
+#define FSM_MATCH_REP(repcont)    FSM_MATCH_FUNC(cwtFsmRepetition,repcont)
 
 #define FSM_INIT(fsm, char_type, tab, pcontext, belong_fn, exact_fn) \
 		(fsm).trans_tab = tab;                            \
@@ -43,10 +47,11 @@ typedef enum _CwtFsmMatchType {
 #define FSM_REJECT  1
 #define FSM_ACCEPT  2
 
+struct _CwtFsm;
 typedef union _CwtFsmCondition {
-	struct { size_t len; void *chars; } str;
-	struct { size_t unused; struct _CwtFsmTransition *tab; } trans_tab;
-	struct { size_t unused; ssize_t (*fn)(void *context, const void *data, size_t len); } trans_fn;
+	struct { size_t len; void *chars; void *unused; } str;
+	struct { size_t unused; struct _CwtFsmTransition *tab; void *unused1; } trans_tab;
+	struct { size_t unused; ssize_t (*fn)(struct _CwtFsm *fsm, void *fn_context, const void *data, size_t len); void *fn_context; } trans_fn;
 } CwtFsmCondition;
 
 typedef struct _CwtFsmTransition {
@@ -63,7 +68,7 @@ typedef struct _CwtFsmTransition {
 } CwtFsmTransition;
 
 typedef struct _CwtFsm {
-	CwtFsmTransition *trans_tab; /* 2-dimensional transition table */
+	CwtFsmTransition *trans_tab;
 	int   sizeof_char;           /* sizeof character */
 	void *context;               /* result context */
 
@@ -73,6 +78,12 @@ typedef struct _CwtFsm {
 	/* checks if string s exactly equals to sequence of characters seq */
 	BOOL (*exact)(const void *s, size_t n1, const void *seq, size_t n2);
 } CwtFsm;
+
+
+typedef struct _CwtFsmRepetitionContext {
+	CwtFsmTransition *trans_tab;
+	int from, count;
+} CwtFsmRepetitionContext;
 
 typedef struct CwtFsmNS {
 	ssize_t (*exec)(CwtFsm *fsm, int state_cur, const void *data, size_t len);
@@ -87,6 +98,8 @@ DLL_API_EXPORT BOOL cwtBelongCwtChar(const void *ch, const void *subset, size_t 
 DLL_API_EXPORT BOOL cwtExactCwtChar(const void *s, size_t n1, const void *seq, size_t n2);
 DLL_API_EXPORT BOOL cwtBelongInt(const void *ch, const void *subset, size_t n);
 DLL_API_EXPORT BOOL cwtExactInt(const void *s, size_t n1, const void *seq, size_t n2);
+
+DLL_API_EXPORT ssize_t cwtFsmRepetition(struct _CwtFsm *fsm, void *fn_context, const void *data, size_t len);
 
 EXTERN_C_END
 
