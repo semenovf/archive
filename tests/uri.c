@@ -41,15 +41,15 @@ static struct _FsmTestEntry {
 	const CWT_CHAR *const valid_str[5];
 	struct _FsmInvalidEntry invalid_entries[5];
 } __fsmTestEntries[] = {
-		/* *2( h16 ":" ) h16 */
-/*
-		{ VHEADER(ipv6address_fsm_5_1)
-			, {_T("AB:CD"), VNULL }
-			, { INULL }}
-*/
+
+		{ VHEADER(authority_fsm)
+			, { _T("user@192.168.1.1")
+				, VNULL }
+				, { INULL }}
+
 
 		/* ALPHA / DIGIT / "-" / "." / "_" / "~" */
-		{ VHEADER(unreserved_fsm)
+		, { VHEADER(unreserved_fsm)
 			, { _T("Z"), _T("z"), _T("9"), _T("~"), VNULL }
 			, {   {-1, _T("?") }
 				, {-1, _T("+") }
@@ -159,7 +159,8 @@ static struct _FsmTestEntry {
 		/* *2( h16 ":" ) h16 */
 		, { VHEADER(ipv6address_fsm_5_1)
 			, {_T("AB"), _T("AB:CD"), _T("AB:CD:EF"), VNULL }
-			, { {-1, _T("$F") }
+			, {   {-1, _T("$F") }
+			    , { 2, _T("AB:??") }
 				, INULL }}
 
 		/* *3( h16 ":" ) h16 */
@@ -187,6 +188,57 @@ static struct _FsmTestEntry {
 			, { INULL }
 		}
 
+		/* "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" ) */
+		, { VHEADER(ipvfuture_fsm)
+			, {   _T("vAB.:")
+				, _T("vAB.::::::::")
+				, VNULL }
+				, { {-1, _T("vA.")}
+				, INULL }}
+
+		/* "[" ( IPv6address / IPvFuture  ) "]" */
+		, { VHEADER(ip_literal_fsm)
+			, {   _T("[::CD:EF:01:23:45:192.168.1.1]")
+				, _T("[vAB.::::::::]")
+				, VNULL }
+				, { {-1, _T("[?]")}
+				, INULL }}
+
+		/* *( unreserved / pct-encoded / sub-delims ) */
+		, { VHEADER(reg_name_fsm)
+			, {   _T("")
+				, _T("%AB")
+				, _T("%AB%CD%EF")
+				, _T("Hello_World.")
+				, VNULL }
+				, { {0, _T("?AB")}
+				, { 3, _T("%AB%")}
+				, INULL }}
+
+		/*  host = IP-literal / IPv4address / reg-name */
+		, { VHEADER(host_fsm)
+			, {   _T("[::CD:EF:01:23:45:192.168.1.1]")
+				, _T("192.168.1.1")
+				, _T("~domain.com")
+				, VNULL }
+				, { {0, _T("?AB")}
+				, { 3, _T("%AB%")}
+				, INULL }}
+
+		/* ":" port */
+		, { VHEADER(authority_fsm_2)
+			, { _T(":2"), _T(":25"), _T(":")
+				, VNULL }
+				, { {1, _T(":AB")}
+				, {-1, _T("AB")}
+				, INULL }}
+
+		/* [ userinfo "@" ] host [ ":" port ] */
+		/* [ authority_fsm_1 ] host [ authority_fsm_2 ] */
+		, { VHEADER(authority_fsm)
+			, { _T("192.168.1.1"), _T("192.168.1.1:"), _T("192.168.1.1:25"), _T("user@192.168.1.1")
+				, VNULL }
+				, { INULL }}
 };
 
 static void test_fsm_valid_entries(int index)
@@ -217,8 +269,9 @@ int main(int argc, char *argv[])
 {
 /*
 	CwtUriNS *uriNS = cwtUriNS();
-	CwtUri uri;
 */
+	CwtUri uri;
+
 	int i;
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
 	__strNS = cwtStrNS();
@@ -228,7 +281,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argv);
 	fsm_common_unused();
 
-	FSM_INIT(__fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(__fsm, CWT_CHAR, NULL, &uri, cwtBelongCwtChar, cwtExactCwtChar);
 
 	CWT_BEGIN_TESTS(95);
 

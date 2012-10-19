@@ -90,13 +90,11 @@ static BOOL __uri_parse(const CWT_CHAR *uri_string, CwtUri *uri)
 
 
 	/* TODO remove this after successful testing URI namespace */
-	CWT_UNUSED(unreserved_fsm);
-	CWT_UNUSED(segment_nz_fsm);
-	CWT_UNUSED(segment_nz_nc_fsm);
-	CWT_UNUSED(segment_fsm);
-	CWT_UNUSED(ipv6address_fsm);
-	CWT_UNUSED(path_absolute_fsm);
 	CWT_UNUSED(path_noscheme_fsm);
+	CWT_UNUSED(path_absolute_fsm);
+	CWT_UNUSED(host_fsm);
+	CWT_UNUSED(authority_fsm_2);
+	CWT_UNUSED(authority_fsm);
 
 	FSM_INIT(fsm, CWT_CHAR, NULL/* uri_reference_fsm*/, uri, cwtBelongCwtChar, cwtExactCwtChar);
 	return cwtFsmNS()->exec(&fsm, 0, uri_string, cwtStrNS()->strLen(uri_string)) >= 0

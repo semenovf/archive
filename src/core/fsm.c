@@ -140,24 +140,27 @@ ssize_t cwtFsmRepetition(CwtFsm *fsm, void *fn_context, const void *data, size_t
 
 static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len_orig)
 {
-	const char *ptr;
+	const char *ptr, *ptr_accepted;
 	BOOL accepted = FALSE;
 	ssize_t nchars_processed;
-	size_t nchars_total_processed;
+	size_t nchars_total_processed, nchars_accepted;
 	CwtFsmTransition *trans;
-	size_t len;
+	size_t len, len_accepted;
 
+/*
 	if( len_orig == 0 )
 		return (ssize_t)0;
+*/
 
-	ptr = (const char*)data;
-	len = len_orig;
+	ptr_accepted = ptr = (const char*)data;
+	len = len_accepted = len_orig;
 	nchars_processed = (ssize_t)-1;
 	nchars_total_processed = (size_t)0;
+	nchars_accepted = (size_t)0;
 
 	trans = &fsm->trans_tab[state_cur];
 
-	while( len > 0 ) {
+	while( TRUE ) {
 
 		switch( trans->match_type ) {
 
@@ -200,20 +203,25 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			if( trans->status == FSM_ACCEPT ) {
 				accepted = TRUE;
 
+				ptr_accepted = ptr;
+				nchars_accepted = nchars_total_processed;
+				len_accepted = len;
+
 				if( trans->action )
-					trans->action(data, (size_t)nchars_processed, fsm->context, trans->action_args);
+					trans->action(data, (size_t)nchars_accepted, fsm->context, trans->action_args);
+			} else {
+				accepted = FALSE;
 			}
 
 			state_cur = trans->state_next;
 		} else {
 			state_cur = trans->state_fail;
-/* {{{ */
-			if( !accepted && state_cur >= 0 ) {
-				ptr = (const char*)data;
-				len = len_orig;
-				nchars_total_processed = (size_t)0;
+
+			if( !accepted && trans->status == FSM_ACCEPT ) {
+				ptr = ptr_accepted;
+				nchars_total_processed = nchars_accepted;
+				len = len_accepted;
 			}
-/*}}}*/
 		}
 
 		if( state_cur < 0 )
