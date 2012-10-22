@@ -203,12 +203,13 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			if( trans->status == FSM_ACCEPT ) {
 				accepted = TRUE;
 
+				if( trans->action )
+					trans->action(ptr_accepted, (size_t)nchars_accepted, fsm->context, trans->action_args);
+
 				ptr_accepted = ptr;
 				nchars_accepted = nchars_total_processed;
 				len_accepted = len;
 
-				if( trans->action )
-					trans->action(data, (size_t)nchars_accepted, fsm->context, trans->action_args);
 			} else {
 				accepted = FALSE;
 			}

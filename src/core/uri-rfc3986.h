@@ -27,11 +27,9 @@
 
 #include <cwt/fsm_common.h>
 
-/*
 static void __set_scheme(const void *data, size_t len, void *context, void *action_args);
-static void __set_path(const void *data, size_t len, void *context, void *action_args);
 static void __set_query(const void *data, size_t len, void *context, void *action_args);
-*/
+static void __set_path(const void *data, size_t len, void *context, void *action_args);
 static void __set_host(const void *data, size_t len, void *context, void *action_args);
 static void __set_port(const void *data, size_t len, void *context, void *action_args);
 static void __set_host_is_ip(const void *data, size_t len, void *context, void *action_args);
@@ -193,14 +191,10 @@ static CwtFsmTransition path_noscheme_fsm[] = {
     , {-1,-1, FSM_MATCH_NOTHING,                FSM_ACCEPT, NULL, NULL }
 };
 
-#ifdef __COMMENT__
-
 /* 0<pchar> */
 static CwtFsmTransition path_empty_fsm[] = {
     {-1,-1, FSM_MATCH_NOTHING, FSM_ACCEPT, NULL, NULL }
 };
-
-#endif
 
 /* 1*4HEXDIG */
 static CwtFsmTransition h16_fsm[] = {
@@ -533,15 +527,12 @@ static CwtFsmTransition authority_fsm[] = {
 	, {-1,-1, FSM_MATCH_FSM(host_fsm),        FSM_ACCEPT, __set_host, NULL }
 };
 
-
-#ifdef __COMMENT__
 /*  *( "/" segment ) */
 static CwtFsmTransition path_abempty_fsm[] = {
-      { 2, FSM_MATCH_STR(_T("/"), 1),   FSM_OPT, NULL, NULL }
-    , {-1, FSM_MATCH_NOTHING,           FSM_OPTEND, NULL, NULL }
-    , {-1, FSM_MATCH_FSM(segment_fsm),  FSM_ACCEPT, NULL, NULL }
+      { 1, 2, FSM_MATCH_STR(_T("/"), 1),   FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_FSM(segment_fsm),  FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_NOTHING,           FSM_ACCEPT, NULL, NULL }
 };
-
 
 /*
 relative-part = "//" authority path-abempty
@@ -550,69 +541,65 @@ relative-part = "//" authority path-abempty
               / path-empty
 */
 static CwtFsmTransition relative_part_fsm[] = {
-	  { 4, FSM_MATCH_STR(_T("//"), 2),       FSM_OPT, NULL, NULL }
-	, {-1, FSM_MATCH_FSM(path_absolute_fsm), FSM_OPT, __set_path, NULL }
-	, {-1, FSM_MATCH_FSM(path_noscheme_fsm), FSM_OPT, __set_path, NULL }
-	, {-1, FSM_MATCH_FSM(path_empty_fsm),    FSM_OPTEND, __set_path, NULL }
+	  { 1, 3, FSM_MATCH_STR(_T("//"), 2),       FSM_NORMAL, NULL, NULL }
+	, { 2, 3, FSM_MATCH_FSM(authority_fsm),     FSM_NORMAL, __set_path, NULL }
+	, {-1, 3, FSM_MATCH_FSM(path_abempty_fsm),  FSM_ACCEPT, __set_path, NULL }
 
-	, { 5, FSM_MATCH_FSM(authority_fsm),     FSM_ACCEPT, __set_path, NULL }
-	, {-1, FSM_MATCH_FSM(path_abempty_fsm),  FSM_ACCEPT, __set_path, NULL }
+	, {-1, 4, FSM_MATCH_FSM(path_absolute_fsm), FSM_ACCEPT, __set_path, NULL }
+	, {-1, 5, FSM_MATCH_FSM(path_noscheme_fsm), FSM_ACCEPT, __set_path, NULL }
+	, {-1,-1, FSM_MATCH_FSM(path_empty_fsm),    FSM_ACCEPT, __set_path, NULL }
 };
 
 /* *( pchar / "/" / "?" ) */
 static CwtFsmTransition query_fsm[] = {
-      {-1, FSM_MATCH_FSM(pchar_fsm),    FSM_OPT, NULL, NULL }
-    , {-1, FSM_MATCH_CHAR(_T("/?"), 2), FSM_OPT, NULL, NULL }
-    , {-1, FSM_MATCH_NOTHING,           FSM_OPTEND, NULL, NULL }
+      { 0, 1, FSM_MATCH_FSM(pchar_fsm),    FSM_ACCEPT, NULL, NULL }
+    , { 0, 2, FSM_MATCH_CHAR(_T("/?"), 2), FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_NOTHING,           FSM_ACCEPT, NULL, NULL }
 };
 
 /* "?" query */
 static CwtFsmTransition relative_ref_fsm_1[] = {
-	  { 0, FSM_MATCH_STR(_T("?"), 1), FSM_ACCEPT, NULL, NULL }
-	, { 1, FSM_MATCH_FSM(query_fsm),  FSM_ACCEPT, __set_query, NULL }
+	  { 1,-1, FSM_MATCH_STR(_T("?"), 1), FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(query_fsm),  FSM_ACCEPT, __set_query, NULL }
 };
 
 /* *( pchar / "/" / "?" ) */
 static CwtFsmTransition fragment_fsm[] = {
-	  {-1, FSM_MATCH_FSM(pchar_fsm),    FSM_OPT, NULL, NULL }
-	, {-1, FSM_MATCH_CHAR(_T("/?"), 2), FSM_OPT, NULL, NULL }
-	, {-1, FSM_MATCH_NOTHING,           FSM_OPTEND, NULL, NULL }
+	  { 0, 1, FSM_MATCH_FSM(pchar_fsm),    FSM_ACCEPT, NULL, NULL }
+	, { 0, 2, FSM_MATCH_CHAR(_T("/?"), 2), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,           FSM_ACCEPT, NULL, NULL }
 };
 
 /* "#" fragment */
 static CwtFsmTransition relative_ref_fsm_2[] = {
-	  { 1, FSM_MATCH_STR(_T("#"), 1),   FSM_ACCEPT, NULL, NULL }
-	, {-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, NULL, NULL}
+	  { 1,-1, FSM_MATCH_STR(_T("#"), 1),   FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, NULL, NULL}
 };
 
 /* relative-part [ "?" query ] [ "#" fragment ] */
 static CwtFsmTransition relative_ref_fsm[] = {
-      { 1, FSM_MATCH_FSM(relative_part_fsm),  FSM_ACCEPT, NULL, NULL }
-
-    , { 3, FSM_MATCH_FSM(relative_ref_fsm_1), FSM_OPT, NULL, NULL }
-    , { 3, FSM_MATCH_NOTHING,                 FSM_OPTEND, NULL, NULL }
-
-    , {-1, FSM_MATCH_FSM(relative_ref_fsm_2), FSM_OPT, NULL, NULL }
-    , {-1, FSM_MATCH_NOTHING,                 FSM_OPTEND, NULL, NULL }
+      { 1,-1, FSM_MATCH_FSM(relative_part_fsm),  FSM_NORMAL, NULL, NULL }
+    , { 2, 2, FSM_MATCH_FSM(relative_ref_fsm_1), FSM_NORMAL, NULL, NULL }
+    , { 3, 3, FSM_MATCH_FSM(relative_ref_fsm_2), FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_NOTHING,                 FSM_ACCEPT, NULL, NULL }
 };
 
-
+/* ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) */
 static CwtFsmTransition scheme_fsm[] =
 {
-	  { 1, FSM_MATCH_FSM(ALPHA_FSM),  FSM_ACCEPT,    NULL, NULL }
-    , { 1, FSM_MATCH_FSM(ALPHA_FSM),  FSM_OPT, NULL, NULL }
-    , { 1, FSM_MATCH_FSM(DIGIT_FSM),  FSM_OPT, NULL, NULL }
-    , { 1, FSM_MATCH_STR(_T("+"), 1), FSM_OPT, NULL, NULL }
-    , { 1, FSM_MATCH_STR(_T("-"), 1), FSM_OPT, NULL, NULL }
-    , { 1, FSM_MATCH_STR(_T("."), 1), FSM_OPTEND,    NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(ALPHA_FSM),     FSM_NORMAL, NULL, NULL }
+    , { 1, 2, FSM_MATCH_FSM(ALPHA_FSM),     FSM_NORMAL, NULL, NULL }
+    , { 1, 3, FSM_MATCH_FSM(DIGIT_FSM),     FSM_NORMAL, NULL, NULL }
+    , { 1, 4, FSM_MATCH_CHAR(_T("+-."), 3), FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_NOTHING,            FSM_ACCEPT, __set_scheme, NULL }
 };
 
 /* segment-nz *( "/" segment ) */
 static CwtFsmTransition path_rootless_fsm[] = {
-      { 1, FSM_MATCH_FSM(segment_nz_fsm), FSM_ACCEPT,    NULL, NULL }
-    , { 3, FSM_MATCH_STR(_T("/"), 1),     FSM_OPT, NULL, NULL }
-    , {-1, FSM_MATCH_NOTHING,             FSM_OPTEND,    NULL, NULL }
-    , {-1, FSM_MATCH_FSM(segment_fsm),    FSM_ACCEPT,    NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(segment_nz_fsm), FSM_ACCEPT, NULL, NULL }
+	, { 2, 3, FSM_MATCH_STR(_T("/"), 1),     FSM_NORMAL, NULL, NULL }
+	, { 1,-1, FSM_MATCH_FSM(segment_fsm),    FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,             FSM_ACCEPT, NULL, NULL }
 };
 
 /*
@@ -622,45 +609,46 @@ static CwtFsmTransition path_rootless_fsm[] = {
 	 / path-empty
 */
 static CwtFsmTransition hier_part_fsm[] = {
- 	  { 4, FSM_MATCH_STR(_T("//"), 2),       FSM_OPT, NULL, NULL }
-	, {-1, FSM_MATCH_FSM(path_absolute_fsm), FSM_OPT, NULL, NULL }
-	, {-1, FSM_MATCH_FSM(path_rootless_fsm), FSM_OPT, NULL, NULL }
-	, {-1, FSM_MATCH_FSM(path_empty_fsm),    FSM_OPTEND,    NULL, NULL }
+	  { 1, 3, FSM_MATCH_STR(_T("//"), 2),       FSM_NORMAL, NULL, NULL }
+	, { 2, 3, FSM_MATCH_FSM(authority_fsm),     FSM_NORMAL, __set_path, NULL }
+	, {-1, 3, FSM_MATCH_FSM(path_abempty_fsm),  FSM_ACCEPT, __set_path, NULL }
 
-	, { 1, FSM_MATCH_FSM(authority_fsm),     FSM_ACCEPT,    NULL, NULL }
-	, { 2, FSM_MATCH_FSM(path_abempty_fsm),  FSM_ACCEPT,    NULL, NULL }
+	, {-1, 4, FSM_MATCH_FSM(path_absolute_fsm), FSM_ACCEPT, __set_path, NULL }
+	, {-1, 5, FSM_MATCH_FSM(path_rootless_fsm), FSM_ACCEPT, __set_path, NULL }
+	, {-1,-1, FSM_MATCH_FSM(path_empty_fsm),    FSM_ACCEPT, __set_path, NULL }
 };
+
 
 /* "?" query */
 static CwtFsmTransition uri_fsm_1[] = {
-	  { 1, FSM_MATCH_STR(_T("?"), 1), FSM_ACCEPT, NULL, NULL }
-	, {-1, FSM_MATCH_FSM(query_fsm),  FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_STR(_T("?"), 1), FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(query_fsm),  FSM_ACCEPT, NULL, NULL }
 };
 
 /* "#" fragment */
 static CwtFsmTransition uri_fsm_2[] = {
-	  { 1, FSM_MATCH_STR(_T("#"), 1),   FSM_ACCEPT, NULL, NULL }
-	, {-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_STR(_T("#"), 1),   FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, NULL, NULL }
 };
+
 
 /* scheme ":" hier-part [ "?" query ] [ "#" fragment ] */
 static CwtFsmTransition uri_fsm[] = {
-	  { 1, FSM_MATCH_FSM(scheme_fsm),    FSM_ACCEPT, __set_scheme, NULL }
-    , { 2, FSM_MATCH_STR(_T(":"), 1),    FSM_ACCEPT,    NULL, NULL }
-	, { 3, FSM_MATCH_FSM(hier_part_fsm), FSM_ACCEPT,    NULL, NULL }
-	, { 5, FSM_MATCH_FSM(uri_fsm_1),     FSM_OPT, NULL, NULL }
-    , { 5, FSM_MATCH_NOTHING,            FSM_OPTEND,    NULL, NULL }
-	, {-1, FSM_MATCH_FSM(uri_fsm_2),     FSM_OPT, NULL, NULL }
-	, {-1, FSM_MATCH_NOTHING,            FSM_OPTEND,    NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(scheme_fsm),    FSM_NORMAL, NULL, NULL }
+    , { 2,-1, FSM_MATCH_STR(_T(":"), 1),    FSM_NORMAL, NULL, NULL }
+	, { 3,-1, FSM_MATCH_FSM(hier_part_fsm), FSM_NORMAL, NULL, NULL }
+
+	, { 4, 4, FSM_MATCH_FSM(uri_fsm_1),     FSM_NORMAL, NULL, NULL }
+	, { 5, 5, FSM_MATCH_FSM(uri_fsm_2),     FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,            FSM_ACCEPT, NULL, NULL }
 };
 
 
-/* URI-reference = URI / relative-ref */
+/* URI / relative-ref */
 static CwtFsmTransition uri_reference_fsm[] = {
-	  {-1, FSM_MATCH_FSM(uri_fsm),          FSM_ACCEPT, NULL, NULL }
-	, {-1, FSM_MATCH_FSM(relative_ref_fsm), FSM_ACCEPT, NULL, NULL }
+	  {-1, 1, FSM_MATCH_FSM(uri_fsm),          FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(relative_ref_fsm), FSM_ACCEPT, NULL, NULL }
 };
-#endif
 
 static BOOL __parse_uint_digits(const CWT_CHAR *s, size_t len, int radix, UINT *d)
 {
@@ -684,20 +672,18 @@ static BOOL __parse_uint_digits(const CWT_CHAR *s, size_t len, int radix, UINT *
 	return ok;
 }
 
-#ifdef __COMMENT__
 static void __set_scheme(const void *data, size_t len, void *context, void *action_args)
 {
 	CwtUri *uri = (CwtUri*)context;
 	CWT_UNUSED(action_args);
-	uri->scheme = __strNS->strNdup((const CWT_CHAR*)data, len);
+	uri->scheme = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
 }
-#endif
 
 static void __set_host(const void *data, size_t len, void *context, void *action_args)
 {
 	CwtUri *uri = (CwtUri*)context;
 	CWT_UNUSED(action_args);
-	uri->host = __strNS->strNdup((const CWT_CHAR*)data, len);
+	uri->host = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
 }
 
 static void __set_port(const void *data, size_t len, void *context, void *action_args)
@@ -734,20 +720,18 @@ static void __check_host_is_ip(const void *data, size_t len, void *context, void
 	}
 }
 
-#ifdef __COMMENT__
 static void __set_path(const void *data, size_t len, void *context, void *action_args)
 {
 	CwtUri *uri = (CwtUri*)context;
 	CWT_UNUSED(action_args);
-	uri->path = __strNS->strNdup((const CWT_CHAR*)data, len);
+	uri->path = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
 }
 
 static void __set_query(const void *data, size_t len, void *context, void *action_args)
 {
 	CwtUri *uri = (CwtUri*)context;
 	CWT_UNUSED(action_args);
-	uri->query = __strNS->strNdup((const CWT_CHAR*)data, len);
+	uri->query = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
 }
-#endif
 
 #endif /* __CWT_URI_RFC3986_H__ */

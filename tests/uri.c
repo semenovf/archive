@@ -42,14 +42,8 @@ static struct _FsmTestEntry {
 	struct _FsmInvalidEntry invalid_entries[5];
 } __fsmTestEntries[] = {
 
-		{ VHEADER(authority_fsm)
-			, { _T("user@192.168.1.1")
-				, VNULL }
-				, { INULL }}
-
-
 		/* ALPHA / DIGIT / "-" / "." / "_" / "~" */
-		, { VHEADER(unreserved_fsm)
+		{ VHEADER(unreserved_fsm)
 			, { _T("Z"), _T("z"), _T("9"), _T("~"), VNULL }
 			, {   {-1, _T("?") }
 				, {-1, _T("+") }
@@ -239,6 +233,57 @@ static struct _FsmTestEntry {
 			, { _T("192.168.1.1"), _T("192.168.1.1:"), _T("192.168.1.1:25"), _T("user@192.168.1.1")
 				, VNULL }
 				, { INULL }}
+
+		/*  *( "/" segment ) */
+		, { VHEADER(path_abempty_fsm)
+			, { _T("/"), _T("/segment"), VNULL }
+				, { INULL }}
+
+        /* relative-part = "//" authority path-abempty
+		              / path-absolute
+		              / path-noscheme
+		              / path-empty
+		*/
+		, { VHEADER(relative_part_fsm)
+			, { _T("//user@host"), _T("//user@host/"), VNULL }
+				, { INULL }}
+
+		/* *( pchar / "/" / "?" ) */
+		, { VHEADER(query_fsm)
+			, { _T("/?"), _T("/"), _T("?query%20string"), VNULL }
+				, { INULL }}
+
+		/* relative-part [ "?" query ] [ "#" fragment ] */
+		, { VHEADER(relative_ref_fsm)
+			, { _T("//user@host/?query%20string"), _T("#fragment%20string")
+				, _T("//user@host/?query%20string#fragment%20string")
+				, VNULL }
+				, { INULL }}
+
+		/* ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) */
+		, { VHEADER(scheme_fsm)
+			, { _T("a"), _T("aA"), _T("A2"), _T("A+")
+				, VNULL }
+				, {   {-1, _T("2a") }
+					, {-1, _T("+A") }
+					, {-1, _T(".A") }
+					, {-1, _T("-a") }
+				    , INULL }}
+
+		/* scheme ":" hier-part [ "?" query ] [ "#" fragment ] */
+		, { VHEADER(uri_fsm)
+		, { _T("http://user@host/?query%20string"), _T("http://user@host/#fragment%20string")
+			, _T("ftp://user@host/?query%20string#fragment%20string")
+			, VNULL }
+			, { INULL }}
+
+
+		/* URI / relative-ref */
+		, { VHEADER(uri_reference_fsm)
+			, { _T("http://user@host/?query%20string"), _T("http://user@host#fragment%20string")
+				, _T("ftp://user@host/?query%20string#fragment%20string")
+				, VNULL }
+				, { INULL }}
 };
 
 static void test_fsm_valid_entries(int index)
@@ -267,30 +312,47 @@ static void test_fsm_valid_entries(int index)
 
 int main(int argc, char *argv[])
 {
-/*
 	CwtUriNS *uriNS = cwtUriNS();
-*/
 	CwtUri uri;
-
 	int i;
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
-	__strNS = cwtStrNS();
-	/*const CWT_CHAR *uri_string = _T("https://192.168.1.1");*/
+	const CWT_CHAR *uri_string = _T("https://192.168.1.1:25/?query%20string#fragment%20string");
+	const CWT_CHAR *scheme = _T("https");
+/*
+	const CWT_CHAR *host = _T("192.168.1.1");
+	BOOL host_is_ip = TRUE;
+	UINT16 port = 25;
+	const CWT_CHAR *path = _T("//192.168.1.1:25/");
+	const CWT_CHAR *query =  _T("query%20string#fragment%20string");
+*/
+
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 	fsm_common_unused();
 
+	__strNS = cwtStrNS();
+
 	FSM_INIT(__fsm, CWT_CHAR, NULL, &uri, cwtBelongCwtChar, cwtExactCwtChar);
 
-	CWT_BEGIN_TESTS(95);
+	CWT_BEGIN_TESTS(147);
 
 	for( i = 0; i < nentries; i++ )
 		test_fsm_valid_entries(i);
-/*
+
 	uriNS->init(&uri);
-	uriNS->destroy(&uri);
+	CWT_TEST_FAIL(uriNS->parse(uri_string, &uri));
+	CWT_TEST_FAIL(uri.scheme);
+	CWT_TEST_OK(__strNS->strEq(uri.scheme, scheme));
+/*
+	CWT_CHAR *host;
+	UINT16    port;
+	BOOL      host_is_ip;
+	CWT_CHAR *path;
+	CWT_CHAR *query;
 */
+
+	uriNS->destroy(&uri);
 
 	CWT_END_TESTS;
 }

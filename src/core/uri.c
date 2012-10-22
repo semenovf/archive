@@ -9,8 +9,6 @@
 #include <cwt/fsm.h>
 #include <cwt/str.h>
 
-static CwtStrNS *__strNS = NULL; /* declare before header file 'uri-rfc3986.h' will be included */
-
 #include "../src/core/uri-rfc3986.h"
 
 static CwtUri*  __uri_create  (void);
@@ -29,9 +27,6 @@ static CwtUriNS __cwtUriNS = {
 
 DLL_API_EXPORT CwtUriNS* cwtUriNS(void)
 {
-	if( __strNS ) {
-		__strNS = cwtStrNS();
-	}
 	return &__cwtUriNS;
 }
 
@@ -88,15 +83,7 @@ static BOOL __uri_parse(const CWT_CHAR *uri_string, CwtUri *uri)
 	if( !uri_string || cwtStrNS()->strLen(uri_string) == 0 )
 		return FALSE;
 
-
-	/* TODO remove this after successful testing URI namespace */
-	CWT_UNUSED(path_noscheme_fsm);
-	CWT_UNUSED(path_absolute_fsm);
-	CWT_UNUSED(host_fsm);
-	CWT_UNUSED(authority_fsm_2);
-	CWT_UNUSED(authority_fsm);
-
-	FSM_INIT(fsm, CWT_CHAR, NULL/* uri_reference_fsm*/, uri, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, uri_reference_fsm, uri, cwtBelongCwtChar, cwtExactCwtChar);
 	return cwtFsmNS()->exec(&fsm, 0, uri_string, cwtStrNS()->strLen(uri_string)) >= 0
 			? TRUE
 			: FALSE;
