@@ -48,6 +48,8 @@ typedef struct CwtStrNS {
 	BOOL              (*isDigit)      (CWT_CHAR);
 	BOOL              (*isSpace)      (CWT_CHAR);
 
+	BOOL              (*isEmpty)      (const CWT_CHAR*);
+
 	void*             (*memcpy)       (void *to, const void *from, size_t sz);
 	void*             (*memmove)      (void *to, const void *from, size_t sz);
 	void*             (*memset)       (void *block, int c, size_t sz);

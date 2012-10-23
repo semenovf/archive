@@ -17,6 +17,7 @@ unix {
     HEADERS += ../../include/cwt/dbi/*.h
     HEADERS += ../../include/cwt/net/*.h
     HEADERS += ../../src/net/*.h
+    HEADERS += ../../src/*.h
 
     SOURCES += ../../src/core/*.c
     SOURCES += ../../src/event/*.c
@@ -26,6 +27,7 @@ unix {
     SOURCES += ../../src/dbi/*.c
     SOURCES += ../../src/net/*.c
     SOURCES += ../../src/net/unix/*.c
+
 
     LIBS += -ldl
 #    LIBS += -lmysql
@@ -45,6 +47,8 @@ win32 {
     HEADERS += ..\\..\\include\\cwt\\dbi\\*.h
     HEADERS += ..\\..\\include\\cwt\\net\\*.h
     HEADERS += ..\\..\\src\\net\\*.h
+    HEADERS += ..\\..\\src\\uri\\*.h
+
 
     SOURCES += ..\\..\\src\\core\\*.c
     SOURCES += ..\\..\\src\\event\\*.c

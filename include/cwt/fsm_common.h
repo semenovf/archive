@@ -13,8 +13,6 @@
 #	error include <cwt/fsm.h> before using this header file
 #endif
 
-static void fsm_common_unused(void);
-
 /* %x41-5A / %x61-7A   ; A-Z / a-z */
 static CwtFsmTransition ALPHA_FSM[] = {
 	  { -1,-1, FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52), FSM_ACCEPT, NULL, NULL }
@@ -37,13 +35,6 @@ static CwtFsmTransition SP_FSM[] = {
 	  {-1,-1, FSM_MATCH_STR(_T(" "), 1), FSM_ACCEPT, NULL, NULL }
 };
 
-static void fsm_common_unused(void)
-{
-	CWT_UNUSED(ALPHA_FSM);
-	CWT_UNUSED(DIGIT_FSM);
-	CWT_UNUSED(HEXDIG_FSM);
-	CWT_UNUSED(SP_FSM);
-}
 
 /*
   RFC 2234

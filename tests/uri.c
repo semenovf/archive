@@ -6,14 +6,15 @@
  * @brief URI testing
  */
 #include <cwt/test.h>
-#include <cwt/uri.h>
 #include <cwt/str.h>
 #include <cwt/fsm.h>
 #include <cwt/logger.h>
+#include <cwt/stdio.h>
+#include <cwt/uri.h>
 
 static CwtFsm __fsm;
 
-static CwtStrNS *__strNS = NULL; /* declare before header file 'uri-rfc3986.h' will be included */
+static CwtStrNS *__strNS = NULL;
 
 #include "../src/core/uri-rfc3986.h"
 
@@ -236,7 +237,7 @@ static struct _FsmTestEntry {
 
 		/*  *( "/" segment ) */
 		, { VHEADER(path_abempty_fsm)
-			, { _T("/"), _T("/segment"), VNULL }
+			, { _T("/"), _T("/segment"), _T("/path/to"), _T("/path/to/"), VNULL }
 				, { INULL }}
 
         /* relative-part = "//" authority path-abempty
@@ -273,7 +274,7 @@ static struct _FsmTestEntry {
 		/* scheme ":" hier-part [ "?" query ] [ "#" fragment ] */
 		, { VHEADER(uri_fsm)
 		, { _T("http://user@host/?query%20string"), _T("http://user@host/#fragment%20string")
-			, _T("ftp://user@host/?query%20string#fragment%20string")
+			, _T("ftp://user@host/path/to?query%20string#fragment%20string")
 			, VNULL }
 			, { INULL }}
 
@@ -315,43 +316,66 @@ int main(int argc, char *argv[])
 	CwtUriNS *uriNS = cwtUriNS();
 	CwtUri uri;
 	int i;
+	CWT_CHAR uri_string[512];
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
-	const CWT_CHAR *uri_string = _T("https://192.168.1.1:25/?query%20string#fragment%20string");
+
 	const CWT_CHAR *scheme = _T("https");
-/*
 	const CWT_CHAR *host = _T("192.168.1.1");
 	BOOL host_is_ip = TRUE;
 	UINT16 port = 25;
-	const CWT_CHAR *path = _T("//192.168.1.1:25/");
-	const CWT_CHAR *query =  _T("query%20string#fragment%20string");
-*/
-
+	const CWT_CHAR *path  = _T("/path/to");
+	const CWT_CHAR *query = _T("query%20string");
+	const CWT_CHAR *fragment = _T("fragment%20string");
+	CWT_CHAR *uri_result;
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
-	fsm_common_unused();
+	CWT_UNUSED(SP_FSM);
 
 	__strNS = cwtStrNS();
 
-	FSM_INIT(__fsm, CWT_CHAR, NULL, &uri, cwtBelongCwtChar, cwtExactCwtChar);
+	cwtStdioNS()->sprintf(uri_string
+		, _T("%s://%s:%u%s?%s#%s")
+		, scheme
+		, host
+		, port
+		, path
+		, query
+		, fragment);
 
-	CWT_BEGIN_TESTS(147);
+	FSM_INIT(__fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+
+	CWT_BEGIN_TESTS(167);
 
 	for( i = 0; i < nentries; i++ )
 		test_fsm_valid_entries(i);
 
 	uriNS->init(&uri);
-	CWT_TEST_FAIL(uriNS->parse(uri_string, &uri));
+	CWT_TEST_FAIL(uriNS->parse(uri_string, &uri) == (ssize_t)__strNS->strLen(uri_string));
 	CWT_TEST_FAIL(uri.scheme);
+	CWT_TEST_FAIL(uri.host);
+	CWT_TEST_FAIL(uri.path);
+	CWT_TEST_FAIL(uri.query);
+	CWT_TEST_FAIL(uri.fragment);
 	CWT_TEST_OK(__strNS->strEq(uri.scheme, scheme));
-/*
-	CWT_CHAR *host;
-	UINT16    port;
-	BOOL      host_is_ip;
-	CWT_CHAR *path;
-	CWT_CHAR *query;
-*/
+	CWT_TEST_OK(__strNS->strEq(uri.host, host));
+	CWT_TEST_OK(uri.host_is_ip == host_is_ip);
+	CWT_TEST_OK(uri.port == port);
+	CWT_TEST_OK(__strNS->strEq(uri.path, path));
+	CWT_TEST_OK(__strNS->strEq(uri.query, query));
+	CWT_TEST_OK(__strNS->strEq(uri.fragment, fragment));
 
+	uri_result = uriNS->compose(&uri);
+	CWT_TEST_OK(__strNS->strEq(uri_string, uri_result));
+	CWT_FREE(uri_result);
+	uriNS->destroy(&uri);
+
+	uriNS->init(&uri);
+	CWT_TEST_FAIL(uriNS->parse(_T("file:/tmp/text.txt"), &uri) == 18);
+	CWT_TEST_FAIL(uri.scheme);
+	CWT_TEST_FAIL(uri.path);
+	CWT_TEST_OK(__strNS->strEq(uri.scheme, _T("file")));
+	CWT_TEST_OK(__strNS->strEq(uri.path, _T("/tmp/text.txt")));
 	uriNS->destroy(&uri);
 
 	CWT_END_TESTS;

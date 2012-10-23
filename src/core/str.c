@@ -87,6 +87,8 @@ static CWT_CHAR* __cwt_strndup    (const CWT_CHAR *s, size_t n);
 static LONGLONG  __cwt_strtoll    (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 static ULONGLONG __cwt_strtoull   (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 
+static BOOL      __cwt_isEmpty    (const CWT_CHAR *s) { return (s && __cwt_strlen(s) > 0) ? FALSE : TRUE; }
+
 static void*     __cwt_bzero    (void *block, size_t sz) { return memset(block, 0, sz); }
 
 static void      __cwt_toupperStr   (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
@@ -149,6 +151,8 @@ static CwtStrNS __cwtStrNS = {
 	, __cwt_isalpha
 	, __cwt_isdigit
 	, __cwt_isspace
+
+	, __cwt_isEmpty
 
 	, memcpy
 	, memmove

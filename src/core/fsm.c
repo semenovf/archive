@@ -196,15 +196,15 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 		}
 
 		if( nchars_processed >= 0 ) {
+			if( trans->action )
+				trans->action(ptr, (size_t)nchars_processed, fsm->context, trans->action_args);
+
 			ptr += (fsm->sizeof_char * nchars_processed);
 			len -= nchars_processed;
 			nchars_total_processed += nchars_processed;
 
 			if( trans->status == FSM_ACCEPT ) {
 				accepted = TRUE;
-
-				if( trans->action )
-					trans->action(ptr_accepted, (size_t)nchars_accepted, fsm->context, trans->action_args);
 
 				ptr_accepted = ptr;
 				nchars_accepted = nchars_total_processed;

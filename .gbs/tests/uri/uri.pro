@@ -6,11 +6,14 @@ INCLUDEPATH += ../../../include
 DEFINES += CWT_USE_TESTS
 
 unix {
+    HEADERS += ../../src/core/*.h
     SOURCES += ../../../tests/uri.c
+
     LIBS += -lcwt
 }
 
 win32 {
+    HEADERS += ..\\..\\src\\core\\*.h
     SOURCES += ..\\..\\..\\tests\\uri.c
     LIBS += cwt.lib
 }

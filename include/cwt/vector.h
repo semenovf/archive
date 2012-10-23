@@ -23,6 +23,7 @@ typedef struct _NS {                                                          \
 	_CollectionT* (*create)      (void);                                      \
 	_CollectionT* (*createSized) (size_t initial_size, size_t max_size);      \
 	void          (*free)        (_CollectionT* p);                           \
+	void          (*disrobe)     (_CollectionT* p);                           \
 	_CollectionT* (*clone)       (_CollectionT* p);                           \
 	BOOL          (*reserve)     (_CollectionT* p, size_t n);                 \
 	BOOL          (*lreserve)    (_CollectionT* p, size_t n);                 \
@@ -58,6 +59,7 @@ typedef struct _NS {                                                          \
 	static void          __initSized   (_CollectionT* p, size_t initial_size, size_t max_size); \
 	static void          __destroy     (_CollectionT* p);                     \
 	static void          __free        (_CollectionT* p);                     \
+	static void          __disrobe     (_CollectionT* p);                     \
 	static _CollectionT* __clone       (_CollectionT* p);                     \
 	static BOOL          __reserve     (_CollectionT* p, size_t n);           \
 	static BOOL          __lreserve    (_CollectionT* p, size_t n);           \
@@ -86,6 +88,7 @@ static _NS  __##_NS = {                                                       \
 	  __create                                                                \
 	, __createSized                                                           \
 	, __free                                                                  \
+	, __disrobe                                                               \
 	, __clone                                                                 \
 	, __reserve                                                               \
 	, __lreserve                                                              \
@@ -162,6 +165,11 @@ static void __destroy(_CollectionT* sb)                                       \
 static void __free(_CollectionT* sb)                                          \
 {                                                                             \
 	__destroy(sb);                                                            \
+	CWT_FREE(sb);                                                             \
+}                                                                             \
+                                                                              \
+static void __disrobe(_CollectionT* sb)                                       \
+{                                                                             \
 	CWT_FREE(sb);                                                             \
 }                                                                             \
                                                                               \
