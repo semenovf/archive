@@ -32,6 +32,7 @@ static void __set_query(const void *data, size_t len, void *context, void *actio
 static void __set_fragment(const void *data, size_t len, void *context, void *action_args);
 static void __set_path(const void *data, size_t len, void *context, void *action_args);
 static void __set_userinfo(const void *data, size_t len, void *context, void *action_args);
+static void __unset_userinfo(const void *data, size_t len, void *context, void *action_args);
 static void __set_host(const void *data, size_t len, void *context, void *action_args);
 static void __set_port(const void *data, size_t len, void *context, void *action_args);
 static void __set_host_is_ip(const void *data, size_t len, void *context, void *action_args);
@@ -510,12 +511,12 @@ static CwtFsmTransition userinfo_fsm[] = {
 	, { 0, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, NULL, NULL }
 	, { 0, 3, FSM_MATCH_FSM(sub_delims_fsm),  FSM_ACCEPT, NULL, NULL }
 	, { 0, 4, FSM_MATCH_STR(_T(":"), 1),      FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,              FSM_ACCEPT, __set_userinfo, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,              FSM_ACCEPT, NULL, NULL }
 };
 
 /* userinfo "@" */
 static CwtFsmTransition authority_fsm_1[] = {
-	  { 1,-1, FSM_MATCH_FSM(userinfo_fsm), FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(userinfo_fsm), FSM_NORMAL, __set_userinfo, NULL }
 	, {-1,-1, FSM_MATCH_STR(_T("@"), 1),   FSM_ACCEPT, NULL, NULL }
 };
 
@@ -525,7 +526,15 @@ static CwtFsmTransition authority_fsm[] = {
 	  { 1, 1, FSM_MATCH_FSM(authority_fsm_1), FSM_NORMAL, NULL, NULL }
 	, { 2, 3, FSM_MATCH_FSM(host_fsm),        FSM_NORMAL, __set_host, NULL }
 	, {-1, 3, FSM_MATCH_FSM(authority_fsm_2), FSM_ACCEPT, NULL, NULL }
-	, { 4, 4, FSM_MATCH_FSM(authority_fsm_1), FSM_NORMAL, NULL, NULL }
+
+	, { 4, 5, FSM_MATCH_FSM(authority_fsm_1), FSM_NORMAL, NULL, NULL }
+	, {-1, 5, FSM_MATCH_FSM(host_fsm),        FSM_ACCEPT, __set_host, NULL }
+
+	, { 6,-1, FSM_MATCH_NOTHING,              FSM_NORMAL, __unset_userinfo, NULL }
+	, { 7, 8, FSM_MATCH_FSM(host_fsm),        FSM_NORMAL, __set_host, NULL }
+	, {-1, 8, FSM_MATCH_FSM(authority_fsm_2), FSM_ACCEPT, NULL, NULL }
+
+	, { 9,-1, FSM_MATCH_NOTHING,              FSM_NORMAL, __unset_userinfo, NULL }
 	, {-1,-1, FSM_MATCH_FSM(host_fsm),        FSM_ACCEPT, __set_host, NULL }
 };
 
@@ -673,33 +682,6 @@ static BOOL __parse_uint_digits(const CWT_CHAR *s, size_t len, int radix, UINT *
 	return ok;
 }
 
-static void __set_scheme(const void *data, size_t len, void *context, void *action_args)
-{
-	if( context ) {
-		CwtUri *uri = (CwtUri*)context;
-		CWT_UNUSED(action_args);
-		uri->scheme = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
-	}
-}
-
-static void __set_userinfo(const void *data, size_t len, void *context, void *action_args)
-{
-	if( context ) {
-		CwtUri *uri = (CwtUri*)context;
-		CWT_UNUSED(action_args);
-		uri->userinfo = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
-	}
-}
-
-
-static void __set_host(const void *data, size_t len, void *context, void *action_args)
-{
-	if( context ) {
-		CwtUri *uri = (CwtUri*)context;
-		CWT_UNUSED(action_args);
-		uri->host = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
-	}
-}
 
 static void __set_port(const void *data, size_t len, void *context, void *action_args)
 {
@@ -739,31 +721,75 @@ static void __check_host_is_ip(const void *data, size_t len, void *context, void
 	}
 }
 
-static void __set_path(const void *data, size_t len, void *context, void *action_args)
+
+static void __set_scheme(const void *data, size_t len, void *context, void *action_args)
 {
 	if( context ) {
 		CwtUri *uri = (CwtUri*)context;
 		CWT_UNUSED(action_args);
-		uri->path = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
+		if( uri->scheme )
+			CWT_FREE(uri->scheme);
+		uri->scheme = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
 	}
+}
+
+static void __unset_userinfo(const void *data, size_t len, void *context, void *action_args)
+{
+	if( context ) {
+		CwtUri *uri = (CwtUri*)context;
+
+		CWT_UNUSED(data);
+		CWT_UNUSED(len);
+		CWT_UNUSED(action_args);
+
+		if( uri->userinfo ) {
+			CWT_FREE(uri->userinfo);
+			uri->userinfo = NULL;
+		}
+	}
+}
+
+static void __set_uri_var(CWT_CHAR **pvar, const void *data, size_t len, void *action_args)
+{
+	CWT_UNUSED(action_args);
+	CWT_ASSERT(pvar);
+
+	if( *pvar )
+		CWT_FREE(*pvar);
+
+	*pvar = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
+}
+
+
+static void __set_userinfo(const void *data, size_t len, void *context, void *action_args)
+{
+	if( context )
+		__set_uri_var(&((CwtUri*)context)->userinfo, data, len, action_args);
+}
+
+
+static void __set_host(const void *data, size_t len, void *context, void *action_args)
+{
+	if( context )
+		__set_uri_var(&((CwtUri*)context)->host, data, len, action_args);
+}
+
+static void __set_path(const void *data, size_t len, void *context, void *action_args)
+{
+	if( context )
+		__set_uri_var(&((CwtUri*)context)->path, data, len, action_args);
 }
 
 static void __set_query(const void *data, size_t len, void *context, void *action_args)
 {
-	if( context ) {
-		CwtUri *uri = (CwtUri*)context;
-		CWT_UNUSED(action_args);
-		uri->query = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
-	}
+	if( context )
+		__set_uri_var(&((CwtUri*)context)->query, data, len, action_args);
 }
 
 static void __set_fragment(const void *data, size_t len, void *context, void *action_args)
 {
-	if( context ) {
-		CwtUri *uri = (CwtUri*)context;
-		CWT_UNUSED(action_args);
-		uri->fragment = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
-	}
+	if( context )
+		__set_uri_var(&((CwtUri*)context)->fragment, data, len, action_args);
 }
 
 #endif /* __CWT_URI_RFC3986_H__ */

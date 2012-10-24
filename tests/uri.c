@@ -43,8 +43,12 @@ static struct _FsmTestEntry {
 	struct _FsmInvalidEntry invalid_entries[5];
 } __fsmTestEntries[] = {
 
+		{ VHEADER(authority_fsm)
+			, { _T("192.168.1.1"), _T("user@192.168.1.1"), VNULL }
+				, { INULL }}
+
 		/* ALPHA / DIGIT / "-" / "." / "_" / "~" */
-		{ VHEADER(unreserved_fsm)
+		, { VHEADER(unreserved_fsm)
 			, { _T("Z"), _T("z"), _T("9"), _T("~"), VNULL }
 			, {   {-1, _T("?") }
 				, {-1, _T("+") }
@@ -320,6 +324,7 @@ int main(int argc, char *argv[])
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
 
 	const CWT_CHAR *scheme = _T("https");
+	const CWT_CHAR *userinfo = _T("user");
 	const CWT_CHAR *host = _T("192.168.1.1");
 	BOOL host_is_ip = TRUE;
 	UINT16 port = 25;
@@ -335,8 +340,9 @@ int main(int argc, char *argv[])
 	__strNS = cwtStrNS();
 
 	cwtStdioNS()->sprintf(uri_string
-		, _T("%s://%s:%u%s?%s#%s")
+		, _T("%s://%s@%s:%u%s?%s#%s")
 		, scheme
+		, userinfo
 		, host
 		, port
 		, path
@@ -345,7 +351,7 @@ int main(int argc, char *argv[])
 
 	FSM_INIT(__fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar);
 
-	CWT_BEGIN_TESTS(167);
+	CWT_BEGIN_TESTS(180);
 
 	for( i = 0; i < nentries; i++ )
 		test_fsm_valid_entries(i);
@@ -353,11 +359,13 @@ int main(int argc, char *argv[])
 	uriNS->init(&uri);
 	CWT_TEST_FAIL(uriNS->parse(uri_string, &uri) == (ssize_t)__strNS->strLen(uri_string));
 	CWT_TEST_FAIL(uri.scheme);
+	CWT_TEST_FAIL(uri.userinfo);
 	CWT_TEST_FAIL(uri.host);
 	CWT_TEST_FAIL(uri.path);
 	CWT_TEST_FAIL(uri.query);
 	CWT_TEST_FAIL(uri.fragment);
 	CWT_TEST_OK(__strNS->strEq(uri.scheme, scheme));
+	CWT_TEST_OK(__strNS->strEq(uri.userinfo, userinfo));
 	CWT_TEST_OK(__strNS->strEq(uri.host, host));
 	CWT_TEST_OK(uri.host_is_ip == host_is_ip);
 	CWT_TEST_OK(uri.port == port);
@@ -377,6 +385,20 @@ int main(int argc, char *argv[])
 	CWT_TEST_OK(__strNS->strEq(uri.scheme, _T("file")));
 	CWT_TEST_OK(__strNS->strEq(uri.path, _T("/tmp/text.txt")));
 	uriNS->destroy(&uri);
+
+	uriNS->init(&uri);
+	CWT_TEST_FAIL(uriNS->parse(_T("scheme:relative/path?query#fragment"), &uri) == 35);
+	CWT_TEST_FAIL(uri.scheme);
+	CWT_TEST_OK(__strNS->strEq(uri.scheme, _T("scheme")));
+	CWT_TEST_OK(__strNS->isEmpty(uri.userinfo));
+	CWT_TEST_OK(__strNS->isEmpty(uri.host));
+	CWT_TEST_OK(uri.port == 0);
+	CWT_TEST_OK(__strNS->strEq(uri.path, _T("relative/path")));
+	CWT_TEST_OK(__strNS->strEq(uri.query, _T("query")));
+	CWT_TEST_OK(__strNS->strEq(uri.fragment, _T("fragment")));
+
+	uriNS->destroy(&uri);
+
 
 	CWT_END_TESTS;
 }
