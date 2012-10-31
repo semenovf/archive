@@ -84,7 +84,7 @@ static ssize_t __uri_parse(const CWT_CHAR *uri_string, CwtUri *uri)
 {
 	CwtFsm fsm;
 
-	CWT_UNUSED(SP_FSM);
+	CWT_UNUSED(fsm_unused_commons_fn);
 	CWT_UNUSED(uri_reference_fsm);
 
 	if( !uri_string || cwtStrNS()->strLen(uri_string) == 0 )

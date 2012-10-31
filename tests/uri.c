@@ -7,10 +7,10 @@
  */
 #include <cwt/test.h>
 #include <cwt/str.h>
-#include <cwt/fsm.h>
 #include <cwt/logger.h>
 #include <cwt/stdio.h>
 #include <cwt/uri.h>
+#include <cwt/fsm_test.h>
 
 static CwtFsm __fsm;
 
@@ -18,30 +18,8 @@ static CwtStrNS *__strNS = NULL;
 
 #include "../src/core/uri-rfc3986.h"
 
-#define VHEADER(fsm) _T(#fsm), fsm
-#define VNULL   NULL
-#define VFILL_1 NULL
-#define VFILL_2 NULL, NULL
-#define VFILL_3 NULL, NULL, NULL
-#define VFILL_4 NULL, NULL, NULL, NULL
-#define INULL   {0, NULL}
-#define IFILL_1 {0, NULL}
-#define IFILL_2 {0, NULL}, {0, NULL}
-#define IFILL_3 {0, NULL}, {0, NULL}, {0, NULL}
-#define IFILL_4 {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}
-#define IFILL_5 {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}
 
-struct _FsmInvalidEntry {
-	ssize_t ret;
-	const CWT_CHAR * const invalid_str;
-};
-
-static struct _FsmTestEntry {
-	const CWT_CHAR *name;
-	CwtFsmTransition *trans_tab;
-	const CWT_CHAR *const valid_str[5];
-	struct _FsmInvalidEntry invalid_entries[5];
-} __fsmTestEntries[] = {
+static struct _FsmTestEntry __fsmTestEntries[] = {
 
 		{ VHEADER(authority_fsm)
 			, { _T("192.168.1.1"), _T("user@192.168.1.1"), VNULL }
@@ -291,14 +269,14 @@ static struct _FsmTestEntry {
 				, { INULL }}
 };
 
-static void test_fsm_valid_entries(int index)
+static void test_fsm_valid_entries(CwtFsm *fsm, struct _FsmTestEntry *entry)
 {
-	const CWT_CHAR *fsmname = __fsmTestEntries[index].name;
-	const CWT_CHAR * const *valid_str  = __fsmTestEntries[index].valid_str;
-	struct _FsmInvalidEntry *invalid_enries = __fsmTestEntries[index].invalid_entries;
+	const CWT_CHAR *fsmname = entry->name;
+	const CWT_CHAR * const *valid_str  = entry->valid_str;
+	struct _FsmInvalidEntry *invalid_enries = entry->invalid_entries;
 
 	cwtLoggerNS()->trace(_T("Test '%s'..."), fsmname);
-	__fsm.trans_tab = __fsmTestEntries[index].trans_tab;
+	fsm->trans_tab = entry->trans_tab;
 
 	while( *valid_str != NULL ) {
 		CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, *valid_str, __strNS->strLen(*valid_str)) == (ssize_t)__strNS->strLen(*valid_str));
@@ -354,7 +332,7 @@ int main(int argc, char *argv[])
 	CWT_BEGIN_TESTS(180);
 
 	for( i = 0; i < nentries; i++ )
-		test_fsm_valid_entries(i);
+		test_fsm_valid_entries(&__fsm, &__fsmTestEntries[i]);
 
 	uriNS->init(&uri);
 	CWT_TEST_FAIL(uriNS->parse(uri_string, &uri) == (ssize_t)__strNS->strLen(uri_string));

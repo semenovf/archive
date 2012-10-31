@@ -85,8 +85,8 @@ int main(int argc, char *argv[])
 {
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
-	CWT_UNUSED(SP_FSM);
-	CWT_UNUSED(ALPHA_FSM);
+
+	CWT_UNUSED(fsm_unused_commons_fn);
 
 	__fsmNS = cwtFsmNS();
 
