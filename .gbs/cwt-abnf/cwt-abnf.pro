@@ -15,7 +15,6 @@ unix {
     HEADERS += ../../include/cwt/*.h
     SOURCES += ../../src/*.c
 
-#    LIBS += -ldl
     LIBS += -lcwt
 }
 
@@ -29,9 +28,4 @@ win32 {
 
     HEADERS += ..\\..\\include\\cwt\\*.h
     SOURCES += ..\\..\\src\\*.c
-
-#    LIBS += Advapi32.lib
-#    LIBS += user32.lib
-#    LIBS += ws2_32.lib
-#    LIBS += iphlpapi.lib
 }

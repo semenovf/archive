@@ -6,4 +6,5 @@
 #************************************************************
 TEMPLATE = subdirs                                           
 CONFIG  += ordered                                           
-SUBDIRS  = cwt-abnf                                          
+SUBDIRS  = cwt-abnf \
+           tests/abnf
