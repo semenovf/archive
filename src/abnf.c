@@ -22,7 +22,20 @@ static CwtAbnfNS __cwtAbnfNS = {
 
 DLL_API_EXPORT CwtAbnfNS* cwtAbnfNS(void)
 {
+/* FIXME remove CWT_UNUSED lines */
 	CWT_UNUSED(fsm_unused_commons_fn);
+	CWT_UNUSED(rulename_fsm);
+	CWT_UNUSED(comment_fsm);
+	CWT_UNUSED(c_nl_fsm);
+	CWT_UNUSED(c_wsp_fsm);
+	CWT_UNUSED(char_val_fsm);
+	CWT_UNUSED(bin_val_fsm);
+	CWT_UNUSED(dec_val_fsm);
+	CWT_UNUSED(hex_val_fsm);
+	CWT_UNUSED(num_val_fsm);
+	CWT_UNUSED(prose_val_fsm);
+	CWT_UNUSED(defined_as_fsm);
+
 	return &__cwtAbnfNS;
 }
 
