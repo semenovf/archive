@@ -310,7 +310,7 @@ static CwtFsmTransition ipv6address_fsm_3[] = {
 /* *1( h16 ":" ) h16 */
 static CwtFsmRepetitionContext ipv6address_rep_01 = { h16_semi_fsm, 0, 1 };
 static CwtFsmTransition ipv6address_fsm_4_1[] = {
-	  { 1, 2, FSM_MATCH_REP(&ipv6address_rep_01), FSM_NORMAL, NULL, NULL }
+	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_01), FSM_NORMAL, NULL, NULL }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 };
@@ -318,7 +318,7 @@ static CwtFsmTransition ipv6address_fsm_4_1[] = {
 /* *2( h16 ":" ) h16 */
 static CwtFsmRepetitionContext ipv6address_rep_02 = { h16_semi_fsm, 0, 2 };
 static CwtFsmTransition ipv6address_fsm_5_1[] = {
-	  { 1, 2, FSM_MATCH_REP(&ipv6address_rep_02), FSM_NORMAL, NULL, NULL }
+	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_02), FSM_NORMAL, NULL, NULL }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 };
@@ -326,7 +326,7 @@ static CwtFsmTransition ipv6address_fsm_5_1[] = {
 /* *3( h16 ":" ) h16 */
 static CwtFsmRepetitionContext ipv6address_rep_03 = { h16_semi_fsm, 0, 3 };
 static CwtFsmTransition ipv6address_fsm_6_1[] = {
-	  { 1, 2, FSM_MATCH_REP(&ipv6address_rep_03), FSM_NORMAL, NULL, NULL }
+	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_03), FSM_NORMAL, NULL, NULL }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 };
@@ -334,7 +334,7 @@ static CwtFsmTransition ipv6address_fsm_6_1[] = {
 /* *4( h16 ":" ) h16 */
 static CwtFsmRepetitionContext ipv6address_rep_04 = { h16_semi_fsm, 0, 4 };
 static CwtFsmTransition ipv6address_fsm_7_1[] = {
-	  { 1, 2, FSM_MATCH_REP(&ipv6address_rep_04), FSM_NORMAL, NULL, NULL }
+	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_04), FSM_NORMAL, NULL, NULL }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 };
@@ -342,7 +342,7 @@ static CwtFsmTransition ipv6address_fsm_7_1[] = {
 /* *5( h16 ":" ) h16 */
 static CwtFsmRepetitionContext ipv6address_rep_05 = { h16_semi_fsm, 0, 5 };
 static CwtFsmTransition ipv6address_fsm_8_1[] = {
-	  { 1, 2, FSM_MATCH_REP(&ipv6address_rep_05), FSM_NORMAL, NULL, NULL }
+	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_05), FSM_NORMAL, NULL, NULL }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 };
@@ -350,7 +350,7 @@ static CwtFsmTransition ipv6address_fsm_8_1[] = {
 /* *6( h16 ":" ) h16 */
 static CwtFsmRepetitionContext ipv6address_rep_06 = { h16_semi_fsm, 0, 6 };
 static CwtFsmTransition ipv6address_fsm_9_1[] = {
-	  { 1, 2, FSM_MATCH_REP(&ipv6address_rep_06), FSM_NORMAL, NULL, NULL }
+	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_06), FSM_NORMAL, NULL, NULL }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 };
@@ -713,7 +713,7 @@ static void __check_host_is_ip(const void *data, size_t len, void *context, void
 	ssize_t ret;
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, ipv4address_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, ipv4address_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 	ret = cwtFsmNS()->exec(&fsm, 0, data, len);
 
 	if( ret > 0 && (size_t)ret == len ) {

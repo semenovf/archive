@@ -36,6 +36,12 @@ DLL_API_EXPORT CwtFsmNS* cwtFsmNS(void)
 	return memcmp(s1, s2, (n1) * sizeof(char_type)) == 0        \
 		? TRUE : FALSE;
 
+#define _RANGE_CHAR(char_type,ch,from,to)                           \
+	return *((const char_type*)(ch)) >= *((const char_type*)(from)) \
+		&& *((const char_type*)(ch)) <= *((const char_type*)(to))   \
+		? TRUE : FALSE;
+
+
 DLL_API_EXPORT BOOL cwtBelongChar(const void *ch, const void *subset, size_t n)
 {
 	_BELONG_CHAR(char, ch, subset, n);
@@ -44,6 +50,11 @@ DLL_API_EXPORT BOOL cwtBelongChar(const void *ch, const void *subset, size_t n)
 DLL_API_EXPORT BOOL cwtExactChar(const void *s, size_t n1, const void *seq, size_t n2)
 {
 	_EXACT_STR(char, s, n1, seq, n2);
+}
+
+DLL_API_EXPORT BOOL cwtRangeChar(const void *ch, const void *from, const void *to)
+{
+	_RANGE_CHAR(char, ch, from, to);
 }
 
 DLL_API_EXPORT BOOL cwtBelongCwtChar(const void *ch, const void *subset, size_t n)
@@ -56,6 +67,11 @@ DLL_API_EXPORT BOOL cwtExactCwtChar(const void *s, size_t n1, const void *seq, s
 	_EXACT_STR(CWT_CHAR, s, n1, seq, n2);
 }
 
+DLL_API_EXPORT BOOL cwtRangeCwtChar(const void *ch, const void *from, const void *to)
+{
+	_RANGE_CHAR(CWT_CHAR, ch, from, to);
+}
+
 DLL_API_EXPORT BOOL cwtBelongInt(const void *ch, const void *subset, size_t n)
 {
 	_BELONG_CHAR(int, ch, subset, n);
@@ -66,6 +82,10 @@ DLL_API_EXPORT BOOL cwtExactInt(const void *s, size_t n1, const void *seq, size_
 	_EXACT_STR(int, s, n1, seq, n2);
 }
 
+DLL_API_EXPORT BOOL cwtRangeInt(const void *ch, const void *from, const void *to)
+{
+	_RANGE_CHAR(int, ch, from, to);
+}
 
 /**
  *
@@ -93,8 +113,10 @@ ssize_t cwtFsmRepetition(CwtFsm *fsm, void *fn_context, const void *data, size_t
 	if( !ptr )
 		return 0;
 
-	if( rep_context->from < 0 )
+	if( rep_context->from <= 0 )
 		rep_context->from = 0;
+	else
+		rep_context->from--;
 
 	if( rep_context->count < 0 )
 		rep_context->count = CWT_INT_MAX - rep_context->from;
@@ -116,24 +138,25 @@ ssize_t cwtFsmRepetition(CwtFsm *fsm, void *fn_context, const void *data, size_t
 
 			nchars_processed = __fsm_exec(&rep_fsm, 0, ptr, len);
 
-			if( j == 0 && nchars_processed < 0 ) {
-				return (ssize_t)-1;
+			if( /*j == 0 && */nchars_processed < 0 ) {
+				break;
+				/*return (ssize_t)-1;*/
 			}
 
-			if( nchars_processed >= 0) {
+			if( nchars_processed > 0) {
 				len -= nchars_processed;
 				ptr += (rep_fsm.sizeof_char * nchars_processed);
 
-				if( j > 0 ) {
+/*				if( j > 0 ) {*/
 					nchars_total_processed += (size_t)nchars_processed;
-				}
+/*				}*/
 			}
 		}
 	}
 
 	CWT_ASSERT(nchars_total_processed <= CWT_SSIZE_T_MAX);
 
-	return i >= rep_context->from
+	return i > rep_context->from
 			? (ssize_t)nchars_total_processed
 			: (ssize_t)-1;
 }
@@ -172,7 +195,13 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			break;
 
 		case Cwt_Fsm_Match_Char:
-			if( fsm->belong(ptr, trans->condition.str.chars, trans->condition.str.len) ) {
+			if( len > 0 && fsm->belong(ptr, trans->condition.str.chars, trans->condition.str.len) ) {
+				nchars_processed = 1;
+			}
+			break;
+
+		case Cwt_Fsm_Match_Range:
+			if( len > 0 && fsm->range(ptr, trans->condition.range.from, trans->condition.range.to) ) {
 				nchars_processed = 1;
 			}
 			break;
@@ -196,8 +225,13 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 		}
 
 		if( nchars_processed >= 0 ) {
-			if( trans->action )
-				trans->action(ptr, (size_t)nchars_processed, fsm->context, trans->action_args);
+			if( trans->status == FSM_ACCEPT ) {
+				if( trans->action )
+					trans->action(ptr_accepted
+					, (size_t)(nchars_total_processed + nchars_processed - nchars_accepted)
+					, fsm->context
+					, trans->action_args);
+			}
 
 			ptr += (fsm->sizeof_char * nchars_processed);
 			len -= nchars_processed;

@@ -96,9 +96,9 @@ static void test_alternatives_simple(void)
 	const CWT_CHAR *notdigit = _T("w");
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, HEXDIG_FSM, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, HEXDIG_FSM, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hexdig, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hexdig, 0) == -1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hexdig, 1) == 1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, digit, 1) == 1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdigit, 1) < 0);
@@ -116,7 +116,7 @@ static void test_repetition_0more(void) {
 	const CWT_CHAR *dec = _T("1972");
 	const CWT_CHAR *notdec = _T("x1972");
 
-	FSM_INIT(fsm, CWT_CHAR, decimal0more_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, decimal0more_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) == 0);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 1) == 1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 2) == 2);
@@ -130,7 +130,6 @@ static void test_repetition_0more(void) {
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 4) == 0);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 5) == 0);
 }
-
 
 /* 1*DIGIT */
 static CwtFsmTransition decimal_fsm[] = {
@@ -157,46 +156,52 @@ static void test_repetition_1more(void)
 	const CWT_CHAR *hex =    _T("BEAF");
 	const CWT_CHAR *nothex = _T("BEAR");
 
-	FSM_INIT(fsm, CWT_CHAR, decimal_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar);
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) == 0);
+	FSM_INIT(fsm, CWT_CHAR, decimal_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) ==-1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 1) == 1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 2) == 2);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 3) == 3);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 4) == 4);
 
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 0) ==-1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 1) < 0);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, notdec, 2) < 0);
 
 	fsm.trans_tab = decimal2_fsm;
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) == 0);
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 1) == -1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) ==-1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 1) ==-1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 2) == 2);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 3) == 3);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 4) == 4);
 
 
 	fsm.trans_tab = hex_fsm;
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 0) ==-1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 1) == 1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 2) == 2);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 3) == 3);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 4) == 4);
 
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 0) ==-1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 1) == 1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 2) == 2);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 3) == 3);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, nothex, 4) == 3);
 }
 
+/* NON-ZERO_DIGIT *DIGIT */
+static CwtFsmTransition non_zero_decimal_fsm[] = {
+	  { 1,-1, FSM_MATCH_CHAR(_T("123456789"), 9), FSM_ACCEPT, NULL, NULL }
+	, { 1,-1, FSM_MATCH_FSM(DIGIT_FSM),           FSM_ACCEPT, NULL, NULL }
+};
 
-/* ( "0" ("x" / "X") hex ) / decimal */
+/* ( "0" ("x" / "X") hex ) / (non-zero-dec dec) */
 static CwtFsmTransition number_fsm[] = {
-	  { 1, 3, FSM_MATCH_STR(_T("0"), 1),   FSM_NORMAL, NULL, NULL }
-	, { 2, 3, FSM_MATCH_CHAR(_T("xX"), 2), FSM_NORMAL, NULL, NULL }
-	, {-1, 3, FSM_MATCH_FSM(hex_fsm),      FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(decimal_fsm),  FSM_ACCEPT, NULL, NULL }
+	  {-1, 1, FSM_MATCH_FSM(non_zero_decimal_fsm), FSM_ACCEPT, NULL, NULL }
+	, { 2,-1, FSM_MATCH_STR(_T("0"), 1),           FSM_NORMAL, NULL, NULL }
+	, { 3,-1, FSM_MATCH_CHAR(_T("xX"), 2),         FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(hex_fsm),              FSM_ACCEPT, NULL, NULL }
+
 };
 
 
@@ -207,17 +212,17 @@ static void test_alternatives(void)
 	const CWT_CHAR *notnumber = _T("[number]");
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, number_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, number_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 0) == 0);
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 1) < 0);
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 2) < 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 0) ==-1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 1) ==-1);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 2) ==-1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 3) == 3);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 4) == 4);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 5) == 5);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 6) == 6);
 
-	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 0) == 0);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 0) ==-1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 1) == 1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 2) == 2);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, decimal, 3) == 3);

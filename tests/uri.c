@@ -5,19 +5,13 @@
  *
  * @brief URI testing
  */
-#include <cwt/test.h>
-#include <cwt/str.h>
+
+#include <cwt/fsm_test.h>
 #include <cwt/logger.h>
 #include <cwt/stdio.h>
 #include <cwt/uri.h>
-#include <cwt/fsm_test.h>
-
-static CwtFsm __fsm;
-
-static CwtStrNS *__strNS = NULL;
 
 #include "../src/core/uri-rfc3986.h"
-
 
 static struct _FsmTestEntry __fsmTestEntries[] = {
 
@@ -44,62 +38,62 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 		/* "!" / "$" / "&" / "'" / "(" / ")"
 		       / "*" / "+" / "," / ";" / "=" */
 		, { VHEADER(sub_delims_fsm)
-			, { _T("!"), _T("$"), _T("&"), _T("'"), VFILL_1 }
-			, { IFILL_5 }}
+			, { _T("!"), _T("$"), _T("&"), _T("'"), VNULL }
+			, { INULL }}
 		, { VHEADER(sub_delims_fsm)
-			, { _T("("), _T(")"), _T("*"), _T("+"), VFILL_1 }
-			, { IFILL_5 }}
+			, { _T("("), _T(")"), _T("*"), _T("+"), VNULL }
+			, { INULL }}
 		, { VHEADER(sub_delims_fsm)
-			, { _T(","), _T(";"), _T("="), VFILL_2 }
+			, { _T(","), _T(";"), _T("="), VNULL }
 			, {   {-1, _T(":") }
 				, {-1, _T("~") }
 				, {-1, _T("\\") }
-				, IFILL_2 }}
+				, INULL }}
 
 
 		/* unreserved / pct-encoded / sub-delims / ":" / "@" */
 		, { VHEADER(pchar_fsm)
-			, { _T("A"), _T(":"), _T("&"), _T("%DE"), VFILL_1 }
+			, { _T("A"), _T(":"), _T("&"), _T("%DE"), VNULL }
 			, {   {-1, _T("%AR") }
 				, {-1, _T("[") }
-				, IFILL_3 }}
+				, INULL }}
 
 		/* 1*pchar */
 		, { VHEADER(segment_nz_fsm)
-			, { _T("ABCDE"), _T("@"), _T("@:"), _T("%DE"), VFILL_1 }
+			, { _T("ABCDE"), _T("@"), _T("@:"), _T("%DE"), VNULL }
 			, { { 3, _T("%BE%AR") }
 				, {-1, _T("}") }
 				, {-1, _T("%AR") }
-				, IFILL_2}}
+				, INULL}}
 
 		/* "/" [ segment-nz *( "/" segment ) ] */
 		, { VHEADER(path_absolute_fsm)
-			, { _T("/"), _T("/ABCDE"), _T("/name@domain.com/%DE%AD%BE%EF"), _T("/name@domain.com/"), VFILL_1 }
+			, { _T("/"), _T("/ABCDE"), _T("/name@domain.com/%DE%AD%BE%EF"), _T("/name@domain.com/"), VNULL }
 			, {   { 6, _T("/name@{}/") }
 				, {-1, _T("name@{}/") }
-				, IFILL_3 }}
+				, INULL }}
 
 		/* 1*( unreserved / pct-encoded / sub-delims / "@" )
 		   		; non-zero-length segment without any colon ":" */
 		, { VHEADER(segment_nz_nc_fsm)
-			, { _T("@"), _T("@@"), _T("%DE%AD"), _T("$@;"), VFILL_1 }
+			, { _T("@"), _T("@@"), _T("%DE%AD"), _T("$@;"), VNULL }
 			, { { -1, _T("{}") }
-				, IFILL_4 }}
+				, INULL }}
 
 		/* segment-nz-nc *( "/" segment ) */
 		, { VHEADER(path_noscheme_fsm)
-			, { _T("%DE%AD"), _T("name@domain"), _T("name@domain/%DE%AD%BE%EF"), VFILL_2 }
+			, { _T("%DE%AD"), _T("name@domain"), _T("name@domain/%DE%AD%BE%EF"), VNULL }
 			, { {12, _T("name@domain/{}") }
-				, IFILL_4 }}
+				, INULL }}
 
 		/* 1*4HEXDIG */
 		, { VHEADER(h16_fsm)
-			, { _T("A"), _T("AB"), _T("ABC"), _T("ABCD"), VFILL_1 }
+			, { _T("A"), _T("AB"), _T("ABC"), _T("ABCD"), VNULL }
 			, {   {-1, _T("WBCD") }
 				, { 1, _T("AWCD") }
 				, { 2, _T("ABWD") }
 				, { 3, _T("ABCW") }
-				, IFILL_1 }}
+				, INULL }}
 
 
 		/* dec-octet "." dec-octet "." dec-octet "." dec-octet */
@@ -109,12 +103,12 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 				, { -1, _T("192.168.0") }
 				, { -1, _T("192.168") }
 				, { -1, _T("192") }
-				, IFILL_1 } }
+				, INULL } }
 
 		/* [ h16 ] "::" 4( h16 ":" ) ls32 */
 		, { VHEADER(ipv6address_fsm_3)
-			, { _T("::1B:2C:3D:4E:192.168.1.1"), _T("AB::1B:2C:3D:4E:192.168.1.1"), VFILL_3 }
-			, { { -1, _T("AR::1B:2C:3D:4E:192.168.1.1") }, IFILL_4 } }
+			, { _T("::1B:2C:3D:4E:192.168.1.1"), _T("AB::1B:2C:3D:4E:192.168.1.1"), VNULL }
+			, { { -1, _T("AR::1B:2C:3D:4E:192.168.1.1") }, INULL } }
 
 		/* *1( h16 ":" ) h16 */
 		, { VHEADER(ipv6address_fsm_4_1)
@@ -269,34 +263,13 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 				, { INULL }}
 };
 
-static void test_fsm_valid_entries(CwtFsm *fsm, struct _FsmTestEntry *entry)
-{
-	const CWT_CHAR *fsmname = entry->name;
-	const CWT_CHAR * const *valid_str  = entry->valid_str;
-	struct _FsmInvalidEntry *invalid_enries = entry->invalid_entries;
-
-	cwtLoggerNS()->trace(_T("Test '%s'..."), fsmname);
-	fsm->trans_tab = entry->trans_tab;
-
-	while( *valid_str != NULL ) {
-		CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0, *valid_str, __strNS->strLen(*valid_str)) == (ssize_t)__strNS->strLen(*valid_str));
-		valid_str++;
-	}
-
-	while( invalid_enries->invalid_str != NULL ) {
-		CWT_TEST_FAIL(cwtFsmNS()->exec(&__fsm, 0
-				, invalid_enries->invalid_str
-				, __strNS->strLen(invalid_enries->invalid_str)) == invalid_enries->ret);
-		invalid_enries++;
-	}
-
-}
-
 
 int main(int argc, char *argv[])
 {
 	CwtUriNS *uriNS = cwtUriNS();
+	CwtStrNS *strNS = cwtStrNS();
 	CwtUri uri;
+	static CwtFsm fsm;
 	int i;
 	CWT_CHAR uri_string[512];
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
@@ -313,9 +286,6 @@ int main(int argc, char *argv[])
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
-	CWT_UNUSED(SP_FSM);
-
-	__strNS = cwtStrNS();
 
 	cwtStdioNS()->sprintf(uri_string
 		, _T("%s://%s@%s:%u%s?%s#%s")
@@ -327,32 +297,32 @@ int main(int argc, char *argv[])
 		, query
 		, fragment);
 
-	FSM_INIT(__fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 
 	CWT_BEGIN_TESTS(180);
 
 	for( i = 0; i < nentries; i++ )
-		test_fsm_valid_entries(&__fsm, &__fsmTestEntries[i]);
+		fsm_test_entries(&fsm, &__fsmTestEntries[i]);
 
 	uriNS->init(&uri);
-	CWT_TEST_FAIL(uriNS->parse(uri_string, &uri) == (ssize_t)__strNS->strLen(uri_string));
+	CWT_TEST_FAIL(uriNS->parse(uri_string, &uri) == (ssize_t)strNS->strLen(uri_string));
 	CWT_TEST_FAIL(uri.scheme);
 	CWT_TEST_FAIL(uri.userinfo);
 	CWT_TEST_FAIL(uri.host);
 	CWT_TEST_FAIL(uri.path);
 	CWT_TEST_FAIL(uri.query);
 	CWT_TEST_FAIL(uri.fragment);
-	CWT_TEST_OK(__strNS->strEq(uri.scheme, scheme));
-	CWT_TEST_OK(__strNS->strEq(uri.userinfo, userinfo));
-	CWT_TEST_OK(__strNS->strEq(uri.host, host));
+	CWT_TEST_OK(strNS->strEq(uri.scheme, scheme));
+	CWT_TEST_OK(strNS->strEq(uri.userinfo, userinfo));
+	CWT_TEST_OK(strNS->strEq(uri.host, host));
 	CWT_TEST_OK(uri.host_is_ip == host_is_ip);
 	CWT_TEST_OK(uri.port == port);
-	CWT_TEST_OK(__strNS->strEq(uri.path, path));
-	CWT_TEST_OK(__strNS->strEq(uri.query, query));
-	CWT_TEST_OK(__strNS->strEq(uri.fragment, fragment));
+	CWT_TEST_OK(strNS->strEq(uri.path, path));
+	CWT_TEST_OK(strNS->strEq(uri.query, query));
+	CWT_TEST_OK(strNS->strEq(uri.fragment, fragment));
 
 	uri_result = uriNS->compose(&uri);
-	CWT_TEST_OK(__strNS->strEq(uri_string, uri_result));
+	CWT_TEST_OK(strNS->strEq(uri_string, uri_result));
 	CWT_FREE(uri_result);
 	uriNS->destroy(&uri);
 
@@ -360,20 +330,20 @@ int main(int argc, char *argv[])
 	CWT_TEST_FAIL(uriNS->parse(_T("file:/tmp/text.txt"), &uri) == 18);
 	CWT_TEST_FAIL(uri.scheme);
 	CWT_TEST_FAIL(uri.path);
-	CWT_TEST_OK(__strNS->strEq(uri.scheme, _T("file")));
-	CWT_TEST_OK(__strNS->strEq(uri.path, _T("/tmp/text.txt")));
+	CWT_TEST_OK(strNS->strEq(uri.scheme, _T("file")));
+	CWT_TEST_OK(strNS->strEq(uri.path, _T("/tmp/text.txt")));
 	uriNS->destroy(&uri);
 
 	uriNS->init(&uri);
 	CWT_TEST_FAIL(uriNS->parse(_T("scheme:relative/path?query#fragment"), &uri) == 35);
 	CWT_TEST_FAIL(uri.scheme);
-	CWT_TEST_OK(__strNS->strEq(uri.scheme, _T("scheme")));
-	CWT_TEST_OK(__strNS->isEmpty(uri.userinfo));
-	CWT_TEST_OK(__strNS->isEmpty(uri.host));
+	CWT_TEST_OK(strNS->strEq(uri.scheme, _T("scheme")));
+	CWT_TEST_OK(strNS->isEmpty(uri.userinfo));
+	CWT_TEST_OK(strNS->isEmpty(uri.host));
 	CWT_TEST_OK(uri.port == 0);
-	CWT_TEST_OK(__strNS->strEq(uri.path, _T("relative/path")));
-	CWT_TEST_OK(__strNS->strEq(uri.query, _T("query")));
-	CWT_TEST_OK(__strNS->strEq(uri.fragment, _T("fragment")));
+	CWT_TEST_OK(strNS->strEq(uri.path, _T("relative/path")));
+	CWT_TEST_OK(strNS->strEq(uri.query, _T("query")));
+	CWT_TEST_OK(strNS->strEq(uri.fragment, _T("fragment")));
 
 	uriNS->destroy(&uri);
 

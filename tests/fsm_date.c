@@ -86,10 +86,11 @@ static BOOL parse_uint_digits(const CWT_CHAR *s, size_t len, int radix, UINT *d)
 
 
 /* 2DIGIT | ( SP 1DIGIT ) */
-static ssize_t parse_mday(void *context, const void *data, size_t len)
+static ssize_t parse_mday(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
 {
+	CWT_UNUSED(fn_context);
 	if( len >= 2 ) {
-		struct tm *tm = (struct tm*)context;
+		struct tm *tm = (struct tm*)fsm->context;
 		const CWT_CHAR *ptr = (const CWT_CHAR *)data;
 		UINT mday;
 		len = 2;
@@ -269,7 +270,7 @@ static void test_parse_date(void)
 	struct tm tm;
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, datetime_fsm, &tm, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, datetime_fsm, &tm, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 
 	CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, date_str, cwtStrNS()->strLen(date_str)) >= (ssize_t)cwtStrNS()->strLen(date_str));
 

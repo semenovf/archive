@@ -90,7 +90,7 @@ static ssize_t __uri_parse(const CWT_CHAR *uri_string, CwtUri *uri)
 	if( !uri_string || cwtStrNS()->strLen(uri_string) == 0 )
 		return FALSE;
 
-	FSM_INIT(fsm, CWT_CHAR, /*uri_reference_fsm*/uri_fsm, uri, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, /*uri_reference_fsm*/uri_fsm, uri, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 	return cwtFsmNS()->exec(&fsm, 0, uri_string, cwtStrNS()->strLen(uri_string));
 }
 

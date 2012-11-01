@@ -37,18 +37,19 @@ static void action(const void *data, size_t len, void *context, void *action_arg
 }
 
 static CwtFsmTransition pct_encoded_str_fsm[] = {
-	{-1,-1, FSM_MATCH_REP(&__rep_context), FSM_ACCEPT, action, NULL }
+	{-1,-1, FSM_MATCH_RPT(&__rep_context), FSM_ACCEPT, action, NULL }
 };
 
-static struct _FsmRepTestEntry {
+static struct _FsmRptTestEntry {
 	int from, count;
 	ssize_t ret;
-} __fsmRepTestEntries[] = {
+} __fsmRptTestEntries[] = {
 	  {-1,-1,18 }
 	, { 0, 0, 0 }
+	, { 0, 1, 3 }
 	, { 1, 1, 3 }
 	, { 1, 2, 6 }
-	, { 5, 2, 3 }
+	, { 2, 2, 9 }
 	, {20,30,-1 }
 };
 
@@ -69,14 +70,14 @@ static void test_fsm_rep(void)
 */
 
 
-	FSM_INIT(fsm, CWT_CHAR, pct_encoded_str_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, pct_encoded_str_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 
-	n = sizeof(__fsmRepTestEntries)/sizeof(__fsmRepTestEntries[0]);
+	n = sizeof(__fsmRptTestEntries)/sizeof(__fsmRptTestEntries[0]);
 
 	for( i = 0; i < n; i++ ) {
-		__rep_context.from  = __fsmRepTestEntries[i].from;
-		__rep_context.count = __fsmRepTestEntries[i].count;
-		CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, pct_str, cwtStrNS()->strLen(pct_str)) == __fsmRepTestEntries[i].ret);
+		__rep_context.from  = __fsmRptTestEntries[i].from;
+		__rep_context.count = __fsmRptTestEntries[i].count;
+		CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, pct_str, cwtStrNS()->strLen(pct_str)) == __fsmRptTestEntries[i].ret);
 	}
 }
 

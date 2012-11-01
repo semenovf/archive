@@ -17,73 +17,6 @@
 static void __fsm_unused_commons(void);
 void (*fsm_unused_commons_fn)(void) = __fsm_unused_commons;
 
-
-static ssize_t __fsm_CHAR(struct _CwtFsm *fsm, void *fn_context, const void *data, size_t len)
-{
-	CWT_UNUSED(fsm);
-	CWT_UNUSED(fn_context);
-
-	if( len > 0 ) {
-		const CWT_CHAR *ptr = (const CWT_CHAR*)data;
-
-		return ( *ptr >= (CWT_CHAR)0x01 && *ptr < (CWT_CHAR)0x7F )
-				|| *ptr == (CWT_CHAR)0x7F /* to avoid GCC warning: comparison is always true due to limited range of data type for 'char' type*/
-				? 1 : 0;
-	}
-
-	return len == 0 ? 0 : -1;
-}
-
-/* %x00-1F / %x7F  ; controls */
-static ssize_t __fsm_CTL(struct _CwtFsm *fsm, void *fn_context, const void *data, size_t len)
-{
-	CWT_UNUSED(fsm);
-	CWT_UNUSED(fn_context);
-
-	if( len > 0 ) {
-		const CWT_CHAR *ptr = (const CWT_CHAR*)data;
-
-		return ( *ptr >= (CWT_CHAR)0x00 && *ptr <= (CWT_CHAR)0x1F )
-				|| *ptr == (CWT_CHAR)0x7F
-				? 1 : 0;
-	}
-
-	return len == 0 ? 0 : -1;
-}
-
-/* %x00-FF ; 8 bits of data */
-static ssize_t __fsm_OCTET(struct _CwtFsm *fsm, void *fn_context, const void *data, size_t len)
-{
-	CWT_UNUSED(fsm);
-	CWT_UNUSED(fn_context);
-
-	if( len > 0 ) {
-		const CWT_CHAR *ptr = (const CWT_CHAR*)data;
-
-		return ( *ptr >= (CWT_CHAR)0x00 && *ptr <= (CWT_CHAR)0xFF )
-				? 1 : 0;
-	}
-
-	return len == 0 ? 0 : -1;
-}
-
-
-/* %x21-7E ; visible (printing) characters */
-static ssize_t __fsm_VCHAR(struct _CwtFsm *fsm, void *fn_context, const void *data, size_t len)
-{
-	CWT_UNUSED(fsm);
-	CWT_UNUSED(fn_context);
-
-	if( len > 0 ) {
-		const CWT_CHAR *ptr = (const CWT_CHAR*)data;
-
-		return ( *ptr >= (CWT_CHAR)0x21 && *ptr <= (CWT_CHAR)0x7E )
-				? 1 : 0;
-	}
-
-	return len == 0 ? 0 : -1;
-}
-
 /*
 RFC-5234 Core Rules
 
@@ -153,33 +86,34 @@ static CwtFsmTransition BIT_FSM[] = {
 	{ -1,-1, FSM_MATCH_CHAR(_T("01"), 2), FSM_ACCEPT, NULL, NULL }
 };
 
-/*
- %x01-7F ; any 7-bit US-ASCII character, excluding NUL
-*/
+/* %x01-7F ; any 7-bit US-ASCII character, excluding NUL */
+static CWT_CHAR __CHAR_RG[2] = {(CWT_CHAR)0x01, (CWT_CHAR)0x7F };
 static CwtFsmTransition CHAR_FSM[] = {
-	{ -1,-1, FSM_MATCH_FUNC(__fsm_CHAR, NULL), FSM_ACCEPT, NULL, NULL }
+	{ -1,-1, FSM_MATCH_RANGE(&__CHAR_RG[0], &__CHAR_RG[1]), FSM_ACCEPT, NULL, NULL }
 };
 
 
 /* %x0D ; carriage return */
 static CwtFsmTransition CR_FSM[] = {
-	  {-1,-1, FSM_MATCH_CHAR(_T("\x0D"), 1), FSM_ACCEPT, NULL, NULL }
+	  {-1,-1, FSM_MATCH_CHAR(_T("\r"), 1), FSM_ACCEPT, NULL, NULL }
 };
 
 /* %x0A ; linefeed */
 static CwtFsmTransition LF_FSM[] = {
-	  {-1,-1, FSM_MATCH_CHAR(_T("\x0A"), 1), FSM_ACCEPT, NULL, NULL }
+	  {-1,-1, FSM_MATCH_CHAR(_T("\n"), 1), FSM_ACCEPT, NULL, NULL }
 };
 
 /* CR LF ; Internet standard newline */
 static CwtFsmTransition CRLF_FSM[] = {
-	  {-1,-1, FSM_MATCH_STR(_T("\x0D\x0A"), 2), FSM_ACCEPT, NULL, NULL }
+	  {-1,-1, FSM_MATCH_STR(_T("\r\n"), 2), FSM_ACCEPT, NULL, NULL }
 };
 
 
 /* %x00-1F / %x7F  ; controls */
+static CWT_CHAR __CTL_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0x1F };
 static CwtFsmTransition CTL_FSM[] = {
-	{ -1,-1, FSM_MATCH_FUNC(__fsm_CTL, NULL), FSM_ACCEPT, NULL, NULL }
+	  { -1,-1, FSM_MATCH_RANGE(&__CTL_RG[0], &__CTL_RG[1]), FSM_ACCEPT, NULL, NULL }
+	, { -1,-1, FSM_MATCH_CHAR(_T("\0x7F"), 1), FSM_ACCEPT, NULL, NULL }
 };
 
 
@@ -203,27 +137,29 @@ static CwtFsmTransition HEXDIG_FSM[] = {
 
 /* %x09 ; horizontal tab */
 static CwtFsmTransition HTAB_FSM[] = {
-	  {-1,-1, FSM_MATCH_CHAR(_T("\x09"), 1), FSM_ACCEPT, NULL, NULL }
+	  {-1,-1, FSM_MATCH_CHAR(_T("\t"), 1), FSM_ACCEPT, NULL, NULL }
 };
 
 /* %x00-FF ; 8 bits of data */
+static CWT_CHAR __OCTET_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0xFF };
 static CwtFsmTransition OCTET_FSM[] = {
-	{ -1,-1, FSM_MATCH_FUNC(__fsm_OCTET, NULL), FSM_ACCEPT, NULL, NULL }
+	{ -1,-1, FSM_MATCH_RANGE(&__OCTET_RG[0], &__OCTET_RG[0]), FSM_ACCEPT, NULL, NULL }
 };
 
 /* %x20  ; space */
 static CwtFsmTransition SP_FSM[] = {
-	  {-1,-1, FSM_MATCH_CHAR(_T("\x20"), 1), FSM_ACCEPT, NULL, NULL }
+	  {-1,-1, FSM_MATCH_CHAR(_T(" "), 1), FSM_ACCEPT, NULL, NULL }
 };
 
 /* %x21-7E ; visible (printing) characters */
+static CWT_CHAR __VCHAR_RG[2] = {(CWT_CHAR)0x21, (CWT_CHAR)0x7E };
 static CwtFsmTransition VCHAR_FSM[] = {
-	{ -1,-1, FSM_MATCH_FUNC(__fsm_VCHAR, NULL), FSM_ACCEPT, NULL, NULL }
+	{ -1,-1, FSM_MATCH_RANGE(&__VCHAR_RG[0], &__VCHAR_RG[1]), FSM_ACCEPT, NULL, NULL }
 };
 
 /* SP / HTAB ; white space */
 static CwtFsmTransition WSP_FSM[] = {
-	{-1,-1, FSM_MATCH_CHAR(_T("\x20\x09"), 2), FSM_ACCEPT, NULL, NULL }
+	{-1,-1, FSM_MATCH_CHAR(_T(" \t"), 2), FSM_ACCEPT, NULL, NULL }
 };
 
 /* *(WSP / CRLF WSP)
@@ -238,10 +174,10 @@ static CwtFsmTransition WSP_FSM[] = {
 					;  other contexts.
 */
 static CwtFsmTransition LWSP_FSM[] = {
-	  { 0, 1, FSM_MATCH_CHAR(_T("\x20\x09"), 2),    FSM_NORMAL, NULL, NULL }
-	, { 0, 2, FSM_MATCH_STR(_T("\x0D\x0A\x20"), 3), FSM_NORMAL, NULL, NULL }
-	, { 0, 3, FSM_MATCH_STR(_T("\x0D\x0A\x09"), 3), FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,                    FSM_ACCEPT, NULL, NULL }
+	  { 0, 1, FSM_MATCH_CHAR(_T(" \t"), 2),    FSM_NORMAL, NULL, NULL }
+	, { 0, 2, FSM_MATCH_STR(_T("\r\n "), 3),   FSM_NORMAL, NULL, NULL }
+	, { 0, 3, FSM_MATCH_STR(_T("\r\n\\t"), 3), FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,               FSM_ACCEPT, NULL, NULL }
 };
 
 
