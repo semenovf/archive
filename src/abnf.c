@@ -35,6 +35,7 @@ DLL_API_EXPORT CwtAbnfNS* cwtAbnfNS(void)
 	CWT_UNUSED(num_val_fsm);
 	CWT_UNUSED(prose_val_fsm);
 	CWT_UNUSED(defined_as_fsm);
+	CWT_UNUSED(repeat_fsm);
 
 	return &__cwtAbnfNS;
 }

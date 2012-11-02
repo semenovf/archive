@@ -12,23 +12,45 @@
 #include "../src/abnf-rfc5234.h"
 
 static struct _FsmTestEntry __fsmTestEntries[] = {
-
-	/*  "%" (bin-val / dec-val / hex-val) */
-	{ VHEADER(num_val_fsm)
-		, { _T("%xDEADBEEF"), _T("%d987654"), _T("%b0101"), _T("%xDEAD.BEEF.321.12345"), VNULL }
-		, {   {-1, _T("%dABC") }
-			, {-1, _T("%xQWERTY") }
-			, { 8, _T("%xABCD98?") }
-			, {-1, _T("%%%") }
-			, INULL }}
-
-	/*"<" *(%x20-3D / %x3F-7E) ">"*/
-	, { VHEADER(prose_val_fsm)
+		/*"<" *(%x20-3D / %x3F-7E) ">"*/
+	{ VHEADER(prose_val_fsm)
 		, { _T("<Hello, World!>"), _T("<--! HTML comment -->"), _T("</end-tag>"), _T("<empty-tag/>"), VNULL }
 		, {   {-1, _T("Hello,>") }
 			, {-1, _T("<World") }
 			, {15, _T("<Hello, World!> \n") }
 			, {-1, _T("<\n>") }
+			, INULL }}
+
+
+
+	/* 1*DIGIT / (*DIGIT "*" *DIGIT) */
+	, { VHEADER(repeat_fsm)
+		, { _T("*5"), _T("1"), _T("1234"), _T("5*"), VNULL }
+		, { INULL }}
+
+	/*  *c-wsp ("=" / "=/") *c-wsp */
+	, { VHEADER(defined_as_fsm)
+		, { _T("\t ="), _T(" \t = \t "), _T("\t =/"), _T(" \t =/ \t "), VNULL }
+		, { INULL }}
+
+	, { VHEADER(defined_as_fsm)
+		, {   _T("; comment line \r\n =")
+			, _T("; comment line \r\n ; comment line \r\n\t=/")
+			, _T("; comment line \r\n ; comment line \r\n\t= \r\n\t")
+			, VNULL }
+		, { INULL }}
+
+	, { VHEADER(defined_as_fsm)
+		, { _T("\r\n\t ="), _T("\r\n\t = \r\n\t\r\n\t"), _T("\r\n\t \r\n\t =/"), _T("\r\n\t =/ \r\n\t\r\n\t"), VNULL }
+		, { INULL }}
+
+	/*  "%" (bin-val / dec-val / hex-val) */
+	, { VHEADER(num_val_fsm)
+		, { _T("%xDEADBEEF"), _T("%d987654"), _T("%b0101"), _T("%xDEAD.BEEF.321.12345"), VNULL }
+		, {   {-1, _T("%dABC") }
+			, {-1, _T("%xQWERTY") }
+			, { 8, _T("%xABCD98?") }
+			, {-1, _T("%%%") }
 			, INULL }}
 
 	/* "x" 1*HEXDIG [ 1*("." 1*HEXDIG) / ("-" 1*HEXDIG) ] */
