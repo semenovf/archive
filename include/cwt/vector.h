@@ -41,6 +41,7 @@ typedef struct _NS {                                                          \
 	void          (*insert)      (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
 	void          (*replace)     (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
 	void          (*removeElem)  (_CollectionT* p, size_t pos);               \
+	void          (*removeLast)  (_CollectionT* p);                           \
 	_ElemT*       (*substr)      (_CollectionT* p, size_t start, size_t nelems); \
 	BOOL          (*find)        (_CollectionT* p, _ElemT ch, size_t *offset);\
 	_ElemT        (*at)          (_CollectionT* p, size_t index);             \
@@ -76,7 +77,8 @@ typedef struct _NS {                                                          \
 	static void          __insertElem  (_CollectionT* p, _ElemT ch, size_t pos);\
 	static void          __insert      (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
 	static void          __replace     (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
-	static void          __removeElem  (_CollectionT* p, size_t pos);          \
+	static void          __removeElem  (_CollectionT* p, size_t pos);         \
+	static void          __removeLast  (_CollectionT* p);                     \
 	static _ElemT*       __substr      (_CollectionT* p, size_t start, size_t nelems); \
 	static BOOL          __find        (_CollectionT* p, _ElemT ch, size_t *offset); \
 	static _ElemT        __at          (_CollectionT* p, size_t index);       \
@@ -106,6 +108,7 @@ static _NS  __##_NS = {                                                       \
 	, __insert                                                                \
 	, __replace                                                               \
 	, __removeElem                                                            \
+	, __removeLast                                                            \
 	, __substr                                                                \
 	, __find                                                                  \
     , __at                                                                    \
@@ -389,6 +392,13 @@ static void __removeElem(_CollectionT* sb, size_t pos)                        \
 		cwtStrNS()->memmove(&sb->m_buffer[pos]                                \
 		    , &sb->m_buffer[pos + 1], sb->m_count * sizeof(_ElemT) );         \
 	}                                                                         \
+}                                                                             \
+	                                                                          \
+static void __removeLast (_CollectionT* p)                                    \
+{                                                                             \
+	CWT_ASSERT(p);                                                            \
+	if( p->m_count > 0)                                                       \
+		__removeElem(p, p->m_count - 1);                                      \
 }                                                                             \
                                                                               \
 static _ElemT* __substr(_CollectionT* sb, size_t start, size_t nelems)        \

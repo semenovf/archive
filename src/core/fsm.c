@@ -9,7 +9,14 @@
 #include <cwt/fsm.h>
 #include <string.h>
 #include <cwt/str.h>
-/*#include <cwt/logger.h>*/
+#include <cwt/vector.h>
+
+CWT_BEGIN_DECL_VECTOR_NS(FsmOffsetArrayNS, FsmOffsetArray, size_t)
+CWT_END_DECL_VECTOR_NS(FsmOffsetArrayNS)
+CWT_BEGIN_DEF_VECTOR_NS(FsmOffsetArrayNS, FsmOffsetArray, size_t)
+CWT_END_DEF_VECTOR_NS(FsmOffsetArrayNS)
+
+
 
 static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len);
 
@@ -156,24 +163,132 @@ ssize_t cwtFsmRepetition(CwtFsm *fsm, void *fn_context, const void *data, size_t
 
 	CWT_ASSERT(nchars_total_processed <= CWT_SSIZE_T_MAX);
 
+	if( rep_context->from == 0 && nchars_total_processed == 0 )
+		return (ssize_t)nchars_total_processed;
+
 	return i > rep_context->from
 			? (ssize_t)nchars_total_processed
 			: (ssize_t)-1;
 }
 
+
+
+static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len)
+{
+	const char *ptr;
+	ssize_t nchars_processed;
+	size_t offset;
+	CwtFsmTransition *trans;
+	FsmOffsetArray *stack;
+
+	trans = &fsm->trans_tab[state_cur];
+
+	CWT_ASSERT(trans);
+
+	stack = __FsmOffsetArrayNS.create();
+	offset = 0;
+	ptr = (const char*)data;
+	__FsmOffsetArrayNS.appendElem(stack, offset);
+	nchars_processed = (ssize_t)-1;
+
+	while( TRUE ) {
+
+		switch( trans->match_type ) {
+
+		case Cwt_Fsm_Match_Str:
+			if( fsm->exact(ptr, CWT_MIN(len-offset, trans->condition.str.len)
+					, trans->condition.str.chars, trans->condition.str.len) ) {
+				nchars_processed = (ssize_t)trans->condition.str.len;
+			}
+			break;
+
+		case Cwt_Fsm_Match_Char:
+			if( offset < len && fsm->belong(ptr, trans->condition.str.chars, trans->condition.str.len) ) {
+				nchars_processed = 1;
+			}
+			break;
+
+		case Cwt_Fsm_Match_Range:
+			if( offset < len && fsm->range(ptr, trans->condition.range.from, trans->condition.range.to) ) {
+				nchars_processed = 1;
+			}
+			break;
+
+		case Cwt_Fsm_Match_Fsm: {
+				CwtFsm inner_fsm;
+
+				memcpy(&inner_fsm, fsm, sizeof(inner_fsm));
+				inner_fsm.trans_tab = trans->condition.trans_tab.tab;
+				nchars_processed = __fsm_exec(&inner_fsm, 0, ptr, len - offset);
+			}
+			break;
+
+		case Cwt_Fsm_Match_Func:
+			nchars_processed = trans->condition.trans_fn.fn(fsm, trans->condition.trans_fn.fn_context, ptr, len - offset);
+			break;
+
+		case Cwt_Fsm_Match_Nothing:
+			nchars_processed = 0;
+			break;
+		}
+
+		if( nchars_processed >= 0 ) {
+			if( trans->status == FSM_ACCEPT ) {
+				if( trans->action ) {
+					const char *ptr_accepted;
+					size_t off = __FsmOffsetArrayNS.last(stack);
+					ptr_accepted = (const char*)data + (fsm->sizeof_char * off);
+					trans->action(ptr_accepted
+					, (size_t)(off - offset)
+					, fsm->context
+					, trans->action_args);
+			}
+
+			ptr += (fsm->sizeof_char * nchars_processed);
+			offset += nchars_processed;
+
+			if( trans->status == FSM_ACCEPT ) {
+				__FsmOffsetArrayNS.appendElem(stack, offset);
+			}
+			state_cur = trans->state_next;
+		} else {
+			state_cur = trans->state_fail;
+
+			if( state_cur >= 0 ) { /* alternative, restore previously saved pointer */
+				offset = __FsmOffsetArrayNS.last(stack);
+				__FsmOffsetArrayNS.removeLast(stack);
+				ptr = (const char*)data + (fsm->sizeof_char * offset);
+			}
+		}
+
+		if( state_cur < 0 )
+			break;
+
+		trans = &fsm->trans_tab[state_cur];
+		nchars_processed = (ssize_t)-1;
+
+		if( trans->status == FSM_REJECT )
+			break;
+	}
+
+	__FsmOffsetArrayNS.free(stack);
+
+	if( trans->status == FSM_ACCEPT ) {
+
+	}
+
+	return (ssize_t)-1;
+}
+
+
+#ifdef __COMMENT__
 static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len_orig)
 {
 	const char *ptr, *ptr_accepted;
-	BOOL accepted = FALSE;
 	ssize_t nchars_processed;
 	size_t nchars_total_processed, nchars_accepted;
 	CwtFsmTransition *trans;
 	size_t len, len_accepted;
-
-/*
-	if( len_orig == 0 )
-		return (ssize_t)0;
-*/
 
 	ptr_accepted = ptr = (const char*)data;
 	len = len_accepted = len_orig;
@@ -182,6 +297,8 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 	nchars_accepted = (size_t)0;
 
 	trans = &fsm->trans_tab[state_cur];
+
+	CWT_ASSERT(trans);
 
 	while( TRUE ) {
 
@@ -238,21 +355,16 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			nchars_total_processed += nchars_processed;
 
 			if( trans->status == FSM_ACCEPT ) {
-				accepted = TRUE;
-
 				ptr_accepted = ptr;
 				nchars_accepted = nchars_total_processed;
 				len_accepted = len;
 
-			} else {
-				accepted = FALSE;
 			}
-
 			state_cur = trans->state_next;
 		} else {
 			state_cur = trans->state_fail;
 
-			if( !accepted && trans->status == FSM_ACCEPT ) {
+			if( state_cur >= 0 ) {
 				ptr = ptr_accepted;
 				nchars_total_processed = nchars_accepted;
 				len = len_accepted;
@@ -271,7 +383,8 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 
 	CWT_ASSERT(nchars_total_processed <= CWT_SSIZE_T_MAX);
 
-	return accepted
+	return trans->status == FSM_ACCEPT /*accepted*/
 			? (ssize_t)nchars_total_processed
 			: (ssize_t)-1;
 }
+#endif
