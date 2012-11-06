@@ -10,10 +10,10 @@
 #include <cwt/str.h>
 #include <string.h>
 
-static const char*    __cstr(CwtByteArray *ba);
-static void           __ltrim(CwtByteArray *ba);
-static void           __rtrim(CwtByteArray *ba);
-static void           __trim(CwtByteArray *ba);
+static const char* __cstr(CwtByteArray *ba);
+static void        __ltrim(CwtByteArray *ba);
+static void        __rtrim(CwtByteArray *ba);
+static void        __trim(CwtByteArray *ba);
 
 CWT_BEGIN_DEF_VECTOR_NS(CwtByteArrayNS, CwtByteArray, BYTE)
 	, __cstr

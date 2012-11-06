@@ -3,10 +3,10 @@
 #include <cwt/string.h>
 #include <cwt/logger.h>
 
-static DlHandle __open(const CWT_CHAR *path, BOOL global, BOOL resolve);
-static DlSymbol __symbol(DlHandle h, const char *name);
-static void     __close(DlHandle h);
-static void     __buildDlFileName(const CWT_CHAR *name, CwtString *libname);
+static DlHandle  __open(const CWT_CHAR *path, BOOL global, BOOL resolve);
+static DlSymbol  __symbol(DlHandle h, const char *name);
+static void      __close(DlHandle h);
+static CWT_CHAR* __buildDlFileName(const CWT_CHAR *name);
 
 static CwtDlNS __cwtDlNS = {
 	  __open
@@ -92,9 +92,13 @@ void __close(DlHandle h)
  * @param name base name of dynamic lubrary
  * @param libname full library name to store
  */
-static void __buildDlFileName(const CWT_CHAR *name, CwtString *libname)
+static CWT_CHAR* __buildDlFileName(const CWT_CHAR *name)
 {
 	CwtStringNS *stringNS = cwtStringNS();
+	CwtString *libname;
+	const CWT_CHAR *ret;
+
+	libname = stringNS->create();
 
 #ifdef CWT_OS_WIN
 	stringNS->append(libname, name);
@@ -106,6 +110,10 @@ static void __buildDlFileName(const CWT_CHAR *name, CwtString *libname)
 #else
 #	error OS not supported
 #endif
+
+	ret = stringNS->cstr(libname);
+	stringNS->disrobe(libname);
+	return (CWT_CHAR*)ret;
 }
 
 

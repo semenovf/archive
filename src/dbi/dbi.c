@@ -242,15 +242,13 @@ static CwtDBIDriver* __dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
 		DlHandle dlHandle;
 		CwtStringNS *stringNS = cwtStringNS();
 		CwtString   *driverName;
-		CwtString   *driverPath;
+		CWT_CHAR    *driverPath;
 
 		driverName = stringNS->create();
-		driverPath = stringNS->create();
-
 		stringNS->sprintf(driverName, _T("cwt-%s"), driver);
 
-		dl->buildDlFileName(stringNS->cstr(driverName), driverPath);
-		dlHandle = dl->open(stringNS->cstr(driverPath), TRUE, TRUE);
+		driverPath = dl->buildDlFileName(stringNS->cstr(driverName));
+		dlHandle = dl->open(driverPath, TRUE, TRUE);
 
 		if( dlHandle ) {
 #ifdef CWT_CC_MSC
@@ -264,7 +262,7 @@ static CwtDBIDriver* __dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
 			}
 		}
 
-		stringNS->free(driverPath);
+		CWT_FREE(driverPath);
 		stringNS->free(driverName);
 	} else {
 		printf_error(__LOG_PREFIX _Tr("unsupported scheme: %s, only 'dbi' acceptable "), scheme);

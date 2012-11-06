@@ -25,7 +25,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <wctype.h>
 #include <wchar.h>
 #include <string.h>
-#include <cwt/string.h>
+/*#include <cwt/string.h>*/
 #include <cwt/str.h>
 #include <cwt/hashtab.h>
 

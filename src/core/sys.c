@@ -10,6 +10,7 @@
 #include <cwt/logger.h>
 #include <cwt/dl.h>
 #include <cwt/str.h>
+#include <cwt/string.h>
 #include <cwt/strlist.h>
 #include <cwt/txtcodec.h>
 
@@ -43,15 +44,13 @@ static BOOL __loadDriver(const CWT_CHAR *dsn, const char *bootstrapNameLatin1)
 		DlHandle dlHandle;
 		CwtStringNS *stringNS = cwtStringNS();
 		CwtString   *driverName;
-		CwtString   *driverPath;
+		CWT_CHAR    *driverPath;
 
 		driverName = stringNS->create();
-		driverPath = stringNS->create();
-
 		stringNS->sprintf(driverName, _T("cwt-%s-%s"), scheme, driver);
 
-		dl->buildDlFileName(stringNS->cstr(driverName), driverPath);
-		dlHandle = dl->open(stringNS->cstr(driverPath), TRUE, TRUE);
+		driverPath = dl->buildDlFileName(stringNS->cstr(driverName));
+		dlHandle = dl->open(driverPath, TRUE, TRUE);
 
 		if( dlHandle ) {
 			bootstrapName = cwtTextCodecNS()->fromLatin1(bootstrapNameLatin1, strlen(bootstrapNameLatin1));
@@ -76,7 +75,7 @@ static BOOL __loadDriver(const CWT_CHAR *dsn, const char *bootstrapNameLatin1)
 			CWT_FREE(bootstrapName);
 		}
 
-		stringNS->free(driverPath);
+		CWT_FREE(driverPath);
 		stringNS->free(driverName);
 	}
 

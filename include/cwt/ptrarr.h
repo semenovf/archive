@@ -12,7 +12,9 @@
 #include <cwt/types.h>
 #include <cwt/vector.h>
 
-CWT_BEGIN_DECL_VECTOR_NS(CwtPtrArrayNS, CwtPtrArray, void*)
+typedef void* ptr_type;
+
+CWT_BEGIN_DECL_VECTOR_NS(CwtPtrArrayNS, CwtPtrArray, ptr_type)
 CWT_END_DECL_VECTOR_NS(CwtPtrArrayNS)
 
 EXTERN_C_BEGIN

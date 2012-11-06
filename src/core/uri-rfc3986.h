@@ -126,9 +126,9 @@ static void __check_host_is_ip(const void *data, size_t len, void *context, void
 
 /* ALPHA / DIGIT / "-" / "." / "_" / "~" */
 static CwtFsmTransition unreserved_fsm[] = {
-      {-1, 1, FSM_MATCH_FSM(ALPHA_FSM),      FSM_ACCEPT, NULL, NULL }
-    , {-1, 2, FSM_MATCH_FSM(DIGIT_FSM),      FSM_ACCEPT, NULL, NULL }
-    , {-1,-1, FSM_MATCH_CHAR(_T("-._~"), 4), FSM_ACCEPT, NULL, NULL }
+      {-1, 1, FSM_MATCH_INLINE(ALPHA_FSM_INL), FSM_ACCEPT, NULL, NULL }
+    , {-1, 2, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_CHAR(_T("-._~"), 4),   FSM_ACCEPT, NULL, NULL }
 };
 
 /* "%" HEXDIG HEXDIG */
@@ -216,22 +216,22 @@ static CwtFsmTransition dec_octet_fsm_4[] = {
 
 /* "2" %x30-34 DIGIT   ; 200-249 */
 static CwtFsmTransition dec_octet_fsm_3[] = {
-	  { 1,-1, FSM_MATCH_STR(_T("2"), 1),      FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_CHAR(_T("01234"), 5), FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(DIGIT_FSM),       FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_STR(_T("2"), 1),       FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_CHAR(_T("01234"), 5),  FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
 };
 
 /* "1" 2DIGIT  ; 100-199 */
 static CwtFsmTransition dec_octet_fsm_2[] = {
 	  { 1,-1, FSM_MATCH_STR(_T("1"), 1), FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_FSM(DIGIT_FSM),  FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(DIGIT_FSM),  FSM_ACCEPT, NULL, NULL }
+	, { 2,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL),  FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL),  FSM_ACCEPT, NULL, NULL }
 };
 
 /* %x31-39 DIGIT       ; 10-99*/
 static CwtFsmTransition dec_octet_fsm_1[] = {
       { 1,-1, FSM_MATCH_CHAR(_T("123456789"), 9), FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_FSM(DIGIT_FSM),           FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL),    FSM_ACCEPT, NULL, NULL }
 };
 
 /*
@@ -242,11 +242,11 @@ static CwtFsmTransition dec_octet_fsm_1[] = {
   / "25" %x30-35        ; 250-255
 */
 static CwtFsmTransition dec_octet_fsm[] = {
-      {-1, 1, FSM_MATCH_FSM(dec_octet_fsm_4), FSM_ACCEPT, NULL, NULL } /* 250 - 255 */
-    , {-1, 2, FSM_MATCH_FSM(dec_octet_fsm_3), FSM_ACCEPT, NULL, NULL } /* 200 - 249 */
-    , {-1, 3, FSM_MATCH_FSM(dec_octet_fsm_2), FSM_ACCEPT, NULL, NULL } /* 100 - 199 */
-    , {-1, 4, FSM_MATCH_FSM(dec_octet_fsm_1), FSM_ACCEPT, NULL, NULL } /* 10 - 99 */
-    , {-1,-1, FSM_MATCH_FSM(DIGIT_FSM),       FSM_ACCEPT, NULL, NULL } /* 0 - 9 */
+      {-1, 1, FSM_MATCH_FSM(dec_octet_fsm_4),  FSM_ACCEPT, NULL, NULL } /* 250 - 255 */
+    , {-1, 2, FSM_MATCH_FSM(dec_octet_fsm_3),  FSM_ACCEPT, NULL, NULL } /* 200 - 249 */
+    , {-1, 3, FSM_MATCH_FSM(dec_octet_fsm_2),  FSM_ACCEPT, NULL, NULL } /* 100 - 199 */
+    , {-1, 4, FSM_MATCH_FSM(dec_octet_fsm_1),  FSM_ACCEPT, NULL, NULL } /* 10 - 99 */
+    , {-1,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL } /* 0 - 9 */
 };
 
 /* dec-octet "." dec-octet "." dec-octet "." dec-octet */
@@ -494,8 +494,8 @@ static CwtFsmTransition host_fsm[] = {
 
 /* *DIGIT */
 static CwtFsmTransition port_fsm[] = {
-      { 0, 1, FSM_MATCH_FSM(DIGIT_FSM), FSM_ACCEPT, NULL, NULL }
-    , {-1,-1, FSM_MATCH_NOTHING,        FSM_ACCEPT, NULL, NULL }
+      { 0, 1, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_NOTHING,               FSM_ACCEPT, NULL, NULL }
 };
 
 
@@ -598,10 +598,10 @@ static CwtFsmTransition relative_ref_fsm[] = {
 /* ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) */
 static CwtFsmTransition scheme_fsm[] =
 {
-	  { 1,-1, FSM_MATCH_FSM(ALPHA_FSM),     FSM_ACCEPT, NULL, NULL }
-    , { 1, 2, FSM_MATCH_FSM(ALPHA_FSM),     FSM_ACCEPT, NULL, NULL }
-    , { 1, 3, FSM_MATCH_FSM(DIGIT_FSM),     FSM_ACCEPT, NULL, NULL }
-    , { 1,-1, FSM_MATCH_CHAR(_T("+-."), 3), FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_INLINE(ALPHA_FSM_INL), FSM_ACCEPT, NULL, NULL }
+    , { 1, 2, FSM_MATCH_INLINE(ALPHA_FSM_INL), FSM_ACCEPT, NULL, NULL }
+    , { 1, 3, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
+    , { 1,-1, FSM_MATCH_CHAR(_T("+-."), 3),    FSM_ACCEPT, NULL, NULL }
 };
 
 /* segment-nz *( "/" segment ) */

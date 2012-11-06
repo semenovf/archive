@@ -13,6 +13,7 @@
 #	include <unistd.h>
 #endif
 #include <cwt/str.h>
+#include <cwt/string.h>
 #include <cwt/txtcodec.h>
 
 CWT_CHAR       __fs_separator    (void);

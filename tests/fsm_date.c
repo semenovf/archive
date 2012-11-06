@@ -230,29 +230,29 @@ static CwtFsmTransition month_fsm[] = {
 
 /* month SP ( 2DIGIT | ( SP 1DIGIT )) */
 static CwtFsmTransition date_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(month_fsm),   FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_FSM(SP_FSM),      FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(month_fsm),        FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_INLINE(SP_FSM_INL),    FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FUNC(parse_mday,NULL), FSM_ACCEPT, NULL, NULL }
 };
 
 /* 2DIGIT ":" 2DIGIT ":" 2DIGIT */
 static CwtFsmTransition time_fsm[] = {
 	  { 1,-1, FSM_MATCH_FUNC(parse_hour,NULL), FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_CHAR(":",1),      FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_CHAR(":",1),           FSM_NORMAL, NULL, NULL }
 	, { 3,-1, FSM_MATCH_FUNC(parse_min,NULL),  FSM_NORMAL, NULL, NULL }
-	, { 4,-1, FSM_MATCH_CHAR(":",1),      FSM_NORMAL, NULL, NULL }
+	, { 4,-1, FSM_MATCH_CHAR(":",1),           FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FUNC(parse_sec,NULL),  FSM_ACCEPT, NULL, NULL }
 };
 
 
 /* wday SP date SP time SP 4DIGIT */
 static CwtFsmTransition datetime_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(wday_fsm),    FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_FSM(SP_FSM),      FSM_NORMAL, NULL, NULL }
-	, { 3,-1, FSM_MATCH_FSM(date_fsm),    FSM_NORMAL, NULL, NULL }
-	, { 4,-1, FSM_MATCH_FSM(SP_FSM),      FSM_NORMAL, NULL, NULL }
-	, { 5,-1, FSM_MATCH_FSM(time_fsm),    FSM_NORMAL, NULL, NULL }
-	, { 6,-1, FSM_MATCH_FSM(SP_FSM),      FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(wday_fsm),         FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_INLINE(SP_FSM_INL),    FSM_NORMAL, NULL, NULL }
+	, { 3,-1, FSM_MATCH_FSM(date_fsm),         FSM_NORMAL, NULL, NULL }
+	, { 4,-1, FSM_MATCH_INLINE(SP_FSM_INL),    FSM_NORMAL, NULL, NULL }
+	, { 5,-1, FSM_MATCH_FSM(time_fsm),         FSM_NORMAL, NULL, NULL }
+	, { 6,-1, FSM_MATCH_INLINE(SP_FSM_INL),    FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FUNC(parse_year,NULL), FSM_ACCEPT, NULL, NULL }
 };
 

@@ -32,6 +32,7 @@ typedef enum _CwtFsmMatchType {
 #define FSM_MATCH_RANGE(f,t)    Cwt_Fsm_Match_Range,{ {0, (void*)(f), (void*)(t)} }
 #define FSM_MATCH_FSM(f)        Cwt_Fsm_Match_Fsm,  { {0, (void*)(f), NULL} }
 #define FSM_MATCH_FUNC(f,pcont) Cwt_Fsm_Match_Func, { {0, (void*)(f), pcont} }
+#define FSM_MATCH_INLINE(inl)   inl
 #define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { {0, NULL, NULL} }
 
 /* repetition

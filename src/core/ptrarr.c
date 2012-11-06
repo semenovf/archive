@@ -9,7 +9,7 @@
 
 #include <cwt/ptrarr.h>
 
-CWT_BEGIN_DEF_VECTOR_NS(CwtPtrArrayNS, CwtPtrArray, void*)
+CWT_BEGIN_DEF_VECTOR_NS(CwtPtrArrayNS, CwtPtrArray, ptr_type)
 CWT_END_DEF_VECTOR_NS(CwtPtrArrayNS)
 
 
@@ -18,4 +18,4 @@ DLL_API_EXPORT CwtPtrArrayNS* cwtPtrArrayNS(void)
 	return &__CwtPtrArrayNS;
 }
 
-CWT_VECTOR_METHODS(CwtPtrArray,void*)
+CWT_VECTOR_METHODS(CwtPtrArray, ptr_type)

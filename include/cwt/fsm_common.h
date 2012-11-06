@@ -77,89 +77,150 @@ RFC-5234 Core Rules
 
 
 /* %x41-5A / %x61-7A   ; A-Z / a-z */
-static CwtFsmTransition ALPHA_FSM[] = {
-	  { -1,-1, FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52), FSM_ACCEPT, NULL, NULL }
- };
+#define ALPHA_FSM_INL  FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52)
 
 /* "0" / "1" */
+#define BIT_FSM_INL    FSM_MATCH_CHAR(_T("01"), 2)
 static CwtFsmTransition BIT_FSM[] = {
-	{ -1,-1, FSM_MATCH_CHAR(_T("01"), 2), FSM_ACCEPT, NULL, NULL }
+	{ -1,-1, FSM_MATCH_INLINE(BIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
 };
+
 
 /* %x01-7F ; any 7-bit US-ASCII character, excluding NUL */
 static CWT_CHAR __CHAR_RG[2] = {(CWT_CHAR)0x01, (CWT_CHAR)0x7F };
-static CwtFsmTransition CHAR_FSM[] = {
-	{ -1,-1, FSM_MATCH_RANGE(&__CHAR_RG[0], &__CHAR_RG[1]), FSM_ACCEPT, NULL, NULL }
-};
-
+#define CHAR_FSM_INL   FSM_MATCH_RANGE(&__CHAR_RG[0], &__CHAR_RG[1])
 
 /* %x0D ; carriage return */
-static CwtFsmTransition CR_FSM[] = {
-	  {-1,-1, FSM_MATCH_CHAR(_T("\r"), 1), FSM_ACCEPT, NULL, NULL }
-};
+#define CR_FSM_INL     FSM_MATCH_STR(_T("\r"), 1)
 
 /* %x0A ; linefeed */
-static CwtFsmTransition LF_FSM[] = {
-	  {-1,-1, FSM_MATCH_CHAR(_T("\n"), 1), FSM_ACCEPT, NULL, NULL }
-};
+#define LF_FSM_INL     FSM_MATCH_STR(_T("\n"), 1)
 
 /* CR LF ; Internet standard newline */
-static CwtFsmTransition CRLF_FSM[] = {
-	  {-1,-1, FSM_MATCH_STR(_T("\r\n"), 2), FSM_ACCEPT, NULL, NULL }
-};
-
-
-/* %x00-1F / %x7F  ; controls */
-static CWT_CHAR __CTL_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0x1F };
-static CwtFsmTransition CTL_FSM[] = {
-	  { -1,-1, FSM_MATCH_RANGE(&__CTL_RG[0], &__CTL_RG[1]), FSM_ACCEPT, NULL, NULL }
-	, { -1,-1, FSM_MATCH_CHAR(_T("\0x7F"), 1), FSM_ACCEPT, NULL, NULL }
-};
-
+#define CRLF_FSM_INL   FSM_MATCH_STR(_T("\r\n"), 2)
 
 /* %x30-39 ; 0-9 */
+#define DIGIT_FSM_INL  FSM_MATCH_CHAR(_T("0123456789"), 10)
 static CwtFsmTransition DIGIT_FSM[] = {
-	  {-1,-1, FSM_MATCH_CHAR(_T("0123456789"), 10), FSM_ACCEPT, NULL, NULL }
+	  {-1,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
 };
 
 
 /* %x22 ; " (Double Quote) */
+#define DQUOTE_FSM_INL FSM_MATCH_STR(_T("\""), 1)
+
+/* %x09 ; horizontal tab */
+#define HTAB_FSM_INL   FSM_MATCH_STR(_T("\t"), 1)
+
+/* %x00-FF ; 8 bits of data */
+static CWT_CHAR __OCTET_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0xFF };
+#define OCTET_FSM_INL  FSM_MATCH_RANGE(&__OCTET_RG[0], &__OCTET_RG[0])
+
+/* %x20  ; space */
+#define SP_FSM_INL     FSM_MATCH_STR(_T(" "), 1)
+
+/* %x21-7E ; visible (printing) characters */
+static CWT_CHAR __VCHAR_RG[2] = {(CWT_CHAR)0x21, (CWT_CHAR)0x7E };
+#define VCHAR_FSM_INL  FSM_MATCH_RANGE(&__VCHAR_RG[0], &__VCHAR_RG[1])
+
+/* SP / HTAB ; white space */
+#define WSP_FSM_INL    FSM_MATCH_CHAR(_T(" \t"), 2)
+
+
+/*
+static CwtFsmTransition ALPHA_FSM[] = {
+	  { -1,-1, FSM_MATCH_CHAR(_T("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52), FSM_ACCEPT, NULL, NULL }
+ };
+*/
+
+
+/* %x01-7F ; any 7-bit US-ASCII character, excluding NUL */
+/*
+static CWT_CHAR __CHAR_RG[2] = {(CWT_CHAR)0x01, (CWT_CHAR)0x7F };
+static CwtFsmTransition CHAR_FSM[] = {
+	{ -1,-1, FSM_MATCH_RANGE(&__CHAR_RG[0], &__CHAR_RG[1]), FSM_ACCEPT, NULL, NULL }
+};
+*/
+
+
+/* %x0D ; carriage return */
+/*
+static CwtFsmTransition CR_FSM[] = {
+	  {-1,-1, FSM_MATCH_CHAR(_T("\r"), 1), FSM_ACCEPT, NULL, NULL }
+};
+*/
+
+/* %x0A ; linefeed */
+/*
+static CwtFsmTransition LF_FSM[] = {
+	  {-1,-1, FSM_MATCH_CHAR(_T("\n"), 1), FSM_ACCEPT, NULL, NULL }
+};
+*/
+
+/* CR LF ; Internet standard newline */
+/*
+static CwtFsmTransition CRLF_FSM[] = {
+	  {-1,-1, FSM_MATCH_STR(_T("\r\n"), 2), FSM_ACCEPT, NULL, NULL }
+};
+*/
+
+
+
+/* %x22 ; " (Double Quote) */
+/*
 static CwtFsmTransition DQUOTE_FSM[] = {
 	{-1,-1, FSM_MATCH_CHAR(_T("\""), 1), FSM_ACCEPT, NULL, NULL }
 };
-
-
-/* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
-static CwtFsmTransition HEXDIG_FSM[] = {
-	  {-1, 1, FSM_MATCH_FSM(DIGIT_FSM),               FSM_ACCEPT, NULL, NULL }
-    , {-1,-1, FSM_MATCH_CHAR(_T("ABCDEFabcdef"), 12), FSM_ACCEPT, NULL, NULL }
-};
+*/
 
 /* %x09 ; horizontal tab */
+/*
 static CwtFsmTransition HTAB_FSM[] = {
 	  {-1,-1, FSM_MATCH_CHAR(_T("\t"), 1), FSM_ACCEPT, NULL, NULL }
 };
+*/
 
 /* %x00-FF ; 8 bits of data */
+/*
 static CWT_CHAR __OCTET_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0xFF };
 static CwtFsmTransition OCTET_FSM[] = {
 	{ -1,-1, FSM_MATCH_RANGE(&__OCTET_RG[0], &__OCTET_RG[0]), FSM_ACCEPT, NULL, NULL }
 };
+*/
 
 /* %x20  ; space */
+/*
 static CwtFsmTransition SP_FSM[] = {
 	  {-1,-1, FSM_MATCH_CHAR(_T(" "), 1), FSM_ACCEPT, NULL, NULL }
 };
+*/
 
 /* %x21-7E ; visible (printing) characters */
+/*
 static CWT_CHAR __VCHAR_RG[2] = {(CWT_CHAR)0x21, (CWT_CHAR)0x7E };
 static CwtFsmTransition VCHAR_FSM[] = {
 	{ -1,-1, FSM_MATCH_RANGE(&__VCHAR_RG[0], &__VCHAR_RG[1]), FSM_ACCEPT, NULL, NULL }
 };
+*/
 
 /* SP / HTAB ; white space */
+/*
 static CwtFsmTransition WSP_FSM[] = {
 	{-1,-1, FSM_MATCH_CHAR(_T(" \t"), 2), FSM_ACCEPT, NULL, NULL }
+};
+*/
+
+/* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
+static CwtFsmTransition HEXDIG_FSM[] = {
+	  {-1, 1, FSM_MATCH_INLINE(DIGIT_FSM_INL),            FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_CHAR(_T("ABCDEFabcdef"), 12), FSM_ACCEPT, NULL, NULL }
+};
+
+/* %x00-1F / %x7F  ; controls */
+static CWT_CHAR __CTL_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0x1F };
+static CwtFsmTransition CTL_FSM[] = {
+	  { -1, 1, FSM_MATCH_RANGE(&__CTL_RG[0], &__CTL_RG[1]), FSM_ACCEPT, NULL, NULL }
+	, { -1,-1, FSM_MATCH_CHAR(_T("\0x7F"), 1),              FSM_ACCEPT, NULL, NULL }
 };
 
 /* *(WSP / CRLF WSP)
@@ -174,21 +235,17 @@ static CwtFsmTransition WSP_FSM[] = {
 					;  other contexts.
 */
 static CwtFsmTransition LWSP_FSM[] = {
-	  { 0, 1, FSM_MATCH_CHAR(_T(" \t"), 2),    FSM_NORMAL, NULL, NULL }
-	, { 0, 2, FSM_MATCH_STR(_T("\r\n "), 3),   FSM_NORMAL, NULL, NULL }
-	, { 0, 3, FSM_MATCH_STR(_T("\r\n\\t"), 3), FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,               FSM_ACCEPT, NULL, NULL }
+	  { 0, 1, FSM_MATCH_INLINE(CRLF_FSM_INL),  FSM_NORMAL, NULL, NULL }
+	, { 0, 2, FSM_MATCH_INLINE(WSP_FSM_INL),   FSM_ACCEPT, NULL, NULL }
+	, { 0,-1, FSM_MATCH_INLINE(WSP_FSM_INL),   FSM_ACCEPT, NULL, NULL }
 };
 
 
 static void __fsm_unused_commons(void)
 {
-	CWT_UNUSED3( ALPHA_FSM,  BIT_FSM,   CHAR_FSM);
-	CWT_UNUSED3( CR_FSM,     LF_FSM,    CRLF_FSM);
-	CWT_UNUSED3( CTL_FSM,    DIGIT_FSM, DQUOTE_FSM);
-	CWT_UNUSED3( HEXDIG_FSM, HTAB_FSM,  LWSP_FSM);
-	CWT_UNUSED3( OCTET_FSM,  SP_FSM,    VCHAR_FSM);
-	CWT_UNUSED ( WSP_FSM);
+	CWT_UNUSED2(BIT_FSM, DIGIT_FSM);
+	CWT_UNUSED3(__CHAR_RG, __OCTET_RG, __VCHAR_RG);
+	CWT_UNUSED3(HEXDIG_FSM, CTL_FSM, LWSP_FSM);
 }
 
 #endif /* __CWT_FSM_COMMON_H__ */

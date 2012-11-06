@@ -12,6 +12,7 @@
 #include <time.h>
 #include <cwt/str.h>
 #include <cwt/test.h>
+#include <cwt/fsm_common.h>
 
 static CwtFsmNS *__fsmNS = NULL;
 
@@ -79,15 +80,6 @@ static void test_int_helpers(void)
 	CWT_TEST_NOK(cwtExactInt(&__ints, nints, NULL, 0));
 }
 
-static CwtFsmTransition DIGIT_FSM[] = {
-	  {-1,-1, FSM_MATCH_CHAR(_T("0123456789"), 10), FSM_ACCEPT, NULL, NULL }
-};
-
-static CwtFsmTransition HEXDIG_FSM[] = {
-	  {-1, 1, FSM_MATCH_FSM(DIGIT_FSM),               FSM_ACCEPT, NULL, NULL }
-    , {-1,-1, FSM_MATCH_CHAR(_T("ABCDEFabcdef"), 12), FSM_ACCEPT, NULL, NULL }
-};
-
 
 static void test_alternatives_simple(void)
 {
@@ -107,8 +99,8 @@ static void test_alternatives_simple(void)
 
 /* 0*DIGIT */
 static CwtFsmTransition decimal0more_fsm[] = {
-	  { 0, 1, FSM_MATCH_FSM(DIGIT_FSM), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,        FSM_ACCEPT, NULL, NULL }
+	  { 0, 1, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,               FSM_ACCEPT, NULL, NULL }
 };
 
 static void test_repetition_0more(void) {
@@ -133,13 +125,13 @@ static void test_repetition_0more(void) {
 
 /* 1*DIGIT */
 static CwtFsmTransition decimal_fsm[] = {
-	  { 0,-1, FSM_MATCH_FSM(DIGIT_FSM), FSM_ACCEPT, NULL, NULL }
+	  { 0,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
 };
 
 /* 2*DIGIT */
 static CwtFsmTransition decimal2_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(DIGIT_FSM), FSM_NORMAL, NULL, NULL }
-	, { 1,-1, FSM_MATCH_FSM(DIGIT_FSM), FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_NORMAL, NULL, NULL }
+	, { 1,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
 };
 
 
@@ -192,7 +184,7 @@ static void test_repetition_1more(void)
 /* NON-ZERO_DIGIT *DIGIT */
 static CwtFsmTransition non_zero_decimal_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_T("123456789"), 9), FSM_ACCEPT, NULL, NULL }
-	, { 1,-1, FSM_MATCH_FSM(DIGIT_FSM),           FSM_ACCEPT, NULL, NULL }
+	, { 1,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL),    FSM_ACCEPT, NULL, NULL }
 };
 
 /* ( "0" ("x" / "X") hex ) / (non-zero-dec dec) */

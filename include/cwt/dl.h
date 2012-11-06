@@ -18,8 +18,6 @@
 #	include <dlfcn.h>
 #endif
 
-#include <cwt/string.h>
-
 #ifdef CWT_CC_MSC
 	typedef HMODULE DlHandle;
 	typedef FARPROC DlSymbol;
@@ -32,10 +30,10 @@
 /*Dynamic library*/
 typedef struct CwtDlNS
 {
-	DlHandle (*open)            (const CWT_CHAR *path, BOOL global, BOOL resolve);
-	DlSymbol (*symbol)          (DlHandle h, const char *name);
-	void     (*close)           (DlHandle h);
-	void     (*buildDlFileName) (const CWT_CHAR *name, CwtString *libname);
+	DlHandle  (*open)            (const CWT_CHAR *path, BOOL global, BOOL resolve);
+	DlSymbol  (*symbol)          (DlHandle h, const char *name);
+	void      (*close)           (DlHandle h);
+	CWT_CHAR* (*buildDlFileName) (const CWT_CHAR *name);
 } CwtDlNS;
 
 EXTERN_C_BEGIN

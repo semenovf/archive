@@ -8,8 +8,8 @@
 */
 #include <time.h>
 #include <cwt/types.h>
-#include <cwt/string.h>
-#include <cwt/bytearr.h>
+/*#include <cwt/string.h>*/
+/*#include <cwt/bytearr.h>*/
 
 typedef struct CwtQuotePair {
 	CWT_CHAR begin;

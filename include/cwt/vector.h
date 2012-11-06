@@ -9,6 +9,7 @@
 #define __CWT_VECTOR_H__
 
 #include <cwt/types.h>
+#include <cwt/str.h>
 
 #define CWT_BEGIN_DECL_VECTOR_NS(_NS,_CollectionT,_ElemT)                     \
 typedef struct _CollectionT                                                   \
