@@ -12,17 +12,13 @@
 #include "../src/abnf-rfc5234.h"
 
 static struct _FsmTestEntry __fsmTestEntries[] = {
-		/*"<" *(%x20-3D / %x3F-7E) ">"*/
-	{ VHEADER(prose_val_fsm)
-		, { _T("<Hello, World!>"), _T("<--! HTML comment -->"), _T("</end-tag>"), _T("<empty-tag/>"), VNULL }
-		, {   {-1, _T("Hello,>") }
-			, {-1, _T("<World") }
-			, {15, _T("<Hello, World!> \n") }
-			, {-1, _T("<\n>") }
-			, INULL }}
-
-
-
+		{ VHEADER(num_val_fsm)
+				, { VNULL }
+				, {   {-1, _T("%dABC") }
+					, {-1, _T("%xQWERTY") }
+					, { 8, _T("%xABCD98?") }
+					, {-1, _T("%%%") }
+					, INULL }}
 	/* 1*DIGIT / (*DIGIT "*" *DIGIT) */
 	, { VHEADER(repeat_fsm)
 		, { _T("*5"), _T("1"), _T("1234"), _T("5*"), VNULL }
@@ -78,6 +74,15 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 			, { 6, _T("b00-01-10") }
 			, INULL }}
 
+	/*"<" *(%x20-3D / %x3F-7E) ">"*/
+	, { VHEADER(prose_val_fsm)
+		, { _T("<Hello, World!>"), _T("<--! HTML comment -->"), _T("</end-tag>"), _T("<empty-tag/>"), VNULL }
+		, {   {-1, _T("Hello,>") }
+			, {-1, _T("<World") }
+			, {15, _T("<Hello, World!> \n") }
+			, {-1, _T("<\n>") }
+			, INULL }}
+
 
 	, { VHEADER(char_val_fsm)
 		, { _T("\"\""), _T("\"?!@#$%^\""), _T("\" !0!1!2!3! \""), _T("\"  Hello, World!  \""), VNULL }
@@ -121,6 +126,7 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 			, {-1, _T("?%") }
 			, {-1, _T("/") }
 			, INULL }}
+
 };
 
 

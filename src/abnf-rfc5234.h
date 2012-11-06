@@ -115,38 +115,36 @@ static void __check_host_is_ip(const void *data, size_t len, void *context, void
 */
 static CWT_CHAR __prose_rg[4] = {(CWT_CHAR)0x20, (CWT_CHAR)0x3D, (CWT_CHAR)0x3F, (CWT_CHAR)0x7E };
 static CwtFsmTransition prose_val_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_T("<"), 1),  FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_STR(_T("<"), 1),  FSM_NORMAL, NULL, NULL }
 	, { 1, 2, FSM_MATCH_RANGE(&__prose_rg[0], &__prose_rg[1]), FSM_NORMAL, NULL, NULL }
 	, { 1, 3, FSM_MATCH_RANGE(&__prose_rg[2], &__prose_rg[3]), FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_CHAR(_T(">"), 1),  FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR(_T(">"), 1),  FSM_ACCEPT, NULL, NULL }
 };
-
-
 
 
 /* ALPHA *(ALPHA / DIGIT / "-") */
 static CwtFsmTransition rulename_fsm[] = {
-      { 1,-1, FSM_MATCH_FSM(ALPHA_FSM),   FSM_ACCEPT, NULL, NULL }
-    , { 1, 2, FSM_MATCH_FSM(ALPHA_FSM),   FSM_NORMAL, NULL, NULL }
-    , { 1, 3, FSM_MATCH_FSM(DIGIT_FSM),   FSM_NORMAL, NULL, NULL }
-    , { 1, 4, FSM_MATCH_CHAR(_T("-"), 1), FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_NOTHING,          FSM_ACCEPT, NULL, NULL }
+      { 1,-1, FSM_MATCH_INLINE(ALPHA_FSM_INL), FSM_ACCEPT, NULL, NULL }
+    , { 1, 2, FSM_MATCH_INLINE(ALPHA_FSM_INL), FSM_NORMAL, NULL, NULL }
+    , { 1, 3, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_NORMAL, NULL, NULL }
+    , { 1, 4, FSM_MATCH_STR(_T("-"), 1),       FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_NOTHING,               FSM_ACCEPT, NULL, NULL }
 };
 
 
 /* ";" *(WSP / VCHAR) CRLF */
 static CwtFsmTransition comment_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_T(";"), 1), FSM_ACCEPT, NULL, NULL }
-    , { 1, 2, FSM_MATCH_FSM(WSP_FSM),     FSM_ACCEPT, NULL, NULL }
-    , { 1, 3, FSM_MATCH_FSM(VCHAR_FSM),   FSM_ACCEPT, NULL, NULL }
-    , {-1, 4, FSM_MATCH_FSM(CRLF_FSM),    FSM_ACCEPT, NULL, NULL }
+      { 1,-1, FSM_MATCH_STR(_T(";"), 1), FSM_ACCEPT, NULL, NULL }
+    , { 1, 2, FSM_MATCH_INLINE(WSP_FSM_INL),     FSM_ACCEPT, NULL, NULL }
+    , { 1, 3, FSM_MATCH_INLINE(VCHAR_FSM_INL),   FSM_ACCEPT, NULL, NULL }
+    , {-1, 4, FSM_MATCH_INLINE(CRLF_FSM_INL),    FSM_ACCEPT, NULL, NULL }
     , {-1,-1, FSM_MATCH_NOTHING,          FSM_REJECT, NULL, NULL }
 };
 
 /* comment / CRLF ; comment or newline */
 static CwtFsmTransition c_nl_fsm[] = {
      {-1, 1, FSM_MATCH_FSM(comment_fsm), FSM_ACCEPT, NULL, NULL }
-   , {-1,-1, FSM_MATCH_FSM(CRLF_FSM),    FSM_ACCEPT, NULL, NULL }
+   , {-1,-1, FSM_MATCH_INLINE(CRLF_FSM_INL),    FSM_ACCEPT, NULL, NULL }
 };
 
 /*
@@ -156,10 +154,10 @@ static CwtFsmTransition c_nl_fsm[] = {
 */
 static CWT_CHAR __char_val_rg[2] = {(CWT_CHAR)0x23, (CWT_CHAR)0x7E };
 static CwtFsmTransition char_val_fsm[] = {
-	{ 1,-1, FSM_MATCH_CHAR(_T("\""), 1), FSM_NORMAL, NULL, NULL }
+	{ 1,-1, FSM_MATCH_INLINE(DQUOTE_FSM_INL), FSM_NORMAL, NULL, NULL }
   , { 1, 2, FSM_MATCH_RANGE(&__char_val_rg[0], &__char_val_rg[1]), FSM_NORMAL, NULL, NULL }
   , { 1, 3, FSM_MATCH_CHAR(_T(" !"), 2), FSM_NORMAL, NULL, NULL }
-  , {-1,-1, FSM_MATCH_CHAR(_T("\""), 1), FSM_ACCEPT, NULL, NULL }
+  , {-1,-1, FSM_MATCH_INLINE(DQUOTE_FSM_INL), FSM_ACCEPT, NULL, NULL }
 };
 
 
@@ -204,7 +202,7 @@ static CwtFsmTransition dec_val_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_T("d"), 1),      FSM_NORMAL, NULL, NULL }
 	, { 2,-1, FSM_MATCH_RPT(&__dec_rpt),       FSM_NORMAL, NULL, NULL }
 	, { 4, 3, FSM_MATCH_FSM(dec_dash_fsm),     FSM_NORMAL, NULL, NULL }
-	, { 4, 4, FSM_MATCH_RPT(&__dec_point_rpt), FSM_NORMAL, NULL, NULL }
+	, { 4,-1, FSM_MATCH_RPT(&__dec_point_rpt), FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_NOTHING,               FSM_ACCEPT, NULL, NULL }
 };
 
@@ -231,18 +229,18 @@ static CwtFsmTransition hex_val_fsm[] = {
 
 /*  "%" (bin-val / dec-val / hex-val) */
 static CwtFsmTransition num_val_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_T("%"), 1), FSM_ACCEPT, NULL, NULL }
-	, {-1, 2, FSM_MATCH_FSM(bin_val_fsm), FSM_ACCEPT, NULL, NULL }
-	, {-1, 3, FSM_MATCH_FSM(dec_val_fsm), FSM_ACCEPT, NULL, NULL }
-	, {-1, 4, FSM_MATCH_FSM(hex_val_fsm), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,          FSM_REJECT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_T("%"), 1), FSM_NORMAL, NULL, NULL }
+	, { 4, 2, FSM_MATCH_FSM(bin_val_fsm), FSM_NORMAL, NULL, NULL }
+	, { 4, 3, FSM_MATCH_FSM(dec_val_fsm), FSM_NORMAL, NULL, NULL }
+	, { 4,-1, FSM_MATCH_FSM(hex_val_fsm), FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,          FSM_ACCEPT, NULL, NULL }
 };
 
 /* WSP / (c-nl WSP) */
 static CwtFsmTransition c_wsp_fsm[] = {
      { 1, 2, FSM_MATCH_FSM(c_nl_fsm), FSM_NORMAL, NULL, NULL }
-   , {-1, 2, FSM_MATCH_FSM(WSP_FSM),  FSM_ACCEPT, NULL, NULL }
-   , {-1,-1, FSM_MATCH_FSM(WSP_FSM),  FSM_ACCEPT, NULL, NULL }
+   , {-1, 2, FSM_MATCH_INLINE(WSP_FSM_INL),  FSM_ACCEPT, NULL, NULL }
+   , {-1,-1, FSM_MATCH_INLINE(WSP_FSM_INL),  FSM_ACCEPT, NULL, NULL }
 };
 
 /*
