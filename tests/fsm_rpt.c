@@ -41,15 +41,25 @@ static CwtFsmTransition pct_encoded_str_fsm[] = {
 };
 
 static struct _FsmRptTestEntry {
-	int from, count;
+	int from, to;
 	ssize_t ret;
 } __fsmRptTestEntries[] = {
 	  {-1,-1,18 }
 	, { 0, 0, 0 }
 	, { 0, 1, 3 }
+	, { 0, 2, 6 }
+	, { 0, 3, 9 }
+	, { 0, 4,12 }
+	, { 0, 5,15 }
+	, { 0, 6,18 }
+	, { 0, 7,18 }
+	, { 0, 8,18 }
 	, { 1, 1, 3 }
 	, { 1, 2, 6 }
-	, { 2, 2, 9 }
+	, { 1, 3, 9 }
+	, { 1, 4,12 }
+	, { 2, 2, 6 }
+	, { 2, 2, 6 }
 	, {20,30,-1 }
 };
 
@@ -61,14 +71,6 @@ static void test_fsm_rep(void)
 	const CWT_CHAR *pct_str = _T("%AB%CD%EF%01%02%03");
 	int i, n;
 	CwtFsm fsm;
-/*
-	const CWT_CHAR *date_str_incorrect_0 = _T("Cat Apr 29 12:34:56 1972");   invalid weekday
-	const CWT_CHAR *date_str_incorrect_1 = _T("Sat Apt 29 12:34:56 1972");   invalid month
-	const CWT_CHAR *date_str_incorrect_2 = _T("Sat Apr 29 32:34:56 1972");   invalid hour
-	const CWT_CHAR *date_str_incorrect_3 = _T("Sat Apr 29 12:34:56  1972");  extra space char before year
-	const CWT_CHAR *date_str_incorrect_4 = _T("Sat Apr 29 12:3:56 1972");    too little digits for minutes
-*/
-
 
 	FSM_INIT(fsm, CWT_CHAR, pct_encoded_str_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 
@@ -76,7 +78,7 @@ static void test_fsm_rep(void)
 
 	for( i = 0; i < n; i++ ) {
 		__rep_context.from  = __fsmRptTestEntries[i].from;
-		__rep_context.count = __fsmRptTestEntries[i].count;
+		__rep_context.to    = __fsmRptTestEntries[i].to;
 		CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, pct_str, cwtStrNS()->strLen(pct_str)) == __fsmRptTestEntries[i].ret);
 	}
 }
@@ -91,7 +93,7 @@ int main(int argc, char *argv[])
 
 	__fsmNS = cwtFsmNS();
 
-	CWT_BEGIN_TESTS(12);
+	CWT_BEGIN_TESTS(17);
 
 	test_fsm_rep();
 

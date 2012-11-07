@@ -90,7 +90,7 @@ typedef struct _CwtFsm {
 
 typedef struct _CwtFsmRepetitionContext {
 	CwtFsmTransition *trans_tab;
-	int from, count;
+	int from, to;
 } CwtFsmRepetitionContext;
 
 typedef struct CwtFsmNS {

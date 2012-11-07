@@ -156,7 +156,8 @@ static CwtFsmTransition pchar_fsm[] = {
 
 /* 1*pchar */
 static CwtFsmTransition segment_nz_fsm[] = {
-	{ 0,-1, FSM_MATCH_FSM(pchar_fsm),     FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(pchar_fsm),     FSM_ACCEPT, NULL, NULL }
+	, { 1,-1, FSM_MATCH_FSM(pchar_fsm),     FSM_ACCEPT, NULL, NULL }
 };
 
 /* *pchar */

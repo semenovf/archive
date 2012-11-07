@@ -105,7 +105,6 @@ static CwtFsmTransition DIGIT_FSM[] = {
 	  {-1,-1, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
 };
 
-
 /* %x22 ; " (Double Quote) */
 #define DQUOTE_FSM_INL FSM_MATCH_STR(_T("\""), 1)
 
@@ -212,15 +211,15 @@ static CwtFsmTransition WSP_FSM[] = {
 
 /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
 static CwtFsmTransition HEXDIG_FSM[] = {
-	  {-1, 1, FSM_MATCH_INLINE(DIGIT_FSM_INL),            FSM_ACCEPT, NULL, NULL }
+	  {-1, 1, FSM_MATCH_INLINE(DIGIT_FSM_INL),        FSM_ACCEPT, NULL, NULL }
     , {-1,-1, FSM_MATCH_CHAR(_T("ABCDEFabcdef"), 12), FSM_ACCEPT, NULL, NULL }
 };
 
 /* %x00-1F / %x7F  ; controls */
-static CWT_CHAR __CTL_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0x1F };
+static CWT_CHAR CTL_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0x1F };
 static CwtFsmTransition CTL_FSM[] = {
-	  { -1, 1, FSM_MATCH_RANGE(&__CTL_RG[0], &__CTL_RG[1]), FSM_ACCEPT, NULL, NULL }
-	, { -1,-1, FSM_MATCH_CHAR(_T("\0x7F"), 1),              FSM_ACCEPT, NULL, NULL }
+	  { -1, 1, FSM_MATCH_RANGE(&CTL_RG[0], &CTL_RG[1]), FSM_ACCEPT, NULL, NULL }
+	, { -1,-1, FSM_MATCH_CHAR(_T("\0x7F"), 1),          FSM_ACCEPT, NULL, NULL }
 };
 
 /* *(WSP / CRLF WSP)

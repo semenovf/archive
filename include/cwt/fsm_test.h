@@ -36,7 +36,7 @@ static void fsm_test_entries(CwtFsm *fsm, struct _FsmTestEntry *entry)
 	CwtStrNS *strNS = cwtStrNS();
 	const CWT_CHAR *fsmname = entry->name;
 	const CWT_CHAR * const *valid_str  = entry->valid_str;
-	struct _FsmInvalidEntry *invalid_enries = entry->invalid_entries;
+	struct _FsmInvalidEntry *invalid_entries = entry->invalid_entries;
 
 	cwtLoggerNS()->trace(_T("Test '%s'..."), fsmname);
 	fsm->trans_tab = entry->trans_tab;
@@ -46,11 +46,11 @@ static void fsm_test_entries(CwtFsm *fsm, struct _FsmTestEntry *entry)
 		valid_str++;
 	}
 
-	while( invalid_enries->invalid_str != NULL ) {
+	while( invalid_entries->invalid_str != NULL ) {
 		CWT_TEST_FAIL(cwtFsmNS()->exec(fsm, 0
-				, invalid_enries->invalid_str
-				, strNS->strLen(invalid_enries->invalid_str)) == invalid_enries->ret);
-		invalid_enries++;
+				, invalid_entries->invalid_str
+				, strNS->strLen(invalid_entries->invalid_str)) == invalid_entries->ret);
+		invalid_entries++;
 	}
 
 }
