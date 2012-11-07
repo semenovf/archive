@@ -12,20 +12,8 @@
 #include "../src/abnf-rfc5234.h"
 
 static struct _FsmTestEntry __fsmTestEntries[] = {
-		{ VHEADER(num_val_fsm)
-				, { VNULL }
-				, {   {-1, _T("%dABC") }
-					, {-1, _T("%xQWERTY") }
-					, { 8, _T("%xABCD98?") }
-					, {-1, _T("%%%") }
-					, INULL }}
-	/* 1*DIGIT / (*DIGIT "*" *DIGIT) */
-	, { VHEADER(repeat_fsm)
-		, { _T("*5"), _T("1"), _T("1234"), _T("5*"), VNULL }
-		, { INULL }}
-
 	/*  *c-wsp ("=" / "=/") *c-wsp */
-	, { VHEADER(defined_as_fsm)
+	{ VHEADER(defined_as_fsm)
 		, { _T("\t ="), _T(" \t = \t "), _T("\t =/"), _T(" \t =/ \t "), VNULL }
 		, { INULL }}
 
@@ -39,15 +27,6 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 	, { VHEADER(defined_as_fsm)
 		, { _T("\r\n\t ="), _T("\r\n\t = \r\n\t\r\n\t"), _T("\r\n\t \r\n\t =/"), _T("\r\n\t =/ \r\n\t\r\n\t"), VNULL }
 		, { INULL }}
-
-	/*  "%" (bin-val / dec-val / hex-val) */
-	, { VHEADER(num_val_fsm)
-		, { _T("%xDEADBEEF"), _T("%d987654"), _T("%b0101"), _T("%xDEAD.BEEF.321.12345"), VNULL }
-		, {   {-1, _T("%dABC") }
-			, {-1, _T("%xQWERTY") }
-			, { 8, _T("%xABCD98?") }
-			, {-1, _T("%%%") }
-			, INULL }}
 
 	/* "x" 1*HEXDIG [ 1*("." 1*HEXDIG) / ("-" 1*HEXDIG) ] */
 	, { VHEADER(hex_val_fsm)
@@ -72,6 +51,15 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 		, {   {-1, _T("010101") }
 			, {-1, _T("b234") }
 			, { 6, _T("b00-01-10") }
+			, INULL }}
+
+	/*  "%" (bin-val / dec-val / hex-val) */
+	, { VHEADER(num_val_fsm)
+		, { _T("%xDEADBEEF"), _T("%d987654"), _T("%b0101"), _T("%xDEAD.BEEF.321.12345"), VNULL }
+		, {   {-1, _T("%dABC") }
+			, {-1, _T("%xQWERTY") }
+			, { 8, _T("%xABCD98?") }
+			, {-1, _T("%%%") }
 			, INULL }}
 
 	/*"<" *(%x20-3D / %x3F-7E) ">"*/
@@ -127,6 +115,98 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 			, {-1, _T("/") }
 			, INULL }}
 
+	/* 1*DIGIT / (*DIGIT "*" *DIGIT) */
+	, { VHEADER(repeat_fsm)
+		, { _T("1"), _T("*5"), _T("1234"), _T("5*"), VNULL }
+		, { INULL }}
+
+	, { VHEADER(repeat_fsm)
+		, { _T("1*5"), _T("1234*2345"), VNULL }
+		, { INULL }}
+
+	/* [repeat] element*/
+	, { VHEADER(repetition_fsm)
+		, { _T("element-name"), _T("1one-elem"), _T("1*one-more-elem"), _T("2*5two-to-five-elems"), VNULL }
+		, { INULL }}
+
+	/* repetition *(1*c-wsp repetition) */
+	, { VHEADER(concatenation_fsm)
+		, {   _T("1one-elem")
+			, _T("1one-elem element-name")
+			, _T("1*one-more-elem  \t  2*5two-to-five-elems")
+			, _T("2*5two-to-five-elems")
+			, VNULL }
+		, { INULL }}
+
+	/* concatenation *(*c-wsp "/" *c-wsp concatenation) */
+	, { VHEADER(alternation_fsm)
+		, {   _T("alter0 / alter1")
+			, _T("2*5two-to-five-elems")
+			, _T("1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems")
+			, _T("1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems / 1one-elem element-name")
+			, VNULL }
+		, { INULL }}
+
+	/* "(" *c-wsp alternation *c-wsp ")" */
+	, { VHEADER(group_fsm)
+		, {   _T("( alter0 / alter1 )")
+			, _T("( 2*5two-to-five-elems )")
+			, _T("( 1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems )")
+			, _T("( 1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems / 1one-elem element-name )")
+			, VNULL }
+		, { INULL }}
+
+	/* "[" *c-wsp alternation *c-wsp "]" */
+	, { VHEADER(option_fsm)
+		, {   _T("[ alter0 / alter1 ]")
+			, _T("[ 2*5two-to-five-elems ]")
+			, _T("[ 1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems ]")
+			, _T("[ 1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems / 1one-elem element-name ]")
+			, VNULL }
+		, { INULL }}
+
+	/* rulename / group / option / char-val / num-val / prose-val */
+	, { VHEADER(element_fsm)
+		, {   _T("rule-name")
+			, _T("( 1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems / 1one-elem element-name )")
+			, _T("[ 1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems / 1one-elem element-name ]")
+			, VNULL }
+		, { INULL }}
+
+	, { VHEADER(element_fsm)
+		, {   _T("\"  Hello, World!  \"")
+			, _T("%xDEAD.BEEF.321.12345")
+			, _T("b10101-11111")
+			, _T("<--! HTML comment -->")
+			, VNULL }
+		, { INULL }}
+
+	/* alternation *c-wsp */
+	, { VHEADER(elements_fsm)
+		, {   _T("alter0 / alter1 \t ")
+			, _T("2*5two-to-five-elems   ")
+			, _T("1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems")
+			, _T("1*one-more-elem  \t  2*5two-to-five-elems / 2*5two-to-five-elems / 1one-elem element-name\t\t  \t\t  ")
+			, VNULL }
+		, { INULL }}
+
+	/* rulename defined-as elements c-nl
+						   ; continues if next line starts
+						   ;  with white space
+	*/
+	, { VHEADER(rule_fsm)
+		, { _T("comment        =  \";\" *(WSP / VCHAR) CRLF\r\n")
+			, _T("element        =  rulename / group / option /\r\n\tchar-val / num-val / prose-val\r\n")
+			, VNULL }
+		, { INULL }}
+
+	/* 1*( rule / (*c-wsp c-nl) ) */
+	, { VHEADER(rulelist_fsm)
+		, { _T("comment        =  \";\" *(WSP / VCHAR) CRLF\r\n"
+		       "element        =  rulename / group / option /\r\n\tchar-val / num-val / prose-val\r\n")
+			, VNULL }
+		, { INULL }}
+
 };
 
 
@@ -145,7 +225,7 @@ int main(int argc, char *argv[])
 
 	FSM_INIT(fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 
-	CWT_BEGIN_TESTS(77);
+	CWT_BEGIN_TESTS(128);
 
 	for( i = 0; i < nentries; i++ )
 		fsm_test_entries(&fsm, &__fsmTestEntries[i]);
