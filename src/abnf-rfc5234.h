@@ -29,18 +29,11 @@
 
 #ifdef __COMMENT__
 static void __set_scheme(const void *data, size_t len, void *context, void *action_args);
-static void __set_query(const void *data, size_t len, void *context, void *action_args);
-static void __set_fragment(const void *data, size_t len, void *context, void *action_args);
-static void __set_path(const void *data, size_t len, void *context, void *action_args);
-static void __set_userinfo(const void *data, size_t len, void *context, void *action_args);
-static void __unset_userinfo(const void *data, size_t len, void *context, void *action_args);
-static void __set_host(const void *data, size_t len, void *context, void *action_args);
-static void __set_port(const void *data, size_t len, void *context, void *action_args);
-static void __set_host_is_ip(const void *data, size_t len, void *context, void *action_args);
-static void __check_host_is_ip(const void *data, size_t len, void *context, void *action_args);
 #endif
 
 /*
+   All CRLF entries replaced by NL !!!
+
    RFC 5234: Augmented BNF for Syntax Specifications: ABNF
    -----------------------------------------------------------------------
          rulelist       =  1*( rule / (*c-wsp c-nl) )
@@ -60,10 +53,10 @@ static void __check_host_is_ip(const void *data, size_t len, void *context, void
 
          c-wsp          =  WSP / (c-nl WSP)
 
-         c-nl           =  comment / CRLF
+         c-nl           =  comment / NL
                                 ; comment or newline
 
-         comment        =  ";" *(WSP / VCHAR) CRLF
+         comment        =  ";" *(WSP / VCHAR) NL
 
          alternation    =  concatenation
                            *(*c-wsp "/" *c-wsp concatenation)
@@ -131,19 +124,19 @@ static CwtFsmTransition rulename_fsm[] = {
 };
 
 
-/* ";" *(WSP / VCHAR) CRLF */
+/* ";" *(WSP / VCHAR) NL */
 static CwtFsmTransition comment_fsm[] = {
-      { 1,-1, FSM_MATCH_STR(_T(";"), 1), FSM_ACCEPT, NULL, NULL }
-    , { 1, 2, FSM_MATCH_INLINE(WSP_FSM_INL),     FSM_ACCEPT, NULL, NULL }
-    , { 1, 3, FSM_MATCH_INLINE(VCHAR_FSM_INL),   FSM_ACCEPT, NULL, NULL }
-    , {-1, 4, FSM_MATCH_INLINE(CRLF_FSM_INL),    FSM_ACCEPT, NULL, NULL }
-    , {-1,-1, FSM_MATCH_NOTHING,          FSM_REJECT, NULL, NULL }
+      { 1,-1, FSM_MATCH_STR(_T(";"), 1),       FSM_ACCEPT, NULL, NULL }
+    , { 1, 2, FSM_MATCH_INLINE(WSP_FSM_INL),   FSM_ACCEPT, NULL, NULL }
+    , { 1, 3, FSM_MATCH_INLINE(VCHAR_FSM_INL), FSM_ACCEPT, NULL, NULL }
+    , {-1, 4, FSM_MATCH_FSM(NL_FSM),           FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_NOTHING,         	   FSM_REJECT, NULL, NULL }
 };
 
-/* comment / CRLF ; comment or newline */
+/* comment / NL ; comment or newline */
 static CwtFsmTransition c_nl_fsm[] = {
      {-1, 1, FSM_MATCH_FSM(comment_fsm), FSM_ACCEPT, NULL, NULL }
-   , {-1,-1, FSM_MATCH_INLINE(CRLF_FSM_INL),    FSM_ACCEPT, NULL, NULL }
+   , {-1,-1, FSM_MATCH_FSM(NL_FSM),      FSM_ACCEPT, NULL, NULL }
 };
 
 /*

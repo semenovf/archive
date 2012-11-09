@@ -16,6 +16,7 @@ typedef struct _CwtAbnf {
 typedef struct _CwtAbnfNS {
 	ssize_t   (*parse)     (const CWT_CHAR *abnf_string);
 	ssize_t   (*parseFile) (const CWT_CHAR *filepath);
+	void      (*setNewLine)(CwtNewLine nl);
 } CwtAbnfNS;
 
 EXTERN_C_BEGIN

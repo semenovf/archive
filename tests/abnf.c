@@ -217,11 +217,17 @@ int main(int argc, char *argv[])
 	int i;
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
 
+	CWT_CHAR *nl = _T("\r\n");
+
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
 	abnf = cwtAbnfNS();
-	CWT_UNUSED(abnf);
+
+
+	/* abnf->setNewLine(Cwt_NL_Win); */
+	NL_FSM[0].condition.str.chars = nl;
+	NL_FSM[0].condition.str.len = 2;
 
 	FSM_INIT(fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 
