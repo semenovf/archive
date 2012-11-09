@@ -11,7 +11,7 @@
 /*#include <cwt/string.h>*/
 
 
-#ifdef CWT_OS_DOS
+#ifdef CWT_OS_MSDOS
 #	include <bios.h> /* bioskey */
 #else
 #	error "No implementation"

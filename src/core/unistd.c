@@ -62,7 +62,7 @@ static ssize_t  __write(int fd, const void *buffer, size_t count )
 }
 
 
-#if defined(CWT_OS_DOS)
+#if defined(CWT_OS_MSDOS)
 
 static void __cwt_sleep(UINT sec)  { sleep(sec); }
 static void __cwt_msleep(UINT msec) {  delay(msec); }

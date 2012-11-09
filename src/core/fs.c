@@ -31,7 +31,7 @@ static CwtFileSystemNS __cwtFileSystemNS = {
 static CwtStrNS *__strNS = NULL;
 static CwtStringNS *__stringNS = NULL;
 
-#if defined(CWT_OS_WIN) || defined(CWT_OS_DOS)
+#if defined(CWT_OS_WIN) || defined(CWT_OS_MSDOS)
 	static CWT_CHAR __fs_separator_char = _T('\\');
 #elif defined(CWT_OS_UNIX)
 	static CWT_CHAR __fs_separator_char = _T('/');

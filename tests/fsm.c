@@ -193,7 +193,6 @@ static CwtFsmTransition number_fsm[] = {
 	, { 2,-1, FSM_MATCH_STR(_T("0"), 1),           FSM_NORMAL, NULL, NULL }
 	, { 3,-1, FSM_MATCH_CHAR(_T("xX"), 2),         FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(hex_fsm),              FSM_ACCEPT, NULL, NULL }
-
 };
 
 
@@ -227,6 +226,42 @@ static void test_alternatives(void)
 }
 
 
+static CwtFsmTransition alpha_seq_fsm[] = {
+	  { 1,-1, FSM_MATCH_SEQ(1), FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_SEQ(2), FSM_NORMAL, NULL, NULL }
+	, { 3,-1, FSM_MATCH_SEQ(3), FSM_NORMAL, NULL, NULL }
+	, { 4,-1, FSM_MATCH_SEQ(4), FSM_NORMAL, NULL, NULL }
+	, { 5,-1, FSM_MATCH_SEQ(5), FSM_NORMAL, NULL, NULL }
+	, { 6,-1, FSM_MATCH_SEQ(6), FSM_NORMAL, NULL, NULL }
+	, { 7,-1, FSM_MATCH_SEQ(7), FSM_NORMAL, NULL, NULL }
+	, { 8,-1, FSM_MATCH_SEQ(8), FSM_NORMAL, NULL, NULL }
+	, { 9,-1, FSM_MATCH_SEQ(9), FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_SEQ(7), FSM_ACCEPT, NULL, NULL }
+};
+
+static CwtFsmTransition z_pos_fsm[] = {
+	  { 1,-1, FSM_MATCH_SEQ(25),    FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_STR("Z",1), FSM_ACCEPT, NULL, NULL }
+	, { 3,-1, FSM_MATCH_SEQ(25),    FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR("z",1), FSM_ACCEPT, NULL, NULL }
+};
+
+
+void test_sequence(void)
+{
+	CwtFsm fsm;
+	size_t nalphas;
+
+	nalphas = strlen(__alpha_chars);
+
+	FSM_INIT(fsm, CWT_CHAR, alpha_seq_fsm, NULL, cwtBelongChar, cwtExactChar, cwtRangeChar);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, __alpha_chars, nalphas) == (ssize_t)nalphas);
+
+	FSM_INIT(fsm, CWT_CHAR, z_pos_fsm, NULL, cwtBelongChar, cwtExactChar, cwtRangeChar);
+	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, __alpha_chars, nalphas) == (ssize_t)nalphas);
+}
+
+
 int main(int argc, char *argv[])
 {
 	CWT_UNUSED(argc);
@@ -234,7 +269,7 @@ int main(int argc, char *argv[])
 
 	__fsmNS = cwtFsmNS();
 
-	CWT_BEGIN_TESTS(230);
+	CWT_BEGIN_TESTS(232);
 
 	test_char_helpers();
 	test_cwt_char_helpers();
@@ -244,6 +279,7 @@ int main(int argc, char *argv[])
 	test_repetition_0more();
 	test_repetition_1more();
 	test_alternatives();
+	test_sequence();
 
 	CWT_END_TESTS;
 }

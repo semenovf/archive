@@ -2,22 +2,12 @@
 #define __CWT_GLOBAL_H__
 
 #include <stdlib.h>
+#include <cwt/global_os.h>
+#include <cwt/global_cc.h>
 
-#ifdef __BORLANDC__
-#	define CWT_CC_BORLAND
-#endif
-
-/* Watcom C compiler */
-#ifdef __WATCOMC__
-#	define CWT_CC_WATCOM
-#endif
-
-/* Microsoft C compiler */
 #ifdef _MSC_VER
 #   define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
-#	define CWT_CC_MSC
-#	define CWT_OS_WIN
 #endif
 
 /* GNU C compiler */
@@ -25,24 +15,8 @@
 #	define CWT_CC_GNUC
 #endif
 
-#if defined(MSDOS) || defined(__MSDOS__) || defined(_MSDOS) || defined(__DOS__)
-#	define CWT_OS_DOS
-#endif
-
-#if defined(linux) && linux
-#	define CWT_OS_LINUX
-#endif
-
-#if (defined(unix) && unix) || defined(CWT_OS_LINUX)
-#	define CWT_OS_UNIX
-#endif
-
 #if defined(_UNICODE) || defined(UNICODE)
 #	define CWT_UNICODE
-#endif
-
-#if defined(_WIN32) || defined(WIN32)
-#	define CWT_WIN32
 #endif
 
 #if _POSIX_C_SOURCE >= 200112L

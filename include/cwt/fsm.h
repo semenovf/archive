@@ -13,6 +13,7 @@
 
 typedef enum _CwtFsmMatchType {
 	  Cwt_Fsm_Match_Nothing
+	, Cwt_Fsm_Match_Seq
 	, Cwt_Fsm_Match_Str
 	, Cwt_Fsm_Match_Char
 	, Cwt_Fsm_Match_Range
@@ -27,6 +28,7 @@ typedef enum _CwtFsmMatchType {
 #	define FSM_MATCH_FUNC(f)       Cwt_Fsm_Match_Func, { .trans_fn = f }
 #	define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { .str = {0, NULL} }
 */
+#define FSM_MATCH_SEQ(n)        Cwt_Fsm_Match_Seq,  { {n, NULL, NULL} }
 #define FSM_MATCH_STR(s,n)      Cwt_Fsm_Match_Str,  { {n, s, NULL} }
 #define FSM_MATCH_CHAR(s,n)     Cwt_Fsm_Match_Char, { {n, s, NULL} }
 #define FSM_MATCH_RANGE(f,t)    Cwt_Fsm_Match_Range,{ {0, (void*)(f), (void*)(t)} }

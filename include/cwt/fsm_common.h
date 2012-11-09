@@ -73,6 +73,10 @@ RFC-5234 Core Rules
 	WSP            =  SP / HTAB
 						; white space
 
+	NL             =  \r\n ; Windows/DOS
+	NL             =/ \n\r ; MAC OS 9
+	NL             =/ \n   ; Unix
+
  */
 
 
@@ -87,8 +91,8 @@ static CwtFsmTransition BIT_FSM[] = {
 
 
 /* %x01-7F ; any 7-bit US-ASCII character, excluding NUL */
-static CWT_CHAR __CHAR_RG[2] = {(CWT_CHAR)0x01, (CWT_CHAR)0x7F };
-#define CHAR_FSM_INL   FSM_MATCH_RANGE(&__CHAR_RG[0], &__CHAR_RG[1])
+static CWT_CHAR CHAR_RG[2] = {(CWT_CHAR)0x01, (CWT_CHAR)0x7F };
+#define CHAR_FSM_INL   FSM_MATCH_RANGE(&CHAR_RG[0], &CHAR_RG[1])
 
 /* %x0D ; carriage return */
 #define CR_FSM_INL     FSM_MATCH_STR(_T("\r"), 1)
@@ -98,6 +102,24 @@ static CWT_CHAR __CHAR_RG[2] = {(CWT_CHAR)0x01, (CWT_CHAR)0x7F };
 
 /* CR LF ; Internet standard newline */
 #define CRLF_FSM_INL   FSM_MATCH_STR(_T("\r\n"), 2)
+
+
+/*
+   \r\n ; Windows/DOS
+   \n\r ; MAC OS 9
+   \n   ; Unix
+*/
+#if defined(CWT_OS_WIN)
+#	define NL_FSM_INL   FSM_MATCH_STR(_T("\r\n"), 2)
+#elif defined(CWT_OS_MAC) /* FIXME must be up to 9 version */
+#	define NL_FSM_INL   FSM_MATCH_STR(_T("\n\r"), 2)
+#else
+#	define NL_FSM_INL   FSM_MATCH_STR(_T("\n "), 1) /* space need to possibility of char sequence changing */
+#endif
+/* Use this FSM transition table instead of CRLF_FSM_INL */
+static CwtFsmTransition NL_FSM[] = {
+	  {-1,-1, FSM_MATCH_INLINE(NL_FSM_INL), FSM_ACCEPT, NULL, NULL }
+};
 
 /* %x30-39 ; 0-9 */
 #define DIGIT_FSM_INL  FSM_MATCH_CHAR(_T("0123456789"), 10)
@@ -112,15 +134,15 @@ static CwtFsmTransition DIGIT_FSM[] = {
 #define HTAB_FSM_INL   FSM_MATCH_STR(_T("\t"), 1)
 
 /* %x00-FF ; 8 bits of data */
-static CWT_CHAR __OCTET_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0xFF };
-#define OCTET_FSM_INL  FSM_MATCH_RANGE(&__OCTET_RG[0], &__OCTET_RG[0])
+static CWT_CHAR OCTET_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0xFF };
+#define OCTET_FSM_INL  FSM_MATCH_RANGE(&OCTET_RG[0], &OCTET_RG[0])
 
 /* %x20  ; space */
 #define SP_FSM_INL     FSM_MATCH_STR(_T(" "), 1)
 
 /* %x21-7E ; visible (printing) characters */
-static CWT_CHAR __VCHAR_RG[2] = {(CWT_CHAR)0x21, (CWT_CHAR)0x7E };
-#define VCHAR_FSM_INL  FSM_MATCH_RANGE(&__VCHAR_RG[0], &__VCHAR_RG[1])
+static CWT_CHAR VCHAR_RG[2] = {(CWT_CHAR)0x21, (CWT_CHAR)0x7E };
+#define VCHAR_FSM_INL  FSM_MATCH_RANGE(&VCHAR_RG[0], &VCHAR_RG[1])
 
 /* SP / HTAB ; white space */
 #define WSP_FSM_INL    FSM_MATCH_CHAR(_T(" \t"), 2)
@@ -181,9 +203,9 @@ static CwtFsmTransition HTAB_FSM[] = {
 
 /* %x00-FF ; 8 bits of data */
 /*
-static CWT_CHAR __OCTET_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0xFF };
+static CWT_CHAR OCTET_RG[2] = {(CWT_CHAR)0x00, (CWT_CHAR)0xFF };
 static CwtFsmTransition OCTET_FSM[] = {
-	{ -1,-1, FSM_MATCH_RANGE(&__OCTET_RG[0], &__OCTET_RG[0]), FSM_ACCEPT, NULL, NULL }
+	{ -1,-1, FSM_MATCH_RANGE(&OCTET_RG[0], &OCTET_RG[0]), FSM_ACCEPT, NULL, NULL }
 };
 */
 
@@ -196,9 +218,9 @@ static CwtFsmTransition SP_FSM[] = {
 
 /* %x21-7E ; visible (printing) characters */
 /*
-static CWT_CHAR __VCHAR_RG[2] = {(CWT_CHAR)0x21, (CWT_CHAR)0x7E };
+static CWT_CHAR VCHAR_RG[2] = {(CWT_CHAR)0x21, (CWT_CHAR)0x7E };
 static CwtFsmTransition VCHAR_FSM[] = {
-	{ -1,-1, FSM_MATCH_RANGE(&__VCHAR_RG[0], &__VCHAR_RG[1]), FSM_ACCEPT, NULL, NULL }
+	{ -1,-1, FSM_MATCH_RANGE(&VCHAR_RG[0], &VCHAR_RG[1]), FSM_ACCEPT, NULL, NULL }
 };
 */
 
@@ -239,11 +261,10 @@ static CwtFsmTransition LWSP_FSM[] = {
 	, { 0,-1, FSM_MATCH_INLINE(WSP_FSM_INL),   FSM_ACCEPT, NULL, NULL }
 };
 
-
 static void __fsm_unused_commons(void)
 {
-	CWT_UNUSED2(BIT_FSM, DIGIT_FSM);
-	CWT_UNUSED3(__CHAR_RG, __OCTET_RG, __VCHAR_RG);
+	CWT_UNUSED3(NL_FSM, BIT_FSM, DIGIT_FSM);
+	CWT_UNUSED3(CHAR_RG, OCTET_RG, VCHAR_RG);
 	CWT_UNUSED3(HEXDIG_FSM, CTL_FSM, LWSP_FSM);
 }
 

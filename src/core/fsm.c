@@ -181,6 +181,10 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 	while( TRUE ) {
 
 		switch( trans->match_type ) {
+		case Cwt_Fsm_Match_Seq:
+			if( len >= trans->condition.str.len )
+				nchars_processed = trans->condition.str.len;
+			break;
 
 		case Cwt_Fsm_Match_Str:
 			if( fsm->exact(ptr, CWT_MIN(len, trans->condition.str.len)

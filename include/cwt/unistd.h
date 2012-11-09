@@ -17,7 +17,7 @@
 #	include <fcntl.h>
 #else
 #	include <io.h>
-#	if defined(CWT_OS_DOS)
+#	if defined(CWT_OS_MSDOS)
 #		include <dos.h>
 #	endif
 #endif

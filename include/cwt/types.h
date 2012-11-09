@@ -63,7 +63,7 @@ typedef char*                  TEXT;
 	typedef unsigned char      UINT8;
 	typedef short int          INT16;
 	typedef unsigned short int UINT16;
-#ifdef CWT_OS_DOS
+#ifdef CWT_OS_MSDOS
 	typedef long               INT32;
 	typedef unsigned long      UINT32;
 #else
@@ -227,5 +227,12 @@ EXTERN_C_END
 #define CWT_SSIZE_T_MAX LONG_MAX
 
 #define CWT_CAST_BOOL(exp) ((exp) ? TRUE : FALSE)
+
+typedef enum _CwtNewLine {
+	  Cwt_NL_Unix
+	, Cwt_NL_Win
+	, Cwt_NL_DOS = Cwt_NL_Win
+	, Cwt_NL_MacOS9
+} CwtNewLine;
 
 #endif /* ! __CWT_TYPES_H__ */
