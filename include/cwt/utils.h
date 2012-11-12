@@ -24,6 +24,15 @@ typedef struct _CwtUtilsNS {
 	INT64  (*bytesToInt64)   (const BYTE bytes[8]);
 	void   (*floatToBytes)   (float f, BYTE bytes[4]);
 	float  (*bytesToFloat)   (const BYTE bytes[4]);
+	void   (*doubleToBytes)  (double d, BYTE bytes[sizeof(double)]);
+	double (*bytesToDouble)  (const BYTE bytes[sizeof(double)]);
+
+	BOOL   (*pack)           (const CWT_CHAR *template_str
+			, BYTE *buf, size_t buf_sz
+			, void *data[], size_t data_count);
+	BOOL   (*unpack)         (const CWT_CHAR *template_str
+			, BYTE *buf, size_t buf_sz
+			, void *data[], size_t data_count);
 } CwtUtilsNS;
 
 

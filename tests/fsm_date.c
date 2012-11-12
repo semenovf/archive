@@ -294,8 +294,6 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_UNUSED(fsm_unused_commons_fn);
-
 	__fsmNS = cwtFsmNS();
 
 	CWT_BEGIN_TESTS(12);

@@ -13,10 +13,6 @@
 #	error include <cwt/fsm.h> before using this header file
 #endif
 
-
-static void __fsm_unused_commons(void);
-void (*fsm_unused_commons_fn)(void) = __fsm_unused_commons;
-
 /*
 RFC-5234 Core Rules
 
@@ -261,8 +257,21 @@ static CwtFsmTransition LWSP_FSM[] = {
 	, { 0,-1, FSM_MATCH_INLINE(WSP_FSM_INL),   FSM_ACCEPT, NULL, NULL }
 };
 
-static void __fsm_unused_commons(void)
+
+
+
+/* BELOW CODE IS FOR SUPPRESS WARNING 'defined but not used' ONLY */
+static void __fsm_unused_commons(CwtFsm *fsm, void *fn_context, const void *data, size_t len);
+
+static CwtFsmTransition UNUSED_FSM[] = {
+	  {-1,-1, FSM_MATCH_FUNC(__fsm_unused_commons, NULL),  FSM_NORMAL, NULL, NULL }
+};
+
+static void __fsm_unused_commons(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
 {
+	CWT_UNUSED2(fsm, fn_context);
+	CWT_UNUSED2(data, len);
+	CWT_UNUSED(UNUSED_FSM);
 	CWT_UNUSED3(NL_FSM, BIT_FSM, DIGIT_FSM);
 	CWT_UNUSED3(CHAR_RG, OCTET_RG, VCHAR_RG);
 	CWT_UNUSED3(HEXDIG_FSM, CTL_FSM, LWSP_FSM);

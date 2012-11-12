@@ -254,10 +254,10 @@ void test_sequence(void)
 
 	nalphas = strlen(__alpha_chars);
 
-	FSM_INIT(fsm, CWT_CHAR, alpha_seq_fsm, NULL, cwtBelongChar, cwtExactChar, cwtRangeChar);
+	FSM_INIT(fsm, char, alpha_seq_fsm, NULL, cwtBelongChar, cwtExactChar, cwtRangeChar);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, __alpha_chars, nalphas) == (ssize_t)nalphas);
 
-	FSM_INIT(fsm, CWT_CHAR, z_pos_fsm, NULL, cwtBelongChar, cwtExactChar, cwtRangeChar);
+	FSM_INIT(fsm, char, z_pos_fsm, NULL, cwtBelongChar, cwtExactChar, cwtRangeChar);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, __alpha_chars, nalphas) == (ssize_t)nalphas);
 }
 

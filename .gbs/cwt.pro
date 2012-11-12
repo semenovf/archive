@@ -19,6 +19,7 @@ SUBDIRS  =            \
     tests/ini         \
     tests/list        \
     tests/options     \
+    tests/pack        \    
     tests/ringbuf     \
     tests/utils       \
     tests/strlist     \

@@ -21,6 +21,16 @@ static void  __int64ToBytes  (INT64 i, BYTE bytes[8]);
 static INT64 __bytesToInt64  (const BYTE bytes[8]);
 static void  __floatToBytes  (float f, BYTE bytes[4]);
 static float __bytesToFloat  (const BYTE bytes[4]);
+static void  __doubleToBytes (double d, BYTE bytes[sizeof(double)]);
+static double __bytesToDouble(const BYTE bytes[sizeof(double)]);
+
+extern BOOL  __utils_pack    (const CWT_CHAR *template_str
+		, BYTE *buf, size_t buf_sz
+		, void *data[], size_t data_count);
+extern BOOL  __utils_unpack  (const CWT_CHAR *template_str
+		, BYTE *buf, size_t buf_sz
+		, void *data[], size_t data_count);
+
 
 static CwtUtilsNS __cwtUtilsNS = {
 	  __calculateCRC32
@@ -35,6 +45,11 @@ static CwtUtilsNS __cwtUtilsNS = {
 	, __bytesToInt64
 	, __floatToBytes
 	, __bytesToFloat
+	, __doubleToBytes
+	, __bytesToDouble
+
+	, __utils_pack
+	, __utils_unpack
 };
 
 DLL_API_EXPORT CwtUtilsNS* cwtUtilsNS(void)
@@ -160,10 +175,28 @@ static float __bytesToFloat (const BYTE bytes[4])
 	union { float fl; INT32 i32; } _f;
 	_f.i32 = __bytesToInt32(bytes);
 	return _f.fl;
-	/*
-		int s = ( f.dw >> 31) ? -1 : 1;
-		int e = ( f.dw >> 23) & 0xff;
-		int m = ( e == 0) ? ( f.dw & 0x7fffff) << 1 : ( f.dw & 0x7fffff) | 0x800000;
-		    e = (e - 127);
-	*/
 }
+
+/**
+ */
+static void  __doubleToBytes (double d, BYTE bytes[sizeof(double)])
+{
+	union { double dl; BYTE bytes[sizeof(double)]; } _d;
+
+	_d.dl = d;
+	cwtStrNS()->memcpy(bytes, _d.bytes, sizeof(double) * sizeof(BYTE));
+}
+
+
+/**
+ *
+ * @param bytes
+ * @return
+ */
+static double __bytesToDouble(const BYTE bytes[sizeof(double)])
+{
+	union { double dl; BYTE bytes[sizeof(double)]; } _d;
+	cwtStrNS()->memcpy(_d.bytes, bytes, sizeof(double) * sizeof(BYTE));
+	return _d.dl;
+}
+
