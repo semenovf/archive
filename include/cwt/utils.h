@@ -27,12 +27,18 @@ typedef struct _CwtUtilsNS {
 	void   (*doubleToBytes)  (double d, BYTE bytes[sizeof(double)]);
 	double (*bytesToDouble)  (const BYTE bytes[sizeof(double)]);
 
-	BOOL   (*pack)           (const CWT_CHAR *template_str
+	ssize_t (*pack)           (const CWT_CHAR *template_str
 			, BYTE *buf, size_t buf_sz
 			, void *data[], size_t data_count);
-	BOOL   (*unpack)         (const CWT_CHAR *template_str
+	ssize_t (*unpack)         (const CWT_CHAR *template_str
 			, BYTE *buf, size_t buf_sz
 			, void *data[], size_t data_count);
+	ssize_t (*packs)          (const CWT_CHAR *template_str
+			, BYTE *buf, size_t buf_sz
+			, void *data, size_t data_count);
+	ssize_t (*unpacks)        (const CWT_CHAR *template_str
+			, BYTE *buf, size_t buf_sz
+			, void *data, size_t data_count);
 } CwtUtilsNS;
 
 

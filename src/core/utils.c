@@ -24,12 +24,18 @@ static float __bytesToFloat  (const BYTE bytes[4]);
 static void  __doubleToBytes (double d, BYTE bytes[sizeof(double)]);
 static double __bytesToDouble(const BYTE bytes[sizeof(double)]);
 
-extern BOOL  __utils_pack    (const CWT_CHAR *template_str
+extern ssize_t __utils_pack    (const CWT_CHAR *template_str
 		, BYTE *buf, size_t buf_sz
 		, void *data[], size_t data_count);
-extern BOOL  __utils_unpack  (const CWT_CHAR *template_str
+extern ssize_t __utils_unpack  (const CWT_CHAR *template_str
 		, BYTE *buf, size_t buf_sz
 		, void *data[], size_t data_count);
+extern ssize_t __utils_packs   (const CWT_CHAR *template_str
+		, BYTE *buf, size_t buf_sz
+		, void *data, size_t data_count);
+extern ssize_t __utils_unpacks (const CWT_CHAR *template_str
+		, BYTE *buf, size_t buf_sz
+		, void *data, size_t data_count);
 
 
 static CwtUtilsNS __cwtUtilsNS = {
@@ -50,6 +56,8 @@ static CwtUtilsNS __cwtUtilsNS = {
 
 	, __utils_pack
 	, __utils_unpack
+	, __utils_packs
+	, __utils_unpacks
 };
 
 DLL_API_EXPORT CwtUtilsNS* cwtUtilsNS(void)

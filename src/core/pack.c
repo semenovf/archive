@@ -31,19 +31,27 @@
 #include <cwt/fsm_common.h>
 #include <cwt/str.h>
 
-typedef enum _ItemType {
-	  ItemType_Invalid
-	, ItemType_Quad
-	, ItemType_Long
-	, ItemType_Short
-	, ItemType_Char
-	, ItemType_Double
-	, ItemType_Float
-	, ItemType_Count
+typedef enum _PackItemType {
+	  Pack_ItemType_Invalid
+	, Pack_ItemType_Quad
+	, Pack_ItemType_Long
+	, Pack_ItemType_Word
+	, Pack_ItemType_Byte
+	, Pack_ItemType_Double
+	, Pack_ItemType_Float
+	, Pack_ItemType_Count
 } ItemType;
 
+typedef enum _PackActionType {
+	  Pack_ActType_Invalid
+	, Pack_ActType_Pack
+	, Pack_ActType_Unpack
+	, Pack_ActType_Packs
+	, Pack_ActType_Unpacks
+} PackActionType;
+
 typedef struct _PackContext {
-	BOOL   is_unpack;
+	PackActionType action;
 	int    err;     /* error code, see CwtErrno */
 
 	BYTE  *buf;
@@ -68,23 +76,23 @@ static void do_repeat(const void *data, size_t len, void *context, void *action_
  *
  * repeat_num  =  num ( "[" 1*DIGIT "]" )
  *
- * num         = "q" / "l" / "s" / "c" / "f" / "d"
+ * num         = "q" / "l" / "w" / "b" / "f" / "d"
  *
  *
  */
 
-static int __type_quad   = ItemType_Quad;
-static int __type_long   = ItemType_Long;
-static int __type_short  = ItemType_Short;
-static int __type_char   = ItemType_Char;
-static int __type_double = ItemType_Double;
-static int __type_float  = ItemType_Float;
+static int __type_quad   = Pack_ItemType_Quad;
+static int __type_long   = Pack_ItemType_Long;
+static int __type_word   = Pack_ItemType_Word;
+static int __type_byte   = Pack_ItemType_Byte;
+static int __type_double = Pack_ItemType_Double;
+static int __type_float  = Pack_ItemType_Float;
 
 static CwtFsmTransition num_fsm[] = {
 	  {-1, 1, FSM_MATCH_STR(_T("q"), 1), FSM_ACCEPT, set_item_type, &__type_quad }
 	, {-1, 2, FSM_MATCH_STR(_T("l"), 1), FSM_ACCEPT, set_item_type, &__type_long }
-	, {-1, 3, FSM_MATCH_STR(_T("s"), 1), FSM_ACCEPT, set_item_type, &__type_short }
-	, {-1, 4, FSM_MATCH_STR(_T("c"), 1), FSM_ACCEPT, set_item_type, &__type_char }
+	, {-1, 3, FSM_MATCH_STR(_T("w"), 1), FSM_ACCEPT, set_item_type, &__type_word }
+	, {-1, 4, FSM_MATCH_STR(_T("b"), 1), FSM_ACCEPT, set_item_type, &__type_byte }
 	, {-1, 5, FSM_MATCH_STR(_T("d"), 1), FSM_ACCEPT, set_item_type, &__type_double }
 	, {-1,-1, FSM_MATCH_STR(_T("f"), 1), FSM_ACCEPT, set_item_type, &__type_float }
 };
@@ -94,12 +102,12 @@ static CwtFsmRepetitionContext __dec_1more_rpt = { DIGIT_FSM, 1, -1 };
 static CwtFsmTransition repeat_fsm[] = {
 	  { 1,-1, FSM_MATCH_STR(_T("["), 1),       FSM_NORMAL, NULL, NULL }
 	, { 2,-1, FSM_MATCH_RPT(&__dec_1more_rpt), FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_STR(_T("]"), 1),       FSM_ACCEPT, set_nrepeat, NULL }
+	, {-1,-1, FSM_MATCH_STR(_T("]"), 1),       FSM_ACCEPT, NULL, NULL }
 };
 
 static CwtFsmTransition repeat_num_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(num_fsm),    FSM_NORMAL, NULL, NULL }
-	, { 2, 2, FSM_MATCH_FSM(repeat_fsm), FSM_NORMAL, NULL, NULL }
+	, { 2, 2, FSM_MATCH_FSM(repeat_fsm), FSM_NORMAL, set_nrepeat, NULL }
 	, {-1,-1, FSM_MATCH_NOTHING,         FSM_ACCEPT, do_repeat, NULL }
 };
 
@@ -115,17 +123,17 @@ static CwtFsmTransition unpack_fsm[] = {
 
 
 
-static BOOL  __pack_helper (CwtFsmTransition *trans
+static ssize_t __pack_helper (CwtFsmTransition *trans
 	, const CWT_CHAR *template_str
 	, BYTE *buf, size_t buf_sz
 	, void *data[], size_t data_count
-	, BOOL is_unpack)
+	, PackActionType act)
 {
 	CwtFsm fsm;
 	PackContext ctx;
 
 	cwtStrNS()->bzero(&ctx, sizeof(ctx));
-	ctx.is_unpack  = is_unpack;
+	ctx.action     = act;
 	ctx.buf        = buf;
 	ctx.buf_sz     = buf_sz;
 	ctx.data       = data;
@@ -136,32 +144,79 @@ static BOOL  __pack_helper (CwtFsmTransition *trans
 				, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
 
 	return cwtFsmNS()->exec(&fsm, 0, template_str, cwtStrNS()->strLen(template_str)) < 0
-			? FALSE
-			: ctx.err != Cwt_NoError ? FALSE : TRUE;
+			? (ssize_t)-1
+			: ctx.err != Cwt_NoError
+			  	  ? (ssize_t)-1
+			  	  : (ssize_t)ctx.buf_off;
 }
 
 /**
- * @brief
+ * @brief Packs data into byte array according to template string.
  *
- * @details
+ * @details Data is represented as a array of pointers to the real variables.
  *
- * @param template_str
- * @param data
- * @param sz data size in bytes
+ * @param template_str Template string.
+ * @param buf Buffer to store packed data.
+ * @param buf_sz Buffer size.
+ * @param data Data to be packed.
+ * @param data_count Number of elements in the array of pointers @c data
+ * @return Total bytes packed.
  */
-BOOL  __utils_pack (const CWT_CHAR *template_str
+ssize_t __utils_pack (const CWT_CHAR *template_str
 		, BYTE *buf, size_t buf_sz
 		, void *data[], size_t data_count )
 {
-	return __pack_helper (pack_fsm, template_str, buf, buf_sz, data, data_count, FALSE);
+	return __pack_helper (pack_fsm, template_str, buf, buf_sz, data, data_count, Pack_ActType_Pack);
 }
 
-BOOL  __utils_unpack (const CWT_CHAR *template_str
+/**
+ *
+ * @param template_str
+ * @param buf
+ * @param buf_sz
+ * @param data
+ * @param data_count
+ * @return Total bytes unpacked
+ */
+ssize_t __utils_unpack (const CWT_CHAR *template_str
 		, BYTE *buf, size_t buf_sz
 		, void *data[], size_t data_count )
 {
-	return __pack_helper (unpack_fsm, template_str, buf, buf_sz, data, data_count, TRUE);
+	return __pack_helper (unpack_fsm, template_str, buf, buf_sz, data, data_count, Pack_ActType_Unpack);
 }
+
+/**
+ *
+ * @param template_str
+ * @param buf
+ * @param buf_sz
+ * @param data
+ * @param data_count
+ * @return Total bytes packed.
+ */
+ssize_t __utils_packs (const CWT_CHAR *template_str
+		, BYTE *buf, size_t buf_sz
+		, void *data, size_t data_count )
+{
+	return __pack_helper (pack_fsm, template_str, buf, buf_sz, &data, data_count, Pack_ActType_Packs);
+}
+
+/**
+ *
+ * @param template_str
+ * @param buf
+ * @param buf_sz
+ * @param data
+ * @param data_count
+ * @return Total bytes unpacked.
+ */
+ssize_t __utils_unpacks (const CWT_CHAR *template_str
+		, BYTE *buf, size_t buf_sz
+		, void *data, size_t data_count )
+{
+	return __pack_helper (unpack_fsm, template_str, buf, buf_sz, &data, data_count, Pack_ActType_Unpacks);
+}
+
 
 static void set_item_type(const void *data, size_t len, void *context, void *action_args)
 {
@@ -210,12 +265,12 @@ typedef struct _PackData {
 
 static PackData __packData[] = {
 	  {-1, NULL, NULL }
-	, { 8, __int64ToBytes,     __bytesToInt64 }
-	, { 4, __int32ToBytes,     __bytesToInt32 }
-	, { 2, __int16ToBytes,     __bytesToInt16 }
-	, { 1, __int8ToBytes,      __bytesToInt8 }
+	, { sizeof(INT64),  __int64ToBytes,  __bytesToInt64 }
+	, { sizeof(INT32),  __int32ToBytes,  __bytesToInt32 }
+	, { sizeof(INT16),  __int16ToBytes,  __bytesToInt16 }
+	, { sizeof(INT8),   __int8ToBytes,   __bytesToInt8 }
 	, { sizeof(double), __doubleToBytes, __bytesToDouble }
-	, { 4, __floatToBytes,     __bytesToFloat }
+	, { sizeof(float),  __floatToBytes,  __bytesToFloat }
 };
 
 static void do_repeat(const void *data, size_t len, void *context, void *action_args)
@@ -224,7 +279,8 @@ static void do_repeat(const void *data, size_t len, void *context, void *action_
 
 	CWT_UNUSED3(data, len, action_args);
 
-	CWT_ASSERT(ctx->item_type > ItemType_Invalid && ctx->item_type <= ItemType_Count );
+	CWT_ASSERT(ctx->item_type > Pack_ItemType_Invalid && ctx->item_type <= Pack_ItemType_Count);
+	CWT_ASSERT(ctx->action != Pack_ActType_Invalid);
 
 	while( ctx->nrepeat-- > 0 ) {
 
@@ -240,13 +296,29 @@ static void do_repeat(const void *data, size_t len, void *context, void *action_
 			break;
 		}
 
-		if( ctx->is_unpack ) {
-			__packData[ctx->item_type].bytesToNum(ctx->buf + ctx->buf_off, ctx->data[ctx->data_index]);
-		} else  {
+		switch(ctx->action) {
+		case Pack_ActType_Pack:
 			__packData[ctx->item_type].numToBytes(ctx->data[ctx->data_index], ctx->buf + ctx->buf_off);
+			ctx->data_index++;
+			break;
+		case Pack_ActType_Unpack:
+			__packData[ctx->item_type].bytesToNum(ctx->buf + ctx->buf_off, ctx->data[ctx->data_index]);
+			ctx->data_index++;
+			break;
+		case Pack_ActType_Packs:
+			__packData[ctx->item_type].numToBytes(*((char**)ctx->data) + ctx->data_index, ctx->buf + ctx->buf_off);
+			ctx->data_index += __packData[ctx->item_type].type_size;
+			break;
+		case Pack_ActType_Unpacks:
+			__packData[ctx->item_type].bytesToNum(ctx->buf + ctx->buf_off, *((char**)ctx->data) + ctx->data_index);
+			ctx->data_index += __packData[ctx->item_type].type_size;
+			break;
+		default:
+			break;
 		}
+
 		ctx->buf_off += __packData[ctx->item_type].type_size;
-		ctx->data_index++;
+		CWT_ASSERT(ctx->buf_off <= CWT_SSIZE_T_MAX);
 	}
 }
 

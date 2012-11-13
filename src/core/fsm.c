@@ -224,13 +224,13 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 		}
 
 		if( nchars_processed >= 0 ) {
-			if( trans->status == FSM_ACCEPT ) {
-				if( trans->action )
-					trans->action(ptr
-					, (size_t)(nchars_processed)
-					, fsm->context
-					, trans->action_args);
+			if( trans->action )
+				trans->action(ptr
+				, (size_t)(nchars_processed)
+				, fsm->context
+				, trans->action_args);
 
+			if( trans->status == FSM_ACCEPT ) {
 				accepted = TRUE;
 			}
 
