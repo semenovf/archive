@@ -89,8 +89,8 @@ void test_pack_unpack_float(void)
 		float f;
 		double d;
 	} origin = {
-		  3.14159
-		, 3.14160
+		  3.14159f
+		, 3.14160f
 	}, dest;
 
 	void *data_origin[] = {
@@ -153,21 +153,22 @@ void test_packs_unpacks_int(void)
 
 void test_packs_unpacks_float(void)
 {
-	BYTE buf[256];
+#define _BUFSZ sizeof(float)+sizeof(double)
+	BYTE buf[_BUFSZ];
 
 	struct _SampleFloatStruct {
 		float f;
 		double d;
 	} origin = {
-		  3.14159
-		, 3.14160
+		  3.14159f
+		, 3.14160f
 	}, dest;
 
-	CWT_TEST_FAIL(cwtUtilsNS()->packs(_T("fd"), buf, 256, &origin, sizeof(origin)) > 0 );
-	CWT_TEST_FAIL(cwtUtilsNS()->unpacks(_T("fd"), buf, 256, &dest, sizeof(dest)) > 0);
+	CWT_TEST_FAIL(cwtUtilsNS()->packs(_T("fd"), buf, _BUFSZ, &origin, sizeof(origin)) > 0 );
+	CWT_TEST_FAIL(cwtUtilsNS()->unpacks(_T("fd"), buf, _BUFSZ, &dest, sizeof(dest)) > 0);
 
-	CWT_TEST_OK(dest.f   == origin.f);
-	CWT_TEST_OK(dest.d   == origin.d);
+	CWT_TEST_OK(dest.f == origin.f);
+	CWT_TEST_OK(dest.d == origin.d);
 }
 
 
