@@ -67,6 +67,8 @@ typedef struct _PackContext {
 } PackContext;
 
 
+static void set_error(const void *data, size_t len, void *context, void *action_args);
+static void set_item_type(const void *data, size_t len, void *context, void *action_args);
 static void set_item_type(const void *data, size_t len, void *context, void *action_args);
 static void set_nrepeat(const void *data, size_t len, void *context, void *action_args);
 static void do_repeat(const void *data, size_t len, void *context, void *action_args);
@@ -74,7 +76,7 @@ static void do_repeat(const void *data, size_t len, void *context, void *action_
 /*
  * pack        =  1*repeat_num
  *
- * repeat_num  =  num ( "[" 1*DIGIT "]" )
+ * repeat_num  =  num *1( "[" 1*DIGIT "]" )
  *
  * num         = "q" / "l" / "w" / "b" / "f" / "d"
  *
@@ -88,6 +90,8 @@ static int __type_byte   = Pack_ItemType_Byte;
 static int __type_double = Pack_ItemType_Double;
 static int __type_float  = Pack_ItemType_Float;
 
+static int __err_inval   = Cwt_Err_Invalid;
+
 static CwtFsmTransition num_fsm[] = {
 	  {-1, 1, FSM_MATCH_STR(_T("q"), 1), FSM_ACCEPT, set_item_type, &__type_quad }
 	, {-1, 2, FSM_MATCH_STR(_T("l"), 1), FSM_ACCEPT, set_item_type, &__type_long }
@@ -97,18 +101,21 @@ static CwtFsmTransition num_fsm[] = {
 	, {-1,-1, FSM_MATCH_STR(_T("f"), 1), FSM_ACCEPT, set_item_type, &__type_float }
 };
 
-/* "[" 1*DIGIT "]" */
+/* *1("[" 1*DIGIT "]" ) */
 static CwtFsmRepetitionContext __dec_1more_rpt = { DIGIT_FSM, 1, -1 };
 static CwtFsmTransition repeat_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR(_T("["), 1),       FSM_NORMAL, NULL, NULL }
+	  { 1, 3, FSM_MATCH_STR(_T("["), 1),       FSM_NORMAL, NULL, NULL }
 	, { 2,-1, FSM_MATCH_RPT(&__dec_1more_rpt), FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_STR(_T("]"), 1),       FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,               FSM_ACCEPT, NULL, NULL }
 };
 
+/* num *1( "[" 1*DIGIT "]" ) */
 static CwtFsmTransition repeat_num_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(num_fsm),    FSM_NORMAL, NULL, NULL }
-	, { 2, 2, FSM_MATCH_FSM(repeat_fsm), FSM_NORMAL, set_nrepeat, NULL }
+	  { 1, 3, FSM_MATCH_FSM(num_fsm),    FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_FSM(repeat_fsm), FSM_NORMAL, set_nrepeat, NULL }
 	, {-1,-1, FSM_MATCH_NOTHING,         FSM_ACCEPT, do_repeat, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,         FSM_REJECT, set_error, &__err_inval }
 };
 
 static CwtFsmTransition pack_fsm[] = {
@@ -218,6 +225,15 @@ ssize_t __utils_unpacks (const CWT_CHAR *template_str
 }
 
 
+static void set_error(const void *data, size_t len, void *context, void *action_args)
+{
+	PackContext *ctx = (PackContext*)context;
+	CWT_UNUSED(data);
+	if( len > 0 )
+		ctx->err = *(int*)action_args;
+}
+
+
 static void set_item_type(const void *data, size_t len, void *context, void *action_args)
 {
 	PackContext *ctx = (PackContext*)context;
@@ -234,13 +250,17 @@ static void set_nrepeat(const void *data, size_t len, void *context, void *actio
 
 	CWT_UNUSED(action_args);
 
-	s = cwtStrNS()->strNdup(((const CWT_CHAR *)data) + 1, len-2);
-	ctx->nrepeat = cwtStrNS()->toINT32(s, 10, &ok);
+	if( len == 0 ) {
+		ctx->nrepeat = 1;
+	} else {
+		s = cwtStrNS()->strNdup(((const CWT_CHAR *)data) + 1, len-2);
+		ctx->nrepeat = cwtStrNS()->toINT32(s, 10, &ok);
 
-	if( !ok )
-		ctx->nrepeat = -1;
+		if( !ok )
+			ctx->nrepeat = -1;
 
-	CWT_FREE(s);
+		CWT_FREE(s);
+	}
 }
 
 static void __int8ToBytes     (void *pnum, BYTE bytes[]) { bytes[0] = (*(BYTE*)pnum); }

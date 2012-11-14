@@ -178,7 +178,7 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 
 	CWT_ASSERT(trans);
 
-	while( TRUE ) {
+	do /*while( TRUE )*/ {
 
 		switch( trans->match_type ) {
 		case Cwt_Fsm_Match_Seq:
@@ -187,7 +187,8 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			break;
 
 		case Cwt_Fsm_Match_Str:
-			if( fsm->exact(ptr, CWT_MIN(len, trans->condition.str.len)
+			if( len >= trans->condition.str.len
+					&& fsm->exact(ptr, CWT_MIN(len, trans->condition.str.len)
 					, trans->condition.str.chars, trans->condition.str.len) ) {
 				nchars_processed = (ssize_t)trans->condition.str.len;
 			}
@@ -254,9 +255,17 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 		trans = &fsm->trans_tab[state_cur];
 		nchars_processed = (ssize_t)-1;
 
-		if( trans->status == FSM_REJECT )
+		if( trans->status == FSM_REJECT ) {
+			if( trans->action )
+				trans->action(ptr
+				, len
+				, fsm->context
+				, trans->action_args);
+
 			return (ssize_t)-1;
-	}
+		}
+
+	} while( TRUE );
 
 	CWT_ASSERT(nchars_total_accepted <= CWT_SSIZE_T_MAX);
 

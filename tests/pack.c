@@ -58,6 +58,8 @@ void test_pack_unpack_int(void)
 		, &dest_min.i8
 	};
 
+	CWT_TEST_FAIL(cwtUtilsNS()->pack(_T("q"), buf, 256, data_origin_max
+			, sizeof(data_origin_max)/sizeof(data_origin_max[0])) > 0);
 	CWT_TEST_FAIL(cwtUtilsNS()->pack(_T("qlwb"), buf, 256, data_origin_max
 			, sizeof(data_origin_max)/sizeof(data_origin_max[0])) > 0);
 	CWT_TEST_FAIL(cwtUtilsNS()->unpack(_T("qlwb"), buf, 256, data_dest_max
@@ -191,18 +193,39 @@ void test_packs_unpacks_int_array(void)
 }
 
 
+void test_packs_failed(void)
+{
+	BYTE buf[32];
+	struct _SampleIntStruct {
+		int unused0;
+		int unused1;
+		int unused2;
+	} origin = {
+		  CWT_INT_MAX
+		, CWT_INT_MAX
+		, CWT_INT_MIN
+	};
+
+	CWT_TEST_OK(cwtUtilsNS()->packs(_T("`"), buf, sizeof(buf), &origin, sizeof(origin)) < 0);
+	CWT_TEST_OK(cwtUtilsNS()->packs(_T("`l"), buf, sizeof(buf), &origin, sizeof(origin)) < 0);
+	CWT_TEST_OK(cwtUtilsNS()->packs(_T("`ll"), buf, sizeof(buf), &origin, sizeof(origin)) < 0);
+	CWT_TEST_OK(cwtUtilsNS()->packs(_T("l`l"), buf, sizeof(buf), &origin, sizeof(origin)) < 0);
+	CWT_TEST_OK(cwtUtilsNS()->packs(_T("ll`"), buf, sizeof(buf), &origin, sizeof(origin)) < 0);
+}
+
 int main(int argc, char *argv[])
 {
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(32);
+	CWT_BEGIN_TESTS(40);
 
 	test_pack_unpack_int();
 	test_pack_unpack_float();
 	test_packs_unpacks_int();
 	test_packs_unpacks_float();
 	test_packs_unpacks_int_array();
+	test_packs_failed();
 
 	CWT_END_TESTS;
 }
