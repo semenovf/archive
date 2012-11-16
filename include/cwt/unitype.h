@@ -11,13 +11,13 @@
 #include <cwt/types.h>
 
 typedef struct _CwtUniType {
+	CwtTypeEnum type;
 	union {
 		LONGLONG  llong_val;
 		float     float_val;
         double    double_val;
         void     *ptr;
 	} value;
-    CwtTypeEnum type;
     size_t capacity;    /* size of buffer pointed by ptr */
     size_t length;      /* length in chars for CwtType_TEXT, or BLOB size */
 } CwtUniType;
@@ -25,7 +25,10 @@ typedef struct _CwtUniType {
 typedef struct _CwtUniTypeNS {
 	CwtUniType* (*create)        (void);
 	void        (*free)          (CwtUniType *ut);
+	void        (*init)          (CwtUniType *ut);
+	void        (*destroy)       (CwtUniType *ut);
 	CwtTypeEnum (*type)          (CwtUniType *ut);
+	BOOL        (*eq)            (CwtUniType *ut0, CwtUniType *ut1);
 /*	BOOL        (*canCast)       (CwtUniType *ut, CwtTypeEnum type);*/
 	BOOL        (*set)           (CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz);
 	BOOL        (*setFromString) (CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s);

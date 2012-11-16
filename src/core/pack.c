@@ -42,17 +42,16 @@ typedef enum _PackItemType {
 	, Pack_ItemType_Count
 } ItemType;
 
-typedef enum _PackActionType {
-	  Pack_ActType_Invalid
-	, Pack_ActType_Pack
-	, Pack_ActType_Unpack
-	, Pack_ActType_Packs
-	, Pack_ActType_Unpacks
-} PackActionType;
+typedef enum _PackAct {
+	  PackAct_Pack
+	, PackAct_Unpack
+	, PackAct_PackUniType
+	, PackAct_UnpackUniType
+} PackAct;
 
 typedef struct _PackContext {
-	PackActionType action;
-	int    err;     /* error code, see CwtErrno */
+	PackAct act;
+	int     err;     /* error code, see CwtErrno */
 
 	BYTE  *buf;
 	size_t buf_sz;
@@ -74,12 +73,19 @@ static void set_nrepeat(const void *data, size_t len, void *context, void *actio
 static void do_repeat(const void *data, size_t len, void *context, void *action_args);
 
 /*
- * pack        =  1*repeat_num
+ * pack         = seq
  *
- * repeat_num  =  num *1( "[" 1*DIGIT "]" )
+ * //unpack       = forward-seq [ backward ]
  *
- * num         = "q" / "l" / "w" / "b" / "f" / "d"
+ * //forward-seq  = *1 seq
  *
+ * //backward-seq = "-" seq
+ *
+ * seq          =  1*repeat_num
+ *
+ * repeat_num   =  num *1( "[" 1*DIGIT "]" )
+ *
+ * num          = "q" / "l" / "w" / "b" / "f" / "d"
  *
  */
 
@@ -118,29 +124,27 @@ static CwtFsmTransition repeat_num_fsm[] = {
 	, {-1,-1, FSM_MATCH_NOTHING,         FSM_REJECT, set_error, &__err_inval }
 };
 
-static CwtFsmTransition pack_fsm[] = {
+/* 1*repeat_num */
+static CwtFsmTransition seq_fsm[] = {
 	  {1,-1, FSM_MATCH_FSM(repeat_num_fsm), FSM_ACCEPT, NULL, NULL }
 	, {1,-1, FSM_MATCH_FSM(repeat_num_fsm), FSM_ACCEPT, NULL, NULL }
 };
 
-static CwtFsmTransition unpack_fsm[] = {
-	  {1,-1, FSM_MATCH_FSM(repeat_num_fsm), FSM_ACCEPT, NULL, NULL }
-	, {1,-1, FSM_MATCH_FSM(repeat_num_fsm), FSM_ACCEPT, NULL, NULL }
-};
-
+static CwtFsmTransition *pack_fsm = seq_fsm;
+static CwtFsmTransition *unpack_fsm = seq_fsm;
 
 
 static ssize_t __pack_helper (CwtFsmTransition *trans
 	, const CWT_CHAR *template_str
 	, BYTE *buf, size_t buf_sz
-	, void *data[], size_t data_count
-	, PackActionType act)
+	, void **data, size_t data_count
+	, PackAct act)
 {
 	CwtFsm fsm;
 	PackContext ctx;
 
 	cwtStrNS()->bzero(&ctx, sizeof(ctx));
-	ctx.action     = act;
+	ctx.act        = act;
 	ctx.buf        = buf;
 	ctx.buf_sz     = buf_sz;
 	ctx.data       = data;
@@ -173,7 +177,7 @@ ssize_t __utils_pack (const CWT_CHAR *template_str
 		, BYTE *buf, size_t buf_sz
 		, void *data[], size_t data_count )
 {
-	return __pack_helper (pack_fsm, template_str, buf, buf_sz, data, data_count, Pack_ActType_Pack);
+	return __pack_helper (pack_fsm, template_str, buf, buf_sz, data, data_count, PackAct_Pack);
 }
 
 /**
@@ -189,39 +193,22 @@ ssize_t __utils_unpack (const CWT_CHAR *template_str
 		, BYTE *buf, size_t buf_sz
 		, void *data[], size_t data_count )
 {
-	return __pack_helper (unpack_fsm, template_str, buf, buf_sz, data, data_count, Pack_ActType_Unpack);
+	return __pack_helper (unpack_fsm, template_str, buf, buf_sz, data, data_count, PackAct_Unpack);
 }
 
-/**
- *
- * @param template_str
- * @param buf
- * @param buf_sz
- * @param data
- * @param data_count
- * @return Total bytes packed.
- */
-ssize_t __utils_packs (const CWT_CHAR *template_str
+
+ssize_t __utils_packUniType  (const CWT_CHAR *template_str
 		, BYTE *buf, size_t buf_sz
-		, void *data, size_t data_count )
+		, CwtUniType *data, size_t data_count)
 {
-	return __pack_helper (pack_fsm, template_str, buf, buf_sz, &data, data_count, Pack_ActType_Packs);
+	return __pack_helper (unpack_fsm, template_str, buf, buf_sz, (void**)&data, data_count, PackAct_PackUniType);
 }
 
-/**
- *
- * @param template_str
- * @param buf
- * @param buf_sz
- * @param data
- * @param data_count
- * @return Total bytes unpacked.
- */
-ssize_t __utils_unpacks (const CWT_CHAR *template_str
+ssize_t __utils_unpackUniType (const CWT_CHAR *template_str
 		, BYTE *buf, size_t buf_sz
-		, void *data, size_t data_count )
+		, CwtUniType *data, size_t data_count)
 {
-	return __pack_helper (unpack_fsm, template_str, buf, buf_sz, &data, data_count, Pack_ActType_Unpacks);
+	return __pack_helper (unpack_fsm, template_str, buf, buf_sz, (void**)&data, data_count, PackAct_UnpackUniType);
 }
 
 
@@ -270,6 +257,19 @@ static void __int64ToBytes    (void *pnum, BYTE bytes[]) { cwtUtilsNS()->int64To
 static void __floatToBytes    (void *pnum, BYTE bytes[]) { cwtUtilsNS()->floatToBytes(*(float*)pnum, bytes); }
 static void __doubleToBytes   (void *pnum, BYTE bytes[]) { cwtUtilsNS()->doubleToBytes(*(double*)pnum, bytes); }
 
+static void __uniTypeInt8ToBytes   (CwtUniType *ut, BYTE bytes[])
+	{ bytes[0] = cwtUniTypeNS()->toBYTE(ut, NULL); }
+static void __uniTypeInt16ToBytes  (CwtUniType *ut, BYTE bytes[])
+	{ cwtUtilsNS()->int16ToBytes((INT16)cwtUniTypeNS()->toSHORT(ut, NULL), bytes); }
+static void __uniTypeInt32ToBytes  (CwtUniType *ut, BYTE bytes[])
+	{ cwtUtilsNS()->int32ToBytes((INT32)cwtUniTypeNS()->toLONG(ut, NULL), bytes); }
+static void __uniTypeInt64ToBytes  (CwtUniType *ut, BYTE bytes[])
+	{ cwtUtilsNS()->int64ToBytes((INT64)cwtUniTypeNS()->toLONGLONG(ut, NULL), bytes); }
+static void __uniTypeFloatToBytes  (CwtUniType *ut, BYTE bytes[])
+	{ cwtUtilsNS()->floatToBytes(cwtUniTypeNS()->toFLOAT(ut, NULL), bytes); }
+static void __uniTypeDoubleToBytes (CwtUniType *ut, BYTE bytes[])
+	{ cwtUtilsNS()->doubleToBytes(cwtUniTypeNS()->toDOUBLE(ut, NULL), bytes); }
+
 static void __bytesToInt8     (const BYTE bytes[], void *pnum) { *((INT8*)pnum) = (INT8)bytes[0]; }
 static void __bytesToInt16    (const BYTE bytes[], void *pnum) { *((INT16*)pnum) = cwtUtilsNS()->bytesToInt16(bytes); }
 static void __bytesToInt32    (const BYTE bytes[], void *pnum) { *((INT32*)pnum) = cwtUtilsNS()->bytesToInt32(bytes); }
@@ -277,68 +277,90 @@ static void __bytesToInt64    (const BYTE bytes[], void *pnum) { *((INT64*)pnum)
 static void __bytesToFloat    (const BYTE bytes[], void *pnum) { *((float*)pnum) = cwtUtilsNS()->bytesToFloat(bytes); }
 static void __bytesToDouble   (const BYTE bytes[], void *pnum) { *((double*)pnum) = cwtUtilsNS()->bytesToDouble(bytes); }
 
+static void __bytesToUniTypeInt8     (const BYTE bytes[], CwtUniType *ut)
+	{ cwtUniTypeNS()->setSBYTE(ut, (INT8)bytes[0]); }
+static void __bytesToUniTypeInt16    (const BYTE bytes[], CwtUniType *ut)
+	{ cwtUniTypeNS()->setSHORT(ut, (SHORT)cwtUtilsNS()->bytesToInt16(bytes)); }
+static void __bytesToUniTypeInt32    (const BYTE bytes[], CwtUniType *ut)
+	{ cwtUniTypeNS()->setLONG(ut, (LONG)cwtUtilsNS()->bytesToInt32(bytes)); }
+static void __bytesToUniTypeInt64    (const BYTE bytes[], CwtUniType *ut)
+	{ cwtUniTypeNS()->setLONGLONG(ut, (LONGLONG)cwtUtilsNS()->bytesToInt64(bytes)); }
+static void __bytesToUniTypeFloat    (const BYTE bytes[], CwtUniType *ut)
+	{ cwtUniTypeNS()->setFLOAT(ut, cwtUtilsNS()->bytesToFloat(bytes)); }
+static void __bytesToUniTypeDouble   (const BYTE bytes[], CwtUniType *ut)
+	{ cwtUniTypeNS()->setDOUBLE(ut, cwtUtilsNS()->bytesToDouble(bytes)); }
+
+
 typedef struct _PackData {
 	int type_size;
 	void (*numToBytes)(void *pnum, BYTE bytes[]);
 	void (*bytesToNum)(const BYTE bytes[], void *pnum);
+	void (*uniTypeToBytes)(CwtUniType *ut, BYTE bytes[]);
+	void (*bytesToUniType)(const BYTE bytes[], CwtUniType *ut);
 } PackData;
 
-static PackData __packData[] = {
-	  {-1, NULL, NULL }
-	, { sizeof(INT64),  __int64ToBytes,  __bytesToInt64 }
-	, { sizeof(INT32),  __int32ToBytes,  __bytesToInt32 }
-	, { sizeof(INT16),  __int16ToBytes,  __bytesToInt16 }
-	, { sizeof(INT8),   __int8ToBytes,   __bytesToInt8 }
-	, { sizeof(double), __doubleToBytes, __bytesToDouble }
-	, { sizeof(float),  __floatToBytes,  __bytesToFloat }
+static PackData __pack_data[] = {
+	  {-1, NULL, NULL, NULL, NULL }
+	, { sizeof(INT64),  __int64ToBytes,  __bytesToInt64 , __uniTypeInt64ToBytes,  __bytesToUniTypeInt64 }
+	, { sizeof(INT32),  __int32ToBytes,  __bytesToInt32 , __uniTypeInt32ToBytes,  __bytesToUniTypeInt32 }
+	, { sizeof(INT16),  __int16ToBytes,  __bytesToInt16 , __uniTypeInt16ToBytes,  __bytesToUniTypeInt16 }
+	, { sizeof(INT8),   __int8ToBytes,   __bytesToInt8  , __uniTypeInt8ToBytes,   __bytesToUniTypeInt8  }
+	, { sizeof(double), __doubleToBytes, __bytesToDouble, __uniTypeDoubleToBytes, __bytesToUniTypeDouble}
+	, { sizeof(float),  __floatToBytes,  __bytesToFloat , __uniTypeFloatToBytes,  __bytesToUniTypeFloat }
 };
 
 static void do_repeat(const void *data, size_t len, void *context, void *action_args)
 {
 	PackContext *ctx = (PackContext*)context;
+	char *ptr;
+	char *uptr;
 
 	CWT_UNUSED3(data, len, action_args);
 
 	CWT_ASSERT(ctx->item_type > Pack_ItemType_Invalid && ctx->item_type <= Pack_ItemType_Count);
-	CWT_ASSERT(ctx->action != Pack_ActType_Invalid);
+
+	if( ctx->data_index == ctx->data_count ) {
+		ctx->err = Cwt_Err_Overflow;
+		ctx->data_index = ctx->data_count;
+		return;
+	}
+
+	ptr  = ((char**)ctx->data)[ctx->data_index];
+	uptr = *((char**)ctx->data) + ctx->data_index * sizeof(CwtUniType);
 
 	while( ctx->nrepeat-- > 0 ) {
 
-		if( ctx->buf_off + __packData[ctx->item_type].type_size > ctx->buf_sz ) {
+		if( ctx->buf_off + __pack_data[ctx->item_type].type_size > ctx->buf_sz ) {
 			ctx->err = Cwt_Err_Overflow;
 			ctx->buf_off = ctx->buf_sz;
 			break;
 		}
 
-		if( ctx->data_index == ctx->data_count ) {
-			ctx->err = Cwt_Err_Overflow;
-			ctx->data_index = ctx->data_count;
+		switch( ctx->act ) {
+		case PackAct_Pack:
+			__pack_data[ctx->item_type].numToBytes(ptr, ctx->buf + ctx->buf_off);
+			ptr += __pack_data[ctx->item_type].type_size;
+			break;
+		case PackAct_Unpack:
+			__pack_data[ctx->item_type].bytesToNum(ctx->buf + ctx->buf_off, ptr);
+			ptr += __pack_data[ctx->item_type].type_size;
+			break;
+		case PackAct_PackUniType:
+			__pack_data[ctx->item_type].uniTypeToBytes((CwtUniType*)uptr, ctx->buf + ctx->buf_off);
+			uptr += sizeof(CwtUniType);
+			ctx->data_index++; /* step to next element */
+			break;
+		case PackAct_UnpackUniType:
+			__pack_data[ctx->item_type].bytesToUniType(ctx->buf + ctx->buf_off, (CwtUniType*)uptr);
+			uptr += sizeof(CwtUniType);
+			ctx->data_index++; /* step to next element */
 			break;
 		}
-
-		switch(ctx->action) {
-		case Pack_ActType_Pack:
-			__packData[ctx->item_type].numToBytes(ctx->data[ctx->data_index], ctx->buf + ctx->buf_off);
-			ctx->data_index++;
-			break;
-		case Pack_ActType_Unpack:
-			__packData[ctx->item_type].bytesToNum(ctx->buf + ctx->buf_off, ctx->data[ctx->data_index]);
-			ctx->data_index++;
-			break;
-		case Pack_ActType_Packs:
-			__packData[ctx->item_type].numToBytes(*((char**)ctx->data) + ctx->data_index, ctx->buf + ctx->buf_off);
-			ctx->data_index += __packData[ctx->item_type].type_size;
-			break;
-		case Pack_ActType_Unpacks:
-			__packData[ctx->item_type].bytesToNum(ctx->buf + ctx->buf_off, *((char**)ctx->data) + ctx->data_index);
-			ctx->data_index += __packData[ctx->item_type].type_size;
-			break;
-		default:
-			break;
-		}
-
-		ctx->buf_off += __packData[ctx->item_type].type_size;
+		ctx->buf_off += __pack_data[ctx->item_type].type_size;
 		CWT_ASSERT(ctx->buf_off <= CWT_SSIZE_T_MAX);
 	}
+
+	if( ctx->act == PackAct_Pack || ctx->act == PackAct_Unpack)
+		ctx->data_index++; /* step to next pointer */
 }
 

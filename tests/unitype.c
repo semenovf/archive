@@ -279,6 +279,9 @@ void test_01(void)
 	__utNS->setBYTE(uval, CWT_BYTE_MAX);
 	CWT_TEST_OK(__utNS->toBYTE(uval, &ok) == CWT_BYTE_MAX && ok);
 
+	__utNS->setSBYTE(uval, CWT_INT8_MIN);
+	CWT_TEST_OK(__utNS->toBYTE(uval, &ok) == (BYTE)CWT_INT8_MIN && ok);
+
 	__utNS->setSHORT(uval, CWT_SHORT_MIN);
 	CWT_TEST_OK(__utNS->toSHORT(uval, &ok) == CWT_SHORT_MIN && ok);
 
@@ -627,7 +630,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(159);
+	CWT_BEGIN_TESTS(160);
 
 	test_size_of();
 	test_00();

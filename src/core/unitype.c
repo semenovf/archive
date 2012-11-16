@@ -14,7 +14,11 @@
 
 static CwtUniType*      __create       (void);
 static void             __free         (CwtUniType *ut);
+static void             __init         (CwtUniType *ut);
+static void             __destroy      (CwtUniType *ut);
+
 static inline CwtTypeEnum __type       (CwtUniType *ut) { CWT_ASSERT(ut); return ut->type; }
+static BOOL             __ut_eq        (CwtUniType *ut0, CwtUniType *ut1);
 static BOOL             __setType      (CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz);
 static BOOL             __setFromString(CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s);
 static inline BOOL      __setBOOL      (CwtUniType *ut, BOOL b)       { return __setType(ut, CwtType_BOOL, &b, 0); }
@@ -64,7 +68,10 @@ static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size
 static CwtUniTypeNS __cwtUniTypeNS = {
 	  __create
 	, __free
+	, __init
+	, __destroy
 	, __type
+	, __ut_eq
 /*	, __canCast*/
 	, __setType
 	, __setFromString
@@ -122,15 +129,30 @@ DLL_API_EXPORT CwtUniTypeNS* cwtUniTypeNS(void)
 }
 
 
+static void __init (CwtUniType *ut)
+{
+	__strNS->bzero(ut, sizeof(CwtUniType));
+	ut->type = CwtType_UNKNOWN;
+}
+
+static void __destroy (CwtUniType *ut)
+{
+	if( ut && ut->type != CwtType_UNKNOWN ) {
+		if( ut->length && ut->value.ptr ) {
+			CWT_FREE(ut->value.ptr);
+			ut->value.ptr = NULL;
+			ut->capacity  = 0;
+			ut->length    = 0;
+		}
+	}
+}
 
 static CwtUniType* __create(void)
 {
 	CwtUniType *ut;
 
 	ut = CWT_MALLOC(CwtUniType);
-	__strNS->bzero(ut, sizeof(CwtUniType));
-	ut->type = CwtType_UNKNOWN;
-
+	__init(ut);
 	return ut;
 }
 
@@ -138,17 +160,84 @@ static CwtUniType* __create(void)
 static void __free(CwtUniType *ut)
 {
 	if( ut ) {
-		if( ut->length && ut->value.ptr ) {
-			CWT_FREE(ut->value.ptr);
-			ut->value.ptr = NULL;
-			ut->capacity = 0;
-			ut->length = 0;
-		}
-
+		__destroy(ut);
 		CWT_FREE(ut);
 	}
 }
 
+/**/
+static int __ut_signed_map[] = {
+/*	UNKNOWN  BOOL CHAR SBYTE BYTE SHORT USHORT INT UINT LONG ULONG LONGLONG ULONGLONG FLOAT DOUBLE TEXT BLOB TIME DATE DATETIME */
+	0,       1,
+#ifdef CWT_UNICODE
+	              1,
+#else
+	             -1,
+#endif
+	                   -1,   1,   -1,    1,    -1, 1,   -1,  1,    -1,      1,        0,    0,     0,   0,   0,   0,   0
+};
+
+
+
+/**
+ * @fn BOOL CwtUniTypeNS::eq(CwtUniType *ut0, CwtUniType *ut1)
+ *
+ * @brief Identifies the equality of two UniType type values.
+ *
+ * @details Two UniType type values are equal if they:
+ * 		both are integer and have equal real values (without any cast),
+ * 		or both are scalar and there values cast to double are equal,
+ * 		or both are allocated memory blocks with the same length and content
+ * 		(compared with CwtStrNS::memcmp() call).
+ *
+ * @param ut0 First CwtUniType value.
+ * @param ut1 Second CwtUniType value.
+ * @return @c TRUE if two values are equal, or @c FALSE.
+ *
+ */
+static BOOL __ut_eq (CwtUniType *ut0, CwtUniType *ut1)
+{
+	if( ut0 == NULL || ut1 == NULL ) {
+		if( ut0 == ut1 )
+			return TRUE;
+	}
+
+	if( CWT_TYPE_IS_INTEGER(ut0->type) && CWT_TYPE_IS_INTEGER(ut1->type) ) {
+		if( ut0->value.llong_val == ut1->value.llong_val ) {
+			if( (__ut_signed_map[ut0->type] + __ut_signed_map[ut1->type]) == 2
+					|| (__ut_signed_map[ut0->type] + __ut_signed_map[ut1->type]) == -2) {
+				return TRUE;
+			}
+
+			if( __ut_signed_map[ut0->type] > 0 &&  ut1->value.llong_val > 0 ) {
+				return TRUE;
+			}
+
+			if( __ut_signed_map[ut1->type] > 0 &&  ut0->value.llong_val > 0 ) {
+				return TRUE;
+			}
+
+		}
+	} else if( CWT_TYPE_IS_SCALAR(ut0->type) && CWT_TYPE_IS_SCALAR(ut1->type) ) {
+		BOOL ok0, ok1;
+		return __toDOUBLE(ut0, &ok0) == __toDOUBLE(ut1, &ok1)
+				&& ok0 && ok1
+				? TRUE : FALSE;
+	} else {
+		if( ut0->type == ut1->type ) {
+			if( ut0->length == ut1->length ) {
+				if( ut0->type == CwtType_TEXT )
+					return cwtStrNS()->memcmp(ut0->value.ptr, ut1->value.ptr, ut0->length * sizeof(CWT_CHAR)) == 0
+							? TRUE : FALSE;
+				else
+					return cwtStrNS()->memcmp(ut0->value.ptr, ut1->value.ptr, ut0->length) == 0
+							? TRUE : FALSE;
+			}
+		}
+	}
+
+	return FALSE;
+}
 
 /**
  * @fn CwtUniTypeNS::set(CwtUniType *ut, CwtTypeEnum type, const void *copy, size_t sz)
@@ -543,8 +632,8 @@ static inline CWT_CHAR __toCHAR(CwtUniType *ut, BOOL *ok)
 				return (_IntType)ut->value.llong_val;                         \
                                                                               \
             else if( CWT_TYPE_IS_INTEGER(ut->type)                            \
-					&& ut->value.llong_val >= (LONGLONG)_Min                  \
-					&& ut->value.llong_val <= (LONGLONG)_Max )                \
+					/*&& ut->value.llong_val >= (LONGLONG)_Min*/              \
+					/*&& ut->value.llong_val <= (LONGLONG)_Max*/ )            \
 				return (_IntType)ut->value.llong_val;                         \
                                                                               \
             else if( CwtType_TEXT == ut->type && ut->length > 0) {            \

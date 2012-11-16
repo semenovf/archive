@@ -9,6 +9,7 @@
 #define __CWT_UTILS_H__
 
 #include <cwt/types.h>
+#include <cwt/unitype.h>
 
 typedef struct _CwtUtilsNS {
 	INT32  (*calculateCRC32) (const void *pdata, size_t nbytes, INT32 initial);
@@ -27,18 +28,18 @@ typedef struct _CwtUtilsNS {
 	void   (*doubleToBytes)  (double d, BYTE bytes[sizeof(double)]);
 	double (*bytesToDouble)  (const BYTE bytes[sizeof(double)]);
 
-	ssize_t (*pack)           (const CWT_CHAR *template_str
+	ssize_t (*pack)          (const CWT_CHAR *template_str
 			, BYTE *buf, size_t buf_sz
 			, void *data[], size_t data_count);
-	ssize_t (*unpack)         (const CWT_CHAR *template_str
+	ssize_t (*unpack)        (const CWT_CHAR *template_str
 			, BYTE *buf, size_t buf_sz
 			, void *data[], size_t data_count);
-	ssize_t (*packs)          (const CWT_CHAR *template_str
+	ssize_t (*packUniType)   (const CWT_CHAR *template_str
 			, BYTE *buf, size_t buf_sz
-			, void *data, size_t data_count);
-	ssize_t (*unpacks)        (const CWT_CHAR *template_str
+			, CwtUniType *data, size_t data_count);
+	ssize_t (*unpackUniType) (const CWT_CHAR *template_str
 			, BYTE *buf, size_t buf_sz
-			, void *data, size_t data_count);
+			, CwtUniType *data, size_t data_count);
 } CwtUtilsNS;
 
 
