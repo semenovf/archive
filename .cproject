@@ -22,7 +22,7 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1495917659.1898899449" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.445900308" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.180428510" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder arguments="" buildPath="${workspace_loc:/cwt/.gbs}" command="${GBS_HOME}/make.sh" id="cdt.managedbuild.target.gnu.builder.base.874476543" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<builder arguments="" buildPath="${workspace_loc:/cwt/.gbs}" command="${GBS_HOME}/make.bat" id="cdt.managedbuild.target.gnu.builder.base.874476543" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1838446321" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1841663718" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.796639036" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
@@ -35,6 +35,7 @@
 									<listOptionValue builtIn="false" value="W:/include"/>
 									<listOptionValue builtIn="false" value="/home/wladt/ws/cwt/include"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files\Microsoft SDKs\Windows\v7.1\Include&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.208553766" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__GNUC__"/>
