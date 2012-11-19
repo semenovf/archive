@@ -22,9 +22,7 @@ static CwtFsmTransition pct_encoded_fsm[] = {
 };
 /*  */
 
-static CwtFsmRepetitionContext __rep_context = {
-	pct_encoded_fsm, -1, -1
-};
+static CwtFsmRptBounds __rpt_context = {-1, -1};
 
 static void action(const void *data, size_t len, void *context, void *action_args)
 {
@@ -37,7 +35,7 @@ static void action(const void *data, size_t len, void *context, void *action_arg
 }
 
 static CwtFsmTransition pct_encoded_str_fsm[] = {
-	{-1,-1, FSM_MATCH_RPT(&__rep_context), FSM_ACCEPT, action, NULL }
+	{-1,-1, FSM_MATCH_RPT(pct_encoded_fsm, &__rpt_context), FSM_ACCEPT, action, NULL }
 };
 
 static struct _FsmRptTestEntry {
@@ -77,8 +75,8 @@ static void test_fsm_rep(void)
 	n = sizeof(__fsmRptTestEntries)/sizeof(__fsmRptTestEntries[0]);
 
 	for( i = 0; i < n; i++ ) {
-		__rep_context.from  = __fsmRptTestEntries[i].from;
-		__rep_context.to    = __fsmRptTestEntries[i].to;
+		__rpt_context.from  = __fsmRptTestEntries[i].from;
+		__rpt_context.to    = __fsmRptTestEntries[i].to;
 		CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, pct_str, cwtStrNS()->strLen(pct_str)) == __fsmRptTestEntries[i].ret);
 	}
 }

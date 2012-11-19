@@ -107,8 +107,7 @@ DLL_API_EXPORT BOOL cwtRangeInt(const void *ch, const void *from, const void *to
  */
 ssize_t cwtFsmRepetition(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
 {
-	CwtFsmRepetitionContext *rep_context = (CwtFsmRepetitionContext*)fn_context;
-	CwtFsm rep_fsm;
+	CwtFsmRptBounds *bounds = (CwtFsmRptBounds*)fn_context;
 	const char *ptr;
 	int i;
 	ssize_t nchars_processed;
@@ -122,23 +121,20 @@ ssize_t cwtFsmRepetition(CwtFsm *fsm, void *fn_context, const void *data, size_t
 	if( !ptr )
 		return 0;
 
-	if( rep_context->from < 0 )
-		rep_context->from = 0;
+	if( bounds->from < 0 )
+		bounds->from = 0;
 
-	if( rep_context->to < 0 )
-		rep_context->to = CWT_INT_MAX;
+	if( bounds->to < 0 )
+		bounds->to = CWT_INT_MAX;
 
-	CWT_ASSERT(rep_context->from <= rep_context->to);
-
-	memcpy(&rep_fsm, fsm, sizeof(CwtFsm));
-	rep_fsm.trans_tab = rep_context->trans_tab;
+	CWT_ASSERT(bounds->from <= bounds->to);
 
 	nchars_processed = (ssize_t)-1;
 	nchars_total_processed = 0;
 
-	for( i = 0; i < rep_context->to && len > 0; i++ ) {
+	for( i = 0; i < bounds->to && len > 0; i++ ) {
 
-		nchars_processed = __fsm_exec(&rep_fsm, 0, ptr, len);
+		nchars_processed = __fsm_exec(fsm, 0, ptr, len);
 
 		if( nchars_processed < 0 ) {
 			break;
@@ -146,14 +142,14 @@ ssize_t cwtFsmRepetition(CwtFsm *fsm, void *fn_context, const void *data, size_t
 
 		if( nchars_processed > 0) {
 			len -= nchars_processed;
-			ptr += (rep_fsm.sizeof_char * nchars_processed);
+			ptr += (fsm->sizeof_char * nchars_processed);
 			nchars_total_processed += (size_t)nchars_processed;
 		}
 	}
 
 	CWT_ASSERT(nchars_total_processed <= CWT_SSIZE_T_MAX);
 
-	if( i < rep_context->from )
+	if( i < bounds->from )
 		return (ssize_t)-1;
 
 	return (ssize_t)nchars_total_processed;
@@ -219,6 +215,15 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			nchars_processed = trans->condition.trans_fn.fn(fsm, trans->condition.trans_fn.fn_context, ptr, len);
 			break;
 
+		case Cwt_Fsm_Match_Rpt: {
+				CwtFsm inner_fsm;
+
+				memcpy(&inner_fsm, fsm, sizeof(inner_fsm));
+				inner_fsm.trans_tab = trans->condition.trans_tab.tab;
+				nchars_processed = cwtFsmRepetition(&inner_fsm, trans->condition.trans_tab.bounds, ptr, len);
+			}
+			break;
+
 		case Cwt_Fsm_Match_Nothing:
 			nchars_processed = 0;
 			break;
@@ -245,8 +250,14 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 			state_cur = trans->state_next;
 		} else {
 			state_cur = trans->state_fail;
-			if( trans->status != FSM_ACCEPT )
+
+			if( trans->status != FSM_ACCEPT ) {
 				accepted = FALSE;
+			}
+
+			ptr -= (fsm->sizeof_char * nchars_total_processed);
+			len += nchars_total_processed;
+			nchars_total_processed = nchars_total_accepted;
 		}
 
 		if( state_cur < 0 )

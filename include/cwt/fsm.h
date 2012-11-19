@@ -19,6 +19,7 @@ typedef enum _CwtFsmMatchType {
 	, Cwt_Fsm_Match_Range
 	, Cwt_Fsm_Match_Fsm
 	, Cwt_Fsm_Match_Func
+	, Cwt_Fsm_Match_Rpt
 } CwtFsmMatchType;
 
 /* MSC does not support such union initializer
@@ -39,7 +40,8 @@ typedef enum _CwtFsmMatchType {
 
 /* repetition
  * 'repcont' is a pointer to CwtFsmRepetitionContext instance */
-#define FSM_MATCH_RPT(repcont)    FSM_MATCH_FUNC(cwtFsmRepetition,repcont)
+/*#define FSM_MATCH_RPT(repcont)   FSM_MATCH_FUNC(cwtFsmRepetition,repcont)*/
+#define FSM_MATCH_RPT(f,r)      Cwt_Fsm_Match_Rpt, { {0, (void*)(f), (void*)(r)} }
 
 #define FSM_INIT(fsm, char_type, tab, pcontext, belong_fn, exact_fn, range_fn) \
 		(fsm).trans_tab = tab;                            \
@@ -53,11 +55,16 @@ typedef enum _CwtFsmMatchType {
 #define FSM_REJECT  1
 #define FSM_ACCEPT  2
 
+typedef struct _CwtFsmRptBounds {
+	int from, to;
+} CwtFsmRptBounds;
+
+
 struct _CwtFsm;
 typedef union _CwtFsmCondition {
 	struct { size_t len; void *chars; void *unused; } str;
 	struct { size_t unused; void *from; void *to; } range;
-	struct { size_t unused; struct _CwtFsmTransition *tab; void *unused1; } trans_tab;
+	struct { size_t unused; struct _CwtFsmTransition *tab; void *bounds; } trans_tab;
 	struct { size_t unused; ssize_t (*fn)(struct _CwtFsm *fsm, void *fn_context, const void *data, size_t len); void *fn_context; } trans_fn;
 } CwtFsmCondition;
 
@@ -90,12 +97,14 @@ typedef struct _CwtFsm {
 } CwtFsm;
 
 
+/*
 typedef struct _CwtFsmRepetitionContext {
 	CwtFsmTransition *trans_tab;
 	int from, to;
 } CwtFsmRepetitionContext;
+*/
 
-typedef struct CwtFsmNS {
+typedef struct _CwtFsmNS {
 	ssize_t (*exec)(CwtFsm *fsm, int state_cur, const void *data, size_t len);
 } CwtFsmNS;
 

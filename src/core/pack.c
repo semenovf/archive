@@ -108,10 +108,10 @@ static CwtFsmTransition num_fsm[] = {
 };
 
 /* *1("[" 1*DIGIT "]" ) */
-static CwtFsmRepetitionContext __dec_1more_rpt = { DIGIT_FSM, 1, -1 };
+static CwtFsmRptBounds __dec_1more_rpt = { 1, -1 };
 static CwtFsmTransition repeat_fsm[] = {
 	  { 1, 3, FSM_MATCH_STR(_T("["), 1),       FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_RPT(&__dec_1more_rpt), FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_RPT(DIGIT_FSM, &__dec_1more_rpt), FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_STR(_T("]"), 1),       FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_NOTHING,               FSM_ACCEPT, NULL, NULL }
 };

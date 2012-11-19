@@ -15,7 +15,7 @@
 
 static struct _FsmTestEntry __fsmTestEntries[] = {
 
-		{ VHEADER(authority_fsm)
+		  { VHEADER(authority_fsm)
 			, { _T("192.168.1.1"), _T("user@192.168.1.1"), VNULL }
 				, { INULL }}
 

@@ -36,7 +36,7 @@ static void __unset_userinfo(const void *data, size_t len, void *context, void *
 static void __set_host(const void *data, size_t len, void *context, void *action_args);
 static void __set_port(const void *data, size_t len, void *context, void *action_args);
 static void __set_host_is_ip(const void *data, size_t len, void *context, void *action_args);
-static void __check_host_is_ip(const void *data, size_t len, void *context, void *action_args);
+/*static void __check_host_is_ip(const void *data, size_t len, void *context, void *action_args);*/
 
 /*
    RFC 3986: Uniform Resource Identifier (URI)
@@ -98,10 +98,12 @@ static void __check_host_is_ip(const void *data, size_t len, void *context, void
                  / path-rootless   ; begins with a segment
                  / path-empty      ; zero characters
 
-   path-abempty  = *( "/" segment )
-   path-absolute = "/" [ segment-nz *( "/" segment ) ]
-   path-noscheme = segment-nz-nc *( "/" segment )
-   path-rootless = segment-nz *( "/" segment )
+   slash-segment = "/" segment
+
+   path-abempty  = *slash-segment
+   path-absolute = "/" [ segment-nz *slash-segment ]
+   path-noscheme = segment-nz-nc *slash-segment
+   path-rootless = segment-nz *slash-segment
    path-empty    = 0<pchar>
 
    segment       = *pchar
@@ -123,6 +125,23 @@ static void __check_host_is_ip(const void *data, size_t len, void *context, void
    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
                  / "*" / "+" / "," / ";" / "="
   */
+
+static CwtFsmRptBounds rpt_0more = { 0, -1 };
+static CwtFsmRptBounds rpt_1more = { 1, -1 };
+static CwtFsmRptBounds rpt_01 = { 0, 1 };
+static CwtFsmRptBounds rpt_02 = { 0, 2 };
+static CwtFsmRptBounds rpt_03 = { 0, 3 };
+static CwtFsmRptBounds rpt_04 = { 0, 4 };
+static CwtFsmRptBounds rpt_05 = { 0, 5 };
+static CwtFsmRptBounds rpt_06 = { 0, 6 };
+/*
+static CwtFsmRptBounds rpt_11 = { 1, 1 };
+static CwtFsmRptBounds rpt_22 = { 2, 2 };
+static CwtFsmRptBounds rpt_33 = { 3, 3 };
+*/
+static CwtFsmRptBounds rpt_44 = { 4, 4 };
+static CwtFsmRptBounds rpt_55 = { 5, 5 };
+static CwtFsmRptBounds rpt_66 = { 6, 6 };
 
 /* ALPHA / DIGIT / "-" / "." / "_" / "~" */
 static CwtFsmTransition unreserved_fsm[] = {
@@ -166,33 +185,39 @@ static CwtFsmTransition segment_fsm[] = {
     , {-1,-1, FSM_MATCH_NOTHING,        FSM_ACCEPT, NULL, NULL }
 };
 
+/* "/" segment */
+static CwtFsmTransition slash_segment_fsm[] = {
+      { 1,-1, FSM_MATCH_STR(_T("/"), 1),        FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_FSM(segment_fsm),       FSM_ACCEPT, NULL, NULL }
+};
+
 /* "/" [ segment-nz *( "/" segment ) ] */
 static CwtFsmTransition path_absolute_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR(_T("/"), 1),     FSM_ACCEPT, NULL, NULL }
-    , { 2,-1, FSM_MATCH_FSM(segment_nz_fsm), FSM_ACCEPT, NULL, NULL }
-
-	, { 3, 4, FSM_MATCH_STR(_T("/"), 1),     FSM_NORMAL, NULL, NULL }
-    , { 2, 5, FSM_MATCH_FSM(segment_fsm),    FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,             FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,             FSM_REJECT, NULL, NULL }
+	  { 1, 3, FSM_MATCH_STR(_T("/"), 1),     FSM_NORMAL, NULL, NULL }
+    , { 2, 3, FSM_MATCH_FSM(segment_nz_fsm), FSM_NORMAL, NULL, NULL }
+    , {-1, 3, FSM_MATCH_RPT(slash_segment_fsm, &rpt_0more), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR(_T("/"), 1),     FSM_ACCEPT, NULL, NULL }
 };
 
 /* 1*( unreserved / pct-encoded / sub-delims / "@" )
    		; non-zero-length segment without any colon ":"
 */
-static CwtFsmTransition segment_nz_nc_fsm[] = {
-      { 0, 1, FSM_MATCH_FSM(unreserved_fsm),  FSM_ACCEPT, NULL, NULL }
-    , { 0, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, NULL, NULL }
-    , { 0, 3, FSM_MATCH_FSM(sub_delims_fsm),  FSM_ACCEPT, NULL, NULL }
-    , { 0,-1, FSM_MATCH_CHAR(_T("@"), 1),     FSM_ACCEPT, NULL, NULL }
+static CwtFsmTransition segment_nc_fsm[] = {
+      {-1, 1, FSM_MATCH_FSM(unreserved_fsm),  FSM_ACCEPT, NULL, NULL }
+    , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, NULL, NULL }
+    , {-1, 3, FSM_MATCH_FSM(sub_delims_fsm),  FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_CHAR(_T("@"), 1),     FSM_ACCEPT, NULL, NULL }
 };
 
-/* segment-nz-nc *( "/" segment ) */
+static CwtFsmTransition segment_nz_nc_fsm[] = {
+    {-1,-1, FSM_MATCH_RPT(segment_nc_fsm, &rpt_1more),  FSM_ACCEPT, NULL, NULL }
+};
+
+
+/* segment-nz-nc *slash-segment */
 static CwtFsmTransition path_noscheme_fsm[] = {
       { 1,-1, FSM_MATCH_FSM(segment_nz_nc_fsm), FSM_ACCEPT, NULL, NULL }
-    , { 2, 3, FSM_MATCH_STR(_T("/"), 1),        FSM_NORMAL, NULL, NULL }
-    , { 1,-1, FSM_MATCH_FSM(segment_fsm),       FSM_ACCEPT, NULL, NULL }
-    , {-1,-1, FSM_MATCH_NOTHING,                FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT(slash_segment_fsm, &rpt_0more), FSM_ACCEPT, NULL, NULL }
 };
 
 /* 0<pchar> */
@@ -275,25 +300,58 @@ static CwtFsmTransition h16_semi_fsm[] = {
 	, {-1,-1, FSM_MATCH_STR(_T(":"), 1), FSM_ACCEPT, NULL, NULL }
 };
 
+/* *1( h16 ":" ) h16 */
+static CwtFsmTransition ipv6address_fsm_4_1[] = {
+	  { 1, 2, FSM_MATCH_RPT(h16_semi_fsm, &rpt_01), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+};
+
+/* *2( h16 ":" ) h16 */
+static CwtFsmTransition ipv6address_fsm_5_1[] = {
+	  { 1, 2, FSM_MATCH_RPT(h16_semi_fsm, &rpt_02), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+};
+
+/* *3( h16 ":" ) h16 */
+static CwtFsmTransition ipv6address_fsm_6_1[] = {
+	  { 1, 2, FSM_MATCH_RPT(h16_semi_fsm, &rpt_03), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+};
+
+/* *4( h16 ":" ) h16 */
+static CwtFsmTransition ipv6address_fsm_7_1[] = {
+	  { 1, 2, FSM_MATCH_RPT(h16_semi_fsm, &rpt_04), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+};
+
+/* *5( h16 ":" ) h16 */
+static CwtFsmTransition ipv6address_fsm_8_1[] = {
+	  { 1, 2, FSM_MATCH_RPT(h16_semi_fsm, &rpt_05), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+};
+
+/* *6( h16 ":" ) h16 */
+static CwtFsmTransition ipv6address_fsm_9_1[] = {
+	  { 1, 2, FSM_MATCH_RPT(h16_semi_fsm, &rpt_06), FSM_NORMAL, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm),               FSM_ACCEPT, NULL, NULL }
+};
+
 /* 6( h16 ":" ) ls32 */
 static CwtFsmTransition ipv6address_fsm_1[] = {
-      { 1,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , { 2,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , { 3,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , { 4,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , { 5,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , { 6,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
+      { 1,-1, FSM_MATCH_RPT(h16_semi_fsm, &rpt_66), FSM_NORMAL, NULL, NULL }
     , {-1,-1, FSM_MATCH_FSM(ls32_fsm),     FSM_ACCEPT, NULL, NULL }
 };
 
 /* "::" 5( h16 ":" ) ls32 */
 static CwtFsmTransition ipv6address_fsm_2[] = {
 	  { 1,-1, FSM_MATCH_STR(_T("::"), 2),  FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 3,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 4,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 5,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-	, { 6,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_RPT(h16_semi_fsm, &rpt_55), FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(ls32_fsm),     FSM_ACCEPT, NULL, NULL }
 };
 
@@ -301,59 +359,8 @@ static CwtFsmTransition ipv6address_fsm_2[] = {
 static CwtFsmTransition ipv6address_fsm_3[] = {
       { 1, 1, FSM_MATCH_FSM(h16_fsm),      FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_STR(_T("::"), 2),  FSM_NORMAL, NULL, NULL }
-    , { 3,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , { 4,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , { 5,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
-    , { 6,-1, FSM_MATCH_FSM(h16_semi_fsm), FSM_NORMAL, NULL, NULL }
+    , { 3,-1, FSM_MATCH_RPT(h16_semi_fsm, &rpt_44), FSM_NORMAL, NULL, NULL }
     , {-1,-1, FSM_MATCH_FSM(ls32_fsm),     FSM_ACCEPT, NULL, NULL }
-};
-
-/* *1( h16 ":" ) h16 */
-static CwtFsmRepetitionContext ipv6address_rep_01 = { h16_semi_fsm, 0, 1 };
-static CwtFsmTransition ipv6address_fsm_4_1[] = {
-	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_01), FSM_NORMAL, NULL, NULL }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-};
-
-/* *2( h16 ":" ) h16 */
-static CwtFsmRepetitionContext ipv6address_rep_02 = { h16_semi_fsm, 0, 2 };
-static CwtFsmTransition ipv6address_fsm_5_1[] = {
-	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_02), FSM_NORMAL, NULL, NULL }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-};
-
-/* *3( h16 ":" ) h16 */
-static CwtFsmRepetitionContext ipv6address_rep_03 = { h16_semi_fsm, 0, 3 };
-static CwtFsmTransition ipv6address_fsm_6_1[] = {
-	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_03), FSM_NORMAL, NULL, NULL }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-};
-
-/* *4( h16 ":" ) h16 */
-static CwtFsmRepetitionContext ipv6address_rep_04 = { h16_semi_fsm, 0, 4 };
-static CwtFsmTransition ipv6address_fsm_7_1[] = {
-	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_04), FSM_NORMAL, NULL, NULL }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-};
-
-/* *5( h16 ":" ) h16 */
-static CwtFsmRepetitionContext ipv6address_rep_05 = { h16_semi_fsm, 0, 5 };
-static CwtFsmTransition ipv6address_fsm_8_1[] = {
-	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_05), FSM_NORMAL, NULL, NULL }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-};
-
-/* *6( h16 ":" ) h16 */
-static CwtFsmRepetitionContext ipv6address_rep_06 = { h16_semi_fsm, 0, 6 };
-static CwtFsmTransition ipv6address_fsm_9_1[] = {
-	  { 1, 2, FSM_MATCH_RPT(&ipv6address_rep_06), FSM_NORMAL, NULL, NULL }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm), FSM_ACCEPT, NULL, NULL }
 };
 
 /* [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32 */
@@ -451,46 +458,49 @@ static CwtFsmTransition ipv6address_fsm[] = {
 };
 
 /* "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" ) */
+static CwtFsmTransition ipvfuture_tail_fsm[] = {
+	  {-1, 1, FSM_MATCH_FSM(unreserved_fsm), FSM_ACCEPT, NULL, NULL }
+	, {-1, 2, FSM_MATCH_FSM(sub_delims_fsm), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR(_T(":"), 1),     FSM_ACCEPT, NULL, NULL }
+};
 static CwtFsmTransition ipvfuture_fsm[] = {
-/*0*/  { 1,-1, FSM_MATCH_STR(_T("v"), 1),     FSM_NORMAL, NULL, NULL }
-
-/*1*/, { 3, 2, FSM_MATCH_FSM(HEXDIG_FSM),     FSM_NORMAL, NULL, NULL }
-/*2*/, {-1,-1, FSM_MATCH_NOTHING,             FSM_REJECT, NULL, NULL }
-/*3*/, { 3, 4, FSM_MATCH_FSM(HEXDIG_FSM),     FSM_NORMAL, NULL, NULL }
-
-/*4*/, { 5,-1, FSM_MATCH_STR(_T("."), 1),     FSM_NORMAL, NULL, NULL }
-
-/*5*/, { 8, 6, FSM_MATCH_FSM(unreserved_fsm), FSM_NORMAL, NULL, NULL }
-/*6*/, { 8, 7, FSM_MATCH_FSM(sub_delims_fsm), FSM_NORMAL, NULL, NULL }
-/*7*/, { 8,-1, FSM_MATCH_STR(_T(":"), 1),     FSM_NORMAL, NULL, NULL }
-/*8*/, { 5,-1, FSM_MATCH_NOTHING,             FSM_ACCEPT, NULL, NULL }
+      { 1,-1, FSM_MATCH_STR(_T("v"), 1),                     FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_RPT(HEXDIG_FSM, &rpt_1more),         FSM_NORMAL, NULL, NULL }
+    , { 3,-1, FSM_MATCH_STR(_T("."), 1),                     FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT(ipvfuture_tail_fsm, &rpt_1more), FSM_ACCEPT, NULL, NULL }
 };
 
 /* "[" ( IPv6address / IPvFuture  ) "]" */
+static CwtFsmTransition ip_literal_entry_fsm[] = {
+	  {-1, 1, FSM_MATCH_FSM(ipv6address_fsm), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(ipvfuture_fsm),   FSM_ACCEPT, NULL, NULL }
+};
 static CwtFsmTransition ip_literal_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR(_T("["), 1),      FSM_NORMAL, NULL, NULL }
-	, { 3, 2, FSM_MATCH_FSM(ipv6address_fsm), FSM_NORMAL, NULL, NULL }
-	, { 3,-1, FSM_MATCH_FSM(ipvfuture_fsm),   FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_STR(_T("]"), 1),      FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_STR(_T("["), 1),       FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_FSM(ip_literal_entry_fsm), FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR(_T("]"), 1),       FSM_ACCEPT, NULL, NULL }
 };
 
 /* *( unreserved / pct-encoded / sub-delims ) */
+static CwtFsmTransition reg_name_entry_fsm[] = {
+      {-1, 1, FSM_MATCH_FSM(unreserved_fsm),  FSM_ACCEPT, NULL, NULL }
+    , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_FSM(sub_delims_fsm),  FSM_ACCEPT, NULL, NULL }
+};
 static CwtFsmTransition reg_name_fsm[] = {
-      { 0, 1, FSM_MATCH_FSM(unreserved_fsm),  FSM_NORMAL, NULL, NULL }
-    , { 0, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_NORMAL, NULL, NULL }
-    , { 0, 3, FSM_MATCH_FSM(sub_delims_fsm),  FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_NOTHING,              FSM_ACCEPT, NULL, NULL }
+      {-1,-1, FSM_MATCH_RPT(reg_name_entry_fsm, &rpt_0more), FSM_ACCEPT, NULL, NULL }
 };
 
 /*  host = IP-literal / IPv4address / reg-name */
 static CwtFsmTransition host_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(ip_literal_fsm), FSM_ACCEPT, __set_host_is_ip, NULL}
+	, {-1, 2, FSM_MATCH_FSM(ipv4address_fsm), FSM_ACCEPT, __set_host_is_ip, NULL}
 
-	/* this poses a parsing problem - all IPv4 addresses are valid
+	/* OBSOLETE NOTE: this poses a parsing problem - all IPv4 addresses are valid
 	reg_name as well. Fix this by doing the reg_name_fsm now,
 	then on match, do a function to check if its an IPv4
 	address */
-	, {-1,-1, FSM_MATCH_FSM(reg_name_fsm),   FSM_ACCEPT, __check_host_is_ip, NULL }
+	, {-1,-1, FSM_MATCH_FSM(reg_name_fsm),   FSM_ACCEPT, NULL, NULL }
 };
 
 /* *DIGIT */
@@ -524,26 +534,15 @@ static CwtFsmTransition authority_fsm_1[] = {
 /* [ userinfo "@" ] host [ ":" port ] */
 /* [ authority_fsm_1 ] host [ authority_fsm_2 ] */
 static CwtFsmTransition authority_fsm[] = {
-	  { 1, 1, FSM_MATCH_FSM(authority_fsm_1), FSM_NORMAL, NULL, NULL }
-	, { 2, 3, FSM_MATCH_FSM(host_fsm),        FSM_NORMAL, __set_host, NULL }
-	, {-1, 3, FSM_MATCH_FSM(authority_fsm_2), FSM_ACCEPT, NULL, NULL }
-
-	, { 4, 5, FSM_MATCH_FSM(authority_fsm_1), FSM_NORMAL, NULL, NULL }
-	, {-1, 5, FSM_MATCH_FSM(host_fsm),        FSM_ACCEPT, __set_host, NULL }
-
-	, { 6,-1, FSM_MATCH_NOTHING,              FSM_NORMAL, __unset_userinfo, NULL }
-	, { 7, 8, FSM_MATCH_FSM(host_fsm),        FSM_NORMAL, __set_host, NULL }
-	, {-1, 8, FSM_MATCH_FSM(authority_fsm_2), FSM_ACCEPT, NULL, NULL }
-
-	, { 9,-1, FSM_MATCH_NOTHING,              FSM_NORMAL, __unset_userinfo, NULL }
-	, {-1,-1, FSM_MATCH_FSM(host_fsm),        FSM_ACCEPT, __set_host, NULL }
+	  { 1, 3, FSM_MATCH_RPT(authority_fsm_1, &rpt_01), FSM_NORMAL, NULL, NULL }
+	, { 2, 3, FSM_MATCH_FSM(host_fsm),                 FSM_NORMAL, __set_host, NULL }
+	, {-1, 3, FSM_MATCH_RPT(authority_fsm_2, &rpt_01), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING,                       FSM_REJECT, __unset_userinfo, NULL }
 };
 
 /*  *( "/" segment ) */
 static CwtFsmTransition path_abempty_fsm[] = {
-      { 1, 2, FSM_MATCH_STR(_T("/"), 1),   FSM_NORMAL, NULL, NULL }
-    , { 0,-1, FSM_MATCH_FSM(segment_fsm),  FSM_ACCEPT, NULL, NULL }
-    , {-1,-1, FSM_MATCH_NOTHING,           FSM_ACCEPT, NULL, NULL }
+      {-1,-1, FSM_MATCH_RPT(slash_segment_fsm, &rpt_0more), FSM_ACCEPT, NULL, NULL }
 };
 
 /*
@@ -563,10 +562,12 @@ static CwtFsmTransition relative_part_fsm[] = {
 };
 
 /* *( pchar / "/" / "?" ) */
+static CwtFsmTransition query_chars_fsm[] = {
+	  {-1, 1, FSM_MATCH_FSM(pchar_fsm),    FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_CHAR(_T("/?"), 2), FSM_ACCEPT, NULL, NULL }
+};
 static CwtFsmTransition query_fsm[] = {
-      { 0, 1, FSM_MATCH_FSM(pchar_fsm),    FSM_ACCEPT, NULL, NULL }
-    , { 0, 2, FSM_MATCH_CHAR(_T("/?"), 2), FSM_ACCEPT, NULL, NULL }
-    , {-1,-1, FSM_MATCH_NOTHING,           FSM_ACCEPT, NULL, NULL }
+    {-1,-1, FSM_MATCH_RPT(query_chars_fsm, &rpt_0more), FSM_ACCEPT, NULL, NULL }
 };
 
 /* "?" query */
@@ -577,9 +578,7 @@ static CwtFsmTransition relative_ref_fsm_1[] = {
 
 /* *( pchar / "/" / "?" ) */
 static CwtFsmTransition fragment_fsm[] = {
-	  { 0, 1, FSM_MATCH_FSM(pchar_fsm),    FSM_ACCEPT, NULL, NULL }
-	, { 0, 2, FSM_MATCH_CHAR(_T("/?"), 2), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,           FSM_ACCEPT, NULL, NULL }
+	{-1,-1, FSM_MATCH_RPT(query_chars_fsm, &rpt_0more), FSM_ACCEPT, NULL, NULL }
 };
 
 /* "#" fragment */
@@ -590,27 +589,27 @@ static CwtFsmTransition relative_ref_fsm_2[] = {
 
 /* relative-part [ "?" query ] [ "#" fragment ] */
 static CwtFsmTransition relative_ref_fsm[] = {
-      { 1,-1, FSM_MATCH_FSM(relative_part_fsm),  FSM_NORMAL, NULL, NULL }
-    , { 2, 2, FSM_MATCH_FSM(relative_ref_fsm_1), FSM_NORMAL, NULL, NULL }
-    , { 3, 3, FSM_MATCH_FSM(relative_ref_fsm_2), FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_NOTHING,                 FSM_ACCEPT, NULL, NULL }
+      { 1,-1, FSM_MATCH_FSM(relative_part_fsm),           FSM_NORMAL, NULL, NULL }
+    , { 2,-1, FSM_MATCH_RPT(relative_ref_fsm_1, &rpt_01), FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT(relative_ref_fsm_2, &rpt_01), FSM_ACCEPT, NULL, NULL }
 };
 
 /* ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) */
+static CwtFsmTransition scheme_chars_fsm[] = {
+	  {-1, 1, FSM_MATCH_INLINE(ALPHA_FSM_INL), FSM_ACCEPT, NULL, NULL }
+	, {-1, 2, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_CHAR(_T("+-."), 3),    FSM_ACCEPT, NULL, NULL }
+};
 static CwtFsmTransition scheme_fsm[] =
 {
-	  { 1,-1, FSM_MATCH_INLINE(ALPHA_FSM_INL), FSM_ACCEPT, NULL, NULL }
-    , { 1, 2, FSM_MATCH_INLINE(ALPHA_FSM_INL), FSM_ACCEPT, NULL, NULL }
-    , { 1, 3, FSM_MATCH_INLINE(DIGIT_FSM_INL), FSM_ACCEPT, NULL, NULL }
-    , { 1,-1, FSM_MATCH_CHAR(_T("+-."), 3),    FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_INLINE(ALPHA_FSM_INL), FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT(scheme_chars_fsm, &rpt_0more), FSM_ACCEPT, NULL, NULL }
 };
 
 /* segment-nz *( "/" segment ) */
 static CwtFsmTransition path_rootless_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(segment_nz_fsm), FSM_ACCEPT, NULL, NULL }
-	, { 2, 3, FSM_MATCH_STR(_T("/"), 1),     FSM_NORMAL, NULL, NULL }
-	, { 1,-1, FSM_MATCH_FSM(segment_fsm),    FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,             FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(segment_nz_fsm),                FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT(slash_segment_fsm, &rpt_0more), FSM_ACCEPT, NULL, NULL }
 };
 
 /*
@@ -621,7 +620,7 @@ static CwtFsmTransition path_rootless_fsm[] = {
 */
 static CwtFsmTransition hier_part_fsm[] = {
 	  { 1, 3, FSM_MATCH_STR(_T("//"), 2),       FSM_NORMAL, NULL, NULL }
-	, { 2, 3, FSM_MATCH_FSM(authority_fsm),     FSM_NORMAL, NULL, NULL }
+	, { 2, 3, FSM_MATCH_FSM(authority_fsm),     FSM_NORMAL, __set_path, NULL }
 	, {-1, 3, FSM_MATCH_FSM(path_abempty_fsm),  FSM_ACCEPT, __set_path, NULL }
 
 	, {-1, 4, FSM_MATCH_FSM(path_absolute_fsm), FSM_ACCEPT, __set_path, NULL }
@@ -648,10 +647,8 @@ static CwtFsmTransition uri_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(scheme_fsm),    FSM_NORMAL, __set_scheme, NULL }
     , { 2,-1, FSM_MATCH_STR(_T(":"), 1),    FSM_NORMAL, NULL, NULL }
 	, { 3,-1, FSM_MATCH_FSM(hier_part_fsm), FSM_NORMAL, NULL, NULL }
-
-	, { 4, 4, FSM_MATCH_FSM(uri_fsm_1),     FSM_NORMAL, NULL, NULL }
-	, { 5, 5, FSM_MATCH_FSM(uri_fsm_2),     FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING,            FSM_ACCEPT, NULL, NULL }
+	, { 4,-1, FSM_MATCH_RPT(uri_fsm_1, &rpt_01), FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT(uri_fsm_2, &rpt_01), FSM_ACCEPT, NULL, NULL }
 };
 
 
@@ -709,6 +706,7 @@ static void __set_host_is_ip(const void *data, size_t len, void *context, void *
 	}
 }
 
+/*
 static void __check_host_is_ip(const void *data, size_t len, void *context, void *action_args)
 {
 	ssize_t ret;
@@ -721,6 +719,7 @@ static void __check_host_is_ip(const void *data, size_t len, void *context, void
 		__set_host_is_ip(data, len, context, action_args);
 	}
 }
+*/
 
 
 static void __set_scheme(const void *data, size_t len, void *context, void *action_args)
