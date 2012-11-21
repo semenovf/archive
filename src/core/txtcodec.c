@@ -216,6 +216,7 @@ static CWT_CHAR* __cwt_fromUtf8(const char *utf8, size_t n)
 #		error __toUtf8 is not implemented yet
 #	endif
 #else
+	CWT_UNUSED(utf8_length);
 	/* FIXME need to convert UTF8 to Local8Bit chars */
 	str = strndup(utf8, n);
 #endif

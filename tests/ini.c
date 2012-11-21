@@ -27,12 +27,12 @@ static CWT_CHAR *directives[] = {
 	, _T("directive6\n")
 };
 
-static void __iniOnError(CwtIniHandler *h, const CWT_CHAR *errstr)
+static void __iniOnError(CwtIniContext *h, const CWT_CHAR *errstr)
 {
 	printf_error(_T("%s at line %lu"), errstr, cwtIniNS()->line(h));
 }
 
-static BOOL __onIniDirective1(CwtIniHandler *h, const CWT_CHAR **argv, size_t argc)
+static BOOL __onIniDirective1(CwtIniContext *h, const CWT_CHAR **argv, size_t argc)
 {
 	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 6);
@@ -40,7 +40,7 @@ static BOOL __onIniDirective1(CwtIniHandler *h, const CWT_CHAR **argv, size_t ar
 	return TRUE;
 }
 
-static BOOL __onIniDirective2(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective2(CwtIniContext *h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 5);
@@ -48,7 +48,7 @@ static BOOL __onIniDirective2(CwtIniHandler *h, const CWT_CHAR* argv[], size_t a
 	return TRUE;
 }
 
-static BOOL __onIniDirective3(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective3(CwtIniContext *h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 4);
@@ -56,7 +56,7 @@ static BOOL __onIniDirective3(CwtIniHandler *h, const CWT_CHAR* argv[], size_t a
 	return TRUE;
 }
 
-static BOOL __onIniDirective4(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective4(CwtIniContext *h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 3);
@@ -64,7 +64,7 @@ static BOOL __onIniDirective4(CwtIniHandler *h, const CWT_CHAR* argv[], size_t a
 	return TRUE;
 }
 
-static BOOL __onIniDirective5(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective5(CwtIniContext *h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 2);
@@ -72,7 +72,7 @@ static BOOL __onIniDirective5(CwtIniHandler *h, const CWT_CHAR* argv[], size_t a
 	return TRUE;
 }
 
-static BOOL __onIniDirective6(CwtIniHandler *h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __onIniDirective6(CwtIniContext *h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_UNUSED(h);
 	CWT_TEST_OK(argc == 1);
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 	CwtStrNS     *strNS = cwtStrNS();
 	CwtIniNS     *iniNS = cwtIniNS();
 	CwtTextCodecNS *codecNS = cwtTextCodecNS();
-	CwtIniHandler *ini;
+	CwtIniContext *ini;
 	CwtChannel   *pchan0;
 	CwtChannel   *pchan1;
 

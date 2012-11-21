@@ -60,7 +60,7 @@ static int __server(void)
 
 		  br = socketNS->read(server, buf, 2048);
 
-		  cwtLoggerNS()->debug(_Tr("Received packet from %s:%u\nData: %s\n\n"), inetAddr, inetPort, buf);
+		  cwtLoggerNS()->debug(_Tr("Received packet (%ld) from %s:%u\nData: %s\n\n"), br, inetAddr, inetPort, buf);
 		  socketNS->close(peer);
 		  CWT_TEST_OK(strcmp(loremipsum, (char*)buf) == 0);
 		  CWT_FREE(inetAddr);

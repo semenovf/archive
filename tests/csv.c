@@ -24,12 +24,12 @@ static CwtCsvNS       *__csvNS = NULL;
 static CwtTextCodecNS *__codecNS = NULL;
 
 
-static void __csvOnError(CwtCsvHandler *csv, const CWT_CHAR *errstr)
+static void __csvOnError(CwtCsvContext *csv, const CWT_CHAR *errstr)
 {
 	printf_error(_T("%s at line %lu"), errstr, cwtCsvNS()->line(csv));
 }
 
-static BOOL __csvOnRow(CwtCsvHandler *h, const CWT_CHAR* argv[], size_t argc)
+static BOOL __csvOnRow(CwtCsvContext *h, const CWT_CHAR* argv[], size_t argc)
 {
 	CWT_UNUSED(h);
 
@@ -69,7 +69,7 @@ static void test_00(void)
 	};
 
 	size_t i;
-	CwtCsvHandler *csv;
+	CwtCsvContext *csv;
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 
@@ -107,7 +107,7 @@ static void test_01(void)
 
 	size_t i;
 	size_t nrows;
-	CwtCsvHandler *csv;
+	CwtCsvContext *csv;
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 
@@ -161,7 +161,7 @@ static void test_02(void)
 
 	size_t i;
 	size_t nrows;
-	CwtCsvHandler *csv;
+	CwtCsvContext *csv;
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 
@@ -214,7 +214,7 @@ static void test_03(void)
 
 	size_t i;
 	size_t nrows;
-	CwtCsvHandler *csv;
+	CwtCsvContext *csv;
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 

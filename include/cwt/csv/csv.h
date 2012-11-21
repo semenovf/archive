@@ -14,35 +14,35 @@
 #include <cwt/dbi/ddi.h>
 
 
-typedef struct _CwtCsvHandler {
+typedef struct _CwtCsvContext {
 	CWT_CHAR      *separator;
-} CwtCsvHandler;
+} CwtCsvContext;
 
-typedef BOOL (*CwtCsvCallback)(CwtCsvHandler*, const CWT_CHAR **argv, size_t argc);
+typedef BOOL (*CwtCsvCallback)(CwtCsvContext*, const CWT_CHAR **argv, size_t argc);
 
 typedef struct CwtCsvNS {
-	CwtCsvHandler*  (*create)  (void);
-	CwtCsvHandler*  (*createWithArgs) (const CWT_CHAR *separator, size_t max_tokens);
-	void            (*free)       (CwtCsvHandler*);
-	void            (*write)      (CwtCsvHandler*, CwtChannel*, const CWT_CHAR *argv[], size_t argc);
-	BOOL            (*parse)      (CwtCsvHandler*, CwtChannel*);
-	void            (*setOnRow)   (CwtCsvHandler*, CwtCsvCallback cb);
-	void            (*error)      (CwtCsvHandler*, const CWT_CHAR *format);
-	void            (*setOnError) (CwtCsvHandler*, void (*ecallback)(CwtCsvHandler*, const CWT_CHAR*));
-	size_t          (*line)       (CwtCsvHandler*);
+	CwtCsvContext*  (*create)  (void);
+	CwtCsvContext*  (*createWithArgs) (const CWT_CHAR *separator, size_t max_tokens);
+	void            (*free)       (CwtCsvContext*);
+	void            (*write)      (CwtCsvContext*, CwtChannel*, const CWT_CHAR *argv[], size_t argc);
+	BOOL            (*parse)      (CwtCsvContext*, CwtChannel*);
+	void            (*setOnRow)   (CwtCsvContext*, CwtCsvCallback cb);
+	void            (*error)      (CwtCsvContext*, const CWT_CHAR *format);
+	void            (*setOnError) (CwtCsvContext*, void (*ecallback)(CwtCsvContext*, const CWT_CHAR*));
+	size_t          (*line)       (CwtCsvContext*);
 
 	/* Simple API for CSV (SAC) */
-	void            (*begin)      (CwtCsvHandler*, CwtChannel*);
-	size_t          (*header)     (CwtCsvHandler*);
-	void            (*titles)     (CwtCsvHandler*, CWT_CHAR **argv, size_t argc);
-	BOOL            (*next)       (CwtCsvHandler*);
-	size_t          (*columnsCount) (CwtCsvHandler*);
-	size_t          (*row)        (CwtCsvHandler*, const CWT_CHAR **argv, size_t argc);
-	const CWT_CHAR* (*column)     (CwtCsvHandler*, const CWT_CHAR *name);
+	void            (*begin)      (CwtCsvContext*, CwtChannel*);
+	size_t          (*header)     (CwtCsvContext*);
+	void            (*titles)     (CwtCsvContext*, CWT_CHAR **argv, size_t argc);
+	BOOL            (*next)       (CwtCsvContext*);
+	size_t          (*columnsCount) (CwtCsvContext*);
+	size_t          (*row)        (CwtCsvContext*, const CWT_CHAR **argv, size_t argc);
+	const CWT_CHAR* (*column)     (CwtCsvContext*, const CWT_CHAR *name);
 
-	BOOL            (*persist)    (CwtCsvHandler*, CwtDBHandler *dbh, CwtDDITable *table);
+	BOOL            (*persist)    (CwtCsvContext*, CwtDBHandler *dbh, CwtDDITable *table);
 
-	BOOL            (*setValidator) (CwtCsvHandler*, const CWT_CHAR *name, BOOL (*)(const CWT_CHAR*));
+	BOOL            (*setValidator) (CwtCsvContext*, const CWT_CHAR *name, BOOL (*)(const CWT_CHAR*));
 } CwtCsvNS;
 
 

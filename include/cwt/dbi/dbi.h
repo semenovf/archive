@@ -185,21 +185,21 @@ typedef struct CwtDBI
 	CwtDDITable*    (*findTable)      (CwtDDI*, const CWT_CHAR *name);
 	CwtDDIColumn*   (*findColumn)     (CwtDDITable*, const CWT_CHAR *name);
 
-	BOOL            (*cTypeBool)      (CwtDDIColumn*);
-	BOOL            (*cTypeInt)       (CwtDDIColumn*, LONGLONG min, ULONGLONG max);
-	BOOL            (*cTypeFloat)     (CwtDDIColumn*);
-	BOOL            (*cTypeDouble)    (CwtDDIColumn*);
-	BOOL            (*cTypeDecimal)   (CwtDDIColumn*, UINT prec, UINT scale);
-	BOOL            (*cTypeText)      (CwtDDIColumn*, ULONGLONG maxlen);
-	BOOL            (*cTypeBlob)      (CwtDDIColumn*, ULONGLONG maxlen);
-	BOOL            (*cTypeTime)      (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stamp);
-	BOOL            (*cTypeRef)       (CwtDDIColumn*, CwtDDITable*);
-	BOOL            (*cDefault)       (CwtDDIColumn*, const CWT_CHAR *defaultValue);
-	BOOL            (*cAutoinc)       (CwtDDIColumn*, UINT inc);
-	BOOL            (*cNull)          (CwtDDIColumn*, BOOL yes);
-	BOOL            (*cIndex)         (CwtDDIColumn*, BOOL yes);
-	BOOL            (*cUniq)          (CwtDDIColumn*, BOOL yes);
-	BOOL            (*cPK)            (CwtDDIColumn*);
+	BOOL            (*setColumnTypeBool)    (CwtDDIColumn*);
+	BOOL            (*setColumnTypeInt)     (CwtDDIColumn*, LONGLONG min, ULONGLONG max);
+	BOOL            (*setColumnTypeFloat)   (CwtDDIColumn*);
+	BOOL            (*setColumnTypeDouble)  (CwtDDIColumn*);
+	BOOL            (*setColumnTypeDecimal) (CwtDDIColumn*, UINT prec, UINT scale);
+	BOOL            (*setColumnTypeText)    (CwtDDIColumn*, ULONGLONG maxlen);
+	BOOL            (*setColumnTypeBlob)    (CwtDDIColumn*, ULONGLONG maxlen);
+	BOOL            (*setColumnTypeTime)    (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stamp);
+	BOOL            (*setColumnTypeRef)     (CwtDDIColumn*, CwtDDITable*);
+	BOOL            (*setColumnDefault)     (CwtDDIColumn*, const CWT_CHAR *defaultValue);
+	BOOL            (*setColumnAutoinc)     (CwtDDIColumn*, UINT inc);
+	BOOL            (*setColumnNullable)    (CwtDDIColumn*, BOOL yes);
+	BOOL            (*setColumnIndexable)   (CwtDDIColumn*, BOOL yes);
+	BOOL            (*setColumnUnique)      (CwtDDIColumn*, BOOL yes);
+	BOOL            (*setColumnPK)          (CwtDDIColumn*);
 
 	BOOL            (*deploy)         (CwtDBHandler*, CwtDDI *ddi, int flags);
 	BOOL            (*recall)         (CwtDBHandler*, CwtDDI *ddi, int flags);

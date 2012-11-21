@@ -73,13 +73,13 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 		} else if(CWT_TYPE_IS_FLOAT(col->type)) {
 			typestr = __stringifyFloatType(col->type, col->opts.float_opts.prec, col->opts.float_opts.scale);
 		} else if( CwtType_TEXT == col->type ) {
-			typestr = __stringifyTextType(col->opts.maxlen);
+			typestr = __stringifyTextType(col->opts.text_opts.maxlen);
 		} else if( CwtType_BLOB == col->type ) {
-			typestr = __stringifyBlobType(col->opts.maxlen);
+			typestr = __stringifyBlobType(col->opts.blob_opts.maxlen);
 		} else if( CwtType_TIME == col->type
 				|| CwtType_DATE == col->type
 				|| CwtType_DATETIME == col->type ) {
-			typestr = __stringifyTimeType(col->type, col->opts.stamp);
+			typestr = __stringifyTimeType(col->type, col->opts.time_opts.stamp ? TRUE : FALSE);
 		} else {
 			CWT_ASSERT(FALSE);
 		}
@@ -93,13 +93,13 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 		col = refcol;
 
 
-	if( col->is_null ) {
+	if( col->flags & (UINT32)CwtDdiColumn_Nullable ) {
 		stringNS->append(tmpbuf, _T(" DEFAULT NULL"));
 	} else {
-		if( col->defaultValue ) {
+		if( col->default_value ) {
 			stringNS->append(tmpbuf, _T(" DEFAULT "));
 			stringNS->appendChar(tmpbuf, _T('\''));
-			stringNS->append(tmpbuf, col->defaultValue);
+			stringNS->append(tmpbuf, col->default_value);
 			stringNS->appendChar(tmpbuf, _T('\''));
 		} else {
 			stringNS->append(tmpbuf, _T(" NOT NULL"));
@@ -138,7 +138,7 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 	if( ddi->charset )
 		charset = ddi->charset;
 
-	if( flags & CWT_DDI_DEPLOY_DROP_DB ) {
+	if( flags & CwtDdi_DeployDropDb ) {
 		stringNS->sprintf(tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
     	slNS->add(spec, stringNS->cstr(tmpbuf));
 	}
@@ -154,7 +154,7 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 		CwtDDITable *tab = (CwtDDITable*)slNS->next(&tabIt);
 		CWT_CHAR comma = _T(' ');
 
-		if( flags & CWT_DDI_DEPLOY_DROP_TAB ) {
+		if( flags & CwtDdi_DeployDropTab ) {
 			stringNS->sprintf(tmpbuf, _T("DROP TABLE IF EXISTS `%s`"), tab->name);
 	    	slNS->add(spec, stringNS->cstr(tmpbuf));
 		}
@@ -176,14 +176,14 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 
 			comma = _T(',');
 
-			if( col->is_index ) {
+			if (col->flags & (UINT32)CwtDdiColumn_Indexable) {
 				stringNS->sprintf(tmpbuf, _T("INDEX (`%s`)"), col->name);
 				if( stringNS->size(constraintSpecs) > 0 )
 					stringNS->appendChar(constraintSpecs, _T(','));
 				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
 			}
 
-			if( col->is_uniq ) {
+			if (col->flags & (UINT32)CwtDdiColumn_Unique) {
 				stringNS->sprintf(tmpbuf, _T("UNIQUE KEY `%s` (`%s`)"), col->name, col->name);
 				if( stringNS->size(constraintSpecs) > 0 )
 					stringNS->appendChar(constraintSpecs, _T(','));
@@ -263,7 +263,7 @@ CwtStrList* __dbd_specForRecall(CwtDDI *ddi, int flags)
 	tmpbuf = stringNS->create();
 	spec = slNS->create();
 
-	if( flags & CWT_DDI_RECALL_DROP_DB ) {
+	if( flags & CwtDdi_RecallDropDb ) {
 		stringNS->sprintf(tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
     	slNS->add(spec, stringNS->cstr(tmpbuf));
 	} else {

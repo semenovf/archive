@@ -41,32 +41,32 @@ typedef struct _CwtCsvHandlerImpl {
 	size_t         max_tokens; /* maximum number of tokens in CSV file */
 	size_t         line;
 	CwtCsvCallback on_row;
-	void           (*on_error)(CwtCsvHandler*, const CWT_CHAR*);
+	void           (*on_error)(CwtCsvContext*, const CWT_CHAR*);
 	CsvData        csvData;
 } CwtCsvHandlerImpl;
 
 
-static CwtCsvHandler*  __csv_create   (void);
-static CwtCsvHandler*  __csv_createWithArgs (const CWT_CHAR *separator, size_t max_tokens);
-static void            __csv_free     (CwtCsvHandler*);
-static void            __csv_write    (CwtCsvHandler*, CwtChannel*, const CWT_CHAR *argv[], size_t argc);
-static BOOL            __csv_parse    (CwtCsvHandler*, CwtChannel*);
-static void            __csv_setOnRow (CwtCsvHandler*, CwtCsvCallback cb);
-static void            __csv_error    (CwtCsvHandler*, const CWT_CHAR *errstr);
-static void            __csv_setOnError (CwtCsvHandler*, void (*callback)(CwtCsvHandler*, const CWT_CHAR*));
-static size_t          __csv_line     (CwtCsvHandler*);
+static CwtCsvContext*  __csv_create   (void);
+static CwtCsvContext*  __csv_createWithArgs (const CWT_CHAR *separator, size_t max_tokens);
+static void            __csv_free     (CwtCsvContext*);
+static void            __csv_write    (CwtCsvContext*, CwtChannel*, const CWT_CHAR *argv[], size_t argc);
+static BOOL            __csv_parse    (CwtCsvContext*, CwtChannel*);
+static void            __csv_setOnRow (CwtCsvContext*, CwtCsvCallback cb);
+static void            __csv_error    (CwtCsvContext*, const CWT_CHAR *errstr);
+static void            __csv_setOnError (CwtCsvContext*, void (*callback)(CwtCsvContext*, const CWT_CHAR*));
+static size_t          __csv_line     (CwtCsvContext*);
 
 /* Simple API for CSV (SAC) */
-static void            __csv_begin   (CwtCsvHandler*, CwtChannel*);
-static size_t          __csv_header  (CwtCsvHandler*);
-static void            __csv_titles  (CwtCsvHandler*, CWT_CHAR **argv, size_t argc);
-static BOOL            __csv_next    (CwtCsvHandler*);
-static size_t          __csv_columnsCount (CwtCsvHandler*);
-static size_t          __csv_row     (CwtCsvHandler*, const CWT_CHAR **argv, size_t argc);
-static const CWT_CHAR* __csv_column  (CwtCsvHandler*, const CWT_CHAR *name);
+static void            __csv_begin   (CwtCsvContext*, CwtChannel*);
+static size_t          __csv_header  (CwtCsvContext*);
+static void            __csv_titles  (CwtCsvContext*, CWT_CHAR **argv, size_t argc);
+static BOOL            __csv_next    (CwtCsvContext*);
+static size_t          __csv_columnsCount (CwtCsvContext*);
+static size_t          __csv_row     (CwtCsvContext*, const CWT_CHAR **argv, size_t argc);
+static const CWT_CHAR* __csv_column  (CwtCsvContext*, const CWT_CHAR *name);
 
-static BOOL            __csv_persist (CwtCsvHandler*, CwtDBHandler *dbh, CwtDDITable *table);
-static BOOL            __csv_setValidator (CwtCsvHandler*, const CWT_CHAR *name, BOOL (*)(const CWT_CHAR*));
+static BOOL            __csv_persist (CwtCsvContext*, CwtDBHandler *dbh, CwtDDITable *table);
+static BOOL            __csv_setValidator (CwtCsvContext*, const CWT_CHAR *name, BOOL (*)(const CWT_CHAR*));
 
 /* helper functions */
 static void          __csv_destroyCsvData(CsvData*);
@@ -141,12 +141,12 @@ static void __csv_destroyCsvData(CsvData *data)
 	}
 }
 
-static CwtCsvHandler* __csv_create(void)
+static CwtCsvContext* __csv_create(void)
 {
 	return __csv_createWithArgs(__csv_default_separator, 0);
 }
 
-static CwtCsvHandler* __csv_createWithArgs(const CWT_CHAR *separator, size_t max_tokens)
+static CwtCsvContext* __csv_createWithArgs(const CWT_CHAR *separator, size_t max_tokens)
 {
 	CwtCsvHandlerImpl *h;
 	h = CWT_MALLOC(CwtCsvHandlerImpl);
@@ -162,11 +162,11 @@ static CwtCsvHandler* __csv_createWithArgs(const CWT_CHAR *separator, size_t max
 	__strNS->bzero(&h->csvData, sizeof(CsvData));
 	/*h->csvData    = NULL;*/
 
-	return (CwtCsvHandler*)h;
+	return (CwtCsvContext*)h;
 }
 
 
-static void __csv_free(CwtCsvHandler *h)
+static void __csv_free(CwtCsvContext *h)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	if( h ) {
@@ -180,7 +180,7 @@ static void __csv_free(CwtCsvHandler *h)
 	}
 }
 
-static void __csv_write(CwtCsvHandler *h, CwtChannel *pchan, const CWT_CHAR* argv[], size_t argc)
+static void __csv_write(CwtCsvContext *h, CwtChannel *pchan, const CWT_CHAR* argv[], size_t argc)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	CwtString         *s;
@@ -210,7 +210,7 @@ static void __csv_write(CwtCsvHandler *h, CwtChannel *pchan, const CWT_CHAR* arg
 	__stringNS->free(s);
 }
 
-static BOOL __csv_parse(CwtCsvHandler *h, CwtChannel *pchan)
+static BOOL __csv_parse(CwtCsvContext *h, CwtChannel *pchan)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	CwtByteArray   *ba;
@@ -312,14 +312,14 @@ static BOOL __csv_parse(CwtCsvHandler *h, CwtChannel *pchan)
 }
 
 
-static void __csv_setOnRow(CwtCsvHandler *h, CwtCsvCallback cb)
+static void __csv_setOnRow(CwtCsvContext *h, CwtCsvCallback cb)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	ph->on_row = cb;
 }
 
 
-static void __csv_error(CwtCsvHandler *h, const CWT_CHAR *errstr)
+static void __csv_error(CwtCsvContext *h, const CWT_CHAR *errstr)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 
@@ -329,7 +329,7 @@ static void __csv_error(CwtCsvHandler *h, const CWT_CHAR *errstr)
 		ph->on_error(h, errstr);
 }
 
-static void __csv_setOnError(CwtCsvHandler *h, void (*callback)(CwtCsvHandler*, const CWT_CHAR*))
+static void __csv_setOnError(CwtCsvContext *h, void (*callback)(CwtCsvContext*, const CWT_CHAR*))
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 
@@ -337,14 +337,14 @@ static void __csv_setOnError(CwtCsvHandler *h, void (*callback)(CwtCsvHandler*, 
 	ph->on_error = callback;
 }
 
-static size_t __csv_line(CwtCsvHandler *h)
+static size_t __csv_line(CwtCsvContext *h)
 {
 	CWT_ASSERT(h);
 	return ((CwtCsvHandlerImpl*)h)->line;
 }
 
 
-static void __csv_begin(CwtCsvHandler *h, CwtChannel *pchan)
+static void __csv_begin(CwtCsvContext *h, CwtChannel *pchan)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 
@@ -360,7 +360,7 @@ static void __csv_begin(CwtCsvHandler *h, CwtChannel *pchan)
 	ph->csvData.columns = __htNS->create(__htNS->strHash, __htNS->streq, cwtFree, cwtFree);
 }
 
-static size_t __csv_header(CwtCsvHandler *h)
+static size_t __csv_header(CwtCsvContext *h)
 {
 	if( __csv_next(h) ) {
 		CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
@@ -406,7 +406,7 @@ static size_t __csv_header(CwtCsvHandler *h)
  * CWT_FREE(titles);
  * @endcode
  */
-static void __csv_titles(CwtCsvHandler *h, CWT_CHAR **argv, size_t argc)
+static void __csv_titles(CwtCsvContext *h, CWT_CHAR **argv, size_t argc)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	size_t count;
@@ -427,7 +427,7 @@ static void __csv_titles(CwtCsvHandler *h, CWT_CHAR **argv, size_t argc)
 	}
 }
 
-static BOOL __csv_next(CwtCsvHandler *h)
+static BOOL __csv_next(CwtCsvContext *h)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	BOOL esc = FALSE;
@@ -518,7 +518,7 @@ static BOOL __csv_next(CwtCsvHandler *h)
  * @param h CSV handler
  * @return number of columns (fields) in the row
  */
-static size_t __csv_columnsCount(CwtCsvHandler *h)
+static size_t __csv_columnsCount(CwtCsvContext *h)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	CWT_ASSERT(h);
@@ -533,7 +533,7 @@ static size_t __csv_columnsCount(CwtCsvHandler *h)
  * @param argc
  * @return actual Number of columns.
  */
-static size_t __csv_row(CwtCsvHandler *h, const CWT_CHAR **argv, size_t argc)
+static size_t __csv_row(CwtCsvContext *h, const CWT_CHAR **argv, size_t argc)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	size_t count;
@@ -567,7 +567,7 @@ static size_t __csv_row(CwtCsvHandler *h, const CWT_CHAR **argv, size_t argc)
  * @param name Name of the column.
  * @return Value of the column specified by name @c name or NULL if column not found.
  */
-static const CWT_CHAR* __csv_column(CwtCsvHandler *h, const CWT_CHAR* name)
+static const CWT_CHAR* __csv_column(CwtCsvContext *h, const CWT_CHAR* name)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	CsvColumn  *column;
@@ -602,7 +602,7 @@ static const CWT_CHAR* __csv_column(CwtCsvHandler *h, const CWT_CHAR* name)
 	return val;
 }
 
-static BOOL __csv_persist (CwtCsvHandler *csv, CwtDBHandler *dbh, CwtDDITable *table)
+static BOOL __csv_persist (CwtCsvContext *csv, CwtDBHandler *dbh, CwtDDITable *table)
 {
 	CwtUniTypeNS *utNS = cwtUniTypeNS();
 	CwtDBI       *dbi  = cwtDBI();
@@ -714,7 +714,7 @@ static BOOL __csv_persist (CwtCsvHandler *csv, CwtDBHandler *dbh, CwtDDITable *t
 }
 
 
-static BOOL __csv_setValidator (CwtCsvHandler *h, const CWT_CHAR* name, BOOL (*validator)(const CWT_CHAR*))
+static BOOL __csv_setValidator (CwtCsvContext *h, const CWT_CHAR* name, BOOL (*validator)(const CWT_CHAR*))
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	CsvColumn  *column;

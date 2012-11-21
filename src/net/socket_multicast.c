@@ -230,7 +230,7 @@ ssize_t __socket_readMcastSocket(CwtSocket *sd, BYTE *buf, size_t sz)
 ssize_t __socket_writeMcastSocket(CwtSocket *sd, const BYTE *buf, size_t sz)
 {
 	CwtMcastSocket *msd = (CwtMcastSocket*)sd;
-	ssize_t bw;
+	ssize_t bw = (ssize_t)-1;
 
 	CWT_ASSERT(sd);
 	CWT_ASSERT(sz <= CWT_INT_MAX);
@@ -242,7 +242,6 @@ ssize_t __socket_writeMcastSocket(CwtSocket *sd, const BYTE *buf, size_t sz)
 	} else {
 		/* FIXME need to implement */
 	}
-    /*return bw;*/
 
-	return -1;
+    return bw;
 }

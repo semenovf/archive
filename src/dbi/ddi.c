@@ -16,7 +16,7 @@ static CwtStrNS  *__strNS = NULL;
 static CwtListNS *__listNS = NULL;
 
 
-static inline void __clear_type(CwtDDIColumn *col)
+static void clear_type(CwtDDIColumn *col)
 {
 	CWT_ASSERT(col);
 
@@ -39,7 +39,7 @@ static inline void __clear_type(CwtDDIColumn *col)
 }
 
 
-static void __ddi_cleanupTable(void *tab)
+static void cleanup_table(void *tab)
 {
 	CwtDDITable *t = (CwtDDITable*)tab;
 
@@ -49,21 +49,21 @@ static void __ddi_cleanupTable(void *tab)
 }
 
 
-static void __ddi_cleanupColumn(void *col)
+static void cleanup_column(void *col)
 {
 	CwtDDIColumn *c = (CwtDDIColumn*)col;
 
 	if( c->name )
 		CWT_FREE(c->name);
-	if( c->defaultValue )
-		CWT_FREE(c->defaultValue);
+	if( c->default_value )
+		CWT_FREE(c->default_value);
 
 	/*CWT_FREE(c);*/
 }
 
 
 
-CwtDDI* __ddi_createDDI(const CWT_CHAR *name, const CWT_CHAR *charset)
+CwtDDI* ddi_create_DDI(const CWT_CHAR *name, const CWT_CHAR *charset)
 {
 	CwtDDI *ddi = CWT_MALLOC(CwtDDI);
 
@@ -75,11 +75,11 @@ CwtDDI* __ddi_createDDI(const CWT_CHAR *name, const CWT_CHAR *charset)
 	__strNS->bzero(ddi, sizeof(CwtDDI));
 	ddi->name = __strNS->strDup(name);
 	ddi->charset = __strNS->strDup(charset);
-	ddi->tables = __listNS->create(sizeof(CwtDDITable), __ddi_cleanupTable);
+	ddi->tables = __listNS->create(sizeof(CwtDDITable), cleanup_table);
 	return ddi;
 }
 
-void __ddi_freeDDI(CwtDDI *ddi)
+void ddi_free_DDI(CwtDDI *ddi)
 {
 	CWT_ASSERT(ddi);
 
@@ -95,7 +95,7 @@ void __ddi_freeDDI(CwtDDI *ddi)
 	CWT_FREE(ddi);
 }
 
-CwtDDITable* __ddi_newTable(CwtDDI *ddi, const CWT_CHAR *name)
+CwtDDITable* ddi_new_table(CwtDDI *ddi, const CWT_CHAR *name)
 {
 	CwtDDITable tab;
 
@@ -104,14 +104,14 @@ CwtDDITable* __ddi_newTable(CwtDDI *ddi, const CWT_CHAR *name)
 
 	__strNS->bzero(&tab, sizeof(CwtDDITable));
 	tab.name = __strNS->strDup(name);
-	tab.columns = __listNS->create(sizeof(CwtDDIColumn), __ddi_cleanupColumn);
+	tab.columns = __listNS->create(sizeof(CwtDDIColumn), cleanup_column);
 
 	__listNS->append(ddi->tables, &tab);
 
 	return __listNS->last(ddi->tables);
 }
 
-CwtDDIColumn* __ddi_newColumn(CwtDDITable *tab, const CWT_CHAR *name)
+CwtDDIColumn* ddi_new_column(CwtDDITable *tab, const CWT_CHAR *name)
 {
 	CwtDDIColumn col;
 
@@ -128,7 +128,7 @@ CwtDDIColumn* __ddi_newColumn(CwtDDITable *tab, const CWT_CHAR *name)
 }
 
 
-CwtDDITable* __ddi_findTable(CwtDDI *ddi, const CWT_CHAR *name)
+CwtDDITable* ddi_find_table(CwtDDI *ddi, const CWT_CHAR *name)
 {
 	CwtListIterator it;
 
@@ -147,7 +147,7 @@ CwtDDITable* __ddi_findTable(CwtDDI *ddi, const CWT_CHAR *name)
 	return NULL;
 }
 
-CwtDDIColumn* __ddi_findColumn(CwtDDITable *tab, const CWT_CHAR *name)
+CwtDDIColumn* ddi_find_column(CwtDDITable *tab, const CWT_CHAR *name)
 {
 	CwtListIterator it;
 
@@ -166,62 +166,62 @@ CwtDDIColumn* __ddi_findColumn(CwtDDITable *tab, const CWT_CHAR *name)
 	return NULL;
 }
 
-BOOL __ddi_cTypeBool(CwtDDIColumn *col)
+BOOL ddi_set_type_bool(CwtDDIColumn *col)
 {
-	__clear_type(col);
+	clear_type(col);
 	col->type = CwtType_BOOL;
 	return TRUE;
 }
 
-BOOL __ddi_cTypeInt(CwtDDIColumn *col, LONGLONG min, ULONGLONG max)
+BOOL ddi_set_type_int(CwtDDIColumn *col, LONGLONG min, ULONGLONG max)
 {
-	__clear_type(col);
+	clear_type(col);
 	col->type = CwtType_INT;
 	col->opts.int_opts.min = min;
 	col->opts.int_opts.max = max;
 	return TRUE;
 }
 
-BOOL __ddi_cTypeFloat(CwtDDIColumn *col)
+BOOL ddi_set_type_float(CwtDDIColumn *col)
 {
-	__clear_type(col);
+	clear_type(col);
 	col->type = CwtType_FLOAT;
 	col->opts.float_opts.prec = 0;
 	col->opts.float_opts.scale = 0;
 	return TRUE;
 }
 
-BOOL __ddi_cTypeDouble(CwtDDIColumn *col)
+BOOL ddi_set_type_double(CwtDDIColumn *col)
 {
-	__clear_type(col);
+	clear_type(col);
 	col->type = CwtType_DOUBLE;
 	col->opts.float_opts.prec = 0;
 	col->opts.float_opts.scale = 0;
 	return TRUE;
 }
 
-BOOL __ddi_cTypeDecimal(CwtDDIColumn *col, UINT prec, UINT scale)
+BOOL ddi_set_type_decimal(CwtDDIColumn *col, UINT prec, UINT scale)
 {
-	__clear_type(col);
+	clear_type(col);
 	col->type = CwtType_DOUBLE;
 	col->opts.float_opts.prec = prec;
 	col->opts.float_opts.scale = scale;
 	return TRUE;
 }
 
-BOOL __ddi_cTypeText(CwtDDIColumn *col, ULONGLONG maxlen)
+BOOL ddi_set_type_text(CwtDDIColumn *col, ULONGLONG maxlen)
 {
-	__clear_type(col);
+	clear_type(col);
 	col->type = CwtType_TEXT;
-	col->opts.maxlen = maxlen;
+	col->opts.text_opts.maxlen = maxlen;
 	return TRUE;
 }
 
-BOOL __ddi_cTypeBlob(CwtDDIColumn *col, ULONGLONG maxlen)
+BOOL ddi_set_type_blob(CwtDDIColumn *col, ULONGLONG maxlen)
 {
-	__clear_type(col);
+	clear_type(col);
 	col->type = CwtType_BLOB;
-	col->opts.maxlen = maxlen;
+	col->opts.blob_opts.maxlen = maxlen;
 	return TRUE;
 }
 
@@ -234,16 +234,16 @@ BOOL __ddi_cTypeBlob(CwtDDIColumn *col, ULONGLONG maxlen)
  * @param stamp if @c TRUE it is transformed into TIMESTAMP
  * @return
  */
-BOOL __ddi_cTypeTime(CwtDDIColumn *col, CwtTypeEnum time_type, BOOL stamp)
+BOOL ddi_set_type_time(CwtDDIColumn *col, CwtTypeEnum time_type, BOOL stamp)
 {
-	__clear_type(col);
+	clear_type(col);
 
 	switch(time_type) {
 	case CwtType_TIME:
 	case CwtType_DATE:
 	case CwtType_DATETIME:
 		col->type = time_type;
-		col->opts.stamp = stamp;
+		col->opts.time_opts.stamp = stamp ? 1ULL : 0ULL;
 		return TRUE;
 	default:
 		break;
@@ -251,9 +251,9 @@ BOOL __ddi_cTypeTime(CwtDDIColumn *col, CwtTypeEnum time_type, BOOL stamp)
 	return FALSE;
 }
 
-BOOL __ddi_cTypeRef(CwtDDIColumn *col, CwtDDITable *ref)
+BOOL ddi_set_type_ref(CwtDDIColumn *col, CwtDDITable *ref)
 {
-	__clear_type(col);
+	clear_type(col);
 
 	CWT_ASSERT(ref);
 	CWT_ASSERT(ref->name);
@@ -270,16 +270,16 @@ BOOL __ddi_cTypeRef(CwtDDIColumn *col, CwtDDITable *ref)
 	return TRUE;
 }
 
-BOOL __ddi_cDefault(CwtDDIColumn *col, const CWT_CHAR *defaultValue)
+BOOL ddi_set_default(CwtDDIColumn *col, const CWT_CHAR *defaultValue)
 {
 	CWT_ASSERT(col);
-	if( col->defaultValue )
-		CWT_FREE(col->defaultValue);
-	col->defaultValue = cwtStrNS()->strDup(defaultValue);
+	if( col->default_value )
+		CWT_FREE(col->default_value);
+	col->default_value = cwtStrNS()->strDup(defaultValue);
 	return TRUE;
 }
 
-BOOL __ddi_cAutoinc (CwtDDIColumn *col, UINT inc)
+BOOL ddi_set_autoinc (CwtDDIColumn *col, UINT inc)
 {
 	CWT_ASSERT(col);
 	CWT_ASSERT(col->name);
@@ -292,32 +292,51 @@ BOOL __ddi_cAutoinc (CwtDDIColumn *col, UINT inc)
 	return TRUE;
 }
 
-BOOL __ddi_cNull(CwtDDIColumn *col, BOOL yes)
+BOOL ddi_set_nullable(CwtDDIColumn *col, BOOL yes)
 {
 	CWT_ASSERT(col);
-	col->is_null = yes ? 1 : 0;
+	if( yes )
+		col->flags |= ((UINT32)CwtDdiColumn_Nullable);
+	else
+		col->flags &= ~((UINT32)CwtDdiColumn_Nullable);
 	return TRUE;
 }
 
-BOOL __ddi_cIndex(CwtDDIColumn *col, BOOL yes)
+BOOL ddi_set_indexable(CwtDDIColumn *col, BOOL yes)
 {
 	CWT_ASSERT(col);
-	col->is_index = yes ? 1 : 0;
+	if( yes )
+		col->flags |= ((UINT32)CwtDdiColumn_Indexable);
+	else
+		col->flags &= ~((UINT32)CwtDdiColumn_Indexable);
 	return TRUE;
 }
 
 
-BOOL __ddi_cUniq(CwtDDIColumn *col, BOOL yes)
+BOOL ddi_set_unique(CwtDDIColumn *col, BOOL yes)
 {
 	CWT_ASSERT(col);
-	col->is_uniq = yes ? 1 : 0;
+	if( yes ) {
+		col->flags |= ((UINT32)CwtDdiColumn_Unique);
+	} else {
+		if( col->pOwner->pPK && col->pOwner->pPK == col ) {
+			col->pOwner->pPK = NULL;
+		}
+		col->flags &= ~((UINT32)CwtDdiColumn_PK);
+	}
 	return TRUE;
 }
 
-BOOL __ddi_cPK(CwtDDIColumn *col)
+BOOL ddi_set_pk(CwtDDIColumn *col)
 {
 	CWT_ASSERT(col);
+	if( col->pOwner->pPK && col->pOwner->pPK != col ) {
+		col->pOwner->pPK->flags |= ~((UINT32)CwtDdiColumn_PK);
+		ddi_set_unique(col->pOwner->pPK, TRUE);
+	}
+
 	col->pOwner->pPK = col;
+	col->flags |= ((UINT32)CwtDdiColumn_PK);
 	return TRUE;
 }
 
@@ -349,12 +368,12 @@ static BOOL __ddi_exec_queries(CwtDBHandler *dbh, CwtDDI *ddi, int flags, CwtStr
 }
 
 
-BOOL __ddi_deploy(CwtDBHandler *dbh, CwtDDI *ddi, int flags)
+BOOL ddi_deploy(CwtDBHandler *dbh, CwtDDI *ddi, int flags)
 {
 	return __ddi_exec_queries(dbh, ddi, flags, dbh->driver()->specForDeploy);
 }
 
-BOOL __ddi_recall(CwtDBHandler *dbh, CwtDDI *ddi, int flags)
+BOOL ddi_recall(CwtDBHandler *dbh, CwtDDI *ddi, int flags)
 {
 	return __ddi_exec_queries(dbh, ddi, flags, dbh->driver()->specForRecall);
 }

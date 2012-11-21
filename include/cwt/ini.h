@@ -18,27 +18,27 @@ typedef enum _CwtIniFlag {
 	, Cwt_IniFlag_DirectiveIgnoreUnknown = 0x02
 } CwtIniFlag;
 
-typedef struct _CwtIniHandler {
+typedef struct _CwtIniContext {
 	size_t        max_tokens; /* maximum number of tokens in INI file instruction line */
 	UINT          flags;
 	CwtChannel   *pchan;
 	size_t        line;
 	CwtHashTable *directives;
-	BOOL        (*defaultCallback)(struct _CwtIniHandler*, const CWT_CHAR **argv, size_t argc);
-	void        (*onError)(struct _CwtIniHandler*, const CWT_CHAR*);
-} CwtIniHandler;
+	BOOL        (*defaultCallback)(struct _CwtIniContext*, const CWT_CHAR **argv, size_t argc);
+	void        (*onError)(struct _CwtIniContext*, const CWT_CHAR*);
+} CwtIniContext;
 
-typedef BOOL (*CwtIniCallback)(struct _CwtIniHandler*, const CWT_CHAR **argv, size_t argc);
+typedef BOOL (*CwtIniCallback)(struct _CwtIniContext*, const CWT_CHAR **argv, size_t argc);
 
 typedef struct CwtIniNS {
-	struct _CwtIniHandler* (*create)  (void);
-	struct _CwtIniHandler* (*createWithFlags) (UINT flags, size_t max_tokens);
-	void          (*free)    (struct _CwtIniHandler*);
-	BOOL          (*parse)   (struct _CwtIniHandler*, CwtChannel*);
-	void          (*error)   (struct _CwtIniHandler*, const CWT_CHAR *errstr);
-	void          (*addDirective) (struct _CwtIniHandler*, const CWT_CHAR *directive, CwtIniCallback handler);
-	void          (*setDefaultDirective) (struct _CwtIniHandler*, CwtIniCallback handler);
-	size_t        (*line)    (struct _CwtIniHandler*);
+	struct _CwtIniContext* (*create)  (void);
+	struct _CwtIniContext* (*createWithFlags) (UINT flags, size_t max_tokens);
+	void          (*free)    (struct _CwtIniContext*);
+	BOOL          (*parse)   (struct _CwtIniContext*, CwtChannel*);
+	void          (*error)   (struct _CwtIniContext*, const CWT_CHAR *errstr);
+	void          (*addDirective) (struct _CwtIniContext*, const CWT_CHAR *directive, CwtIniCallback handler);
+	void          (*setDefaultDirective) (struct _CwtIniContext*, CwtIniCallback handler);
+	size_t        (*line)    (struct _CwtIniContext*);
 } CwtIniNS;
 
 
