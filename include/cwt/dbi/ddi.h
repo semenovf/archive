@@ -23,12 +23,10 @@ typedef enum _CwtDdiColumnFlag {
 	  CwtDdiColumn_General    = 0
 	, CwtDdiColumn_Unique     = 0x0001
 	, CwtDdiColumn_PK         = 0x0002 | CwtDdiColumn_Unique /* + Unique */
-	, CwtDdiColumn_FK         = 0x0004 /* used only in persistence specification */
-	                                   /* to reserve column as reference (Foreign Key) */
-	, CwtDdiColumn_Indexable  = 0x0008
-	, CwtDdiColumn_Nullable   = 0x0010
-	, CwtDdiColumn_Insertable = 0x0020 /* TODO not used yet */
-	, CwtDdiColumn_Updatable  = 0x0040 /* TODO not used yet */
+	, CwtDdiColumn_Indexable  = 0x0004
+	, CwtDdiColumn_Nullable   = 0x0008
+	, CwtDdiColumn_Insertable = 0x0010 /* TODO not used yet */
+	, CwtDdiColumn_Updatable  = 0x0020 /* TODO not used yet */
 } CwtDdiColumnFlag;
 
 struct _CwtDDITable;
@@ -46,33 +44,43 @@ typedef union _CwtDDIColumnOpts {
 	struct _CwtDDIColumnTimeOpts  time_opts;
 } CwtDDIColumnOpts;
 
-#define CWT_DDI_INT_OPTS(_min,_max)       {{(ULONGLONG)_max     , (LONGLONG)_min}}
-#define CWT_DDI_FLOAT_OPTS(_prec,_scale)  {{(ULONGLONG)_prec    , (LONGLONG)_scale}}
-#define CWT_DDI_FLOAT_OPTS_DEFAULT        {{0ULL                , 0LL}}
-#define CWT_DDI_TEXT_OPTS(_maxlen)        {{(ULONGLONG)_maxlen  , 0LL}}
-#define CWT_DDI_BLOB_OPTS(_maxlen)        {{(ULONGLONG)_maxlen  , 0LL}}
-#define CWT_DDI_TIME_OPTS(is_stamp)       {{(ULONGLONG)is_stamp , 0LL}}
-#define CWT_DDI_BOOL_OPTS                 {{0ULL                , 0LL}}
-#define CWT_DDI_FKL_OPTS                  {{0ULL                , 0LL}}
+#define CWT_DDI_INT(_min,_max,_autoinc)        NULL , CwtType_INT      , {{(ULONGLONG)_max     , (LONGLONG)_min}}   , _autoinc  , NULL
+#define CWT_DDI_FLOAT(_prec,_scale,_autoinc)   NULL , CwtType_FLOAT    , {{(ULONGLONG)_prec    , (LONGLONG)_scale}} , _autoinc  , NULL
+#define CWT_DDI_DOUBLE(_prec,_scale,_autoinc)  NULL , CwtType_DOUBLE   , {{(ULONGLONG)_prec    , (LONGLONG)_scale}} , _autoinc  , NULL
+#define CWT_DDI_TEXT(_maxlen)                  NULL , CwtType_TEXT     , {{(ULONGLONG)_maxlen  , 0LL}}              , 0         , NULL
+#define CWT_DDI_BLOB(_maxlen)                  NULL , CwtType_BLOB     , {{(ULONGLONG)_maxlen  , 0LL}}              , 0         , NULL
+#define CWT_DDI_TIME(is_stamp)                 NULL , CwtType_TIME     , {{(ULONGLONG)is_stamp , 0LL}}              , 0         , NULL
+#define CWT_DDI_DATE(is_stamp)                 NULL , CwtType_DATE     , {{(ULONGLONG)is_stamp , 0LL}}              , 0         , NULL
+#define CWT_DDI_DATETIME(is_stamp)             NULL , CwtType_DATETIME , {{(ULONGLONG)is_stamp , 0LL}}              , 0         , NULL
+#define CWT_DDI_REF(_entity)                   NULL , CwtType_UNKNOWN  , {{0ULL                , 0LL}}              , 0         , (CwtDDITable*)_entity
+#define CWT_DDI_BOOL                           NULL , CwtType_BOOL     , {{0ULL                , 0LL}}              , 0         , NULL
+#define CWT_DDI_BOOL_TRUE                      _T("1")
+#define CWT_DDI_BOOL_FALSE                     _T("0")
+#define CWT_DDI_NULL_ENTRY                     { NULL, CWT_DDI_BOOL, CwtDdiColumn_General, NULL, NULL }
 
 typedef struct _CwtDDIColumn {
-	struct _CwtDDITable *pOwner;
 	CWT_CHAR            *name;
+	struct _CwtDDITable *owner_ptr;
 	CwtTypeEnum          type;
-	struct _CwtDDITable *pRef;
 	CwtDDIColumnOpts     opts;
-
-	CWT_CHAR *default_value;
-	UINT autoinc; /* AUTO_INCREMENT value, valid for integer or floating point number, 0 - no auto increment */
-	UINT32 flags; /* see CwtDdiColumnFlag */
-} CwtDDIColumn;
+	UINT                 autoinc; /* AUTO_INCREMENT value, valid for integer or floating point number, 0 - no auto increment */
+	struct _CwtDDITable *ref_ptr;
+	UINT32               flags;   /* see CwtDdiColumnFlag */
+	CWT_CHAR            *default_value;
+} CwtDDIColumn, CwtPersistEntry;
 
 typedef struct _CwtDDITable {
 	CWT_CHAR     *name;
-	CwtDDIColumn *pPK; /* Primary key */
-	CwtDDIColumn *pAutoinc;
+	CwtDDIColumn *pk_ptr;      /* pointer to the primary key column */
+	CwtDDIColumn *autoinc_ptr; /* pointer to the autoincremented column */
 	CwtList      *columns;
 } CwtDDITable;
+
+typedef struct _CwtPersistEntity {
+	CWT_CHAR        *name;
+	CwtPersistEntry *entries;
+	CwtDDITable     *table_ptr;
+} CwtPersistEntity;
 
 
 typedef struct _CwtDDI {

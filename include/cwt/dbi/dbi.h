@@ -179,13 +179,16 @@ typedef struct CwtDBI
 
 	/* DDI specific methods */
 	CwtDDI*         (*createDDI)      (const CWT_CHAR *name, const CWT_CHAR *charset);
+	CwtDDI*         (*buildDDI)       (const CWT_CHAR *name, const CWT_CHAR *charset, CwtPersistEntity *entities);
 	void            (*freeDDI)        (CwtDDI*);
+
 	CwtDDITable*    (*newTable)       (CwtDDI*, const CWT_CHAR *name);
 	CwtDDIColumn*   (*newColumn)      (CwtDDITable*, const CWT_CHAR *name);
 	CwtDDITable*    (*findTable)      (CwtDDI*, const CWT_CHAR *name);
 	CwtDDIColumn*   (*findColumn)     (CwtDDITable*, const CWT_CHAR *name);
 
 	BOOL            (*setColumnTypeBool)    (CwtDDIColumn*);
+	BOOL            (*setColumnTypeChar)    (CwtDDIColumn*);
 	BOOL            (*setColumnTypeInt)     (CwtDDIColumn*, LONGLONG min, ULONGLONG max);
 	BOOL            (*setColumnTypeFloat)   (CwtDDIColumn*);
 	BOOL            (*setColumnTypeDouble)  (CwtDDIColumn*);

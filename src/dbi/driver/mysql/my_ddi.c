@@ -49,13 +49,13 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 	stringNS->append(tmpbuf, col->name);
 	stringNS->appendChar(tmpbuf, _T(' '));
 
-	if( col->pRef ) {
+	if( col->ref_ptr ) {
 		int n = (int)slNS->size(ddi->tables);
 
 		refcol = col;
 
-		while( col->pRef && n-- ) {
-			col = col->pRef->pPK;
+		while( col->ref_ptr && n-- ) {
+			col = col->ref_ptr->pk_ptr;
 		}
 
 		if( n <= 0 ) {
@@ -190,7 +190,7 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
 			}
 
-			if( col->pRef ) {
+			if( col->ref_ptr ) {
 				if( stringNS->size(constraintSpecs) > 0 )
 					stringNS->append(constraintSpecs, _T(", "));
 
@@ -199,7 +199,7 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
 
 				stringNS->sprintf(tmpbuf, _T("CONSTRAINT `FK_%s__%s` FOREIGN KEY (`%s`) REFERENCES `%s` (`%s`)")
-					, tab->name, col->name, col->name, col->pRef->name, col->pRef->pPK->name);
+					, tab->name, col->name, col->name, col->ref_ptr->name, col->ref_ptr->pk_ptr->name);
 				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
 			}
 		}
@@ -207,10 +207,10 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 		if( !ok )
 			break;
 
-		if( tab->pPK ) {
+		if( tab->pk_ptr ) {
 			stringNS->append(columnSpecs, _T(", "));
 			stringNS->append(columnSpecs, _T("PRIMARY KEY ("));
-			stringNS->append(columnSpecs, tab->pPK->name);
+			stringNS->append(columnSpecs, tab->pk_ptr->name);
 			stringNS->appendChar(columnSpecs, _T(')'));
 		}
 
@@ -229,8 +229,8 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 		stringNS->appendChar(columnSpecs, _T(')'));
 		stringNS->append(columnSpecs, _T(" ENGINE="));
 		stringNS->append(columnSpecs, __MYSQL_DEFAULT_DB_ENGINE);
-		if( tab->pAutoinc ) {
-			stringNS->sprintf(tmpbuf, _T(" AUTO_INCREMENT=%d"), tab->pAutoinc->autoinc);
+		if( tab->autoinc_ptr ) {
+			stringNS->sprintf(tmpbuf, _T(" AUTO_INCREMENT=%d"), tab->autoinc_ptr->autoinc);
 			stringNS->append(columnSpecs, stringNS->cstr(tmpbuf));
 		}
 
@@ -283,7 +283,7 @@ CwtStrList* __dbd_specForRecall(CwtDDI *ddi, int flags)
 			while( slNS->hasMore(&colIt) ) {
 				CwtDDIColumn *col = (CwtDDIColumn*)slNS->next(&colIt);
 
-				if( col->pRef ) {
+				if( col->ref_ptr ) {
 					stringNS->sprintf(tmpbuf, _T("ALTER TABLE `%s` DROP FOREIGN KEY `FK_%s__%s`")
 						, tab->name, tab->name, col->name );
 					slNS->add(spec, stringNS->cstr(tmpbuf));

@@ -23,15 +23,15 @@ static void clear_type(CwtDDIColumn *col)
 	/* clear autoinc */
 	if( !(CWT_TYPE_IS_INTEGER(col->type) || CWT_TYPE_IS_FLOAT(col->type)) ) {
 		col->autoinc = 0;
-		if( col->pOwner->pAutoinc == col )
-			col->pOwner->pAutoinc = NULL;
+		if( col->owner_ptr->autoinc_ptr == col )
+			col->owner_ptr->autoinc_ptr = NULL;
 	}
 
 	/* clear opts */
 	__strNS->bzero(&col->opts, sizeof(col->opts));
 
 	/* clear reference */
-	col->pRef = NULL;
+	col->ref_ptr = NULL;
 
 	/* clear type */
 	col->type = CwtType_UNKNOWN;
@@ -61,40 +61,6 @@ static void cleanup_column(void *col)
 	/*CWT_FREE(c);*/
 }
 
-
-
-CwtDDI* ddi_create_DDI(const CWT_CHAR *name, const CWT_CHAR *charset)
-{
-	CwtDDI *ddi = CWT_MALLOC(CwtDDI);
-
-	if( !__strNS ) {
-		__strNS  = cwtStrNS();
-		__listNS = cwtListNS();
-	}
-
-	__strNS->bzero(ddi, sizeof(CwtDDI));
-	ddi->name = __strNS->strDup(name);
-	ddi->charset = __strNS->strDup(charset);
-	ddi->tables = __listNS->create(sizeof(CwtDDITable), cleanup_table);
-	return ddi;
-}
-
-void ddi_free_DDI(CwtDDI *ddi)
-{
-	CWT_ASSERT(ddi);
-
-	if( ddi->name )
-		CWT_FREE(ddi->name);
-
-	if( ddi->charset )
-		CWT_FREE(ddi->charset);
-
-	if( ddi->tables )
-		__listNS->free(ddi->tables);
-
-	CWT_FREE(ddi);
-}
-
 CwtDDITable* ddi_new_table(CwtDDI *ddi, const CWT_CHAR *name)
 {
 	CwtDDITable tab;
@@ -119,7 +85,7 @@ CwtDDIColumn* ddi_new_column(CwtDDITable *tab, const CWT_CHAR *name)
 	CWT_ASSERT(tab->columns);
 
 	__strNS->bzero(&col, sizeof(CwtDDIColumn));
-	col.pOwner = tab;
+	col.owner_ptr = tab;
 	col.name  = __strNS->strDup(name);
 
 	__listNS->append(tab->columns, &col);
@@ -127,6 +93,40 @@ CwtDDIColumn* ddi_new_column(CwtDDITable *tab, const CWT_CHAR *name)
 	return __listNS->last(tab->columns);
 }
 
+
+CwtDDI* ddi_create_DDI(const CWT_CHAR *name, const CWT_CHAR *charset)
+{
+	CwtDDI *ddi = CWT_MALLOC(CwtDDI);
+
+	if( !__strNS ) {
+		__strNS  = cwtStrNS();
+		__listNS = cwtListNS();
+	}
+
+	__strNS->bzero(ddi, sizeof(CwtDDI));
+	ddi->name = __strNS->strDup(name);
+	ddi->charset = __strNS->strDup(charset);
+	ddi->tables = __listNS->create(sizeof(CwtDDITable), cleanup_table);
+	return ddi;
+}
+
+
+
+void ddi_free_DDI(CwtDDI *ddi)
+{
+	CWT_ASSERT(ddi);
+
+	if( ddi->name )
+		CWT_FREE(ddi->name);
+
+	if( ddi->charset )
+		CWT_FREE(ddi->charset);
+
+	if( ddi->tables )
+		__listNS->free(ddi->tables);
+
+	CWT_FREE(ddi);
+}
 
 CwtDDITable* ddi_find_table(CwtDDI *ddi, const CWT_CHAR *name)
 {
@@ -170,6 +170,15 @@ BOOL ddi_set_type_bool(CwtDDIColumn *col)
 {
 	clear_type(col);
 	col->type = CwtType_BOOL;
+	return TRUE;
+}
+
+BOOL ddi_set_type_char (CwtDDIColumn *col)
+{
+	clear_type(col);
+	col->type = CwtType_CHAR;
+	col->opts.int_opts.min = CWT_CHAR_MIN;
+	col->opts.int_opts.max = CWT_CHAR_MAX;
 	return TRUE;
 }
 
@@ -258,14 +267,14 @@ BOOL ddi_set_type_ref(CwtDDIColumn *col, CwtDDITable *ref)
 	CWT_ASSERT(ref);
 	CWT_ASSERT(ref->name);
 
-	if( !ref->pPK ) {
-		printf_error(_T("primary key not set for referenced table '%s'"), ref->name);
+	if( !ref->pk_ptr ) {
+		cwtLoggerNS()->error(_T("primary key not set for referenced table '%s'"), ref->name);
 		return FALSE;
 	}
 
-	col->type = ref->pPK->type;
-	__strNS->memcpy(&col->opts, &ref->pPK->opts, sizeof(ref->pPK->opts));
-	col->pRef = ref;
+	col->type = ref->pk_ptr->type;
+	__strNS->memcpy(&col->opts, &ref->pk_ptr->opts, sizeof(ref->pk_ptr->opts));
+	col->ref_ptr = ref;
 
 	return TRUE;
 }
@@ -286,7 +295,7 @@ BOOL ddi_set_autoinc (CwtDDIColumn *col, UINT inc)
 
 	if( CWT_TYPE_IS_INTEGER(col->type) || CWT_TYPE_IS_FLOAT(col->type)) {
 		col->autoinc = inc;
-		col->pOwner->pAutoinc = col;
+		col->owner_ptr->autoinc_ptr = col;
 	}
 
 	return TRUE;
@@ -319,8 +328,8 @@ BOOL ddi_set_unique(CwtDDIColumn *col, BOOL yes)
 	if( yes ) {
 		col->flags |= ((UINT32)CwtDdiColumn_Unique);
 	} else {
-		if( col->pOwner->pPK && col->pOwner->pPK == col ) {
-			col->pOwner->pPK = NULL;
+		if( col->owner_ptr->pk_ptr && col->owner_ptr->pk_ptr == col ) {
+			col->owner_ptr->pk_ptr = NULL;
 		}
 		col->flags &= ~((UINT32)CwtDdiColumn_PK);
 	}
@@ -330,19 +339,19 @@ BOOL ddi_set_unique(CwtDDIColumn *col, BOOL yes)
 BOOL ddi_set_pk(CwtDDIColumn *col)
 {
 	CWT_ASSERT(col);
-	if( col->pOwner->pPK && col->pOwner->pPK != col ) {
-		col->pOwner->pPK->flags |= ~((UINT32)CwtDdiColumn_PK);
-		ddi_set_unique(col->pOwner->pPK, TRUE);
+	if( col->owner_ptr->pk_ptr && col->owner_ptr->pk_ptr != col ) {
+		col->owner_ptr->pk_ptr->flags |= ~((UINT32)CwtDdiColumn_PK);
+		ddi_set_unique(col->owner_ptr->pk_ptr, TRUE);
 	}
 
-	col->pOwner->pPK = col;
+	col->owner_ptr->pk_ptr = col;
 	col->flags |= ((UINT32)CwtDdiColumn_PK);
 	return TRUE;
 }
 
 
 /* Helper function for __ddi_deploy and __ddi_recall */
-static BOOL __ddi_exec_queries(CwtDBHandler *dbh, CwtDDI *ddi, int flags, CwtStrList* (*specFor) (CwtDDI*, int flags))
+static BOOL exec_queries(CwtDBHandler *dbh, CwtDDI *ddi, int flags, CwtStrList* (*specFor) (CwtDDI*, int flags))
 {
 	CwtStrListNS *slNS = cwtStrListNS();
 
@@ -370,10 +379,124 @@ static BOOL __ddi_exec_queries(CwtDBHandler *dbh, CwtDDI *ddi, int flags, CwtStr
 
 BOOL ddi_deploy(CwtDBHandler *dbh, CwtDDI *ddi, int flags)
 {
-	return __ddi_exec_queries(dbh, ddi, flags, dbh->driver()->specForDeploy);
+	return exec_queries(dbh, ddi, flags, dbh->driver()->specForDeploy);
 }
 
 BOOL ddi_recall(CwtDBHandler *dbh, CwtDDI *ddi, int flags)
 {
-	return __ddi_exec_queries(dbh, ddi, flags, dbh->driver()->specForRecall);
+	return exec_queries(dbh, ddi, flags, dbh->driver()->specForRecall);
+}
+
+
+CwtDDI* ddi_build_DDI (const CWT_CHAR *name, const CWT_CHAR *charset, CwtPersistEntity *entities)
+{
+	CwtDDI *ddi;
+	CwtPersistEntity *entity_ptr;
+	BOOL ok = TRUE;
+
+	ddi = ddi_create_DDI(name, charset);
+
+	entity_ptr = &entities[0];
+
+	while (entity_ptr->name) {
+		CwtDDITable     *tab;
+		CwtPersistEntry *entry_ptr;
+
+		entry_ptr = &entity_ptr->entries[0];
+
+		CWT_ASSERT(entry_ptr);
+
+		if (!entry_ptr->name)
+			break;
+
+		/* Already built */
+		if (entity_ptr->table_ptr) {
+			entity_ptr++;
+			continue;
+		}
+
+		tab = ddi_new_table(ddi, entity_ptr->name);
+		entity_ptr->table_ptr = tab;
+
+		while (entry_ptr->name) {
+			CwtDDIColumn *col;
+
+			col = ddi_new_column(tab, entry_ptr->name);
+
+			switch (entry_ptr->type) {
+			case CwtType_UNKNOWN:
+				if (entry_ptr->ref_ptr != NULL) {
+					CwtPersistEntity *entity_ref = (CwtPersistEntity *)entry_ptr->ref_ptr;
+					if( entity_ref->table_ptr ) {
+						ok = ddi_set_type_ref(col, entity_ref->table_ptr);
+					} else {
+						cwtLoggerNS()->error(_T("Referenced table does not initialized yet: %s"), entity_ref->name);
+						ok = FALSE;
+					}
+				} else {
+					ok = FALSE;
+				}
+				break;
+			case CwtType_BOOL:
+				ok = ddi_set_type_bool(col);
+				break;
+			case CwtType_CHAR:
+				ok = ddi_set_type_char(col);
+				break;
+			case CwtType_SBYTE:
+			case CwtType_BYTE:
+			case CwtType_SHORT:
+			case CwtType_USHORT:
+			case CwtType_INT:
+			case CwtType_UINT:
+			case CwtType_LONG:
+			case CwtType_ULONG:
+			case CwtType_LONGLONG:
+			case CwtType_ULONGLONG:
+				ok = ddi_set_type_int(col
+						, entry_ptr->opts.int_opts.min
+						, entry_ptr->opts.int_opts.max);
+				break;
+
+			case CwtType_FLOAT:
+			case CwtType_DOUBLE:
+				if ( entry_ptr->opts.float_opts.prec != 0.0
+						&& entry_ptr->opts.float_opts.scale != 0 ) {
+					ok = ddi_set_type_decimal(col
+						, (UINT)entry_ptr->opts.float_opts.prec
+						, (UINT)entry_ptr->opts.float_opts.scale);
+				} else {
+					if (CwtType_FLOAT == entry_ptr->type )
+						ok = ddi_set_type_float(col);
+					else
+						ok = ddi_set_type_double(col);
+				}
+				break;
+			case CwtType_TEXT:
+				ok = ddi_set_type_text(col, entry_ptr->opts.text_opts.maxlen);
+				break;
+			case CwtType_BLOB:
+				ok = ddi_set_type_text(col, entry_ptr->opts.blob_opts.maxlen);
+				break;
+			case CwtType_TIME:
+			case CwtType_DATE:
+			case CwtType_DATETIME:
+				ok = ddi_set_type_time(col, entry_ptr->type, entry_ptr->opts.time_opts.stamp ? TRUE : FALSE);
+				break;
+			default:
+				break;
+			}
+
+			entry_ptr++;
+		}
+
+		entity_ptr++;
+	}
+
+	if (!ok) {
+		ddi_free_DDI(ddi);
+		ddi = NULL;
+	}
+
+	return ddi;
 }

@@ -14,74 +14,76 @@
 
 #define __LOG_PREFIX _Tr("dbi: ")
 
-static void            dbi_parse_dsn     (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
-static CwtDBIDriver*   dbi_load          (const CWT_CHAR *scheme, const CWT_CHAR *driver);
-static CwtDBHandler*   dbi_connect       (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
-static void            dbi_disconnect    (CwtDBHandler*);
-static BOOL            dbi_func          (CwtDBHandler*, const CWT_CHAR*, CWT_CHAR**);
-static void            dbi_attr          (CwtDBHandler*, const CWT_CHAR*, void*);
-static BOOL            dbi_set_auto_commit (CwtDBHandler*, BOOL);
-static BOOL            dbi_auto_commit   (CwtDBHandler*);
-static CwtDBI_RC       dbi_err           (CwtDBHandler*);
-static const CWT_CHAR* dbi_strerror      (CwtDBHandler*);
-static const CWT_CHAR* dbi_state         (CwtDBHandler*);
-static BOOL            dbi_query         (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
-static BOOL            dbi_query_bin      (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
-static CwtStatement*   dbi_prepare       (CwtDBHandler*, const CWT_CHAR *sql);
-static BOOL            dbi_execute       (CwtStatement*);
-static ULONGLONG       dbi_last_id       (CwtStatement*);
-static ULONGLONG       dbi_rows          (CwtDBHandler*);
-static BOOL            dbi_tables        (CwtDBHandler*, CwtStrList *tables);
-static BOOL            dbi_table_exists  (CwtDBHandler*, const CWT_CHAR *tname);
-static char*           dbi_encode_n      (CwtDBHandler*, const CWT_CHAR *s, size_t n);
-static CWT_CHAR*       dbi_decode_n      (CwtDBHandler*, const char *s, size_t n);
-static char*           dbi_encode        (CwtDBHandler*, const CWT_CHAR *s);
-static CWT_CHAR*       dbi_decode        (CwtDBHandler*, const char *s);
-static BOOL            dbi_begin         (CwtDBHandler *dbh);
-static BOOL            dbi_commit        (CwtDBHandler *dbh);
-static BOOL            dbi_rollback      (CwtDBHandler *dbh);
+static void            dbi_parse_dsn        (const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN);
+static CwtDBIDriver*   dbi_load             (const CWT_CHAR *scheme, const CWT_CHAR *driver);
+static CwtDBHandler*   dbi_connect          (const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
+static void            dbi_disconnect       (CwtDBHandler*);
+static BOOL            dbi_func             (CwtDBHandler*, const CWT_CHAR*, CWT_CHAR**);
+static void            dbi_attr             (CwtDBHandler*, const CWT_CHAR*, void*);
+static BOOL            dbi_set_auto_commit  (CwtDBHandler*, BOOL);
+static BOOL            dbi_auto_commit      (CwtDBHandler*);
+static CwtDBI_RC       dbi_err              (CwtDBHandler*);
+static const CWT_CHAR* dbi_strerror         (CwtDBHandler*);
+static const CWT_CHAR* dbi_state            (CwtDBHandler*);
+static BOOL            dbi_query            (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
+static BOOL            dbi_query_bin        (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
+static CwtStatement*   dbi_prepare          (CwtDBHandler*, const CWT_CHAR *sql);
+static BOOL            dbi_execute          (CwtStatement*);
+static ULONGLONG       dbi_last_id          (CwtStatement*);
+static ULONGLONG       dbi_rows             (CwtDBHandler*);
+static BOOL            dbi_tables           (CwtDBHandler*, CwtStrList *tables);
+static BOOL            dbi_table_exists     (CwtDBHandler*, const CWT_CHAR *tname);
+static char*           dbi_encode_n         (CwtDBHandler*, const CWT_CHAR *s, size_t n);
+static CWT_CHAR*       dbi_decode_n         (CwtDBHandler*, const char *s, size_t n);
+static char*           dbi_encode           (CwtDBHandler*, const CWT_CHAR *s);
+static CWT_CHAR*       dbi_decode           (CwtDBHandler*, const char *s);
+static BOOL            dbi_begin            (CwtDBHandler *dbh);
+static BOOL            dbi_commit           (CwtDBHandler *dbh);
+static BOOL            dbi_rollback         (CwtDBHandler *dbh);
 
-static void            dbi_close         (CwtStatement *sth);
-static CwtUniType*     dbi_bind          (CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
-static CwtUniType*     dbi_bind_text     (CwtStatement *sth, size_t index, size_t length);
-static CwtUniType*     dbi_bind_blob     (CwtStatement *sth, size_t index, size_t sz);
-static BOOL            dbi_set_from_string (CwtStatement *sth, CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s);
-static BOOL            dbi_set_unitype   (CwtStatement *sth, CwtUniType *ut, CwtUniType *val);
-static BOOL            dbi_set_BOOL       (CwtStatement *sth, CwtUniType *ut, BOOL b)      { return sth->dbh->setParm(sth, ut, &b, 0); }
-static BOOL            dbi_set_CHAR       (CwtStatement *sth, CwtUniType *ut, CWT_CHAR ch) { return sth->dbh->setParm(sth, ut, &ch, 0); }
-static BOOL            dbi_set_SBYTE      (CwtStatement *sth, CwtUniType *ut, SBYTE n)     { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_BYTE       (CwtStatement *sth, CwtUniType *ut, BYTE n)      { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_SHORT      (CwtStatement *sth, CwtUniType *ut, SHORT n)     { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_USHORT     (CwtStatement *sth, CwtUniType *ut, USHORT n)    { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_INT        (CwtStatement *sth, CwtUniType *ut, INT n)       { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_UINT       (CwtStatement *sth, CwtUniType *ut, UINT n)      { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_LONG       (CwtStatement *sth, CwtUniType *ut, LONG n)      { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_ULONG      (CwtStatement *sth, CwtUniType *ut, ULONG n)     { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_LONGLONG   (CwtStatement *sth, CwtUniType *ut, LONGLONG n)  { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_ULONGLONG  (CwtStatement *sth, CwtUniType *ut, ULONGLONG n) { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_FLOAT      (CwtStatement *sth, CwtUniType *ut, float n)     { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_DOUBLE     (CwtStatement *sth, CwtUniType *ut, double n)    { return sth->dbh->setParm(sth, ut, &n, 0); }
-static BOOL            dbi_set_TEXT       (CwtStatement *sth, CwtUniType *ut, const CWT_CHAR *p, size_t length) { return sth->dbh->setParm(sth, ut, p, length); }
-static BOOL            dbi_set_BLOB       (CwtStatement *sth, CwtUniType *ut, const void *p, size_t sz) { return sth->dbh->setParm(sth, ut, p, sz); }
-static BOOL            dbi_set_TIME       (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p)        { return sth->dbh->setParm(sth, ut, p, 0); }
-static BOOL            dbi_set_DATE       (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p)        { return sth->dbh->setParm(sth, ut, p, 0); }
-static BOOL            dbi_set_DATETIME   (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p)        { return sth->dbh->setParm(sth, ut, p, 0); }
+static void            dbi_close            (CwtStatement *sth);
+static CwtUniType*     dbi_bind             (CwtStatement *sth, size_t index, CwtTypeEnum cwtType);
+static CwtUniType*     dbi_bind_text        (CwtStatement *sth, size_t index, size_t length);
+static CwtUniType*     dbi_bind_blob        (CwtStatement *sth, size_t index, size_t sz);
+static BOOL            dbi_set_from_string  (CwtStatement *sth, CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s);
+static BOOL            dbi_set_unitype      (CwtStatement *sth, CwtUniType *ut, CwtUniType *val);
+static BOOL            dbi_set_BOOL         (CwtStatement *sth, CwtUniType *ut, BOOL b)      { return sth->dbh->setParm(sth, ut, &b, 0); }
+static BOOL            dbi_set_CHAR         (CwtStatement *sth, CwtUniType *ut, CWT_CHAR ch) { return sth->dbh->setParm(sth, ut, &ch, 0); }
+static BOOL            dbi_set_SBYTE        (CwtStatement *sth, CwtUniType *ut, SBYTE n)     { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_BYTE         (CwtStatement *sth, CwtUniType *ut, BYTE n)      { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_SHORT        (CwtStatement *sth, CwtUniType *ut, SHORT n)     { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_USHORT       (CwtStatement *sth, CwtUniType *ut, USHORT n)    { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_INT          (CwtStatement *sth, CwtUniType *ut, INT n)       { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_UINT         (CwtStatement *sth, CwtUniType *ut, UINT n)      { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_LONG         (CwtStatement *sth, CwtUniType *ut, LONG n)      { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_ULONG        (CwtStatement *sth, CwtUniType *ut, ULONG n)     { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_LONGLONG     (CwtStatement *sth, CwtUniType *ut, LONGLONG n)  { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_ULONGLONG    (CwtStatement *sth, CwtUniType *ut, ULONGLONG n) { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_FLOAT        (CwtStatement *sth, CwtUniType *ut, float n)     { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_DOUBLE       (CwtStatement *sth, CwtUniType *ut, double n)    { return sth->dbh->setParm(sth, ut, &n, 0); }
+static BOOL            dbi_set_TEXT         (CwtStatement *sth, CwtUniType *ut, const CWT_CHAR *p, size_t length) { return sth->dbh->setParm(sth, ut, p, length); }
+static BOOL            dbi_set_BLOB         (CwtStatement *sth, CwtUniType *ut, const void *p, size_t sz) { return sth->dbh->setParm(sth, ut, p, sz); }
+static BOOL            dbi_set_TIME         (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p)        { return sth->dbh->setParm(sth, ut, p, 0); }
+static BOOL            dbi_set_DATE         (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p)        { return sth->dbh->setParm(sth, ut, p, 0); }
+static BOOL            dbi_set_DATETIME     (CwtStatement *sth, CwtUniType *ut, const CWT_TIME *p)        { return sth->dbh->setParm(sth, ut, p, 0); }
 
-static BOOL            dbi_fetch_next     (CwtStatement *sth) { return sth->dbh->fetchNext(sth); }
-static BOOL            dbi_fetch_column   (CwtStatement *sth, CWT_CHAR *col, CwtUniType *value) { return sth->dbh->fetchColumn(sth, col, value); }
+static BOOL            dbi_fetch_next       (CwtStatement *sth) { return sth->dbh->fetchNext(sth); }
+static BOOL            dbi_fetch_column     (CwtStatement *sth, CWT_CHAR *col, CwtUniType *value) { return sth->dbh->fetchColumn(sth, col, value); }
 
 
-static CwtTypeEnum     dbi_toCwtTypeEnum     (CwtSqlTypeEnum sqlType);
-static CwtSqlTypeEnum  dbi_toSqlTypeEnum     (CwtTypeEnum cwtType);
+static CwtTypeEnum     dbi_toCwtTypeEnum    (CwtSqlTypeEnum sqlType);
+static CwtSqlTypeEnum  dbi_toSqlTypeEnum    (CwtTypeEnum cwtType);
 
-extern CwtDDI*         ddi_create_DDI     (const CWT_CHAR *name, const CWT_CHAR *charset);
-extern void            ddi_free_DDI       (CwtDDI *ddi);
-extern CwtDDITable*    ddi_new_table      (CwtDDI *ddi, const CWT_CHAR *name);
-extern CwtDDIColumn*   ddi_new_column     (CwtDDITable *table, const CWT_CHAR *name);
-extern CwtDDITable*    ddi_find_table     (CwtDDI*, const CWT_CHAR *name);
-extern CwtDDIColumn*   ddi_find_column    (CwtDDITable*, const CWT_CHAR *name);
+extern CwtDDI*         ddi_create_DDI       (const CWT_CHAR *name, const CWT_CHAR *charset);
+extern CwtDDI*         ddi_build_DDI        (const CWT_CHAR *name, const CWT_CHAR *charset, CwtPersistEntity *entities);
+extern void            ddi_free_DDI         (CwtDDI *ddi);
+extern CwtDDITable*    ddi_new_table        (CwtDDI *ddi, const CWT_CHAR *name);
+extern CwtDDIColumn*   ddi_new_column       (CwtDDITable *table, const CWT_CHAR *name);
+extern CwtDDITable*    ddi_find_table       (CwtDDI*, const CWT_CHAR *name);
+extern CwtDDIColumn*   ddi_find_column      (CwtDDITable*, const CWT_CHAR *name);
 
 extern BOOL            ddi_set_type_bool    (CwtDDIColumn*);
+extern BOOL            ddi_set_type_char    (CwtDDIColumn*);
 extern BOOL            ddi_set_type_int     (CwtDDIColumn*, LONGLONG min, ULONGLONG max);
 extern BOOL            ddi_set_type_float   (CwtDDIColumn*);
 extern BOOL            ddi_set_type_double  (CwtDDIColumn*);
@@ -99,7 +101,6 @@ extern BOOL            ddi_set_pk           (CwtDDIColumn*);
 
 extern BOOL            ddi_deploy           (CwtDBHandler *dbh, CwtDDI *ddi, int flags);
 extern BOOL            ddi_recall           (CwtDBHandler *dbh, CwtDDI *ddi, int flags);
-
 
 static CwtDBI __cwtDBI = {
 	  dbi_parse_dsn
@@ -162,6 +163,7 @@ static CwtDBI __cwtDBI = {
 	, dbi_toSqlTypeEnum
 
 	, ddi_create_DDI
+	, ddi_build_DDI
 	, ddi_free_DDI
 	, ddi_new_table
 	, ddi_new_column
@@ -169,6 +171,7 @@ static CwtDBI __cwtDBI = {
 	, ddi_find_column
 
 	, ddi_set_type_bool
+	, ddi_set_type_char
     , ddi_set_type_int
     , ddi_set_type_float
     , ddi_set_type_double
