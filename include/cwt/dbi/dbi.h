@@ -179,7 +179,7 @@ typedef struct CwtDBI
 
 	/* DDI specific methods */
 	CwtDDI*         (*createDDI)      (const CWT_CHAR *name, const CWT_CHAR *charset);
-	CwtDDI*         (*buildDDI)       (const CWT_CHAR *name, const CWT_CHAR *charset, CwtPersistEntity *entities);
+	CwtDDI*         (*buildDDI)       (const CWT_CHAR *name, const CWT_CHAR *charset, CwtPersistEntity *entities[], size_t nentries);
 	void            (*freeDDI)        (CwtDDI*);
 
 	CwtDDITable*    (*newTable)       (CwtDDI*, const CWT_CHAR *name);

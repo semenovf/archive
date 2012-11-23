@@ -182,6 +182,52 @@ static CwtDDI* __create_ddi(void)
 	return ddi;
 }
 
+
+static CwtDDI* __build_ddi(void)
+{
+	CwtPersistEntry student_entries[] = {
+		  { _T("name")       , CWT_DDI_TEXT(20)                , CwtDdiColumn_General , NULL }
+		, { _T("sex")        , CWT_DDI_TEXT(1)                 , CwtDdiColumn_General , NULL }
+		, { _T("student_id") , CWT_DDI_INT(0, CWT_UINT_MAX, 1) , CwtDdiColumn_PK      , NULL }
+		, CWT_DDI_NULL_ENTRY
+	};
+	CwtPersistEntity student_entity = { _T("student"), student_entries };
+
+	CwtPersistEntry grade_event_entries[] = {
+		  { _T("date")     , CWT_DDI_DATE(FALSE)             , CwtDdiColumn_General , NULL }
+		, { _T("category") , CWT_DDI_TEXT(1)                 , CwtDdiColumn_General , NULL }
+		, { _T("event_id") , CWT_DDI_INT(0, CWT_UINT_MAX, 1) , CwtDdiColumn_PK      , NULL }
+		, CWT_DDI_NULL_ENTRY
+	};
+	CwtPersistEntity grade_event_entity = { _T("grade_event"), grade_event_entries };
+
+	CwtPersistEntry score_entries[] = {
+		  { _T("student_id") , CWT_DDI_REF(&student_entity)             , CwtDdiColumn_Indexable , NULL }
+		, { _T("event_id")   , CWT_DDI_REF(&grade_event_entity)         , CwtDdiColumn_General   , NULL }
+		, { _T("score")      , CWT_DDI_INT(CWT_INT_MIN, CWT_INT_MAX, 0) , CwtDdiColumn_PK        , NULL }
+		, CWT_DDI_NULL_ENTRY
+	};
+	CwtPersistEntity score_entity = { _T("score"), score_entries };
+
+
+	CwtPersistEntry absence_entries[] = {
+		  { _T("student_id") , CWT_DDI_REF(&student_entity) , CwtDdiColumn_PK , NULL }
+		, { _T("date")       , CWT_DDI_DATE(FALSE)          , CwtDdiColumn_General , NULL }
+		, CWT_DDI_NULL_ENTRY
+	};
+	CwtPersistEntity absence_entity = { _T("absence"), absence_entries };
+
+	CwtPersistEntity *entities[] = {
+		  &student_entity
+		, &grade_event_entity
+		, &score_entity
+		, &absence_entity
+	};
+
+	return __dbi->buildDDI(_T("sampdb"), _T("utf8"), entities, sizeof(entities)/sizeof(entities[0]));
+
+}
+
 static void test_00(void)
 {
 	CwtDBIDriver *dbd;
@@ -190,7 +236,7 @@ static void test_00(void)
 	CwtStrList   *recallSpec;
 
 	dbd = __dbi->load(_T("DBI"), __driver);
-	CWT_TEST_FAIL2(dbd, "Unable to load driver represented by DSN");
+	CWT_TEST_FAIL2(dbd, _T("Loading driver represented by DSN"));
 
 	ddi = __create_ddi();
 
@@ -227,7 +273,7 @@ static void test_01(void)
 
 	dbh = __dbi->connect(__dsn, __username, __password, NULL);
 
-	CWT_TEST_FAIL2(dbh, "May be you forgot to start MySQL service?");
+	CWT_TEST_FAIL2(dbh, _T("May be you forgot to start MySQL service?"));
 
 	ddi = __create_ddi();
 
@@ -240,6 +286,43 @@ static void test_01(void)
 
 
 
+static void test_02(void)
+{
+	CwtDBIDriver *dbd;
+	CwtDDI       *ddi;
+	CwtStrList   *deploySpec;
+	CwtStrList   *recallSpec;
+
+	CWT_TEST_FAIL(ddi = __build_ddi());
+	dbd = __dbi->load(_T("DBI"), __driver);
+	CWT_TEST_FAIL2(dbd, _T("Loading driver represented by DSN"));
+
+
+	CWT_TEST_OK(deploySpec = dbd->specForDeploy(ddi, CwtDdi_DeployDropDb | CwtDdi_DeployDropTab));
+	CWT_TEST_OK(recallSpec = dbd->specForRecall(ddi, 0 /*CWT_DDI_RECALL_DROP_DB*/));
+
+	{
+		CwtStrListIterator it;
+		__slNS->begin(deploySpec, &it);
+		while( __slNS->hasMore(&it) ) {
+			printf_debug(_T("Spec: %s"), __slNS->next(&it));
+		}
+	}
+
+	{
+		CwtStrListIterator it;
+		__slNS->begin(recallSpec, &it);
+		while( __slNS->hasMore(&it) ) {
+			printf_debug(_T("Spec: %s"), __slNS->next(&it));
+		}
+	}
+
+	__slNS->free(deploySpec);
+	__slNS->free(recallSpec);
+	__dbi->freeDDI(ddi);
+}
+
+
 int main(int argc, char *argv[])
 {
 	__dbi = cwtDBI();
@@ -248,8 +331,9 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(6);
+	CWT_BEGIN_TESTS(10);
 
+	test_02();
 	test_00();
 	test_01();
 

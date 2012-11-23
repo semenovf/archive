@@ -22,7 +22,7 @@ typedef enum _CwtDdiFlag {
 typedef enum _CwtDdiColumnFlag {
 	  CwtDdiColumn_General    = 0
 	, CwtDdiColumn_Unique     = 0x0001
-	, CwtDdiColumn_PK         = 0x0002 | CwtDdiColumn_Unique /* + Unique */
+	, CwtDdiColumn_PK         = 0x0002
 	, CwtDdiColumn_Indexable  = 0x0004
 	, CwtDdiColumn_Nullable   = 0x0008
 	, CwtDdiColumn_Insertable = 0x0010 /* TODO not used yet */
@@ -56,7 +56,7 @@ typedef union _CwtDDIColumnOpts {
 #define CWT_DDI_BOOL                           NULL , CwtType_BOOL     , {{0ULL                , 0LL}}              , 0         , NULL
 #define CWT_DDI_BOOL_TRUE                      _T("1")
 #define CWT_DDI_BOOL_FALSE                     _T("0")
-#define CWT_DDI_NULL_ENTRY                     { NULL, CWT_DDI_BOOL, CwtDdiColumn_General, NULL, NULL }
+#define CWT_DDI_NULL_ENTRY                     { NULL, CWT_DDI_BOOL, CwtDdiColumn_General, NULL }
 
 typedef struct _CwtDDIColumn {
 	CWT_CHAR            *name;
@@ -79,7 +79,6 @@ typedef struct _CwtDDITable {
 typedef struct _CwtPersistEntity {
 	CWT_CHAR        *name;
 	CwtPersistEntry *entries;
-	CwtDDITable     *table_ptr;
 } CwtPersistEntity;
 
 

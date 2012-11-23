@@ -75,7 +75,7 @@ static CwtTypeEnum     dbi_toCwtTypeEnum    (CwtSqlTypeEnum sqlType);
 static CwtSqlTypeEnum  dbi_toSqlTypeEnum    (CwtTypeEnum cwtType);
 
 extern CwtDDI*         ddi_create_DDI       (const CWT_CHAR *name, const CWT_CHAR *charset);
-extern CwtDDI*         ddi_build_DDI        (const CWT_CHAR *name, const CWT_CHAR *charset, CwtPersistEntity *entities);
+extern CwtDDI*         ddi_build_DDI        (const CWT_CHAR *name, const CWT_CHAR *charset, CwtPersistEntity *entities[], size_t nentries);
 extern void            ddi_free_DDI         (CwtDDI *ddi);
 extern CwtDDITable*    ddi_new_table        (CwtDDI *ddi, const CWT_CHAR *name);
 extern CwtDDIColumn*   ddi_new_column       (CwtDDITable *table, const CWT_CHAR *name);
