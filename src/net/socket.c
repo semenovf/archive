@@ -157,8 +157,17 @@ static void __socket_close (CwtSocket *sd)
 
 		CWT_ASSERT(__socket_nsockets_opened > 0 );
 
+		if (sd->type == Cwt_UdpSocket) {
+			if (((CwtUdpSocket*)sd)->is_master)
+				__socket_closeNative(sd->sockfd);
+		} else {
+			__socket_closeNative(sd->sockfd);
+		}
+
+/*
 		if ( !(sd->type == Cwt_UdpSocket && ((CwtUdpSocket*)sd)->is_master) )
 			__socket_closeNative(sd->sockfd);
+*/
 
 		sd->sockfd = -1;
 
