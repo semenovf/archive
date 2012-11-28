@@ -48,8 +48,6 @@
 #include <cwt/logger.h>
 #include <cwt/string.h>
 #include <cwt/strlist.h>
-/*#include <cwt/str.h>*/
-/*#include <string.h>*/
 
 
 #define __LOG_PREFIX _T("mysql: ")

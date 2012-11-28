@@ -113,6 +113,8 @@ static CWT_CHAR CHAR_RG[2] = {(CWT_CHAR)0x01, (CWT_CHAR)0x7F };
 #	define NL_FSM_INL   FSM_MATCH_STR(_T("\n "), 1) /* space need to possibility of char sequence changing */
 #endif
 /* Use this FSM transition table instead of CRLF_FSM_INL */
+
+
 static CwtFsmTransition NL_FSM[] = {
 	  {-1,-1, FSM_MATCH_INLINE(NL_FSM_INL), FSM_ACCEPT, NULL, NULL }
 };
