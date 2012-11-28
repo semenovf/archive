@@ -13,7 +13,7 @@
 
 static struct _FsmTestEntry __fsmTestEntries[] = {
 	/*  *c-wsp ("=" / "=/") *c-wsp */
-	{ VHEADER(defined_as_fsm)
+	  { VHEADER(defined_as_fsm)
 		, { _T("\t ="), _T(" \t = \t "), _T("\t =/"), _T(" \t =/ \t "), VNULL }
 		, { INULL }}
 
@@ -213,7 +213,7 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 int main(int argc, char *argv[])
 {
 	static CwtFsm fsm;
-	CwtAbnfNS *abnf;
+	/*CwtAbnfNS *abnf;*/
 	int i;
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
 
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	abnf = cwtAbnfNS();
+	/*abnf = cwtAbnfNS();*/
 
 
 	/* abnf->setNewLine(Cwt_NL_Win); */
