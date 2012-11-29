@@ -24,7 +24,7 @@ const char* hello_world_replaced_extended= "Hello, World!HELLO, WORLD!";
 
 int main(int argc, char *argv[])
 {
-	CwtByteArrayNS *baNS = cwtByteArrayNS();
+	CwtByteArrayNS *baNS = cwt_bytearray_ns();
 	CwtByteArray *ba;
 
 	CWT_UNUSED(argc);

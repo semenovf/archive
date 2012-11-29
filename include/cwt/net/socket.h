@@ -61,7 +61,7 @@ typedef struct _CwtSocketNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtSocketNS* cwtSocketNS(void);
+DLL_API_EXPORT CwtSocketNS* cwt_socket_ns(void);
 EXTERN_C_END
 
 

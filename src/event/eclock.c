@@ -71,11 +71,11 @@ static CwtEventClockNS __cwtEventClockNS = {
 static CwtListNS    *__listNS = NULL;
 static CwtEventNS   *__eventNS = NULL;
 
-DLL_API_EXPORT CwtEventClockNS* cwtEventClockNS(void)
+DLL_API_EXPORT CwtEventClockNS* cwt_event_clock_ns(void)
 {
 	if( !__listNS ) {
-		__listNS = cwtListNS();
-		__eventNS = cwtEventNS();
+		__listNS = cwt_list_ns();
+		__eventNS = cwt_event_ns();
 	}
 
 	if( !__time_handlers ) {

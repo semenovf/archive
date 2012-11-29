@@ -19,7 +19,7 @@ CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 	int domain = AF_INET;
 
 	if( !__socket_allowSockets() ) {
-		cwtLoggerNS()->error(_Tr("network sockets not allowed in this system"));
+		cwt_logger_ns()->error(_Tr("network sockets not allowed in this system"));
 		return NULL;
 	}
 
@@ -33,7 +33,7 @@ CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 
 	sockfd = socket(domain, nativeType, 0);
     if( sockfd < 0 ) {
-    	cwtLoggerNS()->error(_Tr("failed to open socket")
+    	cwt_logger_ns()->error(_Tr("failed to open socket")
     			_CWT_SOCKET_LOG_FMTSUFFIX
     			, _CWT_SOCKET_LOG_ARGS);
 		return NULL;
@@ -41,7 +41,7 @@ CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 
 	if( is_nonblocking ) {
 		if (!__socket_setNonBlockingNative(sockfd, is_nonblocking)) {
-			cwtLoggerNS()->error(_Tr("set/unset socket non-blocking mode failed"));
+			cwt_logger_ns()->error(_Tr("set/unset socket non-blocking mode failed"));
 			__socket_closeNative(sockfd);
 			return NULL;
 		}
@@ -50,20 +50,20 @@ CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 	switch(socketType) {
 	case Cwt_LocalSocket:
 		sd = (CwtSocket*)CWT_MALLOC(CwtLocalSocket);
-		cwtStrNS()->bzero(sd, sizeof(CwtLocalSocket));
+		cwt_str_ns()->bzero(sd, sizeof(CwtLocalSocket));
 		break;
 	case Cwt_McastSocket:
 		sd = (CwtSocket*)CWT_MALLOC(CwtMcastSocket);
-		cwtStrNS()->bzero(sd, sizeof(CwtMcastSocket));
+		cwt_str_ns()->bzero(sd, sizeof(CwtMcastSocket));
 		break;
 	case Cwt_UdpSocket:
 		sd = (CwtSocket*)CWT_MALLOC(CwtUdpSocket);
-		cwtStrNS()->bzero(sd, sizeof(CwtUdpSocket));
+		cwt_str_ns()->bzero(sd, sizeof(CwtUdpSocket));
 		break;
 	case Cwt_TcpSocket:
 	default:
 		sd = (CwtSocket*)CWT_MALLOC(CwtTcpSocket);
-		cwtStrNS()->bzero(sd, sizeof(CwtTcpSocket));
+		cwt_str_ns()->bzero(sd, sizeof(CwtTcpSocket));
 		break;
 	}
 
@@ -82,7 +82,7 @@ BOOL __socket_initSockAddrIn(struct sockaddr_in *saddr, const CWT_CHAR *inetAddr
 {
 	BOOL ok = TRUE;
 
-	cwtStrNS()->bzero(saddr, sizeof(*saddr));
+	cwt_str_ns()->bzero(saddr, sizeof(*saddr));
 	saddr->sin_family      = AF_INET;
 	saddr->sin_port        = htons(port);
 
@@ -90,7 +90,7 @@ BOOL __socket_initSockAddrIn(struct sockaddr_in *saddr, const CWT_CHAR *inetAddr
 		saddr->sin_addr.s_addr = htonl(INADDR_ANY);
 	} else {
 		char *inetAddrLatin1;
-		inetAddrLatin1 = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strLen(inetAddr));
+		inetAddrLatin1 = cwt_textcodec_ns()->toLatin1(inetAddr, cwt_str_ns()->strLen(inetAddr));
 
 		if( !inet_aton(inetAddrLatin1, &saddr->sin_addr) ) {
 			do {
@@ -99,7 +99,7 @@ BOOL __socket_initSockAddrIn(struct sockaddr_in *saddr, const CWT_CHAR *inetAddr
 				phost = gethostbyname(inetAddrLatin1);
 
 				if (phost == (struct hostent *)NULL) {
-					cwtLoggerNS()->error(_Tr("%s: host not found"), inetAddr);
+					cwt_logger_ns()->error(_Tr("%s: host not found"), inetAddr);
 					/*printf("h_errno = %d\n", h_errno);*/
 					ok = FALSE;
 					break;

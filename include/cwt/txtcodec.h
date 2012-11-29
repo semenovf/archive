@@ -17,7 +17,7 @@ typedef struct _CwtTextCodecNS {
 } CwtTextCodecNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtTextCodecNS* cwtTextCodecNS(void);
+DLL_API_EXPORT CwtTextCodecNS* cwt_textcodec_ns(void);
 EXTERN_C_END
 
 #endif /*__CWT_TXTCODEC_H__*/

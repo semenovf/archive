@@ -182,7 +182,7 @@ static _CollectionT* __clone(_CollectionT* sb)                                \
 	if( sb ) {                                                                \
 		_CollectionT* clone = __createSized(sb->m_count, __default_max_size); \
 		if( sb->m_count > 0 ) {                                               \
-			cwtStrNS()->memcpy(clone->m_buffer                                \
+			cwt_str_ns()->memcpy(clone->m_buffer                              \
 				, sb->m_buffer, sb->m_count * sizeof(_ElemT));                \
 			clone->m_count = sb->m_count;                                     \
 		}                                                                     \
@@ -212,7 +212,7 @@ static BOOL __reserve(_CollectionT* sb, size_t n)                             \
                                                                               \
 		buffer = CWT_MALLOCA(_ElemT, capacity);                               \
                                                                               \
-		cwtStrNS()->memcpy(buffer, sb->m_buffer, sb->m_count * sizeof(_ElemT)); \
+		cwt_str_ns()->memcpy(buffer, sb->m_buffer, sb->m_count * sizeof(_ElemT)); \
                                                                               \
 		CWT_FREE(sb->m_buffer);                                               \
 		sb->m_buffer = buffer;                                                \
@@ -240,7 +240,7 @@ static BOOL __lreserve(_CollectionT* sb, size_t n)                            \
                                                                               \
 	buffer = CWT_MALLOCA(_ElemT, capacity);                                   \
                                                                               \
-	cwtStrNS()->memcpy(buffer + n, sb->m_buffer                               \
+	cwt_str_ns()->memcpy(buffer + n, sb->m_buffer                             \
 		, sb->m_count * sizeof(_ElemT));                                      \
                                                                               \
 	CWT_FREE(sb->m_buffer);                                                   \
@@ -255,7 +255,7 @@ static BOOL __mreserve(_CollectionT* sb, size_t n, size_t pos)                \
 	size_t inc;                                                               \
 	_ElemT *buffer;                                                           \
 	size_t capacity;                                                          \
-	CwtStrNS *strNS = cwtStrNS();                                             \
+	CwtStrNS *strNS = cwt_str_ns();                                           \
                                                                               \
 	CWT_ASSERT(sb);                                                           \
                                                                               \
@@ -331,7 +331,7 @@ static void __appendElems(_CollectionT* sb, const _ElemT *s, size_t n)        \
 {                                                                             \
 	CWT_ASSERT(__reserve(sb, n));                                             \
                                                                               \
-	cwtStrNS()->memcpy(sb->m_buffer + sb->m_count, s, n * sizeof(_ElemT)); \
+	cwt_str_ns()->memcpy(sb->m_buffer + sb->m_count, s, n * sizeof(_ElemT)); \
 	sb->m_count += n;                                                         \
 }                                                                             \
                                                                               \
@@ -390,7 +390,7 @@ static void __removeElem(_CollectionT* sb, size_t pos)                        \
                                                                               \
 	if( pos < sb->m_count ) {                                                 \
 		sb->m_count--;                                                        \
-		cwtStrNS()->memmove(&sb->m_buffer[pos]                                \
+		cwt_str_ns()->memmove(&sb->m_buffer[pos]                              \
 		    , &sb->m_buffer[pos + 1], sb->m_count * sizeof(_ElemT) );         \
 	}                                                                         \
 }                                                                             \
@@ -409,7 +409,7 @@ static _ElemT* __substr(_CollectionT* sb, size_t start, size_t nelems)        \
 	if( start < sb->m_count ) {                                               \
 		nelems = CWT_MIN(nelems, sb->m_count - start);                        \
 		elems = CWT_MALLOCA(_ElemT, nelems+1);                                \
-		cwtStrNS()->memcpy(elems, sb->m_buffer + start                        \
+		cwt_str_ns()->memcpy(elems, sb->m_buffer + start                      \
 			, nelems * sizeof(_ElemT));                                       \
 	    elems[nelems] = '\x0';                                                \
 	}                                                                         \

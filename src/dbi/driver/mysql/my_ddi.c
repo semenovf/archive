@@ -28,8 +28,8 @@ static const CWT_CHAR *__MYSQL_DEFAULT_DB_ENGINE = _T("InnoDB");
 
 static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtString *tmpbuf, CWT_CHAR comma)
 {
-	CwtStringNS  *stringNS = cwtStringNS();
-	CwtStrListNS *slNS     = cwtStrListNS();
+	CwtStringNS  *stringNS = cwt_string_ns();
+	CwtStrListNS *slNS     = cwt_strList_ns();
 
 	CWT_CHAR *typestr = NULL;
 	/*BOOL is_ref       = FALSE;*/
@@ -116,8 +116,8 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 
 CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, const CWT_CHAR *charset, UINT ddiflags*/)
 {
-	CwtStringNS  *stringNS = cwtStringNS();
-	CwtStrListNS *slNS     = cwtStrListNS();
+	CwtStringNS  *stringNS = cwt_string_ns();
+	CwtStrListNS *slNS     = cwt_strList_ns();
 	CwtString    *tmpbuf   = stringNS->create();
 	CWT_CHAR     *charset  = (CWT_CHAR*)__MYSQL_DEFAULT_CHARSET;
 
@@ -257,8 +257,8 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
 
 CwtStrList* __dbd_specForRecall(CwtDDI *ddi, int flags)
 {
-	CwtStringNS  *stringNS = cwtStringNS();
-	CwtStrListNS *slNS     = cwtStrListNS();
+	CwtStringNS  *stringNS = cwt_string_ns();
+	CwtStrListNS *slNS     = cwt_strList_ns();
 	CwtString    *tmpbuf   = stringNS->create();
 	CwtStrList   *spec     = NULL;
 

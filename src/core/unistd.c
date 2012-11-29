@@ -9,6 +9,8 @@
 #include <cwt/unistd.h>
 
 
+extern int cwt_usleep(unsigned int usec);
+
 static ssize_t  __read (int fd, void *buffer, size_t count );
 static ssize_t  __write(int fd, const void *buffer, size_t count );
 static void     __cwt_sleep(UINT sec);
@@ -43,7 +45,7 @@ static CwtUnistdNS __cwtUnistdNS = {
 
 };
 
-DLL_API_EXPORT CwtUnistdNS* cwtUnistdNS(void)
+DLL_API_EXPORT CwtUnistdNS* cwt_unistd_ns(void)
 {
 	return &__cwtUnistdNS;
 }
@@ -89,9 +91,9 @@ static void __cwt_usleep(UINT usec)
 
 #elif defined(CWT_CC_GNUC)
 
-static void __cwt_sleep(UINT sec)  { sleep(sec); }
-static void __cwt_msleep(UINT msec) { usleep((msec)*1000); }
-static void __cwt_usleep(UINT usec) { usleep(usec); }
+static void __cwt_sleep(UINT sec)   { sleep(sec); }
+static void __cwt_msleep(UINT msec) { cwt_usleep((msec)*1000); }
+static void __cwt_usleep(UINT usec) { cwt_usleep(usec); }
 
 #else
 

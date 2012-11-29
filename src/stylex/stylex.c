@@ -25,7 +25,7 @@ extern void _cwt_colorx_init(void);
 extern void _cwt_colorx_release(void);
 
 /**
- * Инициализирует подсистему стилей
+ * я┐╜я┐╜я┐╜циая┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜темя┐╜ я┐╜тиля┐╜я┐╜
  *
  */
 void cwt_stylex_init(void)
@@ -44,8 +44,8 @@ void cwt_stylex_init(void)
 }
 
 /**
- * Деактивизирует подсистему стилей.
- * Освобождает ресурсы, задействованные при использовании подсистемы стилей.
+ * я┐╜я┐╜я┐╜я┐╜тивя┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜темя┐╜ я┐╜тиля┐╜я┐╜.
+ * я┐╜своя┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜, я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜твоя┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜ я┐╜споя┐╜ьзоя┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜темя┐╜ я┐╜тиля┐╜я┐╜.
  *
  */
 void cwt_stylex_release(void)
@@ -79,16 +79,16 @@ Cwt_StyleAttrSetPtr cwt_stylex_newStyleAttrSet(void)
 }
 
 /**
- * Клонирует стиль.
+ * я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜тиля┐╜.
  *
- * @param clone Целевой стиль для клонирования.
- * @param orig Клонируемый стиль.
+ * @param clone я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜тиля┐╜ я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜ровя┐╜я┐╜я┐╜я┐╜.
+ * @param orig я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜уемя┐╜ я┐╜тиля┐╜.
  */
 void cwt_stylex_cloneStyle(Cwt_StylePtr clone, Cwt_StyleConstPtr orig)
 {
 	CWT_ASSERT(orig);
 	CWT_ASSERT(clone);
-	cwtStrNS()->memcpy(clone, orig, sizeof(Cwt_Style));
+	cwt_str_ns()->memcpy(clone, orig, sizeof(Cwt_Style));
 }
 
 
@@ -124,16 +124,16 @@ Cwt_StyleAttrSetPtr cwt_stylex_styleAttrSetById(const CWT_CHAR *name, BOOL creat
 
 
 /**
- * @brief Выполняет сборку стиля на основе каскадной таблицы стилей
+ * @brief я┐╜ыпоя┐╜я┐╜я┐╜я┐╜ сбоя┐╜я┐╜ я┐╜тиля┐╜ я┐╜я┐╜ я┐╜сноя┐╜я┐╜ я┐╜я┐╜ская┐╜я┐╜я┐╜я┐╜ табя┐╜я┐╜я┐╜я┐╜ я┐╜тиля┐╜я┐╜
  *
- * @param pstyle результирующий стиль
- * @param media тип носителя
- * @param id    идентификатор виджета
- * @param cls   класс виджета
- * @param state состояние виджета
- * @param wtype тип виджета
+ * @param pstyle резя┐╜я┐╜я┐╜я┐╜я┐╜я┐╜щий я┐╜тиля┐╜
+ * @param media тип я┐╜я┐╜я┐╜теля┐╜
+ * @param id    я┐╜я┐╜я┐╜я┐╜я┐╜фикя┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜
+ * @param cls   я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜
+ * @param state я┐╜я┐╜я┐╜яния┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜
+ * @param wtype тип я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜
  *
- * @note Поддержка media только all или screen.
+ * @note я┐╜я┐╜я┐╜я┐╜я┐╜ржкя┐╜ media только all я┐╜я┐╜я┐╜ screen.
  */
 void cwt_stylex_assembly(Cwt_StylePtr pstyle
 	, const CWT_CHAR *media

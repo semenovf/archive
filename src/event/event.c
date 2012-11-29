@@ -51,10 +51,10 @@ static CwtEventNS __cwtEventNS  = {
 
 static CwtListNS *__listNS = NULL;
 
-DLL_API_EXPORT CwtEventNS* cwtEventNS(void)
+DLL_API_EXPORT CwtEventNS* cwt_event_ns(void)
 {
 	if( !__listNS ) {
-		__listNS = cwtListNS();
+		__listNS = cwt_list_ns();
 	}
 
 	if( !__registered_sources ) {
@@ -82,12 +82,12 @@ static inline BOOL __registerSource(CwtEventSource *source)
 {
 	if( !__isRegisteredSource(source) ) {
 		if( !source->poll ) {
-			cwtLoggerNS()->error(_T("registration source failed: 'poll' method is not specified"));
+			cwt_logger_ns()->error(_T("registration source failed: 'poll' method is not specified"));
 			return FALSE;
 		}
 		__listNS->append(__registered_sources, source);
 	} else {
-		cwtLoggerNS()->error(_T("source already registered"));
+		cwt_logger_ns()->error(_T("source already registered"));
 		return FALSE;
 	}
 
@@ -209,7 +209,7 @@ static BOOL __dispatchEvents(void)
 		if( __idle_process ) {
 			__idle_process();
 		} else {
-			cwtUnistdNS()->msleep(50);
+			cwt_unistd_ns()->msleep(50);
 		}
 	} else {
 		while( __listNS->size(__input_queue) ) {

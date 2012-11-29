@@ -41,11 +41,11 @@ static CwtListNS *__listNS = NULL;
 /**
  *
  */
-DLL_API_EXPORT CwtStackNS* cwtStackNS(void)
+DLL_API_EXPORT CwtStackNS* cwt_stack_ns(void)
 {
 	if( !__strNS ) {
-		__strNS = cwtStrNS();
-		__listNS = cwtListNS();
+		__strNS = cwt_str_ns();
+		__listNS = cwt_list_ns();
 	}
 	return &__cwtStackNS;
 }

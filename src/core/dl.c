@@ -8,15 +8,19 @@ static DlSymbol  __symbol(DlHandle h, const char *name);
 static void      __close(DlHandle h);
 static CWT_CHAR* __buildDlFileName(const CWT_CHAR *name);
 
+extern BOOL dl_load_ns(const CWT_CHAR *dsn);
+
+
 static CwtDlNS __cwtDlNS = {
 	  __open
 	, __symbol
 	, __close
 	, __buildDlFileName
+	, dl_load_ns
 };
 
 
-DLL_API_EXPORT CwtDlNS* cwtDlNS(void)
+DLL_API_EXPORT CwtDlNS* cwt_dl_ns(void)
 {
 	return &__cwtDlNS;
 }
@@ -34,15 +38,15 @@ DlHandle __open( const CWT_CHAR *path, BOOL global, BOOL resolve )
 	h = LoadLibraryEx(path, NULL, dwFlags);
 
 	if( !h ) {
-		cwtLoggerNS()->error( _Tr("%s: failed to open dynamic library: %s"), path, cwtStrNS()->strError(GetLastError()) );
+		cwt_logger_ns()->error( _Tr("%s: failed to open dynamic library: %s"), path, cwt_str_ns()->strError(GetLastError()) );
 	} else {
-	   // use the result in a call to GetProcAddress
+	   /*use the result in a call to GetProcAddress*/
 	}
 #else
-	dlerror(); // clear error
+	dlerror(); /* clear error */
 	h = dlopen( path, (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ) );
 	if( !h ) {
-		cwtLoggerNS()->error( _Tr("%s: failed to open dynamic library: %s"), path, dlerror() );
+		cwt_logger_ns()->error( _Tr("%s: failed to open dynamic library: %s"), path, dlerror() );
 	}
 #endif
 
@@ -59,13 +63,13 @@ static DlSymbol __symbol(DlHandle h, const char *sym_name)
 #ifdef CWT_CC_MSC
 	sym = GetProcAddress(h, sym_name);
 	if( !sym ) {
-		cwtLoggerNS()->error(_Tr("%s: symbol not found: error code=%lu"), sym_name, GetLastError());
+		cwt_logger_ns()->error(_Tr("%s: symbol not found: error code=%lu"), sym_name, GetLastError());
 	}
 #else
 	dlerror(); /*clear error*/
 	sym = dlsym( h, sym_name );
 	if( !sym ) {
-		cwtLoggerNS()->error(_Tr("%s: symbol not found: error code=%lu"), sym_name, dlerror());
+		cwt_logger_ns()->error(_Tr("%s: symbol not found: error code=%lu"), sym_name, dlerror());
 	}
 #endif
 	return sym;
@@ -94,7 +98,7 @@ void __close(DlHandle h)
  */
 static CWT_CHAR* __buildDlFileName(const CWT_CHAR *name)
 {
-	CwtStringNS *stringNS = cwtStringNS();
+	CwtStringNS *stringNS = cwt_string_ns();
 	CwtString *libname;
 	const CWT_CHAR *ret;
 

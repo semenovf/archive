@@ -16,7 +16,7 @@ typedef struct CwtStdioNS {
 } CwtStdioNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtStdioNS* cwtStdioNS(void);
+DLL_API_EXPORT CwtStdioNS* cwt_stdio_ns(void);
 EXTERN_C_END
 
 

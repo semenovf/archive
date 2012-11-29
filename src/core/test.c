@@ -11,7 +11,7 @@
 static CwtTestContext __cwtTestContext = { 0, 0, 0, 0 };
 
 
-CwtTestContext* cwtResetTestContext(int ntests)
+CwtTestContext* cwt_reset_test_context(int ntests)
 {
 	__cwtTestContext.m_total_tests = ntests;
 	__cwtTestContext.m_run_tests
@@ -21,7 +21,7 @@ CwtTestContext* cwtResetTestContext(int ntests)
 	return &__cwtTestContext;
 }
 
-CwtTestContext* cwtTestContext(void)
+CwtTestContext* cwt_test_context(void)
 {
 	return &__cwtTestContext;
 }

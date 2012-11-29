@@ -17,15 +17,15 @@ static BOOL __initSockAddrUn(struct sockaddr_un *saddr, const CWT_CHAR *path)
 	char *utf8Path;
 	BOOL ok = FALSE;
 
-	if( !path || cwtStrNS()->strLen(path) == 0 ) {
-		cwtLoggerNS()->error(_Tr("local socket path is empty"));
+	if( !path || cwt_str_ns()->strLen(path) == 0 ) {
+		cwt_logger_ns()->error(_Tr("local socket path is empty"));
 		return FALSE;
 	}
 
-	utf8Path = cwtTextCodecNS()->toUtf8(path, cwtStrNS()->strLen(path));
+	utf8Path = cwt_textcodec_ns()->toUtf8(path, cwt_str_ns()->strLen(path));
 
 	if( strlen(utf8Path) >= sizeof(saddr->sun_path)) {
-		cwtLoggerNS()->error(_Tr("local socket path too long"));
+		cwt_logger_ns()->error(_Tr("local socket path too long"));
 	} else {
 		saddr->sun_family = AF_UNIX;
 		strcpy(saddr->sun_path, utf8Path);
@@ -49,7 +49,7 @@ static BOOL __initListener(CwtLocalSocket *sd_local
 	rc = bind(sd_local->sockfd, (SOCKADDR*)&sd_local->sockaddr, len);
 
 	if( rc < 0 ) {
-		cwtLoggerNS()->error(_Tr("bind failed")
+		cwt_logger_ns()->error(_Tr("bind failed")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 		return FALSE;
@@ -58,7 +58,7 @@ static BOOL __initListener(CwtLocalSocket *sd_local
 	rc = listen(sd_local->sockfd, 0);
 
 	if (rc < 0) {
-		cwtLoggerNS()->error(_Tr("changing socket state to listening mode failed")
+		cwt_logger_ns()->error(_Tr("changing socket state to listening mode failed")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 		return FALSE;
@@ -86,7 +86,7 @@ static BOOL __initClient(CwtLocalSocket *sd_local
 		}
 
 		if (rc < 0) {
-			cwtLoggerNS()->error(_Tr("connection to '%s' failed")
+			cwt_logger_ns()->error(_Tr("connection to '%s' failed")
 				_CWT_SOCKET_LOG_FMTSUFFIX
 				, path
 				, _CWT_SOCKET_LOG_ARGS);
@@ -115,7 +115,7 @@ static CwtSocket* __socket_openLocalSocketHelper(
 			: __initClient((CwtLocalSocket *)sd, path);
 
 		if (!ok) {
-			cwtSocketNS()->close(sd);
+			cwt_socket_ns()->close(sd);
 			sd = NULL;
 		}
 	}
@@ -168,7 +168,7 @@ CwtSocket* __socket_acceptLocalSocket(CwtSocket *sd)
 	}
 
 	CWT_FREE(sd_local);
-	cwtLoggerNS()->error(_Tr("accepting connection failed")
+	cwt_logger_ns()->error(_Tr("accepting connection failed")
 		_CWT_SOCKET_LOG_FMTSUFFIX
 		, _CWT_SOCKET_LOG_ARGS);
 
@@ -194,10 +194,10 @@ CWT_CHAR*  __socket_localPath(CwtSocket *sd)
 		size_t socklen = strlen(sd_local->sockaddr.sun_path);
 
 		if( socklen >= sizeof(sd_local->sockaddr.sun_path) ) {
-			cwtLoggerNS()->error(_Tr("local socket is invalid or it's path is wrong"));
+			cwt_logger_ns()->error(_Tr("local socket is invalid or it's path is wrong"));
 			return NULL;
 		}
-		return cwtTextCodecNS()->fromUtf8(sd_local->sockaddr.sun_path, socklen);
+		return cwt_textcodec_ns()->fromUtf8(sd_local->sockaddr.sun_path, socklen);
 	}
 
 	return NULL;

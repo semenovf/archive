@@ -209,7 +209,7 @@ typedef struct CwtDBI
 } CwtDBI;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtDBI* cwtDBI(void);
+DLL_API_EXPORT CwtDBI* cwt_dbi_ns(void);
 EXTERN_C_END
 
 #endif /* __CWT_DBI_H__ */

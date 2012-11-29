@@ -11,13 +11,13 @@
 #include <cwt/test.h>
 #include <cwt/ringbuf.h>
 
-CwtRingBufNS *__rbNS = NULL;
+CwtRingBufferNS *__rbNS = NULL;
 
 /* Test Maximum limit */
 static void test_00(void)
 {
 	int i;
-	CwtRingBuf *rb = __rbNS->createSized(8, 128);
+	CwtRingBuffer *rb = __rbNS->createSized(8, 128);
 	for(i = 0; i < 256; i++ ) {
 		if( i > 127 ) {
 			CWT_TEST_OK(!__rbNS->put(rb, (BYTE)i));
@@ -36,7 +36,7 @@ static void test_01(void)
 	int n;
 	BYTE obuf[7] = { 0xDE, 0xAD, 0xBE, 0xAF, 0xF0, 0x0D, 0xEB };
 	BYTE ibuf[7];
-	CwtRingBuf *rb = __rbNS->create();
+	CwtRingBuffer *rb = __rbNS->create();
 
 	while(i--) {
 		__rbNS->pushBack(rb, obuf, 7);
@@ -71,9 +71,9 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(129);
+	CWT_BEGIN_TESTS(132);
 
-	__rbNS = cwtRingBufNS();
+	__rbNS = cwt_ringbuffer_ns();
 
 	test_00();
 	test_01();

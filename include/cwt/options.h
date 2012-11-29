@@ -68,7 +68,7 @@ typedef struct _CwtOptionsNS {
 } CwtOptionsNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtOptionsNS* cwtOptionsNS(void);
+DLL_API_EXPORT CwtOptionsNS* cwt_options_ns(void);
 EXTERN_C_END
 
 

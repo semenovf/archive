@@ -44,12 +44,12 @@ static CwtListNS    *__listNS = NULL;
 static CwtChannelNS *__channelNS = NULL;
 static CwtEventNS   *__eventNS = NULL;
 
-DLL_API_EXPORT CwtEventChannelNS* cwtEventChannelNS(void)
+DLL_API_EXPORT CwtEventChannelNS* cwt_event_channel_ns(void)
 {
 	if( !__listNS ) {
-		__listNS = cwtListNS();
-		__channelNS = cwtChannelNS();
-		__eventNS = cwtEventNS();
+		__listNS = cwt_list_ns();
+		__channelNS = cwt_channel_ns();
+		__eventNS = cwt_event_ns();
 	}
 	if( !__listeners ) {
 		__listeners = __listNS->create(sizeof(CwtChannelListener), __cleanupListener);

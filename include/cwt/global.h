@@ -20,7 +20,8 @@
 #endif
 
 #if _POSIX_C_SOURCE >= 200112L
-#	define CWT_HAVE_POLL 1
+#	define CWT_HAVE_POLL   1
+#	define CWT_HAVE_SELECT 1
 #endif
 
 #if _POSIX_C_SOURCE >= 1 || defined(_XOPEN_SOURCE) || defined(_POSIX_SOURCE)

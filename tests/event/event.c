@@ -15,7 +15,7 @@ static CwtEventSource __event_source_4 = {__poll, NULL};
 
 static void test_event_sources(void)
 {
-	CwtEventNS *eventNS = cwtEventNS();
+	CwtEventNS *eventNS = cwt_event_ns();
 
 	CWT_TEST_OK(eventNS->registerSource(&__event_source_0));
 	CWT_TEST_OK(eventNS->registerSource(&__event_source_1));

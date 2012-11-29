@@ -19,17 +19,17 @@
  */
 CWT_CHAR* __stringifyBoolType(void)
 {
-	return cwtStrNS()->strDup(_T("BOOLEAN"));
+	return cwt_str_ns()->strDup(_T("BOOLEAN"));
 }
 
 
 CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *s = NULL;
 
 	if( max > CWT_LONGLONG_MAX && ! (min >= 0) ) {
-		print_error(_Tr("bounds for integer is illegal"));
+		cwt_logger_ns()->error(_Tr("bounds for integer is illegal"));
 		return NULL;
 	}
 
@@ -66,7 +66,7 @@ CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max)
  */
 CWT_CHAR* __stringifyFloatType(CwtTypeEnum type, UINT prec, UINT scale)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *fstr = NULL;
 
 	CWT_ASSERT(type == CwtType_FLOAT || type == CwtType_DOUBLE);
@@ -85,7 +85,7 @@ CWT_CHAR* __stringifyFloatType(CwtTypeEnum type, UINT prec, UINT scale)
 		CWT_CHAR buf[64];
 		strNS->bzero(buf, 64 * sizeof(CWT_CHAR));
 
-		CWT_ASSERT(cwtStdioNS()->snprintf(buf, 31, _T("DECIMAL(%d,%d)"), prec, scale) > 0);
+		CWT_ASSERT(cwt_stdio_ns()->snprintf(buf, 31, _T("DECIMAL(%d,%d)"), prec, scale) > 0);
 		fstr = strNS->strDup(buf);
 	}
 
@@ -94,18 +94,18 @@ CWT_CHAR* __stringifyFloatType(CwtTypeEnum type, UINT prec, UINT scale)
 
 CWT_CHAR* __stringifyTextType(ULONGLONG maxlen)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *s = NULL;
 
 	if( maxlen == 0ULL ) {
 		s = strNS->strDup(_T("TEXT"));
 	} else if( maxlen < 64 ) {
 		CWT_CHAR buf[64];
-		CWT_ASSERT(cwtStdioNS()->snprintf(buf, 63, _T("CHAR(%lu)"), maxlen) > 0);
+		CWT_ASSERT(cwt_stdio_ns()->snprintf(buf, 63, _T("CHAR(%lu)"), maxlen) > 0);
 		s = strNS->strDup(buf);
 	} else if( maxlen < 256 ) {
 		CWT_CHAR buf[64];
-		CWT_ASSERT(cwtStdioNS()->snprintf(buf, 63, _T("VARCHAR(%lu)"), maxlen) > 0);
+		CWT_ASSERT(cwt_stdio_ns()->snprintf(buf, 63, _T("VARCHAR(%lu)"), maxlen) > 0);
 		s = strNS->strDup(buf);
 	} else if( maxlen <= CWT_UINT16_MAX ) {
 		s = strNS->strDup(_T("TEXT"));
@@ -120,7 +120,7 @@ CWT_CHAR* __stringifyTextType(ULONGLONG maxlen)
 
 CWT_CHAR* __stringifyBlobType(ULONGLONG maxlen)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *s = NULL;
 
 	if( maxlen == 0ULL ) {
@@ -140,7 +140,7 @@ CWT_CHAR* __stringifyBlobType(ULONGLONG maxlen)
 
 CWT_CHAR* __stringifyTimeType(CwtTypeEnum time_type, BOOL stamp)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 
 	if( stamp ) {
 		return strNS->strDup(_T("TIMESTAMP DEFAULT CURRENT_TIMESTAMP"));

@@ -839,7 +839,7 @@ while (argc > 1 && argv[op][0] == '-')
   else if (strcmp(argv[op], "-C") == 0)
     {
     int rc;
-    cwtStdioNS()->printf(_T("PCRE version %s\n"), __pcreNS->version());
+    cwt_stdio_ns()->printf(_T("PCRE version %s\n"), __pcreNS->version());
 
     printf("Compiled with\n");
     (void)__pcreNS->config(PCRE_CONFIG_UTF8, &rc);
@@ -929,7 +929,7 @@ pcre_stack_free = stack_free;
 /* Heading line unless quiet, then prompt for first regex if stdin */
 
 if( !quiet )
-	cwtStdioNS()->fprintf(outfile, _T("PCRE version %s\n\n"), __pcreNS->version());
+	cwt_stdio_ns()->fprintf(outfile, _T("PCRE version %s\n\n"), __pcreNS->version());
 
 /* Main loop */
 

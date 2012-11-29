@@ -38,10 +38,10 @@ static CwtIniNS __cwtIniNS = {
 
 CwtHashTableNS *__htNS = NULL;
 
-DLL_API_EXPORT CwtIniNS* cwtIniNS(void)
+DLL_API_EXPORT CwtIniNS* cwt_ini_ns(void)
 {
 	if( !__htNS ) {
-		__htNS = cwtHashTableNS();
+		__htNS = cwt_hashtable_ns();
 	}
 	return &__cwtIniNS;
 }
@@ -86,11 +86,11 @@ static void __ini_free(CwtIniContext* h)
 
 static BOOL __ini_parse(CwtIniContext *h, CwtChannel *pchan)
 {
-	CwtStrNS       *strNS    = cwtStrNS();
-	CwtStrListNS   *slNS     = cwtStrListNS();
-	CwtChannelNS   *chNS     = cwtChannelNS();
-	CwtByteArrayNS *baNS     = cwtByteArrayNS();
-	CwtTextCodecNS *codecNS  = cwtTextCodecNS();
+	CwtStrNS       *strNS    = cwt_str_ns();
+	CwtStrListNS   *slNS     = cwt_strList_ns();
+	CwtChannelNS   *chNS     = cwt_channel_ns();
+	CwtByteArrayNS *baNS     = cwt_bytearray_ns();
+	CwtTextCodecNS *codecNS  = cwt_textcodec_ns();
 	CwtByteArray   *ba;
 	CwtStrList     *tokens;
 	BOOL esc = FALSE;
@@ -203,7 +203,7 @@ static void __ini_addDirective (CwtIniContext *h, const CWT_CHAR *directive, Cwt
 	CWT_ASSERT(h);
 
 	if( directive && handler ) {
-		CWT_CHAR *dir = cwtStrNS()->strDup(directive);
+		CWT_CHAR *dir = cwt_str_ns()->strDup(directive);
 		CWT_ASSERT(__htNS->insert(h->directives, dir, handler));
 	}
 }

@@ -40,7 +40,7 @@ static CwtLocaleNS __cwtLocaleNS = {
 };
 
 
-DLL_API_EXPORT CwtLocaleNS *cwtLocaleNS(void)
+DLL_API_EXPORT CwtLocaleNS *cwt_locale_ns(void)
 {
 	return &__cwtLocaleNS;
 }

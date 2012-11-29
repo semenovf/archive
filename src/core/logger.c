@@ -4,6 +4,16 @@
 #include <cwt/str.h>
 #include <cwt/string.h>
 
+static void printf_trace (const CWT_CHAR* format, ...);
+static void printf_debug (const CWT_CHAR* format, ...);
+static void printf_info  (const CWT_CHAR* format, ...);
+static void printf_warn  (const CWT_CHAR* format, ...);
+static void printf_error (const CWT_CHAR* format, ...);
+static void set_printer  (LOGGER_TYPE type, void (*printer)(const CWT_CHAR* msg), const CWT_CHAR* prefix);
+static void set_default_printers(void);
+
+static void init_loggers(void);
+
 static CwtLoggerNS __cwtLoggerNS = {
 	  printf_trace
 	, printf_debug
@@ -37,7 +47,7 @@ static CWT_CHAR* __default_prefix[LOGGER_COUNT] = {
 static BOOL __is_logger_init = FALSE;
 
 
-DLL_API_EXPORT CwtLoggerNS* cwtLoggerNS(void)
+DLL_API_EXPORT CwtLoggerNS* cwt_logger_ns(void)
 {
 	if( !__is_logger_init ) {
 		init_loggers();
@@ -47,7 +57,7 @@ DLL_API_EXPORT CwtLoggerNS* cwtLoggerNS(void)
 }
 
 
-void set_printer(LOGGER_TYPE type
+static void set_printer(LOGGER_TYPE type
 	, void (*printer)(const CWT_CHAR* msg)
 	, const CWT_CHAR* prefix)
 {
@@ -59,11 +69,11 @@ void set_printer(LOGGER_TYPE type
 	}
 
 	if( prefix ) {
-		LOGGER_CONTEXT[type].prefix = cwtStrNS()->strDup(prefix);
+		LOGGER_CONTEXT[type].prefix = cwt_str_ns()->strDup(prefix);
 	}
 
 	if( !LOGGER_CONTEXT[type].sbuf ) {
-		LOGGER_CONTEXT[type].sbuf = cwtStringNS()->create();
+		LOGGER_CONTEXT[type].sbuf = cwt_string_ns()->create();
 	}
 
 	if( printer )
@@ -72,19 +82,19 @@ void set_printer(LOGGER_TYPE type
 
 
 static void _print_trace(const CWT_CHAR* msg)
-{ cwtStdioNS()->fprintf(stdout, _T("%s\n"), msg); }
+{ cwt_stdio_ns()->fprintf(stdout, _T("%s\n"), msg); }
 
 static void _print_debug(const CWT_CHAR* msg)
-{ cwtStdioNS()->fprintf(stdout, _T("%s\n"), msg); }
+{ cwt_stdio_ns()->fprintf(stdout, _T("%s\n"), msg); }
 
 static void _print_info(const CWT_CHAR* msg)
-{ cwtStdioNS()->fprintf(stdout, _T("%s\n"), msg); }
+{ cwt_stdio_ns()->fprintf(stdout, _T("%s\n"), msg); }
 
 static void _print_warn(const CWT_CHAR* msg)
-{ cwtStdioNS()->fprintf(stderr, _T("%s\n"), msg); }
+{ cwt_stdio_ns()->fprintf(stderr, _T("%s\n"), msg); }
 
 static void _print_error(const CWT_CHAR* msg)
-{ cwtStdioNS()->fprintf(stderr, _T("%s\n"), msg); }
+{ cwt_stdio_ns()->fprintf(stderr, _T("%s\n"), msg); }
 
 
 /*
@@ -98,7 +108,7 @@ void _printf_fatal(int exit_code, const CHAR* format, ...)
 }
 */
 
-void set_default_printers(void)
+static void set_default_printers(void)
 {
 	set_printer(LOGGER_TRACE, _print_trace, __default_prefix[LOGGER_TRACE]);
 	set_printer(LOGGER_DEBUG, _print_debug, __default_prefix[LOGGER_DEBUG]);
@@ -107,14 +117,14 @@ void set_default_printers(void)
 	set_printer(LOGGER_ERROR, _print_error, __default_prefix[LOGGER_ERROR]);
 }
 
-void init_loggers(void)
+static void init_loggers(void)
 {
 	set_default_printers();
 }
 
 static void _print(LOGGER_TYPE type, const CWT_CHAR* msg)
 {
-	CwtStringNS *sbns = cwtStringNS();
+	CwtStringNS *sbns = cwt_string_ns();
 
 	if( ! LOGGER_CONTEXT[type].printer )
 		init_loggers();
@@ -129,11 +139,13 @@ static void _print(LOGGER_TYPE type, const CWT_CHAR* msg)
 }
 
 
+/*
 void print_trace(const CWT_CHAR* msg) { _print(LOGGER_TRACE, msg); }
 void print_debug(const CWT_CHAR* msg) { _print(LOGGER_DEBUG, msg); }
 void print_info(const CWT_CHAR* msg)  { _print(LOGGER_INFO, msg); }
 void print_warn(const CWT_CHAR* msg)  { _print(LOGGER_WARN, msg); }
 void print_error(const CWT_CHAR* msg) { _print(LOGGER_ERROR, msg); }
+*/
 
 
 #define __MSG_SZ 512
@@ -146,7 +158,7 @@ static void _printf(LOGGER_TYPE type, const CWT_CHAR* format, va_list args)
 	CWT_CHAR msg[__MSG_SZ+1];
 	CWT_CHAR *amsg = NULL;
 
-	n = cwtStdioNS()->vsnprintf(msg, __MSG_SZ, format, args);
+	n = cwt_stdio_ns()->vsnprintf(msg, __MSG_SZ, format, args);
 
 	while( n < 0 ) {
 		sz += __MSG_INC_SZ;
@@ -160,7 +172,7 @@ static void _printf(LOGGER_TYPE type, const CWT_CHAR* format, va_list args)
 			CWT_FREE(amsg);
 
 		amsg = CWT_MALLOCA(CWT_CHAR, sz+1);
-		n = cwtStdioNS()->vsnprintf(amsg, sz, format, args);
+		n = cwt_stdio_ns()->vsnprintf(amsg, sz, format, args);
 	}
 
 	if( sz <= __MSG_MAX_SZ) {
@@ -173,7 +185,7 @@ static void _printf(LOGGER_TYPE type, const CWT_CHAR* format, va_list args)
 	}
 }
 
-void printf_trace(const CWT_CHAR* format, ...)
+static void printf_trace(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -181,7 +193,7 @@ void printf_trace(const CWT_CHAR* format, ...)
 	va_end(args);
 }
 
-void printf_debug(const CWT_CHAR* format, ...)
+static void printf_debug(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -189,7 +201,7 @@ void printf_debug(const CWT_CHAR* format, ...)
 	va_end(args);
 }
 
-void printf_info(const CWT_CHAR* format, ...)
+static void printf_info(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -197,7 +209,7 @@ void printf_info(const CWT_CHAR* format, ...)
 	va_end(args);
 }
 
-void printf_warn(const CWT_CHAR* format, ...)
+static void printf_warn(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -205,7 +217,7 @@ void printf_warn(const CWT_CHAR* format, ...)
 	va_end(args);
 }
 
-void printf_error(const CWT_CHAR* format, ...)
+static void printf_error(const CWT_CHAR* format, ...)
 {
 	va_list args;
 	va_start(args, format);

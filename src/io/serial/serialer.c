@@ -65,7 +65,7 @@ void serialport_dump(int portnum)
 	serialport_settings(portnum, &uart_base, &irq);
 	serialport_parms(portnum, &speed, &hispeed, &db, &parity, &sb);
 
-	cwtStdioNS()->printf(_Tr("COM%d: irq=%d; uart_base=0x%04X; speed=%ld; hispeed=%c; db=%d; sb=%d; parity=%s\n")
+	cwt_stdio_ns()->printf(_Tr("COM%d: irq=%d; uart_base=0x%04X; speed=%ld; hispeed=%c; db=%d; sb=%d; parity=%s\n")
 		, portnum
 		, irq
 		, uart_base

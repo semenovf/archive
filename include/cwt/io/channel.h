@@ -28,7 +28,7 @@ typedef struct _CwtChannel
 	CwtIODevice  *dev;
     unsigned long total_br; /* total bytes read */
     unsigned long total_bw; /* total bytes written */
-    CwtRingBuf    *rb;
+    CwtRingBuffer    *rb;
 } CwtChannel;
 
 
@@ -51,7 +51,7 @@ typedef struct _CwtChannelNS {
 } CwtChannelNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtChannelNS* cwtChannelNS(void);
+DLL_API_EXPORT CwtChannelNS* cwt_channel_ns(void);
 EXTERN_C_END
 
 #endif /* __CWT_IO_CHANNEL_H__ */

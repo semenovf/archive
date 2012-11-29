@@ -58,11 +58,11 @@ void test_pack_unpack_int(void)
 		, &dest_min.i8
 	};
 
-	CWT_TEST_FAIL(cwtUtilsNS()->pack(_T("q"), buf, 256, data_origin_max
+	CWT_TEST_FAIL(cwt_utils_ns()->pack(_T("q"), buf, 256, data_origin_max
 			, sizeof(data_origin_max)/sizeof(data_origin_max[0])) > 0);
-	CWT_TEST_FAIL(cwtUtilsNS()->pack(_T("qlwb"), buf, 256, data_origin_max
+	CWT_TEST_FAIL(cwt_utils_ns()->pack(_T("qlwb"), buf, 256, data_origin_max
 			, sizeof(data_origin_max)/sizeof(data_origin_max[0])) > 0);
-	CWT_TEST_FAIL(cwtUtilsNS()->unpack(_T("qlwb"), buf, 256, data_dest_max
+	CWT_TEST_FAIL(cwt_utils_ns()->unpack(_T("qlwb"), buf, 256, data_dest_max
 			, sizeof(data_dest_max)/sizeof(data_dest_max[0])) > 0);
 
 	CWT_TEST_OK(dest_max.i64 == origin_max.i64);
@@ -70,9 +70,9 @@ void test_pack_unpack_int(void)
 	CWT_TEST_OK(dest_max.i16 == origin_max.i16);
 	CWT_TEST_OK(dest_max.i8  == origin_max.i8);
 
-	CWT_TEST_FAIL(cwtUtilsNS()->pack(_T("qlwb"), buf, 256, data_origin_min
+	CWT_TEST_FAIL(cwt_utils_ns()->pack(_T("qlwb"), buf, 256, data_origin_min
 			, sizeof(data_origin_min)/sizeof(data_origin_min[0])) > 0);
-	CWT_TEST_FAIL(cwtUtilsNS()->unpack(_T("qlwb"), buf, 256, data_dest_min
+	CWT_TEST_FAIL(cwt_utils_ns()->unpack(_T("qlwb"), buf, 256, data_dest_min
 			, sizeof(data_dest_min)/sizeof(data_dest_min[0])) > 0);
 
 	CWT_TEST_OK(dest_min.i64 == origin_min.i64);
@@ -103,9 +103,9 @@ void test_pack_unpack_float(void)
 		, &dest.d
 	};
 
-	CWT_TEST_FAIL(cwtUtilsNS()->pack(_T("fd"), buf, 256, data_origin
+	CWT_TEST_FAIL(cwt_utils_ns()->pack(_T("fd"), buf, 256, data_origin
 			, sizeof(data_origin)/sizeof(data_origin[0])) > 0);
-	CWT_TEST_FAIL(cwtUtilsNS()->unpack(_T("fd"), buf, 256, data_dest
+	CWT_TEST_FAIL(cwt_utils_ns()->unpack(_T("fd"), buf, 256, data_dest
 			, sizeof(data_dest)/sizeof(data_dest[0])) > 0);
 
 	CWT_TEST_OK(dest.f   == origin.f);
@@ -128,8 +128,8 @@ void test_pack_unpack_int_array(void)
 	void *data_dest[] = { &dest.i64[0], &dest.i32 };
 
 
-	CWT_TEST_FAIL(cwtUtilsNS()->pack(_T("q[4]l"), buf, 256, data_origin, 2) > 0);
-	CWT_TEST_FAIL(cwtUtilsNS()->unpack(_T("q[4]l"), buf, 256, data_dest, 2) > 0);
+	CWT_TEST_FAIL(cwt_utils_ns()->pack(_T("q[4]l"), buf, 256, data_origin, 2) > 0);
+	CWT_TEST_FAIL(cwt_utils_ns()->unpack(_T("q[4]l"), buf, 256, data_dest, 2) > 0);
 
 	CWT_TEST_OK(dest.i64[0] == origin.i64[0]);
 	CWT_TEST_OK(dest.i64[1] == origin.i64[1]);
@@ -154,17 +154,17 @@ void test_pack_failed(void)
 
 	void *data_origin[] = { &origin.unused0, &origin.unused1, &origin.unused2 };
 
-	CWT_TEST_OK(cwtUtilsNS()->pack(_T("`"), buf, sizeof(buf),   data_origin, 3) < 0);
-	CWT_TEST_OK(cwtUtilsNS()->pack(_T("`l"), buf, sizeof(buf),  data_origin, 3) < 0);
-	CWT_TEST_OK(cwtUtilsNS()->pack(_T("`ll"), buf, sizeof(buf), data_origin, 3) < 0);
-	CWT_TEST_OK(cwtUtilsNS()->pack(_T("l`l"), buf, sizeof(buf), data_origin, 3) < 0);
-	CWT_TEST_OK(cwtUtilsNS()->pack(_T("ll`"), buf, sizeof(buf), data_origin, 3) < 0);
+	CWT_TEST_OK(cwt_utils_ns()->pack(_T("`"), buf, sizeof(buf),   data_origin, 3) < 0);
+	CWT_TEST_OK(cwt_utils_ns()->pack(_T("`l"), buf, sizeof(buf),  data_origin, 3) < 0);
+	CWT_TEST_OK(cwt_utils_ns()->pack(_T("`ll"), buf, sizeof(buf), data_origin, 3) < 0);
+	CWT_TEST_OK(cwt_utils_ns()->pack(_T("l`l"), buf, sizeof(buf), data_origin, 3) < 0);
+	CWT_TEST_OK(cwt_utils_ns()->pack(_T("ll`"), buf, sizeof(buf), data_origin, 3) < 0);
 }
 
 
 void test_pack_unpack_unitype(void)
 {
-	CwtUniTypeNS *utNS = cwtUniTypeNS();
+	CwtUniTypeNS *utNS = cwt_unitype_ns();
 
 	BYTE buf[256];
 	CwtUniType origin[7];
@@ -184,9 +184,9 @@ void test_pack_unpack_unitype(void)
 	utNS->setSHORT    (&origin[5], CWT_INT16_MAX);
 	utNS->setBYTE     (&origin[6], CWT_INT8_MAX);
 
-	CWT_TEST_FAIL(cwtUtilsNS()->packUniType(_T("b[3]qlwb"), buf, 256, &origin[0]
+	CWT_TEST_FAIL(cwt_utils_ns()->packUniType(_T("b[3]qlwb"), buf, 256, &origin[0]
 			, sizeof(origin)/sizeof(origin[0])) > 0);
-	CWT_TEST_FAIL(cwtUtilsNS()->unpackUniType(_T("b[3]qlwb"), buf, 256, &dest[0]
+	CWT_TEST_FAIL(cwt_utils_ns()->unpackUniType(_T("b[3]qlwb"), buf, 256, &dest[0]
 			, sizeof(dest)/sizeof(dest[0])) > 0);
 
 	for( i = 0; i < (int)(sizeof(origin)/sizeof(origin[0])); i++ )

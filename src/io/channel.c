@@ -48,10 +48,10 @@ static CwtChannelNS __cwtChannelNS = {
 };
 
 
-static CwtRingBufNS *__rbNS = NULL;
+static CwtRingBufferNS *__rbNS = NULL;
 static CwtByteArrayNS *__baNS = NULL;
 
-DLL_API_EXPORT CwtChannelNS* cwtChannelNS(void)
+DLL_API_EXPORT CwtChannelNS* cwt_channel_ns(void)
 {
 	return &__cwtChannelNS;
 }
@@ -74,7 +74,7 @@ static void __destroy(CwtChannel *pchan)
 			pchan->dev->close(pchan->dev);
         }
 
-        cwtRingBufNS()->free(pchan->rb);
+        cwt_ringbuffer_ns()->free(pchan->rb);
         pchan->rb = NULL;
 	}
 }
@@ -84,15 +84,15 @@ static CwtChannel* __open(CwtIODevice *pdev)
 	CwtChannel* pchan;
 
 	if( !pdev ) {
-		printf_error(_Tr("device is null"));
+		cwt_logger_ns()->error(_Tr("device is null"));
 		return (CwtChannel*)NULL;
 	}
 
 	if( !__rbNS )
-		__rbNS = cwtRingBufNS();
+		__rbNS = cwt_ringbuffer_ns();
 
 	if( !__baNS )
-		__baNS = cwtByteArrayNS();
+		__baNS = cwt_bytearray_ns();
 
 	pchan = CWT_MALLOC(CwtChannel);
 	__init((CwtChannel*)pchan, pdev);

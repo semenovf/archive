@@ -19,7 +19,7 @@ typedef struct _CwtFileSystemNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtFileSystemNS* cwtFileSystemNS(void);
+DLL_API_EXPORT CwtFileSystemNS* cwt_filesystem_ns(void);
 EXTERN_C_END
 
 

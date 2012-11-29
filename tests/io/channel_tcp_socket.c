@@ -41,9 +41,9 @@ nisl ut aliquip ex ea commodo consequat. Duis autem vel eum";
 
 int main(int argc, char *argv[])
 {
-	CwtSocketNS    *socketNS = cwtSocketNS();
-	CwtChannelNS   *chNS = cwtChannelNS();
-	CwtByteArrayNS *baNS = cwtByteArrayNS();
+	CwtSocketNS    *socketNS = cwt_socket_ns();
+	CwtChannelNS   *chNS = cwt_channel_ns();
+	CwtByteArrayNS *baNS = cwt_bytearray_ns();
 	CwtSocket     *sockfdServer;
 	CwtSocket     *sockfdClient;
 	CwtChannel    *pchan0;

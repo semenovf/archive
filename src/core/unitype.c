@@ -35,7 +35,7 @@ static inline BOOL      __setLONGLONG  (CwtUniType *ut, LONGLONG n)   { return _
 static inline BOOL      __setULONGLONG (CwtUniType *ut, ULONGLONG n)  { return __setType(ut, CwtType_ULONGLONG, &n, 0); }
 static inline BOOL      __setFLOAT     (CwtUniType *ut, float n)      { return __setType(ut, CwtType_FLOAT, &n, 0); }
 static inline BOOL      __setDOUBLE    (CwtUniType *ut, double n)     { return __setType(ut, CwtType_DOUBLE, &n, 0); }
-static inline BOOL      __setTEXT      (CwtUniType *ut, const CWT_CHAR *p, size_t length) { return __setType(ut, CwtType_TEXT, p, length ? length : cwtStrNS()->strLen(p)); }
+static inline BOOL      __setTEXT      (CwtUniType *ut, const CWT_CHAR *p, size_t length) { return __setType(ut, CwtType_TEXT, p, length ? length : cwt_str_ns()->strLen(p)); }
 static inline BOOL      __setBLOB      (CwtUniType *ut, const void *p, size_t sz) { return __setType(ut, CwtType_BLOB, p, sz); }
 static inline BOOL      __setTIME      (CwtUniType *ut, const CWT_TIME *p) { return __setType(ut, CwtType_TIME, p, sizeof(CWT_TIME)); }
 static inline BOOL      __setDATE      (CwtUniType *ut, const CWT_TIME *p) { return __setType(ut, CwtType_DATE, p, sizeof(CWT_TIME)); }
@@ -119,10 +119,10 @@ static CwtUniTypeNS __cwtUniTypeNS = {
 static CwtStrNS *__strNS = NULL;
 
 
-DLL_API_EXPORT CwtUniTypeNS* cwtUniTypeNS(void)
+DLL_API_EXPORT CwtUniTypeNS* cwt_unitype_ns(void)
 {
 	if( !__strNS ) {
-		__strNS = cwtStrNS();
+		__strNS = cwt_str_ns();
 	}
 
 	return &__cwtUniTypeNS;
@@ -227,10 +227,10 @@ static BOOL __ut_eq (CwtUniType *ut0, CwtUniType *ut1)
 		if( ut0->type == ut1->type ) {
 			if( ut0->length == ut1->length ) {
 				if( ut0->type == CwtType_TEXT )
-					return cwtStrNS()->memcmp(ut0->value.ptr, ut1->value.ptr, ut0->length * sizeof(CWT_CHAR)) == 0
+					return cwt_str_ns()->memcmp(ut0->value.ptr, ut1->value.ptr, ut0->length * sizeof(CWT_CHAR)) == 0
 							? TRUE : FALSE;
 				else
-					return cwtStrNS()->memcmp(ut0->value.ptr, ut1->value.ptr, ut0->length) == 0
+					return cwt_str_ns()->memcmp(ut0->value.ptr, ut1->value.ptr, ut0->length) == 0
 							? TRUE : FALSE;
 			}
 		}
@@ -769,7 +769,7 @@ static CWT_CHAR* __toTEXT (CwtUniType *ut, BOOL *ok)
 	} else {
 
 		CwtString *buf;
-		CwtStringNS *stringNS = cwtStringNS();
+		CwtStringNS *stringNS = cwt_string_ns();
 
 		buf = stringNS->create();
 
@@ -1009,7 +1009,7 @@ static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size
 		}
 
 		if( p ) {
-			cwtStrNS()->memcpy(ut->value.ptr, p, nbytes);
+			cwt_str_ns()->memcpy(ut->value.ptr, p, nbytes);
 			ut->length = sz;
 		}
 	}

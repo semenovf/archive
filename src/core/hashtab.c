@@ -131,11 +131,11 @@ static CwtHashTableNS __cwtHashTableNS = {
 
 static CwtStrNS *__cwtStrNS = NULL;
 
-DLL_API_EXPORT CwtHashTableNS* cwtHashTableNS(void)
+DLL_API_EXPORT CwtHashTableNS* cwt_hashtable_ns(void)
 {
 
 	if( !__cwtStrNS ) {
-		__cwtStrNS = cwtStrNS();
+		__cwtStrNS = cwt_str_ns();
 	}
 	return &__cwtHashTableNS;
 }

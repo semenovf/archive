@@ -11,48 +11,48 @@
 #include <cwt/global.h>
 #include <cwt/types.h>
 
-#define RBE_QUOTE_CHAR_UNBALANCED -2
-
-typedef struct CwtRingBuf
+typedef struct _CwtRingBuffer
 {
 	BYTE*    m_buffer;
     size_t   m_head;
     size_t   m_count;
     size_t   m_capacity;
     size_t   m_max_capacity;
-} CwtRingBuf;
+} CwtRingBuffer;
 
 
-typedef struct _CwtRingBufNS {
-	CwtRingBuf*   (*create)     (void);
-	CwtRingBuf*   (*createSized)(size_t initial_size, size_t max_size);
-	void          (*free)       (CwtRingBuf*);
-	CwtRingBuf*   (*clone)      (CwtRingBuf*);
-	BOOL          (*reserve)    (CwtRingBuf*, size_t n);
-	size_t        (*capacity)   (CwtRingBuf*);
-	BOOL          (*isEmpty)    (CwtRingBuf*);
-	void          (*clear)      (CwtRingBuf*);
-	size_t        (*size)       (CwtRingBuf*);
-	BYTE          (*at)         (CwtRingBuf*, size_t index);
-	BYTE          (*atFront)    (CwtRingBuf*);
-	BYTE          (*first)      (CwtRingBuf*);
-	BYTE          (*atBack)     (CwtRingBuf*);
-	BYTE          (*last)       (CwtRingBuf*);
-	ssize_t       (*read)       (CwtRingBuf*, BYTE* bytes, size_t n);
-	ssize_t       (*peek)       (CwtRingBuf*, BYTE* bytes, size_t n);
-	ssize_t       (*write)      (CwtRingBuf*, const BYTE* chars, size_t n);
-	BYTE          (*get)        (CwtRingBuf*);
-	void          (*popFront)   (CwtRingBuf*, size_t n);
-	void          (*popBack)    (CwtRingBuf*, size_t n);
-	BOOL          (*put)        (CwtRingBuf*, BYTE b);
-	BOOL          (*pushBack)   (CwtRingBuf*, const BYTE* bytes, size_t n);
-	BOOL          (*find)       (CwtRingBuf*, const BYTE* bytes, size_t n, size_t from, size_t* index);
-	BOOL          (*findAny)    (CwtRingBuf*, const BYTE* bytes, size_t n, size_t from, size_t* index);
-	/*ssize_t       rb_write_from_file(CwtRingBuf*, int fd, size_t n);*/
-} CwtRingBufNS;
+typedef struct _CwtRingBufferNS {
+	void           (*init)       (CwtRingBuffer *);
+	void           (*initSized)  (CwtRingBuffer *, size_t initial_size, size_t max_size);
+	void           (*destroy)    (CwtRingBuffer *);
+	CwtRingBuffer* (*create)     (void);
+	CwtRingBuffer* (*createSized)(size_t initial_size, size_t max_size);
+	void           (*free)       (CwtRingBuffer *);
+	CwtRingBuffer* (*clone)      (CwtRingBuffer *);
+	BOOL           (*reserve)    (CwtRingBuffer *, size_t n);
+	size_t         (*capacity)   (CwtRingBuffer *);
+	BOOL           (*isEmpty)    (CwtRingBuffer *);
+	void           (*clear)      (CwtRingBuffer *);
+	size_t         (*size)       (CwtRingBuffer *);
+	BYTE           (*at)         (CwtRingBuffer *, size_t index);
+	BYTE           (*atFront)    (CwtRingBuffer *);
+	BYTE           (*first)      (CwtRingBuffer *);
+	BYTE           (*atBack)     (CwtRingBuffer *);
+	BYTE           (*last)       (CwtRingBuffer *);
+	ssize_t        (*read)       (CwtRingBuffer *, BYTE *bytes, size_t n);
+	ssize_t        (*peek)       (CwtRingBuffer *, BYTE *bytes, size_t n);
+	ssize_t        (*write)      (CwtRingBuffer *, const BYTE *chars, size_t n);
+	BYTE           (*get)        (CwtRingBuffer *);
+	void           (*popFront)   (CwtRingBuffer *, size_t n);
+	void           (*popBack)    (CwtRingBuffer *, size_t n);
+	BOOL           (*put)        (CwtRingBuffer *, BYTE b);
+	BOOL           (*pushBack)   (CwtRingBuffer *, const BYTE *bytes, size_t n);
+	BOOL           (*find)       (CwtRingBuffer *, const BYTE *bytes, size_t n, size_t from, size_t *index);
+	BOOL           (*findAny)    (CwtRingBuffer *, const BYTE *bytes, size_t n, size_t from, size_t *index);
+} CwtRingBufferNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtRingBufNS* cwtRingBufNS(void);
+DLL_API_EXPORT CwtRingBufferNS* cwt_ringbuffer_ns(void);
 EXTERN_C_END;
 
 

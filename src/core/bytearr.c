@@ -23,7 +23,7 @@ CWT_BEGIN_DEF_VECTOR_NS(CwtByteArrayNS, CwtByteArray, BYTE)
 CWT_END_DEF_VECTOR_NS(CwtByteArrayNS)
 
 
-DLL_API_EXPORT CwtByteArrayNS* cwtByteArrayNS(void)
+DLL_API_EXPORT CwtByteArrayNS* cwt_bytearray_ns(void)
 {
 	return &__CwtByteArrayNS;
 }

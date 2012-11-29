@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  =            \
-#    cwt-pcre-dftables \
     cwt               \
     cwt-csv           \
     cwt-mysql         \
@@ -38,9 +37,6 @@ SUBDIRS  =            \
     tests/mdarr       \
     tests/uri         \
     examples/app
-
-#    cwt-pcre          \
-#    tests/pcre        \
 
 
 unix {

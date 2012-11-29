@@ -40,24 +40,24 @@
 #	define CWT_LOCK
 #	define CWT_UNLOCK
 #else
-#	define CWT_LOCK   cwtMtNS()->global()->lock()
-#	define CWT_UNLOCK cwtMtNS()->global()->unlock()
+#	define CWT_LOCK   cwt_mt_ns()->global()->lock()
+#	define CWT_UNLOCK cwt_mt_ns()->global()->unlock()
 #endif
 
 typedef struct _CwtThreaded {
 	BOOL is_global;
-	void (*lock)(struct _CwtThreaded *);
-	void (*unlock)(struct _CwtThreaded *);
 } CwtThreaded;
 
 typedef struct _CwtMtNS {
 	CwtThreaded* (*global) (void);
 	CwtThreaded* (*local)  (void);
 	void         (*free)   (CwtThreaded *);
+	void         (*lock)(struct _CwtThreaded *);
+	void         (*unlock)(struct _CwtThreaded *);
 } CwtMtNS;
 
 EXTERN_C_BEGIN
-DLL_API CwtMtNS* cwtMtNS(void);
+DLL_API CwtMtNS* cwt_mt_ns(void);
 EXTERN_C_END
 
 /*

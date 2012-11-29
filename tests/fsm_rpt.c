@@ -31,7 +31,7 @@ static void action(const void *data, size_t len, void *context, void *action_arg
 	CWT_UNUSED(context);
 	CWT_UNUSED(action_args);
 
-	cwtLoggerNS()->trace(_T("PCT-encoded element found"));
+	cwt_logger_ns()->trace(_T("PCT-encoded element found"));
 }
 
 static CwtFsmTransition pct_encoded_str_fsm[] = {
@@ -65,19 +65,19 @@ static struct _FsmRptTestEntry {
 
 static void test_fsm_rep(void)
 {
-	CwtFsmNS *fsmNS = cwtFsmNS();
+	CwtFsmNS *fsmNS = cwt_fsm_ns();
 	const CWT_CHAR *pct_str = _T("%AB%CD%EF%01%02%03");
 	int i, n;
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, pct_encoded_str_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, pct_encoded_str_fsm, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
 	n = sizeof(__fsmRptTestEntries)/sizeof(__fsmRptTestEntries[0]);
 
 	for( i = 0; i < n; i++ ) {
 		__rpt_context.from  = __fsmRptTestEntries[i].from;
 		__rpt_context.to    = __fsmRptTestEntries[i].to;
-		CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, pct_str, cwtStrNS()->strLen(pct_str)) == __fsmRptTestEntries[i].ret);
+		CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, pct_str, cwt_str_ns()->strLen(pct_str)) == __fsmRptTestEntries[i].ret);
 	}
 }
 
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	__fsmNS = cwtFsmNS();
+	__fsmNS = cwt_fsm_ns();
 
 	CWT_BEGIN_TESTS(17);
 

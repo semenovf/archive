@@ -25,7 +25,7 @@ static CwtEventNS *__eventNS = NULL;
 DLL_API_EXPORT CwtApp* cwtApp(void)
 {
 	if( !__eventNS ) {
-		__eventNS = cwtEventNS();
+		__eventNS = cwt_event_ns();
 	}
 	return &__app;
 }

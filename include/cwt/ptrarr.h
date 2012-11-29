@@ -18,7 +18,7 @@ CWT_BEGIN_DECL_VECTOR_NS(CwtPtrArrayNS, CwtPtrArray, ptr_type)
 CWT_END_DECL_VECTOR_NS(CwtPtrArrayNS)
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtPtrArrayNS* cwtPtrArrayNS(void);
+DLL_API_EXPORT CwtPtrArrayNS* cwt_ptrarray_ns(void);
 EXTERN_C_END
 
 

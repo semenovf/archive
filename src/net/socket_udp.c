@@ -23,7 +23,7 @@ static BOOL __initListener(CwtUdpSocket *sd_udp
 	/* Bind the socket. */
 	rc = bind(sd_udp->sockfd, (SOCKADDR*)&sd_udp->sockaddr, sizeof(sd_udp->sockaddr));
 	if( rc < 0 ) {
-		cwtLoggerNS()->error(_Tr("bind failed")
+		cwt_logger_ns()->error(_Tr("bind failed")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 		return FALSE;
@@ -62,7 +62,7 @@ static CwtSocket* __socket_openUdpSocketHelper(
 			: __initClient((CwtUdpSocket *)sd, inetAddr, port);
 
 		if (!ok) {
-			cwtSocketNS()->close(sd);
+			cwt_socket_ns()->close(sd);
 			sd = NULL;
 		} else {
 			((CwtUdpSocket*)sd)->is_master = TRUE;
@@ -137,9 +137,9 @@ CwtSocket* __socket_acceptUdpSocket(CwtSocket *sd)
 
 	/*FIXME MT unsafe*/
 	if (EINTR == errno) {
-		cwtLoggerNS()->warn(_Tr("UDP socket acception interrupted by signal"));
+		cwt_logger_ns()->warn(_Tr("UDP socket acception interrupted by signal"));
 	} else {
-		cwtLoggerNS()->error(_Tr("accepting connection failed")
+		cwt_logger_ns()->error(_Tr("accepting connection failed")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 	}
@@ -165,7 +165,7 @@ ssize_t __socket_readUdpSocket(CwtSocket *sd, BYTE *buf, size_t sz)
 			&senderSize);
 
 	if( br < 0 ) {
-		cwtLoggerNS()->error(_Tr("receiving data error")
+		cwt_logger_ns()->error(_Tr("receiving data error")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 	}
@@ -194,7 +194,7 @@ ssize_t __socket_writeUdpSocket(CwtSocket *sd, const BYTE *buf, size_t sz)
 		sizeof(sd_udp->sockaddr));
 
 	if( bw < 0 ) {
-		cwtLoggerNS()->error(_Tr("sending data error")
+		cwt_logger_ns()->error(_Tr("sending data error")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 	}

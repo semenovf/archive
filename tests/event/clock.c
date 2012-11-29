@@ -27,7 +27,7 @@ static BOOL on_clock_time(CwtEvent *pevt)
 	__eventClockNS->peekTime(pevt, &hour, &min, &sec);
 
 	ntimes++;
-	printf_info(_T("Clock time event: %02d:%02d:%02d"), hour, min, sec);
+	cwt_logger_ns()->info(_T("Clock time event: %02d:%02d:%02d"), hour, min, sec);
 	return FALSE;
 }
 
@@ -37,7 +37,7 @@ static BOOL on_clock_date(CwtEvent *pevt)
 
 	__eventClockNS->peekDate(pevt, &day, &mon, &year);
 
-	printf_info(_T("Clock date event: %02d:%02d:%02d"), day, mon, year);
+	cwt_logger_ns()->info(_T("Clock date event: %02d:%02d:%02d"), day, mon, year);
 	return FALSE;
 }
 
@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	__eventNS = cwtEventNS();
-	__eventClockNS = cwtEventClockNS();
+	__eventNS = cwt_event_ns();
+	__eventClockNS = cwt_event_clock_ns();
 
 	CWT_BEGIN_TESTS(1);
 

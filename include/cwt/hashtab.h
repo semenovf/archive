@@ -169,7 +169,7 @@ typedef struct _CwtHashTableNS {
 } CwtHashTableNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtHashTableNS* cwtHashTableNS(void);
+DLL_API_EXPORT CwtHashTableNS* cwt_hashtable_ns(void);
 EXTERN_C_END
 
 

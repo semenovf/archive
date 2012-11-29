@@ -74,7 +74,7 @@ typedef struct _CwtUniTypeNS {
 } CwtUniTypeNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtUniTypeNS* cwtUniTypeNS(void);
+DLL_API_EXPORT CwtUniTypeNS* cwt_unitype_ns(void);
 EXTERN_C_END
 
 #endif /* __CWT_UNITYPE_H__ */

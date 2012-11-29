@@ -26,7 +26,7 @@ static CwtTextCodecNS *__codecNS = NULL;
 
 static void __csvOnError(CwtCsvContext *csv, const CWT_CHAR *errstr)
 {
-	printf_error(_T("%s at line %lu"), errstr, cwtCsvNS()->line(csv));
+	cwt_logger_ns()->error(_T("%s at line %lu"), errstr, cwt_csv_ns()->line(csv));
 }
 
 static BOOL __csvOnRow(CwtCsvContext *h, const CWT_CHAR* argv[], size_t argc)
@@ -38,12 +38,12 @@ static BOOL __csvOnRow(CwtCsvContext *h, const CWT_CHAR* argv[], size_t argc)
 	CWT_TEST_OK(__strNS->strEq(_T("Three"), argv[2]));
 
 	if( __strNS->strEq(_T("Fox"), argv[0]) ) {
-		printf_debug(_T("%s"), argv[7]);
+		cwt_logger_ns()->debug(_T("%s"), argv[7]);
 		CWT_TEST_OK(__strNS->strEq(_T("Eight;The quick brown; fox jumps over ;the lazy dog"), argv[7]));
 	}
 
 	if( __strNS->strEq(_T("Quo"), argv[0]) ) {
-		printf_debug(_T("%s"), argv[7]);
+		cwt_logger_ns()->debug(_T("%s"), argv[7]);
 		CWT_TEST_OK(__strNS->strEq(_T("Eight\nEight"), argv[7]));
 	}
 
@@ -256,10 +256,10 @@ static void test_03(void)
 
 int main(int argc, char *argv[])
 {
-	__chNS  = cwtChannelNS();
-	__strNS = cwtStrNS();
-	__csvNS = cwtCsvNS();
-	__codecNS = cwtTextCodecNS();
+	__chNS  = cwt_channel_ns();
+	__strNS = cwt_str_ns();
+	__csvNS = cwt_csv_ns();
+	__codecNS = cwt_textcodec_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);

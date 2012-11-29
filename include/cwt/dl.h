@@ -9,7 +9,7 @@
 #ifndef __CWT_DL_H__
 #define __CWT_DL_H__
 
-// see http://en.wikipedia.org/wiki/Dynamic_loading
+/* see http://en.wikipedia.org/wiki/Dynamic_loading */
 #include <cwt/types.h>
 
 #ifdef CWT_CC_MSC
@@ -34,10 +34,12 @@ typedef struct CwtDlNS
 	DlSymbol  (*symbol)          (DlHandle h, const char *name);
 	void      (*close)           (DlHandle h);
 	CWT_CHAR* (*buildDlFileName) (const CWT_CHAR *name);
+
+	BOOL      (*loadNS)          (const CWT_CHAR *dsn);
 } CwtDlNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtDlNS* cwtDlNS(void);
+DLL_API_EXPORT CwtDlNS* cwt_dl_ns(void);
 EXTERN_C_END
 
-#endif // __CWT_DL_H__
+#endif /*__CWT_DL_H__ */

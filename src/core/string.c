@@ -13,12 +13,10 @@
 
 static CwtStringNS __CwtStringNS;
 
-static void __append   (CwtString *s, const CWT_CHAR *str);
-static const CWT_CHAR* __cstr(CwtString *s);
-static int  __sprintf  (CwtString *s, const CWT_CHAR *format, ...);
-static int  __vsprintf (CwtString *s, const CWT_CHAR *format, va_list args);
-
-/*static append_string_f __append_ptr = __append;*/
+static void string_append   (CwtString *s, const CWT_CHAR *str);
+static const CWT_CHAR* string_cstr(CwtString *s);
+static int  string_sprintf  (CwtString *s, const CWT_CHAR *format, ...);
+static int  string_vsprintf (CwtString *s, const CWT_CHAR *format, va_list args);
 
 CWT_BEGIN_DEF_VECTOR_NS(CwtStringNS, CwtString, CWT_CHAR)
 	, __appendElem
@@ -26,14 +24,14 @@ CWT_BEGIN_DEF_VECTOR_NS(CwtStringNS, CwtString, CWT_CHAR)
 	, __prependElem
 	, __insertElem
 	, __removeElem
-    , __append
-	, __cstr
-	, __sprintf
-	, __vsprintf
+    , string_append
+	, string_cstr
+	, string_sprintf
+	, string_vsprintf
 CWT_END_DEF_VECTOR_NS(CwtStringNS)
 
 
-DLL_API_EXPORT CwtStringNS* cwtStringNS(void)
+DLL_API_EXPORT CwtStringNS* cwt_string_ns(void)
 {
 	return &__CwtStringNS;
 }
@@ -41,13 +39,13 @@ DLL_API_EXPORT CwtStringNS* cwtStringNS(void)
 CWT_VECTOR_METHODS(CwtString,CWT_CHAR)
 
 
-static void __append(CwtString *s, const CWT_CHAR *str)
+static void string_append(CwtString *s, const CWT_CHAR *str)
 {
-	__appendElems(s, str, cwtStrNS()->strLen(str));
+	__appendElems(s, str, cwt_str_ns()->strLen(str));
 }
 
 
-static const CWT_CHAR* __cstr(CwtString *sb)
+static const CWT_CHAR* string_cstr(CwtString *sb)
 {
 	__appendElem(sb, _T('\x0'));
 	sb->m_count--;
@@ -55,29 +53,29 @@ static const CWT_CHAR* __cstr(CwtString *sb)
 }
 
 
-static int  __sprintf(CwtString *s, const CWT_CHAR *format, ...)
+static int  string_sprintf(CwtString *s, const CWT_CHAR *format, ...)
 {
 	int n;
 	va_list args;
 	va_start(args, format);
 
-	n = __vsprintf(s, format, args);
+	n = string_vsprintf(s, format, args);
 
 	va_end(args);
 	return n;
 }
 
 
-static int  __vsprintf (CwtString *s, const CWT_CHAR *format, va_list args)
+static int  string_vsprintf (CwtString *s, const CWT_CHAR *format, va_list args)
 {
-	CwtStrNS   *strNS   = cwtStrNS();
-	CwtStdioNS *stdioNS = cwtStdioNS();
+	CwtStrNS   *str_ns   = cwt_str_ns();
+	CwtStdioNS *stdio_ns = cwt_stdio_ns();
 	size_t sz;
 	int n;
 
 	CWT_ASSERT(s);
 
-	sz = strNS->strLen(format);
+	sz = str_ns->strLen(format);
 
 	do {
 		CWT_ASSERT(sz < CWT_SIZE_T_MAX/2 );
@@ -86,7 +84,7 @@ static int  __vsprintf (CwtString *s, const CWT_CHAR *format, va_list args)
 
 		__clear(s);
 		__resize(s, sz+1);
-		n = stdioNS->vsnprintf(s->m_buffer, sz, format, args);
+		n = stdio_ns->vsnprintf(s->m_buffer, sz, format, args);
 	} while( n < 0 || (size_t)n == sz );
 
 	__resize(s, (size_t)n);

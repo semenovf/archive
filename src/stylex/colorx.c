@@ -172,7 +172,7 @@ static struct {
 
 void _cwt_colorx_init(void)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	size_t i;
 	size_t n;
 
@@ -197,7 +197,7 @@ void _cwt_colorx_release(void)
 
 Cwt_Color cwt_stylex_colorByName(const CWT_CHAR *name)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *key;
 	Cwt_Color *pcolor;
 
@@ -230,7 +230,7 @@ Cwt_Color cwt_stylex_colorByName(const CWT_CHAR *name)
  */
 BOOL cwt_stylex_parseColor(const CWT_CHAR *str, Cwt_Color *pcolor)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	BOOL ok = FALSE;
 	Cwt_Color color = (Cwt_Color)0;
 

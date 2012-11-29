@@ -16,67 +16,70 @@
 static const size_t default_initial_size = 64;
 static const size_t default_max_size = CWT_SIZE_T_MAX;
 
+static void           rb_init         (CwtRingBuffer *rb);
+static void           rb_init_sized   (CwtRingBuffer *rb, size_t initial_size, size_t max_size);
+static void           rb_destroy      (CwtRingBuffer *);
+static CwtRingBuffer* rb_create       (void);
+static CwtRingBuffer* rb_create_sized (size_t initial_size, size_t max_size);
+static void           rb_free         (CwtRingBuffer *rb);
+static CwtRingBuffer* rb_clone        (CwtRingBuffer *rb);
+static BOOL           rb_reserve      (CwtRingBuffer *rb, size_t n);
+static size_t         rb_capacity     (CwtRingBuffer *rb);
+static BOOL           rb_is_empty     (CwtRingBuffer *rb);
+static void           rb_clear        (CwtRingBuffer *rb);
+static size_t         rb_size         (CwtRingBuffer *rb);
+static BYTE           rb_at           (CwtRingBuffer *rb, size_t index);
+static BYTE           rb_at_front     (CwtRingBuffer *rb);
+static BYTE           rb_at_back      (CwtRingBuffer *rb);
+static ssize_t        rb_read         (CwtRingBuffer *rb, BYTE *bytes, size_t n);
+static ssize_t        rb_peek         (CwtRingBuffer *rb, BYTE *bytes, size_t n);
+static ssize_t        rb_write        (CwtRingBuffer *rb, const BYTE *chars, size_t n);
+static BYTE           rb_get          (CwtRingBuffer *rb);
+static void           rb_pop_front    (CwtRingBuffer *rb, size_t n);
+static void           rb_pop_back     (CwtRingBuffer *rb, size_t n);
+static BOOL           rb_put          (CwtRingBuffer *rb, BYTE b);
+static BOOL           rb_push_back    (CwtRingBuffer *rb, const BYTE *bytes, size_t n);
+static BOOL           rb_find         (CwtRingBuffer *rb, const BYTE *bytes, size_t n, size_t from, size_t *index);
+static BOOL           rb_find_any     (CwtRingBuffer *rb, const BYTE *bytes, size_t n, size_t from, size_t *index);
 
-static CwtRingBuf*   __create     (void);
-static CwtRingBuf*   __createSized(size_t initial_size, size_t max_size);
-static void          __free       (CwtRingBuf*);
-static CwtRingBuf*   __clone      (CwtRingBuf*);
-static BOOL          __reserve    (CwtRingBuf*, size_t n);
-static size_t        __capacity   (CwtRingBuf*);
-static BOOL          __isEmpty    (CwtRingBuf*);
-static void          __clear      (CwtRingBuf*);
-static size_t        __size       (CwtRingBuf*);
-static BYTE          __at         (CwtRingBuf*, size_t index);
-static BYTE          __atFront    (CwtRingBuf*);
-/*static BYTE          __first      (CwtRingBuf*);*/
-static BYTE          __atBack     (CwtRingBuf*);
-/*static BYTE          __last       (CwtRingBuf*);*/
-static ssize_t       __read       (CwtRingBuf*, BYTE* bytes, size_t n);
-static ssize_t       __peek       (CwtRingBuf*, BYTE* bytes, size_t n);
-static ssize_t       __write      (CwtRingBuf*, const BYTE* chars, size_t n);
-static BYTE          __get        (CwtRingBuf*);
-static void          __popFront   (CwtRingBuf*, size_t n);
-static void          __popBack    (CwtRingBuf*, size_t n);
-static BOOL          __put        (CwtRingBuf*, BYTE b);
-static BOOL          __pushBack   (CwtRingBuf*, const BYTE* bytes, size_t n);
-static BOOL          __find       (CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, size_t* index);
-static BOOL          __findAny    (CwtRingBuf*, const BYTE* bytes, size_t n, size_t from, size_t* index);
-
-static CwtRingBufNS __cwtRingBufNS  = {
-	  __create
-	, __createSized
-	, __free
-	, __clone
-	, __reserve
-	, __capacity
-	, __isEmpty
-	, __clear
-	, __size
-	, __at
-	, __atFront
-	, __atFront
-	, __atBack
-	, __atBack
-	, __read
-	, __peek
-	, __write
-	, __get
-	, __popFront
-	, __popBack
-	, __put
-	, __pushBack
-	, __find
-	, __findAny
+static CwtRingBufferNS __cwtRingBufNS  = {
+	  rb_init
+	, rb_init_sized
+	, rb_destroy
+	, rb_create
+	, rb_create_sized
+	, rb_free
+	, rb_clone
+	, rb_reserve
+	, rb_capacity
+	, rb_is_empty
+	, rb_clear
+	, rb_size
+	, rb_at
+	, rb_at_front
+	, rb_at_front
+	, rb_at_back
+	, rb_at_back
+	, rb_read
+	, rb_peek
+	, rb_write
+	, rb_get
+	, rb_pop_front
+	, rb_pop_back
+	, rb_put
+	, rb_push_back
+	, rb_find
+	, rb_find_any
 };
 
 
-DLL_API_EXPORT CwtRingBufNS* cwtRingBufNS(void)
+DLL_API_EXPORT CwtRingBufferNS* cwt_ringbuffer_ns(void)
 {
 	return &__cwtRingBufNS;
 }
 
 
-static inline size_t __get_bare_index(CwtRingBuf* rb, size_t index)
+static inline size_t __get_bare_index(CwtRingBuffer* rb, size_t index)
 {
 	CWT_ASSERT(index < rb->m_count);
 
@@ -88,57 +91,74 @@ static inline size_t __get_bare_index(CwtRingBuf* rb, size_t index)
 }
 
 
-static CwtRingBuf* __create(void)
+static void rb_init (CwtRingBuffer *rb)
 {
-	return __createSized((size_t)0, (size_t)0);
+	rb_init_sized(rb, (size_t)0, (size_t)0);
 }
 
-
-static CwtRingBuf* __createSized(size_t initial_size, size_t max_size)
+static void rb_init_sized (CwtRingBuffer *rb, size_t initial_size, size_t max_size)
 {
-	CwtRingBuf* rb;
+	if (rb) {
+		if( !initial_size ) {
+			initial_size = default_initial_size;
+		}
 
-	rb = CWT_MALLOC(CwtRingBuf);
-	CWT_ASSERT(rb);
+		if( !max_size ) {
+			max_size = default_max_size;
+		}
 
-	if( !initial_size ) {
-		initial_size = default_initial_size;
+		if( initial_size > max_size ) {
+			initial_size = max_size;
+		}
+
+		rb->m_buffer = CWT_MALLOCA(BYTE, initial_size);
+		CWT_ASSERT(rb->m_buffer);
+
+		rb->m_capacity = initial_size;
+		rb->m_count = 0;
+		rb->m_head = 0;
+		rb->m_max_capacity = max_size;
 	}
-
-	if( !max_size ) {
-		max_size = default_max_size;
-	}
-
-	if( initial_size > max_size ) {
-		initial_size = max_size;
-	}
-
-	rb->m_buffer = CWT_MALLOCA(BYTE, initial_size);
-	CWT_ASSERT(rb->m_buffer);
-
-	rb->m_capacity = initial_size;
-	rb->m_count = 0;
-	rb->m_head = 0;
-	rb->m_max_capacity = max_size;
-
-	return rb;
 }
 
-
-static void __free(CwtRingBuf* rb)
+static void rb_destroy (CwtRingBuffer *rb)
 {
 	if( rb ) {
 		if( rb->m_buffer )
 			CWT_FREE(rb->m_buffer);
+	}
+}
+
+static CwtRingBuffer* rb_create(void)
+{
+	return rb_create_sized((size_t)0, (size_t)0);
+}
+
+
+static CwtRingBuffer* rb_create_sized(size_t initial_size, size_t max_size)
+{
+	CwtRingBuffer* rb;
+
+	rb = CWT_MALLOC(CwtRingBuffer);
+	CWT_ASSERT(rb);
+	rb_init_sized(rb, initial_size, max_size);
+	return rb;
+}
+
+
+static void rb_free(CwtRingBuffer* rb)
+{
+	if( rb ) {
+		rb_destroy(rb);
 		CWT_FREE(rb);
 	}
 }
 
 
-static CwtRingBuf* __clone(CwtRingBuf *rb)
+static CwtRingBuffer*   rb_clone(CwtRingBuffer *rb)
 {
 	if( rb ) {
-		CwtRingBuf *clone = __createSized(rb->m_count, default_max_size);
+		CwtRingBuffer *clone = rb_create_sized(rb->m_count, default_max_size);
 		if( rb->m_count > 0 ) {
 			if( rb->m_capacity - rb->m_head >= rb->m_count ) {
 				memcpy(clone->m_buffer, rb->m_buffer + rb->m_head, rb->m_count);
@@ -155,7 +175,7 @@ static CwtRingBuf* __clone(CwtRingBuf *rb)
 
 
 
-static BOOL __reserve(CwtRingBuf *rb, size_t n )
+static BOOL    rb_reserve(CwtRingBuffer *rb, size_t n )
 {
 	size_t available;
 	size_t inc;
@@ -193,21 +213,21 @@ static BOOL __reserve(CwtRingBuf *rb, size_t n )
 }
 
 
-static size_t __capacity(CwtRingBuf *rb)
+static size_t rb_capacity(CwtRingBuffer *rb)
 {
 	CWT_ASSERT(rb);
 	return rb->m_capacity;
 }
 
 
-static BOOL __isEmpty(CwtRingBuf *rb)
+static BOOL rb_is_empty(CwtRingBuffer *rb)
 {
 	CWT_ASSERT(rb);
 	return (rb->m_count == 0 ? TRUE : FALSE);
 }
 
 
-static void __clear(CwtRingBuf *rb)
+static void rb_clear(CwtRingBuffer *rb)
 {
 	CWT_ASSERT(rb);
 	rb->m_head = 0;
@@ -215,26 +235,26 @@ static void __clear(CwtRingBuf *rb)
 }
 
 
-static size_t __size(CwtRingBuf *rb)
+static size_t rb_size(CwtRingBuffer *rb)
 {
 	CWT_ASSERT(rb);
 	return rb->m_count;
 }
 
 
-static BYTE __at(CwtRingBuf *rb, size_t index )
+static BYTE rb_at(CwtRingBuffer *rb, size_t index )
 {
 	CWT_ASSERT(rb);
 	return rb->m_buffer[__get_bare_index(rb, index)];
 }
 
-static BYTE __atFront(CwtRingBuf *rb)
+static BYTE rb_at_front(CwtRingBuffer *rb)
 {
 	CWT_ASSERT(rb);
 	return rb->m_buffer[__get_bare_index(rb, 0)];
 }
 
-static BYTE __atBack(CwtRingBuf *rb)
+static BYTE rb_at_back(CwtRingBuffer *rb)
 {
 	CWT_ASSERT(rb);
 	CWT_ASSERT(rb->m_count > 0);
@@ -242,11 +262,11 @@ static BYTE __atBack(CwtRingBuf *rb)
 }
 
 
-static ssize_t __read(CwtRingBuf *rb, BYTE* bytes, size_t n)
+static ssize_t rb_read(CwtRingBuffer *rb, BYTE* bytes, size_t n)
 {
-	ssize_t br = __peek(rb, bytes, n);
+	ssize_t br = rb_peek(rb, bytes, n);
 	if( br > 0 )
-		__popFront(rb, br);
+		rb_pop_front(rb, br);
 	return br;
 }
 
@@ -263,7 +283,7 @@ static ssize_t __read(CwtRingBuf *rb, BYTE* bytes, size_t n)
  * @see pop
  * @see popFront
  */
-static ssize_t __peek(CwtRingBuf *rb, BYTE* bytes, size_t n)
+static ssize_t rb_peek(CwtRingBuffer *rb, BYTE* bytes, size_t n)
 {
 
 	CWT_ASSERT(rb);
@@ -292,14 +312,14 @@ static ssize_t __peek(CwtRingBuf *rb, BYTE* bytes, size_t n)
 
 
 
-static ssize_t __write(CwtRingBuf *rb, const BYTE* bytes, size_t n)
+static ssize_t rb_write(CwtRingBuffer *rb, const BYTE* bytes, size_t n)
 {
 	CWT_ASSERT(rb);
 
 	if( !n )
 		return (ssize_t)0;
 
-	if( !__pushBack(rb, bytes, (size_t)n) ) {
+	if( !rb_push_back(rb, bytes, (size_t)n) ) {
 		return (ssize_t)-1;
 	}
 
@@ -307,19 +327,19 @@ static ssize_t __write(CwtRingBuf *rb, const BYTE* bytes, size_t n)
 }
 
 
-static BYTE __get(CwtRingBuf *rb)
+static BYTE rb_get(CwtRingBuffer *rb)
 {
 	BYTE ch;
 	CWT_ASSERT(rb);
 
-	ch = __atFront(rb);
-	__popFront(rb, 1);
+	ch = rb_at_front(rb);
+	rb_pop_front(rb, 1);
 	return ch;
 }
 
 
 /* TODO need to optimize */
-static void __popFront(CwtRingBuf* rb, size_t n)
+static void rb_pop_front(CwtRingBuffer* rb, size_t n)
 {
 	CWT_ASSERT(rb);
 
@@ -338,7 +358,7 @@ static void __popFront(CwtRingBuf* rb, size_t n)
 }
 
 
-static void __popBack(CwtRingBuf* rb, size_t n)
+static void rb_pop_back(CwtRingBuffer* rb, size_t n)
 {
 	CWT_ASSERT(rb);
 
@@ -352,11 +372,11 @@ static void __popBack(CwtRingBuf* rb, size_t n)
 }
 
 
-static BOOL __put(CwtRingBuf* rb, BYTE b)
+static BOOL rb_put(CwtRingBuffer* rb, BYTE b)
 {
 	CWT_ASSERT(rb);
 
-	if( !__reserve(rb, 1) )
+	if( !   rb_reserve(rb, 1) )
 		return FALSE;
 
 	rb->m_count++;
@@ -365,13 +385,13 @@ static BOOL __put(CwtRingBuf* rb, BYTE b)
 }
 
 
-static BOOL __pushBack(CwtRingBuf* rb, const BYTE* bytes, size_t n)
+static BOOL rb_push_back(CwtRingBuffer* rb, const BYTE* bytes, size_t n)
 {
 	size_t tail;
 
 	CWT_ASSERT(rb);
 
-	if( !__reserve(rb, n) )
+	if( !   rb_reserve(rb, n) )
 		return FALSE;
 
 	tail = (rb->m_head + rb->m_count) % rb->m_capacity;
@@ -388,7 +408,7 @@ static BOOL __pushBack(CwtRingBuf* rb, const BYTE* bytes, size_t n)
 }
 
 
-static BOOL __find(CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, size_t* index)
+static BOOL rb_find(CwtRingBuffer *rb, const BYTE* bytes, size_t n, size_t from, size_t* index)
 {
 	size_t i = 0;
 	size_t j = 0;
@@ -396,14 +416,14 @@ static BOOL __find(CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, siz
 	CWT_ASSERT(rb);
 
 	for( i = from; i < rb->m_count; i++ ) {
-		if( __at(rb, i) == bytes[0] ) {
+		if( rb_at(rb, i) == bytes[0] ) {
 
 			if( i + n > rb->m_count ) {
 				return FALSE;
 			}
 
 			for( j = 1; j < n; j++ ) {
-				if( __at(rb, i+j) != bytes[j] )
+				if( rb_at(rb, i+j) != bytes[j] )
 					break;
 			}
 
@@ -428,7 +448,7 @@ static BOOL __find(CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, siz
  * @param index
  * @return
  */
-static BOOL __findAny(CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, size_t* index)
+static BOOL rb_find_any(CwtRingBuffer *rb, const BYTE* bytes, size_t n, size_t from, size_t* index)
 {
 	size_t i = 0, j = 0;
 
@@ -436,7 +456,7 @@ static BOOL __findAny(CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, 
 
 	for( i = from; i < rb->m_count; i++ ) {
 		for( j = 0; j < n; j++ ) {
-			if( __at(rb, i) == bytes[j] ) {
+			if( rb_at(rb, i) == bytes[j] ) {
 				if( index )
 					*index = i;
 				return TRUE;
@@ -456,11 +476,11 @@ static BOOL __findAny(CwtRingBuf *rb, const BYTE* bytes, size_t n, size_t from, 
  * @param n max bytes to write
  * @return bytes written into the ring buffer, or -1 if error
  */
-ssize_t rb_write_from_file(CwtRingBuf* rb, int fd, size_t n)
+ssize_t rb_write_from_file(CwtRingBuffer* rb, int fd, size_t n)
 {
 	BYTE ibuf[256];
 	size_t total_br = 0;
-	CwtUnistdNS *ns = cwtUnistdNS();
+	CwtUnistdNS *ns = cwt_unistd_ns();
 
 	if( fd < 0 ) {
 		print_error(_Tr("invalid file descriptor"));

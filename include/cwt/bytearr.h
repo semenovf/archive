@@ -19,7 +19,7 @@ void           (*trim)        (CwtByteArray *ba);
 CWT_END_DECL_VECTOR_NS(CwtByteArrayNS)
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtByteArrayNS* cwtByteArrayNS(void);
+DLL_API_EXPORT CwtByteArrayNS* cwt_bytearray_ns(void);
 EXTERN_C_END
 
 

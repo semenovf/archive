@@ -22,7 +22,7 @@
 _LongType __cwt_to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) {     \
 	_LongType val;                                                            \
 	CWT_CHAR *endptr;                                                         \
-	CwtStrNS* strNS = cwtStrNS();                                             \
+	CwtStrNS* strNS = cwt_str_ns();                                           \
 																		      \
 	if( radix <= 0 ) {                                                        \
 		if( strNS->strNCmp(_T("0x"), str, 2) == 0 ) {                         \
@@ -61,7 +61,7 @@ _LongType __cwt_to##_LongType(const CWT_CHAR *str, int radix, BOOL *ok) {     \
 #define __CWT_STR_TO_INTTYPE(_IntType,_LongType,_maxInt,_minInt)              \
 _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {       \
 	BOOL okk = TRUE;                                                          \
-	CwtStrNS* strNS = cwtStrNS();                                             \
+	CwtStrNS* strNS = cwt_str_ns();                                           \
 	_LongType val = strNS->to##_LongType(str, radix, &okk);                   \
 	if( !okk || val > _maxInt || val < _minInt ) {                            \
 		okk = FALSE;                                                          \
@@ -76,7 +76,7 @@ _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {       \
 #define __CWT_STR_TO_UINTTYPE(_IntType,_LongType,_maxInt)                     \
 _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {       \
 	BOOL okk = TRUE;                                                          \
-	CwtStrNS* strNS = cwtStrNS();                                             \
+	CwtStrNS* strNS = cwt_str_ns();                                           \
 	_LongType val = strNS->to##_LongType(str, radix, &okk);                   \
 	if( !okk || val > _maxInt ) {                                             \
 		okk = FALSE;                                                          \
@@ -89,10 +89,10 @@ _IntType __cwt_to##_IntType(const CWT_CHAR *str, int radix, BOOL *ok) {       \
 }
 
 
-__CWT_STR_TO_LONGTYPE(ULONGLONG, cwtStrNS()->strToULLong, CWT_ULONGLONG_MAX, 0LL)
-__CWT_STR_TO_LONGTYPE(LONGLONG, cwtStrNS()->strToLLONG, CWT_LONGLONG_MAX, CWT_LONGLONG_MIN)
-__CWT_STR_TO_LONGTYPE(ULONG, cwtStrNS()->strToULong, CWT_ULONG_MAX, 0L)
-__CWT_STR_TO_LONGTYPE(LONG, cwtStrNS()->strToLong, CWT_LONG_MAX, CWT_LONG_MIN)
+__CWT_STR_TO_LONGTYPE(ULONGLONG, cwt_str_ns()->strToULLong, CWT_ULONGLONG_MAX, 0LL)
+__CWT_STR_TO_LONGTYPE(LONGLONG, cwt_str_ns()->strToLLONG, CWT_LONGLONG_MAX, CWT_LONGLONG_MIN)
+__CWT_STR_TO_LONGTYPE(ULONG, cwt_str_ns()->strToULong, CWT_ULONG_MAX, 0L)
+__CWT_STR_TO_LONGTYPE(LONG, cwt_str_ns()->strToLong, CWT_LONG_MAX, CWT_LONG_MIN)
 __CWT_STR_TO_INTTYPE(INT, LONG, CWT_INT_MAX, CWT_INT_MIN)
 __CWT_STR_TO_UINTTYPE(UINT, ULONG, CWT_UINT_MAX)
 __CWT_STR_TO_INTTYPE(SHORT, LONG, CWT_SHORT_MAX, CWT_SHORT_MIN)
@@ -105,7 +105,7 @@ double __cwt_toDouble(const CWT_CHAR *str, BOOL *ok)
 {
 	double val;
 	CWT_CHAR *endptr;
-	CwtStrNS* strNS = cwtStrNS();
+	CwtStrNS* strNS = cwt_str_ns();
 
    /* Need to reset errno because it will not reset */
    /* in the subsequent call if error will not occurred */

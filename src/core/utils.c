@@ -60,7 +60,7 @@ static CwtUtilsNS __cwtUtilsNS = {
 	, __utils_unpackUniType
 };
 
-DLL_API_EXPORT CwtUtilsNS* cwtUtilsNS(void)
+DLL_API_EXPORT CwtUtilsNS* cwt_utils_ns(void)
 {
 	return &__cwtUtilsNS;
 }
@@ -78,7 +78,7 @@ static void  __now(CWT_TIME *dt)
 	time_t now = time(NULL);
 
 	CWT_ASSERT(dt);
-	cwtStrNS()->memcpy(&tm_, localtime(&now), sizeof(struct tm));
+	cwt_str_ns()->memcpy(&tm_, localtime(&now), sizeof(struct tm));
 	dt->year     = tm_.tm_year + 1900;
 	dt->mon      = tm_.tm_mon + 1;
 	dt->day      = tm_.tm_mday;
@@ -192,7 +192,7 @@ static void  __doubleToBytes (double d, BYTE bytes[sizeof(double)])
 	union { double dl; BYTE bytes[sizeof(double)]; } _d;
 
 	_d.dl = d;
-	cwtStrNS()->memcpy(bytes, _d.bytes, sizeof(double) * sizeof(BYTE));
+	cwt_str_ns()->memcpy(bytes, _d.bytes, sizeof(double) * sizeof(BYTE));
 }
 
 
@@ -204,7 +204,7 @@ static void  __doubleToBytes (double d, BYTE bytes[sizeof(double)])
 static double __bytesToDouble(const BYTE bytes[sizeof(double)])
 {
 	union { double dl; BYTE bytes[sizeof(double)]; } _d;
-	cwtStrNS()->memcpy(_d.bytes, bytes, sizeof(double) * sizeof(BYTE));
+	cwt_str_ns()->memcpy(_d.bytes, bytes, sizeof(double) * sizeof(BYTE));
 	return _d.dl;
 }
 

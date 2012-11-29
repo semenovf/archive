@@ -109,10 +109,10 @@ size_t __socket_nsockets_opened = (size_t)0;
 
 static CwtLoggerNS *__logger = NULL;
 
-DLL_API_EXPORT CwtSocketNS* cwtSocketNS(void)
+DLL_API_EXPORT CwtSocketNS* cwt_socket_ns(void)
 {
 	if( !__logger ) {
-		__logger = cwtLoggerNS();
+		__logger = cwt_logger_ns();
 	}
 
 	return &__cwtSocketNS;
@@ -173,7 +173,7 @@ static void __socket_close (CwtSocket *sd)
 
 		if (sd->type == Cwt_LocalSocket && sd->is_listener) {
 			CWT_CHAR *localPath = __cwtSocketNS.localPath(sd);
-			if( !cwtFileSystemNS()->unlink(localPath) ) {
+			if( !cwt_filesystem_ns()->unlink(localPath) ) {
 				__logger->error(_Tr("unable to unlink local socket: %s")
 					_CWT_SOCKET_LOG_FMTSUFFIX
 					, localPath
@@ -273,7 +273,7 @@ static CWT_CHAR*  __socket_inetAddr(CwtSocket *sd)
 	/* FIXME MT-unsafe, The string is returned in a statically
 	 * allocated buffer, which subsequent calls will overwrite*/
 	inetAddrLatin1 = inet_ntoa(*in);
-	inetAddr = cwtTextCodecNS()->fromLatin1(inetAddrLatin1, strlen(inetAddrLatin1));
+	inetAddr = cwt_textcodec_ns()->fromLatin1(inetAddrLatin1, strlen(inetAddrLatin1));
 
 	return inetAddr;
 }

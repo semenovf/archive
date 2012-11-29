@@ -1,15 +1,8 @@
 #ifndef __CWT_STR_H__
 #define __CWT_STR_H__
 
-/*
-#ifdef _STRING_H
-#	error do not need to mix <cwt/str.h> and <string.h>
-#endif
-*/
 #include <time.h>
 #include <cwt/types.h>
-/*#include <cwt/string.h>*/
-/*#include <cwt/bytearr.h>*/
 
 typedef struct CwtQuotePair {
 	CWT_CHAR begin;
@@ -99,18 +92,19 @@ typedef struct CwtStrNS {
 } CwtStrNS;
 
 
-#define CWT_QUOTES_SINGLE cwtStrNS()->singleQuotesPair()
-#define CWT_QUOTES_DOUBLE cwtStrNS()->doubleQuotesPair()
-#define CWT_QUOTES_BOTH   cwtStrNS()->quotesPair()
-#define CWT_WHITESPACES   cwtStrNS()->whitespaces() /* ' ', '\t', '\n', '\v', '\f', '\r' */
+#define CWT_QUOTES_SINGLE cwt_str_ns()->singleQuotesPair()
+#define CWT_QUOTES_DOUBLE cwt_str_ns()->doubleQuotesPair()
+#define CWT_QUOTES_BOTH   cwt_str_ns()->quotesPair()
+#define CWT_WHITESPACES   cwt_str_ns()->whitespaces() /* ' ', '\t', '\n', '\v', '\f', '\r' */
 
 EXTERN_C_BEGIN
 
-DLL_API_EXPORT CwtStrNS* cwtStrNS(void);
+DLL_API_EXPORT CwtStrNS* cwt_str_ns(void);
 
-#define CWT_STRING_OR_EMPTYSTR(s) ((s) ? (s) : cwtStrNS()->constEmptyStr())
-#define CWT_STRING_OR_NULLSTR(s) ((s) ? (s) : cwtStrNS()->constNullStr())
+#define CWT_STRING_OR_EMPTYSTR(s) ((s) ? (s) : cwt_str_ns()->constEmptyStr())
+#define CWT_STRING_OR_NULLSTR(s) ((s) ? (s) : cwt_str_ns()->constNullStr())
 
+#ifdef __DEPRECATED__
 #ifdef strcasecmp
 #	undef strcasecmp
 #endif
@@ -125,6 +119,7 @@ DLL_API_EXPORT char* strNdup(const char *s, size_t n);
 #else
 #	define stricmp  CWT_ISO_CPP_NAME(strcasecmp)
 #	define strnicmp CWT_ISO_CPP_NAME(strncasecmp)
+#endif
 #endif
 
 EXTERN_C_END

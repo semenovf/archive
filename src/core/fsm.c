@@ -28,7 +28,7 @@ static CwtFsmNS __cwtFsmNS = {
 };
 
 
-DLL_API_EXPORT CwtFsmNS* cwtFsmNS(void)
+DLL_API_EXPORT CwtFsmNS* cwt_fsm_ns(void)
 {
 	return &__cwtFsmNS;
 }
@@ -52,47 +52,47 @@ DLL_API_EXPORT CwtFsmNS* cwtFsmNS(void)
 		? TRUE : FALSE;
 
 
-DLL_API_EXPORT BOOL cwtBelongChar(const void *ch, const void *subset, size_t n)
+DLL_API_EXPORT BOOL cwt_fsm_belong_char(const void *ch, const void *subset, size_t n)
 {
 	_BELONG_CHAR(char, ch, subset, n);
 }
 
-DLL_API_EXPORT BOOL cwtExactChar(const void *s, size_t n1, const void *seq, size_t n2)
+DLL_API_EXPORT BOOL cwt_fsm_exact_char(const void *s, size_t n1, const void *seq, size_t n2)
 {
 	_EXACT_STR(char, s, n1, seq, n2);
 }
 
-DLL_API_EXPORT BOOL cwtRangeChar(const void *ch, const void *from, const void *to)
+DLL_API_EXPORT BOOL cwt_fsm_range_char(const void *ch, const void *from, const void *to)
 {
 	_RANGE_CHAR(char, ch, from, to);
 }
 
-DLL_API_EXPORT BOOL cwtBelongCwtChar(const void *ch, const void *subset, size_t n)
+DLL_API_EXPORT BOOL cwt_fsm_belong_cwtchar(const void *ch, const void *subset, size_t n)
 {
 	_BELONG_CHAR(CWT_CHAR, ch, subset, n);
 }
 
-DLL_API_EXPORT BOOL cwtExactCwtChar(const void *s, size_t n1, const void *seq, size_t n2)
+DLL_API_EXPORT BOOL cwt_fsm_exact_cwtchar(const void *s, size_t n1, const void *seq, size_t n2)
 {
 	_EXACT_STR(CWT_CHAR, s, n1, seq, n2);
 }
 
-DLL_API_EXPORT BOOL cwtRangeCwtChar(const void *ch, const void *from, const void *to)
+DLL_API_EXPORT BOOL cwt_fsm_range_cwtchar(const void *ch, const void *from, const void *to)
 {
 	_RANGE_CHAR(CWT_CHAR, ch, from, to);
 }
 
-DLL_API_EXPORT BOOL cwtBelongInt(const void *ch, const void *subset, size_t n)
+DLL_API_EXPORT BOOL cwt_fsm_belong_int(const void *ch, const void *subset, size_t n)
 {
 	_BELONG_CHAR(int, ch, subset, n);
 }
 
-DLL_API_EXPORT BOOL cwtExactInt(const void *s, size_t n1, const void *seq, size_t n2)
+DLL_API_EXPORT BOOL cwt_fsm_exact_int(const void *s, size_t n1, const void *seq, size_t n2)
 {
 	_EXACT_STR(int, s, n1, seq, n2);
 }
 
-DLL_API_EXPORT BOOL cwtRangeInt(const void *ch, const void *from, const void *to)
+DLL_API_EXPORT BOOL cwt_fsm_range_int(const void *ch, const void *from, const void *to)
 {
 	_RANGE_CHAR(int, ch, from, to);
 }
@@ -105,7 +105,7 @@ DLL_API_EXPORT BOOL cwtRangeInt(const void *ch, const void *from, const void *to
  * @param len
  * @return
  */
-ssize_t cwtFsmRepetition(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
+ssize_t cwt_fsm_repetition(CwtFsm *fsm, void *fn_context, const void *data, size_t len)
 {
 	CwtFsmRptBounds *bounds = (CwtFsmRptBounds*)fn_context;
 	const char *ptr;
@@ -220,7 +220,7 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 
 				memcpy(&inner_fsm, fsm, sizeof(inner_fsm));
 				inner_fsm.trans_tab = trans->condition.trans_tab.tab;
-				nchars_processed = cwtFsmRepetition(&inner_fsm, trans->condition.trans_tab.bounds, ptr, len);
+				nchars_processed = cwt_fsm_repetition(&inner_fsm, trans->condition.trans_tab.bounds, ptr, len);
 			}
 			break;
 

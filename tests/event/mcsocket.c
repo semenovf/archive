@@ -21,7 +21,7 @@ static CwtEventChannelNS *__eventChannelNS = NULL;
 
 static BOOL on_multicast_receiver(CwtEvent *pevt)
 {
-	CwtChannelNS *cns = cwtChannelNS();
+	CwtChannelNS *cns = cwt_channel_ns();
 
 	CwtChannel *pchan;
 	ssize_t br;
@@ -49,10 +49,10 @@ int main(int argc, char *argv[])
 	CwtChannel     *pchan_writer;
 	CwtEventSource *chan_src;
 
-	__socketNS  = cwtSocketNS();
-	__channelNS = cwtChannelNS();
-	__eventNS   = cwtEventNS();
-	__eventChannelNS = cwtEventChannelNS();
+	__socketNS  = cwt_socket_ns();
+	__channelNS = cwt_channel_ns();
+	__eventNS   = cwt_event_ns();
+	__eventChannelNS = cwt_event_channel_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);

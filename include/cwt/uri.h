@@ -32,7 +32,7 @@ typedef struct _CwtUriNS {
 } CwtUriNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtUriNS* cwtUriNS(void);
+DLL_API_EXPORT CwtUriNS* cwt_uri_ns(void);
 EXTERN_C_END
 
 

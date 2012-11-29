@@ -89,9 +89,9 @@ static void cwt_evt_test_0(void)
 
 int main(int argc, char *argv[])
 {
-	__channelNS = cwtChannelNS();
-	__eventNS = cwtEventNS();
-	__eventChannelNS = cwtEventChannelNS();
+	__channelNS = cwt_channel_ns();
+	__eventNS = cwt_event_ns();
+	__eventChannelNS = cwt_event_channel_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);

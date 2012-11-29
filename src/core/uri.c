@@ -29,7 +29,7 @@ static CwtUriNS __cwtUriNS = {
 	, __uri_compose
 };
 
-DLL_API_EXPORT CwtUriNS* cwtUriNS(void)
+DLL_API_EXPORT CwtUriNS* cwt_uri_ns(void)
 {
 	return &__cwtUriNS;
 }
@@ -53,7 +53,7 @@ static void __uri_free (CwtUri *uri)
 static inline void __uri_init (CwtUri *uri)
 {
 	if( uri )
-		cwtStrNS()->bzero(uri, sizeof(*uri));
+		cwt_str_ns()->bzero(uri, sizeof(*uri));
 }
 
 static void __uri_destroy (CwtUri *uri)
@@ -86,11 +86,11 @@ static ssize_t __uri_parse(const CWT_CHAR *uri_string, CwtUri *uri)
 
 	CWT_UNUSED(uri_reference_fsm);
 
-	if( !uri_string || cwtStrNS()->strLen(uri_string) == 0 )
+	if( !uri_string || cwt_str_ns()->strLen(uri_string) == 0 )
 		return FALSE;
 
-	FSM_INIT(fsm, CWT_CHAR, /*uri_reference_fsm*/uri_fsm, uri, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
-	return cwtFsmNS()->exec(&fsm, 0, uri_string, cwtStrNS()->strLen(uri_string));
+	FSM_INIT(fsm, CWT_CHAR, /*uri_reference_fsm*/uri_fsm, uri, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
+	return cwt_fsm_ns()->exec(&fsm, 0, uri_string, cwt_str_ns()->strLen(uri_string));
 }
 
 /**
@@ -100,8 +100,8 @@ static ssize_t __uri_parse(const CWT_CHAR *uri_string, CwtUri *uri)
  */
 static CWT_CHAR* __uri_compose (CwtUri *uri)
 {
-	CwtStrNS *strNS = cwtStrNS();
-	CwtStringNS *stringNS = cwtStringNS();
+	CwtStrNS *strNS = cwt_str_ns();
+	CwtStringNS *stringNS = cwt_string_ns();
 	CwtString *uri_string;
 	CWT_CHAR *result;
 
@@ -136,7 +136,7 @@ static CWT_CHAR* __uri_compose (CwtUri *uri)
 
 		if( uri->port > 0 ) {
 			CWT_CHAR port_str[32];
-			cwtStdioNS()->snprintf(port_str, 31, _T(":%u"), uri->port );
+			cwt_stdio_ns()->snprintf(port_str, 31, _T(":%u"), uri->port );
 			stringNS->append(uri_string, port_str);
 		}
 

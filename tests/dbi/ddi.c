@@ -247,7 +247,7 @@ static void test_00(void)
 		CwtStrListIterator it;
 		__slNS->begin(deploySpec, &it);
 		while( __slNS->hasMore(&it) ) {
-			printf_debug(_T("Spec: %s"), __slNS->next(&it));
+			cwt_logger_ns()->debug(_T("Spec: %s"), __slNS->next(&it));
 		}
 	}
 
@@ -255,7 +255,7 @@ static void test_00(void)
 		CwtStrListIterator it;
 		__slNS->begin(recallSpec, &it);
 		while( __slNS->hasMore(&it) ) {
-			printf_debug(_T("Spec: %s"), __slNS->next(&it));
+			cwt_logger_ns()->debug(_T("Spec: %s"), __slNS->next(&it));
 		}
 	}
 
@@ -305,7 +305,7 @@ static void test_02(void)
 		CwtStrListIterator it;
 		__slNS->begin(deploySpec, &it);
 		while( __slNS->hasMore(&it) ) {
-			printf_debug(_T("Spec: %s"), __slNS->next(&it));
+			cwt_logger_ns()->debug(_T("Spec: %s"), __slNS->next(&it));
 		}
 	}
 
@@ -313,7 +313,7 @@ static void test_02(void)
 		CwtStrListIterator it;
 		__slNS->begin(recallSpec, &it);
 		while( __slNS->hasMore(&it) ) {
-			printf_debug(_T("Spec: %s"), __slNS->next(&it));
+			cwt_logger_ns()->debug(_T("Spec: %s"), __slNS->next(&it));
 		}
 	}
 
@@ -325,8 +325,8 @@ static void test_02(void)
 
 int main(int argc, char *argv[])
 {
-	__dbi = cwtDBI();
-	__slNS = cwtStrListNS();
+	__dbi = cwt_dbi_ns();
+	__slNS = cwt_strList_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);

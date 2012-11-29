@@ -660,7 +660,7 @@ static CwtFsmTransition uri_reference_fsm[] = {
 
 static BOOL __parse_uint_digits(const CWT_CHAR *s, size_t len, int radix, UINT *d)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	BOOL ok;
 	CWT_CHAR buf[64];
 	UINT n;
@@ -729,7 +729,7 @@ static void __set_scheme(const void *data, size_t len, void *context, void *acti
 		CWT_UNUSED(action_args);
 		if( uri->scheme )
 			CWT_FREE(uri->scheme);
-		uri->scheme = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
+		uri->scheme = cwt_str_ns()->strNdup((const CWT_CHAR*)data, len);
 	}
 }
 
@@ -757,7 +757,7 @@ static void __set_uri_var(CWT_CHAR **pvar, const void *data, size_t len, void *a
 	if( *pvar )
 		CWT_FREE(*pvar);
 
-	*pvar = cwtStrNS()->strNdup((const CWT_CHAR*)data, len);
+	*pvar = cwt_str_ns()->strNdup((const CWT_CHAR*)data, len);
 }
 
 

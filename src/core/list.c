@@ -72,10 +72,10 @@ static CwtStrNS *__strNS = NULL;
 /**
  *
  */
-DLL_API_EXPORT CwtListNS* cwtListNS(void)
+DLL_API_EXPORT CwtListNS* cwt_list_ns(void)
 {
 	if( !__strNS ) {
-		__strNS = cwtStrNS();
+		__strNS = cwt_str_ns();
 	}
 	return &__cwtListNS;
 }
@@ -111,7 +111,7 @@ static CwtList* __list_createPtr (void (*data_cleanup)(void*))
 static void __list_init(CwtList *list, size_t sizeofData, void (*data_cleanup)(void*))
 {
 	CWT_ASSERT(list);
-	cwtStrNS()->bzero(list, sizeof(CwtList));
+	cwt_str_ns()->bzero(list, sizeof(CwtList));
 	list->datasz = sizeofData;
 	list->data_cleanup = data_cleanup;
 }

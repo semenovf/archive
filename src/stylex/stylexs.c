@@ -80,7 +80,7 @@ static BOOL __parseUINT32(const CWT_CHAR *str, void *pval)
 	BOOL ok = FALSE;
 	UINT32 n;
 
-	n = cwtStrNS()->toUINT32(str, 0, &ok);
+	n = cwt_str_ns()->toUINT32(str, 0, &ok);
 	if( ok )
 		*((UINT*)pval) = n;
 	return ok;
@@ -91,7 +91,7 @@ static BOOL __parseINT32(const CWT_CHAR *str, void *pval)
 	BOOL ok = FALSE;
 	INT n;
 
-	n = cwtStrNS()->toINT32(str, 0, &ok);
+	n = cwt_str_ns()->toINT32(str, 0, &ok);
 	if( ok )
 		*((INT*)pval) = n;
 	return ok;
@@ -99,7 +99,7 @@ static BOOL __parseINT32(const CWT_CHAR *str, void *pval)
 
 static BOOL __parseBorderStyle(const CWT_CHAR *str, void *pval)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *borderStyleStr = strNS->strDup(str);
 	int borderStyle = -1;
 
@@ -147,7 +147,7 @@ static BOOL __parseString(const CWT_CHAR *str, void *pval)
 		return FALSE;
 
 	if( pval )
-		*((CWT_CHAR**)pval) = cwtStrNS()->strDup(str);
+		*((CWT_CHAR**)pval) = cwt_str_ns()->strDup(str);
 
 	return TRUE;
 }
@@ -204,7 +204,7 @@ static BOOL __parseHAlign(const CWT_CHAR *str, void *pval)
 #include <cwt/test.h>
 void cwt_stylex_test_parse_attrs(void)
 {
-	CwtStdioNS *stdioNS = cwtStdioNS();
+	CwtStdioNS *stdioNS = cwt_stdio_ns();
 	CWT_CHAR buf[32];
 	ULONG ulongNum;
 

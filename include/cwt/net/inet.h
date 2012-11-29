@@ -24,7 +24,7 @@ typedef struct _CwtInetNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtInetNS* cwtInetNS(void);
+DLL_API_EXPORT CwtInetNS* cwt_inet_ns(void);
 EXTERN_C_END
 
 

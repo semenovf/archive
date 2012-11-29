@@ -32,36 +32,36 @@ static void test_char_helpers(void)
 	ndigits = strlen(__digit_chars);
 
 	for(i = 0; i < nalphas; i++) {
-		CWT_TEST_OK(cwtBelongChar((void*)&__alpha_chars[i], __alpha_chars, nalphas));
+		CWT_TEST_OK(cwt_fsm_belong_char((void*)&__alpha_chars[i], __alpha_chars, nalphas));
 	}
 	for(i = 0; i < ndigits; i++) {
-		CWT_TEST_OK(cwtBelongChar((void*)&__digit_chars[i], __digit_chars, ndigits));
+		CWT_TEST_OK(cwt_fsm_belong_char((void*)&__digit_chars[i], __digit_chars, ndigits));
 	}
 
-	CWT_TEST_OK(cwtExactChar(__alpha_chars, nalphas, __alpha_chars, nalphas));
-	CWT_TEST_NOK(cwtExactChar(__alpha_chars, nalphas, __alpha_chars+1, nalphas-1));
-	CWT_TEST_NOK(cwtExactChar(NULL, 0, __alpha_chars, nalphas));
-	CWT_TEST_NOK(cwtExactChar(__alpha_chars, nalphas, NULL, 0));
+	CWT_TEST_OK(cwt_fsm_exact_char(__alpha_chars, nalphas, __alpha_chars, nalphas));
+	CWT_TEST_NOK(cwt_fsm_exact_char(__alpha_chars, nalphas, __alpha_chars+1, nalphas-1));
+	CWT_TEST_NOK(cwt_fsm_exact_char(NULL, 0, __alpha_chars, nalphas));
+	CWT_TEST_NOK(cwt_fsm_exact_char(__alpha_chars, nalphas, NULL, 0));
 }
 
 static void test_cwt_char_helpers(void)
 {
 	size_t i, nalphas, ndigits;
 
-	nalphas = cwtStrNS()->strLen(__alpha_cwt_chars);
-	ndigits = cwtStrNS()->strLen(__digit_cwt_chars);
+	nalphas = cwt_str_ns()->strLen(__alpha_cwt_chars);
+	ndigits = cwt_str_ns()->strLen(__digit_cwt_chars);
 
 	for(i = 0; i < nalphas; i++) {
-		CWT_TEST_OK(cwtBelongCwtChar((void*)&__alpha_cwt_chars[i], __alpha_cwt_chars, nalphas));
+		CWT_TEST_OK(cwt_fsm_belong_cwtchar((void*)&__alpha_cwt_chars[i], __alpha_cwt_chars, nalphas));
 	}
 	for(i = 0; i < ndigits; i++) {
-		CWT_TEST_OK(cwtBelongCwtChar((void*)&__digit_cwt_chars[i], __digit_cwt_chars, ndigits));
+		CWT_TEST_OK(cwt_fsm_belong_cwtchar((void*)&__digit_cwt_chars[i], __digit_cwt_chars, ndigits));
 	}
 
-	CWT_TEST_OK(cwtExactCwtChar(__alpha_cwt_chars, nalphas, __alpha_cwt_chars, nalphas));
-	CWT_TEST_NOK(cwtExactCwtChar(__alpha_cwt_chars, nalphas, __alpha_cwt_chars+1, nalphas-1));
-	CWT_TEST_NOK(cwtExactCwtChar(NULL, 0, __alpha_cwt_chars, nalphas));
-	CWT_TEST_NOK(cwtExactCwtChar(__alpha_cwt_chars, nalphas, NULL, 0));
+	CWT_TEST_OK(cwt_fsm_exact_cwtchar(__alpha_cwt_chars, nalphas, __alpha_cwt_chars, nalphas));
+	CWT_TEST_NOK(cwt_fsm_exact_cwtchar(__alpha_cwt_chars, nalphas, __alpha_cwt_chars+1, nalphas-1));
+	CWT_TEST_NOK(cwt_fsm_exact_cwtchar(NULL, 0, __alpha_cwt_chars, nalphas));
+	CWT_TEST_NOK(cwt_fsm_exact_cwtchar(__alpha_cwt_chars, nalphas, NULL, 0));
 }
 
 static void test_int_helpers(void)
@@ -71,13 +71,13 @@ static void test_int_helpers(void)
 	nints = sizeof(__ints);
 
 	for(i = 0; i < nints; i++) {
-		CWT_TEST_OK(cwtBelongInt((void*)&__ints[i], __ints, nints));
+		CWT_TEST_OK(cwt_fsm_belong_int((void*)&__ints[i], __ints, nints));
 	}
 
-	CWT_TEST_OK(cwtExactInt(__ints, nints, __ints, nints));
-	CWT_TEST_NOK(cwtExactInt(__ints, nints, &__ints[1], nints-1));
-	CWT_TEST_NOK(cwtExactInt(NULL, 0, &__ints, nints));
-	CWT_TEST_NOK(cwtExactInt(&__ints, nints, NULL, 0));
+	CWT_TEST_OK(cwt_fsm_exact_int(__ints, nints, __ints, nints));
+	CWT_TEST_NOK(cwt_fsm_exact_int(__ints, nints, &__ints[1], nints-1));
+	CWT_TEST_NOK(cwt_fsm_exact_int(NULL, 0, &__ints, nints));
+	CWT_TEST_NOK(cwt_fsm_exact_int(&__ints, nints, NULL, 0));
 }
 
 
@@ -88,7 +88,7 @@ static void test_alternatives_simple(void)
 	const CWT_CHAR *notdigit = _T("w");
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, HEXDIG_FSM, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, HEXDIG_FSM, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hexdig, 0) == -1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hexdig, 1) == 1);
@@ -108,7 +108,7 @@ static void test_repetition_0more(void) {
 	const CWT_CHAR *dec = _T("1972");
 	const CWT_CHAR *notdec = _T("x1972");
 
-	FSM_INIT(fsm, CWT_CHAR, decimal0more_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, decimal0more_fsm, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) == 0);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 1) == 1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 2) == 2);
@@ -148,7 +148,7 @@ static void test_repetition_1more(void)
 	const CWT_CHAR *hex =    _T("BEAF");
 	const CWT_CHAR *nothex = _T("BEAR");
 
-	FSM_INIT(fsm, CWT_CHAR, decimal_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, decimal_fsm, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 0) ==-1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 1) == 1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, dec, 2) == 2);
@@ -203,7 +203,7 @@ static void test_alternatives(void)
 	const CWT_CHAR *notnumber = _T("[number]");
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, number_fsm, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, number_fsm, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 0) ==-1);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, hex, 1) ==-1);
@@ -254,10 +254,10 @@ void test_sequence(void)
 
 	nalphas = strlen(__alpha_chars);
 
-	FSM_INIT(fsm, char, alpha_seq_fsm, NULL, cwtBelongChar, cwtExactChar, cwtRangeChar);
+	FSM_INIT(fsm, char, alpha_seq_fsm, NULL, cwt_fsm_belong_char, cwt_fsm_exact_char, cwt_fsm_range_char);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, __alpha_chars, nalphas) == (ssize_t)nalphas);
 
-	FSM_INIT(fsm, char, z_pos_fsm, NULL, cwtBelongChar, cwtExactChar, cwtRangeChar);
+	FSM_INIT(fsm, char, z_pos_fsm, NULL, cwt_fsm_belong_char, cwt_fsm_exact_char, cwt_fsm_range_char);
 	CWT_TEST_FAIL(__fsmNS->exec(&fsm, 0, __alpha_chars, nalphas) == (ssize_t)nalphas);
 }
 
@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	__fsmNS = cwtFsmNS();
+	__fsmNS = cwt_fsm_ns();
 
 	CWT_BEGIN_TESTS(232);
 

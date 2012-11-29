@@ -72,7 +72,7 @@ typedef struct _CwtListNS {
 } CwtListNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtListNS* cwtListNS(void);
+DLL_API_EXPORT CwtListNS* cwt_list_ns(void);
 EXTERN_C_END
 
 #endif /* __CWT_LIST_H__ */

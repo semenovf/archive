@@ -40,7 +40,7 @@ videntur parum clari, fiant sollemnes in futurum.";
 
 static int __server(void)
 {
-  CwtSocketNS *socketNS = cwtSocketNS();
+  CwtSocketNS *socketNS = cwt_socket_ns();
   CwtSocket *server;
   int i;
   BYTE buf[2048];
@@ -60,7 +60,7 @@ static int __server(void)
 
 		  br = socketNS->read(server, buf, 2048);
 
-		  cwtLoggerNS()->debug(_Tr("Received packet (%ld) from %s:%u\nData: %s\n\n"), br, inetAddr, inetPort, buf);
+		  cwt_logger_ns()->debug(_Tr("Received packet (%ld) from %s:%u\nData: %s\n\n"), br, inetAddr, inetPort, buf);
 		  socketNS->close(peer);
 		  CWT_TEST_OK(strcmp(loremipsum, (char*)buf) == 0);
 		  CWT_FREE(inetAddr);
@@ -73,7 +73,7 @@ static int __server(void)
 
 static int __client(void)
 {
-	CwtSocketNS *socketNS = cwtSocketNS();
+	CwtSocketNS *socketNS = cwt_socket_ns();
 	CwtSocket *client;
 	size_t loremipsum_len;
 	int i;
@@ -84,7 +84,7 @@ static int __client(void)
 
 
 	for (i = 0; i < NPACK; i++) {
-		cwtLoggerNS()->debug(_Tr("Sending packet %d\n"), i);
+		cwt_logger_ns()->debug(_Tr("Sending packet %d\n"), i);
 		CWT_TEST_FAIL(socketNS->write(client, (BYTE*)loremipsum, loremipsum_len+1) > 0);
 	}
 
@@ -108,9 +108,9 @@ int main(int argc, char *argv[])
 		CWT_END_TESTS;
 	}
 
-	cwtLoggerNS()->info(_Tr("Run '%s -server' to start server."), argv[0]);
-	cwtLoggerNS()->info(_Tr("Run '%s -client' to start client."), argv[0]);
-	cwtLoggerNS()->info(_Tr("Note: run server before launching client."));
+	cwt_logger_ns()->info(_Tr("Run '%s -server' to start server."), argv[0]);
+	cwt_logger_ns()->info(_Tr("Run '%s -client' to start client."), argv[0]);
+	cwt_logger_ns()->info(_Tr("Note: run server before launching client."));
 
 	return EXIT_FAILURE;
 }

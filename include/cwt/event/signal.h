@@ -36,7 +36,7 @@ typedef struct _CwtEventSignalNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtEventSignalNS* cwtEventSignalNS(void);
+DLL_API_EXPORT CwtEventSignalNS* cwt_event_signal_ns(void);
 EXTERN_C_END
 
 

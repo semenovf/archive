@@ -33,11 +33,11 @@ static CwtListNS    *__listNS = NULL;
 static CwtEventNS   *__eventNS = NULL;
 
 
-DLL_API_EXPORT CwtEventSignalNS* cwtEventSignalNS(void)
+DLL_API_EXPORT CwtEventSignalNS* cwt_event_signal_ns(void)
 {
 	if( !__listNS ) {
-		__listNS = cwtListNS();
-		__eventNS = cwtEventNS();
+		__listNS = cwt_list_ns();
+		__eventNS = cwt_event_ns();
 	}
 
 	return &__cwtEventSignalNS;

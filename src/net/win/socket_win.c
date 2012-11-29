@@ -13,7 +13,7 @@
 BOOL __socket_allowSockets(void)
 {
 	if( !__socket_is_sockets_allowed ) {
-		CwtLoggerNS *logger = cwtLoggerNS();
+		CwtLoggerNS *logger = cwt_logger_ns();
 
 		WORD version;
 		WSADATA wsaData;

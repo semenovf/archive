@@ -33,21 +33,21 @@ struct _FsmTestEntry {
 
 static void fsm_test_entries(CwtFsm *fsm, struct _FsmTestEntry *entry)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	const CWT_CHAR *fsmname = entry->name;
 	const CWT_CHAR * const *valid_str  = entry->valid_str;
 	struct _FsmInvalidEntry *invalid_entries = entry->invalid_entries;
 
-	cwtLoggerNS()->trace(_T("Test '%s'..."), fsmname);
+	cwt_logger_ns()->trace(_T("Test '%s'..."), fsmname);
 	fsm->trans_tab = entry->trans_tab;
 
 	while( *valid_str != NULL ) {
-		CWT_TEST_FAIL(cwtFsmNS()->exec(fsm, 0, *valid_str, strNS->strLen(*valid_str)) == (ssize_t)strNS->strLen(*valid_str));
+		CWT_TEST_FAIL(cwt_fsm_ns()->exec(fsm, 0, *valid_str, strNS->strLen(*valid_str)) == (ssize_t)strNS->strLen(*valid_str));
 		valid_str++;
 	}
 
 	while( invalid_entries->invalid_str != NULL ) {
-		CWT_TEST_FAIL(cwtFsmNS()->exec(fsm, 0
+		CWT_TEST_FAIL(cwt_fsm_ns()->exec(fsm, 0
 				, invalid_entries->invalid_str
 				, strNS->strLen(invalid_entries->invalid_str)) == invalid_entries->ret);
 		invalid_entries++;

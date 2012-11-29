@@ -60,8 +60,8 @@ videntur parum clari, fiant sollemnes in futurum.");
 
 int main(int argc, char *argv[])
 {
-	CwtStrNS *strNS = cwtStrNS();
-	CwtStrListNS *slNS = cwtStrListNS();
+	CwtStrNS *strNS = cwt_str_ns();
+	CwtStrListNS *slNS = cwt_strList_ns();
 	CwtStrList *sl;
 
 	CWT_UNUSED(argc);

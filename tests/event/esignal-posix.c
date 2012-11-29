@@ -2,7 +2,7 @@
 #include <cwt/logger.h>
 #include <cwt/types.h>
 #include <cwt/test.h>
-#include <cwt/sys.h>
+#include <cwt/dl.h>
 #include <cwt/event/event.h>
 #include <cwt/event/signal.h>
 
@@ -55,10 +55,10 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(35);
 
-	__eventNS = cwtEventNS();
-	__eventSignalNS = cwtEventSignalNS();
+	__eventNS = cwt_event_ns();
+	__eventSignalNS = cwt_event_signal_ns();
 
-	CWT_TEST_FAIL(cwtSysNS()->loadNS(_T("event:signal-posix")));
+	CWT_TEST_FAIL(cwt_dl_ns()->loadNS(_T("event:signal-posix")));
 
 	__eventNS->setIdleProccess(__idle_proc);
 	__eventNS->registerSource(__eventSignalNS->source());

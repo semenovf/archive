@@ -64,7 +64,7 @@ static void set_month(const void *data, size_t len, void *context, void *action_
 
 static BOOL parse_uint_digits(const CWT_CHAR *s, size_t len, int radix, UINT *d)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	BOOL ok;
 	CWT_CHAR buf[64];
 	UINT n;
@@ -95,7 +95,7 @@ static ssize_t parse_mday(CwtFsm *fsm, void *fn_context, const void *data, size_
 		UINT mday;
 		len = 2;
 
-		if( cwtStrNS()->isSpace(ptr[0]) ) {
+		if( cwt_str_ns()->isSpace(ptr[0]) ) {
 			ptr++;
 			len--;
 		}
@@ -260,7 +260,7 @@ static CwtFsmTransition datetime_fsm[] = {
 
 static void test_parse_date(void)
 {
-	CwtFsmNS *fsmNS = cwtFsmNS();
+	CwtFsmNS *fsmNS = cwt_fsm_ns();
 	const CWT_CHAR *date_str = _T("Sat Apr 29 12:34:56 1972");
 	const CWT_CHAR *date_str_incorrect_0 = _T("Cat Apr 29 12:34:56 1972");  /* invalid weekday */
 	const CWT_CHAR *date_str_incorrect_1 = _T("Sat Apt 29 12:34:56 1972");  /* invalid month */
@@ -270,9 +270,9 @@ static void test_parse_date(void)
 	struct tm tm;
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, datetime_fsm, &tm, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, datetime_fsm, &tm, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
-	CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, date_str, cwtStrNS()->strLen(date_str)) >= (ssize_t)cwtStrNS()->strLen(date_str));
+	CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, date_str, cwt_str_ns()->strLen(date_str)) >= (ssize_t)cwt_str_ns()->strLen(date_str));
 
 	CWT_TEST_OK(tm.tm_wday == 6);
 	CWT_TEST_OK(tm.tm_mon == 3);
@@ -281,11 +281,11 @@ static void test_parse_date(void)
 	CWT_TEST_OK(tm.tm_sec == 56);
 	CWT_TEST_OK(tm.tm_year + 1900 == 1972);
 
-	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_0, cwtStrNS()->strLen(date_str_incorrect_0)) < 0);
-	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_1, cwtStrNS()->strLen(date_str_incorrect_1)) < 0);
-	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_2, cwtStrNS()->strLen(date_str_incorrect_2)) < 0);
-	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_3, cwtStrNS()->strLen(date_str_incorrect_3)) < 0);
-	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_4, cwtStrNS()->strLen(date_str_incorrect_4)) < 0);
+	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_0, cwt_str_ns()->strLen(date_str_incorrect_0)) < 0);
+	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_1, cwt_str_ns()->strLen(date_str_incorrect_1)) < 0);
+	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_2, cwt_str_ns()->strLen(date_str_incorrect_2)) < 0);
+	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_3, cwt_str_ns()->strLen(date_str_incorrect_3)) < 0);
+	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_4, cwt_str_ns()->strLen(date_str_incorrect_4)) < 0);
 }
 
 
@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	__fsmNS = cwtFsmNS();
+	__fsmNS = cwt_fsm_ns();
 
 	CWT_BEGIN_TESTS(12);
 

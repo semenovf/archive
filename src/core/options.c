@@ -42,7 +42,7 @@ static BOOL        __it_default_hasMore   (CwtOptionIterator *it);
 static CwtArgvType __it_default_next      (CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg);
 static void        __it_default_free      (CwtOptionIterator *it) { if (it) CWT_FREE(it); }
 
-static void        __it_on_error(const CWT_CHAR *errstr) { cwtLoggerNS()->error(errstr); }
+static void        __it_on_error(const CWT_CHAR *errstr) { cwt_logger_ns()->error(errstr); }
 
 static CwtOptionsNS __cwtOptionsNS = {
 	  __createIterator
@@ -64,7 +64,7 @@ static BOOL __getOptarg(CwtOptionIterator *it, CWT_CHAR **arg);
 static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg);
 
 
-DLL_API_EXPORT CwtOptionsNS* cwtOptionsNS(void)
+DLL_API_EXPORT CwtOptionsNS* cwt_options_ns(void)
 {
 	return &__cwtOptionsNS;
 }
@@ -100,7 +100,7 @@ static CwtOptionIterator* __createIterator (CwtOptionIteratorType itType)
 
 static void __splitLongOptWithArg(const CWT_CHAR *token, CWT_CHAR **popt, CWT_CHAR **parg)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *p;
 
 	CWT_ASSERT(popt);
@@ -138,8 +138,8 @@ static BOOL __it_default_hasMore (CwtOptionIterator *it)
 static CwtArgvType __it_default_next (CwtOptionIterator *it, CWT_CHAR **opt, CWT_CHAR **arg)
 {
 	CwtDefaultOptionIterator *it_ = (CwtDefaultOptionIterator *)it;
-	CwtStrNS        *strNS   = cwtStrNS();
-	CwtTextCodecNS  *codecNS = cwtTextCodecNS();
+	CwtStrNS        *strNS   = cwt_str_ns();
+	CwtTextCodecNS  *codecNS = cwt_textcodec_ns();
 	CWT_CHAR        *optStr;
 	CWT_CHAR        *popt, *parg;
 	CwtArgvType     argvType;
@@ -240,7 +240,7 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 		LONGLONG v;
 		CWT_ASSERT(arg);
 
-		v = cwtStrNS()->toLONGLONG(arg, 0, &ok);
+		v = cwt_str_ns()->toLONGLONG(arg, 0, &ok);
 		if (!ok)
 			return FALSE;
 
@@ -256,7 +256,7 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 		BOOL ok;
 		CWT_ASSERT(arg);
 
-		v = cwtStrNS()->toDouble(arg, &ok);
+		v = cwt_str_ns()->toDouble(arg, &ok);
 		if (!ok)
 			return FALSE;
 
@@ -272,7 +272,7 @@ static BOOL __assignOptarg(CwtOption *popt, const CWT_CHAR *arg)
 		CWT_ASSERT(arg);
 		if(popt->validator && !popt->validator(arg))
 			return FALSE;
-		*(CWT_CHAR**)popt->arg = cwtStrNS()->strDup(arg);
+		*(CWT_CHAR**)popt->arg = cwt_str_ns()->strDup(arg);
 		break;
 	}
 
@@ -311,9 +311,9 @@ static BOOL  __parse (int argc, char **argv, CwtOption *options, CwtStrList *arg
  */
 static BOOL __parseWithIterator(CwtOption *options, CwtStrList *args, CwtOptionIterator *it)
 {
-	CwtHashTableNS  *htNS     = cwtHashTableNS();
-	CwtStringNS     *stringNS = cwtStringNS();
-	CwtStrListNS    *slNS     = cwtStrListNS();
+	CwtHashTableNS  *htNS     = cwt_hashtable_ns();
+	CwtStringNS     *stringNS = cwt_string_ns();
+	CwtStrListNS    *slNS     = cwt_strList_ns();
 
 	BOOL             rc;
     CwtHashTable    *shortOptsHash;
@@ -402,14 +402,14 @@ static BOOL __parseWithIterator(CwtOption *options, CwtStrList *args, CwtOptionI
 
 				if (argStr) {
 					if (!__assignOptarg(popt, argStr)) {
-						cwtStringNS()->sprintf(errStr, _T("'%s': invalid value"), optStr);
+						cwt_string_ns()->sprintf(errStr, _T("'%s': invalid value"), optStr);
 						rc = FALSE;
 					} else {
 						if (it->onOption)
 							it->onOption(popt);
 					}
 				} else {
-					cwtStringNS()->sprintf(errStr, _T("'%s': argument expected"), optStr);
+					cwt_string_ns()->sprintf(errStr, _T("'%s': argument expected"), optStr);
 					rc = FALSE;
 				}
 			} else {
@@ -490,7 +490,7 @@ static void __printUsage(const CWT_CHAR *progname
 		, const CwtOption *optset
 		, FILE *out)
 {
-	CwtStdioNS *stdioNS = cwtStdioNS();
+	CwtStdioNS *stdioNS = cwt_stdio_ns();
 	const CwtOption *popt = optset;
 
 	if (!progname)

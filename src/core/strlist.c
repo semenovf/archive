@@ -82,11 +82,11 @@ static CwtStrListNS __cwtStrListNS = {
 static CwtStrNS  *__strNS  = NULL;
 static CwtListNS *__listNS = NULL;
 
-DLL_API_EXPORT CwtStrListNS* cwtStrListNS(void)
+DLL_API_EXPORT CwtStrListNS* cwt_strList_ns(void)
 {
 	if( !__strNS ) {
-		__strNS  = cwtStrNS();
-		__listNS = cwtListNS();
+		__strNS  = cwt_str_ns();
+		__listNS = cwt_list_ns();
 	}
 	return &__cwtStrListNS;
 }
@@ -182,7 +182,7 @@ static CWT_CHAR* __cat(CwtStrList *psl)
  */
 static CWT_CHAR* __catDelim(CwtStrList *psl, const CWT_CHAR *delim)
 {
-	CwtStringNS *stringNS = cwtStringNS();
+	CwtStringNS *stringNS = cwt_string_ns();
 	CwtString *sbuf;
 	CWT_CHAR *str;
 	CwtStrListIterator it;
@@ -358,7 +358,7 @@ static int __splitSkip(CwtStrList *psl, const CWT_CHAR *str
 		, size_t (*skip)(const CWT_CHAR *tail, size_t tail_len, void *delim)
 		, void *delim, const CwtQuotePair *qpairs, UINT flags)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 
 	size_t i, ibegin;
 	size_t skip_len = 0;

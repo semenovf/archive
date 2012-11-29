@@ -55,10 +55,10 @@ static BOOL __accept (CwtSignal signum)
 	sigaddset(&sa.sa_mask, _SIGMAP(signum));
 
 	if (sigaction(_SIGMAP(signum), &sa, NULL) != 0) {
-		cwtLoggerNS()->error(_Tr("Failed to set handler for signal: %d"), signum);
+		cwt_logger_ns()->error(_Tr("Failed to set handler for signal: %d"), signum);
 		return FALSE;
 	} else {
-		cwtLoggerNS()->debug(_Tr("Set handler for signal: %d"), signum);
+		cwt_logger_ns()->debug(_Tr("Set handler for signal: %d"), signum);
 	}
 	return TRUE;
 }
@@ -107,12 +107,12 @@ BOOL __ns_init__(const CWT_CHAR *params)
 	if( !__eventNS ) {
 		CwtEventSignalNS *eNS;
 
-		__eventNS = cwtEventNS();
-		__listNS = cwtListNS();
-		eNS = cwtEventSignalNS();
+		__eventNS = cwt_event_ns();
+		__listNS = cwt_list_ns();
+		eNS = cwt_event_signal_ns();
 
 		if( pipe(__pipefd) != 0 ) {
-			cwtLoggerNS()->error(cwtStrNS()->strError(errno));
+			cwt_logger_ns()->error(cwt_str_ns()->strError(errno));
 			return FALSE;
 		}
 		fcntl(__pipefd[0], F_SETFL, fcntl(__pipefd[0], F_GETFL) | O_NONBLOCK);

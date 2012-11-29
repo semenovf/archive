@@ -10,32 +10,29 @@
 
 #if defined(CWT_SINGLE_THREADED)
 
-static void __st_lock(CwtThreaded *th)   { CWT_UNUSED(th); }
-static void __st_unlock(CwtThreaded *th) { CWT_UNUSED(th); }
-
 static CwtThreaded __th_global = {
-	  TRUE
-	, __st_lock
-	, __st_unlock
+	TRUE
 };
 
 static CwtThreaded __th_local = {
-	  FALSE
-	, __st_lock
-	, __st_unlock
+	FALSE
 };
 
-static CwtThreaded* __st_global(void) { return &__th_global; }
-static CwtThreaded* __st_local (void) { return &__th_local; }
-static void         __st_free  (CwtThreaded *th) { CWT_UNUSED(th); }
+static CwtThreaded* st_global(void) { return &__th_global; }
+static CwtThreaded* st_local (void) { return &__th_local; }
+static void         st_free  (CwtThreaded *th) { CWT_UNUSED(th); }
+static void         st_lock  (CwtThreaded *th) { CWT_UNUSED(th); }
+static void         st_unlock(CwtThreaded *th) { CWT_UNUSED(th); }
 
 static CwtMtNS __cwtMtNS = {
-	  __st_global
-	, __st_local
-	, __st_free
+	  st_global
+	, st_local
+	, st_free
+	, st_lock
+	, st_unlock
 };
 
-DLL_API CwtMtNS* cwtMtNS(void)
+DLL_API CwtMtNS* cwt_mt_ns(void)
 {
 	return &__cwtMtNS;
 }
@@ -52,10 +49,8 @@ DLL_API CwtMtNS* cwtMtNS(void)
 	static CRITICAL_SECTION __critsec;
 	static BOOL __is_initialised = FALSE;
 
-	static void __mt_global_lock(CwtThreaded *);
-	static void __mt_global_unlock(CwtThreaded *);
-	static void __mt_local_lock(CwtThreaded *);
-	static void __mt_local_unlock(CwtThreaded *);
+	static void __mt_lock(CwtThreaded *);
+	static void __mt_unlock(CwtThreaded *);
 
 	static CwtThreaded* __mt_global(void);
 	static CwtThreaded* __mt_local (void);
@@ -63,17 +58,17 @@ DLL_API CwtMtNS* cwtMtNS(void)
 
 	static CwtMultiThreadedGlobal __th_global = {
 		  TRUE
-		, __mt_global_lock
-		, __mt_global_unlock
 	}
 
 	static CwtMtNS __cwtMtNS = {
 		  __mt_global
 		, __mt_local
 		, __mt_free
+		, __mt_lock
+		, __mt_unlock
 	};
 
-	DLL_API CwtMtNS* cwtMtNS(void)
+	DLL_API CwtMtNS* cwt_mt_ns(void)
 	{
 		if (!__is_initialised) {
 			InitializeCriticalSection(&__critsec);
@@ -84,24 +79,18 @@ DLL_API CwtMtNS* cwtMtNS(void)
 
 	static void __mt_global_lock(CwtThreaded *th)
 	{
-		CWT_UNUSED(th);
-		EnterCriticalSection(&__critsec);
+		if (th->is_global)
+			EnterCriticalSection(&__critsec);
+		else
+			EnterCriticalSection(&((CwtMultiThreadedLocal *)th)->critsec);
 	}
 
 	static void __mt_global_unlock(CwtThreaded *th)
 	{
-		CWT_UNUSED(th);
-		LeaveCriticalSection(&__critsec);
-	}
-
-	static void __mt_local_lock(CwtThreaded *th)
-	{
-		EnterCriticalSection(&((CwtMultiThreadedLocal *)th)->critsec);
-	}
-
-	static void __mt_local_unlock(CwtThreaded *th)
-	{
-		LeaveCriticalSection(&((CwtMultiThreadedLocal *)th)->critsec);
+		if (th->is_global)
+			LeaveCriticalSection(&__critsec);
+		else
+			LeaveCriticalSection(&((CwtMultiThreadedLocal *)th)->critsec);
 	}
 
 	static CwtThreaded* __mt_global(void)
@@ -113,8 +102,6 @@ DLL_API CwtMtNS* cwtMtNS(void)
 	{
 		CwtMultiThreadedLocal *loc = CWT_MALLOC(CwtMultiThreadedLocal);
 		loc->__base.is_global = FALSE;
-		loc->__base.lock      = __mt_local_lock;
-		loc->__base.unlock    = __mt_local_unlock;
 		InitializeCriticalSection(&loc->critsec);
 		return (CwtThreaded*)loc;
 	}
@@ -126,7 +113,9 @@ DLL_API CwtMtNS* cwtMtNS(void)
 			CWT_FREE(th);
 		}
 	}
+
 #else /* defined(CWT_POSIX_THREADS) */
+
 	typedef struct _CwtMultiThreadedLocal {
 		struct _CwtThreaded __base;
 		pthread_mutex_t critsec;
@@ -137,28 +126,25 @@ DLL_API CwtMtNS* cwtMtNS(void)
 	static BOOL __is_initialised = FALSE;
 	static pthread_mutex_t __critsec;
 
-	static void __mt_global_lock(CwtThreaded *);
-	static void __mt_global_unlock(CwtThreaded *);
-	static void __mt_local_lock(CwtThreaded *);
-	static void __mt_local_unlock(CwtThreaded *);
-
 	static CwtThreaded* __mt_global(void);
 	static CwtThreaded* __mt_local (void);
 	static void         __mt_free  (CwtThreaded *);
+	static void         __mt_lock(CwtThreaded *);
+	static void         __mt_unlock(CwtThreaded *);
 
 	static CwtMultiThreadedGlobal __th_global = {
 		  TRUE
-		, __mt_global_lock
-		, __mt_global_unlock
 	};
 
 	static CwtMtNS __cwtMtNS = {
 		  __mt_global
 		, __mt_local
 		, __mt_free
+		, __mt_lock
+		, __mt_unlock
 	};
 
-	DLL_API CwtMtNS* cwtMtNS(void)
+	DLL_API CwtMtNS* cwt_mt_ns(void)
 	{
 		if (!__is_initialised) {
 			pthread_mutex_init(&__critsec, NULL);
@@ -167,26 +153,20 @@ DLL_API CwtMtNS* cwtMtNS(void)
 		return &__cwtMtNS;
 	}
 
-	static void __mt_global_lock(CwtThreaded *th)
+	static void __mt_lock(CwtThreaded *th)
 	{
-		CWT_UNUSED(th);
-		pthread_mutex_lock(&__critsec);
+		if (th->is_global)
+			pthread_mutex_lock(&__critsec);
+		else
+			pthread_mutex_lock(&((CwtMultiThreadedLocal *)th)->critsec);
 	}
 
-	static void __mt_global_unlock(CwtThreaded *th)
+	static void __mt_unlock(CwtThreaded *th)
 	{
-		CWT_UNUSED(th);
-		pthread_mutex_unlock(&__critsec);
-	}
-
-	static void __mt_local_lock(CwtThreaded *th)
-	{
-		EnterCriticalSection(&((CwtMultiThreadedLocal *)th)->critsec);
-	}
-
-	static void __mt_local_unlock(CwtThreaded *th)
-	{
-		LeaveCriticalSection(&((CwtMultiThreadedLocal *)th)->critsec);
+		if (th)
+			pthread_mutex_unlock(&__critsec);
+		else
+			pthread_mutex_unlock(&((CwtMultiThreadedLocal *)th)->critsec);
 	}
 
 	static CwtThreaded* __mt_global(void)
@@ -198,15 +178,13 @@ DLL_API CwtMtNS* cwtMtNS(void)
 	{
 		CwtMultiThreadedLocal *loc = CWT_MALLOC(CwtMultiThreadedLocal);
 		loc->__base.is_global = FALSE;
-		loc->__base.lock      = __mt_local_lock;
-		loc->__base.unlock    = __mt_local_unlock;
 		pthread_mutex_init(&loc->critsec, NULL);
 		return (CwtThreaded*)loc;
 	}
 
 	static void __mt_free (CwtThreaded *th)
 	{
-		if(!th->is_global) {
+		if (!th->is_global) {
 			pthread_mutex_destroy(&((CwtMultiThreadedLocal*)th)->critsec);
 			CWT_FREE(th);
 		}

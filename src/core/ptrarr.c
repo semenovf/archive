@@ -13,7 +13,7 @@ CWT_BEGIN_DEF_VECTOR_NS(CwtPtrArrayNS, CwtPtrArray, ptr_type)
 CWT_END_DEF_VECTOR_NS(CwtPtrArrayNS)
 
 
-DLL_API_EXPORT CwtPtrArrayNS* cwtPtrArrayNS(void)
+DLL_API_EXPORT CwtPtrArrayNS* cwt_ptrarray_ns(void)
 {
 	return &__CwtPtrArrayNS;
 }

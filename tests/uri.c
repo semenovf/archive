@@ -266,8 +266,8 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 
 int main(int argc, char *argv[])
 {
-	CwtUriNS *uriNS = cwtUriNS();
-	CwtStrNS *strNS = cwtStrNS();
+	CwtUriNS *uriNS = cwt_uri_ns();
+	CwtStrNS *strNS = cwt_str_ns();
 	CwtUri uri;
 	static CwtFsm fsm;
 	int i;
@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	cwtStdioNS()->sprintf(uri_string
+	cwt_stdio_ns()->sprintf(uri_string
 		, _T("%s://%s@%s:%u%s?%s#%s")
 		, scheme
 		, userinfo
@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
 		, query
 		, fragment);
 
-	FSM_INIT(fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, NULL, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
 	CWT_BEGIN_TESTS(180);
 

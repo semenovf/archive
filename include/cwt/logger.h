@@ -29,29 +29,8 @@ typedef struct _CwtLoggerNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtLoggerNS* cwtLoggerNS(void);
+DLL_API_EXPORT CwtLoggerNS* cwt_logger_ns(void);
 EXTERN_C_END
-
-EXTERN_C_BEGIN
-
-DLL_API_EXPORT void init_loggers(void);
-
-DLL_API_EXPORT void print_trace(const CWT_CHAR* msg); /* deprecated */
-DLL_API_EXPORT void print_debug(const CWT_CHAR* msg); /* deprecated */
-DLL_API_EXPORT void print_info(const CWT_CHAR* msg); /* deprecated */
-DLL_API_EXPORT void print_warn(const CWT_CHAR* msg); /* deprecated */
-DLL_API_EXPORT void print_error(const CWT_CHAR* msg); /* deprecated */
-DLL_API_EXPORT void printf_trace(const CWT_CHAR* format, ...); /* deprecated */
-DLL_API_EXPORT void printf_debug(const CWT_CHAR* format, ...); /* deprecated */
-DLL_API_EXPORT void printf_info(const CWT_CHAR* format, ...); /* deprecated */
-DLL_API_EXPORT void printf_warn(const CWT_CHAR* format, ...); /* deprecated */
-DLL_API_EXPORT void printf_error(const CWT_CHAR* format, ...); /* deprecated */
-
-DLL_API_EXPORT void set_printer(LOGGER_TYPE type /* deprecated */
-	, void (*printer)(const CWT_CHAR* msg)
-	, const CWT_CHAR* prefix);
-
-DLL_API_EXPORT void set_default_printers(void); /* deprecated */
 
 EXTERN_C_END
 

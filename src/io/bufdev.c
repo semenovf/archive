@@ -20,8 +20,8 @@ typedef struct CwtBufferDevice
 	CwtIODevice __base;
 
 	BOOL master;
-	CwtRingBuf *in;
-	CwtRingBuf *out;
+	CwtRingBuffer *in;
+	CwtRingBuffer *out;
 } CwtBufferDevice;
 
 
@@ -32,8 +32,8 @@ CwtIODevice* cwtBufferDeviceOpen()
 	bufd = CWT_MALLOC(struct CwtBufferDevice);
 
 	bufd->master = TRUE;
-	bufd->in = cwtRingBufNS()->create();
-	bufd->out = cwtRingBufNS()->create();
+	bufd->in = cwt_ringbuffer_ns()->create();
+	bufd->out = cwt_ringbuffer_ns()->create();
 
 	bufd->__base.close = __dev_close;
 	bufd->__base.bytesAvailable = __dev_bytesAvailable;
@@ -74,8 +74,8 @@ void __dev_close(CwtIODevice *dev)
 	bufd = (CwtBufferDevice*)dev;
 
 	if( bufd->master ) {
-		cwtRingBufNS()->free(bufd->in);
-		cwtRingBufNS()->free(bufd->out);
+		cwt_ringbuffer_ns()->free(bufd->in);
+		cwt_ringbuffer_ns()->free(bufd->out);
 	}
 }
 
@@ -85,13 +85,13 @@ size_t __dev_bytesAvailable(CwtIODevice *dev)
 	CwtBufferDevice *bufd;
 	CWT_ASSERT(dev);
 	bufd = (CwtBufferDevice*)dev;
-	return cwtRingBufNS()->size(bufd->in);
+	return cwt_ringbuffer_ns()->size(bufd->in);
 }
 
 ssize_t __dev_read(CwtIODevice *dev, BYTE* buf, size_t sz)
 {
 	CWT_ASSERT(dev);
-	return cwtRingBufNS()->read(((CwtBufferDevice*)dev)->in, buf, sz);
+	return cwt_ringbuffer_ns()->read(((CwtBufferDevice*)dev)->in, buf, sz);
 }
 
 ssize_t __dev_write(CwtIODevice *dev, const BYTE* buf, size_t sz)
@@ -101,7 +101,7 @@ ssize_t __dev_write(CwtIODevice *dev, const BYTE* buf, size_t sz)
 	CWT_ASSERT(dev);
 
 	bufd = (CwtBufferDevice*)dev;
-	return cwtRingBufNS()->write(bufd->out, buf, sz);
+	return cwt_ringbuffer_ns()->write(bufd->out, buf, sz);
 }
 
 /*

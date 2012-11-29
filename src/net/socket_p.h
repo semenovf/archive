@@ -107,7 +107,7 @@ extern ssize_t    __socket_writeUdpSocket   (CwtSocket*, const BYTE *buf, size_t
 extern ssize_t    __socket_writeMcastSocket (CwtSocket*, const BYTE *buf, size_t sz);
 
 #define _CWT_SOCKET_LOG_FMTSUFFIX _T(": %s (errno=%d)")
-#define _CWT_SOCKET_LOG_ARGS      cwtStrNS()->strError(__socket_errno), __socket_errno
+#define _CWT_SOCKET_LOG_ARGS      cwt_str_ns()->strError(__socket_errno), __socket_errno
 
 #ifdef CWT_CC_MSC
 extern int inet_aton(const char *cp, struct in_addr *inp);

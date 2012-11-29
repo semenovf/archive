@@ -26,7 +26,7 @@ typedef struct _CwtEventClockNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtEventClockNS* cwtEventClockNS(void);
+DLL_API_EXPORT CwtEventClockNS* cwt_event_clock_ns(void);
 EXTERN_C_END
 
 

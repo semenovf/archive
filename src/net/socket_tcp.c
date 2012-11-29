@@ -29,7 +29,7 @@ static BOOL __initListener(CwtTcpSocket *sd_tcp
      */
 	rc = setsockopt(sd_tcp->sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse));
 	if (rc < 0)	{
-		cwtLoggerNS()->error(_Tr("setting the socket to reusable address mode (SO_REUSEADDR) failed")
+		cwt_logger_ns()->error(_Tr("setting the socket to reusable address mode (SO_REUSEADDR) failed")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 		return FALSE;
@@ -42,7 +42,7 @@ static BOOL __initListener(CwtTcpSocket *sd_tcp
 	/* Bind the socket. */
 	rc = bind(sd_tcp->sockfd, (SOCKADDR*)&sd_tcp->sockaddr, sizeof(sd_tcp->sockaddr));
 	if( rc < 0 ) {
-		cwtLoggerNS()->error(_Tr("bind failed")
+		cwt_logger_ns()->error(_Tr("bind failed")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 		return FALSE;
@@ -50,7 +50,7 @@ static BOOL __initListener(CwtTcpSocket *sd_tcp
 
 	rc = listen(sd_tcp->sockfd, 10);
 	if (rc < 0) {
-		cwtLoggerNS()->error(_Tr("changing socket state to listening mode failed")
+		cwt_logger_ns()->error(_Tr("changing socket state to listening mode failed")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 		return FALSE;
@@ -88,7 +88,7 @@ static BOOL __initClient(CwtTcpSocket *sd_tcp
 	}
 
 	if (rc < 0) {
-		cwtLoggerNS()->error(_Tr("connection to %s:%u failed")
+		cwt_logger_ns()->error(_Tr("connection to %s:%u failed")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, inetAddr
 			, port
@@ -117,7 +117,7 @@ static CwtSocket* __socket_openTcpSocketHelper(
 			: __initClient((CwtTcpSocket *)sd, inetAddr, port);
 
 		if (!ok) {
-			cwtSocketNS()->close(sd);
+			cwt_socket_ns()->close(sd);
 			sd = NULL;
 		}
 	}
@@ -177,7 +177,7 @@ CwtSocket* __socket_acceptTcpSocket(CwtSocket *sd)
 	}
 
 	CWT_FREE(sd_tcp);
-	cwtLoggerNS()->error(_Tr("accepting connection failed")
+	cwt_logger_ns()->error(_Tr("accepting connection failed")
 		_CWT_SOCKET_LOG_FMTSUFFIX
 		, _CWT_SOCKET_LOG_ARGS);
 
@@ -197,7 +197,7 @@ ssize_t __socket_readTcpSocket(CwtSocket *sd, BYTE *buf, size_t sz)
 	br = recv(sd->sockfd, buf, (int)sz, 0);
 
 	if( br < 0 ) {
-		printf_error(_Tr("receiving data error")
+		cwt_logger_ns()->error(_Tr("receiving data error")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
 	}

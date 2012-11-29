@@ -44,7 +44,7 @@ typedef struct _CwtUtilsNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtUtilsNS* cwtUtilsNS(void);
+DLL_API_EXPORT CwtUtilsNS* cwt_utils_ns(void);
 EXTERN_C_END
 
 #endif /* __CWT_UTILS_H__ */

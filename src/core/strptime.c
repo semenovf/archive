@@ -99,7 +99,7 @@ static const CWT_UCHAR *__find_string(const CWT_UCHAR*, int *, const CWT_CHAR* c
 static const CWT_CHAR* const* __cwt_tzname(void);
 
 
-CWT_CHAR* __cwt_strptime(const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm)
+CWT_CHAR* str_strptime(const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm)
 {
 	CWT_UCHAR c;
 	const CWT_UCHAR *bp, *ep;
@@ -107,10 +107,10 @@ CWT_CHAR* __cwt_strptime(const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm
 	const CWT_CHAR *new_fmt;
 
 	if( !__strNS )
-		__strNS = cwtStrNS();
+		__strNS = cwt_str_ns();
 
 	if( !__locNS )
-		__locNS = cwtLocaleNS();
+		__locNS = cwt_locale_ns();
 
 	bp = (const CWT_UCHAR *)buf;
 
@@ -191,7 +191,7 @@ literal:
 		case _T('x'):	/* The date, using the locale's format. */
 			new_fmt = __locNS->dateFormat(); /*_ctloc(d_fmt);*/
 		    recurse:
-			bp = (const CWT_UCHAR*)__cwt_strptime((const CWT_CHAR*)bp, new_fmt, tm);
+			bp = (const CWT_UCHAR*)str_strptime((const CWT_CHAR*)bp, new_fmt, tm);
 			LEGAL_ALT(ALT_E);
 			continue;
 
@@ -288,6 +288,7 @@ literal:
 			{
 				time_t sse = 0;
 				UINT64 rulim = TIME_MAX;
+				struct tm *tm_tmp;
 
 				if (*bp < _T('0') || *bp > _T('9')) {
 					bp = NULL;
@@ -305,11 +306,19 @@ literal:
 					bp = NULL;
 					continue;
 				}
+
+				/* FIXME multithreading unsafe */
+				tm_tmp = localtime(&sse);
+				CWT_ASSERT(tm_tmp);
+				__strNS->memcpy(&tm, tm_tmp, sizeof(tm));
+/*
+
 #ifdef CWT_CC_MSC
 				if( localtime_s(tm, &sse) != 0 )
 #else
 				if( localtime_r(&sse, tm) == NULL )
 #endif
+*/
 					bp = NULL;
 			}
 			continue;
@@ -380,7 +389,8 @@ literal:
 			continue;
 
 		case _T('Z'):
-			CWT_ISO_CPP_NAME(tzset)();
+			/*FIXME need execution of tzset or no?*/
+			/*CWT_ISO_CPP_NAME(tzset)();*/
 			if( __strNS->strNCmp((const CWT_CHAR*)bp, __gmt, 3) == 0) {
 				tm->tm_isdst = 0;
 #ifdef TM_GMTOFF
@@ -398,7 +408,7 @@ literal:
 					tm->TM_GMTOFF = -(timezone);
 #endif
 #ifdef TM_ZONE
-					tm->TM_ZONE = tzname[i];
+					tm->TM_ZONE = __tzname[i];
 #endif
 				}
 				bp = ep;
@@ -605,7 +615,7 @@ static const CWT_UCHAR* __find_string(const CWT_UCHAR *bp, int *tgt, const CWT_C
 static const CWT_CHAR* const* __cwt_tzname(void)
 {
 #ifdef CWT_UNICODE
-	CwtTextCodecNS *tcNS = cwtTextCodecNS();
+	CwtTextCodecNS *tcNS = cwt_textcodec_ns();
 	static CWT_CHAR* __cwt_tznames[2] = { NULL, NULL };
 	static BOOL __cwt_tznames_is_set = FALSE;
 

@@ -99,8 +99,8 @@ CwtDDI* ddi_create_DDI(const CWT_CHAR *name, const CWT_CHAR *charset)
 	CwtDDI *ddi = CWT_MALLOC(CwtDDI);
 
 	if( !__strNS ) {
-		__strNS  = cwtStrNS();
-		__listNS = cwtListNS();
+		__strNS  = cwt_str_ns();
+		__listNS = cwt_list_ns();
 	}
 
 	__strNS->bzero(ddi, sizeof(CwtDDI));
@@ -268,7 +268,7 @@ BOOL ddi_set_type_ref(CwtDDIColumn *col, CwtDDITable *ref)
 	CWT_ASSERT(ref->name);
 
 	if( !ref->pk_ptr ) {
-		cwtLoggerNS()->error(_T("primary key not set for referenced table '%s'"), ref->name);
+		cwt_logger_ns()->error(_T("primary key not set for referenced table '%s'"), ref->name);
 		return FALSE;
 	}
 
@@ -284,7 +284,7 @@ BOOL ddi_set_default(CwtDDIColumn *col, const CWT_CHAR *defaultValue)
 	CWT_ASSERT(col);
 	if( col->default_value )
 		CWT_FREE(col->default_value);
-	col->default_value = cwtStrNS()->strDup(defaultValue);
+	col->default_value = cwt_str_ns()->strDup(defaultValue);
 	return TRUE;
 }
 
@@ -353,7 +353,7 @@ BOOL ddi_set_pk(CwtDDIColumn *col)
 /* Helper function for __ddi_deploy and __ddi_recall */
 static BOOL exec_queries(CwtDBHandler *dbh, CwtDDI *ddi, int flags, CwtStrList* (*specFor) (CwtDDI*, int flags))
 {
-	CwtStrListNS *slNS = cwtStrListNS();
+	CwtStrListNS *slNS = cwt_strList_ns();
 
 	CwtStrList *spec;
 	CwtStrListIterator it;

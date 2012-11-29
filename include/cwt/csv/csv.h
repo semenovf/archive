@@ -47,7 +47,7 @@ typedef struct CwtCsvNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtCsvNS* cwtCsvNS(void);
+DLL_API_EXPORT CwtCsvNS* cwt_csv_ns(void);
 EXTERN_C_END
 
 #endif /* __CWT_CSV_H__ */

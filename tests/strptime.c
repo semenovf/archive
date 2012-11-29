@@ -40,7 +40,7 @@ void test_00(void)
 
 int main(int argc, char *argv[])
 {
-	__strNS = cwtStrNS();
+	__strNS = cwt_str_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);

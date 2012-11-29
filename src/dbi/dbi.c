@@ -192,7 +192,7 @@ static CwtDBI __cwtDBI = {
 };
 
 
-DLL_API_EXPORT CwtDBI* cwtDBI(void)
+DLL_API_EXPORT CwtDBI* cwt_dbi_ns(void)
 {
 	return &__cwtDBI;
 }
@@ -210,8 +210,8 @@ DLL_API_EXPORT CwtDBI* cwtDBI(void)
  */
 static void dbi_parse_dsn(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
 {
-	CwtStrNS *strNS = cwtStrNS();
-	CwtStrListNS *slNS = cwtStrListNS();
+	CwtStrNS *strNS = cwt_str_ns();
+	CwtStrListNS *slNS = cwt_strList_ns();
 	CwtStrList *opts;
 	const CWT_CHAR *opt;
 
@@ -236,14 +236,14 @@ static void dbi_parse_dsn(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **dri
 
 static CwtDBIDriver* dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
 {
-	CwtStrNS *strNS = cwtStrNS();
-	CwtDlNS  *dl    = cwtDlNS();
+	CwtStrNS *strNS = cwt_str_ns();
+	CwtDlNS  *dl    = cwt_dl_ns();
 
 	CwtDBIDriver *dbd = (CwtDBIDriver*)NULL;
 
 	if( strNS->strCaseEq(_T("dbi"), scheme) ) {
 		DlHandle dlHandle;
-		CwtStringNS *stringNS = cwtStringNS();
+		CwtStringNS *stringNS = cwt_string_ns();
 		CwtString   *driverName;
 		CWT_CHAR    *driverPath;
 
@@ -268,7 +268,7 @@ static CwtDBIDriver* dbi_load(const CWT_CHAR *scheme, const CWT_CHAR *driver)
 		CWT_FREE(driverPath);
 		stringNS->free(driverName);
 	} else {
-		printf_error(__LOG_PREFIX _Tr("unsupported scheme: %s, only 'dbi' acceptable "), scheme);
+		cwt_logger_ns()->error(__LOG_PREFIX _Tr("unsupported scheme: %s, only 'dbi' acceptable "), scheme);
 	}
 
 	return dbd;
@@ -365,8 +365,8 @@ static inline BOOL dbi_query_bin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_t 
 
 static inline CwtStatement* dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql)
 {
-	CwtStrNS     *strNS = cwtStrNS();
-	CwtUniTypeNS *utNS  = cwtUniTypeNS();
+	CwtStrNS     *strNS = cwt_str_ns();
+	CwtUniTypeNS *utNS  = cwt_unitype_ns();
 	CwtStatement* sth;
 
 	CWT_ASSERT(dbh);
@@ -469,7 +469,7 @@ static BOOL dbi_rollback(CwtDBHandler *dbh)
 
 static void dbi_close(CwtStatement *sth)
 {
-	CwtUniTypeNS *utNS = cwtUniTypeNS();
+	CwtUniTypeNS *utNS = cwt_unitype_ns();
 	size_t nbind_params;
 
 	if( !sth )
@@ -499,12 +499,12 @@ static CwtUniType* __dbi_bind_helper(CwtStatement *sth, size_t index, CwtTypeEnu
 	CWT_ASSERT(sth->dbh);
 
 	if( index >= sth->dbh->bindParmsCount(sth) ) {
-		print_error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
+		cwt_logger_ns()->error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
 		return NULL;
 	}
 
 	ut = sth->bind_params[index];
-	cwtUniTypeNS()->set(ut, cwtType, NULL, sz);
+	cwt_unitype_ns()->set(ut, cwtType, NULL, sz);
 	sth->dbh->bindByIndex(sth, index, ut);
 
 	return ut;
@@ -535,7 +535,7 @@ static CwtUniType* dbi_bind_blob( CwtStatement *sth, size_t index, size_t sz)
 
 static BOOL dbi_set_from_string(CwtStatement *sth, CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 {
-	CwtUniTypeNS *utNS = cwtUniTypeNS();
+	CwtUniTypeNS *utNS = cwt_unitype_ns();
 	CwtUniType *val;
 	BOOL ok = TRUE;
 

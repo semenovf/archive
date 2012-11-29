@@ -13,7 +13,7 @@
 
 int main(int argc, char *argv[])
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);

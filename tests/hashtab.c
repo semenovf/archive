@@ -434,7 +434,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	__htNS = cwtHashTableNS();
+	__htNS = cwt_hashtable_ns();
 
 	CWT_BEGIN_TESTS(69835);
 

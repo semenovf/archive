@@ -109,19 +109,19 @@ typedef struct _CwtFsmNS {
 } CwtFsmNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtFsmNS* cwtFsmNS(void);
+DLL_API_EXPORT CwtFsmNS* cwt_fsm_ns(void);
 
-DLL_API_EXPORT BOOL cwtBelongChar(const void *ch, const void *subset, size_t n);
-DLL_API_EXPORT BOOL cwtExactChar(const void *s, size_t n1, const void *seq, size_t n2);
-DLL_API_EXPORT BOOL cwtRangeChar(const void *ch, const void *from, const void *to);
-DLL_API_EXPORT BOOL cwtBelongCwtChar(const void *ch, const void *subset, size_t n);
-DLL_API_EXPORT BOOL cwtExactCwtChar(const void *s, size_t n1, const void *seq, size_t n2);
-DLL_API_EXPORT BOOL cwtRangeCwtChar(const void *ch, const void *from, const void *to);
-DLL_API_EXPORT BOOL cwtBelongInt(const void *ch, const void *subset, size_t n);
-DLL_API_EXPORT BOOL cwtExactInt(const void *s, size_t n1, const void *seq, size_t n2);
-DLL_API_EXPORT BOOL cwtRangeInt(const void *ch, const void *from, const void *to);
+DLL_API_EXPORT BOOL cwt_fsm_belong_char(const void *ch, const void *subset, size_t n);
+DLL_API_EXPORT BOOL cwt_fsm_exact_char(const void *s, size_t n1, const void *seq, size_t n2);
+DLL_API_EXPORT BOOL cwt_fsm_range_char(const void *ch, const void *from, const void *to);
+DLL_API_EXPORT BOOL cwt_fsm_belong_cwtchar(const void *ch, const void *subset, size_t n);
+DLL_API_EXPORT BOOL cwt_fsm_exact_cwtchar(const void *s, size_t n1, const void *seq, size_t n2);
+DLL_API_EXPORT BOOL cwt_fsm_range_cwtchar(const void *ch, const void *from, const void *to);
+DLL_API_EXPORT BOOL cwt_fsm_belong_int(const void *ch, const void *subset, size_t n);
+DLL_API_EXPORT BOOL cwt_fsm_exact_int(const void *s, size_t n1, const void *seq, size_t n2);
+DLL_API_EXPORT BOOL cwt_fsm_range_int(const void *ch, const void *from, const void *to);
 
-DLL_API_EXPORT ssize_t cwtFsmRepetition(struct _CwtFsm *fsm, void *fn_context, const void *data, size_t len);
+DLL_API_EXPORT ssize_t cwt_fsm_repetition(struct _CwtFsm *fsm, void *fn_context, const void *data, size_t len);
 
 EXTERN_C_END
 

@@ -40,8 +40,8 @@ nisl ut aliquip ex ea commodo consequat. Duis autem vel eum";
 
 int main(int argc, char *argv[])
 {
-	CwtChannelNS   *chNS = cwtChannelNS();
-	CwtByteArrayNS *baNS = cwtByteArrayNS();
+	CwtChannelNS   *chNS = cwt_channel_ns();
+	CwtByteArrayNS *baNS = cwt_bytearray_ns();
 	CwtChannel    *pchan0;
 	CwtChannel    *pchan1;
 	CwtByteArray  *ba;

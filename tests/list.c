@@ -120,8 +120,8 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	__strNS = cwtStrNS();
-	__listNS = cwtListNS();
+	__strNS = cwt_str_ns();
+	__listNS = cwt_list_ns();
 
 	CWT_BEGIN_TESTS(27);
 	test_00();

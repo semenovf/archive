@@ -34,7 +34,7 @@ videntur parum clari, fiant sollemnes in futurum.";
 
 static int __server(void)
 {
-	CwtSocketNS *socketNS = cwtSocketNS();
+	CwtSocketNS *socketNS = cwt_socket_ns();
 
 	int        i;
 	CwtSocket *server;
@@ -54,7 +54,7 @@ static int __server(void)
 		while( !socketNS->bytesAvailable(peer) )
 			{;}
 		CWT_TEST_FAIL((br = socketNS->read(peer, buf, _BUFSZ)) > 0);
-		cwtLoggerNS()->debug(_Tr("Received packet from %s:%u\nData: %s\n\n"), inetAddr, inetPort, buf);
+		cwt_logger_ns()->debug(_Tr("Received packet from %s:%u\nData: %s\n\n"), inetAddr, inetPort, buf);
 		CWT_TEST_OK(strcmp(loremipsum, (char*)buf) == 0);
 		CWT_TEST_FAIL(socketNS->write(peer, buf, _BUFSZ) > 0);
 	}
@@ -67,7 +67,7 @@ static int __server(void)
 
 static int __client(void)
 {
-	CwtSocketNS *socketNS = cwtSocketNS();
+	CwtSocketNS *socketNS = cwt_socket_ns();
 
 	int        i;
 	CwtSocket *client;
@@ -80,13 +80,13 @@ static int __client(void)
 	loremipsum_len = strlen(loremipsum);
 
 	for( i = 0; i < NPACK; i++ ) {
-		cwtLoggerNS()->debug(_Tr("Sending packet..."));
+		cwt_logger_ns()->debug(_Tr("Sending packet..."));
 		CWT_TEST_FAIL(socketNS->write(client, (BYTE*)loremipsum, loremipsum_len+1) > 0);
 
 		while( !socketNS->bytesAvailable(client) )
 			{;}
 		CWT_TEST_FAIL((bw = socketNS->read(client, buf, _BUFSZ)) > 0);
-		cwtLoggerNS()->debug(_Tr("Received packet\nData: %s\n\n"), buf);
+		cwt_logger_ns()->debug(_Tr("Received packet\nData: %s\n\n"), buf);
 	}
 
 	socketNS->close(client);
@@ -109,9 +109,9 @@ int main(int argc, char *argv[])
 		CWT_END_TESTS;
 	}
 
-	cwtLoggerNS()->info(_Tr("Run '%s -server' to start server."), argv[0]);
-	cwtLoggerNS()->info(_Tr("Run '%s -client' to start client."), argv[0]);
-	cwtLoggerNS()->info(_Tr("Note: run server before launching client."));
+	cwt_logger_ns()->info(_Tr("Run '%s -server' to start server."), argv[0]);
+	cwt_logger_ns()->info(_Tr("Run '%s -client' to start client."), argv[0]);
+	cwt_logger_ns()->info(_Tr("Note: run server before launching client."));
 
 	return EXIT_FAILURE;
 }

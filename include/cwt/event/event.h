@@ -30,7 +30,7 @@ typedef struct _CwtEventNS {
 } CwtEventNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtEventNS* cwtEventNS(void);
+DLL_API_EXPORT CwtEventNS* cwt_event_ns(void);
 EXTERN_C_END
 
 

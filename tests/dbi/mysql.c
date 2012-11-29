@@ -136,10 +136,10 @@ static const CWT_CHAR *__sql_insert
 
 int main(int argc, char *argv[])
 {
-	CwtDBI     *dbi   = cwtDBI();
-	CwtStrNS   *strNS = cwtStrNS();
-	CwtStdioNS *stdioNS = cwtStdioNS();
-	CwtUniTypeNS *utNS = cwtUniTypeNS();
+	CwtDBI     *dbi   = cwt_dbi_ns();
+	CwtStrNS   *strNS = cwt_str_ns();
+	CwtStdioNS *stdioNS = cwt_stdio_ns();
+	CwtUniTypeNS *utNS = cwt_unitype_ns();
 
 	CwtDBHandler *dbh;
 	CwtStatement *sth;
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 
 	/* Show tables */
 	{
-		CwtStrListNS *strlistNS = cwtStrListNS();
+		CwtStrListNS *strlistNS = cwt_strList_ns();
 		CwtStrList *tables;
 		size_t i;
 
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 		CWT_TEST_FAIL((sth = dbi->prepare(dbh, sql_insert)));
 		ut = dbi->bindByIndex(sth, 0, CwtType_DATE);
 
-		cwtUtilsNS()->now(&cwtm);
+		cwt_utils_ns()->now(&cwtm);
 		CWT_TEST_FAIL(dbi->setDATE(sth, ut, &cwtm));
 
 		CWT_TEST_FAIL(dbh->execute(sth));
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 		CWT_TEST_OK(dbh->rows(sth) == 1UL);
 		CWT_TEST_OK(dbi->err(dbh) == 0);
 
-		print_info(_T("inserting 1000 records, please wait ..."));
+		cwt_logger_ns()->info(_T("inserting 1000 records, please wait ..."));
 
 		for( i = 0; i < 1000; i++ ) {
 			if( !dbh->execute(sth) )
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
 		CWT_TEST_FAIL((sth = dbi->prepare(dbh, sql_insert)));
 		ut = dbi->bindByIndex(sth, 0, CwtType_TIME);
 
-		cwtUtilsNS()->now(&cwtm);
+		cwt_utils_ns()->now(&cwtm);
 		CWT_TEST_FAIL(dbi->setTIME(sth, ut, &cwtm));
 
 		CWT_TEST_FAIL(dbh->execute(sth));

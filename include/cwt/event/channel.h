@@ -20,7 +20,7 @@ typedef struct _CwtEventChannelNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtEventChannelNS* cwtEventChannelNS(void);
+DLL_API_EXPORT CwtEventChannelNS* cwt_event_channel_ns(void);
 EXTERN_C_END
 
 #endif /* __CWT_EVENT_CHANNEL_H__ */

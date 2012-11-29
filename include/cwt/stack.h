@@ -27,7 +27,7 @@ typedef struct _CwtStackNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtStackNS* cwtStackNS(void);
+DLL_API_EXPORT CwtStackNS* cwt_stack_ns(void);
 EXTERN_C_END
 
 

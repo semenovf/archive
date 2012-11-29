@@ -47,7 +47,7 @@ static CwtSocket* __socket_openLocalSocketHelper(
 			: __initClient((CwtLocalSocket *)sd, path);
 
 		if (!ok) {
-			cwtSocketNS()->close(sd);
+			cwt_socket_ns()->close(sd);
 			sd = NULL;
 		}
 	}

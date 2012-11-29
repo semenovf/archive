@@ -40,7 +40,7 @@ typedef struct CwtUnistdNS {
 } CwtUnistdNS;
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtUnistdNS* cwtUnistdNS(void);
+DLL_API_EXPORT CwtUnistdNS* cwt_unistd_ns(void);
 
 
 EXTERN_C_END

@@ -43,7 +43,7 @@ int cwtSerialDevicePort(CwtIODevice *dev)
  */
 CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 {
-	CwtStrNS *strNS = cwtStrNS();
+	CwtStrNS *strNS = cwt_str_ns();
 	CwtSerialDevice *spd;
 	int i;
 	BOOL is_error = FALSE;
@@ -63,14 +63,14 @@ CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 		if( strNS->strNCmp(_T("port="), attrs[i], 5) == 0 ) {
 			portnum = strNS->toUINT(attrs[i]+5, 0, &ok);
 			if( !ok || portnum < 1 || portnum > SERIALPORT_MAX ) {
-				printf_error(_T("bad serial port number or it is out of bounds (must be between 1 and %d)")
+				cwt_logger_ns()->error(_T("bad serial port number or it is out of bounds (must be between 1 and %d)")
 					, SERIALPORT_MAX);
 				is_error = TRUE;
 			}
 		} else if( strNS->strNCmp(_T("speed="), attrs[i], 6) == 0 ) {
 			speed = strNS->toLONG(attrs[i]+6, 0, &ok);
 			if( !ok ) {
-				print_error(_Tr("bad serial port speed"));
+				cwt_logger_ns()->error(_Tr("bad serial port speed"));
 				is_error = TRUE;
 			}
 		} else if( strNS->strNCmp(_T("parity="), attrs[i], 7) == 0 ) {
@@ -81,7 +81,7 @@ CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 			} else if( strNS->strEq(_T("even"), attrs[i] + 7) ) {
 				parity = SP_ParityEven;
 			} else {
-				print_error(_Tr("bad serial port parity"));
+				cwt_logger_ns()->error(_Tr("bad serial port parity"));
 				is_error = TRUE;
 			}
 		} else if( strNS->strNCmp(_T("data="), attrs[i], 5) == 0 ) {
@@ -94,7 +94,7 @@ CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 			} else if( strNS->strEq(_T("8"), attrs[i] + 5) ) {
 				db = SP_DB8;
 			} else {
-				print_error(_Tr("bad serial port stop bits"));
+				cwt_logger_ns()->error(_Tr("bad serial port stop bits"));
 				is_error = TRUE;
 			}
 		} else if( strNS->strNCmp(_T("stop="), attrs[i], 5) == 0 ) {
@@ -103,25 +103,25 @@ CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 			} else if( strNS->strEq(_T("2"), attrs[i] + 5) ) {
 				sb = SP_SB2;
 			} else {
-				print_error(_Tr("bad serial port stop bits"));
+				cwt_logger_ns()->error(_Tr("bad serial port stop bits"));
 				is_error = TRUE;
 			}
 		} else if( strNS->strNCmp(_T("uart_base="), attrs[i], 10) == 0 ) {
 			uart_base = strNS->toUINT(attrs[i] + 10, 0, &ok);
 			if( !ok ) {
-				print_error(_Tr("bad serial port uart base address"));
+				cwt_logger_ns()->error(_Tr("bad serial port uart base address"));
 				is_error = TRUE;
 			}
 		} else if( strNS->strNCmp(_T("irq="), attrs[i], 4) == 0 ) {
 			irq = strNS->toUINT(attrs[i] + 4, 0, &ok);
 			if( !ok || irq < 1 || irq > 15 ) {
-				print_error(_Tr("bad serial port IRQ"));
+				cwt_logger_ns()->error(_Tr("bad serial port IRQ"));
 				is_error = TRUE;
 			}
 		} else if( strNS->strEq(_T("hispeed"), attrs[i]) ) {
 			hispeed = TRUE;
 		} else {
-			printf_warn(_Tr("%s: invalid serial port attribute, ignored")
+			cwt_logger_ns()->warn(_Tr("%s: invalid serial port attribute, ignored")
 				, CWT_STRING_OR_NULLSTR(attrs[i]));
 		}
 	}
@@ -130,7 +130,7 @@ CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 		return (CwtIODevice*)NULL;
 
 	if( portnum < 0) {
-		print_error(_Tr("serial port number must be specified"));
+		cwt_logger_ns()->error(_Tr("serial port number must be specified"));
 		return (CwtIODevice*)NULL;
 	}
 
@@ -145,7 +145,7 @@ CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 			case 4: uart_base = 0x2E8;
 				break;
 			default:
-				print_error(_Tr("serial port uart base address must be specified"));
+				cwt_logger_ns()->error(_Tr("serial port uart base address must be specified"));
 				return (CwtIODevice*)NULL;
 		}
 	}
@@ -157,7 +157,7 @@ CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 			case 2:
 			case 4: irq = 3/*0x0B*/; break;
 			default:
-				print_error(_Tr("serial port IRQ must be specified"));
+				cwt_logger_ns()->error(_Tr("serial port IRQ must be specified"));
 				return (CwtIODevice*)NULL;
 		}
 	}
@@ -166,14 +166,14 @@ CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 
 	if( rc != E_SP_NOERROR ) {
 /*		serialport_close(portnum);*/
-		printf_error(_Tr("serialport_set_settings: %s"), serialport_strerror(rc));
+		cwt_logger_ns()->error(_Tr("serialport_set_settings: %s"), serialport_strerror(rc));
 		return (CwtIODevice*)NULL;
 	}
 
 	rc = serialport_open(portnum, speed, hispeed, db, parity, sb);
 
 	if( rc != E_SP_NOERROR ) {
-		printf_error(_Tr("serialport_open: %s"), serialport_strerror(rc));
+		cwt_logger_ns()->error(_Tr("serialport_open: %s"), serialport_strerror(rc));
 		return (CwtIODevice*)NULL;
 	}
 

@@ -36,8 +36,8 @@ static const CWT_CHAR *argvTypeStr(CwtArgvType argvType)
 
 static void test_iterate_options(void)
 {
-	CwtStrNS *strNS = cwtStrNS();
-	CwtStringNS *stringNS = cwtStringNS();
+	CwtStrNS *strNS = cwt_str_ns();
+	CwtStringNS *stringNS = cwt_string_ns();
 	CwtOptionIterator *it;
 	CwtString *desc;
 	int i;
@@ -131,8 +131,8 @@ static void test_iterate_options(void)
 
 static void test_options_general(void)
 {
-	CwtStrNS *strNS = cwtStrNS();
-	CwtStrListNS *slNS = cwtStrListNS();
+	CwtStrNS *strNS = cwt_str_ns();
+	CwtStrListNS *slNS = cwt_strList_ns();
 	CwtOptionIterator *it;
 
 	CwtStrList *args;
@@ -213,7 +213,7 @@ static void test_options_general(void)
 
 int main(int argc, char *argv[])
 {
-	__optNS = cwtOptionsNS();
+	__optNS = cwt_options_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);

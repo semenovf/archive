@@ -28,7 +28,7 @@ static BOOL __initListener(CwtMcastSocket *msd
 	    /* application to receive copies of the multicast datagrams. */
 		rc = setsockopt(msd->sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse));
 		if (rc < 0) {
-			cwtLoggerNS()->error(_Tr("setting SO_REUSEADDR error")
+			cwt_logger_ns()->error(_Tr("setting SO_REUSEADDR error")
 					_CWT_SOCKET_LOG_FMTSUFFIX
 					, _CWT_SOCKET_LOG_ARGS);
 			break;
@@ -43,7 +43,7 @@ static BOOL __initListener(CwtMcastSocket *msd
 
 		rc = bind(msd->sockfd, (struct sockaddr*)&localSock, sizeof(localSock));
 		if (rc < 0) {
-			cwtLoggerNS()->error(_Tr("binding datagram socket error")
+			cwt_logger_ns()->error(_Tr("binding datagram socket error")
 					_CWT_SOCKET_LOG_FMTSUFFIX
 					, _CWT_SOCKET_LOG_ARGS);
 			break;
@@ -59,7 +59,7 @@ static BOOL __initListener(CwtMcastSocket *msd
 
 		rc = setsockopt(msd->sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&msd->group.mreq, sizeof(msd->group.mreq));
 		if (rc < 0) {
-			cwtLoggerNS()->error(_Tr("adding multicast group error (%d)")
+			cwt_logger_ns()->error(_Tr("adding multicast group error (%d)")
 				_CWT_SOCKET_LOG_FMTSUFFIX
 				, _CWT_SOCKET_LOG_ARGS);
 			break;
@@ -94,7 +94,7 @@ static BOOL __initClient(
 	localInterface.s_addr = inet_addr(inetAddrLatin1); /*inet_addr("192.168.0.198");*/
 
 	if(setsockopt(msd->sockfd, IPPROTO_IP, IP_MULTICAST_IF, (char *)&localInterface, sizeof(localInterface)) < 0) {
-		cwtLoggerNS()->error(_Tr("setting local interface error (%d)")
+		cwt_logger_ns()->error(_Tr("setting local interface error (%d)")
 				_CWT_SOCKET_LOG_FMTSUFFIX
 				, _CWT_SOCKET_LOG_ARGS);
 		return FALSE;
@@ -119,8 +119,8 @@ static CwtSocket* __socket_openMcastSocketHelper(
 		char *inetAddrLatin1;
 		char *inetMcastAddrLatin1;
 
-		inetAddrLatin1      = cwtTextCodecNS()->toLatin1(inetAddr, cwtStrNS()->strLen(inetAddr));
-		inetMcastAddrLatin1 = cwtTextCodecNS()->toLatin1(inetMcastAddr, cwtStrNS()->strLen(inetMcastAddr));
+		inetAddrLatin1      = cwt_textcodec_ns()->toLatin1(inetAddr, cwt_str_ns()->strLen(inetAddr));
+		inetMcastAddrLatin1 = cwt_textcodec_ns()->toLatin1(inetMcastAddr, cwt_str_ns()->strLen(inetMcastAddr));
 
 		if( is_listener ) {
 			ok = __initListener((CwtMcastSocket *)sd
@@ -136,7 +136,7 @@ static CwtSocket* __socket_openMcastSocketHelper(
 		CWT_FREE(inetAddrLatin1);
 		CWT_FREE(inetMcastAddrLatin1);
 		if (!ok) {
-			cwtSocketNS()->close(sd);
+			cwt_socket_ns()->close(sd);
 			sd = NULL;
 		}
 	}

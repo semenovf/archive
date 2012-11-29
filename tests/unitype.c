@@ -623,9 +623,9 @@ void test_time(void)
 
 int main(int argc, char *argv[])
 {
-	__strNS   = cwtStrNS();
-	__utilsNS = cwtUtilsNS();
-	__utNS    = cwtUniTypeNS();
+	__strNS   = cwt_str_ns();
+	__utilsNS = cwt_utils_ns();
+	__utNS    = cwt_unitype_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);

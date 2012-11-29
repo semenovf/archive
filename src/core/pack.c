@@ -143,7 +143,7 @@ static ssize_t __pack_helper (CwtFsmTransition *trans
 	CwtFsm fsm;
 	PackContext ctx;
 
-	cwtStrNS()->bzero(&ctx, sizeof(ctx));
+	cwt_str_ns()->bzero(&ctx, sizeof(ctx));
 	ctx.act        = act;
 	ctx.buf        = buf;
 	ctx.buf_sz     = buf_sz;
@@ -152,9 +152,9 @@ static ssize_t __pack_helper (CwtFsmTransition *trans
 
 	FSM_INIT(fsm, CWT_CHAR, trans
 				, &ctx
-				, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+				, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
-	return cwtFsmNS()->exec(&fsm, 0, template_str, cwtStrNS()->strLen(template_str)) < 0
+	return cwt_fsm_ns()->exec(&fsm, 0, template_str, cwt_str_ns()->strLen(template_str)) < 0
 			? (ssize_t)-1
 			: ctx.err != Cwt_NoError
 			  	  ? (ssize_t)-1
@@ -240,8 +240,8 @@ static void set_nrepeat(const void *data, size_t len, void *context, void *actio
 	if( len == 0 ) {
 		ctx->nrepeat = 1;
 	} else {
-		s = cwtStrNS()->strNdup(((const CWT_CHAR *)data) + 1, len-2);
-		ctx->nrepeat = cwtStrNS()->toINT32(s, 10, &ok);
+		s = cwt_str_ns()->strNdup(((const CWT_CHAR *)data) + 1, len-2);
+		ctx->nrepeat = cwt_str_ns()->toINT32(s, 10, &ok);
 
 		if( !ok )
 			ctx->nrepeat = -1;
@@ -251,44 +251,44 @@ static void set_nrepeat(const void *data, size_t len, void *context, void *actio
 }
 
 static void __int8ToBytes     (void *pnum, BYTE bytes[]) { bytes[0] = (*(BYTE*)pnum); }
-static void __int16ToBytes    (void *pnum, BYTE bytes[]) { cwtUtilsNS()->int16ToBytes(*(INT16*)pnum, bytes); }
-static void __int32ToBytes    (void *pnum, BYTE bytes[]) { cwtUtilsNS()->int32ToBytes(*(INT32*)pnum, bytes); }
-static void __int64ToBytes    (void *pnum, BYTE bytes[]) { cwtUtilsNS()->int64ToBytes(*(INT64*)pnum, bytes); }
-static void __floatToBytes    (void *pnum, BYTE bytes[]) { cwtUtilsNS()->floatToBytes(*(float*)pnum, bytes); }
-static void __doubleToBytes   (void *pnum, BYTE bytes[]) { cwtUtilsNS()->doubleToBytes(*(double*)pnum, bytes); }
+static void __int16ToBytes    (void *pnum, BYTE bytes[]) { cwt_utils_ns()->int16ToBytes(*(INT16*)pnum, bytes); }
+static void __int32ToBytes    (void *pnum, BYTE bytes[]) { cwt_utils_ns()->int32ToBytes(*(INT32*)pnum, bytes); }
+static void __int64ToBytes    (void *pnum, BYTE bytes[]) { cwt_utils_ns()->int64ToBytes(*(INT64*)pnum, bytes); }
+static void __floatToBytes    (void *pnum, BYTE bytes[]) { cwt_utils_ns()->floatToBytes(*(float*)pnum, bytes); }
+static void __doubleToBytes   (void *pnum, BYTE bytes[]) { cwt_utils_ns()->doubleToBytes(*(double*)pnum, bytes); }
 
 static void __uniTypeInt8ToBytes   (CwtUniType *ut, BYTE bytes[])
-	{ bytes[0] = cwtUniTypeNS()->toBYTE(ut, NULL); }
+	{ bytes[0] = cwt_unitype_ns()->toBYTE(ut, NULL); }
 static void __uniTypeInt16ToBytes  (CwtUniType *ut, BYTE bytes[])
-	{ cwtUtilsNS()->int16ToBytes((INT16)cwtUniTypeNS()->toSHORT(ut, NULL), bytes); }
+	{ cwt_utils_ns()->int16ToBytes((INT16)cwt_unitype_ns()->toSHORT(ut, NULL), bytes); }
 static void __uniTypeInt32ToBytes  (CwtUniType *ut, BYTE bytes[])
-	{ cwtUtilsNS()->int32ToBytes((INT32)cwtUniTypeNS()->toLONG(ut, NULL), bytes); }
+	{ cwt_utils_ns()->int32ToBytes((INT32)cwt_unitype_ns()->toLONG(ut, NULL), bytes); }
 static void __uniTypeInt64ToBytes  (CwtUniType *ut, BYTE bytes[])
-	{ cwtUtilsNS()->int64ToBytes((INT64)cwtUniTypeNS()->toLONGLONG(ut, NULL), bytes); }
+	{ cwt_utils_ns()->int64ToBytes((INT64)cwt_unitype_ns()->toLONGLONG(ut, NULL), bytes); }
 static void __uniTypeFloatToBytes  (CwtUniType *ut, BYTE bytes[])
-	{ cwtUtilsNS()->floatToBytes(cwtUniTypeNS()->toFLOAT(ut, NULL), bytes); }
+	{ cwt_utils_ns()->floatToBytes(cwt_unitype_ns()->toFLOAT(ut, NULL), bytes); }
 static void __uniTypeDoubleToBytes (CwtUniType *ut, BYTE bytes[])
-	{ cwtUtilsNS()->doubleToBytes(cwtUniTypeNS()->toDOUBLE(ut, NULL), bytes); }
+	{ cwt_utils_ns()->doubleToBytes(cwt_unitype_ns()->toDOUBLE(ut, NULL), bytes); }
 
 static void __bytesToInt8     (const BYTE bytes[], void *pnum) { *((INT8*)pnum) = (INT8)bytes[0]; }
-static void __bytesToInt16    (const BYTE bytes[], void *pnum) { *((INT16*)pnum) = cwtUtilsNS()->bytesToInt16(bytes); }
-static void __bytesToInt32    (const BYTE bytes[], void *pnum) { *((INT32*)pnum) = cwtUtilsNS()->bytesToInt32(bytes); }
-static void __bytesToInt64    (const BYTE bytes[], void *pnum) { *((INT64*)pnum) = cwtUtilsNS()->bytesToInt64(bytes); }
-static void __bytesToFloat    (const BYTE bytes[], void *pnum) { *((float*)pnum) = cwtUtilsNS()->bytesToFloat(bytes); }
-static void __bytesToDouble   (const BYTE bytes[], void *pnum) { *((double*)pnum) = cwtUtilsNS()->bytesToDouble(bytes); }
+static void __bytesToInt16    (const BYTE bytes[], void *pnum) { *((INT16*)pnum) = cwt_utils_ns()->bytesToInt16(bytes); }
+static void __bytesToInt32    (const BYTE bytes[], void *pnum) { *((INT32*)pnum) = cwt_utils_ns()->bytesToInt32(bytes); }
+static void __bytesToInt64    (const BYTE bytes[], void *pnum) { *((INT64*)pnum) = cwt_utils_ns()->bytesToInt64(bytes); }
+static void __bytesToFloat    (const BYTE bytes[], void *pnum) { *((float*)pnum) = cwt_utils_ns()->bytesToFloat(bytes); }
+static void __bytesToDouble   (const BYTE bytes[], void *pnum) { *((double*)pnum) = cwt_utils_ns()->bytesToDouble(bytes); }
 
 static void __bytesToUniTypeInt8     (const BYTE bytes[], CwtUniType *ut)
-	{ cwtUniTypeNS()->setSBYTE(ut, (INT8)bytes[0]); }
+	{ cwt_unitype_ns()->setSBYTE(ut, (INT8)bytes[0]); }
 static void __bytesToUniTypeInt16    (const BYTE bytes[], CwtUniType *ut)
-	{ cwtUniTypeNS()->setSHORT(ut, (SHORT)cwtUtilsNS()->bytesToInt16(bytes)); }
+	{ cwt_unitype_ns()->setSHORT(ut, (SHORT)cwt_utils_ns()->bytesToInt16(bytes)); }
 static void __bytesToUniTypeInt32    (const BYTE bytes[], CwtUniType *ut)
-	{ cwtUniTypeNS()->setLONG(ut, (LONG)cwtUtilsNS()->bytesToInt32(bytes)); }
+	{ cwt_unitype_ns()->setLONG(ut, (LONG)cwt_utils_ns()->bytesToInt32(bytes)); }
 static void __bytesToUniTypeInt64    (const BYTE bytes[], CwtUniType *ut)
-	{ cwtUniTypeNS()->setLONGLONG(ut, (LONGLONG)cwtUtilsNS()->bytesToInt64(bytes)); }
+	{ cwt_unitype_ns()->setLONGLONG(ut, (LONGLONG)cwt_utils_ns()->bytesToInt64(bytes)); }
 static void __bytesToUniTypeFloat    (const BYTE bytes[], CwtUniType *ut)
-	{ cwtUniTypeNS()->setFLOAT(ut, cwtUtilsNS()->bytesToFloat(bytes)); }
+	{ cwt_unitype_ns()->setFLOAT(ut, cwt_utils_ns()->bytesToFloat(bytes)); }
 static void __bytesToUniTypeDouble   (const BYTE bytes[], CwtUniType *ut)
-	{ cwtUniTypeNS()->setDOUBLE(ut, cwtUtilsNS()->bytesToDouble(bytes)); }
+	{ cwt_unitype_ns()->setDOUBLE(ut, cwt_utils_ns()->bytesToDouble(bytes)); }
 
 
 typedef struct _PackData {

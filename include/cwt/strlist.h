@@ -51,19 +51,16 @@ typedef struct CwtStrListNS {
 
 	const CWT_CHAR*	(*at)          (CwtStrList *psl, size_t index);
 	void            (*begin)       (CwtStrList *psl, CwtStrListIterator *iter);
-/*	void            (*beginFrom)   (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);*/
 	void            (*rbegin)      (CwtStrList *psl, CwtStrListIterator *iter);
-/*	void            (*rbeginFrom)  (CwtStrList *psl, CwtStrListElem *pelem, CwtStrListIterator *iter);*/
 	BOOL            (*hasMore)     (CwtStrListIterator *iter);
 	const CWT_CHAR* (*next)        (CwtStrListIterator *iter);
-/*	CwtStrListElem* (*elem)        (CwtStrListIterator *iter);*/
 	void            (*toArray)     (CwtStrList*, CWT_CHAR **argv, size_t *argc);
 	BOOL            (*find)        (CwtStrList*, const CWT_CHAR *s, size_t *index);
 } CwtStrListNS;
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtStrListNS* cwtStrListNS();
+DLL_API_EXPORT CwtStrListNS* cwt_strList_ns();
 EXTERN_C_END;
 
 

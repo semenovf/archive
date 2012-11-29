@@ -19,6 +19,8 @@
 #include <stdarg.h>
 */
 
+char* cwt_strndup (const char *s, size_t n);
+
 static char*      __cwt_toLatin1     (const CWT_CHAR *s, size_t n);
 static CWT_CHAR*  __cwt_fromLatin1   (const char *s, size_t n);
 static char*      __cwt_toUtf8       (const CWT_CHAR *s, size_t n);
@@ -37,10 +39,10 @@ static CwtTextCodecNS __cwtTextCodecNS = {
 
 static CwtStrNS *__cwtStrNS = NULL;
 
-DLL_API_EXPORT CwtTextCodecNS* cwtTextCodecNS(void)
+DLL_API_EXPORT CwtTextCodecNS* cwt_textcodec_ns(void)
 {
 	if( !__cwtStrNS ) {
-		__cwtStrNS = cwtStrNS();
+		__cwtStrNS = cwt_str_ns();
 	}
 	return &__cwtTextCodecNS;
 }
@@ -71,7 +73,7 @@ static char* __cwt_toLatin1( const CWT_CHAR *s, size_t n )
 			}
 		}
 #else
-		str = strndup(s, n);
+		str = cwt_strndup(s, n);
 #endif
 	} /* if s */
 	return str;
@@ -98,7 +100,7 @@ static CWT_CHAR* __cwt_fromLatin1(const char *s, size_t n)
         }
 	}
 #else
-	str = strndup(s, n);
+	str = cwt_strndup(s, n);
 #endif
 
 	return str;
@@ -150,7 +152,7 @@ static char* __cwt_toUtf8(const CWT_CHAR *s, size_t n)
 #	endif
 #else
 		/* FIXME need to convert Local8Bit chars into UTF8 */
-		utf8 = strndup(s, n);
+		utf8 = cwt_strndup(s, n);
 #endif
 
 	} /* s */
@@ -218,7 +220,7 @@ static CWT_CHAR* __cwt_fromUtf8(const char *utf8, size_t n)
 #else
 	CWT_UNUSED(utf8_length);
 	/* FIXME need to convert UTF8 to Local8Bit chars */
-	str = strndup(utf8, n);
+	str = cwt_strndup(utf8, n);
 #endif
 
 	return str;
@@ -233,7 +235,7 @@ static char* __cwt_toMBCS(const CWT_CHAR *s, const CWT_CHAR *csname, size_t n)
 	if( __cwtStrNS->strEq(_T("latin1"), csname))
 		return __cwt_toLatin1(s, n);
 
-	printf_warn(_Tr("CwtStrNS::toMBCS(): no text codec is attached, converting to MBCS"));
+	cwt_logger_ns()->warn(_Tr("CwtStrNS::toMBCS(): no text codec is attached, converting to MBCS"));
 	return __cwt_toLatin1(s, n);
 }
 
@@ -245,7 +247,7 @@ static CWT_CHAR* __cwt_fromMBCS(const char *s, const CWT_CHAR *csname, size_t n)
 	if( __cwtStrNS->strEq(_T("latin1"), csname))
 		return __cwt_fromLatin1(s, n);
 
-	printf_warn(_Tr("CwtStrNS::fromMBCS(): no text codec is attached, converting from MBCS"));
+	cwt_logger_ns()->warn(_Tr("CwtStrNS::fromMBCS(): no text codec is attached, converting from MBCS"));
 	return __cwt_fromLatin1(s, n);
 }
 

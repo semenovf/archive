@@ -26,7 +26,7 @@ int                (*vsprintf)    (CwtString *s, const CWT_CHAR *format, va_list
 CWT_END_DECL_VECTOR_NS(CwtStringNS)
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtStringNS* cwtStringNS(void);
+DLL_API_EXPORT CwtStringNS* cwt_string_ns(void);
 EXTERN_C_END
 
 

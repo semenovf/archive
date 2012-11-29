@@ -14,7 +14,7 @@
 
 int main(int argc, char *argv[])
 {
-	CwtUtilsNS *utilsNS = cwtUtilsNS();
+	CwtUtilsNS *utilsNS = cwt_utils_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);

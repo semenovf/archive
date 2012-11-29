@@ -12,6 +12,7 @@
 typedef enum _CwtErrno {
       Cwt_NoError
 	, Cwt_Err_Overflow
+	, Cwt_Err_Range
 	, Cwt_Err_Invalid   /* invalid argument */
 } CwtErrno;
 
