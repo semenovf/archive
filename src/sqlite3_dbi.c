@@ -141,9 +141,9 @@ static CwtDBIDriver __cwtDBIDriver = {
 DLL_API_EXPORT CwtDBIDriver* cwtDBIDriverImpl(void)
 {
 	if( !__strNS ) {
-		__strNS = cwtStrNS();
+		__strNS = cwt_str_ns();
 		/*__htNS  = cwtHashTableNS();*/
-		__utNS  = cwtUniTypeNS();
+		__utNS  = cwt_unitype_ns();
 	}
 	return &__cwtDBIDriver;
 }
