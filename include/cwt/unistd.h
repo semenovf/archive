@@ -33,9 +33,9 @@ typedef struct CwtUnistdNS {
 	INT      (*sopen)    (const CWT_CHAR *filename, INT oflag, INT shflag, ...);
 #endif
 
-	void (*sleep)(UINT sec);
-	void (*msleep)(UINT msec);
-	void (*usleep)(UINT sec);
+	BOOL (*sleep)  (ULONG sec);
+	BOOL (*msleep) (ULONG msec);
+	BOOL (*usleep) (ULONG sec);
 
 } CwtUnistdNS;
 

@@ -474,7 +474,6 @@ int cwt_vsnprintf(CWT_CHAR *string, size_t length, const CWT_CHAR *format, va_li
 	data.pf = format;
 	data.counter = 0;
 
-
 	/* sanity check, the string must be > 1 */
 	if (length < 1)
 		return -1;

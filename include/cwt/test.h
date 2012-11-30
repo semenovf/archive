@@ -17,14 +17,12 @@
 #	error Need to compile sources with CWT_USE_TESTS macro defined
 #endif
 
-struct CwtTestContext {
+typedef struct _CwtTestContext {
 	int m_total_tests;
 	int m_run_tests;
 	int m_ok_tests;
 	int m_failed_tests;
-};
-typedef struct CwtTestContext CwtTestContext;
-extern CwtTestContext *__cwtTestContextPtr__;
+} CwtTestContext;
 
 EXTERN_C_BEGIN
 DLL_API_EXPORT CwtTestContext* cwt_reset_test_context(int ntests);
@@ -36,88 +34,88 @@ EXTERN_C_END
 
 
 #define CWT_END_TESTS {                                                       \
-	CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();               \
+	CwtTestContext* test_ctx = cwt_test_context();                            \
     cwt_logger_ns()->trace(_Tr("TEST: -----------------------------------")); \
 	cwt_logger_ns()->trace(_Tr("TEST: Results: total=%d, run=%d, ok=%d, failed=%d")     \
-		, __cwtTestContextPtr__->m_total_tests                                \
-        , __cwtTestContextPtr__->m_run_tests                                  \
-        , __cwtTestContextPtr__->m_ok_tests                                   \
-        , __cwtTestContextPtr__->m_failed_tests); 	                          \
-	if( __cwtTestContextPtr__->m_total_tests != __cwtTestContextPtr__->m_run_tests )   \
+		, test_ctx->m_total_tests                                             \
+        , test_ctx->m_run_tests                                               \
+        , test_ctx->m_ok_tests                                                \
+        , test_ctx->m_failed_tests); 	                                      \
+	if( test_ctx->m_total_tests != test_ctx->m_run_tests )                    \
 		cwt_logger_ns()->warn(_Tr("Incomplete tests"));                       \
 	cwt_logger_ns()->trace(_Tr("TEST: Total result: %s"),                     \
-		(__cwtTestContextPtr__->m_run_tests                                   \
-        == __cwtTestContextPtr__->m_ok_tests                                  \
+		(test_ctx->m_run_tests                                                \
+        == test_ctx->m_ok_tests                                               \
            ? _Tr("success") : _Tr("failure")));                               \
-	exit (__cwtTestContextPtr__->m_run_tests                                  \
-        == __cwtTestContextPtr__->m_ok_tests ? EXIT_SUCCESS : EXIT_FAILURE);  \
+	exit (test_ctx->m_run_tests                                               \
+        == test_ctx->m_ok_tests ? EXIT_SUCCESS : EXIT_FAILURE);               \
 }
 
 #define CWT_TEST_OK(exp) if( (exp) ) {        	                              \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_ok_tests++;						          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_ok_tests++;						                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: %s => ok")                    \
-        	, ++__cwtTestContextPtr__->m_run_tests, __WIDEN(#exp));           \
+        	, ++test_ctx->m_run_tests, __WIDEN(#exp));                        \
 	} else {                              	                                  \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_failed_tests++;					          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_failed_tests++;					                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: %s => failed at %s:%d")       \
-			, ++__cwtTestContextPtr__->m_run_tests                            \
+			, ++test_ctx->m_run_tests                                         \
 			, __WIDEN(#exp), __TFILE__, __LINE__);                            \
 	}
 
 #define CWT_TEST_OK2(exp,desc) if( (exp) ) {   	                              \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_ok_tests++;						          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_ok_tests++;						                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: %s => ok")                    \
-        	, ++__cwtTestContextPtr__->m_run_tests, desc);                    \
+        	, ++test_ctx->m_run_tests, desc);                                 \
 	} else {                              	                                  \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_failed_tests++;					          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_failed_tests++;					                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: %s => failed at %s:%d")       \
-			, ++__cwtTestContextPtr__->m_run_tests, desc                      \
+			, ++test_ctx->m_run_tests, desc                                   \
             , __TFILE__, __LINE__);                                           \
 	}
 
 #define CWT_TEST_NOK(exp) if( !(exp) ) {        	                          \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_ok_tests++;						          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_ok_tests++;						                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: ! %s => ok")                  \
-			, ++__cwtTestContextPtr__->m_run_tests, __WIDEN(#exp));           \
+			, ++test_ctx->m_run_tests, __WIDEN(#exp));                        \
 	} else {                              	                                  \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_failed_tests++;					          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_failed_tests++;					                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: ! %s => failed at %s:%d")     \
-			, ++__cwtTestContextPtr__->m_run_tests                            \
+			, ++test_ctx->m_run_tests                                         \
             , __WIDEN(#exp), __TFILE__, __LINE__);                            \
 	}
 
 
 #define CWT_TEST_FAIL(exp) if( (exp) ) {        	                          \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_ok_tests++;						          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_ok_tests++;						                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: %s => ok")                    \
-			, ++__cwtTestContextPtr__->m_run_tests, __WIDEN(#exp));           \
+			, ++test_ctx->m_run_tests, __WIDEN(#exp));                        \
 	} else {                              	                                  \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_failed_tests++;					          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_failed_tests++;					                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: %s => failed at %s:%d")       \
-			, ++__cwtTestContextPtr__->m_run_tests                            \
+			, ++test_ctx->m_run_tests                                         \
             , __WIDEN(#exp), __TFILE__, __LINE__);                            \
 		CWT_END_TESTS;                                                        \
 		exit(EXIT_FAILURE);                                                   \
 	}
 
 #define CWT_TEST_FAIL2(exp,desc) if( (exp) ) {        	                      \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_ok_tests++;						          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_ok_tests++;						                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: %s => ok")                    \
-			, ++__cwtTestContextPtr__->m_run_tests, desc);                    \
+			, ++test_ctx->m_run_tests, desc);                                 \
 	} else {                              	                                  \
-		CwtTestContext* __cwtTestContextPtr__ = cwt_test_context();           \
-		__cwtTestContextPtr__->m_failed_tests++;					          \
+		CwtTestContext* test_ctx = cwt_test_context();                        \
+		test_ctx->m_failed_tests++;					                          \
 		cwt_logger_ns()->trace(_Tr("TEST[%03u]: failed at %s:%d, %s")         \
-			, ++__cwtTestContextPtr__->m_run_tests                            \
+			, ++test_ctx->m_run_tests                                         \
             , __TFILE__, __LINE__, desc);                                     \
 		CWT_END_TESTS;                                                        \
 		exit(EXIT_FAILURE);                                                   \

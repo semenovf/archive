@@ -39,6 +39,9 @@
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.208553766" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__GNUC__"/>
+									<listOptionValue builtIn="false" value="CWT_MT"/>
+									<listOptionValue builtIn="false" value="CWT_POSIX_THREADS"/>
+									<listOptionValue builtIn="false" value="CWT_WIN32_THREADS"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1507245781" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>

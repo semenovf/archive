@@ -4,28 +4,15 @@
 #include <stdlib.h>
 #include <cwt/global_os.h>
 #include <cwt/global_cc.h>
+#include <cwt/config.h>
 
 #ifdef _MSC_VER
 #   define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
 #endif
 
-/* GNU C compiler */
-#ifdef __GNUC__
-#	define CWT_CC_GNUC
-#endif
-
 #if defined(_UNICODE) || defined(UNICODE)
 #	define CWT_UNICODE
-#endif
-
-#if _POSIX_C_SOURCE >= 200112L
-#	define CWT_HAVE_POLL   1
-#	define CWT_HAVE_SELECT 1
-#endif
-
-#if _POSIX_C_SOURCE >= 1 || defined(_XOPEN_SOURCE) || defined(_POSIX_SOURCE)
-#	define CWT_HAVE_SIGACTION 1
 #endif
 
 

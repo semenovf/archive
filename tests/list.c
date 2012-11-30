@@ -16,7 +16,6 @@ static CwtStrNS *__strNS = NULL;
 static CwtListNS *__listNS = NULL;
 
 
-
 static void test_00(void)
 {
 	CwtList *list;

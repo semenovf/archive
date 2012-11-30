@@ -8,20 +8,20 @@
 
 #include <cwt/test.h>
 
-static CwtTestContext __cwtTestContext = { 0, 0, 0, 0 };
+static CwtTestContext __cwt_test_context = { 0, 0, 0, 0 };
 
 
 CwtTestContext* cwt_reset_test_context(int ntests)
 {
-	__cwtTestContext.m_total_tests = ntests;
-	__cwtTestContext.m_run_tests
-		= __cwtTestContext.m_ok_tests
-		= __cwtTestContext.m_failed_tests
+	__cwt_test_context.m_total_tests = ntests;
+	__cwt_test_context.m_run_tests
+		= __cwt_test_context.m_ok_tests
+		= __cwt_test_context.m_failed_tests
 		= 0;
-	return &__cwtTestContext;
+	return &__cwt_test_context;
 }
 
 CwtTestContext* cwt_test_context(void)
 {
-	return &__cwtTestContext;
+	return &__cwt_test_context;
 }

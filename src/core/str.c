@@ -249,7 +249,7 @@ CWT_CHAR* str_strdup (const CWT_CHAR *s)
 	CWT_CHAR *clone;
 	size_t len = str_strlen(s) + 1;
 	clone = CWT_MALLOCA(CWT_CHAR, len);
-	memcpy(clone, s, sizeof(CWT_CHAR*) * len);
+	memcpy(clone, s, sizeof(CWT_CHAR) * len);
 	return clone;
 }
 

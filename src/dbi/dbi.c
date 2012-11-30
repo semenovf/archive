@@ -9,7 +9,6 @@
 #include <cwt/string.h>
 #include <cwt/strlist.h>
 #include <cwt/str.h>
-#include <cwt/sys.h>
 #include <cwt/dl.h>
 
 #define __LOG_PREFIX _Tr("dbi: ")

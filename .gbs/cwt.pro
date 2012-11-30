@@ -17,6 +17,7 @@ SUBDIRS  =            \
     tests/hashtab     \
     tests/ini         \
     tests/list        \
+    tests/logger      \
     tests/options     \
     tests/pack        \    
     tests/ringbuf     \

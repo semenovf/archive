@@ -26,16 +26,6 @@
 #		define CWT_SINGLE_THREADED
 #	endif
 
-/*
-#	ifndef CWT_DEFAULT_MT_POLICY
-#		ifdef CWT_SINGLE_THREADED
-#			define CWT_DEFAULT_MT_POLICY single_threaded
-#		else
-#			define CWT_DEFAULT_MT_POLICY multi_threaded_local
-#		endif
-#	endif
-*/
-
 #ifdef CWT_SINGLE_THREADED
 #	define CWT_LOCK
 #	define CWT_UNLOCK
@@ -44,55 +34,44 @@
 #	define CWT_UNLOCK cwt_mt_ns()->global()->unlock()
 #endif
 
-typedef struct _CwtThreaded {
-	BOOL is_global;
-} CwtThreaded;
+
+#if defined(CWT_SINGLE_THREADED)
+
+	typedef struct _CwtThreaded {
+		BOOL is_global;
+	} CwtThreaded;
+
+#elif defined(CWT_WIN32_THREADS)
+
+	typedef struct _CwtThreaded {
+		BOOL is_global;
+		CRITICAL_SECTION critsec;
+	} CwtThreaded;
+
+#elif defined(CWT_POSIX_THREADS)
+
+	typedef struct _CwtThreaded {
+		BOOL is_global;
+		pthread_mutex_t critsec;
+	} CwtThreaded;
+
+#else
+#	error Unknown thread subsystem
+#endif
 
 typedef struct _CwtMtNS {
 	CwtThreaded* (*global) (void);
 	CwtThreaded* (*local)  (void);
+	void         (*init)   (CwtThreaded *);
+	void         (*destroy)(CwtThreaded *);
 	void         (*free)   (CwtThreaded *);
-	void         (*lock)(struct _CwtThreaded *);
-	void         (*unlock)(struct _CwtThreaded *);
+	void         (*lock)   (CwtThreaded *);
+	void         (*unlock) (CwtThreaded *);
 } CwtMtNS;
 
 EXTERN_C_BEGIN
 DLL_API CwtMtNS* cwt_mt_ns(void);
 EXTERN_C_END
-
-/*
-	template<class mt_policy=JQ_DEFAULT_MT_POLICY>
-	class AutoLock
-	{
-	public:
-		mt_policy *m_mutex;
-		AutoLock(mt_policy *mtx) : m_mutex(mtx) { m_mutex->lock(); }
-		~AutoLock() { m_mutex->unlock(); }
-	};
-*/
-
-
-/*
-	// Macro that provides a locking implementation. Use the Lock() and Unlock()
-	// methods to protect a section of code from simultaneous access by multiple
-	// threads. The AutoLock class is a helper that will hold the lock while in
-	// scope.
-*/
-/*
-#define JQ_IMPLEMENT_LOCKING(ClassName)                             \
-	protected:                                                      \
-		class AutoLock                                              \
-		{                                                           \
-		public:                                                     \
-			AutoLock(ClassName *base)                               \
-				: m_base(base) { m_base->m_mutex.lock(); }          \
-			~AutoLock() { m_base->m_mutex.unlock(); }               \
-		private:                                                    \
-			ClassName* m_base;                                      \
-		};                                                          \
-	private:                                                        \
-		JQ_DEFAULT_MT_POLICY m_mutex;
-*/
 
 #endif  /*__CWT_GLOBAL_H__*/
 
