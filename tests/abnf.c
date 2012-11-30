@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 	NL_FSM[0].condition.str.chars = nl;
 	NL_FSM[0].condition.str.len = 2;
 
-	FSM_INIT(fsm, CWT_CHAR, NULL, NULL, cwtBelongCwtChar, cwtExactCwtChar, cwtRangeCwtChar);
+	FSM_INIT(fsm, CWT_CHAR, NULL, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
 	CWT_BEGIN_TESTS(128);
 
