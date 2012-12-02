@@ -36,6 +36,7 @@ SUBDIRS  =            \
     tests/fsm_date    \
     tests/fsm_rpt     \
     tests/mdarr       \
+    tests/snprintf    \
     tests/uri         \
     examples/app
 

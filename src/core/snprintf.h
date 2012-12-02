@@ -112,7 +112,7 @@ Alain Magloire: alainm@rcsm.ee.mcgill.ca
 
 /* this struct holds everything we need */
 struct DATA {
-	int length;
+	size_t length;
 	CWT_CHAR *holder;
 	int counter;
 	const CWT_CHAR *pf;
@@ -125,10 +125,10 @@ struct DATA {
 
 /* signature of the functions */
 /* the floating point stuff */
-static double pow_10(int);
-static int    log_10(double);
-static double integral(double, double *);
-static char * numtoa(double, int, int, CWT_CHAR **);
+static double    pow_10(int);
+static int       log_10(double);
+static double    integral(double, double *);
+static CWT_CHAR* numtoa(double, int, int, CWT_CHAR **);
 
 /* for the format */
 static void conv_flag(CWT_CHAR *, struct DATA *);

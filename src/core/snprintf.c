@@ -221,7 +221,7 @@ static void decimal(struct DATA *p, double d)
 	CWT_CHAR *tmp;
 
 	tmp = itoa(d);
-	p->width -= cwt_str_ns()->strLen(tmp);
+	p->width -= (int)cwt_str_ns()->strLen(tmp);
 	PAD_RIGHT(p);
 	PUT_PLUS(d, p);
 	PUT_SPACE(d, p);
@@ -239,7 +239,7 @@ static void octal(struct DATA *p, double d)
 	CWT_CHAR *tmp;
 
 	tmp = otoa(d);
-	p->width -= cwt_str_ns()->strLen(tmp);
+	p->width -= (int)cwt_str_ns()->strLen(tmp);
 
 	PAD_RIGHT(p);
 
@@ -260,7 +260,7 @@ static void hexa(struct DATA *p, double d)
 	CWT_CHAR *tmp;
 
 	tmp = htoa(d);
-	p->width -= cwt_str_ns()->strLen(tmp);
+	p->width -= (int)cwt_str_ns()->strLen(tmp);
 
 	PAD_RIGHT(p);
 
@@ -281,7 +281,7 @@ static void strings(struct DATA *p, CWT_CHAR *tmp)
 {
 	int i;
 
-	i = cwt_str_ns()->strLen(tmp);
+	i = (int)cwt_str_ns()->strLen(tmp);
 
 	if (p->precision != NOT_FOUND) /* the smallest number */
 		i = (i < p->precision ? i : p->precision);
@@ -311,7 +311,7 @@ static void floating(struct DATA *p, double d)
 	p->width = p->width -
 			((d > 0. && p->justify == RIGHT) ? 1:0) -
             ((p->space == FOUND) ? 1:0) -
-            cwt_str_ns()->strLen(tmp) - p->precision - 1;
+            ((int)cwt_str_ns()->strLen(tmp)) - p->precision - 1;
 
 	PAD_RIGHT(p);
 	PUT_PLUS(d, p);
@@ -326,7 +326,7 @@ static void floating(struct DATA *p, double d)
 		PUT_CHAR(_T('.'), p);  /* put the '.' */
 
 	if (*p->pf == _T('g') || *p->pf == _T('G')) /* smash the trailing zeros */
-		for (i = cwt_str_ns()->strLen(tmp2) - 1; i >= 0 && tmp2[i] == _T('0'); i--)
+		for (i = ((int)cwt_str_ns()->strLen(tmp2)) - 1; i >= 0 && tmp2[i] == _T('0'); i--)
 			tmp2[i] = _T('\0');
 
 	for (; *tmp2; tmp2++)
@@ -367,7 +367,7 @@ static void exponent(struct DATA *p, double d)
 		PUT_CHAR(_T('.'), p);  /* the '.' */
 
 	if (*p->pf == _T('g') || *p->pf == _T('G')) /* smash the trailing zeros */
-		for (i = cwt_str_ns()->strLen(tmp2) - 1; i >= 0 && tmp2[i] == _T('0'); i--)
+		for (i = ((int)cwt_str_ns()->strLen(tmp2)) - 1; i >= 0 && tmp2[i] == _T('0'); i--)
 			tmp2[i] = _T('\0');
 
 	for (; *tmp2; tmp2++)
@@ -452,9 +452,9 @@ static void conv_flag(CWT_CHAR *s, struct DATA * p)
     	  number[i] = _T('\0');
 
     	  if (p->width == NOT_FOUND)
-    		  p->width = atoi(number);
+    		  p->width = cwt_str_ns()->toINT(number, 10, NULL);
     	  else
-    		  p->precision = atoi(number);
+    		  p->precision = cwt_str_ns()->toINT(number, 10, NULL);
     	  s--;   /* went to far go back */
     	  break;
 		}
@@ -557,7 +557,7 @@ int cwt_vsnprintf(CWT_CHAR *string, size_t length, const CWT_CHAR *format, va_li
 
 				case _T('c'): /* character */
 					d = va_arg(args, int);
-					PUT_CHAR(d, &data);
+					PUT_CHAR((CWT_CHAR)d, &data);
 					state = 0;
 					break;
 
@@ -612,160 +612,3 @@ int cwt_vsnprintf(CWT_CHAR *string, size_t length, const CWT_CHAR *format, va_li
 	*data.holder = _T('\0'); /* the end ye ! */
 	return data.counter;
 }
-
-#ifdef DRIVER
-
-#include <stdio.h>
-
-/* set of small tests for snprintf() */
-void main()
-{
-  char holder[100];
-  int i;
-
-/*
-  printf("Suite of test for snprintf:\n");
-  printf("a_format\n");
-  printf("printf() format\n");
-  printf("snprintf() format\n\n");
-*/
-/* Checking the field widths */
-
-  printf("/%%d/, 336\n");
-  snprintf(holder, sizeof holder, "/%d/\n", 336);
-  printf("/%d/\n", 336);
-  printf("%s\n", holder);
-
-  printf("/%%2d/, 336\n");
-  snprintf(holder, sizeof holder, "/%2d/\n", 336);
-  printf("/%2d/\n", 336);
-  printf("%s\n", holder);
-
-  printf("/%%10d/, 336\n");
-  snprintf(holder, sizeof holder, "/%10d/\n", 336);
-  printf("/%10d/\n", 336);
-  printf("%s\n", holder);
-
-  printf("/%%-10d/, 336\n");
-  snprintf(holder, sizeof holder, "/%-10d/\n", 336);
-  printf("/%-10d/\n", 336);
-  printf("%s\n", holder);
-
-
-/* floating points */
-
-  printf("/%%f/, 1234.56\n");
-  snprintf(holder, sizeof holder, "/%f/\n", 1234.56);
-  printf("/%f/\n", 1234.56);
-  printf("%s\n", holder);
-
-  printf("/%%e/, 1234.56\n");
-  snprintf(holder, sizeof holder, "/%e/\n", 1234.56);
-  printf("/%e/\n", 1234.56);
-  printf("%s\n", holder);
-
-  printf("/%%4.2f/, 1234.56\n");
-  snprintf(holder, sizeof holder, "/%4.2f/\n", 1234.56);
-  printf("/%4.2f/\n", 1234.56);
-  printf("%s\n", holder);
-
-  printf("/%%3.1f/, 1234.56\n");
-  snprintf(holder, sizeof holder, "/%3.1f/\n", 1234.56);
-  printf("/%3.1f/\n", 1234.56);
-  printf("%s\n", holder);
-
-  printf("/%%10.3f/, 1234.56\n");
-  snprintf(holder, sizeof holder, "/%10.3f/\n", 1234.56);
-  printf("/%10.3f/\n", 1234.56);
-  printf("%s\n", holder);
-
-  printf("/%%10.3e/, 1234.56\n");
-  snprintf(holder, sizeof holder, "/%10.3e/\n", 1234.56);
-  printf("/%10.3e/\n", 1234.56);
-  printf("%s\n", holder);
-
-  printf("/%%+4.2f/, 1234.56\n");
-  snprintf(holder, sizeof holder, "/%+4.2f/\n", 1234.56);
-  printf("/%+4.2f/\n", 1234.56);
-  printf("%s\n", holder);
-
-  printf("/%%010.2f/, 1234.56\n");
-  snprintf(holder, sizeof holder, "/%010.2f/\n", 1234.56);
-  printf("/%010.2f/\n", 1234.56);
-  printf("%s\n", holder);
-
-#define BLURB "Outstanding acting !"
-/* strings precisions */
-
-  printf("/%%2s/, \"%s\"\n", BLURB);
-  snprintf(holder, sizeof holder, "/%2s/\n", BLURB);
-  printf("/%2s/\n", BLURB);
-  printf("%s\n", holder);
-
-  printf("/%%22s/ %s\n", BLURB);
-  snprintf(holder, sizeof holder, "/%22s/\n", BLURB);
-  printf("/%22s/\n", BLURB);
-  printf("%s\n", holder);
-
-  printf("/%%22.5s/ %s\n", BLURB);
-  snprintf(holder, sizeof holder, "/%22.5s/\n", BLURB);
-  printf("/%22.5s/\n", BLURB);
-  printf("%s\n", holder);
-
-  printf("/%%-22.5s/ %s\n", BLURB);
-  snprintf(holder, sizeof holder, "/%-22.5s/\n", BLURB);
-  printf("/%-22.5s/\n", BLURB);
-  printf("%s\n", holder);
-
-/* see some flags */
-
-  printf("%%x %%X %%#x, 31, 31, 31\n");
-  snprintf(holder, sizeof holder, "%x %X %#x\n", 31, 31, 31);
-  printf("%x %X %#x\n", 31, 31, 31);
-  printf("%s\n", holder);
-
-  printf("**%%d**%% d**%% d**, 42, 42, -42\n");
-  snprintf(holder, sizeof holder, "**%d**% d**% d**\n", 42, 42, -42);
-  printf("**%d**% d**% d**\n", 42, 42, -42);
-  printf("%s\n", holder);
-
-/* other flags */
-
-  printf("/%%g/, 31.4\n");
-  snprintf(holder, sizeof holder, "/%g/\n", 31.4);
-  printf("/%g/\n", 31.4);
-  printf("%s\n", holder);
-
-  printf("/%%.6g/, 31.4\n");
-  snprintf(holder, sizeof holder, "/%.6g/\n", 31.4);
-  printf("/%.6g/\n", 31.4);
-  printf("%s\n", holder);
-
-  printf("/%%.1G/, 31.4\n");
-  snprintf(holder, sizeof holder, "/%.1G/\n", 31.4);
-  printf("/%.1G/\n", 31.4);
-  printf("%s\n", holder);
-
-  printf("abc%%n\n");
-  printf("abc%n", &i); printf("%d\n", i);
-  snprintf(holder, sizeof holder, "abc%n", &i);
-  printf("%s", holder); printf("%d\n\n", i);
-  
-  printf("%%*.*s --> 10.10\n");
-  snprintf(holder, sizeof holder, "%*.*s\n", 10, 10, BLURB);
-  printf("%*.*s\n", 10, 10, BLURB);
-  printf("%s\n", holder);
-
-  printf("%%%%%%%%\n");
-  snprintf(holder, sizeof holder, "%%%%\n");
-  printf("%%%%\n");
-  printf("%s\n", holder);
-
-#define BIG "Hello this is a too big string for the buffer"
-/*  printf("A buffer to small of 10, trying to put this:\n");*/
-  printf("<%%>, %s\n", BIG); 
-  i = snprintf(holder, 10, "%s\n", BIG);
-  printf("<%s>\n", BIG);
-  printf("<%s>\n", holder);
-}
-#endif

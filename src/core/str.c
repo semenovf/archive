@@ -46,7 +46,7 @@ static ULONG     __cwt_strtoul (const CWT_CHAR *s, CWT_CHAR **endptr, int radix)
 static double    __cwt_strtod  (const CWT_CHAR *s, CWT_CHAR **endptr) { return wcstod(s, endptr); }
 static BOOL      __cwt_isalpha (CWT_CHAR ch) { return iswalpha(ch) ? TRUE : FALSE; }
 static BOOL      __cwt_isdigit (CWT_CHAR ch) { return iswdigit(ch) ? TRUE : FALSE; }
-static BOOL      str_isspace (CWT_CHAR ch) { return iswspace(ch) ? TRUE : FALSE; }
+       BOOL      str_isspace (CWT_CHAR ch) { return iswspace(ch) ? TRUE : FALSE; }
 static CWT_CHAR  str_toupper(CWT_CHAR ch) { return (CWT_CHAR)towupper(ch); }
 static CWT_CHAR  str_tolower(CWT_CHAR ch) { return (CWT_CHAR)towlower(ch); }
 

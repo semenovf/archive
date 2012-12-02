@@ -137,7 +137,7 @@ DLL_API_EXPORT CwtIODevice* cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, 
 	if( infilename ) {
 			fd->in = ns->sopen(infilename, imode, SH_DENYNO, S_IREAD | S_IWRITE);
 			if( fd->in < 0 ) {
-					printf_error(_Tr("unable to open input file: %s: %s"), infilename, cwt_str_ns()->strError(errno));
+				cwt_logger_ns()->error(_Tr("unable to open input file: %s: %s"), infilename, cwt_str_ns()->strError(errno));
 					CWT_FREE(fd);
 					return (CwtIODevice*)NULL;
 			}
@@ -146,7 +146,7 @@ DLL_API_EXPORT CwtIODevice* cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, 
 	if( outfilename ) {
 		fd->out = ns->sopen(outfilename, omode, SH_DENYNO, S_IREAD | S_IWRITE);
 		if( fd->out < 0 ) {
-			printf_error(_Tr("unable to open output file: %s: %s"), infilename, cwt_str_ns()->strError(errno));
+			cwt_logger_ns()->error(_Tr("unable to open output file: %s: %s"), infilename, cwt_str_ns()->strError(errno));
 			if( fd->in > 0 ) {
 					ns->close(fd->in);
 			}

@@ -119,7 +119,7 @@ static ULONGLONG  __strtoull_helper (const CWT_CHAR *nptr, CWT_CHAR **endptr, in
 	} else if (!any) {
 		errno = EINVAL;
 	} else if (neg) {
-		acc = -acc;
+		acc = (ULONGLONG)(0-acc);
 	}
 
 	if (endptr != NULL)

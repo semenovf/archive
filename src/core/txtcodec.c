@@ -126,7 +126,7 @@ static char* __cwt_toUtf8(const CWT_CHAR *s, size_t n)
 			NULL, NULL);           /*unused*/
 
 		if( utf8_length == 0 ) {
-			printf_error(_Tr("getting length of result utf8 string failed: %s"), __cwtStrNS->strError(GetLastError()));
+			cwt_logger_ns()->error(_Tr("getting length of result utf8 string failed: %s"), __cwtStrNS->strError(GetLastError()));
 			return NULL;
 		}
 
@@ -142,7 +142,7 @@ static char* __cwt_toUtf8(const CWT_CHAR *s, size_t n)
 				&utf8[0],
 				utf8_length,
 				NULL, NULL )) {
-			printf_error(_Tr("converting string to utf8 failed: %s"), __cwtStrNS->strError(GetLastError()));
+			cwt_logger_ns()->error(_Tr("converting string to utf8 failed: %s"), __cwtStrNS->strError(GetLastError()));
 			CWT_FREE(utf8);
 			return NULL;
 		}
@@ -193,7 +193,7 @@ static CWT_CHAR* __cwt_fromUtf8(const char *utf8, size_t n)
 			0);                /*request size of destination buffer, in wchar_t's*/
 
 		if( length == 0 ) {
-			printf_error(_Tr("getting length of result string failed %s"), __cwtStrNS->strError(GetLastError()));
+			cwt_logger_ns()->error(_Tr("getting length of result string failed %s"), __cwtStrNS->strError(GetLastError()));
 			return NULL;
 		}
 
@@ -207,7 +207,7 @@ static CWT_CHAR* __cwt_fromUtf8(const char *utf8, size_t n)
 				(int)utf8_length, /*FIXME need to check*/
 				&str[0],
 				length )) {
-			printf_error(_Tr("converting string from_utf8_failed: %s"), __cwtStrNS->strError(GetLastError()));
+			cwt_logger_ns()->error(_Tr("converting string from_utf8_failed: %s"), __cwtStrNS->strError(GetLastError()));
 			CWT_FREE(str);
 			return NULL;
 		}
