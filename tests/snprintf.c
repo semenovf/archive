@@ -24,18 +24,21 @@
 
 #include <cwt/logger.h>
 #include <cwt/stdio.h>
+#include <cwt/str.h>
 #include <cwt/test.h>
 
 int main(int argc, char *argv[])
 {
 	CwtStdioNS *stdio_ns = cwt_stdio_ns();
+	CwtStrNS   *str_ns   = cwt_str_ns();
+
 	CWT_CHAR holder[100];
 	int i;
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(1);
+	CWT_BEGIN_TESTS(2);
 
 	stdio_ns->printf(_T("abc%%n\n"));
 	stdio_ns->printf(_T("abc%n"), &i);
@@ -178,6 +181,8 @@ int main(int argc, char *argv[])
 	/*  stdio_ns->printf(_T("A buffer to small of 10, trying to put this:\n");*/
 	stdio_ns->printf(_T("<%%>, %s\n"), BIG);
 	i = stdio_ns->snprintf(holder, 10, _T("%s\n"), BIG);
+	CWT_TEST_OK(i == 9);
+	CWT_TEST_OK(str_ns->strEq(_T("Hello thi"), holder))
 	stdio_ns->printf(_T("<%s>\n"), BIG);
 	stdio_ns->printf(_T("<%s>\n"), holder);
 

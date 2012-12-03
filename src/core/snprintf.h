@@ -114,7 +114,7 @@ Alain Magloire: alainm@rcsm.ee.mcgill.ca
 struct DATA {
 	size_t length;
 	CWT_CHAR *holder;
-	int counter;
+	size_t counter;
 	const CWT_CHAR *pf;
 	/* FLAGS */
 	int width, precision;
