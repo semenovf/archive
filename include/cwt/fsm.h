@@ -13,6 +13,7 @@
 
 typedef enum _CwtFsmMatchType {
 	  Cwt_Fsm_Match_Nothing
+	, Cwt_Fsm_Match_Nl           /* Match new line */
 	, Cwt_Fsm_Match_Seq
 	, Cwt_Fsm_Match_Str
 	, Cwt_Fsm_Match_Char
@@ -29,20 +30,18 @@ typedef enum _CwtFsmMatchType {
 #	define FSM_MATCH_FUNC(f)       Cwt_Fsm_Match_Func, { .trans_fn = f }
 #	define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { .str = {0, NULL} }
 */
-#define FSM_MATCH_SEQ(n)        Cwt_Fsm_Match_Seq,  { {n, NULL, NULL} }
-#define FSM_MATCH_STR(s,n)      Cwt_Fsm_Match_Str,  { {n, s, NULL} }
-#define FSM_MATCH_CHAR(s,n)     Cwt_Fsm_Match_Char, { {n, s, NULL} }
-#define FSM_MATCH_RANGE(f,t)    Cwt_Fsm_Match_Range,{ {0, (void*)(f), (void*)(t)} }
-#define FSM_MATCH_FSM(f)        Cwt_Fsm_Match_Fsm,  { {0, (void*)(f), NULL} }
-#define FSM_MATCH_FUNC(f,pcont) Cwt_Fsm_Match_Func, { {0, (void*)(f), pcont} }
+#define FSM_MATCH_NL            Cwt_Fsm_Match_Nl      , { {0, NULL, NULL} }
+#define FSM_MATCH_SEQ(n)        Cwt_Fsm_Match_Seq     , { {n, NULL, NULL} }
+#define FSM_MATCH_STR(s,n)      Cwt_Fsm_Match_Str     , { {n, s, NULL} }
+#define FSM_MATCH_CHAR(s,n)     Cwt_Fsm_Match_Char    , { {n, s, NULL} }
+#define FSM_MATCH_RANGE(f,t)    Cwt_Fsm_Match_Range   , { {0, (void*)(f), (void*)(t)} }
+#define FSM_MATCH_FSM(f)        Cwt_Fsm_Match_Fsm     , { {0, (void*)(f), NULL} }
+#define FSM_MATCH_FUNC(f,pcont) Cwt_Fsm_Match_Func    , { {0, (void*)(f), pcont} }
+#define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing , { {0, NULL, NULL} }
+#define FSM_MATCH_RPT(f,r)      Cwt_Fsm_Match_Rpt     , { {0, (void*)(f), (void*)(r)} }
 #define FSM_MATCH_INLINE(inl)   inl
-#define FSM_MATCH_NOTHING       Cwt_Fsm_Match_Nothing, { {0, NULL, NULL} }
 
-/* repetition
- * 'repcont' is a pointer to CwtFsmRepetitionContext instance */
-/*#define FSM_MATCH_RPT(repcont)   FSM_MATCH_FUNC(cwtFsmRepetition,repcont)*/
-#define FSM_MATCH_RPT(f,r)      Cwt_Fsm_Match_Rpt, { {0, (void*)(f), (void*)(r)} }
-
+/*
 #define FSM_INIT(fsm, char_type, tab, pcontext, belong_fn, exact_fn, range_fn) \
 		(fsm).trans_tab = tab;                            \
 		(fsm).sizeof_char = sizeof(char_type);            \
@@ -50,6 +49,7 @@ typedef enum _CwtFsmMatchType {
 		(fsm).belong    = belong_fn;                      \
 		(fsm).exact     = exact_fn;                       \
 		(fsm).range     = range_fn;
+*/
 
 #define FSM_NORMAL  0
 #define FSM_REJECT  1
@@ -81,19 +81,25 @@ typedef struct _CwtFsmTransition {
 	void *action_args;
 } CwtFsmTransition;
 
+typedef BOOL (*CwtBelongCharFn) (const void *ch, const void *subset, size_t n);
+typedef BOOL (*CwtExactCharFn)  (const void *s, size_t n1, const void *seq, size_t n2);
+typedef BOOL (*CwtRangeCharFn)  (const void *ch, const void *from, const void *to);
+
+
 typedef struct _CwtFsm {
 	CwtFsmTransition *trans_tab;
+	CWT_CHAR *nl;
 	int   sizeof_char;           /* sizeof character */
 	void *context;               /* result context */
 
 	/* checks if character ch belongs to the set of characters subset */
-	BOOL (*belong)(const void *ch, const void *subset, size_t n);
+	CwtBelongCharFn belong_char_fn;
 
 	/* checks if string s exactly equals to sequence of characters seq */
-	BOOL (*exact)(const void *s, size_t n1, const void *seq, size_t n2);
+	CwtExactCharFn exact_char_fn;
 
 	/* checks if character ch belongs to the specified range */
-	BOOL (*range)(const void *ch, const void *from, const void *to);
+	CwtRangeCharFn range_char_fn;
 } CwtFsm;
 
 
@@ -105,7 +111,20 @@ typedef struct _CwtFsmRepetitionContext {
 */
 
 typedef struct _CwtFsmNS {
-	ssize_t (*exec)(CwtFsm *fsm, int state_cur, const void *data, size_t len);
+	void    (*init)             (
+		  CwtFsm *fsm
+		, int sizeof_char_type
+		, CwtFsmTransition *initial_tab
+		, void *context
+		, CwtBelongCharFn belong_char_fn
+		, CwtExactCharFn exact_char_fn
+		, CwtRangeCharFn range_char_fn);
+	void    (*destroy)          (CwtFsm *fsm);
+	ssize_t (*exec)             (CwtFsm *fsm, int state_cur, const void *data, size_t len);
+	void    (*reproduce)        (CwtFsm *fsm_copy, CwtFsm *fsm_orig, CwtFsmTransition *initial_tab);
+	void    (*reproduceWithContext) (CwtFsm *fsm_copy, CwtFsm *fsm_orig, CwtFsmTransition *initial_tab, void *context);
+	void    (*setNewLine)       (CwtFsm *fsm, CwtNewLineEnum nl);
+	void    (*setCustomNewLine) (CwtFsm *fsm, const CWT_CHAR *nl);
 } CwtFsmNS;
 
 EXTERN_C_BEGIN

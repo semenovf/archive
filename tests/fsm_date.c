@@ -270,7 +270,7 @@ static void test_parse_date(void)
 	struct tm tm;
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, datetime_fsm, &tm, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
+	fsmNS->init(&fsm, sizeof(CWT_CHAR), datetime_fsm, &tm, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
 	CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, date_str, cwt_str_ns()->strLen(date_str)) >= (ssize_t)cwt_str_ns()->strLen(date_str));
 
@@ -286,6 +286,7 @@ static void test_parse_date(void)
 	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_2, cwt_str_ns()->strLen(date_str_incorrect_2)) < 0);
 	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_3, cwt_str_ns()->strLen(date_str_incorrect_3)) < 0);
 	CWT_TEST_OK(fsmNS->exec(&fsm, 0, date_str_incorrect_4, cwt_str_ns()->strLen(date_str_incorrect_4)) < 0);
+	fsmNS->destroy(&fsm);
 }
 
 

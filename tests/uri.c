@@ -297,12 +297,14 @@ int main(int argc, char *argv[])
 		, query
 		, fragment);
 
-	FSM_INIT(fsm, CWT_CHAR, NULL, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
+	cwt_fsm_ns()->init(&fsm, sizeof(CWT_CHAR), NULL, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
 	CWT_BEGIN_TESTS(180);
 
 	for( i = 0; i < nentries; i++ )
 		fsm_test_entries(&fsm, &__fsmTestEntries[i]);
+
+	cwt_fsm_ns()->destroy(&fsm);
 
 	uriNS->init(&uri);
 	CWT_TEST_FAIL(uriNS->parse(uri_string, &uri) == (ssize_t)strNS->strLen(uri_string));

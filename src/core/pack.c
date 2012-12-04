@@ -142,6 +142,7 @@ static ssize_t __pack_helper (CwtFsmTransition *trans
 {
 	CwtFsm fsm;
 	PackContext ctx;
+	ssize_t rc;
 
 	cwt_str_ns()->bzero(&ctx, sizeof(ctx));
 	ctx.act        = act;
@@ -150,15 +151,19 @@ static ssize_t __pack_helper (CwtFsmTransition *trans
 	ctx.data       = data;
 	ctx.data_count = data_count;
 
-	FSM_INIT(fsm, CWT_CHAR, trans
+	cwt_fsm_ns()->init(&fsm, sizeof(CWT_CHAR)
+				, trans
 				, &ctx
 				, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
-	return cwt_fsm_ns()->exec(&fsm, 0, template_str, cwt_str_ns()->strLen(template_str)) < 0
+	rc = cwt_fsm_ns()->exec(&fsm, 0, template_str, cwt_str_ns()->strLen(template_str)) < 0
 			? (ssize_t)-1
 			: ctx.err != Cwt_NoError
 			  	  ? (ssize_t)-1
 			  	  : (ssize_t)ctx.buf_off;
+
+	cwt_fsm_ns()->destroy(&fsm);
+	return rc;
 }
 
 /**

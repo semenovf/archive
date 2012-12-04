@@ -83,14 +83,17 @@ static void __uri_destroy (CwtUri *uri)
 static ssize_t __uri_parse(const CWT_CHAR *uri_string, CwtUri *uri)
 {
 	CwtFsm fsm;
+	ssize_t rc;
 
 	CWT_UNUSED(uri_reference_fsm);
 
 	if( !uri_string || cwt_str_ns()->strLen(uri_string) == 0 )
 		return FALSE;
 
-	FSM_INIT(fsm, CWT_CHAR, /*uri_reference_fsm*/uri_fsm, uri, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
-	return cwt_fsm_ns()->exec(&fsm, 0, uri_string, cwt_str_ns()->strLen(uri_string));
+	cwt_fsm_ns()->init(&fsm, sizeof(CWT_CHAR), uri_fsm, uri, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
+	rc = cwt_fsm_ns()->exec(&fsm, 0, uri_string, cwt_str_ns()->strLen(uri_string));
+	cwt_fsm_ns()->destroy(&fsm);
+	return rc;
 }
 
 /**

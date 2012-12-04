@@ -226,13 +226,15 @@ EXTERN_C_END
 #define CWT_SIZE_T_MAX  ULONG_MAX
 #define CWT_SSIZE_T_MAX LONG_MAX
 
-#define CWT_CAST_BOOL(exp) ((exp) ? TRUE : FALSE)
+#define CWT_CAST_BOOL(exp)    ((exp) ? TRUE : FALSE)
+#define CWT_CAST_SIZE_T(exp)  ((size_t)(exp))
+#define CWT_CAST_SSIZE_T(exp) ((ssize_t)(exp))
 
-typedef enum _CwtNewLine {
+typedef enum _CwtNewLineEnum {
 	  Cwt_NL_Unix
 	, Cwt_NL_Win
 	, Cwt_NL_DOS = Cwt_NL_Win
 	, Cwt_NL_MacOS9
-} CwtNewLine;
+} CwtNewLineEnum;
 
 #endif /* ! __CWT_TYPES_H__ */

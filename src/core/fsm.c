@@ -19,18 +19,138 @@ CWT_END_DEF_VECTOR_NS    (FsmOffsetArrayNS)
 CWT_VECTOR_METHODS       (                  FsmOffsetArray, size_t)
 */
 
+/*
+   \r\n ; Windows/DOS
+   \n\r ; MAC OS 9
+   \n   ; Unix
 
+   Use this FSM transition table instead of CRLF_FSM_INL
+*/
 
-static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len);
+static const CWT_CHAR *__nl_win = _T("\r\n");
+static const CWT_CHAR *__nl_mac = _T("\n\r"); /* FIXME must be up to 9 version */
+static const CWT_CHAR *__nl_nix = _T("\n");
+
+static void    fsm_init          (
+		  CwtFsm *fsm
+		, int sizeof_char_type
+		, CwtFsmTransition *initial_tab
+		, void *context
+		, CwtBelongCharFn belong_char_fn
+		, CwtExactCharFn exact_char_fn
+		, CwtRangeCharFn range_char_fn);
+static void    fsm_destroy       (CwtFsm *fsm);
+static ssize_t fsm_exec          (CwtFsm *fsm, int state_cur, const void *data, size_t len);
+static void    fsm_reproduce     (CwtFsm *fsm_copy, CwtFsm *fsm_orig, CwtFsmTransition *trans);
+static void    fsm_reproduce_with_context (CwtFsm *fsm_copy, CwtFsm *fsm_orig, CwtFsmTransition *initial_tab, void *context);
+static void    fsm_set_nl        (CwtFsm *fsm, CwtNewLineEnum nl);
+static void    fsm_set_custom_nl (CwtFsm *fsm, const CWT_CHAR *nl);
+
 
 static CwtFsmNS __cwtFsmNS = {
-	  __fsm_exec
+	  fsm_init
+	, fsm_destroy
+	, fsm_exec
+	, fsm_reproduce
+	, fsm_reproduce_with_context
+	, fsm_set_nl
+	, fsm_set_custom_nl
 };
 
 
 DLL_API_EXPORT CwtFsmNS* cwt_fsm_ns(void)
 {
 	return &__cwtFsmNS;
+}
+
+
+static void fsm_init (CwtFsm *fsm
+		, int sizeof_char_type
+		, CwtFsmTransition *initial_tab
+		, void *context
+		, CwtBelongCharFn belong_char_fn
+		, CwtExactCharFn exact_char_fn
+		, CwtRangeCharFn range_char_fn)
+{
+	cwt_str_ns()->bzero(fsm, sizeof(*fsm));
+	fsm->trans_tab         = initial_tab;
+	fsm->sizeof_char       = sizeof_char_type;
+	fsm->context           = context;
+	fsm->belong_char_fn    = belong_char_fn;
+	fsm->exact_char_fn     = exact_char_fn;
+	fsm->range_char_fn     = range_char_fn;
+
+	fsm_set_nl(fsm,
+#if defined(CWT_OS_WIN)
+			Cwt_NL_Win
+#elif defined(CWT_OS_MAC9) /* FIXME must be recognized and defined in global._os.h */
+			Cwt_NL_MacOS9
+#elif defined(CWT_OS_UNIX)
+			Cwt_NL_Unix
+#else
+			Cwt_NL_Unix
+#endif
+	);
+}
+
+static void fsm_destroy (CwtFsm *fsm)
+{
+	if (fsm) {
+		if (fsm->nl) {
+			CWT_FREE(fsm->nl);
+			fsm->nl = NULL;
+		}
+	}
+}
+
+
+static void fsm_reproduce (CwtFsm *fsm_copy, CwtFsm *fsm_orig, CwtFsmTransition *trans_tab)
+{
+	CWT_ASSERT(fsm_orig);
+	CWT_ASSERT(fsm_copy);
+
+	cwt_str_ns()->memcpy(fsm_copy, fsm_orig, sizeof(*fsm_orig));
+	fsm_copy->trans_tab = trans_tab;
+	fsm_copy->nl = cwt_str_ns()->strDup(fsm_orig->nl);
+}
+
+
+static void fsm_reproduce_with_context (CwtFsm *fsm_copy, CwtFsm *fsm_orig, CwtFsmTransition *initial_tab, void *context)
+{
+	fsm_reproduce(fsm_copy, fsm_orig, initial_tab);
+	fsm_copy->context = context;
+}
+
+static void fsm_set_nl (CwtFsm *fsm, CwtNewLineEnum nl)
+{
+	CWT_ASSERT(fsm);
+
+	switch (nl) {
+	case Cwt_NL_Win:
+		fsm_set_custom_nl(fsm, __nl_win);
+		break;
+	case Cwt_NL_MacOS9:
+		fsm_set_custom_nl(fsm, __nl_mac);
+		break;
+	case Cwt_NL_Unix:
+	default:
+		fsm_set_custom_nl(fsm, __nl_nix);
+		break;
+	}
+}
+
+static void fsm_set_custom_nl (CwtFsm *fsm, const CWT_CHAR *nl)
+{
+	CWT_ASSERT(fsm);
+
+	if (fsm->nl) {
+		CWT_FREE(fsm->nl);
+		fsm->nl = NULL;
+	}
+
+	if (nl) {
+		fsm->nl = cwt_str_ns()->strDup(nl);
+	}
 }
 
 #define _BELONG_CHAR(char_type,ch,subset,n)                           \
@@ -134,7 +254,7 @@ ssize_t cwt_fsm_repetition(CwtFsm *fsm, void *fn_context, const void *data, size
 
 	for( i = 0; i < bounds->to && len > 0; i++ ) {
 
-		nchars_processed = __fsm_exec(fsm, 0, ptr, len);
+		nchars_processed = fsm_exec(fsm, 0, ptr, len);
 
 		if( nchars_processed < 0 ) {
 			break;
@@ -155,7 +275,7 @@ ssize_t cwt_fsm_repetition(CwtFsm *fsm, void *fn_context, const void *data, size
 	return (ssize_t)nchars_total_processed;
 }
 
-static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len)
+static ssize_t fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t len)
 {
 	const char *ptr;
 	ssize_t nchars_processed;
@@ -177,6 +297,20 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 	do /*while( TRUE )*/ {
 
 		switch( trans->match_type ) {
+
+		case Cwt_Fsm_Match_Nl:
+			if (fsm->nl) {
+				size_t nl_len = cwt_str_ns()->strLen(fsm->nl);
+
+				if (fsm->exact_char_fn(ptr, CWT_MIN(len, nl_len), fsm->nl, nl_len)) {
+					nchars_processed = nl_len;
+				}
+			} else {
+				nchars_processed = 0;
+			}
+			break;
+
+
 		case Cwt_Fsm_Match_Seq:
 			if( len >= trans->condition.str.len )
 				nchars_processed = (ssize_t)trans->condition.str.len;
@@ -184,30 +318,29 @@ static ssize_t __fsm_exec(CwtFsm *fsm, int state_cur, const void *data, size_t l
 
 		case Cwt_Fsm_Match_Str:
 			if( len >= trans->condition.str.len
-					&& fsm->exact(ptr, CWT_MIN(len, trans->condition.str.len)
+					&& fsm->exact_char_fn(ptr, CWT_MIN(len, trans->condition.str.len)
 					, trans->condition.str.chars, trans->condition.str.len) ) {
 				nchars_processed = (ssize_t)trans->condition.str.len;
 			}
 			break;
 
 		case Cwt_Fsm_Match_Char:
-			if( len > 0 && fsm->belong(ptr, trans->condition.str.chars, trans->condition.str.len) ) {
+			if( len > 0 && fsm->belong_char_fn(ptr, trans->condition.str.chars, trans->condition.str.len) ) {
 				nchars_processed = 1;
 			}
 			break;
 
 		case Cwt_Fsm_Match_Range:
-			if( len > 0 && fsm->range(ptr, trans->condition.range.from, trans->condition.range.to) ) {
+			if( len > 0 && fsm->range_char_fn(ptr, trans->condition.range.from, trans->condition.range.to) ) {
 				nchars_processed = 1;
 			}
 			break;
 
 		case Cwt_Fsm_Match_Fsm: {
 				CwtFsm inner_fsm;
-
-				memcpy(&inner_fsm, fsm, sizeof(inner_fsm));
-				inner_fsm.trans_tab = trans->condition.trans_tab.tab;
-				nchars_processed = __fsm_exec(&inner_fsm, 0, ptr, len);
+				fsm_reproduce(&inner_fsm, fsm, trans->condition.trans_tab.tab);
+				nchars_processed = fsm_exec(&inner_fsm, 0, ptr, len);
+				fsm_destroy(&inner_fsm);
 			}
 			break;
 

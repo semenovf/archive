@@ -42,6 +42,9 @@ RFC-5234 Core Rules
 	DQUOTE         =  %x22
 						; " (Double Quote)
 
+	QUOTE		   =  %x27
+						; ' (Quote)
+
 	HEXDIG         =  DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
 
 	HTAB           =  %x09
@@ -101,23 +104,10 @@ static CWT_CHAR CHAR_RG[2] = {(CWT_CHAR)0x01, (CWT_CHAR)0x7F };
 
 
 /*
-   \r\n ; Windows/DOS
-   \n\r ; MAC OS 9
-   \n   ; Unix
-*/
-#if defined(CWT_OS_WIN)
-#	define NL_FSM_INL   FSM_MATCH_STR(_T("\r\n"), 2)
-#elif defined(CWT_OS_MAC) /* FIXME must be up to 9 version */
-#	define NL_FSM_INL   FSM_MATCH_STR(_T("\n\r"), 2)
-#else
-#	define NL_FSM_INL   FSM_MATCH_STR(_T("\n "), 1) /* space need to possibility of char sequence changing */
-#endif
-/* Use this FSM transition table instead of CRLF_FSM_INL */
-
-
 static CwtFsmTransition NL_FSM[] = {
 	  {-1,-1, FSM_MATCH_INLINE(NL_FSM_INL), FSM_ACCEPT, NULL, NULL }
 };
+*/
 
 /* %x30-39 ; 0-9 */
 #define DIGIT_FSM_INL  FSM_MATCH_CHAR(_T("0123456789"), 10)
@@ -274,7 +264,7 @@ static void __fsm_unused_commons(CwtFsm *fsm, void *fn_context, const void *data
 	CWT_UNUSED2(fsm, fn_context);
 	CWT_UNUSED2(data, len);
 	CWT_UNUSED(UNUSED_FSM);
-	CWT_UNUSED3(NL_FSM, BIT_FSM, DIGIT_FSM);
+	CWT_UNUSED2(BIT_FSM, DIGIT_FSM);
 	CWT_UNUSED3(CHAR_RG, OCTET_RG, VCHAR_RG);
 	CWT_UNUSED3(HEXDIG_FSM, CTL_FSM, LWSP_FSM);
 }

@@ -70,7 +70,7 @@ static void test_fsm_rep(void)
 	int i, n;
 	CwtFsm fsm;
 
-	FSM_INIT(fsm, CWT_CHAR, pct_encoded_str_fsm, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
+	fsmNS->init(&fsm, sizeof(CWT_CHAR), pct_encoded_str_fsm, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
 
 	n = sizeof(__fsmRptTestEntries)/sizeof(__fsmRptTestEntries[0]);
 
@@ -79,6 +79,8 @@ static void test_fsm_rep(void)
 		__rpt_context.to    = __fsmRptTestEntries[i].to;
 		CWT_TEST_FAIL(fsmNS->exec(&fsm, 0, pct_str, cwt_str_ns()->strLen(pct_str)) == __fsmRptTestEntries[i].ret);
 	}
+
+	fsmNS->destroy(&fsm);
 }
 
 
