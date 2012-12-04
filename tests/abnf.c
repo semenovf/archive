@@ -12,8 +12,26 @@
 #include "../src/abnf-rfc5234.h"
 
 static struct _FsmTestEntry __fsmTestEntries[] = {
+	/* ";" *(WSP / VCHAR) NL */
+	  { VHEADER(comment_fsm)
+		, { _T(";\r\n"), _T("; comment line \r\n"), _T("; comment\r\n"), _T("; \t\t \r\n"), VNULL }
+		, {   {-1, _T(";") }
+			, {-1, _T(";\n") }
+			, {-1, _T(";\r") }
+			, {-1, _T("comment\r\n") }
+			, INULL }}
+
+	/* WSP / (c-nl WSP) */
+	, { VHEADER(c_wsp_fsm)
+		, { _T("\t"), _T("; comment line \r\n "), _T("\r\n\t"), _T("; \t\t \r\n "), VNULL }
+		, {   { 3, _T("\r\n\t ") }
+			, {-1, _T(";\n") }
+			, {-1, _T(";\r") }
+			, {-1, _T("comment\r\n") }
+			, INULL }}
+
 	/*  *c-wsp ("=" / "=/") *c-wsp */
-	  { VHEADER(defined_as_fsm)
+	, { VHEADER(defined_as_fsm)
 		, { _T("\t ="), _T(" \t = \t "), _T("\t =/"), _T(" \t =/ \t "), VNULL }
 		, { INULL }}
 
@@ -79,28 +97,10 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 			, {-1, _T("\"  \t  \"") }
 			, INULL }}
 
-	/* WSP / (c-nl WSP) */
-	, { VHEADER(c_wsp_fsm)
-		, { _T("\t"), _T("; comment line \r\n "), _T("\r\n\t"), _T("; \t\t \r\n "), VNULL }
-		, {   { 3, _T("\r\n\t ") }
-			, {-1, _T(";\n") }
-			, {-1, _T(";\r") }
-			, {-1, _T("comment\r\n") }
-			, INULL }}
-
 	/* comment / CRLF ; comment or newline */
 	, { VHEADER(c_nl_fsm)
 		, { _T(";\r\n"), _T("; comment line \r\n"), _T("\r\n"), _T("; \t\t \r\n"), VNULL }
 		, {   { 2, _T("\r\n  ") }
-			, {-1, _T(";\n") }
-			, {-1, _T(";\r") }
-			, {-1, _T("comment\r\n") }
-			, INULL }}
-
-	/* ";" *(WSP / VCHAR) CRLF */
-	, { VHEADER(comment_fsm)
-		, { _T(";\r\n"), _T("; comment line \r\n"), _T("; comment\r\n"), _T("; \t\t \r\n"), VNULL }
-		, {   {-1, _T(";") }
 			, {-1, _T(";\n") }
 			, {-1, _T(";\r") }
 			, {-1, _T("comment\r\n") }
@@ -213,7 +213,6 @@ static struct _FsmTestEntry __fsmTestEntries[] = {
 int main(int argc, char *argv[])
 {
 	static CwtFsm fsm;
-	/*CwtAbnfNS *abnf;*/
 	int i;
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
 
@@ -222,20 +221,15 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	/*abnf = cwtAbnfNS();*/
-
-
-	/* abnf->setNewLine(Cwt_NL_Win); */
-	NL_FSM[0].condition.str.chars = nl;
-	NL_FSM[0].condition.str.len = 2;
-
-	FSM_INIT(fsm, CWT_CHAR, NULL, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
+	cwt_fsm_ns()->init(&fsm, sizeof(CWT_CHAR), NULL, NULL, cwt_fsm_belong_cwtchar, cwt_fsm_exact_cwtchar, cwt_fsm_range_cwtchar);
+	cwt_fsm_ns()->setCustomNewLine(&fsm, nl);
 
 	CWT_BEGIN_TESTS(128);
 
 	for( i = 0; i < nentries; i++ )
 		fsm_test_entries(&fsm, &__fsmTestEntries[i]);
 
+	cwt_fsm_ns()->destroy(&fsm);
 
 	CWT_END_TESTS;
 }

@@ -27,10 +27,6 @@
 
 #include <cwt/fsm_common.h>
 
-#ifdef __COMMENT__
-static void __set_scheme(const void *data, size_t len, void *context, void *action_args);
-#endif
-
 /*
    All CRLF entries replaced by NL !!!
 
@@ -43,7 +39,6 @@ static void __set_scheme(const void *data, size_t len, void *context, void *acti
                                 ;  with white space
 
          rulename       =  ALPHA *(ALPHA / DIGIT / "-")
-
 
          defined-as     =  *c-wsp ("=" / "=/") *c-wsp
                                 ; basic rules definition and
@@ -99,13 +94,6 @@ static void __set_scheme(const void *data, size_t len, void *context, void *acti
   */
 
 
-/* "<" *(%x20-3D / %x3F-7E) ">"
-                       ; bracketed string of SP and VCHAR
-                       ;  without angles
-                       ; prose description, to be used as
-                       ;  last resort
-*/
-
 static CwtFsmRptBounds rpt_0more = { 0, -1 };
 static CwtFsmRptBounds rpt_1more = { 1, -1 };
 
@@ -148,13 +136,13 @@ static CwtFsmTransition wsp_vchar_fsm[] = {
 static CwtFsmTransition comment_fsm[] = {
       { 1,-1, FSM_MATCH_STR(_T(";"), 1)                , FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_RPT(wsp_vchar_fsm, &rpt_0more) , FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_FSM(NL_FSM)                    , FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_NL                             , FSM_ACCEPT, NULL, NULL }
 };
 
 /* comment / NL ; comment or newline */
 static CwtFsmTransition c_nl_fsm[] = {
-     {-1, 1, FSM_MATCH_FSM(comment_fsm), FSM_ACCEPT, NULL, NULL }
-   , {-1,-1, FSM_MATCH_FSM(NL_FSM),      FSM_ACCEPT, NULL, NULL }
+     {-1, 1, FSM_MATCH_FSM(comment_fsm) , FSM_ACCEPT, NULL, NULL }
+   , {-1,-1, FSM_MATCH_NL               , FSM_ACCEPT, NULL, NULL }
 };
 
 /*
@@ -259,15 +247,11 @@ static CwtFsmTransition c_nl_wsp_fsm[] = {
      { 1,-1, FSM_MATCH_FSM(c_nl_fsm)       , FSM_NORMAL , NULL , NULL }
    , {-1,-1, FSM_MATCH_INLINE(WSP_FSM_INL) , FSM_ACCEPT , NULL , NULL }
 };
+/* WSP / c-nl-wsp */
 static CwtFsmTransition c_wsp_fsm[] = {
      {-1, 1, FSM_MATCH_FSM(c_nl_wsp_fsm)   , FSM_ACCEPT , NULL , NULL }
    , {-1,-1, FSM_MATCH_INLINE(WSP_FSM_INL) , FSM_ACCEPT , NULL , NULL }
 };
-
-/*
-static CwtFsmRepetitionContext c_wsp_0more_rpt = { c_wsp_fsm,-1,-1 };
-static CwtFsmRepetitionContext c_wsp_1more_rpt = { c_wsp_fsm, 1,-1 };
-*/
 
 /*
   *c-wsp ("=" / "=/") *c-wsp
