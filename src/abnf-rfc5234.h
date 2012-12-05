@@ -376,7 +376,6 @@ static CwtFsmTransition rule_c_wsp_nl_fsm[] = {
 	, {-1,-1, FSM_MATCH_FSM(rule_fsm)     , FSM_ACCEPT, NULL, NULL }
 };
 
-/*static CwtFsmRepetitionContext rulelist_1more_rpt = { rule_c_wsp_nl_fsm, 1, -1 };*/
 static CwtFsmTransition rulelist_fsm[] = {
 	{-1,-1, FSM_MATCH_RPT(rule_c_wsp_nl_fsm, &rpt_1more) , FSM_ACCEPT, NULL, NULL }
 };
