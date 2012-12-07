@@ -144,7 +144,7 @@ static ssize_t __pack_helper (CwtFsmTransition *trans
 	PackContext ctx;
 	ssize_t rc;
 
-	cwt_str_ns()->bzero(&ctx, sizeof(ctx));
+	cwt_bzero(&ctx, sizeof(ctx));
 	ctx.act        = act;
 	ctx.buf        = buf;
 	ctx.buf_sz     = buf_sz;

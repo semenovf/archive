@@ -21,9 +21,16 @@ typedef enum CwtOpenFileMode {
 
 EXTERN_C_BEGIN
 
+/*
+ * cwtFileDeviceOpen is a deprecated name, use 'cwt_open_file' instead
+ */
 DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, CwtOpenMode mode);
+
+#define cwt_open_file(p,m) cwtFileDeviceOpen(p,m)
+
 #ifdef __SUPPORT_SHARING__
 DLL_API_EXPORT CwtIODevice* cwtSharedFileDeviceOpen(const CWT_CHAR* infilename, const CWT_CHAR* outfilename, BOOL master);
+#define cwt_open_shared_file(p,m) cwtSharedFileDeviceOpen(p,m)
 #endif
 
 EXTERN_C_END

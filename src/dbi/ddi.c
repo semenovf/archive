@@ -28,7 +28,7 @@ static void clear_type(CwtDDIColumn *col)
 	}
 
 	/* clear opts */
-	__strNS->bzero(&col->opts, sizeof(col->opts));
+	cwt_bzero(&col->opts, sizeof(col->opts));
 
 	/* clear reference */
 	col->ref_ptr = NULL;
@@ -68,7 +68,7 @@ CwtDDITable* ddi_new_table(CwtDDI *ddi, const CWT_CHAR *name)
 	CWT_ASSERT(ddi);
 	CWT_ASSERT(ddi->tables);
 
-	__strNS->bzero(&tab, sizeof(CwtDDITable));
+	cwt_bzero(&tab, sizeof(CwtDDITable));
 	tab.name = __strNS->strDup(name);
 	tab.columns = __listNS->create(sizeof(CwtDDIColumn), cleanup_column);
 
@@ -84,7 +84,7 @@ CwtDDIColumn* ddi_new_column(CwtDDITable *tab, const CWT_CHAR *name)
 	CWT_ASSERT(tab);
 	CWT_ASSERT(tab->columns);
 
-	__strNS->bzero(&col, sizeof(CwtDDIColumn));
+	cwt_bzero(&col, sizeof(CwtDDIColumn));
 	col.owner_ptr = tab;
 	col.name  = __strNS->strDup(name);
 
@@ -103,7 +103,7 @@ CwtDDI* ddi_create_DDI(const CWT_CHAR *name, const CWT_CHAR *charset)
 		__listNS = cwt_list_ns();
 	}
 
-	__strNS->bzero(ddi, sizeof(CwtDDI));
+	cwt_bzero(ddi, sizeof(CwtDDI));
 	ddi->name = __strNS->strDup(name);
 	ddi->charset = __strNS->strDup(charset);
 	ddi->tables = __listNS->create(sizeof(CwtDDITable), cleanup_table);

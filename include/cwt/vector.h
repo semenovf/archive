@@ -21,8 +21,11 @@ typedef struct _CollectionT                                                   \
 } _CollectionT, *_CollectionT##Ptr;                                           \
                                                                               \
 typedef struct _NS {                                                          \
+	void          (*init)        (_CollectionT* p);                           \
+	void          (*initSized)   (_CollectionT* p, size_t initial_size, size_t max_size); \
 	_CollectionT* (*create)      (void);                                      \
 	_CollectionT* (*createSized) (size_t initial_size, size_t max_size);      \
+	void          (*destroy)     (_CollectionT* p);                           \
 	void          (*free)        (_CollectionT* p);                           \
 	void          (*disrobe)     (_CollectionT* p);                           \
 	_CollectionT* (*clone)       (_CollectionT* p);                           \
@@ -56,9 +59,10 @@ typedef struct _NS {                                                          \
 	static const size_t __default_initial_size = 64;                          \
 	static const size_t __default_max_size = CWT_SIZE_T_MAX;                  \
                                                                               \
+    static void          __init        (_CollectionT* p);                     \
+    static void          __initSized   (_CollectionT* p, size_t initial_size, size_t max_size); \
 	static _CollectionT* __create      (void);                                \
 	static _CollectionT* __createSized (size_t initial_size, size_t max_size);\
-	static void          __initSized   (_CollectionT* p, size_t initial_size, size_t max_size); \
 	static void          __destroy     (_CollectionT* p);                     \
 	static void          __free        (_CollectionT* p);                     \
 	static void          __disrobe     (_CollectionT* p);                     \
@@ -88,8 +92,11 @@ typedef struct _NS {                                                          \
     static const _ElemT* __data        (_CollectionT* p);                     \
                                                                               \
 static _NS  __##_NS = {                                                       \
-	  __create                                                                \
+	  __init                                                                  \
+    , __initSized                                                             \
+	, __create                                                                \
 	, __createSized                                                           \
+	, __destroy                                                               \
 	, __free                                                                  \
 	, __disrobe                                                               \
 	, __clone                                                                 \
@@ -121,6 +128,32 @@ static _NS  __##_NS = {                                                       \
 
 
 #define CWT_VECTOR_METHODS(_CollectionT,_ElemT)                               \
+static void __init(_CollectionT* sb)                                          \
+{                                                                             \
+	__initSized(sb, CWT_CAST_SIZE_T(0), CWT_CAST_SIZE_T(0));                  \
+}                                                                             \
+static void __initSized(_CollectionT* sb, size_t initial_size, size_t max_size)\
+{                                                                             \
+	if( !initial_size ) {                                                     \
+		initial_size = __default_initial_size;                                \
+	}                                                                         \
+																			  \
+	if( !max_size ) {                                                         \
+		max_size = __default_max_size;                                        \
+	}                                                                         \
+																			  \
+	if( initial_size > max_size ) {                                           \
+		initial_size = max_size;                                              \
+	}                                                                         \
+																			  \
+	sb->m_buffer = CWT_MALLOCA(_ElemT, initial_size);                         \
+	CWT_ASSERT(sb->m_buffer);                                                 \
+																			  \
+	sb->m_capacity = initial_size;                                            \
+	sb->m_count = 0;                                                          \
+	sb->m_max_capacity = max_size;                                            \
+}                                                                             \
+																			  \
 _CollectionT*  __create(void)                                                 \
 {                                                                             \
 	return __createSized((size_t)0, (size_t)0);                               \
@@ -134,28 +167,6 @@ static _CollectionT* __createSized(size_t initial_size, size_t max_size)      \
 	CWT_ASSERT(sb);                                                           \
 	__initSized(sb, initial_size, max_size);                                  \
 	return sb;                                                                \
-}                                                                             \
-                                                                              \
-static void __initSized(_CollectionT* sb, size_t initial_size, size_t max_size)\
-{                                                                             \
-	if( !initial_size ) {                                                     \
-		initial_size = __default_initial_size;                                \
-	}                                                                         \
-                                                                              \
-	if( !max_size ) {                                                         \
-		max_size = __default_max_size;                                        \
-	}                                                                         \
-                                                                              \
-	if( initial_size > max_size ) {                                           \
-		initial_size = max_size;                                              \
-	}                                                                         \
-                                                                              \
-	sb->m_buffer = CWT_MALLOCA(_ElemT, initial_size);                         \
-	CWT_ASSERT(sb->m_buffer);                                                 \
-                                                                              \
-	sb->m_capacity = initial_size;                                            \
-	sb->m_count = 0;                                                          \
-	sb->m_max_capacity = max_size;                                            \
 }                                                                             \
                                                                               \
 static void __destroy(_CollectionT* sb)                                       \

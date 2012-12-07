@@ -161,7 +161,7 @@ static BOOL __ht_allocate_table(CwtHashTable *hash_table)
 
 	/* Allocate the table and initialize to NULL for all entries */
 	hash_table->table = CWT_MALLOCA(CwtHashTableEntry*, hash_table->table_size);
-	__cwtStrNS->bzero(hash_table->table, hash_table->table_size * sizeof(CwtHashTableEntry*));
+	cwt_bzero(hash_table->table, hash_table->table_size * sizeof(CwtHashTableEntry*));
 
 	return hash_table->table != NULL ? TRUE : FALSE;
 }

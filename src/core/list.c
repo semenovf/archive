@@ -111,7 +111,7 @@ static CwtList* __list_createPtr (void (*data_cleanup)(void*))
 static void __list_init(CwtList *list, size_t sizeofData, void (*data_cleanup)(void*))
 {
 	CWT_ASSERT(list);
-	cwt_str_ns()->bzero(list, sizeof(CwtList));
+	cwt_bzero(list, sizeof(CwtList));
 	list->datasz = sizeofData;
 	list->data_cleanup = data_cleanup;
 }

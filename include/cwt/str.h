@@ -2,6 +2,7 @@
 #define __CWT_STR_H__
 
 #include <time.h>
+#include <string.h>
 #include <cwt/types.h>
 
 typedef struct CwtQuotePair {
@@ -47,7 +48,7 @@ typedef struct CwtStrNS {
 	void*             (*memmove)      (void *to, const void *from, size_t sz);
 	void*             (*memset)       (void *block, int c, size_t sz);
 	int               (*memcmp)       (const void *m1, const void *m2, size_t n);
-	void*             (*bzero)        (void *block, size_t sz);
+	/*void*             (*bzero)        (void *block, size_t sz);*/
 
 	LONGLONG          (*toLONGLONG)   (const CWT_CHAR*, int radix, BOOL *ok);
 	ULONGLONG         (*toULONGLONG)  (const CWT_CHAR*, int radix, BOOL *ok);
@@ -84,11 +85,12 @@ typedef struct CwtStrNS {
 	const CWT_CHAR*   (*constEmptyStr)(void);
 	const CWT_CHAR*   (*constNullStr) (void);
 
-	const CwtQuotePair*   (*singleQuotesPair)(void);
-	const CwtQuotePair*   (*doubleQuotesPair)(void);
-	const CwtQuotePair*   (*quotesPair)(void);
-	const CWT_CHAR*       (*whitespaces)(void);
-
+	const CwtQuotePair*   (*singleQuotesPair)   (void);
+	const CwtQuotePair*   (*doubleQuotesPair)   (void);
+	const CwtQuotePair*   (*quotesPair)         (void);
+	const CWT_CHAR*       (*whitespaces)        (void);
+	void                  (*setReplacementChar) (CWT_CHAR repl_char);
+	CWT_CHAR              (*replacementChar)    (void);
 } CwtStrNS;
 
 
@@ -100,6 +102,8 @@ typedef struct CwtStrNS {
 EXTERN_C_BEGIN
 
 DLL_API_EXPORT CwtStrNS* cwt_str_ns(void);
+/*DLL_API_EXPORT void*     cwt_bzero(void *block, size_t sz);*/
+#define cwt_bzero(block,sz) memset(block, 0, sz)
 
 #define CWT_STRING_OR_EMPTYSTR(s) ((s) ? (s) : cwt_str_ns()->constEmptyStr())
 #define CWT_STRING_OR_NULLSTR(s) ((s) ? (s) : cwt_str_ns()->constNullStr())

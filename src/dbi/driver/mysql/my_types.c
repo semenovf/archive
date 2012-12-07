@@ -83,7 +83,7 @@ CWT_CHAR* __stringifyFloatType(CwtTypeEnum type, UINT prec, UINT scale)
 		}
 	} else {
 		CWT_CHAR buf[64];
-		strNS->bzero(buf, 64 * sizeof(CWT_CHAR));
+		cwt_bzero(buf, 64 * sizeof(CWT_CHAR));
 
 		CWT_ASSERT(cwt_stdio_ns()->snprintf(buf, 31, _T("DECIMAL(%d,%d)"), prec, scale) > 0);
 		fstr = strNS->strDup(buf);

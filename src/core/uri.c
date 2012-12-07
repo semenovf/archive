@@ -53,7 +53,7 @@ static void __uri_free (CwtUri *uri)
 static inline void __uri_init (CwtUri *uri)
 {
 	if( uri )
-		cwt_str_ns()->bzero(uri, sizeof(*uri));
+		cwt_bzero(uri, sizeof(*uri));
 }
 
 static void __uri_destroy (CwtUri *uri)

@@ -72,7 +72,7 @@ static void fsm_init (CwtFsm *fsm
 		, CwtExactCharFn exact_char_fn
 		, CwtRangeCharFn range_char_fn)
 {
-	cwt_str_ns()->bzero(fsm, sizeof(*fsm));
+	cwt_bzero(fsm, sizeof(*fsm));
 	fsm->trans_tab         = initial_tab;
 	fsm->sizeof_char       = sizeof_char_type;
 	fsm->context           = context;

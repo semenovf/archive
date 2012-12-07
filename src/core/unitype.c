@@ -131,7 +131,7 @@ DLL_API_EXPORT CwtUniTypeNS* cwt_unitype_ns(void)
 
 static void __init (CwtUniType *ut)
 {
-	__strNS->bzero(ut, sizeof(CwtUniType));
+	cwt_bzero(ut, sizeof(CwtUniType));
 	ut->type = CwtType_UNKNOWN;
 }
 

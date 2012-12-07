@@ -1077,8 +1077,6 @@ static BOOL __dbd_queryBin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_t length
  */
 static CwtStatement* __dbd_prepare(CwtDBHandler *dbh, const CWT_CHAR *stmt_str)
 {
-	CwtStrNS *strNS = cwt_str_ns();
-
 	MYSQL_STMT *stmt;
 	CwtMySqlStatement *sth;
 	char *stmt_str_ = NULL;
@@ -1118,10 +1116,10 @@ static CwtStatement* __dbd_prepare(CwtDBHandler *dbh, const CWT_CHAR *stmt_str)
 
 	if( sth->nbind_params > 0UL ) {
 		sth->bind_params = CWT_MALLOCA(MYSQL_BIND, sth->nbind_params);
-		strNS->bzero(sth->bind_params, sizeof(MYSQL_BIND) * sth->nbind_params);
+		cwt_bzero(sth->bind_params, sizeof(MYSQL_BIND) * sth->nbind_params);
 
 		sth->is_null = CWT_MALLOCA(my_bool, sth->nbind_params);
-		strNS->bzero(sth->is_null, sizeof(my_bool) * sth->nbind_params);
+		cwt_bzero(sth->is_null, sizeof(my_bool) * sth->nbind_params);
 	}
 
 	return (CwtStatement*)sth;
@@ -1302,7 +1300,6 @@ static void __stmt_close(CwtStatement *sth)
 
 static BOOL __stmt_execute(CwtStatement *sth)
 {
-	CwtStrNS *strNS = cwt_str_ns();
 	CwtMySqlStatement *msth = (CwtMySqlStatement*)sth;
 	BOOL hasBlobs = FALSE;
 
@@ -1338,7 +1335,7 @@ static BOOL __stmt_execute(CwtStatement *sth)
 
 		if( msth->nrbind_params > 0UL && msth->rbind_params == NULL ) {
 			msth->rbind_params = CWT_MALLOCA(MYSQL_BIND, msth->nrbind_params);
-			strNS->bzero(msth->rbind_params, sizeof(MYSQL_BIND) * msth->nrbind_params);
+			cwt_bzero(msth->rbind_params, sizeof(MYSQL_BIND) * msth->nrbind_params);
 		}
 
 		if( msth->rbind_map ) {
@@ -1388,7 +1385,7 @@ static BOOL __stmt_execute(CwtStatement *sth)
 			if( field->length > 0 ) {
 				msth->rbind_params[i].buffer_length = field->length + 1;
 				msth->rbind_params[i].buffer = CWT_MALLOCA(char, field->length + 1);
-				strNS->bzero(msth->rbind_params[i].buffer, sizeof(char) * (field->length + 1));
+				cwt_bzero(msth->rbind_params[i].buffer, sizeof(char) * (field->length + 1));
 
 				/*printf_debug(_T("Buffer allocated: 0x%p [i=%u][sz=%lu]"), msth->rbind_params[i].buffer, i, field->length + 1);*/
 			}
@@ -1630,7 +1627,7 @@ static BOOL __stmt_setParm(CwtStatement *sth, CwtUniType *ut, const void *copy, 
 			CWT_TIME *cwtm   = (CWT_TIME*)copy;
 			MYSQL_TIME *mytm = (MYSQL_TIME*)ut->value.ptr;
 
-			__strNS->bzero(mytm, sizeof(MYSQL_TIME));
+			cwt_bzero(mytm, sizeof(MYSQL_TIME));
 
 			mytm->time_type = MYSQL_TIMESTAMP_DATETIME;
 

@@ -159,7 +159,7 @@ static CwtCsvContext* csv_create_with_args(const CWT_CHAR *separator, size_t max
 	h->max_tokens = max_tokens > 0 ? max_tokens : 128;
 	h->line       = 0;
 	h->on_error   = NULL;
-	__strNS->bzero(&h->csvData, sizeof(CsvData));
+	cwt_bzero(&h->csvData, sizeof(CsvData));
 	/*h->csvData    = NULL;*/
 
 	return (CwtCsvContext*)h;

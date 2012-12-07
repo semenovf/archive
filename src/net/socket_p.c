@@ -50,20 +50,20 @@ CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 	switch(socketType) {
 	case Cwt_LocalSocket:
 		sd = (CwtSocket*)CWT_MALLOC(CwtLocalSocket);
-		cwt_str_ns()->bzero(sd, sizeof(CwtLocalSocket));
+		cwt_bzero(sd, sizeof(CwtLocalSocket));
 		break;
 	case Cwt_McastSocket:
 		sd = (CwtSocket*)CWT_MALLOC(CwtMcastSocket);
-		cwt_str_ns()->bzero(sd, sizeof(CwtMcastSocket));
+		cwt_bzero(sd, sizeof(CwtMcastSocket));
 		break;
 	case Cwt_UdpSocket:
 		sd = (CwtSocket*)CWT_MALLOC(CwtUdpSocket);
-		cwt_str_ns()->bzero(sd, sizeof(CwtUdpSocket));
+		cwt_bzero(sd, sizeof(CwtUdpSocket));
 		break;
 	case Cwt_TcpSocket:
 	default:
 		sd = (CwtSocket*)CWT_MALLOC(CwtTcpSocket);
-		cwt_str_ns()->bzero(sd, sizeof(CwtTcpSocket));
+		cwt_bzero(sd, sizeof(CwtTcpSocket));
 		break;
 	}
 
@@ -82,7 +82,7 @@ BOOL __socket_initSockAddrIn(struct sockaddr_in *saddr, const CWT_CHAR *inetAddr
 {
 	BOOL ok = TRUE;
 
-	cwt_str_ns()->bzero(saddr, sizeof(*saddr));
+	cwt_bzero(saddr, sizeof(*saddr));
 	saddr->sin_family      = AF_INET;
 	saddr->sin_port        = htons(port);
 

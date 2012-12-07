@@ -362,9 +362,8 @@ static inline BOOL dbi_query_bin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_t 
 	return dbh->driver()->queryBin(dbh, sql, length);
 }
 
-static inline CwtStatement* dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql)
+static CwtStatement* dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql)
 {
-	CwtStrNS     *strNS = cwt_str_ns();
 	CwtUniTypeNS *utNS  = cwt_unitype_ns();
 	CwtStatement* sth;
 
@@ -380,7 +379,7 @@ static inline CwtStatement* dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql)
 		nbind_params = dbh->bindParmsCount(sth);
 
 		sth->bind_params = CWT_MALLOCA(CwtUniType*, nbind_params);
-		strNS->bzero(sth->bind_params, sizeof(CwtUniType*) * nbind_params);
+		cwt_bzero(sth->bind_params, sizeof(CwtUniType*) * nbind_params);
 
 		for( i = 0; i < nbind_params; i++ ) {
 			sth->bind_params[i] = utNS->create();
