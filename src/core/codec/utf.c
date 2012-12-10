@@ -17,24 +17,42 @@
  *  26 	U+3FFFFFF 			111110xx 	10xxxxxx 	10xxxxxx 	10xxxxxx 	10xxxxxx
  *  31 	U+7FFFFFFF 			1111110x 	10xxxxxx 	10xxxxxx 	10xxxxxx 	10xxxxxx 	10xxxxxx
  */
-CWT_CHAR* decode_utf8(const char *utf8, size_t len/*, QTextCodec::ConverterState *state*/)
+CWT_CHAR* decode_utf8(const char *utf8, size_t len, char **tail)
 {
 	CWT_CHAR *s, ptr;
     CWT_CHAR  repl_char;
     UINT32    uc;
     size_t    i;
     BOOL      ok = FALSE;
+    int       need = 0;
 
     repl_char = cwt_str_ns()->replacementChar();
 
     s = CWT_MALLOCA(CWT_CHAR, len + 1);
     ptr = s;
 
+	if (tail) {
+		*tail = NULL;
+	}
+
+
 	for (i = 0; i < len; i++) {
 		if ( utf8[i] < 0x80 ) {
 			uc = (UINT32)utf8[i];
-		} else if (utf8[i] & 0x0800) {
-
+			need = 0;
+		} else if ((utf8[i] & 0xE0) == 0xC0) {
+			need = 1;
+		} else if ((utf8[i] & 0xF0) == 0xE0) {
+			need = 2;
+		} else if ((utf8[i] & 0xF8) == 0xF0) {
+			need = 3;
+		} else if ((utf8[i] & 0xFE) == 0xFC) {
+			need = 4;
+		} else {
+			if (tail) {
+				*tail = &utf8[i];
+			}
+			break;
 		}
 
 		if(	(uc >= 0xD800 && uc <= 0xDFFF) || uc >= 0x110000 )
