@@ -1,5 +1,4 @@
-@echo off
-@rem %comspec% /k ""C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"" x86
+rem @echo off
 
 :: --------------------------------------------------------------------------------------------
 :: File : SetEnv.cmd
@@ -27,12 +26,14 @@
 
 set ACTION=%1
 
-@call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /Debug /win7 2>&1
-@rem if %ERRORLEVEL% EQU 0 goto begin
-if errorlevel 0 goto begin
-call "C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" x86 2>&1
-if errorlevel 0 goto begin
-@rem if %ERRORLEVEL% GTR 0 goto error_SetEnv
+set SETENV=C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd
+set ARGS=/Debug /win7 
+if exist "%SETENV%" goto begin 
+
+set SETENV=C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat
+set ARGS=x86
+if exist "%SETENV%" goto begin
+
 goto error_SetEnv
 
 :: nmake
@@ -40,6 +41,7 @@ goto error_SetEnv
 :: if errorlevel goto error_nmakeNotFound
 
 :begin
+call "%SETENV%" %ARGS% 2>&1
 if "%ACTION%" == "clean" goto makeclean
 if "%ACTION%" == "all" goto makeall
 
