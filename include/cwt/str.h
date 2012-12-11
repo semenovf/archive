@@ -102,8 +102,11 @@ typedef struct CwtStrNS {
 EXTERN_C_BEGIN
 
 DLL_API_EXPORT CwtStrNS* cwt_str_ns(void);
+
+DLL_API_EXPORT char* cwt_strndup (const char *s, size_t n);
 /*DLL_API_EXPORT void*     cwt_bzero(void *block, size_t sz);*/
 #define cwt_bzero(block,sz) memset(block, 0, sz)
+
 
 #define CWT_STRING_OR_EMPTYSTR(s) ((s) ? (s) : cwt_str_ns()->constEmptyStr())
 #define CWT_STRING_OR_NULLSTR(s) ((s) ? (s) : cwt_str_ns()->constNullStr())
@@ -119,7 +122,6 @@ DLL_API_EXPORT CwtStrNS* cwt_str_ns(void);
 #ifdef CWT_CC_MSC
 #	define strcasecmp  CWT_ISO_CPP_NAME(stricmp)
 #	define strncasecmp CWT_ISO_CPP_NAME(strnicmp)
-DLL_API_EXPORT char* strNdup(const char *s, size_t n);
 #else
 #	define stricmp  CWT_ISO_CPP_NAME(strcasecmp)
 #	define strnicmp CWT_ISO_CPP_NAME(strncasecmp)

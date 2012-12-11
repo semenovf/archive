@@ -42,6 +42,7 @@
 									<listOptionValue builtIn="false" value="CWT_MT"/>
 									<listOptionValue builtIn="false" value="CWT_POSIX_THREADS"/>
 									<listOptionValue builtIn="false" value="CWT_WIN32_THREADS"/>
+									<listOptionValue builtIn="false" value="CWT_UNICODE"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1507245781" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>

@@ -20,7 +20,6 @@ unix {
     HEADERS += ../../src/*.h
 
     SOURCES += ../../src/core/*.c
-    SOURCES += ../../src/core/codec/*.c
     SOURCES += ../../src/core/unix/*.c
     SOURCES += ../../src/event/*.c
     SOURCES += ../../src/io/*.c
@@ -53,7 +52,6 @@ win32 {
 
 
     SOURCES += ..\\..\\src\\core\\*.c
-    SOURCES += ..\\..\\src\\core\\codec\\*.c
     SOURCES += ..\\..\\src\\core\\win\\*.c
     SOURCES += ..\\..\\src\\event\\*.c
     SOURCES += ..\\..\\src\\io\\*.c

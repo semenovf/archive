@@ -22,4 +22,6 @@
 #	define CWT_HAVE_SIGACTION 1
 #endif
 
+#define CWT_SIZEOF_WCHAR 2 /* FIXME */
+
 #endif /* __CWT_CONFIG_H__ */

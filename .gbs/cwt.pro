@@ -38,6 +38,7 @@ SUBDIRS  =            \
     tests/mdarr       \
     tests/snprintf    \
     tests/uri         \
+    tests/utf8        \
     examples/app
 
 

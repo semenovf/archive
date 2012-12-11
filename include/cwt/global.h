@@ -204,6 +204,7 @@ EXTERN_C_END
 #define CWT_MALLOC(T)     ((T*)cwtMalloc(sizeof(T)))
 #define CWT_MALLOCA(T,sz) ((T*)cwtMalloc(sizeof(T)*(sz)))
 #define CWT_FREE(v)       cwtFree(v)
+#define CWT_REALLOC(p,sz) realloc(p,sz);
 
 /* Two-dimensional array macros */
 #define CWT_A2_NCOLS(a)          sizeof(a[0])/sizeof(a[0][0])

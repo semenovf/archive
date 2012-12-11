@@ -26,16 +26,11 @@ License along with libiberty; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
+#include "cwt/str.h"
 #include <string.h>
 #include <stdlib.h>
 
-/*
-extern size_t	strlen (const char*);
-extern PTR	malloc (size_t);
-extern PTR	memcpy (PTR, const PTR, size_t);
-*/
-
-char* cwt_strndup (const char *s, size_t n)
+DLL_API_EXPORT char* cwt_strndup (const char *s, size_t n)
 {
 	char *result;
 	size_t len = strlen (s);

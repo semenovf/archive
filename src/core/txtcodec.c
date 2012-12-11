@@ -19,8 +19,6 @@
 #include <stdarg.h>
 */
 
-extern char* cwt_strndup (const char *s, size_t n);
-
 static char*      txtcodec_to_latin1     (const CWT_CHAR *s, size_t n);
 static CWT_CHAR*  txtcodec_from_latin1   (const char *s, size_t n);
 static char*      txtcodec_to_utf8       (const CWT_CHAR *s, size_t n);
@@ -108,56 +106,15 @@ static CWT_CHAR* txtcodec_from_latin1(const char *s, size_t n)
 
 static char* txtcodec_to_utf8(const CWT_CHAR *s, size_t n)
 {
-	char *utf8 = NULL;
-
-	if( s ) {
+	if (!s)
+		return NULL;
 
 #ifdef CWT_UNICODE
-#	ifdef CWT_CC_MSC
-		/*size_t length = n; *//*(size_t)__cwtStrNS.strlen(s)*/
-		/*Get length (in chars) of resulting UTF-8 string*/
-		const int utf8_length = WideCharToMultiByte(
-			CP_UTF8,               /*convert to UTF-8*/
-			0,                     /*default flags*/
-			s,                     /*source UTF-16 string*/
-			(int)n,                /*source string length, in wchar_t's */ /*FIXME need to check*/
-			NULL,                  /*unused - no conversion required in this step*/
-			0,                     /*request buffer size*/
-			NULL, NULL);           /*unused*/
-
-		if( utf8_length == 0 ) {
-			cwt_logger_ns()->error(_Tr("getting length of result utf8 string failed: %s"), __cwtStrNS->strError(GetLastError()));
-			return NULL;
-		}
-
-		/*Allocate destination buffer for UTF-8 string*/
-		utf8 = CWT_MALLOCA(char, utf8_length+1);
-
-		/*Do the conversion from UTF-16 to UTF-8*/
-		if ( ! WideCharToMultiByte(
-				CP_UTF8,
-				0,
-				s,
-				(int)n, /*FIXME need to check*/
-				&utf8[0],
-				utf8_length,
-				NULL, NULL )) {
-			cwt_logger_ns()->error(_Tr("converting string to utf8 failed: %s"), __cwtStrNS->strError(GetLastError()));
-			CWT_FREE(utf8);
-			return NULL;
-		}
-		utf8[utf8_length] = '\0';
-#	else
-#		error __toUtf8 is not implemented yet
-#	endif
+	return cwt_encode_utf8(s, n);
 #else
 		/* FIXME need to convert Local8Bit chars into UTF8 */
-		utf8 = cwt_strndup(s, n);
+	return cwt_strndup(s, n);
 #endif
-
-	} /* s */
-
-	return utf8;
 }
 
 
@@ -170,61 +127,15 @@ static char* txtcodec_to_utf8(const CWT_CHAR *s, size_t n)
  */
 static CWT_CHAR* txtcodec_from_utf8(const char *utf8, size_t n)
 {
-	CWT_CHAR *str = NULL;
-	size_t utf8_length;
-
-	if( !utf8 ) {
+	if( !utf8 )
 		return NULL;
-	}
-
-	utf8_length = n;
 
 #ifdef CWT_UNICODE
-#	ifdef CWT_CC_MSC
-
-	if( utf8_length ) {
-		/*Get length (in wchar_t's) of resulting UTF-16 string*/
-		int length = MultiByteToWideChar(
-			CP_UTF8,           /*convert from UTF-8*/
-			0,                 /*default flags*/
-			utf8,              /*source UTF-8 string*/
-			(int)utf8_length,  /*length (in chars) of source UTF-8 string*/ /*FIXME need to check*/
-			NULL,              /*unused - no conversion done in this step*/
-			0);                /*request size of destination buffer, in wchar_t's*/
-
-		if( length == 0 ) {
-			cwt_logger_ns()->error(_Tr("getting length of result string failed %s"), __cwtStrNS->strError(GetLastError()));
-			return NULL;
-		}
-
-		str = CWT_MALLOCA(CWT_CHAR, length+1);
-
-		/*Do the conversion from UTF-8 to UTF-16*/
-		if( ! MultiByteToWideChar(
-				CP_UTF8,
-				0,
-				utf8,
-				(int)utf8_length, /*FIXME need to check*/
-				&str[0],
-				length )) {
-			cwt_logger_ns()->error(_Tr("converting string from_utf8_failed: %s"), __cwtStrNS->strError(GetLastError()));
-			CWT_FREE(str);
-			return NULL;
-		}
-
-		str[length] = _T('\0');
-	}
-#	else
-	extern CWT_CHAR* decode_utf8(const char *utf8, size_t n);
-	return utf8_to_unicode(utf8, n);
-#	endif
+	return cwt_decode_utf8(utf8, n);
 #else
-	CWT_UNUSED(utf8_length);
 	/* FIXME need to convert UTF8 to Local8Bit chars */
-	str = cwt_strndup(utf8, n);
+	return cwt_strndup(utf8, n);
 #endif
-
-	return str;
 }
 
 
