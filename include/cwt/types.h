@@ -74,6 +74,9 @@ typedef char*                  TEXT;
 	typedef unsigned long long UINT64;
 #endif
 
+typedef UINT16 CWT_UCS2;
+typedef UINT32 CWT_UCS4;
+
 /*
  * year <= 9999,month <= 12, day <= 31, hour <= 23, hour <= 59, hour <= 59.
  *

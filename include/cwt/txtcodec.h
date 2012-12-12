@@ -15,8 +15,9 @@ typedef struct _CwtTextCodecNS {
 EXTERN_C_BEGIN
 DLL_API_EXPORT CwtTextCodecNS* cwt_textcodec_ns(void);
 
-DLL_API_EXPORT wchar_t* cwt_decode_utf8(const char *utf8, size_t len);
-DLL_API_EXPORT char*    cwt_encode_utf8(const wchar_t *s, size_t len);
+DLL_API_EXPORT wchar_t*  cwt_decode_utf8(const char *utf8, size_t len);
+DLL_API_EXPORT char*     cwt_encode_utf8(const wchar_t *s, size_t len);
+
 EXTERN_C_END
 
 #endif /*__CWT_TXTCODEC_H__*/

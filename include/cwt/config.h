@@ -22,6 +22,13 @@
 #	define CWT_HAVE_SIGACTION 1
 #endif
 
-#define CWT_SIZEOF_WCHAR 2 /* FIXME */
+
+#ifndef CWT_SIZEOF_WCHAR
+#	if __SIZEOF_WCHAR_T__ == 4 || __WCHAR_MAX__ > 0x10000
+#		define CWT_SIZEOF_WCHAR 4
+#	else
+#		define CWT_SIZEOF_WCHAR 2
+#	endif
+#endif
 
 #endif /* __CWT_CONFIG_H__ */

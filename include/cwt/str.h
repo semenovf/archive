@@ -5,13 +5,13 @@
 #include <string.h>
 #include <cwt/types.h>
 
-typedef struct CwtQuotePair {
+typedef struct _CwtQuotePair {
 	CWT_CHAR begin;
 	CWT_CHAR end;
 } CwtQuotePair;
 
 
-typedef struct CwtStrNS {
+typedef struct _CwtStrNS {
 	const CWT_CHAR*   (*strError)     (int);
 	CWT_CHAR*         (*strPtime)     (const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm);
 	size_t            (*strFtime)     (CWT_CHAR *buf, size_t sz, const CWT_CHAR *format, const struct tm* ptm);

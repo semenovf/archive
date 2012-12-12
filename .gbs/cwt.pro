@@ -3,7 +3,6 @@ CONFIG  += ordered
 SUBDIRS  =            \
     cwt               \
     cwt-csv           \
-    cwt-mysql         \
     tests/bytearr     \
     tests/csv         \
     tests/event       \
@@ -13,7 +12,6 @@ SUBDIRS  =            \
     tests/esocket     \
     tests/crc32       \    
     tests/crc64       \
-    tests/ddi         \
     tests/hashtab     \
     tests/ini         \
     tests/list        \
@@ -25,7 +23,6 @@ SUBDIRS  =            \
     tests/strlist     \
     tests/strptime    \
     tests/strutils    \
-    tests/dbi         \
     tests/unitype     \
     tests/net/local   \
     tests/net/udp     \
