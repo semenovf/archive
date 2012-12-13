@@ -17,13 +17,13 @@
  *
  * @return
  */
-CWT_CHAR* __stringifyBoolType(void)
+CWT_CHAR* my_stringify_bool_type(void)
 {
 	return cwt_str_ns()->strDup(_T("BOOLEAN"));
 }
 
 
-CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max)
+CWT_CHAR* my_stringify_int_type(LONGLONG min, ULONGLONG max)
 {
 	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *s = NULL;
@@ -64,7 +64,7 @@ CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max)
  * A precision from 0 to 23 results in a 4-byte single-precision FLOAT column.
  * A precision from 24 to 53 results in an 8-byte double-precision DOUBLE column.
  */
-CWT_CHAR* __stringifyFloatType(CwtTypeEnum type, UINT prec, UINT scale)
+CWT_CHAR* my_stringify_float_type(CwtTypeEnum type, UINT prec, UINT scale)
 {
 	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *fstr = NULL;
@@ -92,7 +92,7 @@ CWT_CHAR* __stringifyFloatType(CwtTypeEnum type, UINT prec, UINT scale)
 	return fstr;
 }
 
-CWT_CHAR* __stringifyTextType(ULONGLONG maxlen)
+CWT_CHAR* my_stringify_text_type(ULONGLONG maxlen)
 {
 	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *s = NULL;
@@ -118,7 +118,7 @@ CWT_CHAR* __stringifyTextType(ULONGLONG maxlen)
 	return s;
 }
 
-CWT_CHAR* __stringifyBlobType(ULONGLONG maxlen)
+CWT_CHAR* my_stringify_blob_type(ULONGLONG maxlen)
 {
 	CwtStrNS *strNS = cwt_str_ns();
 	CWT_CHAR *s = NULL;
@@ -138,7 +138,7 @@ CWT_CHAR* __stringifyBlobType(ULONGLONG maxlen)
 	return s;
 }
 
-CWT_CHAR* __stringifyTimeType(CwtTypeEnum time_type, BOOL stamp)
+CWT_CHAR* my_stringify_time_type(CwtTypeEnum time_type, BOOL stamp)
 {
 	CwtStrNS *strNS = cwt_str_ns();
 

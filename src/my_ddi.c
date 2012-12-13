@@ -14,12 +14,12 @@
 #include <cwt/logger.h>
 
 
-extern CWT_CHAR* __stringifyBoolType(void);
-extern CWT_CHAR* __stringifyIntType(LONGLONG min, ULONGLONG max);
-extern CWT_CHAR* __stringifyFloatType(CwtTypeEnum time_type, UINT prec, UINT scale);
-extern CWT_CHAR* __stringifyTextType(ULONGLONG maxlen);
-extern CWT_CHAR* __stringifyBlobType(ULONGLONG maxlen);
-extern CWT_CHAR* __stringifyTimeType(CwtTypeEnum time_type, BOOL stamp);
+extern CWT_CHAR* my_stringify_bool_type(void);
+extern CWT_CHAR* my_stringify_int_type(LONGLONG min, ULONGLONG max);
+extern CWT_CHAR* my_stringify_float_type(CwtTypeEnum time_type, UINT prec, UINT scale);
+extern CWT_CHAR* my_stringify_text_type(ULONGLONG maxlen);
+extern CWT_CHAR* my_stringify_blob_type(ULONGLONG maxlen);
+extern CWT_CHAR* my_stringify_time_type(CwtTypeEnum time_type, BOOL stamp);
 
 static const CWT_CHAR *__MYSQL_DEFAULT_CHARSET   = _T("utf8");
 static const CWT_CHAR *__MYSQL_DEFAULT_DB_ENGINE = _T("InnoDB");
@@ -29,7 +29,7 @@ static const CWT_CHAR *__MYSQL_DEFAULT_DB_ENGINE = _T("InnoDB");
 static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtString *tmpbuf, CWT_CHAR comma)
 {
 	CwtStringNS  *stringNS = cwt_string_ns();
-	CwtStrListNS *slNS     = cwt_strList_ns();
+	CwtStrListNS *slNS     = cwt_strlist_ns();
 
 	CWT_CHAR *typestr = NULL;
 	/*BOOL is_ref       = FALSE;*/
@@ -67,21 +67,21 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 
 	if( col->type != CwtType_UNKNOWN ) {
 		if( col->type == CwtType_BOOL ) {
-			typestr = __stringifyBoolType();
+			typestr = my_stringify_bool_type();
 		} else if( CWT_TYPE_IS_INTEGER(col->type) ) {
-			typestr = __stringifyIntType(col->opts.int_opts.min, col->opts.int_opts.max);
+			typestr = my_stringify_int_type(col->opts.int_opts.min, col->opts.int_opts.max);
 		} else if(CWT_TYPE_IS_FLOAT(col->type)) {
-			typestr = __stringifyFloatType(col->type
+			typestr = my_stringify_float_type(col->type
 					, (UINT)col->opts.float_opts.prec
 					, (UINT)col->opts.float_opts.scale);
 		} else if( CwtType_TEXT == col->type ) {
-			typestr = __stringifyTextType(col->opts.text_opts.maxlen);
+			typestr = my_stringify_text_type(col->opts.text_opts.maxlen);
 		} else if( CwtType_BLOB == col->type ) {
-			typestr = __stringifyBlobType(col->opts.blob_opts.maxlen);
+			typestr = my_stringify_blob_type(col->opts.blob_opts.maxlen);
 		} else if( CwtType_TIME == col->type
 				|| CwtType_DATE == col->type
 				|| CwtType_DATETIME == col->type ) {
-			typestr = __stringifyTimeType(col->type, col->opts.time_opts.stamp ? TRUE : FALSE);
+			typestr = my_stringify_time_type(col->type, col->opts.time_opts.stamp ? TRUE : FALSE);
 		} else {
 			CWT_ASSERT(FALSE);
 		}
@@ -114,10 +114,10 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 	return TRUE;
 }
 
-CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, const CWT_CHAR *charset, UINT ddiflags*/)
+CwtStrList* my_dbd_spec_for_deploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, const CWT_CHAR *charset, UINT ddiflags*/)
 {
 	CwtStringNS  *stringNS = cwt_string_ns();
-	CwtStrListNS *slNS     = cwt_strList_ns();
+	CwtStrListNS *slNS     = cwt_strlist_ns();
 	CwtString    *tmpbuf   = stringNS->create();
 	CWT_CHAR     *charset  = (CWT_CHAR*)__MYSQL_DEFAULT_CHARSET;
 
@@ -255,10 +255,10 @@ CwtStrList* __dbd_specForDeploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, con
     return spec;
 }
 
-CwtStrList* __dbd_specForRecall(CwtDDI *ddi, int flags)
+CwtStrList* my_dbd_spec_for_recall(CwtDDI *ddi, int flags)
 {
 	CwtStringNS  *stringNS = cwt_string_ns();
-	CwtStrListNS *slNS     = cwt_strList_ns();
+	CwtStrListNS *slNS     = cwt_strlist_ns();
 	CwtString    *tmpbuf   = stringNS->create();
 	CwtStrList   *spec     = NULL;
 

@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 
 	/* Show tables */
 	{
-		CwtStrListNS *strlistNS = cwt_strList_ns();
+		CwtStrListNS *strlistNS = cwt_strlist_ns();
 		CwtStrList *tables;
 		size_t i;
 

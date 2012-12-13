@@ -326,7 +326,7 @@ static void test_02(void)
 int main(int argc, char *argv[])
 {
 	__dbi = cwt_dbi_ns();
-	__slNS = cwt_strList_ns();
+	__slNS = cwt_strlist_ns();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
