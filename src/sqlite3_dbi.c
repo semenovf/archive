@@ -9,28 +9,30 @@
 
 #include <cwt/txtcodec.h>
 #include <cwt/dbi/dbi.h>
-/*#include <cwt/hashtab.h>*/
-/*
 #include <cwt/logger.h>
-#include <cwt/string.h>
 #include <cwt/strlist.h>
-*/
+#include <cwt/string.h>
+#include "sqlite3/sqlite3.h"
+/*#include <cwt/hashtab.h>*/
 
+#define _LOG_PREFIX _T("sqlite3: ")
+#define _DBH(dbh)  (((CwtSqliteDBHandler*)(dbh))->dbh_native)
+#define _STH(sth)  (((CwtSqliteStatement*)(sth))->stmt_native)
 
-#define __LOG_PREFIX _T("sqlite3: ")
-/*
-#define __DBH(dbh)  (((CwtMySqlDBHandler*)(dbh))->conn)
-#define __STH(sth)  (((CwtMySqlStatement*)(sth))->stmt)
-*/
+#define _MAX_SQL_TIMEOUT 10000 // 10 seconds
 
 typedef struct _CwtSqliteStatement {
 	CwtStatement __base;
+	sqlite3_stmt *stmt_native;
 } CwtSqliteStatement;
 
 
 typedef struct _CwtSqliteDBHandler
 {
 	CwtDBHandler __base;
+	sqlite3     *dbh_native;
+	CwtString    errorstr;
+	CWT_CHAR    *csname;      /* character set name */
 } CwtSqliteDBHandler;
 
 
@@ -41,32 +43,29 @@ typedef struct _CwtMySqlBindParam {
 } CwtMySqlBindParam;
 */
 
-static CwtStrNS       *__strNS = NULL;
-/*static CwtHashTableNS *__htNS = NULL;*/
-static CwtUniTypeNS   *__utNS = NULL;
+static CwtStrNS       *__str_ns = NULL;
+static CwtStringNS    *__string_ns = NULL;
+static CwtUniTypeNS   *__ut_ns = NULL;
 
 /* DBI API functions implementations */
-/*
-CwtDBHandler*           __dbd_connect(const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
-static void             __dbd_disconnect(CwtDBHandler *dbh);
-static BOOL             __dbd_func(CwtDBHandler *dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[]);
-static void             __dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr_value);
-static BOOL             __dbd_setAutoCommit(CwtDBHandler *dbh, BOOL on);
-static BOOL             __dbd_autoCommit(CwtDBHandler *dbh);
-static CwtDBI_RC        __dbd_err(CwtDBHandler *dbh);
-static const CWT_CHAR*  __dbd_strerror(CwtDBHandler *dbh);
-static const CWT_CHAR*  __dbd_state(CwtDBHandler *dbh);
-static BOOL             __dbd_query(CwtDBHandler *dbh, const CWT_CHAR *sql);
-static BOOL             __dbd_queryBin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_t length);
-static CwtStatement*    __dbd_prepare(CwtDBHandler *dbh, const CWT_CHAR *statement);
-static ULONGLONG        __dbd_affectedRows(CwtDBHandler *dbh);
-static BOOL             __dbd_tables(CwtDBHandler *dbh, CwtStrList *tables);
-static BOOL             __dbd_tableExists(CwtDBHandler*, const CWT_CHAR *tname);
-static char*            __dbd_encode_n(CwtDBHandler *dbh, const CWT_CHAR *s, size_t n);
-static CWT_CHAR*        __dbd_decode_n(CwtDBHandler *dbh, const char *s, size_t n);
-static char*            __dbd_encode(CwtDBHandler *dbh, const CWT_CHAR *s) { return __dbd_encode_n(dbh, s, __strNS->strLen(s)); }
-static CWT_CHAR*        __dbd_decode(CwtDBHandler *dbh, const char *s) { return __dbd_decode_n(dbh, s, strlen(s)); }
-*/
+CwtDBHandler*           sqlite3_dbd_connect(const CWT_CHAR *dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname);
+static void             sqlite3_dbd_disconnect(CwtDBHandler *dbh);
+static BOOL             sqlite3_dbd_func(CwtDBHandler *dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[]);
+static void             sqlite3_dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr_value);
+static BOOL             sqlite3_dbd_set_auto_commit (CwtDBHandler *dbh, BOOL on);
+static BOOL             sqlite3_dbd_auto_commit     (CwtDBHandler *dbh);
+static CwtDBI_RC        sqlite3_dbd_err             (CwtDBHandler *dbh);
+static const CWT_CHAR*  sqlite3_dbd_strerror        (CwtDBHandler *dbh);
+static const CWT_CHAR*  sqlite3_dbd_state           (CwtDBHandler *dbh);
+static BOOL             sqlite3_dbd_query           (CwtDBHandler *dbh, const CWT_CHAR *sql);
+static CwtStatement*    sqlite3_dbd_prepare         (CwtDBHandler *dbh, const CWT_CHAR *statement);
+static ULONGLONG        sqlite3_dbd_affected_rows   (CwtDBHandler *dbh);
+static BOOL             sqlite3_dbd_tables          (CwtDBHandler *dbh, CwtStrList *tables);
+static BOOL             sqlite3_dbd_table_exists    (CwtDBHandler*, const CWT_CHAR *tname);
+static char*            sqlite3_dbd_encode_n(CwtDBHandler *dbh, const CWT_CHAR *s, size_t n);
+static CWT_CHAR*        sqlite3_dbd_decode_n(CwtDBHandler *dbh, const char *s, size_t n);
+static char*            sqlite3_dbd_encode(CwtDBHandler *dbh, const CWT_CHAR *s) { return sqlite_dbd_encode_n(dbh, s, __str_ns->strLen(s)); }
+static CWT_CHAR*        sqlite3_dbd_decode(CwtDBHandler *dbh, const char *s) { return sqlite_dbd_decode_n(dbh, s, strlen(s)); }
 
 /*
 static BOOL             __dbd_begin(CwtDBHandler *dbh);
@@ -93,6 +92,7 @@ static BOOL             __stmt_setParm     (CwtStatement *sth, CwtUniType *ut, c
 */
 
 /* local helper functions */
+static void             __destroy(CwtSqliteDBHandler *sdbh);
 /*
 static BOOL             __mysql_isBlob(int mysqltype);
 static BOOL             __mysql_isInteger(int mysqltype);
@@ -101,7 +101,6 @@ static enum enum_field_types
                         __mysql_toMysqlType(CwtTypeEnum cwtType);
 static CwtTypeEnum      __mysql_fromMysqlType( enum enum_field_types mysqlType, UINT field_flags);
 static BOOL             __mysql_isUnsigned(CwtTypeEnum cwtType);
-static void             __mysql_destroy(CwtMySqlDBHandler *dbh);
 static void             __mysql_stmtDestroy(CwtMySqlStatement *sth);
 static BOOL             __mysql_buildSqlCreateDB(CwtString *sql, CWT_CHAR *argv[]);
 static BOOL             __mysql_buildSqlDropDB(CwtString *sql, CWT_CHAR *argv[]);
@@ -111,25 +110,24 @@ static int              __mysql_realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR
 /*static BOOL __nConnections = 0;*/ /* number of connections */
 
 static CwtDBIDriver __cwtDBIDriver = {
-	  NULL /*__dbd_connect          */
-	, NULL /*__dbd_disconnect       */
-	, NULL /*__dbd_func             */
-	, NULL /*__dbd_attr             */
-	, NULL /*__dbd_setAutoCommit    */
-	, NULL /*__dbd_autoCommit       */
-	, NULL /*__dbd_err              */
-	, NULL /*__dbd_strerror         */
-	, NULL /*__dbd_state            */
-	, NULL /*__dbd_query            */
-	, NULL /*__dbd_queryBin         */
-	, NULL /*__dbd_prepare          */
-	, NULL /*__dbd_affectedRows     */
-	, NULL /*__dbd_tables           */
-	, NULL /*__dbd_tableExists      */
-	, NULL /*__dbd_encode_n         */
-	, NULL /*__dbd_decode_n         */
-	, NULL /*__dbd_encode           */
-	, NULL /*__dbd_decode           */
+	  sqlite3_dbd_connect
+	, sqlite3_dbd_disconnect
+	, sqlite3_dbd_func
+	, sqlite3_dbd_attr
+	, sqlite3_dbd_set_auto_commit
+	, sqlite3_dbd_auto_commit
+	, sqlite3_dbd_err
+	, sqlite3_dbd_strerror
+	, sqlite3_dbd_state
+	, sqlite3_dbd_query
+	, sqlite3_dbd_prepare
+	, sqlite3_dbd_affected_rows
+	, sqlite3_dbd_tables
+	, sqlite3_dbd_table_exists
+	, sqlite3_dbd_encode_n
+	, sqlite3_dbd_decode_n
+	, sqlite3_dbd_encode
+	, sqlite3_dbd_decode
 	, NULL /*__dbd_begin            */
     , NULL /*__dbd_commit           */
     , NULL /*__dbd_rollback         */
@@ -140,15 +138,372 @@ static CwtDBIDriver __cwtDBIDriver = {
 
 DLL_API_EXPORT CwtDBIDriver* cwtDBIDriverImpl(void)
 {
-	if( !__strNS ) {
-		__strNS = cwt_str_ns();
-		/*__htNS  = cwtHashTableNS();*/
-		__utNS  = cwt_unitype_ns();
+	if( !__str_ns ) {
+		__str_ns    = cwt_str_ns();
+		__string_ns = cwt_string_ns();
+		__ut_ns     = cwt_unitype_ns();
 	}
 	return &__cwtDBIDriver;
 }
 
 
+/**
+ *
+ * @brief Connects to sqlite3 databases.
+ *
+ * @param driver_dsn Details see SQLite docs on sqlite3_open_v2 function.
+ * 					 Examples:
+ *                   path=data.db
+ *                   	Open the file "data.db" in the current directory.
+ *
+ *                   path=/home/fred/data.db
+ *                   path=///home/fred/data.db
+ *                   path=//localhost/home/fred/data.db
+ *                   	Open the database file "/home/fred/data.db".
+ *
+ *                   path=///C:/Documents%20and%20Settings/fred/Desktop/data.db
+ *                   	Windows only: Open the file "data.db" on fred's desktop on drive C:.
+ *                   	Note that the %20 escaping in this example is not
+ *                   	strictly necessary - space characters can be used literally
+ *                   	in URI filenames.
+ *
+ *                   path=data.db?mode=ro&cache=private
+ *                   	Open file "data.db" in the current directory for read-only access.
+ *                   	Regardless of whether or not shared-cache mode is enabled
+ *                   	by default, use a private cache.
+ *
+ *                   path=/home/fred/data.db?vfs=unix-nolock
+ *                   	Open file "/home/fred/data.db". Use the special VFS "unix-nolock".
+ *
+ *                   path=data.db?mode=readonly
+ *                   	An error. "readonly" is not a valid option for the "mode" parameter.
+ *
+ * @param username   Unused.
+ * @param password   Unused.
+ * @param csname     Character set name (Sqlite supports only UTF-16, UTF-16le, UTF-16be, UTF-8).
+ *                   Only UTF-8 is supported now by DBI driver.
+ * @return DBI connection to specified sqlite3 databases.
+ *
+ * @note  Autocommit mode is on by default.
+ */
+CwtDBHandler* sqlite3_dbd_connect(const CWT_CHAR *driver_dsn, const CWT_CHAR *username, const CWT_CHAR *password, const CWT_CHAR *csname)
+{
+	CwtStrListNS   *strlist_ns = cwt_strlist_ns();
+
+	CwtSqliteDBHandler *dbh = NULL;
+	int        rc;
+	int        sqlite3_flags;
+	CwtString  path;
+	char      *path_utf8;
+	CwtStrList opts;
+	CwtStrListIterator opts_it;
+
+	CWT_UNUSED3(username, password, csname);
+
+    rc = SQLITE_OK;
+
+	/* Parse driver DSN */
+	strlist_ns->init(&opts);
+	strlist_ns->split(opts, driver_dsn, _T(";"), NULL, 0);
+	strlist_ns->begin(opts, &opts_it);
+
+	sqlite3_flags = 0;
+	__string_ns->init(&path);
+
+	while( strlist_ns->hasMore(&opts_it) ) {
+		const CWT_CHAR* opt = strlist_ns->next(&opts_it);
+
+		if (__str_ns->strNCmp(_T("path="), opt, 5) == 0) {
+			__string_ns->append(&path, _T("file:"));
+			__string_ns->append(&path, &opt[5]);
+		}
+	}
+
+
+#ifdef CWT_UNICODE
+    path_utf8 = cwt_textcodec_ns()->toUtf8(string_ns->cstr(&path)
+    		, string_ns->size(&path));
+#else
+    path_utf8 = path;
+#endif
+
+    rc = sqlite3_open_v2 (path_utf8, &dbh->dbh_native, sqlite3_flags, 0 );
+
+	if( rc != SQLITE_OK ) {
+		if( !dbh->dbh_native ) {
+			cwt_logger_ns()->error(_LOG_PREFIX _Tr("Unable to allocate memory for database handler."));
+		} else {
+			switch( rc ) {
+				case SQLITE_CANTOPEN:
+					cwt_logger_ns()->error(_LOG_PREFIX _T("%s. Try to check path '%s'")
+						, sqlite3_errmsg(dbh->dbh_native)
+						, __string_ns->cstr(&path));
+					break;
+				default: break;
+			}
+			sqlite3_close(dbh->dbh_native);
+		}
+	} else {
+		dbh = CWT_MALLOC(CwtSqliteDBHandler);
+		__string_ns->init(&dbh->errorstr);
+		dbh->csname = __str_ns->strDup(csname);
+
+		/* TODO for what this call ?*/
+		sqlite3_busy_timeout(_DBH(dbh), _MAX_SQL_TIMEOUT);
+
+		/*
+			dbh->__base.close      = my_stmt_close;
+			dbh->__base.execute    = my_stmt_execute;
+			dbh->__base.lastId     = my_stmt_last_id;
+			dbh->__base.err        = my_stmt_err;
+			dbh->__base.strerror   = my_stmt_strerror;
+			dbh->__base.bindByIndex     = my_stmt_bind_by_index;
+			dbh->__base.bindParmsCount = my_stmt_bind_parms_count;
+			dbh->__base.setParm    = my_stmt_set_parm;
+			dbh->__base.rows       = my_stmt_affected_rows;
+			dbh->__base.size       = my_stmt_num_rows;
+			dbh->__base.fetchNext  = my_stmt_fetch_next;
+			dbh->__base.fetchColumn= my_stmt_fetch_column;
+			dbh->__base.driver     = cwtDBIDriverImpl;
+			dbh->auto_commit       = FALSE;
+			dbh->csname            = NULL;
+			dbh->errorstr          = NULL;
+			dbh->sqlstate          = NULL;
+		*/
+	}
+
+#ifdef CWT_UNICODE
+    CWT_FREE(path_utf8);
+#endif
+    __string_ns->destroy(&path);
+    strlist_ns->destroy(&opts);
+
+    return (CwtDBHandler*)dbh;
+}
+
+
+static void sqlite3_dbd_disconnect (CwtDBHandler *dbh)
+{
+	sqlite3_stmt* stmt;
+
+	if (!dbh )
+		return;
+
+	while ((stmt = sqlite3_next_stmt(_DBH(dbh), 0)) != 0)
+		sqlite3_finalize(stmt);
+
+	sqlite3_close(_DBH(dbh));
+	__destroy(dbh);
+	CWT_FREE(dbh);
+}
+
+
+static BOOL sqlite3_dbd_func(CwtDBHandler *dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[])
+{
+	CWT_UNUSED3(dbh, func_name, argv);
+	return FALSE;
+}
+
+static void sqlite3_dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr_value)
+{
+	CWT_UNUSED3(dbh, attr_name, attr_value);
+}
+
+static BOOL sqlite3_dbd_set_auto_commit (CwtDBHandler *dbh, BOOL on)
+{
+	return TRUE;
+}
+
+static BOOL sqlite3_dbd_auto_commit(CwtDBHandler *dbh)
+{
+	CWT_ASSERT(dbh);
+	return 0 == sqlite3_get_autocommit(_DBH(dbh))
+			? FALSE
+			: TRUE;
+}
+
+static CwtDBI_RC sqlite3_dbd_err(CwtDBHandler *dbh)
+{
+	CWT_ASSERT(dbh);
+	return (CwtDBI_RC)sqlite3_errcode(_DBH(dbh));
+}
+
+static const CWT_CHAR* sqlite3_dbd_strerror(CwtDBHandler *dbh)
+{
+	CwtSqliteDBHandler *sdbh = (CwtSqliteDBHandler *)dbh;
+	CWT_CHAR *s;
+	char     *errstr;
+	size_t    len;
+	sqlite3_mutex *lock;
+
+	CWT_ASSERT(sdbh);
+	CWT_ASSERT(_DBH(sdbh));
+
+	__string_ns->clear(&sdbh->errorstr);
+
+	lock = sqlite3_db_mutex(_DBH(sdbh));
+	sqlite3_mutex_enter(lock);
+
+	errstr = sqlite3_errmsg(_DBH(sdbh));
+	s = cwt_textcodec_ns()->fromUtf8(errstr, strlen(errstr));
+	__string_ns->initWithBuffer(sdbh->errorstr, s, __str_ns->strLen(s)-1);
+	sqlite3_mutex_leave(lock);
+
+	return __string_ns->cstr(&sdbh->errorstr);
+}
+
+
+/**
+ * @brief Returns a null-terminated string containing the SQLSTATE error code.
+ *
+ * @param dbh Database handle
+ * @return a null-terminated string containing the SQLSTATE error code.
+ */
+static const CWT_CHAR*  sqlite3_dbd_state(CwtDBHandler *dbh)
+{
+	/* TODO could this be implemented? */
+	return _T("00000");
+}
+
+
+static BOOL sqlite3_dbd_query (CwtDBHandler *dbh, const CWT_CHAR *sql)
+{
+	int rc;
+	char *sql_utf8;
+
+	CWT_ASSERT(dbh);
+
+	sql_utf8 = sqlite3_dbd_encode(dbh, sql);
+	rc = sqlite3_exec(_DBH(dbh), sql_utf8, NULL, NULL, NULL);
+	CWT_FREE(sql_utf8);
+
+	return 0 == rc ? TRUE : FALSE;
+}
+
+
+static CwtStatement* sqlite3_dbd_prepare(CwtDBHandler *dbh, const CWT_CHAR *statement)
+{
+	sqlite3_stmt *stmt_native;
+	CwtSqliteStatement *stmt;
+	char *sql_utf8;
+	int rc;
+
+	sql_utf8 = cwt_textcodec_ns()->toUtf8(statement, __str_ns->strLen(statement));
+	rc = sqlite3_prepare_v2(
+			_DBH(dbh)       /* Database handle */
+			, sql_utf8      /* SQL statement, UTF-8 encoded */
+			, -1            /* Maximum length of zSql in bytes. */
+			, &stmt_native  /* OUT: Statement handle */
+			, NULL );       /* OUT: Pointer to unused portion of zSql */
+	CWT_FREE(sql_utf8);
+
+	if (rc != SQLITE_OK)
+		return NULL;
+
+	stmt = CWT_MALLOC(CwtSqliteStatement);
+	stmt->stmt_native = stmt_native;
+
+	return (CwtStatement *)stmt;
+}
+
+static ULONGLONG sqlite3_dbd_affected_rows (CwtDBHandler *dbh)
+{
+	int nrows;
+	nrows = sqlite3_changes(_DBH(dbh));
+
+	if (nrows < 0)
+		return (ULONGLONG)0;
+
+	return (ULONGLONG)nrows;
+}
+
+static BOOL sqlite3_dbd_tables (CwtDBHandler *dbh, CwtStrList *tables)
+{
+	CwtStrListNS *sl_ns  = cwt_strlist_ns();
+
+	CwtSqliteDBHandler *sdbh = (CwtSqliteDBHandler*)dbh;
+
+	CWT_ASSERT(dbh);
+	CWT_ASSERT(_DBH(dbh));
+	CWT_ASSERT(tables);
+
+	res = mysql_list_tables(mdbh->conn, NULL);
+
+	if( !res ) {
+		cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to list tables: %s"), __cwtDBIDriver.strerror(dbh));
+		return FALSE;
+	}
+
+	while( res ) {
+		CWT_CHAR* decoded;
+
+		mysql_data_seek(res, i);
+
+		row = mysql_fetch_row(res);
+
+		if( !row ) {
+			break;
+		}
+
+		decoded = my_dbd_decode(dbh, row[0]);
+		slNS->append( tables, decoded);
+
+		i++;
+	}
+
+	mysql_free_result(res);
+
+	return ok;
+}
+
+static BOOL sqlite3_dbd_table_exists (CwtDBHandler *dbh, const CWT_CHAR *tname)
+{
+	CwtString sql;
+	CwtSqliteStatement *stmt;
+
+	__string_ns->init(&sql);
+	__string_ns->sprintf(&sql
+			, _T("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '%s'")
+			, tname);
+
+
+	__string_ns->destroy(&sql);
+
+	stmt = sqlite3_dbd_prepare(dbh, __string_ns->cstr(&sql));
+
+
+	stmt.exec();
+	int c = stmt.column_int(0);
+	return ( c > 0 );
+}
+
+static char* sqlite3_dbd_encode_n(CwtDBHandler *dbh, const CWT_CHAR *s, size_t n)
+{
+	CwtSqliteDBHandler *sdbh = (CwtSqliteDBHandler *)dbh;
+
+	CWT_ASSERT(sdbh);
+	CWT_ASSERT(_DBH(sdbh));
+
+	return cwt_textcodec_ns()->toMBCS(s, sdbh->csname, n);
+}
+
+static CWT_CHAR* sqlite3_dbd_decode_n(CwtDBHandler *dbh, const char *s, size_t n)
+{
+	CwtSqliteDBHandler *sdbh = (CwtSqliteDBHandler *)dbh;
+
+	CWT_ASSERT(sdbh);
+	CWT_ASSERT(_DBH(sdbh));
+
+	return cwt_textcodec_ns()->fromMBCS(s, sdbh->csname, n);
+}
+
+
+static void __destroy(CwtSqliteDBHandler *sdbh)
+{
+	CWT_ASSERT(sdbh);
+	__string_ns->destroy(&sdbh->errorstr);
+	CWT_FREE(sdbh->csname);
+}
 
 #ifdef __COMMENT__
 
@@ -496,57 +851,6 @@ SqlHandler::~SqlHandler()
 	}
 */}
 
-
-jq::SqlResult SqlHandler::connect( const jq::String &dsn, bool create )
-{
-	// Close already connected data base
-	if( isConnected() ) {
-		if( m_path == dsn )
-			return jq::DBI::SQL_SUCCESS;
-		sqlite3_close(m_dbh);
-	}
-
-	m_path = dsn;
-	int rc;
-	if( create )
-		rc = sqlite3_open_v2( m_path, &m_dbh, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, 0 );
-	else
-		rc = sqlite3_open_v2( m_path, &m_dbh, SQLITE_OPEN_READWRITE, 0 );
-
-	if( rc != SQLITE_OK ) {
-		if( !m_dbh ) {
-			throw jq::SqlException(jq::DBI::SQL_NOMEM, _Tr("unable to allocate memory for database handler"));
-		} else {
-			jq::String strerr = sqlite3_errmsg( m_dbh );
-			switch( rc ) {
-				case SQLITE_CANTOPEN:
-					strerr += _Tr(". Try to check path: ");
-					strerr += m_path;
-				default: break;
-			}
-			sqlite3_close(m_dbh);
-			m_dbh = 0;
-			throw jq::SqlException(SQL_ERROR(rc), strerr);
-		}
-	}
-	sqlite3_busy_timeout( m_dbh, MAX_SQL_TIMEOUT);
-	return jq::DBI::SQL_SUCCESS;
-}
-
-
-jq::SqlResult SqlHandler::disconnect()
-{
-	sqlite3_stmt* stmt;
-
-	if( m_dbh ) {
-		while( (stmt = sqlite3_next_stmt(m_dbh, 0)) != 0 )
-			sqlite3_finalize(stmt);
-
-		sqlite3_close(m_dbh);
-		m_dbh = 0;
-	}
-	return jq::DBI::SQL_SUCCESS;
-}
 
 
 jq::SqlStatement* SqlHandler::prepare( const jq::String &stmt )
