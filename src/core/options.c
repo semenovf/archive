@@ -313,7 +313,7 @@ static BOOL __parseWithIterator(CwtOption *options, CwtStrList *args, CwtOptionI
 {
 	CwtHashTableNS  *htNS     = cwt_hashtable_ns();
 	CwtStringNS     *stringNS = cwt_string_ns();
-	CwtStrListNS    *slNS     = cwt_strList_ns();
+	CwtStrListNS    *slNS     = cwt_strlist_ns();
 
 	BOOL             rc;
     CwtHashTable    *shortOptsHash;

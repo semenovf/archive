@@ -87,7 +87,7 @@ static void __ini_free(CwtIniContext* h)
 static BOOL __ini_parse(CwtIniContext *h, CwtChannel *pchan)
 {
 	CwtStrNS       *strNS    = cwt_str_ns();
-	CwtStrListNS   *slNS     = cwt_strList_ns();
+	CwtStrListNS   *slNS     = cwt_strlist_ns();
 	CwtChannelNS   *chNS     = cwt_channel_ns();
 	CwtByteArrayNS *baNS     = cwt_bytearray_ns();
 	CwtTextCodecNS *codecNS  = cwt_textcodec_ns();

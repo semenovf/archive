@@ -61,7 +61,7 @@ videntur parum clari, fiant sollemnes in futurum.");
 int main(int argc, char *argv[])
 {
 	CwtStrNS *strNS = cwt_str_ns();
-	CwtStrListNS *slNS = cwt_strList_ns();
+	CwtStrListNS *slNS = cwt_strlist_ns();
 	CwtStrList *sl;
 
 	CWT_UNUSED(argc);

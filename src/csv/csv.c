@@ -109,7 +109,7 @@ DLL_API_EXPORT CwtCsvNS* cwt_csv_ns(void)
 	if( ! __strNS ) {
 		__strNS    = cwt_str_ns();
 		__stringNS = cwt_string_ns();
-		__slNS     = cwt_strList_ns();
+		__slNS     = cwt_strlist_ns();
 		__chNS     = cwt_channel_ns();
 		__baNS     = cwt_bytearray_ns();
 		__codecNS  = cwt_textcodec_ns();

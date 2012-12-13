@@ -25,7 +25,6 @@ static CwtDBI_RC       dbi_err              (CwtDBHandler*);
 static const CWT_CHAR* dbi_strerror         (CwtDBHandler*);
 static const CWT_CHAR* dbi_state            (CwtDBHandler*);
 static BOOL            dbi_query            (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
-static BOOL            dbi_query_bin        (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
 static CwtStatement*   dbi_prepare          (CwtDBHandler*, const CWT_CHAR *sql);
 static BOOL            dbi_execute          (CwtStatement*);
 static ULONGLONG       dbi_last_id          (CwtStatement*);
@@ -114,7 +113,6 @@ static CwtDBI __cwtDBI = {
 	, dbi_strerror
 	, dbi_state
 	, dbi_query
-	, dbi_query_bin
 	, dbi_prepare
 	, dbi_execute
 	, dbi_last_id
@@ -210,7 +208,7 @@ DLL_API_EXPORT CwtDBI* cwt_dbi_ns(void)
 static void dbi_parse_dsn(const CWT_CHAR *dsn, CWT_CHAR **scheme, CWT_CHAR **driver, CWT_CHAR **driverDSN)
 {
 	CwtStrNS *strNS = cwt_str_ns();
-	CwtStrListNS *slNS = cwt_strList_ns();
+	CwtStrListNS *slNS = cwt_strlist_ns();
 	CwtStrList *opts;
 	const CWT_CHAR *opt;
 
@@ -354,13 +352,6 @@ static inline BOOL dbi_query(CwtDBHandler *dbh, const CWT_CHAR *sql)
 	return dbh->driver()->query(dbh, sql);
 }
 
-
-/* can be used for statements that contain binary data */
-static inline BOOL dbi_query_bin(CwtDBHandler *dbh, const CWT_CHAR *sql, size_t length)
-{
-	CWT_ASSERT(dbh);
-	return dbh->driver()->queryBin(dbh, sql, length);
-}
 
 static CwtStatement* dbi_prepare(CwtDBHandler *dbh, const CWT_CHAR *sql)
 {

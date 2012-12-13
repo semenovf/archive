@@ -23,7 +23,9 @@ typedef CwtListIterator CwtStrListIterator;
 
 
 typedef struct CwtStrListNS {
+	void            (*init)        (CwtStrList *psl);
 	CwtStrList*     (*create)      (void);
+	void            (*destroy)     (CwtStrList *psl);
 	void            (*free)        (CwtStrList *psl);
 	void            (*clear)       (CwtStrList *psl);
 	size_t          (*size)        (CwtStrList *psl);
@@ -60,7 +62,7 @@ typedef struct CwtStrListNS {
 
 
 EXTERN_C_BEGIN
-DLL_API_EXPORT CwtStrListNS* cwt_strList_ns();
+DLL_API_EXPORT CwtStrListNS* cwt_strlist_ns();
 EXTERN_C_END;
 
 

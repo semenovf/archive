@@ -23,6 +23,7 @@ typedef struct _CollectionT                                                   \
 typedef struct _NS {                                                          \
 	void          (*init)        (_CollectionT* p);                           \
 	void          (*initSized)   (_CollectionT* p, size_t initial_size, size_t max_size); \
+	void          (*initWithBuffer) (_CollectionT* p, _ElemT *buf, size_t n); \
 	_CollectionT* (*create)      (void);                                      \
 	_CollectionT* (*createSized) (size_t initial_size, size_t max_size);      \
 	void          (*destroy)     (_CollectionT* p);                           \
@@ -61,6 +62,7 @@ typedef struct _NS {                                                          \
                                                                               \
     static void          __init        (_CollectionT* p);                     \
     static void          __initSized   (_CollectionT* p, size_t initial_size, size_t max_size); \
+    static void          __initWithBuffer (_CollectionT* p, _ElemT *buf, size_t n);  \
 	static _CollectionT* __create      (void);                                \
 	static _CollectionT* __createSized (size_t initial_size, size_t max_size);\
 	static void          __destroy     (_CollectionT* p);                     \
@@ -94,6 +96,7 @@ typedef struct _NS {                                                          \
 static _NS  __##_NS = {                                                       \
 	  __init                                                                  \
     , __initSized                                                             \
+    , __initWithBuffer                                                        \
 	, __create                                                                \
 	, __createSized                                                           \
 	, __destroy                                                               \
@@ -153,7 +156,20 @@ static void __initSized(_CollectionT* sb, size_t initial_size, size_t max_size)\
 	sb->m_count = 0;                                                          \
 	sb->m_max_capacity = max_size;                                            \
 }                                                                             \
-																			  \
+                                                                              \
+static void __initWithBuffer (_CollectionT* p, _ElemT *buf, size_t n)         \
+{                                                                             \
+	if (!buf || n == 0) {                                                     \
+		__init(p);                                                            \
+		return;                                                               \
+	}                                                                         \
+                                                                              \
+	p->m_buffer = buf;                                                        \
+	p->m_capacity = n;                                                        \
+	p->m_count = n;                                                           \
+	p->m_max_capacity = __default_max_size;                                   \
+}                                                                             \
+                                                                              \
 _CollectionT*  __create(void)                                                 \
 {                                                                             \
 	return __createSized((size_t)0, (size_t)0);                               \

@@ -18,14 +18,6 @@
 
 typedef INT32 CwtDBI_RC;
 
-/*
-typedef struct CwtBindEntry {
-	CwtTypeId type_id;
-	void     *value;
-	size_t   *plength;
-} CwtBindEntry;
-*/
-
 typedef enum CwtSqlTypeEnum {
 	  CwtSql_TINYINT
 	, CwtSql_SMALLINT
@@ -92,7 +84,7 @@ typedef struct _CwtDBIDriver
 	const CWT_CHAR* (*strerror)      (CwtDBHandler*);
 	const CWT_CHAR* (*state)         (CwtDBHandler*);
 	BOOL            (*query)         (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
-	BOOL            (*queryBin)      (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
+	/*BOOL            (*queryBin)      (CwtDBHandler*, const CWT_CHAR *sql, size_t length); *//* can be used for statements that contain binary data */
 	CwtStatement*   (*prepare)       (CwtDBHandler*, const CWT_CHAR *sql);
 	ULONGLONG       (*rows)          (CwtDBHandler*);
 	BOOL            (*tables)        (CwtDBHandler*, CwtStrList *tables);
@@ -130,7 +122,6 @@ typedef struct CwtDBI
 	const CWT_CHAR* (*strerror)       (CwtDBHandler*);
 	const CWT_CHAR* (*state)          (CwtDBHandler*);
 	BOOL            (*query)          (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
-	BOOL            (*queryBin)       (CwtDBHandler*, const CWT_CHAR *sql, size_t length); /* can be used for statements that contain binary data */
 	CwtStatement*   (*prepare)        (CwtDBHandler*, const CWT_CHAR *sql);
 	BOOL            (*execute)        (CwtStatement*);
 	ULONGLONG       (*lastId)         (CwtStatement*);

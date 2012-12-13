@@ -353,7 +353,7 @@ BOOL ddi_set_pk(CwtDDIColumn *col)
 /* Helper function for __ddi_deploy and __ddi_recall */
 static BOOL exec_queries(CwtDBHandler *dbh, CwtDDI *ddi, int flags, CwtStrList* (*specFor) (CwtDDI*, int flags))
 {
-	CwtStrListNS *slNS = cwt_strList_ns();
+	CwtStrListNS *slNS = cwt_strlist_ns();
 
 	CwtStrList *spec;
 	CwtStrListIterator it;

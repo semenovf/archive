@@ -41,9 +41,11 @@ typedef struct _CwtListIterator
 
 
 typedef struct _CwtListNS {
+	void             (*init)        (CwtList*, size_t sizeofData, void (*data_cleanup)(void*));
+	void             (*initPtr)     (CwtList*, void (*data_cleanup)(void*));
 	CwtList*         (*create)      (size_t sizeofData, void (*data_cleanup)(void*));
 	CwtList*         (*createPtr)   (void (*data_cleanup)(void*));
-	/*void             (*init)        (CwtList*, size_t sizeofData, void (*data_cleanup)(void*));*/
+	void             (*destroy)     (CwtList*);
 	void             (*free)        (CwtList*);
 	void             (*clear)       (CwtList*);
 	size_t           (*size)        (CwtList*);

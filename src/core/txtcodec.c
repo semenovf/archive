@@ -141,10 +141,13 @@ static CWT_CHAR* txtcodec_from_utf8(const char *utf8, size_t n)
 
 static char* txtcodec_to_mbcs(const CWT_CHAR *s, const CWT_CHAR *csname, size_t n)
 {
-	if( __cwtStrNS->strEq(_T("utf8"), csname))
+	if( __cwtStrNS->strCaseEq(_T("utf8"), csname))
 		return txtcodec_to_utf8(s, n);
 
-	if( __cwtStrNS->strEq(_T("latin1"), csname))
+	if( __cwtStrNS->strCaseEq(_T("utf-8"), csname))
+		return txtcodec_to_utf8(s, n);
+
+	if( __cwtStrNS->strCaseEq(_T("latin1"), csname))
 		return txtcodec_to_latin1(s, n);
 
 	cwt_logger_ns()->warn(_Tr("CwtStrNS::toMBCS(): no text codec is attached, converting to latin1"));

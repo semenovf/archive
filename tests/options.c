@@ -132,7 +132,7 @@ static void test_iterate_options(void)
 static void test_options_general(void)
 {
 	CwtStrNS *strNS = cwt_str_ns();
-	CwtStrListNS *slNS = cwt_strList_ns();
+	CwtStrListNS *slNS = cwt_strlist_ns();
 	CwtOptionIterator *it;
 
 	CwtStrList *args;
