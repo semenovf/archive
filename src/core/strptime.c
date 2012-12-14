@@ -64,8 +64,8 @@ extern char* tzname[2];
 
 #define TM_YEAR_BASE	1900
 
-static CwtStrNS    *__strNS = NULL;
-static CwtLocaleNS *__locNS = NULL;
+static CwtStrNS    *__str_ns = NULL;
+static CwtLocaleNS *__loc_ns = NULL;
 
 /*
 #ifdef __weak_alias
@@ -106,11 +106,11 @@ CWT_CHAR* str_strptime(const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm)
 	int alt_format, i, split_year = 0, neg = 0, offs;
 	const CWT_CHAR *new_fmt;
 
-	if( !__strNS )
-		__strNS = cwt_str_ns();
+	if( !__str_ns )
+		__str_ns = cwt_str_ns();
 
-	if( !__locNS )
-		__locNS = cwt_locale_ns();
+	if( !__loc_ns )
+		__loc_ns = cwt_locale_ns();
 
 	bp = (const CWT_UCHAR *)buf;
 
@@ -120,8 +120,8 @@ CWT_CHAR* str_strptime(const CWT_CHAR *buf, const CWT_CHAR *fmt, struct tm *tm)
 		i = 0;
 
 		/* Eat up white-space. */
-		if( __strNS->isSpace(c) ) {
-			while( __strNS->isSpace(*bp) )
+		if( __str_ns->isSpace(c) ) {
+			while( __str_ns->isSpace(*bp) )
 				bp++;
 			continue;
 		}
@@ -156,7 +156,7 @@ literal:
 		 * "Complex" conversion rules, implemented through recursion.
 		 */
 		case _T('c'):	/* Date and time, using the locale's format. */
-			new_fmt = __locNS->dateTimeFormat()/*_ctloc(d_t_fmt)*/;
+			new_fmt = __loc_ns->dateTimeFormat()/*_ctloc(d_t_fmt)*/;
 			goto recurse;
 
 		case _T('D'):	/* The date as "%m/%d/%y". */
@@ -175,7 +175,7 @@ literal:
 			goto recurse;
 
 		case _T('r'):	/* The time in 12-hour clock representation. */
-			new_fmt = __locNS->amPmTimeFormat(); /*_ctloc(t_fmt_ampm);*/
+			new_fmt = __loc_ns->amPmTimeFormat(); /*_ctloc(t_fmt_ampm);*/
 			LEGAL_ALT(0);
 			goto recurse;
 
@@ -185,11 +185,11 @@ literal:
 			goto recurse;
 
 		case _T('X'):	/* The time, using the locale's format. */
-			new_fmt = __locNS->timeFormat();/* ctloc(t_fmt);*/
+			new_fmt = __loc_ns->timeFormat();/* ctloc(t_fmt);*/
 			goto recurse;
 
 		case _T('x'):	/* The date, using the locale's format. */
-			new_fmt = __locNS->dateFormat(); /*_ctloc(d_fmt);*/
+			new_fmt = __loc_ns->dateFormat(); /*_ctloc(d_fmt);*/
 		    recurse:
 			bp = (const CWT_UCHAR*)str_strptime((const CWT_CHAR*)bp, new_fmt, tm);
 			LEGAL_ALT(ALT_E);
@@ -200,14 +200,14 @@ literal:
 		 */
 		case _T('A'):	/* The day of week, using the locale's form. */
 		case _T('a'):
-			bp = __find_string(bp, &tm->tm_wday, __locNS->weekDays()/*_ctloc(day)*/, __locNS->weekDaysAbr()/*_ctloc(abday)*/, 7);
+			bp = __find_string(bp, &tm->tm_wday, __loc_ns->weekDays()/*_ctloc(day)*/, __loc_ns->weekDaysAbr()/*_ctloc(abday)*/, 7);
 			LEGAL_ALT(0);
 			continue;
 
 		case _T('B'):	/* The month, using the locale's form. */
 		case _T('b'):
 		case _T('h'):
-			bp = __find_string(bp, &tm->tm_mon, __locNS->months()/*_ctloc(mon)*/, __locNS->monthsAbr()/*_ctloc(abmon)*/, 12);
+			bp = __find_string(bp, &tm->tm_mon, __loc_ns->months()/*_ctloc(mon)*/, __loc_ns->monthsAbr()/*_ctloc(abmon)*/, 12);
 			LEGAL_ALT(0);
 			continue;
 
@@ -269,7 +269,7 @@ literal:
 			continue;
 
 		case _T('p'):	/* The locale's equivalent of AM/PM. */
-			bp = __find_string(bp, &i, __locNS->amPm() /*_ctloc(am_pm)*/, NULL, 2);
+			bp = __find_string(bp, &i, __loc_ns->amPm() /*_ctloc(am_pm)*/, NULL, 2);
 			if (tm->tm_hour > 11)
 				return NULL;
 			tm->tm_hour += i * 12;
@@ -310,7 +310,7 @@ literal:
 				/* FIXME multithreading unsafe */
 				tm_tmp = localtime(&sse);
 				CWT_ASSERT(tm_tmp);
-				__strNS->memcpy(&tm, tm_tmp, sizeof(tm));
+				__str_ns->memcpy(&tm, tm_tmp, sizeof(tm));
 /*
 
 #ifdef CWT_CC_MSC
@@ -357,7 +357,7 @@ literal:
 				 */
 			do
 				bp++;
-			while (__strNS->isDigit(*bp));
+			while (__str_ns->isDigit(*bp));
 			continue;
 
 		case _T('V'):	/* The ISO 8601:1988 week number as decimal */
@@ -391,7 +391,7 @@ literal:
 		case _T('Z'):
 			/*FIXME need execution of tzset or no?*/
 			/*CWT_ISO_CPP_NAME(tzset)();*/
-			if( __strNS->strNCmp((const CWT_CHAR*)bp, __gmt, 3) == 0) {
+			if( __str_ns->strNCmp((const CWT_CHAR*)bp, __gmt, 3) == 0) {
 				tm->tm_isdst = 0;
 #ifdef TM_GMTOFF
 				tm->TM_GMTOFF = 0;
@@ -433,7 +433,7 @@ literal:
 			 * [A-IL-M] = -1 ... -9 (J not used)
 			 * [N-Y]  = +1 ... +12
 			 */
-			while( __strNS->isSpace(*bp) )
+			while( __str_ns->isSpace(*bp) )
 				bp++;
 
 			switch (*bp++) {
@@ -508,7 +508,7 @@ literal:
 			}
 			offs = 0;
 			for (i = 0; i < 4; ) {
-				if( __strNS->isDigit(*bp) ) {
+				if( __str_ns->isDigit(*bp) ) {
 					offs = offs * 10 + (*bp++ - _T('0'));
 					i++;
 					continue;
@@ -549,7 +549,7 @@ literal:
 		 */
 		case _T('n'):	/* Any kind of white-space. */
 		case _T('t'):
-			while (__strNS->isSpace(*bp))
+			while (__str_ns->isSpace(*bp))
 				bp++;
 			LEGAL_ALT(0);
 			continue;
@@ -599,8 +599,8 @@ static const CWT_UCHAR* __find_string(const CWT_UCHAR *bp, int *tgt, const CWT_C
 	/* check full name - then abbreviated ones */
 	for (; n1 != NULL; n1 = n2, n2 = NULL) {
 		for (i = 0; i < c; i++, n1++) {
-			len = __strNS->strLen(*n1);
-			if (__strNS->strNCaseCmp(*n1, (const CWT_CHAR*)bp, len) == 0) {
+			len = __str_ns->strLen(*n1);
+			if (__str_ns->strNCaseCmp(*n1, (const CWT_CHAR*)bp, len) == 0) {
 				*tgt = i;
 				return bp + len;
 			}

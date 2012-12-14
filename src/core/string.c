@@ -13,10 +13,11 @@
 
 static CwtStringNS __CwtStringNS;
 
-static void string_append   (CwtString *s, const CWT_CHAR *str);
-static const CWT_CHAR* string_cstr(CwtString *s);
-static int  string_sprintf  (CwtString *s, const CWT_CHAR *format, ...);
-static int  string_vsprintf (CwtString *s, const CWT_CHAR *format, va_list args);
+static void string_append          (CwtString *s, const CWT_CHAR *str);
+static void string_assign          (CwtString *s, const CWT_CHAR *str);
+static const CWT_CHAR* string_cstr (CwtString *s);
+static int  string_sprintf         (CwtString *s, const CWT_CHAR *format, ...);
+static int  string_vsprintf        (CwtString *s, const CWT_CHAR *format, va_list args);
 
 CWT_BEGIN_DEF_VECTOR_NS(CwtStringNS, CwtString, CWT_CHAR)
 	, __appendElem
@@ -25,6 +26,7 @@ CWT_BEGIN_DEF_VECTOR_NS(CwtStringNS, CwtString, CWT_CHAR)
 	, __insertElem
 	, __removeElem
     , string_append
+    , string_assign
 	, string_cstr
 	, string_sprintf
 	, string_vsprintf
@@ -44,6 +46,12 @@ static void string_append(CwtString *s, const CWT_CHAR *str)
 	__appendElems(s, str, cwt_str_ns()->strLen(str));
 }
 
+static void string_assign (CwtString *s, const CWT_CHAR *str)
+{
+	if (s->m_count > 0)
+		__clear(s);
+	__appendElems(s, str, cwt_str_ns()->strLen(str));
+}
 
 static const CWT_CHAR* string_cstr(CwtString *sb)
 {

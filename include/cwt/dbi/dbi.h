@@ -84,7 +84,6 @@ typedef struct _CwtDBIDriver
 	const CWT_CHAR* (*strerror)      (CwtDBHandler*);
 	const CWT_CHAR* (*state)         (CwtDBHandler*);
 	BOOL            (*query)         (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
-	/*BOOL            (*queryBin)      (CwtDBHandler*, const CWT_CHAR *sql, size_t length); *//* can be used for statements that contain binary data */
 	CwtStatement*   (*prepare)       (CwtDBHandler*, const CWT_CHAR *sql);
 	ULONGLONG       (*rows)          (CwtDBHandler*);
 	BOOL            (*tables)        (CwtDBHandler*, CwtStrList *tables);
@@ -101,12 +100,6 @@ typedef struct _CwtDBIDriver
 	CwtStrList*     (*specForRecall) (CwtDDI*, int flags);
 } CwtDBIDriver;
 
-
-/*
-typedef struct _CwtDBIBindGroup {
-
-} CwtDBIBindGroup;
-*/
 
 typedef struct CwtDBI
 {

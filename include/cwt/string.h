@@ -20,6 +20,7 @@ void               (*prependChar)    (CwtString *s, CWT_CHAR ch);
 void               (*insertChar)     (CwtString *s, CWT_CHAR ch, size_t pos);
 void               (*removeChar)     (CwtString *s, size_t pos);
 void               (*append)         (CwtString *s, const CWT_CHAR *str);
+void               (*assign)         (CwtString *s, const CWT_CHAR *str);
 const CWT_CHAR*    (*cstr)           (CwtString *s);
 int                (*sprintf)        (CwtString *s, const CWT_CHAR *format, ...);
 int                (*vsprintf)       (CwtString *s, const CWT_CHAR *format, va_list args);

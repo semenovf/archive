@@ -131,7 +131,16 @@ typedef struct _CwtHashTableIterator {
 
 
 typedef struct _CwtHashTableNS {
-	CwtHashTable*      (*create) (CwtHashTableHashFunc hash_func, CwtHashTableEqualFunc equal_func, CwtHashTableKeyFreeFunc key_free_func, CwtHashTableValueFreeFunc value_free_func);
+	void               (*init)   (CwtHashTable *hash_table
+							, CwtHashTableHashFunc hash_func
+							, CwtHashTableEqualFunc equal_func
+							, CwtHashTableKeyFreeFunc key_free_func
+							, CwtHashTableValueFreeFunc value_free_func);
+	CwtHashTable*      (*create) (CwtHashTableHashFunc hash_func
+							, CwtHashTableEqualFunc equal_func
+							, CwtHashTableKeyFreeFunc key_free_func
+							, CwtHashTableValueFreeFunc value_free_func);
+	void               (*destroy)(CwtHashTable *hash_table);
 	void               (*free)   (CwtHashTable *hash_table);
 	BOOL               (*insert) (CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value);
 	CwtHashTableValue  (*lookup) (CwtHashTable *hash_table, CwtHashTableKey key);
@@ -151,7 +160,7 @@ typedef struct _CwtHashTableNS {
 	ULONG              (*cstriHash)(void *string);
 	ULONG              (*wstrHash) (void *string);
 	ULONG              (*wstriHash)(void *string);
-	BOOL               (*cchareq)   (void *plocation1, void *plocation2);
+	BOOL               (*cchareq)  (void *plocation1, void *plocation2);
 	BOOL               (*wchareq)  (void *plocation1, void *plocation2);
 	BOOL               (*inteq)    (void *plocation1, void *plocation2);
 	BOOL               (*cstreq)   (void *string1, void *string2);

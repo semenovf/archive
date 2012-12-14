@@ -46,16 +46,21 @@ static const UINT hash_table_primes[] = {
 static const size_t hash_table_num_primes
 	= sizeof(hash_table_primes) / sizeof(int);
 
-
-static CwtHashTable*      __ht_create    (CwtHashTableHashFunc hash_func, CwtHashTableEqualFunc equal_func, CwtHashTableKeyFreeFunc key_free_func, CwtHashTableValueFreeFunc value_free_func);
-static void               __ht_free      (CwtHashTable *hash_table);
-static BOOL               __ht_insert    (CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value);
-static CwtHashTableValue  __ht_lookup    (CwtHashTable *hash_table, CwtHashTableKey key);
-static BOOL               __ht_remove    (CwtHashTable *hash_table, CwtHashTableKey key);
-static size_t             __ht_size      (CwtHashTable *hash_table);
-static void               __ht_begin     (CwtHashTable *hash_table, CwtHashTableIterator *it);
-static BOOL               __ht_hasMore   (CwtHashTableIterator *it);
-static CwtHashTableEntry* __ht_next      (CwtHashTableIterator *it);
+static void               ht_init      (CwtHashTable *hash_table
+						, CwtHashTableHashFunc hash_func
+						, CwtHashTableEqualFunc equal_func
+						, CwtHashTableKeyFreeFunc key_free_func
+						, CwtHashTableValueFreeFunc value_free_func);
+static CwtHashTable*      ht_create    (CwtHashTableHashFunc hash_func, CwtHashTableEqualFunc equal_func, CwtHashTableKeyFreeFunc key_free_func, CwtHashTableValueFreeFunc value_free_func);
+static void               ht_destroy   (CwtHashTable *hash_table);
+static void               ht_free      (CwtHashTable *hash_table);
+static BOOL               ht_insert    (CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value);
+static CwtHashTableValue  ht_lookup    (CwtHashTable *hash_table, CwtHashTableKey key);
+static BOOL               ht_remove    (CwtHashTable *hash_table, CwtHashTableKey key);
+static size_t             ht_size      (CwtHashTable *hash_table);
+static void               ht_begin     (CwtHashTable *hash_table, CwtHashTableIterator *it);
+static BOOL               ht_hasMore   (CwtHashTableIterator *it);
+static CwtHashTableEntry* ht_next      (CwtHashTableIterator *it);
 static ULONG              __ht_ccharHash (void *vlocation);
 static ULONG              __ht_wcharHash (void *vlocation);
 static ULONG              __ht_intHash   (void *vlocation);
@@ -83,15 +88,17 @@ static int               __ht_cstricmp  (void *string1, void *string2);
 static int               __ht_wstricmp  (void *string1, void *string2);
 
 static CwtHashTableNS __cwtHashTableNS = {
-	  __ht_create
-	, __ht_free
-	, __ht_insert
-	, __ht_lookup
-	, __ht_remove
-	, __ht_size
-	, __ht_begin
-	, __ht_hasMore
-	, __ht_next
+	  ht_init
+	, ht_create
+	, ht_destroy
+	, ht_free
+	, ht_insert
+	, ht_lookup
+	, ht_remove
+	, ht_size
+	, ht_begin
+	, ht_hasMore
+	, ht_next
 	, __ht_ccharHash
 	, __ht_wcharHash
 	, __ht_intHash
@@ -186,6 +193,33 @@ static void __ht_free_entry(CwtHashTable *hash_table, CwtHashTableEntry *entry)
 }
 
 
+
+
+static void ht_init (CwtHashTable *hash_table
+	, CwtHashTableHashFunc hash_func
+	, CwtHashTableEqualFunc equal_func
+	, CwtHashTableKeyFreeFunc key_free_func
+	, CwtHashTableValueFreeFunc value_free_func)
+{
+	CWT_ASSERT(hash_table);
+	hash_table->hash_func = hash_func;
+	hash_table->equal_func = equal_func;
+	hash_table->key_free_func = NULL;
+	hash_table->value_free_func = NULL;
+	hash_table->entries = 0;
+	hash_table->prime_index = 0;
+
+	/* Allocate the table */
+	if( !__ht_allocate_table(hash_table) ) {
+		CWT_FREE(hash_table);
+		hash_table = NULL;
+	} else {
+		hash_table->key_free_func = key_free_func;
+		hash_table->value_free_func = value_free_func;
+	}
+}
+
+
 /**
  * @fn CwtHashTableNS::create(CwtHashTableHashFunc hash_func, CwtHashTableEqualFunc equal_func, CwtHashTableKeyFreeFunc key_free_func, CwtHashTableValueFreeFunc value_free_func)
  *
@@ -203,7 +237,7 @@ static void __ht_free_entry(CwtHashTable *hash_table, CwtHashTableEntry *entry)
  *                             was not possible to allocate the new hash
  *                             table.
  */
-static CwtHashTable* __ht_create(CwtHashTableHashFunc hash_func
+static CwtHashTable* ht_create(CwtHashTableHashFunc hash_func
 	, CwtHashTableEqualFunc equal_func
 	, CwtHashTableKeyFreeFunc key_free_func
     , CwtHashTableValueFreeFunc value_free_func)
@@ -212,26 +246,33 @@ static CwtHashTable* __ht_create(CwtHashTableHashFunc hash_func
 
 	/* Allocate a new hash table structure */
 	hash_table = CWT_MALLOC(CwtHashTable);
-
-	hash_table->hash_func = hash_func;
-	hash_table->equal_func = equal_func;
-	hash_table->key_free_func = NULL;
-	hash_table->value_free_func = NULL;
-	hash_table->entries = 0;
-	hash_table->prime_index = 0;
-
-	/* Allocate the table */
-	if( !__ht_allocate_table(hash_table) ) {
-		CWT_FREE(hash_table);
-		hash_table = NULL;
-	} else {
-		hash_table->key_free_func = key_free_func;
-		hash_table->value_free_func = value_free_func;
-	}
-
+	ht_init (hash_table, hash_func, equal_func, key_free_func, value_free_func);
 	return hash_table;
 }
 
+
+static void ht_destroy (CwtHashTable *hash_table)
+{
+	CwtHashTableEntry *rover;
+	CwtHashTableEntry *next;
+	size_t i;
+
+	if (hash_table) {
+		/* Free all entries in all chains */
+		for( i = 0; i < hash_table->table_size; ++i ) {
+			rover = hash_table->table[i];
+			while (rover != NULL) {
+				next = rover->next;
+				__ht_free_entry(hash_table, rover);
+				rover = next;
+			}
+		}
+
+		/* Free the table */
+		CWT_FREE(hash_table->table);
+		hash_table->table = NULL;
+	}
+}
 
 /**
  * @fn CwtHashTableNS::free(CwtHashTable *hash_table)
@@ -240,28 +281,13 @@ static CwtHashTable* __ht_create(CwtHashTableHashFunc hash_func
  *
  * @param hash_table           The hash table to destroy.
  */
-static void __ht_free(CwtHashTable *hash_table)
+static void ht_free(CwtHashTable *hash_table)
 {
-	CwtHashTableEntry *rover;
-	CwtHashTableEntry *next;
-	size_t i;
-	
-	/* Free all entries in all chains */
-	for( i = 0; i < hash_table->table_size; ++i ) {
-		rover = hash_table->table[i];
-		while (rover != NULL) {
-			next = rover->next;
-			__ht_free_entry(hash_table, rover);
-			rover = next;
-		}
+	if (hash_table) {
+		ht_destroy(hash_table);
+		/* Free the hash table structure */
+		CWT_FREE(hash_table);
 	}
-	
-	/* Free the table */
-	CWT_FREE(hash_table->table);
-	hash_table->table = NULL;
-	
-	/* Free the hash table structure */
-	CWT_FREE(hash_table);
 }
 
 
@@ -335,7 +361,7 @@ static BOOL __ht_enlarge(CwtHashTable *hash_table)
  *                             or zero if it was not possible to allocate
  *                             memory for the new entry.
  */
-static BOOL __ht_insert(CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value)
+static BOOL ht_insert(CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value)
 {
 	CwtHashTableEntry *rover;
 	CwtHashTableEntry *newentry;
@@ -425,7 +451,7 @@ static BOOL __ht_insert(CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTa
  * @return                    The value, or @ref HASH_TABLE_NULL if there
  *                            is no value with that key in the hash table.
  */
-static CwtHashTableValue __ht_lookup(CwtHashTable *hash_table, CwtHashTableKey key)
+static CwtHashTableValue ht_lookup(CwtHashTable *hash_table, CwtHashTableKey key)
 {
 	CwtHashTableEntry *rover;
 	size_t index;
@@ -461,7 +487,7 @@ static CwtHashTableValue __ht_lookup(CwtHashTable *hash_table, CwtHashTableKey k
  * @return                    Non-zero if a key was removed, or zero if the
  *                            specified key was not found in the hash table.
  */
-static BOOL __ht_remove(CwtHashTable *hash_table, CwtHashTableKey key)
+static BOOL ht_remove(CwtHashTable *hash_table, CwtHashTableKey key)
 {
 	CwtHashTableEntry **rover;
 	CwtHashTableEntry *entry;
@@ -518,7 +544,7 @@ static BOOL __ht_remove(CwtHashTable *hash_table, CwtHashTableKey key)
  * @param hash_table          The hash table.
  * @return                    The number of entries in the hash table.
  */
-static size_t __ht_size(CwtHashTable *hash_table)
+static size_t ht_size(CwtHashTable *hash_table)
 {
 	return hash_table->entries;
 }
@@ -533,7 +559,7 @@ static size_t __ht_size(CwtHashTable *hash_table)
  * @param iter                Pointer to an iterator structure to
  *                            initialise.
  */
-static void __ht_begin(CwtHashTable *hash_table, CwtHashTableIterator *it)
+static void ht_begin(CwtHashTable *hash_table, CwtHashTableIterator *it)
 {
 	size_t chain;
 	
@@ -562,7 +588,7 @@ static void __ht_begin(CwtHashTable *hash_table, CwtHashTableIterator *it)
  *                            over, non-zero if there are more values to
  *                            iterate over.
  */
-static BOOL __ht_hasMore(CwtHashTableIterator *it)
+static BOOL ht_hasMore(CwtHashTableIterator *it)
 {
 	return it->next_entry != NULL ? TRUE : FALSE;
 }
@@ -634,7 +660,7 @@ static ULONG __ht_ptrHash(void *plocation)
  *                            @ref HASH_TABLE_NULL if there are no more
  *                            keys to iterate over.
  */
-static CwtHashTableEntry* __ht_next(CwtHashTableIterator *it)
+static CwtHashTableEntry* ht_next(CwtHashTableIterator *it)
 {
 	CwtHashTableEntry *current_entry;
 	CwtHashTableEntry *result;
