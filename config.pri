@@ -23,6 +23,7 @@ isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=$$(TARGET_CPU) }
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=x86 }
 
 # qmake internal variables
+#DEFINES -= UNICODE
 QT=
 CONFIG = $$CWT_CONFIG
 CONFIG += warn_on
