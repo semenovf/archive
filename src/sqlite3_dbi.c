@@ -7,6 +7,7 @@
  */
 
 
+#include <time.h> /* strftime */
 #include <cwt/txtcodec.h>
 #include <cwt/dbi/dbi.h>
 #include <cwt/logger.h>
@@ -20,7 +21,7 @@
 #define _STH_CAST(sth)  ((CwtSqliteStatement *)(sth))
 #define _DBH(dbh)       (((CwtSqliteDBHandler*)(dbh))->dbh_native)
 #define _STH(sth)       (((CwtSqliteStatement*)(sth))->stmt_native)
-#define _DBH_RESET_ERRNO(dbh) _DBH_CAST(sth)->errno = SQLITE_OK
+#define _DBH_RESET_ERRNO(dbh) _DBH_CAST(dbh)->errno = SQLITE_OK
 #define _STH_RESET_ERRNO(sth) _STH_CAST(sth)->errno = SQLITE_OK
 
 #define _MAX_SQL_TIMEOUT        10000 /* 10 seconds */
@@ -36,7 +37,7 @@ typedef struct _CwtSqliteColumnInfo {
 typedef struct _CwtSqliteStatement {
 	CwtStatement        __base;
 	sqlite3_stmt        *stmt_native;
-	CwtDBI_RC            errno;
+	CwtErrno             errno;
 	CwtString            errorstr;
 	CwtHashTable         column_map;     /* maps column names to index */
 	CwtSqliteColumnInfo *column_info;    /* helper storage for column_map's values */
@@ -47,7 +48,7 @@ typedef struct _CwtSqliteDBHandler
 {
 	CwtDBHandler __base;
 	sqlite3     *dbh_native;
-	CwtDBI_RC    errno;
+	CwtErrno     errno;
 	CwtString    errorstr;
 	CWT_CHAR    *csname;      /* character set name */
 } CwtSqliteDBHandler;
@@ -64,7 +65,7 @@ static BOOL             s3_dbd_func(CwtDBHandler *dbh, const CWT_CHAR *func_name
 static void             s3_dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr_value);
 static BOOL             s3_dbd_set_auto_commit (CwtDBHandler *dbh, BOOL on);
 static BOOL             s3_dbd_auto_commit     (CwtDBHandler *dbh);
-static CwtDBI_RC        s3_dbd_err             (CwtDBHandler *dbh);
+static CwtErrno         s3_dbd_err             (CwtDBHandler *dbh);
 static const CWT_CHAR*  s3_dbd_strerror        (CwtDBHandler *dbh);
 static const CWT_CHAR*  s3_dbd_state           (CwtDBHandler *dbh);
 static BOOL             s3_dbd_query           (CwtDBHandler *dbh, const CWT_CHAR *sql);
@@ -94,33 +95,20 @@ static ULONGLONG        s3_stmt_affected_rows (CwtStatement *sth);
 static ULONGLONG        s3_stmt_num_rows      (CwtStatement *sth);
 static BOOL             s3_stmt_fetch_next    (CwtStatement *sth);
 static BOOL             s3_stmt_fetch_column  (CwtStatement *sth, CWT_CHAR *col, CwtUniType *ut);
-static CwtDBI_RC        s3_stmt_stmt_err      (CwtStatement *sth);
-static const CWT_CHAR*  s3_stmt_stmt_strerror (CwtStatement *sth);
-/*
-static BOOL             __stmt_bindByIndex (CwtStatement *sth, size_t index, CwtUniType *ut);
-static inline size_t    __stmt_bindParmsCount(CwtStatement *sth) { CWT_ASSERT(sth); return ((CwtMySqlStatement*)sth)->nbind_params; }
-static BOOL             __stmt_setParm     (CwtStatement *sth, CwtUniType *ut, const void *copy, size_t sz);
-*/
+static CwtErrno         s3_stmt_err           (CwtStatement *sth);
+static const CWT_CHAR*  s3_stmt_strerror      (CwtStatement *sth);
+static BOOL             s3_stmt_bind_by_index (CwtStatement *sth, size_t index, CwtUniType *ut);
+static size_t           s3_stmt_bind_parms_count(CwtStatement *sth);
+static BOOL             s3_stmt_bind_parms_bounds(CwtStatement *sth, int index);
+static BOOL             s3_stmt_set_parm      (CwtStatement *sth, CwtUniType *ut, const void *copy, size_t sz);
 
 /* local helper functions */
 static void             __s3_destroy          (CwtSqliteDBHandler *sdbh);
-static void             __s3_assign_error     (int rc_native, const char *errstr_utf8, CwtDBI_RC *perrno, CwtString *perrstr);
+static void             __s3_assign_error     (int rc_native, const char *errstr_utf8, CwtErrno *perrno, CwtString *perrstr);
 static inline void      __s3_assign_error_dbh (int rc_native, CwtSqliteDBHandler *dbh);
 static inline void      __s3_assign_error_sth (int rc_native, CwtSqliteStatement *sth);
 static CwtTypeEnum      __s3_from_sqlite3_type(const char *s3_type_utf8, int s3_type);
-/*
-static BOOL             __mysql_isBlob(int mysqltype);
-static BOOL             __mysql_isInteger(int mysqltype);
-static BOOL             __mysql_isTime(int mysqltype);
-static enum enum_field_types
-                        __mysql_toMysqlType(CwtTypeEnum cwtType);
-static CwtTypeEnum      __mysql_fromMysqlType( enum enum_field_types mysqlType, UINT field_flags);
-static BOOL             __mysql_isUnsigned(CwtTypeEnum cwtType);
-static void             __mysql_stmtDestroy(CwtMySqlStatement *sth);
-static BOOL             __mysql_buildSqlCreateDB(CwtString *sql, CWT_CHAR *argv[]);
-static BOOL             __mysql_buildSqlDropDB(CwtString *sql, CWT_CHAR *argv[]);
-static int              __mysql_realQuery(CwtMySqlDBHandler *dbh, const CWT_CHAR *stmt_str, size_t length);
-*/
+
 
 /*static BOOL __nConnections = 0;*/ /* number of connections */
 
@@ -182,6 +170,41 @@ static struct {
 	, { "LONGTEXT"   , CwtType_TEXT     }
 	, { "BIT"        , CwtType_TEXT     }
 };
+
+static struct {
+	int s3_ret_code;
+	CwtErrno errno;
+} __s3_errno_map[] = {
+	  { SQLITE_OK          , Cwt_NoError }
+/* beginning-of-error-codes */
+	, { SQLITE_ERROR       , Cwt_Err_DBI } /* SQL error or missing database */
+	, { SQLITE_INTERNAL    , Cwt_Err_DBI } /* Internal logic error in SQLite */
+	, { SQLITE_PERM        , Cwt_Err_Perm } /* Access permission denied */
+	, { SQLITE_ABORT       , Cwt_Err_DBI } /* Callback routine requested an abort */
+	, { SQLITE_BUSY        , Cwt_Err_Busy } /* The database file is locked */
+	, { SQLITE_LOCKED      , Cwt_Err_DBI } /* A table in the database is locked */
+	, { SQLITE_NOMEM       , Cwt_Err_DBI } /* A malloc() failed */
+	, { SQLITE_READONLY    , Cwt_Err_DBI } /* Attempt to write a readonly database */
+	, { SQLITE_INTERRUPT   , Cwt_Err_Interrupt } /* Operation terminated by sqlite3_interrupt()*/
+	, { SQLITE_IOERR       , Cwt_Err_IO   } /* Some kind of disk I/O error occurred */
+	, { SQLITE_CORRUPT     , Cwt_Err_DBI } /* The database disk image is malformed */
+	, { SQLITE_NOTFOUND    , Cwt_Err_DBI } /* Unknown opcode in sqlite3_file_control() */
+	, { SQLITE_FULL        , Cwt_Err_DBI } /* Insertion failed because database is full */
+	, { SQLITE_CANTOPEN    , Cwt_Err_DBI } /* Unable to open the database file */
+	, { SQLITE_PROTOCOL    , Cwt_Err_DBI } /* Database lock protocol error */
+	, { SQLITE_EMPTY       , Cwt_Err_DBI } /* Database is empty */
+	, { SQLITE_SCHEMA      , Cwt_Err_DBI } /* The database schema changed */
+	, { SQLITE_TOOBIG      , Cwt_Err_DBI } /* String or BLOB exceeds size limit */
+	, { SQLITE_CONSTRAINT  , Cwt_Err_DBI } /* Abort due to constraint violation */
+	, { SQLITE_MISMATCH    , Cwt_Err_DBI } /* Data type mismatch */
+	, { SQLITE_MISUSE      , Cwt_Err_DBI } /* Library used incorrectly */
+	, { SQLITE_NOLFS       , Cwt_Err_DBI } /* Uses OS features not supported on host */
+	, { SQLITE_AUTH        , Cwt_Err_Auth } /* Authorization denied */
+	, { SQLITE_FORMAT      , Cwt_Err_DBI } /* Auxiliary database format error */
+	, { SQLITE_RANGE       , Cwt_Err_Range } /* 2nd parameter to sqlite3_bind out of range */
+	, { SQLITE_NOTADB      , Cwt_Err_DBI } /* File opened that is not a database file */
+};
+
 
 DLL_API_EXPORT CwtDBIDriver* cwtDBIDriverImpl(void)
 {
@@ -303,13 +326,12 @@ CwtDBHandler* s3_dbd_connect(const CWT_CHAR *driver_dsn
 		dbh->__base.close      = s3_stmt_close;
 		dbh->__base.execute    = s3_stmt_execute;
 		dbh->__base.lastId     = s3_stmt_last_id;
-		dbh->__base.err        = s3_stmt_stmt_err;
-		dbh->__base.strerror   = s3_stmt_stmt_strerror;
-		/*
-			dbh->__base.bindByIndex     = my_stmt_bind_by_index;
-			dbh->__base.bindParmsCount = my_stmt_bind_parms_count;
-			dbh->__base.setParm    = my_stmt_set_parm;
-*/
+		dbh->__base.err        = s3_stmt_err;
+		dbh->__base.strerror   = s3_stmt_strerror;
+		dbh->__base.bindByIndex= s3_stmt_bind_by_index;
+		dbh->__base.bindParmsCount = s3_stmt_bind_parms_count;
+		dbh->__base.isBindParmsBounds = s3_stmt_bind_parms_bounds;
+		dbh->__base.setParm    = s3_stmt_set_parm;
 		dbh->__base.rows       = s3_stmt_affected_rows;
 		dbh->__base.size       = s3_stmt_num_rows;
 		dbh->__base.fetchNext  = s3_stmt_fetch_next;
@@ -372,7 +394,7 @@ static BOOL s3_dbd_auto_commit(CwtDBHandler *dbh)
 			: TRUE;
 }
 
-static CwtDBI_RC s3_dbd_err(CwtDBHandler *dbh)
+static CwtErrno s3_dbd_err(CwtDBHandler *dbh)
 {
 	CWT_ASSERT(dbh);
 	return _DBH_CAST(dbh)->errno;
@@ -448,7 +470,7 @@ static CwtStatement* s3_dbd_prepare(CwtDBHandler *dbh, const CWT_CHAR *statement
 	sth->stmt_native = stmt_native;
 	sth->errno = SQLITE_OK;
 	__string_ns->init(&sth->errorstr);
-	__ht_ns->init(&sth->column_map, __ht_ns->strHash, __ht_ns->streq, cwtFree, NULL);
+	__ht_ns->init(&sth->column_map, __ht_ns->strHash, __ht_ns->streq, cwt_free, NULL);
 	sth->column_info = NULL;
 
 	column_count = sqlite3_column_count(_STH(sth));
@@ -493,11 +515,10 @@ static ULONGLONG s3_dbd_affected_rows (CwtDBHandler *dbh)
 static BOOL s3_dbd_tables (CwtDBHandler *dbh, CwtStrList *tables)
 {
 	CwtStrListNS *sl_ns  = cwt_strlist_ns();
-
-	CwtSqliteDBHandler *sdbh = (CwtSqliteDBHandler*)dbh;
 	CwtString sql;
-	CwtSqliteStatement *stmt;
-
+	CwtSqliteStatement *sth;
+	BOOL ok = TRUE;
+	CwtString tname;
 
 	CWT_ASSERT(dbh);
 	CWT_ASSERT(_DBH(dbh));
@@ -506,33 +527,31 @@ static BOOL s3_dbd_tables (CwtDBHandler *dbh, CwtStrList *tables)
 	_DBH_RESET_ERRNO(dbh);
 
 	__string_ns->init(&sql);
+	__string_ns->init(&tname);
 	__string_ns->assign(&sql, _T("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"));
 
-	stmt = s3_dbd_prepare(dbh, __string_ns->cstr(&sql));
-	if (stmt) {
+	sth = s3_dbd_prepare(dbh, __string_ns->cstr(&sql));
 
-	}
-	__string_ns->destroy(&sql);
+	if (sth) {
+		CwtUniType ut;
+		__ut_ns->init(&ut);
 
-
-	while( res ) {
-		CWT_CHAR* decoded;
-
-		mysql_data_seek(res, i);
-
-		row = mysql_fetch_row(res);
-
-		if( !row ) {
-			break;
+		if (s3_stmt_execute(sth)) {
+			while (s3_stmt_fetch_next(sth)) {
+				if (s3_stmt_fetch_column(sth, _T("name"), &ut)) {
+					sl_ns->append(tables, __ut_ns->toString(ut, &tname));
+				}
+			}
+		} else {
+			ok = FALSE;
 		}
 
-		decoded = my_dbd_decode(dbh, row[0]);
-		slNS->append( tables, decoded);
+		__ut_ns->destroy(&ut);
+		s3_stmt_close(sth);
 
-		i++;
 	}
-
-	mysql_free_result(res);
+	__string_ns->destroy(&tname);
+	__string_ns->destroy(&sql);
 
 	return ok;
 }
@@ -547,16 +566,30 @@ static BOOL s3_dbd_table_exists (CwtDBHandler *dbh, const CWT_CHAR *tname)
 
 	__string_ns->init(&sql);
 	__string_ns->sprintf(&sql
-			, _T("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '%s'")
+			, _T("SELECT COUNT(*) as table_count FROM sqlite_master WHERE type = 'table' AND name = '%s'")
 			, tname);
 
 	sth = s3_dbd_prepare(dbh, __string_ns->cstr(&sql));
 
+
 	if (sth) {
-		if (s3_stmt_execute (sth)) {
-			int c = stmt.column_int(0);
+		CwtUniType ut;
+
+		__ut_ns->init(&ut);
+
+		if (s3_stmt_bind_by_index(sth, 1, &ut)
+				&& s3_stmt_set_parm(sth, &ut, tname, __str_ns->strLen(tname))
+				&& s3_stmt_execute(sth)
+				&& s3_stmt_fetch_next(sth)) {
+
+			if (s3_stmt_fetch_column(sth, _T("name"), &ut)) {
+				if (__ut_ns->toINT(&ut, NULL) > 0)
+					ok = TRUE;
+			}
+
 		}
-		s3_stmt_close((CwtStatement *)sth);
+		__ut_ns->destroy(&ut);
+		s3_stmt_close(sth);
 	}
 	__string_ns->destroy(&sql);
 
@@ -600,6 +633,7 @@ static BOOL s3_dbd_rollback (CwtDBHandler *dbh)
 {
 	CWT_ASSERT(dbh);
 	return s3_dbd_query(dbh, _T("ROLLBACK"));
+
 }
 
 
@@ -697,37 +731,113 @@ static BOOL s3_stmt_fetch_column (CwtStatement *sth, CWT_CHAR *col, CwtUniType *
 
 	cwt_type = pcol_info->cwt_type;
 
-	if( CwtType_TIME == cwt_type || CwtType_DATE == cwt_type || CwtType_DATETIME == cwt_type ) {
-		CWT_TIME cwtm;
-		struct tm tm;
 
-		cwt_bzero(&cwtm, sizeof(CWT_TIME));
+	switch (cwt_type) {
+	case CwtType_TIME:
+	case CwtType_DATE:
+	case CwtType_DATETIME: {
+			CWT_TIME cwtm;
+			struct tm tm;
+			const char *bytes;
+			size_t nchars;
+			CWT_CHAR *s;
 
-		if (CwtType_TIME == cwt_type) {
-			__str_ns->strPtime();
-			cwtm.hour     = mytm->hour;
-			cwtm.min      = mytm->minute;
-			cwtm.sec      = mytm->second;
-			cwtm.sec_part = 0;
-		} else if (CwtType_DATE == cwt_type) {
+			bytes = sqlite3_column_text(_STH(sth), pcol_info->index);
+			s = s3_dbd_decode_n(sth->dbh, (const char*)bytes, strlen((const char*)bytes));
+			nchars = __str_ns->strLen(s);
+			cwt_bzero(&cwtm, sizeof(CWT_TIME));
 
-		} else {
-
+			if (CwtType_TIME == cwt_type && nchars == 6) {  /* format 'hhmmss' */
+				__str_ns->strPtime(s, _T("%H%M%S"), &tm);
+				cwtm.hour     = tm.tm_hour;
+				cwtm.min      = tm.tm_min;
+				cwtm.sec      = tm.tm_sec;
+				cwtm.sec_part = 0;
+				ok = __ut_ns->setTIME(ut, &cwtm);
+			} else if (CwtType_DATE == cwt_type && nchars == 8) { /* format 'YYYYMMDD' */
+				__str_ns->strPtime(s, _T("%Y%m%d"), &tm);
+				cwtm.year     = tm.tm_year;
+				cwtm.mon      = tm.tm_mon;
+				cwtm.day      = tm.tm_mday;
+				ok = __ut_ns->setDATE(ut, &cwtm);
+			} else if (CwtType_DATETIME == cwt_type && nchars == 14) { /* format 'YYYYMMDDhhmmss' */
+				__str_ns->strPtime(s, _T("%Y%m%d%H%M%S"), &tm);
+				cwtm.year     = tm.tm_year;
+				cwtm.mon      = tm.tm_mon;
+				cwtm.day      = tm.tm_mday;
+				cwtm.hour     = tm.tm_hour;
+				cwtm.min      = tm.tm_min;
+				cwtm.sec      = tm.tm_sec;
+				cwtm.sec_part = 0;
+				ok = __ut_ns->setDATETIME(ut, &cwtm);
+			} else {
+				_STH_CAST(sth)->errno = Cwt_Err_BadVal;
+				__string_ns->sprintf(_STH_CAST(sth)->errorstr, _Tr("Bad value for date/time"));
+			}
+			CWT_FREE(s);
 		}
+		break;
 
-		if (CwtType_DATE == cwt_type || CwtType_DATETIME == cwt_type) {
-			cwtm.year     = mytm->year;
-			cwtm.mon      = mytm->month;
-			cwtm.day      = mytm->day;
+	case CwtType_CHAR:
+		int ch;
+		ch = sqlite3_column_int(_STH(sth), pcol_info->index);
+		if (ch >= CWT_CHAR_MIN && ch <= CWT_CHAR_MAX)
+			ok = __ut_ns->setCHAR(ut, (CWT_CHAR)ch);
+		else
+			; /* error */
+		break;
+
+	case CwtType_SHORT:
+		int i;
+		i = sqlite3_column_int(_STH(sth), pcol_info->index);
+		if (i >= CWT_SHORT_MIN && i <= CWT_SHORT_MAX)
+			ok = __ut_ns->setSHORT(ut, (SHORT)i);
+		else
+			; /* error */
+		break;
+
+	case CwtType_INT:
+		ok = __ut_ns->setINT(ut, sqlite3_column_int(_STH(sth), pcol_info->index));
+		break;
+
+	case CwtType_LONGLONG:
+		ok = __ut_ns->setLONGLONG(ut, (LONGLONG)sqlite3_column_int64(_STH(sth), pcol_info->index));
+		break;
+
+	case CwtType_FLOAT:
+		ok = __ut_ns->setFLOAT(ut, (float)sqlite3_column_double(_STH(sth), pcol_info->index));
+		break;
+
+	case CwtType_DOUBLE:
+		ok = __ut_ns->setDOUBLE(ut, sqlite3_column_double(_STH(sth), pcol_info->index));
+		break;
+
+	case CwtType_TEXT: {
+			const unsigned char *bytes;
+			CWT_CHAR *s;
+
+			bytes = sqlite3_column_text(_STH(sth), pcol_info->index);
+			CWT_CHAR *s = s3_dbd_decode_n(sth->dbh, (const char*)bytes, strlen((const char*)bytes));
+			ok = __ut_ns->setTEXT(ut, s, __str_ns->strLen(s));
+			CWT_FREE(s);
 		}
+		break;
 
-		ok = __ut_ns->set(ut, cwt_type, &cwtm, sizeof(CWT_TIME));
-	} else if( CwtType_TEXT == cwt_type ) {
-		CWT_CHAR *s = sth->dbh->driver()->decode_n(sth->dbh, (const char*)rbind->buffer, *rbind->length);
-		ok = __ut_ns->setTEXT(ut, s, *rbind->length);
-		CWT_FREE(s);
-	} else {
-		ok = __ut_ns->set(ut, cwt_type, rbind->buffer, *rbind->length);
+	case CwtType_BLOB: {
+			const void *bytes;
+			int nbytes;
+
+			bytes = sqlite3_column_blob(_STH(sth), pcol_info->index);
+			nbytes = sqlite3_column_bytes(_STH(sth), pcol_info->index);
+			ok = __ut_ns->setBLOB(ut, bytes, (size_t)nbytes);
+		}
+		break;
+
+	default:
+		_STH_CAST(sth)->errno = Cwt_Err_BadVal;
+		__string_ns->sprintf(_STH_CAST(sth)->errorstr
+				, _Tr("Bad type of fetched value for column '%s'"), col);
+		break;
 	}
 
 	return ok;
@@ -799,20 +909,178 @@ static ULONGLONG s3_stmt_num_rows (CwtStatement *sth)
 	return nrows;
 }
 
-static CwtDBI_RC s3_stmt_stmt_err (CwtStatement *sth)
-{
-	CWT_ASSERT(sth);
-	return SQLITE_OK == _STH_CAST(sth)->errno
-			? __str_ns->constEmptyStr()
-			: __string_ns->cstr(&_STH_CAST(sth)->errorstr);
-}
-
-static const CWT_CHAR*  s3_stmt_stmt_strerror (CwtStatement *sth)
+static CwtErrno s3_stmt_err (CwtStatement *sth)
 {
 	CWT_ASSERT(sth);
 	return _STH_CAST(sth)->errno;
 }
 
+static const CWT_CHAR*  s3_stmt_strerror (CwtStatement *sth)
+{
+	CWT_ASSERT(sth);
+	return Cwt_NoError == _STH_CAST(sth)->errno
+			? __str_ns->constEmptyStr()
+			: __string_ns->cstr(&_STH_CAST(sth)->errorstr);
+}
+
+static BOOL s3_stmt_bind_by_index (CwtStatement *sth, size_t index, CwtUniType *ut)
+{
+	/* Real bind made while setting value */
+	CWT_UNUSED3(sth, index, ut);
+	return TRUE;
+}
+
+
+
+static size_t s3_stmt_bind_parms_count(CwtStatement *sth)
+{
+	CWT_ASSERT(sth);
+
+	/* 'sqlite3_bind_parameter_count'
+	 * routine actually returns the index of the largest (rightmost) parameter */
+	return (size_t)sqlite3_bind_parameter_count(_STH(sth)) + 1;
+}
+
+
+static BOOL s3_stmt_bind_parms_bounds(CwtStatement *sth, int index)
+{
+	if( index < 0 || index > sqlite3_bind_parameter_count(_STH(sth)) )
+		return FALSE;
+
+	return TRUE;
+}
+
+
+static BOOL s3_stmt_set_parm (CwtStatement *sth, CwtUniType *ut, const void *copy, size_t sz)
+{
+	int rc;
+	char buf[20]; /*YYYYMMDDhhmmss.SSS*/
+	BOOL ok = TRUE;
+
+	CWT_ASSERT(sth);
+
+	/* Unbound parameters are interpreted as NULL. */
+	if (!ut)
+		return TRUE;
+
+	ok = __ut_ns->set(ut, ut->type, copy, sz);
+
+	if (ok) {
+		switch (ut->type) {
+		case CwtType_BOOL:
+			/* Boolean values are stored as integers 0 (false) and 1 (true). */
+			rc = sqlite3_bind_int(_STH(sth)
+					, (int)index
+					, __ut_ns->toBOOL(ut, &ok) == TRUE ? 1 : 0);
+			break;
+		case CwtType_CHAR:
+		case CwtType_SBYTE:
+		case CwtType_BYTE:
+		case CwtType_SHORT:
+		case CwtType_USHORT:
+		case CwtType_INT:
+		case CwtType_UINT:
+			rc = sqlite3_bind_int(_STH(sth)
+					, (int)index
+					, __ut_ns->toINT(ut, &ok));
+			break;
+		case CwtType_LONG:
+		case CwtType_ULONG:
+		case CwtType_LONGLONG:
+		case CwtType_ULONGLONG:
+			rc = sqlite3_bind_int64(_STH(sth)
+					, (int)index
+					, __ut_ns->toLONGLONG(ut, &ok));
+			break;
+		case CwtType_FLOAT:
+		case CwtType_DOUBLE:
+			rc = sqlite3_bind_double(_STH(sth)
+					, (int)index
+					, __ut_ns->toDOUBLE(ut, &ok));
+			break;
+
+		case CwtType_TEXT: {
+				CWT_CHAR *orig;
+				char *utf8;
+
+				orig = __ut_ns->toTEXT(ut, &ok);
+				if (ok && orig) {
+					utf8 = s3_dbd_encode(_DBH(sth->dbh), orig);
+
+					/* utf8 will be freed automatically (see last argument)*/
+					rc = sqlite3_bind_text(_STH(sth), (int)index, utf8, strlen(utf8), cwt_free);
+				}
+
+				CWT_FREE(orig);
+			}	if (!ok) {
+				_STH_CAST(sth)->errno = Cwt_Err_BadVal;
+				__string_ns->sprintf(_STH_CAST(sth)->errorstr
+						, _Tr("Bad bind value with index %u"), index);
+				return FALSE;
+			}
+
+			break;
+
+		case CwtType_BLOB: {
+				size_t sz;
+				const void *bytes;
+
+				bytes = __ut_ns->toBLOB(ut, &sz);
+				CWT_ASSERT(sz <= CWT_INT_MAX);
+				rc = sqlite3_bind_blob(_STH(sth), (int)index, bytes, (int)sz, SQLITE_STATIC);
+			}
+			break;
+
+		case CwtType_TIME: {
+				CWT_TIME tm;
+				__ut_ns->toTIME(ut, &tm, &ok);
+				strftime(buf
+					, "%H%M%S"
+					, tm.hour, tm.min, tm.sec);
+				rc = sqlite3_bind_text(_STH(sth), (int)index, buf, strlen(buf), SQLITE_STATIC);
+			}
+			break;
+		case CwtType_DATE: {
+				CWT_TIME tm;
+				__ut_ns->toDATE(ut, &tm, &ok);
+				strftime(buf
+					, "%Y%m%d"
+					, tm.year, tm.mon, tm.hour);
+				rc = sqlite3_bind_text(_STH(sth), (int)index, buf, strlen(buf), SQLITE_STATIC);
+			}
+			break;
+
+		case CwtType_DATETIME: {
+				CWT_TIME tm;
+				__ut_ns->toDATETIME(ut, &tm, &ok);
+				strftime(buf
+					, "%Y%m%d%H%M%S"
+					, tm.year, tm.mon, tm.hour
+					, tm.hour, tm.min, tm.sec);
+				rc = sqlite3_bind_text(_STH(sth), (int)index, buf, strlen(buf), SQLITE_STATIC);
+			}
+			break;
+
+		default:
+			ok = FALSE;
+			break;
+		}
+	}
+
+	if (!ok) {
+		_STH_CAST(sth)->errno = Cwt_Err_BadVal;
+		__string_ns->sprintf(_STH_CAST(sth)->errorstr
+				, _Tr("Bad bind value with index %u"), index);
+		return FALSE;
+	}
+
+	if (SQLITE_OK != rc) {
+		__s3_assign_error_sth (rc, sth);
+		return FALSE;
+	}
+
+	return TRUE;
+}
 
 static void __s3_destroy(CwtSqliteDBHandler *sdbh)
 {
@@ -821,7 +1089,7 @@ static void __s3_destroy(CwtSqliteDBHandler *sdbh)
 	CWT_FREE(sdbh->csname);
 }
 
-static void  __s3_assign_error(int rc_native, const char *errstr_utf8, CwtDBI_RC *perrno, CwtString *errstr)
+static void  __s3_assign_error(int rc_native, const char *errstr_utf8, CwtErrno *perrno, CwtString *errstr)
 {
 	CWT_CHAR *errstr_decoded;
 
@@ -834,8 +1102,22 @@ static void  __s3_assign_error(int rc_native, const char *errstr_utf8, CwtDBI_RC
 		CWT_FREE(errstr_decoded);
 	}
 
-	if (perrno)
-		*perrno = (CwtDBI_RC)rc_native;
+	if (perrno) {
+		int i, n;
+		*perrno = Cwt_Err_DBI;
+
+		n = sizeof(__s3_errno_map)/sizeof(__s3_errno_map[0]);
+		for (i = 0; i < n; ++i) {
+			if (rc_native == __s3_errno_map[i].s3_ret_code) {
+				*perrno = __s3_errno_map[i].errno;
+				break;
+			}
+		}
+
+		if (*perrno == Cwt_Err_DBI) {
+			cwt_logger_ns()->warn(_Tr("Native Sqlite3 error is not mapped yet: %d"), rc_native);
+		}
+	}
 }
 
 static inline void __s3_assign_error_dbh (int rc_native, CwtDBHandler *dbh)
@@ -898,484 +1180,3 @@ static CwtTypeEnum __s3_from_sqlite3_type (const char *s3_type_utf8, int s3_type
 
 	return cwt_type;
 }
-
-#ifdef __COMMENT__
-
-#include <sqlite3.h>
-#include <jq/Defs.hpp>
-#include <jq/String.hpp>
-#include <jq/DBI.hpp>
-
-
-#define MAX_RETRY_COUNT	10
-#define MAX_RETRY_SLEEP	1000 //  1 second
-#define MAX_SQL_TIMEOUT 10000 // 10 seconds
-
-
-extern "C" jq::SqlHandler* New( const jq::String& dsn );
-extern "C" bool Free( jq::SqlHandler* );
-
-
-class SqlValue : public jq::SqlValue
-{
-public:
-	SqlValue() : type(jq::SqlNull) { data.blob_value = 0; }
-	~SqlValue() { if(type == jq::SqlText && data.text_value ) delete data.text_value; }
-
-	jq::SqlType type;
-	union {
-		int           int_value;
-		double        float_value;
-		jq::String*   text_value;
-		void*         blob_value;
-	} data;
-};
-
-
-#define CHECK_FOR_CONNECTION	if(!this->m_dbh) {                             \
-	throw jq::SqlException(jq::DBI::SQL_DISCONNECTED, _Tr("database is disconnected")); }
-
-#define CHECK_FOR_STATEMENT  	if(!this->m_stmt) {                            \
-		throw jq::SqlException(jq::DBI::SQL_NULLPTR, _Tr("bad statement")); }
-
-#define CHECK_FOR_RANGE(i)      if( (i) < 0 && (i) >= this->column_count() ) { \
-		throw jq::SqlException(jq::DBI::SQL_RANGE, _Tr("column index is out of range")); }
-
-
-
-
-class SqlHandler;
-
-class SqlStatement : public jq::SqlStatement
-{
-	friend class SqlHandler;
-
-protected:
-	SqlStatement() {}
-
-public:
-	SqlStatement( sqlite3* dbh ) : m_dbh(dbh),  m_stmt(0) {}
-	SqlStatement( sqlite3* dbh, sqlite3_stmt* stmt ): m_dbh(dbh), m_stmt(stmt) {}
-	virtual ~SqlStatement() { finish(); }
-
-	jq::SqlResult bind(int i, int val);
-	jq::SqlResult bind(int i, double val);
-	jq::SqlResult bind(int i, const jq::String& val);
-	jq::SqlResult bind(int i, const void* val, int sz);
-
-	int            column_int(int i);
-	double         column_float(int i);
-	jq::String     column_text(int i);
-	const void*    column_blob(int i);
-	jq::SqlValue*  column_value(int i, jq::SqlValue* val  = 0 );
-
-
-	int            column_bytes(int i);
-	jq::SqlType    column_type(int i);
-	int            column_count();
-
-	//static  SqlResult exec( const jq::String& stmt );
-	bool exec();
-
-	bool fetchRow();
-
-	void reset() { CHECK_FOR_STATEMENT; sqlite3_reset(m_stmt); }
-
-	void finish() { if(m_stmt) sqlite3_finalize(m_stmt); }
-private:
-	sqlite3* m_dbh;
-	sqlite3_stmt* m_stmt;
-};
-
-
-class SqlHandler : public jq::SqlHandler
-{
-protected:
-
-
-public:
-	SqlHandler(): m_dbh(0) {}
-	virtual ~SqlHandler();
-
-	jq::SqlResult connect( const jq::String &dsn, bool create = false );
-	jq::SqlResult disconnect();
-
-	bool isConnected() const { return m_dbh != 0 ? true : false; }
-	virtual jq::StringList tables() { return jq::StringList(); }
-	bool tableExists( const jq::String &name );
-
-	bool info( jq::String* dsn, jq::String* dbname );
-
-	/**
-	 * Prepares the statement
-	 */
-	jq::SqlStatement* prepare( const jq::String &stmt );
-	jq::SqlResult prepare( const jq::String &stmt, jq::SqlStatement* st );
-
-	/**
-	 * Starts the transaction
-	 */
-	bool begin();
-
-	/**
-	 * Ends the transaction
-	 */
-	bool end();
-
-	/**
-	 * Commits the transaction
-	 */
-	bool commit();
-
-	/**
-	 * Rollbacks (undo) the transacion
-	 */
-	bool rollback();
-
-	jq::SqlResult exec(const jq::String &sql);
-
-	void free( jq::SqlStatement* stmt );
-
-private:
-	sqlite3* m_dbh;       // Sqlite3 database handler
-	jq::String m_path;  // Path to the database
-};
-
-
-
-
-jq::SqlResult SqlStatement::bind(int i, int val)
-{
-	CHECK_FOR_STATEMENT;
-
-	int rc = sqlite3_bind_int(m_stmt, i, val);
-	if( rc != SQLITE_OK )
-		throw jq::SqlException(SQL_ERROR(rc), _Tr("bind integer failed"));
-
-	return jq::DBI::SQL_SUCCESS;
-}
-
-jq::SqlResult SqlStatement::bind(int i, double val)
-{
-	CHECK_FOR_STATEMENT;
-
-	int rc = sqlite3_bind_double(m_stmt, i, val);
-	if( rc != SQLITE_OK )
-		throw jq::SqlException(SQL_ERROR(rc), _Tr("bind double failed"));
-
-	return jq::DBI::SQL_SUCCESS;
-}
-
-jq::SqlResult SqlStatement::bind(int i, const jq::String& val)
-{
-	CHECK_FOR_STATEMENT;
-
-	int rc = sqlite3_bind_text( m_stmt, i, (const char*)val, val.length(), 0 );
-	if( rc != SQLITE_OK )
-		throw jq::SqlException(SQL_ERROR(rc), _Tr("bind string failed"));
-
-	return jq::DBI::SQL_SUCCESS;
-}
-
-jq::SqlResult SqlStatement::bind(int i, const void* val, int sz )
-{
-	CHECK_FOR_STATEMENT;
-
-	int rc = sqlite3_bind_blob( m_stmt, i, val, sz, 0 );
-	if( rc != SQLITE_OK )
-		throw jq::SqlException(SQL_ERROR(rc), _Tr("bind blob failed"));
-
-	return jq::DBI::SQL_SUCCESS;
-}
-
-
-int SqlStatement::column_int(int i)
-{
-	CHECK_FOR_STATEMENT;
-	CHECK_FOR_RANGE(i);
-	return sqlite3_column_int(m_stmt, i);
-}
-
-double SqlStatement::column_float(int i)
-{
-	CHECK_FOR_STATEMENT;
-	CHECK_FOR_RANGE(i);
-	return sqlite3_column_double(m_stmt, i);
-}
-
-jq::String SqlStatement::column_text(int i)
-{
-	CHECK_FOR_STATEMENT;
-	CHECK_FOR_RANGE(i);
-	return jq::String((char*)sqlite3_column_text(m_stmt, i));
-}
-
-const void* SqlStatement::column_blob(int i)
-{
-	CHECK_FOR_STATEMENT;
-	CHECK_FOR_RANGE(i);
-	return sqlite3_column_blob(m_stmt, i);
-}
-
-
-jq::SqlValue* SqlStatement::column_value(int i, jq::SqlValue* val )
-{
-	CHECK_FOR_STATEMENT;
-	CHECK_FOR_RANGE(i);
-
-	SqlValue* v;
-
-	if( !val ) {
-		v = new SqlValue();
-	} else {
-		v = dynamic_cast<SqlValue*>(val);
-	}
-
-	v->type = column_type(i);
-	switch( v->type ) {
-		case jq::SqlInt:     v->data.int_value   = column_int(i);   break;
-		case jq::SqlFloat:   v->data.float_value = column_float(i); break;
-		case jq::SqlText:    v->data.text_value  = new jq::String(column_text(i));  break;
-		case jq::SqlBlob:    v->data.blob_value  = const_cast<void*>(column_blob(i));  break;
-		case jq::SqlNull:
-		default: v->data.blob_value  = 0; break;
-	}
-	return dynamic_cast<jq::SqlValue*>(v);
-}
-
-int SqlStatement::column_bytes(int i)
-{
-	CHECK_FOR_STATEMENT;
-	CHECK_FOR_RANGE(i);
-	return sqlite3_column_bytes(m_stmt, i);
-}
-
-jq::SqlType SqlStatement::column_type(int i)
-{
-	CHECK_FOR_STATEMENT;
-	CHECK_FOR_RANGE(i);
-
-	switch(sqlite3_column_type(m_stmt, i)) {
-		case SQLITE_INTEGER: return jq::SqlInt;
-		case SQLITE_FLOAT:   return jq::SqlFloat;
-		case SQLITE_TEXT:    return jq::SqlText;
-		case SQLITE_BLOB:    return jq::SqlBlob;
-		case SQLITE_NULL:    return jq::SqlNull;
-	}
-
-	return jq::SqlUnknown;
-}
-
-
-int SqlStatement::column_count()
-{
-	CHECK_FOR_STATEMENT;
-	return sqlite3_column_count(m_stmt);
-}
-
-
-bool SqlStatement::exec()
-{
-	CHECK_FOR_STATEMENT;
-	int rc;
-	int nretries = MAX_RETRY_COUNT;
-
-	sqlite3_reset( m_stmt );
-	do {
-		rc = sqlite3_step( m_stmt );
-
-		if( rc == SQLITE_BUSY ) {
-			if( nretries++ > MAX_RETRY_COUNT ) {
-				break;
-			} else {
-				sqlite3_sleep(MAX_RETRY_SLEEP);
-			}
-		}
-	} while ( rc == SQLITE_BUSY );
-
-	if( rc == SQLITE_DONE ) {
-		return true;
-	}
-	if( rc == SQLITE_ROW ) {
-		return true;
-	}
-	throw jq::SqlException(SQL_ERROR(rc), sqlite3_errmsg(m_dbh));
-	return false;
-}
-
-
-bool SqlStatement::fetchRow()
-{
-	CHECK_FOR_STATEMENT;
-
-	int rc;
-	int nretries = MAX_RETRY_COUNT;
-
-	do {
-		rc = sqlite3_step( m_stmt );
-
-		if( rc == SQLITE_BUSY ) {
-			if( nretries++ > MAX_RETRY_COUNT ) {
-				break;
-			} else {
-				sqlite3_sleep(MAX_RETRY_SLEEP);
-			}
-		}
-	} while ( rc == SQLITE_BUSY );
-
-	if( rc == SQLITE_ROW ) {
-		return true;
-	}
-
-	if( rc == SQLITE_DONE ) {
-		return false;
-	}
-
-	throw jq::SqlException(SQL_ERROR(rc), sqlite3_errmsg(m_dbh));
-	return false;
-}
-
-
-SqlHandler::~SqlHandler()
-{
-	disconnect();
-/*	if( m_hdlib ) {
-		dlclose(m_hdlib);
-		m_hdlib = 0;
-	}
-*/}
-
-
-
-jq::SqlStatement* SqlHandler::prepare( const jq::String &stmt )
-{
-	CHECK_FOR_CONNECTION;
-
-	SqlStatement* st = new SqlStatement(m_dbh);
-	this->prepare(stmt, st);
-	return dynamic_cast<jq::SqlStatement*>(st);
-}
-
-
-jq::SqlResult SqlHandler::prepare( const jq::String &sql, jq::SqlStatement* st )
-{
-	CHECK_FOR_CONNECTION;
-	if( !st ) {
-		throw jq::SqlException(jq::DBI::SQL_NULLPTR, _Tr("statement is null"));
-	}
-
-	sqlite3_stmt *stmt;
-	int rc = sqlite3_prepare_v2( m_dbh, sql, -1, &stmt, 0 );
-	if( rc != SQLITE_OK ) {
-		throw jq::SqlException(SQL_ERROR(rc), sqlite3_errmsg( m_dbh ));
-	}
-
-	SqlStatement* _st = dynamic_cast<SqlStatement*>(st);
-	_st->finish();
-	_st->m_dbh = m_dbh;
-	_st->m_stmt = stmt;
-	return jq::DBI::SQL_SUCCESS;
-}
-
-
-
-bool SqlHandler::tableExists( const jq::String &name )
-{
-	CHECK_FOR_CONNECTION;
-
-	jq::String sql;
-	sql.sprintf("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '%s'", (const char*)name);
-	SqlStatement stmt(m_dbh);
-	prepare(sql, &stmt);
-	stmt.exec();
-	int c = stmt.column_int(0);
-	return ( c > 0 );
-}
-
-
-bool SqlHandler::info( jq::String* dsn, jq::String* dbname )
-{
-	if( dsn ) *dsn = m_path;
-	if( dbname) *dbname = m_path;
-	return true;
-}
-
-static bool __transaction_stage(sqlite3* dbh, const char* sql )
-{
-    char* errstr;
-	int rc = sqlite3_exec(dbh, sql, 0, 0, &errstr);
-	if( rc != SQLITE_OK ) {
-		jq::String ex;
-		ex.sprintf("transaction %s failed: %s", sql, errstr);
-		sqlite3_free(errstr);
-		throw jq::SqlException(SQL_ERROR(rc), ex);
-	}
-	sqlite3_free(errstr);
-	return true;
-}
-
-
-bool SqlHandler::begin()
-{
-	CHECK_FOR_CONNECTION;
-	return __transaction_stage(m_dbh, "BEGIN" );
-}
-
-
-bool SqlHandler::end()
-{
-	CHECK_FOR_CONNECTION;
-	return __transaction_stage(m_dbh, "END" );}
-
-
-bool SqlHandler::commit()
-{
-	CHECK_FOR_CONNECTION;
-	return __transaction_stage(m_dbh, "COMMIT" );}
-
-
-bool SqlHandler::rollback()
-{
-	CHECK_FOR_CONNECTION;
-	return __transaction_stage(m_dbh, "ROLLBACK" );
-}
-
-
-jq::SqlResult SqlHandler::exec(const jq::String &sql)
-{
-	char* errstr;
-	int rc = sqlite3_exec( m_dbh, sql, 0, 0, &errstr );
-	if( rc != SQLITE_OK ) {
-		jq::String ex;
-		ex.sprintf(_Tr("sql execution failed: result: %d: %s"), rc, errstr);
-		sqlite3_free(errstr);
-		throw jq::SqlException(SQL_ERROR(rc), ex);
-	}
-	sqlite3_free(errstr);
-	return jq::DBI::SQL_SUCCESS;
-}
-
-void SqlHandler::free( jq::SqlStatement *stmt )
-{
-	if( stmt )
-		delete dynamic_cast<SqlStatement*>(stmt);
-}
-
-
-jq::SqlHandler* New( const jq::String &dsn )
-{
-	SqlHandler* dbh = new SqlHandler();
-	dbh->connect(dsn, true);
-//	DEBUG("connect(): DSN: %s", (const char*)dsn);
-	return dynamic_cast<jq::SqlHandler*>(dbh);
-}
-
-bool Free( jq::SqlHandler *dbh )
-{
-	if( dbh ) {
-		dbh->disconnect();
-		delete dynamic_cast<SqlHandler*>(dbh);
-	}
-	return true;
-}
-#endif
