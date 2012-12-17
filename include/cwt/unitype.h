@@ -72,7 +72,7 @@ typedef struct _CwtUniTypeNS {
 	CWT_TIME*   (*toTIME)        (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
 	CWT_TIME*   (*toDATE)        (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
 	CWT_TIME*   (*toDATETIME)    (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
-	CWT_CHAR*   (*toString)      (CwtUniType *ut, CwtString *str);
+	const CWT_CHAR* (*toString)  (CwtUniType *ut, CwtString *str);
 } CwtUniTypeNS;
 
 EXTERN_C_BEGIN

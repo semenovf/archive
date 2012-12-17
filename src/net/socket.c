@@ -138,18 +138,18 @@ static void __socket_close (CwtSocket *sd)
 	if (sd->sockfd > 0) {
 
 		/* leave multicast receiver socket group */
-		if( sd->type == Cwt_McastSocket && sd->is_listener ) {
+		if( Cwt_McastSocket == sd->type && sd->is_listener ) {
 			CwtMcastSocket *msd = (CwtMcastSocket*)sd;
 			if( setsockopt (msd->sockfd, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&msd->group.mreq, sizeof(msd->group.mreq)) < 0 ) {
-		        __logger->error(_Tr("dropping multicast group")
+		        __logger->error(_Tr("Dropping multicast group")
 		        	_CWT_SOCKET_LOG_FMTSUFFIX
 		        	, _CWT_SOCKET_LOG_ARGS);
 			}
 		}
 
-		if (sd->type == Cwt_TcpSocket) {
+		if (Cwt_TcpSocket == sd->type) {
 			if (shutdown(sd->sockfd, SHUT_RDWR) != 0) {
-				__logger->error(_Tr("failed to shutdown socket")
+				__logger->error(_Tr("Failed to shutdown socket")
 					_CWT_SOCKET_LOG_FMTSUFFIX
 					, _CWT_SOCKET_LOG_ARGS);
 			}
@@ -171,10 +171,10 @@ static void __socket_close (CwtSocket *sd)
 
 		sd->sockfd = -1;
 
-		if (sd->type == Cwt_LocalSocket && sd->is_listener) {
+		if (Cwt_LocalSocket == sd->type && sd->is_listener) {
 			CWT_CHAR *localPath = __cwtSocketNS.localPath(sd);
 			if( !cwt_filesystem_ns()->unlink(localPath) ) {
-				__logger->error(_Tr("unable to unlink local socket: %s")
+				__logger->error(_Tr("Unable to unlink local socket: %s")
 					_CWT_SOCKET_LOG_FMTSUFFIX
 					, localPath
 					, _CWT_SOCKET_LOG_ARGS);

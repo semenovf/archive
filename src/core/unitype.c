@@ -60,7 +60,7 @@ static const void*      __toBLOB       (CwtUniType *ut, size_t *sz);
 static CWT_TIME*        __toTIME       (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
 static CWT_TIME*        __toDATE       (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
 static CWT_TIME*        __toDATETIME   (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
-static CWT_CHAR*        ut_to_string   (CwtUniType *ut, CwtString *str);
+static const CWT_CHAR*  ut_to_string   (CwtUniType *ut, CwtString *str);
 
 /* Helper function */
 static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size_t sz);

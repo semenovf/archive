@@ -223,8 +223,7 @@ static const CWT_CHAR* str_strerror(int errn)
 		__errorstr = NULL;
 	}
 
-#ifdef CWT_UNICODE
-#	ifdef CWT_CC_MSC
+#ifdef CWT_CC_MSC
 	{
     LPVOID lpMsgBuf;
 
@@ -242,11 +241,12 @@ static const CWT_CHAR* str_strerror(int errn)
     LocalFree(lpMsgBuf);
     __cwtStrNS.chomp(__errorstr);
 	}
-#	else
-	__errorstr = __cwtStrNS.strDup(CWT_ISO_CPP_NAME(wcserror)(errn));
-#	endif
 #else
+#	ifdef CWT_UNICODE
+	__errorstr = __cwtStrNS.strDup(CWT_ISO_CPP_NAME(wcserror)(errn));
+#	else
 	__errorstr = __cwtStrNS.strDup(strerror(errn));
+#	endif
 #endif
 
 	return __errorstr;
