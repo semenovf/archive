@@ -69,7 +69,7 @@ unsigned char *yield, *p;
 int i;
 
 #ifndef DFTABLES
-yield = (unsigned char*)cwtMalloc(tables_length);
+yield = (unsigned char*)cwt_malloc(tables_length);
 #else
 yield = (unsigned char*)malloc(tables_length);
 #endif

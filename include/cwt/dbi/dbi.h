@@ -12,11 +12,12 @@
 #define __CWT_DBI_H__
 
 #include <cwt/types.h>
+#include <cwt/errno.h>
 #include <cwt/unitype.h>
 #include <cwt/strlist.h>
 #include <cwt/dbi/ddi.h>
 
-typedef INT32 CwtDBI_RC;
+/*typedef INT32 CwtDBI_RC;*/
 
 typedef enum CwtSqlTypeEnum {
 	  CwtSql_TINYINT
@@ -60,10 +61,11 @@ typedef struct _CwtDBHandler {
 	void            (*close)         (CwtStatement*);
 	BOOL            (*execute)       (CwtStatement*);
 	ULONGLONG       (*lastId)        (CwtStatement*);
-	CwtDBI_RC       (*err)           (CwtStatement*);
+	CwtErrno        (*err)           (CwtStatement*);
 	const CWT_CHAR* (*strerror)      (CwtStatement*);
 	BOOL            (*bindByIndex)   (CwtStatement*, size_t index, CwtUniType *ut);
 	size_t          (*bindParmsCount)(CwtStatement*);
+	BOOL            (*isBindParmsBounds)(CwtStatement*, int index);
 	BOOL            (*setParm)       (CwtStatement*, CwtUniType *ut, const void *copy, size_t sz);
 	ULONGLONG       (*rows)          (CwtStatement*);
 	ULONGLONG       (*size)          (CwtStatement*);
@@ -80,7 +82,7 @@ typedef struct _CwtDBIDriver
 	void            (*attr)          (CwtDBHandler*, const CWT_CHAR*, void*);
 	BOOL            (*setAutoCommit) (CwtDBHandler*, BOOL);
 	BOOL            (*autoCommit)    (CwtDBHandler*);
-	CwtDBI_RC       (*err)           (CwtDBHandler*);
+	CwtErrno        (*err)           (CwtDBHandler*);
 	const CWT_CHAR* (*strerror)      (CwtDBHandler*);
 	const CWT_CHAR* (*state)         (CwtDBHandler*);
 	BOOL            (*query)         (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
@@ -111,7 +113,7 @@ typedef struct CwtDBI
 	void            (*attr)           (CwtDBHandler*, const CWT_CHAR*, void*);
 	BOOL            (*setAutoCommit)  (CwtDBHandler*, BOOL);
 	BOOL            (*autoCommit)     (CwtDBHandler*);
-	CwtDBI_RC       (*err)            (CwtDBHandler*);
+	CwtErrno        (*err)            (CwtDBHandler*);
 	const CWT_CHAR* (*strerror)       (CwtDBHandler*);
 	const CWT_CHAR* (*state)          (CwtDBHandler*);
 	BOOL            (*query)          (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */

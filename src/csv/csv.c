@@ -357,7 +357,7 @@ static void csv_begin(CwtCsvContext *h, CwtChannel *pchan)
 	ph->csvData.pchan   = pchan;
 	ph->line            = 0;
 
-	ph->csvData.columns = __htNS->create(__htNS->strHash, __htNS->streq, cwtFree, cwtFree);
+	ph->csvData.columns = __htNS->create(__htNS->strHash, __htNS->streq, cwt_free, cwt_free);
 }
 
 static size_t csv_header(CwtCsvContext *h)

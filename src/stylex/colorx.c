@@ -177,7 +177,7 @@ void _cwt_colorx_init(void)
 	size_t n;
 
 	__cwt_color_table = hash_table_new(string_hash, string_equal);
-	hash_table_register_free_functions(__cwt_color_table, cwtFree, NULL);
+	hash_table_register_free_functions(__cwt_color_table, cwt_free, NULL);
 
 	n = sizeof(__cwt_color_names)/sizeof(__cwt_color_names[0]);
 	for( i = 0; i < n; i++  ) {

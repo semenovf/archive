@@ -326,7 +326,7 @@ char *p;
 for (i = 0; i < double_count; i += 2)
   size += sizeof(char *) + ovector[i+1] - ovector[i] + 1;
 
-stringlist = (char **)cwtMalloc(size);
+stringlist = (char **)cwt_malloc(size);
 if (stringlist == NULL) return PCRE_ERROR_NOMEMORY;
 
 *listptr = (const char **)stringlist;
@@ -399,7 +399,7 @@ if (stringnumber < 0 || stringnumber >= stringcount)
   return PCRE_ERROR_NOSUBSTRING;
 stringnumber *= 2;
 yield = ovector[stringnumber+1] - ovector[stringnumber];
-substring = (char *)cwtMalloc(yield + 1);
+substring = (char *)cwt_malloc(yield + 1);
 if (substring == NULL) return PCRE_ERROR_NOMEMORY;
 memcpy(substring, subject + ovector[stringnumber], yield);
 substring[yield] = 0;

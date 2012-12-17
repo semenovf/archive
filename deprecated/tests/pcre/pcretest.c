@@ -996,7 +996,7 @@ while (!done)
     true_study_size =
       (sbuf[4] << 24) | (sbuf[5] << 16) | (sbuf[6] << 8) | sbuf[7];
 
-    re = (real_pcre *)cwtMalloc(true_size);
+    re = (real_pcre *)cwt_malloc(true_size);
     regex_gotten_store = gotten_store;
 
     if (fread(re, 1, true_size, f) != true_size) goto FAIL_READ;
@@ -1030,7 +1030,7 @@ while (!done)
       {
       pcre_study_data *psd;
 
-      extra = (pcre_extra *)cwtMalloc(sizeof(pcre_extra) + true_study_size);
+      extra = (pcre_extra *)cwt_malloc(sizeof(pcre_extra) + true_study_size);
       extra->flags = PCRE_EXTRA_STUDY_DATA;
 
       psd = (pcre_study_data *)(((char *)extra) + sizeof(pcre_extra));

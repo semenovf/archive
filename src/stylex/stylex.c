@@ -35,10 +35,10 @@ void cwt_stylex_init(void)
 	__cwt_class_table = hash_table_new(string_hash, string_equal);
 	__cwt_id_table    = hash_table_new(string_hash, string_equal);
 
-	hash_table_register_free_functions(__cwt_media_table, cwtFree, NULL);
-	hash_table_register_free_functions(__cwt_wtype_table, cwtFree, NULL);
-	hash_table_register_free_functions(__cwt_class_table, cwtFree, NULL);
-	hash_table_register_free_functions(__cwt_id_table,    cwtFree, NULL);
+	hash_table_register_free_functions(__cwt_media_table, cwt_free, NULL);
+	hash_table_register_free_functions(__cwt_wtype_table, cwt_free, NULL);
+	hash_table_register_free_functions(__cwt_class_table, cwt_free, NULL);
+	hash_table_register_free_functions(__cwt_id_table,    cwt_free, NULL);
 
 	_cwt_colorx_init();
 }

@@ -159,7 +159,7 @@ CwtHashTable* generate_hash_table(void)
 	 * string versions of the integer values 0..9999 to ensure that there
 	 * will be collisions within the hash table (using integer values
 	 * with int_hash causes no collisions) */
-	hash_table = __htNS->create(__htNS->cstrHash, __htNS->cstreq, NULL, cwtFree);
+	hash_table = __htNS->create(__htNS->cstrHash, __htNS->cstreq, NULL, cwt_free);
 
 	/* Insert lots of values */
 	for( i = 0; i < NUM_TEST_VALUES; ++i ) {

@@ -193,17 +193,17 @@
 
 #ifndef NDEBUG
 EXTERN_C_BEGIN
-DLL_API_EXPORT void* cwtMalloc(size_t size);
-DLL_API_EXPORT void  cwtFree(void*);
+DLL_API_EXPORT void* cwt_malloc(size_t size);
+DLL_API_EXPORT void  cwt_free(void*);
 EXTERN_C_END
 #else
 #	define cwtMalloc malloc
 #	define cwtFree   free
 #endif
 
-#define CWT_MALLOC(T)     ((T*)cwtMalloc(sizeof(T)))
-#define CWT_MALLOCA(T,sz) ((T*)cwtMalloc(sizeof(T)*(sz)))
-#define CWT_FREE(v)       cwtFree(v)
+#define CWT_MALLOC(T)     ((T*)cwt_malloc(sizeof(T)))
+#define CWT_MALLOCA(T,sz) ((T*)cwt_malloc(sizeof(T)*(sz)))
+#define CWT_FREE(v)       cwt_free(v)
 #define CWT_REALLOC(p,sz) realloc(p,sz);
 
 /* Two-dimensional array macros */

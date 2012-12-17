@@ -21,7 +21,7 @@ static BOOL            dbi_func             (CwtDBHandler*, const CWT_CHAR*, CWT
 static void            dbi_attr             (CwtDBHandler*, const CWT_CHAR*, void*);
 static BOOL            dbi_set_auto_commit  (CwtDBHandler*, BOOL);
 static BOOL            dbi_auto_commit      (CwtDBHandler*);
-static CwtDBI_RC       dbi_err              (CwtDBHandler*);
+static CwtErrno        dbi_err              (CwtDBHandler*);
 static const CWT_CHAR* dbi_strerror         (CwtDBHandler*);
 static const CWT_CHAR* dbi_state            (CwtDBHandler*);
 static BOOL            dbi_query            (CwtDBHandler*, const CWT_CHAR *sql);   /* cannot be used for statements that contain binary data */
@@ -327,7 +327,7 @@ static inline BOOL dbi_auto_commit(CwtDBHandler *dbh)
 	return dbh->driver()->autoCommit(dbh);
 }
 
-static inline CwtDBI_RC dbi_err(CwtDBHandler *dbh)
+static inline CwtErrno dbi_err(CwtDBHandler *dbh)
 {
 	CWT_ASSERT(dbh);
 	return dbh->driver()->err(dbh);
@@ -487,7 +487,7 @@ static CwtUniType* __dbi_bind_helper(CwtStatement *sth, size_t index, CwtTypeEnu
 	CWT_ASSERT(sth);
 	CWT_ASSERT(sth->dbh);
 
-	if( index >= sth->dbh->bindParmsCount(sth) ) {
+	if( !sth->dbh->isBindParmsBounds(sth, (int)index)) {
 		cwt_logger_ns()->error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
 		return NULL;
 	}
@@ -521,7 +521,6 @@ static CwtUniType* dbi_bind_blob( CwtStatement *sth, size_t index, size_t sz)
 	return __dbi_bind_helper(sth, index, CwtType_BLOB, sz);
 }
 
-
 static BOOL dbi_set_from_string(CwtStatement *sth, CwtUniType *ut, CwtTypeEnum type, const CWT_CHAR *s)
 {
 	CwtUniTypeNS *utNS = cwt_unitype_ns();
@@ -535,7 +534,6 @@ static BOOL dbi_set_from_string(CwtStatement *sth, CwtUniType *ut, CwtTypeEnum t
 
 	return ok;
 }
-
 
 static BOOL dbi_set_unitype(CwtStatement *sth, CwtUniType *ut, CwtUniType *val)
 {

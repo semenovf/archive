@@ -930,7 +930,7 @@ for (;;)
       else
         {
         new_recursive.offset_save =
-          (int *)cwtMalloc(new_recursive.saved_max * sizeof(int));
+          (int *)cwt_malloc(new_recursive.saved_max * sizeof(int));
         if (new_recursive.offset_save == NULL) RRETURN(PCRE_ERROR_NOMEMORY);
         }
 
@@ -3878,7 +3878,7 @@ ocount = offsetcount - (offsetcount % 3);
 if (re->top_backref > 0 && re->top_backref >= ocount/3)
   {
   ocount = re->top_backref * 3 + 3;
-  md->offset_vector = (int *)cwtMalloc(ocount * sizeof(int));
+  md->offset_vector = (int *)cwt_malloc(ocount * sizeof(int));
   if (md->offset_vector == NULL) return PCRE_ERROR_NOMEMORY;
   using_temporary_offsets = TRUE;
   DPRINTF(("Got memory to hold back references\n"));

@@ -9,7 +9,7 @@
 #include <cwt/global.h>
 #include <cwt/logger.h>
 
-DLL_API_EXPORT void* cwtMalloc(size_t size)
+DLL_API_EXPORT void* cwt_malloc(size_t size)
 {
 	void *block;
 /*
@@ -30,7 +30,7 @@ DLL_API_EXPORT void* cwtMalloc(size_t size)
 	return block;
 }
 
-DLL_API_EXPORT void cwtFree(void *block)
+DLL_API_EXPORT void cwt_free(void *block)
 {
 	if( block )
 		free(block);

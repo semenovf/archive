@@ -191,7 +191,7 @@ static void list_insert (CwtListIterator *before, void *data)
 
 	list = before->list;
 
-	n = (CwtListNode*)cwtMalloc(sizeof(CwtListNode*) * 2 + list->datasz);
+	n = (CwtListNode*)cwt_malloc(sizeof(CwtListNode*) * 2 + list->datasz);
 
 	if( list->is_ptr )
 		__str_ns->memcpy(n->d, &data, list->datasz);
@@ -225,7 +225,7 @@ static void list_prepend(CwtList *list, void *data)
 {
 	CwtListNode *n;
 
-	n = (CwtListNode*)cwtMalloc(sizeof(CwtListNode*) * 2 + list->datasz);
+	n = (CwtListNode*)cwt_malloc(sizeof(CwtListNode*) * 2 + list->datasz);
 	if( list->is_ptr )
 		__str_ns->memcpy(n->d, &data, list->datasz);
 	else
@@ -258,7 +258,7 @@ static void list_append(CwtList *list, void *data)
 {
 	CwtListNode *n;
 
-	n = (CwtListNode*)cwtMalloc(sizeof(CwtListNode*) * 2 + list->datasz);
+	n = (CwtListNode*)cwt_malloc(sizeof(CwtListNode*) * 2 + list->datasz);
 	__str_ns->memcpy(n->d, list->is_ptr ? &data : data, list->datasz);
 
 	n->n = NULL;

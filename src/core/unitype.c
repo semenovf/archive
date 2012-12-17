@@ -60,6 +60,7 @@ static const void*      __toBLOB       (CwtUniType *ut, size_t *sz);
 static CWT_TIME*        __toTIME       (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
 static CWT_TIME*        __toDATE       (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
 static CWT_TIME*        __toDATETIME   (CwtUniType *ut, CWT_TIME *tm, BOOL *ok);
+static CWT_CHAR*        ut_to_string   (CwtUniType *ut, CwtString *str);
 
 /* Helper function */
 static void __setBuffer(CwtUniType *ut, CwtTypeEnum cwtType, const void *p, size_t sz);
@@ -114,6 +115,7 @@ static CwtUniTypeNS __cwtUniTypeNS = {
 	, __toTIME
 	, __toDATE
 	, __toDATETIME
+	, ut_to_string
 };
 
 static CwtStrNS *__strNS = NULL;
@@ -976,6 +978,81 @@ static CWT_TIME* __toDATETIME (CwtUniType *ut, CWT_TIME *tm, BOOL *ok)
 	return NULL;
 }
 
+static const CWT_CHAR* ut_to_string (CwtUniType *ut, CwtString *str)
+{
+	CwtStringNS *string_ns = cwt_string_ns();
+
+	CWT_ASSERT(ut);
+	CWT_ASSERT(str);
+
+	string_ns->clear(str);
+
+	if( CwtType_TEXT == ut->type ) {
+		if( ut->length > 0 )
+			string_ns->appendChars(str, (CWT_CHAR*)ut->value.ptr, ut->length);
+	} else {
+		switch( ut->type ) {
+		case CwtType_BOOL:
+			string_ns->append(str, __toBOOL(ut, NULL) ? _Tr("true") : _Tr("false"));
+			break;
+		case CwtType_CHAR:
+			string_ns->appendChar(str, __toCHAR(ut, NULL));
+			break;
+		case CwtType_SBYTE:
+		case CwtType_SHORT:
+		case CwtType_INT:
+			string_ns->sprintf(str, _T("%d"), __toINT(ut, NULL));
+			break;
+		case CwtType_BYTE:
+		case CwtType_USHORT:
+		case CwtType_UINT:
+			string_ns->sprintf(str, _T("%u"), __toUINT(ut, NULL));
+			break;
+		case CwtType_LONG:
+			string_ns->sprintf(str, _T("%ld"), __toLONG(ut, NULL));
+			break;
+		case CwtType_ULONG:
+			string_ns->sprintf(str, _T("%lu"), __toULONG(ut, NULL));
+			break;
+		case CwtType_LONGLONG:
+			string_ns->sprintf(str, _T("%lld"), __toLONGLONG(ut, NULL));
+			break;
+		case CwtType_ULONGLONG:
+			string_ns->sprintf(str, _T("%llu"), __toULONGLONG(ut, NULL));
+			break;
+		case CwtType_FLOAT:
+			string_ns->sprintf(str, _T("%f"), __toFLOAT(ut, NULL));
+			break;
+		case CwtType_DOUBLE:
+			string_ns->sprintf(str, _T("%g"), __toFLOAT(ut, NULL));
+			break;
+		case CwtType_TIME: {
+				CWT_TIME tm;
+				__toTIME(ut, &tm, NULL);
+				string_ns->sprintf(str, _T("%2u:%2u:%2u"), tm.hour, tm.min, tm.sec);
+			}
+			break;
+		case CwtType_DATE: {
+				CWT_TIME tm;
+				__toTIME(ut, &tm, NULL);
+				string_ns->sprintf(str, _T("%4u-%2u-%2u"), tm.year, tm.mon, tm.day);
+			}
+			break;
+		case CwtType_DATETIME: {
+				CWT_TIME tm;
+				__toTIME(ut, &tm, NULL);
+				string_ns->sprintf(str, _T("%4u-%2u-%2u %2u:%2u:%2u")
+					, tm.year, tm.mon, tm.day
+					, tm.hour, tm.min, tm.sec);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	return string_ns->cstr(str);
+}
 
 /* Helper function.
  * For CwtType_TEXT sz is number of chars.

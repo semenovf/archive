@@ -64,9 +64,9 @@ static CwtIniContext* __ini_createWithFlags(UINT flags, size_t max_tokens)
 	h->onError    = NULL;
 
 	if( flags & Cwt_IniFlag_DirectiveIgnoreCase ) {
-		h->directives = __htNS->create(__htNS->striHash, __htNS->strieq, cwtFree, NULL);
+		h->directives = __htNS->create(__htNS->striHash, __htNS->strieq, cwt_free, NULL);
 	} else {
-		h->directives = __htNS->create(__htNS->strHash, __htNS->streq, cwtFree, NULL);
+		h->directives = __htNS->create(__htNS->strHash, __htNS->streq, cwt_free, NULL);
 	}
 
 	return h;

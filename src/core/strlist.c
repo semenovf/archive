@@ -98,13 +98,13 @@ DLL_API_EXPORT CwtStrListNS* cwt_strlist_ns(void)
 
 static void sl_init (CwtStrList *psl)
 {
-	__list_ns->initPtr((CwtList*)psl, cwtFree);
+	__list_ns->initPtr((CwtList*)psl, cwt_free);
 }
 
 
 static inline CwtStrList* __create(void)
 {
-	return (CwtStrList*)__list_ns->createPtr(cwtFree);
+	return (CwtStrList*)__list_ns->createPtr(cwt_free);
 }
 
 static void sl_destroy (CwtStrList *psl)
