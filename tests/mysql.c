@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
 		ut[7]  = dbi->bindByIndex(sth, 7, CwtType_LONG);
 		ut[8]  = dbi->bindByIndex(sth, 8, CwtType_ULONG);
 		ut[9]  = dbi->bindByIndex(sth, 9, CwtType_LONGLONG);
-		ut[10]  = dbi->bindByIndex(sth, 10, CwtType_ULONGLONG);
+		ut[10] = dbi->bindByIndex(sth, 10, CwtType_ULONGLONG);
 
 		dbi->setBOOL     (sth, ut[0],  TRUE);
 		dbi->setSBYTE    (sth, ut[1],  CWT_SBYTE_MAX);

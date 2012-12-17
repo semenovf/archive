@@ -50,9 +50,12 @@
 #include <cwt/strlist.h>
 
 
-#define __LOG_PREFIX _T("mysql: ")
-#define __DBH(dbh)  (((CwtMySqlDBHandler*)(dbh))->conn)
-#define __STH(sth)  (((CwtMySqlStatement*)(sth))->stmt)
+#define _LOG_PREFIX _T("mysql: ")
+#define _DBH(dbh)  (((CwtMySqlDBHandler *)(dbh))->conn)
+#define _STH(sth)  (((CwtMySqlStatement *)(sth))->stmt)
+#define _DBH_CAST(dbh)  ((CwtMySqlStatement *)(dbh))
+#define _STH_CAST(sth)  ((CwtMySqlStatement *)(sth))
+
 
 typedef struct _CwtMySqlStatement {
 	CwtStatement __base;
@@ -100,7 +103,7 @@ static BOOL             my_dbd_func              (CwtDBHandler *dbh, const CWT_C
 static void             my_dbd_attr              (CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr_value);
 static BOOL             my_dbd_set_auto_commit   (CwtDBHandler *dbh, BOOL on);
 static BOOL             my_dbd_auto_commit       (CwtDBHandler *dbh);
-static CwtDBI_RC        my_dbd_err               (CwtDBHandler *dbh);
+static CwtErrno         my_dbd_err               (CwtDBHandler *dbh);
 static const CWT_CHAR*  my_dbd_strerror          (CwtDBHandler *dbh);
 static const CWT_CHAR*  my_dbd_state             (CwtDBHandler *dbh);
 static BOOL             my_dbd_query             (CwtDBHandler *dbh, const CWT_CHAR *sql);
@@ -127,10 +130,11 @@ static ULONGLONG        my_stmt_affected_rows    (CwtStatement *sth);
 static ULONGLONG        my_stmt_num_rows         (CwtStatement*);
 static BOOL             my_stmt_fetch_next       (CwtStatement*);
 static BOOL             my_stmt_fetch_column     (CwtStatement *sth, CWT_CHAR *col, CwtUniType *ut);
-static CwtDBI_RC        my_stmt_err              (CwtStatement *sth);
+static CwtErrno         my_stmt_err              (CwtStatement *sth);
 static const CWT_CHAR*  my_stmt_strerror         (CwtStatement *sth);
 static BOOL             my_stmt_bind_by_index    (CwtStatement *sth, size_t index, CwtUniType *ut);
 static inline size_t    my_stmt_bind_parms_count (CwtStatement *sth) { CWT_ASSERT(sth); return ((CwtMySqlStatement*)sth)->nbind_params; }
+static BOOL             my_stmt_bind_parms_bounds(CwtStatement*, int index);
 static BOOL             my_stmt_set_parm         (CwtStatement *sth, CwtUniType *ut, const void *copy, size_t sz);
 
 /* local helper functions */
@@ -486,14 +490,14 @@ CwtDBHandler* my_dbd_connect(const CWT_CHAR *driverDSN
 		csname = csname_default;
 
 	if( !(str_ns->strEq(_T("latin1"), csname) || str_ns->strEq(_T("utf8"), csname)) ) {
-		cwt_logger_ns()->error(__LOG_PREFIX _Tr("only Latin1 or UTF-8 character set is supported now"));
+		cwt_logger_ns()->error(_LOG_PREFIX _Tr("only Latin1 or UTF-8 character set is supported now"));
 		return NULL;
 	}
 
 	if( !__nConnections ) {
 	    /* initialize client library */
 	    if( mysql_library_init(0, NULL, NULL) ) {
-	    	cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to initialize MySQL library"));
+	    	cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to initialize MySQL library"));
 	        return NULL;
 	    }
 	}
@@ -504,8 +508,9 @@ CwtDBHandler* my_dbd_connect(const CWT_CHAR *driverDSN
     dbh->__base.lastId     = my_stmt_last_id;
     dbh->__base.err        = my_stmt_err;
     dbh->__base.strerror   = my_stmt_strerror;
-	dbh->__base.bindByIndex     = my_stmt_bind_by_index;
+	dbh->__base.bindByIndex= my_stmt_bind_by_index;
 	dbh->__base.bindParmsCount = my_stmt_bind_parms_count;
+	dbh->__base.isBindParmsBounds = my_stmt_bind_parms_bounds;
 	dbh->__base.setParm    = my_stmt_set_parm;
     dbh->__base.rows       = my_stmt_affected_rows;
     dbh->__base.size       = my_stmt_num_rows;
@@ -526,13 +531,13 @@ CwtDBHandler* my_dbd_connect(const CWT_CHAR *driverDSN
         dbh->conn = mysql_init(NULL);
 
         if( dbh->conn == NULL ) {
-        	cwt_logger_ns()->error(__LOG_PREFIX _Tr("unable to initialize MySQL connection handler (probably out of memory)"));
+        	cwt_logger_ns()->error(_LOG_PREFIX _Tr("unable to initialize MySQL connection handler (probably out of memory)"));
         	break;
         }
 
         /* Set character set */
         if( mysql_options(dbh->conn, MYSQL_SET_CHARSET_NAME, csname_) != 0 ) {
-        	cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to set character set: %s"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh));
+        	cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to set character set: %s"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh));
         	break;
         }
 
@@ -559,7 +564,7 @@ CwtDBHandler* my_dbd_connect(const CWT_CHAR *driverDSN
         	} else if( str_ns->strNCmp(_T("port="), opt, 5) == 0) {
         		port = str_ns->toUINT(&opt[5], 0, &ok);
         		if( !ok ) {
-        			cwt_logger_ns()->error(__LOG_PREFIX _Tr("bad port value"));
+        			cwt_logger_ns()->error(_LOG_PREFIX _Tr("bad port value"));
         			break;
         		}
 
@@ -591,12 +596,12 @@ CwtDBHandler* my_dbd_connect(const CWT_CHAR *driverDSN
         ok = FALSE;
 
 		if( mysql_real_connect(dbh->conn, host, username_, password_, dbname, port, sockname, flags) == NULL) {
-			cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to connect the database: %s"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh));
+			cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to connect the database: %s"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh));
 			break;
 		}
 
 		 if( mysql_autocommit(dbh->conn, 1) != 0 ) {
-			 cwt_logger_ns()->error(__LOG_PREFIX _Tr("unable to set autocommit on"));
+			 cwt_logger_ns()->error(_LOG_PREFIX _Tr("unable to set autocommit on"));
 			 break;
 		 }
 
@@ -711,7 +716,7 @@ static void __mysql_stmt_destroy(CwtMySqlStatement *sth)
 
 
 		if( mysql_stmt_close(sth->stmt) != 0 ) {
-			cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to close statement: %s"), mysql_stmt_error(__STH(sth)));
+			cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to close statement: %s"), mysql_stmt_error(_STH(sth)));
 		}
 
 		sth->stmt = NULL;
@@ -755,7 +760,7 @@ static BOOL __mysql_build_sql_create_db(CwtString *sql, CWT_CHAR *argv[])
 	}
 
 	if( usage ) {
-		cwt_logger_ns()->warn(__LOG_PREFIX _Tr("usage: dbh->func: createdb dbname ['CHARACTER SET' charset_name] ['COLLATE' collation_name]"));
+		cwt_logger_ns()->warn(_LOG_PREFIX _Tr("usage: dbh->func: createdb dbname ['CHARACTER SET' charset_name] ['COLLATE' collation_name]"));
 		return FALSE;
 	}
 
@@ -781,7 +786,7 @@ static BOOL __mysql_build_sql_drop_db(CwtString *sql, CWT_CHAR *argv[])
 	}
 
 	if( usage ) {
-		cwt_logger_ns()->warn(__LOG_PREFIX _Tr("usage: dbh->func: dropdb dbname"));
+		cwt_logger_ns()->warn(_LOG_PREFIX _Tr("usage: dbh->func: dropdb dbname"));
 		return FALSE;
 	}
 
@@ -828,7 +833,7 @@ static BOOL my_dbd_func(CwtDBHandler *dbh, const CWT_CHAR *func_name, CWT_CHAR *
 				rv = TRUE;
 		}
 	} else {
-		cwt_logger_ns()->warn(__LOG_PREFIX _Tr("unsupported function name: %s"), CWT_STRING_OR_NULLSTR(func_name));
+		cwt_logger_ns()->warn(_LOG_PREFIX _Tr("unsupported function name: %s"), CWT_STRING_OR_NULLSTR(func_name));
 	}
 
 	stringNS->free(sql);
@@ -895,35 +900,35 @@ static void my_dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr
 
 	if( strNS->strCaseEq(_T("errno"), attr_name) ) {
 
-		*((UINT*)attr_value) = mysql_errno(__DBH(dbh));
+		*((UINT*)attr_value) = mysql_errno(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("error"), attr_name)) {
 
-		*((const char**)attr_value) = mysql_error(__DBH(dbh));
+		*((const char**)attr_value) = mysql_error(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("hostinfo"), attr_name)) {
 
-		*((const char**)attr_value) = mysql_get_host_info(__DBH(dbh));
+		*((const char**)attr_value) = mysql_get_host_info(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("info"), attr_name)) {
 
-		*((const char**)attr_value) = mysql_info(__DBH(dbh));
+		*((const char**)attr_value) = mysql_info(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("insertid"), attr_name)) {
 
-		*((ULONGLONG*)attr_value) = mysql_insert_id(__DBH(dbh));
+		*((ULONGLONG*)attr_value) = mysql_insert_id(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("protoinfo"), attr_name)) {
 
-		*((UINT*)attr_value) = mysql_get_proto_info(__DBH(dbh));
+		*((UINT*)attr_value) = mysql_get_proto_info(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("serverinfo"), attr_name)) {
 
-		*((const char**)attr_value) = mysql_get_server_info(__DBH(dbh));
+		*((const char**)attr_value) = mysql_get_server_info(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("serverversion"), attr_name)) {
 
-		*((ULONG*)attr_value) = mysql_get_server_version(__DBH(dbh));
+		*((ULONG*)attr_value) = mysql_get_server_version(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("clientinfo"), attr_name)) {
 
@@ -935,15 +940,15 @@ static void my_dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr
 
 	} else if(strNS->strCaseEq(_T("thread_id"), attr_name)) {
 
-		*((ULONG*)attr_value) = mysql_thread_id(__DBH(dbh));
+		*((ULONG*)attr_value) = mysql_thread_id(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("stat"), attr_name)) {
 
-		*((const char**)attr_value) = mysql_stat(__DBH(dbh));
+		*((const char**)attr_value) = mysql_stat(_DBH(dbh));
 
 	} else if(strNS->strCaseEq(_T("charset"), attr_name)) {
 
-		*((const char**)attr_value) = mysql_character_set_name(__DBH(dbh));
+		*((const char**)attr_value) = mysql_character_set_name(_DBH(dbh));
 
 	}
 }
@@ -951,11 +956,11 @@ static void my_dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr
 static BOOL my_dbd_set_auto_commit(CwtDBHandler *dbh, BOOL on)
 {
 	CWT_ASSERT(dbh);
-	if( mysql_autocommit(__DBH(dbh), on ? 1 : 0) == 0 ) {
+	if( mysql_autocommit(_DBH(dbh), on ? 1 : 0) == 0 ) {
 		((CwtMySqlDBHandler*)dbh)->auto_commit = on;
 		return TRUE;
 	}
-	cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to change autocommit mode"));
+	cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to change autocommit mode"));
 	return FALSE;
 }
 
@@ -973,10 +978,10 @@ static BOOL my_dbd_auto_commit(CwtDBHandler *dbh)
  *
  * @see mysql_errno()
  */
-static CwtDBI_RC my_dbd_err(CwtDBHandler *dbh)
+static CwtErrno my_dbd_err(CwtDBHandler *dbh)
 {
 	CWT_ASSERT(dbh);
-	return (CwtDBI_RC)mysql_errno(__DBH(dbh));
+	return (CwtDBI_RC)mysql_errno(_DBH(dbh));
 }
 
 /**
@@ -1047,7 +1052,7 @@ static BOOL my_dbd_query(CwtDBHandler *dbh, const CWT_CHAR *sql)
 	CWT_ASSERT(dbh);
 
 	if( __mysql_real_query((CwtMySqlDBHandler*)dbh, sql, cwt_str_ns()->strLen(sql)) != 0 ) {
-		cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to query: %s [%s]"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh), sql);
+		cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to query: %s [%s]"), __cwtDBIDriver.strerror((CwtDBHandler*)dbh), sql);
 		return FALSE;
 	}
 	return TRUE;
@@ -1070,16 +1075,16 @@ static CwtStatement* my_dbd_prepare(CwtDBHandler *dbh, const CWT_CHAR *stmt_str)
 
 	CWT_ASSERT(dbh);
 
-	stmt = mysql_stmt_init(__DBH(dbh));
+	stmt = mysql_stmt_init(_DBH(dbh));
 
 	if( !stmt ) {
-		cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to initialize statement: %s"), __cwtDBIDriver.strerror(dbh));
+		cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to initialize statement: %s"), __cwtDBIDriver.strerror(dbh));
 		return NULL;
 	}
 
 	stmt_str_ = __cwtDBIDriver.encode(dbh, stmt_str);
 	if( mysql_stmt_prepare(stmt, stmt_str_, (ULONG)strlen(stmt_str_)) != 0 ) { /*FIXME type cast problems*/
-		cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to prepare statement: %s"), __cwtDBIDriver.strerror(dbh));
+		cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to prepare statement: %s"), __cwtDBIDriver.strerror(dbh));
 		mysql_stmt_close(stmt);
 		CWT_FREE(stmt_str_);
 		return NULL;
@@ -1116,7 +1121,7 @@ static CwtStatement* my_dbd_prepare(CwtDBHandler *dbh, const CWT_CHAR *stmt_str)
 static ULONGLONG my_dbd_affected_rows(CwtDBHandler *dbh)
 {
 	CWT_ASSERT(dbh);
-	return (ULONGLONG)mysql_affected_rows(__DBH(dbh));
+	return (ULONGLONG)mysql_affected_rows(_DBH(dbh));
 }
 
 
@@ -1137,7 +1142,7 @@ static BOOL my_dbd_tables(CwtDBHandler *dbh, CwtStrList *tables)
 	res = mysql_list_tables(mdbh->conn, NULL);
 
 	if( !res ) {
-		cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to list tables: %s"), __cwtDBIDriver.strerror(dbh));
+		cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to list tables: %s"), __cwtDBIDriver.strerror(dbh));
 		return FALSE;
 	}
 
@@ -1180,7 +1185,7 @@ static BOOL my_dbd_table_exists(CwtDBHandler *dbh, const CWT_CHAR *tname)
 	res = mysql_list_tables(mdbh->conn, NULL);
 
 	if( !res ) {
-		cwt_logger_ns()->error(__LOG_PREFIX _Tr("failed to list tables: %s"), __cwtDBIDriver.strerror(dbh));
+		cwt_logger_ns()->error(_LOG_PREFIX _Tr("failed to list tables: %s"), __cwtDBIDriver.strerror(dbh));
 		return FALSE;
 	}
 
@@ -1248,7 +1253,7 @@ static void my_stmt_close(CwtStatement *sth)
 	if( !sth )
 		return;
 
-	if( __STH(sth) ) {
+	if( _STH(sth) ) {
 		__mysql_stmt_destroy((CwtMySqlStatement*)sth);
 		CWT_FREE(sth);
 	}
@@ -1295,8 +1300,8 @@ static BOOL my_stmt_execute(CwtStatement *sth)
 
 	if( msth->nbind_params > 0 ) {
 		if( !msth->is_bind ) {
-			if( mysql_stmt_bind_param(__STH(sth), msth->bind_params) != 0 ) {
-				cwt_logger_ns()->error( __LOG_PREFIX _Tr("bind parameters failed: %s\n"), msth->__base.dbh->strerror(sth));
+			if( mysql_stmt_bind_param(_STH(sth), msth->bind_params) != 0 ) {
+				cwt_logger_ns()->error( _LOG_PREFIX _Tr("bind parameters failed: %s\n"), msth->__base.dbh->strerror(sth));
 				return FALSE;
 			}
 
@@ -1317,7 +1322,7 @@ static BOOL my_stmt_execute(CwtStatement *sth)
 			mysql_free_result(msth->meta);
 		}
 
-		msth->meta          = mysql_stmt_result_metadata(__STH(msth));
+		msth->meta          = mysql_stmt_result_metadata(_STH(msth));
 		msth->nrbind_params = msth->meta != NULL ? mysql_num_fields(msth->meta) : 0;
 
 		if( msth->nrbind_params > 0UL && msth->rbind_params == NULL ) {
@@ -1337,16 +1342,16 @@ static BOOL my_stmt_execute(CwtStatement *sth)
 		msth->is_rbind = TRUE;
 	}
 
-	if( mysql_stmt_execute(__STH(sth)) != 0 ) {
-		cwt_logger_ns()->error( __LOG_PREFIX _Tr("executing statement error: %s\n"), msth->__base.dbh->strerror(sth));
+	if( mysql_stmt_execute(_STH(sth)) != 0 ) {
+		cwt_logger_ns()->error( _LOG_PREFIX _Tr("executing statement error: %s\n"), msth->__base.dbh->strerror(sth));
 		return FALSE;
 	}
 
 	if( msth->nrbind_params > 0 ) {
 		UINT i;
 
-		msth->rbind_map = __ht_ns->create(__ht_ns->strHash, __ht_ns->streq, cwtFree, NULL);
-		msth->meta_map = __ht_ns->create(__ht_ns->strHash, __ht_ns->streq, cwtFree, NULL);
+		msth->rbind_map = __ht_ns->create(__ht_ns->strHash, __ht_ns->streq, cwt_free, NULL);
+		msth->meta_map = __ht_ns->create(__ht_ns->strHash, __ht_ns->streq, cwt_free, NULL);
 
 		for( i = 0; i < msth->nrbind_params; i++ ) {
 			MYSQL_FIELD *field = mysql_fetch_field_direct(msth->meta, i);
@@ -1383,19 +1388,19 @@ static BOOL my_stmt_execute(CwtStatement *sth)
 			/*CWT_ASSERT(__htNS->lookup(msth->rbind_map, __dbd_decode(sth->dbh, field->name)));*/
 		}
 
-		if( mysql_stmt_bind_result(__STH(sth), msth->rbind_params) != 0 ) {
-			cwt_logger_ns()->error( __LOG_PREFIX _Tr("failed to bind result: %s\n"), msth->__base.dbh->strerror(sth));
+		if( mysql_stmt_bind_result(_STH(sth), msth->rbind_params) != 0 ) {
+			cwt_logger_ns()->error( _LOG_PREFIX _Tr("failed to bind result: %s\n"), msth->__base.dbh->strerror(sth));
 			return FALSE;
 		}
 
 
 		if( hasBlobs ) {
 			my_bool update_max_length = 1;
-			mysql_stmt_attr_set(__STH(sth), STMT_ATTR_UPDATE_MAX_LENGTH, &update_max_length);
+			mysql_stmt_attr_set(_STH(sth), STMT_ATTR_UPDATE_MAX_LENGTH, &update_max_length);
 		}
 
-		if( mysql_stmt_store_result(__STH(sth)) != 0 ) {
-			cwt_logger_ns()->error( __LOG_PREFIX _Tr("failed to cache (buffer) the result: %s\n"), msth->__base.dbh->strerror(sth));
+		if( mysql_stmt_store_result(_STH(sth)) != 0 ) {
+			cwt_logger_ns()->error( _LOG_PREFIX _Tr("failed to cache (buffer) the result: %s\n"), msth->__base.dbh->strerror(sth));
 			return FALSE;
 		}
 
@@ -1415,8 +1420,8 @@ static BOOL my_stmt_execute(CwtStatement *sth)
 				}
 			}
 
-			if( mysql_stmt_bind_result(__STH(sth), msth->rbind_params) != 0 ) {
-				cwt_logger_ns()->error( __LOG_PREFIX _Tr("unable to bind BLOB value(s): %s\n"), msth->__base.dbh->strerror(sth));
+			if( mysql_stmt_bind_result(_STH(sth), msth->rbind_params) != 0 ) {
+				cwt_logger_ns()->error( _LOG_PREFIX _Tr("unable to bind BLOB value(s): %s\n"), msth->__base.dbh->strerror(sth));
 				return FALSE;
 			}
 	     }
@@ -1429,19 +1434,19 @@ static BOOL my_stmt_execute(CwtStatement *sth)
 static ULONGLONG my_stmt_last_id (CwtStatement *sth)
 {
 	CWT_ASSERT(sth);
-	return (ULONGLONG)mysql_stmt_insert_id(__STH(sth));
+	return (ULONGLONG)mysql_stmt_insert_id(_STH(sth));
 }
 
 static ULONGLONG my_stmt_affected_rows(CwtStatement *sth)
 {
 	CWT_ASSERT(sth);
-	return (ULONGLONG)mysql_stmt_affected_rows(__STH(sth));
+	return (ULONGLONG)mysql_stmt_affected_rows(_STH(sth));
 }
 
 static ULONGLONG my_stmt_num_rows(CwtStatement *sth)
 {
 	CWT_ASSERT(sth);
-	return (ULONGLONG)mysql_stmt_num_rows(__STH(sth));
+	return (ULONGLONG)mysql_stmt_num_rows(_STH(sth));
 }
 
 
@@ -1459,12 +1464,12 @@ static BOOL my_stmt_fetch_next(CwtStatement *sth)
 	if( rv != 0 ) {
 		switch(rv) {
 		case 1: /*error*/
-			cwt_logger_ns()->error( __LOG_PREFIX _Tr("failed to fetch result: %s"), msth->__base.dbh->strerror(sth));
+			cwt_logger_ns()->error( _LOG_PREFIX _Tr("failed to fetch result: %s"), msth->__base.dbh->strerror(sth));
 			return FALSE;
 		case MYSQL_NO_DATA:
 			return FALSE;
 		case MYSQL_DATA_TRUNCATED:
-			cwt_logger_ns()->warn( __LOG_PREFIX _Tr("data truncated"));
+			cwt_logger_ns()->warn( _LOG_PREFIX _Tr("data truncated"));
 			break;
 		}
 	}
@@ -1535,10 +1540,10 @@ static BOOL my_stmt_fetch_column(CwtStatement *sth, CWT_CHAR *col, CwtUniType *u
 	return ok;
 }
 
-static CwtDBI_RC my_stmt_err(CwtStatement *sth)
+static CwtErrno my_stmt_err(CwtStatement *sth)
 {
 	CWT_ASSERT(sth);
-	return (CwtDBI_RC)mysql_stmt_errno(__STH(sth));
+	return (CwtDBI_RC)mysql_stmt_errno(_STH(sth));
 }
 
 static const CWT_CHAR* my_stmt_strerror(CwtStatement *sth)
@@ -1567,10 +1572,12 @@ static BOOL my_stmt_bind_by_index (CwtStatement *sth, size_t index, CwtUniType *
 	CWT_ASSERT(sth);
 	CWT_ASSERT(ut);
 
-	if( index >= msth->nbind_params ) {
+	/* Checks in DBI layer */
+/*	if( index >= msth->nbind_params ) {
 		cwt_logger_ns()->error(__LOG_PREFIX _Tr("bind parameter index is out of bounds"));
 		return FALSE;
 	}
+*/
 
 	bind_param = (MYSQL_BIND*)&msth->bind_params[index];
 
@@ -1600,6 +1607,14 @@ static BOOL my_stmt_bind_by_index (CwtStatement *sth, size_t index, CwtUniType *
 	return TRUE;
 }
 
+
+static BOOL my_stmt_bind_parms_bounds(CwtStatement *sth, int index)
+{
+	if( index < 0 || index >= _STH_CAST(sth)->nbind_params )
+		return FALSE;
+
+	return TRUE;
+}
 
 static BOOL my_stmt_set_parm(CwtStatement *sth, CwtUniType *ut, const void *copy, size_t sz)
 {
