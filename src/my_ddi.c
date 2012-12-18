@@ -28,11 +28,10 @@ static const CWT_CHAR *__MYSQL_DEFAULT_DB_ENGINE = _T("InnoDB");
 
 static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtString *tmpbuf, CWT_CHAR comma)
 {
-	CwtStringNS  *stringNS = cwt_string_ns();
-	CwtStrListNS *slNS     = cwt_strlist_ns();
+	CwtStringNS  *string_ns = cwt_string_ns();
+	CwtStrListNS *sl_ns     = cwt_strlist_ns();
 
 	CWT_CHAR *typestr = NULL;
-	/*BOOL is_ref       = FALSE;*/
 	CwtDDIColumn *refcol = NULL;
 
 /*
@@ -45,12 +44,12 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 	    [COLUMN_FORMAT {FIXED|DYNAMIC|DEFAULT}] - not supported yet
 */
 	/*stringNS->clear(tmpbuf);*/
-	stringNS->appendChar(tmpbuf, comma);
-	stringNS->append(tmpbuf, col->name);
-	stringNS->appendChar(tmpbuf, _T(' '));
+	string_ns->appendChar(tmpbuf, comma);
+	string_ns->append(tmpbuf, col->name);
+	string_ns->appendChar(tmpbuf, _T(' '));
 
 	if( col->ref_ptr ) {
-		int n = (int)slNS->size(ddi->tables);
+		int n = (int)sl_ns->size(ddi->tables);
 
 		refcol = col;
 
@@ -61,8 +60,6 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 		if( n <= 0 ) {
 			return FALSE;
 		}
-
-		/*is_ref = TRUE;*/
 	}
 
 	if( col->type != CwtType_UNKNOWN ) {
@@ -87,7 +84,7 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 		}
 	}
 
-	stringNS->append(tmpbuf, typestr);
+	string_ns->append(tmpbuf, typestr);
 
 	CWT_FREE(typestr);
 
@@ -96,82 +93,78 @@ static BOOL __collect_column_definitions(CwtDDI *ddi, CwtDDIColumn *col, CwtStri
 
 
 	if( col->flags & (UINT32)CwtDdiColumn_Nullable ) {
-		stringNS->append(tmpbuf, _T(" DEFAULT NULL"));
+		string_ns->append(tmpbuf, _T(" DEFAULT NULL"));
 	} else {
 		if( col->default_value ) {
-			stringNS->append(tmpbuf, _T(" DEFAULT "));
-			stringNS->appendChar(tmpbuf, _T('\''));
-			stringNS->append(tmpbuf, col->default_value);
-			stringNS->appendChar(tmpbuf, _T('\''));
+			string_ns->append(tmpbuf, _T(" DEFAULT "));
+			string_ns->appendChar(tmpbuf, _T('\''));
+			string_ns->append(tmpbuf, col->default_value);
+			string_ns->appendChar(tmpbuf, _T('\''));
 		} else {
-			stringNS->append(tmpbuf, _T(" NOT NULL"));
+			string_ns->append(tmpbuf, _T(" NOT NULL"));
 		}
 	}
 
 	if( col->autoinc && !refcol )
-		stringNS->append(tmpbuf, _T(" AUTO_INCREMENT"));
+		string_ns->append(tmpbuf, _T(" AUTO_INCREMENT"));
 
 	return TRUE;
 }
 
 CwtStrList* my_dbd_spec_for_deploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, const CWT_CHAR *ns, const CwtDDI *ddi, const CWT_CHAR *charset, UINT ddiflags*/)
 {
-	CwtStringNS  *stringNS = cwt_string_ns();
-	CwtStrListNS *slNS     = cwt_strlist_ns();
-	CwtString    *tmpbuf   = stringNS->create();
-	CWT_CHAR     *charset  = (CWT_CHAR*)__MYSQL_DEFAULT_CHARSET;
-
-	CwtStrList   *spec         = NULL;
-	CwtString    *columnSpecs  = NULL; /* column definitions */
-/*	CwtString    *indexSpecs   = NULL;*/
-	CwtString    *constraintSpecs = NULL;
+	CwtStringNS  *string_ns = cwt_string_ns();
+	CwtStrListNS *sl_ns     = cwt_strlist_ns();
+	CwtString    tmpbuf;
+	CWT_CHAR     *charset   = (CWT_CHAR*)__MYSQL_DEFAULT_CHARSET;
+	CwtStrList   *spec        = NULL;
+	CwtString    column_specs; /* column definitions */
+	CwtString    constraint_specs;
 	BOOL ok = TRUE;
 
 
 	CwtListIterator tabIt;
 	CwtListIterator colIt;
 
-	tmpbuf = stringNS->create();
-	spec = slNS->create();
-	columnSpecs = stringNS->create();
-	/*indexSpecs = stringNS->create();*/
-	constraintSpecs = stringNS->create();
+	spec = sl_ns->create();
+	string_ns->init(&tmpbuf);
+	string_ns->init(&column_specs);
+	string_ns->init(&constraint_specs);
 
 	if( ddi->charset )
 		charset = ddi->charset;
 
 	if( flags & CwtDdi_DeployDropDb ) {
-		stringNS->sprintf(tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
-    	slNS->add(spec, stringNS->cstr(tmpbuf));
+		string_ns->sprintf(&tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
+    	sl_ns->add(spec, string_ns->cstr(&tmpbuf));
 	}
 
-	stringNS->sprintf(tmpbuf, _T("CREATE DATABASE IF NOT EXISTS `%s`"), ddi->name);
-	slNS->add(spec, stringNS->cstr(tmpbuf));
+	string_ns->sprintf(&tmpbuf, _T("CREATE DATABASE IF NOT EXISTS `%s`"), ddi->name);
+	sl_ns->add(spec, string_ns->cstr(&tmpbuf));
 
-    stringNS->sprintf(tmpbuf, _T("USE `%s`"), ddi->name);
-    slNS->add(spec, stringNS->cstr(tmpbuf));
+    string_ns->sprintf(&tmpbuf, _T("USE `%s`"), ddi->name);
+    sl_ns->add(spec, string_ns->cstr(&tmpbuf));
 
-	slNS->begin(ddi->tables, &tabIt);
-	while( slNS->hasMore(&tabIt)) {
-		CwtDDITable *tab = (CwtDDITable*)slNS->next(&tabIt);
+	sl_ns->begin(ddi->tables, &tabIt);
+	while( sl_ns->hasMore(&tabIt)) {
+		CwtDDITable *tab = (CwtDDITable*)sl_ns->next(&tabIt);
 		CWT_CHAR comma = _T(' ');
 
 		if( flags & CwtDdi_DeployDropTab ) {
-			stringNS->sprintf(tmpbuf, _T("DROP TABLE IF EXISTS `%s`"), tab->name);
-	    	slNS->add(spec, stringNS->cstr(tmpbuf));
+			string_ns->sprintf(&tmpbuf, _T("DROP TABLE IF EXISTS `%s`"), tab->name);
+	    	sl_ns->add(spec, string_ns->cstr(&tmpbuf));
 		}
 
-		/*stringNS->clear(indexSpecs);*/
-		stringNS->clear(columnSpecs);
-		stringNS->clear(constraintSpecs);
+		string_ns->clear(&column_specs);
+		string_ns->clear(&constraint_specs);
 
-		stringNS->sprintf(columnSpecs, _T("CREATE TABLE IF NOT EXISTS `%s` ("), tab->name);
+		string_ns->sprintf(&column_specs, _T("CREATE TABLE IF NOT EXISTS `%s` ("), tab->name);
 
-		slNS->begin(tab->columns, &colIt);
+		sl_ns->begin(tab->columns, &colIt);
 
-		while( slNS->hasMore(&colIt) ) {
-			CwtDDIColumn *col = (CwtDDIColumn*)slNS->next(&colIt);
-			if( !__collect_column_definitions(ddi, col, columnSpecs, comma) ) {
+		while( sl_ns->hasMore(&colIt) ) {
+			CwtDDIColumn *col = (CwtDDIColumn*)sl_ns->next(&colIt);
+			if( !__collect_column_definitions(ddi, col, &column_specs, comma) ) {
 				ok = FALSE;
 				break;
 			}
@@ -179,30 +172,30 @@ CwtStrList* my_dbd_spec_for_deploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, 
 			comma = _T(',');
 
 			if (col->flags & (UINT32)CwtDdiColumn_Indexable) {
-				stringNS->sprintf(tmpbuf, _T("INDEX (`%s`)"), col->name);
-				if( stringNS->size(constraintSpecs) > 0 )
-					stringNS->appendChar(constraintSpecs, _T(','));
-				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
+				string_ns->sprintf(&tmpbuf, _T("INDEX (`%s`)"), col->name);
+				if( string_ns->size(&constraint_specs) > 0 )
+					string_ns->appendChar(&constraint_specs, _T(','));
+				string_ns->append(&constraint_specs, string_ns->cstr(&tmpbuf));
 			}
 
 			if (col->flags & (UINT32)CwtDdiColumn_Unique) {
-				stringNS->sprintf(tmpbuf, _T("UNIQUE KEY `%s` (`%s`)"), col->name, col->name);
-				if( stringNS->size(constraintSpecs) > 0 )
-					stringNS->appendChar(constraintSpecs, _T(','));
-				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
+				string_ns->sprintf(&tmpbuf, _T("UNIQUE KEY `%s` (`%s`)"), col->name, col->name);
+				if( string_ns->size(&constraint_specs) > 0 )
+					string_ns->appendChar(&constraint_specs, _T(','));
+				string_ns->append(&constraint_specs, string_ns->cstr(&tmpbuf));
 			}
 
 			if( col->ref_ptr ) {
-				if( stringNS->size(constraintSpecs) > 0 )
-					stringNS->append(constraintSpecs, _T(", "));
+				if( string_ns->size(&constraint_specs) > 0 )
+					string_ns->append(&constraint_specs, _T(", "));
 
-				stringNS->sprintf(tmpbuf, _T("KEY `FK_%s__%s` (`%s`), ")
+				string_ns->sprintf(&tmpbuf, _T("KEY `FK_%s__%s` (`%s`), ")
 					, tab->name, col->name, col->name);
-				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
+				string_ns->append(&constraint_specs, string_ns->cstr(&tmpbuf));
 
-				stringNS->sprintf(tmpbuf, _T("CONSTRAINT `FK_%s__%s` FOREIGN KEY (`%s`) REFERENCES `%s` (`%s`)")
+				string_ns->sprintf(&tmpbuf, _T("CONSTRAINT `FK_%s__%s` FOREIGN KEY (`%s`) REFERENCES `%s` (`%s`)")
 					, tab->name, col->name, col->name, col->ref_ptr->name, col->ref_ptr->pk_ptr->name);
-				stringNS->append(constraintSpecs, stringNS->cstr(tmpbuf));
+				string_ns->append(&constraint_specs, string_ns->cstr(&tmpbuf));
 			}
 		}
 
@@ -210,45 +203,36 @@ CwtStrList* my_dbd_spec_for_deploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, 
 			break;
 
 		if( tab->pk_ptr ) {
-			stringNS->append(columnSpecs, _T(", "));
-			stringNS->append(columnSpecs, _T("PRIMARY KEY ("));
-			stringNS->append(columnSpecs, tab->pk_ptr->name);
-			stringNS->appendChar(columnSpecs, _T(')'));
+			string_ns->append(&column_specs, _T(", "));
+			string_ns->append(&column_specs, _T("PRIMARY KEY ("));
+			string_ns->append(&column_specs, tab->pk_ptr->name);
+			string_ns->appendChar(&column_specs, _T(')'));
 		}
 
-/*
-		if( stringNS->size(indexSpecs) > 0 ) {
-			stringNS->append(columnSpecs, _T(", "));
-			stringNS->append(columnSpecs, stringNS->cstr(indexSpecs));
-		}
-*/
-
-		if( stringNS->size(constraintSpecs) > 0 ) {
-			stringNS->append(columnSpecs, _T(", "));
-			stringNS->append(columnSpecs, stringNS->cstr(constraintSpecs));
+		if( string_ns->size(&constraint_specs) > 0 ) {
+			string_ns->append(&column_specs, _T(", "));
+			string_ns->append(&column_specs, string_ns->cstr(&constraint_specs));
 		}
 
-		stringNS->appendChar(columnSpecs, _T(')'));
-		stringNS->append(columnSpecs, _T(" ENGINE="));
-		stringNS->append(columnSpecs, __MYSQL_DEFAULT_DB_ENGINE);
+		string_ns->appendChar(&column_specs, _T(')'));
+		string_ns->append(&column_specs, _T(" ENGINE="));
+		string_ns->append(&column_specs, __MYSQL_DEFAULT_DB_ENGINE);
 		if( tab->autoinc_ptr ) {
-			stringNS->sprintf(tmpbuf, _T(" AUTO_INCREMENT=%d"), tab->autoinc_ptr->autoinc);
-			stringNS->append(columnSpecs, stringNS->cstr(tmpbuf));
+			string_ns->append(&column_specs, _T(" AUTO_INCREMENT=1"));
 		}
 
-		stringNS->append(columnSpecs, _T(" DEFAULT CHARSET="));
-		stringNS->append(columnSpecs, charset);
+		string_ns->append(&column_specs, _T(" DEFAULT CHARSET="));
+		string_ns->append(&column_specs, charset);
 
-		slNS->add(spec, stringNS->cstr(columnSpecs));
+		sl_ns->add(spec, string_ns->cstr(&column_specs));
 	}
 
-	 stringNS->free(tmpbuf);
-	 stringNS->free(columnSpecs);
-	 /*stringNS->free(indexSpecs);*/
-	 stringNS->free(constraintSpecs);
+	 string_ns->destroy(&tmpbuf);
+	 string_ns->destroy(&column_specs);
+	 string_ns->destroy(&constraint_specs);
 
 	 if( !ok ) {
-		 slNS->free(spec);
+		 sl_ns->free(spec);
 		 spec = NULL;
 	 }
 
@@ -257,50 +241,51 @@ CwtStrList* my_dbd_spec_for_deploy(CwtDDI *ddi, int flags /*CwtStrList *ddiSql, 
 
 CwtStrList* my_dbd_spec_for_recall(CwtDDI *ddi, int flags)
 {
-	CwtStringNS  *stringNS = cwt_string_ns();
-	CwtStrListNS *slNS     = cwt_strlist_ns();
-	CwtString    *tmpbuf   = stringNS->create();
-	CwtStrList   *spec     = NULL;
+	CwtStringNS  *string_ns = cwt_string_ns();
+	CwtStrListNS *sl_ns     = cwt_strlist_ns();
+	CwtString    tmpbuf     = NULL;
+	CwtStrList   *spec      = NULL;
 
-	tmpbuf = stringNS->create();
-	spec = slNS->create();
+	string_ns->init(&tmpbuf);
+	spec = sl_ns->create();
 
 	if( flags & CwtDdi_RecallDropDb ) {
-		stringNS->sprintf(tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
-    	slNS->add(spec, stringNS->cstr(tmpbuf));
+		string_ns->sprintf(&tmpbuf, _T("DROP DATABASE IF EXISTS `%s`"), ddi->name);
+    	sl_ns->add(spec, string_ns->cstr(&tmpbuf));
 	} else {
 		CwtListIterator tabIt;
 		CwtListIterator colIt;
 
-		stringNS->sprintf(tmpbuf, _T("USE `%s`"), ddi->name);
-    	slNS->add(spec, stringNS->cstr(tmpbuf));
+		string_ns->sprintf(&tmpbuf, _T("USE `%s`"), ddi->name);
+    	sl_ns->add(spec, string_ns->cstr(&tmpbuf));
 
 
-		slNS->begin(ddi->tables, &tabIt);
-		while( slNS->hasMore(&tabIt)) {
-			CwtDDITable *tab = (CwtDDITable*)slNS->next(&tabIt);
+		sl_ns->begin(ddi->tables, &tabIt);
+		while( sl_ns->hasMore(&tabIt)) {
+			CwtDDITable *tab = (CwtDDITable*)sl_ns->next(&tabIt);
 
-			slNS->begin(tab->columns, &colIt);
+			sl_ns->begin(tab->columns, &colIt);
 
-			while( slNS->hasMore(&colIt) ) {
-				CwtDDIColumn *col = (CwtDDIColumn*)slNS->next(&colIt);
+			while( sl_ns->hasMore(&colIt) ) {
+				CwtDDIColumn *col = (CwtDDIColumn*)sl_ns->next(&colIt);
 
 				if( col->ref_ptr ) {
-					stringNS->sprintf(tmpbuf, _T("ALTER TABLE `%s` DROP FOREIGN KEY `FK_%s__%s`")
+					string_ns->sprintf(&tmpbuf, _T("ALTER TABLE `%s` DROP FOREIGN KEY `FK_%s__%s`")
 						, tab->name, tab->name, col->name );
-					slNS->add(spec, stringNS->cstr(tmpbuf));
+					sl_ns->add(spec, string_ns->cstr(&tmpbuf));
 				}
 			}
 		}
 
-		slNS->begin(ddi->tables, &tabIt);
-		while( slNS->hasMore(&tabIt)) {
-			CwtDDITable *tab = (CwtDDITable*)slNS->next(&tabIt);
-			stringNS->sprintf(tmpbuf, _T("DROP TABLE IF EXISTS `%s`"), tab->name);
-	    	slNS->add(spec, stringNS->cstr(tmpbuf));
+		sl_ns->begin(ddi->tables, &tabIt);
+		while( sl_ns->hasMore(&tabIt)) {
+			CwtDDITable *tab = (CwtDDITable*)sl_ns->next(&tabIt);
+			string_ns->sprintf(&tmpbuf, _T("DROP TABLE IF EXISTS `%s`"), tab->name);
+	    	sl_ns->add(spec, string_ns->cstr(&tmpbuf));
 		}
 
 	}
 
+	string_ns->destroy(&tmpbuf);
     return spec;
 }
