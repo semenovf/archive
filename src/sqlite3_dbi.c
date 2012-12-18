@@ -223,31 +223,41 @@ DLL_API_EXPORT CwtDBIDriver* cwtDBIDriverImpl(void)
  * @brief Connects to sqlite3 databases.
  *
  * @param driver_dsn Details see SQLite docs on sqlite3_open_v2 function.
- * 					 Examples:
- *                   path=data.db
- *                   	Open the file "data.db" in the current directory.
+ *				Examples:
+ *              	path=data.db
+ *                 		Open the file "data.db" in the current directory.
  *
- *                   path=/home/fred/data.db
- *                   path=///home/fred/data.db
- *                   path=//localhost/home/fred/data.db
- *                   	Open the database file "/home/fred/data.db".
+ *                  path=/home/fred/data.db
+ *                  path=///home/fred/data.db
+ *                  path=//localhost/home/fred/data.db
+ *                  	Open the database file "/home/fred/data.db".
  *
- *                   path=///C:/Documents%20and%20Settings/fred/Desktop/data.db
- *                   	Windows only: Open the file "data.db" on fred's desktop on drive C:.
- *                   	Note that the %20 escaping in this example is not
- *                   	strictly necessary - space characters can be used literally
- *                   	in URI filenames.
+ *                  path=///C:/Documents%20and%20Settings/fred/Desktop/data.db
+ *                  	Windows only: Open the file "data.db" on fred's desktop on drive C:.
+ *                  	Note that the %20 escaping in this example is not
+ *                  	strictly necessary - space characters can be used literally
+ *                  	in URI filenames.
  *
- *                   path=data.db?mode=ro&cache=private
- *                   	Open file "data.db" in the current directory for read-only access.
- *                   	Regardless of whether or not shared-cache mode is enabled
- *                   	by default, use a private cache.
+ *                  path=data.db?mode=ro&cache=private
+ *                  	Open file "data.db" in the current directory for read-only access.
+ *                  	Regardless of whether or not shared-cache mode is enabled
+ *                  	by default, use a private cache.
  *
- *                   path=/home/fred/data.db?vfs=unix-nolock
- *                   	Open file "/home/fred/data.db". Use the special VFS "unix-nolock".
+ *                  path=/home/fred/data.db?vfs=unix-nolock
+ *                  	Open file "/home/fred/data.db". Use the special VFS "unix-nolock".
  *
- *                   path=data.db?mode=readonly
- *                   	An error. "readonly" is not a valid option for the "mode" parameter.
+ *                  path=data.db?mode=readonly
+ *                  	An error. "readonly" is not a valid option for the "mode" parameter.
+ *
+ *				Mode values:
+ *					mode=ro
+ *				    mode=rw
+ *                  mode=rwc
+ *                  mode=memory
+ *
+ *              Cache values:
+ *              	cache=shared
+ *              	cache=private
  *
  * @param username   Unused.
  * @param password   Unused.
@@ -262,11 +272,12 @@ CwtDBHandler* s3_dbd_connect(const CWT_CHAR *driver_dsn
 		, const CWT_CHAR *password
 		, const CWT_CHAR *csname)
 {
-	CwtStrListNS   *strlist_ns = cwt_strlist_ns();
+	CwtStrListNS   *sl_ns = cwt_strlist_ns();
 
 	CwtSqliteDBHandler *dbh = NULL;
 	int        rc;
-	int        sqlite3_flags;
+	int        s3_flags;
+	int        s3_flag_mode;
 	CwtString  path;
 	char      *path_utf8;
 	CwtStrList opts;
@@ -277,31 +288,38 @@ CwtDBHandler* s3_dbd_connect(const CWT_CHAR *driver_dsn
     rc = SQLITE_OK;
 
 	/* Parse driver DSN */
-	strlist_ns->init(&opts);
-	strlist_ns->split(opts, driver_dsn, _T(";"), NULL, 0);
-	strlist_ns->begin(opts, &opts_it);
+	sl_ns->init(&opts);
+	sl_ns->split(opts, driver_dsn, _T(";"), NULL, 0);
+	sl_ns->begin(opts, &opts_it);
 
-	sqlite3_flags = 0;
+	s3_flags = SQLITE_OPEN_URI;
+	s3_flag_mode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 	__string_ns->init(&path);
 
-	while( strlist_ns->hasMore(&opts_it) ) {
-		const CWT_CHAR* opt = strlist_ns->next(&opts_it);
+	while( sl_ns->hasMore(&opts_it) ) {
+		const CWT_CHAR* opt = sl_ns->next(&opts_it);
 
 		if (__str_ns->strNCmp(_T("path="), opt, 5) == 0) {
 			__string_ns->append(&path, _T("file:"));
 			__string_ns->append(&path, &opt[5]);
+
+			if(__str_ns->strStr(_T("mode=ro")))
+				s3_flag_mode = SQLITE_OPEN_READONLY;
+			else if(__str_ns->strStr(_T("mode=rw")))
+				s3_flag_mode = SQLITE_OPEN_READWRITE;
+			else if(__str_ns->strStr(_T("mode=rwc")))
+				s3_flag_mode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+			else if(__str_ns->strStr(_T("mode=memory")))
+				s3_flag_mode = SQLITE_OPEN_MEMORY;
 		}
 	}
 
+	s3_flags |= s3_flag_mode;
 
-#ifdef CWT_UNICODE
-    path_utf8 = cwt_textcodec_ns()->toUtf8(string_ns->cstr(&path)
-    		, string_ns->size(&path));
-#else
-    path_utf8 = path;
-#endif
+    path_utf8 = cwt_textcodec_ns()->toUtf8(__string_ns->cstr(&path)
+    		, __string_ns->size(&path));
 
-    rc = sqlite3_open_v2 (path_utf8, &dbh->dbh_native, sqlite3_flags, 0 );
+    rc = sqlite3_open_v2(path_utf8, &dbh->dbh_native, s3_flags, NULL);
 
 	if( rc != SQLITE_OK ) {
 		if( !dbh->dbh_native ) {
@@ -343,11 +361,10 @@ CwtDBHandler* s3_dbd_connect(const CWT_CHAR *driver_dsn
 		dbh->errno = SQLITE_OK;
 	}
 
-#ifdef CWT_UNICODE
+
     CWT_FREE(path_utf8);
-#endif
     __string_ns->destroy(&path);
-    strlist_ns->destroy(&opts);
+    sl_ns->destroy(&opts);
 
     return (CwtDBHandler*)dbh;
 }
@@ -363,7 +380,7 @@ static void s3_dbd_disconnect (CwtDBHandler *dbh)
 	while ((stmt = sqlite3_next_stmt(_DBH(dbh), 0)) != 0)
 		sqlite3_finalize(stmt);
 
-	sqlite3_close(_DBH(dbh));
+	sqlite3_close_v2(_DBH(dbh));
 	__string_ns->destroy(&_DBH_CAST(dbh)->errorstr);
 	__s3_destroy(dbh);
 	CWT_FREE(dbh);
