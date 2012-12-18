@@ -25,8 +25,9 @@ typedef enum _CwtDdiColumnFlag {
 	, CwtDdiColumn_PK         = 0x0002
 	, CwtDdiColumn_Indexable  = 0x0004
 	, CwtDdiColumn_Nullable   = 0x0008
-	, CwtDdiColumn_Insertable = 0x0010 /* TODO not used yet */
-	, CwtDdiColumn_Updatable  = 0x0020 /* TODO not used yet */
+	, CwtDdiColumn_Autoinc    = 0x0010
+	, CwtDdiColumn_Insertable = 0x0020 /* TODO not used yet */
+	, CwtDdiColumn_Updatable  = 0x0040 /* TODO not used yet */
 } CwtDdiColumnFlag;
 
 struct _CwtDDITable;
@@ -44,26 +45,25 @@ typedef union _CwtDDIColumnOpts {
 	struct _CwtDDIColumnTimeOpts  time_opts;
 } CwtDDIColumnOpts;
 
-#define CWT_DDI_INT(_min,_max,_autoinc)        NULL , CwtType_INT      , {{(ULONGLONG)_max     , (LONGLONG)_min}}   , _autoinc  , NULL
-#define CWT_DDI_FLOAT(_prec,_scale,_autoinc)   NULL , CwtType_FLOAT    , {{(ULONGLONG)_prec    , (LONGLONG)_scale}} , _autoinc  , NULL
-#define CWT_DDI_DOUBLE(_prec,_scale,_autoinc)  NULL , CwtType_DOUBLE   , {{(ULONGLONG)_prec    , (LONGLONG)_scale}} , _autoinc  , NULL
-#define CWT_DDI_TEXT(_maxlen)                  NULL , CwtType_TEXT     , {{(ULONGLONG)_maxlen  , 0LL}}              , 0         , NULL
-#define CWT_DDI_BLOB(_maxlen)                  NULL , CwtType_BLOB     , {{(ULONGLONG)_maxlen  , 0LL}}              , 0         , NULL
-#define CWT_DDI_TIME(is_stamp)                 NULL , CwtType_TIME     , {{(ULONGLONG)is_stamp , 0LL}}              , 0         , NULL
-#define CWT_DDI_DATE(is_stamp)                 NULL , CwtType_DATE     , {{(ULONGLONG)is_stamp , 0LL}}              , 0         , NULL
-#define CWT_DDI_DATETIME(is_stamp)             NULL , CwtType_DATETIME , {{(ULONGLONG)is_stamp , 0LL}}              , 0         , NULL
-#define CWT_DDI_REF(_entity)                   NULL , CwtType_UNKNOWN  , {{0ULL                , 0LL}}              , 0         , (CwtDDITable*)_entity
-#define CWT_DDI_BOOL                           NULL , CwtType_BOOL     , {{0ULL                , 0LL}}              , 0         , NULL
-#define CWT_DDI_BOOL_TRUE                      _T("1")
-#define CWT_DDI_BOOL_FALSE                     _T("0")
-#define CWT_DDI_NULL_ENTRY                     { NULL, CWT_DDI_BOOL, CwtDdiColumn_General, NULL }
+#define CWT_DDI_INT(_min,_max)        NULL , CwtType_INT      , {{(ULONGLONG)_max     , (LONGLONG)_min}}   , NULL
+#define CWT_DDI_FLOAT(_prec,_scale)   NULL , CwtType_FLOAT    , {{(ULONGLONG)_prec    , (LONGLONG)_scale}} , NULL
+#define CWT_DDI_DOUBLE(_prec,_scale)  NULL , CwtType_DOUBLE   , {{(ULONGLONG)_prec    , (LONGLONG)_scale}} , NULL
+#define CWT_DDI_TEXT(_maxlen)         NULL , CwtType_TEXT     , {{(ULONGLONG)_maxlen  , 0LL}}              , NULL
+#define CWT_DDI_BLOB(_maxlen)         NULL , CwtType_BLOB     , {{(ULONGLONG)_maxlen  , 0LL}}              , NULL
+#define CWT_DDI_TIME(is_stamp)        NULL , CwtType_TIME     , {{(ULONGLONG)is_stamp , 0LL}}              , NULL
+#define CWT_DDI_DATE(is_stamp)        NULL , CwtType_DATE     , {{(ULONGLONG)is_stamp , 0LL}}              , NULL
+#define CWT_DDI_DATETIME(is_stamp)    NULL , CwtType_DATETIME , {{(ULONGLONG)is_stamp , 0LL}}              , NULL
+#define CWT_DDI_REF(_entity)          NULL , CwtType_UNKNOWN  , {{0ULL                , 0LL}}              , (CwtDDITable*)_entity
+#define CWT_DDI_BOOL                  NULL , CwtType_BOOL     , {{0ULL                , 0LL}}              , NULL
+#define CWT_DDI_BOOL_TRUE             _T("1")
+#define CWT_DDI_BOOL_FALSE            _T("0")
+#define CWT_DDI_NULL_ENTRY            { NULL, CWT_DDI_BOOL, CwtDdiColumn_General, NULL }
 
 typedef struct _CwtDDIColumn {
 	CWT_CHAR            *name;
 	struct _CwtDDITable *owner_ptr;
 	CwtTypeEnum          type;
 	CwtDDIColumnOpts     opts;
-	UINT                 autoinc; /* AUTO_INCREMENT value, valid for integer or floating point number, 0 - no auto increment */
 	struct _CwtDDITable *ref_ptr;
 	UINT32               flags;   /* see CwtDdiColumnFlag */
 	CWT_CHAR            *default_value;

@@ -90,12 +90,12 @@ extern BOOL            ddi_set_type_text    (CwtDDIColumn*, ULONGLONG maxlen);
 extern BOOL            ddi_set_type_blob    (CwtDDIColumn*, ULONGLONG maxlen);
 extern BOOL            ddi_set_type_time    (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stmap);
 extern BOOL            ddi_set_type_ref     (CwtDDIColumn*, CwtDDITable*);
-extern BOOL            ddi_set_default      (CwtDDIColumn*, const CWT_CHAR *defaultValue);
-extern BOOL            ddi_set_autoinc      (CwtDDIColumn*, UINT inc);
-extern BOOL            ddi_set_nullable     (CwtDDIColumn*, BOOL yes);
-extern BOOL            ddi_set_indexable    (CwtDDIColumn*, BOOL yes);
-extern BOOL            ddi_set_unique       (CwtDDIColumn*, BOOL yes);
-extern BOOL            ddi_set_pk           (CwtDDIColumn*);
+extern void            ddi_set_default      (CwtDDIColumn*, const CWT_CHAR *defaultValue);
+extern void            ddi_set_autoinc      (CwtDDIColumn*, BOOL yes);
+extern void            ddi_set_nullable     (CwtDDIColumn*, BOOL yes);
+extern void            ddi_set_indexable    (CwtDDIColumn*, BOOL yes);
+extern void            ddi_set_unique       (CwtDDIColumn*, BOOL yes);
+extern void            ddi_set_pk           (CwtDDIColumn*);
 
 extern BOOL            ddi_deploy           (CwtDBHandler *dbh, CwtDDI *ddi, int flags);
 extern BOOL            ddi_recall           (CwtDBHandler *dbh, CwtDDI *ddi, int flags);

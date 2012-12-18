@@ -183,15 +183,15 @@ typedef struct CwtDBI
 	BOOL            (*setColumnTypeBlob)    (CwtDDIColumn*, ULONGLONG maxlen);
 	BOOL            (*setColumnTypeTime)    (CwtDDIColumn*, CwtTypeEnum time_type, BOOL stamp);
 	BOOL            (*setColumnTypeRef)     (CwtDDIColumn*, CwtDDITable*);
-	BOOL            (*setColumnDefault)     (CwtDDIColumn*, const CWT_CHAR *defaultValue);
-	BOOL            (*setColumnAutoinc)     (CwtDDIColumn*, UINT inc);
-	BOOL            (*setColumnNullable)    (CwtDDIColumn*, BOOL yes);
-	BOOL            (*setColumnIndexable)   (CwtDDIColumn*, BOOL yes);
-	BOOL            (*setColumnUnique)      (CwtDDIColumn*, BOOL yes);
-	BOOL            (*setColumnPK)          (CwtDDIColumn*);
+	void            (*setColumnDefault)     (CwtDDIColumn*, const CWT_CHAR *defaultValue);
+	void            (*setColumnAutoinc)     (CwtDDIColumn*, BOOL yes);
+	void            (*setColumnNullable)    (CwtDDIColumn*, BOOL yes);
+	void            (*setColumnIndexable)   (CwtDDIColumn*, BOOL yes);
+	void            (*setColumnUnique)      (CwtDDIColumn*, BOOL yes);
+	void            (*setColumnPK)          (CwtDDIColumn*);
 
-	BOOL            (*deploy)         (CwtDBHandler*, CwtDDI *ddi, int flags);
-	BOOL            (*recall)         (CwtDBHandler*, CwtDDI *ddi, int flags);
+	BOOL            (*deploy)               (CwtDBHandler*, CwtDDI *ddi, int flags);
+	BOOL            (*recall)               (CwtDBHandler*, CwtDDI *ddi, int flags);
 } CwtDBI;
 
 EXTERN_C_BEGIN

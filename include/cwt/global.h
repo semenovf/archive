@@ -54,17 +54,6 @@
 #	define EXTERN_C_END
 #endif
 
-/* TODO depricated */
-#ifdef __cplusplus
-#	define CWT_NS_BEGIN          namespace jq {
-#	define CWT_NS_END            }
-#	define CWT_NS_PREFIXED(name) jq::name
-#else
-#	define CWT_NS_BEGIN
-#	define CWT_NS_END
-#	define CWT_NS_PREFIXED(name) name
-#endif
-
 #ifdef __cplusplus
 #	define CWT_NS_BEGIN          namespace cwt {
 #	define CWT_NS_END            }
