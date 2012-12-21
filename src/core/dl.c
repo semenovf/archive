@@ -3,7 +3,7 @@
 #include <cwt/string.h>
 #include <cwt/logger.h>
 
-static DlHandle  __open(const CWT_CHAR *path, BOOL global, BOOL resolve);
+extern DlHandle  dl_open(const CWT_CHAR *path, BOOL global, BOOL resolve);
 static DlSymbol  __symbol(DlHandle h, const char *name);
 static void      __close(DlHandle h);
 static CWT_CHAR* __buildDlFileName(const CWT_CHAR *name);
@@ -12,7 +12,7 @@ extern BOOL dl_load_ns(const CWT_CHAR *dsn);
 
 
 static CwtDlNS __cwtDlNS = {
-	  __open
+	  dl_open
 	, __symbol
 	, __close
 	, __buildDlFileName
@@ -25,6 +25,7 @@ DLL_API_EXPORT CwtDlNS* cwt_dl_ns(void)
 	return &__cwtDlNS;
 }
 
+#ifdef __COMMENT__
 DlHandle __open( const CWT_CHAR *path, BOOL global, BOOL resolve )
 {
 	DlHandle h = NULL;
@@ -53,7 +54,7 @@ DlHandle __open( const CWT_CHAR *path, BOOL global, BOOL resolve )
 	return h;
 }
 
-
+#endif
 static DlSymbol __symbol(DlHandle h, const char *sym_name)
 {
 	DlSymbol sym = NULL;

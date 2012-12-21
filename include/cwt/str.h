@@ -32,7 +32,7 @@ typedef struct _CwtStrNS {
 	CWT_CHAR*         (*strNdup)      (const CWT_CHAR *s, size_t n);
 	CWT_CHAR*         (*strCat)       (CWT_CHAR *dest, const CWT_CHAR *src);
 	CWT_CHAR*         (*strNCat)      (CWT_CHAR *dest, const CWT_CHAR *src, size_t n);
-	CWT_CHAR*		  (*strTok)       (CWT_CHAR *tok, const CWT_CHAR *delim);
+/*	CWT_CHAR*		  (*strTok)       (CWT_CHAR *tok, const CWT_CHAR *delim);*/
 	LONG              (*strToLong)    (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 	ULONG             (*strToULong)   (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);
 	LONGLONG          (*strToLLONG)   (const CWT_CHAR *s, CWT_CHAR **endptr, int radix);

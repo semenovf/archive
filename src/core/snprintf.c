@@ -39,6 +39,7 @@
 
 #include "snprintf.h"
 #include <cwt/str.h>
+#include <ctype.h>
 
 /*
  * Find the nth power of 10

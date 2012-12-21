@@ -19,28 +19,42 @@
 #include <stdarg.h>
 */
 
-static char*      txtcodec_to_latin1     (const CWT_CHAR *s, size_t n);
-static CWT_CHAR*  txtcodec_from_latin1   (const char *s, size_t n);
-static char*      txtcodec_to_utf8       (const CWT_CHAR *s, size_t n);
-static CWT_CHAR*  txtcodec_from_utf8     (const char *utf8, size_t n);
-static char*      txtcodec_to_mbcs       (const CWT_CHAR *s, const CWT_CHAR *csname, size_t n);
-static CWT_CHAR*  txtcodec_from_mbcs     (const char *s, const CWT_CHAR *csname, size_t n);
+static CwtStrNS *__str_ns = NULL;
+
+static char*      txtcodec_to_latin1_n   (const CWT_CHAR *s, size_t n);
+static CWT_CHAR*  txtcodec_from_latin1_n (const char *s, size_t n);
+static char*      txtcodec_to_utf8_n     (const CWT_CHAR *s, size_t n);
+static CWT_CHAR*  txtcodec_from_utf8_n   (const char *utf8, size_t n);
+static char*      txtcodec_to_mbcs_n     (const CWT_CHAR *s, const CWT_CHAR *csname, size_t n);
+static CWT_CHAR*  txtcodec_from_mbcs_n   (const char *s, const CWT_CHAR *csname, size_t n);
+
+static char*      txtcodec_to_latin1     (const CWT_CHAR *s) { return txtcodec_to_latin1_n(s, __str_ns->strLen(s)); }
+static CWT_CHAR*  txtcodec_from_latin1   (const char *s)     { return txtcodec_from_latin1_n(s, strlen(s)); }
+static char*      txtcodec_to_utf8       (const CWT_CHAR *s) { return txtcodec_to_utf8_n(s, __str_ns->strLen(s)); }
+static CWT_CHAR*  txtcodec_from_utf8     (const char *utf8)  { return txtcodec_from_utf8_n(utf8, strlen(utf8)); }
+static char*      txtcodec_to_mbcs       (const CWT_CHAR *s, const CWT_CHAR *csname) { return txtcodec_to_mbcs_n(s, csname, __str_ns->strLen(s)); }
+static CWT_CHAR*  txtcodec_from_mbcs     (const char *s, const CWT_CHAR *csname)     { return txtcodec_from_mbcs_n(s, csname, strlen(s)); }
 
 static CwtTextCodecNS __cwtTextCodecNS = {
-	  txtcodec_to_latin1
+	  txtcodec_to_latin1_n
+	, txtcodec_from_latin1_n
+	, txtcodec_to_utf8_n
+	, txtcodec_from_utf8_n
+	, txtcodec_to_mbcs_n
+	, txtcodec_from_mbcs_n
+	, txtcodec_to_latin1
 	, txtcodec_from_latin1
 	, txtcodec_to_utf8
 	, txtcodec_from_utf8
 	, txtcodec_to_mbcs
 	, txtcodec_from_mbcs
-};
 
-static CwtStrNS *__cwtStrNS = NULL;
+};
 
 DLL_API_EXPORT CwtTextCodecNS* cwt_textcodec_ns(void)
 {
-	if( !__cwtStrNS ) {
-		__cwtStrNS = cwt_str_ns();
+	if( !__str_ns ) {
+		__str_ns = cwt_str_ns();
 	}
 	return &__cwtTextCodecNS;
 }
@@ -49,7 +63,7 @@ DLL_API_EXPORT CwtTextCodecNS* cwt_textcodec_ns(void)
 /**
   @return converted string, or empty string if error occured or source string was empty
 */
-static char* txtcodec_to_latin1( const CWT_CHAR *s, size_t n )
+static char* txtcodec_to_latin1_n( const CWT_CHAR *s, size_t n )
 {
 	char *str = NULL;
 
@@ -78,7 +92,7 @@ static char* txtcodec_to_latin1( const CWT_CHAR *s, size_t n )
 }
 
 
-static CWT_CHAR* txtcodec_from_latin1(const char *s, size_t n)
+static CWT_CHAR* txtcodec_from_latin1_n(const char *s, size_t n)
 {
 	CWT_CHAR *str = NULL;
 
@@ -104,7 +118,7 @@ static CWT_CHAR* txtcodec_from_latin1(const char *s, size_t n)
 	return str;
 }
 
-static char* txtcodec_to_utf8(const CWT_CHAR *s, size_t n)
+static char* txtcodec_to_utf8_n(const CWT_CHAR *s, size_t n)
 {
 	if (!s)
 		return NULL;
@@ -125,7 +139,7 @@ static char* txtcodec_to_utf8(const CWT_CHAR *s, size_t n)
  *
  * Note: Return value must be deallocated.
  */
-static CWT_CHAR* txtcodec_from_utf8(const char *utf8, size_t n)
+static CWT_CHAR* txtcodec_from_utf8_n(const char *utf8, size_t n)
 {
 	if( !utf8 )
 		return NULL;
@@ -139,30 +153,30 @@ static CWT_CHAR* txtcodec_from_utf8(const char *utf8, size_t n)
 }
 
 
-static char* txtcodec_to_mbcs(const CWT_CHAR *s, const CWT_CHAR *csname, size_t n)
+static char* txtcodec_to_mbcs_n(const CWT_CHAR *s, const CWT_CHAR *csname, size_t n)
 {
-	if( __cwtStrNS->strCaseEq(_T("utf8"), csname))
-		return txtcodec_to_utf8(s, n);
+	if( __str_ns->strCaseEq(_T("utf8"), csname))
+		return txtcodec_to_utf8_n(s, n);
 
-	if( __cwtStrNS->strCaseEq(_T("utf-8"), csname))
-		return txtcodec_to_utf8(s, n);
+	if( __str_ns->strCaseEq(_T("utf-8"), csname))
+		return txtcodec_to_utf8_n(s, n);
 
-	if( __cwtStrNS->strCaseEq(_T("latin1"), csname))
-		return txtcodec_to_latin1(s, n);
+	if( __str_ns->strCaseEq(_T("latin1"), csname))
+		return txtcodec_to_latin1_n(s, n);
 
 	cwt_logger_ns()->warn(_Tr("CwtStrNS::toMBCS(): no text codec is attached, converting to latin1"));
-	return txtcodec_to_latin1(s, n);
+	return txtcodec_to_latin1_n(s, n);
 }
 
 
-static CWT_CHAR* txtcodec_from_mbcs(const char *s, const CWT_CHAR *csname, size_t n)
+static CWT_CHAR* txtcodec_from_mbcs_n(const char *s, const CWT_CHAR *csname, size_t n)
 {
-	if( __cwtStrNS->strEq(_T("utf8"), csname))
-		return txtcodec_from_utf8(s, n);
-	if( __cwtStrNS->strEq(_T("latin1"), csname))
-		return txtcodec_from_latin1(s, n);
+	if( __str_ns->strEq(_T("utf8"), csname))
+		return txtcodec_from_utf8_n(s, n);
+	if( __str_ns->strEq(_T("latin1"), csname))
+		return txtcodec_from_latin1_n(s, n);
 
 	cwt_logger_ns()->warn(_Tr("CwtStrNS::fromMBCS(): no text codec is attached, converting from latin1"));
-	return txtcodec_from_latin1(s, n);
+	return txtcodec_from_latin1_n(s, n);
 }
 

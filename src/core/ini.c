@@ -123,7 +123,7 @@ static BOOL __ini_parse(CwtIniContext *h, CwtChannel *pchan)
 
 		baNS->trim(ba);
 		if( baNS->size(ba) > 0 ) {
-			str = codecNS->fromUtf8(baNS->cstr(ba), baNS->size(ba));
+			str = codecNS->fromUtf8_n(baNS->cstr(ba), baNS->size(ba));
 
 			if( str && strNS->strLen(str) > 0 ) {
 

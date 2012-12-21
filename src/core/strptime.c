@@ -624,10 +624,10 @@ static const CWT_CHAR* const* __cwt_tzname(void)
 		extern char* tzname[2];
 #	endif
 		if( tzname[0] ) {
-			__cwt_tznames[0] = tcNS->fromLatin1(tzname[0], strlen(tzname[0]));
+			__cwt_tznames[0] = tcNS->fromLatin1(tzname[0]);
 		}
 		if( tzname[1] ) {
-			__cwt_tznames[1] = tcNS->fromLatin1(tzname[1], strlen(tzname[1]));
+			__cwt_tznames[1] = tcNS->fromLatin1(tzname[1]);
 		}
 		__cwt_tznames_is_set = TRUE;
 	}

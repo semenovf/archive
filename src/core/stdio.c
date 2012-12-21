@@ -14,20 +14,18 @@ extern int cwt_vsnprintf(CWT_CHAR *buffer, size_t count, const CWT_CHAR *format,
 static CwtStdioNS __cwtStdioNS = {
 #ifdef CWT_UNICODE
 	  wprintf
-	, wsprintf
 	, fwprintf
 
      /* Note: warning C4996: '_vswprintf': swprintf has been changed to conform with the ISO C standard,
 	  * adding an extra character count parameter. To use traditional Microsoft swprintf,
 	  * set _CRT_NON_CONFORMING_SWPRINTFS (before including <stdio.h>).
 	  * Need for compatibly with vsprintf for single-byte characters */
-	, CWT_ISO_CPP_NAME(vswprintf) /* vswprintf defers for C and C++ */
+	/*, CWT_ISO_CPP_NAME(vswprintf) *//* vswprintf defers for C and C++ */
 	#ifdef CWT_CC_MSC
 	#	define _CRT_NON_CONFORMING_SWPRINTFS 1
 	#endif
 #else
 	  printf
-	, sprintf
 	, fprintf
 	, vsprintf
 #endif

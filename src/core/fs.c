@@ -112,7 +112,7 @@ BOOL __fs_unlink(const CWT_CHAR *pathname)
 
 #if defined(CWT_OS_UNIX)
 	char *utf8Pathname;
-	utf8Pathname = cwt_textcodec_ns()->toUtf8(pathname, cwt_str_ns()->strLen(pathname));
+	utf8Pathname = cwt_textcodec_ns()->toUtf8(pathname);
 	ok = unlink(utf8Pathname) == 0 ? TRUE : FALSE;
 	CWT_FREE(utf8Pathname);
 #elif defined(CWT_OS_WIN)

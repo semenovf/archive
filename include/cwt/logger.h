@@ -32,7 +32,5 @@ EXTERN_C_BEGIN
 DLL_API_EXPORT CwtLoggerNS* cwt_logger_ns(void);
 EXTERN_C_END
 
-EXTERN_C_END
-
 #endif /* _LOGGER_H_ */
 

@@ -39,7 +39,7 @@ static int       str_strcmp  (const CWT_CHAR *s1, const CWT_CHAR *s2) { return w
 static int       str_strncmp (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n) { return wcsncmp(s1, s2, n); }
 static CWT_CHAR* str_strcat  (CWT_CHAR *dest, const CWT_CHAR *src) { return wcscat(dest, src); }
 static CWT_CHAR* str_strncat (CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return wcsncat(dest, src, n); }
-static CWT_CHAR* str_strtok  (CWT_CHAR *tok, const CWT_CHAR *delim) { return wcstok(tok, delim); }
+/*static CWT_CHAR* str_strtok  (CWT_CHAR *tok, const CWT_CHAR *delim) { return wcstok(tok, delim); }*/
 static LONG      str_strtol  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return wcstol(s, endptr, radix); }
 static ULONG     str_strtoul (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return wcstoul(s, endptr, radix); }
 static double    str_strtod  (const CWT_CHAR *s, CWT_CHAR **endptr) { return wcstod(s, endptr); }
@@ -61,7 +61,7 @@ static int       str_strcmp   (const CWT_CHAR *s1, const CWT_CHAR *s2) { return 
 static int       str_strncmp  (const CWT_CHAR *s1, const CWT_CHAR *s2, size_t n) { return strncmp(s1,s2,n); }
 static CWT_CHAR* str_strcat   (CWT_CHAR *dest, const CWT_CHAR *src) { return strcat(dest, src); }
 static CWT_CHAR* str_strncat  (CWT_CHAR *dest, const CWT_CHAR *src, size_t n) { return strncat(dest, src, n); }
-static CWT_CHAR* str_strtok   (CWT_CHAR *tok, const CWT_CHAR *delim) { return strtok(tok, delim); }
+/*static CWT_CHAR* str_strtok   (CWT_CHAR *tok, const CWT_CHAR *delim) { return strtok(tok, delim); }*/
 static LONG      str_strtol   (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return strtol(s, endptr, radix); }
 static ULONG     str_strtoul  (const CWT_CHAR *s, CWT_CHAR **endptr, int radix) { return strtoul(s, endptr, radix); }
 static double    str_strtod   (const CWT_CHAR *s, CWT_CHAR **endptr) { return strtod(s, endptr); }
@@ -143,7 +143,7 @@ static CwtStrNS __cwtStrNS = {
 	, str_strndup
 	, str_strcat
 	, str_strncat
-	, str_strtok
+/*	, str_strtok*/
 	, str_strtol
 	, str_strtoul
 	, str_strtoll
@@ -243,7 +243,7 @@ static const CWT_CHAR* str_strerror(int errn)
 	}
 #else
 #	ifdef CWT_UNICODE
-	__errorstr = __cwtStrNS.strDup(CWT_ISO_CPP_NAME(wcserror)(errn));
+	__errorstr = __cwtStrNS.strDup(CWT_ISO_CPP_NAME(wcserror)(errn)); /*FIXME no 'wcserror' found if Linux*/
 #	else
 	__errorstr = __cwtStrNS.strDup(strerror(errn));
 #	endif

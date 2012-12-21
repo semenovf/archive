@@ -40,7 +40,7 @@ static BOOL __load_driver(const CWT_CHAR *dsn, const char *bootstrapNameLatin1)
 		dlHandle = dl->open(driverPath, TRUE, TRUE);
 
 		if( dlHandle ) {
-			bootstrapName = cwt_textcodec_ns()->fromLatin1(bootstrapNameLatin1, strlen(bootstrapNameLatin1));
+			bootstrapName = cwt_textcodec_ns()->fromLatin1(bootstrapNameLatin1);
 #ifdef __COMMENT__
 #ifdef CWT_CC_MSC
 			DlSymbol bootstrap = dl->symbol(dlHandle, bootstrapNameLatin1);

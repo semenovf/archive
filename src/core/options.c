@@ -148,7 +148,7 @@ static CwtArgvType __it_default_next (CwtOptionIterator *it, CWT_CHAR **opt, CWT
 	popt = NULL;
 	parg = NULL;
 
-	optStr = codecNS->fromUtf8(it_->argv[it_->argi], strlen(it_->argv[it_->argi]));
+	optStr = codecNS->fromUtf8(it_->argv[it_->argi]);
 
 	if (strNS->startsWith(optStr, _T("-"))) {
 		/* Single dash '-' */
