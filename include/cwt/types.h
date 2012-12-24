@@ -9,7 +9,10 @@
 #		undef TRUE
 #		undef FALSE
 #	endif
-	typedef enum BOOL { FALSE, TRUE } BOOL;
+/*	typedef enum BOOL { FALSE, TRUE } BOOL;*/
+	typedef unsigned char BOOL;
+#	define FALSE 0
+#	define TRUE  1
 #endif
 
 #ifdef CWT_UNICODE

@@ -125,7 +125,12 @@
 #define CWT_MIN(a,b)  (((a) < (b)) ? (a) : (b))
 #define CWT_MAX(a,b)  (((a) > (b)) ? (a) : (b))
 
-#ifndef NDEBUG
+
+#if defined(NDEBUG) || defined(_NDEBUG)
+#	define CWT_NDEBUG 1
+#endif
+
+#ifndef CWT_NDEBUG
 #	define CWT_FPRINT(stream,prefix,str) _std_fprintf(stream, _Tr("%s (%s[%d]): %s\n"), prefix, _TFILE_, __LINE__, str)
 #	define CWT_PRINT(prefix,str) CWT_FPRINT(stdout,prefix,str)
 #	define CWT_TRACE(str) CWT_FPRINT(stdout,_Tr("TRACE"),str)
@@ -186,12 +191,13 @@ DLL_API_EXPORT void* cwt_malloc(size_t size);
 DLL_API_EXPORT void  cwt_free(void*);
 EXTERN_C_END
 #else
-#	define cwtMalloc malloc
-#	define cwtFree   free
+#	define cwt_malloc malloc
+#	define cwt_free   free
 #endif
 
-#define CWT_MALLOC(T)     ((T*)cwt_malloc(sizeof(T)))
-#define CWT_MALLOCA(T,sz) ((T*)cwt_malloc(sizeof(T)*(sz)))
+#define CWT_MALLOCT(T)    ((T*)cwt_malloc(sizeof(T)))
+#define CWT_MALLOCA(T,n)  ((T*)cwt_malloc(sizeof(T)*(n)))
+#define CWT_MALLOC(sz)    ((char*)cwt_malloc(sz)
 #define CWT_FREE(v)       cwt_free(v)
 #define CWT_REALLOC(p,sz) realloc(p,sz);
 
