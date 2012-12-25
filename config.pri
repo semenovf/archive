@@ -22,8 +22,9 @@ unix: isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=linux }
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=$$(TARGET_CPU) }
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=x86 }
 
+isEmpty(CWT_UNICODE) { DEFINES -= UNICODE }
+
 # qmake internal variables
-DEFINES += UNICODE
 QT=
 CONFIG = $$CWT_CONFIG
 CONFIG += warn_on
