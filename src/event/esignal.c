@@ -65,7 +65,7 @@ static BOOL __accept (CwtSignal signum)
 
 static BOOL __raise(CwtSignal signum)
 {
-	CwtEventSignal *pevt = CWT_MALLOC(CwtEventSignal);
+	CwtEventSignal *pevt = CWT_MALLOCT(CwtEventSignal);
 	pevt->signum = signum;
 	__eventNS->initEvent((CwtEvent*)pevt, __signal_handlers, __eventNS->defaultDestructor);
 	__eventNS->post((CwtEvent*)pevt);

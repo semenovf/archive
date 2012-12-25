@@ -139,7 +139,7 @@ static void __pollChannel(void)
 		CwtChannelListener *plistener = (CwtChannelListener*)__listNS->next(&it);
 
 	    if( __channelNS->bytesAvailable(plistener->channel) > 0 ) {
-	    	CwtEventChannel *pevt = CWT_MALLOC(CwtEventChannel);
+	    	CwtEventChannel *pevt = CWT_MALLOCT(CwtEventChannel);
 	    	pevt->channel = plistener->channel;
 
 	    	__eventNS->initEvent((CwtEvent*)pevt, plistener->readers, __eventNS->defaultDestructor);

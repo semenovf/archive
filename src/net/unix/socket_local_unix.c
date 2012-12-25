@@ -22,7 +22,7 @@ static BOOL __initSockAddrUn(struct sockaddr_un *saddr, const CWT_CHAR *path)
 		return FALSE;
 	}
 
-	utf8Path = cwt_textcodec_ns()->toUtf8(path, cwt_str_ns()->strLen(path));
+	utf8Path = cwt_textcodec_ns()->toUtf8(path);
 
 	if( strlen(utf8Path) >= sizeof(saddr->sun_path)) {
 		cwt_logger_ns()->error(_Tr("local socket path too long"));
@@ -152,7 +152,7 @@ CwtSocket* __socket_acceptLocalSocket(CwtSocket *sd)
 	CWT_ASSERT(sd);
 	CWT_ASSERT(Cwt_LocalSocket == sd->type);
 
-	sd_local = CWT_MALLOC(CwtLocalSocket);
+	sd_local = CWT_MALLOCT(CwtLocalSocket);
 	socklen = sizeof(sd_local->sockaddr);
 
 	client = accept(sd->sockfd, (struct sockaddr*)&sd_local->sockaddr, &socklen);
@@ -197,7 +197,7 @@ CWT_CHAR*  __socket_localPath(CwtSocket *sd)
 			cwt_logger_ns()->error(_Tr("local socket is invalid or it's path is wrong"));
 			return NULL;
 		}
-		return cwt_textcodec_ns()->fromUtf8(sd_local->sockaddr.sun_path, socklen);
+		return cwt_textcodec_ns()->fromUtf8_n(sd_local->sockaddr.sun_path, socklen);
 	}
 
 	return NULL;

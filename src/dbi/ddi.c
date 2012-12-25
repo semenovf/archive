@@ -92,7 +92,7 @@ CwtDDIColumn* ddi_new_column(CwtDDITable *tab, const CWT_CHAR *name)
 
 CwtDDI* ddi_create_DDI(const CWT_CHAR *name, const CWT_CHAR *charset)
 {
-	CwtDDI *ddi = CWT_MALLOC(CwtDDI);
+	CwtDDI *ddi = CWT_MALLOCT(CwtDDI);
 
 	if( !__strNS ) {
 		__strNS  = cwt_str_ns();

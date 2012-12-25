@@ -54,7 +54,7 @@ DLL_API_EXPORT CwtIODevice* cwtSocketDeviceOpen(CwtSocket *sockfd)
 	if( !sockfd )
 		return NULL;
 
-	sdev = CWT_MALLOC(CwtSocketDevice);
+	sdev = CWT_MALLOCT(CwtSocketDevice);
 
 	sdev->__base.close          = __dev_close;
 	sdev->__base.bytesAvailable = __dev_bytesAvailable;

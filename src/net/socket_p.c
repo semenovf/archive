@@ -49,20 +49,20 @@ CwtSocket* __socket_openTypified(CwtSocketType socketType, BOOL is_nonblocking)
 
 	switch(socketType) {
 	case Cwt_LocalSocket:
-		sd = (CwtSocket*)CWT_MALLOC(CwtLocalSocket);
+		sd = (CwtSocket*)CWT_MALLOCT(CwtLocalSocket);
 		cwt_bzero(sd, sizeof(CwtLocalSocket));
 		break;
 	case Cwt_McastSocket:
-		sd = (CwtSocket*)CWT_MALLOC(CwtMcastSocket);
+		sd = (CwtSocket*)CWT_MALLOCT(CwtMcastSocket);
 		cwt_bzero(sd, sizeof(CwtMcastSocket));
 		break;
 	case Cwt_UdpSocket:
-		sd = (CwtSocket*)CWT_MALLOC(CwtUdpSocket);
+		sd = (CwtSocket*)CWT_MALLOCT(CwtUdpSocket);
 		cwt_bzero(sd, sizeof(CwtUdpSocket));
 		break;
 	case Cwt_TcpSocket:
 	default:
-		sd = (CwtSocket*)CWT_MALLOC(CwtTcpSocket);
+		sd = (CwtSocket*)CWT_MALLOCT(CwtTcpSocket);
 		cwt_bzero(sd, sizeof(CwtTcpSocket));
 		break;
 	}
@@ -90,7 +90,7 @@ BOOL __socket_initSockAddrIn(struct sockaddr_in *saddr, const CWT_CHAR *inetAddr
 		saddr->sin_addr.s_addr = htonl(INADDR_ANY);
 	} else {
 		char *inetAddrLatin1;
-		inetAddrLatin1 = cwt_textcodec_ns()->toLatin1(inetAddr, cwt_str_ns()->strLen(inetAddr));
+		inetAddrLatin1 = cwt_textcodec_ns()->toLatin1(inetAddr);
 
 		if( !inet_aton(inetAddrLatin1, &saddr->sin_addr) ) {
 			do {

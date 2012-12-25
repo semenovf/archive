@@ -153,7 +153,7 @@ static CwtUniType* __create(void)
 {
 	CwtUniType *ut;
 
-	ut = CWT_MALLOC(CwtUniType);
+	ut = CWT_MALLOCT(CwtUniType);
 	__init(ut);
 	return ut;
 }

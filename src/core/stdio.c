@@ -11,7 +11,7 @@
 static int cwt_snprintf(CWT_CHAR *buffer, size_t count, const CWT_CHAR *format, ...);
 extern int cwt_vsnprintf(CWT_CHAR *buffer, size_t count, const CWT_CHAR *format, va_list);
 
-static CwtStdioNS __cwtStdioNS = {
+static CwtStdioNS __stdio_ns = {
 #ifdef CWT_UNICODE
 	  wprintf
 	, fwprintf
@@ -27,7 +27,6 @@ static CwtStdioNS __cwtStdioNS = {
 #else
 	  printf
 	, fprintf
-	, vsprintf
 #endif
 	, cwt_snprintf
 	, cwt_vsnprintf
@@ -36,7 +35,7 @@ static CwtStdioNS __cwtStdioNS = {
 
 DLL_API_EXPORT CwtStdioNS* cwt_stdio_ns(void)
 {
-	return &__cwtStdioNS;
+	return &__stdio_ns;
 }
 
 /**

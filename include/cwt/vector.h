@@ -11,58 +11,50 @@
 #include <cwt/types.h>
 #include <cwt/str.h>
 
-typedef struct _CwtVector {
-#ifndef CWT_NDEBUG
-	INT32   magic;
-#endif
-	BOOL allocated;
-} CwtVector;
+#define CWT_BEGIN_DECL_VECTOR_NS(_NS,_CollectionT,_ElemT)                     \
+typedef struct _CollectionT                                                   \
+{                                                                             \
+	_ElemT*   m_buffer;                                                       \
+    size_t    m_count;                                                        \
+    size_t    m_capacity;                                                     \
+    size_t    m_max_capacity;                                                 \
+} _CollectionT, *_CollectionT##Ptr;                                           \
+                                                                              \
+typedef struct _NS {                                                          \
+	void          (*init)        (_CollectionT* p);                           \
+	void          (*initSized)   (_CollectionT* p, size_t initial_size, size_t max_size); \
+	void          (*initWithBuffer) (_CollectionT* p, _ElemT *buf, size_t n); \
+	_CollectionT* (*create)      (void);                                      \
+	_CollectionT* (*createSized) (size_t initial_size, size_t max_size);      \
+	void          (*destroy)     (_CollectionT* p);                           \
+	void          (*free)        (_CollectionT* p);                           \
+	void          (*disrobe)     (_CollectionT* p);                           \
+	_CollectionT* (*clone)       (_CollectionT* p);                           \
+	BOOL          (*reserve)     (_CollectionT* p, size_t n);                 \
+	BOOL          (*lreserve)    (_CollectionT* p, size_t n);                 \
+	BOOL          (*mreserve)    (_CollectionT* p, size_t n, size_t pos);     \
+	BOOL          (*resize)      (_CollectionT* p, size_t n);                 \
+	size_t        (*capacity)    (_CollectionT* p);                           \
+	BOOL          (*isEmpty)     (_CollectionT* p);                           \
+	void          (*clear)       (_CollectionT* p);                           \
+	size_t        (*size)        (_CollectionT* p);                           \
+	size_t        (*length)      (_CollectionT* p);                           \
+	void          (*appendElem)  (_CollectionT* p, _ElemT ch);                \
+	void          (*appendElems) (_CollectionT* p, const _ElemT *elems, size_t n); \
+	void          (*prependElem) (_CollectionT* p, _ElemT ch);                \
+	void          (*insertElem)  (_CollectionT* p, _ElemT ch, size_t pos);    \
+	void          (*insert)      (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
+	void          (*replace)     (_CollectionT* p, const _ElemT *elems, size_t nelems, size_t pos); \
+	void          (*removeElem)  (_CollectionT* p, size_t pos);               \
+	void          (*removeLast)  (_CollectionT* p);                           \
+	_ElemT*       (*substr)      (_CollectionT* p, size_t start, size_t nelems); \
+	BOOL          (*find)        (_CollectionT* p, _ElemT ch, size_t *offset);\
+	_ElemT        (*at)          (_CollectionT* p, size_t index);             \
+    _ElemT        (*first)       (_CollectionT* p);                           \
+    _ElemT        (*last)        (_CollectionT* p);                           \
+    const _ElemT* (*data)        (_CollectionT* p);
 
-typedef struct _CwtVectorNS {
-	void          (*init)          (CwtVector *v, int sizeof_item);
-	void          (*initSized)     (CwtVector *v, int sizeof_item, size_t initial_size, size_t max_size);
-	/*void          (*initRawBuffer) (CwtVector *v, int sizeof_item, const char *buf, size_t nitems);*/
-	CwtVector*    (*create)        (int sizeof_item);
-	CwtVector*    (*createSized)   (int sizeof_item, size_t initial_size, size_t max_size);
-	void          (*destroy)       (CwtVector *v);
-	void          (*free)          (CwtVector *v);
-/*	void          (*disrobe)       (CwtVector *v);*/
-	void          (*assign)        (CwtVector *target, CwtVector *orig);
-	CwtVector*    (*clone)         (CwtVector *v);
-	BOOL          (*reserve)       (CwtVector *v, size_t n);
-	BOOL          (*resize)        (CwtVector *v, size_t n);
-	size_t        (*capacity)      (CwtVector *v);
-	BOOL          (*isEmpty)       (CwtVector *v);
-	void          (*clear)         (CwtVector *v);
-	size_t        (*size)          (CwtVector *v);
-	size_t        (*length)        (CwtVector *v);
-	void          (*appendItem)    (CwtVector* p, void *item);
-
-#ifdef __COMMENT_
-
-	BOOL          (*lreserve)    (CwtVector* p, size_t n);
-	BOOL          (*mreserve)    (CwtVector* p, size_t n, size_t pos);
-
-	void          (*appendElems) (CwtVector* p, const _ElemT *elems, size_t n);
-	void          (*prependElem) (CwtVector* p, _ElemT ch);
-	void          (*insertElem)  (CwtVector* p, _ElemT ch, size_t pos);
-	void          (*insert)      (CwtVector* p, const _ElemT *elems, size_t nelems, size_t pos);
-	void          (*replace)     (CwtVector* p, const _ElemT *elems, size_t nelems, size_t pos);
-	void          (*removeElem)  (CwtVector* p, size_t pos);
-	void          (*removeLast)  (CwtVector* p);
-	_ElemT*       (*substr)      (CwtVector* p, size_t start, size_t nelems);
-	BOOL          (*find)        (CwtVector* p, _ElemT ch, size_t *offset);
-	_ElemT        (*at)          (CwtVector* p, size_t index);
-    _ElemT        (*first)       (CwtVector* p);
-    _ElemT        (*last)        (CwtVector* p);
-    const _ElemT* (*data)        (CwtVector* p);
-#endif
-} CwtVectorNS;
-
-EXTERN_C_BEGIN
-DLL_API_EXPORT CwtVectorNS* cwt_vector_ns(void);
-EXTERN_C_END
-
+#define CWT_END_DECL_VECTOR_NS(_NS) } _NS;
 
 #define CWT_BEGIN_DEF_VECTOR_NS(_NS,_CollectionT,_ElemT)                      \
 	static const size_t __default_initial_size = 64;                          \
@@ -165,7 +157,7 @@ static void __initSized(_CollectionT* sb, size_t initial_size, size_t max_size)\
 	sb->m_max_capacity = max_size;                                            \
 }                                                                             \
                                                                               \
-static void __initRawBuffer (_CollectionT* p, _ElemT *buf, size_t n)         \
+static void __initWithBuffer (_CollectionT* p, _ElemT *buf, size_t n)         \
 {                                                                             \
 	if (!buf || n == 0) {                                                     \
 		__init(p);                                                            \
@@ -187,7 +179,7 @@ static _CollectionT* __createSized(size_t initial_size, size_t max_size)      \
 {                                                                             \
 	_CollectionT* sb;                                                         \
                                                                               \
-	sb = CWT_MALLOC(_CollectionT);                                            \
+	sb = CWT_MALLOCT(_CollectionT);                                           \
 	CWT_ASSERT(sb);                                                           \
 	__initSized(sb, initial_size, max_size);                                  \
 	return sb;                                                                \

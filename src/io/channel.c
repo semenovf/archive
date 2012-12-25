@@ -90,7 +90,7 @@ static CwtChannel* channel_open(CwtIODevice *pdev)
 	if( !__ba_ns )
 		__ba_ns = cwt_bytearray_ns();
 
-	pchan = CWT_MALLOC(CwtChannel);
+	pchan = CWT_MALLOCT(CwtChannel);
 	__init((CwtChannel*)pchan, pdev);
 
 	return pchan;

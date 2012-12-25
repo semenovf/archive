@@ -6,6 +6,7 @@ release/
 Makefile
 makefile
 doxygen/html
+doxygen/man
 doc/
 *.mk
 *.log

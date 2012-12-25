@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 #include <cwt/global.h>
-#include <cwt/logger.h>
+/*#include <cwt/logger.h>*/
 
 DLL_API_EXPORT void* cwt_malloc(size_t size)
 {

@@ -243,7 +243,7 @@ static const CWT_CHAR* str_strerror(int errn)
 	}
 #else
 #	ifdef CWT_UNICODE
-	__errorstr = __cwtStrNS.strDup(CWT_ISO_CPP_NAME(wcserror)(errn)); /*FIXME no 'wcserror' found if Linux*/
+	__errorstr = __cwtStrNS.strDup(CWT_ISO_CPP_NAME(wcserror)(errn)); /*FIXME no 'wcserror' found in Linux*/
 #	else
 	__errorstr = __cwtStrNS.strDup(strerror(errn));
 #	endif

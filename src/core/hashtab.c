@@ -245,7 +245,7 @@ static CwtHashTable* ht_create(CwtHashTableHashFunc hash_func
 	CwtHashTable *hash_table;
 
 	/* Allocate a new hash table structure */
-	hash_table = CWT_MALLOC(CwtHashTable);
+	hash_table = CWT_MALLOCT(CwtHashTable);
 	ht_init (hash_table, hash_func, equal_func, key_free_func, value_free_func);
 	return hash_table;
 }
@@ -419,7 +419,7 @@ static BOOL ht_insert(CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTabl
 	}
 	
 	/* Not in the hash table yet.  Create a new entry */
-	newentry = CWT_MALLOC(CwtHashTableEntry);
+	newentry = CWT_MALLOCT(CwtHashTableEntry);
 
 	if( newentry == NULL ) {
 		return FALSE;

@@ -54,7 +54,7 @@ static CwtIniContext* __ini_create(void)
 static CwtIniContext* __ini_createWithFlags(UINT flags, size_t max_tokens)
 {
 	CwtIniContext *h;
-	h = CWT_MALLOC(CwtIniContext);
+	h = CWT_MALLOCT(CwtIniContext);
 
 	h->max_tokens = max_tokens > 0 ? max_tokens : 128;
 	h->flags      = flags;

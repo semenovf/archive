@@ -197,7 +197,7 @@ EXTERN_C_END
 
 #define CWT_MALLOCT(T)    ((T*)cwt_malloc(sizeof(T)))
 #define CWT_MALLOCA(T,n)  ((T*)cwt_malloc(sizeof(T)*(n)))
-#define CWT_MALLOC(sz)    ((char*)cwt_malloc(sz)
+#define CWT_MALLOC(sz)    cwt_malloc(sz)
 #define CWT_FREE(v)       cwt_free(v)
 #define CWT_REALLOC(p,sz) realloc(p,sz);
 

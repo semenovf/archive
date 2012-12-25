@@ -75,7 +75,7 @@ static CwtOptionIterator* __createIterator (CwtOptionIteratorType itType)
 	case Cwt_OptionIterator_Default:
 	default: {
 		CwtDefaultOptionIterator *it;
-		it = CWT_MALLOC(CwtDefaultOptionIterator);
+		it = CWT_MALLOCT(CwtDefaultOptionIterator);
 		it->__base.begin        = __it_default_begin;
 		it->__base.hasMore      = __it_default_hasMore;
 		it->__base.next         = __it_default_next;

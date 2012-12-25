@@ -189,7 +189,7 @@ CwtIODevice* cwtSerialDeviceOpen(CWT_CHAR *attrs[], int nattrs)
 		, irq);
 */
 
-	spd = CWT_MALLOC(CwtSerialDevice);
+	spd = CWT_MALLOCT(CwtSerialDevice);
 
 	spd->__base.close          = __dev_close;
 	spd->__base.bytesAvailable = __dev_bytesAvailable;

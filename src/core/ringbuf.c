@@ -139,7 +139,7 @@ static CwtRingBuffer* rb_create_sized(size_t initial_size, size_t max_size)
 {
 	CwtRingBuffer* rb;
 
-	rb = CWT_MALLOC(CwtRingBuffer);
+	rb = CWT_MALLOCT(CwtRingBuffer);
 	CWT_ASSERT(rb);
 	rb_init_sized(rb, initial_size, max_size);
 	return rb;

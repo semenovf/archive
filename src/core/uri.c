@@ -37,7 +37,7 @@ DLL_API_EXPORT CwtUriNS* cwt_uri_ns(void)
 static CwtUri*  __uri_create (void)
 {
 	CwtUri *uri;
-	uri = CWT_MALLOC(CwtUri);
+	uri = CWT_MALLOCT(CwtUri);
 	__uri_init(uri);
 	return uri;
 }

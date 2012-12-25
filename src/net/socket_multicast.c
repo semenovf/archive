@@ -119,8 +119,8 @@ static CwtSocket* __socket_openMcastSocketHelper(
 		char *inetAddrLatin1;
 		char *inetMcastAddrLatin1;
 
-		inetAddrLatin1      = cwt_textcodec_ns()->toLatin1(inetAddr, cwt_str_ns()->strLen(inetAddr));
-		inetMcastAddrLatin1 = cwt_textcodec_ns()->toLatin1(inetMcastAddr, cwt_str_ns()->strLen(inetMcastAddr));
+		inetAddrLatin1      = cwt_textcodec_ns()->toLatin1(inetAddr);
+		inetMcastAddrLatin1 = cwt_textcodec_ns()->toLatin1(inetMcastAddr);
 
 		if( is_listener ) {
 			ok = __initListener((CwtMcastSocket *)sd

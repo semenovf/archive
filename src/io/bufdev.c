@@ -29,7 +29,7 @@ CwtIODevice* cwtBufferDeviceOpen()
 {
 	CwtBufferDevice *bufd;
 
-	bufd = CWT_MALLOC(struct CwtBufferDevice);
+	bufd = CWT_MALLOCT(struct CwtBufferDevice);
 
 	bufd->master = TRUE;
 	bufd->in = cwt_ringbuffer_ns()->create();
@@ -50,7 +50,7 @@ CwtIODevice* cwtBufferDeviceOpenPeer(CwtIODevice *bufd)
 {
 	CwtBufferDevice *peer_bufd;
 
-	peer_bufd = CWT_MALLOC(CwtBufferDevice);
+	peer_bufd = CWT_MALLOCT(CwtBufferDevice);
 
 	peer_bufd->master = FALSE;
 	peer_bufd->in = ((CwtBufferDevice*)bufd)->out;

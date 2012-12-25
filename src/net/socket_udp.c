@@ -110,7 +110,7 @@ CwtSocket* __socket_acceptUdpSocket(CwtSocket *sd)
 	CWT_ASSERT(sd);
 	CWT_ASSERT(Cwt_UdpSocket == sd->type);
 
-	sd_udp = CWT_MALLOC(CwtUdpSocket);
+	sd_udp = CWT_MALLOCT(CwtUdpSocket);
 
 	/* Peeks at the incoming data. The data is copied into the buffer
 	 * but is not removed from the input queue.

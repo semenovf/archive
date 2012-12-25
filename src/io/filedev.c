@@ -83,7 +83,7 @@ DLL_API_EXPORT CwtIODevice* cwtFileDeviceOpen(const CWT_CHAR *path, CwtOpenMode 
 		return (CwtIODevice*)NULL;
 	}
 
-	fd = CWT_MALLOC(CwtFileDevice);
+	fd = CWT_MALLOCT(CwtFileDevice);
 	fd->in  = -1;
 	fd->out = -1;
 

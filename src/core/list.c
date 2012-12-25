@@ -111,14 +111,14 @@ static void list_init_ptr (CwtList *list, void (*data_cleanup)(void*))
  */
 static CwtList* list_create(size_t sizeofData, void (*data_cleanup)(void*))
 {
-	CwtList *list = CWT_MALLOC(CwtList);
+	CwtList *list = CWT_MALLOCT(CwtList);
 	list_init(list, sizeofData, data_cleanup);
 	return list;
 }
 
 static CwtList* list_create_ptr (void (*data_cleanup)(void*))
 {
-	CwtList *list = CWT_MALLOC(CwtList);
+	CwtList *list = CWT_MALLOCT(CwtList);
 	list_init(list, sizeof(void*), data_cleanup);
 	list->is_ptr = TRUE;
 	return list;

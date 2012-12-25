@@ -273,7 +273,7 @@ static CWT_CHAR*  __socket_inetAddr(CwtSocket *sd)
 	/* FIXME MT-unsafe, The string is returned in a statically
 	 * allocated buffer, which subsequent calls will overwrite*/
 	inetAddrLatin1 = inet_ntoa(*in);
-	inetAddr = cwt_textcodec_ns()->fromLatin1(inetAddrLatin1, strlen(inetAddrLatin1));
+	inetAddr = cwt_textcodec_ns()->fromLatin1(inetAddrLatin1);
 
 	return inetAddr;
 }

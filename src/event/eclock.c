@@ -133,7 +133,7 @@ static void __peekDate(CwtEvent *pevt, int *pday, int *pmon, int *pyear)
 
 static void __postTime(int hour, int min, int sec)
 {
-	CwtEventClockTime *pevt = CWT_MALLOC(CwtEventClockTime);
+	CwtEventClockTime *pevt = CWT_MALLOCT(CwtEventClockTime);
 	pevt->hour = hour;
 	pevt->min  = min;
 	pevt->sec  = sec;
@@ -145,7 +145,7 @@ static void __postTime(int hour, int min, int sec)
 
 static void __postDate(int day, int mon, int year)
 {
-	CwtEventClockDate *pevt = CWT_MALLOC(CwtEventClockDate);
+	CwtEventClockDate *pevt = CWT_MALLOCT(CwtEventClockDate);
 	pevt->year = year;
 	pevt->mon  = mon;
 	pevt->day  = day;

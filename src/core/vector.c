@@ -5,6 +5,8 @@
  *      Author: wladt
  */
 
+#ifdef __COMMENT__
+
 #include "vector_p.h"
 #include <cwt/str.h>
 
@@ -538,3 +540,4 @@ static const _ElemT* __data (_CollectionT* p)                                 \
 	CWT_ASSERT(p);                                                            \
 	return p->m_count > 0 ? p->m_buffer : NULL;                               \
 }
+#endif

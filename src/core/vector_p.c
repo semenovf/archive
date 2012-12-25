@@ -6,7 +6,7 @@
  * @brief
  */
 
-
+#ifdef __COMMENT__
 #include "vector_p.h"
 
 
@@ -96,3 +96,4 @@ BOOL v_right_reserve_shared (CwtVectorImpl *v, size_t n)
 
 	return TRUE;
 }
+#endif

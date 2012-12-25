@@ -161,7 +161,7 @@ CwtSocket* __socket_acceptTcpSocket(CwtSocket *sd)
 	CWT_ASSERT(sd);
 	CWT_ASSERT(Cwt_TcpSocket == sd->type);
 
-	sd_tcp = CWT_MALLOC(CwtTcpSocket);
+	sd_tcp = CWT_MALLOCT(CwtTcpSocket);
 	socklen = sizeof(sd_tcp->sockaddr);
 
 	client = accept(sd->sockfd, (struct sockaddr*)&sd_tcp->sockaddr, &socklen);
