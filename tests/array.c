@@ -59,7 +59,7 @@ void test_long_array(void)
 	CwtArrayNS *array_ns = cwt_array_ns();
 	CwtArray   *arr;
 	long *plong_data;
-	long *plong;
+	const long *plong;
 	int i;
 
 	arr = array_ns->allocLong(_ARR_SIZE);

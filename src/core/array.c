@@ -15,12 +15,12 @@ static CwtArray* a_allocz      (int sizeof_item, size_t capacity);
 static CwtArray* a_realloc     (CwtArray *, size_t new_capacity);
 static void      a_free        (CwtArray *);
 static CwtArray* a_clone       (CwtArray *);
-static size_t    a_copy        (CwtArray *, CwtArray *, size_t n);
+static size_t    a_copy        (CwtArray *, CwtArray *, size_t off_to, size_t off_from, size_t n);
 static size_t    a_move        (CwtArray *, size_t off_to, size_t off_from, size_t n);
 static void      a_bzero       (CwtArray *);
 static void*     a_data        (CwtArray *);
-static void*     a_at          (CwtArray *, int index);
-static void*     a_put         (CwtArray *, int index, const void *item);
+static const void* a_at        (CwtArray *, size_t index);
+static void*     a_put         (CwtArray *, size_t index, const void *item);
 static size_t    a_size        (CwtArray *a)     { CWT_ASSERT(a); return a->capacity; }
 static BOOL      a_eq          (CwtArray *, CwtArray *);
 static CwtArray* a_alloc_char  (size_t capacity) { return a_allocz(sizeof(char), capacity); }
@@ -128,7 +128,7 @@ static CwtArray* a_clone (CwtArray *a)
 	if (a) {
 		CwtArray *clone;
 		clone = a_alloc(a->sizeof_item, a->capacity);
-		a_copy(clone, a, a->capacity);
+		a_copy(clone, a, 0, 0, a->capacity);
 		return clone;
 	}
 
@@ -144,20 +144,26 @@ static CwtArray* a_clone (CwtArray *a)
  *          calculated as MIN(from->size, to->size, n).
  *          Items' sizes of arrays must be equal.
  *
- * @param to Destination array.
- * @param from Source array.
- * @param n Number of items to copy.
- * @return Actually items copied.
+ * @param to       Destination array.
+ * @param from     Source array.
+ * @param off_to   Offset in destination array.
+ * @param off_from Offset in source array.
+ * @param n        Number of items to copy.
+ * @return         Actually items copied.
  */
-static size_t a_copy (CwtArray *to, CwtArray *from, size_t n)
+static size_t a_copy (CwtArray *to, CwtArray *from, size_t off_to, size_t off_from, size_t n)
 {
-	if (!to) return 0;
-	if (!from) return 0;
-	if (to->sizeof_item != from->sizeof_item) return 0;
+	if (!to || !from)
+		return 0;
 
-	n = CWT_MIN(from->capacity, n);
-	n = CWT_MIN(to->capacity, n);
-	memcpy(to->buffer, from->buffer, n * to->sizeof_item);
+	if (to->sizeof_item != from->sizeof_item)
+		return 0;
+
+	n = CWT_MIN(from->capacity - off_from, n);
+	n = CWT_MIN(to->capacity - off_to, n);
+	memcpy(to->buffer + off_to * to->sizeof_item
+		, from->buffer + off_from * from->sizeof_item
+		, n * to->sizeof_item);
 	return n;
 }
 
@@ -192,9 +198,8 @@ static size_t a_move (CwtArray *a, size_t off_to, size_t off_from, size_t n)
 
 static inline void a_bzero (CwtArray *a)
 {
-	if (a) {
+	if (a)
 		memset(&a->buffer[0], 0, a->capacity * a->sizeof_item);
-	}
 }
 
 static void* a_data (CwtArray *a)
@@ -204,21 +209,21 @@ static void* a_data (CwtArray *a)
 	return &a->buffer[0];
 }
 
-static void* a_at (CwtArray *a, int index)
+static const void* a_at (CwtArray *a, size_t index)
 {
 	CWT_ASSERT(a);
-	if (index < 0 || index >= (int)a->capacity)
+	if (index >= a->capacity)
 		return NULL;
 
 	return &a->buffer[index * a->sizeof_item];
 }
 
-static void* a_put (CwtArray *a, int index, const void *item)
+static void* a_put (CwtArray *a, size_t index, const void *item)
 {
 	char *ptr;
 
 	CWT_ASSERT(a);
-	if (index < 0 || index >= (int)a->capacity)
+	if (index >= a->capacity)
 		return NULL;
 
 	ptr = &a->buffer[index * a->sizeof_item];

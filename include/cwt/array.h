@@ -58,12 +58,12 @@ typedef struct _CwtArrayNS {
 	CwtArray*     (*realloc)  (CwtArray *, size_t new_capacity);
 	void          (*free)     (CwtArray *);
 	CwtArray*     (*clone)    (CwtArray *);
-	size_t        (*copy)     (CwtArray *, CwtArray *, size_t n);
+	size_t        (*copy)     (CwtArray *, CwtArray *, size_t off_to, size_t off_from, size_t n);
 	size_t        (*move)     (CwtArray *, size_t off_to, size_t off_from, size_t n);
 	void          (*bzero)    (CwtArray *);
 	void*         (*data)     (CwtArray *);
-	void*         (*at)       (CwtArray *, int index);
-	void*         (*put)      (CwtArray *, int index, const void *item);
+	const void*   (*at)       (CwtArray *, size_t index);
+	void*         (*put)      (CwtArray *, size_t index, const void *item);
 	size_t        (*size)     (CwtArray *);
 	BOOL          (*eq)       (CwtArray *, CwtArray *);
 
