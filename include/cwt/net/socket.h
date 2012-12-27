@@ -12,6 +12,7 @@
 #define __CWT_SOCKET_H__
 
 #include <cwt/types.h>
+#include <cwt/bytearr.h>
 
 #if defined(CWT_CC_MSC)
 #	include <winsock2.h>
@@ -52,7 +53,7 @@ typedef struct _CwtSocketNS {
 	BOOL             (*setNonBlocking)(CwtSocket*, BOOL is_nonblocking);
 
 	size_t           (*bytesAvailable)(CwtSocket*);
-	ssize_t          (*read)          (CwtSocket*, BYTE* buf, size_t sz);
+	ssize_t          (*read)          (CwtSocket*, CwtByteArray *ba, size_t sz);
 	ssize_t          (*write)         (CwtSocket*, const BYTE *buf, size_t sz);
 	CWT_CHAR*        (*inetAddr)      (CwtSocket*);
 	UINT16           (*inetPort)      (CwtSocket*);

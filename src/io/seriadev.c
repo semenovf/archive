@@ -19,7 +19,7 @@
 
 static void    __dev_close(CwtIODevice*);
 static size_t  __dev_bytesAvailable(CwtIODevice*);
-static ssize_t __dev_read(CwtIODevice*, BYTE*, size_t);
+static ssize_t __dev_read(CwtIODevice*, CwtByteArray *, size_t);
 static ssize_t __dev_write(CwtIODevice*, const BYTE*, size_t);
 
 typedef struct CwtSerialDevice
@@ -215,10 +215,10 @@ size_t __dev_bytesAvailable(CwtIODevice *dev)
 	return cwtSerialBytesAvailable(((CwtSerialDevice*)dev)->portnum);
 }
 
-ssize_t __dev_read(CwtIODevice *dev, BYTE* buf, size_t sz)
+ssize_t __dev_read(CwtIODevice *dev, CwtByteArray *ba, size_t sz)
 {
 	CWT_ASSERT(dev);
-	return cwtSerialRead(((CwtSerialDevice*)dev)->portnum, buf, sz);
+	return cwtSerialRead(((CwtSerialDevice*)dev)->portnum, ba, sz);
 }
 
 ssize_t __dev_write(CwtIODevice *dev, const BYTE* buf, size_t sz)

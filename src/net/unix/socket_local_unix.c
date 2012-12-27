@@ -175,9 +175,9 @@ CwtSocket* __socket_acceptLocalSocket(CwtSocket *sd)
 	return NULL;
 }
 
-ssize_t __socket_readLocalSocket(CwtSocket *sd, BYTE *buf, size_t sz)
+ssize_t __socket_readLocalSocket(CwtSocket *sd, CwtByteArray *ba, size_t sz)
 {
-	return __socket_readTcpSocket(sd, buf, sz);
+	return __socket_readTcpSocket(sd, ba, sz);
 }
 
 

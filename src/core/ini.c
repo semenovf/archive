@@ -86,11 +86,11 @@ static void __ini_free(CwtIniContext* h)
 
 static BOOL __ini_parse(CwtIniContext *h, CwtChannel *pchan)
 {
-	CwtStrNS       *strNS    = cwt_str_ns();
-	CwtStrListNS   *slNS     = cwt_strlist_ns();
-	CwtChannelNS   *chNS     = cwt_channel_ns();
-	CwtByteArrayNS *baNS     = cwt_bytearray_ns();
-	CwtTextCodecNS *codecNS  = cwt_textcodec_ns();
+	CwtStrNS       *str_ns    = cwt_str_ns();
+	CwtStrListNS   *sl_ns     = cwt_strlist_ns();
+	CwtChannelNS   *ch_ns     = cwt_channel_ns();
+	CwtByteArrayNS *ba_ns     = cwt_bytearray_ns();
+	CwtTextCodecNS *codec_ns  = cwt_textcodec_ns();
 	CwtByteArray   *ba;
 	CwtStrList     *tokens;
 	BOOL esc = FALSE;
@@ -98,22 +98,22 @@ static BOOL __ini_parse(CwtIniContext *h, CwtChannel *pchan)
 
 	CWT_ASSERT(h);
 
-	ba = baNS->create();
-	tokens = slNS->create();
+	ba = ba_ns->create();
+	tokens = sl_ns->create();
 	h->line = 0;
 
-	while( !chNS->atEnd(pchan) && chNS->readLine(pchan, ba) ) {
+	while( !ch_ns->atEnd(pchan) && ch_ns->readLine(pchan, ba) ) {
 		CWT_CHAR *str;
 
 		h->line++;
 
 		/* empty line */
-		if( baNS->size(ba) == 0 )
+		if( ba_ns->size(ba) == 0 )
 			continue;
 
-		if( baNS->last(ba) == '\\' ) {
-			baNS->resize(ba, baNS->size(ba)-1); /* remove backslash */
-			baNS->appendElem(ba, ' ');
+		if( ba_ns->last(ba) == '\\' ) {
+			ba_ns->resize(ba, ba_ns->size(ba)-1); /* remove backslash */
+			ba_ns->append(ba, ' ');
 			esc = TRUE;
 			continue;
 		} else {
@@ -121,26 +121,26 @@ static BOOL __ini_parse(CwtIniContext *h, CwtChannel *pchan)
 		}
 
 
-		baNS->trim(ba);
-		if( baNS->size(ba) > 0 ) {
-			str = codecNS->fromUtf8_n(baNS->cstr(ba), baNS->size(ba));
+		ba_ns->trim(ba);
+		if( ba_ns->size(ba) > 0 ) {
+			str = codec_ns->fromUtf8_n(ba_ns->cstr(ba), ba_ns->size(ba));
 
-			if( str && strNS->strLen(str) > 0 ) {
+			if( str && str_ns->strLen(str) > 0 ) {
 
 				/* not a comment */
 				if( str[0] != _T('#')) {
-					int rc = slNS->splitAny(tokens, str, CWT_WHITESPACES, CWT_QUOTES_BOTH, 0);
+					int rc = sl_ns->splitAny(tokens, str, CWT_WHITESPACES, CWT_QUOTES_BOTH, 0);
 					if( rc > 0 ) {
 						CwtIniCallback callback;
 						CWT_CHAR **argv;
 						size_t argc = 0;
 
-						argc = slNS->size(tokens);
+						argc = sl_ns->size(tokens);
 
 						if( argc <= h->max_tokens ) {
 							argv = CWT_MALLOCA(CWT_CHAR*, argc);
 
-							slNS->toArray(tokens, argv, &argc);
+							sl_ns->toArray(tokens, argv, &argc);
 							callback  = (CwtIniCallback)__htNS->lookup(h->directives, argv[0]);
 
 							if( callback ) {
@@ -170,15 +170,15 @@ static BOOL __ini_parse(CwtIniContext *h, CwtChannel *pchan)
 		}
 		CWT_FREE(str);
 
-		baNS->clear(ba);
-		slNS->clear(tokens);
+		ba_ns->clear(ba);
+		sl_ns->clear(tokens);
 
 		if( !ok )
 			break;
 	}
 
-	slNS->free(tokens);
-	baNS->free(ba);
+	sl_ns->free(tokens);
+	ba_ns->free(ba);
 
 	if( esc ) {
 		__cwtIniNS.error(h, _T("unexpected end-of-file"));

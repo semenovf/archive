@@ -185,22 +185,25 @@ CwtSocket* __socket_acceptTcpSocket(CwtSocket *sd)
 }
 
 
-ssize_t __socket_readTcpSocket(CwtSocket *sd, BYTE *buf, size_t sz)
+ssize_t __socket_readTcpSocket(CwtSocket *sd, CwtByteArray *ba, size_t n)
 {
+	CwtByteArrayNS *ba_ns = cwt_bytearray_ns();
 	ssize_t br;
 
 	CWT_ASSERT(sd);
 
-	/*sz = CWT_MIN(sz, __socket_bytesAvailable(sd));*/
-	sz = CWT_MIN(sz, CWT_INT_MAX);
-
-	br = recv(sd->sockfd, buf, (int)sz, 0);
+	n = CWT_MIN(n, CWT_INT_MAX);
+	ba_ns->reserve(ba, ba_ns->size(ba) + n);
+	br = recv(sd->sockfd, ba_ns->data(ba) + ba_ns->size(ba), (int)n, 0);
 
 	if( br < 0 ) {
 		cwt_logger_ns()->error(_Tr("receiving data error")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
+	} else {
+		ba_ns->resize(ba, ba_ns->size(ba) + br);
 	}
+
 	return (ssize_t)br;
 }
 

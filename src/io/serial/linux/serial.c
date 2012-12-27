@@ -104,10 +104,10 @@ ssize_t serialport_write(int portnum, const BYTE *buf, size_t count)
 	return (ssize_t)0;
 }
 
-ssize_t serialport_read(int portnum, BYTE *buf, size_t count)
+ssize_t serialport_read(int portnum, CwtByteArray *ba, size_t count)
 {
 	CWT_UNUSED(portnum);
-	CWT_UNUSED(buf);
+	CWT_UNUSED(ba);
 	CWT_UNUSED(count);
 
 	return (ssize_t)0;

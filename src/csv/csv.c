@@ -95,25 +95,25 @@ static CwtCsvNS __cwtCsvNS = {
 	, csv_set_validator
 };
 
-static CwtStrNS       *__strNS    = NULL;
-static CwtStringNS    *__stringNS = NULL;
-static CwtStrListNS   *__slNS     = NULL;
-static CwtChannelNS   *__chNS     = NULL;
-static CwtByteArrayNS *__baNS     = NULL;
-static CwtTextCodecNS *__codecNS  = NULL;
-static CwtHashTableNS *__htNS     = NULL;
+static CwtStrNS       *__str_ns    = NULL;
+static CwtStringNS    *__string_ns = NULL;
+static CwtStrListNS   *__sl_ns     = NULL;
+static CwtChannelNS   *__ch_ns     = NULL;
+static CwtByteArrayNS *__ba_ns     = NULL;
+static CwtTextCodecNS *__codec_ns  = NULL;
+static CwtHashTableNS *__ht_ns     = NULL;
 
 
 DLL_API_EXPORT CwtCsvNS* cwt_csv_ns(void)
 {
-	if( ! __strNS ) {
-		__strNS    = cwt_str_ns();
-		__stringNS = cwt_string_ns();
-		__slNS     = cwt_strlist_ns();
-		__chNS     = cwt_channel_ns();
-		__baNS     = cwt_bytearray_ns();
-		__codecNS  = cwt_textcodec_ns();
-		__htNS     = cwt_hashtable_ns();
+	if( ! __str_ns ) {
+		__str_ns    = cwt_str_ns();
+		__string_ns = cwt_string_ns();
+		__sl_ns     = cwt_strlist_ns();
+		__ch_ns     = cwt_channel_ns();
+		__ba_ns     = cwt_bytearray_ns();
+		__codec_ns  = cwt_textcodec_ns();
+		__ht_ns     = cwt_hashtable_ns();
 	}
 
 	return &__cwtCsvNS;
@@ -126,17 +126,17 @@ static void destroy_csv_data(CsvData *data)
 		return;
 
 	if( data->ba ) {
-		__baNS->free(data->ba);
+		__ba_ns->free(data->ba);
 		data->ba = NULL;
 	}
 
 	if( data->tokens ) {
-		__slNS->free(data->tokens);
+		__sl_ns->free(data->tokens);
 		data->tokens = NULL;
 	}
 
 	if( data->columns ) {
-		__htNS->free(data->columns);
+		__ht_ns->free(data->columns);
 		data->columns = NULL;
 	}
 }
@@ -149,12 +149,12 @@ static CwtCsvContext* csv_create(void)
 static CwtCsvContext* csv_create_with_args(const CWT_CHAR *separator, size_t max_tokens)
 {
 	CwtCsvHandlerImpl *h;
-	h = CWT_MALLOC(CwtCsvHandlerImpl);
+	h = CWT_MALLOCT(CwtCsvHandlerImpl);
 
 	if( separator ) {
-		h->separator = __strNS->strDup(separator);
+		h->separator = __str_ns->strDup(separator);
 	} else {
-		h->separator = __strNS->strDup(__csv_default_separator);
+		h->separator = __str_ns->strDup(__csv_default_separator);
 	}
 	h->max_tokens = max_tokens > 0 ? max_tokens : 128;
 	h->line       = 0;
@@ -188,26 +188,26 @@ static void csv_write(CwtCsvContext *h, CwtChannel *pchan, const CWT_CHAR* argv[
 
 	CWT_ASSERT(ph->separator);
 
-	s = __stringNS->create();
+	s = __string_ns->create();
 
 	if( argc > 0 )
-		__stringNS->append(s, argv[0]);
+		__string_ns->append(s, argv[0]);
 
 	for( i = 1; i < argc; i++ ) {
-		__stringNS->append(s, ph->separator);
-		__stringNS->append(s, argv[i]);
-		__stringNS->appendChar(s, _T('\n'));
+		__string_ns->append(s, ph->separator);
+		__string_ns->append(s, argv[i]);
+		__string_ns->appendChar(s, _T('\n'));
 	}
 
-	if( __stringNS->length(s) > 0 ) {
+	if( __string_ns->length(s) > 0 ) {
 		char *utf8;
-		utf8 = __codecNS->toUtf8(__stringNS->cstr(s), __stringNS->length(s));
-		__chNS->write(pchan, (BYTE*)utf8, strlen(utf8));
+		utf8 = __codec_ns->toUtf8(__string_ns->cstr(s));
+		__ch_ns->write(pchan, (BYTE*)utf8, strlen(utf8));
 		CWT_FREE(utf8);
 	}
 
 
-	__stringNS->free(s);
+	__string_ns->free(s);
 }
 
 static BOOL csv_parse(CwtCsvContext *h, CwtChannel *pchan)
@@ -221,23 +221,23 @@ static BOOL csv_parse(CwtCsvContext *h, CwtChannel *pchan)
 
 	CWT_ASSERT(h);
 
-	ba = __baNS->create();
-	tokens = __slNS->create();
+	ba = __ba_ns->create();
+	tokens = __sl_ns->create();
 	ph->line = 0;
 
-	while( !__chNS->atEnd(pchan) && __chNS->readLine(pchan, ba) ) {
+	while( !__ch_ns->atEnd(pchan) && __ch_ns->readLine(pchan, ba) ) {
 		CWT_CHAR *str;
 
 		quoted = FALSE;
 		ph->line++;
 
 		/* empty line */
-		if( __baNS->size(ba) == 0 )
+		if( __ba_ns->size(ba) == 0 )
 			continue;
 
-		if( __baNS->last(ba) == '\\' ) {
-			__baNS->resize(ba, __baNS->size(ba)-1); /* remove backslash and insert space instead of it */
-			__baNS->appendElem(ba, ' ');
+		if( __ba_ns->last(ba) == '\\' ) {
+			__ba_ns->resize(ba, __ba_ns->size(ba)-1); /* remove backslash and insert space instead of it */
+			__ba_ns->append(ba, ' ');
 			esc = TRUE;
 			continue;
 		} else {
@@ -246,24 +246,24 @@ static BOOL csv_parse(CwtCsvContext *h, CwtChannel *pchan)
 
 		/*__baNS->trim(ba);*/
 
-		if( __baNS->size(ba) > 0 ) {
-			str = __codecNS->fromUtf8(__baNS->cstr(ba), __baNS->size(ba));
+		if( __ba_ns->size(ba) > 0 ) {
+			str = __codec_ns->fromUtf8_n(__ba_ns->cstr(ba), __ba_ns->size(ba));
 
-			if( str && __strNS->strLen(str) > 0 ) {
+			if( str && __str_ns->strLen(str) > 0 ) {
 
-				int rc = __slNS->split(tokens, str, ph->separator, CWT_QUOTES_BOTH
+				int rc = __sl_ns->split(tokens, str, ph->separator, CWT_QUOTES_BOTH
 						, CWT_TRIM_WHITESPACES | CWT_STRIP_BOUNDING_QUOTES);
 
 				if( rc > 0 ) {
 					CWT_CHAR **argv;
 					size_t argc = 0;
 
-					argc = __slNS->size(tokens);
+					argc = __sl_ns->size(tokens);
 
 					if( argc <= ph->max_tokens ) {
 						argv = CWT_MALLOCA(CWT_CHAR*, argc);
 
-						__slNS->toArray(tokens, argv, &argc);
+						__sl_ns->toArray(tokens, argv, &argc);
 
 						if( ph->on_row ) {
 							ok = ph->on_row(h, (const CWT_CHAR**)argv, argc);
@@ -284,19 +284,19 @@ static BOOL csv_parse(CwtCsvContext *h, CwtChannel *pchan)
 		CWT_FREE(str);
 
 		if( quoted ) {
-			__baNS->appendElem(ba, '\n');
+			__ba_ns->append(ba, '\n');
 		} else {
-			__baNS->clear(ba);
+			__ba_ns->clear(ba);
 		}
 
-		__slNS->clear(tokens);
+		__sl_ns->clear(tokens);
 
 		if( !ok )
 			break;
 	}
 
-	__slNS->free(tokens);
-	__baNS->free(ba);
+	__sl_ns->free(tokens);
+	__ba_ns->free(ba);
 
 	if( quoted ) {
 		csv_error(h, _Tr("quotes are unbalanced"));
@@ -352,12 +352,12 @@ static void csv_begin(CwtCsvContext *h, CwtChannel *pchan)
 
 	destroy_csv_data(&ph->csvData);
 
-	ph->csvData.ba      = __baNS->create();
-	ph->csvData.tokens  = __slNS->create();
+	ph->csvData.ba      = __ba_ns->create();
+	ph->csvData.tokens  = __sl_ns->create();
 	ph->csvData.pchan   = pchan;
 	ph->line            = 0;
 
-	ph->csvData.columns = __htNS->create(__htNS->strHash, __htNS->streq, cwt_free, cwt_free);
+	ph->csvData.columns = __ht_ns->create(__ht_ns->strHash, __ht_ns->streq, cwt_free, cwt_free);
 }
 
 static size_t csv_header(CwtCsvContext *h)
@@ -367,18 +367,18 @@ static size_t csv_header(CwtCsvContext *h)
 		CwtStrListIterator it;
 		size_t i = 0;
 
-		__slNS->begin(ph->csvData.tokens, &it);
+		__sl_ns->begin(ph->csvData.tokens, &it);
 
-		while( __slNS->hasMore(&it) ) {
-			CsvColumn *column = CWT_MALLOC(CsvColumn);
-			CWT_CHAR *key = __strNS->strDup(__slNS->next(&it));
+		while( __sl_ns->hasMore(&it) ) {
+			CsvColumn *column = CWT_MALLOCT(CsvColumn);
+			CWT_CHAR *key = __str_ns->strDup(__sl_ns->next(&it));
 
 			column->index = i++;
 			column->validate = NULL;
 
-			CWT_ASSERT(__htNS->insert(ph->csvData.columns, key, column));
+			CWT_ASSERT(__ht_ns->insert(ph->csvData.columns, key, column));
 		}
-		return __slNS->size(ph->csvData.tokens);
+		return __sl_ns->size(ph->csvData.tokens);
 	}
 	return (size_t)0;
 }
@@ -414,15 +414,15 @@ static void csv_titles(CwtCsvContext *h, CWT_CHAR **argv, size_t argc)
 
 	CWT_ASSERT(h);
 
-	count = __htNS->size(ph->csvData.columns);
+	count = __ht_ns->size(ph->csvData.columns);
 
 	if( argv && count > 0 ) {
 		CwtHashTableIterator it;
 
-		__htNS->begin(ph->csvData.columns, &it);
+		__ht_ns->begin(ph->csvData.columns, &it);
 
-		while( __htNS->hasMore(&it) && i < argc ) {
-			argv[i++] = (CWT_CHAR*)__htNS->next(&it)->key;
+		while( __ht_ns->hasMore(&it) && i < argc ) {
+			argv[i++] = (CWT_CHAR*)__ht_ns->next(&it)->key;
 		}
 	}
 }
@@ -436,46 +436,46 @@ static BOOL csv_next(CwtCsvContext *h)
 
 	CWT_ASSERT(h);
 
-	__slNS->clear(ph->csvData.tokens);
-	__baNS->clear(ph->csvData.ba);
+	__sl_ns->clear(ph->csvData.tokens);
+	__ba_ns->clear(ph->csvData.ba);
 
-	if( __chNS->atEnd(ph->csvData.pchan) )
+	if( __ch_ns->atEnd(ph->csvData.pchan) )
 		return FALSE;
 
 
-	while( !__chNS->atEnd(ph->csvData.pchan) && __chNS->readLine(ph->csvData.pchan, ph->csvData.ba) ) {
+	while( !__ch_ns->atEnd(ph->csvData.pchan) && __ch_ns->readLine(ph->csvData.pchan, ph->csvData.ba) ) {
 		CWT_CHAR *str;
 
 		quoted = FALSE;
 		ph->line++;
 
 		/* empty line */
-		if( __baNS->size(ph->csvData.ba) == 0 )
+		if( __ba_ns->size(ph->csvData.ba) == 0 )
 			continue;
 
-		if( __baNS->last(ph->csvData.ba) == '\\' ) {
-			__baNS->resize(ph->csvData.ba, __baNS->size(ph->csvData.ba)-1); /* remove backslash and insert space instead of it */
-			__baNS->appendElem(ph->csvData.ba, ' ');
+		if( __ba_ns->last(ph->csvData.ba) == '\\' ) {
+			__ba_ns->resize(ph->csvData.ba, __ba_ns->size(ph->csvData.ba)-1); /* remove backslash and insert space instead of it */
+			__ba_ns->append(ph->csvData.ba, ' ');
 			esc = TRUE;
 			continue;
 		} else {
 			esc = FALSE;
 		}
 
-		if( __baNS->size(ph->csvData.ba) > 0 ) {
+		if( __ba_ns->size(ph->csvData.ba) > 0 ) {
 
 			/* TODO need apply text codec insteed of fromUtf8 call */
-			str = __codecNS->fromUtf8(__baNS->cstr(ph->csvData.ba), __baNS->size(ph->csvData.ba));
+			str = __codec_ns->fromUtf8_n(__ba_ns->cstr(ph->csvData.ba), __ba_ns->size(ph->csvData.ba));
 
-			if( str && __strNS->strLen(str) > 0 ) {
+			if( str && __str_ns->strLen(str) > 0 ) {
 
 				/* not a comment */
 				if( str[0] != _T('#')) {
-					int rc = __slNS->split(ph->csvData.tokens, str, ph->separator, CWT_QUOTES_BOTH
+					int rc = __sl_ns->split(ph->csvData.tokens, str, ph->separator, CWT_QUOTES_BOTH
 							, CWT_TRIM_WHITESPACES | CWT_STRIP_BOUNDING_QUOTES);
 
 					if( rc > 0 ) {
-						if( __slNS->size(ph->csvData.tokens) > ph->max_tokens ) {
+						if( __sl_ns->size(ph->csvData.tokens) > ph->max_tokens ) {
 							csv_error(h, _Tr("maximum tokens in row are exceeded"));
 							ok = FALSE;
 						}
@@ -488,7 +488,7 @@ static BOOL csv_next(CwtCsvContext *h)
 		CWT_FREE(str);
 
 		if( quoted ) {
-			__baNS->appendElem(ph->csvData.ba, '\n');
+			__ba_ns->append(ph->csvData.ba, '\n');
 			continue;
 		}
 
@@ -522,7 +522,7 @@ static size_t csv_columns_count(CwtCsvContext *h)
 {
 	CwtCsvHandlerImpl *ph = (CwtCsvHandlerImpl*)h;
 	CWT_ASSERT(h);
-	return __slNS->size(ph->csvData.tokens);
+	return __sl_ns->size(ph->csvData.tokens);
 }
 
 
@@ -542,19 +542,19 @@ static size_t csv_row(CwtCsvContext *h, const CWT_CHAR **argv, size_t argc)
 
 	CWT_ASSERT(h);
 
-	count = CWT_MIN(__slNS->size(ph->csvData.tokens), argc);
+	count = CWT_MIN(__sl_ns->size(ph->csvData.tokens), argc);
 
 	if( argv && count > 0 ) {
-		__slNS->begin(ph->csvData.tokens, &it);
+		__sl_ns->begin(ph->csvData.tokens, &it);
 		i = 0;
 
-		while( count > 0 && __slNS->hasMore(&it) ) {
-			argv[i++] = __slNS->next(&it);
+		while( count > 0 && __sl_ns->hasMore(&it) ) {
+			argv[i++] = __sl_ns->next(&it);
 			count--;
 		}
 	}
 
-	return __slNS->size(ph->csvData.tokens);
+	return __sl_ns->size(ph->csvData.tokens);
 }
 
 
@@ -576,28 +576,28 @@ static const CWT_CHAR* csv_column(CwtCsvContext *h, const CWT_CHAR* name)
 
 	CWT_ASSERT(h);
 
-	column = __htNS->lookup(ph->csvData.columns, (void*)name);
+	column = __ht_ns->lookup(ph->csvData.columns, (void*)name);
 
 
-	if( column && column->index < __slNS->size(ph->csvData.tokens) ) {
-		val = __slNS->at(ph->csvData.tokens, column->index);
+	if( column && column->index < __sl_ns->size(ph->csvData.tokens) ) {
+		val = __sl_ns->at(ph->csvData.tokens, column->index);
 
 		if( column->validate ) {
 			if( !column->validate(val) ) {
-				tmpbuf = __stringNS->create();
-				__stringNS->sprintf(tmpbuf, _Tr("'%s': bad value"), name);
-				__cwtCsvNS.error(h, __stringNS->cstr(tmpbuf));
+				tmpbuf = __string_ns->create();
+				__string_ns->sprintf(tmpbuf, _Tr("'%s': bad value"), name);
+				__cwtCsvNS.error(h, __string_ns->cstr(tmpbuf));
 				val = NULL;
 			}
 		}
 	} else {
-		tmpbuf = __stringNS->create();
-		__stringNS->sprintf(tmpbuf, _Tr("'%s': invalid column specified"), name);
-		__cwtCsvNS.error(h, __stringNS->cstr(tmpbuf));
+		tmpbuf = __string_ns->create();
+		__string_ns->sprintf(tmpbuf, _Tr("'%s': invalid column specified"), name);
+		__cwtCsvNS.error(h, __string_ns->cstr(tmpbuf));
 	}
 
 	if( tmpbuf )
-		__stringNS->free(tmpbuf);
+		__string_ns->free(tmpbuf);
 
 	return val;
 }
@@ -623,29 +623,29 @@ static BOOL csv_persist (CwtCsvContext *csv, CwtDBHandler *dbh, CwtDDITable *tab
 
 	titles = CWT_MALLOCA(CWT_CHAR*, ncolumns);
 	uts    = CWT_MALLOCA(CwtUniType*, ncolumns);
-	tmpbuf = __stringNS->create();
+	tmpbuf = __string_ns->create();
 
 	__cwtCsvNS.titles(csv, titles, ncolumns);
-	sql = __stringNS->create();
+	sql = __string_ns->create();
 
 	/* Prepare statement for INSERT VALUES */
-	__stringNS->append(sql, _T("INSERT INTO "));
-	__stringNS->append(sql, table->name);
-	__stringNS->appendChar(sql, _T('('));
-	__stringNS->append(sql, titles[0]);
+	__string_ns->append(sql, _T("INSERT INTO "));
+	__string_ns->append(sql, table->name);
+	__string_ns->appendChar(sql, _T('('));
+	__string_ns->append(sql, titles[0]);
 	for( i = 1; i < ncolumns; i++ ) {
-		__stringNS->appendChar(sql, _T(','));
-		__stringNS->append(sql, titles[i]);
+		__string_ns->appendChar(sql, _T(','));
+		__string_ns->append(sql, titles[i]);
 	}
 
-	__stringNS->append(sql, _T(") VALUES("));
-	__stringNS->appendChar(sql, _T('?'));
+	__string_ns->append(sql, _T(") VALUES("));
+	__string_ns->appendChar(sql, _T('?'));
 	for( i = 1; i < ncolumns; i++ ) {
-		__stringNS->append(sql, _T(",?"));
+		__string_ns->append(sql, _T(",?"));
 	}
-	__stringNS->appendChar(sql, _T(')'));
+	__string_ns->appendChar(sql, _T(')'));
 
-	sth = dbi->prepare(dbh, __stringNS->cstr(sql));
+	sth = dbi->prepare(dbh, __string_ns->cstr(sql));
 
 	if( !sth ) {
 		ok = FALSE;
@@ -658,8 +658,8 @@ static BOOL csv_persist (CwtCsvContext *csv, CwtDBHandler *dbh, CwtDDITable *tab
 			col = dbi->findColumn(table, titles[i]);
 
 			if( !col ) {
-				__stringNS->sprintf(tmpbuf, _Tr("'%s': column not found"), titles[i]);
-				__cwtCsvNS.error(csv, __stringNS->cstr(tmpbuf));
+				__string_ns->sprintf(tmpbuf, _Tr("'%s': column not found"), titles[i]);
+				__cwtCsvNS.error(csv, __string_ns->cstr(tmpbuf));
 				ok = FALSE;
 				break;
 			}
@@ -691,8 +691,8 @@ static BOOL csv_persist (CwtCsvContext *csv, CwtDBHandler *dbh, CwtDDITable *tab
 				}
 
 				if( !ok ) {
-					__stringNS->sprintf(tmpbuf, _Tr("invalid value for column '%s'"), titles[i]);
-					__cwtCsvNS.error(csv, __stringNS->cstr(tmpbuf));
+					__string_ns->sprintf(tmpbuf, _Tr("invalid value for column '%s'"), titles[i]);
+					__cwtCsvNS.error(csv, __string_ns->cstr(tmpbuf));
 					break;
 				}
 			}
@@ -704,8 +704,8 @@ static BOOL csv_persist (CwtCsvContext *csv, CwtDBHandler *dbh, CwtDDITable *tab
 		utNS->free(ut);
 	}
 
-	__stringNS->free(sql);
-	__stringNS->free(tmpbuf);
+	__string_ns->free(sql);
+	__string_ns->free(tmpbuf);
 	CWT_FREE(titles);
 	CWT_FREE(uts);
 	dbi->close(sth);
@@ -721,16 +721,16 @@ static BOOL csv_set_validator (CwtCsvContext *h, const CWT_CHAR* name, BOOL (*va
 
 	CWT_ASSERT(h);
 
-	column = __htNS->lookup(ph->csvData.columns, (void*)name);
+	column = __ht_ns->lookup(ph->csvData.columns, (void*)name);
 
-	if( column && column->index < __slNS->size(ph->csvData.tokens) ) {
+	if( column && column->index < __sl_ns->size(ph->csvData.tokens) ) {
 		column->validate = validator;
 		return TRUE;
 	} else {
-		CwtString *tmpbuf = __stringNS->create();
-		__stringNS->sprintf(tmpbuf, _Tr("'%s': invalid column specified"), name);
-		__cwtCsvNS.error(h, __stringNS->cstr(tmpbuf));
-		__stringNS->free(tmpbuf);
+		CwtString *tmpbuf = __string_ns->create();
+		__string_ns->sprintf(tmpbuf, _Tr("'%s': invalid column specified"), name);
+		__cwtCsvNS.error(h, __string_ns->cstr(tmpbuf));
+		__string_ns->free(tmpbuf);
 	}
 
 	return FALSE;

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <cwt/global.h>
 #include <cwt/types.h>
+#include <cwt/bytearr.h>
 
 EXTERN_C_BEGIN
 
@@ -70,12 +71,12 @@ typedef enum CwtSerialParity {
 
 DLL_API_EXPORT const CWT_CHAR* serialport_strerror(CwtSerialRC rc);
 DLL_API_EXPORT const CWT_CHAR* serialport_parity_str(CwtSerialParity parity);
-DLL_API_EXPORT void serialport_dump(int portnum);
-DLL_API_EXPORT CwtSerialRC serialport_init(void);
-DLL_API_EXPORT void serialport_release(void);
-DLL_API_EXPORT CwtSerialRC serialport_set_settings(int portnum, UINT16 uart_base, char irq);
-DLL_API_EXPORT void serialport_settings(int portnum, UINT16 *uart_base, char *irq);
-DLL_API_EXPORT BOOL serialport_has_valid_settings(int portnum);
+DLL_API_EXPORT void            serialport_dump(int portnum);
+DLL_API_EXPORT CwtSerialRC     serialport_init(void);
+DLL_API_EXPORT void            serialport_release(void);
+DLL_API_EXPORT CwtSerialRC     serialport_set_settings(int portnum, UINT16 uart_base, char irq);
+DLL_API_EXPORT void            serialport_settings(int portnum, UINT16 *uart_base, char *irq);
+DLL_API_EXPORT BOOL            serialport_has_valid_settings(int portnum);
 
 DLL_API_EXPORT CwtSerialRC serialport_open(
 		int portnum
@@ -85,22 +86,22 @@ DLL_API_EXPORT CwtSerialRC serialport_open(
 	  , CwtSerialParity parity
 	  , CwtSerialSB sb); /* TRUE if port support max speed 921600L, FALSE if max speed is 115200L */
 
-DLL_API_EXPORT void serialport_close(int portnum);
+DLL_API_EXPORT void        serialport_close(int portnum);
 DLL_API_EXPORT CwtSerialRC serialport_errno(int portnum);
-DLL_API_EXPORT void serialport_set_parms(int portnum, CwtSerialBitrate speed, BOOL hispeed, CwtSerialDB db, CwtSerialParity parity, CwtSerialSB stop_bits);
-DLL_API_EXPORT void serialport_parms(int portnum, CwtSerialBitrate *speed, BOOL *hispeed, CwtSerialDB *db, CwtSerialParity *parity, CwtSerialSB *stop_bits);
+DLL_API_EXPORT void        serialport_set_parms(int portnum, CwtSerialBitrate speed, BOOL hispeed, CwtSerialDB db, CwtSerialParity parity, CwtSerialSB stop_bits);
+DLL_API_EXPORT void        serialport_parms(int portnum, CwtSerialBitrate *speed, BOOL *hispeed, CwtSerialDB *db, CwtSerialParity *parity, CwtSerialSB *stop_bits);
 
-DLL_API_EXPORT ssize_t serialport_write(int portnum, const BYTE *buf, size_t count);
-DLL_API_EXPORT ssize_t serialport_read(int portnum, BYTE *buf, size_t count);
-DLL_API_EXPORT ssize_t serialport_read_msr(int portnum, BYTE *buf, BYTE *msr_buf, size_t count);
-DLL_API_EXPORT size_t  serialport_bytes_available(int portnum);
+DLL_API_EXPORT ssize_t     serialport_write(int portnum, const BYTE *buf, size_t count);
+DLL_API_EXPORT ssize_t     serialport_read(int portnum, CwtByteArray *ba, size_t count);
+DLL_API_EXPORT ssize_t     serialport_read_msr(int portnum, BYTE *buf, BYTE *msr_buf, size_t count);
+DLL_API_EXPORT size_t      serialport_bytes_available(int portnum);
 
-DLL_API_EXPORT BOOL serialport_tx_ready(int portnum);
-DLL_API_EXPORT BOOL serialport_tx_empty(int portnum);
-DLL_API_EXPORT BOOL serialport_rx_empty(int portnum);
-DLL_API_EXPORT void serialport_flush_tx(int portnum);
-DLL_API_EXPORT void serialport_flush_rx(int portnum);
-DLL_API_EXPORT BOOL serialport_carrier_detected(int portnum);
+DLL_API_EXPORT BOOL        serialport_tx_ready(int portnum);
+DLL_API_EXPORT BOOL        serialport_tx_empty(int portnum);
+DLL_API_EXPORT BOOL        serialport_rx_empty(int portnum);
+DLL_API_EXPORT void        serialport_flush_tx(int portnum);
+DLL_API_EXPORT void        serialport_flush_rx(int portnum);
+DLL_API_EXPORT BOOL        serialport_carrier_detected(int portnum);
 
 /**
 serialport_init();        // optional

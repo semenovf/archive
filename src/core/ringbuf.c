@@ -31,8 +31,8 @@ static size_t         rb_size         (CwtRingBuffer *rb);
 static BYTE           rb_at           (CwtRingBuffer *rb, size_t index);
 static BYTE           rb_at_front     (CwtRingBuffer *rb);
 static BYTE           rb_at_back      (CwtRingBuffer *rb);
-static ssize_t        rb_read         (CwtRingBuffer *rb, BYTE *bytes, size_t n);
-static ssize_t        rb_peek         (CwtRingBuffer *rb, BYTE *bytes, size_t n);
+static ssize_t        rb_read         (CwtRingBuffer *rb, CwtByteArray *ba, size_t n);
+static ssize_t        rb_peek         (CwtRingBuffer *rb, CwtByteArray *ba, size_t n);
 static ssize_t        rb_write        (CwtRingBuffer *rb, const BYTE *chars, size_t n);
 static BYTE           rb_get          (CwtRingBuffer *rb);
 static void           rb_pop_front    (CwtRingBuffer *rb, size_t n);
@@ -72,9 +72,12 @@ static CwtRingBufferNS __cwtRingBufNS  = {
 	, rb_find_any
 };
 
+static CwtByteArrayNS *__ba_ns = NULL;
 
 DLL_API_EXPORT CwtRingBufferNS* cwt_ringbuffer_ns(void)
 {
+	if (!__ba_ns)
+		__ba_ns = cwt_bytearray_ns();
 	return &__cwtRingBufNS;
 }
 
@@ -262,9 +265,9 @@ static BYTE rb_at_back(CwtRingBuffer *rb)
 }
 
 
-static ssize_t rb_read(CwtRingBuffer *rb, BYTE* bytes, size_t n)
+static ssize_t rb_read(CwtRingBuffer *rb, CwtByteArray *ba, size_t n)
 {
-	ssize_t br = rb_peek(rb, bytes, n);
+	ssize_t br = rb_peek(rb, ba, n);
 	if( br > 0 )
 		rb_pop_front(rb, br);
 	return br;
@@ -283,7 +286,7 @@ static ssize_t rb_read(CwtRingBuffer *rb, BYTE* bytes, size_t n)
  * @see pop
  * @see popFront
  */
-static ssize_t rb_peek(CwtRingBuffer *rb, BYTE* bytes, size_t n)
+static ssize_t rb_peek(CwtRingBuffer *rb, CwtByteArray *ba, size_t n)
 {
 
 	CWT_ASSERT(rb);
@@ -295,16 +298,16 @@ static ssize_t rb_peek(CwtRingBuffer *rb, BYTE* bytes, size_t n)
 	n = CWT_MIN(n, CWT_SSIZE_T_MAX);
 
 	if( rb->m_capacity - rb->m_head >= n ) {
-		memcpy(bytes, rb->m_buffer + rb->m_head, n);
+		__ba_ns->appendBytes(ba, rb->m_buffer + rb->m_head, n);
 	} else {
 		size_t c0;
 		size_t c1;
 		c0 = rb->m_capacity - rb->m_head;
 		c1 = (size_t)n - c0;
-		memcpy(bytes, rb->m_buffer + rb->m_head, c0);
-		if( c1 ) {
-			memcpy(bytes + c0, rb->m_buffer, c1);
-		}
+
+		__ba_ns->appendBytes(ba, rb->m_buffer + rb->m_head, c0);
+		if( c1 )
+			__ba_ns->appendBytes(ba, rb->m_buffer, c1);
 	}
 
 	return (ssize_t)n;

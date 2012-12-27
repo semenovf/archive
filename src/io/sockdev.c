@@ -10,7 +10,7 @@
 
 static void    __dev_close(CwtIODevice *dev);
 static size_t  __dev_bytesAvailable(CwtIODevice *dev);
-static ssize_t __dev_read(CwtIODevice *dev, BYTE* buf, size_t sz);
+static ssize_t __dev_read(CwtIODevice *dev, CwtByteArray *ba, size_t sz);
 static ssize_t __dev_write(CwtIODevice *dev, const BYTE* buf, size_t sz);
 
 typedef struct CwtSocketDevice {
@@ -193,11 +193,11 @@ static size_t __dev_bytesAvailable(CwtIODevice *dev)
 	return cwt_socket_ns()->bytesAvailable(sd->sockfd);
 }
 
-static ssize_t __dev_read(CwtIODevice *dev, BYTE *buf, size_t sz)
+static ssize_t __dev_read(CwtIODevice *dev, CwtByteArray *ba, size_t sz)
 {
 	CwtSocketDevice *sd = (CwtSocketDevice*)dev;
 	CWT_ASSERT(sd);
-	return cwt_socket_ns()->read(sd->sockfd, buf, sz);
+	return cwt_socket_ns()->read(sd->sockfd, ba, sz);
 }
 
 static ssize_t __dev_write(CwtIODevice *dev, const BYTE *buf, size_t sz)

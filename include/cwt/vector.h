@@ -26,59 +26,64 @@ typedef struct _CwtVector
     CwtSharedArray *d;
 } CwtVector;
 
+#define _CWT_VECTOR_COMMON_NS                                                                                      \
+		void          (*initPeer)      (CwtVector *v, CwtVector *peer);                                            \
+		CwtVector*    (*createPeer)    (CwtVector *peer);                                                          \
+		void          (*destroy)       (CwtVector *v);                                                             \
+		void          (*free)          (CwtVector *v);                                                             \
+		void          (*assign)        (CwtVector *v, CwtVector *peer);                                            \
+		BOOL          (*isEmpty)       (CwtVector *v);                                                             \
+		BOOL          (*reserve)       (CwtVector *v, size_t n);                                                   \
+		BOOL          (*reserveBack)   (CwtVector *v, size_t n);                                                   \
+		BOOL          (*reserveFront)  (CwtVector *v, size_t n);                                                   \
+		BOOL          (*resize)        (CwtVector *v, size_t n);                                                   \
+		size_t        (*capacity)      (CwtVector *v);                                                             \
+		void          (*clear)         (CwtVector *v);                                                             \
+		size_t        (*size)          (CwtVector *v);                                                             \
+		void          (*popBack)       (CwtVector *v, size_t n);                                                   \
+		void          (*popFront)      (CwtVector *v, size_t n);                                                   \
+		void          (*remove)        (CwtVector *v, size_t pos);                                                 \
+		void          (*remove_n)      (CwtVector *v, size_t pos, size_t n);                                       \
+		BOOL          (*sub)           (CwtVector *to, CwtVector *from, size_t off_from, size_t n);                \
+
+#define _CWT_VECTOR_COMMON_INIT                                 \
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, \
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+
+#define _CWT_VECTOR_COMMON_N 18
+
+#define _CWT_VECTOR_TYPED_NS                                                                                       \
+		void          (*init)          (CwtVector *v, int sizeof_item);                                            \
+		void          (*initSized)     (CwtVector *v, int sizeof_item, size_t initial_size, size_t max_capacity);  \
+		CwtVector*    (*create)        (int sizeof_item);                                                          \
+		CwtVector*    (*createSized)   (int sizeof_item, size_t initial_size, size_t max_capacity);                \
+		const void*   (*at)            (CwtVector *v, size_t index);                                               \
+		void*         (*first)         (CwtVector *v);                                                             \
+		const void*   (*constFirst)    (CwtVector *v);                                                             \
+		void*         (*last)          (CwtVector *v);                                                             \
+		const void*   (*constLast)     (CwtVector *v);                                                             \
+		void*         (*data)          (CwtVector *v);                                                             \
+		const void*   (*constData)     (CwtVector *v);                                                             \
+		void          (*append)        (CwtVector *v, void *item);                                                 \
+		void          (*pushBack)      (CwtVector *v, void *item);                                                 \
+		void          (*pushFront)     (CwtVector *v, void *item);                                                 \
+		void          (*insert)        (CwtVector *v, void *item, size_t pos);                                     \
+		void          (*insertRep)     (CwtVector *v, void *item, size_t pos, size_t n);                           \
+		void          (*fill)          (CwtVector *v, void *item, size_t n);                                       \
+		BOOL          (*indexOf)       (CwtVector *v, void *item, size_t off_from, size_t *index);                 \
+		BOOL          (*replace)       (CwtVector *v, const void *item, size_t pos);
+
 
 typedef struct _CwtVectorNS {
-	void          (*init)          (CwtVector *v, int sizeof_item);
-	void          (*initSized)     (CwtVector *v, int sizeof_item, size_t initial_size, size_t max_capacity);
-	void          (*initPeer)      (CwtVector *v, CwtVector *peer);
-	CwtVector*    (*create)        (int sizeof_item);
-	CwtVector*    (*createSized)   (int sizeof_item, size_t initial_size, size_t max_capacity);
-	CwtVector*    (*createPeer)    (CwtVector *peer);
-	void          (*destroy)       (CwtVector *v);
-	void          (*free)          (CwtVector *v);
-	void          (*assign)        (CwtVector *v, CwtVector *peer);
-	BOOL          (*isEmpty)       (CwtVector *v);
-	BOOL          (*reserve)       (CwtVector *v, size_t n);
-	BOOL          (*reserveBack)   (CwtVector *v, size_t n);
-	BOOL          (*reserveFront)  (CwtVector *v, size_t n);
-	BOOL          (*resize)        (CwtVector *v, size_t n);
-	size_t        (*capacity)      (CwtVector *v);
-	void          (*clear)         (CwtVector *v);
-	size_t        (*size)          (CwtVector *v);
-	const void*   (*at)            (CwtVector *v, size_t index);
-	void*         (*first)         (CwtVector *v);
-	const void*   (*constFirst)    (CwtVector *v);
-	void*         (*last)          (CwtVector *v);
-	const void*   (*constLast)     (CwtVector *v);
-	void*         (*data)          (CwtVector *v);
-	const void*   (*constData)     (CwtVector *v);
-	void          (*append)        (CwtVector *v, void *item);
-	void          (*pushBack)      (CwtVector *v, void *item);
-	void          (*pushFront)     (CwtVector *v, void *item);
-	void          (*insert)        (CwtVector *v, void *item, size_t pos);
-	void          (*insertRep)     (CwtVector *v, void *item, size_t pos, size_t n);
-	void          (*fill)          (CwtVector *v, void *item, size_t n);
-	void          (*popBack)       (CwtVector *v);
-	void          (*popFront)      (CwtVector *v);
-	void          (*remove)        (CwtVector *v, size_t pos);
-	void          (*remove_n)      (CwtVector *v, size_t pos, size_t n);
-
-
-#ifdef __COMMENT__
-/*	void          (*disrobe)       (CwtVector *v);*/
-/*  void          (*initRawBuffer) (CwtVector *v, int sizeof_item, const char *buf, size_t nitems);*/
-
-	void          (*replace)     (CwtVector *v, const _ElemT *elems, size_t nelems, size_t pos);
-	void          (*removeElem)  (CwtVector *v, size_t pos);
-	void          (*removeLast)  (CwtVector *v);
-	_ElemT*       (*substr)      (CwtVector *v, size_t start, size_t nelems);
-	BOOL          (*find)        (CwtVector *v, _ElemT ch, size_t *offset);
-#endif
+	_CWT_VECTOR_COMMON_NS
+	_CWT_VECTOR_TYPED_NS
 } CwtVectorNS;
 
 EXTERN_C_BEGIN
 DLL_API_EXPORT CwtVectorNS* cwt_vector_ns(void);
 EXTERN_C_END
+
+
 
 #include <string.h>
 #define CWT_BEGIN_DECL_VECTOR_NS(_NS,_CollectionT,_ElemT)                     \

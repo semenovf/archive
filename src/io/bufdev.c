@@ -11,7 +11,7 @@
 
 static void    __dev_close          (CwtIODevice*);
 static size_t  __dev_bytesAvailable (CwtIODevice *pdev);
-static ssize_t __dev_read           (CwtIODevice*, BYTE*, size_t);
+static ssize_t __dev_read           (CwtIODevice*, CwtByteArray *ba, size_t);
 static ssize_t __dev_write          (CwtIODevice*, const BYTE*, size_t);
 /*static CwtIODevice* __dev_accept    (CwtIODevice *);*/
 
@@ -88,10 +88,10 @@ size_t __dev_bytesAvailable(CwtIODevice *dev)
 	return cwt_ringbuffer_ns()->size(bufd->in);
 }
 
-ssize_t __dev_read(CwtIODevice *dev, BYTE* buf, size_t sz)
+ssize_t __dev_read(CwtIODevice *dev, CwtByteArray *ba, size_t sz)
 {
 	CWT_ASSERT(dev);
-	return cwt_ringbuffer_ns()->read(((CwtBufferDevice*)dev)->in, buf, sz);
+	return cwt_ringbuffer_ns()->read(((CwtBufferDevice*)dev)->in, ba, sz);
 }
 
 ssize_t __dev_write(CwtIODevice *dev, const BYTE* buf, size_t sz)

@@ -14,7 +14,7 @@ static inline BOOL   channel_at_end          (CwtChannel *);
 static BOOL          channel_can_read_line   (CwtChannel *);
 static BOOL          channel_read_line       (CwtChannel *, CwtByteArray *ba);
 static ssize_t       channel_poll            (CwtChannel *);
-static ssize_t       channel_read            (CwtChannel *, BYTE *buf, size_t sz);
+static ssize_t       channel_read            (CwtChannel *, CwtByteArray *ba, size_t sz);
 static ssize_t       channel_write           (CwtChannel *, const BYTE *buf, size_t sz);
 static ssize_t       channel_write_byte      (CwtChannel *, BYTE ch);
 static size_t        channel_bytes_available (CwtChannel *);
@@ -153,7 +153,6 @@ static size_t channel_bytes_available(CwtChannel *pchan)
 static BOOL channel_slurp (CwtChannel *pchan, CwtByteArray *buffer)
 {
 	size_t sz_saved;
-	BYTE bytes[_BUFSZ];
 	ssize_t br;
 
 	CWT_ASSERT(buffer);
@@ -161,9 +160,8 @@ static BOOL channel_slurp (CwtChannel *pchan, CwtByteArray *buffer)
 
 	sz_saved = __ba_ns->size(buffer);
 
-	while ( (br = channel_read(pchan, bytes, _BUFSZ)) > 0 ) {
-		__ba_ns->appendElems(buffer, bytes, br);
-	}
+	while ( (br = channel_read(pchan, buffer, _BUFSZ)) > 0 )
+		;
 
 	if (br < 0) {
 		if (sz_saved) {
@@ -213,20 +211,17 @@ static BOOL channel_read_line(CwtChannel *pchan, CwtByteArray *ba)
 {
 	BYTE eolChars[] = "\r\n";
 	size_t index;
-	size_t ba_off;
 	ssize_t br;
 
 	CWT_ASSERT(pchan);
 	CWT_ASSERT(ba);
 
-	ba_off = __ba_ns->size(ba);
-
 	br = channel_poll(pchan);
 
 	if( __rb_ns->findAny(pchan->rb, eolChars, 2, 0, &index) ) {
 		BYTE nl;
-		__ba_ns->resize(ba, ba_off + index);
-		__rb_ns->peek(pchan->rb, ba->m_buffer + ba_off, index);
+		__ba_ns->reserve(ba, __ba_ns->size(ba) + index);
+		__rb_ns->peek(pchan->rb, ba, index);
 
 		__rb_ns->popFront(pchan->rb, index);
 		nl = __rb_ns->first(pchan->rb);
@@ -241,8 +236,8 @@ static BOOL channel_read_line(CwtChannel *pchan, CwtByteArray *ba)
 
 		return TRUE;
 	} else if( br == 0 && __rb_ns->size(pchan->rb) > 0 ) {
-		__ba_ns->resize(ba, ba_off + __rb_ns->size(pchan->rb));
-		__rb_ns->peek(pchan->rb, ba->m_buffer + ba_off, __rb_ns->size(pchan->rb));
+		__ba_ns->resize(ba, __ba_ns->size(ba) + __rb_ns->size(pchan->rb));
+		__rb_ns->peek(pchan->rb, ba, __rb_ns->size(pchan->rb));
 		__rb_ns->clear(pchan->rb);
 
 		return TRUE;
@@ -254,15 +249,20 @@ static BOOL channel_read_line(CwtChannel *pchan, CwtByteArray *ba)
 #define __DATA_CHUNK_SZ 256
 static ssize_t channel_poll(CwtChannel *pchan)
 {
-	BYTE buf[__DATA_CHUNK_SZ];
+	CwtByteArrayNS *ba_ns = cwt_bytearray_ns();
 	int n = 5;
 	ssize_t br, tbr = 0;
+	CwtByteArray ba;
+
+	cwt_bytearray_ns()->init(&ba);
 	CWT_ASSERT(pchan && pchan->dev);
 
 	while( n-- ) {
-		br = pchan->dev->read(pchan->dev, buf, __DATA_CHUNK_SZ);
+		ba_ns->clear(&ba);
+		br = pchan->dev->read(pchan->dev, &ba, __DATA_CHUNK_SZ);
+
 		if( br > 0 ) {
-			__rb_ns->pushBack(pchan->rb, buf, br);
+			__rb_ns->pushBack(pchan->rb, ba_ns->constData(&ba), ba_ns->size(&ba));
 			tbr += br;
 
 			if( br < __DATA_CHUNK_SZ )
@@ -273,21 +273,23 @@ static ssize_t channel_poll(CwtChannel *pchan)
 			break;
 		}
 	}
+
+	ba_ns->destroy(&ba);
 	return tbr;
 }
 
 
-static ssize_t channel_read(CwtChannel *pchan, BYTE *buf, size_t sz)
+static ssize_t channel_read(CwtChannel *pchan, CwtByteArray *ba, size_t sz)
 {
 	ssize_t br = 0;
 	CWT_ASSERT(pchan && pchan->dev);
 
 	if (__rb_ns->size(pchan->rb) > 0) {
-		br = __rb_ns->read(pchan->rb, buf, sz);
+		br = __rb_ns->read(pchan->rb, ba, sz);
 	} else {
 		channel_poll(pchan);
 		if( __rb_ns->size(pchan->rb) > 0 )
-			br = __rb_ns->read(pchan->rb, buf, sz);
+			br = __rb_ns->read(pchan->rb, ba, sz);
 	}
 
 	if( br > 0 )

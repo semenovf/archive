@@ -22,7 +22,7 @@
 
 static void    __dev_close(CwtIODevice*);
 static size_t  __dev_bytesAvailable(CwtIODevice*);
-static ssize_t __dev_read(CwtIODevice*, BYTE*, size_t);
+static ssize_t __dev_read(CwtIODevice*, CwtByteArray *, size_t);
 static ssize_t __dev_write(CwtIODevice*, const BYTE*, size_t);
 
 typedef struct CwtFileDevice
@@ -210,7 +210,7 @@ size_t __dev_bytesAvailable(CwtIODevice *dev)
 	return (size_t)(total - fd->read_pos);
 }
 
-ssize_t __dev_read(CwtIODevice *dev, BYTE* buf, size_t sz)
+ssize_t __dev_read(CwtIODevice *dev, CwtByteArray *ba, size_t sz)
 {
 	CwtUnistdNS *ns = cwt_unistd_ns();
 	CwtFileDevice *fd;
@@ -228,7 +228,7 @@ ssize_t __dev_read(CwtIODevice *dev, BYTE* buf, size_t sz)
 	CWT_ASSERT(ns->lseek(fd->in, fd->read_pos, SEEK_SET) >= 0L);
 
 	/*FIXME: warning C4267: 'function' : conversion from 'size_t' to 'UINT', possible loss of data */
-	br = ns->read(fd->in, buf, /*(UINT)*/sz);
+	br = ns->read(fd->in, ba, /*(UINT)*/sz);
 
 	CWT_ASSERT(br >= 0);
 	fd->read_pos += br;

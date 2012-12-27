@@ -220,9 +220,9 @@ CwtSocket* __socket_acceptMcastSocket(CwtSocket *sd)
 }
 
 
-ssize_t __socket_readMcastSocket(CwtSocket *sd, BYTE *buf, size_t sz)
+ssize_t __socket_readMcastSocket(CwtSocket *sd, CwtByteArray *ba, size_t sz)
 {
-	CWT_UNUSED3(sd, buf, sz);
+	CWT_UNUSED3(sd, ba, sz);
 	/* FIXME need to implement */
 	return -1;
 }

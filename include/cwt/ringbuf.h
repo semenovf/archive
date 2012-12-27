@@ -10,6 +10,7 @@
 
 #include <cwt/global.h>
 #include <cwt/types.h>
+#include <cwt/bytearr.h>
 
 typedef struct _CwtRingBuffer
 {
@@ -39,8 +40,8 @@ typedef struct _CwtRingBufferNS {
 	BYTE           (*first)      (CwtRingBuffer *);
 	BYTE           (*atBack)     (CwtRingBuffer *);
 	BYTE           (*last)       (CwtRingBuffer *);
-	ssize_t        (*read)       (CwtRingBuffer *, BYTE *bytes, size_t n);
-	ssize_t        (*peek)       (CwtRingBuffer *, BYTE *bytes, size_t n);
+	ssize_t        (*read)       (CwtRingBuffer *, CwtByteArray *ba, size_t n);
+	ssize_t        (*peek)       (CwtRingBuffer *, CwtByteArray *ba, size_t n);
 	ssize_t        (*write)      (CwtRingBuffer *, const BYTE *chars, size_t n);
 	BYTE           (*get)        (CwtRingBuffer *);
 	void           (*popFront)   (CwtRingBuffer *, size_t n);

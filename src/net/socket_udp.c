@@ -148,13 +148,16 @@ CwtSocket* __socket_acceptUdpSocket(CwtSocket *sd)
 }
 
 
-ssize_t __socket_readUdpSocket(CwtSocket *sd, BYTE *buf, size_t sz)
+ssize_t __socket_readUdpSocket(CwtSocket *sd, CwtByteArray *ba, size_t sz)
 {
+	CwtByteArrayNS *ba_ns = cwt_bytearray_ns();
 	ssize_t br;
 	struct sockaddr_in senderAddr;
 	UINT senderSize = sizeof(senderAddr);
 
-	br = recvfrom(sd->sockfd, buf
+
+	ba_ns->reserve(ba, ba_ns->size(ba) + sz);
+	br = recvfrom(sd->sockfd, ba_ns->data(ba) + ba_ns->size(ba)
 #ifdef CWT_CC_MSC
 			, (int)CWT_MIN(sz, CWT_INT_MAX)
 #else
@@ -168,6 +171,8 @@ ssize_t __socket_readUdpSocket(CwtSocket *sd, BYTE *buf, size_t sz)
 		cwt_logger_ns()->error(_Tr("receiving data error")
 			_CWT_SOCKET_LOG_FMTSUFFIX
 			, _CWT_SOCKET_LOG_ARGS);
+	} else {
+		ba_ns->resize(ba, ba_ns->size(ba) + br);
 	}
 
 	return br;

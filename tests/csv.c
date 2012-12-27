@@ -80,7 +80,7 @@ static void test_00(void)
 	__csvNS->setOnError(csv, __csvOnError);
 
 	for( i = 0; i < sizeof(__rows)/sizeof(__rows[0]); i++ ) {
-		char *str = __codecNS->toUtf8(__rows[i], __strNS->strLen(__rows[i]));
+		char *str = __codecNS->toUtf8(__rows[i]);
 		__chNS->write(pchan0, (BYTE*)str, strlen(str));
 		CWT_FREE(str);
 	}
@@ -119,7 +119,7 @@ static void test_01(void)
 	__csvNS->setOnError(csv, __csvOnError);
 
 	for( i = 0; i < sizeof(__rows)/sizeof(__rows[0]); i++ ) {
-		char *str = __codecNS->toUtf8(__rows[i], __strNS->strLen(__rows[i]));
+		char *str = __codecNS->toUtf8(__rows[i]);
 		__chNS->write(pchan0, (BYTE*)str, strlen(str));
 		CWT_FREE(str);
 	}
@@ -173,7 +173,7 @@ static void test_02(void)
 	__csvNS->setOnError(csv, __csvOnError);
 
 	for( i = 0; i < sizeof(__rows)/sizeof(__rows[0]); i++ ) {
-		char *str = __codecNS->toUtf8(__rows[i], __strNS->strLen(__rows[i]));
+		char *str = __codecNS->toUtf8(__rows[i]);
 		__chNS->write(pchan0, (BYTE*)str, strlen(str));
 		CWT_FREE(str);
 	}
@@ -225,7 +225,7 @@ static void test_03(void)
 	__csvNS->setOnError(csv, __csvOnError);
 
 	for( i = 0; i < sizeof(__rows)/sizeof(__rows[0]); i++ ) {
-		char *str = __codecNS->toUtf8(__rows[i], __strNS->strLen(__rows[i]));
+		char *str = __codecNS->toUtf8(__rows[i]);
 		__chNS->write(pchan0, (BYTE*)str, strlen(str));
 		CWT_FREE(str);
 	}

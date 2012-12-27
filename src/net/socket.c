@@ -49,7 +49,7 @@ static void       __socket_close          (CwtSocket*);
 static BOOL       __socket_setNonBlocking (CwtSocket*, BOOL is_nonblocking);
 
        size_t     __socket_bytesAvailable (CwtSocket*);
-static ssize_t    __socket_read           (CwtSocket*, BYTE *buf, size_t sz);
+static ssize_t    __socket_read           (CwtSocket*, CwtByteArray *ba, size_t sz);
 static ssize_t    __socket_write          (CwtSocket*, const BYTE *buf, size_t sz);
 static CWT_CHAR*  __socket_inetAddr       (CwtSocket*);
 static UINT16     __socket_inetPort       (CwtSocket*);
@@ -58,7 +58,7 @@ extern CWT_CHAR*  __socket_localPath      (CwtSocket*);
 
 typedef CwtSocket* (*_socket_accept_f)(CwtSocket*);
 typedef ssize_t    (*_socket_write_f)(CwtSocket*, const BYTE *buf, size_t sz);
-typedef ssize_t    (*_socket_read_f) (CwtSocket*, BYTE *buf, size_t sz);
+typedef ssize_t    (*_socket_read_f) (CwtSocket*, CwtByteArray *ba, size_t sz);
 
 static _socket_accept_f __socket_acceptTypified[] = {
 	  __socket_acceptLocalSocket
@@ -222,10 +222,10 @@ size_t __socket_bytesAvailable (CwtSocket *sd)
 }
 
 
-static ssize_t __socket_read(CwtSocket *sd, BYTE *buf, size_t sz)
+static ssize_t __socket_read(CwtSocket *sd, CwtByteArray *ba, size_t sz)
 {
 	CWT_ASSERT(sd);
-	return __socket_readTypified[sd->type](sd, buf, sz);
+	return __socket_readTypified[sd->type](sd, ba, sz);
 }
 
 
