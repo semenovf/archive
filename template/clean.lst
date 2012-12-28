@@ -17,9 +17,15 @@ makefile
 *.idb
 *.o
 *.obj
-*.a
 *.so
+*.dll
+*.so.*
+*.dylib
+*.lib
 *.lai
 *.la
 *.a
+*.exe
+*.out
+*.app
 *.log

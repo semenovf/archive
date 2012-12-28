@@ -105,12 +105,11 @@ create() {
     chmod +x backup.sh
 
     # Prepare .gitignore
-    cat $GBS_HOME/template/gitignore  > .gitignore
+    echo "!.gitignore"                > .gitignore
+    cat $GBS_HOME/template/gitignore >> .gitignore
+    echo ""                          >> .gitignore
     cat $GBS_HOME/template/clean.lst >> .gitignore
-    echo "!.gitignore"               >> .gitignore
     
-    
-
     echo "Project '$PROJECT' created"
     echo "Modyfy '.gbs/$PROJECT.pro' to add new subprojects"
 }
