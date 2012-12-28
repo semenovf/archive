@@ -20,9 +20,18 @@ doc/
 *.idb
 
 # Compiled Dynamic libraries
+*.dll
 *.so
+*.so.*
+*.dylib
 
 # Compiled Static libraries
 *.lai
 *.la
+*.lib
 *.a
+
+# Executables
+*.exe
+*.out
+*.app

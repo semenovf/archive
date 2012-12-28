@@ -10,8 +10,10 @@
 #include <cwt/types.h>
 #include <cwt/test.h>
 #include <cwt/ringbuf.h>
+#include <cwt/bytearr.h>
 
 CwtRingBufferNS *__rb_ns = NULL;
+CwtByteArrayNS  *__ba_ns = NULL;
 
 /* Test Maximum limit */
 static void test_00(void)
@@ -35,8 +37,8 @@ static void test_01(void)
 	int i = 256;
 	int n;
 	BYTE obuf[7] = { 0xDE, 0xAD, 0xBE, 0xAF, 0xF0, 0x0D, 0xEB };
-	BYTE ibuf[7];
 	CwtRingBuffer *rb = __rb_ns->create();
+	CwtByteArray  *ba = __ba_ns->create();
 
 	while(i--)
 		__rb_ns->pushBack(rb, obuf, 7);
@@ -44,8 +46,13 @@ static void test_01(void)
 	CWT_TEST_OK(__rb_ns->size(rb) == 1792);
 
 	n = 0;
-	while( __rb_ns->peek(rb, ibuf, 7) ) {
-		if( !(ibuf[0] == obuf[0]
+	while( __rb_ns->peek(rb, ba, 7) ) {
+		const BYTE *ibuf;
+
+		CWT_TEST_FAIL(__ba_ns->size(ba) == 7);
+		ibuf = __ba_ns->constData(ba);
+
+		if( !( ibuf[0] == obuf[0]
 		    && ibuf[1] == obuf[1]
 		    && ibuf[2] == obuf[2]
 		    && ibuf[3] == obuf[3]
@@ -57,12 +64,14 @@ static void test_01(void)
 			break;
 		}
 		__rb_ns->popFront(rb, 7);
+		__ba_ns->clear(ba);
 		n++;
 	}
 
 	CWT_TEST_OK(__rb_ns->size(rb) == 0);
 	CWT_TEST_OK(n == 256);
 	__rb_ns->free(rb);
+	__ba_ns->free(ba);
 }
 
 int main(int argc, char *argv[])
@@ -70,9 +79,10 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(132);
+	CWT_BEGIN_TESTS(388);
 
 	__rb_ns = cwt_ringbuffer_ns();
+	__ba_ns = cwt_bytearray_ns();
 
 	test_00();
 	test_01();

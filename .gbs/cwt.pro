@@ -7,8 +7,8 @@ SUBDIRS  =             \
      tests/bytearr     \
      tests/crc32       \    
      tests/crc64       \
-     tests/csv         \
      tests/ringbuf     \
+     tests/utf8        \
     
 #    tests/event       \
 #    tests/echannel    \
@@ -37,7 +37,6 @@ SUBDIRS  =             \
 #    tests/mdarr       \
 #    tests/snprintf    \
 #    tests/uri         \
-#    tests/utf8        \
 #    examples/app
 
 
