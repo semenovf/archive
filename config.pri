@@ -1,20 +1,18 @@
-#CWT_CONFIG = release
-#CWT_CONFIG = debug
+#
+# Set this variable in project's .pro file
+#
+#CWT_CONFIG = release | debug
+isEmpty(CWT_CONFIG) { CWT_CONFIG = debug }
 
 CWT_TARGET_PLATFORM=$$(CWT_TARGET_PLATFORM)
 CWT_TARGET_CPU=$$(CWT_TARGET_CPU)
-#CWT_TARGET_PLATFORM=win7
-#CWT_TARGET_PLATFORM=winxp
-#CWT_TARGET_CPU=i386
-
-isEmpty(CWT_CONFIG) { CWT_CONFIG = debug }
 
 #
 # TARGET_PLATFORM variable is set in WinSDK's SetEnv
 #
 isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=$$(TARGET_PLATFORM) }
-win32: isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=win7 }
-unix: isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=linux }
+win32: isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=win32 }
+unix: isEmpty(CWT_TARGET_PLATFORM)  { CWT_TARGET_PLATFORM=unix }
 
 #
 # TARGET_CPU variable is set in WinSDK's SetEnv
@@ -22,7 +20,7 @@ unix: isEmpty(CWT_TARGET_PLATFORM) { CWT_TARGET_PLATFORM=linux }
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=$$(TARGET_CPU) }
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=x86 }
 
-isEmpty(CWT_UNICODE) { DEFINES -= UNICODE }
+isEmpty(CWT_UNICODE)    { DEFINES -= UNICODE }
 
 # qmake internal variables
 QT=
@@ -31,9 +29,9 @@ CONFIG += warn_on
 CONFIG += $$CWT_TARGET_CPU
 CONFIG += $$CWT_TARGET_PLATFORM
 
-DEFINES += CWT_LANG=ru
+DEFINES += CWT_LANG=$$CWT_LANG
 DEFINES += CWT_TARGET_PLATFORM=$$CWT_TARGET_PLATFORM
-unix: CWT_ROOT_DIR = $$(HOME)/ws
+unix: CWT_ROOT_DIR = $$(HOME)
 win32: CWT_ROOT_DIR = \
 
 unix {
@@ -50,9 +48,11 @@ win32 {
 }
 
 
-message(Target Platform: $${CWT_TARGET_PLATFORM})
+message(Target Platform : $${CWT_TARGET_PLATFORM})
 message(Target CPU      : $${CWT_TARGET_CPU})
 message(Configuration   : $${CWT_CONFIG})
 message(Workspace folder: $${CWT_ROOT_DIR})
-#message(qmake CONFIG   : ${CONFIG})
+message(CONFIG          : $${CONFIG})
+message(QMAKESPEC       : $${QMAKESPEC})
+message(QT              : $${QT})
 message(Processed config.pri)

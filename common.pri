@@ -1,9 +1,11 @@
 include(config.pri)
 message(Process common.pri)
 
-QT=
 OBJECTS_DIR = $$CWT_CONFIG/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU
 
+debug {
+    DEFINES += CWT_USE_TESTS
+}
 
 unix {
 
@@ -65,7 +67,7 @@ win32 {
 x64 {
     debug: QMAKE_CFLAGS_DEBUG = /Zi /MDd /WX
     release: QMAKE_CFLAGS_DEBUG = /Zi /MD /WX
-    
+
     debug: QMAKE_CXXFLAGS_DEBUG = /Zi /MDd /WX
     release: QMAKE_CXXFLAGS_DEBUG = /Zi /MD /WX
 }

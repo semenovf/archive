@@ -26,7 +26,7 @@ fi
 
 usage() {
     echo "Usage:"
-    echo "   ws [-create|-clear] PROJECTNAME"
+    echo "   ws [-create|-clear] [-git] PROJECTNAME"
 }
 
 username() {
@@ -52,21 +52,27 @@ create() {
 
     DATE=`date`
     username
-    
+
     mkdir $PROJECT
     cd $PROJECT
     mkdir .gbs
+    mkdir .gbs/tests
+    mkdir .gbs/$PROJECT
+    cp $GBS_HOME/template/tests.pro .gbs/tests/tests.pro
+    cp $GBS_HOME/template/project.pro .gbs/$PROJECT/$PROJECT.pro
+
     mkdir include
+    mkdir include/$PROJECT
     mkdir src
     mkdir tests
+    echo '#ifdef  __@PRJ@_H__'       > include/$PROJECT/$PROJECT.h
+    echo '#define __@PRJ@_H__'      >> include/$PROJECT/$PROJECT.h
+    echo ' '                        >> include/$PROJECT/$PROJECT.h
+    echo '#endif /* __@PRJ@_H__ */' >> include/$PROJECT/$PROJECT.h
+    cp $GBS_HOME/template/main.c src/main.c
+    cp $GBS_HOME/template/test.c tests/test.c
 
-    cd include 
-    mkdir $PROJECT
-
-    cd ../.gbs
-    mkdir tests
-    mkdir $PROJECT
-
+    cd .gbs
     echo "#************************************************************"  > $PROJECT.pro
     echo "#* Generated automatically by '$0'                           " >> $PROJECT.pro
     echo "#* Command: $CMDLINE                                         " >> $PROJECT.pro
@@ -75,26 +81,25 @@ create() {
     echo "#************************************************************" >> $PROJECT.pro
     echo "TEMPLATE = subdirs                                           " >> $PROJECT.pro
     echo "CONFIG  += ordered                                           " >> $PROJECT.pro
-    echo "SUBDIRS  = $PROJECT                                          " >> $PROJECT.pro
-
+    echo "SUBDIRS  = $PROJECT tests                                    " >> $PROJECT.pro
     cd ..
 
     # Prepare make.sh (for use from IDE, e.g. Eclipse)
     echo "#!/bin/sh"          > make.sh
-    echo "$GBS_HOME/make.sh \$*" >> make.sh
+    echo '$GBS_HOME/make.sh \$*' >> make.sh
     chmod +x make.sh
 
     # Prepare clean.sh
     echo "#!/bin/sh"                > clean.sh
     echo "cd .gbs"                 >> clean.sh
-    echo "$GBS_HOME/make.sh clean" >> clean.sh
+    echo '$GBS_HOME/make.sh clean' >> clean.sh
     chmod +x clean.sh
     
     # Prepare build.sh
     echo "#!/bin/sh"                > build.sh
     echo "cd .gbs"                 >> build.sh
-    echo "$GBS_HOME/make.sh clean" >> build.sh
-    echo "$GBS_HOME/make.sh all"   >> build.sh
+    echo '$GBS_HOME/make.sh clean' >> build.sh
+    echo '$GBS_HOME/make.sh all'   >> build.sh
     chmod +x build.sh
 
     # Prepare backup.sh
@@ -109,7 +114,18 @@ create() {
     cat $GBS_HOME/template/gitignore >> .gitignore
     echo ""                          >> .gitignore
     cat $GBS_HOME/template/clean.lst >> .gitignore
-    
+
+    touch README.md
+
+    GIT_EXE=`which git`
+    if [ "$GIT_OK" == "yes" ] && [ -x $GIT_EXE ] ; then
+	$GIT_EXE init
+	$GIT_EXE add -A .
+	$GIT_EXE commit -m "Initial commit"
+	$GIT_EXE remote add origin git@github.com:semenovf/${PROJECT}.git
+	$GIT_EXE push -u origin master
+    fi
+
     echo "Project '$PROJECT' created"
     echo "Modyfy '.gbs/$PROJECT.pro' to add new subprojects"
 }
@@ -122,6 +138,11 @@ clean() {
 case "$1" in
     -create)
 	PROJECT=$2
+	GIT_OK=
+	if [ "$PROJECT" == "-git" ] ; then
+	    PROJECT=$3
+	    GIT_OK=yes
+	fi
 	if [ -z $PROJECT ]; then
 	    usage
 	    exit 1
