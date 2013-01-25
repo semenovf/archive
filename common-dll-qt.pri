@@ -3,6 +3,7 @@ message(Process common-dll-qt.pri)
 
 CONFIG += qt
 QT += core
+INCLUDEPATH += $$(QT_HOME)/include
 
 win32 {
 #    !qmake defaults
