@@ -5,6 +5,14 @@ CONFIG += qt
 QT += core
 INCLUDEPATH += $$(QT_HOME)/include
 
+unix {
+    LIBS += -L$$(QT_HOME)/lib
+}
+
+win32 {
+}
+
+
 win32 {
 #    !qmake defaults
 #
