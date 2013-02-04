@@ -65,7 +65,7 @@ create() {
     mkdir include/$PROJECT
     mkdir src
     mkdir tests
-    echo '#ifdef  __@PRJ@_H__'       > include/$PROJECT/$PROJECT.h
+    echo '#ifndef __@PRJ@_H__'       > include/$PROJECT/$PROJECT.h
     echo '#define __@PRJ@_H__'      >> include/$PROJECT/$PROJECT.h
     echo ' '                        >> include/$PROJECT/$PROJECT.h
     echo '#endif /* __@PRJ@_H__ */' >> include/$PROJECT/$PROJECT.h
