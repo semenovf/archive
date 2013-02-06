@@ -6,4 +6,7 @@
 #************************************************************
 TEMPLATE = subdirs                                           
 CONFIG  += ordered                                           
-SUBDIRS  = cwt-core tests                                    
+SUBDIRS  = cwt-core \
+    tests/dl        \
+    tests/fsm       \
+    tests/uri
