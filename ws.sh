@@ -85,8 +85,9 @@ create() {
     cd ..
 
     # Prepare make.sh (for use from IDE, e.g. Eclipse)
-    echo "#!/bin/sh"          > make.sh
-    echo '$GBS_HOME/make.sh \$*' >> make.sh
+    echo "#!/bin/sh"             > make.sh
+    echo 'cd .gbs'              >> make.sh
+    echo '$GBS_HOME/make.sh $*' >> make.sh
     chmod +x make.sh
 
     # Prepare clean.sh
