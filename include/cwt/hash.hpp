@@ -15,7 +15,11 @@
 
 CWT_NS_BEGIN
 
+#if QT_VERSION < 0x050000
+inline uint qHash(const String &key) { return qHash(key.__impl); }
+#else
 inline uint qHash(const String &key, uint seed = 0) { return qHash(key.__impl, seed); }
+#endif
 
 template <typename Key, typename T>
 class Hash {
