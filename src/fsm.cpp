@@ -8,15 +8,13 @@
 
 #include <cwt/fsm.hpp>
 #include <cwt/char.hpp>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 CWT_NS_BEGIN
 
 static void reproduce (FsmContext *copy, const FsmContext *orig, const FsmTransition *initialTab);
 /*static void reproduceWithContext (FsmContext *copy, const FsmContext *orig, const FsmTransition *initialTab, void *context);*/
-/*static ssize_t repetition(FsmContext *fsm, void *fn_context, const void *data, size_t len);*/
-/*static ssize_t repetition(FsmContext *fsmContext, const FsmRptBounds *bounds, const void *data, size_t len);*/
 
 ssize_t FsmMatchSeq::match(FsmContext *fsm, const void *data, size_t len) const
 {
@@ -85,12 +83,6 @@ ssize_t FsmMatchFunc::match(FsmContext *fsm, const void *data, size_t len) const
 
 ssize_t FsmMatchRpt::match(FsmContext *fsm, const void *data, size_t len) const
 {
-/*
-	FsmContext inner_fsm;
-	memcpy(&inner_fsm, fsm, sizeof(inner_fsm));
-	inner_fsm.trans_tab = m_trans;
-	return repetition(&inner_fsm, &m_bounds, data, len);
-*/
 	int from = 0;
 	int to = CWT_INT_MAX;
 	const char *ptr;
@@ -155,68 +147,6 @@ static void reproduceWithContext (FsmContext *copy, const FsmContext *orig, cons
 }
 */
 
-/**
- *
- * @param fsm
- * @param fn_context
- * @param data
- * @param len
- * @return
- */
-/*
-static ssize_t repetition(FsmContext *fsmContext, const FsmRptBounds *rptBounds, const void *data, size_t len)
-{
-	int from = 0;
-	int to = CWT_INT_MAX;
-	const char *ptr;
-	int i;
-	ssize_t nchars_processed;
-	size_t nchars_total_processed;
-
-	CWT_ASSERT(fsmContext);
-
-	ptr = (const char*)data;
-
-	if( !ptr )
-		return 0;
-
-	if (rptBounds) {
-		if( rptBounds->from >= 0 )
-			from = rptBounds->from;
-
-		if( rptBounds->to >= 0 )
-			to = rptBounds->to;
-	}
-
-	CWT_ASSERT(from <= to);
-
-	nchars_processed = (ssize_t)-1;
-	nchars_total_processed = 0;
-
-	for( i = 0; i < to && len > 0; i++ ) {
-
-		nchars_processed = execFsmContext(fsmContext, 0, ptr, len);
-
-		if( nchars_processed < 0 ) {
-			break;
-		}
-
-		if( nchars_processed > 0) {
-			len -= nchars_processed;
-			ptr += (fsmContext->sizeof_char * nchars_processed);
-			nchars_total_processed += (size_t)nchars_processed;
-		}
-	}
-
-	CWT_ASSERT(nchars_total_processed <= CWT_SSIZE_MAX);
-
-	if( i < from )
-		return (ssize_t)-1;
-
-	return (ssize_t)nchars_total_processed;
-}
-*/
-
 ssize_t execFsmContext (FsmContext *fsmContext, int state_cur, const void *data, size_t datalen)
 {
 	const char *ptr;
@@ -259,21 +189,21 @@ ssize_t execFsmContext (FsmContext *fsmContext, int state_cur, const void *data,
 			len -= nchars_processed;
 			nchars_total_processed += nchars_processed;
 
-			if( trans->status == FSM_ACCEPT )
+			if (trans->status == FSM_ACCEPT)
 				nchars_total_accepted = nchars_total_processed;
 
-			state_cur = trans->state_next;
+			if (trans->status == FSM_REJECT) { /* finish, use case see at cwt-csv:csv_rfc4180.hpp in 'nonquoted_char_fsm' for ex. */
+				state_cur = -1;
+				accepted = false;
+			} else {
+				state_cur = trans->state_next;
+			}
 		} else {
 			state_cur = trans->state_fail;
 
 			if( trans->status != FSM_ACCEPT ) {
 				accepted = false;
 			}
-
-/*
-			ptr -= (fsmContext->sizeof_char * nchars_total_processed);
-			len += nchars_total_processed;
-*/
 
 			ptr = (const char*)data + (fsmContext->sizeof_char * nchars_total_accepted);
 			len = datalen + nchars_total_accepted;
@@ -287,7 +217,8 @@ ssize_t execFsmContext (FsmContext *fsmContext, int state_cur, const void *data,
 		trans = &fsmContext->trans_tab[state_cur];
 		nchars_processed = (ssize_t)-1;
 
-		if( trans->status == FSM_REJECT ) {
+/*
+		if (trans->status == FSM_REJECT) {
 			if( trans->action )
 				trans->action(ptr
 				, len
@@ -296,6 +227,7 @@ ssize_t execFsmContext (FsmContext *fsmContext, int state_cur, const void *data,
 
 			return (ssize_t)-1;
 		}
+*/
 
 	} while( true );
 
