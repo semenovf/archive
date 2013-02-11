@@ -1,31 +1,18 @@
 CWT_CONFIG=debug
-
-include($$(GBS_HOME)/common-dll.pri)
-
-TARGET = cwt-abnf
-
+include($$(GBS_HOME)/common-dll-qt.pri)
+TARGET=cwt-abnf
 INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../cwt/include
-
-# comment this in production mode
-DEFINES += CWT_USE_TESTS
-
+INCLUDEPATH += ../../../cwt-common/include
+INCLUDEPATH += ../../../cwt-core/include
 
 unix {
-    HEADERS += ../../include/cwt/*.h
-    SOURCES += ../../src/*.c
-
+    HEADERS += ../../include/cwt/*.hpp
+    SOURCES += ../../src/*.cpp
     LIBS += -lcwt
 }
 
 win32 {
-    # see cwt/src/stdio.c for description
-    DEFINES += _CRT_NON_CONFORMING_SWPRINTFS
-
-    # compile as C sources
-    QMAKE_CFLAGS += /TC
-    QMAKE_CXXFLAGS += /TC
-
-    HEADERS += ..\\..\\include\\cwt\\*.h
-    SOURCES += ..\\..\\src\\*.c
+    HEADERS += ..\\..\\include\\cwt\\*.hpp
+    SOURCES += ..\\..\\src\\*.cpp
+    LIBS += cwt.lib
 }

@@ -103,6 +103,7 @@ CWT_NS_BEGIN
 
 String _ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
 String _DIGIT(_U("0123456789"));
+String _HEXDIGIT(_U("0123456789ABCDEFabcdef")); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
 String _BIT(_U("01"));
 String _DQUOTE(_U("\""));
 String _WSP(_U(" \t"));
@@ -209,42 +210,40 @@ static FsmTransition bin_val_fsm[] = {
 
 /* "d" 1*DIGIT [ 1*("." 1*DIGIT) / ("-" 1*DIGIT) ] */
 static FsmTransition dec_dash_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_T("-"), 1)           , FSM_NORMAL , NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(DIGIT_FSM, &rpt_1more) , FSM_ACCEPT , NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("-"))          , FSM_NORMAL , NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 1,-1) , FSM_ACCEPT , NULL, NULL }
 };
 static FsmTransition dec_point_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_T("."), 1)           , FSM_NORMAL , NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(DIGIT_FSM, &rpt_1more) , FSM_ACCEPT , NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("."))          , FSM_NORMAL , NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 1,-1) , FSM_ACCEPT , NULL, NULL }
 };
 static FsmTransition dec_dash_point_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(dec_dash_fsm)              , FSM_ACCEPT , NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(dec_point_fsm, &rpt_1more) , FSM_ACCEPT , NULL, NULL }
+	  {-1, 1, FSM_MATCH_FSM(dec_dash_fsm)            , FSM_ACCEPT , NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_FSM(dec_point_fsm, 1,-1) , FSM_ACCEPT , NULL, NULL }
 };
 static FsmTransition dec_val_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_T("d"), 1)           , FSM_NORMAL , NULL, NULL }
-	, { 2,-1, FSM_MATCH_RPT(DIGIT_FSM, &rpt_1more) , FSM_ACCEPT , NULL, NULL }
-	, { 3, 3, FSM_MATCH_FSM(dec_dash_point_fsm)    , FSM_NORMAL , NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING                    , FSM_ACCEPT , NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("d"))               , FSM_NORMAL , NULL, NULL }
+	, { 2,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 1,-1)        , FSM_NORMAL , NULL, NULL }
+	, {-1,-1, FSM_MATCH_OPT_FSM(dec_dash_point_fsm) , FSM_ACCEPT , NULL, NULL }
 };
 
 /* "x" 1*HEXDIG [ 1*("." 1*HEXDIG) / ("-" 1*HEXDIG) ] */
 static FsmTransition hex_dash_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_T("-"), 1)            , FSM_NORMAL , NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(HEXDIG_FSM, &rpt_1more) , FSM_ACCEPT , NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("-"))             , FSM_NORMAL , NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_HEXDIGIT, 1,-1) , FSM_ACCEPT , NULL, NULL }
 };
 static FsmTransition hex_point_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_T("."), 1)            , FSM_NORMAL , NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(HEXDIG_FSM, &rpt_1more) , FSM_ACCEPT , NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("."))             , FSM_NORMAL , NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_HEXDIGIT, 1,-1) , FSM_ACCEPT , NULL, NULL }
 };
 static FsmTransition hex_dash_point_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(hex_dash_fsm)              , FSM_ACCEPT , NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(hex_point_fsm, &rpt_1more) , FSM_ACCEPT , NULL, NULL }
+	  {-1, 1, FSM_MATCH_FSM(hex_dash_fsm)            , FSM_ACCEPT , NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_FSM(hex_point_fsm, 1,-1) , FSM_ACCEPT , NULL, NULL }
 };
 static FsmTransition hex_val_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_T("x"), 1)            , FSM_NORMAL , NULL, NULL }
-	, { 2,-1, FSM_MATCH_RPT(HEXDIG_FSM, &rpt_1more) , FSM_ACCEPT , NULL, NULL }
-	, { 3, 3, FSM_MATCH_FSM(hex_dash_point_fsm)     , FSM_NORMAL , NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING                     , FSM_ACCEPT , NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("x"))               , FSM_NORMAL , NULL, NULL }
+	, { 2,-1, FSM_MATCH_RPT_CHAR(_HEXDIGIT, 1,-1)   , FSM_NORMAL , NULL, NULL }
+	, {-1,-1, FSM_MATCH_OPT_FSM(hex_dash_point_fsm) , FSM_ACCEPT , NULL, NULL }
 };
 
 /*  "%" (bin-val / dec-val / hex-val) */
@@ -254,21 +253,20 @@ static FsmTransition num_val_opt_fsm[] = {
 	, {-1,-1, FSM_MATCH_FSM(bin_val_fsm) , FSM_ACCEPT, NULL, NULL }
 };
 static FsmTransition num_val_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_T("%"), 1)     , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("%"))        , FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(num_val_opt_fsm) , FSM_ACCEPT, NULL, NULL }
 };
-
 
 /* WSP / (c-nl WSP) */
 /* c-nl WSP */
 static FsmTransition c_nl_wsp_fsm[] = {
-     { 1,-1, FSM_MATCH_FSM(c_nl_fsm)       , FSM_NORMAL , NULL , NULL }
-   , {-1,-1, FSM_MATCH_INLINE(WSP_FSM_INL) , FSM_ACCEPT , NULL , NULL }
+     { 1,-1, FSM_MATCH_FSM(c_nl_fsm) , FSM_NORMAL , NULL , NULL }
+   , {-1,-1, FSM_MATCH_CHAR(_WSP)    , FSM_ACCEPT , NULL , NULL }
 };
 /* WSP / c-nl-wsp */
 static FsmTransition c_wsp_fsm[] = {
-     {-1, 1, FSM_MATCH_FSM(c_nl_wsp_fsm)   , FSM_ACCEPT , NULL , NULL }
-   , {-1,-1, FSM_MATCH_INLINE(WSP_FSM_INL) , FSM_ACCEPT , NULL , NULL }
+     {-1, 1, FSM_MATCH_FSM(c_nl_wsp_fsm) , FSM_ACCEPT , NULL , NULL }
+   , {-1,-1, FSM_MATCH_CHAR(_WSP)        , FSM_ACCEPT , NULL , NULL }
 };
 
 /*
@@ -277,43 +275,39 @@ static FsmTransition c_wsp_fsm[] = {
 							;  incremental alternatives
 */
 static FsmTransition assign_fsm[] = {
-	  {-1, 1, FSM_MATCH_STR(_T("=/"), 2)           , FSM_ACCEPT , NULL, NULL }
-	, {-1,-1, FSM_MATCH_STR(_T("="), 1)            , FSM_ACCEPT , NULL, NULL }
+	  {-1, 1, FSM_MATCH_STR(_U("=/")) , FSM_ACCEPT , NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR(_U("="))  , FSM_ACCEPT , NULL, NULL }
 };
 static FsmTransition defined_as_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_NORMAL , NULL, NULL }
-	, { 2,-1, FSM_MATCH_FSM(assign_fsm)            , FSM_NORMAL , NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_ACCEPT , NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL , NULL, NULL }
+	, { 2,-1, FSM_MATCH_FSM(assign_fsm)          , FSM_NORMAL , NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_ACCEPT , NULL, NULL }
 };
 
-/*
-static CwtFsmRepetitionContext __dec_1more_rpt = { DIGIT_FSM, 1, -1 };
-static CwtFsmRepetitionContext __dec_0more_rpt = { DIGIT_FSM,-1, -1 };
-*/
 /* *DIGIT "*" *DIGIT */
 static FsmTransition repeat_range_fsm[] = {
-	  { 1, 1, FSM_MATCH_RPT(DIGIT_FSM, &rpt_0more) , FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_STR(_T("*"), 1)            , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(DIGIT_FSM, &rpt_0more) , FSM_ACCEPT, NULL, NULL }
+	  { 1, 1, FSM_MATCH_RPT_CHAR(_DIGIT, 0,-1) , FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_CHAR(_U("*"))          , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 0,-1) , FSM_ACCEPT, NULL, NULL }
 };
 /* (*DIGIT "*" *DIGIT) / 1*DIGIT  */
 static FsmTransition repeat_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(repeat_range_fsm)      , FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(DIGIT_FSM, &rpt_1more) , FSM_ACCEPT, NULL, NULL }
+	  {-1, 1, FSM_MATCH_FSM(repeat_range_fsm)  , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 1,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
-static FsmTransition element_fsm[];
+extern FsmTransition element_fsm[];
 /* [repeat] element */
 static FsmTransition repetition_fsm[] = {
-	  { 1, 1, FSM_MATCH_FSM(repeat_fsm),  FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(element_fsm), FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_OPT_FSM(repeat_fsm),  FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(element_fsm)   , FSM_ACCEPT, NULL, NULL }
 };
 
 /* repetition *(1*c-wsp repetition) */
 /* 1*c-wsp repetition */
 static FsmTransition repetition_c_wsp_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_1more) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(repetition_fsm)        , FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 1,-1) , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(repetition_fsm)      , FSM_ACCEPT, NULL, NULL }
 };
 static FsmTransition concatenation_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(repetition_fsm),       FSM_ACCEPT, NULL, NULL }
@@ -324,43 +318,43 @@ static FsmTransition concatenation_fsm[] = {
 /* concatenation *(*c-wsp "/" *c-wsp concatenation) */
 /* *c-wsp "/" *c-wsp concatenation */
 static FsmTransition concatenation_c_wsp_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_STR(_T("/"), 1)            , FSM_NORMAL, NULL, NULL }
-	, { 3,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(concatenation_fsm)     , FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_CHAR(_U("/"))            , FSM_NORMAL, NULL, NULL }
+	, { 3,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(concatenation_fsm)   , FSM_ACCEPT, NULL, NULL }
 };
 
 static FsmTransition alternation_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(concatenation_fsm),       FSM_ACCEPT, NULL, NULL }
-	, { 1,-1, FSM_MATCH_FSM(concatenation_c_wsp_fsm), FSM_ACCEPT, NULL, NULL }
+	  {-1, 1, FSM_MATCH_FSM(concatenation_fsm),       FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_FSM(concatenation_c_wsp_fsm, 0,-1), FSM_ACCEPT, NULL, NULL }
 };
 
 /* alternation *c-wsp */
 static FsmTransition elements_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(alternation_fsm)       , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* "[" *c-wsp alternation *c-wsp "]" */
 static FsmTransition option_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR(_T("["), 1)            , FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_NORMAL, NULL, NULL }
-	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)       , FSM_NORMAL, NULL, NULL }
-	, { 4,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_STR(_T("]"), 1)            , FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_STR(_U("["))             , FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
+	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, NULL, NULL }
+	, { 4,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR(_U("]"))             , FSM_ACCEPT, NULL, NULL }
 };
 
 /* "(" *c-wsp alternation *c-wsp ")" */
 static FsmTransition group_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR(_T("("), 1)            , FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_NORMAL, NULL, NULL }
-	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)       , FSM_NORMAL, NULL, NULL }
-	, { 4,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_STR(_T(")"), 1)            , FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("("))            , FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
+	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, NULL, NULL }
+	, { 4,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR(_U(")"))             , FSM_ACCEPT, NULL, NULL }
 };
 
 /* rulename / group / option / char-val / num-val / prose-val */
-static FsmTransition element_fsm[] = {
+FsmTransition element_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(rulename_fsm),  FSM_ACCEPT, NULL, NULL }
 	, {-1, 2, FSM_MATCH_FSM(group_fsm),     FSM_ACCEPT, NULL, NULL }
 	, {-1, 3, FSM_MATCH_FSM(option_fsm),    FSM_ACCEPT, NULL, NULL }
@@ -384,8 +378,8 @@ static FsmTransition rule_fsm[] = {
 /* 1*( rule / (*c-wsp c-nl) ) */
 /* *c-wsp c-nl */
 static FsmTransition c_wsp_nl_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT(c_wsp_fsm, &rpt_0more) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(c_nl_fsm)              , FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(c_nl_fsm)            , FSM_ACCEPT, NULL, NULL }
 };
 
 /* rule / (*c-wsp c-nl) */
@@ -395,7 +389,7 @@ static FsmTransition rule_c_wsp_nl_fsm[] = {
 };
 
 static FsmTransition rulelist_fsm[] = {
-	{-1,-1, FSM_MATCH_RPT(rule_c_wsp_nl_fsm, &rpt_1more) , FSM_ACCEPT, NULL, NULL }
+	{-1,-1, FSM_MATCH_RPT_FSM(rule_c_wsp_nl_fsm, 1,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 CWT_NS_END
