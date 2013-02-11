@@ -1,2 +1,2 @@
 #!/bin/sh
-/home/wladt/ws/gbs/make.sh $*
+$GBS_HOME/make.sh \$*

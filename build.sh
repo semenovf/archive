@@ -1,4 +1,4 @@
 #!/bin/sh
 cd .gbs
-/home/wladt/ws/gbs/make.sh clean
-/home/wladt/ws/gbs/make.sh all
+$GBS_HOME/make.sh clean
+$GBS_HOME/make.sh all

@@ -9,7 +9,7 @@
 #include <cwt/abnf.h>
 #include <cwt/fsm_test.h>
 
-#include "../src/abnf-rfc5234.h"
+#include "../src/abnf-rfc5234.hpp"
 
 static struct _FsmTestEntry __fsmTestEntries[] = {
 	/* ";" *(WSP / VCHAR) NL */
