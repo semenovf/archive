@@ -101,8 +101,10 @@ static FsmTestEntry __fsmTestEntries[] = {
 	, { VHEADER(c_nl_fsm)
 		, { ";\r\n", "; comment line \r\n", "\r\n", "; \t\t \r\n", VNULL }
 		, {   { 2, "\r\n  " }
+/*
 			, {-1, ";\n" }
 			, {-1, ";\r" }
+*/
 			, {-1, "comment\r\n" }
 			, INULL }}
 
@@ -215,7 +217,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(128);
+	CWT_BEGIN_TESTS(124);
 
 	static Fsm<Char> fsm(NULL, NULL);
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);

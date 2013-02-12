@@ -30,6 +30,20 @@
 CWT_NS_BEGIN
 
 /*
+static bool _trace(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED3(data, len, context);
+	if (action_args) {
+		CWT_TRACE(String().sprintf("%s: [%s]"
+				, reinterpret_cast<String*>(action_args)->toUtf8().data()
+				, String((const Char*)action_args).toUtf8().data()
+				, String((const Char*)data, len).toUtf8().data()).toUtf8().data());
+	}
+	return true;
+}
+*/
+
+/*
    All CRLF entries replaced by NL !!!
 
    RFC 5234: Augmented BNF for Syntax Specifications: ABNF
@@ -325,7 +339,7 @@ static FsmTransition concatenation_c_wsp_fsm[] = {
 };
 
 static FsmTransition alternation_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(concatenation_fsm),       FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(concatenation_fsm)                , FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_RPT_FSM(concatenation_c_wsp_fsm, 0,-1), FSM_ACCEPT, NULL, NULL }
 };
 
