@@ -8,9 +8,9 @@ INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
 
 unix {
-    SOURCES += ../../tests/test.c
+    SOURCES += ../../tests/test.cpp
 }
 
 win32 {
-    SOURCES += ..\\..\\tests\\test.c
+    SOURCES += ..\\..\\tests\\test.cpp
 }

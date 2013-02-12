@@ -69,8 +69,8 @@ create() {
     echo '#define __@PRJ@_H__'      >> include/$PROJECT/$PROJECT.h
     echo ' '                        >> include/$PROJECT/$PROJECT.h
     echo '#endif /* __@PRJ@_H__ */' >> include/$PROJECT/$PROJECT.h
-    cp $GBS_HOME/template/main.c src/main.c
-    cp $GBS_HOME/template/test.c tests/test.c
+    cp $GBS_HOME/template/main.cpp src/main.cpp
+    cp $GBS_HOME/template/test.cpp tests/test.cpp
 
     cd .gbs
     echo "#************************************************************"  > $PROJECT.pro
