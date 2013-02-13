@@ -9,4 +9,7 @@ CONFIG  += ordered
 SUBDIRS  = cwt-core \
     tests/dl        \
     tests/fsm       \
+    tests/logger    \
+    tests/sepaloid  \
     tests/uri
+

@@ -51,6 +51,7 @@ String& String::sprintf(const char * cformat, ...)
 	va_list args;
 	va_start(args, cformat);
 	String::vsprintf(cformat, args);
+	va_end(args);
 	return *this;
 }
 

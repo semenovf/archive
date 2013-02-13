@@ -131,9 +131,9 @@ static bool set_host_is_ip(const void *data, size_t len, void *context, void *ac
 #define FSM_MATCH_CHAR(s) FsmMatch(new FsmMatchStringChar(s))
 #define FSM_MATCH_STR(s)  FsmMatch(new FsmMatchStringStr(s))
 
-String _ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
-String _DIGIT(_U("0123456789"));
-String _HEXDIGIT(_U("0123456789ABCDEFabcdef")); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
+static String _ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
+static String _DIGIT(_U("0123456789"));
+static String _HEXDIGIT(_U("0123456789ABCDEFabcdef")); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
 
 static FsmTransition digit_fsm[] = {
     {-1,-1, FSM_MATCH_CHAR(_DIGIT), FSM_ACCEPT, NULL, NULL }
