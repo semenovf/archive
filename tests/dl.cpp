@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 	dl_test_fn dltest;
 
 	CWT_TEST_FAIL(dlhandle = Dl::open(dlname));
-	CWT_TEST_FAIL(dltest = (dl_test_fn)Dl::ptr(dlhandle, _U("dl_only_for_testing_purpose")));
+	CWT_TEST_FAIL(dltest = (dl_test_fn)Dl::ptr(dlhandle, "dl_only_for_testing_purpose"));
 	CWT_TEST_OK(dltest() == dl_only_for_testing_purpose());
 	Dl::close(dlhandle);
 

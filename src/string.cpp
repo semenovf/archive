@@ -39,6 +39,9 @@ Char* String::data()             { return reinterpret_cast<Char*>(__impl.data())
 const Char*	String::data() const { return reinterpret_cast<const Char*>(__impl.data()); }
 bool String::isEmpty() const     { return reinterpret_cast<const Char*>(__impl.isEmpty()); }
 bool String::isNull() const      { return reinterpret_cast<const Char*>(__impl.isNull()); }
+int String::indexOf(const String &str, int from, bool cs) const { return __impl.indexOf(str.__impl, from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+int String::indexOf(Char ch, int from, bool cs) const { return __impl.indexOf(ch.__impl, from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+
 int	String::length() const       { return __impl.length(); }
 
 String&	String::prepend(const String &str) { __impl.prepend(str.__impl); return *this; }
@@ -55,7 +58,8 @@ String& String::sprintf(const char * cformat, ...)
 	return *this;
 }
 
-
+bool String::startsWith(const String &s, bool cs) const { return __impl.startsWith(s.__impl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+bool String::startsWith(Char c, bool cs) const { return __impl.startsWith(c.__impl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 
 double	 String::toDouble(bool *ok) const           { return __impl.toDouble(ok); }
 float	 String::toFloat(bool *ok) const            { return __impl.toFloat(ok); }

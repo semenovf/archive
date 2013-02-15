@@ -11,18 +11,21 @@
 
 #include <cwt/cwt.h>
 #include <cwt/string.hpp>
+#include <cwt/bytearray.hpp>
 #include <QtCore/QHash>
 
 CWT_NS_BEGIN
 
 #if QT_VERSION < 0x050000
 inline uint qHash(const String &key) { return qHash(key.__impl); }
+inline uint qHash(const ByteArray &key) { return qHash(key.__impl); }
 #else
 inline uint qHash(const String &key, uint seed = 0) { return qHash(key.__impl, seed); }
+inline uint qHash(const ByteArray &key, uint seed = 0) { return qHash(key.__impl, seed); }
 #endif
 
 template <typename Key, typename T>
-class Hash {
+class DLL_API Hash {
 public:
 	typedef typename QHash<Key,T>::iterator iterator;
 	typedef typename QHash<Key,T>::const_iterator const_iterator;

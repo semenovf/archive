@@ -7,8 +7,8 @@
  */
 
 
-#ifndef __CWT_UI_SIGSLOT_MAPPING_HPP__
-#define __CWT_UI_SIGSLOT_MAPPING_HPP__
+#ifndef __CWT_SIGSLOT_MAPPING_HPP__
+#define __CWT_SIGSLOT_MAPPING_HPP__
 
 #include <cwt/cwt.h>
 #include <cwt/sigslot.hpp>
@@ -21,6 +21,7 @@ class sigslot_mapping_t
 public:
 	virtual ~sigslot_mapping_t() {}
 	virtual void connectAll() = 0;
+	virtual void disconnectAll() = 0;
 	virtual void appendEmitter(Emitter *e) = 0;
 	virtual void appendDetector(Petaloid *petaloid, Detector d) = 0;
 };
@@ -35,6 +36,7 @@ struct _base_sigslot_mapping_t : public sigslot_mapping_t
 	detector_vector_t detectors;
 
 	virtual void connectAll();
+	virtual void disconnectAll();
 	virtual void appendEmitter(Emitter *e) { emitters.append(reinterpret_cast<_emitterT*>(e)); }
 	virtual void appendDetector(Petaloid *p, Detector d) { detectors.append(DetectorPair (p, d));}
 };
@@ -54,6 +56,17 @@ void _base_sigslot_mapping_t<_emitterT, _detectorT>::connectAll()
 		}
 	}
 }
+
+template <typename _emitterT, typename _detectorT>
+void _base_sigslot_mapping_t<_emitterT, _detectorT>::disconnectAll()
+{
+    typename emitter_vector_t::const_iterator itEnd = emitters.end();
+
+	for( typename emitter_vector_t::const_iterator it = emitters.begin(); it != itEnd; it++ ) {
+		(*it)->disconnect_all();
+	}
+}
+
 
 /*template <template typename notused = NULL>*/
 struct sigslot_mapping0_t : public _base_sigslot_mapping_t<signal0<>, void (Petaloid::*)()> {};
@@ -84,4 +97,4 @@ struct sigslot_mapping8_t : public _base_sigslot_mapping_t<signal8<a0, a1, a2, a
 
 CWT_NS_END
 
-#endif /* __CWT_UI_SIGSLOT_MAPPING_HPP__ */
+#endif /* __CWT_SIGSLOT_MAPPING_HPP__ */

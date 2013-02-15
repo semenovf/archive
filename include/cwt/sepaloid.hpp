@@ -6,33 +6,40 @@
  *  Removed to CWT on: Feb 12, 2013
  */
 
-#ifndef __CWT_UI_SEPALOID_HPP__
-#define __CWT_UI_SEPALOID_HPP__
+#ifndef __CWT_SEPALOID_HPP__
+#define __CWT_SEPALOID_HPP__
 
 #include <cwt/vector.hpp>
 #include <cwt/hash.hpp>
 #include <cwt/sigslotmapping.hpp>
+#include <cwt/dl.hpp>
 
 CWT_NS_BEGIN
 
-class Sepaloid
+struct PetaloidSpec {
+	PetaloidSpec() : p(NULL), ph(NULL), dtor(NULL) {}
+	PetaloidSpec(Petaloid *a, Dl::Handle b, __petaloid_dtor__ c) : p(a), ph(b), dtor(c) {}
+	Petaloid *p;
+	Dl::Handle ph;          /* null for local */
+	__petaloid_dtor__ dtor; /* may be null (no destructor) */
+};
+
+
+class DLL_API Sepaloid
 {
 public:
 	typedef struct { const char *id; sigslot_mapping_t *map; const char *desc; } Mapping;
-	typedef Hash<const char*, Mapping*> MappingHash;
+	typedef Hash<ByteArray, Mapping*> MappingHash;
 
 public:
 	Sepaloid(Mapping mapping[], int n);
 	~Sepaloid() {}
 
-	void appendExternPetaloidDir(const String &dir) { m_searchDirs.append(dir); }
-	bool registerLocalPetaloid(Petaloid &petaloid);
-
-
-/* TODO need implementation
+	void addSearchPath(const String &dir) { m_searchPaths.append(dir); }
+	bool registerLocalPetaloid(Petaloid &petaloid, __petaloid_dtor__ dtor = Petaloid::defaultDtor);
+	bool registerStaticPetaloid(Petaloid &petaloid);
 	bool registerPetaloidForPath(const String &path);
 	bool registerPetaloidForName(const String &name);
-*/
 
 /* TODO need implementation
 	bool registerPetaloidForUrl(const String &url);
@@ -42,39 +49,18 @@ public:
 */
 
 	void connectAll();
-/*
-	bool loadPetaloids(
-			void (*mapping_proc)(SepaloidBootstrap&),
-			unsigned int n, String specs[],
-			unsigned int l, Petaloid *locals[]);
-
-	void foreach_petaloid( void (*)(Petaloid*) );
-*/
+	void disconnectAll();
+	void unregisterAll();
 
 protected:
-/*
-	Petaloid* loadPetaloid(const String &name, const String &dir);
-	void registerPetaloid(Petaloid *p, SepaloidBootstrap *bootstrap);
-*/
-
-public /*signals*/:
-/*
-	sigslot::signal0<>              emitPetaloidDestroy;
-	sigslot::signal1<const String&> emitPetaloidLoaded;
-*/
-
-private /*signals*/:
-/*
-	sigslot::signal0<> emitPetaloidRegisteredSys;
-	sigslot::signal0<> emitPetaloidRegistered;
-*/
+	bool registerPetaloid(Petaloid &petaloid, Dl::Handle ph, __petaloid_dtor__ dtor);
 
 private:
-	MappingHash     m_mapping;
-	Vector<String>  m_searchDirs;     /* directories where to find petaloids */
-	/*Vector<Petaloid*> m_petaloids;*/
+	MappingHash          m_mapping;
+	Vector<String>       m_searchPaths;     /* directories where to search petaloids */
+	Vector<PetaloidSpec> m_petaloids;
 };
 
 CWT_NS_END
 
-#endif /* __CWT_UI_SEPALOID_HPP__ */
+#endif /* __CWT_SEPALOID_HPP__ */

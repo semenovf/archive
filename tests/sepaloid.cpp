@@ -1,14 +1,15 @@
 #include <cwt/test.h>
 #include <cwt/sepaloid.hpp>
+#include <cwt/logger.hpp>
 #include <cstring>
 
 using namespace cwt;
 
-class LocalPetalodEmitter : public Petaloid
+class LocalPetaloidEmitter : public Petaloid
 {
 public:
-	LocalPetalodEmitter() : Petaloid("LocalPetalodEmitter") {}
-	virtual ~LocalPetalodEmitter() {}
+	LocalPetaloidEmitter() : Petaloid("LocalPetalodEmitter") {}
+	virtual ~LocalPetaloidEmitter() {}
 	virtual const EmitterMapping* getEmitters(int *count);
 	virtual const DetectorMapping* getDetectors(int *count) { CWT_UNUSED(count); return NULL; }
 
@@ -24,7 +25,7 @@ public: /*signal*/
 	signal8<bool, char, short, int, long, long long, const char*, const String&> emitEightArgs;
 };
 
-const EmitterMapping* LocalPetalodEmitter::getEmitters(int *count)
+const EmitterMapping* LocalPetaloidEmitter::getEmitters(int *count)
 {
 	static EmitterMapping local_emitter_mapping[] = {
 		  { "ZeroArg"   , EMITTER_CAST(emitZeroArg) }
@@ -43,11 +44,11 @@ const EmitterMapping* LocalPetalodEmitter::getEmitters(int *count)
 	return &local_emitter_mapping[0];
 }
 
-class LocalPetalodDetector : public Petaloid
+class LocalPetaloidDetector : public Petaloid
 {
 public:
-	LocalPetalodDetector() : Petaloid("LocalPetalodDetector") {}
-	virtual ~LocalPetalodDetector() {}
+	LocalPetaloidDetector() : Petaloid("LocalPetalodDetector") {}
+	virtual ~LocalPetaloidDetector() {}
 	virtual const EmitterMapping* getEmitters(int *count) { CWT_UNUSED(count); return NULL; }
 	virtual const DetectorMapping* getDetectors(int *count);
 
@@ -63,63 +64,63 @@ public: /*slots*/
 	void onEightArgs(bool ok, char, short, int, long, long long, const char*, const String&);
 };
 
-inline void LocalPetalodDetector::onZeroArg()
+inline void LocalPetaloidDetector::onZeroArg()
 {
 	CWT_TEST_OK2(true == true, "onZeroArg()");
 }
 
-inline void LocalPetalodDetector::onOneArg(bool ok)
+inline void LocalPetaloidDetector::onOneArg(bool ok)
 {
 	CWT_TEST_OK2(ok == true, "onOneArg(bool)");
 }
 
-inline void LocalPetalodDetector::onTwoArgs(bool ok, char ch)
+inline void LocalPetaloidDetector::onTwoArgs(bool ok, char ch)
 {
 	CWT_TEST_OK2(ok == true && ch == 'c', "onTwoArgs(true, 'c')");
 }
 
-inline void LocalPetalodDetector::onThreeArgs(bool ok, char, short i)
+inline void LocalPetaloidDetector::onThreeArgs(bool ok, char, short i)
 {
 	CWT_TEST_OK2(ok == true && i == CWT_SHORT_MAX, "onThreeArgs(bool,..., CWT_SHORT_MAX)");
 }
 
-inline void LocalPetalodDetector::onFourArgs(bool ok, char, short, int i)
+inline void LocalPetaloidDetector::onFourArgs(bool ok, char, short, int i)
 {
 	CWT_TEST_OK2(ok == true && i == CWT_INT_MAX, "onFourArgs(bool,..., CWT_INT_MAX)");
 }
 
-inline void LocalPetalodDetector::onFiveArgs(bool ok, char, short, int, long i)
+inline void LocalPetaloidDetector::onFiveArgs(bool ok, char, short, int, long i)
 {
 	CWT_TEST_OK2(ok == true && i == CWT_INT_MAX, "onFiveArgs(bool,... CWT_INT_MAX)");
 }
 
-inline void LocalPetalodDetector::onSixArgs(bool ok, char, short, int, long, const char *hello)
+inline void LocalPetaloidDetector::onSixArgs(bool ok, char, short, int, long, const char *hello)
 {
 	CWT_TEST_OK2(ok == true && strcmp("Hello, World!", hello) == 0, "onSixArgs(bool,...\"Hello, World!\")");
 }
 
-inline void LocalPetalodDetector::onSevenArgs(bool ok, char, short, int, long, const char*, const String &hello)
+inline void LocalPetaloidDetector::onSevenArgs(bool ok, char, short, int, long, const char*, const String &hello)
 {
-	CWT_TEST_OK2(ok == true && hello == _U("Hello, Unicode World!"), "onSevenArgs(bool,..., String(\"Hello, Unicode World!\"");
+	CWT_TEST_OK2(ok == true && hello == _U("Hello, Unicode World!"), "onSevenArgs(bool,..., String(\"Hello, Unicode World!\")");
 }
 
-inline void LocalPetalodDetector::onEightArgs(bool ok, char, short, int, long, long long i, const char*, const String&)
+inline void LocalPetaloidDetector::onEightArgs(bool ok, char, short, int, long, long long i, const char*, const String&)
 {
 	CWT_TEST_OK2(ok == true && i == CWT_LONG_MAX, "onEightArgs(bool,..., CWT_LONG_MAX,...)");
 }
 
-const DetectorMapping* LocalPetalodDetector::getDetectors(int *count)
+const DetectorMapping* LocalPetaloidDetector::getDetectors(int *count)
 {
 	static DetectorMapping local_detector_mapping[] = {
-		  { "ZeroArg"   , DETECTOR_CAST(LocalPetalodDetector::onZeroArg) }
-		, { "OneArg"    , DETECTOR_CAST(LocalPetalodDetector::onOneArg) }
-		, { "TwoArgs"   , DETECTOR_CAST(LocalPetalodDetector::onTwoArgs) }
-		, { "ThreeArgs" , DETECTOR_CAST(LocalPetalodDetector::onThreeArgs) }
-		, { "FourArgs"  , DETECTOR_CAST(LocalPetalodDetector::onFourArgs) }
-		, { "FiveArgs"  , DETECTOR_CAST(LocalPetalodDetector::onFiveArgs) }
-		, { "SixArgs"   , DETECTOR_CAST(LocalPetalodDetector::onSixArgs) }
-		, { "SevenArgs" , DETECTOR_CAST(LocalPetalodDetector::onSevenArgs) }
-		, { "EightArgs" , DETECTOR_CAST(LocalPetalodDetector::onEightArgs) }
+		  { "ZeroArg"   , DETECTOR_CAST(LocalPetaloidDetector::onZeroArg) }
+		, { "OneArg"    , DETECTOR_CAST(LocalPetaloidDetector::onOneArg) }
+		, { "TwoArgs"   , DETECTOR_CAST(LocalPetaloidDetector::onTwoArgs) }
+		, { "ThreeArgs" , DETECTOR_CAST(LocalPetaloidDetector::onThreeArgs) }
+		, { "FourArgs"  , DETECTOR_CAST(LocalPetaloidDetector::onFourArgs) }
+		, { "FiveArgs"  , DETECTOR_CAST(LocalPetaloidDetector::onFiveArgs) }
+		, { "SixArgs"   , DETECTOR_CAST(LocalPetaloidDetector::onSixArgs) }
+		, { "SevenArgs" , DETECTOR_CAST(LocalPetaloidDetector::onSevenArgs) }
+		, { "EightArgs" , DETECTOR_CAST(LocalPetaloidDetector::onEightArgs) }
 	};
 
 	CWT_ASSERT(count);
@@ -143,14 +144,19 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(9);
+    CWT_BEGIN_TESTS(13);
 
-    LocalPetalodEmitter *emitter = new LocalPetalodEmitter;
-    LocalPetalodDetector *detector = new LocalPetalodDetector;
+    Logger::init();
+
+    LocalPetaloidEmitter *emitter = new LocalPetaloidEmitter;
+    LocalPetaloidDetector *detector = new LocalPetaloidDetector;
 
     Sepaloid sepaloid(app_mapping, sizeof(app_mapping)/sizeof(app_mapping[0]));
-    sepaloid.registerLocalPetaloid(*emitter);
-    sepaloid.registerLocalPetaloid(*detector);
+    CWT_TEST_OK(sepaloid.registerLocalPetaloid(*emitter));
+    CWT_TEST_OK(sepaloid.registerLocalPetaloid(*detector));
+    CWT_TEST_OK(sepaloid.registerPetaloidForPath(_U("libpetaloid-tmpl.so")));
+    sepaloid.addSearchPath(_U("."));
+    CWT_TEST_OK(sepaloid.registerPetaloidForName(_U("petaloid-tmpl")));
     sepaloid.connectAll();
 
     emitter->emitZeroArg   ();
@@ -162,6 +168,9 @@ int main(int argc, char *argv[])
     emitter->emitSixArgs   (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, "Hello, World!");
     emitter->emitSevenArgs (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, "Hello, World!", _U("Hello, Unicode World!"));
     emitter->emitEightArgs (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, CWT_LONG_MAX, "Hello, World!", _U("Hello, Unicode World!"));
+
+    sepaloid.disconnectAll();
+    sepaloid.unregisterAll();
 
     CWT_END_TESTS;
 }

@@ -35,7 +35,7 @@ public:
 
 public:
 	static Handle open            (const String &path, bool global = true, bool resolve = true);
-	static Ptr    ptr             (Handle h, const String &symname);
+	static Ptr    ptr             (Handle h, const char *symname);
 	static void   close           (Handle h);
 	static String buildDlFileName (const String &basename);
 };

@@ -10,7 +10,7 @@
 #include <cstdio>
 
 #include "../src/uri-rfc3986.hpp"
-#include "fsm_test.hpp"
+#include <cwt/fsm_test.hpp>
 
 using namespace cwt;
 

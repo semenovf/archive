@@ -19,7 +19,7 @@
 /*#define StringLiteral(s) String::fromUtf8("" s "", sizeof(s)-1)*/
 
 /* Unicode characters array */
-#define _U(s)  String::fromUtf8("" s "", sizeof(s)-1)
+#define _U(s)  cwt::String::fromUtf8("" s "", sizeof(s)-1)
 #define _Ur(s) _U(s)
 
 CWT_NS_BEGIN
@@ -49,6 +49,8 @@ public:
 	const Char*	data() const;
 	bool	isEmpty() const;
 	bool	isNull() const;
+	int	    indexOf(const String &str, int from = 0, bool cs = true) const;
+	int	    indexOf(Char ch, int from = 0, bool cs = true) const;
 	int	    length() const;
 
 	String&	prepend(const String &str);
@@ -57,6 +59,9 @@ public:
 
 	String& sprintf(const char * cformat, ...);
 	String& vsprintf(const char *cformat, va_list ap);
+
+	bool	startsWith(const String &s, bool cs = true) const;
+	bool	startsWith(Char c, bool cs = true) const;
 
 	double	 toDouble(bool *ok = 0) const;
 	float	 toFloat(bool *ok = 0) const;

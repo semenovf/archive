@@ -12,8 +12,11 @@
 
 CWT_NS_BEGIN
 
-Logger::Level Logger::g_level = Trace;
-Vector<LogAppender*> Logger::g_appenders;
+void Logger::init()
+{
+	static StdioLogAppender logAppender;
+	Logger::connectAppender(&logAppender);
+}
 
 class LogEmitter
 {
@@ -40,13 +43,12 @@ static LogEmitter g_logEmitter;
 
 void LogAppender::connect()
 {
-	Logger::Level l = Logger::level();
-	if (l < Logger::Debug) g_logEmitter.emitTrace.connect(this, &LogAppender::trace);
-	if (l < Logger::Info)  g_logEmitter.emitDebug.connect(this, &LogAppender::debug);
-	if (l < Logger::Warn)  g_logEmitter.emitInfo.connect(this, &LogAppender::info);
-	if (l < Logger::Error) g_logEmitter.emitWarn.connect(this, &LogAppender::warn);
-	if (l < Logger::Fatal) g_logEmitter.emitError.connect(this, &LogAppender::error);
-	if (l < Logger::NoLog) g_logEmitter.emitFatal.connect(this, &LogAppender::fatal);
+	if (m_priority < Logger::Debug) g_logEmitter.emitTrace.connect(this, &LogAppender::trace);
+	if (m_priority < Logger::Info)  g_logEmitter.emitDebug.connect(this, &LogAppender::debug);
+	if (m_priority < Logger::Warn)  g_logEmitter.emitInfo.connect(this, &LogAppender::info);
+	if (m_priority < Logger::Error) g_logEmitter.emitWarn.connect(this, &LogAppender::warn);
+	if (m_priority < Logger::Fatal) g_logEmitter.emitError.connect(this, &LogAppender::error);
+	if (m_priority < Logger::NoLog) g_logEmitter.emitFatal.connect(this, &LogAppender::fatal);
 }
 
 void LogAppender::disconnect()
@@ -60,25 +62,43 @@ void LogAppender::disconnect()
 }
 
 
-#define PLAIN_CHAR 1
-#define FLAG_CHAR 2
-String LogAppender::patternify(const String &pattern, const String &msg)
+void LogAppender::setPriority(Logger::Priority level)
 {
-	String result(msg);
-	CWT_UNUSED(pattern);
-	return result;
+	disconnect();
+	m_priority = level;
+	connect();
 }
 
 
-void Logger::setLevel(Level level)
+String LogAppender::patternify(Logger::Priority priority, const String &pattern, const String &msg)
 {
-	if (level > Logger::Trace) g_logEmitter.emitTrace.disconnect_all();
-	if (level > Logger::Debug) g_logEmitter.emitDebug.disconnect_all();
-	if (level > Logger::Info)  g_logEmitter.emitInfo.disconnect_all();
-	if (level > Logger::Warn)  g_logEmitter.emitWarn.disconnect_all();
-	if (level > Logger::Error) g_logEmitter.emitError.disconnect_all();
-	if (level > Logger::Fatal) g_logEmitter.emitFatal.disconnect_all();
+	LoggerPatternContext ctx;
+	ctx.priority = priority;
+	ctx.msg = &msg;
+	Fsm<Char> fsm(pattern_fsm, &ctx);
+
+	if (fsm.exec(0, pattern.data(), pattern.length()) == pattern.length()) {
+		return ctx.result;
+	}
+	Logger::error("invalid pattern for logger appender");
+	return String::null();
 }
+
+
+/**
+ * @brief Clear all buffers.
+ *
+ */
+void StringsLogAppender::clear()
+{
+	m_traceStrings.clear();
+	m_debugStrings.clear();
+	m_infoStrings.clear();
+	m_warnStrings.clear();
+	m_errorStrings.clear();
+	m_fatalStrings.clear();
+}
+
 
 void Logger::trace(const char * cformat, ...)
 {

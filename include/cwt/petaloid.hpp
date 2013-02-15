@@ -9,28 +9,8 @@
 #ifndef __CWT_PETALOID_HPP__
 #define __CWT_PETALOID_HPP__
 
+#include <cwt/cwt.h>
 #include <cwt/sigslot.hpp>
-
-/*
-#define PETALOID_SLOT_CAST(slotPtr) reinterpret_cast<jq::detector_slot_t>(slotPtr)
-
-#define JQ_DEF_PETALOID_CLASS_FACTORY(PetaloidClass)                           \
-	JQ_DEF_DL_CLASS_FACTORY                                                    \
-                                                                               \
-	void* DlClassFactoryPrivate::newClassInstance( const char_type* ) {        \
-		return new PetaloidClass;                                              \
-    }                                                                          \
-    void DlClassFactoryPrivate::deleteClassInstance( void *ptr )               \
-    {                                                                          \
-		delete reinterpret_cast<PetaloidClass*>(ptr);                          \
-    }
-
-
-
-#define sigids_petaloidRegisteredSys _T("$sigPetaloidRegisteredSys$")
-#define sigids_petaloidRegistered    _T("$sigPetaloidRegistered$")
-#define sigids_petaloidDestroy       _T("$sigPetaloidDestroy$")
-*/
 
 CWT_NS_BEGIN
 
@@ -43,6 +23,13 @@ typedef void (Petaloid::*Detector)(void*);
 typedef struct { const char *id; void *emitter; } EmitterMapping;
 typedef struct { const char *id; Detector  detector; } DetectorMapping;
 
+#define CWT_PETALOID_API extern "C" DLL_API
+#define CWT_PETALOID_CONSTRUCTOR_NAME "__petaloid_ctor__"
+#define CWT_PETALOID_DESTRUCTOR_NAME "__petaloid_dtor__"
+typedef Petaloid* (*__petaloid_ctor__)();
+typedef void  (*__petaloid_dtor__)(Petaloid*);
+
+
 class Petaloid : public has_slots<>
 {
 private:
@@ -53,31 +40,11 @@ public:
 	virtual ~Petaloid() {}
 	const char *name() const { return m_name; }
 
+	static void defaultDtor(Petaloid *p) { CWT_ASSERT(p); delete p; }
+
 	virtual const EmitterMapping* getEmitters(int *count) = 0;
 	virtual const DetectorMapping* getDetectors(int *count) = 0;
-/*
-	virtual void onRegistered() {;}
-	virtual void onDestroy() { name(); }
-*/
 
-public /*slots*/:
-/*
-	void onRegisteredHelper();
-	void onDestroyHelper();
-*/
-	/*void onRegisteredSys();*/
-
-protected:
-/*
-	bool registerEmitter( sigids_t sid, void *em );
-	bool registerDetector( sigids_t sid, detector_slot_t ds );
-*/
-
-protected:
-/*
-	emitter_map_t  m_emap;
-	detector_map_t m_dmap;
-*/
 private:
 	const char *m_name;
 };

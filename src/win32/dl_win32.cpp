@@ -4,6 +4,8 @@
 
 CWT_NS_BEGIN
 
+extern String strerror_win32(uint errn);
+
 Dl::Handle Dl::open (const String &path, bool global, bool resolve)
 {
 	Dl::Handle h = NULL;
@@ -16,29 +18,25 @@ Dl::Handle Dl::open (const String &path, bool global, bool resolve)
 
 	h = LoadLibraryEx(path.utf16(), NULL, dwFlags);
 
-/*
 	if( !h ) {
-		cwt_logger_ns()->error( _Tr("%s: failed to open dynamic library: %s"), path, cwt_str_ns()->strError(GetLastError()) );
+		Logger::error( _Tr("%ls: failed to open dynamic library: %s"), path, strerror_win32(GetLastError()));
 	} else {
-*/
 	   /*use the result in a call to GetProcAddress*/
-/*	}*/
+	}
 
 	return h;
 }
 
-Dl::Ptr Dl::ptr (Dl::Handle h, const String &symname)
+Dl::Ptr Dl::ptr (Dl::Handle h, const char *symname)
 {
 	Dl::Ptr p = NULL;
 
 	CWT_ASSERT(symname);
 
 	p = GetProcAddress(h, symname);
-/*
 	if (!p) {
-		cwt_logger_ns()->error(_Tr("%s: symbol not found: error code=%lu"), sym_name, GetLastError());
+		Logger::error(_Tr("%s: symbol not found: %s"), symname, strerror_win32(GetLastError()));
 	}
-*/
 	return p;
 }
 
