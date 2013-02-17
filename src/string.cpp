@@ -69,6 +69,7 @@ short_t	 String::toShort(bool *ok, int base) const  { return __impl.toShort(ok, 
 uint_t	 String::toUInt(bool *ok, int base) const   { return __impl.toUInt(ok, base); }
 ulong_t	 String::toULong(bool *ok, int base) const  { return __impl.toULongLong(ok, base); }
 ushort_t String::toUShort(bool *ok, int base) const { return __impl.toUShort(ok, base); }
+void     String::truncate(int count)                  { __impl.truncate(count); }
 
 ByteArray String::toUtf8() const
 {

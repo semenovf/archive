@@ -11,12 +11,15 @@
 
 #include <cwt/fsm.hpp>
 #include <cwt/logger.hpp>
+#include <ctime>
 
 CWT_NS_BEGIN
 
 struct PatternSpec {
-	uchar_t spec_char;
-	String fmod;  /* format modifier */
+	Char spec_char;
+	bool left_justify;
+	int min_width;
+	int max_width;
 	String fspec; /* format specifier */
 };
 
@@ -44,6 +47,11 @@ const char *__priority_str[] = {
 static bool begin_spec(const void *data, size_t len, void *context, void *action_args);
 static bool end_spec(const void *data, size_t len, void *context, void *action_args);
 static bool append_plain_char(const void *data, size_t len, void *context, void *action_args);
+static bool set_left_justify(const void *data, size_t len, void *context, void *action_args);
+static bool set_min_width(const void *data, size_t len, void *context, void *action_args);
+static bool set_max_width(const void *data, size_t len, void *context, void *action_args);
+static bool set_spec_char(const void *data, size_t len, void *context, void *action_args);
+static bool set_format_spec(const void *data, size_t len, void *context, void *action_args);
 
 /**
  * Each conversion specifier starts with a percent sign (%)
@@ -79,36 +87,39 @@ static FsmTransition plain_char_fsm[] = {
     , {-1,-1, FSM_MATCH_RANGE(&plain_char[2], &plain_char[3]) , FSM_ACCEPT, NULL, NULL }
 };
 
-
 /* format-mod = [ "-" ] *2DIGIT [ "." *2DIGIT ] */
 static FsmTransition dot_digit_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_U("."))          , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 0, 2) , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, NULL }
 };
 static FsmTransition format_mod_fsm[] = {
-	  { 1,-1, FSM_MATCH_OPT_CHAR(_U("-"))      , FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 0, 2) , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_OPT_CHAR(_U("-"))      , FSM_NORMAL, set_left_justify, NULL }
+	, { 2,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, NULL }
 	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm) , FSM_ACCEPT, NULL, NULL }
 };
 
-/* format-spec = "{" *( ALPHA / DIGIT / "." / "," / ":" / "-" / "_" / WS ) "}" */
+/* format-spec = "{" *( <exclude '{' (0x7B) and '}' (0x7D) > ) "}" */
+Char format_spec_char[] = {
+	  0x20, 0x7A
+	, 0x7C, 0x7C
+	, 0x7E, 0x10FFFF
+};
 static FsmTransition format_spec_char_fsm[] = {
-      {-1, 1, FSM_MATCH_CHAR(_ALPHA)      , FSM_ACCEPT, NULL, NULL }
-    , {-1, 2, FSM_MATCH_CHAR(_DIGIT)      , FSM_ACCEPT, NULL, NULL }
-    , {-1, 3, FSM_MATCH_CHAR(_WS)         , FSM_ACCEPT, NULL, NULL }
-    , {-1,-1, FSM_MATCH_CHAR(_U(".,:-_")) , FSM_ACCEPT, NULL, NULL }
+	  {-1, 1, FSM_MATCH_RANGE(&format_spec_char[0], &format_spec_char[1]) , FSM_ACCEPT, NULL, NULL }
+	, {-1, 2, FSM_MATCH_RANGE(&format_spec_char[2], &format_spec_char[3]) , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RANGE(&format_spec_char[4], &format_spec_char[5]) , FSM_ACCEPT, NULL, NULL }
 };
 static FsmTransition format_spec_fsm[] = {
       { 1,-1, FSM_MATCH_CHAR(_U("{"))     , FSM_NORMAL, NULL, NULL }
-    , { 2,-1, FSM_MATCH_CHAR(_DIGIT)      , FSM_NORMAL, NULL, NULL }
+    , { 2,-1, FSM_MATCH_RPT_FSM(format_spec_char_fsm, 0,256) , FSM_NORMAL, set_format_spec, NULL }
     , {-1,-1, FSM_MATCH_CHAR(_U("}"))     , FSM_ACCEPT, NULL, NULL }
 };
 
-/* spec = "%" [ format-mod ] ( "m" / "d" ) [ format-spec ]*/
+/* spec = "%" [ format-mod ] ( "m" / "d" / "p" ) [ format-spec ]*/
 static FsmTransition spec_fsm[] = {
       { 1,-1, FSM_MATCH_CHAR(_U("%"))            , FSM_NORMAL, begin_spec, NULL }
     , { 2,-1, FSM_MATCH_OPT_FSM(format_mod_fsm)  , FSM_NORMAL, NULL, NULL }
-    , { 3,-1, FSM_MATCH_CHAR(_U("mdp"))          , FSM_NORMAL, NULL, NULL }
+    , { 3,-1, FSM_MATCH_CHAR(_U("mdp"))          , FSM_NORMAL, set_spec_char, NULL }
     , {-1,-1, FSM_MATCH_OPT_FSM(format_spec_fsm) , FSM_ACCEPT, end_spec, NULL }
 };
 
@@ -126,11 +137,12 @@ static FsmTransition pattern_fsm[] = {
 
 static bool begin_spec(const void *data, size_t len, void *context, void *action_args)
 {
-	CWT_TRACE("begin_spec");
 	CWT_UNUSED3(data, len, action_args);
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	ctx->pspec.spec_char = 0;
-	ctx->pspec.fmod.clear();
+	ctx->pspec.left_justify = false;
+	ctx->pspec.min_width = -1;
+	ctx->pspec.max_width = -1;
 	ctx->pspec.fspec.clear();
 	return true;
 }
@@ -139,31 +151,126 @@ static bool begin_spec(const void *data, size_t len, void *context, void *action
 static bool end_spec(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED3(data, len, action_args);
-	CWT_TRACE("end_spec");
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
-	switch((char)ctx->pspec.spec_char) {
+	uc_uchar_t spec_char = ctx->pspec.spec_char;
+	String result;
+
+	switch((char)spec_char) {
 	case 'p':
-		ctx->result.append(String().fromUtf8(__priority_str[ctx->priority]));
+		result = String().fromUtf8(__priority_str[ctx->priority]);
 		break;
 	case 'm':
 		CWT_ASSERT(ctx->msg);
-		ctx->result.append(*ctx->msg);
-		CWT_TRACE(String().sprintf("ctx->result.append(%ls)", ctx->msg->utf16()).toUtf8().data());
+		result = *ctx->msg;
+		break;
+	case 'd': {
+		/* FIXME replace code with reentrant time functions or use mutex */
+		time_t t;
+		struct tm *tm;
+		char buf[128];
+		t = time(NULL);
+		tm = localtime(&t);
+
+		if (ctx->pspec.fspec == _U("ABSOLUTE")) {
+			strftime(buf, sizeof(buf), "%H:%M:%S", tm);
+		} else if (ctx->pspec.fspec == _U("DATE")) {
+			strftime(buf, sizeof(buf), "%d %b %Y %H:%M:%S", tm);
+		} else if(ctx->pspec.fspec == _U("ISO8601")) {
+			strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", tm);
+		} else {
+			strftime(buf, sizeof(buf), ctx->pspec.fspec.toUtf8().data(), tm);
+		}
+		result = String().fromUtf8(buf);
+	}
 		break;
 	default:
 		break;
 	}
+
+	/* truncate */
+	if (ctx->pspec.max_width > 0 && result.length() > ctx->pspec.max_width) {
+		result.truncate(ctx->pspec.max_width);
+	}
+
+	/* pad */
+	if (ctx->pspec.min_width > 0 && result.length() < ctx->pspec.min_width) {
+		String padding(ctx->pspec.min_width - result.length(), Char(0x20));
+		if (ctx->pspec.left_justify) {
+			result.append(padding);
+		} else {
+			result.prepend(padding);
+		}
+	}
+
+	ctx->result.append(result);
+
 	return true;
 }
 
+static bool set_spec_char(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED(action_args);
+	CWT_ASSERT(len ==1);
+	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
+	const Char* spec_char = reinterpret_cast<const Char*>(data);
+	ctx->pspec.spec_char = spec_char[0];
+	return true;
+}
+
+static bool set_format_spec(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED(action_args);
+	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
+	ctx->pspec.fspec = String(reinterpret_cast<const Char*>(data), len);
+	return true;
+}
 
 static bool append_plain_char(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED(action_args);
-	CWT_TRACE("append_plain_char");
 	String ch(reinterpret_cast<const Char*>(data), len);
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	ctx->result.append(ch);
+	return true;
+}
+
+static bool set_left_justify(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED2(data, action_args);
+	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
+	if (len == 1) {
+		ctx->pspec.left_justify = true;
+	}
+	return true;
+}
+
+static bool set_min_width(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED2(data, action_args);
+	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
+	if (len > 0) {
+		bool ok;
+		String n(reinterpret_cast<const Char*>(data), len);
+		ctx->pspec.min_width = n.toUInt(&ok);
+		if (!ok) {
+			fprintf(stderr, _Tr("[<!LOGGER PATTERN: BAD PADDING VALUE!>]"));
+		}
+	}
+	return true;
+}
+
+static bool set_max_width(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED2(data, action_args);
+	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
+	if (len > 0) {
+		bool ok;
+		String n(reinterpret_cast<const Char*>(data), len);
+		ctx->pspec.max_width = n.toUInt(&ok);
+		if (!ok) {
+			fprintf(stderr, _Tr("[<!LOGGER PATTERN: BAD TRUNCATION VALUE!>]"));
+		}
+	}
 	return true;
 }
 
