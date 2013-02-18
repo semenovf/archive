@@ -11,10 +11,6 @@
 #include <cwt/cwt.h>
 #include <cwt/string.hpp>
 #include <cwt/errorable.hpp>
-/*
-#include <cwt/hash.hpp>
-#include <cwt/vector.hpp>
-*/
 
 CWT_NS_BEGIN
 

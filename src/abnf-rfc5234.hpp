@@ -26,22 +26,30 @@
 #define __CWT_ABNF_RFC5234_H__
 
 #include <cwt/fsm.hpp>
+#include "abnf_p.hpp"
 
 CWT_NS_BEGIN
 
-/*
-static bool _trace(const void *data, size_t len, void *context, void *action_args)
+static bool rulename(const void *data, size_t len, void *context, void *action_args);
+static bool comment(const void *data, size_t len, void *context, void *action_args);
+static bool begin_option(const void *data, size_t len, void *context, void *action_args);
+static bool end_option(const void *data, size_t len, void *context, void *action_args);
+static bool begin_group(const void *data, size_t len, void *context, void *action_args);
+static bool end_group(const void *data, size_t len, void *context, void *action_args);
+static bool num_val(const void *data, size_t len, void *context, void *action_args);
+static bool prose_val(const void *data, size_t len, void *context, void *action_args);
+
+
+/*static bool _trace(const void *data, size_t len, void *context, void *action_args)
 {
-	CWT_UNUSED3(data, len, context);
+	CWT_UNUSED(context);
 	if (action_args) {
-		CWT_TRACE(String().sprintf("%s: [%s]"
-				, reinterpret_cast<String*>(action_args)->toUtf8().data()
-				, String((const Char*)action_args).toUtf8().data()
-				, String((const Char*)data, len).toUtf8().data()).toUtf8().data());
+		CWT_TRACE(String().sprintf("%s: [%ls]"
+				, reinterpret_cast<const char*>(action_args)
+				, String((const Char*)data, len).data()).toUtf8().data());
 	}
 	return true;
-}
-*/
+}*/
 
 /*
    All CRLF entries replaced by NL !!!
@@ -115,13 +123,13 @@ static bool _trace(const void *data, size_t len, void *context, void *action_arg
 #define FSM_MATCH_RPT_CHAR(s,f,t) FsmMatch(new FsmMatchRpt(FSM_MATCH_CHAR(s),f,t))
 #define FSM_MATCH_OPT_CHAR(s)     FsmMatch(new FsmMatchRpt(FSM_MATCH_CHAR(s),0,1))
 
-String _ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
-String _DIGIT(_U("0123456789"));
-String _HEXDIGIT(_U("0123456789ABCDEFabcdef")); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
-String _BIT(_U("01"));
-String _DQUOTE(_U("\""));
-String _WSP(_U(" \t"));
-String _NL(_U("\n\r"));
+static String _ALPHA    = _U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+static String _DIGIT    = _U("0123456789");
+static String _HEXDIGIT = _U("0123456789ABCDEFabcdef");
+static String _BIT      = _U("01");
+static String _DQUOTE   = _U("\"");
+static String _WSP      = _U(" \t");
+static String _NL       = _U("\n\r");
 
 
 static FsmTransition nl_fsm[] = {
@@ -175,7 +183,7 @@ static FsmTransition comment_fsm[] = {
 
 /* comment / NL ; comment or newline */
 static FsmTransition c_nl_fsm[] = {
-     {-1, 1, FSM_MATCH_FSM(comment_fsm) , FSM_ACCEPT, NULL, NULL }
+     {-1, 1, FSM_MATCH_FSM(comment_fsm) , FSM_ACCEPT, comment, NULL }
    , {-1,-1, FSM_MATCH_FSM(nl_fsm)      , FSM_ACCEPT, NULL, NULL }
 };
 
@@ -184,7 +192,7 @@ static FsmTransition c_nl_fsm[] = {
                        ; quoted string of SP and VCHAR
                        ;  without DQUOTE
 */
-static Char char_val_rg[] = {0x23, 0x7E };
+static Char char_val_rg[] = { 0x23, 0x7E };
 static FsmTransition char_val_opt_fsm[] = {
 	  {-1, 1, FSM_MATCH_RANGE(&char_val_rg[0], &char_val_rg[1]) , FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_CHAR(_U(" !"))                          , FSM_ACCEPT, NULL, NULL }
@@ -237,7 +245,7 @@ static FsmTransition dec_dash_point_fsm[] = {
 };
 static FsmTransition dec_val_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_U("d"))               , FSM_NORMAL , NULL, NULL }
-	, { 2,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 1,-1)        , FSM_NORMAL , NULL, NULL }
+	, { 2,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 1,-1)      , FSM_NORMAL , NULL, NULL }
 	, {-1,-1, FSM_MATCH_OPT_FSM(dec_dash_point_fsm) , FSM_ACCEPT , NULL, NULL }
 };
 
@@ -268,7 +276,7 @@ static FsmTransition num_val_opt_fsm[] = {
 };
 static FsmTransition num_val_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_U("%"))        , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(num_val_opt_fsm) , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(num_val_opt_fsm) , FSM_ACCEPT, num_val, NULL }
 };
 
 /* WSP / (c-nl WSP) */
@@ -331,7 +339,7 @@ static FsmTransition concatenation_fsm[] = {
 
 /* concatenation *(*c-wsp "/" *c-wsp concatenation) */
 /* *c-wsp "/" *c-wsp concatenation */
-static FsmTransition concatenation_c_wsp_fsm[] = {
+static FsmTransition concatenation_next_fsm[] = {
 	  { 1,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
 	, { 2,-1, FSM_MATCH_CHAR(_U("/"))            , FSM_NORMAL, NULL, NULL }
 	, { 3,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
@@ -339,8 +347,8 @@ static FsmTransition concatenation_c_wsp_fsm[] = {
 };
 
 static FsmTransition alternation_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(concatenation_fsm)                , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT_FSM(concatenation_c_wsp_fsm, 0,-1), FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(concatenation_fsm)               , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_FSM(concatenation_next_fsm, 0,-1), FSM_ACCEPT, NULL, NULL }
 };
 
 /* alternation *c-wsp */
@@ -351,30 +359,30 @@ static FsmTransition elements_fsm[] = {
 
 /* "[" *c-wsp alternation *c-wsp "]" */
 static FsmTransition option_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR(_U("["))             , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_STR(_U("["))             , FSM_NORMAL, begin_option, NULL }
 	, { 2,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
 	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, NULL, NULL }
 	, { 4,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_STR(_U("]"))             , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR(_U("]"))             , FSM_ACCEPT, end_option, NULL }
 };
 
 /* "(" *c-wsp alternation *c-wsp ")" */
 static FsmTransition group_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_U("("))            , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("("))            , FSM_NORMAL, begin_group, NULL }
 	, { 2,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
 	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, NULL, NULL }
 	, { 4,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_STR(_U(")"))             , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_STR(_U(")"))             , FSM_ACCEPT, end_group, NULL }
 };
 
 /* rulename / group / option / char-val / num-val / prose-val */
 FsmTransition element_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(rulename_fsm),  FSM_ACCEPT, NULL, NULL }
+	  {-1, 1, FSM_MATCH_FSM(rulename_fsm),  FSM_ACCEPT, rulename, NULL }
 	, {-1, 2, FSM_MATCH_FSM(group_fsm),     FSM_ACCEPT, NULL, NULL }
 	, {-1, 3, FSM_MATCH_FSM(option_fsm),    FSM_ACCEPT, NULL, NULL }
 	, {-1, 4, FSM_MATCH_FSM(char_val_fsm),  FSM_ACCEPT, NULL, NULL }
 	, {-1, 5, FSM_MATCH_FSM(num_val_fsm),   FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(prose_val_fsm), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_FSM(prose_val_fsm), FSM_ACCEPT, prose_val, NULL }
 };
 
 /*
@@ -383,7 +391,7 @@ FsmTransition element_fsm[] = {
                        ;  with white space
 */
 static FsmTransition rule_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(rulename_fsm)   , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_FSM(rulename_fsm)   , FSM_NORMAL, rulename, NULL }
 	, { 2,-1, FSM_MATCH_FSM(defined_as_fsm) , FSM_NORMAL, NULL, NULL }
 	, { 3,-1, FSM_MATCH_FSM(elements_fsm)   , FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(c_nl_fsm)       , FSM_ACCEPT, NULL, NULL }
@@ -405,6 +413,84 @@ static FsmTransition rule_c_wsp_nl_fsm[] = {
 static FsmTransition rulelist_fsm[] = {
 	{-1,-1, FSM_MATCH_RPT_FSM(rule_c_wsp_nl_fsm, 1,-1) , FSM_ACCEPT, NULL, NULL }
 };
+
+static bool rulename(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED(action_args);
+	if (context) {
+		AbnfParseContext *ctx = _CAST_CTX(context);
+		return ctx->on_rulename(String(reinterpret_cast<const Char*>(data), len), ctx->userContext);
+	}
+	return true;
+}
+
+static bool comment(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED(action_args);
+	if (!context)
+		return true;
+
+	AbnfParseContext *ctx = _CAST_CTX(context);
+	String comment(reinterpret_cast<const Char*>(data), len);
+	return ctx->on_comment(comment, ctx->userContext);
+}
+
+static bool begin_option(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED3(data, len, action_args);
+	if (!context)
+		return true;
+	AbnfParseContext *ctx = _CAST_CTX(context);
+	return ctx->on_begin_option(ctx->userContext);
+}
+
+static bool end_option(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED3(data, len, action_args);
+	if (!context)
+		return true;
+	AbnfParseContext *ctx = _CAST_CTX(context);
+	return ctx->on_end_option(ctx->userContext);
+}
+
+static bool begin_group(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED3(data, len, action_args);
+	if (!context)
+		return true;
+	AbnfParseContext *ctx = _CAST_CTX(context);
+	return ctx->on_begin_group(ctx->userContext);
+}
+
+static bool end_group(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED3(data, len, action_args);
+	if (!context)
+		return true;
+	AbnfParseContext *ctx = _CAST_CTX(context);
+	return ctx->on_end_group(ctx->userContext);
+}
+
+static bool num_val(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED(action_args);
+	if (context) {
+		AbnfParseContext *ctx = _CAST_CTX(context);
+		return ctx->on_numeric_value(String(reinterpret_cast<const Char*>(data), len), ctx->userContext);
+	}
+	return true;
+}
+
+static bool prose_val(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED(action_args);
+	if (context) {
+		AbnfParseContext *ctx = _CAST_CTX(context);
+		return ctx->on_prose_value(String(reinterpret_cast<const Char*>(data), len), ctx->userContext);
+	}
+	return true;
+}
+
 
 CWT_NS_END
 
