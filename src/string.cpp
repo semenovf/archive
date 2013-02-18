@@ -18,7 +18,6 @@ String::String(const Char *unicode, int size) : __impl(reinterpret_cast<const QC
 String::String(Char ch)              : __impl(ch.__impl) {}
 String::String(int size, Char ch)    : __impl(size, ch.__impl) {}
 String::String(const String &other)  : __impl(other.__impl) {}
-String::~String() {}
 
 String&	String::append(const String &str) { __impl.append(str.__impl); return *this; }
 String&	String::append(const Char *unicode, int size)

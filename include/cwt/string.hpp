@@ -37,7 +37,7 @@ public:
 	String(Char ch);
 	String(int size, Char ch);
 	String(const String &other);
-	~String();
+	~String() {}
 
 	String&	append(const String &str);
 	String&	append(const Char *unicode, int size);

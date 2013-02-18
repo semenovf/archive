@@ -66,7 +66,6 @@ private:
 public:
 	FsmMatch(FsmMatchBase *match) : m_match(match) { CWT_ASSERT(m_match); }
 	FsmMatch(const FsmMatch &match) {
-		deref();
 		CWT_ASSERT(match.m_match);
 		m_match = match.m_match;
 		m_match->ref++; }
