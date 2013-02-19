@@ -20,32 +20,32 @@ Sepaloid::Sepaloid(Sepaloid::Mapping mapping[], int n) : m_searchPaths()
 	}
 }
 
-bool Sepaloid::registerLocalPetaloid(Petaloid &petaloid, __petaloid_dtor__ dtor)
+Petaloid* Sepaloid::registerLocalPetaloid(Petaloid &petaloid, petaloid_dtor_t dtor)
 {
-	return registerPetaloid(petaloid, NULL, dtor);
+	return registerPetaloid(petaloid, NULL, dtor) ? &petaloid : NULL;
 }
 
-bool Sepaloid::registerStaticPetaloid(Petaloid &petaloid)
+Petaloid* Sepaloid::registerStaticPetaloid(Petaloid &petaloid)
 {
-	return registerPetaloid(petaloid, NULL, NULL);
+	return registerPetaloid(petaloid, NULL, NULL) ? &petaloid : NULL;
 }
 
-bool Sepaloid::registerPetaloidForPath(const String &path)
+Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pname, int arg, char **argv)
 {
 	if (!FileSystem::exists(path)) {
 		Logger::error(_Tr("Petaloid not found by specified path: %ls"), path.utf16());
-		return false;
+		return NULL;
 	}
 
 	Dl::Handle ph = Dl::open(path);
 	if (ph) {
-		__petaloid_ctor__ petaloid_ctor = reinterpret_cast<__petaloid_ctor__>(Dl::ptr(ph, CWT_PETALOID_CONSTRUCTOR_NAME));
-		__petaloid_dtor__ petaloid_dtor = reinterpret_cast<__petaloid_dtor__>(Dl::ptr(ph, CWT_PETALOID_DESTRUCTOR_NAME));
+		petaloid_ctor_t petaloid_ctor = reinterpret_cast<petaloid_ctor_t>(Dl::ptr(ph, CWT_PETALOID_CONSTRUCTOR_NAME));
+		petaloid_dtor_t petaloid_dtor = reinterpret_cast<petaloid_dtor_t>(Dl::ptr(ph, CWT_PETALOID_DESTRUCTOR_NAME));
 
 		if (petaloid_ctor) {
-			Petaloid *p = reinterpret_cast<Petaloid*>(petaloid_ctor());
+			Petaloid *p = reinterpret_cast<Petaloid*>(petaloid_ctor(pname, arg, argv));
 			if (p) {
-				return registerPetaloid(*p, ph, petaloid_dtor);
+				return registerPetaloid(*p, ph, petaloid_dtor) ? p : NULL;
 			} else {
 				Logger::error(_Tr("failed to construct Petaloid specified by path: %ls"), path.utf16());
 			}
@@ -54,10 +54,10 @@ bool Sepaloid::registerPetaloidForPath(const String &path)
 		}
 		Dl::close(ph);
 	}
-	return false;
+	return NULL;
 }
 
-bool Sepaloid::registerPetaloidForName(const String &name)
+Petaloid* Sepaloid::registerPetaloidForName(const String &name, const char *pname, int arg, char **argv)
 {
 	String filename = Dl::buildDlFileName(name);
 
@@ -73,14 +73,14 @@ bool Sepaloid::registerPetaloidForName(const String &name)
 			Logger::debug(_Tr("Petaloid found at '%ls' by specified name: %ls")
 					, it->utf16()
 					, name.utf16());
-			return registerPetaloidForPath(path);
+			return registerPetaloidForPath(path, pname, arg, argv);
 		}
 	}
 	Logger::error(_Tr("Petaloid not found by specified name: %ls"), name.utf16());
-	return false;
+	return NULL;
 }
 
-bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, __petaloid_dtor__ dtor)
+bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor_t dtor)
 {
 	int nemitters, ndetectors;
 	const EmitterMapping* emitters = petaloid.getEmitters(&nemitters);
@@ -139,6 +139,15 @@ void Sepaloid::connectAll()
 
 	for(; it != itEnd; it++ ) {
 		it.value()->map->connectAll();
+	}
+
+	/* initialize all petaloids */
+	Vector<PetaloidSpec>::iterator it1 = m_petaloids.begin();
+	Vector<PetaloidSpec>::iterator itEnd1 = m_petaloids.end();
+
+	for (;it1 != itEnd1; it1++) {
+		CWT_ASSERT(it1->p);
+		it1->p->init();
 	}
 }
 

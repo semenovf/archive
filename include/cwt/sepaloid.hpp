@@ -18,10 +18,10 @@ CWT_NS_BEGIN
 
 struct PetaloidSpec {
 	PetaloidSpec() : p(NULL), ph(NULL), dtor(NULL) {}
-	PetaloidSpec(Petaloid *a, Dl::Handle b, __petaloid_dtor__ c) : p(a), ph(b), dtor(c) {}
+	PetaloidSpec(Petaloid *a, Dl::Handle b, petaloid_dtor_t c) : p(a), ph(b), dtor(c) {}
 	Petaloid *p;
 	Dl::Handle ph;          /* null for local */
-	__petaloid_dtor__ dtor; /* may be null (no destructor) */
+	petaloid_dtor_t dtor; /* may be null (no destructor) */
 };
 
 
@@ -33,13 +33,16 @@ public:
 
 public:
 	Sepaloid(Mapping mapping[], int n);
-	~Sepaloid() {}
+	~Sepaloid() {
+	    disconnectAll();
+	    unregisterAll();
+	}
 
 	void addSearchPath(const String &dir) { m_searchPaths.append(dir); }
-	bool registerLocalPetaloid(Petaloid &petaloid, __petaloid_dtor__ dtor = Petaloid::defaultDtor);
-	bool registerStaticPetaloid(Petaloid &petaloid);
-	bool registerPetaloidForPath(const String &path);
-	bool registerPetaloidForName(const String &name);
+	Petaloid* registerLocalPetaloid(Petaloid &petaloid, petaloid_dtor_t dtor = Petaloid::defaultDtor);
+	Petaloid* registerStaticPetaloid(Petaloid &petaloid);
+	Petaloid* registerPetaloidForPath(const String &path, const char *pname = NULL, int argc = 0, char **argv = NULL);
+	Petaloid* registerPetaloidForName(const String &name, const char *pname = NULL, int argc = 0, char **argv = NULL);
 
 /* TODO need implementation
 	bool registerPetaloidForUrl(const String &url);
@@ -53,7 +56,7 @@ public:
 	void unregisterAll();
 
 protected:
-	bool registerPetaloid(Petaloid &petaloid, Dl::Handle ph, __petaloid_dtor__ dtor);
+	bool registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor_t dtor);
 
 private:
 	MappingHash          m_mapping;

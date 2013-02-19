@@ -26,8 +26,8 @@ typedef struct { const char *id; Detector  detector; } DetectorMapping;
 #define CWT_PETALOID_API extern "C" DLL_API
 #define CWT_PETALOID_CONSTRUCTOR_NAME "__petaloid_ctor__"
 #define CWT_PETALOID_DESTRUCTOR_NAME "__petaloid_dtor__"
-typedef Petaloid* (*__petaloid_ctor__)();
-typedef void  (*__petaloid_dtor__)(Petaloid*);
+typedef Petaloid* (*petaloid_ctor_t)(const char *name, int argc, char **argv);
+typedef void  (*petaloid_dtor_t)(Petaloid*);
 
 
 class Petaloid : public has_slots<>
@@ -44,6 +44,7 @@ public:
 
 	virtual const EmitterMapping* getEmitters(int *count) = 0;
 	virtual const DetectorMapping* getDetectors(int *count) = 0;
+	virtual void init() {}
 
 private:
 	const char *m_name;

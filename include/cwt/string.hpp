@@ -24,7 +24,7 @@
 
 CWT_NS_BEGIN
 
-class StringDataPtr;
+//class StringDataPtr;
 
 // Qt   QString
 // C#
