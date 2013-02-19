@@ -253,7 +253,8 @@ concatenation  =  repetition *(1*c-wsp repetition)               \n\
 																 \n\
 repetition     =  [repeat] element                               \n\
 																 \n\
-repeat         =  1*DIGIT / (*DIGIT \"*\" *DIGIT)                \n\
+repeat         =  1*DIGIT                                        \n\
+repeat         =/ *DIGIT \"*\" *DIGIT                            \n\
 																 \n\
 element        =  rulename / group / option /                    \n\
 				  char-val / num-val / prose-val                 \n\

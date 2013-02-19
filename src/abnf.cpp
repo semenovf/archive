@@ -12,6 +12,26 @@
 
 CWT_NS_BEGIN
 
+static bool on_begin_rule(void *userContext)
+{
+	CWT_UNUSED(userContext);
+	return true;
+}
+
+static bool on_end_rule(void *userContext)
+{
+	CWT_UNUSED(userContext);
+	printf("\n");
+	return true;
+}
+
+static bool on_begin_def(void *userContext)
+{
+	CWT_UNUSED(userContext);
+	printf("=");
+	return true;
+}
+
 static bool on_rulename(const String &rulename, void *userContext)
 {
 	CWT_UNUSED(userContext);
@@ -77,6 +97,9 @@ bool Abnf::parse(const String &abnf)
 	AbnfParseContext ctx = {
 		  NULL
 		, NULL
+		, Callback1<void*>(on_begin_rule)
+		, Callback1<void*>(on_end_rule)
+		, Callback1<void*>(on_begin_def)
 		, Callback2<const String&,void*>(on_rulename)
 		, Callback2<const String&,void*>(on_comment)
 		, Callback1<void*>(on_begin_option)

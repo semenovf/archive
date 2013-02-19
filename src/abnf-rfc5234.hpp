@@ -30,12 +30,17 @@
 
 CWT_NS_BEGIN
 
+static const int _BEGIN_RULE   = 1;
+static const int _END_RULE     = 2;
+static const int _BEGIN_OPTION = 3;
+static const int _END_OPTION   = 4;
+static const int _BEGIN_GROUP  = 5;
+static const int _END_GROUP    = 6;
+static const int _BEGIN_DEF    = 7; // begin rule definition
+
+static bool block(const void *data, size_t len, void *context, void *action_args);
 static bool rulename(const void *data, size_t len, void *context, void *action_args);
 static bool comment(const void *data, size_t len, void *context, void *action_args);
-static bool begin_option(const void *data, size_t len, void *context, void *action_args);
-static bool end_option(const void *data, size_t len, void *context, void *action_args);
-static bool begin_group(const void *data, size_t len, void *context, void *action_args);
-static bool end_group(const void *data, size_t len, void *context, void *action_args);
 static bool num_val(const void *data, size_t len, void *context, void *action_args);
 static bool prose_val(const void *data, size_t len, void *context, void *action_args);
 
@@ -359,20 +364,20 @@ static FsmTransition elements_fsm[] = {
 
 /* "[" *c-wsp alternation *c-wsp "]" */
 static FsmTransition option_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR(_U("["))             , FSM_NORMAL, begin_option, NULL }
+	  { 1,-1, FSM_MATCH_STR(_U("["))             , FSM_NORMAL, block, (void*)&_BEGIN_OPTION }
 	, { 2,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
 	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, NULL, NULL }
 	, { 4,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_STR(_U("]"))             , FSM_ACCEPT, end_option, NULL }
+	, {-1,-1, FSM_MATCH_STR(_U("]"))             , FSM_ACCEPT, block, (void*)&_END_OPTION }
 };
 
 /* "(" *c-wsp alternation *c-wsp ")" */
 static FsmTransition group_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_U("("))            , FSM_NORMAL, begin_group, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_U("("))            , FSM_NORMAL, block, (void*)&_BEGIN_GROUP }
 	, { 2,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
 	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, NULL, NULL }
 	, { 4,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_STR(_U(")"))             , FSM_ACCEPT, end_group, NULL }
+	, {-1,-1, FSM_MATCH_STR(_U(")"))             , FSM_ACCEPT, block, (void*)&_END_GROUP }
 };
 
 /* rulename / group / option / char-val / num-val / prose-val */
@@ -392,7 +397,7 @@ FsmTransition element_fsm[] = {
 */
 static FsmTransition rule_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(rulename_fsm)   , FSM_NORMAL, rulename, NULL }
-	, { 2,-1, FSM_MATCH_FSM(defined_as_fsm) , FSM_NORMAL, NULL, NULL }
+	, { 2,-1, FSM_MATCH_FSM(defined_as_fsm) , FSM_NORMAL, block, (void*)&_BEGIN_DEF }
 	, { 3,-1, FSM_MATCH_FSM(elements_fsm)   , FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(c_nl_fsm)       , FSM_ACCEPT, NULL, NULL }
 };
@@ -407,12 +412,40 @@ static FsmTransition c_wsp_nl_fsm[] = {
 /* rule / (*c-wsp c-nl) */
 static FsmTransition rule_c_wsp_nl_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(c_wsp_nl_fsm) , FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(rule_fsm)     , FSM_ACCEPT, NULL, NULL }
+	, { 2,-1, FSM_MATCH_NOTHING           , FSM_NORMAL, block, (void*)&_BEGIN_RULE }
+	, { 3,-1, FSM_MATCH_FSM(rule_fsm)     , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING           , FSM_ACCEPT, block, (void*)&_END_RULE }
 };
 
 static FsmTransition rulelist_fsm[] = {
 	{-1,-1, FSM_MATCH_RPT_FSM(rule_c_wsp_nl_fsm, 1,-1) , FSM_ACCEPT, NULL, NULL }
 };
+
+
+static bool block(const void *data, size_t len, void *context, void *action_args)
+{
+	CWT_UNUSED2(data, len);
+	const int *flag = (const int *)action_args;
+
+	if (!context)
+		return true;
+
+	AbnfParseContext *ctx = _CAST_CTX(context);
+
+	switch (*flag) {
+	case _BEGIN_RULE   : return ctx->on_begin_rule(ctx->userContext);
+	case _END_RULE     : return ctx->on_end_rule(ctx->userContext);
+	case _BEGIN_OPTION : return ctx->on_begin_option(ctx->userContext);
+	case _END_OPTION   : return ctx->on_end_option(ctx->userContext);
+	case _BEGIN_GROUP  : return ctx->on_begin_group(ctx->userContext);
+	case _END_GROUP    : return ctx->on_end_group(ctx->userContext);
+	case _BEGIN_DEF    : return ctx->on_begin_def(ctx->userContext);
+	default:
+		break;
+	}
+
+	return false;
+}
 
 static bool rulename(const void *data, size_t len, void *context, void *action_args)
 {
@@ -433,42 +466,6 @@ static bool comment(const void *data, size_t len, void *context, void *action_ar
 	AbnfParseContext *ctx = _CAST_CTX(context);
 	String comment(reinterpret_cast<const Char*>(data), len);
 	return ctx->on_comment(comment, ctx->userContext);
-}
-
-static bool begin_option(const void *data, size_t len, void *context, void *action_args)
-{
-	CWT_UNUSED3(data, len, action_args);
-	if (!context)
-		return true;
-	AbnfParseContext *ctx = _CAST_CTX(context);
-	return ctx->on_begin_option(ctx->userContext);
-}
-
-static bool end_option(const void *data, size_t len, void *context, void *action_args)
-{
-	CWT_UNUSED3(data, len, action_args);
-	if (!context)
-		return true;
-	AbnfParseContext *ctx = _CAST_CTX(context);
-	return ctx->on_end_option(ctx->userContext);
-}
-
-static bool begin_group(const void *data, size_t len, void *context, void *action_args)
-{
-	CWT_UNUSED3(data, len, action_args);
-	if (!context)
-		return true;
-	AbnfParseContext *ctx = _CAST_CTX(context);
-	return ctx->on_begin_group(ctx->userContext);
-}
-
-static bool end_group(const void *data, size_t len, void *context, void *action_args)
-{
-	CWT_UNUSED3(data, len, action_args);
-	if (!context)
-		return true;
-	AbnfParseContext *ctx = _CAST_CTX(context);
-	return ctx->on_end_group(ctx->userContext);
 }
 
 static bool num_val(const void *data, size_t len, void *context, void *action_args)

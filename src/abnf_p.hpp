@@ -20,6 +20,9 @@ struct AbnfParseContext {
 	Errorable     *status;
 	void          *userContext;
 
+	Callback1<void*> on_begin_rule;
+	Callback1<void*> on_end_rule;
+	Callback1<void*> on_begin_def;
 	Callback2<const String&, void*> on_rulename;
 	Callback2<const String&, void*> on_comment;
 	Callback1<void*> on_begin_option;
