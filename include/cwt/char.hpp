@@ -25,8 +25,6 @@ public:
 	Char(uc_uchar16_t code);
 	Char(uc_char32_t code);
 	Char(uc_uchar32_t code);
-/*	Char(char ch);*/
-/*	Char(uchar_t ch);*/
 
 	operator uc_uchar16_t() { return (uc_uchar16_t)__impl.unicode(); }
 	operator uc_uchar32_t() { return (uc_uchar32_t)__impl.unicode(); }
@@ -35,6 +33,10 @@ public:
 	friend bool	operator<(Char ch1, Char ch2);
 	friend bool	operator<=(Char ch1, Char ch2);
 	friend bool	operator==(Char ch1, Char ch2);
+/*
+	friend bool	operator==(Char ch1, uc_uchar16_t);
+	friend bool	operator==(Char ch1, uc_uchar32_t);
+*/
 	friend bool	operator>(Char ch1, Char ch2);
 	friend bool	operator>=(Char ch1, Char ch2);
 public:

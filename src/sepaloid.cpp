@@ -142,13 +142,15 @@ void Sepaloid::connectAll()
 	}
 
 	/* initialize all petaloids */
-	Vector<PetaloidSpec>::iterator it1 = m_petaloids.begin();
-	Vector<PetaloidSpec>::iterator itEnd1 = m_petaloids.end();
+/*
+	Vector<PetaloidSpec>::iterator p = m_petaloids.begin();
+	Vector<PetaloidSpec>::iterator pEnd = m_petaloids.end();
 
-	for (;it1 != itEnd1; it1++) {
-		CWT_ASSERT(it1->p);
-		it1->p->init();
+	for (;p != pEnd; p++) {
+		CWT_ASSERT(p->p);
+		p->p->init();
 	}
+*/
 }
 
 void Sepaloid::disconnectAll()

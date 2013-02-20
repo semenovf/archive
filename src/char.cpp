@@ -22,6 +22,10 @@ bool operator!=(Char ch1, Char ch2) { return ch1.__impl != ch2.__impl ? true : f
 bool operator<(Char ch1, Char ch2)  { return ch1.__impl < ch2.__impl ? true : false; }
 bool operator<=(Char ch1, Char ch2) { return ch1.__impl <= ch2.__impl ? true : false; }
 bool operator==(Char ch1, Char ch2) { return ch1.__impl == ch2.__impl ? true : false; }
+/*
+bool operator==(Char ch1, uc_uchar16_t ch2) { return ch1.__impl == ch2 ? true : false; }
+bool operator==(Char ch1, uc_uchar32_t ch2) { return ch1.__impl == ch2 ? true : false; }
+*/
 bool operator>(Char ch1, Char ch2)  { return ch1.__impl > ch2.__impl ? true : false; }
 bool operator>=(Char ch1, Char ch2) { return ch1.__impl >= ch2.__impl ? true : false; }
 

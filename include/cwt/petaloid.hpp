@@ -11,6 +11,7 @@
 
 #include <cwt/cwt.h>
 #include <cwt/sigslot.hpp>
+#include <cwt/uuid.hpp>
 
 CWT_NS_BEGIN
 
@@ -30,24 +31,27 @@ typedef Petaloid* (*petaloid_ctor_t)(const char *name, int argc, char **argv);
 typedef void  (*petaloid_dtor_t)(Petaloid*);
 
 
-class Petaloid : public has_slots<>
+class DLL_API Petaloid : public has_slots<>
 {
 private:
-	Petaloid() : m_name(NULL) {}
+	Petaloid() : m_name(NULL), m_uuid() {}
 
 public:
-	Petaloid(const char *name) : m_name(name) {}
+	Petaloid(const char *name) : m_name(name), m_uuid() {}
+	Petaloid(const char *name, const uuid_t &uuid) : m_name(name), m_uuid(uuid) {}
+	Petaloid(const char *name, const Uuid &uuid) : m_name(name), m_uuid(uuid) {}
 	virtual ~Petaloid() {}
-	const char *name() const { return m_name; }
+	const char* name() const { return m_name; }
+	const uuid_t& uuid() const { return m_uuid.uuid(); }
 
 	static void defaultDtor(Petaloid *p) { CWT_ASSERT(p); delete p; }
 
 	virtual const EmitterMapping* getEmitters(int *count) = 0;
 	virtual const DetectorMapping* getDetectors(int *count) = 0;
-	virtual void init() {}
 
 private:
 	const char *m_name;
+	Uuid m_uuid;
 };
 
 struct DetectorPair

@@ -59,6 +59,7 @@ String& String::sprintf(const char * cformat, ...)
 
 bool String::startsWith(const String &s, bool cs) const { return __impl.startsWith(s.__impl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 bool String::startsWith(Char c, bool cs) const { return __impl.startsWith(c.__impl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+String String::substr(int pos, int n) const { String s; s.__impl = __impl.mid(pos, n); return s; }
 
 double	 String::toDouble(bool *ok) const           { return __impl.toDouble(ok); }
 float	 String::toFloat(bool *ok) const            { return __impl.toFloat(ok); }
