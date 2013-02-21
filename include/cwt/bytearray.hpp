@@ -7,7 +7,6 @@
  */
 
 #include <cwt/cwt.h>
-#include <QtCore/QByteArray>
 
 #ifndef __CWT_BYTEARRAY_HPP__
 #define __CWT_BYTEARRAY_HPP__
@@ -34,8 +33,9 @@ public:
 	ByteArray& setRawData(const char * data, uint size);
 
 	friend bool	operator==(const ByteArray &s1, const ByteArray &s2);
+
 public:
-	QByteArray __impl;
+	void *__impl;
 };
 
 CWT_NS_END

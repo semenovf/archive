@@ -21,8 +21,8 @@ inline uint qHash(const String &key)    { return qHash(key.__impl); }
 inline uint qHash(const ByteArray &key) { return qHash(key.__impl); }
 inline uint qHash(const uuid_t &key)    { return qHash(ByteArray((const char*)&key, sizeof(key))); }
 #else
-inline uint qHash(const String &key, uint seed = 0)    { return qHash(key.__impl, seed); }
-inline uint qHash(const ByteArray &key, uint seed = 0) { return qHash(key.__impl, seed); }
+inline uint qHash(const String &key, uint seed = 0)    { return qHash(*reinterpret_cast<const QString*>(key.__impl), seed); }
+inline uint qHash(const ByteArray &key, uint seed = 0) { return qHash(*reinterpret_cast<const QByteArray*>(key.__impl), seed); }
 inline uint qHash(const uuid_t &key, uint seed = 0)    { return qHash(ByteArray((const char*)&key, sizeof(key)), seed); }
 #endif
 

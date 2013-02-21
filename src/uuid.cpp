@@ -10,7 +10,6 @@
 
 CWT_NS_BEGIN
 
-
 void Uuid::uuid_copy(uuid_t &uuid, const uuid_t &other)
 {
 	uuid.time_low = other.time_low;
@@ -48,12 +47,12 @@ bool Uuid::parse(const char *uuid_str, int len)
 {
 	bool ok = false;
 	String s = String().fromUtf8(uuid_str, len);
-	Char sep(0x002D);
+	Char dash(0x002D);
 
 	if (s.length() < 36)
 		return false;
 
-	if ( !(s[8] == sep s[13] == s[18] == s[23] == sep) )
+	if ( !(s[8] == dash && s[13] == dash && s[18] == dash && s[23] == dash) )
 		return false;
 
 	m_uuid.time_low = s.substr(0, 8).toUInt(&ok, 16);
@@ -80,6 +79,22 @@ bool Uuid::parse(const char *uuid_str, int len)
     if (!ok) return false;
 
 	return true;
+}
+
+String Uuid::toString(const uuid_t &uuid)
+{
+	return String().sprintf("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x"
+		, uuid.time_low
+		, uuid.time_mid
+		, uuid.time_hi_and_version
+		, uuid.clock_seq_hi_and_reserved
+		, uuid.clock_seq_low
+		, uuid.node[0]
+		, uuid.node[1]
+		, uuid.node[2]
+		, uuid.node[3]
+		, uuid.node[4]
+		, uuid.node[5]);
 }
 
 

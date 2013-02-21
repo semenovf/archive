@@ -7,47 +7,56 @@
  */
 
 
-#include <cwt/string.hpp>
+#include "../include/cwt/string.hpp"
+#define QT_NO_CAST_FROM_ASCII
+#include <QtCore/QString>
+
+#define _IMPL reinterpret_cast<QString*>(__impl)
+#define _CONST_IMPL reinterpret_cast<const QString*>(__impl)
+#define _CAST(s) reinterpret_cast<QString*>(s)
+#define _CONST_CAST(s) reinterpret_cast<const QString*>(s)
 
 CWT_NS_BEGIN
 
 static const String __nullString;
 
-String::String()                     : __impl() {}
-String::String(const Char *unicode, int size) : __impl(reinterpret_cast<const QChar*>(unicode), size) {}
-String::String(Char ch)              : __impl(ch.__impl) {}
-String::String(int size, Char ch)    : __impl(size, ch.__impl) {}
-String::String(const String &other)  : __impl(other.__impl) {}
-
-String&	String::append(const String &str) { __impl.append(str.__impl); return *this; }
-String&	String::append(const Char *unicode, int size)
+String::String() : __impl(new QString()) {}
+String::String(const Char *unicode, int size) : __impl(NULL)
 {
-#if QT_VERSION < 0x050000
-	append(String(unicode, size));
-#else
-	__impl.append(reinterpret_cast<const QChar*>(unicode), size);
-#endif
-	return *this;
+	QString *s = new QString;
+	s->resize(size);
+	QChar *data = s->data();
+
+	for(int i = 0; i < size; i++)
+		data[i] = QChar(unicode[i].unicode());
+
+	__impl = s;
 }
+String::String(Char ch)              : __impl(new QString(QChar(ch.unicode()))) {}
+String::String(int size, Char ch)    : __impl(new QString(size, QChar(ch.unicode()))) {}
+String::String(const String &other)  : __impl(new QString(*_CONST_CAST(other.__impl))) {}
+String::~String() { delete _IMPL; }
 
-String&	String::append(Char ch) { __impl.append(ch.__impl); return *this; }
+String&	String::append(const String &str) { _IMPL->append(_CONST_CAST(str.__impl)); return *this; }
+String&	String::append(const Char *unicode, int size) {	append(String(unicode, size)); return *this; }
+String&	String::append(Char ch) { _IMPL->append(QChar(ch.unicode())); return *this; }
 
-const Char String::at(int pos) const     { const QChar ch = __impl.at(pos); return Char(ch.unicode()); }
-void String::clear()             { __impl.clear(); }
-Char* String::data()             { return reinterpret_cast<Char*>(__impl.data()); }
-const Char*	String::data() const { return reinterpret_cast<const Char*>(__impl.data()); }
-bool String::isEmpty() const     { return reinterpret_cast<const Char*>(__impl.isEmpty()); }
-bool String::isNull() const      { return reinterpret_cast<const Char*>(__impl.isNull()); }
-int String::indexOf(const String &str, int from, bool cs) const { return __impl.indexOf(str.__impl, from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
-int String::indexOf(Char ch, int from, bool cs) const { return __impl.indexOf(ch.__impl, from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+const Char String::at(int pos) const     { const QChar ch = _CONST_IMPL->at(pos); return Char(ch.unicode()); }
+void String::clear()             { _IMPL->clear(); }
+Char* String::data()             { return reinterpret_cast<Char*>(_IMPL->data()); }
+const Char*	String::data() const { return reinterpret_cast<const Char*>(_IMPL->data()); }
+bool String::isEmpty() const     { return reinterpret_cast<const Char*>(_IMPL->isEmpty()); }
+bool String::isNull() const      { return reinterpret_cast<const Char*>(_IMPL->isNull()); }
+int String::indexOf(const String &str, int from, bool cs) const { return _CONST_IMPL->indexOf(*_CONST_CAST(str.__impl), from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+int String::indexOf(Char ch, int from, bool cs) const { return _CONST_IMPL->indexOf(QChar(ch.unicode()), from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 
-int	String::length() const       { return __impl.length(); }
+int	String::length() const       { return _CONST_IMPL->length(); }
 
-String&	String::prepend(const String &str) { __impl.prepend(str.__impl); return *this; }
+String&	String::prepend(const String &str) { _IMPL->prepend(*_CAST(str.__impl)); return *this; }
 String&	String::prepend(const Char *unicode, int size) { String s(unicode, size); prepend(s); return *this; }
-String&	String::prepend(Char ch) { __impl.prepend(ch.__impl); return *this; }
+String&	String::prepend(Char ch) { _IMPL->prepend(QChar(ch.unicode())); return *this; }
 
-String& String::vsprintf(const char *cformat, va_list ap) {	__impl.vsprintf(cformat, ap); return *this; }
+String& String::vsprintf(const char *cformat, va_list ap) {	_IMPL->vsprintf(cformat, ap); return *this; }
 String& String::sprintf(const char * cformat, ...)
 {
 	va_list args;
@@ -57,115 +66,115 @@ String& String::sprintf(const char * cformat, ...)
 	return *this;
 }
 
-bool String::startsWith(const String &s, bool cs) const { return __impl.startsWith(s.__impl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
-bool String::startsWith(Char c, bool cs) const { return __impl.startsWith(c.__impl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
-String String::substr(int pos, int n) const { String s; s.__impl = __impl.mid(pos, n); return s; }
+bool String::startsWith(const String &s, bool cs) const { return _CONST_IMPL->startsWith(*_CONST_CAST(s.__impl), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+bool String::startsWith(Char ch, bool cs) const { return _IMPL->startsWith(QChar(ch.unicode()), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+String String::substr(int pos, int n) const { String s; *_CAST(s.__impl) = _CONST_IMPL->mid(pos, n); return s; }
 
-double	 String::toDouble(bool *ok) const           { return __impl.toDouble(ok); }
-float	 String::toFloat(bool *ok) const            { return __impl.toFloat(ok); }
-int_t	 String::toInt(bool *ok, int base) const    { return __impl.toInt(ok, base); }
-long_t   String::toLong(bool *ok, int base) const   { return __impl.toLongLong(ok, base); }
-short_t	 String::toShort(bool *ok, int base) const  { return __impl.toShort(ok, base); }
-uint_t	 String::toUInt(bool *ok, int base) const   { return __impl.toUInt(ok, base); }
-ulong_t	 String::toULong(bool *ok, int base) const  { return __impl.toULongLong(ok, base); }
-ushort_t String::toUShort(bool *ok, int base) const { return __impl.toUShort(ok, base); }
-void     String::truncate(int count)                  { __impl.truncate(count); }
+double	 String::toDouble(bool *ok) const           { return _CONST_IMPL->toDouble(ok); }
+float	 String::toFloat(bool *ok) const            { return _CONST_IMPL->toFloat(ok); }
+int_t	 String::toInt(bool *ok, int base) const    { return _CONST_IMPL->toInt(ok, base); }
+long_t   String::toLong(bool *ok, int base) const   { return _CONST_IMPL->toLongLong(ok, base); }
+short_t	 String::toShort(bool *ok, int base) const  { return _CONST_IMPL->toShort(ok, base); }
+uint_t	 String::toUInt(bool *ok, int base) const   { return _CONST_IMPL->toUInt(ok, base); }
+ulong_t	 String::toULong(bool *ok, int base) const  { return _CONST_IMPL->toULongLong(ok, base); }
+ushort_t String::toUShort(bool *ok, int base) const { return _CONST_IMPL->toUShort(ok, base); }
+void     String::truncate(int count)                { _IMPL->truncate(count); }
 
 ByteArray String::toUtf8() const
 {
 	ByteArray bytes;
-	bytes.__impl = __impl.toUtf8();
+	*reinterpret_cast<QByteArray*>(bytes.__impl) = _CONST_IMPL->toUtf8();
 	return bytes;
 }
 
-const ushort_t* String::utf16() const { return __impl.utf16(); }
+const ushort_t* String::utf16() const { return _IMPL->utf16(); }
 
-String&	String::operator+=(const String &other) { __impl.operator +=(other.__impl);	return *this; }
-String&	String::operator+=(Char ch) { __impl.operator +=(ch.__impl); return *this; }
-String&	String::operator=(const String & other) { __impl.operator =(other.__impl); return *this; }
-String&	String::operator=(Char ch) { __impl.operator =(ch.__impl); return *this; }
-Char String::operator[](int pos) { QCharRef qch = __impl.operator [](pos); return Char(qch.unicode()); }
-const Char String::operator[](int pos) const { const QChar qch = __impl.operator [](pos); return Char(qch.unicode()); }
+String&	String::operator+=(const String &other) { _IMPL->operator += (*_CONST_CAST(other.__impl));	return *this; }
+String&	String::operator+=(Char ch)             { _IMPL->operator += (QChar(ch.unicode())); return *this; }
+String&	String::operator=(const String & other) { _IMPL->operator  = (*_CONST_CAST(other.__impl)); return *this; }
+String&	String::operator=(Char ch)              { _IMPL->operator  = (QChar(ch.unicode())); return *this; }
+Char String::operator[](int pos)                { QCharRef qch = _IMPL->operator [](pos); return Char(qch.unicode()); }
+const Char String::operator[](int pos) const    { const QChar qch = _CONST_IMPL->operator [](pos); return Char(qch.unicode()); }
 
 bool operator != (const String &s1, const String &s2) {
 #if QT_VERSION < 0x050000
-	return s1.__impl.operator != (s2.__impl);
+	return _CONST_CAST(s1.__impl)->operator != *_CONST_CAST(s2.__impl);
 #else
-	return operator != (s1.__impl, s2.__impl);
+	return operator != (*_CONST_CAST(s1.__impl), *_CONST_CAST(s2.__impl));
 #endif
 }
 
 const String operator + (const String &s1, const String &s2)
 {
 	String s;
-	operator + (s.__impl, s1.__impl);
-	operator + (s.__impl, s2.__impl);
+	operator + (*_CONST_CAST(s.__impl), *_CONST_CAST(s1.__impl));
+	operator + (*_CONST_CAST(s.__impl), *_CONST_CAST(s2.__impl));
 	return s;
 }
 const String operator+(const String &s1, Char ch)
 {
 	String s;
-	operator + (s.__impl, s1.__impl);
-	operator + (s.__impl, ch.__impl);
+	operator + (*_CONST_CAST(s.__impl), *_CONST_CAST(s1.__impl));
+	operator + (*_CONST_CAST(s.__impl), QChar(ch.unicode()));
 	return s;
 }
 
 bool operator < (const String &s1, const  String &s2)
 {
 #if QT_VERSION < 0x050000
-	return s1.__impl.operator < (s2.__impl);
+	return _CONST_CAST(s1.__impl)->operator < (*_CONST_CAST(s2.__impl));
 #else
-	return operator < (s1.__impl, s2.__impl);
+	return operator < (*_CONST_CAST(s1.__impl), *_CONST_CAST(s2.__impl));
 #endif
 }
 
 bool operator <= (const String &s1, const String &s2)
 {
 #if QT_VERSION < 0x050000
-	return s1.__impl.operator <= (s2.__impl);
+	return _CONST_CAST(s1.__impl)->operator <= (*_CONST_CAST(s2.__impl));
 #else
-	return operator <= (s1.__impl, s2.__impl);
+	return operator <= (*_CONST_CAST(s1.__impl), *_CONST_CAST(s2.__impl));
 #endif
 }
 
 bool operator == (const String &s1, const String &s2)
 {
 #if QT_VERSION < 0x050000
-	return s1.__impl.operator == (s2.__impl);
+	return _CONST_CAST(s1.__impl)->operator == (*_CONST_CAST(s2.__impl));
 #else
-	return operator == (s1.__impl, s2.__impl);
+	return operator == (*_CONST_CAST(s1.__impl), *_CONST_CAST(s2.__impl));
 #endif
 }
 
 bool operator > (const String &s1, const  String &s2)
 {
 #if QT_VERSION < 0x050000
-	return s1.__impl.operator > (s2.__impl);
+	return _CONST_CAST(s1.__impl)->operator > (*_CONST_CAST(s2.__impl));
 #else
-	return operator > (s1.__impl, s2.__impl);
+	return operator > (*_CONST_CAST(s1.__impl), *_CONST_CAST(s2.__impl));
 #endif
 }
 
 bool operator >= (const String &s1, const String &s2)
 {
 #if QT_VERSION < 0x050000
-	return s1.__impl.operator >= (s2.__impl);
+	return _CONST_CAST(s1.__impl)->operator >= (*_CONST_CAST(s2.__impl));
 #else
-	return operator >= (s1.__impl, s2.__impl);
+	return operator >= (*_CONST_CAST(s1.__impl), *_CONST_CAST(s2.__impl));
 #endif
 }
 
 String String::fromUtf8(const char *str, int size)
 {
 	String s;
-	s.__impl = QString::fromUtf8(str, size);
+	*_CAST(s.__impl) = QString::fromUtf8(str, size);
 	return s;
 }
 
 String String::fromUtf8(const ByteArray &str)
 {
 	String s;
-	s.__impl = QString::fromUtf8(str.__impl);
+	*_CAST(s.__impl) = QString::fromUtf8(*reinterpret_cast<const QByteArray*>(str.__impl));
 	return s;
 }
 
@@ -173,35 +182,35 @@ String String::fromUtf8(const ByteArray &str)
 String String::number(double n, char format, int precision)
 {
 	String s;
-	s.__impl = QString::number(n, format, precision);
+	*_CAST(s.__impl) = QString::number(n, format, precision);
 	return s;
 }
 
 String String::number(int_t n, int base)
 {
 	String s;
-	s.__impl = QString::number(n, base);
+	*_CAST(s.__impl) = QString::number(n, base);
 	return s;
 }
 
 String String::number(uint_t n, int base)
 {
 	String s;
-	s.__impl = QString::number(n, base);
+	*_CAST(s.__impl) = QString::number(n, base);
 	return s;
 }
 
 String String::number(long_t n, int base)
 {
 	String s;
-	s.__impl = QString::number(n, base);
+	*_CAST(s.__impl) = QString::number(n, base);
 	return s;
 }
 
 String String::number(ulong_t n, int base)
 {
 	String s;
-	s.__impl = QString::number(n, base);
+	*_CAST(s.__impl) = QString::number(n, base);
 	return s;
 }
 

@@ -10,7 +10,6 @@
 #define __CWT_CHAR_HPP__
 
 #include <cwt/cwt.h>
-#include <QtCore/QChar>
 
 CWT_NS_BEGIN
 
@@ -20,27 +19,27 @@ CWT_NS_BEGIN
 
 class DLL_API Char {
 public:
-	Char();
-	Char(uc_char16_t code);
-	Char(uc_uchar16_t code);
-	Char(uc_char32_t code);
-	Char(uc_uchar32_t code);
+	Char() : ch(0x0) {}
+	Char(uc_char16_t code)  : ch((uc_uchar_t)code) {}
+	Char(uc_uchar16_t code) : ch((uc_uchar_t)code) {}
+	Char(uc_char32_t code)  : ch((uc_uchar_t)code) {}
+	Char(uc_uchar32_t code) : ch((uc_uchar_t)code) {}
+	~Char() {}
 
-	operator uc_uchar16_t() { return (uc_uchar16_t)__impl.unicode(); }
-	operator uc_uchar32_t() { return (uc_uchar32_t)__impl.unicode(); }
+	operator uc_uchar16_t() { return (uc_uchar16_t)ch; }
+	operator uc_uchar32_t() { return (uc_uchar32_t)ch; }
 
-	friend bool	operator!=(Char ch1, Char ch2);
-	friend bool	operator<(Char ch1, Char ch2);
-	friend bool	operator<=(Char ch1, Char ch2);
-	friend bool	operator==(Char ch1, Char ch2);
-/*
-	friend bool	operator==(Char ch1, uc_uchar16_t);
-	friend bool	operator==(Char ch1, uc_uchar32_t);
-*/
-	friend bool	operator>(Char ch1, Char ch2);
-	friend bool	operator>=(Char ch1, Char ch2);
-public:
-	QChar __impl;
+	uc_uchar_t unicode() const { return ch; }
+
+	friend bool	operator != (Char ch1, Char ch2) { return ch1.ch != ch2.ch; }
+	friend bool	operator  < (Char ch1, Char ch2) { return ch1.ch  < ch2.ch; }
+	friend bool	operator <= (Char ch1, Char ch2) { return ch1.ch <= ch2.ch; }
+	friend bool	operator == (Char ch1, Char ch2) { return ch1.ch == ch2.ch; }
+	friend bool	operator >  (Char ch1, Char ch2) { return ch1.ch  > ch2.ch; }
+	friend bool	operator >= (Char ch1, Char ch2) { return ch1.ch >= ch2.ch; }
+
+private:
+	uc_uchar_t ch;
 };
 
 CWT_NS_END

@@ -10,8 +10,6 @@
 #define __CWT_STRING_HPP__
 
 #include <cwt/cwt.h>
-#define QT_NO_CAST_FROM_ASCII
-#include <QtCore/QString>
 #include <cwt/char.hpp>
 #include <cwt/bytearray.hpp>
 #include <cstdarg>
@@ -37,7 +35,7 @@ public:
 	String(Char ch);
 	String(int size, Char ch);
 	String(const String &other);
-	~String() {}
+	~String();
 
 	String&	append(const String &str);
 	String&	append(const Char *unicode, int size);
@@ -106,22 +104,8 @@ public:
 	static const String& null();
 
 public:
-	QString __impl;
+	void *__impl;
 };
-
-/*
-class StringDataPtr {
-public:
-	explicit StringDataPtr(const String &str) : m_str(new String(str.data())) {}
-	operator Char*() { return m_str->data(); }
-	operator const Char*() const { return m_str->data(); }
-
-	String& string() { return *m_str; }
-	const String& string() const { return *m_str; }
-private:
-	String *m_str;
-};
-*/
 
 CWT_NS_END
 

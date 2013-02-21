@@ -19,7 +19,7 @@
 
 /**
  * @file   uuid.c
- * @author wladt
+ * @author see Copyright above
  * @date   Feb 20, 2013 2:01:07 PM
  *
  * @brief
@@ -29,23 +29,160 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "sysdep.h"
-#include "uuid.h"
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <sys/sysinfo.h>
+#include "../include/cwt/uuid.h"
+#include "../include/cwt/md5.h"
+#include "../include/cwt/sha1.h"
+#include "../include/cwt/mt.h"
+
+/* set the following to the number of 100ns ticks of the actual
+   resolution of your system's clock */
+#define UUIDS_PER_TICK 1024
+
+typedef uint64_t uuid_time_t;
+typedef struct {
+    char nodeID[6];
+} uuid_node_t;
+
+static void get_ieee_node_identifier(uuid_node_t *node);
+static void get_system_time(uuid_time_t *uuid_time);
+static void get_random_info(char seed[16]);
 
 /* various forward declarations */
-static int read_state(uint16_t *clockseq, uuid_time_t *timestamp,
-    uuid_node_t *node);
-static void write_state(uint16_t clockseq, uuid_time_t timestamp,
-    uuid_node_t node);
-static void format_uuid_v1(uuid_t *uuid, uint16_t clockseq,
-    uuid_time_t timestamp, uuid_node_t node);
+static int read_state(uint16_t *clockseq, uuid_time_t *timestamp, uuid_node_t *node);
+static void write_state(uint16_t clockseq, uuid_time_t timestamp, uuid_node_t node);
+static void format_uuid_v1(uuid_t *uuid, uint16_t clockseq, uuid_time_t timestamp, uuid_node_t node);
 
-static void format_uuid_v3or5(uuid_t *uuid, unsigned char hash[16],
-    int v);
+static void format_uuid_v3or5(uuid_t *uuid, unsigned char hash[16], int v);
 static void get_current_time(uuid_time_t *timestamp);
 static uint16_t true_random(void);
 
-/* uuid_create -- generator a UUID */
+
+/* system dependent call to get IEEE node ID.
+   This sample implementation generates a random node ID. */
+static void get_ieee_node_identifier(uuid_node_t *node)
+{
+    static int inited = 0;
+    static uuid_node_t saved_node;
+    char seed[16];
+    FILE *fp;
+
+    if (!inited) {
+        fp = fopen("nodeid", "rb");
+        if (fp) {
+            fread(&saved_node, sizeof saved_node, 1, fp);
+            fclose(fp);
+        }
+        else {
+            get_random_info(seed);
+            seed[0] |= 0x01;
+            memcpy(&saved_node, seed, sizeof saved_node);
+            fp = fopen("nodeid", "wb");
+            if (fp) {
+                fwrite(&saved_node, sizeof saved_node, 1, fp);
+                fclose(fp);
+            }
+        }
+
+        inited = 1;
+    }
+
+    *node = saved_node;
+}
+
+/* system dependent call to get the current system time. Returned as
+   100ns ticks since UUID epoch, but resolution may be less than
+   100ns. */
+#ifdef CWT_CC_MSC
+
+static void get_system_time(uuid_time_t *uuid_time)
+{
+    ULARGE_INTEGER time;
+
+    /* NT keeps time in FILETIME format which is 100ns ticks since
+       Jan 1, 1601. UUIDs use time in 100ns ticks since Oct 15, 1582.
+       The difference is 17 Days in Oct + 30 (Nov) + 31 (Dec)
+       + 18 years and 5 leap days. */
+    GetSystemTimeAsFileTime((FILETIME *)&time);
+    time.QuadPart +=
+
+          (unsigned __int64) (1000*1000*10)       // seconds
+        * (unsigned __int64) (60 * 60 * 24)       // days
+        * (unsigned __int64) (17+30+31+365*18+5); // # of days
+    *uuid_time = time.QuadPart;
+}
+
+/* Sample code, not for use in production; see RFC 1750 */
+static void get_random_info(char seed[16])
+{
+	md5_state_t ctx; /*MD5_CTX c;*/
+
+    struct {
+        MEMORYSTATUS m;
+        SYSTEM_INFO s;
+        FILETIME t;
+        LARGE_INTEGER pc;
+        DWORD tc;
+        DWORD l;
+        char hostname[MAX_COMPUTERNAME_LENGTH + 1];
+    } r;
+
+    md5_init(&ctx);/*    MD5Init(&c);*/
+    GlobalMemoryStatus(&r.m);
+    GetSystemInfo(&r.s);
+    GetSystemTimeAsFileTime(&r.t);
+    QueryPerformanceCounter(&r.pc);
+    r.tc = GetTickCount();
+    r.l = MAX_COMPUTERNAME_LENGTH + 1;
+    GetComputerName(r.hostname, &r.l);
+    md5_update(&ctx, &r, sizeof r); /*   MD5Update(&c, &r, sizeof r);*/
+    md5_finish(&ctx, seed); /*    MD5Final(seed, &c);*/
+}
+
+#else
+
+static void get_system_time(uuid_time_t *uuid_time)
+{
+    struct timeval tp;
+
+    gettimeofday(&tp, (struct timezone *)0);
+
+    /* Offset between UUID formatted times and Unix formatted times.
+       UUID UTC base time is October 15, 1582.
+       Unix base time is January 1, 1970.*/
+    *uuid_time = ((uint64_t)tp.tv_sec * 10000000)
+        + ((uint64_t)tp.tv_usec * 10)
+        + 0x01B21DD213814000LL;
+}
+
+/* Sample code, not for use in production; see RFC 1750 */
+static void get_random_info(char seed[16])
+{
+	md5_state_t ctx; /*MD5_CTX c;*/
+    struct {
+        struct sysinfo s;
+        struct timeval t;
+        char hostname[257];
+    } r;
+
+    md5_init(&ctx);/*    MD5Init(&c);*/
+    sysinfo(&r.s);
+    gettimeofday(&r.t, (struct timezone *)0);
+    gethostname(r.hostname, 256);
+    md5_update(&ctx, (md5_byte_t*)&r, sizeof r); /*   MD5Update(&c, &r, sizeof r);*/
+    md5_finish(&ctx, (md5_byte_t*)seed); /*    MD5Final(seed, &c);*/
+}
+
+#endif
+
+/**
+ *
+ * @param uuid
+ * @return
+ */
 int uuid_create(uuid_t *uuid)
 {
      uuid_time_t timestamp, last_time;
@@ -55,7 +192,7 @@ int uuid_create(uuid_t *uuid)
      int f;
 
      /* acquire system-wide lock so we're alone */
-     LOCK;
+     CWT_LOCK;
      /* get time, node ID, saved state from non-volatile storage */
      get_current_time(&timestamp);
      get_ieee_node_identifier(&node);
@@ -71,7 +208,7 @@ int uuid_create(uuid_t *uuid)
      /* save the state for next time */
      write_state(clockseq, timestamp, node);
 
-     UNLOCK;
+     CWT_UNLOCK;
 
      /* stuff fields into the UUID */
      format_uuid_v1(uuid, clockseq, timestamp, node);
@@ -208,12 +345,17 @@ static uint16_t true_random(void)
     return rand();
 }
 
-/* uuid_create_md5_from_name -- create a version 3 (MD5) UUID using a
-   "name" from a "name space" */
-void uuid_create_md5_from_name(uuid_t *uuid, uuid_t nsid, void *name,
-                               int namelen)
+/**
+ * @brief Create a version 3 (MD5) UUID using a "name" from a "name space"
+ *
+ * @param uuid resulting UUID
+ * @param nsid UUID of the namespace
+ * @param name the name from which to generate a UUID
+ * @param namelen the length of the name
+ */
+void uuid_create_md5_from_name(uuid_t *uuid, uuid_t nsid, const void *name, int namelen)
 {
-    MD5_CTX c;
+	md5_state_t ctx; /*MD5_CTX c;*/
     unsigned char hash[16];
     uuid_t net_nsid;
 
@@ -224,21 +366,27 @@ void uuid_create_md5_from_name(uuid_t *uuid, uuid_t nsid, void *name,
     net_nsid.time_mid = htons(net_nsid.time_mid);
     net_nsid.time_hi_and_version = htons(net_nsid.time_hi_and_version);
 
-    MD5Init(&c);
-    MD5Update(&c, &net_nsid, sizeof net_nsid);
-    MD5Update(&c, name, namelen);
-    MD5Final(hash, &c);
+    md5_init(&ctx);/*    MD5Init(&c);*/
+    md5_update(&ctx, (md5_byte_t*)&net_nsid, sizeof net_nsid); /*   MD5Update(&c, &net_nsid, sizeof net_nsid); */
+    md5_update(&ctx, name, namelen);
+    md5_finish(&ctx, hash); /*  MD5Final(hash, &c); */
 
     /* the hash is in network byte order at this point */
     format_uuid_v3or5(uuid, hash, 3);
 }
 
-
-void uuid_create_sha1_from_name(uuid_t *uuid, uuid_t nsid, void *name,
-                                int namelen)
+/**
+ * @brief Create a version 5 (SHA-1) UUID using a "name" from a "name space"
+ *
+ * @param uuid resulting UUID
+ * @param nsid UUID of the namespace
+ * @param name the name from which to generate a UUID
+ * @param namelen the length of the name
+ */
+void uuid_create_sha1_from_name(uuid_t *uuid, uuid_t nsid, const void *name, int namelen)
 {
-    SHA_CTX c;
-    unsigned char hash[20];
+	sha1_state_t ctx;  /*SHA_CTX c;*/
+    unsigned char hash[SHA1_OUTPUT_SIZE];
     uuid_t net_nsid;
 
     /* put name space ID in network byte order so it hashes the same
@@ -248,10 +396,10 @@ void uuid_create_sha1_from_name(uuid_t *uuid, uuid_t nsid, void *name,
     net_nsid.time_mid = htons(net_nsid.time_mid);
     net_nsid.time_hi_and_version = htons(net_nsid.time_hi_and_version);
 
-    SHA1_Init(&c);
-    SHA1_Update(&c, &net_nsid, sizeof net_nsid);
-    SHA1_Update(&c, name, namelen);
-    SHA1_Final(hash, &c);
+    sha1_init(&ctx);
+    sha1_update(&ctx, (sha1_byte_t*)&net_nsid, sizeof net_nsid);
+    sha1_update(&ctx, name, namelen);
+    sha1_finish(&ctx, hash); /*  SHA1_Final(hash, &c); */
 
     /* the hash is in network byte order at this point */
     format_uuid_v3or5(uuid, hash, 5);
@@ -276,6 +424,12 @@ void format_uuid_v3or5(uuid_t *uuid, unsigned char hash[16], int v)
 
 /* uuid_compare --  Compare two UUID's "lexically" and return */
 #define CHECK(f1, f2) if (f1 != f2) return f1 < f2 ? -1 : 1;
+/* uuid_compare --  Compare two UUID's "lexically" and return
+        -1   u1 is lexically before u2
+         0   u1 is equal to u2
+         1   u1 is lexically after u2
+   Note that lexical ordering is not temporal ordering!
+*/
 int uuid_compare(uuid_t *u1, uuid_t *u2)
 {
     int i;

@@ -10,7 +10,11 @@ SUBDIRS  = cwt-core \
     tests/dl        \
     tests/fsm       \
     tests/logger    \
+    tests/md5       \
     tests/petaloid  \
     tests/sepaloid  \
-    tests/uri
+    tests/uri       \
+    tests/uuid      \
+    utils/uuid-gen
+
 

@@ -10,6 +10,7 @@
 #define __CWT_UUID_HPP__
 
 #include <cwt/cwt.h>
+#include <cwt/uuid.h>
 #include <cwt/string.hpp>
 
 CWT_NS_BEGIN
@@ -22,12 +23,13 @@ public:
 
 	bool isNull() const;
 	bool parse(const char *uuid_str, int len = -1);
-	String toString(const uuid_t &uuid) const;
+	String toString() const { return toString(m_uuid); }
 	const uuid_t& uuid() const { return m_uuid; }
 
 	Uuid& operator = (const Uuid &uuid)   { uuid_copy(m_uuid, uuid.m_uuid); return *this; }
 	Uuid& operator = (const uuid_t &uuid) { uuid_copy(m_uuid, uuid); return *this; }
 
+	static String toString(const uuid_t &uuid);
 	friend bool	operator==(const Uuid &uuid1, const Uuid &uuid2) { return Uuid::uuid_eq(uuid1.m_uuid, uuid2.m_uuid); }
 	friend bool	operator==(const Uuid &uuid1, const uuid_t &uuid2) { return Uuid::uuid_eq(uuid1.m_uuid, uuid2); }
 

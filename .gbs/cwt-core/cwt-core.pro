@@ -8,12 +8,16 @@ INCLUDEPATH += ../../../cwt-common/include
 
 unix {
     HEADERS += ../../include/cwt/*.hpp
+    HEADERS += ../../include/cwt/*.h
     SOURCES += ../../src/*.cpp
+    SOURCES += ../../src/*.c
     SOURCES += ../../src/unix/*.cpp
 }
 
 win32 {
     HEADERS += ..\\..\\include\\cwt\\*.hpp
+    HEADERS += ..\\..\\include\\cwt\\*.h
     SOURCES += ..\\..\\src\\*.cpp
+    SOURCES += ..\\..\\src\\*.c
     SOURCES += ..\\..\\src\\win32\\*.cpp
 }

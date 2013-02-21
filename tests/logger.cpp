@@ -1,6 +1,6 @@
 #include <cwt/test.h>
-#include <cwt/logger.hpp>
 #include <cstdio>
+#include "../include/cwt/logger.hpp"
 
 using namespace cwt;
 
