@@ -79,6 +79,8 @@ typedef struct md5_state_s {
     md5_byte_t buf[64];         /* accumulate block */
 } md5_state_t;
 
+#define	MD5_OUTPUT_SIZE	16	/* in bytes */
+
 
 EXTERN_C_BEGIN
 

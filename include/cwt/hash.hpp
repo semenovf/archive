@@ -17,8 +17,8 @@
 CWT_NS_BEGIN
 
 #if QT_VERSION < 0x050000
-inline uint qHash(const String &key)    { return qHash(key.__impl); }
-inline uint qHash(const ByteArray &key) { return qHash(key.__impl); }
+inline uint qHash(const String &key)    { return qHash(*reinterpret_cast<const QString*>(key.__impl)); }
+inline uint qHash(const ByteArray &key) { return qHash(*reinterpret_cast<const QByteArray*>(key.__impl)); }
 inline uint qHash(const uuid_t &key)    { return qHash(ByteArray((const char*)&key, sizeof(key))); }
 #else
 inline uint qHash(const String &key, uint seed = 0)    { return qHash(*reinterpret_cast<const QString*>(key.__impl), seed); }

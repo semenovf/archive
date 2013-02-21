@@ -6,10 +6,10 @@
  *  Removed to CWT on: Feb 12, 2013
  */
 
-#include <cwt/sepaloid.hpp>
-#include <cwt/logger.hpp>
-#include <cwt/filesystem.hpp>
-#include <cwt/dl.hpp>
+#include "../include/cwt/sepaloid.hpp"
+#include "../include/cwt/logger.hpp"
+#include "../include/cwt/filesystem.hpp"
+#include "../include/cwt/dl.hpp"
 
 CWT_NS_BEGIN
 
@@ -89,10 +89,8 @@ bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor
 	MappingHash::iterator itEnd = m_mapping.end();
 
 	if (emitters) {
-		ByteArray emitter_id;
-
 		for (int i = 0; i < nemitters; i++) {
-			emitter_id.setRawData(emitters[i].id, strlen(emitters[i].id));
+			ByteArray emitter_id(emitters[i].id);
 			MappingHash::iterator it = m_mapping.find(emitter_id);
 			if (it != itEnd) {
 				it.value()->map->appendEmitter(reinterpret_cast<Emitter*>(emitters[i].emitter));
@@ -107,10 +105,8 @@ bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor
 	}
 
 	if (detectors) {
-		ByteArray detector_id;
-
 		for (int i = 0; i < ndetectors; i++) {
-			detector_id.setRawData(detectors[i].id, strlen(detectors[i].id));
+			ByteArray detector_id(detectors[i].id);
 			MappingHash::iterator it = m_mapping.find(detector_id);
 			if (it != itEnd) {
 				it.value()->map->appendDetector(&petaloid, detectors[i].detector);

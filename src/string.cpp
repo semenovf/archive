@@ -98,7 +98,7 @@ const Char String::operator[](int pos) const    { const QChar qch = _CONST_IMPL-
 
 bool operator != (const String &s1, const String &s2) {
 #if QT_VERSION < 0x050000
-	return _CONST_CAST(s1.__impl)->operator != *_CONST_CAST(s2.__impl);
+	return _CONST_CAST(s1.__impl) != *_CONST_CAST(s2.__impl);
 #else
 	return operator != (*_CONST_CAST(s1.__impl), *_CONST_CAST(s2.__impl));
 #endif
