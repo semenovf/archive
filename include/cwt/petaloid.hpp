@@ -46,8 +46,8 @@ public:
 
 	static void defaultDtor(Petaloid *p) { CWT_ASSERT(p); delete p; }
 
-	virtual const EmitterMapping* getEmitters(int *count) = 0;
-	virtual const DetectorMapping* getDetectors(int *count) = 0;
+	virtual const EmitterMapping* getEmitters(int *count)   { CWT_ASSERT(count); return NULL; }
+	virtual const DetectorMapping* getDetectors(int *count) { CWT_ASSERT(count); return NULL; }
 
 private:
 	const char *m_name;
