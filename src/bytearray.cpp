@@ -6,7 +6,7 @@
  * @brief
  */
 
-#include <cwt/bytearray.hpp>
+#include "../include/cwt/bytearray.hpp"
 #include <QtCore/QByteArray>
 
 #define _IMPL reinterpret_cast<QByteArray*>(__impl)
@@ -18,7 +18,12 @@
 CWT_NS_BEGIN
 
 ByteArray::ByteArray() : __impl(new QByteArray()) {}
-ByteArray::ByteArray(const char *data, int size) : __impl(new QByteArray(data, size)) {}
+ByteArray::ByteArray(const char *data, int size)
+#if QT_VERSION < 0x050000
+	: __impl(new QByteArray(data, size < 0 ? strlen(data) : size)) {}
+#else
+	: __impl(new QByteArray(data, size)) {}
+#endif
 ByteArray::ByteArray(int size, char ch) : __impl(new QByteArray(size, ch)) {}
 ByteArray::ByteArray(const ByteArray &other) : __impl(new QByteArray(*_CONST_CAST(other.__impl))) {}
 ByteArray::~ByteArray() { delete _IMPL; }

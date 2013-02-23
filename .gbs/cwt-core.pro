@@ -9,6 +9,7 @@ CONFIG  += ordered
 SUBDIRS  = cwt-core \
     tests/dl        \
     tests/fsm       \
+    tests/hash      \
     tests/logger    \
     tests/md5       \
     tests/petaloid  \

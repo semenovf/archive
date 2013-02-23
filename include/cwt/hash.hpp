@@ -46,6 +46,8 @@ public:
 	const_iterator find(const Key & key) const { return __impl.find(key); }
 	bool	       isEmpty() const { return __impl.isEmpty(); }
 	iterator       insert(const Key & key, const T & value) { return __impl.insert(key, value); }
+	const Key	   key ( const T & value ) const { return __impl->key(value); }
+	const Key	   key ( const T & value, const Key & defaultKey ) const { return __impl.key(value, defaultKey); }
 	int	           remove(const Key & key) { return __impl.remove(key); }
 	int  	       size() const { return __impl.size(); }
 	const T	       value(const Key & key) const { return __impl.value(key); }
