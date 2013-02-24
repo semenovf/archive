@@ -30,6 +30,16 @@ ByteArray::~ByteArray() { delete _IMPL; }
 
 char* ByteArray::data() { return _IMPL->data(); }
 const char* ByteArray::data() const { return _CONST_IMPL->data(); }
+
+double	 ByteArray::toDouble(bool *ok) const           { return _CONST_IMPL->toDouble(ok); }
+float	 ByteArray::toFloat(bool *ok) const            { return _CONST_IMPL->toFloat(ok); }
+int_t	 ByteArray::toInt(bool *ok, int base) const    { return _CONST_IMPL->toInt(ok, base); }
+long_t   ByteArray::toLong(bool *ok, int base) const   { return _CONST_IMPL->toLongLong(ok, base); }
+short_t	 ByteArray::toShort(bool *ok, int base) const  { return _CONST_IMPL->toShort(ok, base); }
+uint_t	 ByteArray::toUInt(bool *ok, int base) const   { return _CONST_IMPL->toUInt(ok, base); }
+ulong_t	 ByteArray::toULong(bool *ok, int base) const  { return _CONST_IMPL->toULongLong(ok, base); }
+ushort_t ByteArray::toUShort(bool *ok, int base) const { return _CONST_IMPL->toUShort(ok, base); }
+
 ByteArray& ByteArray::setRawData(const char * data, uint size) { _IMPL->setRawData(data, size); return *this; }
 
 bool operator==(const ByteArray &s1, const ByteArray &s2) {	return *_CONST_CAST(s1.__impl) == *_CONST_CAST(s2.__impl); }

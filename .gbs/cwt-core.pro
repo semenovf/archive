@@ -14,6 +14,7 @@ SUBDIRS  = cwt-core \
     tests/md5       \
     tests/petaloid  \
     tests/sepaloid  \
+    tests/unitype   \
     tests/uri       \
     tests/uuid      \
     utils/uuid-gen

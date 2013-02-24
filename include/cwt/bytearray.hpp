@@ -30,6 +30,15 @@ public:
 	char* data();
 	const char* data() const;
 
+	double	 toDouble(bool *ok = 0) const;
+	float	 toFloat(bool *ok = 0) const;
+	int_t	 toInt(bool *ok = 0, int base = 10) const;
+	long_t   toLong(bool *ok = 0, int base = 10) const;
+	short_t	 toShort(bool *ok = 0, int base = 10) const;
+	uint_t	 toUInt(bool *ok = 0, int base = 10) const;
+	ulong_t	 toULong(bool *ok = 0, int base = 10) const;
+	ushort_t toUShort(bool *ok = 0, int base = 10) const;
+
 	ByteArray& setRawData(const char * data, uint size);
 
 	friend bool	operator==(const ByteArray &s1, const ByteArray &s2);
