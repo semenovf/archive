@@ -14,6 +14,7 @@
 CWT_NS_BEGIN
 
 /* FIXME Need GOOD implementation */
+/*
 template <typename _T = int>
 class Atomic {
 public:
@@ -27,14 +28,21 @@ private:
 	mt_def(m_mutex);
 	_T m_val;
 };
+*/
 
+//__sync_bool_compare_and_swap
 
-class AtomicInt : public Atomic<int> {
+template <typename int_type>
+class AtomicInt {
 public:
-	AtomicInt(int val) : Atomic<int>(val) {}
+	AtomicInt(int_type val) : i(val) {}
 	virtual ~AtomicInt() { }
-	bool ref() { ++(*this); return ((int)*this) > 0 ? true : false; }
+	AtomicInt& operator++() { ++i; return *this; }
+	AtomicInt& operator--() { --i; return *this; }
+	bool ref() { __sync_add_and_fetch(&i); return ((int)*this) > 0 ? true : false; }
 	bool deref() { --(*this); return ((int)*this) > 0 ? true : false; }
+private:
+	int_type i;
 };
 
 

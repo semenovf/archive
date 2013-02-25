@@ -43,6 +43,8 @@ String&	String::append(Char ch) { _IMPL->append(QChar(ch.unicode())); return *th
 
 const Char String::at(int pos) const     { const QChar ch = _CONST_IMPL->at(pos); return Char(ch.unicode()); }
 void String::clear()             { _IMPL->clear(); }
+bool String::contains(const String & str, bool cs) const { return _CONST_IMPL->contains(*_CONST_CAST(str.__impl), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+bool String::contains(Char ch, bool cs) const { return _CONST_IMPL->contains(QChar(ch.unicode()), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 Char* String::data()             { return reinterpret_cast<Char*>(_IMPL->data()); }
 const Char*	String::data() const { return reinterpret_cast<const Char*>(_IMPL->data()); }
 bool String::isEmpty() const     { return reinterpret_cast<const Char*>(_IMPL->isEmpty()); }

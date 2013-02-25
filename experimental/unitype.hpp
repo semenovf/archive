@@ -18,7 +18,6 @@
 #include <cwt/datetime.hpp>
 #include <cwt/time.hpp>
 
-QVariant v;
 CWT_NS_BEGIN
 
 enum UniTypeEnum {

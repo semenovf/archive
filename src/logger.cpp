@@ -18,6 +18,15 @@ void Logger::init()
 	Logger::connectAppender(&logAppender);
 }
 
+/*
+static struct LoggerInit {
+	LoggerInit() {
+		static StdioLogAppender logAppender;
+		Logger::connectAppender(&logAppender);
+	}
+} __logger_init;
+*/
+
 class LogEmitter
 {
 public:

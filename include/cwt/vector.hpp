@@ -36,6 +36,7 @@ public:
 	const_iterator end() const { return __impl.end(); }
 	T& first();
 	const T& first() const;
+	int indexOf(const T & value, int from = 0) const { return __impl.indexOf(value, from); }
 	bool isEmpty() const { return __impl.isEmpty(); }
 	T& last();
 	const T& last() const;
