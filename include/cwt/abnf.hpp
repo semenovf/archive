@@ -10,13 +10,12 @@
 
 #include <cwt/cwt.h>
 #include <cwt/string.hpp>
-#include <cwt/errorable.hpp>
 
 CWT_NS_BEGIN
 
-class DLL_API Abnf : public Errorable {
+class DLL_API Abnf {
 public:
-	Abnf() : Errorable() {}
+	Abnf() {}
 	~Abnf() {}
 
 	bool parse(const String &abnf);

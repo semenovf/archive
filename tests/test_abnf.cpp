@@ -9,6 +9,7 @@
 
 #include <cwt/abnf.hpp>
 #include <cwt/fsm_test.hpp>
+#include <cwt/logger.hpp>
 #include "../src/abnf-rfc5234.hpp"
 
 static FsmTestEntry __fsmTestEntries[] = {
@@ -217,6 +218,7 @@ static void test_abnf_fsm()
 	static Fsm<Char> fsm(NULL, NULL);
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
 
+	// TODO remove line below
 	nentries = 0;
 	for( int i = 0; i < nentries; i++ )
 		fsm_test_entries(fsm, &__fsmTestEntries[i]);
@@ -293,13 +295,11 @@ static void test_abnf()
 	CWT_TEST_FAIL(abnf.parse(String().fromUtf8(abnf_test_str)));
 }
 
-
-
 int main(int argc, char *argv[])
 {
+	Logger::init();
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
-
 	CWT_BEGIN_TESTS(124);
 
 	test_abnf_fsm();
