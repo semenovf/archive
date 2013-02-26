@@ -43,6 +43,7 @@ public:
 	void prepend(const T &value);
 	void resize(int size) { __impl.resize(size); }
 	int size() const;
+	void swap(Vector<T> & other) { __impl.swap(other.__impl); }
 
 	T& operator[](int i);
 	const T& operator[](int i) const;

@@ -47,6 +47,8 @@ public:
 	bool contains(Char ch, bool cs = true) const;
 	Char* data();
 	const Char*	data() const;
+	bool	endsWith(const String &s, bool cs = true) const;
+	bool	endsWith(Char c, bool cs = true) const;
 	bool	isEmpty() const;
 	bool	isNull() const;
 	int	    indexOf(const String &str, int from = 0, bool cs = true) const;

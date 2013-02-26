@@ -68,8 +68,11 @@ String& String::sprintf(const char * cformat, ...)
 	return *this;
 }
 
+bool String::endsWith(const String &s, bool cs) const { return _CONST_IMPL->endsWith(*_CONST_CAST(s.__impl), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+bool String::endsWith(Char ch, bool cs) const { return _IMPL->endsWith(QChar(ch.unicode()), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 bool String::startsWith(const String &s, bool cs) const { return _CONST_IMPL->startsWith(*_CONST_CAST(s.__impl), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 bool String::startsWith(Char ch, bool cs) const { return _IMPL->startsWith(QChar(ch.unicode()), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+
 String String::substr(int pos, int n) const { String s; *_CAST(s.__impl) = _CONST_IMPL->mid(pos, n); return s; }
 
 double	 String::toDouble(bool *ok) const           { return _CONST_IMPL->toDouble(ok); }
