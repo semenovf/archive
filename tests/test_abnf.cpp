@@ -219,7 +219,7 @@ static void test_abnf_fsm()
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
 
 	// TODO remove line below
-	nentries = 0;
+	//nentries = 0;
 	for( int i = 0; i < nentries; i++ )
 		fsm_test_entries(fsm, &__fsmTestEntries[i]);
 }
@@ -255,8 +255,8 @@ concatenation  =  repetition *(1*c-wsp repetition)               \n\
 																 \n\
 repetition     =  [repeat] element                               \n\
 																 \n\
-repeat         =  1*DIGIT                                        \n\
-repeat         =/ *DIGIT \"*\" *DIGIT                            \n\
+repeat         =  *DIGIT \"*\" *DIGIT                            \n\
+repeat         =/ 1*DIGIT                                        \n\
 																 \n\
 element        =  rulename / group / option /                    \n\
 				  char-val / num-val / prose-val                 \n\
@@ -297,10 +297,14 @@ static void test_abnf()
 
 int main(int argc, char *argv[])
 {
-	Logger::init();
+	StdioLogAppender stdlogger;
+	stdlogger.setPattern(_U("%d{ABSOLUTE} [%p]: %m"));
+	Logger::connectAppender(&stdlogger);
+	stdlogger.setPriority(Logger::Trace);
+
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
-	CWT_BEGIN_TESTS(124);
+	CWT_BEGIN_TESTS(125);
 
 	test_abnf_fsm();
 	test_abnf();

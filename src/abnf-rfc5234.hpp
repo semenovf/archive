@@ -31,22 +31,25 @@
 
 CWT_NS_BEGIN
 
-static const int _BEGIN_RULE        = 1;
-static const int _END_RULE          = 2;
-static const int _BEGIN_ALTERNATION = 3;
-static const int _END_ALTERNATION   = 4;
-static const int _BEGIN_CONCAT      = 5;
-static const int _END_CONCAT        = 6;
-static const int _BEGIN_RPT         = 7;
-static const int _END_RPT           = 8;
-static const int _BEGIN_OPTION      = 9;
-static const int _END_OPTION        = 10;
-static const int _BEGIN_GROUP       = 11;
-static const int _END_GROUP         = 12;
-static const int _ELEM_RULE_REF     = 13;
-static const int _ELEM_CHAR_VAL     = 14;
-static const int _ELEM_NUM_VAL      = 15;
-static const int _ELEM_PROSE_VAL    = 16;
+static const int _BEGIN_DOC         = 1;
+static const int _END_DOC_OK        = 2;
+static const int _END_DOC_FAIL      = 3;
+static const int _BEGIN_RULE        = 4;
+static const int _END_RULE          = 5;
+static const int _BEGIN_ALTERNATION = 6;
+static const int _END_ALTERNATION   = 7;
+static const int _BEGIN_CONCAT      = 8;
+static const int _END_CONCAT        = 9;
+static const int _BEGIN_RPT         = 10;
+static const int _END_RPT           = 11;
+static const int _BEGIN_OPTION      = 12;
+static const int _END_OPTION        = 13;
+static const int _BEGIN_GROUP       = 14;
+static const int _END_GROUP         = 15;
+static const int _ELEM_RULE_REF     = 16;
+static const int _ELEM_CHAR_VAL     = 17;
+static const int _ELEM_NUM_VAL      = 18;
+static const int _ELEM_PROSE_VAL    = 19;
 
 static const int _RPT_FROM   = 1;
 static const int _RPT_TO     = 2;
@@ -355,7 +358,8 @@ static FsmTransition repetition_c_wsp_fsm[] = {
 	, {-1,-1, FSM_MATCH_FSM(repetition_fsm)      , FSM_ACCEPT, NULL, NULL }
 };
 static FsmTransition concatenation_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(repetition_fsm)                , FSM_NORMAL, block, (void*)&_BEGIN_CONCAT }
+	  { 1,-1, FSM_MATCH_NOTHING                            , FSM_NORMAL, block, (void*)&_BEGIN_CONCAT }
+	, { 2,-1, FSM_MATCH_FSM(repetition_fsm)                , FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_RPT_FSM(repetition_c_wsp_fsm, 0,-1), FSM_ACCEPT, block, (void*)&_END_CONCAT }
 };
 
@@ -369,11 +373,12 @@ static FsmTransition concatenation_next_fsm[] = {
 };
 
 static FsmTransition alternation_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(concatenation_fsm)               , FSM_NORMAL, block, (void*)&_BEGIN_ALTERNATION }
+	  { 1,-1, FSM_MATCH_NOTHING                              , FSM_NORMAL, block, (void*)&_BEGIN_ALTERNATION }
+	, { 2,-1, FSM_MATCH_FSM(concatenation_fsm)               , FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_RPT_FSM(concatenation_next_fsm, 0,-1), FSM_ACCEPT, block, (void*)&_END_ALTERNATION }
 };
 
-/* alternation *c-wsp */
+/* elements = alternation *c-wsp */
 static FsmTransition elements_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_ACCEPT, NULL, NULL }
@@ -433,7 +438,10 @@ static FsmTransition rule_c_wsp_nl_fsm[] = {
 };
 
 static FsmTransition rulelist_fsm[] = {
-	{-1,-1, FSM_MATCH_RPT_FSM(rule_c_wsp_nl_fsm, 1,-1) , FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_NOTHING                          , FSM_NORMAL, block, (void*)&_BEGIN_DOC }
+	, { 2, 3, FSM_MATCH_RPT_FSM(rule_c_wsp_nl_fsm, 1,-1) , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_NOTHING                          , FSM_ACCEPT, block, (void*)&_END_DOC_OK }
+	, {-1,-1, FSM_MATCH_NOTHING                          , FSM_ACCEPT, block, (void*)&_END_DOC_FAIL }
 };
 
 
@@ -448,6 +456,9 @@ static bool block(const void *data, size_t len, void *context, void *action_args
 	AbnfParseContext *ctx = _CAST_PARSE_CTX(context);
 
 	switch (*flag) {
+	case _BEGIN_DOC         : return ctx->beginDocument(ctx->userContext);
+	case _END_DOC_OK        : return ctx->endDocument(true, ctx->userContext);
+	case _END_DOC_FAIL      : return ctx->endDocument(false, ctx->userContext);
 	case _BEGIN_RULE        :
 		if (String((const Char*)data, len).contains(_U("=/"))) {
 			return ctx->beginRule(ctx->rulename, true, ctx->userContext);
@@ -459,14 +470,25 @@ static bool block(const void *data, size_t len, void *context, void *action_args
 	case _END_ALTERNATION   : return ctx->endAlternation(ctx->userContext);
 	case _BEGIN_CONCAT      : return ctx->beginConcatenation(ctx->userContext);
 	case _END_CONCAT        : return ctx->endConcatenation(ctx->userContext);
-	case _BEGIN_RPT         : return ctx->beginRepetition(len > 0 ? ctx->rpt.from : 1, len > 0 ? ctx->rpt.to : 1, ctx->userContext);
+	case _BEGIN_RPT: {
+		int from = ctx->rpt.from, to = ctx->rpt.to;
+		if (ctx->rpt.to == CWT_INT_MIN)
+			from = to = 1;
+		ctx->rpt.from = ctx->rpt.to = CWT_INT_MIN;
+		return ctx->beginRepetition(from, to, ctx->userContext);
+	}
 	case _END_RPT           : return ctx->endRepetition(ctx->userContext);
 	case _BEGIN_OPTION      : return ctx->beginOption(ctx->userContext);
 	case _END_OPTION        : return ctx->endOption(ctx->userContext);
 	case _BEGIN_GROUP       : return ctx->beginGroup(ctx->userContext);
 	case _END_GROUP         : return ctx->endGroup(ctx->userContext);
 	case _ELEM_RULE_REF     : return ctx->ruleRef(String((const Char*)data, len), ctx->userContext);
-	case _ELEM_CHAR_VAL     : return ctx->charVal(String((const Char*)data, len), ctx->userContext);
+	case _ELEM_CHAR_VAL     : {
+		String s((const Char*)data, len);
+		CWT_ASSERT(s.startsWith(Char('\"')));
+		CWT_ASSERT(s.endsWith(Char('\"')));
+		return ctx->charVal(s.substr(1, s.length()-2), ctx->userContext);
+	}
 	case _ELEM_NUM_VAL      : return ctx->numVal(String((const Char*)data, len), ctx->userContext);
 	case _ELEM_PROSE_VAL    : return ctx->proseVal(String((const Char*)data, len), ctx->userContext);
 
@@ -482,8 +504,6 @@ static bool rulename(const void *data, size_t len, void *context, void *action_a
 	CWT_UNUSED(action_args);
 	if (context) {
 		AbnfParseContext *ctx = _CAST_PARSE_CTX(context);
-		ctx->rpt.from = 1;
-		ctx->rpt.to = 1;
 		ctx->rulename = String((const Char*)data, len);
 	}
 	return true;
@@ -507,21 +527,28 @@ static bool rpt(const void *data, size_t len, void *context, void *action_args)
 	if (context) {
 		AbnfParseContext *ctx = _CAST_PARSE_CTX(context);
 		bool ok = true;
-		int value;
+		int value = 0;
 
-		if (!len)
-			value = -1;
-		else
+		if (len) {
 			value = String((const Char*)data, len).toInt(&ok, 10);
-		if (!ok) {
-			Logger::error("invalid repetition value");
-			return false;
+			if (!ok) {
+				Logger::error("invalid repetition value");
+				return false;
+			}
 		}
+
 		switch(*flag) {
-		case _RPT_FROM: ctx->rpt.from = value < 0 ? 0 : value; break;
-		case _RPT_TO: ctx->rpt.to = value; break;
-		case _RPT_FROMTO: ctx->rpt.from = value; ctx->rpt.to = value; break;
-		default: return false;
+		case _RPT_FROM:
+			ctx->rpt.from = len > 0 ? value : 0;
+			break;
+		case _RPT_TO:
+			ctx->rpt.to = len > 0 ? value : -1;
+			break;
+		case _RPT_FROMTO:
+			ctx->rpt.from = ctx->rpt.to = len > 0 ? value : 1;
+			break;
+		default:
+			return false;
 		}
 	}
 	return true;

@@ -26,9 +26,9 @@ public:
 		, Abnf_Alternation
 		, Abnf_Concatenation
 		, Abnf_Repetition
-		, Abnf_RuleNameElement
 		, Abnf_GroupElement
 		, Abnf_OptionElement
+		, Abnf_RuleRefElement
 		, Abnf_CharValElement
 		, Abnf_NumValElement
 		, Abnf_ProseValElement
@@ -44,9 +44,8 @@ public:
 
 class AbnfNodeRule : public AbnfNode {
 public:
-	AbnfNodeRule(const String &s) : AbnfNode(Abnf_Rule), name(s), refs(1) {}
+	AbnfNodeRule(const String &s) : AbnfNode(Abnf_Rule), name(s) {}
 	String name;
-	int refs;
 };
 class AbnfNodeAlternation : public AbnfNode {
 public:
@@ -61,10 +60,6 @@ public:
 	AbnfNodeRepetition(int f, int t) : AbnfNode(Abnf_Repetition), from(f), to(t) {}
 	int from, to;
 };
-class AbnfNodeRuleNameElement : public AbnfNode {
-public:
-	AbnfNodeRuleNameElement() : AbnfNode(Abnf_RuleNameElement) {}
-};
 class AbnfNodeGroupElement : public AbnfNode {
 public:
 	AbnfNodeGroupElement() : AbnfNode(Abnf_GroupElement) {}
@@ -72,6 +67,11 @@ public:
 class AbnfNodeOptionElement : public AbnfNode {
 public:
 	AbnfNodeOptionElement() : AbnfNode(Abnf_OptionElement) {}
+};
+class AbnfNodeRuleRefElement : public AbnfNode {
+public:
+	AbnfNodeRuleRefElement(const String &v) : AbnfNode(Abnf_RuleRefElement), value(v) {}
+	String value;
 };
 class AbnfNodeCharValElement : public AbnfNode {
 public:
@@ -89,9 +89,15 @@ public:
 	String value;
 };
 
+typedef Hash<String, AbnfNode*> AbnfRulesHash;
+typedef Hash<String, bool>      AbnfRulesDefsHash;
+typedef Stack<AbnfNode*>        AbnfNodesStack;
+
 struct AbnfContext {
-	Hash<String, AbnfNode*> rules;
-	Stack<AbnfNode*>        rulestack;
+	AbnfRulesHash     rules;
+	AbnfRulesDefsHash rulesdefs; // if rule is defined
+	AbnfNodesStack    nodestack;
+	bool isIncrementalAlternation;
 };
 
 struct AbnfParseContext {
@@ -99,6 +105,8 @@ struct AbnfParseContext {
 	String    rulename; // rulename for the current rule
 	struct    { int from, to; } rpt;
 
+	Callback1<void*> beginDocument;
+	Callback2<bool, void*> endDocument;
 	Callback3<const String&, bool, void*> beginRule; // callback(rulename, incremental, abnfContext)
 	Callback1<void*> endRule;
 	Callback1<void*> beginAlternation;
@@ -117,17 +125,6 @@ struct AbnfParseContext {
 	Callback2<const String&, void*> proseVal;
 
 	Callback2<const String&, void*> comment;
-/*
-	Callback1<void*> on_incremental_alternative;
-	Callback2<const String&, void*> on_rulename;
-
-	Callback1<void*> on_begin_option;
-	Callback1<void*> on_end_option;
-	Callback1<void*> on_begin_group;
-	Callback1<void*> on_end_group;
-	Callback2<const String&, void*> on_numeric_value;
-	Callback2<const String&, void*> on_prose_value;
-*/
 };
 
 CWT_NS_END
