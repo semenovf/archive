@@ -362,35 +362,46 @@ static bool comment(const String &comment, void *userContext)
 	return true;
 }
 
+static AbnfSimpleApi __default_api = {
+	  begin_document
+	, end_document
+	, begin_rule
+	, end_rule
+	, begin_alternation
+	, end_alternation
+	, begin_concatenation
+	, end_concatenation
+	, begin_repetition
+	, end_repetition
+	, begin_option
+	, end_option
+	, begin_group
+	, end_group
+	, rule_ref
+	, char_val
+	, num_val
+	, prose_val
+	, comment
+};
+
 bool Abnf::parse(const String &abnf)
+{
+	return parse(abnf, __default_api);
+}
+
+
+bool Abnf::parse(const String &abnf, AbnfSimpleApi &api)
 {
 	CWT_UNUSED(abnf);
 	AbnfContext abnfContext;
+
 	abnfContext.isIncrementalAlternation = false;
 
 	AbnfParseContext parseContext = {
 		  &abnfContext
 		, String()
 		, {CWT_INT_MIN, CWT_INT_MIN}
-		, Callback1<void*>               (begin_document)
-		, Callback2<bool, void*>         (end_document)
-		, Callback3<const String&, bool, void*>(begin_rule)
-		, Callback1<void*>               (end_rule)
-		, Callback1<void*>               (begin_alternation)
-		, Callback1<void*>               (end_alternation)
-		, Callback1<void*>               (begin_concatenation)
-		, Callback1<void*>               (end_concatenation)
-		, Callback3<int, int, void*>     (begin_repetition)
-		, Callback1<void*>               (end_repetition)
-		, Callback1<void*>               (begin_option)
-		, Callback1<void*>               (end_option)
-		, Callback1<void*>               (begin_group)
-		, Callback1<void*>               (end_group)
-		, Callback2<const String&, void*>(rule_ref)
-		, Callback2<const String&, void*>(char_val)
-		, Callback2<const String&, void*>(num_val)
-		, Callback2<const String&, void*>(prose_val)
-		, Callback2<const String&, void*>(comment)
+		, api
 	};
 
 	Fsm<Char> fsm(rulelist_fsm, &parseContext);

@@ -456,41 +456,41 @@ static bool block(const void *data, size_t len, void *context, void *action_args
 	AbnfParseContext *ctx = _CAST_PARSE_CTX(context);
 
 	switch (*flag) {
-	case _BEGIN_DOC         : return ctx->beginDocument(ctx->userContext);
-	case _END_DOC_OK        : return ctx->endDocument(true, ctx->userContext);
-	case _END_DOC_FAIL      : return ctx->endDocument(false, ctx->userContext);
+	case _BEGIN_DOC         : return ctx->api.beginDocument(ctx->userContext);
+	case _END_DOC_OK        : return ctx->api.endDocument(true, ctx->userContext);
+	case _END_DOC_FAIL      : return ctx->api.endDocument(false, ctx->userContext);
 	case _BEGIN_RULE        :
 		if (String((const Char*)data, len).contains(_U("=/"))) {
-			return ctx->beginRule(ctx->rulename, true, ctx->userContext);
+			return ctx->api.beginRule(ctx->rulename, true, ctx->userContext);
 		}
-		return ctx->beginRule(ctx->rulename, false, ctx->userContext);
+		return ctx->api.beginRule(ctx->rulename, false, ctx->userContext);
 
-	case _END_RULE          : return ctx->endRule(ctx->userContext);
-	case _BEGIN_ALTERNATION : return ctx->beginAlternation(ctx->userContext);
-	case _END_ALTERNATION   : return ctx->endAlternation(ctx->userContext);
-	case _BEGIN_CONCAT      : return ctx->beginConcatenation(ctx->userContext);
-	case _END_CONCAT        : return ctx->endConcatenation(ctx->userContext);
+	case _END_RULE          : return ctx->api.endRule(ctx->userContext);
+	case _BEGIN_ALTERNATION : return ctx->api.beginAlternation(ctx->userContext);
+	case _END_ALTERNATION   : return ctx->api.endAlternation(ctx->userContext);
+	case _BEGIN_CONCAT      : return ctx->api.beginConcatenation(ctx->userContext);
+	case _END_CONCAT        : return ctx->api.endConcatenation(ctx->userContext);
 	case _BEGIN_RPT: {
 		int from = ctx->rpt.from, to = ctx->rpt.to;
 		if (ctx->rpt.to == CWT_INT_MIN)
 			from = to = 1;
 		ctx->rpt.from = ctx->rpt.to = CWT_INT_MIN;
-		return ctx->beginRepetition(from, to, ctx->userContext);
+		return ctx->api.beginRepetition(from, to, ctx->userContext);
 	}
-	case _END_RPT           : return ctx->endRepetition(ctx->userContext);
-	case _BEGIN_OPTION      : return ctx->beginOption(ctx->userContext);
-	case _END_OPTION        : return ctx->endOption(ctx->userContext);
-	case _BEGIN_GROUP       : return ctx->beginGroup(ctx->userContext);
-	case _END_GROUP         : return ctx->endGroup(ctx->userContext);
-	case _ELEM_RULE_REF     : return ctx->ruleRef(String((const Char*)data, len), ctx->userContext);
+	case _END_RPT           : return ctx->api.endRepetition(ctx->userContext);
+	case _BEGIN_OPTION      : return ctx->api.beginOption(ctx->userContext);
+	case _END_OPTION        : return ctx->api.endOption(ctx->userContext);
+	case _BEGIN_GROUP       : return ctx->api.beginGroup(ctx->userContext);
+	case _END_GROUP         : return ctx->api.endGroup(ctx->userContext);
+	case _ELEM_RULE_REF     : return ctx->api.ruleRef(String((const Char*)data, len), ctx->userContext);
 	case _ELEM_CHAR_VAL     : {
 		String s((const Char*)data, len);
 		CWT_ASSERT(s.startsWith(Char('\"')));
 		CWT_ASSERT(s.endsWith(Char('\"')));
-		return ctx->charVal(s.substr(1, s.length()-2), ctx->userContext);
+		return ctx->api.charVal(s.substr(1, s.length()-2), ctx->userContext);
 	}
-	case _ELEM_NUM_VAL      : return ctx->numVal(String((const Char*)data, len), ctx->userContext);
-	case _ELEM_PROSE_VAL    : return ctx->proseVal(String((const Char*)data, len), ctx->userContext);
+	case _ELEM_NUM_VAL      : return ctx->api.numVal(String((const Char*)data, len), ctx->userContext);
+	case _ELEM_PROSE_VAL    : return ctx->api.proseVal(String((const Char*)data, len), ctx->userContext);
 
 	default:
 		break;
@@ -516,7 +516,7 @@ static bool comment(const void *data, size_t len, void *context, void *action_ar
 		return true;
 
 	AbnfParseContext *ctx = _CAST_PARSE_CTX(context);
-	return ctx->comment(String((const Char*)data, len), ctx->userContext);
+	return ctx->api.comment(String((const Char*)data, len), ctx->userContext);
 }
 
 static bool rpt(const void *data, size_t len, void *context, void *action_args)
