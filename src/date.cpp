@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include "date.hpp"
+#include "../include/cwt/date.hpp"
 
 CWT_NS_BEGIN
 

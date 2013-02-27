@@ -12,6 +12,7 @@
 #include <cwt/cwt.h>
 #include <cwt/char.hpp>
 #include <cwt/bytearray.hpp>
+#include <cwt/memory.hpp>
 #include <cstdarg>
 
 /*#define StringLiteral(s) String::fromUtf8("" s "", sizeof(s)-1)*/
@@ -35,7 +36,7 @@ public:
 	String(Char ch);
 	String(int size, Char ch);
 	String(const String &other);
-	~String();
+	~String() {}
 
 	String&	append(const String &str);
 	String&	append(const Char *unicode, int size);
@@ -62,6 +63,7 @@ public:
 	String& sprintf(const char * cformat, ...);
 	String& vsprintf(const char *cformat, va_list ap);
 
+	int	    size() const;
 	bool	startsWith(const String &s, bool cs = true) const;
 	bool	startsWith(Char c, bool cs = true) const;
 	String  substr(int pos, int n = -1) const;
@@ -107,8 +109,10 @@ public:
 
 	static const String& null();
 
-public:
-	void *__impl;
+private:
+    class Impl;
+    typedef unique_ptr<Impl> ImplPtr;
+    ImplPtr pimpl;
 };
 
 CWT_NS_END

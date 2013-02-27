@@ -8,17 +8,13 @@
 #include <cwt/test.h>
 #include <cwt/hash.hpp>
 #include <cwt/bytearray.hpp>
+#include <cwt/string.hpp>
 #include <cstring>
-#include <QtCore/QByteArray>
 
 using namespace cwt;
 
-int main(int argc, char *argv[])
+void test_bytearray_hash()
 {
-    CWT_CHECK_SIZEOF_TYPES;
-    CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(1000);
-
     Hash<ByteArray, ByteArray> hash;
     for(int i = 0; i < 1000; i++) {
     	char str[64];
@@ -34,5 +30,35 @@ int main(int argc, char *argv[])
     	CWT_TEST_OK2(strcmp(value.data(),sample.data()) == 0
     			, String().sprintf("[%s] == [%s]", value.data(), str).toUtf8().data());
     }
+}
+
+void test_string_hash()
+{
+    Hash<String, String> hash;
+    for(int i = 0; i < 1000; i++) {
+    	String str;
+    	str.sprintf("Test string %d", i);
+    	hash.insert(str, str);
+    }
+
+    for(int i = 0; i < 1000; i++) {
+    	String str;
+    	str.sprintf("Test string %d", i);
+    	String sample(str);
+    	String value(hash[str]);
+    	CWT_TEST_OK2(sample == value
+    			, String().sprintf("[%ls] == [%ls]", value.data(), sample.data()).toUtf8().data());
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    CWT_CHECK_SIZEOF_TYPES;
+    CWT_UNUSED2(argc, argv);
+    CWT_BEGIN_TESTS(2000);
+
+    test_bytearray_hash();
+    test_string_hash();
+
     CWT_END_TESTS;
 }

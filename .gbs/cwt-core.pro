@@ -6,16 +6,17 @@
 #************************************************************
 TEMPLATE = subdirs                                           
 CONFIG  += ordered                                           
-SUBDIRS  = cwt-core \
-    tests/dl        \
-    tests/fsm       \
-    tests/hash      \
-    tests/logger    \
-    tests/md5       \
-    tests/petaloid  \
-    tests/sepaloid  \
-    tests/uri       \
-    tests/uuid      \
+SUBDIRS  = cwt-core  \
+    tests/dl         \
+    tests/fsm        \
+    tests/hash       \
+    tests/logger     \
+    tests/md5        \
+    tests/petaloid   \
+    tests/sepaloid   \
+    tests/textstream \
+    tests/uri        \
+    tests/uuid       \
     utils/uuid-gen
 
 

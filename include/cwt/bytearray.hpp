@@ -7,6 +7,7 @@
  */
 
 #include <cwt/cwt.h>
+#include <cwt/memory.hpp>
 
 #ifndef __CWT_BYTEARRAY_HPP__
 #define __CWT_BYTEARRAY_HPP__
@@ -25,10 +26,11 @@ public:
 	ByteArray(const char *data, int size = -1);
 	ByteArray(int size, char ch);
 	ByteArray(const ByteArray &other);
-	~ByteArray();
+	~ByteArray() {}
 
 	char* data();
 	const char* data() const;
+	int length() const;
 
 	double	 toDouble(bool *ok = 0) const;
 	float	 toFloat(bool *ok = 0) const;
@@ -40,11 +42,17 @@ public:
 	ushort_t toUShort(bool *ok = 0, int base = 10) const;
 
 	ByteArray& setRawData(const char * data, uint size);
+	int size() const;
+
+	ByteArray &	operator=(const ByteArray &other);
+	ByteArray &	operator=(const char *str);
 
 	friend bool	operator==(const ByteArray &s1, const ByteArray &s2);
 
-public:
-	void *__impl;
+private:
+    class Impl;
+    typedef unique_ptr<Impl> ImplPtr;
+    ImplPtr pimpl;
 };
 
 CWT_NS_END
