@@ -15,9 +15,16 @@ ByteArray::ByteArray(const char *data, int size) : pimpl(new Impl(data, size)) {
 ByteArray::ByteArray(int size, char ch) : pimpl(new Impl(size, ch)) {}
 ByteArray::ByteArray(const ByteArray &other) : pimpl(new Impl(*other.pimpl)) {}
 
+ByteArray& ByteArray::append(const ByteArray &bytes)     { pimpl->append(*bytes.pimpl); return *this; }
+ByteArray& ByteArray::append(const char *data, int size) { pimpl->append(data, size); return *this; }
+ByteArray& ByteArray::append(char ch)                    { pimpl->append(ch); return *this; }
+void ByteArray::clear() { pimpl->clear(); }
 char* ByteArray::data() { return pimpl->data(); }
 const char* ByteArray::data() const { return pimpl->data(); }
 int ByteArray::length() const { return size(); }
+ByteArray& ByteArray::remove(int pos, int len)         { pimpl->remove(pos, len); return *this; }
+void ByteArray::reserve(int size)                      { pimpl->reserve(size); }
+void ByteArray::resize(int size)                       { pimpl->resize(size); }
 double	 ByteArray::toDouble(bool *ok) const           { return pimpl->toDouble(ok); }
 float	 ByteArray::toFloat(bool *ok) const            { return pimpl->toFloat(ok); }
 int_t	 ByteArray::toInt(bool *ok, int base) const    { return pimpl->toInt(ok, base); }

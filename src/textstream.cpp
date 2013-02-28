@@ -7,6 +7,7 @@
  */
 
 #include "../include/cwt/textstream.hpp"
+#include "../include/cwt/reader.hpp"
 #include "QtCore/QTextStream"
 #include "string_impl.hpp"
 
@@ -18,7 +19,7 @@ public:
 };
 
 TextStream::TextStream(Reader *r) : pimpl(new TextStream::Impl(r)) {}
-String TextStream::readAll() { pimpl->readAll(); return String(); }
+String TextStream::readAll() { String s; *s.pimpl = pimpl->readAll(); return s; }
 
 CWT_NS_END
 

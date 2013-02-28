@@ -29,6 +29,9 @@ CWT_NS_BEGIN
 // C#
 // Java
 
+class TextStream;
+class FileReader;
+
 class DLL_API String {
 public:
 	String();
@@ -113,6 +116,9 @@ private:
     class Impl;
     typedef unique_ptr<Impl> ImplPtr;
     ImplPtr pimpl;
+
+    friend class FileReader;
+    friend class TextStream;
 };
 
 CWT_NS_END

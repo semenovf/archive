@@ -28,9 +28,17 @@ public:
 	ByteArray(const ByteArray &other);
 	~ByteArray() {}
 
+	ByteArray& append(const ByteArray &bytes);
+	ByteArray& append(const char *data, int size = -1);
+	ByteArray& append(char ch);
+
+	void clear();
 	char* data();
 	const char* data() const;
 	int length() const;
+	ByteArray& remove(int pos, int len);
+	void reserve(int size);
+	void resize(int size);
 
 	double	 toDouble(bool *ok = 0) const;
 	float	 toFloat(bool *ok = 0) const;

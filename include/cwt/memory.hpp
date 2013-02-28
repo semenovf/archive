@@ -14,6 +14,8 @@
 
 CWT_NS_BEGIN
 
+// FIXME add support for native C++11 implementation of unique_ptr.
+
 template <typename T>
 class unique_ptr: public std::auto_ptr<T> {
 public:

@@ -15,7 +15,9 @@ CWT_NS_BEGIN
 void Logger::init()
 {
 	static StdioLogAppender logAppender;
+	logAppender.setPattern(_U("%d{ABSOLUTE} [%p]: %m"));
 	Logger::connectAppender(&logAppender);
+	logAppender.setPriority(Logger::Trace);
 }
 
 /*
