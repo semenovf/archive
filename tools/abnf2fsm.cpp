@@ -20,10 +20,7 @@ static void test_abnf()
 
 int main(int argc, char *argv[])
 {
-	StdioLogAppender stdlogger;
-	stdlogger.setPattern(_U("%d{ABSOLUTE} [%p]: %m"));
-	Logger::connectAppender(&stdlogger);
-	stdlogger.setPriority(Logger::Trace);
+	Logger::init();
 
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
