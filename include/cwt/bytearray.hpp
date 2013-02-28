@@ -35,7 +35,7 @@ public:
 	void clear();
 	char* data();
 	const char* data() const;
-	int length() const;
+	size_t length() const;
 	ByteArray& remove(int pos, int len);
 	void reserve(int size);
 	void resize(int size);
@@ -50,7 +50,7 @@ public:
 	ushort_t toUShort(bool *ok = 0, int base = 10) const;
 
 	ByteArray& setRawData(const char * data, uint size);
-	int size() const;
+	size_t   size() const;
 
 	ByteArray &	operator=(const ByteArray &other);
 	ByteArray &	operator=(const char *str);

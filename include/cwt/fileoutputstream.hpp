@@ -22,7 +22,7 @@ public:
 	virtual bool isNull() const { return m_fd < 0 ? true: false;  }
 	virtual void close();
 	virtual void flush();
-	virtual ssize_t write(const byte_t bytes[], size_t sz);
+	virtual ssize_t write(const char bytes[], size_t sz);
 private:
 	int    m_fd;
 };

@@ -22,7 +22,7 @@ public:
 	virtual bool isNull() const = 0;
 	virtual ssize_t available() = 0;
 	virtual void close() = 0;
-	virtual ssize_t read(byte_t bytes[], size_t szMax) = 0;
+	virtual ssize_t read(char bytes[], size_t szMax) = 0;
 };
 
 CWT_NS_END

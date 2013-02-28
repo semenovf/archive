@@ -13,7 +13,7 @@
 
 CWT_NS_BEGIN
 
-ssize_t BufferedInputStream::read(byte_t bytes[], size_t sz)
+ssize_t BufferedInputStream::read(char bytes[], size_t sz)
 {
 	ssize_t ntotalbytes = ssize_t(0);
 	ssize_t nbytes;
@@ -28,7 +28,7 @@ ssize_t BufferedInputStream::read(byte_t bytes[], size_t sz)
 
 	if (nbytes > 0) {
 		memcpy(bytes, m_buffer.data(), size_t(nbytes));
-		m_buffer.remove(0, sz);
+		m_buffer.remove(0, nbytes);
 		ntotalbytes += nbytes;
 	} else { // buffer is empty
 		nbytes = m_istream->read(bytes, sz);
@@ -37,11 +37,12 @@ ssize_t BufferedInputStream::read(byte_t bytes[], size_t sz)
 			return ssize_t(-1);
 
 		ntotalbytes += nbytes;
-		nbytes = m_istream->read(reinterpret_cast<byte_t*>(m_buffer.data()), MAX_SIZE);
+		m_buffer.resize(m_maxSize);
+		nbytes = m_istream->read(m_buffer.data(), m_maxSize);
 
-		if (nbytes > 0)
+		if (nbytes > 0) {
 			m_buffer.resize(nbytes);
-		else {
+		} else {
 			m_buffer.clear();
 		}
 	}
@@ -49,7 +50,7 @@ ssize_t BufferedInputStream::read(byte_t bytes[], size_t sz)
 	return ntotalbytes;
 }
 
-ssize_t BufferedOutputStream::write(const byte_t bytes[], size_t sz)
+ssize_t BufferedOutputStream::write(const char bytes[], size_t sz)
 {
 	ssize_t ntotalbytes = ssize_t(0);
 
@@ -60,17 +61,17 @@ ssize_t BufferedOutputStream::write(const byte_t bytes[], size_t sz)
 		return ssize_t(0);
 
 	if (size_t(m_buffer.size()) >= sz + m_maxSize) {
-		m_buffer.append(reinterpret_cast<const char*>(bytes), sz);
+		m_buffer.append(bytes, sz);
 		ntotalbytes = sz;
 	} else {
 		ssize_t nbytes;
 
 		if (m_buffer.size() > 0) {
-			nbytes = m_ostream->write(reinterpret_cast<const byte_t*>(m_buffer.data()), m_buffer.size());
+			nbytes = m_ostream->write(m_buffer.data(), m_buffer.size());
 
 			if (nbytes < 0)
 				return ssize_t(-1);
-			if (nbytes < m_buffer.size()) {
+			if (size_t(nbytes) < m_buffer.size()) {
 				Logger::debug("not all bytes written from buffer");
 				return ssize_t(-1);
 			}
@@ -79,7 +80,7 @@ ssize_t BufferedOutputStream::write(const byte_t bytes[], size_t sz)
 		}
 
 		size_t rest = sz;
-		const byte_t *ptr = bytes;
+		const char *ptr = bytes;
 
 		while (rest > size_t(m_maxSize)) {
 			nbytes = m_ostream->write(ptr, m_maxSize);

@@ -22,7 +22,7 @@ public:
 	virtual bool isNull() const = 0;
 	virtual void close()  = 0;
 	virtual void flush()  = 0;
-	virtual ssize_t write(const byte_t bytes[], size_t sz) = 0;
+	virtual ssize_t write(const char bytes[], size_t sz) = 0;
 };
 
 CWT_NS_END

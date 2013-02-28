@@ -129,7 +129,7 @@ bool operator <= (const String &s1, const String &s2)
 bool operator == (const String &s1, const String &s2)
 {
 #if QT_VERSION < 0x050000
-	return s1.pimpl)->operator == (*s2.pimpl);
+	return s1.pimpl->operator == (*s2.pimpl);
 #else
 	return operator == (*s1.pimpl, *s2.pimpl);
 #endif

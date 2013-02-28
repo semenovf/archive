@@ -24,7 +24,7 @@ public:
 	virtual bool isNull() const { return m_fd < 0 ? true: false; }
 	virtual ssize_t available();
 	virtual void close();
-	virtual ssize_t read(byte_t bytes[], size_t szMax);
+	virtual ssize_t read(char bytes[], size_t szMax);
 
 private:
 	int    m_fd;

@@ -62,10 +62,9 @@ videntur parum clari, fiant sollemnes in futurum.";
 
 #include <unistd.h>
 #include <fcntl.h>
-/*
-#include <sys/types.h>
-#include <sys/stat.h>
-*/
+
+static const String filename(_U("test_textstream.txt"));
+static const int _BUF_SZ = 32;
 
 int main(int argc, char *argv[])
 {
@@ -73,19 +72,37 @@ int main(int argc, char *argv[])
     CWT_UNUSED2(argc, argv);
     CWT_BEGIN_TESTS(1);
     Logger::init();
-    int fd = ::open("aaaa", O_CREAT | O_WRONLY);
-    close(fd);
 
-    FileOutputStream fos(_U("test_textstream.txt"), false);
-    BufferedOutputStream *bos = new BufferedOutputStream(&fos);
+    FileOutputStream fos(filename, false);
+    BufferedOutputStream bos(&fos);
     CWT_TEST_FAIL(!fos.isNull());
-    CWT_TEST_FAIL(!bos->isNull());
+    CWT_TEST_FAIL(!bos.isNull());
 
-    ssize_t nbytes = bos->write(reinterpret_cast<const byte_t*>(loremipsum), strlen(loremipsum));
+    ssize_t nbytes = bos.write(loremipsum, strlen(loremipsum));
     CWT_TEST_FAIL(nbytes > 0);
     CWT_TEST_OK((size_t)nbytes == strlen(loremipsum));
 
-    delete bos;
+    bos.close();
+
+    FileInputStream fis(filename);
+    BufferedInputStream bis(&fis, 32);
+    CWT_TEST_FAIL(!fis.isNull());
+    CWT_TEST_FAIL(!bis.isNull());
+
+    char buf[_BUF_SZ+1];
+    ByteArray bytes;
+    while ((nbytes = bis.read(buf, _BUF_SZ)) > 0) {
+    	bytes.append(buf, nbytes);
+    	buf[nbytes] = '\0';
+    	printf("%s", buf);
+    }
+
+    printf("\n");
+    Logger::debug("bytes.size() = %d", bytes.size());
+    Logger::debug("strlen(loremipsum) = %d", strlen(loremipsum));
+    CWT_TEST_OK(bytes.size() == strlen(loremipsum));
+    CWT_TEST_OK(bytes == ByteArray(loremipsum, strlen(loremipsum)));
+
     CWT_END_TESTS;
 }
 

@@ -9,25 +9,22 @@
 #include "../include/cwt/fileinputstream.hpp"
 #include "../include/cwt/fileoutputstream.hpp"
 #include "../include/cwt/logger.hpp"
-/*
-#include <sys/types.h>
 #include <unistd.h>
-*/
 #include <fcntl.h>
 
 CWT_NS_BEGIN
 
-static int __open_file(const String &filename, int oflags)
+static int __open_file(const String &filename, int oflags, int mode = 0)
 {
 	#ifdef CWT_CC_GNUC
-		//oflags |= O_NONBLOCK;
+		oflags |= O_NONBLOCK;
 	#endif
 
 	#ifdef CWT_CC_MSC
 	oflags |= O_BINARY;
 	#endif
 
-	int fd = ::open(filename.toUtf8().data(), oflags);
+	int fd = ::open(filename.toUtf8().data(), oflags, mode);
 	if (fd < 0) {
 		Logger::error(_Tr("unable to open file: %ls")
 				, filename.data()/*, cwt_str_ns()->strError(errno)*/);
@@ -41,7 +38,6 @@ FileInputStream::FileInputStream(const String &filename)
 	m_fd = __open_file(filename, O_RDONLY);
 }
 
-
 FileOutputStream::FileOutputStream(const String &filename, bool append)
 {
 	int oflags = O_WRONLY;
@@ -49,7 +45,7 @@ FileOutputStream::FileOutputStream(const String &filename, bool append)
 		oflags |= O_APPEND;
 	else
 		oflags |= O_CREAT | O_TRUNC;
-	m_fd = __open_file(filename, oflags);
+	m_fd = __open_file(filename, oflags, S_IRUSR | S_IWUSR);
 }
 
 ssize_t FileInputStream::available()
@@ -76,7 +72,7 @@ void FileInputStream::close()
 	m_fd = -1;
 }
 
-ssize_t FileInputStream::read(byte_t bytes[], size_t szMax)
+ssize_t FileInputStream::read(char bytes[], size_t szMax)
 {
 	if (m_fd < 0)
 		return ssize_t(-1);
@@ -100,7 +96,7 @@ void FileOutputStream::flush()
 		::fsync(m_fd);
 }
 
-ssize_t FileOutputStream::write(const byte_t bytes[], size_t sz)
+ssize_t FileOutputStream::write(const char bytes[], size_t sz)
 {
 	if (m_fd < 0)
 		return ssize_t(-1);
