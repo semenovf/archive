@@ -81,6 +81,7 @@ public:
 	ushort_t toUShort(bool *ok = 0, int base = 10) const;
 
 	void     truncate(int count);
+	const Char*	unicode() const;
 
 	ByteArray toUtf8() const;
 	const ushort_t* utf16() const;

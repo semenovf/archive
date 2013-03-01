@@ -13,6 +13,7 @@
 
 CWT_NS_BEGIN
 
+/*
 class TextStream::Impl : public QTextStream {
 public:
 	Impl(Reader *r) : QTextStream(r) {}
@@ -20,6 +21,7 @@ public:
 
 TextStream::TextStream(Reader *r) : pimpl(new TextStream::Impl(r)) {}
 String TextStream::readAll() { String s; *s.pimpl = pimpl->readAll(); return s; }
+*/
 
 CWT_NS_END
 

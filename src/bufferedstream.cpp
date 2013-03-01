@@ -101,4 +101,21 @@ ssize_t BufferedOutputStream::write(const char bytes[], size_t sz)
 	return ntotalbytes;
 }
 
+
+void BufferedOutputStream::flush()
+{
+	if(m_ostream) {
+		if (m_buffer.size() > 0) {
+			ssize_t nbytes = m_ostream->write(m_buffer.data(), m_buffer.size());
+
+			if (nbytes < 0 || size_t(nbytes) < m_buffer.size())
+				Logger::error("failed to flush data from output stream buffer");
+
+			m_buffer.clear();
+		}
+
+		m_ostream->flush();
+	}
+}
+
 CWT_NS_END

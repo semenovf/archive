@@ -68,6 +68,7 @@ uint_t	 String::toUInt(bool *ok, int base) const   { return pimpl->toUInt(ok, ba
 ulong_t	 String::toULong(bool *ok, int base) const  { return pimpl->toULongLong(ok, base); }
 ushort_t String::toUShort(bool *ok, int base) const { return pimpl->toUShort(ok, base); }
 void     String::truncate(int count)                { pimpl->truncate(count); }
+const Char*	String::unicode() const                 { return reinterpret_cast<const Char*>(pimpl->unicode()); }
 
 ByteArray String::toUtf8() const
 {

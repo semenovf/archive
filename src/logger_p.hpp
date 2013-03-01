@@ -152,7 +152,7 @@ static bool end_spec(const void *data, size_t len, void *context, void *action_a
 {
 	CWT_UNUSED3(data, len, action_args);
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
-	uc_uchar_t spec_char = ctx->pspec.spec_char;
+	char spec_char = ctx->pspec.spec_char.toLatin1();
 	String result;
 
 	switch((char)spec_char) {

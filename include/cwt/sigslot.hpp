@@ -109,15 +109,15 @@
 CWT_NS_BEGIN
 /*namespace sigslot {*/
 
-	class DLL_API single_threaded
+	class DLL_API cwt_single_threaded
 	{
 	public:
-		single_threaded()
+		cwt_single_threaded()
 		{
 			;
 		}
 
-		virtual ~single_threaded()
+		virtual ~cwt_single_threaded()
 		{
 			;
 		}

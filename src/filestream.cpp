@@ -72,19 +72,40 @@ void FileInputStream::close()
 	m_fd = -1;
 }
 
-ssize_t FileInputStream::read(char bytes[], size_t szMax)
+inline ssize_t FileInputStream::read(char bytes[], size_t szMax)
 {
 	if (m_fd < 0)
 		return ssize_t(-1);
-
-	/*FIXME: warning C4267: 'function' : conversion from 'size_t' to 'UINT', possible loss of data */
 	return ::read(m_fd, bytes, szMax);
+}
+
+
+#define _BUF_SZ 512
+ByteArray FileInputStream::readAll()
+{
+	ssize_t nbytes;
+	char buffer[_BUF_SZ];
+	ByteArray bytes;
+
+	if (m_fd < 0)
+		return bytes;
+
+	while ((nbytes = read(buffer, _BUF_SZ)) > 0 ) {
+		bytes.append(buffer, size_t(nbytes));
+	}
+
+	if (nbytes < 0) { // error
+		bytes.clear();
+	}
+
+	return bytes;
 }
 
 
 void FileOutputStream::close()
 {
 	if (m_fd > 0) {
+		flush();
 		::close(m_fd);
 	}
 	m_fd = -1;

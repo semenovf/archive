@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(1);
+    CWT_BEGIN_TESTS(10);
     Logger::init();
 
     FileOutputStream fos(filename, false);
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     bos.close();
 
     FileInputStream fis(filename);
-    BufferedInputStream bis(&fis, 32);
+    BufferedInputStream bis(&fis, _BUF_SZ);
     CWT_TEST_FAIL(!fis.isNull());
     CWT_TEST_FAIL(!bis.isNull());
 
@@ -100,6 +100,12 @@ int main(int argc, char *argv[])
     printf("\n");
     Logger::debug("bytes.size() = %d", bytes.size());
     Logger::debug("strlen(loremipsum) = %d", strlen(loremipsum));
+    CWT_TEST_OK(bytes.size() == strlen(loremipsum));
+    CWT_TEST_OK(bytes == ByteArray(loremipsum, strlen(loremipsum)));
+
+    FileInputStream fis_entire(filename);
+    bytes.clear();
+    bytes = fis_entire.readAll();
     CWT_TEST_OK(bytes.size() == strlen(loremipsum));
     CWT_TEST_OK(bytes == ByteArray(loremipsum, strlen(loremipsum)));
 

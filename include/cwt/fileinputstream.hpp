@@ -12,6 +12,7 @@
 #include <cwt/cwt.h>
 #include <cwt/inputstream.hpp>
 #include <cwt/string.hpp>
+#include <cwt/bytearray.hpp>
 
 CWT_NS_BEGIN
 
@@ -25,6 +26,8 @@ public:
 	virtual ssize_t available();
 	virtual void close();
 	virtual ssize_t read(char bytes[], size_t szMax);
+
+	ByteArray readAll();
 
 private:
 	int    m_fd;

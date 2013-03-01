@@ -24,7 +24,7 @@ public:
 
 	virtual bool isNull() const { return m_ostream ? false : true; }
 	virtual void close();
-	virtual void flush()  { if(m_ostream) { m_ostream->flush(); } }
+	virtual void flush();
 	virtual ssize_t write(const char bytes[], size_t sz);
 protected:
 	ByteArray     m_buffer;
@@ -36,6 +36,7 @@ protected:
 inline void BufferedOutputStream::close()
 {
 	if(m_ostream) {
+		flush();
 		m_ostream->close();
 		m_ostream = NULL;
 	}

@@ -12,10 +12,12 @@
 
 CWT_NS_BEGIN
 
+/*
 FileReader::FileReader(const String &name)
 	: Reader()
 	, impl(*name.pimpl)
 {}
+*/
 
 
 CWT_NS_END
