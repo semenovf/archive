@@ -29,8 +29,10 @@ CWT_NS_BEGIN
 // C#
 // Java
 
+/*
 class TextStream;
 class FileReader;
+*/
 
 class DLL_API String {
 public:

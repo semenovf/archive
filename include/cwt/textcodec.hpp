@@ -12,6 +12,7 @@
 #include <cwt/cwt.h>
 #include <cwt/bytearray.hpp>
 #include <cwt/string.hpp>
+#include <cwt/mt.hpp>
 
 CWT_NS_BEGIN
 
@@ -42,6 +43,10 @@ protected:
 public:
 	static TextCodec* forName(const char* name);
 	static TextCodec* forName(const ByteArray &name) { return forName(name.data()); }
+	static TextCodec* forLocale();
+
+private:
+	static CWT_DEFAULT_MT_POLICY g_mutex;
 };
 
 CWT_NS_END
