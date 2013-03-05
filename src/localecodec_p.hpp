@@ -13,14 +13,10 @@
 
 CWT_NS_BEGIN
 
-class LocaleTextCodec : public TextCodec {
+class LocaleTextCodec {
 public:
 	LocaleTextCodec() {}
 	virtual ~LocaleTextCodec() {}
-
-protected:
-	virtual String decode(const char *bytes, size_t len, CodecState *state);
-	virtual ByteArray encode(const Char *chars, size_t len, CodecState *state);
 };
 
 

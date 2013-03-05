@@ -14,38 +14,25 @@
 
 CWT_NS_BEGIN
 
-static LocaleTextCodec *__localeTextCodec = NULL;
-static Utf8TextCodec *__utf8TextCodec = NULL;
+CWT_DEFAULT_MT_POLICY StreamDecoder::g_mutex;
 
-TextCodec* TextCodec::forName(const char* name)
+StreamDecoder* StreamDecoder::forName(const char* charset, InputStream *is, Char replacement)
 {
-	if (!name)
+	if (!charset)
 		return NULL;
 
 	AutoLock<> locker(&g_mutex);
 
-	// Search in list of standard codecs
-	if (strcasecmp(name, "system") == 0
-			|| strcasecmp(name, "locale") == 0) {
-		if (!__localeTextCodec)
-			__localeTextCodec = new LocaleTextCodec;
-		return __localeTextCodec;
-	} else if (strcasecmp(name, "utf8") == 0
-			|| strcasecmp(name, "utf-8") == 0) {
-		if (!__utf8TextCodec)
-			__utf8TextCodec = new Utf8TextCodec;
-		return __utf8TextCodec;
+	if (strcasecmp(charset, "system") == 0
+			|| strcasecmp(charset, "locale") == 0) {
+		;//return new LocaleTextCodec;
+	} else if (strcasecmp(charset, "utf8") == 0
+			|| strcasecmp(charset, "utf-8") == 0) {
+		return new Utf8Decoder(is, replacement);
 	}
 
 	return NULL;
 }
 
-TextCodec* TextCodec::forLocale()
-{
-	AutoLock<> locker(&g_mutex);
-	if (!__localeTextCodec)
-		__localeTextCodec = new LocaleTextCodec;
-	return __localeTextCodec;
-}
 
 CWT_NS_END
