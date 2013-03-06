@@ -21,9 +21,10 @@ CWT_NS_BEGIN
  *  31 	U+7FFFFFFF 			1111110x 	10xxxxxx 	10xxxxxx 	10xxxxxx 	10xxxxxx 	10xxxxxx
  */
 
-static inline int utf8decoder_fill_buffer(InputStream &is, ByteArray bytes, size_t maxSize)
+static inline int utf8decoder_fill_buffer(InputStream &is, ByteArray bytes, size_t maxSize, bool &atEnd)
 {
 	size_t buflen = bytes.length();
+	atEnd = false;
 
 	if (buflen < maxSize) {
 		bytes.reserve(maxSize);
@@ -31,6 +32,9 @@ static inline int utf8decoder_fill_buffer(InputStream &is, ByteArray bytes, size
 		ssize_t nbytes = is.read(bytes.data(), maxSize - buflen);
 		if (nbytes < 0)
 			return ssize_t(-1);
+
+		if (!nbytes)
+			atEnd = true;
 
 		bytes.resize(int(buflen + nbytes));
 	}
@@ -113,11 +117,12 @@ ssize_t Utf8Decoder::read(Char chars[], size_t len)
 	if(!len)
 		return 0;
 
+	bool atEnd = false;
 	Char *pchars = chars;
 	size_t totalLen = 0; // total chars read (less or equals to len)
 
 	while (totalLen < len) {
-		ssize_t buflen = utf8decoder_fill_buffer(*m_is, m_buffer, BufSize);
+		ssize_t buflen = utf8decoder_fill_buffer(*m_is, m_buffer, BufSize, atEnd);
 
 		// no more bytes in the stream nor in the buffer
 		if (!buflen <= 0)

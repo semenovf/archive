@@ -7,6 +7,7 @@
 TEMPLATE = subdirs                                           
 CONFIG  += ordered                                           
 SUBDIRS  = cwt-core  \
+    tests/bytestream \
     tests/dl         \
     tests/fsm        \
     tests/hash       \

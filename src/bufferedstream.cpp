@@ -6,8 +6,7 @@
  * @brief
  */
 
-#include "../include/cwt/bufferedinputstream.hpp"
-#include "../include/cwt/bufferedoutputstream.hpp"
+#include "../include/cwt/bufferedstream.hpp"
 #include "../include/cwt/logger.hpp"
 #include <cstring>
 
