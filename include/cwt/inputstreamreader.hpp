@@ -24,6 +24,8 @@ public:
 	virtual bool    isNull() const { return !m_is ? true : m_is->isNull() ? true : false; }
 	virtual void 	close();
 	virtual ssize_t read(Char chars[], size_t len);
+
+	String          readAll();
 private:
 	InputStream   *m_is;
 	StreamDecoder *m_decoder;

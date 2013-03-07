@@ -18,15 +18,15 @@ class Utf8Decoder : public StreamDecoder {
 protected:
 	Utf8Decoder()
 		: StreamDecoder()
-		, m_buffer(BufSize, 0)
+		, m_buffer()
 		, m_headerDone(false)
-		, m_remainChar(Char::MaxCodePoint) {}
+		, m_remainChar(Char::MaxCodePoint) { m_buffer.reserve(BufSize); }
 public:
-	Utf8Decoder(InputStream *is, Char replacement = Char::ReplacementChar)
+	Utf8Decoder(InputStream &is, Char replacement = Char::ReplacementChar)
 		: StreamDecoder(is, replacement)
-		, m_buffer(BufSize, 0)
+		, m_buffer()
 		, m_headerDone(false)
-		, m_remainChar(Char::MaxCodePoint) {}
+		, m_remainChar(Char::MaxCodePoint) { m_buffer.reserve(BufSize); }
 	virtual ~Utf8Decoder() {}
 	virtual ssize_t read(Char chars[], size_t len);
 private:
@@ -35,18 +35,25 @@ private:
 	Char      m_remainChar;
 };
 
-
-#ifdef __COMMENT__
-class Utf8TextCodec : public TextCodec {
-public:
-	Utf8TextCodec() {}
-	virtual ~Utf8TextCodec() {}
-
+class Utf8Encoder : public StreamEncoder {
 protected:
-	virtual String decode(const char *bytes, size_t len, CodecState *state);
-	virtual ByteArray encode(const Char *chars, size_t len, CodecState *state);
+	Utf8Encoder()
+		: StreamEncoder()
+		, m_headerDone(false)
+		, m_hiSurrogate(-1) {}
+public:
+	Utf8Encoder(OutputStream &os, bool ignoreHeader = true, char replacement = '?')
+		: StreamEncoder(os, ignoreHeader, replacement)
+		, m_headerDone(ignoreHeader ? true : false)
+		, m_hiSurrogate(-1) {}
+	virtual ~Utf8Encoder() {}
+	virtual ssize_t write(const Char chars[], size_t sz);
+
+private:
+	bool m_headerDone;
+	int  m_hiSurrogate;
 };
-#endif
+
 
 CWT_NS_END
 

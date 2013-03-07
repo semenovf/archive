@@ -9,8 +9,7 @@
 
 #include <cwt/test.h>
 #include <cwt/logger.hpp>
-#include <cwt/fileoutputstream.hpp>
-#include <cwt/fileinputstream.hpp>
+#include <cwt/filestream.hpp>
 #include <cwt/bufferedstream.hpp>
 #include <cwt/bytearraystream.hpp>
 #include <cstring>

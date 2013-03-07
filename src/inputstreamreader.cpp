@@ -15,7 +15,7 @@ InputStreamReader::InputStreamReader(InputStream &in, const char *charset, Char 
 	: m_is(&in), m_decoder(NULL)
 {
 	if (charset) {
-		m_decoder = StreamDecoder::forName(charset, &in, replacement);
+		m_decoder = StreamDecoder::forName(charset, in, replacement);
 	}
 
 	if (!m_decoder)
@@ -42,6 +42,22 @@ ssize_t InputStreamReader::read(Char chars[], size_t len)
 	CWT_ASSERT(len <= CWT_SSIZE_MAX);
 
 	return m_decoder->read(chars, len);
+}
+
+String InputStreamReader::readAll()
+{
+	Char chars[512];
+	String result;
+	ssize_t nchars;
+
+	while( (nchars = read(chars, 512)) > 0 )
+		result.append(chars, nchars);
+
+	if (nchars != 0) {
+		result.clear();
+		return String(); // null;
+	}
+	return result;
 }
 
 CWT_NS_END

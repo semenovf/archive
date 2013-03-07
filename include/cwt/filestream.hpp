@@ -6,19 +6,21 @@
  * @brief
  */
 
-#ifndef __CWT_FILEINPUTSTREAM_HPP__
-#define __CWT_FILEINPUTSTREAM_HPP__
+#ifndef __CWT_FILESTREAM_HPP__
+#define __CWT_FILESTREAM_HPP__
 
 #include <cwt/cwt.h>
-#include <cwt/inputstream.hpp>
 #include <cwt/string.hpp>
 #include <cwt/bytearray.hpp>
+#include <cwt/inputstream.hpp>
+#include <cwt/outputstream.hpp>
 
 CWT_NS_BEGIN
 
 class FileInputStream : public InputStream {
 public:
 	FileInputStream(const String &filename);
+	FileInputStream(const char *filename);
 	FileInputStream(int fd) : m_fd(fd) { close(); }
 	~FileInputStream() { close(); }
 
@@ -33,6 +35,21 @@ private:
 	int    m_fd;
 };
 
+
+class FileOutputStream : public OutputStream {
+public:
+	FileOutputStream(const String &filename, bool append = true);
+	FileOutputStream(const char *filename, bool append = true);
+	virtual ~FileOutputStream() {}
+
+	virtual bool isNull() const { return m_fd < 0 ? true: false;  }
+	virtual void close();
+	virtual void flush();
+	virtual ssize_t write(const char bytes[], size_t sz);
+private:
+	int    m_fd;
+};
+
 CWT_NS_END
 
-#endif /* __CWT_FILEINPUTSTREAM_HPP__ */
+#endif /* __CWT_FILESTREAM_HPP__ */

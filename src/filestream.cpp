@@ -6,15 +6,14 @@
  * @brief
  */
 
-#include "../include/cwt/fileinputstream.hpp"
-#include "../include/cwt/fileoutputstream.hpp"
+#include "../include/cwt/filestream.hpp"
 #include "../include/cwt/logger.hpp"
 #include <unistd.h>
 #include <fcntl.h>
 
 CWT_NS_BEGIN
 
-static int __open_file(const String &filename, int oflags, int mode = 0)
+static int __open_file(const char *filename, int oflags, int mode = 0)
 {
 	#ifdef CWT_CC_GNUC
 		oflags |= O_NONBLOCK;
@@ -24,21 +23,32 @@ static int __open_file(const String &filename, int oflags, int mode = 0)
 	oflags |= O_BINARY;
 	#endif
 
-	int fd = ::open(filename.toUtf8().data(), oflags, mode);
+	int fd = ::open(filename, oflags, mode);
 	if (fd < 0) {
 		Logger::error(_Tr("unable to open file: %ls")
-				, filename.data()/*, cwt_str_ns()->strError(errno)*/);
+				, filename/*, cwt_str_ns()->strError(errno)*/);
 	}
 
 	return fd;
 }
 
 FileInputStream::FileInputStream(const String &filename)
-{
-	m_fd = __open_file(filename, O_RDONLY);
-}
+	: m_fd(__open_file(filename.toUtf8().data(), O_RDONLY)) {}
+
+FileInputStream::FileInputStream(const char *filename)
+	: m_fd(__open_file(filename, O_RDONLY)) {}
 
 FileOutputStream::FileOutputStream(const String &filename, bool append)
+{
+	int oflags = O_WRONLY;
+	if (append)
+		oflags |= O_APPEND;
+	else
+		oflags |= O_CREAT | O_TRUNC;
+	m_fd = __open_file(filename.toUtf8().data(), oflags, S_IRUSR | S_IWUSR);
+}
+
+FileOutputStream::FileOutputStream(const char *filename, bool append)
 {
 	int oflags = O_WRONLY;
 	if (append)
