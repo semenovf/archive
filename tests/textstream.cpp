@@ -15,8 +15,8 @@
 using namespace cwt;
 
 static const char *utf8_files[] = {
-	  "rc/utf8/gothic.txt"
-	, "rc/utf8/greek.txt"
+	  "rc/utf8/greek.txt"
+	, "rc/utf8/gothic.txt"
 	, "rc/utf8/mideng.txt"
 	, "rc/utf8/midger.txt"
 	, "rc/utf8/rune.txt"
@@ -44,6 +44,8 @@ int main(int argc, char *argv[])
 
     	String s = reader.readAll();
     	CWT_TEST_OK(!s.isNull());
+
+    	printf("%s", s.toUtf8().data());
 
     	reader.close();
     	fis.close();

@@ -82,7 +82,7 @@ static inline int utf8decoder_convert_bytes(const byte_t *bytes, int len, uint_t
 	if (need >= len)
 		return -2;
 
-	for (int i = 1; i < len; ++i) {
+	for (int i = 1; i <= need; ++i) {
 		if ((bytes[i] & 0xC0) == 0x80) {
 			uc = (uc << 6) | (bytes[i] & 0x3F);
 		} else {

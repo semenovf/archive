@@ -25,7 +25,7 @@ static int __open_file(const char *filename, int oflags, int mode = 0)
 
 	int fd = ::open(filename, oflags, mode);
 	if (fd < 0) {
-		Logger::error(_Tr("unable to open file: %ls")
+		Logger::error(_Tr("unable to open file: %s")
 				, filename/*, cwt_str_ns()->strError(errno)*/);
 	}
 
