@@ -107,7 +107,8 @@ create() {
     echo "#!/bin/sh"                  > backup.sh
     echo "./clean.sh"                >> backup.sh
     echo "DATE=\`date +%Y%m%d\`"     >> backup.sh
-    echo "tar -cjvf $PROJECT-\$DATE.tar.bz2 ./" >> backup.sh
+    echo "PREFIX=\`pwd\`"            >> backup.sh
+    echo "tar -cjvf \${PREFIX}-\${DATE}.tar.bz2 ./" >> backup.sh
     chmod +x backup.sh
 
     # Prepare .gitignore
