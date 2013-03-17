@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="<%=l 'lang_short' %>" >
+<head>
+    <title><%= title %></title>
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/css/style.css" type="text/css"/>
+
+    %= include 'inc/meta'
+    %= include 'inc/ie'
+    %= include 'inc/loginExt'
+</head>
+
+<body>
+    <%= content %>
+</body>
+</html>

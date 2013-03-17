@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="<%=l 'lang_short' %>" >
+<head>
+    <title><%= title %></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/css/style.css" type="text/css"/>
+
+    %= include 'inc/meta'
+    %= include 'inc/ie'
+    %= include 'inc/time'
+    %= include 'inc/ext'
+
+    %= javascript begin
+    Ext.require([
+        'Ext.toolbar.Toolbar',
+        'Ext.menu.Menu',
+        'Ext.Viewport',
+        'Ext.data.Connection'
+    ]);
+    Ext.require(['*']);
+    
+    Ext.onReady(function() {
+    
+        var urlPath = window.location.pathname + window.location.search;
+        Ext.util.Cookies.set('lastUrl', urlPath);
+    
+        Ext.QuickTips.init();
+    
+        var aWindow = Ext.create('Ext.window.Window', {
+            title: '<%=l 'menuBar_help_about_title' %>',
+            height: 400,
+            width: 600,
+            layout: 'fit',
+            resizable : false,
+            closeAction: 'hide',
+            contentEl: 'about'
+        });
+    
+        var tb = Ext.create('Ext.toolbar.Toolbar', {
+            region: 'north',
+            items: [
+            {
+                text: '<%=l 'menuBar_main' %>',
+                handler: function() {
+                    window.location = '/';
+                }
+            },
+            {
+                text : '<%=l 'menuBar_plan' %>',
+                menu: new Ext.menu.Menu({
+                    items: [
+                        // these will render as dropdown menu items when the arrow is clicked:
+                        {text: 'ст. Заставка - ст. Нижние Серги', handler: function() {
+                            window.location = '/station/0';
+                        }}
+                    ]
+                })
+            },
+            {
+                text : '<%=l 'menuBar_info' %>',
+                menu: new Ext.menu.Menu({
+                    items: [
+                        // these will render as dropdown menu items when the arrow is clicked:
+                        {text: '<%=l 'menuBar_info_listLocomotives' %>',
+                        handler: function() {
+                            window.location = '/info/locomotives';
+                        }},
+                        {text: '<%=l 'menuBar_info_listPpo' %>',
+                        handler: function() {
+                            window.location = '/info/ppos';
+                        }},
+                        {text: '<%=l 'menuBar_info_listLights' %>',
+                        handler: function() {
+                            window.location = '/info/ligths';
+                        }},
+                        {text: '<%=l 'menuBar_info_listArrows' %>',
+                        handler: function() {
+                            window.location = '/info/arrows';
+                        }}
+                    ]
+                })
+            },
+            {
+                xtype: 'button',
+                text : '<%=l 'menuBar_report' %>',
+                // handle a click on the button itself
+                menu: new Ext.menu.Menu({
+                    items: [
+                        // these will render as dropdown menu items when the arrow is clicked:
+                        {text: '<%=l 'menuBar_report_lostPpo' %>',
+                            handler: function() {
+                                window.location = '/report/lostPpo';
+                        }}
+                    ]
+                })
+            },
+            {
+                xtype: 'button',
+                text : '<%=l 'menuBar_help' %>',
+                // handle a click on the button itself
+                menu: new Ext.menu.Menu({
+                    items: [
+                        {text: '<%=l 'menuBar_help_userManual_arm' %>',
+                            handler: function() {
+                                window.location = '/docs/arm.pdf';
+                        }},
+                        {text: '<%=l 'menuBar_help_userManual_gate' %>',
+                            handler: function() {
+                                window.location = '/docs/gate.pdf';
+                        }},
+                        {text: '<%=l 'menuBar_help_about' %>',
+                            handler: function() {
+                                aWindow.show();
+                        }}
+                    ]
+                })
+            },
+    
+            // begin using the right-justified button container
+            '->',
+    
+            {
+                icon: '/img/greenLed.gif', // icons can also be specified inline
+                cls: 'x-btn-icon',
+                tooltip: '<%=l 'menuBar_health_tooltip' %>'
+                /*,
+                handler: function() {
+                    window.location = '/health/health';
+                    //Ext.example.msg('Button Click', 'You clicked the "icon only" button.');
+                }*/
+            },
+            {
+                text: '<%=l 'stk_sergi' %>',
+                menu: { // submenu by nested config object
+                    items: [
+                        // stick any markup in a menu
+                        '<strong class="menu-title">Доступные СТК</strong>',
+                        {
+                            icon: '/img/greenLed.gif',
+                            text: '<%=l 'stk_sergi' %>',
+                            checked: true,
+                            group: 'stkGroup'
+                        }
+                    ]
+                }
+            },
+    
+            // add a vertical separator bar between toolbar items
+            '-',
+    
+            // same as ' ' to create Ext.toolbar.Spacer
+            {
+                id: 'time',
+                //xtype: 'tbtext',
+                //xtype: 'splitbutton',
+                text: '__:__',
+                tooltip: '<%=l 'menuBar_health_tooltip' %>'
+            },
+                                    
+            { xtype: 'tbspacer', width: 50 },
+            
+            // add a 50px space
+            {
+                //tooltip : 'Сегодня',
+                xtype: 'splitbutton',
+                text : '<sec:authentication property="name"/>',
+                menu: new Ext.menu.Menu({
+                    items: [
+                        // these will render as dropdown menu items when the arrow is clicked:
+                        {text: '<%=l 'menuBar_user_logout' %>',
+                            handler: function() {
+                                <%= include 'inc/logout' %>
+                        }}
+                    ]
+                }),
+                handler: function() {
+                    window.location = '/user';
+                }
+            }
+            ]}
+        );
+    
+        var mainContainer = getPageContenet();
+    
+        var viewport = Ext.create('Ext.Viewport', {
+            id: 'viewport',
+            renderTo: Ext.getBody(),
+            layout: 'border',
+            minWidth: 640,
+            minHeight: 480,
+            padding: '1 1 1 1',
+            items: [ tb, mainContainer ]
+        });
+    
+        displayTime();
+        setInterval("displayTime()", 1000);
+    });
+    
+    function onItemCheck(item, checked) {
+            //Ext.example.msg('Item Check', 'You {1} the "{0}" menu item.', item.text, checked ? 'checked' : 'unchecked');
+    }
+% end
+
+%= content 'header'
+
+</head>
+<body>
+
+<div class="hidden">
+    <%= content %>
+</div>
+
+<div class="hidden">
+    <div id="about" class="bg">
+        <img class="loginLogo" src="/img/logo.svg" alt="logo"/>
+
+        <section class="loginPanel" id="renderLogin">
+            Автоматическая локомотивная сигнализация с использованием радиоканала<br/>
+            Автоматизированное рабочее место технолога системы АЛСР<br/>
+            Версия: 1.1.0a<br/>
+            <a href="http://www.npcprom.ru">НПЦ «Промэлектроника»</a>
+        </section>
+
+        <footer>
+            <img class="footerLine" src="/img/line.svg" alt="line"/>
+        </footer>
+    </div>
+</div>
+
+</body>
+</html>
