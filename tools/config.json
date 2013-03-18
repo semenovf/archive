@@ -4,5 +4,6 @@
     , "db_port": 3306
     , "db_user": "root"
     , "db_password": "rdflhfnehf"
-    , "table_name_countries" : "countries"
+    , "countries.table" : "countries"
+    , "currencies.table" : "currencies"
 }
