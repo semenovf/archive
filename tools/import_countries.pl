@@ -1,29 +1,10 @@
 #!/usr/bin/env perl
-use Text::CSV::Encoded;
-use DBI;
-use JSON;
 use Data::Dumper;
 use FindBin;
 BEGIN { unshift @INC, "$FindBin::Bin/../lib"; unshift @INC, "$FindBin::Bin/../tools" }
 use CSV::Persist;
 use strict;
 use warnings;
-
-
-my $persist = CSV::Persist->new(Config=>'config.json', Prefix=>'countries');
-#my $config;
-#{
-#    local $/;
-#    open( my $fh, '<', 'config.json' );
-#    $config = decode_json(<$fh>);
-#    close($fh);
-#}
-#
-#$config->{db_host} = 'localhost' unless $config->{db_host};
-#$config->{db_port} = 3306 unless $config->{db_port};
-#$config->{table_name_countries} = 'countries' unless $config->{table_name_countries};
-
-#print Dumper $config;
 
 # CSV format:
 #  id,code,name,latitude,longitude,currency,timezone

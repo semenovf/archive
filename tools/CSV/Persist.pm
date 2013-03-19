@@ -1,6 +1,7 @@
 package CSV::Persist;
 use DBI;
 use JSON;
+use Text::CSV::Encoded;
 
 use strict;
 use warnings;
@@ -74,26 +75,26 @@ sub persist
         ++$line;
         @header = @$row;
         next unless @header;
-        #next if $fields[0] =~ /^#/; # ommit comment lines (first column begins with '#')
         if ($header_expect) {
             if ($header[0] =~ /^#/) {
                 # must be an actual header
+                $header[0] =~ /^#\s*(.*)/ && do { $header[0] = $1; };
                 last;
             } else {
-                die "Header expected\n";
+                # must be an actual header
+                last;
             }
         } else {
             if ($header[0] =~ /^#\s*%header/) {
                 $header_expect = 1;
             } elsif($header[0] =~ /^#/) {
-                ;
+                ; # simple comment
             } else {
                 die "Header not found\n";
             }
         }
     }
-
-    $header[0] =~ /^#\s*(.*)/ && do { $header[0] = $1; };
+    
     print join('-', @header), "\n";
 
     $dbh->do('DROP TABLE IF EXISTS ' . $self->{table}) or die $dbh->errstr;
