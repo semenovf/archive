@@ -47,6 +47,7 @@ use warnings;
 my $csv_file = '../../hg/rc/db/countries.csv';
 $csv_file = $ARGV[0] if @ARGV > 0;
 
+my $persist = CSV::Persist->new(Config=>'config.json', Prefix=>'countries');
 $persist->persist($csv_file);
 
 #$sth = $dbh->prepare('SELECT code, name, currency FROM '
