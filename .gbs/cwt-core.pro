@@ -16,6 +16,7 @@ SUBDIRS  = cwt-core  \
     tests/md5        \
     tests/petaloid   \
     tests/sepaloid   \
+    tests/shared_ptr \
     tests/string     \
     tests/textstream \
     tests/uri        \
