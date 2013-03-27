@@ -36,6 +36,7 @@ sub new {
     $self->{db_host}     = switch_param($self, $pfx, 'db_host') || 'localhost';
     $self->{db_port}     = switch_param($self, $pfx, 'db_port') || 3306;
     $self->{table}       = switch_param($self, $pfx, 'table') || die q(Table name must be specfied by 'table' parameter);
+    $self->{scheme}      = undef; # will be intialized later in load_scheme
     
     return bless $self, $class;
 }
@@ -51,11 +52,11 @@ sub new {
     , "encoding_out" : "utf8"
     , "header"       : true // header exists (first non-comment line )
     , "comment_str"  : "#"  // ignore lines begin with 'comment_str' string
-    , "sql"          : {
-          "code"     : "CHAR(2);PK"
-        , "name"     : "STRING(45);NN"
-        , "currency" : "CHAR(3)"
-    }
+    , "fields"       : [
+            { "name" :"code", "type" : "CHAR(2)", "spec" : "PK" }  // spec: "PK;Nullable;Autoinc"
+          , { "name" :"name", "type" : "TEXT(45)", "spec" : "" }
+          , { "name" :"currency", "type" : "CHAR(3)", "spec" : "" }
+    ]
 }
 
 Data types:
@@ -82,7 +83,7 @@ Flags
 
 =cut
 
-sub persist_config
+sub load_scheme
 {
     my ($self, $csv_file) = @_;
     my $json_file = $csv_file . '.json';
@@ -97,8 +98,56 @@ sub persist_config
         $pconfig->{binary} = 1;
         $pconfig->{eol}    = $/; # for supporting embedded newlines
     }
+    $self->{scheme} = $pconfig;
+    $self->{scheme}->{skip_header} = 0 unless defined $self->{scheme}->{skip_header};
     return $pconfig;
 }
+
+sub sql_create_table_spec
+{
+    my ($self) = @_;
+    my $pk;
+    
+    my $scolon = '';
+    my $spec = 'CREATE TABLE IF NOT EXISTS ' . $self->{table};
+    $spec .= '(';
+    foreach my $f (@$self->{scheme}->fields) {
+        my %fspec = map {  lc($_) => 1  } split /;/, $f->{spec};
+        $spec .= $scolon;
+        $spec .= '`'. $f->{name} . '`';
+        $spec .= ' ' . $f->{type};
+        $spec .= ' NOT NULL' unless defined $fspec{nullable};
+        $spec .= ' AUTO_INCREMENT' unless defined $fspec{autoinc};
+        $pk = $f->{name} if defined $fspec{pk};
+        $scolon = ', ';
+    }
+    $spec .= ', PRIMARY KEY (`' . $pk . '`)' if defined $pk;
+    $spec .= ') ENGINE=InnoDB DEFAULT CHARACTER SET = utf8 COLLATE = utf8_general_ci';
+    return $spec;    
+}
+
+
+sub sql_insert_spec
+{
+    my ($self) = @_;
+    my $scolon = '';
+
+    my $spec = 'INSERT INTO ' . $self->{table};
+    my $values = '(';
+
+    $spec .= '(';
+    foreach my $f (@$self->{scheme}->fields) {
+        my %fspec = map {  lc($_) => 1  } split /;/, $f->{spec};
+        $spec .= $scolon;
+        $values .= $scolon . '?';
+        $spec .= '`'. $f->{name} . '`';
+        $scolon = ', ';
+    }
+    $values .= ')';
+    $spec .= ') VALUES ' . $values;
+    return $spec;    
+}
+
 
 sub persist
 {
@@ -116,64 +165,26 @@ sub persist
     print 'Connected to database by ', $self->{db_user}, '@', $self->{db_host}, ':', $self->{db_port}, "\n";
     
     my $csv = Text::CSV::Encoded->new ({
-        $self->persist_config($csv_file)
+        $self->load_scheme($csv_file)
     });
     
     my $line = 0;
     
-    # Find header.
-    # Header format:
-    # # %header
-    # # id,code$CHAR(2)$PK,name$VARCHAR(45)$NN,latitude,longitude,currency$CHAR(3)$NN,timezone
-    my @header;
-    my $header_expect = 0;
-    while (my $row = $csv->getline ($in)) {
+    if ($self->{scheme}->{skip_header}) {
+        $csv->getline ($in);
         ++$line;
-        @header = @$row;
-        next unless @header;
-        if ($header_expect) {
-            if ($header[0] =~ /^#/) {
-                # must be an actual header
-                $header[0] =~ /^#\s*(.*)/ && do { $header[0] = $1; };
-                last;
-            } else {
-                # must be an actual header
-                last;
-            }
-        } else {
-            if ($header[0] =~ /^#\s*%header/) {
-                $header_expect = 1;
-            } elsif($header[0] =~ /^#/) {
-                ; # simple comment
-            } else {
-                die "Header not found\n";
-            }
-        }
     }
     
-    print join('-', @header), "\n";
-
     $dbh->do('DROP TABLE IF EXISTS ' . $self->{table}) or die $dbh->errstr;
-    
-    $dbh->do('CREATE TABLE IF NOT EXISTS '
-        . $self->{table}
-        . '(`code` CHAR(2)  NOT NULL,
-            `name` VARCHAR(45) NOT NULL,
-            `currency` CHAR(3) NOT NULL,
-            PRIMARY KEY (`code`)
-            ) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8 COLLATE = utf8_general_ci' ) or die $dbh->errstr;
+    $dbh->do($self->sql_create_table_spec) or die $dbh->errstr;
+    my $sth = $dbh->prepare($self->sql_insert_spec) or die $dbh->errstr;
 
-    my $sth = $dbh->prepare('INSERT INTO '
-        .  $self->{table}
-        . ' (code, name, currency) VALUES (?, ?, ?)') or die $dbh->errstr;
-
-
-    
     while (my $row = $csv->getline ($in)) {
         ++$line;
         my @fields = @$row;
         next unless @fields;
-        next if $fields[0] =~ /^#/; # ommit comment lines (first column begins with '#')
+        next if $fields[0] =~ /^\s*#/; # skip comment lines
+
         my $data = {code => undef, name => undef, currency => undef};
         SWITCH: {
             (@fields == 7) and do { $data->{code} = $fields[1]; $data->{name} = $fields[2]; $data->{currency} = $fields[5]; last; };
@@ -183,8 +194,8 @@ sub persist
             die 'invalid row format at line ' , $line, "\n";
         };
     
-        die 'invalid country code at line ', $line, "\n" unless length($data->{code}) == 2;
-        die 'invalid currency code at line ', $line, "\n" unless length($data->{currency}) == 3 || length($data->{currency}) == 0; # Antarctica has no currency
+#        die 'invalid country code at line ', $line, "\n" unless length($data->{code}) == 2;
+#        die 'invalid currency code at line ', $line, "\n" unless length($data->{currency}) == 3 || length($data->{currency}) == 0; # Antarctica has no currency
         
         #print join(' ', $data->{code},  $data->{name}, $data->{currency}), "\n";
         $sth->execute($data->{code},  $data->{name}, $data->{currency}) or die $dbh->errstr;

@@ -37,6 +37,10 @@ sub startup {
     # Normal route to controller
     $r->any('/account')          ->to('account#list');
     $r->any('/account/create')   ->to('account#create');
+    
+    $r->post('/tr')              ->to('transaction#input');
+    $r->post('/tr/create')       ->to('transaction#new');
+    
     $r->any('/(*)')              ->to(cb => sub {
         my $self = shift;
 #        $self->res->code(404);
