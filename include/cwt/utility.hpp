@@ -13,7 +13,7 @@
 
 CWT_NS_BEGIN
 
-#if 1 // TODO Need recognition of CXX11 standard
+#if 0 // TODO Need recognition of CXX11 standard
 #	include <algorithm> // until C++11
 //#	include <utility>   // since C++11
 template<typename T>

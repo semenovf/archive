@@ -69,6 +69,11 @@ private:
 
 CWT_NS_BEGIN
 
+/**
+ *
+ * @code
+ * AutoLock<>()
+ */
 template<class mt_policy = CWT_DEFAULT_MT_POLICY>
 class AutoLock
 {
@@ -80,10 +85,7 @@ public:
 
 
 //
-// Macro that provides a locking implementation. Use the Lock() and Unlock()
-// methods to protect a section of code from simultaneous access by multiple
-// threads. The AutoLock class is a helper that will hold the lock while in
-// scope.
+// The AutoLock class is a helper that will hold the lock while in scope.
 //
 #define CWT_IMPLEMENT_LOCKING(ClassName)                        \
 protected:                                                      \

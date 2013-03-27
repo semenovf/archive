@@ -9,7 +9,6 @@
 #include "../include/cwt/textcodec.hpp"
 #include "utfcodec_p.hpp"
 #include "localecodec_p.hpp"
-#include <cwt/mt.h>
 #include <cstring>
 
 CWT_NS_BEGIN
