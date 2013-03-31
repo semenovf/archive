@@ -9,7 +9,7 @@
 #ifndef __CWT_STRING_IMPL_HPP__
 #define __CWT_STRING_IMPL_HPP__
 
-#include "../include/cwt/string.hpp"
+#include "../../include/cwt/string.hpp"
 #define QT_NO_CAST_FROM_ASCII
 #include <QtCore/QString>
 

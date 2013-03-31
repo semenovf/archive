@@ -21,13 +21,16 @@ class Array {
 	T       *head;
 
 public:
+	Array() : capacity(0), raw(0), head(NULL) {}
 	Array(T a[], size_t n);
+	Array(const Array &a);
 	Array(size_t sz, bool zero = false);
 	~Array();
 
+	void        alloc (size_t capacity);
 	T&          at(size_t index) { CWT_ASSERT(index < capacity); return head[index]; }
 	const T&    at(size_t index) const { CWT_ASSERT(index < capacity); return head[index]; }
-	void        bzero ()       { if(head) memset(head, 0, capacity * sizeof(T)); }
+	void        bzero () { if(head) memset(head, 0, capacity * sizeof(T)); }
 	Array*      clone () const;
 	void        copy  (Array &to, size_t off_to, size_t off_from, size_t n) const;
 	T*          data  ()       { return head; }
@@ -52,6 +55,13 @@ inline Array<T>::Array(T a[], size_t n)
 }
 
 template <typename T>
+inline Array<T>::Array(const Array &a)
+	: capacity(a.capacity), raw(0), head(NULL)
+{
+	copy(*this, 0, 0, a.capacity);
+}
+
+template <typename T>
 Array<T>::Array(size_t sz, bool zero)
 	: capacity(0), raw(0), head(NULL)
 {
@@ -69,7 +79,18 @@ template <typename T>
 inline Array<T>::~Array()
 {
 	if(!raw)
-		delete head;
+		delete[] head;
+}
+
+template <typename T>
+inline void Array<T>::alloc (size_t size)
+{
+	if (raw && head) {
+		delete[] head;
+	}
+	head = new T[size];
+	raw = 1;
+	capacity = size;
 }
 
 template <typename T>

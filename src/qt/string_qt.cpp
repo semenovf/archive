@@ -1,19 +1,17 @@
 /**
- * @file   string.cpp
+ * @file   string_qt.cpp
  * @author wladt
  * @date   Jan 24, 2013 2:32:45 PM
  *
  * @brief
  */
 
-#ifndef CWT_STRING_IMPL
 
-#include "../../include/cwt/string.hpp"
+#include "string_qt.hpp"
 #include <cstring>
 
 CWT_NS_BEGIN
 
-#ifdef __COMMENT__
 static const String __nullString;
 
 String::String() : pimpl(new Impl()) {}
@@ -210,8 +208,5 @@ const String& String::null()
 {
 	return __nullString;
 }
-#endif
 
 CWT_NS_END
-
-#endif /* !CWT_STRING_IMPL */

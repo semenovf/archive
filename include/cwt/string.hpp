@@ -15,6 +15,10 @@
 #include <cwt/memory.hpp>
 #include <cstdarg>
 
+#ifndef CWT_STRING_IMPL
+#	include <cwt/vector.hpp>
+#endif
+
 /*#define StringLiteral(s) String::fromUtf8("" s "", sizeof(s)-1)*/
 
 /* Unicode characters array */
@@ -34,7 +38,11 @@ class TextStream;
 class FileReader;
 */
 
-class DLL_API String {
+class DLL_API String
+#ifndef CWT_STRING_IMPL
+	: public Vector<uint16_t>
+#endif
+{
 public:
 	String();
 	String(const Char *unicode, int size = -1);
@@ -43,35 +51,35 @@ public:
 	String(const String &other);
 	~String() {}
 
-	String&	append(const String &str);
-	String&	append(const Char *unicode, int size);
-	String&	append(Char ch);
+	String&	 append(const String &str);
+	String&	 append(const Char *unicode, int size);
+	String&  append(Char ch);
 
 	const Char at(int pos) const;
-	void clear();
-	bool contains(const String & str, bool cs = true) const;
-	bool contains(Char ch, bool cs = true) const;
-	Char* data();
+	void     clear();
+	bool     contains(const String & str, bool cs = true) const;
+	bool     contains(Char ch, bool cs = true) const;
+	Char*    data();
 	const Char*	data() const;
-	bool	endsWith(const String &s, bool cs = true) const;
-	bool	endsWith(Char c, bool cs = true) const;
-	bool	isEmpty() const;
-	bool	isNull() const;
-	int	    indexOf(const String &str, int from = 0, bool cs = true) const;
-	int	    indexOf(Char ch, int from = 0, bool cs = true) const;
-	int	    length() const;
+	bool	 endsWith(const String &s, bool cs = true) const;
+	bool	 endsWith(Char c, bool cs = true) const;
+	bool	 isEmpty() const;
+	bool	 isNull() const;
+	int	     indexOf(const String &str, int from = 0, bool cs = true) const;
+	int	     indexOf(Char ch, int from = 0, bool cs = true) const;
+	int	     length() const;
 
-	String&	prepend(const String &str);
-	String&	prepend(const Char *unicode, int size);
-	String&	prepend(Char ch);
+	String&	 prepend(const String &str);
+	String&	 prepend(const Char *unicode, int size);
+	String&	 prepend(Char ch);
 
-	String& sprintf(const char * cformat, ...);
-	String& vsprintf(const char *cformat, va_list ap);
+	String&  sprintf(const char * cformat, ...);
+	String&  vsprintf(const char *cformat, va_list ap);
 
-	int	    size() const;
-	bool	startsWith(const String &s, bool cs = true) const;
-	bool	startsWith(Char c, bool cs = true) const;
-	String  substr(int pos, int n = -1) const;
+	int	     size() const;
+	bool	 startsWith(const String &s, bool cs = true) const;
+	bool	 startsWith(Char c, bool cs = true) const;
+	String   substr(int pos, int n = -1) const;
 
 	double	 toDouble(bool *ok = 0) const;
 	float	 toFloat(bool *ok = 0) const;
@@ -92,7 +100,7 @@ public:
 	String&	operator+=(Char ch);
 	String&	operator=(const String & other);
 	String&	operator=(Char ch);
-	Char operator[](int pos);
+	Char    operator[](int pos);
 	const Char operator[](int pos) const;
 
 	friend bool	operator!=(const String &s1, const String &s2);
@@ -116,13 +124,21 @@ public:
 	static const String& null();
 
 private:
+#ifdef CWT_STRING_IMPL
     class Impl;
     typedef unique_ptr<Impl> ImplPtr;
     ImplPtr pimpl;
+#else
+    typedef Array<ushort_t> StringData;
+    shared_ptr<StringData> m_data;
+#endif
 
     friend class FileReader;
     friend class TextStream;
 };
+
+#ifndef CWT_STRING_IMPL
+#endif
 
 CWT_NS_END
 
