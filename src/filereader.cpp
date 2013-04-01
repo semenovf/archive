@@ -8,7 +8,6 @@
 
 
 #include "../include/cwt/reader.hpp"
-#include "string_impl.hpp"
 
 CWT_NS_BEGIN
 

@@ -33,7 +33,7 @@ public:
 	void addError(const String& text);
 	void clearErrors() { m_errors.clear(); }
 	size_t errorCount() const;
-	const String& errorTextAt(int index) const;
+	const String& errorTextAt(size_t index) const;
 	bool isError() const { return m_errors.size() != 0; }
 	bool isGood() const { return m_errors.size() == 0; }
 	const String& lastErrorText() const;
@@ -47,9 +47,9 @@ inline size_t Errorable::errorCount() const
 	return m_errors.size();
 }
 
-inline const String& Errorable::errorTextAt(int index) const
+inline const String& Errorable::errorTextAt(size_t index) const
 {
-	return index >= 0 && index < m_errors.size()
+	return index < m_errors.size()
 			? m_errors[index].errstr
 			: String::null();
 }

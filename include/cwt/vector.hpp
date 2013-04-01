@@ -22,13 +22,6 @@ public:
     class iterator {
     public:
         T *i;
-/*
-        typedef std::random_access_iterator_tag  iterator_category;
-        typedef qptrdiff difference_type;
-        typedef T value_type;
-        typedef T *pointer;
-        typedef T &reference;
-*/
 
         inline iterator() : i(0) {}
         inline iterator(T *n) : i(n) {}
@@ -58,13 +51,6 @@ public:
     class const_iterator {
     public:
         const T *i;
-/*
-        typedef std::random_access_iterator_tag  iterator_category;
-        typedef qptrdiff difference_type;
-        typedef T value_type;
-        typedef const T *pointer;
-        typedef const T &reference;
-*/
 
         inline                 const_iterator() : i(0)                       {}
         inline                 const_iterator(const T *n) : i(n)             {}
@@ -99,32 +85,32 @@ public:
 	Vector(const Vector<T> &other);
 	~Vector() { delete m_data; }
 
-	T&             at(int i);
-	const T&       at(int i) const;
+	T&             at(size_t i);
+	const T&       at(size_t i) const;
 	void           append(const T &value);
-	void           clear() { detach(); (*m_data)->count = 0; }
-	T*             data()  { detach(); return (*m_data)->data.data(); }
-	const T*       data()  { return (*m_data)->data.data(); }
+	void           clear()         { detach(); (*m_data)->count = 0; }
+	T*             data()          { detach(); return (*m_data)->data.data(); }
+	const T*       data() const    { return (*m_data)->data.data(); }
 	T&             first()         { return at(0); }
 	const T&       first() const   { return at(0); }
-	int            indexOf(const T & value, int from = 0) const;
-	bool           isNull() const  { return m_data->use_count() <= 0 ? true : false; }
 	bool           isEmpty() const { return m_data->use_count() > 0 && (*m_data)->count > 0 ? false : true; }
 	T&             last()          { CWT_ASSERT((*m_data)->count > 0); return at((*m_data)->count-1); }
 	const T&       last() const    { CWT_ASSERT((*m_data)->count > 0); return at((*m_data)->count-1); }
 	void           prepend(const T &value);
-	void           resize(int size)        { reserve(size); (*m_data)->count = size; }
-	void           reserve(int size)       { detachAndRealloc(CWT_MAX(size, (*m_data)->data.size())); }
+	void           resize(size_t size)        { reserve(size); (*m_data)->count = size; }
+	void           reserve(size_t size)       { detachAndRealloc(CWT_MAX(size, (*m_data)->data.size())); }
 	size_t         size() const            { return (*m_data)->count; }
 	void           swap(Vector<T> & other) { cwt::swap(m_data, other.m_data); }
 
-    iterator       begin()       { detach(); return iterator(); }
-    iterator       end()         { detach(); return iterator() + size; }
-    const_iterator begin() const { return const_iterator(); }
-    const_iterator end() const   { return const_iterator() + size; }
+    iterator       begin()        { detach(); return iterator((*m_data)->data.data()); }
+    iterator       end()          { detach(); return iterator((*m_data)->data.data()) + (*m_data)->count; }
+    const_iterator begin() const  { return const_iterator((*m_data)->data.data()); }
+    const_iterator end() const    { return const_iterator((*m_data)->data.data()) + (*m_data)->count; }
+    const_iterator cbegin() const { return const_iterator((*m_data)->data.data()); }
+    const_iterator cend() const   { return const_iterator((*m_data)->data.data()) + (*m_data)->count; }
 
-	T&             operator[](int i)       { return at(i); }
-	const T&       operator[](int i) const { return at(i); }
+	T&             operator[](size_t i)       { return at(i); }
+	const T&       operator[](size_t i) const { return at(i); }
 
 protected:
 	void           detach() { detachAndRealloc((*m_data)->count); }
@@ -150,19 +136,24 @@ void Vector<T>::detachAndRealloc(size_t newsize)
 	if (m_data->use_count() > 1) {
 		delete m_data;
 		m_data = new shared_ptr<VectorData>(new VectorData);
-		(*m_data)->data.alloc(CWT_MAX(newsize, (*orig)->count));
-		(*orig)->data.copy((*m_data)->data, 0, 0, CWT_MIN(newsize, (*orig)->count));
+		(*m_data)->data.alloc((*orig)->data.capacity());
+		Array<T>::copy((*m_data)->data, (*orig)->data, 0, 0, CWT_MIN(newsize, (*orig)->count));
 	} else {
-		(*m_data)->data.realloc(CWT_MAX(newsize, (*orig)->count));
+		if (newsize > (*orig)->data.capacity())
+			(*m_data)->data.realloc(newsize);
 	}
 	(*m_data)->count = CWT_MIN(newsize, (*orig)->count);
 }
+
 
 template <typename T>
 inline Vector<T>::Vector()
 	: m_data(new shared_ptr<VectorData>(new VectorData))
 {
+	(*m_data)->count = 0;
+	(*m_data)->data.alloc(32);
 }
+
 
 template <typename T>
 inline Vector<T>::Vector(int size)
@@ -188,48 +179,44 @@ template <typename T>
 inline Vector<T>::Vector(const Vector<T> &other)
 	: m_data(new shared_ptr<VectorData>(new VectorData))
 {
-	(*m_data)->count = size;
-	(*m_data)->data.alloc(size);
-	(*other.m_data)->data.copy((*m_data)->data, 0, 0, (*other.m_data)->count);
+	(*m_data)->data.alloc((*other.m_data)->count);
+	Array<T>::copy((*m_data)->data, (*other.m_data)->data, 0, 0, (*other.m_data)->count);
+	(*m_data)->count = (*other.m_data)->count;
 }
 
 
 template <typename T>
-inline T& Vector<T>::at(int i)
+inline T& Vector<T>::at(size_t i)
 {
 	CWT_ASSERT(!isEmpty());
-	CWT_ASSERT(i >= 0 && i < (*m_data)->count);
+	CWT_ASSERT(i < (*m_data)->count);
 	detach();
 	return (*m_data)->data.at(i);
 }
 
 template <typename T>
-inline const T& Vector<T>::at(int i) const
+inline const T& Vector<T>::at(size_t i) const
 {
 	CWT_ASSERT(!isEmpty());
-	CWT_ASSERT(i >= 0 && i < (*m_data)->count);
+	CWT_ASSERT(i < (*m_data)->count);
 	return (*m_data)->data.at(i);
 }
 
 template <typename T>
 void Vector<T>::append(const T &value)
 {
-	size_t capacity = (*m_data)->count;
-	capacity += 32;
-	reserve(capacity);
-
 	T *d = (*m_data)->data.data();
-	d[(*m_data)->count+1] = value;
-	(*m_data)->count++;
+	if ((*m_data)->count == (*m_data)->data.size())
+		reserve((*m_data)->count + 32);
+	d[(*m_data)->count++] = value;
 }
 
 
 template <typename T>
-inline void Vector<T>::prepend(const T &value)
+void Vector<T>::prepend(const T &value)
 {
-	size_t capacity = (*m_data)->count;
-	capacity += 1;
-	reserve(capacity);
+	if ((*m_data)->count == (*m_data)->data.size())
+		reserve((*m_data)->count + 32);
 	(*m_data)->data.move(1, 0, (*m_data)->count);
 
 	T *d = (*m_data)->data.data();

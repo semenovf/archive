@@ -16,58 +16,61 @@ CWT_NS_BEGIN
 
 template <typename T>
 class Array {
-	size_t   capacity;
-	uint32_t raw : 1; /* is raw data */
-	T       *head;
+	size_t   m_capacity;
+	uint16_t m_raw : 1; /* is raw data */
+	T       *m_head;
 
 public:
-	Array() : capacity(0), raw(0), head(NULL) {}
+	Array() : m_capacity(0), m_raw(0), m_head(NULL) {}
 	Array(T a[], size_t n);
 	Array(const Array &a);
 	Array(size_t sz, bool zero = false);
 	~Array();
 
 	void        alloc (size_t capacity);
-	T&          at(size_t index) { CWT_ASSERT(index < capacity); return head[index]; }
-	const T&    at(size_t index) const { CWT_ASSERT(index < capacity); return head[index]; }
-	void        bzero () { if(head) memset(head, 0, capacity * sizeof(T)); }
+	T&          at(size_t index) { CWT_ASSERT(index < m_capacity); return m_head[index]; }
+	const T&    at(size_t index) const { CWT_ASSERT(index < m_capacity); return m_head[index]; }
+	void        bzero () { if(m_head) memset(m_head, 0, m_capacity * sizeof(T)); }
 	Array*      clone () const;
-	void        copy  (Array &to, size_t off_to, size_t off_from, size_t n) const;
-	T*          data  ()       { return head; }
-	const T*    data  () const { return head; }
+	//void        copy  (Array &to, size_t off_to, size_t off_from, size_t n) const;
+	T*          data  ()       { return m_head; }
+	const T*    data  () const { return m_head; }
 	bool        eq    (const Array &a);
 	void        move  (size_t off_to, size_t off_from, size_t n);
 	void        realloc (size_t new_capacity);
-	size_t      size  () const { return capacity; }
+	size_t      size  () const { return m_capacity; }
+	size_t      capacity() const { return m_capacity; }
 
 	T&          operator [] (size_t index) { return at(index); }
 	const T&    operator [] (size_t index) const { return at(index); }
+
+	static void copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
 };
 
 template <typename T>
 inline Array<T>::Array(T a[], size_t n)
-	: capacity(0), raw(1), head(NULL)
+	: m_capacity(0), m_raw(1), m_head(NULL)
 {
 	if (a) {
-		capacity = n;
-		head = &a[0];
+		m_capacity = n;
+		m_head = &a[0];
 	}
 }
 
 template <typename T>
 inline Array<T>::Array(const Array &a)
-	: capacity(a.capacity), raw(0), head(NULL)
+	: m_capacity(a.m_capacity), m_raw(0), m_head(NULL)
 {
-	copy(*this, 0, 0, a.capacity);
+	copy(*this, a, 0, 0, a.m_capacity);
 }
 
 template <typename T>
 Array<T>::Array(size_t sz, bool zero)
-	: capacity(0), raw(0), head(NULL)
+	: m_capacity(0), m_raw(0), m_head(NULL)
 {
 	if (sz) {
-		head = new T[sz];
-		capacity = sz;
+		m_head = new T[sz];
+		m_capacity = sz;
 
 		if (zero) {
 			bzero();
@@ -78,27 +81,27 @@ Array<T>::Array(size_t sz, bool zero)
 template <typename T>
 inline Array<T>::~Array()
 {
-	if(!raw)
-		delete[] head;
+	if(!m_raw)
+		delete[] m_head;
 }
 
 template <typename T>
 inline void Array<T>::alloc (size_t size)
 {
-	if (raw && head) {
-		delete[] head;
+	if (!m_raw && m_head) {
+		delete[] m_head;
 	}
-	head = new T[size];
-	raw = 1;
-	capacity = size;
+	m_head = new T[size];
+	m_raw = 0;
+	m_capacity = size;
 }
 
 template <typename T>
 Array<T>* Array<T>::clone () const
 {
-	Array<T> *clone = new Array<T>(capacity);
+	Array<T> *clone = new Array<T>(m_capacity);
 	if (clone)
-		copy(*clone, 0, 0, capacity);
+		copy(*clone, *this, 0, 0, m_capacity);
 	return clone;
 }
 
@@ -117,18 +120,18 @@ Array<T>* Array<T>::clone () const
 * @return Actually items copied.
 */
 template <typename T>
-void Array<T>::copy (Array &to, size_t off_to, size_t off_from, size_t n) const
+void Array<T>::copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n)
 {
-	n = CWT_MIN(capacity - off_from, n);
-	n = CWT_MIN(to.capacity - off_to, n);
-	memcpy(to.head + off_to, head + off_from, n * sizeof(T));
+	n = CWT_MIN(from.m_capacity - off_from, n);
+	n = CWT_MIN(to.m_capacity - off_to, n);
+	memcpy(to.m_head + off_to, from.m_head + off_from, n * sizeof(T));
 }
 
 template <typename T>
 inline bool Array<T>::eq (const Array &a)
 {
-	return capacity == a.capacity
-			&& memcmp(head, a.head, capacity * sizeof(T)) == 0
+	return m_capacity == a.m_capacity
+			&& memcmp(m_head, a.m_head, m_capacity * sizeof(T)) == 0
 			? true : false;
 }
 
@@ -142,12 +145,12 @@ inline bool Array<T>::eq (const Array &a)
 template <typename T>
 void Array<T>::realloc (size_t new_capacity)
 {
-	if (new_capacity != capacity) {
+	if (new_capacity != m_capacity) {
 		T *new_head = new T[new_capacity];
-		memcpy(new_head, head, CWT_MIN(capacity, new_capacity));
-		delete head;
-		head = new_head;
-		capacity = new_capacity;
+		memcpy(new_head, m_head, CWT_MIN(m_capacity, new_capacity));
+		delete m_head;
+		m_head = new_head;
+		m_capacity = new_capacity;
 	}
 }
 
@@ -164,12 +167,12 @@ void Array<T>::realloc (size_t new_capacity)
 template <typename T>
 void Array<T>::move (size_t off_to, size_t off_from, size_t n)
 {
-	CWT_ASSERT(off_to + n <= capacity && off_from + n <= capacity);
+	CWT_ASSERT(off_to + n <= m_capacity && off_from + n <= m_capacity);
 
-	n = CWT_MIN(n, capacity - off_from);
-	n = CWT_MIN(n, capacity - off_to);
+	n = CWT_MIN(n, m_capacity - off_from);
+	n = CWT_MIN(n, m_capacity - off_to);
 
-	memmove(head + off_to, head + off_from, n * sizeof(T));
+	memmove(m_head + off_to, m_head + off_from, n * sizeof(T));
 }
 
 

@@ -6,8 +6,10 @@
  * @brief
  */
 
-#ifndef __CWT_STRING_IMPL_HPP__
-#define __CWT_STRING_IMPL_HPP__
+#ifndef __CWT_STRING_QT_HPP__
+#define __CWT_STRING_QT_HPP__
+
+#ifndef CWT_STRING_SELF_IMPL
 
 #include "../../include/cwt/string.hpp"
 #define QT_NO_CAST_FROM_ASCII
@@ -35,7 +37,8 @@ inline String::Impl::Impl(const Char *unicode, int size) : QString()
 		chars[i] = QChar(unicode[i].unicode());
 }
 
-
 CWT_NS_END
 
-#endif /* __CWT_STRING_IMPL_HPP__ */
+#endif /* CWT_STRING_SELF_IMPL */
+
+#endif /* __CWT_STRING_QT_HPP__ */

@@ -47,11 +47,11 @@ void _base_sigslot_mapping_t<_emitterT, _detectorT>::connectAll()
 	if( emitters.size() == 0 || detectors.size() == 0 )
 		return;
 
-    typename emitter_vector_t::const_iterator itEnd = emitters.end();
-	typename detector_vector_t::const_iterator itdEnd = detectors.end();
+    typename emitter_vector_t::const_iterator itEnd = emitters.cend();
+	typename detector_vector_t::const_iterator itdEnd = detectors.cend();
 
-	for( typename emitter_vector_t::const_iterator it = emitters.begin(); it != itEnd; it++ ) {
-		for( typename detector_vector_t::const_iterator itd = detectors.begin(); itd != itdEnd; itd++ ) {
+	for( typename emitter_vector_t::const_iterator it = emitters.cbegin(); it != itEnd; it++ ) {
+		for( typename detector_vector_t::const_iterator itd = detectors.cbegin(); itd != itdEnd; itd++ ) {
 			(*it)->connect(itd->petaloid, reinterpret_cast<_detectorT>(itd->detector));
 		}
 	}
@@ -60,9 +60,9 @@ void _base_sigslot_mapping_t<_emitterT, _detectorT>::connectAll()
 template <typename _emitterT, typename _detectorT>
 void _base_sigslot_mapping_t<_emitterT, _detectorT>::disconnectAll()
 {
-    typename emitter_vector_t::const_iterator itEnd = emitters.end();
+    typename emitter_vector_t::const_iterator itEnd = emitters.cend();
 
-	for( typename emitter_vector_t::const_iterator it = emitters.begin(); it != itEnd; it++ ) {
+	for( typename emitter_vector_t::const_iterator it = emitters.cbegin(); it != itEnd; it++ ) {
 		(*it)->disconnect_all();
 	}
 }

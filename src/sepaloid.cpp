@@ -61,8 +61,8 @@ Petaloid* Sepaloid::registerPetaloidForName(const String &name, const char *pnam
 {
 	String filename = Dl::buildDlFileName(name);
 
-	Vector<String>::const_iterator it    =  m_searchPaths.begin();
-	Vector<String>::const_iterator itEnd =  m_searchPaths.end();
+	Vector<String>::const_iterator it    =  m_searchPaths.cbegin();
+	Vector<String>::const_iterator itEnd =  m_searchPaths.cend();
 
 	for (; it != itEnd; it++) {
 		String path(*it);

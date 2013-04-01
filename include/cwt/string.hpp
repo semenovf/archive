@@ -15,7 +15,7 @@
 #include <cwt/memory.hpp>
 #include <cstdarg>
 
-#ifndef CWT_STRING_IMPL
+#ifdef CWT_STRING_SELF_IMPL
 #	include <cwt/vector.hpp>
 #endif
 
@@ -39,7 +39,7 @@ class FileReader;
 */
 
 class DLL_API String
-#ifndef CWT_STRING_IMPL
+#ifdef CWT_STRING_SELF_IMPL
 	: public Vector<uint16_t>
 #endif
 {
@@ -124,7 +124,7 @@ public:
 	static const String& null();
 
 private:
-#ifdef CWT_STRING_IMPL
+#ifndef CWT_STRING_SELF_IMPL
     class Impl;
     typedef unique_ptr<Impl> ImplPtr;
     ImplPtr pimpl;
@@ -137,10 +137,6 @@ private:
     friend class TextStream;
 };
 
-#ifndef CWT_STRING_IMPL
-#endif
-
 CWT_NS_END
-
 
 #endif /* __CWT_STRING_HPP__ */
