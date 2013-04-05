@@ -19,11 +19,11 @@ sub startup {
     $self->plugin('database', { 
     databases => {
         'dbh' => { 
-            dsn      => 'dbi:mysql:dbname=hg'
+            dsn      => 'dbi:mysql:dbname=hg:host=localhost:port=3306'
           , username => 'hg'
           , password => '1qazxsw2'
-          , host     => 'localhost'
-          , port     => 3306
+          #, host     => 'localhost'
+          #, port     => 3306
         }
     }
     });

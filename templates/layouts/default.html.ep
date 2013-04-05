@@ -3,8 +3,9 @@
 <head>
     <title><%= title %></title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/css/style.css" type="text/css"/>
+    <link rel="icon" href="<%= url_for('/img/favicon.ico') %>" type="image/x-icon">
+    <link rel="stylesheet" href="<%= url_for('/bootstrap/css/bootstrap.css') %>">
+    <link rel="stylesheet" href="<%= url_for('/bootstrap/css/bootstrap-responsive.css') %>">
 
 %= content 'header'
 
