@@ -19,6 +19,7 @@ CWT_NS_BEGIN
 
 class DLL_API Char {
 public:
+	typedef ushort_t char_type;
 	enum SpecialChar {
 		  Null = 0x0000
 		, ReplacementChar = 0xfffd
@@ -38,8 +39,8 @@ public:
 	bool isSurrogate() const { return isSurrogate(ucs); }
 
 	char toLatin1() const { return ucs > 0xff ? '\x0' : char(ucs); }
-	ushort_t unicode() const { return ucs; }
-	ushort_t& unicode() { return ucs; }
+	char_type unicode() const { return ucs; }
+	char_type& unicode() { return ucs; }
 
 	static Char fromLatin1(char ch) { return Char(ushort_t(uchar_t(ch))); }
 
@@ -71,7 +72,7 @@ public:
 	friend bool	operator >= (Char ch1, Char ch2) { return ch1.ucs >= ch2.ucs; }
 
 private:
-	ushort_t ucs;
+	char_type ucs;
 };
 
 CWT_NS_END

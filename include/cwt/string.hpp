@@ -40,9 +40,15 @@ class FileReader;
 
 class DLL_API String
 #ifdef CWT_STRING_SELF_IMPL
-	: public Vector<uint16_t>
+	: public Vector<Char::char_type>
 #endif
 {
+#ifdef CWT_STRING_SELF_IMPL
+	typedef Char::char_type   data_type;
+	typedef Char::char_type   char_type;
+	typedef Vector<char_type> BaseClass;
+#endif
+
 public:
 	String();
 	String(const Char *unicode, int size = -1);
@@ -56,27 +62,35 @@ public:
 	String&  append(Char ch);
 
 	const Char at(int pos) const;
+#ifndef CWT_STRING_SELF_IMPL // already defined in base class (Vector)
 	void     clear();
+#endif
 	bool     contains(const String & str, bool cs = true) const;
 	bool     contains(Char ch, bool cs = true) const;
 	Char*    data();
 	const Char*	data() const;
 	bool	 endsWith(const String &s, bool cs = true) const;
 	bool	 endsWith(Char c, bool cs = true) const;
+#ifndef CWT_STRING_SELF_IMPL // already defined in base class (Vector)
 	bool	 isEmpty() const;
+#endif
+#ifndef CWT_STRING_SELF_IMPL // obsolete
 	bool	 isNull() const;
+#endif
 	int	     indexOf(const String &str, int from = 0, bool cs = true) const;
 	int	     indexOf(Char ch, int from = 0, bool cs = true) const;
 	int	     length() const;
 
 	String&	 prepend(const String &str);
-	String&	 prepend(const Char *unicode, int size);
+	String&	 prepend(const Char *unicode, int size = -1);
 	String&	 prepend(Char ch);
 
 	String&  sprintf(const char * cformat, ...);
 	String&  vsprintf(const char *cformat, va_list ap);
 
+#ifndef CWT_STRING_SELF_IMPL // already defined in base class (Vector)
 	int	     size() const;
+#endif
 	bool	 startsWith(const String &s, bool cs = true) const;
 	bool	 startsWith(Char c, bool cs = true) const;
 	String   substr(int pos, int n = -1) const;
@@ -128,9 +142,6 @@ private:
     class Impl;
     typedef unique_ptr<Impl> ImplPtr;
     ImplPtr pimpl;
-#else
-    typedef Array<ushort_t> StringData;
-    shared_ptr<StringData> m_data;
 #endif
 
     friend class FileReader;

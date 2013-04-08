@@ -97,8 +97,8 @@ public:
 	T&             last()          { CWT_ASSERT((*m_data)->count > 0); return at((*m_data)->count-1); }
 	const T&       last() const    { CWT_ASSERT((*m_data)->count > 0); return at((*m_data)->count-1); }
 	void           prepend(const T &value);
-	void           resize(size_t size)        { reserve(size); (*m_data)->count = size; }
-	void           reserve(size_t size)       { detachAndRealloc(CWT_MAX(size, (*m_data)->data.size())); }
+	void           resize(size_t size)     { reserve(size); (*m_data)->count = size; }
+	void           reserve(size_t size)    { detachAndRealloc(CWT_MAX(size, (*m_data)->data.size())); }
 	size_t         size() const            { return (*m_data)->count; }
 	void           swap(Vector<T> & other) { cwt::swap(m_data, other.m_data); }
 
