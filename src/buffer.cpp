@@ -9,6 +9,7 @@
 #include "../include/cwt/buffer.hpp"
 
 CWT_NS_BEGIN
+#ifdef __COMMENT__
 
 void Buffer::init(const ByteArray &bytes, size_t offset, size_t count)
 {
@@ -45,7 +46,7 @@ ssize_t Buffer::writeBytes(const char bytes[], size_t sz)
 	m_data.append(bytes, sz);
 	return ssize_t(sz);
 }
-
+#endif
 CWT_NS_END
 
 

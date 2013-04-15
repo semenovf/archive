@@ -13,14 +13,15 @@
 
 CWT_NS_BEGIN
 
-CWT_DEFAULT_MT_POLICY StreamDecoder::g_mutex;
-CWT_DEFAULT_MT_POLICY StreamEncoder::g_mutex;
+CWT_DEFAULT_MT_POLICY Decoder::g_mutex;
+CWT_DEFAULT_MT_POLICY Encoder::g_mutex;
 
-StreamDecoder* StreamDecoder::forName(const char* charset, InputStream &is, Char replacement)
+Decoder* Decoder::forName(const char* charset, Char replacement)
 {
 	if (!charset)
 		return NULL;
 
+	CWT_UNUSED(replacement); // TODO remove
 	AutoLock<> locker(&g_mutex);
 
 	if (strcasecmp(charset, "system") == 0
@@ -28,21 +29,21 @@ StreamDecoder* StreamDecoder::forName(const char* charset, InputStream &is, Char
 		;//return new LocaleTextCodec;
 	} else if (strcasecmp(charset, "utf8") == 0
 			|| strcasecmp(charset, "utf-8") == 0) {
-		return new Utf8Decoder(is, replacement);
+		;//return new Utf8Decoder(replacement);
 	}
 
 	return NULL;
 }
 
-StreamEncoder* StreamEncoder::forName(
+Encoder* Encoder::forName(
 		const char* charset
-		, OutputStream &os
 		, bool ignoreHeader
 		, char replacement)
 {
 	if (!charset)
 		return NULL;
 
+	CWT_UNUSED2(ignoreHeader,replacement); // TODO remove
 	AutoLock<> locker(&g_mutex);
 
 	if (strcasecmp(charset, "system") == 0
@@ -50,7 +51,7 @@ StreamEncoder* StreamEncoder::forName(
 		;//return new LocaleTextCodec;
 	} else if (strcasecmp(charset, "utf8") == 0
 			|| strcasecmp(charset, "utf-8") == 0) {
-		return new Utf8Encoder(os, ignoreHeader, replacement);
+		;//return new Utf8Encoder(ignoreHeader, replacement);
 	}
 
 	return NULL;

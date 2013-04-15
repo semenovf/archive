@@ -14,6 +14,8 @@
 
 CWT_NS_BEGIN
 
+#ifdef __COMMENT__
+
 class DLL_API Buffer : public IODevice {
 public:
 	static const size_t ChunkSize = 512;
@@ -68,6 +70,8 @@ inline size_t Buffer::bytesAvailable()
 {
 	return m_data.length() - m_offset;
 }
+
+#endif
 
 CWT_NS_END
 

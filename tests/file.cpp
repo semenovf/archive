@@ -9,6 +9,7 @@
 
 #include <cwt/test.h>
 #include <cwt/logger.hpp>
+#include <cwt/file.hpp>
 
 using namespace cwt;
 

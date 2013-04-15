@@ -13,47 +13,35 @@
 
 CWT_NS_BEGIN
 
-class Utf8Decoder : public StreamDecoder {
+class Utf8Decoder : public Decoder {
 	static const size_t BufSize = 512;
 protected:
-	Utf8Decoder()
-		: StreamDecoder()
-		, m_buffer()
-		, m_headerDone(false)
-		, m_remainChar(Char::MaxCodePoint) { m_buffer.reserve(BufSize); }
+	virtual String convertToUnicode(const char *bytes, size_t len) = 0;
 public:
-	Utf8Decoder(InputStream &is, Char replacement = Char::ReplacementChar)
-		: StreamDecoder(is, replacement)
+	Utf8Decoder(Char replacement = Char::ReplacementChar)
+		: Decoder(replacement)
 		, m_buffer()
 		, m_headerDone(false)
 		, m_remainChar(Char::MaxCodePoint) { m_buffer.reserve(BufSize); }
-	virtual ~Utf8Decoder() {}
-	virtual ssize_t read(Char chars[], size_t len);
+
 private:
 	ByteArray m_buffer;
 	bool      m_headerDone;
 	Char      m_remainChar;
 };
 
-class Utf8Encoder : public StreamEncoder {
+class Utf8Encoder : public Encoder {
 protected:
-	Utf8Encoder()
-		: StreamEncoder()
-		, m_headerDone(false)
-		, m_hiSurrogate(-1) {}
+	virtual ByteArray convertFromUnicode(const Char *chars, size_t len) = 0;
 public:
-	Utf8Encoder(OutputStream &os, bool ignoreHeader = true, char replacement = '?')
-		: StreamEncoder(os, ignoreHeader, replacement)
+	Utf8Encoder(bool ignoreHeader = true, char replacement = '?')
+		: Encoder(ignoreHeader, replacement)
 		, m_headerDone(ignoreHeader ? true : false)
 		, m_hiSurrogate(-1) {}
-	virtual ~Utf8Encoder() {}
-	virtual ssize_t write(const Char chars[], size_t sz);
-
 private:
 	bool m_headerDone;
 	int  m_hiSurrogate;
 };
-
 
 CWT_NS_END
 

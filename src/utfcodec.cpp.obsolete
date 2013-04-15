@@ -10,8 +10,6 @@
 
 CWT_NS_BEGIN
 
-#ifdef __COMMENT__
-
 /* UTF-8
  *
  * Bits Last code point/ 	Byte 1 		Byte 2 		Byte 3 		Byte 4 		Byte 5 		Byte 6
@@ -257,5 +255,5 @@ ssize_t Utf8Writer::write(const Char chars[], size_t sz)
 
 	return m_os->write(bytes.data(), bytes.length());
 }
-#endif
+
 CWT_NS_END

@@ -83,38 +83,37 @@ public:
 	explicit Vector(int size);
 	Vector(int size, const T &value);
 	Vector(const Vector<T> &other);
-	~Vector() { delete m_data; }
 
 	T&             at(size_t i);
 	const T&       at(size_t i) const;
 	void           append(const T &value);
-	void           clear()         { detach(); (*m_data)->count = 0; }
-	T*             data()          { detach(); return (*m_data)->data.data(); }
-	const T*       data() const    { return (*m_data)->data.data(); }
+	void           clear()         { detach(); m_d->count = 0; }
+	T*             data()          { detach(); return m_d->data.data(); }
+	const T*       data() const    { return m_d->data.data(); }
 	T&             first()         { return at(0); }
 	const T&       first() const   { return at(0); }
-	bool           isEmpty() const { return m_data->use_count() > 0 && (*m_data)->count > 0 ? false : true; }
-	T&             last()          { CWT_ASSERT((*m_data)->count > 0); return at((*m_data)->count-1); }
-	const T&       last() const    { CWT_ASSERT((*m_data)->count > 0); return at((*m_data)->count-1); }
+	bool           isEmpty() const { return m_d.use_count() > 0 && m_d->count > 0 ? false : true; }
+	T&             last()          { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
+	const T&       last() const    { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
 	void           prepend(const T &value);
-	void           resize(size_t size)     { reserve(size); (*m_data)->count = size; }
-	void           reserve(size_t size)    { detachAndRealloc(CWT_MAX(size, (*m_data)->data.size())); }
-	size_t         size() const            { return (*m_data)->count; }
-	void           swap(Vector<T> & other) { cwt::swap(m_data, other.m_data); }
+	void           resize(size_t size)     { reserve(size); m_d->count = size; }
+	void           reserve(size_t size)    { detachAndRealloc(CWT_MAX(size, m_d->data.size())); }
+	size_t         size() const            { return m_d->count; }
+	void           swap(Vector<T> & other) { m_d.swap(other.m_d); }
 
-    iterator       begin()        { detach(); return iterator((*m_data)->data.data()); }
-    iterator       end()          { detach(); return iterator((*m_data)->data.data()) + (*m_data)->count; }
-    const_iterator begin() const  { return const_iterator((*m_data)->data.data()); }
-    const_iterator end() const    { return const_iterator((*m_data)->data.data()) + (*m_data)->count; }
-    const_iterator cbegin() const { return const_iterator((*m_data)->data.data()); }
-    const_iterator cend() const   { return const_iterator((*m_data)->data.data()) + (*m_data)->count; }
+    iterator       begin()        { detach(); return iterator(m_d->data.data()); }
+    iterator       end()          { detach(); return iterator(m_d->data.data()) + m_d->count; }
+    const_iterator begin() const  { return const_iterator(m_d->data.data()); }
+    const_iterator end() const    { return const_iterator(m_d->data.data()) + m_d->count; }
+    const_iterator cbegin() const { return const_iterator(m_d->data.data()); }
+    const_iterator cend() const   { return const_iterator(m_d->data.data()) + m_d->count; }
 
 	T&             operator[](size_t i)       { return at(i); }
 	const T&       operator[](size_t i) const { return at(i); }
 	Vector<T>&	   operator=(const Vector<T> & other);
 
 protected:
-	void           detach() { detachAndRealloc((*m_data)->count); }
+	void           detach() { detachAndRealloc(m_d->count); }
 	void           detachAndRealloc(size_t newsize);
 
 protected:
@@ -123,73 +122,58 @@ protected:
 		size_t   count;
 	} VectorData;
 
-	shared_ptr<VectorData> *m_data;
+	shared_ptr<VectorData> m_d;
 };
 
 
 template <typename T>
 void Vector<T>::detachAndRealloc(size_t newsize)
 {
-	CWT_ASSERT(m_data);
-
-	shared_ptr<VectorData> *orig = m_data;
-
-	if (m_data->use_count() > 1) {
-		delete m_data;
-		m_data = new shared_ptr<VectorData>(new VectorData);
-		(*m_data)->data.alloc((*orig)->data.capacity());
-		Array<T>::copy((*m_data)->data, (*orig)->data, 0, 0, CWT_MIN(newsize, (*orig)->count));
+	if (m_d.use_count() > 1) {
+		shared_ptr<VectorData> d(new VectorData);
+		m_d.swap(d);
+		m_d->data.alloc(d->data.capacity());
+		Array<T>::copy(m_d->data, d->data, 0, 0, CWT_MIN(newsize, d->count));
 	} else {
-		if (newsize > (*orig)->data.capacity())
-			(*m_data)->data.realloc(newsize);
+		if (newsize > m_d->data.capacity())
+			m_d->data.realloc(newsize);
 	}
-	(*m_data)->count = CWT_MIN(newsize, (*orig)->count);
+	m_d->count = CWT_MIN(newsize, m_d->count);
 }
 
 
 template <typename T>
-inline Vector<T>::Vector()
-	: m_data(new shared_ptr<VectorData>(new VectorData))
+inline Vector<T>::Vector() : m_d(NULL)
 {
-	(*m_data)->count = 0;
-	(*m_data)->data.alloc(32);
-}
-
-
-template <typename T>
-inline Vector<T>::Vector(int size)
-	: m_data(new shared_ptr<VectorData>(new VectorData))
-{
-	(*m_data)->count = 0;
-	(*m_data)->data.alloc(size);
 }
 
 template <typename T>
-Vector<T>::Vector(int size, const T &value)
-	: m_data(new shared_ptr<VectorData>(new VectorData))
+inline Vector<T>::Vector(int size) : m_d(new VectorData)
 {
-	(*m_data)->count = size;
-	(*m_data)->data.alloc(size);
-	T *d = (*m_data)->data.data();
+	m_d->count = 0;
+	m_d->data.alloc(size);
+}
+
+template <typename T>
+Vector<T>::Vector(int size, const T &value)	: m_d(new VectorData)
+{
+	m_d->count = size;
+	m_d->data.alloc(size);
+	T *d = m_d->data.data();
 	for(int i = 0; i< size; ++i) {
 		d[i] = value;
 	}
 }
 
 template <typename T>
-inline Vector<T>::Vector(const Vector<T> &other) : m_data(0)
+inline Vector<T>::Vector(const Vector<T> &other) : m_d(other.m_d)
 {
-	m_data = other.m_data;
-	m_data->ref();
 }
 
 template <typename T>
 inline Vector<T>& Vector<T>::operator=(const Vector<T> & other)
 {
-	if (m_data != other.m_data) {
-		Vector<T> tmp(other);
-		tmp.swap(*this);
-	}
+	m_d == other.m_d;
 	return *this;
 }
 
@@ -197,39 +181,39 @@ template <typename T>
 inline T& Vector<T>::at(size_t i)
 {
 	CWT_ASSERT(!isEmpty());
-	CWT_ASSERT(i < (*m_data)->count);
+	CWT_ASSERT(i < m_d->count);
 	detach();
-	return (*m_data)->data.at(i);
+	return m_d->data.at(i);
 }
 
 template <typename T>
 inline const T& Vector<T>::at(size_t i) const
 {
 	CWT_ASSERT(!isEmpty());
-	CWT_ASSERT(i < (*m_data)->count);
-	return (*m_data)->data.at(i);
+	CWT_ASSERT(i < m_d->count);
+	return m_d->data.at(i);
 }
 
 template <typename T>
 void Vector<T>::append(const T &value)
 {
-	T *d = (*m_data)->data.data();
-	if ((*m_data)->count == (*m_data)->data.size())
-		reserve((*m_data)->count + 32);
-	d[(*m_data)->count++] = value;
+	T *d = m_d->data.data();
+	if (m_d->count == m_d->data.size())
+		reserve(m_d->count + 32);
+	d[m_d->count++] = value;
 }
 
 
 template <typename T>
 void Vector<T>::prepend(const T &value)
 {
-	if ((*m_data)->count == (*m_data)->data.size())
-		reserve((*m_data)->count + 32);
-	(*m_data)->data.move(1, 0, (*m_data)->count);
+	if (m_d->count == m_d->data.size())
+		reserve(m_d->count + 32);
+	m_d->data.move(1, 0, m_d->count);
 
-	T *d = (*m_data)->data.data();
+	T *d = m_d->data.data();
 	d[0] = value;
-	(*m_data)->count++;
+	m_d->count++;
 }
 
 CWT_NS_END

@@ -16,7 +16,7 @@ using namespace cwt;
 void test_int_vector(void)
 {
 	Vector<int> v(_VECTOR_SIZE);
-	int *pint;
+	const int *pint;
 
 	for(int i = 0; i < _VECTOR_SIZE; i++)
 		v.append(i);
@@ -80,7 +80,6 @@ void test_char_vector(void)
 	}
 }
 
-
 struct Foo {
 	int i;
 	char ch;
@@ -133,7 +132,6 @@ void test_vector_iterator(void)
 		CWT_TEST_OK(i == it->j);
 		CWT_TEST_OK(loremipsum[i] == it->ch);
 	}
-
 }
 
 
@@ -142,7 +140,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(1397);
+	CWT_BEGIN_TESTS(1283);
 
 	test_int_vector();
 	test_long_vector();
