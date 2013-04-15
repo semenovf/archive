@@ -9,6 +9,9 @@
 #include "../../include/cwt/string.hpp"
 #include <cstring>
 
+
+#ifdef CWT_STRING_SELF_IMPL
+
 CWT_NS_BEGIN
 
 static const String __nullString;
@@ -230,10 +233,6 @@ const Char String::operator[](int pos) const
 	return Char(BaseClass::at(pos));
 }
 
-
-#ifdef CWT_STRING_SELF_IMPL
-
-
 int String::indexOf(const String &str, int from, bool cs) const { return pimpl->indexOf(*str.pimpl, from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 int String::indexOf(Char ch, int from, bool cs) const { return pimpl->indexOf(QChar(ch.unicode()), from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 
@@ -378,6 +377,6 @@ String String::number(ulong_t n, int base)
 	return s;
 }
 
-#endif // CWT_STRING_SELF_IMPL
-
 CWT_NS_END
+
+#endif // CWT_STRING_SELF_IMPL

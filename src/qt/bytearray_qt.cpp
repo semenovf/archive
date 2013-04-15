@@ -1,12 +1,12 @@
 /**
- * @file   bytearray.cpp
+ * @file   bytearray_qt.cpp
  * @author wladt
  * @date   Jan 24, 2013 4:15:33 PM
  *
  * @brief
  */
 
-#include "bytearray_impl.hpp"
+#include "bytearray_qt.hpp"
 
 CWT_NS_BEGIN
 

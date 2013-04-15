@@ -11,7 +11,7 @@
 
 
 #include <cwt/cwt.h>
-#include <cwt/string.hpp>
+#include <cwt/iodevice.hpp>
 
 CWT_NS_BEGIN
 
@@ -32,6 +32,13 @@ private:
 	int m_fd;
 };
 */
+class DLL_API File : public IODevice {
+	CWT_IODEVICE_PIMPL(File);
+public:
+	File();
+	File(const File &other);
+	bool open(const char *path, int oflags);
+};
 
 CWT_NS_END
 

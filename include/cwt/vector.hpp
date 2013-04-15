@@ -111,6 +111,7 @@ public:
 
 	T&             operator[](size_t i)       { return at(i); }
 	const T&       operator[](size_t i) const { return at(i); }
+	Vector<T>&	   operator=(const Vector<T> & other);
 
 protected:
 	void           detach() { detachAndRealloc((*m_data)->count); }
@@ -176,14 +177,21 @@ Vector<T>::Vector(int size, const T &value)
 }
 
 template <typename T>
-inline Vector<T>::Vector(const Vector<T> &other)
-	: m_data(new shared_ptr<VectorData>(new VectorData))
+inline Vector<T>::Vector(const Vector<T> &other) : m_data(0)
 {
-	(*m_data)->data.alloc((*other.m_data)->count);
-	Array<T>::copy((*m_data)->data, (*other.m_data)->data, 0, 0, (*other.m_data)->count);
-	(*m_data)->count = (*other.m_data)->count;
+	m_data = other.m_data;
+	m_data->ref();
 }
 
+template <typename T>
+inline Vector<T>& Vector<T>::operator=(const Vector<T> & other)
+{
+	if (m_data != other.m_data) {
+		Vector<T> tmp(other);
+		tmp.swap(*this);
+	}
+	return *this;
+}
 
 template <typename T>
 inline T& Vector<T>::at(size_t i)

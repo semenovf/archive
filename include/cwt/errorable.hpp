@@ -12,6 +12,8 @@
 #include <cwt/cwt.h>
 #include <cwt/string.hpp>
 #include <cwt/vector.hpp>
+#include <cwt/logger.hpp>
+#include <cwt/system.h>
 
 CWT_NS_BEGIN
 
@@ -24,12 +26,16 @@ struct ErrorData {
 
 class DLL_API Errorable
 {
+	static const int SystemErrorBufLen = 128;
 protected:
 	Errorable() {}
 
 public:
+	virtual ~Errorable() { clearErrors(); }
 	/*virtual ~Errorable() {}*/
-
+	void addSystemError(int errn, const char *prefix = 0);
+	void addSystemError(int errn, const String &prefix);
+	void addError(const char *text);
 	void addError(const String& text);
 	void clearErrors() { m_errors.clear(); }
 	size_t errorCount() const;
@@ -37,6 +43,7 @@ public:
 	bool isError() const { return m_errors.size() != 0; }
 	bool isGood() const { return m_errors.size() == 0; }
 	const String& lastErrorText() const;
+	void logErrors() const;
 
 private:
 	Vector<ErrorData> m_errors;
@@ -67,6 +74,43 @@ inline void Errorable::addError(const String& text)
 		m_errors.last().ntimes++;
 	else
 		m_errors.append(ErrorData(text));
+}
+
+inline void Errorable::addError(const char *text)
+{
+	addError(String::fromUtf8(text));
+}
+
+inline void Errorable::addSystemError(int errn, const String &prefix)
+{
+	char errstr[SystemErrorBufLen];
+	cwt_strerror(errn, errstr, SystemErrorBufLen);
+	if (prefix.isEmpty()) {
+		addError(String::fromUtf8(errstr));
+	} else {
+		addError(String().sprintf("%ls: %s", prefix.unicode(), errstr));
+	}
+}
+
+inline void Errorable::addSystemError(int errn, const char *prefix)
+{
+	if (prefix)
+		addSystemError(errn, String::null());
+	else
+		addSystemError(errn, String::fromUtf8(prefix));
+}
+
+inline void Errorable::logErrors() const
+{
+	Vector<ErrorData>::const_iterator itEnd = m_errors.end();
+	for (Vector<ErrorData>::const_iterator it = m_errors.begin()
+			; it != itEnd; ++it) {
+		if (it->ntimes > 1) {
+			Logger::error("%ls", it->errstr.unicode());
+		} else {
+			Logger::error(_Tr("%ls <occured %d times>"), it->errstr.unicode(), it->ntimes);
+		}
+	}
 }
 
 CWT_NS_END

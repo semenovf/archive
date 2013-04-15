@@ -13,6 +13,7 @@ unix {
     SOURCES += ../../src/*.c
     SOURCES += ../../src/qt/*.cpp
     SOURCES += ../../src/unix/*.cpp
+    SOURCES += ../../src/unix/*.c
 }
 
 win32 {
@@ -22,4 +23,5 @@ win32 {
     SOURCES += ..\\..\\src\\*.c
     SOURCES += ..\\..\\src\\qt\\*.cpp
     SOURCES += ..\\..\\src\\win32\\*.cpp
+    SOURCES += ..\\..\\src\\win32\\*.c
 }

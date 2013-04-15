@@ -7,11 +7,7 @@
  */
 
 
-#include <cwt/mt.h>
-
-/* This is a template for usage as global mutex
- */
-#ifdef __CWT_USAGE_EXAMPLE__
+#include "../include/cwt/mt.h"
 
 #ifndef CWT_SINGLE_THREADED
 static mt_def(__g_mutex);
@@ -25,5 +21,3 @@ DLL_API mutex_t* cwt_global_mutex(void)
 	return &__g_mutex;
 }
 #endif /* CWT_SINGLE_THREADED */
-
-#endif

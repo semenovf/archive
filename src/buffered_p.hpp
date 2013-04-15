@@ -10,11 +10,26 @@
 #define __CWT_BUFFEREDSTREAM_HPP__
 
 #include <cwt/cwt.h>
-#include <cwt/bytearray.hpp>
-#include <cwt/inputstream.hpp>
-#include <cwt/outputstream.hpp>
+#include "../include/cwt/bytearray.hpp"
+#include "../include/cwt/iodevice.hpp"
 
 CWT_NS_BEGIN
+
+
+class BufferedIODevice : public IODevice
+{
+protected:
+	virtual ssize_t readBytes(char bytes[], size_t n);
+	virtual ssize_t writeBytes(const char bytes[], size_t n);
+public:
+	BufferedIODevice();
+
+private:
+	ByteArray  m_data;
+	int        m_maxSize;
+	IODevice  *m_dev;
+};
+
 
 class BufferedInputStream : public InputStream {
 	static const int MAX_SIZE = 512;

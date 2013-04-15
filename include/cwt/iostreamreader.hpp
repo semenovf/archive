@@ -1,16 +1,16 @@
 /**
- * @file   inputstreamreader.hpp
+ * @file   iostreamreader.hpp
  * @author wladt
  * @date   Mar 4, 2013 12:16:56 PM
  *
  * @brief
  */
 
-#ifndef __CWT_INPUTSTREAMREADER_HPP__
-#define __CWT_INPUTSTREAMREADER_HPP__
+#ifndef __CWT_IOSTREAMREADER_HPP__
+#define __CWT_IOSTREAMREADER_HPP__
 
 #include <cwt/cwt.h>
-#include <cwt/inputstream.hpp>
+#include <cwt/iostream.hpp>
 #include <cwt/textcodec.hpp>
 
 CWT_NS_BEGIN
@@ -34,4 +34,4 @@ private:
 
 CWT_NS_END
 
-#endif /* __CWT_INPUTSTREAMREADER_HPP__ */
+#endif /* __CWT_IOSTREAMREADER_HPP__ */

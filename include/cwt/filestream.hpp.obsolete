@@ -1,19 +1,22 @@
 /**
- * @file   fileinputstream.hpp
+ * @file   filestream.hpp
  * @author wladt
  * @date   Feb 28, 2013 11:53:25 AM
  *
  * @brief
  */
 
+#ifdef __OBSOLETE__
+
 #ifndef __CWT_FILESTREAM_HPP__
 #define __CWT_FILESTREAM_HPP__
 
 #include <cwt/cwt.h>
-#include <cwt/string.hpp>
-#include <cwt/bytearray.hpp>
+//#include <cwt/string.hpp>
+//#include <cwt/bytearray.hpp>
 #include <cwt/inputstream.hpp>
 #include <cwt/outputstream.hpp>
+#include <cwt/file.hpp>
 
 CWT_NS_BEGIN
 
@@ -53,3 +56,5 @@ private:
 CWT_NS_END
 
 #endif /* __CWT_FILESTREAM_HPP__ */
+
+#endif

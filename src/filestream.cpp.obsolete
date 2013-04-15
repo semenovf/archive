@@ -6,6 +6,8 @@
  * @brief
  */
 
+#ifdef __OBSOLETE__
+
 #include "../include/cwt/filestream.hpp"
 #include "../include/cwt/logger.hpp"
 #include <unistd.h>
@@ -136,3 +138,5 @@ ssize_t FileOutputStream::write(const char bytes[], size_t sz)
 }
 
 CWT_NS_END
+
+#endif
