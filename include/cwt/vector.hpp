@@ -143,8 +143,10 @@ void Vector<T>::detachAndRealloc(size_t newsize)
 
 
 template <typename T>
-inline Vector<T>::Vector() : m_d(NULL)
+inline Vector<T>::Vector() : m_d(new VectorData)
 {
+	m_d->count = 0;
+//	m_d->data.alloc(size);
 }
 
 template <typename T>
@@ -173,7 +175,7 @@ inline Vector<T>::Vector(const Vector<T> &other) : m_d(other.m_d)
 template <typename T>
 inline Vector<T>& Vector<T>::operator=(const Vector<T> & other)
 {
-	m_d == other.m_d;
+	m_d = other.m_d;
 	return *this;
 }
 
@@ -197,9 +199,10 @@ inline const T& Vector<T>::at(size_t i) const
 template <typename T>
 void Vector<T>::append(const T &value)
 {
-	T *d = m_d->data.data();
+	detach();
 	if (m_d->count == m_d->data.size())
 		reserve(m_d->count + 32);
+	T *d = m_d->data.data();
 	d[m_d->count++] = value;
 }
 
@@ -207,6 +210,7 @@ void Vector<T>::append(const T &value)
 template <typename T>
 void Vector<T>::prepend(const T &value)
 {
+	detach();
 	if (m_d->count == m_d->data.size())
 		reserve(m_d->count + 32);
 	m_d->data.move(1, 0, m_d->count);

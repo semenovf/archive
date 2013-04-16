@@ -8,6 +8,7 @@
 
 #include <cwt/logger.hpp>
 #include <cstdarg>
+#include <cstdlib>
 #include "logger_p.hpp"
 
 CWT_NS_BEGIN
@@ -19,15 +20,6 @@ void Logger::init()
 	Logger::connectAppender(&logAppender);
 	logAppender.setPriority(Logger::Trace);
 }
-
-/*
-static struct LoggerInit {
-	LoggerInit() {
-		static StdioLogAppender logAppender;
-		Logger::connectAppender(&logAppender);
-	}
-} __logger_init;
-*/
 
 class LogEmitter
 {
@@ -157,6 +149,7 @@ void Logger::fatal(const char * cformat, ...)
 	va_start(args, cformat);
 	g_logEmitter.emitFatal(String().vsprintf(cformat, args));
 	va_end(args);
+	abort();
 }
 
 

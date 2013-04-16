@@ -11,26 +11,31 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/stat.h>
 
 CWT_NS_BEGIN
+
+static int __perms_to_mode(int perms);
 
 class File::Impl {
 public:
 	Impl() : m_path(NULL), m_fd(-1) { ; }
 	~Impl() { close(); }
 
-	ssize_t bytesAvailable() const;
+	size_t bytesAvailable() const;
 	int close();
 	bool open(Errorable *ex, const char *path, int oflags);
 	ssize_t readBytes(Errorable *ex, char bytes[], size_t n);
 	ssize_t writeBytes(Errorable *ex, const char bytes[], size_t n);
+	bool    setPermissions(Errorable *ex, int perms);
 
+	static bool setPermissions(const char *path, int perms);
 public:
 	char *m_path;
 	int   m_fd;
 };
 
-ssize_t File::Impl::bytesAvailable() const
+size_t File::Impl::bytesAvailable() const
 {
 	off_t total;
 	off_t cur;
@@ -53,12 +58,15 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 	int fd;
 	int native_oflags = 0;
 
-	if (oflags & IODevice::ReadWrite)
+	if (oflags & IODevice::ReadWrite) {
 		native_oflags |= O_RDWR;
-	else if (oflags & IODevice::WriteOnly)
+		native_oflags |= O_CREAT;
+	} else if (oflags & IODevice::WriteOnly) {
 		native_oflags |= O_WRONLY;
-	else
+		native_oflags |= O_CREAT;
+	} else {
 		native_oflags |= O_RDONLY;
+	}
 
 	if (oflags & IODevice::NonBlocking)
 		native_oflags |= O_NONBLOCK;
@@ -113,13 +121,65 @@ ssize_t File::Impl::writeBytes(Errorable *ex, const char bytes[], size_t n)
 	return sz;
 }
 
-File::File() : pimpl(new Impl) { ; }
-ssize_t File::bytesAvailable() const { return pimpl->bytesAvailable(); }
+static int __perms_to_mode(int perms)
+{
+	int mode = 0;
+	if ((perms & File::ReadOwner) || (perms & File::ReadUser))
+		mode |= S_IRUSR;
+	if ((perms & File::WriteOwner) || (perms & File::WriteUser))
+	    mode |= S_IWUSR;
+	if ((perms & File::ExeOwner) || (perms & File::ExeUser))
+		mode |= S_IXUSR;
+	if (perms & File::ReadGroup)
+		mode |= S_IRGRP;
+	if (perms & File::WriteGroup)
+		mode |= S_IWGRP;
+	if (perms & File::ExeGroup)
+		mode |= S_IXGRP;
+	if (perms & File::ReadOther)
+		mode |= S_IROTH;
+	if (perms & File::WriteOther)
+		mode |= S_IWOTH;
+	if (perms & File::ExeOther)
+		mode |= S_IXOTH;
+
+	return mode;
+}
+
+bool File::Impl::setPermissions(Errorable *ex, int perms)
+{
+	CWT_ASSERT(m_path);
+
+	if (::chmod(m_path, __perms_to_mode(perms)) != 0) {
+		ex->addSystemError(errno, String().sprintf(_Tr("failed to change permissions to file (%s)")
+				, m_path != NULL ? m_path : "" ));
+		return false;
+	}
+
+	return true;
+}
+
+bool File::Impl::setPermissions(const char *path, int perms)
+{
+	CWT_ASSERT(path);
+
+	if (::chmod(path, __perms_to_mode(perms)) != 0) {
+		Logger::error(_Tr("failed to change permissions to file (%s)")
+				, path != NULL ? path : "");
+		return false;
+	}
+
+	return true;
+}
+
+File::File() : pimpl(new File::Impl) { ; }
+size_t  File::bytesAvailable() const { return pimpl->bytesAvailable(); }
 bool    File::open(const char *path, int oflags) {	return pimpl->open(this, path, oflags); }
 int     File::close() {	return pimpl->close(); }
 bool    File::opened() const { return pimpl->m_fd; }
 ssize_t File::readBytes(char bytes[], size_t n) { return pimpl->readBytes(this, bytes, n); }
 ssize_t File::writeBytes(const char bytes[], size_t n) { return pimpl->writeBytes(this, bytes, n); }
 
-
+bool File::setPermissions(int perms) { return pimpl->setPermissions(this, perms); }
+bool File::setPermissions(const char *path, int perms) { return File::Impl::setPermissions(path, perms); }
 CWT_NS_END

@@ -38,15 +38,15 @@ public:
 	};
 
 protected:
-	virtual ssize_t   readBytes(char bytes[], size_t n) = 0;
-	virtual ssize_t   writeBytes(const char bytes[], size_t n) = 0;
-	virtual ssize_t   bytesAvailable() const = 0;
+	virtual ssize_t readBytes(char bytes[], size_t n) = 0;
+	virtual ssize_t writeBytes(const char bytes[], size_t n) = 0;
+	virtual size_t  bytesAvailable() const = 0;
 
 public:
 	virtual int  close() = 0;
 	virtual bool opened() const = 0;
 
-	ssize_t      available() const                   { return m_buffer.size() + bytesAvailable(); }
+	size_t       available() const                   { return m_buffer.size() + bytesAvailable(); }
 	virtual bool atEnd() const                       { return available() == ssize_t(0); }
 	ssize_t      read(char bytes[], size_t n);
 	ssize_t      write(const char bytes[], size_t n);

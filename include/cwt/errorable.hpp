@@ -32,7 +32,6 @@ protected:
 
 public:
 	virtual ~Errorable() { clearErrors(); }
-	/*virtual ~Errorable() {}*/
 	void addSystemError(int errn, const char *prefix = 0);
 	void addSystemError(int errn, const String &prefix);
 	void addError(const char *text);
@@ -71,46 +70,15 @@ inline const String& Errorable::lastErrorText() const
 inline void Errorable::addError(const String& text)
 {
 	if (m_errors.size() > 0 && m_errors.last().errstr == text)
-		m_errors.last().ntimes++;
+		;
 	else
 		m_errors.append(ErrorData(text));
+	m_errors.last().ntimes++;
 }
 
 inline void Errorable::addError(const char *text)
 {
 	addError(String::fromUtf8(text));
-}
-
-inline void Errorable::addSystemError(int errn, const String &prefix)
-{
-	char errstr[SystemErrorBufLen];
-	cwt_strerror(errn, errstr, SystemErrorBufLen);
-	if (prefix.isEmpty()) {
-		addError(String::fromUtf8(errstr));
-	} else {
-		addError(String().sprintf("%ls: %s", prefix.unicode(), errstr));
-	}
-}
-
-inline void Errorable::addSystemError(int errn, const char *prefix)
-{
-	if (prefix)
-		addSystemError(errn, String::null());
-	else
-		addSystemError(errn, String::fromUtf8(prefix));
-}
-
-inline void Errorable::logErrors() const
-{
-	Vector<ErrorData>::const_iterator itEnd = m_errors.end();
-	for (Vector<ErrorData>::const_iterator it = m_errors.begin()
-			; it != itEnd; ++it) {
-		if (it->ntimes > 1) {
-			Logger::error("%ls", it->errstr.unicode());
-		} else {
-			Logger::error(_Tr("%ls <occured %d times>"), it->errstr.unicode(), it->ntimes);
-		}
-	}
 }
 
 CWT_NS_END
