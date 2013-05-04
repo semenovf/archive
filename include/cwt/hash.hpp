@@ -24,6 +24,8 @@ public:
 	Hash(const Hash<Key, T> &other) : impl(other.impl) {}
 	~Hash() {}
 
+	T&	           at(const Key & key) { return impl.operator [](key); }
+	const T        at(const Key & key) const { return impl.operator [](key); }
 	iterator       begin() { return impl.begin(); }
 	const_iterator begin() const { return impl.begin(); }
 	iterator       end() { return impl.end(); }

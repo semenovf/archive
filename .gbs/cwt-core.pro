@@ -7,13 +7,13 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = cwt-core  \
+    examples/logger  \
     tests/array      \
     tests/bytestream \
     tests/dl         \
     tests/file       \
     tests/fsm        \
     tests/hash       \
-    tests/logger     \
     tests/md5        \
     tests/petaloid   \
     tests/sepaloid   \

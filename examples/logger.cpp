@@ -8,7 +8,6 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(1);
 
     StdioLogAppender stdlogger;
     stdlogger.setPattern(_U("%d{ABSOLUTE} [%p]: %m"));
@@ -21,7 +20,6 @@ int main(int argc, char *argv[])
     Logger::info("logging info");
     Logger::warn("logging warn");
     Logger::error("logging error");
-    Logger::fatal("logging fatal");
 
     stdlogger.setPattern(_U("%d{DATE} [%p]: %m"));
     printf("--All messages will be print excluding Trace and Debug with date as DATE specifier:\n");
@@ -31,7 +29,6 @@ int main(int argc, char *argv[])
     Logger::info("logging info");
     Logger::warn("logging warn");
     Logger::error("logging error");
-    Logger::fatal("logging fatal");
 
     stdlogger.setPattern(_U("%d{ISO8601} [%p]: %m"));
     printf("--Only Warn, Error an Fatal level messages will be print with date as ISO8601 specifier:\n");
@@ -41,7 +38,6 @@ int main(int argc, char *argv[])
     Logger::info("logging info");
     Logger::warn("logging warn");
     Logger::error("logging error");
-    Logger::fatal("logging fatal");
 
     stdlogger.setPriority(Logger::Trace);
 
@@ -56,5 +52,5 @@ int main(int argc, char *argv[])
 
     Logger::disconnectAppender(&stdlogger);
 
-    CWT_END_TESTS;
+    return EXIT_SUCCESS;
 }

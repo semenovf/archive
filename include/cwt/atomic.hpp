@@ -12,19 +12,19 @@
 #include <cwt/cwt.h>
 
 #if defined(CWT_CC_MSVC)
-#	pragma message("Using MSVC implementation for atomic variables")
+//#	pragma message("Using MSVC implementation for atomic variables")
 #	include <cwt/atomic_msvc.hpp>
 #elif defined(CWT_CPP_CXX11)
-#	pragma message("Using C++11 implementation for atomic variables")
+//#	pragma message("Using C++11 implementation for atomic variables")
 #	include <cwt/atomic_cxx11.hpp>
 #elif defined(CWT_CC_GNUC)
-#	pragma message("Using GCC implementation for atomic variables")
+//#	pragma message("Using GCC implementation for atomic variables")
 #	include <cwt/atomic_gcc.hpp>
 #elif defined(CWT_TARGET_CPU) && (defined(CWT_TARGET_CPU_X86) || defined(CWT_TARGET_CPU_x86))
-#	pragma message("Using x86 implementation for atomic variables")
+//#	pragma message("Using x86 implementation for atomic variables")
 #	include <cwt/atomic_x86.hpp>
 #else
-#	pragma message("Using implementation with locking (worst case) for atomic variables")
+//#	pragma message("Using implementation with locking (worst case) for atomic variables")
 #	include <cwt/atomic_mt.hpp>
 #endif
 
