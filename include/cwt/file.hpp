@@ -41,6 +41,7 @@ public:
 	File();
 	bool open(const char *path, int oflags);
 	virtual int  close();
+	virtual void flush();
 	virtual bool opened() const;
 	bool setPermissions(int perms);
 

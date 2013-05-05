@@ -22,6 +22,7 @@ public:
 	Impl() : m_path(NULL), m_fd(-1) { ; }
 	~Impl() { close(); }
 
+	void flush();
 	size_t bytesAvailable() const;
 	int close();
 	bool open(Errorable *ex, const char *path, int oflags);
@@ -34,6 +35,14 @@ public:
 	char *m_path;
 	int   m_fd;
 };
+
+
+void File::Impl::flush()
+{
+	if (m_fd > 0) {
+		::fsync(m_fd);
+	}
+}
 
 size_t File::Impl::bytesAvailable() const
 {
@@ -175,7 +184,8 @@ bool File::Impl::setPermissions(const char *path, int perms)
 File::File() : pimpl(new File::Impl) { ; }
 size_t  File::bytesAvailable() const { return pimpl->bytesAvailable(); }
 bool    File::open(const char *path, int oflags) {	return pimpl->open(this, path, oflags); }
-int     File::close() {	return pimpl->close(); }
+int     File::close()   { return pimpl->close(); }
+void    File::flush()   { pimpl->flush(); }
 bool    File::opened() const { return pimpl->m_fd; }
 ssize_t File::readBytes(char bytes[], size_t n) { return pimpl->readBytes(this, bytes, n); }
 ssize_t File::writeBytes(const char bytes[], size_t n) { return pimpl->writeBytes(this, bytes, n); }

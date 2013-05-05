@@ -23,7 +23,7 @@ void Errorable::addSystemError(int errn, const String &prefix)
 
 void Errorable::addSystemError(int errn, const char *prefix)
 {
-	if (prefix)
+	if (!prefix)
 		addSystemError(errn, String::null());
 	else
 		addSystemError(errn, String::fromUtf8(prefix));
