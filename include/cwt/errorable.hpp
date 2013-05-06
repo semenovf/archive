@@ -42,7 +42,7 @@ public:
 	bool isError() const { return m_errors.size() != 0; }
 	bool isGood() const { return m_errors.size() == 0; }
 	const String& lastErrorText() const;
-	void logErrors() const;
+	void logErrors(bool clear = true);
 
 private:
 	Vector<ErrorData> m_errors;

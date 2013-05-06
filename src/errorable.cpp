@@ -29,10 +29,10 @@ void Errorable::addSystemError(int errn, const char *prefix)
 		addSystemError(errn, String::fromUtf8(prefix));
 }
 
-void Errorable::logErrors() const
+void Errorable::logErrors(bool clear)
 {
-	Vector<ErrorData>::const_iterator itEnd = m_errors.end();
-	for (Vector<ErrorData>::const_iterator it = m_errors.begin()
+	Vector<ErrorData>::const_iterator itEnd = m_errors.cend();
+	for (Vector<ErrorData>::const_iterator it = m_errors.cbegin()
 			; it != itEnd; ++it) {
 		if (it->ntimes > 1) {
 			Logger::error(_Tr("%ls <occured %d times>"), it->errstr.unicode(), it->ntimes);
@@ -41,6 +41,9 @@ void Errorable::logErrors() const
 			Logger::error("%ls", it->errstr.unicode());
 		}
 	}
+
+	if (clear)
+		clearErrors();
 }
 
 CWT_NS_END
