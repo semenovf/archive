@@ -8,9 +8,8 @@
 
 
 #include <cwt/test.h>
-#include <cwt/logger.hpp>
 
-using namespace cwt;
+//using namespace cwt;
 
 /*
 
@@ -32,7 +31,6 @@ int main(int argc, char *argv[])
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
     CWT_BEGIN_TESTS(1);
-    Logger::init();
 
 /*    size_t nfiles = sizeof(utf8_files)/sizeof(utf8_files[0]);
 

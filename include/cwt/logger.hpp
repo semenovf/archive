@@ -25,7 +25,6 @@ public:
 	enum Priority { Trace, Debug, Info, Warn, Error, Fatal, NoLog };
 
 public:
-	static void init();
 	static void connectAppender(LogAppender *appender);
 	static void disconnectAppender(LogAppender *appender);
 	static void trace(const char * cformat, ...);
@@ -48,9 +47,9 @@ public:
 	void connect();
 	void disconnect();
 public:
-	LogAppender() : m_pattern(_U("%m")), m_priority(Logger::Trace) { }
-	LogAppender(const String &pattern) : m_pattern(pattern), m_priority(Logger::Trace) {}
-	virtual ~LogAppender() { disconnect(); }
+	LogAppender() : m_connected(false), m_pattern(_U("%m")), m_priority(Logger::Trace) { }
+	LogAppender(const String &pattern) : m_connected(false), m_pattern(pattern), m_priority(Logger::Trace) {}
+	virtual ~LogAppender() { if(m_connected) disconnect(); }
 
 	void setPattern(const String &pattern) { m_pattern = pattern; }
 	void setPriority(Logger::Priority level);
@@ -68,6 +67,7 @@ protected:
 	String patternify(Logger::Priority priority, const String &msg) { return patternify(priority, m_pattern, msg); }
 
 private:
+	bool m_connected;
 	String m_pattern;
 	Logger::Priority m_priority;
 };
@@ -77,7 +77,7 @@ class NullLogAppender : public LogAppender
 {
 public:
 	NullLogAppender() {}
-	virtual ~NullLogAppender() {}
+	~NullLogAppender() {}
 	virtual void trace(const String&) {}
 	virtual void debug(const String&) {}
 	virtual void info(const String&) {}
@@ -91,7 +91,7 @@ class StdioLogAppender : public LogAppender
 {
 public:
 	StdioLogAppender() {}
-	virtual ~StdioLogAppender() {}
+	~StdioLogAppender() {}
 	virtual void trace(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Trace, msg).toUtf8().data()); }
 	virtual void debug(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Debug, msg).toUtf8().data()); }
 	virtual void info(const String &msg)  { ::fprintf(stdout, "%s\n", patternify(Logger::Info, msg).toUtf8().data()); }
@@ -104,7 +104,7 @@ class StringsLogAppender : public LogAppender
 {
 public:
 	StringsLogAppender() {}
-	virtual ~StringsLogAppender() {}
+	~StringsLogAppender() {}
 	virtual void trace(const String &msg) { m_traceStrings.append(patternify(Logger::Trace, msg)); }
 	virtual void debug(const String &msg) { m_debugStrings.append(patternify(Logger::Debug, msg)); }
 	virtual void info(const String &msg)  { m_infoStrings.append(patternify (Logger::Info, msg)); }

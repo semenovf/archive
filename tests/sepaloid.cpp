@@ -1,6 +1,5 @@
 #include <cwt/test.h>
 #include <cwt/sepaloid.hpp>
-#include <cwt/logger.hpp>
 #include <cstring>
 
 using namespace cwt;
@@ -47,7 +46,7 @@ const EmitterMapping* LocalPetaloidEmitter::getEmitters(int *count)
 class LocalPetaloidDetector : public Petaloid
 {
 public:
-	LocalPetaloidDetector() : Petaloid("LocalPetalodDetector") {}
+	LocalPetaloidDetector() : Petaloid("LocalPetaloidDetector") {}
 	virtual ~LocalPetaloidDetector() {}
 	virtual const EmitterMapping* getEmitters(int *count) { CWT_UNUSED(count); return NULL; }
 	virtual const DetectorMapping* getDetectors(int *count);
@@ -145,8 +144,6 @@ int main(int argc, char *argv[])
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
     CWT_BEGIN_TESTS(13);
-
-    Logger::init();
 
     LocalPetaloidEmitter *emitter = new LocalPetaloidEmitter;
     LocalPetaloidDetector *detector = new LocalPetaloidDetector;

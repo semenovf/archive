@@ -8,7 +8,6 @@
 
 
 #include <cwt/test.h>
-#include <cwt/logger.hpp>
 #include <cwt/bytearray.hpp>
 #include <cwt/file.hpp>
 
@@ -64,7 +63,6 @@ int main(int argc, char *argv[])
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
     CWT_BEGIN_TESTS(9);
-    Logger::init();
 
     File file;
     CWT_TEST_FAIL(file.open(FILENAME, IODevice::WriteOnly)); //file.lastErrorText().toUtf8().data());

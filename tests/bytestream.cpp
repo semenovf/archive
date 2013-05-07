@@ -8,10 +8,9 @@
 
 
 #include <cwt/test.h>
-#include <cwt/logger.hpp>
 #include <cstring>
 
-using namespace cwt;
+//using namespace cwt;
 
 #ifdef __COMMENT__
 
@@ -114,7 +113,6 @@ int main(int argc, char *argv[])
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
     CWT_BEGIN_TESTS(21);
-    Logger::init();
 
 #ifdef __COMMENT__
     FileOutputStream fos(filename, false);
