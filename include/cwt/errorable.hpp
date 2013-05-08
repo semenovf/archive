@@ -32,9 +32,9 @@ protected:
 
 public:
 	virtual ~Errorable() { clearErrors(); }
-	void addSystemError(int errn, const char *prefix = 0);
+	void addSystemError(int errn, const char *prefix, ...);
 	void addSystemError(int errn, const String &prefix);
-	void addError(const char *text);
+	void addError(const char * cformat, ...);
 	void addError(const String& text);
 	void clearErrors() { m_errors.clear(); }
 	size_t errorCount() const;
@@ -74,11 +74,6 @@ inline void Errorable::addError(const String& text)
 	else
 		m_errors.append(ErrorData(text));
 	m_errors.last().ntimes++;
-}
-
-inline void Errorable::addError(const char *text)
-{
-	addError(String::fromUtf8(text));
 }
 
 CWT_NS_END

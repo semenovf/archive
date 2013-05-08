@@ -670,7 +670,7 @@ static bool set_port(const void *data, size_t len, void *context, void *action_a
 			bool ok;
 			ctx->uridata->port = digits.toUShort(&ok, 10);
 			if (!ok) {
-				ctx->status->addError(_Ur("invalid port"));
+				ctx->status->addError(_Tr("invalid port"));
 				return false;
 			}
 		}

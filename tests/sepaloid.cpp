@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(13);
+    CWT_BEGIN_TESTS(14);
 
     LocalPetaloidEmitter *emitter = new LocalPetaloidEmitter;
     LocalPetaloidDetector *detector = new LocalPetaloidDetector;
@@ -156,6 +156,15 @@ int main(int argc, char *argv[])
     CWT_TEST_OK(sepaloid.registerPetaloidForName(_U("petaloid-tmpl")));
     sepaloid.connectAll();
 
+    CWT_TEST_FAIL(sepaloid.count() == 4);
+    Sepaloid::const_iterator it = sepaloid.cbegin();
+    Sepaloid::const_iterator itEnd = sepaloid.cend();
+
+    Logger::debug("List of registered petaloids:");
+    for (int i = 0; it != itEnd; ++it, ++i) {
+    	Logger::debug("Petaloid %02d: %ls", i, it->name().utf16());
+    }
+
     emitter->emitZeroArg   ();
     emitter->emitOneArg    (true);
     emitter->emitTwoArgs   (true, 'c');
@@ -166,6 +175,7 @@ int main(int argc, char *argv[])
     emitter->emitSevenArgs (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, "Hello, World!", _U("Hello, Unicode World!"));
     emitter->emitEightArgs (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, CWT_LONG_MAX, "Hello, World!", _U("Hello, Unicode World!"));
 
+    // This calls are optional - will be executed while sepaloid destruction
     sepaloid.disconnectAll();
     sepaloid.unregisterAll();
 

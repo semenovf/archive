@@ -31,10 +31,10 @@ public:
         inline T &             operator [] (int j) const { return *(i + j); }
         inline bool            operator == (const iterator &o) const { return i == o.i; }
         inline bool            operator != (const iterator &o) const { return i != o.i; }
-        inline bool            operator <  (const iterator& other) const { return i < other.i; }
-        inline bool            operator <= (const iterator& other) const { return i <= other.i; }
-        inline bool            operator >  (const iterator& other) const { return i > other.i; }
-        inline bool            operator >= (const iterator& other) const { return i >= other.i; }
+        inline bool            operator <  (const iterator &o) const { return i <  o.i; }
+        inline bool            operator <= (const iterator &o) const { return i <= o.i; }
+        inline bool            operator >  (const iterator &o) const { return i >  o.i; }
+        inline bool            operator >= (const iterator &o) const { return i >= o.i; }
         inline iterator&       operator ++ () { ++i; return *this; }
         inline iterator        operator ++ (int) { T *n = i; ++i; return n; }
         inline iterator&       operator -- () { i--; return *this; }

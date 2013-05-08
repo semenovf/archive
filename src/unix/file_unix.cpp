@@ -86,7 +86,7 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 	fd = ::open(path, native_oflags);
 
 	if (fd < 0) {
-		ex->addSystemError(errno, String().sprintf(_Tr("failed to open '%s'"), path));
+		ex->addSystemError(errno, _Tr("failed to open '%s'"), path);
 		return false;
 	}
 	m_fd = fd;
@@ -112,8 +112,8 @@ ssize_t File::Impl::readBytes(Errorable *ex, char bytes[], size_t n)
 
 	sz = ::read(m_fd, bytes, n);
 	if (sz < 0) {
-		ex->addSystemError(errno, String().sprintf(_Tr("failed to read from file (%s)")
-				, m_path != NULL ? m_path : "" ));
+		ex->addSystemError(errno, _Tr("failed to read from file (%s)")
+				, m_path != NULL ? m_path : "" );
 	}
 	return sz;
 }
@@ -124,8 +124,8 @@ ssize_t File::Impl::writeBytes(Errorable *ex, const char bytes[], size_t n)
 
 	sz = ::write(m_fd, bytes, n);
 	if( sz < 0 ) {
-		ex->addSystemError(errno, String().sprintf(_Tr("failed to write to file (%s)")
-				, m_path != NULL ? m_path : "" ));
+		ex->addSystemError(errno, _Tr("failed to write to file (%s)")
+				, m_path != NULL ? m_path : "" );
 	}
 	return sz;
 }
@@ -160,8 +160,8 @@ bool File::Impl::setPermissions(Errorable *ex, int perms)
 	CWT_ASSERT(m_path);
 
 	if (::chmod(m_path, __perms_to_mode(perms)) != 0) {
-		ex->addSystemError(errno, String().sprintf(_Tr("failed to change permissions to file (%s)")
-				, m_path != NULL ? m_path : "" ));
+		ex->addSystemError(errno, _Tr("failed to change permissions to file (%s)")
+				, m_path != NULL ? m_path : "");
 		return false;
 	}
 

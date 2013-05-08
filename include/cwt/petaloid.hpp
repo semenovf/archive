@@ -37,11 +37,11 @@ private:
 	Petaloid() : m_name(NULL), m_uuid() {}
 
 public:
-	Petaloid(const char *name) : m_name(name), m_uuid() {}
-	Petaloid(const char *name, const uuid_t &uuid) : m_name(name), m_uuid(uuid) {}
-	Petaloid(const char *name, const Uuid &uuid) : m_name(name), m_uuid(uuid) {}
+	Petaloid(const char *name) : m_name(String().fromUtf8(name)), m_uuid() {}
+	Petaloid(const char *name, const uuid_t &uuid) : m_name(String().fromUtf8(name)), m_uuid(uuid) {}
+	Petaloid(const char *name, const Uuid &uuid) : m_name(String().fromUtf8(name)), m_uuid(uuid) {}
 	virtual ~Petaloid() {}
-	const char* name() const { return m_name; }
+	const String& name() const { return m_name; }
 	const uuid_t& uuid() const { return m_uuid.uuid(); }
 
 	static void defaultDtor(Petaloid *p) { CWT_ASSERT(p); delete p; }
@@ -50,7 +50,7 @@ public:
 	virtual const DetectorMapping* getDetectors(int *count) { CWT_ASSERT(count); return NULL; }
 
 private:
-	const char *m_name;
+	String m_name;
 	Uuid m_uuid;
 };
 

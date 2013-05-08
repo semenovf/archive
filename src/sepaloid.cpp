@@ -6,8 +6,8 @@
  *  Removed to CWT on: Feb 12, 2013
  */
 
-#include "../include/cwt/sepaloid.hpp"
 #include "../include/cwt/logger.hpp"
+#include "../include/cwt/sepaloid.hpp"
 #include "../include/cwt/filesystem.hpp"
 #include "../include/cwt/dl.hpp"
 
@@ -33,7 +33,7 @@ Petaloid* Sepaloid::registerStaticPetaloid(Petaloid &petaloid)
 Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pname, int arg, char **argv)
 {
 	if (!FileSystem::exists(path)) {
-		Logger::error(_Tr("Petaloid not found by specified path: %ls"), path.utf16());
+		addError(_Tr("Petaloid not found by specified path: %s"), path.utf16());
 		return NULL;
 	}
 
@@ -47,10 +47,10 @@ Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pnam
 			if (p) {
 				return registerPetaloid(*p, ph, petaloid_dtor) ? p : NULL;
 			} else {
-				Logger::error(_Tr("failed to construct Petaloid specified by path: %ls"), path.utf16());
+				addError(_Tr("failed to construct Petaloid specified by path: %ls"), path.utf16());
 			}
 		} else {
-			Logger::error(_Tr("constructor not found for Petaloid specified by path: %ls"), path.utf16());
+			addError(_Tr("constructor not found for Petaloid specified by path: %ls"), path.utf16());
 		}
 		Dl::close(ph);
 	}
@@ -76,7 +76,7 @@ Petaloid* Sepaloid::registerPetaloidForName(const String &name, const char *pnam
 			return registerPetaloidForPath(path, pname, arg, argv);
 		}
 	}
-	Logger::error(_Tr("Petaloid not found by specified name: %ls"), name.utf16());
+	addError(_Tr("Petaloid not found by specified name: %ls"), name.utf16());
 	return NULL;
 }
 
@@ -96,9 +96,9 @@ bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor
 				it.value()->map->appendEmitter(reinterpret_cast<Emitter*>(emitters[i].emitter));
 			} else {
 				Logger::warn(
-					_Tr("emitter '%s' not found while registering Petaloid '%s' ...")
+					_Tr("emitter '%s' not found while registering Petaloid '%ls' ...")
 					, emitters[i].id
-					, petaloid.name());
+					, petaloid.name().utf16());
 				Logger::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
@@ -112,9 +112,9 @@ bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor
 				it.value()->map->appendDetector(&petaloid, detectors[i].detector);
 			} else {
 				Logger::warn(
-					_Tr("detector '%s' not found while registering Petaloid '%s' ...")
+					_Tr("detector '%s' not found while registering Petaloid '%ls' ...")
 					, emitters[i].id
-					, petaloid.name());
+					, petaloid.name().utf16());
 				Logger::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
@@ -122,7 +122,7 @@ bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor
 
 	PetaloidSpec pspec(&petaloid, ph, dtor);
 	m_petaloids.append(pspec);
-	Logger::debug("Petaloid [%s] registered.", petaloid.name());
+	Logger::debug("Petaloid [%ls] registered.", petaloid.name().utf16());
 
 	return true;
 }
