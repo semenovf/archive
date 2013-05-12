@@ -33,15 +33,16 @@ sub startup {
     
     # Router
     my $r = $self->routes;
+    $r->namespaces(['HgWeb::Controller']);
     
     # Normal route to controller
-    $r->any('/account')          ->to('account#list');
-    $r->any('/account/create')   ->to('account#create');
+    $r->any('/account')        ->to('account#list');
+    $r->any('/account/create') ->to('account#create');
     
-    $r->post('/tr')              ->to('transaction#input');
-    $r->post('/tr/create')       ->to('transaction#new');
+    $r->any('/tr')             ->to('transaction#list');
+    $r->any('/tr/create')      ->to('transaction#create');
     
-    $r->any('/(*)')              ->to(cb => sub {
+    $r->any('/(*)')            ->to(cb => sub {
         my $self = shift;
 #        $self->res->code(404);
 #        $self->res->message('Not Found');

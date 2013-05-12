@@ -48,4 +48,9 @@ sub toList
     return \@syslogList;
 }
 
+sub input
+{
+    
+}
+
 1;

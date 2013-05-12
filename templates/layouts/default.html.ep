@@ -2,14 +2,27 @@
 <html lang="<%=l 'lang_short' %>" >
 <head>
     <title><%= title %></title>
+    <meta name="robots" content="none"/>
+    <meta http-equiv="expires" content="0"/>
+    <meta http-equiv="pragma" content="no-cache"/>
+    <meta http-equiv="cache-control" content="no-cache"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <link rel="icon" href="<%= url_for('/img/favicon.ico') %>" type="image/x-icon">
+    
+    <!-- Boostrap -->
+    <!--
     <link rel="stylesheet" href="<%= url_for('/bootstrap/css/bootstrap.css') %>">
     <link rel="stylesheet" href="<%= url_for('/bootstrap/css/bootstrap-responsive.css') %>">
-
-%= content 'header'
-
+    -->
+    
+    <!-- jQuery, jQueryUI -->
+    <link rel="stylesheet" href="<%= url_for('/jquery-ui/1.10.3/themes/start/jquery-ui.css') %>" />
+    <script src="<%= url_for('/jquery/1.9.1/jquery.js') %>"></script>
+    <script src="<%= url_for('/jquery-ui/1.10.3/jquery-ui.js')%>"></script>
+    
+    <%= content 'header' %>
 </head>
+
 <body>
 <%= content %>
 </body>
