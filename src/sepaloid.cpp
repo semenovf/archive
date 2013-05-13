@@ -33,7 +33,7 @@ Petaloid* Sepaloid::registerStaticPetaloid(Petaloid &petaloid)
 Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pname, int arg, char **argv)
 {
 	if (!FileSystem::exists(path)) {
-		addError(_Tr("Petaloid not found by specified path: %s"), path.utf16());
+		addError(_Tr("petaloid not found by specified path: %s"), path.utf16());
 		return NULL;
 	}
 
@@ -43,7 +43,7 @@ Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pnam
 		petaloid_dtor_t petaloid_dtor = reinterpret_cast<petaloid_dtor_t>(Dl::ptr(ph, CWT_PETALOID_DESTRUCTOR_NAME));
 
 		if (petaloid_ctor) {
-			Petaloid *p = reinterpret_cast<Petaloid*>(petaloid_ctor(pname, arg, argv));
+			Petaloid *p = reinterpret_cast<Petaloid*>(petaloid_ctor(this, pname, arg, argv));
 			if (p) {
 				return registerPetaloid(*p, ph, petaloid_dtor) ? p : NULL;
 			} else {
@@ -53,6 +53,8 @@ Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pnam
 			addError(_Tr("constructor not found for Petaloid specified by path: %ls"), path.utf16());
 		}
 		Dl::close(ph);
+	} else {
+		addError(_Tr("failed to open petaloid specified by path: %ls"), path.utf16());
 	}
 	return NULL;
 }
@@ -69,14 +71,15 @@ Petaloid* Sepaloid::registerPetaloidForName(const String &name, const char *pnam
 		path.append(FileSystem::separator());
 		path.append(filename);
 
+		Logger::debug(_Tr("looking for petaloid '%ls' at '%ls' as '%ls'")
+				, name.utf16()
+				, it->utf16()
+				, path.utf16());
 		if (FileSystem::exists(path)) {
-			Logger::debug(_Tr("Petaloid found at '%ls' by specified name: %ls")
-					, it->utf16()
-					, name.utf16());
 			return registerPetaloidForPath(path, pname, arg, argv);
 		}
 	}
-	addError(_Tr("Petaloid not found by specified name: %ls"), name.utf16());
+	addError(_Tr("petaloid not found by specified name: %ls"), name.utf16());
 	return NULL;
 }
 

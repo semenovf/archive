@@ -18,6 +18,7 @@ CWT_NS_BEGIN
 #define DETECTOR_CAST(slot) reinterpret_cast<cwt::Detector>(&slot)
 #define EMITTER_CAST(e)     reinterpret_cast<void *>(&e)
 
+class Sepaloid;
 class Petaloid;
 typedef signal1<void*> Emitter;
 typedef void (Petaloid::*Detector)(void*);
@@ -27,7 +28,7 @@ typedef struct { const char *id; Detector  detector; } DetectorMapping;
 #define CWT_PETALOID_API extern "C" DLL_API
 #define CWT_PETALOID_CONSTRUCTOR_NAME "__petaloid_ctor__"
 #define CWT_PETALOID_DESTRUCTOR_NAME "__petaloid_dtor__"
-typedef Petaloid* (*petaloid_ctor_t)(const char *name, int argc, char **argv);
+typedef Petaloid* (*petaloid_ctor_t)(Sepaloid *sepaloid, const char *name, int argc, char **argv);
 typedef void  (*petaloid_dtor_t)(Petaloid*);
 
 
@@ -46,8 +47,8 @@ public:
 
 	static void defaultDtor(Petaloid *p) { CWT_ASSERT(p); delete p; }
 
-	virtual const EmitterMapping* getEmitters(int *count)   { CWT_ASSERT(count); return NULL; }
-	virtual const DetectorMapping* getDetectors(int *count) { CWT_ASSERT(count); return NULL; }
+	virtual const EmitterMapping* getEmitters(int *count)   { CWT_ASSERT(count); *count = 0; return 0; }
+	virtual const DetectorMapping* getDetectors(int *count) { CWT_ASSERT(count); *count = 0; return 0; }
 
 private:
 	String m_name;
