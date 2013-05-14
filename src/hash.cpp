@@ -1,43 +1,51 @@
+/*
+
+Copyright (c) 2005-2008, Simon Howard
+
+Permission to use, copy, modify, and/or distribute this software
+for any purpose with or without fee is hereby granted, provided
+that the above copyright notice and this permission notice appear
+in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE
+AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*/
+
 /**
  * @file   hash.cpp
  * @author wladt
- * @date   Feb 27, 2013 1:30:49 PM
+ * @date   May 14, 2013 9:51:17 AM
  *
  * @brief
  */
 
+
 #include "../include/cwt/hash.hpp"
-#include "../include/cwt/char.hpp"
-//CWT_NS_BEGIN
 
-static inline uint_t hash(const byte_t *p, int len, uint_t seed)
-{
-    uint_t h = seed;
+/* This is a set of good hash table prime numbers, from:
+* http://planetmath.org/encyclopedia/GoodHashTablePrimes.html
+* Each prime is roughly double the previous value, and as far as
+* possible from the nearest powers of two. */
 
-    for (int i = 0; i < len; ++i)
-        h = 31 * h + p[i];
-
-    return h;
-}
-
-static inline uint_t hash(const cwt::Char *p, int len, uint_t seed)
-{
-    uint_t h = seed;
-
-    for (int i = 0; i < len; ++i)
-        h = 31 * h + p[i].unicode();
-
-    return h;
-}
-
-#if QT_VERSION < 0x050000
-DLL_API uint_t qHash(const cwt::String &key)    { return hash(reinterpret_cast<const cwt::Char*>(key.data()), key.size(), 0); }
-DLL_API uint_t qHash(const cwt::ByteArray &key) { return hash(reinterpret_cast<const byte_t*>(key.data()), key.size(), 0); }
-DLL_API uint_t qHash(const uuid_t &key)         { return hash(reinterpret_cast<const byte_t*>(&key), sizeof(key), 0); }
-#else
-DLL_API uint_t qHash(const cwt::String &key, uint_t seed)    { return hash(reinterpret_cast<const cwt::Char*>(key.data()), key.size(), seed); }
-DLL_API uint_t qHash(const cwt::ByteArray &key, uint_t seed) { return hash(reinterpret_cast<const byte_t*>(key.data()), key.size(), seed); }
-DLL_API uint_t qHash(const uuid_t &key, uint_t seed)         { return hash(reinterpret_cast<const byte_t*>(&key), sizeof(key), seed); }
+static const uint_t __primes[] = {
+	  53, 97, 193, 389, 769, 1543, 3079, 6151, 12289, 24593, 49157u
+#ifndef CWT_OS_MSDOS
+	, 98317, 196613, 393241, 786433, 1572869, 3145739, 6291469
+	, 12582917, 25165843, 50331653, 100663319, 201326611
+	, 402653189, 805306457, 1610612741
 #endif
+};
 
-//CWT_NS_END
+static const size_t __primes_count = sizeof(__primes) / sizeof(uint_t);
+
+const uint_t* primes_for_hash(/*out*/ size_t *count)
+{
+	*count = __primes_count;
+	return __primes;
+}

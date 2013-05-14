@@ -30,7 +30,7 @@ public:
 	void        alloc (size_t capacity);
 	T&          at(size_t index) { CWT_ASSERT(index < m_capacity); return m_head[index]; }
 	const T&    at(size_t index) const { CWT_ASSERT(index < m_capacity); return m_head[index]; }
-	void        bzero () { if(m_head) memset(m_head, 0, m_capacity * sizeof(T)); }
+	void        bzero () { if(m_head) ::memset(m_head, 0, m_capacity * sizeof(T)); }
 	Array*      clone () const;
 	//void        copy  (Array &to, size_t off_to, size_t off_from, size_t n) const;
 	T*          data  ()       { return m_head; }
