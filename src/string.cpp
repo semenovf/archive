@@ -7,6 +7,7 @@
  */
 
 #include "../../include/cwt/string.hpp"
+#include "../../include/cwt/hash.hpp"
 #include <cstring>
 
 
@@ -15,6 +16,11 @@
 CWT_NS_BEGIN
 
 static const String __nullString;
+
+DLL_API uint_t hash_func(const String &key, uint_t seed)
+{
+    return hash_chars(key.unicode(), key.size(), seed);
+}
 
 /**
  * Constructs a null string. Null strings are also empty.

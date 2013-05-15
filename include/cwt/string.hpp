@@ -148,6 +148,8 @@ private:
     friend class TextStream;
 };
 
+DLL_API uint_t hash_func(const String &key, uint_t seed);
+
 CWT_NS_END
 
 #endif /* __CWT_STRING_HPP__ */

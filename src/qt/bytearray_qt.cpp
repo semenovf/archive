@@ -21,6 +21,7 @@ ByteArray& ByteArray::append(char ch)                    { pimpl->append(ch); re
 void ByteArray::clear()                                  { pimpl->clear(); }
 char* ByteArray::data()                                  { return pimpl->data(); }
 const char* ByteArray::data() const                      { return pimpl->data(); }
+const char* ByteArray::constData() const                 { return pimpl->data(); }
 size_t ByteArray::length() const                         { return size(); }
 ByteArray& ByteArray::remove(int pos, int len)           { pimpl->remove(pos, len); return *this; }
 void ByteArray::reserve(int size)                        { pimpl->reserve(size); }

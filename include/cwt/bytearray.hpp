@@ -35,6 +35,7 @@ public:
 	void clear();
 	char* data();
 	const char* data() const;
+	const char* constData() const;
 	size_t length() const;
 	ByteArray& remove(int pos, int len);
 	void reserve(int size);
@@ -62,6 +63,8 @@ private:
     typedef unique_ptr<Impl> ImplPtr;
     ImplPtr pimpl;
 };
+
+DLL_API uint_t hash_func(const ByteArray &key, uint seed = 0);
 
 CWT_NS_END
 

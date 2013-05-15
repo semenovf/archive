@@ -75,6 +75,8 @@ private:
 	char_type ucs;
 };
 
+DLL_API uint_t hash_func(Char key, uint_t seed = 0);
+
 CWT_NS_END
 
 #endif /* __CWT_CHAR_HPP__ */

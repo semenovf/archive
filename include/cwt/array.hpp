@@ -40,6 +40,7 @@ public:
 	void        realloc (size_t new_capacity);
 	size_t      size  () const { return m_capacity; }
 	size_t      capacity() const { return m_capacity; }
+	void        swap(Array<T> & other);
 
 	T&          operator [] (size_t index) { return at(index); }
 	const T&    operator [] (size_t index) const { return at(index); }
@@ -173,6 +174,22 @@ void Array<T>::move (size_t off_to, size_t off_from, size_t n)
 	n = CWT_MIN(n, m_capacity - off_to);
 
 	memmove(m_head + off_to, m_head + off_from, n * sizeof(T));
+}
+
+template <typename T>
+void Array<T>::swap(Array<T> & other)
+{
+	size_t   capacity = m_capacity;
+	uint16_t raw      = m_raw;
+	T       *head     = m_head;
+
+	m_capacity = other.m_capacity;
+	m_raw      = other.m_raw;
+	m_head     = other.m_head;
+
+	other.m_capacity = capacity;
+	other.m_raw      = raw;
+	other.m_head     = head;
 }
 
 

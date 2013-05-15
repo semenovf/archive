@@ -40,8 +40,10 @@ public:
 	const T        at(const Key & key) const { return __impl.operator [](key); }
 	iterator       begin() { return __impl.begin(); }
 	const_iterator begin() const { return __impl.begin(); }
+	const_iterator cbegin() const { return __impl.cbegin(); }
 	iterator       end() { return __impl.end(); }
 	const_iterator end() const { return __impl.end(); }
+	const_iterator cend() const { return __impl.cend(); }
 	void	       clear() { __impl.clear(); }
 	iterator	   find(const Key & key) { return __impl.find(key); }
 	const_iterator find(const Key & key) const { return __impl.find(key); }
@@ -61,7 +63,7 @@ public:
 	const T        operator[](const Key & key) const { return __impl.operator [](key); }
 
 public:
-	Hash<Key,T> __impl;
+	QHash<Key,T> __impl;
 };
 
 CWT_NS_END
