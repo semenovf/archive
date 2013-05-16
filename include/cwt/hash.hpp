@@ -111,6 +111,7 @@ struct HashData {
 
 template <typename Key, typename T>
 class Hash {
+public: // TODO Make private!
 	struct Entry {
 		Entry *next;
 		Key key;
@@ -259,17 +260,18 @@ public:
 
 protected:
 	void           detach();
-	void           copy_node_helper(HashData::Node *to, HashData::Node *from) {
+
+private:
+	static void    copy_node_helper(HashData::Node *to, HashData::Node *from) {
 						cast_entry(to)->key = cast_entry(from)->key;
 						cast_entry(to)->value = cast_entry(from)->value;
 		           }
-	uint_t         hash_func_helper(HashData::Node *node, uint_t seed) {
+	static uint_t  hash_func_helper(HashData::Node *node, uint_t seed) {
 						return hash_func(cast_entry(node)->key, seed);
 				   }
-	bool           eq_key_helper(HashData::Node *n1, HashData::Node *n2) {
+	static bool    eq_key_helper(HashData::Node *n1, HashData::Node *n2) {
 						return cast_entry(n1)->key == cast_entry(n2)->key;
 				   }
-
 
 private:
 	shared_ptr<HashData> m_d;
@@ -372,8 +374,6 @@ inline typename Hash<Key,T>::const_iterator Hash<Key,T>::find(const Key &key) co
 
 
 /**
-* @fn CwtHashTableNS::insert(CwtHashTable *hash_table, CwtHashTableKey key, CwtHashTableValue value)
-*
 * @brief Insert a value into a hash table, overwriting any existing entry using the same key.
 *
 * @param hash_table The hash table.
@@ -509,7 +509,7 @@ T& Hash<Key, T>::operator[](const Key &key)
     if (it == end()) {
     	it = insert(key, T());
     }
-    return it->value;
+    return it.value();
 }
 
 CWT_NS_END

@@ -23,6 +23,7 @@
  * @date   Feb 20, 2013 1:56:25 PM
  *
  * @brief
+ * @see http://www.ietf.org/rfc/rfc4122.txt (A Universally Unique IDentifier (UUID) URN Namespace)
  */
 
 #ifndef __UUID_H__

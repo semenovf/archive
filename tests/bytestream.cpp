@@ -1,5 +1,5 @@
 /**
- * @file   textstream.cpp
+ * @file   bytestream.cpp
  * @author wladt
  * @date   Feb 27, 2013 4:54:05 PM
  *

@@ -92,12 +92,12 @@ class StdioLogAppender : public LogAppender
 public:
 	StdioLogAppender() {}
 	~StdioLogAppender() {}
-	virtual void trace(const String &msg) { ::fprintf(stdout, "%s\n\r", patternify(Logger::Trace, msg).toUtf8().data()); }
-	virtual void debug(const String &msg) { ::fprintf(stdout, "%s\n\r", patternify(Logger::Debug, msg).toUtf8().data()); }
-	virtual void info(const String &msg)  { ::fprintf(stdout, "%s\n\r", patternify(Logger::Info, msg).toUtf8().data()); }
-	virtual void warn(const String &msg)  { ::fprintf(stderr, "%s\n\r", patternify(Logger::Warn, msg).toUtf8().data()); }
-	virtual void error(const String &msg) { ::fprintf(stderr, "%s\n\r", patternify(Logger::Error, msg).toUtf8().data()); }
-	virtual void fatal(const String &msg) { ::fprintf(stderr, "%s\n\r", patternify(Logger::Fatal, msg).toUtf8().data()); }
+	virtual void trace(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Trace, msg).toUtf8().data()); }
+	virtual void debug(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Debug, msg).toUtf8().data()); }
+	virtual void info(const String &msg)  { ::fprintf(stdout, "%s\n", patternify(Logger::Info, msg).toUtf8().data()); }
+	virtual void warn(const String &msg)  { ::fprintf(stderr, "%s\n", patternify(Logger::Warn, msg).toUtf8().data()); }
+	virtual void error(const String &msg) { ::fprintf(stderr, "%s\n", patternify(Logger::Error, msg).toUtf8().data()); }
+	virtual void fatal(const String &msg) { ::fprintf(stderr, "%s\n", patternify(Logger::Fatal, msg).toUtf8().data()); }
 };
 
 class StringsLogAppender : public LogAppender

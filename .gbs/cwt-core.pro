@@ -9,6 +9,7 @@ CONFIG  += ordered
 SUBDIRS  = cwt-core  \
     examples/logger  \
     tests/array      \
+    tests/bytearray  \
     tests/bytestream \
     tests/dl         \
     tests/file       \

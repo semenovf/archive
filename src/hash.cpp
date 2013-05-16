@@ -27,7 +27,9 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 #include "../include/cwt/hash.hpp"
+#include "../include/cwt/logger.hpp"
 
+#include <cwt/bytearray.hpp>
 
 CWT_NS_BEGIN
 
@@ -99,22 +101,21 @@ HashData::~HashData()
 void HashData::allocNodeTable()
 {
 	size_t size;
-	uint_t *primes;
-	size_t nprimes;
 
 	/* Determine the table size based on the current prime index.
 	* An attempt is made here to ensure sensible behavior if the
 	* maximum prime is exceeded, but in practice other things are
 	* likely to break long before that happens. */
 
-	if (primeIndex < nprimes) {
-		size = primes[primeIndex];
+	if (primeIndex < __primesCount) {
+		size = __primes[primeIndex];
 	} else {
 		size = nentries * 10;
 	}
 
 	/* Allocate the table and initialize to NULL for all entries */
 	nodeTable.alloc(size);
+	nodeTable.bzero();
 }
 
 void HashData::rehash(size_t pindex)
@@ -130,11 +131,13 @@ void HashData::rehash(size_t pindex)
 	if (primeIndex == pindex)
 		return;
 
+	//Logger::trace("HashData::rehash(): primeIndex = %d", primeIndex);
+
 	primeIndex = pindex;
 	dest_size = __primes[primeIndex];
 	orig_size = nodeTable.size();
 
-	Array<HashData::Node*> table(dest_size);
+	Array<HashData::Node*> table(dest_size, true);
 
 	/* Link all entries from all chains into the new table */
 	for (size_t i = 0; i < orig_size; ++i) {
@@ -143,6 +146,12 @@ void HashData::rehash(size_t pindex)
 		while (rover != NULL) {
 			next = rover->next;
 
+/*
+			Logger::debug("ByteArray [%p]: %s=>%s"
+					, rover
+					, reinterpret_cast<Hash<ByteArray,ByteArray>::Entry* >(rover)->key.data()
+					, reinterpret_cast<Hash<ByteArray,ByteArray>::Entry* >(rover)->value.data());
+*/
 			/* Find the index into the new table */
 			index = (size_t)(hash_func_helper(rover, seed) % dest_size);
 
@@ -218,6 +227,9 @@ HashData::Node* HashData::lastNode(size_t *index)
 
 	if (nentries > 0) { // nodeTable has at leat one element
 		size_t i = nodeTable.size() - 1;
+
+		// instead of use 'for (size_t i = *index; i >= 0; --i)' 'use do-while'
+		// to disable gcc warning: comparison of unsigned expression >= 0 is always true
 		do {
 			if (nodeTable[i] != NULL) {
 				rover = nodeTable[i];
@@ -226,7 +238,7 @@ HashData::Node* HashData::lastNode(size_t *index)
 					rover = rover->next;
 				break;
 			}
-		} while(i--); // disable gcc warning: comparison of unsigned expression >= 0 is always true
+		} while(i--);
 	}
 	return rover;
 }
@@ -260,7 +272,20 @@ HashData::Node* HashData::prevNode(HashData::Node *rover, size_t *index)
 			return NULL;
 
 		--*index;
+		size_t i = *index;
 
+		do {
+			if (nodeTable[i] != NULL) {
+				prev = nodeTable[i];
+				*index = i;
+				while (prev->next != NULL)
+					prev = prev->next;
+				return prev;
+			}
+		} while(i--);
+
+
+/*
 		for (size_t i = *index; i >= 0; --i) {
 			if (nodeTable[i] != NULL) {
 				prev = nodeTable[i];
@@ -270,6 +295,7 @@ HashData::Node* HashData::prevNode(HashData::Node *rover, size_t *index)
 				return prev;
 			}
 		}
+*/
 	}
 	/* Look up node previous to rover in the same chunk */
 	else {

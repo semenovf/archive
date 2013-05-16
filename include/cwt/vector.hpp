@@ -80,7 +80,7 @@ public:
 
 public:
 	Vector();
-	explicit Vector(int size);
+	Vector(int size);
 	Vector(int size, const T &value);
 	Vector(const Vector<T> &other);
 
@@ -96,6 +96,8 @@ public:
 	T&             last()          { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
 	const T&       last() const    { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
 	void           prepend(const T &value);
+	void	       remove(size_t i);
+	void	       remove(size_t i, size_t count);
 	void           resize(size_t size)     { reserve(size); m_d->count = size; }
 	void           reserve(size_t size)    { detachAndRealloc(CWT_MAX(size, m_d->data.size())); }
 	size_t         size() const            { return m_d->count; }
@@ -110,7 +112,7 @@ public:
 
 	T&             operator[](size_t i)       { return at(i); }
 	const T&       operator[](size_t i) const { return at(i); }
-	Vector<T>&	   operator=(const Vector<T> & other);
+	Vector<T>&	   operator = (const Vector<T> & other);
 
 protected:
 	void           detach() { detachAndRealloc(m_d->count); }
@@ -206,7 +208,6 @@ void Vector<T>::append(const T &value)
 	d[m_d->count++] = value;
 }
 
-
 template <typename T>
 void Vector<T>::prepend(const T &value)
 {
@@ -218,6 +219,26 @@ void Vector<T>::prepend(const T &value)
 	T *d = m_d->data.data();
 	d[0] = value;
 	m_d->count++;
+}
+
+template <typename T>
+inline void Vector<T>::remove(size_t i)
+{
+	remove(i, 1);
+}
+
+template <typename T>
+void Vector<T>::remove(size_t i, size_t n)
+{
+	if (m_d->count > 0) {
+		CWT_ASSERT(i < m_d->count);
+		n = CWT_MIN(m_d->data.size() - i, n);
+		detach();
+		if (i + n < m_d->count) { // removing not last elements
+			m_d->data.move(i, i + n, m_d->data.size() - i - n);
+		}
+		m_d->count -= n;
+	}
 }
 
 CWT_NS_END

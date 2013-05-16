@@ -36,6 +36,7 @@ public:
 	T*          data  ()       { return m_head; }
 	const T*    data  () const { return m_head; }
 	bool        eq    (const Array &a);
+	bool        isRaw() const { return m_raw; }
 	void        move  (size_t off_to, size_t off_from, size_t n);
 	void        realloc (size_t new_capacity);
 	size_t      size  () const { return m_capacity; }
@@ -46,6 +47,7 @@ public:
 	const T&    operator [] (size_t index) const { return at(index); }
 
 	static void copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
+	static void copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n);
 };
 
 template <typename T>
@@ -126,6 +128,13 @@ void Array<T>::copy(Array &to, const Array &from, size_t off_to, size_t off_from
 	n = CWT_MIN(from.m_capacity - off_from, n);
 	n = CWT_MIN(to.m_capacity - off_to, n);
 	memcpy(to.m_head + off_to, from.m_head + off_from, n * sizeof(T));
+}
+
+template <typename T>
+void Array<T>::copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n)
+{
+	n = CWT_MIN(to.m_capacity - off_to, n);
+	memcpy(to.m_head + off_to, from + off_from, n * sizeof(T));
 }
 
 template <typename T>

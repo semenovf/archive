@@ -10,17 +10,16 @@
 #include "../../include/cwt/hash.hpp"
 #include <cstring>
 
-
-#ifdef CWT_STRING_SELF_IMPL
-
 CWT_NS_BEGIN
-
-static const String __nullString;
 
 DLL_API uint_t hash_func(const String &key, uint_t seed)
 {
     return hash_chars(key.unicode(), key.size(), seed);
 }
+
+#ifdef CWT_STRING_SELF_IMPL
+
+static const String __nullString;
 
 /**
  * Constructs a null string. Null strings are also empty.
@@ -382,7 +381,6 @@ String String::number(ulong_t n, int base)
 	*s.pimpl = QString::number(n, base);
 	return s;
 }
+#endif // CWT_STRING_SELF_IMPL
 
 CWT_NS_END
-
-#endif // CWT_STRING_SELF_IMPL
