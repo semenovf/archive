@@ -28,7 +28,8 @@ void test_convert_number()
 
 	ByteArray ba_double;
 	ba_double.setNumber(double(13.14159));
-	Logger::debug("13.14159 == %s", ba_double.constData());
+	printf("13.14159 == %s\n", ba_double.constData());
+	Logger::trace("13.14159 == %s", ba_double.constData());
 
 	CWT_TEST_OK(num.toInt(&ok) == 1234 && ok);
 }

@@ -20,6 +20,22 @@ DLL_API uint_t hash_func(const ByteArray &key, uint_t seed)
 	return hash_bytes(reinterpret_cast<const byte_t *>(key.constData()), key.size(), seed);
 }
 
+#ifdef CWT_BYTEARRAY_SELF_IMPL
+
+ByteArray::ByteArray() : BaseClass() {}
+ByteArray::ByteArray(const char *data, int size = -1) : BaseClass() { append(data, size); }
+ByteArray::ByteArray(const ByteArray &other) : BaseClass() { m_d = other.m_d; }
+ByteArray::~ByteArray() {}
+
+ByteArray&	ByteArray::operator = (const ByteArray &other) { m_d = other.m_d; return *this; }
+ByteArray&	ByteArray::operator = (const char *str) { ByteArray other(str); swap(other); return *this; }
+
+
+const char* ByteArray::constData() const { return data(); }
+size_t ByteArray::length() const { return BaseClass::size(); }
+ByteArray& ByteArray::remove(size_t pos, size_t len) { BaseClass::remove(pos, len); return *this; }
+
+
 ByteArray& ByteArray::append(const ByteArray &bytes)
 {
 	return append(bytes.constData(), bytes.size());
@@ -257,7 +273,7 @@ byte_t ByteArray::toByte(bool *ok, int base) const
 ByteArray& ByteArray::setNumber(long_t n, int base)
 {
 	char buf[64];
-
+CWT_UNUSED(base);
 #ifdef CWT_HAS_INT64
 	sprintf(buf, "%lld", n);
 #else
@@ -272,7 +288,7 @@ ByteArray& ByteArray::setNumber(long_t n, int base)
 ByteArray& ByteArray::setNumber(ulong_t n, int base)
 {
 	char buf[64];
-
+	CWT_UNUSED(base);
 #ifdef CWT_HAS_INT64
 	sprintf(buf, "%llu", n);
 #else
@@ -288,7 +304,10 @@ ByteArray& ByteArray::setNumber(double n, char f, int prec)
 {
 	char format[32];
 	char buf[64];
-	sprintf(format, "%c.%d", f, prec);
+	if (f == 'g')
+		sprintf(format, "%%%c", f);
+	else
+		sprintf(format, "%%.%d%c", prec, f);
 	sprintf(buf, format, n);
 
 	detach();
@@ -297,6 +316,6 @@ ByteArray& ByteArray::setNumber(double n, char f, int prec)
 
 	return *this;
 }
-
+#endif
 
 CWT_NS_END

@@ -13,12 +13,14 @@
 
 CWT_NS_BEGIN
 
+class LogEmitter;
+
 class DefaultLogAppender : public StdioLogAppender
 {
 public:
 	typedef StdioLogAppender Base;
 public:
-	DefaultLogAppender() : StdioLogAppender() {}
+	explicit DefaultLogAppender() : StdioLogAppender() { m_connected = true; m_priority = Logger::Trace; }
 	~DefaultLogAppender() {} // override destructor (exclude disconnect() call)
 };
 
@@ -28,13 +30,12 @@ class LogEmitter
 	typedef StdioLogAppender DefaultLogAppender;
 
 private:
-	LogEmitter() {
+	LogEmitter() : logAppender() {
 		logAppender.setPattern(_U("%d{ABSOLUTE} [%p]: %m"));
 		// Do not set priority here !!!
 		// logAppender.setPriority(Logger::Trace);
 
 		// Make connections according to default log priority (set by default constructor)
-
 		emitTrace.connect (&logAppender, &DefaultLogAppender::trace);
 		emitDebug.connect (&logAppender, &DefaultLogAppender::debug);
 		emitInfo.connect  (&logAppender, &DefaultLogAppender::info);
@@ -69,8 +70,6 @@ public:
 private:
 	DefaultLogAppender logAppender;
 };
-
-//static LogEmitter g_logEmitter;
 
 void LogAppender::connect()
 {
@@ -123,8 +122,7 @@ String LogAppender::patternify(Logger::Priority priority, const String &pattern,
 	if (fsm.exec(0, pattern.data(), pattern.length()) == pattern.length()) {
 		return ctx.result;
 	}
-	Logger::error("invalid pattern for logger appender");
-	return String::null();
+	return String().sprintf(_Tr("[<!INVALID PATTERN!>]: %ls"), msg.utf16());
 }
 
 

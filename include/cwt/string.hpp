@@ -55,7 +55,7 @@ public:
 	String(Char ch);
 	String(int size, Char ch);
 	String(const String &other);
-	~String() {}
+	~String() { /*printf("{%p}: String::~String('%s')\n", this, this->toUtf8().constData());*/ }
 
 	String&	 append(const String &str);
 	String&	 append(const Char *unicode, int size);

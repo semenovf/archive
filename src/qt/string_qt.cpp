@@ -42,7 +42,7 @@ String&	String::prepend(const String &str) { pimpl->prepend(*str.pimpl); return 
 String&	String::prepend(const Char *unicode, int size) { String s(unicode, size); prepend(s); return *this; }
 String&	String::prepend(Char ch) { pimpl->prepend(QChar(ch.unicode())); return *this; }
 
-String& String::vsprintf(const char *cformat, va_list ap) {	pimpl->vsprintf(cformat, ap); return *this; }
+String& String::vsprintf(const char *cformat, va_list args) { pimpl->vsprintf(cformat, args); return *this; }
 String& String::sprintf(const char * cformat, ...)
 {
 	va_list args;
@@ -164,7 +164,7 @@ String String::fromUtf8(const char *str, int size)
 String String::fromUtf8(const ByteArray &str)
 {
 	String s;
-	*s.pimpl = QString::fromUtf8(str.data());
+	*s.pimpl = QString::fromUtf8(str.constData());
 	return s;
 }
 

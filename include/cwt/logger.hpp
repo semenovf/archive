@@ -66,7 +66,7 @@ protected:
 	static String patternify(Logger::Priority priority, const String &pattern, const String &msg);
 	String patternify(Logger::Priority priority, const String &msg) { return patternify(priority, m_pattern, msg); }
 
-private:
+protected:
 	bool m_connected;
 	String m_pattern;
 	Logger::Priority m_priority;

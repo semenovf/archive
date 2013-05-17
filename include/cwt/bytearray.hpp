@@ -7,7 +7,13 @@
  */
 
 #include <cwt/cwt.h>
-#include <cwt/vector.hpp>
+
+#ifdef CWT_STRING_SELF_IMPL
+#	include <cwt/vector.hpp>
+#else
+#include <cwt/memory.hpp>
+#endif
+
 
 #ifndef __CWT_BYTEARRAY_QT_HPP__
 #define __CWT_BYTEARRAY_QT_HPP__
@@ -19,28 +25,36 @@ CWT_NS_BEGIN
 // C#
 // Java
 
-class DLL_API ByteArray : public Vector<char>
+class DLL_API ByteArray
+#ifdef CWT_BYTEARRAY_SELF_IMPL
+	: public Vector<char>
+#endif
 {
+#ifdef CWT_BYTEARRAY_SELF_IMPL
 	typedef char   data_type;
 	typedef Vector<data_type> BaseClass;
+#endif
 
 public:
-	ByteArray() : BaseClass() {}
-	ByteArray(const char *data, int size = -1) : BaseClass() { append(data, size); }
+	ByteArray();
+	ByteArray(const char *data, int size = -1);
 	//ByteArray(int size, char ch);
-	ByteArray(const ByteArray &other) : BaseClass() { m_d = other.m_d; }
-	~ByteArray() {}
+	ByteArray(const ByteArray &other);
+	~ByteArray();
 
 	ByteArray& append(const ByteArray &bytes);
 	ByteArray& append(const char *data, int size = -1);
 	ByteArray& append(char ch);
 
-	// void clear(); // inherited
-	// char* data(); // inherited
-	// const char* data() const; // inherited
-	const char* constData() const { return data(); }
-	size_t length() const { return BaseClass::size(); }
-	ByteArray& remove(size_t pos, size_t len) { BaseClass::remove(pos, len); return *this; }
+#ifndef CWT_BYTEARRAY_SELF_IMPL
+	void clear();
+	char* data();
+	const char* data() const;
+	size_t size() const;
+#endif
+	const char* constData() const;
+	size_t length() const;
+	ByteArray& remove(size_t pos, size_t len);
 	void reserve(size_t size);
 	void resize(size_t size);
 
@@ -67,20 +81,29 @@ public:
 	ByteArray&	setNumber(float n, char f = 'g', int prec = 6) { return setNumber(double(n), f, prec); }
 
 	ByteArray& setRawData(const char *data, size_t size);
-	// size_t   size() const; // inherited
 
-	ByteArray&	operator = (const ByteArray &other) { m_d = other.m_d; return *this; }
-	ByteArray&	operator = (const char *str) { ByteArray other(str); swap(other); return *this; }
+	ByteArray&	operator = (const ByteArray &other);
+	ByteArray&	operator = (const char *str);
 
 	friend bool	operator ==(const ByteArray &s1, const ByteArray &s2);
+
+#ifndef CWT_BYTEARRAY_SELF_IMPL
+private:
+    class Impl;
+    typedef unique_ptr<Impl> ImplPtr;
+    ImplPtr pimpl;
+#endif
+
 };
 
 DLL_API uint_t hash_func(const ByteArray &key, uint seed = 0);
 
+#ifdef CWT_BYTEARRAY_SELF_IMPL
 inline bool operator ==(const ByteArray &s1, const ByteArray &s2)
 {
 	return s1.m_d->data.eq(s2.m_d->data);
 }
+#endif
 
 CWT_NS_END
 
