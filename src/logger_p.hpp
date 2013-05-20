@@ -18,8 +18,8 @@ CWT_NS_BEGIN
 struct PatternSpec {
 	Char spec_char;
 	bool left_justify;
-	int min_width;
-	int max_width;
+	size_t min_width;
+	size_t max_width;
 	String fspec; /* format specifier */
 };
 

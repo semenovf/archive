@@ -13,7 +13,7 @@
 #include <cwt/bytearray.hpp>
 #include <cwt/string.hpp>
 #include <cwt/mt.hpp>
-#include <cwt/datastream.hpp>
+#include <cwt/iodevice.hpp>
 #include <cwt/textcodec.hpp>
 
 CWT_NS_BEGIN
@@ -22,11 +22,11 @@ class TextStream {
 private:
 	static const size_t ChunkSize = 512;
 public:
-	TextStream() : m_ds(NULL), m_decoder(NULL), m_encoder(NULL)  {}
-	TextStream(DataStream &ds) : m_ds(&ds), m_decoder(NULL), m_encoder(NULL)  {}
+	TextStream() : m_dev(NULL), m_decoder(NULL), m_encoder(NULL)  {}
+	TextStream(IODevice &dev) : m_dev(&dev), m_decoder(NULL), m_encoder(NULL)  {}
 	~TextStream() {}
-	bool    isNull() const { return m_ds && !m_ds->isNull() ? false : true; }
-	String read(size_t len);
+	bool    isNull() const { return m_dev != NULL ? false : true; }
+	String  read(size_t len);
 	ssize_t write(const String &s);
 	String  readAll();
 
@@ -34,9 +34,10 @@ public:
 	void setEncoder(Encoder *encoder) { m_encoder = encoder; }
 
 protected:
-	DataStream *m_ds;
-	Decoder *m_decoder;
-	Encoder *m_encoder;
+	IODevice *m_dev;
+	Decoder  *m_decoder;
+	Encoder  *m_encoder;
+	String    m_remainChars;
 };
 
 CWT_NS_END

@@ -22,28 +22,41 @@ ssize_t IODevice::read(char bytes[], size_t n)
 
 	nbytes = CWT_MIN(n, m_buffer.size());
 
+	// First, read from buffer.
 	if (nbytes > 0) {
 		::memcpy(bytes, m_buffer.data(), size_t(nbytes));
 		m_buffer.remove(0, nbytes);
 		ntotalbytes += nbytes;
-	} else { // buffer is empty
-		nbytes = readBytes(bytes, n);
+	}
 
-		if (nbytes < ssize_t(0))
-			return ssize_t(-1);
+	// Needs more bytes than was in buffer.
+	if (size_t(nbytes) < n) {
+		char *pbytes = bytes + nbytes;
+		n -= nbytes;
 
-		ntotalbytes += nbytes;
-		m_buffer.resize(BufferMaxSize);
-		nbytes = readBytes(m_buffer.data(), BufferMaxSize);
+		// Read remain bytes
+		nbytes = readBytes(pbytes, n);
 
-		if (nbytes > 0) {
-			m_buffer.resize(nbytes);
-		} else {
-			m_buffer.clear();
+		if (nbytes > ssize_t(0)) {
+			ntotalbytes += nbytes;
+			m_buffer.resize(BufferMaxSize);
+			nbytes = readBytes(m_buffer.data(), BufferMaxSize);
+
+			if (nbytes > 0) {
+				m_buffer.resize(nbytes);
+			} else {
+				m_buffer.clear();
+			}
 		}
 	}
 
 	return ntotalbytes;
+}
+
+void IODevice::unread(const char bytes[], size_t n)
+{
+	CWT_ASSERT(m_buffer.size() + n <= BufferMaxSize * 2);
+	m_buffer.prepend(bytes, n);
 }
 
 ssize_t IODevice::write(const char bytes[], size_t n)
@@ -51,6 +64,26 @@ ssize_t IODevice::write(const char bytes[], size_t n)
 	return writeBytes(bytes, n);
 }
 
+
+ByteArray IODevice::readAll()
+{
+	ByteArray ba;
+	char bytes[ChunkSize];
+	ssize_t n;
+
+	if (m_buffer.size() > 0)
+		ba.append(m_buffer);
+
+	while ( (n = readBytes(bytes, ChunkSize)) > 0 ) {
+		ba.append(bytes, n);
+	}
+
+	if (n < 0) {
+		; // error
+	}
+
+	return ba;
+}
 
 CWT_NS_END
 

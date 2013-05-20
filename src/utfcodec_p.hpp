@@ -16,7 +16,7 @@ CWT_NS_BEGIN
 class Utf8Decoder : public Decoder {
 	static const size_t BufSize = 512;
 protected:
-	virtual String convertToUnicode(const char *bytes, size_t len) = 0;
+	virtual String convertToUnicode(const char *bytes, size_t len, size_t *nremainBytes);
 public:
 	Utf8Decoder(Char replacement = Char::ReplacementChar)
 		: Decoder(replacement)
@@ -32,7 +32,7 @@ private:
 
 class Utf8Encoder : public Encoder {
 protected:
-	virtual ByteArray convertFromUnicode(const Char *chars, size_t len) = 0;
+	virtual ByteArray convertFromUnicode(const Char *chars, size_t len);
 public:
 	Utf8Encoder(bool ignoreHeader = true, char replacement = '?')
 		: Encoder(ignoreHeader, replacement)

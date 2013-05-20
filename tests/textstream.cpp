@@ -8,47 +8,52 @@
 
 
 #include <cwt/test.h>
+#include <cwt/textstream.hpp>
+#include <cwt/file.hpp>
 
-//using namespace cwt;
-
-/*
+using namespace cwt;
 
 static const char *utf8_files[] = {
-	  "rc/utf8/greek.txt"
+	  "rc/utf8/UTF-8-test.txt"
+	, "rc/utf8/multilang.txt"
+	, "rc/utf8/greek.txt"
 	, "rc/utf8/gothic.txt"
 	, "rc/utf8/mideng.txt"
 	, "rc/utf8/midger.txt"
 	, "rc/utf8/rune.txt"
 	, "rc/utf8/vietnamese.txt"
-	, "rc/utf8/multilang.txt"
 };
-*/
-
-
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(1);
+    CWT_BEGIN_TESTS(21);
 
-/*    size_t nfiles = sizeof(utf8_files)/sizeof(utf8_files[0]);
+    size_t nfiles = sizeof(utf8_files)/sizeof(utf8_files[0]);
 
     for (size_t i = 0; i < nfiles; i++) {
-    	FileInputStream fis(utf8_files[i]);
-    	CWT_TEST_FAIL(!fis.isNull());
+    	File file;
+    	String trace_msg;
+    	trace_msg.sprintf(_Tr("Open %s"), utf8_files[i]);
+        CWT_TEST_FAIL2(file.open(utf8_files[i], IODevice::ReadOnly), trace_msg.toUtf8().data());
 
-    	InputStreamReader reader(fis, "UTF-8");
-    	CWT_TEST_FAIL(!reader.isNull());
+        TextStream ts(file);
+        Decoder *utf8Decoder = Decoder::forName("utf8");
+        ts.setDecoder(utf8Decoder);
+        String s = ts.readAll();
 
-    	String s = reader.readAll();
-    	CWT_TEST_OK(!s.isNull());
+        file.close();
 
-    	printf("%s", s.toUtf8().data());
+        CWT_TEST_FAIL2(file.open(utf8_files[i], IODevice::ReadOnly), trace_msg.toUtf8().data());
+        ByteArray complete = file.readAll();
+        file.close();
 
-    	reader.close();
-    	fis.close();
-    }*/
+        CWT_TEST_OK(complete == s.toUtf8());
+    }
+
+    Decoder::cleanup();
+    Encoder::cleanup();
 
     CWT_END_TESTS;
 }

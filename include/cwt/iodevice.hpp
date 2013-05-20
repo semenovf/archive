@@ -16,13 +16,11 @@
 
 CWT_NS_BEGIN
 
-class DataStream;
-
 class IODevice : public Errorable
 {
 public:
-	static const size_t ChunkSize = 512;
-	static const size_t BufferMaxSize = 512;
+	static const size_t ChunkSize     = 512;
+	static const size_t BufferMaxSize = 512; // must be less than CWT_SIZE_MAX/2
 
 protected:
 	IODevice() {;}
@@ -51,11 +49,11 @@ public:
 	virtual bool atEnd() const                       { return available() == ssize_t(0); }
 	ssize_t      read(char bytes[], size_t n);
 	ssize_t      write(const char bytes[], size_t n);
+	void         unread(const char bytes[], size_t n);
+	ByteArray    readAll();
 
 private:
-	ByteArray m_buffer; // TODO need shared
-
-	friend class DataStream;
+	ByteArray m_buffer; // FIXME need shared
 };
 
 CWT_NS_END

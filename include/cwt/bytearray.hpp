@@ -7,13 +7,7 @@
  */
 
 #include <cwt/cwt.h>
-
-#ifdef CWT_STRING_SELF_IMPL
-#	include <cwt/vector.hpp>
-#else
 #include <cwt/memory.hpp>
-#endif
-
 
 #ifndef __CWT_BYTEARRAY_QT_HPP__
 #define __CWT_BYTEARRAY_QT_HPP__
@@ -26,14 +20,13 @@ CWT_NS_BEGIN
 // Java
 
 class DLL_API ByteArray
-#ifdef CWT_BYTEARRAY_SELF_IMPL
-	: public Vector<char>
-#endif
 {
+/*
 #ifdef CWT_BYTEARRAY_SELF_IMPL
 	typedef char   data_type;
 	typedef Vector<data_type> BaseClass;
 #endif
+*/
 
 public:
 	ByteArray();
@@ -46,12 +39,15 @@ public:
 	ByteArray& append(const char *data, int size = -1);
 	ByteArray& append(char ch);
 
-#ifndef CWT_BYTEARRAY_SELF_IMPL
 	void clear();
 	char* data();
 	const char* data() const;
 	size_t size() const;
-#endif
+
+	ByteArray &prepend(const ByteArray &ba);
+	ByteArray &prepend(const char *str, int len = -1);
+	ByteArray &prepend(char ch);
+
 	const char* constData() const;
 	size_t length() const;
 	ByteArray& remove(size_t pos, size_t len);
@@ -87,23 +83,22 @@ public:
 
 	friend bool	operator ==(const ByteArray &s1, const ByteArray &s2);
 
-#ifndef CWT_BYTEARRAY_SELF_IMPL
 private:
     class Impl;
     typedef unique_ptr<Impl> ImplPtr;
     ImplPtr pimpl;
-#endif
-
 };
 
 DLL_API uint_t hash_func(const ByteArray &key, uint seed = 0);
 
+/*
 #ifdef CWT_BYTEARRAY_SELF_IMPL
 inline bool operator ==(const ByteArray &s1, const ByteArray &s2)
 {
 	return s1.m_d->data.eq(s2.m_d->data);
 }
 #endif
+*/
 
 CWT_NS_END
 

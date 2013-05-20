@@ -24,9 +24,12 @@ char* ByteArray::data()                                  { return pimpl->data();
 const char* ByteArray::data() const                      { return pimpl->data(); }
 const char* ByteArray::constData() const                 { return pimpl->data(); }
 size_t ByteArray::length() const                         { return size(); }
-ByteArray& ByteArray::remove(size_t pos, size_t len)     { CWT_ASSERT(pos > CWT_INT_MAX || len > CWT_INT_MAX); pimpl->remove((int)pos, (int)len); return *this; }
-void ByteArray::reserve(size_t size)                     { CWT_ASSERT(size > CWT_INT_MAX); pimpl->reserve((int)size); }
-void ByteArray::resize(size_t size)                      { CWT_ASSERT(size > CWT_INT_MAX); pimpl->resize((int)size); }
+ByteArray &ByteArray::prepend(const ByteArray &bytes)    { pimpl->prepend(*bytes.pimpl); return *this; }
+ByteArray &ByteArray::prepend(const char *str, int len)  { if(len > 0) pimpl->prepend(str, len); else pimpl->prepend(str); return *this; }
+ByteArray &ByteArray::prepend(char ch)                   { pimpl->prepend(ch); return *this; }
+ByteArray& ByteArray::remove(size_t pos, size_t len)     { CWT_ASSERT(pos <= CWT_INT_MAX || len > CWT_INT_MAX); pimpl->remove((int)pos, (int)len); return *this; }
+void ByteArray::reserve(size_t size)                     { CWT_ASSERT(size <= CWT_INT_MAX); pimpl->reserve((int)size); }
+void ByteArray::resize(size_t size)                      { CWT_ASSERT(size <= CWT_INT_MAX); pimpl->resize((int)size); }
 double	 ByteArray::toDouble(bool *ok) const             { return pimpl->toDouble(ok); }
 float	 ByteArray::toFloat(bool *ok) const              { return pimpl->toFloat(ok); }
 int_t	 ByteArray::toInt(bool *ok, int base) const      { return pimpl->toInt(ok, base); }

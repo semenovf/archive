@@ -118,8 +118,11 @@ String LogAppender::patternify(Logger::Priority priority, const String &pattern,
 	ctx.priority = priority;
 	ctx.msg = &msg;
 	Fsm<Char> fsm(pattern_fsm, &ctx);
+	ssize_t len;
 
-	if (fsm.exec(0, pattern.data(), pattern.length()) == pattern.length()) {
+	len = fsm.exec(0, pattern.data(), pattern.length());
+
+	if (len >= 0 && size_t(len) == pattern.length()) {
 		return ctx.result;
 	}
 	return String().sprintf(_Tr("[<!INVALID PATTERN!>]: %ls"), msg.utf16());

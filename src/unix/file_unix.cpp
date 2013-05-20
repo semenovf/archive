@@ -103,6 +103,7 @@ int File::Impl::close()
 		::free(m_path);
 
 	m_fd = -1;
+	m_path = NULL;
 	return rc;
 }
 

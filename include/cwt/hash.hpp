@@ -440,7 +440,7 @@ inline const T Hash<Key, T>::value(const Key &key) const
 }
 
 template <typename Key, typename T>
-const T Hash<Key, T>::value(const Key &akey, const T &defaultValue) const
+const T Hash<Key, T>::value(const Key &key, const T &defaultValue) const
 {
     if (m_d->nentries == 0)
         return defaultValue;

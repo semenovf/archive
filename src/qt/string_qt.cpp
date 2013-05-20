@@ -20,9 +20,9 @@ String::String(Char ch)              : pimpl(new Impl(ch)) {}
 String::String(int size, Char ch)    : pimpl(new Impl(size, ch)) {}
 String::String(const String &other)  : pimpl(new Impl(*other.pimpl)) {}
 
-String&	String::append(const String &str) { pimpl->append(*str.pimpl); return *this; }
+String&	String::append(const String &str)             { pimpl->append(*str.pimpl); return *this; }
 String&	String::append(const Char *unicode, int size) {	append(String(unicode, size)); return *this; }
-String&	String::append(Char ch) { pimpl->append(QChar(ch.unicode())); return *this; }
+String&	String::append(Char ch)                       { pimpl->append(QChar(ch.unicode())); return *this; }
 
 const Char String::at(int pos) const     { const QChar ch = pimpl->at(pos); return Char(ch.unicode()); }
 void String::clear()             { pimpl->clear(); }
@@ -35,12 +35,19 @@ bool String::isNull() const      { return reinterpret_cast<const Char*>(pimpl->i
 int String::indexOf(const String &str, int from, bool cs) const { return pimpl->indexOf(*str.pimpl, from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 int String::indexOf(Char ch, int from, bool cs) const { return pimpl->indexOf(QChar(ch.unicode()), from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 
-int	String::length() const       { return size(); }
-int	String::size() const         { return pimpl->size(); }
+size_t String::size() const      { return size_t(pimpl->size()); }
 
-String&	String::prepend(const String &str) { pimpl->prepend(*str.pimpl); return *this; }
+String&	String::prepend(const String &str)             { pimpl->prepend(*str.pimpl); return *this; }
 String&	String::prepend(const Char *unicode, int size) { String s(unicode, size); prepend(s); return *this; }
-String&	String::prepend(Char ch) { pimpl->prepend(QChar(ch.unicode())); return *this; }
+String&	String::prepend(Char ch)                       { pimpl->prepend(QChar(ch.unicode())); return *this; }
+String& String::remove(size_t pos, size_t n) {
+	CWT_ASSERT(pos <= CWT_INT_MAX);
+	CWT_ASSERT(n <= CWT_INT_MAX);
+	remove(int(pos), int(n));
+	return *this;
+}
+void String::reserve(size_t size) { CWT_ASSERT(size <= CWT_INT_MAX); pimpl->reserve(int(size)); }
+void String::resize(size_t size)  { CWT_ASSERT(size <= CWT_INT_MAX); pimpl->resize(int(size)); }
 
 String& String::vsprintf(const char *cformat, va_list args) { pimpl->vsprintf(cformat, args); return *this; }
 String& String::sprintf(const char * cformat, ...)
@@ -57,7 +64,13 @@ bool String::endsWith(Char ch, bool cs) const { return pimpl->endsWith(QChar(ch.
 bool String::startsWith(const String &s, bool cs) const { return pimpl->startsWith(*s.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 bool String::startsWith(Char ch, bool cs) const { return pimpl->startsWith(QChar(ch.unicode()), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 
-String String::substr(int pos, int n) const { String s; *s.pimpl = pimpl->mid(pos, n); return s; }
+String String::substr(size_t pos, size_t n) const   {
+	CWT_ASSERT(pos <= CWT_INT_MAX);
+	CWT_ASSERT(n <= CWT_INT_MAX);
+	String s;
+	*s.pimpl = pimpl->mid(int(pos), int(n));
+	return s;
+}
 
 double	 String::toDouble(bool *ok) const           { return pimpl->toDouble(ok); }
 float	 String::toFloat(bool *ok) const            { return pimpl->toFloat(ok); }
