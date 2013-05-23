@@ -7,7 +7,7 @@
  */
 
 #include "../include/cwt/textstream.hpp"
-
+#include <cstdio>
 CWT_NS_BEGIN
 
 
@@ -71,10 +71,19 @@ String TextStream::readAll()
 
 	while ((n = m_dev->read(bytes, ChunkSize)) > 0) {
 		String s = m_decoder->toUnicode(bytes, n, &nremainBytes);
-		if (nremainBytes > 0)
+		result += s;
+
+		if (nremainBytes > 0) {
 			m_dev->unread(&bytes[0] + n - nremainBytes, nremainBytes);
 
-		result += s;
+			// Prevent infinite loop
+			// Remain bytes stored at internal buffer of the I/O device.
+			// Can read this bytes after.
+			if (m_dev->atEnd()) { // no data at device
+				Logger::warn(_Tr("TextStream::readAll(): remains %d bytes after decoding"), nremainBytes);
+				break;
+			}
+		}
 	}
 
 	return result;

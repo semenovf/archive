@@ -28,6 +28,8 @@ struct PetaloidSpec {
 
 class DLL_API Sepaloid : public Errorable
 {
+private:
+	CWT_DENY_COPY(Sepaloid)
 public:
 	typedef struct { const char *id; sigslot_mapping_t *map; const char *desc; } Mapping;
 	typedef Hash<ByteArray, Mapping*> MappingHash;
@@ -126,6 +128,7 @@ public:
 	void connectAll();
 	void disconnectAll();
 	void unregisterAll();
+	void start();
 
 protected:
 	bool registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor_t dtor);

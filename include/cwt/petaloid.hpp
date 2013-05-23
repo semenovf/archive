@@ -50,6 +50,7 @@ public:
 	virtual const EmitterMapping* getEmitters(int *count)   { CWT_ASSERT(count); *count = 0; return 0; }
 	virtual const DetectorMapping* getDetectors(int *count) { CWT_ASSERT(count); *count = 0; return 0; }
 
+	virtual void onStart() {} // call from Sepaloid::start()
 private:
 	String m_name;
 	Uuid m_uuid;

@@ -14,21 +14,27 @@
 using namespace cwt;
 
 static const char *utf8_files[] = {
-	  "rc/utf8/UTF-8-test.txt"
-	, "rc/utf8/multilang.txt"
+//	  "rc/utf8/UTF-8-test.txt"
+	  "rc/utf8/multilang.txt"
 	, "rc/utf8/greek.txt"
-	, "rc/utf8/gothic.txt"
 	, "rc/utf8/mideng.txt"
 	, "rc/utf8/midger.txt"
 	, "rc/utf8/rune.txt"
+#ifdef CWT_UCS4_CHAR
 	, "rc/utf8/vietnamese.txt"
+	, "rc/utf8/gothic.txt"
+#endif
 };
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(21);
+#ifdef CWT_UCS4_CHAR
+    CWT_BEGIN_TESTS(24);
+#else
+    CWT_BEGIN_TESTS(15);
+#endif
 
     size_t nfiles = sizeof(utf8_files)/sizeof(utf8_files[0]);
 

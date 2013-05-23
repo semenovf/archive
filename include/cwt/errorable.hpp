@@ -69,10 +69,11 @@ inline const String& Errorable::lastErrorText() const
 
 inline void Errorable::addError(const String& text)
 {
-	if (m_errors.size() > 0 && m_errors.last().errstr == text)
+	if (m_errors.size() > 0 && m_errors.last().errstr == text) {
 		;
-	else
+	} else {
 		m_errors.append(ErrorData(text));
+	}
 	m_errors.last().ntimes++;
 }
 

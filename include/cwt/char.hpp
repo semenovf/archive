@@ -19,19 +19,32 @@ CWT_NS_BEGIN
 
 class DLL_API Char {
 public:
-	typedef ushort_t char_type;
+#ifdef CWT_UCS4_CHAR
+	typedef uint32_t char_type;
+#else
+	typedef uint16_t char_type;
+#endif
 	enum SpecialChar {
 		  Null = 0x0000
 		, ReplacementChar = 0xfffd
-		, MaxCodePoint = 0x10ffff
+#ifdef CWT_UCS4_CHAR
+		, MaxCodePoint    = 0x10ffff
+#else
+		, MaxCodePoint    = 0xffff
+#endif
 	};
 
 public:
-	Char() : ucs(ushort_t(0)) {}
+	Char() : ucs(char_type(0)) {}
 	Char(ushort_t ch) : ucs(ch) {}
-	Char(short_t ch)  : ucs(ushort_t(ch)) {}
+	Char(short_t ch)  : ucs(char_type(ch)) {}
+#ifdef CWT_UCS4_CHAR
+	Char(uint_t ch)   : ucs(char_type(ch)) {}
+	Char(int_t ch)    : ucs(char_type(ch)) {}
+#else
 	Char(uint_t ch)   : ucs(ushort_t(ch & 0xffff)) {}
 	Char(int_t ch)    : ucs(ushort_t(ch & 0xffff)) {}
+#endif
 	~Char() {}
 
 	bool isLowSurrogate() const { return isLowSurrogate(ucs); }

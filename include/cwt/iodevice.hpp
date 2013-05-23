@@ -46,7 +46,7 @@ public:
 	virtual void flush() = 0;
 
 	size_t       available() const                   { return m_buffer.size() + bytesAvailable(); }
-	virtual bool atEnd() const                       { return available() == ssize_t(0); }
+	virtual bool atEnd() const                       { return bytesAvailable() == ssize_t(0); }
 	ssize_t      read(char bytes[], size_t n);
 	ssize_t      write(const char bytes[], size_t n);
 	void         unread(const char bytes[], size_t n);

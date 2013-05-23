@@ -76,6 +76,10 @@ Petaloid* Sepaloid::registerPetaloidForName(const String &name, const char *pnam
 				, it->utf16()
 				, path.utf16());
 		if (FileSystem::exists(path)) {
+			Logger::debug(_Tr("petaloid '%ls' found at '%ls' as '%ls'")
+					, name.utf16()
+					, it->utf16()
+					, path.utf16());
 			return registerPetaloidForPath(path, pname, arg, argv);
 		}
 	}
@@ -169,6 +173,7 @@ void Sepaloid::unregisterAll()
 
 	for (;it != itEnd; it++) {
 		CWT_ASSERT(it->p);
+		String pname = it->p->name();
 		if (it->dtor) {
 			it->dtor(it->p);
 			it->p = NULL;
@@ -176,9 +181,22 @@ void Sepaloid::unregisterAll()
 		if (it->ph) {
 			Dl::close(it->ph);
 		}
+		Logger::debug(_Tr("Petaloid '%ls' unregistered"), pname.utf16());
 	}
 
 	m_petaloids.clear();
 }
+
+void Sepaloid::start()
+{
+	Vector<PetaloidSpec>::iterator it = m_petaloids.begin();
+	Vector<PetaloidSpec>::iterator itEnd = m_petaloids.end();
+
+	for (;it != itEnd; it++) {
+		CWT_ASSERT(it->p);
+		it->p->onStart();
+	}
+}
+
 
 CWT_NS_END
