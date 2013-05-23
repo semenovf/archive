@@ -20,15 +20,19 @@ Sepaloid::Sepaloid(Sepaloid::Mapping mapping[], int n) : m_searchPaths()
 	}
 }
 
-Petaloid* Sepaloid::registerLocalPetaloid(Petaloid &petaloid, petaloid_dtor_t dtor)
+Petaloid* Sepaloid::registerLocalPetaloid(Petaloid *petaloid, petaloid_dtor_t dtor)
 {
-	return registerPetaloid(petaloid, NULL, dtor) ? &petaloid : NULL;
+	if (petaloid)
+		return registerPetaloid(*petaloid, NULL, dtor) ? petaloid : NULL;
+	return NULL;
 }
 
+/*
 Petaloid* Sepaloid::registerStaticPetaloid(Petaloid &petaloid)
 {
 	return registerPetaloid(petaloid, NULL, NULL) ? &petaloid : NULL;
 }
+*/
 
 Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pname, int arg, char **argv)
 {

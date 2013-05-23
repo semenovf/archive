@@ -104,8 +104,8 @@ public:
 	}
 
 	void addSearchPath(const String &dir) { m_searchPaths.append(dir); }
-	Petaloid* registerLocalPetaloid(Petaloid &petaloid, petaloid_dtor_t dtor = Petaloid::defaultDtor);
-	Petaloid* registerStaticPetaloid(Petaloid &petaloid);
+	Petaloid* registerLocalPetaloid(Petaloid *petaloid, petaloid_dtor_t dtor = Petaloid::defaultDtor);
+//	Petaloid* registerStaticPetaloid(Petaloid &petaloid);
 	Petaloid* registerPetaloidForPath(const String &path, const char *pname = NULL, int argc = 0, char **argv = NULL);
 	Petaloid* registerPetaloidForName(const String &name, const char *pname = NULL, int argc = 0, char **argv = NULL);
 
