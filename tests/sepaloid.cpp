@@ -149,8 +149,8 @@ int main(int argc, char *argv[])
     LocalPetaloidDetector *detector = new LocalPetaloidDetector;
 
     Sepaloid sepaloid(app_mapping, sizeof(app_mapping)/sizeof(app_mapping[0]));
-    CWT_TEST_OK(sepaloid.registerLocalPetaloid(*emitter));
-    CWT_TEST_OK(sepaloid.registerLocalPetaloid(*detector));
+    CWT_TEST_OK(sepaloid.registerLocalPetaloid(emitter));
+    CWT_TEST_OK(sepaloid.registerLocalPetaloid(detector));
     CWT_TEST_OK(sepaloid.registerPetaloidForPath(_U("libpetaloid-tmpl.so")));
     sepaloid.addSearchPath(_U("."));
     CWT_TEST_OK(sepaloid.registerPetaloidForName(_U("petaloid-tmpl")));
