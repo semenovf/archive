@@ -18,7 +18,7 @@
 #elif defined(CWT_OS_WIN)
 #	define CWT_WIN32_THREADS
 #	include <windows.h>
-#elif defined(__GNUG__)
+#elif defined(CWT_HAVE_PTHREAD)
 #	define CWT_POSIX_THREADS
 #	include <pthread.h>
 #else
@@ -26,7 +26,7 @@
 #endif
 
 #if defined(CWT_SINGLE_THREADED)
-
+#	pragma message("No threads")
 #	define mt_def(mutex)
 #	define mt_init(mutex)
 #	define mt_destroy(mutex)
@@ -34,7 +34,7 @@
 #	define mt_unlock(mutex)
 
 #elif defined(CWT_WIN32_THREADS)
-
+#	pragma message("Using WIN32 threads")
 	typedef CRITICAL_SECTION mutex_t;
 
 #	define mt_def(mutex)      mutex_t mutex
@@ -44,7 +44,7 @@
 #	define mt_unlock(mutex)   LeaveCriticalSection(&mutex)
 
 #elif defined(CWT_POSIX_THREADS)
-
+#	pragma message("Using POSIX threads")
 	typedef pthread_mutex_t mutex_t;
 
 #	define mt_def(mutex)      mutex_t mutex

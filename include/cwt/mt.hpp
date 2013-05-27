@@ -54,8 +54,8 @@ class DLL_API multi_threaded_local
 {
 public:
 	multi_threaded_local() { mt_init(m_mutex); }
-	multi_threaded_local(const multi_threaded_local&) { InitializeCriticalSection(&m_critsec); }
-	virtual ~multi_threaded_local() { mt_init(g_mutex); }
+	//multi_threaded_local(const multi_threaded_local&) { InitializeCriticalSection(&m_critsec); }
+	virtual ~multi_threaded_local() { mt_destroy(m_mutex); }
 
 	virtual void lock() { mt_lock(m_mutex); }
 	virtual void unlock() { mt_unlock(m_mutex); }
