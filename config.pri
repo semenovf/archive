@@ -33,6 +33,9 @@ CONFIG += $$CWT_TARGET_PLATFORM
 DEFINES += CWT_LANG=$$CWT_LANG
 DEFINES += CWT_TARGET_PLATFORM=$$CWT_TARGET_PLATFORM
 
+# Multi-threading support
+DEFINES += CWT_MT
+
 # Comment line below to set unicode character size to 2 bytes
 # Note. Only after self implementation of String class!
 #DEFINES += CWT_UCS4_CHAR
