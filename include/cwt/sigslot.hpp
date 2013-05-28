@@ -19,7 +19,7 @@
 //										  this is the default - use SIGSLOT_PURE_ISO to disable this if
 //										  necessary)
 //
-//			SIGSLOT_DEFAULT_MT_POLICY	- Where thread support is enabled, this defaults to multi_threaded_global.
+//			CWT_DEFAULT_MT_POLICY	- Where thread support is enabled, this defaults to multi_threaded_global.
 //										  Otherwise, the default is single_threaded. #define this yourself to
 //										  override the default. In pure ISO mode, anything other than
 //										  single_threaded will cause a compiler error.
@@ -84,202 +84,9 @@
 
 #include <set>
 #include <list>
-#include <cwt/cwt.h>
-
-#if defined(SIGSLOT_PURE_ISO) || (!defined(WIN32) && !defined(__GNUG__) && !defined(SIGSLOT_USE_POSIX_THREADS))
-#	define _SIGSLOT_SINGLE_THREADED
-#elif defined(WIN32)
-#	define _SIGSLOT_HAS_WIN32_THREADS
-#	include <windows.h>
-#elif defined(__GNUG__) || defined(SIGSLOT_USE_POSIX_THREADS)
-#	define _SIGSLOT_HAS_POSIX_THREADS
-#	include <pthread.h>
-#else
-#	define _SIGSLOT_SINGLE_THREADED
-#endif
-
-#ifndef SIGSLOT_DEFAULT_MT_POLICY
-#	ifdef _SIGSLOT_SINGLE_THREADED
-#		define SIGSLOT_DEFAULT_MT_POLICY single_threaded
-#	else
-#		define SIGSLOT_DEFAULT_MT_POLICY multi_threaded_local
-#	endif
-#endif
+#include <cwt/mt.hpp>
 
 CWT_NS_BEGIN
-/*namespace sigslot {*/
-
-	class DLL_API cwt_single_threaded
-	{
-	public:
-		cwt_single_threaded()
-		{
-			;
-		}
-
-		virtual ~cwt_single_threaded()
-		{
-			;
-		}
-
-		virtual void lock()
-		{
-			;
-		}
-
-		virtual void unlock()
-		{
-			;
-		}
-	};
-
-#ifdef _SIGSLOT_HAS_WIN32_THREADS
-	// The multi threading policies only get compiled in if they are enabled.
-	class DLL_API multi_threaded_global
-	{
-	public:
-		multi_threaded_global()
-		{
-			static bool isinitialised = false;
-
-			if(!isinitialised)
-			{
-				InitializeCriticalSection(get_critsec());
-				isinitialised = true;
-			}
-		}
-
-		multi_threaded_global(const multi_threaded_global&)
-		{
-			;
-		}
-
-		virtual ~multi_threaded_global()
-		{
-			;
-		}
-
-		virtual void lock()
-		{
-			EnterCriticalSection(get_critsec());
-		}
-
-		virtual void unlock()
-		{
-			LeaveCriticalSection(get_critsec());
-		}
-
-	private:
-		CRITICAL_SECTION* get_critsec()
-		{
-			static CRITICAL_SECTION g_critsec;
-			return &g_critsec;
-		}
-	};
-
-	class DLL_API multi_threaded_local
-	{
-	public:
-		multi_threaded_local()
-		{
-			InitializeCriticalSection(&m_critsec);
-		}
-
-		multi_threaded_local(const multi_threaded_local&)
-		{
-			InitializeCriticalSection(&m_critsec);
-		}
-
-		virtual ~multi_threaded_local()
-		{
-			DeleteCriticalSection(&m_critsec);
-		}
-
-		virtual void lock()
-		{
-			EnterCriticalSection(&m_critsec);
-		}
-
-		virtual void unlock()
-		{
-			LeaveCriticalSection(&m_critsec);
-		}
-
-	private:
-		CRITICAL_SECTION m_critsec;
-	};
-#endif // _SIGSLOT_HAS_WIN32_THREADS
-
-#ifdef _SIGSLOT_HAS_POSIX_THREADS
-	// The multi threading policies only get compiled in if they are enabled.
-	class multi_threaded_global
-	{
-	public:
-		multi_threaded_global()
-		{
-			pthread_mutex_init(get_mutex(), NULL);
-		}
-
-		multi_threaded_global(const multi_threaded_global&)
-		{
-			;
-		}
-
-		virtual ~multi_threaded_global()
-		{
-			;
-		}
-
-		virtual void lock()
-		{
-			pthread_mutex_lock(get_mutex());
-		}
-
-		virtual void unlock()
-		{
-			pthread_mutex_unlock(get_mutex());
-		}
-
-	private:
-		pthread_mutex_t* get_mutex()
-		{
-			static pthread_mutex_t g_mutex;
-			return &g_mutex;
-		}
-	};
-
-	class multi_threaded_local
-	{
-	public:
-		multi_threaded_local()
-		{
-			pthread_mutex_init(&m_mutex, NULL);
-		}
-
-		multi_threaded_local(const multi_threaded_local&)
-		{
-			pthread_mutex_init(&m_mutex, NULL);
-		}
-
-		virtual ~multi_threaded_local()
-		{
-			pthread_mutex_destroy(&m_mutex);
-		}
-
-		virtual void lock()
-		{
-			pthread_mutex_lock(&m_mutex);
-		}
-
-		virtual void unlock()
-		{
-			pthread_mutex_unlock(&m_mutex);
-		}
-
-	private:
-		pthread_mutex_t m_mutex;
-	};
-#endif // _SIGSLOT_HAS_POSIX_THREADS
 
 	template<class mt_policy>
 	class lock_block
@@ -421,11 +228,12 @@ CWT_NS_BEGIN
 	class _signal_base : public mt_policy
 	{
 	public:
+		virtual ~_signal_base() {}
 		virtual void slot_disconnect(has_slots<mt_policy>* pslot) = 0;
 		virtual void slot_duplicate(const has_slots<mt_policy>* poldslot, has_slots<mt_policy>* pnewslot) = 0;
 	};
 
-	template<class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	template<class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class DLL_API has_slots : public mt_policy
 	{
 	private:
@@ -1939,7 +1747,7 @@ CWT_NS_BEGIN
 			arg5_type, arg6_type, arg7_type, arg8_type);
 	};
 
-	template<class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	template<class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class signal0 : public _signal_base0<mt_policy>
 	{
 		typedef _signal_base0<mt_policy> __base_class;
@@ -2001,7 +1809,7 @@ CWT_NS_BEGIN
 		}
 	};
 
-	template<class arg1_type, class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	template<class arg1_type, class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class signal1 : public _signal_base1<arg1_type, mt_policy>
 	{
 		typedef _signal_base1<arg1_type, mt_policy> __base_class;
@@ -2064,7 +1872,7 @@ CWT_NS_BEGIN
 		}
 	};
 
-	template<class arg1_type, class arg2_type, class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	template<class arg1_type, class arg2_type, class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class signal2 : public _signal_base2<arg1_type, arg2_type, mt_policy>
 	{
 		typedef _signal_base2<arg1_type, arg2_type, mt_policy> __base_class;
@@ -2126,7 +1934,7 @@ CWT_NS_BEGIN
 		}
 	};
 
-	template<class arg1_type, class arg2_type, class arg3_type, class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	template<class arg1_type, class arg2_type, class arg3_type, class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class signal3 : public _signal_base3<arg1_type, arg2_type, arg3_type, mt_policy>
 	{
 		typedef  _signal_base3<arg1_type, arg2_type, arg3_type, mt_policy> __base_class;
@@ -2189,7 +1997,7 @@ CWT_NS_BEGIN
 		}
 	};
 
-	template<class arg1_type, class arg2_type, class arg3_type, class arg4_type, class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	template<class arg1_type, class arg2_type, class arg3_type, class arg4_type, class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class signal4 : public _signal_base4<arg1_type, arg2_type, arg3_type,
 		arg4_type, mt_policy>
 	{
@@ -2255,7 +2063,7 @@ CWT_NS_BEGIN
 	};
 
 	template<class arg1_type, class arg2_type, class arg3_type, class arg4_type,
-	class arg5_type, class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	class arg5_type, class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class signal5 : public _signal_base5<arg1_type, arg2_type, arg3_type,
 		arg4_type, arg5_type, mt_policy>
 	{
@@ -2327,7 +2135,7 @@ CWT_NS_BEGIN
 
 
 	template<class arg1_type, class arg2_type, class arg3_type, class arg4_type,
-	class arg5_type, class arg6_type, class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	class arg5_type, class arg6_type, class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class signal6 : public _signal_base6<arg1_type, arg2_type, arg3_type,
 		arg4_type, arg5_type, arg6_type, mt_policy>
 	{
@@ -2398,7 +2206,7 @@ CWT_NS_BEGIN
 	};
 
 	template<class arg1_type, class arg2_type, class arg3_type, class arg4_type,
-	class arg5_type, class arg6_type, class arg7_type, class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	class arg5_type, class arg6_type, class arg7_type, class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class signal7 : public _signal_base7<arg1_type, arg2_type, arg3_type,
 		arg4_type, arg5_type, arg6_type, arg7_type, mt_policy>
 	{
@@ -2470,7 +2278,7 @@ CWT_NS_BEGIN
 	};
 
 	template<class arg1_type, class arg2_type, class arg3_type, class arg4_type,
-	class arg5_type, class arg6_type, class arg7_type, class arg8_type, class mt_policy = SIGSLOT_DEFAULT_MT_POLICY>
+	class arg5_type, class arg6_type, class arg7_type, class arg8_type, class mt_policy = CWT_DEFAULT_MT_POLICY>
 	class signal8 : public _signal_base8<arg1_type, arg2_type, arg3_type,
 		arg4_type, arg5_type, arg6_type, arg7_type, arg8_type, mt_policy>
 	{

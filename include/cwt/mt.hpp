@@ -67,7 +67,7 @@ private:
 // catched in mt.h
 #endif
 
-CWT_NS_BEGIN
+//CWT_NS_BEGIN
 
 /**
  *
@@ -112,6 +112,6 @@ protected:                                                      \
 private:                                                        \
 	CWT_DEFAULT_MT_POLICY m_mutex;
 
-CWT_NS_END
+//CWT_NS_END
 
 #endif /* __CWT_MT_HPP__ */

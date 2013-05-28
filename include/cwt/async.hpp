@@ -9,13 +9,15 @@
 #define __CWT_ASYNC_HPP__
 
 #include <cwt/cwt.h>
+#include <cwt/sigslot.hpp>
 #include <QtConcurrent/QtConcurrent>
 
 CWT_NS_BEGIN
 
-template <typename result_type>
+template <typename result_type = void>
 class future {
 public:
+	future() : m_future() {}
 	explicit future(const QFuture<result_type>& future) : m_future(future) {}
 	result_type result()    { return m_future.result(); }
 	void cancel()           { m_future.cancel(); }
@@ -77,8 +79,65 @@ future<T> async(const Class *object, T (Class::*method)(Arg1) const, const Arg1 
 	return future<T>(QtConcurrent::run(object, method, arg1));
 }
 
-// TODO Expand up to five arguments.
+template<typename T, typename Class, typename Arg1, typename Arg2>
+future<T> async(const Class *object, T (Class::*method)(Arg1, Arg2) const, const Arg1 &arg1, const Arg2 &arg2)
+{
+	return future<T>(QtConcurrent::run(object, method, arg1, arg2));
+}
 
+template<typename T, typename Class, typename Arg1, typename Arg2, typename Arg3>
+future<T> async(const Class *object, T (Class::*method)(Arg1, Arg2, Arg3) const, const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
+{
+	return future<T>(QtConcurrent::run(object, method, arg1, arg2, arg3));
+}
+
+template<typename T, typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+future<T> async(const Class *object, T (Class::*method)(Arg1, Arg2, Arg3, Arg4) const, const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
+{
+	return future<T>(QtConcurrent::run(object, method, arg1, arg2, arg3, arg4));
+}
+
+template<typename T, typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+future<T> async(const Class *object, T (Class::*method)(Arg1, Arg2, Arg3, Arg4, Arg5) const, const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
+{
+	return future<T>(QtConcurrent::run(object, method, arg1, arg2, arg3, arg4, arg5));
+}
+
+template<typename Emitter>
+future<void> async_emit(Emitter &emitter)
+{
+	return future<void>(QtConcurrent::run(&emitter, &Emitter::emit_));
+}
+
+template<typename Emitter, typename Arg1>
+future<void> async_emit(Emitter &emitter, const Arg1 &arg1)
+{
+	return future<void>(QtConcurrent::run(&emitter, &Emitter::emit_, arg1));
+}
+
+template<typename Emitter, typename Arg1, typename Arg2>
+future<void> async_emit(Emitter &emitter, const Arg1 &arg1, const Arg2 &arg2)
+{
+	return future<void>(QtConcurrent::run(&emitter, &Emitter::emit_, arg1, arg2));
+}
+
+template<typename Emitter, typename Arg1, typename Arg2, typename Arg3>
+future<void> async_emit(Emitter &emitter, const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
+{
+	return future<void>(QtConcurrent::run(&emitter, &Emitter::emit_, arg1, arg2, arg3));
+}
+
+template<typename Emitter, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+future<void> async_emit(Emitter &emitter, const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
+{
+	return future<void>(QtConcurrent::run(&emitter, &Emitter::emit_, arg1, arg2, arg3, arg4));
+}
+
+template<typename Emitter, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+future<void> async_emit(Emitter &emitter, const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
+{
+	return future<void>(QtConcurrent::run(&emitter, &Emitter::emit_, arg1, arg2, arg3, arg4, arg5));
+}
 
 CWT_NS_END
 
