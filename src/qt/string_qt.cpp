@@ -40,12 +40,20 @@ size_t String::size() const      { return size_t(pimpl->size()); }
 String&	String::prepend(const String &str)             { pimpl->prepend(*str.pimpl); return *this; }
 String&	String::prepend(const Char *unicode, int size) { String s(unicode, size); prepend(s); return *this; }
 String&	String::prepend(Char ch)                       { pimpl->prepend(QChar(ch.unicode())); return *this; }
-String& String::remove(size_t pos, size_t n) {
+String& String::remove(size_t pos, size_t n)
+{
 	CWT_ASSERT(pos <= CWT_INT_MAX);
 	CWT_ASSERT(n <= CWT_INT_MAX);
 	remove(int(pos), int(n));
 	return *this;
 }
+
+String& String::replace(const String &before, const String &after, bool cs)
+{
+	pimpl->replace(*before.pimpl, *after.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive);
+	return *this;
+}
+
 void String::reserve(size_t size) { CWT_ASSERT(size <= CWT_INT_MAX); pimpl->reserve(int(size)); }
 void String::resize(size_t size)  { CWT_ASSERT(size <= CWT_INT_MAX); pimpl->resize(int(size)); }
 

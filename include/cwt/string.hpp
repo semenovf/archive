@@ -75,6 +75,9 @@ public:
 	String&	 prepend(const Char *unicode, int size = -1);
 	String&	 prepend(Char ch);
 	String&  remove(size_t pos, size_t n);
+
+	String&  replace(const String &before, const String &after, bool cs = true);
+
 	void	 reserve(size_t size);
 	void	 resize(size_t size);
 

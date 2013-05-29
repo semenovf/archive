@@ -369,7 +369,7 @@ inline typename Hash<Key,T>::const_iterator Hash<Key,T>::find(const Key &key) co
 	e.key = key;
 
 	HashData::Node *node = m_d->lookup(reinterpret_cast<HashData::Node*>(&e), &index);
-	return iterator(m_d.get(), node, index);
+	return const_iterator(m_d.get(), node, index);
 }
 
 

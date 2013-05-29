@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     	trace_msg.sprintf(_Tr("Open %s"), utf8_files[i]);
         CWT_TEST_FAIL2(file.open(utf8_files[i], IODevice::ReadOnly), trace_msg.toUtf8().data());
 
-        TextStream ts(file);
+        TextInputStream ts(&file);
         Decoder *utf8Decoder = Decoder::forName("utf8");
         ts.setDecoder(utf8Decoder);
         String s = ts.readAll();

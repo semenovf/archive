@@ -52,7 +52,7 @@ public:
 		emitWarn.disconnect_all();
 		emitError.disconnect_all();
 		emitFatal.disconnect_all();
-		CWT_TRACE("~LogEmitter()");
+//		CWT_TRACE("~LogEmitter()");
 	}
 
 	static shared_ptr<LogEmitter> instance() {

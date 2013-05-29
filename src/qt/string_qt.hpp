@@ -9,8 +9,6 @@
 #ifndef __CWT_STRING_QT_HPP__
 #define __CWT_STRING_QT_HPP__
 
-#ifndef CWT_STRING_SELF_IMPL
-
 #include "../../include/cwt/string.hpp"
 #define QT_NO_CAST_FROM_ASCII
 #include <QtCore/QString>
@@ -26,6 +24,7 @@ public:
 	Impl(const Impl &other)       : QString(other) {}
 	Impl(const QString &other)    : QString(other) {}
 	Impl& operator=(Char ch)      { QString::operator  = (QChar(ch.unicode())); return *this; }
+	~Impl() { QChar *d = data(); memset(d, 0, sizeof(QChar) * length()); }
 };
 
 inline String::Impl::Impl(const Char *unicode, int size) : QString()
@@ -36,9 +35,6 @@ inline String::Impl::Impl(const Char *unicode, int size) : QString()
 	for(int i = 0; i < size; i++)
 		chars[i] = QChar(unicode[i].unicode());
 }
-
 CWT_NS_END
-
-#endif /* CWT_STRING_SELF_IMPL */
 
 #endif /* __CWT_STRING_QT_HPP__ */

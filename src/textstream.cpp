@@ -11,8 +11,18 @@
 CWT_NS_BEGIN
 
 
-String TextStream::read(size_t len)
+String TextInputStream::read(size_t len)
 {
+	if (m_isString) {
+		CWT_ASSERT(m_string);
+		if (m_pos < m_string->length()) {
+			String result(m_string->substr(m_pos, len));
+			m_pos += result.length();
+			return result;
+		}
+		return String();
+	}
+
 	CWT_ASSERT(m_dev);
 
 	// TODO need to support default decoder
@@ -49,18 +59,18 @@ String TextStream::read(size_t len)
 }
 
 
-ssize_t TextStream::write(const String &s)
+String TextInputStream::readAll()
 {
-	CWT_ASSERT(m_encoder);
-	CWT_ASSERT(m_dev);
-	ByteArray ba = m_encoder->fromUnicode(s.data(), s.length());
-	return m_dev->write(ba.data(), ba.length());
-}
+	if (m_isString) {
+		CWT_ASSERT(m_string);
+		if (m_pos < m_string->length()) {
+			String result(m_string->substr(m_pos, m_string->length()));
+			m_pos += result.length();
+			return result;
+		}
+		return String();
+	}
 
-
-
-String TextStream::readAll()
-{
 	CWT_ASSERT(m_decoder);
 	CWT_ASSERT(m_dev);
 
@@ -87,6 +97,21 @@ String TextStream::readAll()
 	}
 
 	return result;
+}
+
+ssize_t TextOutputStream::write(const String &s)
+{
+	if (m_isString) {
+		CWT_ASSERT(m_string);
+		CWT_ASSERT(m_string->length() >= CWT_SSIZE_MAX);
+		m_string->append(s);
+		return ssize_t(s.length());
+	}
+
+	CWT_ASSERT(m_encoder);
+	CWT_ASSERT(m_dev);
+	ByteArray ba = m_encoder->fromUnicode(s.data(), s.length());
+	return m_dev->write(ba.data(), ba.length());
 }
 
 CWT_NS_END
