@@ -36,6 +36,7 @@ public:
 
 public:
 	Char() : ucs(char_type(0)) {}
+	Char(char latin1Char) : ucs(ushort_t(latin1Char)) {}
 	Char(ushort_t ch) : ucs(ch) {}
 	Char(short_t ch)  : ucs(char_type(ch)) {}
 #ifdef CWT_UCS4_CHAR

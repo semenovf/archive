@@ -8,8 +8,10 @@
 
 #include "../include/cwt/textstream.hpp"
 #include <cstdio>
+
 CWT_NS_BEGIN
 
+const String TextInputStream::DEFAULT_END_LINE = _U("\n");
 
 String TextInputStream::read(size_t len)
 {
@@ -98,6 +100,54 @@ String TextInputStream::readAll()
 
 	return result;
 }
+
+Char TextInputStream::getChar()
+{
+	String ch = read(1);
+	return ch.length() > 0 ? ch[0] : Char();
+}
+
+String TextInputStream::readLine()
+{
+	const String endLines[1] = { DEFAULT_END_LINE };
+	return readLine(endLines, 1);
+}
+
+String TextInputStream::readLine(const String &endLine)
+{
+	String result;
+	Char ch;
+
+	while ((ch = getChar()).unicode()) {
+		result.append(ch);
+		if (result.endsWith(endLine)) {
+			result.resize(result.length() - endLine.length());
+			return result;
+		}
+	}
+
+	return result;
+}
+
+
+String TextInputStream::readLine(const String& endLines[], int count)
+{
+	String result;
+	Char ch;
+
+	while ((ch = getChar()).unicode()) {
+		result.append(ch);
+		for (int i = 0; i < count; ++i) {
+			if (result.endsWith(endLines[i])) {
+				result.resize(result.length() - endLines[i].length());
+				return result;
+			}
+		}
+	}
+
+	return result;
+}
+
 
 ssize_t TextOutputStream::write(const String &s)
 {

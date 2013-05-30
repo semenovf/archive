@@ -40,6 +40,7 @@ struct FsmTransition;
 struct FsmRptBounds {
 	int from, to;
 };
+
 typedef ssize_t (*FsmFunc)(FsmContext *fsm, void *fn_context, const void *data, size_t len);
 
 struct FsmMatchBase
@@ -74,7 +75,6 @@ public:
 	ssize_t operator () (FsmContext *fsm, const void *data, size_t len) const {
 		return m_match->match(fsm, data, len);
 	}
-
 private:
 	FsmMatchBase* m_match;
 };

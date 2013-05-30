@@ -21,6 +21,7 @@ CWT_NS_BEGIN
 class TextInputStream {
 private:
 	static const size_t ChunkSize = 512;
+	static const String DEFAULT_END_LINE;
 public:
 	TextInputStream() : m_isString(false), m_dev(NULL), m_decoder(NULL) {}
 	TextInputStream(IODevice *dev) : m_isString(false), m_dev(dev), m_decoder(NULL) {}
@@ -34,6 +35,9 @@ public:
 	}
 	String read(size_t len);
 	String readAll();
+	String readLine();
+	String readLine(const String &endLine);
+	String readLine(const String& endLines[], int count);
 	Char   getChar();
 
 	void setDecoder(Decoder *decoder) { m_decoder = decoder; }

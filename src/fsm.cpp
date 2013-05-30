@@ -14,7 +14,6 @@
 CWT_NS_BEGIN
 
 static void reproduce (FsmContext *copy, const FsmContext *orig, const FsmTransition *initialTab);
-/*static void reproduceWithContext (FsmContext *copy, const FsmContext *orig, const FsmTransition *initialTab, void *context);*/
 
 ssize_t FsmMatchSeq::match(FsmContext *fsm, const void *data, size_t len) const
 {
@@ -51,6 +50,7 @@ ssize_t FsmMatchChar::match(FsmContext *fsm, const void *data, size_t len) const
 			  	  : (ssize_t)-1;
 }
 
+
 ssize_t FsmMatchStringChar::match(FsmContext *fsm, const void *data, size_t len) const
 {
 	size_t count = (size_t)m_str.length();
@@ -60,7 +60,6 @@ ssize_t FsmMatchStringChar::match(FsmContext *fsm, const void *data, size_t len)
 			  	  ? (ssize_t)1
 			  	  : (ssize_t)-1;
 }
-
 
 ssize_t FsmMatchRange::match(FsmContext *fsm, const void *data, size_t len) const
 {
@@ -127,7 +126,6 @@ ssize_t FsmMatchRpt::match(FsmContext *fsm, const void *data, size_t len) const
 		return (ssize_t)-1;
 
 	return (ssize_t)nchars_total_processed;
-
 }
 
 static void reproduce (FsmContext *copy, const FsmContext *orig, const FsmTransition *initialTab)
@@ -138,14 +136,6 @@ static void reproduce (FsmContext *copy, const FsmContext *orig, const FsmTransi
 	memcpy(copy, orig, sizeof(*orig));
 	copy->trans_tab = initialTab;
 }
-
-/*
-static void reproduceWithContext (FsmContext *copy, const FsmContext *orig, const FsmTransition *initialTab, void *context)
-{
-	reproduce(copy, orig, initialTab);
-	copy->context = context;
-}
-*/
 
 ssize_t execFsmContext (FsmContext *fsmContext, int state_cur, const void *data, size_t datalen)
 {
