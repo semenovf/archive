@@ -11,7 +11,8 @@
 
 CWT_NS_BEGIN
 
-const String TextInputStream::DEFAULT_END_LINE = _U("\n");
+static const String DEFAULT_END_LINES[] = {_U("\n\r"), _U("\r\n"), _U("\r"), _U("\n") };
+static const int __endLinesCount = sizeof(DEFAULT_END_LINES)/sizeof(DEFAULT_END_LINES[0]);
 
 String TextInputStream::read(size_t len)
 {
@@ -101,19 +102,13 @@ String TextInputStream::readAll()
 	return result;
 }
 
-Char TextInputStream::getChar()
+String TextInputStream::readLine(bool with_nl)
 {
-	String ch = read(1);
-	return ch.length() > 0 ? ch[0] : Char();
+	return readLine(DEFAULT_END_LINES, __endLinesCount, with_nl);
 }
 
-String TextInputStream::readLine()
-{
-	const String endLines[1] = { DEFAULT_END_LINE };
-	return readLine(endLines, 1);
-}
-
-String TextInputStream::readLine(const String &endLine)
+// TODO need more effective algorithm
+String TextInputStream::readLine(const String &endLine, bool with_nl)
 {
 	String result;
 	Char ch;
@@ -121,7 +116,8 @@ String TextInputStream::readLine(const String &endLine)
 	while ((ch = getChar()).unicode()) {
 		result.append(ch);
 		if (result.endsWith(endLine)) {
-			result.resize(result.length() - endLine.length());
+			if (!with_nl)
+				result.resize(result.length() - endLine.length());
 			return result;
 		}
 	}
@@ -129,8 +125,8 @@ String TextInputStream::readLine(const String &endLine)
 	return result;
 }
 
-
-String TextInputStream::readLine(const String& endLines[], int count)
+// TODO need more effective algorithm
+String TextInputStream::readLine(const String endLines[], int count, bool with_nl)
 {
 	String result;
 	Char ch;
@@ -139,7 +135,8 @@ String TextInputStream::readLine(const String& endLines[], int count)
 		result.append(ch);
 		for (int i = 0; i < count; ++i) {
 			if (result.endsWith(endLines[i])) {
-				result.resize(result.length() - endLines[i].length());
+				if (!with_nl)
+					result.resize(result.length() - endLines[i].length());
 				return result;
 			}
 		}

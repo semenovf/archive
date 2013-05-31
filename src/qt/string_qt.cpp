@@ -225,7 +225,7 @@ String String::number(ulong_t n, int base)
 	return s;
 }
 
-const String& String::null()
+const String& String::constNull()
 {
 	return __nullString;
 }

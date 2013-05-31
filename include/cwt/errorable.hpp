@@ -57,14 +57,14 @@ inline const String& Errorable::errorTextAt(size_t index) const
 {
 	return index < m_errors.size()
 			? m_errors[index].errstr
-			: String::null();
+			: String::constNull();
 }
 
 inline const String& Errorable::lastErrorText() const
 {
 	return m_errors.size() > 0
 			? m_errors.last().errstr
-			: String::null();
+			: String::constNull();
 }
 
 inline void Errorable::addError(const String& text)

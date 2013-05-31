@@ -107,9 +107,9 @@ String Utf8Decoder::convertToUnicode(const char *bytes, size_t len, size_t *nrem
 
 	if (!m_headerDone) {
 		if (len == 1 && byte_t(bytes[0]) == 0xef) {
-			return String::null();
+			return String();
 		} if (len == 2 && byte_t(bytes[0]) == 0xef && byte_t(bytes[1]) == 0xbb) {
-			return String::null();
+			return String();
 		} if (len >= 3 && byte_t(bytes[0]) == 0xef && byte_t(bytes[1]) == 0xbb && byte_t(bytes[2]) == 0xbf) {
 			// starts with a byte order mark
 			bytes += 3;

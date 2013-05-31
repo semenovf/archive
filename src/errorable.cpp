@@ -25,7 +25,7 @@ void Errorable::addSystemError(int errn, const String &prefix)
 void Errorable::addSystemError(int errn, const char *prefix, ...)
 {
 	if (!prefix) {
-		addSystemError(errn, String::null());
+		addSystemError(errn, String::constNull());
 	} else {
 		va_list args;
 		va_start(args, prefix);

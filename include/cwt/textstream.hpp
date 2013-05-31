@@ -18,10 +18,9 @@
 
 CWT_NS_BEGIN
 
-class TextInputStream {
+class DLL_API TextInputStream {
 private:
 	static const size_t ChunkSize = 512;
-	static const String DEFAULT_END_LINE;
 public:
 	TextInputStream() : m_isString(false), m_dev(NULL), m_decoder(NULL) {}
 	TextInputStream(IODevice *dev) : m_isString(false), m_dev(dev), m_decoder(NULL) {}
@@ -35,10 +34,11 @@ public:
 	}
 	String read(size_t len);
 	String readAll();
-	String readLine();
-	String readLine(const String &endLine);
-	String readLine(const String& endLines[], int count);
+	String readLine(bool with_nl = false);
+	String readLine(const String &endLine, bool with_nl = false);
+	String readLine(const String endLines[], int count, bool with_nl = false);
 	Char   getChar();
+	void   ungetChar(Char ch);
 
 	void setDecoder(Decoder *decoder) { m_decoder = decoder; }
 
@@ -54,10 +54,10 @@ protected:
 			String *m_string;
 		};
 	};
-	String    m_remainChars;
+	String m_remainChars;
 };
 
-class TextOutputStream {
+class DLL_API TextOutputStream {
 public:
 	TextOutputStream() : m_isString(false), m_dev(NULL), m_encoder(NULL)  {}
 	TextOutputStream(IODevice *dev) : m_isString(false), m_dev(dev), m_encoder(NULL)  {}
@@ -79,6 +79,18 @@ protected:
 	};
 
 };
+
+inline Char TextInputStream::getChar()
+{
+	String ch = read(1);
+	return ch.length() > 0 ? ch[0] : Char();
+}
+
+// TODO need more effective algorithm for returning a char into the stream.
+inline void TextInputStream::ungetChar(Char ch)
+{
+	m_remainChars.prepend(ch);
+}
 
 CWT_NS_END
 

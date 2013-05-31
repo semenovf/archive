@@ -44,7 +44,6 @@ class DLL_API String
 	typedef Vector<char_type> BaseClass;
 #endif
 */
-
 public:
 	String();
 	String(const Char *unicode, int size = -1);
@@ -129,7 +128,7 @@ public:
 	static String number(long_t n, int base = 10);
 	static String number(ulong_t n, int base = 10);
 
-	static const String& null();
+	static const String& constNull();
 
 private:
     class Impl;
