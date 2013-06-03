@@ -67,21 +67,32 @@ public:
 
 	ByteArray&	setNumber(long_t n, int base = 10);
 	ByteArray&	setNumber(ulong_t n, int base = 10);
-	ByteArray&	setNumber(int_t n, int base = 10)   { return setNumber(long_t(n), base); }
-	ByteArray&	setNumber(uint_t n, int base = 10)  { return setNumber(ulong_t(n), base); }
-	ByteArray&	setNumber(short_t n, int base = 10) { return setNumber(long_t(n), base); }
-	ByteArray&	setNumber(ushort_t n, int base = 10){ return setNumber(ulong_t(n), base); }
+	ByteArray&	setNumber(int_t n, int base = 10);
+	ByteArray&	setNumber(uint_t n, int base = 10);
+	ByteArray&	setNumber(short_t n, int base = 10);
+	ByteArray&	setNumber(ushort_t n, int base = 10);
 	ByteArray&	setNumber(sbyte_t n, int base = 10) { return setNumber(long_t(n), base); }
 	ByteArray&	setNumber(byte_t n, int base = 10)  { return setNumber(ulong_t(n), base); }
 	ByteArray&	setNumber(double n, char f = 'g', int prec = 6);
-	ByteArray&	setNumber(float n, char f = 'g', int prec = 6) { return setNumber(double(n), f, prec); }
+	ByteArray&	setNumber(float n, char f = 'g', int prec = 6);
 
 	ByteArray& setRawData(const char *data, size_t size);
+
+	bool startsWith(const ByteArray &ba) const;
+	bool startsWith(const char *s) const;
+	bool startsWith(char c) const;
 
 	ByteArray&	operator = (const ByteArray &other);
 	ByteArray&	operator = (const char *str);
 
 	friend bool	operator ==(const ByteArray &s1, const ByteArray &s2);
+
+	static ByteArray number(double n, char format = 'g', int precision = 6);
+	static ByteArray number(float n, char format = 'g', int precision = 6);
+	static ByteArray number(int_t n, int base = 10);
+	static ByteArray number(uint_t n, int base = 10);
+	static ByteArray number(long_t n, int base = 10);
+	static ByteArray number(ulong_t n, int base = 10);
 
 private:
     class Impl;

@@ -60,6 +60,7 @@ public:
 	void     clear();
 	bool     contains(const String & str, bool cs = true) const;
 	bool     contains(Char ch, bool cs = true) const;
+	bool     compare(const String & other, bool cs = true) const;
 	Char*    data();
 	const Char*	data() const;
 	bool	 endsWith(const String &s, bool cs = true) const;
@@ -122,7 +123,19 @@ public:
 	static String fromUtf8(const char *str, int size = -1);
 	static String fromUtf8(const ByteArray &str);
 
+	String&	setNumber(long_t n, int base = 10);
+	String&	setNumber(ulong_t n, int base = 10);
+	String&	setNumber(int_t n, int base = 10);
+	String&	setNumber(uint_t n, int base = 10);
+	String&	setNumber(short_t n, int base = 10);
+	String&	setNumber(ushort_t n, int base = 10);
+	String&	setNumber(sbyte_t n, int base = 10) { return setNumber(long_t(n), base); }
+	String&	setNumber(byte_t n, int base = 10)  { return setNumber(ulong_t(n), base); }
+	String&	setNumber(float n, char f = 'g', int prec = 6);
+	String&	setNumber(double n, char f = 'g', int prec = 6);
+
 	static String number(double n, char format = 'g', int precision = 6);
+	static String number(float n, char format = 'g', int precision = 6);
 	static String number(int_t n, int base = 10);
 	static String number(uint_t n, int base = 10);
 	static String number(long_t n, int base = 10);

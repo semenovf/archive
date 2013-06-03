@@ -30,6 +30,16 @@ ByteArray &ByteArray::prepend(char ch)                   { pimpl->prepend(ch); r
 ByteArray& ByteArray::remove(size_t pos, size_t len)     { CWT_ASSERT(pos <= CWT_INT_MAX || len > CWT_INT_MAX); pimpl->remove((int)pos, (int)len); return *this; }
 void ByteArray::reserve(size_t size)                     { CWT_ASSERT(size <= CWT_INT_MAX); pimpl->reserve((int)size); }
 void ByteArray::resize(size_t size)                      { CWT_ASSERT(size <= CWT_INT_MAX); pimpl->resize((int)size); }
+
+ByteArray& ByteArray::setNumber(long_t n, int base) { pimpl->setNum(n, base); return *this; }
+ByteArray& ByteArray::setNumber(ulong_t n, int base) { pimpl->setNum(n, base); return *this; }
+ByteArray& ByteArray::setNumber(int_t n, int base) { pimpl->setNum(n, base); return *this; }
+ByteArray& ByteArray::setNumber(uint_t n, int base) { pimpl->setNum(n, base); return *this; }
+ByteArray& ByteArray::setNumber(short_t n, int base) { pimpl->setNum(n, base); return *this; }
+ByteArray& ByteArray::setNumber(ushort_t n, int base) { pimpl->setNum(n, base); return *this; }
+ByteArray& ByteArray::setNumber(double n, char f, int prec) { pimpl->setNum(n, f, prec); return *this; }
+ByteArray& ByteArray::setNumber(float n, char f, int prec) { pimpl->setNum(n, f, prec); return *this; }
+
 double	 ByteArray::toDouble(bool *ok) const             { return pimpl->toDouble(ok); }
 float	 ByteArray::toFloat(bool *ok) const              { return pimpl->toFloat(ok); }
 int_t	 ByteArray::toInt(bool *ok, int base) const      { return pimpl->toInt(ok, base); }
@@ -39,18 +49,60 @@ uint_t	 ByteArray::toUInt(bool *ok, int base) const     { return pimpl->toUInt(o
 ulong_t	 ByteArray::toULong(bool *ok, int base) const    { return pimpl->toULongLong(ok, base); }
 ushort_t ByteArray::toUShort(bool *ok, int base) const   { return pimpl->toUShort(ok, base); }
 
-ByteArray& ByteArray::setNumber(long_t n, int base)                 { pimpl->setNum(n, base); return *this; }
-ByteArray& ByteArray::setNumber(ulong_t n, int base)                { pimpl->setNum(n, base); return *this; }
-ByteArray& ByteArray::setNumber(double n, char f, int prec)         { pimpl->setNum(n, f, prec); return *this; }
-
-
 ByteArray& ByteArray::setRawData(const char * data, uint size) { pimpl->setRawData(data, size); return *this; }
 size_t ByteArray::size() const { return size_t(pimpl->size()); }
+
+bool ByteArray::startsWith(const ByteArray &ba) const { return pimpl->startsWith(*ba.pimpl); }
+bool ByteArray::startsWith(const char *s) const { return pimpl->startsWith(s); }
+bool ByteArray::startsWith(char c) const { return pimpl->startsWith(c); }
 
 ByteArray&	ByteArray::operator=(const ByteArray &other) { pimpl->operator  = (*other.pimpl); return *this;}
 ByteArray&	ByteArray::operator=(const char *str) { pimpl->operator  = (str); return *this;}
 
 bool operator==(const ByteArray &s1, const ByteArray &s2) {	return *s1.pimpl == *s2.pimpl; }
+
+
+ByteArray ByteArray::number(double n, char format, int precision)
+{
+	ByteArray ba;
+	*ba.pimpl = QByteArray::number(n, format, precision);
+	return ba;
+}
+
+ByteArray ByteArray::number(float n, char format, int precision)
+{
+	ByteArray ba;
+	*ba.pimpl = QByteArray::number(n, format, precision);
+	return ba;
+}
+
+ByteArray ByteArray::number(int_t n, int base)
+{
+	ByteArray ba;
+	*ba.pimpl = QByteArray::number(n, base);
+	return ba;
+}
+
+ByteArray ByteArray::number(uint_t n, int base)
+{
+	ByteArray ba;
+	*ba.pimpl = QByteArray::number(n, base);
+	return ba;
+}
+
+ByteArray ByteArray::number(long_t n, int base)
+{
+	ByteArray ba;
+	*ba.pimpl = QByteArray::number(n, base);
+	return ba;
+}
+
+ByteArray ByteArray::number(ulong_t n, int base)
+{
+	ByteArray ba;
+	*ba.pimpl = QByteArray::number(n, base);
+	return ba;
+}
 
 CWT_NS_END
 

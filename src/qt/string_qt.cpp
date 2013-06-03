@@ -28,6 +28,7 @@ const Char String::at(int pos) const     { const QChar ch = pimpl->at(pos); retu
 void String::clear()             { pimpl->clear(); }
 bool String::contains(const String & str, bool cs) const { return pimpl->contains(*str.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 bool String::contains(Char ch, bool cs) const { return pimpl->contains(QChar(ch.unicode()), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+bool String::compare(const String &other, bool cs) const { return pimpl->compare(*other.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 Char* String::data()             { return reinterpret_cast<Char*>(pimpl->data()); }
 const Char*	String::data() const { return reinterpret_cast<const Char*>(pimpl->data()); }
 bool String::isEmpty() const     { return reinterpret_cast<const Char*>(pimpl->isEmpty()); }
@@ -79,6 +80,15 @@ String String::substr(size_t pos, size_t n) const   {
 	*s.pimpl = pimpl->mid(int(pos), int(n));
 	return s;
 }
+
+String&	String::setNumber(long_t n, int base) { pimpl->setNum(n, base); return *this; }
+String&	String::setNumber(ulong_t n, int base) { pimpl->setNum(n, base); return *this; }
+String&	String::setNumber(int_t n, int base) { pimpl->setNum(n, base); return *this; }
+String&	String::setNumber(uint_t n, int base) { pimpl->setNum(n, base); return *this; }
+String&	String::setNumber(short_t n, int base) { pimpl->setNum(n, base); return *this; }
+String&	String::setNumber(ushort_t n, int base) { pimpl->setNum(n, base); return *this; }
+String&	String::setNumber(float n, char f, int prec) { pimpl->setNum(n, f, prec); return *this; }
+String&	String::setNumber(double n, char f, int prec) { pimpl->setNum(n, f, prec); return *this; }
 
 double	 String::toDouble(bool *ok) const           { return pimpl->toDouble(ok); }
 float	 String::toFloat(bool *ok) const            { return pimpl->toFloat(ok); }
@@ -191,6 +201,13 @@ String String::fromUtf8(const ByteArray &str)
 
 
 String String::number(double n, char format, int precision)
+{
+	String s;
+	*s.pimpl = QString::number(n, format, precision);
+	return s;
+}
+
+String String::number(float n, char format, int precision)
 {
 	String s;
 	*s.pimpl = QString::number(n, format, precision);

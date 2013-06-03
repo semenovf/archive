@@ -25,6 +25,7 @@ SUBDIRS  = cwt-core  \
     tests/uri        \
     tests/uuid       \
     tests/vector     \
+    tests/unitype    \
     utils/uuid-gen
 
 

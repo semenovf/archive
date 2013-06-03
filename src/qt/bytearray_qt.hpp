@@ -8,7 +8,7 @@
 
 
 #include "../include/cwt/bytearray.hpp"
-#include <QtCore/QByteArray>
+#include <QByteArray>
 
 CWT_NS_BEGIN
 
