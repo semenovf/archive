@@ -28,7 +28,7 @@ const Char String::at(int pos) const     { const QChar ch = pimpl->at(pos); retu
 void String::clear()             { pimpl->clear(); }
 bool String::contains(const String & str, bool cs) const { return pimpl->contains(*str.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 bool String::contains(Char ch, bool cs) const { return pimpl->contains(QChar(ch.unicode()), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
-bool String::compare(const String &other, bool cs) const { return pimpl->compare(*other.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+int String::compare(const String &other, bool cs) const { return pimpl->compare(*other.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 Char* String::data()             { return reinterpret_cast<Char*>(pimpl->data()); }
 const Char*	String::data() const { return reinterpret_cast<const Char*>(pimpl->data()); }
 bool String::isEmpty() const     { return reinterpret_cast<const Char*>(pimpl->isEmpty()); }

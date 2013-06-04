@@ -1,9 +1,10 @@
+CWT_CONFIG=debug
 include($$(GBS_HOME)/common-app-qt.pri)
+TARGET = test_json
 
-TARGET = test_unitype
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../cwt-common/include
-SOURCES += ../../../tests/unitype.cpp
+SOURCES += ../../../tests/json.cpp
 HEADERS += ../../../../cwt-common/include/*.h
 HEADERS += ../../../cwt-common/include/*.h
 HEADERS += ../../../cwt-common/include/*.hpp

@@ -47,7 +47,7 @@ public:
 
 	bool isNull() const { return m_d->type == NullValue; }
 
-	//void setFromString (const String &s);
+	void setFromString (const String &s);
 	void setNull       ();
 	void setBool       (bool b)    { setLong(b ? 1L : 0L); }
 	void setInt        (int_t n)   { setLong(long_t(n)); }

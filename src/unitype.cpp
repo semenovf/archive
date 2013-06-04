@@ -56,15 +56,52 @@ UniType::Data* UniType::clone()
 	return d;
 }
 
-
-
-/*
+/**
+ * @brief Set unitype value according to value is string.
+ * @details If string can be converted to long, unsigned long, float or double
+ * 	then that value will be assigned to unitype,
+ * 	otherwise original string will be assigned.
+ *
+ * @param s string value.
+ */
 void UniType::setFromString (const String &s)
 {
+	bool ok;
+	// check if string is integer
+	ulong_t ulong_val = s.toULong(&ok);
+	if (ok) {
+		setULong(ulong_val);
+		return;
+	}
 
+	long_t long_val = s.toLong(&ok);
+	if (ok) {
+		setLong(long_val);
+		return;
+	}
+
+	double double_val = s.toDouble(&ok);
+	if (ok) {
+		setDouble(double_val);
+		return;
+	}
+
+	setString(s);
 }
-*/
 
+/**
+ * @brief Cast unitype to boolean value.
+ *
+ * @param ok always stores @c true if ok is not null.
+ * @return @c false
+ * 	if unitype is NullValue;
+ * 	if unitype is StringValue and it is empty, equals to "no", "false" or "0";
+ * 	if unitype is BlobValue and it is empty, equals to "no", "false" or "0";
+ * 	if unitype is FloatValue and it equals to 0.0;
+ * 	if unitype is DoubleValue and it equals to 0.0;
+ * 	if unitype is integer value and it equals to 0;
+ * 	in other cases return @c true.
+ */
 bool UniType::toBool(bool *ok) const
 {
 	bool result = true;
@@ -75,17 +112,17 @@ bool UniType::toBool(bool *ok) const
 		break;
 	case UniType::StringValue:
 		if (m_d->d.string_val->isEmpty()
-				|| m_d->d.string_val->compare(_U("no"))
-				|| m_d->d.string_val->compare(_U("false"))
-				|| m_d->d.string_val->compare(_U("0"))) {
+				|| m_d->d.string_val->compare(_U("no")) == 0
+				|| m_d->d.string_val->compare(_U("false")) == 0
+				|| m_d->d.string_val->compare(_U("0")) == 0) {
 			result = false;
 		}
 		break;
 	case UniType::BlobValue:
 		if (m_d->d.blob_val->length() == 0
-				|| ::strcmp(m_d->d.blob_val->data(), "no")
-				|| ::strcmp(m_d->d.blob_val->data(), "false")
-				|| ::strcmp(m_d->d.blob_val->data(), "false")) {
+				|| ::strcmp(m_d->d.blob_val->data(), "no") == 0
+				|| ::strcmp(m_d->d.blob_val->data(), "false") == 0
+				|| ::strcmp(m_d->d.blob_val->data(), "0") == 0) {
 			result = false;
 		}
 		break;

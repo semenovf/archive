@@ -14,16 +14,29 @@
 #include <cwt/utility.hpp>
 
 #define CWT_PIMPL_IMPL(Class)                                                  \
+private:                                                                       \
+	CWT_DENY_COPY(Class);                                                      \
+private:                                                                       \
+    class Impl;                                                                \
+    shared_ptr<Impl> pimpl; // TODO may be unique_ptr<> is more suitable in this case
+
+
+#define CWT_PIMPL_IMPL_COPYABLE(Class)                                         \
 public:                                                                        \
 	Class(const Class &other) : pimpl(other.pimpl) {}                          \
-	Class& operator=(const Class &other) {                                     \
-		pimpl == other.pimpl; return *this;                                    \
+	Class& operator = (const Class &other) {                                   \
+		pimpl = other.pimpl; return *this;                                     \
 	}                                                                          \
 private:                                                                       \
     class Impl;                                                                \
-    shared_ptr<Impl> pimpl;
-
-//CWT_NS_BEGIN
-//CWT_NS_END
+    shared_ptr<Impl> pimpl;                                                    \
+private:                                                                       \
+	Impl* pimpl_clone();                                                       \
+	void detach() {                                                            \
+		if (!pimpl.unique()) {                                                 \
+			shared_ptr<Impl> __d(pimpl_clone());                               \
+			pimpl.swap(__d);                                                   \
+		}                                                                      \
+	}
 
 #endif /* __CWT_PIMPL_HPP__ */

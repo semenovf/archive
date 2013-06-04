@@ -60,7 +60,7 @@ public:
 	void     clear();
 	bool     contains(const String & str, bool cs = true) const;
 	bool     contains(Char ch, bool cs = true) const;
-	bool     compare(const String & other, bool cs = true) const;
+	int      compare(const String & other, bool cs = true) const;
 	Char*    data();
 	const Char*	data() const;
 	bool	 endsWith(const String &s, bool cs = true) const;
