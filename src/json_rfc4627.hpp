@@ -25,8 +25,7 @@
 #ifndef __CWT_JSON_RFC4627_HPP__
 #define __CWT_JSON_RFC4627_HPP__
 
-#include <cwt/fsm.hpp>
-//#include <cstdio>
+#include "../include/cwt/fsm.hpp"
 #include "json_p.hpp"
 
 CWT_NS_BEGIN

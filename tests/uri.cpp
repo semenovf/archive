@@ -1,5 +1,5 @@
 /**
- * @file   uri.c
+ * @file   uri.cpp
  * @author wladt
  * @date   Oct 12, 2012 11:18:36 AM
  *
@@ -9,8 +9,8 @@
 #include <cwt/uri.hpp>
 #include <cstdio>
 
-#include "../src/uri-rfc3986.hpp"
 #include <cwt/fsm_test.hpp>
+#include "../src/uri_rfc3986.hpp"
 
 using namespace cwt;
 

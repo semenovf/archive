@@ -17,6 +17,7 @@ SUBDIRS  = cwt-core  \
     tests/fsm        \
     tests/hash       \
     tests/json       \
+    tests/json_simplepath \
     tests/md5        \
     tests/options    \
     tests/petaloid   \

@@ -21,7 +21,7 @@ public:
 		, JsonValue_Array
 	} type_enum;
 
-	static const JsonValue Null;
+	static JsonValue sharedNull;
 
 protected:
 	JsonValue() : m_parent(NULL) {}
@@ -34,11 +34,11 @@ public:
 	virtual String toString() const { return _U("null"); }
 	bool isNull() const { return type() == JsonValue_Null ? true : false; }
 
-	virtual const JsonValue& at(size_t i) const { CWT_UNUSED(i); return Null; }
-	virtual const JsonValue& operator[](size_t i) const { CWT_UNUSED(i); return Null; }
+	virtual JsonValue& at(size_t i) { CWT_UNUSED(i); return sharedNull; }
+	virtual JsonValue& operator[](size_t i) { CWT_UNUSED(i); return sharedNull; }
 
-	virtual const JsonValue& at(const String &key) const { CWT_UNUSED(key); return Null; }
-	virtual const JsonValue& operator[](const String &key) const { CWT_UNUSED(key); return Null; }
+	virtual JsonValue& at(const String &key) { CWT_UNUSED(key); return sharedNull; }
+	virtual JsonValue& operator[](const String &key) { CWT_UNUSED(key); return sharedNull; }
 
 	virtual bool boolean() const { return false; }
 	virtual double number() const { return double(0); }
@@ -111,12 +111,12 @@ public:
 	virtual type_enum type() const { return JsonValue_Array; }
 	virtual void add(const String &key, JsonValue *value) { CWT_UNUSED(key); append(value); }
 
-	virtual const JsonValue& at(size_t i) const {
+	virtual JsonValue& at(size_t i) {
 		if (i >= m_siblings.size())
-			return JsonValue::Null;
+			return JsonValue::sharedNull;
 		return *m_siblings.at(i);
 	}
-	virtual const JsonValue& operator[](size_t i) const { return at(i); }
+	virtual JsonValue& operator[](size_t i) { return at(i); }
 
 	void append(JsonValue *v) { m_siblings.append(v); }
 	int count() const { return size(); }
@@ -135,13 +135,13 @@ public:
 	virtual type_enum type() const { return JsonValue_Object; }
 	virtual void add(const String &key, JsonValue *value) { insert(key, value); }
 
-	virtual const JsonValue& at(const String &key) const {
-		Hash<String, JsonValue*>::const_iterator it = m_siblings.find(key);
+	virtual JsonValue& at(const String &key) {
+		Hash<String, JsonValue*>::iterator it = m_siblings.find(key);
 		if (it == m_siblings.end())
-			return JsonValue::Null;
+			return JsonValue::sharedNull;
 		return *it.value();
 	}
-	virtual const JsonValue& operator[](const String &key) const { return at(key); }
+	virtual JsonValue& operator[](const String &key) { return at(key); }
 
 	int count() const { return size(); }
 	void insert(const String &key, JsonValue *value) { m_siblings.insert(key, value); }
@@ -166,6 +166,7 @@ struct JsonSAJ {
 
 
 class DLL_API Json : public Errorable {
+	CWT_DENY_COPY(Json);
 public:
 	Json() : Errorable(), m_root(NULL) {}
 	Json(const String &json) : Errorable(), m_root(NULL) { parse(json); }
@@ -180,15 +181,34 @@ public:
 	bool isObject() const { return m_root ? m_root->type() == JsonValue::JsonValue_Object ? true : false : false; }
 	bool isNull() const { return m_root ? false : true; }
 
-	virtual const JsonValue& at(size_t i) const { return m_root ? m_root->at(i) : JsonValue::Null; }
-	virtual const JsonValue& operator[](size_t i) const { return at(i); }
-	virtual const JsonValue& at(const String &key) const { return m_root ? m_root->at(key) : JsonValue::Null; }
-	virtual const JsonValue& operator[](const String &key) const { return at(key); }
+	virtual JsonValue& at(size_t i) { return m_root ? m_root->at(i) : JsonValue::sharedNull; }
+	virtual JsonValue& operator[](size_t i) { return at(i); }
+	virtual JsonValue& at(const String &key) { return m_root ? m_root->at(key) : JsonValue::sharedNull; }
+	virtual JsonValue& operator[](const String &key) { return at(key); }
 
 	JsonObject& object() { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Object); return *dynamic_cast<JsonObject*>(m_root); }
 	JsonArray& array() { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Array); return *dynamic_cast<JsonArray*>(m_root); }
 private:
 	JsonValue *m_root;
+};
+
+
+/*
+ * Syntax (according to suggestions from http://goessner.net/articles/JsonPath/):
+ * /            root object/element
+ * /            child operator
+ * .            current object/element
+ * ..           parent operator
+ * []           subscript operator
+ */
+class DLL_API JsonSimplePath {
+public:
+	JsonSimplePath() {}
+	JsonValue& find (const String &jpath);
+	const JsonValue& find (const String &jpath) const;
+	bool contains(const String &jpath) const;
+
+	friend class JsonSimplePathContext;
 };
 
 CWT_NS_END

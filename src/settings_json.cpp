@@ -12,35 +12,21 @@
 
 CWT_NS_BEGIN
 
-const Char Settings::DEFAULT_SEPARATOR_CHAR = Char('/');
-
 class Settings::Impl : public Json {
 public:
-	Impl() : Json(), m_separatorChar(Settings::DEFAULT_SEPARATOR_CHAR) {}
+	Impl() : Json()/*, m_separatorChar(Settings::DEFAULT_SEPARATOR_CHAR)*/ {}
 
 public:
-	Char m_separatorChar;
+	//Char m_separatorChar;
 };
 
 Settings::Settings() : pimpl(new Settings::Impl)
 {
 }
 
-void Settings::setPathSeparator(Char separator)
-{
-	pimpl->m_separatorChar = separator;
-}
-
-static Vector<UniType> split_path(const String & key)
-{
-	Vector<UniType> path;
-
-	return path;
-}
-
 void Settings::setValue(const String & key, const UniType & value)
 {
-
+	CWT_UNUSED2(key, value);
 }
 
 CWT_NS_END

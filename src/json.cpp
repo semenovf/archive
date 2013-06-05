@@ -7,7 +7,7 @@
 
 CWT_NS_BEGIN
 
-const JsonValue JsonValue::Null;
+JsonValue JsonValue::sharedNull;
 
 bool on_begin_json(void *userContext)
 {

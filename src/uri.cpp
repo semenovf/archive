@@ -9,7 +9,7 @@
 #include <cwt/fsm.hpp>
 
 #include <cwt/uri.hpp>
-#include "uri-rfc3986.hpp"
+#include "uri_rfc3986.hpp"
 
 CWT_NS_BEGIN
 
