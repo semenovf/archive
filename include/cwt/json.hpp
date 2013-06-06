@@ -35,10 +35,14 @@ public:
 	bool isNull() const { return type() == JsonValue_Null ? true : false; }
 
 	virtual JsonValue& at(size_t i) { CWT_UNUSED(i); return sharedNull; }
-	virtual JsonValue& operator[](size_t i) { CWT_UNUSED(i); return sharedNull; }
-
 	virtual JsonValue& at(const String &key) { CWT_UNUSED(key); return sharedNull; }
+	virtual const JsonValue& at(size_t i) const { CWT_UNUSED(i); return sharedNull; }
+	virtual const JsonValue& at(const String &key) const { CWT_UNUSED(key); return sharedNull; }
+
+	virtual JsonValue& operator[](size_t i) { CWT_UNUSED(i); return sharedNull; }
 	virtual JsonValue& operator[](const String &key) { CWT_UNUSED(key); return sharedNull; }
+	virtual const JsonValue& operator[](size_t i) const { CWT_UNUSED(i); return sharedNull; }
+	virtual const JsonValue& operator[](const String &key) const { CWT_UNUSED(key); return sharedNull; }
 
 	virtual bool boolean() const { return false; }
 	virtual double number() const { return double(0); }
@@ -116,7 +120,13 @@ public:
 			return JsonValue::sharedNull;
 		return *m_siblings.at(i);
 	}
+	virtual const JsonValue& at(size_t i) const {
+		if (i >= m_siblings.size())
+			return JsonValue::sharedNull;
+		return *m_siblings.at(i);
+	}
 	virtual JsonValue& operator[](size_t i) { return at(i); }
+	virtual const JsonValue& operator[](size_t i) const { return at(i); }
 
 	void append(JsonValue *v) { m_siblings.append(v); }
 	int count() const { return size(); }
@@ -141,7 +151,14 @@ public:
 			return JsonValue::sharedNull;
 		return *it.value();
 	}
+	virtual const JsonValue& at(const String &key) const {
+		Hash<String, JsonValue*>::const_iterator it = m_siblings.find(key);
+		if (it == m_siblings.end())
+			return JsonValue::sharedNull;
+		return *it.value();
+	}
 	virtual JsonValue& operator[](const String &key) { return at(key); }
+	virtual const JsonValue& operator[](const String &key) const { return at(key); }
 
 	int count() const { return size(); }
 	void insert(const String &key, JsonValue *value) { m_siblings.insert(key, value); }
@@ -182,12 +199,23 @@ public:
 	bool isNull() const { return m_root ? false : true; }
 
 	virtual JsonValue& at(size_t i) { return m_root ? m_root->at(i) : JsonValue::sharedNull; }
-	virtual JsonValue& operator[](size_t i) { return at(i); }
 	virtual JsonValue& at(const String &key) { return m_root ? m_root->at(key) : JsonValue::sharedNull; }
+	virtual const JsonValue& at(size_t i) const { return m_root ? m_root->at(i) : JsonValue::sharedNull; }
+	virtual const JsonValue& at(const String &key) const { return m_root ? m_root->at(key) : JsonValue::sharedNull; }
+
+	virtual JsonValue& operator[](size_t i) { return at(i); }
 	virtual JsonValue& operator[](const String &key) { return at(key); }
+	virtual const JsonValue& operator[](size_t i) const { return at(i); }
+	virtual const JsonValue& operator[](const String &key) const { return at(key); }
 
 	JsonObject& object() { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Object); return *dynamic_cast<JsonObject*>(m_root); }
 	JsonArray& array() { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Array); return *dynamic_cast<JsonArray*>(m_root); }
+	const JsonObject& object() const { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Object); return *dynamic_cast<JsonObject*>(m_root); }
+	const JsonArray& array() const { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Array); return *dynamic_cast<JsonArray*>(m_root); }
+
+	JsonValue& value() { return *m_root; }
+	const JsonValue& value() const { return *m_root; }
+
 private:
 	JsonValue *m_root;
 };
@@ -203,10 +231,20 @@ private:
  */
 class DLL_API JsonSimplePath {
 public:
-	JsonSimplePath() {}
-	JsonValue& find (const String &jpath);
-	const JsonValue& find (const String &jpath) const;
+	JsonSimplePath(Json &json) : m_json(&json) {}
+
+	Json& json() { return *m_json; }
+	const Json& json() const { return *m_json; }
+	void setJson(Json &json) { m_json = &json; }
+
+	JsonValue& find (const String &jpath) { return const_cast<JsonValue&>(findValue(jpath)); }
+	const JsonValue& find (const String &jpath) const { return findValue(jpath); }
 	bool contains(const String &jpath) const;
+
+protected:
+	const JsonValue& findValue (const String &jpath) const;
+private:
+	Json *m_json;
 
 	friend class JsonSimplePathContext;
 };

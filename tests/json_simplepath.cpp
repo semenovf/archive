@@ -8,7 +8,7 @@
 
 #include "../include/cwt/json.hpp"
 #include "../include/cwt/fsm_test.hpp"
-#include "../src/json_simplepath.cpp"
+#include "../src/json_simplepath_fsm.hpp"
 
 using namespace cwt;
 
@@ -19,7 +19,12 @@ static String jpath_2(_U("[1]/[2]/[3]/title"));
 */
 
 static FsmTestEntry __fsmTestEntries[] = {
-		  { VHEADER(subscript_fsm)
+		  { VHEADER(jpath_fsm)
+			, { "/", VNULL }
+			, { { 19, "/root[1]/invalid[2]key/[1]" }
+				, INULL }}
+
+		, { VHEADER(subscript_fsm)
 			, { "[1]", "[12]", "[9876]", VNULL }
 			, {   {-1, "[0]" }
 				, {-1, "[01234]" }
@@ -37,9 +42,10 @@ static FsmTestEntry __fsmTestEntries[] = {
 				, { INULL }}
 
 		, { VHEADER(jpath_fsm)
-			, { "/root/elem[1]/elem[2]/elem3", "/root/element[1]/././..", "elem/parent[1]/../child",VNULL }
-			, {   {-1, "[]" }
+			, { "/", "/root/elem[1]/elem[2]/elem3", "/root/element[1]/././..", "elem/parent[1]/../child", VNULL }
+			, {   { 0, "[]" }
 				, { 5, "/root[]" }
+				, { 20, "/root[23]/invalid[2]key" }
 				, INULL }}
 };
 
@@ -54,14 +60,91 @@ void test_json_simplepath_fsm()
 }
 
 
+
+static const char *json_object_str = "{                                \
+		\"Image\": {                                                   \
+			\"Width\":  800,                                           \
+			\"Height\": 600,                                           \
+			\"Title\":  \"View from 15th Floor\",                      \
+			\"Thumbnail\": {                                           \
+				\"Url\":    \"http://www.example.com/image/481989943\",\
+				\"Height\": 125,                                       \
+				\"Width\":  \"100\"                                    \
+			},                                                         \
+			\"IDs\": [116, 943, 234, 38793]                            \
+		  }                                                            \
+	 }";
+
+static const char *json_array_str = "   [        \
+		  {                                      \
+			 \"precision\": \"zip\",             \
+			 \"Latitude\":  37.7668,             \
+			 \"Longitude\": -122.3959,           \
+			 \"Address\":   \"\",                \
+			 \"City\":      \"SAN FRANCISCO\",   \
+			 \"State\":     \"CA\",              \
+			 \"Zip\":       \"94107\",           \
+			 \"Country\":   \"US\"               \
+		  },                                     \
+		  {                                      \
+			 \"precision\": \"zip\",             \
+			 \"Latitude\":  37.371991,           \
+			 \"Longitude\": -122.026020,         \
+			 \"Address\":   \"\",                \
+			 \"City\":      \"SUNNYVALE\",       \
+			 \"State\":     \"CA\",              \
+			 \"Zip\":       \"94085\",           \
+			 \"Country\":   \"US\"               \
+		  }                                      \
+	   ]";
+
+void test_json_simplepath()
+{
+	Json json_object(String::fromUtf8(json_object_str));
+
+	CWT_TEST_FAIL(json_object.isGood());
+	CWT_TEST_OK(json_object.isObject());
+
+	JsonSimplePath jpath(&json_object);
+
+	CWT_TEST_OK(jpath.contains(_U("/")));
+	CWT_TEST_OK(jpath.contains(_U("/Image")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/Width")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/Height")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/Title")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/Thumbnail")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/Thumbnail/Url")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/Thumbnail/Height")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/Thumbnail/Width")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/IDs")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/IDs/[0]")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/IDs/[1]")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/IDs/[2]")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/IDs/[3]")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[0]")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[1]")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[2]")));
+	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[3]")));
+
+	Json json_array(String::fromUtf8(json_array_str));
+
+	CWT_TEST_FAIL(json_array.isGood());
+	CWT_TEST_OK(json_array.isArray());
+
+	jpath.setJson(&json_array);
+
+}
+
+
 int main(int argc, char *argv[])
 {
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(94);
+	CWT_BEGIN_TESTS(21);
 
-	test_json_simplepath_fsm();
+	if(0) test_json_simplepath_fsm();
+	if(1) test_json_simplepath();
 
 	CWT_END_TESTS;
 }

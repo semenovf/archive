@@ -33,8 +33,8 @@ Char* String::data()             { return reinterpret_cast<Char*>(pimpl->data())
 const Char*	String::data() const { return reinterpret_cast<const Char*>(pimpl->data()); }
 bool String::isEmpty() const     { return reinterpret_cast<const Char*>(pimpl->isEmpty()); }
 bool String::isNull() const      { return reinterpret_cast<const Char*>(pimpl->isNull()); }
-int String::indexOf(const String &str, int from, bool cs) const { return pimpl->indexOf(*str.pimpl, from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
-int String::indexOf(Char ch, int from, bool cs) const { return pimpl->indexOf(QChar(ch.unicode()), from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+ssize_t String::indexOf(const String &str, int from, bool cs) const { return (ssize_t)pimpl->indexOf(*str.pimpl, from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
+ssize_t String::indexOf(Char ch, int from, bool cs) const { return (ssize_t)pimpl->indexOf(QChar(ch.unicode()), from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 
 size_t String::size() const      { return size_t(pimpl->size()); }
 

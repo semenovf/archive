@@ -44,14 +44,20 @@ static void fsm_test_entries(Fsm<Char> &fsm, FsmTestEntry *entry)
 	fsm.setTransitionTable(entry->trans_tab);
 
 	while( *valid_str != NULL ) {
+		char desc[128];
 		String input(String::fromUtf8(*valid_str));
-		CWT_TEST_FAIL(fsm.exec(0, input.data(), input.length()) == (ssize_t)input.length());
+		ssize_t result = fsm.exec(0, input.data(), input.length());
+		sprintf(desc, "result == input.length(): %d == %d", result, (ssize_t)input.length());
+		CWT_TEST_FAIL2(result == (ssize_t)input.length(), desc);
 		valid_str++;
 	}
 
 	while( invalid_entries->str != NULL ) {
+		char desc[128];
 		String input(String::fromUtf8(invalid_entries->str));
-		CWT_TEST_FAIL(fsm.exec(0, input.data(), input.length()) == invalid_entries->ret);
+		ssize_t result = fsm.exec(0, input.data(), input.length());
+		sprintf(desc, "result == invalid_entries->ret: %d == %d", result, invalid_entries->ret);
+		CWT_TEST_FAIL2(result == invalid_entries->ret, desc);
 		invalid_entries++;
 	}
 }

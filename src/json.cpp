@@ -71,7 +71,9 @@ bool on_value(void *userContext, const String &name, JsonValue *value)
 
 	CWT_ASSERT(activeContainer != NULL);
 	dynamic_cast<JsonContainer*>(activeContainer)->add(name, value);
-	CWT_TRACE(String().sprintf("Value: '%ls' => %ls", name.unicode(), value->toString().unicode()).toUtf8().data());
+	String trace;
+	trace.sprintf("Value: '%ls' => %ls", name.unicode(), value->toString().unicode());
+	CWT_TRACE(trace.toUtf8().data());
 	return true;
 }
 

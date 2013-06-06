@@ -67,8 +67,8 @@ public:
 	bool	 endsWith(Char c, bool cs = true) const;
 	bool	 isEmpty() const;
 	bool	 isNull() const;
-	int	     indexOf(const String &str, int from = 0, bool cs = true) const;
-	int	     indexOf(Char ch, int from = 0, bool cs = true) const;
+	ssize_t  indexOf(const String &str, int from = 0, bool cs = true) const;
+	ssize_t  indexOf(Char ch, int from = 0, bool cs = true) const;
 	size_t   length() const { return size(); }
 
 	String&	 prepend(const String &str);
