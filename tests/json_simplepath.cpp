@@ -105,7 +105,9 @@ void test_json_simplepath()
 	CWT_TEST_FAIL(json_object.isGood());
 	CWT_TEST_OK(json_object.isObject());
 
-	JsonSimplePath jpath(&json_object);
+	JsonSimplePath jpath(json_object);
+	jpath.changeRoot(_U("/Image"));
+	CWT_TEST_OK(jpath.contains(_U("../Image/IDs[0]")));
 
 	CWT_TEST_OK(jpath.contains(_U("/")));
 	CWT_TEST_OK(jpath.contains(_U("/Image")));
@@ -126,13 +128,58 @@ void test_json_simplepath()
 	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[2]")));
 	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[3]")));
 
+	jpath[_U("/Image/Width")].setValue(1024);
+	CWT_TEST_OK(jpath.contains(_U("/Image/Width")));
+
+	jpath.changeRoot(_U("/Image"));
+	CWT_TEST_OK(jpath.contains(_U("IDs[0]")));
+	CWT_TEST_OK(jpath.contains(_U("IDs[1]")));
+	CWT_TEST_OK(jpath.contains(_U("IDs[2]")));
+	CWT_TEST_OK(jpath.contains(_U("IDs[3]")));
+	CWT_TEST_OK(jpath.contains(_U("./IDs[0]")));
+	CWT_TEST_OK(jpath.contains(_U("./IDs[1]")));
+	CWT_TEST_OK(jpath.contains(_U("./IDs[2]")));
+	CWT_TEST_OK(jpath.contains(_U("./IDs[3]")));
+	CWT_TEST_OK(jpath.contains(_U("../Image/IDs[0]")));
+	CWT_TEST_OK(jpath.contains(_U("../Image/IDs[1]")));
+	CWT_TEST_OK(jpath.contains(_U("../Image/IDs[2]")));
+	CWT_TEST_OK(jpath.contains(_U("../Image/IDs[3]")));
+	CWT_TEST_OK(jpath[_U("../Image/IDs[0]")].number() == double(116));
+	CWT_TEST_OK(jpath[_U("../Image/IDs[1]")].number() == double(943));
+	CWT_TEST_OK(jpath[_U("../Image/IDs[2]")].number() == double(234));
+	CWT_TEST_OK(jpath[_U("../Image/IDs[3]")].number() == double(38793));
+
+	jpath.changeRoot(_U("/"));
+	CWT_TEST_OK(jpath.contains(_U("Image/IDs[0]")));
+	CWT_TEST_OK(jpath.contains(_U("Image/IDs[1]")));
+	CWT_TEST_OK(jpath.contains(_U("Image/IDs[2]")));
+	CWT_TEST_OK(jpath.contains(_U("Image/IDs[3]")));
+
 	Json json_array(String::fromUtf8(json_array_str));
 
 	CWT_TEST_FAIL(json_array.isGood());
 	CWT_TEST_OK(json_array.isArray());
 
-	jpath.setJson(&json_array);
-
+	jpath.setJson(json_array);
+	CWT_TEST_OK(jpath.contains(_U("/")));
+	CWT_TEST_OK(jpath.contains(_U("/[0]")));
+	CWT_TEST_OK(jpath.contains(_U("/[0]/precision")));
+	CWT_TEST_OK(jpath.contains(_U("/[0]/Latitude")));
+	CWT_TEST_OK(jpath.contains(_U("/[0]/Longitude")));
+	CWT_TEST_OK(jpath.contains(_U("/[0]/Address")));
+	CWT_TEST_OK(jpath.contains(_U("/[0]/City")));
+	CWT_TEST_OK(jpath.contains(_U("/[0]/State")));
+	CWT_TEST_OK(jpath.contains(_U("/[0]/Zip")));
+	CWT_TEST_OK(jpath.contains(_U("/[0]/Country")));
+	CWT_TEST_OK(jpath.contains(_U("/[1]")));
+	CWT_TEST_OK(jpath.contains(_U("/[1]/precision")));
+	CWT_TEST_OK(jpath.contains(_U("/[1]/Latitude")));
+	CWT_TEST_OK(jpath.contains(_U("/[1]/Longitude")));
+	CWT_TEST_OK(jpath.contains(_U("/[1]/Address")));
+	CWT_TEST_OK(jpath.contains(_U("/[1]/City")));
+	CWT_TEST_OK(jpath.contains(_U("/[1]/State")));
+	CWT_TEST_OK(jpath.contains(_U("/[1]/Zip")));
+	CWT_TEST_OK(jpath.contains(_U("/[1]/Country")));
 }
 
 
@@ -141,7 +188,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(21);
+	CWT_BEGIN_TESTS(41);
 
 	if(0) test_json_simplepath_fsm();
 	if(1) test_json_simplepath();

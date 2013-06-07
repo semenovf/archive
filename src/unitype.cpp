@@ -20,6 +20,9 @@ UniType::Data::~Data()
 	case BlobValue:
 		delete d.blob_val;
 		break;
+	case ObjectValue:
+		delete d.object_val;
+		break;
 	default:
 		break;
 	}
@@ -135,8 +138,12 @@ bool UniType::toBool(bool *ok) const
 			result = false;
 		break;
 	case UniType::LongValue:
-	default:
 		if (m_d->d.long_val == 0L)
+			result = false;
+		break;
+	case UniType::ObjectValue:
+	default:
+		if (!(m_d->d.object_val && m_d->d.object_val->ptr))
 			result = false;
 		break;
 	}
@@ -232,9 +239,11 @@ long_t UniType::toLong(bool *ok) const
 		}
 		break;
 	case UniType::LongValue:
-	default:
 		result = m_d->d.long_val;
 		tmpOk = true;
+		break;
+	case UniType::ObjectValue:
+	default:
 		break;
 	}
 
@@ -270,10 +279,13 @@ ulong_t UniType::toULong(bool *ok) const
 		}
 		break;
 	case UniType::LongValue:
-	default:
 		result = ulong_t(m_d->d.long_val);
 		tmpOk = true;
 		break;
+	case UniType::ObjectValue:
+	default:
+		break;
+
 	}
 
 	if (ok)
@@ -307,11 +319,13 @@ float UniType::toFloat(bool *ok) const
 		}
 		break;
 	case UniType::LongValue:
-	default:
 		if ((m_d->d.long_val >= long_t(CWT_FLOAT_MIN) && m_d->d.double_val <= long_t(CWT_FLOAT_MAX))) {
 			result = float(m_d->d.long_val);
 			tmpOk = true;
 		}
+		break;
+	case UniType::ObjectValue:
+	default:
 		break;
 	}
 
@@ -344,9 +358,11 @@ double UniType::toDouble(bool *ok) const
 		tmpOk = true;
 		break;
 	case UniType::LongValue:
-	default:
 		result = double(m_d->d.long_val);
 		tmpOk = true;
+		break;
+	case UniType::ObjectValue:
+	default:
 		break;
 	}
 
@@ -370,6 +386,13 @@ Char UniType::toChar(bool *ok) const
 String UniType::toString(bool *ok) const
 {
 	String result;
+
+	if (ok)
+		*ok = false;
+
+	if (m_d->type == UniType::ObjectValue) {
+		return String();
+	}
 
 	switch(m_d->type) {
 	case UniType::NullValue:
@@ -402,6 +425,13 @@ ByteArray UniType::toBlob(bool *ok) const
 {
 	ByteArray result;
 
+	if (ok)
+		*ok = false;
+
+	if (m_d->type == UniType::ObjectValue) {
+		return ByteArray();
+	}
+
 	switch(m_d->type) {
 	case UniType::NullValue:
 		break;
@@ -429,6 +459,19 @@ ByteArray UniType::toBlob(bool *ok) const
 
 	return result;
 }
+
+template <typename T>
+T* UniType::toObject(bool *ok) const
+{
+	if (ok) *ok = false;
+
+	if (m_d->type == ObjectValue) {
+		if (ok) *ok = true;
+		return *reinterpret_cast<T*>(m_d->d.object_val);
+	}
+	return NULL;
+}
+
 
 
 CWT_NS_END

@@ -14,6 +14,19 @@
 
 CWT_NS_BEGIN
 
+class UniObject {
+private:
+	UniObject() : o(NULL) {}
+public:
+	void deleter(void*);
+	~UniObject() { if (deleter) deleter(o); }
+
+	template <typename T>
+	static UniObject* make(const T & v) { o = new T(v); }
+private:
+	void *o;
+};
+
 class UniType {
 public:
 	enum TypeEnum {
@@ -23,6 +36,7 @@ public:
 		, DoubleValue
 		, StringValue
 		, BlobValue
+		, ObjectValue
 	};
 
 public:
@@ -37,6 +51,9 @@ public:
 	UniType(Char v) : m_d(new Data)             { m_d->type = LongValue; m_d->d.long_val = long_t(v.unicode()); }
 	UniType(const String &v) : m_d(new Data)    { m_d->type = StringValue; m_d->d.string_val = new String(v); }
 	UniType(const ByteArray &v) : m_d(new Data) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
+
+	template <typename T>
+	UniType(const T &v) : m_d(new Data)         { m_d->type = ObjectValue; m_d->d.object_val = UniObject::make(v); }
 
 	UniType(const UniType &other) { m_d = other.m_d; }
 	UniType& operator = (const UniType &other)
@@ -78,15 +95,19 @@ public:
 	String    toString(bool *ok = NULL) const;
 	ByteArray toBlob(bool *ok = NULL) const;
 
+	template <typename T>
+	T*        toObject(bool *ok = NULL) const;
+
 private:
 	struct Data {
 		TypeEnum type;
 		union {
-			long_t    long_val;
-			float     float_val;
-			double    double_val;
+			long_t     long_val;
+			float      float_val;
+			double     double_val;
 			String    *string_val;
 			ByteArray *blob_val;
+			UniObject *object_val;
 		} d;
 		~Data();
 	};

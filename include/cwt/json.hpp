@@ -6,6 +6,7 @@
 #include <cwt/errorable.hpp>
 #include <cwt/hash.hpp>
 #include <cwt/vector.hpp>
+#include <cwt/unitype.hpp>
 
 CWT_NS_BEGIN
 
@@ -39,10 +40,15 @@ public:
 	virtual const JsonValue& at(size_t i) const { CWT_UNUSED(i); return sharedNull; }
 	virtual const JsonValue& at(const String &key) const { CWT_UNUSED(key); return sharedNull; }
 
+	JsonValue& parent() { return *m_parent; }
+	const JsonValue& parent() const { return *m_parent; }
+
 	virtual JsonValue& operator[](size_t i) { CWT_UNUSED(i); return sharedNull; }
 	virtual JsonValue& operator[](const String &key) { CWT_UNUSED(key); return sharedNull; }
 	virtual const JsonValue& operator[](size_t i) const { CWT_UNUSED(i); return sharedNull; }
 	virtual const JsonValue& operator[](const String &key) const { CWT_UNUSED(key); return sharedNull; }
+
+
 
 	virtual bool boolean() const { return false; }
 	virtual double number() const { return double(0); }
@@ -231,22 +237,26 @@ private:
  */
 class DLL_API JsonSimplePath {
 public:
-	JsonSimplePath(Json &json) : m_json(&json) {}
+	JsonSimplePath(Json &json) : m_json(&json), m_jsonRootValue(&json.value()) { ; }
 
 	Json& json() { return *m_json; }
 	const Json& json() const { return *m_json; }
-	void setJson(Json &json) { m_json = &json; }
+	void setJson(Json &json) { m_json = &json; m_jsonRootValue = &json.value(); }
 
+	bool changeRoot(const String &jpath);
 	JsonValue& find (const String &jpath) { return const_cast<JsonValue&>(findValue(jpath)); }
 	const JsonValue& find (const String &jpath) const { return findValue(jpath); }
 	bool contains(const String &jpath) const;
 
+	JsonValue& operator [] (const String &jpath) { return const_cast<JsonValue&>(findValue(jpath)); }
+	const JsonValue& operator [] (const String &jpath) const { return findValue(jpath); }
+
 protected:
 	const JsonValue& findValue (const String &jpath) const;
+
 private:
 	Json *m_json;
-
-	friend class JsonSimplePathContext;
+	const JsonValue *m_jsonRootValue;
 };
 
 CWT_NS_END
