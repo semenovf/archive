@@ -48,8 +48,6 @@ public:
 	virtual const JsonValue& operator[](size_t i) const { CWT_UNUSED(i); return sharedNull; }
 	virtual const JsonValue& operator[](const String &key) const { CWT_UNUSED(key); return sharedNull; }
 
-
-
 	virtual bool boolean() const { return false; }
 	virtual double number() const { return double(0); }
 	virtual String string() const { return String(); }

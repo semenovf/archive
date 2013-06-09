@@ -128,8 +128,8 @@ void test_json_simplepath()
 	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[2]")));
 	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[3]")));
 
-	jpath[_U("/Image/Width")].setValue(1024);
-	CWT_TEST_OK(jpath.contains(_U("/Image/Width")));
+//	jpath[_U("/Image/Width")].setValue(1024);
+//	CWT_TEST_OK(jpath.contains(_U("/Image/Width")));
 
 	jpath.changeRoot(_U("/Image"));
 	CWT_TEST_OK(jpath.contains(_U("IDs[0]")));

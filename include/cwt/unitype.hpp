@@ -14,23 +14,28 @@
 
 CWT_NS_BEGIN
 
-class UniObject {
-private:
-	UniObject() : o(NULL) {}
-public:
-	void deleter(void*);
-	~UniObject() { if (deleter) deleter(o); }
-
-	template <typename T>
-	static UniObject* make(const T & v) { o = new T(v); }
-private:
-	void *o;
+struct AbstractUniObject {
+	virtual ~AbstractUniObject() { ; }
 };
+
+template <typename T>
+struct UniObject : public AbstractUniObject
+{
+	UniObject(const T &v) : value(v) { ; }
+	UniObject& operator = (const T &v) { value = v; return *this; }
+	~UniObject() { ; }
+	T value;
+
+	T getValue() const { return value; }
+	T& getValue() { return value; }
+};
+
 
 class UniType {
 public:
 	enum TypeEnum {
 		  NullValue
+		, BoolValue
 		, LongValue
 		, FloatValue
 		, DoubleValue
@@ -41,7 +46,7 @@ public:
 
 public:
 	UniType() : m_d(new Data)                   { m_d->type = NullValue; }
-	UniType(bool v) : m_d(new Data)             { m_d->type = LongValue; m_d->d.long_val = long_t(v ? 1L : 0L); }
+	UniType(bool v) : m_d(new Data)             { m_d->type = BoolValue; m_d->d.long_val = long_t(v ? 1L : 0L); }
 	UniType(int_t v) : m_d(new Data)            { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 	UniType(uint_t v) : m_d(new Data)           { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 	UniType(long_t v) : m_d(new Data)           { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
@@ -53,7 +58,8 @@ public:
 	UniType(const ByteArray &v) : m_d(new Data) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
 
 	template <typename T>
-	UniType(const T &v) : m_d(new Data)         { m_d->type = ObjectValue; m_d->d.object_val = UniObject::make(v); }
+	static UniType make_object(const T &v);
+//	UniType(const T &v) : m_d(new Data)         { m_d->type = ObjectValue; m_d->d.object_val = new UniObject<T>(v); }
 
 	UniType(const UniType &other) { m_d = other.m_d; }
 	UniType& operator = (const UniType &other)
@@ -66,7 +72,7 @@ public:
 
 	void setFromString (const String &s);
 	void setNull       ();
-	void setBool       (bool b)    { setLong(b ? 1L : 0L); }
+	void setBool       (bool b);
 	void setInt        (int_t n)   { setLong(long_t(n)); }
 	void setUInt       (uint_t n)  { setLong(long_t(n)); }
 	void setLong       (long_t n);
@@ -96,7 +102,7 @@ public:
 	ByteArray toBlob(bool *ok = NULL) const;
 
 	template <typename T>
-	T*        toObject(bool *ok = NULL) const;
+	T         toObject(bool *ok = NULL) const;
 
 private:
 	struct Data {
@@ -107,7 +113,7 @@ private:
 			double     double_val;
 			String    *string_val;
 			ByteArray *blob_val;
-			UniObject *object_val;
+			AbstractUniObject *object_val;
 		} d;
 		~Data();
 	};
@@ -120,6 +126,28 @@ private:
 	shared_ptr<Data> m_d;
 };
 
+template <typename T>
+inline UniType UniType::make_object(const T &v)
+{
+	UniType ut;
+	ut.m_d->type = ObjectValue;
+	ut.m_d->d.object_val = new UniObject<T>(v);
+	return ut;
+}
+
+template <typename T>
+T UniType::toObject(bool *ok) const
+{
+	if (ok) *ok = false;
+
+	if (m_d->type == ObjectValue) {
+		if (ok)
+			*ok = true;
+		return (dynamic_cast<UniObject<T>* >(m_d->d.object_val))->getValue();
+	}
+	return NULL;
+}
+
 inline void UniType::detach()
 {
 	if (!m_d.unique()) {
@@ -127,7 +155,6 @@ inline void UniType::detach()
 		m_d.swap(d);
 	}
 }
-
 
 inline void UniType::setUniTypeData(Data *data)
 {
@@ -140,6 +167,12 @@ inline void UniType::setNull()
 	Data *d = new Data;
 	d->type = UniType::NullValue;
 	setUniTypeData(d);
+}
+
+inline void UniType::setBool (bool b)
+{
+	setLong(b ? 1L : 0L);
+	m_d->type = UniType::BoolValue;
 }
 
 inline void UniType::setLong (long_t n)

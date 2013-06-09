@@ -164,6 +164,10 @@ void test_00(void)
 	CWT_TEST_OK(blob.size() == ::strlen(loremipsum));
 	CWT_TEST_OK(::strcmp(loremipsum, blob.data()) == 0);
 
+	UniType object_val = UniType::make_object<String>(text_en);
+	text = object_val.toObject<String>();
+	CWT_TEST_OK(ok && text == text_en);
+
 /*
 	{
 		CWT_TIME tm1;
