@@ -48,6 +48,9 @@ public:
 
 	static void copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
 	static void copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n);
+
+	static void deep_copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
+	static void deep_copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n);
 };
 
 template <typename T>
@@ -136,6 +139,26 @@ void Array<T>::copy(Array &to, const T *from, size_t off_to, size_t off_from, si
 	n = CWT_MIN(to.m_capacity - off_to, n);
 	memcpy(to.m_head + off_to, from + off_from, n * sizeof(T));
 }
+
+template <typename T>
+void Array<T>::deep_copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n)
+{
+	n = CWT_MIN(from.m_capacity - off_from, n);
+	n = CWT_MIN(to.m_capacity - off_to, n);
+	for (size_t i = off_from, j = off_to; n > 0; --n, ++i, ++j) {
+		*(to.m_head + i) = *(from.m_head + j);
+	}
+}
+
+template <typename T>
+void Array<T>::deep_copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n)
+{
+	n = CWT_MIN(to.m_capacity - off_to, n);
+	for (size_t i = off_from, j = off_to; n > 0; --n, ++i, ++j) {
+		*(to.m_head + i) = *(from + j);
+	}
+}
+
 
 template <typename T>
 inline bool Array<T>::eq (const Array &a)

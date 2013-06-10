@@ -249,7 +249,7 @@ public:
 	const Key	   key ( const T & value ) const;
 	const Key	   key ( const T & value, const Key & defaultKey ) const;
 	int	           remove(const Key & key);
-	int  	       size() const { return m_d->nentries; }
+	size_t 	       size() const { return m_d->nentries; }
 	const T	       value(const Key & key) const;
 	const T	       value(const Key & key, const T &defaultValue) const;
 

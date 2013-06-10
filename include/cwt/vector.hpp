@@ -135,7 +135,7 @@ void Vector<T>::detachAndRealloc(size_t newsize)
 		shared_ptr<VectorData> d(new VectorData);
 		m_d.swap(d);
 		m_d->data.alloc(d->data.capacity());
-		Array<T>::copy(m_d->data, d->data, 0, 0, CWT_MIN(newsize, d->count));
+		Array<T>::deep_copy(m_d->data, d->data, 0, 0, CWT_MIN(newsize, d->count));
 	} else {
 		if (newsize > m_d->data.capacity())
 			m_d->data.realloc(newsize);

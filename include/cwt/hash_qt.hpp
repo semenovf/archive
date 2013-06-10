@@ -52,7 +52,7 @@ public:
 	const Key	   key ( const T & value ) const { return __impl->key(value); }
 	const Key	   key ( const T & value, const Key & defaultKey ) const { return __impl.key(value, defaultKey); }
 	int	           remove(const Key & key) { return __impl.remove(key); }
-	int  	       size() const { return __impl.size(); }
+	size_t 	       size() const { int sz = __impl.size(); CWT_ASSERT(sz >= 0); return size_t(sz); }
 	const T	       value(const Key & key) const { return __impl.value(key); }
 	const T	       value(const Key & key, const T &defaultValue) const { return __impl.value(key); }
 

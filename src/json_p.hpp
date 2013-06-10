@@ -57,8 +57,6 @@ struct JsonNamedValue {
 struct JsonDomContext {
 	JsonValue        *rootContainer;
 	Stack<JsonValue*> containers;
-
-	//JsonDomContext() : activeContainer(NULL) {}
 };
 
 struct JsonParseContext {

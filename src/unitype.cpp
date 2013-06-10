@@ -50,6 +50,9 @@ UniType::Data* UniType::clone()
 	case UniType::DoubleValue:
 		d->d.double_val = m_d->d.double_val;
 		break;
+	case UniType::ObjectValue:
+		*d->d.object_val = *m_d->d.object_val;
+		break;
 	case UniType::BoolValue:
 	case UniType::LongValue:
 	default:
@@ -143,6 +146,7 @@ bool UniType::toBool(bool *ok) const
 		if (m_d->d.long_val == 0L)
 			result = false;
 		break;
+
 	case UniType::ObjectValue:
 	default:
 		if (!(m_d->d.object_val))

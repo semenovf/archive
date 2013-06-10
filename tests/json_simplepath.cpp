@@ -128,9 +128,6 @@ void test_json_simplepath()
 	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[2]")));
 	CWT_TEST_OK(jpath.contains(_U("/Image/IDs[3]")));
 
-//	jpath[_U("/Image/Width")].setValue(1024);
-//	CWT_TEST_OK(jpath.contains(_U("/Image/Width")));
-
 	jpath.changeRoot(_U("/Image"));
 	CWT_TEST_OK(jpath.contains(_U("IDs[0]")));
 	CWT_TEST_OK(jpath.contains(_U("IDs[1]")));
@@ -154,6 +151,12 @@ void test_json_simplepath()
 	CWT_TEST_OK(jpath.contains(_U("Image/IDs[1]")));
 	CWT_TEST_OK(jpath.contains(_U("Image/IDs[2]")));
 	CWT_TEST_OK(jpath.contains(_U("Image/IDs[3]")));
+
+	//	jpath[_U("/Image/Width")].setValue(1024);
+	//	CWT_TEST_OK(jpath.contains(_U("/Image/Width")));
+	//  jpath.remove(_U("/Image/Width"));
+	//	CWT_TEST_NOK(jpath.contains(_U("/Image/Width")));
+
 
 	Json json_array(String::fromUtf8(json_array_str));
 

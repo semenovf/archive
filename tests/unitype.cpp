@@ -501,7 +501,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(114);
+	CWT_BEGIN_TESTS(115);
 
 	test_00();
 	test_01();

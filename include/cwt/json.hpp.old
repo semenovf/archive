@@ -133,9 +133,9 @@ public:
 	virtual const JsonValue& operator[](size_t i) const { return at(i); }
 
 	void append(JsonValue *v) { m_siblings.append(v); }
-	int count() const         { return size(); }
-	bool isEmpty() const      { return m_siblings.isEmpty(); }
-	int size() const          { return m_siblings.size(); }
+	int count() const { return size(); }
+	bool isEmpty() const { return m_siblings.isEmpty(); }
+	int size() const { return m_siblings.size(); }
 	virtual String toString() const { return _U("Array"); }
 private:
 	Vector<JsonValue*> m_siblings;

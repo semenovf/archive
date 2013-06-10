@@ -42,7 +42,7 @@ public:
 	const T& last() const;
 	void prepend(const T &value);
 	void resize(int size) { __impl.resize(size); }
-	int size() const;
+	size_t size() const;
 	void swap(Vector<T> & other) { __impl.swap(other.__impl); }
 
 	T& operator[](int i);
@@ -86,7 +86,7 @@ template <typename T>
 inline void Vector<T>::prepend(const T &value) { __impl.prepend(value); }
 
 template <typename T>
-inline int Vector<T>::size() const { return __impl.size(); }
+inline size_t Vector<T>::size() const { int sz = __impl.size(); CWT_ASSERT(sz >= 0); return size_t(sz); }
 
 template <typename T>
 inline T& Vector<T>::operator [] (int i) { return __impl.operator [](i); }
