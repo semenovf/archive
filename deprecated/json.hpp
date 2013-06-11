@@ -6,21 +6,20 @@
 #include <cwt/errorable.hpp>
 #include <cwt/hash.hpp>
 #include <cwt/vector.hpp>
-#include <cwt/unitype.hpp>
 
 CWT_NS_BEGIN
 
 class JsonValue
 {
 public:
-	typedef enum {
+	enum TypeEnum {
 		  JsonValue_Null
 		, JsonValue_Boolean
 		, JsonValue_Number
 		, JsonValue_String
 		, JsonValue_Object
 		, JsonValue_Array
-	} type_enum;
+	};
 
 	static JsonValue sharedNull;
 
@@ -31,17 +30,17 @@ public:
 	JsonValue(JsonValue *parent) : m_parent(parent) {}
 	virtual ~JsonValue() {}
 
-	virtual type_enum type() const { return JsonValue_Null; }
-	virtual String toString() const { return _U("null"); }
+	virtual TypeEnum type() const { return JsonValue_Null; }
+	//virtual String toString() const { return _U("null"); }
 	bool isNull() const { return type() == JsonValue_Null ? true : false; }
+
+	JsonValue& parent() { return *m_parent; }
+	const JsonValue& parent() const { return *m_parent; }
 
 	virtual JsonValue& at(size_t i) { CWT_UNUSED(i); return sharedNull; }
 	virtual JsonValue& at(const String &key) { CWT_UNUSED(key); return sharedNull; }
 	virtual const JsonValue& at(size_t i) const { CWT_UNUSED(i); return sharedNull; }
 	virtual const JsonValue& at(const String &key) const { CWT_UNUSED(key); return sharedNull; }
-
-	JsonValue& parent() { return *m_parent; }
-	const JsonValue& parent() const { return *m_parent; }
 
 	virtual JsonValue& operator[](size_t i) { CWT_UNUSED(i); return sharedNull; }
 	virtual JsonValue& operator[](const String &key) { CWT_UNUSED(key); return sharedNull; }
@@ -51,7 +50,6 @@ public:
 	virtual bool boolean() const { return false; }
 	virtual double number() const { return double(0); }
 	virtual String string() const { return String(); }
-
 protected:
 	JsonValue *m_parent;
 };
@@ -62,11 +60,13 @@ private:
 	JsonBoolean() : m_value(false) {}
 public:
 	JsonBoolean(JsonValue *parent, bool v) : JsonValue(parent), m_value(v) {}
-	virtual type_enum type() const { return JsonValue_Boolean; }
-	virtual String toString() const { return m_value ? _U("true") : _U("false"); }
+	virtual TypeEnum type() const { return JsonValue_Boolean; }
+	//virtual String toString() const { return m_value ? _U("true") : _U("false"); }
 
-	bool value() const { return m_value; }
-	virtual bool boolean() const { return value(); }
+	virtual bool boolean() const { return m_value; }
+	virtual double number() const { return m_value ? double(1) : double(0); }
+	virtual String string() const { return m_value ? _U("true") : _U("false"); }
+
 private:
 	bool m_value;
 };
@@ -77,11 +77,16 @@ private:
 	JsonNumber() : m_value(0.0) {}
 public:
 	JsonNumber(JsonValue *parent, double v) : JsonValue(parent), m_value(v) {}
-	virtual type_enum type() const { return JsonValue_Number; }
-	virtual String toString() const { return String().number(m_value); }
+	virtual TypeEnum type() const { return JsonValue_Number; }
+	//virtual String toString() const { return String().number(m_value); }
 
+	virtual bool boolean() const { return m_value == double(0) ? false : true; }
+	virtual double number() const { return m_value; }
+	virtual String string() const { String s; s.setNumber(m_value); return s; }
+/*
 	double value() const { return m_value; }
 	virtual double number() const { return value(); }
+*/
 private:
 	double m_value;
 };
@@ -93,11 +98,17 @@ private:
 public:
 	JsonString(JsonValue *parent, const String &s) : JsonValue(parent), m_value(s) {}
 	JsonString(JsonValue *parent, const Char *s, int size = -1) : JsonValue(parent), m_value(s, size) {}
-	virtual type_enum type() const { return JsonValue_String; }
-	virtual String toString() const { return m_value; }
+	virtual TypeEnum type() const { return JsonValue_String; }
+	//virtual String toString() const { return m_value; }
 
+	virtual bool boolean() const { return m_value.isEmpty() ? false : true; }
+	virtual double number() const { return m_value.toDouble(); }
+	virtual String string() const { return m_value; }
+
+/*
 	String value() const { return m_value; }
 	virtual String string() const { return value(); }
+*/
 private:
 	String m_value;
 };
@@ -115,8 +126,8 @@ class JsonArray : public JsonContainer
 {
 public:
 	JsonArray(JsonValue *parent) : JsonContainer(parent), m_siblings() {}
-	~JsonArray();
-	virtual type_enum type() const { return JsonValue_Array; }
+	virtual ~JsonArray();
+	virtual TypeEnum type() const { return JsonValue_Array; }
 	virtual void add(const String &key, JsonValue *value) { CWT_UNUSED(key); append(value); }
 
 	virtual JsonValue& at(size_t i) {
@@ -133,10 +144,10 @@ public:
 	virtual const JsonValue& operator[](size_t i) const { return at(i); }
 
 	void append(JsonValue *v) { m_siblings.append(v); }
-	int count() const { return size(); }
-	bool isEmpty() const { return m_siblings.isEmpty(); }
-	int size() const { return m_siblings.size(); }
-	virtual String toString() const { return _U("Array"); }
+	int count() const         { return size(); }
+	bool isEmpty() const      { return m_siblings.isEmpty(); }
+	int size() const          { return m_siblings.size(); }
+	//virtual String toString() const { return _U("Array"); }
 private:
 	Vector<JsonValue*> m_siblings;
 };
@@ -145,8 +156,8 @@ class JsonObject : public JsonContainer
 {
 public:
 	JsonObject(JsonValue *parent) : JsonContainer(parent), m_siblings() {}
-	~JsonObject();
-	virtual type_enum type() const { return JsonValue_Object; }
+	virtual ~JsonObject();
+	virtual TypeEnum type() const { return JsonValue_Object; }
 	virtual void add(const String &key, JsonValue *value) { insert(key, value); }
 
 	virtual JsonValue& at(const String &key) {
@@ -168,7 +179,7 @@ public:
 	void insert(const String &key, JsonValue *value) { m_siblings.insert(key, value); }
 	bool isEmpty() const { return m_siblings.isEmpty(); }
 	int size() const { return m_siblings.size(); }
-	virtual String toString() const { return _U("Object"); }
+	//virtual String toString() const { return _U("Object"); }
 private:
 	Hash<String, JsonValue*> m_siblings;
 };

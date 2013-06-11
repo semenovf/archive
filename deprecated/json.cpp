@@ -1,7 +1,7 @@
-#include "../include/cwt/json.hpp"
-#include "../include/cwt/fsm.hpp"
-#include "../include/cwt/textstream.hpp"
-#include "../include/cwt/file.hpp"
+#include <cwt/json.hpp>
+#include <cwt/fsm.hpp>
+#include <cwt/textstream.hpp>
+#include <cwt/file.hpp>
 #include "json_p.hpp"
 #include "json_rfc4627.hpp"
 
@@ -13,7 +13,7 @@ bool on_begin_json(void *userContext)
 {
 	JsonDomContext *domCtx = reinterpret_cast<JsonDomContext*>(userContext);
 	domCtx->containers.push(new JsonArray(NULL));
-	//CWT_TRACE("Begin JSON");
+	CWT_TRACE("Begin JSON");
 	return true;
 }
 
@@ -23,46 +23,44 @@ bool on_end_json(void *userContext, bool status)
 		JsonDomContext *domCtx = reinterpret_cast<JsonDomContext*>(userContext);
 		CWT_ASSERT(domCtx->containers.size() == 1);
 		domCtx->rootContainer = const_cast<JsonValue*>(&domCtx->containers.top()->at(0));
-		//CWT_TRACE("End JSON: OK");
+		CWT_TRACE("End JSON: OK");
 	} else {
-		//CWT_TRACE("End JSON: FAILED");
+		CWT_TRACE("End JSON: FAILED");
 	}
 	return true;
 }
 
 bool on_begin_object(void *userContext, const String &name, JsonObject *object)
 {
-	CWT_UNUSED(name);
 	JsonDomContext *domCtx = reinterpret_cast<JsonDomContext*>(userContext);
 	domCtx->containers.push(dynamic_cast<JsonValue*>(object));
-	//CWT_TRACE(String().sprintf("Begin object: %ls", name.data()).toUtf8().data());
+	CWT_TRACE(String().sprintf("Begin object: %ls", name.data()).toUtf8().data());
 	return true;
 }
 
 bool on_end_object(void *userContext, const String &name, JsonObject *object)
 {
-	CWT_UNUSED2(name, object);
+	CWT_UNUSED(object);
 	JsonDomContext *domCtx = reinterpret_cast<JsonDomContext*>(userContext);
 	domCtx->containers.pop();
-	//CWT_TRACE(String().sprintf("End object: %ls", name.data()).toUtf8().data());
+	CWT_TRACE(String().sprintf("End object: %ls", name.data()).toUtf8().data());
 	return true;
 }
 
 bool on_begin_array(void *userContext, const String &name, JsonArray *array)
 {
-	CWT_UNUSED(name);
 	JsonDomContext *domCtx = reinterpret_cast<JsonDomContext*>(userContext);
 	domCtx->containers.push(dynamic_cast<JsonValue*>(array));
-	//CWT_TRACE(String().sprintf("Begin array: %ls", name.data()).toUtf8().data());
+	CWT_TRACE(String().sprintf("Begin array: %ls", name.data()).toUtf8().data());
 	return true;
 }
 
 bool on_end_array(void *userContext, const String &name, JsonArray *array)
 {
-	CWT_UNUSED2(name, array);
+	CWT_UNUSED(array);
 	JsonDomContext *domCtx = reinterpret_cast<JsonDomContext*>(userContext);
 	domCtx->containers.pop();
-	//CWT_TRACE(String().sprintf("End array: %ls", name.data()).toUtf8().data());
+	CWT_TRACE(String().sprintf("End array: %ls", name.data()).toUtf8().data());
 	return true;
 }
 
@@ -72,22 +70,10 @@ bool on_value(void *userContext, const String &name, JsonValue *value)
 	JsonValue *activeContainer = domCtx->containers.top();
 
 	CWT_ASSERT(activeContainer != NULL);
-	switch (activeContainer->type()) {
-	case JsonValue::JsonValue_Array:
-		dynamic_cast<JsonArray*>(activeContainer)->append(value);
-		break;
-	case JsonValue::JsonValue_Object:
-		dynamic_cast<JsonObject*>(activeContainer)->insert(name, value);
-		break;
-	default:
-		break;
-	}
-
-/*
+	dynamic_cast<JsonContainer*>(activeContainer)->add(name, value);
 	String trace;
 	trace.sprintf("Value: '%ls' => %ls", name.unicode(), value->string().unicode());
 	CWT_TRACE(trace.toUtf8().data());
-*/
 	return true;
 }
 
@@ -171,22 +157,21 @@ bool Json::isEmpty() const
 
 JsonArray::~JsonArray()
 {
-	array_type* siblings = arrayPtr();
 	Vector<JsonValue*>::iterator it;
-	Vector<JsonValue*>::iterator end = siblings->end();
-	for (it = siblings->begin(); it != end; it++) {
+	Vector<JsonValue*>::iterator end = m_siblings.end();
+	for (it = m_siblings.begin(); it != end; it++) {
 		delete *it;
 	}
 }
 
 JsonObject::~JsonObject()
 {
-	object_type* siblings = objectPtr();
 	Hash<String, JsonValue*>::iterator it;
-	Hash<String, JsonValue*>::iterator end = siblings->end();
-	for (it = siblings->begin(); it != end; it++) {
+	Hash<String, JsonValue*>::iterator end = m_siblings.end();
+	for (it = m_siblings.begin(); it != end; it++) {
 		delete *it;
 	}
 }
+
 
 CWT_NS_END

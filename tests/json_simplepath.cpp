@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(41);
+	CWT_BEGIN_TESTS(62);
 
 	if(0) test_json_simplepath_fsm();
 	if(1) test_json_simplepath();

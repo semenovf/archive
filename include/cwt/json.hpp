@@ -13,165 +13,154 @@ CWT_NS_BEGIN
 class JsonValue
 {
 public:
-	typedef enum {
+	enum TypeEnum {
 		  JsonValue_Null
 		, JsonValue_Boolean
 		, JsonValue_Number
 		, JsonValue_String
 		, JsonValue_Object
 		, JsonValue_Array
-	} type_enum;
+	};
 
 	static JsonValue sharedNull;
 
 protected:
-	JsonValue() : m_parent(NULL) {}
+	JsonValue() : m_type(JsonValue_Null), m_value(), m_parent(NULL) {}
+	JsonValue(JsonValue *parent, TypeEnum type) : m_type(type), m_value(), m_parent(parent) {}
 
 public:
-	JsonValue(JsonValue *parent) : m_parent(parent) {}
+	JsonValue(JsonValue *parent) : m_type(JsonValue_Null), m_value(), m_parent(parent) {}
 	virtual ~JsonValue() {}
 
-	virtual type_enum type() const { return JsonValue_Null; }
-	virtual String toString() const { return _U("null"); }
+	TypeEnum type() const { return m_type; }
 	bool isNull() const { return type() == JsonValue_Null ? true : false; }
+	JsonValue& parent() { return *m_parent; }
+	const JsonValue& parent() const { return *m_parent; }
+	bool boolean() const { return m_value.toBool(); }
+	double number() const { return m_value.toDouble(); }
+	String string() const { return m_value.toString(); }
 
 	virtual JsonValue& at(size_t i) { CWT_UNUSED(i); return sharedNull; }
 	virtual JsonValue& at(const String &key) { CWT_UNUSED(key); return sharedNull; }
 	virtual const JsonValue& at(size_t i) const { CWT_UNUSED(i); return sharedNull; }
 	virtual const JsonValue& at(const String &key) const { CWT_UNUSED(key); return sharedNull; }
 
-	JsonValue& parent() { return *m_parent; }
-	const JsonValue& parent() const { return *m_parent; }
-
-	virtual JsonValue& operator[](size_t i) { CWT_UNUSED(i); return sharedNull; }
-	virtual JsonValue& operator[](const String &key) { CWT_UNUSED(key); return sharedNull; }
-	virtual const JsonValue& operator[](size_t i) const { CWT_UNUSED(i); return sharedNull; }
-	virtual const JsonValue& operator[](const String &key) const { CWT_UNUSED(key); return sharedNull; }
-
-	virtual bool boolean() const { return false; }
-	virtual double number() const { return double(0); }
-	virtual String string() const { return String(); }
+	JsonValue& operator[](size_t i) { return at(i); }
+	JsonValue& operator[](const String &key) { return at(key); }
+	const JsonValue& operator[](size_t i) const { return at(i); }
+	const JsonValue& operator[](const String &key) const { return at(key); }
 
 protected:
+	TypeEnum m_type;
+	UniType  m_value;
 	JsonValue *m_parent;
 };
 
 class JsonBoolean : public JsonValue
 {
-private:
-	JsonBoolean() : m_value(false) {}
 public:
-	JsonBoolean(JsonValue *parent, bool v) : JsonValue(parent), m_value(v) {}
-	virtual type_enum type() const { return JsonValue_Boolean; }
-	virtual String toString() const { return m_value ? _U("true") : _U("false"); }
-
-	bool value() const { return m_value; }
-	virtual bool boolean() const { return value(); }
-private:
-	bool m_value;
+	explicit JsonBoolean(JsonValue *parent, bool v) : JsonValue(parent, JsonValue_Boolean) { m_value.setBool(v); }
 };
 
 class JsonNumber : public JsonValue
 {
-private:
-	JsonNumber() : m_value(0.0) {}
 public:
-	JsonNumber(JsonValue *parent, double v) : JsonValue(parent), m_value(v) {}
-	virtual type_enum type() const { return JsonValue_Number; }
-	virtual String toString() const { return String().number(m_value); }
-
-	double value() const { return m_value; }
-	virtual double number() const { return value(); }
-private:
-	double m_value;
+	explicit JsonNumber(JsonValue *parent, double v) : JsonValue(parent, JsonValue_Number) { m_value.setDouble(v); }
 };
 
 class JsonString : public JsonValue
 {
-private:
-	JsonString() : m_value() {}
 public:
-	JsonString(JsonValue *parent, const String &s) : JsonValue(parent), m_value(s) {}
-	JsonString(JsonValue *parent, const Char *s, int size = -1) : JsonValue(parent), m_value(s, size) {}
-	virtual type_enum type() const { return JsonValue_String; }
-	virtual String toString() const { return m_value; }
-
-	String value() const { return m_value; }
-	virtual String string() const { return value(); }
-private:
-	String m_value;
+	explicit JsonString(JsonValue *parent, const String &s) : JsonValue(parent, JsonValue_String) { m_value.setString(s); }
+	explicit JsonString(JsonValue *parent, const Char *chars) : JsonValue(parent, JsonValue_String) { m_value.setString(String(chars)); }
+	explicit JsonString(JsonValue *parent, const Char *chars, size_t size) : JsonValue(parent, JsonValue_String) { m_value.setString(String(chars, size)); }
 };
 
-
-class JsonContainer : public JsonValue
+class JsonArray : public JsonValue
 {
+	typedef Vector<JsonValue*> array_type;
+	array_type* arrayPtr() { return &m_value.objectRef<array_type>(); }
+	const array_type* arrayPtr() const { return &m_value.objectRef<array_type>(); }
+
 public:
-	JsonContainer(JsonValue *parent) : JsonValue(parent) {}
-	virtual ~JsonContainer() {}
-	virtual void add(const String &key, JsonValue *value) = 0;
+	explicit JsonArray(JsonValue *parent);
+	virtual ~JsonArray();
+//	virtual void add(const String &key, JsonValue *value) { CWT_UNUSED(key); append(value); }
+
+	virtual JsonValue& at(size_t i);
+	virtual const JsonValue& at(size_t i) const;
+
+	void append(JsonValue *v) { arrayPtr()->append(v); }
+	size_t count() const      { return arrayPtr()->size(); }
+	bool isEmpty() const      { return arrayPtr()->isEmpty(); }
+	size_t size() const       { return arrayPtr()->size(); }
 };
 
-class JsonArray : public JsonContainer
+inline JsonArray::JsonArray(JsonValue *parent)
+	: JsonValue(parent, JsonValue_Array)
 {
-public:
-	JsonArray(JsonValue *parent) : JsonContainer(parent), m_siblings() {}
-	~JsonArray();
-	virtual type_enum type() const { return JsonValue_Array; }
-	virtual void add(const String &key, JsonValue *value) { CWT_UNUSED(key); append(value); }
+	m_value = UniType::make_object<array_type>(array_type());
+}
 
-	virtual JsonValue& at(size_t i) {
-		if (i >= m_siblings.size())
-			return JsonValue::sharedNull;
-		return *m_siblings.at(i);
-	}
-	virtual const JsonValue& at(size_t i) const {
-		if (i >= m_siblings.size())
-			return JsonValue::sharedNull;
-		return *m_siblings.at(i);
-	}
-	virtual JsonValue& operator[](size_t i) { return at(i); }
-	virtual const JsonValue& operator[](size_t i) const { return at(i); }
-
-	void append(JsonValue *v) { m_siblings.append(v); }
-	int count() const         { return size(); }
-	bool isEmpty() const      { return m_siblings.isEmpty(); }
-	int size() const          { return m_siblings.size(); }
-	virtual String toString() const { return _U("Array"); }
-private:
-	Vector<JsonValue*> m_siblings;
-};
-
-class JsonObject : public JsonContainer
+inline JsonValue& JsonArray::at(size_t i)
 {
+	array_type* siblings = arrayPtr();
+	if (i >= siblings->size())
+		return JsonValue::sharedNull;
+	return *siblings->at(i);
+}
+
+inline const JsonValue& JsonArray::at(size_t i) const
+{
+	const array_type* siblings = arrayPtr();
+	if (i >= siblings->size())
+		return JsonValue::sharedNull;
+	return *siblings->at(i);
+}
+
+class JsonObject : public JsonValue
+{
+	typedef Hash<String, JsonValue*> object_type;
+	object_type* objectPtr() { return &m_value.objectRef<object_type>(); }
+	const object_type* objectPtr() const { return &m_value.objectRef<object_type>(); }
+
 public:
-	JsonObject(JsonValue *parent) : JsonContainer(parent), m_siblings() {}
-	~JsonObject();
-	virtual type_enum type() const { return JsonValue_Object; }
-	virtual void add(const String &key, JsonValue *value) { insert(key, value); }
+	explicit JsonObject(JsonValue *parent);
+	virtual ~JsonObject();
+	//virtual void add(const String &key, JsonValue *value) { insert(key, value); }
 
-	virtual JsonValue& at(const String &key) {
-		Hash<String, JsonValue*>::iterator it = m_siblings.find(key);
-		if (it == m_siblings.end())
-			return JsonValue::sharedNull;
-		return *it.value();
-	}
-	virtual const JsonValue& at(const String &key) const {
-		Hash<String, JsonValue*>::const_iterator it = m_siblings.find(key);
-		if (it == m_siblings.end())
-			return JsonValue::sharedNull;
-		return *it.value();
-	}
-	virtual JsonValue& operator[](const String &key) { return at(key); }
-	virtual const JsonValue& operator[](const String &key) const { return at(key); }
+	virtual JsonValue& at(const String &key);
+	virtual const JsonValue& at(const String &key) const;
 
-	int count() const { return size(); }
-	void insert(const String &key, JsonValue *value) { m_siblings.insert(key, value); }
-	bool isEmpty() const { return m_siblings.isEmpty(); }
-	int size() const { return m_siblings.size(); }
-	virtual String toString() const { return _U("Object"); }
-private:
-	Hash<String, JsonValue*> m_siblings;
+	size_t count() const                             { return objectPtr()->size(); }
+	void insert(const String &key, JsonValue *value) { objectPtr()->insert(key, value); }
+	bool isEmpty() const                             { return objectPtr()->isEmpty(); }
+	int size() const                                 { return objectPtr()->size(); }
 };
+
+inline JsonObject::JsonObject(JsonValue *parent)
+	: JsonValue(parent, JsonValue_Object)
+{
+	m_value = UniType::make_object<object_type>(object_type());
+}
+
+inline JsonValue& JsonObject::at(const String &key)
+{
+	object_type* siblings = objectPtr();
+	Hash<String, JsonValue*>::iterator it = siblings->find(key);
+	if (it == siblings->end())
+		return JsonValue::sharedNull;
+	return *it.value();
+}
+
+inline const JsonValue& JsonObject::at(const String &key) const
+{
+	const object_type* siblings = objectPtr();
+	Hash<String, JsonValue*>::const_iterator it = siblings->find(key);
+	if (it == siblings->end())
+		return JsonValue::sharedNull;
+	return *it.value();
+}
 
 
 /* This struct provides the Simple API for JSON */
@@ -202,15 +191,15 @@ public:
 	bool isObject() const { return m_root ? m_root->type() == JsonValue::JsonValue_Object ? true : false : false; }
 	bool isNull() const { return m_root ? false : true; }
 
-	virtual JsonValue& at(size_t i) { return m_root ? m_root->at(i) : JsonValue::sharedNull; }
-	virtual JsonValue& at(const String &key) { return m_root ? m_root->at(key) : JsonValue::sharedNull; }
-	virtual const JsonValue& at(size_t i) const { return m_root ? m_root->at(i) : JsonValue::sharedNull; }
-	virtual const JsonValue& at(const String &key) const { return m_root ? m_root->at(key) : JsonValue::sharedNull; }
+	JsonValue& at(size_t i) { return m_root ? m_root->at(i) : JsonValue::sharedNull; }
+	JsonValue& at(const String &key) { return m_root ? m_root->at(key) : JsonValue::sharedNull; }
+	const JsonValue& at(size_t i) const { return m_root ? m_root->at(i) : JsonValue::sharedNull; }
+	const JsonValue& at(const String &key) const { return m_root ? m_root->at(key) : JsonValue::sharedNull; }
 
-	virtual JsonValue& operator[](size_t i) { return at(i); }
-	virtual JsonValue& operator[](const String &key) { return at(key); }
-	virtual const JsonValue& operator[](size_t i) const { return at(i); }
-	virtual const JsonValue& operator[](const String &key) const { return at(key); }
+	JsonValue& operator[](size_t i) { return at(i); }
+	JsonValue& operator[](const String &key) { return at(key); }
+	const JsonValue& operator[](size_t i) const { return at(i); }
+	const JsonValue& operator[](const String &key) const { return at(key); }
 
 	JsonObject& object() { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Object); return *dynamic_cast<JsonObject*>(m_root); }
 	JsonArray& array() { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Array); return *dynamic_cast<JsonArray*>(m_root); }

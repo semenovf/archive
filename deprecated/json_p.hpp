@@ -10,7 +10,7 @@
 #define __CWT_JSON_P_HPP__
 
 #include <cwt/stack.hpp>
-#include "../include/cwt/json.hpp"
+#include "cwt/json.hpp"
 
 CWT_NS_BEGIN
 

@@ -46,7 +46,8 @@ class DLL_API String
 */
 public:
 	String();
-	String(const Char *unicode, int size = -1);
+	String(const Char *unicode);
+	String(const Char *unicode, size_t size);
 	String(Char ch);
 	String(int size, Char ch);
 	String(const String &other);

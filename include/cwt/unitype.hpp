@@ -107,6 +107,24 @@ public:
 	template <typename T>
 	T         toObject(bool *ok = NULL) const;
 
+
+/* Do not use this methods!!! For internal use only !!! */
+	long_t& longRef()    { return m_d->d.long_val; }
+	const long_t& longRef() const    { return m_d->d.long_val; }
+	float& floatRef()    { return m_d->d.float_val; }
+	const float& floatRef() const { return m_d->d.float_val; }
+	double& doubleRef()  { return m_d->d.double_val; }
+	const double& doubleRef() const { return m_d->d.double_val; }
+	String& stringRef()  { return *m_d->d.string_val; }
+	const String& stringRef() const { return *m_d->d.string_val; }
+	ByteArray& blobRef() { return *m_d->d.blob_val; }
+	const ByteArray& blobRef() const { return *m_d->d.blob_val; }
+
+	template <typename T>
+	T& objectRef() { return dynamic_cast<UniObject<T>* >(m_d->d.object_val)->getValue(); }
+	template <typename T>
+	const T& objectRef() const { return dynamic_cast<UniObject<T>* >(m_d->d.object_val)->getValue(); }
+
 private:
 	struct Data {
 		TypeEnum type;

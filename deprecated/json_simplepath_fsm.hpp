@@ -5,10 +5,6 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_JSON_SIMPLEPATH_FSM_HPP__
-#define __CWT_JSON_SIMPLEPATH_FSM_HPP__
-
-
 #include "../include/cwt/json.hpp"
 #include "../include/cwt/fsm.hpp"
 
@@ -209,5 +205,3 @@ bool _on_end_elem(const void *data, size_t len, void *context, void *action_args
 }
 
 CWT_NS_END
-
-#endif // __CWT_JSON_SIMPLEPATH_FSM_HPP__

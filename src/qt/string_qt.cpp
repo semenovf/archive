@@ -15,7 +15,8 @@ CWT_NS_BEGIN
 static const String __nullString;
 
 String::String() : pimpl(new Impl()) {}
-String::String(const Char *unicode, int size) : pimpl(new Impl(unicode, size)) {}
+String::String(const Char *unicode) : pimpl(new Impl(unicode)) {}
+String::String(const Char *unicode, size_t size)  : pimpl(new Impl(unicode, size)) {}
 String::String(Char ch)              : pimpl(new Impl(ch)) {}
 String::String(int size, Char ch)    : pimpl(new Impl(size, ch)) {}
 String::String(const String &other)  : pimpl(new Impl(*other.pimpl)) {}
