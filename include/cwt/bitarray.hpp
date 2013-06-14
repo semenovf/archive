@@ -10,7 +10,7 @@
 #define __CWT_BITSET_HPP__
 
 #include <cwt/cwt.h>
-#include <QtCore/QBitArray>
+#include <QBitArray>
 
 CWT_NS_BEGIN
 

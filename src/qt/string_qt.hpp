@@ -11,7 +11,7 @@
 
 #include "../../include/cwt/string.hpp"
 #define QT_NO_CAST_FROM_ASCII
-#include <QtCore/QString>
+#include <QString>
 
 CWT_NS_BEGIN
 
