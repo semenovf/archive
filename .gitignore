@@ -7,7 +7,6 @@ release/
 doxygen/html
 doc/
 
-
 Makefile
 makefile
 *.mk
@@ -39,3 +38,5 @@ makefile
 *.out
 *.app
 *.log
+moc_*.cpp
+qrc_*.cpp

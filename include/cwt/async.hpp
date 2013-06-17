@@ -10,7 +10,8 @@
 
 #include <cwt/cwt.h>
 #include <cwt/sigslot.hpp>
-#include <QtConcurrent/QtConcurrent>
+//#include <QtConcurrent/QtConcurrent>
+#include <QtCore>
 
 CWT_NS_BEGIN
 
