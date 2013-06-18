@@ -122,7 +122,11 @@ public: // TODO Make private!
         return reinterpret_cast<Entry *>(node);
     }
 public:
+
+    class const_iterator;
+
 	class iterator {
+		friend class const_iterator;
 		HashData *hd;
 		HashData::Node *rover;
 		size_t index;
@@ -190,6 +194,7 @@ public:
         inline const T &operator*() const { return cast_entry(rover)->value; }
         inline const T *operator->() const { return &cast_entry(rover)->value; }
         inline bool operator==(const const_iterator &o) const { return rover == o.rover; }
+        inline bool operator==(const iterator &o) const { return rover == o.rover; }
         inline bool operator!=(const const_iterator &o) const { return rover != o.rover; }
 
         const_iterator& operator++() {

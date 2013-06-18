@@ -69,7 +69,8 @@ protected:
 
 public:
 	static T* instance();
-	void free();
+	static void free();
+	static void forceFree();
 
 private:
 	static T*   _self;
@@ -105,8 +106,22 @@ void Singleton<T>::free()
 	static CWT_DEFAULT_MT_POLICY mutex;
 	AutoLock<> locker(&mutex);
 	if( --_refs == 0 ) {
-		delete this;
-		Singleton<T>::_self = 0;
+		if (_self) {
+			delete _self;
+			_self = 0;
+		}
+	}
+}
+
+template <class T>
+void Singleton<T>::forceFree()
+{
+	static CWT_DEFAULT_MT_POLICY mutex;
+	AutoLock<> locker(&mutex);
+	_refs = 0;
+	if (_self) {
+		delete _self;
+		_self = 0;
 	}
 }
 
