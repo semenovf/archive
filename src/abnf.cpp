@@ -17,20 +17,20 @@ CWT_NS_BEGIN
 
 static void __to_string_helper(const AbnfNode *parentNode)
 {
-	Vector<AbnfNode*>::const_iterator node = parentNode->nodes.begin();
-	Vector<AbnfNode*>::const_iterator invalidNode = parentNode->nodes.end();
+	Vector<AbnfNode*>::const_iterator node = parentNode->m_nodes.begin();
+	Vector<AbnfNode*>::const_iterator invalidNode = parentNode->m_nodes.end();
 
 	String delim(_U(""));
 
 	for(; node != invalidNode; node++) {
 		AbnfNode *n = *node;
-		CWT_ASSERT(n->type != AbnfNode::Abnf_Rule);
+		CWT_ASSERT(n->m_type != AbnfNode::Abnf_Rule);
 
 		printf("%s", delim.toUtf8().data());
 
-		switch(n->type) {
+		switch(n->m_type) {
 		case AbnfNode::Abnf_Alternation:
-			if(n->nodes.size() > 0) {
+			if(n->m_nodes.size() > 0) {
 				//printf(" _ALTER_{ ");
 				__to_string_helper(*node);
 				//printf(" } ");
@@ -38,7 +38,7 @@ static void __to_string_helper(const AbnfNode *parentNode)
 			break;
 
 		case AbnfNode::Abnf_Concatenation:
-			if (n->nodes.size() > 0) {
+			if (n->m_nodes.size() > 0) {
 				//printf(" _CONCAT_{ ");
 				__to_string_helper(*node);
 				//printf(" } ");
@@ -46,9 +46,9 @@ static void __to_string_helper(const AbnfNode *parentNode)
 			break;
 
 		case AbnfNode::Abnf_Repetition:
-			if (n->nodes.size() > 0) {
-				int from = dynamic_cast<AbnfNodeRepetition*>(*node)->from;
-				int to = dynamic_cast<AbnfNodeRepetition*>(*node)->to;
+			if (n->m_nodes.size() > 0) {
+				int from = dynamic_cast<AbnfNodeRepetition*>(*node)->m_from;
+				int to = dynamic_cast<AbnfNodeRepetition*>(*node)->m_to;
 
 //				printf("%d*%d", from, to);
 				if (from == 1 && to == 1) {
@@ -67,7 +67,7 @@ static void __to_string_helper(const AbnfNode *parentNode)
 			break;
 
 		case AbnfNode::Abnf_GroupElement:
-			if (n->nodes.size() > 0) {
+			if (n->m_nodes.size() > 0) {
 				printf("(");
 				__to_string_helper(*node);
 				printf(")");
@@ -75,7 +75,7 @@ static void __to_string_helper(const AbnfNode *parentNode)
 			break;
 
 		case AbnfNode::Abnf_OptionElement:
-			if(n->nodes.size() > 0) {
+			if(n->m_nodes.size() > 0) {
 				printf("[");
 				__to_string_helper(*node);
 				printf("]");
@@ -83,37 +83,37 @@ static void __to_string_helper(const AbnfNode *parentNode)
 			break;
 
 		case AbnfNode::Abnf_RuleRefElement:
-			printf("%s", dynamic_cast<AbnfNodeRuleRefElement*>(*node)->value.toUtf8().data());
+			printf("%s", dynamic_cast<AbnfNodeRuleRefElement*>(*node)->m_value.toUtf8().data());
 			break;
 		case AbnfNode::Abnf_CharValElement:
-			printf("\"%s\"", dynamic_cast<AbnfNodeCharValElement*>(*node)->value.toUtf8().data());
+			printf("\"%s\"", dynamic_cast<AbnfNodeCharValElement*>(*node)->m_value.toUtf8().data());
 			break;
 		case AbnfNode::Abnf_NumValElement:
-			printf("%s", dynamic_cast<AbnfNodeNumValElement*>(*node)->value.toUtf8().data());
+			printf("%s", dynamic_cast<AbnfNodeNumValElement*>(*node)->m_value.toUtf8().data());
 			break;
 		case AbnfNode::Abnf_ProseValElement:
-			printf("%s", dynamic_cast<AbnfNodeProseValElement*>(*node)->value.toUtf8().data());
+			printf("%s", dynamic_cast<AbnfNodeProseValElement*>(*node)->m_value.toUtf8().data());
 			break;
 		default:
 			break;
 		}
 
-		if(parentNode->type == AbnfNode::Abnf_Alternation)
+		if(parentNode->m_type == AbnfNode::Abnf_Alternation)
 			delim = _U(" / ");
-		else if(parentNode->type == AbnfNode::Abnf_Concatenation)
+		else if(parentNode->m_type == AbnfNode::Abnf_Concatenation)
 			delim = _U(" ");
 	}
 }
 
 static void __to_string(AbnfContext *ctx)
 {
-	AbnfRulesHash::const_iterator it = ctx->rules.begin();
-	AbnfRulesHash::const_iterator itEnd = ctx->rules.end();
+	AbnfRulesHash::const_iterator it = ctx->rules.cbegin();
+	AbnfRulesHash::const_iterator itEnd = ctx->rules.cend();
 	for(; it != itEnd; ++it) {
 		printf("%s = ", it.key().toUtf8().data());
 
-		Vector<AbnfNode*>::const_iterator node = it.value()->nodes.begin();
-		Vector<AbnfNode*>::const_iterator invalidNode = it.value()->nodes.end();
+		Vector<AbnfNode*>::const_iterator node = it.value()->m_nodes.cbegin();
+		Vector<AbnfNode*>::const_iterator invalidNode = it.value()->m_nodes.cend();
 
 		for(; node != invalidNode; ++node) {
 			__to_string_helper((*node));
@@ -137,13 +137,13 @@ static bool end_document(bool status, void *userContext)
 	CWT_ASSERT(ctx->nodestack.size() == 0);
 
 	if (status) {
-		AbnfRulesDefsHash::const_iterator it = ctx->rulesdefs.begin();
-		AbnfRulesDefsHash::const_iterator itEnd = ctx->rulesdefs.end();
-		AbnfRulesHash::const_iterator invalidRule = ctx->rules.end();
+		AbnfRulesDefsHash::const_iterator it = ctx->rulesdefs.cbegin();
+		AbnfRulesDefsHash::const_iterator itEnd = ctx->rulesdefs.cend();
+		AbnfRulesHash::const_iterator invalidRule = ctx->rules.cend();
 
 		for(; it != itEnd; ++it) {
 			if (!it.value()) {
-				if (ctx->rules.find(it.key()) == invalidRule) {
+				if (invalidRule == ctx->rules.find(it.key())) {
 					Logger::warn("undefined rule: %ls", it.key().data());
 				} else {
 					Logger::trace("root rule: %ls", it.key().data());
@@ -155,8 +155,8 @@ static bool end_document(bool status, void *userContext)
 	__to_string(ctx);
 
 	// delete all rules
-	AbnfRulesHash::const_iterator it = ctx->rules.begin();
-	AbnfRulesHash::const_iterator itEnd = ctx->rules.end();
+	AbnfRulesHash::const_iterator it = ctx->rules.cbegin();
+	AbnfRulesHash::const_iterator itEnd = ctx->rules.cend();
 	for(; it != itEnd; ++it) {
 		delete it.value();
 	}
@@ -169,13 +169,13 @@ static bool begin_rule(const String &rulename, bool incremental, void *userConte
 	AbnfContext *ctx = _CAST_USER_CTX(userContext);
 
 	if (incremental) {
-		AbnfRulesHash::const_iterator it = ctx->rules.find(rulename);
+		AbnfRulesHash::iterator it = ctx->rules.find(rulename);
 		if (it == ctx->rules.end()) { // rule for incremental alternative not initialized before
 			Logger::error("%ls: rule for incremental alternative not initialized before", rulename.data());
 			return false;
 		}
 		ctx->nodestack.push(it.value());
-		AbnfNode *alt = it.value()->nodes.first();
+		AbnfNode *alt = it.value()->m_nodes.first();
 		CWT_ASSERT(alt);
 		ctx->nodestack.push(alt);
 		ctx->isIncrementalAlternation = true;
@@ -203,19 +203,19 @@ static bool end_rule(void *userContext)
 	CWT_ASSERT(ctx->nodestack.size() > 0);
 
 	if (ctx->isIncrementalAlternation ) {
-		while (ctx->nodestack.top()->type != AbnfNode::Abnf_Alternation) {
+		while (ctx->nodestack.top()->m_type != AbnfNode::Abnf_Alternation) {
 			ctx->nodestack.pop();
 		}
 	}
 
 	ctx->isIncrementalAlternation = false;
 
-	while (ctx->nodestack.top()->type != AbnfNode::Abnf_Rule) {
+	while (ctx->nodestack.top()->m_type != AbnfNode::Abnf_Rule) {
 		ctx->nodestack.pop();
 	}
 
 	CWT_ASSERT(ctx->nodestack.size() > 0);
-	CWT_ASSERT(ctx->nodestack.top()->type == AbnfNode::Abnf_Rule);
+	CWT_ASSERT(ctx->nodestack.top()->m_type == AbnfNode::Abnf_Rule);
 	AbnfNodeRule *rule = dynamic_cast<AbnfNodeRule*>(ctx->nodestack.pop());
 	CWT_UNUSED(rule);
 	printf("\n");
@@ -233,12 +233,12 @@ static bool begin_alternation(void *userContext)
 
 static bool __end_block(AbnfNode::AbnfNodeType type, AbnfContext *ctx)
 {
-	while (ctx->nodestack.top()->type != type) {
+	while (ctx->nodestack.top()->m_type != type) {
 		ctx->nodestack.pop();
 	}
 
 	CWT_ASSERT(ctx->nodestack.size() > 0);
-	CWT_ASSERT(ctx->nodestack.top()->type == type);
+	CWT_ASSERT(ctx->nodestack.top()->m_type == type);
 	AbnfNode *node = ctx->nodestack.pop();
 	CWT_ASSERT(ctx->nodestack.size() > 0);
 	ctx->nodestack.top()->addNode(node);
@@ -406,8 +406,11 @@ bool Abnf::parse(const String &abnf, AbnfSimpleApi &api)
 
 	Fsm<Char> fsm(rulelist_fsm, &parseContext);
 
-	if (fsm.exec(0, abnf.data(), abnf.length()) == abnf.length()) {
-		return true;
+	ssize_t result = fsm.exec(0, abnf.data(), abnf.length());
+	if (result > 0 && size_t(result) == abnf.length()) {
+		if (isGood()) {
+			return true;
+		}
 	}
 
 	return false;

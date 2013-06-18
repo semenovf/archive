@@ -11,6 +11,7 @@
 #include <cwt/cwt.h>
 #include <cwt/string.hpp>
 #include <cwt/callback.hpp>
+#include <cwt/errorable.hpp>
 
 CWT_NS_BEGIN
 
@@ -37,9 +38,10 @@ struct AbnfSimpleApi {
 	Callback2<const String&, void*> comment;
 };
 
-class DLL_API Abnf {
+class DLL_API Abnf : public Errorable
+{
 public:
-	Abnf() {}
+	Abnf() : Errorable() {}
 	~Abnf() {}
 
 	bool parse(const String &abnf);
