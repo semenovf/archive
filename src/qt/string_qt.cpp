@@ -200,6 +200,23 @@ String String::fromUtf8(const ByteArray &str)
 	return s;
 }
 
+String String::fromLatin1 (const char * str, size_t size)
+{
+	String s;
+	CWT_ASSERT(size > CWT_INT_MAX);
+	*s.pimpl = QString::fromLatin1(str, int(size));
+	return s;
+}
+
+String String::fromLatin1 (const char * str)
+{
+	String s;
+	size_t size = ::strlen(str);
+	CWT_ASSERT(size > CWT_INT_MAX);
+	*s.pimpl = QString::fromLatin1(str, size);
+	return s;
+}
+
 
 String String::number(double n, char format, int precision)
 {

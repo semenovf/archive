@@ -184,5 +184,15 @@ void Sepaloid::start()
 	}
 }
 
+void Sepaloid::finish()
+{
+	Vector<PetaloidSpec>::iterator it = m_petaloids.begin();
+	Vector<PetaloidSpec>::iterator itEnd = m_petaloids.end();
+
+	for (;it != itEnd; it++) {
+		CWT_ASSERT(it->p);
+		it->p->onFinish();
+	}
+}
 
 CWT_NS_END

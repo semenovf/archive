@@ -121,9 +121,6 @@ public:
 	friend bool	operator>(const String &s1, const  String &s2);
 	friend bool	operator>=(const String &s1, const String &s2);
 
-	static String fromUtf8(const char *str, int size = -1);
-	static String fromUtf8(const ByteArray &str);
-
 	String&	setNumber(long_t n, int base = 10);
 	String&	setNumber(ulong_t n, int base = 10);
 	String&	setNumber(int_t n, int base = 10);
@@ -134,6 +131,11 @@ public:
 	String&	setNumber(byte_t n, int base = 10)  { return setNumber(ulong_t(n), base); }
 	String&	setNumber(float n, char f = 'g', int prec = 6);
 	String&	setNumber(double n, char f = 'g', int prec = 6);
+
+	static String fromUtf8(const char *str, int size = -1);
+	static String fromUtf8(const ByteArray &str);
+	static String fromLatin1 (const char * str, size_t size);
+	static String fromLatin1 (const char * str);
 
 	static String number(double n, char format = 'g', int precision = 6);
 	static String number(float n, char format = 'g', int precision = 6);

@@ -51,6 +51,7 @@ public:
 	virtual const DetectorMapping* getDetectors(int *count) { CWT_ASSERT(count); *count = 0; return 0; }
 
 	virtual void onStart() {} // call from Sepaloid::start()
+	virtual void onFinish() {} // call from Sepaloid::finish()
 private:
 	String m_name;
 	Uuid m_uuid;

@@ -125,6 +125,7 @@ public:
 	void disconnectAll();
 	void unregisterAll();
 	void start();
+	void finish();
 
 protected:
 	bool registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor_t dtor);
