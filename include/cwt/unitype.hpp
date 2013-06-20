@@ -85,7 +85,7 @@ public:
 	void setBlob       (const ByteArray &blob);
 
 	template <typename T>
-	void setObject(const T & o) const;
+	void setObject(const T & o);
 
 	void swap(UniType &other) { m_d.swap(other.m_d); }
 
@@ -244,7 +244,7 @@ inline void UniType::setBlob (const ByteArray &blob)
 }
 
 template <typename T>
-void UniType::setObject(const T & o) const
+void UniType::setObject(const T & o)
 {
 	Data *d = new Data;
 	d->type = UniType::ObjectValue;
