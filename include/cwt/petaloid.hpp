@@ -67,4 +67,31 @@ struct DetectorPair
 
 CWT_NS_END
 
+
+#define CWT_PETALOID_EMITTER(id, em) { id , EMITTER_CAST(em) }
+#define CWT_PETALOID_DETECTOR(id, dt) { id , DETECTOR_CAST(dt) }
+
+#define CWT_PETALOID_EMITTERS_BEGIN                                 \
+const EmitterMapping* getEmitters(int *count)                       \
+{                                                                   \
+	static EmitterMapping emitter_mapping[] = {
+
+#define CWT_PETALOID_EMITTERS_END                                   \
+	};                                                              \
+	*count = sizeof(emitter_mapping)/sizeof(emitter_mapping[0]) ;   \
+	return &emitter_mapping[0];                                     \
+}
+
+
+#define CWT_PETALOID_DETECTORS_BEGIN                                \
+const DetectorMapping* getDetectors(int *count)                     \
+{                                                                   \
+	static DetectorMapping detector_mapping[] = {
+
+#define CWT_PETALOID_DETECTORS_END		                            \
+	};                                                              \
+	*count = sizeof(detector_mapping)/sizeof(detector_mapping[0]) ; \
+	return &detector_mapping[0];                                    \
+}
+
 #endif /* __CWT_PETALOID_HPP__ */

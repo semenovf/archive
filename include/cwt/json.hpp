@@ -10,6 +10,9 @@
 
 CWT_NS_BEGIN
 
+class JsonArray;
+class JsonObject;
+
 class JsonValue
 {
 public:
@@ -26,7 +29,7 @@ public:
 
 protected:
 	JsonValue() : m_type(JsonValue_Null), m_value(), m_parent(NULL) {}
-	JsonValue(JsonValue *parent, TypeEnum type) : m_type(type), m_value(), m_parent(parent) {}
+	JsonValue(TypeEnum type, JsonValue *parent) : m_type(type), m_value(), m_parent(parent) {}
 
 public:
 	JsonValue(JsonValue *parent) : m_type(JsonValue_Null), m_value(), m_parent(parent) {}
@@ -54,26 +57,31 @@ protected:
 	TypeEnum m_type;
 	UniType  m_value;
 	JsonValue *m_parent;
+
+	friend class JsonArray; // for access to protected members, see void JsonArray::append(JsonValue *value)
+	friend class JsonObject;
 };
+
+typedef JsonValue JsonNull;
 
 class JsonBoolean : public JsonValue
 {
 public:
-	explicit JsonBoolean(JsonValue *parent, bool v) : JsonValue(parent, JsonValue_Boolean) { m_value.setBool(v); }
+	explicit JsonBoolean(bool v, JsonValue *parent = nullptr) : JsonValue(JsonValue_Boolean, parent) { m_value.setBool(v); }
 };
 
 class JsonNumber : public JsonValue
 {
 public:
-	explicit JsonNumber(JsonValue *parent, double v) : JsonValue(parent, JsonValue_Number) { m_value.setDouble(v); }
+	explicit JsonNumber(double v, JsonValue *parent = nullptr) : JsonValue(JsonValue_Number, parent) { m_value.setDouble(v); }
 };
 
 class JsonString : public JsonValue
 {
 public:
-	explicit JsonString(JsonValue *parent, const String &s) : JsonValue(parent, JsonValue_String) { m_value.setString(s); }
-	explicit JsonString(JsonValue *parent, const Char *chars) : JsonValue(parent, JsonValue_String) { m_value.setString(String(chars)); }
-	explicit JsonString(JsonValue *parent, const Char *chars, size_t size) : JsonValue(parent, JsonValue_String) { m_value.setString(String(chars, size)); }
+	explicit JsonString(const String &s, JsonValue *parent = nullptr) : JsonValue(JsonValue_String, parent) { m_value.setString(s); }
+	explicit JsonString(const Char *chars, JsonValue *parent = nullptr) : JsonValue(JsonValue_String, parent) { m_value.setString(String(chars)); }
+	explicit JsonString(const Char *chars, size_t size, JsonValue *parent = nullptr) : JsonValue(JsonValue_String, parent) { m_value.setString(String(chars, size)); }
 };
 
 class JsonArray : public JsonValue
@@ -83,21 +91,20 @@ class JsonArray : public JsonValue
 	const array_type* arrayPtr() const { return &m_value.objectRef<array_type>(); }
 
 public:
-	explicit JsonArray(JsonValue *parent);
+	explicit JsonArray(JsonValue *parent = nullptr);
 	virtual ~JsonArray();
-//	virtual void add(const String &key, JsonValue *value) { CWT_UNUSED(key); append(value); }
 
 	virtual JsonValue& at(size_t i);
 	virtual const JsonValue& at(size_t i) const;
 
-	void append(JsonValue *v) { arrayPtr()->append(v); }
+	void append(JsonValue *value) { arrayPtr()->append(value); value->m_parent = this; }
 	size_t count() const      { return arrayPtr()->size(); }
 	bool isEmpty() const      { return arrayPtr()->isEmpty(); }
 	size_t size() const       { return arrayPtr()->size(); }
 };
 
 inline JsonArray::JsonArray(JsonValue *parent)
-	: JsonValue(parent, JsonValue_Array)
+	: JsonValue(JsonValue_Array, parent)
 {
 	m_value = UniType::make_object<array_type>(array_type());
 }
@@ -125,21 +132,20 @@ class JsonObject : public JsonValue
 	const object_type* objectPtr() const { return &m_value.objectRef<object_type>(); }
 
 public:
-	explicit JsonObject(JsonValue *parent);
+	explicit JsonObject(JsonValue *parent = nullptr);
 	virtual ~JsonObject();
-	//virtual void add(const String &key, JsonValue *value) { insert(key, value); }
 
 	virtual JsonValue& at(const String &key);
 	virtual const JsonValue& at(const String &key) const;
 
 	size_t count() const                             { return objectPtr()->size(); }
-	void insert(const String &key, JsonValue *value) { objectPtr()->insert(key, value); }
+	void insert(const String &key, JsonValue *value) { objectPtr()->insert(key, value); value->m_parent = this; }
 	bool isEmpty() const                             { return objectPtr()->isEmpty(); }
 	int size() const                                 { return objectPtr()->size(); }
 };
 
 inline JsonObject::JsonObject(JsonValue *parent)
-	: JsonValue(parent, JsonValue_Object)
+	: JsonValue(JsonValue_Object, parent)
 {
 	m_value = UniType::make_object<object_type>(object_type());
 }
@@ -177,10 +183,18 @@ struct JsonSAJ {
 
 class DLL_API Json : public Errorable {
 	CWT_DENY_COPY(Json);
-public:
+protected:
 	Json() : Errorable(), m_root(NULL) {}
+
+public:
+	Json(JsonObject *object) : Errorable(), m_root(object) { }
+	Json(JsonArray *array) : Errorable(), m_root(array) { }
 	Json(const String &json) : Errorable(), m_root(NULL) { parse(json); }
-	~Json() { if (m_root) delete m_root; }
+	~Json() {
+		if (m_root)
+			delete m_root;
+		m_root = nullptr;
+	}
 
 	bool parse(const String &json);
 	bool parseFromFile(const char *path);

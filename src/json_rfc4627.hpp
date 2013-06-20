@@ -521,13 +521,13 @@ static bool scalar_value(const void *data, size_t len, void *context, void *acti
 
 	switch (*pflag) {
 	case _JSON_VALUE_NULL:
-		value = new JsonValue(NULL);
+		value = new JsonValue(nullptr);
 		break;
 	case _JSON_VALUE_FALSE:
-		value = new JsonBoolean(NULL, false);
+		value = new JsonBoolean(false);
 		break;
 	case _JSON_VALUE_TRUE:
-		value = new JsonBoolean(NULL, true);
+		value = new JsonBoolean(true);
 		break;
 	case _JSON_VALUE_NUMBER: {
 		String number((const Char*)data, len);
@@ -538,7 +538,7 @@ static bool scalar_value(const void *data, size_t len, void *context, void *acti
 			ctx->status->addError(_Tr("invalid number near %ls"), String((const Char*)data, CWT_MIN(10,len)).unicode());
 			return false;
 		}
-		value = new JsonNumber(NULL, d);
+		value = new JsonNumber(d);
 	}
 		break;
 	case _JSON_VALUE_STRING: {
@@ -548,7 +548,7 @@ static bool scalar_value(const void *data, size_t len, void *context, void *acti
 		CWT_ASSERT(str[len-1] == _DQUOTE[0]);
 		String value_str(str + 1, len - 2);
 		unescape_chars(value_str);
-		value = new JsonString(NULL, value_str);
+		value = new JsonString(value_str);
 		break;
 	}
 	default:

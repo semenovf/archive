@@ -68,6 +68,7 @@ protected:
 	virtual ~Singleton() { _self = 0; }
 
 public:
+	//static void attach(T *o);
 	static T* instance();
 	static void free();
 	static void forceFree();
@@ -87,6 +88,18 @@ int Singleton<T>::_refs = 0;
 /*
 template <class T>
 CWT_DEFAULT_MT_POLICY Singleton<T>::_mutex;
+*/
+
+/*
+template <class T>
+static void Singleton<T>::attach(T *o)
+{
+	static CWT_DEFAULT_MT_POLICY mutex;
+	AutoLock<> locker(&mutex);
+	CWT_ASSERT(_self == nullptr);
+	_self = o;
+	_refs = 1;
+}
 */
 
 template <class T>
