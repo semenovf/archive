@@ -8,6 +8,7 @@
 
 #include "../include/cwt/hash.hpp"
 #include "../include/cwt/char.hpp"
+#include "../include/cwt/string.hpp"
 //CWT_NS_BEGIN
 
 static inline uint_t hash(const byte_t *p, int len, uint_t seed)

@@ -9,11 +9,13 @@
 #ifndef __CWT_SEPALOID_HPP__
 #define __CWT_SEPALOID_HPP__
 
-#include <cwt/vector.hpp>
-#include <cwt/hash.hpp>
-#include <cwt/errorable.hpp>
-#include <cwt/sigslotmapping.hpp>
 #include <cwt/dl.hpp>
+#include <cwt/errorable.hpp>
+#include <cwt/hash.hpp>
+#include <cwt/mt.hpp>
+#include <cwt/sigslotmapping.hpp>
+#include <cwt/thread.hpp>
+#include <cwt/vector.hpp>
 
 CWT_NS_BEGIN
 
@@ -25,16 +27,16 @@ struct PetaloidSpec {
 	petaloid_dtor_t dtor; /* may be null (no destructor) */
 };
 
-
-class DLL_API Sepaloid : public Errorable
+class DLL_API Sepaloid : public Errorable, public has_slots<>
 {
-private:
 	CWT_DENY_COPY(Sepaloid)
+	CWT_IMPLEMENT_LOCKING(Sepaloid);
 public:
 	typedef struct { const char *id; sigslot_mapping_t *map; const char *desc; } Mapping;
 	typedef Hash<ByteArray, Mapping*> MappingHash;
 
-    class iterator {
+    class iterator
+    {
     public:
 		Vector<PetaloidSpec>::iterator it;
 
@@ -63,7 +65,8 @@ public:
     };
     friend class iterator;
 
-    class const_iterator {
+    class const_iterator
+    {
     public:
 		Vector<PetaloidSpec>::const_iterator it;
 
@@ -107,7 +110,7 @@ public:
 	Petaloid* registerLocalPetaloid(Petaloid *petaloid, petaloid_dtor_t dtor = Petaloid::defaultDtor);
 	Petaloid* registerPetaloidForPath(const String &path, const char *pname = NULL, int argc = 0, char **argv = NULL);
 	Petaloid* registerPetaloidForName(const String &name, const char *pname = NULL, int argc = 0, char **argv = NULL);
-
+	void setMasterPetaloid(Petaloid *p) { m_masterPetaloid = p; }
 	size_t         count() const  { return m_petaloids.size(); }
     iterator       begin()        { return iterator(m_petaloids.begin()); }
     iterator       end()          { return iterator(m_petaloids.end()); }
@@ -116,16 +119,17 @@ public:
     const_iterator cbegin() const { return const_iterator(m_petaloids.cbegin()); }
     const_iterator cend() const   { return const_iterator(m_petaloids.cend()); }
 
-
 /* TODO need implementation
 	bool registerPetaloidForUrl(const String &url);
 */
-
 	void connectAll();
 	void disconnectAll();
 	void unregisterAll();
 	void start();
-	void finish();
+	int  exec();
+
+// slots
+	void quit();
 
 protected:
 	bool registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor_t dtor);
@@ -134,6 +138,9 @@ private:
 	MappingHash          m_mapping;
 	Vector<String>       m_searchPaths;     /* directories where to search petaloids */
 	Vector<PetaloidSpec> m_petaloids;
+	Vector<Thread*>      m_threads;
+
+	Petaloid*            m_masterPetaloid;
 };
 
 CWT_NS_END

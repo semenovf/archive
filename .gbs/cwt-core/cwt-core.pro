@@ -8,16 +8,19 @@ INCLUDEPATH += ../../../cwt-common/include
 
 HEADERS += ../../include/cwt/*.hpp
 HEADERS += ../../include/cwt/*.h
+HEADERS += ../../src/*.hpp
+HEADERS += ../../src/qt/*.hpp
 SOURCES += ../../src/*.cpp
 SOURCES += ../../src/*.c
-SOURCES += ../../src/qt/bytearray_qt.cpp
-SOURCES += ../../src/qt/string_qt.cpp
-SOURCES += ../../src/unix/*.cpp
-SOURCES += ../../src/unix/*.c
+SOURCES += ../../src/qt/*.cpp
 
 #HEADERS += ../../experimental/*.hpp
 #SOURCES += ../../experimental/*.cpp
 
-unix {}
+unix {
+    HEADERS += ../../src/unix/*.hpp
+    SOURCES += ../../src/unix/*.cpp
+    SOURCES += ../../src/unix/*.c
+}
 
 win32 {}

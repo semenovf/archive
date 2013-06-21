@@ -110,5 +110,5 @@ inline void PetaloidTemplate::onSixArgs(bool ok, char, short, int, long, const c
 }
 
 
-CWT_PETALOID_API Petaloid* __petaloid_ctor__(Sepaloid *, const char *, int , char **) { return dynamic_cast<Petaloid*>(new PetaloidTemplate()); }
+CWT_PETALOID_API Petaloid* __petaloid_ctor__(const char *, int , char **) { return dynamic_cast<Petaloid*>(new PetaloidTemplate()); }
 CWT_PETALOID_API void  __petaloid_dtor__(Petaloid *p) { CWT_ASSERT(p); delete p; }

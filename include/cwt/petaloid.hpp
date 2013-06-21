@@ -28,33 +28,43 @@ typedef struct { const char *id; Detector  detector; } DetectorMapping;
 #define CWT_PETALOID_API extern "C" DLL_API
 #define CWT_PETALOID_CONSTRUCTOR_NAME "__petaloid_ctor__"
 #define CWT_PETALOID_DESTRUCTOR_NAME "__petaloid_dtor__"
-typedef Petaloid* (*petaloid_ctor_t)(Sepaloid *sepaloid, const char *name, int argc, char **argv);
+typedef Petaloid* (*petaloid_ctor_t)(/*Sepaloid *sepaloid, */const char *name, int argc, char **argv);
 typedef void  (*petaloid_dtor_t)(Petaloid*);
 
 
 class DLL_API Petaloid : public has_slots<>
 {
 private:
-	Petaloid() : m_name(NULL), m_uuid() {}
+	Petaloid() : m_name(NULL), m_uuid(), m_sepaloidPtr(nullptr) {}
 
 public:
-	Petaloid(const char *name) : m_name(String().fromUtf8(name)), m_uuid() {}
-	Petaloid(const char *name, const uuid_t &uuid) : m_name(String().fromUtf8(name)), m_uuid(uuid) {}
-	Petaloid(const char *name, const Uuid &uuid) : m_name(String().fromUtf8(name)), m_uuid(uuid) {}
+	Petaloid(const char *name) : m_name(String().fromUtf8(name)), m_uuid(), m_sepaloidPtr(nullptr), run(nullptr) {}
+	Petaloid(const char *name, const uuid_t &uuid) : m_name(String().fromUtf8(name)), m_uuid(uuid), m_sepaloidPtr(nullptr), run(nullptr) {}
+	Petaloid(const char *name, const Uuid &uuid) : m_name(String().fromUtf8(name)), m_uuid(uuid), m_sepaloidPtr(nullptr), run(nullptr) {}
 	virtual ~Petaloid() {}
 	const String& name() const { return m_name; }
 	const uuid_t& uuid() const { return m_uuid.uuid(); }
+	Sepaloid* sepaloid() const { return m_sepaloidPtr; }
+
+	bool isRegistered() const { return m_sepaloidPtr != nullptr ? true : false; }
 
 	static void defaultDtor(Petaloid *p) { CWT_ASSERT(p); delete p; }
 
 	virtual const EmitterMapping* getEmitters(int *count)   { CWT_ASSERT(count); *count = 0; return 0; }
 	virtual const DetectorMapping* getDetectors(int *count) { CWT_ASSERT(count); *count = 0; return 0; }
 
-	virtual void onStart() {} // call from Sepaloid::start()
+	virtual void onStart() {}  // call from Sepaloid::start()
 	virtual void onFinish() {} // call from Sepaloid::finish()
+
 private:
-	String m_name;
-	Uuid m_uuid;
+	String    m_name;
+	Uuid      m_uuid;
+	Sepaloid* m_sepaloidPtr;
+
+public:
+	int (*run)(Petaloid*);
+
+	friend class Sepaloid;
 };
 
 struct DetectorPair

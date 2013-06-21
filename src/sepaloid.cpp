@@ -13,6 +13,19 @@
 
 CWT_NS_BEGIN
 
+class PetaloidThreaded : public Thread
+{
+public:
+	PetaloidThreaded(Petaloid *p) : Thread() , m_petaloid(p) { CWT_ASSERT(m_petaloid); }
+	const Petaloid *petaloid() const { return m_petaloid; }
+
+protected:
+	virtual void run() { m_petaloid->run(m_petaloid); }
+
+private:
+	Petaloid*        m_petaloid;
+};
+
 Sepaloid::Sepaloid(Sepaloid::Mapping mapping[], int n) : m_searchPaths()
 {
 	for (int i = 0; i < n; i++) {
@@ -40,7 +53,7 @@ Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pnam
 		petaloid_dtor_t petaloid_dtor = reinterpret_cast<petaloid_dtor_t>(Dl::ptr(ph, CWT_PETALOID_DESTRUCTOR_NAME));
 
 		if (petaloid_ctor) {
-			Petaloid *p = reinterpret_cast<Petaloid*>(petaloid_ctor(this, pname, arg, argv));
+			Petaloid *p = reinterpret_cast<Petaloid*>(petaloid_ctor(pname, arg, argv));
 			if (p) {
 				return registerPetaloid(*p, ph, petaloid_dtor) ? p : NULL;
 			} else {
@@ -124,13 +137,20 @@ bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor
 		}
 	}
 
+	petaloid.m_sepaloidPtr = this;
 	PetaloidSpec pspec(&petaloid, ph, dtor);
 	m_petaloids.append(pspec);
-	Logger::debug("petaloid [%ls] registered.", petaloid.name().utf16());
+
+	// Petaloid must be run in a separate thread.
+	if (petaloid.run) {
+		m_threads.append(new PetaloidThreaded(&petaloid));
+		Logger::debug("petaloid [%ls] registered as threaded.", petaloid.name().utf16());
+	} else {
+		Logger::debug("petaloid [%ls] registered.", petaloid.name().utf16());
+	}
 
 	return true;
 }
-
 
 void Sepaloid::connectAll()
 {
@@ -154,6 +174,14 @@ void Sepaloid::disconnectAll()
 
 void Sepaloid::unregisterAll()
 {
+	Vector<Thread*>::iterator itThread = m_threads.begin();
+	Vector<Thread*>::iterator itThreadEnd = m_threads.end();
+
+	for (; itThread != itThreadEnd; ++itThread) {
+		delete *itThread;
+	}
+	m_threads.clear();
+
 	Vector<PetaloidSpec>::iterator it = m_petaloids.begin();
 	Vector<PetaloidSpec>::iterator itEnd = m_petaloids.end();
 
@@ -169,7 +197,6 @@ void Sepaloid::unregisterAll()
 		}
 		Logger::debug(_Tr("petaloid [%ls] unregistered"), pname.utf16());
 	}
-
 	m_petaloids.clear();
 }
 
@@ -184,14 +211,57 @@ void Sepaloid::start()
 	}
 }
 
-void Sepaloid::finish()
+int Sepaloid::exec()
 {
-	Vector<PetaloidSpec>::iterator it = m_petaloids.begin();
-	Vector<PetaloidSpec>::iterator itEnd = m_petaloids.end();
+	int r = 0;
 
-	for (;it != itEnd; it++) {
-		CWT_ASSERT(it->p);
-		it->p->onFinish();
+	// Exclude master petaloid from threads pool of sepaloid
+	if (m_masterPetaloid) {
+		size_t size = m_threads.size();
+		for (size_t i = 0; i < size; ++i) {
+			PetaloidThreaded *pt = dynamic_cast<PetaloidThreaded*>(m_threads[i]);
+			if (pt->petaloid() == m_masterPetaloid) {
+				m_threads.remove(i);
+				delete pt;
+				break;
+			}
+		}
+	}
+
+	Vector<Thread*>::iterator itThread = m_threads.begin();
+	Vector<Thread*>::iterator itThreadEnd = m_threads.end();
+
+	for (;itThread != itThreadEnd; itThread++) {
+		(*itThread)->start();
+	}
+
+	if (m_masterPetaloid && m_masterPetaloid->run) {
+		r = m_masterPetaloid->run(m_masterPetaloid);
+	}
+
+	for (itThread = m_threads.begin(); itThread != itThreadEnd; itThread++) {
+		(*itThread)->wait();
+	}
+
+	Vector<PetaloidSpec>::iterator itPetaloid = m_petaloids.begin();
+	Vector<PetaloidSpec>::iterator itPetaloidEnd = m_petaloids.end();
+
+	for (;itPetaloid != itPetaloidEnd; itPetaloid++) {
+		CWT_ASSERT(itPetaloid->p);
+		itPetaloid->p->onFinish();
+	}
+
+	return r;
+}
+
+void Sepaloid::quit()
+{
+	AutoLock(this);
+	Vector<Thread*>::iterator itThread = m_threads.begin();
+	Vector<Thread*>::iterator itThreadEnd = m_threads.end();
+
+	for (;itThread != itThreadEnd; itThread++) {
+		(*itThread)->quit();
 	}
 }
 
