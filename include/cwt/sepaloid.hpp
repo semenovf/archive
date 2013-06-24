@@ -129,7 +129,7 @@ public:
 	int  exec();
 
 // slots
-	void quit();
+	//void quit();
 
 protected:
 	bool registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor_t dtor);

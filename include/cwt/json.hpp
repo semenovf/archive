@@ -28,34 +28,45 @@ public:
 	static JsonValue sharedNull;
 
 protected:
-	JsonValue() : m_type(JsonValue_Null), m_value(), m_parent(NULL) {}
 	JsonValue(TypeEnum type, JsonValue *parent) : m_type(type), m_value(), m_parent(parent) {}
 
 public:
-	JsonValue(JsonValue *parent) : m_type(JsonValue_Null), m_value(), m_parent(parent) {}
+	JsonValue() : m_type(JsonValue_Null), m_value(), m_parent(nullptr) {}
+//	JsonValue(JsonValue *parent) : m_type(JsonValue_Null), m_value(), m_parent(parent) {}
 	virtual ~JsonValue() {}
 
 	TypeEnum type() const { return m_type; }
 	bool isNull() const { return type() == JsonValue_Null ? true : false; }
+	bool isBoolean() const { return type() == JsonValue_Boolean ? true : false; }
+	bool isNumber() const { return type() == JsonValue_Number ? true : false; }
+	bool isString() const { return type() == JsonValue_String ? true : false; }
+	bool isObject() const { return type() == JsonValue_Object ? true : false; }
+	bool isArray() const { return type() == JsonValue_Array ? true : false; }
+
 	JsonValue& parent() { return *m_parent; }
 	const JsonValue& parent() const { return *m_parent; }
 	bool boolean() const { return m_value.toBool(); }
 	double number() const { return m_value.toDouble(); }
 	String string() const { return m_value.toString(); }
 
-	virtual JsonValue& at(size_t i) { CWT_UNUSED(i); return sharedNull; }
-	virtual JsonValue& at(const String &key) { CWT_UNUSED(key); return sharedNull; }
-	virtual const JsonValue& at(size_t i) const { CWT_UNUSED(i); return sharedNull; }
-	virtual const JsonValue& at(const String &key) const { CWT_UNUSED(key); return sharedNull; }
+	virtual void remove(size_t i) { CWT_UNUSED(i); }
+	virtual void remove(const String &key) { CWT_UNUSED(key); }
 
-	JsonValue& operator[](size_t i) { return at(i); }
-	JsonValue& operator[](const String &key) { return at(key); }
-	const JsonValue& operator[](size_t i) const { return at(i); }
-	const JsonValue& operator[](const String &key) const { return at(key); }
+	void setValue(const JsonValue &value);
+
+	virtual JsonValue& at (size_t i) { CWT_UNUSED(i); return sharedNull; }
+	virtual JsonValue& at (const String &key) { CWT_UNUSED(key); return sharedNull; }
+	virtual const JsonValue& at (size_t i) const { CWT_UNUSED(i); return sharedNull; }
+	virtual const JsonValue& at (const String &key) const { CWT_UNUSED(key); return sharedNull; }
+
+	JsonValue& operator [] (size_t i) { return at(i); }
+	JsonValue& operator [] (const String &key) { return at(key); }
+	const JsonValue& operator [] ( size_t i) const { return at(i); }
+	const JsonValue& operator [] (const String &key) const { return at(key); }
 
 protected:
-	TypeEnum m_type;
-	UniType  m_value;
+	TypeEnum   m_type;
+	UniType    m_value;
 	JsonValue *m_parent;
 
 	friend class JsonArray; // for access to protected members, see void JsonArray::append(JsonValue *value)
@@ -63,6 +74,7 @@ protected:
 };
 
 typedef JsonValue JsonNull;
+
 
 class JsonBoolean : public JsonValue
 {
@@ -90,14 +102,16 @@ class JsonArray : public JsonValue
 	array_type* arrayPtr() { return &m_value.objectRef<array_type>(); }
 	const array_type* arrayPtr() const { return &m_value.objectRef<array_type>(); }
 
+	void destroy();
 public:
 	explicit JsonArray(JsonValue *parent = nullptr);
-	virtual ~JsonArray();
+	virtual ~JsonArray() { destroy(); }
 
 	virtual JsonValue& at(size_t i);
 	virtual const JsonValue& at(size_t i) const;
 
 	void append(JsonValue *value) { arrayPtr()->append(value); value->m_parent = this; }
+	virtual void remove(size_t i);
 	size_t count() const      { return arrayPtr()->size(); }
 	bool isEmpty() const      { return arrayPtr()->isEmpty(); }
 	size_t size() const       { return arrayPtr()->size(); }
@@ -125,12 +139,23 @@ inline const JsonValue& JsonArray::at(size_t i) const
 	return *siblings->at(i);
 }
 
+inline void JsonArray::remove(size_t i)
+{
+	array_type* siblings = arrayPtr();
+	if (i < siblings->size()) {
+		JsonValue *value = siblings->at(i);
+		siblings->remove(i);
+		delete value;
+	}
+}
+
 class JsonObject : public JsonValue
 {
 	typedef Hash<String, JsonValue*> object_type;
 	object_type* objectPtr() { return &m_value.objectRef<object_type>(); }
 	const object_type* objectPtr() const { return &m_value.objectRef<object_type>(); }
 
+	void destroy();
 public:
 	explicit JsonObject(JsonValue *parent = nullptr);
 	virtual ~JsonObject();
@@ -140,6 +165,7 @@ public:
 
 	size_t count() const                             { return objectPtr()->size(); }
 	void insert(const String &key, JsonValue *value) { objectPtr()->insert(key, value); value->m_parent = this; }
+	virtual void remove(const String &key);
 	bool isEmpty() const                             { return objectPtr()->isEmpty(); }
 	int size() const                                 { return objectPtr()->size(); }
 };
@@ -168,6 +194,15 @@ inline const JsonValue& JsonObject::at(const String &key) const
 	return *it.value();
 }
 
+inline void JsonObject::remove(const String &key)
+{
+	object_type* siblings = objectPtr();
+	JsonValue *value = siblings->at(key);
+	if (value) {
+		siblings->remove(key);
+		delete value;
+	}
+}
 
 /* This struct provides the Simple API for JSON */
 struct JsonSAJ {
@@ -223,6 +258,7 @@ public:
 	JsonValue& value() { return *m_root; }
 	const JsonValue& value() const { return *m_root; }
 
+	String toString(int baseIndent = 0) const;
 private:
 	JsonValue *m_root;
 };
@@ -240,7 +276,7 @@ class DLL_API JsonSimplePath {
 public:
 	JsonSimplePath(Json &json) : m_json(&json), m_jsonRootValue(&json.value()) { ; }
 
-	Json& json() { return *m_json; }
+	Json& json() const { return *m_json; }
 	const Json& json() const { return *m_json; }
 	void setJson(Json &json) { m_json = &json; m_jsonRootValue = &json.value(); }
 
@@ -248,12 +284,14 @@ public:
 	JsonValue& find (const String &jpath) { return const_cast<JsonValue&>(findValue(jpath)); }
 	const JsonValue& find (const String &jpath) const { return findValue(jpath); }
 	bool contains(const String &jpath) const;
+	void setValue(const String& jpath, const UniType& value);
 
 	JsonValue& operator [] (const String &jpath) { return const_cast<JsonValue&>(findValue(jpath)); }
 	const JsonValue& operator [] (const String &jpath) const { return findValue(jpath); }
 
 protected:
 	const JsonValue& findValue (const String &jpath) const;
+	JsonValue& makeTree(const String &jpath);
 
 private:
 	Json *m_json;

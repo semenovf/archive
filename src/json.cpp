@@ -169,7 +169,31 @@ bool Json::isEmpty() const
 		: false;
 }
 
-JsonArray::~JsonArray()
+
+String Json::toString() const
+{
+	String r;
+
+	return r;
+}
+
+inline void JsonValue::setValue(const JsonValue &value)
+{
+	switch(m_type) {
+	case JsonValue_Object:
+		dynamic_cast<JsonObject*>(this)->destroy();
+		break;
+	case JsonValue_Array:
+		dynamic_cast<JsonArray*>(this)->destroy();
+		break;
+	default:
+		break;
+	}
+	m_type = value.m_type;
+	m_value = value;
+}
+
+void JsonArray::destroy()
 {
 	array_type* siblings = arrayPtr();
 	Vector<JsonValue*>::iterator it;
@@ -179,7 +203,7 @@ JsonArray::~JsonArray()
 	}
 }
 
-JsonObject::~JsonObject()
+JsonObject::destroy()
 {
 	object_type* siblings = objectPtr();
 	Hash<String, JsonValue*>::iterator it;

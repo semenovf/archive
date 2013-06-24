@@ -225,16 +225,30 @@ void test_json(void)
 	CWT_TEST_OK(json_array[1][_U("Country")].string()   == _U("US"));
 }
 
+void test_json_remove(void)
+{
+	Json json_object(String::fromUtf8(json_object_str));
+	Json json_array(String::fromUtf8(json_array_str));
+
+	CWT_TEST_NOK(json_object.isEmpty());
+	CWT_TEST_NOK(json_array.isEmpty());
+
+	CWT_TEST_OK(json_object[_U("Image")][_U("Width")].number() == double(800));
+	CWT_TEST_FAIL(json_object[_U("Image")].isObject());
+	json_object[_U("Image")].remove(_U("Width"));
+	CWT_TEST_OK(json_object[_U("Image")][_U("Width")].isNull());
+}
 
 int main(int argc, char *argv[])
 {
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(94);
+	CWT_BEGIN_TESTS(99);
 
 	test_json_fsm();
 	test_json();
+	test_json_remove();
 
 	CWT_END_TESTS;
 }

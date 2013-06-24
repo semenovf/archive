@@ -254,6 +254,7 @@ int Sepaloid::exec()
 	return r;
 }
 
+/*
 void Sepaloid::quit()
 {
 	AutoLock(this);
@@ -264,5 +265,6 @@ void Sepaloid::quit()
 		(*itThread)->quit();
 	}
 }
+*/
 
 CWT_NS_END

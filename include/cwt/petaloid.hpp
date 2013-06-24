@@ -44,7 +44,7 @@ public:
 	virtual ~Petaloid() {}
 	const String& name() const { return m_name; }
 	const uuid_t& uuid() const { return m_uuid.uuid(); }
-	Sepaloid* sepaloid() const { return m_sepaloidPtr; }
+	//Sepaloid* sepaloid() const { return m_sepaloidPtr; }
 
 	bool isRegistered() const { return m_sepaloidPtr != nullptr ? true : false; }
 

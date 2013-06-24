@@ -403,7 +403,7 @@ typename Hash<Key,T>::iterator Hash<Key,T>::insert(const Key & key, const T & va
 	 * decreases. Enlarge the table size to prevent this happening
 	 */
 	//if ((m_d->nentries * 3) / m_d->nodeTable.size() > 1) {
-	if (m_d->nentries/m_d->nodeTable.size() > 1/3) {
+	if (double(m_d->nentries/m_d->nodeTable.size()) > double(1/3)) {
 		/* Table is more than 1/3 full */
 		m_d->rehash(m_d->primeIndex + 1);
 	}
@@ -466,14 +466,14 @@ int Hash<Key, T>::remove(const Key &key)
     detach();
 
 	Entry e;
-	size_t index;
+	//size_t index;
 	e.key = key;
 
     HashData::Node *r = m_d->remove(reinterpret_cast<HashData::Node*>(&e));
     if (r) {
     	delete cast_entry(r);
 
-    	if (m_d->nentries/m_d->nodeTable.size() < 1/3) {
+    	if (double(m_d->nentries/m_d->nodeTable.size()) < double(1/3)) {
     		if (m_d->primeIndex > 0)
     			m_d->rehash(m_d->primeIndex - 1);
     	}

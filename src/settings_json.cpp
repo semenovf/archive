@@ -14,17 +14,12 @@ CWT_NS_BEGIN
 
 class Settings::Impl : public Json {
 public:
-	Impl() : Json()/*, m_separatorChar(Settings::DEFAULT_SEPARATOR_CHAR)*/ {}
-
-public:
-	//Char m_separatorChar;
+	Impl() : Json() {}
 };
 
-Settings::Settings() : pimpl(new Settings::Impl)
-{
-}
+Settings::Settings() : pimpl(new Settings::Impl) {}
 
-void Settings::setValue(const String & key, const UniType & value)
+void Settings::setValue(const String& path, const UniType& value)
 {
 	CWT_UNUSED2(key, value);
 }

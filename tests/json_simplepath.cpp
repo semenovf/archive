@@ -25,9 +25,9 @@ static FsmTestEntry __fsmTestEntries[] = {
 				, INULL }}
 
 		, { VHEADER(subscript_fsm)
-			, { "[1]", "[12]", "[9876]", VNULL }
-			, {   {-1, "[0]" }
-				, {-1, "[01234]" }
+			, { "[1]", "[12]", "[9876]", "[01234]", VNULL }
+			, {   {-1, "[a0]" }
+				, {-1, "[01A234]" }
 			    , {-1, "[1234" }
 			    , {-1, "[]" }
 			    , INULL }}
@@ -191,10 +191,10 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(62);
+	CWT_BEGIN_TESTS(87);
 
-	if(0) test_json_simplepath_fsm();
-	if(1) test_json_simplepath();
+	test_json_simplepath_fsm();
+	test_json_simplepath();
 
 	CWT_END_TESTS;
 }
