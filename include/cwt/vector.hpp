@@ -92,6 +92,7 @@ public:
 	const T*       data() const    { return m_d->data.data(); }
 	T&             first()         { return at(0); }
 	const T&       first() const   { return at(0); }
+	//void	       insert (size_t i, const T & value); // TODO add this method
 	bool           isEmpty() const { return m_d.use_count() > 0 && m_d->count > 0 ? false : true; }
 	T&             last()          { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
 	const T&       last() const    { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }

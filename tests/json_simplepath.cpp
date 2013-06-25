@@ -163,7 +163,7 @@ void test_json_simplepath()
 	CWT_TEST_FAIL(json_array.isGood());
 	CWT_TEST_OK(json_array.isArray());
 
-	jpath.setJson(json_array);
+	jpath.attachJson(json_array);
 	CWT_TEST_OK(jpath.contains(_U("/")));
 	CWT_TEST_OK(jpath.contains(_U("/[0]")));
 	CWT_TEST_OK(jpath.contains(_U("/[0]/precision")));
@@ -186,6 +186,40 @@ void test_json_simplepath()
 }
 
 
+void test_json_makepath()
+{
+	Json json;
+	JsonSimplePath jpath(json);
+	jpath.setValue(_U("/Image/Width"), JsonNumber(800));
+	CWT_TEST_OK(json.isObject());
+	jpath.setValue(_U("/Image/Height"), JsonNumber(600));
+	CWT_TEST_OK(json.isObject());
+	jpath.setValue(_U("/Image/Title"), JsonString(_U("View from 15th Floor")));
+	CWT_TEST_OK(json.isObject());
+
+	CWT_TEST_OK(jpath[_U("/Image/Width")].number() == double(800));
+	CWT_TEST_OK(jpath[_U("/Image/Height")].number() == double(600));
+	CWT_TEST_OK(jpath[_U("/Image/Title")].string() == _U("View from 15th Floor"));
+
+	printf("%s\n", json.toString().toUtf8().data());
+
+/*
+	jpath.setValue(_U("/Image/IDs/[2]"), JsonNumber(234));
+	CWT_TEST_OK(json.isObject());
+	jpath.setValue(_U("/Image/IDs/[3]"), JsonNumber(38793));
+	CWT_TEST_OK(json.isObject());
+	jpath.setValue(_U("/Image/IDs/[1]"), JsonNumber(943));
+	CWT_TEST_OK(json.isObject());
+	jpath.setValue(_U("/Image/IDs/[0]"), JsonNumber(116));
+	CWT_TEST_OK(json.isObject());
+
+	CWT_TEST_OK(jpath[_U("/Image/IDs[0]")].number() == double(116));
+	CWT_TEST_OK(jpath[_U("/Image/IDs[1]")].number() == double(943));
+	CWT_TEST_OK(jpath[_U("/Image/IDs[2]")].number() == double(234));
+	CWT_TEST_OK(jpath[_U("/Image/IDs[3]")].number() == double(38793));
+*/
+}
+
 int main(int argc, char *argv[])
 {
 	CWT_UNUSED(argc);
@@ -195,6 +229,7 @@ int main(int argc, char *argv[])
 
 	test_json_simplepath_fsm();
 	test_json_simplepath();
+	test_json_makepath();
 
 	CWT_END_TESTS;
 }

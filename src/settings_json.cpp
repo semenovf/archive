@@ -21,7 +21,7 @@ Settings::Settings() : pimpl(new Settings::Impl) {}
 
 void Settings::setValue(const String& path, const UniType& value)
 {
-	CWT_UNUSED2(key, value);
+	CWT_UNUSED2(path, value);
 }
 
 CWT_NS_END

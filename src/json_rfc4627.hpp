@@ -30,15 +30,15 @@
 
 CWT_NS_BEGIN
 
-static bool begin_json(const void *data, size_t len, void *context, void *action_args);
-static bool end_json(const void *data, size_t len, void *context, void *action_args);
-static bool begin_member(const void *data, size_t len, void *context, void *action_args);
-static bool end_member(const void *data, size_t len, void *context, void *action_args);
-static bool begin_object(const void *data, size_t len, void *context, void *action_args);
-static bool end_object(const void *data, size_t len, void *context, void *action_args);
-static bool begin_array(const void *data, size_t len, void *context, void *action_args);
-static bool end_array(const void *data, size_t len, void *context, void *action_args);
-static bool scalar_value(const void *data, size_t len, void *context, void *action_args);
+static bool __begin_json(const void *data, size_t len, void *context, void *action_args);
+static bool __end_json(const void *data, size_t len, void *context, void *action_args);
+static bool __begin_member(const void *data, size_t len, void *context, void *action_args);
+static bool __end_member(const void *data, size_t len, void *context, void *action_args);
+static bool __begin_object(const void *data, size_t len, void *context, void *action_args);
+static bool __end_object(const void *data, size_t len, void *context, void *action_args);
+static bool __begin_array(const void *data, size_t len, void *context, void *action_args);
+static bool __end_array(const void *data, size_t len, void *context, void *action_args);
+static bool __scalar_value(const void *data, size_t len, void *context, void *action_args);
 
 static const int _JSON_VALUE_NULL   = 1;
 static const int _JSON_VALUE_FALSE  = 2;
@@ -309,9 +309,9 @@ extern FsmTransition value_fsm[];
 
 /* member = string name-separator value */
 static FsmTransition member_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(string_fsm)         , FSM_NORMAL, begin_member, NULL }
+	  { 1,-1, FSM_MATCH_FSM(string_fsm)         , FSM_NORMAL, __begin_member, NULL }
 	, { 2,-1, FSM_MATCH_FSM(name_separator_fsm) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(value_fsm)          , FSM_ACCEPT, end_member, NULL }
+	, {-1,-1, FSM_MATCH_FSM(value_fsm)          , FSM_ACCEPT, __end_member, NULL }
 };
 
 /* next-member = value-separator member */
@@ -329,9 +329,9 @@ static FsmTransition object_body_fsm[] = {
 /* object = begin-object [ member *( value-separator member ) ] end-object */
 /* object = begin-object [ object-body ] end-object */
 static FsmTransition object_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(begin_object_fsm)    , FSM_NORMAL, begin_object, NULL }
+	  { 1,-1, FSM_MATCH_FSM(begin_object_fsm)    , FSM_NORMAL, __begin_object, NULL }
 	, { 2,-1, FSM_MATCH_OPT_FSM(object_body_fsm) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(end_object_fsm)      , FSM_ACCEPT, end_object, NULL }
+	, {-1,-1, FSM_MATCH_FSM(end_object_fsm)      , FSM_ACCEPT, __end_object, NULL }
 };
 
 /* === Arrays === */
@@ -350,9 +350,9 @@ static FsmTransition array_body_fsm[] = {
 /* array = begin-array [ value *( value-separator value ) ] end-array */
 /* array = begin-array [ array-body ] end-array */
 static FsmTransition array_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(begin_array_fsm)    , FSM_NORMAL, begin_array, NULL }
+	  { 1,-1, FSM_MATCH_FSM(begin_array_fsm)    , FSM_NORMAL, __begin_array, NULL }
 	, { 2,-1, FSM_MATCH_OPT_FSM(array_body_fsm) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_FSM(end_array_fsm)      , FSM_ACCEPT, end_array, NULL }
+	, {-1,-1, FSM_MATCH_FSM(end_array_fsm)      , FSM_ACCEPT, __end_array, NULL }
 };
 
 
@@ -363,11 +363,11 @@ static String _TRUE(_U("true"));
 
 /* value = false / null / true / object / array / number / string */
 FsmTransition value_fsm[] = {
-	  {-1, 1, FSM_MATCH_STR(_FALSE)     , FSM_ACCEPT, scalar_value, (void*)&_JSON_VALUE_FALSE }
-	, {-1, 2, FSM_MATCH_STR(_NULL)      , FSM_ACCEPT, scalar_value, (void*)&_JSON_VALUE_NULL }
-	, {-1, 3, FSM_MATCH_STR(_TRUE)      , FSM_ACCEPT, scalar_value, (void*)&_JSON_VALUE_TRUE }
-	, {-1, 4, FSM_MATCH_FSM(number_fsm) , FSM_ACCEPT, scalar_value, (void*)&_JSON_VALUE_NUMBER }
-	, {-1, 5, FSM_MATCH_FSM(string_fsm) , FSM_ACCEPT, scalar_value, (void*)&_JSON_VALUE_STRING }
+	  {-1, 1, FSM_MATCH_STR(_FALSE)     , FSM_ACCEPT, __scalar_value, (void*)&_JSON_VALUE_FALSE }
+	, {-1, 2, FSM_MATCH_STR(_NULL)      , FSM_ACCEPT, __scalar_value, (void*)&_JSON_VALUE_NULL }
+	, {-1, 3, FSM_MATCH_STR(_TRUE)      , FSM_ACCEPT, __scalar_value, (void*)&_JSON_VALUE_TRUE }
+	, {-1, 4, FSM_MATCH_FSM(number_fsm) , FSM_ACCEPT, __scalar_value, (void*)&_JSON_VALUE_NUMBER }
+	, {-1, 5, FSM_MATCH_FSM(string_fsm) , FSM_ACCEPT, __scalar_value, (void*)&_JSON_VALUE_STRING }
 	, {-1, 6, FSM_MATCH_FSM(object_fsm) , FSM_ACCEPT, NULL, NULL }//value, (void*)&_JSON_VALUE_OBJECT }
 	, {-1,-1, FSM_MATCH_FSM(array_fsm)  , FSM_ACCEPT, NULL, NULL }//value, (void*)&_JSON_VALUE_ARRAY }
 };
@@ -376,11 +376,11 @@ FsmTransition value_fsm[] = {
 const bool _STATUS_OK = true;
 const bool _STATUS_FAIL = false;
 static FsmTransition json_fsm[] = {
-	  { 1,-1, FSM_MATCH_NOTHING         , FSM_NORMAL, begin_json, NULL }
+	  { 1,-1, FSM_MATCH_NOTHING         , FSM_NORMAL, __begin_json, NULL }
 	, { 3, 2, FSM_MATCH_FSM(object_fsm) , FSM_NORMAL, NULL, NULL }
 	, { 3, 4, FSM_MATCH_FSM(array_fsm)  , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_NOTHING         , FSM_ACCEPT, end_json, (void*)&_STATUS_OK }
-	, {-1,-1, FSM_MATCH_NOTHING         , FSM_REJECT, end_json, (void*)&_STATUS_FAIL }
+	, {-1,-1, FSM_MATCH_NOTHING         , FSM_ACCEPT, __end_json, (void*)&_STATUS_OK }
+	, {-1,-1, FSM_MATCH_NOTHING         , FSM_REJECT, __end_json, (void*)&_STATUS_FAIL }
 };
 
 
@@ -390,7 +390,7 @@ inline void unescape_chars(String &s)
 	// TODO unescape hexdigits in form: \uXXXX
 }
 
-static bool begin_member(const void *data, size_t len, void *context, void *action_args)
+static bool __begin_member(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED(action_args);
 	if (!context)
@@ -408,7 +408,7 @@ static bool begin_member(const void *data, size_t len, void *context, void *acti
 	return true;
 }
 
-static bool end_member(const void *data, size_t len, void *context, void *action_args)
+static bool __end_member(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED3(data, len, action_args);
 	if (!context)
@@ -419,7 +419,7 @@ static bool end_member(const void *data, size_t len, void *context, void *action
 	return true;
 }
 
-static bool begin_json(const void *data, size_t len, void *context, void *action_args)
+static bool __begin_json(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED3(data, len, action_args);
 	if (!context)
@@ -429,7 +429,7 @@ static bool begin_json(const void *data, size_t len, void *context, void *action
 	return ctx->onBeginJson(ctx->userContext);
 }
 
-static bool end_json(const void *data, size_t len, void *context, void *action_args)
+static bool __end_json(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED2(data, len);
 	if (!context)
@@ -443,22 +443,22 @@ static bool end_json(const void *data, size_t len, void *context, void *action_a
 	return ctx->onEndJson(ctx->userContext, *pstatus);
 }
 
-static bool begin_object(const void *data, size_t len, void *context, void *action_args)
+static bool __begin_object(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED3(data, len, action_args);
 	if (!context)
 		return true;
 
 	JsonParseContext *ctx = _CAST_CTX(context);
-	JsonObject *object = new JsonObject(NULL);
+	JsonValue *object = JsonValue::createObject();
 	JsonNamedValue namedValue(ctx->memberName, object);
 	ctx->objects.push(namedValue);
 	ctx->memberName.clear();
 
-	return ctx->onBeginObject(ctx->userContext, namedValue.name, dynamic_cast<JsonObject*>(namedValue.value));
+	return ctx->onBeginObject(ctx->userContext, namedValue.name, namedValue.value);
 }
 
-static bool end_object(const void *data, size_t len, void *context, void *action_args)
+static bool __end_object(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED3(data, len, action_args);
 	if (!context)
@@ -468,27 +468,27 @@ static bool end_object(const void *data, size_t len, void *context, void *action
 	CWT_ASSERT(ctx->objects.size() > 0);
 	JsonNamedValue namedValue(ctx->objects.pop());
 
-	return ctx->onEndObject(ctx->userContext, namedValue.name, dynamic_cast<JsonObject*>(namedValue.value))
-			&& ctx->onValue(ctx->userContext, namedValue.name, dynamic_cast<JsonObject*>(namedValue.value));
+	return ctx->onEndObject(ctx->userContext, namedValue.name, namedValue.value)
+			&& ctx->onValue(ctx->userContext, namedValue.name, namedValue.value);
 }
 
 
-static bool begin_array(const void *data, size_t len, void *context, void *action_args)
+static bool __begin_array(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED3(data, len, action_args);
 	if (!context)
 		return true;
 
 	JsonParseContext *ctx = _CAST_CTX(context);
-	JsonArray *array = new JsonArray(NULL);
+	JsonValue *array = JsonValue::createArray();
 	JsonNamedValue namedValue(ctx->memberName, array);
 	ctx->arrays.push(namedValue);
 	ctx->memberName.clear();
 
-	return ctx->onBeginArray(ctx->userContext, namedValue.name, dynamic_cast<JsonArray*>(namedValue.value));
+	return ctx->onBeginArray(ctx->userContext, namedValue.name, namedValue.value);
 }
 
-static bool end_array(const void *data, size_t len, void *context, void *action_args)
+static bool __end_array(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED3(data, len, action_args);
 	if (!context)
@@ -498,11 +498,11 @@ static bool end_array(const void *data, size_t len, void *context, void *action_
 	CWT_ASSERT(ctx->arrays.size() > 0);
 	JsonNamedValue namedValue(ctx->arrays.pop());
 
-	return ctx->onEndArray(ctx->userContext, namedValue.name, dynamic_cast<JsonArray*>(namedValue.value))
-			&& ctx->onValue(ctx->userContext, namedValue.name, dynamic_cast<JsonArray*>(namedValue.value));
+	return ctx->onEndArray(ctx->userContext, namedValue.name, namedValue.value)
+			&& ctx->onValue(ctx->userContext, namedValue.name, namedValue.value);
 }
 
-static bool scalar_value(const void *data, size_t len, void *context, void *action_args)
+static bool __scalar_value(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_ASSERT(action_args);
 	if (!context)
@@ -521,13 +521,13 @@ static bool scalar_value(const void *data, size_t len, void *context, void *acti
 
 	switch (*pflag) {
 	case _JSON_VALUE_NULL:
-		value = new JsonValue(nullptr);
+		value = new JsonValue();
 		break;
 	case _JSON_VALUE_FALSE:
-		value = new JsonBoolean(false);
+		value = new JsonValue(false);
 		break;
 	case _JSON_VALUE_TRUE:
-		value = new JsonBoolean(true);
+		value = new JsonValue(true);
 		break;
 	case _JSON_VALUE_NUMBER: {
 		String number((const Char*)data, len);
@@ -538,7 +538,7 @@ static bool scalar_value(const void *data, size_t len, void *context, void *acti
 			ctx->status->addError(_Tr("invalid number near %ls"), String((const Char*)data, CWT_MIN(10,len)).unicode());
 			return false;
 		}
-		value = new JsonNumber(d);
+		value = new JsonValue(d);
 	}
 		break;
 	case _JSON_VALUE_STRING: {
@@ -548,7 +548,7 @@ static bool scalar_value(const void *data, size_t len, void *context, void *acti
 		CWT_ASSERT(str[len-1] == _DQUOTE[0]);
 		String value_str(str + 1, len - 2);
 		unescape_chars(value_str);
-		value = new JsonString(value_str);
+		value = new JsonValue(value_str);
 		break;
 	}
 	default:

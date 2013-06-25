@@ -14,18 +14,29 @@
 
 CWT_NS_BEGIN
 
+class JsonSimplePathContext;
+
+static bool __end_elem__for_find_value(JsonSimplePathContext *ctx);
+static bool __end_elem__for_make_tree(JsonSimplePathContext *ctx);
+
 class JsonSimplePathContext {
 public:
-	JsonSimplePathContext(const JsonSimplePath & jsonPath, const JsonValue & initial, bool isMakeTree = false)
-		: m_jsonPathPtr(&jsonPath)
-		, m_jsonValuePtr(&initial)
-		, m_isMakeTree(isMakeTree){ ; }
+	JsonSimplePathContext(Json* json, JsonValue* initial, bool isMakeTree = false)
+		: m_json(json)
+		, m_jsonTmpValue(initial)
+	{
+		end_elem_helper = isMakeTree
+				? &__end_elem__for_make_tree
+				: &__end_elem__for_find_value;
+	}
+
+	bool (*end_elem_helper)(JsonSimplePathContext *ctx);
+
 public:
-	const JsonSimplePath *m_jsonPathPtr;
-	const JsonValue      *m_jsonValuePtr;
-	bool                  m_isMakeTree;
-	String m_key;
-	String m_subscript;
+	Json      *m_json;
+	JsonValue *m_jsonTmpValue;
+	String     m_key;
+	String     m_subscript;
 };
 
 #define FSM_MATCH_CHAR(s)         FsmMatch(new FsmMatchStringChar(s))
@@ -34,7 +45,7 @@ public:
 #define FSM_MATCH_RPT_FUNC(func,f,t) FsmMatch(new FsmMatchRpt(FSM_MATCH_FUNC(func, nullptr),f,t))
 #define FSM_MATCH_OPT_CHAR(s)     FsmMatch(new FsmMatchRpt(FSM_MATCH_CHAR(s),0,1))
 
-static ssize_t _is_key_char(FsmContext *fsm, void *fn_context, const void *data, size_t len);
+static ssize_t __is_key_char(FsmContext *fsm, void *fn_context, const void *data, size_t len);
 
 static String _ROOT_OP(_U("/"));
 static String _CHILD_OP(_U("/"));
@@ -45,11 +56,11 @@ static String _SUBSCRIPT_CLOSE(_U("]"));
 //static String _DIGIT1_9(_U("123456789"));
 static String _DIGIT(_U("0123456789"));
 
-static bool _is_root(const void *, size_t, void *, void *);
-static bool _on_begin_elem(const void *, size_t, void *, void *);
-static bool _on_end_elem(const void *, size_t, void *, void *);
-static bool _on_key(const void *, size_t, void *, void *);
-static bool _on_subscript(const void *, size_t, void *, void *);
+static bool __is_root(const void *, size_t, void *, void *);
+static bool __begin_elem(const void *, size_t, void *, void *);
+static bool __end_elem(const void *, size_t, void *, void *);
+static bool __key(const void *, size_t, void *, void *);
+static bool __subscript(const void *, size_t, void *, void *);
 
 //static bool _trace(const void *data, size_t len, void *context, void *action_args);
 
@@ -70,7 +81,7 @@ static bool _on_subscript(const void *, size_t, void *, void *);
 //static String _TRACE(_U("TRACE"));
 
 static FsmTransition key_fsm[] = {
-      {-1, 1, FSM_MATCH_RPT_FUNC(_is_key_char,1,-1), FSM_ACCEPT, nullptr, nullptr }
+      {-1, 1, FSM_MATCH_RPT_FUNC(__is_key_char,1,-1), FSM_ACCEPT, nullptr, nullptr }
     , {-1, 2, FSM_MATCH_STR(_PARENT)               , FSM_ACCEPT, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_STR(_CURRENT)              , FSM_ACCEPT, nullptr, nullptr }
 };
@@ -83,16 +94,16 @@ static FsmTransition subscript_fsm[] = {
 };
 
 static FsmTransition key_subscript_fsm[] = {
-      { 1,-1, FSM_MATCH_FSM(key_fsm)       , FSM_NORMAL, _on_key, nullptr }
-    , {-1,-1, FSM_MATCH_FSM(subscript_fsm) , FSM_ACCEPT, _on_subscript, nullptr }
+      { 1,-1, FSM_MATCH_FSM(key_fsm)       , FSM_NORMAL, __key, nullptr }
+    , {-1,-1, FSM_MATCH_FSM(subscript_fsm) , FSM_ACCEPT, __subscript, nullptr }
 };
 
 static FsmTransition elem_fsm[] = {
-	  { 1,-1, FSM_MATCH_NOTHING                , FSM_NORMAL, _on_begin_elem, nullptr }
+	  { 1,-1, FSM_MATCH_NOTHING                , FSM_NORMAL, __begin_elem, nullptr }
     , { 4, 2, FSM_MATCH_FSM(key_subscript_fsm) , FSM_ACCEPT, nullptr, nullptr }
-    , { 4, 3, FSM_MATCH_FSM(subscript_fsm)     , FSM_ACCEPT, _on_subscript, nullptr }
-    , { 4,-1, FSM_MATCH_FSM(key_fsm)           , FSM_ACCEPT, _on_key, nullptr }
-	, {-1,-1, FSM_MATCH_NOTHING                , FSM_ACCEPT, _on_end_elem, nullptr }
+    , { 4, 3, FSM_MATCH_FSM(subscript_fsm)     , FSM_ACCEPT, __subscript, nullptr }
+    , { 4,-1, FSM_MATCH_FSM(key_fsm)           , FSM_ACCEPT, __key, nullptr }
+	, {-1,-1, FSM_MATCH_NOTHING                , FSM_ACCEPT, __end_elem, nullptr }
 };
 
 static FsmTransition next_elem_fsm[] = {
@@ -106,7 +117,7 @@ static FsmTransition elems_fsm[] = {
 };
 
 static FsmTransition jpath_fsm[] = {
-      { 1,-1, FSM_MATCH_OPT_CHAR(_ROOT_OP) , FSM_NOm_isSetValueRMAL, _is_root, nullptr }
+      { 1,-1, FSM_MATCH_OPT_CHAR(_ROOT_OP) , FSM_NORMAL, __is_root, nullptr }
     , {-1,-1, FSM_MATCH_OPT_FSM(elems_fsm) , FSM_ACCEPT, nullptr, nullptr }
 };
 
@@ -123,7 +134,7 @@ bool _trace(const void *data, size_t len, void *context, void *action_args)
 }
 */
 
-ssize_t _is_key_char(FsmContext *fsm, void *fn_context, const void *data, size_t len)
+ssize_t __is_key_char(FsmContext *fsm, void *fn_context, const void *data, size_t len)
 {
 	CWT_UNUSED2(fsm, fn_context);
 	if (len > 0) {
@@ -134,72 +145,83 @@ ssize_t _is_key_char(FsmContext *fsm, void *fn_context, const void *data, size_t
 	return ssize_t(-1);
 }
 
-bool _is_root(const void *data, size_t len, void *context, void *action_args)
+#ifdef __CWT_TEST__
+bool __is_root(const void *, size_t , void *, void *)
+{
+	return true;
+}
+#else
+bool __is_root(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED2(data, action_args);
-#ifndef __CWT_TEST__
+
 	if (len > 0) {
 		JsonSimplePathContext *ctx = reinterpret_cast<JsonSimplePathContext*>(context);
-		ctx->m_jsonValuePtr = &ctx->m_jsonPathPtr->json().value();
+		ctx->m_jsonTmpValue = &ctx->m_json->value();
 	}
-#else
-	CWT_UNUSED2(len, context);
-#endif
 	return true;
 }
+#endif
 
-
-bool _on_key(const void *data, size_t len, void *context, void *action_args)
+#ifdef __CWT_TEST__
+bool __key(const void *, size_t , void *, void *)
+{
+	return true;
+}
+#else
+bool __key(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED(action_args);
-#ifndef __CWT_TEST__
 	JsonSimplePathContext *ctx = reinterpret_cast<JsonSimplePathContext*>(context);
 	ctx->m_key = String(reinterpret_cast<const Char*>(data), len);
-#else
-	CWT_UNUSED3(data, len, context);
-#endif
 	return true;
 }
+#endif
 
-bool _on_subscript(const void *data, size_t len, void *context, void *action_args)
+#ifdef __CWT_TEST__
+bool __subscript(const void *, size_t, void *, void *)
+{
+	return true;
+}
+#else
+bool __subscript(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED(action_args);
-#ifndef __CWT_TEST__
 	CWT_ASSERT(len > 2);
 	JsonSimplePathContext *ctx = reinterpret_cast<JsonSimplePathContext*>(context);
 	ctx->m_subscript = String(reinterpret_cast<const Char*>(data) + 1, len - 2);
-#else
-	CWT_UNUSED3(data, len, context);
-#endif
 	return true;
 }
+#endif
 
-bool _on_begin_elem(const void *data, size_t len, void *context, void *action_args)
+#ifdef __CWT_TEST__
+bool __begin_elem(const void *, size_t, void *, void *)
+{
+	return true;
+}
+#else
+bool __begin_elem(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED3(data, len, action_args);
-#ifndef __CWT_TEST__
 	JsonSimplePathContext *ctx = reinterpret_cast<JsonSimplePathContext*>(context);
 	ctx->m_key.clear();
 	ctx->m_subscript.clear();
-#else
-	CWT_UNUSED(context);
-#endif
 	return true;
 }
+#endif
 
-
-static bool _on_end_elem__for_find_value(JsonSimplePathContext *ctx)
+bool __end_elem__for_find_value(JsonSimplePathContext *ctx)
 {
 	if (!ctx->m_key.isEmpty()) {
 		if (ctx->m_key == _U(".")) { // current
 			; // nothing to do
 		} else if (ctx->m_key == _U("..")) { // parent
-			ctx->m_jsonValuePtr = &ctx->m_jsonValuePtr->parent();
-			if (ctx->m_jsonValuePtr == nullptr) { // top element
-				ctx->m_jsonValuePtr = &ctx->m_jsonPathPtr->json().value();
+			ctx->m_jsonTmpValue = &ctx->m_jsonTmpValue->parent();
+			if (ctx->m_jsonTmpValue == nullptr) { // top element
+				ctx->m_jsonTmpValue = &ctx->m_json->value();
 			}
 		} else {
-			ctx->m_jsonValuePtr = &ctx->m_jsonValuePtr->at(ctx->m_key);
+			ctx->m_jsonTmpValue = &ctx->m_jsonTmpValue->at(ctx->m_key);
 		}
 	}
 
@@ -208,82 +230,79 @@ static bool _on_end_elem__for_find_value(JsonSimplePathContext *ctx)
 		size_t index = ctx->m_subscript.toUInt(&ok);
 
 		if (ok) {
-			ctx->m_jsonValuePtr = &ctx->m_jsonValuePtr->at(m_isSetValueindex);
+			ctx->m_jsonTmpValue = &ctx->m_jsonTmpValue->at(index);
 		} else {
-			ctx->m_jsonValuePtr = &JsonValue::sharedNull;
-			ctx->m_jsonPathPtr->json()->addError(_Tr("bad subscript value"));
+			ctx->m_jsonTmpValue = &JsonValue::sharedNull;
+			ctx->m_json->addError(_Tr("bad subscript value"));
 		}
 	}
 
-	if (ctx->m_jsonValuePtr == &JsonValue::sharedNull) {
+	if (ctx->m_jsonTmpValue == &JsonValue::sharedNull) {
 		return false;
 	}
 	return true;
 }
 
-static bool _on_end_elem__for_make_tree(JsonSimplePathContext *ctx)
+bool __end_elem__for_make_tree(JsonSimplePathContext *ctx)
 {
-	JsonValue *parent = ctx->m_jsonValuePtr;
+	JsonValue *parent = ctx->m_jsonTmpValue;
 
 	CWT_ASSERT(parent);
 
 	if (!ctx->m_key.isEmpty()) {
-		JsonValue *value = nullptr;
 
 		if (!parent->isObject())
-			parent->setValue(JsonObject());
+			parent->setValue(JsonValue::createObject());
 
-		value = parent->at(ctx->m_key);
-
-		if (value == &JsonValue::sharedNull) {
-			value = new JsonNull()
-			dynamic_cast<JsonObject*>(parent)->insert(ctx->m_key, value);
+		if (parent->at(ctx->m_key).isInvalid()) {
+			parent->insert(ctx->m_key, new JsonValue());
 		}
 
-		parent = value;
+		parent = & parent->at(ctx->m_key);
+		CWT_ASSERT(!parent->isInvalid());
 	}
 
 	if (!ctx->m_subscript.isEmpty()) {
 		bool ok;
 		size_t index = ctx->m_subscript.toUInt(&ok);
 		if (!ok) {
-			ctx->m_jsonPathPtr->json()->addError(_Tr("bad subscript value"));
+			ctx->m_json->addError(_Tr("bad subscript value"));
 			return false;
 		}
 
 		if (!parent->isArray())
 			parent->setValue(JsonArray());
 
-		JsonArray* array = dynamic_cast<JsonArray*>(parent);
+		JsonArray* array = static_cast<JsonArray*>(parent);
 
-		if (array->count() <= index)
-		JsonValue *value = nullptr;
-		for (size_t i = array->count(); i <= index; ++i) {
-			value = new JsonNull();
-			array->append(value);
+		if (array->count() <= index) {
+			for (size_t i = array->count(); i <= index; ++i) {
+				array->append(new JsonNull());
+			}
 		}
-		parent = value;
+
+		parent = & array->at(index);
+		CWT_ASSERT(!parent->isInvalid());
 	}
+
+	ctx->m_jsonTmpValue = parent;
+	return true;
 }
 
 
-bool _on_end_elem(const void *data, size_t len, void *context, void *action_args)
+#ifdef __CWT_TEST__
+bool __end_elem(const void *, size_t, void *, void *)
+{
+	return true;
+}
+#else
+bool __end_elem(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_UNUSED3(data, len, action_args);
-#ifndef __CWT_TEST__
 	JsonSimplePathContext *ctx = reinterpret_cast<JsonSimplePathContext*>(context);
-	bool r = false;
-	if (ctx->m_isMakeTree) {
-		r = _on_end_elem__for_make_tree(ctx);
-	} else {
-		r = _on_end_elem__for_find_value(ctx);
-	}
-	return r;
-#else
-	CWT_UNUSED(context);
-	return true;
-#endif
+	return ctx->end_elem_helper(ctx);
 }
+#endif
 
 CWT_NS_END
 

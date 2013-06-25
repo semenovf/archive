@@ -10,10 +10,7 @@
 
 CWT_NS_BEGIN
 
-class JsonArray;
-class JsonObject;
-
-class JsonValue
+class DLL_API JsonValue
 {
 public:
 	enum TypeEnum {
@@ -27,204 +24,134 @@ public:
 
 	static JsonValue sharedNull;
 
-protected:
-	JsonValue(TypeEnum type, JsonValue *parent) : m_type(type), m_value(), m_parent(parent) {}
+private:
+	typedef Hash<String, JsonValue*> object_type;
+	object_type* objectPtr()             { CWT_ASSERT(m_type == JsonValue_Object); return &m_value.objectRef<object_type>(); }
+	const object_type* objectPtr() const { CWT_ASSERT(m_type == JsonValue_Object); return &m_value.objectRef<object_type>(); }
+
+	typedef Vector<JsonValue*> array_type;
+	array_type* arrayPtr()               { CWT_ASSERT(m_type == JsonValue_Array); return &m_value.objectRef<array_type>(); }
+	const array_type* arrayPtr() const   { CWT_ASSERT(m_type == JsonValue_Array); return &m_value.objectRef<array_type>(); }
+
+	static void destroyScalar (JsonValue & jvalue) { CWT_UNUSED(jvalue); }
+	static void destroyObject (JsonValue & jvalue);
+	static void destroyArray  (JsonValue & jvalue);
+
+	static String nullToString    (const JsonValue & jvalue)  { CWT_UNUSED(jvalue); return _U("null"); }
+	static String booleanToString (const JsonValue & jvalue)  { return jvalue.boolean() ? _U("true") : _U("false"); }
+	static String numberToString  (const JsonValue & jvalue)  { return jvalue.string(); }
+	static String stringToString  (const JsonValue & jvalue)  { String r(Char('"')); r += jvalue.string(); r += Char('"'); return r; }
+	static String objectToString  (const JsonValue & jvalue);
+	static String arrayToString   (const JsonValue & jvalue);
+
+//	JsonValue(TypeEnum type) : m_type(type), m_value(), m_parent(nullptr) {}
+	void destroy();
 
 public:
 	JsonValue() : m_type(JsonValue_Null), m_value(), m_parent(nullptr) {}
-//	JsonValue(JsonValue *parent) : m_type(JsonValue_Null), m_value(), m_parent(parent) {}
-	virtual ~JsonValue() {}
+	JsonValue(const JsonValue &value) { setValue(value); }
 
-	TypeEnum type() const { return m_type; }
-	bool isNull() const { return type() == JsonValue_Null ? true : false; }
+	JsonValue(bool value)    : m_type(JsonValue_Boolean), m_value(value), m_parent(nullptr)  { }
+	JsonValue(double value)  : m_type(JsonValue_Number) , m_value(value), m_parent(nullptr)  { }
+	JsonValue(float value)   : m_type(JsonValue_Number) , m_value(value), m_parent(nullptr)  { }
+	JsonValue(long_t value)  : m_type(JsonValue_Number) , m_value(value), m_parent(nullptr)  { }
+	JsonValue(ulong_t value) : m_type(JsonValue_Number) , m_value(value), m_parent(nullptr)  { }
+	JsonValue(int_t value)   : m_type(JsonValue_Number) , m_value(value), m_parent(nullptr)  { }
+	JsonValue(uint_t value)  : m_type(JsonValue_Number) , m_value(value), m_parent(nullptr)  { }
+	JsonValue(const String &s)   : m_type(JsonValue_String), m_value(s), m_parent(nullptr)   { }
+	JsonValue(const Char *chars) : m_type(JsonValue_String), m_value(String(chars)), m_parent(nullptr) { }
+	JsonValue(const Char *chars, size_t size) : m_type(JsonValue_String), m_value(String(chars, size)), m_parent(nullptr) { }
+
+	static JsonValue* createObject();
+	static JsonValue* createArray();
+
+	~JsonValue() { destroy(); }
+	JsonValue& operator = (const JsonValue &value) { setValue(value); return *this; }
+
+	bool setValue(const JsonValue &value);
+
+	TypeEnum type()  const { return m_type; }
+	bool isInvalid() const { return this   == &sharedNull       ? true : false; }
+	bool isNull()    const { return type() == JsonValue_Null    ? true : false; }
 	bool isBoolean() const { return type() == JsonValue_Boolean ? true : false; }
-	bool isNumber() const { return type() == JsonValue_Number ? true : false; }
-	bool isString() const { return type() == JsonValue_String ? true : false; }
-	bool isObject() const { return type() == JsonValue_Object ? true : false; }
-	bool isArray() const { return type() == JsonValue_Array ? true : false; }
+	bool isNumber()  const { return type() == JsonValue_Number  ? true : false; }
+	bool isString()  const { return type() == JsonValue_String  ? true : false; }
+	bool isObject()  const { return type() == JsonValue_Object  ? true : false; }
+	bool isArray()   const { return type() == JsonValue_Array   ? true : false; }
 
-	JsonValue& parent() { return *m_parent; }
+	JsonValue& parent()             { return *m_parent; }
 	const JsonValue& parent() const { return *m_parent; }
-	bool boolean() const { return m_value.toBool(); }
+
+	bool boolean() const  { return m_value.toBool(); }
 	double number() const { return m_value.toDouble(); }
 	String string() const { return m_value.toString(); }
 
-	virtual void remove(size_t i) { CWT_UNUSED(i); }
-	virtual void remove(const String &key) { CWT_UNUSED(key); }
+	void remove(size_t i);
+	void remove(const String &key);
+	void append(JsonValue *jvalue);
+	void insert(const String &key, JsonValue *jvalue); // { objectPtr()->insert(key, value); value->m_parent = this; }
+	//void insert(size_t i, JsonValue *value); // TODO add this method after implementing Vector::insert method
 
-	void setValue(const JsonValue &value);
+	JsonValue&       at (size_t i);
+	JsonValue&       at (const String &key);
+	const JsonValue& at (size_t i) const;
+	const JsonValue& at (const String &key) const;
 
-	virtual JsonValue& at (size_t i) { CWT_UNUSED(i); return sharedNull; }
-	virtual JsonValue& at (const String &key) { CWT_UNUSED(key); return sharedNull; }
-	virtual const JsonValue& at (size_t i) const { CWT_UNUSED(i); return sharedNull; }
-	virtual const JsonValue& at (const String &key) const { CWT_UNUSED(key); return sharedNull; }
-
-	JsonValue& operator [] (size_t i) { return at(i); }
-	JsonValue& operator [] (const String &key) { return at(key); }
-	const JsonValue& operator [] ( size_t i) const { return at(i); }
+	JsonValue&       operator [] (size_t i)                { return at(i); }
+	const JsonValue& operator [] (size_t i) const          { return at(i); }
+	JsonValue&       operator [] (const String &key)       { return at(key); }
 	const JsonValue& operator [] (const String &key) const { return at(key); }
+
+	size_t count() const      { return size(); }
+	size_t size() const {
+		return m_type == JsonValue_Object
+				? objectPtr()->size()
+				: m_type == JsonValue_Array ? arrayPtr()->size() : 1;
+	}
+
+	String toString() const;
 
 protected:
 	TypeEnum   m_type;
 	UniType    m_value;
 	JsonValue *m_parent;
-
-	friend class JsonArray; // for access to protected members, see void JsonArray::append(JsonValue *value)
-	friend class JsonObject;
 };
 
-typedef JsonValue JsonNull;
-
-
-class JsonBoolean : public JsonValue
+inline JsonValue* JsonValue::createObject()
 {
-public:
-	explicit JsonBoolean(bool v, JsonValue *parent = nullptr) : JsonValue(JsonValue_Boolean, parent) { m_value.setBool(v); }
-};
-
-class JsonNumber : public JsonValue
-{
-public:
-	explicit JsonNumber(double v, JsonValue *parent = nullptr) : JsonValue(JsonValue_Number, parent) { m_value.setDouble(v); }
-};
-
-class JsonString : public JsonValue
-{
-public:
-	explicit JsonString(const String &s, JsonValue *parent = nullptr) : JsonValue(JsonValue_String, parent) { m_value.setString(s); }
-	explicit JsonString(const Char *chars, JsonValue *parent = nullptr) : JsonValue(JsonValue_String, parent) { m_value.setString(String(chars)); }
-	explicit JsonString(const Char *chars, size_t size, JsonValue *parent = nullptr) : JsonValue(JsonValue_String, parent) { m_value.setString(String(chars, size)); }
-};
-
-class JsonArray : public JsonValue
-{
-	typedef Vector<JsonValue*> array_type;
-	array_type* arrayPtr() { return &m_value.objectRef<array_type>(); }
-	const array_type* arrayPtr() const { return &m_value.objectRef<array_type>(); }
-
-	void destroy();
-public:
-	explicit JsonArray(JsonValue *parent = nullptr);
-	virtual ~JsonArray() { destroy(); }
-
-	virtual JsonValue& at(size_t i);
-	virtual const JsonValue& at(size_t i) const;
-
-	void append(JsonValue *value) { arrayPtr()->append(value); value->m_parent = this; }
-	virtual void remove(size_t i);
-	size_t count() const      { return arrayPtr()->size(); }
-	bool isEmpty() const      { return arrayPtr()->isEmpty(); }
-	size_t size() const       { return arrayPtr()->size(); }
-};
-
-inline JsonArray::JsonArray(JsonValue *parent)
-	: JsonValue(JsonValue_Array, parent)
-{
-	m_value = UniType::make_object<array_type>(array_type());
+	JsonValue* jvalue = new JsonValue(JsonValue_Object);
+	jvalue->m_value = UniType::make_object<object_type>(object_type());
+	return jvalue;
 }
 
-inline JsonValue& JsonArray::at(size_t i)
+inline JsonValue* JsonValue::createArray()
 {
-	array_type* siblings = arrayPtr();
-	if (i >= siblings->size())
-		return JsonValue::sharedNull;
-	return *siblings->at(i);
+	JsonValue* jvalue = new JsonValue(JsonValue_Array);
+	jvalue->m_value = UniType::make_object<array_type>(array_type());
+	return jvalue;
 }
 
-inline const JsonValue& JsonArray::at(size_t i) const
-{
-	const array_type* siblings = arrayPtr();
-	if (i >= siblings->size())
-		return JsonValue::sharedNull;
-	return *siblings->at(i);
-}
 
-inline void JsonArray::remove(size_t i)
-{
-	array_type* siblings = arrayPtr();
-	if (i < siblings->size()) {
-		JsonValue *value = siblings->at(i);
-		siblings->remove(i);
-		delete value;
-	}
-}
-
-class JsonObject : public JsonValue
-{
-	typedef Hash<String, JsonValue*> object_type;
-	object_type* objectPtr() { return &m_value.objectRef<object_type>(); }
-	const object_type* objectPtr() const { return &m_value.objectRef<object_type>(); }
-
-	void destroy();
-public:
-	explicit JsonObject(JsonValue *parent = nullptr);
-	virtual ~JsonObject();
-
-	virtual JsonValue& at(const String &key);
-	virtual const JsonValue& at(const String &key) const;
-
-	size_t count() const                             { return objectPtr()->size(); }
-	void insert(const String &key, JsonValue *value) { objectPtr()->insert(key, value); value->m_parent = this; }
-	virtual void remove(const String &key);
-	bool isEmpty() const                             { return objectPtr()->isEmpty(); }
-	int size() const                                 { return objectPtr()->size(); }
-};
-
-inline JsonObject::JsonObject(JsonValue *parent)
-	: JsonValue(JsonValue_Object, parent)
-{
-	m_value = UniType::make_object<object_type>(object_type());
-}
-
-inline JsonValue& JsonObject::at(const String &key)
-{
-	object_type* siblings = objectPtr();
-	Hash<String, JsonValue*>::iterator it = siblings->find(key);
-	if (it == siblings->end())
-		return JsonValue::sharedNull;
-	return *it.value();
-}
-
-inline const JsonValue& JsonObject::at(const String &key) const
-{
-	const object_type* siblings = objectPtr();
-	Hash<String, JsonValue*>::const_iterator it = siblings->find(key);
-	if (it == siblings->end())
-		return JsonValue::sharedNull;
-	return *it.value();
-}
-
-inline void JsonObject::remove(const String &key)
-{
-	object_type* siblings = objectPtr();
-	JsonValue *value = siblings->at(key);
-	if (value) {
-		siblings->remove(key);
-		delete value;
-	}
-}
 
 /* This struct provides the Simple API for JSON */
 struct JsonSAJ {
 	bool (*onBeginJson)(void *userContext);
 	bool (*onEndJson)(void *userContext, bool status);
-	bool (*onBeginObject)(void *userContext, const String &name, JsonObject *object);
-	bool (*onEndObject)(void *userContext, const String &name, JsonObject *object);
-	bool (*onBeginArray)(void *userContext, const String &name, JsonArray *object);
-	bool (*onEndArray)(void *userContext, const String &name, JsonArray *object);
+	bool (*onBeginObject)(void *userContext, const String &name, JsonValue *object);
+	bool (*onEndObject)(void *userContext, const String &name, JsonValue *object);
+	bool (*onBeginArray)(void *userContext, const String &name, JsonValue *array);
+	bool (*onEndArray)(void *userContext, const String &name, JsonValue *array);
 	bool (*onValue)(void *userContext, const String &name, JsonValue *value);
 };
 
 
 class DLL_API Json : public Errorable {
 	CWT_DENY_COPY(Json);
-protected:
-	Json() : Errorable(), m_root(NULL) {}
 
 public:
-	Json(JsonObject *object) : Errorable(), m_root(object) { }
-	Json(JsonArray *array) : Errorable(), m_root(array) { }
-	Json(const String &json) : Errorable(), m_root(NULL) { parse(json); }
+	Json() : Errorable(), m_root(new JsonValue()) {}
+	Json(JsonValue * jvalue) : Errorable(), m_root(jvalue) { CWT_ASSERT(jvalue); }
+	Json(const String & text) : Errorable(), m_root(new JsonValue()) { parse(text); }
 	~Json() {
 		if (m_root)
 			delete m_root;
@@ -236,7 +163,7 @@ public:
 	bool parse(const String &json, const JsonSAJ *saj, void *userContext);
 
 	bool isArray() const { return m_root ? m_root->type() == JsonValue::JsonValue_Array ? true : false : false; }
-	bool isEmpty() const;
+	//bool isEmpty() const;
 	bool isObject() const { return m_root ? m_root->type() == JsonValue::JsonValue_Object ? true : false : false; }
 	bool isNull() const { return m_root ? false : true; }
 
@@ -250,19 +177,23 @@ public:
 	const JsonValue& operator[](size_t i) const { return at(i); }
 	const JsonValue& operator[](const String &key) const { return at(key); }
 
-	JsonObject& object() { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Object); return *dynamic_cast<JsonObject*>(m_root); }
-	JsonArray& array() { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Array); return *dynamic_cast<JsonArray*>(m_root); }
-	const JsonObject& object() const { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Object); return *dynamic_cast<JsonObject*>(m_root); }
-	const JsonArray& array() const { CWT_ASSERT(m_root && m_root->type() == JsonValue::JsonValue_Array); return *dynamic_cast<JsonArray*>(m_root); }
-
 	JsonValue& value() { return *m_root; }
 	const JsonValue& value() const { return *m_root; }
+	bool setValue(const JsonValue &value);
 
-	String toString(int baseIndent = 0) const;
+	String toString() const { return m_root->toString(); }
 private:
 	JsonValue *m_root;
 };
 
+inline bool Json::setValue(const JsonValue &value)
+{
+	if (m_root)
+		return m_root->setValue(value);
+
+	m_root = new JsonValue(value);
+	return true;
+}
 
 /*
  * Syntax (according to suggestions from http://goessner.net/articles/JsonPath/):
@@ -274,17 +205,18 @@ private:
  */
 class DLL_API JsonSimplePath {
 public:
-	JsonSimplePath(Json &json) : m_json(&json), m_jsonRootValue(&json.value()) { ; }
+	JsonSimplePath(Json &json) : m_json(&json), m_jsonRootValue(& json.value()) { ; }
 
 	Json& json() const { return *m_json; }
-	const Json& json() const { return *m_json; }
-	void setJson(Json &json) { m_json = &json; m_jsonRootValue = &json.value(); }
+	void attachJson(Json &json) { m_json = &json; m_jsonRootValue = & json.value(); }
 
 	bool changeRoot(const String &jpath);
+	bool chroot(const String &jpath) { return changeRoot(jpath); }
+
 	JsonValue& find (const String &jpath) { return const_cast<JsonValue&>(findValue(jpath)); }
 	const JsonValue& find (const String &jpath) const { return findValue(jpath); }
 	bool contains(const String &jpath) const;
-	void setValue(const String& jpath, const UniType& value);
+	bool setValue(const String& jpath, const JsonValue &value);
 
 	JsonValue& operator [] (const String &jpath) { return const_cast<JsonValue&>(findValue(jpath)); }
 	const JsonValue& operator [] (const String &jpath) const { return findValue(jpath); }
@@ -294,8 +226,8 @@ protected:
 	JsonValue& makeTree(const String &jpath);
 
 private:
-	Json *m_json;
-	const JsonValue *m_jsonRootValue;
+	Json      * m_json;
+	JsonValue * m_jsonRootValue;
 };
 
 CWT_NS_END

@@ -67,11 +67,11 @@ struct JsonParseContext {
 	Stack<JsonNamedValue> arrays;
 	JsonMethod<>      onBeginJson;
 	JsonMethod1<bool> onEndJson;
-	JsonMethod2<const String&, JsonObject*> onBeginObject;
-	JsonMethod2<const String&, JsonObject*> onEndObject;
-	JsonMethod2<const String&, JsonArray*>  onBeginArray;
-	JsonMethod2<const String&, JsonArray*>  onEndArray;
-	JsonMethod2<const String&, JsonValue*>  onValue;
+	JsonMethod2<const String&, JsonValue*> onBeginObject;
+	JsonMethod2<const String&, JsonValue*> onEndObject;
+	JsonMethod2<const String&, JsonValue*> onBeginArray;
+	JsonMethod2<const String&, JsonValue*> onEndArray;
+	JsonMethod2<const String&, JsonValue*> onValue;
 };
 
 CWT_NS_END

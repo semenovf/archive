@@ -7,6 +7,7 @@
 
 #include "../include/cwt/json.hpp"
 
+
 CWT_NS_BEGIN
 
 inline static void __indent(String& r, int indent, int baseIndent)
@@ -24,6 +25,14 @@ static void __to_string (String& r, JsonValue* jvalue, int *indent, int baseInde
 		r += Char('{');
 		r += Char('\n');
 		++(*indent);
+
+
+		object_type* siblings = objectPtr();
+		Hash<String, JsonValue*>::iterator it;
+		Hash<String, JsonValue*>::iterator end = siblings->end();
+		for (it = siblings->begin(); it != end; it++) {
+			delete *it;
+		}
 
 /*
 		for( MapNode::const_iterator itm = dynamic_cast<MapNode*>(node)->begin();
@@ -47,6 +56,13 @@ static void __to_string (String& r, JsonValue* jvalue, int *indent, int baseInde
 		r += Char('[');
 		r += Char('\n');
 		++(*indent);
+
+		array_type* siblings = arrayPtr();
+		Vector<JsonValue*>::iterator it;
+		Vector<JsonValue*>::iterator end = siblings->end();
+		for (it = siblings->begin(); it != end; it++) {
+			delete *it;
+		}
 
 /*
 		for( VectorNode::const_iterator itv = dynamic_cast<VectorNode*>(node)->begin();
