@@ -45,10 +45,6 @@ static const int _JSON_VALUE_FALSE  = 2;
 static const int _JSON_VALUE_TRUE   = 3;
 static const int _JSON_VALUE_NUMBER = 4;
 static const int _JSON_VALUE_STRING = 5;
-/*
-static const int _JSON_VALUE_OBJECT = 6;
-static const int _JSON_VALUE_ARRAY  = 7;
-*/
 
 /*
    RFC 4627:  The application/json Media Type for JavaScript Object Notation (JSON).

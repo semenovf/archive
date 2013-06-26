@@ -22,6 +22,7 @@ SUBDIRS  = cwt-core  \
     tests/options    \
     tests/petaloid   \
     tests/sepaloid   \
+    tests/settings   \
     tests/shared_ptr \
     tests/string     \
     tests/textstream \

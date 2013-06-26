@@ -39,11 +39,11 @@ public:
 	String     m_subscript;
 };
 
-#define FSM_MATCH_CHAR(s)         FsmMatch(new FsmMatchStringChar(s))
-#define FSM_MATCH_STR(s)          FsmMatch(new FsmMatchStringStr(s))
-#define FSM_MATCH_RPT_CHAR(s,f,t) FsmMatch(new FsmMatchRpt(FSM_MATCH_CHAR(s),f,t))
+#define FSM_MATCH_CHAR(s)            FsmMatch(new FsmMatchStringChar(s))
+#define FSM_MATCH_STR(s)             FsmMatch(new FsmMatchStringStr(s))
+#define FSM_MATCH_RPT_CHAR(s,f,t)    FsmMatch(new FsmMatchRpt(FSM_MATCH_CHAR(s),f,t))
 #define FSM_MATCH_RPT_FUNC(func,f,t) FsmMatch(new FsmMatchRpt(FSM_MATCH_FUNC(func, nullptr),f,t))
-#define FSM_MATCH_OPT_CHAR(s)     FsmMatch(new FsmMatchRpt(FSM_MATCH_CHAR(s),0,1))
+#define FSM_MATCH_OPT_CHAR(s)        FsmMatch(new FsmMatchRpt(FSM_MATCH_CHAR(s),0,1))
 
 static ssize_t __is_key_char(FsmContext *fsm, void *fn_context, const void *data, size_t len);
 
@@ -251,8 +251,10 @@ bool __end_elem__for_make_tree(JsonSimplePathContext *ctx)
 
 	if (!ctx->m_key.isEmpty()) {
 
-		if (!parent->isObject())
-			parent->setValue(JsonValue::createObject());
+		if (!parent->isObject()) {
+			shared_ptr<JsonValue> o(JsonValue::createObject());
+			parent->setValue(*o);
+		}
 
 		if (parent->at(ctx->m_key).isInvalid()) {
 			parent->insert(ctx->m_key, new JsonValue());
@@ -270,18 +272,18 @@ bool __end_elem__for_make_tree(JsonSimplePathContext *ctx)
 			return false;
 		}
 
-		if (!parent->isArray())
-			parent->setValue(JsonArray());
+		if (!parent->isArray()) {
+			shared_ptr<JsonValue> a(JsonValue::createArray());
+			parent->setValue(*a);
+		}
 
-		JsonArray* array = static_cast<JsonArray*>(parent);
-
-		if (array->count() <= index) {
-			for (size_t i = array->count(); i <= index; ++i) {
-				array->append(new JsonNull());
+		if (parent->count() <= index) {
+			for (size_t i = parent->count(); i <= index; ++i) {
+				parent->append(new JsonValue());
 			}
 		}
 
-		parent = & array->at(index);
+		parent = & parent->at(index);
 		CWT_ASSERT(!parent->isInvalid());
 	}
 

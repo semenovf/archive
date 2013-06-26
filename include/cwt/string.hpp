@@ -132,10 +132,11 @@ public:
 	String&	setNumber(float n, char f = 'g', int prec = 6);
 	String&	setNumber(double n, char f = 'g', int prec = 6);
 
-	static String fromUtf8(const char *str, int size = -1);
+	static String fromUtf8(const char *utf8);
+	static String fromUtf8(const char *utf8, size_t size);
 	static String fromUtf8(const ByteArray &str);
-	static String fromLatin1 (const char * str, size_t size);
-	static String fromLatin1 (const char * str);
+	static String fromLatin1 (const char * latin1, size_t size);
+	static String fromLatin1 (const char * latin1);
 
 	static String number(double n, char format = 'g', int precision = 6);
 	static String number(float n, char format = 'g', int precision = 6);

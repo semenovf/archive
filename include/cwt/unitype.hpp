@@ -14,6 +14,9 @@
 
 CWT_NS_BEGIN
 
+typedef long_t integer_type;
+typedef double number_type;
+
 struct AbstractUniObject {
 	virtual ~AbstractUniObject() { ; }
 };
@@ -88,6 +91,11 @@ public:
 	void setObject(const T & o);
 
 	void swap(UniType &other) { m_d.swap(other.m_d); }
+
+	bool      boolean() const  { return toBool(); }
+	long_t    integer() const  { return toLong(); }
+	double    number() const   { return toDouble(); }
+	String    string() const   { return toString(); }
 
 	bool      toBool(bool *ok = NULL) const;
 	byte_t    toByte(bool *ok = NULL) const;

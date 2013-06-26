@@ -190,34 +190,41 @@ void test_json_makepath()
 {
 	Json json;
 	JsonSimplePath jpath(json);
-	jpath.setValue(_U("/Image/Width"), JsonNumber(800));
+	jpath.setValue(_U("/Image/Width"), JsonValue(800));
 	CWT_TEST_OK(json.isObject());
-	jpath.setValue(_U("/Image/Height"), JsonNumber(600));
+	jpath.setValue(_U("/Image/Height"), JsonValue(600));
 	CWT_TEST_OK(json.isObject());
-	jpath.setValue(_U("/Image/Title"), JsonString(_U("View from 15th Floor")));
+	jpath.setValue(_U("/Image/Title"), JsonValue(_U("View from 15th Floor")));
 	CWT_TEST_OK(json.isObject());
 
 	CWT_TEST_OK(jpath[_U("/Image/Width")].number() == double(800));
 	CWT_TEST_OK(jpath[_U("/Image/Height")].number() == double(600));
 	CWT_TEST_OK(jpath[_U("/Image/Title")].string() == _U("View from 15th Floor"));
 
-	printf("%s\n", json.toString().toUtf8().data());
-
-/*
-	jpath.setValue(_U("/Image/IDs/[2]"), JsonNumber(234));
+	jpath.setValue(_U("/Image/IDs/[2]"), JsonValue(234));
 	CWT_TEST_OK(json.isObject());
-	jpath.setValue(_U("/Image/IDs/[3]"), JsonNumber(38793));
+	jpath.setValue(_U("/Image/IDs/[3]"), JsonValue(38793));
 	CWT_TEST_OK(json.isObject());
-	jpath.setValue(_U("/Image/IDs/[1]"), JsonNumber(943));
+	jpath.setValue(_U("/Image/IDs/[1]"), JsonValue(943));
 	CWT_TEST_OK(json.isObject());
-	jpath.setValue(_U("/Image/IDs/[0]"), JsonNumber(116));
+	jpath.setValue(_U("/Image/IDs/[0]"), JsonValue(116));
 	CWT_TEST_OK(json.isObject());
 
 	CWT_TEST_OK(jpath[_U("/Image/IDs[0]")].number() == double(116));
 	CWT_TEST_OK(jpath[_U("/Image/IDs[1]")].number() == double(943));
 	CWT_TEST_OK(jpath[_U("/Image/IDs[2]")].number() == double(234));
 	CWT_TEST_OK(jpath[_U("/Image/IDs[3]")].number() == double(38793));
-*/
+
+	jpath.setValue(_U("/Image/Thumbnail/Url"), JsonValue(_U("http://www.example.com/image/481989943")));
+	jpath.changeRoot(_U("/Image/Thumbnail"));
+	jpath.setValue(_U("Height"), JsonValue(125));
+	jpath.setValue(_U("Width"), JsonValue(_U("100")));
+
+	CWT_TEST_OK(jpath[_U("/Image/Thumbnail/Url")].string() == _U("http://www.example.com/image/481989943"));
+	CWT_TEST_OK(jpath[_U("/Image/Thumbnail/Height")].number() == double(125));
+	CWT_TEST_OK(jpath[_U("/Image/Thumbnail/Width")].number() == double(100));
+
+	printf("%s\n", json.toString().toUtf8().data());
 }
 
 int main(int argc, char *argv[])
@@ -225,7 +232,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(87);
+	CWT_BEGIN_TESTS(104);
 
 	test_json_simplepath_fsm();
 	test_json_simplepath();

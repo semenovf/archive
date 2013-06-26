@@ -183,13 +183,8 @@ void test_json(void)
 	CWT_TEST_OK(json_empty_object.isObject());
 	CWT_TEST_OK(json_empty_array.isArray());
 
-	CWT_TEST_NOK(json_object.isEmpty());
-	CWT_TEST_NOK(json_array.isEmpty());
-	CWT_TEST_OK(json_object.object().size() > 0);
-	CWT_TEST_OK(json_array.array().size() > 0);
-
-	CWT_TEST_OK(json_empty_object.isEmpty());
-	CWT_TEST_OK(json_empty_array.isEmpty());
+	CWT_TEST_OK(json_object.size() > 0);
+	CWT_TEST_OK(json_array.size() > 0);
 
 	CWT_TEST_OK(json_object[_U("Image")][_U("Width")].number() == double(800));
 	CWT_TEST_OK(json_object[_U("Image")][_U("Height")].number() == double(600));
@@ -230,9 +225,6 @@ void test_json_remove(void)
 	Json json_object(String::fromUtf8(json_object_str));
 	Json json_array(String::fromUtf8(json_array_str));
 
-	CWT_TEST_NOK(json_object.isEmpty());
-	CWT_TEST_NOK(json_array.isEmpty());
-
 	CWT_TEST_OK(json_object[_U("Image")][_U("Width")].number() == double(800));
 	CWT_TEST_FAIL(json_object[_U("Image")].isObject());
 	json_object[_U("Image")].remove(_U("Width"));
@@ -244,7 +236,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(99);
+	CWT_BEGIN_TESTS(93);
 
 	test_json_fsm();
 	test_json();

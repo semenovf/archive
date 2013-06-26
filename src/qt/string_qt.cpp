@@ -186,24 +186,33 @@ bool operator >= (const String &s1, const String &s2)
 #endif
 }
 
-String String::fromUtf8(const char *str, int size)
+String String::fromUtf8(const char *utf8)
 {
 	String s;
-	*s.pimpl = QString::fromUtf8(str, size);
+	*s.pimpl = QString::fromUtf8(utf8);
 	return s;
 }
 
-String String::fromUtf8(const ByteArray &str)
+String String::fromUtf8(const char *utf8, size_t size)
 {
 	String s;
-	*s.pimpl = QString::fromUtf8(str.constData());
+	CWT_ASSERT(size <= CWT_INT_MAX);
+	*s.pimpl = QString::fromUtf8(utf8, int(size));
+	return s;
+}
+
+
+String String::fromUtf8(const ByteArray &bytes)
+{
+	String s;
+	*s.pimpl = QString::fromUtf8(bytes.constData());
 	return s;
 }
 
 String String::fromLatin1 (const char * str, size_t size)
 {
 	String s;
-	CWT_ASSERT(size > CWT_INT_MAX);
+	CWT_ASSERT(size <= CWT_INT_MAX);
 	*s.pimpl = QString::fromLatin1(str, int(size));
 	return s;
 }

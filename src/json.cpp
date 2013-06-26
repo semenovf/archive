@@ -158,18 +158,6 @@ bool Json::parseFromFile(const char *path)
     return parse(json_str);
 }
 
-/*
-bool Json::isEmpty() const
-{
-	return m_root
-		? m_root->type() == JsonValue::JsonValue_Object
-		  	  ? dynamic_cast<JsonObject*>(m_root)->isEmpty()
-		  	  : dynamic_cast<JsonArray*>(m_root)->isEmpty()
-		: false;
-}
-*/
-
-
 typedef void (*destroyer_f)(JsonValue &);
 
 void JsonValue::destroy()
@@ -324,6 +312,7 @@ String JsonValue::objectToString(const JsonValue & jvalue)
 	++it;
 
 	for (; it != end; it++) {
+		r += Char(',');
 		r += Char('"');
 		r += it.key();
 		r += Char('"');
