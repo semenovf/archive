@@ -156,7 +156,7 @@ class DLL_API Json : public Errorable
 	CWT_DENY_COPY(Json);
 
 public:
-	Json() : Errorable(), m_root(JsonValue::createObject()) {}
+	Json(JsonValue::TypeEnum t = JsonValue::JsonValue_Object);
 	Json(const String & text) : Errorable(), m_root(JsonValue::createObject()) { parse(text); }
 	~Json();
 
@@ -167,31 +167,146 @@ public:
 	bool isArray() const  { CWT_ASSERT(m_root); return m_root->type() == JsonValue::JsonValue_Array; }
 	bool isObject() const { CWT_ASSERT(m_root); return m_root->type() == JsonValue::JsonValue_Object; }
 
-	JsonValue&       at(size_t i)                { CWT_ASSERT(m_root); return m_root->at(i); }
-	JsonValue&       at(const String &key)       { CWT_ASSERT(m_root); return m_root->at(key); }
-	const JsonValue& at(size_t i) const          { CWT_ASSERT(m_root); return m_root->at(i); }
-	const JsonValue& at(const String &key) const { CWT_ASSERT(m_root); return m_root->at(key); }
+	JsonValue&       at (size_t i)                { CWT_ASSERT(m_root); return m_root->at(i); }
+	JsonValue&       at (const String &key)       { CWT_ASSERT(m_root); return m_root->at(key); }
+	const JsonValue& at (size_t i) const          { CWT_ASSERT(m_root); return m_root->at(i); }
+	const JsonValue& at (const String &key) const { CWT_ASSERT(m_root); return m_root->at(key); }
 
 	JsonValue& operator       [] (size_t i)                { return at(i); }
 	JsonValue& operator       [] (const String &key)       { return at(key); }
 	const JsonValue& operator [] (size_t i) const          { return at(i); }
 	const JsonValue& operator [] (const String &key) const { return at(key); }
 
-	JsonValue& value() { CWT_ASSERT(m_root); return *m_root; }
+	JsonValue&       value() { CWT_ASSERT(m_root); return *m_root; }
 	const JsonValue& value() const { CWT_ASSERT(m_root); return *m_root; }
 
 	size_t size() const      { CWT_ASSERT(m_root); return m_root->size(); }
-	String toString() const { CWT_ASSERT(m_root); return m_root->toString(); }
+	String toString() const  { CWT_ASSERT(m_root); return m_root->toString(); }
+
 private:
 	JsonValue *m_root;
 };
 
+/**
+ * @details If @c t equals to JsonValue::JsonValue_Array then JSON constructed with array,
+ * otherwise with object as the root element.
+ *
+ * @param t
+ */
+inline Json::Json (JsonValue::TypeEnum t)
+	: Errorable()
+	, m_root(t == JsonValue::JsonValue_Array
+			? JsonValue::createArray()
+			: JsonValue::createObject())
+{
+}
 
 inline Json::~Json()
 {
 	if (m_root) delete m_root;
 	m_root = nullptr;
 }
+
+
+class DLL_API JsonPrettyPrint
+{
+public:
+	/*
+	 * Brace Positions:
+	 * ===================
+	 *
+	 * BraceSameLine:
+	 * -------------------
+	 * "object" : {
+	 * 		"foo" : 100,
+	 * 		"bar" : "Hello"
+	 * }
+	 *
+	 * BraceNextLine
+	 * -------------------
+	 * "object" :
+	 * {
+	 * 		"foo" : 100,
+	 * 		"bar" : "Hello"
+	 * }
+	 *
+	 * BraceNextLineIndent
+	 * -------------------
+	 * "object" :
+	 * 		{
+	 * 		"foo" : 100,
+	 * 		"bar" : "Hello"
+	 * 		}
+	 */
+	enum BracePosition {
+		  BraceSameLine
+		, BraceNextLine
+		, BraceNextLineIndent
+	};
+
+	/*
+	 * Comma Positions:
+	 * ===================
+	 *
+	 * CommaSameLine:
+	 * -------------------
+	 *
+	 * 	"foo" : 100,
+	 * 	"bar" : "Hello"
+	 *
+	 * CommaNextLine
+	 * -------------------
+	 * 	"foo" : 100
+	 * 	, "bar" : "Hello"
+	 *
+	 * CommaNextLineIndent
+	 * -------------------
+	 * 	  "foo" : 100
+	 * 	, "bar" : "Hello"
+	 *
+	 */
+	enum CommaPosition {
+		  CommaSameLine
+		, CommaNextLine
+		, CommaNextLineIndent
+	};
+
+
+	enum Style {
+		  StyleCompact     // all in one line
+		, StyleKR          // Kernighan and Ritchie, baseIndent = 4, bracePosition = BraceSameLine, commaPosition = CommaSameLine
+		, StyleBSD         // baseIndent = 4, bracePosition = BraceNextLine, commaPosition = CommaSameLine
+		, StyleGNU         // baseIndent = 2, bracePosition = BraceNextLine, commaPosition = CommaSameLine
+		, StyleWhitesmiths // baseIndent = 4, bracePosition = BraceNextLineIndent, commaPosition = CommaSameLine
+		, StyleFavorite    // baseIndent = 4, bracePosition = BraceSameLine, commaPosition = CommaNextLineIndent, keysOrder = ascending
+	};
+
+	enum Order {
+		  NoOrder
+		, OrderAscending
+		, OrderDescending
+	};
+
+	struct Format {
+		int           baseIndent;    // base indent in spaces, -1 - compact style
+		BracePosition bracePosition;
+		CommaPosition commaPosition;
+		Order         keysOrder;
+	};
+
+	JsonPrettyPrint(Style style = StyleFavorite);
+	JsonPrettyPrint(const Format & format);
+
+	void setBaseIndent(int indent) { m_format.baseIndent = indent; }
+	void setBracePosition(BracePosition bracePosition) { m_format.bracePosition = bracePosition; }
+	void setCommaPosition(CommaPosition commaPosition) { m_format.commaPosition = commaPosition; }
+	void setOrder(Order order) { m_format.keysOrder = order; }
+
+	String toString(const Json & json) const;
+
+private:
+	Format m_format;
+};
 
 
 /*

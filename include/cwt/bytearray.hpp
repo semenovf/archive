@@ -7,7 +7,7 @@
  */
 
 #include <cwt/cwt.h>
-#include <cwt/memory.hpp>
+#include <cwt/pimpl.hpp>
 
 #ifndef __CWT_BYTEARRAY_QT_HPP__
 #define __CWT_BYTEARRAY_QT_HPP__
@@ -21,19 +21,13 @@ CWT_NS_BEGIN
 
 class DLL_API ByteArray
 {
-/*
-#ifdef CWT_BYTEARRAY_SELF_IMPL
-	typedef char   data_type;
-	typedef Vector<data_type> BaseClass;
-#endif
-*/
+	CWT_PIMPL_DECL_COPYABLE(ByteArray)
 
 public:
 	ByteArray();
-	ByteArray(const char *data, int size = -1);
-	//ByteArray(int size, char ch);
-	ByteArray(const ByteArray &other);
-	~ByteArray();
+	ByteArray(const char *data);
+	ByteArray(const char *data, size_t size);
+	ByteArray(size_t size, char ch);
 
 	ByteArray& append(const ByteArray &bytes);
 	ByteArray& append(const char *data, int size = -1);
@@ -82,7 +76,7 @@ public:
 	bool startsWith(const char *s) const;
 	bool startsWith(char c) const;
 
-	ByteArray&	operator = (const ByteArray &other);
+	//ByteArray&	operator = (const ByteArray &other);
 	ByteArray&	operator = (const char *str);
 
 	friend bool	operator ==(const ByteArray &s1, const ByteArray &s2);
@@ -93,11 +87,6 @@ public:
 	static ByteArray number(uint_t n, int base = 10);
 	static ByteArray number(long_t n, int base = 10);
 	static ByteArray number(ulong_t n, int base = 10);
-
-private:
-    class Impl;
-    typedef unique_ptr<Impl> ImplPtr;
-    ImplPtr pimpl;
 };
 
 DLL_API uint_t hash_func(const ByteArray &key, uint seed = 0);

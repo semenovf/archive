@@ -7,33 +7,80 @@
  */
 
 
-#include "string_qt.hpp"
+#include "../../include/cwt/string.hpp"
 #include <cstring>
+#define QT_NO_CAST_FROM_ASCII
+#include <QString>
 
 CWT_NS_BEGIN
 
 static const String __nullString;
 
-String::String() : pimpl(new Impl()) {}
-String::String(const Char *unicode) : pimpl(new Impl(unicode)) {}
+class String::Impl : public QString {
+public:
+	Impl() : QString() {}
+	Impl(const Char *unicode);
+	Impl(const Char *unicode, size_t size);
+	Impl(Char ch)                 : QString(QChar(ch.unicode())) {}
+	Impl(size_t size, Char ch)    : QString(size, QChar(ch.unicode())) {}
+	Impl(const Impl &other)       : QString(other) {}
+	Impl(const QString &other)    : QString(other) {}
+	Impl& operator=(Char ch)      { QString::operator  = (QChar(ch.unicode())); return *this; }
+//	~Impl() { QChar *d = data(); memset(d, 0, sizeof(QChar) * length()); }
+};
+
+
+// TODO need an optimized version
+String::Impl::Impl(const Char *unicode) : QString()
+{
+	while(*unicode != Char(0)) {
+		this->append(QChar(unicode->unicode()));
+		++unicode;
+	}
+}
+
+// TODO need an optimized version
+String::Impl::Impl(const Char *unicode, size_t size) : QString()
+{
+	CWT_ASSERT(size <= CWT_INT_MAX);
+	resize(int(size));
+	QChar *chars = QString::data();
+
+	for(size_t i = 0; i < size; i++)
+		chars[i] = QChar(unicode[i].unicode());
+}
+
+// TODO need an optimized version
+String::Impl::Impl(size_t size, Char ch) : QString()
+{
+	CWT_ASSERT(size <= CWT_INT_MAX);
+	resize(int(size));
+	QChar *chars = QString::data();
+
+	for(size_t i = 0; i < size; i++)
+		chars[i] = QChar(ch.unicode());
+}
+
+String::String()                     : pimpl(new Impl()) {}
+String::String(const Char *unicode)  : pimpl(new Impl(unicode)) {}
 String::String(const Char *unicode, size_t size)  : pimpl(new Impl(unicode, size)) {}
 String::String(Char ch)              : pimpl(new Impl(ch)) {}
-String::String(int size, Char ch)    : pimpl(new Impl(size, ch)) {}
+String::String(size_t size, Char ch) : pimpl(new Impl(size, ch)) {}
 String::String(const String &other)  : pimpl(new Impl(*other.pimpl)) {}
 
 String&	String::append(const String &str)             { pimpl->append(*str.pimpl); return *this; }
 String&	String::append(const Char *unicode, int size) {	append(String(unicode, size)); return *this; }
 String&	String::append(Char ch)                       { pimpl->append(QChar(ch.unicode())); return *this; }
 
-const Char String::at(int pos) const     { const QChar ch = pimpl->at(pos); return Char(ch.unicode()); }
-void String::clear()             { pimpl->clear(); }
+const Char String::at(int pos) const  { const QChar ch = pimpl->at(pos); return Char(ch.unicode()); }
+void String::clear()                  { pimpl->clear(); }
 bool String::contains(const String & str, bool cs) const { return pimpl->contains(*str.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 bool String::contains(Char ch, bool cs) const { return pimpl->contains(QChar(ch.unicode()), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 int String::compare(const String &other, bool cs) const { return pimpl->compare(*other.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
-Char* String::data()             { return reinterpret_cast<Char*>(pimpl->data()); }
-const Char*	String::data() const { return reinterpret_cast<const Char*>(pimpl->data()); }
-bool String::isEmpty() const     { return reinterpret_cast<const Char*>(pimpl->isEmpty()); }
-bool String::isNull() const      { return reinterpret_cast<const Char*>(pimpl->isNull()); }
+Char* String::data()                  { return reinterpret_cast<Char*>(pimpl->data()); }
+const Char*	String::data() const      { return reinterpret_cast<const Char*>(pimpl->data()); }
+bool String::isEmpty() const          { return reinterpret_cast<const Char*>(pimpl->isEmpty()); }
+bool String::isNull() const           { return reinterpret_cast<const Char*>(pimpl->isNull()); }
 ssize_t String::indexOf(const String &str, int from, bool cs) const { return (ssize_t)pimpl->indexOf(*str.pimpl, from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 ssize_t String::indexOf(Char ch, int from, bool cs) const { return (ssize_t)pimpl->indexOf(QChar(ch.unicode()), from, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 

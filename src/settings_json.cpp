@@ -106,4 +106,35 @@ Vector<UniType> Settings::array (const String & path, const Vector<UniType> & de
 	return arr;
 }
 
+bool Settings::parse(const String & str, Format format)
+{
+	if (format == UnknownFormat) {
+		// try native format - JSON
+		return pimpl->json().parse(str);
+	}
+
+	switch(format) {
+	case JsonFormat: return pimpl->json().parse(str);
+	default: break;
+	}
+
+	return false;
+}
+
+bool Settings::parseFromFile(const char *path, Format format)
+{
+	if (format == UnknownFormat) {
+		// try native format - JSON
+		return pimpl->json().parseFromFile(path);
+	}
+
+	switch(format) {
+	case JsonFormat: return pimpl->json().parseFromFile(path);
+	default: break;
+	}
+
+	return false;
+
+}
+
 CWT_NS_END

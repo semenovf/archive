@@ -1,15 +1,20 @@
 include($$(GBS_HOME)/common-app-qt.pri)
 
-TARGET = test_bytearray
+TARGET = test_bitarray
+
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../cwt-common/include
 
+HEADERS += ../../../../cwt-common/include/*.h
+HEADERS += ../../../cwt-common/include/*.h
+HEADERS += ../../../cwt-common/include/*.hpp
+
+SOURCES += ../../../tests/bitarray.cpp
+
 unix {
-    SOURCES += ../../../tests/bytearray.cpp
     LIBS += -lcwt
 }
 
 win32 {
-    SOURCES += ..\\..\\..\\tests\\bytearray.cpp
     LIBS += cwt.lib
 }

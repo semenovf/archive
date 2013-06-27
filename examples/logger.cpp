@@ -1,4 +1,3 @@
-#include <cwt/test.h>
 #include <cstdio>
 #include "../include/cwt/logger.hpp"
 #include "../include/cwt/string.hpp"

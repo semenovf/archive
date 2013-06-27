@@ -49,7 +49,7 @@ public:
 	String(const Char *unicode);
 	String(const Char *unicode, size_t size);
 	String(Char ch);
-	String(int size, Char ch);
+	String(size_t size, Char ch);
 	String(const String &other);
 	~String() { /*printf("{%p}: String::~String('%s')\n", this, this->toUtf8().constData());*/ }
 

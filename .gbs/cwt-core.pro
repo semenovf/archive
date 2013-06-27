@@ -7,9 +7,11 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = cwt-core  \
+    examples/json_prettyprint \
     examples/logger  \
     tests/array      \
     tests/async      \
+    tests/bitarray   \
     tests/bytearray  \
     tests/bytestream \
     tests/dl         \
