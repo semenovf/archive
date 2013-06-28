@@ -24,6 +24,7 @@ isEmpty(CWT_UNICODE)    { DEFINES -= UNICODE }
 
 # qmake internal variables
 QT-=gui
+QT-=webkit
 CONFIG = $$CWT_CONFIG
 CONFIG += warn_on
 CONFIG += resources
