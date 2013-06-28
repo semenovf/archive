@@ -63,7 +63,7 @@ DLL_API void  sha1_init(sha1_state_t *pms); /* Initialize SHA-1 algorithm */
 DLL_API void  sha1_update(sha1_state_t *pms, const sha1_byte_t *input_buffer, int length); /* Append a string to SHA-1 algorithm */
 DLL_API void  sha1_finish(sha1_state_t *pms, sha1_byte_t output[SHA1_OUTPUT_SIZE]);  /* Finish the SHA-1 algorithm and return the hash */
 DLL_API char* sha1_file(FILE *fp);
-DLL_API char* sha1_str(char *p);
+DLL_API char* sha1_str(const char *p);
 EXTERN_C_END
 
 #endif /* __CWT_SHA1_H__ */

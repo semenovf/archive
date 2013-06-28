@@ -20,7 +20,7 @@ DLL_API uint_t hash_func(const ByteArray &key, uint_t seed)
 	return hash_bytes(reinterpret_cast<const byte_t *>(key.constData()), key.size(), seed);
 }
 
-#ifdef CWT_BYTEARRAY_SELF_IMPL
+#ifdef __COMMENT__
 
 ByteArray::ByteArray() : BaseClass() {}
 ByteArray::ByteArray(const char *data, int size = -1) : BaseClass() { append(data, size); }

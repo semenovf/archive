@@ -38,6 +38,7 @@ class DLL_API String
 #endif
 */
 {
+	CWT_PIMPL_DECL_COPYABLE(String)
 /*#ifdef CWT_STRING_SELF_IMPL
 	typedef Char::char_type   data_type;
 	typedef Char::char_type   char_type;
@@ -50,8 +51,7 @@ public:
 	String(const Char *unicode, size_t size);
 	String(Char ch);
 	String(size_t size, Char ch);
-	String(const String &other);
-	~String() { /*printf("{%p}: String::~String('%s')\n", this, this->toUtf8().constData());*/ }
+//	~String() { /*printf("{%p}: String::~String('%s')\n", this, this->toUtf8().constData());*/ }
 
 	String&	 append(const String &str);
 	String&	 append(const Char *unicode, int size);
@@ -107,7 +107,6 @@ public:
 
 	String&	operator+=(const String & other);
 	String&	operator+=(Char ch);
-	String&	operator=(const String & other);
 	String&	operator=(Char ch);
 	Char    operator[](int pos);
 	const Char operator[](int pos) const;
@@ -147,10 +146,12 @@ public:
 
 	static const String& constNull();
 
+/*
 private:
     class Impl;
     typedef unique_ptr<Impl> ImplPtr;
     ImplPtr pimpl;
+*/
 
     friend class TextStream;
 };

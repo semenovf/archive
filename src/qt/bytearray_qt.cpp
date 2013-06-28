@@ -6,15 +6,36 @@
  * @brief
  */
 
-#include "bytearray_qt.hpp"
+#include "../include/cwt/bytearray.hpp"
 #include <QByteArray>
 
 CWT_NS_BEGIN
+
+/*
+class ByteArray::Impl : public QByteArray {
+public:
+	Impl() : QByteArray() {}
+	Impl(const char *data, int size)
+	#if QT_VERSION < 0x050000
+		: QByteArray(data, size < 0 ? strlen(data) : size) {}
+	#else
+		: QByteArray(data, size) {}
+	#endif
+	Impl(int size, char ch) : QByteArray(size, ch) {}
+	Impl(const Impl &other) : QByteArray(other) {}
+
+	Impl&	operator=(const Impl& other) { QByteArray::operator  = (other); return *this; }
+	Impl&	operator=(const char * str) { QByteArray::operator  = (str); return *this; }
+};
+*/
+
 
 class ByteArray::Impl : public QByteArray
 {
 public:
 	Impl() : QByteArray() {  }
+	Impl(const Impl &other) : QByteArray(other) {}
+	Impl(const QByteArray &other) : QByteArray(other) {}
 	Impl(const char *data) : QByteArray(data) {}
 	Impl(const char *data, size_t size) : QByteArray(data, int(size)) { CWT_ASSERT(size <= CWT_INT_MAX); }
 	Impl(size_t size, char ch) : QByteArray(int(size), ch) { CWT_ASSERT(size <= CWT_INT_MAX); }
@@ -22,21 +43,24 @@ public:
 
 CWT_PIMPL_IMPL_COPYABLE(ByteArray)
 
-ByteArray::ByteArray()                              : pimpl(new ByteArray::Impl()) {}
+ByteArray::ByteArray()                              : pimpl(new Impl()) {}
 ByteArray::ByteArray(const char *data)              : pimpl(new Impl(data)) {}
 ByteArray::ByteArray(const char *data, size_t size) : pimpl(new Impl(data, size)) {}
 ByteArray::ByteArray(size_t size, char ch)          : pimpl(new Impl(size, ch)) {}
 
 ByteArray& ByteArray::append(const ByteArray &bytes)     { detach(); pimpl->append(*bytes.pimpl); return *this; }
-ByteArray& ByteArray::append(const char *data, int size) { detach(); pimpl->append(data, size); return *this; }
+ByteArray& ByteArray::append(const char *data)           { detach(); pimpl->append(data); return *this; }
+ByteArray& ByteArray::append(const char *data, size_t size) { CWT_ASSERT(size <= CWT_INT_MAX); detach(); pimpl->append(data, size); return *this; }
 ByteArray& ByteArray::append(char ch)                    { detach(); pimpl->append(ch); return *this; }
+bool ByteArray::isEmpty() const                          { return pimpl->isEmpty(); }
 void ByteArray::clear()                                  { detach(); pimpl->clear(); }
 char* ByteArray::data()                                  { detach(); return pimpl->data(); }
 const char* ByteArray::data() const                      { return pimpl->data(); }
 const char* ByteArray::constData() const                 { return pimpl->data(); }
 size_t ByteArray::length() const                         { return size(); }
 ByteArray &ByteArray::prepend(const ByteArray &bytes)    { detach(); pimpl->prepend(*bytes.pimpl); return *this; }
-ByteArray &ByteArray::prepend(const char *str, int len)  { detach(); if(len > 0) pimpl->prepend(str, len); else pimpl->prepend(str); return *this; }
+ByteArray &ByteArray::prepend(const char *str)           { detach(); pimpl->prepend(str); return *this; }
+ByteArray &ByteArray::prepend(const char *str, size_t len)  { CWT_ASSERT(len <= CWT_INT_MAX); detach(); pimpl->prepend(str, int(len)); return *this; }
 ByteArray &ByteArray::prepend(char ch)                   { detach(); pimpl->prepend(ch); return *this; }
 ByteArray& ByteArray::remove(size_t pos, size_t len)     { detach(); CWT_ASSERT(pos <= CWT_INT_MAX || len > CWT_INT_MAX); pimpl->remove((int)pos, (int)len); return *this; }
 void ByteArray::reserve(size_t size)                     { detach(); CWT_ASSERT(size <= CWT_INT_MAX); pimpl->reserve((int)size); }
@@ -76,42 +100,42 @@ bool operator == (const ByteArray &s1, const ByteArray &s2) { return *s1.pimpl =
 ByteArray ByteArray::number(double n, char format, int precision)
 {
 	ByteArray ba;
-	*ba.pimpl = QByteArray::number(n, format, precision);
+	*ba.pimpl = ByteArray::Impl(QByteArray::number(n, format, precision));
 	return ba;
 }
 
 ByteArray ByteArray::number(float n, char format, int precision)
 {
 	ByteArray ba;
-	*ba.pimpl = QByteArray::number(n, format, precision);
+	*ba.pimpl = ByteArray::Impl(QByteArray::number(n, format, precision));
 	return ba;
 }
 
 ByteArray ByteArray::number(int_t n, int base)
 {
 	ByteArray ba;
-	*ba.pimpl = QByteArray::number(n, base);
+	*ba.pimpl = ByteArray::Impl(QByteArray::number(n, base));
 	return ba;
 }
 
 ByteArray ByteArray::number(uint_t n, int base)
 {
 	ByteArray ba;
-	*ba.pimpl = QByteArray::number(n, base);
+	*ba.pimpl = ByteArray::Impl(QByteArray::number(n, base));
 	return ba;
 }
 
 ByteArray ByteArray::number(long_t n, int base)
 {
 	ByteArray ba;
-	*ba.pimpl = QByteArray::number(n, base);
+	*ba.pimpl = ByteArray::Impl(QByteArray::number(n, base));
 	return ba;
 }
 
 ByteArray ByteArray::number(ulong_t n, int base)
 {
 	ByteArray ba;
-	*ba.pimpl = QByteArray::number(n, base);
+	*ba.pimpl = ByteArray::Impl(QByteArray::number(n, base));
 	return ba;
 }
 

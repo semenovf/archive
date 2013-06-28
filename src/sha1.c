@@ -241,7 +241,7 @@ void sha1_finish(sha1_state_t *pms, sha1_byte_t output[SHA1_OUTPUT_SIZE])
 	}
 }
 
-char *sha1_str(char *p)
+char *sha1_str(const char *p)
 {
 	sha1_state_t state;
 	sha1_byte_t digest[SHA1_OUTPUT_SIZE];

@@ -17,6 +17,7 @@ public:
 	Impl () : QBitArray () {}
 	Impl (size_t size, bool value = false) : QBitArray (int(size), value) { CWT_ASSERT(size <= CWT_INT_MAX); }
 	Impl (const Impl& impl) : QBitArray(impl) {}
+	Impl (const QBitArray& ba) : QBitArray(ba) {}
 };
 
 CWT_PIMPL_IMPL_COPYABLE(BitArray);
@@ -371,7 +372,7 @@ BitArray& BitArray::operator |= (const BitArray& other )
 BitArray BitArray::operator ~ () const
 {
 	BitArray ba;
-	ba.pimpl.reset(new BitArray::Impl(pimpl->operator ~ ()));
+	*ba.pimpl = BitArray::Impl(pimpl->operator ~ ());
 	return ba;
 }
 
@@ -391,7 +392,7 @@ BitArray BitArray::operator ~ () const
 BitArray operator & (const BitArray& a1, const BitArray& a2)
 {
 	BitArray ba;
-	ba.pimpl.reset(new BitArray::Impl(operator & (*a1.pimpl, *a2.pimpl)));
+	*ba.pimpl = BitArray::Impl(operator & (*a1.pimpl, *a2.pimpl));
 	return ba;
 }
 
@@ -410,9 +411,8 @@ BitArray operator & (const BitArray& a1, const BitArray& a2)
  */
 BitArray operator ^ (const BitArray& a1, const BitArray& a2)
 {
-	BitArray::Impl *impl = new BitArray::Impl(operator ^ (*a1.pimpl, *a2.pimpl));
-	//BitArray ba(operator ^ (*a1.pimpl, *a2.pimpl));
-	//ba.pimpl.reset(new BitArray::Impl());
+	BitArray ba;
+	*ba.pimpl = BitArray::Impl(operator ^ (*a1.pimpl, *a2.pimpl));
 	return ba;
 }
 
@@ -432,7 +432,7 @@ BitArray operator ^ (const BitArray& a1, const BitArray& a2)
 BitArray operator | (const BitArray& a1, const BitArray& a2)
 {
 	BitArray ba;
-	ba.pimpl.reset(new BitArray::Impl(operator | (*a1.pimpl, *a2.pimpl)));
+	*ba.pimpl = BitArray::Impl(operator | (*a1.pimpl, *a2.pimpl));
 	return ba;
 }
 

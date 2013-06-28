@@ -34,6 +34,7 @@ void test_convert_number()
 	CWT_TEST_OK(num.toInt(&ok) == 1234 && ok);
 }
 
+
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;

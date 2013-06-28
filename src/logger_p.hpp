@@ -141,8 +141,8 @@ static bool begin_spec(const void *data, size_t len, void *context, void *action
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	ctx->pspec.spec_char = 0;
 	ctx->pspec.left_justify = false;
-	ctx->pspec.min_width = -1;
-	ctx->pspec.max_width = -1;
+	ctx->pspec.min_width = 0;
+	ctx->pspec.max_width = 0;
 	ctx->pspec.fspec.clear();
 	return true;
 }

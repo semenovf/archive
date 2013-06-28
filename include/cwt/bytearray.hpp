@@ -28,18 +28,22 @@ public:
 	ByteArray(const char *data);
 	ByteArray(const char *data, size_t size);
 	ByteArray(size_t size, char ch);
+	~ByteArray() {}
 
 	ByteArray& append(const ByteArray &bytes);
-	ByteArray& append(const char *data, int size = -1);
+	ByteArray& append(const char *data);
+	ByteArray& append(const char *data, size_t size);
 	ByteArray& append(char ch);
 
+	bool isEmpty() const;
 	void clear();
 	char* data();
 	const char* data() const;
 	size_t size() const;
 
 	ByteArray &prepend(const ByteArray &ba);
-	ByteArray &prepend(const char *str, int len = -1);
+	ByteArray &prepend(const char *str);
+	ByteArray &prepend(const char *str, size_t size);
 	ByteArray &prepend(char ch);
 
 	const char* constData() const;
