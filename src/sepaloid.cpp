@@ -17,6 +17,7 @@ class PetaloidThreaded : public Thread
 {
 public:
 	PetaloidThreaded(Petaloid *p) : Thread() , m_petaloid(p) { CWT_ASSERT(m_petaloid); }
+	virtual ~PetaloidThreaded() {}
 	const Petaloid *petaloid() const { return m_petaloid; }
 
 protected:

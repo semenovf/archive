@@ -28,6 +28,7 @@ public:
 	};
 public:
 	Thread();
+	virtual ~Thread() {}
 
 	void	 exit (int returnCode = 0);
 	bool	 isFinished () const;

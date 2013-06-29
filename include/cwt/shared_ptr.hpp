@@ -51,7 +51,7 @@ class ref_count_with_deleter: public ref_count
 {
 private:
 	ref_count_with_deleter();
-	CWT_AVOID_COPY(ref_count_with_deleter);
+	CWT_DENY_COPY(ref_count_with_deleter);
 
 public:
 	ref_count_with_deleter(T *ptr, Deleter d) : ref_count(), m_ptr(ptr), m_deleter(d) { deleter_fn = deleter; }
