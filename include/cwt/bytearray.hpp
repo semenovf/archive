@@ -41,6 +41,10 @@ public:
 	const char* data() const;
 	size_t size() const;
 
+	ssize_t	indexOf ( const ByteArray & ba, size_t from = 0 ) const;
+	ssize_t	indexOf ( const char * str, size_t from = 0 ) const;
+	ssize_t	indexOf ( char ch, size_t from = 0 ) const;
+
 	ByteArray &prepend(const ByteArray &ba);
 	ByteArray &prepend(const char *str);
 	ByteArray &prepend(const char *str, size_t size);
@@ -76,12 +80,22 @@ public:
 
 	ByteArray& setRawData(const char *data, size_t size);
 
-	bool startsWith(const ByteArray &ba) const;
-	bool startsWith(const char *s) const;
-	bool startsWith(char c) const;
+	bool endsWith    (const ByteArray & ba) const;
+	bool endsWith    (const char * s) const;
+	bool endsWith    (char c) const;
+	bool startsWith  (const ByteArray &ba) const;
+	bool startsWith  (const char *s) const;
+	bool startsWith  (char c) const;
+	ByteArray substr (size_t pos) const;
+	ByteArray substr (size_t pos, size_t n) const;
 
 	//ByteArray&	operator = (const ByteArray &other);
 	ByteArray&	operator = (const char *str);
+	char	operator[] (ssize_t i) const;
+	char	operator[] (size_t i) const;
+
+	char &	operator[] (ssize_t i);
+	char &	operator[] (size_t i);
 
 	friend bool	operator ==(const ByteArray &s1, const ByteArray &s2);
 

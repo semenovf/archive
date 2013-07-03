@@ -87,12 +87,67 @@ ushort_t ByteArray::toUShort(bool *ok, int base) const   { return pimpl->toUShor
 ByteArray& ByteArray::setRawData(const char * data, uint size) { detach(); pimpl->setRawData(data, size); return *this; }
 size_t ByteArray::size() const { return size_t(pimpl->size()); }
 
+/**
+ * @fn ssize_t	ByteArray::indexOf (const ByteArray & ba, size_t from) const
+ *
+ * @brief Finds the index position of the first occurrence of the byte array @c ba in this byte array,
+ *        searching forward from index position @c from. Returns -1 if ba could not be found.
+ *
+ * @param ba byte array searching for.
+ * @param from Index position searching forward from.
+ * @return Returns the index position of the first occurrence of the byte array @c ba, -1 if @c ba could not be found.
+ */
+ssize_t	ByteArray::indexOf (const ByteArray & ba, size_t from) const
+{
+	CWT_ASSERT(from <= CWT_INT_MAX);
+	return ssize_t(pimpl->indexOf(ba.pimpl, int(from)));
+}
+
+ssize_t	ByteArray::indexOf ( const char * str, size_t from) const
+{
+	CWT_ASSERT(from <= CWT_INT_MAX);
+	return ssize_t(pimpl->indexOf(str, int(from)));
+}
+
+ssize_t	ByteArray::indexOf ( char ch, size_t from) const
+{
+	CWT_ASSERT(from <= CWT_INT_MAX);
+	return ssize_t(pimpl->indexOf(ch, int(from)));
+}
+
+bool ByteArray::endsWith    (const ByteArray & ba) const { return pimpl->endsWith(*ba.pimpl); }
+bool ByteArray::endsWith    (const char * s) const { return pimpl->endsWith(s);}
+bool ByteArray::endsWith    (char c) const { return pimpl->endsWith(c); }
 bool ByteArray::startsWith(const ByteArray &ba) const { return pimpl->startsWith(*ba.pimpl); }
 bool ByteArray::startsWith(const char *s) const { return pimpl->startsWith(s); }
 bool ByteArray::startsWith(char c) const { return pimpl->startsWith(c); }
 
+ByteArray ByteArray::substr(size_t pos, size_t n) const
+{
+	CWT_ASSERT(pos <= CWT_INT_MAX);
+	CWT_ASSERT(n <= CWT_INT_MAX);
+	ByteArray ba;
+	*ba.pimpl = pimpl->mid(int(pos), int(n));
+	return ba;
+}
+
+ByteArray ByteArray::substr(size_t pos) const
+{
+	CWT_ASSERT(pos <= CWT_INT_MAX);
+	ByteArray ba;
+	*ba.pimpl = pimpl->mid(int(pos));
+	return ba;
+}
+
 //ByteArray&	ByteArray::operator=(const ByteArray &other) { pimpl->operator  = (*other.pimpl); return *this;}
 ByteArray&	ByteArray::operator = (const char *str) { detach(); pimpl->operator  = (str); return *this;}
+
+char ByteArray::operator[] (ssize_t i) const { return pimpl->operator [] (i); }
+char ByteArray::operator[] (size_t i) const { return pimpl->operator [] (i); }
+
+// TODO return must be replaced by ByteRef instance
+char & ByteArray::operator[] (ssize_t i) { return pimpl->data()[i]; }
+char & ByteArray::operator[] (size_t i) { return pimpl->data()[i]; }
 
 bool operator == (const ByteArray &s1, const ByteArray &s2) { return *s1.pimpl == *s2.pimpl; }
 

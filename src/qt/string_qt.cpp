@@ -125,13 +125,23 @@ bool String::endsWith(Char ch, bool cs) const { return pimpl->endsWith(QChar(ch.
 bool String::startsWith(const String &s, bool cs) const { return pimpl->startsWith(*s.pimpl, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 bool String::startsWith(Char ch, bool cs) const { return pimpl->startsWith(QChar(ch.unicode()), cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
 
-String String::substr(size_t pos, size_t n) const   {
+String String::substr(size_t pos, size_t n) const
+{
 	CWT_ASSERT(pos <= CWT_INT_MAX);
 	CWT_ASSERT(n <= CWT_INT_MAX);
 	String s;
 	*s.pimpl = pimpl->mid(int(pos), int(n));
 	return s;
 }
+
+String String::substr(size_t pos) const
+{
+	CWT_ASSERT(pos <= CWT_INT_MAX);
+	String s;
+	*s.pimpl = pimpl->mid(int(pos));
+	return s;
+}
+
 
 String&	String::setNumber(long_t n, int base)         { detach(); pimpl->setNum(n, base); return *this; }
 String&	String::setNumber(ulong_t n, int base)        { detach(); pimpl->setNum(n, base); return *this; }

@@ -23,7 +23,7 @@ public:
 	static const size_t BufferMaxSize = 512; // must be less than CWT_SIZE_MAX/2
 
 protected:
-	IODevice() {;}
+	IODevice() : m_buffer(), m_head(0), m_lineMaxLength(CWT_INT_MAX) {;}
 
 public:
 	enum OpenMode {
@@ -34,6 +34,9 @@ public:
 		, NonBlocking = 0x0004
 		, Unbuffered  = 0x0008
 	};
+
+private:
+	bool cacheInput();
 
 protected:
 	virtual ssize_t readBytes(char bytes[], size_t n) = 0;
@@ -49,11 +52,21 @@ public:
 	virtual bool atEnd() const                       { return bytesAvailable() == ssize_t(0); }
 	ssize_t      read(char bytes[], size_t n);
 	ssize_t      write(const char bytes[], size_t n);
-	void         unread(const char bytes[], size_t n);
+	void         unread(const char bytes[], size_t n); // TODO must be removed (referenced from TextStream class)
 	ByteArray    readAll();
+	bool         getByte(char * byte);
+	void         ungetByte(char byte);
+
+	void      setLineMaxLength(size_t max) { m_lineMaxLength = max; }
+	ByteArray readLine(bool with_nl = false);
+	ByteArray readLine(const ByteArray & endLine, bool with_nl = false);
+	ByteArray readLine(const ByteArray endLines[], int count, bool with_nl = false);
 
 private:
-	ByteArray m_buffer; // FIXME need shared
+	// FIXME need shared
+	ByteArray m_buffer;
+	ssize_t   m_head;   // head position
+	size_t    m_lineMaxLength;
 };
 
 CWT_NS_END

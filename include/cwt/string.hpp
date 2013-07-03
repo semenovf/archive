@@ -88,7 +88,8 @@ public:
 	size_t   size() const;
 	bool	 startsWith(const String &s, bool cs = true) const;
 	bool	 startsWith(Char c, bool cs = true) const;
-	String   substr(size_t pos, size_t n = -1) const;
+	String   substr(size_t pos) const;
+	String   substr(size_t pos, size_t n) const;
 
 	double	 toDouble(bool *ok = 0) const;
 	float	 toFloat(bool *ok = 0) const;
