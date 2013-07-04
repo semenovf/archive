@@ -12,28 +12,7 @@
 
 CWT_NS_BEGIN
 
-static const ByteArray DEFAULT_END_LINES[] = {"\n\r", "\r\n", "\r", "\n" };
-static const int __endLinesCount = sizeof(DEFAULT_END_LINES)/sizeof(DEFAULT_END_LINES[0]);
-
-
-bool IODevice::cacheInput()
-{
-	CWT_ASSERT(BufferMaxSize >= m_buffer.size());
-	size_t n = BufferMaxSize - m_buffer.size(); // free space
-
-	if (n > size_t(BufferMaxSize/2)) {
-		ssize_t nbytes;
-		m_buffer.resize(BufferMaxSize);
-		nbytes = readBytes(m_buffer.data() + m_buffer.size(), n);
-		if (nbytes < 0) {
-			this->addSystemError(errno, _Tr("read failed"));
-			return false;
-		} else {
-			m_buffer.resize(m_buffer.size() + nbytes);
-		}
-	}
-	return true;
-}
+static const ByteArray __defaultEndLines[] = {"\n\r", "\r\n", "\r", "\n" };
 
 ssize_t IODevice::read(char bytes[], size_t n)
 {
@@ -99,16 +78,25 @@ bool IODevice::getByte(char * byte)
 		m_buffer.clear();
 		m_head = 0;
 
-		if (!cacheInput())
+		m_buffer.resize(BufferMaxSize);
+		ssize_t nbytes = readBytes(m_buffer.data(), m_buffer.size());
+
+		if (nbytes == 0) {
+			m_buffer.clear();
+			return false; // end of data
+		} else if (nbytes < 0) {
+			this->addSystemError(errno, _Tr("read failed"));
 			return false;
+		} else {
+			if (size_t(nbytes) != m_buffer.size())
+				m_buffer.resize(nbytes);
+		}
 	}
 
-	if (m_head >= ssize_t(m_buffer.size())) {
-		return false;
-	}
+	CWT_ASSERT(m_head < ssize_t(m_buffer.size()));
 
 	if (byte)
-		*byte = m_buffer[m_head];
+		*byte = m_buffer.at(m_head);
 	++m_head;
 
 	return true;
@@ -135,58 +123,52 @@ ByteArray IODevice::readAll()
 	}
 
 	if (n < 0) {
-		; // error
+		this->addSystemError(errno, _Tr("read failed"));
 	}
 
 	return ba;
 }
 
 
-ByteArray IODevice::readLine(bool with_nl)
+/*
+ * Returns byte array contains line of data.
+ * @c ok stores @c true if one of endLines[] has been reached.
+ */
+ByteArray IODevice::readLineData(const ByteArray endLines[], int count, bool * ok, size_t maxSize)
 {
-	return readLine(DEFAULT_END_LINES, __endLinesCount, with_nl);
-}
-
-ByteArray IODevice::readLine(const ByteArray & endLine, bool with_nl)
-{
-	ByteArray result;
 	char ch;
+	size_t n = 0;
+	ByteArray r;
+
+	if (ok)
+		*ok = false;
 
 	while (getByte(&ch)) {
-		result.append(ch);
-		if (result.endsWith(endLine)) {
-			if (!with_nl)
-				result.resize(result.length() - endLine.length());
-			return result;
+
+		if (n == maxSize) {
+			ungetByte(ch);
+			this->addError(_Tr("maximum limit exceeded"));
+			return r;
 		}
-	}
 
-	if (this->isError())
-		return ByteArray();
-
-	return result;
-}
-
-ByteArray IODevice::readLine(const ByteArray endLines[], int count, bool with_nl)
-{
-	ByteArray result;
-	char ch;
-
-	while (getByte(&ch)) {
-		result.append(ch);
+		r.append(ch);
 		for (int i = 0; i < count; ++i) {
-			if (result.endsWith(endLines[i])) {
-				if (!with_nl)
-					result.resize(result.length() - endLines[i].length());
-				return result;
+			if (r.endsWith(endLines[i])) {
+				r.resize(r.length() - endLines[i].length());
+				if (ok)
+					*ok = true;
+				return r;
 			}
 		}
 	}
 
-	if (this->isError())
-		return ByteArray();
+	return r;
+}
 
-	return result;
+
+inline ByteArray IODevice::readLine(bool * ok, size_t maxSize)
+{
+	return readLineData(__defaultEndLines, sizeof(__defaultEndLines)/sizeof(__defaultEndLines[0]), ok, maxSize);
 }
 
 

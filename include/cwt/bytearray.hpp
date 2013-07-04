@@ -35,6 +35,8 @@ public:
 	ByteArray& append(const char *data, size_t size);
 	ByteArray& append(char ch);
 
+	char at(size_t i) const;
+	char at(ssize_t i) const;
 	bool isEmpty() const;
 	void clear();
 	char* data();

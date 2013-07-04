@@ -35,20 +35,18 @@ public:
 		, Unbuffered  = 0x0008
 	};
 
-private:
-	bool cacheInput();
-
 protected:
 	virtual ssize_t readBytes(char bytes[], size_t n) = 0;
 	virtual ssize_t writeBytes(const char bytes[], size_t n) = 0;
 	virtual size_t  bytesAvailable() const = 0;
+	virtual ByteArray readLineData(const ByteArray endLines[], int count, bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX);
 
 public:
 	virtual int  close() = 0;
 	virtual bool opened() const = 0;
 	virtual void flush() = 0;
 
-	size_t       available() const                   { return m_buffer.size() + bytesAvailable(); }
+	size_t       available() const                   { return m_buffer.size() - m_head + bytesAvailable(); }
 	virtual bool atEnd() const                       { return bytesAvailable() == ssize_t(0); }
 	ssize_t      read(char bytes[], size_t n);
 	ssize_t      write(const char bytes[], size_t n);
@@ -58,9 +56,10 @@ public:
 	void         ungetByte(char byte);
 
 	void      setLineMaxLength(size_t max) { m_lineMaxLength = max; }
-	ByteArray readLine(bool with_nl = false);
-	ByteArray readLine(const ByteArray & endLine, bool with_nl = false);
-	ByteArray readLine(const ByteArray endLines[], int count, bool with_nl = false);
+	ByteArray readLine(bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX);
+	ByteArray readLine(const ByteArray & endLine, bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX);
+	ByteArray readLine(const char * endLine, bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX) { return readLine(ByteArray(endLine), ok, maxSize); }
+	ByteArray readLine(const ByteArray endLines[], int count, bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX);
 
 private:
 	// FIXME need shared
@@ -68,6 +67,18 @@ private:
 	ssize_t   m_head;   // head position
 	size_t    m_lineMaxLength;
 };
+
+inline ByteArray IODevice::readLine(const ByteArray & endLine, bool * ok, size_t maxSize)
+{
+	const ByteArray endLines[] = { endLine };
+	return readLineData(endLines, 1, ok, maxSize);
+}
+
+inline ByteArray IODevice::readLine(const ByteArray endLines[], int count, bool * ok, size_t maxSize)
+{
+	return readLineData(endLines, count, ok, maxSize);
+}
+
 
 CWT_NS_END
 
