@@ -160,6 +160,13 @@ bool Json::parseFromFile(const char *path)
 
 typedef void (*destroyer_f)(JsonValue &);
 
+
+JsonValue::JsonValue(const JsonValue &value)
+{
+	m_type = value.m_type;
+	m_value = value.m_value;
+}
+
 void JsonValue::destroy()
 {
 	static destroyer_f __vtable_destroy [] = {

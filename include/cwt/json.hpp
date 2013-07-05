@@ -49,7 +49,7 @@ private:
 
 public:
 	JsonValue() : m_type(JsonValue_Null), m_value(), m_parent(nullptr) {}
-	JsonValue(const JsonValue &value) { setValue(value); }
+	JsonValue(const JsonValue &value);
 
 	JsonValue(bool value)    : m_type(JsonValue_Boolean), m_value(value), m_parent(nullptr)  { }
 	JsonValue(double value)  : m_type(JsonValue_Number) , m_value(value), m_parent(nullptr)  { }
@@ -61,6 +61,8 @@ public:
 	JsonValue(const String &s)   : m_type(JsonValue_String), m_value(s), m_parent(nullptr)   { }
 	JsonValue(const Char *chars) : m_type(JsonValue_String), m_value(String(chars)), m_parent(nullptr) { }
 	JsonValue(const Char *chars, size_t size) : m_type(JsonValue_String), m_value(String(chars, size)), m_parent(nullptr) { }
+	JsonValue(const char *utf8) : m_type(JsonValue_String), m_value(String::fromUtf8(utf8)), m_parent(nullptr) { }
+	JsonValue(const char *utf8, size_t size) : m_type(JsonValue_String), m_value(String::fromUtf8(utf8, size)), m_parent(nullptr) { }
 
 	static JsonValue* createObject();
 	static JsonValue* createArray();
@@ -166,6 +168,11 @@ public:
 
 	bool isArray() const  { CWT_ASSERT(m_root); return m_root->type() == JsonValue::JsonValue_Array; }
 	bool isObject() const { CWT_ASSERT(m_root); return m_root->type() == JsonValue::JsonValue_Object; }
+
+	void remove(size_t i)                             {CWT_ASSERT(m_root); m_root->remove(i);}
+	void remove(const String &key)                    {CWT_ASSERT(m_root); m_root->remove(key);}
+	void append(JsonValue *jvalue)                    {CWT_ASSERT(m_root); m_root->append(jvalue);}
+	void insert(const String &key, JsonValue *jvalue) {CWT_ASSERT(m_root); m_root->insert(key, jvalue);}
 
 	JsonValue&       at (size_t i)                { CWT_ASSERT(m_root); return m_root->at(i); }
 	JsonValue&       at (const String &key)       { CWT_ASSERT(m_root); return m_root->at(key); }
