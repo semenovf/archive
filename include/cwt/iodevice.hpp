@@ -20,10 +20,10 @@ class IODevice : public Errorable
 {
 public:
 	static const size_t ChunkSize     = 512;
-	static const size_t BufferMaxSize = 512; // must be less than CWT_SIZE_MAX/2
+	static const size_t DefaultBufferSize = 512; // must be less than CWT_SIZE_MAX/2
 
 protected:
-	IODevice() : m_buffer(), m_head(0), m_lineMaxLength(CWT_INT_MAX) {;}
+	IODevice() : m_buffer(), m_head(0) {;}
 
 public:
 	enum OpenMode {
@@ -39,7 +39,7 @@ protected:
 	virtual ssize_t readBytes(char bytes[], size_t n) = 0;
 	virtual ssize_t writeBytes(const char bytes[], size_t n) = 0;
 	virtual size_t  bytesAvailable() const = 0;
-	virtual ByteArray readLineData(const ByteArray endLines[], int count, bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX);
+	ByteArray readLineData(const ByteArray endLines[], int count, bool * ok = nullptr, size_t maxSize = CWT_INT_MAX);
 
 public:
 	virtual int  close() = 0;
@@ -55,17 +55,15 @@ public:
 	bool         getByte(char * byte);
 	void         ungetByte(char byte);
 
-	void      setLineMaxLength(size_t max) { m_lineMaxLength = max; }
-	ByteArray readLine(bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX);
-	ByteArray readLine(const ByteArray & endLine, bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX);
-	ByteArray readLine(const char * endLine, bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX) { return readLine(ByteArray(endLine), ok, maxSize); }
-	ByteArray readLine(const ByteArray endLines[], int count, bool * ok = nullptr, size_t maxSize = CWT_SIZE_MAX);
+	ByteArray    readLine(bool * ok = nullptr, size_t maxSize = CWT_INT_MAX);
+	ByteArray    readLine(const ByteArray & endLine, bool * ok = nullptr, size_t maxSize = CWT_INT_MAX);
+	ByteArray    readLine(const char * endLine, bool * ok = nullptr, size_t maxSize = CWT_INT_MAX) { return readLine(ByteArray(endLine), ok, maxSize); }
+	ByteArray    readLine(const ByteArray endLines[], int count, bool * ok = nullptr, size_t maxSize = CWT_INT_MAX);
 
 private:
 	// FIXME need shared
 	ByteArray m_buffer;
 	ssize_t   m_head;   // head position
-	size_t    m_lineMaxLength;
 };
 
 inline ByteArray IODevice::readLine(const ByteArray & endLine, bool * ok, size_t maxSize)

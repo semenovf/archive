@@ -68,6 +68,7 @@ public:
 	ushort_t toUShort(bool *ok = 0, int base = 10) const;
 	byte_t	 toByte(bool *ok = 0, int base = 10) const;
 	sbyte_t  toSByte(bool *ok = 0, int base = 10) const;
+	ByteArray toBase64 () const;
 
 	ByteArray&	setNumber(long_t n, int base = 10);
 	ByteArray&	setNumber(ulong_t n, int base = 10);
@@ -107,6 +108,8 @@ public:
 	static ByteArray number(uint_t n, int base = 10);
 	static ByteArray number(long_t n, int base = 10);
 	static ByteArray number(ulong_t n, int base = 10);
+
+	static ByteArray fromBase64 (const ByteArray & base64);
 };
 
 DLL_API uint_t hash_func(const ByteArray &key, uint seed = 0);

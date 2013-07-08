@@ -35,14 +35,24 @@ void test_convert_number()
 }
 
 
+void test_base64()
+{
+	ByteArray text("Qt is great!");
+	CWT_TEST_OK(text.toBase64() == "UXQgaXMgZ3JlYXQh");
+
+	ByteArray based64("UXQgaXMgZ3JlYXQh");
+	CWT_TEST_OK(text == ByteArray::fromBase64(based64));
+}
+
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(2);
+	CWT_BEGIN_TESTS(5);
 
 	test_append();
 	test_convert_number();
+	test_base64();
 
     CWT_END_TESTS;
 }

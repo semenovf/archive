@@ -46,8 +46,8 @@ ssize_t IODevice::read(char bytes[], size_t n)
 
 		if (nbytes > ssize_t(0)) {
 			ntotalbytes += nbytes;
-			m_buffer.resize(BufferMaxSize);
-			nbytes = readBytes(m_buffer.data(), BufferMaxSize);
+			m_buffer.resize(DefaultBufferSize);
+			nbytes = readBytes(m_buffer.data(), DefaultBufferSize);
 
 			if (nbytes > 0) {
 				m_buffer.resize(nbytes);
@@ -61,9 +61,10 @@ ssize_t IODevice::read(char bytes[], size_t n)
 }
 
 
+// TODO must be removed (referenced from TextStream class)
 void IODevice::unread(const char bytes[], size_t n)
 {
-	CWT_ASSERT(m_buffer.size() + n <= BufferMaxSize * 2);
+	CWT_ASSERT(m_buffer.size() + n <= DefaultBufferSize);
 	m_buffer.prepend(bytes, n);
 }
 
@@ -78,7 +79,7 @@ bool IODevice::getByte(char * byte)
 		m_buffer.clear();
 		m_head = 0;
 
-		m_buffer.resize(BufferMaxSize);
+		m_buffer.resize(DefaultBufferSize);
 		ssize_t nbytes = readBytes(m_buffer.data(), m_buffer.size());
 
 		if (nbytes == 0) {
@@ -115,8 +116,10 @@ ByteArray IODevice::readAll()
 	char bytes[ChunkSize];
 	ssize_t n;
 
-	if (m_buffer.size() > 0)
+	if (m_buffer.size() > 0) {
 		ba.append(m_buffer);
+		m_buffer.clear();
+	}
 
 	while ( (n = readBytes(bytes, ChunkSize)) > 0 ) {
 		ba.append(bytes, n);
@@ -166,7 +169,7 @@ ByteArray IODevice::readLineData(const ByteArray endLines[], int count, bool * o
 }
 
 
-inline ByteArray IODevice::readLine(bool * ok, size_t maxSize)
+ByteArray IODevice::readLine(bool * ok, size_t maxSize)
 {
 	return readLineData(__defaultEndLines, sizeof(__defaultEndLines)/sizeof(__defaultEndLines[0]), ok, maxSize);
 }

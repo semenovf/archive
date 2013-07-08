@@ -286,6 +286,21 @@ String String::fromLatin1 (const char * str)
 	return s;
 }
 
+String String::fromUtf16 (const ushort_t * unicode, size_t size)
+{
+	String s;
+	CWT_ASSERT(size <= CWT_INT_MAX);
+	*s.pimpl = QString::fromUtf16(unicode, int(size));
+	return s;
+}
+
+String String::fromUtf16 (const ushort_t * unicode)
+{
+	String s;
+	*s.pimpl = QString::fromUtf16(unicode);
+	return s;
+}
+
 
 String String::number(double n, char format, int precision)
 {

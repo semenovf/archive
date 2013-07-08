@@ -85,6 +85,13 @@ short_t	 ByteArray::toShort(bool *ok, int base) const    { return pimpl->toShort
 uint_t	 ByteArray::toUInt(bool *ok, int base) const     { return pimpl->toUInt(ok, base); }
 ulong_t	 ByteArray::toULong(bool *ok, int base) const    { return pimpl->toULongLong(ok, base); }
 ushort_t ByteArray::toUShort(bool *ok, int base) const   { return pimpl->toUShort(ok, base); }
+ByteArray ByteArray::toBase64 () const
+{
+	ByteArray ba;
+	*ba.pimpl = pimpl->toBase64();
+	return ba;
+
+}
 
 ByteArray& ByteArray::setRawData(const char * data, uint size) { detach(); pimpl->setRawData(data, size); return *this; }
 size_t ByteArray::size() const { return size_t(pimpl->size()); }
@@ -193,6 +200,13 @@ ByteArray ByteArray::number(ulong_t n, int base)
 {
 	ByteArray ba;
 	*ba.pimpl = ByteArray::Impl(QByteArray::number(n, base));
+	return ba;
+}
+
+ByteArray ByteArray::fromBase64 (const ByteArray & base64)
+{
+	ByteArray ba;
+	*ba.pimpl = ByteArray::Impl(QByteArray::fromBase64(*base64.pimpl));
 	return ba;
 }
 

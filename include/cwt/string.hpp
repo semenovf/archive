@@ -32,19 +32,8 @@ CWT_NS_BEGIN
 class TextStream;
 
 class DLL_API String
-/*
-#ifdef CWT_STRING_SELF_IMPL
-	: public Vector<Char::char_type>
-#endif
-*/
 {
 	CWT_PIMPL_DECL_COPYABLE(String)
-/*#ifdef CWT_STRING_SELF_IMPL
-	typedef Char::char_type   data_type;
-	typedef Char::char_type   char_type;
-	typedef Vector<char_type> BaseClass;
-#endif
-*/
 public:
 	String();
 	String(const Char *unicode);
@@ -112,47 +101,42 @@ public:
 	Char    operator[](int pos);
 	const Char operator[](int pos) const;
 
-	friend bool	operator!=(const String &s1, const String &s2);
 	friend const String	operator+(const String &s1, const String &s2);
 	friend const String	operator+(const String &s, Char ch);
-	friend bool	operator<(const String &s1, const  String &s2);
-	friend bool	operator<=(const String &s1, const String &s2);
-	friend bool	operator==(const String &s1, const String &s2);
-	friend bool	operator>(const String &s1, const  String &s2);
-	friend bool	operator>=(const String &s1, const String &s2);
+	friend bool	operator != (const String &s1, const String &s2);
+	friend bool	operator <  (const String &s1, const  String &s2);
+	friend bool	operator <= (const String &s1, const String &s2);
+	friend bool	operator == (const String &s1, const String &s2);
+	friend bool	operator >  (const String &s1, const  String &s2);
+	friend bool	operator >= (const String &s1, const String &s2);
 
-	String&	setNumber(long_t n, int base = 10);
-	String&	setNumber(ulong_t n, int base = 10);
-	String&	setNumber(int_t n, int base = 10);
-	String&	setNumber(uint_t n, int base = 10);
-	String&	setNumber(short_t n, int base = 10);
-	String&	setNumber(ushort_t n, int base = 10);
-	String&	setNumber(sbyte_t n, int base = 10) { return setNumber(long_t(n), base); }
-	String&	setNumber(byte_t n, int base = 10)  { return setNumber(ulong_t(n), base); }
-	String&	setNumber(float n, char f = 'g', int prec = 6);
-	String&	setNumber(double n, char f = 'g', int prec = 6);
+	String&	setNumber (long_t n, int base = 10);
+	String&	setNumber (ulong_t n, int base = 10);
+	String&	setNumber (int_t n, int base = 10);
+	String&	setNumber (uint_t n, int base = 10);
+	String&	setNumber (short_t n, int base = 10);
+	String&	setNumber (ushort_t n, int base = 10);
+	String&	setNumber (sbyte_t n, int base = 10) { return setNumber(long_t(n), base); }
+	String&	setNumber (byte_t n, int base = 10)  { return setNumber(ulong_t(n), base); }
+	String&	setNumber (float n, char f = 'g', int prec = 6);
+	String&	setNumber (double n, char f = 'g', int prec = 6);
 
-	static String fromUtf8(const char *utf8);
-	static String fromUtf8(const char *utf8, size_t size);
-	static String fromUtf8(const ByteArray &str);
+	static String fromUtf8   (const char *utf8);
+	static String fromUtf8   (const char *utf8, size_t size);
+	static String fromUtf8   (const ByteArray &str);
 	static String fromLatin1 (const char * latin1, size_t size);
 	static String fromLatin1 (const char * latin1);
+	static String fromUtf16  (const ushort_t * unicode, size_t size);
+	static String fromUtf16  (const ushort_t * unicode);
 
-	static String number(double n, char format = 'g', int precision = 6);
-	static String number(float n, char format = 'g', int precision = 6);
-	static String number(int_t n, int base = 10);
-	static String number(uint_t n, int base = 10);
-	static String number(long_t n, int base = 10);
-	static String number(ulong_t n, int base = 10);
+	static String number (double n, char format = 'g', int precision = 6);
+	static String number (float n, char format = 'g', int precision = 6);
+	static String number (int_t n, int base = 10);
+	static String number (uint_t n, int base = 10);
+	static String number (long_t n, int base = 10);
+	static String number (ulong_t n, int base = 10);
 
 	static const String& constNull();
-
-/*
-private:
-    class Impl;
-    typedef unique_ptr<Impl> ImplPtr;
-    ImplPtr pimpl;
-*/
 
     friend class TextStream;
 };
