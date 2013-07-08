@@ -22,33 +22,19 @@ DLL_API uint_t hash_chars(const Char *p, size_t len, uint seed);
 
 inline uint_t hash_func(char key, uint_t seed = 0)        { return uint_t(key) ^ seed; }
 inline uint_t hash_func(byte_t key, uint_t seed = 0)      { return uint_t(key) ^ seed; }
-inline uint_t hash_func(signed char key, uint_t seed = 0) { return uint_t(key) ^ seed; }
 inline uint_t hash_func(ushort_t key, uint_t seed = 0)    { return uint_t(key) ^ seed; }
-inline uint_t hash_func(short key, uint_t seed = 0)       { return uint_t(key) ^ seed; }
+inline uint_t hash_func(short_t key, uint_t seed = 0)     { return uint_t(key) ^ seed; }
 inline uint_t hash_func(uint_t key, uint_t seed = 0)      { return key ^ seed; }
 inline uint_t hash_func(int key, uint_t seed = 0)         { return uint_t(key) ^ seed; }
-inline uint_t hash_func(unsigned long key, uint_t seed = 0)
+inline uint_t hash_func(ulong_t key, uint_t seed = 0)
 {
-    if (sizeof(unsigned long) > sizeof(uint_t)) {
+    if (sizeof(ulong_t) > sizeof(uint_t)) {
         return uint_t(((key >> (8 * sizeof(uint_t) - 1)) ^ key) & (~0U)) ^ seed;
     } else {
         return uint_t(key & (~0U)) ^ seed;
     }
 }
-inline uint_t hash_func(long key, uint_t seed = 0) { return hash_func((unsigned long)key, seed); }
-
-
-#ifdef CWT_HAS_INT64
-inline uint_t hash_func(uint64_t key, uint_t seed = 0)
-{
-    if (sizeof(uint64_t) > sizeof(uint_t)) {
-        return uint_t(((key >> (8 * sizeof(uint_t) - 1)) ^ key) & (~0U)) ^ seed;
-    } else {
-        return uint_t(key & (~0U)) ^ seed;
-    }
-}
-inline uint_t hash_func(int64_t key, uint_t seed = 0) { return hash_func(uint64_t(key), seed); }
-#endif
+inline uint_t hash_func(long_t key, uint_t seed = 0) { return hash_func((ulong_t)key, seed); }
 
 
 //#if defined(CWT_CC_MSVC)
@@ -409,7 +395,7 @@ typename Hash<Key,T>::iterator Hash<Key,T>::insert(const Key & key, const T & va
 	}
 
 	Hash::Entry *e;
-	uint_t index;
+	size_t index;
 
 	e = new Entry;
 	e->key = key;

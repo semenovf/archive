@@ -68,8 +68,13 @@ ByteArray& ByteArray::remove(size_t pos, size_t len)     { detach(); CWT_ASSERT(
 void ByteArray::reserve(size_t size)                     { detach(); CWT_ASSERT(size <= CWT_INT_MAX); pimpl->reserve((int)size); }
 void ByteArray::resize(size_t size)                      { detach(); CWT_ASSERT(size <= CWT_INT_MAX); pimpl->resize((int)size); }
 
-ByteArray& ByteArray::setNumber(long_t n, int base)      { detach(); pimpl->setNum(n, base); return *this; }
-ByteArray& ByteArray::setNumber(ulong_t n, int base)     { detach(); pimpl->setNum(n, base); return *this; }
+#ifdef CWT_HAS_INT64
+ByteArray& ByteArray::setNumber(long_t n, int base)      { detach(); pimpl->setNum((qlonglong)n, base); return *this; }
+ByteArray& ByteArray::setNumber(ulong_t n, int base)     { detach(); pimpl->setNum((qulonglong)n, base); return *this; }
+#else
+ByteArray& ByteArray::setNumber(long_t n, int base)      { detach(); pimpl->setNum((long)n, base); return *this; }
+ByteArray& ByteArray::setNumber(ulong_t n, int base)     { detach(); pimpl->setNum((unsigned long)n, base); return *this; }
+#endif
 ByteArray& ByteArray::setNumber(int_t n, int base)       { detach(); pimpl->setNum(n, base); return *this; }
 ByteArray& ByteArray::setNumber(uint_t n, int base)      { detach(); pimpl->setNum(n, base); return *this; }
 ByteArray& ByteArray::setNumber(short_t n, int base)     { detach(); pimpl->setNum(n, base); return *this; }
@@ -93,7 +98,7 @@ ByteArray ByteArray::toBase64 () const
 
 }
 
-ByteArray& ByteArray::setRawData(const char * data, uint size) { detach(); pimpl->setRawData(data, size); return *this; }
+ByteArray& ByteArray::setRawData(const char * data, size_t size) { CWT_ASSERT(size <= CWT_INT_MAX); detach(); pimpl->setRawData(data, (uint)size); return *this; }
 size_t ByteArray::size() const { return size_t(pimpl->size()); }
 
 /**
@@ -151,12 +156,12 @@ ByteArray ByteArray::substr(size_t pos) const
 //ByteArray&	ByteArray::operator=(const ByteArray &other) { pimpl->operator  = (*other.pimpl); return *this;}
 ByteArray&	ByteArray::operator = (const char *str) { detach(); pimpl->operator  = (str); return *this;}
 
-char ByteArray::operator[] (ssize_t i) const { return pimpl->operator [] (i); }
-char ByteArray::operator[] (size_t i) const { return pimpl->operator [] (i); }
+char ByteArray::operator[] (ssize_t i) const { CWT_ASSERT(i <= CWT_INT_MAX); return pimpl->operator [] ((int)i); }
+char ByteArray::operator[] (size_t i) const { CWT_ASSERT(i <= CWT_INT_MAX); return pimpl->operator [] ((uint)i); }
 
 // TODO return must be replaced by ByteRef instance
-char & ByteArray::operator[] (ssize_t i) { return pimpl->data()[i]; }
-char & ByteArray::operator[] (size_t i) { return pimpl->data()[i]; }
+char & ByteArray::operator[] (ssize_t i) { CWT_ASSERT(i <= CWT_INT_MAX); return pimpl->data()[(int)i]; }
+char & ByteArray::operator[] (size_t i) { CWT_ASSERT(i <= CWT_INT_MAX); return pimpl->data()[(int)i]; }
 
 bool operator == (const ByteArray &s1, const ByteArray &s2) { return *s1.pimpl == *s2.pimpl; }
 
@@ -192,14 +197,24 @@ ByteArray ByteArray::number(uint_t n, int base)
 ByteArray ByteArray::number(long_t n, int base)
 {
 	ByteArray ba;
-	*ba.pimpl = ByteArray::Impl(QByteArray::number(n, base));
+	*ba.pimpl =
+#ifdef CWT_HAS_INT64
+		ByteArray::Impl(QByteArray::number((qlonglong)n, base));
+#else
+		ByteArray::Impl(QByteArray::number((long)n, base));
+#endif
 	return ba;
 }
 
 ByteArray ByteArray::number(ulong_t n, int base)
 {
 	ByteArray ba;
-	*ba.pimpl = ByteArray::Impl(QByteArray::number(n, base));
+	*ba.pimpl =
+#ifdef CWT_HAS_INT64
+	ByteArray::Impl(QByteArray::number((qulonglong)n, base));
+#else
+	ByteArray::Impl(QByteArray::number((unsigned long)n, base));
+#endif
 	return ba;
 }
 

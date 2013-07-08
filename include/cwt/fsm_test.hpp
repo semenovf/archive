@@ -47,7 +47,7 @@ static void fsm_test_entries(Fsm<Char> &fsm, FsmTestEntry *entry)
 		char desc[128];
 		String input(String::fromUtf8(*valid_str));
 		ssize_t result = fsm.exec(0, input.data(), input.length());
-		sprintf(desc, "result == input.length(): %d == %d", result, (ssize_t)input.length());
+		sprintf(desc, "result == input.length(): %ld == %ld", result, (ssize_t)input.length());
 		CWT_TEST_FAIL2(result == (ssize_t)input.length(), desc);
 		valid_str++;
 	}
@@ -56,7 +56,7 @@ static void fsm_test_entries(Fsm<Char> &fsm, FsmTestEntry *entry)
 		char desc[128];
 		String input(String::fromUtf8(invalid_entries->str));
 		ssize_t result = fsm.exec(0, input.data(), input.length());
-		sprintf(desc, "result == invalid_entries->ret: %d == %d", result, invalid_entries->ret);
+		sprintf(desc, "result == invalid_entries->ret: %ld == %ld", result, invalid_entries->ret);
 		CWT_TEST_FAIL2(result == invalid_entries->ret, desc);
 		invalid_entries++;
 	}
