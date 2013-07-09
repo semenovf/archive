@@ -9,7 +9,7 @@
 
 #include "../../include/cwt/string.hpp"
 #include <cstring>
-#define QT_NO_CAST_FROM_ASCII
+//#define QT_NO_CAST_FROM_ASCII
 #include <QString>
 
 CWT_NS_BEGIN
@@ -18,7 +18,7 @@ static const String __nullString;
 
 class String::Impl : public QString {
 public:
-	Impl() : QString() {}
+	Impl() : QString("") {} // must be not isNull()
 	Impl(const Char *unicode);
 	Impl(const Char *unicode, size_t size);
 	Impl(Char ch)                 : QString(QChar(ch.unicode())) {}

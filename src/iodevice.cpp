@@ -137,41 +137,40 @@ ByteArray IODevice::readAll()
  * Returns byte array contains line of data.
  * @c ok stores @c true if one of endLines[] has been reached.
  */
-ByteArray IODevice::readLineData(const ByteArray endLines[], int count, bool * ok, size_t maxSize)
+//ByteArray IODevice::readLineData(const ByteArray endLines[], int count, bool * ok, size_t maxSize)
+IODevice::ReadLineStatus IODevice::readLineData(const ByteArray endLines[], int count, ByteArray & bytes, size_t maxSize)
 {
 	char ch;
-	size_t n = 0;
-	ByteArray r;
 
-	if (ok)
-		*ok = false;
+	if (bytes.size() >= maxSize) {
+		return ReadLine_Overflow;
+	}
 
 	while (getByte(&ch)) {
 
-		if (n == maxSize) {
-			ungetByte(ch);
-			this->addError(_Tr("maximum limit exceeded"));
-			return r;
+		bytes.append(ch);
+		for (int i = 0; i < count; ++i) {
+			if (bytes.endsWith(endLines[i])) {
+				bytes.resize(bytes.length() - endLines[i].length());
+				return ReadLine_Ok;
+			}
 		}
 
-		r.append(ch);
-		for (int i = 0; i < count; ++i) {
-			if (r.endsWith(endLines[i])) {
-				r.resize(r.length() - endLines[i].length());
-				if (ok)
-					*ok = true;
-				return r;
-			}
+		if (bytes.size() >= maxSize) {
+			return ReadLine_Overflow;
 		}
 	}
 
-	return r;
+	if (isError())
+		return ReadLine_Error;
+
+	return ReadLine_Intermediate;
 }
 
 
-ByteArray IODevice::readLine(bool * ok, size_t maxSize)
+IODevice::ReadLineStatus IODevice::readLine(ByteArray & bytes, size_t maxSize)
 {
-	return readLineData(__defaultEndLines, sizeof(__defaultEndLines)/sizeof(__defaultEndLines[0]), ok, maxSize);
+	return readLineData(__defaultEndLines, sizeof(__defaultEndLines)/sizeof(__defaultEndLines[0]), bytes, maxSize);
 }
 
 

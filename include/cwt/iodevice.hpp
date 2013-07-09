@@ -35,11 +35,18 @@ public:
 		, Unbuffered  = 0x0008
 	};
 
+	enum ReadLineStatus {
+		  ReadLine_Overflow = -2
+		, ReadLine_Error = -1
+		, ReadLine_Ok = 0
+		, ReadLine_Intermediate
+	};
+
 protected:
 	virtual ssize_t readBytes(char bytes[], size_t n) = 0;
 	virtual ssize_t writeBytes(const char bytes[], size_t n) = 0;
 	virtual size_t  bytesAvailable() const = 0;
-	ByteArray readLineData(const ByteArray endLines[], int count, bool * ok = nullptr, size_t maxSize = CWT_INT_MAX);
+	ReadLineStatus  readLineData(const ByteArray endLines[], int count, ByteArray & bytes, size_t maxSize = CWT_INT_MAX);
 
 public:
 	virtual int  close() = 0;
@@ -55,10 +62,10 @@ public:
 	bool         getByte(char * byte);
 	void         ungetByte(char byte);
 
-	ByteArray    readLine(bool * ok = nullptr, size_t maxSize = CWT_INT_MAX);
-	ByteArray    readLine(const ByteArray & endLine, bool * ok = nullptr, size_t maxSize = CWT_INT_MAX);
-	ByteArray    readLine(const char * endLine, bool * ok = nullptr, size_t maxSize = CWT_INT_MAX) { return readLine(ByteArray(endLine), ok, maxSize); }
-	ByteArray    readLine(const ByteArray endLines[], int count, bool * ok = nullptr, size_t maxSize = CWT_INT_MAX);
+	ReadLineStatus readLine(ByteArray & bytes, size_t maxSize = CWT_INT_MAX);
+	ReadLineStatus readLine(const ByteArray & endLine, ByteArray & bytes, size_t maxSize = CWT_INT_MAX);
+	ReadLineStatus readLine(const char * endLine, ByteArray & bytes, size_t maxSize = CWT_INT_MAX) { return readLine(ByteArray(endLine), bytes, maxSize); }
+	ReadLineStatus readLine(const ByteArray endLines[], int count, ByteArray & bytes, size_t maxSize = CWT_INT_MAX);
 
 private:
 	// FIXME need shared
@@ -66,15 +73,15 @@ private:
 	ssize_t   m_head;   // head position
 };
 
-inline ByteArray IODevice::readLine(const ByteArray & endLine, bool * ok, size_t maxSize)
+inline IODevice::ReadLineStatus IODevice::readLine(const ByteArray & endLine, ByteArray & bytes, size_t maxSize)
 {
 	const ByteArray endLines[] = { endLine };
-	return readLineData(endLines, 1, ok, maxSize);
+	return readLineData(endLines, 1, bytes, maxSize);
 }
 
-inline ByteArray IODevice::readLine(const ByteArray endLines[], int count, bool * ok, size_t maxSize)
+inline IODevice::ReadLineStatus IODevice::readLine(const ByteArray endLines[], int count, ByteArray & bytes, size_t maxSize)
 {
-	return readLineData(endLines, count, ok, maxSize);
+	return readLineData(endLines, count, bytes, maxSize);
 }
 
 

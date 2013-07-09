@@ -33,7 +33,7 @@ public:
 class ByteArray::Impl : public QByteArray
 {
 public:
-	Impl() : QByteArray() {  }
+	Impl() : QByteArray("") { } // must be not isNull()
 	Impl(const Impl &other) : QByteArray(other) {}
 	Impl(const QByteArray &other) : QByteArray(other) {}
 	Impl(const char *data) : QByteArray(data) {}
