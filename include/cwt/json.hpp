@@ -5,6 +5,7 @@
 #include <cwt/string.hpp>
 #include <cwt/errorable.hpp>
 #include <cwt/hash.hpp>
+#include <cwt/bytearray.hpp>
 #include <cwt/vector.hpp>
 #include <cwt/unitype.hpp>
 
@@ -18,6 +19,7 @@ public:
 		, JsonValue_Boolean
 		, JsonValue_Number
 		, JsonValue_String
+		, JsonValue_Binary // non JSON standard
 		, JsonValue_Object
 		, JsonValue_Array
 	};
@@ -64,6 +66,8 @@ public:
 	JsonValue(const char *utf8) : m_type(JsonValue_String), m_value(String::fromUtf8(utf8)), m_parent(nullptr) { }
 	JsonValue(const char *utf8, size_t size) : m_type(JsonValue_String), m_value(String::fromUtf8(utf8, size)), m_parent(nullptr) { }
 
+	JsonValue(const ByteArray & bytes) : m_type(JsonValue_Binary), m_value(bytes), m_parent(nullptr) { }
+
 	static JsonValue* createObject();
 	static JsonValue* createArray();
 
@@ -79,6 +83,7 @@ public:
 	bool isBoolean() const { return m_type == JsonValue_Boolean; }
 	bool isNumber()  const { return m_type == JsonValue_Number; }
 	bool isString()  const { return m_type == JsonValue_String; }
+	bool isBinary()  const { return m_type == JsonValue_Binary; }
 	bool isObject()  const { return m_type == JsonValue_Object; }
 	bool isArray()   const { return m_type == JsonValue_Array; }
 
@@ -90,6 +95,7 @@ public:
 	double  number() const   { return m_value.toDouble(); }
 	String  string() const   { return m_value.toString(); }
 	UniType value() const    { return m_value; }
+	ByteArray binary() const { return m_value.toBlob(); }
 
 	void remove(size_t i);
 	void remove(const String &key);
@@ -210,7 +216,10 @@ inline Json::Json (JsonValue::TypeEnum t)
 
 inline Json::~Json()
 {
-	if (m_root) delete m_root;
+	Logger::debug("Deleting JSON : %p (m_root = %p)", this, m_root);
+	if (m_root) {
+		delete m_root;
+	}
 	m_root = nullptr;
 }
 
