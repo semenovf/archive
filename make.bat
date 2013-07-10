@@ -30,9 +30,9 @@ set SETENV=C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd
 set ARGS=/Debug /win7 
 if exist "%SETENV%" goto begin 
 
-set SETENV=C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat
-set ARGS=x86
-if exist "%SETENV%" goto begin
+:: set SETENV=C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat
+:: set ARGS=x86
+:: if exist "%SETENV%" goto begin
 
 goto error_SetEnv
 
@@ -65,6 +65,5 @@ goto end
 :error_nmakeNotFound
 echo Error: nmake not found 1>&2
 goto end
-
 
 :end
