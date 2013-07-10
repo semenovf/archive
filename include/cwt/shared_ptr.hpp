@@ -69,7 +69,7 @@ private:
 };
 
 template <class T>
-class shared_ptr
+class DLL_API shared_ptr
 {
 private:
     template <typename Deleter>

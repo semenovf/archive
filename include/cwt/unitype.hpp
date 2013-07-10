@@ -34,7 +34,7 @@ struct UniObject : public AbstractUniObject
 };
 
 
-class UniType {
+class DLL_API UniType {
 public:
 	enum TypeEnum {
 		  NullValue

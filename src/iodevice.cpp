@@ -27,7 +27,7 @@ ssize_t IODevice::read(char bytes[], size_t n)
 		m_head = 0;
 	}
 
-	nbytes = CWT_MIN(n, m_buffer.size());
+	nbytes = CWT_MIN(n, m_buffer.size()); // FIXME warning C4267: '=' : conversion from 'size_t' to 'ssize_t', possible loss of data
 
 	// First, read from buffer.
 	if (nbytes > 0) {

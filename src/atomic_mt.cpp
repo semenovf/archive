@@ -6,7 +6,9 @@
  * @brief
  */
 
-#include "../include/cwt/atomic_mt.hpp"
+#include "../include/cwt/atomic.hpp"
+
+#if defined(CWT_HAVE_ATOMIC_MT)
 
 CWT_NS_BEGIN
 
@@ -25,3 +27,5 @@ template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<unsigned long long in
 #endif
 
 CWT_NS_END
+
+#endif

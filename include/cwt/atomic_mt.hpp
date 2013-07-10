@@ -1,13 +1,13 @@
 /**
- * @file   atomic_unix.hpp
+ * @file   atomic_mt.hpp
  * @author wladt
  * @date   Mar 27, 2013 11:45:49 AM
  *
  * @brief
  */
 
-#ifndef __CWT_ATOMIC_UNIX_HPP__
-#define __CWT_ATOMIC_UNIX_HPP__
+#ifndef __CWT_ATOMIC_MT_HPP__
+#define __CWT_ATOMIC_MT_HPP__
 
 #include <cwt/cwt.h>
 #include <cwt/mt.hpp>
@@ -66,4 +66,4 @@ struct atomic_integer_intrinsics
 
 CWT_NS_END
 
-#endif /* __CWT_ATOMIC_UNIX_HPP__ */
+#endif /* __CWT_ATOMIC_MT_HPP__ */

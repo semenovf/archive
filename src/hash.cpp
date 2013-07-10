@@ -59,7 +59,7 @@ DLL_API uint_t hash_bytes(const byte_t *p, size_t len, uint_t seed)
     return h;
 }
 
-DLL_API uint_t hash_chars(const Char *p, size_t len, uint seed)
+DLL_API uint_t hash_chars(const Char *p, size_t len, uint_t seed)
 {
     uint_t h = seed;
 

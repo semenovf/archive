@@ -17,8 +17,8 @@ extern "C" {
     long _InterlockedExchangeAdd(long volatile *, long);
 
 #ifdef CWT_HAS_INT64
-    __int64 long _InterlockedExchangeAdd64(__int64 volatile *, __int64);
-# endif
+    __int64 _InterlockedExchangeAdd64(__int64 volatile *, __int64);
+#endif
 }
 
 CWT_NS_BEGIN
@@ -52,6 +52,7 @@ struct atomic_integer_intrinsics
     {
     	return _InterlockedExchangeAdd(&value, valueToAdd);
     }
+};
 
 CWT_NS_END
 

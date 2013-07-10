@@ -16,7 +16,7 @@
 
 CWT_NS_BEGIN
 
-class IODevice : public Errorable
+class DLL_API IODevice : public Errorable
 {
 public:
 	static const size_t ChunkSize     = 512;

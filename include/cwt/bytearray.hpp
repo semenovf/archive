@@ -112,7 +112,7 @@ public:
 	static ByteArray fromBase64 (const ByteArray & base64);
 };
 
-DLL_API uint_t hash_func(const ByteArray &key, uint seed = 0);
+DLL_API uint_t hash_func(const ByteArray &key, uint_t seed = 0);
 
 /*
 #ifdef CWT_BYTEARRAY_SELF_IMPL

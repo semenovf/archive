@@ -33,7 +33,7 @@ CWT_NS_BEGIN
 #define FSM_REJECT  1
 #define FSM_ACCEPT  2
 
-struct FsmMatchBase;
+//class FsmMatchBase;
 struct FsmContext;
 struct FsmTransition;
 
@@ -43,8 +43,9 @@ struct FsmRptBounds {
 
 typedef ssize_t (*FsmFunc)(FsmContext *fsm, void *fn_context, const void *data, size_t len);
 
-struct FsmMatchBase
+class FsmMatchBase
 {
+public:
 	FsmMatchBase() : ref(1) {}
 	virtual ~FsmMatchBase() {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const = 0;
@@ -80,16 +81,18 @@ private:
 };
 
 /* Matches sequence of characters */
-struct FsmMatchSeq : public FsmMatchBase
+class FsmMatchSeq : public FsmMatchBase
 {
+public:
 	FsmMatchSeq(size_t len) : m_len(len) {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
 	size_t m_len;
 };
 
 /* Matches string of characters */
-struct FsmMatchStr : public FsmMatchBase
+class FsmMatchStr : public FsmMatchBase
 {
+public:
 	FsmMatchStr(const void *str, size_t len) : m_len(len), m_str(str) {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
 	size_t m_len;
@@ -97,8 +100,9 @@ struct FsmMatchStr : public FsmMatchBase
 };
 
 /* Matches string of characters from String object */
-struct FsmMatchStringStr : public FsmMatchBase
+class FsmMatchStringStr : public FsmMatchBase
 {
+public:
 	FsmMatchStringStr(const String &str) : m_str(str) {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
 	String m_str;
@@ -106,8 +110,9 @@ struct FsmMatchStringStr : public FsmMatchBase
 
 
 /* Matches one character from characters */
-struct FsmMatchChar : public FsmMatchBase
+class FsmMatchChar : public FsmMatchBase
 {
+public:
 	FsmMatchChar(const void *chars, size_t count) : m_count(count), m_chars(chars) {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
 	size_t m_count;
@@ -115,30 +120,34 @@ struct FsmMatchChar : public FsmMatchBase
 };
 
 /* Matches one character from String object */
-struct FsmMatchStringChar : public FsmMatchBase
+class FsmMatchStringChar : public FsmMatchBase
 {
+public:
 	FsmMatchStringChar(const String &str) : m_str(str) {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
 	String m_str;
 };
 
 
-struct FsmMatchRange : public FsmMatchBase
+class FsmMatchRange : public FsmMatchBase
 {
+public:
 	FsmMatchRange( const void *from, const void *to) : m_from(from), m_to(to) {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
 	const void *m_from, *m_to;
 };
 
-struct FsmMatchFsm : public FsmMatchBase
+class FsmMatchFsm : public FsmMatchBase
 {
+public:
 	FsmMatchFsm(const FsmTransition *trans) : m_trans(trans) {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
 	const FsmTransition *m_trans;
 };
 
-struct FsmMatchFunc : public FsmMatchBase
+class FsmMatchFunc : public FsmMatchBase
 {
+public:
 	FsmMatchFunc(FsmFunc fn, void *fnContext) : m_fn(fn), m_fnContext(fnContext) {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
 	FsmFunc m_fn;
@@ -158,8 +167,9 @@ private:
 	FsmRptBounds m_bounds;
 };
 
-struct FsmMatchNothing : public FsmMatchBase
+class FsmMatchNothing : public FsmMatchBase
 {
+public:
 	FsmMatchNothing() {}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const {
 		CWT_UNUSED3(fsm, data, len);
