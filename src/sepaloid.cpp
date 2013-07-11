@@ -27,7 +27,8 @@ private:
 	Petaloid*        m_petaloid;
 };
 
-Sepaloid::Sepaloid(Sepaloid::Mapping mapping[], int n) : m_searchPaths()
+Sepaloid::Sepaloid(Sepaloid::Mapping mapping[], int n)
+	: m_masterPetaloid(nullptr)
 {
 	for (int i = 0; i < n; i++) {
 		m_mapping.insert(ByteArray(mapping[i].id), &mapping[i]);

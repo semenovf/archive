@@ -14,13 +14,19 @@
 #include <cwt/string.hpp>
 #include <cwt/mt.hpp>
 #include <cwt/iodevice.hpp>
+#include <cwt/errorable.hpp>
 #include <cwt/textcodec.hpp>
 
 CWT_NS_BEGIN
 
-class DLL_API TextInputStream {
+class DLL_API TextInputStream  : public Errorable
+{
 private:
 	static const size_t ChunkSize = 512;
+
+protected:
+	IODevice::ReadLineStatus readLineData(const String endLines[], int count, String & s, size_t maxSize = CWT_INT_MAX);
+
 public:
 	TextInputStream() : m_isString(false), m_dev(NULL), m_decoder(NULL) {}
 	TextInputStream(IODevice *dev) : m_isString(false), m_dev(dev), m_decoder(NULL) {}
@@ -34,11 +40,14 @@ public:
 	}
 	String read(size_t len);
 	String readAll();
-	String readLine(bool with_nl = false);
-	String readLine(const String &endLine, bool with_nl = false);
-	String readLine(const String endLines[], int count, bool with_nl = false);
-	Char   getChar();
-	void   ungetChar(Char ch);
+
+	IODevice::ReadLineStatus readLine(String & s, size_t maxSize = CWT_INT_MAX);
+	IODevice::ReadLineStatus readLine(const String & endLine, String & s, size_t maxSize = CWT_INT_MAX);
+	IODevice::ReadLineStatus readLine(const Char * endLine, String & s, size_t maxSize = CWT_INT_MAX) { return readLine(String(endLine), s, maxSize); }
+	IODevice::ReadLineStatus readLine(const String endLines[], int count, String & s, size_t maxSize = CWT_INT_MAX);
+
+	bool getChar(Char & ch);
+	void ungetChar(Char ch);
 
 	void setDecoder(Decoder *decoder) { m_decoder = decoder; }
 
@@ -80,10 +89,17 @@ protected:
 
 };
 
-inline Char TextInputStream::getChar()
+inline bool TextInputStream::getChar(Char & ch)
 {
-	String ch = read(1);
-	return ch.length() > 0 ? ch[0] : Char();
+	String s = read(1);
+
+	if (s.length() > 0 ) {
+		ch = s[0];
+		return true;
+	}
+
+	ch = Char();
+	return false;
 }
 
 // TODO need more effective algorithm for returning a char into the stream.
@@ -91,6 +107,18 @@ inline void TextInputStream::ungetChar(Char ch)
 {
 	m_remainChars.prepend(ch);
 }
+
+inline IODevice::ReadLineStatus TextInputStream::readLine(const String & endLine, String & s, size_t maxSize)
+{
+	const String endLines[] = { endLine };
+	return readLineData(endLines, 1, s, maxSize);
+}
+
+inline IODevice::ReadLineStatus TextInputStream::readLine(const String endLines[], int count, String & s, size_t maxSize)
+{
+	return readLineData(endLines, count, s, maxSize);
+}
+
 
 CWT_NS_END
 

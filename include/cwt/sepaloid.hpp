@@ -97,7 +97,7 @@ public:
     friend class const_iterator;
 
 protected:
-    Sepaloid() {}
+    Sepaloid() : m_masterPetaloid(nullptr) {}
 
 public:
 	Sepaloid(Mapping mapping[], int n);

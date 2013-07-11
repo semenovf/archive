@@ -137,7 +137,6 @@ ByteArray IODevice::readAll()
  * Returns byte array contains line of data.
  * @c ok stores @c true if one of endLines[] has been reached.
  */
-//ByteArray IODevice::readLineData(const ByteArray endLines[], int count, bool * ok, size_t maxSize)
 IODevice::ReadLineStatus IODevice::readLineData(const ByteArray endLines[], int count, ByteArray & bytes, size_t maxSize)
 {
 	char ch;

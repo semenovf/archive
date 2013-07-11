@@ -103,6 +103,7 @@ public:
 	void           reserve(size_t size)    { detachAndRealloc(CWT_MAX(size, m_d->data.size())); }
 	size_t         size() const            { return m_d->count; }
 	void           swap(Vector<T> & other) { m_d.swap(other.m_d); }
+	//bool endsWith  (Vector<T> & end) const; // TODO Must be implemented
 
     iterator       begin()        { detach(); return iterator(m_d->data.data()); }
     iterator       end()          { detach(); return iterator(m_d->data.data()) + m_d->count; }

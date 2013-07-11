@@ -11,8 +11,7 @@
 
 CWT_NS_BEGIN
 
-static const String DEFAULT_END_LINES[] = {_U("\n\r"), _U("\r\n"), _U("\r"), _U("\n") };
-static const int __endLinesCount = sizeof(DEFAULT_END_LINES)/sizeof(DEFAULT_END_LINES[0]);
+static const String __defaultEndLines[] = {_U("\n\r"), _U("\r\n"), _U("\r"), _U("\n") };
 
 String TextInputStream::read(size_t len)
 {
@@ -87,7 +86,7 @@ String TextInputStream::readAll()
 		result += s;
 
 		if (nremainBytes > 0) {
-			m_dev->unread(&bytes[0] + n - nremainBytes, nremainBytes);
+			m_dev->unread(&bytes[0] + n - nremainBytes, nremainBytes); // FIXME call of unread is evil
 
 			// Prevent infinite loop
 			// Remain bytes stored at internal buffer of the I/O device.
@@ -102,12 +101,43 @@ String TextInputStream::readAll()
 	return result;
 }
 
-String TextInputStream::readLine(bool with_nl)
+
+IODevice::ReadLineStatus TextInputStream::readLine(String & s, size_t maxSize)
 {
-	return readLine(DEFAULT_END_LINES, __endLinesCount, with_nl);
+	return readLineData(__defaultEndLines, sizeof(__defaultEndLines)/sizeof(__defaultEndLines[0]), s, maxSize);
 }
 
-// TODO need more effective algorithm
+
+IODevice::ReadLineStatus TextInputStream::readLineData(const String endLines[], int count, String & s, size_t maxSize)
+{
+	Char ch;
+
+	if (s.size() >= maxSize) {
+		return IODevice::ReadLine_Overflow;
+	}
+
+	while (getChar(ch)) {
+
+		s.append(ch);
+		for (int i = 0; i < count; ++i) {
+			if (s.endsWith(endLines[i])) {
+				s.resize(s.length() - endLines[i].length());
+				return IODevice::ReadLine_Ok;
+			}
+		}
+
+		if (s.size() >= maxSize) {
+			return IODevice::ReadLine_Overflow;
+		}
+	}
+
+	if (isError())
+		return IODevice::ReadLine_Error;
+
+	return IODevice::ReadLine_Intermediate;
+}
+
+/*
 String TextInputStream::readLine(const String &endLine, bool with_nl)
 {
 	String result;
@@ -124,8 +154,10 @@ String TextInputStream::readLine(const String &endLine, bool with_nl)
 
 	return result;
 }
+*/
 
 // TODO need more effective algorithm
+/*
 String TextInputStream::readLine(const String endLines[], int count, bool with_nl)
 {
 	String result;
@@ -144,6 +176,7 @@ String TextInputStream::readLine(const String endLines[], int count, bool with_n
 
 	return result;
 }
+*/
 
 
 ssize_t TextOutputStream::write(const String &s)
