@@ -4,6 +4,8 @@ TARGET =
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
 
+DEPENDPATH += ../../include
+
 unix {
     HEADERS += ../../include/@PRJ@/*.h
     SOURCES += ../../src/*.c
