@@ -47,14 +47,13 @@ public:
 
 static ssize_t __is_key_char(FsmContext *fsm, void *fn_context, const void *data, size_t len);
 
-static String _ROOT_OP(_U("/"));
-static String _CHILD_OP(_U("/"));
-static String _PARENT(_U(".."));
-static String _CURRENT(_U("."));
-static String _SUBSCRIPT_OPEN(_U("["));
-static String _SUBSCRIPT_CLOSE(_U("]"));
-//static String _DIGIT1_9(_U("123456789"));
-static String _DIGIT(_U("0123456789"));
+static String _JSONP_ROOT_OP(_U("/"));
+static String _JSONP_CHILD_OP(_U("/"));
+static String _JSONP_PARENT(_U(".."));
+static String _JSONP_CURRENT(_U("."));
+static String _JSONP_SUBSCRIPT_OPEN(_U("["));
+static String _JSONP_SUBSCRIPT_CLOSE(_U("]"));
+static String _JSONP_DIGIT(_U("0123456789"));
 
 static bool __is_root(const void *, size_t, void *, void *);
 static bool __begin_elem(const void *, size_t, void *, void *);
@@ -82,15 +81,15 @@ static bool __subscript(const void *, size_t, void *, void *);
 
 static FsmTransition key_fsm[] = {
       {-1, 1, FSM_MATCH_RPT_FUNC(__is_key_char,1,-1), FSM_ACCEPT, nullptr, nullptr }
-    , {-1, 2, FSM_MATCH_STR(_PARENT)               , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_STR(_CURRENT)              , FSM_ACCEPT, nullptr, nullptr }
+    , {-1, 2, FSM_MATCH_STR(_JSONP_PARENT)               , FSM_ACCEPT, nullptr, nullptr }
+    , {-1,-1, FSM_MATCH_STR(_JSONP_CURRENT)              , FSM_ACCEPT, nullptr, nullptr }
 };
 
 static FsmTransition subscript_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_SUBSCRIPT_OPEN) , FSM_NORMAL, nullptr, nullptr }
-    , { 2,-1, FSM_MATCH_CHAR(_DIGIT)          , FSM_NORMAL, nullptr, nullptr }
-    , { 3,-1, FSM_MATCH_RPT_CHAR(_DIGIT,0,-1) , FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_SUBSCRIPT_CLOSE), FSM_ACCEPT, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_CHAR(_JSONP_SUBSCRIPT_OPEN) , FSM_NORMAL, nullptr, nullptr }
+    , { 2,-1, FSM_MATCH_CHAR(_JSONP_DIGIT)          , FSM_NORMAL, nullptr, nullptr }
+    , { 3,-1, FSM_MATCH_RPT_CHAR(_JSONP_DIGIT,0,-1) , FSM_NORMAL, nullptr, nullptr }
+    , {-1,-1, FSM_MATCH_CHAR(_JSONP_SUBSCRIPT_CLOSE), FSM_ACCEPT, nullptr, nullptr }
 };
 
 static FsmTransition key_subscript_fsm[] = {
@@ -107,7 +106,7 @@ static FsmTransition elem_fsm[] = {
 };
 
 static FsmTransition next_elem_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_CHILD_OP) , FSM_NORMAL, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_CHAR(_JSONP_CHILD_OP) , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_FSM(elem_fsm)   , FSM_ACCEPT, nullptr, nullptr }
 };
 
@@ -117,7 +116,7 @@ static FsmTransition elems_fsm[] = {
 };
 
 static FsmTransition jpath_fsm[] = {
-      { 1,-1, FSM_MATCH_OPT_CHAR(_ROOT_OP) , FSM_NORMAL, __is_root, nullptr }
+      { 1,-1, FSM_MATCH_OPT_CHAR(_JSONP_ROOT_OP) , FSM_NORMAL, __is_root, nullptr }
     , {-1,-1, FSM_MATCH_OPT_FSM(elems_fsm) , FSM_ACCEPT, nullptr, nullptr }
 };
 

@@ -54,7 +54,7 @@ public:
 	UniType(uint_t v) : m_d(new Data)           { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 	UniType(long_t v) : m_d(new Data)           { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 	UniType(ulong_t v) :m_d(new Data)           { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(float v) : m_d(new Data)            { m_d->type = FloatValue; m_d->d.float_val = v; }
+	UniType(float v) : m_d(new Data)            { m_d->type = FloatValue; m_d->d.double_val = v; }
 	UniType(double v) : m_d(new Data)           { m_d->type = DoubleValue; m_d->d.double_val = v; }
 	UniType(Char v) : m_d(new Data)             { m_d->type = LongValue; m_d->d.long_val = long_t(v.unicode()); }
 	UniType(const String &v) : m_d(new Data)    { m_d->type = StringValue; m_d->d.string_val = new String(v); }
@@ -119,8 +119,10 @@ public:
 /* Do not use this methods!!! For internal use only !!! */
 	long_t& longRef()    { return m_d->d.long_val; }
 	const long_t& longRef() const    { return m_d->d.long_val; }
+/*
 	float& floatRef()    { return m_d->d.float_val; }
 	const float& floatRef() const { return m_d->d.float_val; }
+*/
 	double& doubleRef()  { return m_d->d.double_val; }
 	const double& doubleRef() const { return m_d->d.double_val; }
 	String& stringRef()  { return *m_d->d.string_val; }
@@ -138,7 +140,7 @@ private:
 		TypeEnum type;
 		union {
 			long_t     long_val;
-			float      float_val;
+			//float      float_val;
 			double     double_val;
 			String    *string_val;
 			ByteArray *blob_val;
@@ -217,7 +219,7 @@ inline void UniType::setFloat (float n)
 {
 	Data *d = new Data;
 	d->type = UniType::FloatValue;
-	d->d.float_val = n;
+	d->d.double_val = n;
 	setUniTypeData(d);
 }
 

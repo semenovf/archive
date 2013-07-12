@@ -195,7 +195,7 @@ void BitArray::setBit (size_t i, bool value)
 {
 	CWT_ASSERT(i <= CWT_INT_MAX);
 	detach();
-	pimpl->setBit(i, value);
+	pimpl->setBit(int(i), value);
 }
 
 

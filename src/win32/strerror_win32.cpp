@@ -12,7 +12,7 @@
 
 CWT_NS_BEGIN
 
-String strerror_win32(uint errn)
+String strerror_win32(uint_t errn)
 {
     LPVOID lpMsgBuf;
 

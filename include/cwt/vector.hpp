@@ -17,7 +17,7 @@
 CWT_NS_BEGIN
 
 template <typename T>
-class Vector {
+class DLL_API Vector {
 public:
     class iterator {
     public:
@@ -39,11 +39,11 @@ public:
         inline iterator        operator ++ (int) { T *n = i; ++i; return n; }
         inline iterator&       operator -- () { i--; return *this; }
         inline iterator        operator -- (int) { T *n = i; i--; return n; }
-        inline iterator&       operator += (int j) { i+=j; return *this; }
-        inline iterator&       operator -= (int j) { i-=j; return *this; }
-        inline iterator        operator +  (int j) const { return iterator(i+j); }
-        inline iterator        operator -  (int j) const { return iterator(i-j); }
-        inline int             operator -  (iterator j) const { return i - j.i; }
+        inline iterator&       operator += (size_t j) { i+=j; return *this; }
+        inline iterator&       operator -= (size_t j) { i-=j; return *this; }
+        inline iterator        operator +  (size_t j) const { return iterator(i+j); }
+        inline iterator        operator -  (size_t j) const { return iterator(i-j); }
+        inline intptr_t        operator -  (iterator j) const { return i - j.i; }
         inline                 operator T* () const { return i; }
     };
     friend class iterator;
@@ -58,7 +58,7 @@ public:
         inline explicit        const_iterator(const iterator &o): i(o.i)     {}
         inline const T&        operator*()                             const { return *i; }
         inline const T*        operator->()                            const { return i; }
-        inline const T&        operator[](int j)                       const { return *(i + j); }
+        inline const T&        operator[](size_t j)                    const { return *(i + j); }
         inline bool            operator==(const const_iterator &o)     const { return i == o.i; }
         inline bool            operator!=(const const_iterator &o)     const { return i != o.i; }
         inline bool            operator<(const const_iterator &other)  const { return i < other.i; }
@@ -69,11 +69,11 @@ public:
         inline const_iterator  operator++(int)                               { const T *n = i; ++i; return n; }
         inline const_iterator& operator--()                                  { i--; return *this; }
         inline const_iterator  operator--(int)                               { const T *n = i; i--; return n; }
-        inline const_iterator& operator+=(int j)                             { i+=j; return *this; }
-        inline const_iterator& operator-=(int j)                             { i-=j; return *this; }
-        inline const_iterator  operator+(int j)                        const { return const_iterator(i+j); }
-        inline const_iterator  operator-(int j)                        const { return const_iterator(i-j); }
-        inline int             operator-(const_iterator j)             const { return i - j.i; }
+        inline const_iterator& operator+=(size_t j)                          { i+=j; return *this; }
+        inline const_iterator& operator-=(size_t j)                          { i-=j; return *this; }
+        inline const_iterator  operator+(size_t j)                     const { return const_iterator(i+j); }
+        inline const_iterator  operator-(size_t j)                     const { return const_iterator(i-j); }
+        inline intptr_t        operator-(const_iterator j)             const { return i - j.i; }
         inline                 operator const T*()                     const { return i; }
     };
     friend class const_iterator;

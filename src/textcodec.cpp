@@ -11,7 +11,7 @@
 #include "localecodec_p.hpp"
 #include <cwt/mt.hpp>
 #include <cwt/hash.hpp>
-#include <cstring>
+#include <cwt/string.h>
 
 CWT_NS_BEGIN
 

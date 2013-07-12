@@ -271,7 +271,7 @@ private:
 };
 
 template <typename T>
-class shareable
+class DLL_API shareable
 {
 private:
 	shareable();

@@ -29,14 +29,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/time.h>
-#include <sys/sysinfo.h>
 #include "../include/cwt/uuid.h"
 #include "../include/cwt/md5.h"
 #include "../include/cwt/sha1.h"
 #include "../include/cwt/mt.h"
+
+#ifdef CWT_CC_GCC
+#	include <unistd.h>
+#	include <arpa/inet.h>
+#	include <sys/time.h>
+#	include <sys/sysinfo.h>
+#endif
+
+#ifdef CWT_CC_MSC
+#	include <winsock2.h> // htonl, ntohl, etc
+#endif
+
 
 /* set the following to the number of 100ns ticks of the actual
    resolution of your system's clock */
@@ -108,7 +116,6 @@ static void get_system_time(uuid_time_t *uuid_time)
        + 18 years and 5 leap days. */
     GetSystemTimeAsFileTime((FILETIME *)&time);
     time.QuadPart +=
-
           (unsigned __int64) (1000*1000*10)       // seconds
         * (unsigned __int64) (60 * 60 * 24)       // days
         * (unsigned __int64) (17+30+31+365*18+5); // # of days
@@ -137,8 +144,8 @@ static void get_random_info(char seed[16])
     QueryPerformanceCounter(&r.pc);
     r.tc = GetTickCount();
     r.l = MAX_COMPUTERNAME_LENGTH + 1;
-    GetComputerName(r.hostname, &r.l);
-    md5_update(&ctx, &r, sizeof r); /*   MD5Update(&c, &r, sizeof r);*/
+    GetComputerNameA(r.hostname, &r.l);
+    md5_update(&ctx, (md5_byte_t*)&r, sizeof r); /*   MD5Update(&c, &r, sizeof r);*/
     md5_finish(&ctx, seed); /*    MD5Final(seed, &c);*/
 }
 

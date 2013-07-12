@@ -20,7 +20,7 @@ CWT_NS_BEGIN
  * Qt   QUrl, QUrlQuery (for query string parsing)
  */
 
-struct UriData {
+struct DLL_API UriData {
 	UriData() : port(0), hostIsIp(false) {}
 	void clear();
 

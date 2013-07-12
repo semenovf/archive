@@ -50,7 +50,7 @@ ByteArray::ByteArray(size_t size, char ch)          : pimpl(new Impl(size, ch)) 
 
 ByteArray& ByteArray::append(const ByteArray &bytes)     { detach(); pimpl->append(*bytes.pimpl); return *this; }
 ByteArray& ByteArray::append(const char *data)           { detach(); pimpl->append(data); return *this; }
-ByteArray& ByteArray::append(const char *data, size_t size) { CWT_ASSERT(size <= CWT_INT_MAX); detach(); pimpl->append(data, size); return *this; }
+ByteArray& ByteArray::append(const char *data, size_t size) { CWT_ASSERT(size <= CWT_INT_MAX); detach(); pimpl->append(data, int(size)); return *this; }
 ByteArray& ByteArray::append(char ch)                    { detach(); pimpl->append(ch); return *this; }
 char ByteArray::at(size_t i) const                       { CWT_ASSERT(i <= CWT_INT_MAX); return pimpl->at(int(i)); }
 char ByteArray::at(ssize_t i) const						 { CWT_ASSERT(i <= CWT_INT_MAX); return pimpl->at(int(i)); }

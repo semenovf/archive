@@ -35,20 +35,20 @@ struct atomic_integer_intrinsics
 
     static inline void store(T &value, T newValue)
     {
-        value = newValue;
+        value = (T)newValue;
     }
 
-    static inline bool ref(long &value)
+    static inline bool ref(T &value)
     {
-    	return _InterlockedIncrement(&value) != 0;
+    	return _InterlockedIncrement((long volatile *)&value) != 0;
     }
 
-    static inline bool deref(long &value)
+    static inline bool deref(T &value)
     {
-    	return _InterlockedDecrement(&value) != 0;
+    	return _InterlockedDecrement((long volatile *)&value) != 0;
     }
 
-    static inline long fetchAndAddRelaxed(long &value, long valueToAdd)
+    static inline T fetchAndAddRelaxed(T &value, T valueToAdd)
     {
     	return _InterlockedExchangeAdd(&value, valueToAdd);
     }

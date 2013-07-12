@@ -294,7 +294,18 @@ CWT_NS_BEGIN
 		}
 
 	private:
+
+// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
+#ifdef CWT_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 		sender_set m_senders;
+
+#ifdef CWT_CC_MSVC
+#	pragma warning(pop)
+#endif
 	};
 
 	template<class mt_policy>

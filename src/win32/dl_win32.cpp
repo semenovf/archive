@@ -1,10 +1,11 @@
 #include <cwt/dl.hpp>
+#include <cwt/logger.hpp>
 
 /* TODO need error reporting */
 
 CWT_NS_BEGIN
 
-extern String strerror_win32(uint errn);
+extern String strerror_win32(uint_t errn);
 
 Dl::Handle Dl::open (const String &path, bool global, bool resolve)
 {
@@ -42,9 +43,9 @@ Dl::Ptr Dl::ptr (Dl::Handle h, const char *symname)
 
 void Dl::close (Dl::Handle h)
 {
-	if( h != (DlHandle)0) {
+	if( h != (Dl::Handle)0) {
 		FreeLibrary(h);
-		h = (DlHandle)0;
+		h = (Dl::Handle)0;
 	}
 }
 

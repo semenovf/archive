@@ -10,11 +10,12 @@
 #define __CWT_DL_HPP__
 
 /* see http://en.wikipedia.org/wiki/Dynamic_loading */
-#include <cwt/cwt.h>
+#include <cwt/cwt.hpp>
 #include <cwt/string.hpp>
 
 #ifdef CWT_CC_MSC
 #	include <windows.h>
+#	include <windef.h>
 #else
 #	include <dlfcn.h>
 #endif

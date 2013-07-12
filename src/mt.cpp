@@ -7,10 +7,11 @@
  */
 
 
-#include "../include/cwt/mt.h"
+#include "../include/cwt/mt.hpp"
 
 #if !defined(CWT_SINGLE_THREADED)
 static mt_def(__g_mutex);
+mutex_t multi_threaded_global::g_mutex;
 
 DLL_API mutex_t* cwt_global_mutex(void)
 {

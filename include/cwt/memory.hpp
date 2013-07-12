@@ -18,11 +18,12 @@ CWT_NS_BEGIN
 // FIXME add support for native C++11 implementation of unique_ptr and shared_ptr.
 
 template <typename T>
-class unique_ptr: public std::auto_ptr<T> {
+class DLL_API unique_ptr: public std::auto_ptr<T> {
 public:
 	explicit unique_ptr(T *p = 0) : std::auto_ptr<T>(p) { }
-	unique_ptr(const unique_ptr &a) throw() : std::auto_ptr<T>(a) { }
+	//unique_ptr(const unique_ptr &a) throw() : std::auto_ptr<T>(a) { }
 
+	~unique_ptr() { std::auto_ptr<T>::~auto_ptr(); }
     template<typename T1>
     unique_ptr(const unique_ptr<T1> &a) : std::auto_ptr<T>(a) { }
 };

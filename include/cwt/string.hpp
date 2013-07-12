@@ -89,7 +89,7 @@ public:
 	ulong_t	 toULong(bool *ok = 0, int base = 10) const;
 	ushort_t toUShort(bool *ok = 0, int base = 10) const;
 
-	void     truncate(int count);
+	void     truncate(size_t count);
 	const Char*	unicode() const;
 
 	ByteArray toUtf8() const;

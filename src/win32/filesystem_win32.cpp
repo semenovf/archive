@@ -10,7 +10,7 @@
 
 CWT_NS_BEGIN
 
-extern String strerror_win32(uint errn);
+extern String strerror_win32(uint_t errn);
 static String __separator(_U("\\"));
 
 Char FileSystem::separator()
@@ -22,7 +22,6 @@ Char FileSystem::separator()
 bool FileSystem::isAbsolute(const String &path)
 {
 	static String __disks(_U("abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-	bool rv;
 
 	if ( path.isEmpty()) {
 		return false;
@@ -44,7 +43,7 @@ bool FileSystem::isAbsolute(const String &path)
 bool FileSystem::exists(const String &path)
 {
 	struct _stat st;
-	return ( _wstat(path.c_str(), &st ) == 0 );
+	return ( _wstat(path.utf16(), &st ) == 0 );
 /*
 
 	struct stat st;

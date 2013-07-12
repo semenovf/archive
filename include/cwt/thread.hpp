@@ -9,12 +9,13 @@
 #define __CWT_THREAD_HPP__
 
 #include <cwt/cwt.hpp>
-#include <cwt/memory.hpp>
+#include <cwt/pimpl.hpp>
 
 CWT_NS_BEGIN
 
 class DLL_API Thread
 {
+	CWT_PIMPL_IMPL(Thread);
 public:
 	enum Priority {
 		  IdlePriority         // scheduled only when no other threads are running.
@@ -46,10 +47,6 @@ public:
 
 protected:
 	virtual void run () {}
-private:
-    class Impl;
-    typedef unique_ptr<Impl> ImplPtr;
-    ImplPtr pimpl;
 };
 
 CWT_NS_END

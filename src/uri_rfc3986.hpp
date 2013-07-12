@@ -131,30 +131,30 @@ static bool set_host_is_ip(const void *data, size_t len, void *context, void *ac
 #define FSM_MATCH_CHAR(s) FsmMatch(new FsmMatchStringChar(s))
 #define FSM_MATCH_STR(s)  FsmMatch(new FsmMatchStringStr(s))
 
-static String _ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
-static String _DIGIT(_U("0123456789"));
-static String _HEXDIGIT(_U("0123456789ABCDEFabcdef")); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
+static String _URI_ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
+static String _URI_DIGIT(_U("0123456789"));
+static String _URI_HEXDIGIT(_U("0123456789ABCDEFabcdef")); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
 
 static FsmTransition digit_fsm[] = {
-    {-1,-1, FSM_MATCH_CHAR(_DIGIT), FSM_ACCEPT, NULL, NULL }
+    {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, NULL, NULL }
 };
 
 static FsmTransition hexdig_fsm[] = {
-    {-1,-1, FSM_MATCH_CHAR(_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
+    {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
 };
 
 /* ALPHA / DIGIT / "-" / "." / "_" / "~" */
 static FsmTransition unreserved_fsm[] = {
-      {-1, 1, FSM_MATCH_CHAR(_ALPHA)     , FSM_ACCEPT, NULL, NULL }
-    , {-1, 2, FSM_MATCH_CHAR(_DIGIT)     , FSM_ACCEPT, NULL, NULL }
+      {-1, 1, FSM_MATCH_CHAR(_URI_ALPHA)     , FSM_ACCEPT, NULL, NULL }
+    , {-1, 2, FSM_MATCH_CHAR(_URI_DIGIT)     , FSM_ACCEPT, NULL, NULL }
     , {-1,-1, FSM_MATCH_CHAR(_U("-._~")) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* "%" HEXDIG HEXDIG */
 static FsmTransition pct_encoded_fsm[] = {
       { 1,-1, FSM_MATCH_STR(_U("%"))   , FSM_NORMAL, NULL, NULL }
-    , { 2,-1, FSM_MATCH_CHAR(_HEXDIGIT), FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_CHAR(_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
+    , { 2,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
 };
 
 /* "!" / "$" / "&" / "'" / "(" / ")"
@@ -230,10 +230,10 @@ static FsmTransition path_empty_fsm[] = {
 
 /* 1*4HEXDIG */
 static FsmTransition h16_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
-	, { 2,-1, FSM_MATCH_CHAR(_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
-	, { 3,-1, FSM_MATCH_CHAR(_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
-	, {-1,-1, FSM_MATCH_CHAR(_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
+	, { 2,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
+	, { 3,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, NULL, NULL }
 };
 
 /* "25" %x30-35        ; 250-255 */
@@ -246,20 +246,20 @@ static FsmTransition dec_octet_fsm_4[] = {
 static FsmTransition dec_octet_fsm_3[] = {
 	  { 1,-1, FSM_MATCH_STR(_U("2"))     , FSM_NORMAL, NULL, NULL }
 	, { 2,-1, FSM_MATCH_CHAR(_U("01234")), FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_CHAR(_DIGIT)     , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT)     , FSM_ACCEPT, NULL, NULL }
 };
 
 /* "1" 2DIGIT  ; 100-199 */
 static FsmTransition dec_octet_fsm_2[] = {
 	  { 1,-1, FSM_MATCH_STR(_U("1")), FSM_NORMAL, NULL, NULL }
-	, { 2,-1, FSM_MATCH_CHAR(_DIGIT), FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_CHAR(_DIGIT), FSM_ACCEPT, NULL, NULL }
+	, { 2,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, NULL, NULL }
 };
 
 /* %x31-39 DIGIT       ; 10-99*/
 static FsmTransition dec_octet_fsm_1[] = {
       { 1,-1, FSM_MATCH_CHAR(_U("123456789")), FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_CHAR(_DIGIT)         , FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT)         , FSM_ACCEPT, NULL, NULL }
 };
 
 /*
@@ -274,7 +274,7 @@ static FsmTransition dec_octet_fsm[] = {
     , {-1, 2, FSM_MATCH_FSM(dec_octet_fsm_3), FSM_ACCEPT, NULL, NULL } /* 200 - 249 */
     , {-1, 3, FSM_MATCH_FSM(dec_octet_fsm_2), FSM_ACCEPT, NULL, NULL } /* 100 - 199 */
     , {-1, 4, FSM_MATCH_FSM(dec_octet_fsm_1), FSM_ACCEPT, NULL, NULL } /* 10 - 99 */
-    , {-1,-1, FSM_MATCH_CHAR(_DIGIT)        , FSM_ACCEPT, NULL, NULL } /* 0 - 9 */
+    , {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT)        , FSM_ACCEPT, NULL, NULL } /* 0 - 9 */
 };
 
 /* dec-octet "." dec-octet "." dec-octet "." dec-octet */
@@ -597,12 +597,12 @@ static FsmTransition relative_ref_fsm[] = {
 
 /* ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) */
 static FsmTransition scheme_chars_fsm[] = {
-	  {-1, 1, FSM_MATCH_CHAR(_ALPHA)   , FSM_ACCEPT, NULL, NULL }
-	, {-1, 2, FSM_MATCH_CHAR(_DIGIT)   , FSM_ACCEPT, NULL, NULL }
+	  {-1, 1, FSM_MATCH_CHAR(_URI_ALPHA)   , FSM_ACCEPT, NULL, NULL }
+	, {-1, 2, FSM_MATCH_CHAR(_URI_DIGIT)   , FSM_ACCEPT, NULL, NULL }
 	, {-1,-1, FSM_MATCH_CHAR(_U("+-.")), FSM_ACCEPT, NULL, NULL }
 };
 static FsmTransition scheme_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_ALPHA), FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_URI_ALPHA), FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_RPT_FSM(scheme_chars_fsm, 0, -1), FSM_ACCEPT, NULL, NULL }
 };
 

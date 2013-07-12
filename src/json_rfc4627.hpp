@@ -26,6 +26,7 @@
 #define __CWT_JSON_RFC4627_HPP__
 
 #include "../include/cwt/fsm.hpp"
+#include "../include/cwt/string.hpp"
 #include "json_p.hpp"
 
 CWT_NS_BEGIN
@@ -140,49 +141,48 @@ static const int _JSON_VALUE_STRING = 5;
 #define FSM_MATCH_RPT_CHAR(s,f,t) FsmMatch(new FsmMatchRpt(FSM_MATCH_CHAR(s),f,t))
 #define FSM_MATCH_OPT_CHAR(s)     FsmMatch(new FsmMatchRpt(FSM_MATCH_CHAR(s),0,1))
 
-static String _ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
-static String _HEXDIGIT(_U("0123456789ABCDEFabcdef")); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
-static String _DIGIT(_U("0123456789"));
-static String _DEC_POINT(_U("."));
-static String _DIGIT1_9(_U("123456789"));
-static String _E(_U("eE"));
-static String _MINUS(_U("-"));
-static String _PLUS(_U("+"));
-static String _MINUSPLUS(_U("-+"));
-static String _ZERO(_U("0"));
-static String _WS(_U(" \t\n\r"));
-static String _ESC(_U("\\"));
-static String _DQUOTE(_U("\""));
-
+static String _JSON_ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
+static String _JSON_HEXDIGIT(_U("0123456789ABCDEFabcdef")); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
+static String _JSON_DIGIT(_U("0123456789"));
+static String _JSON_DEC_POINT(_U("."));
+static String _JSON_DIGIT1_9(_U("123456789"));
+static String _JSON_E(_U("eE"));
+static String _JSON_MINUS(_U("-"));
+static String _JSON_PLUS(_U("+"));
+static String _JSON_MINUSPLUS(_U("-+"));
+static String _JSON_ZERO(_U("0"));
+static String _JSON_WS(_U(" \t\n\r"));
+static String _JSON_ESC(_U("\\"));
+static String _JSON_DQUOTE(_U("\""));
 
 /* exp = e [ minus / plus ] 1*DIGIT */
 static FsmTransition exp_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_E)               , FSM_NORMAL, NULL, NULL }
-    , { 2,-1, FSM_MATCH_OPT_CHAR(_MINUSPLUS)   , FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 1,-1) , FSM_ACCEPT, NULL, NULL }
+      { 1,-1, FSM_MATCH_CHAR(_JSON_E)               , FSM_NORMAL, NULL, NULL }
+    , { 2,-1, FSM_MATCH_OPT_CHAR(_JSON_MINUSPLUS)   , FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_DIGIT, 1,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* frac = decimal-point 1*DIGIT */
 static FsmTransition frac_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_DEC_POINT)       , FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 1,-1) , FSM_ACCEPT, NULL, NULL }
+      { 1,-1, FSM_MATCH_CHAR(_JSON_DEC_POINT)       , FSM_NORMAL, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_DIGIT, 1,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* decimal_number_fsm = digit1-9 *DIGIT */
 static FsmTransition decimal_num_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_DIGIT1_9)        , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT,-1,-1) , FSM_ACCEPT, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_JSON_DIGIT1_9)        , FSM_NORMAL, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_DIGIT,-1,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* int = zero / ( digit1-9 *DIGIT ) */
 static FsmTransition int_fsm[] = {
-      {-1, 1, FSM_MATCH_CHAR(_ZERO)          , FSM_ACCEPT, NULL, NULL }
+      {-1, 1, FSM_MATCH_CHAR(_JSON_ZERO)          , FSM_ACCEPT, NULL, NULL }
     , {-1,-1, FSM_MATCH_FSM(decimal_num_fsm) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* number = [ minus ] int [ frac ] [ exp ] */
 static FsmTransition number_fsm[] = {
-      { 1, 1, FSM_MATCH_OPT_CHAR(_MINUS) , FSM_NORMAL, NULL, NULL }
+      { 1, 1, FSM_MATCH_OPT_CHAR(_JSON_MINUS) , FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_FSM(int_fsm)     , FSM_NORMAL, NULL, NULL }
     , { 3,-1, FSM_MATCH_OPT_FSM(frac_fsm), FSM_NORMAL, NULL, NULL }
     , {-1,-1, FSM_MATCH_OPT_FSM(exp_fsm) , FSM_ACCEPT, NULL, NULL }
@@ -190,44 +190,44 @@ static FsmTransition number_fsm[] = {
 
 /* begin-array     = ws %x5B ws  ; [ left square bracket */
 static FsmTransition begin_array_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_CHAR(_U("["))       , FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* end-array       = ws %x5D ws  ; ] right square bracket */
 static FsmTransition end_array_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_CHAR(_U("]"))       , FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* begin-object    = ws %x7B ws  ; { left curly bracket */
 static FsmTransition begin_object_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_CHAR(_U("{"))       , FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* end-object      = ws %x7D ws  ; } right curly bracket */
 static FsmTransition end_object_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_CHAR(_U("}"))       , FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* name-separator  = ws %x3A ws  ; : colon */
 static FsmTransition name_separator_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_CHAR(_U(":"))       , FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 /* value-separator = ws %x2C ws  ; , comma */
 static FsmTransition value_separator_fsm[] = {
-	  { 1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_CHAR(_U(","))       , FSM_NORMAL, NULL, NULL }
-    , {-1,-1, FSM_MATCH_RPT_CHAR(_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_WS, 0,-1) , FSM_ACCEPT, NULL, NULL }
 };
 
 
@@ -247,7 +247,7 @@ static FsmTransition unescaped_char_fsm[] = {
 /* %x75 4HEXDIG ; uXXXX */
 static FsmTransition unicode_char_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_U("uU"))            , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT_CHAR(_HEXDIGIT, 4, 4) , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_JSON_HEXDIGIT, 4, 4) , FSM_ACCEPT, NULL, NULL }
 };
 
 
@@ -269,7 +269,7 @@ static FsmTransition escaped_char_fsm[] = {
 
 /* escape escaped_char */
 static FsmTransition escaped_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_ESC)            , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_JSON_ESC)            , FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_FSM(escaped_char_fsm) , FSM_ACCEPT, NULL, NULL }
 };
 
@@ -293,9 +293,9 @@ static FsmTransition char_fsm[] = {
 
 /* string = quotation-mark *char quotation-mark */
 static FsmTransition string_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_DQUOTE)           , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(_JSON_DQUOTE)           , FSM_NORMAL, NULL, NULL }
 	, { 2,-1, FSM_MATCH_RPT_FSM(char_fsm, 0,-1) , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_CHAR(_DQUOTE)           , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_CHAR(_JSON_DQUOTE)           , FSM_ACCEPT, NULL, NULL }
 };
 
 
@@ -396,8 +396,8 @@ static bool __begin_member(const void *data, size_t len, void *context, void *ac
 
 	const Char *str = (const Char*)data;
 	CWT_ASSERT(len >= 2);
-	CWT_ASSERT(str[0] == _DQUOTE[0]);
-	CWT_ASSERT(str[len-1] == _DQUOTE[0]);
+	CWT_ASSERT(str[0] == _JSON_DQUOTE[0]);
+	CWT_ASSERT(str[len-1] == _JSON_DQUOTE[0]);
 
 	ctx->memberName = String(str + 1, len - 2);
 	unescape_chars(ctx->memberName);
@@ -540,8 +540,8 @@ static bool __scalar_value(const void *data, size_t len, void *context, void *ac
 	case _JSON_VALUE_STRING: {
 		const Char *str = (const Char*)data;
 		CWT_ASSERT(len >= 2);
-		CWT_ASSERT(str[0] == _DQUOTE[0]);
-		CWT_ASSERT(str[len-1] == _DQUOTE[0]);
+		CWT_ASSERT(str[0] == _JSON_DQUOTE[0]);
+		CWT_ASSERT(str[len-1] == _JSON_DQUOTE[0]);
 		String value_str(str + 1, len - 2);
 		unescape_chars(value_str);
 		value = new JsonValue(value_str);

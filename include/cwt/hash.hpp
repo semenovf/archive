@@ -96,7 +96,7 @@ struct HashData {
 
 
 template <typename Key, typename T>
-class Hash {
+class DLL_API Hash {
 public: // TODO Make private!
 	struct Entry {
 		Entry *next;

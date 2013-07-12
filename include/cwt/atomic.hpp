@@ -44,9 +44,9 @@ public:
 
     // Non-atomic API
     T load() const { return intrinsics::load(m_value); }
-    void store(T newValue) { intrinsics::store(m_value, newValue); }
-    bool ref() { return intrinsics::ref(m_value); }
-    bool deref() { return intrinsics::deref(m_value); }
+    void store(T newValue) { intrinsics::store((T&)m_value, newValue); }
+    bool ref() { return intrinsics::ref((T&)m_value); }
+    bool deref() { return intrinsics::deref((T&)m_value); }
 
     T fetchAndAddRelaxed(T valueToAdd)
     {

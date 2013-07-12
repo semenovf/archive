@@ -95,7 +95,7 @@ String& String::remove(size_t pos, size_t n)
 	CWT_ASSERT(pos <= CWT_INT_MAX);
 	CWT_ASSERT(n <= CWT_INT_MAX);
 	detach();
-	remove(int(pos), int(n));
+	pimpl->remove(int(pos), int(n));
 	return *this;
 }
 
@@ -160,7 +160,7 @@ short_t	 String::toShort(bool *ok, int base) const  { return pimpl->toShort(ok, 
 uint_t	 String::toUInt(bool *ok, int base) const   { return pimpl->toUInt(ok, base); }
 ulong_t	 String::toULong(bool *ok, int base) const  { return pimpl->toULongLong(ok, base); }
 ushort_t String::toUShort(bool *ok, int base) const { return pimpl->toUShort(ok, base); }
-void     String::truncate(int count)                { pimpl->truncate(count); }
+void     String::truncate(size_t count)             { CWT_ASSERT(count <= CWT_INT_MAX); detach(); pimpl->truncate(int(count)); }
 const Char*	String::unicode() const                 { return reinterpret_cast<const Char*>(pimpl->unicode()); }
 
 ByteArray String::toUtf8() const
@@ -281,8 +281,8 @@ String String::fromLatin1 (const char * str)
 {
 	String s;
 	size_t size = ::strlen(str);
-	CWT_ASSERT(size > CWT_INT_MAX);
-	*s.pimpl = QString::fromLatin1(str, size);
+	CWT_ASSERT(size <= CWT_INT_MAX);
+	*s.pimpl = QString::fromLatin1(str, int(size));
 	return s;
 }
 

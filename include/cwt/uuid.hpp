@@ -15,7 +15,7 @@
 
 CWT_NS_BEGIN
 
-class Uuid {
+class DLL_API Uuid {
 public:
 	Uuid() { static uuid_t null_uuid = CWT_NULL_UUID; uuid_copy(m_uuid, null_uuid); }
 	Uuid(const Uuid &uuid) { uuid_copy(m_uuid, uuid.m_uuid); }

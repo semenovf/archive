@@ -174,7 +174,7 @@ ByteArray Utf8Encoder::convertFromUnicode(const Char *chars, size_t len)
 	const Char *ch  = chars;
 	const Char *end = ch + len;
 	while (ch < end) {
-	    uint u = ch->unicode();
+	    uint_t u = ch->unicode();
 	    if (m_hiSurrogate >= 0) {
 	        if (ch->isLowSurrogate()) {
 	            u = Char::surrogatePairToUcs4(m_hiSurrogate, u);

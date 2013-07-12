@@ -73,9 +73,9 @@ static bool set_format_spec(const void *data, size_t len, void *context, void *a
  * p    Priority (Trace, Debug, Info etc.).
  */
 
-static String _ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
-static String _DIGIT(_U("0123456789"));
-static String _WS(_U(" \t"));
+static String _LOGGER_ALPHA(_U("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
+static String _LOGGER_DIGIT(_U("0123456789"));
+static String _LOGGER_WS(_U(" \t"));
 
 /* exclude '%' (0x25) */
 Char plain_char[] = {
@@ -90,11 +90,11 @@ static FsmTransition plain_char_fsm[] = {
 /* format-mod = [ "-" ] *2DIGIT [ "." *2DIGIT ] */
 static FsmTransition dot_digit_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_U("."))          , FSM_NORMAL, NULL, NULL }
-	, {-1,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, NULL }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(_LOGGER_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, NULL }
 };
 static FsmTransition format_mod_fsm[] = {
 	  { 1,-1, FSM_MATCH_OPT_CHAR(_U("-"))      , FSM_NORMAL, set_left_justify, NULL }
-	, { 2,-1, FSM_MATCH_RPT_CHAR(_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, NULL }
+	, { 2,-1, FSM_MATCH_RPT_CHAR(_LOGGER_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, NULL }
 	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm) , FSM_ACCEPT, NULL, NULL }
 };
 
