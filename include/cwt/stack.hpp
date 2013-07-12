@@ -28,11 +28,11 @@ public:
 
 template<typename T>
 inline T Stack<T>::pop()
-{ CWT_ASSERT(!this->isEmpty()); Vector<T>::detach(); T t = this->data()[this->size() -1]; this->resize(this->size()-1); return t; }
+{ CWT_ASSERT(!this->isEmpty()); Vector<T>::m_d.detach(); T t = this->data()[this->size() -1]; this->resize(this->size()-1); return t; }
 
 template<typename T>
 inline T &Stack<T>::top()
-{ CWT_ASSERT(!this->isEmpty()); Vector<T>::detach(); return this->data()[this->size()-1]; }
+{ CWT_ASSERT(!this->isEmpty()); Vector<T>::m_d.detach(); return this->data()[this->size()-1]; }
 
 template<typename T>
 inline const T &Stack<T>::top() const

@@ -187,32 +187,32 @@ public:
 		return (value == ptr.value);
 	}
 
-	inline bool operator== (const T* p) const
+	inline bool operator == (const T* p) const
 	{
 		return (value == p);
 	}
 
-	inline bool operator!= (const shared_ptr& ptr) const
+	inline bool operator != (const shared_ptr& ptr) const
 	{
 		return (value != ptr.value);
 	}
 
-	inline bool operator!= (const T* p) const
+	inline bool operator != (const T* p) const
 	{
 		return (value != p);
 	}
 
-	inline bool operator<= (const shared_ptr& ptr) const
+	inline bool operator <= (const shared_ptr& ptr) const
 	{
 		return (value <= ptr.value);
 	}
 
-	inline bool operator<= (const T* p) const
+	inline bool operator <= (const T* p) const
 	{
 		return (value <= p);
 	}
 
-	inline bool operator< (const shared_ptr& ptr) const
+	inline bool operator < (const shared_ptr& ptr) const
 	{
 		return (value < ptr.value);
 	}
@@ -222,22 +222,22 @@ public:
 		return (value < p);
 	}
 
-	inline bool operator>= (const shared_ptr& ptr) const
+	inline bool operator >= (const shared_ptr& ptr) const
 	{
 		return (value >= ptr.value);
 	}
 
-	inline bool operator>= (const T* p) const
+	inline bool operator >= (const T* p) const
 	{
 		return (value >= p);
 	}
 
-	inline bool operator> (const shared_ptr& ptr) const
+	inline bool operator > (const shared_ptr& ptr) const
 	{
 		return (value > ptr.value);
 	}
 
-	inline bool operator> (const T* p) const
+	inline bool operator > (const T* p) const
 	{
 		return (value > p);
 	}
@@ -270,7 +270,47 @@ private:
     ref_count *d;
 };
 
-template< class T >
+template <typename T>
+class shareable
+{
+private:
+	shareable();
+public:
+	explicit shareable(T *ptr) : d(ptr) {}
+	void detach()
+	{
+		if (d.use_count() > 1) {
+			shared_ptr<T> dd(new T(*d));
+			d.swap(dd);
+		}
+	}
+
+    void swap(shareable &other) { d.swap(other.d); }
+	bool unique() const { return d.unique(); }
+	T* operator -> () const  { return d.get(); }
+
+	shared_ptr<T> d;
+};
+
+template <typename T>
+inline shared_ptr<T> make_shared() { return shared_ptr<T>(new T); }
+
+template <class T, class Arg1>
+inline shared_ptr<T> make_shared(Arg1 a1) { return shared_ptr<T>(new T(a1)); }
+
+template <class T, class Arg1, class Arg2>
+inline shared_ptr<T> make_shared(Arg1 a1, Arg2 a2) { return shared_ptr<T>(new T(a1, a2)); }
+
+template <class T, class Arg1, class Arg2, class Arg3>
+inline shared_ptr<T> make_shared(Arg1 a1, Arg2 a2, Arg3 a3) { return shared_ptr<T>(new T(a1, a2, a3)); }
+
+template <class T, class Arg1, class Arg2, class Arg3, class Arg4>
+inline shared_ptr<T> make_shared(Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4) { return shared_ptr<T>(new T(a1, a2, a3, a4)); }
+
+template <class T, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5>
+inline shared_ptr<T> make_shared(Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5) { return shared_ptr<T>(new T(a1, a2, a3, a4, a5)); }
+
+template< class T>
 inline void swap(shared_ptr<T> &a, shared_ptr<T> &b )
 {
 	a.swap(b);

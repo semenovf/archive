@@ -80,33 +80,41 @@ public:
 
 public:
 	Vector();
-	Vector(int size);
-	Vector(int size, const T &value);
+	Vector(size_t size);
+	Vector(size_t size, const T &value);
+	Vector(const T * values, size_t size) : m_d(new VectorData) { append(values, size); }
 	Vector(const Vector<T> &other);
 
 	T&             at(size_t i);
 	const T&       at(size_t i) const;
+	bool           endsWith (const Vector<T> & end) const;
 	void           append(const T &value);
-	void           clear()         { detach(); m_d->count = 0; }
-	T*             data()          { detach(); return m_d->data.data(); }
+	void           append(const T * value, size_t count);
+	void           append(const Vector<T> & other);
+	void           clear()         { m_d.detach(); m_d->count = 0; }
+	T*             data()          { m_d.detach(); return m_d->data.data(); }
 	const T*       data() const    { return m_d->data.data(); }
+	const T*       constData() const { return m_d->data.data(); }
 	T&             first()         { return at(0); }
 	const T&       first() const   { return at(0); }
-	//void	       insert (size_t i, const T & value); // TODO add this method
-	bool           isEmpty() const { return m_d.use_count() > 0 && m_d->count > 0 ? false : true; }
+	//void	       insert (size_t i, const T & value); // TODO implement this method
+	bool           isEmpty() const { return m_d->count > 0 ? false : true; }
 	T&             last()          { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
 	const T&       last() const    { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
-	void           prepend(const T &value);
+	void           prepend(const T & value);
+	void           push_back (const T & value) { append(value); }
 	void	       remove(size_t i);
 	void	       remove(size_t i, size_t count);
 	void           resize(size_t size)     { reserve(size); m_d->count = size; }
-	void           reserve(size_t size)    { detachAndRealloc(CWT_MAX(size, m_d->data.size())); }
+	void           reserve(size_t size);
 	size_t         size() const            { return m_d->count; }
-	void           swap(Vector<T> & other) { m_d.swap(other.m_d); }
-	//bool endsWith  (Vector<T> & end) const; // TODO Must be implemented
+	Vector<T>	   mid(size_t pos, size_t length) const;
+	Vector<T>	   left(size_t count) const   { return mid(0, count); }
+	Vector<T>	   right(size_t count) const  { return mid(size() - count, count); }
+	void           swap(Vector<T> & other)    { m_d.swap(other.m_d); }
 
-    iterator       begin()        { detach(); return iterator(m_d->data.data()); }
-    iterator       end()          { detach(); return iterator(m_d->data.data()) + m_d->count; }
+    iterator       begin()        { m_d.detach(); return iterator(m_d->data.data()); }
+    iterator       end()          { m_d.detach(); return iterator(m_d->data.data()) + m_d->count; }
     const_iterator begin() const  { return const_iterator(m_d->data.data()); }
     const_iterator end() const    { return const_iterator(m_d->data.data()) + m_d->count; }
     const_iterator cbegin() const { return const_iterator(m_d->data.data()); }
@@ -116,20 +124,28 @@ public:
 	const T&       operator[](size_t i) const { return at(i); }
 	Vector<T>&	   operator = (const Vector<T> & other);
 
+/*
 protected:
 	void           detach() { detachAndRealloc(m_d->count); }
 	void           detachAndRealloc(size_t newsize);
+*/
 
 protected:
-	typedef struct {
+	struct VectorData {
+		VectorData() : count(0) {}
+		VectorData(const VectorData & other) : count(other.count)
+		{
+			data.alloc(count);
+			Array<T>::deep_copy(data, other.data, 0, 0, count);
+		}
 		Array<T> data;
 		size_t   count;
-	} VectorData;
+	};
 
-	shared_ptr<VectorData> m_d;
+	shareable<VectorData> m_d;
 };
 
-
+/*
 template <typename T>
 void Vector<T>::detachAndRealloc(size_t newsize)
 {
@@ -144,6 +160,7 @@ void Vector<T>::detachAndRealloc(size_t newsize)
 	}
 	m_d->count = CWT_MIN(newsize, m_d->count);
 }
+*/
 
 
 template <typename T>
@@ -154,19 +171,19 @@ inline Vector<T>::Vector() : m_d(new VectorData)
 }
 
 template <typename T>
-inline Vector<T>::Vector(int size) : m_d(new VectorData)
+inline Vector<T>::Vector(size_t size) : m_d(new VectorData)
 {
 	m_d->count = 0;
 	m_d->data.alloc(size);
 }
 
 template <typename T>
-Vector<T>::Vector(int size, const T &value)	: m_d(new VectorData)
+Vector<T>::Vector(size_t size, const T &value)	: m_d(new VectorData)
 {
 	m_d->count = size;
 	m_d->data.alloc(size);
 	T *d = m_d->data.data();
-	for(int i = 0; i< size; ++i) {
+	for(size_t i = 0; i < size; ++i) {
 		d[i] = value;
 	}
 }
@@ -188,7 +205,7 @@ inline T& Vector<T>::at(size_t i)
 {
 	CWT_ASSERT(!isEmpty());
 	CWT_ASSERT(i < m_d->count);
-	detach();
+	m_d.detach();
 	return m_d->data.at(i);
 }
 
@@ -201,9 +218,32 @@ inline const T& Vector<T>::at(size_t i) const
 }
 
 template <typename T>
+bool Vector<T>::endsWith (const Vector<T> & end) const
+{
+	size_t sz1 = this->size();
+	size_t sz2 = end.size();
+
+	if (sz1 == 0 || sz2 == 0)
+		return false;
+
+	if (sz1 < sz2)
+		return false;
+
+	bool r = true;
+
+	for (size_t i = sz1 - 1, j = sz2 - 1; r && j >= 0; ++i, ++j) {
+		if (this->at(i) != end[j]) {
+			r = false;
+		}
+	}
+
+	return r;
+}
+
+template <typename T>
 void Vector<T>::append(const T &value)
 {
-	detach();
+	m_d.detach();
 	if (m_d->count == m_d->data.size())
 		reserve(m_d->count + 32);
 	T *d = m_d->data.data();
@@ -211,9 +251,31 @@ void Vector<T>::append(const T &value)
 }
 
 template <typename T>
+void Vector<T>::append(const T * value, size_t count)
+{
+	m_d.detach();
+
+	if (m_d->count + count > m_d->data.size())
+		reserve(m_d->count + CWT_MAX(32, count));
+
+	T *d = m_d->data.data();
+
+	for (size_t i = 0; i < count; ++i) {
+		d[m_d->count++] = value[i];
+	}
+}
+
+template <typename T>
+void Vector<T>::append(const Vector<T> & other)
+{
+	append(other.constData(), other.size());
+}
+
+
+template <typename T>
 void Vector<T>::prepend(const T &value)
 {
-	detach();
+	m_d.detach();
 	if (m_d->count == m_d->data.size())
 		reserve(m_d->count + 32);
 	m_d->data.move(1, 0, m_d->count);
@@ -235,12 +297,35 @@ void Vector<T>::remove(size_t i, size_t n)
 	if (m_d->count > 0) {
 		CWT_ASSERT(i < m_d->count);
 		n = CWT_MIN(m_d->data.size() - i, n);
-		detach();
+		m_d.detach();
 		if (i + n < m_d->count) { // removing not last elements
 			m_d->data.move(i, i + n, m_d->data.size() - i - n);
 		}
 		m_d->count -= n;
 	}
+}
+
+template <typename T>
+inline void Vector<T>::reserve(size_t size)
+{
+	m_d.detach();
+	if (size > m_d->data.size())
+		m_d->data.realloc(size);
+}
+
+template <typename T>
+Vector<T> Vector<T>::mid(size_t pos, size_t length) const
+{
+	Vector<T> r;
+
+	if (pos < this->size()) {
+		length = CWT_MIN(length, this->size() - pos);
+		r.resize(length);
+		for (size_t i = 0, j = pos; i < length; ++i, ++j)
+			r[i] = this->at(j);
+	}
+
+	return r;
 }
 
 CWT_NS_END

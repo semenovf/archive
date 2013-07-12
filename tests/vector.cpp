@@ -135,17 +135,43 @@ void test_vector_iterator(void)
 }
 
 
+void test_swap()
+{
+	const char* lorem  = "Lorem";
+	const char* ipsum  = "Ipsum";
+	Vector<char> v1(lorem, strlen(lorem));
+
+	if (true) {
+		Vector<char> v2(ipsum, strlen(ipsum));
+
+		CWT_TEST_OK(strncmp(v1.constData(), lorem, strlen(lorem)) == 0);
+		CWT_TEST_OK(strncmp(v2.constData(), ipsum, strlen(ipsum)) == 0);
+
+		v2.swap(v1);
+
+		CWT_TEST_OK(strncmp(v2.constData(), lorem, strlen(lorem)) == 0);
+		CWT_TEST_OK(strncmp(v1.constData(), ipsum, strlen(ipsum)) == 0);
+
+		v2.clear();
+		v2.append(ipsum, strlen(ipsum));
+		CWT_TEST_OK(strncmp(v2.constData(), ipsum, strlen(ipsum)) == 0);
+	}
+
+	CWT_TEST_OK(strncmp(v1.constData(), ipsum, strlen(ipsum)) == 0);
+}
+
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(1283);
+	CWT_BEGIN_TESTS(1403);
 
 	test_int_vector();
 	test_long_vector();
 	test_char_vector();
 	test_vector_iterator();
+	test_swap();
 
     CWT_END_TESTS;
 }
