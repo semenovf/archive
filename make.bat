@@ -27,7 +27,7 @@ rem @echo off
 set ACTION=%1
 
 set SETENV=C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd
-set ARGS=/Debug /win7 
+set ARGS=/Debug /win7 /x86
 if exist "%SETENV%" goto begin 
 
 :: set SETENV=C:\Program Files\Microsoft Visual Studio 10.0\VC\vcvarsall.bat
