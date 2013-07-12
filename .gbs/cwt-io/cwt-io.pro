@@ -7,10 +7,12 @@ INCLUDEPATH += ../../../cwt-common/include
 INCLUDEPATH += ../../../cwt-core/include
 
 DEPENDPATH += ../../include/cwt
+DEPENDPATH += ../../include/cwt/io
 
 unix {
-    SOURCES += ../../src/*.cpp
-    LIBS += -lcwt
+#    SOURCES += ../../src/*.cpp
+    SOURCES += ../../src/unix/*.cpp
+#    LIBS += -lcwt
 }
 
 win32 {

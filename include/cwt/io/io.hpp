@@ -45,8 +45,8 @@ private:
 template <typename T>
 Vector<T> FilterChain<T>::process(const Vector<T> & input, bool * ok)
 {
-	Vector<filter_type>::iterator it = m_chain.begin();
-	Vector<filter_type>::iterator itEnd = m_chain.end();
+	typename Vector<filter_type>::iterator it = m_chain.begin();
+	typename Vector<filter_type>::iterator itEnd = m_chain.end();
 	Vector<T> r(input);
 
 	bool okk = true;

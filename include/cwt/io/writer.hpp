@@ -27,7 +27,7 @@ template <typename T>
 struct Writer
 {
 	bool put(T & ch);
-	ssize_t write(T * chars, size_t size);
+	ssize_t write(const Vector<T> & chars);
 };
 
 } // namespace io
