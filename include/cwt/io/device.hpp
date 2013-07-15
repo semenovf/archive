@@ -46,6 +46,7 @@ public:
 	virtual bool opened () const = 0;
 	virtual void flush  () = 0;
 
+	size_t       chunkSize() const { return ChunkSize; }
 	size_t       available() const       { return bytesAvailable(); }
 	bool         atEnd    () const       { return bytesAvailable() == ssize_t(0); }
 	vector_type  read     (size_t size);
