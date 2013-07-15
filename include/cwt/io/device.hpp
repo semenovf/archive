@@ -49,6 +49,8 @@ public:
 	size_t       available() const       { return bytesAvailable(); }
 	bool         atEnd    () const       { return bytesAvailable() == ssize_t(0); }
 	vector_type  read     (size_t size);
+	ssize_t      read     (char bytes[], size_t n) { return readBytes(bytes, n); }
+	ssize_t      write    (const char bytes[], size_t n) { return writeBytes(bytes, n); }
 	ssize_t      write    (const vector_type & bytes);
 };
 

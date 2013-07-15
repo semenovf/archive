@@ -9,96 +9,77 @@
 #define __CWT_IO_READER_HPP__
 
 #include <cwt/io/io.hpp>
-#include <cwt/deque.hpp>
+//#include <cwt/deque.hpp>
 #include <cwt/shared_ptr.hpp>
 #include <cwt/errorable.hpp>
-#include <algorithm> // std::copy
-#include <iterator>  // std::back_inserter
+//#include <algorithm> // std::copy
+//#include <iterator>  // std::back_inserter
 
 CWT_NS_BEGIN
 
 namespace io {
 
-template <typename P>
-class Producer
+template <typename char_type>
+class Buffer : public Vector<char_type>
 {
 public:
-	typedef typename P::char_type char_type;
-	typedef Vector<char_type>     vector_type;
+	Buffer(size_t size) : Vector<char_type>(), m_head(0) { this->reserve(size); }
+	size_t count() const { return this->size() - m_head; }
 
-	Producer(shared_ptr<P> p) : m_p(p) {}
-	bool    isError  () { return m_p->isError(); }
-	bool    atEnd    () { return m_p->atEnd(); }
-	vector_type read (size_t size) { return m_p->read(size); }
+	void shift(size_t n)
+	{
+		m_head += n;
+		if (m_head >= this->size()) {
+			this->clear();
+			m_head = 0;
+		}
+	}
+
+	void unshift()
+	{
+		if (m_head > 0) {
+			this->remove(0, m_head);
+			m_head = 0;
+		}
+	}
 
 private:
-	shared_ptr<P> m_p;
+	size_t m_head;
 };
 
-template <typename P, typename T>
-class Reader : public Errorable
+
+template <typename P, typename C>
+class Reader
 {
 public:
-	typedef typename P::char_type pchar_type; // Producer's character type
-	typedef Vector<T> vector_type;
-	typedef Producer<P> producer_type;
-	typedef Codec<pchar_type, T> decoder_type;
-	typedef FilterChain<T> filter_chain_type;
+	typedef typename C::orig_char_type  orig_char_type;
+	typedef typename C::dest_char_type  dest_char_type;
+	typedef typename C::dest_char_type  char_type;
+	typedef Vector<dest_char_type>      vector_type;
 
 public:
-	Reader(shared_ptr<P> producer);
+	Reader(shared_ptr<P> producer) : m_producer(producer), m_decoder(new C) {}
+	Reader(shared_ptr<P> producer, shared_ptr<C> decoder) : m_producer(producer), m_decoder(decoder) {}
 
-	Reader(shared_ptr<P> producer
-			, shared_ptr<decoder_type> decoder);
-
-	Reader(shared_ptr<P> producer
-			, shared_ptr<decoder_type> decoder
-			, shared_ptr<filter_chain_type> filterChain);
-
-	bool    isError () { return m_producer->isError() || isError(); }
-	bool    atEnd   () { return m_producer->atEnd() && m_bufferT2.isEmpty(); }
-	bool    get     (T & ch);
-	bool    unget   (T ch);
+	bool    isError  () { return m_producer->isError(); }
+	bool    atEnd    () { return m_producer->atEnd() && m_bufferT2.isEmpty(); }
+	bool    get      (char_type & ch);
+	bool    unget    (char_type ch);
 	vector_type read (size_t size);
 
+/*
+protected:
+	bool readToInternalBuffer();
+*/
+
 private:
-	producer_type m_producer;
-	shared_ptr<decoder_type>      m_decoder;
-	shared_ptr<filter_chain_type> m_filterChain;
-	Deque<pchar_type>  m_bufferT1;
-	Deque<T>           m_bufferT2;
+	shared_ptr<P>           m_producer;
+	shared_ptr<C>           m_decoder;
+	Buffer<orig_char_type>  m_bufferT1;
+	Buffer<dest_char_type>  m_bufferT2;
 };
 
-
-template <typename P, typename T>
-inline Reader<P, T>::Reader(shared_ptr<P> producer)
-	: m_producer(producer)
-	, m_decoder()
-	, m_filterChain()
-{
-}
-
-template <typename P, typename T>
-inline Reader<P, T>::Reader(
-		  shared_ptr<P> producer
-		, shared_ptr<decoder_type> decoder)
-	: m_producer(producer)
-	, m_decoder(decoder)
-	, m_filterChain()
-{
-}
-
-template <typename P, typename T>
-inline Reader<P, T>::Reader(
-		  shared_ptr<P> producer
-		, shared_ptr<decoder_type> decoder
-		, shared_ptr<filter_chain_type> filterChain)
-	: m_producer(producer)
-	, m_decoder(decoder)
-	, m_filterChain(filterChain)
-{
-}
-
+#ifdef __COMMENT__
 
 template <typename T>
 inline void __append_vector(Deque<T> & d, Vector<T> v)
@@ -123,71 +104,48 @@ inline void __append_deque(Vector<T> &v, Deque<T> d)
 		v.append(*it);
 		++it;
 	}
-
 }
+#endif
 
-
-template <typename P, typename T>
-typename Reader<P, T>::vector_type Reader<P, T>::read (size_t size)
+template <typename P, typename C>
+typename Reader<P, C>::vector_type Reader<P, C>::read (size_t size)
 {
 	vector_type r;
 
 	// If internal buffer has previous read chars, append they to result
-	if (m_bufferT2.size() > 0) {
+	if (m_bufferT2.count() > 0) {
 		size_t sz = CWT_MIN(size, m_bufferT2.size());
-		__append_deque(r, m_bufferT2.left(sz));
-		m_bufferT2.remove(0, sz);
+		r.append(m_bufferT2.left(sz));
+		m_bufferT2.shift(sz);
 	}
 
-	Vector<pchar_type> bytes;
-
 	while (r.size() < size) {
-		if (!m_bufferT1.isEmpty()) {
-			__append_deque(bytes, m_bufferT1);
-			m_bufferT1.clear();
-		}
+		m_bufferT1.unshift(); // m_bufferT::m_head is zero now
 
-		if (bytes.isEmpty()) {
-			bytes = m_producer.read(P::ChunkSize);
-		}
-
-		if (bytes.isEmpty()) {
-			if (m_producer.isError()) {
-				r.clear();
+		if (m_bufferT1.count() < P::ChunkSize / 2) {
+			m_bufferT1.reserve(P::ChunkSize);
+			ssize_t nbytes = m_producer->read(P::ChunkSize - m_bufferT1.count());
+			if (nbytes <= 0) {
+				if (m_producer->isError()) {
+					r.clear();
+				}
+				break;
 			}
-			break;
+			m_bufferT1.resize(size_t(nbytes) + m_bufferT1.count());
 		}
 
 		vector_type decoded;
+		ssize_t remain = 0;
+		decoded = m_decoder->convert(m_bufferT1, & remain);
 
-		if (m_decoder.get()) {
-			ssize_t nonconverted = 0;
-			decoded = m_decoder->convert(bytes, & nonconverted);
-
-			if (nonconverted < 0) { // error
-				addError(_Tr("Decoding failed"));
-				break;
-			}
-
-			if (nonconverted > 0) {
-				__append_vector(m_bufferT1, bytes.right(size_t(nonconverted)));
-			}
-		} else {
-			if (sizeof(pchar_type) != sizeof(T)) {
-				addError(_Tr("Decoder must be specified"));
-				break;
-			}
-			decoded = bytes;
+		if (remain < 0) { // error
+			m_producer->addError(_Tr("decoding failed"));
+			r.clear();
+			break;
 		}
 
-		if (m_filterChain.get()) {
-			bool ok = true;
-			decoded = m_filterChain->process(decoded, &ok);
-
-			if (!ok) {
-				addError(_Tr("Filtering failed"));
-				break;
-			}
+		if (remain > 0) {
+			m_bufferT1.shift(bytes.right(size_t(remain)));
 		}
 
 		bytes.clear();
@@ -195,71 +153,57 @@ typename Reader<P, T>::vector_type Reader<P, T>::read (size_t size)
 	}
 
 	if (r.size() > size) {
-		__append_vector(m_bufferT2, r.right(r.size() - size));
-		r.remove(size, r.size() - size);
+		m_bufferT2.append(r.right(r.size() - size));
+		r.remove(size, r.size() - size); // truncate
 	}
 
 	return r;
 }
 
-template <typename P, typename T>
-bool Reader<P, T>::get(T & ch)
+// FIXME need more effective algorithm
+template <typename P, typename C>
+bool Reader<P, C>::get(Reader<P, C>::char_type & ch)
 {
-	if (m_bufferT2.isEmpty()) {
-		m_bufferT2 = read(256);
-	}
-
-	if (m_bufferT2.isEmpty())
+	Vector<char_type> v = read(1);
+	if (v.isEmpty())
 		return false;
-
-	ch = m_bufferT2[0];
-	m_bufferT2.remove(0, 1);
+	ch = v.at(0);
+	return true;
 }
 
-template <typename P, typename T>
-bool Reader<P, T>::unget (T ch)
+template <typename P, typename C>
+bool Reader<P, C>::unget (Reader<P, C>::char_type ch)
 {
 	m_bufferT2.prepend(ch);
 	return true;
 }
 
 enum ReadLineStatus {
-	  ReadLine_Success
-	, ReadLine_Intermediate
-	, ReadLine_AtEnd
-	, ReadLine_Overflow
-	, ReadLine_Error
+	  ReadLine_Error    =    -2
+	, ReadLine_Overflow =    -1
+	, ReadLine_Intermediate = 0
+	, ReadLine_AtEnd    =     1
+	, ReadLine_Success  =     2
 };
 
-#ifdef __COMMENT__
 
-template <typename T>
-struct Line
-{
-	void append(const T &value);
-	void resize(size_t size);
-	bool endsWith (Line<T> & end) const;
-};
-
-template <typename T1, typename T2>
+template <typename R>
 class LineReader
 {
-	static const Line<T2> defaultEndLine;
-
-	typedef Reader<T1, T2> reader_type;
+	typedef typename R::char_type char_type;
 private:
 	LineReader() {}
 
 public:
-	LineReader(shared_ptr<reader_type> reader, size_t maxSize = 256);
-	ReadLineStatus readLine(Line<T2> & line);
-	void setEndLine(const Line<T2> & endl) { m_ends.clear(); m_ends.append(endl); }
-	void addEndLine(const Line<T2> & endl) { m_ends.append(endl); }
+	LineReader(R * reader, size_t maxSize = 256);
+	ReadLineStatus readLine(Vector<char_type> & line);
+	void setEndLine(const Vector<char_type> & endl) { m_ends.clear(); m_ends.append(endl); }
+	void addEndLine(const Vector<char_type> & endl) { m_ends.append(endl); }
 
 private:
-	size_t                  m_maxSize;
-	shared_ptr<reader_type> m_reader;
-	Vector<Line<T2> >       m_ends;
+	size_t m_maxSize;
+	R *    m_reader;
+	Vector<Vector<char_type> >  m_ends;
 };
 
 /**
@@ -268,18 +212,18 @@ private:
  * @param endIsSuccess Interpret the end of the reader as Success status, otherwise as Intermediate.
  * @param maxSize
  */
-template <typename T1, typename T2>
-inline LineReader<T1, T2>::LineReader(shared_ptr<Reader<T1,T2> > reader, size_t maxSize)
+template <typename R>
+inline LineReader<R>::LineReader(R * reader, size_t maxSize)
 	: m_maxSize(maxSize)
 	, m_reader(reader)
 {
-	setEndLine(defaultEndLine);
+	//setEndLine(defaultEndLine);
 }
 
-template <typename T1, typename T2>
-ReadLineStatus LineReader<T1, T2>::readLine(Line<T2> & line)
+template <typename R>
+ReadLineStatus LineReader<R>::readLine(Vector<char_type> & line)
 {
-	T2 ch;
+	char_type ch;
 	ReadLineStatus rc = ReadLine_Intermediate;
 
 	if (line.size() >= m_maxSize) {
@@ -287,7 +231,7 @@ ReadLineStatus LineReader<T1, T2>::readLine(Line<T2> & line)
 	} else {
 		size_t n = 0;
 
-		while (m_reader->get(&ch)) {
+		while (m_reader->get(ch)) {
 			line.append(ch);
 
 			for (size_t i = 0; i < m_ends.size(); ++i) {
@@ -298,7 +242,7 @@ ReadLineStatus LineReader<T1, T2>::readLine(Line<T2> & line)
 			}
 
 			if (n) {
-				line.resize(line.length() - n);
+				line.resize(line.size() - n);
 				rc = ReadLine_Success;
 				break;
 			}
@@ -313,12 +257,12 @@ ReadLineStatus LineReader<T1, T2>::readLine(Line<T2> & line)
 	if (m_reader->isError()) {
 		rc = ReadLine_Error;
 	} else if (m_reader->atEnd()) {
-		rc == ReadLine_AtEnd;
+		rc = ReadLine_AtEnd;
 	}
 
 	return rc;
 }
-#endif
+
 } // namespace io
 
 CWT_NS_END

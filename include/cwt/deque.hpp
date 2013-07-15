@@ -22,10 +22,11 @@ class Deque
 public:
 	typedef typename DequeData::iterator iterator;
 	typedef typename DequeData::const_iterator const_iterator;
+	typedef typename DequeData::reference reference;
 
 public:
 	Deque() : m_d(new DequeData) {}
-
+	reference at(size_t index) { return m_d->at(index); }
 	iterator begin() { return m_d->begin(); }
 	iterator end()   { return m_d->end(); }
 	const_iterator cbegin() const { return m_d->begin(); }

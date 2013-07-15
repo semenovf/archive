@@ -8,7 +8,7 @@
 #ifndef __CWT_IO_WRITER_HPP__
 #define __CWT_IO_WRITER_HPP__
 
-#include <cwt/io.hpp>
+#include <cwt/io/io.hpp>
 #include <cwt/shared_ptr.hpp>
 
 CWT_NS_BEGIN
