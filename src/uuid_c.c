@@ -34,7 +34,7 @@
 #include "../include/cwt/sha1.h"
 #include "../include/cwt/mt.h"
 
-#ifdef CWT_CC_GCC
+#ifdef CWT_CC_GNUC
 #	include <unistd.h>
 #	include <arpa/inet.h>
 #	include <sys/time.h>

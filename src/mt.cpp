@@ -10,15 +10,5 @@
 #include "../include/cwt/mt.hpp"
 
 #if !defined(CWT_SINGLE_THREADED)
-static mt_def(__g_mutex);
 mutex_t multi_threaded_global::g_mutex;
-
-DLL_API mutex_t* cwt_global_mutex(void)
-{
-	static bool __g_mutex_initialized = false;
-	if(!__g_mutex_initialized)
-		mt_init(__g_mutex);
-	__g_mutex_initialized = true;
-	return &__g_mutex;
-}
 #endif /* CWT_SINGLE_THREADED */

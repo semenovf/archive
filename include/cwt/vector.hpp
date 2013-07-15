@@ -231,7 +231,7 @@ bool Vector<T>::endsWith (const Vector<T> & end) const
 
 	bool r = true;
 
-	for (size_t i = sz1 - 1, j = sz2 - 1; r && j >= 0; ++i, ++j) {
+	for (size_t i = sz1 - 1, j = sz2 - 1; r && sz2 > 0; --i, --j, --sz2) {
 		if (this->at(i) != end[j]) {
 			r = false;
 		}
@@ -296,10 +296,10 @@ void Vector<T>::remove(size_t i, size_t n)
 {
 	if (m_d->count > 0) {
 		CWT_ASSERT(i < m_d->count);
-		n = CWT_MIN(m_d->data.size() - i, n);
+		n = CWT_MIN(m_d->count - i, n);
 		m_d.detach();
 		if (i + n < m_d->count) { // removing not last elements
-			m_d->data.move(i, i + n, m_d->data.size() - i - n);
+			m_d->data.move(i, i + n, m_d->count - i - n);
 		}
 		m_d->count -= n;
 	}
