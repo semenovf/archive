@@ -10,9 +10,10 @@ DEPENDPATH += ../../include/cwt
 DEPENDPATH += ../../include/cwt/io
 
 unix {
-#    SOURCES += ../../src/*.cpp
+    HEADERS += ../../include/cwt/*.hpp
+    HEADERS += ../../include/cwt/io/*.hpp
     SOURCES += ../../src/unix/*.cpp
-#    LIBS += -lcwt
+    LIBS += -lcwt
 }
 
 win32 {

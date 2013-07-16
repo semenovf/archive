@@ -1,7 +1,9 @@
 #include <cwt/test.h>
 #include <cwt/io/reader.hpp>
 #include <cwt/io/file.hpp>
+#include <cwt/io/buffer.hpp>
 #include <cstring>
+#include <cstdio>
 
 using namespace std;
 using namespace cwt;
@@ -49,34 +51,89 @@ const char *loremipsum =
 39.decima et quinta decima.\" Eodem modo typi, qui nunc nobis    \n\
 40.videntur parum clari, fiant sollemnes in futurum.";
 
-struct Codec
+
+const char *loremipsum_lines[] = {
+    "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    "
+,  "2.sed diam nonummy nibh euismod tincidunt ut laoreet dolore     "
+,  "3.magna aliquam erat volutpat. Ut wisi enim ad minim veniam,    "
+,  "4.quis nostrud exerci tation ullamcorper suscipit lobortis      "
+,  "5.nisl ut aliquip ex ea commodo consequat. Duis autem vel eum   "
+,  "6.iriure dolor in hendrerit in vulputate velit esse molestie    "
+,  "7.consequat, vel illum dolore eu feugiat nulla facilisis at     "
+,  "8.vero eros et accumsan et iusto odio dignissim qui blandit     "
+,  "9.praesent luptatum zzril delenit augue duis dolore te feugait  "
+,  "10.nulla facilisi. Nam liber tempor cum soluta nobis eleifend    "
+,  "11.option congue nihil imperdiet doming id quod mazim placerat   "
+,  "12.facer possim assum. Typi non habent claritatem insitam; est   "
+,  "13.usus legentis in iis qui facit eorum claritatem.              "
+,  "14.Investigationes demonstraverunt lectores legere me lius quod  "
+,  "15.ii legunt saepius. Claritas est etiam processus dynamicus,    "
+,  "16.qui sequitur mutationem consuetudium lectorum. Mirum est      "
+,  "17.notare quam littera gothica, quam nunc putamus parum claram,  "
+,  "18.anteposuerit litterarum formas humanitatis per seacula quarta "
+,  "19.decima et quinta decima. Eodem modo typi, qui nunc nobis      "
+,  "20.videntur parum clari, fiant sollemnes in futurum.             "
+,  "21.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,     "
+,  "22.sed diam nonummy nibh euismod tincidunt ut laoreet dolore     "
+,  "23.magna aliquam erat volutpat. \"Ut wisi enim ad minim veniam,  "
+,  "24.quis nostrud exerci tation ullamcorper suscipit lobortis      "
+,  "25.nisl ut aliquip ex ea commodo consequat. Duis autem vel eum   "
+,  "26.iriure dolor in hendrerit in vulputate velit esse molestie    "
+,  "27.consequat, vel illum dolore eu feugiat nulla facilisis at     "
+,  "28.vero eros et accumsan et iusto odio dignissim qui blandit     "
+,  "29.praesent luptatum zzril delenit augue duis dolore te feugait  "
+,  "30.nulla facilisi. Nam liber tempor cum soluta nobis eleifend    "
+,  "31.option congue nihil imperdiet doming id quod mazim placerat   "
+,  "32.facer possim assum. Typi non habent claritatem insitam; est   "
+,  "33.usus legentis in iis qui facit eorum claritatem.              "
+,  "34.Investigationes demonstraverunt lectores legere me lius quod  "
+,  "35.ii legunt saepius. Claritas est etiam processus dynamicus,    "
+,  "36.qui sequitur mutationem consuetudium lectorum. Mirum est      "
+,  "37.notare quam littera gothica, quam nunc putamus parum claram,  "
+,  "38.anteposuerit litterarum formas humanitatis per seacula quarta "
+,  "39.decima et quinta decima.\" Eodem modo typi, qui nunc nobis    "
+,  "40.videntur parum clari, fiant sollemnes in futurum." };
+
+void test_variant_chunk_reader()
 {
-	typedef char orig_char_type;
-	typedef char dest_char_type;
-	ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
-	{
-		size_t n = CWT_MIN(osize, isize);
-		CWT_ASSERT( n > 0 && n <= CWT_SSIZE_MAX);
-		memcpy(output, input, sizeof(char) * n);
-		*remain = 0;
-		return ssize_t(n);
+	shared_ptr<io::File> file(new io::File());
+
+	for(size_t chunkSize = 1; chunkSize < 1025; ++chunkSize) {
+		file->open(filename);
+		CWT_TEST_FAIL(file->opened());
+	    io::Reader<io::File, io::NullCodec<char> > reader(file, chunkSize);
+
+	    printf(_Tr("Test with Chunk Size = %u\n"), chunkSize);
+	    Vector<char> bytes = reader.read(strlen(loremipsum));
+	    CWT_TEST_OK(bytes.size() == strlen(loremipsum));
+	    CWT_TEST_OK(strncmp(bytes.data(), loremipsum, strlen(loremipsum)) == 0);
+
+		file->close();
 	}
-};
+}
 
 void test_line_reader()
 {
-    shared_ptr<io::File> file(new io::File());
-    CWT_TEST_NOK(file->opened());
+	typedef io::Reader<io::Buffer, io::NullCodec<char> > Reader;
 
-    file->open(filename);
-    CWT_TEST_FAIL(file->opened());
+	shared_ptr<io::Buffer> buffer(new io::Buffer);
+	buffer->write(loremipsum, strlen(loremipsum));
+	CWT_TEST_FAIL(buffer->available() == strlen(loremipsum));
 
-    io::Reader<io::File, Codec> reader(file);
-    Vector<char> bytes = reader.read(strlen(loremipsum));
-    CWT_TEST_OK(bytes.size() == strlen(loremipsum));
-    CWT_TEST_OK(strncmp(bytes.data(), loremipsum, strlen(loremipsum)) == 0);
-    file->close();
+	shared_ptr<Reader> reader(new Reader(buffer));
+	io::BufferedReader<Reader> lineReader(reader);
+	Vector<char> r;
 
+	size_t nlines = sizeof(loremipsum_lines)/sizeof(loremipsum_lines[0]);
+	size_t iline = 0;
+
+	while(!(r = lineReader.readUntil(Vector<char>("\n", 1), 80)).isEmpty() && iline < nlines) {
+		r.append(0);
+		CWT_TEST_OK(strcmp(loremipsum_lines[iline], r.constData()) == 0);
+		++iline;
+	}
+
+	CWT_TEST_OK2(iline == nlines, _Tr("All lines are checked"));
 
 #ifdef __COMMENT__
     file->open(filename);
@@ -118,8 +175,9 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(4);
+    CWT_BEGIN_TESTS(3114);
 
+    test_variant_chunk_reader();
     test_line_reader();
 
     CWT_END_TESTS;

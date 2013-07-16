@@ -12,9 +12,10 @@ DEPENDPATH += ../../include/cwt
 DEPENDPATH += ../../include/cwt/io
 
 unix {
+    HEADERS += ../../include/cwt/io
     SOURCES += ../../tests/test.cpp
-    LIBS += -lcwt
     LIBS += -lcwt-io
+    LIBS += -lcwt
 }
 
 win32 {
