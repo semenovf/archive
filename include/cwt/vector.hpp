@@ -145,24 +145,6 @@ protected:
 	shareable<VectorData> m_d;
 };
 
-/*
-template <typename T>
-void Vector<T>::detachAndRealloc(size_t newsize)
-{
-	if (m_d.use_count() > 1) {
-		shared_ptr<VectorData> d(new VectorData);
-		m_d.swap(d);
-		m_d->data.alloc(d->data.capacity());
-		Array<T>::deep_copy(m_d->data, d->data, 0, 0, CWT_MIN(newsize, d->count));
-	} else {
-		if (newsize > m_d->data.capacity())
-			m_d->data.realloc(newsize);
-	}
-	m_d->count = CWT_MIN(newsize, m_d->count);
-}
-*/
-
-
 template <typename T>
 inline Vector<T>::Vector() : m_d(new VectorData)
 {
