@@ -18,7 +18,7 @@ class DLL_API Buffer : public Device
 {
 protected:
 	virtual ssize_t readBytes      (char bytes[], size_t n);
-	virtual ssize_t writeBytes     (const char bytes[], size_t n) { CWT_ASSERT(n <= CWT_SSIZE_MAX); m_buffer.append(bytes, n); return ssize_t(n); }
+	virtual ssize_t writeBytes     (const char bytes[], size_t n);
 	virtual size_t  bytesAvailable () const { return m_buffer.size(); }
 
 public:
@@ -26,6 +26,8 @@ public:
 	virtual int  close  () { return 1; }
 	virtual bool opened () const { return true; }
 	virtual void flush  () {}
+
+	Vector<char> & buffer() { return m_buffer; }
 
 private:
 	Vector<char> m_buffer;
@@ -43,6 +45,14 @@ ssize_t Buffer::readBytes (char bytes[], size_t n)
 	}
 	return ssize_t(nbytes);
 }
+
+inline ssize_t Buffer::writeBytes (const char bytes[], size_t n)
+{
+	CWT_ASSERT(n <= CWT_SSIZE_MAX);
+	m_buffer.append(bytes, n);
+	return ssize_t(n);
+}
+
 
 } // namespace io
 

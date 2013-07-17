@@ -1,14 +1,14 @@
 #include <cwt/test.h>
-#include <cwt/io/reader.hpp>
-#include <cwt/io/file.hpp>
-#include <cwt/io/buffer.hpp>
+#include "../include/cwt/io/reader.hpp"
+#include "../include/cwt/io/writer.hpp"
+#include "../include/cwt/io/file.hpp"
+#include "../include/cwt/io/buffer.hpp"
 #include <cstring>
 #include <cstdio>
 
 using namespace std;
 using namespace cwt;
 
-static const char *filename = "test_file.txt";
 const char *loremipsum =
 "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    \n\
 2.sed diam nonummy nibh euismod tincidunt ut laoreet dolore     \n\
@@ -53,7 +53,7 @@ const char *loremipsum =
 
 
 const char *loremipsum_lines[] = {
-    "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    "
+   "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    "
 ,  "2.sed diam nonummy nibh euismod tincidunt ut laoreet dolore     "
 ,  "3.magna aliquam erat volutpat. Ut wisi enim ad minim veniam,    "
 ,  "4.quis nostrud exerci tation ullamcorper suscipit lobortis      "
@@ -94,25 +94,37 @@ const char *loremipsum_lines[] = {
 ,  "39.decima et quinta decima.\" Eodem modo typi, qui nunc nobis    "
 ,  "40.videntur parum clari, fiant sollemnes in futurum." };
 
+
+void test_writer()
+{
+	typedef io::Writer<io::Buffer, io::NullCodec<char> > Writer;
+
+	shared_ptr<io::Buffer> buffer(new io::Buffer);
+    Writer writer(buffer);
+    CWT_TEST_FAIL(ssize_t(strlen(loremipsum)) == writer.write(loremipsum, strlen(loremipsum)));
+    CWT_TEST_OK(buffer->buffer().size() == strlen(loremipsum));
+	CWT_TEST_OK(strncmp(buffer->buffer().data(), loremipsum, strlen(loremipsum)) == 0);
+}
+
 void test_variant_chunk_reader()
 {
-	shared_ptr<io::File> file(new io::File());
+	typedef io::Reader<io::Buffer, io::NullCodec<char> > Reader;
 
 	for(size_t chunkSize = 1; chunkSize < 1025; ++chunkSize) {
-		file->open(filename);
-		CWT_TEST_FAIL(file->opened());
-	    io::Reader<io::File, io::NullCodec<char> > reader(file, chunkSize);
+		shared_ptr<io::Buffer> buffer(new io::Buffer);
+		buffer->write(loremipsum, strlen(loremipsum));
+		CWT_TEST_FAIL(buffer->available() == strlen(loremipsum));
+
+	    Reader reader(buffer, chunkSize);
 
 	    printf(_Tr("Test with Chunk Size = %u\n"), chunkSize);
 	    Vector<char> bytes = reader.read(strlen(loremipsum));
 	    CWT_TEST_OK(bytes.size() == strlen(loremipsum));
 	    CWT_TEST_OK(strncmp(bytes.data(), loremipsum, strlen(loremipsum)) == 0);
-
-		file->close();
 	}
 }
 
-void test_line_reader()
+void test_line_reader(bool withCanUntil)
 {
 	typedef io::Reader<io::Buffer, io::NullCodec<char> > Reader;
 
@@ -127,58 +139,68 @@ void test_line_reader()
 	size_t nlines = sizeof(loremipsum_lines)/sizeof(loremipsum_lines[0]);
 	size_t iline = 0;
 
-	while(!(r = lineReader.readUntil(Vector<char>("\n", 1), 80)).isEmpty() && iline < nlines) {
+	if (!withCanUntil) {
+		while(!(r = lineReader.readUntil(Vector<char>("\n", 1), 80)).isEmpty() && iline < nlines) {
+			r.append(0);
+			CWT_TEST_OK(strcmp(loremipsum_lines[iline], r.constData()) == 0);
+			++iline;
+		}
+		CWT_TEST_OK2(iline == nlines, _Tr("All lines are checked"));
+	} else {
+		--nlines;
+		size_t ntests = 0;
+		while(iline < nlines && ntests < nlines) {
+			if (lineReader.canReadUntil(Vector<char>("\n", 1), 80)) {
+				r = lineReader.readUntil(Vector<char>("\n", 1), 80);
+				r.append(0);
+				CWT_TEST_OK(strcmp(loremipsum_lines[iline], r.constData()) == 0);
+				++iline;
+			}
+
+			++ntests;
+		}
+		CWT_TEST_OK2(ntests == iline, _Tr("All lines are checked"));
+	}
+}
+
+void test_get_reader()
+{
+	typedef io::Reader<io::Buffer, io::NullCodec<char> > Reader;
+
+	size_t nlines = sizeof(loremipsum_lines)/sizeof(loremipsum_lines[0]);
+
+	for (size_t iline = 0; iline < nlines; ++iline) {
+		Vector<char> r;
+
+		shared_ptr<io::Buffer> buffer(new io::Buffer);
+		buffer->write(loremipsum_lines[iline], strlen(loremipsum_lines[iline]));
+		CWT_TEST_FAIL(buffer->available() == strlen(loremipsum_lines[iline]));
+
+		shared_ptr<Reader> reader(new Reader(buffer));
+		io::BufferedReader<Reader> charReader(reader);
+		char ch;
+
+		while (charReader.get(ch)) {
+			r.append(ch);
+		}
 		r.append(0);
 		CWT_TEST_OK(strcmp(loremipsum_lines[iline], r.constData()) == 0);
-		++iline;
 	}
-
-	CWT_TEST_OK2(iline == nlines, _Tr("All lines are checked"));
-
-#ifdef __COMMENT__
-    file->open(filename);
-    CWT_TEST_FAIL(file->opened());
-    char ch;
-    while (reader.get(ch)) {
-    	printf("%c", ch);
-    }
-    printf("\n");
-    file->close();
-
-
-    file->open(filename);
-    CWT_TEST_FAIL(file->opened());
-    io::LineReader<io::Reader<io::File, Codec> > lineReader(&reader);
-    lineReader.setEndLine(Vector<char>("\n", 1));
-
-    Vector<char> line;
-    io::ReadLineStatus rc = io::ReadLine_Success;
-
-    while (rc >= 0) {
-    	rc = lineReader.readLine(line);
-
-    	if (rc == io::ReadLine_Success) {
-    		line.append(0);
-    		printf("LINE: \"%s\"\n", line.data());
-    		line.clear();
-    	} else if (rc == io::ReadLine_AtEnd) {
-    		printf("LINE: \"%s\"\n", line.data());
-    		break;
-    	}
-    }
-
-	file->close();
-#endif
 }
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(3114);
+    CWT_BEGIN_TESTS(3238);
+
+    test_writer();
 
     test_variant_chunk_reader();
-    test_line_reader();
+    test_line_reader(false);
+    test_line_reader(true);
+    test_get_reader();
+//  test_mix_get_read(); // TODO
 
     CWT_END_TESTS;
     return 0;
