@@ -7,7 +7,6 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = cwt-core  \
-    examples/json_prettyprint \
     examples/logger  \
     tests/array      \
     tests/async      \
@@ -18,13 +17,10 @@ SUBDIRS  = cwt-core  \
     tests/file       \
     tests/fsm        \
     tests/hash       \
-    tests/json       \
-    tests/json_simplepath \
     tests/md5        \
     tests/options    \
     tests/petaloid   \
     tests/sepaloid   \
-    tests/settings   \
     tests/shared_ptr \
     tests/string     \
     tests/textstream \
@@ -33,5 +29,4 @@ SUBDIRS  = cwt-core  \
     tests/vector     \
     tests/unitype    \
     utils/uuid-gen
-
-
+#    tests/settings   \

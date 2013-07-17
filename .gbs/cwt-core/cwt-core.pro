@@ -17,8 +17,7 @@ SOURCES += ../../src/*.cpp
 SOURCES += ../../src/*.c
 SOURCES += ../../src/qt/*.cpp
 
-#HEADERS += ../../experimental/*.hpp
-#SOURCES += ../../experimental/*.cpp
+SOURCES += ../../deprecated/*.cpp
 
 unix {
     DEPENDPATH += ../../src/unix
