@@ -1,19 +1,19 @@
 CWT_CONFIG=debug
-include($$(GBS_HOME)/common-app.pri)
-TARGET =
+include($$(GBS_HOME)/common-dll.pri)
+TARGET = cwt-app
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
+INCLUDEPATH += ../../../cwt-core/include
+INCLUDEPATH += ../../../cwt-json/include
 
-DEPENDPATH += ../../include
+HEADERS += ../../include/cwt/*.hpp
+SOURCES += ../../src/*.cpp
 
 unix {
-    HEADERS += ../../include/@PRG@/*.h
-    SOURCES += ../../src/*.c
-#   LIBS += -lmylib
+    LIBS += -lcwt
+    LIBS += -lcwt-json
 }
 
 win32 {
-    HEADERS += ..\\..\\include\\@PRG@\\*.h
-    SOURCES += ..\\..\\src\\*.c
 #   LIBS += lmylib.lib
 }
