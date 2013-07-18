@@ -6,13 +6,12 @@ INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
 INCLUDEPATH += ../../../cwt-core/include
 
-DEPENDPATH += ../../include/cwt
-DEPENDPATH += ../../include/cwt/io
+HEADERS += ../../include/cwt/*.hpp
+HEADERS += ../../include/cwt/io/*.hpp
+SOURCES += ../../src/*.cpp
+SOURCES += ../../src/unix/*.cpp
 
 unix {
-    HEADERS += ../../include/cwt/*.hpp
-    HEADERS += ../../include/cwt/io/*.hpp
-    SOURCES += ../../src/unix/*.cpp
     LIBS += -lcwt
 }
 

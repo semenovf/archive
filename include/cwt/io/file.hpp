@@ -48,6 +48,7 @@ public:
 	virtual void flush();
 	virtual bool opened() const;
 
+	size_t size() const;
 	bool setPermissions(int perms);
 	static bool setPermissions(const char *path, int perms);
 };

@@ -28,6 +28,7 @@ public:
 	ssize_t readBytes(Errorable *ex, char bytes[], size_t n);
 	ssize_t writeBytes(Errorable *ex, const char bytes[], size_t n);
 	bool    setPermissions(Errorable *ex, int perms);
+	size_t  size() const;
 
 	static bool setPermissions(const char *path, int perms);
 	static int  permsToMode(int perms);
@@ -46,17 +47,15 @@ void File::Impl::flush()
 
 size_t File::Impl::bytesAvailable() const
 {
-	off_t total;
-	off_t cur;
-
 	CWT_ASSERT(m_fd  >= 0);
 
-	cur = ::lseek(m_fd, 0L, SEEK_CUR);
-	total = ::lseek(m_fd, 0L, SEEK_END);
-	CWT_ASSERT(total >= 0L);
-	CWT_ASSERT(cur >= 0L);
+	off_t cur = ::lseek(m_fd, off_t(0), SEEK_CUR);
+	CWT_ASSERT(cur >= off_t(0));
 
-	::lseek(m_fd, cur, SEEK_SET);
+	off_t total = ::lseek(m_fd, off_t(0), SEEK_END);
+	CWT_ASSERT(total >= off_t(0));
+
+	CWT_ASSERT(::lseek(m_fd, cur, SEEK_SET) >= off_t(0));
 	CWT_ASSERT(total >= cur);
 
 	return (size_t)(total - cur);
@@ -156,6 +155,25 @@ int File::Impl::permsToMode(int perms)
 	return mode;
 }
 
+size_t File::Impl::size() const
+{
+	CWT_ASSERT(m_fd  >= 0);
+
+	off_t cur   = ::lseek(m_fd, 0L, SEEK_CUR);
+	CWT_ASSERT(cur >= off_t(0));
+
+	off_t begin = ::lseek(m_fd, 0L, SEEK_SET);
+	CWT_ASSERT(begin >= off_t(0));
+
+	off_t end   = ::lseek(m_fd, 0L, SEEK_END);
+	CWT_ASSERT(end >= off_t(0));
+
+	CWT_ASSERT(::lseek(m_fd, cur, SEEK_SET) >= off_t(0));
+
+	CWT_ASSERT(begin <= end);
+	return size_t(end - begin);
+}
+
 bool File::Impl::setPermissions(Errorable *ex, int perms)
 {
 	CWT_ASSERT(m_path);
@@ -191,6 +209,7 @@ bool    File::opened() const { return pimpl->m_fd >= 0; }
 ssize_t File::readBytes(char bytes[], size_t n) { return pimpl->readBytes(this, bytes, n); }
 ssize_t File::writeBytes(const char bytes[], size_t n) { return pimpl->writeBytes(this, bytes, n); }
 
+size_t File::size() const { return pimpl->size(); }
 bool File::setPermissions(int perms) { return pimpl->setPermissions(this, perms); }
 bool File::setPermissions(const char *path, int perms) { return File::Impl::setPermissions(path, perms); }
 
