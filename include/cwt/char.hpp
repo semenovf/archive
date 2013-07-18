@@ -9,7 +9,7 @@
 #ifndef __CWT_CHAR_HPP__
 #define __CWT_CHAR_HPP__
 
-#include <cwt/cwt.h>
+#include <cwt/unicode.hpp>
 
 CWT_NS_BEGIN
 
@@ -48,9 +48,9 @@ public:
 #endif
 	~Char() {}
 
-	bool isLowSurrogate() const { return isLowSurrogate(ucs); }
-	bool isHiSurrogate() const { return isHiSurrogate(ucs); }
-	bool isSurrogate() const { return isSurrogate(ucs); }
+	bool isLowSurrogate() const { return Unicode::isLowSurrogate(ucs); }
+	bool isHiSurrogate() const { return Unicode::isHiSurrogate(ucs); }
+	bool isSurrogate() const { return Unicode::isSurrogate(ucs); }
 
 	char toLatin1() const { return ucs > 0xff ? '\x0' : char(ucs); }
 	char_type unicode() const { return ucs; }
@@ -58,6 +58,7 @@ public:
 
 	static Char fromLatin1(char ch) { return Char(ushort_t(uchar_t(ch))); }
 
+#ifdef __OBSOLETE__SEE_UNICODE_HPP__
 	/* Low Surrogates: DC00-DFFF
 	 * Qt implementation: (ucs4 & 0xfffffc00) == 0xdc00;
 	 * */
@@ -77,6 +78,7 @@ public:
 	 * Qt implementation: (uint_t(hi)<<10) + lo - 0x35fdc00
 	 * */
 	static uint_t surrogatePairToUcs4(ushort_t hi, ushort_t lo) { return (hi-0xd800)*400 + (lo-0xdc00) + 10000; }
+#endif
 
 	friend bool	operator != (Char ch1, Char ch2) { return ch1.ucs != ch2.ucs; }
 	friend bool	operator  < (Char ch1, Char ch2) { return ch1.ucs  < ch2.ucs; }

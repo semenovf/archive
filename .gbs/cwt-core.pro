@@ -18,9 +18,6 @@ SUBDIRS  = cwt-core  \
     tests/fsm        \
     tests/hash       \
     tests/md5        \
-    tests/options    \
-    tests/petaloid   \
-    tests/sepaloid   \
     tests/shared_ptr \
     tests/string     \
     tests/textstream \
@@ -29,4 +26,3 @@ SUBDIRS  = cwt-core  \
     tests/vector     \
     tests/unitype    \
     utils/uuid-gen
-#    tests/settings   \

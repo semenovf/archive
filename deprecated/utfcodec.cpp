@@ -77,13 +77,13 @@ static inline int utf8decoder_convert_bytes(const byte_t *bytes, size_t len, uin
 		return 0; // skip the BOM
 	}
 
-	if (!Char::isNonCharacter(uc) && Char::requiresSurrogates(uc) && uc <= Char::MaxCodePoint) {
+	if (!Unicode::isNonCharacter(uc) && Unicode::requiresSurrogates(uc) && uc <= Char::MaxCodePoint) {
 		// surrogate pair
-		uc = Char::hiSurrogate(uc);
-		*remainChar = Char::lowSurrogate(uc);
+		uc = Unicode::hiSurrogate(uc);
+		*remainChar = Unicode::lowSurrogate(uc);
 	} else if ((uc < min_uc)              // overlong sequence
-			|| Char::isSurrogate(uc)      // UTF16 surrogate
-			|| Char::isNonCharacter(uc)   // non-character
+			|| Unicode::isSurrogate(uc)      // UTF16 surrogate
+			|| Unicode::isNonCharacter(uc)   // non-character
 			|| uc > Char::MaxCodePoint) { // non-character
 		return -1;
 	}
@@ -177,7 +177,7 @@ ByteArray Utf8Encoder::convertFromUnicode(const Char *chars, size_t len)
 	    uint_t u = ch->unicode();
 	    if (m_hiSurrogate >= 0) {
 	        if (ch->isLowSurrogate()) {
-	            u = Char::surrogatePairToUcs4(m_hiSurrogate, u);
+	            u = Unicode::surrogatePairToUcs4(m_hiSurrogate, u);
 	            m_hiSurrogate = -1;
 	        } else {
 	            // high surrogate without low
@@ -206,14 +206,14 @@ ByteArray Utf8Encoder::convertFromUnicode(const Char *chars, size_t len)
 	            *cursor++ = 0xc0 | ((byte_t) (u >> 6));
 	        } else {
 	            // is it one of the Unicode non-characters?
-	            if (Char::isNonCharacter(u)) {
+	            if (Unicode::isNonCharacter(u)) {
 	                *cursor++ = m_replacement;
 	                ++ch;
 	                ++invalid;
 	                continue;
 	            }
 
-	            if (Char::requiresSurrogates(u)) {
+	            if (Unicode::requiresSurrogates(u)) {
 	                *cursor++ = 0xf0 | ((byte_t) (u >> 18));
 	                *cursor++ = 0x80 | (((byte_t) (u >> 12)) & 0x3f);
 	            } else {
