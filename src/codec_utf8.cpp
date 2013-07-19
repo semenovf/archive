@@ -13,11 +13,13 @@ CWT_NS_BEGIN
 
 namespace io {
 
-template class Utf8UcsCodec<uint16_t, 0x0000, 0xfffd, 0xffff>;
-template class Utf8UcsCodec<uint32_t, 0x0000, 0xfffd, 0x10ffff>;
+/*
+template class Utf8UcsCodec<uint16_t, 0xffff>;
+template class Utf8UcsCodec<uint32_t, 0x10ffff>;
+*/
 
-template ssize_t Utf8UcsCodec<uint16_t, 0x0000, 0xfffd, 0xffff>::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
-template ssize_t Utf8UcsCodec<uint32_t, 0x0000, 0xfffd, 0x10ffff>::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Utf8Ucs2Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Utf8Ucs4Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 template ssize_t Ucs2Utf8Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 template ssize_t Ucs4Utf8Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 
@@ -82,21 +84,28 @@ static inline int __utf8_decode_bytes(const char *bytes, size_t len, uint32_t & 
 		}
 	}
 
+/*
 	if (uc == 0xFEFF) {
 		return 0; // skip the BOM
 	}
+*/
 
 	return need;
 }
 
 
-template <typename T, uint32_t NullChar, uint32_t ReplChar, uint32_t MaxCP>
-ssize_t Utf8UcsCodec<T, NullChar, ReplChar, MaxCP>::convert(T output[], size_t osize, const char input[], size_t isize, size_t * remain)
+template <typename T, uint32_t MaxCP>
+ssize_t Utf8UcsCodec<T, MaxCP>::convert(T output[], size_t osize, const char input[], size_t isize, size_t * remain)
 {
 	CWT_ASSERT(remain);
 
+	if (!osize || !isize)
+		return 0;
+
+	const char *pbytes = input;
+	const char *pbytesEnd = input + isize;
 	T *pchars = output;
-	ssize_t r = 0;
+	T *pcharsEnd = output + osize;
 	*remain = isize;
 
 	if (!m_headerDone) {
@@ -106,137 +115,147 @@ ssize_t Utf8UcsCodec<T, NullChar, ReplChar, MaxCP>::convert(T output[], size_t o
 			return 0;
 		} if (isize >= 3 && byte_t(input[0]) == 0xef && byte_t(input[1]) == 0xbb && byte_t(input[2]) == 0xbf) {
 			// starts with a byte order mark
-			input += 3;
-			isize -= 3;
-			*remain -= 3;
+			pbytes += 3;
 		}
 	}
 	m_headerDone = true;
 
-	if (m_remainChar != MaxCodePoint) {
-		*pchars++ = m_remainChar;
-		++r;
-		m_remainChar = MaxCodePoint; // reset remain char
-	}
-
-	for (size_t i = 0; i < isize && size_t(r) < osize ; ++i, --*remain) {
+	for (; pbytes < pbytesEnd && pchars < pcharsEnd; ++pbytes) {
 		uint32_t uc = 0;
 		uint32_t min_uc = 0; // for 'Overlong' encodings recognition
-		int n = __utf8_decode_bytes(input , isize, uc, min_uc);
+		int n = __utf8_decode_bytes(pbytes, size_t(pbytesEnd - pbytes), uc, min_uc);
 
-		if (!Unicode::isNonCharacter(uc) && Unicode::requiresSurrogates(uc) && uc <= MaxCodePoint) {
-			// surrogate pair
-			uc = Unicode::hiSurrogate(uc);
-			m_remainChar = Unicode::lowSurrogate(uc);
-		} else if ((uc < min_uc)                 // overlong sequence
+		// Code units too few
+		if (n == -2) {
+			break;
+		}
+
+		// Error, add replacement char, one byte will be skipped.
+		if (n == -1) {
+			*pchars++ = m_replacementChar;
+			++m_invalidCount;
+			continue;
+		}
+
+		// Skip the BOM
+		if (uc == 0xFEFF) {
+			pbytes += n; // n = 2 for BOM (0xEF, 0xBB, 0xBF)
+			continue;
+		}
+
+		if ((uc < min_uc)                        // overlong sequence
 				|| Unicode::isSurrogate(uc)      // UTF16 surrogate
 				|| Unicode::isNonCharacter(uc)   // non-character
 				|| uc > MaxCodePoint) {          // non-character
-			n = -1;
-		}
 
-		if (n == -2) { // too few bytes
-			break;
-		} else if (n == -1) { // error
-			uc = m_replacementChar;
+			// As for n == -1
+			*pchars++ = m_replacementChar;
 			++m_invalidCount;
-		} else if (uc == 0xFEFF) {
-			continue; // skip the BOM
-		} else {
-			i += n;
-			*remain -= n;
-			if (uc > MaxCodePoint) {
-				uc = m_replacementChar;
-				++m_invalidCount;
-			}
+			continue;
 		}
 
 		*pchars++ = T(uc);
-		++r;
+		pbytes += n;
 	}
 
-	return r;
+	*remain = size_t(pbytesEnd - pbytes);
+
+	return ssize_t(pchars - output);
 }
 
-static inline size_t __utf8_encode_ucs(char *utf8, uint32_t ucs4, char replacement, size_t & invalid)
+// Returns number of bytes need to encode the unicode char
+static inline ssize_t __utf8_encode_ucs(char *utf8, size_t size, uint32_t ucs4)
 {
-	size_t r = 0;
+	char *cursor = utf8;
 
     if (ucs4 < 0x80) {
-        *utf8++ = char(ucs4);
-        ++r;
-    } else {
-        if (ucs4 < 0x0800) {
-            *utf8++ = 0xc0 | byte_t(ucs4 >> 6);
-            ++r;
-        } else {
-            // is it one of the Unicode non-characters?
-            if (Unicode::isNonCharacter(ucs4)) {
-                *utf8++ = replacement;
-                ++r;
-                ++invalid;
-                return r;
-            }
+    	if (size < 1)
+    		return ssize_t(-1);
+        *cursor++ = char(ucs4);
+    } else if (ucs4 < 0x0800) {
+    	if (size < 2)
+    		return ssize_t(-1);
+    	*cursor++ = 0xC0 | byte_t(ucs4 >> 6);
+    	*cursor++ = 0x80 | byte_t(ucs4 & 0x3f);
+    } else if (ucs4 < 0x10000) {
+    	if (size < 3)
+    		return ssize_t(-1);
 
-            if (Unicode::requiresSurrogates(ucs4)) {
-                *utf8++ = 0xf0 | byte_t(ucs4 >> 18);
-                *utf8++ = 0x80 | (byte_t(ucs4 >> 12) & 0x3f);
-                r += 2;
-            } else {
-                *utf8++ = 0xe0 | (byte_t(ucs4 >> 12) & 0x3f);
-                ++r;
-            }
-            *utf8++ = 0x80 | (byte_t(ucs4 >> 6) & 0x3f);
-            ++r;
-        }
-        *utf8++ = 0x80 | byte_t(ucs4 & 0x3f);
-        ++r;
+    	*cursor++ = 0xE0 | byte_t(ucs4 >> 12);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 6)  & 0x3F);
+    	*cursor++ = 0x80 | byte_t(ucs4 & 0x3F);
+    } else if (ucs4 < 0x200000) {
+    	if (size < 4)
+    		return ssize_t(-1);
+
+    	*cursor++ = 0xF0 | byte_t(ucs4 >> 18);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 12) & 0x3F);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 6)  & 0x3F);
+    	*cursor++ = 0x80 | byte_t(ucs4 & 0x3F);
+    } else if (ucs4 < 0x4000000) {
+    	if (size < 5)
+    		return ssize_t(-1);
+
+    	*cursor++ = 0xF8 | byte_t(ucs4 >> 24);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 18) & 0x3F);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 12) & 0x3F);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 6)  & 0x3F);
+    	*cursor++ = 0x80 | byte_t(ucs4 & 0x3F);
+    } else if (ucs4 < 0x80000000) {
+    	if (size < 6)
+    		return ssize_t(-1);
+    	*cursor++ = 0xFC | byte_t(ucs4 >> 30);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 24) & 0x3F);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 18) & 0x3F);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 12) & 0x3F);
+    	*cursor++ = 0x80 | (byte_t(ucs4 >> 6)  & 0x3F);
+    	*cursor++ = 0x80 | byte_t(ucs4 & 0x3F);
     }
 
-    return r;
+    return size_t(cursor - utf8);
 }
 
-template <typename T>
-ssize_t UcsUtf8Codec<T>::convert(char output[], size_t osize, const T input[], size_t isize, size_t * remain)
+template <typename T, uint32_t MaxCP>
+ssize_t UcsUtf8Codec<T, MaxCP>::convert(char output[], size_t osize, const T input[], size_t isize, size_t * remain)
 {
-	ssize_t r  = 0;
-	char *cursor = output;
+	CWT_ASSERT(remain);
+
+	char *pbytes = output;
+	char *pbytesEnd = output + osize;
+	const T *pchars = input;
+	const T *pcharsEnd = input + isize;
 	*remain = isize;
 
 	if (!m_headerDone) {
 		if (osize > 2) {
-			*cursor++ = 0xef;
-			*cursor++ = 0xbb;
-			*cursor++ = 0xbf;
+			*pbytes++ = 0xef;
+			*pbytes++ = 0xbb;
+			*pbytes++ = 0xbf;
 			m_headerDone = true;
-			r += 3;
-			osize -= 3;
 		} else {
 			return 0;
 		}
 	}
 
-	const T *ch  = input;
-	const T *end = ch + isize;
+	while (pbytes < pbytesEnd && pchars < pcharsEnd) {
 
-	while (ch < end && osize > 0) {
-		char utf8[16];
-	    size_t n = __utf8_encode_ucs(utf8, uint32_t(*ch), m_replacementChar, m_invalidCount);
-	    CWT_ASSERT(n < 16);
+		uint32_t ucs4 = uint32_t(*pchars);
 
-	    if (n <= osize) {
-	    	for (size_t i = 0; i < n; ++i)
-	    		*cursor++ = utf8[i];
-	    	r += n;
-	    	osize -= n;
-	    	--*remain;
-	    	++ch;
+	    if (Unicode::isNonCharacter(ucs4) || ucs4 > MaxCodePoint) {
+	    	*pbytes++ = m_replacementChar;
+	        ++m_invalidCount;
+	        continue;
 	    } else {
-	    	break;
+			ssize_t n = __utf8_encode_ucs(pbytes, size_t(pbytesEnd - pbytes), ucs4);
+			if (n < 0) // not enough space
+				break;
+			pbytes += n;
 	    }
+	    ++pchars;
 	}
 
-	return r;
+	*remain = size_t(pcharsEnd - pchars);
+	return ssize_t(pbytes - output);
 }
 
 } // namespace io

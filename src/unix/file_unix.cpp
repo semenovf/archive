@@ -66,12 +66,18 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 	int fd;
 	int native_oflags = 0;
 
+	bool created = false;
+
 	if (oflags & Device::ReadWrite) {
 		native_oflags |= O_RDWR;
 		native_oflags |= O_CREAT;
 	} else if (oflags & Device::WriteOnly) {
 		native_oflags |= O_WRONLY;
 		native_oflags |= O_CREAT;
+
+		struct stat st;
+		if (stat(path, &st) != 0 && errno == ENOENT)
+			created = true;
 	} else {
 		native_oflags |= O_RDONLY;
 	}
@@ -89,6 +95,11 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 		return false;
 	}
 	m_fd = fd;
+
+	if (created) {
+		return setPermissions(path, File::ReadOwner | File::WriteOwner);
+	}
+
 	return true;
 }
 

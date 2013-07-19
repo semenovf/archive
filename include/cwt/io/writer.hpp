@@ -56,7 +56,7 @@ inline ssize_t Writer<Consumer, Encoder>::write(const Writer<Consumer, Encoder>:
 template <typename Consumer, typename Encoder>
 inline ssize_t Writer<Consumer, Encoder>::write(const char_type chars[], size_t size)
 {
-	ssize_t ntotal;
+	ssize_t ntotal = 0;
 	size_t  remain = size;
 	dest_char_type buffer[ChunkSize];
 
