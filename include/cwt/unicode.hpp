@@ -24,16 +24,17 @@ public:
 	 * Qt implementation: (ucs4 & 0xfffffc00) == 0xd800
 	 * */
 	static bool isHiSurrogate(uint32_t ucs4)      { return ucs4 >= 0xd800 && ucs4 <= 0xdbff; }
+
 	static bool isNonCharacter(uint32_t ucs4)     { return ucs4 >= 0xfdd0 && (ucs4 <= 0xfdef || (ucs4 & 0xfffe) == 0xfffe); }
 	static bool isSurrogate(uint32_t ucs4)        { return (ucs4 - 0xd800u < 2048u); }
-	static uint16_t hiSurrogate(uint32_t ucs4)    { return uint16_t((ucs4 >> 10) + 0xd7c0); }
-	static uint16_t lowSurrogate(uint32_t ucs4)   { return uint16_t(ucs4 % 0x400 + 0xdc00); }
-	static bool requiresSurrogates(uint32_t ucs4) { return (ucs4 >= 0x10000); }
+	//static uint16_t hiSurrogate(uint32_t ucs4)    { return uint16_t((ucs4 >> 10) + 0xd7c0); }
+	//static uint16_t lowSurrogate(uint32_t ucs4)   { return uint16_t(ucs4 % 0x400 + 0xdc00); }
+	//static bool requiresSurrogates(uint32_t ucs4) { return (ucs4 >= 0x10000); }
 
 	/* ucs4 = (hi-0xD800)*400 + (lo-0xDC00) + 10000
 	 * Qt implementation: (uint_t(hi)<<10) + lo - 0x35fdc00
 	 * */
-	static uint32_t surrogatePairToUcs4(uint16_t hi, uint16_t lo) { return (hi-0xd800)*400 + (lo-0xdc00) + 10000; }
+	//static uint32_t surrogatePairToUcs4(uint16_t hi, uint16_t lo) { return (hi-0xd800)*400 + (lo-0xdc00) + 10000; }
 };
 
 CWT_NS_END
