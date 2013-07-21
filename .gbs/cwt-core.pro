@@ -14,15 +14,14 @@ SUBDIRS  = cwt-core  \
     tests/bytearray  \
     tests/bytestream \
     tests/dl         \
-    tests/file       \
     tests/fsm        \
     tests/hash       \
     tests/md5        \
     tests/shared_ptr \
     tests/string     \
-    tests/textstream \
     tests/uri        \
     tests/uuid       \
     tests/vector     \
     tests/unitype    \
+    tests/utf8string \
     utils/uuid-gen

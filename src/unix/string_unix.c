@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#include "../../include/cwt/system.h"
+#include "../../include/cwt/string.h"
 #include "../../include/cwt/mt.h"
 
 DLL_API char* cwt_strerror(int errn, char *buf, size_t buflen)

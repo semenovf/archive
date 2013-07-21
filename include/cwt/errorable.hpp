@@ -13,7 +13,7 @@
 #include <cwt/string.hpp>
 #include <cwt/vector.hpp>
 #include <cwt/logger.hpp>
-#include <cwt/system.h>
+#include <cwt/string.h>
 
 CWT_NS_BEGIN
 

@@ -15,5 +15,11 @@
 #	define strcasecmp _stricmp
 #endif
 
+EXTERN_C_BEGIN
+
+DLL_API char* cwt_strerror(int errn, char *buf, size_t buflen);
+
+EXTERN_C_END
+
 
 #endif /* __CWT_STRING_H__ */

@@ -42,5 +42,4 @@ private:                                                                       \
 		}                                                                      \
 	}
 
-
 #endif /* __CWT_PIMPL_HPP__ */

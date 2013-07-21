@@ -9,7 +9,7 @@
 #ifndef __CWT_STRING_HPP__
 #define __CWT_STRING_HPP__
 
-#include <cwt/cwt.h>
+#include <cwt/cwt.hpp>
 #include <cwt/char.hpp>
 #include <cwt/bytearray.hpp>
 #include <cwt/memory.hpp>
@@ -28,8 +28,6 @@ CWT_NS_BEGIN
 // Qt   QString
 // C#
 // Java
-
-class TextStream;
 
 class DLL_API String
 {
@@ -137,8 +135,6 @@ public:
 	static String number (ulong_t n, int base = 10);
 
 	static const String& constNull();
-
-    friend class TextStream;
 };
 
 DLL_API uint_t hash_func(const String &key, uint_t seed);
