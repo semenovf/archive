@@ -8,8 +8,8 @@
  */
 
 #include "../include/cwt/settings.hpp"
-#include "../include/cwt/json.hpp"
-#include "../include/cwt/vector.hpp"
+#include <cwt/json.hpp>
+#include <cwt/vector.hpp>
 
 CWT_NS_BEGIN
 

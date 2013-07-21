@@ -28,7 +28,7 @@ public:
 public:
 	Settings();
 	bool parse(const String & str, Format format = UnknownFormat);
-	bool parseFromFile(const char *path, Format format = UnknownFormat);
+	bool parseFromFile(const char *path, Format format = UnknownFormat, const char *encoding = "utf8");
 
 	UniType operator [] (const String & path) { return value(path); }
 	UniType value   (const String & path, const UniType & defaultValue = UniType());

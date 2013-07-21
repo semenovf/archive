@@ -6,10 +6,10 @@
  *  Removed to CWT on: Feb 12, 2013
  */
 
-#include "../include/cwt/logger.hpp"
 #include "../include/cwt/sepaloid.hpp"
-#include "../include/cwt/filesystem.hpp"
-#include "../include/cwt/dl.hpp"
+#include <cwt/logger.hpp>
+#include <cwt/filesystem.hpp>
+#include <cwt/dl.hpp>
 
 CWT_NS_BEGIN
 
