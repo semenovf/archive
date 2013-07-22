@@ -10,7 +10,9 @@
 
 #include <cwt/cwt.hpp>
 #include <cwt/pimpl.hpp>
-#include <cwt/shared_ptr.hpp>
+#include <cwt/bytearray.hpp>
+#include <cwt/unicode.hpp>
+#include <cwt/hash.hpp>
 
 CWT_NS_BEGIN
 
@@ -18,11 +20,31 @@ CWT_NS_BEGIN
 // C#
 // Java
 
-#ifdef CWT_UCS4_CHAR
-	typedef uint32_t UChar;
-#else
-	typedef uint16_t UChar;
-#endif
+typedef uint32_t UChar;
+
+struct DLL_API Utf8Entry
+{
+	const char *cursor;
+	const char *end;
+	//uint32_t    uc;
+
+	Utf8Entry()
+		: cursor(nullptr)
+		, end(nullptr)
+		/*, uc(0) */{}
+	Utf8Entry(const Utf8Entry & o)
+		: cursor(o.cursor)
+		, end(o.end)
+		/*, uc(o.uc) */{}
+
+	explicit Utf8Entry(const char *cur, const char *e/*, uint32_t ch = Unicode::Null*/)
+		: cursor(cur)
+		, end(e)
+		/*, uc(ch) */{}
+
+	UChar value() const;
+    Utf8Entry & next ();
+};
 
 class DLL_API Utf8String
 {
@@ -34,33 +56,84 @@ public:
 
 	class iterator {
 		friend class const_iterator;
-		void *impl;
-	public:
-        iterator();
-        explicit iterator(const iterator &o);
-        ~iterator();
+		Utf8Entry m_entry;
 
-        UChar value() const;
-        UChar operator      * () const;
-        bool operator      == (const iterator &o) const;
-        bool operator      != (const iterator &o) const;
-        iterator& operator ++ ();
-        iterator operator  ++ (int);
-        iterator &operator -- ();
-        iterator operator  -- (int);
-        iterator operator   + (int) const;
-        iterator operator   - (int) const;
-        iterator &operator += (int);
-        iterator &operator -= (int);
+	public:
+        iterator() : m_entry() {}
+    	iterator(const iterator & o) : m_entry(o.m_entry) {}
+    	explicit iterator(const char *cursor, const char *end/*, uint32_t ch = Unicode::Null*/)
+    		: m_entry(cursor, end/*, ch*/) {}
+
+    	UChar value() const { return m_entry.value(); }
+        UChar operator  * () const { return m_entry.value(); }
+        ssize_t distance(const iterator & o) const { return ssize_t(o.m_entry.cursor - m_entry.cursor); }
+        bool operator  == (const iterator & o) const { return m_entry.cursor == o.m_entry.cursor; }
+        bool operator  != (const iterator & o) const { return m_entry.cursor != o.m_entry.cursor; }
+        iterator & operator ++ () { m_entry.next(); return *this; }
+        iterator   operator ++ (int) {
+            iterator r(*this);
+            this->operator ++();
+            return r;
+        }
+
+        bool operator  > (const iterator & o) const { return m_entry.cursor > o.m_entry.cursor; }
+        bool operator >= (const iterator & o) const { return m_entry.cursor >= o.m_entry.cursor; }
+        bool operator  < (const iterator & o) const { return m_entry.cursor < o.m_entry.cursor; }
+        bool operator <= (const iterator & o) const { return m_entry.cursor <= o.m_entry.cursor; }
+
+//        iterator & operator -- ();
+//        iterator   operator -- (int);
+//        iterator   operator  + (int) const;
+//        iterator   operator  - (int) const;
+//        iterator & operator += (int);
+//        iterator & operator -= (int);
 	};
 
 	class const_iterator {
 		friend class iterator;
-		void *impl;
+		Utf8Entry m_entry;
+
+	public:
+        const_iterator() : m_entry() {}
+    	const_iterator(const iterator & o) : m_entry(o.m_entry) {}
+    	const_iterator(const const_iterator & o) : m_entry(o.m_entry) {}
+    	explicit const_iterator(const char *cursor, const char *end/*, uint32_t ch = Unicode::Null*/)
+    		: m_entry(cursor, end/*, ch*/) {}
+
+    	UChar value() const { return m_entry.value(); }
+        UChar operator  * () const { return m_entry.value(); }
+        bool operator  == (const iterator & o) const { return m_entry.cursor == o.m_entry.cursor; }
+        bool operator  == (const const_iterator & o) const { return m_entry.cursor == o.m_entry.cursor; }
+        bool operator  != (const iterator & o) const { return m_entry.cursor != o.m_entry.cursor; }
+        bool operator  != (const const_iterator & o) const { return m_entry.cursor != o.m_entry.cursor; }
+        const_iterator & operator ++ () { m_entry.next(); return *this; }
+        const_iterator   operator ++ (int) {
+            const_iterator r(*this);
+            this->operator ++();
+            return r;
+        }
+
+        bool operator  > (const const_iterator & o) const { return m_entry.cursor > o.m_entry.cursor; }
+        bool operator >= (const const_iterator & o) const { return m_entry.cursor >= o.m_entry.cursor; }
+        bool operator  < (const const_iterator & o) const { return m_entry.cursor < o.m_entry.cursor; }
+        bool operator <= (const const_iterator & o) const { return m_entry.cursor <= o.m_entry.cursor; }
+
+//        iterator & operator -- ();
+//        iterator   operator -- (int);
+//        iterator   operator  + (int) const;
+//        iterator   operator  - (int) const;
+//        iterator & operator += (int);
+//        iterator & operator -= (int);
+	};
+/*
+	class const_iterator {
+		friend class iterator;
+		char *cursor;
+		char *end;
+		UChar ch;
 	public:
         const_iterator();
         explicit const_iterator(const iterator &o);
-        ~const_iterator();
 
         UChar value() const;
         UChar operator * () const;
@@ -68,6 +141,7 @@ public:
         bool operator  != (const const_iterator &o) const;
         const_iterator & operator ++ ();
         const_iterator   operator ++ (int);
+
         const_iterator & operator -- ();
         const_iterator   operator -- (int);
         const_iterator   operator  + (int) const;
@@ -75,6 +149,7 @@ public:
         const_iterator & operator += (int);
         const_iterator & operator -= (int);
 	};
+*/
 
 public:
 	Utf8String();
@@ -85,6 +160,14 @@ public:
 	Utf8String&	 append(const Utf8String & s);
 	Utf8String&	 append(const char *latin1, int length);
 	Utf8String&	 append(const char *latin1);
+	Utf8String&  append(char latin1);
+
+    iterator       begin();
+    iterator       end();
+    const_iterator begin() const;
+    const_iterator end() const;
+    const_iterator cbegin() const { return begin(); }
+    const_iterator cend() const   { return end(); }
 
 #ifdef __NOT_IMPLEMENTED_YET__
 	/*
@@ -92,9 +175,7 @@ public:
 	Utf8String(const UChar *s, size_t size);
 	Utf8String(size_t size, UChar ch);
 */
-
 	Utf8String&	 append(const UChar *unicode, int length);
-	Utf8String&  append(char latin1);
 	Utf8String&  append(UChar ch);
 
 	const UChar at(int pos) const;
@@ -106,15 +187,19 @@ public:
 	int      compare(const String & other, bool cs = true) const;
 #endif
 	const char*	data() const;
+	const char*	c_str() const;
 #ifdef __NOT_IMPLEMENTED_YET__
 	bool	 endsWith(const String &s, bool cs = true) const;
 	bool	 endsWith(UChar ch, bool cs = true) const;
 #endif
+
 	bool	 isEmpty() const;
+	iterator find(const Utf8String & s, iterator from = begin());
+	const_iterator find(const Utf8String & s, const_iterator from = cbegin()) const;
+
 #ifdef __NOT_IMPLEMENTED_YET__
 	ssize_t  indexOf(const String &str, int from = 0, bool cs = true) const;
 	ssize_t  indexOf(UChar ch, int from = 0, bool cs = true) const;
-	size_t   length() const { return size(); }
 
 	String&	 prepend(const String &str);
 	String&	 prepend(const UChar *unicode, int size = -1);
@@ -123,13 +208,18 @@ public:
 
 	String&  replace(const String &before, const String &after, bool cs = true);
 
-	void	 reserve(size_t size);
-	void	 resize(size_t size);
-
 	String&  sprintf(const char * cformat, ...);
 	String&  vsprintf(const char *cformat, va_list ap);
+#endif
 
+	size_t   length() const;
 	size_t   size() const;
+
+	void reserve (size_t n = 0);
+	void resize (size_t n);
+	void resize (size_t n, char c);
+
+#ifdef __NOT_IMPLEMENTED_YET__
 	bool	 startsWith(const String &s, bool cs = true) const;
 	bool	 startsWith(UChar c, bool cs = true) const;
 	String   substr(size_t pos) const;
@@ -152,7 +242,6 @@ public:
 	String&	operator = (UChar ch);
 	UChar operator[](int pos) const;
 
-	friend const Utf8String	operator + (const Utf8String &s, UChar ch);
 #endif
 	friend Utf8String operator + (const Utf8String &s1, const Utf8String &s2);
 
@@ -174,12 +263,14 @@ public:
 	String&	setNumber (byte_t n, int base = 10)  { return setNumber(ulong_t(n), base); }
 	String&	setNumber (float n, char f = 'g', int prec = 6);
 	String&	setNumber (double n, char f = 'g', int prec = 6);
+#endif
+	static Utf8String fromUtf8   (const ByteArray &str, bool * ok);
+	static Utf8String fromUtf8   (const char *utf8, bool * ok);
+	static Utf8String fromUtf8   (const char *utf8, size_t size, bool * ok);
+	static Utf8String fromLatin1 (const char * latin1, size_t size, bool * ok);
+	static Utf8String fromLatin1 (const char * latin1, bool * ok);
 
-	static String fromUtf8   (const char *utf8);
-	static String fromUtf8   (const char *utf8, size_t size);
-	static String fromUtf8   (const ByteArray &str);
-	static String fromLatin1 (const char * latin1, size_t size);
-	static String fromLatin1 (const char * latin1);
+#ifdef __NOT_IMPLEMENTED_YET__
 	static String fromUtf16  (const ushort_t * unicode, size_t size);
 	static String fromUtf16  (const ushort_t * unicode);
 
@@ -192,11 +283,18 @@ public:
 
 	static const String& constNull();
 #endif
+
+	friend void swap (Utf8String& x, Utf8String& y) { x.pimpl.swap(y.pimpl); }
+
+public:
+	static int decodeBytes(const char * bytes, size_t len, uint32_t & uc, uint32_t & min_uc);
+	static ssize_t encodeUcs4(char *utf8, size_t size, uint32_t ucs4);
 };
 
-#ifdef __NOT_IMPLEMENTED_YET__
-DLL_API uint_t hash_func(const Utf8String &key, uint_t seed);
-#endif
+inline uint_t hash_func(const Utf8String &key, uint_t seed)
+{
+	return hash_bytes(reinterpret_cast<const byte_t*>(key.data()), key.size(), seed);
+}
 
 CWT_NS_END
 

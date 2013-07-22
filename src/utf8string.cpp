@@ -5,17 +5,9 @@
  *      Author: wladt
  */
 
-#include "../../include/cwt/utf8string.hpp"
-#include <string>
-#include <cstring>
+#include "utf8string_p.hpp"
 
 CWT_NS_BEGIN
-
-struct Utf8String::Impl : public std::string
-{
-	Impl() : std::string() {}
-	Impl(const Impl & other) : std::string(other) { }
-};
 
 CWT_PIMPL_IMPL_COPYABLE(Utf8String);
 
@@ -48,12 +40,56 @@ bool Utf8String::isEmpty() const
 	return pimpl->empty();
 }
 
+/**
+ *
+ * @brief Returns string size in unicode code points (UChar).
+ *
+ * @return size of string in unicode code points (bytes).
+ */
+size_t Utf8String::length() const
+{
+	size_t r = 0;
+	const_iterator it = begin();
+	const_iterator itEnd = end();
+
+	while (it++ != itEnd)
+		++r;
+	return r;
+}
+
+
+/**
+ * @brief Returns string size in code units (bytes).
+ *
+ * @return size of string in code units (bytes).
+ */
+size_t Utf8String::size() const
+{
+	return pimpl->size();
+}
+
 Utf8String& Utf8String::append(const Utf8String & s)
 {
 	detach();
 	pimpl->append(*s.pimpl);
 	return *this;
 }
+
+void Utf8String::reserve (size_t n)
+{
+	pimpl->reserve(n);
+}
+
+void Utf8String::resize (size_t n)
+{
+	pimpl->resize(n);
+}
+
+void Utf8String::resize (size_t n, char c)
+{
+	pimpl->resize(n, c);
+}
+
 
 Utf8String&	Utf8String::append(const char *latin1, int length)
 {
@@ -76,6 +112,11 @@ Utf8String& Utf8String::append(const char *latin1)
 	return append(latin1, strlen(latin1));
 }
 
+Utf8String& Utf8String::append(char latin1)
+{
+	return append(&latin1, 1);
+}
+
 void Utf8String::clear()
 {
 	detach();
@@ -85,6 +126,11 @@ void Utf8String::clear()
 const char*	Utf8String::data() const
 {
 	return pimpl->data();
+}
+
+const char*	Utf8String::c_str() const
+{
+	return pimpl->c_str();
 }
 
 Utf8String operator + (const Utf8String &s1, const Utf8String &s2)

@@ -1,0 +1,27 @@
+/*
+ * utf8string_p.hpp
+ *
+ *  Created on: Jul 22, 2013
+ *      Author: wladt
+ */
+
+#ifndef __CWT_UTF8STRING_P_HPP__
+#define __CWT_UTF8STRING_P_HPP__
+
+#include "../../include/cwt/utf8string.hpp"
+#include "../../include/cwt/unicode.hpp"
+#include <string>
+#include <cstring>
+
+CWT_NS_BEGIN
+
+struct Utf8String::Impl : public std::string
+{
+	static const size_t npos = std::string::npos;
+	Impl() : std::string() {}
+	Impl(const Impl & other) : std::string(other) { }
+};
+
+CWT_NS_END
+
+#endif /* __CWT_UTF8STRING_P_HPP__ */
