@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_IO_CODEC_UTF8_HPP__
-#define __CWT_IO_CODEC_UTF8_HPP__
+#ifndef __CWT_UTF8CODEC_HPP__
+#define __CWT_UTF8CODEC_HPP__
 
 #include <cwt/cwt.hpp>
 
@@ -81,5 +81,4 @@ extern template ssize_t Ucs4Utf8Codec::convert(dest_char_type output[], size_t o
 
 CWT_NS_END
 
-
-#endif /* __CWT_IO_CODEC_UTF8_HPP__ */
+#endif /* __CWT_UTF8CODEC_HPP__ */

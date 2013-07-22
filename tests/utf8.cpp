@@ -3,7 +3,7 @@
 #include "../include/cwt/io/writer.hpp"
 #include "../include/cwt/io/buffer.hpp"
 #include "../include/cwt/io/file.hpp"
-#include "../include/cwt/io/codec_utf8.hpp"
+#include "../include/cwt/io/utf8codec.hpp"
 #include <cstring>
 #include <cstdio>
 
