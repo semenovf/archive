@@ -20,6 +20,7 @@ struct Utf8String::Impl : public std::string
 	static const size_t npos = std::string::npos;
 	Impl() : std::string() {}
 	Impl(const Impl & other) : std::string(other) { }
+	Impl(const std::string & other) : std::string(other) { }
 };
 
 CWT_NS_END
