@@ -44,14 +44,14 @@ public:
 	typedef Vector<char_type>           vector_type;
 
 public:
-	Reader(shared_ptr<P> producer, size_t chunkSize = 512)
+	Reader (shared_ptr<P> producer, size_t chunkSize = 512)
 		: m_chunkSize(chunkSize)
 	    , m_producer(producer)
 		, m_decoder(new C)
 		, m_buffer(new orig_char_type[chunkSize])
 		, m_remain(0)
 	{}
-	Reader(shared_ptr<P> producer, shared_ptr<C> decoder, size_t chunkSize = 512)
+	Reader (shared_ptr<P> producer, shared_ptr<C> decoder, size_t chunkSize = 512)
 		: m_chunkSize(chunkSize)
 		, m_producer(producer)
 		, m_decoder(decoder)
