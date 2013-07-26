@@ -12,7 +12,6 @@
 #include <cwt/pimpl.hpp>
 #include <cwt/bytearray.hpp>
 #include <cwt/unicode.hpp>
-#include <cwt/hash.hpp>
 
 CWT_NS_BEGIN
 
@@ -40,12 +39,14 @@ class DLL_API Utf8String
 {
 	CWT_PIMPL_DECL_COPYABLE(Utf8String);
 public:
+	typedef UChar char_type;
 	static const char ReplacementChar = '?';
 
     class const_iterator;
 
 	class iterator {
 		friend class const_iterator;
+		friend class Utf8String;
 		Utf8Entry m_entry;
 
 	public:
@@ -102,6 +103,7 @@ public:
 
 	class const_iterator {
 		friend class iterator;
+		friend class Utf8String;
 		Utf8Entry m_entry;
 
 	public:
@@ -167,17 +169,19 @@ public:
 	Utf8String(const char *latin1);
 	Utf8String(const char *latin1, size_t length);
 	Utf8String(size_t count, char latin1);
+	Utf8String(const const_iterator & begin, const const_iterator & end);
 
 	const char*	data() const;
+	const char*	constData() const { return data(); }
 	const char*	c_str() const;
 	UChar       charAt(size_t pos) const;
 	void        clear();
 	bool	    isEmpty() const;
 
-	Utf8String & append(const Utf8String & s);
-	Utf8String & append(const char *latin1, int length);
-	Utf8String & append(const char *latin1);
-	Utf8String & append(size_t count, char latin1) { return append(Utf8String(count, latin1)); }
+	Utf8String & append(const Utf8String & s) { return insert(s, end()); }
+	Utf8String & prepend(const Utf8String & s) { return insert(s, begin()); }
+	Utf8String & insert(const Utf8String & s, size_t pos) { return insert(s, begin() + pos); }
+	Utf8String & insert(const Utf8String & s, const const_iterator & pos);
 
     iterator       begin();
     iterator       end();
@@ -216,23 +220,16 @@ public:
 	ssize_t  indexOf(const String &str, int from = 0, bool cs = true) const;
 	ssize_t  indexOf(UChar ch, int from = 0, bool cs = true) const;
 
-//	String&	 prepend(const String &str);
-//	String&	 prepend(const UChar *unicode, int size = -1);
-//	String&	 prepend(UChar ch);
 	String&  remove(size_t pos, size_t n);
-
 	String&  replace(const String &before, const String &after, bool cs = true);
 
-	String&  sprintf(const char * cformat, ...);
-	String&  vsprintf(const char *cformat, va_list ap);
 #endif
 
 	size_t   length() const;
+	size_t   length(const const_iterator & begin, const const_iterator & end) const;
 	size_t   size() const;
 
 	void reserve (size_t n = 0);
-	void resize (size_t n);
-	void resize (size_t n, char c);
 
 	Utf8String substr(size_t pos) const { return substr(pos, length()); }
 	Utf8String substr(size_t pos, size_t n) const { return substr(begin() + pos, n); }
@@ -260,6 +257,9 @@ public:
 	Utf8String & setNumber (byte_t n, int base = 10)   { return setNumber(ulong_t(n), base); }
 	Utf8String & setNumber (float n, char f = 'g', int prec = 6) { return setNumber(double(n), f, prec); }
 	Utf8String & setNumber (double n, char f = 'g', int prec = 6);
+
+	Utf8String & sprintf(const char * cformat, ...);
+	Utf8String & vsprintf(const char *cformat, va_list ap);
 
 #ifdef __NOT_IMPLEMENTED_YET__
 	void     truncate(size_t count);
@@ -301,16 +301,12 @@ public:
 
 protected:
 	int compare (const const_iterator & from, size_t len, const char * s, size_t subpos, size_t sublen) const;
+	size_t calculateLength();
 
 public:
 	static int decodeBytes(const char * bytes, size_t len, uint32_t & uc, uint32_t & min_uc);
 	static ssize_t encodeUcs4(char *utf8, size_t size, uint32_t ucs4);
 };
-
-inline uint_t hash_func(const Utf8String &key, uint_t seed)
-{
-	return hash_bytes(reinterpret_cast<const byte_t*>(key.data()), key.size(), seed);
-}
 
 CWT_NS_END
 

@@ -11,14 +11,19 @@
 
 #include <cwt/cwt.h>
 #include <cwt/array.hpp>
-#include <cwt/char.hpp>
+#include <cwt/string.hpp>
 #include <cwt/shared_ptr.hpp>
 #include <cstring>
 
 CWT_NS_BEGIN
 
 DLL_API uint_t hash_bytes(const byte_t *p, size_t len, uint_t seed);
-DLL_API uint_t hash_chars(const Char *p, size_t len, uint_t seed);
+DLL_API uint_t hash_uchars(const UChar *p, size_t len, uint_t seed);
+inline uint_t hash_func(const String &key, uint_t seed)
+{
+	return hash_bytes(reinterpret_cast<const byte_t*>(key.data()), key.size(), seed);
+}
+
 
 inline uint_t hash_func(char key, uint_t seed = 0)        { return uint_t(key) ^ seed; }
 inline uint_t hash_func(byte_t key, uint_t seed = 0)      { return uint_t(key) ^ seed; }

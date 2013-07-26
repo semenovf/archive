@@ -27,14 +27,14 @@ struct FsmInvalidEntry {
 };
 
 struct FsmTestEntry {
-	const char *name;
-	FsmTransition *trans_tab;
-	const char *valid_str[5];
+	const char            *name;
+	FsmTransition<String> *trans_tab;
+	const char            *valid_str[5];
 	struct FsmInvalidEntry invalid_entries[5];
 };
 
 
-static void fsm_test_entries(Fsm<Char> &fsm, FsmTestEntry *entry)
+static void fsm_test_entries(Fsm<String> &fsm, FsmTestEntry *entry)
 {
 	const char *fsmname = entry->name;
 	const char * const *valid_str  = &entry->valid_str[0];
@@ -46,7 +46,7 @@ static void fsm_test_entries(Fsm<Char> &fsm, FsmTestEntry *entry)
 	while( *valid_str != NULL ) {
 		char desc[128];
 		String input(String::fromUtf8(*valid_str));
-		ssize_t result = fsm.exec(0, input.data(), input.length());
+		ssize_t result = fsm.exec(0, input.begin(), input.end());
 		sprintf(desc, "result == input.length(): %d == %d", (int)result, (int)input.length());
 		CWT_TEST_FAIL2(result == (ssize_t)input.length(), desc);
 		valid_str++;
@@ -55,7 +55,7 @@ static void fsm_test_entries(Fsm<Char> &fsm, FsmTestEntry *entry)
 	while( invalid_entries->str != NULL ) {
 		char desc[128];
 		String input(String::fromUtf8(invalid_entries->str));
-		ssize_t result = fsm.exec(0, input.data(), input.length());
+		ssize_t result = fsm.exec(0, input.begin(), input.end());
 		sprintf(desc, "result == invalid_entries->ret: %d == %d", (int)result, (int)invalid_entries->ret);
 		CWT_TEST_FAIL2(result == invalid_entries->ret, desc);
 		invalid_entries++;

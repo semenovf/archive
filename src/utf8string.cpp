@@ -10,6 +10,7 @@
 #include <cerrno>
 #include <sstream>
 #include <iomanip>
+#include <cstdarg>
 
 CWT_NS_BEGIN
 
@@ -21,27 +22,44 @@ Utf8String::Utf8String() : pimpl(new Utf8String::Impl())
 
 Utf8String::Utf8String(const char *latin1) : pimpl(new Utf8String::Impl())
 {
-	append(latin1, strlen(latin1));
+	pimpl->m_length = strlen(latin1);
+	for (size_t i = 0; i < pimpl->m_length; ++i) {
+		if(byte_t(latin1[i]) > 127)
+			pimpl->append(1, ReplacementChar);
+		else
+			pimpl->append(1, latin1[i]);
+	}
 }
 
 Utf8String::Utf8String(const char *latin1, size_t length) : pimpl(new Utf8String::Impl())
 {
-	append(latin1, length);
+	pimpl->m_length = length;
+	for (size_t i = 0; i < pimpl->m_length; ++i) {
+		if(byte_t(latin1[i]) > 127)
+			pimpl->append(1, ReplacementChar);
+		else
+			pimpl->append(1, latin1[i]);
+	}
 }
 
 Utf8String::Utf8String(size_t count, char latin1) : pimpl(new Utf8String::Impl())
 {
-	for (size_t i = 0; i < count; ++i) {
-		if (latin1 < 127)
-			pimpl->append(1, latin1);
-		else
-			pimpl->append(1, ReplacementChar);
+	if (byte_t(latin1) > 127)
+		latin1 = ReplacementChar;
+	pimpl->append(count, latin1);
+	pimpl->m_length = count;
+}
+
+Utf8String::Utf8String(const const_iterator & begin, const const_iterator & end)
+{
+	if (begin < end) {
+		pimpl->append(begin.m_entry.cursor, begin.distance(end));
 	}
 }
 
 bool Utf8String::isEmpty() const
 {
-	return pimpl->empty();
+	return pimpl->m_length == 0;
 }
 
 /**
@@ -52,14 +70,25 @@ bool Utf8String::isEmpty() const
  */
 size_t Utf8String::length() const
 {
-	size_t r = 0;
-	const_iterator it = begin();
-	const_iterator itEnd = end();
+	return pimpl->m_length;
+}
 
-	while (it++ < itEnd)
+
+size_t Utf8String::length(const const_iterator & begin, const const_iterator & end) const
+{
+	size_t r = 0;
+	const_iterator it = begin;
+
+	while (it++ < end)
 		++r;
 
 	return r;
+}
+
+size_t Utf8String::calculateLength()
+{
+	pimpl->m_length = length(begin(), end());
+	return pimpl->m_length;
 }
 
 
@@ -73,29 +102,10 @@ size_t Utf8String::size() const
 	return pimpl->size();
 }
 
-Utf8String& Utf8String::append(const Utf8String & s)
-{
-	detach();
-	pimpl->append(*s.pimpl);
-	return *this;
-}
-
 void Utf8String::reserve (size_t n)
 {
 	detach();
 	pimpl->reserve(n);
-}
-
-void Utf8String::resize (size_t n)
-{
-	detach();
-	pimpl->resize(n);
-}
-
-void Utf8String::resize (size_t n, char c)
-{
-	detach();
-	pimpl->resize(n, c);
 }
 
 Utf8String Utf8String::substr(const const_iterator & from, size_t n) const
@@ -110,33 +120,27 @@ Utf8String Utf8String::substr(const const_iterator & from, size_t n) const
 		size_t pos = from.distance(begin());
 		size_t len = itEnd.distance(from);
 		*r.pimpl = pimpl->substr(pos, len);
+		r.calculateLength();
 	}
 
 	return r;
 }
 
 
-Utf8String&	Utf8String::append(const char *latin1, int length)
+Utf8String & Utf8String::insert(const Utf8String & s, const Utf8String::const_iterator & pos)
 {
 	detach();
-	const char *end = latin1 + length;
+	const_iterator it(pos);
+	if (it > end())
+		it = end();
+	if (it < begin())
+		it = begin();
 
-	while (latin1 < end) {
-		if (*latin1 < 127)
-			pimpl->append(1, *latin1);
-		else
-			pimpl->append(1, ReplacementChar);
-		++latin1;
-	}
-
+	size_t i = it.distance(begin());
+	pimpl->insert(i, s.data(), s.size());
+	pimpl->m_length += s.length();
 	return *this;
 }
-
-Utf8String& Utf8String::append(const char *latin1)
-{
-	return append(latin1, strlen(latin1));
-}
-
 
 /**
  *
@@ -259,6 +263,7 @@ void Utf8String::clear()
 {
 	detach();
 	pimpl->clear();
+	pimpl->m_length = 0;
 }
 
 const char*	Utf8String::data() const
@@ -414,6 +419,7 @@ Utf8String & Utf8String::setNumber (long_t n, int base)
 	std::ostringstream os;
 	os << std::setbase(base) << n;
 	*this->pimpl = os.str();
+	calculateLength();
 	return *this;
 }
 
@@ -423,6 +429,7 @@ Utf8String & Utf8String::setNumber (ulong_t n, int base)
 	std::ostringstream os;
 	os << std::setbase(base) << n;
 	*this->pimpl = os.str();
+	calculateLength();
 	return *this;
 }
 
@@ -446,11 +453,33 @@ Utf8String & Utf8String::setNumber (double n, char f, int prec)
 	CWT_ASSERT(sprintf(num, fmt, n) > 0);
 
 	this->pimpl->assign(num);
+	calculateLength();
+	return *this;
+}
+
+Utf8String & Utf8String::sprintf(const char * cformat, ...)
+{
+	va_list args;
+	va_start(args, cformat);
+	detach();
+	Utf8String::vsprintf(cformat, args);
+	va_end(args);
 	return *this;
 }
 
 
-Utf8String operator + (const Utf8String &s1, const Utf8String &s2)
+// FIXME Need implementation based on FSM
+Utf8String & Utf8String::vsprintf(const char *cformat, va_list ap)
+{
+	char buf[4096];
+	int n = ::vsprintf(buf, cformat, ap);
+	CWT_ASSERT(n >= 0);
+	*this = Utf8String(buf, size_t(n));
+	return *this;
+}
+
+
+Utf8String operator + (const Utf8String & s1, const Utf8String & s2)
 {
 	Utf8String s(s1);
 	s.append(s2);

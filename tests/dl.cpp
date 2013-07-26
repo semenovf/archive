@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(3);
 
-	String dlname = Dl::buildDlFileName(_U("cwt"));
+	String dlname = Dl::buildDlFileName(String("cwt"));
 	Dl::Handle dlhandle;
 	typedef int (*dl_test_fn)(void);
 	dl_test_fn dltest;

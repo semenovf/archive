@@ -29,7 +29,7 @@ void test_bytearray_hash()
     	ByteArray sample(str);
     	ByteArray value(hash[str]);
     	CWT_TEST_OK2(strcmp(value.data(),sample.data()) == 0
-    			, String().sprintf("[%s] == [%s]", value.data(), str).toUtf8().data());
+    			, String().sprintf("[%s] == [%s]", value.data(), str).c_str());
     }
 }
 
@@ -48,7 +48,7 @@ void test_string_hash()
     	String sample(str);
     	String value(hash[str]);
     	CWT_TEST_OK2(sample == value
-    			, String().sprintf("[%ls] == [%ls]", value.data(), sample.data()).toUtf8().data());
+    			, String().sprintf("[%ls] == [%ls]", value.data(), sample.data()).c_str());
     }
 }
 

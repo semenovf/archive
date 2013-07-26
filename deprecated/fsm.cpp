@@ -7,7 +7,6 @@
  */
 
 #include <cwt/fsm.hpp>
-#include <cwt/char.hpp>
 #include <cstdlib>
 #include <cstring>
 

@@ -56,7 +56,6 @@ public:
 	UniType(ulong_t v) :m_d(new Data)           { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 	UniType(float v) : m_d(new Data)            { m_d->type = FloatValue; m_d->d.double_val = v; }
 	UniType(double v) : m_d(new Data)           { m_d->type = DoubleValue; m_d->d.double_val = v; }
-	UniType(Char v) : m_d(new Data)             { m_d->type = LongValue; m_d->d.long_val = long_t(v.unicode()); }
 	UniType(const String &v) : m_d(new Data)    { m_d->type = StringValue; m_d->d.string_val = new String(v); }
 	UniType(const ByteArray &v) : m_d(new Data) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
 
@@ -82,7 +81,7 @@ public:
 	void setULong      (ulong_t n) { setLong(long_t(n)); }
 	void setFloat      (float n);
 	void setDouble     (double n);
-	void setChar       (Char ch)   { setLong(long_t(ch.unicode())); }
+	void setChar       (UChar ch)   { setLong(long_t(ch)); }
 	void setString     (const String &s);
 	void setBlob       (const char *blob, size_t sz);
 	void setBlob       (const ByteArray &blob);
@@ -108,7 +107,7 @@ public:
 	ulong_t   toULong(bool *ok = NULL) const;
 	float     toFloat(bool *ok = NULL) const;
 	double    toDouble(bool *ok = NULL) const;
-	Char      toChar(bool *ok = NULL) const;
+	UChar     toUChar(bool *ok = NULL) const;
 	String    toString(bool *ok = NULL) const;
 	ByteArray toBlob(bool *ok = NULL) const;
 

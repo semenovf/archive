@@ -10,262 +10,173 @@
 #define __CWT_FSM_HPP__
 
 #include <cwt/cwt.h>
-#include <cwt/char.hpp>
 #include <cwt/string.hpp>
 #include <cstring>
 
 CWT_NS_BEGIN
 
 /* There are common predefined macros.
- * There are no predefined macros FSM_MATCH_STR and FSM_MATCH_CHAR.
- * They are specific for sample storage (e.g. plain array or String)
- * and can/must be defined separately.
  */
-#define FSM_MATCH_SEQ(n)          FsmMatch(new FsmMatchSeq(n))
-#define FSM_MATCH_RANGE(f,t)      FsmMatch(new FsmMatchRange(f,t))
-#define FSM_MATCH_FSM(tr)         FsmMatch(new FsmMatchFsm(tr))
-#define FSM_MATCH_OPT_FSM(tr)     FsmMatch(new FsmMatchRpt(FsmMatch(new FsmMatchFsm(tr)),0,1))
-#define FSM_MATCH_FUNC(f,pcont)   FsmMatch(new FsmMatchFunc(f,pcont))
-#define FSM_MATCH_RPT_FSM(tr,f,t) FsmMatch(new FsmMatchRpt(FsmMatch(new FsmMatchFsm(tr)),f,t))
-#define FSM_MATCH_NOTHING         FsmMatch(new FsmMatchNothing)
+#define FSM_MATCH_SEQ(n)          FsmMatch<String>(new FsmMatchSeq<String>(n))
+#define FSM_MATCH_RANGE(f,t)      FsmMatch<String>(new FsmMatchRange<String>(f,t))
+#define FSM_MATCH_FSM(tr)         FsmMatch<String>(new FsmMatchFsm<String>(tr))
+#define FSM_MATCH_OPT_FSM(tr)     FsmMatch<String>(new FsmMatchRpt<String>(FsmMatch<String>(new FsmMatchFsm<String>(tr)),0,1))
+#define FSM_MATCH_FUNC(f,pcont)   FsmMatch<String>(new FsmMatchFunc<String>(f,pcont))
+#define FSM_MATCH_RPT_FSM(tr,f,t) FsmMatch<String>(new FsmMatchRpt<String>(FsmMatch<String>(new FsmMatchFsm<String>(tr)),f,t))
+#define FSM_MATCH_NOTHING         FsmMatch<String>(new FsmMatchNothing<String>)
+#define FSM_MATCH_CHAR(s)         FsmMatch<String>(new FsmMatchChar<String>(s))
+#define FSM_MATCH_STR(s)          FsmMatch<String>(new FsmMatchStr<String>(s))
+#define FSM_MATCH_RPT_CHAR(s,f,t) FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_CHAR(s),f,t))
+#define FSM_MATCH_OPT_CHAR(s)     FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_CHAR(s),0,1))
 
 #define FSM_NORMAL  0
 #define FSM_REJECT  1
 #define FSM_ACCEPT  2
 
-//class FsmMatchBase;
+template <typename _P>
 struct FsmContext;
+
+template <typename _P>
 struct FsmTransition;
 
 struct FsmRptBounds {
 	int from, to;
 };
 
-typedef ssize_t (*FsmFunc)(FsmContext *fsm, void *fn_context, const void *data, size_t len);
-
+template <typename _P>
 class FsmMatchBase
 {
 public:
-	FsmMatchBase() : ref(1) {}
+	typedef typename _P::char_type char_type;
+	typedef typename _P::const_iterator const_iterator;
+
+	FsmMatchBase() {}
 	virtual ~FsmMatchBase() {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const = 0;
-	int ref;
+	virtual ssize_t match(FsmContext<_P> *fsm, const const_iterator & begin, const const_iterator & end) const = 0;
 };
 
+template <typename _P>
 class FsmMatch
 {
+public:
+	typedef typename _P::char_type char_type;
+	typedef typename _P::const_iterator const_iterator;
+	typedef ssize_t (*func_type)(FsmContext<_P> *fsm, void *fn_context, const typename _P::const_iterator & begin, const typename _P::const_iterator & end);
 private:
 	FsmMatch() : m_match(NULL) {}
-	void deref() {
-		if (m_match) {
-			CWT_ASSERT(m_match->ref > 0);
-			m_match->ref--;
-			if(m_match->ref == 0)
-				delete m_match;
-			m_match = NULL;
-		}
-	}
 public:
-	FsmMatch(FsmMatchBase *match) : m_match(match) { CWT_ASSERT(m_match); }
-	FsmMatch(const FsmMatch &match) {
-		CWT_ASSERT(match.m_match);
-		m_match = match.m_match;
-		m_match->ref++; }
-	~FsmMatch() { deref(); }
+	FsmMatch(FsmMatchBase<_P> * match) : m_match(match) { CWT_ASSERT(m_match); }
+	~FsmMatch() { delete m_match; }
 
-	ssize_t operator () (FsmContext *fsm, const void *data, size_t len) const {
-		return m_match->match(fsm, data, len);
+	ssize_t operator () (FsmContext<_P> *fsm, const const_iterator & begin, const const_iterator & end) const {
+		return m_match->match(fsm, begin, end);
 	}
 private:
-	FsmMatchBase* m_match;
+	FsmMatchBase<_P>* m_match;
 };
 
-/* Matches sequence of characters */
-class FsmMatchSeq : public FsmMatchBase
+template <typename _P>
+struct FsmTransition
 {
-public:
-	FsmMatchSeq(size_t len) : m_len(len) {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
-	size_t m_len;
-};
+	typedef typename _P::char_type char_type;
+	typedef typename _P::const_iterator const_iterator;
 
-/* Matches string of characters */
-class FsmMatchStr : public FsmMatchBase
-{
-public:
-	FsmMatchStr(const void *str, size_t len) : m_len(len), m_str(str) {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
-	size_t m_len;
-	const void *m_str;
-};
-
-/* Matches string of characters from String object */
-class FsmMatchStringStr : public FsmMatchBase
-{
-public:
-	FsmMatchStringStr(const String &str) : m_str(str) {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
-	String m_str;
-};
-
-
-/* Matches one character from characters */
-class FsmMatchChar : public FsmMatchBase
-{
-public:
-	FsmMatchChar(const void *chars, size_t count) : m_count(count), m_chars(chars) {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
-	size_t m_count;
-	const void *m_chars;
-};
-
-/* Matches one character from String object */
-class FsmMatchStringChar : public FsmMatchBase
-{
-public:
-	FsmMatchStringChar(const String &str) : m_str(str) {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
-	String m_str;
-};
-
-
-class FsmMatchRange : public FsmMatchBase
-{
-public:
-	FsmMatchRange( const void *from, const void *to) : m_from(from), m_to(to) {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
-	const void *m_from, *m_to;
-};
-
-class FsmMatchFsm : public FsmMatchBase
-{
-public:
-	FsmMatchFsm(const FsmTransition *trans) : m_trans(trans) {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
-	const FsmTransition *m_trans;
-};
-
-class FsmMatchFunc : public FsmMatchBase
-{
-public:
-	FsmMatchFunc(FsmFunc fn, void *fnContext) : m_fn(fn), m_fnContext(fnContext) {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
-	FsmFunc m_fn;
-	void *m_fnContext;
-};
-
-class FsmMatchRpt : public FsmMatchBase
-{
-public:
-	FsmMatchRpt(const FsmMatch &match, int from, int to) : m_match(match) {
-		m_bounds.from = from; m_bounds.to = to;
-	}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;
-
-private:
-	FsmMatch     m_match;
-	FsmRptBounds m_bounds;
-};
-
-class FsmMatchNothing : public FsmMatchBase
-{
-public:
-	FsmMatchNothing() {}
-	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const {
-		CWT_UNUSED3(fsm, data, len);
-		return 0;
-	}
-};
-
-struct FsmTransition {
 	int state_next;
 	int state_fail;
-	FsmMatch match;
+	FsmMatch<_P> match;
 	int status; /* last entry in the chain of ...*/
-	bool (*action)(const void *data, size_t len, void *context, void *action_args);
+	bool (*action)(const const_iterator & begin, const const_iterator & end, void *context, void *action_args);
 	void *action_args;
 };
 
-/** @brief Checks if character 'ch' belongs to the set of characters subset */
-typedef bool (*FsmBelongCharFn) (const void *ch, const void *subset, size_t n);
-
-/** @brief Checks if string 's' exactly equals to sequence of characters 'seq' */
-typedef bool (*FsmExactCharFn)  (const void *s, size_t n1, const void *seq, size_t n2);
-
-/** @brief Checks if character 'ch' belongs to the specified range */
-typedef bool (*FsmRangeCharFn)  (const void *ch, const void *from, const void *to);
-
+template <typename _P>
 struct FsmContext {
-	const FsmTransition *trans_tab;
-	int   sizeof_char;           /* size of character */
+	const FsmTransition<_P> *trans_tab;
 	void *context;               /* user context */
-
-	FsmBelongCharFn belongCharFn;
-	FsmExactCharFn  exactCharFn;
-	FsmRangeCharFn  rangeCharFn;
 };
 
-extern ssize_t execFsmContext (FsmContext *fsmContext, int state_cur, const void *data, size_t len);
 
-template<typename char_type>
-class Fsm {
+template <typename _P>
+class Fsm
+{
+public:
+	typedef typename _P::char_type char_type;
+	typedef typename _P::const_iterator const_iterator;
+
 private:
 	Fsm() : m_fsmContext(NULL) {}
 public:
-	Fsm(const FsmTransition *initialTrans, void *context);
+	Fsm(const FsmTransition<_P> *initialTrans, void *context);
 	~Fsm();
 
-	void setTransitionTable(FsmTransition *trans) { if (m_fsmContext) m_fsmContext->trans_tab = trans; }
-	ssize_t exec(int state_cur, const void *data, size_t len) { return execFsmContext(m_fsmContext, state_cur, data, len); }
+	void setTransitionTable(FsmTransition<_P> *trans) { m_fsmContext->trans_tab = trans; }
+	ssize_t exec(int state_cur, const const_iterator & begin, const const_iterator & end);
+
+public:
+	static bool belongsChar(char_type ch, const const_iterator & begin, const const_iterator & end);
+	static bool containsChars(const const_iterator & needle_begin, const const_iterator & needle_end
+			, const const_iterator & haystack_begin, const const_iterator & haystack_end);
+	static bool rangeChar(char_type ch, char_type from, char_type to);
 
 private:
-	FsmContext *m_fsmContext;
+	FsmContext<_P> *m_fsmContext;
 };
 
-template<typename char_type>
-bool belongCharType(const void *ch, const void *subset, size_t n)
+
+/** @brief Checks if character 'ch' belongs to the set of characters subset
+ * */
+template <typename _P>
+bool Fsm<_P>::belongsChar(char_type ch, const const_iterator & begin, const const_iterator & end)
 {
-	size_t i = 0;
-	const char_type *ss = (const char_type*)subset;
-	char_type c = *(char_type*)ch;
-	while (i < n) {
-		if (ss[i++] == c)
+	const_iterator it(begin);
+	while (it < end) {
+		if (ch == it.value())
 			return true;
+		++it;
 	}
 	return false;
 }
 
-template<typename char_type>
-inline bool exactCharType(const void *s, size_t n1, const void *seq, size_t n2)
+/** @brief Checks if string 's' exactly equals to sequence of characters 'seq'
+ * */
+template <typename _P>
+bool Fsm<_P>::containsChars(const const_iterator & needle_begin, const const_iterator & needle_end
+		, const const_iterator & haystack_begin, const const_iterator & haystack_end)
 {
-	return n1 != n2
-		? false
-		: memcmp(s, seq, n1 * sizeof(char_type)) == 0
-		  	  ? true : false;
+	const_iterator it_needle(needle_begin);
+	const_iterator it_haystack(haystack_begin);
+
+	if (needle_begin == needle_end)
+		return false;
+
+	while(it_needle < needle_end && it_haystack < haystack_end) {
+		if (it_needle.value() != it_haystack.value())
+			break;
+		++it_needle;
+		++it_haystack;
+	}
+
+	return it_needle == needle_end ? true : false;
 }
 
-template<typename char_type>
-inline bool rangeCharType(const void *ch, const void *from, const void *to)
+/** @brief Checks if character 'ch' belongs to the specified range
+ * */
+template <typename _P>
+inline bool Fsm<_P>::rangeChar(char_type ch, char_type from, char_type to)
 {
-	return *((const char_type*)ch) >= *((const char_type*)from)
-		&& *((const char_type*)ch) <= *((const char_type*)to)
-		? true : false;
+	return ch >= from && ch <= to ? true : false;
 }
 
-template<typename char_type>
-Fsm<char_type>::Fsm( const FsmTransition *initialTrans, void *context )
-	: m_fsmContext(new FsmContext)
+template <typename _P>
+Fsm<_P>::Fsm( const FsmTransition<_P> *initialTrans, void *context)
+	: m_fsmContext(new FsmContext<_P>)
 {
 	m_fsmContext->trans_tab     = initialTrans;
-	m_fsmContext->sizeof_char   = sizeof(char_type);
 	m_fsmContext->context       = context;
-	m_fsmContext->belongCharFn  = belongCharType<char_type>;
-	m_fsmContext->exactCharFn   = exactCharType<char_type>;
-	m_fsmContext->rangeCharFn   = rangeCharType<char_type>;
 }
 
-template<typename char_type>
-Fsm<char_type>::~Fsm()
+template <typename _P>
+Fsm<_P>::~Fsm()
 {
 	if (m_fsmContext) {
 		delete m_fsmContext;
@@ -273,5 +184,8 @@ Fsm<char_type>::~Fsm()
 }
 
 CWT_NS_END
+
+#include <cwt/fsm_match.hpp>
+#include <cwt/fsm_exec.hpp>
 
 #endif /* __CWT_FSM_H__ */

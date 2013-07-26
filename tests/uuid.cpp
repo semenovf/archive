@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     Uuid uuid;
     CWT_TEST_OK(uuid.parse(uuid_sample_str));
     CWT_TEST_OK(String().fromUtf8(uuid_sample_str) == uuid.toString());
-    printf("%s\n", uuid.toString().toUtf8().data());
+    printf("%s\n", uuid.toString().c_str());
 
     CWT_END_TESTS;
 }

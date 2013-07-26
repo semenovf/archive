@@ -5,15 +5,14 @@
 
 CWT_NS_BEGIN
 
-Dl::Handle Dl::open (const String &path, bool global, bool resolve)
+Dl::Handle Dl::open (const String & path, bool global, bool resolve)
 {
 	Dl::Handle h = NULL;
-	ByteArray utf8path(path.toUtf8());
 
 	dlerror(); /* clear error */
-	h = dlopen( utf8path.data(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ) );
+	h = dlopen( path.c_str(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ) );
 	if( !h ) {
-		Logger::error( _Tr("%ls: failed to open dynamic library: %s"), path.utf16(), dlerror());
+		Logger::error( _Tr("%s: failed to open dynamic library: %s"), path.c_str(), dlerror());
 	}
 	return h;
 }
@@ -48,9 +47,9 @@ void Dl::close (Dl::Handle h)
 String Dl::buildDlFileName (const String &basename)
 {
 	String libname;
-	libname.append(_U("lib"));
+	libname.append(String("lib"));
 	libname.append(basename);
-	libname.append(_U(".so"));
+	libname.append(String(".so"));
 	return libname;
 }
 

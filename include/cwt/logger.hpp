@@ -47,7 +47,7 @@ public:
 	void connect();
 	void disconnect();
 public:
-	LogAppender() : m_connected(false), m_pattern(_U("%m")), m_priority(Logger::Trace) { }
+	LogAppender() : m_connected(false), m_pattern("%m"), m_priority(Logger::Trace) { }
 	LogAppender(const String &pattern) : m_connected(false), m_pattern(pattern), m_priority(Logger::Trace) {}
 	virtual ~LogAppender() { if(m_connected) disconnect(); }
 
@@ -92,12 +92,12 @@ class StdioLogAppender : public LogAppender
 public:
 	StdioLogAppender() {}
 	~StdioLogAppender() {}
-	virtual void trace(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Trace, msg).toUtf8().data()); }
-	virtual void debug(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Debug, msg).toUtf8().data()); }
-	virtual void info(const String &msg)  { ::fprintf(stdout, "%s\n", patternify(Logger::Info, msg).toUtf8().data()); }
-	virtual void warn(const String &msg)  { ::fprintf(stderr, "%s\n", patternify(Logger::Warn, msg).toUtf8().data()); }
-	virtual void error(const String &msg) { ::fprintf(stderr, "%s\n", patternify(Logger::Error, msg).toUtf8().data()); }
-	virtual void fatal(const String &msg) { ::fprintf(stderr, "%s\n", patternify(Logger::Fatal, msg).toUtf8().data()); }
+	virtual void trace(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Trace, msg).c_str()); }
+	virtual void debug(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Debug, msg).c_str()); }
+	virtual void info(const String &msg)  { ::fprintf(stdout, "%s\n", patternify(Logger::Info, msg).c_str()); }
+	virtual void warn(const String &msg)  { ::fprintf(stderr, "%s\n", patternify(Logger::Warn, msg).c_str()); }
+	virtual void error(const String &msg) { ::fprintf(stderr, "%s\n", patternify(Logger::Error, msg).c_str()); }
+	virtual void fatal(const String &msg) { ::fprintf(stderr, "%s\n", patternify(Logger::Fatal, msg).c_str()); }
 };
 
 class StringsLogAppender : public LogAppender

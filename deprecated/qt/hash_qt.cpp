@@ -7,7 +7,6 @@
  */
 
 #include "../include/cwt/hash.hpp"
-#include "../include/cwt/char.hpp"
 #include "../include/cwt/string.hpp"
 //CWT_NS_BEGIN
 

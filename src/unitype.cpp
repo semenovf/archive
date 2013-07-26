@@ -117,9 +117,9 @@ bool UniType::toBool(bool *ok) const
 		break;
 	case UniType::StringValue:
 		if (m_d->d.string_val->isEmpty()
-				|| m_d->d.string_val->compare(_U("no")) == 0
-				|| m_d->d.string_val->compare(_U("false")) == 0
-				|| m_d->d.string_val->compare(_U("0")) == 0) {
+				|| m_d->d.string_val->compare(String("no")) == 0
+				|| m_d->d.string_val->compare(String("false")) == 0
+				|| m_d->d.string_val->compare(String("0")) == 0) {
 			result = false;
 		}
 		break;
@@ -365,10 +365,10 @@ double UniType::toDouble(bool *ok) const
 	return result;
 }
 
-Char UniType::toChar(bool *ok) const
+UChar UniType::toUChar(bool *ok) const
 {
 	bool tmpOk;
-	Char result(to_uint_type<uint_t>(*this, Char::MaxCodePoint, &tmpOk));
+	UChar result(to_uint_type<uint_t>(*this, Unicode::MaxCodePoint, &tmpOk));
 
 	if (ok)
 		*ok = tmpOk;
@@ -391,7 +391,7 @@ String UniType::toString(bool *ok) const
 	case UniType::NullValue:
 		break;
 	case UniType::BoolValue:
-		result = m_d->d.long_val ? _U("true") : _U("false");
+		result = m_d->d.long_val ? String("true") : String("false");
 		break;
 	case UniType::StringValue:
 		result = *m_d->d.string_val;
@@ -433,7 +433,7 @@ ByteArray UniType::toBlob(bool *ok) const
 		break;
 	case UniType::StringValue:
 		CWT_ASSERT(m_d->d.string_val);
-		result = m_d->d.string_val->toUtf8();
+		result = ByteArray(m_d->d.string_val->data(), m_d->d.string_val->size());
 		break;
 	case UniType::BlobValue:
 		result = *m_d->d.blob_val;

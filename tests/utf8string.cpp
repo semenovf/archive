@@ -11,6 +11,7 @@
 
 using namespace cwt;
 
+#define _u8(s)  Utf8String::fromUtf8(s)
 
 void test_basic()
 {
@@ -108,6 +109,19 @@ void test_iterator()
 	CWT_TEST_OK(n == s.length());
 }
 
+void test_insert()
+{
+	bool ok;
+	Utf8String s (Utf8String::fromUtf8("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя", &ok));
+
+	CWT_TEST_OK(_u8("GIJKLЁЖЗИЙЭЮЯ").append(_u8("gijklёжзийэюя")) == s);
+	CWT_TEST_OK(_u8("GIJKL").insert(_u8("ЁЖЗИЙЭЮЯgijklёжзийэюя"), 5) == s);
+	CWT_TEST_OK(_u8("GIJKLЁ").insert(_u8("ЖЗИЙЭЮЯgijklёжзийэюя"), 6) == s);
+	CWT_TEST_OK(_u8("GIJKLЁЖЗИgijklёжзийэюя").insert(_u8("ЙЭЮЯ"), 9) == s);
+	CWT_TEST_OK(_u8("gijklёжзийэюя").prepend(_u8("GIJKLЁЖЗИЙЭЮЯ")) == s);
+}
+
+
 void test_substr()
 {
 	bool ok;
@@ -126,7 +140,6 @@ void test_substr()
 }
 
 
-#define _u8(s)  Utf8String::fromUtf8(s)
 void test_compare()
 {
 	CWT_TEST_OK(_u8("Б").compare(_u8("Б")) == 0);
@@ -187,7 +200,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(53);
+    CWT_BEGIN_TESTS(64);
 
     test_basic();
     test_init();
@@ -196,6 +209,7 @@ int main(int argc, char *argv[])
     test_find<Utf8String::const_iterator>();
     test_iterator<Utf8String::iterator>();
     test_iterator<Utf8String::const_iterator>();
+    test_insert();
     test_substr();
     test_compare();
     test_startWith();

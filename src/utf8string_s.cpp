@@ -188,10 +188,12 @@ Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok)
 			}
 		}
 	}
-	r.pimpl->resize(i);
 
 	if (pok)
 		*pok = ok;
+
+	r.pimpl->resize(i);
+	r.calculateLength();
 
 	return r;
 }
@@ -215,6 +217,7 @@ Utf8String Utf8String::fromLatin1 (const char * latin1, size_t length, bool * po
 	if (pok)
 		*pok = ok;
 
+	r.calculateLength();
 	return r;
 }
 

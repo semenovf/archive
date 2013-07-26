@@ -18,14 +18,14 @@ void Errorable::addSystemError(int errn, const String &prefix)
 	if (prefix.isEmpty()) {
 		addError(String::fromUtf8(errstr));
 	} else {
-		addError(String().sprintf("%ls: %s", prefix.unicode(), errstr));
+		addError(String().sprintf("%s: %s", prefix.c_str(), errstr));
 	}
 }
 
 void Errorable::addSystemError(int errn, const char *prefix, ...)
 {
 	if (!prefix) {
-		addSystemError(errn, String::constNull());
+		addSystemError(errn, String());
 	} else {
 		va_list args;
 		va_start(args, prefix);
@@ -41,10 +41,10 @@ void Errorable::logErrors(bool clear)
 	for (Vector<ErrorData>::const_iterator it = m_errors.cbegin()
 			; it != itEnd; ++it) {
 		if (it->ntimes > 1) {
-			Logger::error(_Tr("%ls <occured %d times>"), it->errstr.unicode(), it->ntimes);
+			Logger::error(_Tr("%s <occured %d times>"), it->errstr.c_str(), it->ntimes);
 
 		} else {
-			Logger::error("%ls", it->errstr.unicode());
+			Logger::error("%s", it->errstr.c_str());
 		}
 	}
 

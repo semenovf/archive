@@ -31,7 +31,7 @@ class LogEmitter
 
 private:
 	LogEmitter() : logAppender() {
-		logAppender.setPattern(_U("%d{ABSOLUTE} [%p]: %m"));
+		logAppender.setPattern(String("%d{ABSOLUTE} [%p]: %m"));
 		// Do not set priority here !!!
 		// logAppender.setPriority(Logger::Trace);
 
@@ -117,15 +117,14 @@ String LogAppender::patternify(Logger::Priority priority, const String &pattern,
 	LoggerPatternContext ctx;
 	ctx.priority = priority;
 	ctx.msg = &msg;
-	Fsm<Char> fsm(pattern_fsm, &ctx);
-	ssize_t len;
+	Fsm<String> fsm(pattern_fsm, &ctx);
 
-	len = fsm.exec(0, pattern.data(), pattern.length());
+	ssize_t len = fsm.exec(0, pattern.begin(), pattern.end());
 
 	if (len >= 0 && size_t(len) == pattern.length()) {
 		return ctx.result;
 	}
-	return String().sprintf(_Tr("[<!INVALID PATTERN!>]: %ls"), msg.utf16());
+	return String().sprintf(_Tr("[<!INVALID PATTERN!>]: %s"), msg.c_str());
 }
 
 

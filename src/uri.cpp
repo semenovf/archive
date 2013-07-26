@@ -36,11 +36,11 @@ void UriData::clear()
 bool Uri::parse(const String &uri)
 {
 	UriParseContext ctx = { this, &m_uri };
-	Fsm<Char> fsm(uri_fsm, &ctx);
+	Fsm<String> fsm(uri_fsm, &ctx);
 
 	m_uri.clear();
 
-	if (fsm.exec(0, uri.data(), uri.length()) >= 0) {
+	if (fsm.exec(0, uri.begin(), uri.end()) >= 0) {
 		clearErrors();
 		return true;
 	}
@@ -63,15 +63,15 @@ String Uri::toString() const
 
 	if (!m_uri.scheme.isEmpty()) {
 		uri += m_uri.scheme;
-		uri += _U(":");
+		uri += String(":");
 	}
 
 	if (!m_uri.userinfo.isEmpty() || !m_uri.host.isEmpty()) {
-		uri += _U("//");
+		uri += String("//");
 
 		if (!m_uri.userinfo.isEmpty()) {
 			uri += m_uri.userinfo;
-			uri += _U("@");
+			uri += String("@");
 		}
 
 		if (!m_uri.host.isEmpty()) {
@@ -79,7 +79,7 @@ String Uri::toString() const
 		}
 
 		if (m_uri.port > 0) {
-			uri += _U(":");
+			uri += String(":");
 			uri += String::number(m_uri.port);
 		}
 
@@ -88,12 +88,12 @@ String Uri::toString() const
 		}
 
 		if (!m_uri.query.isEmpty()) {
-			uri += _U("?");
+			uri += String("?");
 			uri += m_uri.query;
 		}
 
 		if (!m_uri.fragment.isEmpty()) {
-			uri += _U("#");
+			uri += String("#");
 			uri += m_uri.fragment;
 		}
 	}

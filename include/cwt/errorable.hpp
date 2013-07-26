@@ -38,10 +38,10 @@ public:
 	void addError(const String& text);
 	void clearErrors() { m_errors.clear(); }
 	size_t errorCount() const;
-	const String& errorTextAt(size_t index) const;
+	const String errorTextAt(size_t index) const;
 	bool isError() const { return m_errors.size() != 0; }
 	bool isGood() const { return m_errors.size() == 0; }
-	const String& lastErrorText() const;
+	const String lastErrorText() const;
 	void logErrors(bool clear = true);
 
 private:
@@ -53,18 +53,18 @@ inline size_t Errorable::errorCount() const
 	return m_errors.size();
 }
 
-inline const String& Errorable::errorTextAt(size_t index) const
+inline const String Errorable::errorTextAt(size_t index) const
 {
 	return index < m_errors.size()
-			? m_errors[index].errstr
-			: String::constNull();
+			? String(m_errors[index].errstr)
+			: String();
 }
 
-inline const String& Errorable::lastErrorText() const
+inline const String Errorable::lastErrorText() const
 {
 	return m_errors.size() > 0
-			? m_errors.last().errstr
-			: String::constNull();
+			? String(m_errors.last().errstr)
+			: String();
 }
 
 inline void Errorable::addError(const String& text)

@@ -47,7 +47,7 @@ bool Uuid::parse(const char *uuid_str, int len)
 {
 	bool ok = false;
 	String s = String().fromUtf8(uuid_str, len);
-	Char dash(0x002D);
+	UChar dash(0x002D);
 
 	if (s.length() < 36)
 		return false;

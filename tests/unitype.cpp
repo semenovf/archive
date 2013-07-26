@@ -70,8 +70,8 @@ void test_00(void)
 	CWT_TEST_OK(bool_val.toBool(&ok) == false);
 	CWT_TEST_OK2(ok, "bool_val == false");
 
-	char_val.setChar(Char('W'));
-	CWT_TEST_OK(char_val.toChar(&ok) == Char('W'));
+	char_val.setChar(UChar('W'));
+	CWT_TEST_OK(char_val.toUChar(&ok) == UChar('W'));
 	CWT_TEST_OK2(ok, "char_val == 'W'");
 
 	sbyte_val.setInt(CWT_SBYTE_MIN);
@@ -215,7 +215,7 @@ void test_01(void)
 	CWT_TEST_OK(uval.toBool(&ok) == false && ok);
 
 	uval.setChar('W');
-	CWT_TEST_OK(uval.toChar(&ok) == Char('W') && ok);
+	CWT_TEST_OK(uval.toUChar(&ok) == UChar('W') && ok);
 
 	uval.setInt(CWT_SBYTE_MIN);
 	CWT_TEST_OK(uval.toSByte(&ok) == CWT_SBYTE_MIN && ok);
@@ -259,8 +259,8 @@ void test_01(void)
 	uval.setDouble(CWT_DOUBLE_MAX);
 	CWT_TEST_OK(uval.toDouble(&ok) == CWT_DOUBLE_MAX && ok);
 
-	String text_en(_U("The quick brown fox jumps over the lazy dog"));
-	String text_ru(_U("Съешь ещё этих мягких французских булок, да выпей чаю"));
+	String text_en(String::fromUtf8("The quick brown fox jumps over the lazy dog"));
+	String text_ru(String::fromUtf8("Съешь ещё этих мягких французских булок, да выпей чаю"));
 	String text;
 
 	uval.setString(text_en);
@@ -375,25 +375,25 @@ void test_bool(void)
 	uval.setDouble(0.0f);
 	CWT_TEST_OK2(uval.toBool(&ok) == false && ok, _Tr("Double '0.0' equals to false"));
 
-	uval.setString(_U(""));
+	uval.setString(String(""));
 	CWT_TEST_OK2(uval.toBool() == false, _Tr("<empty text> == false"));
 
-	uval.setString(_U("false"));
+	uval.setString(String("false"));
 	CWT_TEST_OK2(uval.toBool() == false, _Tr("'false' == false"));
 
-	uval.setString(_U("no"));
+	uval.setString(String("no"));
 	CWT_TEST_OK2(uval.toBool() == false, _Tr("'no' == false"));
 
-	uval.setString(_U("FALSE"));
+	uval.setString(String("FALSE"));
 	CWT_TEST_OK2(uval.toBool() == true, _Tr("'FALSE' == true"));
 
-	uval.setString(_U("FaLsE"));
+	uval.setString(String("FaLsE"));
 	CWT_TEST_OK2(uval.toBool() == true, _Tr("'FaLsE' == true"));
 
-	uval.setString(_U("0"));
+	uval.setString(String("0"));
 	CWT_TEST_OK2(uval.toBool() == false, _Tr("'0' == false"));
 
-	uval.setString(_U("text"));
+	uval.setString(String("text"));
 	CWT_TEST_OK2(uval.toBool() == true, _Tr("<any other text> is true"));
 
 	uval.setBlob("false", 5);
@@ -441,13 +441,13 @@ void test_integer(void)
 	short_val.setInt(s);
 	CWT_TEST_OK(short_val.toShort(&ok) == s && ok);
 
-	short_val.setFromString(_U("10"));
+	short_val.setFromString(String("10"));
 	CWT_TEST_OK(short_val.toShort(&ok) == 10 && ok);
 
 	int_val.setInt(d);
 	CWT_TEST_OK(int_val.toInt(&ok) == d && ok);
 
-	int_val.setFromString(_U("10"));
+	int_val.setFromString(String("10"));
 	CWT_TEST_OK(int_val.toInt(&ok) == 10 && ok);
 }
 
@@ -462,17 +462,17 @@ void test_float(void)
 	float_val.setFloat(f);
 	CWT_TEST_OK(float_val.toFloat(&ok) == f && ok);
 
-	float_val.setFromString(_U("3.14159"));
-	CWT_TEST_OK(float_val.toFloat(&ok) == _U("3.14159").toFloat() && ok);
+	float_val.setFromString(String("3.14159"));
+	CWT_TEST_OK(float_val.toFloat(&ok) == String("3.14159").toFloat() && ok);
 
 	double_val.setDouble(d);
 	CWT_TEST_OK(double_val.toDouble(&ok) == d && ok);
 
-	double_val.setFromString(_U("3.14e+10"));
+	double_val.setFromString(String("3.14e+10"));
 	double d1 = double_val.toDouble(&ok);
-	double d2 = _U("3.14e+10").toDouble();
+	double d2 = String("3.14e+10").toDouble();
 	CWT_TEST_OK(d1 == d2);
-	CWT_TEST_OK(double_val.toDouble(&ok) == _U("3.14e+10").toDouble() && ok);
+	CWT_TEST_OK(double_val.toDouble(&ok) == String("3.14e+10").toDouble() && ok);
 }
 
 

@@ -9,8 +9,8 @@
 #include <cwt/cwt.h>
 #include <cwt/pimpl.hpp>
 
-#ifndef __CWT_BYTEARRAY_QT_HPP__
-#define __CWT_BYTEARRAY_QT_HPP__
+#ifndef __CWT_BYTEARRAY_HPP__
+#define __CWT_BYTEARRAY_HPP__
 
 
 CWT_NS_BEGIN
@@ -36,7 +36,7 @@ public:
 	ByteArray& append(char ch);
 
 	char at(size_t i) const;
-	char at(ssize_t i) const;
+	//char at(ssize_t i) const;
 	bool isEmpty() const;
 	void clear();
 	char* data();

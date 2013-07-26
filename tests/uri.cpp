@@ -268,7 +268,7 @@ static FsmTestEntry __fsmTestEntries[] = {
 void test_uri_fsm()
 {
 	Uri uri;
-	static Fsm<Char> fsm(NULL, NULL);
+	static Fsm<String> fsm(NULL, NULL);
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
 
 	for( int i = 0; i < nentries; i++ )
@@ -312,24 +312,24 @@ void test_uri_parse()
 
 	uri_result = uri.toString();
 	printf("%s\n", uri_string);
-	printf("%s\n", uri_result.toUtf8().data());
+	printf("%s\n", uri_result.c_str());
 	CWT_TEST_OK(uri_result == String::fromUtf8(uri_string));
 
-	CWT_TEST_FAIL(uri.parse(_U("file:/tmp/text.txt")));
-	CWT_TEST_OK(uri.scheme() == _U("file"));
-	CWT_TEST_OK(uri.path() == _U("/tmp/text.txt"));
+	CWT_TEST_FAIL(uri.parse(String("file:/tmp/text.txt")));
+	CWT_TEST_OK(uri.scheme() == String("file"));
+	CWT_TEST_OK(uri.path() == String("/tmp/text.txt"));
 
-	CWT_TEST_FAIL(uri.parse(_U("scheme:relative/path?query#fragment")));
-	CWT_TEST_OK(uri.scheme() == _U("scheme"));
+	CWT_TEST_FAIL(uri.parse(String("scheme:relative/path?query#fragment")));
+	CWT_TEST_OK(uri.scheme() == String("scheme"));
 	CWT_TEST_OK(uri.userinfo().isEmpty());
 	CWT_TEST_OK(uri.host().isEmpty());
 	CWT_TEST_OK(uri.port() == 0);
-	CWT_TEST_OK(uri.path() == _U("relative/path"));
-	CWT_TEST_OK(uri.query() == _U("query"));
-	CWT_TEST_OK(uri.fragment() == _U("fragment"));
+	CWT_TEST_OK(uri.path() == String("relative/path"));
+	CWT_TEST_OK(uri.query() == String("query"));
+	CWT_TEST_OK(uri.fragment() == String("fragment"));
 
-	CWT_TEST_OK(uri.parse(_U("http://ru.indeed.com/%D0%A2%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D1%89%D0%B8%D0%BA-%D0%92%D0%B5%D0%B1-jobs")));
-	CWT_TEST_OK(uri.parse(_U("https://webcache.googleusercontent.com/search?client=ubuntu&channel=fs&q=cache:Aaap4fYxHwAJ:http://toriava.ru/category/11/47/b1067/b2047/%2BCrystalMedia+%D0%B5%D0%BA%D0%B0%D1%82%D0%B5%D1%80%D0%B8%D0%BD%D0%B1%D1%83%D1%80%D0%B3&oe=utf-8&redir_esc=&hl=ru&ct=clnk")));
+	CWT_TEST_OK(uri.parse(String("http://ru.indeed.com/%D0%A2%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D1%89%D0%B8%D0%BA-%D0%92%D0%B5%D0%B1-jobs")));
+	CWT_TEST_OK(uri.parse(String("https://webcache.googleusercontent.com/search?client=ubuntu&channel=fs&q=cache:Aaap4fYxHwAJ:http://toriava.ru/category/11/47/b1067/b2047/%2BCrystalMedia+%D0%B5%D0%BA%D0%B0%D1%82%D0%B5%D1%80%D0%B8%D0%BD%D0%B1%D1%83%D1%80%D0%B3&oe=utf-8&redir_esc=&hl=ru&ct=clnk")));
 }
 
 int main(int argc, char *argv[])

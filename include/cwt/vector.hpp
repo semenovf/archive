@@ -19,6 +19,9 @@ CWT_NS_BEGIN
 template <typename T>
 class DLL_API Vector {
 public:
+	typedef T char_type;
+
+public:
     class iterator {
     public:
         T *i;
@@ -26,6 +29,7 @@ public:
         inline iterator() : i(0) {}
         inline iterator(T *n) : i(n) {}
         inline iterator(const iterator &o): i(o.i){}
+        inline T               value() { return *i; }
         inline T &             operator *  () const { return *i; }
         inline T *             operator -> () const { return i; }
         inline T &             operator [] (int j) const { return *(i + j); }
@@ -56,6 +60,7 @@ public:
         inline                 const_iterator(const T *n) : i(n)             {}
         inline                 const_iterator(const const_iterator &o): i(o.i) {}
         inline explicit        const_iterator(const iterator &o): i(o.i)     {}
+        inline T               value() { return *i; }
         inline const T&        operator*()                             const { return *i; }
         inline const T*        operator->()                            const { return i; }
         inline const T&        operator[](size_t j)                    const { return *(i + j); }
@@ -85,14 +90,14 @@ public:
 	Vector(const T * values, size_t size) : m_d(new VectorData) { append(values, size); }
 	Vector(const Vector<T> &other);
 
-	T&             at(size_t i);
+	T              at(size_t i);
 	const T&       at(size_t i) const;
 	bool           endsWith (const Vector<T> & end) const;
 	void           append(const T &value);
 	void           append(const T * value, size_t count);
 	void           append(const Vector<T> & other);
 	void           clear()         { m_d.detach(); m_d->count = 0; }
-	T*             data()          { m_d.detach(); return m_d->data.data(); }
+	//T*             data()          { m_d.detach(); return m_d->data.data(); }
 	const T*       data() const    { return m_d->data.data(); }
 	const T*       constData() const { return m_d->data.data(); }
 	T&             first()         { return at(0); }
@@ -120,15 +125,9 @@ public:
     const_iterator cbegin() const { return const_iterator(m_d->data.data()); }
     const_iterator cend() const   { return const_iterator(m_d->data.data()) + m_d->count; }
 
-	T&             operator[](size_t i)       { return at(i); }
+	T              operator[](size_t i)       { return at(i); }
 	const T&       operator[](size_t i) const { return at(i); }
 	Vector<T>&	   operator = (const Vector<T> & other);
-
-/*
-protected:
-	void           detach() { detachAndRealloc(m_d->count); }
-	void           detachAndRealloc(size_t newsize);
-*/
 
 protected:
 	struct VectorData {
@@ -183,7 +182,7 @@ inline Vector<T>& Vector<T>::operator=(const Vector<T> & other)
 }
 
 template <typename T>
-inline T& Vector<T>::at(size_t i)
+inline T Vector<T>::at(size_t i)
 {
 	CWT_ASSERT(!isEmpty());
 	CWT_ASSERT(i < m_d->count);
