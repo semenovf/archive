@@ -53,7 +53,6 @@ ByteArray& ByteArray::append(const char *data)           { detach(); pimpl->appe
 ByteArray& ByteArray::append(const char *data, size_t size) { CWT_ASSERT(size <= CWT_INT_MAX); detach(); pimpl->append(data, int(size)); return *this; }
 ByteArray& ByteArray::append(char ch)                    { detach(); pimpl->append(ch); return *this; }
 char ByteArray::at(size_t i) const                       { CWT_ASSERT(i <= CWT_INT_MAX); return pimpl->at(int(i)); }
-char ByteArray::at(ssize_t i) const						 { CWT_ASSERT(i <= CWT_INT_MAX); return pimpl->at(int(i)); }
 bool ByteArray::isEmpty() const                          { return pimpl->isEmpty(); }
 void ByteArray::clear()                                  { detach(); pimpl->clear(); }
 char* ByteArray::data()                                  { detach(); return pimpl->data(); }

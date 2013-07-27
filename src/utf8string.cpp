@@ -6,8 +6,9 @@
  */
 
 #include "utf8string_p.hpp"
-#include <stdlib.h>
-#include <cerrno>
+#include "../include/cwt/string.h"
+//#include <stdlib.h>
+//#include <cerrno>
 #include <sstream>
 #include <iomanip>
 #include <cstdarg>
@@ -277,139 +278,55 @@ const char*	Utf8String::c_str() const
 }
 
 
-static long_t __str_to_long_helper(const char *s, bool *pok, int base, long_t min_val, long_t max_val)
+
+double Utf8String::toDouble(bool *ok) const
 {
-	bool ok = true;
-	char *endptr = nullptr;
-
-	errno = 0;
-#ifdef CWT_HAS_INT64
-	long_t r = strtoll(s, & endptr, base);
-#else
-	long_t r = strtol(s, & endptr, base);
-#endif
-
-	if ((errno == ERANGE && (r == CWT_LONG_MAX || r == CWT_LONG_MIN))
-			|| (errno != 0 && r == long_t(0))
-			|| endptr == s
-			|| *endptr != '\0'
-			|| r < min_val || r > max_val) {
-		r = long_t(0);
-		ok = false;
-	}
-
-	if (pok)
-		*pok = ok;
-	return r;
-}
-
-
-ulong_t	__str_to_ulong_helper(const char *s, bool *pok, int base, ulong_t max_val)
-{
-	bool ok = true;
-	char *endptr = nullptr;
-
-	errno = 0;
-#ifdef CWT_HAS_INT64
-	ulong_t r = strtoull(s, & endptr, base);
-#else
-	ulong_t r = strtoul(s, & endptr, base);
-#endif
-
-	if ((errno == ERANGE && r == CWT_ULONG_MAX)
-			|| (errno != 0 && r == ulong_t(0))
-			|| endptr == s
-			|| *endptr != '\0'
-			|| r > max_val ) {
-		r = ulong_t(0);
-		ok = false;
-	}
-
-	if (pok)
-		*pok = ok;
-	return r;
-}
-
-double Utf8String::toDouble(bool *pok) const
-{
-	bool ok = true;
-	char *endptr = nullptr;
-
-	const char * s = c_str();
-	errno = 0;
-	double r = strtod(s, & endptr);
-
-	if (errno == ERANGE
-			|| endptr == s
-			|| *endptr != '\0' ) {
-		r = double(0);
-		ok = false;
-	}
-
-	if (pok)
-		*pok = ok;
-	return r;
+	return cwt_str_to_double(c_str(), ok);
 }
 
 float Utf8String::toFloat(bool *pok) const
 {
-	bool ok = true;
-	char *endptr = nullptr;
-
-	const char * s = c_str();
-	errno = 0;
-	float r = strtof(s, & endptr);
-
-	if (errno == ERANGE
-			|| endptr == s
-			|| *endptr != '\0' ) {
-		r = float(0);
-		ok = false;
-	}
-
-	if (pok)
-		*pok = ok;
-	return r;
+	return cwt_str_to_float(c_str(), pok);
 }
 
 long_t Utf8String::toLong(bool *pok, int base) const
 {
-	return __str_to_long_helper(c_str(), pok, base, CWT_LONG_MIN, CWT_LONG_MAX);
+	return cwt_str_to_long(c_str(), pok, base);
 }
 
 ulong_t	Utf8String::toULong(bool *pok, int base) const
 {
-	return __str_to_ulong_helper(c_str(), pok, base, CWT_ULONG_MAX);
+	return cwt_str_to_ulong(c_str(), pok, base);
 }
 
 int_t Utf8String::toInt(bool *pok, int base) const
 {
-	return int_t(__str_to_long_helper(c_str(), pok, base, long_t(CWT_INT_MIN), long_t(CWT_INT_MAX)));
+	return cwt_str_to_int(c_str(), pok, base);
 }
 
 uint_t Utf8String::toUInt(bool *pok, int base) const
 {
-	return uint_t(__str_to_ulong_helper(c_str(), pok, base, ulong_t(CWT_UINT_MAX)));
+	return cwt_str_to_uint(c_str(), pok, base);
 }
 
 short_t Utf8String::toShort(bool *pok, int base) const
 {
-	return int_t(__str_to_long_helper(c_str(), pok, base, long_t(CWT_SHORT_MIN), long_t(CWT_SHORT_MAX)));
+	return cwt_str_to_short(c_str(), pok, base);
 }
 
 ushort_t Utf8String::toUShort(bool *pok, int base) const
 {
-	return ushort_t(__str_to_ulong_helper(c_str(), pok, base, ulong_t(CWT_USHORT_MAX)));
+	return cwt_str_to_ushort(c_str(), pok, base);
 }
 
 sbyte_t Utf8String::toSByte(bool *pok, int base) const
 {
-	return sbyte_t(__str_to_long_helper(c_str(), pok, base, long_t(CWT_SBYTE_MIN), long_t(CWT_SBYTE_MAX)));
+	return cwt_str_to_sbyte(c_str(), pok, base);
 }
 
 byte_t Utf8String::toByte(bool *pok, int base) const
 {
-	return byte_t(__str_to_ulong_helper(c_str(), pok, base, ulong_t(CWT_BYTE_MAX)));
+	return cwt_str_to_byte(c_str(), pok, base);
 }
 
 // TODO need to implement without using the standard stream library

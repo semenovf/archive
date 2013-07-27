@@ -17,7 +17,17 @@
 
 EXTERN_C_BEGIN
 
-DLL_API char* cwt_strerror(int errn, char *buf, size_t buflen);
+DLL_API char*    cwt_strerror      (int errn, char *buf, size_t buflen);
+DLL_API double	 cwt_str_to_double (const char * s, bool *ok = 0);
+DLL_API float	 cwt_str_to_float  (const char * s, bool *ok = 0);
+DLL_API long_t   cwt_str_to_long   (const char * s, bool *ok = 0, int base = 10);
+DLL_API ulong_t	 cwt_str_to_ulong  (const char * s, bool *ok = 0, int base = 10);
+DLL_API int_t	 cwt_str_to_int    (const char * s, bool *ok = 0, int base = 10);
+DLL_API uint_t	 cwt_str_to_uint   (const char * s, bool *ok = 0, int base = 10);
+DLL_API short_t	 cwt_str_to_short  (const char * s, bool *ok = 0, int base = 10);
+DLL_API ushort_t cwt_str_to_ushort (const char * s, bool *ok = 0, int base = 10);
+DLL_API sbyte_t  cwt_str_to_sbyte  (const char * s, bool *ok = 0, int base = 10);
+DLL_API byte_t	 cwt_str_to_byte   (const char * s, bool *ok = 0, int base = 10);
 
 EXTERN_C_END
 

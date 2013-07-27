@@ -15,40 +15,34 @@
 
 using namespace cwt;
 
-#ifdef __COMMENT__
-static const ByteArray __alpha_bytes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-static const ByteArray __digit_bytes = "0123456789";
+static const ByteArray __alpha_bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+static const ByteArray __digit_bytes("0123456789");
 
-#endif
 static int _ints[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 static Vector<int> __integers(_ints, 10);
 
 static const String __alpha_chars("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ");
 static const String __digit_chars("0123456789");
 
-
-#ifdef __COMMENT__
 static void test_byte_helpers(void)
 {
 	size_t i, nalphas, ndigits;
 
-	nalphas = strlen(__alpha_bytes);
-	ndigits = strlen(__digit_bytes);
+	nalphas = __alpha_bytes.length();
+	ndigits = __digit_bytes.length();
 
 	for(i = 0; i < nalphas; i++) {
-		CWT_TEST_OK(Fsm<ByteArray>::belongsChar((void*)&__alpha_bytes[i], __alpha_bytes, nalphas));
+		CWT_TEST_OK(Fsm<ByteArray>::belongsChar(__alpha_bytes[i], __alpha_bytes.cbegin(), __alpha_bytes.cend()));
 	}
 	for(i = 0; i < ndigits; i++) {
-		CWT_TEST_OK(Fsm<ByteArray>::belongsChar((void*)&__digit_bytes[i], __digit_bytes, ndigits));
+		CWT_TEST_OK(Fsm<ByteArray>::belongsChar(__digit_bytes[i], __digit_bytes.cbegin(), __digit_bytes.cend()));
 	}
 
-	CWT_TEST_OK(exactCharType<byte_t>(__alpha_bytes, nalphas, __alpha_bytes, nalphas));
-	CWT_TEST_NOK(exactCharType<byte_t>(__alpha_bytes, nalphas, __alpha_bytes+1, nalphas-1));
-	CWT_TEST_NOK(exactCharType<byte_t>(NULL, 0, __alpha_bytes, nalphas));
-	CWT_TEST_NOK(exactCharType<byte_t>(__alpha_bytes, nalphas, NULL, 0));
-
+	CWT_TEST_OK (Fsm<ByteArray>::containsChars(__alpha_bytes.cbegin(), __alpha_bytes.cend(), __alpha_bytes.cbegin(), __alpha_bytes.cend()));
+//	CWT_TEST_NOK(Fsm<ByteArray>::containsChars(__alpha_bytes, nalphas, __alpha_bytes+1, nalphas-1));
+	CWT_TEST_NOK(Fsm<ByteArray>::containsChars(__alpha_bytes.cend(), __alpha_bytes.cend(), __alpha_bytes.cbegin(), __alpha_bytes.cend()));
+	CWT_TEST_NOK(Fsm<ByteArray>::containsChars(__alpha_bytes.cbegin(), __alpha_bytes.cend(), __alpha_bytes.cend(), __alpha_bytes.cend()));
 }
-#endif
 
 static void test_int_helpers(void)
 {
@@ -281,7 +275,7 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(263);
 
-	//test_byte_helpers();
+	test_byte_helpers();
 	test_int_helpers();
 	test_char_helpers();
 	//test_alternatives_simple();

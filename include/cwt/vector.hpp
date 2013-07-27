@@ -86,18 +86,18 @@ public:
 public:
 	Vector();
 	Vector(size_t size);
-	Vector(size_t size, const T &value);
+	Vector(size_t size, const T & value);
 	Vector(const T * values, size_t size) : m_d(new VectorData) { append(values, size); }
 	Vector(const Vector<T> &other);
 
-	T              at(size_t i);
+	T&             at(size_t i);
 	const T&       at(size_t i) const;
 	bool           endsWith (const Vector<T> & end) const;
 	void           append(const T &value);
 	void           append(const T * value, size_t count);
 	void           append(const Vector<T> & other);
 	void           clear()         { m_d.detach(); m_d->count = 0; }
-	//T*             data()          { m_d.detach(); return m_d->data.data(); }
+	T*             data()          { m_d.detach(); return m_d->data.data(); }
 	const T*       data() const    { return m_d->data.data(); }
 	const T*       constData() const { return m_d->data.data(); }
 	T&             first()         { return at(0); }
@@ -125,7 +125,7 @@ public:
     const_iterator cbegin() const { return const_iterator(m_d->data.data()); }
     const_iterator cend() const   { return const_iterator(m_d->data.data()) + m_d->count; }
 
-	T              operator[](size_t i)       { return at(i); }
+	T&             operator[](size_t i)       { return at(i); }
 	const T&       operator[](size_t i) const { return at(i); }
 	Vector<T>&	   operator = (const Vector<T> & other);
 
@@ -182,7 +182,7 @@ inline Vector<T>& Vector<T>::operator=(const Vector<T> & other)
 }
 
 template <typename T>
-inline T Vector<T>::at(size_t i)
+inline T& Vector<T>::at(size_t i)
 {
 	CWT_ASSERT(!isEmpty());
 	CWT_ASSERT(i < m_d->count);

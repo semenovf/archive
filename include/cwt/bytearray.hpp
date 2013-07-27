@@ -6,18 +6,41 @@
  * @brief
  */
 
-#include <cwt/cwt.h>
-#include <cwt/pimpl.hpp>
-
 #ifndef __CWT_BYTEARRAY_HPP__
 #define __CWT_BYTEARRAY_HPP__
 
+#include <string>
+#include <cwt/string.h>
 
 CWT_NS_BEGIN
 
-// Qt   QByteArray
-// C#
-// Java
+class DLL_API ByteArray : public Vector<char>
+{
+	typedef Vector<char> base_class;
+public:
+	ByteArray() : base_class() {}
+	ByteArray(const char *data) : base_class(data, strlen(data)) {}
+	ByteArray(const char *data, size_t size) : base_class(data, size) {}
+	ByteArray(size_t size, char ch) : base_class(size, ch) {}
+	~ByteArray() {}
+	ByteArray & operator = (const ByteArray & other) { base_class::operator = (dynamic_cast<const base_class &>(other)); return *this; }
+
+	const char * c_str() const;
+	size_t length() const { return size(); }
+
+	double	 toDouble (bool *ok = 0) const { return cwt_str_to_double(c_str(), ok); }
+	float	 toFloat  (bool *ok = 0) const { return cwt_str_to_float(c_str(), ok); }
+	long_t   toLong   (bool *ok = 0, int base = 10) const { return cwt_str_to_long(c_str(), ok, base); }
+	ulong_t	 toULong  (bool *ok = 0, int base = 10) const { return cwt_str_to_ulong(c_str(), ok, base); }
+	int_t	 toInt    (bool *ok = 0, int base = 10) const { return cwt_str_to_int(c_str(), ok, base); }
+	uint_t	 toUInt   (bool *ok = 0, int base = 10) const { return cwt_str_to_uint(c_str(), ok, base); }
+	short_t	 toShort  (bool *ok = 0, int base = 10) const { return cwt_str_to_short(c_str(), ok, base); }
+	ushort_t toUShort (bool *ok = 0, int base = 10) const { return cwt_str_to_ushort(c_str(), ok, base); }
+	sbyte_t  toSByte  (bool *ok = 0, int base = 10) const { return cwt_str_to_sbyte(c_str(), ok, base); }
+	byte_t	 toByte   (bool *ok = 0, int base = 10) const { return cwt_str_to_byte(c_str(), ok, base); }
+};
+
+#ifdef __COMMENT__
 
 class DLL_API ByteArray
 {
@@ -114,14 +137,7 @@ public:
 
 DLL_API uint_t hash_func(const ByteArray &key, uint_t seed = 0);
 
-/*
-#ifdef CWT_BYTEARRAY_SELF_IMPL
-inline bool operator ==(const ByteArray &s1, const ByteArray &s2)
-{
-	return s1.m_d->data.eq(s2.m_d->data);
-}
 #endif
-*/
 
 CWT_NS_END
 
