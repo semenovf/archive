@@ -51,7 +51,7 @@ static void test_int_helpers()
 {
 	size_t i, nints;
 
-	nints = sizeof(__integers);
+	nints = sizeof(__integers)/sizeof(__integers[0]);
 
 	for(i = 0; i < nints; i++) {
 		CWT_TEST_OK(Fsm<Vector<int> >::belongsChar(__integers[i], __integers.cbegin(), __integers.cend()));
