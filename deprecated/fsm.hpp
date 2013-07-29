@@ -158,7 +158,7 @@ public:
 class FsmMatchRpt : public FsmMatchBase
 {
 public:
-	FsmMatchRpt(const FsmMatch &match, int from, int to) : m_match(match) {
+	FsmMatchRpt(const FsmMatch & match, int from, int to) : m_match(match) {
 		m_bounds.from = from; m_bounds.to = to;
 	}
 	virtual ssize_t match(FsmContext *fsm, const void *data, size_t len) const;

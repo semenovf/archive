@@ -90,61 +90,29 @@ Utf8String::const_iterator Utf8String::end() const
 	return iterator(pimpl->data() + pimpl->size());
 }
 
-Utf8String::iterator Utf8String::find(const Utf8String & s, Utf8String::iterator from)
-{
-	CWT_ASSERT(from <= end());
-	ssize_t fromPos = from.distance(begin());
-	CWT_ASSERT(fromPos >= 0);
-	size_t pos = pimpl->find(*s.pimpl, size_t(fromPos));
 
-	if (pos == Utf8String::Impl::npos)
+Utf8String::const_iterator Utf8String::find(const char * s, size_t pos, size_t n) const
+{
+	if (pos >= length())
 		return end();
 
-	return Utf8String::iterator(data() + pos);
-}
+	size_t real_pos = (begin() + pos).distance(begin());
+	size_t find_pos = pimpl->find(s, real_pos, n);
 
-Utf8String::const_iterator Utf8String::find(const Utf8String & s, Utf8String::const_iterator from) const
-{
-	CWT_ASSERT(from <= end());
-	ssize_t fromPos = from.distance(begin());
-	CWT_ASSERT(fromPos >= 0);
-	size_t pos = pimpl->find(*s.pimpl, size_t(fromPos));
-
-	if (pos == Utf8String::Impl::npos)
+	if (find_pos == Utf8String::Impl::npos)
 		return end();
 
-	return Utf8String::const_iterator(data() + pos);
+	return Utf8String::const_iterator(data() + find_pos);
 }
 
-Utf8String::iterator Utf8String::find(const char * s)
+Utf8String::const_iterator Utf8String::find(const Utf8String & s, Utf8String::const_iterator pos) const
 {
-	return find(s, strlen(s));
+	return find(s.constData(), length(begin(), pos), s.size());
 }
 
-Utf8String::iterator Utf8String::find(const char * s, size_t n)
+Utf8String::const_iterator Utf8String::find(const char * s, size_t from) const
 {
-	detach();
-	size_t pos = pimpl->find(s, 0, n);
-
-	if (pos == Utf8String::Impl::npos)
-		return end();
-
-	return Utf8String::iterator(data() + pos);
-}
-
-Utf8String::const_iterator Utf8String::find(const char * s) const
-{
-	return find(s, strlen(s));
-}
-
-Utf8String::const_iterator Utf8String::find(const char * s, size_t n) const
-{
-	size_t pos = pimpl->find(s, 0, n);
-
-	if (pos == Utf8String::Impl::npos)
-		return end();
-
-	return Utf8String::const_iterator(data() + pos);
+	return find(s, from, strlen(s));
 }
 
 

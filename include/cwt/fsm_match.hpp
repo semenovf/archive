@@ -26,7 +26,7 @@ public:
 	virtual ~FsmMatchSeq() {}
 	virtual ssize_t match(FsmContext<_P> *, const const_iterator & begin, const const_iterator & end) const
 	{
-		return begin + m_len < end ? (ssize_t)m_len : (ssize_t)-1;
+		return begin + m_len <= end ? (ssize_t)m_len : (ssize_t)-1;
 	}
 private:
 	size_t m_len;
@@ -44,9 +44,9 @@ public:
 	virtual ~FsmMatchStr() {}
 	virtual ssize_t match(FsmContext<_P> *, const const_iterator & begin, const const_iterator & end) const
 	{
-		return begin == end
+		return m_p.length() == 0
 				? 0
-				: Fsm<_P>::containsChars(m_p.begin(), m_p.end(), begin, end)
+				: begin < end && Fsm<_P>::containsChars(m_p.begin(), m_p.end(), begin, end)
 				  	  ? ssize_t(m_p.length(m_p.begin(), m_p.end()))
 				  	  : ssize_t(-1);
 	}
@@ -154,9 +154,6 @@ public:
 		int to = CWT_INT_MAX;
 		const_iterator ptr(begin);
 		size_t nchars_total_processed;
-
-		if( ptr >= end )
-			return 0;
 
 		if( m_bounds.from >= 0 )
 			from = m_bounds.from;

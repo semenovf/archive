@@ -52,9 +52,11 @@ Utf8String::Utf8String(size_t count, char latin1) : pimpl(new Utf8String::Impl()
 }
 
 Utf8String::Utf8String(const const_iterator & begin, const const_iterator & end)
+	: pimpl(new Utf8String::Impl())
 {
 	if (begin < end) {
 		pimpl->append(begin.m_entry.cursor, begin.distance(end));
+		calculateLength();
 	}
 }
 
@@ -106,7 +108,7 @@ size_t Utf8String::size() const
 void Utf8String::reserve (size_t n)
 {
 	detach();
-	pimpl->reserve(n);
+	pimpl->reserve(n * 6);
 }
 
 Utf8String Utf8String::substr(const const_iterator & from, size_t n) const
@@ -255,8 +257,7 @@ bool Utf8String::startsWith(const char * s, size_t n) const
 
 UChar Utf8String::charAt(size_t pos) const
 {
-	if (pos >= length())
-		return Unicode::Null;
+	CWT_ASSERT(pos < length());
 	return (begin() + pos).value();
 }
 
@@ -360,14 +361,14 @@ Utf8String & Utf8String::setNumber (ulong_t n, int base)
 Utf8String & Utf8String::setNumber (double n, char f, int prec)
 {
 	detach();
-	char fmt[16];
+	char fmt[32];
 	char num[64];
 	if (prec)
-		CWT_ASSERT(sprintf(fmt, "%%.%d%c", prec, f) > 0);
+		CWT_ASSERT(::sprintf(fmt, "%%.%d%c", prec, f) > 0);
 	else
-		CWT_ASSERT(sprintf(fmt, "%%%c", f) > 0);
+		CWT_ASSERT(::sprintf(fmt, "%%%c", f) > 0);
 
-	CWT_ASSERT(sprintf(num, fmt, n) > 0);
+	CWT_ASSERT(::sprintf(num, fmt, n) > 0);
 
 	this->pimpl->assign(num);
 	calculateLength();

@@ -64,13 +64,12 @@ void test_swap()
 	CWT_TEST_OK2(strcmp(cyrillic.c_str(), latinChars) == 0, _Tr("Cyrillic string contains latin characters after swap"));
 }
 
-template <typename _iterator>
 void test_find()
 {
 	bool ok;
 	Utf8String haystack (Utf8String::fromUtf8("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯабвгдеёжзийклмнопрстуфхцчшщьыъэюя", &ok));
 	Utf8String needles[3];
-	_iterator its[3];
+	Utf8String::const_iterator its[3];
 
 	needles[0] = Utf8String::fromUtf8("АБВГ", &ok);
 	its[0] = haystack.begin();
@@ -80,7 +79,7 @@ void test_find()
 	its[2] = haystack.end();
 
 	for (size_t i = 0; i < sizeof(needles)/sizeof(needles[0]); ++i) {
-		_iterator it = haystack.find(needles[i], haystack.begin());
+		Utf8String::const_iterator it = haystack.find(needles[i], haystack.begin());
 
 		CWT_TEST_OK(it == its[i]);
 	}
@@ -200,13 +199,12 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(64);
+    CWT_BEGIN_TESTS(61);
 
     test_basic();
     test_init();
     test_swap();
-    test_find<Utf8String::iterator>();
-    test_find<Utf8String::const_iterator>();
+    test_find();
     test_iterator<Utf8String::iterator>();
     test_iterator<Utf8String::const_iterator>();
     test_insert();

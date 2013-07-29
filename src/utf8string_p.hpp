@@ -27,3 +27,4 @@ struct Utf8String::Impl : public std::string
 CWT_NS_END
 
 #endif /* __CWT_UTF8STRING_P_HPP__ */
+

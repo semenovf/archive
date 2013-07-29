@@ -311,8 +311,8 @@ void test_uri_parse()
 	CWT_TEST_OK(uri.port() == port);
 
 	uri_result = uri.toString();
-	printf("%s\n", uri_string);
-	printf("%s\n", uri_result.c_str());
+	printf("uri_string: %s\n", uri_string);
+	printf("uri_result: %s\n", uri_result.c_str());
 	CWT_TEST_OK(uri_result == String::fromUtf8(uri_string));
 
 	CWT_TEST_FAIL(uri.parse(String("file:/tmp/text.txt")));

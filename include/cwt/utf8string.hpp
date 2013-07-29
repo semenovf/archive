@@ -198,8 +198,8 @@ public:
     int compare (size_t pos, size_t len, const char * s, size_t n) const;
 
 	bool contains(const Utf8String & s) const { return find(s, begin()) != end(); }
-	bool contains(const char * s) const { return find(s) != end(); }
-	bool contains(const char * s, size_t n) const { return find(s, n) != end(); }
+	bool contains(const char * s) const { return find(s, 0, strlen(s)) != end(); }
+	bool contains(const char * s, size_t n) const { return find(s, 0, n) != end(); }
 
 	bool endsWith(const Utf8String & s) const;
 	bool endsWith(const char * s) const;
@@ -209,11 +209,8 @@ public:
 	bool startsWith(const char * s) const;
 	bool startsWith(const char * s, size_t n) const;
 
-	iterator find(const Utf8String & s, iterator from);
 	const_iterator find(const Utf8String & s, const_iterator from) const;
-	iterator find(const char * s);
-	iterator find(const char * s, size_t from);
-	const_iterator find(const char * s) const;
+	const_iterator find(const char * s, size_t from, size_t n) const;
 	const_iterator find(const char * s, size_t from) const;
 
 #ifdef __NOT_IMPLEMENTED_YET__

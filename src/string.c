@@ -24,11 +24,11 @@ static long_t __str_to_long_helper(const char *s, bool *pok, int base, long_t mi
 #endif
 
 	if ((errno == ERANGE && (r == CWT_LONG_MAX || r == CWT_LONG_MIN))
-			|| (errno != 0 && r == long_t(0))
+			|| (errno != 0 && r == (long_t)0)
 			|| endptr == s
 			|| *endptr != '\0'
 			|| r < min_val || r > max_val) {
-		r = long_t(0);
+		r = (long_t)0;
 		ok = false;
 	}
 
@@ -51,11 +51,11 @@ static ulong_t	__str_to_ulong_helper(const char *s, bool *pok, int base, ulong_t
 #endif
 
 	if ((errno == ERANGE && r == CWT_ULONG_MAX)
-			|| (errno != 0 && r == ulong_t(0))
+			|| (errno != 0 && r == (ulong_t)0)
 			|| endptr == s
 			|| *endptr != '\0'
 			|| r > max_val ) {
-		r = ulong_t(0);
+		r = (ulong_t)0;
 		ok = false;
 	}
 

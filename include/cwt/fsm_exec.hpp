@@ -67,7 +67,7 @@ ssize_t Fsm<_P>::exec(int state_cur, const Fsm<_P>::const_iterator & begin, cons
 			break;
 
 		trans = & m_fsmContext->trans_tab[state_cur];
-		nchars_processed = ssize_t(-1);
+		//nchars_processed = ssize_t(-1);
 
 	} while( true );
 

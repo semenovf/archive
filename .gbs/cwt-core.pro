@@ -17,6 +17,7 @@ SUBDIRS  = cwt-core  \
     tests/fsm        \
     tests/hash       \
     tests/md5        \
+    tests/safeformat \
     tests/shared_ptr \
     tests/string     \
     tests/uri        \

@@ -26,6 +26,8 @@ CWT_NS_BEGIN
 #define FSM_MATCH_NOTHING         FsmMatch<String>(new FsmMatchNothing<String>)
 #define FSM_MATCH_CHAR(s)         FsmMatch<String>(new FsmMatchChar<String>(s))
 #define FSM_MATCH_STR(s)          FsmMatch<String>(new FsmMatchStr<String>(s))
+#define FSM_MATCH_RPT_STR(s,f,t)  FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_STR(s),f,t))
+#define FSM_MATCH_OPT_STR(s)      FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_STR(s),0,1))
 #define FSM_MATCH_RPT_CHAR(s,f,t) FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_CHAR(s),f,t))
 #define FSM_MATCH_OPT_CHAR(s)     FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_CHAR(s),0,1))
 
@@ -50,9 +52,10 @@ public:
 	typedef typename _P::char_type char_type;
 	typedef typename _P::const_iterator const_iterator;
 
-	FsmMatchBase() {}
+	FsmMatchBase() : ref(1) {}
 	virtual ~FsmMatchBase() {}
 	virtual ssize_t match(FsmContext<_P> *fsm, const const_iterator & begin, const const_iterator & end) const = 0;
+	int ref;
 };
 
 template <typename _P>
@@ -63,10 +66,24 @@ public:
 	typedef typename _P::const_iterator const_iterator;
 	typedef ssize_t (*func_type)(FsmContext<_P> *fsm, void *fn_context, const typename _P::const_iterator & begin, const typename _P::const_iterator & end);
 private:
-	FsmMatch() : m_match(NULL) {}
+	FsmMatch() : m_match(nullptr) {}
+	void deref() {
+		if (m_match) {
+			CWT_ASSERT(m_match->ref > 0);
+			m_match->ref--;
+			if(m_match->ref == 0)
+				delete m_match;
+			m_match = NULL;
+		}
+	}
+
 public:
 	FsmMatch(FsmMatchBase<_P> * match) : m_match(match) { CWT_ASSERT(m_match); }
-	~FsmMatch() { delete m_match; }
+	FsmMatch(const FsmMatch &match) {
+		CWT_ASSERT(match.m_match);
+		m_match = match.m_match;
+		m_match->ref++; }
+	~FsmMatch() { deref(); }
 
 	ssize_t operator () (FsmContext<_P> *fsm, const const_iterator & begin, const const_iterator & end) const {
 		return m_match->match(fsm, begin, end);
