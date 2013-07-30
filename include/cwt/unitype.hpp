@@ -48,16 +48,20 @@ public:
 	};
 
 public:
-	UniType() : m_d(new Data)                   { m_d->type = NullValue; }
-	UniType(bool v) : m_d(new Data)             { m_d->type = BoolValue; m_d->d.long_val = long_t(v ? 1L : 0L); }
-	UniType(int_t v) : m_d(new Data)            { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(uint_t v) : m_d(new Data)           { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(long_t v) : m_d(new Data)           { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(ulong_t v) :m_d(new Data)           { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(float v) : m_d(new Data)            { m_d->type = FloatValue; m_d->d.double_val = v; }
-	UniType(double v) : m_d(new Data)           { m_d->type = DoubleValue; m_d->d.double_val = v; }
-	UniType(const String &v) : m_d(new Data)    { m_d->type = StringValue; m_d->d.string_val = new String(v); }
-	UniType(const ByteArray &v) : m_d(new Data) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
+	UniType()           : m_d(new Data)          { m_d->type = NullValue; }
+	UniType(bool v)     : m_d(new Data)          { m_d->type = BoolValue; m_d->d.long_val = long_t(v ? 1L : 0L); }
+	UniType(char v)     : m_d(new Data)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType(byte_t v)   : m_d(new Data)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType(short_t v)  : m_d(new Data)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType(ushort_t v) : m_d(new Data)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType(int_t v)    : m_d(new Data)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType(uint_t v)   : m_d(new Data)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType(long_t v)   : m_d(new Data)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType(ulong_t v)  : m_d(new Data)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType(float v)    : m_d(new Data)          { m_d->type = FloatValue; m_d->d.double_val = v; }
+	UniType(double v)   : m_d(new Data)          { m_d->type = DoubleValue; m_d->d.double_val = v; }
+	UniType(const String & v) : m_d(new Data)    { m_d->type = StringValue; m_d->d.string_val = new String(v); }
+	UniType(const ByteArray & v) : m_d(new Data) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
 
 	template <typename T>
 	static UniType make_object(const T &v);
@@ -75,13 +79,17 @@ public:
 	void setFromString (const String &s);
 	void setNull       ();
 	void setBool       (bool b);
-	void setInt        (int_t n)   { setLong(long_t(n)); }
-	void setUInt       (uint_t n)  { setLong(long_t(n)); }
+	void setChar       (char c)     { setLong(long_t(c)); }
+	void setByte       (byte_t n)   { setLong(long_t(n)); }
+	void setShort      (short_t n)  { setLong(long_t(n)); }
+	void setUShort     (ushort_t n) { setLong(long_t(n)); }
+	void setInt        (int_t n)    { setLong(long_t(n)); }
+	void setUInt       (uint_t n)   { setLong(long_t(n)); }
 	void setLong       (long_t n);
-	void setULong      (ulong_t n) { setLong(long_t(n)); }
+	void setULong      (ulong_t n)  { setLong(long_t(n)); }
 	void setFloat      (float n);
 	void setDouble     (double n);
-	void setChar       (UChar ch)   { setLong(long_t(ch)); }
+	void setUChar      (UChar ch)   { setLong(long_t(ch)); }
 	void setString     (const String &s);
 	void setBlob       (const char *blob, size_t sz);
 	void setBlob       (const ByteArray &blob);

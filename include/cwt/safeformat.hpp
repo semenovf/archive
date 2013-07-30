@@ -8,44 +8,63 @@
 #ifndef __CWT_SAFEFORMAT_HPP__
 #define __CWT_SAFEFORMAT_HPP__
 
-#include <cwt/cwt.hpp>
+#include <cwt/fsm.hpp>
+#include <cwt/unitype.hpp>
+#include <cwt/shared_ptr.hpp>
 
 CWT_NS_BEGIN
 
-template <typename _P>
+struct SafeFormatContext;
+
 class SafeFormat
 {
-	typedef typename _P::const_iterator const_iterator;
-
 public:
-	SafeFormat(const _P & format)
-		: m_format(format)
-		, m_result()
-		, m_cursor(format.begin())
-		, m_end(format.end())
-	{}
-
-/*
-	_P & operator () () { return m_result; }
-	const _P & operator () () const { return m_result; }
-*/
-
-	inline operator String & ()
-	{
-		if (m_cursor < m_end)
-			m_result.append(_P(m_cursor, m_end));
-		return m_result;
-	}
-
-
-	SafeFormat & operator () (char c) { m_result.append(_P(1, c)); return *this; }
-	SafeFormat & operator () (const char * s) { m_result.append(_P(s)); return *this; }
+	enum Flag {
+		  NoFlag
+		, ZeroPadding          = 0x0001 // The value should be zero padded.
+		                                // For d, i, o, u, x, X, a, A, e, E, f, F, g, and G conversions,
+		                                // the converted value is padded on the left with zeros rather
+		                                // than blanks. If the 0 and - flags both appear, the 0 flag is ignored.
+		                                // If a precision is given with a numeric conversion (d, i, o, u, x, and X),
+		                                // the 0 flag is ignored.  For other conversions, the behavior is undefined.
+		, LeftJustify          = 0x0002 // The  converted  value  is  to  be  left adjusted on the field boundary.
+		                                // (The default is right justification.)  Except for n conversions,
+		                                // the converted value is padded on the right with blanks, rather than on
+		                                // the left with blanks or zeros.  A - overrides a 0 if both are given.
+		, SpaceBeforePositive  = 0x0004 // Left space before positive number
+		, NeedSign             = 0x0008 // A sign (+ or -) should always be placed before a number produced by a signed conversion.
+		                                // By default a sign is used only for negative numbers.
+		                                // @c NeedSign overrides a @c SpaceBeforePositive if both are used.
+	};
 
 private:
-	_P m_format;
-	_P m_result;
-	const_iterator m_cursor;
-	const_iterator m_end;
+	SafeFormat() {}
+	CWT_DENY_COPY(SafeFormat);
+
+public:
+	SafeFormat(const String & format);
+
+	operator String & ();
+
+	SafeFormat & operator () (const UniType & ut);
+	SafeFormat & operator () (const char * latin1) { return operator () (UniType(String(latin1))); }
+	SafeFormat & operator () (const void * ptr)    { return operator () (UniType(uintptr_t(ptr))); }
+/*
+	SafeFormat & operator () (long_t n);
+	SafeFormat & operator () (ulong_t n);
+	SafeFormat & operator () (int_t n)    { return operator () (long_t(n)); }
+	SafeFormat & operator () (uint_t n)   { return operator () (ulong_t(n)); }
+	SafeFormat & operator () (short_t n)  { return operator () (long_t(n)); }
+	SafeFormat & operator () (ushort_t n) { return operator () (ulong_t(n)); }
+	SafeFormat & operator () (byte_t n)   { return operator () (ulong_t(n)); }
+	SafeFormat & operator () (float n);
+	SafeFormat & operator () (double n);
+*/
+
+private:
+	bool nextArg();
+private:
+	shared_ptr<SafeFormatContext> m_context;
 };
 
 CWT_NS_END

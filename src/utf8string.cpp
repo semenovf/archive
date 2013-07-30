@@ -60,6 +60,25 @@ Utf8String::Utf8String(const const_iterator & begin, const const_iterator & end)
 	}
 }
 
+Utf8String::Utf8String(size_t count, UChar c)
+{
+	char utf8[6];
+
+	if (!Unicode::isValid(c))
+		c = UChar(Utf8String::ReplacementChar);
+
+	ssize_t sz = encodeUcs4(utf8, 6, c);
+	CWT_ASSERT(sz > 0);
+
+	pimpl->reserve(pimpl->size() + count * 4);
+
+	for (size_t i = 0; i < count; ++i) {
+		pimpl->append(utf8, size_t(sz));
+	}
+
+	pimpl->m_length = count;
+}
+
 bool Utf8String::isEmpty() const
 {
 	return pimpl->m_length == 0;
@@ -128,7 +147,6 @@ Utf8String Utf8String::substr(const const_iterator & from, size_t n) const
 
 	return r;
 }
-
 
 Utf8String & Utf8String::insert(const Utf8String & s, const Utf8String::const_iterator & pos)
 {
@@ -330,22 +348,74 @@ byte_t Utf8String::toByte(bool *pok, int base) const
 	return cwt_str_to_byte(c_str(), pok, base);
 }
 
+
+// FIXME need full support of Unicode standard
+Utf8String Utf8String::toLower () const
+{
+	Utf8String r;
+	const_iterator it = begin();
+	const_iterator itEnd = end();
+
+	while (it < itEnd) {
+		UChar uc = *it;
+		if (uc < 128) {
+			if (char(uc) >= 'A' && char(uc) <= 'Z')
+				uc += 0x20;
+			r.append(1, char(uc));
+		} else {
+			r.append(1, uc);
+		}
+		++it;
+	}
+	return r;
+}
+
+// FIXME need full support of Unicode standard
+Utf8String Utf8String::toUpper () const
+{
+	Utf8String r;
+	const_iterator it = begin();
+	const_iterator itEnd = end();
+
+	while (it < itEnd) {
+		UChar uc = *it;
+		if (uc < 128) {
+			if (char(uc) >= 'a' && char(uc) <= 'z')
+				uc -= 0x20;
+			r.append(1, char(uc));
+		} else {
+			r.append(1, uc);
+		}
+		++it;
+	}
+	return r;
+}
+
+
 // TODO need to implement without using the standard stream library
-Utf8String & Utf8String::setNumber (long_t n, int base)
+Utf8String & Utf8String::setNumber (long_t n, int base, bool uppercase)
 {
 	detach();
 	std::ostringstream os;
-	os << std::setbase(base) << n;
+	os << std::setbase(base);
+	if (uppercase) {
+		os << std::uppercase;
+	}
+	os << n;
 	*this->pimpl = os.str();
 	calculateLength();
 	return *this;
 }
 
-Utf8String & Utf8String::setNumber (ulong_t n, int base)
+Utf8String & Utf8String::setNumber (ulong_t n, int base, bool uppercase)
 {
 	detach();
 	std::ostringstream os;
-	os << std::setbase(base) << n;
+	os << std::setbase(base);
+	if (uppercase) {
+		os << std::uppercase;
+	}
+	os << n;
 	*this->pimpl = os.str();
 	calculateLength();
 	return *this;

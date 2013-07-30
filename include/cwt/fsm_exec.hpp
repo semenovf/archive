@@ -23,6 +23,9 @@ ssize_t Fsm<_P>::exec(int state_cur, const Fsm<_P>::const_iterator & begin, cons
 	const FsmTransition<_P> *trans;
 	bool accepted = false;
 
+	CWT_ASSERT(m_fsmContext);
+	CWT_ASSERT(m_fsmContext->trans_tab);
+
 	trans = & m_fsmContext->trans_tab[state_cur];
 
 	CWT_ASSERT(trans);

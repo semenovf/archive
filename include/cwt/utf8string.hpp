@@ -170,6 +170,7 @@ public:
 	Utf8String(const char *latin1, size_t length);
 	Utf8String(size_t count, char latin1);
 	Utf8String(const const_iterator & begin, const const_iterator & end);
+	Utf8String(size_t count, UChar c);
 
 	const char*	data() const;
 	const char*	constData() const { return data(); }
@@ -179,6 +180,7 @@ public:
 	bool	    isEmpty() const;
 
 	Utf8String & append(const Utf8String & s) { return insert(s, end()); }
+	Utf8String & append(size_t count, UChar uc) { return append(Utf8String(count, uc)); }
 	Utf8String & prepend(const Utf8String & s) { return insert(s, begin()); }
 	Utf8String & insert(const Utf8String & s, size_t pos) { return insert(s, begin() + pos); }
 	Utf8String & insert(const Utf8String & s, const const_iterator & pos);
@@ -244,14 +246,17 @@ public:
 	sbyte_t  toSByte(bool *ok = 0, int base = 10) const;
 	byte_t	 toByte(bool *ok = 0, int base = 10) const;
 
-	Utf8String & setNumber (long_t n, int base = 10);
-	Utf8String & setNumber (ulong_t n, int base = 10);
-	Utf8String & setNumber (int_t n, int base = 10)    { return setNumber(long_t(n), base); }
-	Utf8String & setNumber (uint_t n, int base = 10)   { return setNumber(ulong_t(n), base); }
-	Utf8String & setNumber (short_t n, int base = 10)  { return setNumber(long_t(n), base); }
-	Utf8String & setNumber (ushort_t n, int base = 10) { return setNumber(ulong_t(n), base); }
-	Utf8String & setNumber (sbyte_t n, int base = 10)  { return setNumber(long_t(n), base); }
-	Utf8String & setNumber (byte_t n, int base = 10)   { return setNumber(ulong_t(n), base); }
+	Utf8String toLower () const;
+	Utf8String toUpper () const;
+
+	Utf8String & setNumber (long_t n, int base = 10, bool uppercase = false);
+	Utf8String & setNumber (ulong_t n, int base = 10, bool uppercase = false);
+	Utf8String & setNumber (int_t n, int base = 10, bool uppercase = false)    { return setNumber(long_t(n), base, uppercase); }
+	Utf8String & setNumber (uint_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
+	Utf8String & setNumber (short_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
+	Utf8String & setNumber (ushort_t n, int base = 10, bool uppercase = false) { return setNumber(ulong_t(n), base, uppercase); }
+	Utf8String & setNumber (sbyte_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
+	Utf8String & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
 	Utf8String & setNumber (float n, char f = 'g', int prec = 6) { return setNumber(double(n), f, prec); }
 	Utf8String & setNumber (double n, char f = 'g', int prec = 6);
 

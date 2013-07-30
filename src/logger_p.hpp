@@ -15,19 +15,21 @@
 
 CWT_NS_BEGIN
 
-struct PatternSpec {
-	UChar spec_char;
-	bool left_justify;
+struct PatternSpec
+{
+	UChar  spec_char;
+	bool   left_justify;
 	size_t min_width;
 	size_t max_width;
 	String fspec; /* format specifier */
 };
 
-struct LoggerPatternContext {
+struct LoggerPatternContext
+{
 	Logger::Priority priority;
-	String result;
-	const String *msg;
-	PatternSpec pspec;
+	String           result;
+	const String    *msg;
+	PatternSpec      pspec;
 };
 
 const String __priority_str[] = {
@@ -68,9 +70,9 @@ static bool set_format_spec   (const String::const_iterator & begin, const Strin
  * p    Priority (Trace, Debug, Info etc.).
  */
 
-static String _LOGGER_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+//static String _LOGGER_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+//static String _LOGGER_WS(" \t");
 static String _LOGGER_DIGIT("0123456789");
-static String _LOGGER_WS(" \t");
 
 /* exclude '%' (0x25) */
 UChar plain_char[] = {
@@ -84,14 +86,14 @@ static FsmTransition<String> plain_char_fsm[] = {
 
 /* format-mod = [ "-" ] *2DIGIT [ "." *2DIGIT ] */
 static FsmTransition<String> dot_digit_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(String("."))          , FSM_NORMAL, NULL, NULL }
+	  { 1,-1, FSM_MATCH_CHAR(".")                     , FSM_NORMAL, NULL, NULL }
 	, {-1,-1, FSM_MATCH_RPT_CHAR(_LOGGER_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, NULL }
 };
 
 static FsmTransition<String> format_mod_fsm[] = {
-	  { 1,-1, FSM_MATCH_OPT_CHAR(String("-"))      , FSM_NORMAL, set_left_justify, NULL }
+	  { 1,-1, FSM_MATCH_OPT_CHAR("-")                 , FSM_NORMAL, set_left_justify, NULL }
 	, { 2,-1, FSM_MATCH_RPT_CHAR(_LOGGER_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, NULL }
-	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm) , FSM_ACCEPT, NULL, NULL }
+	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm)        , FSM_ACCEPT, NULL, NULL }
 };
 
 /* format-spec = "{" *( <exclude '{' (0x7B) and '}' (0x7D) > ) "}" */
@@ -106,16 +108,16 @@ static FsmTransition<String> format_spec_char_fsm[] = {
 	, {-1,-1, FSM_MATCH_RANGE(format_spec_char[4], format_spec_char[5]) , FSM_ACCEPT, NULL, NULL }
 };
 static FsmTransition<String> format_spec_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(String("{"))     , FSM_NORMAL, NULL, NULL }
+      { 1,-1, FSM_MATCH_CHAR("{")                            , FSM_NORMAL, NULL, NULL }
     , { 2,-1, FSM_MATCH_RPT_FSM(format_spec_char_fsm, 0,256) , FSM_NORMAL, set_format_spec, NULL }
-    , {-1,-1, FSM_MATCH_CHAR(String("}"))     , FSM_ACCEPT, NULL, NULL }
+    , {-1,-1, FSM_MATCH_CHAR("}")                            , FSM_ACCEPT, NULL, NULL }
 };
 
 /* spec = "%" [ format-mod ] ( "m" / "d" / "p" ) [ format-spec ]*/
 static FsmTransition<String> spec_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(String("%"))        , FSM_NORMAL, begin_spec, NULL }
+      { 1,-1, FSM_MATCH_CHAR("%")                , FSM_NORMAL, begin_spec, NULL }
     , { 2,-1, FSM_MATCH_OPT_FSM(format_mod_fsm)  , FSM_NORMAL, NULL, NULL }
-    , { 3,-1, FSM_MATCH_CHAR(String("mdp"))      , FSM_NORMAL, set_spec_char, NULL }
+    , { 3,-1, FSM_MATCH_CHAR("mdp")              , FSM_NORMAL, set_spec_char, NULL }
     , {-1,-1, FSM_MATCH_OPT_FSM(format_spec_fsm) , FSM_ACCEPT, end_spec, NULL }
 };
 
@@ -204,7 +206,6 @@ static bool end_spec (const String::const_iterator & , const String::const_itera
 }
 
 static bool set_spec_char (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *)
-//static bool set_spec_char(const void *data, size_t len, void *context, void *action_args)
 {
 	CWT_ASSERT(begin < end);
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
@@ -213,7 +214,6 @@ static bool set_spec_char (const String::const_iterator & begin, const String::c
 }
 
 static bool set_format_spec (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *)
-//static bool set_format_spec(const void *data, size_t len, void *context, void *action_args)
 {
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	ctx->pspec.fspec = String(begin, end);
@@ -222,7 +222,6 @@ static bool set_format_spec (const String::const_iterator & begin, const String:
 
 
 static bool append_plain_char (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *)
-//static bool append_plain_char(const void *data, size_t len, void *context, void *action_args)
 {
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	ctx->result.append(String(begin, end));
@@ -230,7 +229,6 @@ static bool append_plain_char (const String::const_iterator & begin, const Strin
 }
 
 static bool set_left_justify (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *)
-//static bool set_left_justify(const void *data, size_t len, void *context, void *action_args)
 {
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	if (begin + 1 == end) {
@@ -240,7 +238,6 @@ static bool set_left_justify (const String::const_iterator & begin, const String
 }
 
 static bool set_min_width (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *)
-//static bool set_min_width(const void *data, size_t len, void *context, void *action_args)
 {
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	if (begin < end) {
@@ -255,7 +252,6 @@ static bool set_min_width (const String::const_iterator & begin, const String::c
 }
 
 static bool set_max_width (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *)
-//static bool set_max_width(const void *data, size_t len, void *context, void *action_args)
 {
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	if (begin < end) {

@@ -120,13 +120,13 @@ public:
 	typedef typename _P::char_type char_type;
 	typedef typename _P::const_iterator const_iterator;
 
-private:
-	Fsm() : m_fsmContext(NULL) {}
 public:
+	Fsm();
 	Fsm(const FsmTransition<_P> *initialTrans, void *context);
 	~Fsm();
 
 	void setTransitionTable(FsmTransition<_P> *trans) { m_fsmContext->trans_tab = trans; }
+	void setUserContext(void * context) { m_fsmContext->context = context; }
 	ssize_t exec(int state_cur, const const_iterator & begin, const const_iterator & end);
 
 public:
@@ -182,6 +182,14 @@ template <typename _P>
 inline bool Fsm<_P>::rangeChar(char_type ch, char_type from, char_type to)
 {
 	return ch >= from && ch <= to ? true : false;
+}
+
+template <typename _P>
+Fsm<_P>::Fsm()
+	: m_fsmContext(new FsmContext<_P>)
+{
+	m_fsmContext->trans_tab     = nullptr;
+	m_fsmContext->context       = nullptr;
 }
 
 template <typename _P>
