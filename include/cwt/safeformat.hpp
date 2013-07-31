@@ -47,22 +47,40 @@ public:
 	operator String & ();
 
 	SafeFormat & operator () (const UniType & ut);
+	SafeFormat & operator () (char c)              { return operator () (UniType(c)); }
+	SafeFormat & operator () (int_t n)             { return operator () (UniType(n)); }
+	SafeFormat & operator () (uint_t n)            { return operator () (UniType(n)); }
+	SafeFormat & operator () (long_t n)            { return operator () (UniType(n)); }
+	SafeFormat & operator () (ulong_t n)           { return operator () (UniType(n)); }
+	SafeFormat & operator () (float n)             { return operator () (UniType(n)); }
+	SafeFormat & operator () (double n)            { return operator () (UniType(n)); }
 	SafeFormat & operator () (const char * latin1) { return operator () (UniType(String(latin1))); }
 	SafeFormat & operator () (const void * ptr)    { return operator () (UniType(uintptr_t(ptr))); }
-/*
-	SafeFormat & operator () (long_t n);
-	SafeFormat & operator () (ulong_t n);
-	SafeFormat & operator () (int_t n)    { return operator () (long_t(n)); }
-	SafeFormat & operator () (uint_t n)   { return operator () (ulong_t(n)); }
-	SafeFormat & operator () (short_t n)  { return operator () (long_t(n)); }
-	SafeFormat & operator () (ushort_t n) { return operator () (ulong_t(n)); }
-	SafeFormat & operator () (byte_t n)   { return operator () (ulong_t(n)); }
-	SafeFormat & operator () (float n);
-	SafeFormat & operator () (double n);
-*/
 
-private:
-	bool nextArg();
+	// boost-like operators
+	SafeFormat & operator % (const UniType & ut)  { return operator () (ut); }
+	SafeFormat & operator % (char c)              { return operator () (c); }
+	SafeFormat & operator % (int_t n)             { return operator () (n); }
+	SafeFormat & operator % (uint_t n)            { return operator () (n); }
+	SafeFormat & operator % (long_t n)            { return operator () (n); }
+	SafeFormat & operator % (ulong_t n)           { return operator () (n); }
+	SafeFormat & operator % (float n)             { return operator () (n); }
+	SafeFormat & operator % (double n)            { return operator () (n); }
+	SafeFormat & operator % (const char * latin1) { return operator () (UniType(String(latin1))); }
+	SafeFormat & operator % (const void * ptr)    { return operator () (UniType(uintptr_t(ptr))); }
+
+	// Qt-like methods
+	SafeFormat & arg (const UniType & ut)  { return operator () (ut); }
+	SafeFormat & arg (char c)              { return operator () (c); }
+	SafeFormat & arg (int_t n)             { return operator () (n); }
+	SafeFormat & arg (uint_t n)            { return operator () (n); }
+	SafeFormat & arg (long_t n)            { return operator () (n); }
+	SafeFormat & arg (ulong_t n)           { return operator () (n); }
+	SafeFormat & arg (float n)             { return operator () (n); }
+	SafeFormat & arg (double n)            { return operator () (n); }
+	SafeFormat & arg (const char * latin1) { return operator () (UniType(String(latin1))); }
+	SafeFormat & arg (const void * ptr)    { return operator () (UniType(uintptr_t(ptr))); }
+
 private:
 	shared_ptr<SafeFormatContext> m_context;
 };

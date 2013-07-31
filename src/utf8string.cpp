@@ -361,9 +361,9 @@ Utf8String Utf8String::toLower () const
 		if (uc < 128) {
 			if (char(uc) >= 'A' && char(uc) <= 'Z')
 				uc += 0x20;
-			r.append(1, char(uc));
+			r.append(Utf8String(1, char(uc)));
 		} else {
-			r.append(1, uc);
+			r.append(Utf8String(1, uc));
 		}
 		++it;
 	}
@@ -382,9 +382,9 @@ Utf8String Utf8String::toUpper () const
 		if (uc < 128) {
 			if (char(uc) >= 'a' && char(uc) <= 'z')
 				uc -= 0x20;
-			r.append(1, char(uc));
+			r.append(Utf8String(1, char(uc)));
 		} else {
-			r.append(1, uc);
+			r.append(Utf8String(1, uc));
 		}
 		++it;
 	}

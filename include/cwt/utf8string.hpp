@@ -180,7 +180,7 @@ public:
 	bool	    isEmpty() const;
 
 	Utf8String & append(const Utf8String & s) { return insert(s, end()); }
-	Utf8String & append(size_t count, UChar uc) { return append(Utf8String(count, uc)); }
+//	Utf8String & append(size_t count, UChar uc) { return append(Utf8String(count, uc)); }
 	Utf8String & prepend(const Utf8String & s) { return insert(s, begin()); }
 	Utf8String & insert(const Utf8String & s, size_t pos) { return insert(s, begin() + pos); }
 	Utf8String & insert(const Utf8String & s, const const_iterator & pos);

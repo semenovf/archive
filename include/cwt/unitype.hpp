@@ -63,15 +63,15 @@ public:
 	UniType(const String & v) : m_d(new Data)    { m_d->type = StringValue; m_d->d.string_val = new String(v); }
 	UniType(const ByteArray & v) : m_d(new Data) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
 
-	template <typename T>
-	static UniType make_object(const T &v);
-
 	UniType(const UniType &other) { m_d = other.m_d; }
 	UniType& operator = (const UniType &other)
 	{
 		m_d = other.m_d;
 		return *this;
 	}
+
+	template <typename T>
+	static UniType make_object(const T &v);
 
 	bool isNull() const { return m_d->type == NullValue; }
 	TypeEnum type() const { return m_d->type; }
