@@ -15,7 +15,7 @@ for dir in $DIRS ; do
 		exit 1
 	    fi
 	    cd ..
-	    echo Git pulling for $dir is OK.
+	    echo Git pushing for $dir is OK.
 	fi
     fi
 done
