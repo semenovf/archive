@@ -6,7 +6,8 @@
  * @brief
  */
 
-#include <cwt/uuid.hpp>
+#include "../include/cwt/uuid.hpp"
+#include "../include/cwt/safeformat.hpp"
 
 CWT_NS_BEGIN
 
@@ -40,13 +41,13 @@ bool Uuid::uuid_eq(const uuid_t &uuid, const uuid_t &other)
 			&& uuid.node[5] == other.node[5] ? true : false;
 }
 
+
 /*              0-------8----3----8----3-------------*/
 /* UUID format: AAAAAAAA-BBBB-CCCC-DDDD-XXXXXXXXXXXX */
 
-bool Uuid::parse(const char *uuid_str, int len)
+bool Uuid::parse(const String & s)
 {
 	bool ok = false;
-	String s = String().fromUtf8(uuid_str, len);
 	UChar dash(0x002D);
 
 	if (s.length() < 36)
@@ -83,18 +84,18 @@ bool Uuid::parse(const char *uuid_str, int len)
 
 String Uuid::toString(const uuid_t &uuid)
 {
-	return String().sprintf("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x"
-		, uuid.time_low
-		, uuid.time_mid
-		, uuid.time_hi_and_version
-		, uuid.clock_seq_hi_and_reserved
-		, uuid.clock_seq_low
-		, uuid.node[0]
-		, uuid.node[1]
-		, uuid.node[2]
-		, uuid.node[3]
-		, uuid.node[4]
-		, uuid.node[5]);
+	return _F("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x")
+		% uuid.time_low
+		% uuid.time_mid
+		% uuid.time_hi_and_version
+		% uuid.clock_seq_hi_and_reserved
+		% uuid.clock_seq_low
+		% uuid.node[0]
+		% uuid.node[1]
+		% uuid.node[2]
+		% uuid.node[3]
+		% uuid.node[4]
+		% uuid.node[5];
 }
 
 

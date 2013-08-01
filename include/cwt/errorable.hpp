@@ -12,14 +12,12 @@
 #include <cwt/cwt.h>
 #include <cwt/string.hpp>
 #include <cwt/vector.hpp>
-#include <cwt/logger.hpp>
-#include <cwt/string.h>
 
 CWT_NS_BEGIN
 
 struct ErrorData {
 	ErrorData() : ntimes(0), errstr() {}
-	ErrorData(const String& s) : ntimes(0), errstr(s) {}
+	ErrorData(const String & s) : ntimes(0), errstr(s) {}
 	int    ntimes;
 	String errstr;
 };
@@ -32,10 +30,9 @@ protected:
 
 public:
 	virtual ~Errorable() { clearErrors(); }
-	void addSystemError(int errn, const char *prefix, ...);
-	void addSystemError(int errn, const String &prefix);
-	void addError(const char * cformat, ...);
-	void addError(const String& text);
+	void addSystemError(int errn, const String & text);
+	void addError(const String & text);
+
 	void clearErrors() { m_errors.clear(); }
 	size_t errorCount() const;
 	const String errorTextAt(size_t index) const;

@@ -27,12 +27,12 @@ public:
 public:
 	static void connectAppender(LogAppender *appender);
 	static void disconnectAppender(LogAppender *appender);
-	static void trace(const char * cformat, ...);
-	static void debug(const char * cformat, ...);
-	static void info(const char * cformat, ...);
-	static void warn(const char * cformat, ...);
-	static void error(const char * cformat, ...);
-	static void fatal(const char * cformat, ...);
+	static void trace (const String & text);
+	static void debug (const String & text);
+	static void info  (const String & text);
+	static void warn  (const String & text);
+	static void error (const String & text);
+	static void fatal (const String & text);
 private:
 	/*static Vector<LogAppender*> g_appenders;*/
 };
@@ -55,16 +55,16 @@ public:
 	void setPriority(Logger::Priority level);
 	Logger::Priority level() { return m_priority; }
 
-	virtual void trace(const String&) = 0;
-	virtual void debug(const String&) = 0;
-	virtual void info(const String&) = 0;
-	virtual void warn(const String&) = 0;
-	virtual void error(const String&) = 0;
-	virtual void fatal(const String&) = 0;
+	virtual void trace (const String &) = 0;
+	virtual void debug (const String &) = 0;
+	virtual void info  (const String &) = 0;
+	virtual void warn  (const String &) = 0;
+	virtual void error (const String &) = 0;
+	virtual void fatal (const String &) = 0;
 
 protected:
-	static String patternify(Logger::Priority priority, const String &pattern, const String &msg);
-	String patternify(Logger::Priority priority, const String &msg) { return patternify(priority, m_pattern, msg); }
+	static String patternify(Logger::Priority priority, const String &pattern, const String & text);
+	String patternify(Logger::Priority priority, const String & text) { return patternify(priority, m_pattern, text); }
 
 protected:
 	bool m_connected;
@@ -78,12 +78,12 @@ class NullLogAppender : public LogAppender
 public:
 	NullLogAppender() {}
 	~NullLogAppender() {}
-	virtual void trace(const String&) {}
-	virtual void debug(const String&) {}
-	virtual void info(const String&) {}
-	virtual void warn(const String&) {}
-	virtual void error(const String&) {}
-	virtual void fatal(const String&) {}
+	virtual void trace (const String &) {}
+	virtual void debug (const String &) {}
+	virtual void info  (const String &) {}
+	virtual void warn  (const String &) {}
+	virtual void error (const String &) {}
+	virtual void fatal (const String &) {}
 };
 
 
@@ -92,12 +92,12 @@ class StdioLogAppender : public LogAppender
 public:
 	StdioLogAppender() {}
 	~StdioLogAppender() {}
-	virtual void trace(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Trace, msg).c_str()); }
-	virtual void debug(const String &msg) { ::fprintf(stdout, "%s\n", patternify(Logger::Debug, msg).c_str()); }
-	virtual void info(const String &msg)  { ::fprintf(stdout, "%s\n", patternify(Logger::Info, msg).c_str()); }
-	virtual void warn(const String &msg)  { ::fprintf(stderr, "%s\n", patternify(Logger::Warn, msg).c_str()); }
-	virtual void error(const String &msg) { ::fprintf(stderr, "%s\n", patternify(Logger::Error, msg).c_str()); }
-	virtual void fatal(const String &msg) { ::fprintf(stderr, "%s\n", patternify(Logger::Fatal, msg).c_str()); }
+	virtual void trace (const String & text) { ::fprintf(stdout, "%s\n", patternify(Logger::Trace, text).c_str()); }
+	virtual void debug (const String & text) { ::fprintf(stdout, "%s\n", patternify(Logger::Debug, text).c_str()); }
+	virtual void info  (const String & text) { ::fprintf(stdout, "%s\n", patternify(Logger::Info, text).c_str()); }
+	virtual void warn  (const String & text) { ::fprintf(stderr, "%s\n", patternify(Logger::Warn, text).c_str()); }
+	virtual void error (const String & text) { ::fprintf(stderr, "%s\n", patternify(Logger::Error, text).c_str()); }
+	virtual void fatal (const String & text) { ::fprintf(stderr, "%s\n", patternify(Logger::Fatal, text).c_str()); }
 };
 
 class StringsLogAppender : public LogAppender
@@ -105,12 +105,12 @@ class StringsLogAppender : public LogAppender
 public:
 	StringsLogAppender() {}
 	~StringsLogAppender() {}
-	virtual void trace(const String &msg) { m_traceStrings.append(patternify(Logger::Trace, msg)); }
-	virtual void debug(const String &msg) { m_debugStrings.append(patternify(Logger::Debug, msg)); }
-	virtual void info(const String &msg)  { m_infoStrings.append(patternify (Logger::Info, msg)); }
-	virtual void warn(const String &msg)  { m_warnStrings.append(patternify (Logger::Warn, msg)); }
-	virtual void error(const String &msg) { m_errorStrings.append(patternify(Logger::Error, msg)); }
-	virtual void fatal(const String &msg) { m_fatalStrings.append(patternify(Logger::Fatal, msg)); }
+	virtual void trace (const String & text) { m_traceStrings.append(patternify(Logger::Trace, text)); }
+	virtual void debug (const String & text) { m_debugStrings.append(patternify(Logger::Debug, text)); }
+	virtual void info  (const String & text)  { m_infoStrings.append(patternify (Logger::Info, text)); }
+	virtual void warn  (const String & text)  { m_warnStrings.append(patternify (Logger::Warn, text)); }
+	virtual void error (const String & text) { m_errorStrings.append(patternify(Logger::Error, text)); }
+	virtual void fatal (const String & text) { m_fatalStrings.append(patternify(Logger::Fatal, text)); }
 
 	Vector<String>& traceStrings() { return m_traceStrings; }
 	Vector<String>& debugStrings() { return m_debugStrings; }

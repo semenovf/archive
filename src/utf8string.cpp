@@ -60,7 +60,7 @@ Utf8String::Utf8String(const const_iterator & begin, const const_iterator & end)
 	}
 }
 
-Utf8String::Utf8String(size_t count, UChar c)
+Utf8String::Utf8String(size_t count, UChar c) : pimpl(new Utf8String::Impl())
 {
 	char utf8[6];
 
@@ -444,28 +444,6 @@ Utf8String & Utf8String::setNumber (double n, char f, int prec)
 	calculateLength();
 	return *this;
 }
-
-Utf8String & Utf8String::sprintf(const char * cformat, ...)
-{
-	va_list args;
-	va_start(args, cformat);
-	detach();
-	Utf8String::vsprintf(cformat, args);
-	va_end(args);
-	return *this;
-}
-
-
-// FIXME Need implementation based on FSM
-Utf8String & Utf8String::vsprintf(const char *cformat, va_list ap)
-{
-	char buf[4096];
-	int n = ::vsprintf(buf, cformat, ap);
-	CWT_ASSERT(n >= 0);
-	*this = Utf8String(buf, size_t(n));
-	return *this;
-}
-
 
 Utf8String operator + (const Utf8String & s1, const Utf8String & s2)
 {

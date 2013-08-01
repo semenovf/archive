@@ -22,9 +22,9 @@ public:
 	Uuid(const uuid_t &uuid) { uuid_copy(m_uuid, uuid); }
 
 	bool isNull() const;
-	bool parse(const char *uuid_str, int len = -1);
+	bool parse(const String & s);
 	String toString() const { return toString(m_uuid); }
-	const uuid_t& uuid() const { return m_uuid; }
+	const uuid_t & uuid() const { return m_uuid; }
 
 	Uuid& operator = (const Uuid &uuid)   { uuid_copy(m_uuid, uuid.m_uuid); return *this; }
 	Uuid& operator = (const uuid_t &uuid) { uuid_copy(m_uuid, uuid); return *this; }

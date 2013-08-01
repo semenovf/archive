@@ -21,7 +21,7 @@ class Array {
 	T       *m_head;
 
 public:
-	Array() : m_capacity(0), m_raw(0), m_head(NULL) {}
+	Array() : m_capacity(0), m_raw(0), m_head(nullptr) {}
 	Array(T a[], size_t n);
 	Array(const Array &a);
 	Array(size_t sz, bool zero = false);
@@ -30,11 +30,13 @@ public:
 	void        alloc (size_t capacity);
 	T&          at(size_t index) { CWT_ASSERT(index < m_capacity); return m_head[index]; }
 	const T&    at(size_t index) const { CWT_ASSERT(index < m_capacity); return m_head[index]; }
-	void        bzero () { if(m_head) ::memset(m_head, 0, m_capacity * sizeof(T)); }
+	void        bzero ()      { if(m_head) ::memset(m_head, 0, m_capacity * sizeof(T)); }
+	void        set   (int c) { if(m_head) ::memset(m_head, c, m_capacity * sizeof(T)); }
+	void        set   (int c, size_t off) { CWT_ASSERT(off < m_capacity); if(m_head) ::memset(m_head + off, c, (m_capacity - off) * sizeof(T)); }
 	Array*      clone () const;
-	//void        copy  (Array &to, size_t off_to, size_t off_from, size_t n) const;
 	T*          data  ()       { return m_head; }
 	const T*    data  () const { return m_head; }
+	const T*    constData () const { return m_head; }
 	bool        eq    (const Array &a);
 	bool        isRaw() const { return m_raw; }
 	void        move  (size_t off_to, size_t off_from, size_t n);

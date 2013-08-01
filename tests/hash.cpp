@@ -5,11 +5,12 @@
  *      Author: wladt
  */
 
-#include <cwt/test.h>
-#include <cwt/hash.hpp>
-#include <cwt/bytearray.hpp>
-#include <cwt/string.hpp>
-#include <cwt/logger.hpp>
+#include "../include/cwt/test.h"
+#include "../include/cwt/hash.hpp"
+#include "../include/cwt/bytearray.hpp"
+#include "../include/cwt/string.hpp"
+#include "../include/cwt/logger.hpp"
+#include "../include/cwt/safeformat.hpp"
 #include <cstring>
 
 using namespace cwt;
@@ -29,7 +30,7 @@ void test_bytearray_hash()
     	ByteArray sample(str);
     	ByteArray value(hash[str]);
     	CWT_TEST_OK2(strcmp(value.data(),sample.data()) == 0
-    			, String().sprintf("[%s] == [%s]", value.c_str(), str).c_str());
+    			, String(_F("[%s] == [%s]") % value % str).c_str());
     }
 }
 
@@ -37,18 +38,16 @@ void test_string_hash()
 {
     Hash<String, String> hash;
     for(int i = 0; i < 2000; i++) {
-    	String str;
-    	str.sprintf("Test string %d", i);
+    	String str(_F("Test string %d") % i);
     	hash.insert(str, str);
     }
 
     for(int i = 0; i < 2000; i++) {
-    	String str;
-    	str.sprintf("Test string %d", i);
+    	String str(_F("Test string %d") % i);
     	String sample(str);
     	String value(hash[str]);
     	CWT_TEST_OK2(sample == value
-    			, String().sprintf("[%s] == [%s]", value.c_str(), sample.c_str()).c_str());
+    			, String(_F("[%s] == [%s]") % value % sample).c_str());
     }
 }
 

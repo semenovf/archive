@@ -145,14 +145,14 @@ public:
 	ByteArray(size_t size, char ch);
 
 	const char * c_str() const;
-	const char*	data() const;
-	const char*	constData() const { return data(); }
-	char &      charAt(size_t pos);
+	const char * data() const;
+	const char * constData() const { return data(); }
+	char &       charAt(size_t pos);
 	const char & charAt (size_t pos) const;
-	void        clear();
-	bool	    isEmpty() const;
-	size_t      size() const;
-	size_t      length() const { return size(); }
+	void         clear();
+	bool	     isEmpty() const;
+	size_t       size() const;
+	size_t       length() const { return size(); }
 
 	ByteArray & append  (const ByteArray & s) { return insert(s, end()); }
 	ByteArray & append  (const char * s) { return insert(s, end()); }

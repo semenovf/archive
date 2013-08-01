@@ -5,9 +5,10 @@
  *      Author: wladt
  */
 
-#include <cwt/test.h>
-#include <cwt/bytearray.hpp>
-#include <cwt/logger.hpp>
+#include "../include/cwt/test.h"
+#include "../include/cwt/bytearray.hpp"
+#include "../include/cwt/logger.hpp"
+#include "../include/cwt/safeformat.hpp"
 #include <cstring>
 
 using namespace cwt;
@@ -19,6 +20,8 @@ void test_append(void)
 
 	CWT_TEST_OK(ba.length() == 6);
 	CWT_TEST_OK(strlen(ba.constData()) == ba.size());
+	CWT_TEST_OK(ba == "OneTwo");
+
 }
 
 void test_convert_number()
@@ -29,7 +32,7 @@ void test_convert_number()
 	ByteArray ba_double;
 	ba_double.setNumber(double(13.14159));
 	printf("13.14159 == %s\n", ba_double.constData());
-	Logger::trace("13.14159 == %s", ba_double.constData());
+	Logger::trace(_F("13.14159 == %s") % ba_double.constData());
 
 	CWT_TEST_OK(num.toInt(&ok) == 1234 && ok);
 }
@@ -48,7 +51,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(5);
+	CWT_BEGIN_TESTS(6);
 
 	test_append();
 	test_convert_number();

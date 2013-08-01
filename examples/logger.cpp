@@ -1,6 +1,7 @@
 #include <cstdio>
 #include "../include/cwt/logger.hpp"
 #include "../include/cwt/string.hpp"
+#include "../include/cwt/safeformat.hpp"
 
 using namespace cwt;
 
@@ -9,10 +10,9 @@ int main(int argc, char *argv[])
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
 
-    Logger::trace("%s, %s!", "Hello", "World");
-    String s;
-    s.sprintf("%s, %s!", "Hello", "World");
-    Logger::trace("%s", s.c_str());
+    Logger::trace(_F("%s, %s!") % "Hello" % "World");
+    String s(_F("%s, %s!") % "Hello" % "World");
+    Logger::trace(_F("%s") % s);
 
     StdioLogAppender stdlogger;
     stdlogger.setPattern(String("%d{ABSOLUTE} [%p]: %m"));

@@ -1,5 +1,6 @@
-#include <cwt/dl.hpp>
-#include <cwt/logger.hpp>
+#include "../../include/cwt/dl.hpp"
+#include "../../include/cwt/logger.hpp"
+#include "../../include/cwt/safeformat.hpp"
 
 /* TODO need error reporting */
 
@@ -12,7 +13,7 @@ Dl::Handle Dl::open (const String & path, bool global, bool resolve)
 	dlerror(); /* clear error */
 	h = dlopen( path.c_str(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ) );
 	if( !h ) {
-		Logger::error( _Tr("%s: failed to open dynamic library: %s"), path.c_str(), dlerror());
+		Logger::error( _Fr("%s: failed to open dynamic library: %s") % path % dlerror());
 	}
 	return h;
 }
@@ -24,7 +25,7 @@ Dl::Ptr Dl::ptr (Dl::Handle h, const char *symname)
 	dlerror(); /*clear error*/
 	p = dlsym(h, symname);
 	if (!p) {
-		Logger::error(_Tr("%s: symbol not found: %s"), symname, dlerror());
+		Logger::error(_Fr("%s: symbol not found: %s") % symname % dlerror());
 	}
 	return p;
 }

@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(231);
+	CWT_BEGIN_TESTS(225);
 
 	test_byte_helpers();
 	test_int_helpers();

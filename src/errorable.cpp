@@ -6,32 +6,22 @@
  * @brief
  */
 
+#include "../include/cwt/safeformat.hpp"
+#include "../include/cwt/logger.hpp"
+#include "../include/cwt/string.h"
 #include "../include/cwt/errorable.hpp"
 #include <cstdarg>
 
 CWT_NS_BEGIN
 
-void Errorable::addSystemError(int errn, const String &prefix)
+void Errorable::addSystemError(int errn, const String & text)
 {
 	char errstr[SystemErrorBufLen];
 	cwt_strerror(errn, errstr, SystemErrorBufLen);
-	if (prefix.isEmpty()) {
+	if (text.isEmpty()) {
 		addError(String::fromUtf8(errstr));
 	} else {
-		addError(String().sprintf("%s: %s", prefix.c_str(), errstr));
-	}
-}
-
-void Errorable::addSystemError(int errn, const char *prefix, ...)
-{
-	if (!prefix) {
-		addSystemError(errn, String());
-	} else {
-		va_list args;
-		va_start(args, prefix);
-		String s = String().vsprintf(prefix, args);
-		va_end(args);
-		addSystemError(errn, s);
+		addError(_F("%s: %s") % text % errstr);
 	}
 }
 
@@ -41,26 +31,15 @@ void Errorable::logErrors(bool clear)
 	for (Vector<ErrorData>::const_iterator it = m_errors.cbegin()
 			; it != itEnd; ++it) {
 		if (it->ntimes > 1) {
-			Logger::error(_Tr("%s <occured %d times>"), it->errstr.c_str(), it->ntimes);
+			Logger::error(_Fr("%s <occured %d times>") % it->errstr % it->ntimes);
 
 		} else {
-			Logger::error("%s", it->errstr.c_str());
+			Logger::error(_F("%s") % it->errstr);
 		}
 	}
 
 	if (clear)
 		clearErrors();
 }
-
-
-void Errorable::addError(const char * cformat, ...)
-{
-	va_list args;
-	va_start(args, cformat);
-	String s = String().vsprintf(cformat, args);
-	va_end(args);
-	addError(s);
-}
-
 
 CWT_NS_END

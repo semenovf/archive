@@ -6,7 +6,8 @@
  * @brief
  */
 
-#include <cwt/logger.hpp>
+#include "../include/cwt/logger.hpp"
+#include "../include/cwt/safeformat.hpp"
 #include <cstdarg>
 #include <cstdlib>
 #include "logger_p.hpp"
@@ -112,7 +113,7 @@ void LogAppender::setPriority(Logger::Priority level)
 }
 
 
-String LogAppender::patternify(Logger::Priority priority, const String &pattern, const String &msg)
+String LogAppender::patternify(Logger::Priority priority, const String & pattern, const String & msg)
 {
 	LoggerPatternContext ctx;
 	ctx.priority = priority;
@@ -124,7 +125,7 @@ String LogAppender::patternify(Logger::Priority priority, const String &pattern,
 	if (len >= 0 && size_t(len) == pattern.length()) {
 		return ctx.result;
 	}
-	return String().sprintf(_Tr("[<!INVALID PATTERN!>]: %s"), msg.c_str());
+	return _Fr("[<!INVALID PATTERN!>]: %s") % msg;
 }
 
 
@@ -143,52 +144,34 @@ void StringsLogAppender::clear()
 }
 
 
-void Logger::trace(const char * cformat, ...)
+void Logger::trace(const String & text)
 {
-	va_list args;
-	va_start(args, cformat);
-	LogEmitter::instance()->emitTrace(String().vsprintf(cformat, args));
-	va_end(args);
+	LogEmitter::instance()->emitTrace(text);
 }
 
-void Logger::debug(const char * cformat, ...)
+void Logger::debug(const String & text)
 {
-	va_list args;
-	va_start(args, cformat);
-	LogEmitter::instance()->emitDebug(String().vsprintf(cformat, args));
-	va_end(args);
+	LogEmitter::instance()->emitDebug(text);
 }
 
-void Logger::info(const char * cformat, ...)
+void Logger::info(const String & text)
 {
-	va_list args;
-	va_start(args, cformat);
-	LogEmitter::instance()->emitInfo(String().vsprintf(cformat, args));
-	va_end(args);
+	LogEmitter::instance()->emitInfo(text);
 }
 
-void Logger::warn(const char * cformat, ...)
+void Logger::warn(const String & text)
 {
-	va_list args;
-	va_start(args, cformat);
-	LogEmitter::instance()->emitWarn(String().vsprintf(cformat, args));
-	va_end(args);
+	LogEmitter::instance()->emitWarn(text);
 }
 
-void Logger::error(const char * cformat, ...)
+void Logger::error(const String & text)
 {
-	va_list args;
-	va_start(args, cformat);
-	LogEmitter::instance()->emitError(String().vsprintf(cformat, args));
-	va_end(args);
+	LogEmitter::instance()->emitError(text);
 }
 
-void Logger::fatal(const char * cformat, ...)
+void Logger::fatal(const String & text)
 {
-	va_list args;
-	va_start(args, cformat);
-	LogEmitter::instance()->emitFatal(String().vsprintf(cformat, args));
-	va_end(args);
+	LogEmitter::instance()->emitFatal(text);
 	abort();
 }
 

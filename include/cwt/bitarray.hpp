@@ -10,6 +10,7 @@
 #define __CWT_BITARRAY_HPP__
 
 #include <cwt/cwt.hpp>
+#include <cwt/array.hpp>
 #include <cwt/pimpl.hpp>
 
 CWT_NS_BEGIN
@@ -21,42 +22,81 @@ CWT_NS_BEGIN
 
 class DLL_API BitArray
 {
-	CWT_PIMPL_DECL_COPYABLE(BitArray);
+	struct Data {
+		Array<uint32_t> a;
+		size_t          nbits;
+	};
+
+	CWT_PIMPL_COPYABLE(BitArray, Data);
 
 public:
 	BitArray ();
 	BitArray (size_t size, bool value = false);
 
-	bool	at (size_t i) const;
-	void	clear ();
-	void	clearBit (size_t i);
-	size_t  count () const;
-	size_t  count (bool on) const;
-	bool	fill (bool value);
-	bool	fill (bool value, size_t size);
-	void	fill (bool value, size_t begin, size_t end);
-	bool	isEmpty () const;
-	void	resize (size_t size);
-	void	setBit (size_t i);
-	void	setBit (size_t i, bool value);
-	size_t  size () const;
-	bool	testBit (size_t i) const;
+	bool	at        (size_t i) const { return testBit(i); }
+	void	clear     ()               { detach(); pimpl->nbits = 0; }
+	void	clearBit  (size_t i);
+	void	setBit    (size_t i);
+	void	setBit    (size_t i, bool value) { if (value) setBit(i); else clearBit(i); }
+	bool	testBit   (size_t i) const;
 	bool	toggleBit (size_t i);
-	void	truncate (size_t pos);
 
-	bool	  operator != (const BitArray& other) const;
-	BitArray& operator &= (const BitArray& other);
-	bool	  operator == (const BitArray& other) const;
+	size_t  count () const { return pimpl->nbits; }
+	size_t  size () const  { return pimpl->nbits; }
+	size_t  count (bool on) const;
+
+	void	fill (bool value) { fill(value, size()); }
+	void	fill (bool value, size_t size) { detach(); *this = BitArray(size, value); }
+	void	fill (bool value, size_t begin, size_t end);
+	bool	isEmpty () const { return pimpl->nbits == 0; }
+	void	resize (size_t size);
+	void	truncate (size_t pos) { if (pos < size()) resize(pos); }
+
+	bool	  operator != (const BitArray & other) const;
+	bool	  operator == (const BitArray & other) const;
+	BitArray& operator &= (const BitArray & other);
 	//QBitRef	operator[] ( uint i )
 	bool	  operator [] (size_t i ) const;
-	BitArray& operator ^= (const BitArray& other );
-	BitArray& operator |= (const BitArray& other );
+	BitArray& operator ^= (const BitArray & other);
+	BitArray& operator |= (const BitArray & other);
 	BitArray  operator ~  () const;
 
-	friend BitArray	operator & (const BitArray& a1, const BitArray& a2);
-	friend BitArray	operator ^ (const BitArray& a1, const BitArray& a2);
-	friend BitArray	operator | (const BitArray& a1, const BitArray& a2);
+	friend BitArray	operator & (const BitArray & a1, const BitArray & a2);
+	friend BitArray	operator ^ (const BitArray & a1, const BitArray & a2);
+	friend BitArray	operator | (const BitArray & a1, const BitArray & a2);
 };
+
+inline void BitArray::clearBit(size_t i)
+{
+	detach();
+	CWT_ASSERT(i < size());
+	*(pimpl->a.data() + 1 + (i >> 5)) &= ~ uint32_t(1 << (i & 31));
+}
+
+inline void BitArray::setBit(size_t i)
+{
+	detach();
+	CWT_ASSERT(i < size());
+	*(pimpl->a.data() + 1 + (i >> 5)) |= uint32_t(1 << (i & 31));
+}
+
+
+inline bool BitArray::testBit(size_t i) const
+{
+	CWT_ASSERT(i < size());
+	return  (*(pimpl->a.constData() + 1 + (i >> 5)) & (1 << (i & 31))) != 0;
+}
+
+inline bool BitArray::toggleBit(size_t i)
+{
+	detach();
+	CWT_ASSERT(i < size());
+	byte_t b = byte_t(1 << (i & 31));
+	byte_t *p = pimpl->a.data() + 1 + (i >> 5);
+	byte_t c = byte_t(*p & b);
+	*p ^= b;
+	return c != 0;
+}
 
 CWT_NS_END
 

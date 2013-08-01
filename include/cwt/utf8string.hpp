@@ -12,6 +12,7 @@
 #include <cwt/pimpl.hpp>
 #include <cwt/bytearray.hpp>
 #include <cwt/unicode.hpp>
+//#include <cwt/safeformat.hpp>
 
 CWT_NS_BEGIN
 
@@ -259,9 +260,6 @@ public:
 	Utf8String & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
 	Utf8String & setNumber (float n, char f = 'g', int prec = 6) { return setNumber(double(n), f, prec); }
 	Utf8String & setNumber (double n, char f = 'g', int prec = 6);
-
-	Utf8String & sprintf(const char * cformat, ...);
-	Utf8String & vsprintf(const char *cformat, va_list ap);
 
 #ifdef __NOT_IMPLEMENTED_YET__
 	void     truncate(size_t count);

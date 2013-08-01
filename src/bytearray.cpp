@@ -350,9 +350,10 @@ ByteArray ByteArray::toBase64 () const
 		            "ghijklmn" "opqrstuv" "wxyz0123" "456789+/";
     const char padchar = '=';
     int padlen = 0;
+    ByteArray tmp;
     size_t sz = size();
 
-    ByteArray tmp((sz * 4) / 3 + 3, 0);
+    tmp.reserve((sz * 4) / 3 + 3);
 
     size_t i = 0;
     const char * d = constData();

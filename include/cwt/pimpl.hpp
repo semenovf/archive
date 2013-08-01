@@ -21,6 +21,24 @@ private:                                                                       \
     shared_ptr<Impl> pimpl; // TODO may be unique_ptr<> is more suitable in this case
 
 
+#define CWT_PIMPL_COPYABLE(Class, Impl)                                        \
+public:                                                                        \
+	Class(const Class &other) : pimpl(other.pimpl) {}                          \
+	Class& operator = (const Class &other) {                                   \
+		pimpl = other.pimpl; return *this;                                     \
+	}                                                                          \
+private:                                                                       \
+	void Class::detach()                                                       \
+    {                                                                          \
+		if (!pimpl.unique()) {                                                 \
+			shared_ptr<Impl> __d(new Impl(*pimpl));                            \
+			pimpl.swap(__d);                                                   \
+		}                                                                      \
+	}                                                                          \
+private:                                                                       \
+    shared_ptr<Impl> pimpl;                                                    \
+
+
 #define CWT_PIMPL_DECL_COPYABLE(Class)                                         \
 public:                                                                        \
 	Class(const Class &other) : pimpl(other.pimpl) {}                          \
