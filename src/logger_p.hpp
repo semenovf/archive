@@ -33,12 +33,12 @@ struct LoggerPatternContext
 };
 
 const String __priority_str[] = {
-	  String(_Tr("Trace"))
-	, String(_Tr("Debug"))
-	, String(_Tr("Info"))
-	, String(_Tr("Warn"))
-	, String(_Tr("Error"))
-	, String(_Tr("Fatal"))
+	  _u8("Trace")
+	, _u8("Debug")
+	, _u8("Info")
+	, _u8("Warn")
+	, _u8("Error")
+	, _u8("Fatal")
 };
 
 static bool begin_spec        (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *action_args);
@@ -134,7 +134,6 @@ static FsmTransition<String> pattern_fsm[] = {
 
 
 static bool begin_spec (const String::const_iterator & , const String::const_iterator & , void *context, void *)
-//static bool begin_spec(const void *data, size_t len, void *context, void *action_args)
 {
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	ctx->pspec.spec_char = 0;
@@ -145,9 +144,7 @@ static bool begin_spec (const String::const_iterator & , const String::const_ite
 	return true;
 }
 
-
 static bool end_spec (const String::const_iterator & , const String::const_iterator & , void *context, void *)
-//static bool end_spec(const void *data, size_t len, void *context, void *action_args)
 {
 	LoggerPatternContext *ctx = reinterpret_cast<LoggerPatternContext *>(context);
 	char spec_char = char(ctx->pspec.spec_char);
@@ -245,7 +242,7 @@ static bool set_min_width (const String::const_iterator & begin, const String::c
 		String n(begin, end);
 		ctx->pspec.min_width = n.toUInt(&ok);
 		if (!ok) {
-			fprintf(stderr, _Tr("[<!LOGGER PATTERN: BAD PADDING VALUE!>]"));
+			CWT_ERROR(_Tr("Bad padding value in Logger pattern"));
 		}
 	}
 	return true;
@@ -259,7 +256,7 @@ static bool set_max_width (const String::const_iterator & begin, const String::c
 		String n(begin, end);
 		ctx->pspec.max_width = n.toUInt(&ok);
 		if (!ok) {
-			fprintf(stderr, _Tr("[<!LOGGER PATTERN: BAD TRUNCATION VALUE!>]"));
+			CWT_ERROR(_Tr("Bad truncation value in Logger pattern"));
 		}
 	}
 	return true;

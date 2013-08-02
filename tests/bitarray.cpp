@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#include <cwt/test.h>
-#include <cwt/bitarray.hpp>
+#include "../include/cwt/test.h"
+#include "../include/cwt/bitarray.hpp"
 #include <cstring>
 
 using namespace cwt;
@@ -48,53 +48,55 @@ void test_set_bits()
 
 void test_logic_operations()
 {
-	BitArray ba1(10), ba2(10);
+	for(size_t sz = 2; sz < 1034; sz += 2) {
+		BitArray ba1(sz), ba2(sz);
 
-	ba1.fill(true);
-	ba2.fill(false);
-	CWT_TEST_OK(ba1 != ba2);
+		ba1.fill(true);
+		ba2.fill(false);
+		CWT_TEST_OK(ba1 != ba2);
 
-	ba2.fill(true);
-	CWT_TEST_OK(ba1 == ba2);
+		ba2.fill(true);
+		CWT_TEST_OK(ba1 == ba2);
 
-	ba2 = ~ba2;
-	CWT_TEST_OK(ba2.count(false) == ba2.size());
+		ba2 = ~ba2;
+		CWT_TEST_OK(ba2.count(false) == ba2.size());
 
-	ba1.fill(true);
-	ba2.truncate(ba1.size());
-	ba2.fill(true);
+		ba1.fill(true);
+		ba2.truncate(ba1.size());
+		ba2.fill(true);
 
-	for(size_t i = 0, j = ba1.size()/2; i < ba1.size()/2; ++i, ++j) {
-		ba1.toggleBit(i);
-		ba2.toggleBit(j);
+		for(size_t i = 0, j = ba1.size()/2; i < ba1.size()/2; ++i, ++j) {
+			ba1.toggleBit(i);
+			ba2.toggleBit(j);
+		}
+
+		CWT_TEST_OK(ba1.count(false) == ba1.size()/2);
+		CWT_TEST_OK(ba2.count(true) == ba2.size()/2);
+		CWT_TEST_OK(ba1 != ba2);
+
+		BitArray ba = ba1 | ba2;
+		CWT_TEST_OK(ba.size() == ba1.size());
+		CWT_TEST_OK(ba.count(true) == ba.size());
+
+		ba = ba1 & ba2;
+		CWT_TEST_OK(ba.count(false) == ba.size());
+
+		ba = ba1 ^ ba2;
+		CWT_TEST_OK(ba.count(true) == ba.size());
+
+		ba = ba ^ ba1;
+		CWT_TEST_OK(ba == ba2);
+
+		ba = ba ^ ba2;
+		CWT_TEST_OK(ba.count(false) == ba.size());
 	}
-
-	CWT_TEST_OK(ba1.count(false) == ba1.size()/2);
-	CWT_TEST_OK(ba2.count(true) == ba2.size()/2);
-	CWT_TEST_OK(ba1 != ba2);
-
-	BitArray ba = ba1 | ba2;
-	CWT_TEST_OK(ba.size() == ba1.size());
-	CWT_TEST_OK(ba.count(true) == ba.size());
-
-	ba = ba1 & ba2;
-	CWT_TEST_OK(ba.count(false) == ba.size());
-
-	ba = ba1 ^ ba2;
-	CWT_TEST_OK(ba.count(true) == ba.size());
-
-	ba = ba ^ ba1;
-	CWT_TEST_OK(ba == ba2);
-
-	ba = ba ^ ba2;
-	CWT_TEST_OK(ba.count(false) == ba.size());
 }
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(19);
+	CWT_BEGIN_TESTS(6199);
 
 	test_set_bits();
 	test_logic_operations();

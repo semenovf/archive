@@ -84,7 +84,7 @@ bool Uuid::parse(const String & s)
 
 String Uuid::toString(const uuid_t &uuid)
 {
-	return _F("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x")
+	return _Fr("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x")
 		% uuid.time_low
 		% uuid.time_mid
 		% uuid.time_hi_and_version

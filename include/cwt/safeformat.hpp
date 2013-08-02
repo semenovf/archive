@@ -10,10 +10,11 @@
 
 #include <cwt/fsm.hpp>
 #include <cwt/unitype.hpp>
+#include <cwt/string.hpp>
+#include <cwt/bytearray.hpp>
 #include <cwt/shared_ptr.hpp>
 
-#define _F(s)  cwt::SafeFormat(s)
-#define _Fr(s) cwt::SafeFormat(_Tr(s))
+#define _Fr(s) cwt::SafeFormat(_u8(s))
 
 CWT_NS_BEGIN
 

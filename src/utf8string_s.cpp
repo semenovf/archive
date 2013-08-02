@@ -141,18 +141,18 @@ ssize_t Utf8String::encodeUcs4(char *utf8, size_t size, uint32_t ucs4)
 }
 
 
-Utf8String Utf8String::fromUtf8 (const ByteArray &utf8, bool * pok)
+Utf8String Utf8String::fromUtf8 (const ByteArray &utf8, bool * pok, size_t * nremain)
 {
-	return fromUtf8(utf8.data(), utf8.size(), pok);
+	return fromUtf8(utf8.data(), utf8.size(), pok, nremain);
 }
 
 
-Utf8String Utf8String::fromUtf8 (const char *utf8, bool * pok)
+Utf8String Utf8String::fromUtf8 (const char *utf8, bool * pok, size_t * nremain)
 {
-	return fromUtf8(utf8, strlen(utf8), pok);
+	return fromUtf8(utf8, strlen(utf8), pok, nremain);
 }
 
-Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok)
+Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok, size_t * nremain)
 {
 	Utf8String r;
 	const char *cursor = utf8;
@@ -171,10 +171,13 @@ Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok)
 			(*r.pimpl)[i++] = ReplacementChar;
 			ok = false;
 			++cursor;
-		} else if(n == -2) {
-			size_t nremain = size_t(end - cursor);
-			for (size_t j = 0; j < nremain; ++j)
-				(*r.pimpl)[i++] = ReplacementChar;
+		} else if (n == -2) {
+			if (nremain) {
+				*nremain = size_t(end - cursor);
+			} else {
+				for (size_t j = size_t(end - cursor); j > 0; --j)
+					(*r.pimpl)[i++] = ReplacementChar;
+			}
 			ok = false;
 			cursor = end;
 		} else {

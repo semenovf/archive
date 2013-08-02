@@ -28,7 +28,7 @@ public:                                                                        \
 		pimpl = other.pimpl; return *this;                                     \
 	}                                                                          \
 private:                                                                       \
-	void Class::detach()                                                       \
+	void detach()                                                              \
     {                                                                          \
 		if (!pimpl.unique()) {                                                 \
 			shared_ptr<Impl> __d(new Impl(*pimpl));                            \

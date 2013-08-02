@@ -30,6 +30,9 @@ public:
 	void        alloc (size_t capacity);
 	T&          at(size_t index) { CWT_ASSERT(index < m_capacity); return m_head[index]; }
 	const T&    at(size_t index) const { CWT_ASSERT(index < m_capacity); return m_head[index]; }
+	int         compare (size_t pos, const Array & other, size_t subpos, size_t len) const;
+	int         compare (const Array & other, size_t len) const { return compare(0, other, 0, len); }
+	int         compare (const Array & other) const { return compare(0, other, 0, other.m_capacity); }
 	void        bzero ()      { if(m_head) ::memset(m_head, 0, m_capacity * sizeof(T)); }
 	void        set   (int c) { if(m_head) ::memset(m_head, c, m_capacity * sizeof(T)); }
 	void        set   (int c, size_t off) { CWT_ASSERT(off < m_capacity); if(m_head) ::memset(m_head + off, c, (m_capacity - off) * sizeof(T)); }
@@ -45,6 +48,7 @@ public:
 	size_t      capacity() const { return m_capacity; }
 	void        swap(Array<T> & other);
 
+
 	T&          operator [] (size_t index) { return at(index); }
 	const T&    operator [] (size_t index) const { return at(index); }
 
@@ -57,7 +61,7 @@ public:
 
 template <typename T>
 inline Array<T>::Array(T a[], size_t n)
-	: m_capacity(0), m_raw(1), m_head(NULL)
+	: m_capacity(0), m_raw(1), m_head(nullptr)
 {
 	if (a) {
 		m_capacity = n;
@@ -67,18 +71,20 @@ inline Array<T>::Array(T a[], size_t n)
 
 template <typename T>
 inline Array<T>::Array(const Array &a)
-	: m_capacity(a.m_capacity), m_raw(0), m_head(NULL)
+	: m_capacity(a.m_capacity), m_raw(0), m_head(nullptr)
 {
-	copy(*this, a, 0, 0, a.m_capacity);
+	if (a.m_capacity > 0) {
+		alloc(a.m_capacity);
+		copy(*this, a, 0, 0, a.m_capacity);
+	}
 }
 
 template <typename T>
-Array<T>::Array(size_t sz, bool zero)
-	: m_capacity(0), m_raw(0), m_head(NULL)
+inline Array<T>::Array(size_t sz, bool zero)
+	: m_capacity(0), m_raw(0), m_head(nullptr)
 {
 	if (sz) {
-		m_head = new T[sz];
-		m_capacity = sz;
+		alloc(sz);
 
 		if (zero) {
 			bzero();
@@ -102,6 +108,13 @@ inline void Array<T>::alloc (size_t size)
 	m_head = new T[size];
 	m_raw = 0;
 	m_capacity = size;
+}
+
+template <typename T>
+inline int Array<T>::compare (size_t pos, const Array & other, size_t subpos, size_t len) const
+{
+	CWT_ASSERT(pos < m_capacity && subpos < other.m_capacity);
+	return memcmp(m_head + pos, other.m_head + subpos, len * sizeof(T));
 }
 
 template <typename T>

@@ -30,7 +30,7 @@ void test_bytearray_hash()
     	ByteArray sample(str);
     	ByteArray value(hash[str]);
     	CWT_TEST_OK2(strcmp(value.data(),sample.data()) == 0
-    			, String(_F("[%s] == [%s]") % value % str).c_str());
+    			, String(_Fr("[%s] == [%s]") % value % str).c_str());
     }
 }
 
@@ -38,16 +38,16 @@ void test_string_hash()
 {
     Hash<String, String> hash;
     for(int i = 0; i < 2000; i++) {
-    	String str(_F("Test string %d") % i);
+    	String str(_Fr("Test string %d") % i);
     	hash.insert(str, str);
     }
 
     for(int i = 0; i < 2000; i++) {
-    	String str(_F("Test string %d") % i);
+    	String str(_Fr("Test string %d") % i);
     	String sample(str);
     	String value(hash[str]);
     	CWT_TEST_OK2(sample == value
-    			, String(_F("[%s] == [%s]") % value % sample).c_str());
+    			, String(_Fr("[%s] == [%s]") % value % sample).c_str());
     }
 }
 

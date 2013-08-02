@@ -12,15 +12,12 @@
 #include <cwt/pimpl.hpp>
 #include <cwt/bytearray.hpp>
 #include <cwt/unicode.hpp>
-//#include <cwt/safeformat.hpp>
 
 CWT_NS_BEGIN
 
 // Qt   QString
 // C#
 // Java
-
-typedef uint32_t UChar;
 
 struct DLL_API Utf8Entry
 {
@@ -277,9 +274,9 @@ public:
 	friend bool	operator >  (const Utf8String &s1, const Utf8String &s2);
 	friend bool	operator >= (const Utf8String &s1, const Utf8String &s2);
 
-	static Utf8String fromUtf8   (const ByteArray &str, bool * ok = nullptr);
-	static Utf8String fromUtf8   (const char *utf8, bool * ok = nullptr);
-	static Utf8String fromUtf8   (const char *utf8, size_t size, bool * ok = nullptr);
+	static Utf8String fromUtf8   (const ByteArray &str, bool * ok = nullptr, size_t * nremain = nullptr);
+	static Utf8String fromUtf8   (const char *utf8, bool * ok = nullptr, size_t * nremain = nullptr);
+	static Utf8String fromUtf8   (const char *utf8, size_t size, bool * ok = nullptr, size_t * nremain = nullptr);
 	static Utf8String fromLatin1 (const char * latin1, size_t size, bool * ok = nullptr);
 	static Utf8String fromLatin1 (const char * latin1, bool * ok = nullptr);
 

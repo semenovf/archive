@@ -21,7 +21,7 @@ void Errorable::addSystemError(int errn, const String & text)
 	if (text.isEmpty()) {
 		addError(String::fromUtf8(errstr));
 	} else {
-		addError(_F("%s: %s") % text % errstr);
+		addError(_Fr("%s: %s") % text % errstr);
 	}
 }
 
@@ -34,7 +34,7 @@ void Errorable::logErrors(bool clear)
 			Logger::error(_Fr("%s <occured %d times>") % it->errstr % it->ntimes);
 
 		} else {
-			Logger::error(_F("%s") % it->errstr);
+			Logger::error(it->errstr);
 		}
 	}
 

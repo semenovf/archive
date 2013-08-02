@@ -12,6 +12,8 @@
 
 CWT_NS_BEGIN
 
+typedef uint32_t UChar;
+
 class DLL_API Unicode
 {
 public:

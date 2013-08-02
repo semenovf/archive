@@ -23,7 +23,7 @@ BitArray::BitArray(size_t size, bool value) : pimpl(new BitArray::Data)
         return;
     }
 
-    pimpl->a.alloc(1 + size/32);
+    pimpl->a.alloc(size/32 + (size % 32 ? 1 : 0));
     pimpl->a.set(value ? 0xffffffff : 0);
 
     pimpl->nbits = size;
@@ -71,25 +71,24 @@ size_t BitArray::count (bool on) const
     size_t len = size();
 
     // See http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-    const byte_t *bits = pimpl->a.data();
+    const uint32_t *bits = pimpl->a.data();
 
     while (len >= 32) {
     	uint32_t v = *bits;
-    	v = v - ((v >> 1) & 0x55555555);                    // reuse input as temporary
-    	v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     // temp
-    	uint32_t c = ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+    	v = v - ((v >> 1) & 0x55555555);
+    	v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
+    	uint32_t c = (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24; // count
 
         len -= 32;
         ++bits;
         r += c;
     }
 
-    int i = int(len); // len is < 32
-    while (i >= 0) {
-        if (*bits & (1 << (i & 31)))
-            ++r;
-        --i;
-    }
+	while (len > 0) {
+		if (*bits & (1 << ((len - 1) & 31)))
+			++r;
+		--len;
+	}
 
     return on ? r : size() - r;
 }
@@ -175,9 +174,9 @@ void BitArray::resize (size_t new_size)
     	pimpl->nbits = 0;
     } else {
     	if (new_size > size()) {
-    		Array<uint32_t> *a = pimpl.get();
+    		Array<uint32_t> *a = & pimpl->a;
     		size_t old_nchunks = a->size();
-    		size_t new_nchunks = 1 + new_size/32;
+    		size_t new_nchunks = new_size/32 + (new_size % 32 ? 1 : 0);
 
     		a->realloc(new_nchunks);
     		if (new_nchunks > old_nchunks) {
@@ -185,7 +184,7 @@ void BitArray::resize (size_t new_size)
     		}
 
     		if (pimpl->nbits % 32) {
-    			a[old_nchunks/32] &= (1 << (pimpl->nbits % 32)) - 1;
+    			(*a)[old_nchunks] &= (1 << (pimpl->nbits % 32)) - 1;
     		}
     	}
     	pimpl->nbits = new_size;
@@ -255,7 +254,8 @@ void BitArray::resize (size_t new_size)
  */
 bool BitArray::operator != (const BitArray & other) const
 {
-	return pimpl->operator != (*other.pimpl);
+	return !(pimpl->nbits == other.pimpl->nbits
+			&& pimpl->a.compare(other.pimpl->a, pimpl->a.size()) == 0);
 }
 
 /**
@@ -268,7 +268,8 @@ bool BitArray::operator != (const BitArray & other) const
  */
 bool BitArray::operator == (const BitArray& other) const
 {
-	return pimpl->operator == (*other.pimpl);
+	return pimpl->nbits == other.pimpl->nbits
+			&& pimpl->a.compare(other.pimpl->a, pimpl->a.size()) == 0;
 }
 
 
@@ -282,11 +283,6 @@ bool BitArray::operator == (const BitArray& other) const
  * @param i Index position.
  * @return The bit value at index position @c i.
  */
-bool BitArray::operator [] (size_t i ) const
-{
-	CWT_ASSERT(i <= CWT_INT_MAX);
-	return pimpl->operator [] (int(i));
-}
 
 /**
  * @fn BitArray& BitArray::operator &= (const BitArray& other).
@@ -302,12 +298,24 @@ bool BitArray::operator [] (size_t i ) const
  * @return Reference to modified bit array.
  */
 
-BitArray& BitArray::operator &= (const BitArray& other)
+BitArray& BitArray::operator &= (const BitArray & other)
 {
 	detach();
-	pimpl->operator &= (*other.pimpl);
-	return *this;
+
+    resize(CWT_MAX(size(), other.size()));
+
+    uint32_t * a1 = pimpl->a.data();
+    const uint32_t * a2 = other.pimpl->a.constData();
+    size_t n = other.pimpl->a.size();
+    size_t p = pimpl->a.size() - n;
+
+    while (n-- > 0)
+        *a1++ &= *a2++;
+    while (p-- > 0)
+        *a1++ = 0;
+    return *this;
 }
+
 /**
  * @fn BitArray& BitArray::operator ^= (const BitArray& other)
  *
@@ -324,8 +332,14 @@ BitArray& BitArray::operator &= (const BitArray& other)
 BitArray& BitArray::operator ^= (const BitArray& other)
 {
 	detach();
-	pimpl->operator ^= (*other.pimpl);
-	return *this;
+    resize(CWT_MAX(size(), other.size()));
+
+    uint32_t *a1 = pimpl->a.data();
+    const uint32_t *a2 = other.pimpl->a.constData();
+    size_t n = other.pimpl->a.size();
+    while (n-- > 0)
+        *a1++ ^= *a2++;
+    return *this;
 }
 
 /**
@@ -341,11 +355,17 @@ BitArray& BitArray::operator ^= (const BitArray& other)
  * @param other Second argument for operation.
  * @return
  */
-BitArray& BitArray::operator |= (const BitArray& other )
+BitArray& BitArray::operator |= (const BitArray & other)
 {
 	detach();
-	pimpl->operator |= (*other.pimpl);
-	return *this;
+    resize(CWT_MAX(size(), other.size()));
+
+    uint32_t *a1 = pimpl->a.data();
+    const uint32_t *a2 = other.pimpl->a.constData();
+    size_t n = other.pimpl->a.size();
+    while (n-- > 0)
+        *a1++ |= *a2++;
+    return *this;
 }
 
 /**
@@ -357,9 +377,22 @@ BitArray& BitArray::operator |= (const BitArray& other )
  */
 BitArray BitArray::operator ~ () const
 {
-	BitArray ba;
-	*ba.pimpl = BitArray::Impl(pimpl->operator ~ ());
-	return ba;
+    size_t sz = size();
+    BitArray a(sz);
+
+    const uint32_t *a1 = pimpl->a.constData();
+    uint32_t *a2 = a.pimpl->a.data();
+
+    size_t n = pimpl->a.size();
+
+    while (n-- > 0)
+        *a2++ = ~*a1++;
+
+//	if (pimpl->nbits && pimpl->nbits % 32) {
+//		*a2 &= (1 << (sz % 32)) - 1;
+//	}
+
+    return a;
 }
 
 /**
@@ -375,11 +408,11 @@ BitArray BitArray::operator ~ () const
  * @param a2 Second argument of operation.
  * @return Result of AND operation.
  */
-BitArray operator & (const BitArray& a1, const BitArray& a2)
+DLL_API BitArray operator & (const BitArray& a1, const BitArray& a2)
 {
-	BitArray ba;
-	*ba.pimpl = BitArray::Impl(operator & (*a1.pimpl, *a2.pimpl));
-	return ba;
+	BitArray tmp(a1);
+	tmp &= a2;
+	return tmp;
 }
 
 /**
@@ -395,11 +428,11 @@ BitArray operator & (const BitArray& a1, const BitArray& a2)
  * @param a2 Second argument of operation.
  * @return Result of XOR operation.
  */
-BitArray operator ^ (const BitArray& a1, const BitArray& a2)
+DLL_API BitArray operator ^ (const BitArray& a1, const BitArray& a2)
 {
-	BitArray ba;
-	*ba.pimpl = BitArray::Impl(operator ^ (*a1.pimpl, *a2.pimpl));
-	return ba;
+	BitArray tmp(a1);
+	tmp ^= a2;
+	return tmp;
 }
 
 /**
@@ -415,11 +448,11 @@ BitArray operator ^ (const BitArray& a1, const BitArray& a2)
  * @param a2 Second argument of operation.
  * @return Result of OR operation.
  */
-BitArray operator | (const BitArray& a1, const BitArray& a2)
+DLL_API BitArray operator | (const BitArray& a1, const BitArray& a2)
 {
-	BitArray ba;
-	*ba.pimpl = BitArray::Impl(operator | (*a1.pimpl, *a2.pimpl));
-	return ba;
+	BitArray tmp(a1);
+	tmp |= a2;
+	return tmp;
 }
 
 

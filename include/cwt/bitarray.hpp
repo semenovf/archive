@@ -52,48 +52,47 @@ public:
 	void	resize (size_t size);
 	void	truncate (size_t pos) { if (pos < size()) resize(pos); }
 
+	bool	  operator [] (size_t i ) const { return testBit(i); }
 	bool	  operator != (const BitArray & other) const;
 	bool	  operator == (const BitArray & other) const;
 	BitArray& operator &= (const BitArray & other);
-	//QBitRef	operator[] ( uint i )
-	bool	  operator [] (size_t i ) const;
 	BitArray& operator ^= (const BitArray & other);
 	BitArray& operator |= (const BitArray & other);
 	BitArray  operator ~  () const;
 
-	friend BitArray	operator & (const BitArray & a1, const BitArray & a2);
-	friend BitArray	operator ^ (const BitArray & a1, const BitArray & a2);
-	friend BitArray	operator | (const BitArray & a1, const BitArray & a2);
+	friend DLL_API BitArray	operator & (const BitArray & a1, const BitArray & a2);
+	friend DLL_API BitArray	operator ^ (const BitArray & a1, const BitArray & a2);
+	friend DLL_API BitArray	operator | (const BitArray & a1, const BitArray & a2);
 };
 
 inline void BitArray::clearBit(size_t i)
 {
 	detach();
 	CWT_ASSERT(i < size());
-	*(pimpl->a.data() + 1 + (i >> 5)) &= ~ uint32_t(1 << (i & 31));
+	*(pimpl->a.data() + (i >> 5)) &= ~ uint32_t(1 << (i & 31));
 }
 
 inline void BitArray::setBit(size_t i)
 {
 	detach();
 	CWT_ASSERT(i < size());
-	*(pimpl->a.data() + 1 + (i >> 5)) |= uint32_t(1 << (i & 31));
+	*(pimpl->a.data() + (i >> 5)) |= uint32_t(1 << (i & 31));
 }
 
 
 inline bool BitArray::testBit(size_t i) const
 {
 	CWT_ASSERT(i < size());
-	return  (*(pimpl->a.constData() + 1 + (i >> 5)) & (1 << (i & 31))) != 0;
+	return  (*(pimpl->a.constData() + (i >> 5)) & (1 << (i & 31))) != 0;
 }
 
 inline bool BitArray::toggleBit(size_t i)
 {
 	detach();
 	CWT_ASSERT(i < size());
-	byte_t b = byte_t(1 << (i & 31));
-	byte_t *p = pimpl->a.data() + 1 + (i >> 5);
-	byte_t c = byte_t(*p & b);
+	uint32_t b = uint32_t(1 << (i & 31));
+	uint32_t *p = pimpl->a.data() + (i >> 5);
+	uint32_t c = uint32_t(*p & b);
 	*p ^= b;
 	return c != 0;
 }
