@@ -6,6 +6,8 @@
  */
 
 #include "../include/cwt/io/file.hpp"
+#include <cwt/logger.hpp>
+#include <cwt/safeformat.hpp>
 #include <cerrno>
 #include <fcntl.h>
 #include <unistd.h>
@@ -91,7 +93,7 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 	fd = ::open(path, native_oflags);
 
 	if (fd < 0) {
-		ex->addSystemError(errno, _Tr("failed to open '%s'"), path);
+		ex->addSystemError(errno, _Fr("Failed to open '%s'") % path);
 		return false;
 	}
 	m_fd = fd;
@@ -123,8 +125,8 @@ ssize_t File::Impl::readBytes(Errorable *ex, char bytes[], size_t n)
 
 	sz = ::read(m_fd, bytes, n);
 	if (sz < 0) {
-		ex->addSystemError(errno, _Tr("failed to read from file (%s)")
-				, m_path != NULL ? m_path : "" );
+		ex->addSystemError(errno
+			, _Fr("Failed to read from file (%s)") % (m_path != NULL ? m_path : ""));
 	}
 	return sz;
 }
@@ -135,8 +137,8 @@ ssize_t File::Impl::writeBytes(Errorable *ex, const char bytes[], size_t n)
 
 	sz = ::write(m_fd, bytes, n);
 	if( sz < 0 ) {
-		ex->addSystemError(errno, _Tr("failed to write to file (%s)")
-				, m_path != NULL ? m_path : "" );
+		ex->addSystemError(errno
+			, _Fr("failed to write to file (%s)") % (m_path != NULL ? m_path : ""));
 	}
 	return sz;
 }
@@ -190,8 +192,8 @@ bool File::Impl::setPermissions(Errorable *ex, int perms)
 	CWT_ASSERT(m_path);
 
 	if (::chmod(m_path, permsToMode(perms)) != 0) {
-		ex->addSystemError(errno, _Tr("failed to change permissions to file (%s)")
-				, m_path != NULL ? m_path : "");
+		ex->addSystemError(errno
+			, _Fr("failed to change permissions to file (%s)") % (m_path != NULL ? m_path : ""));
 		return false;
 	}
 
@@ -203,8 +205,8 @@ bool File::Impl::setPermissions(const char *path, int perms)
 	CWT_ASSERT(path);
 
 	if (::chmod(path, permsToMode(perms)) != 0) {
-		Logger::error(_Tr("failed to change permissions to file (%s)")
-				, path != NULL ? path : "");
+		Logger::error(_Fr("failed to change permissions to file (%s)")
+				% (path != NULL ? path : ""));
 		return false;
 	}
 

@@ -8,7 +8,8 @@
 #ifndef __CWT_UTF8CODEC_HPP__
 #define __CWT_UTF8CODEC_HPP__
 
-#include <cwt/cwt.hpp>
+#include <cwt/unicode.hpp>
+#include <cwt/shared_ptr.hpp>
 
 CWT_NS_BEGIN
 
@@ -32,6 +33,7 @@ public:
 
 	ssize_t convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 	bool isValid() const { return m_invalidCount == size_t(0); }
+	size_t invalidCount() { return m_invalidCount; }
 
 private:
 	T      m_replacementChar;
@@ -63,6 +65,7 @@ public:
 
 	ssize_t convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 	bool isValid() const { return m_invalidCount == size_t(0); }
+	size_t invalidCount() { return m_invalidCount; }
 
 private:
 	bool    m_ignoreHeader;
@@ -76,6 +79,56 @@ typedef UcsUtf8Codec<uint32_t, 0x10ffff> Ucs4Utf8Codec;
 
 extern template ssize_t Ucs2Utf8Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 extern template ssize_t Ucs4Utf8Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+
+
+class DLL_API Utf8BytesCodec
+{
+public:
+	static const char ReplacementChar = '?';
+	static const size_t BufferSize = 256;
+public:
+	typedef char orig_char_type;
+	typedef char dest_char_type;
+
+protected:
+	Utf8BytesCodec(char replacement = ReplacementChar) : m_utf8Ucs4Codec(UChar(replacement)) {}
+
+public:
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain) = 0;
+	bool isValid() const { return m_utf8Ucs4Codec.isValid(); }
+
+protected:
+	Utf8Ucs4Codec m_utf8Ucs4Codec;
+	UChar         m_buffer[BufferSize];
+};
+
+class DLL_API Utf8Utf8Codec : public Utf8BytesCodec
+{
+public:
+	Utf8Utf8Codec(char replacement = ReplacementChar) : Utf8BytesCodec(replacement) {}
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
+};
+
+class DLL_API Utf8Encoder
+{
+public:
+
+public:
+	typedef char orig_char_type;
+	typedef char dest_char_type;
+
+	Utf8Encoder(shared_ptr<Utf8BytesCodec> converter) : m_converter(converter) {}
+
+	ssize_t convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain)
+	{
+		return m_converter->convert(output, osize, input, isize, remain);
+	}
+	bool isValid() const { return m_converter->isValid(); }
+
+private:
+	shared_ptr<Utf8BytesCodec> m_converter;
+};
+
 
 } // namespace io
 
