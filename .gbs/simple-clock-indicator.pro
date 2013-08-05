@@ -6,4 +6,4 @@
 #************************************************************
 TEMPLATE = subdirs                                           
 CONFIG  += ordered                                           
-SUBDIRS  = simple-clock-indicator tests                                    
+SUBDIRS  = simple-clock-indicator
