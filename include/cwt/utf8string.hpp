@@ -225,6 +225,7 @@ public:
 	size_t   length() const;
 	size_t   length(const const_iterator & begin, const const_iterator & end) const;
 	size_t   size() const;
+	size_t   calculateLength();
 
 	void reserve (size_t n = 0);
 
@@ -274,11 +275,18 @@ public:
 	friend bool	operator >  (const Utf8String &s1, const Utf8String &s2);
 	friend bool	operator >= (const Utf8String &s1, const Utf8String &s2);
 
-	static Utf8String fromUtf8   (const ByteArray &str, bool * ok = nullptr, size_t * nremain = nullptr);
-	static Utf8String fromUtf8   (const char *utf8, bool * ok = nullptr, size_t * nremain = nullptr);
-	static Utf8String fromUtf8   (const char *utf8, size_t size, bool * ok = nullptr, size_t * nremain = nullptr);
-	static Utf8String fromLatin1 (const char * latin1, size_t size, bool * ok = nullptr);
-	static Utf8String fromLatin1 (const char * latin1, bool * ok = nullptr);
+	struct ConvertState {
+		ConvertState() : nremain(0), invalidChars(0), replacementChar(ReplacementChar) {}
+		size_t nremain;
+		size_t invalidChars;
+		char   replacementChar;
+	};
+
+	static Utf8String fromUtf8   (const ByteArray &str, bool * ok = nullptr, ConvertState * state = nullptr);
+	static Utf8String fromUtf8   (const char *utf8, bool * ok = nullptr, ConvertState * state = nullptr);
+	static Utf8String fromUtf8   (const char *utf8, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
+	static Utf8String fromLatin1 (const char * latin1, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
+	static Utf8String fromLatin1 (const char * latin1, bool * ok = nullptr, ConvertState * state = nullptr);
 
 	static Utf8String number (double n, char fmt = 'g', int prec = 6) { return Utf8String().setNumber(n, fmt, prec); }
 	static Utf8String number (float n, char fmt = 'g', int prec = 6)  { return Utf8String().setNumber(n, fmt, prec); }
@@ -298,7 +306,6 @@ public:
 
 protected:
 	int compare (const const_iterator & from, size_t len, const char * s, size_t subpos, size_t sublen) const;
-	size_t calculateLength();
 
 public:
 	static int decodeBytes(const char * bytes, size_t len, uint32_t & uc, uint32_t & min_uc);

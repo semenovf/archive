@@ -23,6 +23,8 @@ Utf8String::Utf8String() : pimpl(new Utf8String::Impl())
 
 Utf8String::Utf8String(const char *latin1) : pimpl(new Utf8String::Impl())
 {
+	*this = fromLatin1(latin1, strlen(latin1));
+/*
 	pimpl->m_length = strlen(latin1);
 	for (size_t i = 0; i < pimpl->m_length; ++i) {
 		if(byte_t(latin1[i]) > 127)
@@ -30,10 +32,13 @@ Utf8String::Utf8String(const char *latin1) : pimpl(new Utf8String::Impl())
 		else
 			pimpl->append(1, latin1[i]);
 	}
+*/
 }
 
 Utf8String::Utf8String(const char *latin1, size_t length) : pimpl(new Utf8String::Impl())
 {
+	*this = fromLatin1(latin1, length);
+/*
 	pimpl->m_length = length;
 	for (size_t i = 0; i < pimpl->m_length; ++i) {
 		if(byte_t(latin1[i]) > 127)
@@ -41,6 +46,7 @@ Utf8String::Utf8String(const char *latin1, size_t length) : pimpl(new Utf8String
 		else
 			pimpl->append(1, latin1[i]);
 	}
+*/
 }
 
 Utf8String::Utf8String(size_t count, char latin1) : pimpl(new Utf8String::Impl())

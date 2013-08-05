@@ -141,24 +141,37 @@ ssize_t Utf8String::encodeUcs4(char *utf8, size_t size, uint32_t ucs4)
 }
 
 
-Utf8String Utf8String::fromUtf8 (const ByteArray &utf8, bool * pok, size_t * nremain)
+Utf8String Utf8String::fromUtf8 (const ByteArray &utf8, bool * pok, ConvertState * state)
 {
-	return fromUtf8(utf8.data(), utf8.size(), pok, nremain);
+	return fromUtf8(utf8.data(), utf8.size(), pok, state);
 }
 
 
-Utf8String Utf8String::fromUtf8 (const char *utf8, bool * pok, size_t * nremain)
+Utf8String Utf8String::fromUtf8 (const char *utf8, bool * pok, ConvertState * state)
 {
-	return fromUtf8(utf8, strlen(utf8), pok, nremain);
+	return fromUtf8(utf8, strlen(utf8), pok, state);
 }
 
-Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok, size_t * nremain)
+/**
+ * @brief
+ *
+ * @param utf8
+ * @param size
+ * @param pok
+ * @param state
+ * @return
+ *
+ * @note Need call Utf8String::calculateLength() after series of call this method with non-null @c state argument.
+ */
+Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok, ConvertState * state)
 {
 	Utf8String r;
 	const char *cursor = utf8;
 	const char *end = utf8 + size;
 	bool ok = true;
 	size_t i = 0;
+	size_t invalidChars = 0;
+	char replacementChar = state ? state->replacementChar : ReplacementChar;
 
 	r.pimpl->resize(size);
 
@@ -168,21 +181,25 @@ Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok, size
 		int n = Utf8String::decodeBytes(cursor, size_t(end - cursor), uc, min_uc);
 
 		if (n == -1) { // error
-			(*r.pimpl)[i++] = ReplacementChar;
+			(*r.pimpl)[i++] = replacementChar;
 			ok = false;
+			++invalidChars;
 			++cursor;
 		} else if (n == -2) {
-			if (nremain) {
-				*nremain = size_t(end - cursor);
+			if (state) {
+				state->nremain = size_t(end - cursor);
 			} else {
-				for (size_t j = size_t(end - cursor); j > 0; --j)
-					(*r.pimpl)[i++] = ReplacementChar;
+				for (size_t j = size_t(end - cursor); j > 0; --j) {
+					(*r.pimpl)[i++] = replacementChar;
+					++invalidChars;
+				}
 			}
 			ok = false;
 			cursor = end;
 		} else {
 			if (!Unicode::isValid(uc, min_uc)) {
-				(*r.pimpl)[i++] = ReplacementChar;
+				(*r.pimpl)[i++] = replacementChar;
+				++invalidChars;
 				ok = false;
 				++cursor;
 			} else {
@@ -196,22 +213,40 @@ Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok, size
 		*pok = ok;
 
 	r.pimpl->resize(i);
-	r.calculateLength();
+
+	if (state)
+		state->invalidChars += invalidChars;
+	else
+		r.calculateLength();
 
 	return r;
 }
 
-Utf8String Utf8String::fromLatin1 (const char * latin1, size_t length, bool * pok)
+
+/**
+ *
+ * @param latin1
+ * @param length
+ * @param pok
+ * @param state
+ * @return
+ *
+ * @note Need call Utf8String::calculateLength() after series of call this method with non-null @c state argument.
+ */
+Utf8String Utf8String::fromLatin1 (const char * latin1, size_t length, bool * pok, ConvertState * state)
 {
 	Utf8String r;
 	bool ok = true;
 	const char *end = latin1 + length;
+	size_t invalidChars = 0;
+	char replacementChar = state ? state->replacementChar : ReplacementChar;
 
 	while (latin1 < end) {
 		if (*latin1 < 127) {
 			r.pimpl->append(1, *latin1);
 		} else {
-			r.pimpl->append(1, ReplacementChar);
+			r.pimpl->append(1, replacementChar);
+			++invalidChars;
 			ok = false;
 		}
 		++latin1;
@@ -220,13 +255,16 @@ Utf8String Utf8String::fromLatin1 (const char * latin1, size_t length, bool * po
 	if (pok)
 		*pok = ok;
 
-	r.calculateLength();
+	if (state)
+		state->invalidChars += invalidChars;
+	else
+		r.calculateLength();
 	return r;
 }
 
-Utf8String Utf8String::fromLatin1 (const char * latin1, bool * pok)
+Utf8String Utf8String::fromLatin1 (const char * latin1, bool * pok, ConvertState * state)
 {
-	return fromLatin1(latin1, strlen(latin1), pok);
+	return fromLatin1(latin1, strlen(latin1), pok, state);
 }
 
 
