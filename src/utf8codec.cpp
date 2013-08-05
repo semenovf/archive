@@ -137,25 +137,29 @@ ssize_t UcsUtf8Codec<T, MaxCP>::convert(char output[], size_t osize, const T inp
 }
 
 
-ssize_t Utf8Utf8Codec::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+ssize_t Utf8Utf8Converter::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
 {
 	CWT_ASSERT(remain);
 
-	bool ok = false;
-	Utf8String s = Utf8String::fromUtf8(input, isize, & ok, remain);
+	Utf8String s = Utf8String::fromUtf8(input, CWT_MIN(isize, osize), nullptr, & m_state);
 	size_t r = s.size(); // size in bytes;
-	CWT_ASSERT(r > CWT_SSIZE_MAX);
-
-	size_t n = CWT_MIN(osize, r);
-
-	memcpy(output, s.data(), n);
-
-	if (r > osize)
-		*remain += r - osize;
+	CWT_ASSERT(r <= CWT_SSIZE_MAX);
+	memcpy(output, s.data(), r);
+	*remain = isize - r;
 	return ssize_t(r);
 }
 
+ssize_t Latin1Utf8Converter::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+{
+	CWT_ASSERT(remain);
 
+	Utf8String s = Utf8String::fromLatin1(input, CWT_MIN(isize, osize), nullptr, & m_state);
+	size_t r = s.size(); // size in bytes;
+	CWT_ASSERT(r <= CWT_SSIZE_MAX);
+	memcpy(output, s.data(), r);
+	*remain = isize - r;
+	return ssize_t(r);
+}
 
 } // namespace io
 

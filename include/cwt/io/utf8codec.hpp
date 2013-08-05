@@ -9,6 +9,7 @@
 #define __CWT_UTF8CODEC_HPP__
 
 #include <cwt/unicode.hpp>
+#include <cwt/utf8string.hpp>
 #include <cwt/shared_ptr.hpp>
 
 CWT_NS_BEGIN
@@ -81,43 +82,54 @@ extern template ssize_t Ucs2Utf8Codec::convert(dest_char_type output[], size_t o
 extern template ssize_t Ucs4Utf8Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 
 
-class DLL_API Utf8BytesCodec
+class DLL_API Utf8BytesConverter
 {
-public:
-	static const char ReplacementChar = '?';
-	static const size_t BufferSize = 256;
 public:
 	typedef char orig_char_type;
 	typedef char dest_char_type;
 
 protected:
-	Utf8BytesCodec(char replacement = ReplacementChar) : m_utf8Ucs4Codec(UChar(replacement)) {}
+	Utf8BytesConverter(char replacement = Utf8String::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
 
 public:
+	virtual ~Utf8BytesConverter() {}
 	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain) = 0;
-	bool isValid() const { return m_utf8Ucs4Codec.isValid(); }
+	bool isValid() const { return m_state.invalidChars == 0; }
 
 protected:
-	Utf8Ucs4Codec m_utf8Ucs4Codec;
-	UChar         m_buffer[BufferSize];
+	Utf8String::ConvertState m_state;
 };
 
-class DLL_API Utf8Utf8Codec : public Utf8BytesCodec
+class DLL_API Utf8Utf8Converter : public Utf8BytesConverter
 {
 public:
-	Utf8Utf8Codec(char replacement = ReplacementChar) : Utf8BytesCodec(replacement) {}
+	Utf8Utf8Converter(char replacement = Utf8String::ReplacementChar) : Utf8BytesConverter(replacement) { }
 	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
 };
 
-class DLL_API Utf8Encoder
+/*
+class DLL_API Utf8Latin1Converter : public Utf8BytesConverter
 {
 public:
+	Utf8Latin1Converter(char replacement = Utf8String::ReplacementChar) : Utf8BytesConverter(replacement) { }
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
+};
+*/
 
+class DLL_API Latin1Utf8Converter : public Utf8BytesConverter
+{
+public:
+	Latin1Utf8Converter(char replacement = Utf8String::ReplacementChar) : Utf8BytesConverter(replacement) { }
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
+};
+
+class DLL_API Utf8Codec
+{
 public:
 	typedef char orig_char_type;
 	typedef char dest_char_type;
 
-	Utf8Encoder(shared_ptr<Utf8BytesCodec> converter) : m_converter(converter) {}
+	Utf8Codec(Utf8BytesConverter * converter) : m_converter(converter) {}
 
 	ssize_t convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain)
 	{
@@ -126,9 +138,8 @@ public:
 	bool isValid() const { return m_converter->isValid(); }
 
 private:
-	shared_ptr<Utf8BytesCodec> m_converter;
+	Utf8BytesConverter * m_converter;
 };
-
 
 } // namespace io
 
