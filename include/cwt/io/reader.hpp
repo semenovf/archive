@@ -39,39 +39,40 @@ template <typename P, typename C>
 class Reader
 {
 public:
+	static const size_t DefaultChunkSize = 512;
+
 	typedef typename C::orig_char_type  orig_char_type;
 	typedef typename C::dest_char_type  char_type;
-	typedef Vector<char_type>           vector_type;
+	typedef typename C::vector_type     vector_type;
 
 public:
-	Reader (shared_ptr<P> producer, size_t chunkSize = 512)
-		: m_chunkSize(chunkSize)
-	    , m_producer(producer)
-		, m_decoder(new C)
-		, m_buffer(new orig_char_type[chunkSize])
-		, m_remain(0)
-	{}
-	Reader (shared_ptr<P> producer, shared_ptr<C> decoder, size_t chunkSize = 512)
-		: m_chunkSize(chunkSize)
-		, m_producer(producer)
-		, m_decoder(decoder)
-		, m_buffer(new orig_char_type[chunkSize])
-		, m_remain(0)
+	Reader (P * producer, size_t chunkSize = DefaultChunkSize)
+		: m_chunkSize (chunkSize)
+	    , m_producer  (producer)
+		, m_decoder   (new C)
+		, m_buffer    (new orig_char_type[chunkSize])
+		, m_remain    (0)
 	{}
 
-	~Reader() { delete m_buffer; }
+	Reader (P * producer, C * decoder, size_t chunkSize = DefaultChunkSize)
+		: m_chunkSize (chunkSize)
+		, m_producer  (producer)
+		, m_decoder   (decoder)
+		, m_buffer    (new orig_char_type[chunkSize])
+		, m_remain    (0)
+	{}
+
+	~Reader()      { delete m_buffer; }
 	bool isError() { return m_producer->isError(); }
 	ssize_t read (char_type chars[], size_t size);
-	vector_type read (size_t size);
 
-private:
-	size_t                  m_chunkSize;
-	shared_ptr<P>           m_producer;
-	shared_ptr<C>           m_decoder;
-	orig_char_type         *m_buffer;
-	size_t                  m_remain;
+protected:
+	size_t           m_chunkSize; // counted in original chars
+	P *              m_producer;
+	C *              m_decoder;
+	orig_char_type * m_buffer;
+	size_t           m_remain;    // counted in original chars
 };
-
 
 template <typename P, typename C>
 ssize_t Reader<P, C>::read (Reader<P, C>::char_type chars[], size_t size)
@@ -90,9 +91,13 @@ ssize_t Reader<P, C>::read (Reader<P, C>::char_type chars[], size_t size)
 			break;
 
 		ssize_t nchars = m_decoder->convert(chars + r, size - r, m_buffer, size_t(nbytes), & m_remain);
-		if (nchars < 0) {
+
+		if (nchars < 0)
+			return ssize_t(-1);
+
+		if (!nchars)
 			break;
-		}
+
 		r += nchars;
 
 		if (m_remain) {
@@ -109,28 +114,19 @@ ssize_t Reader<P, C>::read (Reader<P, C>::char_type chars[], size_t size)
 	return ssize_t(r);
 }
 
-template <typename P, typename C>
-inline typename Reader<P, C>::vector_type Reader<P, C>::read (size_t size)
-{
-	vector_type r;
-	r.reserve(size);
-	ssize_t nchars = this->read(r.data(), size);
-	if (nchars > 0)
-		r.resize(size_t(nchars));
-	return r;
-}
 
 template <typename R>
 class BufferedReader
 {
 public:
 	typedef typename R::char_type char_type;
-	typedef Vector<char_type> vector_type;
+	typedef typename R::vector_type vector_type;
 private:
 	BufferedReader() {}
 
 public:
-	BufferedReader(shared_ptr<R> reader) : m_reader(reader), m_buffer(), m_cursor(0) {}
+	BufferedReader(R * reader) : m_reader(reader), m_buffer(), m_cursor(0) {}
+	vector_type read (size_t length);
 	bool canReadUntil(const vector_type & end, size_t maxSize);
 	bool canReadUntil(const vector_type ends[], size_t count, size_t maxSize);
 	vector_type readUntil(const vector_type & end, size_t maxSize);
@@ -140,44 +136,63 @@ public:
 
 protected:
 	typename vector_type::const_iterator findFirstEnding(const vector_type ends[], size_t count);
-	bool fillBuffer(size_t maxSize, bool resetCursor);
+	bool fillBuffer(size_t lowMaxLength, bool resetCursor);
 
-private:
-	shared_ptr<R> m_reader;
+protected:
+	R *           m_reader;
 	vector_type   m_buffer;
 	size_t        m_cursor;
 };
 
-
 template <typename R>
-bool BufferedReader<R>::fillBuffer(size_t maxSize, bool resetCursor)
+bool BufferedReader<R>::fillBuffer(size_t lowMaxLength, bool resetCursor)
 {
+	bool ok = true;
+
 	if (!m_reader->isError()) {
-		if (m_cursor > 0 && m_cursor >= m_buffer.size()) {
+		if (m_cursor > 0 && m_cursor >= m_buffer.length()) {
 			m_buffer.clear();
 			m_cursor = 0;
 		}
 
-		if (resetCursor && m_cursor > 0 && m_buffer.size() > 0) {
+		if (resetCursor && m_cursor > 0 && m_buffer.length() > 0) {
 			m_buffer.remove(0, m_cursor);
 			m_cursor = 0;
 		}
 
-		m_buffer.reserve(maxSize);
-		ssize_t nchars = m_reader->read(m_buffer.data() + m_buffer.size(), maxSize - m_buffer.size());
+		char_type tmp[R::DefaultChunkSize];
 
-		if (nchars < 0)
-			return false;
+		while (m_buffer.length() < lowMaxLength) {
+			ssize_t nchars = m_reader->read(tmp, R::DefaultChunkSize);
 
-		m_buffer.resize(m_buffer.size() + size_t(nchars));
+			if (nchars < 0) {
+				ok = false;
+				break;
+			}
 
-		if (!m_buffer.size())
-			return false;
+			if (!nchars)
+				break;
 
-		return true;
+			m_buffer.append(tmp, size_t(nchars));
+		}
 	}
 
-	return false;
+	return ok;
+}
+
+
+template <typename R>
+typename BufferedReader<R>::vector_type BufferedReader<R>::read (size_t length)
+{
+	BufferedReader<R>::vector_type r;
+
+	if (m_buffer.length() < length) {
+		fillBuffer(length, true);
+	}
+
+	r = m_buffer.left(length);
+	m_buffer.clear();
+	return r;
 }
 
 template <typename R>
@@ -262,8 +277,8 @@ typename BufferedReader<R>::vector_type BufferedReader<R>::readUntil(
 			typename vector_type::const_iterator it = findFirstEnding(ends, count);
 
 			if (it != m_buffer.cend()) {
-				r = m_buffer.left(it - m_buffer.cbegin());
-				m_buffer.remove(0, it - m_buffer.cbegin() + ends[i].size());
+				r = m_buffer.left(m_buffer.length(m_buffer.cbegin(), it));
+				m_buffer.remove(0, m_buffer.length(m_buffer.cbegin(), it) + ends[i].length());
 				break;
 			}
 		}

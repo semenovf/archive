@@ -11,6 +11,7 @@
 #include <cwt/unicode.hpp>
 #include <cwt/utf8string.hpp>
 #include <cwt/shared_ptr.hpp>
+#include <cwt/vector.hpp>
 
 CWT_NS_BEGIN
 
@@ -24,8 +25,9 @@ public:
 	static const T ReplacementChar = T(0xfffd);
 	static const T MaxCodePoint    = MaxCP;
 public:
-	typedef char orig_char_type;
-	typedef T    dest_char_type;
+	typedef char      orig_char_type;
+	typedef T         dest_char_type;
+	typedef Vector<T> vector_type;
 
 	Utf8UcsCodec(T replacement = ReplacementChar)
 		: m_replacementChar(replacement)
@@ -55,8 +57,9 @@ public:
 	static const T MaxCodePoint        = MaxCP;
 	static const char ReplacementChar  = '?';
 public:
-	typedef T    orig_char_type;
-	typedef char dest_char_type;
+	typedef T          orig_char_type;
+	typedef char       dest_char_type;
+	typedef Utf8String vector_type;
 
 	UcsUtf8Codec(bool ignoreHeader = true, char replacement = ReplacementChar)
 		: m_ignoreHeader(ignoreHeader)
@@ -84,9 +87,11 @@ extern template ssize_t Ucs4Utf8Codec::convert(dest_char_type output[], size_t o
 
 class DLL_API Utf8BytesConverter
 {
+/*
 public:
 	typedef char orig_char_type;
 	typedef char dest_char_type;
+*/
 
 protected:
 	Utf8BytesConverter(char replacement = Utf8String::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
@@ -128,6 +133,7 @@ class DLL_API Utf8Codec
 public:
 	typedef char orig_char_type;
 	typedef char dest_char_type;
+	typedef Utf8String vector_type;
 
 	Utf8Codec(Utf8BytesConverter * converter) : m_converter(converter) {}
 

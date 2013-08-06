@@ -115,10 +115,11 @@ void test_variant_chunk_reader()
 		buffer->write(loremipsum, strlen(loremipsum));
 		CWT_TEST_FAIL(buffer->available() == strlen(loremipsum));
 
-	    Reader reader(buffer, chunkSize);
+	    Reader reader(buffer.get(), chunkSize);
+	    io::BufferedReader<Reader> bufferedReader(&reader);
 
 	    printf(_Tr("Test with Chunk Size = %u\n"), chunkSize);
-	    Vector<char> bytes = reader.read(strlen(loremipsum));
+	    Vector<char> bytes = bufferedReader.read(strlen(loremipsum));
 	    CWT_TEST_OK(bytes.size() == strlen(loremipsum));
 	    CWT_TEST_OK(strncmp(bytes.data(), loremipsum, strlen(loremipsum)) == 0);
 	}
@@ -128,12 +129,12 @@ void test_line_reader(bool withCanUntil)
 {
 	typedef io::Reader<io::Buffer, io::NullCodec<char> > Reader;
 
-	shared_ptr<io::Buffer> buffer(new io::Buffer);
-	buffer->write(loremipsum, strlen(loremipsum));
-	CWT_TEST_FAIL(buffer->available() == strlen(loremipsum));
+	io::Buffer buffer;
+	buffer.write(loremipsum, strlen(loremipsum));
+	CWT_TEST_FAIL(buffer.available() == strlen(loremipsum));
 
-	shared_ptr<Reader> reader(new Reader(buffer));
-	io::BufferedReader<Reader> lineReader(reader);
+	Reader reader(&buffer);
+	io::BufferedReader<Reader> lineReader(&reader);
 	Vector<char> r;
 
 	size_t nlines = sizeof(loremipsum_lines)/sizeof(loremipsum_lines[0]);
@@ -172,12 +173,12 @@ void test_get_reader()
 	for (size_t iline = 0; iline < nlines; ++iline) {
 		Vector<char> r;
 
-		shared_ptr<io::Buffer> buffer(new io::Buffer);
-		buffer->write(loremipsum_lines[iline], strlen(loremipsum_lines[iline]));
-		CWT_TEST_FAIL(buffer->available() == strlen(loremipsum_lines[iline]));
+		io::Buffer buffer;
+		buffer.write(loremipsum_lines[iline], strlen(loremipsum_lines[iline]));
+		CWT_TEST_FAIL(buffer.available() == strlen(loremipsum_lines[iline]));
 
-		shared_ptr<Reader> reader(new Reader(buffer));
-		io::BufferedReader<Reader> charReader(reader);
+		Reader reader(&buffer);
+		io::BufferedReader<Reader> charReader(&reader);
 		char ch;
 
 		while (charReader.get(ch)) {

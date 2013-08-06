@@ -9,6 +9,7 @@
 #define __CWT_IO_HPP__
 
 #include <cwt/cwt.hpp>
+#include <cwt/vector.hpp>
 #include <cstring>
 
 CWT_NS_BEGIN
@@ -20,6 +21,8 @@ struct NullCodec
 {
 	typedef T orig_char_type;
 	typedef T dest_char_type;
+	typedef Vector<T> vector_type;
+
 	ssize_t convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain)
 	{
 		size_t n = CWT_MIN(osize, isize);

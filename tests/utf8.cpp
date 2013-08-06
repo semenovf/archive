@@ -3,7 +3,8 @@
 #include "../include/cwt/io/writer.hpp"
 #include "../include/cwt/io/buffer.hpp"
 #include "../include/cwt/io/file.hpp"
-#include "../include/cwt/io/utf8codec.hpp"
+#include "../include/cwt/io/textreader.hpp"
+#include "../include/cwt/io/datareader.hpp"
 #include <cstring>
 #include <cstdio>
 
@@ -21,7 +22,7 @@ static _FileSpec utf8_ucs2_files[] = {
 };
 
 static _FileSpec utf8_ucs4_files[] = {
-	  { "rc/utf8/multilang.txt" , nullptr, 11931, 9356}
+	  { "rc/utf8/multilang.txt" , nullptr, 11931, 9356 }
 	, { "rc/utf8/cyrillic.txt"  , nullptr,   132,   66 }
 	, { "rc/utf8/greek.txt"     , nullptr,   338,  204 }
 	, { "rc/utf8/mideng.txt"    , nullptr,   288,  278 }
@@ -40,76 +41,70 @@ void test_Utf8UcsCodec(_FileSpec file_spec[], int nspecs)
 	typedef io::Writer<io::Buffer, Encoder> BufferWriter;
 	typedef io::Writer<io::File, Encoder> FileWriter;
 
-    shared_ptr<io::File> file(new io::File);
-    Reader reader(file);
-    BytesReader bytesReader(file);
+    io::File file;
+    Reader reader(&file);
+    BytesReader bytesReader(&file);
 
-    shared_ptr<io::Buffer> buffer(new io::Buffer);
-    BufferWriter writer(buffer);
+    io::Buffer buffer;
+    BufferWriter writer(&buffer);
 
-    shared_ptr<io::File> ofile(new io::File);
+    io::File ofile;
     FileWriter fileWriter(ofile);
 
     for (int i = 0; i < nspecs; i++) {
-    	file->open(file_spec[i].path, io::Device::ReadOnly);
+    	file.open(file_spec[i].path, io::Device::ReadOnly);
 
     	printf("Test file: %s...\n", file_spec[i].path);
-    	CWT_TEST_FAIL(file->opened());
+    	CWT_TEST_FAIL(file.opened());
 
-    	CWT_TEST_FAIL(file->size() == file_spec[i].size);
+    	CWT_TEST_FAIL(file.size() == file_spec[i].size);
 
-    	typename Reader::vector_type decoded = reader.read(file->size());
+    	typename Reader::vector_type decoded = reader.read(file.size());
     	CWT_TEST_OK(decoded.size() == file_spec[i].nchars);
 
     	if (file_spec[i].opath) {
-    		ofile->open(file_spec[i].opath, io::Device::WriteOnly);
-    		CWT_ASSERT(ofile->opened());
+    		ofile.open(file_spec[i].opath, io::Device::WriteOnly);
+    		CWT_ASSERT(ofile.opened());
     		fileWriter.write(decoded);
-    		ofile->close();
+    		ofile.close();
     	}
 
-        file->close();
+        file.close();
 
-        buffer->buffer().clear();
+        buffer.buffer().clear();
         CWT_TEST_OK(writer.write(decoded) == ssize_t(file_spec[i].size));
 
-        file->open(file_spec[i].path, io::Device::ReadOnly);
-        typename BytesReader::vector_type bytes = bytesReader.read(file->size());
+        file.open(file_spec[i].path, io::Device::ReadOnly);
+        typename BytesReader::vector_type bytes = bytesReader.read(file.size());
         CWT_TEST_OK(bytes.size() == file_spec[i].size);
-        file->close();
+        file.close();
 
-        CWT_TEST_OK(strncmp(buffer->buffer().constData(), bytes.constData(), bytes.size()) == 0);
+        CWT_TEST_OK(strncmp(buffer.buffer().constData(), bytes.constData(), bytes.size()) == 0);
     }
 }
 
-
-void test_Utf8Codec(_FileSpec file_spec[], int nspecs)
+void test_Utf8Codec(_FileSpec file_spec[], int nspecs, size_t chunkSize)
 {
-	typedef io::Reader<io::Device, io::Utf8Codec> Utf8DeviceReader;
-	typedef io::Reader<io::Device, io::NullCodec<char> > BytesReader;
-
-	shared_ptr<io::Device> fileDevice(new io::File);
-    Utf8DeviceReader utf8Reader(fileDevice, shared_ptr<io::Utf8Codec>(new io::Utf8Codec(new io::Utf8Utf8Converter)), 8);
-    BytesReader      bytesReader(fileDevice);
+	io::File file;
+	io::TextReader textReader(& file, new io::Utf8Utf8Converter, chunkSize);
+    io::DataReader dataReader(& file, chunkSize);
 
     for (int i = 0; i < nspecs; i++) {
-    	io::File * file = dynamic_cast<io::File*>(fileDevice.get());
-    	file->open(file_spec[i].path, io::Device::ReadOnly);
+    	file.open(file_spec[i].path, io::Device::ReadOnly);
 
     	printf("test_Utf8Codec: test file: %s...\n", file_spec[i].path);
-    	CWT_TEST_FAIL(file->opened());
-    	CWT_TEST_FAIL(file->size() == file_spec[i].size);
+    	CWT_TEST_FAIL(file.opened());
+    	CWT_TEST_FAIL(file.size() == file_spec[i].size);
 
-    	typename Utf8DeviceReader::vector_type utf8 = utf8Reader.read(file->size());
+    	String utf8 = textReader.read(file.size());
     	CWT_TEST_OK(utf8.size() == file_spec[i].size);
+    	CWT_TEST_OK(utf8.length() == file_spec[i].nchars);
+    	file.close();
 
-    	file->close();
-
-    	file->open(file_spec[i].path, io::Device::ReadOnly);
-    	typename BytesReader::vector_type raw = bytesReader.read(file->size());
+    	file.open(file_spec[i].path, io::Device::ReadOnly);
+    	ByteArray raw = dataReader.read(file.size());
     	CWT_TEST_OK(raw.size() == file_spec[i].size);
-
-    	file->close();
+    	file.close();
 
         CWT_TEST_OK(raw.size() == utf8.size());
         CWT_TEST_OK(strncmp(utf8.constData(), raw.constData(), raw.size()) == 0);
@@ -120,11 +115,12 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(132);
+    CWT_BEGIN_TESTS(14084);
 
    	test_Utf8UcsCodec<io::Utf8Ucs2Codec, io::Ucs2Utf8Codec>(utf8_ucs2_files, sizeof(utf8_ucs2_files)/sizeof(utf8_ucs2_files[0]));
    	test_Utf8UcsCodec<io::Utf8Ucs4Codec, io::Ucs4Utf8Codec>(utf8_ucs4_files, sizeof(utf8_ucs4_files)/sizeof(utf8_ucs4_files[0]));
-    test_Utf8Codec(utf8_ucs4_files, sizeof(utf8_ucs4_files)/sizeof(utf8_ucs4_files[0]));
+   	for (size_t i = 6; i < 256; ++i)
+   		test_Utf8Codec(utf8_ucs4_files, sizeof(utf8_ucs4_files)/sizeof(utf8_ucs4_files[0]), i);
 
     CWT_END_TESTS;
     return 0;

@@ -96,6 +96,7 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 		ex->addSystemError(errno, _Fr("Failed to open '%s'") % path);
 		return false;
 	}
+
 	m_fd = fd;
 
 	if (created) {
