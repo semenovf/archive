@@ -108,11 +108,13 @@ public:
 	const T&       last() const    { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
 	void           prepend(const T & value);
 	void           push_back (const T & value) { append(value); }
-	void	       remove(size_t i);
-	void	       remove(size_t i, size_t count);
+	void	       remove(size_t pos);
+	void	       remove(size_t pos, size_t n);
 	void           resize(size_t size)     { reserve(size); m_d->count = size; }
 	void           reserve(size_t size);
 	size_t         size() const            { return m_d->count; }
+	size_t         length() const            { return size(); }
+	size_t         length(const const_iterator & begin, const const_iterator & end) const { return end - begin; }
 	Vector<T>	   mid(size_t pos, size_t length) const;
 	Vector<T>	   left(size_t count) const   { return mid(0, count); }
 	Vector<T>	   right(size_t count) const  { return mid(size() - count, count); }

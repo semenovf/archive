@@ -164,8 +164,8 @@ public:
 
 public:
 	Utf8String();
-	Utf8String(const char *latin1);
-	Utf8String(const char *latin1, size_t length);
+	Utf8String(const char * s);
+	Utf8String(const char * s, size_t size);
 	Utf8String(size_t count, char latin1);
 	Utf8String(const const_iterator & begin, const const_iterator & end);
 	Utf8String(size_t count, UChar c);
@@ -178,7 +178,7 @@ public:
 	bool	    isEmpty() const;
 
 	Utf8String & append(const Utf8String & s) { return insert(s, end()); }
-//	Utf8String & append(size_t count, UChar uc) { return append(Utf8String(count, uc)); }
+	Utf8String & append(const char * s, size_t size) { return append(Utf8String(s, size)); }
 	Utf8String & prepend(const Utf8String & s) { return insert(s, begin()); }
 	Utf8String & insert(const Utf8String & s, size_t pos) { return insert(s, begin() + pos); }
 	Utf8String & insert(const Utf8String & s, const const_iterator & pos);
@@ -229,10 +229,18 @@ public:
 
 	void reserve (size_t n = 0);
 
-	Utf8String substr(size_t pos) const { return substr(pos, length()); }
-	Utf8String substr(size_t pos, size_t n) const { return substr(begin() + pos, n); }
+	Utf8String & remove(size_t pos)                  { return remove(pos, length()); }
+	Utf8String & remove(size_t pos, size_t n)        { return remove(begin() + pos, n); }
+	Utf8String & remove(const const_iterator & from) { return remove(from, length()); }
+	Utf8String & remove(const const_iterator & from, size_t n);
+
+	Utf8String substr(size_t pos) const                  { return substr(pos, length()); }
+	Utf8String substr(size_t pos, size_t n) const        { return substr(begin() + pos, n); }
 	Utf8String substr(const const_iterator & from) const { return substr(from, length()); }
 	Utf8String substr(const const_iterator & from, size_t n) const;
+	Utf8String mid(size_t pos, size_t n) const           { return substr(pos, n); }
+	Utf8String left(size_t n) const                      { return substr(0, n); }
+	Utf8String right(size_t n) const                     { return substr(length() - n, n); }
 
 	double	 toDouble(bool *ok = 0) const;
 	float	 toFloat(bool *ok = 0) const;

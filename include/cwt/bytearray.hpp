@@ -33,8 +33,8 @@ public:
     	iterator(const iterator & o) : m_cursor(o.m_cursor) {}
     	explicit iterator(const char * cursor) : m_cursor(cursor) {}
 
-    	char value() const                          { return *m_cursor; }
-        char operator  * () const                   { return *m_cursor; }
+    	char value() const                           { return *m_cursor; }
+        char operator  * () const                    { return *m_cursor; }
         size_t distance (const iterator & o) const   { ssize_t d = o.m_cursor - m_cursor; return d > 0 ? d : d * -1; }
         bool operator  == (const iterator & o) const { return m_cursor == o.m_cursor; }
         bool operator  != (const iterator & o) const { return !(m_cursor == o.m_cursor); }
@@ -264,31 +264,6 @@ inline ByteArray operator + (const ByteArray & s1, const ByteArray & s2)
 }
 
 DLL_API uint_t hash_func(const ByteArray & key, uint_t seed = 0);
-
-
-#ifdef __COMMENT__
-
-class DLL_API ByteArray
-{
-	CWT_PIMPL_DECL_COPYABLE(ByteArray)
-
-public:
-	ssize_t	indexOf ( const ByteArray & ba, size_t from = 0 ) const;
-	ssize_t	indexOf ( const char * str, size_t from = 0 ) const;
-	ssize_t	indexOf ( char ch, size_t from = 0 ) const;
-
-	size_t length() const;
-	ByteArray& remove(size_t pos, size_t len);
-	void reserve(size_t size);
-
-
-	ByteArray& setRawData(const char *data, size_t size);
-
-
-
-};
-
-#endif
 
 CWT_NS_END
 

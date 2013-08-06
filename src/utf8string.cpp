@@ -21,32 +21,14 @@ Utf8String::Utf8String() : pimpl(new Utf8String::Impl())
 {
 }
 
-Utf8String::Utf8String(const char *latin1) : pimpl(new Utf8String::Impl())
+Utf8String::Utf8String(const char * utf8) : pimpl(new Utf8String::Impl())
 {
-	*this = fromLatin1(latin1, strlen(latin1));
-/*
-	pimpl->m_length = strlen(latin1);
-	for (size_t i = 0; i < pimpl->m_length; ++i) {
-		if(byte_t(latin1[i]) > 127)
-			pimpl->append(1, ReplacementChar);
-		else
-			pimpl->append(1, latin1[i]);
-	}
-*/
+	*this = fromUtf8(utf8, strlen(utf8));
 }
 
-Utf8String::Utf8String(const char *latin1, size_t length) : pimpl(new Utf8String::Impl())
+Utf8String::Utf8String(const char * utf8, size_t length) : pimpl(new Utf8String::Impl())
 {
-	*this = fromLatin1(latin1, length);
-/*
-	pimpl->m_length = length;
-	for (size_t i = 0; i < pimpl->m_length; ++i) {
-		if(byte_t(latin1[i]) > 127)
-			pimpl->append(1, ReplacementChar);
-		else
-			pimpl->append(1, latin1[i]);
-	}
-*/
+	*this = fromUtf8(utf8, length);
 }
 
 Utf8String::Utf8String(size_t count, char latin1) : pimpl(new Utf8String::Impl())
@@ -136,6 +118,25 @@ void Utf8String::reserve (size_t n)
 	pimpl->reserve(n * 6);
 }
 
+Utf8String & Utf8String::remove(const const_iterator & from, size_t n)
+{
+	detach();
+
+	Utf8String::const_iterator itEnd = from + n;
+
+	if (itEnd > end())
+		itEnd = end();
+
+	if (from >= begin() && from < itEnd) {
+		size_t pos = from.distance(begin());
+		size_t sz  = itEnd.distance(from);
+		pimpl->erase(pos, sz);
+		calculateLength();
+	}
+
+	return *this;
+}
+
 Utf8String Utf8String::substr(const const_iterator & from, size_t n) const
 {
 	Utf8String r;
@@ -146,13 +147,14 @@ Utf8String Utf8String::substr(const const_iterator & from, size_t n) const
 
 	if (from >= begin() && from < itEnd) {
 		size_t pos = from.distance(begin());
-		size_t len = itEnd.distance(from);
-		*r.pimpl = pimpl->substr(pos, len);
+		size_t sz  = itEnd.distance(from);
+		*r.pimpl = pimpl->substr(pos, sz);
 		r.calculateLength();
 	}
 
 	return r;
 }
+
 
 Utf8String & Utf8String::insert(const Utf8String & s, const Utf8String::const_iterator & pos)
 {
@@ -301,7 +303,6 @@ const char*	Utf8String::c_str() const
 {
 	return pimpl->c_str();
 }
-
 
 
 double Utf8String::toDouble(bool *ok) const
