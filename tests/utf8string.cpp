@@ -108,6 +108,32 @@ void test_iterator()
 	CWT_TEST_OK(n == s.length());
 }
 
+template <typename _reverse_iterator>
+void test_reverse_iterator()
+{
+	CWT_TRACE("test_reverse_iterator() begin...");
+	bool ok;
+	Utf8String s (Utf8String::fromUtf8("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя", &ok));
+	size_t n = 0;
+
+	_reverse_iterator it = s.rbegin();
+	while (it++ < s.rend()) {
+		++n;
+	}
+
+	CWT_TEST_OK(n == s.length());
+
+	it = s.rend();
+	n = 0;
+	while (it-- > s.rbegin()) {
+		++n;
+	}
+
+	CWT_TEST_OK(n == s.length());
+	CWT_TEST_OK(n == s.length(s.crbegin(), s.crend()));
+	CWT_TRACE("test_reverse_iterator() completed");
+}
+
 void test_insert()
 {
 	bool ok;
@@ -199,7 +225,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(61);
+    CWT_BEGIN_TESTS(67);
 
     test_basic();
     test_init();
@@ -207,6 +233,8 @@ int main(int argc, char *argv[])
     test_find();
     test_iterator<Utf8String::iterator>();
     test_iterator<Utf8String::const_iterator>();
+    test_reverse_iterator<Utf8String::reverse_iterator>();
+    test_reverse_iterator<Utf8String::const_reverse_iterator>();
     test_insert();
     test_substr();
     test_compare();

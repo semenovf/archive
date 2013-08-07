@@ -31,6 +31,10 @@ struct DLL_API Utf8Entry
 	UChar value() const;
     Utf8Entry & next ();
     Utf8Entry & prev ();
+
+	UChar r_value() const;
+    Utf8Entry & r_next () { return prev(); }
+    Utf8Entry & r_prev () { return next(); }
 };
 
 class DLL_API Utf8String
@@ -162,6 +166,128 @@ public:
         bool operator <= (const const_iterator & o) const { return m_entry.cursor <= o.m_entry.cursor; }
 	};
 
+    class const_reverse_iterator;
+
+	class reverse_iterator {
+		friend class const_reverse_iterato;
+		friend class Utf8String;
+		Utf8Entry m_entry;
+
+	public:
+		reverse_iterator() : m_entry() {}
+		reverse_iterator(const reverse_iterator & o) : m_entry(o.m_entry) {}
+    	explicit reverse_iterator(Utf8Entry::pointer cursor) : m_entry(cursor) {}
+
+    	UChar value() const                          { return m_entry.r_value(); }
+        UChar operator  * () const                   { return m_entry.r_value(); }
+        size_t distance (const iterator & o) const   { ssize_t d = o.m_entry.cursor - m_entry.cursor; return d > 0 ? d : d * -1; }
+        bool operator  == (const iterator & o) const { return m_entry.cursor == o.m_entry.cursor; }
+        bool operator  != (const iterator & o) const { return !(m_entry.cursor == o.m_entry.cursor); }
+        reverse_iterator & operator ++ ()                    { m_entry.r_next(); return *this; }
+        reverse_iterator   operator ++ (int) {
+        	reverse_iterator r(*this);
+            this->operator ++();
+            return r;
+        }
+
+        reverse_iterator & operator -- ()  { m_entry.r_prev(); return *this; }
+        reverse_iterator   operator -- (int) {
+        	reverse_iterator r(*this);
+            this->operator --();
+            return r;
+        }
+        reverse_iterator   operator  + (int n) const {
+        	reverse_iterator it(*this);
+        	it += n;
+        	return it;
+        }
+        reverse_iterator   operator  - (int n ) const {
+        	reverse_iterator it(*this);
+        	it -= n;
+        	return it;
+        }
+
+        reverse_iterator & operator += (int n) {
+        	while(n-- > 0)
+          		m_entry.r_next();
+          	return *this;
+        }
+
+        reverse_iterator & operator -= (int n) {
+        	while(n-- > 0)
+          		m_entry.r_prev();
+          	return *this;
+        }
+
+		bool operator  > (const reverse_iterator & o) const { return m_entry.cursor < o.m_entry.cursor; }
+		bool operator >= (const reverse_iterator & o) const { return m_entry.cursor <= o.m_entry.cursor; }
+		bool operator  < (const reverse_iterator & o) const { return m_entry.cursor > o.m_entry.cursor; }
+		bool operator <= (const reverse_iterator & o) const { return m_entry.cursor >= o.m_entry.cursor; }
+	};
+
+	class const_reverse_iterator {
+		friend class reverse_iterator;
+		friend class Utf8String;
+		Utf8Entry m_entry;
+
+	public:
+		const_reverse_iterator() : m_entry() {}
+		const_reverse_iterator(const reverse_iterator & o) : m_entry(o.m_entry) {}
+		const_reverse_iterator(const const_reverse_iterator & o) : m_entry(o.m_entry) {}
+    	explicit const_reverse_iterator(Utf8Entry::pointer cursor)  : m_entry(cursor) {}
+
+    	UChar value() const                                { return m_entry.value(); }
+        UChar operator  * () const                         { return m_entry.value(); }
+        size_t distance (const const_reverse_iterator & o) const   { ssize_t d = o.m_entry.cursor - m_entry.cursor; return d > 0 ? d : d * -1; }
+        bool operator  == (const reverse_iterator & o) const       { return m_entry.cursor == o.m_entry.cursor; }
+        bool operator  == (const const_reverse_iterator & o) const { return m_entry.cursor == o.m_entry.cursor; }
+        bool operator  != (const reverse_iterator & o) const       { return !(m_entry.cursor == o.m_entry.cursor); }
+        bool operator  != (const const_reverse_iterator & o) const { return !(m_entry.cursor == o.m_entry.cursor); }
+        const_reverse_iterator & operator ++ ()                    { m_entry.r_next(); return *this; }
+        const_reverse_iterator   operator ++ (int) {
+        	const_reverse_iterator r(*this);
+            this->operator ++();
+            return r;
+        }
+
+        const_reverse_iterator & operator -- () { m_entry.r_prev(); return *this; }
+
+        const_reverse_iterator   operator -- (int) {
+        	const_reverse_iterator r(*this);
+            this->operator --();
+            return r;
+        }
+
+        const_reverse_iterator   operator  + (int n) const {
+        	const_reverse_iterator it(*this);
+        	it += n;
+        	return it;
+        }
+
+        const_reverse_iterator   operator  - (int n) const {
+        	const_reverse_iterator it(*this);
+        	it -= n;
+        	return it;
+        }
+
+        const_reverse_iterator & operator += (int n) {
+        	while(n-- > 0)
+        		m_entry.r_next();
+        	return *this;
+        }
+
+        const_reverse_iterator & operator -= (int n) {
+        	while(n-- > 0)
+          		m_entry.r_prev();
+          	return *this;
+        }
+
+        bool operator  > (const const_reverse_iterator & o) const { return m_entry.cursor  < o.m_entry.cursor; }
+        bool operator >= (const const_reverse_iterator & o) const { return m_entry.cursor <= o.m_entry.cursor; }
+        bool operator  < (const const_reverse_iterator & o) const { return m_entry.cursor  > o.m_entry.cursor; }
+        bool operator <= (const const_reverse_iterator & o) const { return m_entry.cursor >= o.m_entry.cursor; }
+	};
+
 public:
 	Utf8String();
 	Utf8String(const char * s);
@@ -190,6 +316,13 @@ public:
     const_iterator cbegin() const { return begin(); }
     const_iterator cend() const   { return end(); }
 
+    reverse_iterator       rbegin();
+    reverse_iterator       rend();
+    const_reverse_iterator rbegin() const;
+    const_reverse_iterator rend() const;
+    const_reverse_iterator crbegin() const { return rbegin(); }
+    const_reverse_iterator crend() const   { return rend(); }
+
     int compare (const Utf8String & s) const;
     int compare (size_t pos, size_t len, const Utf8String & s) const;
     int compare (size_t pos, size_t len, const Utf8String & s, size_t subpos, size_t sublen) const;
@@ -216,14 +349,13 @@ public:
 #ifdef __NOT_IMPLEMENTED_YET__
 	ssize_t  indexOf(const String &str, int from = 0, bool cs = true) const;
 	ssize_t  indexOf(UChar ch, int from = 0, bool cs = true) const;
-
-	String&  remove(size_t pos, size_t n);
 	String&  replace(const String &before, const String &after, bool cs = true);
-
 #endif
 
+	bool     atLeast(const const_iterator & begin, size_t count) const { return begin + count < cend(); }
 	size_t   length() const;
 	size_t   length(const const_iterator & begin, const const_iterator & end) const;
+	size_t   length(const const_reverse_iterator & begin, const const_reverse_iterator & end) const;
 	size_t   size() const;
 	size_t   calculateLength();
 

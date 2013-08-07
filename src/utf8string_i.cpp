@@ -27,7 +27,7 @@ Utf8Entry & Utf8Entry::next ()
 	byte_t ch = byte_t(cursor[0]);
 
 	if (ch < 128) {
-		cursor++;
+		++cursor;
 	} else if ((ch & 0xE0) == 0xC0) {
 		cursor += 2;
 	} else if ((ch & 0xF0) == 0xE0) {
@@ -49,7 +49,7 @@ Utf8Entry & Utf8Entry::next ()
 Utf8Entry & Utf8Entry::prev ()
 {
 	if ((*(cursor - 1) & 0x80) == 0x00) {
-		cursor--;
+		--cursor;
 	} else if ((*(cursor - 2) & 0xE0) == 0xC0) {
 		cursor -= 2;
 	} else if ((*(cursor - 3) & 0xF0) == 0xE0) {
@@ -65,6 +65,35 @@ Utf8Entry & Utf8Entry::prev ()
 		; // begin() reached
 	}
 	return *this;
+}
+
+UChar Utf8Entry::r_value() const
+{
+	int need = -1;
+
+	if ((*(cursor - 1) & 0x80) == 0x00) {
+		need = 1;
+	} else if ((*(cursor - 2) & 0xE0) == 0xC0) {
+		need = 2;
+	} else if ((*(cursor - 3) & 0xF0) == 0xE0) {
+		need = 3;
+	} else if ((*(cursor - 4) & 0xF8) == 0xF0) {
+		need = 4;
+	} else if ((*(cursor - 5) & 0xFC) == 0xF8) {
+		need = 5;
+	} else if ((*(cursor - 6) & 0xFE) == 0xFC) {
+		need = 6;
+	} else {
+		;
+	}
+
+	uint32_t uc = Unicode::Null;
+	uint32_t min_uc = 0; // for 'Overlong' encodings recognition
+	int n = Utf8String::decodeBytes(cursor - need, need, uc, min_uc);
+
+	CWT_ASSERT(n >= 0);
+	CWT_ASSERT(Unicode::isValid(uc, min_uc));
+	return uc;
 }
 
 Utf8String::iterator Utf8String::begin()
@@ -88,6 +117,28 @@ Utf8String::const_iterator Utf8String::begin() const
 Utf8String::const_iterator Utf8String::end() const
 {
 	return iterator(pimpl->data() + pimpl->size());
+}
+
+Utf8String::reverse_iterator Utf8String::rbegin()
+{
+	detach();
+	return reverse_iterator(pimpl->data() + pimpl->size());
+}
+
+Utf8String::reverse_iterator Utf8String::rend()
+{
+	detach();
+	return reverse_iterator(pimpl->data());
+}
+
+Utf8String::const_reverse_iterator Utf8String::rbegin() const
+{
+	return reverse_iterator(pimpl->data() + pimpl->size());
+}
+
+Utf8String::const_reverse_iterator Utf8String::rend() const
+{
+	return reverse_iterator(pimpl->data());
 }
 
 

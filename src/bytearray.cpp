@@ -184,6 +184,25 @@ ByteArray::const_iterator ByteArray::find(const ByteArray & s, const_iterator fr
 	return find(s.constData(), from.distance(begin()), s.size());
 }
 
+ByteArray & ByteArray::remove(const const_iterator & from, size_t n)
+{
+	detach();
+
+	ByteArray::const_iterator itEnd = from + n;
+
+	if (itEnd > end())
+		itEnd = end();
+
+	if (from >= begin() && from < itEnd) {
+		size_t pos = from.distance(begin());
+		size_t sz  = itEnd.distance(from);
+		pimpl->erase(pos, sz);
+	}
+
+	return *this;
+
+}
+
 void ByteArray::reserve (size_t n)
 {
 	detach();

@@ -95,6 +95,17 @@ size_t Utf8String::length(const const_iterator & begin, const const_iterator & e
 	return r;
 }
 
+size_t Utf8String::length(const const_reverse_iterator & begin, const const_reverse_iterator & end) const
+{
+	size_t r = 0;
+	const_reverse_iterator it = begin;
+
+	while (it++ < end)
+		++r;
+
+	return r;
+}
+
 size_t Utf8String::calculateLength()
 {
 	pimpl->m_length = length(begin(), end());

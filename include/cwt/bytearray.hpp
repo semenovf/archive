@@ -153,6 +153,11 @@ public:
 	bool	     isEmpty() const;
 	size_t       size() const;
 	size_t       length() const { return size(); }
+	size_t       length(const const_iterator & begin, const const_iterator & end) const
+	{
+		CWT_ASSERT(begin <= end);
+		return begin.distance(end);
+	}
 
 	ByteArray & append  (const ByteArray & s) { return insert(s, end()); }
 	ByteArray & append  (const char * s) { return insert(s, end()); }
@@ -197,13 +202,21 @@ public:
 	const_iterator find(const char * s, size_t pos, size_t n) const;
 	const_iterator find(const char * s, size_t pos) const { return find(s, pos, strlen(s)); }
 
+	ByteArray & remove(size_t pos)                  { return remove(pos, length()); }
+	ByteArray & remove(size_t pos, size_t n)        { return remove(begin() + pos, n); }
+	ByteArray & remove(const const_iterator & from) { return remove(from, length()); }
+	ByteArray & remove(const const_iterator & from, size_t n);
+
 	void reserve (size_t n = 0);
 	void resize(size_t size);
 
-	ByteArray substr(size_t pos) const { return substr(pos, length()); }
+	ByteArray substr(size_t pos) const            { return substr(pos, length()); }
 	ByteArray substr(size_t pos, size_t n) const;
 	ByteArray substr(const const_iterator & from) const;
 	ByteArray substr(const const_iterator & from, size_t n) const;
+	ByteArray mid(size_t pos, size_t n) const     { return substr(pos, n); }
+	ByteArray left(size_t n) const                { return substr(0, n); }
+	ByteArray right(size_t n) const               { return substr(length() - n, n); }
 
 	double	 toDouble (bool *ok = 0) const { return cwt_str_to_double(c_str(), ok); }
 	float	 toFloat  (bool *ok = 0) const { return cwt_str_to_float(c_str(), ok); }
