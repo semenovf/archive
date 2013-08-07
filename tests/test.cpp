@@ -3,6 +3,7 @@
 #include "../include/cwt/io/writer.hpp"
 #include "../include/cwt/io/file.hpp"
 #include "../include/cwt/io/buffer.hpp"
+#include "../include/cwt/io/datareader.hpp"
 #include <cstring>
 #include <cstdio>
 
@@ -115,8 +116,7 @@ void test_variant_chunk_reader()
 		buffer->write(loremipsum, strlen(loremipsum));
 		CWT_TEST_FAIL(buffer->available() == strlen(loremipsum));
 
-	    Reader reader(buffer.get(), chunkSize);
-	    io::BufferedReader<Reader> bufferedReader(&reader);
+	    io::BufferedReader<Reader> bufferedReader(shared_ptr<Reader>(new Reader(buffer, chunkSize)));
 
 	    printf(_Tr("Test with Chunk Size = %u\n"), chunkSize);
 	    Vector<char> bytes = bufferedReader.read(strlen(loremipsum));
@@ -129,19 +129,18 @@ void test_line_reader(bool withCanUntil)
 {
 	typedef io::Reader<io::Buffer, io::NullCodec<char> > Reader;
 
-	io::Buffer buffer;
-	buffer.write(loremipsum, strlen(loremipsum));
-	CWT_TEST_FAIL(buffer.available() == strlen(loremipsum));
+	shared_ptr<io::Buffer> buffer(new io::Buffer);
+	buffer->write(loremipsum, strlen(loremipsum));
+	CWT_TEST_FAIL(buffer->available() == strlen(loremipsum));
 
-	Reader reader(&buffer);
-	io::BufferedReader<Reader> lineReader(&reader);
+	io::BufferedReader<Reader> lineReader(shared_ptr<Reader>(new Reader(buffer)));
 	Vector<char> r;
 
 	size_t nlines = sizeof(loremipsum_lines)/sizeof(loremipsum_lines[0]);
 	size_t iline = 0;
 
 	if (!withCanUntil) {
-		while(!(r = lineReader.readUntil(Vector<char>("\n", 1), 80)).isEmpty() && iline < nlines) {
+		while(!(r = lineReader.readUntil(Vector<char>("\n", 1), nullptr, 80)).isEmpty() && iline < nlines) {
 			r.append(0);
 			CWT_TEST_OK(strcmp(loremipsum_lines[iline], r.constData()) == 0);
 			++iline;
@@ -152,7 +151,7 @@ void test_line_reader(bool withCanUntil)
 		size_t ntests = 0;
 		while(iline < nlines && ntests < nlines) {
 			if (lineReader.canReadUntil(Vector<char>("\n", 1), 80)) {
-				r = lineReader.readUntil(Vector<char>("\n", 1), 80);
+				r = lineReader.readUntil(Vector<char>("\n", 1), nullptr, 80);
 				r.append(0);
 				CWT_TEST_OK(strcmp(loremipsum_lines[iline], r.constData()) == 0);
 				++iline;
@@ -173,12 +172,11 @@ void test_get_reader()
 	for (size_t iline = 0; iline < nlines; ++iline) {
 		Vector<char> r;
 
-		io::Buffer buffer;
-		buffer.write(loremipsum_lines[iline], strlen(loremipsum_lines[iline]));
-		CWT_TEST_FAIL(buffer.available() == strlen(loremipsum_lines[iline]));
+		shared_ptr<io::Buffer> buffer(new io::Buffer);
+		buffer->write(loremipsum_lines[iline], strlen(loremipsum_lines[iline]));
+		CWT_TEST_FAIL(buffer->available() == strlen(loremipsum_lines[iline]));
 
-		Reader reader(&buffer);
-		io::BufferedReader<Reader> charReader(&reader);
+		io::BufferedReader<Reader> charReader(shared_ptr<Reader>(new Reader(buffer)));
 		char ch;
 
 		while (charReader.get(ch)) {
@@ -196,9 +194,8 @@ int main(int argc, char *argv[])
     CWT_BEGIN_TESTS(3238);
 
     test_writer();
-
     test_variant_chunk_reader();
-    test_line_reader(false);
+   	test_line_reader(false);
     test_line_reader(true);
     test_get_reader();
 //  test_mix_get_read(); // TODO

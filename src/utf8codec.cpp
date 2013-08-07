@@ -19,13 +19,13 @@ template class Utf8UcsCodec<uint16_t, 0xffff>;
 template class Utf8UcsCodec<uint32_t, 0x10ffff>;
 */
 
-template ssize_t Utf8Ucs2Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
-template ssize_t Utf8Ucs4Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
-template ssize_t Ucs2Utf8Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
-template ssize_t Ucs4Utf8Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Ucs2Encoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Ucs4Encoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Ucs2Decoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Ucs4Decoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 
 template <typename T, uint32_t MaxCP>
-ssize_t Utf8UcsCodec<T, MaxCP>::convert(T output[], size_t osize, const char input[], size_t isize, size_t * remain)
+ssize_t UcsEncoder<T, MaxCP>::convert(T output[], size_t osize, const char input[], size_t isize, size_t * remain)
 {
 	CWT_ASSERT(remain);
 
@@ -94,7 +94,7 @@ ssize_t Utf8UcsCodec<T, MaxCP>::convert(T output[], size_t osize, const char inp
 }
 
 template <typename T, uint32_t MaxCP>
-ssize_t UcsUtf8Codec<T, MaxCP>::convert(char output[], size_t osize, const T input[], size_t isize, size_t * remain)
+ssize_t UcsDecoder<T, MaxCP>::convert(char output[], size_t osize, const T input[], size_t isize, size_t * remain)
 {
 	CWT_ASSERT(remain);
 
@@ -137,7 +137,7 @@ ssize_t UcsUtf8Codec<T, MaxCP>::convert(char output[], size_t osize, const T inp
 }
 
 
-ssize_t Utf8Utf8Converter::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+ssize_t Utf8NullDecoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
 {
 	CWT_ASSERT(remain);
 
@@ -149,7 +149,19 @@ ssize_t Utf8Utf8Converter::convert(char output[], size_t osize, const char input
 	return ssize_t(r);
 }
 
-ssize_t Latin1Utf8Converter::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+ssize_t Utf8NullEncoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+{
+	CWT_ASSERT(remain);
+
+	Utf8String s = Utf8String::fromUtf8(input, CWT_MIN(isize, osize), nullptr, & m_state);
+	size_t r = s.size(); // size in bytes;
+	CWT_ASSERT(r <= CWT_SSIZE_MAX);
+	memcpy(output, s.data(), r);
+	*remain = isize - r;
+	return ssize_t(r);
+}
+
+ssize_t Latin1Decoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
 {
 	CWT_ASSERT(remain);
 

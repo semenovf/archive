@@ -26,6 +26,7 @@ struct NullByteCodec : public NullCodec<char>
 class DLL_API DataReader : public BufferedReader<Reader<Device, NullByteCodec> >
 {
 	static const size_t MaxLineLength = 4096;
+
 	typedef Reader<Device, NullByteCodec> base_reader;
 	typedef BufferedReader<base_reader>   base_class;
 
@@ -35,19 +36,20 @@ public:
 	typedef typename base_class::vector_type vector_type;
 
 public:
-	DataReader(Device * dev, size_t chunkSize = base_reader::DefaultChunkSize)
-		: base_class(new base_reader(dev, new NullByteCodec, chunkSize))
+	DataReader(shared_ptr<Device> dev, size_t chunkSize = base_reader::DefaultChunkSize)
+		: base_class(shared_ptr<base_reader>(new base_reader(dev, shared_ptr<NullByteCodec>(new NullByteCodec), chunkSize)))
 		{}
-	//Device * device() const { return m_producer.get(); }
 
-	ByteArray readLine(const ByteArray & end = ByteArray("\n", 1), size_t maxLength = MaxLineLength)
+	Device * device() const { return reader()->producer(); }
+
+	ByteArray readLine(const ByteArray & end = ByteArray("\n"), bool * ok = nullptr, size_t maxLength = MaxLineLength)
 	{
-		return readUntil(end, maxLength);
+		return readUntil(end, ok, maxLength);
 	}
 
-	ByteArray readLine(const ByteArray ends[], size_t count, size_t maxLength = MaxLineLength)
+	ByteArray readLine(const ByteArray ends[], size_t count, bool * ok = nullptr, size_t maxLength = MaxLineLength)
 	{
-		return readUntil(ends, count, maxLength);
+		return readUntil(ends, count, ok, maxLength);
 	}
 };
 

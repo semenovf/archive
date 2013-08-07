@@ -27,13 +27,9 @@ public:
 	typedef Vector<char_type>                 vector_type;
 
 public:
-	Writer (shared_ptr<Consumer> consumer)
-	    : m_consumer(consumer)
-		, m_encoder(new Encoder)
-	{}
-	Writer (shared_ptr<Consumer> consumer, shared_ptr<Encoder> encoder)
+	Writer (shared_ptr<Consumer> consumer, shared_ptr<Encoder> encoder = shared_ptr<Encoder>())
 		: m_consumer(consumer)
-		, m_encoder(encoder)
+		, m_encoder(encoder.get() ? encoder : shared_ptr<Encoder>(new Encoder))
 	{}
 
 	~Writer() { }
@@ -41,9 +37,11 @@ public:
 	ssize_t write (const char_type chars[], size_t size);
 	ssize_t write (const vector_type & chars);
 
+	Consumer * consumer() const { return m_consumer.get(); }
+
 private:
-	shared_ptr<Consumer>    m_consumer;
-	shared_ptr<Encoder>     m_encoder;
+	shared_ptr<Consumer> m_consumer;
+	shared_ptr<Encoder>  m_encoder;
 };
 
 

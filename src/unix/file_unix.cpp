@@ -226,6 +226,7 @@ ssize_t File::writeBytes(const char bytes[], size_t n) { return pimpl->writeByte
 size_t File::size() const { return pimpl->size(); }
 bool File::setPermissions(int perms) { return pimpl->setPermissions(this, perms); }
 bool File::setPermissions(const char *path, int perms) { return File::Impl::setPermissions(path, perms); }
+void File::rewind() { ::lseek(pimpl->m_fd, 0L, SEEK_SET); }
 
 } // namespace io
 

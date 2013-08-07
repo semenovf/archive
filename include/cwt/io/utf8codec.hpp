@@ -18,7 +18,7 @@ CWT_NS_BEGIN
 namespace io {
 
 template <typename T, uint32_t MaxCP>
-class DLL_API Utf8UcsCodec
+class DLL_API UcsEncoder
 {
 public:
 	static const T Null            = T(0x0000);
@@ -29,7 +29,7 @@ public:
 	typedef T         dest_char_type;
 	typedef Vector<T> vector_type;
 
-	Utf8UcsCodec(T replacement = ReplacementChar)
+	UcsEncoder(T replacement = ReplacementChar)
 		: m_replacementChar(replacement)
 		, m_headerDone(false)
 		, m_invalidCount(0) {}
@@ -44,14 +44,14 @@ private:
 	size_t m_invalidCount;
 };
 
-typedef Utf8UcsCodec<uint16_t, 0xffff>   Utf8Ucs2Codec;
-typedef Utf8UcsCodec<uint32_t, 0x10ffff> Utf8Ucs4Codec;
+typedef UcsEncoder<uint16_t, 0xffff>   Ucs2Encoder;
+typedef UcsEncoder<uint32_t, 0x10ffff> Ucs4Encoder;
 
-extern template ssize_t Utf8Ucs2Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
-extern template ssize_t Utf8Ucs4Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+extern template ssize_t Ucs2Encoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+extern template ssize_t Ucs4Encoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 
 template <typename T, uint32_t MaxCP>
-class DLL_API UcsUtf8Codec
+class DLL_API UcsDecoder
 {
 public:
 	static const T MaxCodePoint        = MaxCP;
@@ -61,7 +61,7 @@ public:
 	typedef char       dest_char_type;
 	typedef Utf8String vector_type;
 
-	UcsUtf8Codec(bool ignoreHeader = true, char replacement = ReplacementChar)
+	UcsDecoder(bool ignoreHeader = true, char replacement = ReplacementChar)
 		: m_ignoreHeader(ignoreHeader)
 		, m_replacementChar(replacement)
 		, m_headerDone(ignoreHeader ? true : false)
@@ -78,26 +78,25 @@ private:
 	size_t  m_invalidCount;
 };
 
-typedef UcsUtf8Codec<uint16_t, 0xffff>   Ucs2Utf8Codec;
-typedef UcsUtf8Codec<uint32_t, 0x10ffff> Ucs4Utf8Codec;
+typedef UcsDecoder<uint16_t, 0xffff>   Ucs2Decoder;
+typedef UcsDecoder<uint32_t, 0x10ffff> Ucs4Decoder;
 
-extern template ssize_t Ucs2Utf8Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
-extern template ssize_t Ucs4Utf8Codec::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+extern template ssize_t Ucs2Decoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+extern template ssize_t Ucs4Decoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
 
 
-class DLL_API Utf8BytesConverter
+class DLL_API Utf8Decoder
 {
-/*
 public:
 	typedef char orig_char_type;
 	typedef char dest_char_type;
-*/
+	typedef Utf8String vector_type;
 
 protected:
-	Utf8BytesConverter(char replacement = Utf8String::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
+	Utf8Decoder(char replacement = Utf8String::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
 
 public:
-	virtual ~Utf8BytesConverter() {}
+	virtual ~Utf8Decoder() {}
 	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain) = 0;
 	bool isValid() const { return m_state.invalidChars == 0; }
 
@@ -105,46 +104,45 @@ protected:
 	Utf8String::ConvertState m_state;
 };
 
-class DLL_API Utf8Utf8Converter : public Utf8BytesConverter
-{
-public:
-	Utf8Utf8Converter(char replacement = Utf8String::ReplacementChar) : Utf8BytesConverter(replacement) { }
-	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
-};
 
-/*
-class DLL_API Utf8Latin1Converter : public Utf8BytesConverter
-{
-public:
-	Utf8Latin1Converter(char replacement = Utf8String::ReplacementChar) : Utf8BytesConverter(replacement) { }
-	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
-};
-*/
-
-class DLL_API Latin1Utf8Converter : public Utf8BytesConverter
-{
-public:
-	Latin1Utf8Converter(char replacement = Utf8String::ReplacementChar) : Utf8BytesConverter(replacement) { }
-	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
-};
-
-class DLL_API Utf8Codec
+class DLL_API Utf8Encoder
 {
 public:
 	typedef char orig_char_type;
 	typedef char dest_char_type;
-	typedef Utf8String vector_type;
+	typedef ByteArray vector_type;
 
-	Utf8Codec(Utf8BytesConverter * converter) : m_converter(converter) {}
+protected:
+	Utf8Encoder(char replacement = Utf8String::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
 
-	ssize_t convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain)
-	{
-		return m_converter->convert(output, osize, input, isize, remain);
-	}
-	bool isValid() const { return m_converter->isValid(); }
+public:
+	virtual ~Utf8Encoder() {}
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain) = 0;
+	virtual bool isValid() const = 0;
+protected:
+	Utf8String::ConvertState m_state;
+};
 
-private:
-	Utf8BytesConverter * m_converter;
+
+class DLL_API Utf8NullDecoder : public Utf8Decoder
+{
+public:
+	Utf8NullDecoder(char replacement = Utf8String::ReplacementChar) : Utf8Decoder(replacement) { }
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
+};
+
+class DLL_API Utf8NullEncoder : public Utf8Encoder
+{
+public:
+	Utf8NullEncoder(char replacement = Utf8String::ReplacementChar) : Utf8Encoder(replacement) { }
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
+};
+
+class DLL_API Latin1Decoder : public Utf8Decoder
+{
+public:
+	Latin1Decoder(char replacement = Utf8String::ReplacementChar) : Utf8Decoder(replacement) { }
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
 };
 
 } // namespace io

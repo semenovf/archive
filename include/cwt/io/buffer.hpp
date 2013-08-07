@@ -34,7 +34,7 @@ private:
 };
 
 
-ssize_t Buffer::readBytes (char bytes[], size_t n)
+inline ssize_t Buffer::readBytes (char bytes[], size_t n)
 {
 	size_t nbytes = 0;
 	if (n > 0 && m_buffer.size() > 0) {
