@@ -117,7 +117,7 @@ ssize_t Reader<P, C>::read (Reader<P, C>::char_type chars[], size_t size)
 	return ssize_t(r);
 }
 
-
+// MT-Safe
 template <typename R>
 class BufferedReader
 {
@@ -128,27 +128,78 @@ public:
 
 	typedef typename R::char_type char_type;
 	typedef typename R::vector_type vector_type;
+
 private:
 	BufferedReader() {}
+
+public:
+    class iterator;
+    friend class iterator;
+
+	class iterator {
+		friend class BufferedReader;
+		BufferedReader * m_reader;
+		char_type        m_value;
+
+	public:
+		iterator() : m_reader(nullptr) {}
+		iterator(BufferedReader & reader) : m_reader(& reader) { ++*this; }
+		iterator(const iterator & x) : m_reader(x.m_reader), m_value(x.m_value) {}
+		~iterator() {}
+
+		const char_type & operator * () const { return   m_value; }
+		const char_type * operator-> () const { return & m_value; }
+
+        bool operator  == (const iterator & o) const { return m_reader == o.m_reader; }
+        bool operator  != (const iterator & o) const { return !(m_reader == o.m_reader); }
+
+		iterator & operator ++ () {
+		    if (m_reader && m_reader->atLeast(1)) {
+		    	m_value = m_reader->m_buffer[m_reader->m_cursor++];
+		    } else {
+		    	m_reader = nullptr;
+		    }
+		    return *this;
+		}
+
+		iterator operator ++ (int) {
+		    iterator r = *this;
+		    ++*this;
+		    return r;
+		}
+
+		bool unget(char_type ch);
+
+/*
+        bool operator  > (const iterator & o) const { return m_cursor > o.m_cursor; }
+		bool operator >= (const iterator & o) const { return m_cursor >= o.m_cursor; }
+		bool operator  < (const iterator & o) const { return m_cursor < o.m_cursor; }
+		bool operator <= (const iterator & o) const { return m_cursor <= o.m_cursor; }
+*/
+	};
 
 public:
 	BufferedReader(shared_ptr<R> reader)
 		: m_reader(reader)
 		, m_buffer()
 		, m_cursor(0) {}
-	vector_type read (size_t length);
-	bool canReadUntil(const vector_type & end, size_t maxSize);
-	bool canReadUntil(const vector_type ends[], size_t count, size_t maxSize);
+	vector_type read (size_t maxSize);
+	bool canReadUntil(const vector_type & end, size_t maxSize, typename vector_type::const_iterator * it = nullptr);
+	bool canReadUntil(const vector_type ends[], size_t count, size_t maxSize, typename vector_type::const_iterator * it = nullptr, ssize_t * pend_index = nullptr);
 	vector_type readUntil(const vector_type & end, bool * ok, size_t maxSize);
 	vector_type readUntil(const vector_type ends[], size_t count, bool * ok, size_t maxSize);
+/*
 	bool get(char_type & ch);
 	bool unget(char_type ch);
+*/
 
 	R * reader() const { return m_reader.get(); }
 
 protected:
-	typename vector_type::const_iterator findFirstEnding(const vector_type ends[], size_t count);
-	bool fillBuffer(size_t lowMaxLength, bool resetCursor);
+	typename vector_type::const_iterator findFirstEnding(const vector_type ends[], size_t count, ssize_t & end_index);
+	/*bool fillBuffer(size_t lowMaxLength, bool resetCursor);*/ // TODO obsolete
+	ssize_t fillBuffer(size_t maxSize);
+	bool atLeast(size_t count);
 
 protected:
 	shared_ptr<R> m_reader;
@@ -156,97 +207,117 @@ protected:
 	size_t        m_cursor;
 };
 
+
+/**
+ * @brief Fill the internal buffer with the data from reader
+ *
+ * @param maxSize Internal buffer need to contain near maxSize characters or less.
+ * @return total  Number of characters read from reader or -1 if error occurred.
+ */
 template <typename R>
-bool BufferedReader<R>::fillBuffer(size_t lowMaxLength, bool resetCursor)
+ssize_t BufferedReader<R>::fillBuffer(size_t maxSize)
 {
-	bool ok = true;
+	CWT_ASSERT(!m_reader->isError());
 
-	if (!m_reader->isError()) {
-		if (m_cursor > 0 && m_cursor >= m_buffer.length()) {
-			m_buffer.clear();
-			m_cursor = 0;
+	ssize_t r = 0;
+	char_type tmp[MaxChunkSize];
+
+	while (m_buffer.length() < maxSize) {
+		ssize_t nchars = m_reader->read(tmp, MaxChunkSize);
+
+		if (nchars < 0) {
+			break;
 		}
 
-		if (resetCursor && m_cursor > 0 && m_buffer.length() > 0) {
-			m_buffer.remove(0, m_cursor);
-			m_cursor = 0;
-		}
+		if (!nchars)
+			break;
 
-		char_type tmp[MaxChunkSize];
-
-		while (m_buffer.length() < lowMaxLength) {
-			ssize_t nchars = m_reader->read(tmp, MaxChunkSize);
-
-			if (nchars < 0) {
-				ok = false;
-				break;
-			}
-
-			if (!nchars)
-				break;
-
-			m_buffer.append(tmp, size_t(nchars));
-		}
+		m_buffer.append(tmp, size_t(nchars));
+		r += nchars;
 	}
 
-	return ok;
-}
-
-
-template <typename R>
-typename BufferedReader<R>::vector_type BufferedReader<R>::read (size_t length)
-{
-	BufferedReader<R>::vector_type r;
-
-	if (m_buffer.length() < length) {
-		fillBuffer(length, ResetCursor);
-	}
-
-	r = m_buffer.left(length);
-	m_buffer.clear();
 	return r;
 }
 
 template <typename R>
-inline bool BufferedReader<R>::get(char_type & ch)
+bool BufferedReader<R>::atLeast(size_t count)
 {
-	if (m_cursor >= m_buffer.length())
-		if (!fillBuffer(MaxChunkSize, NotResetCursor))
-			return false;
-
-	if (!m_buffer.length())
-		return false;
-
-	ch = m_buffer.at(m_cursor++);
-	return true;
-}
-
-
-template <typename R>
-bool BufferedReader<R>::unget(char_type ch)
-{
-	if (!m_reader->isError()) {
-		if (m_cursor > 0 && m_cursor >= m_buffer.size()) {
-			m_buffer[--m_cursor] = ch;
-			return true;
+	if (m_cursor + count <= m_buffer.length()) {
+		if (m_cursor > m_buffer.length() * 3 / 4) {
+			m_buffer.remove(0, m_cursor);
+			m_cursor = 0;
 		}
-
-		if (!m_cursor) {
-			m_buffer.prepend(ch);
-			return true;
-		}
+		return true;
 	}
+
+	if (m_cursor >= m_buffer.length()) {
+		m_buffer.clear();
+		m_cursor = 0;
+	}
+
+	if (fillBuffer(m_cursor + count) < 0) {
+		return false;
+	}
+
+	if (m_cursor + count <= m_buffer.length())
+		return true;
 
 	return false;
 }
 
 template <typename R>
-typename BufferedReader<R>::vector_type::const_iterator BufferedReader<R>::findFirstEnding(const vector_type ends[], size_t count)
+typename BufferedReader<R>::vector_type BufferedReader<R>::read (size_t maxSize)
 {
+	BufferedReader<R>::vector_type r;
+
+	if (atLeast(maxSize)) {
+		r = m_buffer.right(maxSize);
+		m_cursor += maxSize;
+	} else if (m_buffer.length() > m_cursor) {
+		r = m_buffer.right(m_buffer.length() - m_cursor);
+		m_buffer.clear();
+		m_cursor = 0;
+	} else {
+		;
+	}
+
+	return r;
+}
+
+template <typename R>
+bool BufferedReader<R>::iterator::unget(char_type ch)
+{
+	CWT_ASSERT(m_reader);
+
+	if (m_reader->m_cursor > 0 && m_reader->m_cursor >= m_buffer.length()) {
+		m_reader->m_buffer[--m_buffer->m_cursor] = ch;
+		return true;
+	}
+
+	if (!m_reader->m_cursor) {
+		m_reader->m_buffer.prepend(ch);
+		return true;
+	}
+
+	return false;
+}
+
+
+template <typename R>
+typename BufferedReader<R>::vector_type::const_iterator BufferedReader<R>::findFirstEnding(
+	  const vector_type ends[]
+	, size_t count
+	, ssize_t & end_index)
+{
+	CWT_ASSERT(count <= CWT_SSIZE_MAX);
+	typename vector_type::const_iterator itBegin = m_buffer.cbegin() + m_cursor;
+	end_index = -1;
+
 	for (size_t i = 0; i < count; ++i) {
 		typename vector_type::const_iterator it;
-		it = search(m_buffer.cbegin(), m_buffer.cend(), ends[i].cbegin(), ends[i].cend());
+		it = search(itBegin, m_buffer.cend(), ends[i].cbegin(), ends[i].cend());
 		if (it != m_buffer.cend()) {
+			end_index = ssize_t(i);
 			return it;
 		}
 	}
@@ -254,19 +325,41 @@ typename BufferedReader<R>::vector_type::const_iterator BufferedReader<R>::findF
 }
 
 template <typename R>
-inline bool BufferedReader<R>::canReadUntil(const BufferedReader<R>::vector_type & end, size_t maxSize)
+inline bool BufferedReader<R>::canReadUntil(const BufferedReader<R>::vector_type & end
+	, size_t maxSize
+	, typename vector_type::const_iterator * pit)
 {
 	const vector_type ends[1] = { end };
-	return canReadUntil(ends, 1, maxSize);
+	return canReadUntil(ends, 1, maxSize, pit);
 }
 
 template <typename R>
-inline bool BufferedReader<R>::canReadUntil(const BufferedReader<R>::vector_type ends[], size_t count, size_t maxSize)
+bool BufferedReader<R>::canReadUntil(const BufferedReader<R>::vector_type ends[]
+	, size_t count
+	, size_t maxSize
+	, typename vector_type::const_iterator * pit
+	, ssize_t * pend_index)
 {
-	if (fillBuffer(maxSize, true)) {
-		return findFirstEnding(ends, count) != m_buffer.cend();
+	CWT_ASSERT(maxSize > 0);
+	size_t size = 0;
+	ssize_t end_index = -1;
+	typename vector_type::const_iterator it = m_buffer.cend();
+	typename vector_type::const_iterator itEnd = m_buffer.cend();
+
+	while (it == itEnd
+			&& size < maxSize
+			&& atLeast(size + CWT_MIN(MaxChunkSize, maxSize - size))) {
+		it = findFirstEnding(ends, count, end_index);
+		size += CWT_MIN(MaxChunkSize, maxSize - size);
 	}
-	return false;
+
+	if (pit)
+		*pit = it;
+
+	if (pend_index)
+		*pend_index = end_index;
+
+	return it == itEnd ? false : true;
 }
 
 
@@ -287,30 +380,16 @@ typename BufferedReader<R>::vector_type BufferedReader<R>::readUntil(
 	, bool * pok
 	, size_t maxSize)
 {
-	CWT_ASSERT(maxSize > 0);
-
 	vector_type r;
 	bool ok = false;
+	ssize_t end_index = -1;
+	typename vector_type::const_iterator it;
 
-	// Reset cursor
-	if (m_cursor > 0 && m_buffer.length() > 0) {
-		m_buffer.remove(0, m_cursor);
-		m_cursor = 0;
-	}
-
-	while (!ok && m_buffer.length() <= maxSize) {
-		if (fillBuffer(CWT_MIN(m_buffer.length() + MaxChunkSize,  maxSize), ResetCursor)) {
-			for (size_t i = 0; i < count; ++i) {
-				typename vector_type::const_iterator it = findFirstEnding(ends, count);
-
-				if (it != m_buffer.cend()) {
-					r = m_buffer.left(m_buffer.length(m_buffer.cbegin(), it));
-					m_buffer.remove(0, m_buffer.length(m_buffer.cbegin(), it) + ends[i].length());
-					ok = true;
-					break;
-				}
-			}
-		}
+	if (canReadUntil(ends, count, maxSize, & it, & end_index)) {
+		size_t lineLength = m_buffer.length(m_buffer.cbegin() + m_cursor, it);
+		r = m_buffer.left(lineLength);
+		m_buffer.remove(0, lineLength + ends[end_index].length());
+		ok = true;
 	}
 
 	if (r.isEmpty()) {

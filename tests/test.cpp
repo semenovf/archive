@@ -177,10 +177,12 @@ void test_get_reader()
 		CWT_TEST_FAIL(buffer->available() == strlen(loremipsum_lines[iline]));
 
 		io::BufferedReader<Reader> charReader(shared_ptr<Reader>(new Reader(buffer)));
-		char ch;
 
-		while (charReader.get(ch)) {
-			r.append(ch);
+		io::BufferedReader<Reader>::iterator it(charReader);
+		io::BufferedReader<Reader>::iterator itEnd;
+
+		while (it != itEnd) {
+			r.append(*it++);
 		}
 		r.append(0);
 		CWT_TEST_OK(strcmp(loremipsum_lines[iline], r.constData()) == 0);
