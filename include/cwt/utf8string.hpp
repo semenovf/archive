@@ -354,8 +354,8 @@ public:
 
 //	bool     atLeast(const const_iterator & begin, size_t count) const { return begin + count < cend(); }
 	size_t   length() const;
-	static size_t length(const const_iterator & begin, const const_iterator & end) const;
-	static size_t length(const const_reverse_iterator & begin, const const_reverse_iterator & end) const;
+	static size_t length(const const_iterator & begin, const const_iterator & end);
+	static size_t length(const const_reverse_iterator & begin, const const_reverse_iterator & end);
 	size_t   size() const;
 	size_t   calculateLength();
 

@@ -84,7 +84,7 @@ size_t Utf8String::length() const
 }
 
 
-size_t Utf8String::length(const const_iterator & begin, const const_iterator & end) const
+size_t Utf8String::length(const const_iterator & begin, const const_iterator & end)
 {
 	size_t r = 0;
 	const_iterator it(begin);
@@ -95,7 +95,7 @@ size_t Utf8String::length(const const_iterator & begin, const const_iterator & e
 	return r;
 }
 
-size_t Utf8String::length(const const_reverse_iterator & begin, const const_reverse_iterator & end) const
+size_t Utf8String::length(const const_reverse_iterator & begin, const const_reverse_iterator & end)
 {
 	size_t r = 0;
 	const_reverse_iterator it(begin);
