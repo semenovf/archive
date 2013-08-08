@@ -87,7 +87,7 @@ size_t Utf8String::length() const
 size_t Utf8String::length(const const_iterator & begin, const const_iterator & end) const
 {
 	size_t r = 0;
-	const_iterator it = begin;
+	const_iterator it(begin);
 
 	while (it++ < end)
 		++r;
@@ -98,7 +98,7 @@ size_t Utf8String::length(const const_iterator & begin, const const_iterator & e
 size_t Utf8String::length(const const_reverse_iterator & begin, const const_reverse_iterator & end) const
 {
 	size_t r = 0;
-	const_reverse_iterator it = begin;
+	const_reverse_iterator it(begin);
 
 	while (it++ < end)
 		++r;

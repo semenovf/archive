@@ -352,10 +352,10 @@ public:
 	String&  replace(const String &before, const String &after, bool cs = true);
 #endif
 
-	bool     atLeast(const const_iterator & begin, size_t count) const { return begin + count < cend(); }
+//	bool     atLeast(const const_iterator & begin, size_t count) const { return begin + count < cend(); }
 	size_t   length() const;
-	size_t   length(const const_iterator & begin, const const_iterator & end) const;
-	size_t   length(const const_reverse_iterator & begin, const const_reverse_iterator & end) const;
+	static size_t length(const const_iterator & begin, const const_iterator & end) const;
+	static size_t length(const const_reverse_iterator & begin, const const_reverse_iterator & end) const;
 	size_t   size() const;
 	size_t   calculateLength();
 

@@ -113,8 +113,9 @@ public:
 	void           resize(size_t size)     { reserve(size); m_d->count = size; }
 	void           reserve(size_t size);
 	size_t         size() const            { return m_d->count; }
-	size_t         length() const            { return size(); }
-	size_t         length(const const_iterator & begin, const const_iterator & end) const { return end - begin; }
+	size_t         length() const          { return size(); }
+	static size_t  length(const iterator & begin, const iterator & end) const { return end - begin; }
+	static size_t  length(const const_iterator & begin, const const_iterator & end) const { return end - begin; }
 	Vector<T>	   mid(size_t pos, size_t length) const;
 	Vector<T>	   left(size_t count) const   { return mid(0, count); }
 	Vector<T>	   right(size_t count) const  { return mid(size() - count, count); }
