@@ -10,18 +10,12 @@
 
 #include <cwt/io/device.hpp>
 #include <cwt/io/reader.hpp>
+#include <cwt/io/nullcodec.hpp>
 #include <cwt/bytearray.hpp>
 
 CWT_NS_BEGIN
 
 namespace io {
-
-struct NullByteCodec : public NullCodec<char>
-{
-	typedef NullCodec<char>::orig_char_type orig_char_type;
-	typedef NullCodec<char>::dest_char_type dest_char_type;
-	typedef ByteArray vector_type;
-};
 
 class DLL_API DataReader : public BufferedReader<Reader<Device, NullByteCodec> >
 {

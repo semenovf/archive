@@ -65,6 +65,7 @@ public:
 	~Reader()      { delete m_buffer; }
 	bool isError() { return m_producer->isError(); }
 	ssize_t read (char_type chars[], size_t size);
+	bool atEnd    () const { return m_producer->atEnd(); }
 
 	P * producer() const { return m_producer.get(); }
 
@@ -169,13 +170,6 @@ public:
 		}
 
 		bool unget(char_type ch);
-
-/*
-        bool operator  > (const iterator & o) const { return m_cursor > o.m_cursor; }
-		bool operator >= (const iterator & o) const { return m_cursor >= o.m_cursor; }
-		bool operator  < (const iterator & o) const { return m_cursor < o.m_cursor; }
-		bool operator <= (const iterator & o) const { return m_cursor <= o.m_cursor; }
-*/
 	};
 
 public:
@@ -188,11 +182,7 @@ public:
 	bool canReadUntil(const vector_type ends[], size_t count, size_t maxSize, typename vector_type::const_iterator * it = nullptr, ssize_t * pend_index = nullptr);
 	vector_type readUntil(const vector_type & end, bool * ok, size_t maxSize);
 	vector_type readUntil(const vector_type ends[], size_t count, bool * ok, size_t maxSize);
-/*
-	bool get(char_type & ch);
-	bool unget(char_type ch);
-*/
-
+	bool atEnd    () const { return m_reader->atEnd(); }
 	R * reader() const { return m_reader.get(); }
 
 protected:
@@ -226,7 +216,7 @@ ssize_t BufferedReader<R>::fillBuffer(size_t maxSize)
 		ssize_t nchars = m_reader->read(tmp, MaxChunkSize);
 
 		if (nchars < 0) {
-			break;
+			return ssize_t(-1);
 		}
 
 		if (!nchars)
@@ -250,7 +240,7 @@ bool BufferedReader<R>::atLeast(size_t count)
 		return true;
 	}
 
-	if (m_cursor >= m_buffer.length()) {
+	if (m_cursor > 0 && m_cursor >= m_buffer.length()) {
 		m_buffer.clear();
 		m_cursor = 0;
 	}
@@ -348,7 +338,7 @@ bool BufferedReader<R>::canReadUntil(const BufferedReader<R>::vector_type ends[]
 
 	while (it == itEnd
 			&& size < maxSize
-			&& atLeast(size + CWT_MIN(MaxChunkSize, maxSize - size))) {
+			&& fillBuffer(size + CWT_MIN(MaxChunkSize, maxSize - size)) >= 0) {
 		it = findFirstEnding(ends, count, end_index);
 		size += CWT_MIN(MaxChunkSize, maxSize - size);
 	}
@@ -395,6 +385,9 @@ typename BufferedReader<R>::vector_type BufferedReader<R>::readUntil(
 	if (r.isEmpty()) {
 		r = m_buffer;
 		m_buffer.clear();
+
+		if (atEnd())
+			ok = true;
 	}
 
 	if (pok)
