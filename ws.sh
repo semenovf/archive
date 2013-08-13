@@ -74,14 +74,14 @@ create() {
 
     cd .gbs
     echo "#************************************************************"  > $PROJECT.pro
-    echo "#* Generated automatically by '$0'                           " >> $PROJECT.pro
-    echo "#* Command: $CMDLINE                                         " >> $PROJECT.pro
-    echo "#* Author:  $USERNAME                                        " >> $PROJECT.pro
-    echo "#* Date:    $DATE                                            " >> $PROJECT.pro
+    echo "#* Generated automatically by '$0'"                            >> $PROJECT.pro
+    echo "#* Command: $CMDLINE"                                          >> $PROJECT.pro
+    echo "#* Author:  $USERNAME"                                         >> $PROJECT.pro
+    echo "#* Date:    $DATE"                                             >> $PROJECT.pro
     echo "#************************************************************" >> $PROJECT.pro
-    echo "TEMPLATE = subdirs                                           " >> $PROJECT.pro
-    echo "CONFIG  += ordered                                           " >> $PROJECT.pro
-    echo "SUBDIRS  = $PROJECT tests                                    " >> $PROJECT.pro
+    echo "TEMPLATE = subdirs"                                            >> $PROJECT.pro
+    echo "CONFIG  += ordered"                                            >> $PROJECT.pro
+    echo "SUBDIRS  = $PROJECT tests"                                     >> $PROJECT.pro
     cd ..
 
     # Prepare make.sh (for use from IDE, e.g. Eclipse)

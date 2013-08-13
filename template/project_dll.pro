@@ -3,17 +3,14 @@ include($$(GBS_HOME)/common-dll.pri)
 TARGET =
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
+INCLUDEPATH += ../../../cwt-core/include
 
-DEPENDPATH += ../../include
+SOURCES += ../../src/*.cpp
 
 unix {
-    HEADERS += ../../include/@PRJ@/*.h
-    SOURCES += ../../src/*.c
-#   LIBS += -lmylib
+    LIBS += -lcwt
 }
 
 win32 {
-    HEADERS += ..\\..\\include\\@PRG@\\*.h
-    SOURCES += ..\\..\\src\\*.c
-#   LIBS += lylib.lib
+    LIBS += cwt.lib
 }

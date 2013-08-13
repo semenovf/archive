@@ -1,4 +1,4 @@
-#include <cwt/cwt.h>
+#include <cwt/cwt.hpp>
 
 int main(int argc, char *argv[])
 {
