@@ -51,7 +51,6 @@ public:
 	size_t size() const;
 	bool setPermissions(int perms);
 	void rewind();
-	static bool setPermissions(const char *path, int perms);
 };
 
 } // namespace io

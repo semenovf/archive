@@ -6,7 +6,6 @@
  */
 
 #include "../include/cwt/io/file.hpp"
-#include <cwt/logger.hpp>
 #include <cwt/safeformat.hpp>
 #include <cerrno>
 #include <fcntl.h>
@@ -29,10 +28,9 @@ public:
 	bool    open(Errorable *ex, const char *path, int oflags);
 	ssize_t readBytes(Errorable *ex, char bytes[], size_t n);
 	ssize_t writeBytes(Errorable *ex, const char bytes[], size_t n);
-	bool    setPermissions(Errorable *ex, int perms);
 	size_t  size() const;
 
-	static bool setPermissions(const char *path, int perms);
+	static bool setPermissions(Errorable *ex, const char *path, int perms);
 	static int  permsToMode(int perms);
 public:
 	char *m_path;
@@ -100,7 +98,7 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 	m_fd = fd;
 
 	if (created) {
-		return setPermissions(path, File::ReadOwner | File::WriteOwner);
+		return setPermissions(ex, path, File::ReadOwner | File::WriteOwner);
 	}
 
 	return true;
@@ -188,26 +186,13 @@ size_t File::Impl::size() const
 	return size_t(end - begin);
 }
 
-bool File::Impl::setPermissions(Errorable *ex, int perms)
-{
-	CWT_ASSERT(m_path);
-
-	if (::chmod(m_path, permsToMode(perms)) != 0) {
-		ex->addSystemError(errno
-			, _Fr("failed to change permissions to file (%s)") % (m_path != NULL ? m_path : ""));
-		return false;
-	}
-
-	return true;
-}
-
-bool File::Impl::setPermissions(const char *path, int perms)
+bool File::Impl::setPermissions(Errorable *ex, const char *path, int perms)
 {
 	CWT_ASSERT(path);
 
 	if (::chmod(path, permsToMode(perms)) != 0) {
-		Logger::error(_Fr("failed to change permissions to file (%s)")
-				% (path != NULL ? path : ""));
+		ex->addSystemError(errno
+			, _Fr("failed to change permissions to file (%s)") % (path != nullptr ? path : ""));
 		return false;
 	}
 
@@ -224,8 +209,7 @@ ssize_t File::readBytes(char bytes[], size_t n) { return pimpl->readBytes(this, 
 ssize_t File::writeBytes(const char bytes[], size_t n) { return pimpl->writeBytes(this, bytes, n); }
 
 size_t File::size() const { return pimpl->size(); }
-bool File::setPermissions(int perms) { return pimpl->setPermissions(this, perms); }
-bool File::setPermissions(const char *path, int perms) { return File::Impl::setPermissions(path, perms); }
+bool File::setPermissions(int perms) { return pimpl->setPermissions(this, pimpl->m_path, perms); }
 void File::rewind() { ::lseek(pimpl->m_fd, 0L, SEEK_SET); }
 
 } // namespace io
