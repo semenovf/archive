@@ -20,6 +20,7 @@ template <typename T>
 class DLL_API Vector {
 public:
 	typedef T char_type;
+	static const size_t DefaultIncrement = 32;
 
 public:
     class iterator {
@@ -178,7 +179,7 @@ inline Vector<T>::Vector(const Vector<T> &other) : m_d(other.m_d)
 }
 
 template <typename T>
-inline Vector<T>& Vector<T>::operator=(const Vector<T> & other)
+inline Vector<T>& Vector<T>::operator = (const Vector<T> & other)
 {
 	m_d = other.m_d;
 	return *this;
@@ -229,7 +230,7 @@ void Vector<T>::append(const T &value)
 {
 	m_d.detach();
 	if (m_d->count == m_d->data.size())
-		reserve(m_d->count + 32);
+		reserve(m_d->count + DefaultIncrement);
 	T *d = m_d->data.data();
 	d[m_d->count++] = value;
 }
@@ -240,7 +241,7 @@ void Vector<T>::append(const T * value, size_t count)
 	m_d.detach();
 
 	if (m_d->count + count > m_d->data.size())
-		reserve(m_d->count + CWT_MAX(32, count));
+		reserve(m_d->count + CWT_MAX(DefaultIncrement, count));
 
 	T *d = m_d->data.data();
 
@@ -261,7 +262,7 @@ void Vector<T>::prepend(const T &value)
 {
 	m_d.detach();
 	if (m_d->count == m_d->data.size())
-		reserve(m_d->count + 32);
+		reserve(m_d->count + DefaultIncrement);
 	m_d->data.move(1, 0, m_d->count);
 
 	T *d = m_d->data.data();

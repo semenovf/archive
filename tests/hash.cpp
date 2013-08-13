@@ -9,7 +9,6 @@
 #include "../include/cwt/hash.hpp"
 #include "../include/cwt/bytearray.hpp"
 #include "../include/cwt/string.hpp"
-#include "../include/cwt/logger.hpp"
 #include "../include/cwt/safeformat.hpp"
 #include <cstring>
 

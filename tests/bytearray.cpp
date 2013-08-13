@@ -7,7 +7,6 @@
 
 #include "../include/cwt/test.h"
 #include "../include/cwt/bytearray.hpp"
-#include "../include/cwt/logger.hpp"
 #include "../include/cwt/safeformat.hpp"
 #include <cstring>
 
@@ -32,7 +31,7 @@ void test_convert_number()
 	ByteArray ba_double;
 	ba_double.setNumber(double(13.14159));
 	printf("13.14159 == %s\n", ba_double.constData());
-	Logger::trace(_Fr("13.14159 == %s") % ba_double.constData());
+	CWT_TRACE(String(_Fr("13.14159 == %s") % ba_double.constData()).c_str());
 
 	CWT_TEST_OK(num.toInt(&ok) == 1234 && ok);
 }

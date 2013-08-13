@@ -55,6 +55,7 @@ public:
 	static void copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
 	static void copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n);
 
+	static void deep_copy(T * to, const T * from, size_t n);
 	static void deep_copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
 	static void deep_copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n);
 };
@@ -156,6 +157,14 @@ void Array<T>::copy(Array &to, const T *from, size_t off_to, size_t off_from, si
 }
 
 template <typename T>
+void Array<T>::deep_copy(T * to, const T * from, size_t n)
+{
+	while (n--) {
+		*to++ = *from++;
+	}
+}
+
+template <typename T>
 void Array<T>::deep_copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n)
 {
 	n = CWT_MIN(from.m_capacity - off_from, n);
@@ -195,8 +204,10 @@ void Array<T>::realloc (size_t new_capacity)
 {
 	if (new_capacity != m_capacity) {
 		T *new_head = new T[new_capacity];
-		memcpy(new_head, m_head, CWT_MIN(m_capacity, new_capacity));
-		delete m_head;
+		if (m_head) {
+			deep_copy(new_head, m_head, CWT_MIN(m_capacity, new_capacity));
+			delete[] m_head;
+		}
 		m_head = new_head;
 		m_capacity = new_capacity;
 	}

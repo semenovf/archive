@@ -27,9 +27,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 #include "../include/cwt/hash.hpp"
-#include "../include/cwt/logger.hpp"
-
-#include <cwt/bytearray.hpp>
+#include "../include/cwt/bytearray.hpp"
 
 CWT_NS_BEGIN
 

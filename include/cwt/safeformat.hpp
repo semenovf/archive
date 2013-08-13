@@ -8,7 +8,6 @@
 #ifndef __CWT_SAFEFORMAT_HPP__
 #define __CWT_SAFEFORMAT_HPP__
 
-#include <cwt/fsm.hpp>
 #include <cwt/unitype.hpp>
 #include <cwt/string.hpp>
 #include <cwt/bytearray.hpp>

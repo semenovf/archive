@@ -160,18 +160,33 @@ void test_swap()
 	CWT_TEST_OK(strncmp(v1.constData(), ipsum, strlen(ipsum)) == 0);
 }
 
+void test_vector_vector()
+{
+	Vector<Vector<int> > records;
+
+	for (int i = 0; size_t(i) < Vector<Vector<int> >::DefaultIncrement + 1; ++i) {
+		Vector<int> record;
+		for (int j = 0; size_t(j) < Vector<Vector<int> >::DefaultIncrement + 1; ++j) {
+			record.append(j);
+		}
+		records.append(record);
+	}
+
+	CWT_TEST_FAIL(records.size() == Vector<Vector<int> >::DefaultIncrement + 1);
+}
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(1403);
+	CWT_BEGIN_TESTS(1404);
 
 	test_int_vector();
 	test_long_vector();
 	test_char_vector();
 	test_vector_iterator();
 	test_swap();
+	test_vector_vector();
 
     CWT_END_TESTS;
 }

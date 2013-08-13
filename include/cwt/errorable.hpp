@@ -36,10 +36,10 @@ public:
 	void clearErrors() { m_errors.clear(); }
 	size_t errorCount() const;
 	const String errorTextAt(size_t index) const;
+	int errorRepeatCount(size_t index) const;
 	bool isError() const { return m_errors.size() != 0; }
 	bool isGood() const { return m_errors.size() == 0; }
 	const String lastErrorText() const;
-	void logErrors(bool clear = true);
 
 private:
 	Vector<ErrorData> m_errors;
@@ -55,6 +55,13 @@ inline const String Errorable::errorTextAt(size_t index) const
 	return index < m_errors.size()
 			? String(m_errors[index].errstr)
 			: String();
+}
+
+inline int Errorable::errorRepeatCount(size_t index) const
+{
+	return index < m_errors.size()
+			? m_errors[index].ntimes
+			: -1;
 }
 
 inline const String Errorable::lastErrorText() const

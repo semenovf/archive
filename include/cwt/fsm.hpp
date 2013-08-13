@@ -140,7 +140,8 @@ private:
 };
 
 
-/** @brief Checks if character 'ch' belongs to the set of characters subset
+/** @brief Checks if character @c ch belongs to the subset of characters
+ *         specified by begin and end iterators.
  * */
 template <typename _P>
 bool Fsm<_P>::belongsChar(char_type ch, const const_iterator & begin, const const_iterator & end)
@@ -154,7 +155,10 @@ bool Fsm<_P>::belongsChar(char_type ch, const const_iterator & begin, const cons
 	return false;
 }
 
-/** @brief Checks if string 's' exactly equals to sequence of characters 'seq'
+/** @brief Checks if haystack specified by begin an end iterators
+ *         (@c haystack_begin and @c haystack_begin respectively)
+ *         contains the needle also specified by begin and end iterators
+ *         (@c needle_begin and @c needle_end respectively).
  * */
 template <typename _P>
 bool Fsm<_P>::containsChars(const const_iterator & needle_begin, const const_iterator & needle_end

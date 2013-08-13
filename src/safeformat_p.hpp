@@ -11,6 +11,7 @@
 #include "../include/cwt/safeformat.hpp"
 #include "../include/cwt/unicode.hpp"
 #include "../include/cwt/vector.hpp"
+#include <cwt/fsm.hpp>
 
 CWT_NS_BEGIN
 

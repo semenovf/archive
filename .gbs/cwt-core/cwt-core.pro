@@ -5,6 +5,7 @@ include($$(GBS_HOME)/common-dll-qt.pri)
 TARGET = cwt
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
+INCLUDEPATH += ../../../cwt-fsm/include
 
 HEADERS += ../../include/cwt/*.hpp
 HEADERS += ../../include/cwt/*.h

@@ -7,7 +7,6 @@
 
 #include "utf8string_p.hpp"
 #include "../../include/cwt/unicode.hpp"
-#include "../../include/cwt/logger.hpp"
 
 CWT_NS_BEGIN
 
