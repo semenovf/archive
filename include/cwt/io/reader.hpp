@@ -35,26 +35,26 @@ template<class ForwardIterator1, class ForwardIterator2>
 	return last1;
 }
 
-template <typename P, typename C>
+template <typename P, typename Decoder>
 class Reader
 {
 public:
 	static const size_t DefaultChunkSize = 512;
 
-	typedef typename C::orig_char_type  orig_char_type;
-	typedef typename C::dest_char_type  char_type;
-	typedef typename C::vector_type     vector_type;
+	typedef typename Decoder::orig_char_type  orig_char_type;
+	typedef typename Decoder::dest_char_type  char_type;
+	typedef typename Decoder::vector_type     vector_type;
 
 public:
 	Reader (shared_ptr<P> producer, size_t chunkSize = DefaultChunkSize)
 		: m_chunkSize (chunkSize)
 	    , m_producer  (producer)
-		, m_decoder   (new C)
+		, m_decoder   (new Decoder)
 		, m_buffer    (new orig_char_type[chunkSize])
 		, m_remain    (0)
 	{}
 
-	Reader (shared_ptr<P> producer, shared_ptr<C> decoder, size_t chunkSize = DefaultChunkSize)
+	Reader (shared_ptr<P> producer, shared_ptr<Decoder> decoder, size_t chunkSize = DefaultChunkSize)
 		: m_chunkSize (chunkSize)
 		, m_producer  (producer)
 		, m_decoder   (decoder)
@@ -70,15 +70,15 @@ public:
 	P * producer() const { return m_producer.get(); }
 
 protected:
-	size_t           m_chunkSize; // counted in original chars
-	shared_ptr<P>    m_producer;
-	shared_ptr<C>    m_decoder;
-	orig_char_type * m_buffer;
-	size_t           m_remain;    // counted in original chars
+	size_t              m_chunkSize; // counted in original chars
+	shared_ptr<P>       m_producer;
+	shared_ptr<Decoder> m_decoder;
+	orig_char_type *    m_buffer;
+	size_t              m_remain;    // counted in original chars
 };
 
-template <typename P, typename C>
-ssize_t Reader<P, C>::read (Reader<P, C>::char_type chars[], size_t size)
+template <typename P, typename Decoder>
+ssize_t Reader<P, Decoder>::read (Reader<P, Decoder>::char_type chars[], size_t size)
 {
 	size_t r = 0;
 	CWT_ASSERT(size <= CWT_SSIZE_MAX);

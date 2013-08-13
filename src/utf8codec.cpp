@@ -137,7 +137,7 @@ ssize_t UcsDecoder<T, MaxCP>::convert(char output[], size_t osize, const T input
 }
 
 
-ssize_t Utf8NullDecoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+ssize_t Utf8Decoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
 {
 	CWT_ASSERT(remain);
 
@@ -149,7 +149,7 @@ ssize_t Utf8NullDecoder::convert(char output[], size_t osize, const char input[]
 	return ssize_t(r);
 }
 
-ssize_t Utf8NullEncoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+ssize_t Utf8Encoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
 {
 	CWT_ASSERT(remain);
 

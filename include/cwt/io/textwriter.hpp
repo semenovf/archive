@@ -1,37 +1,37 @@
 /*
- * datawriter.hpp
+ * textwriter.hpp
  *
- *  Created on: Aug 12, 2013
+ *  Created on: Aug 13, 2013
  *      Author: wladt
  */
 
-#ifndef __CWT_IO_DATAWRITER_HPP__
-#define __CWT_IO_DATAWRITER_HPP__
+#ifndef __CWT_IO_TEXTWRITER_HPP__
+#define __CWT_IO_TEXTWRITER_HPP__
 
 #include <cwt/io/device.hpp>
 #include <cwt/io/writer.hpp>
-#include <cwt/io/nullcodec.hpp>
-#include <cwt/bytearray.hpp>
-#include <cwt/string.hpp>
+#include <cwt/io/utf8codec.hpp>
 
 CWT_NS_BEGIN
 
 namespace io {
 
-class DLL_API DataWriter : public Writer<Device, NullByteCodec>
+class DLL_API TextWriter : public Writer<Device, Utf8Encoder>
 {
-	typedef Writer<Device, NullByteCodec> base_class;
+private:
+	typedef Writer<Device, Utf8Encoder> base_class;
 
-	CWT_DENY_COPY(DataWriter);
+	CWT_DENY_COPY(TextWriter);
 
-/*
 public:
 	typedef typename base_class::vector_type vector_type;
 
-*/
 public:
-	DataWriter(shared_ptr<Device> dev)
-		: base_class(dev, shared_ptr<NullByteCodec>(new NullByteCodec))
+	TextWriter(shared_ptr<Device> dev)
+		: base_class(dev, make_shared<Utf8Encoder>())
+		{}
+	TextWriter(shared_ptr<Device> dev, shared_ptr<Utf8Encoder> encoder)
+		: base_class(dev, encoder)
 		{}
 
 	Device * device() const { return consumer(); }
@@ -45,4 +45,4 @@ public:
 
 CWT_NS_END
 
-#endif /* __CWT_IO_DATAWRITER_HPP__ */
+#endif /* __CWT_IO_TEXTWRITER_HPP__ */

@@ -32,11 +32,11 @@ public:
 
 public:
 	TextReader(shared_ptr<Device> dev, shared_ptr<Utf8Decoder> decoder, size_t chunkSize = base_reader::DefaultChunkSize)
-		: base_class(shared_ptr<base_reader>( new base_reader(dev, decoder, chunkSize)))
+		: base_class(shared_ptr<base_reader> (new base_reader(dev, decoder, chunkSize)))
 		{}
 
 	TextReader(shared_ptr<Device> dev, size_t chunkSize = base_reader::DefaultChunkSize)
-		: base_class(shared_ptr<base_reader>( new base_reader(dev, shared_ptr<Utf8Decoder>(new Utf8NullDecoder), chunkSize)))
+		: base_class(shared_ptr<base_reader> (new base_reader(dev, shared_ptr<Utf8Decoder>(new Utf8NullDecoder), chunkSize)))
 		{}
 
 	Device * device() const { return reader()->producer(); }

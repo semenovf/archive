@@ -114,7 +114,7 @@ int File::Impl::close()
 		::free(m_path);
 
 	m_fd = -1;
-	m_path = NULL;
+	m_path = nullptr;
 	return rc;
 }
 
@@ -200,6 +200,8 @@ bool File::Impl::setPermissions(Errorable *ex, const char *path, int perms)
 }
 
 File::File() : pimpl(new File::Impl) { ; }
+File::File(int fd) : pimpl(new File::Impl) { pimpl->m_fd = ::dup(fd); }
+File::File(const char *path, int oflags) : pimpl(new File::Impl) { pimpl->open(this, path, oflags); }
 size_t  File::bytesAvailable() const { return pimpl->bytesAvailable(); }
 bool    File::open(const char *path, int oflags) {	return pimpl->open(this, path, oflags); }
 int     File::close()   { return pimpl->close(); }

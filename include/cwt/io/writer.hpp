@@ -27,9 +27,14 @@ public:
 	typedef Vector<char_type>                 vector_type;
 
 public:
-	Writer (shared_ptr<Consumer> consumer, shared_ptr<Encoder> encoder = shared_ptr<Encoder>())
+	Writer (shared_ptr<Consumer> consumer)
 		: m_consumer(consumer)
-		, m_encoder(encoder.get() ? encoder : shared_ptr<Encoder>(new Encoder))
+		, m_encoder(new Encoder)
+	{}
+
+	Writer (shared_ptr<Consumer> consumer, shared_ptr<Encoder> encoder)
+		: m_consumer(consumer)
+		, m_encoder(encoder)
 	{}
 
 	~Writer() { }

@@ -42,6 +42,7 @@ protected:
 
 public:
 	File();
+	File(int fd);
 	File(const char *path, int oflags);
 	bool open(const char *path, int oflags = ReadOwner | WriteOwner);
 	virtual int  close();

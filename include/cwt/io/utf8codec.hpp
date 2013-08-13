@@ -92,12 +92,10 @@ public:
 	typedef char dest_char_type;
 	typedef Utf8String vector_type;
 
-protected:
-	Utf8Decoder(char replacement = Utf8String::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
-
 public:
+	Utf8Decoder(char replacement = Utf8String::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
 	virtual ~Utf8Decoder() {}
-	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain) = 0;
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
 	bool isValid() const { return m_state.invalidChars == 0; }
 
 protected:
@@ -112,31 +110,25 @@ public:
 	typedef char dest_char_type;
 	typedef ByteArray vector_type;
 
-protected:
-	Utf8Encoder(char replacement = Utf8String::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
-
 public:
+	Utf8Encoder() : m_state() { m_state.replacementChar = Utf8String::ReplacementChar; }
+	Utf8Encoder(char replacement) : m_state() { m_state.replacementChar = replacement; }
 	virtual ~Utf8Encoder() {}
-	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain) = 0;
-	virtual bool isValid() const = 0;
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
+	bool isValid() const { return m_state.invalidChars == 0; }
 protected:
 	Utf8String::ConvertState m_state;
 };
 
 
-class DLL_API Utf8NullDecoder : public Utf8Decoder
+typedef Utf8Decoder Utf8NullDecoder;
+
+/*class DLL_API Utf8NullDecoder : public Utf8Decoder
 {
 public:
 	Utf8NullDecoder(char replacement = Utf8String::ReplacementChar) : Utf8Decoder(replacement) { }
 	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
-};
-
-class DLL_API Utf8NullEncoder : public Utf8Encoder
-{
-public:
-	Utf8NullEncoder(char replacement = Utf8String::ReplacementChar) : Utf8Encoder(replacement) { }
-	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
-};
+};*/
 
 class DLL_API Latin1Decoder : public Utf8Decoder
 {
@@ -144,6 +136,16 @@ public:
 	Latin1Decoder(char replacement = Utf8String::ReplacementChar) : Utf8Decoder(replacement) { }
 	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
 };
+
+typedef Utf8Encoder Utf8NullEncoder;
+/*
+class DLL_API Utf8NullEncoder : public Utf8Encoder
+{
+public:
+	Utf8NullEncoder(char replacement = Utf8String::ReplacementChar) : Utf8Encoder(replacement) { }
+	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
+};
+*/
 
 } // namespace io
 
