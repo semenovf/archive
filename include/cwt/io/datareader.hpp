@@ -35,6 +35,17 @@ public:
 		{}
 
 	Device * device() const { return reader()->producer(); }
+	const ByteArray & data() const { return base_class::m_buffer; }
+
+	bool canReadLine(const ByteArray & end = ByteArray("\n"), size_t maxLength = MaxLineLength)
+	{
+		return canReadUntil(end, maxLength, nullptr);
+	}
+
+	bool canReadLine(const ByteArray ends[], size_t count, size_t maxLength = MaxLineLength)
+	{
+		return canReadUntil(ends, count, maxLength, nullptr, nullptr);
+	}
 
 	ByteArray readLine(const ByteArray & end = ByteArray("\n"), bool * ok = nullptr, size_t maxLength = MaxLineLength)
 	{

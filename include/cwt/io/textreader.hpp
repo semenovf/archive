@@ -41,6 +41,16 @@ public:
 
 	Device * device() const { return reader()->producer(); }
 
+	bool canReadLine(const Utf8String & end = Utf8String("\n"), size_t maxLength = MaxLineLength)
+	{
+		return canReadUntil(end, maxLength, nullptr);
+	}
+
+	bool canReadLine(const Utf8String ends[], size_t count, size_t maxLength = MaxLineLength)
+	{
+		return canReadUntil(ends, count, maxLength, nullptr, nullptr);
+	}
+
 	Utf8String readLine(const Utf8String & end = Utf8String("\n"), bool * ok = nullptr, size_t maxLength = MaxLineLength)
 	{
 		return readUntil(end, ok, maxLength);

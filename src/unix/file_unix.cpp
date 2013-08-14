@@ -25,16 +25,16 @@ public:
 	void    flush();
 	size_t  bytesAvailable() const;
 	int     close();
-	bool    open(Errorable *ex, const char *path, int oflags);
+	bool    open(Errorable *ex, const String & path, int oflags);
 	ssize_t readBytes(Errorable *ex, char bytes[], size_t n);
 	ssize_t writeBytes(Errorable *ex, const char bytes[], size_t n);
 	size_t  size() const;
 
-	static bool setPermissions(Errorable *ex, const char *path, int perms);
+	static bool setPermissions(Errorable *ex, const String & path, int perms);
 	static int  permsToMode(int perms);
 public:
-	char *m_path;
-	int   m_fd;
+	String m_path;
+	int    m_fd;
 };
 
 
@@ -61,7 +61,7 @@ size_t File::Impl::bytesAvailable() const
 	return (size_t)(total - cur);
 }
 
-bool File::Impl::open(Errorable *ex, const char *path, int oflags)
+bool File::Impl::open(Errorable *ex, const String & path, int oflags)
 {
 	int fd;
 	int native_oflags = 0;
@@ -76,7 +76,7 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 		native_oflags |= O_CREAT;
 
 		struct stat st;
-		if (stat(path, &st) != 0 && errno == ENOENT)
+		if (stat(path.c_str(), &st) != 0 && errno == ENOENT)
 			created = true;
 	} else {
 		native_oflags |= O_RDONLY;
@@ -85,10 +85,9 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 	if (oflags & Device::NonBlocking)
 		native_oflags |= O_NONBLOCK;
 
-	m_path = CWT_MALLOCA(char, strlen(path)+1);
-	memcpy(m_path, path, strlen(path)+1);
+	m_path = path;
 
-	fd = ::open(path, native_oflags);
+	fd = ::open(path.c_str(), native_oflags);
 
 	if (fd < 0) {
 		ex->addSystemError(errno, _Fr("Failed to open '%s'") % path);
@@ -98,7 +97,7 @@ bool File::Impl::open(Errorable *ex, const char *path, int oflags)
 	m_fd = fd;
 
 	if (created) {
-		return setPermissions(ex, path, File::ReadOwner | File::WriteOwner);
+		return setPermissions(ex, path.c_str(), File::ReadOwner | File::WriteOwner);
 	}
 
 	return true;
@@ -110,11 +109,9 @@ int File::Impl::close()
 
 	if (m_fd > 0)
 		rc = ::close(m_fd);
-	if (m_path)
-		::free(m_path);
 
 	m_fd = -1;
-	m_path = nullptr;
+	m_path.clear();
 	return rc;
 }
 
@@ -186,13 +183,12 @@ size_t File::Impl::size() const
 	return size_t(end - begin);
 }
 
-bool File::Impl::setPermissions(Errorable *ex, const char *path, int perms)
+bool File::Impl::setPermissions(Errorable *ex, const String & path, int perms)
 {
-	CWT_ASSERT(path);
-
-	if (::chmod(path, permsToMode(perms)) != 0) {
+	CWT_ASSERT(!path.isEmpty());
+	if (::chmod(path.c_str(), permsToMode(perms)) != 0) {
 		ex->addSystemError(errno
-			, _Fr("failed to change permissions to file (%s)") % (path != nullptr ? path : ""));
+			, _Fr("failed to change permissions to file (%s)") % path);
 		return false;
 	}
 
@@ -201,9 +197,9 @@ bool File::Impl::setPermissions(Errorable *ex, const char *path, int perms)
 
 File::File() : pimpl(new File::Impl) { ; }
 File::File(int fd) : pimpl(new File::Impl) { pimpl->m_fd = ::dup(fd); }
-File::File(const char *path, int oflags) : pimpl(new File::Impl) { pimpl->open(this, path, oflags); }
+File::File(const String & path, int oflags) : pimpl(new File::Impl) { pimpl->open(this, path, oflags); }
 size_t  File::bytesAvailable() const { return pimpl->bytesAvailable(); }
-bool    File::open(const char *path, int oflags) {	return pimpl->open(this, path, oflags); }
+bool    File::open(const String & path, int oflags) {	return pimpl->open(this, path, oflags); }
 int     File::close()   { return pimpl->close(); }
 void    File::flush()   { pimpl->flush(); }
 bool    File::opened() const { return pimpl->m_fd >= 0; }

@@ -334,9 +334,8 @@ bool BufferedReader<R>::canReadUntil(const BufferedReader<R>::vector_type ends[]
 	size_t size = 0;
 	ssize_t end_index = -1;
 	typename vector_type::const_iterator it = m_buffer.cend();
-	typename vector_type::const_iterator itEnd = m_buffer.cend();
 
-	while (it == itEnd
+	while (it == m_buffer.cend()
 			&& size < maxSize
 			&& fillBuffer(size + CWT_MIN(MaxChunkSize, maxSize - size)) >= 0) {
 		it = findFirstEnding(ends, count, end_index);
@@ -349,7 +348,7 @@ bool BufferedReader<R>::canReadUntil(const BufferedReader<R>::vector_type ends[]
 	if (pend_index)
 		*pend_index = end_index;
 
-	return it == itEnd ? false : true;
+	return it == m_buffer.cend() ? false : true;
 }
 
 

@@ -8,7 +8,6 @@
 
 #include "../include/cwt/io/utf8codec.hpp"
 #include <cwt/utf8string.hpp>
-#include <cwt/unicode.hpp>
 
 CWT_NS_BEGIN
 
@@ -74,7 +73,7 @@ ssize_t UcsEncoder<T, MaxCP>::convert(T output[], size_t osize, const char input
 		}
 
 		if ((uc < min_uc)                        // overlong sequence
-				|| Unicode::isSurrogate(uc)      // UTF16 surrogate
+				|| UChar::isSurrogate(uc)      // UTF16 surrogate
 				/*|| Unicode::isNonCharacter(uc)*/   // non-character
 				|| uc > MaxCodePoint) {          // non-character
 

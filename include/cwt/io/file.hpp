@@ -43,8 +43,8 @@ protected:
 public:
 	File();
 	File(int fd);
-	File(const char *path, int oflags);
-	bool open(const char *path, int oflags = ReadOwner | WriteOwner);
+	File(const String & path, int oflags);
+	bool open(const String & path, int oflags = ReadOwner | WriteOwner);
 	virtual int  close();
 	virtual void flush();
 	virtual bool opened() const;
