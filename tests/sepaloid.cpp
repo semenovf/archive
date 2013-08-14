@@ -1,5 +1,7 @@
 #include <cwt/test.h>
 #include <cwt/sepaloid.hpp>
+#include <cwt/safeformat.hpp>
+#include <cwt/logger.hpp>
 #include <cstring>
 
 using namespace cwt;
@@ -100,7 +102,7 @@ inline void LocalPetaloidDetector::onSixArgs(bool ok, char, short, int, long, co
 
 inline void LocalPetaloidDetector::onSevenArgs(bool ok, char, short, int, long, const char*, const String &hello)
 {
-	CWT_TEST_OK2(ok == true && hello == _U("Hello, Unicode World!"), "onSevenArgs(bool,..., String(\"Hello, Unicode World!\")");
+	CWT_TEST_OK2(ok == true && hello == String("Hello, Unicode World!"), "onSevenArgs(bool,..., String(\"Hello, Unicode World!\")");
 }
 
 inline void LocalPetaloidDetector::onEightArgs(bool ok, char, short, int, long, long long i, const char*, const String&)
@@ -151,9 +153,9 @@ int main(int argc, char *argv[])
     Sepaloid sepaloid(app_mapping, sizeof(app_mapping)/sizeof(app_mapping[0]));
     CWT_TEST_OK(sepaloid.registerLocalPetaloid(emitter));
     CWT_TEST_OK(sepaloid.registerLocalPetaloid(detector));
-    CWT_TEST_OK(sepaloid.registerPetaloidForPath(_U("libpetaloid-tmpl.so")));
-    sepaloid.addSearchPath(_U("."));
-    CWT_TEST_OK(sepaloid.registerPetaloidForName(_U("petaloid-tmpl")));
+    CWT_TEST_OK(sepaloid.registerPetaloidForPath("libpetaloid-tmpl.so"));
+    sepaloid.addSearchPath(".");
+    CWT_TEST_OK(sepaloid.registerPetaloidForName("petaloid-tmpl"));
     sepaloid.connectAll();
 
     CWT_TEST_FAIL(sepaloid.count() == 4);
@@ -162,7 +164,7 @@ int main(int argc, char *argv[])
 
     Logger::debug("List of registered petaloids:");
     for (int i = 0; it != itEnd; ++it, ++i) {
-    	Logger::debug("Petaloid %02d: %ls", i, it->name().utf16());
+    	Logger::debug(_Fr("Petaloid %02d: %s") % i % it->name());
     }
 
     emitter->emitZeroArg   ();
@@ -172,8 +174,8 @@ int main(int argc, char *argv[])
     emitter->emitFourArgs  (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX);
     emitter->emitFiveArgs  (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX);
     emitter->emitSixArgs   (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, "Hello, World!");
-    emitter->emitSevenArgs (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, "Hello, World!", _U("Hello, Unicode World!"));
-    emitter->emitEightArgs (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, CWT_LONG_MAX, "Hello, World!", _U("Hello, Unicode World!"));
+    emitter->emitSevenArgs (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, "Hello, World!", "Hello, Unicode World!");
+    emitter->emitEightArgs (true, 'c', CWT_SHORT_MAX, CWT_INT_MAX, CWT_INT_MAX, CWT_LONG_MAX, "Hello, World!", "Hello, Unicode World!");
 
     // This calls are optional - will be executed while sepaloid destruction
     sepaloid.disconnectAll();

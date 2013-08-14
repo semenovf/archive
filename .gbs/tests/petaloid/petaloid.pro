@@ -10,6 +10,11 @@ INCLUDEPATH += ../../../../cwt-app/include
 SOURCES += ../../../tests/petaloid_tmpl.cpp
 
 unix {
+#    LIBS += -lcwt
+#    LIBS += -lcwt-json
+#    LIBS += -lcwt-io
+#    LIBS += -lcwt-logger
+#    LIBS += -lcwt-app
 }
 
 win32 {

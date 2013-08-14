@@ -10,6 +10,10 @@
 #include "../include/cwt/settings.hpp"
 #include <cwt/json.hpp>
 #include <cwt/vector.hpp>
+#include <cwt/safeformat.hpp>
+#include <cwt/logger.hpp>
+#include <cwt/io/file.hpp>
+#include <cwt/io/textreader.hpp>
 
 CWT_NS_BEGIN
 
@@ -29,10 +33,6 @@ void Settings::setValue(const String& path, ulong_t value)      { pimpl->setValu
 void Settings::setValue(const String& path, int_t value)        { pimpl->setValue(path, value); }
 void Settings::setValue(const String& path, uint_t value)       { pimpl->setValue(path, value); }
 void Settings::setValue(const String& path, const String & s)   { pimpl->setValue(path, s); }
-void Settings::setValue(const String& path, const Char * chars) { pimpl->setValue(path, String(chars)); }
-void Settings::setValue(const String& path, const Char * chars, size_t size) { pimpl->setValue(path, String(chars, size)); }
-void Settings::setValue(const String& path, const char * utf8)  { pimpl->setValue(path, String::fromUtf8(utf8)); }
-void Settings::setValue(const String& path, const char * utf8, size_t size) { pimpl->setValue(path, String::fromUtf8(utf8, size)); }
 
 UniType Settings::value(const String& path, const UniType & defaultValue)
 {
@@ -121,20 +121,18 @@ bool Settings::parse(const String & str, Format format)
 	return false;
 }
 
-bool Settings::parseFromFile(const char *path, Format format)
+bool Settings::parseFromFile(const String & path, Format format)
 {
-	if (format == UnknownFormat) {
-		// try native format - JSON
-		return pimpl->json().parseFromFile(path);
+	shared_ptr<io::File> file(new io::File);
+
+	if (!file->open(path, io::Device::ReadOnly)) {
+		Logger::error(_Fr("Failed to open file: %s") % path);
+		return false;
 	}
-
-	switch(format) {
-	case JsonFormat: return pimpl->json().parseFromFile(path);
-	default: break;
-	}
-
-	return false;
-
+	io::TextReader reader(dynamic_pointer_cast<io::Device, io::File>(file));
+	String s(reader.read(file->available()));
+	file->close();
+	return parse(s, format);
 }
 
 CWT_NS_END

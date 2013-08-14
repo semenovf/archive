@@ -28,7 +28,7 @@ public:
 public:
 	Settings();
 	bool parse(const String & str, Format format = UnknownFormat);
-	bool parseFromFile(const char *path, Format format = UnknownFormat, const char *encoding = "utf8");
+	bool parseFromFile(const String & path, Format format = UnknownFormat);
 
 	UniType operator [] (const String & path) { return value(path); }
 	UniType value   (const String & path, const UniType & defaultValue = UniType());
@@ -47,10 +47,6 @@ public:
 	void setValue (const String & path, int_t value);
 	void setValue (const String & path, uint_t value);
 	void setValue (const String & path, const String & s);
-	void setValue (const String & path, const Char * chars);
-	void setValue (const String & path, const Char * chars, size_t size);
-	void setValue (const String & path, const char * utf8);
-	void setValue (const String & path, const char * utf8, size_t size);
 };
 
 CWT_NS_END

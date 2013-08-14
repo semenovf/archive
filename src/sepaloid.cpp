@@ -7,6 +7,7 @@
  */
 
 #include "../include/cwt/sepaloid.hpp"
+#include <cwt/safeformat.hpp>
 #include <cwt/logger.hpp>
 #include <cwt/filesystem.hpp>
 #include <cwt/dl.hpp>
@@ -45,7 +46,7 @@ Petaloid* Sepaloid::registerLocalPetaloid(Petaloid *petaloid, petaloid_dtor_t dt
 Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pname, int arg, char **argv)
 {
 	if (!FileSystem::exists(path)) {
-		addError(_Tr("petaloid not found by specified path: %s"), path.utf16());
+		addError(_Fr("Petaloid not found by specified path: %s") % path);
 		return NULL;
 	}
 
@@ -59,14 +60,14 @@ Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pnam
 			if (p) {
 				return registerPetaloid(*p, ph, petaloid_dtor) ? p : NULL;
 			} else {
-				addError(_Tr("failed to construct petaloid specified by path: %ls"), path.utf16());
+				addError(_Fr("Failed to construct petaloid specified by path: %s") % path);
 			}
 		} else {
-			addError(_Tr("constructor not found for petaloid specified by path: %ls"), path.utf16());
+			addError(_Fr("Constructor not found for petaloid specified by path: %s") % path);
 		}
 		Dl::close(ph);
 	} else {
-		addError(_Tr("failed to open petaloid specified by path: %ls"), path.utf16());
+		addError(_Fr("Failed to open petaloid specified by path: %s") % path);
 	}
 	return NULL;
 }
@@ -80,22 +81,16 @@ Petaloid* Sepaloid::registerPetaloidForName(const String &name, const char *pnam
 
 	for (; it != itEnd; it++) {
 		String path(*it);
-		path.append(FileSystem::separator());
+		path.append(String(1, FileSystem::separator()));
 		path.append(filename);
 
-		Logger::debug(_Tr("looking for petaloid [%ls] at '%ls' as '%ls'")
-				, name.utf16()
-				, it->utf16()
-				, path.utf16());
+		Logger::debug(_Fr("Looking for petaloid [%s] at '%s' as '%s'") % name % *it % path);
 		if (FileSystem::exists(path)) {
-			Logger::debug(_Tr("petaloid [%ls] found at '%ls' as '%ls'")
-					, name.utf16()
-					, it->utf16()
-					, path.utf16());
+			Logger::debug(_Fr("Petaloid [%s] found at '%s' as '%s'") % name % *it % path);
 			return registerPetaloidForPath(path, pname, arg, argv);
 		}
 	}
-	addError(_Tr("petaloid not found by specified name: %ls"), name.utf16());
+	addError(_Fr("Petaloid not found by specified name: %s") % name);
 	return NULL;
 }
 
@@ -115,9 +110,9 @@ bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor
 				it.value()->map->appendEmitter(reinterpret_cast<Emitter*>(emitters[i].emitter));
 			} else {
 				Logger::warn(
-					_Tr("emitter '%s' not found while registering petaloid [%ls] ...")
-					, emitters[i].id
-					, petaloid.name().utf16());
+					_Fr("Emitter '%s' not found while registering petaloid [%s] ...")
+					% emitters[i].id
+					% petaloid.name());
 				Logger::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
@@ -131,9 +126,9 @@ bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor
 				it.value()->map->appendDetector(&petaloid, detectors[i].detector);
 			} else {
 				Logger::warn(
-					_Tr("detector '%s' not found while registering petaloid [%ls] ...")
-					, emitters[i].id
-					, petaloid.name().utf16());
+					_Fr("Detector '%s' not found while registering petaloid [%s] ...")
+					% emitters[i].id
+					% petaloid.name());
 				Logger::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
@@ -146,9 +141,9 @@ bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor
 	// Petaloid must be run in a separate thread.
 	if (petaloid.run) {
 		m_threads.append(new PetaloidThreaded(&petaloid));
-		Logger::debug("petaloid [%ls] registered as threaded.", petaloid.name().utf16());
+		Logger::debug(_Fr("Petaloid [%s] registered as threaded") % petaloid.name());
 	} else {
-		Logger::debug("petaloid [%ls] registered.", petaloid.name().utf16());
+		Logger::debug(_Fr("Petaloid [%s] registered") % petaloid.name());
 	}
 
 	return true;
@@ -197,7 +192,7 @@ void Sepaloid::unregisterAll()
 		if (it->ph) {
 			Dl::close(it->ph);
 		}
-		Logger::debug(_Tr("petaloid [%ls] unregistered"), pname.utf16());
+		Logger::debug(_Fr("Petaloid [%s] unregistered") % pname);
 	}
 	m_petaloids.clear();
 }
