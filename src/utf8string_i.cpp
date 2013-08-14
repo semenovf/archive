@@ -6,18 +6,17 @@
  */
 
 #include "utf8string_p.hpp"
-#include "../../include/cwt/unicode.hpp"
 
 CWT_NS_BEGIN
 
 UChar Utf8Entry::value() const
 {
-	uint32_t uc = Unicode::Null;
+	uint32_t uc = UChar::Null;
 	uint32_t min_uc = 0; // for 'Overlong' encodings recognition
 	int n = Utf8String::decodeBytes(cursor, 6, uc, min_uc);
 
 	CWT_ASSERT(n >= 0);
-	CWT_ASSERT(Unicode::isValid(uc, min_uc));
+	CWT_ASSERT(UChar::isValid(uc, min_uc));
 	return uc;
 }
 
@@ -86,12 +85,12 @@ UChar Utf8Entry::r_value() const
 		;
 	}
 
-	uint32_t uc = Unicode::Null;
+	uint32_t uc = UChar::Null;
 	uint32_t min_uc = 0; // for 'Overlong' encodings recognition
 	int n = Utf8String::decodeBytes(cursor - need, need, uc, min_uc);
 
 	CWT_ASSERT(n >= 0);
-	CWT_ASSERT(Unicode::isValid(uc, min_uc));
+	CWT_ASSERT(UChar::isValid(uc, min_uc));
 	return uc;
 }
 

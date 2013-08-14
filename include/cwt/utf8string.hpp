@@ -11,7 +11,7 @@
 #include <cwt/cwt.hpp>
 #include <cwt/pimpl.hpp>
 #include <cwt/bytearray.hpp>
-#include <cwt/unicode.hpp>
+#include <cwt/uchar.hpp>
 
 CWT_NS_BEGIN
 
@@ -349,15 +349,24 @@ public:
 #ifdef __NOT_IMPLEMENTED_YET__
 	ssize_t  indexOf(const String &str, int from = 0, bool cs = true) const;
 	ssize_t  indexOf(UChar ch, int from = 0, bool cs = true) const;
-	String&  replace(const String &before, const String &after, bool cs = true);
+
 #endif
 
-//	bool     atLeast(const const_iterator & begin, size_t count) const { return begin + count < cend(); }
 	size_t   length() const;
 	static size_t length(const const_iterator & begin, const const_iterator & end);
 	static size_t length(const const_reverse_iterator & begin, const const_reverse_iterator & end);
 	size_t   size() const;
 	size_t   calculateLength();
+
+	/* TODO need to implement 'replace' methods
+		Utf8String & replace (size_t pos,  size_t len,  const Utf8String & str);
+		Utf8String & replace (iterator i1, iterator i2, const Utf8String & str);
+		Utf8String & replace (size_t pos,  size_t len,  const Utf8String & str, size_t subpos, size_t sublen);
+		Utf8String & replace (iterator i1, iterator i2, const Utf8String & str, size_t subpos, size_t sublen);
+		Utf8String & replace (size_t pos,  size_t len,  size_t n, UChar c);
+		Utf8String & replace (iterator i1, iterator i2, size_t n, UChar c);
+	*/
+	Utf8String & replace(const Utf8String & before, const Utf8String & after);
 
 	void reserve (size_t n = 0);
 

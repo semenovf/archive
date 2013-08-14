@@ -7,8 +7,6 @@
 
 #include "utf8string_p.hpp"
 #include "../include/cwt/string.h"
-//#include <stdlib.h>
-//#include <cerrno>
 #include <sstream>
 #include <iomanip>
 #include <cstdarg>
@@ -52,7 +50,7 @@ Utf8String::Utf8String(size_t count, UChar c) : pimpl(new Utf8String::Impl())
 {
 	char utf8[6];
 
-	if (!Unicode::isValid(c))
+	if (!UChar::isValid(c))
 		c = UChar(Utf8String::ReplacementChar);
 
 	ssize_t sz = encodeUcs4(utf8, 6, c);
@@ -121,6 +119,37 @@ size_t Utf8String::calculateLength()
 size_t Utf8String::size() const
 {
 	return pimpl->size();
+}
+
+/**
+ * @brief Replaces every occurrence of the string @c before with the string
+ *        @c after and returns a reference to this string.
+ * @param before Replaceable string.
+ * @param after Replacement string.
+ * @return
+ */
+Utf8String & Utf8String::replace(const Utf8String & before, const Utf8String & after)
+{
+	Utf8String r;
+	const_iterator it1 = cbegin();
+	const_iterator it2 = find(before, it1);
+
+	// nothing to replace
+	while (it2 != cend()) {
+		r.append(Utf8String(it1, it2));
+		r.append(after);
+
+		it1 = it2;
+		it1 += before.length();
+		it2 = find(before, it1);
+	}
+
+	if (!r.isEmpty()) {
+		swap(*this, r);
+		this->calculateLength();
+	}
+
+	return *this;
 }
 
 void Utf8String::reserve (size_t n)

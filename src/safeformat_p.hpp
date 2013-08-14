@@ -9,7 +9,6 @@
 #define __CWT_SAFEFORMAT_P_HPP__
 
 #include "../include/cwt/safeformat.hpp"
-#include "../include/cwt/unicode.hpp"
 #include "../include/cwt/vector.hpp"
 #include <cwt/fsm.hpp>
 
@@ -39,7 +38,7 @@ inline void __clear_spec(ConversionSpec & spec)
 	spec.flags     = SafeFormat::NoFlag;
 	spec.width     =  0;
 	spec.prec      =  1;
-	spec.spec_char = Unicode::Null;
+	spec.spec_char = UChar::Null;
 }
 
 inline void __clear_context(SafeFormatContext & ctx)

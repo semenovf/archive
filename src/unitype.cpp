@@ -368,7 +368,7 @@ double UniType::toDouble(bool *ok) const
 UChar UniType::toUChar(bool *ok) const
 {
 	bool tmpOk;
-	UChar result(to_uint_type<uint_t>(*this, Unicode::MaxCodePoint, &tmpOk));
+	UChar result(to_uint_type<uint_t>(*this, UChar::MaxCodePoint, &tmpOk));
 
 	if (ok)
 		*ok = tmpOk;

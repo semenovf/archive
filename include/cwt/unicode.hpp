@@ -12,8 +12,7 @@
 
 CWT_NS_BEGIN
 
-typedef uint32_t UChar;
-
+#ifdef __COMMENT__
 class DLL_API Unicode
 {
 public:
@@ -49,7 +48,7 @@ public:
 	}
 
 };
-
+#endif
 CWT_NS_END
 
 #endif /* __CWT_UNICODE_HPP__ */

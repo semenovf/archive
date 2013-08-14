@@ -319,7 +319,7 @@ inline void swap(shared_ptr<T> &a, shared_ptr<T> &b )
 template< class T, class U >
 inline shared_ptr<T> static_pointer_cast (const shared_ptr<U> &r)
 {
-	return shared_ptr<T>(r, static_cast<U*>(r.get()));
+	return shared_ptr<T>(static_cast<T*>(r.get()));
 }
 
 template< class T, class U >
@@ -327,14 +327,14 @@ inline shared_ptr<T> dynamic_pointer_cast (const shared_ptr<U> &r)
 {
 	T* p = dynamic_cast<T*>(r.get());
 	if (p)
-		return shared_ptr<T>(r, p);
+		return shared_ptr<T>(p);
 	return shared_ptr<T>();
 }
 
 template< class T, class U >
 inline shared_ptr<T> const_pointer_cast (const shared_ptr<U> &r )
 {
-	return shared_ptr<T>(r, const_cast<T*>(r.get()));
+	return shared_ptr<T>(const_cast<T*>(r.get()));
 }
 
 CWT_NS_END

@@ -31,12 +31,6 @@ int main(int argc, char *argv[])
 
 	CWT_BEGIN_TESTS(38);
 
-/*
-	int i;
-	String s = SafeFormat("Hello, %s: iptr = %p! 0x%X 0x%x") % "World" % &i % 255 % 255;
-	printf("%s\n", s.c_str());
-*/
-
 	// When 0 is printed with an explicit precision 0, the output is empty.
 	CWT_TEST_NOK(SafeFormat("%.0d") % 0 == String("0"));
 	CWT_TEST_OK(test_arg<int>("%.0d", 0));
@@ -82,6 +76,10 @@ int main(int argc, char *argv[])
 	CWT_TEST_OK(test_arg<char>("%+5c" , 'A')); // gcc warning: '+' flag used with ‘%c’ gnu_printf format
 
 	CWT_TEST_OK(test_arg<int>("%d\n", 245));
+
+	int i;
+	String s = SafeFormat("Hello, %s:\t iptr = %p! 0x%X 0x%x") % "World" % &i % 255 % 255;
+	printf("%s\n", s.c_str());
 
 	CWT_END_TESTS;
 }

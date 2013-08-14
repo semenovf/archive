@@ -24,14 +24,10 @@ static String _SF_FLAG_CHAR("0- +");
 static String _SF_SPEC_CHAR("diouxXeEfFgGcsp");
 
 /* exclude '%' (0x25) */
-static UChar plain_char[] = {
-	  0x20, 0x24
-	, 0x26, 0x10FFFF
-};
-
 static FsmTransition<String> plain_char_fsm[] = {
-      {-1, 1, FSM_MATCH_RANGE(plain_char[0], plain_char[1]) , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_RANGE(plain_char[2], plain_char[3]) , FSM_ACCEPT, nullptr, nullptr }
+      {-1, 1, FSM_MATCH_RANGE(0x20u, 0x24u)     , FSM_ACCEPT, nullptr, nullptr }
+    , {-1, 2, FSM_MATCH_RANGE(0x26u, 0x10FFFFu) , FSM_ACCEPT, nullptr, nullptr }
+    , {-1,-1, FSM_MATCH_RANGE(0x01u, 0x19u)     , FSM_ACCEPT, nullptr, nullptr }
 };
 
 static FsmTransition<String> plain_chars_fsm[] = {

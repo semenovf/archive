@@ -17,7 +17,10 @@ CWT_NS_BEGIN
 
 struct Utf8String::Impl : public std::string
 {
+	typedef std::string::iterator iterator;
+	typedef std::string::const_iterator const_iterator;
 	static const size_t npos = std::string::npos;
+
 	Impl() : std::string(), m_length(0) {}
 	Impl(const Impl & other) : std::string(other), m_length(other.m_length) { }
 	Impl(const std::string & other) : std::string(other), m_length(0) { } // need recalculation of length after use this constructor

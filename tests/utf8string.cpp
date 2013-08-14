@@ -195,7 +195,7 @@ void test_endsWith()
 	bool ok;
 	Utf8String s (Utf8String::fromUtf8("ЁЖЗИЙЭЮЯGIJKLёжзийэюяgijkl", &ok));
 
-	CWT_ASSERT(ok);
+	CWT_TEST_FAIL2(ok, "From UTF-8 conversion failed");
 
 	CWT_TEST_OK(s.endsWith(s));
 	CWT_TEST_OK(s.endsWith("l"));
@@ -219,6 +219,25 @@ void test_number_conversions()
 	CWT_TEST_OK(_u8("123.456").toDouble(&ok) == double(123.456) && ok);
 }
 
+void test_replace()
+{
+	bool ok;
+	Utf8String s (Utf8String::fromUtf8("АБВABCАБВABCАБВABCАБВABCАБВABCАБВABCАБВ", &ok));
+	CWT_TEST_FAIL2(ok, "From UTF-8 conversion failed");
+
+	Utf8String after ("=XYZ=");
+	Utf8String dest1 ("=XYZ=ABC=XYZ=ABC=XYZ=ABC=XYZ=ABC=XYZ=ABC=XYZ=ABC=XYZ=");
+
+	Utf8String before (Utf8String::fromUtf8("АБВ", &ok));
+	CWT_TEST_FAIL2(ok, "From UTF-8 conversion failed");
+
+	printf("orig: %s\n", s.c_str());
+	printf("dest: %s\n", dest1.c_str());
+
+	s.replace(before, after);
+	printf("repl: %s\n", s.c_str());
+	CWT_TEST_OK(s == dest1);
+}
 
 
 int main(int argc, char *argv[])
@@ -241,6 +260,7 @@ int main(int argc, char *argv[])
     test_startWith();
     test_endsWith();
     test_number_conversions();
+    test_replace();
 
     CWT_END_TESTS;
 }

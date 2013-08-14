@@ -48,7 +48,7 @@ bool Uuid::uuid_eq(const uuid_t &uuid, const uuid_t &other)
 bool Uuid::parse(const String & s)
 {
 	bool ok = false;
-	UChar dash(0x002D);
+	UChar dash(0x002Du);
 
 	if (s.length() < 36)
 		return false;

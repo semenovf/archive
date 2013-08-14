@@ -197,7 +197,7 @@ Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok, Conv
 			ok = false;
 			cursor = end;
 		} else {
-			if (!Unicode::isValid(uc, min_uc)) {
+			if (!UChar::isValid(uc, min_uc)) {
 				(*r.pimpl)[i++] = replacementChar;
 				++invalidChars;
 				ok = false;
