@@ -60,11 +60,11 @@ win32 {
 }
 
 
-message(Target Platform : $${CWT_TARGET_PLATFORM})
-message(Target CPU      : $${CWT_TARGET_CPU})
-message(Configuration   : $${CWT_CONFIG})
-message(Workspace folder: $${CWT_ROOT_DIR})
-message(CONFIG          : $${CONFIG})
-message(QMAKESPEC       : $${QMAKESPEC})
-message(QT              : $${QT})
-message(Processed config.pri)
+#message(Target Platform : $${CWT_TARGET_PLATFORM})
+#message(Target CPU      : $${CWT_TARGET_CPU})
+#message(Configuration   : $${CWT_CONFIG})
+#message(Workspace folder: $${CWT_ROOT_DIR})
+#message(CONFIG          : $${CONFIG})
+#message(QMAKESPEC       : $${QMAKESPEC})
+#message(QT              : $${QT})
+#message(Processed config.pri)
