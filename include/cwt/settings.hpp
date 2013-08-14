@@ -47,6 +47,7 @@ public:
 	void setValue (const String & path, int_t value);
 	void setValue (const String & path, uint_t value);
 	void setValue (const String & path, const String & s);
+	void setValue (const String & path, const char * latin1);
 };
 
 CWT_NS_END

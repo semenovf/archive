@@ -6,6 +6,7 @@ INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../cwt-common/include
 INCLUDEPATH += ../../../../cwt-core/include
 INCLUDEPATH += ../../../../cwt-logger/include
+INCLUDEPATH += ../../../../cwt-fs/include
 INCLUDEPATH += ../../../../cwt-app/include
 
 SOURCES += ../../../tests/sepaloid.cpp

@@ -17,6 +17,7 @@ unix {
     LIBS += -lcwt-io
     LIBS += -lcwt-json
     LIBS += -lcwt-logger
+    LIBS += -lcwt-fs
 }
 
 win32 {

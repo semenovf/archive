@@ -25,14 +25,15 @@ public:
 };
 
 Settings::Settings() : pimpl(new Settings::Impl) { ; }
-void Settings::setValue(const String& path, bool value)         { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, double value)       { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, float value)        { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, long_t value)       { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, ulong_t value)      { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, int_t value)        { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, uint_t value)       { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, const String & s)   { pimpl->setValue(path, s); }
+void Settings::setValue(const String& path, bool value)          { pimpl->setValue(path, value); }
+void Settings::setValue(const String& path, double value)        { pimpl->setValue(path, value); }
+void Settings::setValue(const String& path, float value)         { pimpl->setValue(path, value); }
+void Settings::setValue(const String& path, long_t value)        { pimpl->setValue(path, value); }
+void Settings::setValue(const String& path, ulong_t value)       { pimpl->setValue(path, value); }
+void Settings::setValue(const String& path, int_t value)         { pimpl->setValue(path, value); }
+void Settings::setValue(const String& path, uint_t value)        { pimpl->setValue(path, value); }
+void Settings::setValue(const String& path, const String & s)    { pimpl->setValue(path, s); }
+void Settings::setValue(const String& path, const char * latin1) { pimpl->setValue(path, latin1); }
 
 UniType Settings::value(const String& path, const UniType & defaultValue)
 {
