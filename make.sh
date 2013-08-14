@@ -21,6 +21,7 @@ case $1 in
   all)
     qmake -makefile -r -o Makefile
     make all
+    if [ $? -ne 0 ] ; then exit 1 ; fi
     ;;
   *)
     usage
