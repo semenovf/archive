@@ -15,20 +15,21 @@
 
 CWT_NS_BEGIN
 
+// MT-safe
 class DLL_API Settings : public has_slots<>
 {
 	CWT_PIMPL_IMPL(Settings);
 
 public:
 	enum Format {
-		  UnknownFormat
+		  DefaultFormat
 		, JsonFormat
 	};
 
 public:
 	Settings();
-	bool parse(const String & str, Format format = UnknownFormat);
-	bool parseFromFile(const String & path, Format format = UnknownFormat);
+	bool parse(const String & str, Format format = DefaultFormat);
+	bool parseFromFile(const String & path, Format format = DefaultFormat);
 
 	UniType operator [] (const String & path) { return value(path); }
 	UniType value   (const String & path, const UniType & defaultValue = UniType());

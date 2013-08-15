@@ -10,6 +10,7 @@
 
 #include <cwt/errorable.hpp>
 #include <cwt/unitype.hpp>
+#include <cwt/settings.hpp>
 
 CWT_NS_BEGIN
 
@@ -41,30 +42,30 @@ struct Options
 
 class DLL_API_EXPORT OptionsReader : public Errorable
 {
-	static const char* DEFAULT_SHORT_PREFIX;     // "-"
-	static const char* DEFAULT_LONG_PREFIX;      // "--"
-	static const char* DEFAULT_OPTARG_SEPARATOR; // "="
+	static const String DEFAULT_SHORT_PREFIX;     // "-"
+	static const String DEFAULT_LONG_PREFIX;      // "--"
+	static const String DEFAULT_OPTARG_SEPARATOR; // "="
 
 	CWT_DENY_COPY(OptionsReader);
 public:
 	OptionsReader();
-	OptionsReader(const char *short_prefix, const char *long_prefix, const char *separator);
+	OptionsReader(const String & short_prefix, const String & long_prefix, const String & separator);
 
-	bool parse(int argc, char *argv[]);
+	bool parse(Settings & settings, int argc, char * argv[], size_t optc, const Options * optv);
 
 private:
-	ByteArray m_shortPrefix;
-	ByteArray m_longPrefix;
-	ByteArray m_separator;
+	String m_shortPrefix;
+	String m_longPrefix;
+	String m_separator;
 };
 
-OptionsReader::OptionsReader()
+inline OptionsReader::OptionsReader()
 	: m_shortPrefix(DEFAULT_SHORT_PREFIX)
 	, m_longPrefix(DEFAULT_LONG_PREFIX)
 	, m_separator(DEFAULT_OPTARG_SEPARATOR)
 {}
 
-OptionsReader::OptionsReader(const char *short_prefix, const char *long_prefix, const char *separator)
+inline OptionsReader::OptionsReader(const String & short_prefix, const String & long_prefix, const String & separator)
 	: m_shortPrefix(short_prefix)
 	, m_longPrefix(long_prefix)
 	, m_separator(separator)

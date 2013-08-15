@@ -9,13 +9,15 @@
 
 CWT_NS_BEGIN
 
-const char* OptionsReader::DEFAULT_SHORT_PREFIX     = "-";
-const char* OptionsReader::DEFAULT_LONG_PREFIX      = "--";
-const char* OptionsReader::DEFAULT_OPTARG_SEPARATOR = "=";
+const String OptionsReader::DEFAULT_SHORT_PREFIX     = "-";
+const String OptionsReader::DEFAULT_LONG_PREFIX      = "--";
+const String OptionsReader::DEFAULT_OPTARG_SEPARATOR = "=";
 
-bool OptionsReader::parse(int argc, char *argv[])
+bool OptionsReader::parse(Settings & settings, int argc, char *argv[], size_t optc, const Options * optv)
 {
+	CWT_UNUSED(settings);
 	CWT_UNUSED2(argc, argv);
+	CWT_UNUSED2(optv, optc);
 	return false;
 }
 

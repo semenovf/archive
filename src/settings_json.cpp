@@ -109,7 +109,7 @@ Vector<UniType> Settings::array (const String & path, const Vector<UniType> & de
 
 bool Settings::parse(const String & str, Format format)
 {
-	if (format == UnknownFormat) {
+	if (format == DefaultFormat) {
 		// try native format - JSON
 		return pimpl->json().parse(str);
 	}
