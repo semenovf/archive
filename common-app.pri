@@ -1,5 +1,5 @@
 include(common.pri)
-message(Process common-app.pri)
+#message(Process common-app.pri)
 
 DESTDIR=$$CWT_DESTDIR_APP
 

@@ -1,5 +1,5 @@
 include(common-dll.pri)
-message(Process common-dll-qt.pri)
+#message(Process common-dll-qt.pri)
 
 CONFIG += qt
 QT += core

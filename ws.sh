@@ -26,7 +26,7 @@ fi
 
 usage() {
     echo "Usage:"
-    echo "   ws [-create|-clear] [-git] PROJECTNAME"
+    echo "   ws -create [-git] PROJECTNAME"
 }
 
 username() {
@@ -65,10 +65,7 @@ create() {
     mkdir include/$PROJECT
     mkdir src
     mkdir tests
-    echo '#ifndef __@PRJ@_H__'       > include/$PROJECT/$PROJECT.h
-    echo '#define __@PRJ@_H__'      >> include/$PROJECT/$PROJECT.h
-    echo ' '                        >> include/$PROJECT/$PROJECT.h
-    echo '#endif /* __@PRJ@_H__ */' >> include/$PROJECT/$PROJECT.h
+    cp $GBS_HOME/template/header.hpp include/$PROJECT/$PROJECT.hpp
     cp $GBS_HOME/template/main.cpp src/main.cpp
     cp $GBS_HOME/template/test.cpp tests/test.cpp
 
@@ -117,7 +114,7 @@ create() {
     echo ""                          >> .gitignore
     cat $GBS_HOME/template/clean.lst >> .gitignore
 
-    touch README.md
+    cp  $GBS_HOME/template/README.md README.md
 
     GIT_EXE=`which git`
     if [ "$GIT_OK" == "yes" ] && [ -x $GIT_EXE ] ; then
@@ -132,11 +129,6 @@ create() {
     echo "Modyfy '.gbs/$PROJECT.pro' to add new subprojects"
 }
 
-clean() {
-    echo "Nothing to clean"
-}
-
-
 case "$1" in
     -create)
 	PROJECT=$2
@@ -150,9 +142,6 @@ case "$1" in
 	    exit 1
 	fi
 	create
-	;;
-    -clean)
-	clean
 	;;
     *)
 	usage

@@ -1,5 +1,5 @@
 include(common-app-qt.pri)
-message(Process common-app-qt-gui.pri)
+#message(Process common-app-qt-gui.pri)
 
 QT += gui
 greaterThan(QT_MAJOR_VERSION, 4) {

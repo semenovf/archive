@@ -1,5 +1,5 @@
 include(config.pri)
-message(Process common.pri)
+#message(Process common.pri)
 
 OBJECTS_DIR = $$CWT_CONFIG/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU
 DEFINED += CWT_TARGET_CPU_$$CWT_TARGET_CPU

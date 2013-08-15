@@ -1,5 +1,5 @@
 include(common-app.pri)
-message(Process common-app-qt.pri)
+#message(Process common-app-qt.pri)
 
 QT += core
 CONFIG += qt

@@ -1,5 +1,5 @@
 include(common.pri)
-message(Process common-petaloid.pri)
+#message(Process common-petaloid.pri)
 
 TEMPLATE = lib
 CONFIG += dll

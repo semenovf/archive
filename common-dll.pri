@@ -1,5 +1,5 @@
 include(common.pri)
-message(Process common-dll.pri)
+#message(Process common-dll.pri)
 
 
 TEMPLATE = lib
