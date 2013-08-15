@@ -4,12 +4,12 @@ TARGET = test_string
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../cwt-common/include
 
+SOURCES += ../../../tests/string.cpp
+
 unix {
-    SOURCES += ../../../tests/string.cpp
     LIBS += -lcwt
 }
 
 win32 {
-    SOURCES += ..\\..\\..\\tests\\string.cpp
     LIBS += cwt.lib
 }

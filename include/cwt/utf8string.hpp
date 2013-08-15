@@ -290,8 +290,8 @@ public:
 
 public:
 	Utf8String();
-	Utf8String(const char * s);
-	Utf8String(const char * s, size_t size);
+	Utf8String(const char * utf8);
+	Utf8String(const char * utf8, size_t size);
 	Utf8String(size_t count, char latin1);
 	Utf8String(const const_iterator & begin, const const_iterator & end);
 	Utf8String(size_t count, UChar c);

@@ -68,15 +68,13 @@ protected:
 	virtual ~Singleton() { _self = 0; }
 
 public:
-	//static void attach(T *o);
-	static T* instance();
+	static T *  instance();
 	static void free();
 	static void forceFree();
 
 private:
-	static T*   _self;
+	static T * _self;
 	static int _refs;
-	//static CWT_DEFAULT_MT_POLICY _mutex;
 };
 
 template <class T>
@@ -85,28 +83,11 @@ T* Singleton<T>::_self = 0;
 template <class T>
 int Singleton<T>::_refs = 0;
 
-/*
-template <class T>
-CWT_DEFAULT_MT_POLICY Singleton<T>::_mutex;
-*/
-
-/*
-template <class T>
-static void Singleton<T>::attach(T *o)
-{
-	static CWT_DEFAULT_MT_POLICY mutex;
-	AutoLock<> locker(&mutex);
-	CWT_ASSERT(_self == nullptr);
-	_self = o;
-	_refs = 1;
-}
-*/
-
 template <class T>
 T* Singleton<T>::instance()
 {
-	static CWT_DEFAULT_MT_POLICY mutex;
-	AutoLock<> locker(&mutex);
+	static CWT_DEFAULT_MT_POLICY g_mutex;
+	AutoLock<> locker(&g_mutex);
 	if( !_self )
 		_self = new T;
 	++_refs;
@@ -116,8 +97,8 @@ T* Singleton<T>::instance()
 template <class T>
 void Singleton<T>::free()
 {
-	static CWT_DEFAULT_MT_POLICY mutex;
-	AutoLock<> locker(&mutex);
+	static CWT_DEFAULT_MT_POLICY g_mutex;
+	AutoLock<> locker(&g_mutex);
 	if( --_refs == 0 ) {
 		if (_self) {
 			delete _self;
@@ -129,8 +110,8 @@ void Singleton<T>::free()
 template <class T>
 void Singleton<T>::forceFree()
 {
-	static CWT_DEFAULT_MT_POLICY mutex;
-	AutoLock<> locker(&mutex);
+	static CWT_DEFAULT_MT_POLICY g_mutex;
+	AutoLock<> locker(&g_mutex);
 	_refs = 0;
 	if (_self) {
 		delete _self;

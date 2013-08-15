@@ -8,12 +8,12 @@ INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../cwt-common/include
 INCLUDEPATH += ../../../../cwt-core/include
 
+SOURCES += ../../../tests/uuid.cpp
+
 unix {
-    SOURCES += ../../../tests/uuid.cpp
     LIBS += -lcwt
 }
 
 win32 {
-    SOURCES += ..\\..\\..\\tests\\uuid.cpp
     LIBS += cwt.lib
 }

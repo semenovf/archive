@@ -8,12 +8,12 @@ INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../cwt-common/include
 INCLUDEPATH += ../../../../cwt-core/include
 
+SOURCES += ../../../tests/md5.c
+
 unix {
-    SOURCES += ../../../tests/md5.c
     LIBS += -lcwt
 }
 
 win32 {
-    SOURCES += ..\\..\\..\\tests\\md5.c
     LIBS += cwt.lib
 }

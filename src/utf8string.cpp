@@ -21,12 +21,14 @@ Utf8String::Utf8String() : pimpl(new Utf8String::Impl())
 
 Utf8String::Utf8String(const char * utf8) : pimpl(new Utf8String::Impl())
 {
-	*this = fromUtf8(utf8, strlen(utf8));
+	if (utf8)
+		*this = fromUtf8(utf8, strlen(utf8));
 }
 
 Utf8String::Utf8String(const char * utf8, size_t length) : pimpl(new Utf8String::Impl())
 {
-	*this = fromUtf8(utf8, length);
+	if (utf8 && length > 0)
+		*this = fromUtf8(utf8, length);
 }
 
 Utf8String::Utf8String(size_t count, char latin1) : pimpl(new Utf8String::Impl())
