@@ -44,6 +44,7 @@ public:
 	File();
 	File(int fd);
 	File(const String & path, int oflags);
+	virtual ~File() {}
 	bool open(const String & path, int oflags = ReadOwner | WriteOwner);
 	virtual int  close();
 	virtual void flush();

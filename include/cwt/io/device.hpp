@@ -41,6 +41,7 @@ protected:
 	virtual size_t  bytesAvailable () const = 0;
 
 public:
+	virtual ~Device() {}
 	virtual int  close  () = 0;
 	virtual bool opened () const = 0;
 	virtual void flush  () = 0;

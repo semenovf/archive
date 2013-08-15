@@ -56,6 +56,12 @@ public:
 	{
 		return readUntil(ends, count, ok, maxLength);
 	}
+
+	ByteArray readAll()
+	{
+		return read(device()->available());
+	}
+
 };
 
 } // namespace io

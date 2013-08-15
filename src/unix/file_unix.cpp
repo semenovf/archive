@@ -19,7 +19,7 @@ namespace io {
 
 class File::Impl {
 public:
-	Impl() : m_path(NULL), m_fd(-1) { ; }
+	Impl() : m_path(nullptr), m_fd(-1) { ; }
 	~Impl() { close(); }
 
 	void    flush();

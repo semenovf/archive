@@ -60,6 +60,11 @@ public:
 	{
 		return readUntil(ends, count, ok, maxLength);
 	}
+
+	Utf8String readAll()
+	{
+		return read(device()->available());
+	}
 };
 
 } // namespace io
