@@ -43,6 +43,7 @@ ___very strong emphasis (italic and boldface)___
 Some text with `some code` inside
 
 Multiline code or longer pieces of code should be indented by four spaces.
+    
     line 1 of code
     line 2 of code
     line 3 of code
