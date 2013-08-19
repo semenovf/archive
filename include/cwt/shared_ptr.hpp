@@ -22,6 +22,11 @@ struct default_deleter {
 	}
 };
 
+template <typename T>
+struct cast_deleter {
+	void operator()(T*) const {}
+};
+
 struct ref_count
 {
 	typedef void (*ref_count_deleter)(ref_count*);
@@ -99,7 +104,12 @@ public:
     	construct<Deleter>(ptr, deleter);
     }
 
-    shared_ptr(const shared_ptr<T> &other) : value(other.value), d(other.d)
+    template <typename T1>
+    shared_ptr(const shared_ptr<T1> & other, T * p) : value(p), d(other.d)
+    {
+    }
+
+    shared_ptr(const shared_ptr<T> & other) : value(other.value), d(other.d)
     {
     	if (d)
     		ref();
@@ -110,20 +120,20 @@ public:
     	deref();
     }
 
-    inline shared_ptr<T>& operator = (const shared_ptr<T> &other)
+    inline shared_ptr<T> & operator = (const shared_ptr<T> &other)
     {
         shared_ptr copy(other);
         swap(copy);
         return *this;
     }
 
-    T& operator * () const
+    T & operator * () const
     {
         CWT_ASSERT(value != 0);
         return *value;
     }
 
-    T* operator -> () const
+    T * operator -> () const
     {
         CWT_ASSERT(value != 0);
         return value;
@@ -266,8 +276,10 @@ private:
     }
 
 private:
-    T *value;
-    ref_count *d;
+    template <typename T1> friend  class shared_ptr;
+
+    T * value;
+    ref_count * d;
 };
 
 template <typename T>
@@ -316,25 +328,25 @@ inline void swap(shared_ptr<T> &a, shared_ptr<T> &b )
 	a.swap(b);
 }
 
-template< class T, class U >
-inline shared_ptr<T> static_pointer_cast (const shared_ptr<U> &r)
+template <class T, class T1>
+inline shared_ptr<T> static_pointer_cast (const shared_ptr<T1> & r)
 {
-	return shared_ptr<T>(static_cast<T*>(r.get()));
+	return shared_ptr<T>(r, static_cast<T*>(r.get()));
 }
 
-template< class T, class U >
-inline shared_ptr<T> dynamic_pointer_cast (const shared_ptr<U> &r)
+template <class T, class T1>
+inline shared_ptr<T> dynamic_pointer_cast (const shared_ptr<T1> & r)
 {
-	T* p = dynamic_cast<T*>(r.get());
+	T * p = dynamic_cast<T*>(r.get());
 	if (p)
-		return shared_ptr<T>(p);
+		return shared_ptr<T>(r, p);
 	return shared_ptr<T>();
 }
 
-template< class T, class U >
-inline shared_ptr<T> const_pointer_cast (const shared_ptr<U> &r )
+template< class T, class T1>
+inline shared_ptr<T> const_pointer_cast (const shared_ptr<T1> & r)
 {
-	return shared_ptr<T>(const_cast<T*>(r.get()));
+	return shared_ptr<T>(r, const_cast<T*>(r.get()));
 }
 
 CWT_NS_END

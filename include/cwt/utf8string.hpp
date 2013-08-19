@@ -12,6 +12,7 @@
 #include <cwt/pimpl.hpp>
 #include <cwt/bytearray.hpp>
 #include <cwt/uchar.hpp>
+#include <cwt/vector.hpp>
 
 CWT_NS_BEGIN
 
@@ -338,7 +339,12 @@ public:
 	bool endsWith(const char * s) const;
 	bool endsWith(const char * s, size_t n) const;
 
-	bool startsWith(const Utf8String & s) const;
+	bool startsWith(const Utf8String & s, const Utf8String::iterator & from) const
+	{
+		return startsWith(s, Utf8String::const_iterator(from));
+	}
+	bool startsWith(const Utf8String & s, const Utf8String::const_iterator & from) const;
+	bool startsWith(const Utf8String & s) const { return startsWith(s, cbegin()); }
 	bool startsWith(const char * s) const;
 	bool startsWith(const char * s, size_t n) const;
 
@@ -407,6 +413,8 @@ public:
 	Utf8String & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
 	Utf8String & setNumber (float n, char f = 'g', int prec = 6) { return setNumber(double(n), f, prec); }
 	Utf8String & setNumber (double n, char f = 'g', int prec = 6);
+
+	Vector<Utf8String> split(const Utf8String & separator, bool keepEmpty = true) const;
 
 #ifdef __NOT_IMPLEMENTED_YET__
 	void     truncate(size_t count);

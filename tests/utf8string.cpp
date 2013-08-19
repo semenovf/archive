@@ -239,12 +239,57 @@ void test_replace()
 	CWT_TEST_OK(s == dest1);
 }
 
+void test_split()
+{
+	Vector<Utf8String> tokens = Utf8String::fromUtf8("А,ББ,ВВ,ГГГ,Д,Е").split(Utf8String(","));
+	CWT_TEST_FAIL(tokens.size() == 6);
+	CWT_TEST_OK(tokens[0] == Utf8String::fromUtf8("А"));
+	CWT_TEST_OK(tokens[1] == Utf8String::fromUtf8("ББ"));
+	CWT_TEST_OK(tokens[2] == Utf8String::fromUtf8("ВВ"));
+	CWT_TEST_OK(tokens[3] == Utf8String::fromUtf8("ГГГ"));
+	CWT_TEST_OK(tokens[4] == Utf8String::fromUtf8("Д"));
+	CWT_TEST_OK(tokens[5] == Utf8String::fromUtf8("Е"));
+
+	tokens = Utf8String::fromUtf8(",ББ,ВВ,ГГГ,Д,Е").split(Utf8String(","));
+	CWT_TEST_FAIL(tokens.size() == 6);
+	CWT_TEST_OK(tokens[0].isEmpty());
+	CWT_TEST_OK(tokens[1] == Utf8String::fromUtf8("ББ"));
+	CWT_TEST_OK(tokens[2] == Utf8String::fromUtf8("ВВ"));
+	CWT_TEST_OK(tokens[3] == Utf8String::fromUtf8("ГГГ"));
+	CWT_TEST_OK(tokens[4] == Utf8String::fromUtf8("Д"));
+	CWT_TEST_OK(tokens[5] == Utf8String::fromUtf8("Е"));
+
+	tokens = Utf8String::fromUtf8(",ББ,ВВ,ГГГ,Д,").split(Utf8String(","));
+	CWT_TEST_FAIL(tokens.size() == 6);
+	CWT_TEST_OK(tokens[0].isEmpty());
+	CWT_TEST_OK(tokens[1] == Utf8String::fromUtf8("ББ"));
+	CWT_TEST_OK(tokens[2] == Utf8String::fromUtf8("ВВ"));
+	CWT_TEST_OK(tokens[3] == Utf8String::fromUtf8("ГГГ"));
+	CWT_TEST_OK(tokens[4] == Utf8String::fromUtf8("Д"));
+	CWT_TEST_OK(tokens[5].isEmpty());
+
+	tokens = Utf8String::fromUtf8(",ББ,ВВ,ГГГ,Д,Е").split(Utf8String(","), false); // do not keep empty
+	CWT_TEST_FAIL(tokens.size() == 5);
+	CWT_TEST_OK(tokens[0] == Utf8String::fromUtf8("ББ"));
+	CWT_TEST_OK(tokens[1] == Utf8String::fromUtf8("ВВ"));
+	CWT_TEST_OK(tokens[2] == Utf8String::fromUtf8("ГГГ"));
+	CWT_TEST_OK(tokens[3] == Utf8String::fromUtf8("Д"));
+	CWT_TEST_OK(tokens[4] == Utf8String::fromUtf8("Е"));
+
+	tokens = Utf8String::fromUtf8(",ББ,ВВ,ГГГ,Д,").split(Utf8String(","), false); // do not keep empty
+	CWT_TEST_FAIL(tokens.size() == 4);
+	CWT_TEST_OK(tokens[0] == Utf8String::fromUtf8("ББ"));
+	CWT_TEST_OK(tokens[1] == Utf8String::fromUtf8("ВВ"));
+	CWT_TEST_OK(tokens[2] == Utf8String::fromUtf8("ГГГ"));
+	CWT_TEST_OK(tokens[3] == Utf8String::fromUtf8("Д"));
+}
+
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(67);
+    CWT_BEGIN_TESTS(103);
 
     test_basic();
     test_init();
@@ -261,6 +306,7 @@ int main(int argc, char *argv[])
     test_endsWith();
     test_number_conversions();
     test_replace();
+    test_split();
 
     CWT_END_TESTS;
 }

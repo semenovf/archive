@@ -135,6 +135,7 @@ Utf8String & Utf8String::replace(const Utf8String & before, const Utf8String & a
 	Utf8String r;
 	const_iterator it1 = cbegin();
 	const_iterator it2 = find(before, it1);
+	size_t beforeLength = before.length();
 
 	// nothing to replace
 	while (it2 != cend()) {
@@ -142,7 +143,7 @@ Utf8String & Utf8String::replace(const Utf8String & before, const Utf8String & a
 		r.append(after);
 
 		it1 = it2;
-		it1 += before.length();
+		it1 += beforeLength;
 		it2 = find(before, it1);
 	}
 
@@ -304,10 +305,12 @@ bool Utf8String::endsWith(const char * s, size_t n) const
 	return pimpl->compare(pimpl_size - n, n, s, n) == 0;
 }
 
+/*
 bool Utf8String::startsWith(const Utf8String & s) const
 {
 	return startsWith(s.data(), s.size());
 }
+*/
 
 bool Utf8String::startsWith(const char * s) const
 {
@@ -321,6 +324,13 @@ bool Utf8String::startsWith(const char * s, size_t n) const
 	if (pimpl_size < n)
 		return false;
 	return pimpl->compare(0, n, s, n) == 0;
+}
+
+bool Utf8String::startsWith(const Utf8String & s, const Utf8String::const_iterator & from) const
+{
+	CWT_ASSERT(from >= cbegin() && from < cend());
+	size_t pos = cbegin().distance(from);
+	return pimpl->compare(pos, s.size(), s.constData(), s.size()) == 0;
 }
 
 UChar Utf8String::charAt(size_t pos) const
@@ -492,6 +502,46 @@ Utf8String & Utf8String::setNumber (double n, char f, int prec)
 	this->pimpl->assign(num);
 	calculateLength();
 	return *this;
+}
+
+Vector<Utf8String> Utf8String::split(const Utf8String & separator, bool keepEmpty) const
+{
+	Vector<Utf8String> r;
+	Utf8String::const_iterator it = cbegin();
+	Utf8String::const_iterator itBegin = it;
+	Utf8String::const_iterator itEnd = cend();
+	size_t separatorLength = separator.length();
+
+	while (it != itEnd) {
+		if (this->startsWith(separator, it)) {
+			Utf8String s(itBegin, it);
+			if (!s.isEmpty()) {
+				r.append(s);
+			} else {
+				if (keepEmpty)
+					r.append(s);
+			}
+			it += separatorLength;
+			itBegin = it;
+		} else {
+			++it;
+		}
+	}
+
+	if (itBegin != it || itBegin == itEnd) {
+		Utf8String s(itBegin, it);
+		if (!s.isEmpty()) {
+			r.append(s);
+		} else {
+			if (keepEmpty)
+				r.append(s);
+		}
+	}
+
+	if (r.isEmpty())
+		r.append(*this);
+
+	return r;
 }
 
 Utf8String operator + (const Utf8String & s1, const Utf8String & s2)
