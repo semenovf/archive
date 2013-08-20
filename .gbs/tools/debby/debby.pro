@@ -22,6 +22,7 @@ unix {
     LIBS += -lcwt-fs
     LIBS += -lcwt-app
     LIBS += -lcwt-debby
+    LIBS += -lcwt-uri
 }
 
 win32 {

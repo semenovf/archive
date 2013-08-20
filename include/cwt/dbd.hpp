@@ -10,40 +10,49 @@
 
 #include <cwt/vector.hpp>
 #include <cwt/errorable.hpp>
+#include <cwt/hash.hpp>
+#include <cwt/unitype.hpp>
 
 CWT_NS_BEGIN
 
-class DbHandlerData {};
-class DbStatementData {};
+class DbDriver;
+
+struct DbHandlerData   { DbDriver * driver; };
+struct DbStatementData { DbDriver * driver; };
 
 class DbDriver
 {
-	static DbHandlerData *         (*connect)       (const String & uri
+public:
+	DbHandlerData *         (*open)          (const String & path
 			, const String & username
 			, const String & password
-			, const String & csname);
-	static void                    (*disconnect)    (DbHandlerData &);
-	static bool                    (*func)          (DbHandlerData & , const String &, String *);
-	static void                    (*attr)          (DbHandlerData & , const String &, void *);
-	static bool                    (*setAutoCommit) (DbHandlerData & , bool);
-	static bool                    (*autoCommit)    (DbHandlerData & );
-	static long_t                  (*errno)         (DbHandlerData &);
-	static String                  (*strerror)      (DbHandlerData &);
-	static String                  (*state)         (DbHandlerData &);
-	static bool                    (*query)         (DbHandlerData &, const String & sql);   /* cannot be used for statements that contain binary data */
-	static DbStatementData *       (*prepare)       (DbHandlerData &, const String & sql);
-	static ulong_t                 (*rows)          (DbHandlerData &);
-	static Vector<String>          (*tables)        (DbHandlerData &);
-	static bool                    (*tableExists)   (DbHandlerData &, const String & tname);
+			, const Hash<String, String> & params);
+	void                    (*close)         (DbHandlerData *);
 
-	static char *                  (*encode_n)      (DbHandlerData &, const String & s, size_t n);
-	static char *                  (*encode)        (DbHandlerData &, const String & s);
-	static String                  (*decode)        (DbHandlerData &, const char * s);
-	static String                  (*decode_n)      (DbHandlerData &, const char * s, size_t n);
+	bool                    (*query)         (DbHandlerData &, const String & sql);   // cannot be used for statements that contain binary data
+	DbStatementData *       (*prepare)       (DbHandlerData &, const String & sql);
+	ulong_t                 (*rows)          (DbHandlerData &);
+	bool                    (*setAutoCommit) (DbHandlerData &, bool);
+	bool                    (*autoCommit)    (DbHandlerData &);
+	long_t                  (*errno)         (DbHandlerData &);
+	String                  (*strerror)      (DbHandlerData &);
 
-	static bool                    (*begin)         (DbHandlerData &); /* begin transaction */
-	static bool                    (*commit)        (DbHandlerData &);
-	static bool                    (*rollback)      (DbHandlerData &);
+/*
+	bool                    (*func)          (DbHandlerData & , const String &, String *);
+	void                    (*attr)          (DbHandlerData & , const String &, void *);
+	Vector<String>          (*tables)        (DbHandlerData &);
+	bool                    (*tableExists)   (DbHandlerData &, const String & tname);
+*/
+
+	bool                    (*begin)         (DbHandlerData &); // begin transaction
+	bool                    (*commit)        (DbHandlerData &);
+	bool                    (*rollback)      (DbHandlerData &);
+
+// Statement routines
+	void					(*closeStmt)     (DbStatementData *);
+	bool					(*execStmt)      (DbStatementData &);
+	Vector<UniType>         (*fetchRowArray) (DbStatementData &);
+	Hash<String, UniType>   (*fetchRowHash)  (DbStatementData &);
 };
 
 CWT_NS_END
