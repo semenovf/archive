@@ -28,9 +28,9 @@ Dl::Handle Dl::open (const String &path, bool global, bool resolve)
 	return h;
 }
 
-Dl::Ptr Dl::ptr (Dl::Handle h, const char *symname)
+Dl::Symbol Dl::ptr (Dl::Handle h, const char *symname)
 {
-	Dl::Ptr p = NULL;
+	Dl::Symbol p = NULL;
 
 	CWT_ASSERT(symname);
 

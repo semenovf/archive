@@ -28,17 +28,19 @@ class DLL_API Dl
 public:
 #ifdef CWT_CC_MSC
 	typedef HMODULE Handle;
-	typedef FARPROC Ptr;
+	typedef FARPROC Symbol;
 #else
 	typedef void* Handle;
-	typedef void* Ptr;
+	typedef void* Symbol;
 #endif
 
 public:
-	static Handle open            (const String &path, bool global = true, bool resolve = true);
-	static Ptr    ptr             (Handle h, const char *symname);
+	static Handle open            (const String & path, bool global = true, bool resolve = true);
+	static bool   opened          (const String & path);
+	static Symbol ptr             (Handle h, const char * symname);
+	static Symbol symbol          (Handle h, const char * symname) { return ptr(h, symname); }
 	static void   close           (Handle h);
-	static String buildDlFileName (const String &basename);
+	static String buildDlFileName (const String & basename);
 };
 
 EXTERN_C_BEGIN

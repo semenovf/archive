@@ -17,9 +17,15 @@ Dl::Handle Dl::open (const String & path, bool global, bool resolve)
 	return h;
 }
 
-Dl::Ptr Dl::ptr (Dl::Handle h, const char *symname)
+bool Dl::opened (const String & path)
 {
-	Dl::Ptr p = NULL;
+	dlerror(); /* clear error */
+	return dlopen( path.c_str(), RTLD_LAZY | RTLD_NOLOAD) != NULL ? true : false;
+}
+
+Dl::Symbol Dl::ptr (Dl::Handle h, const char *symname)
+{
+	Dl::Symbol p = NULL;
 
 	dlerror(); /*clear error*/
 	p = dlsym(h, symname);
