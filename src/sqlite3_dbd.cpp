@@ -6,12 +6,18 @@
  * @brief
  */
 
-#include <time.h> /* strftime */
+//#include <ctime> /* strftime */
+#include <cstdlib>
 #include <cwt/logger.hpp>
 #include <cwt/string.hpp>
 #include <cwt/safeformat.hpp>
+#include <cwt/hash.hpp>
 #include <cwt/dbd.hpp>
-#include <cwt/uri.hpp>
+#include <cwt/dbh.hpp>
+#include <cwt/unitype.hpp>
+#include <cwt/vector.hpp>
+#include <cwt/bytearray.hpp>
+
 /*
 #include <cwt/txtcodec.h>
 #include <cwt/dbi/dbi.h>
@@ -20,9 +26,12 @@
 #include <cwt/string.h>
 #include <cwt/hashtab.h>
 */
-#include "sqlite3/sqlite3.h"
+#include "../sqlite3/sqlite3.h"
 
 CWT_NS_BEGIN
+
+static int __refs = 0;
+static DbDriver * __dbd = nullptr;
 
 /*
 #define _LOG_PREFIX _T("sqlite3: ")
@@ -34,10 +43,9 @@ CWT_NS_BEGIN
 #define _STH_RESET_ERRNO(sth) _STH_CAST(sth)->errno = SQLITE_OK
 */
 
-#define _MAX_SQL_TIMEOUT        10000 /* 10 seconds */
-//#define _MAX_EXEC_RETRY_COUNT	   10
-//#define _MAX_EXEC_RETRY_SLEEP	  200
-
+const int __MAX_SQL_TIMEOUT      = 10000; /* 10 seconds */
+const int __MAX_EXEC_RETRY_COUNT = 10;
+const int __MAX_EXEC_RETRY_SLEEP = 200;
 
 /*
 typedef struct _CwtSqliteColumnInfo {
@@ -59,28 +67,42 @@ typedef struct _CwtSqliteColumnInfo {
 struct Sqlite3DbHandler : public DbHandlerData
 {
 	sqlite3 * dbh_native;
-	long_t  errno;
-	String  csname;      /* character set name */
 };
 
-/*
-static CwtStrNS       *__str_ns = NULL;
-static CwtStringNS    *__string_ns = NULL;
-static CwtUniTypeNS   *__ut_ns = NULL;
-static CwtHashTableNS *__ht_ns = NULL;
-*/
+struct Sqlite3DbStatement : public DbStatementData
+{
+	sqlite3_stmt * sth_native;
+};
+
 
 /* DBI API functions implementations */
-DbHandlerData *         s3_dbd_connect(const String & dsn, const String & username, const String & password, const String & csname);
+DbHandlerData *         s3_dbd_open  (const String & driver_uri
+		, const String & username
+		, const String & password
+		, const Hash<String, String> & params);
+static void             s3_dbd_close           (DbHandlerData * dbh);
+static bool             s3_dbd_set_auto_commit (DbHandlerData & dbh, bool on);
+static bool             s3_dbd_auto_commit     (DbHandlerData & dbh);
+static long_t           s3_dbd_errno           (DbHandlerData & dbh);
+static String           s3_dbd_strerror        (DbHandlerData & dbh);
+
+static bool             s3_dbd_query           (DbHandlerData & dbh, const String & sql);
+static DbStatementData * s3_dbd_prepare        (DbHandlerData & dbh, const String & sql);
+static ulong_t          s3_dbd_affected_rows   (DbHandlerData & dbh);
+static bool             s3_dbd_begin           (DbHandlerData & dbh);
+static bool             s3_dbd_commit          (DbHandlerData & dbh);
+static bool             s3_dbd_rollback        (DbHandlerData & dbh);
+
+static void             s3_dbd_stmt_close      (DbStatementData * sth);
+static bool             s3_dbd_stmt_exec       (DbStatementData & sth);
+static Vector<UniType>  s3_dbd_stmt_fetch_row_array (DbStatementData & sth);
+static Hash<String, UniType>  s3_dbd_stmt_fetch_row_hash (DbStatementData & sth);
 
 #ifdef __COMMENT__
-static void             s3_dbd_disconnect(CwtDBHandler *dbh);
 static BOOL             s3_dbd_func(CwtDBHandler *dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[]);
 static void             s3_dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr_value);
 static BOOL             s3_dbd_set_auto_commit (CwtDBHandler *dbh, BOOL on);
 static BOOL             s3_dbd_auto_commit     (CwtDBHandler *dbh);
-static CwtErrno         s3_dbd_err             (CwtDBHandler *dbh);
-static const CWT_CHAR*  s3_dbd_strerror        (CwtDBHandler *dbh);
 static const CWT_CHAR*  s3_dbd_state           (CwtDBHandler *dbh);
 static BOOL             s3_dbd_query           (CwtDBHandler *dbh, const CWT_CHAR *sql);
 static CwtStatement*    s3_dbd_prepare         (CwtDBHandler *dbh, const CWT_CHAR *statement);
@@ -93,17 +115,14 @@ static char*            s3_dbd_encode          (CwtDBHandler *dbh, const CWT_CHA
 									{ return sqlite_dbd_encode_n(dbh, s, __str_ns->strLen(s)); }
 static CWT_CHAR*        s3_dbd_decode          (CwtDBHandler *dbh, const char *s)
 									{ return sqlite_dbd_decode_n(dbh, s, strlen(s)); }
-static BOOL             s3_dbd_begin           (CwtDBHandler *dbh);
-static BOOL             s3_dbd_commit          (CwtDBHandler *dbh);
-static BOOL             s3_dbd_rollback        (CwtDBHandler *dbh);
 
 /*
 extern CwtStrList*      __dbd_specForDeploy(CwtDDI *ddi, int flags);
 extern CwtStrList*      __dbd_specForRecall(CwtDDI *ddi, int flags);
 */
 
-static void             s3_stmt_close         (CwtStatement *sth);
-static BOOL             s3_stmt_execute       (CwtStatement *sth);
+
+
 static ULONGLONG        s3_stmt_last_id       (CwtStatement *sth);
 static ULONGLONG        s3_stmt_affected_rows (CwtStatement *sth);
 static ULONGLONG        s3_stmt_num_rows      (CwtStatement *sth);
@@ -127,30 +146,18 @@ static CwtTypeEnum      __s3_from_sqlite3_type(const char *s3_type_utf8, int s3_
 /*static BOOL __nConnections = 0;*/ /* number of connections */
 
 static CwtDBIDriver __cwtDBIDriver = {
-	  s3_dbd_connect
-	, s3_dbd_disconnect
 	, s3_dbd_func
 	, s3_dbd_attr
-	, s3_dbd_set_auto_commit
-	, s3_dbd_auto_commit
 	, s3_dbd_err
 	, s3_dbd_strerror
 	, s3_dbd_state
-	, s3_dbd_query
 	, s3_dbd_prepare
-	, s3_dbd_affected_rows
 	, s3_dbd_tables
 	, s3_dbd_table_exists
 	, s3_dbd_encode_n
 	, s3_dbd_decode_n
 	, s3_dbd_encode
 	, s3_dbd_decode
-	, s3_dbd_begin
-    , s3_dbd_commit
-    , s3_dbd_rollback
-
-    , NULL /*__dbd_specForDeploy    */
-    , NULL /*__dbd_specForRecall    */
 };
 
 static struct {
@@ -220,6 +227,49 @@ static struct {
 };
 #endif
 
+
+extern "C" DbDriver * __open__()
+{
+	if (!__dbd) {
+		__dbd = new DbDriver;
+
+		__dbd->open          = s3_dbd_open;
+		__dbd->close         = s3_dbd_close;
+		__dbd->autoCommit    = s3_dbd_auto_commit;
+		__dbd->setAutoCommit = s3_dbd_set_auto_commit;
+		__dbd->errno         = s3_dbd_errno;
+		__dbd->strerror      = s3_dbd_strerror;
+		__dbd->query         = s3_dbd_query;
+		__dbd->prepare       = s3_dbd_prepare;
+		__dbd->rows          = s3_dbd_affected_rows;
+		__dbd->begin         = s3_dbd_begin;
+		__dbd->commit        = s3_dbd_commit;
+		__dbd->rollback      = s3_dbd_rollback;
+		__dbd->closeStmt     = s3_dbd_stmt_close;
+		__dbd->execStmt      = s3_dbd_stmt_exec;
+		__dbd->fetchRowArray = s3_dbd_stmt_fetch_row_array;
+		__dbd->fetchRowHash  = s3_dbd_stmt_fetch_row_hash;
+
+		/*
+				dbh->__base.close      = s3_stmt_close;
+				dbh->__base.execute    = s3_stmt_execute;
+				dbh->__base.lastId     = s3_stmt_last_id;
+				dbh->__base.err        = s3_stmt_err;
+				dbh->__base.strerror   = s3_stmt_strerror;
+				dbh->__base.bindByIndex= s3_stmt_bind_by_index;
+				dbh->__base.bindParmsCount = s3_stmt_bind_parms_count;
+				dbh->__base.isBindParmsBounds = s3_stmt_bind_parms_bounds;
+				dbh->__base.setParm    = s3_stmt_set_parm;
+				dbh->__base.size       = s3_stmt_num_rows;
+				dbh->__base.fetchNext  = s3_stmt_fetch_next;
+				dbh->__base.fetchColumn= s3_stmt_fetch_column;
+		*/
+
+	}
+
+	return __dbd;
+}
+
 /**
  *
  * @brief Connects to sqlite3 databases.
@@ -263,223 +313,176 @@ static struct {
  *
  * @param username   Unused.
  * @param password   Unused.
- * @param csname     Character set name (Sqlite supports only UTF-16, UTF-16le, UTF-16be, UTF-8).
- *                   Only UTF-8 is supported now by DBI driver.
+ * //@param csname     Character set name (Sqlite supports only UTF-16, UTF-16le, UTF-16be, UTF-8).
+ * //                  Only UTF-8 is supported now by DBI driver.
  * @return DBI connection to specified sqlite3 databases.
  *
  * @note  Autocommit mode is on by default.
  */
-DbHandlerData * s3_dbd_connect(const String & driver_uri
+DbHandlerData * s3_dbd_open(const String & path
 		, const String & username
 		, const String & password
-		, const String & csname)
+		, const Hash<String, String> & params)
 {
 	Sqlite3DbHandler * dbh = nullptr;
+	sqlite3 *  dbh_native = nullptr;
 	int        rc = SQLITE_OK;
 	int        s3_flags;
 	int        s3_flag_mode;
-	Uri        uri(driver_uri);
 
-	CWT_UNUSED3(username, password, csname);
-
-	if (!uri.isValid())
-		return nullptr;
-
-	if (!(uri.scheme().isEmpty() || uri.scheme() == "file")) {
-		Logger::error(_Tr("sqlite3_dbd: Invalid URI scheme: must be empty or 'file'."));
-		return nullptr;
-	}
-
-	if (!(uri.authority().isEmpty() || uri.authority() == "localhost")) {
-		Logger::error(_Tr("sqlite3_dbd: Invalid URI authority: must empty or 'localhost'."));
-		return nullptr;
-	}
+	CWT_UNUSED2(username, password);
 
     s3_flags = SQLITE_OPEN_URI;
 	s3_flag_mode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 
-	String q = uri.query();
+	Hash<String, String>::const_iterator mode = params.find(String("mode"));
 
-	if (q.contains("mode=ro"))
-		s3_flag_mode = SQLITE_OPEN_READONLY;
-	else if (q.contains("mode=rw"))
-		s3_flag_mode = SQLITE_OPEN_READWRITE;
-	else if (q.contains("mode=rwc"))
-		s3_flag_mode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-	else if (q.contains("mode=memory"))
-		s3_flag_mode = SQLITE_OPEN_MEMORY;
+	if (mode != params.cend()) {
+		if (*mode == "ro")
+			s3_flag_mode = SQLITE_OPEN_READONLY;
+		else if (*mode == "rw")
+			s3_flag_mode = SQLITE_OPEN_READWRITE;
+		else if (*mode == "rwc")
+			s3_flag_mode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+		else if (*mode == "memory")
+			s3_flag_mode = SQLITE_OPEN_MEMORY;
+	}
 
 	s3_flags |= s3_flag_mode;
 
-    rc = sqlite3_open_v2(uri.path().c_str(), & dbh->dbh_native, s3_flags, NULL);
+    rc = sqlite3_open_v2(path.c_str(), & dbh_native, s3_flags, NULL);
 
 	if (rc != SQLITE_OK) {
-		if (!dbh->dbh_native) {
+		if (!dbh_native) {
 			Logger::error(_Tr("sqlite3_dbd: Unable to allocate memory for database handler."));
 		} else {
 			switch( rc ) {
 				case SQLITE_CANTOPEN:
 					Logger::error(_Fr("sqlite3_dbd: %s. Try to check path '%s'")
-						, sqlite3_errmsg(dbh->dbh_native)
-						, uri.path());
+						% sqlite3_errmsg(dbh_native)
+						% path);
 					break;
 				default: break;
 			}
-			sqlite3_close(dbh->dbh_native);
+			sqlite3_close(dbh_native);
+			dbh_native = nullptr;
 		}
 	} else {
+		CWT_ASSERT(__dbd);
 		dbh = new Sqlite3DbHandler;
 
-		/* TODO for what this call ?*/
-		sqlite3_busy_timeout(dbh->dbh_native, _MAX_SQL_TIMEOUT);
+		// TODO for what this call ?
+		sqlite3_busy_timeout(dbh_native, __MAX_SQL_TIMEOUT);
 
-/*
-		dbh->__base.close      = s3_stmt_close;
-		dbh->__base.execute    = s3_stmt_execute;
-		dbh->__base.lastId     = s3_stmt_last_id;
-		dbh->__base.err        = s3_stmt_err;
-		dbh->__base.strerror   = s3_stmt_strerror;
-		dbh->__base.bindByIndex= s3_stmt_bind_by_index;
-		dbh->__base.bindParmsCount = s3_stmt_bind_parms_count;
-		dbh->__base.isBindParmsBounds = s3_stmt_bind_parms_bounds;
-		dbh->__base.setParm    = s3_stmt_set_parm;
-		dbh->__base.rows       = s3_stmt_affected_rows;
-		dbh->__base.size       = s3_stmt_num_rows;
-		dbh->__base.fetchNext  = s3_stmt_fetch_next;
-		dbh->__base.fetchColumn= s3_stmt_fetch_column;
-		dbh->__base.driver     = cwtDBIDriverImpl;
-*/
+		// Enable extended result codes
+		sqlite3_extended_result_codes(dbh_native, 1);
 
-		dbh->csname = csname;
-		dbh->errno = SQLITE_OK;
+		dbh->driver = __dbd;
+		dbh->dbh_native = dbh_native;
 	}
 
-    return dynamic_cast<DbHandlerData*>(dbh);
+	++__refs;
+
+    return reinterpret_cast<DbHandlerData*>(dbh);
 }
 
-#ifdef __COMMENT_
-static void s3_dbd_disconnect (CwtDBHandler *dbh)
+
+static void s3_dbd_close (DbHandlerData * dbh)
 {
-	sqlite3_stmt* stmt;
+	//sqlite3_stmt * stmt;
+	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler*>(dbh);
 
 	if (!dbh )
 		return;
 
-	while ((stmt = sqlite3_next_stmt(_DBH(dbh), 0)) != 0)
+/*
+	while ((stmt = sqlite3_next_stmt(s3_dbh->dbh_native, 0)) != 0)
 		sqlite3_finalize(stmt);
+*/
 
-	sqlite3_close_v2(_DBH(dbh));
-	__string_ns->destroy(&_DBH_CAST(dbh)->errorstr);
-	__s3_destroy(dbh);
-	CWT_FREE(dbh);
+	sqlite3_close_v2(s3_dbh->dbh_native);
+	s3_dbh->driver = nullptr;
+	s3_dbh->dbh_native = nullptr;
+	delete s3_dbh;
+
+	--__refs;
+
+	CWT_ASSERT(__dbd);
+	CWT_ASSERT(__refs >= 0);
+	if (!__refs) {
+		delete __dbd;
+		__dbd = nullptr;
+		__refs = 0;
+	}
 }
 
-
-static BOOL s3_dbd_func(CwtDBHandler *dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[])
+bool s3_dbd_set_auto_commit (DbHandlerData & , bool )
 {
-	CWT_UNUSED3(dbh, func_name, argv);
-	return FALSE;
+	return true;
 }
 
-static void s3_dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr_value)
+bool s3_dbd_auto_commit(DbHandlerData & dbh)
 {
-	CWT_UNUSED3(dbh, attr_name, attr_value);
+	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	return 0 == sqlite3_get_autocommit(s3_dbh->dbh_native)
+			? false
+			: true;
 }
 
-static BOOL s3_dbd_set_auto_commit (CwtDBHandler *dbh, BOOL on)
+long_t s3_dbd_errno (DbHandlerData & dbh)
 {
-	return TRUE;
+	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	int rc = sqlite3_errcode(s3_dbh->dbh_native);
+	if (rc == SQLITE_OK
+			|| rc == SQLITE_DONE
+			|| rc == SQLITE_ROW)
+		rc = 0;
+	return long_t(rc);
 }
 
-static BOOL s3_dbd_auto_commit(CwtDBHandler *dbh)
+String s3_dbd_strerror (DbHandlerData & dbh)
 {
-	CWT_ASSERT(dbh);
-	return 0 == sqlite3_get_autocommit(_DBH(dbh))
-			? FALSE
-			: TRUE;
+	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	return String(sqlite3_errmsg(s3_dbh->dbh_native));
 }
 
-static CwtErrno s3_dbd_err(CwtDBHandler *dbh)
+bool s3_dbd_query (DbHandlerData & dbh, const String & sql)
 {
-	CWT_ASSERT(dbh);
-	return _DBH_CAST(dbh)->errno;
-}
+	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
 
-static const CWT_CHAR* s3_dbd_strerror(CwtDBHandler *dbh)
-{
-	CWT_ASSERT(dbh);
-	return SQLITE_OK == _DBH_CAST(dbh)->errno
-			? __str_ns->constEmptyStr()
-			: __string_ns->cstr(&_DBH_CAST(dbh)->errorstr);
-}
+	int rc = sqlite3_exec(s3_dbh->dbh_native, sql.c_str(), NULL, NULL, NULL);
 
-
-/**
- * @brief Returns a null-terminated string containing the SQLSTATE error code.
- *
- * @param dbh Database handle
- * @return a null-terminated string containing the SQLSTATE error code.
- */
-static const CWT_CHAR*  s3_dbd_state(CwtDBHandler *dbh)
-{
-	/* TODO could this be implemented? */
-	return _T("00000");
-}
-
-
-static BOOL s3_dbd_query (CwtDBHandler *dbh, const CWT_CHAR *sql)
-{
-	int rc;
-	char *sql_utf8;
-
-	CWT_ASSERT(dbh);
-
-	_DBH_RESET_ERRNO(dbh);
-
-	sql_utf8 = s3_dbd_encode(dbh, sql);
-	rc = sqlite3_exec(_DBH(dbh), sql_utf8, NULL, NULL, NULL);
-	CWT_FREE(sql_utf8);
-
-	if (SQLITE_OK != rc)
-		__s3_assign_error_dbh(rc, dbh);
-
-	return 0 == rc ? TRUE : FALSE;
-}
-
-
-static CwtStatement* s3_dbd_prepare(CwtDBHandler *dbh, const CWT_CHAR *statement)
-{
-	sqlite3_stmt *stmt_native;
-	CwtSqliteStatement *sth;
-	char *sql_utf8;
-	int rc;
-	int column_count;
-
-	_DBH_RESET_ERRNO(dbh);
-
-	sql_utf8 = cwt_textcodec_ns()->toUtf8(statement, __str_ns->strLen(statement));
-	rc = sqlite3_prepare_v2(
-			_DBH(dbh)       /* Database handle */
-			, sql_utf8      /* SQL statement, UTF-8 encoded */
-			, -1            /* Maximum length of zSql in bytes. */
-			, &stmt_native  /* OUT: Statement handle */
-			, NULL );       /* OUT: Pointer to unused portion of zSql */
-	CWT_FREE(sql_utf8);
-
-	if (rc != SQLITE_OK) {
-		__s3_assign_error_dbh(rc, dbh);
-		return NULL;
+	if (SQLITE_OK != rc) {
+		return false;
 	}
 
-	sth = CWT_MALLOC(CwtSqliteStatement);
-	sth->stmt_native = stmt_native;
-	sth->errno = SQLITE_OK;
-	__string_ns->init(&sth->errorstr);
-	__ht_ns->init(&sth->column_map, __ht_ns->strHash, __ht_ns->streq, cwt_free, NULL);
-	sth->column_info = NULL;
+	return true;
+}
 
-	column_count = sqlite3_column_count(_STH(sth));
+
+DbStatementData * s3_dbd_prepare(DbHandlerData & dbh, const String & sql)
+{
+	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	sqlite3_stmt * sth_native;
+
+	int rc = sqlite3_prepare_v2(
+			s3_dbh->dbh_native
+			, sql.c_str()      /* SQL statement, UTF-8 encoded */
+			, -1               /* Maximum length of zSql in bytes. */
+			, & sth_native     /* OUT: Statement handle */
+			, NULL );          /* OUT: Pointer to unused portion of zSql */
+
+	if (rc != SQLITE_OK) {
+		return nullptr;
+	}
+
+	Sqlite3DbStatement * sth = new Sqlite3DbStatement;
+	sth->sth_native = sth_native;
+
+	int column_count = sqlite3_column_count(sth->sth_native);
+
 	if (column_count > 0) { /* SELECT statement */
+/*
 		int i;
 
 		sth->column_info = CWT_MALLOCA(CwtSqliteColumnInfo, column_count);
@@ -498,20 +501,172 @@ static CwtStatement* s3_dbd_prepare(CwtDBHandler *dbh, const CWT_CHAR *statement
 				, cwt_textcodec_ns()->fromUtf8(cname_utf8, strlen(cname_utf8))
 				, &sth->column_info[i]);
 		}
+*/
 	}
 
-	return (CwtStatement *)sth;
+	return dynamic_cast<DbStatementData*>(sth);
 }
 
-static ULONGLONG s3_dbd_affected_rows (CwtDBHandler *dbh)
+
+ulong_t s3_dbd_affected_rows (DbHandlerData & dbh)
 {
-	int nrows;
-	nrows = sqlite3_changes(_DBH(dbh));
+	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	int nrows = sqlite3_changes(s3_dbh->dbh_native);
+	return nrows < 0 ? ulong_t(0) : ulong_t(nrows);
+}
 
-	if (nrows < 0)
-		return (ULONGLONG)0;
 
-	return (ULONGLONG)nrows;
+bool s3_dbd_begin (DbHandlerData & dbh)
+{
+	return s3_dbd_query(dbh, "BEGIN");
+}
+
+bool s3_dbd_commit (DbHandlerData & dbh)
+{
+	return s3_dbd_query(dbh, "COMMIT");
+}
+
+bool s3_dbd_rollback (DbHandlerData & dbh)
+{
+	return s3_dbd_query(dbh, "ROLLBACK");
+}
+
+void s3_dbd_stmt_close (DbStatementData * sth)
+{
+	if (sth)
+		return;
+
+	Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(sth);
+
+	int rc = sqlite3_finalize(s3_sth->sth_native);
+	if (rc != SQLITE_OK) {
+		Logger::error(_Tr("Failed to close statement"));
+	}
+	s3_sth->sth_native = nullptr;
+	delete s3_sth;
+}
+
+bool s3_dbd_stmt_exec (DbStatementData & sth)
+{
+	Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(& sth);
+	int rc = sqlite3_reset(s3_sth->sth_native);
+	return rc == SQLITE_OK ? true : false;
+}
+
+static int __fetch_helper (Sqlite3DbStatement * s3_sth)
+{
+	int rc = SQLITE_OK;
+	int nretries = __MAX_EXEC_RETRY_COUNT;
+
+	do {
+		rc = sqlite3_step(s3_sth->sth_native);
+
+		if( rc == SQLITE_BUSY ) {
+			if( nretries++ > __MAX_EXEC_RETRY_COUNT ) {
+				break;
+			} else {
+				sqlite3_sleep(__MAX_EXEC_RETRY_SLEEP);
+			}
+		}
+	} while (rc == SQLITE_BUSY);
+
+	if (rc == SQLITE_DONE) {
+		; // ok
+	} else if (rc == SQLITE_ROW) {
+		; // ok
+	}
+
+	return rc;
+}
+
+Vector<UniType> s3_dbd_stmt_fetch_row_array (DbStatementData & sth)
+{
+	Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(& sth);
+	int rc = __fetch_helper(s3_sth);
+	Vector<UniType> r;
+
+	if (rc == SQLITE_ROW) {
+		int ncols = sqlite3_column_count(s3_sth->sth_native);
+		for (int i = 0; i < ncols; ++i) {
+			//String column_name (sqlite3_column_name(s3_sth->sth_native, i));
+
+			switch (sqlite3_column_type(s3_sth->sth_native, i)) {
+			case SQLITE_INTEGER:
+				r.append(UniType(sqlite3_column_int64(s3_sth->sth_native, i)));
+				break;
+			case SQLITE_FLOAT:
+				r.append(UniType(sqlite3_column_double(s3_sth->sth_native, i)));
+				break;
+			case SQLITE_TEXT:
+				r.append(UniType(sqlite3_column_text(s3_sth->sth_native, i)));
+				break;
+			case SQLITE_BLOB: {
+				const char * bytes = (const char *)sqlite3_column_blob(s3_sth->sth_native, i);
+				int nbytes = sqlite3_column_bytes(s3_sth->sth_native, i);
+				CWT_ASSERT(nbytes >= 0);
+				r.append(UniType(ByteArray(bytes, size_t(nbytes))));
+				}
+				break;
+			case SQLITE_NULL:
+			default:
+				r.append(UniType());
+				break;
+			}
+		}
+	}
+
+	return r;
+}
+
+Hash<String, UniType>  s3_dbd_stmt_fetch_row_hash (DbStatementData & sth)
+{
+	Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(& sth);
+	int rc = __fetch_helper(s3_sth);
+	Hash<String, UniType> r;
+
+	if (rc == SQLITE_ROW) {
+		int ncols = sqlite3_column_count(s3_sth->sth_native);
+		for (int i = 0; i < ncols; ++i) {
+			String column_name (sqlite3_column_name(s3_sth->sth_native, i));
+
+			switch (sqlite3_column_type(s3_sth->sth_native, i)) {
+			case SQLITE_INTEGER:
+				r.insert(column_name, UniType(sqlite3_column_int64(s3_sth->sth_native, i)));
+				break;
+			case SQLITE_FLOAT:
+				r.insert(column_name, UniType(sqlite3_column_double(s3_sth->sth_native, i)));
+				break;
+			case SQLITE_TEXT:
+				r.insert(column_name, UniType(sqlite3_column_text(s3_sth->sth_native, i)));
+				break;
+			case SQLITE_BLOB: {
+				const char * bytes = (const char *)sqlite3_column_blob(s3_sth->sth_native, i);
+				int nbytes = sqlite3_column_bytes(s3_sth->sth_native, i);
+				CWT_ASSERT(nbytes >= 0);
+				r.insert(column_name, UniType(ByteArray(bytes, size_t(nbytes))));
+				}
+				break;
+			case SQLITE_NULL:
+			default:
+				r.insert(column_name, UniType());
+				break;
+			}
+		}
+	}
+
+	return r;
+}
+
+#ifdef __COMMENT_
+static BOOL s3_dbd_func(CwtDBHandler *dbh, const CWT_CHAR *func_name, CWT_CHAR *argv[])
+{
+	CWT_UNUSED3(dbh, func_name, argv);
+	return FALSE;
+}
+
+static void s3_dbd_attr(CwtDBHandler *dbh, const CWT_CHAR *attr_name, void *attr_value)
+{
+	CWT_UNUSED3(dbh, attr_name, attr_value);
 }
 
 /*
@@ -601,106 +756,6 @@ static BOOL s3_dbd_table_exists (CwtDBHandler *dbh, const CWT_CHAR *tname)
 	return ok;
 }
 
-static char* s3_dbd_encode_n(CwtDBHandler *dbh, const CWT_CHAR *s, size_t n)
-{
-	CwtSqliteDBHandler *sdbh = (CwtSqliteDBHandler *)dbh;
-
-	CWT_ASSERT(sdbh);
-	CWT_ASSERT(_DBH(sdbh));
-
-	return cwt_textcodec_ns()->toMBCS(s, sdbh->csname, n);
-}
-
-static CWT_CHAR* s3_dbd_decode_n(CwtDBHandler *dbh, const char *s, size_t n)
-{
-	CwtSqliteDBHandler *sdbh = (CwtSqliteDBHandler *)dbh;
-
-	CWT_ASSERT(sdbh);
-	CWT_ASSERT(_DBH(sdbh));
-
-	return cwt_textcodec_ns()->fromMBCS(s, sdbh->csname, n);
-}
-
-
-static BOOL s3_dbd_begin (CwtDBHandler *dbh)
-{
-	CWT_ASSERT(dbh);
-	return s3_dbd_query(dbh, _T("BEGIN"));
-}
-
-static BOOL s3_dbd_commit (CwtDBHandler *dbh)
-{
-	CWT_ASSERT(dbh);
-	return s3_dbd_query(dbh, _T("COMMIT"));
-}
-
-static BOOL s3_dbd_rollback (CwtDBHandler *dbh)
-{
-	CWT_ASSERT(dbh);
-	return s3_dbd_query(dbh, _T("ROLLBACK"));
-
-}
-
-
-static void s3_stmt_close (CwtStatement *sth)
-{
-	if (sth && _STH(sth)) {
-		int rc;
-		rc = sqlite3_finalize(_STH(sth));
-		if (rc != SQLITE_OK) {
-			cwt_logger_ns()->error(_T("Close statement error: %s")
-					, s3_dbd_strerror(sth->dbh));
-		}
-		_STH(sth) = NULL;
-		__string_ns->destroy(&_STH_CAST(sth)->errorstr);
-		__ht_ns->destroy(&_STH_CAST(sth)->column_map);
-
-		if (_STH_CAST(sth)->column_info)
-			CWT_FREE(_STH_CAST(sth)->column_info);
-
-		CWT_FREE(sth);
-	}
-}
-
-
-static BOOL s3_stmt_execute (CwtStatement *sth)
-{
-	sqlite3_reset(_STH(sth));
-	return TRUE;
-}
-
-static BOOL s3_stmt_fetch_next (CwtStatement *sth)
-{
-	int rc;
-	int nretries = _MAX_EXEC_RETRY_COUNT;
-
-	CWT_ASSERT(sth);
-	CWT_ASSERT(_STH(sth));
-
-	_STH_RESET_ERRNO(sth);
-
-	do {
-		rc = sqlite3_step(_STH(sth));
-
-		if( rc == SQLITE_BUSY ) {
-			if( nretries++ > _MAX_EXEC_RETRY_COUNT ) {
-				break;
-			} else {
-				sqlite3_sleep(_MAX_EXEC_RETRY_SLEEP);
-			}
-		}
-	} while ( rc == SQLITE_BUSY );
-
-	if( rc == SQLITE_DONE ) {
-		return TRUE;
-	}
-	if( rc == SQLITE_ROW ) {
-		return TRUE;
-	}
-	__s3_assign_error_sth(rc, sth);
-
-	return FALSE;
-}
 
 /**
  *

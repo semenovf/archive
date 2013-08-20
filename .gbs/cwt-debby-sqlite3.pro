@@ -6,4 +6,4 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = cwt-debby-sqlite3
+SUBDIRS  = cwt-debby-sqlite3 tests

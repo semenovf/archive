@@ -4,7 +4,8 @@ TARGET = cwt-debby-sqlite3
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
 INCLUDEPATH += ../../../cwt-core/include
-INCLUDEPATH += ../../../cwt-uri/include
+INCLUDEPATH += ../../../cwt-logger/include
+INCLUDEPATH += ../../../cwt-debby/include
 
 HEADERS += ../../sqlite3/*.h
 SOURCES += ../../sqlite3/*.c
@@ -13,7 +14,6 @@ SOURCES += ../../src/*.cpp
 unix {
     LIBS += -lcwt
     LIBS += -lcwt-logger
-    LIBS += -lcwt-uri
 }
 
 win32 {
