@@ -12,6 +12,8 @@ INCLUDEPATH += ../../../cwt-debby/include
 SOURCES += ../../tests/test.cpp
 
 unix {
+#    QMAKE_CXXFLAGS += -pg
+#    LIBS += -pg
     LIBS += -lcwt
     LIBS += -lcwt-logger
     LIBS += -lcwt-io

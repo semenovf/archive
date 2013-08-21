@@ -12,6 +12,8 @@ SOURCES += ../../sqlite3/*.c
 SOURCES += ../../src/*.cpp
 
 unix {
+#    QMAKE_CXXFLAGS += -pg
+#    LIBS += -pg
     LIBS += -lcwt
     LIBS += -lcwt-logger
 }
