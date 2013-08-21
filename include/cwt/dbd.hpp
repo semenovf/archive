@@ -32,27 +32,23 @@ public:
 	bool                    (*query)         (DbHandlerData &, const String & sql);   // cannot be used for statements that contain binary data
 	DbStatementData *       (*prepare)       (DbHandlerData &, const String & sql);
 	ulong_t                 (*rows)          (DbHandlerData &);
+	ulong_t 				(*lastId)        (DbHandlerData &);
+	Vector<String>          (*tables)        (DbHandlerData &);
+	bool                    (*tableExists)   (DbHandlerData &, const String & name);
 	bool                    (*setAutoCommit) (DbHandlerData &, bool);
 	bool                    (*autoCommit)    (DbHandlerData &);
-	long_t                  (*errno)         (DbHandlerData &);
-	String                  (*strerror)      (DbHandlerData &);
-
-/*
-	bool                    (*func)          (DbHandlerData & , const String &, String *);
-	void                    (*attr)          (DbHandlerData & , const String &, void *);
-	Vector<String>          (*tables)        (DbHandlerData &);
-	bool                    (*tableExists)   (DbHandlerData &, const String & tname);
-*/
-
-	bool                    (*begin)         (DbHandlerData &); // begin transaction
+	bool                    (*begin)         (DbHandlerData &);
 	bool                    (*commit)        (DbHandlerData &);
 	bool                    (*rollback)      (DbHandlerData &);
+
+	long_t                  (*errno)         (DbHandlerData &);
 
 // Statement routines
 	void					(*closeStmt)     (DbStatementData *);
 	bool					(*execStmt)      (DbStatementData &);
-	Vector<UniType>         (*fetchRowArray) (DbStatementData &);
-	Hash<String, UniType>   (*fetchRowHash)  (DbStatementData &);
+	bool                    (*fetchRowArray) (DbStatementData &, Vector<UniType> & row);
+	bool                    (*fetchRowHash)  (DbStatementData &, Hash<String, UniType> & row);
+	bool                    (*bind)          (DbStatementData &, size_t index, const UniType & param);
 };
 
 CWT_NS_END

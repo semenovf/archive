@@ -84,9 +84,15 @@ void DbHandler::close ()
 
 DbStatement * DbHandler::prepare (const String & sql)
 {
-	DbStatement * dbs = new DbStatement;
-	dbs->m_sth = m_dbh->driver->prepare(*m_dbh, sql);
-	return dbs;
+	DbStatementData * d = m_dbh->driver->prepare(*m_dbh, sql);
+	if (d) {
+		DbStatement * sth = new DbStatement;
+		sth->m_sth = d;
+		sth->m_bindCursor = 0; // reset counter of bind parameters
+		return sth;
+	}
+
+	return nullptr;
 }
 
 CWT_NS_END
