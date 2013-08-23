@@ -1,18 +1,48 @@
 #include "../../include/cwt/dl.hpp"
 #include "../../include/cwt/safeformat.hpp"
+#include <sys/stat.h>
 
 /* TODO need error reporting */
 
 CWT_NS_BEGIN
 
-Dl::Handle Dl::open (const String & path, bool global, bool resolve)
+inline bool __file_exists (const String & path)
+{
+	struct stat st;
+	return ( stat(path.c_str(), &st ) == 0 );
+}
+
+inline bool __is_absolute_path (const String & path)
+{
+	return path.startsWith(String("/"));
+}
+
+Dl::Handle Dl::open (const String & path, String & realPath, bool global, bool resolve)
 {
 	Dl::Handle h = NULL;
 
+	realPath.clear();
+
+	if (!__file_exists(path)) {
+		if (!__is_absolute_path(path)) {
+			Vector<String>::const_iterator it = searchPath.cbegin();
+			Vector<String>::const_iterator itEnd = searchPath.cend();
+			while (it != itEnd) {
+				realPath = *it + String("/") + path;
+				if (!__file_exists(realPath))
+					break;
+				++it;
+			}
+		}
+	}
+
+	if (realPath.isEmpty())
+		realPath = path;
+
 	dlerror(); /* clear error */
-	h = dlopen( path.c_str(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ) );
-	if( !h ) {
-		CWT_ERROR( String(_Fr("%s: failed to open dynamic library: %s") % path % dlerror()).c_str());
+	h = dlopen( realPath.c_str(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ) );
+	if (!h) {
+		CWT_ERROR( String(_Fr("%s (%s): failed to open dynamic library: %s") % path % realPath % dlerror()).c_str());
 	}
 	return h;
 }

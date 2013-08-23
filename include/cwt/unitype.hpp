@@ -61,6 +61,7 @@ public:
 	UniType(float v)    : m_d(new Data)          { m_d->type = FloatValue; m_d->d.double_val = v; }
 	UniType(double v)   : m_d(new Data)          { m_d->type = DoubleValue; m_d->d.double_val = v; }
 	UniType(const String & v) : m_d(new Data)    { m_d->type = StringValue; m_d->d.string_val = new String(v); }
+	UniType(const char * v) : m_d(new Data)      { m_d->type = StringValue; m_d->d.string_val = new String(v); }
 	UniType(const ByteArray & v) : m_d(new Data) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
 
 	UniType(const UniType &other) { m_d = other.m_d; }
@@ -122,6 +123,7 @@ public:
 	template <typename T>
 	T         toObject(bool *ok = NULL) const;
 
+	static String toStringType(UniType::TypeEnum t);
 
 /* Do not use this methods!!! For internal use only !!! */
 	long_t& longRef()    { return m_d->d.long_val; }

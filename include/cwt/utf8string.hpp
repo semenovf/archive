@@ -43,7 +43,7 @@ class DLL_API Utf8String
 	CWT_PIMPL_DECL_COPYABLE(Utf8String);
 public:
 	typedef UChar char_type;
-	static const char ReplacementChar = '?';
+	//static const char ReplacementChar = '?';
 
     class const_iterator;
 
@@ -399,6 +399,7 @@ public:
 	ushort_t toUShort(bool *ok = 0, int base = 10) const;
 	sbyte_t  toSByte(bool *ok = 0, int base = 10) const;
 	byte_t	 toByte(bool *ok = 0, int base = 10) const;
+	Vector<uint16_t> toUtf16 () const;
 
 	Utf8String toLower () const;
 	Utf8String toUpper () const;
@@ -417,9 +418,9 @@ public:
 	Vector<Utf8String> split(const Utf8String & separator, bool keepEmpty = true) const;
 
 #ifdef __NOT_IMPLEMENTED_YET__
-	void     truncate(size_t count);
-	const UChar*	unicode() const;
+	const Vector<UChar>	unicode() const;
 #endif
+
 	Utf8String & operator += (const Utf8String & other) { return append(other); }
 	UChar operator[](size_t pos) const { return charAt(pos); }
 
@@ -433,15 +434,18 @@ public:
 	friend bool	operator >= (const Utf8String &s1, const Utf8String &s2);
 
 	struct ConvertState {
-		ConvertState() : nremain(0), invalidChars(0), replacementChar(ReplacementChar) {}
+		ConvertState() : nremain(0), invalidChars(0), replacementChar(UChar::ReplacementChar) {}
 		size_t nremain;
 		size_t invalidChars;
-		char   replacementChar;
+		UChar  replacementChar;
 	};
 
 	static Utf8String fromUtf8   (const ByteArray &str, bool * ok = nullptr, ConvertState * state = nullptr);
-	static Utf8String fromUtf8   (const char *utf8, bool * ok = nullptr, ConvertState * state = nullptr);
-	static Utf8String fromUtf8   (const char *utf8, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
+	static Utf8String fromUtf8   (const char * utf8, bool * ok = nullptr, ConvertState * state = nullptr);
+	static Utf8String fromUtf8   (const char * utf8, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
+
+	static Utf8String fromUtf16  (const uint16_t * utf16, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
+
 	static Utf8String fromLatin1 (const char * latin1, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
 	static Utf8String fromLatin1 (const char * latin1, bool * ok = nullptr, ConvertState * state = nullptr);
 
@@ -451,13 +455,6 @@ public:
 	static Utf8String number (uint_t n, int base = 10)                { return Utf8String().setNumber(n, base); }
 	static Utf8String number (long_t n, int base = 10)                { return Utf8String().setNumber(n, base); }
 	static Utf8String number (ulong_t n, int base = 10)               { return Utf8String().setNumber(n, base); }
-
-#ifdef __NOT_IMPLEMENTED_YET__
-	static String fromUtf16  (const ushort_t * unicode, size_t size);
-	static String fromUtf16  (const ushort_t * unicode);
-
-	static const String& constNull();
-#endif
 
 	friend void swap (Utf8String& x, Utf8String& y) { x.pimpl.swap(y.pimpl); }
 

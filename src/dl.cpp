@@ -1,5 +1,9 @@
 #include <cwt/dl.hpp>
 
+CWT_NS_BEGIN
+
+Vector<String> Dl::searchPath;
+
 /**
  * @fn String Dl::buildDlFileName (const String &basename)
  *
@@ -37,3 +41,5 @@ extern "C" int DLL_API dl_only_for_testing_purpose(void)
 	i++;
 	return i;
 }
+
+CWT_NS_END

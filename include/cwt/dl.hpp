@@ -35,12 +35,22 @@ public:
 #endif
 
 public:
-	static Handle open            (const String & path, bool global = true, bool resolve = true);
+	static Handle open            (const String & path
+			, bool global = true
+			, bool resolve = true) {
+		String unused; return open(path, unused, global, resolve);
+	}
+	static Handle open            (const String & path, String & realPath, bool global = true, bool resolve = true);
 	static bool   opened          (const String & path);
 	static Symbol ptr             (Handle h, const char * symname);
 	static Symbol symbol          (Handle h, const char * symname) { return ptr(h, symname); }
 	static void   close           (Handle h);
 	static String buildDlFileName (const String & basename);
+	static void   addSearchPath   (const String & dir) { searchPath.append(dir); }
+	static void   clearSearchPath () { searchPath.clear(); }
+
+private:
+	static Vector<String> searchPath;
 };
 
 EXTERN_C_BEGIN

@@ -35,7 +35,7 @@ int Utf8String::decodeBytes(const char *bytes, size_t len, uint32_t & uc, uint32
 {
 	byte_t ch = byte_t(bytes[0]);
 	int need = 0;
-
+	min_uc = 0;
 	uc = 0;
 
 	if (ch < 128) {
@@ -89,7 +89,7 @@ int Utf8String::decodeBytes(const char *bytes, size_t len, uint32_t & uc, uint32
 
 // Returns number of bytes need to encode the unicode char
 //
-ssize_t Utf8String::encodeUcs4(char *utf8, size_t size, uint32_t ucs4)
+ssize_t Utf8String::encodeUcs4(char * utf8, size_t size, uint32_t ucs4)
 {
 	char *cursor = utf8;
 
@@ -147,7 +147,7 @@ Utf8String Utf8String::fromUtf8 (const ByteArray &utf8, bool * pok, ConvertState
 }
 
 
-Utf8String Utf8String::fromUtf8 (const char *utf8, bool * pok, ConvertState * state)
+Utf8String Utf8String::fromUtf8 (const char * utf8, bool * pok, ConvertState * state)
 {
 	return fromUtf8(utf8, strlen(utf8), pok, state);
 }
@@ -163,34 +163,36 @@ Utf8String Utf8String::fromUtf8 (const char *utf8, bool * pok, ConvertState * st
  *
  * @note Need call Utf8String::calculateLength() after series of call this method with non-null @c state argument.
  */
-Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok, ConvertState * state)
+Utf8String Utf8String::fromUtf8 (const char * utf8, size_t size, bool * pok, ConvertState * state)
 {
 	Utf8String r;
 	const char *cursor = utf8;
 	const char *end = utf8 + size;
 	bool ok = true;
-	size_t i = 0;
 	size_t invalidChars = 0;
-	char replacementChar = state ? state->replacementChar : ReplacementChar;
+	size_t nremain = 0;
+	uint32_t min_uc = 0; // for 'Overlong' encodings recognition
 
-	r.pimpl->resize(size);
+	char replacement[6];
+	ssize_t replacementSize = Utf8String::encodeUcs4(replacement, 6
+			, state ? uint32_t(state->replacementChar) : UChar::ReplacementChar);
+	CWT_ASSERT(replacementSize >= 0);
 
 	while (cursor < end) {
 		uint32_t uc = 0;
-		uint32_t min_uc = 0; // for 'Overlong' encodings recognition
 		int n = Utf8String::decodeBytes(cursor, size_t(end - cursor), uc, min_uc);
 
 		if (n == -1) { // error
-			(*r.pimpl)[i++] = replacementChar;
+			r.pimpl->append(replacement, replacementSize);
 			ok = false;
 			++invalidChars;
 			++cursor;
 		} else if (n == -2) {
 			if (state) {
-				state->nremain = size_t(end - cursor);
+				nremain = size_t(end - cursor);
 			} else {
 				for (size_t j = size_t(end - cursor); j > 0; --j) {
-					(*r.pimpl)[i++] = replacementChar;
+					r.pimpl->append(replacement, replacementSize);
 					++invalidChars;
 				}
 			}
@@ -198,13 +200,17 @@ Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok, Conv
 			cursor = end;
 		} else {
 			if (!UChar::isValid(uc, min_uc)) {
-				(*r.pimpl)[i++] = replacementChar;
+				r.pimpl->append(replacement, replacementSize);
 				++invalidChars;
 				ok = false;
 				++cursor;
 			} else {
+				r.pimpl->append(cursor, size_t(n) + 1);
+				cursor += size_t(n) + 1;
+/*
 				for (size_t j = 0; j <= size_t(n); ++j)
 					(*r.pimpl)[i++] = *cursor++;
+*/
 			}
 		}
 	}
@@ -212,16 +218,75 @@ Utf8String Utf8String::fromUtf8 (const char *utf8, size_t size, bool * pok, Conv
 	if (pok)
 		*pok = ok;
 
-	r.pimpl->resize(i);
-
-	if (state)
+	if (state) {
 		state->invalidChars += invalidChars;
-	else
-		r.calculateLength();
+		state->nremain = nremain;
+	}
+
+	r.calculateLength();
 
 	return r;
 }
 
+
+static const int halfShift  = 10; /* used for shifting by 10 bits */
+static const uint32_t halfBase = uint32_t(0x0010000);
+
+Utf8String Utf8String::fromUtf16 (const uint16_t * utf16, size_t size, bool * pok, ConvertState * state)
+{
+	Utf8String r;
+	size_t invalidChars = 0;
+	size_t nremain = 0;
+	bool ok = true;
+	const uint16_t * source = utf16;
+    const uint16_t * sourceEnd   = utf16 + size;
+
+    uint32_t replacementChar = state ? uint32_t(state->replacementChar) : UChar::ReplacementChar;
+
+    while (source < sourceEnd) {
+    	uint32_t ch = *source++;
+
+    	/* If we have a surrogate pair, convert to uint32_t first. */
+    	if (UChar::isHiSurrogate(ch)) {
+    		/* If the 16 bits following the high surrogate are in the source buffer... */
+    		if (source < sourceEnd) {
+    			uint32_t ch2 = *source;
+
+    			/* If it's a low surrogate, convert to uint32_t. */
+    			if (UChar::isLowSurrogate(ch2)) {
+    				ch = ((ch - UChar::HiSurrogateStart) << halfShift)
+            		+ (ch2 - UChar::LowSurrogateStart) + halfBase;
+    				++source;
+    			} else { /* it's an unpaired high surrogate */
+    				ok = false;
+    	    		++invalidChars;
+    	    		ch = replacementChar;
+    	    		++source;
+    			}
+    		} else { /* We don't have the 16 bits following the high surrogate. */
+    			nremain = 1;
+    			break;
+    		}
+    	} else if (UChar::isLowSurrogate(ch)) {
+    		ok = false;
+    		++invalidChars;
+    		ch = replacementChar;
+    	}
+
+    	r.append(Utf8String(1, ch));
+    }
+
+	if (pok)
+		*pok = ok;
+
+	if (state) {
+		state->invalidChars += invalidChars;
+		state->nremain = nremain;
+	}
+
+    r.calculateLength();
+	return r;
+}
 
 /**
  *
@@ -239,13 +304,18 @@ Utf8String Utf8String::fromLatin1 (const char * latin1, size_t length, bool * po
 	bool ok = true;
 	const char *end = latin1 + length;
 	size_t invalidChars = 0;
-	char replacementChar = state ? state->replacementChar : ReplacementChar;
+
+	char replacement[6];
+	ssize_t replacementSize = Utf8String::encodeUcs4(replacement, 6
+			, state ? uint32_t(state->replacementChar) : UChar::ReplacementChar);
+	CWT_ASSERT(replacementSize >= 0);
+
 
 	while (latin1 < end) {
 		if (*latin1 < 127) {
 			r.pimpl->append(1, *latin1);
 		} else {
-			r.pimpl->append(1, replacementChar);
+			r.pimpl->append(replacement, replacementSize);
 			++invalidChars;
 			ok = false;
 		}
@@ -257,8 +327,8 @@ Utf8String Utf8String::fromLatin1 (const char * latin1, size_t length, bool * po
 
 	if (state)
 		state->invalidChars += invalidChars;
-	else
-		r.calculateLength();
+
+	r.calculateLength();
 	return r;
 }
 

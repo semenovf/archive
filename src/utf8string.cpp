@@ -17,6 +17,9 @@ CWT_PIMPL_IMPL_COPYABLE(Utf8String);
 
 Utf8String::Utf8String() : pimpl(new Utf8String::Impl())
 {
+	if (true) {
+		;
+	}
 }
 
 Utf8String::Utf8String(const char * utf8) : pimpl(new Utf8String::Impl())
@@ -34,7 +37,7 @@ Utf8String::Utf8String(const char * utf8, size_t length) : pimpl(new Utf8String:
 Utf8String::Utf8String(size_t count, char latin1) : pimpl(new Utf8String::Impl())
 {
 	if (byte_t(latin1) > 127)
-		latin1 = ReplacementChar;
+		latin1 = '?';
 	pimpl->append(count, latin1);
 	pimpl->m_length = count;
 }
@@ -53,7 +56,7 @@ Utf8String::Utf8String(size_t count, UChar c) : pimpl(new Utf8String::Impl())
 	char utf8[6];
 
 	if (!UChar::isValid(c))
-		c = UChar(Utf8String::ReplacementChar);
+		c = UChar(UChar::ReplacementChar);
 
 	ssize_t sz = encodeUcs4(utf8, 6, c);
 	CWT_ASSERT(sz > 0);
@@ -407,6 +410,58 @@ byte_t Utf8String::toByte(bool *pok, int base) const
 	return cwt_str_to_byte(c_str(), pok, base);
 }
 
+
+/*
+ * Index into the table below with the first byte of a UTF-8 sequence to
+ * get the number of trailing bytes that are supposed to follow it.
+ * Note that *legal* UTF-8 values can't have 4 or 5-bytes. The table is
+ * left as-is for anyone who may want to do such conversion, which was
+ * allowed in earlier algorithms.
+ */
+static const char trailingBytesForUTF8[256] = {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
+};
+
+static const uint32_t halfBase = uint32_t(0x0010000);
+static const uint32_t halfMask = uint32_t(0x3FF);
+static const int halfShift  = 10; /* used for shifting by 10 bits */
+
+Vector<uint16_t> Utf8String::toUtf16 () const
+{
+	Vector<uint16_t> r;
+
+	const_iterator it = cbegin();
+	const_iterator itEnd = cend();
+
+	while (it != itEnd) {
+		uint32_t ch = *it;
+
+		if (ch <= UChar::MaxBMP) { /* Target is a character <= 0xFFFF */
+			/* UTF-16 surrogate values are illegal in UTF-32 */
+			if (ch >= UChar::HiSurrogateStart && ch <= UChar::LowSurrogateEnd) {
+				ch = UChar::ReplacementChar;
+			}
+			r.append(uint16_t(ch));
+		} else if (ch > UChar::MaxCodePoint) {
+			ch = UChar::ReplacementChar;
+			r.append(uint16_t(ch));
+		} else {
+			ch -= halfBase;
+			r.append(uint16_t((ch >> halfShift) + UChar::HiSurrogateStart));
+			r.append(uint16_t((ch & halfMask) + UChar::LowSurrogateStart));
+		}
+
+		++it;
+	}
+	return r;
+}
 
 // FIXME need full support of Unicode standard
 Utf8String Utf8String::toLower () const

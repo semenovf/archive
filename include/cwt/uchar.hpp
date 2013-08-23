@@ -19,8 +19,15 @@ CWT_NS_BEGIN
 class DLL_API UChar
 {
 public:
-	static const uint32_t MaxCodePoint = 0x10ffff;
-	static const uint32_t Null = 0x0000;
+	static const uint32_t MaxCodePoint    = 0x10ffff;
+	static const uint32_t Null            = 0x0000;
+	static const uint32_t ReplacementChar = uint32_t(0x0000FFFD);
+	static const uint32_t MaxBMP          = uint32_t(0x0000FFFF);
+
+	static const uint32_t HiSurrogateStart  = uint32_t(0xD800);
+	static const uint32_t HiSurrogateEnd    = uint32_t(0xDBFF);
+	static const uint32_t LowSurrogateStart = uint32_t(0xDC00);
+	static const uint32_t LowSurrogateEnd   = uint32_t(0xDFFF);
 
 public:
 	UChar() : m_value(Null) {}
@@ -38,13 +45,13 @@ public:
 	/* Low Surrogates: DC00-DFFF
 	 * Qt implementation: (ucs4 & 0xfffffc00) == 0xdc00;
 	 * */
-	static bool isLowSurrogate(const UChar & ucs4) { return ucs4 >= 0xdc00 && ucs4 <= 0xdfff; }
+	static bool isLowSurrogate(const UChar & ucs4) { return ucs4 >= LowSurrogateStart && ucs4 <= LowSurrogateEnd; }
 
 	/* High Surrogates: D800-DBFF
 	 * Qt implementation: (ucs4 & 0xfffffc00) == 0xd800
 	 * */
-	static bool isHiSurrogate(const UChar & ucs4)      { return ucs4 >= 0xd800 && ucs4 <= 0xdbff; }
-	static bool isSurrogate(const UChar & ucs4)        { return (ucs4 - 0xd800u < 2048u); }
+	static bool isHiSurrogate(const UChar & ucs4)      { return ucs4 >= HiSurrogateStart && ucs4 <= HiSurrogateEnd; }
+	static bool isSurrogate(const UChar & ucs4)        { return (ucs4 - HiSurrogateStart < 2048u); }
 	static bool isValid(const UChar & ch, const UChar & min_uc = UChar());
 
 private:

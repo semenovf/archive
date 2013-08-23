@@ -457,4 +457,20 @@ ByteArray UniType::toBlob(bool *ok) const
 	return result;
 }
 
+String UniType::toStringType(UniType::TypeEnum t)
+{
+	static const char * types[] = {
+		  "Null"
+		, "Bool"
+		, "Long"
+		, "Float"
+		, "Double"
+		, "String"
+		, "Blob"
+		, "Object"
+	};
+
+	return String(types[t]);
+}
+
 CWT_NS_END

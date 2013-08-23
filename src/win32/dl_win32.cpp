@@ -7,6 +7,19 @@ CWT_NS_BEGIN
 
 extern String strerror_win32(uint_t errn);
 
+
+inline bool __file_exists (const String & path)
+{
+	struct _stat st;
+	return ( _wstat(path.utf16(), &st ) == 0 );
+}
+
+inline bool __is_absolute_path (const String & path)
+{
+	return path.startsWith(String("/"));
+}
+
+
 Dl::Handle Dl::open (const String &path, bool global, bool resolve)
 {
 	Dl::Handle h = NULL;
