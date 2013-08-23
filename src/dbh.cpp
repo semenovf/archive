@@ -18,10 +18,10 @@ CWT_NS_BEGIN
 static const char * __db_driver_ctor_sym = "__open__";
 static CWT_DEFAULT_MT_POLICY g_mutex;
 
-
 DbHandler * DbHandler::open (const String & uri_str)
 {
-	AutoLock<> locker(&g_mutex);
+	static CWT_DEFAULT_MT_POLICY mutex;
+	AutoLock<> locker(& mutex);
 
 	DbHandler::driver_ctor db_driver_ctor;
 	Uri uri (uri_str);
@@ -74,7 +74,8 @@ DbHandler * DbHandler::open (const String & uri_str)
 
 void DbHandler::close ()
 {
-	AutoLock<> locker(&g_mutex);
+	static CWT_DEFAULT_MT_POLICY mutex;
+	AutoLock<> locker(& mutex);
 
 	if (m_dbh) {
 		m_dbh->driver->close(m_dbh);

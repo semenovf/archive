@@ -19,6 +19,12 @@ class DbDriver;
 
 struct DbHandlerData   { DbDriver * driver; };
 struct DbStatementData { DbDriver * driver; };
+struct DbColumnMeta
+{
+	String            column_name;
+	UniType::TypeEnum column_type;
+	String            native_type;
+};
 
 class DbDriver
 {
@@ -42,6 +48,8 @@ public:
 	bool                    (*rollback)      (DbHandlerData &);
 
 	long_t                  (*errno)         (DbHandlerData &);
+
+	bool                    (*meta)          (DbHandlerData &, const String & table, Vector<DbColumnMeta> & meta);
 
 // Statement routines
 	void					(*closeStmt)     (DbStatementData *);

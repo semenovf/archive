@@ -40,6 +40,9 @@ public:
 	bool                    rollback ()   { return m_dbh->driver->rollback(*m_dbh); }
 	long_t                  errno ()      { return m_dbh->driver->errno(*m_dbh); }
 
+	bool                    meta (const String & table, Vector<DbColumnMeta> & meta)
+										  { return m_dbh->driver->meta(*m_dbh, table, meta); }
+
 private:
 	DbHandlerData * m_dbh;
 };

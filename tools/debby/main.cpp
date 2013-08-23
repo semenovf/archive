@@ -29,7 +29,7 @@ int DebbyProc::proc()
 		usage();
 		return -1;
 	}
-	return debby.parseFromFile(m_debbyFilePath);
+	return debby.parseFromFile(m_debbyFilePath) ? 0 : -1;
 }
 
 int main(int argc, char * argv[])
