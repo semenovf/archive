@@ -2,6 +2,8 @@
 #include <cwt/dbd.hpp>
 #include <cwt/dbh.hpp>
 #include <cwt/sth.hpp>
+#include <cwt/safeformat.hpp>
+#include <cwt/filesystem.hpp>
 #include <cwt/shared_ptr.hpp>
 
 using namespace cwt;
@@ -252,14 +254,67 @@ void test_sqlite3_collation()
 }
 
 
+void test_columns()
+{
+	shared_ptr<DbHandler> dbh(DbHandler::open("sqlite3:///tmp/test.db?mode=rwc"));
+
+	if(dbh->tableExists("t2")) {
+		dbh->query("DROP TABLE IF EXISTS t2");
+	}
+
+	CWT_TEST_OK(dbh->query(
+			"CREATE TABLE t2("
+			"    x INTEGER PRIMARY KEY,"
+			"    a TEXT,"
+			"    b FLOAT,"
+			"    c DOUBLE,"
+			"    d NUMERIC,"
+			"    e VARCHAR(10),"
+			"    f NOTYPE,"
+			"    g BOOLEAN"
+			")"));
+
+	Vector<DbColumnMeta> meta;
+	CWT_TEST_FAIL(dbh->meta("t2", meta));
+	CWT_TEST_FAIL(meta.size() == 8);
+
+	for (size_t i = 0 ; i < meta.size(); ++i) {
+		if (meta[i].column_name == String("x")) {
+			CWT_TEST_OK(meta[i].column_type == UniType::LongValue);
+		} else if (meta[i].column_name == String("a")) {
+			CWT_TEST_OK(meta[i].column_type == UniType::StringValue);
+		} else if (meta[i].column_name == String("b")) {
+			CWT_TEST_OK(meta[i].column_type == UniType::DoubleValue);
+		} else if (meta[i].column_name == String("c")) {
+			CWT_TEST_OK(meta[i].column_type == UniType::DoubleValue);
+		} else if (meta[i].column_name == String("d")) {
+			CWT_TEST_OK(meta[i].column_type == UniType::DoubleValue);
+		} else if (meta[i].column_name == String("e")) {
+			CWT_TEST_OK(meta[i].column_type == UniType::StringValue);
+		} else if (meta[i].column_name == String("f")) {
+			CWT_TEST_OK(meta[i].column_type == UniType::BlobValue);
+		} else if (meta[i].column_name == String("g")) {
+			CWT_TEST_OK(meta[i].column_type == UniType::BoolValue);
+		}
+
+		CWT_DEBUG(String(SafeFormat("SQL Type (%s) maps to UniType type (%s)")
+				% meta[i].native_type
+				% UniType::toStringType(meta[i].column_type)) . c_str() );
+	}
+
+	CWT_TEST_OK(dbh->query("DROP TABLE IF EXISTS t2"));
+}
+
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(86);
+    CWT_BEGIN_TESTS(98);
 
+    FileSystem::unlink("/tmp/test.db");
    	test_base();
     test_sqlite3_collation();
+    test_columns();
 
     CWT_END_TESTS;
     return 0;

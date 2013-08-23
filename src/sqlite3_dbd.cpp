@@ -49,7 +49,6 @@ static void             s3_dbd_close           (DbHandlerData * dbh);
 static bool             s3_dbd_set_auto_commit (DbHandlerData & dbh, bool on);
 static bool             s3_dbd_auto_commit     (DbHandlerData & dbh);
 static long_t           s3_dbd_errno           (DbHandlerData & dbh);
-
 static bool             s3_dbd_query           (DbHandlerData & dbh, const String & sql);
 static DbStatementData * s3_dbd_prepare        (DbHandlerData & dbh, const String & sql);
 static ulong_t          s3_dbd_affected_rows   (DbHandlerData & dbh);
@@ -59,6 +58,7 @@ static bool             s3_dbd_table_exists    (DbHandlerData & dbh, const Strin
 static bool             s3_dbd_begin           (DbHandlerData & dbh);
 static bool             s3_dbd_commit          (DbHandlerData & dbh);
 static bool             s3_dbd_rollback        (DbHandlerData & dbh);
+static bool             s3_dbd_meta            (DbHandlerData & dbh, const String & table, Vector<DbColumnMeta> & meta);
 
 static void             s3_dbd_stmt_close      (DbStatementData * sth);
 static bool             s3_dbd_stmt_exec       (DbStatementData & sth);
@@ -93,6 +93,7 @@ extern "C" DbDriver * __open__()
 		__dbd->begin         = s3_dbd_begin;
 		__dbd->commit        = s3_dbd_commit;
 		__dbd->rollback      = s3_dbd_rollback;
+		__dbd->meta          = s3_dbd_meta;
 		__dbd->closeStmt     = s3_dbd_stmt_close;
 		__dbd->execStmt      = s3_dbd_stmt_exec;
 		__dbd->fetchRowArray = s3_dbd_stmt_fetch_row_array;
@@ -101,6 +102,12 @@ extern "C" DbDriver * __open__()
 	}
 
 	return __dbd;
+}
+
+// Synonym to __open__ (__init__ is a preferred bootstrap function name)
+extern "C" DbDriver * __init__()
+{
+	return __open__();
 }
 
 /**
@@ -376,6 +383,7 @@ bool s3_dbd_table_exists (DbHandlerData & dbh, const String & name)
 	return r;
 }
 
+
 bool s3_dbd_begin (DbHandlerData & dbh)
 {
 	return s3_dbd_query(dbh, "BEGIN");
@@ -390,6 +398,71 @@ bool s3_dbd_rollback (DbHandlerData & dbh)
 {
 	return s3_dbd_query(dbh, "ROLLBACK");
 }
+
+
+static UniType::TypeEnum __map_column_type (const String & ct)
+{
+	if (ct.startsWith("BOOL")) {
+		return UniType::BoolValue;
+	} else if (ct.startsWith("INT")
+			|| ct.startsWith("INTEGER")
+			|| ct.startsWith("TINYINT")
+			|| ct.startsWith("SMALLINT")
+			|| ct.startsWith("MEDIUMINT")
+			|| ct.startsWith("BIGINT")
+			|| ct.startsWith("UNSIGNED")
+			|| ct.startsWith("DATE")
+			|| ct.startsWith("DATETIME")
+			|| ct.startsWith("TIME")) {
+
+		return UniType::LongValue;
+
+	} else if (ct.startsWith("REAL")
+			|| ct.startsWith("DOUBLE")
+			|| ct.startsWith("FLOAT")
+			|| ct.startsWith("NUMERIC")
+			|| ct.startsWith("DECIMAL")) {
+
+		return UniType::DoubleValue;
+
+	} else if (ct.startsWith("CHAR")
+			|| ct.startsWith("VARCHAR")
+			|| ct.startsWith("VARYING")
+			|| ct.startsWith("NCHAR")
+			|| ct.startsWith("NATIVE CHAR")
+			|| ct.startsWith("NVARCHAR")
+			|| ct.startsWith("TEXT")
+			|| ct.startsWith("CLOB")) {
+
+		return UniType::StringValue;
+
+	}
+
+	return UniType::BlobValue;
+}
+
+bool s3_dbd_meta (DbHandlerData & dbh, const String & table, Vector<DbColumnMeta> & meta)
+{
+	DbStatementData * sth = s3_dbd_prepare(dbh, SafeFormat("PRAGMA table_info(%s)") % table);
+
+	if (sth) {
+		if (s3_dbd_stmt_exec(*sth)) {
+			Hash<String, UniType> row;
+			while (s3_dbd_stmt_fetch_row_hash (*sth, row)) {
+				DbColumnMeta m;
+				m.column_name = row["name"].toString();
+				m.native_type = row["type"].toString();
+				m.column_type = __map_column_type(m.native_type);
+				meta.append(m);
+				row.clear();
+			}
+		}
+		s3_dbd_stmt_close(sth);
+		return true;
+	}
+	return false;
+}
+
 
 void s3_dbd_stmt_close (DbStatementData * sth)
 {
@@ -482,7 +555,7 @@ bool s3_dbd_stmt_fetch_row_array (DbStatementData & sth, Vector<UniType> & row)
 				}
 				break;
 			case SQLITE_BLOB: {
-				const char * bytes = (const char *)sqlite3_column_blob(s3_sth->sth_native, i);
+				const char * bytes = reinterpret_cast<const char*>(sqlite3_column_blob(s3_sth->sth_native, i));
 				int nbytes = sqlite3_column_bytes(s3_sth->sth_native, i);
 				CWT_ASSERT(nbytes >= 0);
 				row.append(UniType(ByteArray(bytes, size_t(nbytes))));
@@ -510,6 +583,9 @@ bool s3_dbd_stmt_fetch_row_hash (DbStatementData & sth, Hash<String, UniType> & 
 		for (int i = 0; i < ncols; ++i) {
 			String column_name (sqlite3_column_name(s3_sth->sth_native, i));
 
+			const char * cn = column_name.c_str(); // TODO remove this lines
+			CWT_UNUSED(cn);
+
 			switch (sqlite3_column_type(s3_sth->sth_native, i)) {
 			case SQLITE_INTEGER:
 				row.insert(column_name, UniType(sqlite3_column_int64(s3_sth->sth_native, i)));
@@ -517,11 +593,13 @@ bool s3_dbd_stmt_fetch_row_hash (DbStatementData & sth, Hash<String, UniType> & 
 			case SQLITE_FLOAT:
 				row.insert(column_name, UniType(sqlite3_column_double(s3_sth->sth_native, i)));
 				break;
-			case SQLITE_TEXT:
-				row.insert(column_name, UniType(sqlite3_column_text(s3_sth->sth_native, i)));
+			case SQLITE_TEXT: {
+				const char * text = reinterpret_cast<const char*>(sqlite3_column_text(s3_sth->sth_native, i));
+				row.insert(column_name, UniType(text));
 				break;
+			}
 			case SQLITE_BLOB: {
-				const char * bytes = (const char *)sqlite3_column_blob(s3_sth->sth_native, i);
+				const char * bytes = reinterpret_cast<const char*>(sqlite3_column_blob(s3_sth->sth_native, i));
 				int nbytes = sqlite3_column_bytes(s3_sth->sth_native, i);
 				CWT_ASSERT(nbytes >= 0);
 				row.insert(column_name, UniType(ByteArray(bytes, size_t(nbytes))));
