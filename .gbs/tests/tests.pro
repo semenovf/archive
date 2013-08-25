@@ -16,7 +16,6 @@ unix {
 #    QMAKE_CXXFLAGS += -pg
 #    LIBS += -pg
     LIBS += -lcwt
-    LIBS += -lcwt-logger
     LIBS += -lcwt-io
     LIBS += -lcwt-uri
     LIBS += -lcwt-fs

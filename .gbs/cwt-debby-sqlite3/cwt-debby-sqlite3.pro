@@ -4,7 +4,6 @@ TARGET = cwt-debby-sqlite3
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
 INCLUDEPATH += ../../../cwt-core/include
-INCLUDEPATH += ../../../cwt-logger/include
 INCLUDEPATH += ../../../cwt-debby/include
 
 HEADERS += ../../sqlite3/*.h
@@ -15,7 +14,6 @@ unix {
 #    QMAKE_CXXFLAGS += -pg
 #    LIBS += -pg
     LIBS += -lcwt
-    LIBS += -lcwt-logger
 }
 
 win32 {
