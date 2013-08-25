@@ -93,7 +93,7 @@ public:
 	typedef Utf8String vector_type;
 
 public:
-	Utf8Decoder(char replacement = Utf8String::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
+	Utf8Decoder(UChar replacement = UChar::ReplacementChar) : m_state() { m_state.replacementChar = replacement; }
 	virtual ~Utf8Decoder() {}
 	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
 	bool isValid() const { return m_state.invalidChars == 0; }
@@ -111,7 +111,7 @@ public:
 	typedef ByteArray vector_type;
 
 public:
-	Utf8Encoder() : m_state() { m_state.replacementChar = Utf8String::ReplacementChar; }
+	Utf8Encoder() : m_state() { m_state.replacementChar = UChar::ReplacementChar; }
 	Utf8Encoder(char replacement) : m_state() { m_state.replacementChar = replacement; }
 	virtual ~Utf8Encoder() {}
 	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
@@ -133,7 +133,7 @@ public:
 class DLL_API Latin1Decoder : public Utf8Decoder
 {
 public:
-	Latin1Decoder(char replacement = Utf8String::ReplacementChar) : Utf8Decoder(replacement) { }
+	Latin1Decoder(UChar replacement = UChar::ReplacementChar) : Utf8Decoder(replacement) { }
 	virtual ssize_t convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain);
 };
 
