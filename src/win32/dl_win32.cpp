@@ -1,5 +1,5 @@
-#include <cwt/dl.hpp>
-#include <cwt/logger.hpp>
+#include "../../include/cwt/dl.hpp"
+#include "../../include/cwt/logger.hpp"
 
 /* TODO need error reporting */
 
@@ -13,27 +13,62 @@ inline bool __file_exists (const String & path)
 	struct _stat st;
 	return ( _wstat(path.utf16(), &st ) == 0 );
 }
-
+// see cwt::fs
 inline bool __is_absolute_path (const String & path)
 {
-	return path.startsWith(String("/"));
+	static String __disks("abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
+	if ( path.isEmpty()) {
+		return false;
+	}
+
+	if (path.startsWith(String("\\"))) {
+		return true;
+	}
+
+	if (path.length() > 2
+			&& __disks.find(String(1, path[0])) == __disks.cbegin()
+			&& path[1] == UChar(':')) {
+		return true;
+	}
+
+	return false;
 }
 
 
-Dl::Handle Dl::open (const String &path, bool global, bool resolve)
+Dl::Handle Dl::open (const String & path, String & realPath, bool global, bool resolve)
 {
 	Dl::Handle h = NULL;
 
 	DWORD dwFlags = 0;
 	CWT_UNUSED(global);
 
+	realPath.clear();
+
+	if (!__file_exists(path)) {
+		if (!__is_absolute_path(path)) {
+			Vector<String>::const_iterator it = searchPath.cbegin();
+			Vector<String>::const_iterator itEnd = searchPath.cend();
+			while (it != itEnd) {
+				realPath = *it + String("/") + path;
+				if (!__file_exists(realPath))
+					break;
+				++it;
+			}
+		}
+	}
+
+	if (realPath.isEmpty())
+		realPath = path;
+
 	if (!resolve)
 		dwFlags |= DONT_RESOLVE_DLL_REFERENCES;
 
-	h = LoadLibraryEx(path.utf16(), NULL, dwFlags);
+	h = LoadLibraryEx(realPath.toUtf16().data(), NULL, dwFlags);
 
 	if( !h ) {
-		Logger::error( _Tr("%ls: failed to open dynamic library: %s"), path, strerror_win32(GetLastError()));
+		Logger::error(_Fr("%s: failed to open dynamic library: %s")
+				% path % strerror_win32(GetLastError()));
 	} else {
 	   /*use the result in a call to GetProcAddress*/
 	}
@@ -49,7 +84,7 @@ Dl::Symbol Dl::ptr (Dl::Handle h, const char *symname)
 
 	p = GetProcAddress(h, symname);
 	if (!p) {
-		Logger::error(_Tr("%s: symbol not found: %s"), symname, strerror_win32(GetLastError()));
+		Logger::error(_Fr("%s: symbol not found: %s") % symname % strerror_win32(GetLastError()));
 	}
 	return p;
 }
@@ -72,7 +107,7 @@ String Dl::buildDlFileName (const String &basename)
 {
 	String libname;
 	libname.append(basename);
-	libname.append(_U(".dll"));
+	libname.append(String(".dll"));
 	return libname;
 }
 

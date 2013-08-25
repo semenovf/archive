@@ -43,7 +43,6 @@ class DLL_API Utf8String
 	CWT_PIMPL_DECL_COPYABLE(Utf8String);
 public:
 	typedef UChar char_type;
-	//static const char ReplacementChar = '?';
 
     class const_iterator;
 
@@ -349,6 +348,7 @@ public:
 	bool startsWith(const char * s, size_t n) const;
 
 	const_iterator find(const Utf8String & s, const_iterator from) const;
+	const_iterator find(const Utf8String & s) const { return find(s, cbegin()); }
 	const_iterator find(const char * s, size_t from, size_t n) const;
 	const_iterator find(const char * s, size_t from) const;
 

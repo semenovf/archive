@@ -7,6 +7,7 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = cwt-core  \
+    examples/logger  \
     tests/array      \
     tests/async      \
     tests/bitarray   \

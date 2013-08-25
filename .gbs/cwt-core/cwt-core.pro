@@ -5,7 +5,6 @@ include($$(GBS_HOME)/common-dll-qt.pri)
 TARGET = cwt
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
-INCLUDEPATH += ../../../cwt-fsm/include
 
 HEADERS += ../../include/cwt/*.hpp
 HEADERS += ../../include/cwt/*.h
@@ -14,8 +13,6 @@ HEADERS += ../../src/qt/*.hpp
 SOURCES += ../../src/*.cpp
 SOURCES += ../../src/*.c
 SOURCES += ../../src/qt/*.cpp
-
-#SOURCES += ../../deprecated/*.cpp
 
 unix {
     SOURCES += ../../src/unix/*.cpp
