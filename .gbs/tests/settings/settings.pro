@@ -15,7 +15,6 @@ SOURCES     += ../../../tests/settings.cpp
 unix {
     LIBS += -lcwt
     LIBS += -lcwt-json
-    LIBS += -lcwt-logger
     LIBS += -lcwt-io
     LIBS += -lcwt-fs
     LIBS += -lcwt-app

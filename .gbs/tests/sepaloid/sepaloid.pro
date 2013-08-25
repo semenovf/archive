@@ -5,7 +5,6 @@ TARGET = test_sepaloid
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../cwt-common/include
 INCLUDEPATH += ../../../../cwt-core/include
-INCLUDEPATH += ../../../../cwt-logger/include
 INCLUDEPATH += ../../../../cwt-fs/include
 INCLUDEPATH += ../../../../cwt-app/include
 
@@ -14,7 +13,6 @@ SOURCES += ../../../tests/sepaloid.cpp
 unix {
     LIBS += -lcwt
     LIBS += -lcwt-json
-    LIBS += -lcwt-logger
     LIBS += -lcwt-io
     LIBS += -lcwt-fs
     LIBS += -lcwt-app

@@ -11,7 +11,6 @@ unix {
     LIBS += -lcwt
     LIBS += -lcwt-json
     LIBS += -lcwt-io
-    LIBS += -lcwt-logger
     LIBS += -lcwt-app
     LIBS += -lcwt-fs
 }
