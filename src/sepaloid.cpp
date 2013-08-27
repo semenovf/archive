@@ -25,7 +25,7 @@ protected:
 	virtual void run() { m_petaloid->run(m_petaloid); }
 
 private:
-	Petaloid*        m_petaloid;
+	Petaloid* m_petaloid;
 };
 
 Sepaloid::Sepaloid(Sepaloid::Mapping mapping[], int n)
@@ -36,18 +36,18 @@ Sepaloid::Sepaloid(Sepaloid::Mapping mapping[], int n)
 	}
 }
 
-Petaloid* Sepaloid::registerLocalPetaloid(Petaloid *petaloid, petaloid_dtor_t dtor)
+Petaloid * Sepaloid::registerLocalPetaloid(Petaloid * petaloid, petaloid_dtor_t dtor)
 {
 	if (petaloid)
-		return registerPetaloid(*petaloid, NULL, dtor) ? petaloid : NULL;
-	return NULL;
+		return registerPetaloid(*petaloid, nullptr, dtor) ? petaloid : nullptr;
+	return nullptr;
 }
 
-Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pname, int arg, char **argv)
+Petaloid * Sepaloid::registerPetaloidForPath(const String & path, const char * pname, int arg, char ** argv)
 {
 	if (!FileSystem::exists(path)) {
-		addError(_Fr("Petaloid not found by specified path: %s") % path);
-		return NULL;
+		Logger::error(_Fr("Petaloid not found by specified path: %s") % path);
+		return nullptr;
 	}
 
 	Dl::Handle ph = Dl::open(path);
@@ -58,43 +58,37 @@ Petaloid* Sepaloid::registerPetaloidForPath(const String &path, const char *pnam
 		if (petaloid_ctor) {
 			Petaloid *p = reinterpret_cast<Petaloid*>(petaloid_ctor(pname, arg, argv));
 			if (p) {
-				return registerPetaloid(*p, ph, petaloid_dtor) ? p : NULL;
+				return registerPetaloid(*p, ph, petaloid_dtor) ? p : nullptr;
 			} else {
-				addError(_Fr("Failed to construct petaloid specified by path: %s") % path);
+				Logger::error(_Fr("Failed to construct petaloid specified by path: %s") % path);
 			}
 		} else {
-			addError(_Fr("Constructor not found for petaloid specified by path: %s") % path);
+			Logger::error(_Fr("Constructor not found for petaloid specified by path: %s") % path);
 		}
 		Dl::close(ph);
 	} else {
-		addError(_Fr("Failed to open petaloid specified by path: %s") % path);
+		Logger::error(_Fr("Failed to open petaloid specified by path: %s") % path);
 	}
-	return NULL;
+	return nullptr;
 }
 
-Petaloid* Sepaloid::registerPetaloidForName(const String &name, const char *pname, int arg, char **argv)
+Petaloid * Sepaloid::registerPetaloidForName(const String & name, const char * pname, int arg, char ** argv)
 {
 	String filename = Dl::buildDlFileName(name);
+	String realPath;
+	Dl::Handle ph = Dl::open(filename, realPath); // try to find petaloid
 
-	Vector<String>::const_iterator it    =  m_searchPaths.cbegin();
-	Vector<String>::const_iterator itEnd =  m_searchPaths.cend();
-
-	for (; it != itEnd; it++) {
-		String path(*it);
-		path.append(String(1, FileSystem::separator()));
-		path.append(filename);
-
-		Logger::debug(_Fr("Looking for petaloid [%s] at '%s' as '%s'") % name % *it % path);
-		if (FileSystem::exists(path)) {
-			Logger::debug(_Fr("Petaloid [%s] found at '%s' as '%s'") % name % *it % path);
-			return registerPetaloidForPath(path, pname, arg, argv);
-		}
+	if (ph) {
+		Dl::close(ph);
+		Logger::debug(_Fr("Petaloid [%s] found at '%s'") % name % realPath);
+		return registerPetaloidForPath(realPath, pname, arg, argv);
 	}
-	addError(_Fr("Petaloid not found by specified name: %s") % name);
-	return NULL;
+
+	Logger::error(_Fr("Petaloid not found by specified name: %s") % name);
+	return nullptr;
 }
 
-bool Sepaloid::registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor_t dtor)
+bool Sepaloid::registerPetaloid(Petaloid & petaloid, Dl::Handle ph, petaloid_dtor_t dtor)
 {
 	int nemitters, ndetectors;
 	const EmitterMapping* emitters = petaloid.getEmitters(&nemitters);
@@ -187,7 +181,7 @@ void Sepaloid::unregisterAll()
 		String pname = it->p->name();
 		if (it->dtor) {
 			it->dtor(it->p);
-			it->p = NULL;
+			it->p = nullptr;
 		}
 		if (it->ph) {
 			Dl::close(it->ph);

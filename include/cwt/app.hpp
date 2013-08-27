@@ -10,6 +10,7 @@
 
 #include <cwt/settings.hpp>
 #include <cwt/options.hpp>
+#include <cwt/sepaloid.hpp>
 
 CWT_NS_BEGIN
 
@@ -31,6 +32,7 @@ public:
 
 	int exec() { return MainProc()(); }
 	int exec(MainProc & mainProc) { return mainProc(); }
+	int exec(Sepaloid & sepaloid) { return sepaloid.exec(); }
 	const Settings & settings() const { return m_settings; }
 	Settings & settings() { return m_settings; }
 

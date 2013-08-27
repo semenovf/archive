@@ -8,7 +8,6 @@
 #ifndef __CWT_OPTIONS_HPP__
 #define __CWT_OPTIONS_HPP__
 
-#include <cwt/errorable.hpp>
 #include <cwt/unitype.hpp>
 #include <cwt/settings.hpp>
 
@@ -40,7 +39,7 @@ struct Options
 //	bool        (*validator)(const void*);  /* validation function for option argument */
 };
 
-class DLL_API_EXPORT OptionsReader : public Errorable
+class DLL_API_EXPORT OptionsReader
 {
 	static const String DEFAULT_SHORT_PREFIX;     // "-"
 	static const String DEFAULT_LONG_PREFIX;      // "--"

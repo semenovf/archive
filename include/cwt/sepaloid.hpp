@@ -10,7 +10,6 @@
 #define __CWT_SEPALOID_HPP__
 
 #include <cwt/dl.hpp>
-#include <cwt/errorable.hpp>
 #include <cwt/hash.hpp>
 #include <cwt/mt.hpp>
 #include <cwt/sigslotmapping.hpp>
@@ -27,7 +26,7 @@ struct PetaloidSpec {
 	petaloid_dtor_t dtor; /* may be null (no destructor) */
 };
 
-class DLL_API Sepaloid : public Errorable, public has_slots<>
+class DLL_API Sepaloid : public has_slots<>
 {
 	CWT_DENY_COPY(Sepaloid)
 	CWT_IMPLEMENT_LOCKING(Sepaloid);
@@ -106,7 +105,7 @@ public:
 	    unregisterAll();
 	}
 
-	void addSearchPath(const String &dir) { m_searchPaths.append(dir); }
+	void addSearchPath(const String &dir) { Dl::addSearchPath(dir); }
 	Petaloid* registerLocalPetaloid(Petaloid *petaloid, petaloid_dtor_t dtor = Petaloid::defaultDtor);
 	Petaloid* registerPetaloidForPath(const String &path, const char *pname = NULL, int argc = 0, char **argv = NULL);
 	Petaloid* registerPetaloidForName(const String &name, const char *pname = NULL, int argc = 0, char **argv = NULL);
@@ -136,7 +135,7 @@ protected:
 
 private:
 	MappingHash          m_mapping;
-	Vector<String>       m_searchPaths;     /* directories where to search petaloids */
+	//Vector<String>       m_searchPaths;     /* directories where to search petaloids */
 	Vector<PetaloidSpec> m_petaloids;
 	Vector<Thread*>      m_threads;
 
