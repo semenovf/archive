@@ -1,6 +1,7 @@
 #include "../../include/cwt/dl.hpp"
 #include "../../include/cwt/safeformat.hpp"
 #include "../../include/cwt/logger.hpp"
+#include "../../include/cwt/mt.hpp"
 #include <sys/stat.h>
 
 /* TODO need error reporting */
@@ -20,6 +21,9 @@ inline bool __is_absolute_path (const String & path)
 
 Dl::Handle Dl::open (const String & path, String & realPath, bool global, bool resolve)
 {
+	static mt_policy_t __mutex;
+	AutoLock<> locker(& __mutex);
+
 	Dl::Handle h = NULL;
 
 	realPath.clear();
@@ -48,11 +52,13 @@ Dl::Handle Dl::open (const String & path, String & realPath, bool global, bool r
 	return h;
 }
 
+/*
 bool Dl::opened (const String & path)
 {
-	dlerror(); /* clear error */
+	dlerror(); // clear error
 	return dlopen( path.c_str(), RTLD_LAZY | RTLD_NOLOAD) != NULL ? true : false;
 }
+*/
 
 Dl::Symbol Dl::ptr (Dl::Handle h, const char *symname)
 {
@@ -68,6 +74,9 @@ Dl::Symbol Dl::ptr (Dl::Handle h, const char *symname)
 
 void Dl::close (Dl::Handle h)
 {
+	static mt_policy_t __mutex;
+	AutoLock<> locker(& __mutex);
+
 	if( h != (Dl::Handle)0) {
 		dlerror(); /*clear error*/
 		dlclose(h);
@@ -81,7 +90,7 @@ void Dl::close (Dl::Handle h)
  * @param name base name of dynamic lubrary
  * @param libname full library name to store
  */
-String Dl::buildDlFileName (const String &basename)
+String Dl::buildDlFileName (const String & basename)
 {
 	String libname;
 	libname.append(String("lib"));

@@ -43,6 +43,7 @@ class DLL_API Utf8String
 	CWT_PIMPL_DECL_COPYABLE(Utf8String);
 public:
 	typedef UChar char_type;
+	static const Utf8String EndOfLine;
 
     class const_iterator;
 
@@ -303,18 +304,22 @@ public:
 	void        clear();
 	bool	    isEmpty() const;
 
-	Utf8String & append(const Utf8String & s) { return insert(s, end()); }
-	Utf8String & append(const char * s, size_t size) { return append(Utf8String(s, size)); }
-	Utf8String & prepend(const Utf8String & s) { return insert(s, begin()); }
-	Utf8String & insert(const Utf8String & s, size_t pos) { return insert(s, begin() + pos); }
-	Utf8String & insert(const Utf8String & s, const const_iterator & pos);
+	Utf8String & append  (const Utf8String & s) { return insert(s, end()); }
+	Utf8String & append  (const char * s, size_t size) { return append(Utf8String(s, size)); }
+	Utf8String & append  (size_t n, UChar ch) { return append(Utf8String(n, ch)); }
+	Utf8String & prepend (const Utf8String & s) { return insert(s, begin()); }
+	Utf8String & prepend (size_t n, UChar ch) { return insert(Utf8String(n, ch), begin()); }
+	Utf8String & insert  (const Utf8String & s, size_t pos) { return insert(s, begin() + pos); }
+	Utf8String & insert  (const Utf8String & s, const const_iterator & pos);
+	Utf8String & insert  (size_t n, UChar ch, size_t pos) { return insert(Utf8String(n, ch), pos); }
+	Utf8String & insert  (size_t n, UChar ch, const const_iterator & pos) { return insert(Utf8String(n, ch), pos); }
 
-    iterator       begin();
-    iterator       end();
-    const_iterator begin() const;
-    const_iterator end() const;
+    iterator       begin ();
+    iterator       end   ();
+    const_iterator begin () const;
+    const_iterator end   () const;
     const_iterator cbegin() const { return begin(); }
-    const_iterator cend() const   { return end(); }
+    const_iterator cend  () const { return end(); }
 
     reverse_iterator       rbegin();
     reverse_iterator       rend();
@@ -446,6 +451,7 @@ public:
 
 	static Utf8String fromUtf16  (const uint16_t * utf16, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
 
+	static Utf8String fromLatin1 (const ByteArray & latin1, bool * ok = nullptr, ConvertState * state = nullptr);
 	static Utf8String fromLatin1 (const char * latin1, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
 	static Utf8String fromLatin1 (const char * latin1, bool * ok = nullptr, ConvertState * state = nullptr);
 

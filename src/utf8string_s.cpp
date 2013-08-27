@@ -9,6 +9,8 @@
 
 CWT_NS_BEGIN
 
+const Utf8String Utf8String::EndOfLine(1, UChar('\n'));
+
 /* UTF-8
  *
  * Bits Last code point/ 	Byte 1 		Byte 2 		Byte 3 		Byte 4 		Byte 5 		Byte 6
@@ -228,6 +230,11 @@ Utf8String Utf8String::fromUtf8 (const char * utf8, size_t size, bool * pok, Con
 	return r;
 }
 
+
+Utf8String Utf8String::fromLatin1 (const ByteArray & latin1, bool * pok , ConvertState * state)
+{
+	return fromLatin1(latin1.data(), latin1.size(), pok, state);
+}
 
 static const int halfShift  = 10; /* used for shifting by 10 bits */
 static const uint32_t halfBase = uint32_t(0x0010000);

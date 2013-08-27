@@ -8,7 +8,6 @@
 
 #include "../include/cwt/logger.hpp"
 #include <cwt/safeformat.hpp>
-#include <cwt/errorable.hpp>
 #include <cwt/shared_ptr.hpp>
 #include <cstdarg>
 #include <cstdlib>
@@ -171,6 +170,20 @@ void Logger::error(const String & text)
 	LogEmitter::instance()->emitError(text);
 }
 
+void Logger::error (int errn, const String & text)
+{
+	static const int SystemErrorBufLen = 256;
+	char errstr[SystemErrorBufLen];
+	cwt_strerror(errn, errstr, SystemErrorBufLen);
+
+	if (text.isEmpty()) {
+		Logger::error(String::fromUtf8(errstr));
+	} else {
+		Logger::error(SafeFormat("%s: %s") % text % String::fromUtf8(errstr));
+	}
+}
+
+/*
 void Logger::error(Errorable & errorable)
 {
 	size_t nerrors = errorable.errorCount();
@@ -187,6 +200,7 @@ void Logger::error(Errorable & errorable)
 
 	errorable.clearErrors();
 }
+*/
 
 void Logger::fatal(const String & text)
 {

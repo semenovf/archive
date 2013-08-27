@@ -21,6 +21,8 @@ class DLL_API ByteArray
 public:
 	typedef char char_type;
 
+	static const ByteArray EndOfLine;
+
     class const_iterator;
 
 	class iterator {
@@ -171,6 +173,8 @@ public:
 	ByteArray & insert  (const ByteArray & s, const const_iterator & pos) { return insert(s.constData(), s.size(), pos); }
 	ByteArray & insert  (const char * s, const const_iterator & pos) { return insert(s, strlen(s), pos); }
 	ByteArray & insert  (const char * s, size_t n, const const_iterator & pos);
+	ByteArray & insert  (size_t size, char ch, size_t pos) { return insert(ByteArray(size, ch), pos); }
+	ByteArray & insert  (size_t size, char ch, const const_iterator & pos) { return insert(ByteArray(size, ch), pos); }
 
     iterator       begin();
     iterator       end();

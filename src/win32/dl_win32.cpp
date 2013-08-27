@@ -1,5 +1,6 @@
 #include "../../include/cwt/dl.hpp"
 #include "../../include/cwt/logger.hpp"
+#include "../../include/cwt/mt.hpp"
 
 /* TODO need error reporting */
 
@@ -38,6 +39,9 @@ inline bool __is_absolute_path (const String & path)
 
 Dl::Handle Dl::open (const String & path, String & realPath, bool global, bool resolve)
 {
+	static mt_policy_t mutex;
+	AutoLock<> locker(&mutex);
+
 	Dl::Handle h = NULL;
 
 	DWORD dwFlags = 0;
@@ -91,6 +95,9 @@ Dl::Symbol Dl::ptr (Dl::Handle h, const char *symname)
 
 void Dl::close (Dl::Handle h)
 {
+	static mt_policy_t mutex;
+	AutoLock<> locker(&mutex);
+
 	if( h != (Dl::Handle)0) {
 		FreeLibrary(h);
 		h = (Dl::Handle)0;

@@ -13,7 +13,7 @@
 #include <cwt/mt.h>
 
 #if defined(CWT_SINGLE_THREADED)
-#define CWT_DEFAULT_MT_POLICY cwt_single_threaded
+#	define CWT_DEFAULT_MT_POLICY cwt_single_threaded
 
 class DLL_API cwt_single_threaded {
 public:
@@ -23,8 +23,10 @@ public:
 	virtual void unlock() {	; }
 };
 
+typedef cwt_single_threaded mt_policy_t;
+
 #elif defined(CWT_WIN32_THREADS) || defined(CWT_POSIX_THREADS)
-#define CWT_DEFAULT_MT_POLICY multi_threaded_local
+#	define CWT_DEFAULT_MT_POLICY multi_threaded_local
 
 class DLL_API multi_threaded_global
 {
@@ -63,6 +65,8 @@ public:
 private:
 	mt_def(m_mutex);
 };
+
+typedef multi_threaded_local mt_policy_t;
 #else
 // catched in mt.h
 #endif

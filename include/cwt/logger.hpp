@@ -13,7 +13,6 @@
 #include <cwt/string.hpp>
 #include <cwt/sigslot.hpp>
 #include <cwt/vector.hpp>
-#include <cwt/errorable.hpp>
 #include <cstdio>
 
 CWT_NS_BEGIN
@@ -33,7 +32,7 @@ public:
 	static void info  (const String & text);
 	static void warn  (const String & text);
 	static void error (const String & text);
-	static void error (Errorable & errorable);
+	static void error (int errn, const String & text);
 	static void fatal (const String & text);
 private:
 	/*static Vector<LogAppender*> g_appenders;*/
