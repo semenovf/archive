@@ -19,6 +19,8 @@ class Debby::Impl : public Json
 public:
 	Impl() : Json() {  }
 	~Impl() { }
+	bool process();
+	bool processEntity(String & code, const JsonValue::object_type & root, const JsonValue::object_type & entity);
 };
 
 CWT_NS_END

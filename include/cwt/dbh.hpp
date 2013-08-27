@@ -14,12 +14,12 @@ CWT_NS_BEGIN
 
 class DbStatement;
 
-class DbHandler : public Errorable
+class DbHandler
 {
 	typedef DbDriver * (*driver_ctor) ();
 
 protected:
-	DbHandler() : Errorable(), m_dbh(nullptr) {}
+	DbHandler() : m_dbh(nullptr) {}
 
 public:
 	~DbHandler() { close(); }

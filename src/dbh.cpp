@@ -24,9 +24,9 @@ DbHandler * DbHandler::open (const String & uri_str)
 	AutoLock<> locker(& mutex);
 
 	DbHandler::driver_ctor db_driver_ctor;
-	Uri uri (uri_str);
+	Uri uri;
 
-	if (!uri.isValid()) {
+	if (!uri.parse(uri_str)) {
 		Logger::error(_Fr("Invalid URI specified for DB driver: %s") % uri_str);
 		return nullptr;
 	}

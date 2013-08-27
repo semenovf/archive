@@ -9,7 +9,6 @@
 #define __CWT_DBD_HPP__
 
 #include <cwt/vector.hpp>
-#include <cwt/errorable.hpp>
 #include <cwt/hash.hpp>
 #include <cwt/unitype.hpp>
 

@@ -18,6 +18,8 @@ public:
 
 	bool parse(const String & src);
 	bool parseFromFile(const String & path);
+protected:
+	bool process();
 };
 
 

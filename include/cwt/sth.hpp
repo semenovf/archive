@@ -14,12 +14,12 @@ CWT_NS_BEGIN
 
 class DbHandler;
 
-class DbStatement : public Errorable
+class DbStatement
 {
 	friend class DbHandler;
 
 public:
-	DbStatement() : Errorable(), m_sth(nullptr), m_bindCursor(0) {}
+	DbStatement() : m_sth(nullptr), m_bindCursor(0) {}
 	~DbStatement() { close(); }
 
 	void            close();
