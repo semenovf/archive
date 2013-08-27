@@ -7,6 +7,7 @@
 
 #include "../include/cwt/io/file.hpp"
 #include <cwt/safeformat.hpp>
+#include <cwt/logger.hpp>
 #include <cerrno>
 #include <fcntl.h>
 #include <unistd.h>
@@ -25,12 +26,12 @@ public:
 	void    flush();
 	size_t  bytesAvailable() const;
 	int     close();
-	bool    open(Errorable *ex, const String & path, int oflags);
-	ssize_t readBytes(Errorable *ex, char bytes[], size_t n);
-	ssize_t writeBytes(Errorable *ex, const char bytes[], size_t n);
+	bool    open(const String & path, int oflags);
+	ssize_t readBytes(char bytes[], size_t n);
+	ssize_t writeBytes(const char bytes[], size_t n);
 	size_t  size() const;
 
-	static bool setPermissions(Errorable *ex, const String & path, int perms);
+	static bool setPermissions(const String & path, int perms);
 	static int  permsToMode(int perms);
 public:
 	String m_path;
@@ -61,7 +62,7 @@ size_t File::Impl::bytesAvailable() const
 	return (size_t)(total - cur);
 }
 
-bool File::Impl::open(Errorable *ex, const String & path, int oflags)
+bool File::Impl::open(const String & path, int oflags)
 {
 	int fd;
 	int native_oflags = 0;
@@ -90,14 +91,14 @@ bool File::Impl::open(Errorable *ex, const String & path, int oflags)
 	fd = ::open(path.c_str(), native_oflags);
 
 	if (fd < 0) {
-		ex->addSystemError(errno, _Fr("Failed to open '%s'") % path);
+		Logger::error(errno, _Fr("Failed to open '%s'") % path);
 		return false;
 	}
 
 	m_fd = fd;
 
 	if (created) {
-		return setPermissions(ex, path.c_str(), File::ReadOwner | File::WriteOwner);
+		return setPermissions(path.c_str(), File::ReadOwner | File::WriteOwner);
 	}
 
 	return true;
@@ -115,25 +116,25 @@ int File::Impl::close()
 	return rc;
 }
 
-ssize_t File::Impl::readBytes(Errorable *ex, char bytes[], size_t n)
+ssize_t File::Impl::readBytes(char bytes[], size_t n)
 {
 	ssize_t sz;
 
 	sz = ::read(m_fd, bytes, n);
 	if (sz < 0) {
-		ex->addSystemError(errno
+		Logger::error(errno
 			, _Fr("Failed to read from file (%s)") % (m_path != NULL ? m_path : ""));
 	}
 	return sz;
 }
 
-ssize_t File::Impl::writeBytes(Errorable *ex, const char bytes[], size_t n)
+ssize_t File::Impl::writeBytes(const char bytes[], size_t n)
 {
 	ssize_t sz;
 
 	sz = ::write(m_fd, bytes, n);
 	if( sz < 0 ) {
-		ex->addSystemError(errno
+		Logger::error(errno
 			, _Fr("failed to write to file (%s)") % (m_path != NULL ? m_path : ""));
 	}
 	return sz;
@@ -183,12 +184,12 @@ size_t File::Impl::size() const
 	return size_t(end - begin);
 }
 
-bool File::Impl::setPermissions(Errorable *ex, const String & path, int perms)
+bool File::Impl::setPermissions(const String & path, int perms)
 {
 	CWT_ASSERT(!path.isEmpty());
 	if (::chmod(path.c_str(), permsToMode(perms)) != 0) {
-		ex->addSystemError(errno
-			, _Fr("failed to change permissions to file (%s)") % path);
+		Logger::error(errno
+			, _Fr("Failed to change permissions to file (%s)") % path);
 		return false;
 	}
 
@@ -197,17 +198,17 @@ bool File::Impl::setPermissions(Errorable *ex, const String & path, int perms)
 
 File::File() : pimpl(new File::Impl) { ; }
 File::File(int fd) : pimpl(new File::Impl) { pimpl->m_fd = ::dup(fd); }
-File::File(const String & path, int oflags) : pimpl(new File::Impl) { pimpl->open(this, path, oflags); }
+File::File(const String & path, int oflags) : pimpl(new File::Impl) { pimpl->open(path, oflags); }
 size_t  File::bytesAvailable() const { return pimpl->bytesAvailable(); }
-bool    File::open(const String & path, int oflags) {	return pimpl->open(this, path, oflags); }
+bool    File::open(const String & path, int oflags) {	return pimpl->open(path, oflags); }
 int     File::close()   { return pimpl->close(); }
 void    File::flush()   { pimpl->flush(); }
 bool    File::opened() const { return pimpl->m_fd >= 0; }
-ssize_t File::readBytes(char bytes[], size_t n) { return pimpl->readBytes(this, bytes, n); }
-ssize_t File::writeBytes(const char bytes[], size_t n) { return pimpl->writeBytes(this, bytes, n); }
+ssize_t File::readBytes(char bytes[], size_t n) { return pimpl->readBytes(bytes, n); }
+ssize_t File::writeBytes(const char bytes[], size_t n) { return pimpl->writeBytes(bytes, n); }
 
 size_t File::size() const { return pimpl->size(); }
-bool File::setPermissions(int perms) { return pimpl->setPermissions(this, pimpl->m_path, perms); }
+bool File::setPermissions(int perms) { return pimpl->setPermissions(pimpl->m_path, perms); }
 void File::rewind() { ::lseek(pimpl->m_fd, 0L, SEEK_SET); }
 
 } // namespace io

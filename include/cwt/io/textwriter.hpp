@@ -23,8 +23,10 @@ private:
 
 	CWT_DENY_COPY(TextWriter);
 
+/*
 public:
-	typedef typename base_class::vector_type vector_type;
+	typedef typename base_class::string_type string_type;
+*/
 
 public:
 	TextWriter(shared_ptr<Device> dev)
@@ -35,9 +37,6 @@ public:
 		{}
 
 	Device * device() const { return consumer(); }
-
-	ssize_t write (const char chars[], size_t size) { return base_class::write(chars, size); }
-	ssize_t write (const ByteArray & bytes) { return write(bytes.data(), bytes.size()); }
 	ssize_t write (const String & s) { return write(s.data(), s.size()); }
 };
 

@@ -12,11 +12,34 @@ CWT_NS_BEGIN
 
 namespace io {
 
-struct NullByteCodec : public NullCodec<char>
+template <typename string_type>
+class NullCodec
 {
-	typedef NullCodec<char>::orig_char_type orig_char_type;
-	typedef NullCodec<char>::dest_char_type dest_char_type;
-	typedef ByteArray vector_type;
+public:
+	typedef string_type istring_type;
+	typedef string_type ostring_type;
+
+	bool convert(ostring_type & output, const istring_type & input, size_t & remain)
+	{
+		output.append(input);
+		remain = 0;
+		return true;
+	}
+};
+
+
+class NullByteCodec
+{
+public:
+	typedef ByteArray istring_type;
+	typedef ByteArray ostring_type;
+
+	bool convert(ostring_type & output, const istring_type & input, size_t & remain)
+	{
+		output.append(input);
+		remain = 0;
+		return true;
+	}
 };
 
 } // namespace io

@@ -82,19 +82,19 @@ void test_Utf8UcsCodec(_FileSpec file_spec[], int nspecs)
 
 
 
-void test_Utf8Codec(_FileSpec file_spec[], int nspecs, size_t chunkSize)
+void test_Utf8Codec(_FileSpec file_spec[], int nspecs)
 {
-	shared_ptr<io::Device> fileDevice(new io::File);
-	io::TextReader textReader(fileDevice, shared_ptr<io::Utf8Decoder>(new io::Utf8NullDecoder), chunkSize);
-    io::DataReader dataReader(fileDevice, chunkSize);
-
     for (int i = 0; i < nspecs; i++) {
-    	io::File * file = dynamic_cast<io::File*>(textReader.device());
+    	io::File * file = new io::File;
     	file->open(file_spec[i].path, io::Device::ReadOnly);
 
     	printf("test_Utf8Codec: test file: %s...\n", file_spec[i].path);
     	CWT_TEST_FAIL(file->opened());
     	CWT_TEST_FAIL(file->size() == file_spec[i].size);
+
+    	shared_ptr<io::Device> fileDevice(file);
+    	io::TextReader textReader(fileDevice, shared_ptr<io::Utf8Decoder>(new io::Utf8NullDecoder));
+        io::DataReader dataReader(fileDevice);
 
     	String utf8 = textReader.read(file->size());
     	CWT_TEST_OK(utf8.size() == file_spec[i].size);
@@ -108,7 +108,7 @@ void test_Utf8Codec(_FileSpec file_spec[], int nspecs, size_t chunkSize)
         CWT_TEST_OK(raw.size() == utf8.size());
         CWT_TEST_OK(strncmp(utf8.constData(), raw.constData(), raw.size()) == 0);
 
-    	file->close();
+    	//file->close();
     }
 }
 
@@ -116,14 +116,13 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(14000);
+    CWT_BEGIN_TESTS(56);
 
 #ifdef __COMMENT__
    	test_Utf8UcsCodec<io::Ucs2Encoder, io::Ucs2Decoder>(utf8_ucs2_files, sizeof(utf8_ucs2_files)/sizeof(utf8_ucs2_files[0]));
    	test_Utf8UcsCodec<io::Ucs4Encoder, io::Ucs4Decoder>(utf8_ucs4_files, sizeof(utf8_ucs4_files)/sizeof(utf8_ucs4_files[0]));
 #endif
-   	for (size_t i = 6; i < 256; ++i)
-   		test_Utf8Codec(utf8_ucs4_files, sizeof(utf8_ucs4_files)/sizeof(utf8_ucs4_files[0]), i);
+	test_Utf8Codec(utf8_ucs4_files, sizeof(utf8_ucs4_files)/sizeof(utf8_ucs4_files[0]));
 
     CWT_END_TESTS;
     return 0;

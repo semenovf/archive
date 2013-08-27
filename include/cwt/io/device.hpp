@@ -9,21 +9,21 @@
 #define __CWT_IO_DEVICE_HPP__
 
 #include <cwt/cwt.hpp>
-#include <cwt/vector.hpp>
-#include <cwt/errorable.hpp>
+#include <cwt/array.hpp>
+#include <cwt/bytearray.hpp>
+#include <cwt/string.hpp>
 
 CWT_NS_BEGIN
 
 namespace io {
 
-class DLL_API Device : public Errorable
+class DLL_API Device
 {
 public:
 	typedef char char_type;
-	typedef Vector<char_type> vector_type;
 
 protected:
-	Device() {;}
+	Device() : m_inputBuffer(nullptr), m_inputBufferSize(0) {;}
 
 public:
 	enum OpenMode {
@@ -41,36 +41,29 @@ protected:
 	virtual size_t  bytesAvailable () const = 0;
 
 public:
-	virtual ~Device() {}
+	virtual ~Device() {
+		if (m_inputBuffer)
+			delete[] m_inputBuffer;
+		m_inputBuffer = nullptr;
+		m_inputBufferSize = 0;
+	}
+
 	virtual int  close  () = 0;
 	virtual bool opened () const = 0;
 	virtual void flush  () = 0;
 
 	size_t       available() const       { return bytesAvailable(); }
 	bool         atEnd    () const       { return bytesAvailable() == ssize_t(0); }
-	vector_type  read     (size_t size);
 	ssize_t      read     (char bytes[], size_t n) { return readBytes(bytes, n); }
+	ssize_t      read     (ByteArray & ba, size_t n);
 	ssize_t      write    (const char bytes[], size_t n) { return writeBytes(bytes, n); }
-	ssize_t      write    (const vector_type & bytes);
+	ssize_t      write    (const Array<char_type> bytes, size_t n) { return writeBytes(bytes.data(), n); }
+	ssize_t      write    (const ByteArray & bytes, size_t n) { return writeBytes(bytes.data(), CWT_MIN(n, bytes.size())); }
+	ssize_t      write    (const ByteArray & bytes) { return writeBytes(bytes.data(), bytes.size()); }
+private:
+	char * m_inputBuffer;
+	size_t m_inputBufferSize;
 };
-
-inline Device::vector_type Device::read (size_t size)
-{
-	vector_type r;
-	r.reserve(size);
-	ssize_t rb = readBytes(r.data(), size);
-	if (rb > 0)
-		r.resize(size_t(rb));
-	return r;
-}
-
-inline ssize_t Device::write(const Vector<char> & bytes)
-{
-	if (bytes.size() > 0)
-		return writeBytes(bytes.data(), bytes.size());
-	return 0;
-}
-
 
 } // namespace io
 

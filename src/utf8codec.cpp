@@ -13,18 +13,19 @@ CWT_NS_BEGIN
 
 namespace io {
 
+#ifdef __OBSOLETE__
 /*
 template class Utf8UcsCodec<uint16_t, 0xffff>;
 template class Utf8UcsCodec<uint32_t, 0x10ffff>;
 */
 
-template ssize_t Ucs2Encoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
-template ssize_t Ucs4Encoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
-template ssize_t Ucs2Decoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
-template ssize_t Ucs4Decoder::convert(dest_char_type output[], size_t osize, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Ucs2Encoder::convert(string_type & output, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Ucs4Encoder::convert(string_type & output, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Ucs2Decoder::convert(string_type & output, const orig_char_type input[], size_t isize, size_t * remain);
+template ssize_t Ucs4Decoder::convert(string_type & output, const orig_char_type input[], size_t isize, size_t * remain);
 
 template <typename T, uint32_t MaxCP>
-ssize_t UcsEncoder<T, MaxCP>::convert(T output[], size_t osize, const char input[], size_t isize, size_t * remain)
+ssize_t UcsEncoder<T, MaxCP>::convert(string_type & output, const char input[], size_t isize, size_t * remain)
 {
 	CWT_ASSERT(remain);
 
@@ -134,42 +135,38 @@ ssize_t UcsDecoder<T, MaxCP>::convert(char output[], size_t osize, const T input
 	*remain = size_t(pcharsEnd - pchars);
 	return ssize_t(pbytes - output);
 }
+#endif
 
-
-ssize_t Utf8Decoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+bool Utf8Decoder::convert(ostring_type & output, const istring_type & input, size_t & remain)
 {
-	CWT_ASSERT(remain);
+	Utf8String s = Utf8String::fromUtf8(input, nullptr, & m_state);
 
-	Utf8String s = Utf8String::fromUtf8(input, CWT_MIN(isize, osize), nullptr, & m_state);
-	size_t r = s.size(); // size in bytes;
-	CWT_ASSERT(r <= CWT_SSIZE_MAX);
-	memcpy(output, s.data(), r);
-	*remain = isize - r;
-	return ssize_t(r);
+	if (m_strict && m_state.invalidChars > 0)
+		return false;
+
+	output.append(s);
+	remain = m_state.nremain;
+	return true;
 }
 
-ssize_t Utf8Encoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+bool Utf8Encoder::convert(ostring_type & output, const istring_type & input, size_t & remain)
 {
 	CWT_ASSERT(remain);
-
-	Utf8String s = Utf8String::fromUtf8(input, CWT_MIN(isize, osize), nullptr, & m_state);
-	size_t r = s.size(); // size in bytes;
-	CWT_ASSERT(r <= CWT_SSIZE_MAX);
-	memcpy(output, s.data(), r);
-	*remain = isize - r;
-	return ssize_t(r);
+	output.append(ByteArray(input.data(), input.size()));
+	remain = 0;
+	return true;
 }
 
-ssize_t Latin1Decoder::convert(char output[], size_t osize, const char input[], size_t isize, size_t * remain)
+bool Latin1Decoder::convert(ostring_type & output, const istring_type & input, size_t & remain)
 {
-	CWT_ASSERT(remain);
+	Utf8String s = Utf8String::fromLatin1(input, nullptr, & m_state);
 
-	Utf8String s = Utf8String::fromLatin1(input, CWT_MIN(isize, osize), nullptr, & m_state);
-	size_t r = s.size(); // size in bytes;
-	CWT_ASSERT(r <= CWT_SSIZE_MAX);
-	memcpy(output, s.data(), r);
-	*remain = isize - r;
-	return ssize_t(r);
+	if (m_strict && m_state.invalidChars > 0)
+		return false;
+
+	output.append(s);
+	remain = m_state.nremain;
+	return true;
 }
 
 } // namespace io

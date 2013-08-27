@@ -16,50 +16,21 @@ CWT_NS_BEGIN
 
 namespace io {
 
-class DLL_API TextReader : public BufferedReader<Reader<Device, Utf8Decoder> >
+class DLL_API TextReader : public Reader<Device, Utf8Decoder>
 {
-public:
-	static const size_t MaxLineLength = 4096;
-
 private:
-	typedef Reader<Device, Utf8Decoder> base_reader;
-	typedef BufferedReader<base_reader> base_class;
+	typedef Reader<Device, Utf8Decoder> base_class;
 
 	CWT_DENY_COPY(TextReader);
 
 public:
-	typedef typename base_class::vector_type vector_type;
+	TextReader(shared_ptr<Device> dev, shared_ptr<Utf8Decoder> decoder)
+		: base_class(dev, decoder) {}
 
-public:
-	TextReader(shared_ptr<Device> dev, shared_ptr<Utf8Decoder> decoder, size_t chunkSize = base_reader::DefaultChunkSize)
-		: base_class(shared_ptr<base_reader> (new base_reader(dev, decoder, chunkSize)))
-		{}
+	TextReader(shared_ptr<Device> dev)
+		: base_class(dev, shared_ptr<Utf8Decoder>(new Utf8NullDecoder)) {}
 
-	TextReader(shared_ptr<Device> dev, size_t chunkSize = base_reader::DefaultChunkSize)
-		: base_class(shared_ptr<base_reader> (new base_reader(dev, shared_ptr<Utf8Decoder>(new Utf8NullDecoder), chunkSize)))
-		{}
-
-	Device * device() const { return reader()->producer(); }
-
-	bool canReadLine(const Utf8String & end = Utf8String("\n"), size_t maxLength = MaxLineLength)
-	{
-		return canReadUntil(end, maxLength, nullptr);
-	}
-
-	bool canReadLine(const Utf8String ends[], size_t count, size_t maxLength = MaxLineLength)
-	{
-		return canReadUntil(ends, count, maxLength, nullptr, nullptr);
-	}
-
-	Utf8String readLine(const Utf8String & end = Utf8String("\n"), bool * ok = nullptr, size_t maxLength = MaxLineLength)
-	{
-		return readUntil(end, ok, maxLength);
-	}
-
-	Utf8String readLine(const Utf8String ends[], size_t count, bool * ok = nullptr, size_t maxLength = MaxLineLength)
-	{
-		return readUntil(ends, count, ok, maxLength);
-	}
+	Device * device() const { return this->producer(); }
 
 	Utf8String readAll()
 	{

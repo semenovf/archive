@@ -17,49 +17,21 @@ CWT_NS_BEGIN
 
 namespace io {
 
-class DLL_API DataReader : public BufferedReader<Reader<Device, NullByteCodec> >
+class DLL_API DataReader : public Reader<Device, NullByteCodec>
 {
-	static const size_t MaxLineLength = 4096;
-
-	typedef Reader<Device, NullByteCodec> base_reader;
-	typedef BufferedReader<base_reader>   base_class;
+	typedef Reader<Device, NullByteCodec> base_class;
 
 	CWT_DENY_COPY(DataReader);
 
 public:
-	typedef typename base_class::vector_type vector_type;
+	DataReader(shared_ptr<Device> dev) : base_class(dev, shared_ptr<NullByteCodec>(new NullByteCodec)) {}
 
-public:
-	DataReader(shared_ptr<Device> dev, size_t chunkSize = base_reader::DefaultChunkSize)
-		: base_class(shared_ptr<base_reader>(new base_reader(dev, shared_ptr<NullByteCodec>(new NullByteCodec), chunkSize)))
-		{}
-
-	Device * device() const { return reader()->producer(); }
-	const ByteArray & data() const { return base_class::m_buffer; }
-
-	bool canReadLine(const ByteArray & end = ByteArray("\n"), size_t maxLength = MaxLineLength)
-	{
-		return canReadUntil(end, maxLength, nullptr);
-	}
-
-	bool canReadLine(const ByteArray ends[], size_t count, size_t maxLength = MaxLineLength)
-	{
-		return canReadUntil(ends, count, maxLength, nullptr, nullptr);
-	}
-
-	ByteArray readLine(const ByteArray & end = ByteArray("\n"), bool * ok = nullptr, size_t maxLength = MaxLineLength)
-	{
-		return readUntil(end, ok, maxLength);
-	}
-
-	ByteArray readLine(const ByteArray ends[], size_t count, bool * ok = nullptr, size_t maxLength = MaxLineLength)
-	{
-		return readUntil(ends, count, ok, maxLength);
-	}
+	Device * device() const { return this->producer(); }
+	const ByteArray & data() const { return base_class::m_outputBuffer; }
 
 	ByteArray readAll()
 	{
-		return read(device()->available());
+		return this->read(device()->available());
 	}
 
 };
