@@ -11,16 +11,87 @@
 #include "../include/cwt/debby.hpp"
 #include <cwt/json.hpp>
 
-
 CWT_NS_BEGIN
+
+enum DebbyTypeEnum
+{
+	  DebbyTypeUnknown
+	, DebbyTypeBool
+	, DebbyTypeString
+	, DebbyTypeInteger
+	, DebbyTypeFloat
+	, DebbyTypeDouble
+	, DebbyTypeDate
+	, DebbyTypeTime
+	, DebbyTypeDateTime
+	, DebbyTypeTimeStamp
+};
+
+class DebbyFieldSpec
+{
+public:
+	DebbyFieldSpec()
+		: name()
+		, type(DebbyTypeUnknown)
+		, pk(false)
+		, autoinc(false)
+		, notnull(true)
+		, index(false)
+		, unique(false)
+		, ref()
+	{
+		opt1.min = 0;
+		opt2.max = 0;
+	}
+
+	DebbyFieldSpec(const DebbyFieldSpec & spec)
+		: name(spec.name)
+		, type(spec.type)
+		, pk(spec.pk)
+		, autoinc(spec.autoinc)
+		, notnull(spec.notnull)
+		, index(spec.index)
+		, unique(spec.unique)
+		, ref(spec.ref)
+	{
+		opt1.min = spec.opt1.min;
+		opt2.max = spec.opt2.max;
+	}
+
+	String name;
+	DebbyTypeEnum type;
+	bool pk;
+	bool autoinc;
+	bool notnull;
+	bool index;
+	bool unique;
+	String ref; // entity name referenced to (foreigh key)
+
+	union { long_t  min; long_t  prec; }  opt1;
+	union { ulong_t max; ulong_t scale; } opt2;
+};
 
 class Debby::Impl : public Json
 {
 public:
 	Impl() : Json() {  }
 	~Impl() { }
-	bool process();
-	bool processEntity(String & code, const JsonValue::object_type & root, const JsonValue::object_type & entity);
+
+	bool parseAll() const;
+
+private:
+	bool parseEntity(const String & name, const JsonValue::object_type & entity) const;
+	bool parseField(const JsonValue * field, DebbyFieldSpec & spec) const;
+	bool parseType(const String & type, DebbyFieldSpec & spec) const;
+	bool parseNumericExtra(const Vector<String> & extra, DebbyFieldSpec & spec) const;
+
+	bool refSpec(const String & refEntityName, DebbyFieldSpec & refSpec) const;
+	String generateCxxEntity(const String & name, const Vector<DebbyFieldSpec> & specs) const;
+	bool onEntity(const String & name, const Vector<DebbyFieldSpec> & specs) const;
+
+	static bool unbrace(const String & s, Vector<String> & r);
+	static String comment(const DebbyFieldSpec & spec);
+
 };
 
 CWT_NS_END
