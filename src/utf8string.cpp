@@ -202,6 +202,84 @@ Utf8String Utf8String::substr(const const_iterator & from, size_t n) const
 }
 
 
+Utf8String Utf8String::substr(const const_iterator & begin, const const_iterator & end) const
+{
+	const_iterator b(begin);
+	const_iterator e(end);
+
+	if (b < cbegin())
+		b = cbegin();
+	if (e > cend())
+		e = cend();
+
+	size_t pos = b.distance(cbegin());
+	size_t sz  = b.distance(e);
+
+	Utf8String r;
+	*r.pimpl = pimpl->substr(pos, sz);
+	r.calculateLength();
+	return r;
+}
+
+Utf8String Utf8String::ltrim() const
+{
+	const_iterator it = cbegin();
+	const_iterator itEnd = cend();
+
+	while (it != itEnd && it.value().isSpace())
+		++it;
+
+	if (it != itEnd) {
+		return substr(it);
+	}
+
+	return *this;
+}
+
+Utf8String Utf8String::rtrim() const
+{
+	const_reverse_iterator itr = crbegin();
+	const_reverse_iterator itrEnd = crend();
+
+	if (itr != itrEnd && itr.value() == UChar::Null) // skip null-terminator
+		++itr;
+
+	while (itr != itrEnd && itr.value().isSpace())
+		++itr;
+
+	if (itr != itrEnd) {
+		--itr;
+		return substr(cbegin(), Utf8String::length(itr, itrEnd));
+	}
+
+	return *this;
+}
+
+Utf8String Utf8String::trim() const
+{
+	const_iterator it = cbegin();
+	const_iterator itEnd = cend();
+
+	while (it != itEnd && it.value().isSpace())
+		++it;
+
+	const_reverse_iterator itr = crbegin();
+	const_reverse_iterator itrEnd = crend();
+
+	if (itr != itrEnd && itr.value() == UChar::Null) // skip null-terminator
+		++itr;
+
+	while (itr != itrEnd && itr.value().isSpace())
+		++itr;
+
+	if (itr != itrEnd) {
+		--itr;
+		return substr(it, Utf8String::length(it, const_iterator(itr)));
+	}
+	return *this;
+}
+
+
 Utf8String & Utf8String::insert(const Utf8String & s, const Utf8String::const_iterator & pos)
 {
 	detach();

@@ -14,6 +14,7 @@
 #include <cwt/shared_ptr.hpp>
 
 #define _Fr(s) cwt::SafeFormat(_u8(s))
+#define _F(s) cwt::SafeFormat(_u8(s))
 
 CWT_NS_BEGIN
 

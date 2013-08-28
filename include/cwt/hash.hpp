@@ -430,13 +430,13 @@ const Key Hash<Key, T>::key(const T &value, const Key &defaultValue) const
 
 
 template <typename Key, typename T>
-inline const T Hash<Key, T>::value(const Key &key) const
+inline const T Hash<Key, T>::value(const Key & key) const
 {
 	return value(key, T());
 }
 
 template <typename Key, typename T>
-const T Hash<Key, T>::value(const Key &key, const T &defaultValue) const
+const T Hash<Key, T>::value(const Key & key, const T & defaultValue) const
 {
     if (m_d->nentries == 0)
         return defaultValue;
@@ -444,12 +444,12 @@ const T Hash<Key, T>::value(const Key &key, const T &defaultValue) const
     const_iterator it = find(key);
     if (it == cend())
     	return defaultValue;
-    return it->value;
+    return it.value();
 }
 
 
 template <class Key, class T>
-int Hash<Key, T>::remove(const Key &key)
+int Hash<Key, T>::remove(const Key & key)
 {
     if (isEmpty())
         return 0;

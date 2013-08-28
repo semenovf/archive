@@ -46,15 +46,19 @@ public:
 	static const Utf8String EndOfLine;
 
     class const_iterator;
+    class reverse_iterator;
+    class const_reverse_iterator;
 
 	class iterator {
 		friend class const_iterator;
+		friend class reverse_iterator;
 		friend class Utf8String;
 		Utf8Entry m_entry;
 
 	public:
         iterator() : m_entry() {}
     	iterator(const iterator & o) : m_entry(o.m_entry) {}
+    	iterator(const reverse_iterator & o);/* : m_entry(o.m_entry) {}*/
     	explicit iterator(Utf8Entry::pointer cursor) : m_entry(cursor) {}
 
     	UChar value() const                          { return m_entry.value(); }
@@ -106,6 +110,7 @@ public:
 
 	class const_iterator {
 		friend class iterator;
+		friend class const_reverse_ietrator;
 		friend class Utf8String;
 		Utf8Entry m_entry;
 
@@ -113,6 +118,7 @@ public:
         const_iterator() : m_entry() {}
     	const_iterator(const iterator & o) : m_entry(o.m_entry) {}
     	const_iterator(const const_iterator & o) : m_entry(o.m_entry) {}
+    	const_iterator(const const_reverse_iterator & o);/* : m_entry(o.m_entry) {}*/
     	explicit const_iterator(Utf8Entry::pointer cursor)  : m_entry(cursor) {}
 
     	UChar value() const                                { return m_entry.value(); }
@@ -170,20 +176,22 @@ public:
     class const_reverse_iterator;
 
 	class reverse_iterator {
-		friend class const_reverse_iterato;
+		friend class const_reverse_iterator;
+		friend class iterator;
 		friend class Utf8String;
 		Utf8Entry m_entry;
 
 	public:
 		reverse_iterator() : m_entry() {}
+		reverse_iterator(const iterator & o) : m_entry(o.m_entry) {}
 		reverse_iterator(const reverse_iterator & o) : m_entry(o.m_entry) {}
     	explicit reverse_iterator(Utf8Entry::pointer cursor) : m_entry(cursor) {}
 
     	UChar value() const                          { return m_entry.r_value(); }
         UChar operator  * () const                   { return m_entry.r_value(); }
-        size_t distance (const iterator & o) const   { ssize_t d = o.m_entry.cursor - m_entry.cursor; return d > 0 ? d : d * -1; }
-        bool operator  == (const iterator & o) const { return m_entry.cursor == o.m_entry.cursor; }
-        bool operator  != (const iterator & o) const { return !(m_entry.cursor == o.m_entry.cursor); }
+        size_t distance (const reverse_iterator & o) const   { ssize_t d = o.m_entry.cursor - m_entry.cursor; return d > 0 ? d : d * -1; }
+        bool operator  == (const reverse_iterator & o) const { return m_entry.cursor == o.m_entry.cursor; }
+        bool operator  != (const reverse_iterator & o) const { return !(m_entry.cursor == o.m_entry.cursor); }
         reverse_iterator & operator ++ ()                    { m_entry.r_next(); return *this; }
         reverse_iterator   operator ++ (int) {
         	reverse_iterator r(*this);
@@ -228,6 +236,7 @@ public:
 
 	class const_reverse_iterator {
 		friend class reverse_iterator;
+		friend class const_iterator;
 		friend class Utf8String;
 		Utf8Entry m_entry;
 
@@ -235,6 +244,7 @@ public:
 		const_reverse_iterator() : m_entry() {}
 		const_reverse_iterator(const reverse_iterator & o) : m_entry(o.m_entry) {}
 		const_reverse_iterator(const const_reverse_iterator & o) : m_entry(o.m_entry) {}
+		const_reverse_iterator(const const_iterator & o) : m_entry(o.m_entry) {}
     	explicit const_reverse_iterator(Utf8Entry::pointer cursor)  : m_entry(cursor) {}
 
     	UChar value() const                                { return m_entry.value(); }
@@ -390,9 +400,14 @@ public:
 	Utf8String substr(size_t pos, size_t n) const        { return substr(begin() + pos, n); }
 	Utf8String substr(const const_iterator & from) const { return substr(from, length()); }
 	Utf8String substr(const const_iterator & from, size_t n) const;
+	Utf8String substr(const const_iterator & begin, const const_iterator & end) const;
 	Utf8String mid(size_t pos, size_t n) const           { return substr(pos, n); }
 	Utf8String left(size_t n) const                      { return substr(0, n); }
 	Utf8String right(size_t n) const                     { return substr(length() - n, n); }
+
+	Utf8String ltrim() const;
+	Utf8String rtrim() const;
+	Utf8String trim() const;
 
 	double	 toDouble(bool *ok = 0) const;
 	float	 toFloat(bool *ok = 0) const;
@@ -471,6 +486,9 @@ public:
 	static int decodeBytes(const char * bytes, size_t len, uint32_t & uc, uint32_t & min_uc);
 	static ssize_t encodeUcs4(char *utf8, size_t size, uint32_t ucs4);
 };
+
+inline Utf8String::iterator::iterator(const reverse_iterator & o) : m_entry(o.m_entry) {}
+inline Utf8String::const_iterator::const_iterator(const const_reverse_iterator & o) : m_entry(o.m_entry) {}
 
 CWT_NS_END
 

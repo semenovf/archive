@@ -284,12 +284,32 @@ void test_split()
 	CWT_TEST_OK(tokens[3] == Utf8String::fromUtf8("Д"));
 }
 
+void test_trim()
+{
+	bool ok;
+	Utf8String empty;
+	Utf8String s (Utf8String::fromUtf8("\n  \t  ЁЖЗИЙЭЮЯGIJKLёжзийэюяgijkl \t \n \t\t\n", &ok));
+	Utf8String ltrimed (Utf8String::fromUtf8("ЁЖЗИЙЭЮЯGIJKLёжзийэюяgijkl \t \n \t\t\n"));
+	Utf8String rtrimed (Utf8String::fromUtf8("\n  \t  ЁЖЗИЙЭЮЯGIJKLёжзийэюяgijkl"));
+	Utf8String trimed (Utf8String::fromUtf8("ЁЖЗИЙЭЮЯGIJKLёжзийэюяgijkl"));
+
+	CWT_TEST_FAIL2(ok, "From UTF-8 conversion failed");
+
+	CWT_TEST_OK(empty.ltrim() == empty);
+	CWT_TEST_OK(empty.rtrim() == empty);
+	CWT_TEST_OK(empty.trim()  == empty);
+
+	CWT_TEST_OK(s.ltrim() == ltrimed);
+	CWT_TEST_OK(s.rtrim() == rtrimed);
+	CWT_TEST_OK(s.trim()  == trimed);
+}
+
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(103);
+    CWT_BEGIN_TESTS(110);
 
     test_basic();
     test_init();
@@ -307,6 +327,7 @@ int main(int argc, char *argv[])
     test_number_conversions();
     test_replace();
     test_split();
+    test_trim();
 
     CWT_END_TESTS;
 }
