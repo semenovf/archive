@@ -13,14 +13,14 @@ using namespace cwt;
 void test_settings_base()
 {
 	Settings settings;
-	settings.setValue("/Image/Width", 800);
-	settings.setValue("/Image/Height", 600);
-	settings.setValue("/Image/Title", "View from 15th Floor");
+	settings.set("/Image/Width", 800);
+	settings.set("/Image/Height", 600);
+	settings.set("/Image/Title", "View from 15th Floor");
 
-	settings.setValue("/Image/IDs/[2]", 234);
-	settings.setValue("/Image/IDs/[3]", 38793);
-	settings.setValue("/Image/IDs/[1]", 943);
-	settings.setValue("/Image/IDs/[0]", 116);
+	settings.set("/Image/IDs/[2]", 234);
+	settings.set("/Image/IDs/[3]", 38793);
+	settings.set("/Image/IDs/[1]", 943);
+	settings.set("/Image/IDs/[0]", 116);
 
 	CWT_TEST_OK(settings.number("/Image/Width")  == double(800));
 	CWT_TEST_OK(settings.number("/Image/Height") == double(600));

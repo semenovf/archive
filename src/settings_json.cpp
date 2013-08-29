@@ -20,20 +20,22 @@ CWT_NS_BEGIN
 class Settings::Impl : public JsonSimplePath
 {
 public:
-	Impl() : JsonSimplePath(*(new Json())) {  }
-	~Impl() { delete & json(); }
+	Impl() : JsonSimplePath(m_json) {  }
+	bool parse(const String & json) { return m_json.parse(json); }
+private:
+	Json m_json;
 };
 
 Settings::Settings() : pimpl(new Settings::Impl) { ; }
-void Settings::setValue(const String& path, bool value)          { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, double value)        { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, float value)         { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, long_t value)        { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, ulong_t value)       { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, int_t value)         { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, uint_t value)        { pimpl->setValue(path, value); }
-void Settings::setValue(const String& path, const String & s)    { pimpl->setValue(path, s); }
-void Settings::setValue(const String& path, const char * latin1) { pimpl->setValue(path, latin1); }
+void Settings::set(const String & path, bool value)          { pimpl->set(path, value); }
+void Settings::set(const String & path, double value)        { pimpl->set(path, value); }
+void Settings::set(const String & path, float value)         { pimpl->set(path, value); }
+void Settings::set(const String & path, long_t value)        { pimpl->set(path, value); }
+void Settings::set(const String & path, ulong_t value)       { pimpl->set(path, value); }
+void Settings::set(const String & path, int_t value)         { pimpl->set(path, value); }
+void Settings::set(const String & path, uint_t value)        { pimpl->set(path, value); }
+void Settings::set(const String & path, const String & s)    { pimpl->set(path, s); }
+void Settings::set(const String & path, const char * latin1) { pimpl->set(path, latin1); }
 
 UniType Settings::value(const String& path, const UniType & defaultValue)
 {
@@ -111,11 +113,11 @@ bool Settings::parse(const String & str, Format format)
 {
 	if (format == DefaultFormat) {
 		// try native format - JSON
-		return pimpl->json().parse(str);
+		return pimpl->parse(str);
 	}
 
 	switch(format) {
-	case JsonFormat: return pimpl->json().parse(str);
+	case JsonFormat: return pimpl->parse(str);
 	default: break;
 	}
 

@@ -40,15 +40,15 @@ public:
 	Vector<UniType>  array  (const String & path, const Vector<UniType> & defaultValue = Vector<UniType>());
 
 /* slots */
-	void setValue (const String & path, bool value);
-	void setValue (const String & path, double value);
-	void setValue (const String & path, float value);
-	void setValue (const String & path, long_t value);
-	void setValue (const String & path, ulong_t value);
-	void setValue (const String & path, int_t value);
-	void setValue (const String & path, uint_t value);
-	void setValue (const String & path, const String & s);
-	void setValue (const String & path, const char * latin1);
+	void set (const String & path, bool value);
+	void set (const String & path, double value);
+	void set (const String & path, float value);
+	void set (const String & path, long_t value);
+	void set (const String & path, ulong_t value);
+	void set (const String & path, int_t value);
+	void set (const String & path, uint_t value);
+	void set (const String & path, const String & s);
+	void set (const String & path, const char * latin1);
 };
 
 CWT_NS_END
