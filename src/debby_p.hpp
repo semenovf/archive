@@ -13,26 +13,12 @@
 
 CWT_NS_BEGIN
 
-enum DebbyTypeEnum
-{
-	  DebbyTypeUnknown
-	, DebbyTypeBool
-	, DebbyTypeString
-	, DebbyTypeInteger
-	, DebbyTypeFloat
-	, DebbyTypeDouble
-	, DebbyTypeDate
-	, DebbyTypeTime
-	, DebbyTypeDateTime
-	, DebbyTypeTimeStamp
-};
-
 class DebbyFieldSpec
 {
 public:
 	DebbyFieldSpec()
 		: name()
-		, type(DebbyTypeUnknown)
+		, type(Debby::TypeUnknown)
 		, pk(false)
 		, autoinc(false)
 		, notnull(true)
@@ -59,7 +45,7 @@ public:
 	}
 
 	String name;
-	DebbyTypeEnum type;
+	Debby::TypeEnum type;
 	bool pk;
 	bool autoinc;
 	bool notnull;
@@ -77,7 +63,7 @@ public:
 	Impl() : Json() {  }
 	~Impl() { }
 
-	bool parseAll() const;
+	bool parseAll();
 
 private:
 	bool parseEntity(const String & name, const JsonValue::object_type & entity) const;
@@ -87,11 +73,14 @@ private:
 
 	bool refSpec(const String & refEntityName, DebbyFieldSpec & refSpec) const;
 	String generateCxxEntity(const String & name, const Vector<DebbyFieldSpec> & specs) const;
+	String generateCxxScheme(const String & name) const;
 	bool onEntity(const String & name, const Vector<DebbyFieldSpec> & specs) const;
 
 	static bool unbrace(const String & s, Vector<String> & r);
 	static String comment(const DebbyFieldSpec & spec);
 
+private:
+	const JsonValue * m_jvSchemeObject;
 };
 
 CWT_NS_END

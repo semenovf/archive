@@ -14,6 +14,21 @@ class Debby
 	CWT_PIMPL_IMPL(Debby);
 
 public:
+	enum TypeEnum
+	{
+		  TypeUnknown
+		, TypeBool
+		, TypeString
+		, TypeInteger
+		, TypeFloat
+		, TypeDouble
+		, TypeDate
+		, TypeTime
+		, TypeDateTime
+		, TypeTimeStamp
+	};
+
+public:
 	Debby();
 
 	bool parse(const String & src);
