@@ -64,12 +64,12 @@ public:
 	static size_t ostring_length(const ostring_type & s) { return s.length(); }
 	static void   ostring_prepend(ostring_type & s, char_type c) { s.prepend(c); }
 
-	static ostring_type readUntil (ostring_type & s, const ostring_type ends[], size_t count, size_t maxSize);
+	static ostring_type readLine (ostring_type & s, const ostring_type ends[], size_t count, size_t maxSize);
 };
 
 
 template <typename P, typename Decoder>
-typename ReaderTraits<P, Decoder>::ostring_type ReaderTraits<P, Decoder>::readUntil (
+typename ReaderTraits<P, Decoder>::ostring_type ReaderTraits<P, Decoder>::readLine (
 	  ostring_type & s
 	, const ostring_type ends[]
 	, size_t count
@@ -105,6 +105,8 @@ template <typename P, typename Decoder>
 class Reader
 {
 public:
+	static const size_t MaxChunkSize = 512;
+
 	typedef ReaderTraits<P, Decoder>              reader_traits;
 	typedef typename reader_traits::istring_type  istring_type;
 	typedef typename reader_traits::ostring_type  ostring_type;
@@ -222,9 +224,10 @@ bool Reader<P, Decoder>::readAndConvert (size_t maxSize)
 template <typename P, typename Decoder>
 bool Reader<P, Decoder>::canRead(size_t maxSize)
 {
-	resetCursor();
+	if (m_cursor != 0)
+		resetCursor();
 	if (maxSize > reader_traits::ostring_length(m_outputBuffer)) {
-		if (!readAndConvert(maxSize)) {
+		if (!readAndConvert(maxSize < MaxChunkSize ? MaxChunkSize : maxSize)) {
 			return false;
 		}
 	}
@@ -262,7 +265,7 @@ typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::readLine (
 		return ostring_type();
 	}
 
-	return reader_traits::readUntil(m_outputBuffer, ends, count, maxSize);
+	return reader_traits::readLine(m_outputBuffer, ends, count, maxSize);
 }
 
 

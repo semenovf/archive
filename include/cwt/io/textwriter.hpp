@@ -23,11 +23,6 @@ private:
 
 	CWT_DENY_COPY(TextWriter);
 
-/*
-public:
-	typedef typename base_class::string_type string_type;
-*/
-
 public:
 	TextWriter(shared_ptr<Device> dev)
 		: base_class(dev, make_shared<Utf8Encoder>())
@@ -37,7 +32,6 @@ public:
 		{}
 
 	Device * device() const { return consumer(); }
-	ssize_t write (const String & s) { return write(s.data(), s.size()); }
 };
 
 } // namespace io
