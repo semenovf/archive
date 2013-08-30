@@ -132,20 +132,44 @@ String Debby::Impl::comment(const DebbyFieldSpec & spec)
 	return r;
 }
 
-bool Debby::Impl::refSpec(const String & refEntityName, DebbyFieldSpec & refSpec) const
-{
-	Hash<String, JsonValue*> hash = m_jvSchemeObject->object();
 
-	if (!hash.contains(refEntityName)) {
-		Logger::error(_Fr("Entity '%s' not found") % refEntityName);
+const JsonValue * Debby::Impl::schemeObject() const
+{
+	const JsonValue::object_type & root = this->object();
+
+	if (!root.contains(__DEBBY_JV_SCHEME)) {
+		Logger::error("Debby's source (JSON) must contain '-scheme' entry as object");
+		return nullptr;
+	}
+
+	const JsonValue * r = root.at(__DEBBY_JV_SCHEME);
+
+	if (!r->isObject()) {
+		Logger::error("'-scheme' entry must be an object");
+		return nullptr;
+	}
+
+	return r;
+}
+
+bool Debby::Impl::refSpec(const String & refName, DebbyFieldSpec & refSpec) const
+{
+	const JsonValue * scheme = this->schemeObject();
+
+	if (!scheme)
+		return false;
+
+	const JsonValue * jv = & scheme->at(refName);
+
+	if (jv->isInvalid()) {
+		Logger::error(_Fr("Table '%s' not found") % refName);
 		return false;
 	}
 
-	JsonValue * jv = hash.value(refEntityName);
 	CWT_ASSERT(jv);
 
 	if (!jv->isObject()) {
-		Logger::error(_Fr("Debby's entity '%s' must be an object") % refEntityName);
+		Logger::error(_Fr("Debby's entity '%s' must be an object") % refName);
 		return false;
 	}
 
@@ -161,7 +185,7 @@ bool Debby::Impl::refSpec(const String & refEntityName, DebbyFieldSpec & refSpec
 	}
 
 	if (it == itEnd) {
-		Logger::error(_Fr("Primary key field not found in entity '%s'") % refEntityName);
+		Logger::error(_Fr("Primary key field not found in entity '%s'") % refName);
 		return false;
 	}
 
@@ -304,7 +328,7 @@ bool Debby::Impl::parseField(const JsonValue * v, DebbyFieldSpec & spec) const
 	return parseType(type, spec);
 }
 
-bool Debby::Impl::parseEntity(const String & name, const JsonValue::object_type & entity) const
+bool Debby::Impl::parseTable(const String & name, const JsonValue::object_type & entity) const
 {
 	JsonValue::object_type::const_iterator it = entity.cbegin();
 	JsonValue::object_type::const_iterator itEnd = entity.cend();
@@ -329,7 +353,7 @@ bool Debby::Impl::parseEntity(const String & name, const JsonValue::object_type 
 	return true;
 }
 
-String Debby::Impl::generateCxxEntity(const String & name, const Vector<DebbyFieldSpec> & specs) const
+String Debby::Impl::generateCxxTable(const String & name, const Vector<DebbyFieldSpec> & specs) const
 {
 	String r;
 
@@ -401,7 +425,7 @@ String Debby::Impl::generateCxxScheme(const String & name) const
 
 bool Debby::Impl::onEntity(const String & name, const Vector<DebbyFieldSpec> & specs) const
 {
-	String cxx = generateCxxEntity(name, specs);
+	String cxx = generateCxxTable(name, specs);
 	if (cxx.isEmpty())
 		return false;
 
@@ -418,22 +442,10 @@ bool Debby::Impl::parseAll()
 		return false;
 	}
 
-	const JsonValue::object_type & root = this->object();
+	const JsonValue * schemeObject = this->schemeObject();
 
-	if (!root.contains(__DEBBY_JV_SCHEME)) {
-		Logger::error("Debby's source (JSON) must contain '-scheme' entry as object");
-		return false;
-	}
-
-	m_jvSchemeObject = root.at(__DEBBY_JV_SCHEME);
-
-	if (!m_jvSchemeObject->isObject()) {
-		Logger::error("'-scheme' entry must be an object");
-		return false;
-	}
-
-	JsonValue::object_type::const_iterator it = m_jvSchemeObject->object().cbegin();
-	JsonValue::object_type::const_iterator itEnd = m_jvSchemeObject->object().cend();
+	JsonValue::object_type::const_iterator it = schemeObject->object().cbegin();
+	JsonValue::object_type::const_iterator itEnd = schemeObject->object().cend();
 
 	// traverse through entities
 	while (it != itEnd) {
@@ -444,7 +456,7 @@ bool Debby::Impl::parseAll()
 		}
 
 		JsonValue::object_type entity = it.value()->object();
-		if (!parseEntity(entityName, entity)) {
+		if (!parseTable(entityName, entity)) {
 			return false;
 		}
 		++it;

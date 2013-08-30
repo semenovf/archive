@@ -45,14 +45,12 @@ class Scheme
 };
 */
 
-class Entity : public Hash<String, UniType>
+class Table : public Hash<String, UniType>
 {
 	typedef Hash<String, UniType> base_class;
 public:
-	Entity() : base_class() {}
+	Table() : base_class() {}
 	bool has (const String & field) { return contains(field); }
-	void reset();
-	bool save();
 };
 
 

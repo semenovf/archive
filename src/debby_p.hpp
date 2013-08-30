@@ -66,21 +66,22 @@ public:
 	bool parseAll();
 
 private:
-	bool parseEntity(const String & name, const JsonValue::object_type & entity) const;
+	bool parseTable(const String & name, const JsonValue::object_type & entity) const;
 	bool parseField(const JsonValue * field, DebbyFieldSpec & spec) const;
 	bool parseType(const String & type, DebbyFieldSpec & spec) const;
 	bool parseNumericExtra(const Vector<String> & extra, DebbyFieldSpec & spec) const;
 
-	bool refSpec(const String & refEntityName, DebbyFieldSpec & refSpec) const;
-	String generateCxxEntity(const String & name, const Vector<DebbyFieldSpec> & specs) const;
+	bool refSpec(const String & refName, DebbyFieldSpec & refSpec) const;
+	String generateCxxTable(const String & name, const Vector<DebbyFieldSpec> & specs) const;
 	String generateCxxScheme(const String & name) const;
 	bool onEntity(const String & name, const Vector<DebbyFieldSpec> & specs) const;
+
+	const JsonValue * schemeObject() const;
 
 	static bool unbrace(const String & s, Vector<String> & r);
 	static String comment(const DebbyFieldSpec & spec);
 
 private:
-	const JsonValue * m_jvSchemeObject;
 };
 
 CWT_NS_END
