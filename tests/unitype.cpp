@@ -475,6 +475,48 @@ void test_float(void)
 	CWT_TEST_OK(double_val.toDouble(&ok) == String("3.14e+10").toDouble() && ok);
 }
 
+struct TestElem
+{
+	TestElem  () : str()                        { puts("TestElem()"); }
+	TestElem  (const TestElem & o) : str(o.str) { if (!str.isEmpty()) ++counter; printf("TestElem (TestElem(\"%s\"))\n", str.c_str()); }
+	TestElem  (const String & s) : str(s)       { ++counter; printf ("TestElem (\"%s\")\n", str.c_str()); }
+	~TestElem ()                                { if (!str.isEmpty()) --counter; printf ("~TestElem (\"%s\")\n", str.c_str()); }
+
+	static int counter;
+	String str;
+};
+
+int TestElem::counter = 0;
+
+void test_object ()
+{
+	{
+		TestElem v("Hello");
+		TestElem & ref = v;
+
+		(void)ref;
+
+/*
+		Vector<TestElem> v;
+		v.append(TestElem(String("One")));
+
+		UniType ut = UniType::make_object(v);
+		Vector<TestElem> * p = & ut.objectRef<Vector<TestElem> >();
+
+		p->append(TestElem(String("Two")));
+		CWT_TEST_OK(p->size() == 2);
+*/
+/*
+		v->append(String("Two"));
+		v->append(String("Three"));
+		v->append(String("Four"));
+
+		CWT_TEST_OK(TestElem::counter == 4);
+*/
+	}
+
+//	CWT_TEST_OK(TestElem::counter == 0);
+}
 
 #ifdef __COMMENT__
 
@@ -501,13 +543,14 @@ int main(int argc, char *argv[])
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 
-	CWT_BEGIN_TESTS(115);
+	CWT_BEGIN_TESTS(117);
 
 	test_00();
 	test_01();
 	test_bool();
 	test_integer();
 	test_float();
+	test_object();
 /*
 	test_text();
 	test_blob();

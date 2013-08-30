@@ -88,7 +88,7 @@ public:
 	Vector();
 	Vector(size_t size);
 	Vector(size_t size, const T & value);
-	Vector(const T * values, size_t size) : m_d(new VectorData) { append(values, size); }
+	Vector(const T * values, size_t size) : m_d(new SharedData) { append(values, size); }
 	Vector(const Vector<T> &other);
 
 	T&             at(size_t i);
@@ -134,9 +134,9 @@ public:
 	Vector<T>&	   operator = (const Vector<T> & other);
 
 protected:
-	struct VectorData {
-		VectorData() : count(0) {}
-		VectorData(const VectorData & other) : count(other.count)
+	struct SharedData {
+		SharedData() : count(0) {}
+		SharedData(const SharedData & other) : count(other.count)
 		{
 			data.alloc(count);
 			Array<T>::deep_copy(data, other.data, 0, 0, count);
@@ -145,25 +145,25 @@ protected:
 		size_t   count;
 	};
 
-	shareable<VectorData> m_d;
+	shareable<SharedData> m_d;
 };
 
 template <typename T>
-inline Vector<T>::Vector() : m_d(new VectorData)
+inline Vector<T>::Vector() : m_d(new SharedData)
 {
 	m_d->count = 0;
 //	m_d->data.alloc(size);
 }
 
 template <typename T>
-inline Vector<T>::Vector(size_t size) : m_d(new VectorData)
+inline Vector<T>::Vector(size_t size) : m_d(new SharedData)
 {
 	m_d->count = 0;
 	m_d->data.alloc(size);
 }
 
 template <typename T>
-Vector<T>::Vector(size_t size, const T &value)	: m_d(new VectorData)
+Vector<T>::Vector(size_t size, const T &value)	: m_d(new SharedData)
 {
 	m_d->count = size;
 	m_d->data.alloc(size);

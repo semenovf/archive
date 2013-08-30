@@ -24,13 +24,21 @@ struct AbstractUniObject {
 template <typename T>
 struct UniObject : public AbstractUniObject
 {
-	UniObject(const T &v) : value(v) { ; }
-	UniObject& operator = (const T &v) { value = v; return *this; }
-	~UniObject() { ; }
+	UniObject (const T & v) : value(v) { ; }
+	UniObject & operator = (const T & v) { value = v; return *this; }
+	~UniObject () { ; }
 	T value;
 
-	T getValue() const { return value; }
-	T& getValue() { return value; }
+/*
+	T   getValue() const { return value; }
+	T & getValue() { return value; }
+*/
+
+/*
+	T &   getRef() const { return value; }
+	const T & getRef()   { return value; }
+*/
+
 };
 
 
@@ -65,14 +73,14 @@ public:
 	UniType(const ByteArray & v) : m_d(new Data) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
 
 	UniType(const UniType &other) { m_d = other.m_d; }
-	UniType& operator = (const UniType &other)
+	UniType & operator = (const UniType &other)
 	{
 		m_d = other.m_d;
 		return *this;
 	}
 
 	template <typename T>
-	static UniType make_object(const T &v);
+	static UniType make_object (const T & v);
 
 	bool isNull() const { return m_d->type == NullValue; }
 	TypeEnum type() const { return m_d->type; }
@@ -98,62 +106,58 @@ public:
 	template <typename T>
 	void setObject(const T & o);
 
-	void swap(UniType &other) { m_d.swap(other.m_d); }
+	void swap(UniType & other) { m_d.swap(other.m_d); }
 
 	bool      boolean() const  { return toBool(); }
 	long_t    integer() const  { return toLong(); }
 	double    number() const   { return toDouble(); }
 	String    string() const   { return toString(); }
 
-	bool      toBool(bool *ok = NULL) const;
-	byte_t    toByte(bool *ok = NULL) const;
-	sbyte_t   toSByte(bool *ok = NULL) const;
-	short_t   toShort(bool *ok = NULL) const;
-	ushort_t  toUShort(bool *ok = NULL) const;
-	int_t     toInt(bool *ok = NULL) const;
-	uint_t    toUInt(bool *ok = NULL) const;
-	long_t    toLong(bool *ok = NULL) const;
-	ulong_t   toULong(bool *ok = NULL) const;
-	float     toFloat(bool *ok = NULL) const;
-	double    toDouble(bool *ok = NULL) const;
-	UChar     toUChar(bool *ok = NULL) const;
-	String    toString(bool *ok = NULL) const;
-	ByteArray toBlob(bool *ok = NULL) const;
+	bool      toBool   (bool * ok = nullptr) const;
+	byte_t    toByte   (bool * ok = nullptr) const;
+	sbyte_t   toSByte  (bool * ok = nullptr) const;
+	short_t   toShort  (bool * ok = nullptr) const;
+	ushort_t  toUShort (bool * ok = nullptr) const;
+	int_t     toInt    (bool * ok = nullptr) const;
+	uint_t    toUInt   (bool * ok = nullptr) const;
+	long_t    toLong   (bool * ok = nullptr) const;
+	ulong_t   toULong  (bool * ok = nullptr) const;
+	float     toFloat  (bool * ok = nullptr) const;
+	double    toDouble (bool * ok = nullptr) const;
+	UChar     toUChar  (bool * ok = nullptr) const;
+	String    toString (bool * ok = nullptr) const;
+	ByteArray toBlob   (bool * ok = nullptr) const;
 
 	template <typename T>
-	T         toObject(bool *ok = NULL) const;
+	T         toObject (bool * ok = nullptr) const;
 
 	static String toStringType(UniType::TypeEnum t);
 
 /* Do not use this methods!!! For internal use only !!! */
-	long_t& longRef()    { return m_d->d.long_val; }
-	const long_t& longRef() const    { return m_d->d.long_val; }
-/*
-	float& floatRef()    { return m_d->d.float_val; }
-	const float& floatRef() const { return m_d->d.float_val; }
-*/
-	double& doubleRef()  { return m_d->d.double_val; }
-	const double& doubleRef() const { return m_d->d.double_val; }
-	String& stringRef()  { return *m_d->d.string_val; }
-	const String& stringRef() const { return *m_d->d.string_val; }
-	ByteArray& blobRef() { return *m_d->d.blob_val; }
-	const ByteArray& blobRef() const { return *m_d->d.blob_val; }
+	long_t &       longRef()       { return m_d->d.long_val; }
+	const long_t & longRef() const { return m_d->d.long_val; }
+
+	double &          doubleRef()       { return m_d->d.double_val; }
+	const double &    doubleRef() const { return m_d->d.double_val; }
+	String &          stringRef()       { return *m_d->d.string_val; }
+	const String &    stringRef() const { return *m_d->d.string_val; }
+	ByteArray &       blobRef()         { return *m_d->d.blob_val; }
+	const ByteArray & blobRef() const   { return *m_d->d.blob_val; }
 
 	template <typename T>
-	T& objectRef() { return dynamic_cast<UniObject<T>* >(m_d->d.object_val)->getValue(); }
+	T &       objectRef()       { return dynamic_cast<UniObject<T>* >(m_d->d.object_val)->value; }
 	template <typename T>
-	const T& objectRef() const { return dynamic_cast<UniObject<T>* >(m_d->d.object_val)->getValue(); }
+	const T & objectRef() const { return dynamic_cast<UniObject<T>* >(m_d->d.object_val)->value; }
 
 private:
 	struct Data {
 		TypeEnum type;
 		union {
-			long_t     long_val;
-			//float      float_val;
-			double     double_val;
-			String    *string_val;
-			ByteArray *blob_val;
-			AbstractUniObject *object_val;
+			long_t              long_val;
+			double              double_val;
+			String *            string_val;
+			ByteArray *         blob_val;
+			AbstractUniObject * object_val;
 		} d;
 		~Data();
 	};
@@ -167,7 +171,7 @@ private:
 };
 
 template <typename T>
-inline UniType UniType::make_object(const T &v)
+inline UniType UniType::make_object(const T & v)
 {
 	UniType ut;
 	ut.m_d->type = ObjectValue;
@@ -177,14 +181,14 @@ inline UniType UniType::make_object(const T &v)
 
 
 template <typename T>
-T UniType::toObject(bool *ok) const
+T UniType::toObject(bool * ok) const
 {
 	if (ok) *ok = false;
 
 	if (m_d->type == ObjectValue) {
 		if (ok)
 			*ok = true;
-		return (dynamic_cast<UniObject<T>* >(m_d->d.object_val))->getValue();
+		return (dynamic_cast<UniObject<T>* >(m_d->d.object_val))->value;
 	}
 	return T();
 }
@@ -197,7 +201,7 @@ inline void UniType::detach()
 	}
 }
 
-inline void UniType::setUniTypeData(Data *data)
+inline void UniType::setUniTypeData(Data * data)
 {
 	shared_ptr<Data> d(data);
 	m_d.swap(d);
