@@ -94,7 +94,7 @@ public:
 	T&             at(size_t i);
 	const T&       at(size_t i) const;
 	bool           endsWith (const Vector<T> & end) const;
-	void           append(const T &value);
+	void           append(const T & value);
 	void           append(const T * value, size_t count);
 	void           append(const Vector<T> & other);
 	void           clear()         { m_d.detach(); m_d->count = 0; }

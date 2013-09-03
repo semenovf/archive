@@ -288,7 +288,9 @@ class DLL_API shareable
 private:
 	shareable();
 public:
-	explicit shareable(T *ptr) : d(ptr) {}
+	shareable(const shareable & other) : d(other.d) {}
+	shareable & operator = (const shareable & other) { d = other.d; return *this; }
+	explicit shareable(T * ptr) : d(ptr) {}
 	void detach()
 	{
 		if (d.use_count() > 1) {
@@ -297,9 +299,9 @@ public:
 		}
 	}
 
-    void swap(shareable &other) { d.swap(other.d); }
+    void swap(shareable & other) { d.swap(other.d); }
 	bool unique() const { return d.unique(); }
-	T* operator -> () const  { return d.get(); }
+	T * operator -> () const  { return d.get(); }
 
 	shared_ptr<T> d;
 };

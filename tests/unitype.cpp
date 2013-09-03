@@ -164,9 +164,11 @@ void test_00(void)
 	CWT_TEST_OK(blob.size() == ::strlen(loremipsum));
 	CWT_TEST_OK(::strcmp(loremipsum, blob.data()) == 0);
 
+/*
 	UniType object_val = UniType::make_object<String>(text_en);
 	text = object_val.toObject<String>();
 	CWT_TEST_OK(ok && text == text_en);
+*/
 
 /*
 	{
@@ -477,11 +479,18 @@ void test_float(void)
 
 struct TestElem
 {
-	TestElem  () : str()                        { puts("TestElem()"); }
+	TestElem  () : str()                        { /*puts("TestElem()");*/ }
 	TestElem  (const TestElem & o) : str(o.str) { if (!str.isEmpty()) ++counter; printf("TestElem (TestElem(\"%s\"))\n", str.c_str()); }
 	TestElem  (const String & s) : str(s)       { ++counter; printf ("TestElem (\"%s\")\n", str.c_str()); }
-	~TestElem ()                                { if (!str.isEmpty()) --counter; printf ("~TestElem (\"%s\")\n", str.c_str()); }
+	~TestElem ()                                { if (!str.isEmpty()) --counter; /*printf ("~TestElem (\"%s\")\n", str.c_str());*/ }
 
+	TestElem & operator = (const TestElem & other)
+	{
+		++counter;
+		str = other.str;
+		printf ("TestElem::operator = (\"%s\")\n", str.c_str());
+		return *this;
+	}
 	static int counter;
 	String str;
 };
@@ -491,31 +500,19 @@ int TestElem::counter = 0;
 void test_object ()
 {
 	{
-		TestElem v("Hello");
-		TestElem & ref = v;
+		UniType ut = UniType::make_object<Vector<TestElem> >();
+		Vector<TestElem> & p = ut.objectRef<Vector<TestElem> >();
 
-		(void)ref;
+		p.append(TestElem(String("One")));
+		p.append(TestElem(String("Two")));
+		p.append(TestElem(String("Three")));
+		p.append(TestElem(String("Four")));
 
-/*
-		Vector<TestElem> v;
-		v.append(TestElem(String("One")));
-
-		UniType ut = UniType::make_object(v);
-		Vector<TestElem> * p = & ut.objectRef<Vector<TestElem> >();
-
-		p->append(TestElem(String("Two")));
-		CWT_TEST_OK(p->size() == 2);
-*/
-/*
-		v->append(String("Two"));
-		v->append(String("Three"));
-		v->append(String("Four"));
-
+		CWT_TEST_OK(p.size() == 4);
 		CWT_TEST_OK(TestElem::counter == 4);
-*/
 	}
 
-//	CWT_TEST_OK(TestElem::counter == 0);
+	CWT_TEST_OK(TestElem::counter == 0);
 }
 
 #ifdef __COMMENT__

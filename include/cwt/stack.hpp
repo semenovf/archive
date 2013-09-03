@@ -14,13 +14,14 @@
 CWT_NS_BEGIN
 
 template <typename T>
-class Stack : public Vector<T>
+class DLL_API Stack : public Vector<T>
 {
-	typedef typename Vector<T> base_class;
+	//typedef typename Vector<T> base_class;
+
 public:
-	Stack() {}
-	Stack(const Stack & other) : base_class (dynamic_cast<const basr_class &>(other)) {}
-	Stack &	   operator = (const Stack & other) { base_class::operator = (other); return *this; }
+	Stack() : Vector<T>() {}
+	Stack(const Stack & other) : Vector<T> (dynamic_cast<const Vector<T> & >(other)) {}
+	Stack &	   operator = (const Stack & other) { Vector<T>::operator = (dynamic_cast<const Vector<T> & >(other)); return *this; }
 
 	T         pop();
 	void      push(const T &t) {  { Vector<T>::append(t); } }

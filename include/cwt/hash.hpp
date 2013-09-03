@@ -176,19 +176,19 @@ public:
 
     public:
         const_iterator() : hd(NULL), rover(NULL), index(0) { }
-        explicit const_iterator(HashData *d, HashData::Node *node, size_t i) : hd(d), rover(node), index(i) { }
-        explicit const_iterator(HashData *d) : hd(d) { rover = hd->firstNode(&index); }
-        explicit const_iterator(const iterator &o) : hd(o.hd), rover(o.rover), index(o.index) { }
+        explicit const_iterator (HashData * d, HashData::Node * node, size_t i) : hd(d), rover(node), index(i) { }
+        explicit const_iterator (HashData * d) : hd(d) { rover = hd->firstNode(& index); }
+        explicit const_iterator (const iterator & o) : hd(o.hd), rover(o.rover), index(o.index) { }
 
-        inline const Key &key() const { return cast_entry(rover)->key; }
-        inline const T &value() const { return cast_entry(rover)->value; }
-        inline const T &operator*() const { return cast_entry(rover)->value; }
-        inline const T *operator->() const { return &cast_entry(rover)->value; }
-        inline bool operator==(const const_iterator &o) const { return rover == o.rover; }
-        inline bool operator==(const iterator &o) const { return rover == o.rover; }
-        inline bool operator!=(const const_iterator &o) const { return rover != o.rover; }
+        inline const Key & key() const { return cast_entry(rover)->key; }
+        inline const T & value() const { return cast_entry(rover)->value; }
+        inline const T & operator  * () const { return cast_entry(rover)->value; }
+        inline const T * operator -> () const { return & cast_entry(rover)->value; }
+        inline bool operator == (const const_iterator & o) const { return rover == o.rover; }
+        inline bool operator == (const iterator & o) const { return rover == o.rover; }
+        inline bool operator != (const const_iterator & o) const { return rover != o.rover; }
 
-        const_iterator& operator++() {
+        const_iterator & operator++() {
             rover = hd->nextNode(rover, &index);
             return *this;
         }

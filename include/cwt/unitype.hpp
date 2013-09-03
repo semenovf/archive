@@ -79,8 +79,13 @@ public:
 		return *this;
 	}
 
+/*
 	template <typename T>
 	static UniType make_object (const T & v);
+*/
+
+	template <typename T>
+	static UniType make_object ();
 
 	bool isNull() const { return m_d->type == NullValue; }
 	TypeEnum type() const { return m_d->type; }
@@ -170,6 +175,7 @@ private:
 	shared_ptr<Data> m_d;
 };
 
+/*
 template <typename T>
 inline UniType UniType::make_object(const T & v)
 {
@@ -178,7 +184,16 @@ inline UniType UniType::make_object(const T & v)
 	ut.m_d->d.object_val = new UniObject<T>(v);
 	return ut;
 }
+*/
 
+template <typename T>
+inline UniType UniType::make_object ()
+{
+	UniType ut;
+	ut.m_d->type = ObjectValue;
+	ut.m_d->d.object_val = new UniObject<T>(T());
+	return ut;
+}
 
 template <typename T>
 T UniType::toObject(bool * ok) const
