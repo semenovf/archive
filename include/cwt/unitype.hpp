@@ -175,17 +175,6 @@ private:
 	shared_ptr<Data> m_d;
 };
 
-/*
-template <typename T>
-inline UniType UniType::make_object(const T & v)
-{
-	UniType ut;
-	ut.m_d->type = ObjectValue;
-	ut.m_d->d.object_val = new UniObject<T>(v);
-	return ut;
-}
-*/
-
 template <typename T>
 inline UniType UniType::make_object ()
 {
