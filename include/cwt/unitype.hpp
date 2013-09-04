@@ -79,11 +79,6 @@ public:
 		return *this;
 	}
 
-/*
-	template <typename T>
-	static UniType make_object (const T & v);
-*/
-
 	template <typename T>
 	static UniType make_object ();
 
@@ -248,7 +243,7 @@ inline void UniType::setDouble (double n)
 	setUniTypeData(d);
 }
 
-inline void UniType::setString (const String &s)
+inline void UniType::setString (const String & s)
 {
 	Data *d = new Data;
 	d->type = UniType::StringValue;
@@ -256,13 +251,13 @@ inline void UniType::setString (const String &s)
 	setUniTypeData(d);
 }
 
-inline void UniType::setBlob (const char *blob, size_t sz)
+inline void UniType::setBlob (const char * blob, size_t sz)
 {
 	ByteArray ba(blob, sz);
 	setBlob(ba);
 }
 
-inline void UniType::setBlob (const ByteArray &blob)
+inline void UniType::setBlob (const ByteArray & blob)
 {
 	Data *d = new Data;
 	d->type = UniType::BlobValue;
