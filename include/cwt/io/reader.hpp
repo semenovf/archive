@@ -148,7 +148,7 @@ public:
 		    return r;
 		}
 
-		bool unget(char_type ch);
+//		bool unget(char_type ch);
 	};
 
 public:
@@ -269,7 +269,7 @@ typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::readLine (
 }
 
 
-template <typename P, typename Decoder>
+/*template <typename P, typename Decoder>
 bool Reader<P, Decoder>::iterator::unget(char_type ch)
 {
 	CWT_ASSERT(m_reader);
@@ -285,7 +285,7 @@ bool Reader<P, Decoder>::iterator::unget(char_type ch)
 	}
 
 	return false;
-}
+}*/
 
 } // namespace io
 
