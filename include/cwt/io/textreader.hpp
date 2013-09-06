@@ -22,6 +22,8 @@ private:
 	typedef Reader<Device, Utf8Decoder> base_class;
 
 	CWT_DENY_COPY(TextReader);
+public:
+	typedef Reader<Device, Utf8Decoder>::iterator iterator;
 
 public:
 	TextReader(shared_ptr<Device> dev, shared_ptr<Utf8Decoder> decoder)

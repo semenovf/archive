@@ -1,4 +1,5 @@
 #include <cwt/test.h>
+#include <cwt/safeformat.hpp>
 #include "../include/cwt/io/reader.hpp"
 #include "../include/cwt/io/writer.hpp"
 #include "../include/cwt/io/file.hpp"
@@ -129,10 +130,14 @@ void test_line_reader()
 		}
 		++iline;
 	}
-	CWT_TEST_OK2(iline == nlines, _Tr("All lines are checked"));
+
+	CWT_TEST_OK(lineReader.atEnd());
+	CWT_TEST_OK(!lineReader.isError());
+
+	CWT_TEST_OK2(iline == nlines, String(_Fr("All lines are checked (%d from %d)") % iline % nlines).c_str());
 }
 
-void test_get_reader()
+void test_reader_iterator()
 {
 	typedef io::Reader<io::Buffer, io::NullCodec<ByteArray> > Reader;
 
@@ -158,15 +163,54 @@ void test_get_reader()
 	}
 }
 
+void test_reader_iterator_ext()
+{
+	typedef io::Reader<io::Buffer, io::NullCodec<ByteArray> > Reader;
+
+	const char * str = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit";
+	shared_ptr<io::Buffer> buffer(new io::Buffer);
+	buffer->write(str, strlen(str));
+	CWT_TEST_FAIL(buffer->available() == strlen(str));
+
+	Reader charReader(buffer);
+
+	Reader::iterator it(charReader);
+	Reader::iterator itEnd;
+
+	CWT_TEST_OK(*it++ == 'L');
+	CWT_TEST_OK(*it++ == 'o');
+	CWT_TEST_OK(*it++ == 'r');
+	CWT_TEST_OK(*it   == 'e');
+	CWT_TEST_OK(*++it == 'm');
+	it += 8;
+	CWT_TEST_OK(*it++ == 'd');
+	CWT_TEST_OK(*it++ == 'o');
+	CWT_TEST_OK(*it++ == 'l');
+	CWT_TEST_OK(*it++ == 'o');
+	CWT_TEST_OK(*it++ == 'r');
+	CWT_TEST_OK(*it++ == ' ');
+
+	CWT_TEST_OK(*it == 's');
+	CWT_TEST_OK(*it.at(0) == 's');
+	CWT_TEST_OK(*it.at(1) == 'i');
+	CWT_TEST_OK(*it.at(2) == 't');
+	CWT_TEST_OK(*it == 's');
+
+	it += 100;
+	CWT_TEST_OK(it == itEnd);
+}
+
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(125);
+    CWT_BEGIN_TESTS(145);
 
-    test_writer();
    	test_line_reader();
-    test_get_reader();
+    test_reader_iterator();
+    test_reader_iterator_ext();
+    test_writer();
+
 //  test_mix_get_read(); // TODO
 
     CWT_END_TESTS;

@@ -61,6 +61,7 @@ public:
 	static ostring_type ostring_left(const ostring_type & s, size_t n)
 		{ return s.left(n); }
 
+	static size_t istring_length(const istring_type & s) { return s.length(); }
 	static size_t ostring_length(const ostring_type & s) { return s.length(); }
 	static void   ostring_prepend(ostring_type & s, char_type c) { s.prepend(c); }
 
@@ -123,32 +124,25 @@ public:
 
 	public:
 		iterator() : m_reader(nullptr) {}
-		iterator(Reader & reader) : m_reader(& reader) { ++*this; }
+		iterator(Reader & reader) : m_reader(& reader) {
+			if (!m_reader || !canRead(1))
+				m_reader = nullptr;
+			else
+				m_value = m_reader->m_outputBuffer[m_reader->m_cursor];
+		}
 		iterator(const iterator & x) : m_reader(x.m_reader), m_value(x.m_value) {}
 		~iterator() {}
-
+		char_type value() const               { return   m_value; }
 		const char_type & operator * () const { return   m_value; }
 		const char_type * operator-> () const { return & m_value; }
 
-        bool operator  == (const iterator & o) const { return m_reader == o.m_reader; }
-        bool operator  != (const iterator & o) const { return !(m_reader == o.m_reader); }
-
-		iterator & operator ++ () {
-		    if (m_reader && m_reader->canRead(1)) {
-		    	m_value = m_reader->m_outputBuffer[m_reader->m_cursor++];
-		    } else {
-		    	m_reader = nullptr;
-		    }
-		    return *this;
-		}
-
-		iterator operator ++ (int) {
-		    iterator r = *this;
-		    ++*this;
-		    return r;
-		}
-
-//		bool unget(char_type ch);
+        bool operator       == (const iterator & o) const { return m_reader == o.m_reader; }
+        bool operator       != (const iterator & o) const { return !(m_reader == o.m_reader); }
+		iterator & operator ++ ();
+		iterator operator   ++ (int);
+		iterator & operator += (size_t index);
+		iterator at (size_t index);
+		bool canRead(size_t n);
 	};
 
 public:
@@ -158,6 +152,7 @@ public:
 		, m_inputBuffer ()
 		, m_outputBuffer()
 		, m_cursor      (0)
+		, m_status      (1)
 	{}
 
 	Reader (shared_ptr<P> producer, shared_ptr<Decoder> decoder)
@@ -166,10 +161,12 @@ public:
 		, m_inputBuffer ()
 		, m_outputBuffer()
 		, m_cursor      (0)
+		, m_status      (1)
 	{}
 
 	ostring_type read  (size_t maxSize);
-	bool        atEnd () const { return m_producer->atEnd(); }
+	bool        atEnd () const   { return m_status == 0; }
+	bool        isError() const  { return m_status < 0; }
 	P *         producer() const { return m_producer.get(); }
 
 	ostring_type readLine(const ostring_type & end, size_t maxSize) {
@@ -188,7 +185,8 @@ protected:
 	shared_ptr<Decoder>  m_decoder;
 	istring_type         m_inputBuffer;
 	ostring_type         m_outputBuffer;
-	size_t               m_cursor;    // cursor for outputBuffer
+	size_t               m_cursor;    // cursor for outputBuffer, used in iterator
+	int                  m_status;    // -1 - error, 0 - at end, +1 - normal
 };
 
 
@@ -204,6 +202,8 @@ inline void Reader<P, Decoder>::resetCursor ()
 template <typename P, typename Decoder>
 bool Reader<P, Decoder>::readAndConvert (size_t maxSize)
 {
+	CWT_ASSERT(maxSize > 0);
+
 	ssize_t nread = reader_traits::read(*m_producer, m_inputBuffer, maxSize);
 
 	if (nread > 0) {
@@ -215,15 +215,28 @@ bool Reader<P, Decoder>::readAndConvert (size_t maxSize)
 				reader_traits::istring_clear(m_inputBuffer);
 			}
 		}
+	} else if (nread < 0) {   // producer error
+		m_status = -1;
+	} else {                  // nread == 0, producer at end
+		if (reader_traits::ostring_length(m_outputBuffer) == 0) {
+			if (reader_traits::istring_length(m_inputBuffer) == 0) { // reader at end
+				m_status = 0;
+			} else {              // not all characters converted
+				m_status = -2;
+			}
+		}
 	}
 
-	return nread >= 0 ? true : false;
+	return m_status > 0 ? true : false;
 }
 
 
 template <typename P, typename Decoder>
 bool Reader<P, Decoder>::canRead(size_t maxSize)
 {
+	if (m_status <= 0)
+		return false;
+
 	if (m_cursor != 0)
 		resetCursor();
 	if (maxSize > reader_traits::ostring_length(m_outputBuffer)) {
@@ -269,23 +282,64 @@ typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::readLine (
 }
 
 
-/*template <typename P, typename Decoder>
-bool Reader<P, Decoder>::iterator::unget(char_type ch)
+template <typename P, typename Decoder>
+inline typename Reader<P, Decoder>::iterator & Reader<P, Decoder>::iterator::operator ++ ()
 {
-	CWT_ASSERT(m_reader);
+    if (m_reader) {
+    	if (canRead(2))
+    		m_value = m_reader->m_outputBuffer[++m_reader->m_cursor];
+    	else
+    		m_reader = nullptr;
+    }
+    return *this;
+}
 
-	if (m_reader->m_cursor > 0 && m_reader->m_cursor >= reader_traits::ostring_length(m_reader->m_outputBuffer)) {
-		m_reader->m_outputBuffer[--m_outputBuffer->m_cursor] = ch;
-		return true;
+template <typename P, typename Decoder>
+inline typename Reader<P, Decoder>::iterator Reader<P, Decoder>::iterator::operator ++ (int)
+{
+    iterator r = *this;
+    ++*this;
+    return r;
+}
+
+template <typename P, typename Decoder>
+typename Reader<P, Decoder>::iterator & Reader<P, Decoder>::iterator::operator += (size_t count)
+{
+	if (count > 0) {
+		if (m_reader && canRead(count)) {
+			m_reader->m_cursor += count;
+			m_value = m_reader->m_outputBuffer[m_reader->m_cursor];
+		} else {
+			m_reader = nullptr;
+		}
 	}
+    return *this;
+}
 
-	if (!m_reader->m_cursor) {
-		reader_traits::ostring_prepend(m_reader->m_outputBuffer, ch);
-		return true;
+template <typename P, typename Decoder>
+inline typename Reader<P, Decoder>::iterator Reader<P, Decoder>::iterator::at (size_t index)
+{
+	iterator r = *this;
+	if (index > 0) {
+		if (m_reader && canRead(index)) {
+			r.m_value = m_reader->m_outputBuffer[m_reader->m_cursor + index];
+		} else {
+			r.m_reader = nullptr;
+		}
 	}
+    return r;
+}
 
+template <typename P, typename Decoder>
+bool Reader<P, Decoder>::iterator::canRead(size_t n)
+{
+	if (m_reader) {
+		if (m_reader->m_cursor + n <= reader_traits::ostring_length(m_reader->m_outputBuffer))
+			return true;
+		return m_reader->canRead(n);
+	}
 	return false;
-}*/
+}
 
 } // namespace io
 

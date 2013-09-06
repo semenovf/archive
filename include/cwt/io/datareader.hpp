@@ -24,6 +24,9 @@ class DLL_API DataReader : public Reader<Device, NullByteCodec>
 	CWT_DENY_COPY(DataReader);
 
 public:
+	typedef Reader<Device, NullByteCodec>::iterator iterator;
+
+public:
 	DataReader(shared_ptr<Device> dev) : base_class(dev, shared_ptr<NullByteCodec>(new NullByteCodec)) {}
 
 	Device * device() const { return this->producer(); }
