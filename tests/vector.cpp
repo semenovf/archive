@@ -160,6 +160,25 @@ void test_swap()
 	CWT_TEST_OK(strncmp(v1.constData(), ipsum, strlen(ipsum)) == 0);
 }
 
+
+void test_array_vector()
+{
+	Vector<Array<int> > records;
+
+	Array<int> a1(1);
+	Array<int> a2(2);
+	Array<int> a3(3);
+	Array<int> a4(4);
+
+
+	records.append(a1);
+	records.append(a2);
+	records.append(a3);
+	records.append(a4);
+
+	CWT_TEST_FAIL(records.size() == 4);
+}
+
 void test_vector_vector()
 {
 	Vector<Vector<int> > records;
@@ -179,7 +198,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(1404);
+	CWT_BEGIN_TESTS(1405);
 
 	test_int_vector();
 	test_long_vector();
@@ -187,6 +206,7 @@ int main(int argc, char *argv[])
 	test_vector_iterator();
 	test_swap();
 	test_vector_vector();
+	test_array_vector();
 
     CWT_END_TESTS;
 }

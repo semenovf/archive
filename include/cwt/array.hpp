@@ -18,18 +18,20 @@ template <typename T>
 class Array {
 	size_t   m_capacity;
 	uint16_t m_raw : 1; /* is raw data */
-	T       *m_head;
+	T *      m_head;
 
 public:
 	Array() : m_capacity(0), m_raw(0), m_head(nullptr) {}
 	Array(T a[], size_t n);
-	Array(const Array &a);
 	Array(size_t sz, bool zero = false);
 	~Array();
 
+	Array(const Array & other);
+	Array &	   operator = (const Array & other);
+
 	void        alloc (size_t capacity);
-	T&          at(size_t index) { CWT_ASSERT(index < m_capacity); return m_head[index]; }
-	const T&    at(size_t index) const { CWT_ASSERT(index < m_capacity); return m_head[index]; }
+	T &         at(size_t index) { CWT_ASSERT(index < m_capacity); return m_head[index]; }
+	const T &   at(size_t index) const { CWT_ASSERT(index < m_capacity); return m_head[index]; }
 	int         compare (size_t pos, const Array & other, size_t subpos, size_t len) const;
 	int         compare (const Array & other, size_t len) const { return compare(0, other, 0, len); }
 	int         compare (const Array & other) const { return compare(0, other, 0, other.m_capacity); }
@@ -40,7 +42,7 @@ public:
 	T*          data  ()       { return m_head; }
 	const T*    data  () const { return m_head; }
 	const T*    constData () const { return m_head; }
-	bool        eq    (const Array &a);
+	bool        eq    (const Array & a);
 	bool        isRaw() const { return m_raw; }
 	void        move  (size_t off_to, size_t off_from, size_t n);
 	void        realloc (size_t new_capacity);
@@ -52,12 +54,12 @@ public:
 	T&          operator [] (size_t index) { return at(index); }
 	const T&    operator [] (size_t index) const { return at(index); }
 
-	static void copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
-	static void copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n);
+	static void copy (Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
+	static void copy (Array &to, const T *from, size_t off_to, size_t off_from, size_t n);
 
-	static void deep_copy(T * to, const T * from, size_t n);
-	static void deep_copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
-	static void deep_copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n);
+	static void deep_copy (T * to, const T * from, size_t n);
+	static void deep_copy (Array &to, const Array &from, size_t off_to, size_t off_from, size_t n);
+	static void deep_copy (Array &to, const T *from, size_t off_to, size_t off_from, size_t n);
 };
 
 template <typename T>
@@ -66,18 +68,28 @@ inline Array<T>::Array(T a[], size_t n)
 {
 	if (a) {
 		m_capacity = n;
-		m_head = &a[0];
+		m_head = & a[0];
 	}
 }
 
 template <typename T>
-inline Array<T>::Array(const Array &a)
-	: m_capacity(a.m_capacity), m_raw(0), m_head(nullptr)
+inline Array<T>::Array(const Array & other)
+	: m_capacity(other.m_capacity), m_raw(0), m_head(nullptr)
 {
-	if (a.m_capacity > 0) {
-		alloc(a.m_capacity);
-		copy(*this, a, 0, 0, a.m_capacity);
+	if (other.m_capacity > 0) {
+		alloc(other.m_capacity);
+		deep_copy(*this, other, 0, 0, other.m_capacity);
 	}
+}
+
+template <typename T>
+inline Array<T> & Array<T>::operator = (const Array & other)
+{
+	if (other.m_capacity > 0) {
+		alloc(other.m_capacity);
+		deep_copy(*this, other, 0, 0, other.m_capacity);
+	}
+	return *this;
 }
 
 template <typename T>
@@ -121,7 +133,7 @@ inline int Array<T>::compare (size_t pos, const Array & other, size_t subpos, si
 template <typename T>
 Array<T>* Array<T>::clone () const
 {
-	Array<T> *clone = new Array<T>(m_capacity);
+	Array<T> * clone = new Array<T>(m_capacity);
 	if (clone)
 		copy(*clone, *this, 0, 0, m_capacity);
 	return clone;
@@ -142,7 +154,7 @@ Array<T>* Array<T>::clone () const
 * @return Actually items copied.
 */
 template <typename T>
-void Array<T>::copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n)
+void Array<T>::copy (Array &to, const Array &from, size_t off_to, size_t off_from, size_t n)
 {
 	n = CWT_MIN(from.m_capacity - off_from, n);
 	n = CWT_MIN(to.m_capacity - off_to, n);
@@ -150,14 +162,14 @@ void Array<T>::copy(Array &to, const Array &from, size_t off_to, size_t off_from
 }
 
 template <typename T>
-void Array<T>::copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n)
+void Array<T>::copy (Array &to, const T *from, size_t off_to, size_t off_from, size_t n)
 {
 	n = CWT_MIN(to.m_capacity - off_to, n);
 	memcpy(to.m_head + off_to, from + off_from, n * sizeof(T));
 }
 
 template <typename T>
-void Array<T>::deep_copy(T * to, const T * from, size_t n)
+void Array<T>::deep_copy (T * to, const T * from, size_t n)
 {
 	while (n--) {
 		*to++ = *from++;
@@ -165,21 +177,21 @@ void Array<T>::deep_copy(T * to, const T * from, size_t n)
 }
 
 template <typename T>
-void Array<T>::deep_copy(Array &to, const Array &from, size_t off_to, size_t off_from, size_t n)
+void Array<T>::deep_copy (Array &to, const Array &from, size_t off_to, size_t off_from, size_t n)
 {
 	n = CWT_MIN(from.m_capacity - off_from, n);
 	n = CWT_MIN(to.m_capacity - off_to, n);
 	for (size_t i = off_from, j = off_to; n > 0; --n, ++i, ++j) {
-		*(to.m_head + i) = *(from.m_head + j);
+		to.m_head[i] = from.m_head[j];
 	}
 }
 
 template <typename T>
-void Array<T>::deep_copy(Array &to, const T *from, size_t off_to, size_t off_from, size_t n)
+void Array<T>::deep_copy (Array &to, const T *from, size_t off_to, size_t off_from, size_t n)
 {
 	n = CWT_MIN(to.m_capacity - off_to, n);
 	for (size_t i = off_from, j = off_to; n > 0; --n, ++i, ++j) {
-		*(to.m_head + i) = *(from + j);
+		to.m_head[i] = from[j];
 	}
 }
 
