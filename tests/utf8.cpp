@@ -85,24 +85,23 @@ void test_Utf8UcsCodec(_FileSpec file_spec[], int nspecs)
 void test_Utf8Codec(_FileSpec file_spec[], int nspecs)
 {
     for (int i = 0; i < nspecs; i++) {
-    	io::File * file = new io::File;
-    	file->open(file_spec[i].path, io::Device::ReadOnly);
+    	io::File file;
+    	file.open(file_spec[i].path, io::Device::ReadOnly);
 
     	printf("test_Utf8Codec: test file: %s...\n", file_spec[i].path);
-    	CWT_TEST_FAIL(file->opened());
-    	CWT_TEST_FAIL(file->size() == file_spec[i].size);
+    	CWT_TEST_FAIL(file.opened());
+    	CWT_TEST_FAIL(file.size() == file_spec[i].size);
 
-    	shared_ptr<io::Device> fileDevice(file);
-    	io::TextReader textReader(fileDevice, shared_ptr<io::Utf8Decoder>(new io::Utf8NullDecoder));
-        io::DataReader dataReader(fileDevice);
+    	io::TextReader textReader(file);
+        io::DataReader dataReader(file);
 
-    	String utf8 = textReader.read(file->size());
+    	String utf8 = textReader.read(file.size());
     	CWT_TEST_OK(utf8.size() == file_spec[i].size);
     	CWT_TEST_OK(utf8.length() == file_spec[i].nchars);
 
-    	file->rewind();
+    	file.rewind();
 
-    	ByteArray raw = dataReader.read(file->size());
+    	ByteArray raw = dataReader.read(file.size());
     	CWT_TEST_OK(raw.size() == file_spec[i].size);
 
         CWT_TEST_OK(raw.size() == utf8.size());

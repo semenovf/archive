@@ -5,6 +5,7 @@
 #include "../include/cwt/io/file.hpp"
 #include "../include/cwt/io/buffer.hpp"
 #include "../include/cwt/io/datareader.hpp"
+#include "../include/cwt/io/datawriter.hpp"
 #include <cstring>
 #include <cstdio>
 
@@ -99,24 +100,20 @@ const char *loremipsum_lines[] = {
 
 void test_writer()
 {
-	typedef io::Writer<io::Buffer, io::NullCodec<ByteArray> > Writer;
-
-	shared_ptr<io::Buffer> buffer(new io::Buffer);
-    Writer writer(buffer);
+	io::Buffer buffer;
+	io::DataWriter writer(buffer);
     CWT_TEST_FAIL(ssize_t(strlen(loremipsum)) == writer.write(ByteArray(loremipsum, strlen(loremipsum))));
-    CWT_TEST_OK(buffer->buffer().size() == strlen(loremipsum));
-	CWT_TEST_OK(strncmp(buffer->buffer().data(), loremipsum, strlen(loremipsum)) == 0);
+    CWT_TEST_OK(buffer.buffer().size() == strlen(loremipsum));
+	CWT_TEST_OK(strncmp(buffer.buffer().data(), loremipsum, strlen(loremipsum)) == 0);
 }
 
 void test_line_reader()
 {
-	typedef io::Reader<io::Buffer, io::NullCodec<ByteArray> > Reader;
+	io::Buffer buffer;
+	buffer.write(loremipsum, strlen(loremipsum));
+	CWT_TEST_FAIL(buffer.available() == strlen(loremipsum));
 
-	shared_ptr<io::Buffer> buffer(new io::Buffer);
-	buffer->write(loremipsum, strlen(loremipsum));
-	CWT_TEST_FAIL(buffer->available() == strlen(loremipsum));
-
-	Reader lineReader(buffer);
+	io::DataReader lineReader(buffer);
 
 	size_t nlines = sizeof(loremipsum_lines)/sizeof(loremipsum_lines[0]);
 	size_t iline = 0;
@@ -139,21 +136,19 @@ void test_line_reader()
 
 void test_reader_iterator()
 {
-	typedef io::Reader<io::Buffer, io::NullCodec<ByteArray> > Reader;
-
 	size_t nlines = sizeof(loremipsum_lines)/sizeof(loremipsum_lines[0]);
 
 	for (size_t iline = 0; iline < nlines; ++iline) {
 		Vector<char> r;
 
-		shared_ptr<io::Buffer> buffer(new io::Buffer);
-		buffer->write(loremipsum_lines[iline], strlen(loremipsum_lines[iline]));
-		CWT_TEST_FAIL(buffer->available() == strlen(loremipsum_lines[iline]));
+		io::Buffer buffer;
+		buffer.write(loremipsum_lines[iline], strlen(loremipsum_lines[iline]));
+		CWT_TEST_FAIL(buffer.available() == strlen(loremipsum_lines[iline]));
 
-		Reader charReader(buffer);
+		io::DataReader charReader(buffer);
 
-		Reader::iterator it(charReader);
-		Reader::iterator itEnd;
+		io::DataReader::iterator it(charReader);
+		io::DataReader::iterator itEnd;
 
 		while (it != itEnd) {
 			r.append(*it++);
@@ -165,18 +160,17 @@ void test_reader_iterator()
 
 void test_reader_iterator_ext()
 {
-	typedef io::Reader<io::Buffer, io::NullCodec<ByteArray> > Reader;
+	const char * str = "Lorem ipsum dolor sit amet,";
+	io::Buffer buffer;
+	buffer.write(str, strlen(str));
+	CWT_TEST_FAIL(buffer.available() == strlen(str));
 
-	const char * str = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit";
-	shared_ptr<io::Buffer> buffer(new io::Buffer);
-	buffer->write(str, strlen(str));
-	CWT_TEST_FAIL(buffer->available() == strlen(str));
+	io::DataReader charReader(buffer);
 
-	Reader charReader(buffer);
+	io::DataReader::iterator it(charReader);
+	io::DataReader::iterator itEnd;
 
-	Reader::iterator it(charReader);
-	Reader::iterator itEnd;
-
+	CWT_TEST_OK(*it   == 'L');
 	CWT_TEST_OK(*it++ == 'L');
 	CWT_TEST_OK(*it++ == 'o');
 	CWT_TEST_OK(*it++ == 'r');
@@ -195,8 +189,11 @@ void test_reader_iterator_ext()
 	CWT_TEST_OK(*it.at(1) == 'i');
 	CWT_TEST_OK(*it.at(2) == 't');
 	CWT_TEST_OK(*it == 's');
-
-	it += 100;
+	CWT_TEST_OK(*it.at(8) == ',');
+	it += 8;
+	CWT_TEST_OK(*it == ',');
+	++it;
+	//it += 100;
 	CWT_TEST_OK(it == itEnd);
 }
 
@@ -204,7 +201,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(145);
+    CWT_BEGIN_TESTS(148);
 
    	test_line_reader();
     test_reader_iterator();

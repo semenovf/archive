@@ -47,26 +47,21 @@ public:
 	typedef typename writer_traits::ostring_type  ostring_type;
 
 public:
-	Writer (shared_ptr<Consumer> consumer)
-		: m_consumer(consumer)
-		, m_encoder(new Encoder)
+	Writer (Consumer & consumerRef, Encoder & encoderRef)
+		: m_consumerRef(consumerRef)
+		, m_encoderRef(encoderRef)
 	{}
 
-	Writer (shared_ptr<Consumer> consumer, shared_ptr<Encoder> encoder)
-		: m_consumer(consumer)
-		, m_encoder(encoder)
-	{}
-
-	bool isError() { return m_consumer->isError(); }
+	bool isError() { return m_consumerRef->isError(); }
 	ssize_t write (const istring_type & input);
 
-	Consumer * consumer() const { return m_consumer.get(); }
+	Consumer * consumer() const { return & m_consumerRef; }
 
 private:
-	shared_ptr<Consumer> m_consumer;
-	shared_ptr<Encoder>  m_encoder;
-	istring_type         m_inputBuffer;
-	ostring_type         m_outputBuffer;
+	Consumer &    m_consumerRef;
+	Encoder &     m_encoderRef;
+	istring_type  m_inputBuffer;
+	ostring_type  m_outputBuffer;
 };
 
 
@@ -80,14 +75,14 @@ inline ssize_t Writer<Consumer, Encoder>::write(const istring_type & input)
 	if (!writer_traits::istring_is_empty(m_inputBuffer)) {
 		writer_traits::istring_append(m_inputBuffer, input);
 
-		if (!writer_traits::convert(*m_encoder, m_outputBuffer, m_inputBuffer, remain))
+		if (!writer_traits::convert(m_encoderRef, m_outputBuffer, m_inputBuffer, remain))
 			return ssize_t(-1);
 	} else {
-		if (!writer_traits::convert(*m_encoder, m_outputBuffer, input, remain))
+		if (!writer_traits::convert(m_encoderRef, m_outputBuffer, input, remain))
 			return ssize_t(-1);
 	}
 
-	ssize_t written = writer_traits::write(*m_consumer, m_outputBuffer);
+	ssize_t written = writer_traits::write(m_consumerRef, m_outputBuffer);
 
 	if (written > 0) {
 		if (remain > 0) {

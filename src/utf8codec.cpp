@@ -151,7 +151,6 @@ bool Utf8Decoder::convert(ostring_type & output, const istring_type & input, siz
 
 bool Utf8Encoder::convert(ostring_type & output, const istring_type & input, size_t & remain)
 {
-	CWT_ASSERT(remain);
 	output.append(ByteArray(input.data(), input.size()));
 	remain = 0;
 	return true;

@@ -20,6 +20,7 @@ namespace io {
 class DLL_API DataReader : public Reader<Device, NullByteCodec>
 {
 	typedef Reader<Device, NullByteCodec> base_class;
+	static NullByteCodec DefaultByteDecoder;
 
 	CWT_DENY_COPY(DataReader);
 
@@ -27,9 +28,9 @@ public:
 	typedef Reader<Device, NullByteCodec>::iterator iterator;
 
 public:
-	DataReader(shared_ptr<Device> dev) : base_class(dev, shared_ptr<NullByteCodec>(new NullByteCodec)) {}
+	DataReader(Device & dev) : base_class(dev, DefaultByteDecoder) {}
 
-	Device * device() const { return this->producer(); }
+	Device * device() const { return & this->producer(); }
 	const ByteArray & data() const { return base_class::m_outputBuffer; }
 
 	ByteArray readAll()

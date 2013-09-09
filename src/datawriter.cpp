@@ -11,6 +11,8 @@ CWT_NS_BEGIN
 
 namespace io {
 
+NullByteCodec DataWriter::DefaultByteEncoder;
+
 } // namespace io
 
 CWT_NS_END

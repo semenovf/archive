@@ -20,19 +20,17 @@ class DLL_API TextReader : public Reader<Device, Utf8Decoder>
 {
 private:
 	typedef Reader<Device, Utf8Decoder> base_class;
+	static Utf8NullDecoder DefaultUtf8Decoder;
 
 	CWT_DENY_COPY(TextReader);
 public:
 	typedef Reader<Device, Utf8Decoder>::iterator iterator;
 
 public:
-	TextReader(shared_ptr<Device> dev, shared_ptr<Utf8Decoder> decoder)
-		: base_class(dev, decoder) {}
+	TextReader(Device & dev, Utf8Decoder & decoder) : base_class(dev, decoder) {}
+	TextReader(Device & dev) : base_class(dev, DefaultUtf8Decoder) {}
 
-	TextReader(shared_ptr<Device> dev)
-		: base_class(dev, shared_ptr<Utf8Decoder>(new Utf8NullDecoder)) {}
-
-	Device * device() const { return this->producer(); }
+	Device * device() const { return & this->producer(); }
 
 	Utf8String readAll()
 	{

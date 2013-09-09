@@ -49,14 +49,14 @@ public:
 	static void ostring_remove(ostring_type & s, size_t pos, size_t n)
 		{ s.remove(pos, n); }
 
+	static void istring_remove(istring_type & s, size_t pos, size_t n)
+		{ s.remove(pos, n); }
+
 	static bool convert(Decoder & decoder, ostring_type & output, const istring_type & input, size_t & remain)
 		{ return decoder.convert(output, input, remain); }
 
 	static void istring_clear(istring_type & s)
-		{ return s.clear(); }
-
-	static istring_type istring_right(const istring_type & s, size_t n)
-		{ return s.right(n); }
+		{ s.clear(); }
 
 	static ostring_type ostring_left(const ostring_type & s, size_t n)
 		{ return s.left(n); }
@@ -65,9 +65,31 @@ public:
 	static size_t ostring_length(const ostring_type & s) { return s.length(); }
 	static void   ostring_prepend(ostring_type & s, char_type c) { s.prepend(c); }
 
+	static bool canReadLine (ostring_type & s, const ostring_type ends[], size_t count, size_t maxSize);
 	static ostring_type readLine (ostring_type & s, const ostring_type ends[], size_t count, size_t maxSize);
 };
 
+
+template <typename P, typename Decoder>
+bool ReaderTraits<P, Decoder>::canReadLine (
+	  ostring_type & s
+	, const ostring_type ends[]
+	, size_t count
+	, size_t maxSize)
+{
+	CWT_ASSERT(count > 0);
+	CWT_ASSERT(maxSize > 1);
+
+	typename ostring_type::const_iterator itBegin = s.cbegin();
+	typename ostring_type::const_iterator it = itBegin;
+
+	size_t i = 0;
+	for (; i < count && it != s.cend(); ++i) {
+		it = search(itBegin, s.cend(), ends[i].cbegin(), ends[i].cend());
+	}
+
+	return it == s.cend() ? false : true;
+}
 
 template <typename P, typename Decoder>
 typename ReaderTraits<P, Decoder>::ostring_type ReaderTraits<P, Decoder>::readLine (
@@ -119,25 +141,20 @@ public:
 
 	class iterator {
 		friend class Reader;
-		Reader * m_reader;
+		Reader *  m_readerPtr;
 		char_type m_value;
 
 	public:
-		iterator() : m_reader(nullptr) {}
-		iterator(Reader & reader) : m_reader(& reader) {
-			if (!m_reader || !canRead(1))
-				m_reader = nullptr;
-			else
-				m_value = m_reader->m_outputBuffer[m_reader->m_cursor];
-		}
-		iterator(const iterator & x) : m_reader(x.m_reader), m_value(x.m_value) {}
+		iterator() : m_readerPtr(nullptr) {}
+		iterator(Reader & reader);
+		iterator(const iterator & x) : m_readerPtr(x.m_readerPtr), m_value(x.m_value) {}
 		~iterator() {}
 		char_type value() const               { return   m_value; }
 		const char_type & operator * () const { return   m_value; }
 		const char_type * operator-> () const { return & m_value; }
 
-        bool operator       == (const iterator & o) const { return m_reader == o.m_reader; }
-        bool operator       != (const iterator & o) const { return !(m_reader == o.m_reader); }
+        bool operator       == (const iterator & o) const { return m_readerPtr == o.m_readerPtr; }
+        bool operator       != (const iterator & o) const { return !(m_readerPtr == o.m_readerPtr); }
 		iterator & operator ++ ();
 		iterator operator   ++ (int);
 		iterator & operator += (size_t index);
@@ -146,18 +163,9 @@ public:
 	};
 
 public:
-	Reader (shared_ptr<P> producer)
-	    : m_producer    (producer)
-		, m_decoder     (new Decoder)
-		, m_inputBuffer ()
-		, m_outputBuffer()
-		, m_cursor      (0)
-		, m_status      (1)
-	{}
-
-	Reader (shared_ptr<P> producer, shared_ptr<Decoder> decoder)
-		: m_producer    (producer)
-		, m_decoder     (decoder)
+	Reader (P & producerRef, Decoder & decoderRef)
+		: m_producerRef    (producerRef)
+		, m_decoderRef     (decoderRef)
 		, m_inputBuffer ()
 		, m_outputBuffer()
 		, m_cursor      (0)
@@ -165,9 +173,15 @@ public:
 	{}
 
 	ostring_type read  (size_t maxSize);
-	bool        atEnd () const   { return m_status == 0; }
+	bool        atEnd () const   { return reader_traits::ostring_length(m_outputBuffer) == 0 && m_status == 0; }
 	bool        isError() const  { return m_status < 0; }
-	P *         producer() const { return m_producer.get(); }
+	P &         producer() const { return m_producerRef; }
+
+	bool canReadLine(const ostring_type & end, size_t maxSize) {
+		const ostring_type ends[1] = { end };
+		return canReadLine(ends, 1, maxSize);
+	}
+	bool canReadLine(const ostring_type ends[], size_t count, size_t maxSize);
 
 	ostring_type readLine(const ostring_type & end, size_t maxSize) {
 		const ostring_type ends[1] = { end };
@@ -176,13 +190,13 @@ public:
 	ostring_type readLine(const ostring_type ends[], size_t count, size_t maxSize);
 
 protected:
-	void resetCursor    ();
-	bool readAndConvert (size_t maxSize);
-	bool canRead        (size_t maxSize);
+	void    resetCursor    ();
+	bool    readAndConvert (size_t maxSize);
+	bool    canRead        (size_t maxSize);
 
 protected:
-	shared_ptr<P>        m_producer;
-	shared_ptr<Decoder>  m_decoder;
+	P &                  m_producerRef;
+	Decoder &            m_decoderRef;
 	istring_type         m_inputBuffer;
 	ostring_type         m_outputBuffer;
 	size_t               m_cursor;    // cursor for outputBuffer, used in iterator
@@ -203,14 +217,15 @@ template <typename P, typename Decoder>
 bool Reader<P, Decoder>::readAndConvert (size_t maxSize)
 {
 	CWT_ASSERT(maxSize > 0);
+	m_status = 1;
 
-	ssize_t nread = reader_traits::read(*m_producer, m_inputBuffer, maxSize);
+	ssize_t nread = reader_traits::read(m_producerRef, m_inputBuffer, maxSize);
 
 	if (nread > 0) {
 		size_t remain = 0;
-		if (reader_traits::convert(*m_decoder, m_outputBuffer, m_inputBuffer, remain)) {
+		if (reader_traits::convert(m_decoderRef, m_outputBuffer, m_inputBuffer, remain)) {
 			if (remain > 0) {
-				m_inputBuffer = reader_traits::istring_right(m_inputBuffer, remain);
+				reader_traits::istring_remove(m_inputBuffer, reader_traits::istring_length(m_inputBuffer) - remain, remain);
 			} else {
 				reader_traits::istring_clear(m_inputBuffer);
 			}
@@ -218,27 +233,28 @@ bool Reader<P, Decoder>::readAndConvert (size_t maxSize)
 	} else if (nread < 0) {   // producer error
 		m_status = -1;
 	} else {                  // nread == 0, producer at end
-		if (reader_traits::ostring_length(m_outputBuffer) == 0) {
+		//if (reader_traits::ostring_length(m_outputBuffer) == 0) {
 			if (reader_traits::istring_length(m_inputBuffer) == 0) { // reader at end
 				m_status = 0;
 			} else {              // not all characters converted
 				m_status = -2;
 			}
-		}
+		//}
 	}
 
-	return m_status > 0 ? true : false;
+	return m_status >= 0 ? true : false;
 }
 
 
 template <typename P, typename Decoder>
 bool Reader<P, Decoder>::canRead(size_t maxSize)
 {
-	if (m_status <= 0)
+	if (m_status < 0)
 		return false;
 
 	if (m_cursor != 0)
 		resetCursor();
+
 	if (maxSize > reader_traits::ostring_length(m_outputBuffer)) {
 		if (!readAndConvert(maxSize < MaxChunkSize ? MaxChunkSize : maxSize)) {
 			return false;
@@ -260,8 +276,29 @@ typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::read (size_t maxSi
 		}
 	}
 
-	return reader_traits::ostring_left(m_outputBuffer, maxSize);
+	ostring_type r = reader_traits::ostring_left(m_outputBuffer, maxSize);
+	reader_traits::ostring_remove(m_outputBuffer, 0, maxSize);
+	return r;
 }
+
+template <typename P, typename Decoder>
+bool Reader<P, Decoder>::canReadLine (
+	  const Reader<P, Decoder>::ostring_type ends[]
+	, size_t count
+	, size_t maxSize)
+{
+	CWT_ASSERT(count > 0);
+	CWT_ASSERT(maxSize > 1);
+
+	resetCursor();
+
+	if (!readAndConvert(maxSize)) {
+		return false;
+	}
+
+	return reader_traits::canReadLine(m_outputBuffer, ends, count, maxSize);
+}
+
 
 template <typename P, typename Decoder>
 typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::readLine (
@@ -283,13 +320,29 @@ typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::readLine (
 
 
 template <typename P, typename Decoder>
-inline typename Reader<P, Decoder>::iterator & Reader<P, Decoder>::iterator::operator ++ ()
+inline Reader<P, Decoder>::iterator::iterator(Reader<P, Decoder> & reader)
+	: m_readerPtr(& reader)
 {
-    if (m_reader) {
-    	if (canRead(2))
-    		m_value = m_reader->m_outputBuffer[++m_reader->m_cursor];
-    	else
-    		m_reader = nullptr;
+	if (!(m_readerPtr && canRead(1))) {
+		m_readerPtr->read(1); // set status to end-of-file or error
+		m_readerPtr = nullptr;
+	} else {
+		m_value = m_readerPtr->m_outputBuffer[m_readerPtr->m_cursor];
+	}
+}
+
+
+template <typename P, typename Decoder>
+typename Reader<P, Decoder>::iterator & Reader<P, Decoder>::iterator::operator ++ ()
+{
+    if (m_readerPtr) {
+    	++m_readerPtr->m_cursor;
+    	if (canRead(1)) {
+    		m_value = m_readerPtr->m_outputBuffer[m_readerPtr->m_cursor];
+    	} else {
+    		m_readerPtr->read(1); // set status to end-of-file or error
+    		m_readerPtr = nullptr;
+    	}
     }
     return *this;
 }
@@ -305,12 +358,15 @@ inline typename Reader<P, Decoder>::iterator Reader<P, Decoder>::iterator::opera
 template <typename P, typename Decoder>
 typename Reader<P, Decoder>::iterator & Reader<P, Decoder>::iterator::operator += (size_t count)
 {
-	if (count > 0) {
-		if (m_reader && canRead(count)) {
-			m_reader->m_cursor += count;
-			m_value = m_reader->m_outputBuffer[m_reader->m_cursor];
-		} else {
-			m_reader = nullptr;
+	if (m_readerPtr) {
+		if (count > 0) {
+			if (canRead(count + 1)) {
+				m_readerPtr->m_cursor += count;
+				m_value = m_readerPtr->m_outputBuffer[m_readerPtr->m_cursor];
+			} else {
+				m_readerPtr->read(count + 1); // set status to end-of-file or error
+				m_readerPtr = nullptr;
+			}
 		}
 	}
     return *this;
@@ -320,11 +376,14 @@ template <typename P, typename Decoder>
 inline typename Reader<P, Decoder>::iterator Reader<P, Decoder>::iterator::at (size_t index)
 {
 	iterator r = *this;
-	if (index > 0) {
-		if (m_reader && canRead(index)) {
-			r.m_value = m_reader->m_outputBuffer[m_reader->m_cursor + index];
-		} else {
-			r.m_reader = nullptr;
+	if (m_readerPtr) {
+		if (index > 0) {
+			if (canRead(index + 1)) {
+				r.m_value = m_readerPtr->m_outputBuffer[m_readerPtr->m_cursor + index];
+			} else {
+				m_readerPtr->read(index + 1); // set status to end-of-file or error
+				r.m_readerPtr = nullptr;
+			}
 		}
 	}
     return r;
@@ -333,10 +392,10 @@ inline typename Reader<P, Decoder>::iterator Reader<P, Decoder>::iterator::at (s
 template <typename P, typename Decoder>
 bool Reader<P, Decoder>::iterator::canRead(size_t n)
 {
-	if (m_reader) {
-		if (m_reader->m_cursor + n <= reader_traits::ostring_length(m_reader->m_outputBuffer))
+	if (m_readerPtr) {
+		if (m_readerPtr->m_cursor + n <= reader_traits::ostring_length(m_readerPtr->m_outputBuffer))
 			return true;
-		return m_reader->canRead(n);
+		return m_readerPtr->canRead(n);
 	}
 	return false;
 }

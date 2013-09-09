@@ -20,16 +20,13 @@ class DLL_API TextWriter : public Writer<Device, Utf8Encoder>
 {
 private:
 	typedef Writer<Device, Utf8Encoder> base_class;
+	static Utf8NullEncoder DefaultUtf8Encoder;
 
 	CWT_DENY_COPY(TextWriter);
 
 public:
-	TextWriter(shared_ptr<Device> dev)
-		: base_class(dev, make_shared<Utf8Encoder>())
-		{}
-	TextWriter(shared_ptr<Device> dev, shared_ptr<Utf8Encoder> encoder)
-		: base_class(dev, encoder)
-		{}
+	TextWriter(Device & dev) : base_class(dev, DefaultUtf8Encoder) {}
+	TextWriter(Device & dev, Utf8Encoder & encoder) : base_class(dev, encoder) {}
 
 	Device * device() const { return consumer(); }
 };
