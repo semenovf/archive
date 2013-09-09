@@ -126,15 +126,15 @@ bool Settings::parse(const String & str, Format format)
 
 bool Settings::parseFromFile(const String & path, Format format)
 {
-	shared_ptr<io::File> file(new io::File);
+	io::File file;
 
-	if (!file->open(path, io::Device::ReadOnly)) {
+	if (!file.open(path, io::Device::ReadOnly)) {
 		Logger::error(_Fr("Failed to open file: %s") % path);
 		return false;
 	}
-	io::TextReader reader(dynamic_pointer_cast<io::Device, io::File>(file));
-	String s(reader.read(file->available()));
-	file->close();
+	io::TextReader reader(file);
+	String s(reader.read(file.available()));
+	file.close();
 	return parse(s, format);
 }
 
