@@ -5,10 +5,10 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_STH_HPP__
-#define __CWT_STH_HPP__
+#ifndef __CWT_DEBBY_STH_HPP__
+#define __CWT_DEBBY_STH_HPP__
 
-#include <cwt/dbd.hpp>
+#include <cwt/debby/dbd.hpp>
 
 CWT_NS_BEGIN
 
@@ -37,4 +37,4 @@ private:
 CWT_NS_END
 
 
-#endif /* __CWT_STH_HPP__ */
+#endif /* __CWT_DEBBY_STH_HPP__ */

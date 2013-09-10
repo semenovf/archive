@@ -1,11 +1,10 @@
 #ifndef __CWT_DEBBY_HPP__
 #define __CWT_DEBBY_HPP__
 
-#include <cwt/cwt.hpp>
 #include <cwt/string.hpp>
 #include <cwt/pimpl.hpp>
-#include <cwt/hash.hpp>
 #include <cwt/unitype.hpp>
+#include <cwt/debby/dbh.hpp>
 
 CWT_NS_BEGIN
 
@@ -37,14 +36,6 @@ protected:
 	bool process();
 };
 
-
-/*
-class Scheme
-{
-
-};
-*/
-
 class Table : public Hash<String, UniType>
 {
 	typedef Hash<String, UniType> base_class;
@@ -52,7 +43,6 @@ public:
 	Table() : base_class() {}
 	bool has (const String & field) { return contains(field); }
 };
-
 
 CWT_NS_END
  

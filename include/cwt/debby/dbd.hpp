@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_DBD_HPP__
-#define __CWT_DBD_HPP__
+#ifndef __CWT_DEBBY_DBD_HPP__
+#define __CWT_DEBBY_DBD_HPP__
 
 #include <cwt/vector.hpp>
 #include <cwt/hash.hpp>
@@ -60,4 +60,4 @@ public:
 
 CWT_NS_END
 
-#endif /* __CWT_DBD_HPP__ */
+#endif /* __CWT_DEBBY_DBD_HPP__ */

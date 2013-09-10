@@ -13,13 +13,12 @@ bool Debby::process()
 
 bool Debby::parseFromFile(const String & path)
 {
-	shared_ptr<io::File> file(new io::File(path, io::Device::ReadOnly));
-	if (!file->opened()) {
+	io::File file(path, io::Device::ReadOnly);
+	if (!file.opened()) {
 		return false;
 	}
 
-	shared_ptr<io::Device> dev = dynamic_pointer_cast<io::Device>(file);
-	io::TextReader reader(dev);
+	io::TextReader reader(file);
 	String s = reader.readAll();
 
 	if (!parse(s)) {

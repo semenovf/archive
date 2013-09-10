@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/dbh.hpp"
-#include "../include/cwt/sth.hpp"
+#include "../include/cwt/debby/dbh.hpp"
+#include "../include/cwt/debby/sth.hpp"
 #include <cwt/dl.hpp>
 #include <cwt/logger.hpp>
 #include <cwt/mt.hpp>
