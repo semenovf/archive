@@ -17,19 +17,19 @@ CWT_NS_BEGIN
 
 template <typename T>
 struct default_deleter {
-	void operator()(T* p) const {
+	void operator()(T * p) const {
 		delete p;
 	}
 };
 
 template <typename T>
 struct cast_deleter {
-	void operator()(T*) const {}
+	void operator()(T *) const {}
 };
 
 struct ref_count
 {
-	typedef void (*ref_count_deleter)(ref_count*);
+	typedef void (* ref_count_deleter)(ref_count *);
 
 	atomic_int weakref;
 	atomic_int strongref;
@@ -69,7 +69,7 @@ public:
 	}
 
 private:
-	T *m_ptr;
+	T *     m_ptr;
 	Deleter m_deleter;
 };
 
@@ -78,7 +78,7 @@ class DLL_API shared_ptr
 {
 private:
     template <typename Deleter>
-    void construct(T *ptr, Deleter deleter)
+    void construct(T * ptr, Deleter deleter)
     {
         if (!ptr) {
             d = 0;
@@ -92,14 +92,14 @@ public:
     {
     }
 
-    explicit shared_ptr(T *ptr) : value(ptr), d(0)
+    explicit shared_ptr(T * ptr) : value(ptr), d(0)
     {
     	default_deleter<T> deleter;
     	construct<default_deleter<T> >(ptr, deleter);
     }
 
     template <typename Deleter>
-    shared_ptr(T *ptr, Deleter deleter) : value(ptr), d(0)
+    shared_ptr(T * ptr, Deleter deleter) : value(ptr), d(0)
     {
     	construct<Deleter>(ptr, deleter);
     }
@@ -120,7 +120,7 @@ public:
     	deref();
     }
 
-    inline shared_ptr<T> & operator = (const shared_ptr<T> &other)
+    inline shared_ptr<T> & operator = (const shared_ptr<T> & other)
     {
         shared_ptr copy(other);
         swap(copy);
@@ -144,12 +144,12 @@ public:
 	   return (0 < use_count());
 	}
 
-    T* get() const
+    T * get() const
     {
     	return value;
     }
 
-    void swap(shared_ptr &other)
+    void swap(shared_ptr & other)
     {
         cwt::swap(d, other.d);
         cwt::swap(this->value, other.value);
@@ -161,14 +161,14 @@ public:
     	swap(copy);
     }
 
-    inline void reset(T *ptr)
+    inline void reset(T * ptr)
     {
     	shared_ptr copy(ptr);
     	swap(copy);
     }
 
     template <typename Deleter>
-    inline void reset(T *ptr, Deleter deleter)
+    inline void reset(T * ptr, Deleter deleter)
     {
     	shared_ptr copy(ptr, deleter);
     	swap(copy);
@@ -192,22 +192,22 @@ public:
     }
 
     // comparaison operators
-	inline bool operator == (const shared_ptr& ptr) const
+	inline bool operator == (const shared_ptr & ptr) const
 	{
 		return (value == ptr.value);
 	}
 
-	inline bool operator == (const T* p) const
+	inline bool operator == (const T * p) const
 	{
 		return (value == p);
 	}
 
-	inline bool operator != (const shared_ptr& ptr) const
+	inline bool operator != (const shared_ptr & ptr) const
 	{
 		return (value != ptr.value);
 	}
 
-	inline bool operator != (const T* p) const
+	inline bool operator != (const T * p) const
 	{
 		return (value != p);
 	}
@@ -217,43 +217,43 @@ public:
 		return (value <= ptr.value);
 	}
 
-	inline bool operator <= (const T* p) const
+	inline bool operator <= (const T * p) const
 	{
 		return (value <= p);
 	}
 
-	inline bool operator < (const shared_ptr& ptr) const
+	inline bool operator < (const shared_ptr & ptr) const
 	{
 		return (value < ptr.value);
 	}
 
-	inline bool operator< (const T* p) const
+	inline bool operator< (const T * p) const
 	{
 		return (value < p);
 	}
 
-	inline bool operator >= (const shared_ptr& ptr) const
+	inline bool operator >= (const shared_ptr & ptr) const
 	{
 		return (value >= ptr.value);
 	}
 
-	inline bool operator >= (const T* p) const
+	inline bool operator >= (const T * p) const
 	{
 		return (value >= p);
 	}
 
-	inline bool operator > (const shared_ptr& ptr) const
+	inline bool operator > (const shared_ptr & ptr) const
 	{
 		return (value > ptr.value);
 	}
 
-	inline bool operator > (const T* p) const
+	inline bool operator > (const T * p) const
 	{
 		return (value > p);
 	}
 
 private:
-    static void deref(ref_count *d)
+    static void deref(ref_count * d)
     {
         if (!d)
         	return;

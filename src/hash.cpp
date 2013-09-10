@@ -57,7 +57,7 @@ DLL_API uint_t hash_bytes(const byte_t *p, size_t len, uint_t seed)
     return h;
 }
 
-DLL_API uint_t hash_uchars(const UChar *p, size_t len, uint_t seed)
+DLL_API uint_t hash_uchars(const UChar * p, size_t len, uint_t seed)
 {
     uint_t h = seed;
 
@@ -67,29 +67,30 @@ DLL_API uint_t hash_uchars(const UChar *p, size_t len, uint_t seed)
     return h;
 }
 
-HashData::Node* HashData::allocNode()
+HashData::Node * HashData::allocNode()
 {
 	return reinterpret_cast<HashData::Node*>(malloc(entrySize));
 }
 
-void HashData::freeNode(HashData::Node *node)
+void HashData::freeNode(HashData::Node * node)
 {
 	free(node);
 }
 
 HashData::~HashData()
 {
-	HashData::Node *rover;
-	HashData::Node *next;
+	HashData::Node * rover;
+	HashData::Node * next;
 	size_t i, size;
 
 	/* Free all entries in all chains */
 	size = nodeTable.size();
 	for (i = 0; i < size; ++i) {
 		rover = nodeTable[i];
-		while (rover != NULL) {
+		while (rover != nullptr) {
 			next = rover->next;
-			delete rover;
+			free_node_helper(rover);
+			free(rover);
 			rover = next;
 		}
 	}
@@ -111,7 +112,7 @@ void HashData::allocNodeTable()
 		size = nentries * 10;
 	}
 
-	/* Allocate the table and initialize to NULL for all entries */
+	/* Allocate the table and initialize to nullptr for all entries */
 	nodeTable.alloc(size);
 	nodeTable.bzero();
 }
@@ -141,7 +142,7 @@ void HashData::rehash(size_t pindex)
 	for (size_t i = 0; i < orig_size; ++i) {
 		rover = nodeTable[i];
 
-		while (rover != NULL) {
+		while (rover != nullptr) {
 			next = rover->next;
 
 /*
@@ -166,10 +167,10 @@ void HashData::rehash(size_t pindex)
 
 HashData* HashData::clone()
 {
-	HashData *hd = new HashData(
-			  entrySize
+	HashData *hd = new HashData( entrySize
 			, seed
-			, copy_node_helper
+			, clone_node_helper
+			, free_node_helper
 			, hash_func_helper
 			, eq_key_helper);
 
@@ -184,10 +185,10 @@ HashData* HashData::clone()
 		for (size_t i = 0; i < orig_size; ++i) {
 			rover = nodeTable[i];
 
-			while (rover != NULL) {
+			while (rover != nullptr) {
 				HashData::Node *e = allocNode();
 
-				copy_node_helper(e, rover);
+				clone_node_helper(e, rover);
 
 				/* Link this entry into the chain */
 				e->next = hd->nodeTable[i];
@@ -205,11 +206,11 @@ HashData* HashData::clone()
 
 HashData::Node* HashData::firstNode(size_t *index)
 {
-	HashData::Node *rover = NULL;
+	HashData::Node *rover = nullptr;
 	if (nentries > 0) {
 		size_t size = nodeTable.size();
 		for (size_t i = 0; i < size; ++i) {
-			if (nodeTable[i] != NULL) {
+			if (nodeTable[i] != nullptr) {
 				*index = i;
 				rover = nodeTable[i];
 				break;
@@ -219,9 +220,9 @@ HashData::Node* HashData::firstNode(size_t *index)
 	return rover;
 }
 
-HashData::Node* HashData::lastNode(size_t *index)
+HashData::Node* HashData::lastNode(size_t * index)
 {
-	HashData::Node *rover = NULL;
+	HashData::Node *rover = nullptr;
 
 	if (nentries > 0) { // nodeTable has at leat one element
 		size_t i = nodeTable.size() - 1;
@@ -229,10 +230,10 @@ HashData::Node* HashData::lastNode(size_t *index)
 		// instead of use 'for (size_t i = *index; i >= 0; --i)' 'use do-while'
 		// to disable gcc warning: comparison of unsigned expression >= 0 is always true
 		do {
-			if (nodeTable[i] != NULL) {
+			if (nodeTable[i] != nullptr) {
 				rover = nodeTable[i];
 				*index = i;
-				while (rover->next != NULL)
+				while (rover->next != nullptr)
 					rover = rover->next;
 				break;
 			}
@@ -241,24 +242,24 @@ HashData::Node* HashData::lastNode(size_t *index)
 	return rover;
 }
 
-HashData::Node* HashData::nextNode(HashData::Node *rover, size_t *index)
+HashData::Node* HashData::nextNode(HashData::Node * rover, size_t * index)
 {
-	if (rover->next != NULL)
+	if (rover->next != nullptr)
 		return rover->next;
 
 	++*index;
 	size_t size = nodeTable.size();
 	for (size_t i = *index; i < size; ++i ) {
 		rover = nodeTable[i];
-		if (rover != NULL) {
+		if (rover != nullptr) {
 			*index = i;
 			return rover;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
-HashData::Node* HashData::prevNode(HashData::Node *rover, size_t *index)
+HashData::Node* HashData::prevNode(HashData::Node * rover, size_t * index)
 {
 	HashData::Node *prev = nodeTable[*index];
 
@@ -267,16 +268,16 @@ HashData::Node* HashData::prevNode(HashData::Node *rover, size_t *index)
 	if (prev == rover) {
 
 		if(*index == 0)
-			return NULL;
+			return nullptr;
 
 		--*index;
 		size_t i = *index;
 
 		do {
-			if (nodeTable[i] != NULL) {
+			if (nodeTable[i] != nullptr) {
 				prev = nodeTable[i];
 				*index = i;
-				while (prev->next != NULL)
+				while (prev->next != nullptr)
 					prev = prev->next;
 				return prev;
 			}
@@ -285,10 +286,10 @@ HashData::Node* HashData::prevNode(HashData::Node *rover, size_t *index)
 
 /*
 		for (size_t i = *index; i >= 0; --i) {
-			if (nodeTable[i] != NULL) {
+			if (nodeTable[i] != nullptr) {
 				prev = nodeTable[i];
 				*index = i;
-				while (prev->next != NULL)
+				while (prev->next != nullptr)
 					prev = prev->next;
 				return prev;
 			}
@@ -302,17 +303,17 @@ HashData::Node* HashData::prevNode(HashData::Node *rover, size_t *index)
 		return prev;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 HashData::Node* HashData::lookup(HashData::Node *node, size_t *index)
 {
-	HashData::Node *rover = NULL;
+	HashData::Node *rover = nullptr;
 	if (nentries > 0) {
 		*index = hash_func_helper(node, seed) % nodeTable.size();
 		rover = nodeTable[*index];
 
-		while (rover != NULL) {
+		while (rover != nullptr) {
 			if (eq_key_helper(node, rover)) {
 				break;
 			}
@@ -333,19 +334,19 @@ HashData::Node* HashData::insert(HashData::Node *node, size_t *index)
 	return node;
 }
 
-HashData::Node* HashData::remove(HashData::Node *key)
+HashData::Node * HashData::remove(HashData::Node * key)
 {
 	if (nentries > 0) {
 		size_t i = hash_func_helper(key, seed) % nodeTable.size();
-		HashData::Node *rover = nodeTable[i];
+		HashData::Node * rover = nodeTable[i];
 
 		if (eq_key_helper(key, rover)) {
 			nodeTable[i] = rover->next;
 			return rover;
 		} else {
-			while (rover->next != NULL) {
+			while (rover->next != nullptr) {
 				if (eq_key_helper(key, rover->next)) {
-					HashData::Node *r = rover->next;
+					HashData::Node * r = rover->next;
 					rover->next = rover->next->next;
 					--nentries;
 					return r;
@@ -354,7 +355,7 @@ HashData::Node* HashData::remove(HashData::Node *key)
 			}
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 CWT_NS_END

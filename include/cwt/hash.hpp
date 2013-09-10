@@ -56,60 +56,65 @@ template <typename T> inline uint_t hash_func(const T *key, uint_t seed = 0)
 
 template<typename T> inline uint_t hash_func(const T &t, uint_t seed) { return (hash_func(t) ^ seed); }
 
-struct HashData {
+struct HashData
+{
 	struct Node {
 		Node *next;
 	};
-	size_t entrySize;    // size of node represents an element in a hash table.
+	size_t entrySize;    // size of node represents an element in a hash table, see Hash::Entry
 	size_t nentries;     // actual number of elements in a hash table
 	size_t primeIndex;   // current index of prime value in the table of primes for allocate nodeTable
 	uint_t seed;
-	Array<Node*> nodeTable;
+	Array<Node *> nodeTable;
 
-	void   (*copy_node_helper)(Node *to, Node *from);
-	uint_t (*hash_func_helper)(Node *node, uint_t seed);
-	bool   (*eq_key_helper)(Node *n1, Node *n2);
+	void   (* clone_node_helper)(Node * to, Node * from);  // called while cloning a node
+	void   (* free_node_helper) (Node * );
+	uint_t (* hash_func_helper)(Node * node, uint_t seed);
+	bool   (* eq_key_helper)   (Node * n1, Node * n2);
 
 	HashData(size_t entrySizeValue, uint_t seedValue
-			, void (*copy_node)(Node*, Node*)
-			, uint_t (*hash_func)(Node*, uint_t)
-			, bool (*eq_key)(Node*, Node*))
+			, void   (* copy_node) (Node *, Node *)
+			, void   (* free_node) (Node * )
+			, uint_t (* hash_func) (Node *, uint_t)
+			, bool   (* eq_key)    (Node *, Node *))
 		: entrySize(entrySizeValue)
 		, nentries(0)
 		, primeIndex(0)
 		, seed(seedValue)
 		, nodeTable()
-		, copy_node_helper(copy_node)
+		, clone_node_helper(copy_node)
+		, free_node_helper(free_node)
 		, hash_func_helper(hash_func)
 		, eq_key_helper(eq_key)	{}
 
 	~HashData();
 
 	void allocNodeTable();
-	Node* allocNode();
-	void freeNode(Node*);
+	Node * allocNode();
+	void freeNode(Node *);
 	void rehash(size_t primeIndex);
-	HashData* clone();
-	HashData::Node* firstNode(size_t *index);
-	HashData::Node* lastNode(size_t *index);
-	HashData::Node* nextNode(HashData::Node *node, size_t *index);
-	HashData::Node* prevNode(HashData::Node *node, size_t *index);
-	HashData::Node* lookup(HashData::Node *key, size_t *index);
-	HashData::Node* insert(HashData::Node *node, size_t *index);
-	HashData::Node* remove(HashData::Node *key);
+	HashData * clone();
+	HashData::Node * firstNode(size_t *index);
+	HashData::Node * lastNode(size_t *index);
+	HashData::Node * nextNode(HashData::Node *node, size_t *index);
+	HashData::Node * prevNode(HashData::Node *node, size_t *index);
+	HashData::Node * lookup(HashData::Node *key, size_t *index);
+	HashData::Node * insert(HashData::Node *node, size_t *index);
+	HashData::Node * remove(HashData::Node *key);
 };
 
 
 template <typename Key, typename T>
-class DLL_API Hash {
-public: // TODO Make private!
+class DLL_API Hash
+{
+public:
 	struct Entry {
-		Entry *next;
+		Entry * next;
 		Key key;
 		T value;
 	};
 
-    static inline Entry* cast_entry(HashData::Node *node) {
+    static inline Entry* cast_entry(HashData::Node * node) {
         return reinterpret_cast<Entry *>(node);
     }
 public:
@@ -118,39 +123,39 @@ public:
 
 	class iterator {
 		friend class const_iterator;
-		HashData *hd;
-		HashData::Node *rover;
+		HashData *       hd;
+		HashData::Node * rover;
 		size_t index;
 	public:
-        iterator() : hd(NULL), rover(NULL), index(0) { }
-        explicit iterator(HashData *d, HashData::Node *node, size_t i) : hd(d), rover(node), index(i) { }
-        explicit iterator(HashData *d) : hd(d) { rover = hd->firstNode(&index); }
+        iterator() : hd(nullptr), rover(nullptr), index(0) { }
+        explicit iterator(HashData * d, HashData::Node * node, size_t i) : hd(d), rover(node), index(i) { }
+        explicit iterator(HashData * d) : hd(d) { rover = hd->firstNode(& index); }
 
-        const Key &key() const { return cast_entry(rover)->key; }
-        T&   value() const { return cast_entry(rover)->value; }
-        T&   operator *  () const { return cast_entry(rover)->value; }
-        T*   operator -> () const { return &cast_entry(rover)->value; }
+        const Key & key() const { return cast_entry(rover)->key; }
+        T &  value() const { return cast_entry(rover)->value; }
+        T &  operator *  () const { return cast_entry(rover)->value; }
+        T *  operator -> () const { return &cast_entry(rover)->value; }
         bool operator == (const iterator &o) const { return rover == o.rover; }
         bool operator != (const iterator &o) const { return rover != o.rover; }
 
-        iterator& operator++() {
+        iterator & operator ++ () {
             rover = hd->nextNode(rover, &index);
             return *this;
         }
 
-        iterator operator++(int) {
+        iterator operator ++ (int) {
             iterator r = *this;
             rover = hd->nextNode(rover, &index);
             return r;
         }
 
-        iterator &operator--() {
-            rover = hd->prevNode(rover, &index);++m_d->nentries;
+        iterator & operator -- () {
+            rover = hd->prevNode(rover, & index);
             return *this;
         }
-        iterator operator--(int) {
+        iterator operator -- (int) {
             iterator r = *this;
-            rover = HashData::prevNode(rover, &index);
+            rover = HashData::prevNode(rover, & index);
             return r;
         }
         iterator operator+(int j) const {
@@ -162,20 +167,20 @@ public:
         	return r;
         }
 
-        inline iterator operator-(int j) const { return operator+(-j); }
-        inline iterator &operator+=(int j) { return *this = *this + j; }
-        inline iterator &operator-=(int j) { return *this = *this - j; }
+        inline iterator operator    - (int j) const { return operator+(-j); }
+        inline iterator & operator += (int j) { return *this = *this + j; }
+        inline iterator & operator -= (int j) { return *this = *this - j; }
 	};
 
     class const_iterator
     {
         friend class iterator;
-		HashData *hd;
-		HashData::Node *rover;
+		HashData *       hd;
+		HashData::Node * rover;
 		size_t index;
 
     public:
-        const_iterator() : hd(NULL), rover(NULL), index(0) { }
+        const_iterator() : hd(nullptr), rover(nullptr), index(0) { }
         explicit const_iterator (HashData * d, HashData::Node * node, size_t i) : hd(d), rover(node), index(i) { }
         explicit const_iterator (HashData * d) : hd(d) { rover = hd->firstNode(& index); }
         explicit const_iterator (const iterator & o) : hd(o.hd), rover(o.rover), index(o.index) { }
@@ -188,27 +193,27 @@ public:
         inline bool operator == (const iterator & o) const { return rover == o.rover; }
         inline bool operator != (const const_iterator & o) const { return rover != o.rover; }
 
-        const_iterator & operator++() {
+        const_iterator & operator ++ () {
             rover = hd->nextNode(rover, &index);
             return *this;
         }
 
-        const_iterator operator++(int) {
+        const_iterator operator ++ (int) {
             const_iterator r = *this;
             rover = hd->nextNode(rover, &index);
             return r;
         }
 
-        const_iterator &operator--() {
+        const_iterator & operator -- () {
             rover = hd->prevNode(rover, &index);
             return *this;
         }
-        const_iterator operator--(int) {
+        const_iterator operator -- (int) {
             const_iterator r = *this;
             rover = HashData::prevNode(rover, &index);
             return r;
         }
-        const_iterator operator+(int j) const {
+        const_iterator operator + (int j) const {
         	const_iterator r = *this;
         	if (j > 0)
         		while (j--) ++r;
@@ -217,17 +222,17 @@ public:
         	return r;
         }
 
-        inline const_iterator operator-(int j) const { return operator+(-j); }
-        inline const_iterator &operator+=(int j) { return *this = *this + j; }
-        inline const_iterator &operator-=(int j) { return *this = *this - j; }
+        inline const_iterator operator - (int j) const { return operator+(-j); }
+        inline const_iterator & operator += (int j) { return *this = *this + j; }
+        inline const_iterator & operator -= (int j) { return *this = *this - j; }
     };
 
 public:
 	Hash(uint_t seed = 0);
-	Hash(const Hash<Key, T> &other);
-	Hash<Key, T>&  operator=(const Hash<Key, T> & other);
+	Hash(const Hash<Key, T> & other);
+	Hash<Key, T> & operator = (const Hash<Key, T> & other);
 
-	T&	           at(const Key & key) { return operator [](key); }
+	T &	           at(const Key & key) { return operator [](key); }
 	const T        at(const Key & key) const { return operator [](key); }
 
     iterator       begin() { detach(); return iterator(m_d.get()); }
@@ -244,23 +249,31 @@ public:
 	iterator       insert(const Key & key, const T & value);
 	const Key	   key ( const T & value ) const;
 	const Key	   key ( const T & value, const Key & defaultKey ) const;
-	int	           remove(const Key & key);
+	bool           remove(const Key & key);
 	size_t 	       size() const { return m_d->nentries; }
+	T &	           value(const Key & key) { return operator [] (key); }
 	const T	       value(const Key & key) const;
-	const T	       value(const Key & key, const T &defaultValue) const;
+	const T	       value(const Key & key, const T & defaultValue) const;
 
 	bool	       operator != (const Hash<Key, T> & other) const { return !(*this == other); }
-	bool	       operator == (const Hash<Key, T> &other) const;
-	T&	           operator [] (const Key & key);
+	bool	       operator == (const Hash<Key, T> & other) const;
+	T &	           operator [] (const Key & key);
 	const T        operator [] (const Key & key) const { return value(key); }
 
 protected:
 	void           detach();
 
 private:
-	static void    copy_node_helper(HashData::Node *to, HashData::Node *from) {
-						cast_entry(to)->key = cast_entry(from)->key;
-						cast_entry(to)->value = cast_entry(from)->value;
+	static void    clone_node_helper(HashData::Node * to, HashData::Node * from) {
+						Entry * newEntry = cast_entry(to);
+						Entry * fromEntry = cast_entry(from);
+						newEntry = new (newEntry) Entry(); // placement new
+						newEntry->key = fromEntry->key;
+						newEntry->value = fromEntry->value;
+		           }
+	static void    free_node_helper(HashData::Node * node) {
+						Entry * entry = cast_entry(node);
+						entry->~Entry();
 		           }
 	static uint_t  hash_func_helper(HashData::Node *node, uint_t seed) {
 						return hash_func(cast_entry(node)->key, seed);
@@ -278,7 +291,8 @@ inline Hash<Key,T>::Hash(uint_t seed)
 	: m_d(new HashData(
 		  sizeof(Hash::Entry)
 		, seed
-		, copy_node_helper
+		, clone_node_helper
+		, free_node_helper
 		, hash_func_helper
 		, eq_key_helper))
 {
@@ -291,7 +305,7 @@ inline Hash<Key,T>::Hash(const Hash<Key, T> &other)
 }
 
 template <typename Key, typename T>
-inline Hash<Key, T>&  Hash<Key,T>::operator=(const Hash<Key, T> & other)
+inline Hash<Key, T>&  Hash<Key,T>::operator = (const Hash<Key, T> & other)
 {
 	m_d = other.m_d;
 	return *this;
@@ -306,19 +320,6 @@ inline void Hash<Key,T>::detach()
 	}
 }
 
-/*
-template <typename Key, typename T>
-inline void Hash<Key,T>::detachAndRehash()
-{
-	if (m_d.use_count() > 1) {
-		shared_ptr<HashData> d(m_d->cloneAndEnlarge());
-		m_d.swap(d);
-	} else {
-		m_d->enlarge();
-	}
-}
-*/
-
 
 template <class Key, class T>
 inline bool Hash<Key, T>::contains(const Key &key) const
@@ -326,7 +327,7 @@ inline bool Hash<Key, T>::contains(const Key &key) const
 	Entry e;
 	size_t index;
 	e.key = key;
-	return m_d->lookup(reinterpret_cast<HashData::Node*>(&e), &index) != NULL;
+	return m_d->lookup(reinterpret_cast<HashData::Node *>(& e), & index) != nullptr;
 }
 
 
@@ -338,7 +339,7 @@ inline bool Hash<Key, T>::contains(const Key &key) const
 * is no value with that key in the hash table.
 */
 template <typename Key, typename T>
-inline typename Hash<Key,T>::iterator Hash<Key,T>::find(const Key &key)
+inline typename Hash<Key,T>::iterator Hash<Key,T>::find(const Key & key)
 {
 	Entry e;
 	size_t index;
@@ -346,7 +347,7 @@ inline typename Hash<Key,T>::iterator Hash<Key,T>::find(const Key &key)
 	detach();
 
 	e.key = key;
-	HashData::Node *node = m_d->lookup(reinterpret_cast<HashData::Node*>(&e), &index);
+	HashData::Node * node = m_d->lookup(reinterpret_cast<HashData::Node *>(& e), & index);
 	return iterator(m_d.get(), node, index);
 }
 
@@ -358,13 +359,13 @@ inline typename Hash<Key,T>::iterator Hash<Key,T>::find(const Key &key)
 * is no value with that key in the hash table.
 */
 template <typename Key, typename T>
-inline typename Hash<Key,T>::const_iterator Hash<Key,T>::find(const Key &key) const
+inline typename Hash<Key,T>::const_iterator Hash<Key,T>::find(const Key & key) const
 {
 	Entry e;
 	size_t index;
 	e.key = key;
 
-	HashData::Node *node = m_d->lookup(reinterpret_cast<HashData::Node*>(&e), &index);
+	HashData::Node * node = m_d->lookup(reinterpret_cast<HashData::Node *>(& e), & index);
 	return const_iterator(m_d.get(), node, index);
 }
 
@@ -449,10 +450,10 @@ const T Hash<Key, T>::value(const Key & key, const T & defaultValue) const
 
 
 template <class Key, class T>
-int Hash<Key, T>::remove(const Key & key)
+bool Hash<Key, T>::remove(const Key & key)
 {
     if (isEmpty())
-        return 0;
+        return false;
 
     detach();
 
@@ -460,19 +461,20 @@ int Hash<Key, T>::remove(const Key & key)
 	//size_t index;
 	e.key = key;
 
-    HashData::Node *r = m_d->remove(reinterpret_cast<HashData::Node*>(&e));
+    HashData::Node * r = m_d->remove(reinterpret_cast<HashData::Node*>(&e));
     if (r) {
-    	delete cast_entry(r);
+    	free_node_helper(r);
+    	m_d->freeNode(r);
 
     	if (double(m_d->nentries/m_d->nodeTable.size()) < double(1/3)) {
     		if (m_d->primeIndex > 0)
     			m_d->rehash(m_d->primeIndex - 1);
     	}
 
-    	return 1;
+    	return true;
     }
 
-    return 0;
+    return false;
 }
 
 template <class Key, class T>
@@ -486,7 +488,7 @@ bool Hash<Key, T>::operator == (const Hash<Key, T> &other) const
     const_iterator it = begin();
 
     while (it != end()) {
-        const Key &key = it.key();
+        const Key & key = it.key();
         const_iterator it2 = other.find(key);
 
         if (it2 == other.end() || !(it2.key() == key))
@@ -498,7 +500,7 @@ bool Hash<Key, T>::operator == (const Hash<Key, T> &other) const
 
 
 template <class Key, class T>
-T& Hash<Key, T>::operator[](const Key &key)
+T & Hash<Key, T>::operator [] (const Key &key)
 {
     detach();
     iterator it = find(key);

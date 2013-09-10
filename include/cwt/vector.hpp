@@ -25,62 +25,64 @@ public:
 public:
     class iterator {
     public:
-        T *i;
+        T * i;
 
         inline iterator() : i(0) {}
-        inline iterator(T *n) : i(n) {}
-        inline iterator(const iterator &o): i(o.i){}
+        inline iterator(T * n) : i(n) {}
+        inline iterator(const iterator & o): i(o.i){}
         inline T               value() { return *i; }
+        inline T &             value() const { return *i; }
         inline T &             operator *  () const { return *i; }
         inline T *             operator -> () const { return i; }
         inline T &             operator [] (int j) const { return *(i + j); }
-        inline bool            operator == (const iterator &o) const { return i == o.i; }
-        inline bool            operator != (const iterator &o) const { return i != o.i; }
-        inline bool            operator <  (const iterator &o) const { return i <  o.i; }
-        inline bool            operator <= (const iterator &o) const { return i <= o.i; }
-        inline bool            operator >  (const iterator &o) const { return i >  o.i; }
-        inline bool            operator >= (const iterator &o) const { return i >= o.i; }
-        inline iterator&       operator ++ () { ++i; return *this; }
-        inline iterator        operator ++ (int) { T *n = i; ++i; return n; }
-        inline iterator&       operator -- () { i--; return *this; }
-        inline iterator        operator -- (int) { T *n = i; i--; return n; }
-        inline iterator&       operator += (size_t j) { i+=j; return *this; }
-        inline iterator&       operator -= (size_t j) { i-=j; return *this; }
+        inline bool            operator == (const iterator & o) const { return i == o.i; }
+        inline bool            operator != (const iterator & o) const { return i != o.i; }
+        inline bool            operator <  (const iterator & o) const { return i <  o.i; }
+        inline bool            operator <= (const iterator & o) const { return i <= o.i; }
+        inline bool            operator >  (const iterator & o) const { return i >  o.i; }
+        inline bool            operator >= (const iterator & o) const { return i >= o.i; }
+        inline iterator &      operator ++ () { ++i; return *this; }
+        inline iterator        operator ++ (int) { T * n = i; ++i; return n; }
+        inline iterator &      operator -- () { i--; return *this; }
+        inline iterator        operator -- (int) { T * n = i; i--; return n; }
+        inline iterator &      operator += (size_t j) { i+=j; return *this; }
+        inline iterator &      operator -= (size_t j) { i-=j; return *this; }
         inline iterator        operator +  (size_t j) const { return iterator(i+j); }
         inline iterator        operator -  (size_t j) const { return iterator(i-j); }
         inline intptr_t        operator -  (iterator j) const { return i - j.i; }
-        inline                 operator T* () const { return i; }
+        inline                 operator T * () const { return i; }
     };
     friend class iterator;
 
     class const_iterator {
     public:
-        const T *i;
+        const T * i;
 
         inline                 const_iterator() : i(0)                       {}
-        inline                 const_iterator(const T *n) : i(n)             {}
+        inline                 const_iterator(const T * n) : i(n)            {}
         inline                 const_iterator(const const_iterator &o): i(o.i) {}
         inline explicit        const_iterator(const iterator &o): i(o.i)     {}
         inline T               value() { return *i; }
-        inline const T&        operator*()                             const { return *i; }
-        inline const T*        operator->()                            const { return i; }
-        inline const T&        operator[](size_t j)                    const { return *(i + j); }
-        inline bool            operator==(const const_iterator &o)     const { return i == o.i; }
-        inline bool            operator!=(const const_iterator &o)     const { return i != o.i; }
-        inline bool            operator<(const const_iterator &other)  const { return i < other.i; }
-        inline bool            operator<=(const const_iterator &other) const { return i <= other.i; }
-        inline bool            operator>(const const_iterator &other)  const { return i > other.i; }
-        inline bool            operator>=(const const_iterator &other) const { return i >= other.i; }
-        inline const_iterator& operator++()                                  { ++i; return *this; }
-        inline const_iterator  operator++(int)                               { const T *n = i; ++i; return n; }
-        inline const_iterator& operator--()                                  { i--; return *this; }
-        inline const_iterator  operator--(int)                               { const T *n = i; i--; return n; }
-        inline const_iterator& operator+=(size_t j)                          { i+=j; return *this; }
-        inline const_iterator& operator-=(size_t j)                          { i-=j; return *this; }
-        inline const_iterator  operator+(size_t j)                     const { return const_iterator(i+j); }
-        inline const_iterator  operator-(size_t j)                     const { return const_iterator(i-j); }
-        inline intptr_t        operator-(const_iterator j)             const { return i - j.i; }
-        inline                 operator const T*()                     const { return i; }
+        inline const T &       value() const { return *i; }
+        inline const T &       operator  * ()                            const { return *i; }
+        inline const T *       operator -> ()                            const { return i; }
+        inline const T &       operator [] (size_t j)                    const { return *(i + j); }
+        inline bool            operator == (const const_iterator &o)     const { return i == o.i; }
+        inline bool            operator != (const const_iterator &o)     const { return i != o.i; }
+        inline bool            operator  < (const const_iterator &other) const { return i < other.i; }
+        inline bool            operator <= (const const_iterator &other) const { return i <= other.i; }
+        inline bool            operator >( const const_iterator &other)  const { return i > other.i; }
+        inline bool            operator >= (const const_iterator &other) const { return i >= other.i; }
+        inline const_iterator& operator ++ ()                                  { ++i; return *this; }
+        inline const_iterator  operator ++ (int)                               { const T *n = i; ++i; return n; }
+        inline const_iterator& operator -- ()                                  { i--; return *this; }
+        inline const_iterator  operator -- (int)                               { const T *n = i; i--; return n; }
+        inline const_iterator& operator += (size_t j)                          { i+=j; return *this; }
+        inline const_iterator& operator -= (size_t j)                          { i-=j; return *this; }
+        inline const_iterator  operator  + (size_t j)                    const { return const_iterator(i+j); }
+        inline const_iterator  operator  - (size_t j)                    const { return const_iterator(i-j); }
+        inline intptr_t        operator  - (const_iterator j)            const { return i - j.i; }
+        inline                 operator const T*()                       const { return i; }
     };
     friend class const_iterator;
 
@@ -89,24 +91,26 @@ public:
 	Vector(size_t size);
 	Vector(size_t size, const T & value);
 	Vector(const T * values, size_t size) : m_d(new SharedData) { append(values, size); }
-	Vector(const Vector<T> &other);
 
-	T&             at(size_t i);
-	const T&       at(size_t i) const;
+	Vector(const Vector<T> &other);
+	Vector<T>&	   operator = (const Vector<T> & other);
+
+	T &            at(size_t i);
+	const T &      at(size_t i) const;
 	bool           endsWith (const Vector<T> & end) const;
 	void           append(const T & value);
 	void           append(const T * value, size_t count);
 	void           append(const Vector<T> & other);
 	void           clear()         { m_d.detach(); m_d->count = 0; }
-	T*             data()          { m_d.detach(); return m_d->data.data(); }
-	const T*       data() const    { return m_d->data.data(); }
-	const T*       constData() const { return m_d->data.data(); }
-	T&             first()         { return at(0); }
-	const T&       first() const   { return at(0); }
+	T *            data()          { m_d.detach(); return m_d->data.data(); }
+	const T *      data() const    { return m_d->data.data(); }
+	const T *      constData() const { return m_d->data.data(); }
+	T &            first()         { return at(0); }
+	const T &      first() const   { return at(0); }
 	//void	       insert (size_t i, const T & value); // TODO implement this method
 	bool           isEmpty() const { return m_d->count > 0 ? false : true; }
-	T&             last()          { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
-	const T&       last() const    { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
+	T &            last()          { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
+	const T &      last() const    { CWT_ASSERT(m_d->count > 0); return at(m_d->count-1); }
 	void           prepend(const T & value);
 	void           push_back (const T & value) { append(value); }
 	void	       remove(size_t pos);
@@ -129,9 +133,8 @@ public:
     const_iterator cbegin() const { return const_iterator(m_d->data.data()); }
     const_iterator cend() const   { return const_iterator(m_d->data.data()) + m_d->count; }
 
-	T&             operator[](size_t i)       { return at(i); }
-	const T&       operator[](size_t i) const { return at(i); }
-	Vector<T>&	   operator = (const Vector<T> & other);
+	T &            operator[](size_t i)       { return at(i); }
+	const T &      operator[](size_t i) const { return at(i); }
 
 protected:
 	struct SharedData {
@@ -151,7 +154,7 @@ protected:
 template <typename T>
 inline Vector<T>::Vector() : m_d(new SharedData)
 {
-	m_d->count = 0;
+//	m_d->count = 0;
 //	m_d->data.alloc(size);
 }
 
@@ -179,14 +182,14 @@ inline Vector<T>::Vector(const Vector<T> &other) : m_d(other.m_d)
 }
 
 template <typename T>
-inline Vector<T>& Vector<T>::operator = (const Vector<T> & other)
+inline Vector<T> & Vector<T>::operator = (const Vector<T> & other)
 {
 	m_d = other.m_d;
 	return *this;
 }
 
 template <typename T>
-inline T& Vector<T>::at(size_t i)
+inline T & Vector<T>::at(size_t i)
 {
 	CWT_ASSERT(!isEmpty());
 	CWT_ASSERT(i < m_d->count);
@@ -195,7 +198,7 @@ inline T& Vector<T>::at(size_t i)
 }
 
 template <typename T>
-inline const T& Vector<T>::at(size_t i) const
+inline const T & Vector<T>::at(size_t i) const
 {
 	CWT_ASSERT(!isEmpty());
 	CWT_ASSERT(i < m_d->count);
