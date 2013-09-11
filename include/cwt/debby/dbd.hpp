@@ -56,6 +56,8 @@ public:
 	bool                    (*fetchRowArray) (DbStatementData &, Vector<UniType> & row);
 	bool                    (*fetchRowHash)  (DbStatementData &, Hash<String, UniType> & row);
 	bool                    (*bind)          (DbStatementData &, size_t index, const UniType & param);
+
+	bool                    (*dropScheme)    (DbHandlerData *); // drop scheme and close connection
 };
 
 CWT_NS_END

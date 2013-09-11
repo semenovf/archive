@@ -15,7 +15,7 @@ class Debby
 public:
 	enum TypeEnum
 	{
-		  TypeUnknown
+		  TypeNull
 		, TypeBool
 		, TypeString
 		, TypeInteger

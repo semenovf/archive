@@ -11,71 +11,62 @@
 #include <cwt/string.hpp>
 #include <cwt/shared_ptr.hpp>
 #include <cwt/unitype.hpp>
-#include <cwt/hash.hpp>
+#include <cwt/orderedhash.hpp>
+#include <cwt/debby.hpp>
 #include <cwt/debby/dbh.hpp>
-
-/*  Usage:
-
-	Scheme scheme;
-	Table table_0 = scheme.addTable("TableName0");
-	Table table_1 = scheme.addTable("TableName1");
-	...
-	Table table_N = scheme.addTable("TableNameN");
-
-	if (!scheme.deploy("sqlite://uri")) {
-		// Error
-	}
-
-	...
-
-	scheme = Scheme::open("sqlite://uri");
-	Table table_M = scheme.addTable("TableNameM");
-
-	...
-
-	scheme = Debby::scheme(String("sqlite://uri"));
-	scheme.delete();
-
- */
 
 CWT_NS_BEGIN
 
-class DLL_API Scheme
+namespace debby {
+
+class DLL_API Field
 {
 public:
-	Scheme() : m_d(new SharedData) {}
-	Scheme(const String & uri);
-
-	Scheme(const Scheme & other) : m_d(other.m_d) {}
-	Scheme & operator = (const Scheme & other);
-
-	bool opened() const { return m_d->dbh != nullptr ? true : false; }
-	bool deploy(const String & uri);
+	Field() : m_type(Debby::TypeNull) {}
+	void setBoolean ();
+	void setNumber (ulong_t max);
+	void setNumber (long_t min, long_t max);
+	void setNumber (double min, double max);
 
 private:
-	struct SharedData
-	{
-		DbHandler * dbh;
-
-		SharedData  () : dbh(nullptr) {}
-		~SharedData () {
-			if (dbh) {
-				dbh->close();
-				delete dbh;
-				dbh = nullptr;
-			}
-		}
-		SharedData  (const SharedData & other) : dbh(other.dbh) {}
-	};
-
-	shareable<SharedData> m_d;
+	Debby::TypeEnum m_type;
 };
 
-inline Scheme & Scheme::operator = (const Scheme & other)
+class DLL_API Table
 {
-	m_d = other.m_d;
-	return *this;
-}
+	typedef OrderedHash<String, shared_ptr<Field> > Fields;
+public:
+	Table () : m_fields() {}
+	Field * addField (const String & name);
+private:
+	Fields m_fields;
+};
+
+
+class DLL_API Scheme
+{
+	typedef OrderedHash<String, shared_ptr<Table> > Tables;
+	CWT_DENY_COPY(Scheme);
+public:
+	Scheme () : m_dbh(nullptr) {}
+	Scheme (const String & uri) : m_dbh(nullptr) { open(uri); }
+
+	void close ();
+	bool open (const String & uri);
+	bool opened () const { return m_dbh == nullptr ? false : m_dbh->opened(); }
+
+	Table * addTable (const String & name);
+
+	// bool populate(); // populate from scheme
+	bool deploy ();
+	bool drop ();
+
+private:
+	DbHandler * m_dbh;
+	Tables      m_tables;
+};
+
+} // namespace debby
 
 CWT_NS_END
 

@@ -18,7 +18,7 @@ class DebbyFieldSpec
 public:
 	DebbyFieldSpec()
 		: name()
-		, type(Debby::TypeUnknown)
+		, type(Debby::TypeNull)
 		, pk(false)
 		, autoinc(false)
 		, notnull(true)

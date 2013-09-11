@@ -9,19 +9,21 @@
 #include "../include/cwt/debby/sth.hpp"
 #include <cwt/dl.hpp>
 #include <cwt/logger.hpp>
-#include <cwt/mt.hpp>
+//#include <cwt/mt.hpp>
 #include <cwt/safeformat.hpp>
 #include <cwt/uri.hpp>
 
 CWT_NS_BEGIN
 
 static const char * __db_driver_ctor_sym = "__open__";
-static CWT_DEFAULT_MT_POLICY g_mutex;
+//static CWT_DEFAULT_MT_POLICY g_mutex;
 
 DbHandler * DbHandler::open (const String & uri_str)
 {
+/*
 	static CWT_DEFAULT_MT_POLICY mutex;
 	AutoLock<> locker(& mutex);
+*/
 
 	DbHandler::driver_ctor db_driver_ctor;
 	Uri uri;
@@ -72,10 +74,27 @@ DbHandler * DbHandler::open (const String & uri_str)
 	return dbh;
 }
 
-void DbHandler::close ()
+
+bool DbHandler::dropScheme (DbHandler * dbh)
 {
+/*
 	static CWT_DEFAULT_MT_POLICY mutex;
 	AutoLock<> locker(& mutex);
+*/
+	// Drop scheme (connection closed automatically)
+	if (dbh->m_dbh->driver->dropScheme(dbh->m_dbh)) {
+		dbh->m_dbh = nullptr;
+		return true;
+	}
+	return false;
+}
+
+void DbHandler::close ()
+{
+/*
+	static CWT_DEFAULT_MT_POLICY mutex;
+	AutoLock<> locker(& mutex);
+*/
 
 	if (m_dbh) {
 		m_dbh->driver->close(m_dbh);

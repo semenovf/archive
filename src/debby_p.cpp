@@ -75,7 +75,7 @@ String Debby::Impl::comment(const DebbyFieldSpec & spec)
 {
 	String r;
 
-	CWT_ASSERT(spec.type != Debby::TypeUnknown);
+	CWT_ASSERT(spec.type != Debby::TypeNull);
 
 	if (spec.ref.isEmpty()) {
 
@@ -364,7 +364,7 @@ String Debby::Impl::generateCxxTable(const String & name, const Vector<DebbyFiel
 	while (it != itEnd) {
 		String type;
 
-		CWT_ASSERT(it->type != Debby::TypeUnknown);
+		CWT_ASSERT(it->type != Debby::TypeNull);
 
 		switch (it->type) {
 		case Debby::TypeBool:

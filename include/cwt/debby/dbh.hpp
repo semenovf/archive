@@ -25,6 +25,9 @@ public:
 	~DbHandler() { close(); }
 
 	static DbHandler *      open (const String & uri);
+	static bool             dropScheme (DbHandler * dbh);
+
+	bool                    opened() const { return m_dbh != nullptr; }
 	void                    close ();
 
 	bool                    query (const String & sql) { return m_dbh->driver->query(*m_dbh, sql); }   // cannot be used for statements that contain binary data
