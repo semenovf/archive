@@ -1,10 +1,10 @@
 #include <cwt/test.h>
-#include <cwt/dbd.hpp>
-#include <cwt/dbh.hpp>
-#include <cwt/sth.hpp>
 #include <cwt/safeformat.hpp>
 #include <cwt/filesystem.hpp>
 #include <cwt/shared_ptr.hpp>
+#include <cwt/debby/dbd.hpp>
+#include <cwt/debby/dbh.hpp>
+#include <cwt/debby/sth.hpp>
 
 using namespace cwt;
 

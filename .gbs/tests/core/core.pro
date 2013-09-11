@@ -4,13 +4,13 @@ include($$(GBS_HOME)/common-app.pri)
 
 TARGET = test_debby_sqlite3
 
-INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../cwt-common/include
-INCLUDEPATH += ../../../cwt-core/include
-INCLUDEPATH += ../../../cwt-debby/include
-INCLUDEPATH += ../../../cwt-fs/include
+INCLUDEPATH += ../../../include
+INCLUDEPATH += ../../../../cwt-common/include
+INCLUDEPATH += ../../../../cwt-core/include
+INCLUDEPATH += ../../../../cwt-debby/include
+INCLUDEPATH += ../../../../cwt-fs/include
 
-SOURCES += ../../tests/test.cpp
+SOURCES += ../../../tests/core.cpp
 
 unix {
 #    QMAKE_CXXFLAGS += -pg
