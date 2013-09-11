@@ -353,4 +353,37 @@ inline shared_ptr<T> const_pointer_cast (const shared_ptr<T1> & r)
 
 CWT_NS_END
 
+/**
+@example Pattern of class based on shareable template
+
+class ShareableClass
+{
+public:
+	ShareableClass(const ShareableClass & other) : m_d(other.m_d) {}
+	ShareableClass & operator = (const ShareableClass & other);
+
+private:
+	struct SharedData
+	{
+		// SharedData members
+		...
+
+		SharedData  () {}
+		~SharedData () {
+			// destroy SharedData members
+			...
+		}
+		SharedData  (const SharedData & other) { / * clone shared data * / }
+		SharedData & operator (const SharedData & other) { / * clone shared data * / return *this; }
+	};
+	cwt::shareable<SharedData> m_d;
+};
+
+ShareableClass & ShareableClass::operator = (const ShareableClass & other)
+{
+	m_d = other.m_d;
+	return *this;
+}
+*/
+
 #endif /* __CWT_SHARED_PTR_HPP__ */

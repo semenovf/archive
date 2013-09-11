@@ -69,7 +69,7 @@ DLL_API uint_t hash_uchars(const UChar * p, size_t len, uint_t seed)
 
 HashData::Node * HashData::allocNode()
 {
-	return reinterpret_cast<HashData::Node*>(malloc(entrySize));
+	return reinterpret_cast<HashData::Node *>(malloc(entrySize));
 }
 
 void HashData::freeNode(HashData::Node * node)
@@ -90,7 +90,7 @@ HashData::~HashData()
 		while (rover != nullptr) {
 			next = rover->next;
 			free_node_helper(rover);
-			free(rover);
+			freeNode(rover);
 			rover = next;
 		}
 	}
@@ -181,6 +181,7 @@ HashData* HashData::clone()
 		hd->nentries   = nentries;
 		hd->primeIndex = primeIndex;
 		hd->nodeTable.alloc(orig_size);
+		hd->nodeTable.bzero();
 
 		for (size_t i = 0; i < orig_size; ++i) {
 			rover = nodeTable[i];

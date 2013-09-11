@@ -16,14 +16,15 @@ using namespace cwt;
 
 void test_bytearray_hash()
 {
+	static const int __ENTRY_COUNT  = 10000;
     Hash<ByteArray, ByteArray> hash;
-    for(int i = 0; i < 10000; i++) {
+    for(int i = 0; i < __ENTRY_COUNT; i++) {
     	char str[64];
     	sprintf(str, "Test byte array %d", i);
     	hash.insert(ByteArray(str), ByteArray(str));
     }
 
-    for(int i = 0; i < 10000; i++) {
+    for(int i = 0; i < __ENTRY_COUNT; i++) {
     	char str[64];
     	sprintf(str, "Test byte array %d", i);
     	ByteArray sample(str);
@@ -34,9 +35,9 @@ void test_bytearray_hash()
 }
 
 
-static const int __ENTRY_COUNT  = 1; //2000
 void test_string_hash()
 {
+	static const int __ENTRY_COUNT  = 2000;
     Hash<String, String> hash;
     for(int i = 0; i < __ENTRY_COUNT; i++) {
     	String str(_Fr("Test string %d") % i);
@@ -115,11 +116,9 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(12000);
+    CWT_BEGIN_TESTS(12020);
 
-    if(false) {
     test_bytearray_hash();
-    }
     test_string_hash();
     test_copy_pod_hash();
     test_copy_hash();
