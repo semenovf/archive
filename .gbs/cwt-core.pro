@@ -13,6 +13,7 @@ SUBDIRS  = cwt-core   \
     tests/bitarray    \
     tests/bytearray   \
     tests/bytestream  \
+    tests/date        \
     tests/dl          \
     tests/hash        \
     tests/fsm         \
