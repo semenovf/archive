@@ -11,7 +11,7 @@
 CWT_NS_BEGIN
 
 
-UniType::Data::~Data()
+UniType::SharedData::~SharedData()
 {
 	switch(type) {
 	case StringValue:
@@ -19,6 +19,15 @@ UniType::Data::~Data()
 		break;
 	case BlobValue:
 		delete d.blob_val;
+		break;
+	case TimeValue:
+		delete d.time_val;
+		break;
+	case DateValue:
+		delete d.date_val;
+		break;
+	case DateTimeValue:
+		delete d.datetime_val;
 		break;
 	case ObjectValue:
 		delete d.object_val;
@@ -29,28 +38,45 @@ UniType::Data::~Data()
 }
 
 
-UniType::Data* UniType::clone()
+UniType::SharedData* UniType::clone()
 {
-	UniType::Data *d = NULL;
-	d = new Data();
+	UniType::SharedData *d = NULL;
+	d = new SharedData();
 	d->type = m_d->type;
 
 	switch(m_d->type) {
 	case UniType::NullValue:
 		break;
+
 	case UniType::StringValue:
 		*d->d.string_val = *m_d->d.string_val;
 		break;
+
 	case UniType::BlobValue:
 		*d->d.blob_val = *m_d->d.blob_val;
 		break;
+
 	case UniType::FloatValue:
 	case UniType::DoubleValue:
 		d->d.double_val = m_d->d.double_val;
 		break;
+
+	case TimeValue:
+		*d->d.time_val = *m_d->d.time_val;
+		break;
+
+	case DateValue:
+		*d->d.date_val = *m_d->d.date_val;
+		break;
+
+	case DateTimeValue:
+		*d->d.datetime_val = *m_d->d.datetime_val;
+		break;
+
 	case UniType::ObjectValue:
 		*d->d.object_val = *m_d->d.object_val;
 		break;
+
 	case UniType::BoolValue:
 	case UniType::LongValue:
 	default:
@@ -69,7 +95,7 @@ UniType::Data* UniType::clone()
  *
  * @param s string value.
  */
-void UniType::setFromString (const String &s)
+void UniType::setFromString (const String & s)
 {
 	bool ok;
 	// check if string is integer
@@ -91,6 +117,8 @@ void UniType::setFromString (const String &s)
 		return;
 	}
 
+	// TODO need to set from string Time, Date and DateTime instances
+
 	setString(s);
 }
 
@@ -105,22 +133,24 @@ void UniType::setFromString (const String &s)
  * 	if unitype is FloatValue and it equals to 0.0;
  * 	if unitype is DoubleValue and it equals to 0.0;
  * 	if unitype is integer value and it equals to 0;
+ * 	if unitype is Time, Date or DateTime value and it is invalid;
+ * 	if unitype is ObjectValue is null;
  * 	in other cases return @c true.
  */
-bool UniType::toBool(bool *ok) const
+bool UniType::toBool(bool * ok) const
 {
-	bool result = true;
+	bool r = true;
 
 	switch(m_d->type) {
 	case UniType::NullValue:
-		result = false;
+		r = false;
 		break;
 	case UniType::StringValue:
 		if (m_d->d.string_val->isEmpty()
 				|| m_d->d.string_val->compare(String("no")) == 0
 				|| m_d->d.string_val->compare(String("false")) == 0
 				|| m_d->d.string_val->compare(String("0")) == 0) {
-			result = false;
+			r = false;
 		}
 		break;
 	case UniType::BlobValue:
@@ -128,38 +158,56 @@ bool UniType::toBool(bool *ok) const
 				|| strcmp(m_d->d.blob_val->data(), "no") == 0
 				|| strcmp(m_d->d.blob_val->data(), "false") == 0
 				|| strcmp(m_d->d.blob_val->data(), "0") == 0) {
-			result = false;
+			r = false;
 		}
 		break;
+
 	case UniType::FloatValue:
 	case UniType::DoubleValue:
 		if (m_d->d.double_val == 0.0f)
-			result = false;
+			r = false;
 		break;
+
 	case UniType::BoolValue:
 	case UniType::LongValue:
 		if (m_d->d.long_val == 0L)
-			result = false;
+			r = false;
 		break;
+
+	case TimeValue:
+		if (! m_d->d.time_val->isValid())
+			r = false;
+		break;
+
+	case DateValue:
+		if (! m_d->d.date_val->isValid())
+			r = false;
+		break;
+
+	case DateTimeValue:
+		if (! m_d->d.datetime_val->isValid())
+			r = false;
+		break;
+
 
 	case UniType::ObjectValue:
 	default:
 		if (!(m_d->d.object_val))
-			result = false;
+			r = false;
 		break;
 	}
 
 	if (ok)
 		*ok = true;
 
-	return result;
+	return r;
 }
 
 template <typename int_type>
 int_type to_int_type(const UniType &ut, int_type min, int_type max, bool *ok)
 {
 	bool tmpOk;
-	long_t result = ut.toLong(&tmpOk);
+	long_t result = ut.toLong(& tmpOk);
 
 	if (tmpOk && result >= long_t(min) && result <= long_t(max)) {
 		tmpOk = true;
@@ -171,10 +219,10 @@ int_type to_int_type(const UniType &ut, int_type min, int_type max, bool *ok)
 }
 
 template <typename uint_type>
-uint_type to_uint_type(const UniType &ut, uint_type max, bool *ok)
+uint_type to_uint_type(const UniType & ut, uint_type max, bool *ok)
 {
 	bool tmpOk;
-	ulong_t result = ut.toULong(&tmpOk);
+	ulong_t result = ut.toULong(& tmpOk);
 
 	if (tmpOk && result <= ulong_t(max)) {
 		tmpOk = true;
@@ -185,7 +233,7 @@ uint_type to_uint_type(const UniType &ut, uint_type max, bool *ok)
 	return uint_type(result);
 }
 
-sbyte_t UniType::toSByte(bool *ok) const
+sbyte_t UniType::toSByte(bool * ok) const
 {
 	return to_int_type<sbyte_t>(*this, CWT_SBYTE_MIN, CWT_SBYTE_MAX, ok);
 }
@@ -215,33 +263,33 @@ uint_t UniType::toUInt(bool *ok) const
 	return to_uint_type<uint_t>(*this, CWT_UINT_MAX, ok);
 }
 
-long_t UniType::toLong(bool *ok) const
+long_t UniType::toLong(bool * ok) const
 {
-	long_t result = long_t(0);
+	long_t r = long_t(0);
 	bool tmpOk = false;
 
 	switch(m_d->type) {
 	case UniType::NullValue:
 		break;
 	case UniType::StringValue:
-		result = m_d->d.string_val->toLong(&tmpOk, 0);
+		r = m_d->d.string_val->toLong(& tmpOk, 0);
 		break;
 	case UniType::BlobValue:
-		result = m_d->d.blob_val->toLong(&tmpOk, 0);
+		r = m_d->d.blob_val->toLong(& tmpOk, 0);
 		break;
 	case UniType::FloatValue:
 	case UniType::DoubleValue:
 		if (m_d->d.double_val >= double(CWT_LONG_MIN) && m_d->d.double_val <= double(CWT_LONG_MAX)) {
-			result = long_t(m_d->d.double_val);
+			r = long_t(m_d->d.double_val);
 			tmpOk = true;
 		}
 		break;
 	case UniType::BoolValue:
 	case UniType::LongValue:
-		result = m_d->d.long_val;
+		r = m_d->d.long_val;
 		tmpOk = true;
 		break;
-	case UniType::ObjectValue:
+
 	default:
 		break;
 	}
@@ -249,77 +297,76 @@ long_t UniType::toLong(bool *ok) const
 	if (ok)
 		*ok = tmpOk;
 
-	return result;
+	return r;
 }
 
-ulong_t UniType::toULong(bool *ok) const
+ulong_t UniType::toULong(bool * ok) const
 {
-	ulong_t result = long_t(0);
+	ulong_t r = long_t(0);
 	bool tmpOk = false;
 
 	switch(m_d->type) {
 	case UniType::NullValue:
 		break;
 	case UniType::StringValue:
-		result = m_d->d.string_val->toULong(&tmpOk, 0);
+		r = m_d->d.string_val->toULong(&tmpOk, 0);
 		break;
 	case UniType::BlobValue:
-		result = m_d->d.blob_val->toULong(&tmpOk, 0);
+		r = m_d->d.blob_val->toULong(&tmpOk, 0);
 		break;
 	case UniType::FloatValue:
 	case UniType::DoubleValue:
 		if ((m_d->d.double_val >= double(CWT_LONG_MIN) && m_d->d.double_val <= double(CWT_LONG_MAX))
 				|| (m_d->d.double_val >= 0.0f && m_d->d.double_val <= double(CWT_ULONG_MAX))) {
-			result = ulong_t(m_d->d.double_val);
+			r = ulong_t(m_d->d.double_val);
 			tmpOk = true;
 		}
 		break;
 	case UniType::BoolValue:
 	case UniType::LongValue:
-		result = ulong_t(m_d->d.long_val);
+		r = ulong_t(m_d->d.long_val);
 		tmpOk = true;
 		break;
-	case UniType::ObjectValue:
+
 	default:
 		break;
-
 	}
 
 	if (ok)
 		*ok = tmpOk;
 
-	return result;
+	return r;
 }
 
-float UniType::toFloat(bool *ok) const
+float UniType::toFloat(bool * ok) const
 {
-	float result = 0.0f;
+	float r = 0.0f;
 	bool tmpOk = false;
 
 	switch(m_d->type) {
 	case UniType::NullValue:
 		break;
 	case UniType::StringValue:
-		result = m_d->d.string_val->toFloat(&tmpOk);
+		r = m_d->d.string_val->toFloat(& tmpOk);
 		break;
 	case UniType::BlobValue:
-		result = m_d->d.blob_val->toFloat(&tmpOk);
+		r = m_d->d.blob_val->toFloat(& tmpOk);
 		break;
 	case UniType::FloatValue:
 	case UniType::DoubleValue:
 		if ((m_d->d.double_val >= double(CWT_FLOAT_MIN) && m_d->d.double_val <= double(CWT_FLOAT_MAX))) {
-			result = float(m_d->d.double_val);
+			r = float(m_d->d.double_val);
 			tmpOk = true;
 		}
 		break;
 	case UniType::BoolValue:
 	case UniType::LongValue:
 		if ((double(m_d->d.long_val) >= CWT_FLOAT_MIN && double(m_d->d.long_val) <= CWT_FLOAT_MAX)) {
-			result = float(m_d->d.long_val);
+			r = float(m_d->d.long_val);
 			tmpOk = true;
 		}
 		break;
-	case UniType::ObjectValue:
+
 	default:
 		break;
 	}
@@ -327,34 +374,34 @@ float UniType::toFloat(bool *ok) const
 	if (ok)
 		*ok = tmpOk;
 
-	return result;
+	return r;
 }
 
 double UniType::toDouble(bool *ok) const
 {
-	double result = 0.0f;
+	double r = 0.0f;
 	bool tmpOk = false;
 
 	switch(m_d->type) {
 	case UniType::NullValue:
 		break;
 	case UniType::StringValue:
-		result = m_d->d.string_val->toDouble(&tmpOk);
+		r = m_d->d.string_val->toDouble(&tmpOk);
 		break;
 	case UniType::BlobValue:
-		result = m_d->d.blob_val->toDouble(&tmpOk);
+		r = m_d->d.blob_val->toDouble(&tmpOk);
 		break;
 	case UniType::FloatValue:
 	case UniType::DoubleValue:
-		result = m_d->d.double_val;
+		r = m_d->d.double_val;
 		tmpOk = true;
 		break;
 	case UniType::BoolValue:
 	case UniType::LongValue:
-		result = double(m_d->d.long_val);
+		r = double(m_d->d.long_val);
 		tmpOk = true;
 		break;
-	case UniType::ObjectValue:
+
 	default:
 		break;
 	}
@@ -362,23 +409,23 @@ double UniType::toDouble(bool *ok) const
 	if (ok)
 		*ok = tmpOk;
 
-	return result;
+	return r;
 }
 
 UChar UniType::toUChar(bool *ok) const
 {
 	bool tmpOk;
-	UChar result(to_uint_type<uint_t>(*this, UChar::MaxCodePoint, &tmpOk));
+	UChar r(to_uint_type<uint_t>(*this, UChar::MaxCodePoint, &tmpOk));
 
 	if (ok)
 		*ok = tmpOk;
 
-	return result;
+	return r;
 }
 
 String UniType::toString(bool *ok) const
 {
-	String result;
+	String r;
 
 	if (ok)
 		*ok = false;
@@ -391,35 +438,48 @@ String UniType::toString(bool *ok) const
 	case UniType::NullValue:
 		break;
 	case UniType::BoolValue:
-		result = m_d->d.long_val ? String("true") : String("false");
+		r = m_d->d.long_val ? String("true") : String("false");
 		break;
 	case UniType::StringValue:
-		result = *m_d->d.string_val;
+		r = *m_d->d.string_val;
 		break;
 	case UniType::BlobValue:
-		result = String::fromUtf8(*m_d->d.blob_val);
+		r = String::fromUtf8(*m_d->d.blob_val);
 		break;
 	case UniType::FloatValue:
-		result = String::number(float(m_d->d.double_val));
+		r = String::number(float(m_d->d.double_val));
 		break;
 	case UniType::DoubleValue:
-		result = String::number(m_d->d.double_val);
+		r = String::number(m_d->d.double_val);
 		break;
+
+	case UniType::TimeValue:
+		r = m_d->d.time_val->toString();
+		break;
+
+	case UniType::DateValue:
+		r = m_d->d.date_val->toString();
+		break;
+
+	case UniType::DateTimeValue:
+		r = m_d->d.datetime_val->toString();
+		break;
+
 	case UniType::LongValue:
 	default:
-		result = String::number(m_d->d.long_val);
+		r = String::number(m_d->d.long_val);
 		break;
 	}
 
 	if (ok)
 		*ok = true;
 
-	return result;
+	return r;
 }
 
-ByteArray UniType::toBlob(bool *ok) const
+ByteArray UniType::toBlob(bool * ok) const
 {
-	ByteArray result;
+	ByteArray r;
 
 	if (ok)
 		*ok = false;
@@ -433,28 +493,41 @@ ByteArray UniType::toBlob(bool *ok) const
 		break;
 	case UniType::StringValue:
 		CWT_ASSERT(m_d->d.string_val);
-		result = ByteArray(m_d->d.string_val->data(), m_d->d.string_val->size());
+		r = ByteArray(m_d->d.string_val->data(), m_d->d.string_val->size());
 		break;
 	case UniType::BlobValue:
-		result = *m_d->d.blob_val;
+		r = *m_d->d.blob_val;
 		break;
 	case UniType::FloatValue:
-		result = ByteArray::number(float(m_d->d.double_val));
+		r = ByteArray::number(float(m_d->d.double_val));
 		break;
 	case UniType::DoubleValue:
-		result = ByteArray::number(m_d->d.double_val);
+		r = ByteArray::number(m_d->d.double_val);
 		break;
+
+	case UniType::TimeValue:
+		r = ByteArray::number(m_d->d.time_val->millis());
+		break;
+
+	case UniType::DateValue:
+		r = ByteArray::number(m_d->d.date_val->julianDay());
+		break;
+
+	case UniType::DateTimeValue:
+		r = ByteArray::number(m_d->d.datetime_val->millisSinceEpoch());
+		break;
+
 	case UniType::BoolValue:
 	case UniType::LongValue:
 	default:
-		result = ByteArray::number(m_d->d.long_val);
+		r = ByteArray::number(m_d->d.long_val);
 		break;
 	}
 
 	if (ok)
 		*ok = true;
 
-	return result;
+	return r;
 }
 
 String UniType::toStringType(UniType::TypeEnum t)
@@ -467,6 +540,9 @@ String UniType::toStringType(UniType::TypeEnum t)
 		, "Double"
 		, "String"
 		, "Blob"
+		, "Time"
+		, "Date"
+		, "DateTime"
 		, "Object"
 	};
 

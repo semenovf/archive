@@ -6,6 +6,8 @@
  */
 
 #include "../include/cwt/date.hpp"
+#include "../include/cwt/math.hpp"
+#include "../include/cwt/safeformat.hpp"
 
 // Sources:
 // 		http://en.wikipedia.org/wiki/Julian_day ,
@@ -30,25 +32,6 @@ static inline Date __valid_date(int y, int m, int d)
     return r;
 }
 
-// Integer Division (Floor function)
-// http://mathworld.wolfram.com/IntegerDivision.html
-// Floor function symbols: |_a/b_| or a\b
-static inline long_t __floor_div(long_t a, long_t b)
-{
-    return (a - (a < 0 ? b-1 : 0)) / b;
-}
-
-static inline long_t __floor_div(long_t a, int b)
-{
-    return (a - (a < 0 ? b-1 : 0)) / b;
-}
-
-static inline int __floor_div(int a, int b)
-{
-    return (a - (a < 0 ? b-1 : 0)) / b;
-}
-
-
 /**
  * @brief Calculates Julian Day (JD) from Gregorian calendar date
  *
@@ -62,17 +45,17 @@ long_t Date::julianDay (int year, int month, int day) // static
 	if (year < 0) // there is no 0 year
 		++year;
 
-	int    a = __floor_div(14 - month, 12);
+	int    a = Math::floorDiv(14 - month, 12);
 	long_t y = long_t(year) + 4800 - a;
 	int    m = month + 12 * a - 3;
 
 	// Gregorian calendar: >= 15.10.1582
 	if (year > 1582 || (year == 1582 && (month > 10 || (month == 10 && day >= 15)))) {
-		return day + __floor_div(153 * m + 2, 5) + 365 * y + __floor_div(y, 4) - __floor_div(y, 100) + __floor_div(y, 400) - 32045;
+		return day + Math::floorDiv(153 * m + 2, 5) + 365 * y + Math::floorDiv(y, 4) - Math::floorDiv(y, 100) + Math::floorDiv(y, 400) - 32045;
 	}
 	// Julian calendar: <= 4.10.1582
 	else if (year < 1582 || (year == 1582 && (month < 10 || (month == 10 && day <= 4)))) {
-		return day + __floor_div(153 * m + 2, 5) + 365 * y + __floor_div(y, 4) - 32083;
+		return day + Math::floorDiv(153 * m + 2, 5) + 365 * y + Math::floorDiv(y, 4) - 32083;
 	}
 
 	return NullJulianDay;
@@ -96,20 +79,20 @@ void Date::fromJulianDay (long_t julianDay, int * yearPtr, int * monthPtr, int *
 	// Gregorian calendar
 	if (julianDay >= 2299161) {
 		long_t a = julianDay + 32044;
-		b = __floor_div(4 * a + 3, 146097);
-		b = a - __floor_div(146097 * b, 4);
+		b = Math::floorDiv(4 * a + 3, 146097);
+		b = a - Math::floorDiv(146097 * b, 4);
 	} else {
 		b = 0;
 		c = julianDay + 32082;
 	}
 
-    int    d = __floor_div(4 * c + 3, 1461);
-    int    e = c - __floor_div(1461 * d, 4);
-    int    m = __floor_div(5 * e + 2, 153);
+    int    d = Math::floorDiv(4 * c + 3, 1461);
+    int    e = c - Math::floorDiv(1461 * d, 4);
+    int    m = Math::floorDiv(5 * e + 2, 153);
 
-    int    day = e - __floor_div(153 * m + 2, 5) + 1;
-    int    month = m + 3 - 12 * __floor_div(m, 10);
-    int    year = 100 * b + d - 4800 + __floor_div(m, 10);
+    int    day = e - Math::floorDiv(153 * m + 2, 5) + 1;
+    int    month = m + 3 - 12 * Math::floorDiv(m, 10);
+    int    year = 100 * b + d - 4800 + Math::floorDiv(m, 10);
 
     if (year <= 0)
         --year ;
@@ -343,6 +326,24 @@ int Date::day () const
     int d;
     fromJulianDay(m_jd, nullptr, nullptr, & d);
     return d;
+}
+
+
+/**
+ * @brief Converts date to string.
+ *
+ * @details The string format corresponds to the ISO 8601 specification,
+ *          taking the form YYYY-MM-DD, where YYYY is the year,
+ *          MM is the month of the year (between 01 and 12),
+ *          and DD is the day of the month between 01 and 31.
+ *
+ * @return The date as string.
+ */
+String Date::toString () const
+{
+	return (year() < 0 || year() > 9999)
+			? String()
+			: String(_F("%4d-%2d-%2d") % year() % month() % day());
 }
 
 

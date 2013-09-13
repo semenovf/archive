@@ -22,6 +22,7 @@ void test_min_max (void)
 {
 	CWT_TEST_OK(Date::MinJulianDay == Date::julianDay(CWT_INT_MIN,  1,  1));
 	CWT_TEST_OK(Date::MaxJulianDay == Date::julianDay(CWT_INT_MAX, 12, 31));
+	CWT_TEST_OK(Date::EpochJulianDay == Date::julianDay(1970, 1, 1));
 }
 
 void test_jd (void)
@@ -107,7 +108,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(44);
+	CWT_BEGIN_TESTS(45);
 
 	test_min_max();
 	test_jd();

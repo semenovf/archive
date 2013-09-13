@@ -17,11 +17,11 @@
 
 CWT_NS_BEGIN
 
-DLL_API uint_t hash_bytes(const byte_t *p, size_t len, uint_t seed);
-DLL_API uint_t hash_uchars(const UChar *p, size_t len, uint_t seed);
-inline uint_t hash_func(const String &key, uint_t seed)
+DLL_API uint_t hash_bytes(const byte_t * p, size_t len, uint_t seed);
+DLL_API uint_t hash_uchars(const UChar * p, size_t len, uint_t seed);
+inline uint_t hash_func(const String & key, uint_t seed)
 {
-	return hash_bytes(reinterpret_cast<const byte_t*>(key.data()), key.size(), seed);
+	return hash_bytes(reinterpret_cast<const byte_t *>(key.data()), key.size(), seed);
 }
 
 
@@ -46,7 +46,7 @@ inline uint_t hash_func(long_t key, uint_t seed = 0) { return hash_func((ulong_t
 //#pragma warning( push )
 //#pragma warning( disable : 4311 ) // disable pointer truncation warning
 //#endif
-template <typename T> inline uint_t hash_func(const T *key, uint_t seed = 0)
+template <typename T> inline uint_t hash_func(const T * key, uint_t seed = 0)
 {
     return hash_func(reinterpret_cast<uintptr_t>(key), seed);
 }
@@ -54,7 +54,7 @@ template <typename T> inline uint_t hash_func(const T *key, uint_t seed = 0)
 //#pragma warning( pop )
 //#endif
 
-template<typename T> inline uint_t hash_func(const T &t, uint_t seed) { return (hash_func(t) ^ seed); }
+template<typename T> inline uint_t hash_func(const T & t, uint_t seed) { return (hash_func(t) ^ seed); }
 
 struct HashData
 {
