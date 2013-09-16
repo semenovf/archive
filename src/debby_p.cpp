@@ -18,6 +18,7 @@ static const String __DEBBY_JV_SCHEME ("-scheme");
 
 static const String __DEBBY_BOOL      ("bool");
 static const String __DEBBY_STRING    ("string");
+static const String __DEBBY_BLOB      ("blob");
 static const String __DEBBY_INT       ("int");
 static const String __DEBBY_FLOAT     ("float");
 static const String __DEBBY_DOUBLE    ("double");
@@ -29,6 +30,7 @@ static const String __DEBBY_REF       ("ref");
 
 static const String __CXX_BOOL        ("bool");
 static const String __CXX_STRING      ("String");
+static const String __CXX_BLOB        ("ByteArray");
 static const String __CXX_INT         ("long_t");
 static const String __CXX_INT8        ("int8_t");
 static const String __CXX_INT16       ("int16_t");
@@ -39,10 +41,10 @@ static const String __CXX_UINT16      ("uint16_t");
 static const String __CXX_UINT32      ("uint32_t");
 static const String __CXX_UINT64      ("uint64_t");
 static const String __CXX_DOUBLE      ("double");
-static const String __CXX_TIME        ("ulong_t");
-static const String __CXX_DATE        (__CXX_TIME);
-static const String __CXX_DATETIME    (__CXX_TIME);
-static const String __CXX_TIMESTAMP   (__CXX_TIME);
+static const String __CXX_TIME        ("Time");
+static const String __CXX_DATE        ("Date");
+static const String __CXX_DATETIME    ("DateTime");
+static const String __CXX_TIMESTAMP   (__CXX_DATETIME);
 
 Debby::Debby() : pimpl(new Debby::Impl)
 {
@@ -75,42 +77,45 @@ String Debby::Impl::comment(const DebbyFieldSpec & spec)
 {
 	String r;
 
-	CWT_ASSERT(spec.type != Debby::TypeNull);
+	CWT_ASSERT(spec.type != DebbyNull);
 
 	if (spec.ref.isEmpty()) {
 
 		switch(spec.type) {
-		case Debby::TypeBool:
+		case DebbyBool:
 			r.append(__DEBBY_BOOL);
 			break;
-		case Debby::TypeString:
+		case DebbyString:
 			r.append(__DEBBY_STRING);
 			break;
-		case Debby::TypeInteger:
+		case DebbyBlob:
+			r.append(__DEBBY_BLOB);
+			break;
+		case DebbyInteger:
 			r.append(__DEBBY_INT);
 			if (spec.opt1.min || spec.opt2.max)
 				r.append(_F("(%d, %u)") % spec.opt1.min % spec.opt2.max);
 			break;
-		case Debby::TypeFloat:
+		case DebbyFloat:
 			r.append(__DEBBY_FLOAT);
 			if (spec.opt1.prec || spec.opt2.scale)
 				r.append(_F("(%d, %u)") % spec.opt1.prec % spec.opt2.scale);
 			break;
-		case Debby::TypeDouble:
+		case DebbyDouble:
 			r.append(__DEBBY_DOUBLE);
 			if (spec.opt1.prec || spec.opt2.scale)
 				r.append(_F("(%d, %u)") % spec.opt1.prec % spec.opt2.scale);
 			break;
-		case Debby::TypeDate:
+		case DebbyDate:
 			r.append(__DEBBY_DATE);
 			break;
-		case Debby::TypeTime:
+		case DebbyTime:
 			r.append(__DEBBY_TIME);
 			break;
-		case Debby::TypeDateTime:
+		case DebbyDateTime:
 			r.append(__DEBBY_DATETIME);
 			break;
-		case Debby::TypeTimeStamp:
+		case DebbyTimeStamp:
 			r.append(__DEBBY_TIMESTAMP);
 			break;
 		default:
@@ -226,11 +231,11 @@ bool Debby::Impl::parseType(const String & type, DebbyFieldSpec & spec) const
 
 	if (type == __DEBBY_BOOL) {
 
-		spec.type = Debby::TypeBool;
+		spec.type = DebbyBool;
 
 	} else if (type.startsWith(__DEBBY_STRING)) {
 
-		spec.type = Debby::TypeString;
+		spec.type = DebbyString;
 
 		if (parms.isEmpty()) {
 			spec.opt2.max = 0;
@@ -247,36 +252,40 @@ bool Debby::Impl::parseType(const String & type, DebbyFieldSpec & spec) const
 			return false;
 		}
 
+	} else if (type.startsWith(__DEBBY_BLOB)) {
+
+		spec.type = DebbyBlob;
+
 	} else if (type.startsWith(__DEBBY_INT)) {
 
-		spec.type = Debby::TypeInteger;
+		spec.type = DebbyInteger;
 		return parseNumericExtra(parms, spec);
 
 	} else if (type.startsWith(__DEBBY_FLOAT)) {
 
-		spec.type = Debby::TypeFloat;
+		spec.type = DebbyFloat;
 		return parseNumericExtra(parms, spec);
 
 	} else if (type.startsWith(__DEBBY_DOUBLE)) {
 
-		spec.type = Debby::TypeDouble;
+		spec.type = DebbyDouble;
 		return parseNumericExtra(parms, spec);
 
 	} else if (type == __DEBBY_DATE) {
 
-		spec.type = Debby::TypeDate;
+		spec.type = DebbyDate;
 
 	} else if (type == __DEBBY_TIME) {
 
-		spec.type = Debby::TypeTime;
+		spec.type = DebbyTime;
 
 	} else if (type == __DEBBY_DATETIME) {
 
-		spec.type = Debby::TypeDateTime;
+		spec.type = DebbyDateTime;
 
 	} else if (type == __DEBBY_TIMESTAMP) {
 
-		spec.type = Debby::TypeTimeStamp;
+		spec.type = DebbyTimeStamp;
 
 	} else if (type.startsWith(__DEBBY_REF)) {
 
@@ -364,32 +373,32 @@ String Debby::Impl::generateCxxTable(const String & name, const Vector<DebbyFiel
 	while (it != itEnd) {
 		String type;
 
-		CWT_ASSERT(it->type != Debby::TypeNull);
+		CWT_ASSERT(it->type != DebbyNull);
 
 		switch (it->type) {
-		case Debby::TypeBool:
+		case DebbyBool:
 			type = __CXX_BOOL;
 			break;
-		case Debby::TypeString:
+		case DebbyString:
 			type = __CXX_STRING;
 			break;
-		case Debby::TypeInteger:
+		case DebbyInteger:
 			type = __CXX_INT;
 			break;
-		case Debby::TypeFloat:
-		case Debby::TypeDouble:
+		case DebbyFloat:
+		case DebbyDouble:
 			type = __CXX_DOUBLE;
 			break;
-		case Debby::TypeDate:
+		case DebbyDate:
 			type = __CXX_DATE;
 			break;
-		case Debby::TypeTime:
+		case DebbyTime:
 			type = __CXX_TIME;
 			break;
-		case Debby::TypeDateTime:
+		case DebbyDateTime:
 			type = __CXX_DATETIME;
 			break;
-		case Debby::TypeTimeStamp:
+		case DebbyTimeStamp:
 			type = __CXX_TIMESTAMP;
 			break;
 		default:

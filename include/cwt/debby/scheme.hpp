@@ -17,45 +17,76 @@
 
 CWT_NS_BEGIN
 
-namespace debby {
+class DebbyTable;
 
-class DLL_API Field
+class DLL_API DebbyField
 {
 public:
-	Field() : m_type(Debby::TypeNull) {}
-	void setBoolean ();
-	void setNumber (ulong_t max);
-	void setNumber (long_t min, long_t max);
-	void setNumber (double min, double max);
+	DebbyField()
+		: m_type(DebbyNull)
+		, m_pk(false)
+		, m_autoinc(0)
+		, m_nullable(false)
+		, m_reftable() {}
+
+	DebbyField(DebbyTypeEnum type)
+		: m_type(type)
+		, m_pk(false)
+		, m_autoinc(0)
+		, m_nullable(false)
+		, m_reftable() {}
+
+	void setPk(bool b) { m_pk = b; }
+	void setAutoinc(int n) { m_autoinc = n; }
+	void setNullable(bool b) { m_nullable = b; }
+	void setRefTable(const String & reftable) { m_reftable = reftable; }
 
 private:
-	Debby::TypeEnum m_type;
+	DebbyTypeEnum m_type;
+	bool m_pk;
+	int m_autoinc;
+	bool m_nullable;
+	String m_reftable;
 };
 
-class DLL_API Table
+class DLL_API DebbyTable
 {
-	typedef OrderedHash<String, shared_ptr<Field> > Fields;
+	typedef OrderedHash<String, shared_ptr<DebbyField> > DebbyFields;
 public:
-	Table () : m_fields() {}
-	Field * addField (const String & name);
+	DebbyTable () : m_fields() {}
+	DebbyField * addBooleanField   (const String & name);
+	DebbyField * addNumberField    (const String & name, ulong_t max);
+	DebbyField * addNumberField    (const String & name, long_t min, long_t max);
+	DebbyField * addNumberField    (const String & name, double min, double max);
+	DebbyField * addStringField    (const String & name, size_t maxLength = CWT_SIZE_MAX);
+	DebbyField * addBlobField      (const String & name);
+	DebbyField * addDateField      (const String & name);
+	DebbyField * addTimeField      (const String & name);
+	DebbyField * addDateTimeField  (const String & name);
+	DebbyField * addTimeStampField (const String & name);
+	DebbyField * addRefField       (const String & name, const String & reftable);
+
 private:
-	Fields m_fields;
+	DebbyField * addField (const String & name, DebbyField * field);
+
+private:
+	DebbyFields m_fields;
 };
 
 
-class DLL_API Scheme
+class DLL_API DebbyScheme
 {
-	typedef OrderedHash<String, shared_ptr<Table> > Tables;
-	CWT_DENY_COPY(Scheme);
+	typedef OrderedHash<String, shared_ptr<DebbyTable> > DebbyTables;
+	CWT_DENY_COPY(DebbyScheme);
 public:
-	Scheme () : m_dbh(nullptr) {}
-	Scheme (const String & uri) : m_dbh(nullptr) { open(uri); }
+	DebbyScheme () : m_dbh(nullptr) {}
+	DebbyScheme (const String & uri) : m_dbh(nullptr) { open(uri); }
 
 	void close ();
 	bool open (const String & uri);
 	bool opened () const { return m_dbh == nullptr ? false : m_dbh->opened(); }
 
-	Table * addTable (const String & name);
+	DebbyTable * addTable (const String & name);
 
 	// bool populate(); // populate from scheme
 	bool deploy ();
@@ -63,10 +94,8 @@ public:
 
 private:
 	DbHandler * m_dbh;
-	Tables      m_tables;
+	DebbyTables m_tables;
 };
-
-} // namespace debby
 
 CWT_NS_END
 

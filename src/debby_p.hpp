@@ -10,6 +10,14 @@
 
 #include "../include/cwt/debby.hpp"
 #include <cwt/json.hpp>
+#include <cwt/vector.hpp>
+
+// Available ORMs for C++.
+// =======================
+// ODB:  http://www.codesynthesis.com
+// SOCI: http://soci.sourceforge.net
+//
+// http://www.agiledata.org/essays/mappingObjects.html
 
 CWT_NS_BEGIN
 
@@ -18,7 +26,7 @@ class DebbyFieldSpec
 public:
 	DebbyFieldSpec()
 		: name()
-		, type(Debby::TypeNull)
+		, type(DebbyNull)
 		, pk(false)
 		, autoinc(false)
 		, notnull(true)
@@ -45,7 +53,7 @@ public:
 	}
 
 	String name;
-	Debby::TypeEnum type;
+	DebbyTypeEnum type;
 	bool pk;
 	bool autoinc;
 	bool notnull;

@@ -8,24 +8,25 @@
 
 CWT_NS_BEGIN
 
+enum DebbyTypeEnum
+{
+	  DebbyNull
+	, DebbyBool
+	, DebbyInteger
+	, DebbyFloat
+	, DebbyDouble
+	, DebbyString
+	, DebbyBlob
+	, DebbyBinary = DebbyBlob
+	, DebbyDate
+	, DebbyTime
+	, DebbyDateTime
+	, DebbyTimeStamp
+};
+
 class Debby
 {
 	CWT_PIMPL_IMPL(Debby);
-
-public:
-	enum TypeEnum
-	{
-		  TypeNull
-		, TypeBool
-		, TypeString
-		, TypeInteger
-		, TypeFloat
-		, TypeDouble
-		, TypeDate
-		, TypeTime
-		, TypeDateTime
-		, TypeTimeStamp
-	};
 
 public:
 	Debby();

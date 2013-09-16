@@ -14,8 +14,6 @@
 
 CWT_NS_BEGIN
 
-namespace debby {
-
 /**
  * @brief Open scheme (database).
  *
@@ -25,7 +23,7 @@ namespace debby {
  * @return @c false if scheme already opened or if an error occurred
  *            while opening the scheme, otherwise @c true.
  */
-bool Scheme::open (const String & uri)
+bool DebbyScheme::open (const String & uri)
 {
 	if (m_dbh) {
 		Logger::error("Scheme already opened, close it before reopen.");
@@ -38,7 +36,7 @@ bool Scheme::open (const String & uri)
 /**
  *  @brief Close scheme.
  */
-void Scheme::close ()
+void DebbyScheme::close ()
 {
 	if (m_dbh) {
 		delete m_dbh;    // automatically closed
@@ -61,7 +59,7 @@ void Scheme::close ()
  * @param name Scheme (database) name.
  * @return @c true if scheme (database) successfully dropped, otherwise @c false.
  */
-bool Scheme::drop ()
+bool DebbyScheme::drop ()
 {
 	bool r = true;
 	if (m_dbh) {
@@ -75,21 +73,19 @@ bool Scheme::drop ()
 }
 
 
-Table * Scheme::addTable (const String & name)
+DebbyTable * DebbyScheme::addTable (const String & name)
 {
-	Tables::iterator it = m_tables.insert(name, shared_ptr<Table>(new Table()));
+	DebbyTables::iterator it = m_tables.insert(name, shared_ptr<DebbyTable>(new DebbyTable()));
 	CWT_ASSERT(it != m_tables.end());
-	Table * r = it.value().get();
+	DebbyTable * r = it.value().get();
 	CWT_ASSERT(r);
 	return r;
 }
 
-bool Scheme::deploy ()
+bool DebbyScheme::deploy ()
 {
 	return true;
 }
-
-} // namespace debby
 
 CWT_NS_END
 
