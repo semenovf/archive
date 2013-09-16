@@ -36,8 +36,8 @@ public:
 	bool	 isRunning () const;
 	Priority priority () const;
 	void	 setPriority (Priority priority);
-	void	 setStackSize (uint_t stackSize);
-	uint_t	 stackSize () const;
+	void	 setStackSize (size_t stackSize);
+	size_t	 stackSize () const;
 	bool	 wait (ulong_t time = CWT_ULONG_MAX);
 	void	 quit ();
 	void	 start (Priority priority = InheritPriority);
