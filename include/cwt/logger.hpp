@@ -31,9 +31,11 @@ public:
 	static void debug (const String & text);
 	static void info  (const String & text);
 	static void warn  (const String & text);
+	static void warn  (int errn, const String & text);
 	static void error (const String & text);
 	static void error (int errn, const String & text);
 	static void fatal (const String & text);
+	static void fatal (int errn, const String & text);
 private:
 	/*static Vector<LogAppender*> g_appenders;*/
 };

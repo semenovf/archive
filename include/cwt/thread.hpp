@@ -45,6 +45,14 @@ public:
 
 //	static   Thread* currentThread ();
 
+	// TODO need call pthread_exit(nullptr) as a list expression in main() routine.
+	//
+	// main()
+	// {
+	// 		...
+	// 		pthread_exit(nullptr);
+	// }
+
 protected:
 	virtual void run () {}
 };

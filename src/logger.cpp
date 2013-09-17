@@ -15,6 +15,8 @@
 
 CWT_NS_BEGIN
 
+static const int __SystemErrorBufLen = 256;
+
 class LogEmitter;
 
 class DefaultLogAppender : public StdioLogAppender
@@ -165,6 +167,19 @@ void Logger::warn(const String & text)
 	LogEmitter::instance()->emitWarn(text);
 }
 
+void Logger::warn (int errn, const String & text)
+{
+	char warnstr[__SystemErrorBufLen];
+	cwt_strerror(errn, warnstr, __SystemErrorBufLen);
+
+	if (text.isEmpty()) {
+		Logger::warn(String::fromUtf8(warnstr));
+	} else {
+		Logger::warn(SafeFormat("%s: %s") % text % String::fromUtf8(warnstr));
+	}
+}
+
+
 void Logger::error(const String & text)
 {
 	LogEmitter::instance()->emitError(text);
@@ -172,9 +187,8 @@ void Logger::error(const String & text)
 
 void Logger::error (int errn, const String & text)
 {
-	static const int SystemErrorBufLen = 256;
-	char errstr[SystemErrorBufLen];
-	cwt_strerror(errn, errstr, SystemErrorBufLen);
+	char errstr[__SystemErrorBufLen];
+	cwt_strerror(errn, errstr, __SystemErrorBufLen);
 
 	if (text.isEmpty()) {
 		Logger::error(String::fromUtf8(errstr));
@@ -183,30 +197,22 @@ void Logger::error (int errn, const String & text)
 	}
 }
 
-/*
-void Logger::error(Errorable & errorable)
-{
-	size_t nerrors = errorable.errorCount();
-
-	for (size_t i = 0; i < nerrors; ++i) {
-		if (errorable.errorRepeatCount(i) > 1) {
-			Logger::error(_Fr("%s <occured %d times>")
-					% errorable.errorTextAt(i)
-					% errorable.errorRepeatCount(i));
-		} else {
-			Logger::error(errorable.errorTextAt(i));
-		}
-	}
-
-	errorable.clearErrors();
-}
-*/
-
 void Logger::fatal(const String & text)
 {
 	LogEmitter::instance()->emitFatal(text);
 	abort();
 }
 
+void Logger::fatal (int errn, const String & text)
+{
+	char errstr[__SystemErrorBufLen];
+	cwt_strerror(errn, errstr, __SystemErrorBufLen);
+
+	if (text.isEmpty()) {
+		Logger::fatal(String::fromUtf8(errstr));
+	} else {
+		Logger::fatal(SafeFormat("%s: %s") % text % String::fromUtf8(errstr));
+	}
+}
 
 CWT_NS_END

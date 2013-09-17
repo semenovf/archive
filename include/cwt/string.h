@@ -17,7 +17,7 @@
 
 EXTERN_C_BEGIN
 
-DLL_API char*    cwt_strerror      (int errn, char *buf, size_t buflen);
+DLL_API char *   cwt_strerror      (int errn, char *buf, size_t buflen);
 DLL_API double	 cwt_str_to_double (const char * s, bool *ok);
 DLL_API float	 cwt_str_to_float  (const char * s, bool *ok);
 DLL_API long_t   cwt_str_to_long   (const char * s, bool *ok, int base);
