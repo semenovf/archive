@@ -31,16 +31,16 @@ public:
 	Thread();
 	virtual ~Thread() {}
 
-	void	 exit (int returnCode = 0);
+//	void	 exit (int returnCode = 0);
 	bool	 isFinished () const;
 	bool	 isRunning () const;
 	Priority priority () const;
-	void	 setPriority (Priority priority);
+//	void	 setPriority (Priority priority);
 	void	 setStackSize (size_t stackSize);
 	size_t	 stackSize () const;
-	bool	 wait (ulong_t time = CWT_ULONG_MAX);
-	void	 quit ();
-	void	 start (Priority priority = InheritPriority);
+	bool	 wait (ulong_t timeout = CWT_ULONG_MAX);
+//	void	 quit ();
+//	void	 start (Priority priority = InheritPriority);
 	void	 terminate ();
 
 //	static   Thread* currentThread ();

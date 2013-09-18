@@ -40,12 +40,12 @@ private:
 		// logAppender.setPriority(Logger::Trace);
 
 		// Make connections according to default log priority (set by default constructor)
-		emitTrace.connect (&logAppender, &DefaultLogAppender::trace);
-		emitDebug.connect (&logAppender, &DefaultLogAppender::debug);
-		emitInfo.connect  (&logAppender, &DefaultLogAppender::info);
-		emitWarn.connect  (&logAppender, &DefaultLogAppender::warn);
-		emitError.connect (&logAppender, &DefaultLogAppender::error);
-		emitFatal.connect (&logAppender, &DefaultLogAppender::fatal);
+		emitTrace.connect (& logAppender, &DefaultLogAppender::trace);
+		emitDebug.connect (& logAppender, &DefaultLogAppender::debug);
+		emitInfo.connect  (& logAppender, &DefaultLogAppender::info);
+		emitWarn.connect  (& logAppender, &DefaultLogAppender::warn);
+		emitError.connect (& logAppender, &DefaultLogAppender::error);
+		emitFatal.connect (& logAppender, &DefaultLogAppender::fatal);
 	}
 
 public:
@@ -64,12 +64,12 @@ public:
 		return logEmitter;
 	}
 
-	signal1<const String&> emitTrace;
-	signal1<const String&> emitDebug;
-	signal1<const String&> emitInfo;
-	signal1<const String&> emitWarn;
-	signal1<const String&> emitError;
-	signal1<const String&> emitFatal;
+	signal1<const String &> emitTrace;
+	signal1<const String &> emitDebug;
+	signal1<const String &> emitInfo;
+	signal1<const String &> emitWarn;
+	signal1<const String &> emitError;
+	signal1<const String &> emitFatal;
 
 private:
 	DefaultLogAppender logAppender;
@@ -213,6 +213,37 @@ void Logger::fatal (int errn, const String & text)
 	} else {
 		Logger::fatal(SafeFormat("%s: %s") % text % String::fromUtf8(errstr));
 	}
+}
+
+
+// TODO sys_xxx methods must have separate appender(s)
+void Logger::sys_warn  (const String & text)
+{
+	warn(text);
+}
+
+void Logger::sys_warn  (int errn, const String & text)
+{
+	warn(errn, text);
+}
+
+void Logger::sys_error (const String & text)
+{
+	error(text);
+}
+
+void Logger::sys_error (int errn, const String & text)
+{
+	error(errn, text);
+}
+
+void Logger::sys_fatal (const String & text)
+{
+	fatal(text);
+}
+void Logger::sys_fatal (int errn, const String & text)
+{
+	fatal(errn, text);
 }
 
 CWT_NS_END

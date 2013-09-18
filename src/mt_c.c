@@ -12,7 +12,7 @@
 #if !defined(CWT_SINGLE_THREADED)
 static mt_def(__g_mutex);
 
-DLL_API mutex_t* cwt_global_mutex(void)
+DLL_API cwt_mutex_t* cwt_global_mutex(void)
 {
 	static bool __g_mutex_initialized = false;
 	if(!__g_mutex_initialized)

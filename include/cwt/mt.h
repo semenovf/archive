@@ -35,23 +35,25 @@
 
 #elif defined(CWT_WIN32_THREADS)
 //#	pragma message("Using WIN32 threads")
-	typedef CRITICAL_SECTION mutex_t;
+	typedef CRITICAL_SECTION cwt_mutex_t;
 
-#	define mt_def(mutex)      mutex_t mutex
-#	define mt_init(mutex)	  InitializeCriticalSection(&mutex)
-#	define mt_destroy(mutex)  DeleteCriticalSection(&mutex)
-#	define mt_lock(mutex)     EnterCriticalSection(&mutex)
-#	define mt_unlock(mutex)   LeaveCriticalSection(&mutex)
+#	define mt_def(mutex)      cwt_mutex_t mutex
+#	define mt_init(mutex)	  InitializeCriticalSection(& mutex)
+#	define mt_destroy(mutex)  DeleteCriticalSection(& mutex)
+#	define mt_lock(mutex)     EnterCriticalSection(& mutex)
+#	define mt_try_lock(mutex) TryEnterCriticalSection(& mutex);
+#	define mt_unlock(mutex)   LeaveCriticalSection(& mutex)
 
 #elif defined(CWT_POSIX_THREADS)
 //#	pragma message("Using POSIX threads")
-	typedef pthread_mutex_t mutex_t;
+	typedef pthread_mutex_t cwt_mutex_t;
 
-#	define mt_def(mutex)      mutex_t mutex
-#	define mt_init(mutex)	  pthread_mutex_init(&mutex, NULL)
-#	define mt_destroy(mutex)  pthread_mutex_destroy(&mutex)
-#	define mt_lock(mutex)     pthread_mutex_lock(&mutex);
-#	define mt_unlock(mutex)   pthread_mutex_unlock(&mutex)
+#	define mt_def(mutex)      cwt_mutex_t mutex
+#	define mt_init(mutex)	  pthread_mutex_init(& mutex, nullptr)
+#	define mt_destroy(mutex)  pthread_mutex_destroy(& mutex)
+#	define mt_lock(mutex)     pthread_mutex_lock(& mutex);
+#	define mt_try_lock(mutex) pthread_mutex_trylock(& mutex);
+#	define mt_unlock(mutex)   pthread_mutex_unlock(& mutex)
 
 #else
 #	error "Unknown thread subsystem"
@@ -65,7 +67,7 @@
 #	define CWT_LOCK   mt_lock(*cwt_global_mutex())
 #	define CWT_UNLOCK mt_unlock(*cwt_global_mutex())
 EXTERN_C_BEGIN
-DLL_API mutex_t* cwt_global_mutex(void);
+DLL_API cwt_mutex_t * cwt_global_mutex(void);
 EXTERN_C_END
 #endif
 
