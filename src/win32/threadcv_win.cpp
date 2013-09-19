@@ -1,11 +1,11 @@
 /*
- * conditionvariable_win.cpp
+ * threadcv_win.cpp
  *
  *  Created on: Sep 18, 2013
  *      Author: wladt
  */
 
-#include "../conditionvariable_p.hpp"
+#include "../threadcv_p.hpp"
 #include "../../include/cwt/logger.hpp"
 #include <pthread.h>
 #include <cerrno>
@@ -17,11 +17,11 @@
 
 CWT_NS_BEGIN
 
-class PosixConditionVariableImpl : public ConditionVariableImpl
+class WinThreadCVImpl : public ThreadCVImpl
 {
 public:
-	PosixConditionVariableImpl();
-	~PosixConditionVariableImpl();
+	WinThreadCVImpl();
+	~WinThreadCVImpl();
 	bool wait (Mutex * lockedMutex, ulong_t timeout = CWT_ULONG_MAX);
 	void wakeOne ();
 	void wakeAll ();
@@ -37,8 +37,8 @@ private:
 };
 
 
-inline PosixConditionVariableImpl::PosixConditionVariableImpl ()
-	: ConditionVariableImpl()
+inline WinThreadCVImpl::WinThreadCVImpl ()
+	: ThreadCVImpl()
 	, m_mutex()
 	, m_waiters(0)
 	, m_wakeups(0)
@@ -46,11 +46,11 @@ inline PosixConditionVariableImpl::PosixConditionVariableImpl ()
 	InitializeConditionVariable(& m_cond);
 }
 
-inline PosixConditionVariableImpl::~PosixConditionVariableImpl ()
+inline WinThreadCVImpl::~WinThreadCVImpl ()
 {
 }
 
-inline void PosixConditionVariableImpl::wakeOne ()
+inline void WinThreadCVImpl::wakeOne ()
 {
 	m_mutex.lock();
 	m_wakeups = CWT_MIN(m_wakeups + 1, m_waiters);
@@ -58,7 +58,7 @@ inline void PosixConditionVariableImpl::wakeOne ()
 	m_mutex.unlock();
 }
 
-inline void PosixConditionVariableImpl::wakeAll ()
+inline void WinThreadCVImpl::wakeAll ()
 {
 	m_mutex.lock();
 	m_wakeups = m_waiters;
@@ -66,7 +66,7 @@ inline void PosixConditionVariableImpl::wakeAll ()
 	m_mutex.unlock();
 }
 
-bool PosixConditionVariableImpl::wait (Mutex * lockedMutex, ulong_t timeout)
+bool WinThreadCVImpl::wait (Mutex * lockedMutex, ulong_t timeout)
 {
     if (! lockedMutex)
         return false;
@@ -86,10 +86,10 @@ bool PosixConditionVariableImpl::wait (Mutex * lockedMutex, ulong_t timeout)
     return r != 0;
 }
 
-ConditionVariable::ConditionVariable () : pimpl (new PosixConditionVariableImpl) {}
-bool ConditionVariable::wait (Mutex * lockedMutex, ulong_t timeout) { return pimpl->wait(locakedMutex, timeout); }
-void ConditionVariable::wakeOne () { pimpl->wakeOne(); }
-void ConditionVariable::wakeAll () { pimpl->wakeAll(); }
+ThreadCV::ThreadCV () : pimpl (new WinThreadCVImpl) {}
+bool ThreadCV::wait (Mutex * lockedMutex, ulong_t timeout) { return pimpl->wait(locakedMutex, timeout); }
+void ThreadCV::wakeOne () { pimpl->wakeOne(); }
+void ThreadCV::wakeAll () { pimpl->wakeAll(); }
 
 
 CWT_NS_END

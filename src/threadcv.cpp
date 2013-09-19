@@ -1,11 +1,11 @@
 /*
- * conditionvariable.cpp
+ * threadcv.cpp
  *
  *  Created on: Sep 18, 2013
  *      Author: wladt
  */
 
-#include "../include/cwt/conditionvariable.hpp"
+#include "../include/cwt/threadcv.hpp"
 
 CWT_NS_BEGIN
 

@@ -16,20 +16,21 @@
 #include <cstdio>
 
 #define CWT_SYS_WARN(s) \
-		Logger::sys_warn(SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s);
+		Logger::sys_warn(SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
 #define CWT_SYS_WARN_RC(rc, s) \
-		Logger::sys_warn(rc, SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s);
+		Logger::sys_warn(rc, SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
 
 #define CWT_SYS_ERROR(s) \
-		Logger::sys_error(SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s);
+		Logger::sys_error(SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
 #define CWT_SYS_ERROR_RC(rc, s) \
-		Logger::sys_error(rc, SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s);
+		Logger::sys_error(rc, SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
 
 #define CWT_SYS_FATAL(s) \
-		Logger::sys_fatal(SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s);
+		Logger::sys_fatal(SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
 #define CWT_SYS_FATAL_RC(rc, s) \
-		Logger::sys_fatal(rc, SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s);
+		Logger::sys_fatal(rc, SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
 
+#define CWT_VERIFY(expr) if (! (expr)) { CWT_SYS_ERROR(#expr); }
 
 CWT_NS_BEGIN
 

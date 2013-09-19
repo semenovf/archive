@@ -5,14 +5,21 @@
  *      Author: wladt
  */
 
-#include "../thread_p.hpp"
 #include "../../include/cwt/mt.hpp"
 #include "../../include/cwt/logger.hpp"
 #include "../../include/cwt/safeformat.hpp"
-#include "../../include/cwt/conditionvariable.hpp"
+#include "../../include/cwt/threadcv.hpp"
 #include <pthread.h>
 #include <sched.h>
 #include <unistd.h> // for _POSIX_PRIORITY_SCHEDULING macro
+
+
+#if defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
+#	define CWT_HAS_THREAD_PRIORITY_SCHEDULING
+#endif
+
+#define __CWT_PIMPL_INIT
+#include "../thread_p.hpp"
 
 CWT_NS_BEGIN
 
@@ -37,23 +44,25 @@ public:
 
 	~PosixThreadImpl();
 
-	void start (Thread::Priority priority = Thread::InheritPriority);
+	void start (Thread::Priority priority = Thread::InheritPriority, size_t stackSize = 0);
 	void setPriority(Thread::Priority priority);
+
 	void terminate ();
 	bool wait (ulong_t time = CWT_ULONG_MAX);
 
 	static void * start_routine (void * arg);
 
 private:
+	bool setStackSize (pthread_attr_t * pattr, size_t stackSize = 0);
 
-#ifdef 	_POSIX_PRIORITY_SCHEDULING
+#ifdef 	CWT_HAS_THREAD_PRIORITY_SCHEDULING
 	bool mapToPosixPriority (Thread::Priority priority, int * posixPolicyPtr, int * posixPriorityPtr);
 #endif
 
 private:
-	pthread_t         m_threadId;
-	ConditionVariable m_threadFinished;
-	ThreadData *      m_threadDataPtr;
+	pthread_t     m_threadId;
+	ThreadCV      m_threadFinished;
+	ThreadData *  m_threadDataPtr;
 };
 
 PosixThreadImpl::~PosixThreadImpl ()
@@ -72,7 +81,35 @@ PosixThreadImpl::~PosixThreadImpl ()
 }
 
 
-#ifdef 	_POSIX_PRIORITY_SCHEDULING
+bool PosixThreadImpl::setStackSize (pthread_attr_t * pattr, size_t stackSize)
+{
+	int rc = 0;
+
+    if (stackSize > 0) {
+    	size_t page_size = getpagesize();
+
+#ifdef PTHREAD_STACK_MIN
+    	if (stackSize < PTHREAD_STACK_MIN)
+    		stackSize = PTHREAD_STACK_MIN;
+#endif
+
+    	stackSize = ((stackSize + page_size - 1) / page_size) * page_size;
+    	rc = pthread_attr_setstacksize(pattr, stackSize);
+
+    	if (rc)
+    		CWT_SYS_ERROR_RC(rc, _Tr("Failed to set thread's stack size"));
+    }
+
+    m_stackSize = 0;
+    rc = pthread_attr_getstacksize(pattr, & m_stackSize);
+
+    if (rc)
+    	CWT_SYS_ERROR_RC(rc, _Tr("Failed to get thread's stack size"));
+
+    return (rc == 0);
+}
+
+#ifdef 	CWT_HAS_THREAD_PRIORITY_SCHEDULING
 // The  range  of  scheduling  priorities  may  vary  on  other POSIX systems,
 // thus it is a good idea for portable applications to use a virtual priority
 // range and map it to the interval given by sched_get_priority_max()
@@ -114,9 +151,9 @@ bool PosixThreadImpl::mapToPosixPriority (Thread::Priority priority, int * posix
     *posixPriorityPtr = CWT_MAX(prio_min, CWT_MIN(prio_max, *posixPriorityPtr));
     return true;
 }
-#endif // _POSIX_PRIORITY_SCHEDULING
+#endif // CWT_HAS_THREAD_PRIORITY_SCHEDULING
 
-void PosixThreadImpl::start (Thread::Priority priority)
+void PosixThreadImpl::start (Thread::Priority priority, size_t stackSize)
 {
 	int rc = 0;
 	AutoLock locker(this);
@@ -155,7 +192,7 @@ void PosixThreadImpl::start (Thread::Priority priority)
 				break;
 			}
 		} else {
-#ifdef _POSIX_PRIORITY_SCHEDULING
+#ifdef CWT_HAS_THREAD_PRIORITY_SCHEDULING
 			int posixPolicy;
 			rc = pthread_attr_getschedpolicy(& attr, & posixPolicy);
 
@@ -183,23 +220,19 @@ void PosixThreadImpl::start (Thread::Priority priority)
             	m_priority = priority;
             	// TODO | ThreadPriorityResetFlag);
             }
-#endif
+#endif // CWT_HAS_THREAD_PRIORITY_SCHEDULING
 		}
 		break;
 	}
 
 	if (rc == 0) {
 		while (true) {
-			if (m_stackSize > 0) {
-				rc = pthread_attr_setstacksize(& attr, m_stackSize);
-				if (rc) {
-					CWT_SYS_ERROR_RC(rc, _Tr("Failed to set stack size for thread"));
-					break;
-				}
-			}
+			if (! setStackSize(& attr, stackSize))
+				break;
 
 			rc = pthread_create(& m_threadId, & attr, start_routine, this);
 			if (rc) {
+				m_threadId = 0;
 				CWT_SYS_ERROR_RC(rc, _Tr("Failed to create thread"));
 				break;
 			}
@@ -209,10 +242,6 @@ void PosixThreadImpl::start (Thread::Priority priority)
 	}
 
 	pthread_attr_destroy(& attr);
-
-	if (rc) {
-		m_threadId = 0;
-	}
 }
 
 void PosixThreadImpl::setPriority(Thread::Priority priority)
@@ -226,7 +255,7 @@ void PosixThreadImpl::setPriority(Thread::Priority priority)
 
     m_priority = priority;
 
-#ifdef _POSIX_PRIORITY_SCHEDULING
+#ifdef CWT_HAS_THREAD_PRIORITY_SCHEDULING
     int posixPolicy;
     sched_param param;
 
@@ -254,7 +283,7 @@ void PosixThreadImpl::setPriority(Thread::Priority priority)
         param.sched_priority = sched_get_priority_min(posixPolicy);
         pthread_setschedparam(m_threadId, posixPolicy, & param);
     }
-#endif // _POSIX_PRIORITY_SCHEDULING
+#endif // CWT_HAS_THREAD_PRIORITY_SCHEDULING
 }
 
 /*
@@ -311,17 +340,5 @@ inline bool PosixThreadImpl::wait (ulong_t timeout)
 
 
 Thread::Thread() : pimpl(new PosixThreadImpl) { }
-bool Thread::isFinished () const { return pimpl->isFinished(); }
-bool Thread::isRunning () const  { return pimpl->isRunning(); }
-Thread::Priority Thread::priority () const { return pimpl->priority(); }
-void Thread::setPriority (Thread::Priority priority) { pimpl->setPriority(priority); }
-void Thread::setStackSize (size_t stackSize) { pimpl->setStackSize(stackSize); }
-size_t Thread::stackSize () const { return pimpl->stackSize(); }
-//void Thread::start (Thread::Priority priority) { pimpl->start(priority); }
-void Thread::terminate () { pimpl->terminate(); }
-bool Thread::wait (ulong_t timeout) { return pimpl->wait(timeout); }
-//void	 Thread::exit (int returnCode = 0)
-//void	 Thread::quit ();
-
 
 CWT_NS_END

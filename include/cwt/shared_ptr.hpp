@@ -23,7 +23,7 @@ struct default_deleter {
 };
 
 template <typename T>
-struct cast_deleter {
+struct custom_deleter {
 	void operator()(T *) const {}
 };
 
@@ -59,13 +59,13 @@ private:
 	CWT_DENY_COPY(ref_count_with_deleter);
 
 public:
-	ref_count_with_deleter(T *ptr, Deleter d) : ref_count(), m_ptr(ptr), m_deleter(d) { deleter_fn = deleter; }
+	ref_count_with_deleter(T * ptr, Deleter d) : ref_count(), m_ptr(ptr), m_deleter(d) { deleter_fn = deleter; }
 	~ref_count_with_deleter() { this->~ref_count(); }
 
-	static void deleter(ref_count *self)
+	static void deleter(ref_count * self)
 	{
-		reinterpret_cast<ref_count_with_deleter*>(self)->m_deleter(
-				reinterpret_cast<ref_count_with_deleter*>(self)->m_ptr);
+		reinterpret_cast<ref_count_with_deleter *>(self)->m_deleter(
+				reinterpret_cast<ref_count_with_deleter *>(self)->m_ptr);
 	}
 
 private:

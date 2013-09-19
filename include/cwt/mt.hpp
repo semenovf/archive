@@ -99,6 +99,18 @@ private:
 	mt_policy * m_mutex;
 };
 
+template<class mt_policy = CWT_DEFAULT_MT_POLICY>
+class AutoUnlock
+{
+public:
+	AutoUnlock(mt_policy * mtx) : m_mutex(mtx) { m_mutex->unlock(); }
+	~AutoUnlock() { m_mutex->lock(); }
+
+	mt_policy * handlePtr() const { return m_mutex; }
+private:
+	mt_policy * m_mutex;
+};
+
 class AutoLockGlobal
 {
 public:

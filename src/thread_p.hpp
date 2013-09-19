@@ -36,7 +36,6 @@ public:
 	bool   isRunning () const;
 	bool   isFinished () const;
 	Thread::Priority priority() const;
-	void   setStackSize (size_t stackSize);
 	size_t stackSize () const;
 
 protected:
@@ -68,20 +67,27 @@ inline Thread::Priority ThreadImpl::priority() const
     return Thread::Priority(m_status & PriorityMask);
 }
 
-
-inline void ThreadImpl::setStackSize(size_t stackSize)
-{
-    AutoLock locker(this);
-    CWT_ASSERT(!isRunning());
-    m_stackSize = stackSize;
-}
-
-
 size_t ThreadImpl::stackSize() const
 {
     AutoLock locker(this);
     return m_stackSize;
 }
+
+
+#ifdef __CWT_PIMPL_INIT
+
+bool Thread::isFinished () const { return pimpl->isFinished(); }
+bool Thread::isRunning () const  { return pimpl->isRunning(); }
+Thread::Priority Thread::priority () const { return pimpl->priority(); }
+void Thread::setPriority (Thread::Priority priority) { pimpl->setPriority(priority); }
+size_t Thread::stackSize () const { return pimpl->stackSize(); }
+//void Thread::start (Thread::Priority priority) { pimpl->start(priority); }
+void Thread::terminate () { pimpl->terminate(); }
+bool Thread::wait (ulong_t timeout) { return pimpl->wait(timeout); }
+//void	 Thread::exit (int returnCode = 0)
+//void	 Thread::quit ();
+
+#endif
 
 CWT_NS_END
 

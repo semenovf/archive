@@ -36,11 +36,10 @@ public:
 	bool	 isRunning () const;
 	Priority priority () const;
 //	void	 setPriority (Priority priority);
-	void	 setStackSize (size_t stackSize);
 	size_t	 stackSize () const;
 	bool	 wait (ulong_t timeout = CWT_ULONG_MAX);
 //	void	 quit ();
-//	void	 start (Priority priority = InheritPriority);
+//	void	 start (Priority priority = InheritPriority, size_t stackSize = 0);
 	void	 terminate ();
 
 //	static   Thread* currentThread ();
