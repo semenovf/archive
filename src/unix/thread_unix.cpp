@@ -13,24 +13,15 @@
 #include <sched.h>
 #include <unistd.h> // for _POSIX_PRIORITY_SCHEDULING macro
 
-
 #if defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
 #	define CWT_HAS_THREAD_PRIORITY_SCHEDULING
 #endif
 
-#define __CWT_PIMPL_INIT
-#include "../thread_p.hpp"
+#define __CWT_INIT_FROM_PIMPL
+#include "thread_unix.hpp"
 
 CWT_NS_BEGIN
 
-struct ThreadData
-{
-	ThreadData()
-		: threadPtr(nullptr)
-	{}
-
-	Thread * threadPtr;
-};
 
 class PosixThreadImpl : public ThreadImpl
 {
@@ -39,7 +30,7 @@ public:
 		: ThreadImpl()
 		, m_threadId(0)
 		, m_threadFinished()
-		, m_threadDataPtr(nullptr)
+		//, m_threadDataPtr(nullptr)
 	{}
 
 	~PosixThreadImpl();
@@ -51,9 +42,10 @@ public:
 	bool wait (ulong_t time = CWT_ULONG_MAX);
 
 	static void * start_routine (void * arg);
+	static void finish_routine (void *);
 
 private:
-	bool setStackSize (pthread_attr_t * pattr, size_t stackSize = 0);
+	bool setStackSize (pthread_attr_t & attr, size_t stackSize = 0);
 
 #ifdef 	CWT_HAS_THREAD_PRIORITY_SCHEDULING
 	bool mapToPosixPriority (Thread::Priority priority, int * posixPolicyPtr, int * posixPriorityPtr);
@@ -62,7 +54,9 @@ private:
 private:
 	pthread_t     m_threadId;
 	ThreadCV      m_threadFinished;
-	ThreadData *  m_threadDataPtr;
+	//ThreadData *  m_threadDataPtr;
+
+	//friend class ThreadData;
 };
 
 PosixThreadImpl::~PosixThreadImpl ()
@@ -73,15 +67,16 @@ PosixThreadImpl::~PosixThreadImpl ()
         wait();
         locker.mutexPtr()->tryLock();
     }
+
     if (isRunningState() && ! isFinished()) {
     	CWT_SYS_WARN(_Tr("Attempt to destroy thread while it is still running"));
     }
 
-    m_threadDataPtr->threadPtr = nullptr;
+    //m_threadDataPtr->threadPtr = nullptr;
 }
 
 
-bool PosixThreadImpl::setStackSize (pthread_attr_t * pattr, size_t stackSize)
+bool PosixThreadImpl::setStackSize (pthread_attr_t & attr, size_t stackSize)
 {
 	int rc = 0;
 
@@ -94,14 +89,14 @@ bool PosixThreadImpl::setStackSize (pthread_attr_t * pattr, size_t stackSize)
 #endif
 
     	stackSize = ((stackSize + page_size - 1) / page_size) * page_size;
-    	rc = pthread_attr_setstacksize(pattr, stackSize);
+    	rc = pthread_attr_setstacksize(& attr, stackSize);
 
     	if (rc)
     		CWT_SYS_ERROR_RC(rc, _Tr("Failed to set thread's stack size"));
     }
 
     m_stackSize = 0;
-    rc = pthread_attr_getstacksize(pattr, & m_stackSize);
+    rc = pthread_attr_getstacksize(& attr, & m_stackSize);
 
     if (rc)
     	CWT_SYS_ERROR_RC(rc, _Tr("Failed to get thread's stack size"));
@@ -227,7 +222,7 @@ void PosixThreadImpl::start (Thread::Priority priority, size_t stackSize)
 
 	if (rc == 0) {
 		while (true) {
-			if (! setStackSize(& attr, stackSize))
+			if (! setStackSize(attr, stackSize))
 				break;
 
 			rc = pthread_create(& m_threadId, & attr, start_routine, this);
@@ -336,6 +331,57 @@ inline bool PosixThreadImpl::wait (ulong_t timeout)
             return false;
     }
     return true;
+}
+
+
+void * PosixThreadImpl::start_routine(void * arg)
+{
+    CWT_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
+    pthread_cleanup_push(PosixThreadImpl::finish_routine, arg);
+
+    Thread * thisThread = reinterpret_cast<Thread *>(arg);
+/*
+    ThreadData * data = ThreadData::get2(thr);
+
+    data->threadId = (Qt::HANDLE)pthread_self();
+    set_thread_data(data);
+
+    data->ref();
+    {
+        QMutexLocker locker(&thr->d_func()->mutex);
+        data->quitNow = thr->d_func()->exited;
+    }
+*/
+
+    CWT_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL));
+    pthread_testcancel();
+
+    thisThread->run(); // Do the job
+    pthread_cleanup_pop(1);
+    return nullptr;
+}
+
+void PosixThreadImpl::finish_routine (void * arg)
+{
+    Thread * thisThread = reinterpret_cast<Thread *>(arg);
+    AutoLock locker(this);
+
+    setFinishingState(true);
+
+    // Delete thread storage data
+/*
+    d->priority = QThread::InheritPriority;
+    void *data = &d->data->tls;
+    locker.unlock();
+    QThreadStorageData::finish((void **)data);
+    locker.relock();
+*/
+
+    m_threadId = 0;
+    setRunningState(false);
+    setFinishingState(false);
+    setFinishedState(true);
+    m_threadFinished.wakeAll();
 }
 
 

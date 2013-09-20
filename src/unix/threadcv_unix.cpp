@@ -9,7 +9,7 @@
 #include <pthread.h>
 #include <cerrno>
 
-#define __CWT_PIMPL_INIT
+#define __CWT_INIT_FROM_PIMPL
 #include "../threadcv_p.hpp"
 
 CWT_NS_BEGIN
@@ -19,8 +19,8 @@ static inline void __calculate_abstime (ulong_t timeout, timespec * ts)
     struct timeval tv;
     gettimeofday(& tv, nullptr);
 
-    ts->tv_nsec = (tv.tv_usec + (timeout % 1000) * 1000) * 1000;
-    ts->tv_sec = tv.tv_sec + (timeout / 1000) + (ts->tv_nsec / 1000000000);
+    ts->tv_nsec  = (tv.tv_usec + (timeout % 1000) * 1000) * 1000;
+    ts->tv_sec   = tv.tv_sec + (timeout / 1000) + (ts->tv_nsec / 1000000000);
     ts->tv_nsec %= 1000000000;
 }
 

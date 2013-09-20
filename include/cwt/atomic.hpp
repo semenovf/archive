@@ -38,23 +38,44 @@ CWT_NS_BEGIN
 template <typename T>
 class atomic_integer
 {
+	typedef T Type;
 public:
     typedef atomic_integer_intrinsics<T> intrinsics;
     typename intrinsics::Type m_value;
 
     // Non-atomic API
-    T load() const { return intrinsics::load(m_value); }
-    void store(T newValue) { intrinsics::store((T&)m_value, newValue); }
-    bool ref() { return intrinsics::ref((T&)m_value); }
-    bool deref() { return intrinsics::deref((T&)m_value); }
+    Type load() const { return intrinsics::load(m_value); }
+    void store(Type newValue) { intrinsics::store((Type &)m_value, newValue); }
+    bool ref() { return intrinsics::ref((Type &)m_value); }
+    bool deref() { return intrinsics::deref((Type &)m_value); }
 
-    T fetchAndAddRelaxed(T valueToAdd)
+    Type fetchAndAddRelaxed(Type valueToAdd)
     {
     	return intrinsics::fetchAndAddRelaxed(m_value, valueToAdd);
     }
 };
 
 typedef atomic_integer<int> atomic_int;
+
+template <typename T>
+class atomic_pointer
+{
+	typedef T * Type;
+public:
+    typedef atomic_integer_intrinsics<Type> intrinsics;
+    typename intrinsics::Type m_value;
+
+    // Non-atomic API
+    Type load() const { return intrinsics::load(m_value); }
+    void store(Type newValue) { intrinsics::store((Type &)m_value, newValue); }
+    bool ref() { return intrinsics::ref((Type &)m_value); }
+    bool deref() { return intrinsics::deref((Type &)m_value); }
+
+    Type fetchAndAddRelaxed(Type valueToAdd)
+    {
+    	return intrinsics::fetchAndAddRelaxed(m_value, valueToAdd);
+    }
+};
 
 CWT_NS_END
 

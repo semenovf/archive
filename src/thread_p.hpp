@@ -43,6 +43,10 @@ protected:
 	bool   isFinishingState () const  { return (m_status & StateMask) & Finishing; }
 	bool   isFinishedState () const   { return (m_status & StateMask) & Finished; }
 
+	void setRunningState (bool b)   { m_status = (m_status & ~StateMask) | b ? Running : 0; }
+	void setFinishingState (bool b) { m_status = (m_status & ~StateMask) | b ? Finishing : 0; }
+	void setFinishedState (bool b) { m_status = (m_status & ~StateMask) | b ? Finished : 0; }
+
 protected:
 	size_t           m_stackSize;
 	Thread::Priority m_priority;
@@ -74,7 +78,7 @@ size_t ThreadImpl::stackSize() const
 }
 
 
-#ifdef __CWT_PIMPL_INIT
+#ifdef __CWT_INIT_FROM_PIMPL
 
 bool Thread::isFinished () const { return pimpl->isFinished(); }
 bool Thread::isRunning () const  { return pimpl->isRunning(); }

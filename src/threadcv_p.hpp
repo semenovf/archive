@@ -18,7 +18,7 @@ public:
 	ThreadCVImpl() {}
 };
 
-#ifdef __CWT_PIMPL_INIT
+#ifdef __CWT_INIT_FROM_PIMPL
 
 void ThreadCV::wait (Mutex & lockedMutex) { pimpl->wait(lockedMutex); }
 bool ThreadCV::wait (Mutex & lockedMutex, ulong_t timeout) { return pimpl->wait(lockedMutex, timeout); }

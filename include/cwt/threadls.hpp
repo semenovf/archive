@@ -14,23 +14,23 @@
 
 CWT_NS_BEGIN
 
-struct cleanup_functor
-{
-	virtual ~cleanup_functor ()
-	{}
+// FIXME Implement
 
-	virtual void operator () (void * data) = 0;
-};
-
-DLL_API void cwt_set_tls_data (void const * key, shared_ptr<cleanup_functor> func, void * tss_data, bool cleanup_existing);
-DLL_API void * cwt_get_tls_data (void const * key);
-
+#ifdef __COMMENT__
 template <typename T>
-class ThreadLS
+class DLL_API ThreadLS
 {
 	CWT_DENY_COPY(ThreadLS);
 
 private:
+	struct cleanup_functor
+	{
+		virtual ~cleanup_functor ()
+		{}
+
+		virtual void operator () (void * data) = 0;
+	};
+
     struct default_deleter : cleanup_functor
     {
         void operator () (void * data)
@@ -57,6 +57,10 @@ private:
     shared_ptr<cleanup_functor> cleanup;
 
 public:
+    static void setData (const void * key, shared_ptr<cleanup_functor> func, void * tls_data, bool cleanup_existing);
+    static void * getData (const void * key);
+
+public:
     typedef T element_type;
 
     ThreadLS () : cleanup(new default_deleter) {}
@@ -69,16 +73,16 @@ public:
 
     ~ThreadLS()
     {
-    	cwt_set_tls_data(this, shared_ptr<cleanup_functor>(), 0, true);
+    	setData(this, shared_ptr<cleanup_functor>(), 0, true);
     }
 
-    T * get () const { return static_cast<T *>(cwt_get_tls_data(this)); }
+    T * get () const { return static_cast<T *>(getData(this)); }
     T * operator-> () const  { return get(); }
     T & operator * () const    { return *get(); }
     T * release ()
     {
         const T * tmp = get();
-        cwt_set_tls_data(this, shared_ptr<cleanup_functor>(), 0, false);
+        setData(this, shared_ptr<cleanup_functor>(), 0, false);
         return tmp;
     }
 
@@ -86,11 +90,11 @@ public:
     {
         const T * const current_value = get();
         if (current_value != new_value) {
-            cwt_set_tls_data(this, cleanup, new_value, true);
+            setData(this, cleanup, new_value, true);
         }
     }
 };
-
+#endif
 
 CWT_NS_END
 
