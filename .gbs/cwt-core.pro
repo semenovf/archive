@@ -23,6 +23,7 @@ SUBDIRS  = cwt-core   \
     tests/shared_ptr  \
     tests/string      \
     tests/time        \
+    tests/thread      \
     tests/uuid        \
     tests/vector      \
     tests/unitype     \

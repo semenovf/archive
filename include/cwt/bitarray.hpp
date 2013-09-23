@@ -20,14 +20,15 @@ CWT_NS_BEGIN
 // C#   BitArray
 // Java BitSet
 
+
 class DLL_API BitArray
 {
-	struct Data {
+	struct Impl {
 		Array<uint32_t> a;
 		size_t          nbits;
 	};
 
-	CWT_PIMPL_COPYABLE(BitArray, Data);
+	CWT_PIMPL_COPYABLE(BitArray);
 
 public:
 	BitArray ();

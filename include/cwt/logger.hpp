@@ -11,6 +11,7 @@
 
 #include <cwt/cwt.h>
 #include <cwt/string.hpp>
+#include <cwt/safeformat.hpp>
 #include <cwt/sigslot.hpp>
 #include <cwt/vector.hpp>
 #include <cstdio>

@@ -69,7 +69,7 @@ public:
 	virtual void tryLock() { mt_try_lock(m_mutex); }
 	virtual void unlock()  { mt_unlock(m_mutex); }
 
-	cwt_mutex_t * handlePtr() const { return & m_mutex; }
+	cwt_mutex_t * handlePtr() { return & m_mutex; }
 private:
 	mt_def(m_mutex);
 };

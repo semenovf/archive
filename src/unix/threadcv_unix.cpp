@@ -8,8 +8,7 @@
 #include "../../include/cwt/logger.hpp"
 #include <pthread.h>
 #include <cerrno>
-
-#define __CWT_INIT_FROM_PIMPL
+#include <sys/time.h>
 #include "../threadcv_p.hpp"
 
 CWT_NS_BEGIN
@@ -24,12 +23,12 @@ static inline void __calculate_abstime (ulong_t timeout, timespec * ts)
     ts->tv_nsec %= 1000000000;
 }
 
-class PosixThreadCVImpl : public ThreadCVImpl
+class ThreadCV::Impl
 {
 public:
-	PosixThreadCVImpl();
-	~PosixThreadCVImpl();
-	void wait (Mutex & lockedMutex);
+	Impl();
+	~Impl();
+	bool wait (Mutex & lockedMutex);
 	bool wait (Mutex & lockedMutex, ulong_t timeout);
 	void wakeOne ();
 	void wakeAll ();
@@ -40,8 +39,7 @@ private:
 };
 
 
-inline PosixThreadCVImpl::PosixThreadCVImpl ()
-	: ThreadCVImpl()
+inline ThreadCV::Impl::Impl ()
 {
     int rc = pthread_mutex_init(& m_internalMutex, nullptr);
     if (rc)
@@ -54,28 +52,30 @@ inline PosixThreadCVImpl::PosixThreadCVImpl ()
     }
 }
 
-inline PosixThreadCVImpl::~PosixThreadCVImpl ()
+inline ThreadCV::Impl::~Impl ()
 {
     CWT_VERIFY(!pthread_mutex_destroy(& m_internalMutex));
     CWT_VERIFY(!pthread_cond_destroy(& m_cond));
 }
 
 
-inline void PosixThreadCVImpl::wakeOne ()
+inline void ThreadCV::Impl::wakeOne ()
 {
-	AutoLock<>(& m_internalMutex);
+	CWT_VERIFY(!pthread_mutex_lock(& m_internalMutex));
 	CWT_VERIFY(!pthread_cond_signal(& m_cond));
+	CWT_VERIFY(!pthread_mutex_unlock(& m_internalMutex));
 }
 
-inline void PosixThreadCVImpl::wakeAll ()
+inline void ThreadCV::Impl::wakeAll ()
 {
-	AutoLock<>(& m_internalMutex);
+	CWT_VERIFY(!pthread_mutex_lock(& m_internalMutex));
 	CWT_VERIFY(!pthread_cond_broadcast(& m_cond));
+	CWT_VERIFY(!pthread_mutex_unlock(& m_internalMutex));
 }
 
 // see section "Timed Condition Wait" in pthread_cond_timedwait(P) manual page.
 //
-bool PosixThreadCVImpl::wait (Mutex & lockedMutex, ulong_t timeout)
+bool ThreadCV::Impl::wait (Mutex & lockedMutex, ulong_t timeout)
 {
 	int rc = 0;
 	{
@@ -101,7 +101,7 @@ bool PosixThreadCVImpl::wait (Mutex & lockedMutex, ulong_t timeout)
    return (rc == 0);
 }
 
-void PosixThreadCVImpl::wait(Mutex & lockedMutex)
+bool ThreadCV::Impl::wait(Mutex & lockedMutex)
 {
     int rc = 0;
     {
@@ -116,9 +116,15 @@ void PosixThreadCVImpl::wait(Mutex & lockedMutex)
 
 	if (rc)
 		CWT_SYS_FATAL_RC(rc, _Tr("Failed in pthread_cond_wait"));
+
+	return true;
 }
 
 
-ThreadCV::ThreadCV () : pimpl (new PosixThreadCVImpl) {}
+ThreadCV::ThreadCV () : pimpl (new ThreadCV::Impl) {}
+bool ThreadCV::wait (Mutex & lockedMutex) { return pimpl->wait(lockedMutex); }
+bool ThreadCV::wait (Mutex & lockedMutex, ulong_t timeout) { return pimpl->wait(lockedMutex, timeout); }
+void ThreadCV::wakeOne () { pimpl->wakeOne(); }
+void ThreadCV::wakeAll () { pimpl->wakeAll(); }
 
 CWT_NS_END

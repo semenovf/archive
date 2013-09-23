@@ -10,12 +10,12 @@
 
 CWT_NS_BEGIN
 
-BitArray::BitArray() : pimpl(new BitArray::Data)
+BitArray::BitArray() : pimpl(new BitArray::Impl)
 {
 	pimpl->nbits = 0;
 }
 
-BitArray::BitArray(size_t size, bool value) : pimpl(new BitArray::Data)
+BitArray::BitArray(size_t size, bool value) : pimpl(new BitArray::Impl)
 {
     if (!size) {
     	pimpl->nbits = 0;

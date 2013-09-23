@@ -14,14 +14,27 @@
 
 CWT_NS_BEGIN
 
+// http://en.wikipedia.org/wiki/Thread-local_storage
+enum TlsImplementation {
+	  TlsPthreads = 1
+	, TlsPosixThreads = TlsPthreads
+	, TlsWin32
+	, TlsCompilerSpecific // using '__thread' keyword for GCC (gcc.gnu.org/onlinedocs/gcc-3.3.1/gcc/Thread-Local.html)
+	                      // or '__declspec(thread)' keywords for MSC (http://msdn.microsoft.com/en-us/library/6yh4a9k1.aspx)
+};
+
+extern TlsImplementation cwt_tls_implementation();
+
 // FIXME Implement
 
-#ifdef __COMMENT__
 template <typename T>
 class DLL_API ThreadLS
 {
 	CWT_DENY_COPY(ThreadLS);
 
+public:
+
+	#ifdef __COMMENT__
 private:
 	struct cleanup_functor
 	{
@@ -93,8 +106,8 @@ public:
             setData(this, cleanup, new_value, true);
         }
     }
-};
 #endif
+};
 
 CWT_NS_END
 

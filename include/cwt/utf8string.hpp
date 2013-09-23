@@ -484,7 +484,7 @@ protected:
 
 public:
 	static int decodeBytes(const char * bytes, size_t len, uint32_t & uc, uint32_t & min_uc);
-	static ssize_t encodeUcs4(char *utf8, size_t size, uint32_t ucs4);
+	static ssize_t encodeUcs4(char * utf8, size_t size, uint32_t ucs4);
 };
 
 inline Utf8String::iterator::iterator(const reverse_iterator & o) : m_entry(o.m_entry) {}

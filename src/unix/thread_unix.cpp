@@ -9,74 +9,95 @@
 #include "../../include/cwt/logger.hpp"
 #include "../../include/cwt/safeformat.hpp"
 #include "../../include/cwt/threadcv.hpp"
+#include "thread_unix.hpp"
 #include <pthread.h>
 #include <sched.h>
-#include <unistd.h> // for _POSIX_PRIORITY_SCHEDULING macro
-
-#if defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
-#	define CWT_HAS_THREAD_PRIORITY_SCHEDULING
-#endif
-
-#define __CWT_INIT_FROM_PIMPL
-#include "thread_unix.hpp"
 
 CWT_NS_BEGIN
 
-
-class PosixThreadImpl : public ThreadImpl
-{
-public:
-	PosixThreadImpl()
-		: ThreadImpl()
-		, m_threadId(0)
-		, m_threadFinished()
-		//, m_threadDataPtr(nullptr)
-	{}
-
-	~PosixThreadImpl();
-
-	void start (Thread::Priority priority = Thread::InheritPriority, size_t stackSize = 0);
-	void setPriority(Thread::Priority priority);
-
-	void terminate ();
-	bool wait (ulong_t time = CWT_ULONG_MAX);
-
-	static void * start_routine (void * arg);
-	static void finish_routine (void *);
-
-private:
-	bool setStackSize (pthread_attr_t & attr, size_t stackSize = 0);
-
-#ifdef 	CWT_HAS_THREAD_PRIORITY_SCHEDULING
-	bool mapToPosixPriority (Thread::Priority priority, int * posixPolicyPtr, int * posixPriorityPtr);
+#ifdef CWT_HAVE_TLS
+	__thread ThreadData * ThreadData::currentThreadData = nullptr;
+#else
+	pthread_once_t ThreadData::threadKeyOnce = PTHREAD_ONCE_INIT;
+	pthread_key_t  ThreadData::threadKey;
 #endif
 
-private:
-	pthread_t     m_threadId;
-	ThreadCV      m_threadFinished;
-	//ThreadData *  m_threadDataPtr;
-
-	//friend class ThreadData;
-};
-
-PosixThreadImpl::~PosixThreadImpl ()
+#ifdef 	CWT_HAVE_THREAD_PRIORITY_SCHEDULING
+// The  range  of  scheduling  priorities  may  vary  on  other POSIX systems,
+// thus it is a good idea for portable applications to use a virtual priority
+// range and map it to the interval given by sched_get_priority_max()
+// and sched_get_priority_min() (see sched_get_priority_max(2)).
+//
+static bool __map_to_posix_priority (Thread::Priority priority, int * posixPolicyPtr, int * posixPriorityPtr)
 {
-    AutoLock locker(this);
+#ifdef SCHED_IDLE
+    if (priority == Thread::IdlePriority) {
+        *posixPolicyPtr = SCHED_IDLE;
+        *posixPriorityPtr = 0;
+        return true;
+    }
+    const int lowestPriority = Thread::LowestPriority;
+#else
+    const int lowestPriority = Thread::IdlePriority;
+#endif
+    const int highestPriority = Thread::TimeCriticalPriority;
+
+    int prio_min = sched_get_priority_min(*posixPolicyPtr);
+    int prio_max = sched_get_priority_max(*posixPolicyPtr);
+
+    if (prio_min < 0 || prio_max < 0)
+        return false;
+
+    // Scale priority using affine transformation:
+    //
+    // x' = a*x + c __
+    //                |
+    // x0' = a*x0 + c |               (x - x0) * (x1' - x0')
+    //                 >  x' = x0' + ----------------------
+    // x1' = a*x1 + c |                     (x1 - x0)
+    //              __|
+    //
+                                                                // XXX Qt5.0 ignores lowestPriority here---
+                                                                //                                         |
+                                                                //                                         v
+    *posixPriorityPtr = prio_min + ((priority - lowestPriority) * (prio_max - prio_min) / (highestPriority - lowestPriority));
+    *posixPriorityPtr = CWT_MAX(prio_min, CWT_MIN(prio_max, *posixPriorityPtr));
+    return true;
+}
+#endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
+
+Thread::Impl::Impl (Thread * threadPtr)
+	: m_mutex()
+	, m_stackSize(0)
+	, m_priority(Thread::InheritPriority)
+	, m_status(NotRunning)
+	, m_threadDataPtr(nullptr)
+{
+	m_threadDataPtr = new ThreadData(threadPtr);
+}
+
+
+Thread::Impl::~Impl ()
+{
+    AutoLock<> locker(& m_mutex);
     if (isFinishingState()) {
-        locker.mutexPtr()->unlock();
+        locker.handlePtr()->unlock();
         wait();
-        locker.mutexPtr()->tryLock();
+        locker.handlePtr()->tryLock();
     }
 
     if (isRunningState() && ! isFinished()) {
     	CWT_SYS_WARN(_Tr("Attempt to destroy thread while it is still running"));
     }
 
-    //m_threadDataPtr->threadPtr = nullptr;
+    if (m_threadDataPtr != nullptr) {
+    	delete m_threadDataPtr;
+    	m_threadDataPtr = nullptr;
+    }
 }
 
 
-bool PosixThreadImpl::setStackSize (pthread_attr_t & attr, size_t stackSize)
+bool Thread::Impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
 {
 	int rc = 0;
 
@@ -104,57 +125,14 @@ bool PosixThreadImpl::setStackSize (pthread_attr_t & attr, size_t stackSize)
     return (rc == 0);
 }
 
-#ifdef 	CWT_HAS_THREAD_PRIORITY_SCHEDULING
-// The  range  of  scheduling  priorities  may  vary  on  other POSIX systems,
-// thus it is a good idea for portable applications to use a virtual priority
-// range and map it to the interval given by sched_get_priority_max()
-// and sched_get_priority_min() (see sched_get_priority_max(2)).
-//
-bool PosixThreadImpl::mapToPosixPriority (Thread::Priority priority, int * posixPolicyPtr, int * posixPriorityPtr)
-{
-#ifdef SCHED_IDLE
-    if (priority == Thread::IdlePriority) {
-        *posixPolicyPtr = SCHED_IDLE;
-        *posixPriorityPtr = 0;
-        return true;
-    }
-    const int lowestPriority = Thread::LowestPriority;
-#else
-    const int lowestPriority = Thread::IdlePriority;
-#endif
-    const int highestPriority = Thread::TimeCriticalPriority;
 
-    int prio_min = sched_get_priority_min(*posixPolicyPtr);
-    int prio_max = sched_get_priority_max(*posixPolicyPtr);
-
-    if (prio_min < 0 || prio_max < 0)
-        return false;
-
-    // Scale priority using affine transformation:
-    //
-    // x' = a*x + c __
-    //                \
-    // x0' = a*x0 + c |               (x - x0) * (x1' - x0')
-    //                 >  x' = x0' + ----------------------
-    // x1' = a*x1 + c |                     (x1 - x0)
-    //              __/
-    //
-                                                                // XXX Qt5.0 ignores lowestPriority here---
-                                                                //                                         |
-                                                                //                                         v
-    *posixPriorityPtr = prio_min + ((priority - lowestPriority) * (prio_max - prio_min) / (highestPriority - lowestPriority));
-    *posixPriorityPtr = CWT_MAX(prio_min, CWT_MIN(prio_max, *posixPriorityPtr));
-    return true;
-}
-#endif // CWT_HAS_THREAD_PRIORITY_SCHEDULING
-
-void PosixThreadImpl::start (Thread::Priority priority, size_t stackSize)
+void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 {
 	int rc = 0;
-	AutoLock locker(this);
+	AutoLock<> locker(& m_mutex);
 
 	if (isFinishingState())
-		m_threadFinished.wait(locker.mutexPtr());
+		m_threadDataPtr->m_threadFinished.wait(*locker.handlePtr());
 
 	if (isRunningState())
 		return;
@@ -187,7 +165,7 @@ void PosixThreadImpl::start (Thread::Priority priority, size_t stackSize)
 				break;
 			}
 		} else {
-#ifdef CWT_HAS_THREAD_PRIORITY_SCHEDULING
+#ifdef CWT_HAVE_THREAD_PRIORITY_SCHEDULING
 			int posixPolicy;
 			rc = pthread_attr_getschedpolicy(& attr, & posixPolicy);
 
@@ -199,7 +177,7 @@ void PosixThreadImpl::start (Thread::Priority priority, size_t stackSize)
 
             int posixPriority;
 
-            if (!mapToPosixPriority(priority, & posixPolicy, & posixPriority)) {
+            if (! __map_to_posix_priority(priority, & posixPolicy, & posixPriority)) {
             	CWT_SYS_WARN(_Tr("Can not map to POSIX priority"));
             	break;
             }
@@ -215,7 +193,7 @@ void PosixThreadImpl::start (Thread::Priority priority, size_t stackSize)
             	m_priority = priority;
             	// TODO | ThreadPriorityResetFlag);
             }
-#endif // CWT_HAS_THREAD_PRIORITY_SCHEDULING
+#endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
 		}
 		break;
 	}
@@ -225,9 +203,9 @@ void PosixThreadImpl::start (Thread::Priority priority, size_t stackSize)
 			if (! setStackSize(attr, stackSize))
 				break;
 
-			rc = pthread_create(& m_threadId, & attr, start_routine, this);
+			rc = pthread_create(& m_threadDataPtr->m_threadId, & attr, & Thread::Impl::start_routine, this);
 			if (rc) {
-				m_threadId = 0;
+				m_threadDataPtr->m_threadId = 0;
 				CWT_SYS_ERROR_RC(rc, _Tr("Failed to create thread"));
 				break;
 			}
@@ -239,9 +217,9 @@ void PosixThreadImpl::start (Thread::Priority priority, size_t stackSize)
 	pthread_attr_destroy(& attr);
 }
 
-void PosixThreadImpl::setPriority(Thread::Priority priority)
+void Thread::Impl::setPriority(Thread::Priority priority)
 {
-    AutoLock locker(this);
+    AutoLock<> locker(& m_mutex);
 
     if (!isRunningState()) {
     	CWT_SYS_WARN("Unable to set thread priority: thread must be in running state");
@@ -250,11 +228,12 @@ void PosixThreadImpl::setPriority(Thread::Priority priority)
 
     m_priority = priority;
 
-#ifdef CWT_HAS_THREAD_PRIORITY_SCHEDULING
+#ifdef CWT_HAVE_THREAD_PRIORITY_SCHEDULING
+
     int posixPolicy;
     sched_param param;
 
-    int rc = pthread_getschedparam(m_threadId, & posixPolicy, & param);
+    int rc = pthread_getschedparam(m_threadDataPtr->m_threadId, & posixPolicy, & param);
 
     if (rc) {
     	CWT_SYS_WARN_RC(rc, _Tr("Cannot get scheduler parameters"));
@@ -263,22 +242,23 @@ void PosixThreadImpl::setPriority(Thread::Priority priority)
 
     int posixPriority;
 
-    if (!mapToPosixPriority(priority, & posixPolicy, & posixPriority)) {
+    if (! __map_to_posix_priority(priority, & posixPolicy, & posixPriority)) {
     	CWT_SYS_WARN(_Tr("Can not map to POSIX priority"));
     	return;
     }
 
     param.sched_priority = posixPriority;
-    rc = pthread_setschedparam(m_threadId, posixPolicy, & param);
+    rc = pthread_setschedparam(m_threadDataPtr->m_threadId, posixPolicy, & param);
 
 #	ifdef SCHED_IDLE
     if (rc < 0 && posixPolicy == SCHED_IDLE && errno == EINVAL) {
     	// Set native thread's priority to minimal value
-        pthread_getschedparam(m_threadId, & posixPolicy, & param);
+        pthread_getschedparam(m_threadDataPtr->m_threadId, & posixPolicy, & param);
         param.sched_priority = sched_get_priority_min(posixPolicy);
-        pthread_setschedparam(m_threadId, posixPolicy, & param);
+        pthread_setschedparam(m_threadDataPtr->m_threadId, posixPolicy, & param);
     }
-#endif // CWT_HAS_THREAD_PRIORITY_SCHEDULING
+#	endif
+#endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
 }
 
 /*
@@ -301,24 +281,24 @@ void PosixThreadImpl::setPriority(Thread::Priority priority)
  *
  *  The above steps happen asynchronously.
  */
-inline void PosixThreadImpl::terminate ()
+void Thread::Impl::terminate ()
 {
-    AutoLock locker(this);
+    AutoLock<> locker(& m_mutex);
 
-    if (!m_threadId)
+    if (! m_threadDataPtr->m_threadId)
         return;
 
-    int rc = pthread_cancel(m_threadId);
+    int rc = pthread_cancel(m_threadDataPtr->m_threadId);
     if (rc) {
     	CWT_SYS_ERROR_RC(rc, _Tr("Thread termination error"));
     }
 }
 
-inline bool PosixThreadImpl::wait (ulong_t timeout)
+bool Thread::Impl::wait (ulong_t timeout)
 {
-    AutoLock locker(this);
+    AutoLock<> locker(& m_mutex);
 
-    if (m_threadId == pthread_self()) {
+    if (m_threadDataPtr->m_threadId == pthread_self()) {
     	CWT_SYS_ERROR(_Tr("PosixThreadImpl::wait(): Attempt to wait on itself"));
         return false;
     }
@@ -327,64 +307,126 @@ inline bool PosixThreadImpl::wait (ulong_t timeout)
         return true;
 
     while (isRunningState()) {
-        if (! m_threadFinished.wait(locker.mutexPtr(), timeout))
-            return false;
+    	if (timeout == CWT_ULONG_MAX) {
+    		if (! m_threadDataPtr->m_threadFinished.wait(m_mutex))
+    			return false;
+    	} else {
+    		if (! m_threadDataPtr->m_threadFinished.wait(m_mutex, timeout))
+    			return false;
+    	}
     }
     return true;
 }
 
 
-void * PosixThreadImpl::start_routine(void * arg)
+void * Thread::Impl::start_routine (void * arg)
 {
     CWT_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
-    pthread_cleanup_push(PosixThreadImpl::finish_routine, arg);
+    pthread_cleanup_push(& Thread::Impl::finish_routine, arg);
 
-    Thread * thisThread = reinterpret_cast<Thread *>(arg);
-/*
-    ThreadData * data = ThreadData::get2(thr);
-
-    data->threadId = (Qt::HANDLE)pthread_self();
-    set_thread_data(data);
-
-    data->ref();
-    {
-        QMutexLocker locker(&thr->d_func()->mutex);
-        data->quitNow = thr->d_func()->exited;
-    }
-*/
+    Thread::Impl * threadImpl = reinterpret_cast<Thread::Impl *>(arg);
+    CWT_ASSERT(threadImpl);
+    CWT_ASSERT(threadImpl->m_threadDataPtr);
+    Thread * thisThread = threadImpl->m_threadDataPtr->m_thread;
+    //ThreadData::set(thisThread->pimpl->m_threadDataPtr);
 
     CWT_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL));
     pthread_testcancel();
 
     thisThread->run(); // Do the job
+
     pthread_cleanup_pop(1);
     return nullptr;
 }
 
-void PosixThreadImpl::finish_routine (void * arg)
+void Thread::Impl::finish_routine (void * arg)
 {
-    Thread * thisThread = reinterpret_cast<Thread *>(arg);
-    AutoLock locker(this);
+	CWT_ASSERT(arg);
+	Thread::Impl * threadImpl = reinterpret_cast<Thread::Impl *>(arg);
+    AutoLock<> locker(& threadImpl->m_mutex);
 
-    setFinishingState(true);
+    CWT_ASSERT(threadImpl->m_threadDataPtr);
+    threadImpl->setFinishingState(true);
 
     // Delete thread storage data
 /*
-    d->priority = QThread::InheritPriority;
-    void *data = &d->data->tls;
     locker.unlock();
     QThreadStorageData::finish((void **)data);
     locker.relock();
 */
+    ThreadData * d = threadImpl->m_threadDataPtr;
+    CWT_ASSERT(d);
+    threadImpl->setRunningState(false);
+    threadImpl->setFinishingState(false);
+    threadImpl->setFinishedState(true);
+    threadImpl->m_threadDataPtr->m_threadFinished.wakeAll();
 
-    m_threadId = 0;
-    setRunningState(false);
-    setFinishingState(false);
-    setFinishedState(true);
-    m_threadFinished.wakeAll();
+    threadImpl->m_threadDataPtr->m_threadId = 0;
+    //d->m_thread = nullptr;
+}
+
+void ThreadData::destroy (void * pdata)
+{
+	CWT_ASSERT(pdata);
+    // POSIX says the value in our key is set to zero before calling
+    // this destructor function, so we need to set it back to the
+    // right value...
+
+	// TODO Check this sentence in debug
+    //pthread_setspecific(m_key, pdata);
+
+    ThreadData * threadDataPtr = static_cast<ThreadData *>(pdata);
+
+    CWT_ASSERT(threadDataPtr->m_thread);
+/*
+    if (data->m_isAdopted) {
+        Thread * thread = data->m_thread;
+        CWT_ASSERT(thread);
+        PosixThreadImpl * thread_p = static_cast<PosixThreadImpl *>(thread->pimpl);
+        CWT_ASSERT(! thread_p->isFinished());
+        thread_p->finish(thread);
+    }
+*/
+
+    // ... but we must reset it to zero before returning so we aren't
+    // called again (POSIX allows implementations to call destructor
+    // functions repeatedly until all values are zero)
+    pthread_setspecific(threadKey, nullptr);
 }
 
 
-Thread::Thread() : pimpl(new PosixThreadImpl) { }
+inline struct timespec __make_timespec(time_t secs, long_t nsecs)
+{
+    struct timespec ts;
+    ts.tv_sec = secs;
+    ts.tv_nsec = nsecs;
+    return ts;
+}
+
+inline void __nanosleep (struct timespec & ts)
+{
+	int rc;
+	while ((rc = nanosleep(& ts, & ts)) < 0 && errno == EINTR)
+		;
+}
+
+void Thread::Impl::sleep(ulong_t secs)
+{
+	struct timespec ts =  __make_timespec(secs, 0);
+    __nanosleep(ts);
+}
+
+void Thread::Impl::msleep(ulong_t msecs)
+{
+	struct timespec ts = __make_timespec(msecs / 1000, msecs % 1000 * 1000 * 1000);
+    __nanosleep(ts);
+}
+
+void Thread::Impl::usleep(ulong_t usecs)
+{
+	struct timespec ts = __make_timespec(usecs / 1000 / 1000, usecs % (1000*1000) * 1000);
+    __nanosleep(ts);
+}
+
 
 CWT_NS_END

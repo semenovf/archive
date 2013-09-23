@@ -18,11 +18,11 @@ CWT_NS_BEGIN
 class DLL_API ThreadCV
 {
 	CWT_PIMPL_IMPL(ThreadCV);
-	CWT_DENY_COPY(ThreadCV);
+
 public:
 	ThreadCV();
 
-	void wait (Mutex & lockedMutex);
+	bool wait (Mutex & lockedMutex);
 	bool wait (Mutex & lockedMutex, ulong_t timeout);
 	void wakeOne ();
 	void wakeAll ();

@@ -9,12 +9,14 @@
 #define __CWT_THREAD_P_HPP__
 
 #include "../include/cwt/thread.hpp"
+#include "../include/cwt/mt.hpp"
 
 CWT_NS_BEGIN
 
-class ThreadImpl
+struct ThreadData;
+
+class Thread::Impl
 {
-	CWT_IMPLEMENT_LOCKING(ThreadImpl);
 protected:
 	static const int PriorityMask = 0x0000000F;
 	static const int StateMask    = 0x000000F0;
@@ -27,71 +29,68 @@ protected:
 	};
 
 public:
-	ThreadImpl()
-		: m_stackSize(0)
-		, m_priority(Thread::InheritPriority)
-		, m_status(NotRunning)
-	{}
+	explicit Impl (Thread * threadPtr);
+	~Impl ();
 
 	bool   isRunning () const;
 	bool   isFinished () const;
 	Thread::Priority priority() const;
 	size_t stackSize () const;
 
-protected:
-	bool   isRunningState () const    { return (m_status & StateMask) & Running; }
-	bool   isFinishingState () const  { return (m_status & StateMask) & Finishing; }
-	bool   isFinishedState () const   { return (m_status & StateMask) & Finished; }
+	void start (Thread::Priority priority = Thread::InheritPriority, size_t stackSize = 0);
+	void setPriority(Thread::Priority priority);
+
+	void terminate ();
+	bool wait (ulong_t time = CWT_ULONG_MAX);
+
+	void sleep (ulong_t secs);
+	void msleep (ulong_t msecs);
+	void usleep (ulong_t usecs);
+
+	static void * start_routine (void * arg);
+	static void finish_routine (void * arg);
+
+private:
+	bool setStackSize (pthread_attr_t & attr, size_t stackSize = 0);
+
+	bool isRunningState () const    { return (m_status & StateMask) & Running; }
+	bool isFinishingState () const  { return (m_status & StateMask) & Finishing; }
+	bool isFinishedState () const   { return (m_status & StateMask) & Finished; }
 
 	void setRunningState (bool b)   { m_status = (m_status & ~StateMask) | b ? Running : 0; }
 	void setFinishingState (bool b) { m_status = (m_status & ~StateMask) | b ? Finishing : 0; }
 	void setFinishedState (bool b) { m_status = (m_status & ~StateMask) | b ? Finished : 0; }
 
-protected:
+private:
+	Mutex            m_mutex;
 	size_t           m_stackSize;
 	Thread::Priority m_priority;
 	uint32_t         m_status;
+
+	ThreadData *     m_threadDataPtr;
+
+	friend class Thread;
 };
 
-inline bool ThreadImpl::isFinished () const
+inline bool Thread::Impl::isFinished () const
 {
-	AutoLock locker(this);
     return isFinishedState() || isFinishingState();
 }
 
-inline bool ThreadImpl::isRunning () const
+inline bool Thread::Impl::isRunning () const
 {
-	AutoLock locker(this);
     return isRunningState() && !isFinishingState();
 }
 
-inline Thread::Priority ThreadImpl::priority() const
+inline Thread::Priority Thread::Impl::priority() const
 {
-    AutoLock locker(this);
     return Thread::Priority(m_status & PriorityMask);
 }
 
-size_t ThreadImpl::stackSize() const
+inline size_t Thread::Impl::stackSize() const
 {
-    AutoLock locker(this);
     return m_stackSize;
 }
-
-
-#ifdef __CWT_INIT_FROM_PIMPL
-
-bool Thread::isFinished () const { return pimpl->isFinished(); }
-bool Thread::isRunning () const  { return pimpl->isRunning(); }
-Thread::Priority Thread::priority () const { return pimpl->priority(); }
-void Thread::setPriority (Thread::Priority priority) { pimpl->setPriority(priority); }
-size_t Thread::stackSize () const { return pimpl->stackSize(); }
-//void Thread::start (Thread::Priority priority) { pimpl->start(priority); }
-void Thread::terminate () { pimpl->terminate(); }
-bool Thread::wait (ulong_t timeout) { return pimpl->wait(timeout); }
-//void	 Thread::exit (int returnCode = 0)
-//void	 Thread::quit ();
-
-#endif
 
 CWT_NS_END
 

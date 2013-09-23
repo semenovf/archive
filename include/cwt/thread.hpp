@@ -16,6 +16,7 @@ CWT_NS_BEGIN
 class DLL_API Thread
 {
 	CWT_PIMPL_IMPL(Thread);
+
 public:
 	enum Priority {
 		  IdlePriority         // scheduled only when no other threads are running.
@@ -27,6 +28,7 @@ public:
 		, TimeCriticalPriority // scheduled as often as possible.
 		, InheritPriority      // use the same priority as the creating thread. This is the default.
 	};
+
 public:
 	Thread();
 	virtual ~Thread() {}
@@ -35,16 +37,20 @@ public:
 	bool	 isFinished () const;
 	bool	 isRunning () const;
 	Priority priority () const;
-//	void	 setPriority (Priority priority);
+	void	 setPriority (Priority priority);
 	size_t	 stackSize () const;
 	bool	 wait (ulong_t timeout = CWT_ULONG_MAX);
 //	void	 quit ();
-//	void	 start (Priority priority = InheritPriority, size_t stackSize = 0);
+	void	 start (Priority priority = InheritPriority, size_t stackSize = 0);
 	void	 terminate ();
+
+	void     sleep (ulong_t secs);
+	void     msleep (ulong_t msecs);
+	void     usleep (ulong_t usecs);
 
 //	static   Thread* currentThread ();
 
-	// TODO need call pthread_exit(nullptr) as a list expression in main() routine.
+	// To allow other threads to continue execution, the main thread should terminate by calling pthread_exit() rather than exit(3).
 	//
 	// main()
 	// {

@@ -9,6 +9,10 @@
 
 #include "../include/cwt/mt.hpp"
 
+CWT_NS_BEGIN
+
 #if !defined(CWT_SINGLE_THREADED)
 cwt_mutex_t multi_threaded_global::g_mutex;
 #endif /* CWT_SINGLE_THREADED */
+
+CWT_NS_END

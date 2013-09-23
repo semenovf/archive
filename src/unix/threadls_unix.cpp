@@ -8,10 +8,19 @@
 
 #include "../../include/cwt/threadls.hpp"
 #include "../../include/cwt/vector.hpp"
+#include "thread_unix.hpp" // for CWT_HAVE_TLS
 
 CWT_NS_BEGIN
 // FIXME Implement these !
 
+TlsImplementation cwt_tls_implementation()
+{
+#ifdef CWT_HAVE_TLS
+	return TlsCompilerSpecific;
+#else
+	return TlsPosixThreads;
+#endif
+}
 
 #ifdef __COMMENT__
 static Mutex destructorsMutex;
