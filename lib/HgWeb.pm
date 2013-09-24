@@ -36,11 +36,11 @@ sub startup {
     $r->namespaces(['HgWeb::Controller']);
     
     # Normal route to controller
-    $r->any('/account')        ->to('account#list');
-    $r->any('/account/create') ->to('account#create');
+    $r->get('/account')         ->to('account#list');
+    $r->post('/account/create') ->to('account#create');
     
-    $r->any('/tr')             ->to('transaction#list');
-    $r->any('/tr/create')      ->to('transaction#create');
+    $r->get('/tr')             ->to('transaction#list');
+    $r->post('/tr/create')     ->to('transaction#create');
     
     $r->any('/(*)')            ->to(cb => sub {
         my $self = shift;
