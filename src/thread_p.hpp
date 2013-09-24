@@ -43,9 +43,9 @@ public:
 	void terminate ();
 	bool wait (ulong_t time = CWT_ULONG_MAX);
 
-	void sleep (ulong_t secs);
-	void msleep (ulong_t msecs);
-	void usleep (ulong_t usecs);
+	static void sleep (ulong_t secs);
+	static void msleep (ulong_t msecs);
+	static void usleep (ulong_t usecs);
 
 	static void * start_routine (void * arg);
 	static void finish_routine (void * arg);
@@ -57,9 +57,7 @@ private:
 	bool isFinishingState () const  { return (m_status & StateMask) & Finishing; }
 	bool isFinishedState () const   { return (m_status & StateMask) & Finished; }
 
-	void setRunningState (bool b)   { m_status = (m_status & ~StateMask) | b ? Running : 0; }
-	void setFinishingState (bool b) { m_status = (m_status & ~StateMask) | b ? Finishing : 0; }
-	void setFinishedState (bool b) { m_status = (m_status & ~StateMask) | b ? Finished : 0; }
+	void setState(State state)      { m_status = (m_status & ~StateMask) | state; }
 
 private:
 	Mutex            m_mutex;
@@ -79,7 +77,7 @@ inline bool Thread::Impl::isFinished () const
 
 inline bool Thread::Impl::isRunning () const
 {
-    return isRunningState() && !isFinishingState();
+    return isRunningState();
 }
 
 inline Thread::Priority Thread::Impl::priority() const

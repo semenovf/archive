@@ -56,17 +56,17 @@ bool Thread::wait (ulong_t timeout)
 
 void Thread::sleep(ulong_t secs)
 {
-    pimpl->sleep(secs);
+    Thread::Impl::sleep(secs);
 }
 
 void Thread::msleep(ulong_t msecs)
 {
-	pimpl->msleep(msecs);
+	Thread::Impl::msleep(msecs);
 }
 
 void Thread::usleep(ulong_t usecs)
 {
-	pimpl->usleep(usecs);
+	Thread::Impl::usleep(usecs);
 }
 
 //void	 Thread::exit (int returnCode = 0)
