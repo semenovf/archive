@@ -13,14 +13,6 @@
 #include <pthread.h>
 #include <sched.h>
 
-#ifdef __COMMENT__
-#ifdef CWT_OS_LINUX
-#	include <sys/time.h>
-#	include <sys/resource.h> // for getrlimit(2)
-#endif
-#endif
-
-
 CWT_NS_BEGIN
 
 #ifdef CWT_HAVE_TLS
@@ -145,7 +137,7 @@ void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 	if (isRunningState())
 		return;
 
-	setState(Running);
+	// TODO set status
 
 	pthread_attr_t attr;
 
@@ -213,20 +205,8 @@ void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 
 			rc = pthread_create(& m_threadDataPtr->m_threadId, & attr, & Thread::Impl::start_routine, this);
 			if (rc) {
-				setState(NotRunning);
 				m_threadDataPtr->m_threadId = 0;
 				CWT_SYS_ERROR_RC(rc, _Tr("Failed to create thread"));
-#ifdef __COMMENT__
-#ifdef CWT_OS_LINUX
-				if (rc == EAGAIN) {
-					struct rlimit rlim;
-					getrlimit(RLIMIT_NPROC, & rlim);
-					String msg(_Fr("May be the limit of threads (processes) has been exceeded: soft limit = %u, hard limit = %u")
-							% ulong_t(rlim.rlim_cur) % ulong_t(rlim.rlim_max));
-					CWT_SYS_ERROR(msg);
-				}
-#endif
-#endif
 				break;
 			}
 
@@ -341,11 +321,10 @@ bool Thread::Impl::wait (ulong_t timeout)
 
 void * Thread::Impl::start_routine (void * arg)
 {
-    CWT_VERIFY(!pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
+    CWT_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
     pthread_cleanup_push(& Thread::Impl::finish_routine, arg);
 
     Thread::Impl * threadImpl = reinterpret_cast<Thread::Impl *>(arg);
-    printf("start_routine: threadImpl = %p\n", threadImpl);
     CWT_ASSERT(threadImpl);
     CWT_ASSERT(threadImpl->m_threadDataPtr);
     Thread * thisThread = threadImpl->m_threadDataPtr->m_thread;
@@ -366,10 +345,8 @@ void Thread::Impl::finish_routine (void * arg)
 	Thread::Impl * threadImpl = reinterpret_cast<Thread::Impl *>(arg);
     AutoLock<> locker(& threadImpl->m_mutex);
 
-    printf("finish_routine: BEGIN: threadImpl = %p\n", threadImpl);
-    CWT_ASSERT(threadImpl);
     CWT_ASSERT(threadImpl->m_threadDataPtr);
-    threadImpl->setState(Finishing);
+    threadImpl->setFinishingState(true);
 
     // Delete thread storage data
 /*
@@ -379,11 +356,12 @@ void Thread::Impl::finish_routine (void * arg)
 */
     ThreadData * d = threadImpl->m_threadDataPtr;
     CWT_ASSERT(d);
-    threadImpl->setState(Finished);
+    threadImpl->setRunningState(false);
+    threadImpl->setFinishingState(false);
+    threadImpl->setFinishedState(true);
     threadImpl->m_threadDataPtr->m_threadFinished.wakeAll();
 
     threadImpl->m_threadDataPtr->m_threadId = 0;
-    printf("finish_routine: END: threadImpl = %p\n", threadImpl);
     //d->m_thread = nullptr;
 }
 
@@ -410,6 +388,9 @@ void ThreadData::destroy (void * pdata)
     }
 */
 
+    // ... but we must reset it to zero before returning so we aren't
+    // called again (POSIX allows implementations to call destructor
+    // functions repeatedly until all values are zero)
     pthread_setspecific(threadKey, nullptr);
 }
 
