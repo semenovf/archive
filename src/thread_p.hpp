@@ -18,14 +18,11 @@ struct ThreadData;
 class Thread::Impl
 {
 protected:
-	static const int PriorityMask = 0x0000000F;
-	static const int StateMask    = 0x000000F0;
-
 	enum State {
 		  NotRunning
-		, Running     = 0x00000010
-		, Finishing   = 0x00000020
-		, Finished    = 0x00000040
+		, Running
+		, Finishing
+		, Finished
 	};
 
 public:
@@ -53,17 +50,19 @@ public:
 private:
 	bool setStackSize (pthread_attr_t & attr, size_t stackSize = 0);
 
+/*
 	bool isRunningState () const    { return (m_status & StateMask) & Running; }
 	bool isFinishingState () const  { return (m_status & StateMask) & Finishing; }
 	bool isFinishedState () const   { return (m_status & StateMask) & Finished; }
 
 	void setState(State state)      { m_status = (m_status & ~StateMask) | state; }
+*/
 
 private:
 	Mutex            m_mutex;
 	size_t           m_stackSize;
 	Thread::Priority m_priority;
-	uint32_t         m_status;
+	State            m_state;
 
 	ThreadData *     m_threadDataPtr;
 
@@ -72,17 +71,17 @@ private:
 
 inline bool Thread::Impl::isFinished () const
 {
-    return isFinishedState() || isFinishingState();
+    return m_state == Finished || m_state == Finishing;
 }
 
 inline bool Thread::Impl::isRunning () const
 {
-    return isRunningState();
+    return m_state == Running;
 }
 
 inline Thread::Priority Thread::Impl::priority() const
 {
-    return Thread::Priority(m_status & PriorityMask);
+    return m_priority;
 }
 
 inline size_t Thread::Impl::stackSize() const
