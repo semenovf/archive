@@ -19,10 +19,10 @@ class Thread::Impl
 {
 protected:
 	enum State {
-		  NotRunning
-		, Running
-		, Finishing
-		, Finished
+		  ThreadNotRunning
+		, ThreadRunning
+		, ThreadFinishing
+		, ThreadFinished
 	};
 
 public:
@@ -71,12 +71,12 @@ private:
 
 inline bool Thread::Impl::isFinished () const
 {
-    return m_state == Finished || m_state == Finishing;
+    return m_state == ThreadFinished || m_state == ThreadFinishing;
 }
 
 inline bool Thread::Impl::isRunning () const
 {
-    return m_state == Running;
+    return m_state == ThreadRunning;
 }
 
 inline Thread::Priority Thread::Impl::priority() const

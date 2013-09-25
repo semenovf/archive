@@ -78,7 +78,7 @@ Thread::Impl::Impl (Thread * threadPtr)
 	: m_mutex()
 	, m_stackSize(0)
 	, m_priority(Thread::InheritPriority)
-	, m_state(NotRunning)
+	, m_state(ThreadNotRunning)
 	, m_threadDataPtr(nullptr)
 {
 	m_threadDataPtr = new ThreadData(threadPtr);
@@ -90,7 +90,7 @@ Thread::Impl::~Impl ()
 	CWT_TRACE("Thread::Impl::~Impl ()");
 
     AutoLock<> locker(& m_mutex);
-    if (m_state == Finishing) {
+    if (m_state == ThreadFinishing) {
         locker.handlePtr()->unlock();
         wait();
         locker.handlePtr()->tryLock();
@@ -144,13 +144,13 @@ void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 	int rc = 0;
 	AutoLock<> locker(& m_mutex);
 
-	if (m_state == Finishing)
+	if (m_state == ThreadFinishing)
 		m_threadDataPtr->m_threadFinished.wait(*locker.handlePtr());
 
-	if (m_state == Running)
+	if (m_state == ThreadRunning)
 		return;
 
-	m_state = Running;
+	m_state = ThreadRunning;
 
 	pthread_attr_t attr;
 
@@ -218,7 +218,7 @@ void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 
 			rc = pthread_create(& m_threadDataPtr->m_threadId, & attr, & Thread::Impl::start_routine, this);
 			if (rc) {
-				m_state = NotRunning;
+				m_state = ThreadNotRunning;
 				m_threadDataPtr->m_threadId = 0;
 				CWT_SYS_ERROR_RC(rc, _Tr("Failed to create thread"));
 #ifdef __COMMENT__
@@ -293,7 +293,7 @@ void Thread::Impl::finish_routine (void * arg)
     		% threadImpl
     		% threadImpl->m_threadDataPtr->m_threadId).c_str());
 
-    threadImpl->m_state = Finishing;
+    threadImpl->m_state = ThreadFinishing;
 
     // Delete thread storage data
 /*
@@ -302,7 +302,7 @@ void Thread::Impl::finish_routine (void * arg)
     locker.relock();
 */
     CWT_ASSERT(threadImpl->m_threadDataPtr);
-    threadImpl->m_state = Finished;
+    threadImpl->m_state = ThreadFinished;
     threadImpl->m_threadDataPtr->m_threadFinished.wakeAll();
 
     threadImpl->m_threadDataPtr->m_threadId = 0;
@@ -316,7 +316,7 @@ void Thread::Impl::setPriority(Thread::Priority priority)
 {
     AutoLock<> locker(& m_mutex);
 
-    if (m_state != Running) {
+    if (m_state != ThreadRunning) {
     	CWT_SYS_WARN("Unable to set thread priority: thread must be in running state");
         return;
     }
@@ -401,7 +401,7 @@ bool Thread::Impl::wait (ulong_t timeout)
         return false;
     }
 
-    while (m_state == Running) {
+    while (m_state == ThreadRunning) {
     	if (timeout == CWT_ULONG_MAX) {
     		if (! m_threadDataPtr->m_threadFinished.wait(m_mutex))
     			return false;
