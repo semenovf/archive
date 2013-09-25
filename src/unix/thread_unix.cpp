@@ -13,6 +13,14 @@
 #include <pthread.h>
 #include <sched.h>
 
+#ifdef __COMMENT__
+#ifdef CWT_OS_LINUX
+#	include <sys/time.h>
+#	include <sys/resource.h> // for getrlimit(2)
+#endif
+#endif
+
+
 CWT_NS_BEGIN
 
 #ifdef CWT_HAVE_TLS
@@ -79,6 +87,8 @@ Thread::Impl::Impl (Thread * threadPtr)
 
 Thread::Impl::~Impl ()
 {
+	CWT_TRACE("Thread::Impl::~Impl ()");
+
     AutoLock<> locker(& m_mutex);
     if (isFinishingState()) {
         locker.handlePtr()->unlock();
@@ -86,14 +96,17 @@ Thread::Impl::~Impl ()
         locker.handlePtr()->tryLock();
     }
 
-    if (isRunningState() && ! isFinished()) {
+    if (! isFinished()) {
     	CWT_SYS_WARN(_Tr("Attempt to destroy thread while it is still running"));
+    } else {
+		if (m_threadDataPtr != nullptr) {
+			m_threadDataPtr->m_threadId = 0;
+			delete m_threadDataPtr;
+			m_threadDataPtr = nullptr;
+		}
     }
 
-    if (m_threadDataPtr != nullptr) {
-    	delete m_threadDataPtr;
-    	m_threadDataPtr = nullptr;
-    }
+    m_threadDataPtr->m_thread = nullptr; // detach from Thread instance
 }
 
 
@@ -137,7 +150,7 @@ void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 	if (isRunningState())
 		return;
 
-	// TODO set status
+	setState(Running);
 
 	pthread_attr_t attr;
 
@@ -205,8 +218,20 @@ void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 
 			rc = pthread_create(& m_threadDataPtr->m_threadId, & attr, & Thread::Impl::start_routine, this);
 			if (rc) {
+				setState(NotRunning);
 				m_threadDataPtr->m_threadId = 0;
 				CWT_SYS_ERROR_RC(rc, _Tr("Failed to create thread"));
+#ifdef __COMMENT__
+#ifdef CWT_OS_LINUX
+				if (rc == EAGAIN) {
+					struct rlimit rlim;
+					getrlimit(RLIMIT_NPROC, & rlim);
+					String msg(_Fr("May be the limit of threads (processes) has been exceeded: soft limit = %u, hard limit = %u")
+							% ulong_t(rlim.rlim_cur) % ulong_t(rlim.rlim_max));
+					CWT_SYS_ERROR(msg);
+				}
+#endif
+#endif
 				break;
 			}
 
@@ -285,9 +310,12 @@ void Thread::Impl::terminate ()
 {
     AutoLock<> locker(& m_mutex);
 
+    CWT_TRACE(String(_Fr("Terminating: m_threadId = %d") % m_threadDataPtr->m_threadId).c_str());
+
     if (! m_threadDataPtr->m_threadId)
         return;
 
+    CWT_TRACE(String(_Fr("Canceling: m_threadId = %d") % m_threadDataPtr->m_threadId).c_str());
     int rc = pthread_cancel(m_threadDataPtr->m_threadId);
     if (rc) {
     	CWT_SYS_ERROR_RC(rc, _Tr("Thread termination error"));
@@ -302,9 +330,6 @@ bool Thread::Impl::wait (ulong_t timeout)
     	CWT_SYS_ERROR(_Tr("PosixThreadImpl::wait(): Attempt to wait on itself"));
         return false;
     }
-
-    if (isFinishedState() || ! isRunningState())
-        return true;
 
     while (isRunningState()) {
     	if (timeout == CWT_ULONG_MAX) {
@@ -321,21 +346,36 @@ bool Thread::Impl::wait (ulong_t timeout)
 
 void * Thread::Impl::start_routine (void * arg)
 {
-    CWT_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
+    CWT_VERIFY(!pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
+
     pthread_cleanup_push(& Thread::Impl::finish_routine, arg);
 
     Thread::Impl * threadImpl = reinterpret_cast<Thread::Impl *>(arg);
     CWT_ASSERT(threadImpl);
     CWT_ASSERT(threadImpl->m_threadDataPtr);
+
+    CWT_TRACE(String(_Fr("start_routine: BEGIN: threadImpl = %p, m_threadId = %d")
+    		% threadImpl
+    		% threadImpl->m_threadDataPtr->m_threadId).c_str());
+
     Thread * thisThread = threadImpl->m_threadDataPtr->m_thread;
     //ThreadData::set(thisThread->pimpl->m_threadDataPtr);
 
-    CWT_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL));
+    // The cancelability state and type of any newly created threads,
+    // including the thread in which main() was first invoked, shall be
+    // PTHREAD_CANCEL_ENABLE and PTHREAD_CANCEL_DEFERRED respectively.
+    CWT_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr));
+    CWT_VERIFY(0 == pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr));
     pthread_testcancel();
 
     thisThread->run(); // Do the job
 
+    CWT_TRACE(String(_Fr("start_routine: END: threadImpl = %p, m_threadId = %d")
+    		% threadImpl
+    		% threadImpl->m_threadDataPtr->m_threadId).c_str());
+
     pthread_cleanup_pop(1);
+
     return nullptr;
 }
 
@@ -343,10 +383,18 @@ void Thread::Impl::finish_routine (void * arg)
 {
 	CWT_ASSERT(arg);
 	Thread::Impl * threadImpl = reinterpret_cast<Thread::Impl *>(arg);
+
+	CWT_ASSERT(threadImpl);
+    CWT_ASSERT(threadImpl->m_threadDataPtr);
+
     AutoLock<> locker(& threadImpl->m_mutex);
 
-    CWT_ASSERT(threadImpl->m_threadDataPtr);
-    threadImpl->setFinishingState(true);
+
+    CWT_TRACE(String(_Fr("finish_routine: BEGIN: threadImpl = %p, m_threadId = %d")
+    		% threadImpl
+    		% threadImpl->m_threadDataPtr->m_threadId).c_str());
+
+    threadImpl->setState(Finishing);
 
     // Delete thread storage data
 /*
@@ -354,15 +402,14 @@ void Thread::Impl::finish_routine (void * arg)
     QThreadStorageData::finish((void **)data);
     locker.relock();
 */
-    ThreadData * d = threadImpl->m_threadDataPtr;
-    CWT_ASSERT(d);
-    threadImpl->setRunningState(false);
-    threadImpl->setFinishingState(false);
-    threadImpl->setFinishedState(true);
+    CWT_ASSERT(threadImpl->m_threadDataPtr);
+    threadImpl->setState(Finished);
     threadImpl->m_threadDataPtr->m_threadFinished.wakeAll();
 
     threadImpl->m_threadDataPtr->m_threadId = 0;
-    //d->m_thread = nullptr;
+    CWT_TRACE(String(_Fr("finish_routine: END: threadImpl = %p, m_threadId = %d")
+    		% threadImpl
+    		% threadImpl->m_threadDataPtr->m_threadId).c_str());
 }
 
 void ThreadData::destroy (void * pdata)
@@ -375,9 +422,9 @@ void ThreadData::destroy (void * pdata)
 	// TODO Check this sentence in debug
     //pthread_setspecific(m_key, pdata);
 
-    ThreadData * threadDataPtr = static_cast<ThreadData *>(pdata);
+    //ThreadData * threadDataPtr = static_cast<ThreadData *>(pdata);
 
-    CWT_ASSERT(threadDataPtr->m_thread);
+    //CWT_ASSERT(threadDataPtr->m_thread);
 /*
     if (data->m_isAdopted) {
         Thread * thread = data->m_thread;
@@ -388,9 +435,6 @@ void ThreadData::destroy (void * pdata)
     }
 */
 
-    // ... but we must reset it to zero before returning so we aren't
-    // called again (POSIX allows implementations to call destructor
-    // functions repeatedly until all values are zero)
     pthread_setspecific(threadKey, nullptr);
 }
 

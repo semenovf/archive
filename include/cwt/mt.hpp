@@ -21,8 +21,9 @@ class DLL_API cwt_single_threaded {
 public:
 	cwt_single_threaded() { ; }
 	virtual ~cwt_single_threaded() { ; }
-	virtual void lock()	{ ;	}
-	virtual void unlock() {	; }
+	void lock()	{ ;	}
+	void tryLock() { ; }
+	void unlock() {	; }
 
 	cwt_mutex_t * handlePtr() const { return nullptr; }
 };
@@ -47,9 +48,9 @@ public:
 	multi_threaded_global(const multi_threaded_global&) { ; }
 	virtual ~multi_threaded_global() { mt_destroy(g_mutex); }
 
-	virtual void lock()    { mt_lock(g_mutex); }
-	virtual void tryLock() { mt_try_lock(g_mutex); }
-	virtual void unlock()  { mt_unlock(g_mutex); }
+	void lock()    { mt_lock(g_mutex); }
+	void tryLock() { mt_try_lock(g_mutex); }
+	void unlock()  { mt_unlock(g_mutex); }
 
 	static multi_threaded_global & getPolicy() { static multi_threaded_global mtp; return mtp; }
 	static cwt_mutex_t * handlePtr() { return & g_mutex; }
@@ -65,9 +66,9 @@ public:
 	//multi_threaded_local(const multi_threaded_local&) { InitializeCriticalSection(&m_critsec); }
 	virtual ~multi_threaded_local() { mt_destroy(m_mutex); }
 
-	virtual void lock()    { mt_lock(m_mutex); }
-	virtual void tryLock() { mt_try_lock(m_mutex); }
-	virtual void unlock()  { mt_unlock(m_mutex); }
+	void lock()    { mt_lock(m_mutex); }
+	void tryLock() { mt_try_lock(m_mutex); }
+	void unlock()  { mt_unlock(m_mutex); }
 
 	cwt_mutex_t * handlePtr() { return & m_mutex; }
 private:
@@ -94,6 +95,10 @@ public:
 	AutoLock(mt_policy * mtx) : m_mutex(mtx) { m_mutex->lock(); }
 	~AutoLock() { m_mutex->unlock(); }
 
+	void lock()    { m_mutex->lock(); }
+	void tryLock() { m_mutex->tryLock(); }
+	void unlock()  { m_mutex->unlock(); }
+
 	mt_policy * handlePtr() const { return m_mutex; }
 private:
 	mt_policy * m_mutex;
@@ -106,6 +111,10 @@ public:
 	AutoUnlock(mt_policy * mtx) : m_mutex(mtx) { m_mutex->unlock(); }
 	~AutoUnlock() { m_mutex->lock(); }
 
+	void lock()    { m_mutex->lock(); }
+	void tryLock() { m_mutex->tryLock(); }
+	void unlock()  { m_mutex->unlock(); }
+
 	mt_policy * handlePtr() const { return m_mutex; }
 private:
 	mt_policy * m_mutex;
@@ -117,6 +126,11 @@ public:
 #ifndef CWT_SINGLE_THREADED
 	AutoLockGlobal() { multi_threaded_global::getPolicy().lock(); }
 	~AutoLockGlobal() { multi_threaded_global::getPolicy().unlock(); }
+
+	void lock()    { multi_threaded_global::getPolicy().lock(); }
+	void tryLock() { multi_threaded_global::getPolicy().tryLock(); }
+	void unlock()  { multi_threaded_global::getPolicy().unlock(); }
+
 #else
 	AutoLockGlobal() { ; }
 	~AutoLockGlobal() { ; }
@@ -134,7 +148,12 @@ protected:                                                      \
 		AutoLock(ClassName * base)                              \
 			: m_base(base) { m_base->m_mutex.lock(); }          \
 		~AutoLock() { m_base->m_mutex.unlock(); }               \
-		Mutex * mutexPtr() const { return & m_base->m_mutex; }  \
+		Mutex * handlePtr() const { return & m_base->m_mutex; } \
+		                                                        \
+		void lock()    { m_base->m_mutex.lock(); }              \
+		void tryLock() { m_base->m_mutex.tryLock(); }           \
+		void unlock()  { m_base->m_mutex.unlock(); }            \
+                                                                \
 	private:                                                    \
 		ClassName * m_base;                                     \
 	};                                                          \

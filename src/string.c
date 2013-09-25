@@ -17,7 +17,7 @@ static long_t __str_to_long_helper(const char *s, bool *pok, int base, long_t mi
 	char *endptr = nullptr;
 
 	errno = 0;
-#ifdef CWT_HAS_INT64
+#ifdef CWT_HAVE_INT64
 	long_t r = strtoll(s, & endptr, base);
 #else
 	long_t r = strtol(s, & endptr, base);
@@ -44,7 +44,7 @@ static ulong_t	__str_to_ulong_helper(const char *s, bool *pok, int base, ulong_t
 	char *endptr = nullptr;
 
 	errno = 0;
-#ifdef CWT_HAS_INT64
+#ifdef CWT_HAVE_INT64
 	ulong_t r = strtoull(s, & endptr, base);
 #else
 	ulong_t r = strtoul(s, & endptr, base);

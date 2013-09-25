@@ -91,6 +91,15 @@ public:
 	SafeFormat & arg (const String & s)     { return operator () (UniType(s)); }
 	SafeFormat & arg (const ByteArray & ba) { return operator () (UniType(ba)); }
 
+#ifdef CWT_HAVE_INT64
+	SafeFormat & operator () (long n)             { return operator () (UniType(n)); }
+	SafeFormat & operator () (unsigned long n)    { return operator () (UniType(n)); }
+	SafeFormat & operator %  (long n)             { return operator () (n); }
+	SafeFormat & operator %  (unsigned long n)    { return operator () (n); }
+	SafeFormat & arg         (long n)             { return operator () (n); }
+	SafeFormat & arg         (unsigned long n)    { return operator () (n); }
+#endif
+
 private:
 	shared_ptr<SafeFormatContext> m_context;
 };

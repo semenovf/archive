@@ -16,7 +16,7 @@ extern "C" {
     long _InterlockedDecrement(long volatile *);
     long _InterlockedExchangeAdd(long volatile *, long);
 
-#ifdef CWT_HAS_INT64
+#ifdef CWT_HAVE_INT64
     __int64 _InterlockedExchangeAdd64(__int64 volatile *, __int64);
 #endif
 }

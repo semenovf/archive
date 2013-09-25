@@ -48,9 +48,9 @@ struct ThreadData
 	static pthread_key_t  threadKey;
 #endif
 
-	Thread *      m_thread;
-	pthread_t     m_threadId;
-	ThreadCV      m_threadFinished;
+	Thread *  m_thread;
+	pthread_t m_threadId;
+	ThreadCV  m_threadFinished;
 };
 
 inline void ThreadData::set (ThreadData * data)
@@ -86,34 +86,6 @@ inline void ThreadData::createKey ()
 {
     pthread_key_create(& threadKey, ThreadData::destroy);
 }
-
-/*
-ThreadData * ThreadData::current ()
-{
-    ThreadData * data = get();
-*/
-
-/*
-    if (! data) {
-        data = new ThreadData;
-        if (true) { // TODO try ?
-        	ThreadData::set(data);
-            data->m_thread = new QAdoptedThread(data);
-        } else  { // catch(...)
-        	ThreadData::clear();
-            data->deref();
-            data = 0;
-            // QT_RETHROW; // TODO throw ?
-        }
-        data->deref();
-        data->m_isAdopted = true;
-        data->m_threadId = pthread_self();
-    }
-*/
-/*
-    return data;
-}
-*/
 
 CWT_NS_END
 

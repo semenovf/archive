@@ -80,7 +80,6 @@ bool ThreadCV::Impl::wait (Mutex & lockedMutex, ulong_t timeout)
 	int rc = 0;
 	{
     	// XXX Does the order of lock/unlock operations matter?
-
         CWT_VERIFY(!pthread_mutex_lock(& m_internalMutex));
         lockedMutex.unlock();
 

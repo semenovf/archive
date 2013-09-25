@@ -21,7 +21,7 @@ template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<unsigned int>::g_mute
 template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<long int>::g_mutex;
 template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<unsigned long int>::g_mutex;
 
-#ifdef CWT_HAS_INT64
+#ifdef CWT_HAVE_INT64
 template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<long long int>::g_mutex;
 template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<unsigned long long int>::g_mutex;
 #endif

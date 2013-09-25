@@ -7,6 +7,7 @@
 
 #include <cwt/test.h>
 #include <cwt/string.hpp>
+#include <cwt/safeformat.hpp>
 #include <cwt/thread.hpp>
 #include <cwt/random.hpp>
 #include <iostream>
@@ -22,9 +23,15 @@ public:
 
 	virtual void run()
 	{
-		Random r (time(nullptr));
+		CWT_ASSERT(isRunning());
+
+		Random r (12345/*time(nullptr)*/);
 		int t = r.random();
-		std::cout << "Thread [" << m_name.c_str() << _Tr("]: Sleeping for ") << t << " nanoseconds" << std::endl;
+		t = t < 1000000
+				? 1000000
+				: t > 3000000 ? 3000000 : t;
+
+		std::cout << "Thread [" << m_name.c_str() << _Tr("]: Sleeping for ") << t << " microseconds" << std::endl;
 		usleep(t);
 	}
 private:
@@ -44,30 +51,66 @@ void test_threads(int nthreads)
 
 	// Initialize threads
 	for(int i = 0; i < nthreads; ++i) {
-		threads[i] = new TestThread();
+		threads[i] = new TestThread(_F("Thread_%04d") % i);
+		CWT_ASSERT(threads[i]);
 	}
 
 	for(int i = 0; i < nthreads; ++i) {
-		threads[i]->start();
+		if (threads[i]) {
+			threads[i]->start(Thread::InheritPriority);
+		}
 	}
 
 	for(int i = 0; i < nthreads; ++i) {
-		threads[i]->wait();
+		if (threads[i] && threads[i]->isRunning()) {
+			threads[i]->wait();
+		}
 	}
 
 
+	for(int i = 0; i < nthreads; ++i) {
+		if (threads[i])
+			delete threads[i];
+	}
 	delete[] threads;
 }
 
+
+void test_wait_timeout ()
+{
+	struct X : public Thread {
+		virtual void run ()
+		{
+			sleep(2);
+		}
+	};
+
+	struct Y : public Thread {
+		virtual void run ()
+		{
+			sleep(5);
+		}
+	};
+
+//	X x;
+//	x.start();
+//	CWT_TEST_OK(x.wait(5000));  // ok => timeout > thread's execution time
+
+	Y y;
+	y.start();
+	CWT_TEST_NOK(y.wait(2000)); // nok => timeout < thread's execution time
+	y.terminate();
+}
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(4);
+	CWT_BEGIN_TESTS(2);
 
-	test_thread();
-	if (0) test_threads(10);
+	if (0) test_thread();
+	if (0) test_threads(350);
+	if (1) test_wait_timeout();
 
     CWT_END_TESTS;
 }

@@ -31,24 +31,21 @@ public:
 
 public:
 	Thread();
-	virtual ~Thread() {}
+	virtual ~Thread();
 
-//	void	 exit (int returnCode = 0);
 	bool	 isFinished () const;
 	bool	 isRunning () const;
 	Priority priority () const;
 	void	 setPriority (Priority priority);
 	size_t	 stackSize () const;
 	bool	 wait (ulong_t timeout = CWT_ULONG_MAX);
-//	void	 quit ();
 	void	 start (Priority priority = InheritPriority, size_t stackSize = 0);
 	void	 terminate ();
 
-	void     sleep (ulong_t secs);
-	void     msleep (ulong_t msecs);
-	void     usleep (ulong_t usecs);
-
-//	static   Thread* currentThread ();
+protected:
+	static void sleep (ulong_t secs);
+	static void msleep (ulong_t msecs);
+	static void usleep (ulong_t usecs);
 
 	// To allow other threads to continue execution, the main thread should terminate by calling pthread_exit() rather than exit(3).
 	//
