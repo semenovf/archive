@@ -87,26 +87,7 @@ Thread::Impl::Impl (Thread * threadPtr)
 
 Thread::Impl::~Impl ()
 {
-	CWT_TRACE("Thread::Impl::~Impl ()");
-
-    AutoLock<> locker(& m_mutex);
-    if (m_state == ThreadFinishing) {
-        locker.handlePtr()->unlock();
-        wait();
-        locker.handlePtr()->tryLock();
-    }
-
-    if (! isFinished()) {
-    	CWT_SYS_WARN(_Tr("Attempt to destroy thread while it is still running"));
-    } else {
-		if (m_threadDataPtr != nullptr) {
-			m_threadDataPtr->m_threadId = 0;
-			delete m_threadDataPtr;
-			m_threadDataPtr = nullptr;
-		}
-    }
-
-    m_threadDataPtr->m_thread = nullptr; // detach from Thread instance
+	m_threadDataPtr->deref();
 }
 
 
@@ -258,7 +239,8 @@ void * Thread::Impl::start_routine (void * arg)
     		% threadImpl->m_threadDataPtr->m_threadId).c_str());
 
     Thread * thisThread = threadImpl->m_threadDataPtr->m_thread;
-    //ThreadData::set(thisThread->pimpl->m_threadDataPtr);
+
+    ThreadData::set(threadImpl->m_threadDataPtr);
 
     // The cancelability state and type of any newly created threads,
     // including the thread in which main() was first invoked, shall be
@@ -273,7 +255,7 @@ void * Thread::Impl::start_routine (void * arg)
     		% threadImpl
     		% threadImpl->m_threadDataPtr->m_threadId).c_str());
 
-    pthread_cleanup_pop(1);
+    pthread_cleanup_pop(true);
 
     return nullptr;
 }
@@ -287,7 +269,6 @@ void Thread::Impl::finish_routine (void * arg)
     CWT_ASSERT(threadImpl->m_threadDataPtr);
 
     AutoLock<> locker(& threadImpl->m_mutex);
-
 
     CWT_TRACE(String(_Fr("finish_routine: BEGIN: threadImpl = %p, m_threadId = %d")
     		% threadImpl

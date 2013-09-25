@@ -48,6 +48,11 @@ struct ThreadData
 	static pthread_key_t  threadKey;
 #endif
 
+	atomic_int __ref;
+
+	void ref()   { __ref.ref(); }
+	void deref() { if (! __ref.deref()) delete this; }
+
 	Thread *  m_thread;
 	pthread_t m_threadId;
 	ThreadCV  m_threadFinished;

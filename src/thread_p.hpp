@@ -30,6 +30,7 @@ public:
 	~Impl ();
 
 	bool   isRunning () const;
+	bool   isFinishing () const;
 	bool   isFinished () const;
 	Thread::Priority priority() const;
 	size_t stackSize () const;
@@ -68,6 +69,12 @@ private:
 
 	friend class Thread;
 };
+
+inline bool Thread::Impl::isFinishing () const
+{
+    return m_state == ThreadFinishing;
+}
+
 
 inline bool Thread::Impl::isFinished () const
 {
