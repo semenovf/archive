@@ -92,14 +92,35 @@ void test_wait_timeout ()
 		}
 	};
 
-//	X x;
-//	x.start();
-//	CWT_TEST_OK(x.wait(5000));  // ok => timeout > thread's execution time
+	struct Z : public Thread {
+		virtual void run ()
+		{
+			//sleep(0);
+		}
+	};
 
+
+/*
+	X x;
+	x.start();
+	CWT_TEST_OK(x.wait(5000));  // ok => timeout > thread's execution time
+*/
+
+/*
 	Y y;
 	y.start();
-//	CWT_TEST_NOK(y.wait(2000)); // nok => timeout < thread's execution time
-//	y.terminate();
+	//CWT_TEST_NOK(y.wait(2000)); // nok => timeout < thread's execution time
+	y.terminate();
+*/
+
+//	Z z0;
+
+	Z z1;
+	z1.start();
+
+//	Z z2;
+//	z2.start();
+//	z2.wait();
 }
 
 int main(int argc, char *argv[])

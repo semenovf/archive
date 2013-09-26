@@ -28,10 +28,15 @@ CWT_NS_BEGIN
 struct ThreadData
 {
 	ThreadData(Thread * thread)
-		: m_thread(thread)
+		: __ref(1)
+		, m_mutex()
+		, m_thread(thread)
 		, m_threadId(0)
 		, m_threadFinished()
+		, m_state(ThreadNotRunning)
 	{}
+
+	~ThreadData () { CWT_TRACE("~ThreadData()"); }
 
 //	static ThreadData * current ();
 
@@ -53,9 +58,11 @@ struct ThreadData
 	void ref()   { __ref.ref(); }
 	void deref() { if (! __ref.deref()) delete this; }
 
+	Mutex     m_mutex;
 	Thread *  m_thread;
 	pthread_t m_threadId;
 	ThreadCV  m_threadFinished;
+	ThreadState m_state;
 };
 
 inline void ThreadData::set (ThreadData * data)

@@ -17,7 +17,7 @@ CWT_NS_BEGIN
 
 class DLL_API ByteArray
 {
-	CWT_PIMPL_DECL_COPYABLE(ByteArray);
+	CWT_PIMPL_DECL_COPYABLE(ByteArray)
 public:
 	typedef char char_type;
 

@@ -43,6 +43,9 @@ public:
     typedef atomic_integer_intrinsics<T> intrinsics;
     typename intrinsics::Type m_value;
 
+    atomic_integer() {}
+    atomic_integer(Type value) { store(value); }
+
     // Non-atomic API
     Type load() const { return intrinsics::load(m_value); }
     void store(Type newValue) { intrinsics::store((Type &)m_value, newValue); }
@@ -64,6 +67,9 @@ class atomic_pointer
 public:
     typedef atomic_integer_intrinsics<Type> intrinsics;
     typename intrinsics::Type m_value;
+
+    atomic_pointer () {}
+    atomic_pointer (Type value) { store(value); }
 
     // Non-atomic API
     Type load() const { return intrinsics::load(m_value); }

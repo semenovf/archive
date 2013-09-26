@@ -75,21 +75,67 @@ static bool __map_to_posix_priority (Thread::Priority priority, int * posixPolic
 #endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
 
 Thread::Impl::Impl (Thread * threadPtr)
-	: m_mutex()
-	, m_stackSize(0)
+	: m_stackSize(0)
 	, m_priority(Thread::InheritPriority)
-	, m_state(ThreadNotRunning)
-	, m_threadDataPtr(nullptr)
+	, m_threadDataPtr(new ThreadData(threadPtr))
 {
-	m_threadDataPtr = new ThreadData(threadPtr);
 }
 
 
 Thread::Impl::~Impl ()
 {
+    AutoLock<> locker(& m_threadDataPtr->m_mutex);
+    if (m_threadDataPtr->m_state == ThreadFinishing) {
+        locker.unlock();
+        wait();
+        locker.tryLock();
+    }
+
+	m_threadDataPtr->m_thread = nullptr; // detach from parent thread
+
+/*
+    if (! (m_threadDataPtr->m_state == ThreadNotRunning
+    		|| m_threadDataPtr->m_state == ThreadFinished
+    		|| m_threadDataPtr->m_state == ThreadFinishing)) {
+*/
+    if (m_threadDataPtr->m_state == ThreadRunning) {
+    	CWT_SYS_WARN(_Tr("Attempt to destroy thread while it is still running"));
+
+    	locker.unlock();
+    	terminate();
+    	finalize(m_threadDataPtr);
+    	locker.tryLock();
+    }
+
 	m_threadDataPtr->deref();
+	m_threadDataPtr = nullptr;
 }
 
+
+bool Thread::Impl::isFinished () const
+{
+	AutoLock<>(& m_threadDataPtr->m_mutex);
+    return m_threadDataPtr->m_state == ThreadFinished
+    		|| m_threadDataPtr->m_state == ThreadFinishing;
+}
+
+bool Thread::Impl::isRunning () const
+{
+	AutoLock<>(& m_threadDataPtr->m_mutex);
+    return m_threadDataPtr->m_state == ThreadRunning;
+}
+
+Thread::Priority Thread::Impl::priority() const
+{
+	AutoLock<>(& m_threadDataPtr->m_mutex);
+    return m_priority;
+}
+
+size_t Thread::Impl::stackSize() const
+{
+	AutoLock<>(& m_threadDataPtr->m_mutex);
+    return m_stackSize;
+}
 
 bool Thread::Impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
 {
@@ -123,15 +169,15 @@ bool Thread::Impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
 void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 {
 	int rc = 0;
-	AutoLock<> locker(& m_mutex);
+	AutoLock<> locker(& m_threadDataPtr->m_mutex);
 
-	if (m_state == ThreadFinishing)
+	if (m_threadDataPtr->m_state == ThreadFinishing)
 		m_threadDataPtr->m_threadFinished.wait(*locker.handlePtr());
 
-	if (m_state == ThreadRunning)
+	if (m_threadDataPtr->m_state == ThreadRunning)
 		return;
 
-	m_state = ThreadRunning;
+	m_threadDataPtr->m_state = ThreadRunning;
 
 	pthread_attr_t attr;
 
@@ -197,9 +243,9 @@ void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 			if (! setStackSize(attr, stackSize))
 				break;
 
-			rc = pthread_create(& m_threadDataPtr->m_threadId, & attr, & Thread::Impl::start_routine, this);
+			rc = pthread_create(& m_threadDataPtr->m_threadId, & attr, & Thread::Impl::thread_routine, this);
 			if (rc) {
-				m_state = ThreadNotRunning;
+				m_threadDataPtr->m_state = ThreadNotRunning;
 				m_threadDataPtr->m_threadId = 0;
 				CWT_SYS_ERROR_RC(rc, _Tr("Failed to create thread"));
 #ifdef __COMMENT__
@@ -223,58 +269,70 @@ void Thread::Impl::start (Thread::Priority priority, size_t stackSize)
 	pthread_attr_destroy(& attr);
 }
 
-
-void * Thread::Impl::start_routine (void * arg)
+void * Thread::Impl::thread_routine (void * arg)
 {
+    // If a cancellation request is received,
+    // it is blocked until cancelability is enabled.
     CWT_VERIFY(!pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
 
-    pthread_cleanup_push(& Thread::Impl::finish_routine, arg);
-
+	CWT_ASSERT(arg);
     Thread::Impl * threadImpl = reinterpret_cast<Thread::Impl *>(arg);
-    CWT_ASSERT(threadImpl);
-    CWT_ASSERT(threadImpl->m_threadDataPtr);
+
+    //CWT_ASSERT(threadImpl->m_threadDataPtr);
+//    if (!threadImpl->m_threadDataPtr) // Thread already destructed
+    	return nullptr;
+
+//    CWT_ASSERT(threadImpl->m_threadDataPtr->m_threadId);
+
+    pthread_cleanup_push(& Thread::Impl::finalize, threadImpl->m_threadDataPtr);
 
     CWT_TRACE(String(_Fr("start_routine: BEGIN: threadImpl = %p, m_threadId = %d")
     		% threadImpl
     		% threadImpl->m_threadDataPtr->m_threadId).c_str());
 
-    Thread * thisThread = threadImpl->m_threadDataPtr->m_thread;
+    //ThreadData::set(threadImpl->m_threadDataPtr); // set thread-specific data
+    //threadImpl->m_threadDataPtr->ref();
 
-    ThreadData::set(threadImpl->m_threadDataPtr);
-
-    // The cancelability state and type of any newly created threads,
-    // including the thread in which main() was first invoked, shall be
-    // PTHREAD_CANCEL_ENABLE and PTHREAD_CANCEL_DEFERRED respectively.
     CWT_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr));
     CWT_VERIFY(0 == pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr));
     pthread_testcancel();
 
+    Thread * thisThread = threadImpl->m_threadDataPtr->m_thread;
+    if (!thisThread) { // detached
+    	CWT_TRACE(_Tr("start_routine: DETACHED"));
+    	return nullptr;
+    }
+
     thisThread->run(); // Do the job
+
+    //threadImpl->m_threadDataPtr->deref();
 
     CWT_TRACE(String(_Fr("start_routine: END: threadImpl = %p, m_threadId = %d")
     		% threadImpl
     		% threadImpl->m_threadDataPtr->m_threadId).c_str());
 
-    pthread_cleanup_pop(true);
+    pthread_cleanup_pop(true); // calls finalize() routine
 
     return nullptr;
 }
 
-void Thread::Impl::finish_routine (void * arg)
+void Thread::Impl::finalize (void * arg)
 {
 	CWT_ASSERT(arg);
-	Thread::Impl * threadImpl = reinterpret_cast<Thread::Impl *>(arg);
+	ThreadData * threadDataPtr = reinterpret_cast<ThreadData *>(arg);
 
-	CWT_ASSERT(threadImpl);
-    CWT_ASSERT(threadImpl->m_threadDataPtr);
+    AutoLock<> locker(& threadDataPtr->m_mutex);
 
-    AutoLock<> locker(& threadImpl->m_mutex);
+    if (threadDataPtr->m_state != ThreadRunning) // already Finishing/Finished
+    	return;
 
-    CWT_TRACE(String(_Fr("finish_routine: BEGIN: threadImpl = %p, m_threadId = %d")
-    		% threadImpl
-    		% threadImpl->m_threadDataPtr->m_threadId).c_str());
+    CWT_ASSERT(threadDataPtr->m_threadId);
 
-    threadImpl->m_state = ThreadFinishing;
+    threadDataPtr->m_state = ThreadFinishing;
+
+    CWT_TRACE(String(_Fr("finish_routine: BEGIN: m_threadId = %d")
+    		% threadDataPtr->m_threadId).c_str());
+
 
     // Delete thread storage data
 /*
@@ -282,22 +340,123 @@ void Thread::Impl::finish_routine (void * arg)
     QThreadStorageData::finish((void **)data);
     locker.relock();
 */
-    CWT_ASSERT(threadImpl->m_threadDataPtr);
-    threadImpl->m_state = ThreadFinished;
-    threadImpl->m_threadDataPtr->m_threadFinished.wakeAll();
+    threadDataPtr->m_threadFinished.wakeAll();
 
-    threadImpl->m_threadDataPtr->m_threadId = 0;
-    CWT_TRACE(String(_Fr("finish_routine: END: threadImpl = %p, m_threadId = %d")
-    		% threadImpl
-    		% threadImpl->m_threadDataPtr->m_threadId).c_str());
+    CWT_TRACE(String(_Fr("finish_routine: END: m_threadId = %d")
+    		% threadDataPtr->m_threadId).c_str());
+
+    threadDataPtr->m_threadId = 0;
+    threadDataPtr->m_state = ThreadFinished;
 }
+
+
+/*
+ *   |              Thread                    pthread
+ *   | terminate()     |                         |
+ *   ----------------->|     pthread_cancel()    |
+ *                     |------------------------>|
+ *                                               |----
+ *                                               |   | 1. Cancellation clean-up handlers are popped
+ *                                               |   |    (in the reverse of the order in which they were pushed)
+ *                                           ----|   |    and called (see pthread_cleanup_push(3))
+ *       2. Thread-specific data destructors |   |<---
+ *          are called, in an unspecified    |   |
+ *          order (see pthread_key_create(3))|   |----
+ *                                           --->|   |
+ *                                               |   | 3. The thread is terminated (see pthread_exit(3))
+ *                                               |   |
+ *                                               |<---
+ *                                               |
+ *
+ *  The above steps happen asynchronously.
+ */
+void Thread::Impl::terminate ()
+{
+    AutoLock<> locker(& m_threadDataPtr->m_mutex);
+
+    CWT_TRACE(String(_Fr("Terminating: m_threadId = %d") % m_threadDataPtr->m_threadId).c_str());
+
+    if (! m_threadDataPtr->m_threadId)
+        return;
+
+    CWT_TRACE(String(_Fr("Canceling: m_threadId = %d") % m_threadDataPtr->m_threadId).c_str());
+    int rc = pthread_cancel(m_threadDataPtr->m_threadId);
+    if (rc) {
+    	CWT_SYS_ERROR_RC(rc, _Tr("Thread termination error"));
+    }
+}
+
+bool Thread::Impl::wait (ulong_t timeout)
+{
+
+	CWT_TRACE("Thread::Impl::wait(): mutex before locking");
+
+    AutoLock<> locker(& m_threadDataPtr->m_mutex);
+
+    CWT_TRACE("Thread::Impl::wait(): mutex locked");
+
+    if (m_threadDataPtr->m_threadId == pthread_self()) {
+    	CWT_SYS_ERROR(_Tr("PosixThreadImpl::wait(): Attempt to wait on itself"));
+        return false;
+    }
+
+    while (m_threadDataPtr->m_state == ThreadRunning) {
+    	CWT_TRACE("Thread::Impl::wait(): while ThreadRunning");
+
+    	if (timeout == CWT_ULONG_MAX) {
+    		if (! m_threadDataPtr->m_threadFinished.wait(m_threadDataPtr->m_mutex))
+    			return false;
+    	} else {
+    		if (! m_threadDataPtr->m_threadFinished.wait(m_threadDataPtr->m_mutex, timeout))
+    			return false;
+    	}
+    }
+    return true;
+}
+
+
+void ThreadData::destroy (void * pdata)
+{
+	CWT_ASSERT(pdata);
+
+	ThreadData * threadDataPtr = reinterpret_cast<ThreadData *>(pdata);
+
+    AutoLock<> locker(& threadDataPtr->m_mutex);
+
+    // POSIX says the value in our key is set to zero before calling
+    // this destructor function, so we need to set it back to the
+    // right value...
+
+	CWT_TRACE(String(_Fr("ThreadData::destroy: pdata = %p") % pdata).c_str());
+
+	// TODO Check this sentence in debug
+    //pthread_setspecific(m_key, pdata);
+
+/*
+    ThreadData * threadDataPtr = static_cast<ThreadData *>(pdata);
+    CWT_ASSERT(threadDataPtr);
+*/
+    threadDataPtr->deref();
+/*
+    if (data->m_isAdopted) {
+        Thread * thread = data->m_thread;
+        CWT_ASSERT(thread);
+        PosixThreadImpl * thread_p = static_cast<PosixThreadImpl *>(thread->pimpl);
+        CWT_ASSERT(! thread_p->isFinished());
+        thread_p->finish(thread);
+    }
+*/
+
+    pthread_setspecific(threadKey, nullptr);
+}
+
 
 
 void Thread::Impl::setPriority(Thread::Priority priority)
 {
-    AutoLock<> locker(& m_mutex);
+    AutoLock<> locker(& m_threadDataPtr->m_mutex);
 
-    if (m_state != ThreadRunning) {
+    if (m_threadDataPtr->m_state != ThreadRunning) {
     	CWT_SYS_WARN("Unable to set thread priority: thread must be in running state");
         return;
     }
@@ -335,90 +494,6 @@ void Thread::Impl::setPriority(Thread::Priority priority)
     }
 #	endif
 #endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
-}
-
-/*
- *   |              Thread                    pthread
- *   | terminate()     |                         |
- *   ----------------->|     pthread_cancel()    |
- *                     |------------------------>|
- *                                               |----
- *                                               |   | 1. Cancellation clean-up handlers are popped
- *                                               |   |    (in the reverse of the order in which they were pushed)
- *                                           ----|   |    and called (see pthread_cleanup_push(3))
- *       2. Thread-specific data destructors |   |<---
- *          are called, in an unspecified    |   |
- *          order (see pthread_key_create(3))|   |----
- *                                           --->|   |
- *                                               |   | 3. The thread is terminated (see pthread_exit(3))
- *                                               |   |
- *                                               |<---
- *                                               |
- *
- *  The above steps happen asynchronously.
- */
-void Thread::Impl::terminate ()
-{
-    AutoLock<> locker(& m_mutex);
-
-    CWT_TRACE(String(_Fr("Terminating: m_threadId = %d") % m_threadDataPtr->m_threadId).c_str());
-
-    if (! m_threadDataPtr->m_threadId)
-        return;
-
-    CWT_TRACE(String(_Fr("Canceling: m_threadId = %d") % m_threadDataPtr->m_threadId).c_str());
-    int rc = pthread_cancel(m_threadDataPtr->m_threadId);
-    if (rc) {
-    	CWT_SYS_ERROR_RC(rc, _Tr("Thread termination error"));
-    }
-}
-
-bool Thread::Impl::wait (ulong_t timeout)
-{
-    AutoLock<> locker(& m_mutex);
-
-    if (m_threadDataPtr->m_threadId == pthread_self()) {
-    	CWT_SYS_ERROR(_Tr("PosixThreadImpl::wait(): Attempt to wait on itself"));
-        return false;
-    }
-
-    while (m_state == ThreadRunning) {
-    	if (timeout == CWT_ULONG_MAX) {
-    		if (! m_threadDataPtr->m_threadFinished.wait(m_mutex))
-    			return false;
-    	} else {
-    		if (! m_threadDataPtr->m_threadFinished.wait(m_mutex, timeout))
-    			return false;
-    	}
-    }
-    return true;
-}
-
-
-void ThreadData::destroy (void * pdata)
-{
-	CWT_ASSERT(pdata);
-    // POSIX says the value in our key is set to zero before calling
-    // this destructor function, so we need to set it back to the
-    // right value...
-
-	// TODO Check this sentence in debug
-    //pthread_setspecific(m_key, pdata);
-
-    //ThreadData * threadDataPtr = static_cast<ThreadData *>(pdata);
-
-    //CWT_ASSERT(threadDataPtr->m_thread);
-/*
-    if (data->m_isAdopted) {
-        Thread * thread = data->m_thread;
-        CWT_ASSERT(thread);
-        PosixThreadImpl * thread_p = static_cast<PosixThreadImpl *>(thread->pimpl);
-        CWT_ASSERT(! thread_p->isFinished());
-        thread_p->finish(thread);
-    }
-*/
-
-    pthread_setspecific(threadKey, nullptr);
 }
 
 

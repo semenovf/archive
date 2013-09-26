@@ -40,7 +40,7 @@ struct DLL_API Utf8Entry
 
 class DLL_API Utf8String
 {
-	CWT_PIMPL_DECL_COPYABLE(Utf8String);
+	CWT_PIMPL_DECL_COPYABLE(Utf8String)
 public:
 	typedef UChar char_type;
 	static const Utf8String EndOfLine;

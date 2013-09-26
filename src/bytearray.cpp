@@ -20,7 +20,7 @@ CWT_NS_BEGIN
 
 const ByteArray ByteArray::EndOfLine(1, '\n');
 
-CWT_PIMPL_IMPL_COPYABLE(ByteArray);
+CWT_PIMPL_IMPL_COPYABLE(ByteArray)
 
 DLL_API uint_t hash_func(const ByteArray & key, uint_t seed)
 {

@@ -28,7 +28,7 @@ class DLL_API BitArray
 		size_t          nbits;
 	};
 
-	CWT_PIMPL_COPYABLE(BitArray);
+	CWT_PIMPL_COPYABLE(BitArray)
 
 public:
 	BitArray ();
