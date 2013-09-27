@@ -42,6 +42,7 @@ public:
 	void	 start (Priority priority = InheritPriority, size_t stackSize = 0);
 	void	 terminate ();
 
+	static void yieldCurrentThread ();
 protected:
 	static void sleep (ulong_t secs);
 	static void msleep (ulong_t msecs);

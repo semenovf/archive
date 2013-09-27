@@ -20,7 +20,7 @@ ssize_t Fsm<_P>::exec(int state_cur, const Fsm<_P>::const_iterator & begin, cons
 	const_iterator ptr = begin;
 	size_t nchars_total_processed = 0;
 	size_t nchars_total_accepted  = 0;
-	const FsmTransition<_P> *trans;
+	const FsmTransition<_P> * trans;
 	bool accepted = false;
 
 	CWT_ASSERT(m_fsmContext);

@@ -109,18 +109,33 @@ void test_wait_timeout ()
 /*
 	Y y;
 	y.start();
-	//CWT_TEST_NOK(y.wait(2000)); // nok => timeout < thread's execution time
-	y.terminate();
+	CWT_TEST_NOK(y.wait(2000)); // nok => timeout < thread's execution time
 */
+
+/*
+	Y y0;
+	y0.start();
+	y0.terminate();
+	y0.wait();
+*/
+
+/*
+	Y y1;
+	y1.start();
+	y1.terminate();
+*/
+
 
 //	Z z0;
 
 	Z z1;
 	z1.start();
 
-//	Z z2;
-//	z2.start();
-//	z2.wait();
+/*
+	Z z2;
+	z2.start();
+	z2.wait();
+*/
 }
 
 int main(int argc, char *argv[])

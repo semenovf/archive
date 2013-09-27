@@ -87,7 +87,7 @@ public:
 		m_match->ref++; }
 	~FsmMatch() { deref(); }
 
-	ssize_t operator () (FsmContext<_P> *fsm, const const_iterator & begin, const const_iterator & end) const {
+	ssize_t operator () (FsmContext<_P> * fsm, const const_iterator & begin, const const_iterator & end) const {
 		return m_match->match(fsm, begin, end);
 	}
 private:

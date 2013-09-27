@@ -41,14 +41,16 @@ private:
 
 inline ThreadCV::Impl::Impl ()
 {
-    int rc = pthread_mutex_init(& m_internalMutex, nullptr);
-    if (rc)
-    	CWT_SYS_FATAL_RC(rc, _Tr("Failed to initialize internal mutex for conditional variable"));
+    int rc;
+    CWT_VERIFY_ERRNO(!(rc = pthread_mutex_init(& m_internalMutex, nullptr)), rc);
 
-    rc = pthread_cond_init(& m_cond, nullptr);
+    if (rc)
+    	CWT_FATAL(_Tr("Failed to initialize internal mutex for conditional variable"));
+
+    CWT_VERIFY_ERRNO(!(rc = pthread_cond_init(& m_cond, nullptr)), rc);
     if (rc) {
         CWT_VERIFY(!pthread_mutex_destroy (& m_internalMutex));
-        CWT_SYS_FATAL_RC(rc, _Tr("Unable to initialize condition variable"));
+        CWT_FATAL(_Tr("Unable to initialize condition variable"));
     }
 }
 
@@ -85,7 +87,7 @@ bool ThreadCV::Impl::wait (Mutex & lockedMutex, ulong_t timeout)
 
 		timespec abstime;
 		__calculate_abstime(timeout, & abstime);
-		rc = pthread_cond_timedwait(& m_cond, & m_internalMutex, & abstime);
+		CWT_VERIFY_ERRNO(!(rc = pthread_cond_timedwait(& m_cond, & m_internalMutex, & abstime)), rc);
 
         CWT_VERIFY(!pthread_mutex_unlock(& m_internalMutex));
         lockedMutex.lock();
@@ -93,9 +95,6 @@ bool ThreadCV::Impl::wait (Mutex & lockedMutex, ulong_t timeout)
 
 	if (rc == ETIMEDOUT)
 		return false;
-
-	if (rc)
-		CWT_SYS_FATAL_RC(rc, _Tr("Failed in pthread_cond_timedwait"));
 
    return (rc == 0);
 }
@@ -107,14 +106,14 @@ bool ThreadCV::Impl::wait(Mutex & lockedMutex)
         CWT_VERIFY(!pthread_mutex_lock(& m_internalMutex));
         lockedMutex.unlock();
 
-        rc = pthread_cond_wait(& m_cond, & m_internalMutex);
+        CWT_VERIFY_ERRNO(!(rc = pthread_cond_wait(& m_cond, & m_internalMutex)), rc);
 
         CWT_VERIFY(!pthread_mutex_unlock(& m_internalMutex));
         lockedMutex.lock();
     }
 
 	if (rc)
-		CWT_SYS_FATAL_RC(rc, _Tr("Failed in pthread_cond_wait"));
+		CWT_FATAL(_Tr("Failed in pthread_cond_wait"));
 
 	return true;
 }

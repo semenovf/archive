@@ -10,36 +10,9 @@
 
 CWT_NS_BEGIN
 
-Thread::Thread() : pimpl(new Thread::Impl(this)) { }
-
-Thread::~Thread()
-{
-	CWT_TRACE("Thread::~Thread()");
-}
-
-bool Thread::isFinished () const
-{
-	return pimpl->isFinished();
-}
-
-bool Thread::isRunning () const
-{
-	return pimpl->isRunning();
-}
-
-Thread::Priority Thread::priority () const
-{
-	return pimpl->priority();
-}
-
 void Thread::setPriority (Thread::Priority priority)
 {
 	pimpl->setPriority(priority);
-}
-
-size_t Thread::stackSize () const
-{
-	return pimpl->stackSize();
 }
 
 void Thread::start (Priority priority, size_t stackSize)

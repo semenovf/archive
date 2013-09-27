@@ -215,35 +215,4 @@ void Logger::fatal (int errn, const String & text)
 	}
 }
 
-
-// TODO sys_xxx methods must have separate appender(s)
-void Logger::sys_warn  (const String & text)
-{
-	warn(text);
-}
-
-void Logger::sys_warn  (int errn, const String & text)
-{
-	warn(errn, text);
-}
-
-void Logger::sys_error (const String & text)
-{
-	error(text);
-}
-
-void Logger::sys_error (int errn, const String & text)
-{
-	error(errn, text);
-}
-
-void Logger::sys_fatal (const String & text)
-{
-	fatal(text);
-}
-void Logger::sys_fatal (int errn, const String & text)
-{
-	fatal(errn, text);
-}
-
 CWT_NS_END

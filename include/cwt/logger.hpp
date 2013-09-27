@@ -16,23 +16,6 @@
 #include <cwt/vector.hpp>
 #include <cstdio>
 
-#define CWT_SYS_WARN(s) \
-		Logger::sys_warn(SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
-#define CWT_SYS_WARN_RC(rc, s) \
-		Logger::sys_warn(rc, SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
-
-#define CWT_SYS_ERROR(s) \
-		Logger::sys_error(SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
-#define CWT_SYS_ERROR_RC(rc, s) \
-		Logger::sys_error(rc, SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
-
-#define CWT_SYS_FATAL(s) \
-		Logger::sys_fatal(SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
-#define CWT_SYS_FATAL_RC(rc, s) \
-		Logger::sys_fatal(rc, SafeFormat("%s[%d]: %s") % String(__FILE__) % int(__LINE__) % s)
-
-#define CWT_VERIFY(expr) if (! (expr)) { CWT_SYS_ERROR(#expr); }
-
 CWT_NS_BEGIN
 
 class LogAppender;
@@ -54,13 +37,6 @@ public:
 	static void error (int errn, const String & text);
 	static void fatal (const String & text);
 	static void fatal (int errn, const String & text);
-
-	static void sys_warn  (const String & text);
-	static void sys_warn  (int errn, const String & text);
-	static void sys_error (const String & text);
-	static void sys_error (int errn, const String & text);
-	static void sys_fatal (const String & text);
-	static void sys_fatal (int errn, const String & text);
 
 private:
 	/*static Vector<LogAppender*> g_appenders;*/

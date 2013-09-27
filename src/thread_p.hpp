@@ -10,6 +10,7 @@
 
 #include "../include/cwt/thread.hpp"
 #include "../include/cwt/mt.hpp"
+#include "../include/cwt/threadcv.hpp"
 
 CWT_NS_BEGIN
 
@@ -25,13 +26,8 @@ enum ThreadState {
 class Thread::Impl
 {
 public:
-	explicit Impl (Thread * threadPtr);
+	explicit Impl (ThreadData * threadData = nullptr);
 	~Impl ();
-
-	bool   isRunning () const;
-	bool   isFinished () const;
-	Thread::Priority priority() const;
-	size_t stackSize () const;
 
 	void start (Thread::Priority priority = Thread::InheritPriority, size_t stackSize = 0);
 	void setPriority(Thread::Priority priority);
@@ -50,10 +46,13 @@ private:
 	bool setStackSize (pthread_attr_t & attr, size_t stackSize = 0);
 
 private:
+	Mutex            m_mutex;
 	size_t           m_stackSize;
 	Thread::Priority m_priority;
+	ThreadState      m_state;
+	ThreadCV         m_threadFinished;
 
-	ThreadData *     m_threadDataPtr;
+	ThreadData *     m_data;
 
 	friend class Thread;
 };
