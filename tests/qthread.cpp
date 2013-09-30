@@ -15,12 +15,16 @@ void test_qthread ()
 	struct X : public QThread {
 		virtual void run ()
 		{
-			//sleep(2);
+			sleep(5);
 		}
 	};
 
 	X x;
 	x.start();
+	if( !x.wait(1000) ) {
+		x.terminate();
+		x.wait();
+	}
 }
 
 int main(int argc, char *argv[])

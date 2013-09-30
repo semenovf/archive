@@ -6,6 +6,7 @@
  */
 
 #include <cwt/test.h>
+#include <cwt/trace.hpp>
 #include <cwt/string.hpp>
 #include <cwt/safeformat.hpp>
 #include <cwt/thread.hpp>
@@ -78,24 +79,39 @@ void test_threads(int nthreads)
 
 void test_wait_timeout ()
 {
-	struct X : public Thread {
+	struct X : public Thread
+	{
+		bool finished;
+		X() : Thread(), finished(false) {}
+
 		virtual void run ()
 		{
 			sleep(2);
+			finished = true;
 		}
 	};
 
-	struct Y : public Thread {
+	struct Y : public Thread
+	{
+		bool finished;
+		Y() : Thread(), finished(false) {}
+
 		virtual void run ()
 		{
 			sleep(5);
+			finished = true;
 		}
 	};
 
-	struct Z : public Thread {
+	struct Z : public Thread
+	{
+		bool finished;
+		Z() : Thread(), finished(false) {}
+
 		virtual void run ()
 		{
-			//sleep(0);
+			sleep(0);
+			finished = true;
 		}
 	};
 
@@ -104,20 +120,27 @@ void test_wait_timeout ()
 	X x;
 	x.start();
 	CWT_TEST_OK(x.wait(5000));  // ok => timeout > thread's execution time
+	CWT_TEST_OK(x.finished);
 */
-
 /*
 	Y y;
 	y.start();
 	CWT_TEST_NOK(y.wait(2000)); // nok => timeout < thread's execution time
+	CWT_TEST_NOK(y.finished);
+	y.terminate();
 */
 
 /*
+	Z z;
+	z.start();
+	CWT_TEST_OK(z.wait()); // ok => thread's routine finished;
+	CWT_TEST_OK(z.finished);
+*/
+
 	Y y0;
 	y0.start();
 	y0.terminate();
 	y0.wait();
-*/
 
 /*
 	Y y1;
@@ -125,11 +148,13 @@ void test_wait_timeout ()
 	y1.terminate();
 */
 
-
 //	Z z0;
 
+
+/*
 	Z z1;
 	z1.start();
+*/
 
 /*
 	Z z2;
@@ -142,12 +167,13 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-	CWT_BEGIN_TESTS(2);
+	CWT_BEGIN_TESTS(6);
 
 	if (0) test_thread();
 	if (0) test_threads(350);
 	if (1) test_wait_timeout();
 
+	Thread::exit();
     CWT_END_TESTS;
 }
 

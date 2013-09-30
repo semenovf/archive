@@ -22,54 +22,49 @@
 //#if defined(CWT_OS_LINUX) && defined(CWT_CC_GNUC)
 //#	define CWT_HAVE_TLS
 //#endif
+
 CWT_NS_BEGIN
+
 
 struct ThreadData
 {
-	ThreadData();
+	ThreadData ();
 	~ThreadData ();
 
-//	static ThreadData * current ();
-
-	static void set (ThreadData * data);
-	static ThreadData * get ();
+	static void set (void * data);
+	static void * get ();
 	static void clear ();
     static void createKey ();
-    static void destroy (void * pdata);
+    static void destroy (void * /*pdata*/);
 
 #ifdef CWT_HAVE_TLS
-    static __thread ThreadData * currentThreadData;
+    static __thread void * currentThreadData;
 #else
 	static pthread_once_t threadKeyOnce;
 	static pthread_key_t  threadKey;
 #endif
 
-	atomic_int __ref;
-
-	void ref()   { __ref.ref(); }
-	void deref() { if (! __ref.deref()) delete this; }
-
-	Thread *  m_thread;
-	pthread_t m_threadId;
+	shared_ptr<Thread::Impl> threadImpl;
+	pthread_t threadId;
 };
 
-inline void ThreadData::set (ThreadData * data)
+inline void ThreadData::set (void * data)
 {
 #ifdef CWT_HAVE_TLS // TODO use __thread
     currentThreadData = data;
 #else
-    pthread_once(& threadKeyOnce, ThreadData::createKey);
+    pthread_once(& threadKeyOnce, createKey);
     pthread_setspecific(threadKey, data);
 #endif
 }
 
-inline ThreadData * ThreadData::get ()
+inline void * ThreadData::get ()
 {
 #ifdef CWT_HAVE_TLS
     return currentThreadData;
 #else
     pthread_once(& threadKeyOnce, ThreadData::createKey);
-    return reinterpret_cast<ThreadData *>(pthread_getspecific(threadKey));
+    return pthread_getspecific(threadKey);
 #endif
 }
 
@@ -84,7 +79,7 @@ inline void ThreadData::clear ()
 
 inline void ThreadData::createKey ()
 {
-    pthread_key_create(& threadKey, ThreadData::destroy);
+    pthread_key_create(& threadKey, destroy);
 }
 
 CWT_NS_END

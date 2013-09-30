@@ -13,6 +13,8 @@
 
 CWT_NS_BEGIN
 
+struct ThreadData;
+
 class DLL_API Thread
 {
 	CWT_PIMPL_IMPL(Thread);
@@ -43,21 +45,20 @@ public:
 	void	 terminate ();
 
 	static void yieldCurrentThread ();
+
+	// Terminate main() function with Thread::exit() this call instead of exit(3) to make
+	// normal cleanup for application threads (including thread's specific data destruction)
+	static void exit (); // equivalent to pthread_exit() for POSIX systems
+
 protected:
 	static void sleep (ulong_t secs);
 	static void msleep (ulong_t msecs);
 	static void usleep (ulong_t usecs);
 
-	// To allow other threads to continue execution, the main thread should terminate by calling pthread_exit() rather than exit(3).
-	//
-	// main()
-	// {
-	// 		...
-	// 		pthread_exit(nullptr);
-	// }
-
 protected:
 	virtual void run () {}
+
+	friend class ThreadData;
 };
 
 CWT_NS_END

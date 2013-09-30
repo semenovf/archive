@@ -14,8 +14,6 @@
 
 CWT_NS_BEGIN
 
-struct ThreadData;
-
 enum ThreadState {
 	  ThreadNotRunning
 	, ThreadRunning
@@ -26,7 +24,7 @@ enum ThreadState {
 class Thread::Impl
 {
 public:
-	explicit Impl (ThreadData * threadData = nullptr);
+	explicit Impl ();
 	~Impl ();
 
 	void start (Thread::Priority priority = Thread::InheritPriority, size_t stackSize = 0);
@@ -51,10 +49,11 @@ private:
 	Thread::Priority m_priority;
 	ThreadState      m_state;
 	ThreadCV         m_threadFinished;
-
+	Thread *  		 m_thread;
 	ThreadData *     m_data;
 
 	friend class Thread;
+	friend struct ThreadData;
 };
 
 CWT_NS_END
