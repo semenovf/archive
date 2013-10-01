@@ -9,14 +9,15 @@
 #ifndef __CWT_ABNF_P_HPP__
 #define __CWT_ABNF_P_HPP__
 
-#include "cwt/abnf.hpp"
+#include "../include/cwt/abnf.hpp"
 #include <cwt/vector.hpp>
 #include <cwt/hash.hpp>
 #include <cwt/stack.hpp>
 
 CWT_NS_BEGIN
 
-#define _CAST_PARSE_CTX(ctx) reinterpret_cast<AbnfParseContext*>(ctx)
+#define __CAST_USER_CTX(userContext)   static_cast<AbnfContext *>(userContext)
+#define __CAST_PARSE_CTX(parseContext) static_cast<AbnfParseContext *>(parseContext)
 
 class AbnfNode
 {
@@ -126,7 +127,7 @@ struct AbnfParseContext
 	void      *userContext;
 	String    rulename; // rulename for the current rule
 	struct    { int from, to; } rpt;
-	AbnfSimpleApi &api;
+	AbnfSimpleApi & api;
 };
 
 CWT_NS_END
