@@ -23,12 +23,12 @@ static void __to_string_helper(std::ostream & os, const AbnfNode *parentNode)
 
 	for(; node != invalidNode; node++) {
 		AbnfNode *n = *node;
-		CWT_ASSERT(n->m_type != AbnfNode::Abnf_Rule);
+		CWT_ASSERT(n->m_type != Abnf_Rule);
 
 		os << delim;
 
 		switch(n->m_type) {
-		case AbnfNode::Abnf_Alternation:
+		case Abnf_Altern:
 			if(n->m_nodes.size() > 0) {
 				//printf(" _ALTER_{ ");
 				__to_string_helper(os, *node);
@@ -36,7 +36,7 @@ static void __to_string_helper(std::ostream & os, const AbnfNode *parentNode)
 			}
 			break;
 
-		case AbnfNode::Abnf_Concatenation:
+		case Abnf_Concat:
 			if (n->m_nodes.size() > 0) {
 				//printf(" _CONCAT_{ ");
 				__to_string_helper(os, *node);
@@ -44,10 +44,10 @@ static void __to_string_helper(std::ostream & os, const AbnfNode *parentNode)
 			}
 			break;
 
-		case AbnfNode::Abnf_Repetition:
+		case Abnf_Rpt:
 			if (n->m_nodes.size() > 0) {
-				int from = dynamic_cast<AbnfNodeRepetition*>(*node)->m_from;
-				int to = dynamic_cast<AbnfNodeRepetition*>(*node)->m_to;
+				int from = dynamic_cast<AbnfNodeRpt*>(*node)->m_from;
+				int to = dynamic_cast<AbnfNodeRpt*>(*node)->m_to;
 
 //				printf("%d*%d", from, to);
 				if (from == 1 && to == 1) {
@@ -65,7 +65,7 @@ static void __to_string_helper(std::ostream & os, const AbnfNode *parentNode)
 			__to_string_helper(os, *node);
 			break;
 
-		case AbnfNode::Abnf_GroupElement:
+		case Abnf_Group:
 			if (n->m_nodes.size() > 0) {
 				os << "(";
 				__to_string_helper(os, *node);
@@ -73,7 +73,7 @@ static void __to_string_helper(std::ostream & os, const AbnfNode *parentNode)
 			}
 			break;
 
-		case AbnfNode::Abnf_OptionElement:
+		case Abnf_Option:
 			if(n->m_nodes.size() > 0) {
 				os << "[";
 				__to_string_helper(os, *node);
@@ -81,25 +81,25 @@ static void __to_string_helper(std::ostream & os, const AbnfNode *parentNode)
 			}
 			break;
 
-		case AbnfNode::Abnf_RuleRefElement:
-			os << dynamic_cast<AbnfNodeRuleRefElement *>(*node)->m_value;
+		case Abnf_RuleRef:
+			os << dynamic_cast<AbnfNodeRuleRef *>(*node)->m_value;
 			break;
-		case AbnfNode::Abnf_CharValElement:
-			os << '"' << dynamic_cast<AbnfNodeCharValElement *>(*node)->m_value << '"';
+		case Abnf_CharVal:
+			os << '"' << dynamic_cast<AbnfNodeCharVal *>(*node)->m_value << '"';
 			break;
-		case AbnfNode::Abnf_NumValElement:
-			os << dynamic_cast<AbnfNodeNumValElement *>(*node)->m_value;
+		case Abnf_NumVal:
+			os << dynamic_cast<AbnfNodeNumVal *>(*node)->m_value;
 			break;
-		case AbnfNode::Abnf_ProseValElement:
-			os << dynamic_cast<AbnfNodeProseValElement *>(*node)->m_value;
+		case Abnf_ProseVal:
+			os << dynamic_cast<AbnfNodeProseVal *>(*node)->m_value;
 			break;
 		default:
 			break;
 		}
 
-		if (parentNode->m_type == AbnfNode::Abnf_Alternation)
+		if (parentNode->m_type == Abnf_Altern)
 			delim = String(" / ");
-		else if (parentNode->m_type == AbnfNode::Abnf_Concatenation)
+		else if (parentNode->m_type == Abnf_Concat)
 			delim = String(" ");
 	}
 }
@@ -202,19 +202,19 @@ static bool end_rule(void * userContext)
 	CWT_ASSERT(ctx->nodestack.size() > 0);
 
 	if (ctx->isIncrementalAlternation ) {
-		while (ctx->nodestack.top()->m_type != AbnfNode::Abnf_Alternation) {
+		while (ctx->nodestack.top()->m_type != Abnf_Altern) {
 			ctx->nodestack.pop();
 		}
 	}
 
 	ctx->isIncrementalAlternation = false;
 
-	while (ctx->nodestack.top()->m_type != AbnfNode::Abnf_Rule) {
+	while (ctx->nodestack.top()->m_type != Abnf_Rule) {
 		ctx->nodestack.pop();
 	}
 
 	CWT_ASSERT(ctx->nodestack.size() > 0);
-	CWT_ASSERT(ctx->nodestack.top()->m_type == AbnfNode::Abnf_Rule);
+	CWT_ASSERT(ctx->nodestack.top()->m_type == Abnf_Rule);
 	AbnfNodeRule *rule = dynamic_cast<AbnfNodeRule*>(ctx->nodestack.pop());
 	CWT_UNUSED(rule);
 	std::cout << std::endl;
@@ -225,12 +225,12 @@ static bool end_rule(void * userContext)
 static bool begin_alternation(void * userContext)
 {
 	AbnfContext *ctx = __CAST_USER_CTX(userContext);
-	ctx->nodestack.push(new AbnfNodeAlternation);
+	ctx->nodestack.push(new AbnfNodeAltern);
 	std::cout << "{/";
 	return true;
 }
 
-static bool __end_block(AbnfNode::AbnfNodeType type, AbnfContext * ctx)
+static bool __end_block(AbnfElementType type, AbnfContext * ctx)
 {
 	while (ctx->nodestack.top()->m_type != type) {
 		ctx->nodestack.pop();
@@ -248,63 +248,63 @@ static bool __end_block(AbnfNode::AbnfNodeType type, AbnfContext * ctx)
 static bool end_alternation(void * userContext)
 {
 	std::cout << "/}";
-	return __end_block(AbnfNode::Abnf_Alternation, __CAST_USER_CTX(userContext));
+	return __end_block(Abnf_Altern, __CAST_USER_CTX(userContext));
 }
 
 static bool begin_concatenation(void * userContext)
 {
 	std::cout << "{+";
 	AbnfContext *ctx = __CAST_USER_CTX(userContext);
-	ctx->nodestack.push(new AbnfNodeConcatenation);
+	ctx->nodestack.push(new AbnfNodeConcat);
 	return true;
 }
 
 static bool end_concatenation(void * userContext)
 {
 	std::cout << "+}";
-	return __end_block(AbnfNode::Abnf_Concatenation, __CAST_USER_CTX(userContext));
+	return __end_block(Abnf_Concat, __CAST_USER_CTX(userContext));
 }
 
 static bool begin_repetition(int from, int to, void * userContext)
 {
 	std::cout << String(_F("{%d*%d") % from % to);
 	AbnfContext *ctx = __CAST_USER_CTX(userContext);
-	ctx->nodestack.push(new AbnfNodeRepetition(from, to));
+	ctx->nodestack.push(new AbnfNodeRpt(from, to));
 	return true;
 }
 
 static bool end_repetition(void * userContext)
 {
 	std::cout << "*}";
-	return __end_block(AbnfNode::Abnf_Repetition, __CAST_USER_CTX(userContext));
+	return __end_block(Abnf_Rpt, __CAST_USER_CTX(userContext));
 }
 
 static bool begin_option(void * userContext)
 {
 	std::cout << "[";
 	AbnfContext *ctx = __CAST_USER_CTX(userContext);
-	ctx->nodestack.push(new AbnfNodeOptionElement);
+	ctx->nodestack.push(new AbnfNodeOption);
 	return true;
 }
 
 static bool end_option(void * userContext)
 {
 	std::cout << "]";
-	return __end_block(AbnfNode::Abnf_OptionElement, __CAST_USER_CTX(userContext));
+	return __end_block(Abnf_Option, __CAST_USER_CTX(userContext));
 }
 
 static bool begin_group(void * userContext)
 {
 	std::cout << "(";
 	AbnfContext *ctx = __CAST_USER_CTX(userContext);
-	ctx->nodestack.push(new AbnfNodeGroupElement);
+	ctx->nodestack.push(new AbnfNodeGroup);
 	return true;
 }
 
 static bool end_group(void * userContext)
 {
 	std::cout << ")";
-	return __end_block(AbnfNode::Abnf_GroupElement, __CAST_USER_CTX(userContext));
+	return __end_block(Abnf_Group, __CAST_USER_CTX(userContext));
 }
 
 static bool rule_ref(const String & rulename, void * userContext)
@@ -319,7 +319,7 @@ static bool rule_ref(const String & rulename, void * userContext)
 	}
 
 	CWT_ASSERT(ctx->nodestack.size() > 0);
-	ctx->nodestack.top()->addNode(new AbnfNodeRuleRefElement(rulename));
+	ctx->nodestack.top()->addNode(new AbnfNodeRuleRef(rulename));
 
 	return true;
 }
@@ -330,7 +330,7 @@ static bool char_val(const String & s, void * userContext)
 	AbnfContext *ctx = __CAST_USER_CTX(userContext);
 
 	CWT_ASSERT(ctx->nodestack.size() > 0);
-	ctx->nodestack.top()->addNode(new AbnfNodeCharValElement(s));
+	ctx->nodestack.top()->addNode(new AbnfNodeCharVal(s));
 	return true;
 }
 
@@ -340,7 +340,7 @@ static bool num_val(const String & num, void * userContext)
 	std::cout << String(_F("NV{%s}") % num);
 	AbnfContext *ctx = __CAST_USER_CTX(userContext);
 	CWT_ASSERT(ctx->nodestack.size() > 0);
-	ctx->nodestack.top()->addNode(new AbnfNodeNumValElement(num));
+	ctx->nodestack.top()->addNode(new AbnfNodeNumVal(num));
 	return true;
 }
 
@@ -349,10 +349,11 @@ static bool prose_val(const String & prose, void * userContext)
 	std::cout << String(_F("PV{%s}") % prose);
 	AbnfContext *ctx = __CAST_USER_CTX(userContext);
 	CWT_ASSERT(ctx->nodestack.size() > 0);
-	ctx->nodestack.top()->addNode(new AbnfNodeProseValElement(prose));
+	ctx->nodestack.top()->addNode(new AbnfNodeProseVal(prose));
 	return true;
 }
 
+/*
 static bool comment(const String & comment, void * userContext)
 {
 	CWT_UNUSED2(comment, userContext);
@@ -360,6 +361,7 @@ static bool comment(const String & comment, void * userContext)
 	std::cout << std::endl << String(_F("C{%s}") % comment) << std::endl;
 	return true;
 }
+*/
 
 static AbnfSimpleApi __default_api = {
 	  begin_document
@@ -380,7 +382,6 @@ static AbnfSimpleApi __default_api = {
 	, char_val
 	, num_val
 	, prose_val
-	, comment
 };
 
 bool Abnf::parse(const String &abnf)

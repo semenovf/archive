@@ -31,25 +31,25 @@
 
 CWT_NS_BEGIN
 
-static const int __ABNF_BEGIN_DOC         = 1;
-static const int __ABNF_END_DOC_OK        = 2;
-static const int __ABNF_END_DOC_FAIL      = 3;
-static const int __ABNF_BEGIN_RULE        = 4;
-static const int __ABNF_END_RULE          = 5;
-static const int __ABNF_BEGIN_ALTERNATION = 6;
-static const int __ABNF_END_ALTERNATION   = 7;
-static const int __ABNF_BEGIN_CONCAT      = 8;
-static const int __ABNF_END_CONCAT        = 9;
-static const int __ABNF_BEGIN_RPT         = 10;
-static const int __ABNF_END_RPT           = 11;
-static const int __ABNF_BEGIN_OPTION      = 12;
-static const int __ABNF_END_OPTION        = 13;
-static const int __ABNF_BEGIN_GROUP       = 14;
-static const int __ABNF_END_GROUP         = 15;
-static const int __ABNF_ELEM_RULE_REF     = 16;
-static const int __ABNF_ELEM_CHAR_VAL     = 17;
-static const int __ABNF_ELEM_NUM_VAL      = 18;
-static const int __ABNF_ELEM_PROSE_VAL    = 19;
+static const int __ABNF_BEGIN_DOC      = 1;
+static const int __ABNF_END_DOC_OK     = 2;
+static const int __ABNF_END_DOC_FAIL   = 3;
+static const int __ABNF_BEGIN_RULE     = 4;
+static const int __ABNF_END_RULE       = 5;
+static const int __ABNF_BEGIN_ALTERN   = 6;
+static const int __ABNF_END_ALTERN     = 7;
+static const int __ABNF_BEGIN_CONCAT   = 8;
+static const int __ABNF_END_CONCAT     = 9;
+static const int __ABNF_BEGIN_RPT      = 10;
+static const int __ABNF_END_RPT        = 11;
+static const int __ABNF_BEGIN_OPTION   = 12;
+static const int __ABNF_END_OPTION     = 13;
+static const int __ABNF_BEGIN_GROUP    = 14;
+static const int __ABNF_END_GROUP      = 15;
+static const int __ABNF_ELEM_RULE_REF  = 16;
+static const int __ABNF_ELEM_CHAR_VAL  = 17;
+static const int __ABNF_ELEM_NUM_VAL   = 18;
+static const int __ABNF_ELEM_PROSE_VAL = 19;
 
 static const int __ABNF_RPT_FROM   = 1;
 static const int __ABNF_RPT_TO     = 2;
@@ -57,7 +57,7 @@ static const int __ABNF_RPT_FROMTO = 3;
 
 static bool block (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *);
 static bool rulename (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *);
-static bool comment (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *);
+//static bool comment (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *);
 static bool rpt (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *);
 
 //static bool plain_element(const void *data, size_t len, void *context, void *action_args);
@@ -162,7 +162,6 @@ static FsmTransition<String> nl_fsm[] = {
 	  {-1, 1, FSM_MATCH_STR("\r\n"), FSM_ACCEPT, nullptr, nullptr } /* Windows/DOS */
 	, {-1, 2, FSM_MATCH_STR("\n\r"), FSM_ACCEPT, nullptr, nullptr } /* Mac OS 9 */
 	, {-1,-1, FSM_MATCH_STR("\n")  , FSM_ACCEPT, nullptr, nullptr } /* Unix */
-//	, {-1,-1, FSM_MATCH_FUNC(__end_of_data, nullptr), FSM_ACCEPT, nullptr, nullptr } /* end-of-data */
 };
 
 /*
@@ -209,7 +208,7 @@ static FsmTransition<String> comment_fsm[] = {
 
 /* comment / NL ; comment or newline */
 static FsmTransition<String> c_nl_fsm[] = {
-     {-1, 1, FSM_MATCH_FSM(comment_fsm) , FSM_ACCEPT, comment, nullptr }
+     {-1, 1, FSM_MATCH_FSM(comment_fsm) , FSM_ACCEPT, nullptr, nullptr }
    , {-1,-1, FSM_MATCH_FSM(nl_fsm)      , FSM_ACCEPT, nullptr, nullptr }
 };
 
@@ -373,9 +372,9 @@ static FsmTransition<String> concatenation_next_fsm[] = {
 };
 
 static FsmTransition<String> alternation_fsm[] = {
-	  { 1,-1, FSM_MATCH_NOTHING                              , FSM_NORMAL, block, (void *) & __ABNF_BEGIN_ALTERNATION }
+	  { 1,-1, FSM_MATCH_NOTHING                              , FSM_NORMAL, block, (void *) & __ABNF_BEGIN_ALTERN }
 	, { 2,-1, FSM_MATCH_FSM(concatenation_fsm)               , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_FSM(concatenation_next_fsm, 0,-1), FSM_ACCEPT, block, (void *) & __ABNF_END_ALTERNATION }
+	, {-1,-1, FSM_MATCH_RPT_FSM(concatenation_next_fsm, 0,-1), FSM_ACCEPT, block, (void *) & __ABNF_END_ALTERN }
 };
 
 /* elements = alternation *c-wsp */
@@ -465,8 +464,8 @@ static bool block (const String::const_iterator & begin, const String::const_ite
 		return ctx->api.beginRule(ctx->rulename, false, ctx->userContext);
 
 	case __ABNF_END_RULE          : return ctx->api.endRule(ctx->userContext);
-	case __ABNF_BEGIN_ALTERNATION : return ctx->api.beginAlternation(ctx->userContext);
-	case __ABNF_END_ALTERNATION   : return ctx->api.endAlternation(ctx->userContext);
+	case __ABNF_BEGIN_ALTERN : return ctx->api.beginAlternation(ctx->userContext);
+	case __ABNF_END_ALTERN   : return ctx->api.endAlternation(ctx->userContext);
 	case __ABNF_BEGIN_CONCAT      : return ctx->api.beginConcatenation(ctx->userContext);
 	case __ABNF_END_CONCAT        : return ctx->api.endConcatenation(ctx->userContext);
 	case __ABNF_BEGIN_RPT: {
@@ -498,7 +497,6 @@ static bool block (const String::const_iterator & begin, const String::const_ite
 	return false;
 }
 
-//static bool rulename(const void *data, size_t len, void *context, void *action_args)
 static bool rulename (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * )
 {
 	if (context) {
@@ -508,7 +506,7 @@ static bool rulename (const String::const_iterator & begin, const String::const_
 	return true;
 }
 
-//static bool comment(const void *data, size_t len, void *context, void *action_args)
+/*
 static bool comment (const String::const_iterator & begin, const String::const_iterator & end, void * context, void *)
 {
 	if (!context)
@@ -517,8 +515,8 @@ static bool comment (const String::const_iterator & begin, const String::const_i
 	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
 	return ctx->api.comment(String(begin, end), ctx->userContext);
 }
+*/
 
-//static bool rpt(const void *data, size_t len, void *context, void *action_args)
 static bool rpt (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args)
 {
 	const int * flag = (const int *)action_args;

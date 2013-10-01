@@ -22,91 +22,79 @@ CWT_NS_BEGIN
 class AbnfNode
 {
 public:
-	enum AbnfNodeType {
-		  Abnf_Rule
-		, Abnf_Alternation
-		, Abnf_Concatenation
-		, Abnf_Repetition
-		, Abnf_GroupElement
-		, Abnf_OptionElement
-		, Abnf_RuleRefElement
-		, Abnf_CharValElement
-		, Abnf_NumValElement
-		, Abnf_ProseValElement
-	};
 
-	AbnfNode(AbnfNodeType t) : m_type(t) {}
+	AbnfNode(AbnfElementType t) : m_type(t) {}
 	virtual ~AbnfNode() {}
 	void addNode(AbnfNode *node) { m_nodes.append(node); }
-	AbnfNodeType ntype() const { return m_type; }
+	AbnfElementType ntype() const { return m_type; }
 
-	AbnfNodeType      m_type;
+	AbnfElementType    m_type;
 	Vector<AbnfNode*> m_nodes;
 };
 
 class AbnfNodeRule : public AbnfNode
 {
 public:
-	AbnfNodeRule(const String &s) : AbnfNode(Abnf_Rule), m_name(s) {}
+	AbnfNodeRule(const String & s) : AbnfNode(Abnf_Rule), m_name(s) {}
 	String m_name;
 };
 
-class AbnfNodeAlternation : public AbnfNode
+class AbnfNodeAltern : public AbnfNode
 {
 public:
-	AbnfNodeAlternation() : AbnfNode(Abnf_Alternation) {}
+	AbnfNodeAltern() : AbnfNode(Abnf_Altern) {}
 };
 
-class AbnfNodeConcatenation : public AbnfNode
+class AbnfNodeConcat : public AbnfNode
 {
 public:
-	AbnfNodeConcatenation() : AbnfNode(Abnf_Concatenation) {}
+	AbnfNodeConcat() : AbnfNode(Abnf_Concat) {}
 };
 
-class AbnfNodeRepetition : public AbnfNode
+class AbnfNodeRpt : public AbnfNode
 {
 public:
-	AbnfNodeRepetition(int f, int t) : AbnfNode(Abnf_Repetition), m_from(f), m_to(t) {}
+	AbnfNodeRpt(int f, int t) : AbnfNode(Abnf_Rpt), m_from(f), m_to(t) {}
 	int m_from, m_to;
 };
 
-class AbnfNodeGroupElement : public AbnfNode
+class AbnfNodeGroup : public AbnfNode
 {
 public:
-	AbnfNodeGroupElement() : AbnfNode(Abnf_GroupElement) {}
+	AbnfNodeGroup() : AbnfNode(Abnf_Group) {}
 };
 
-class AbnfNodeOptionElement : public AbnfNode
+class AbnfNodeOption : public AbnfNode
 {
 public:
-	AbnfNodeOptionElement() : AbnfNode(Abnf_OptionElement) {}
+	AbnfNodeOption() : AbnfNode(Abnf_Option) {}
 };
 
-class AbnfNodeRuleRefElement : public AbnfNode
+class AbnfNodeRuleRef : public AbnfNode
 {
 public:
-	AbnfNodeRuleRefElement(const String &v) : AbnfNode(Abnf_RuleRefElement), m_value(v) {}
+	AbnfNodeRuleRef(const String &v) : AbnfNode(Abnf_RuleRef), m_value(v) {}
 	String m_value;
 };
 
-class AbnfNodeCharValElement : public AbnfNode
+class AbnfNodeCharVal : public AbnfNode
 {
 public:
-	AbnfNodeCharValElement(const String &v) : AbnfNode(Abnf_CharValElement), m_value(v) {}
+	AbnfNodeCharVal(const String &v) : AbnfNode(Abnf_CharVal), m_value(v) {}
 	String m_value;
 };
 
-class AbnfNodeNumValElement : public AbnfNode
+class AbnfNodeNumVal : public AbnfNode
 {
 public:
-	AbnfNodeNumValElement(const String &v) : AbnfNode(Abnf_NumValElement), m_value(v) {}
+	AbnfNodeNumVal(const String &v) : AbnfNode(Abnf_NumVal), m_value(v) {}
 	String m_value;
 };
 
-class AbnfNodeProseValElement : public AbnfNode
+class AbnfNodeProseVal : public AbnfNode
 {
 public:
-	AbnfNodeProseValElement(const String &v) : AbnfNode(Abnf_ProseValElement), m_value(v) {}
+	AbnfNodeProseVal(const String &v) : AbnfNode(Abnf_ProseVal), m_value(v) {}
 	String m_value;
 };
 
