@@ -383,7 +383,6 @@ void Thread::Impl::finalize (void * arg)
     threadImpl->m_data->threadId = 0;
     threadImpl->m_state = ThreadFinished;
     threadImpl->m_threadFinished.wakeAll();
-    pthread_exit(nullptr);
 }
 
 void ThreadData::destroy (void * pdata)

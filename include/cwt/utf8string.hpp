@@ -13,6 +13,7 @@
 #include <cwt/bytearray.hpp>
 #include <cwt/uchar.hpp>
 #include <cwt/vector.hpp>
+#include <ostream>
 
 CWT_NS_BEGIN
 
@@ -409,16 +410,16 @@ public:
 	Utf8String rtrim() const;
 	Utf8String trim() const;
 
-	double	 toDouble(bool *ok = 0) const;
-	float	 toFloat(bool *ok = 0) const;
-	long_t   toLong(bool *ok = 0, int base = 10) const;
-	ulong_t	 toULong(bool *ok = 0, int base = 10) const;
-	int_t	 toInt(bool *ok = 0, int base = 10) const;
-	uint_t	 toUInt(bool *ok = 0, int base = 10) const;
-	short_t	 toShort(bool *ok = 0, int base = 10) const;
-	ushort_t toUShort(bool *ok = 0, int base = 10) const;
-	sbyte_t  toSByte(bool *ok = 0, int base = 10) const;
-	byte_t	 toByte(bool *ok = 0, int base = 10) const;
+	double	 toDouble(bool * ok = 0) const;
+	float	 toFloat(bool * ok = 0) const;
+	long_t   toLong(bool * ok = 0, int base = 10) const;
+	ulong_t	 toULong(bool * ok = 0, int base = 10) const;
+	int_t	 toInt(bool * ok = 0, int base = 10) const;
+	uint_t	 toUInt(bool * ok = 0, int base = 10) const;
+	short_t	 toShort(bool * ok = 0, int base = 10) const;
+	ushort_t toUShort(bool * ok = 0, int base = 10) const;
+	sbyte_t  toSByte(bool * ok = 0, int base = 10) const;
+	byte_t	 toByte(bool * ok = 0, int base = 10) const;
 	Vector<uint16_t> toUtf16 () const;
 
 	Utf8String toLower () const;
@@ -489,6 +490,9 @@ public:
 
 inline Utf8String::iterator::iterator(const reverse_iterator & o) : m_entry(o.m_entry) {}
 inline Utf8String::const_iterator::const_iterator(const const_reverse_iterator & o) : m_entry(o.m_entry) {}
+
+
+inline std::ostream & operator << (std::ostream & os, const Utf8String & o) { os << o.c_str(); return os; }
 
 CWT_NS_END
 

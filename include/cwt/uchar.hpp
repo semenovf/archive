@@ -32,6 +32,8 @@ public:
 public:
 	UChar() : m_value(Null) {}
 	UChar(char latin1) : m_value(latin1) { CWT_ASSERT(byte_t(latin1) <= 127); }
+	UChar(uchar_t latin1) : m_value(latin1) { CWT_ASSERT(latin1 <= 127); }
+	UChar(int latin1) : m_value(latin1) { CWT_ASSERT(latin1 <= 127); }
 	UChar(uint32_t ucs4) : m_value(ucs4) { }
 	UChar(const UChar & ucs4) : m_value(ucs4.m_value) { }
 	operator uint32_t () const { return m_value; }

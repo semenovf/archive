@@ -33,7 +33,7 @@ public:
 				: t > 3000000 ? 3000000 : t;
 
 		std::cout << "Thread [" << m_name.c_str() << _Tr("]: Sleeping for ") << t << " microseconds" << std::endl;
-		usleep(t);
+		msleep(500);
 	}
 private:
 	String m_name;
@@ -116,51 +116,40 @@ void test_wait_timeout ()
 	};
 
 
-/*
 	X x;
 	x.start();
 	CWT_TEST_OK(x.wait(5000));  // ok => timeout > thread's execution time
 	CWT_TEST_OK(x.finished);
-*/
-/*
+
 	Y y;
 	y.start();
 	CWT_TEST_NOK(y.wait(2000)); // nok => timeout < thread's execution time
 	CWT_TEST_NOK(y.finished);
 	y.terminate();
-*/
 
-/*
+
 	Z z;
 	z.start();
 	CWT_TEST_OK(z.wait()); // ok => thread's routine finished;
 	CWT_TEST_OK(z.finished);
-*/
 
 	Y y0;
 	y0.start();
 	y0.terminate();
 	y0.wait();
 
-/*
 	Y y1;
 	y1.start();
 	y1.terminate();
-*/
 
-//	Z z0;
+	Z z0;
 
-
-/*
 	Z z1;
 	z1.start();
-*/
 
-/*
 	Z z2;
 	z2.start();
 	z2.wait();
-*/
 }
 
 int main(int argc, char *argv[])
@@ -170,11 +159,10 @@ int main(int argc, char *argv[])
 	CWT_BEGIN_TESTS(6);
 
 	if (0) test_thread();
-	if (0) test_threads(350);
-	if (1) test_wait_timeout();
+	if (1) test_threads(350);
+	if (0) test_wait_timeout();
 
-	Thread::exit();
-    CWT_END_TESTS;
+    CWT_END_TESTS; // exits with Thread::exit
 }
 
 
