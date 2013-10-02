@@ -413,4 +413,162 @@ bool Abnf::parse(const String & abnf, AbnfSimpleApi & api)
 	return false;
 }
 
+AbnfRuleSet::~AbnfRuleSet()
+{
+	Vector<AbnfRule *>::iterator it = m_rules.begin();
+	Vector<AbnfRule *>::iterator itEnd = m_rules.end();
+
+	for (; it != itEnd; ++it)
+		delete *it;
+}
+
+AbnfRule * AbnfRuleSet::newRule (const String & name)
+{
+	AbnfRule * rule = new AbnfRule(name);
+	size_t index = m_rules.size();
+	m_rules.append(rule);
+	m_rulesIndices.insert(name, index);
+	return rule;
+}
+
+
+String AbnfRuleSet::toString () const
+{
+	Vector<AbnfRule *>::const_iterator it = m_rules.begin();
+	Vector<AbnfRule *>::const_iterator itEnd = m_rules.end();
+
+	String r;
+
+	for (; it != itEnd; ++it) {
+		r.append((*it)->toString());
+		if (! r.endsWith(String::EndOfLine))
+			r.append(String::EndOfLine);
+		r.append(String::EndOfLine);
+	}
+
+	return r;
+}
+
+AbnfRule * AbnfRuleSet::find (const String & name)
+{
+	AbnfRule * r = nullptr;
+	Hash<String, size_t>::iterator it = m_rulesIndices.find(name);
+	if (it != m_rulesIndices.end()) {
+		size_t i = it.value();
+		CWT_ASSERT(i < m_rules.size());
+		r = m_rules[i];
+	}
+	return r;
+}
+
+const AbnfRule * AbnfRuleSet::find (const String & name) const
+{
+	AbnfRule * r = nullptr;
+	Hash<String, size_t>::const_iterator it = m_rulesIndices.find(name);
+	if (it != m_rulesIndices.cend()) {
+		size_t i = it.value();
+		CWT_ASSERT(i < m_rules.size());
+		r = m_rules[i];
+	}
+	return r;
+}
+
+AbnfAbstractContainer::~AbnfAbstractContainer()
+{
+	Vector<AbnfAbstractElement *>::iterator it = m_elements.begin();
+	Vector<AbnfAbstractElement *>::iterator itEnd = m_elements.end();
+
+	for (; it != itEnd; ++it) {
+		delete *it;
+	}
+}
+
+String AbnfAbstractContainer::toString (const String & separator) const
+{
+	Vector<AbnfAbstractElement *>::const_iterator it = m_elements.begin();
+	Vector<AbnfAbstractElement *>::const_iterator itEnd = m_elements.end();
+
+	String r;
+	String sep;
+
+	for (; it != itEnd; ++it) {
+		if ((*it)->type() != Abnf_Comment)
+			r.append(sep);
+		r.append((*it)->toString());
+		sep = separator;
+	}
+
+	return r;
+}
+
+String AbnfRpt::toString () const
+{
+	String r;
+
+	if (0 == m_elements.size())
+		return String();
+
+	if (m_from < 0 && m_to < 0) {
+		r.append(1, '*');
+	} else {
+		if (m_from > 0)
+			r.append(String::number(m_from));
+		if (m_from != m_to) {
+			r.append(1, '*');
+			if (m_to > 0) {
+				r.append(String::number(m_to));
+			}
+		}
+	}
+
+	if (m_elements.size() == 1
+			&& (m_elements[0]->isScalar()
+					|| Abnf_Group == m_elements[0]->type()
+					|| Abnf_Option == m_elements[0]->type())) {
+		r.append(AbnfAbstractContainer::toString(" "));
+	} else {
+		r.append("( ");
+		r.append(AbnfAbstractContainer::toString(" "));
+		r.append(" )");
+	}
+	return r;
+}
+
+AbnfAltern & AbnfAbstractContainer::newAltern()
+{
+	AbnfAltern & altern = Abnf::newAltern();
+	m_elements.append(& altern);
+	return altern;
+}
+
+AbnfConcat & AbnfAbstractContainer::newConcat()
+{
+	AbnfConcat & concat = Abnf::newConcat();
+	m_elements.append(& concat);
+	return concat;
+}
+
+AbnfRpt & AbnfAbstractContainer::newRpt(int from, int to)
+{
+	AbnfRpt & rpt = Abnf::newRpt(from, to);
+	rpt.setBounds(from, to);
+	m_elements.append(& rpt);
+	return rpt;
+}
+
+AbnfGroup & AbnfAbstractContainer::newGroup ()
+{
+	CWT_TRACE_METHOD();
+	AbnfGroup & group = Abnf::newGroup();
+	m_elements.append(& group);
+	return group;
+}
+
+AbnfOption & AbnfAbstractContainer::newOption ()
+{
+	AbnfOption & option = Abnf::newOption();
+	m_elements.append(& option);
+	return option;
+}
+
 CWT_NS_END

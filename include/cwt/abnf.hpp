@@ -13,10 +13,25 @@
 #include <cwt/callback.hpp>
 #include <cwt/vector.hpp>
 #include <cwt/hash.hpp>
+#include <cwt/unitype.hpp>
+
+//#define CWT_TRACE_ENABLE
+#include <cwt/trace.hpp>
 
 CWT_NS_BEGIN
 
 class Abnf;
+class AbnfRule;
+class AbnfAltern;
+class AbnfConcat;
+class AbnfRpt;
+class AbnfGroup;
+class AbnfOption;
+class AbnfRuleRef;
+class AbnfCharVal;
+class AbnfNumVal;
+class AbnfProseVal;
+class AbnfComment;
 
 struct AbnfSimpleApi {
 	Callback1<void *> beginDocument;
@@ -41,7 +56,7 @@ struct AbnfSimpleApi {
 
 
 enum AbnfElementType {
-	  Abnf_Rule  // TODO Delete this element
+	  Abnf_Rule
 	, Abnf_Altern
 	, Abnf_Concat
 	, Abnf_Rpt
@@ -51,51 +66,210 @@ enum AbnfElementType {
 	, Abnf_CharVal
 	, Abnf_NumVal
 	, Abnf_ProseVal
+	, Abnf_Comment
 };
 
 
 class AbnfAbstractElement
 {
-	CWT_DENY_COPY(AbnfAbstractElement);
+	//CWT_DENY_COPY(AbnfAbstractElement);
+
+public:
+	virtual ~AbnfAbstractElement() {}
+	virtual String toString() const = 0;
+
+	AbnfElementType type() const { return m_type; }
+	virtual bool isScalar() const { return false; }
+
 protected:
 	AbnfAbstractElement (AbnfElementType type) : m_type(type) {}
 	AbnfElementType m_type;
+
+	friend class Abnf;
 };
 
-
-class AbnfAltern : public AbnfAbstractElement
+class AbnfAbstractContainer : public AbnfAbstractElement
 {
+	//CWT_DENY_COPY(AbnfAbstractContainer);
 public:
+	AbnfAbstractContainer & add (AbnfAbstractElement & element)
+	{
+		m_elements.append(& element);
+		return *this;
+	}
+
+	AbnfAbstractContainer & add (const String & ruleref);
+	AbnfAbstractContainer & addComment (const String & comment = String());
+
+	virtual ~AbnfAbstractContainer();
+	virtual String toString (const String & separator = String(1, ' ')) const;
+
+	AbnfAltern & newAltern ();
+	AbnfConcat & newConcat ();
+	AbnfRpt &    newRpt    (int from = -1, int to = -1);
+	AbnfGroup &  newGroup  ();
+	AbnfOption & newOption ();
+
+protected:
+	AbnfAbstractContainer (AbnfElementType type) : AbnfAbstractElement(type) {}
+	Vector<AbnfAbstractElement *> m_elements;
 };
 
-class AbnfRule
+class AbnfRule : public AbnfAbstractContainer
 {
-	CWT_DENY_COPY(AbnfRule);
-
 public:
-	AbnfRule (const String & name) : m_name(name) {}
+	AbnfRule (const String & name) : AbnfAbstractContainer(Abnf_Rule), m_name(name) {}
 	const String & name () const { return m_name; }
-
+	virtual String toString () const { return m_name + String(" = ") + AbnfAbstractContainer::toString(); }
 private:
 	String m_name;
-	Vector<AbnfAbstractElement *> m_elements;
+};
+
+class AbnfAltern : public AbnfAbstractContainer
+{
+public:
+	AbnfAltern() : AbnfAbstractContainer(Abnf_Altern) {}
+	virtual String toString () const { return AbnfAbstractContainer::toString(" / "); }
+};
+
+class AbnfConcat : public AbnfAbstractContainer
+{
+public:
+	AbnfConcat() : AbnfAbstractContainer(Abnf_Concat) {}
+	virtual String toString () const { return AbnfAbstractContainer::toString(" "); }
+};
+
+class AbnfRpt : public AbnfAbstractContainer
+{
+public:
+	AbnfRpt () : AbnfAbstractContainer(Abnf_Rpt), m_from(-1), m_to(-1) {}
+	AbnfRpt (int from, int to) : AbnfAbstractContainer(Abnf_Rpt), m_from(from), m_to(to) {}
+	void setBounds(int from, int to) { m_from = from; m_to = to; }
+
+	virtual String toString () const;
+private:
+	int m_from, m_to;
+};
+
+class AbnfGroup : public AbnfAbstractContainer
+{
+public:
+	AbnfGroup() : AbnfAbstractContainer(Abnf_Group) {}
+	virtual String toString () const { return String("( ") + AbnfAbstractContainer::toString(" ") + String(" )"); }
+};
+
+class AbnfOption : public AbnfAbstractContainer
+{
+public:
+	AbnfOption() : AbnfAbstractContainer(Abnf_Option) {}
+	virtual String toString () const { return String("[ ") + AbnfAbstractContainer::toString(" ") + String(" ]"); }
+};
+
+// base for terminal symbols
+class AbnfScalar : public AbnfAbstractElement
+{
+	CWT_DENY_COPY(AbnfScalar);
+public:
+	virtual bool isScalar() const { return true; }
+	void setValue (const String & v) { m_value = v;	}
+
+protected:
+	AbnfScalar (AbnfElementType type) : AbnfAbstractElement(type), m_value() {}
+	AbnfScalar (AbnfElementType type, const String & v) : AbnfAbstractElement (type), m_value(v) {}
+	String m_value;
+};
+
+class AbnfRuleRef : public AbnfScalar
+{
+public:
+	AbnfRuleRef () : AbnfScalar (Abnf_RuleRef) {}
+	AbnfRuleRef (const String & v) : AbnfScalar (Abnf_RuleRef, v) {}
+	virtual String toString () const { return m_value; }
+};
+
+class AbnfCharVal : public AbnfScalar
+{
+public:
+	AbnfCharVal () : AbnfScalar (Abnf_CharVal) {}
+	AbnfCharVal (const String & v) : AbnfScalar (Abnf_CharVal, v) {}
+	virtual String toString () const { return String(1, '"') + m_value + String(1, '"'); }
+};
+
+class AbnfNumVal : public AbnfScalar
+{
+public:
+	AbnfNumVal () : AbnfScalar (Abnf_NumVal), m_base(10) {}
+	AbnfNumVal (ulong_t single, int base = 10)
+		: AbnfScalar (Abnf_NumVal, String::number(single, base, String::NumberUppercase))
+		, m_base(base)
+	{
+		CWT_ASSERT(base == 2 || base == 10 || base == 16);
+	}
+
+	AbnfNumVal (ulong_t from, ulong_t to, int base = 10)
+		: AbnfScalar (Abnf_NumVal, String())
+		, m_base(base)
+	{
+		CWT_ASSERT(base == 2 || base == 10 || base == 16);
+		CWT_ASSERT(from <= to);
+		m_value = String::number(from, base, String::NumberUppercase) + String(1, '-') + String::number(to, base, String::NumberUppercase);
+	}
+
+	AbnfNumVal & add (ulong_t single, int base = 10)
+	{
+		CWT_ASSERT(base == 2 || base == 10 || base == 16);
+		m_value += m_value.isEmpty()
+				? String::number(single, base)
+				: String(1, '.') + String::number(single, base);
+		return *this;
+	}
+
+	virtual String toString () const
+	{
+		return String(1, '%')
+				+ (m_base == 10
+					? String(1, 'd')
+					: m_base == 16
+					  	  ? String(1, 'x')
+					  	  : String(1, 'b'))
+		        + m_value;
+	}
+private:
+	int m_base;
+};
+
+class AbnfProseVal : public AbnfScalar
+{
+public:
+	AbnfProseVal () : AbnfScalar (Abnf_ProseVal) {}
+	AbnfProseVal (const String & v) : AbnfScalar (Abnf_ProseVal, v) {}
+	virtual String toString () const { return String(1, '<') + m_value + String(1, '>'); }
+};
+
+class AbnfComment : public AbnfScalar
+{
+public:
+	AbnfComment () : AbnfScalar (Abnf_Comment, String::EndOfLine) {}
+	AbnfComment (const String & v) : AbnfScalar (Abnf_Comment, v) {}
+	virtual String toString () const
+	{
+		return (m_value.isEmpty() || m_value == String::EndOfLine)
+				? String::EndOfLine
+				: String("\t\t; ") + m_value + String::EndOfLine;
+	}
 };
 
 class AbnfRuleSet
 {
 	AbnfRuleSet() : m_rules(), m_rulesIndices() {}
-	~AbnfRuleSet() { /* TODO implement cleanup of vector m_rules */ }
+	~AbnfRuleSet();
 	CWT_DENY_COPY(AbnfRuleSet);
 
 public:
-	AbnfRule & addRule(const String & name)
-	{
-		AbnfRule * rule = new AbnfRule(name);
-		size_t index = m_rules.size();
-		m_rules.append(rule);
-		m_rulesIndices.insert(name, index);
-		return * rule;
-	}
+	AbnfRule * newRule (const String & name);
+	String toString () const;
+	AbnfRule * find (const String & name);
+	const AbnfRule * find (const String & name) const;
 
 private:
 	Vector<AbnfRule *> m_rules;
@@ -113,9 +287,38 @@ public:
 	bool parse(const String & abnf);
 	bool parse(const String & abnf, AbnfSimpleApi & api);
 
-	static AbnfRuleSet & createRuleSet () { return * new AbnfRuleSet; }
-	static void destroyRuleSet (AbnfRuleSet & ruleset) { delete & ruleset; }
+	static AbnfRuleSet * createRuleSet () { return new AbnfRuleSet; }
+	static void destroyRuleSet (AbnfRuleSet * ruleset) { delete ruleset; }
+
+	static AbnfAltern &   newAltern ()   { return * new AbnfAltern; }
+	static AbnfConcat &   newConcat ()   { return * new AbnfConcat; }
+	static AbnfRpt &      newRpt    (int from = -1, int to = -1) { { return * new AbnfRpt(from, to); } }
+	static AbnfRpt &      newRpt    (const String & ruleref, int from = -1, int to = -1)
+	{
+		AbnfRpt * r = new AbnfRpt(from, to);
+		r->add(Abnf::newRuleRef(ruleref));
+		return *r;
+	}
+	static AbnfGroup &    newGroup  ()   { return * new AbnfGroup; }
+	static AbnfOption &   newOption ()   { return * new AbnfOption; }
+	static AbnfRuleRef &  newRuleRef  (const String & name)  { return * new AbnfRuleRef(name); }
+	static AbnfCharVal &  newCharVal  (const String & v) { return * new AbnfCharVal(v); }
+	static AbnfNumVal &   newNumVal   (ulong_t single, int base = 10) { return * new AbnfNumVal(single, base); }
+	static AbnfNumVal &   newNumVal   (ulong_t from, ulong_t to, int base = 10) { return * new AbnfNumVal(from, to, base); }
+	static AbnfProseVal & newProseVal (const String & v) { return * new AbnfProseVal(v); }
+	static AbnfComment &  newComment  (const String & v = String()) { return * new AbnfComment(v); }
 };
+
+inline AbnfAbstractContainer & AbnfAbstractContainer::add (const String & ruleref)
+{
+	return add(Abnf::newRuleRef(ruleref));
+}
+
+inline AbnfAbstractContainer & AbnfAbstractContainer::addComment (const String & comment)
+{
+	return add(Abnf::newComment(comment));
+}
+
 
 CWT_NS_END
 

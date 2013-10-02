@@ -25,7 +25,7 @@ public:
 
 	AbnfNode(AbnfElementType t) : m_type(t) {}
 	virtual ~AbnfNode() {}
-	void addNode(AbnfNode *node) { m_nodes.append(node); }
+	void addNode(AbnfNode * node) { m_nodes.append(node); }
 	AbnfElementType ntype() const { return m_type; }
 
 	AbnfElementType    m_type;
@@ -73,34 +73,34 @@ public:
 class AbnfNodeRuleRef : public AbnfNode
 {
 public:
-	AbnfNodeRuleRef(const String &v) : AbnfNode(Abnf_RuleRef), m_value(v) {}
+	AbnfNodeRuleRef(const String & v) : AbnfNode(Abnf_RuleRef), m_value(v) {}
 	String m_value;
 };
 
 class AbnfNodeCharVal : public AbnfNode
 {
 public:
-	AbnfNodeCharVal(const String &v) : AbnfNode(Abnf_CharVal), m_value(v) {}
+	AbnfNodeCharVal(const String & v) : AbnfNode(Abnf_CharVal), m_value(v) {}
 	String m_value;
 };
 
 class AbnfNodeNumVal : public AbnfNode
 {
 public:
-	AbnfNodeNumVal(const String &v) : AbnfNode(Abnf_NumVal), m_value(v) {}
+	AbnfNodeNumVal(const String & v) : AbnfNode(Abnf_NumVal), m_value(v) {}
 	String m_value;
 };
 
 class AbnfNodeProseVal : public AbnfNode
 {
 public:
-	AbnfNodeProseVal(const String &v) : AbnfNode(Abnf_ProseVal), m_value(v) {}
+	AbnfNodeProseVal(const String & v) : AbnfNode(Abnf_ProseVal), m_value(v) {}
 	String m_value;
 };
 
-typedef Hash<String, AbnfNode*> AbnfRulesHash;
-typedef Hash<String, bool>      AbnfRulesDefsHash;
-typedef Stack<AbnfNode*>        AbnfNodesStack;
+typedef Hash<String, AbnfNode *> AbnfRulesHash;
+typedef Hash<String, bool>       AbnfRulesDefsHash;
+typedef Stack<AbnfNode *>        AbnfNodesStack;
 
 struct AbnfContext
 {
@@ -112,7 +112,7 @@ struct AbnfContext
 
 struct AbnfParseContext
 {
-	void      *userContext;
+	void *    userContext;
 	String    rulename; // rulename for the current rule
 	struct    { int from, to; } rpt;
 	AbnfSimpleApi & api;
