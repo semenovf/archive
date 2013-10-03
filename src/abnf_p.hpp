@@ -16,6 +16,13 @@
 
 CWT_NS_BEGIN
 
+inline String TRANSITION_TABLE_NAME(const String & rulename, int count = -1)
+{
+	return rulename
+			+ (count >= 0 ? String(1, '_') + String::number(count) : String())
+			+ "_fsm";
+}
+
 #define __CAST_USER_CTX(userContext)   static_cast<AbnfContext *>(userContext)
 #define __CAST_PARSE_CTX(parseContext) static_cast<AbnfParseContext *>(parseContext)
 

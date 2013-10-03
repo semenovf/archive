@@ -551,7 +551,13 @@ AbnfConcat & AbnfAbstractContainer::newConcat()
 AbnfRpt & AbnfAbstractContainer::newRpt(int from, int to)
 {
 	AbnfRpt & rpt = Abnf::newRpt(from, to);
-	rpt.setBounds(from, to);
+	m_elements.append(& rpt);
+	return rpt;
+}
+
+AbnfRpt & AbnfAbstractContainer::newRpt (const String & ruleref, int from, int to)
+{
+	AbnfRpt & rpt = Abnf::newRpt(ruleref, from, to);
 	m_elements.append(& rpt);
 	return rpt;
 }

@@ -92,6 +92,8 @@ class AbnfAbstractContainer : public AbnfAbstractElement
 {
 	//CWT_DENY_COPY(AbnfAbstractContainer);
 public:
+	virtual ~AbnfAbstractContainer();
+
 	AbnfAbstractContainer & add (AbnfAbstractElement & element)
 	{
 		m_elements.append(& element);
@@ -100,13 +102,14 @@ public:
 
 	AbnfAbstractContainer & add (const String & ruleref);
 	AbnfAbstractContainer & addComment (const String & comment = String());
+	const Vector<AbnfAbstractElement *> & elements() const { return m_elements; }
 
-	virtual ~AbnfAbstractContainer();
 	virtual String toString (const String & separator = String(1, ' ')) const;
 
 	AbnfAltern & newAltern ();
 	AbnfConcat & newConcat ();
 	AbnfRpt &    newRpt    (int from = -1, int to = -1);
+	AbnfRpt &    newRpt    (const String & ruleref, int from = -1, int to = -1);
 	AbnfGroup &  newGroup  ();
 	AbnfOption & newOption ();
 
@@ -270,6 +273,17 @@ public:
 	String toString () const;
 	AbnfRule * find (const String & name);
 	const AbnfRule * find (const String & name) const;
+
+	bool normalize ();
+	String generateTransitions () const;
+
+private:
+	bool normalizeRule (AbnfRule & rule);
+	bool normalizeElement (AbnfAbstractContainer & container, AbnfRule & rule, int & uniqn, int nesting);
+	String generateTransitionTablesClass () const;
+	String generateTransitionTables () const;
+	String generateTransitionTable (const AbnfRule & rule) const;
+	String generateTransition (const AbnfAbstractElement & element) const;
 
 private:
 	Vector<AbnfRule *> m_rules;
