@@ -45,6 +45,7 @@ class DLL_API Utf8String
 public:
 	typedef UChar char_type;
 	static const Utf8String EndOfLine;
+	static const bool NumberUppercase = true;
 
     class const_iterator;
     class reverse_iterator;
@@ -442,17 +443,29 @@ public:
 	const Vector<UChar>	unicode() const;
 #endif
 
+	UChar operator [] (size_t pos) const { return charAt(pos); }
+
 	Utf8String & operator += (const Utf8String & other) { return append(other); }
-	UChar operator[](size_t pos) const { return charAt(pos); }
+	Utf8String & operator += (const char * latin1) { return append(Utf8String(latin1)); }
+	Utf8String & operator += (UChar ch) { return append(1, ch); }
+	Utf8String & operator += (char latin1) { return append(1, UChar(latin1)); }
 
-	friend Utf8String operator + (const Utf8String &s1, const Utf8String &s2);
+	Utf8String & operator << (const Utf8String & other) { return append(other); }
+	Utf8String & operator << (const char * latin1) { return append(Utf8String(latin1)); }
+	Utf8String & operator << (UChar ch) { return append(1, ch); }
+	Utf8String & operator << (char latin1) { return append(1, UChar(latin1)); }
 
-	friend bool	operator != (const Utf8String &s1, const Utf8String &s2);
-	friend bool	operator <  (const Utf8String &s1, const Utf8String &s2);
-	friend bool	operator <= (const Utf8String &s1, const Utf8String &s2);
-	friend bool	operator == (const Utf8String &s1, const Utf8String &s2);
-	friend bool	operator >  (const Utf8String &s1, const Utf8String &s2);
-	friend bool	operator >= (const Utf8String &s1, const Utf8String &s2);
+	friend Utf8String operator + (const Utf8String & s1, const Utf8String & s2);
+	friend Utf8String operator + (const Utf8String & s, const char * latin1) { return s + Utf8String(latin1); }
+	friend Utf8String operator + (const Utf8String & s, UChar ch) { return s + Utf8String(1, ch); }
+	friend Utf8String operator + (const Utf8String & s, char latin1) { return s + Utf8String(1, UChar(latin1)); }
+
+	friend bool	operator != (const Utf8String & s1, const Utf8String & s2);
+	friend bool	operator <  (const Utf8String & s1, const Utf8String & s2);
+	friend bool	operator <= (const Utf8String & s1, const Utf8String & s2);
+	friend bool	operator == (const Utf8String & s1, const Utf8String & s2);
+	friend bool	operator >  (const Utf8String & s1, const Utf8String & s2);
+	friend bool	operator >= (const Utf8String & s1, const Utf8String & s2);
 
 	struct ConvertState {
 		ConvertState() : nremain(0), invalidChars(0), replacementChar(UChar::ReplacementChar) {}
@@ -471,12 +484,12 @@ public:
 	static Utf8String fromLatin1 (const char * latin1, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
 	static Utf8String fromLatin1 (const char * latin1, bool * ok = nullptr, ConvertState * state = nullptr);
 
-	static Utf8String number (double n, char fmt = 'g', int prec = 6) { return Utf8String().setNumber(n, fmt, prec); }
-	static Utf8String number (float n, char fmt = 'g', int prec = 6)  { return Utf8String().setNumber(n, fmt, prec); }
-	static Utf8String number (int_t n, int base = 10)                 { return Utf8String().setNumber(n, base); }
-	static Utf8String number (uint_t n, int base = 10)                { return Utf8String().setNumber(n, base); }
-	static Utf8String number (long_t n, int base = 10)                { return Utf8String().setNumber(n, base); }
-	static Utf8String number (ulong_t n, int base = 10)               { return Utf8String().setNumber(n, base); }
+	static Utf8String number (double n, char fmt = 'g', int prec = 6)           { return Utf8String().setNumber(n, fmt, prec); }
+	static Utf8String number (float n, char fmt = 'g', int prec = 6)            { return Utf8String().setNumber(n, fmt, prec); }
+	static Utf8String number (int_t n, int base = 10, bool uppercase = false)   { return Utf8String().setNumber(n, base, uppercase); }
+	static Utf8String number (uint_t n, int base = 10, bool uppercase = false)  { return Utf8String().setNumber(n, base, uppercase); }
+	static Utf8String number (long_t n, int base = 10, bool uppercase = false)  { return Utf8String().setNumber(n, base, uppercase); }
+	static Utf8String number (ulong_t n, int base = 10, bool uppercase = false) { return Utf8String().setNumber(n, base, uppercase); }
 
 	friend void swap (Utf8String& x, Utf8String& y) { x.pimpl.swap(y.pimpl); }
 
@@ -491,6 +504,13 @@ public:
 inline Utf8String::iterator::iterator(const reverse_iterator & o) : m_entry(o.m_entry) {}
 inline Utf8String::const_iterator::const_iterator(const const_reverse_iterator & o) : m_entry(o.m_entry) {}
 
+
+inline Utf8String operator + (const Utf8String & s1, const Utf8String & s2)
+{
+	Utf8String s(s1);
+	s.append(s2);
+	return s;
+}
 
 inline std::ostream & operator << (std::ostream & os, const Utf8String & o) { os << o.c_str(); return os; }
 

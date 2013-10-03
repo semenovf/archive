@@ -158,9 +158,9 @@ int main(int argc, char *argv[])
     CWT_UNUSED2(argc, argv);
 	CWT_BEGIN_TESTS(6);
 
-	if (0) test_thread();
+	if (1) test_thread();
 	if (1) test_threads(350);
-	if (0) test_wait_timeout();
+	if (1) test_wait_timeout();
 
     CWT_END_TESTS; // exits with Thread::exit
 }

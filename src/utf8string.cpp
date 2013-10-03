@@ -659,13 +659,6 @@ Vector<Utf8String> Utf8String::split(const Utf8String & separator, bool keepEmpt
 	return r;
 }
 
-Utf8String operator + (const Utf8String & s1, const Utf8String & s2)
-{
-	Utf8String s(s1);
-	s.append(s2);
-	return s;
-}
-
 bool operator != (const Utf8String &s1, const Utf8String &s2)
 {
 	return *s1.pimpl != *s2.pimpl;
