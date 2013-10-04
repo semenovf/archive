@@ -15,23 +15,24 @@
 
 CWT_NS_BEGIN
 
-/* There are common predefined macros.
- */
-#define FSM_MATCH_SEQ(n)          FsmMatch<String>(new FsmMatchSeq<String>(n))
-#define FSM_MATCH_RANGE(f,t)      FsmMatch<String>(new FsmMatchRange<String>(f,t))
-#define FSM_MATCH_FSM(tr)         FsmMatch<String>(new FsmMatchFsm<String>(tr))
-#define FSM_MATCH_RPT_FSM(tr,f,t) FsmMatch<String>(new FsmMatchRpt<String>(FsmMatch<String>(new FsmMatchFsm<String>(tr)),(f),(t)))
-#define FSM_MATCH_OPT_FSM(tr)     FsmMatch<String>(new FsmMatchRpt<String>(FsmMatch<String>(new FsmMatchFsm<String>(tr)),0,1))
-#define FSM_MATCH_FUNC(fn,pcont)  FsmMatch<String>(new FsmMatchFunc<String>(fn,pcont))
-#define FSM_MATCH_RPT_FUNC(fn,pcont,f,t) FsmMatch<String>(new FsmMatchRpt<String>(FsmMatch<String>(new FsmMatchFunc<String>(fn,pcont)),(f),(t)))
-#define FSM_MATCH_OPT_FUNC(fn,pcont) FsmMatch<String>(new FsmMatchRpt<String>(FsmMatch<String>(new FsmMatchFunc<String>(fn,pcont)),0,1))
-#define FSM_MATCH_NOTHING         FsmMatch<String>(new FsmMatchNothing<String>)
-#define FSM_MATCH_CHAR(s)         FsmMatch<String>(new FsmMatchChar<String>(s))
-#define FSM_MATCH_STR(s)          FsmMatch<String>(new FsmMatchStr<String>(s))
-#define FSM_MATCH_RPT_STR(s,f,t)  FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_STR(s),f,t))
-#define FSM_MATCH_OPT_STR(s)      FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_STR(s),0,1))
-#define FSM_MATCH_RPT_CHAR(s,f,t) FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_CHAR(s),f,t))
-#define FSM_MATCH_OPT_CHAR(s)     FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_CHAR(s),0,1))
+/* There are common predefined macros. */
+#define FSM_MATCH_SEQ(n)                 FsmMatch<String>(new FsmMatchSeq<String>(n))
+#define FSM_MATCH_RANGE(min,max)         FsmMatch<String>(new FsmMatchRange<String>(min,max))
+#define FSM_MATCH_RPT_RANGE(min,max,f,t) FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_RANGE(min,max),(f),(t)))
+#define FSM_MATCH_OPT_RANGE(min,max)     FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_RANGE(min,max),0,1))
+#define FSM_MATCH_FSM(tr)                FsmMatch<String>(new FsmMatchFsm<String>(tr))
+#define FSM_MATCH_RPT_FSM(tr,f,t)        FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_FSM(tr),(f),(t)))
+#define FSM_MATCH_OPT_FSM(tr)            FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_FSM(tr),0,1))
+#define FSM_MATCH_FUNC(fn,pcont)         FsmMatch<String>(new FsmMatchFunc<String>(fn,pcont))
+#define FSM_MATCH_RPT_FUNC(fn,pcont,f,t) FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_FUNC(fn,pcont),(f),(t)))
+#define FSM_MATCH_OPT_FUNC(fn,pcont)     FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_FUNC(fn,pcont),0,1))
+#define FSM_MATCH_NOTHING                FsmMatch<String>(new FsmMatchNothing<String>)
+#define FSM_MATCH_CHAR(s)                FsmMatch<String>(new FsmMatchChar<String>(s))
+#define FSM_MATCH_STR(s)                 FsmMatch<String>(new FsmMatchStr<String>(s))
+#define FSM_MATCH_RPT_STR(s,f,t)         FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_STR(s),f,t))
+#define FSM_MATCH_OPT_STR(s)             FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_STR(s),0,1))
+#define FSM_MATCH_RPT_CHAR(s,f,t)        FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_CHAR(s),f,t))
+#define FSM_MATCH_OPT_CHAR(s)            FsmMatch<String>(new FsmMatchRpt<String>(FSM_MATCH_CHAR(s),0,1))
 
 #define FSM_NORMAL  0
 #define FSM_REJECT  1
@@ -91,7 +92,7 @@ public:
 		return m_match->match(fsm, begin, end);
 	}
 private:
-	FsmMatchBase<_P>* m_match;
+	FsmMatchBase<_P> * m_match;
 };
 
 template <typename _P>
@@ -104,8 +105,8 @@ struct FsmTransition
 	int state_fail;
 	FsmMatch<_P> match;
 	int status; /* last entry in the chain of ...*/
-	bool (*action)(const const_iterator & begin, const const_iterator & end, void *context, void *action_args);
-	void *action_args;
+	bool (* action)(const const_iterator & begin, const const_iterator & end, void * context, void * action_args);
+	void * action_args;
 };
 
 template <typename _P>
@@ -138,7 +139,7 @@ public:
 	static bool rangeChar(char_type ch, char_type from, char_type to);
 
 private:
-	FsmContext<_P> *m_fsmContext;
+	FsmContext<_P> * m_fsmContext;
 };
 
 
