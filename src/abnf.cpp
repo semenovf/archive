@@ -422,13 +422,13 @@ AbnfRuleSet::~AbnfRuleSet()
 		delete *it;
 }
 
-AbnfRule * AbnfRuleSet::newRule (const String & name)
+AbnfRule & AbnfRuleSet::newRule (const String & name)
 {
 	AbnfRule * rule = new AbnfRule(name);
 	size_t index = m_rules.size();
 	m_rules.append(rule);
 	m_rulesIndices.insert(name, index);
-	return rule;
+	return *rule;
 }
 
 
@@ -555,12 +555,14 @@ AbnfRpt & AbnfAbstractContainer::newRpt(int from, int to)
 	return rpt;
 }
 
+/*
 AbnfRpt & AbnfAbstractContainer::newRpt (const String & ruleref, int from, int to)
 {
 	AbnfRpt & rpt = Abnf::newRpt(ruleref, from, to);
 	m_elements.append(& rpt);
 	return rpt;
 }
+*/
 
 AbnfGroup & AbnfAbstractContainer::newGroup ()
 {

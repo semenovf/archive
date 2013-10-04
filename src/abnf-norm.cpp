@@ -10,31 +10,35 @@
 CWT_NS_BEGIN
 
 
-/**
+/*
  *
  * @param element
  * @param rule
  * @param uniqn unique counter inside the rule
- * @param nestingValue
  * @return
  */
-bool AbnfRuleSet::normalizeElement (AbnfAbstractContainer & container, AbnfRule & rule, int & uniqn, int nesting)
+bool AbnfRuleSet::normalizeElement (AbnfAbstractContainer & container, AbnfRule & rule, int & uniqn)
 {
 	bool r = true;
 
-	switch (container.type()) {
-	case Abnf_Altern:
-		break;
-	case Abnf_Concat:
-		break;
-	case Abnf_Rpt:
-		break;
-	case Abnf_Group:
-		break;
-	case Abnf_Option:
-		break;
-	default:
-		break;
+	Vector<AbnfAbstractElement *> * elements = & container.m_elements;
+	Vector<AbnfAbstractElement *>::iterator it = elements->begin();
+	Vector<AbnfAbstractElement *>::iterator itEnd = elements->end();
+
+	for (; it != itEnd; ++it) {
+
+		// Ignore repetition of scalar
+		if ((*it)->type() == Abnf_Rpt) {
+			const Vector<AbnfAbstractElement *> & rpt_elements = dynamic_cast<const AbnfAbstractContainer *>(*it)->elements();
+			if (rpt_elements.size() == 1 && rpt_elements[0]->isScalar())
+				continue;
+		}
+
+		if (! (*it)->isScalar()) {
+			String newRuleName = rule.name() + '_' + String::number(uniqn++);
+			newRule(newRuleName).add(**it);
+			*it = & Abnf::newRuleRef(newRuleName);
+		}
 	}
 
 	return r;
@@ -43,25 +47,18 @@ bool AbnfRuleSet::normalizeElement (AbnfAbstractContainer & container, AbnfRule 
 bool AbnfRuleSet::normalizeRule (AbnfRule & rule)
 {
 	bool r = true;
-	const Vector<AbnfAbstractElement *> * elements = & rule.elements();
+	Vector<AbnfAbstractElement *> * elements = & rule.m_elements;
 
-	Vector<AbnfAbstractElement *>::iterator it = elements->begin();
-	Vector<AbnfAbstractElement *>::iterator itEnd = elements->end();
-
-	for (; r && it != itEnd; ++it) {
+	// each iteration elements may changes the size (grows after appending new rules)
+	for (size_t i = 0; r && i < elements->size(); ++i) {
 		int uniqn = 0;
-		int nesting = 0;
-		AbnfAbstractElement * element = (*it);
+		AbnfAbstractElement * element = (*elements)[i];
 
 		// AbnfComment is scalar too
 		if (element->isScalar())
 			continue;
 
-		r = normalizeElement(*dynamic_cast<AbnfAbstractContainer *>(element), rule, uniqn, nesting);
-
-		// May be new elements has been appended
-		it = elements->begin();
-		itEnd = elements->end();
+		r = normalizeElement(*dynamic_cast<AbnfAbstractContainer *>(element), rule, uniqn);
 	}
 
 	return r;

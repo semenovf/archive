@@ -19,10 +19,10 @@ using namespace cwt;
 
 void test_abnf_build()
 {
-	AbnfRuleSet * ruleset = Abnf::createRuleSet ();
+	AbnfRuleSet ruleset;
 
 	// 1*( rule / (*c-wsp c-nl) )
-	AbnfRule * rule = ruleset->newRule("rulelist");
+	AbnfRule * rule = & ruleset.newRule("rulelist");
 	rule->newRpt(1,-1)
 				.newGroup()
 					.newAltern()
@@ -37,7 +37,7 @@ void test_abnf_build()
 //	rule = rulename defined-as elements c-nl
 //		; continues if next line starts
 //		; with white space
-	rule = ruleset->newRule("rule");
+	rule = & ruleset.newRule("rule");
 	rule->newConcat()
 			.add(Abnf::newRuleRef("rulename"))
 			.add(Abnf::newRuleRef("defined-as"))
@@ -53,7 +53,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	rulename =  ALPHA *(ALPHA / DIGIT / "-")
-	rule = ruleset->newRule("rulename");
+	rule = & ruleset.newRule("rulename");
 	rule->newConcat()
 			.add(Abnf::newRuleRef("ALPHA"))
 			.newRpt().newAltern()
@@ -67,7 +67,7 @@ void test_abnf_build()
 //		   ; basic rules definition and
 //		   ; incremental alternatives
 
-	rule = ruleset->newRule("defined-as");
+	rule = & ruleset.newRule("defined-as");
 	rule->newConcat()
 			.add(Abnf::newRpt("c-wsp"))
 			.add(Abnf::newGroup()
@@ -86,7 +86,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	elements = alternation *c-wsp
-	rule = ruleset->newRule("elements");
+	rule = & ruleset.newRule("elements");
 	rule->newConcat()
 			.add("alternation")
 			.add(Abnf::newRpt("c-wsp"));
@@ -95,7 +95,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	c-wsp =  WSP / (c-nl WSP)
-	rule = ruleset->newRule("c-wsp");
+	rule = & ruleset.newRule("c-wsp");
 	rule->newAltern()
 			.add("WSP")
 			.add(Abnf::newGroup()
@@ -106,7 +106,7 @@ void test_abnf_build()
 
 //	c-nl = comment / NL
 //			; comment or newline
-	rule = ruleset->newRule("c-nl");
+	rule = & ruleset.newRule("c-nl");
 	rule->newAltern()
 			.add("comment")
 			.add("NL")
@@ -118,7 +118,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	comment =  ";" *(WSP / VCHAR) NL
-	rule = ruleset->newRule("comment");
+	rule = & ruleset.newRule("comment");
 	rule->newConcat()
 			.add(Abnf::newCharVal(";"))
 			.add(Abnf::newRpt()
@@ -131,7 +131,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	alternation = concatenation *( *c-wsp "/" *c-wsp concatenation )
-	rule = ruleset->newRule("alternation");
+	rule = & ruleset.newRule("alternation");
 	rule->newConcat()
 			.add("concatenation")
 			.add(Abnf::newRpt()
@@ -145,7 +145,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 // concatenation = repetition *( 1*c-wsp repetition )
-	rule = ruleset->newRule("concatenation");
+	rule = & ruleset.newRule("concatenation");
 	rule->newConcat()
 			.add("repetition")
 			.add(Abnf::newRpt()
@@ -157,7 +157,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 // repetition = [ repeat ] element
-	rule = ruleset->newRule("repetition");
+	rule = & ruleset.newRule("repetition");
 	rule->newConcat()
 			.add(Abnf::newOption().add("repeat"))
 			.add("element");
@@ -166,7 +166,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	repeat = ( *DIGIT "*" *DIGIT ) / 1*DIGIT
-	rule = ruleset->newRule("repeat");
+	rule = & ruleset.newRule("repeat");
 	rule->newAltern()
 			.add(Abnf::newGroup()
 				.add(Abnf::newRpt("DIGIT"))
@@ -178,7 +178,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	element = rulename / group / option / char-val / num-val / prose-val
-	rule = ruleset->newRule("element");
+	rule = & ruleset.newRule("element");
 	rule->newAltern()
 			.add("rulename")
 			.add("group")
@@ -191,7 +191,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	group = "(" *c-wsp alternation *c-wsp ")"
-	rule = ruleset->newRule("group");
+	rule = & ruleset.newRule("group");
 	rule->newConcat()
 			.add(Abnf::newCharVal("("))
 			.add(Abnf::newRpt("c-wsp"))
@@ -203,7 +203,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	option = "[" *c-wsp alternation *c-wsp "]"
-	rule = ruleset->newRule("option");
+	rule = & ruleset.newRule("option");
 	rule->newConcat()
 			.add(Abnf::newCharVal("["))
 			.add(Abnf::newRpt("c-wsp"))
@@ -217,7 +217,7 @@ void test_abnf_build()
 //	char-val = DQUOTE *( %x20-21 / %x23-7E ) DQUOTE
 //			; quoted string of SP and VCHAR
 //			; without DQUOTE
-	rule = ruleset->newRule("char-val");
+	rule = & ruleset.newRule("char-val");
 	rule->newConcat()
 			.add("DQUOTE")
 			.add(Abnf::newRpt()
@@ -238,7 +238,7 @@ void test_abnf_build()
 
 
 //	num-val = "%" ( bin-val / dec-val / hex-val )
-	rule = ruleset->newRule("num-val");
+	rule = & ruleset.newRule("num-val");
 	rule->newConcat()
 		.add(Abnf::newCharVal("%"))
 		.add(Abnf::newGroup()
@@ -253,7 +253,7 @@ void test_abnf_build()
 //	bin-val = "b" 1*BIT [ 1*( "." 1*BIT ) / ( "-" 1*BIT ) ]
 //			; series of concatenated bit values
 //			; or single ONEOF range
-	rule = ruleset->newRule("bin-val");
+	rule = & ruleset.newRule("bin-val");
 	rule->newConcat()
 			.add(Abnf::newCharVal("b"))
 			.add(Abnf::newRpt("BIT", 1))
@@ -278,7 +278,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	dec-val = "d" 1*DIGIT [ 1*( "." 1*DIGIT ) / ( "-" 1*DIGIT ) ]
-	rule = ruleset->newRule("dec-val");
+	rule = & ruleset.newRule("dec-val");
 	rule->newConcat()
 			.add(Abnf::newCharVal("d"))
 			.add(Abnf::newRpt("DIGIT", 1))
@@ -298,7 +298,7 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 //	hex-val = "x" 1*HEXDIG [ 1*( "." 1*HEXDIG ) / ( "-" 1*HEXDIG ) ]
-	rule = ruleset->newRule("hex-val");
+	rule = & ruleset.newRule("hex-val");
 	rule->newConcat()
 			.add(Abnf::newCharVal("x"))
 			.add(Abnf::newRpt("HEXDIG", 1))
@@ -323,7 +323,7 @@ void test_abnf_build()
 //			; prose description, to be used as
 //			;  last resort
 
-	rule = ruleset->newRule("prose-val");
+	rule = & ruleset.newRule("prose-val");
 	rule->newConcat()
 			.add(Abnf::newCharVal("<"))
 			.add(Abnf::newRpt()
@@ -345,33 +345,31 @@ void test_abnf_build()
 	__CWT_TEST_RULE(s, rule);
 
 
-	CWT_TEST_OK(ruleset->find("rulelist"));
-	CWT_TEST_OK(ruleset->find("rule"));
-	CWT_TEST_OK(ruleset->find("rulename"));
-	CWT_TEST_OK(ruleset->find("defined-as"));
-	CWT_TEST_OK(ruleset->find("elements"));
-	CWT_TEST_OK(ruleset->find("c-wsp"));
-	CWT_TEST_OK(ruleset->find("c-nl"));
-	CWT_TEST_OK(ruleset->find("comment"));
-	CWT_TEST_OK(ruleset->find("alternation"));
-	CWT_TEST_OK(ruleset->find("concatenation"));
-	CWT_TEST_OK(ruleset->find("repetition"));
-	CWT_TEST_OK(ruleset->find("repeat"));
-	CWT_TEST_OK(ruleset->find("element"));
-	CWT_TEST_OK(ruleset->find("group"));
-	CWT_TEST_OK(ruleset->find("option"));
-	CWT_TEST_OK(ruleset->find("char-val"));
-	CWT_TEST_OK(ruleset->find("num-val"));
-	CWT_TEST_OK(ruleset->find("bin-val"));
-	CWT_TEST_OK(ruleset->find("dec-val"));
-	CWT_TEST_OK(ruleset->find("hex-val"));
-	CWT_TEST_OK(ruleset->find("prose-val"));
+	CWT_TEST_OK(ruleset.find("rulelist"));
+	CWT_TEST_OK(ruleset.find("rule"));
+	CWT_TEST_OK(ruleset.find("rulename"));
+	CWT_TEST_OK(ruleset.find("defined-as"));
+	CWT_TEST_OK(ruleset.find("elements"));
+	CWT_TEST_OK(ruleset.find("c-wsp"));
+	CWT_TEST_OK(ruleset.find("c-nl"));
+	CWT_TEST_OK(ruleset.find("comment"));
+	CWT_TEST_OK(ruleset.find("alternation"));
+	CWT_TEST_OK(ruleset.find("concatenation"));
+	CWT_TEST_OK(ruleset.find("repetition"));
+	CWT_TEST_OK(ruleset.find("repeat"));
+	CWT_TEST_OK(ruleset.find("element"));
+	CWT_TEST_OK(ruleset.find("group"));
+	CWT_TEST_OK(ruleset.find("option"));
+	CWT_TEST_OK(ruleset.find("char-val"));
+	CWT_TEST_OK(ruleset.find("num-val"));
+	CWT_TEST_OK(ruleset.find("bin-val"));
+	CWT_TEST_OK(ruleset.find("dec-val"));
+	CWT_TEST_OK(ruleset.find("hex-val"));
+	CWT_TEST_OK(ruleset.find("prose-val"));
 
 	std::cout << "===================================" << std::endl;
-	std::cout << ruleset->toString();// << std::endl;
+	std::cout << ruleset.toString();// << std::endl;
 	std::cout << "===================================" << std::endl;
-
-	Abnf::destroyRuleSet (ruleset);
 }
 
 int main(int argc, char *argv[])

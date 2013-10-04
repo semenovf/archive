@@ -20,19 +20,19 @@ using namespace cwt;
  */
 void test_abnf_normalize()
 {
-	AbnfRuleSet * ruleset = Abnf::createRuleSet ();
+	AbnfRuleSet ruleset;
 
-	ruleset->newRule("expr")
-		->newConcat()
+	ruleset.newRule("expr")
+		.newConcat()
 			.add("op")
 			.add(Abnf::newCharVal("+"))
-			.add("op");
+			.add(Abnf::newRpt("DIGIT", 1));
 
-	ruleset->newRule("op")
-		->newRpt("DIGIT", 1);
+	ruleset.newRule("op")
+		.newRpt(1).add(Abnf::newRuleRef("DIGIT"));
 
-	ruleset->newRule("DIGIT")
-		->newAltern()
+	ruleset.newRule("DIGIT")
+		.newAltern()
 			.add(Abnf::newCharVal("0"))
 			.add(Abnf::newCharVal("1"))
 			.add(Abnf::newCharVal("2"))
@@ -44,13 +44,11 @@ void test_abnf_normalize()
 			.add(Abnf::newCharVal("8"))
 			.add(Abnf::newCharVal("9"));
 
-	CWT_TEST_OK(ruleset->normalize());
+	CWT_TEST_OK(ruleset.normalize());
 
 	std::cout << "ABNF: =============================" << std::endl;
-	std::cout << ruleset->toString();// << std::endl;
+	std::cout << ruleset.toString();// << std::endl;
 	std::cout << "===================================" << std::endl;
-
-	Abnf::destroyRuleSet (ruleset);
 }
 
 int main(int argc, char *argv[])
