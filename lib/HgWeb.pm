@@ -40,7 +40,8 @@ sub startup {
     $r->post('/account/create') ->to('account#create');
     
     $r->get('/tr')             ->to('transaction#list');
-    $r->post('/tr/create')     ->to('transaction#create');
+    #$r->post('/tr/create')     ->to('transaction#create');
+    $r->get('/tr/create')     ->to('transaction#create');
     
     $r->any('/(*)')            ->to(cb => sub {
         my $self = shift;
