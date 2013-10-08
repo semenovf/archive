@@ -8,6 +8,7 @@
 #include <cwt/test.h>
 #include <cwt/utf8string.hpp>
 #include <cstring>
+#include <iostream>
 
 using namespace cwt;
 
@@ -231,12 +232,17 @@ void test_replace()
 	Utf8String before (Utf8String::fromUtf8("АБВ", &ok));
 	CWT_TEST_FAIL2(ok, "From UTF-8 conversion failed");
 
-	printf("orig: %s\n", s.c_str());
-	printf("dest: %s\n", dest1.c_str());
+	std::cout << "orig: " << s << std::endl;
+	std::cout << "dest: " << dest1 << std::endl;
 
 	s.replace(before, after);
-	printf("repl: %s\n", s.c_str());
+	std::cout << "repl: " << s << std::endl;
 	CWT_TEST_OK(s == dest1);
+
+	Utf8String s1("ABC-XYZ");
+	s1.replace(Utf8String("-"), Utf8String("_"));
+	CWT_TEST_OK(s1 == Utf8String("ABC_XYZ"));
+	std::cout << "s1: " << s1 << std::endl;
 }
 
 void test_split()
@@ -309,7 +315,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(110);
+    CWT_BEGIN_TESTS(111);
 
     test_basic();
     test_init();

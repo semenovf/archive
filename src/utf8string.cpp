@@ -150,6 +150,11 @@ Utf8String & Utf8String::replace(const Utf8String & before, const Utf8String & a
 		it2 = find(before, it1);
 	}
 
+
+	if (it1 != cend()) {
+		r.append(Utf8String(it1, cend()));
+	}
+
 	if (!r.isEmpty()) {
 		swap(*this, r);
 		this->calculateLength();
