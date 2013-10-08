@@ -8,6 +8,7 @@
 #include "abnf_p.hpp"
 #include <cwt/logger.hpp>
 #include <cwt/fsm.hpp>
+#include <iostream>
 
 CWT_NS_BEGIN
 
@@ -31,7 +32,7 @@ String AbnfRpt::toFsmMatchString() const
 	return r;
 }
 
-String AbnfOption::toFsmMatchString() const
+/*String AbnfOption::toFsmMatchString() const
 {
 	String r;
 
@@ -43,7 +44,7 @@ String AbnfOption::toFsmMatchString() const
 	  << ", 0, 1)";
 
 	return r;
-}
+}*/
 
 String AbnfRuleRef::toFsmMatchString() const
 {
@@ -73,11 +74,19 @@ String AbnfNumVal::toFsmMatchString() const
 	return r;
 }
 
-
-String AbnfRuleSet::generateTransitionTablesClass () const
+// TODO need to implement
+String AbnfProseVal::toFsmMatchString() const
 {
-	Vector<AbnfRule *>::const_iterator it = m_rules.begin();
-	Vector<AbnfRule *>::const_iterator itEnd = m_rules.end();
+	String r;
+	r << "FSM_MATCH_FUNC("
+	  << ")";
+	return r;
+}
+
+String AbnfGenContext::generateTransitionTablesClass () const
+{
+	Vector<AbnfRule *>::const_iterator it = m_rulesetPtr->rules().cbegin();
+	Vector<AbnfRule *>::const_iterator itEnd = m_rulesetPtr->rules().cend();
 
 	String r;
 
@@ -96,7 +105,7 @@ String AbnfRuleSet::generateTransitionTablesClass () const
 	return r;
 }
 
-String AbnfRuleSet::generateTransition (int state_next, int state_fail, const String & match, int status) const
+String AbnfGenContext::generateTransition (int state_next, int state_fail, const String & match, int status) const
 {
 	String r;
 
@@ -112,12 +121,10 @@ String AbnfRuleSet::generateTransition (int state_next, int state_fail, const St
 	return r;
 }
 
-/*
-
-static String __compact_char_values (Vector<AbnfAbstractElement *>::const_iterator & it, const Vector<AbnfAbstractElement *>::const_iterator & itEnd)
+static String __compact_char_values (Vector<AbnfElement *>::const_iterator & it, const Vector<AbnfElement *>::const_iterator & itEnd)
 {
 	String r;
-	Vector<AbnfAbstractElement *>::const_iterator it1(it);
+	Vector<AbnfElement *>::const_iterator it1(it);
 
 	while ( it1 != itEnd && (*it1)->type() == Abnf_CharVal) {
 		const AbnfCharVal * v = dynamic_cast<const AbnfCharVal *>(*it1);
@@ -130,40 +137,33 @@ static String __compact_char_values (Vector<AbnfAbstractElement *>::const_iterat
 	it = it1;
 	return r;
 }
-*/
 
-static String __comment_for_transition_table(AbnfElementType type)
-{
-	String r;
-	r << "// "
-	  << (type == Abnf_Rpt
-		  ? "Repeat"
-		  : type == Abnf_Altern
-				? "Alternation"
-				: type == Abnf_Concat
-					  ? "Concatenation" : "<not_supported_yet>");
-	return r;
-}
-
-String AbnfRuleSet::generateTransitionTable (const AbnfRule & rule) const
+String AbnfGenContext::generateTransitionTable (const AbnfRule & rule) const
 {
 	String r;
 
 	CWT_ASSERT(rule.elements().size() == 1);
 	CWT_ASSERT(! (rule.elements())[0]->isScalar()); // one of containers
 
-	const AbnfAbstractElement * inner = (rule.elements())[0];
-	const Vector<AbnfAbstractElement * > & elements = dynamic_cast<const AbnfAbstractContainer *>(inner)->elements();
+	const AbnfElement * inner = (rule.elements())[0];
+	const Vector<AbnfElement * > & elements = dynamic_cast<const AbnfContainer *>(inner)->elements();
 	AbnfElementType innerType = inner->type();
 
 	int state_next = -1;
 	int state_fail = -1;
-	//int state_last = elements.size();
 	int status = FSM_NORMAL;
+
+/*
+	if (! (innerType == Abnf_Altern
+			|| innerType == Abnf_Concat)) {
+		return String();
+	}
+*/
+	std::cout << rule.toString() << std::endl;
 
 	CWT_ASSERT_X(innerType == Abnf_Altern
 			|| innerType == Abnf_Concat
-		, _Tr("Elements may be added to rule through the bypass"));
+		, String(_Fr("Elements may be added to rule through the bypass: %d") % innerType).c_str() );
 
 	if (innerType == Abnf_Altern) {
 		state_fail = 0;
@@ -175,19 +175,21 @@ String AbnfRuleSet::generateTransitionTable (const AbnfRule & rule) const
 		status = FSM_NORMAL;
 	}
 
-	r << __comment_for_transition_table(innerType) << String::EndOfLine;
+	r << "// " << rule.toString() << String::EndOfLine;
 	r << "static Transitions::Type " << TRANSITION_TABLE_NAME(rule.name()) << "[] = {" << String::EndOfLine;
 	String sep("  ");
 
-	Vector<AbnfAbstractElement *>::const_iterator it = elements.begin();
-	Vector<AbnfAbstractElement *>::const_iterator itEnd = elements.end();
+	Vector<AbnfElement *>::const_iterator it = elements.begin();
+	Vector<AbnfElement *>::const_iterator itEnd = elements.end();
 
-	for (; it != itEnd; ++it) {
-		const AbnfAbstractElement * element = *it;
+	while (it != itEnd) {
+		const AbnfElement * element = *it;
 		AbnfElementType t = element->type();
 
-		if (t == Abnf_Comment)
+		if (t == Abnf_Comment) {
+			++it;
 			continue;
+		}
 
 		if (innerType == Abnf_Altern) {
 			++state_fail;
@@ -195,7 +197,20 @@ String AbnfRuleSet::generateTransitionTable (const AbnfRule & rule) const
 			++state_next;
 		}
 
-		r << INDENT << sep << generateTransition(state_next, state_fail, element->toFsmMatchString(), status) << String::EndOfLine;
+		if (t == Abnf_CharVal && m_compactCharValues) {
+			// Compact char values
+			String s = __compact_char_values(it, itEnd);
+			r << INDENT << sep
+				<< generateTransition(state_next, state_fail
+						, (innerType == Abnf_Altern
+								? String("FSM_MATCH_CHAR(_u8(\"") + s + "\"))"
+								: String("FSM_MATCH_STR(_u8(\"") + s + "\"))")
+						, status)
+				<< String::EndOfLine;
+		} else {
+			r << INDENT << sep << generateTransition(state_next, state_fail, element->toFsmMatchString(), status) << String::EndOfLine;
+			++it;
+		}
 		sep = String(", ");
 	}
 
@@ -214,10 +229,10 @@ String AbnfRuleSet::generateTransitionTable (const AbnfRule & rule) const
 	return r;
 }
 
-String AbnfRuleSet::generateTransitionTables () const
+String AbnfGenContext::generateTransitionTables () const
 {
-	Vector<AbnfRule *>::const_iterator it = m_rules.begin();
-	Vector<AbnfRule *>::const_iterator itEnd = m_rules.end();
+	Vector<AbnfRule *>::const_iterator it = m_rulesetPtr->rules().cbegin();
+	Vector<AbnfRule *>::const_iterator itEnd = m_rulesetPtr->rules().cend();
 
 	String r;
 
@@ -235,9 +250,15 @@ String AbnfRuleSet::generateTransitionTables () const
 	return r;
 }
 
-String AbnfRuleSet::generateTransitions () const
+String AbnfGenContext::generate () const
 {
 	String r;
+
+	if (! m_rulesetPtr->normalize()) {
+		Logger::error(_Tr("Failed to normalize ABNF ruleset"));
+		return String();
+	}
+
 	String ttc(generateTransitionTablesClass());
 	String tt(generateTransitionTables());
 

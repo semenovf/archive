@@ -21,7 +21,7 @@ using namespace cwt;
  */
 void test_abnf_gen()
 {
-	AbnfRuleSet ruleset;
+	AbnfRuleList ruleset;
 
 	ruleset.newRule("expr")
 		.newConcat()
@@ -32,8 +32,7 @@ void test_abnf_gen()
 	ruleset.newRule("op")
 		.newConcat()
 			.add(Abnf::newRpt("DIGIT", 1))
-			.add(Abnf::newOption()
-				.newRpt(1).add(Abnf::newRuleRef("ALPHA")));
+			.newRpt(1).add(Abnf::newRuleRef("ALPHA"));
 
 	ruleset.newRule("DIGIT")
 		.newAltern()
@@ -63,12 +62,13 @@ void test_abnf_gen()
 			.add(Abnf::newNumVal(0x104, 16));
 
 
-	ruleset.normalize();
-	String trans = ruleset.generateTransitions();
+	AbnfGenContext genCtx(ruleset);
+	genCtx.compactCharValues(true);
+	String trans = genCtx.generate();
 	CWT_TEST_FAIL(!trans.isEmpty());
 
 	std::cout << "ABNF: =============================" << std::endl;
-	std::cout << ruleset.toString();// << std::endl;
+	std::cout << ruleset.toString();
 	std::cout << "===================================" << std::endl;
 
 	std::cout << "Transitions: ======================" << std::endl;
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 {
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
-	CWT_BEGIN_TESTS(42);
+	CWT_BEGIN_TESTS(1);
 
 	test_abnf_gen();
 

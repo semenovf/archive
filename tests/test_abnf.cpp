@@ -223,8 +223,9 @@ static void test_abnf_fsm()
 }
 
 
-static const char *abnf_test_str = "c = ;k\n";
+static const char *abnf_test_str = "a = b;c";
 //static const char *abnf_test_str = "comment        =  \";\" *(WSP / VCHAR) CRLF\r\n";
+
 /*
 static const char *abnf_test_str = "\n\
 rulelist       =  1*( rule / (*c-wsp c-nl) )                     \n\
@@ -289,19 +290,16 @@ prose-val      =  \"<\" *(%x20-3D / %x3F-7E) \">\"               \n\
 					   ;  last resort                            \n\
 ";
 */
+
 static void test_abnf()
 {
 	Abnf abnf;
-	CWT_TEST_FAIL(abnf.parse(String().fromUtf8(abnf_test_str)));
+	AbnfRuleList ruleset;
+	CWT_TEST_FAIL(abnf.parse(String::fromUtf8(abnf_test_str), ruleset));
 }
 
 int main(int argc, char *argv[])
 {
-	StdioLogAppender stdlogger;
-	stdlogger.setPattern(String("%d{ABSOLUTE} [%p]: %m"));
-	Logger::connectAppender(&stdlogger);
-	stdlogger.setPriority(Logger::Trace);
-
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
 	CWT_BEGIN_TESTS(125);

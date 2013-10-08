@@ -31,6 +31,7 @@
 
 CWT_NS_BEGIN
 
+/*
 static const int __ABNF_BEGIN_DOC      = 1;
 static const int __ABNF_END_DOC_OK     = 2;
 static const int __ABNF_END_DOC_FAIL   = 3;
@@ -50,15 +51,34 @@ static const int __ABNF_ELEM_RULE_REF  = 16;
 static const int __ABNF_ELEM_CHAR_VAL  = 17;
 static const int __ABNF_ELEM_NUM_VAL   = 18;
 static const int __ABNF_ELEM_PROSE_VAL = 19;
+*/
+static int __ABNF_RPT_FROM   = 1;
+static int __ABNF_RPT_TO     = 2;
+static int __ABNF_RPT_FROMTO = 3;
 
-static const int __ABNF_RPT_FROM   = 1;
-static const int __ABNF_RPT_TO     = 2;
-static const int __ABNF_RPT_FROMTO = 3;
+static int __ABNF_NUM_BIN =  2; // Numeric value in binary form
+static int __ABNF_NUM_DEC = 10; // Numeric value in decimal form
+static int __ABNF_NUM_HEX = 16; // Numeric value in hexidecimal form
 
+static bool on_rule_ref (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+static bool on_group (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+static bool on_option (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+static bool on_char_val (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+static bool on_num_val (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+static bool on_prose_val (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+static bool on_comment (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+
+static bool set_num_base (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+
+static bool accept_rule (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+static bool repeat_range (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args);
+
+/*
 static bool block (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *);
 static bool rulename (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *);
 //static bool comment (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *);
 static bool rpt (const String::const_iterator & begin, const String::const_iterator & end, void *context, void *);
+*/
 
 //static bool plain_element(const void *data, size_t len, void *context, void *action_args);
 /*
@@ -195,7 +215,7 @@ static FsmTransition<String> rulename_fsm[] = {
 
 /* ";" *(WSP / VCHAR) NL */
 /* VCHAR = %x21-7E ; visible (printing) characters */
-static UChar vchar_rg[2] = {0x21, 0x7E };
+static UChar vchar_rg[2] = { 0x21, 0x7E };
 static FsmTransition<String> wsp_vchar_fsm[] = {
 	  {-1, 1, FSM_MATCH_CHAR(__ABNF_WSP)               , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_RANGE(vchar_rg[0], vchar_rg[1]), FSM_ACCEPT, nullptr, nullptr }
@@ -208,7 +228,7 @@ static FsmTransition<String> comment_fsm[] = {
 
 /* comment / NL ; comment or newline */
 static FsmTransition<String> c_nl_fsm[] = {
-     {-1, 1, FSM_MATCH_FSM(comment_fsm) , FSM_ACCEPT, nullptr, nullptr }
+     {-1, 1, FSM_MATCH_FSM(comment_fsm) , FSM_ACCEPT, on_comment, nullptr }
    , {-1,-1, FSM_MATCH_FSM(nl_fsm)      , FSM_ACCEPT, nullptr, nullptr }
 };
 
@@ -249,7 +269,7 @@ static FsmTransition<String> bin_dash_point_fsm[] = {
 	, {-1,-1, FSM_MATCH_RPT_FSM(bin_point_fsm, 1,-1) , FSM_ACCEPT , nullptr, nullptr }
 };
 static FsmTransition<String> bin_val_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR("b")                   , FSM_NORMAL , nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR("b")                   , FSM_NORMAL , set_num_base, & __ABNF_NUM_BIN }
 	, { 2,-1, FSM_MATCH_RPT_CHAR(__ABNF_BIT, 1,-1)  , FSM_NORMAL , nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_OPT_FSM(bin_dash_point_fsm) , FSM_ACCEPT , nullptr, nullptr }
 };
@@ -269,7 +289,7 @@ static FsmTransition<String> dec_dash_point_fsm[] = {
 	, {-1,-1, FSM_MATCH_RPT_FSM(dec_point_fsm, 1,-1) , FSM_ACCEPT , nullptr, nullptr }
 };
 static FsmTransition<String> dec_val_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR("d")                    , FSM_NORMAL , nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR("d")                    , FSM_NORMAL , set_num_base, & __ABNF_NUM_DEC }
 	, { 2,-1, FSM_MATCH_RPT_CHAR(__ABNF_DIGIT, 1,-1) , FSM_NORMAL , nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_OPT_FSM(dec_dash_point_fsm)  , FSM_ACCEPT , nullptr, nullptr }
 };
@@ -288,7 +308,7 @@ static FsmTransition<String> hex_dash_point_fsm[] = {
 	, {-1,-1, FSM_MATCH_RPT_FSM(hex_point_fsm, 1,-1) , FSM_ACCEPT , nullptr, nullptr }
 };
 static FsmTransition<String> hex_val_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR("x")                       , FSM_NORMAL , nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR("x")                       , FSM_NORMAL , set_num_base, & __ABNF_NUM_HEX }
 	, { 2,-1, FSM_MATCH_RPT_CHAR(__ABNF_HEXDIGIT, 1,-1) , FSM_NORMAL , nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_OPT_FSM(hex_dash_point_fsm)     , FSM_ACCEPT , nullptr, nullptr }
 };
@@ -312,8 +332,8 @@ static FsmTransition<String> c_nl_wsp_fsm[] = {
 };
 /* WSP / c-nl-wsp */
 static FsmTransition<String> c_wsp_fsm[] = {
-     {-1, 1, FSM_MATCH_FSM(c_nl_wsp_fsm) , FSM_ACCEPT , nullptr , nullptr }
-   , {-1,-1, FSM_MATCH_CHAR(__ABNF_WSP)  , FSM_ACCEPT , nullptr , nullptr }
+	 {-1, 1, FSM_MATCH_CHAR(__ABNF_WSP)  , FSM_ACCEPT , nullptr , nullptr }
+   , {-1,-1, FSM_MATCH_FSM(c_nl_wsp_fsm) , FSM_ACCEPT , nullptr , nullptr }
 };
 
 /*
@@ -333,21 +353,21 @@ static FsmTransition<String> defined_as_fsm[] = {
 
 /* *DIGIT "*" *DIGIT */
 static FsmTransition<String> repeat_range_fsm[] = {
-	  { 1, 1, FSM_MATCH_RPT_CHAR(__ABNF_DIGIT, 0,-1) , FSM_NORMAL, rpt, (void *) & __ABNF_RPT_FROM }
+	  { 1, 1, FSM_MATCH_RPT_CHAR(__ABNF_DIGIT, 0,-1) , FSM_NORMAL, repeat_range, & __ABNF_RPT_FROM }
 	, { 2,-1, FSM_MATCH_CHAR("*")                    , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_CHAR(__ABNF_DIGIT, 0,-1) , FSM_ACCEPT, rpt, (void *) & __ABNF_RPT_TO }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(__ABNF_DIGIT, 0,-1) , FSM_ACCEPT, repeat_range, & __ABNF_RPT_TO }
 };
 /* (*DIGIT "*" *DIGIT) / 1*DIGIT  */
 static FsmTransition<String> repeat_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(repeat_range_fsm)  , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_CHAR(__ABNF_DIGIT, 1,-1) , FSM_ACCEPT, rpt, (void *) & __ABNF_RPT_FROMTO }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(__ABNF_DIGIT, 1,-1) , FSM_ACCEPT, repeat_range, & __ABNF_RPT_FROMTO }
 };
 
 extern FsmTransition<String> element_fsm[];
 /* [repeat] element */
 static FsmTransition<String> repetition_fsm[] = {
-	  { 1,-1, FSM_MATCH_OPT_FSM(repeat_fsm), FSM_NORMAL, block, (void *) & __ABNF_BEGIN_RPT }
-	, {-1,-1, FSM_MATCH_FSM(element_fsm)   , FSM_ACCEPT, block, (void *) & __ABNF_END_RPT }
+	  { 1,-1, FSM_MATCH_OPT_FSM(repeat_fsm), FSM_NORMAL, nullptr, nullptr }
+	, {-1,-1, FSM_MATCH_FSM(element_fsm)   , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* concatenation = repetition *(1*c-wsp repetition) */
@@ -357,9 +377,8 @@ static FsmTransition<String> repetition_c_wsp_fsm[] = {
 	, {-1,-1, FSM_MATCH_FSM(repetition_fsm)      , FSM_ACCEPT, nullptr, nullptr }
 };
 static FsmTransition<String> concatenation_fsm[] = {
-	  { 1,-1, FSM_MATCH_NOTHING                            , FSM_NORMAL, block, (void *) & __ABNF_BEGIN_CONCAT }
-	, { 2,-1, FSM_MATCH_FSM(repetition_fsm)                , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_FSM(repetition_c_wsp_fsm, 0,-1), FSM_ACCEPT, block, (void *) & __ABNF_END_CONCAT }
+	  { 1,-1, FSM_MATCH_FSM(repetition_fsm)                , FSM_NORMAL, nullptr, nullptr }
+	, {-1,-1, FSM_MATCH_RPT_FSM(repetition_c_wsp_fsm, 0,-1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* concatenation *(*c-wsp "/" *c-wsp concatenation) */
@@ -372,9 +391,9 @@ static FsmTransition<String> concatenation_next_fsm[] = {
 };
 
 static FsmTransition<String> alternation_fsm[] = {
-	  { 1,-1, FSM_MATCH_NOTHING                              , FSM_NORMAL, block, (void *) & __ABNF_BEGIN_ALTERN }
+	  { 1,-1, FSM_MATCH_NOTHING                              , FSM_NORMAL, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_FSM(concatenation_fsm)               , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_FSM(concatenation_next_fsm, 0,-1), FSM_ACCEPT, block, (void *) & __ABNF_END_ALTERN }
+	, {-1,-1, FSM_MATCH_RPT_FSM(concatenation_next_fsm, 0,-1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* elements = alternation *c-wsp */
@@ -385,30 +404,30 @@ static FsmTransition<String> elements_fsm[] = {
 
 /* "[" *c-wsp alternation *c-wsp "]" */
 static FsmTransition<String> option_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR("[")                 , FSM_NORMAL, block, (void *) & __ABNF_BEGIN_OPTION }
+	  { 1,-1, FSM_MATCH_STR("[")                 , FSM_NORMAL, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, nullptr, nullptr }
 	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, nullptr, nullptr }
 	, { 4,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_STR("]")                 , FSM_ACCEPT, block, (void *) & __ABNF_END_OPTION }
+	, {-1,-1, FSM_MATCH_STR("]")                 , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* "(" *c-wsp alternation *c-wsp ")" */
 static FsmTransition<String> group_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR("(")                , FSM_NORMAL, block, (void *) & __ABNF_BEGIN_GROUP }
+	  { 1,-1, FSM_MATCH_CHAR("(")                , FSM_NORMAL, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, nullptr, nullptr }
 	, { 3,-1, FSM_MATCH_FSM(alternation_fsm)     , FSM_NORMAL, nullptr, nullptr }
 	, { 4,-1, FSM_MATCH_RPT_FSM(c_wsp_fsm, 0,-1) , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_STR(")")                 , FSM_ACCEPT, block, (void *) & __ABNF_END_GROUP }
+	, {-1,-1, FSM_MATCH_STR(")")                 , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* rulename / group / option / char-val / num-val / prose-val */
 FsmTransition<String> element_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(rulename_fsm),  FSM_ACCEPT, block, (void *) & __ABNF_ELEM_RULE_REF }
-	, {-1, 2, FSM_MATCH_FSM(group_fsm),     FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 3, FSM_MATCH_FSM(option_fsm),    FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 4, FSM_MATCH_FSM(char_val_fsm),  FSM_ACCEPT, block, (void *) & __ABNF_ELEM_CHAR_VAL }
-	, {-1, 5, FSM_MATCH_FSM(num_val_fsm),   FSM_ACCEPT, block, (void *) & __ABNF_ELEM_NUM_VAL }
-	, {-1,-1, FSM_MATCH_FSM(prose_val_fsm), FSM_ACCEPT, block, (void *) & __ABNF_ELEM_PROSE_VAL }
+	  {-1, 1, FSM_MATCH_FSM(rulename_fsm),  FSM_ACCEPT, on_rule_ref , nullptr }
+	, {-1, 2, FSM_MATCH_FSM(group_fsm),     FSM_ACCEPT, on_group    , nullptr }
+	, {-1, 3, FSM_MATCH_FSM(option_fsm),    FSM_ACCEPT, on_option   , nullptr }
+	, {-1, 4, FSM_MATCH_FSM(char_val_fsm),  FSM_ACCEPT, on_char_val , nullptr }
+	, {-1, 5, FSM_MATCH_FSM(num_val_fsm),   FSM_ACCEPT, on_num_val  , nullptr }
+	, {-1,-1, FSM_MATCH_FSM(prose_val_fsm), FSM_ACCEPT, on_prose_val, nullptr }
 };
 
 /*
@@ -417,10 +436,10 @@ FsmTransition<String> element_fsm[] = {
                        ;  with white space
 */
 static FsmTransition<String> rule_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(rulename_fsm)   , FSM_NORMAL, rulename, nullptr }
-	, { 2,-1, FSM_MATCH_FSM(defined_as_fsm) , FSM_NORMAL, block, (void *) & __ABNF_BEGIN_RULE }
+	  { 1,-1, FSM_MATCH_FSM(rulename_fsm)   , FSM_NORMAL, nullptr, nullptr }
+	, { 2,-1, FSM_MATCH_FSM(defined_as_fsm) , FSM_NORMAL, nullptr, nullptr }
 	, { 3,-1, FSM_MATCH_FSM(elements_fsm)   , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(c_nl_fsm)       , FSM_ACCEPT, block, (void *) & __ABNF_END_RULE }
+	, {-1,-1, FSM_MATCH_FSM(c_nl_fsm)       , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* 1*( rule / (*c-wsp c-nl) ) */
@@ -432,18 +451,165 @@ static FsmTransition<String> c_wsp_nl_fsm[] = {
 
 /* rule / (*c-wsp c-nl) */
 static FsmTransition<String> rule_c_wsp_nl_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(c_wsp_nl_fsm) , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(rule_fsm)     , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_FSM(rule_fsm)     , FSM_ACCEPT, accept_rule, nullptr }
+	, {-1,-1, FSM_MATCH_FSM(c_wsp_nl_fsm) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 static FsmTransition<String> rulelist_fsm[] = {
-	  { 1,-1, FSM_MATCH_NOTHING                          , FSM_NORMAL, block, (void *) & __ABNF_BEGIN_DOC }
-	, { 2, 3, FSM_MATCH_RPT_FSM(rule_c_wsp_nl_fsm, 1,-1) , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_NOTHING                          , FSM_ACCEPT, block, (void *) & __ABNF_END_RULE }
-	, {-1,-1, FSM_MATCH_NOTHING                          , FSM_ACCEPT, block, (void *) & __ABNF_END_DOC_FAIL }
+	  {-1,-1, FSM_MATCH_RPT_FSM(rule_c_wsp_nl_fsm, 1,-1) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 
+static bool on_rule_ref (const String::const_iterator & begin, const String::const_iterator & end, void * context, void *)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	String rulename(begin, end);
+
+	CWT_UNUSED(ctx);
+
+	CWT_TRACE(String(_Fr("AbnfRuleRef('%s')") % rulename).c_str());
+
+/*
+	CWT_ASSERT(ctx->elementStack.size() > 0);
+	AbnfElement * element = ctx->elementStack.top();
+
+	CWT_ASSERT(!element->isScalar());
+	dynamic_cast<AbnfContainer *>(element)->add(Abnf::newRuleRef(rulename));
+*/
+	return true;
+}
+
+static bool on_group (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	String value(begin, end);
+
+	CWT_UNUSED2(ctx, action_args);
+
+	CWT_TRACE(String(_Fr("AbnfGroup ( %s )") % value).c_str());
+	return true;
+}
+
+static bool on_option (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	String value(begin, end);
+
+	CWT_UNUSED2(ctx, action_args);
+
+	CWT_TRACE(String(_Fr("AbnfOption [ %s ]") % value).c_str());
+	return true;
+}
+
+static bool on_char_val (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * /*action_args*/)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	String value(begin, end);
+
+	CWT_UNUSED(ctx);
+
+	CWT_TRACE(String(_Fr("AbnfCharVal(%s)") % value).c_str());
+/*
+	CWT_ASSERT(ctx->elementStack.size() > 0);
+	AbnfElement * element = ctx->elementStack.top();
+
+	CWT_ASSERT(!element->isScalar());
+	dynamic_cast<AbnfContainer *>(element)->add(Abnf::newCharVal(value));
+*/
+	return true;
+}
+
+static bool on_num_val (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * /*action_args*/)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	String value(begin, end);
+	CWT_UNUSED(ctx);
+	CWT_TRACE(String(_Fr("AbnfNumVal(%s)") % value).c_str());
+/*
+
+	CWT_ASSERT(ctx->elementStack.size() > 0);
+	AbnfElement * element = ctx->elementStack.top();
+
+	CWT_ASSERT(!element->isScalar());
+*/
+	//dynamic_cast<AbnfContainer *>(element)->add(Abnf::newNumVal(value));
+	return true;
+}
+
+static bool on_prose_val (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	String value(begin, end);
+	CWT_UNUSED2(ctx, action_args);
+	CWT_TRACE(String(_Fr("AbnfProseVal(%s)") % value).c_str());
+	return true;
+}
+
+static bool on_comment (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	CWT_UNUSED2(ctx, action_args);
+	String comment(begin+1, end-1);
+	CWT_TRACE(String(_Fr("C('%s')") % comment).c_str());
+	return true;
+}
+
+static bool set_num_base (const String::const_iterator & /*begin*/, const String::const_iterator & /*end*/, void * context, void * action_args)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	ctx->numValBase = * static_cast<int *>(action_args);
+	return true;
+}
+
+static bool accept_rule (const String::const_iterator & begin, const String::const_iterator & end, void * context, void *)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	CWT_UNUSED2(begin, end);
+	CWT_UNUSED(ctx);
+/*
+	CWT_ASSERT(ctx->elementStack.size() > 0);
+	AbnfElement * element = ctx->elementStack.pop();
+	CWT_TRACE(String(_Fr("R('%s')") % dynamic_cast<AbnfRule *>(element)->name()).c_str());
+*/
+	return true;
+}
+
+static bool repeat_range (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args)
+{
+	AbnfParseContext * ctx = __CAST_PARSE_CTX(context);
+	int rangeType = * static_cast<int *>(action_args);
+
+	bool ok = true;
+	int value = 0;
+
+	if (begin < end) {
+		value = String(begin, end).toInt(& ok, 10);
+		if (!ok) {
+			Logger::error("invalid repetition value");
+			return false;
+		}
+	}
+
+	return true;
+
+	CWT_ASSERT(ctx->elementStack.size() > 0);
+	AbnfElement * element = ctx->elementStack.top();
+	CWT_ASSERT(element && element->type() == Abnf_Rpt);
+
+	if (rangeType == __ABNF_RPT_FROM) {
+		dynamic_cast<AbnfRpt*>(element)->setFrom(begin < end ? value : 0);
+	} else if (rangeType == __ABNF_RPT_TO) {
+		dynamic_cast<AbnfRpt*>(element)->setTo(begin < end ? value : -1);
+	} else if (rangeType == __ABNF_RPT_FROMTO) {
+		dynamic_cast<AbnfRpt*>(element)->setBounds(begin < end ? value : 1, begin < end ? value : 1);
+	} else {
+		return false;
+	}
+
+	return true;
+}
+
+#ifdef __COMMENT__
 static bool block (const String::const_iterator & begin, const String::const_iterator & end, void * context, void * action_args)
 {
 	const int *flag = (const int *)action_args;
@@ -550,6 +716,7 @@ static bool rpt (const String::const_iterator & begin, const String::const_itera
 	}
 	return true;
 }
+#endif
 
 CWT_NS_END
 

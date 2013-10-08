@@ -9,29 +9,19 @@
 
 #include <cwt/abnf.hpp>
 #include <cwt/logger.hpp>
+#include <iostream>
 
 using namespace cwt;
 
-/*
-static void test_abnf()
-{
-	Abnf abnf;
-	abnf.parse(String().fromUtf8(abnf_test_str));
-}
-*/
+extern String generateAbnfTransitions();
 
 int main(int argc, char *argv[])
 {
 	CWT_UNUSED(argc);
 	CWT_UNUSED(argv);
-//	CWT_BEGIN_TESTS(125);
-/*
 
-	test_abnf_fsm();
-	test_abnf();
-*/
+	std::cout << generateAbnfTransitions();
 
-//	CWT_END_TESTS;
 	return EXIT_SUCCESS;
 }
 

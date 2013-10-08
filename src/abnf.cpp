@@ -14,6 +14,8 @@
 
 CWT_NS_BEGIN
 
+#ifdef __COMMENT__
+
 static void __to_string_helper(std::ostream & os, const AbnfNode *parentNode)
 {
 	Vector<AbnfNode*>::const_iterator node = parentNode->m_nodes.begin();
@@ -363,7 +365,9 @@ static bool comment(const String & comment, void * userContext)
 }
 */
 
-static AbnfSimpleApi __default_api = {
+#endif // __COMMENT__
+
+/*static AbnfSimpleApi __default_api = {
 	  begin_document
 	, end_document
 	, begin_rule
@@ -382,119 +386,125 @@ static AbnfSimpleApi __default_api = {
 	, char_val
 	, num_val
 	, prose_val
-};
+};*/
 
-bool Abnf::parse(const String &abnf)
-{
-	return parse(abnf, __default_api);
-}
-
-
-bool Abnf::parse(const String & abnf, AbnfSimpleApi & api)
+bool Abnf::parse(const String & abnf, AbnfRuleList & ruleset)
 {
 	CWT_UNUSED(abnf);
+	AbnfParseContext ctx = {
+		  & ruleset
+		, Stack<AbnfElement *>()
+		, 10  // numValBase
+		, 0   // numValMin
+		, 0   // numValMax
+	};
+
+/*
 	AbnfContext abnfContext;
-
 	abnfContext.isIncrementalAlternation = false;
-
+*/
+	/*
 	AbnfParseContext ctx = {
 		  & abnfContext
 		, String()
 		, {CWT_INT_MIN, CWT_INT_MIN}
 		, api
 	};
-
+*/
 	Fsm<String> fsm(rulelist_fsm, & ctx);
 
-	if (fsm.exec(0, abnf.begin(), abnf.end()) >= 0) {
+	String s(abnf);
+
+	if (!s.endsWith(String::EndOfLine))
+		s.append(String::EndOfLine);
+
+	if (fsm.exec(0, s.begin(), s.end()) >= 0) {
 		return true;
 	}
 
 	return false;
 }
 
-AbnfRuleSet::~AbnfRuleSet()
+AbnfRule & AbnfRuleList::newRule (const String & name)
 {
-	Vector<AbnfRule *>::iterator it = m_rules.begin();
-	Vector<AbnfRule *>::iterator itEnd = m_rules.end();
+	String rulename(name);
+	rulename.replace("-", "_");
+	AbnfRule * rule = new AbnfRule(rulename);
+	size_t index = m_elements.size();
+	this->add(*rule);
 
-	for (; it != itEnd; ++it)
-		delete *it;
-}
-
-AbnfRule & AbnfRuleSet::newRule (const String & name)
-{
-	AbnfRule * rule = new AbnfRule(name);
-	size_t index = m_rules.size();
-	m_rules.append(rule);
-	m_rulesIndices.insert(name, index);
+	CWT_ASSERT_X(m_rulesIndices.cend() == m_rulesIndices.find(rulename)
+		, String(_Fr("Rule name must be unique: %s") % name).c_str());
+	m_rulesIndices.insert(rulename, index);
 	return *rule;
 }
 
 
-String AbnfRuleSet::toString () const
+String AbnfRuleList::toString () const
 {
-	Vector<AbnfRule *>::const_iterator it = m_rules.begin();
-	Vector<AbnfRule *>::const_iterator itEnd = m_rules.end();
+	Vector<AbnfRule *>::const_iterator it = rules().cbegin();
+	Vector<AbnfRule *>::const_iterator itEnd = rules().cend();
 
 	String r;
 
 	for (; it != itEnd; ++it) {
-		r.append((*it)->toString());
+		r << (*it)->toString();
 		if (! r.endsWith(String::EndOfLine))
-			r.append(String::EndOfLine);
-		r.append(String::EndOfLine);
+			r << String::EndOfLine;
+		r << String::EndOfLine;
 	}
 
 	return r;
 }
 
-AbnfRule * AbnfRuleSet::find (const String & name)
+AbnfRule * AbnfRuleList::find (const String & name)
 {
 	AbnfRule * r = nullptr;
 	Hash<String, size_t>::iterator it = m_rulesIndices.find(name);
+	Vector<AbnfRule *> & vrules = rules();
 	if (it != m_rulesIndices.end()) {
 		size_t i = it.value();
-		CWT_ASSERT(i < m_rules.size());
-		r = m_rules[i];
+		CWT_ASSERT(i < vrules.size());
+		r = vrules[i];
 	}
 	return r;
 }
 
-const AbnfRule * AbnfRuleSet::find (const String & name) const
+const AbnfRule * AbnfRuleList::find (const String & name) const
 {
 	AbnfRule * r = nullptr;
 	Hash<String, size_t>::const_iterator it = m_rulesIndices.find(name);
+	const Vector<AbnfRule *> & vrules = rules();
 	if (it != m_rulesIndices.cend()) {
 		size_t i = it.value();
-		CWT_ASSERT(i < m_rules.size());
-		r = m_rules[i];
+		CWT_ASSERT(i < vrules.size());
+		r = vrules[i];
 	}
 	return r;
 }
 
-AbnfAbstractContainer::~AbnfAbstractContainer()
+AbnfContainer::~AbnfContainer()
 {
-	Vector<AbnfAbstractElement *>::iterator it = m_elements.begin();
-	Vector<AbnfAbstractElement *>::iterator itEnd = m_elements.end();
+	Vector<AbnfElement *>::iterator it = m_elements.begin();
+	Vector<AbnfElement *>::iterator itEnd = m_elements.end();
 
 	for (; it != itEnd; ++it) {
 		delete *it;
 	}
 }
 
-String AbnfAbstractContainer::toString (const String & separator) const
+String AbnfContainer::toString (const String & separator) const
 {
-	Vector<AbnfAbstractElement *>::const_iterator it = m_elements.begin();
-	Vector<AbnfAbstractElement *>::const_iterator itEnd = m_elements.end();
+	Vector<AbnfElement *>::const_iterator it = m_elements.begin();
+	Vector<AbnfElement *>::const_iterator itEnd = m_elements.end();
 
 	String r;
 	String sep;
 
 	for (; it != itEnd; ++it) {
 		if ((*it)->type() != Abnf_Comment)
-			r.append(sep);
-		r.append((*it)->toString());
+			r << sep;
+		r << (*it)->toString();
 		sep = separator;
 	}
 
@@ -504,79 +514,71 @@ String AbnfAbstractContainer::toString (const String & separator) const
 String AbnfRpt::toString () const
 {
 	String r;
+	bool isOption = false;
 
 	if (0 == m_elements.size())
 		return String();
 
-	if (m_from < 0 && m_to < 0) {
-		r.append(1, '*');
+	// Option
+	if (m_from <= 0 && m_to == 1) {
+		r << "[ ";
+		isOption = true;
 	} else {
-		if (m_from > 0)
-			r.append(String::number(m_from));
-		if (m_from != m_to) {
-			r.append(1, '*');
-			if (m_to > 0) {
-				r.append(String::number(m_to));
+		if (m_from < 0 && m_to < 0) {
+			r << '*';
+		} else {
+			if (m_from > 0)
+				r << String::number(m_from);
+			if (m_from != m_to) {
+				r << '*';
+				if (m_to > 0) {
+					r << String::number(m_to);
+				}
 			}
 		}
 	}
 
-	if (m_elements.size() == 1
-			&& (m_elements[0]->isScalar()
-					|| Abnf_Group == m_elements[0]->type()
-					|| Abnf_Option == m_elements[0]->type())) {
-		r.append(AbnfAbstractContainer::toString(" "));
+	if (m_elements.size() == 1 && (m_elements[0]->isScalar())) {
+		r << AbnfContainer::toString(" ");
 	} else {
-		r.append("( ");
-		r.append(AbnfAbstractContainer::toString(" "));
-		r.append(" )");
+		r << (isOption ? "" : "( ")
+		  << AbnfContainer::toString(" ")
+		  << (isOption ? "" : " )");
 	}
+
+	if (isOption) {
+		r << " ]";
+	}
+
 	return r;
 }
 
-AbnfAltern & AbnfAbstractContainer::newAltern()
+AbnfAltern & AbnfContainer::newAltern()
 {
 	AbnfAltern & altern = Abnf::newAltern();
-	m_elements.append(& altern);
+	this->add(altern);
 	return altern;
 }
 
-AbnfConcat & AbnfAbstractContainer::newConcat()
+AbnfConcat & AbnfContainer::newConcat()
 {
 	AbnfConcat & concat = Abnf::newConcat();
-	m_elements.append(& concat);
+	this->add(concat);
 	return concat;
 }
 
-AbnfRpt & AbnfAbstractContainer::newRpt(int from, int to)
+AbnfRpt & AbnfContainer::newRpt(int from, int to)
 {
 	AbnfRpt & rpt = Abnf::newRpt(from, to);
-	m_elements.append(& rpt);
+	this->add(rpt);
 	return rpt;
 }
 
-/*
-AbnfRpt & AbnfAbstractContainer::newRpt (const String & ruleref, int from, int to)
+AbnfRpt & AbnfContainer::newRpt (const String & ruleref, int from, int to)
 {
 	AbnfRpt & rpt = Abnf::newRpt(ruleref, from, to);
-	m_elements.append(& rpt);
+	this->add(rpt);
 	return rpt;
-}
-*/
-
-AbnfGroup & AbnfAbstractContainer::newGroup ()
-{
-	CWT_TRACE_METHOD();
-	AbnfGroup & group = Abnf::newGroup();
-	m_elements.append(& group);
-	return group;
-}
-
-AbnfOption & AbnfAbstractContainer::newOption ()
-{
-	AbnfOption & option = Abnf::newOption();
-	m_elements.append(& option);
-	return option;
 }
 
 CWT_NS_END

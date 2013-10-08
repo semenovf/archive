@@ -23,8 +23,10 @@ inline String TRANSITION_TABLE_NAME(const String & rulename, int count = -1)
 			+ "_fsm";
 }
 
-#define __CAST_USER_CTX(userContext)   static_cast<AbnfContext *>(userContext)
+//#define __CAST_USER_CTX(userContext)   static_cast<AbnfContext *>(userContext)
 #define __CAST_PARSE_CTX(parseContext) static_cast<AbnfParseContext *>(parseContext)
+
+#ifdef __COMMENT__
 
 class AbnfNode
 {
@@ -117,13 +119,22 @@ struct AbnfContext
 	bool isIncrementalAlternation;
 };
 
+#endif
+
 struct AbnfParseContext
 {
-	void *    userContext;
-	String    rulename; // rulename for the current rule
-	struct    { int from, to; } rpt;
-	AbnfSimpleApi & api;
+	AbnfRuleList * ruleset;
+	Stack<AbnfElement *> elementStack;
+
+	int numValBase;
+	ulong_t numValMin;
+	ulong_t numValMax;
+	//void *    userContext;
+	//String    rulename; // rulename for the current rule
+	//struct    { int from, to; } rpt;
+	//AbnfSimpleApi & api;
 };
+
 
 CWT_NS_END
 

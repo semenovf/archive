@@ -9,7 +9,6 @@
 
 CWT_NS_BEGIN
 
-
 /*
  *
  * @param element
@@ -17,62 +16,79 @@ CWT_NS_BEGIN
  * @param uniqn unique counter inside the rule
  * @return
  */
-bool AbnfRuleSet::normalizeElement (AbnfAbstractContainer & container, AbnfRule & rule, int & uniqn)
+bool AbnfRuleList::normalizeElement (AbnfElement & element, AbnfRule & rule, int & uniqn)
 {
 	bool r = true;
 
-	Vector<AbnfAbstractElement *> * elements = & container.m_elements;
-	Vector<AbnfAbstractElement *>::iterator it = elements->begin();
-	Vector<AbnfAbstractElement *>::iterator itEnd = elements->end();
+	if (element.isScalar()) {
+		return true;
+	}
+
+	AbnfContainer & container = dynamic_cast<AbnfContainer &>(element);
+
+	Vector<AbnfElement *> * elements = & container.m_elements;
+	Vector<AbnfElement *>::iterator it = elements->begin();
+	Vector<AbnfElement *>::iterator itEnd = elements->end();
 
 	for (; it != itEnd; ++it) {
+		AbnfElement * elem = *it;
 
-		// Ignore repetition of scalar
-		if ((*it)->type() == Abnf_Rpt) {
-			const Vector<AbnfAbstractElement *> & rpt_elements = dynamic_cast<const AbnfAbstractContainer *>(*it)->elements();
-			if (rpt_elements.size() == 1 && rpt_elements[0]->isScalar())
-				continue;
-		}
-
-		if (! (*it)->isScalar()) {
-			String newRuleName = rule.name() + '_' + String::number(uniqn++);
-			newRule(newRuleName).add(**it);
-			*it = & Abnf::newRuleRef(newRuleName);
-		}
-	}
-
-	return r;
-}
-
-bool AbnfRuleSet::normalizeRule (AbnfRule & rule)
-{
-	bool r = true;
-	Vector<AbnfAbstractElement *> * elements = & rule.m_elements;
-
-	// each iteration elements may changes the size (grows after appending new rules)
-	for (size_t i = 0; r && i < elements->size(); ++i) {
-		int uniqn = 0;
-		AbnfAbstractElement * element = (*elements)[i];
-
-		// AbnfComment is scalar too
-		if (element->isScalar())
+		if (elem->isScalar())
 			continue;
 
-		r = normalizeElement(*dynamic_cast<AbnfAbstractContainer *>(element), rule, uniqn);
+		// Replaceable element.
+		// For repetition it is a child element (which is a container).
+		Vector<AbnfElement *>::iterator itRepl(it);
+
+		if (elem->type() == Abnf_Rpt) {
+			AbnfRpt * rpt = dynamic_cast<AbnfRpt *>(elem);
+			Vector<AbnfElement *> & rpt_elements = rpt->m_elements;
+
+			CWT_ASSERT(rpt_elements.size() == 1);
+
+			if (rpt_elements[0]->isScalar())
+				continue;
+
+			itRepl = rpt_elements.begin();
+			elem = rpt_elements[0];
+		}
+
+		String newRuleName = rule.name() + '_' + String::number(uniqn++);
+		newRule(newRuleName).add(*elem);
+		*itRepl = & Abnf::newRuleRef(newRuleName);
+
+		r = normalizeElement(*elem, rule, uniqn);
+		if (!r)
+			break;
 	}
 
 	return r;
 }
 
-bool AbnfRuleSet::normalize ()
+bool AbnfRuleList::normalizeRule (AbnfRule & rule)
 {
 	bool r = true;
-	Vector<AbnfRule *>::iterator it = m_rules.begin();
-	Vector<AbnfRule *>::iterator itEnd = m_rules.end();
+	Vector<AbnfElement *> * elements = & rule.m_elements;
 
-	for (; r && it != itEnd; ++it) {
-		AbnfRule * rule = *it;
-		r = normalizeRule(*rule);
+	// Rule has only one element (top-level container: Altern, Concat or Rpt)
+	CWT_ASSERT(elements->size() == 1);
+
+	int uniqn = 0;
+	AbnfElement * element = (*elements)[0];
+
+	r = normalizeElement(*element, rule, uniqn);
+
+	return r;
+}
+
+bool AbnfRuleList::normalize ()
+{
+	bool r = true;
+
+	Vector<AbnfRule *> & rulesRef = rules();
+
+	for (size_t i = 0; r && i < rulesRef.size(); ++i) {
+		r = normalizeRule(*rulesRef[i]);
 	}
 
 	return true;

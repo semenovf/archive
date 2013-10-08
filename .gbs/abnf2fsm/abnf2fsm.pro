@@ -6,6 +6,7 @@ INCLUDEPATH += ../../../cwt-common/include
 INCLUDEPATH += ../../../cwt-core/include
 
 SOURCES += ../../tools/abnf2fsm.cpp
+SOURCES += ../../tools/abnf_ruleset.cpp
 
 unix {
     LIBS += -lcwt
