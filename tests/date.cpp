@@ -94,6 +94,13 @@ void test_valid (void)
 	 CWT_TEST_OK2(! Date::isValid(2006, 2, 29) , _Tr("29.02.2006 is not a valid date: 2006 is not a leap year"));
 	 CWT_TEST_OK2(! Date::isValid(2100, 2, 29) , _Tr("29.02.2100 is not a valid date: 2100 is not a leap year"));
 	 CWT_TEST_OK2(Date::isValid(1202, 6, 6)    , _Tr("06.06.1202 is a valid date: even though 1202 is pre-Gregorian"));
+
+	 int year;
+	 int month;
+	 int day;
+	 long_t jd = long_t(2456575);
+	 Date::fromJulianDay(jd, & year, & month, & day);
+	 CWT_TEST_OK(jd == Date::julianDay(year, month, day));
 }
 
 void test_periods (void)
