@@ -16,7 +16,7 @@
 #include <cwt/unitype.hpp>
 
 //#define CWT_TRACE_ENABLE
-#include <cwt/trace.hpp>
+//#include <cwt/trace.hpp>
 
 CWT_NS_BEGIN
 
@@ -26,10 +26,6 @@ class AbnfRule;
 class AbnfAltern;
 class AbnfConcat;
 class AbnfRpt;
-/*
-class AbnfGroup;
-class AbnfOption;
-*/
 class AbnfRuleRef;
 class AbnfCharVal;
 class AbnfNumVal;
@@ -75,8 +71,6 @@ enum AbnfElementType {
 
 class AbnfElement
 {
-	//CWT_DENY_COPY(AbnfAbstractElement);
-
 public:
 	virtual ~AbnfElement () {}
 	virtual String toString () const = 0;
@@ -96,7 +90,6 @@ protected:
 
 class AbnfContainer : public AbnfElement
 {
-	//CWT_DENY_COPY(AbnfAbstractContainer);
 public:
 	virtual ~AbnfContainer();
 
@@ -125,8 +118,9 @@ protected:
 	friend class AbnfRuleList;
 };
 
-class AbnfRule : public AbnfContainer
+class DLL_API AbnfRule : public AbnfContainer
 {
+	CWT_DENY_COPY(AbnfRule);
 public:
 	AbnfRule (const String & name) : AbnfContainer(Abnf_Rule), m_name(name) {}
 
@@ -137,22 +131,25 @@ private:
 	String m_name;
 };
 
-class AbnfAltern : public AbnfContainer
+class DLL_API AbnfAltern : public AbnfContainer
 {
+	CWT_DENY_COPY(AbnfAltern);
 public:
 	AbnfAltern() : AbnfContainer(Abnf_Altern) {}
 	virtual String toString () const;
 };
 
-class AbnfConcat : public AbnfContainer
+class DLL_API AbnfConcat : public AbnfContainer
 {
+	CWT_DENY_COPY(AbnfConcat);
 public:
 	AbnfConcat() : AbnfContainer(Abnf_Concat) {}
 	virtual String toString () const;
 };
 
-class AbnfRpt : public AbnfContainer
+class DLL_API AbnfRpt : public AbnfContainer
 {
+	CWT_DENY_COPY(AbnfRpt);
 public:
 	AbnfRpt () : AbnfContainer(Abnf_Rpt), m_from(-1), m_to(-1) {}
 	AbnfRpt (int from, int to) : AbnfContainer(Abnf_Rpt), m_from(from), m_to(to) {}
@@ -168,10 +165,9 @@ private:
 	int m_from, m_to;
 };
 
-// base for terminal symbols
+
 class AbnfScalar : public AbnfElement
 {
-	CWT_DENY_COPY(AbnfScalar);
 public:
 	virtual bool isScalar() const { return true; }
 	void setValue (const String & v) { m_value = v;	}
@@ -183,11 +179,12 @@ protected:
 	String m_value;
 };
 
-class AbnfRuleRef : public AbnfScalar
+class DLL_API AbnfRuleRef : public AbnfScalar
 {
+	CWT_DENY_COPY(AbnfRuleRef);
 public:
 	AbnfRuleRef () : AbnfScalar (Abnf_RuleRef) {}
-	AbnfRuleRef (const String & v) : AbnfScalar (Abnf_RuleRef, String(v).replace("-", "_")) {}
+	AbnfRuleRef (const String & rulename) : AbnfScalar (Abnf_RuleRef, rulename) {}
 
 	const String & name () const { return value(); }
 
@@ -195,8 +192,9 @@ public:
 	virtual String toFsmMatchString() const;
 };
 
-class AbnfCharVal : public AbnfScalar
+class DLL_API AbnfCharVal : public AbnfScalar
 {
+	CWT_DENY_COPY(AbnfCharVal);
 public:
 	AbnfCharVal () : AbnfScalar (Abnf_CharVal) {}
 	AbnfCharVal (const String & v) : AbnfScalar (Abnf_CharVal, v) {}
@@ -204,8 +202,9 @@ public:
 	virtual String toFsmMatchString() const;
 };
 
-class AbnfNumVal : public AbnfScalar
+class DLL_API AbnfNumVal : public AbnfScalar
 {
+	CWT_DENY_COPY(AbnfNumVal);
 public:
 	AbnfNumVal () : AbnfScalar (Abnf_NumVal)
 		, m_base(10)
@@ -236,26 +235,8 @@ public:
 	ulong_t max () const { return m_max; }
 	bool isRange () const { return m_min != m_max; }
 
-	AbnfNumVal & add (ulong_t single, int base = 10)
-	{
-		CWT_ASSERT(base == 2 || base == 10 || base == 16);
-		m_value += m_value.isEmpty()
-				? String::number(single, base)
-				: String(1, '.') + String::number(single, base);
-		return *this;
-	}
-
-	virtual String toString () const
-	{
-		return String(1, '%')
-				+ (m_base == 10
-					? String(1, 'd')
-					: m_base == 16
-					  	  ? String(1, 'x')
-					  	  : String(1, 'b'))
-		        + m_value;
-	}
-
+	AbnfNumVal & add (ulong_t single, int base = 10);
+	virtual String toString () const;
 	virtual String toFsmMatchString() const;
 
 private:
@@ -264,8 +245,9 @@ private:
 	ulong_t m_max;
 };
 
-class AbnfProseVal : public AbnfScalar
+class DLL_API AbnfProseVal : public AbnfScalar
 {
+	CWT_DENY_COPY(AbnfProseVal);
 public:
 	AbnfProseVal () : AbnfScalar (Abnf_ProseVal) {}
 	AbnfProseVal (const String & v) : AbnfScalar (Abnf_ProseVal, v) {}
@@ -273,8 +255,9 @@ public:
 	virtual String toFsmMatchString() const; //{ return String(); } // TODO need to implement
 };
 
-class AbnfComment : public AbnfScalar
+class DLL_API AbnfComment : public AbnfScalar
 {
+	CWT_DENY_COPY(AbnfComment);
 public:
 	AbnfComment () : AbnfScalar (Abnf_Comment, String::EndOfLine) {}
 	AbnfComment (const String & v) : AbnfScalar (Abnf_Comment, v) {}
@@ -286,7 +269,7 @@ public:
 	}
 };
 
-class AbnfRuleList : public AbnfContainer
+class DLL_API AbnfRuleList : public AbnfContainer
 {
 	CWT_DENY_COPY(AbnfRuleList);
 
@@ -317,24 +300,33 @@ private:
 
 
 // Context for generation of FSM data
-class AbnfGenContext
+class DLL_API AbnfGenContext
 {
 public:
-	AbnfGenContext (AbnfRuleList & ruleset)
-		: m_rulesetPtr(& ruleset)
+	AbnfGenContext (const String & srcDataType, AbnfRuleList & ruleset)
+		: m_sourceDataType(srcDataType)
+		, m_transitionType(String("FsmTransition<") + m_sourceDataType + String(1, '>'))
+		, m_rulelist(ruleset)
 		, m_compactCharValues(false)
 	{}
 	String generate () const;
 	void compactCharValues(bool compact) { m_compactCharValues = compact; }
 
 private:
+	String generateHeader() const;
+	String generateEnum() const;
 	String generateTransitionTablesClass () const;
 	String generateTransitionTables () const;
 	String generateTransitionTable (const AbnfRule & rule) const;
 	String generateTransition (int state_next, int state_fail, const String & match, int status) const;
 
+	const String & sourceDataType () const { return m_sourceDataType; }
+	const String & transitionType () const { return m_transitionType; }
+
 private:
-	AbnfRuleList * m_rulesetPtr;
+	String         m_sourceDataType;
+	String         m_transitionType;
+	AbnfRuleList & m_rulelist;
 
 	// Options for generate transitions
 	bool m_compactCharValues;
@@ -376,18 +368,6 @@ inline AbnfContainer & AbnfContainer::addComment (const String & comment)
 	return add(Abnf::newComment(comment));
 }
 
-/*
-inline AbnfRpt & AbnfRule::newRpt (int from, int to)
-{
-	return newAltern().newRpt(from, to);
-}
-
-inline AbnfRpt & AbnfRule::newRpt (const String & ruleref, int from, int to)
-{
-	return newAltern().newRpt(ruleref, from, to);
-}
-*/
-
 inline String AbnfAltern::toString () const
 {
 	String r;
@@ -405,6 +385,27 @@ inline String AbnfConcat::toString () const
 	  << (m_parent->type() == Abnf_Rule || m_parent->type() == Abnf_Rpt ? "" : " )");
 	return r;
 }
+
+inline AbnfNumVal & AbnfNumVal::add (ulong_t single, int base)
+{
+	CWT_ASSERT(base == 2 || base == 10 || base == 16);
+	m_value += m_value.isEmpty()
+			? String::number(single, base)
+			: String(1, '.') + String::number(single, base);
+	return *this;
+}
+
+inline String AbnfNumVal::toString () const
+{
+	return String(1, '%')
+			+ (m_base == 10
+				? String(1, 'd')
+				: m_base == 16
+				  	  ? String(1, 'x')
+				  	  : String(1, 'b'))
+	        + m_value;
+}
+
 
 CWT_NS_END
 

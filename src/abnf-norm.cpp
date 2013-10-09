@@ -53,7 +53,7 @@ bool AbnfRuleList::normalizeElement (AbnfElement & element, AbnfRule & rule, int
 			elem = rpt_elements[0];
 		}
 
-		String newRuleName = rule.name() + '_' + String::number(uniqn++);
+		String newRuleName = rule.name() + '-' + String::number(uniqn++);
 		newRule(newRuleName).add(*elem);
 		*itRepl = & Abnf::newRuleRef(newRuleName);
 

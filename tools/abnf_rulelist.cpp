@@ -1,11 +1,11 @@
 /*
- * abnf_ruleset.cpp
+ * abnf_rulelist.cpp
  *
  *  Created on: Oct 7, 2013
  *      Author: wladt
  */
 
-#include "../../include/cwt/abnf.hpp"
+#include <cwt/abnf.hpp>
 #include <iostream>
 
 using namespace cwt;
@@ -73,24 +73,21 @@ RFC 5234: Augmented BNF for Syntax Specifications: ABNF
                                 ;  last resort
 */
 
-String generateAbnfTransitions()
-{
-	AbnfRuleList ruleset;
 
+void buildAbnfRuleList (AbnfRuleList & rulelist)
+{
 	// 1*( rule / (*c-wsp c-nl) )
-	AbnfRule * rule = & ruleset.newRule("rulelist");
-	rule->newRpt(1,-1)
+	rulelist.newRule("rulelist").newRpt(1,-1)
 		.newAltern()
 			.add(Abnf::newRuleRef("rule"))
 			.add(Abnf::newConcat()
 				.add(Abnf::newRpt("c-wsp"))
 				.add(Abnf::newRuleRef("c-nl")));
 
-//	rule = rulename defined-as elements c-nl
-//		; continues if next line starts
-//		; with white space
-	rule = & ruleset.newRule("rule");
-	rule->newConcat()
+	//	rule = rulename defined-as elements c-nl
+	//		; continues if next line starts
+	//		; with white space
+	rulelist.newRule("rule").newConcat()
 			.add(Abnf::newRuleRef("rulename"))
 			.add(Abnf::newRuleRef("defined-as"))
 			.add(Abnf::newRuleRef("elements"))
@@ -99,21 +96,18 @@ String generateAbnfTransitions()
 			.add(Abnf::newComment("continues if next line starts"))
 			.add(Abnf::newComment("with white space"));
 
-//	rulename =  ALPHA *(ALPHA / DIGIT / "-")
-	rule = & ruleset.newRule("rulename");
-	rule->newConcat()
+	//	rulename =  ALPHA *(ALPHA / DIGIT / "-")
+	rulelist.newRule("rulename").newConcat()
 			.add(Abnf::newRuleRef("ALPHA"))
 			.newRpt().newAltern()
 					.add(Abnf::newRuleRef("ALPHA"))
 					.add(Abnf::newRuleRef("DIGIT"))
 					.add(Abnf::newCharVal("-"));
 
-//	defined-as = *c-wsp (\"=\" / \"=/\") *c-wsp
-//		   ; basic rules definition and
-//		   ; incremental alternatives
-
-	rule = & ruleset.newRule("defined-as");
-	rule->newConcat()
+	//	defined-as = *c-wsp (\"=\" / \"=/\") *c-wsp
+	//		   ; basic rules definition and
+	//		   ; incremental alternatives
+	rulelist.newRule("defined-as").newConcat()
 			.add(Abnf::newRpt("c-wsp"))
 			.add(Abnf::newAltern()
 				.add(Abnf::newCharVal("="))
@@ -123,30 +117,26 @@ String generateAbnfTransitions()
 			.add(Abnf::newComment("basic rules definition and"))
 			.add(Abnf::newComment("incremental alternatives"));
 
-//	elements = alternation *c-wsp
-	rule = & ruleset.newRule("elements");
-	rule->newConcat()
+	//	elements = alternation *c-wsp
+	rulelist.newRule("elements").newConcat()
 		.add("alternation")
 		.add(Abnf::newRpt("c-wsp"));
 
-//	c-wsp =  WSP / (c-nl WSP)
-	rule = & ruleset.newRule("c-wsp");
-	rule->newAltern()
+	//	c-wsp =  WSP / (c-nl WSP)
+	rulelist.newRule("c-wsp").newAltern()
 			.add("WSP")
 			.add(Abnf::newConcat().add("c-nl").add("WSP"));
 
-//	c-nl = comment / NL
-//			; comment or newline
-	rule = & ruleset.newRule("c-nl");
-	rule->newAltern()
+	//	c-nl = comment / NL
+	//			; comment or newline
+	rulelist.newRule("c-nl").newAltern()
 			.add("comment")
 			.add("NL")
 			.addComment()
 			.addComment("comment or newline");
 
-//	comment =  ";" *(WSP / VCHAR) NL
-	rule = & ruleset.newRule("comment");
-	rule->newConcat()
+	//	comment =  ";" *(WSP / VCHAR) NL
+	rulelist.newRule("comment").newConcat()
 			.add(Abnf::newCharVal(";"))
 			.add(Abnf::newRpt()
 				.add(Abnf::newAltern()
@@ -154,9 +144,8 @@ String generateAbnfTransitions()
 					.add("VCHAR")))
 			.add("NL");
 
-//	alternation = concatenation *( *c-wsp "/" *c-wsp concatenation )
-	rule = & ruleset.newRule("alternation");
-	rule->newConcat()
+	//	alternation = concatenation *( *c-wsp "/" *c-wsp concatenation )
+	rulelist.newRule("alternation").newConcat()
 			.add("concatenation")
 			.add(Abnf::newRpt()
 				.add(Abnf::newConcat()
@@ -165,33 +154,29 @@ String generateAbnfTransitions()
 					.add(Abnf::newRpt("c-wsp"))
 					.add("concatenation")));
 
-// concatenation = repetition *( 1*c-wsp repetition )
-	rule = & ruleset.newRule("concatenation");
-	rule->newConcat()
+	// concatenation = repetition *( 1*c-wsp repetition )
+	rulelist.newRule("concatenation").newConcat()
 			.add("repetition")
 			.add(Abnf::newRpt()
 				.add(Abnf::newConcat()
 					.add(Abnf::newRpt("c-wsp", 1))
 					.add("repetition")));
 
-// repetition = [ repeat ] element
-	rule = & ruleset.newRule("repetition");
-	rule->newConcat()
+	// repetition = [ repeat ] element
+	rulelist.newRule("repetition").newConcat()
 			.add(Abnf::newRpt("repeat", 0, 1))
 			.add("element");
 
-//	repeat = ( *DIGIT "*" *DIGIT ) / 1*DIGIT
-	rule = & ruleset.newRule("repeat");
-	rule->newAltern()
+	//	repeat = ( *DIGIT "*" *DIGIT ) / 1*DIGIT
+	rulelist.newRule("repeat").newAltern()
 		.add(Abnf::newConcat()
 			.add(Abnf::newRpt("DIGIT"))
 			.add(Abnf::newCharVal("*"))
 			.add(Abnf::newRpt("DIGIT")))
 		.add(Abnf::newRpt("DIGIT", 1));
 
-//	element = rulename / group / option / char-val / num-val / prose-val
-	rule = & ruleset.newRule("element");
-	rule->newAltern()
+	//	element = rulename / group / option / char-val / num-val / prose-val
+	rulelist.newRule("element").newAltern()
 			.add("rulename")
 			.add("group")
 			.add("option")
@@ -199,29 +184,26 @@ String generateAbnfTransitions()
 			.add("num-val")
 			.add("prose-val");
 
-//	group = "(" *c-wsp alternation *c-wsp ")"
-	rule = & ruleset.newRule("group");
-	rule->newConcat()
+	//	group = "(" *c-wsp alternation *c-wsp ")"
+	rulelist.newRule("group").newConcat()
 			.add(Abnf::newCharVal("("))
 			.add(Abnf::newRpt("c-wsp"))
 			.add("alternation")
 			.add(Abnf::newRpt("c-wsp"))
 			.add(Abnf::newCharVal(")"));
 
-//	option = "[" *c-wsp alternation *c-wsp "]"
-	rule = & ruleset.newRule("option");
-	rule->newConcat()
+	//	option = "[" *c-wsp alternation *c-wsp "]"
+	rulelist.newRule("option").newConcat()
 			.add(Abnf::newCharVal("["))
 			.add(Abnf::newRpt("c-wsp"))
 			.add("alternation")
 			.add(Abnf::newRpt("c-wsp"))
 			.add(Abnf::newCharVal("]"));
 
-//	char-val = DQUOTE *( %x20-21 / %x23-7E ) DQUOTE
-//			; quoted string of SP and VCHAR
-//			; without DQUOTE
-	rule = & ruleset.newRule("char-val");
-	rule->newConcat()
+	//	char-val = DQUOTE *( %x20-21 / %x23-7E ) DQUOTE
+	//			; quoted string of SP and VCHAR
+	//			; without DQUOTE
+	rulelist.newRule("char-val").newConcat()
 			.add("DQUOTE")
 			.add(Abnf::newRpt()
 				.add(Abnf::newAltern()
@@ -234,20 +216,18 @@ String generateAbnfTransitions()
 			.addComment("quoted string of SP and VCHAR")
 			.addComment("without DQUOTE");
 
-//	num-val = "%" ( bin-val / dec-val / hex-val )
-	rule = & ruleset.newRule("num-val");
-	rule->newConcat()
+	//	num-val = "%" ( bin-val / dec-val / hex-val )
+	rulelist.newRule("num-val").newConcat()
 		.add(Abnf::newCharVal("%"))
 		.add(Abnf::newAltern()
 			.add("bin-val")
 			.add("dec-val")
 			.add("hex-val"));
 
-//	bin-val = "b" 1*BIT [ 1*( "." 1*BIT ) / ( "-" 1*BIT ) ]
-//			; series of concatenated bit values
-//			; or single ONEOF range
-	rule = & ruleset.newRule("bin-val");
-	rule->newConcat()
+	//	bin-val = "b" 1*BIT [ 1*( "." 1*BIT ) / ( "-" 1*BIT ) ]
+	//			; series of concatenated bit values
+	//			; or single ONEOF range
+	rulelist.newRule("bin-val").newConcat()
 		.add(Abnf::newCharVal("b"))
 		.add(Abnf::newRpt("BIT", 1))
 		.add(Abnf::newRpt(0, 1)
@@ -263,9 +243,8 @@ String generateAbnfTransitions()
 			.addComment("series of concatenated bit values")
 			.addComment("or single ONEOF range");
 
-//	dec-val = "d" 1*DIGIT [ 1*( "." 1*DIGIT ) / ( "-" 1*DIGIT ) ]
-	rule = & ruleset.newRule("dec-val");
-	rule->newConcat()
+	//	dec-val = "d" 1*DIGIT [ 1*( "." 1*DIGIT ) / ( "-" 1*DIGIT ) ]
+	rulelist.newRule("dec-val").newConcat()
 		.add(Abnf::newCharVal("d"))
 		.add(Abnf::newRpt("DIGIT", 1))
 		.add(Abnf::newRpt(0, 1)
@@ -278,9 +257,8 @@ String generateAbnfTransitions()
 					.add(Abnf::newCharVal("-"))
 					.add(Abnf::newRpt("DIGIT", 1)))));
 
-//	hex-val = "x" 1*HEXDIG [ 1*( "." 1*HEXDIG ) / ( "-" 1*HEXDIG ) ]
-	rule = & ruleset.newRule("hex-val");
-	rule->newConcat()
+	//	hex-val = "x" 1*HEXDIG [ 1*( "." 1*HEXDIG ) / ( "-" 1*HEXDIG ) ]
+	rulelist.newRule("hex-val").newConcat()
 		.add(Abnf::newCharVal("x"))
 		.add(Abnf::newRpt("HEXDIG", 1))
 		.add(Abnf::newRpt(0, 1)
@@ -293,14 +271,12 @@ String generateAbnfTransitions()
 					.add(Abnf::newCharVal("-"))
 					.add(Abnf::newRpt("HEXDIG", 1)))));
 
-//	prose-val = "<" *( %x20-3D / %x3F-7E ) ">"
-//			; bracketed string of SP and VCHAR
-//			;  without angles
-//			; prose description, to be used as
-//			;  last resort
-
-	rule = & ruleset.newRule("prose-val");
-	rule->newConcat()
+	//	prose-val = "<" *( %x20-3D / %x3F-7E ) ">"
+	//			; bracketed string of SP and VCHAR
+	//			;  without angles
+	//			; prose description, to be used as
+	//			;  last resort
+	rulelist.newRule("prose-val").newConcat()
 			.add(Abnf::newCharVal("<"))
 			.add(Abnf::newRpt()
 				.add(Abnf::newAltern()
@@ -312,13 +288,4 @@ String generateAbnfTransitions()
 			.addComment(" without angles")
 			.addComment("prose description, to be used as")
 			.addComment(" last resort");
-
-	//ruleset.normalize();
-	std::cout << "===================================" << std::endl;
-	std::cout << ruleset.toString();// << std::endl;
-	std::cout << "===================================" << std::endl;
-
-	AbnfGenContext genCtx(ruleset);
-	genCtx.compactCharValues(true);
-	return genCtx.generate();
 }

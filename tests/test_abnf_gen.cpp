@@ -62,7 +62,7 @@ void test_abnf_gen()
 			.add(Abnf::newNumVal(0x104, 16));
 
 
-	AbnfGenContext genCtx(ruleset);
+	AbnfGenContext genCtx("String", ruleset);
 	genCtx.compactCharValues(true);
 	String trans = genCtx.generate();
 	CWT_TEST_FAIL(!trans.isEmpty());

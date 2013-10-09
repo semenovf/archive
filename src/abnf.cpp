@@ -425,16 +425,18 @@ bool Abnf::parse(const String & abnf, AbnfRuleList & ruleset)
 	return false;
 }
 
-AbnfRule & AbnfRuleList::newRule (const String & name)
+AbnfRule & AbnfRuleList::newRule (const String & rulename)
 {
+/*
 	String rulename(name);
 	rulename.replace("-", "_");
+*/
 	AbnfRule * rule = new AbnfRule(rulename);
 	size_t index = m_elements.size();
 	this->add(*rule);
 
 	CWT_ASSERT_X(m_rulesIndices.cend() == m_rulesIndices.find(rulename)
-		, String(_Fr("Rule name must be unique: %s") % name).c_str());
+		, String(_Fr("Rule name must be unique: %s") % rulename).c_str());
 	m_rulesIndices.insert(rulename, index);
 	return *rule;
 }

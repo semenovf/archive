@@ -13,7 +13,17 @@
 
 using namespace cwt;
 
-extern String generateAbnfTransitions();
+void buildAbnfRuleList (AbnfRuleList & rulelist);
+
+String generateAbnfTransitions()
+{
+	AbnfRuleList rulelist;
+	AbnfGenContext genCtx("String", rulelist);
+
+	buildAbnfRuleList(rulelist);
+	genCtx.compactCharValues(true);
+	return genCtx.generate();
+}
 
 int main(int argc, char *argv[])
 {
