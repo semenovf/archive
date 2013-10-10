@@ -80,7 +80,7 @@ void Date::fromJulianDay (long_t julianDay, int * yearPtr, int * monthPtr, int *
 	if (julianDay >= 2299161) {
 		long_t a = julianDay + 32044;
 		b = Math::floorDiv(4 * a + 3, 146097);
-		b = a - Math::floorDiv(146097 * b, 4);
+		c = a - Math::floorDiv(146097 * b, 4);
 	} else {
 		b = 0;
 		c = julianDay + 32082;

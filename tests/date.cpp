@@ -14,6 +14,7 @@
 
 #include <cwt/test.h>
 #include <cwt/date.hpp>
+#include <cwt/safeformat.hpp>
 #include <iostream>
 
 using namespace cwt;
@@ -100,7 +101,10 @@ void test_valid (void)
 	 int day;
 	 long_t jd = long_t(2456575);
 	 Date::fromJulianDay(jd, & year, & month, & day);
-	 CWT_TEST_OK(jd == Date::julianDay(year, month, day));
+	 CWT_TEST_OK2(Date::julianDay( 2013, 10,  9) == jd
+		 , String(_Fr("9.10.2013 == %u") % jd).c_str());
+	 CWT_TEST_OK2(jd == Date::julianDay(year, month, day)
+	 	 , String(_Fr("%u (9.10.2013) == %d.%d.%d") % jd % day % month % year).c_str());
 }
 
 void test_periods (void)
