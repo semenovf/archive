@@ -388,11 +388,11 @@ static bool comment(const String & comment, void * userContext)
 	, prose_val
 };*/
 
-bool Abnf::parse(const String & abnf, AbnfRuleList & ruleset)
+bool Abnf::parse(const String & abnf, AbnfRuleList & rulelist)
 {
 	CWT_UNUSED(abnf);
 	AbnfParseContext ctx = {
-		  & ruleset
+		  & rulelist
 		, Stack<AbnfElement *>()
 		, 10  // numValBase
 		, 0   // numValMin

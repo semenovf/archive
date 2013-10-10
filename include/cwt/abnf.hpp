@@ -303,22 +303,25 @@ private:
 class DLL_API AbnfGenContext
 {
 public:
+	struct Options {
+		bool compactCharValues;
+	};
+public:
 	AbnfGenContext (const String & srcDataType, AbnfRuleList & ruleset)
 		: m_sourceDataType(srcDataType)
 		, m_transitionType(String("FsmTransition<") + m_sourceDataType + String(1, '>'))
 		, m_rulelist(ruleset)
-		, m_compactCharValues(false)
-	{}
+	{
+		m_options.compactCharValues = false;
+	}
 	String generate () const;
-	void compactCharValues(bool compact) { m_compactCharValues = compact; }
+	void setCompactCharValues(bool compact) { m_options.compactCharValues = compact; }
 
 private:
-	String generateHeader() const;
-	String generateEnum() const;
-	String generateTransitionTablesClass () const;
+/*
 	String generateTransitionTables () const;
 	String generateTransitionTable (const AbnfRule & rule) const;
-	String generateTransition (int state_next, int state_fail, const String & match, int status) const;
+*/
 
 	const String & sourceDataType () const { return m_sourceDataType; }
 	const String & transitionType () const { return m_transitionType; }
@@ -329,7 +332,7 @@ private:
 	AbnfRuleList & m_rulelist;
 
 	// Options for generate transitions
-	bool m_compactCharValues;
+	Options        m_options;
 };
 
 class DLL_API Abnf

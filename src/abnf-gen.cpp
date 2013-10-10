@@ -41,7 +41,7 @@ String AbnfRpt::toFsmMatchString() const
 String AbnfRuleRef::toFsmMatchString() const
 {
 	String r;
-	r << "FSM_MATCH_FSM(" << __c_name(name()) << ")";
+	r << "FSM_MATCH_FSM(Transitions::" << TRANSITION_TABLE_NAME(__c_name(name())) << ")";
 	return r;
 }
 
@@ -76,7 +76,7 @@ String AbnfProseVal::toFsmMatchString() const
 }
 
 
-String AbnfGenContext::generateHeader() const
+static String generateHeader(const String & sourceDataType)
 {
 	String r;
 	String lines[3];
@@ -99,14 +99,49 @@ String AbnfGenContext::generateHeader() const
 
 	r << "/*" << String(maxlen, '*') << "*/" << String::EndOfLine;
 
+	r << String::EndOfLine
+	  << "#include <cwt/fsm.hpp>" << String::EndOfLine
+	  << String::EndOfLine
+	  << "using namespace cwt;" << String::EndOfLine
+	  << String::EndOfLine;
+
+	r << "#ifdef FSM_MATCH_RPT" << String::EndOfLine
+	  << "#" << INDENT << "undef FSM_MATCH_RPT" << String::EndOfLine
+	  << "#endif" << String::EndOfLine
+	  << "#define FSM_MATCH_RPT(fsm,f,t) FsmMatch<" << sourceDataType << ">(new FsmMatchRpt<" << sourceDataType << ">(fsm,f,t))" << String::EndOfLine
+	  << String::EndOfLine;
+
+	r << "#ifdef FSM_MATCH_NOTHING" << String::EndOfLine
+	  << "#" << INDENT << "undef FSM_MATCH_NOTHING" << String::EndOfLine
+	  << "#endif" << String::EndOfLine
+	  << "#define FSM_MATCH_NOTHING FsmMatch<" << sourceDataType << ">(new FsmMatchNothing<" << sourceDataType << ">)" << String::EndOfLine
+	  << String::EndOfLine;
+
+	r << "#ifdef FSM_MATCH_FSM" << String::EndOfLine
+	  << "#" << INDENT << "undef FSM_MATCH_FSM" << String::EndOfLine
+	  << "#endif" << String::EndOfLine
+	  << "#define FSM_MATCH_FSM(tr) FsmMatch<" << sourceDataType << ">(new FsmMatchFsm<" << sourceDataType << ">(tr))" << String::EndOfLine
+	  << String::EndOfLine;
+
+	r << "#ifdef FSM_MATCH_CHAR" << String::EndOfLine
+	  << "#" << INDENT << "undef FSM_MATCH_CHAR" << String::EndOfLine
+	  << "#endif" << String::EndOfLine
+	  << "#define FSM_MATCH_CHAR(s) FsmMatch<" << sourceDataType << ">(new FsmMatchChar<" << sourceDataType << ">(s))" << String::EndOfLine
+	  << String::EndOfLine;
+
+	r << "#ifdef FSM_MATCH_STR" << String::EndOfLine
+	  << "#" << INDENT << "undef FSM_MATCH_STR" << String::EndOfLine
+	  << "#endif" << String::EndOfLine
+	  << "#define FSM_MATCH_STR(s) FsmMatch<" << sourceDataType << ">(new FsmMatchStr<" << sourceDataType << ">(s))" << String::EndOfLine;
+
 	return r;
 }
 
-String AbnfGenContext::generateEnum () const
+static String generateEnum (const AbnfRuleList & rulelist, size_t origRulesCount)
 {
 	String r;
-	Vector<AbnfRule *>::const_iterator it = m_rulelist.rules().cbegin();
-	Vector<AbnfRule *>::const_iterator itEnd = m_rulelist.rules().cend();
+	Vector<AbnfRule *>::const_iterator it = rulelist.rules().cbegin();
+	Vector<AbnfRule *>::const_iterator itEnd = it + origRulesCount;
 
 	String sep("  ");
 	r << "enum TokenEnum" << String::EndOfLine
@@ -123,24 +158,114 @@ String AbnfGenContext::generateEnum () const
 	return r;
 }
 
-String AbnfGenContext::generateTransitionTablesClass () const
+static String generateActionArgs (const AbnfRuleList & rulelist, size_t origRulesCount)
 {
-	Vector<AbnfRule *>::const_iterator it = m_rulelist.rules().cbegin();
-	Vector<AbnfRule *>::const_iterator itEnd = m_rulelist.rules().cend();
+	String r;
+	Vector<AbnfRule *>::const_iterator it = rulelist.rules().cbegin();
+	Vector<AbnfRule *>::const_iterator itEnd = it + origRulesCount;
+
+	String sep("  ");
+
+	r << "static int ACTION_ARGS[] = {" << String::EndOfLine;
+
+	for (; it != itEnd; ++it) {
+		r << INDENT << sep << "Token_" << __c_name((*it)->name()) << String::EndOfLine;
+		sep = String(", ");
+	}
+
+	r << "};" << String::EndOfLine;
+
+	return r;
+}
+
+static String generateActions (const AbnfRuleList & /*rulelist*/, size_t /*origRulesCount*/, const String & sourceDataType)
+{
+	String r;
+	//Vector<AbnfRule *>::const_iterator it = rulelist.rules().cbegin();
+	//Vector<AbnfRule *>::const_iterator itEnd = it + origRulesCount;
+
+	// on_begin
+	r << "bool Transitions::on_begin(const "
+	  << sourceDataType << "::const_iterator & begin, const "
+	  << sourceDataType << "::const_iterator & end, void * context, void * action_args)" << String::EndOfLine
+	  << "{" << String::EndOfLine;
+	r << INDENT << "TokenEnum tokenType = *static_cast<TokenEnum *>(action_args);" << String::EndOfLine;
+
+    r << INDENT << "Transitions::Node * node = new Transitions::Node(tokenType, nullptr);" << String::EndOfLine
+      << INDENT << "node->itBegin = begin;" << String::EndOfLine
+      << INDENT << "node->itEnd = end;" << String::EndOfLine
+      << INDENT << "CWT_UNUSED(context);" << String::EndOfLine
+      << String::EndOfLine;
+
+	r << INDENT << "return true;" << String::EndOfLine;
+	r << "}" << String::EndOfLine;
+
+	r << String::EndOfLine;
+
+	// on_end_accepted
+	r << "bool Transitions::on_end_accepted(const "
+	  << sourceDataType << "::const_iterator & begin, const "
+	  << sourceDataType << "::const_iterator & end, void * context, void * action_args)" << String::EndOfLine
+	  << "{" << String::EndOfLine;
+	r << INDENT << "TokenEnum tokenType = *static_cast<TokenEnum *>(action_args);" << String::EndOfLine;
+
+	r << INDENT << "Transitions::Node * node = new Transitions::Node(tokenType, nullptr);" << String::EndOfLine
+      << INDENT << "node->itBegin = begin;" << String::EndOfLine
+      << INDENT << "node->itEnd = end;" << String::EndOfLine
+      << INDENT << "CWT_UNUSED(context);" << String::EndOfLine
+      << String::EndOfLine;
+
+	r << INDENT << "return true;" << String::EndOfLine;
+	r << "}" << String::EndOfLine;
+
+	r << String::EndOfLine;
+
+	// on_end_rejected
+	r << "bool Transitions::on_end_rejected(const "
+	  << sourceDataType << "::const_iterator & begin, const "
+	  << sourceDataType << "::const_iterator & end, void * context, void * action_args)" << String::EndOfLine
+	  << "{" << String::EndOfLine;
+	r << INDENT << "TokenEnum tokenType = *static_cast<TokenEnum *>(action_args);" << String::EndOfLine;
+
+	r << INDENT << "Transitions::Node * node = new Transitions::Node(tokenType, nullptr);" << String::EndOfLine
+      << INDENT << "node->itBegin = begin;" << String::EndOfLine
+      << INDENT << "node->itEnd = end;" << String::EndOfLine
+      << INDENT << "CWT_UNUSED(context);" << String::EndOfLine
+      << String::EndOfLine;
+
+    r << INDENT << "return true;" << String::EndOfLine;
+	r << "}" << String::EndOfLine;
+
+	return r;
+}
+
+
+static String generateTransitionTablesClass (const AbnfRuleList & rulelist
+		, const String & transitionType
+		, const String & sourceDataType)
+{
+	Vector<AbnfRule *>::const_iterator it = rulelist.rules().cbegin();
+	Vector<AbnfRule *>::const_iterator itEnd = rulelist.rules().cend();
 
 	String r;
 
 	r << "class Transitions" << String::EndOfLine
 	  << "{" << String::EndOfLine
 	  << "public:" << String::EndOfLine
-	  << INDENT << "typedef " << transitionType() << " Type;" << String::EndOfLine
+	  << INDENT << "typedef " << transitionType << " Type;" << String::EndOfLine
 	  << String::EndOfLine;
 
 	r << INDENT << "struct Node" << String::EndOfLine
 	  << INDENT << "{" << String::EndOfLine
-	  << INDENT << INDENT << "NodeType type;" << String::EndOfLine
-	  << INDENT << INDENT << sourceDataType() << "::const_iterator itBegin;" << String::EndOfLine
-	  << INDENT << INDENT << sourceDataType() << "::const_iterator itEnd;" << String::EndOfLine
+  	  << INDENT << INDENT << "Node(TokenEnum type, Node * parent)" << String::EndOfLine
+  	  << INDENT << INDENT << INDENT << ": tokenType(type)" << String::EndOfLine
+  	  << INDENT << INDENT << INDENT << ", parent(parent)" << String::EndOfLine
+  	  << INDENT << INDENT << "{}" << String::EndOfLine
+  	  << String::EndOfLine;
+
+	r << INDENT << INDENT << "TokenEnum tokenType;" << String::EndOfLine
+	  << INDENT << INDENT << sourceDataType << "::const_iterator itBegin;" << String::EndOfLine
+	  << INDENT << INDENT << sourceDataType << "::const_iterator itEnd;" << String::EndOfLine
 	  << INDENT << INDENT << "Vector<Node *> siblings;" << String::EndOfLine
 	  << INDENT << INDENT << "Node * parent;" << String::EndOfLine
 	  << INDENT << "};" << String::EndOfLine
@@ -150,12 +275,27 @@ String AbnfGenContext::generateTransitionTablesClass () const
 		r << INDENT << "static Type " << TRANSITION_TABLE_NAME(__c_name((*it)->name())) << "[];" << String::EndOfLine;
 	}
 
+	r << String::EndOfLine;
+
+	r << INDENT << "static bool on_begin(const "
+	  << sourceDataType << "::const_iterator & begin, const "
+	  << sourceDataType << "::const_iterator & end, void * context, void * action_args);" << String::EndOfLine;
+
+	r << INDENT << "static bool on_end_accepted(const "
+	  << sourceDataType << "::const_iterator & begin, const "
+	  << sourceDataType << "::const_iterator & end, void * context, void * action_args);" << String::EndOfLine;
+
+	r << INDENT << "static bool on_end_rejected(const "
+	  << sourceDataType << "::const_iterator & begin, const "
+	  << sourceDataType << "::const_iterator & end, void * context, void * action_args);" << String::EndOfLine;
+
 	r << "};" << String::EndOfLine;
 
 	return r;
 }
 
-String AbnfGenContext::generateTransition (int state_next, int state_fail, const String & match, int status) const
+static String generateTransition (int state_next, int state_fail, const String & match, int status
+		, const String & action = String(), const String & action_args = String())
 {
 	String r;
 
@@ -164,14 +304,14 @@ String AbnfGenContext::generateTransition (int state_next, int state_fail, const
 		<< ", " << String::number(state_fail)
 		<< ", " << match
 		<< ", " << FSM_STATUS_STR[status]
-		<< ", " << "nullptr"
-		<< ", " << "nullptr";
+		<< ", " << (action.isEmpty() ? "nullptr" : action)
+		<< ", " << (action_args.isEmpty() ? "nullptr" : action_args);
 
 	r << " }";
 	return r;
 }
 
-static String __compact_char_values (Vector<AbnfElement *>::const_iterator & it, const Vector<AbnfElement *>::const_iterator & itEnd)
+static String compactCharValues (Vector<AbnfElement *>::const_iterator & it, const Vector<AbnfElement *>::const_iterator & itEnd)
 {
 	String r;
 	Vector<AbnfElement *>::const_iterator it1(it);
@@ -188,7 +328,22 @@ static String __compact_char_values (Vector<AbnfElement *>::const_iterator & it,
 	return r;
 }
 
-String AbnfGenContext::generateTransitionTable (const AbnfRule & rule) const
+
+static size_t calculateNonComments (const Vector<AbnfElement *> & elements)
+{
+	size_t r = 0;
+	Vector<AbnfElement *>::const_iterator it = elements.begin();
+	Vector<AbnfElement *>::const_iterator itEnd = elements.end();
+
+	while (it != itEnd) {
+		if ((*it)->type() != Abnf_Comment)
+			++r;
+		++it;
+	}
+	return r;
+}
+
+static String generateTransitionTable (const AbnfRule & rule, bool isOrigRule, const AbnfGenContext::Options & options)
 {
 	String r;
 
@@ -199,11 +354,11 @@ String AbnfGenContext::generateTransitionTable (const AbnfRule & rule) const
 	const Vector<AbnfElement * > & elements = dynamic_cast<const AbnfContainer *>(inner)->elements();
 	AbnfElementType innerType = inner->type();
 
+	String c_rulename(__c_name(rule.name()));
+	String actionArgsText(String("& ACTION_ARGS[Token_") + c_rulename + "]");
 	int state_next = -1;
 	int state_fail = -1;
 	int status = FSM_NORMAL;
-
-//	std::cout << rule.toString() << std::endl;
 
 	CWT_ASSERT_X(innerType == Abnf_Altern
 			|| innerType == Abnf_Concat
@@ -223,8 +378,27 @@ String AbnfGenContext::generateTransitionTable (const AbnfRule & rule) const
 	r << "/*" << String::EndOfLine;
 	r << INDENT << rule.toString() << String::EndOfLine;
 	r << "*/" << String::EndOfLine;
-	r << "static Transitions::Type " << TRANSITION_TABLE_NAME(__c_name(rule.name())) << "[] = {" << String::EndOfLine;
+	r << "Transitions::Type Transitions::" << TRANSITION_TABLE_NAME(c_rulename) << "[] = {" << String::EndOfLine;
 	String sep("  ");
+
+	size_t nelements = calculateNonComments(elements);
+
+	if (isOrigRule) {
+		r << INDENT << sep
+		  << generateTransition(1, -1, "FSM_MATCH_NOTHING", FSM_NORMAL, "Transitions::on_begin", actionArgsText)
+		  << String::EndOfLine;
+
+		// begin action
+		if (innerType == Abnf_Altern) {
+			++state_fail;
+			state_next = nelements + 2;
+		} else { // Abnf_Concat || Abnf_Rpt
+			++state_next;
+			state_fail = nelements + 2;
+		}
+
+		sep = String(", ");
+	}
 
 	Vector<AbnfElement *>::const_iterator it = elements.begin();
 	Vector<AbnfElement *>::const_iterator itEnd = elements.end();
@@ -244,9 +418,9 @@ String AbnfGenContext::generateTransitionTable (const AbnfRule & rule) const
 			++state_next;
 		}
 
-		if (t == Abnf_CharVal && m_compactCharValues) {
+		if (t == Abnf_CharVal && options.compactCharValues) {
 			// Compact char values
-			String s = __compact_char_values(it, itEnd);
+			String s = compactCharValues(it, itEnd);
 			if (s.isEmpty()) {
 				s = dynamic_cast<const AbnfScalar *>(element)->value();
 				r << INDENT << sep
@@ -268,33 +442,52 @@ String AbnfGenContext::generateTransitionTable (const AbnfRule & rule) const
 			r << INDENT << sep << generateTransition(state_next, state_fail, element->toFsmMatchString(), status) << String::EndOfLine;
 			++it;
 		}
+
 		sep = String(", ");
 	}
 
 	if (innerType == Abnf_Altern) {
 		r << INDENT << sep
-		  << generateTransition(-1, -1, "FSM_MATCH_NOTHING", FSM_REJECT)
+		  << generateTransition(-1, -1, "FSM_MATCH_NOTHING", FSM_REJECT
+				  , (isOrigRule ? "Transitions::on_end_rejected" : "")
+				  , (isOrigRule ? actionArgsText : ""))
 		  << String::EndOfLine;
+
+		if (isOrigRule) {
+			r << INDENT << sep
+			  << generateTransition(-1, -1, "FSM_MATCH_NOTHING", FSM_ACCEPT, "Transitions::on_end_accepted", actionArgsText)
+			  << String::EndOfLine;
+		}
 	} else { // Abnf_Concat || Abnf_Rpt
 		r << INDENT << sep
-		  << generateTransition(-1, -1, "FSM_MATCH_NOTHING", FSM_ACCEPT)
+		  << generateTransition(-1, -1, "FSM_MATCH_NOTHING", FSM_ACCEPT
+				  , (isOrigRule ? "Transitions::on_end_accepted" : "")
+				  , (isOrigRule ? actionArgsText : ""))
 		  << String::EndOfLine;
+
+		if (isOrigRule) {
+			r << INDENT << sep
+			  << generateTransition(-1, -1, "FSM_MATCH_NOTHING", FSM_REJECT , "Transitions::on_end_rejected", actionArgsText)
+			  << String::EndOfLine;
+		}
 	}
+
 
 	r << "};" << String::EndOfLine;
 
 	return r;
 }
 
-String AbnfGenContext::generateTransitionTables () const
+String generateTransitionTables (const AbnfRuleList & rulelist, const AbnfGenContext::Options & options, size_t origRulesCount)
 {
-	Vector<AbnfRule *>::const_iterator it = m_rulelist.rules().cbegin();
-	Vector<AbnfRule *>::const_iterator itEnd = m_rulelist.rules().cend();
+	Vector<AbnfRule *>::const_iterator it = rulelist.rules().cbegin();
+	Vector<AbnfRule *>::const_iterator itEnd = rulelist.rules().cend();
 
 	String r;
+	size_t i = 0;
 
-	for (; it != itEnd; ++it) {
-		String tt(generateTransitionTable (**it));
+	for (; it != itEnd; ++it, ++i) {
+		String tt(generateTransitionTable (**it, i < origRulesCount, options));
 
 		if (tt.isEmpty()) {
 			return String(); // error
@@ -311,29 +504,31 @@ String AbnfGenContext::generate () const
 {
 	String r;
 
-	// Do it before normalization
-	String enumText(generateEnum());
-
-	//String generateTransitionActions();
+	// Before normalization
+	size_t origRulesCount = m_rulelist.elements().size();
 
 	if (! m_rulelist.normalize()) {
 		Logger::error(_Tr("Failed to normalize ABNF rulelist"));
 		return String();
 	}
 
-	String ttcText(generateTransitionTablesClass());
-	String ttText(generateTransitionTables());
+	String ttcText(generateTransitionTablesClass(m_rulelist, transitionType(), sourceDataType()));
+	String ttText(generateTransitionTables(m_rulelist, m_options, origRulesCount));
 
 	if (ttcText.isEmpty() || ttText.isEmpty())
 		return String();
 
-	r << generateHeader()
-	  << String::EndOfLine
-	  << enumText
-	  << String::EndOfLine
-	  << ttcText
-	  << String::EndOfLine
-	  << ttText;
+	String headerText(generateHeader(sourceDataType()));
+	String enumText(generateEnum(m_rulelist, origRulesCount));
+	String actionFlags(generateActionArgs(m_rulelist, origRulesCount));
+	String actionsText(generateActions(m_rulelist, origRulesCount, sourceDataType()));
+
+	r << headerText   << String::EndOfLine
+	  << enumText     << String::EndOfLine
+	  << ttcText      << String::EndOfLine
+	  << actionFlags  << String::EndOfLine
+	  << ttText       << String::EndOfLine
+	  << actionsText;
 
 	return r;
 }
