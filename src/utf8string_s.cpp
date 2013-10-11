@@ -143,6 +143,84 @@ ssize_t Utf8String::encodeUcs4(char * utf8, size_t size, uint32_t ucs4)
 }
 
 
+/**
+ * @brief Returns string with escaping characters specified by @c escaped array.
+ *
+ * @param str     Source string.
+ * @param escaped Array of characters need to escape.
+ * @param nescaped Number of characters in @c escaped.
+ * @return String with escaping specified characters.
+ */
+Utf8String Utf8String::escape (const Utf8String & str, const UChar escaped[], size_t nescaped)
+{
+	Utf8String r;
+	r.pimpl->reserve(str.size());
+
+	Utf8String::const_iterator it = str.cbegin();
+	Utf8String::const_iterator itEnd = str.cend();
+
+	while (it != itEnd) {
+		for (size_t i = 0; i < nescaped; ++i) {
+			if (*it == escaped[i]) {
+				r.append(1, UChar('\\'));
+				r.append(1, *it);
+				break;
+			}
+		}
+
+		++it;
+	}
+
+	return r;
+}
+
+/**
+ * @brief Returns string with escaping special characters.
+ *
+ * @details Escaped characters are:
+ * 		@arg &#92;b (bell), &#92;t (horizontal tab), &#92;v (vertical tab),
+ * 		@arg &#92;n (line feed), &#92;r (carriage return)
+ * 		@arg &#34; (quotation mark), &#39; (apostrophe)
+ * 		@arg &#92; (backslash)
+ *
+ * @param str Source string.
+ * @return String with escaping special characters.
+ */
+Utf8String Utf8String::escape (const Utf8String & str)
+{
+	Utf8String r;
+	static UChar __replacement_chars[] = {
+		    0,   1,  2,   3,  4,  5,  6, 'b',  8, 't'
+		, 'n', 'v', 12, 'r', 14, 15, 16,  17, 18,  19
+		,  20,  21, 22,  23, 24, 25, 26,  27, 28,  29
+		,  30,  31
+	};
+
+	r.pimpl->reserve(str.size());
+
+	Utf8String::const_iterator it = str.cbegin();
+	Utf8String::const_iterator itEnd = str.cend();
+
+	while (it != itEnd) {
+		if ((*it).unicode() < 32) {
+			r.append(1, UChar('\\'));
+			r.append(1, __replacement_chars[(*it).unicode()]);
+
+		} else if ( *it == UChar('\\')
+				|| *it == UChar('\'')
+				|| *it == UChar('"')) {
+
+			r.append(1, UChar('\\'));
+			r.append(1, *it);
+		} else {
+			r.append(1, *it);
+		}
+		++it;
+	}
+
+	return r;
+}
+
 Utf8String Utf8String::fromUtf8 (const ByteArray &utf8, bool * pok, ConvertState * state)
 {
 	return fromUtf8(utf8.data(), utf8.size(), pok, state);

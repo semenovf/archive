@@ -474,7 +474,12 @@ public:
 		UChar  replacementChar;
 	};
 
-	static Utf8String fromUtf8   (const ByteArray &str, bool * ok = nullptr, ConvertState * state = nullptr);
+	Utf8String escape            () const { return escape(*this); }
+	Utf8String escape            (const UChar escaped[], size_t nescaped) const { return escape(*this, escaped, nescaped); }
+	static Utf8String escape     (const Utf8String & str, const UChar escaped[], size_t nescaped);
+	static Utf8String escape     (const Utf8String & str);
+
+	static Utf8String fromUtf8   (const ByteArray & str, bool * ok = nullptr, ConvertState * state = nullptr);
 	static Utf8String fromUtf8   (const char * utf8, bool * ok = nullptr, ConvertState * state = nullptr);
 	static Utf8String fromUtf8   (const char * utf8, size_t size, bool * ok = nullptr, ConvertState * state = nullptr);
 
