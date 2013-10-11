@@ -28,6 +28,7 @@ class AbnfConcat;
 class AbnfRpt;
 class AbnfRuleRef;
 class AbnfCharVal;
+class AbnfTerminal;
 class AbnfNumVal;
 class AbnfProseVal;
 class AbnfComment;
@@ -196,10 +197,14 @@ class DLL_API AbnfCharVal : public AbnfScalar
 {
 	CWT_DENY_COPY(AbnfCharVal);
 public:
-	AbnfCharVal () : AbnfScalar (Abnf_CharVal) {}
-	AbnfCharVal (const String & v) : AbnfScalar (Abnf_CharVal, v) {}
+	AbnfCharVal () : AbnfScalar (Abnf_CharVal), m_isAltern(false) {}
+	AbnfCharVal (const String & v, bool isAltern = false) : AbnfScalar (Abnf_CharVal, v), m_isAltern(isAltern) {}
 	virtual String toString () const { return String(1, '"') + m_value + String(1, '"'); }
 	virtual String toFsmMatchString() const;
+
+	bool isAltern () const { return m_isAltern; }
+private:
+	bool m_isAltern;
 };
 
 class DLL_API AbnfNumVal : public AbnfScalar
@@ -304,25 +309,17 @@ class DLL_API AbnfGenContext
 {
 public:
 	struct Options {
-		bool compactCharValues;
+		bool no_options_yet;
 	};
 public:
 	AbnfGenContext (const String & srcDataType, AbnfRuleList & ruleset)
 		: m_sourceDataType(srcDataType)
 		, m_transitionType(String("FsmTransition<") + m_sourceDataType + String(1, '>'))
 		, m_rulelist(ruleset)
-	{
-		m_options.compactCharValues = false;
-	}
+	{}
 	String generate () const;
-	void setCompactCharValues(bool compact) { m_options.compactCharValues = compact; }
 
 private:
-/*
-	String generateTransitionTables () const;
-	String generateTransitionTable (const AbnfRule & rule) const;
-*/
-
 	const String & sourceDataType () const { return m_sourceDataType; }
 	const String & transitionType () const { return m_transitionType; }
 
@@ -354,7 +351,7 @@ public:
 	}
 
 	static AbnfRuleRef &  newRuleRef  (const String & name)  { return * new AbnfRuleRef(name); }
-	static AbnfCharVal &  newCharVal  (const String & v) { return * new AbnfCharVal(v); }
+	static AbnfCharVal &  newCharVal  (const String & v, bool isAltern = false) { return * new AbnfCharVal(v, isAltern); }
 	static AbnfNumVal &   newNumVal   (ulong_t single, int base = 10) { return * new AbnfNumVal(single, base); }
 	static AbnfNumVal &   newNumVal   (ulong_t from, ulong_t to, int base = 10) { return * new AbnfNumVal(from, to, base); }
 	static AbnfProseVal & newProseVal (const String & v) { return * new AbnfProseVal(v); }

@@ -48,7 +48,8 @@ String AbnfRuleRef::toFsmMatchString() const
 String AbnfCharVal::toFsmMatchString() const
 {
 	String r;
-	r << "FSM_MATCH_STR(_u8(\"" << value() << "\"))";
+	r << (m_isAltern ? "FSM_MATCH_CHAR" : "FSM_MATCH_STR");
+	r << "(_u8(\"" << String::escape(value()) << "\"))";
 	return r;
 }
 
@@ -311,6 +312,7 @@ static String generateTransition (int state_next, int state_fail, const String &
 	return r;
 }
 
+/*
 static String compactCharValues (Vector<AbnfElement *>::const_iterator & it, const Vector<AbnfElement *>::const_iterator & itEnd)
 {
 	String r;
@@ -327,7 +329,7 @@ static String compactCharValues (Vector<AbnfElement *>::const_iterator & it, con
 	it = it1;
 	return r;
 }
-
+*/
 
 static size_t calculateNonComments (const Vector<AbnfElement *> & elements)
 {
@@ -346,6 +348,7 @@ static size_t calculateNonComments (const Vector<AbnfElement *> & elements)
 static String generateTransitionTable (const AbnfRule & rule, bool isOrigRule, const AbnfGenContext::Options & options)
 {
 	String r;
+	CWT_UNUSED(options);
 
 	CWT_ASSERT(rule.elements().size() == 1);
 	CWT_ASSERT(! (rule.elements())[0]->isScalar()); // one of containers
@@ -418,6 +421,7 @@ static String generateTransitionTable (const AbnfRule & rule, bool isOrigRule, c
 			++state_next;
 		}
 
+/*
 		if (t == Abnf_CharVal && options.compactCharValues) {
 			// Compact char values
 			String s = compactCharValues(it, itEnd);
@@ -439,9 +443,10 @@ static String generateTransitionTable (const AbnfRule & rule, bool isOrigRule, c
 					<< String::EndOfLine;
 			}
 		} else {
+*/
 			r << INDENT << sep << generateTransition(state_next, state_fail, element->toFsmMatchString(), status) << String::EndOfLine;
 			++it;
-		}
+//		}
 
 		sep = String(", ");
 	}

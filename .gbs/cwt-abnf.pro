@@ -7,9 +7,9 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = cwt-abnf              \
+           abnf2fsm              \
            tests/test_abnf       \
            tests/test_abnf_gen   \
            tests/test_abnf_build \
            tests/test_abnf_norm  \
-	   tests/test_abnf_tmp   \
-           abnf2fsm
+           tests/test_abnf_tmp

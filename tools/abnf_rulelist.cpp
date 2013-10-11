@@ -76,6 +76,15 @@ RFC 5234: Augmented BNF for Syntax Specifications: ABNF
 
 void buildAbnfRuleList (AbnfRuleList & rulelist)
 {
+	String ABNF_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+	String ABNF_DIGIT("0123456789");
+	String ABNF_HEXDIG("0123456789ABCDEFabcdef");
+	String ABNF_BIT("01");
+	String ABNF_DQUOTE("\"");
+	String ABNF_WSP(" \t");
+
+#define IS_ALTERN true
+
 	// 1*( rule / (*c-wsp c-nl) )
 	rulelist.newRule("rulelist").newRpt(1,-1)
 		.newAltern()
@@ -98,10 +107,10 @@ void buildAbnfRuleList (AbnfRuleList & rulelist)
 
 	//	rulename =  ALPHA *(ALPHA / DIGIT / "-")
 	rulelist.newRule("rulename").newConcat()
-			.add(Abnf::newRuleRef("ALPHA"))
+			.add(Abnf::newCharVal(ABNF_ALPHA, IS_ALTERN))
 			.newRpt().newAltern()
-					.add(Abnf::newRuleRef("ALPHA"))
-					.add(Abnf::newRuleRef("DIGIT"))
+					.add(Abnf::newCharVal(ABNF_ALPHA, IS_ALTERN))
+					.add(Abnf::newCharVal(ABNF_DIGIT, IS_ALTERN))
 					.add(Abnf::newCharVal("-"));
 
 	//	defined-as = *c-wsp (\"=\" / \"=/\") *c-wsp
@@ -124,14 +133,14 @@ void buildAbnfRuleList (AbnfRuleList & rulelist)
 
 	//	c-wsp =  WSP / (c-nl WSP)
 	rulelist.newRule("c-wsp").newAltern()
-			.add("WSP")
-			.add(Abnf::newConcat().add("c-nl").add("WSP"));
+			.add(Abnf::newCharVal(ABNF_WSP, IS_ALTERN))
+			.add(Abnf::newConcat().add("c-nl").add(Abnf::newCharVal(ABNF_WSP, IS_ALTERN)));
 
 	//	c-nl = comment / NL
 	//			; comment or newline
 	rulelist.newRule("c-nl").newAltern()
 			.add("comment")
-			.add("NL")
+			.add(Abnf::newCharVal("\n")) // TODO see NL rule below
 			.addComment()
 			.addComment("comment or newline");
 
@@ -140,9 +149,9 @@ void buildAbnfRuleList (AbnfRuleList & rulelist)
 			.add(Abnf::newCharVal(";"))
 			.add(Abnf::newRpt()
 				.add(Abnf::newAltern()
-					.add("WSP")
-					.add("VCHAR")))
-			.add("NL");
+					.add(Abnf::newCharVal(ABNF_WSP, IS_ALTERN))
+					.add(Abnf::newNumVal(0x21, 0x7E, 16))))
+			.add(Abnf::newCharVal("\n")); // TODO see NL below
 
 	//	alternation = concatenation *( *c-wsp "/" *c-wsp concatenation )
 	rulelist.newRule("alternation").newConcat()
@@ -170,10 +179,10 @@ void buildAbnfRuleList (AbnfRuleList & rulelist)
 	//	repeat = ( *DIGIT "*" *DIGIT ) / 1*DIGIT
 	rulelist.newRule("repeat").newAltern()
 		.add(Abnf::newConcat()
-			.add(Abnf::newRpt("DIGIT"))
+			.add(Abnf::newRpt().add(Abnf::newCharVal(ABNF_DIGIT, IS_ALTERN)))
 			.add(Abnf::newCharVal("*"))
-			.add(Abnf::newRpt("DIGIT")))
-		.add(Abnf::newRpt("DIGIT", 1));
+			.add(Abnf::newRpt().add(Abnf::newCharVal(ABNF_DIGIT, IS_ALTERN))))
+		.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_DIGIT, IS_ALTERN)));
 
 	//	element = rulename / group / option / char-val / num-val / prose-val
 	rulelist.newRule("element").newAltern()
@@ -204,14 +213,12 @@ void buildAbnfRuleList (AbnfRuleList & rulelist)
 	//			; quoted string of SP and VCHAR
 	//			; without DQUOTE
 	rulelist.newRule("char-val").newConcat()
-			.add("DQUOTE")
+			.add(Abnf::newCharVal(ABNF_DQUOTE))
 			.add(Abnf::newRpt()
 				.add(Abnf::newAltern()
 					.add(Abnf::newNumVal(0x20, 0x21, 16))
-					.add(Abnf::newNumVal(0x23, 0x7E, 16))
-				)
-			)
-			.add("DQUOTE")
+					.add(Abnf::newNumVal(0x23, 0x7E, 16))))
+			.add(Abnf::newCharVal(ABNF_DQUOTE))
 			.addComment()
 			.addComment("quoted string of SP and VCHAR")
 			.addComment("without DQUOTE");
@@ -229,16 +236,16 @@ void buildAbnfRuleList (AbnfRuleList & rulelist)
 	//			; or single ONEOF range
 	rulelist.newRule("bin-val").newConcat()
 		.add(Abnf::newCharVal("b"))
-		.add(Abnf::newRpt("BIT", 1))
+		.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_BIT, IS_ALTERN)))
 		.add(Abnf::newRpt(0, 1)
 			.add(Abnf::newAltern()
 				.add(Abnf::newRpt(1)
 					.add(Abnf::newConcat()
 						.add(Abnf::newCharVal("."))
-						.add(Abnf::newRpt("BIT", 1))))
+						.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_BIT, IS_ALTERN)))))
 				.add(Abnf::newConcat()
 					.add(Abnf::newCharVal("-"))
-					.add(Abnf::newRpt("BIT", 1)))))
+					.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_BIT, IS_ALTERN))))))
 			.addComment()
 			.addComment("series of concatenated bit values")
 			.addComment("or single ONEOF range");
@@ -246,30 +253,30 @@ void buildAbnfRuleList (AbnfRuleList & rulelist)
 	//	dec-val = "d" 1*DIGIT [ 1*( "." 1*DIGIT ) / ( "-" 1*DIGIT ) ]
 	rulelist.newRule("dec-val").newConcat()
 		.add(Abnf::newCharVal("d"))
-		.add(Abnf::newRpt("DIGIT", 1))
+		.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_DIGIT, IS_ALTERN)))
 		.add(Abnf::newRpt(0, 1)
 			.add(Abnf::newAltern()
 				.add(Abnf::newRpt(1)
 					.add(Abnf::newConcat()
 						.add(Abnf::newCharVal("."))
-						.add(Abnf::newRpt("DIGIT", 1))))
+						.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_DIGIT, IS_ALTERN)))))
 				.add(Abnf::newConcat()
 					.add(Abnf::newCharVal("-"))
-					.add(Abnf::newRpt("DIGIT", 1)))));
+					.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_DIGIT, IS_ALTERN))))));
 
 	//	hex-val = "x" 1*HEXDIG [ 1*( "." 1*HEXDIG ) / ( "-" 1*HEXDIG ) ]
 	rulelist.newRule("hex-val").newConcat()
 		.add(Abnf::newCharVal("x"))
-		.add(Abnf::newRpt("HEXDIG", 1))
+		.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_HEXDIG, IS_ALTERN)))
 		.add(Abnf::newRpt(0, 1)
 			.add(Abnf::newAltern()
 				.add(Abnf::newRpt(1)
 					.add(Abnf::newConcat()
 						.add(Abnf::newCharVal("."))
-						.add(Abnf::newRpt("HEXDIG", 1))))
+						.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_HEXDIG, IS_ALTERN)))))
 				.add(Abnf::newConcat()
 					.add(Abnf::newCharVal("-"))
-					.add(Abnf::newRpt("HEXDIG", 1)))));
+					.add(Abnf::newRpt(1).add(Abnf::newCharVal(ABNF_HEXDIG, IS_ALTERN))))));
 
 	//	prose-val = "<" *( %x20-3D / %x3F-7E ) ">"
 	//			; bracketed string of SP and VCHAR
@@ -288,4 +295,11 @@ void buildAbnfRuleList (AbnfRuleList & rulelist)
 			.addComment(" without angles")
 			.addComment("prose description, to be used as")
 			.addComment(" last resort");
+
+/*
+	rulelist.newRule("NL").newAltern()
+			.add(Abnf::newCharVal("\r\n")) // Windows/DOS
+			.add(Abnf::newCharVal("\n\r")) // Mac OS 9
+			.add(Abnf::newCharVal("\n"));  // Unix
+*/
 }

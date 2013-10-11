@@ -21,7 +21,6 @@ String generateAbnfTransitions()
 	AbnfGenContext genCtx("String", rulelist);
 
 	buildAbnfRuleList(rulelist);
-	genCtx.setCompactCharValues(true);
 	return genCtx.generate();
 }
 

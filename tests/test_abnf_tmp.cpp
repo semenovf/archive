@@ -6,7 +6,7 @@ using namespace cwt;
 
 bool parse (String text)
 {
-	Fsm<String> fsm; //(rulelist_fsm, nullptr);
+	Fsm<String> fsm(Transitions::rulelist_fsm, nullptr);
 
 	if (fsm.exec(0, text.begin(), text.end()) >= 0) {
 		return true;
