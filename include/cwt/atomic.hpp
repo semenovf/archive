@@ -72,10 +72,10 @@ public:
     atomic_pointer (Type value) { store(value); }
 
     // Non-atomic API
-    Type load() const { return intrinsics::load(m_value); }
-    void store(Type newValue) { intrinsics::store((Type &)m_value, newValue); }
-    bool ref() { return intrinsics::ref((Type &)m_value); }
-    bool deref() { return intrinsics::deref((Type &)m_value); }
+    Type load  () const { return intrinsics::load(m_value); }
+    void store (Type newValue) { intrinsics::store((Type &)m_value, newValue); }
+    bool ref   () { return intrinsics::ref((Type &)m_value); }
+    bool deref () { return intrinsics::deref((Type &)m_value); }
 
     Type fetchAndAddRelaxed(Type valueToAdd)
     {
