@@ -23,7 +23,7 @@ protected:
 
 public:
 	Buffer() : m_buffer() {}
-	virtual int  close  () { return 1; }
+	virtual bool close  () { return true; }
 	virtual bool opened () const { return true; }
 	virtual void flush  () {}
 

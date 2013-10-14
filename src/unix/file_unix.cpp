@@ -25,14 +25,14 @@ public:
 
 	void    flush();
 	size_t  bytesAvailable() const;
-	int     close();
-	bool    open(const String & path, int oflags);
+	bool    close();
+	bool    open(const String & path, int32_t oflags);
 	ssize_t readBytes(char bytes[], size_t n);
 	ssize_t writeBytes(const char bytes[], size_t n);
 	size_t  size() const;
 
-	static bool setPermissions(const String & path, int perms);
-	static int  permsToMode(int perms);
+	static bool setPermissions(const String & path, int32_t perms);
+	static int  permsToMode(int32_t perms);
 public:
 	String m_path;
 	int    m_fd;
@@ -62,7 +62,7 @@ size_t File::Impl::bytesAvailable() const
 	return (size_t)(total - cur);
 }
 
-bool File::Impl::open(const String & path, int oflags)
+bool File::Impl::open(const String & path, int32_t oflags)
 {
 	int fd;
 	int native_oflags = 0;
@@ -104,16 +104,20 @@ bool File::Impl::open(const String & path, int oflags)
 	return true;
 }
 
-int File::Impl::close()
+bool File::Impl::close()
 {
-	int rc;
+	bool r = true;
 
-	if (m_fd > 0)
-		rc = ::close(m_fd);
+	if (m_fd > 0) {
+		if (::close(m_fd) < 0) {
+			Logger::error(errno, _Tr("Failed to close file"));
+			r = false;
+		}
+	}
 
 	m_fd = -1;
 	m_path.clear();
-	return rc;
+	return r;
 }
 
 ssize_t File::Impl::readBytes(char bytes[], size_t n)
@@ -140,7 +144,7 @@ ssize_t File::Impl::writeBytes(const char bytes[], size_t n)
 	return sz;
 }
 
-int File::Impl::permsToMode(int perms)
+int File::Impl::permsToMode(int32_t perms)
 {
 	int mode = 0;
 	if ((perms & File::ReadOwner) || (perms & File::ReadUser))
@@ -184,7 +188,7 @@ size_t File::Impl::size() const
 	return size_t(end - begin);
 }
 
-bool File::Impl::setPermissions(const String & path, int perms)
+bool File::Impl::setPermissions(const String & path, int32_t perms)
 {
 	CWT_ASSERT(!path.isEmpty());
 	if (::chmod(path.c_str(), permsToMode(perms)) != 0) {
@@ -198,17 +202,17 @@ bool File::Impl::setPermissions(const String & path, int perms)
 
 File::File() : pimpl(new File::Impl) { ; }
 File::File(int fd) : pimpl(new File::Impl) { pimpl->m_fd = ::dup(fd); }
-File::File(const String & path, int oflags) : pimpl(new File::Impl) { pimpl->open(path, oflags); }
+File::File(const String & path, int32_t oflags) : pimpl(new File::Impl) { pimpl->open(path, oflags); }
 size_t  File::bytesAvailable() const { return pimpl->bytesAvailable(); }
-bool    File::open(const String & path, int oflags) {	return pimpl->open(path, oflags); }
-int     File::close()   { return pimpl->close(); }
+bool    File::open(const String & path, int32_t oflags) {	return pimpl->open(path, oflags); }
+bool    File::close()   { return pimpl->close(); }
 void    File::flush()   { pimpl->flush(); }
 bool    File::opened() const { return pimpl->m_fd >= 0; }
 ssize_t File::readBytes(char bytes[], size_t n) { return pimpl->readBytes(bytes, n); }
 ssize_t File::writeBytes(const char bytes[], size_t n) { return pimpl->writeBytes(bytes, n); }
 
 size_t File::size() const { return pimpl->size(); }
-bool File::setPermissions(int perms) { return pimpl->setPermissions(pimpl->m_path, perms); }
+bool File::setPermissions(int32_t perms) { return pimpl->setPermissions(pimpl->m_path, perms); }
 void File::rewind() { ::lseek(pimpl->m_fd, 0L, SEEK_SET); }
 
 } // namespace io

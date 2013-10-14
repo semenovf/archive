@@ -43,15 +43,15 @@ protected:
 public:
 	File();
 	File(int fd);
-	File(const String & path, int oflags);
+	File(const String & path, int32_t oflags);
 	virtual ~File() {}
-	bool open(const String & path, int oflags = ReadOwner | WriteOwner);
-	virtual int  close();
+	bool open(const String & path, int32_t oflags = ReadWrite);
+	virtual bool close();
 	virtual void flush();
 	virtual bool opened() const;
 
 	size_t size() const;
-	bool setPermissions(int perms);
+	bool setPermissions(int32_t perms);
 	void rewind();
 };
 

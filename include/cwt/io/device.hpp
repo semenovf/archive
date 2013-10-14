@@ -39,16 +39,18 @@ protected:
 	virtual ssize_t readBytes      (char bytes[], size_t n) = 0;
 	virtual ssize_t writeBytes     (const char bytes[], size_t n) = 0;
 	virtual size_t  bytesAvailable () const = 0;
-
+	void closeDevice() { close(); }
 public:
-	virtual ~Device() {
+	virtual ~Device()
+	{
 		if (m_inputBuffer)
 			delete[] m_inputBuffer;
 		m_inputBuffer = nullptr;
 		m_inputBufferSize = 0;
+		closeDevice();
 	}
 
-	virtual int  close  () = 0;
+	virtual bool close  () = 0;
 	virtual bool opened () const = 0;
 	virtual void flush  () = 0;
 
