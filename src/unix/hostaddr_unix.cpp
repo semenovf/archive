@@ -5,51 +5,20 @@
  *      Author: wladt
  */
 
-#include "../../include/cwt/io/socket.hpp"
+//#include "../../include/cwt/io/socket.hpp"
 #include <cwt/logger.hpp>
+/*
 #include <cwt/safeformat.hpp>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+*/
 
 CWT_NS_BEGIN
 
 namespace io {
 
-String HostAddress::toString () const
-{
-	return m_hostname;
-}
-
-
-bool HostAddress::resolve ()
-{
-	bool r = true;
-
-	// Translate hostname into IP address
-	if (m_ipv4 == InvalidIpv4) {
-		if (m_hostname.isEmpty())
-			return false;
-	}
-
-/*
-	struct hostent * phost;
-
-	phost = gethostbyname(m_hostname.c_str());
-
-	if (phost == (struct hostent *)NULL) {
-		//Logger::error(_Fr("%s: host not found") % hostname);
-		return false;
-	}
-
-			memcpy(& sockaddr.sin_addr, phost->h_addr, sizeof(sockaddr.sin_addr));
-
-		} while(false);
-	}*/
-	return r;
-}
-
-
+#ifdef __COMMENT__
 bool init_inet_sockaddr (struct sockaddr_in & sockaddr, const HostAddress & /*hostAddr*/, uint16_t port)
 {
 	memset(& sockaddr, sizeof(sockaddr), 0);
@@ -93,7 +62,7 @@ bool init_inet_sockaddr (struct sockaddr_in & sockaddr, const HostAddress & /*ho
 
 	return true;
 }
-
+#endif
 } // namespace io
 
 CWT_NS_END

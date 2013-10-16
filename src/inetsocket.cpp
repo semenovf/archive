@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/io/socket.hpp"
+#include "../include/cwt/io/inetsocket.hpp"
 
 
 /* Sources:

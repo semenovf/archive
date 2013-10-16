@@ -20,12 +20,13 @@ protected:
 	virtual ssize_t readBytes      (char bytes[], size_t n);
 	virtual ssize_t writeBytes     (const char bytes[], size_t n);
 	virtual size_t  bytesAvailable () const { return m_buffer.size(); }
+	virtual bool    closeDevice    () { return true; }
+	virtual bool    deviceIsOpened () const { return true; }
+	virtual void    flushDevice    () {}
 
 public:
 	Buffer() : m_buffer() {}
-	virtual bool close  () { return true; }
-	virtual bool opened () const { return true; }
-	virtual void flush  () {}
+	virtual ~Buffer() { close(); }
 
 	Vector<char> & buffer() { return m_buffer; }
 

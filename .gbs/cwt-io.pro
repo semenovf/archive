@@ -6,4 +6,8 @@
 #************************************************************
 TEMPLATE = subdirs                                           
 CONFIG  += ordered                                           
-SUBDIRS  = cwt-io tests/basic tests/utf8
+SUBDIRS  = cwt-io   \
+    tests/basic     \
+    tests/utf8      \
+    tests/addrinfo  \
+    tests/tcpsocket

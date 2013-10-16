@@ -39,7 +39,10 @@ protected:
 	virtual ssize_t readBytes      (char bytes[], size_t n) = 0;
 	virtual ssize_t writeBytes     (const char bytes[], size_t n) = 0;
 	virtual size_t  bytesAvailable () const = 0;
-	void closeDevice() { close(); }
+	virtual bool    closeDevice    ()  = 0;
+	virtual bool    deviceIsOpened () const = 0;
+	virtual void    flushDevice    () = 0;
+
 public:
 	virtual ~Device()
 	{
@@ -47,13 +50,11 @@ public:
 			delete[] m_inputBuffer;
 		m_inputBuffer = nullptr;
 		m_inputBufferSize = 0;
-		closeDevice();
 	}
 
-	virtual bool close  () = 0;
-	virtual bool opened () const = 0;
-	virtual void flush  () = 0;
-
+	bool         opened   () const       { return deviceIsOpened(); }
+	void         flush    ()             { flushDevice(); }
+	bool         close    ()             { return closeDevice(); }
 	size_t       available() const       { return bytesAvailable(); }
 	bool         atEnd    () const       { return bytesAvailable() == ssize_t(0); }
 	ssize_t      read     (char bytes[], size_t n) { return readBytes(bytes, n); }
@@ -62,6 +63,7 @@ public:
 	ssize_t      write    (const Array<char_type> bytes, size_t n) { return writeBytes(bytes.data(), n); }
 	ssize_t      write    (const ByteArray & bytes, size_t n) { return writeBytes(bytes.data(), CWT_MIN(n, bytes.size())); }
 	ssize_t      write    (const ByteArray & bytes) { return writeBytes(bytes.data(), bytes.size()); }
+
 private:
 	char * m_inputBuffer;
 	size_t m_inputBufferSize;

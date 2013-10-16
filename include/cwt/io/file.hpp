@@ -39,16 +39,16 @@ protected:
 	virtual ssize_t readBytes(char bytes[], size_t n);
 	virtual ssize_t writeBytes(const char bytes[], size_t n);
 	virtual size_t  bytesAvailable() const;
+	virtual bool    closeDevice    ();
+	virtual bool    deviceIsOpened () const;
+	virtual void    flushDevice    ();
 
 public:
 	File();
 	File(int fd);
 	File(const String & path, int32_t oflags);
-	virtual ~File() {}
+	virtual ~File() { close(); }
 	bool open(const String & path, int32_t oflags = ReadWrite);
-	virtual bool close();
-	virtual void flush();
-	virtual bool opened() const;
 
 	size_t size() const;
 	bool setPermissions(int32_t perms);
