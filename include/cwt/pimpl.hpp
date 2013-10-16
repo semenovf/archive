@@ -16,7 +16,7 @@
 #define CWT_PIMPL_IMPL(Class)                                                  \
 private:                                                                       \
 	CWT_DENY_COPY(Class);                                                      \
-private:                                                                       \
+protected:                                                                     \
     class Impl;                                                                \
     shared_ptr<Impl> pimpl; // TODO may be unique_ptr<> is more suitable in this case
 
@@ -27,7 +27,7 @@ public:                                                                        \
 	Class & operator = (const Class & other) {                                 \
 		pimpl = other.pimpl; return *this;                                     \
 	}                                                                          \
-private:                                                                       \
+protected:                                                                     \
 	void detach()                                                              \
     {                                                                          \
 		if (!pimpl.unique()) {                                                 \
@@ -35,7 +35,7 @@ private:                                                                       \
 			pimpl.swap(__d);                                                   \
 		}                                                                      \
 	}                                                                          \
-private:                                                                       \
+protected:                                                                     \
     shared_ptr<Impl> pimpl;
 
 
@@ -45,10 +45,10 @@ public:                                                                        \
 	Class & operator = (const Class & other) {                                 \
 		pimpl = other.pimpl; return *this;                                     \
 	}                                                                          \
-private:                                                                       \
+protected:                                                                     \
     class Impl;                                                                \
     shared_ptr<Impl> pimpl;                                                    \
-private:                                                                       \
+protected:                                                                     \
 	void detach();
 
 #define CWT_PIMPL_IMPL_COPYABLE(Class)                                         \
