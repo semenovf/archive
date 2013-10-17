@@ -19,9 +19,9 @@
 CWT_NS_BEGIN
 
 struct PetaloidSpec {
-	PetaloidSpec() : p(NULL), ph(NULL), dtor(NULL) {}
-	PetaloidSpec(Petaloid *a, Dl::Handle b, petaloid_dtor_t c) : p(a), ph(b), dtor(c) {}
-	Petaloid *p;
+	PetaloidSpec() : p(nullptr), ph(nullptr), dtor(nullptr) {}
+	PetaloidSpec(Petaloid * a, Dl::Handle b, petaloid_dtor_t c) : p(a), ph(b), dtor(c) {}
+	Petaloid * p;
 	Dl::Handle ph;          /* null for local */
 	petaloid_dtor_t dtor; /* may be null (no destructor) */
 };
@@ -52,12 +52,12 @@ public:
         inline bool       operator <= (const iterator &o) const { return it.operator <= (o.it); }
         inline bool       operator >  (const iterator &o) const { return it.operator >  (o.it); }
         inline bool       operator >= (const iterator &o) const { return it.operator >= (o.it); }
-        inline iterator&  operator ++ ()                        { ++it; return *this; }
+        inline iterator & operator ++ ()                        { ++it; return *this; }
         inline iterator   operator ++ (int)                     { Vector<PetaloidSpec>::iterator n(it); ++it; return iterator(n); }
-        inline iterator&  operator -- ()                        { it--; return *this; }
+        inline iterator & operator -- ()                        { it--; return *this; }
         inline iterator   operator -- (int)                     { Vector<PetaloidSpec>::iterator n(it); it--; return n; }
-        inline iterator&  operator += (int j)                   { it.operator += (j); return *this; }
-        inline iterator&  operator -= (int j)                   { it.operator -= (j); return *this; }
+        inline iterator & operator += (int j)                   { it.operator += (j); return *this; }
+        inline iterator & operator -= (int j)                   { it.operator -= (j); return *this; }
         inline iterator   operator +  (int j) const             { return iterator(it.operator + (j)); }
         inline iterator   operator -  (int j) const             { return iterator(it.operator - (j)); }
         inline intptr_t   operator -  (iterator j) const        { return it.operator - (j.it); }
@@ -83,12 +83,12 @@ public:
         inline bool       operator <= (const const_iterator &o) const { return it.operator <= (o.it); }
         inline bool       operator >  (const const_iterator &o) const { return it.operator >  (o.it); }
         inline bool       operator >= (const const_iterator &o) const { return it.operator >= (o.it); }
-        inline const_iterator&  operator ++ ()                        { ++it; return *this; }
+        inline const_iterator & operator ++ ()                        { ++it; return *this; }
         inline const_iterator   operator ++ (int)                     { Vector<PetaloidSpec>::const_iterator n(it); ++it; return const_iterator(n); }
-        inline const_iterator&  operator -- ()                        { it--; return *this; }
+        inline const_iterator & operator -- ()                        { it--; return *this; }
         inline const_iterator   operator -- (int)                     { Vector<PetaloidSpec>::const_iterator n(it); it--; return n; }
-        inline const_iterator&  operator += (int j)                   { it.operator += (j); return *this; }
-        inline const_iterator&  operator -= (int j)                   { it.operator -= (j); return *this; }
+        inline const_iterator & operator += (int j)                   { it.operator += (j); return *this; }
+        inline const_iterator & operator -= (int j)                   { it.operator -= (j); return *this; }
         inline const_iterator   operator +  (int j) const             { return const_iterator(it.operator + (j)); }
         inline const_iterator   operator -  (int j) const             { return const_iterator(it.operator - (j)); }
         inline intptr_t         operator -  (const_iterator j) const  { return it.operator - (j.it); }
@@ -106,40 +106,39 @@ public:
 	}
 
 	void addSearchPath(const String &dir) { Dl::addSearchPath(dir); }
-	Petaloid* registerLocalPetaloid(Petaloid *petaloid, petaloid_dtor_t dtor = Petaloid::defaultDtor);
-	Petaloid* registerPetaloidForPath(const String &path, const char *pname = NULL, int argc = 0, char **argv = NULL);
-	Petaloid* registerPetaloidForName(const String &name, const char *pname = NULL, int argc = 0, char **argv = NULL);
+	Petaloid * registerLocalPetaloid(Petaloid * petaloid, petaloid_dtor_t dtor = Petaloid::defaultDtor);
+	Petaloid * registerPetaloidForPath(const String & path, const char * pname = nullptr, int argc = 0, char ** argv = nullptr);
+	Petaloid * registerPetaloidForName(const String & name, const char * pname = nullptr, int argc = 0, char ** argv = nullptr);
 	void setMasterPetaloid(Petaloid *p) { m_masterPetaloid = p; }
-	size_t         count() const  { return m_petaloids.size(); }
-    iterator       begin()        { return iterator(m_petaloids.begin()); }
-    iterator       end()          { return iterator(m_petaloids.end()); }
-    const_iterator begin() const  { return const_iterator(m_petaloids.begin()); }
-    const_iterator end() const    { return const_iterator(m_petaloids.end()); }
-    const_iterator cbegin() const { return const_iterator(m_petaloids.cbegin()); }
-    const_iterator cend() const   { return const_iterator(m_petaloids.cend()); }
+	size_t         count () const  { return m_petaloids.size(); }
+    iterator       begin ()        { return iterator(m_petaloids.begin()); }
+    iterator       end   ()        { return iterator(m_petaloids.end()); }
+    const_iterator begin () const  { return const_iterator(m_petaloids.begin()); }
+    const_iterator end   () const  { return const_iterator(m_petaloids.end()); }
+    const_iterator cbegin() const  { return const_iterator(m_petaloids.cbegin()); }
+    const_iterator cend  () const  { return const_iterator(m_petaloids.cend()); }
 
 /* TODO need implementation
 	bool registerPetaloidForUrl(const String &url);
 */
-	void connectAll();
-	void disconnectAll();
-	void unregisterAll();
-	void start();
-	int  exec();
+	void connectAll ();
+	void disconnectAll ();
+	void unregisterAll ();
+	void start ();
+	int  exec ();
 
 // slots
 	//void quit();
 
 protected:
-	bool registerPetaloid(Petaloid &petaloid, Dl::Handle ph, petaloid_dtor_t dtor);
+	bool registerPetaloid(Petaloid & petaloid, Dl::Handle ph, petaloid_dtor_t dtor);
 
 private:
 	MappingHash          m_mapping;
-	//Vector<String>       m_searchPaths;     /* directories where to search petaloids */
 	Vector<PetaloidSpec> m_petaloids;
-	Vector<Thread*>      m_threads;
+	Vector<Thread *>     m_threads;
 
-	Petaloid*            m_masterPetaloid;
+	Petaloid *           m_masterPetaloid;
 };
 
 CWT_NS_END
