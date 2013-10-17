@@ -50,7 +50,7 @@ public:
 	// normal cleanup for application threads (including thread's specific data destruction)
 	static void exit (); // equivalent to pthread_exit() for POSIX systems
 
-protected:
+public:
 	static void sleep (ulong_t secs);
 	static void msleep (ulong_t msecs);
 	static void usleep (ulong_t usecs);
