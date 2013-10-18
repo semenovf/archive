@@ -624,16 +624,27 @@ Utf8String & Utf8String::setNumber (double n, char f, int prec)
 	return *this;
 }
 
-Vector<Utf8String> Utf8String::split(const Utf8String & separator, bool keepEmpty) const
+Vector<Utf8String> Utf8String::split(bool isOneSeparatorChar, const Utf8String & separator, bool keepEmpty, UChar quoteChar) const
 {
 	Vector<Utf8String> r;
 	Utf8String::const_iterator it = cbegin();
 	Utf8String::const_iterator itBegin = it;
 	Utf8String::const_iterator itEnd = cend();
 	size_t separatorLength = separator.length();
+	bool quote = false;
 
 	while (it != itEnd) {
-		if (this->startsWith(separator, it)) {
+
+		if (quoteChar != UChar::Null && *it == quoteChar) {
+			if (quote) {
+				quote = false;
+			} else {
+				quote = true;
+			}
+			++it;
+		} else if (!quote
+				&& ((isOneSeparatorChar && separator.contains(*it))
+					|| (!isOneSeparatorChar && this->startsWith(separator, it)))) {
 			Utf8String s(itBegin, it);
 			if (!s.isEmpty()) {
 				r.append(s);
@@ -641,7 +652,7 @@ Vector<Utf8String> Utf8String::split(const Utf8String & separator, bool keepEmpt
 				if (keepEmpty)
 					r.append(s);
 			}
-			it += separatorLength;
+			it += isOneSeparatorChar ? 1 : separatorLength;
 			itBegin = it;
 		} else {
 			++it;
@@ -661,6 +672,11 @@ Vector<Utf8String> Utf8String::split(const Utf8String & separator, bool keepEmpt
 	if (r.isEmpty())
 		r.append(*this);
 
+
+	CWT_VERIFY_X(!quote, _Tr("Unbalanced quote"));
+	if (quote)
+		r.clear();
+
 	return r;
 }
 
@@ -671,7 +687,8 @@ bool operator != (const Utf8String &s1, const Utf8String &s2)
 
 bool operator < (const Utf8String &s1, const Utf8String &s2)
 {
-	return *s1.pimpl < *s2.pimpl;
+	return s1.pimpl->compare(*s2.pimpl) < 0;
+	//return *s1.pimpl < *s2.pimpl;
 }
 
 bool operator <= (const Utf8String &s1, const Utf8String &s2)

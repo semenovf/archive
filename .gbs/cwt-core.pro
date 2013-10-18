@@ -15,7 +15,7 @@ SUBDIRS  = cwt-core   \
     tests/bytestream  \
     tests/date        \
     tests/dl          \
-    tests/hash        \
+    tests/collection  \
     tests/fsm         \
     tests/md5         \
     tests/orderedhash \

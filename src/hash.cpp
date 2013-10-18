@@ -67,12 +67,12 @@ DLL_API uint_t hash_uchars(const UChar * p, size_t len, uint_t seed)
     return h;
 }
 
-HashData::Node * HashData::allocNode()
+HashData::Node * HashData::allocNode() const
 {
 	return reinterpret_cast<HashData::Node *>(malloc(entrySize));
 }
 
-void HashData::freeNode(HashData::Node * node)
+void HashData::freeNode(HashData::Node * node) const
 {
 	free(node);
 }
@@ -165,7 +165,7 @@ void HashData::rehash(size_t pindex)
 	nodeTable.swap(table);
 }
 
-HashData* HashData::clone()
+HashData* HashData::clone() const
 {
 	HashData *hd = new HashData( entrySize
 			, seed
@@ -187,7 +187,7 @@ HashData* HashData::clone()
 			rover = nodeTable[i];
 
 			while (rover != nullptr) {
-				HashData::Node *e = allocNode();
+				HashData::Node * e = allocNode();
 
 				clone_node_helper(e, rover);
 

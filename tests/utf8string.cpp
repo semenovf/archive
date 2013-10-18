@@ -7,12 +7,13 @@
 
 #include <cwt/test.h>
 #include <cwt/utf8string.hpp>
+#include <cwt/safeformat.hpp>
 #include <cstring>
 #include <iostream>
 
 using namespace cwt;
 
-#define _u8(s)  Utf8String::fromUtf8(s)
+//#define _u8(s)  Utf8String::fromUtf8(s)
 
 void test_basic()
 {
@@ -288,6 +289,34 @@ void test_split()
 	CWT_TEST_OK(tokens[1] == Utf8String::fromUtf8("ВВ"));
 	CWT_TEST_OK(tokens[2] == Utf8String::fromUtf8("ГГГ"));
 	CWT_TEST_OK(tokens[3] == Utf8String::fromUtf8("Д"));
+
+	tokens = Utf8String::fromUtf8("АА,\"ББ,ВВ,\"ГГГ,Д,").split(Utf8String(","), false, UChar('"')); // do not keep empty
+	CWT_TEST_FAIL(tokens.size() == 3);
+	CWT_TEST_OK(tokens[0] == Utf8String::fromUtf8("АА"));
+	CWT_TEST_OK(tokens[1] == Utf8String::fromUtf8("\"ББ,ВВ,\"ГГГ"));
+	CWT_TEST_OK(tokens[2] == Utf8String::fromUtf8("Д"));
+
+	String unbalanced(Utf8String::fromUtf8("АА,\"ББ,ВВ,ГГГ,Д,"));
+	tokens = unbalanced.split(Utf8String(","), false, UChar('"')); // do not keep empty
+	CWT_TEST_OK2(tokens.isEmpty(), String(_Fr("Unbalanced quote character in test string: [%s]") % unbalanced).c_str());
+
+	tokens = Utf8String::fromUtf8("one,two;three four/five\tsix").splitOneOf(Utf8String(",; /\t"), false, UChar('"')); // do not keep empty
+	CWT_TEST_FAIL(tokens.size() == 6);
+	CWT_TEST_OK(tokens[0] == "one");
+	CWT_TEST_OK(tokens[1] == "two");
+	CWT_TEST_OK(tokens[2] == "three");
+	CWT_TEST_OK(tokens[3] == "four");
+	CWT_TEST_OK(tokens[4] == "five");
+	CWT_TEST_OK(tokens[5] == "six");
+
+	tokens = Utf8String::fromUtf8("one  , two ; three four / five\t six").splitOneOf(Utf8String(",; /\t"), false, UChar('"')); // do not keep empty
+	CWT_TEST_FAIL(tokens.size() == 6);
+	CWT_TEST_OK(tokens[0] == "one");
+	CWT_TEST_OK(tokens[1] == "two");
+	CWT_TEST_OK(tokens[2] == "three");
+	CWT_TEST_OK(tokens[3] == "four");
+	CWT_TEST_OK(tokens[4] == "five");
+	CWT_TEST_OK(tokens[5] == "six");
 }
 
 void test_trim()
@@ -315,7 +344,7 @@ int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(111);
+    CWT_BEGIN_TESTS(130);
 
     test_basic();
     test_init();

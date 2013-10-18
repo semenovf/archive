@@ -11,6 +11,7 @@ CWT_NS_BEGIN
 
 const Utf8String Utf8String::EndOfLine(1, UChar('\n'));
 
+
 /* UTF-8
  *
  * Bits Last code point/ 	Byte 1 		Byte 2 		Byte 3 		Byte 4 		Byte 5 		Byte 6

@@ -90,10 +90,10 @@ struct HashData
 	~HashData();
 
 	void allocNodeTable();
-	Node * allocNode();
-	void freeNode(Node *);
+	Node * allocNode() const;
+	void freeNode(Node *) const;
 	void rehash(size_t primeIndex);
-	HashData * clone();
+	HashData * clone() const;
 	HashData::Node * firstNode(size_t *index);
 	HashData::Node * lastNode(size_t *index);
 	HashData::Node * nextNode(HashData::Node *node, size_t *index);
@@ -251,13 +251,13 @@ public:
 	const Key	   key ( const T & value, const Key & defaultKey ) const;
 	bool           remove(const Key & key);
 	size_t 	       size() const { return m_d->nentries; }
-	T &	           value(const Key & key) { return operator [] (key); }
+	T &	           value(const Key & key);
 	const T	       value(const Key & key) const;
 	const T	       value(const Key & key, const T & defaultValue) const;
 
 	bool	       operator != (const Hash<Key, T> & other) const { return !(*this == other); }
 	bool	       operator == (const Hash<Key, T> & other) const;
-	T &	           operator [] (const Key & key);
+	T &	           operator [] (const Key & key) { return value(key); }
 	const T        operator [] (const Key & key) const { return value(key); }
 
 protected:
@@ -430,6 +430,17 @@ const Key Hash<Key, T>::key(const T &value, const Key &defaultValue) const
 }
 
 
+template <class Key, class T>
+T & Hash<Key, T>::value (const Key &key)
+{
+    detach();
+    iterator it = find(key);
+    if (it == end()) {
+    	it = insert(key, T());
+    }
+    return it.value();
+}
+
 template <typename Key, typename T>
 inline const T Hash<Key, T>::value(const Key & key) const
 {
@@ -498,17 +509,6 @@ bool Hash<Key, T>::operator == (const Hash<Key, T> &other) const
     return true;
 }
 
-
-template <class Key, class T>
-T & Hash<Key, T>::operator [] (const Key &key)
-{
-    detach();
-    iterator it = find(key);
-    if (it == end()) {
-    	it = insert(key, T());
-    }
-    return it.value();
-}
 
 CWT_NS_END
 

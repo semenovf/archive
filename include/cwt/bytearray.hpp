@@ -253,12 +253,12 @@ public:
 
 	friend ByteArray operator + (const ByteArray &s1, const ByteArray &s2);
 
-	friend bool	operator != (const ByteArray &s1, const ByteArray &s2);
-	friend bool	operator <  (const ByteArray &s1, const ByteArray &s2);
-	friend bool	operator <= (const ByteArray &s1, const ByteArray &s2);
-	friend bool	operator == (const ByteArray &s1, const ByteArray &s2);
-	friend bool	operator >  (const ByteArray &s1, const ByteArray &s2);
-	friend bool	operator >= (const ByteArray &s1, const ByteArray &s2);
+	friend bool	operator != (const ByteArray & s1, const ByteArray & s2);
+	friend bool	operator <  (const ByteArray & s1, const ByteArray & s2);
+	friend bool	operator <= (const ByteArray & s1, const ByteArray & s2);
+	friend bool	operator == (const ByteArray & s1, const ByteArray & s2);
+	friend bool	operator >  (const ByteArray & s1, const ByteArray & s2);
+	friend bool	operator >= (const ByteArray & s1, const ByteArray & s2);
 
 	static ByteArray number (double n, char fmt = 'g', int prec = 6) { return ByteArray().setNumber(n, fmt, prec); }
 	static ByteArray number (float n, char fmt = 'g', int prec = 6)  { return ByteArray().setNumber(n, fmt, prec); }

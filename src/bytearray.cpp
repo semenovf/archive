@@ -27,7 +27,6 @@ DLL_API uint_t hash_func(const ByteArray & key, uint_t seed)
 	return hash_bytes(reinterpret_cast<const byte_t *>(key.constData()), key.size(), seed);
 }
 
-
 ByteArray::ByteArray() : pimpl(new ByteArray::Impl())
 {
 }

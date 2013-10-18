@@ -302,19 +302,19 @@ public:
 	};
 
 public:
-	Utf8String();
-	Utf8String(const char * latin1);
-	Utf8String(const char * latin1, size_t size);
-	Utf8String(size_t count, char latin1);
-	Utf8String(const const_iterator & begin, const const_iterator & end);
-	Utf8String(size_t count, UChar c);
+	Utf8String ();
+	Utf8String (const char * latin1);
+	Utf8String (const char * latin1, size_t size);
+	Utf8String (size_t count, char latin1);
+	Utf8String (const const_iterator & begin, const const_iterator & end);
+	Utf8String (size_t count, UChar c);
 
-	const char*	data() const;
-	const char*	constData() const { return data(); }
-	const char*	c_str() const;
-	UChar       charAt(size_t pos) const;
-	void        clear();
-	bool	    isEmpty() const;
+	const char*	data () const;
+	const char*	constData () const { return data(); }
+	const char*	c_str () const;
+	UChar       charAt (size_t pos) const;
+	void        clear ();
+	bool	    isEmpty () const;
 
 	Utf8String & append  (const Utf8String & s) { return insert(s, end()); }
 	Utf8String & append  (const char * s, size_t size) { return append(Utf8String(s, size)); }
@@ -348,6 +348,7 @@ public:
     int compare (size_t pos, size_t len, const char * s, size_t n) const;
 
 	bool contains(const Utf8String & s) const { return find(s, begin()) != end(); }
+	bool contains(UChar ch) const { return find(Utf8String(1, ch), begin()) != end(); }
 	bool contains(const char * s) const { return find(s, 0, strlen(s)) != end(); }
 	bool contains(const char * s, size_t n) const { return find(s, 0, n) != end(); }
 
@@ -437,7 +438,20 @@ public:
 	Utf8String & setNumber (float n, char f = 'g', int prec = 6) { return setNumber(double(n), f, prec); }
 	Utf8String & setNumber (double n, char f = 'g', int prec = 6);
 
-	Vector<Utf8String> split(const Utf8String & separator, bool keepEmpty = true) const;
+	Vector<Utf8String> split(const Utf8String & separator, bool keepEmpty = true, UChar quoteChar = UChar(UChar::Null)) const
+	{
+		return split(false, separator, keepEmpty, quoteChar);
+	}
+	Vector<Utf8String> split(const UChar & separator, bool keepEmpty = true, UChar quoteChar = UChar(UChar::Null)) const
+	{
+		return split(false, Utf8String(1, separator), keepEmpty, quoteChar);
+	}
+
+	Vector<Utf8String> splitOneOf(const Utf8String & separators, bool keepEmpty = true, UChar quoteChar = UChar(UChar::Null)) const
+	{
+		return split(true, Utf8String(separators), keepEmpty, quoteChar);
+	}
+
 
 #ifdef __NOT_IMPLEMENTED_YET__
 	const Vector<UChar>	unicode() const;
@@ -500,6 +514,7 @@ public:
 
 protected:
 	int compare (const const_iterator & from, size_t len, const char * s, size_t subpos, size_t sublen) const;
+	Vector<Utf8String> split(bool isOneSeparatorChar, const Utf8String & separator, bool keepEmpty = true, UChar quoteChar = UChar(UChar::Null)) const;
 
 public:
 	static int decodeBytes(const char * bytes, size_t len, uint32_t & uc, uint32_t & min_uc);

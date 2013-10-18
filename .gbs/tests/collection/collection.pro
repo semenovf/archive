@@ -1,15 +1,15 @@
 include($$(GBS_HOME)/common-app-qt.pri)
 
-TARGET = test_hash
+TARGET = test_collection
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../cwt-common/include
 
+SOURCES += ../../../tests/collection.cpp
+
 unix {
-    SOURCES += ../../../tests/hash.cpp
     LIBS += -lcwt
 }
 
 win32 {
-    SOURCES += ..\\..\\..\\tests\\hash.cpp
     LIBS += cwt.lib
 }
