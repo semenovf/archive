@@ -1,0 +1,21 @@
+% layout 'default';
+% title l('Websocket::Echo');
+
+% content header => begin
+
+% end
+
+<script>
+    //var ws = new WebSocket("<%= url_for('ws/echo')->to_abs %>");
+    var ws = new WebSocket('ws://localhost:3000/ws/echo');
+
+    // Incoming messages
+    ws.onmessage = function(event) {
+        document.body.innerHTML += event.data + '<br/>';
+    };
+
+    // Outgoing messages
+    window.setInterval(function() {
+        ws.send('Hello Mojo!');
+    }, 1000);
+</script>

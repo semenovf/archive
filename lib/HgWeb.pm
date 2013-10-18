@@ -43,6 +43,10 @@ sub startup {
     #$r->post('/tr/create')     ->to('transaction#create');
     $r->get('/tr/create')     ->to('transaction#create');
     
+    # WebSocket echo service
+    $r->get('/ws')->to('websocket#index');
+    $r->websocket('/ws/echo')->to('websocket#echo');
+    
     $r->any('/(*)')            ->to(cb => sub {
         my $self = shift;
 #        $self->res->code(404);
