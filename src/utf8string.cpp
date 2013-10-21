@@ -70,6 +70,27 @@ Utf8String::Utf8String(size_t count, UChar c) : pimpl(new Utf8String::Impl())
 	pimpl->m_length = count;
 }
 
+Utf8String::Utf8String (bool no_check, const char * utf8)
+{
+	if (no_check) {
+		pimpl->append(utf8, strlen(utf8));
+		calculateLength();
+	} else {
+		*this = fromUtf8(utf8, strlen(utf8));
+	}
+}
+
+Utf8String::Utf8String (bool no_check, const char * utf8, size_t size)
+{
+	if (no_check) {
+		pimpl->append(utf8, size);
+		calculateLength();
+	} else {
+		*this = fromUtf8(utf8, size);
+	}
+}
+
+
 bool Utf8String::isEmpty() const
 {
 	return pimpl->m_length == 0;

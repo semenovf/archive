@@ -308,6 +308,8 @@ public:
 	Utf8String (size_t count, char latin1);
 	Utf8String (const const_iterator & begin, const const_iterator & end);
 	Utf8String (size_t count, UChar c);
+	Utf8String (bool no_check, const char * utf8);
+	Utf8String (bool no_check, const char * utf8, size_t size);
 
 	const char*	data () const;
 	const char*	constData () const { return data(); }

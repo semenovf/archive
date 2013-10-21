@@ -25,6 +25,7 @@ SUBDIRS  = cwt-core   \
     tests/time        \
     tests/thread      \
     tests/qthread     \
+    tests/regexp      \
     tests/uuid        \
     tests/vector      \
     tests/unitype     \

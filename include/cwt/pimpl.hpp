@@ -14,7 +14,6 @@
 #include <cwt/utility.hpp>
 
 #define CWT_PIMPL_IMPL(Class)                                                  \
-private:                                                                       \
 	CWT_DENY_COPY(Class);                                                      \
 protected:                                                                     \
     class Impl;                                                                \

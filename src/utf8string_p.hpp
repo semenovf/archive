@@ -15,8 +15,9 @@
 
 CWT_NS_BEGIN
 
-struct Utf8String::Impl : public std::string
+class Utf8String::Impl : public std::string
 {
+public:
 	typedef std::string::iterator iterator;
 	typedef std::string::const_iterator const_iterator;
 	static const size_t npos = std::string::npos;
