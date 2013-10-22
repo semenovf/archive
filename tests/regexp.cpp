@@ -7,22 +7,38 @@
 
 #include <cwt/test.h>
 #include <cwt/regexp.hpp>
+#include <iostream>
 
 using namespace cwt;
 
-void test_exact_match()
+void test_simple_match()
 {
-	RegExp re("^([-+])?(\\d+)(px|pt|em|%)?$");
-	RegExp::iterator it = re.begin("+230pt");
-	RegExp::iterator itEnd = re.end();
+	RegExp re("\\d\\d \\w+");
+	RegExpMatch match = re.match("abc123 def");
+	CWT_TEST_OK(match.hasMatch());
+
+	re.setPattern("\\d\\d \\w+");
+	match = re.match("abc123 def");
+	CWT_TEST_FAIL(match.hasMatch());
+	CWT_TEST_OK(match.captured(0) == "23 def");
+
+	re.setPattern("\\d\\d \\w+");
+	match = re.match("12 abc 45 def");
+	CWT_TEST_FAIL(match.hasMatch());
+	CWT_TEST_OK(match.captured(0) == "12 abc");
+	CWT_TEST_OK(match.captured(1) == "45 def");
+
+
+	/*
+	RegExp rx("^([-+])?(\\d+)(px|pt|em|%)?$");
+	RegExpMatch match = rx.match("+230pt");
+	RegExpMatch::iterator it = match.begin();
+	RegExpMatch::iterator itEnd = match.end();
 
 	while (it != itEnd) {
+		std::cout << *it << std::endl;
 		++it;
 	}
-/*
-	re.capturedText(0);
-	re.capturedText(1);
-	re.capturedText(2);
 */
 }
 
@@ -32,7 +48,7 @@ int main(int argc, char *argv[])
     CWT_UNUSED2(argc, argv);
 	CWT_BEGIN_TESTS(1);
 
-	test_exact_match();
+	test_simple_match();
 
     CWT_END_TESTS;
 }

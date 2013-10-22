@@ -15,26 +15,30 @@ CWT_NS_BEGIN
 
 CWT_PIMPL_IMPL_COPYABLE(Utf8String);
 
-Utf8String::Utf8String() : pimpl(new Utf8String::Impl())
+Utf8String::Utf8String()
+	: pimpl(new Utf8String::Impl())
 {
 	if (true) {
 		;
 	}
 }
 
-Utf8String::Utf8String(const char * latin1) : pimpl(new Utf8String::Impl())
+Utf8String::Utf8String(const char * latin1)
+	: pimpl(new Utf8String::Impl())
 {
 	if (latin1)
 		*this = fromLatin1(latin1, strlen(latin1));
 }
 
-Utf8String::Utf8String(const char * latin1, size_t length) : pimpl(new Utf8String::Impl())
+Utf8String::Utf8String(const char * latin1, size_t length)
+	: pimpl(new Utf8String::Impl())
 {
 	if (latin1 && length > 0)
 		*this = fromLatin1(latin1, length);
 }
 
-Utf8String::Utf8String(size_t count, char latin1) : pimpl(new Utf8String::Impl())
+Utf8String::Utf8String(size_t count, char latin1)
+	: pimpl(new Utf8String::Impl())
 {
 	if (byte_t(latin1) > 127)
 		latin1 = '?';
@@ -51,7 +55,8 @@ Utf8String::Utf8String(const const_iterator & begin, const const_iterator & end)
 	}
 }
 
-Utf8String::Utf8String(size_t count, UChar c) : pimpl(new Utf8String::Impl())
+Utf8String::Utf8String(size_t count, UChar c)
+	: pimpl(new Utf8String::Impl())
 {
 	char utf8[6];
 
@@ -70,9 +75,10 @@ Utf8String::Utf8String(size_t count, UChar c) : pimpl(new Utf8String::Impl())
 	pimpl->m_length = count;
 }
 
-Utf8String::Utf8String (bool no_check, const char * utf8)
+Utf8String::Utf8String (bool no_utf8_check, const char * utf8)
+	: pimpl(new Utf8String::Impl())
 {
-	if (no_check) {
+	if (no_utf8_check) {
 		pimpl->append(utf8, strlen(utf8));
 		calculateLength();
 	} else {
@@ -80,9 +86,10 @@ Utf8String::Utf8String (bool no_check, const char * utf8)
 	}
 }
 
-Utf8String::Utf8String (bool no_check, const char * utf8, size_t size)
+Utf8String::Utf8String (bool no_utf8_check, const char * utf8, size_t size)
+	: pimpl(new Utf8String::Impl())
 {
-	if (no_check) {
+	if (no_utf8_check) {
 		pimpl->append(utf8, size);
 		calculateLength();
 	} else {

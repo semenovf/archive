@@ -1,0 +1,10 @@
+1. Copy pcre.h.generic => pcre8/pcre.h
+2. Copy config.h.generic => pcre8/config.h
+3. Add line
+    DEFINE += HAVE_CONFIG_H
+    to project file cwt-core.pro
+4. Edit pcre8/config.h
+5. Build default tables:
+    cd pcre8/dftables
+    run compiler specific shell script ./build_<compiler>[.sh|.cmd]
+    will be generated source file ../dftables.c

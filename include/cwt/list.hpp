@@ -29,8 +29,8 @@ class DLL_API List
 	CWT_PIMPL_COPYABLE(List);
 
 public:
-	typedef typename Impl<T>::iterator iterator;
-	typedef typename Impl<T>::const_iterator const_iterator;
+	typedef typename Impl::iterator iterator;
+	typedef typename Impl::const_iterator const_iterator;
 
 public:
     List ();
@@ -53,18 +53,18 @@ public:
 };
 
 template <typename T>
-inline List::List () : pimpl(new List::Impl)
+inline List<T>::List () : pimpl(new List::Impl)
 {}
 
 template <typename T>
-inline void List::append(const T & value)
+inline void List<T>::append(const T & value)
 {
 	detach();
 	pimpl->push_back(value);
 }
 
 template <typename T>
-void List::append(const T * value, size_t count)
+void List<T>::append(const T * value, size_t count)
 {
 	if (count > 0) {
 		detach();
@@ -74,32 +74,32 @@ void List::append(const T * value, size_t count)
 }
 
 template <typename T>
-inline void List::append(const List<T> & other)
+inline void List<T>::append(const List<T> & other)
 {
 	detach();
 	pimpl->insert(pimpl->end(), other.pimpl->begin(), other.pimpl.end());
 }
 
 template <typename T>
-inline void List::prepend(const T & value)
+inline void List<T>::prepend(const T & value)
 {
 	detach();
 	pimpl->push_front(value);
 }
 
 template <typename T>
-void List::prepend(const T * value, size_t count)
+void List<T>::prepend(const T * value, size_t count)
 {
 	if (count > 0) {
 		detach();
-		Impl::iterator it = pimpl->begin();
+		typename Impl::iterator it = pimpl->begin();
 		while(count-- > 0)
 			it = pimpl->insert(it, *value++);
 	}
 }
 
 template <typename T>
-inline void List::prepend(const List<T> & other)
+inline void List<T>::prepend(const List<T> & other)
 {
 	detach();
 	pimpl->insert(pimpl->begin(), other.pimpl->begin(), other.pimpl.end());
@@ -129,10 +129,12 @@ bool Map<Key, T>::operator == (const Map<Key, T> & other) const
 }
 #endif
 
-inline List::Impl::Impl(const List::Impl & other)
+template <typename T>
+inline List<T>::Impl::Impl(const List::Impl & other)
+	: std::list<T>()
 {
 	this->insert(std::list<T>::begin()
-			, other::begin(), other::end());
+			, other.begin(), other.end());
 }
 
 CWT_NS_END

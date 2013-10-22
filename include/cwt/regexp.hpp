@@ -14,6 +14,46 @@
 
 CWT_NS_BEGIN
 
+class RegExp;
+
+class DLL_API RegExpMatch
+{
+	CWT_PIMPL_DECL_COPYABLE(RegExpMatch);
+
+public:
+	class iterator {
+		friend class RegExpMatch;
+		class iterator_data;
+		shared_ptr<iterator_data> m_d;
+	public:
+		iterator ();
+		iterator (const iterator & other);
+		~iterator() {}
+
+    	String value () const;
+        String operator * () const { return value(); }
+        bool operator  == (const iterator & o) const;
+        bool operator  != (const iterator & o) const { return ! (*this == o); }
+        iterator & operator ++ ();
+        iterator   operator ++ (int) {
+            iterator r(*this);
+            this->operator ++();
+            return r;
+        }
+	};
+
+public:
+	RegExpMatch();
+	iterator begin () const;
+	iterator end () const;
+
+	bool hasMatch () const;
+	String captured (size_t index) const;
+	StringList captured() const;
+
+	friend class RegExp;
+};
+
 class DLL_API RegExp
 {
 	CWT_PIMPL_DECL_COPYABLE(RegExp);
@@ -37,45 +77,6 @@ public:
 	int errorOffset () const;
 
 	RegExpMatch match (const String & s);
-/*
-	String capturedText(size_t index = 0);
-	StringList capturedText() const;
-*/
-};
-
-
-class DLL_API RegExpMatch
-{
-	CWT_PIMPL_DECL_COPYABLE(RegExpMatch);
-
-public:
-	class iterator {
-		class iterator_data;
-		shared_ptr<iterator_data> m_d;
-	public:
-		iterator () : m_d() {}
-		iterator (const iterator & other);
-
-    	String value () const;
-        String operator * () const { return value(); }
-        bool operator  == (const iterator & o) const { return m_d == o.m_d; }
-        bool operator  != (const iterator & o) const { return m_d != o.m_d; }
-        iterator & operator ++ ();
-        iterator   operator ++ (int) {
-            iterator r(*this);
-            this->operator ++();
-            return r;
-        }
-	};
-
-public:
-	iterator begin () const;
-	iterator end () const;
-
-/*
-	String capturedText(size_t index = 0);
-	StringList capturedText() const;
-*/
 };
 
 CWT_NS_END

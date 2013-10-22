@@ -8,6 +8,12 @@
 #include "thread_p.hpp"
 #include "../include/cwt/logger.hpp"
 
+// Sources:
+// * POSIX Threads Programming
+//	https://computing.llnl.gov/tutorials/pthreads/
+// * Завершение работы нитей
+//	http://pic.dhe.ibm.com/infocenter/aix/v6r1/topic/com.ibm.aix.genprogc/doc/genprogc/term_threads.htm#term_threads__cleanup
+
 CWT_NS_BEGIN
 
 void Thread::setPriority (Thread::Priority priority)

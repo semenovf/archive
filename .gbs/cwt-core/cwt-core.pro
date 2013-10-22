@@ -9,9 +9,14 @@ INCLUDEPATH += ../../../cwt-common/include
 HEADERS += ../../include/cwt/*.hpp
 HEADERS += ../../include/cwt/*.h
 HEADERS += ../../src/*.hpp
+HEADERS += ../../pcre8/*.h
 SOURCES += ../../src/*.cpp
 SOURCES += ../../src/*.c
+SOURCES += ../../pcre8/*.c
 #SOURCES += ../../src/qt/*.cpp
+
+# PCRE configuration
+DEFINES += HAVE_CONFIG_H
 
 unix {
     SOURCES += ../../src/unix/*.cpp
