@@ -1,13 +1,15 @@
 package HgWeb::Controller::Transaction;
-use Mojo::Base 'Mojolicious::Controller';
+use Mojo::Base 'HgWeb::Controller';
 
-sub list {
+sub list
+{
     my $self = shift;
     $self->render_text('Transaction List');
 }
 
 
-sub create {
+sub create
+{
     my $self = shift;
     $self->render(template => 'app/transaction');
 }

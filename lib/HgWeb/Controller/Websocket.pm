@@ -1,5 +1,5 @@
 package HgWeb::Controller::Websocket;
-use Mojo::Base 'Mojolicious::Controller';
+use Mojo::Base 'HgWeb::Controller';
 use Mojo::IOLoop; # for websocket
 
 sub index

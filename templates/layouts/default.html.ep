@@ -16,14 +16,15 @@
     -->
     
     <!-- jQuery, jQueryUI -->
+    <!--
     <link rel="stylesheet" href="<%= url_for('/jquery-ui/1.10.3/themes/start/jquery-ui.css') %>" />
     <script src="<%= url_for('/jquery/1.9.1/jquery.js') %>"></script>
     <script src="<%= url_for('/jquery-ui/1.10.3/jquery-ui.js')%>"></script>
-    
+    -->
     <%= content 'header' %>
 </head>
 
-<body>
+<body class="default">
 <%= content %>
 </body>
 </html>

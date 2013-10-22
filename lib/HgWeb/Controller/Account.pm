@@ -1,5 +1,5 @@
 package HgWeb::Controller::Account;
-use Mojo::Base 'Mojolicious::Controller';
+use Mojo::Base 'HgWeb::Controller';
 use Hg::Account;
 
 sub list {

@@ -1,5 +1,5 @@
 package HgWeb::Controller::Currency;
-use Mojo::Base 'Mojolicious::Controller';
+use Mojo::Base 'HgWeb::Controller';
 use Hg::Currency;
 
 sub list {

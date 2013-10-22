@@ -1,6 +1,7 @@
 package HgWeb;
 use Mojo::Base 'Mojolicious';
 use Mojolicious::Plugin::Database;
+use HgWeb::Plugin::UrlFor;
 
 #BEGIN { $ENV{MOJO_I18N_DEBUG} = 1 };
 BEGIN { $ENV{MOJO_LOG_LEVEL} = 'debug' };
@@ -9,9 +10,15 @@ BEGIN { $ENV{MOJO_LOG_LEVEL} = 'debug' };
 sub startup {
     my $self = shift;
     
+    # Add another namespace to load plugins from
+    my $plugins = $self->plugins;
+    push @{$plugins->namespaces}, 'HgWeb::Plugin';
+    
     # Documentation browser under "/perldoc"
     #$self->plugin('PODRenderer');
     
+    $self->plugin('UrlFor');
+
     # Internationalization
     $self->plugin('I18N', default => 'en_US' );
     
