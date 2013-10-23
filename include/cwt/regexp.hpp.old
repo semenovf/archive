@@ -14,7 +14,8 @@
 
 CWT_NS_BEGIN
 
-#ifdef __COMMENT__
+class RegExp;
+
 class DLL_API RegExpMatch
 {
 	CWT_PIMPL_DECL_COPYABLE(RegExpMatch);
@@ -53,7 +54,7 @@ public:
 
 	friend class RegExp;
 };
-#endif
+
 class DLL_API RegExp
 {
 	CWT_PIMPL_DECL_COPYABLE(RegExp);
@@ -75,13 +76,10 @@ public:
 	void setPattern (const String & pattern);
 	const String & errorString () const;
 	int errorOffset () const;
-	bool isError () const;
 
-	bool match (const String & s);
-	bool matchNext ();
-	size_t capturedCount () const;
-	String captured (size_t index = 0) const;
-	StringList groups () const;
+	RegExpMatch match (const String & s);
+
+	friend class RegExpMatch;
 };
 
 CWT_NS_END

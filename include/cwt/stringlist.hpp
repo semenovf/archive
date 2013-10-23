@@ -8,12 +8,12 @@
 #ifndef __CWT_STRINGLIST_HPP__
 #define __CWT_STRINGLIST_HPP__
 
-#include <cwt/list.hpp>
+#include <cwt/vector.hpp>
 #include <cwt/string.hpp>
 
 CWT_NS_BEGIN
 
-typedef List<String> StringList;
+typedef Vector<String> StringList;
 
 CWT_NS_END
 
