@@ -18,6 +18,7 @@ sub startup {
     #$self->plugin('PODRenderer');
     
     $self->plugin('UrlFor');
+    $self->plugin('Widget');
 
     # Internationalization
     $self->plugin('I18N', default => 'en_US' );
@@ -48,8 +49,9 @@ sub startup {
     
     $r->get('/tr')             ->to('transaction#list');
     #$r->post('/tr/create')     ->to('transaction#create');
-    $r->get('/tr/create')     ->to('transaction#create');
-    
+    $r->get('/tr/create')         ->to('transaction#create');
+    $r->get('/tr/create/expander')->to('transaction#expander');
+   
     # WebSocket echo service
     $r->get('/ws')->to('websocket#index');
     $r->websocket('/ws/echo')->to('websocket#echo');

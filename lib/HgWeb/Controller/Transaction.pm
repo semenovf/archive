@@ -14,4 +14,10 @@ sub create
     $self->render(template => 'app/transaction');
 }
 
+sub expander
+{
+    my $self = shift;
+    $self->render(json => {header => 'Header', content => 'Content data'});
+}
+
 1;
