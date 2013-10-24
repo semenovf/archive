@@ -1,47 +1,56 @@
 package HgWidget::Expander;
+use HgWidget::Config;
 
-my $id_counter = 0;
+use Mo qw(is default chain required);
+extends 'HgWidget::Widget';
 
-sub new
+has id       => (is => 'rw', chain => 1, required => 1);
+has header   => (is => 'rw', chain => 1, default => 'Rename the header...');
+has content  => (is => 'rw', chain => 1, default => 'Set the content...');
+has expanded => (is => 'rw', chain => 1, default => 1);
+has url      => (is => 'rw', chain => 1, default => 'http://');
+has timeout  => (is => 'rw', chain => 1, default => '500');
+
+sub _to_boolean
 {
-    my $class = shift or die;
-    my $id = shift // "jqxExpander_$id_counter";
-    my $self = {
-        id => $id
-    };
-    return bless $self, $class;
+    my $val = shift // 0;
+    return $val
+        ? ($val eq 'false' ? 'false' : 'true')
+        : 'false';
 }
 
-sub default_header_id
+sub _default_header_id
 {
-    my $self = shift;
-    return $self->{id} . 'Header';
+    my $id = shift or die;
+    return $id . 'Header';
 }
 
-sub default_content_id
+sub _default_content_id
 {
-    my $self = shift;
-    return $self->{id} . 'Content';
+    my $id = shift or die;
+    return $id . 'Content';
 }
 
 sub controller
 {
     my $self = shift;
-    my %opts = @_;
 
-    my $id        = $self->{id};
-    my $idHeader  = $self->default_header_id;
-    my $idContent = $self->default_content_id;
-    my $theme     = $opts{theme}  // 'white';
-    my $url       = $opts{url}    // '';
-    my $width     = $opts{width}  // '100%';
-    my $height    = $opts{height} // '100%';
+    my $id        = $self->id;
+    my $idHeader  = _default_header_id($self->id);
+    my $idContent = _default_content_id($self->id);
+    my $url       = $self->url;
+    my $width     = $self->width;
+    my $height    = $self->height;
+    my $expanded  = _to_boolean($self->expanded);
+    my $timeout   = $self->timeout;
+    
+    my $theme     = $self->theme // HgWidget::Config->get('theme');
     
     die "URL is mandatory" unless $url;
     
-    return <<"EndOfControllerData";
+    my $html = <<"EndOfControllerData";
 \$(document).ready(function () {
-    \$("#$id").jqxExpander({ width: '$width', height: '$height', theme: '$theme' });
+    \$("#$id").jqxExpander({ width:'$width', height:'$height', expanded:$expanded, theme:'$theme' });
     
     setTimeout(function () {
         \$.ajax({
@@ -53,19 +62,21 @@ sub controller
                 \$("#$id").jqxExpander('setContent', data.content);
             }
         });
-    }, 500);
+    }, $timeout);
 });
 EndOfControllerData
+
+    $html;
 }
 
 sub view
 {
     my $self = shift;
-    my $id   = $self->{id};
-    my $idHeader  = $self->default_header_id;
-    my $idContent = $self->default_content_id;
+    my $id = $self->id;
+    my $idHeader  = _default_header_id($self->id);
+    my $idContent = _default_content_id($self->id);
     
-    return <<"EndOfViewData"
+    my $html = <<"EndOfViewData";
     <div id='$id'>
     <div id='$idHeader'>
         Loading Header...</div>
@@ -73,6 +84,8 @@ sub view
         Loading Content...</div>
     </div>
 EndOfViewData
+
+    $html;
 }
 
 1;

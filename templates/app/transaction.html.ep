@@ -3,43 +3,13 @@
 
 % content header => begin
 
-%= url_for_style      ('/jqwidgets/styles', 'jqx.base');
-%= url_for_javascript ('/jqwidgets', 'gettheme');
-%= url_for_javascript ('/jquery', '1.10.2', 'jquery.min');
-%= url_for_javascript ('/jqwidgets', 'jqxcore');
-%= url_for_javascript ('/jqwidgets', 'jqxexpander');
-
-% widget 'Expander', 'jqxExpander';
-%= widget_controller 'jqxExpander', url=>'/tr/create/expander';
-
-<!--
-    $(document).ready(function () {
-        $("#jqxWidget").jqxExpander({ width: '350px', height: '350px', theme: 'white' });
-        url = '/tr/create/expander';
-        
-        setTimeout(function () {
-            $.ajax({
-                url: url,
-                type: 'GET',
-                dataType: 'json',
-                success: function (data) {
-                    $("#jqxWidget").jqxExpander('setHeaderContent', data.header);
-                    $("#jqxWidget").jqxExpander('setContent', data.content);
-                }
-            });
-        }, 500);
-    });
--->
+% widget_config theme=>'darkblue';
+%= widget_import 'Expander';
+% w('jqxExpander', 'Expander');
+% w('jqxExpander')->url('/tr/create/expander');
+% w('jqxExpander')->theme('darkblue');
+%= widget_controller('jqxExpander');
 
 % end
 
-%= widget_view 'jqxExpander';
-
-<!--
-<div id='jqxWidget'>
-    <div id='expanderHeader'>
-        Loading Header...</div>
-    <div id='expanderContent'>
-        Loading Content...</div>
-</div>
--->
+%= widget_view('jqxExpander');
