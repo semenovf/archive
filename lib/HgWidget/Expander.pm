@@ -1,23 +1,13 @@
 package HgWidget::Expander;
-use HgWidget::Config;
-
+use HgWidget::Util;
 use Mo qw(is default chain required);
 extends 'HgWidget::Widget';
 
-has id       => (is => 'rw', chain => 1, required => 1);
 has header   => (is => 'rw', chain => 1, default => 'Rename the header...');
 has content  => (is => 'rw', chain => 1, default => 'Set the content...');
 has expanded => (is => 'rw', chain => 1, default => 1);
-has url      => (is => 'rw', chain => 1, default => 'http://');
+has url      => (is => 'rw', chain => 1, default => undef);
 has timeout  => (is => 'rw', chain => 1, default => '500');
-
-sub _to_boolean
-{
-    my $val = shift // 0;
-    return $val
-        ? ($val eq 'false' ? 'false' : 'true')
-        : 'false';
-}
 
 sub _default_header_id
 {
@@ -31,42 +21,51 @@ sub _default_content_id
     return $id . 'Content';
 }
 
+sub _import_scripts
+{
+    [
+        '/jqwidgets/jqxexpander.js'
+    ];
+}
+
 sub controller
 {
     my $self = shift;
+    
+    my $id         = $self->id;
+    my $idHeader   = _default_header_id($self->id);
+    my $idContent  = _default_content_id($self->id);
+    my $timeout    = $self->timeout;
+    my $url        = $self->url;
 
-    my $id        = $self->id;
-    my $idHeader  = _default_header_id($self->id);
-    my $idContent = _default_content_id($self->id);
-    my $url       = $self->url;
-    my $width     = $self->width;
-    my $height    = $self->height;
-    my $expanded  = _to_boolean($self->expanded);
-    my $timeout   = $self->timeout;
+    my $attrs = jsJoinAttrs(
+          jsAttrString('theme', $self->global->theme)
+        , jsAttrString('width', $self->width)
+        , jsAttrString('height', $self->height)
+        , jsAttrBoolean('expanded', $self->expanded)
+    );
     
-    my $theme     = $self->theme // HgWidget::Config->get('theme');
-    
-    die "URL is mandatory" unless $url;
-    
-    my $html = <<"EndOfControllerData";
-\$(document).ready(function () {
-    \$("#$id").jqxExpander({ width:'$width', height:'$height', expanded:$expanded, theme:'$theme' });
-    
+    my $r = <<"EndOfControllerData";
+    \$("#$id").jqxExpander({ $attrs });
+EndOfControllerData
+
+    if (defined $url) {
+        $r .= <<"EndOfControllerData";
     setTimeout(function () {
         \$.ajax({
             url: '$url',
             type: 'GET',
             dataType: 'json',
             success: function (data) {
-                \$("#$id").jqxExpander('setHeaderContent', data.header);
-                \$("#$id").jqxExpander('setContent', data.content);
+                if(data.header)  \$("#$id").jqxExpander('setHeaderContent', data.header);
+                if(data.content) \$("#$id").jqxExpander('setContent', data.content);
             }
         });
     }, $timeout);
-});
 EndOfControllerData
+    }
 
-    $html;
+    $r;
 }
 
 sub view
@@ -76,13 +75,13 @@ sub view
     my $idHeader  = _default_header_id($self->id);
     my $idContent = _default_content_id($self->id);
     
+    my $headerText = 'Specification' // 'Loading Header...';
+    
     my $html = <<"EndOfViewData";
-    <div id='$id'>
-    <div id='$idHeader'>
-        Loading Header...</div>
-    <div id='$idContent'>
-        Loading Content...</div>
-    </div>
+<div id='$id'>
+    <div id='$idHeader'>$headerText</div>
+    <div id='$idContent'>Loading Content...</div>
+</div>
 EndOfViewData
 
     $html;

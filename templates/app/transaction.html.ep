@@ -3,13 +3,52 @@
 
 % content header => begin
 
-% widget_config theme=>'darkblue';
-%= widget_import 'Expander';
-% w('jqxExpander', 'Expander');
-% w('jqxExpander')->url('/tr/create/expander');
-% w('jqxExpander')->theme('darkblue');
-%= widget_controller('jqxExpander');
+% w()->theme('metro');
+% w('hello', 'Label')->text('Hello, World!');
+% w('comboAccount', 'ComboBox')->source('sourceForAccount')->selectedIndex(1);
+% w('comboCategory', 'ComboBox')->source('sourceForCategory')->selectedIndex(1);
+% w('jqxExpander', 'Expander')->url('/tr/create/expander');
+% w('btnCancel', 'PushButton')->text('Cancel');
+% w('btnAccept', 'PushButton')->text('Accept')->submit(1);
+
+%= widget_imports
+
+<script type="text/javascript">
+    
+var sourceForAccount = [
+      "Cache"
+    , "Account in JPMorgan Chase"
+    , "Account in Fed ;)"
+    , "Account in Bank of New York"
+    , "Account in Deutsche Bank"
+    , "Account in Bank of England"
+    , "Account in Bank of Japan"
+    , "Account in Bank of China"
+    , "Account in HSBC Holdings plc"
+];
+
+var sourceForCategory = [
+      "Foodstuffs"
+    , "Household appliances"
+    , "Footwear"
+    , "Auto"
+    , "Public service"
+];
+
+$(document).ready(function () {
+%= widget_controllers
+});
+</script>
 
 % end
 
-%= widget_view('jqxExpander');
+<p><%= widget_view 'hello' %></p>
+<table>
+    <tr><td><%= widget_view 'comboAccount' %></td></tr>
+    <tr><td><%= widget_view 'comboCategory' %></td></tr>
+</table>
+
+%= widget_view 'jqxExpander';
+
+<div><%=widget_view 'btnCancel' %> <%=widget_view 'btnAccept' %></div>
+

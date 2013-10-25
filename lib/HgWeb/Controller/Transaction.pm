@@ -17,7 +17,8 @@ sub create
 sub expander
 {
     my $self = shift;
-    $self->render(json => {header => 'Header', content => 'Content data'});
+    #$self->render(json => {header => 'Header', content => 'Content data'});
+    $self->render(json => {content => 'Content data'});
 }
 
 1;
