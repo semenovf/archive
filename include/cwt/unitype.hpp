@@ -70,7 +70,7 @@ public:
 	UniType(ushort_t v) : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 	UniType(int_t v)    : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 	UniType(uint_t v)   : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-#ifdef CWT_HAVE_INT64 // 'long_t' is 'long long'
+#if CWT_OS_BITS == 32 // 'long_t' is 'long long'
 	UniType(long v)          : m_d(new SharedData)     { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 	UniType(unsigned long v) : m_d(new SharedData)     { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 #endif

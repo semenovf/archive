@@ -91,7 +91,7 @@ public:
 	SafeFormat & arg (const String & s)     { return operator () (UniType(s)); }
 	SafeFormat & arg (const ByteArray & ba) { return operator () (UniType(ba)); }
 
-#ifdef CWT_HAVE_INT64
+#if CWT_OS_BITS == 32
 	SafeFormat & operator () (long n)             { return operator () (UniType(n)); }
 	SafeFormat & operator () (unsigned long n)    { return operator () (UniType(n)); }
 	SafeFormat & operator %  (long n)             { return operator () (n); }
