@@ -65,6 +65,6 @@ win32 {
 #message(Configuration   : $${CWT_CONFIG})
 #message(Workspace folder: $${CWT_ROOT_DIR})
 #message(CONFIG          : $${CONFIG})
-#message(QMAKESPEC       : $${QMAKESPEC})
+#message(QMAKESPEC       : $$QMAKESPEC)
 #message(QT              : $${QT})
 #message(Processed config.pri)
