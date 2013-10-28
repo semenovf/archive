@@ -17,7 +17,7 @@ sub jsJoinAttrs
     
     foreach my $a (@attrs) {
         next unless defined $a;
-        $r .= ' ,' if length($r) > 0;
+        $r .= ', ' if length($r) > 0;
         $r .= $a;
     }
     $r;

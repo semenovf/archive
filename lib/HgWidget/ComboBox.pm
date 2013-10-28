@@ -8,6 +8,7 @@ extends 'HgWidget::Widget';
 #
 
 has selectedIndex => (is => 'rw', chain => 1, default => undef);
+has autoComplete  => (is => 'rw', chain => 1, default => undef);
 has source        => (is => 'rw', chain => 1, default => undef); # JS variable
 has animationType => (is => 'rw', chain => 1, default => 'none');
 
@@ -20,18 +21,23 @@ sub _import_scripts
     ];
 }
 
+sub _js_attrs
+{
+	my $self = shift;
+	jsJoinAttrs(
+		$self->SUPER::_js_attrs
+		, jsAttrBoolean('autoComplete', $self->autoComplete)
+        , jsAttrVar('source', $self->source)
+        , jsAttrString('animationType', $self->animationType)
+        , jsAttrNumber('selectedIndex', $self->selectedIndex)
+	);
+}
+
 sub controller
 {
     my $self = shift;
     my $id = $self->id;
-    my $attrs = jsJoinAttrs(
-          jsAttrString('theme', $self->global->theme)
-        , jsAttrVar('source', $self->source)
-        , jsAttrString('animationType', $self->animationType)
-        , jsAttrString('width', $self->width)
-        , jsAttrString('height', $self->height)
-        , jsAttrNumber('selectedIndex', $self->selectedIndex)
-    );
+    my $attrs = $self->_js_attrs;
     
     my $r = <<"EndOfControllerData";
     \$("#$id").jqxComboBox({ $attrs });
@@ -39,7 +45,7 @@ EndOfControllerData
     $r;
 }
 
-sub view
+sub render
 {
     my $self = shift;
     my $id = $self->id;

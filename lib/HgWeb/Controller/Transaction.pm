@@ -7,11 +7,16 @@ sub list
     $self->render_text('Transaction List');
 }
 
-
 sub create
 {
     my $self = shift;
     $self->render(template => 'app/transaction');
+}
+
+sub tabletest
+{
+    my $self = shift;
+    $self->render(template => 'app/tabletest');
 }
 
 sub expander

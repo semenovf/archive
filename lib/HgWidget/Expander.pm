@@ -28,6 +28,15 @@ sub _import_scripts
     ];
 }
 
+sub _js_attrs
+{
+	my $self = shift;
+	jsJoinAttrs(
+		$self->SUPER::_js_attrs
+        , jsAttrBoolean('expanded', $self->expanded)
+	);
+}
+
 sub controller
 {
     my $self = shift;
@@ -37,13 +46,7 @@ sub controller
     my $idContent  = _default_content_id($self->id);
     my $timeout    = $self->timeout;
     my $url        = $self->url;
-
-    my $attrs = jsJoinAttrs(
-          jsAttrString('theme', $self->global->theme)
-        , jsAttrString('width', $self->width)
-        , jsAttrString('height', $self->height)
-        , jsAttrBoolean('expanded', $self->expanded)
-    );
+    my $attrs      = $self->_js_attrs;
     
     my $r = <<"EndOfControllerData";
     \$("#$id").jqxExpander({ $attrs });
@@ -68,21 +71,21 @@ EndOfControllerData
     $r;
 }
 
-sub view
+sub render
 {
     my $self = shift;
     my $id = $self->id;
     my $idHeader  = _default_header_id($self->id);
     my $idContent = _default_content_id($self->id);
     
-    my $headerText = 'Specification' // 'Loading Header...';
-    
-    my $html = <<"EndOfViewData";
-<div id='$id'>
-    <div id='$idHeader'>$headerText</div>
-    <div id='$idContent'>Loading Content...</div>
-</div>
-EndOfViewData
+    my $html = qq[<div id='$id'>];
+    $html .= qq[<div id='$idHeader'>];
+    $html .= $self->_render_content($self->header);
+    $html .= qq[</div>];
+    $html .= qq[<div id='$idContent'>];
+    $html .= $self->_render_content($self->content);
+    $html .= qq[</div>];
+	$html .= qq[</div>];
 
     $html;
 }

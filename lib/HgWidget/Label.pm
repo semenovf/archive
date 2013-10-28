@@ -4,7 +4,7 @@ extends 'HgWidget::Widget';
 
 has text => (is => 'rw', chain => 1, default => '');
 
-sub view
+sub render
 {
     my $self = shift or die;
     my $id   = $self->id;

@@ -13,18 +13,20 @@ sub _import_scripts
     ];
 }
 
+sub _js_attrs
+{
+	my $self = shift;
+	jsJoinAttrs(
+		$self->SUPER::_js_attrs
+	);
+}
+
 sub controller
 {
     my $self = shift;
     my $id = $self->id;
-    my $attrs = jsJoinAttrs(
-          jsAttrString('theme', $self->global->theme)
-        , jsAttrString('width', $self->width)
-        , jsAttrString('height', $self->height)
-        , jsAttrBoolean('disabled', $self->disabled)
-    );
-
-    
+    my $attrs = $self->_js_attrs;
+        
     my $r = <<"EndOfControllerData";
     \$("#$id").jqxButton({ $attrs });
 EndOfControllerData
@@ -32,7 +34,7 @@ EndOfControllerData
     $r;
 }
 
-sub view
+sub render
 {
     my $self = shift;
     my $id = $self->id;

@@ -51,6 +51,7 @@ sub startup {
     #$r->post('/tr/create')     ->to('transaction#create');
     $r->get('/tr/create')         ->to('transaction#create');
     $r->get('/tr/create/expander')->to('transaction#expander');
+    $r->get('/tr/create/tabletest')->to('transaction#tabletest');
    
     # WebSocket echo service
     $r->get('/ws')->to('websocket#index');

@@ -109,14 +109,14 @@ sub register
         b($imports);
     });
 
-    $app->helper(widget_view => sub {
+    $app->helper(widget_render => sub {
         my $self = shift;
         my $id = shift or die 'Widget\'s identifier is mandatory';
         my $widgets = $plugin->{__hg_widgets__} or die;
         
         die qq(Widget with id '$id' does not exist) unless defined $widgets->{$id};
         # prevent escaping
-        b($widgets->{$id}->view(@_));
+        b($widgets->{$id}->render(@_));
     });
 }
 
