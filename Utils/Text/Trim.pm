@@ -1,11 +1,15 @@
-package cwt::Trim;
+package JQ::Utils::Text::Trim;
 use strict;
 
-=item cwt::Trim::ltrim( $string )
-=item cwt::Trim::rtrim( $string )
-=item cwt::Trim::trim( $string )
-=item cwt::Trim::sppack ($string )
-=item cwt::Trim::sppacktrim( $string )
+require Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT = qw( ltrim rtrim trim sppack sppacktrim );
+
+=item ltrim( $string )
+=item rtrim( $string )
+=item trim( $string )
+=item sppack ($string )
+=item sppacktrim( $string )
 
 Trims leftmost, rightmost and both spaces
 Packs spaces

@@ -1,0 +1,209 @@
+package JQ::HTTP::Reader;
+
+use URI;
+#use URI::Split qw(uri_split);
+#use URI::QueryParam;
+use HTTP::Request::Common;
+use LWP::UserAgent;
+use Encode qw(encode);
+use JQ::Logger;
+use strict;
+
+
+# variable dafaults
+#
+sub DEFAULT_AGENT   ()  { 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.9) Gecko/20100315 Firefox/3.5.9' }
+sub DEFAULT_TIMEOUT ()  { 2 * 60 }  # 2 minuites
+sub DEFAULT_PROXY   ()  { 'ENV' }
+sub DEFAULT_METHOD  ()  { 'GET' }
+#sub DEFAULT_SCHEME  ()  { 'http' }
+#sub DEFAULT_PATH    ()  { undef }
+
+sub validTimeout { my $t = shift; return ( $t > 5 && $t < 60*5 ) ? 1 : 0; }
+
+# private funcions
+#
+sub isValidProxy {
+    my $p = shift;
+    return 1 if ($p eq 'DIRECT');
+    return 1 if ($p eq 'ENV');
+    return 1 if ($p =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}/);
+    return 0;
+}
+
+
+=item JobQuest::Source::HTTP->new( %Options )
+
+Options:
+    -Agent      name of useragent (default is 'JobQuest/0.01')
+    -Timeout    timeout for useragent waiting response (default is 120 seconds)
+    -Proxy      proxy: 'DIRECT'|'ENV'|'<ipaddress>:<port>' (default is 'ENV')
+    -Method     method for useragent: 'GET'|'POST' (default is 'GET')
+    -URL        uniform resource identifier
+=cut
+
+sub new
+{
+    my ($class, %args) = @_;
+    my $ua;
+    my $self;
+    
+    my $agent       = delete $args{-Agent}  // DEFAULT_AGENT;
+    my $timeout     = delete $args{-Timeout}// DEFAULT_TIMEOUT;
+    my $proxy       = delete $args{-Proxy}  // DEFAULT_PROXY;
+    my $method      = delete $args{-Method} // DEFAULT_METHOD;
+    my $url         = delete $args{-URL}    // DEFAULT_PATH;
+    
+    die (__PACKAGE__, '::new(): invalid value for timeout, must be in range: > 5 seconds and < 5 minutes', "\n")
+      unless( _valid_timeout($timeout) );
+
+    die(__PACKAGE__, '::new(): invalid value for proxy', "\n")
+        unless( _valid_proxy($proxy) );
+  
+    $ua = LWP::UserAgent->new;
+    $ua->agent($agent);
+    $ua->timeout($timeout);
+    
+    unless ( $proxy eq 'DIRECT' ) {
+      if( $proxy eq 'ENV' ) {
+        $ua->env_proxy;
+      } else {
+        $ua->proxy('http', $proxy);
+      }
+    }
+    
+    # дополнительные параметры useragent
+#    $ua->parse_head(0+$1) if $ua_params =~ /parse_head=(\d)/i;
+    
+    $self->{'useragent'} = $ua;
+    $self = bless $self, __PACKAGE__;
+    $self->method($method);
+    $self->url($uri);
+    return $self;
+}
+
+=item $source->method()
+=item $source->method('GET'|'POST');
+
+Returns or sets method type
+
+=cut
+
+sub method
+{
+    my $self = shift;
+    my $method = shift or return $self->{'method'};
+
+    unless( $method eq 'GET' or $method eq 'POST' ) {
+        die( __PACKAGE__, "::method(): method [$method] is invalid\n");
+    }
+    $self->{'method'} = $method;
+    return;
+}
+
+
+sub url
+{
+    my $self = shift;
+    my $url = shift or return $self->{'url'};
+    
+    # if $url is a scalar value
+    #
+    unless( ref $url ) {
+        if( $url =~ m|^[^:/?#]+://| ) { # path is absolute
+            $self->{'url'} = URI->new( $url );
+        } else {    # path is relative
+            # not applicable
+            die __PACKAGE__, "::url(): arg1 is invalid: relative path not applicable in this case\n"
+                unless $self->{'url'};
+            $self->{'url'}->path_query($url);
+        } 
+    } elsif( ref($url) =~ /^URI/) {
+        $self->{'url'} = $url;
+    } else {
+        die __PACKAGE__, "::url(): arg1 is invalid: path must be a scalar or URI object\n";
+    } # unless( ref $path )
+}
+
+=item $theSource->get()
+
+Returns: content of downloaded page
+Called from SUPER's get method 
+=cut
+
+sub _get_data
+{
+    my $self = shift;
+  
+    my $res;
+    
+    # некорректно обрабатываются страницы в форматах wide-character strings
+    #if( defined($self->{'enc'}) and $self->{'enc'} =~ /utf/i) {
+    #    $self->{useragent}->parse_head(0);
+    #} else {
+    #    $self->{useragent}->parse_head(1);
+    #}
+  
+    jq_info('loading content from ',$self->url->as_string);
+    $res = $self->{useragent}->get($self->url->as_string) if uc($self->method) eq 'GET';
+    $res = $self->{useragent}->post($self->url->as_string, $self->url->query_form_hash) if uc($self->method) eq 'POST';
+    
+    die( "unexpected error") unless $res;
+    
+    unless( $res->is_success ) {
+        jq_error( 'failure loading content from ',$self->url->as_string, ' with status ', $res->status_line);
+        return;
+    }
+    
+    #jq_debug('date: ', $res->date);
+    #jq_debug('expires:', $res->expires);
+    #jq_debug('if_modified_since:', $res->if_modified_since);
+    #jq_debug('if_unmodified_since', $res->if_unmodified_since);
+    #jq_debug('last_modified', $res->last_modified);
+    #jq_debug('content_type', $res->content_type);
+    #jq_debug('content_encoding', $res->content_encoding);
+    #jq_debug('content_length', $res->content_length);
+    #jq_debug('content_language', $res->content_language);
+    #jq_debug('title', $res->title);
+    #jq_debug('user_agent', $res->user_agent);
+    #jq_debug('server', $res->server);
+    #jq_debug('from', $res->from);
+    #jq_debug('referer', $res->referer);
+    #jq_debug('www_authenticate', $res->www_authenticate);
+    #jq_debug('authorization', $res->authorization);
+    #jq_debug('proxy_authorization', $res->proxy_authorization);
+    #jq_debug('authorization_basic', $res->authorization_basic);
+    #jq_debug('proxy_authorization_basic', $res->proxy_authorization_basic);
+    
+    
+    # вызов decoded_content необходим в случаях, когда HTML-страница кодирована в UTF-8
+    # LWP не поддерживает кодировку заголовка в UTF-8 и выдает об этом сообщение.
+    # Как средство можно использовать нижеприведенный код с предварительно установленным
+    # значением parse_header = FALSE (см. параметр parse_header для конструктора
+    # ридера HTTPReader
+    
+    #if( $self->{useragent}->parse_head ) {
+    #    $data = $res->content;
+    #} else {
+    #    $data = $res->decoded_content;
+    #}
+
+    $self->{'len'} = length($res->content); # original content length (before decoding)
+
+    my %opts = ( 'raise_error'=>0 );
+#    $opts{ 'default_charset' } = $main::ENC if defined $main::ENC;
+    #$opts{ 'charset' } = $self->{'enc'} if defined $self->{'enc'};
+    
+    my $data = \$res->decoded_content( %opts ) || undef;
+    unless( $data ) {
+        jq_error( 'failure while decoding content' );
+        return;
+    };
+    
+    return encode($main::ENC, $$data);
+}
+
+
+1;
+
+__END__

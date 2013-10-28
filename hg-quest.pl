@@ -4,7 +4,7 @@ use File::Basename;
 use Getopt::Long;
 use Pod::Usage;
 use URI;
-use cwt::Logger;
+use Q::Logger;
 use HgQuest::Parser;
 use XML::Parser;
 use JobQuest::Conf;
@@ -101,15 +101,15 @@ foreach my $parser ( @{$AppData{'parsers'}} ) {
 
 #
 #
-# itemsOnPage=50 - êîëè÷åñòâî âàêàíñèé íà ñòðàíèöó
-# isFromAgency=10 - âûâîäèòü âàêàíñèè îò àãåíòñòâ
-# isWithoutSalary=10 - âûâîäèòü âàêàíñèè áåç óêàçàíèÿ çàðïëàòû
-# orderBy=2 - ñîðòèðîâàòü ïî äàòå (2)
+# itemsOnPage=50 - ÐºÐ¾Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ð²Ð°ÐºÐ°Ð½ÑÐ¸Ð¹ Ð½Ð° ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ñƒ
+# isFromAgency=10 - Ð²Ñ‹Ð²Ð¾Ð´Ð¸Ñ‚ÑŒ Ð²Ð°ÐºÐ°Ð½ÑÐ¸Ð¸ Ð¾Ñ‚ Ð°Ð³ÐµÐ½Ñ‚ÑÑ‚Ð²
+# isWithoutSalary=10 - Ð²Ñ‹Ð²Ð¾Ð´Ð¸Ñ‚ÑŒ Ð²Ð°ÐºÐ°Ð½ÑÐ¸Ð¸ Ð±ÐµÐ· ÑƒÐºÐ°Ð·Ð°Ð½Ð¸Ñ Ð·Ð°Ñ€Ð¿Ð»Ð°Ñ‚Ñ‹
+# orderBy=2 - ÑÐ¾Ñ€Ñ‚Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ Ð¿Ð¾ Ð´Ð°Ñ‚Ðµ (2)
 # actionSearch=search&
-# areaId=3  - Åêàòåðèíáóðã è îáëàñòü
+# areaId=3  - Ð•ÐºÐ°Ñ‚ÐµÑ€Ð¸Ð½Ð±ÑƒÑ€Ð³ Ð¸ Ð¾Ð±Ð»Ð°ÑÑ‚ÑŒ
 # keyword1=
-# searchPeriod=7    - âûâîä çà ïîñëåäíþþ íåäåëþ (7)
-# professionalAreaId=1 Ïðîôåñèîíàëüíàÿ îáëàñòü (1-Èíôîðìàöèîííûå òåõíîëîãèè/Èíòåðíåò/Òåëåêîì)
+# searchPeriod=7    - Ð²Ñ‹Ð²Ð¾Ð´ Ð·Ð° Ð¿Ð¾ÑÐ»ÐµÐ´Ð½ÑŽÑŽ Ð½ÐµÐ´ÐµÐ»ÑŽ (7)
+# professionalAreaId=1 ÐŸÑ€Ð¾Ñ„ÐµÑÐ¸Ð¾Ð½Ð°Ð»ÑŒÐ½Ð°Ñ Ð¾Ð±Ð»Ð°ÑÑ‚ÑŒ (1-Ð˜Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸Ð¾Ð½Ð½Ñ‹Ðµ Ñ‚ÐµÑ…Ð½Ð¾Ð»Ð¾Ð³Ð¸Ð¸/Ð˜Ð½Ñ‚ÐµÑ€Ð½ÐµÑ‚/Ð¢ÐµÐ»ÐµÐºÐ¾Ð¼)
 #my $parser4 = JobQuest::Parser->new('ural_hh_ru',
 #    -pages=>4,
 #    -reader=>JobQuest::Reader->new('HTTPUrgentReader', -Scheme=>[5, 10],

@@ -1,8 +1,10 @@
-package HgQuest::ClassLoader;
+package JQ::ClassLoader;
+
 use Module::Load;
 use strict;
 
-sub new {
+sub new
+{
     my $root_class = shift;
     my $sub_class = shift;
     my %args = @_;

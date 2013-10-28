@@ -1,0 +1,91 @@
+package JobQuest::Reader::HTTPUrgentReader;
+
+# Diligent HTTP
+# В случае неудачи загрузки контента, производит повтор запроса по указанной схеме
+#
+
+use JQ::Lib::Logger;
+use JobQuest::Reader::HTTPReader;
+use strict;
+
+our @ISA = qw(JobQuest::Reader::HTTPReader);
+
+=item JobQuest::Source::HTTPUrgentReader->new( %Options )
+
+Options:
+    -Scheme => "<numAttempts>, <delay>"                  # scheme #1
+    -Scheme => "<delay1>, <delay2>, <delay3>, ..."       # scheme #2
+    -Scheme => [ <numAttempts>, <delay> ]                # scheme #1
+    -Scheme => [ <delay1>, <delay2>, <delay3>, ... ]     # scheme #2
+    -Scheme => undef - no scheme (return JobQuest::Source::HTTPReader object)
+
+=cut
+
+sub new
+{
+    my ($class, %args) = @_;
+    my $scheme  = $args{-scheme} || undef;
+    
+    delete $args{-scheme} if $scheme;
+
+    my $self = $class->SUPER::new(%args);
+    
+    return $self unless $scheme;
+
+    unless( ref($scheme) ) {
+        my @a = split( /\s*,\s*/, $scheme );
+        $scheme = \@a;
+    }
+    
+    die(__PACKAGE__, "::new(): bad diligent scheme\n") if(scalar(@$scheme) < 2 );
+    
+    $self->{'scheme'} = $scheme;
+    
+    return bless $self, __PACKAGE__;
+}
+
+
+
+=item $theSource->get()
+
+Returns: content of downloaded page
+
+=cut
+
+sub _get_data
+{
+    my $self = shift;
+    my $scheme = $self->{'scheme'};
+    
+    my $data;
+
+# scheme #1
+    if( scalar(@$scheme) == 2 ) {
+        my $numAttempts = $scheme->[0];
+        my $delay = $scheme->[1];
+    
+    LOOP: {    # see perlsyn#<Statement Modifiers>
+        do {
+            $data = $self->SUPER::_get_data;
+            last if $data;
+            jq_info("delaying $delay seconds");
+            sleep($delay)
+        } while( --$numAttempts > 0 ); } # LOOP   
+        return $data;
+    }
+
+# scheme #2
+    my $i = 0;
+    
+    for( my $i = 0; $i < scalar(@$scheme); $i++ ) {
+        $data = $self->SUPER::_get_data();
+        last if $data;
+        jq_info("delayed by ', $scheme->[$i], ' seconds");
+        sleep($scheme->[$i]);
+    }
+    return $data;
+}
+
+1;
+
+__END__

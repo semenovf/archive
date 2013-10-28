@@ -1,0 +1,15 @@
+package JQ::Exception;
+use Exception::Class (
+    __PACKAGE__.'::IO' => {
+        description=>'IO exception'
+    },
+    __PACKAGE__.'::PureVirtualMethod' => {
+        description=>'pure virtual method'
+    },
+    __PACKAGE__.'::InvalidValue' => {
+        description=>'value is null or invalid'
+    }
+);
+use strict;
+
+1;
