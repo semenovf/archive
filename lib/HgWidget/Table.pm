@@ -6,17 +6,15 @@ extends 'HgWidget::Widget';
 #
 # http://www.jqwidgets.com/jquery-widgets-demo/demos/jqxgrid/defaultfunctionality.htm
 #
-use constant FEATURE_BASE       => 0x0001;
-use constant FEATURE_EDITABLE   => 0x0002;
-use constant FEATURE_SELECTABLE => 0x0004;
-use constant FEATURE_GROUPING   => 0x0008;
-my $_features = FEATURE_BASE;
+use constant FEATURE_EDITABLE   => 0x0001;
+use constant FEATURE_GROUPING   => 0x0002;
+my $_features = 0;
 
 has columns  => (is => 'ro', chain => 1, default => []);
-has features => (is => 'ro', chain => 1, default => FEATURE_BASE);
+has features => (is => 'ro', chain => 1, default => 0);
 
 =item $table->setFeature($feature)
-$feature := 'base' | 'editable' | 'selectable'
+$feature := 'editable' | 'grouping'
 =cut
 
 sub setFeature
@@ -25,9 +23,7 @@ sub setFeature
 	my $feature = shift or return $self;
 	my $ok = 0;
 	
-	$feature eq 'base'       and do { $ok = 1; $self->{features} |= FEATURE_BASE; $_features |= FEATURE_BASE; };
 	$feature eq 'editable'   and do { $ok = 1; $self->{features} |= FEATURE_EDITABLE; $_features |= FEATURE_EDITABLE; };
-	$feature eq 'selectable' and do { $ok = 1; $self->{features} |= FEATURE_SELECTABLE; $_features |= FEATURE_SELECTABLE; };
 	$feature eq 'grouping'   and do { $ok = 1; $self->{features} |= FEATURE_GROUPING; $_features |= FEATURE_GROUPING; };
 	
 	warn "Bad feature to set for Table instance: $feature\n" unless $ok;
@@ -38,9 +34,13 @@ sub _import_scripts
 	my $self = shift;
 	my $r = [];
 	
-	push @$r, '/jqwidgets/jqxgrid.js'           if $_features & FEATURE_BASE;
+	push @$r, '/jqwidgets/jqxdata.js';
+	push @$r, '/jqwidgets/jqxgrid.js';
+	push @$r, '/jqwidgets/jqxbuttons.js';
+	push @$r, '/jqwidgets/jqxscrollbar.js';
+	push @$r, '/jqwidgets/jqxgrid.selection.js';
+	
 	push @$r, '/jqwidgets/jqxgrid.edit.js'      if $_features & FEATURE_EDITABLE;
-	push @$r, '/jqwidgets/jqxgrid.selection.js' if $_features & FEATURE_SELECTABLE;
 	push @$r, '/jqwidgets/jqxgrid.grouping.js'  if $_features & FEATURE_GROUPING;
 
     $r;
