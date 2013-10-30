@@ -317,6 +317,7 @@ public:
 	const char*	data () const;
 	const char*	constData () const { return data(); }
 	const char*	c_str () const;
+	const char*	utf8 () const { return c_str(); }
 	UChar       charAt (size_t pos) const;
 	void        clear ();
 	bool	    isEmpty () const;
