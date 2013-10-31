@@ -12,6 +12,8 @@
 /* see http://en.wikipedia.org/wiki/Dynamic_loading */
 #include <cwt/cwt.hpp>
 #include <cwt/string.hpp>
+#include <cwt/map.hpp>
+#include <cwt/vector.hpp>
 
 #ifdef CWT_CC_MSC
 #	include <windows.h>
@@ -30,8 +32,8 @@ public:
 	typedef HMODULE Handle;
 	typedef FARPROC Symbol;
 #else
-	typedef void* Handle;
-	typedef void* Symbol;
+	typedef void * Handle;
+	typedef void * Symbol;
 #endif
 
 public:
@@ -49,8 +51,12 @@ public:
 	static void   addSearchPath   (const String & dir) { searchPath.append(dir); }
 	static void   clearSearchPath () { searchPath.clear(); }
 
+	static bool   pluginOpen  (const String & name, const String & path, void * pluggable);
+	static bool   pluginClose (const String & name, void * pluggable);
+
 private:
 	static Vector<String> searchPath;
+	static Map<String, Handle> plugins;
 };
 
 EXTERN_C_BEGIN

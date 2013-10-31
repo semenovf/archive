@@ -1,8 +1,11 @@
-#include <cwt/dl.hpp>
+#include "../include/cwt/dl.hpp"
+#include "../include/cwt/safeformat.hpp"
+#include "../include/cwt/logger.hpp"
 
 CWT_NS_BEGIN
 
 Vector<String> Dl::searchPath;
+Map<String, Dl::Handle> Dl::plugins;
 
 /**
  * @fn String Dl::buildDlFileName (const String &basename)
@@ -33,6 +36,56 @@ Vector<String> Dl::searchPath;
  *                to variables are always immediately bound when the library is loaded.
  * @return
  */
+
+
+typedef bool (* __plugin_ctor) (const void *);
+typedef bool (* __plugin_dtor) (const void *);
+static const char * __plugin_ctor_sym = "__cwt_plugin_ctor__";
+static const char * __plugin_dtor_sym = "__cwt_plugin_dtor__";
+
+bool Dl::pluginOpen(const String & name, const String & path, void * pluggable)
+{
+	Dl::Handle dlh = Dl::open(path);
+
+	if (!dlh) {
+		Logger::error(_Fr("Unable to load plugin from %s") % path);
+		return false;
+	}
+
+	__plugin_ctor ctor = reinterpret_cast<__plugin_ctor>(Dl::symbol(dlh, __plugin_ctor_sym));
+	if (!ctor) {
+		Logger::error(_Fr("Constructor (%s) not found at %s") % __plugin_ctor_sym % path);
+		return false;
+	}
+
+	Dl::plugins.insert(name, dlh);
+
+	return ctor(pluggable);
+}
+
+bool Dl::pluginClose(const String & name, void * pluggable)
+{
+	Map<String, Handle>::iterator it = Dl::plugins.find(name);
+
+	if (it == Dl::plugins.end()) {
+		Logger::error(_Fr("Plugin '%s' not found, may be it was not load before") % name);
+		return false;
+	}
+
+	Dl::Handle dlh = it->second;
+	CWT_ASSERT(dlh);
+
+	__plugin_dtor dtor = reinterpret_cast<__plugin_dtor>(Dl::symbol(dlh, __plugin_dtor_sym));
+	if (!dtor) {
+		Logger::error(_Fr("Destructor (%s) not found for plugin %s") % __plugin_dtor_sym % name);
+		return false;
+	}
+
+	Dl::plugins.remove(name);
+
+	return dtor(pluggable);
+}
+
 
 
 extern "C" int DLL_API dl_only_for_testing_purpose(void)

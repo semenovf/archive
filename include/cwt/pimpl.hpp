@@ -14,7 +14,7 @@
 #include <cwt/utility.hpp>
 
 #define CWT_PIMPL_IMPL(Class)                                                  \
-	CWT_DENY_COPY(Class);                                                      \
+	CWT_DENY_COPY(Class)                                                       \
 protected:                                                                     \
     class Impl;                                                                \
     shared_ptr<Impl> pimpl; // TODO may be unique_ptr<> is more suitable in this case
@@ -45,10 +45,9 @@ public:                                                                        \
 		pimpl = other.pimpl; return *this;                                     \
 	}                                                                          \
 protected:                                                                     \
-    class Impl;                                                                \
-    shared_ptr<Impl> pimpl;                                                    \
-protected:                                                                     \
-	void detach();
+	void detach();                                                             \
+	class Impl;                                                                \
+    shared_ptr<Impl> pimpl;
 
 #define CWT_PIMPL_IMPL_COPYABLE(Class)                                         \
 	void Class::detach()                                                       \
