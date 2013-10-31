@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIRS="cwt-core cwt-io cwt-uri cwt-json cwt-fs cwt-csv cwt-app"
+DIRS="cwt-core cwt-io cwt-uri cwt-json cwt-fs cwt-csv cwt-app cwt-settings-json"
 
 for dir in $DIRS ; do
     cd $dir
