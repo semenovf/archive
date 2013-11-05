@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <cwt/string.hpp>
 #include <cwt/safeformat.hpp>
-#include <cwt/hash.hpp>
+#include <cwt/map.hpp>
 #include <cwt/debby/dbd.hpp>
 #include <cwt/debby/dbh.hpp>
 #include <cwt/unitype.hpp>
@@ -18,6 +18,7 @@
 #include <cwt/bytearray.hpp>
 #include <cwt/logger.hpp>
 #include <cwt/filesystem.hpp>
+#include <cwt/mt.hpp>
 
 #include "../sqlite3/sqlite3.h"
 
@@ -25,6 +26,7 @@ CWT_NS_BEGIN
 
 static int __refs = 0;
 static DbDriver * __dbd = nullptr;
+static Mutex __mutex;
 
 const int __MAX_SQL_TIMEOUT      = 10000; /* 10 seconds */
 const int __MAX_EXEC_RETRY_COUNT = 10;
@@ -45,7 +47,7 @@ struct Sqlite3DbStatement : public DbStatementData
 DbHandlerData *         s3_dbd_open  (const String & driver_uri
 		, const String & username
 		, const String & password
-		, const Hash<String, String> & params);
+		, const Map<String, String> & params);
 static void             s3_dbd_close           (DbHandlerData * dbh);
 static bool             s3_dbd_set_auto_commit (DbHandlerData & dbh, bool on);
 static bool             s3_dbd_auto_commit     (DbHandlerData & dbh);
@@ -64,7 +66,7 @@ static bool             s3_dbd_meta            (DbHandlerData & dbh, const Strin
 static void             s3_dbd_stmt_close      (DbStatementData * sth);
 static bool             s3_dbd_stmt_exec       (DbStatementData & sth);
 static bool             s3_dbd_stmt_fetch_row_array (DbStatementData & sth, Vector<UniType> & row);
-static bool             s3_dbd_stmt_fetch_row_hash (DbStatementData & sth, Hash<String, UniType> & row);
+static bool             s3_dbd_stmt_fetch_row_hash (DbStatementData & sth, Map<String, UniType> & row);
 static bool             s3_dbd_stmt_bind       (DbStatementData & sth, size_t index, const UniType & param);
 
 static bool             s3_drop_scheme         (DbHandlerData * dbh);
@@ -75,9 +77,12 @@ inline String __s3_stmt_errmsg(Sqlite3DbStatement * s3_sth)
 	return String(sqlite3_errmsg(dbh_native));
 }
 
-
-extern "C" DbDriver * __open__()
+extern "C" bool __cwt_plugin_ctor__(void * pluggable)
 {
+	CWT_ASSERT(pluggable);
+	DbDriver ** pdbd = static_cast<DbDriver **>(pluggable);
+
+	AutoLock<> lock(& __mutex);
 	if (!__dbd) {
 		__dbd = new DbDriver;
 
@@ -103,14 +108,15 @@ extern "C" DbDriver * __open__()
 		__dbd->bind          = s3_dbd_stmt_bind;
 		__dbd->dropScheme    = s3_drop_scheme;
 	}
+	*pdbd = __dbd;
 
-	return __dbd;
+	return __dbd != nullptr;
 }
 
-// Synonym to __open__ (__init__ is a preferred bootstrap function name)
-extern "C" DbDriver * __init__()
+extern "C" bool __cwt_plugin_dtor__(void * pluggable)
 {
-	return __open__();
+	CWT_UNUSED(pluggable);
+	return true;
 }
 
 /**
@@ -163,7 +169,7 @@ extern "C" DbDriver * __init__()
 DbHandlerData * s3_dbd_open(const String & path
 		, const String & username
 		, const String & password
-		, const Hash<String, String> & params)
+		, const Map<String, String> & params)
 {
 	Sqlite3DbHandler * dbh = nullptr;
 	sqlite3 *  dbh_native = nullptr;
@@ -174,23 +180,23 @@ DbHandlerData * s3_dbd_open(const String & path
 	CWT_UNUSED2(username, password);
 
 	if (path.isEmpty()) {
-		Logger::error(_Tr("Path to database does not specified empty"));
+		Logger::error(_Tr("Path to database does not specified"));
 		return nullptr;
 	}
 
     s3_flags = SQLITE_OPEN_URI;
 	s3_flag_mode = SQLITE_OPEN_READONLY;// | SQLITE_OPEN_CREATE;
 
-	Hash<String, String>::const_iterator mode = params.find(String("mode"));
+	Map<String, String>::const_iterator mode = params.find(String("mode"));
 
 	if (mode != params.cend()) {
-		if (*mode == "ro")
+		if (mode->second == "ro")
 			s3_flag_mode = SQLITE_OPEN_READONLY;
-		else if (*mode == "rw")
+		else if (mode->second == "rw")
 			s3_flag_mode = SQLITE_OPEN_READWRITE;
-		else if (*mode == "rwc")
+		else if (mode->second == "rwc")
 			s3_flag_mode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-		else if (*mode == "memory")
+		else if (mode->second == "memory")
 			s3_flag_mode = SQLITE_OPEN_MEMORY;
 	}
 
@@ -225,8 +231,10 @@ DbHandlerData * s3_dbd_open(const String & path
 		dbh->dbh_native = dbh_native;
 	}
 
-	if (dbh)
+	if (dbh) {
+		AutoLock<> lock(& __mutex);
 		++__refs;
+	}
 
     return reinterpret_cast<DbHandlerData*>(dbh);
 }
@@ -249,6 +257,7 @@ static void s3_dbd_close (DbHandlerData * dbh)
 	s3_dbh->dbh_native = nullptr;
 	delete s3_dbh;
 
+	AutoLock<> lock(& __mutex);
 	--__refs;
 
 	CWT_ASSERT(__dbd);
@@ -454,7 +463,7 @@ bool s3_dbd_meta (DbHandlerData & dbh, const String & table, Vector<DbColumnMeta
 
 	if (sth) {
 		if (s3_dbd_stmt_exec(*sth)) {
-			Hash<String, UniType> row;
+			Map<String, UniType> row;
 			while (s3_dbd_stmt_fetch_row_hash (*sth, row)) {
 				DbColumnMeta m;
 				m.column_name = row["name"].toString();
@@ -580,7 +589,7 @@ bool s3_dbd_stmt_fetch_row_array (DbStatementData & sth, Vector<UniType> & row)
 	return false;
 }
 
-bool s3_dbd_stmt_fetch_row_hash (DbStatementData & sth, Hash<String, UniType> & row)
+bool s3_dbd_stmt_fetch_row_hash (DbStatementData & sth, Map<String, UniType> & row)
 {
 	Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(& sth);
 	int rc = __fetch_helper(s3_sth);
