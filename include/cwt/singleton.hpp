@@ -59,6 +59,18 @@ CWT_NS_BEGIN
  * @endcode
  */
 
+// TODO C++11 : For the singleton pattern, double-checked locking is not needed:
+// 		If control enters the declaration concurrently while the variable is being initialized,
+// 		the concurrent execution shall wait for completion of the initialization.
+//																	—§6.7 [stmt.dcl] p4
+// static Singleton& instance()
+// {
+//     	static Singleton s;
+//		return s;
+// }
+//
+// See http://en.wikipedia.org/wiki/Double-checked_locking
+
 template <class T>
 class Singleton
 {
@@ -78,13 +90,13 @@ private:
 };
 
 template <class T>
-T* Singleton<T>::_self = 0;
+T * Singleton<T>::_self = 0;
 
 template <class T>
 int Singleton<T>::_refs = 0;
 
 template <class T>
-T* Singleton<T>::instance()
+T * Singleton<T>::instance()
 {
 	static CWT_DEFAULT_MT_POLICY g_mutex;
 	AutoLock<> locker(&g_mutex);
@@ -98,7 +110,7 @@ template <class T>
 void Singleton<T>::free()
 {
 	static CWT_DEFAULT_MT_POLICY g_mutex;
-	AutoLock<> locker(&g_mutex);
+	AutoLock<> locker(& g_mutex);
 	if( --_refs == 0 ) {
 		if (_self) {
 			delete _self;
@@ -111,7 +123,7 @@ template <class T>
 void Singleton<T>::forceFree()
 {
 	static CWT_DEFAULT_MT_POLICY g_mutex;
-	AutoLock<> locker(&g_mutex);
+	AutoLock<> locker(& g_mutex);
 	_refs = 0;
 	if (_self) {
 		delete _self;

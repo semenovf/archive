@@ -38,8 +38,8 @@ Map<String, Dl::Handle> Dl::plugins;
  */
 
 
-typedef bool (* __plugin_ctor) (const void *);
-typedef bool (* __plugin_dtor) (const void *);
+typedef bool (* __plugin_ctor) (void *);
+typedef bool (* __plugin_dtor) (void *);
 static const char * __plugin_ctor_sym = "__cwt_plugin_ctor__";
 static const char * __plugin_dtor_sym = "__cwt_plugin_dtor__";
 
