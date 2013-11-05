@@ -16,8 +16,6 @@ class DbStatement;
 
 class DbHandler
 {
-	typedef DbDriver * (*driver_ctor) ();
-
 protected:
 	DbHandler() : m_dbh(nullptr) {}
 

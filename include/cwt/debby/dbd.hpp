@@ -9,7 +9,7 @@
 #define __CWT_DEBBY_DBD_HPP__
 
 #include <cwt/vector.hpp>
-#include <cwt/hash.hpp>
+#include <cwt/map.hpp>
 #include <cwt/unitype.hpp>
 
 CWT_NS_BEGIN
@@ -31,7 +31,7 @@ public:
 	DbHandlerData *         (*open)          (const String & path
 			, const String & username
 			, const String & password
-			, const Hash<String, String> & params);
+			, const Map<String, String> & params);
 	void                    (*close)         (DbHandlerData *);
 
 	bool                    (*query)         (DbHandlerData &, const String & sql);   // cannot be used for statements that contain binary data
@@ -54,7 +54,7 @@ public:
 	void					(*closeStmt)     (DbStatementData *);
 	bool					(*execStmt)      (DbStatementData &);
 	bool                    (*fetchRowArray) (DbStatementData &, Vector<UniType> & row);
-	bool                    (*fetchRowHash)  (DbStatementData &, Hash<String, UniType> & row);
+	bool                    (*fetchRowHash)  (DbStatementData &, Map<String, UniType> & row);
 	bool                    (*bind)          (DbStatementData &, size_t index, const UniType & param);
 
 	bool                    (*dropScheme)    (DbHandlerData *); // drop scheme and close connection

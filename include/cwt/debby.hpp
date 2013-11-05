@@ -1,28 +1,39 @@
 #ifndef __CWT_DEBBY_HPP__
 #define __CWT_DEBBY_HPP__
 
+#ifdef __COMMENT__
+
 #include <cwt/string.hpp>
 #include <cwt/pimpl.hpp>
 #include <cwt/unitype.hpp>
 #include <cwt/debby/dbh.hpp>
 
+#endif
+
 CWT_NS_BEGIN
 
-enum DebbyTypeEnum
+namespace debby
 {
-	  DebbyNull
-	, DebbyBool
-	, DebbyInteger
-	, DebbyFloat
-	, DebbyDouble
-	, DebbyString
-	, DebbyBlob
-	, DebbyBinary = DebbyBlob
-	, DebbyDate
-	, DebbyTime
-	, DebbyDateTime
-	, DebbyTimeStamp
+
+enum TypeEnum
+{
+	  Null
+	, Bool
+	, Integer
+	, Float
+	, Double
+	, String
+	, Blob
+	, Binary = Blob
+	, Date
+	, Time
+	, DateTime
+	, TimeStamp
 };
+
+#ifdef __COMMENT__
+
+
 
 class Debby
 {
@@ -44,6 +55,10 @@ public:
 	Table() : base_class() {}
 	bool has (const String & field) { return contains(field); }
 };
+
+#endif
+
+} // namespace debby
 
 CWT_NS_END
  

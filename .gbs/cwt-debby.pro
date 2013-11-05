@@ -6,4 +6,5 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = cwt-debby tests tools/debby
+SUBDIRS  = cwt-debby tests/debby tests/schema
+# tools/debby

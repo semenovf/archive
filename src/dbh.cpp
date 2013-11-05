@@ -15,7 +15,7 @@
 
 CWT_NS_BEGIN
 
-static const char * __db_driver_ctor_sym = "__open__";
+//static const char * __db_driver_ctor_sym = "__open__";
 //static CWT_DEFAULT_MT_POLICY g_mutex;
 
 DbHandler * DbHandler::open (const String & uri_str)
@@ -25,7 +25,7 @@ DbHandler * DbHandler::open (const String & uri_str)
 	AutoLock<> locker(& mutex);
 */
 
-	DbHandler::driver_ctor db_driver_ctor;
+//	DbHandler::driver_ctor db_driver_ctor;
 	Uri uri;
 
 	if (!uri.parse(uri_str)) {
@@ -41,6 +41,14 @@ DbHandler * DbHandler::open (const String & uri_str)
 	}
 
 	debby_name.prepend(String("cwt-debby-"));
+	DbDriver * driver = nullptr;
+
+	String dlpath = Dl::buildDlFileName(debby_name);
+	if (!Dl::pluginOpen(debby_name, dlpath, & driver)) {
+		Logger::error(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
+		return nullptr;
+	}
+/*
 	String dlpath = Dl::buildDlFileName(debby_name);
 	Dl::Handle dlh = Dl::open(dlpath);
 
@@ -55,21 +63,27 @@ DbHandler * DbHandler::open (const String & uri_str)
 		return nullptr;
 	}
 
-	DbDriver * driver = db_driver_ctor();
+	DbDriver * driver = !db_driver_ctor(& driver);
 	if (!driver) {
 		Logger::error(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
 		return nullptr;
 	}
+*/
 
 	Vector<String> userinfo = uri.userinfo().split(":");
-	Hash<String, String> params;
+	Map<String, String> params;
 
-	DbHandler * dbh = new DbHandler;
-
-	dbh->m_dbh = driver->open (uri.path()
+	DbHandlerData * driverData = driver->open (uri.path()
 			, userinfo.size() > 0 ? userinfo[0] : String() // login
 			, userinfo.size() > 1 ? userinfo[1] : String() // password
 			, uri.queryItems());
+
+	if (!driverData)
+		return nullptr;
+
+	DbHandler * dbh = new DbHandler;
+
+	dbh->m_dbh = driverData;
 
 	return dbh;
 }
