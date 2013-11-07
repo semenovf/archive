@@ -7,6 +7,7 @@
 #include <cwt/debby/sth.hpp>
 
 using namespace cwt;
+using namespace cwt::debby;
 
 void test_base()
 {

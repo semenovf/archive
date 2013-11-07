@@ -6,23 +6,17 @@
  * @brief
  */
 
-//#include <ctime> /* strftime */
+#include "sqlite3_dbd.hpp"
+
 #include <cstdlib>
 #include <cwt/string.hpp>
 #include <cwt/safeformat.hpp>
 #include <cwt/map.hpp>
-#include <cwt/debby/dbd.hpp>
-#include <cwt/debby/dbh.hpp>
 #include <cwt/unitype.hpp>
 #include <cwt/vector.hpp>
 #include <cwt/bytearray.hpp>
 #include <cwt/logger.hpp>
-#include <cwt/filesystem.hpp>
 #include <cwt/mt.hpp>
-
-#include "../sqlite3/sqlite3.h"
-
-CWT_NS_BEGIN
 
 static int __refs = 0;
 static DbDriver * __dbd = nullptr;
@@ -32,44 +26,31 @@ const int __MAX_SQL_TIMEOUT      = 10000; /* 10 seconds */
 const int __MAX_EXEC_RETRY_COUNT = 10;
 const int __MAX_EXEC_RETRY_SLEEP = 200;
 
-struct Sqlite3DbHandler : public DbHandlerData
-{
-	sqlite3 * dbh_native;
-};
-
-struct Sqlite3DbStatement : public DbStatementData
-{
-	sqlite3_stmt * sth_native;
-};
-
-
 /* DBI API functions implementations */
-DbHandlerData *         s3_dbd_open  (const String & driver_uri
+DbHandlerData *          s3_dbd_open  (const String & driver_uri
 		, const String & username
 		, const String & password
 		, const Map<String, String> & params);
-static void             s3_dbd_close           (DbHandlerData * dbh);
-static bool             s3_dbd_set_auto_commit (DbHandlerData & dbh, bool on);
-static bool             s3_dbd_auto_commit     (DbHandlerData & dbh);
-static long_t           s3_dbd_errno           (DbHandlerData & dbh);
-static bool             s3_dbd_query           (DbHandlerData & dbh, const String & sql);
+static void              s3_dbd_close           (DbHandlerData * dbh);
+static bool              s3_dbd_set_auto_commit (DbHandlerData & dbh, bool on);
+static bool              s3_dbd_auto_commit     (DbHandlerData & dbh);
+static long_t            s3_dbd_errno           (DbHandlerData & dbh);
+//static bool              s3_dbd_query           (DbHandlerData & dbh, const String & sql);
 static DbStatementData * s3_dbd_prepare        (DbHandlerData & dbh, const String & sql);
-static ulong_t          s3_dbd_affected_rows   (DbHandlerData & dbh);
-static ulong_t 			s3_dbd_last_id         (DbHandlerData & dbh);
-static Vector<String>   s3_dbd_tables          (DbHandlerData & dbh);
-static bool             s3_dbd_table_exists    (DbHandlerData & dbh, const String & name);
-static bool             s3_dbd_begin           (DbHandlerData & dbh);
-static bool             s3_dbd_commit          (DbHandlerData & dbh);
-static bool             s3_dbd_rollback        (DbHandlerData & dbh);
-static bool             s3_dbd_meta            (DbHandlerData & dbh, const String & table, Vector<DbColumnMeta> & meta);
+static ulong_t           s3_dbd_affected_rows   (DbHandlerData & dbh);
+static ulong_t 			 s3_dbd_last_id         (DbHandlerData & dbh);
+static Vector<String>    s3_dbd_tables          (DbHandlerData & dbh);
+static bool              s3_dbd_table_exists    (DbHandlerData & dbh, const String & name);
+static bool              s3_dbd_begin           (DbHandlerData & dbh);
+static bool              s3_dbd_commit          (DbHandlerData & dbh);
+static bool              s3_dbd_rollback        (DbHandlerData & dbh);
+static bool              s3_dbd_meta            (DbHandlerData & dbh, const String & table, Vector<DbColumnMeta> & meta);
 
-static void             s3_dbd_stmt_close      (DbStatementData * sth);
-static bool             s3_dbd_stmt_exec       (DbStatementData & sth);
-static bool             s3_dbd_stmt_fetch_row_array (DbStatementData & sth, Vector<UniType> & row);
-static bool             s3_dbd_stmt_fetch_row_hash (DbStatementData & sth, Map<String, UniType> & row);
-static bool             s3_dbd_stmt_bind       (DbStatementData & sth, size_t index, const UniType & param);
-
-static bool             s3_drop_scheme         (DbHandlerData * dbh);
+static void              s3_dbd_stmt_close      (DbStatementData * sth);
+static bool              s3_dbd_stmt_exec       (DbStatementData & sth);
+static bool              s3_dbd_stmt_fetch_row_array (DbStatementData & sth, Vector<UniType> & row);
+static bool              s3_dbd_stmt_fetch_row_hash (DbStatementData & sth, Map<String, UniType> & row);
+static bool              s3_dbd_stmt_bind       (DbStatementData & sth, size_t index, const UniType & param);
 
 inline String __s3_stmt_errmsg(Sqlite3DbStatement * s3_sth)
 {
@@ -106,7 +87,8 @@ extern "C" bool __cwt_plugin_ctor__(void * pluggable)
 		__dbd->fetchRowArray = s3_dbd_stmt_fetch_row_array;
 		__dbd->fetchRowHash  = s3_dbd_stmt_fetch_row_hash;
 		__dbd->bind          = s3_dbd_stmt_bind;
-		__dbd->dropScheme    = s3_drop_scheme;
+		__dbd->createSchema  = s3_create_schema;
+		__dbd->dropSchema    = s3_drop_schema;
 	}
 	*pdbd = __dbd;
 
@@ -691,21 +673,3 @@ bool s3_dbd_stmt_bind (DbStatementData & sth, size_t index, const UniType & para
 	}
 	return rc == SQLITE_OK ? true : false;
 }
-
-
-static bool s3_drop_scheme (DbHandlerData * dbh)
-{
-	CWT_ASSERT(dbh);
-
-	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(dbh);
-	const char * filename = sqlite3_db_filename(s3_dbh->dbh_native, "main");
-	if (!filename) {
-		Logger::error(_Tr("Bad scheme name or invalid sqlite3 connection"));
-		return false;
-	}
-
-	s3_dbd_close(dbh);
-	return FileSystem::unlink(filename);
-}
-
-CWT_NS_END
