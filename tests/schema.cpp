@@ -10,28 +10,36 @@
 #include <cwt/debby/schema.hpp>
 #include <iostream>
 
-/*
-#include <cwt/dbh.hpp>
-#include <cwt/sth.hpp>
-*/
 void test_deploy()
 {
 	cwt::debby::Schema schema;
 	cwt::debby::Table table_0 = schema.add("TableName0");
+	cwt::debby::Table table_1 = schema.add("TableName1");
 
-	cwt::debby::Field id_00 = table_0.addNumber("id", 0, long_t(CWT_INT_MAX));
-	id_00.setNullable(false);
-	id_00.setAutoinc(true);
-	id_00.setPrimary(true);
-	id_00.setUnique(true);
+	cwt::debby::Field id_0 = table_0.addInteger("id");
+	id_0.setNullable(false);
+	id_0.setUnique(true);
+	id_0.setAutoinc(2);
+
+	table_0.addPrimaryKey("id");
+/*
+	table_0.addPrimaryKey("pk1");
+	table_0.addPrimaryKey("pk2");
+*/
+
+	cwt::debby::Field id_1  = table_1.addInteger("id");
+	cwt::debby::Field fk_10 = table_1.addRef("fk_10", "TableName0");
+	id_1.setNullable(false);
+	id_1.setUnique(true);
 
 	std::cout << schema.json().toString() << std::endl;
 
-	const cwt::String dbname("test_scheme");
+	const cwt::String dbname("test_schema");
 	const cwt::String dbpath(_F("/tmp/%s.db") % dbname);
 	cwt::String uri(_F("sqlite3:%s?mode=rwc") % dbpath);
 
-	CWT_TEST_OK(schema.deploy(uri));
+	CWT_TEST_OK2(schema.deploy(uri), cwt::String(_Fr("Deploying '%s' ... ") % uri).utf8());
+	CWT_TEST_OK2(schema.drop(uri), cwt::String(_Fr("Dropping '%s' ... ") % uri).utf8());
 
 
 #ifdef __COMMENT__

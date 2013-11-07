@@ -9,73 +9,45 @@
 #include "../include/cwt/debby/sth.hpp"
 #include <cwt/dl.hpp>
 #include <cwt/logger.hpp>
-//#include <cwt/mt.hpp>
 #include <cwt/safeformat.hpp>
 #include <cwt/uri.hpp>
 
 CWT_NS_BEGIN
 
-//static const char * __db_driver_ctor_sym = "__open__";
-//static CWT_DEFAULT_MT_POLICY g_mutex;
-
-DbHandler * DbHandler::open (const String & uri_str)
+namespace debby
 {
-/*
-	static CWT_DEFAULT_MT_POLICY mutex;
-	AutoLock<> locker(& mutex);
-*/
 
-//	DbHandler::driver_ctor db_driver_ctor;
-	Uri uri;
+DbHandler * DbHandler::open (const cwt::String & uri_str)
+{
+	cwt::Uri uri;
 
 	if (!uri.parse(uri_str)) {
-		Logger::error(_Fr("Invalid URI specified for DB driver: %s") % uri_str);
+		cwt::Logger::error(_Fr("Invalid URI specified for DB driver: %s") % uri_str);
 		return nullptr;
 	}
 
-	String debby_name = uri.scheme();
+	cwt::String debby_name = uri.scheme();
 
 	if (debby_name.isEmpty()) {
 		Logger::error(_Tr("Invalid URI specified for DB driver: DB driver name is empty."));
 		return nullptr;
 	}
 
-	debby_name.prepend(String("cwt-debby-"));
+	debby_name.prepend(cwt::String("cwt-debby-"));
 	DbDriver * driver = nullptr;
 
-	String dlpath = Dl::buildDlFileName(debby_name);
-	if (!Dl::pluginOpen(debby_name, dlpath, & driver)) {
-		Logger::error(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
-		return nullptr;
-	}
-/*
-	String dlpath = Dl::buildDlFileName(debby_name);
-	Dl::Handle dlh = Dl::open(dlpath);
-
-	if (!dlh) {
-		Logger::error(_Fr("Unable to load DB driver for %s from %s") % uri.scheme() % dlpath);
+	cwt::String dlpath = cwt::Dl::buildDlFileName(debby_name);
+	if (!cwt::Dl::pluginOpen(debby_name, dlpath, & driver)) {
+		cwt::Logger::error(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
 		return nullptr;
 	}
 
-	db_driver_ctor = reinterpret_cast<driver_ctor>(Dl::symbol(dlh, __db_driver_ctor_sym));
-	if (!db_driver_ctor) {
-		Logger::error(_Fr("DB driver constructor (%s) not found for %s at %s") % __db_driver_ctor_sym % uri.scheme() % dlpath);
-		return nullptr;
-	}
-
-	DbDriver * driver = !db_driver_ctor(& driver);
-	if (!driver) {
-		Logger::error(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
-		return nullptr;
-	}
-*/
-
-	Vector<String> userinfo = uri.userinfo().split(":");
-	Map<String, String> params;
+	cwt::Vector<cwt::String> userinfo = uri.userinfo().split(":");
+	cwt::Map<cwt::String, cwt::String> params;
 
 	DbHandlerData * driverData = driver->open (uri.path()
-			, userinfo.size() > 0 ? userinfo[0] : String() // login
-			, userinfo.size() > 1 ? userinfo[1] : String() // password
+			, userinfo.size() > 0 ? userinfo[0] : cwt::String() // login
+			, userinfo.size() > 1 ? userinfo[1] : cwt::String() // password
 			, uri.queryItems());
 
 	if (!driverData)
@@ -83,21 +55,25 @@ DbHandler * DbHandler::open (const String & uri_str)
 
 	DbHandler * dbh = new DbHandler;
 
-	dbh->m_dbh = driverData;
+	dbh->_dbhData = driverData;
 
 	return dbh;
 }
 
-
-bool DbHandler::dropScheme (DbHandler * dbh)
+bool DbHandler::deploySchema (DbHandler & dbh, const Schema & schema)
 {
-/*
-	static CWT_DEFAULT_MT_POLICY mutex;
-	AutoLock<> locker(& mutex);
-*/
-	// Drop scheme (connection closed automatically)
-	if (dbh->m_dbh->driver->dropScheme(dbh->m_dbh)) {
-		dbh->m_dbh = nullptr;
+	if (!dbh._dbhData)
+		return false;
+	return dbh._dbhData->driver->createSchema(*dbh._dbhData, schema);
+}
+
+bool DbHandler::dropSchema (DbHandler & dbh, const Schema & schema)
+{
+	if (!dbh._dbhData)
+		return false;
+	// Drop schema (connection closed automatically)
+	if (dbh._dbhData->driver->dropSchema(*dbh._dbhData, schema)) {
+		dbh._dbhData = nullptr;
 		return true;
 	}
 	return false;
@@ -105,20 +81,15 @@ bool DbHandler::dropScheme (DbHandler * dbh)
 
 void DbHandler::close ()
 {
-/*
-	static CWT_DEFAULT_MT_POLICY mutex;
-	AutoLock<> locker(& mutex);
-*/
-
-	if (m_dbh) {
-		m_dbh->driver->close(m_dbh);
-		m_dbh = nullptr;
+	if (_dbhData) {
+		_dbhData->driver->close(_dbhData);
+		_dbhData = nullptr;
 	}
 }
 
-DbStatement * DbHandler::prepare (const String & sql)
+DbStatement * DbHandler::prepare (const cwt::String & sql)
 {
-	DbStatementData * d = m_dbh->driver->prepare(*m_dbh, sql);
+	DbStatementData * d = _dbhData->driver->prepare(*_dbhData, sql);
 	if (d) {
 		DbStatement * sth = new DbStatement;
 		sth->m_sth = d;
@@ -128,6 +99,8 @@ DbStatement * DbHandler::prepare (const String & sql)
 
 	return nullptr;
 }
+
+} // namespace debby
 
 CWT_NS_END
 

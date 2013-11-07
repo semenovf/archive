@@ -15,25 +15,7 @@ CWT_NS_BEGIN
 namespace debby
 {
 
-enum TypeEnum
-{
-	  Null
-	, Bool
-	, Integer
-	, Float
-	, Double
-	, String
-	, Blob
-	, Binary = Blob
-	, Date
-	, Time
-	, DateTime
-	, TimeStamp
-};
-
 #ifdef __COMMENT__
-
-
 
 class Debby
 {

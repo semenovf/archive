@@ -12,41 +12,47 @@
 
 CWT_NS_BEGIN
 
+namespace debby
+{
+
 class DbStatement;
 
 class DbHandler
 {
 protected:
-	DbHandler() : m_dbh(nullptr) {}
+	DbHandler() : _dbhData(nullptr) {}
 
 public:
 	~DbHandler() { close(); }
 
-	static DbHandler *      open (const String & uri);
-	static bool             dropScheme (DbHandler * dbh);
+	static DbHandler *      open (const cwt::String & uri);
+	static bool             deploySchema (DbHandler & dbh, const Schema & schema);
+	static bool             dropSchema (DbHandler & dbh, const Schema & schema);
 
-	bool                    opened() const { return m_dbh != nullptr; }
+	bool                    opened() const { return _dbhData != nullptr; }
 	void                    close ();
 
-	bool                    query (const String & sql) { return m_dbh->driver->query(*m_dbh, sql); }   // cannot be used for statements that contain binary data
-	DbStatement *           prepare (const String & sql);
-	ulong_t                 rows ()       { return m_dbh->driver->rows(*m_dbh); }
-	ulong_t                 lastId ()     { return m_dbh->driver->lastId(*m_dbh); }
-	Vector<String>          tables ()     { return m_dbh->driver->tables(*m_dbh); }
-	bool                    tableExists   (const String & name) { return m_dbh->driver->tableExists(*m_dbh, name); }
-	bool                    setAutoCommit (bool on) { return m_dbh->driver->setAutoCommit(*m_dbh, on); }
-	bool                    autoCommit () { return m_dbh->driver->autoCommit(*m_dbh); }
-	bool                    begin ()      { return m_dbh->driver->begin(*m_dbh); }
-	bool                    commit ()     { return m_dbh->driver->commit(*m_dbh); }
-	bool                    rollback ()   { return m_dbh->driver->rollback(*m_dbh); }
-	long_t                  errno ()      { return m_dbh->driver->errno(*m_dbh); }
+	bool                    query (const cwt::String & sql) { return _dbhData->driver->query(*_dbhData, sql); }   // cannot be used for statements that contain binary data
+	DbStatement *           prepare (const cwt::String & sql);
+	ulong_t                 rows ()       { return _dbhData->driver->rows(*_dbhData); }
+	ulong_t                 lastId ()     { return _dbhData->driver->lastId(*_dbhData); }
+	cwt::Vector<cwt::String> tables ()    { return _dbhData->driver->tables(*_dbhData); }
+	bool                    tableExists   (const cwt::String & name) { return _dbhData->driver->tableExists(*_dbhData, name); }
+	bool                    setAutoCommit (bool on) { return _dbhData->driver->setAutoCommit(*_dbhData, on); }
+	bool                    autoCommit () { return _dbhData->driver->autoCommit(*_dbhData); }
+	bool                    begin ()      { return _dbhData->driver->begin(*_dbhData); }
+	bool                    commit ()     { return _dbhData->driver->commit(*_dbhData); }
+	bool                    rollback ()   { return _dbhData->driver->rollback(*_dbhData); }
+	long_t                  errno ()      { return _dbhData->driver->errno(*_dbhData); }
 
-	bool                    meta (const String & table, Vector<DbColumnMeta> & meta)
-										  { return m_dbh->driver->meta(*m_dbh, table, meta); }
+	bool                    meta (const cwt::String & table, cwt::Vector<DbColumnMeta> & meta)
+										  { return _dbhData->driver->meta(*_dbhData, table, meta); }
 
 private:
-	DbHandlerData * m_dbh;
+	DbHandlerData * _dbhData;
 };
+
+} // namespace debby
 
 CWT_NS_END
 
