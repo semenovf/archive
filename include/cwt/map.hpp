@@ -9,8 +9,10 @@
 #define __CWT_MAP_HPP__
 
 #include <map>
+#include <utility> // for std::pair
 #include <cwt/cwt.h>
 #include <cwt/shared_ptr.hpp>
+
 
 CWT_NS_BEGIN
 
@@ -68,6 +70,8 @@ public:
 	bool	       operator == (const Map<Key, T> & other) const;
 	T &	           operator [] (const Key & key) { return value(key); }
 	const T        operator [] (const Key & key) const { return value(key); }
+
+	Map &          operator << (const std::pair<Key, T> & p) { this->insert(p.first, p.second); return *this; }
 
 protected:
 	void           detach();

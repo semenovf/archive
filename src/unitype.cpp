@@ -6,10 +6,10 @@
  */
 
 #include "../include/cwt/unitype.hpp"
+#include "../include/cwt/map.hpp"
 #include <string.h>
 
 CWT_NS_BEGIN
-
 
 UniType::SharedData::~SharedData()
 {
@@ -38,7 +38,7 @@ UniType::SharedData::~SharedData()
 }
 
 
-UniType::SharedData* UniType::clone()
+UniType::SharedData * UniType::clone()
 {
 	UniType::SharedData *d = NULL;
 	d = new SharedData();
@@ -533,20 +533,52 @@ ByteArray UniType::toBlob(bool * ok) const
 String UniType::toStringType(UniType::TypeEnum t)
 {
 	static const char * types[] = {
-		  "Null"
-		, "Bool"
-		, "Long"
-		, "Float"
-		, "Double"
-		, "String"
-		, "Blob"
-		, "Time"
-		, "Date"
-		, "DateTime"
-		, "Object"
+		  "null"
+		, "bool"
+		, "integer"
+		, "float"
+		, "double"
+		, "string"
+		, "blob"
+		, "time"
+		, "date"
+		, "datetime"
+		, "object"
 	};
 
 	return String(types[t]);
+}
+
+
+struct UniTypeStringAffinity : public Map<String, UniType::TypeEnum>
+{
+	static UniTypeStringAffinity affinity;
+
+	UniTypeStringAffinity() {
+		affinity << std::make_pair(String("null")     , UniType::NullValue)
+				 << std::make_pair(String("bool")     , UniType::BoolValue)
+		         << std::make_pair(String("boolean")  , UniType::BoolValue)
+		         << std::make_pair(String("int")      , UniType::IntegerValue)
+		         << std::make_pair(String("integer")  , UniType::IntegerValue)
+		         << std::make_pair(String("float")    , UniType::FloatValue)
+		         << std::make_pair(String("double")   , UniType::DoubleValue)
+		         << std::make_pair(String("string")   , UniType::StringValue)
+		         << std::make_pair(String("blob")     , UniType::BlobValue)
+		         << std::make_pair(String("bin")      , UniType::BlobValue)
+		         << std::make_pair(String("binary")   , UniType::BlobValue)
+		         << std::make_pair(String("time")     , UniType::TimeValue)
+		         << std::make_pair(String("date")     , UniType::DateValue)
+		         << std::make_pair(String("datetime") , UniType::DateTimeValue)
+		         << std::make_pair(String("obj")      , UniType::ObjectValue)
+		         << std::make_pair(String("object")   , UniType::ObjectValue);
+	}
+};
+
+UniTypeStringAffinity UniTypeStringAffinity::affinity;
+
+UniType::TypeEnum UniType::fromStringType(const String & s)
+{
+	return UniTypeStringAffinity::affinity.value(s.toLower(), NullValue);
 }
 
 CWT_NS_END
