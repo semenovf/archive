@@ -45,7 +45,8 @@ struct UniObject : public AbstractUniObject
 };
 
 
-class DLL_API UniType {
+class DLL_API UniType
+{
 public:
 	enum TypeEnum {
 		  NullValue
@@ -88,7 +89,7 @@ public:
 	UniType(const DateTime & v) : m_d(new SharedData)  { m_d->type = DateTimeValue; m_d->d.datetime_val = new DateTime(v); }
 
 	UniType(const UniType &other) { m_d = other.m_d; }
-	UniType & operator = (const UniType &other)
+	UniType & operator = (const UniType & other)
 	{
 		m_d = other.m_d;
 		return *this;
@@ -120,6 +121,24 @@ public:
 	void setTime       (const Time & time);
 	void setDate       (const Date & date);
 	void setDateTime   (const DateTime & dt);
+
+	UniType & operator = (bool b)                 { setBool(b);      return *this; }
+	UniType & operator = (char c)                 { setChar(c);      return *this; }
+	UniType & operator = (byte_t n)               { setByte(n);      return *this; }
+	UniType & operator = (short_t n)              { setShort(n);     return *this; }
+	UniType & operator = (ushort_t n)             { setUShort(n);    return *this; }
+	UniType & operator = (int_t n)                { setInt(n);       return *this; }
+	UniType & operator = (uint_t n)               { setUInt(n);      return *this; }
+	UniType & operator = (long_t n)               { setLong(n);      return *this; }
+	UniType & operator = (ulong_t n)              { setULong(n);     return *this; }
+	UniType & operator = (float n)                { setFloat(n);     return *this; }
+	UniType & operator = (double n)               { setDouble(n);    return *this; }
+	UniType & operator = (UChar ch)               { setUChar(ch);    return *this; }
+	UniType & operator = (const String & s)       { setString(s);    return *this; }
+	UniType & operator = (const ByteArray & blob) { setBlob(blob);   return *this; }
+	UniType & operator = (const Time & time)      { setTime(time);   return *this; }
+	UniType & operator = (const Date & date)      { setDate(date);   return *this; }
+	UniType & operator = (const DateTime & dt)    { setDateTime(dt); return *this; }
 
 	template <typename T>
 	void setObject(const T & o);

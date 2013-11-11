@@ -11,8 +11,8 @@
 #include <map>
 #include <utility> // for std::pair
 #include <cwt/cwt.h>
+#include <cwt/vector.hpp>
 #include <cwt/shared_ptr.hpp>
-
 
 CWT_NS_BEGIN
 
@@ -72,6 +72,7 @@ public:
 	const T        operator [] (const Key & key) const { return value(key); }
 
 	Map &          operator << (const std::pair<Key, T> & p) { this->insert(p.first, p.second); return *this; }
+	Vector<Key>    keys() const;
 
 protected:
 	void           detach();
@@ -149,6 +150,19 @@ MapData<Key, T> * MapData<Key, T>::clone () const
 	peer->insert(it, itEnd);
 	return peer;
 }
+
+template <typename Key, typename T>
+Vector<Key> Map<Key, T>::keys () const
+{
+	Vector<Key> r;
+	const_iterator it = cbegin();
+	const_iterator itEnd = cend();
+	for (; it != itEnd; ++it) {
+		r.append(it->first);
+	}
+	return r;
+}
+
 CWT_NS_END
 
 #endif /* __CWT_MAP_HPP__ */
