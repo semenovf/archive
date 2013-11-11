@@ -1,4 +1,4 @@
-CWT_CONFIG=release
+CWT_CONFIG=debug
 include($$(GBS_HOME)/common-app.pri)
 TARGET = simple-clock-indicator
 #INCLUDEPATH += /usr/include/libappindicator3-0.1
