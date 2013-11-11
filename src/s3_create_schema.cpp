@@ -8,10 +8,8 @@
 #include "sqlite3_dbd.hpp"
 #include <cwt/logger.hpp>
 #include <cwt/safeformat.hpp>
+#include <cwt/debby/record.hpp>
 #include <cwt/debby/schema.hpp>
-
-static const uint_t __version[] = { 1000, 1000 };
-
 
 struct SqlTypeAffinity : public cwt::Map<cwt::UniType::TypeEnum, cwt::String>
 {
@@ -33,70 +31,72 @@ struct SqlTypeAffinity : public cwt::Map<cwt::UniType::TypeEnum, cwt::String>
 
 SqlTypeAffinity SqlTypeAffinity::affinity;
 
-static bool __check_version (const Schema & schema)
+static String __s3_column_def (const Attribute & attr)
 {
-	ushort_t major, minor;
-	uint_t v = schema.version(& major, & minor);
-	if (v >= __version[0] && v <= __version[1]) {
-		return true;
+	cwt::String r;
+	r << attr.name()
+	  << " "
+	  << SqlTypeAffinity::affinity.value(attr.type(), cwt::String());
+
+	if (!attr.isNullable())
+		r << " NOT NULL";
+	if (attr.isPk())
+		r << " PRIMARY KEY";
+	if (attr.isAutoinc())
+		r << " AUTOINCREMENT";
+	if (attr.isUnique())
+		r << " UNIQUE";
+
+	if (attr.hasDefault()) {
+		cwt::String defaultValue;
+
+		switch(attr.type()) {
+		case cwt::UniType::BoolValue:
+			defaultValue << (attr.defaultValue().toBool() ? "1" : "0");
+			break;
+		case cwt::UniType::IntegerValue:
+		case cwt::UniType::FloatValue:
+		case cwt::UniType::DoubleValue:
+			defaultValue << attr.defaultValue().toString();
+			break;
+		case cwt::UniType::StringValue:
+		case cwt::UniType::TimeValue:
+		case cwt::UniType::DateValue:
+		case cwt::UniType::DateTimeValue:
+			defaultValue << '"' << attr.defaultValue().toString() << '"';
+			break;
+		default:
+			break;
+		}
+
+		CWT_ASSERT(!defaultValue.isEmpty());
+		r << " DEFAULT " << defaultValue;
 	}
 
-	Logger::error(_Fr("Unsupported version: %u.%u") % major % minor);
-	return false;
+	return r;
 }
 
-
-static String __s3_column_def (const Field & field)
-{
-	return SqlTypeAffinity::affinity.value(
-			field.isRef() ? field.deref().type() : field.type()
-			, cwt::String());
-}
 
 bool s3_create_schema (DbHandlerData & dbh, const Schema & schema)
 {
 	bool r = true;
 
-	if (!__check_version(schema))
-		return false;
-
-	Vector<cwt::String> tableNames = schema.tableNames();
+	Vector<cwt::String> tableNames = schema.names();
 	size_t ntables = tableNames.size();
 
 	for (size_t i = 0; i < ntables; ++i) {
-		Table table = schema.table(tableNames[i]);
+		const Table & table = schema[tableNames[i]];
 		cwt::String sql("CREATE TABLE IF NOT EXISTS ");
 		sql << tableNames[i] << " (";
 
-		Vector<cwt::String> fieldNames = table.fieldNames();
+		Vector<cwt::String> fieldNames = table.names();
 		size_t nfields = fieldNames.size();
-		cwt::String comma;
 
-		for (size_t f = 0; f < nfields; ++f) {
-			Field field = table.field(fieldNames[f]);
-			sql << comma << fieldNames[f] << " " << __s3_column_def(field);
-			if (field.isPk())
-				sql << " PRIMARY KEY";
-			if (field.isAutoinc())
-				sql << " AUTOINCREMENT";
-			comma = ", ";
-		}
+		//if (table.hasPk())
+		sql << __s3_column_def(table.pk());
 
-		// Constraints
-
-		// Primary Key
-		Vector<cwt::String> pknames = table.primaryKeyNames();
-		size_t npk = pknames.size();
-		comma.clear();
-
-		if (npk > 1) { // Compound primary key
-			sql << ", CONSTRAINT __" << tableNames[i] << "_pk__ PRIMARY KEY (";
-			for (size_t ipk = 0; ipk < npk; ++ipk) {
-				sql << comma << pknames[ipk];
-				comma = ", ";
-			}
-			sql << ")";
-		}
+		for (size_t f = 0; f < nfields; ++f)
+			sql << ", " << __s3_column_def(table[fieldNames[f]]);
 
 		sql << ")";
 
@@ -117,10 +117,7 @@ bool s3_drop_schema (DbHandlerData & dbh, const Schema & schema)
 {
 	bool r = true;
 
-	if (!__check_version(schema))
-		return false;
-
-	Vector<cwt::String> tableNames = schema.tableNames();
+	Vector<cwt::String> tableNames = schema.names();
 	size_t ntables = tableNames.size();
 
 	for (size_t i = 0; i < ntables; ++i) {
