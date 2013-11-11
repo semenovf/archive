@@ -5,7 +5,8 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/debby/dbh.hpp"
+//#include "../include/cwt/debby/dbh.hpp"
+#include "../include/cwt/debby/record.hpp"
 #include "../include/cwt/debby/schema.hpp"
 #include <cwt/logger.hpp>
 #include <cwt/safeformat.hpp>
@@ -14,6 +15,46 @@ CWT_NS_BEGIN
 
 namespace debby
 {
+
+bool Schema::deploy(const cwt::String & uri)
+{
+	cwt::shared_ptr<DbHandler> dbh(DbHandler::open(uri));
+	if(dbh.get()) {
+		return dbh->deploySchema(*dbh.get(), *this);
+	}
+
+	return false;
+}
+
+
+bool Schema::deploy(DbHandler & dbh)
+{
+	return dbh.deploySchema(dbh, *this);
+}
+
+/**
+ * @brief Drop schema.
+ *
+ * @param name Schema (database) name.
+ * @return @c true if scheme (database) successfully dropped, otherwise @c false.
+ */
+bool Schema::drop (const cwt::String & uri)
+{
+	cwt::shared_ptr<DbHandler> dbh(DbHandler::open(uri));
+	if(dbh.get()) {
+		return dbh->dropSchema(*dbh.get(), *this);
+	}
+
+	return false;
+}
+
+bool Schema::drop (DbHandler & dbh)
+{
+	return dbh.dropSchema(dbh, *this);
+}
+
+
+#ifdef __COMMENT__
 
 //static const cwt::String SchemaObjectKey ("__debby_schema__");
 
@@ -58,31 +99,6 @@ Table Schema::add (const cwt::String & name)
 	return Table(jv);
 }
 
-bool Schema::deploy(const cwt::String & uri)
-{
-	cwt::shared_ptr<DbHandler> dbh(DbHandler::open(uri));
-	if(dbh.get()) {
-		return dbh->deploySchema(*dbh.get(), *this);
-	}
-
-	return false;
-}
-
-/**
- * @brief Drop schema.
- *
- * @param name Schema (database) name.
- * @return @c true if scheme (database) successfully dropped, otherwise @c false.
- */
-bool Schema::drop (const cwt::String & uri)
-{
-	cwt::shared_ptr<DbHandler> dbh(DbHandler::open(uri));
-	if(dbh.get()) {
-		return dbh->dropSchema(*dbh.get(), *this);
-	}
-
-	return false;
-}
 
 // Version in format xxx.yyy.
 // So, 1.0 is 1000, 10.0 is 10000, 12.03 is 12003
@@ -99,6 +115,28 @@ uint_t Schema::version (ushort_t * major, ushort_t * minor) const
 
 	if (major)
 		*major = ushort_t(j);
+	class DLL_API Schema
+	{
+	public:
+		Schema();
+
+		Table add (const cwt::String & name);
+
+		bool deploy(const cwt::String & uri);
+		bool deploy(DbHandler & dbh);
+		bool drop(const cwt::String & uri);
+		bool drop(DbHandler & dbh);
+
+		const JsonValue & json () const { return _schema; }
+		uint_t version (ushort_t * major = nullptr, ushort_t * minor = nullptr) const;
+
+		size_t count () const;
+		cwt::Vector<cwt::String> tableNames() const;
+		Table table(const cwt::String & name) const;
+
+	private:
+		Json _schema;
+	};
 
 	if (minor)
 		*minor = ushort_t(n);
@@ -406,6 +444,7 @@ Field Field::deref() const
 
 	return Field();
 }
+#endif
 
 } // namespace debby
 

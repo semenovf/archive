@@ -1,0 +1,84 @@
+/*
+ * query_insert.cpp
+ *
+ *  Created on: Nov 8, 2013
+ *      Author: wladt
+ */
+
+#include "query_p.hpp"
+
+CWT_NS_BEGIN
+
+namespace debby
+{
+
+cwt::String Insert::buildSql () const
+{
+	cwt::String r("INSERT INTO");
+
+	r << ' ' << _target;
+
+	Row::const_iterator it = _record.cbegin();
+	Row::const_iterator itEnd = _record.cend();
+
+	cwt::String columns;
+	cwt::String values;
+	cwt::String comma;
+
+	while (it != itEnd) {
+		columns << comma << '`' << it->first << '`';
+		values << comma << '?';
+		comma = ", ";
+		++it;
+	}
+
+	r << " (" << columns << ")";
+	r << " VALUES (" << values << ")";
+
+	CWT_TRACE(r.c_str());
+
+	return r;
+}
+
+Value & Insert::operator [] (const cwt::String & column)
+{
+	Row::iterator it = _record.find(column);
+	if (it == _record.end()) {
+		_isReady = false; // adding new column
+		it = _record.insert(column, cwt::UniType());
+	}
+
+	return it->second;
+}
+
+bool Insert::save (DbHandler & dbh)
+{
+	if (!_isReady) {
+		cwt::String sql = buildSql();
+		cwt::shared_ptr<DbStatement> sth(dbh.prepare(sql));
+
+		if (sth.get())
+			_isReady = true;
+
+		_sth = sth;
+	}
+
+	if (!_sth.get())
+		return false;
+
+	Row::const_iterator it = _record.cbegin();
+	Row::const_iterator itEnd = _record.cend();
+
+	while (it != itEnd) {
+		_sth->bind(it->second);
+		++it;
+	}
+
+	return _sth->exec();
+}
+
+} // namespace debby
+
+CWT_NS_END
+
+

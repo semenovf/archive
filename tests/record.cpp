@@ -7,7 +7,9 @@
 
 #include <cwt/test.h>
 #include <cwt/safeformat.hpp>
+#include <cwt/debby/record.hpp>
 #include <cwt/debby/schema.hpp>
+#include <cwt/debby/utils.hpp>
 #include <iostream>
 
 using namespace cwt;
@@ -15,6 +17,31 @@ using namespace cwt::debby;
 
 void test_deploy()
 {
+	Record currency("currency", cwt::UniType::StringValue);
+//	currency.addString("code");
+	currency.addString("name");
+	currency.addString("symbol");
+
+	Record account("account");
+	account.addString("name").setDefault(String("default name"));
+	account.setAutoinc();
+	account.addRef("currency", currency);
+
+	Schema schema;
+	schema << currency << account;
+
+	String uri = buildSqlite3Uri("test_schema", "/tmp", "mode=rwc");
+	CWT_TEST_OK2(schema.deploy(uri), String(_Fr("Deploying '%s' ... ") % uri).utf8());
+
+	shared_ptr<DbHandler> dbh(DbHandler::open(uri));
+	CWT_TEST_FAIL(dbh.get());
+
+	currency[Record::PkName] = String("RUB");
+	currency["name"] = String("Russian ruble");
+	currency["symbol"] = String::fromUtf8("руб (RUB)");
+	currency.create(*dbh);
+
+#ifdef __COMMENT__
 	Schema schema;
 	Table table_0 = schema.add("Table0");
 	Table table_1 = schema.add("Table1");
@@ -64,65 +91,15 @@ void test_deploy()
 */
 
 
-	//CWT_TEST_OK2(schema.drop(uri), cwt::String(_Fr("Dropping '%s' ... ") % uri).utf8());
-
-
-#ifdef __COMMENT__
-	//String uri("sqlite3:/tmp/test.db");
-	DebbyScheme scheme(uri);
-
-	CWT_TEST_OK(FileSystem::exists(dbpath));
-
-	DebbyTable * table_0 = scheme.addTable("TableName0");
-	DebbyTable * table_1 = scheme.addTable("TableName1");
-	DebbyTable * table_3 = scheme.addTable("TableName3");
-
-	CWT_UNUSED2(table_1, table_3);
-
-	DebbyField * field_00 = table_0->addNumberField    ("FieldName0", ulong_t(CWT_INT_MAX));
-/*
-	DebbyField * field_01 = table_0->addBooleanField   ("FieldName1");
-	DebbyField * field_02 = table_0->addStringField    ("FieldName2", 256);
-	DebbyField * field_03 = table_0->addNumberField    ("FieldName3", CWT_UINT_MAX);
-	DebbyField * field_04 = table_0->addNumberField    ("FieldName4", 0.0f, 1.0f);
-	DebbyField * field_05 = table_0->addNumberField    ("FieldName5", CWT_DOUBLE_MIN, CWT_DOUBLE_MAX);
-	DebbyField * field_06 = table_0->addDateField      ("FieldName6");
-	DebbyField * field_07 = table_0->addTimeField      ("FieldName7");
-	DebbyField * field_08 = table_0->addDateTimeField  ("FieldName8");
-	DebbyField * field_09 = table_0->addTimeStampField ("FieldName9");
-*/
-
-	field_00->setPk(true);
-	field_00->setAutoinc(1);
-
-	if (!scheme.deploy()) {
-		// Error
-	}
-
-	scheme.drop();
-
-	CWT_TEST_OK(!FileSystem::exists(dbpath));
-
-	scheme.close(); // unnecessary call after drop()
-/*
-	...
-
-	scheme.open(uri);
-	Table table_M = scheme.addTable("TableNameM");
-
-	...
-
-	scheme.drop();
-	scheme.close();
-*/
 #endif
+	//CWT_TEST_OK2(schema.drop(uri), cwt::String(_Fr("Dropping '%s' ... ") % uri).utf8());
 }
 
 int main(int argc, char *argv[])
 {
     CWT_CHECK_SIZEOF_TYPES;
     CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(1);
+    CWT_BEGIN_TESTS(2);
 
     test_deploy();
 

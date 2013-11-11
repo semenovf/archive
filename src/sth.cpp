@@ -18,6 +18,7 @@ namespace debby
 void DbStatement::close ()
 {
 	if (m_sth) {
+		CWT_ASSERT(m_sth->driver);
 		m_sth->driver->closeStmt(m_sth);
 		m_sth = nullptr;
 	}
@@ -41,6 +42,8 @@ void DbStatement::close ()
  */
 DbStatement & DbStatement::bind (const cwt::UniType & param)
 {
+	CWT_ASSERT(m_sth);
+	CWT_ASSERT(m_sth->driver);
 	if (m_sth->driver->bind(*m_sth, m_bindCursor, param)) {
 		++m_bindCursor;
 	}

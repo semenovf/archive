@@ -10,6 +10,8 @@
 
 #endif
 
+#include <cwt/cwt.hpp>
+
 CWT_NS_BEGIN
 
 namespace debby

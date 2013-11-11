@@ -1,0 +1,104 @@
+/*
+ * query.cpp
+ *
+ *  Created on: Nov 8, 2013
+ *      Author: wladt
+ */
+
+#include "query_p.hpp"
+
+CWT_NS_BEGIN
+
+namespace debby
+{
+
+static const cwt::String SelectResultKey    ("result");
+static const cwt::String SelectLimitFromKey ("limit_from");
+static const cwt::String SelectLimitToKey   ("limit_to");
+static const cwt::String SelectDistinctKey  ("distinct");
+
+
+// TODO can/must be DB Engine specific
+static cwt::String __build_select_sql (const Select & q)
+{
+	cwt::String r("SELECT");
+
+	r << ' ' << q.result();
+
+	if (q.isDistinct())
+		r << " DISTINCT";
+
+	uint_t limitFrom;
+	uint_t limitTo;
+
+	q.limit(& limitFrom, & limitTo);
+
+	if (limitFrom || limitTo) {
+		if (limitFrom && limitTo && (limitFrom != limitTo)) {
+			r << " LIMIT " << limitFrom << ", " << limitTo;
+		} else {
+			r << " LIMIT " << CWT_MAX(limitFrom, limitTo);
+		}
+	}
+
+	return r;
+}
+
+Select::Select (const cwt::String & result) : _query()
+{
+	_query.insert(SelectResultKey, result.isEmpty() ? "*" : result);
+}
+
+cwt::String Select::result () const
+{
+	return _query[SelectResultKey].string();
+}
+
+Select & Select::distinct (bool b)
+{
+	_query.insert(SelectDistinctKey, b);
+	return *this;
+}
+
+bool Select::isDistinct () const
+{
+	return _query[SelectDistinctKey].boolean(false);
+}
+
+Select & Select::limit (uint_t from, uint_t to)
+{
+	_query.insert(SelectLimitFromKey, CWT_MIN(from, to));
+	_query.insert(SelectLimitToKey, CWT_MAX(from, to));
+	return *this;
+}
+
+void Select::limit (uint_t * from, uint_t * to) const
+{
+	if (from)
+		*from = _query[SelectLimitFromKey].integer(0);
+
+	if (to)
+		*to = _query[SelectLimitFromKey].integer(0);
+}
+
+
+Row Select::first (DbHandler & /*dbh*/)
+{
+	limit(1,1);
+	cwt::String sql = __build_select_sql (*this);
+	return Row();
+}
+
+Row Select::last (DbHandler & /*dbh*/)
+{
+	limit(1,1);
+	cwt::String sql = __build_select_sql (*this);
+	return Row();
+}
+
+
+} // namespace debby
+
+CWT_NS_END
+
+
