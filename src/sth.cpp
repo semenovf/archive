@@ -15,7 +15,7 @@ namespace debby
 /**
  *
  */
-void DbStatement::close ()
+void Statement::close ()
 {
 	if (m_sth) {
 		CWT_ASSERT(m_sth->driver);
@@ -40,7 +40,7 @@ void DbStatement::close ()
  * @param param
  * @return
  */
-DbStatement & DbStatement::bind (const cwt::UniType & param)
+Statement & Statement::bind (const cwt::UniType & param)
 {
 	CWT_ASSERT(m_sth);
 	CWT_ASSERT(m_sth->driver);

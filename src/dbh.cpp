@@ -17,20 +17,20 @@ CWT_NS_BEGIN
 namespace debby
 {
 
-DbHandler * DbHandler::open (const cwt::String & uri_str)
+DbHandlerPtr DbHandler::open (const cwt::String & uri_str)
 {
 	cwt::Uri uri;
 
 	if (!uri.parse(uri_str)) {
 		cwt::Logger::error(_Fr("Invalid URI specified for DB driver: %s") % uri_str);
-		return nullptr;
+		return DbHandlerPtr();
 	}
 
 	cwt::String debby_name = uri.scheme();
 
 	if (debby_name.isEmpty()) {
 		Logger::error(_Tr("Invalid URI specified for DB driver: DB driver name is empty."));
-		return nullptr;
+		return DbHandlerPtr();
 	}
 
 	debby_name.prepend(cwt::String("cwt-debby-"));
@@ -39,7 +39,7 @@ DbHandler * DbHandler::open (const cwt::String & uri_str)
 	cwt::String dlpath = cwt::Dl::buildDlFileName(debby_name);
 	if (!cwt::Dl::pluginOpen(debby_name, dlpath, & driver)) {
 		cwt::Logger::error(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
-		return nullptr;
+		return DbHandlerPtr();
 	}
 
 	cwt::Vector<cwt::String> userinfo = uri.userinfo().split(":");
@@ -51,10 +51,9 @@ DbHandler * DbHandler::open (const cwt::String & uri_str)
 			, uri.queryItems());
 
 	if (!driverData)
-		return nullptr;
+		return DbHandlerPtr();
 
-	DbHandler * dbh = new DbHandler;
-
+	DbHandlerPtr dbh(new DbHandler);
 	dbh->_dbhData = driverData;
 
 	return dbh;
@@ -87,17 +86,17 @@ void DbHandler::close ()
 	}
 }
 
-DbStatement * DbHandler::prepare (const cwt::String & sql)
+StatementPtr DbHandler::prepare (const cwt::String & sql)
 {
 	DbStatementData * d = _dbhData->driver->prepare(*_dbhData, sql);
 	if (d) {
-		DbStatement * sth = new DbStatement;
+		StatementPtr sth(new Statement);
 		sth->m_sth = d;
 		sth->m_bindCursor = 0; // reset counter of bind parameters
 		return sth;
 	}
 
-	return nullptr;
+	return StatementPtr();
 }
 
 } // namespace debby

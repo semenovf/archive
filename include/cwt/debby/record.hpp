@@ -20,29 +20,34 @@ CWT_NS_BEGIN
 namespace debby
 {
 
+class Attribute;
 class Record;
+class Schema;
+
+typedef Record Table;
+typedef Attribute Field;
 
 class DLL_API Attribute
 {
 	typedef cwt::Map<cwt::String, cwt::UniType> MetaType;
 
-public:
-	static const bool Unsigned = true;
-	static const bool Signed = false;
-
-private:
 	Attribute () {}
-	Attribute (const cwt::String & name, const cwt::UniType & value);
+	Attribute (const Attribute & other) : _value(other._value), _meta(other._meta)  {}
+	Attribute & operator = (const Attribute & other) { _value = other._value; _meta = other._meta; return *this; }
+
 	bool isBooleanSet (const cwt::String & optname) const;
 	bool hasOpt       (const cwt::String & optname) const;
 
 public:
-	const String & name () const { return _name; }
-	bool isInvalid() const { return _name.isEmpty(); }
+	static const bool Unsigned = true;
+	static const bool Signed = false;
 
+	Attribute & setPk       (bool b = true);
+	Attribute & setAutoinc  (uint_t n = 1);
 	Attribute & setNullable (bool b = true);
 	Attribute & setUnique   (bool b = true);
 	Attribute & setDefault  (const cwt::UniType & defaultValue);
+	Attribute & setValue    (const cwt::UniType & value) { _value = value; return *this; }
 
 	bool isPk () const;
 	bool isAutoinc  () const;
@@ -55,10 +60,9 @@ public:
 	cwt::UniType defaultValue () const;
 	cwt::UniType::TypeEnum type () const;
 
-	Attribute & operator = (const cwt::UniType & value) { _value = value; return *this; }
+	Attribute & operator = (const cwt::UniType & value) { return setValue(value); }
 
 private:
-	cwt::String  _name;
 	cwt::UniType _value;
 	MetaType     _meta;
 
@@ -68,18 +72,23 @@ private:
 class DLL_API Record
 {
 	typedef cwt::Map<cwt::String, Attribute *> AttributeMap;
+	enum {
+		  SthForCreate
+		, SthForUpdate
+		, SthForDelete
+	};
 
-public:
-	static const cwt::String PkName;
-
-protected:
+	Attribute & add (const cwt::String & name);
 	cwt::String buildSqlForCreate () const;
+	cwt::String buildSqlForLoad () const;
+	static Record * load (DbHandler & dbh, const cwt::String & name);
+
+	Record () : _name() {}
+	Record (const cwt::String & name) : _name(name) {}
 
 public:
-	Record();
-	Record (const cwt::String & name, cwt::UniType::TypeEnum pkType = cwt::UniType::IntegerValue);
 	~Record ();
-	const String & name () const { return _name; }
+	const String & name      () const { return _name; }
 	Attribute & addBoolean   (const cwt::String & name);
 	Attribute & addInteger   (const cwt::String & name, size_t size = 0, bool isUnsigned = false);
 	Attribute & addDecimal   (const cwt::String & name, size_t size = 0, size_t decimals = 0, bool isUnsigned = false);
@@ -90,46 +99,44 @@ public:
 	Attribute & addDate      (const cwt::String & name, bool isTimeStamp = false);
 	Attribute & addTime      (const cwt::String & name, bool isTimeStamp = false);
 	Attribute & addDateTime  (const cwt::String & name, bool isTimeStamp = false);
-	Attribute & addRef       (const cwt::String & name, const Record & refrecord);
-
-	bool isInvalid() const { return _name.isEmpty(); }
-	const Attribute & pk () const { return _pk; }
-	void setAutoinc (uint_t n = 1);
-	uint_t autoinc () const;
+	Attribute & addFromAttr  (const cwt::String & name, const Attribute & attr);
 
 	size_t count () const { return _attrs.size(); }
 	cwt::Vector<cwt::String> names() const { return _attrs.keys(); }
+
 	const Attribute & operator [] (const cwt::String & name) const;
-	Attribute & operator [] (const cwt::String & name);
+	Attribute &       operator [] (const cwt::String & name);
 
 	bool create (DbHandler & dbh);
-/*
-	bool load();
+	/*
+		bool update();
+		bool destroy();
+	*/
 
-	bool update();
-	bool del();
+	/*
+	static RecordPtr findBy (DbHandler & dbh, const cwt::String & name
+			, const cwt::String & a, const cwt::UniType & v);
+	static RecordPtr findBy (DbHandler & dbh, const cwt::String & name
+			, const cwt::String & a0, const cwt::UniType & v0
+			, const cwt::String & a1, const cwt::UniType & v1);
+	static RecordPtr findBy (DbHandler & dbh, const cwt::String & name
+			, const cwt::String & a0, const cwt::UniType & v0
+			, const cwt::String & a1, const cwt::UniType & v1
+			, const cwt::String & a2, const cwt::UniType & v3);
+*/
+/*
+	static RecordPtr findBy (DbHandler & dbh, const cwt::String & name
+			, int argc, const std::pair<cwt::String, cwt::UniType> args[]);
 */
 
 private:
-	cwt::String  _name;
-	Attribute    _pk;
-	Attribute    _dummy;
-	AttributeMap _attrs;
-	DbStatement  * _sthPool[4]; // 0 - for load, 1 - for create, 2 - for update, 3 - for delete
+	cwt::String   _name;
+	Attribute     _dummy;
+	AttributeMap  _attrs;
+	StatementPtr  _sthPool[3]; // 0 - for create, 1 - for update, 2 - for delete
+
+	friend class Schema;
 };
-
-
-typedef Record Table;
-typedef Attribute Field;
-
-
-inline Record::Record()
-    : _name()
-	, _pk()
-{
-	_sthPool[0] = _sthPool[1] = _sthPool[2] = _sthPool[3] = nullptr;
-}
-
 
 /*
 typedef cwt::UniType                 Value;
@@ -202,30 +209,7 @@ private:
 	Value       _dummy;
 	cwt::shared_ptr<DbStatement> _sth;
 };
-
-class DLL_API Schema
-{
-public:
-	Schema();
-
-	Table add (const cwt::String & name);
-
-	bool deploy(const cwt::String & uri);
-	bool deploy(DbHandler & dbh);
-	bool drop(const cwt::String & uri);
-	bool drop(DbHandler & dbh);
-
-	const JsonValue & json () const { return _schema; }
-	uint_t version (ushort_t * major = nullptr, ushort_t * minor = nullptr) const;
-
-	size_t count () const;
-	cwt::Vector<cwt::String> tableNames() const;
-	Table table(const cwt::String & name) const;
-
-private:
-	Json _schema;
-};*/
-
+*/
 } // namespace debby
 
 CWT_NS_END

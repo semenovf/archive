@@ -24,9 +24,28 @@ struct DbHandlerData   { DbDriver * driver; };
 struct DbStatementData { DbDriver * driver; };
 struct DbColumnMeta
 {
-	cwt::String            column_name;
-	cwt::UniType::TypeEnum column_type;
-	cwt::String            native_type;
+	DbColumnMeta()
+		: column_type(cwt::UniType::NullValue)
+		, has_pk            (false, false)
+		, has_autoinc       (false, 0)
+		, has_not_null      (false, true)
+		, has_default_value (false, cwt::UniType())
+		, has_size          (false, 0)
+		, has_decimals      (false, 0)
+		, has_unsigned      (false, false)
+		, has_timestamp     (false, false)
+	{}
+	cwt::String             column_name;
+	cwt::UniType::TypeEnum  column_type;
+	cwt::String             native_type;
+	std::pair<bool, bool>   has_pk;
+	std::pair<bool, uint_t> has_autoinc; // > 0 if column is autoincremented
+	std::pair<bool, bool>   has_not_null; // has not_null value, value set in 'not_null' property
+	std::pair<bool, cwt::UniType> has_default_value;
+	std::pair<bool, size_t> has_size;
+	std::pair<bool, size_t> has_decimals;
+	std::pair<bool, bool>   has_unsigned;
+	std::pair<bool, bool>   has_timestamp;
 };
 
 struct DbDriver
