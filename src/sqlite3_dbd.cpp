@@ -36,7 +36,7 @@ static bool              s3_dbd_set_auto_commit (DbHandlerData & dbh, bool on);
 static bool              s3_dbd_auto_commit     (DbHandlerData & dbh);
 static long_t            s3_dbd_errno           (DbHandlerData & dbh);
 //static bool              s3_dbd_query           (DbHandlerData & dbh, const String & sql);
-static DbStatementData * s3_dbd_prepare        (DbHandlerData & dbh, const String & sql);
+static DbStatementData * s3_dbd_prepare         (DbHandlerData & dbh, const String & sql);
 static ulong_t           s3_dbd_affected_rows   (DbHandlerData & dbh);
 static ulong_t 			 s3_dbd_last_id         (DbHandlerData & dbh);
 static Vector<String>    s3_dbd_tables          (DbHandlerData & dbh);
@@ -354,7 +354,13 @@ Vector<String> s3_dbd_tables (DbHandlerData & dbh)
 		if (s3_dbd_stmt_exec(*sth)) {
 			Vector<UniType> row;
 			while (s3_dbd_stmt_fetch_row_array (*sth, row)) {
-				r.append(row[0].toString());
+				String table = row[0].toString();
+
+				// ignore system tables
+				if (table == "sqlite_sequence")
+					continue;
+
+				r.append(table);
 				row.clear();
 			}
 		}
@@ -439,26 +445,60 @@ static UniType::TypeEnum __map_column_type (const String & ct)
 	return UniType::BlobValue;
 }
 
+// AUTOINCREMENT only applies to primary keys
+//
 bool s3_dbd_meta (DbHandlerData & dbh, const String & table, Vector<DbColumnMeta> & meta)
 {
-	DbStatementData * sth = s3_dbd_prepare(dbh, SafeFormat("PRAGMA table_info(%s)") % table);
+	bool r = false;
+	cwt::String sqlForMeta;
+	cwt::String sqlForAutoinc;
 
-	if (sth) {
-		if (s3_dbd_stmt_exec(*sth)) {
+	sqlForMeta << "PRAGMA table_info(" << table << ")";
+	sqlForAutoinc << "SELECT 1 FROM sqlite_master WHERE tbl_name=\""
+			<< table
+			<< "\" AND sql LIKE \"%AUTOINCREMENT%\"";
+
+	DbStatementData * sthForMeta    = s3_dbd_prepare(dbh, sqlForMeta);
+	DbStatementData * sthForAutoinc = s3_dbd_prepare(dbh, sqlForAutoinc);
+
+	if (sthForMeta && sthForAutoinc) {
+		if (s3_dbd_stmt_exec(*sthForMeta) && s3_dbd_stmt_exec(*sthForAutoinc)) {
+
+			Vector<UniType> autoincRow;
+			uint_t autoinc = 0;
+			if (s3_dbd_stmt_fetch_row_array (*sthForAutoinc, autoincRow))
+				autoinc = 1;
+
 			Map<String, UniType> row;
-			while (s3_dbd_stmt_fetch_row_hash (*sth, row)) {
+			while (s3_dbd_stmt_fetch_row_hash (*sthForMeta, row)) {
 				DbColumnMeta m;
-				m.column_name = row["name"].toString();
-				m.native_type = row["type"].toString();
-				m.column_type = __map_column_type(m.native_type);
+				m.column_name       = row["name"].toString();
+				m.native_type       = row["type"].toString();
+				m.column_type       = __map_column_type(m.native_type);
+
+				m.has_pk.first      = true;
+				m.has_pk.second     = row["pk"].toBool();
+
+				m.has_autoinc.first  = true;
+				m.has_autoinc.second = autoinc;
+
+				m.has_not_null.first  = true;
+				m.has_not_null.second =  row["notnull"].toBool();
+
+				m.has_default_value.first  = true;
+				m.has_default_value.second = row["dflt_value"];
+
 				meta.append(m);
 				row.clear();
 			}
+
+			r = true;
 		}
-		s3_dbd_stmt_close(sth);
-		return true;
+		s3_dbd_stmt_close(sthForMeta);
+		s3_dbd_stmt_close(sthForAutoinc);
 	}
-	return false;
+
+	return r;
 }
 
 
@@ -580,9 +620,6 @@ bool s3_dbd_stmt_fetch_row_hash (DbStatementData & sth, Map<String, UniType> & r
 		int ncols = sqlite3_column_count(s3_sth->sth_native);
 		for (int i = 0; i < ncols; ++i) {
 			String column_name (sqlite3_column_name(s3_sth->sth_native, i));
-
-			const char * cn = column_name.c_str(); // TODO remove this lines
-			CWT_UNUSED(cn);
 
 			switch (sqlite3_column_type(s3_sth->sth_native, i)) {
 			case SQLITE_INTEGER:

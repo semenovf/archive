@@ -62,7 +62,7 @@ void test_sqlite3_collation()
 			"    d COLLATE NOCASE"   /* collating sequence NOCASE */
 			")"));
 
-	shared_ptr<DbStatement> sth(dbh->prepare("INSERT INTO t1 VALUES(?,?,?,?,?)"));
+	StatementPtr sth = dbh->prepare("INSERT INTO t1 VALUES(?,?,?,?,?)");
 	CWT_TEST_FAIL(sth.get());
 
 	sth->bind(int(1)).bind(String("abc")).bind(String("abc")).bind(String("abc  ")).bind(String("abc"));
@@ -80,7 +80,7 @@ void test_sqlite3_collation()
 	/* Text comparison a=b is performed using the BINARY collating sequence. */
 	// SELECT x FROM t1 WHERE a = b ORDER BY x;
 	// --result 1 2 3
-	sth.reset(dbh->prepare("SELECT x FROM t1 WHERE a = b ORDER BY x"));
+	sth = dbh->prepare("SELECT x FROM t1 WHERE a = b ORDER BY x");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -96,7 +96,7 @@ void test_sqlite3_collation()
 	/* Text comparison a=b is performed using the RTRIM collating sequence. */
 	// SELECT x FROM t1 WHERE a = b COLLATE RTRIM ORDER BY x;
 	// --result 1 2 3 4
-	sth.reset(dbh->prepare("SELECT x FROM t1 WHERE a = b COLLATE RTRIM ORDER BY x"));
+	sth = dbh->prepare("SELECT x FROM t1 WHERE a = b COLLATE RTRIM ORDER BY x");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -113,7 +113,7 @@ void test_sqlite3_collation()
 	/* Text comparison d=a is performed using the NOCASE collating sequence. */
 	// SELECT x FROM t1 WHERE d = a ORDER BY x;
 	// --result 1 2 3 4
-	sth.reset(dbh->prepare("SELECT x FROM t1 WHERE d = a ORDER BY x"));
+	sth = dbh->prepare("SELECT x FROM t1 WHERE d = a ORDER BY x");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -130,7 +130,7 @@ void test_sqlite3_collation()
 	/* Text comparison a=d is performed using the BINARY collating sequence. */
 	// SELECT x FROM t1 WHERE a = d ORDER BY x;
 	// --result 1 4
-	sth.reset(dbh->prepare("SELECT x FROM t1 WHERE a = d ORDER BY x"));
+	sth = dbh->prepare("SELECT x FROM t1 WHERE a = d ORDER BY x");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -145,7 +145,7 @@ void test_sqlite3_collation()
 	/* Text comparison 'abc'=c is performed using the RTRIM collating sequence. */
 	// SELECT x FROM t1 WHERE 'abc' = c ORDER BY x;
 	// --result 1 2 3
-	sth.reset(dbh->prepare("SELECT x FROM t1 WHERE 'abc' = c ORDER BY x"));
+	sth = dbh->prepare("SELECT x FROM t1 WHERE 'abc' = c ORDER BY x");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -161,7 +161,7 @@ void test_sqlite3_collation()
 	/* Text comparison c='abc' is performed using the RTRIM collating sequence. */
 	// SELECT x FROM t1 WHERE c = 'abc' ORDER BY x;
 	// --result 1 2 3
-	sth.reset(dbh->prepare("SELECT x FROM t1 WHERE c = 'abc' ORDER BY x"));
+	sth = dbh->prepare("SELECT x FROM t1 WHERE c = 'abc' ORDER BY x");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -177,7 +177,7 @@ void test_sqlite3_collation()
 	 ** 'abc', 'ABC', and 'Abc' are placed in the same group). */
 	// SELECT count(*) FROM t1 GROUP BY d ORDER BY 1;
 	//--result 4
-	sth.reset(dbh->prepare("SELECT count(*) FROM t1 GROUP BY d ORDER BY 1"));
+	sth = dbh->prepare("SELECT count(*) FROM t1 GROUP BY d ORDER BY 1");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -191,7 +191,7 @@ void test_sqlite3_collation()
 	** 'ABC' and 'Abc' form different groups */
 	// SELECT count(*) FROM t1 GROUP BY (d || '') ORDER BY 1;
 	// --result 1 1 2
-	sth.reset(dbh->prepare("SELECT count(*) FROM t1 GROUP BY (d || '') ORDER BY 1"));
+	sth = dbh->prepare("SELECT count(*) FROM t1 GROUP BY (d || '') ORDER BY 1");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -206,7 +206,7 @@ void test_sqlite3_collation()
 	/* Sorting or column c is performed using the RTRIM collating sequence. */
 	// SELECT x FROM t1 ORDER BY c, x;
 	// --result 4 1 2 3
-	sth.reset(dbh->prepare("SELECT x FROM t1 ORDER BY c, x"));
+	sth = dbh->prepare("SELECT x FROM t1 ORDER BY c, x");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -222,7 +222,7 @@ void test_sqlite3_collation()
 	/* Sorting of (c||'') is performed using the BINARY collating sequence. */
 	// SELECT x FROM t1 ORDER BY (c||''), x;
 	// --result 4 2 3 1
-	sth.reset(dbh->prepare("SELECT x FROM t1 ORDER BY (c||''), x"));
+	sth = dbh->prepare("SELECT x FROM t1 ORDER BY (c||''), x");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -238,7 +238,7 @@ void test_sqlite3_collation()
 	/* Sorting of column c is performed using the NOCASE collating sequence. */
 	// SELECT x FROM t1 ORDER BY c COLLATE NOCASE, x;
 	// --result 2 4 3 1
-	sth.reset(dbh->prepare("SELECT x FROM t1 ORDER BY c COLLATE NOCASE, x"));
+	sth = dbh->prepare("SELECT x FROM t1 ORDER BY c COLLATE NOCASE, x");
 	CWT_TEST_FAIL(sth.get());
 	CWT_TEST_OK(sth->exec());
 
@@ -257,7 +257,7 @@ void test_sqlite3_collation()
 
 void test_columns()
 {
-	shared_ptr<DbHandler> dbh(DbHandler::open("sqlite3:///tmp/test.db?mode=rwc"));
+	DbHandlerPtr dbh(DbHandler::open("sqlite3:///tmp/test.db?mode=rwc"));
 
 	if(dbh->tableExists("t2")) {
 		dbh->query("DROP TABLE IF EXISTS t2");

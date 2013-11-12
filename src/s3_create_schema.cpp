@@ -31,10 +31,10 @@ struct SqlTypeAffinity : public cwt::Map<cwt::UniType::TypeEnum, cwt::String>
 
 SqlTypeAffinity SqlTypeAffinity::affinity;
 
-static String __s3_column_def (const Attribute & attr)
+static String __s3_column_def (const cwt::String & name, const Attribute & attr)
 {
 	cwt::String r;
-	r << attr.name()
+	r << name
 	  << " "
 	  << SqlTypeAffinity::affinity.value(attr.type(), cwt::String());
 
@@ -84,19 +84,21 @@ bool s3_create_schema (DbHandlerData & dbh, const Schema & schema)
 	Vector<cwt::String> tableNames = schema.names();
 	size_t ntables = tableNames.size();
 
-	for (size_t i = 0; i < ntables; ++i) {
-		const Table & table = schema[tableNames[i]];
+	for (size_t t = 0; t < ntables; ++t) {
+		const Table & table = schema[tableNames[t]];
 		cwt::String sql("CREATE TABLE IF NOT EXISTS ");
-		sql << tableNames[i] << " (";
+		sql << tableNames[t] << " (";
 
 		Vector<cwt::String> fieldNames = table.names();
 		size_t nfields = fieldNames.size();
+		bool needComma = false;
 
-		//if (table.hasPk())
-		sql << __s3_column_def(table.pk());
-
-		for (size_t f = 0; f < nfields; ++f)
-			sql << ", " << __s3_column_def(table[fieldNames[f]]);
+		for (size_t f = 0; f < nfields; ++f) {
+			if (needComma)
+				sql << ", ";
+			sql << __s3_column_def(fieldNames[f], table[fieldNames[f]]);
+			needComma = true;
+		}
 
 		sql << ")";
 
