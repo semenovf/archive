@@ -13,10 +13,9 @@ SOURCES += ../../sqlite3/*.c
 SOURCES += ../../src/*.cpp
 
 unix {
+#    QMAKE_CFLAGS += -pg
 #    QMAKE_CXXFLAGS += -pg
-#    LIBS += -pg
     LIBS += -lcwt
-#    LIBS += -lcwt-fs
 }
 
 win32 {
