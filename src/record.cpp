@@ -118,6 +118,41 @@ cwt::UniType::TypeEnum Attribute::type () const
 	return cwt::UniType::fromStringType(_meta[TypeKey].string());
 }
 
+cwt::String Attribute::stringifyValue(const Attribute & attr)
+{
+	String r;
+
+	switch(attr.type()) {
+	case cwt::UniType::StringValue:
+		r << '"' << attr._value.toString() << '"';
+		break;
+
+	case cwt::UniType::BoolValue:
+	case cwt::UniType::IntegerValue:
+	case cwt::UniType::FloatValue:
+	case cwt::UniType::DoubleValue:
+		r << attr._value.toString();
+		break;
+
+	case cwt::UniType::TimeValue:
+	case cwt::UniType::DateValue:
+	case cwt::UniType::DateTimeValue:
+		// TODO how to represent the date/time values - number or string?
+		r << attr._value.toString();
+		break;
+
+	case cwt::UniType::BlobValue:
+	case cwt::UniType::ObjectValue:
+	case cwt::UniType::NullValue:
+	default:
+		// assert later
+		break;
+	}
+
+	return r;
+}
+
+
 Record::~Record ()
 {
 	AttributeMap::iterator it = _attrs.begin();

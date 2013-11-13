@@ -62,6 +62,8 @@ public:
 
 	Attribute & operator = (const cwt::UniType & value) { return setValue(value); }
 
+	static cwt::String stringifyValue(const Attribute & attr);
+
 private:
 	cwt::UniType _value;
 	MetaType     _meta;
@@ -75,16 +77,17 @@ class DLL_API Record
 	enum {
 		  SthForCreate
 		, SthForUpdate
-		, SthForDelete
+		, SthForDestroy
 	};
 
 	Attribute & add (const cwt::String & name);
 	cwt::String buildSqlForCreate () const;
+	cwt::String buildSqlForDestroy (); // not const
 	cwt::String buildSqlForLoad () const;
 	static Record * load (DbHandler & dbh, const cwt::String & name);
 
-	Record () : _name() {}
-	Record (const cwt::String & name) : _name(name) {}
+	Record () : _cachedPk(cwt::String(), nullptr), _name() {}
+	Record (const cwt::String & name) : _cachedPk(cwt::String(), nullptr), _name(name) {}
 
 public:
 	~Record ();
@@ -106,11 +109,12 @@ public:
 
 	const Attribute & operator [] (const cwt::String & name) const;
 	Attribute &       operator [] (const cwt::String & name);
+	bool containes (const cwt::String & name) { return _attrs.contains(name); }
 
 	bool create (DbHandler & dbh);
+	bool destroy (DbHandler & dbh);
 	/*
 		bool update();
-		bool destroy();
 	*/
 
 	/*
@@ -130,6 +134,7 @@ public:
 */
 
 private:
+	std::pair<cwt::String, Attribute *> _cachedPk;
 	cwt::String   _name;
 	Attribute     _dummy;
 	AttributeMap  _attrs;

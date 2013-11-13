@@ -39,6 +39,7 @@ public:
 
 	const Record & operator [] (const cwt::String & name) const;
 	Record & operator [] (const cwt::String & name);
+	bool containes (const cwt::String & name) { return _schema.contains(name); }
 
 	bool load (DbHandler & dbh);
 

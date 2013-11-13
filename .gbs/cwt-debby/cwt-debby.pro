@@ -11,6 +11,7 @@ INCLUDEPATH += ../../../cwt-uri/include
 SOURCES += ../../src/*.cpp
 
 unix {
+#    QMAKE_CXXFLAGS += -pg
     LIBS += -lcwt
     LIBS += -lcwt-io
     LIBS += -lcwt-json

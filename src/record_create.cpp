@@ -51,11 +51,10 @@ bool Record::create (DbHandler & dbh)
 	if (!_sthPool[SthForCreate]) {
 		cwt::String sql = buildSqlForCreate();
 		_sthPool[SthForCreate] = dbh.prepare(sql);
+
+		if (!_sthPool[SthForCreate])
+			return false;
 	}
-
-	if (!_sthPool[SthForCreate])
-		return false;
-
 
 	AttributeMap::const_iterator it = _attrs.cbegin();
 	AttributeMap::const_iterator itEnd = _attrs.cend();
