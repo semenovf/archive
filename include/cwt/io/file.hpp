@@ -46,7 +46,7 @@ protected:
 public:
 	File();
 	File(int fd);
-	File(const String & path, int32_t oflags);
+	File(const String & path, int32_t oflags = ReadWrite);
 	virtual ~File() { close(); }
 	bool open(const String & path, int32_t oflags = ReadWrite);
 
