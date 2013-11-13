@@ -290,6 +290,18 @@ long_t UniType::toLong(bool * ok) const
 		tmpOk = true;
 		break;
 
+	case TimeValue:
+		r = long_t(m_d->d.time_val->millis());
+		break;
+
+	case DateValue:
+		r = long_t(m_d->d.date_val->julianDay());
+		break;
+
+	case DateTimeValue:
+		r = long_t(m_d->d.datetime_val->millisSinceEpoch());
+		break;
+
 	default:
 		break;
 	}
@@ -328,6 +340,18 @@ ulong_t UniType::toULong(bool * ok) const
 		tmpOk = true;
 		break;
 
+	case TimeValue:
+		r = ulong_t(m_d->d.time_val->millis());
+		break;
+
+	case DateValue:
+		r = ulong_t(m_d->d.date_val->julianDay());
+		break;
+
+	case DateTimeValue:
+		r = ulong_t(m_d->d.datetime_val->millisSinceEpoch());
+		break;
+
 	default:
 		break;
 	}
@@ -361,9 +385,19 @@ float UniType::toFloat(bool * ok) const
 		break;
 	case UniType::BoolValue:
 	case UniType::LongValue:
-		if ((double(m_d->d.long_val) >= CWT_FLOAT_MIN && double(m_d->d.long_val) <= CWT_FLOAT_MAX)) {
-			r = float(m_d->d.long_val);
-			tmpOk = true;
+	case UniType::TimeValue:
+	case UniType::DateValue:
+	case UniType::DateTimeValue: {
+		tmpOk = true;
+		double v = double(this->toLong(& tmpOk));
+
+		if (tmpOk) {
+			if (v >= double(CWT_FLOAT_MIN) && v <= double(CWT_FLOAT_MAX)) {
+				r = float(v);
+			} else {
+				tmpOk = false;
+			}
+		}
 		}
 		break;
 
@@ -398,8 +432,10 @@ double UniType::toDouble(bool *ok) const
 		break;
 	case UniType::BoolValue:
 	case UniType::LongValue:
-		r = double(m_d->d.long_val);
-		tmpOk = true;
+	case UniType::TimeValue:
+	case UniType::DateValue:
+	case UniType::DateTimeValue:
+		r = double(this->toLong(&tmpOk));
 		break;
 
 	default:
