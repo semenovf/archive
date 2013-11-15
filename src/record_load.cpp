@@ -27,64 +27,27 @@ Record * Record::load (DbHandler & dbh, const cwt::String & name)
 	Record * r = new Record;
 
 	for (; itMeta != itMetaEnd; ++itMeta) {
-		Attribute * pattr = nullptr;
+		Json jsonMeta;
+		jsonMeta.insert("type"      , cwt::UniType::typeToString(itMeta->column_type));
+		jsonMeta.insert("pk"        , itMeta->has_pk.first ? itMeta->has_pk.second : false);
+		jsonMeta.insert("nullable"  , itMeta->has_not_null.first ? !itMeta->has_not_null.second : false);
+		jsonMeta.insert("unique"    , itMeta->has_unique.first ? !itMeta->has_unique.second : false);
+		jsonMeta.insert("unsigned"  , itMeta->has_unsigned.first ? itMeta->has_unsigned.second : false);
+		jsonMeta.insert("timestamp" , itMeta->has_timestamp.first ? itMeta->has_timestamp.second : false);
+		jsonMeta.insert("size"      , itMeta->has_size.first ? size_t(itMeta->has_size.second) : 0);
+		jsonMeta.insert("autoinc"   , itMeta->has_autoinc.first ? itMeta->has_autoinc.second : 0);
 
-		switch (itMeta->column_type) {
-			case cwt::UniType::BoolValue:
-				pattr = & r->addBoolean(itMeta->column_name);
-				break;
-			case cwt::UniType::IntegerValue:
-				pattr = & r->addInteger(itMeta->column_name
-						, itMeta->has_size.first ? itMeta->has_size.second : 0
-						, itMeta->has_unsigned.first ? itMeta->has_unsigned.second : false);
-				break;
-			case cwt::UniType::FloatValue:
-				pattr = & r->addFloat(itMeta->column_name
-						, itMeta->has_unsigned.first ? itMeta->has_unsigned.second : false);
-				break;
-			case cwt::UniType::DoubleValue:
-				pattr = & r->addDouble(itMeta->column_name
-						, itMeta->has_unsigned.first ? itMeta->has_unsigned.second : false);
-				break;
-			case cwt::UniType::StringValue:
-				pattr = & r->addString(itMeta->column_name
-						, itMeta->has_size.first ? itMeta->has_size.second : 0);
-				break;
-			case cwt::UniType::BlobValue:
-				pattr = & r->addBlob(itMeta->column_name);
-				break;
-			case cwt::UniType::TimeValue:
-				pattr = & r->addTime(itMeta->column_name
-						, itMeta->has_timestamp.first ? itMeta->has_timestamp.second : false);
-				break;
-			case cwt::UniType::DateValue:
-				pattr = & r->addDate(itMeta->column_name
-						, itMeta->has_timestamp.first ? itMeta->has_timestamp.second : false);
-				break;
-			case cwt::UniType::DateTimeValue:
-				pattr = & r->addDateTime(itMeta->column_name
-						, itMeta->has_timestamp.first ? itMeta->has_timestamp.second : false);
-				break;
-			case cwt::UniType::ObjectValue:
-			case cwt::UniType::NullValue:
-			default:
-				// assert later
-				break;
+		if (itMeta->has_default_value.first) {
+			cwt::String v(itMeta->has_default_value.second.toString());
+
+			if (itMeta->column_type == cwt::UniType::StringValue) {
+				v.prepend(1, '"');
+				v.append(1, '"');
+			}
+			jsonMeta.insert("default", v);
 		}
 
-		CWT_ASSERT(pattr);
-
-		if (itMeta->has_pk.first)
-			pattr->setPk(itMeta->has_pk.second);
-
-		if (itMeta->has_autoinc.first)
-			pattr->setAutoinc(itMeta->has_autoinc.second);
-
-		if (itMeta->has_not_null.first)
-			pattr->setNullable(!itMeta->has_not_null.second);
-
-		if (itMeta->has_default_value.first && !pattr->isNullable())
-			pattr->setDefault(itMeta->has_default_value.second);
+		r->addFromJson (itMeta->column_name, jsonMeta);
 	}
 
 	return r;

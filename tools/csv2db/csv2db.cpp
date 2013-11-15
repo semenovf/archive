@@ -22,10 +22,6 @@
  *  , "skip_lines"     : 1               // skip lines in CSV file before read records
  *  , "endline"        : "\\n"           // end lines, may be an array
  *  , "columns_num"    : 4               // expected number of columns in the source
- *
- *
- *  // types: bool | boolean, int | integer, string, float, double, blob, time, date, datetime
- *
  *  , "map"            : [               // mapping CSV fields into SQL fields
  *        {}                             // ignore column (no mapping)
  *  	, { "attr" : "code", "type": "string", "pk" : true }
@@ -45,62 +41,14 @@ static bool init_table(cwt::debby::Table & table, const cwt::JsonValue::array_ty
 			return false;
 		}
 
-		cwt::JsonValue & spec =  *mapping[i];
+		cwt::JsonValue & spec = *mapping[i];
 
 		// skip column
 		if (spec.size() == 0 || spec["attr"].isInvalid())
 			continue;
 
 		cwt::String fieldName = spec["attr"].string();
-		cwt::String typeStr   = spec["type"].string("int");
-
-		cwt::debby::Field * field = nullptr;
-
-		if (typeStr.startsWith("bool"))
-			field = & table.addBoolean(fieldName);
-
-		else if (typeStr.startsWith("int"))
-			field = & table.addInteger(fieldName
-				, spec["size"].integer(0)
-				, spec["unsigned"].boolean(false));
-
-		else if (typeStr.startsWith("float"))
-			field = & table.addFloat(fieldName
-				, spec["unsigned"].boolean(false));
-
-		else if (typeStr.startsWith("double"))
-			field = & table.addDouble(fieldName
-				, spec["unsigned"].boolean(false));
-
-		else if (typeStr.startsWith("str"))
-			field = & table.addString(fieldName
-				, spec["size"].integer(0));
-
-		else if (typeStr.startsWith("bin") || typeStr == "blob")
-			field = & table.addBlob(fieldName);
-
-		else if (typeStr == "time")
-			field = & table.addTime(fieldName
-				, spec["timestamp"].boolean(false));
-
-		else if (typeStr == "date")
-			field = & table.addDate(fieldName
-				, spec["timestamp"].boolean(false));
-
-		else if (typeStr == "datetime")
-			field = & table.addDateTime(fieldName
-				, spec["timestamp"].boolean(false));
-
-		if (!field) {
-			cwt::Logger::error(_Tr("Unknown or invalid field type"));
-			return false;
-		}
-
-		field->setPk(spec["pk"].boolean(false));
-		field->setAutoinc(spec["autoinc"].integer(0));
-		field->setNullable(spec["nullable"].boolean(false));
-		field->setUnique(spec["unique"].boolean(false));
-		field->setDefault(spec["default"].value());
+		table.addFromJson(fieldName, spec);
 	}
 
 	return true;
@@ -110,9 +58,15 @@ static bool init_table(cwt::debby::Table & table, const cwt::JsonValue::array_ty
 bool Csv2DbContext::convert (const cwt::Json & policy
 		, cwt::CsvReader & csvreader
 		, cwt::debby::DbHandler & dbh
-		, cwt::debby::Schema & schema
 		, const cwt::String & tableName)
 {
+
+	cwt::debby::Schema schema;
+
+	if (!schema.load(dbh)) {
+		cwt::Logger::error(_Tr("Failed to load schema"));
+		return false;
+	}
 
 	if (schema.containes(tableName)) {
 		cwt::Logger::error(_Fr("%s: table already exists") % tableName);
@@ -164,34 +118,33 @@ bool Csv2DbContext::convert (const cwt::Json & policy
 	}
 
 	cwt::JsonValue::array_type mapping = policy["map"].array();
-	size_t mappingSize = mapping.size();
-
 	cwt::debby::Table & table = schema.add(tableName);
 
 	if (!init_table(table, mapping))
 		return false;
 
+	size_t nfields = mapping.size(); // actual number of fields
+
 	dbh.begin();
 
 	while (!(csvrecord = csvreader.readRecord()).isEmpty()) {
 		++line;
+		CWT_TRACE(cwt::String(_F("columns = %u") % csvrecord.size()).c_str());
 		if (csvrecord.size() != ncolumns) {
-			cwt::Logger::error(_Fr("Incomplete number of columns (expected %u) at %u")
-					% ncolumns
-					% line);
+			cwt::Logger::error(_Fr("Incomplete number of columns at line %u, expected %u")
+					% line
+					% ncolumns);
 			return false;
 		}
 
-		country["code"]      = csvRecord[1];
-		country["name"]      = csvRecord[2];
-/*
-		country["latitude"]  = csvRecord[3];
-		country["longitude"] = csvRecord[4];
-*/
-		country["currency"]  = csvRecord[5];
-		country["timezone"]  = csvRecord[6];
+		for (size_t i = 0; i < ncolumns && i < nfields; ++i) {
+			if (mapping[i]->size() > 0) {
+				cwt::String attrName = (*mapping[i])["attr"].string(); // not null, already checked by 'init_table'
+				table[attrName] = csvrecord[i];
+			}
+		}
 
-		if (!country.create(dbh)) {
+		if (!table.create(dbh)) {
 			dbh.rollback();
 			return false;
 		}
@@ -199,7 +152,7 @@ bool Csv2DbContext::convert (const cwt::Json & policy
 	}
 	dbh.commit();
 
-
+	return true;
 }
 
 

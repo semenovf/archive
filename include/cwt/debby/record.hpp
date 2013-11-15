@@ -11,6 +11,7 @@
 #include <cwt/string.hpp>
 #include <cwt/map.hpp>
 #include <cwt/unitype.hpp>
+#include <cwt/json.hpp>
 #include <cwt/debby.hpp>
 #include <cwt/debby/dbh.hpp>
 #include <cwt/debby/sth.hpp>
@@ -103,6 +104,7 @@ public:
 	Attribute & addTime      (const cwt::String & name, bool isTimeStamp = false);
 	Attribute & addDateTime  (const cwt::String & name, bool isTimeStamp = false);
 	Attribute & addFromAttr  (const cwt::String & name, const Attribute & attr);
+	Attribute & addFromJson  (const cwt::String & name, const cwt::JsonValue & meta);
 
 	size_t count () const { return _attrs.size(); }
 	cwt::Vector<cwt::String> names() const { return _attrs.keys(); }

@@ -20,7 +20,6 @@ public:
 	bool convert (const cwt::Json & policy
 			, cwt::CsvReader & csvreader
 			, cwt::debby::DbHandler & dbh
-			, cwt::debby::Schema & schema
 			, const cwt::String & tableName);
 };
 

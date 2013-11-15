@@ -29,6 +29,7 @@ struct DbColumnMeta
 		, has_pk            (false, false)
 		, has_autoinc       (false, 0)
 		, has_not_null      (false, true)
+        , has_unique        (false, false)
 		, has_default_value (false, cwt::UniType())
 		, has_size          (false, 0)
 		, has_decimals      (false, 0)
@@ -41,6 +42,7 @@ struct DbColumnMeta
 	std::pair<bool, bool>   has_pk;
 	std::pair<bool, uint_t> has_autoinc; // > 0 if column is autoincremented
 	std::pair<bool, bool>   has_not_null; // has not_null value, value set in 'not_null' property
+	std::pair<bool, bool>   has_unique;
 	std::pair<bool, cwt::UniType> has_default_value;
 	std::pair<bool, size_t> has_size;
 	std::pair<bool, size_t> has_decimals;

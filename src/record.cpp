@@ -115,7 +115,7 @@ cwt::UniType Attribute::defaultValue () const
 
 cwt::UniType::TypeEnum Attribute::type () const
 {
-	return cwt::UniType::fromStringType(_meta[TypeKey].string());
+	return cwt::UniType::typeFromString(_meta[TypeKey].string());
 }
 
 cwt::String Attribute::stringifyValue(const Attribute & attr)
@@ -174,7 +174,7 @@ inline Attribute & Record::add (const cwt::String & name)
 Attribute & Record::addBoolean (const cwt::String & name)
 {
 	Attribute & attr = this->add(name);
-	attr._meta.insert(TypeKey, cwt::UniType::toStringType(cwt::UniType::BoolValue));
+	attr._meta.insert(TypeKey, cwt::UniType::typeToString(cwt::UniType::BoolValue));
 	return attr;
 }
 
@@ -186,7 +186,7 @@ Attribute & Record::addInteger (const cwt::String & name, size_t size, bool isUn
 Attribute & Record::addDecimal (const cwt::String & name, size_t size, size_t decimals, bool isUnsigned)
 {
 	Attribute & attr = this->add(name);
-	attr._meta.insert(TypeKey, cwt::UniType::toStringType(cwt::UniType::IntegerValue));
+	attr._meta.insert(TypeKey, cwt::UniType::typeToString(cwt::UniType::IntegerValue));
 
 	if (size)
 		attr._meta.insert(SizeKey, size);
@@ -203,7 +203,7 @@ Attribute & Record::addDecimal (const cwt::String & name, size_t size, size_t de
 Attribute & Record::addFloat (const cwt::String & name, bool isUnsigned)
 {
 	Attribute & attr = this->add(name);
-	attr._meta.insert(TypeKey, cwt::UniType::toStringType(cwt::UniType::FloatValue));
+	attr._meta.insert(TypeKey, cwt::UniType::typeToString(cwt::UniType::FloatValue));
 	if (isUnsigned)
 		attr._meta.insert(UnsignedKey, isUnsigned);
 	return attr;
@@ -212,7 +212,7 @@ Attribute & Record::addFloat (const cwt::String & name, bool isUnsigned)
 Attribute & Record::addDouble (const cwt::String & name, bool isUnsigned)
 {
 	Attribute & attr = this->add(name);
-	attr._meta.insert(TypeKey, cwt::UniType::toStringType(cwt::UniType::DoubleValue));
+	attr._meta.insert(TypeKey, cwt::UniType::typeToString(cwt::UniType::DoubleValue));
 	if (isUnsigned)
 		attr._meta.insert(UnsignedKey, isUnsigned);
 	return attr;
@@ -221,7 +221,7 @@ Attribute & Record::addDouble (const cwt::String & name, bool isUnsigned)
 Attribute & Record::addString (const cwt::String & name, size_t size)
 {
 	Attribute & attr = this->add(name);
-	attr._meta.insert(TypeKey, cwt::UniType::toStringType(cwt::UniType::StringValue));
+	attr._meta.insert(TypeKey, cwt::UniType::typeToString(cwt::UniType::StringValue));
 	if (size)
 		attr._meta.insert(SizeKey, size);
 	return attr;
@@ -230,14 +230,14 @@ Attribute & Record::addString (const cwt::String & name, size_t size)
 Attribute & Record::addBlob (const cwt::String & name)
 {
 	Attribute & attr = this->add(name);
-	attr._meta.insert(TypeKey, cwt::UniType::toStringType(cwt::UniType::BlobValue));
+	attr._meta.insert(TypeKey, cwt::UniType::typeToString(cwt::UniType::BlobValue));
 	return attr;
 }
 
 Attribute & Record::addDate (const cwt::String & name, bool isTimeStamp)
 {
 	Attribute & attr = this->add(name);
-	attr._meta.insert(TypeKey, cwt::UniType::toStringType(cwt::UniType::DateValue));
+	attr._meta.insert(TypeKey, cwt::UniType::typeToString(cwt::UniType::DateValue));
 	if (isTimeStamp)
 		attr._meta.insert(Timestamp, true);
 	return attr;
@@ -246,7 +246,7 @@ Attribute & Record::addDate (const cwt::String & name, bool isTimeStamp)
 Attribute & Record::addTime (const cwt::String & name, bool isTimeStamp)
 {
 	Attribute & attr = this->add(name);
-	attr._meta.insert(TypeKey, cwt::UniType::toStringType(cwt::UniType::TimeValue));
+	attr._meta.insert(TypeKey, cwt::UniType::typeToString(cwt::UniType::TimeValue));
 	if (isTimeStamp)
 		attr._meta.insert(Timestamp, true);
 	return attr;
@@ -255,7 +255,7 @@ Attribute & Record::addTime (const cwt::String & name, bool isTimeStamp)
 Attribute & Record::addDateTime (const cwt::String & name, bool isTimeStamp)
 {
 	Attribute & attr = this->add(name);
-	attr._meta.insert(TypeKey, cwt::UniType::toStringType(cwt::UniType::DateTimeValue));
+	attr._meta.insert(TypeKey, cwt::UniType::typeToString(cwt::UniType::DateTimeValue));
 	if (isTimeStamp)
 		attr._meta.insert(Timestamp, true);
 	return attr;
@@ -268,6 +268,104 @@ Attribute & Record::addFromAttr (const cwt::String & name, const Attribute & oth
 	attr.setPk(false);
 	attr.setAutoinc(0);
 	return attr;
+}
+
+/**
+ * @brief Adds new attribute initialized from JSON
+ *
+ * @param name Attribute name.
+ * @param meta JSON representation of Attribute's meta information.
+ *
+ *       @arg attributes = attribute *(attribute)
+ *       @arg attribute  = type [ pk ] [ nullable ] [ unique ]
+ *                              [unsigned] [ timestamp ]
+ *                              [ size ] [ autoinc ] [ default ]
+ *       @arg type = "type" ":" type-value
+ *       @arg type-value  = <valid cwt::UniType type string representation,
+ *                           see cwt::UniType::typeToString() excepting "null">
+ *                          ; "bool" / "boolean" / "int" / "integer"
+ *                          ; "string" / "float" / "double" / "blob"
+ *                          ; "time" / "date" / "datetime"
+ *       @arg pk          = "pk" ":" boolean-value
+ *                          ; accepted by all types.
+ *       @arg nullable    = "nullable" ":" boolean-value
+ *                          ; accepted by all types.
+ *       @arg unique      = "unique" ":" boolean-value
+ *                          ; accepted by all types.
+ *       @arg unsigned    = "unsigned" ":" boolean-value
+ *                          ; accepted by numeric values.
+ *       @arg timestamp   = "timestamp" ":" boolean-value
+ *                          ; accepted by time/date/datetime values.
+ *       @arg size        = "size" ":" integer-value
+ *                          ; accepted by time/date/datetime values.
+ *       @arg autoinc     = "autoinc" ":" integer-value
+ *                          ; accepted by numeric values.
+ *       @arg default     = "default" ":" <valid JSON attribute value>
+ *                          ; accepted by all types.
+ *       @arg boolean-value = <valid JSON boolean value>
+ *       @arg integer-value = <valid JSON integer value>
+ *
+ *       Default for "type" is "integer".
+ *       Default for "pk"   is false.
+ *       Default for "nullable" is false.
+ *       Default for "unique" is false.
+ *       Default for "autoinc" is 0.
+ *       Default for "default" is <empty string>.
+ *       Default for "unsigned" is false.
+ *       Default for "timestamp" is false.
+ *       Default for "size" is 0 (unlimited).
+ *
+ * @return New added attribute.
+ */
+Attribute & Record::addFromJson  (const cwt::String & name, const cwt::JsonValue & meta)
+{
+	cwt::UniType::TypeEnum type = cwt::UniType::typeFromString(meta["type"].string("integer"));
+
+	Attribute * pattr = nullptr;
+
+	switch(type) {
+	case cwt::UniType::BoolValue:
+		pattr = & addBoolean(name);
+		break;
+	case cwt::UniType::FloatValue:
+		pattr = & addFloat(name, meta["unsigned"].boolean(false));
+		break;
+	case cwt::UniType::DoubleValue:
+		pattr = & addDouble(name, meta["unsigned"].boolean(false));
+		break;
+	case cwt::UniType::StringValue:
+		pattr = & addString(name, size_t(meta["size"].integer(0)));
+		break;
+	case cwt::UniType::BlobValue:
+		pattr = & addBlob(name);
+		break;
+	case cwt::UniType::TimeValue:
+		pattr = & addTime(name, meta["timestamp"].boolean(false));
+		break;
+	case cwt::UniType::DateValue:
+		pattr = & addDate(name, meta["timestamp"].boolean(false));
+		break;
+	case cwt::UniType::DateTimeValue:
+		pattr = & addDateTime(name, meta["timestamp"].boolean(false));
+		break;
+	case cwt::UniType::IntegerValue:
+	case cwt::UniType::ObjectValue:
+	case cwt::UniType::NullValue:
+		pattr = & addInteger(name
+				, size_t(meta["size"].integer(0))
+				, meta["unsigned"].boolean(false));
+		break;
+	}
+
+	CWT_ASSERT(pattr);
+
+	pattr->setPk(meta["pk"].boolean(false));
+	pattr->setAutoinc(uint_t(meta["autoinc"].integer(0)));
+	pattr->setNullable(meta["nullable"].boolean(false));
+	pattr->setUnique(meta["unique"].boolean(false));
+	pattr->setDefault(meta["default"].value());
+
+	return *pattr;
 }
 
 const Attribute & Record::operator [] (const cwt::String & name) const
