@@ -30,15 +30,17 @@ public:
 	Settings(Format format = DefaultFormat);
 	~Settings();
 	bool parse(const String & str);
-	//bool parseFromFile(const String & path, Format format = DefaultFormat);
 
 	UniType operator [] (const String & path) { return value(path); }
-	UniType value   (const String & path, const UniType & defaultValue = UniType());
-	bool    boolean (const String & path, bool defaultValue = false);
-	long_t  integer (const String & path, long_t defaultValue = long_t(0));
-	double  number  (const String & path, double defaultValue = double(0));
-	String  string  (const String & path, const String & defaultValue = String());
-	Vector<UniType>  array  (const String & path, const Vector<UniType> & defaultValue = Vector<UniType>());
+	UniType value   (const String & path, const UniType & defaultValue = UniType()) const;
+	bool    boolean (const String & path, bool defaultValue = false) const;
+	long_t  integer (const String & path, long_t defaultValue = long_t(0)) const;
+	double  number  (const String & path, double defaultValue = double(0)) const;
+	String  string  (const String & path, const String & defaultValue = String()) const;
+	Vector<UniType>  array  (const String & path, const Vector<UniType> & defaultValue = Vector<UniType>()) const;
+
+	bool contains (const String & path) const;
+	UniType::TypeEnum type (const String & path) const;
 
 /* slots */
 	void set (const String & path, bool value);

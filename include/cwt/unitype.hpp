@@ -168,8 +168,8 @@ public:
 	template <typename T>
 	T         toObject (bool * ok = nullptr) const;
 
-	static String toStringType(UniType::TypeEnum t);
-	static UniType::TypeEnum fromStringType(const String & s);
+	static String typeToString(UniType::TypeEnum t);
+	static UniType::TypeEnum typeFromString(const String & s);
 
 /* Do not use this methods!!! For internal use only !!! */
 	long_t &       longRef()       { return m_d->d.long_val; }

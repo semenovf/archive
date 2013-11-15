@@ -18,12 +18,15 @@ public:
 	SettingsImpl() {}
 
 	bool    (* parse)   (SettingsImpl * self, const String & str);
-	UniType (* value)   (SettingsImpl * self, const String & path, const UniType & defaultValue);
-	bool    (* boolean) (SettingsImpl * self, const String & path, bool defaultValue);
-	long_t  (* integer) (SettingsImpl * self, const String & path, long_t defaultValue);
-	double  (* number)  (SettingsImpl * self, const String & path, double defaultValue);
-	String  (* string)  (SettingsImpl * self, const String & path, const String & defaultValue);
-	Vector<UniType>  (* array)  (SettingsImpl * self, const String & path, const Vector<UniType> & defaultValue);
+	UniType (* value)   (const SettingsImpl * self, const String & path, const UniType & defaultValue);
+	bool    (* boolean) (const SettingsImpl * self, const String & path, bool defaultValue);
+	long_t  (* integer) (const SettingsImpl * self, const String & path, long_t defaultValue);
+	double  (* number)  (const SettingsImpl * self, const String & path, double defaultValue);
+	String  (* string)  (const SettingsImpl * self, const String & path, const String & defaultValue);
+	Vector<UniType>  (* array)  (const SettingsImpl * self, const String & path, const Vector<UniType> & defaultValue);
+
+	bool (* contains)   (const SettingsImpl * self, const String & path);
+	UniType::TypeEnum (* type) (const SettingsImpl * self, const String & path);
 
 	void (* setBool)   (SettingsImpl * self, const String & path, bool value);
 	void (* setDouble) (SettingsImpl * self, const String & path, double value);

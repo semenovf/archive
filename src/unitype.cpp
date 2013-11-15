@@ -566,11 +566,12 @@ ByteArray UniType::toBlob(bool * ok) const
 	return r;
 }
 
-String UniType::toStringType(UniType::TypeEnum t)
+
+String UniType::typeToString(UniType::TypeEnum t)
 {
-	static const char * types[] = {
+	static const char * strings[] = {
 		  "null"
-		, "bool"
+		, "boolean"
 		, "integer"
 		, "float"
 		, "double"
@@ -581,12 +582,11 @@ String UniType::toStringType(UniType::TypeEnum t)
 		, "datetime"
 		, "object"
 	};
-
-	return String(types[t]);
+	return String(strings[t]);
 }
 
 
-struct UniTypeStringAffinity : public Map<String, UniType::TypeEnum>
+struct UniTypeStringAffinity: public Map<String, UniType::TypeEnum>
 {
 	static UniTypeStringAffinity affinity;
 
@@ -612,7 +612,7 @@ struct UniTypeStringAffinity : public Map<String, UniType::TypeEnum>
 
 UniTypeStringAffinity UniTypeStringAffinity::affinity;
 
-UniType::TypeEnum UniType::fromStringType(const String & s)
+UniType::TypeEnum UniType::typeFromString(const String & s)
 {
 	return UniTypeStringAffinity::affinity.value(s.toLower(), NullValue);
 }
