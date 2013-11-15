@@ -300,7 +300,7 @@ void test_columns()
 
 		CWT_DEBUG(String(SafeFormat("SQL Type (%s) maps to UniType type (%s)")
 				% meta[i].native_type
-				% UniType::toStringType(meta[i].column_type)) . c_str() );
+				% UniType::typeToString(meta[i].column_type)) . c_str() );
 	}
 
 	CWT_TEST_OK(dbh->query("DROP TABLE IF EXISTS t2"));

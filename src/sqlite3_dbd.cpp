@@ -485,6 +485,9 @@ bool s3_dbd_meta (DbHandlerData & dbh, const String & table, Vector<DbColumnMeta
 				m.has_not_null.first  = true;
 				m.has_not_null.second =  row["notnull"].toBool();
 
+				m.has_unique.first  = false;
+				m.has_unique.second = false;
+
 				m.has_default_value.first  = true;
 				m.has_default_value.second = row["dflt_value"];
 
