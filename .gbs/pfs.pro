@@ -6,4 +6,6 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = pfs tests
+SUBDIRS  = pfs       \
+    tests/shared_ptr \
+    tests/bytearray

@@ -1,6 +1,6 @@
 CWT_CONFIG=debug
-include($$(GBS_HOME)/common-app.pri)
-TARGET =
+include($$(GBS_HOME)/common-dll.pri)
+TARGET = pfs
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
 INCLUDEPATH += ../../../cwt-core/include
@@ -8,9 +8,7 @@ INCLUDEPATH += ../../../cwt-core/include
 SOURCES += ../../src/*.cpp
 
 unix {
-    LIBS += -lcwt
 }
 
 win32 {
-    LIBS += cwt.lib
 }
