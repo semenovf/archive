@@ -20,6 +20,9 @@ CWT_NS_BEGIN
 typedef long_t integer_type;
 typedef double number_type;
 
+class UniType;
+typedef UniType unitype;
+
 struct AbstractUniObject {
 	virtual ~AbstractUniObject() { ; }
 };
@@ -48,7 +51,7 @@ struct UniObject : public AbstractUniObject
 class DLL_API UniType
 {
 public:
-	enum TypeEnum {
+	enum Type {
 		  NullValue
 		, BoolValue
 		, LongValue
@@ -65,30 +68,31 @@ public:
 	};
 
 public:
-	UniType()           : m_d(new SharedData)          { m_d->type = NullValue; }
-	UniType(bool v)     : m_d(new SharedData)          { m_d->type = BoolValue; m_d->d.long_val = long_t(v ? 1L : 0L); }
-	UniType(char v)     : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(byte_t v)   : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(short_t v)  : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(ushort_t v) : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(int_t v)    : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(uint_t v)   : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-#if CWT_OS_BITS == 32 // 'long_t' is 'long long'
-	UniType(long v)          : m_d(new SharedData)     { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(unsigned long v) : m_d(new SharedData)     { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType ()           : m_d(new SharedData)          { m_d->type = NullValue; }
+	UniType (bool v)     : m_d(new SharedData)          { m_d->type = BoolValue; m_d->d.long_val = long_t(v ? 1L : 0L); }
+	UniType (char v)     : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType (byte_t v)   : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType (short_t v)  : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType (ushort_t v) : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType (int_t v)    : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType (uint_t v)   : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+//#if CWT_OS_BITS == 32 // 'long_t' is 'long long'
+#ifdef CWT_HAVE_INT64
+	UniType (long v)          : m_d(new SharedData)     { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType (unsigned long v) : m_d(new SharedData)     { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
 #endif
-	UniType(long_t v)   : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(ulong_t v)  : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
-	UniType(float v)    : m_d(new SharedData)          { m_d->type = FloatValue; m_d->d.double_val = v; }
-	UniType(double v)   : m_d(new SharedData)          { m_d->type = DoubleValue; m_d->d.double_val = v; }
-	UniType(const String & v) : m_d(new SharedData)    { m_d->type = StringValue; m_d->d.string_val = new String(v); }
-	UniType(const char * v) : m_d(new SharedData)      { m_d->type = StringValue; m_d->d.string_val = new String(v); }
-	UniType(const ByteArray & v) : m_d(new SharedData) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
-	UniType(const Time & v) : m_d(new SharedData)      { m_d->type = TimeValue; m_d->d.time_val = new Time(v); }
-	UniType(const Date & v) : m_d(new SharedData)      { m_d->type = DateValue; m_d->d.date_val = new Date(v); }
-	UniType(const DateTime & v) : m_d(new SharedData)  { m_d->type = DateTimeValue; m_d->d.datetime_val = new DateTime(v); }
+	UniType (long_t v)   : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType (ulong_t v)  : m_d(new SharedData)          { m_d->type = LongValue; m_d->d.long_val = long_t(v); }
+	UniType (float v)    : m_d(new SharedData)          { m_d->type = FloatValue; m_d->d.double_val = v; }
+	UniType (double v)   : m_d(new SharedData)          { m_d->type = DoubleValue; m_d->d.double_val = v; }
+	UniType (const String & v) : m_d(new SharedData)    { m_d->type = StringValue; m_d->d.string_val = new String(v); }
+	UniType (const char * v) : m_d(new SharedData)      { m_d->type = StringValue; m_d->d.string_val = new String(v); }
+	UniType (const ByteArray & v) : m_d(new SharedData) { m_d->type = BlobValue; m_d->d.blob_val = new ByteArray(v); }
+	UniType (const Time & v) : m_d(new SharedData)      { m_d->type = TimeValue; m_d->d.time_val = new Time(v); }
+	UniType (const Date & v) : m_d(new SharedData)      { m_d->type = DateValue; m_d->d.date_val = new Date(v); }
+	UniType (const DateTime & v) : m_d(new SharedData)  { m_d->type = DateTimeValue; m_d->d.datetime_val = new DateTime(v); }
 
-	UniType(const UniType &other) { m_d = other.m_d; }
+	UniType(const UniType & other) { m_d = other.m_d; }
 	UniType & operator = (const UniType & other)
 	{
 		m_d = other.m_d;
@@ -98,8 +102,8 @@ public:
 	template <typename T>
 	static UniType make_object ();
 
-	bool isNull() const { return m_d->type == NullValue; }
-	TypeEnum type() const { return m_d->type; }
+	bool     isNull () const { return m_d->type == NullValue; }
+	Type type   () const { return m_d->type; }
 
 	void setFromString (const String &s);
 	void setNull       ();
@@ -141,14 +145,14 @@ public:
 	UniType & operator = (const DateTime & dt)    { setDateTime(dt); return *this; }
 
 	template <typename T>
-	void setObject(const T & o);
+	void setObject (const T & o);
 
-	void swap(UniType & other) { m_d.swap(other.m_d); }
+	void swap (UniType & other) { m_d.swap(other.m_d); }
 
-	bool      boolean() const  { return toBool(); }
-	long_t    integer() const  { return toLong(); }
-	double    number() const   { return toDouble(); }
-	String    string() const   { return toString(); }
+	bool      boolean () const  { return toBool(); }
+	long_t    integer () const  { return toLong(); }
+	double    number  () const  { return toDouble(); }
+	String    string  () const  { return toString(); }
 
 	bool      toBool   (bool * ok = nullptr) const;
 	byte_t    toByte   (bool * ok = nullptr) const;
@@ -168,34 +172,18 @@ public:
 	template <typename T>
 	T         toObject (bool * ok = nullptr) const;
 
-	static String typeToString(UniType::TypeEnum t);
-	static UniType::TypeEnum typeFromString(const String & s);
-
-/* Do not use this methods!!! For internal use only !!! */
-	long_t &       longRef()       { return m_d->d.long_val; }
-	const long_t & longRef() const { return m_d->d.long_val; }
-
-	double &          doubleRef()         { return m_d->d.double_val; }
-	const double &    doubleRef() const   { return m_d->d.double_val; }
-	String &          stringRef()         { return *m_d->d.string_val; }
-	const String &    stringRef() const   { return *m_d->d.string_val; }
-	ByteArray &       blobRef()           { return *m_d->d.blob_val; }
-	const ByteArray & blobRef() const     { return *m_d->d.blob_val; }
-	Time &            timeRef()           { return *m_d->d.time_val; }
-	const Time &      timeRef() const     { return *m_d->d.time_val; }
-	Date &            dateRef()           { return *m_d->d.date_val; }
-	const Date &      dateRef() const     { return *m_d->d.date_val; }
-	DateTime &        dateTimeRef()       { return *m_d->d.datetime_val; }
-	const DateTime &  dateTimeRef() const { return *m_d->d.datetime_val; }
-
 	template <typename T>
 	T &       objectRef()       { return dynamic_cast<UniObject<T>* >(m_d->d.object_val)->value; }
+
 	template <typename T>
 	const T & objectRef() const { return dynamic_cast<UniObject<T>* >(m_d->d.object_val)->value; }
 
+	static String typeToString(UniType::Type t);
+	static UniType::Type typeFromString(const String & s);
+
 private:
 	struct SharedData {
-		TypeEnum type;
+		Type type;
 		union {
 			long_t              long_val;
 			double              double_val;
@@ -251,89 +239,6 @@ inline void UniType::setUniTypeData(SharedData * data)
 {
 	shared_ptr<SharedData> d(data);
 	m_d.swap(d);
-}
-
-inline void UniType::setNull()
-{
-	SharedData *d = new SharedData;
-	d->type = UniType::NullValue;
-	setUniTypeData(d);
-}
-
-inline void UniType::setLong (long_t n)
-{
-	SharedData *d = new SharedData;
-	d->type = UniType::LongValue;
-	d->d.long_val = long_t(n);
-	setUniTypeData(d);
-}
-
-inline void UniType::setBool (bool b)
-{
-	setLong(b ? 1L : 0L);
-	m_d->type = UniType::BoolValue;
-}
-
-inline void UniType::setFloat (float n)
-{
-	SharedData *d = new SharedData;
-	d->type = UniType::FloatValue;
-	d->d.double_val = n;
-	setUniTypeData(d);
-}
-
-inline void UniType::setDouble (double n)
-{
-	SharedData *d = new SharedData;
-	d->type = UniType::DoubleValue;
-	d->d.double_val = n;
-	setUniTypeData(d);
-}
-
-inline void UniType::setString (const String & s)
-{
-	SharedData *d = new SharedData;
-	d->type = UniType::StringValue;
-	d->d.string_val = new String(s);
-	setUniTypeData(d);
-}
-
-inline void UniType::setBlob (const char * blob, size_t sz)
-{
-	ByteArray ba(blob, sz);
-	setBlob(ba);
-}
-
-inline void UniType::setBlob (const ByteArray & blob)
-{
-	SharedData *d = new SharedData;
-	d->type = UniType::BlobValue;
-	d->d.blob_val = new ByteArray(blob);
-	setUniTypeData(d);
-}
-
-inline void UniType::setTime (const Time & time)
-{
-	SharedData *d = new SharedData;
-	d->type = UniType::TimeValue;
-	d->d.time_val = new Time(time);
-	setUniTypeData(d);
-}
-
-inline void UniType::setDate (const Date & date)
-{
-	SharedData *d = new SharedData;
-	d->type = UniType::DateValue;
-	d->d.date_val = new Date(date);
-	setUniTypeData(d);
-}
-
-inline void UniType::setDateTime   (const DateTime & dt)
-{
-	SharedData *d = new SharedData;
-	d->type = UniType::DateTimeValue;
-	d->d.datetime_val = new DateTime(dt);
-	setUniTypeData(d);
 }
 
 

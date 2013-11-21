@@ -40,7 +40,7 @@ public:
 	Vector<UniType>  array  (const String & path, const Vector<UniType> & defaultValue = Vector<UniType>()) const;
 
 	bool contains (const String & path) const;
-	UniType::TypeEnum type (const String & path) const;
+	UniType::Type type (const String & path) const;
 
 /* slots */
 	void set (const String & path, bool value);

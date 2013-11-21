@@ -495,6 +495,8 @@ struct TestElem
 	String str;
 };
 
+#ifdef __COMMENT__
+
 int TestElem::counter = 0;
 
 void test_object ()
@@ -515,7 +517,6 @@ void test_object ()
 	CWT_TEST_OK(TestElem::counter == 0);
 }
 
-#ifdef __COMMENT__
 
 /* TODO need to implement */
 void test_text(void)
@@ -547,7 +548,7 @@ int main(int argc, char *argv[])
 	test_bool();
 	test_integer();
 	test_float();
-	test_object();
+//	test_object();
 /*
 	test_text();
 	test_blob();

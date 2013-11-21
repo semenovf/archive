@@ -9,7 +9,7 @@
 #ifndef __CWT_UTILITY_HPP__
 #define __CWT_UTILITY_HPP__
 
-#include <cwt/cwt.h>
+#include <cwt/cwt.hpp>
 
 CWT_NS_BEGIN
 

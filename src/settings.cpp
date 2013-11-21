@@ -61,7 +61,7 @@ Vector<UniType> Settings::array (const String & path, const Vector<UniType> & de
 bool Settings::contains (const String & path) const
 	{ return pimpl->contains(this->pimpl.get(), path); }
 
-UniType::TypeEnum Settings::type (const String & path) const
+UniType::Type Settings::type (const String & path) const
 	{ return pimpl->type(this->pimpl.get(), path); }
 
 CWT_NS_END

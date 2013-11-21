@@ -26,7 +26,7 @@ public:
 	Vector<UniType>  (* array)  (const SettingsImpl * self, const String & path, const Vector<UniType> & defaultValue);
 
 	bool (* contains)   (const SettingsImpl * self, const String & path);
-	UniType::TypeEnum (* type) (const SettingsImpl * self, const String & path);
+	UniType::Type (* type) (const SettingsImpl * self, const String & path);
 
 	void (* setBool)   (SettingsImpl * self, const String & path, bool value);
 	void (* setDouble) (SettingsImpl * self, const String & path, double value);

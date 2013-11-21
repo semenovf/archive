@@ -24,6 +24,9 @@ CWT_NS_BEGIN
 #define NO_UTF8_CHECK true
 #define UTF8_CHECK    false
 
+class Utf8String;
+typedef Utf8String utf8string;
+
 struct DLL_API Utf8Entry
 {
 	typedef const char * pointer;

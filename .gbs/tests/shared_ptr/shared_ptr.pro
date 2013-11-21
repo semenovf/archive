@@ -1,4 +1,4 @@
-include($$(GBS_HOME)/common-app-qt.pri)
+include($$(GBS_HOME)/common-app.pri)
 
 TARGET = test_shared_ptr
 INCLUDEPATH += ../../../include

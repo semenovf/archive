@@ -38,6 +38,90 @@ UniType::SharedData::~SharedData()
 }
 
 
+void UniType::setNull()
+{
+	SharedData *d = new SharedData;
+	d->type = UniType::NullValue;
+	setUniTypeData(d);
+}
+
+void UniType::setLong (long_t n)
+{
+	SharedData *d = new SharedData;
+	d->type = UniType::LongValue;
+	d->d.long_val = long_t(n);
+	setUniTypeData(d);
+}
+
+void UniType::setBool (bool b)
+{
+	setLong(b ? 1L : 0L);
+	m_d->type = UniType::BoolValue;
+}
+
+void UniType::setFloat (float n)
+{
+	SharedData *d = new SharedData;
+	d->type = UniType::FloatValue;
+	d->d.double_val = n;
+	setUniTypeData(d);
+}
+
+void UniType::setDouble (double n)
+{
+	SharedData *d = new SharedData;
+	d->type = UniType::DoubleValue;
+	d->d.double_val = n;
+	setUniTypeData(d);
+}
+
+void UniType::setString (const String & s)
+{
+	SharedData *d = new SharedData;
+	d->type = UniType::StringValue;
+	d->d.string_val = new String(s);
+	setUniTypeData(d);
+}
+
+void UniType::setBlob (const char * blob, size_t sz)
+{
+	ByteArray ba(blob, sz);
+	setBlob(ba);
+}
+
+void UniType::setBlob (const ByteArray & blob)
+{
+	SharedData *d = new SharedData;
+	d->type = UniType::BlobValue;
+	d->d.blob_val = new ByteArray(blob);
+	setUniTypeData(d);
+}
+
+void UniType::setTime (const Time & time)
+{
+	SharedData *d = new SharedData;
+	d->type = UniType::TimeValue;
+	d->d.time_val = new Time(time);
+	setUniTypeData(d);
+}
+
+void UniType::setDate (const Date & date)
+{
+	SharedData *d = new SharedData;
+	d->type = UniType::DateValue;
+	d->d.date_val = new Date(date);
+	setUniTypeData(d);
+}
+
+void UniType::setDateTime   (const DateTime & dt)
+{
+	SharedData *d = new SharedData;
+	d->type = UniType::DateTimeValue;
+	d->d.datetime_val = new DateTime(dt);
+	setUniTypeData(d);
+}
+
+
 UniType::SharedData * UniType::clone()
 {
 	UniType::SharedData *d = NULL;
@@ -567,7 +651,7 @@ ByteArray UniType::toBlob(bool * ok) const
 }
 
 
-String UniType::typeToString(UniType::TypeEnum t)
+String UniType::typeToString(UniType::Type t)
 {
 	static const char * strings[] = {
 		  "null"
@@ -586,7 +670,7 @@ String UniType::typeToString(UniType::TypeEnum t)
 }
 
 
-struct UniTypeStringAffinity: public Map<String, UniType::TypeEnum>
+struct UniTypeStringAffinity: public Map<String, UniType::Type>
 {
 	static UniTypeStringAffinity affinity;
 
@@ -612,7 +696,7 @@ struct UniTypeStringAffinity: public Map<String, UniType::TypeEnum>
 
 UniTypeStringAffinity UniTypeStringAffinity::affinity;
 
-UniType::TypeEnum UniType::typeFromString(const String & s)
+UniType::Type UniType::typeFromString(const String & s)
 {
 	return UniTypeStringAffinity::affinity.value(s.toLower(), NullValue);
 }

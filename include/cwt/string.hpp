@@ -13,9 +13,10 @@
 
 CWT_NS_BEGIN
 
-typedef Utf8String String;
+typedef Utf8String String; // NOTE obsolete type name
+typedef utf8string string;
 
-#define _u8(s) cwt::String::fromUtf8(s)
+#define _u8(s) cwt::string::fromUtf8(s)
 
 CWT_NS_END
 

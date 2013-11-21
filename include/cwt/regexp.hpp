@@ -14,46 +14,6 @@
 
 CWT_NS_BEGIN
 
-#ifdef __COMMENT__
-class DLL_API RegExpMatch
-{
-	CWT_PIMPL_DECL_COPYABLE(RegExpMatch);
-
-public:
-	class iterator {
-		friend class RegExpMatch;
-		class iterator_data;
-		shared_ptr<iterator_data> m_d;
-	public:
-		iterator ();
-		iterator (const iterator & other);
-		~iterator() {}
-
-    	String value () const;
-        String operator * () const { return value(); }
-        bool operator  == (const iterator & o) const;
-        bool operator  != (const iterator & o) const { return ! (*this == o); }
-        iterator & operator ++ ();
-        iterator   operator ++ (int) {
-            iterator r(*this);
-            this->operator ++();
-            return r;
-        }
-	};
-
-public:
-	RegExpMatch();
-	iterator begin () const;
-	iterator end () const;
-
-	bool hasMatch () const;
-	bool next() const;
-	String captured (size_t index) const;
-	StringList captured() const;
-
-	friend class RegExp;
-};
-#endif
 class DLL_API RegExp
 {
 	CWT_PIMPL_DECL_COPYABLE(RegExp);
