@@ -87,8 +87,10 @@ extern "C" bool __cwt_plugin_ctor__(void * pluggable)
 		__dbd->fetchRowArray = s3_dbd_stmt_fetch_row_array;
 		__dbd->fetchRowHash  = s3_dbd_stmt_fetch_row_hash;
 		__dbd->bind          = s3_dbd_stmt_bind;
+/*
 		__dbd->createSchema  = s3_create_schema;
 		__dbd->dropSchema    = s3_drop_schema;
+*/
 	}
 	*pdbd = __dbd;
 
@@ -404,7 +406,7 @@ bool s3_dbd_rollback (DbHandlerData & dbh)
 }
 
 
-static UniType::TypeEnum __map_column_type (const String & ct)
+static UniType::Type __map_column_type (const String & ct)
 {
 	if (ct.startsWith("BOOL")) {
 		return UniType::BoolValue;
@@ -489,7 +491,24 @@ bool s3_dbd_meta (DbHandlerData & dbh, const String & table, Vector<DbColumnMeta
 				m.has_unique.second = false;
 
 				m.has_default_value.first  = true;
-				m.has_default_value.second = row["dflt_value"];
+				// dequote
+				if (row["dflt_value"].type() == cwt::UniType::StringValue) {
+					String dequoted = row["dflt_value"].string();
+					if (dequoted.length() >= 2) {
+						UChar first = dequoted[0];
+						UChar last = dequoted[dequoted.length() - 1];
+						if ((first == '"' && last == '"')
+								|| (first == '\'' && last == '\'')
+								|| (first == '`' && last == '`')) {
+
+							dequoted = dequoted.substr(1, dequoted.length() - 2);
+						}
+					}
+					m.has_default_value.second = dequoted;
+				} else {
+					m.has_default_value.second = row["dflt_value"];
+				}
+
 
 				meta.append(m);
 				row.clear();

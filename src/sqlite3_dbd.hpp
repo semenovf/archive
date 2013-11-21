@@ -27,7 +27,9 @@ struct Sqlite3DbStatement : public DbStatementData
 
 
 bool s3_dbd_query (DbHandlerData & dbh, const String & sql);
+/*
 bool s3_create_schema (DbHandlerData & dbh, const Schema & schema);
 bool s3_drop_schema (DbHandlerData & dbh, const Schema & schema);
+*/
 
 #endif /* __CWT_DEBBY_SQLITE3_DBD_HPP__ */
