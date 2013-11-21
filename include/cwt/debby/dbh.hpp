@@ -19,6 +19,8 @@ namespace debby
 
 class Statement;
 class DbHandler;
+class Schema;
+class Record;
 
 typedef cwt::shared_ptr<DbHandler> DbHandlerPtr;
 
@@ -31,8 +33,6 @@ public:
 	~DbHandler() { close(); }
 
 	static DbHandlerPtr open (const cwt::String & uri);
-	static bool         deploySchema (DbHandler & dbh, const Schema & schema);
-	static bool         dropSchema (DbHandler & dbh, const Schema & schema);
 
 	bool     opened() const { return _dbhData != nullptr; }
 	void     close ();

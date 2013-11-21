@@ -23,18 +23,38 @@
  *  , "endline"        : "\\n"           // end lines, may be an array
  *  , "columns_num"    : 4               // expected number of columns in the source
  *  , "map"            : [               // mapping CSV fields into SQL fields
+ *
  *        {}                             // ignore column (no mapping)
- *  	, { "attr" : "code", "type": "string", "pk" : true }
+ *  	, { "attr" : "code", "type": "string" }
  * 		, { "attr" : "name", "type": "string" }
  * 		, { "attr" : "currency", "type": "string" }
- *  	]
+ *
+ *    ]
  *  }
+ *
+ * Attributes for 'map' entry:
+ *	     "type" : <valid cwt::UniType type string representation,
+ *                           see cwt::UniType::typeToString() excepting "null">
+ *                          ; "bool" / "boolean" / "int" / "integer"
+ *                          ; "string" / "float" / "double" / "blob"
+ *                          ; "time" / "date" / "datetime"
+ *
+ *       "pk"        : true | false, default is false
+ *       "index"     : true | false, default is false
+ *       "nullable"  : true | false, default is false
+*        "unique"    : true | false, default is false
+ *       "unsigned"  : true | false, default is false
+ *       "timestamp" : true | false, default is false
+ *       "size"      : unsigned integer, default is 0
+ *       "autoinc"   : unsigned integer, default is 0
+ *       "default"   : <valid JSON attribute value>, default is undefined.
  */
 
 
-static bool init_table(cwt::debby::Table & table, const cwt::JsonValue::array_type & mapping)
+static bool __init_table(cwt::debby::Table & table, const cwt::JsonValue::array_type & mapping)
 {
 	size_t size = mapping.size();
+
 	for (size_t i = 0; i < size; ++i) {
 		if (!mapping[i]->isObject()) {
 			cwt::Logger::error("array 'map' element must be an object");
@@ -47,8 +67,19 @@ static bool init_table(cwt::debby::Table & table, const cwt::JsonValue::array_ty
 		if (spec.size() == 0 || spec["attr"].isInvalid())
 			continue;
 
-		cwt::String fieldName = spec["attr"].string();
-		table.addFromJson(fieldName, spec);
+		cwt::String fname = spec["attr"].string();
+		cwt::UniType::Type ftype = cwt::UniType::typeFromString(spec["type"].string());
+		cwt::debby::Attribute & attr = table.newAttribute(fname, ftype);
+
+		attr.setPk        (spec["pk"].boolean(false));
+		attr.setIndexable (spec["index"].boolean(false));
+		attr.setNullable  (spec["nullable"].boolean(false));
+		attr.setUnique    (spec["unique"].boolean(false));
+		attr.setUnsigned  (spec["unsigned"].boolean(false));
+		attr.setTimestamp (spec["timestamp"].boolean(false));
+		attr.setAutoinc   (spec["autoinc"].integer(0));
+		attr.setSize      (size_t(spec["size"].integer(0)));
+		attr.setDefault   (spec["default"].string());
 	}
 
 	return true;
@@ -57,19 +88,11 @@ static bool init_table(cwt::debby::Table & table, const cwt::JsonValue::array_ty
 
 bool Csv2DbContext::convert (const cwt::Json & policy
 		, cwt::CsvReader & csvreader
-		, cwt::debby::DbHandler & dbh
-		, const cwt::String & tableName)
+		, cwt::debby::Schema & schema
+		, const cwt::String & tname)
 {
-
-	cwt::debby::Schema schema;
-
-	if (!schema.load(dbh)) {
-		cwt::Logger::error(_Tr("Failed to load schema"));
-		return false;
-	}
-
-	if (schema.containes(tableName)) {
-		cwt::Logger::error(_Fr("%s: table already exists") % tableName);
+	if (schema.contains(tname)) {
+		cwt::Logger::error(_Fr("%s: table already exists") % tname);
 		return false;
 	}
 
@@ -110,7 +133,6 @@ bool Csv2DbContext::convert (const cwt::Json & policy
 
 	size_t line = size_t(skipLines);
 	size_t ncolumns = size_t(policy["columns_num"].integer(0));
-	cwt::Vector<cwt::String> csvrecord;
 
 	if (!policy["map"].isArray()) {
 		cwt::Logger::error(_Tr("'map' entry not found or it must be an array"));
@@ -118,18 +140,28 @@ bool Csv2DbContext::convert (const cwt::Json & policy
 	}
 
 	cwt::JsonValue::array_type mapping = policy["map"].array();
-	cwt::debby::Table & table = schema.add(tableName);
 
-	if (!init_table(table, mapping))
+	if (mapping.size() == 0) {
+		cwt::Logger::error(_Tr("'map' entry is empty"));
+		return false;
+	}
+
+	cwt::debby::Table & table = schema.newTable(tname);
+
+	if (!__init_table(table, mapping))
+		return false;
+
+	if (!schema.save())
 		return false;
 
 	size_t nfields = mapping.size(); // actual number of fields
 
-	dbh.begin();
+	schema.begin();
+
+	cwt::Vector<cwt::String> csvrecord;
 
 	while (!(csvrecord = csvreader.readRecord()).isEmpty()) {
 		++line;
-		CWT_TRACE(cwt::String(_F("columns = %u") % csvrecord.size()).c_str());
 		if (csvrecord.size() != ncolumns) {
 			cwt::Logger::error(_Fr("Incomplete number of columns at line %u, expected %u")
 					% line
@@ -137,20 +169,22 @@ bool Csv2DbContext::convert (const cwt::Json & policy
 			return false;
 		}
 
+		cwt::debby::Record record(table);
+
 		for (size_t i = 0; i < ncolumns && i < nfields; ++i) {
 			if (mapping[i]->size() > 0) {
 				cwt::String attrName = (*mapping[i])["attr"].string(); // not null, already checked by 'init_table'
-				table[attrName] = csvrecord[i];
+				record[attrName] = csvrecord[i];
 			}
 		}
 
-		if (!table.create(dbh)) {
-			dbh.rollback();
+		if (!record.create()) { // insert new record
+			schema.rollback();
 			return false;
 		}
 
 	}
-	dbh.commit();
+	schema.commit();
 
 	return true;
 }

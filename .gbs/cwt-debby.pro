@@ -6,7 +6,7 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = cwt-debby \
-    tools/csv2db
+SUBDIRS  = cwt-debby
+#    tools/csv2db
 #    tests/schema
 # tools/debby

@@ -30,7 +30,7 @@ int Csv2DbProc::proc()
 		return -1;
 	}
 
-	cwt::String uriDb(settings.string("/db-uri"));
+	cwt::String uri(settings.string("/db-uri"));
 
 	if (_sourcePath.isEmpty()) {
 		cwt::Logger::error("No database URI specified");
@@ -55,9 +55,11 @@ int Csv2DbProc::proc()
 	if (!readerJson.device()->opened())
 		return -1;
 
-	cwt::debby::DbHandlerPtr dbh(cwt::debby::DbHandler::open(uriDb));
-	if (!dbh.get())
+	cwt::debby::Schema schema;
+	if (schema.load(uri)) {
+		cwt::Logger::error(_Tr("Failed to load schema"));
 		return -1;
+	}
 
 	CsvReader csvreader(readerCsv, UChar(','));
 	Json policy;
@@ -66,7 +68,7 @@ int Csv2DbProc::proc()
 		return -1;
 
 	Csv2DbContext converter;
-	return converter.convert(policy, csvreader, *dbh, tableName) ? 0 : -1;
+	return converter.convert(policy, csvreader, schema, tableName) ? 0 : -1;
 }
 
 

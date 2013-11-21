@@ -35,9 +35,10 @@ struct DbColumnMeta
 		, has_decimals      (false, 0)
 		, has_unsigned      (false, false)
 		, has_timestamp     (false, false)
+		, has_index         (false, false)
 	{}
 	cwt::String             column_name;
-	cwt::UniType::TypeEnum  column_type;
+	cwt::UniType::Type  column_type;
 	cwt::String             native_type;
 	std::pair<bool, bool>   has_pk;
 	std::pair<bool, uint_t> has_autoinc; // > 0 if column is autoincremented
@@ -48,6 +49,7 @@ struct DbColumnMeta
 	std::pair<bool, size_t> has_decimals;
 	std::pair<bool, bool>   has_unsigned;
 	std::pair<bool, bool>   has_timestamp;
+	std::pair<bool, bool>   has_index;
 };
 
 struct DbDriver
@@ -81,8 +83,8 @@ struct DbDriver
 	bool                     (*fetchRowHash)  (DbStatementData &, cwt::Map<cwt::String, cwt::UniType> & row);
 	bool                     (*bind)          (DbStatementData &, size_t index, const cwt::UniType & param);
 
-	bool                     (*createSchema)  (DbHandlerData &, const Schema & schema); // create schema
-	bool                     (*dropSchema)    (DbHandlerData &, const Schema & schema); // drop schema and close connection
+//	bool                     (*createSchema)  (DbHandlerData &, const Schema & schema); // create schema
+//	bool                     (*dropSchema)    (DbHandlerData &, const Schema & schema); // drop schema and close connection
 };
 
 } // namespace debby

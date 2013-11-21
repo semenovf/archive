@@ -59,6 +59,7 @@ DbHandlerPtr DbHandler::open (const cwt::String & uri_str)
 	return dbh;
 }
 
+/*
 bool DbHandler::deploySchema (DbHandler & dbh, const Schema & schema)
 {
 	if (!dbh._dbhData)
@@ -77,6 +78,7 @@ bool DbHandler::dropSchema (DbHandler & dbh, const Schema & schema)
 	}
 	return false;
 }
+*/
 
 void DbHandler::close ()
 {

@@ -187,8 +187,8 @@ void test_create ()
 	CWT_TEST_FAIL(dbh.get());
 	__prepare_schema(schema);
 	CWT_TEST_FAIL2(schema.deploy(*dbh), String(_Fr("Deploying '%s' ... ") % uri).utf8());
-	CWT_TEST_FAIL(schema.containes("currency"));
-	CWT_TEST_FAIL(schema.containes("country"));
+	CWT_TEST_FAIL(schema.contains("currency"));
+	CWT_TEST_FAIL(schema.contains("country"));
 	CWT_TEST_OK2(__traverse_currencies(*dbh, schema["currency"]), _Tr("Populating currencies ... "));
 	CWT_TEST_OK2(__traverse_countries(*dbh, schema["country"]), _Tr("Populating countries ... "));
 }
@@ -202,8 +202,8 @@ void test_destroy ()
 	CWT_TEST_FAIL(dbh.get());
 	__prepare_schema(schema);
 	CWT_TEST_FAIL2(schema.deploy(*dbh), String(_Fr("Deploying '%s' ... ") % uri).utf8());
-	CWT_TEST_FAIL(schema.containes("currency"));
-	CWT_TEST_FAIL(schema.containes("country"));
+	CWT_TEST_FAIL(schema.contains("currency"));
+	CWT_TEST_FAIL(schema.contains("country"));
 	CWT_TEST_OK2(__traverse_currencies(*dbh, schema["currency"]), _Tr("Populating currencies ... "));
 	CWT_TEST_OK2(__traverse_countries(*dbh, schema["country"]), _Tr("Populating countries ... "));
 }
@@ -214,7 +214,7 @@ void test_load ()
 	__prepare_schema(schema);
 
 	String uri = buildSqlite3Uri("test_schema", "/tmp", "mode=rwc");
-	CWT_TEST_FAIL2(schema.deploy(uri), String(_Fr("Deploying '%s' ... ") % uri).utf8());
+	CWT_TEST_FAIL2(schema.create(uri), String(_Fr("Deploying '%s' ... ") % uri).utf8());
 
 	DbHandlerPtr dbh(DbHandler::open(uri));
 	CWT_TEST_FAIL(dbh.get());
