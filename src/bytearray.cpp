@@ -39,7 +39,7 @@ bytearray & bytearray::insert (const char * s, size_t n, const const_iterator & 
 	if (it < begin())
 		it = begin();
 
-	size_t i = begin() - it;
+	size_t i = it - begin();
 	base_class::insert(i, s, n);
 	return *this;
 }
@@ -147,7 +147,7 @@ static long_t __str_to_long_helper(const char *s, bool * pok, int base, long_t m
 	char *endptr = nullptr;
 
 	errno = 0;
-#ifdef CWT_HAVE_INT64
+#ifdef HAVE_INT64
 	long_t r = strtoll(s, & endptr, base);
 #else
 	long_t r = strtol(s, & endptr, base);

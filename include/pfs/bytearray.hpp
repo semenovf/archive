@@ -10,10 +10,11 @@
 
 #include <pfs.hpp>
 #include <string>
+#include <ostream>
 
 namespace pfs {
 
-class bytearray : protected std::string
+class DLL_API bytearray : private std::string
 {
 	typedef std::string base_class;
 	bytearray (const base_class & other) : base_class(other) {}
@@ -25,8 +26,8 @@ public:
 public:
 	bytearray () : base_class() {}
 
-	bytearray(const char *data) : base_class(data) {}
-	bytearray(const char *data, size_t size) : base_class(data, size) {}
+	bytearray(const char * s) : base_class(s) {}
+	bytearray(const char * s, size_t size) : base_class(s, size) {}
 	bytearray(size_t size, char ch) : base_class(size, ch) {}
 
 	const char * c_str() const { return base_class::c_str(); }
@@ -259,6 +260,8 @@ inline bool	operator <= (const bytearray & s1, const char * s2) { return s1.comp
 inline bool	operator == (const bytearray & s1, const char * s2) { return s1.compare(s2) == 0; }
 inline bool	operator >  (const bytearray & s1, const char * s2) { return s1.compare(s2) >  0; }
 inline bool	operator >= (const bytearray & s1, const char * s2) { return s1.compare(s2) >= 0; }
+
+inline std::ostream & operator << (std::ostream & os, const bytearray & o) { os << o.c_str(); return os; }
 
 //DLL_API uint_t hash_func(const bytearray & key, uint_t seed = 0);
 
