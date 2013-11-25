@@ -13,7 +13,7 @@
 namespace pfs {
 
 template <typename T>
-class list : protected std::list<T>
+class list : private std::list<T>
 {
 	typedef std::list<T> base_class;
 

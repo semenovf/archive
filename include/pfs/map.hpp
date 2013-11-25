@@ -8,13 +8,13 @@
 #ifndef __PFS_MAP_HPP__
 #define __PFS_MAP_HPP__
 
-#include <cwt/cwt.hpp>
+#include <pfs.hpp>
 #include <map>
 
 namespace pfs {
 
 template <typename Key, typename T>
-class map : public std::map<Key, T> {};
+class map : private std::map<Key, T> {};
 
 } // pfs
 

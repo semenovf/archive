@@ -212,13 +212,13 @@ inline bytearray bytearray::substr(size_t pos, size_t n) const
 	return ba;
 }
 
-bytearray bytearray::substr(const const_iterator & from) const
+inline bytearray bytearray::substr(const const_iterator & from) const
 {
 	bytearray ba(base_class::substr(from - begin(), length()));
 	return ba;
 }
 
-bytearray bytearray::substr(const const_iterator & from, size_t n) const
+inline bytearray bytearray::substr(const const_iterator & from, size_t n) const
 {
 	bytearray ba(base_class::substr(from - begin(), n));
 	return ba;

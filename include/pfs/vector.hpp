@@ -10,10 +10,10 @@
 
 #include <vector>
 
-namespace cwt {
+namespace pfs {
 
 template <typename T>
-class vector : protected std::vector<T>
+class vector : private std::vector<T>
 {
 	typedef std::vector<T> base_class;
 
