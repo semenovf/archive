@@ -28,3 +28,4 @@
 * [QDjango](http://opensource.bolloretelecom.eu/projects/qdjango/)
 * [QtPersistence](http://sourceforge.net/projects/qtpersistence/)
 * [QsT SQL Tools](http://sourceforge.net/projects/qstsqltools/)
+* [Mapping Objects to Relational Databases: O/R Mapping In Detail](http://www.agiledata.org/essays/mappingObjects.html)
