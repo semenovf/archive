@@ -9,35 +9,59 @@
 #define __PFS_BYTEARRAY_HPP__
 
 #include <pfs.hpp>
+#include <pfs/shared_ptr.hpp>
 #include <string>
 #include <ostream>
 
 namespace pfs {
 
-class DLL_API bytearray : private std::string
+class byteref;
+
+class DLL_API bytearray
 {
-	typedef std::string base_class;
-	bytearray (const base_class & other) : base_class(other) {}
+private:
+	typedef std::string impl;
+	shared_ptr<impl> _pimpl;
+
+	void detach()
+	{
+		if (!_pimpl.unique()) {
+			shared_ptr<bytearray::impl> d(new bytearray::impl(*_pimpl));
+			_pimpl.swap(d);
+		}
+	}
+	bytearray (const impl & other) : _pimpl(new impl(other)) {}
 
 public:
-	typedef base_class::iterator iterator;
-	typedef base_class::const_iterator const_iterator;
+	bytearray (const bytearray & other) : _pimpl(other._pimpl) { }
+	bytearray & operator = (const bytearray & other)
+	{
+		_pimpl = other._pimpl;
+		return *this;
+	}
 
 public:
-	bytearray () : base_class() {}
+	typedef impl::iterator iterator;
+	typedef impl::const_iterator const_iterator;
 
-	bytearray(const char * s) : base_class(s) {}
-	bytearray(const char * s, size_t size) : base_class(s, size) {}
-	bytearray(size_t size, char ch) : base_class(size, ch) {}
+public:
+	bytearray () : _pimpl(new impl()) {}
+	bytearray(const char * s) : _pimpl(new impl(s)) {}
+	bytearray(const char * s, size_t size) : _pimpl(new impl(s, size)) {}
+	bytearray(size_t size, char c) : _pimpl(new impl(size, c)) {}
 
-	const char * c_str() const { return base_class::c_str(); }
-	const char * data() const  { return base_class::data(); }
+	const char * c_str() const { return _pimpl->c_str(); }
+	const char * data() const  { return _pimpl->data(); }
 	const char * constData() const { return data(); }
-	char &       charAt(size_t pos) { PFS_ASSERT(pos < length()); return base_class::at(pos); }
-	const char & charAt (size_t pos) const { PFS_ASSERT(pos < length()); return base_class::at(pos); }
-	void         clear() { base_class::clear(); }
-	bool	     isEmpty() const { return base_class::empty(); }
-	size_t       size () const { return base_class::size(); }
+
+	byteref      at (size_t pos);
+	const char & at (size_t pos) const { PFS_ASSERT(pos < size()); return _pimpl->at(pos); }
+	byteref      operator [] (size_t pos);
+	const char & operator [] (size_t pos) const { return at(pos); }
+
+	void         clear() { detach(); _pimpl->clear(); }
+	bool	     isEmpty() const { return _pimpl->empty(); }
+	size_t       size () const { return _pimpl->size(); }
 	size_t       length () const { return size(); }
 
 	bytearray & append  (const bytearray & s) { return insert(s, end()); }
@@ -55,10 +79,10 @@ public:
 	bytearray & insert  (size_t size, char ch, size_t pos) { return insert(bytearray(size, ch), pos); }
 	bytearray & insert  (size_t size, char ch, const const_iterator & pos) { return insert(bytearray(size, ch), pos); }
 
-    iterator       begin () { return base_class::begin(); }
-    iterator       end   () { return base_class::end(); }
-    const_iterator begin () const { return base_class::begin(); }
-    const_iterator end   () const { return base_class::end(); }
+    iterator       begin () { detach(); return _pimpl->begin(); }
+    iterator       end   () { detach(); return _pimpl->end(); }
+    const_iterator begin () const { return _pimpl->begin(); }
+    const_iterator end   () const { return _pimpl->end(); }
     const_iterator cbegin() const { return begin(); }
     const_iterator cend  () const { return end(); }
 
@@ -81,17 +105,18 @@ public:
 	bool startsWith (const char * s) const;
 	bool startsWith (const char * s, size_t n) const;
 
-	const_iterator find(const bytearray & s, const_iterator pos) const;
-	const_iterator find(const char * s, size_t pos, size_t n) const;
-	const_iterator find(const char * s, size_t pos) const;
+	const_iterator find (const bytearray & s, const_iterator pos) const;
+	const_iterator find (const char * s, size_t pos, size_t n) const;
+	const_iterator find (const char * s, size_t pos) const;
 
-	bytearray & remove(size_t pos)                  { return remove(pos, length()); }
-	bytearray & remove(size_t pos, size_t n)        { return remove(begin() + pos, n); }
-	bytearray & remove(const const_iterator & from) { return remove(from, length()); }
-	bytearray & remove(const const_iterator & from, size_t n);
+	bytearray & remove (size_t pos)                  { return remove(pos, length()); }
+	bytearray & remove (size_t pos, size_t n)        { return remove(begin() + pos, n); }
+	bytearray & remove (const const_iterator & from) { return remove(from, length()); }
+	bytearray & remove (const const_iterator & from, size_t n);
 
 	void reserve (size_t n = 0);
-	void resize(size_t size);
+	void resize  (size_t size);
+	void swap (bytearray & other) { pfs::swap(_pimpl, other._pimpl); }
 
 	bytearray substr(size_t pos) const            { return substr(pos, length()); }
 	bytearray substr(size_t pos, size_t n) const;
@@ -124,8 +149,6 @@ public:
 	bytearray & setNumber (double n, char f = 'g', int prec = 6);
 
 	bytearray & operator += (const bytearray & other) { return append(other); }
-	char & operator [] (size_t pos) { return charAt(pos); }
-	const char & operator [] (size_t pos) const { return charAt(pos); }
 
 	friend bytearray operator + (const bytearray & s1, const bytearray & s2);
 
@@ -152,7 +175,59 @@ public:
 
 	static bytearray fromBase64 (const bytearray & base64);
 	bytearray toBase64 () const;
+
+	friend class byteref;
 };
+
+
+class DLL_API byteref
+{
+	bytearray & _a;
+    size_t _i;
+
+    inline byteref (bytearray & a, size_t index)
+        : _a(a), _i(index) {}
+
+    friend class bytearray;
+
+public:
+    operator char () const { return _i < _a.size() ? (*_a._pimpl)[_i] : char(0); }
+
+    byteref & operator = (char c)
+    {
+    	PFS_ASSERT(_i < _a.size());
+    	_a.detach();
+        (*_a._pimpl)[_i] = c;
+        return *this;
+    }
+
+    byteref & operator = (const byteref & c)
+    {
+    	PFS_ASSERT(_i < _a.size());
+    	_a.detach();
+        (*_a._pimpl)[_i] = (*c._a._pimpl)[c._i];
+        return *this;
+    }
+
+    bool operator == (char c) const { return (*_a._pimpl)[_i] == c; }
+    bool operator != (char c) const { return (*_a._pimpl)[_i] != c; }
+    bool operator >  (char c) const { return (*_a._pimpl)[_i] > c; }
+    bool operator >= (char c) const { return (*_a._pimpl)[_i] >= c; }
+    bool operator <  (char c) const { return (*_a._pimpl)[_i] < c; }
+    bool operator <= (char c) const { return (*_a._pimpl)[_i] <= c; }
+};
+
+
+inline byteref bytearray::at(size_t pos)
+{
+	PFS_ASSERT(pos < length());
+	return byteref(*this, pos);
+}
+
+inline byteref bytearray::operator [] (size_t pos)
+{
+	return at(pos);
+}
 
 inline bytearray operator + (const bytearray & s1, const bytearray & s2)
 {
@@ -163,32 +238,32 @@ inline bytearray operator + (const bytearray & s1, const bytearray & s2)
 
 inline int bytearray::compare (const bytearray & s) const
 {
-	return base_class::compare(s.constData());
+	return _pimpl->compare(s.constData());
 }
 
 inline int bytearray::compare (size_t pos, size_t len, const bytearray & s) const
 {
-	return base_class::compare(pos, len, s.constData());
+	return _pimpl->compare(pos, len, s.constData());
 }
 
 inline int bytearray::compare (size_t pos, size_t len, const bytearray & s, size_t subpos, size_t sublen) const
 {
-	return base_class::compare(pos, len, s.constData(), subpos, sublen);
+	return _pimpl->compare(pos, len, s.constData(), subpos, sublen);
 }
 
 inline int bytearray::compare (const char * s) const
 {
-	return base_class::compare(s);
+	return _pimpl->compare(s);
 }
 
 inline int bytearray::compare (size_t pos, size_t len, const char * s) const
 {
-	return base_class::compare(pos, len, s);
+	return _pimpl->compare(pos, len, s);
 }
 
 inline int bytearray::compare (size_t pos, size_t len, const char * s, size_t n) const
 {
-	return base_class::compare(pos, len, s, n);
+	return _pimpl->compare(pos, len, s, n);
 }
 
 inline bytearray::const_iterator bytearray::find(const bytearray & s, const_iterator from) const
@@ -198,29 +273,31 @@ inline bytearray::const_iterator bytearray::find(const bytearray & s, const_iter
 
 inline void bytearray::reserve (size_t n)
 {
-	base_class::reserve(n);
+	detach();
+	_pimpl->reserve(n);
 }
 
 inline void bytearray::resize (size_t size)
 {
-	base_class::resize(size);
+	detach();
+	_pimpl->resize(size);
 }
 
 inline bytearray bytearray::substr(size_t pos, size_t n) const
 {
-	bytearray ba(base_class::substr(pos, n));
+	bytearray ba(_pimpl->substr(pos, n));
 	return ba;
 }
 
 inline bytearray bytearray::substr(const const_iterator & from) const
 {
-	bytearray ba(base_class::substr(from - begin(), length()));
+	bytearray ba(_pimpl->substr(from - begin(), length()));
 	return ba;
 }
 
 inline bytearray bytearray::substr(const const_iterator & from, size_t n) const
 {
-	bytearray ba(base_class::substr(from - begin(), n));
+	bytearray ba(_pimpl->substr(from - begin(), n));
 	return ba;
 }
 

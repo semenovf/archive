@@ -8,4 +8,6 @@ TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = pfs       \
     tests/shared_ptr \
-    tests/bytearray
+    tests/bytearray  \
+    tests/vector     \
+    tests/cow_ptr_qt

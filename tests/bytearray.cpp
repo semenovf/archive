@@ -8,6 +8,7 @@
 #include <cwt/test.hpp>
 #include <pfs/bytearray.hpp>
 #include <cstring>
+#include <iostream>
 
 void test_append(void)
 {
@@ -17,7 +18,6 @@ void test_append(void)
 	TEST_OK(ba.length() == 6);
 	TEST_OK(strlen(ba.constData()) == ba.size());
 	TEST_OK(ba == "OneTwo");
-
 }
 
 void test_convert_number()
@@ -34,7 +34,7 @@ void test_convert_number()
 }
 
 
-void test_base64()
+void test_base64 ()
 {
 	pfs::bytearray text("Qt is great!");
 	TEST_OK(text.toBase64() == "UXQgaXMgZ3JlYXQh");
@@ -43,15 +43,31 @@ void test_base64()
 	TEST_OK(text == pfs::bytearray::fromBase64(based64));
 }
 
+void test_cow ()
+{
+	pfs::bytearray s1("Hello?");
+	pfs::byteref c = s1[5]; // Non-const detachment does nothing here
+	pfs::bytearray s2(s1);  // Lazy-copy, shared state
+	c = '!';
+
+	TEST_OK(s1[5] != s2[5]); // COW OK
+	TEST_OK(s1[5] == '!');   // COW OK
+	TEST_OK(s2[5] == '?');   // COW OK
+
+	std::cout << "s1 =" << s1.c_str() << std::endl;
+	std::cout << "s2 =" << s2.c_str() << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(6);
+	BEGIN_TESTS(9);
 
 	test_append();
 	test_convert_number();
 	test_base64();
+	test_cow();
 
     END_TESTS;
 }

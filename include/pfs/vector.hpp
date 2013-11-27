@@ -9,50 +9,83 @@
 #define __PFS_VECTOR_HPP__
 
 #include <vector>
+#include <pfs/shared_ptr.hpp>
 
 namespace pfs {
 
 template <typename T>
-class vector : private std::vector<T>
+class vector
 {
-	typedef std::vector<T> base_class;
+private:
+	typedef std::vector<T> impl;
+	shared_ptr<impl> _pimpl;
+
+	void detach()
+	{
+		if (!_pimpl.unique()) {
+			shared_ptr<impl> d(new impl(*_pimpl));
+			_pimpl.swap(d);
+		}
+	}
+	vector (const impl & other) : _pimpl(new impl(other)) {}
 
 public:
-	typedef typename base_class::iterator iterator;
-	typedef typename base_class::const_iterator const_iterator;
+	vector (const vector & other) : _pimpl(other._pimpl) { }
+	vector & operator = (const vector & other)
+	{
+		_pimpl = other._pimpl;
+		return *this;
+	}
 
 public:
-	vector () : base_class() {}
+	typedef typename impl::iterator iterator;
+	typedef typename impl::const_iterator const_iterator;
 
-	T &            at (size_t i) { return base_class::operator [] (i); }
-	const T &      at (size_t i) const { return base_class::operator [] (i); }
-	T &            operator[](size_t i)       { return base_class::operator [] (i); }
-	const T &      operator[](size_t i) const { return base_class::operator [] (i); }
+public:
+	vector () : _pimpl(new impl()) {}
+	explicit vector (size_t n, const T & v = T()) : _pimpl(new impl(n, v)) {}
+	explicit vector (const T * values, size_t size) : _pimpl(new impl) { append(values, size); }
 
-	T *       data()            { return base_class::data(); }
-	const T * data() const      { return base_class::data(); }
-	const T * constData() const { return base_class::data(); }
-	void      clear()           { base_class::clear(); }
-	bool      isEmpty() const   { return base_class::empty(); }
-	size_t size() const         { return base_class::size(); }
-	size_t length() const       { return size(); }
+    iterator       begin () { detach(); return _pimpl->begin(); }
+    iterator       end   () { detach(); return _pimpl->end(); }
+    const_iterator begin () const { return _pimpl->begin(); }
+    const_iterator end   () const { return _pimpl->end(); }
+    const_iterator cbegin() const { return begin(); }
+    const_iterator cend  () const { return end(); }
 
-	void append(const T & value) { base_class::push_back(value); }
-	void append(const T * value, size_t count);
-	void append(const vector<T> & other) { append(other.constData(), other.size()); }
+	const T &    at (size_t i) const { return _pimpl->operator [] (i); }
+	T &          operator [] (size_t i) { detach(); return _pimpl->operator [] (i); }
+	const T &    operator [] (size_t i) const { return at(i); }
+
+	T *       data()            { detach(); return _pimpl->data(); }
+	const T * data() const      { return _pimpl->data(); }
+	const T * constData() const { return _pimpl->data(); }
+	void      clear()           { detach(); _pimpl->clear(); }
+	bool      isEmpty() const   { return _pimpl->empty(); }
+	size_t    size() const      { return _pimpl->size(); }
+	size_t    length() const    { return size(); }
+
+	void append (const T & value) { detach(); _pimpl->push_back(value); }
+	void append (const T * value, size_t count);
+	void append (const vector<T> & other) { append(other.constData(), other.size()); }
+
+    void resize(size_t n, T v = T()) { detach(); _pimpl->resize(n, v); }
+    void swap (vector<T> & other) { pfs::swap(_pimpl, other._pimpl); }
+
 };
 
 template <typename T>
 void vector<T>::append(const T * value, size_t count)
 {
+	detach();
 	T * d = data();
-	base_class::reserve(size() + count);
+	_pimpl->reserve(size() + count);
 
 	size_t i = size();
 	for (size_t j = 0; j < count; ++i, ++j) {
 		d[i] = value[j];
 	}
-	base_class::resize(i);
+	_pimpl->resize(i);
 }
 
 } // cwt
