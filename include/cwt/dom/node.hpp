@@ -8,9 +8,9 @@
 #ifndef __CWT_DOM_NODE_HPP__
 #define __CWT_DOM_NODE_HPP__
 
-#include <cwt/string.hpp>
-#include <cwt/map.hpp>
-#include <cwt/unitype.hpp>
+#include <pfs/string.hpp>
+#include <pfs/map.hpp>
+#include <pfs/unitype.hpp>
 
 namespace cwt { namespace dom {
 
