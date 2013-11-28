@@ -73,8 +73,8 @@ public:
 	  const cwt::unitype & value () const { return _nodeValue; }
 
 private:
-	  cwt::string      _nodeName;        // readonly
-	  cwt::unitype     _nodeValue;
+	  pfs::string      _nodeName;        // readonly
+	  pfs::unitype     _nodeValue;
 	  ushort_t         _nodeType;        // readonly
 	  node *           _parentNode;      // readonly
 	  node_list *      _childNodes;      // readonly
