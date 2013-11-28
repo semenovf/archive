@@ -26,7 +26,7 @@ public:
 	date () : _jd (NullJulianDay) {}
 	date (int year, int month, int day) { setDate(year, month, day); }
 
-	bool isValid() const { return _jd >= MinJulianDay && _jd <= MaxJulianDay; }
+	bool isValid () const { return _jd >= MinJulianDay && _jd <= MaxJulianDay; }
 
 	date addDays (int ndays) const;
 	date addMonths (int nmonths) const;
@@ -36,9 +36,9 @@ public:
 	int dayOfYear   () const;
 	int daysInMonth () const;
 	int daysInYear  () const;
-	long_t daysTo (const date & d) const;
-	bool setDate (int year, int month, int day);
-	void split (int * year, int * month, int * day);
+	long_t daysTo   (const date & d) const;
+	bool setDate    (int year, int month, int day);
+	void split      (int * year, int * month, int * day);
 
 	int year  () const;
 	int month () const;

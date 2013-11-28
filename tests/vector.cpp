@@ -14,18 +14,18 @@
 
 void test_int_vector(void)
 {
-	pfs::vector<int> v(_VECTOR_SIZE);
+	pfs::vector<int> v;
 	const int *pint;
 
 	for(int i = 0; i < _VECTOR_SIZE; i++)
 		v.append(i);
 
 	for(int i = 0; i < _VECTOR_SIZE; i++)
-		TEST_OK(v[i] == i);
+		TEST_FAIL(v[i] == i);
 
 	pint = v.data();
 	for(int i = 0; i < _VECTOR_SIZE; i++)
-		TEST_OK(pint[i] == i);
+		TEST_FAIL(pint[i] == i);
 }
 
 
@@ -40,11 +40,11 @@ void test_long_vector(void)
 	pint[_VECTOR_SIZE-1] = PFS_INT_MAX;
 
 	for(i = 1; i < _VECTOR_SIZE-1; i++) {
-		TEST_OK(v.at(i) == 0L);
+		TEST_FAIL(v.at(i) == 0L);
 	}
 
-	TEST_OK(v.at(0) == PFS_INT_MIN);
-	TEST_OK(v.at(_VECTOR_SIZE-1) == PFS_INT_MAX);
+	TEST_FAIL(v.at(0) == PFS_INT_MIN);
+	TEST_FAIL(v.at(_VECTOR_SIZE-1) == PFS_INT_MAX);
 }
 
 
@@ -63,19 +63,19 @@ void test_char_vector(void)
 		v[i] = loremipsum[i];
 
 	pfs::vector<char> peer = v;
-	TEST_OK(strcmp(v.data(), loremipsum) == 0);
-	TEST_OK(strcmp(peer.data(), loremipsum) == 0);
+	TEST_FAIL(strcmp(v.data(), loremipsum) == 0);
+	TEST_FAIL(strcmp(peer.data(), loremipsum) == 0);
 
 	pfs::vector<char>::const_iterator it = v.cbegin();
 	pfs::vector<char>::const_iterator itEnd = v.cend();
 
 	for(int i = 0; it != itEnd; ++it, ++i) {
-		TEST_OK(loremipsum[i] == *it);
+		TEST_FAIL(loremipsum[i] == *it);
 	}
 
 	it = v.cbegin();
 	for(int i = 0; it != itEnd; it++, i++) {
-		TEST_OK(loremipsum[i] == *it);
+		TEST_FAIL(loremipsum[i] == *it);
 	}
 }
 
@@ -111,9 +111,9 @@ void test_vector_iterator(void)
 		pfs::vector<Foo>::iterator itEnd = peer.end();
 
 		for(int i = 0; it != itEnd; ++it, ++i) {
-			TEST_OK(i == it->i);
-			TEST_OK(i == it->j);
-			TEST_OK(loremipsum[i] == it->ch);
+			TEST_FAIL(i == it->i);
+			TEST_FAIL(i == it->j);
+			TEST_FAIL(loremipsum[i] == it->ch);
 		}
 	}
 
@@ -122,16 +122,16 @@ void test_vector_iterator(void)
 	pfs::vector<Foo>::const_iterator itEnd = v.cend();
 
 	for(int i = 0; it != itEnd; ++it, ++i) {
-		TEST_OK(i == it->i);
-		TEST_OK(i == it->j);
-		TEST_OK(loremipsum[i] == it->ch);
+		TEST_FAIL(i == it->i);
+		TEST_FAIL(i == it->j);
+		TEST_FAIL(loremipsum[i] == it->ch);
 	}
 
 	it = v.cbegin();
 	for(int i = 0; it != itEnd; it++, i++) {
-		TEST_OK(i == it->i);
-		TEST_OK(i == it->j);
-		TEST_OK(loremipsum[i] == it->ch);
+		TEST_FAIL(i == it->i);
+		TEST_FAIL(i == it->j);
+		TEST_FAIL(loremipsum[i] == it->ch);
 	}
 }
 
@@ -145,20 +145,20 @@ void test_swap()
 	if (true) {
 		pfs::vector<char> v2(ipsum, strlen(ipsum));
 
-		TEST_OK(strncmp(v1.constData(), lorem, strlen(lorem)) == 0);
-		TEST_OK(strncmp(v2.constData(), ipsum, strlen(ipsum)) == 0);
+		TEST_FAIL(strncmp(v1.constData(), lorem, strlen(lorem)) == 0);
+		TEST_FAIL(strncmp(v2.constData(), ipsum, strlen(ipsum)) == 0);
 
 		v2.swap(v1);
 
-		TEST_OK(strncmp(v2.constData(), lorem, strlen(lorem)) == 0);
-		TEST_OK(strncmp(v1.constData(), ipsum, strlen(ipsum)) == 0);
+		TEST_FAIL(strncmp(v2.constData(), lorem, strlen(lorem)) == 0);
+		TEST_FAIL(strncmp(v1.constData(), ipsum, strlen(ipsum)) == 0);
 
 		v2.clear();
 		v2.append(ipsum, strlen(ipsum));
-		TEST_OK(strncmp(v2.constData(), ipsum, strlen(ipsum)) == 0);
+		TEST_FAIL(strncmp(v2.constData(), ipsum, strlen(ipsum)) == 0);
 	}
 
-	TEST_OK(strncmp(v1.constData(), ipsum, strlen(ipsum)) == 0);
+	TEST_FAIL(strncmp(v1.constData(), ipsum, strlen(ipsum)) == 0);
 }
 
 

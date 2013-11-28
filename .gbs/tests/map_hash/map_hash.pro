@@ -1,10 +1,9 @@
 include($$(GBS_HOME)/common-test.pri)
 
-TARGET = test_vector
+TARGET = test_map_hash
 
 INCLUDEPATH += ../../../include
-
-SOURCES += ../../../tests/vector.cpp
+SOURCES += ../../../tests/map_hash.cpp
 
 unix  { LIBS += -lpfs }
 win32 { LIBS += pfs.lib }

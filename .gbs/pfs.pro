@@ -10,4 +10,9 @@ SUBDIRS  = pfs       \
     tests/shared_ptr \
     tests/bytearray  \
     tests/vector     \
+    tests/map_hash   \
+    tests/date       \
+    tests/time       \
+    tests/utf8string_ptr \
+    tests/utf8string \
     tests/cow_ptr_qt

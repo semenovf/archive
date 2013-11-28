@@ -30,7 +30,6 @@ private:
 			_pimpl.swap(d);
 		}
 	}
-	bytearray (const impl & other) : _pimpl(new impl(other)) {}
 
 public:
 	bytearray (const bytearray & other) : _pimpl(other._pimpl) { }
@@ -46,9 +45,10 @@ public:
 
 public:
 	bytearray () : _pimpl(new impl()) {}
-	bytearray(const char * s) : _pimpl(new impl(s)) {}
-	bytearray(const char * s, size_t size) : _pimpl(new impl(s, size)) {}
-	bytearray(size_t size, char c) : _pimpl(new impl(size, c)) {}
+	bytearray (const impl & other) : _pimpl(new impl(other)) {}
+	bytearray (const char * s) : _pimpl(new impl(s)) {}
+	bytearray (const char * s, size_t size) : _pimpl(new impl(s, size)) {}
+	bytearray (size_t size, char c) : _pimpl(new impl(size, c)) {}
 
 	const char * c_str() const { return _pimpl->c_str(); }
 	const char * data() const  { return _pimpl->data(); }
