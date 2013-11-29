@@ -138,7 +138,7 @@ void utf8string::clear ()
 
 utf8string::const_iterator utf8string::end () const
 {
-	return const_iterator(_pimpl->end().base());
+	return const_iterator(data() + _pimpl->size());
 }
 
 /**
@@ -240,10 +240,12 @@ double utf8string::toDouble(bool * ok) const
 	return bytearray(c_str()).toDouble(ok);
 }
 
+/*
 float utf8string::toFloat(bool * ok) const
 {
 	return bytearray(c_str()).toFloat(ok);
 }
+*/
 
 long_t utf8string::toLong(bool * ok, int base) const
 {

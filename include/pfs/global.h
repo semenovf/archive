@@ -56,7 +56,25 @@
 #	define EXTERN_C_END
 #endif
 
-#if defined(_MSC_VER)/* && defined(__cplusplus)*/
+#if defined(PFS_CC_MSVC)
+#	ifdef HAVE_INT64
+#		define strtolong  _strtoi64
+#		define strtoulong _strtoui64
+#	else
+#		define strtolong   strtol
+#		define strtoulong  strtoull
+#	endif
+#else
+#	ifdef HAVE_INT64
+#		define strtolong  strtoll
+#		define strtoulong strtoull
+#	else
+#		define strtolong  strtol
+#		define strtoulong strtoull
+#	endif
+#endif
+
+#if defined(PFS_CC_MSVC)/* && defined(__cplusplus)*/
 /* for suppressing warning 'C4996' in MSVC warning :
  * 		'posix_name': The POSIX name for this item is deprecated.
  * 		Instead, use the ISO C++ conformant name: _posix_name.
@@ -77,7 +95,7 @@
 #define _Tr(s)  s
 
 #if defined(PFS_OS_WIN) && defined(PFS_UNICODE)
-#	define __WIDEN(x) _T(x) /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
+#	define __WIDEN(x) x /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
 #	define __TFILE__ __WIDEN(__FILE__)
 #else
 #	define __WIDEN(x) x

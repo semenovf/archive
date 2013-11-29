@@ -86,7 +86,7 @@ public:
     }
 
     // Random access iterator requirements
-    reference operator [] (const difference_type & n) const
+    value_type /*reference */operator [] (const difference_type & n) const
     {
     	return _p[n];
     }

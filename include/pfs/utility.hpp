@@ -6,12 +6,12 @@
  * @brief
  */
 
-#ifndef __CWT_UTILITY_HPP__
-#define __CWT_UTILITY_HPP__
+#ifndef __PFS_UTILITY_HPP__
+#define __PFS_UTILITY_HPP__
 
 namespace pfs {
 
-#if 0 // TODO Need recognition of C++11 standard
+#if __cplusplus >= 201103L // C++11
 #	include <algorithm> // until C++11
 //#	include <utility>   // since C++11
 template<typename T>
@@ -31,18 +31,18 @@ inline void swap(T & a, T & b)
 }
 #endif
 
-template<typename T>
-inline T & max(T & a, T & b)
+/*template<typename T>
+inline T & max (T & a, T & b)
 {
 	return a >= b ? a : b;
 }
 
 template<typename T>
-inline T & min(T & a, T & b)
+inline T & min (T & a, T & b)
 {
 	return a <= b ? a : b;
-}
+}*/
 
 } // pfs
 
-#endif /* __CWT_UTILITY_HPP__ */
+#endif /* __PFS_UTILITY_HPP__ */

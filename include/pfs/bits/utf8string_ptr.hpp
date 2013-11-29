@@ -22,7 +22,7 @@ public:
 	typedef ucchar     value_type;
 	typedef ptrdiff_t difference_type;
 	typedef const ucchar * pointer;
-	typedef const ucchar & reference;
+	typedef const ucchar /*& */reference;
 
 private:
 	std::string::const_pointer _p;     // pointer to begin of code units
@@ -35,6 +35,7 @@ public:
 	utf8string_ptr () : _p(nullptr) {}
 	utf8string_ptr (const std::string::pointer p) : _p(p) {}
 	utf8string_ptr (std::string::const_pointer p) : _p(p) {}
+	//utf8string_ptr (std::string::const_iterator p) : _p(& *p) {}
 
 	std::string::const_pointer ptr () const { return _p; }
 	value_type operator * () const { return value(); }

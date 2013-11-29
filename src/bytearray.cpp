@@ -6,7 +6,6 @@
  * @brief
  */
 
-//#include "../include/cwt/hash.hpp"
 #include "../include/pfs/bytearray.hpp"
 #include <cstring>
 #include <cstdlib>
@@ -83,7 +82,8 @@ bytearray::const_iterator bytearray::find(const char * s, size_t pos, size_t n) 
 	if (find_pos == _pimpl->npos)
 		return end();
 
-	return bytearray::const_iterator(data() + find_pos);
+	//return bytearray::const_iterator(data() + find_pos);
+	return bytearray::const_iterator(begin() + find_pos);
 }
 
 bytearray::const_iterator bytearray::find(const char * s, size_t pos) const
@@ -152,11 +152,7 @@ static long_t __str_to_long_helper(const char *s, bool * pok, int base, long_t m
 	char *endptr = nullptr;
 
 	errno = 0;
-#ifdef HAVE_INT64
-	long_t r = strtoll(s, & endptr, base);
-#else
-	long_t r = strtol(s, & endptr, base);
-#endif
+	long_t r = strtolong(s, & endptr, base);
 
 	if ((errno == ERANGE && (r == PFS_LONG_MAX || r == PFS_LONG_MIN))
 			|| (errno != 0 && r == (long_t)0)
@@ -179,11 +175,7 @@ static ulong_t	__str_to_ulong_helper(const char *s, bool * pok, int base, ulong_
 	char *endptr = nullptr;
 
 	errno = 0;
-#ifdef HAVE_INT64
-	ulong_t r = strtoull(s, & endptr, base);
-#else
-	ulong_t r = strtoul(s, & endptr, base);
-#endif
+	ulong_t r = strtoulong(s, & endptr, base);
 
 	if ((errno == ERANGE && r == PFS_ULONG_MAX)
 			|| (errno != 0 && r == (ulong_t)0)
@@ -211,7 +203,7 @@ static double __str_to_double (const char * s, bool * pok)
 	if (errno == ERANGE
 			|| endptr == s
 			|| *endptr != '\0' ) {
-		r = (double)0.0f;
+		r = double(0);
 		ok = false;
 	}
 
@@ -220,35 +212,37 @@ static double __str_to_double (const char * s, bool * pok)
 	return r;
 }
 
+/*
 static float __str_to_float (const char * s, bool *pok)
 {
 	bool ok = true;
-	char *endptr = nullptr;
+	double r = __str_to_double (s, & ok);
 
-	errno = 0;
-	float r = strtof(s, & endptr);
-
-	if (errno == ERANGE
-			|| endptr == s
-			|| *endptr != '\0' ) {
-		r = (float)0.0f;
-		ok = false;
+	if (ok) {
+		if (r < double(PFS_FLOAT_MIN)
+				&& r > double(PFS_FLOAT_MAX)) {
+			ok = false;
+			r = double(0);
+		}
 	}
 
 	if (pok)
 		*pok = ok;
 	return r;
 }
+*/
 
 double bytearray::toDouble (bool * ok) const
 {
 	return __str_to_double(c_str(), ok);
 }
 
+/*
 float	 bytearray::toFloat (bool * ok) const
 {
 	return __str_to_float(c_str(), ok);
 }
+*/
 
 long_t bytearray::toLong (bool * ok, int base) const
 {

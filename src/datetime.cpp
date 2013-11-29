@@ -23,7 +23,7 @@ datetime datetime::addMillis (long_t millis) const
 	datetime r;
 
     long_t dd = _date.julianDay();
-    int tt = time(0, 0, 0).millisTo(_time);
+    long_t tt = time(0, 0, 0).millisTo(_time);
     int sign = 1;
 
     if (millis < 0) {
@@ -48,8 +48,9 @@ datetime datetime::addMillis (long_t millis) const
         tt = tt % time::MillisPerDay;
     }
 
+    PFS_ASSERT(tt >= PFS_INT_MIN && tt <= PFS_INT_MAX);
     r._date.fromJulianDay(dd);
-    r._time = time(0, 0, 0).addMillis(tt);
+    r._time = time(0, 0, 0).addMillis(int(tt));
 
     return r;
 }
@@ -87,8 +88,10 @@ void datetime::setMillisSinceEpoch (long_t millis)
         millis += time::MillisPerDay;
     }
 
-    _date = date(1970, 1, 1).addDays(days);
-    _time = time(0, 0, 0).addMillis(millis);
+    PFS_ASSERT(days >= PFS_INT_MIN && days <= PFS_INT_MAX);
+    PFS_ASSERT(millis >= PFS_INT_MIN && millis <= PFS_INT_MAX);
+    _date = date(1970, 1, 1).addDays(int(days));
+    _time = time(0, 0, 0).addMillis(int(millis));
 }
 
 /**

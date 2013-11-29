@@ -100,7 +100,7 @@ public:
 	utf8string & setNumber (ushort_t n, int base = 10, bool uppercase = false) { return setNumber(ulong_t(n), base, uppercase); }
 	utf8string & setNumber (sbyte_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
 	utf8string & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
-	utf8string & setNumber (float n, char f = 'g', int prec = 6)               { return setNumber(double(n), f, prec); }
+	//utf8string & setNumber (float n, char f = 'g', int prec = 6)               { return setNumber(double(n), f, prec); }
 	utf8string & setNumber (double n, char f = 'g', int prec = 6);
 
 	utf8string substr (const const_iterator & begin, size_t n) const;
@@ -113,7 +113,7 @@ public:
 	utf8string right  (size_t n) const                     { return substr(length() - n, n); }
 
 	double	 toDouble (bool * ok = 0) const;
-	float	 toFloat  (bool * ok = 0) const;
+	//float	 toFloat  (bool * ok = 0) const;
 	long_t   toLong   (bool * ok = 0, int base = 10) const;
 	ulong_t	 toULong  (bool * ok = 0, int base = 10) const;
 	int_t	 toInt    (bool * ok = 0, int base = 10) const;
@@ -161,16 +161,9 @@ public:
 	utf8string & remove (size_t pos) { return remove(pos, length()); }
 	utf8string & remove (size_t pos, size_t n);
 
-/*
-	utf8string & replace (const_iterator i1, const_iterator i2, const_iterator first, const_iterator last);
-	utf8string & replace (const_iterator i1, const_iterator i2, const utf8string & str, size_t subpos, size_t sublen);
-	utf8string & replace (const_iterator i1, const_iterator i2, const utf8string & str, size_t sublen);
-	utf8string & replace (const_iterator i1, const_iterator i2, const utf8string & str);
-*/
 	utf8string & replace (size_t pos, size_t len, const utf8string & str, size_t subpos, size_t sublen);
 	utf8string & replace (size_t pos, size_t len, const utf8string & str, size_t subpos);
 	utf8string & replace (size_t pos, size_t len, const utf8string & str);
-//	utf8string & replace (const_iterator i1, const_iterator i2, size_t n, ucchar c);
 	utf8string & replace (size_t pos, size_t len, size_t n, ucchar c);
 
 	utf8string & replace (const utf8string & before, const utf8string & after);
@@ -213,7 +206,7 @@ public:
 	utf8string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = nullptr);
 
 	static utf8string number (double n, char fmt = 'g', int prec = 6);
-	static utf8string number (float n, char fmt = 'g', int prec = 6);
+	//static utf8string number (float n, char fmt = 'g', int prec = 6);
 	static utf8string number (int_t n, int base = 10, bool uppercase = false);
 	static utf8string number (uint_t n, int base = 10, bool uppercase = false);
 	static utf8string number (long_t n, int base = 10, bool uppercase = false);
@@ -261,10 +254,12 @@ inline utf8string utf8string::number (double n, char fmt, int prec)
 	return utf8string().setNumber(n, fmt, prec);
 }
 
+/*
 inline utf8string utf8string::number (float n, char fmt, int prec)
 {
 	return utf8string().setNumber(n, fmt, prec);
 }
+*/
 
 inline utf8string utf8string::number (int_t n, int base, bool uppercase)
 {

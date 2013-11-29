@@ -47,7 +47,7 @@ struct ref_count
 	atomic_int strongref;
 	ref_count_deleter deleter_fn;
 
-	ref_count () : deleter_fn(NULL)
+	ref_count () : deleter_fn(nullptr)
 	{
 		strongref.store(1);
 		weakref.store(1);
@@ -163,8 +163,8 @@ public:
 
     void swap(shared_ptr & other)
     {
-        pfs::swap(d, other.d);
-        pfs::swap(this->value, other.value);
+        ::pfs::swap<ref_count *>(d, other.d);
+        ::pfs::swap(this->value, other.value);
     }
 
     inline void reset()
@@ -338,11 +338,13 @@ inline shared_ptr<T> make_shared(Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4) { return sh
 template <class T, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5>
 inline shared_ptr<T> make_shared(Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5) { return shared_ptr<T>(new T(a1, a2, a3, a4, a5)); }
 
+/*
 template< class T>
-inline void swap(shared_ptr<T> &a, shared_ptr<T> &b )
+inline void swap (shared_ptr<T> & a, shared_ptr<T> & b )
 {
 	a.swap(b);
 }
+*/
 
 template <class T, class T1>
 inline shared_ptr<T> static_pointer_cast (const shared_ptr<T1> & r)

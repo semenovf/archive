@@ -77,8 +77,8 @@ utf8string_ptr::difference_type operator - (const utf8string_ptr & p1, const utf
 	if (p1 < p2)
 		sign = -1;
 
-	const utf8string_ptr limit(pfs::max(p1, p2));
-	utf8string_ptr p(pfs::min(p1, p2));
+	const utf8string_ptr limit(PFS_MAX(p1, p2));
+	utf8string_ptr p(PFS_MIN(p1, p2));
 
 	while (p < limit) {
 		p.jump_forward(1);

@@ -76,7 +76,7 @@ long_t date::julianDay (int year, int month, int day) // static
 void date::fromJulianDay (long_t julianDay, int * yearPtr, int * monthPtr, int * dayPtr) // static
 {
 	long_t b = 0;
-	int c = 0;
+	long_t c = 0;
 
 	// Gregorian calendar
 	if (julianDay >= 2299161) {
@@ -88,23 +88,23 @@ void date::fromJulianDay (long_t julianDay, int * yearPtr, int * monthPtr, int *
 		c = julianDay + 32082;
 	}
 
-    int    d = math::floorDiv(4 * c + 3, 1461);
-    int    e = c - math::floorDiv(1461 * d, 4);
-    int    m = math::floorDiv(5 * e + 2, 153);
+    long_t    d = math::floorDiv(4 * c + 3, 1461);
+    long_t    e = c - math::floorDiv(1461 * d, 4);
+    long_t    m = math::floorDiv(5 * e + 2, 153);
 
-    int    day = e - math::floorDiv(153 * m + 2, 5) + 1;
-    int    month = m + 3 - 12 * math::floorDiv(m, 10);
-    int    year = 100 * b + d - 4800 + math::floorDiv(m, 10);
+    long_t    day = e - math::floorDiv(153 * m + 2, 5) + 1;
+    long_t    month = m + 3 - 12 * math::floorDiv(m, 10);
+    long_t    year = 100 * b + d - 4800 + math::floorDiv(m, 10);
 
     if (year <= 0)
         --year ;
 
     if (yearPtr)
-        *yearPtr = year;
+        *yearPtr = int(year);
     if (monthPtr)
-        *monthPtr = month;
+        *monthPtr = int(month);
     if (dayPtr)
-        *dayPtr = day;
+        *dayPtr = int(day);
 }
 
 
@@ -230,7 +230,7 @@ int date::dayOfYear() const
 {
     return !isValid()
         ? 0
-        : _jd - julianDay(year(), 1, 1) + 1;
+        : int(_jd - julianDay(year(), 1, 1) + 1);
 }
 
 /**

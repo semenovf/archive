@@ -127,7 +127,6 @@ public:
 	bytearray right(size_t n) const               { return substr(length() - n, n); }
 
 	double	 toDouble (bool *ok = 0) const;
-	float	 toFloat  (bool *ok = 0) const;
 	long_t   toLong   (bool *ok = 0, int base = 10) const;
 	ulong_t	 toULong  (bool *ok = 0, int base = 10) const;
 	int_t	 toInt    (bool *ok = 0, int base = 10) const;
@@ -145,7 +144,6 @@ public:
 	bytearray & setNumber (ushort_t n, int base = 10) { return setNumber(ulong_t(n), base); }
 	bytearray & setNumber (sbyte_t n, int base = 10)  { return setNumber(long_t(n), base); }
 	bytearray & setNumber (byte_t n, int base = 10)   { return setNumber(ulong_t(n), base); }
-	bytearray & setNumber (float n, char f = 'g', int prec = 6) { return setNumber(double(n), f, prec); }
 	bytearray & setNumber (double n, char f = 'g', int prec = 6);
 
 	bytearray & operator += (const bytearray & other) { return append(other); }
