@@ -45,6 +45,8 @@ public:
 	int day   () const;
 
 	long_t julianDay() const { return _jd; }
+
+	string toString (const char * format) const;
 	string toString () const;
 
 	bool operator == ( const date & other ) const { return _jd == other._jd; }

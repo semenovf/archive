@@ -11,30 +11,8 @@
 #include <pfs.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/shared_ptr.hpp>
+#include <pfs/pimpl.hpp>
 #include <map>
-
-#define PFS_PIMPL_INLINE(Class,Impl)                           \
-private:                                                       \
-	pfs::shared_ptr<impl> _pimpl;                              \
-                                                               \
-	void detach()                                              \
-	{                                                          \
-		if (!_pimpl.unique()) {                                \
-			pfs::shared_ptr<impl> d(new impl(*_pimpl));        \
-			_pimpl.swap(d);                                    \
-		}                                                      \
-	}                                                          \
-                                                               \
-	Class (const impl & other) : _pimpl(new impl(other)) {}    \
-                                                               \
-public:                                                        \
-	Class (const Class & other) : _pimpl(other._pimpl) { }     \
-	Class & operator = (const Class & other)                   \
-	{                                                          \
-		_pimpl = other._pimpl;                                 \
-		return *this;                                          \
-	}
-
 
 namespace pfs {
 

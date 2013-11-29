@@ -10,12 +10,17 @@
 
 #include <vector>
 #include <pfs/shared_ptr.hpp>
+#include <pfs/pimpl.hpp>
 
 namespace pfs {
 
 template <typename T>
 class vector
 {
+	typedef std::vector<T> impl;
+	PFS_PIMPL_INLINE(vector, impl)
+
+/*
 private:
 	typedef std::vector<T> impl;
 	shared_ptr<impl> _pimpl;
@@ -36,6 +41,7 @@ public:
 		_pimpl = other._pimpl;
 		return *this;
 	}
+*/
 
 public:
 	typedef typename impl::iterator iterator;
@@ -70,8 +76,6 @@ public:
 	void append (const vector<T> & other) { append(other.constData(), other.size()); }
 
     void resize(size_t n, T v = T()) { detach(); _pimpl->resize(n, v); }
-    void swap (vector<T> & other) { pfs::swap(_pimpl, other._pimpl); }
-
 };
 
 template <typename T>

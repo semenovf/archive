@@ -30,6 +30,9 @@ void test_stringify ()
 {
 	TEST_OK(pfs::time(14, 0, 0).toString() == _u8("14:00:00"));
 	TEST_OK(pfs::time(9, 54, 3).toString() == _u8("09:54:03"));
+	TEST_OK(pfs::time(14, 0, 0).toString("%H:%M:%S") == _u8("14:00:00"));
+	TEST_OK(pfs::time(9, 54, 3).toString("%H:%M:%S") == _u8("09:54:03"));
+	TEST_OK(pfs::time(9, 54, 3).toString("[%%%H::%M::%S%%]") == _u8("[%09::54::03%]"));
 }
 
 int main(int argc, char *argv[])

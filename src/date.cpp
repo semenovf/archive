@@ -7,6 +7,7 @@
 
 #include "../include/pfs/date.hpp"
 #include "../include/pfs/math.hpp"
+#include <cstring>
 #include <sstream>
 #include <iomanip>
 
@@ -330,6 +331,105 @@ int date::day () const
 }
 
 
+
+/**
+ *
+ * @param format
+ * @return
+ *
+ * %n     A newline character.
+ * %t     A tab character.
+ * %C     The century number (year/100) as a 2-digit integer.
+ * %d     The day of the month as a decimal number (range 01 to 31).
+ * %e     Like %d, the day of the month as a decimal number, but a leading zero is replaced by a space.
+ * %F     Equivalent to %Y-%m-%d (the ISO 8601 date format).
+ * %j     The day of the year as a decimal number (range 001 to 366).
+ * %m     The month as a decimal number (range 01 to 12).
+ * %u     The day of the week as a decimal, range 1 to 7, Monday being 1.
+ * %y     The year as a decimal number without a century (range 00 to 99).
+ * %Y     The year as a decimal number including the century.
+ *
+ * TODO need to support
+ * %U     The week number of the current year as a decimal number, range 00 to 53,
+ *        starting with the first Sunday as the first day of week 01.
+ * %V     The ISO 8601 week number (see NOTES) of the current year as a decimal number,
+ *        range 01 to 53, where week 1 is the first week that has at least 4 days in the new year.
+ *        See also  %U  and %W.
+ */
+string date::toString (const char * format) const
+{
+	if (year() < 0 && year() > 9999)
+		return string();
+
+	std::stringstream ss;
+	const char * p = format;
+	const char * end = format + strlen(format);
+	bool need_spec = false; // true if conversion specifier character expected
+
+	while (p < end) {
+		if (*p == '%') {
+			if (need_spec) {
+				ss << '%';
+				need_spec = false;
+			} else {
+				need_spec = true;
+			}
+		} else {
+			if (!need_spec) {
+				ss << *p;
+			} else {
+				switch (*p) {
+				case 'n':
+					ss << std::endl;
+					break;
+				case 't':
+					ss << '\t';
+					break;
+				case 'C':
+					ss << std::setw(2) << std::setfill('0') << year()/100;
+					break;
+				case 'd':
+					ss << std::setw(2) << std::setfill('0') << day();
+					break;
+				case 'e':
+					ss << std::setw(2) << std::setfill(' ') << day();
+					break;
+				case 'F':
+					ss << std::setw(4) << std::setfill('0') << year()
+					   << '-'
+					   << std::setw(2) << std::setfill('0') << month()
+					   << '-'
+					   << std::setw(2) << std::setfill('0') << day();
+					break;
+				case 'j':
+					ss << std::setw(3) << std::setfill('0') << dayOfYear();
+					break;
+				case 'm':
+					ss << std::setw(2) << std::setfill('0') << month();
+					break;
+				case 'u':
+					ss << dayOfWeek();
+					break;
+				case 'y':
+					ss << std::setw(2) << std::setfill('0') << year() % 100;
+					break;
+				case 'Y':
+					ss << std::setw(4) << std::setfill('0') << year();
+					break;
+
+				default:
+					ss << *p;
+					break;
+				}
+
+				need_spec = false;
+			}
+		}
+		++p;
+	}
+	return string::fromLatin1(ss.str());
+}
+
 /**
  * @brief Converts date to string.
  *
@@ -342,17 +442,7 @@ int date::day () const
  */
 string date::toString () const
 {
-	if (year() >= 0 || year() <= 9999) {
-		std::stringstream ss;
-		ss << std::setw(4) << std::setfill('0') << year()
-		   << '-'
-		   << std::setw(2) << std::setfill('0') << month()
-		   << '-'
-		   << std::setw(2) << std::setfill('0') << day();
-		return string::fromLatin1(ss.str());
-	}
-	return string();
+	return toString("%F"); // equivalent to %H:%M:%S
 }
-
 
 } // pfs

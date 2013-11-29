@@ -43,6 +43,7 @@ public:
 	int	secsTo (const time & t) const;
 
 	bool setTime (int hour, int min, int sec, int millis = 0);
+	string toString (const char * format) const;
 	string toString () const;
 
 	bool operator == (const time & t) const { return _millis == t._millis; }

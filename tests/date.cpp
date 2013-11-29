@@ -118,6 +118,8 @@ void test_periods (void)
 
 void test_stringify ()
 {
+	TEST_OK(pfs::date(2013, 11, 28).toString("%Y-%m-%d") == _u8("2013-11-28"));
+	TEST_OK(pfs::date(1, 2, 3).toString("%Y-%m-%d") == _u8("0001-02-03"));
 	TEST_OK(pfs::date(2013, 11, 28).toString() == _u8("2013-11-28"));
 	TEST_OK(pfs::date(1, 2, 3).toString() == _u8("0001-02-03"));
 }
@@ -126,7 +128,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(49);
+	BEGIN_TESTS(51);
 
 	test_min_max();
 	test_jd();
