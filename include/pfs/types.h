@@ -63,7 +63,7 @@ typedef uint32_t           uint_t;
 typedef ssize_t offset_t;
 
 #ifndef HAVE_INTPTR_T
-#if CWT_OS_BITS == 64
+#if PFS_OS_BITS == 64
 	typedef long int          intptr_t;
 #else
 	typedef int               intptr_t;
@@ -71,7 +71,7 @@ typedef ssize_t offset_t;
 #endif
 
 #ifndef HAVE_UINTPTR_T
-#if CWT_OS_BITS == 64
+#if PFS_OS_BITS == 64
 	typedef unsigned long int uintptr_t;
 #else
 	typedef unsigned int      uintptr_t;
@@ -111,6 +111,6 @@ typedef struct {
     byte_t    node[6];
 } uuid_t;
 
-#define CWT_NULL_UUID { 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0}}
+//#define CWT_NULL_UUID { 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0}}
 
 #endif /* ! __CWT_TYPES_H__ */

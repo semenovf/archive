@@ -23,8 +23,18 @@ namespace pfs {
 class DLL_API utf8string
 {
 private:
+// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 	class impl;
 	shared_ptr<impl> _pimpl;
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 	void detach ();
 

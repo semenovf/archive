@@ -160,7 +160,7 @@ public:
 	bool operator  < (const utf8string_ptr & o) const { return _p <  o._p; }
 	bool operator <= (const utf8string_ptr & o) const { return _p <= o._p; }
 
-	friend difference_type operator - (const utf8string_ptr & p1, const utf8string_ptr & p2);
+	friend DLL_API difference_type operator - (const utf8string_ptr & p1, const utf8string_ptr & p2);
 };
 
 } // pfs

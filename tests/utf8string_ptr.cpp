@@ -15,7 +15,7 @@ void test_constptr()
 	std::string s("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя");
 	pfs::utf8string_ptr ptr(s.data());
 	pfs::utf8string_ptr begin(s.data());
-	pfs::utf8string_ptr end(s.end().base());
+	pfs::utf8string_ptr end(s.data() + s.size());
 
 	std::cout << "Iterate through string \"" << s << '"' << std::endl;
 
