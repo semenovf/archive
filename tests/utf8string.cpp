@@ -226,8 +226,6 @@ void test_number_conversions()
 	TEST_OK(_u8("-123456").toInt(&ok) == -123456 && ok);
 	TEST_OK(_u8("/123456").toInt(&ok) == 0 && !ok);
 	TEST_OK(_u8("123.456").toInt(&ok) == 0 && !ok);
-
-	TEST_OK(_u8("123.456").toFloat(&ok) == 123.456f && ok);
 	TEST_OK(_u8("123.456").toDouble(&ok) == double(123.456) && ok);
 }
 
@@ -373,7 +371,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(147);
+	BEGIN_TESTS(146);
 
     test_basic();
     test_init();

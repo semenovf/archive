@@ -299,7 +299,7 @@ vector<uint16_t> utf8string::toUtf16 () const
 	const_iterator itEnd = cend();
 
 	while (it != itEnd) {
-		uint32_t ch = *it;
+		ucchar ch = *it;
 
 		if (ch <= ucchar::MaxBMP) { /* Target is a character <= 0xFFFF */
 			/* UTF-16 surrogate values are illegal in UTF-32 */
@@ -751,7 +751,7 @@ utf8string utf8string::toLower () const
 	const_iterator itEnd = end();
 
 	while (it < itEnd) {
-		r.append(utf8string(1, (*it).toLower()));
+		r.append(utf8string(1, it->toLower()));
 		++it;
 	}
 	return r;
@@ -764,7 +764,7 @@ utf8string utf8string::toUpper () const
 	const_iterator itEnd = end();
 
 	while (it < itEnd) {
-		r.append(utf8string(1, (*it).toUpper()));
+		r.append(utf8string(1, it->toUpper()));
 		++it;
 	}
 	return r;

@@ -26,10 +26,10 @@ private:
 	class impl;
 	shared_ptr<impl> _pimpl;
 
-	void detach();
+	void detach ();
 
 public:
-	utf8string(const utf8string & other) : _pimpl(other._pimpl) {}
+	utf8string (const utf8string & other) : _pimpl(other._pimpl) {}
 	utf8string & operator = (const utf8string & other)
 	{
 		_pimpl = other._pimpl;

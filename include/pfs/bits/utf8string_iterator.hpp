@@ -49,18 +49,18 @@ public:
     }
 
     // Forward iterator requirements
-    value_type operator * () const
+    const reference operator * () const
     {
     	return *_p;
     }
 
-    struct __ptr {
-    	value_type _v;
-    	__ptr (value_type v) : _v(v) {}
-    	value_type * operator -> () { return & _v; }
-    	const value_type * operator -> () const { return & _v; }
-    };
-    __ptr operator-> () const { return __ptr(*_p); }
+    reference operator * ()
+    {
+    	return *_p;
+    }
+
+    const pointer operator -> () const { return _p.operator -> (); }
+    pointer operator -> () { return _p.operator -> (); }
 
     utf8string_iterator & operator ++ ()
     {
@@ -86,7 +86,12 @@ public:
     }
 
     // Random access iterator requirements
-    value_type /*reference */operator [] (const difference_type & n) const
+    const reference operator [] (const difference_type & n) const
+    {
+    	return _p[n];
+    }
+
+    reference operator [] (const difference_type & n)
     {
     	return _p[n];
     }
