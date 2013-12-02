@@ -16,12 +16,12 @@ namespace cwt { namespace dom {
 class node;
 typedef pfs::shared_ptr<node> node_ptr;
 
-class DLL_API node_list : public pfs::list<node_ptr>
+class DLL_API nodelist : public pfs::list<node_ptr>
 {
 	typedef pfs::list<node_ptr> base_class;
 
 public:
-	node_list() : base_class () {}
+	nodelist() : base_class () {}
 
 	node_ptr item(size_t index);
 	size_t length () const { return base_class::size(); }

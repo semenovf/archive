@@ -8,26 +8,26 @@
 #ifndef __CWT_DOM_ATTR_HPP__
 #define __CWT_DOM_ATTR_HPP__
 
-#include <pfs/string.hpp>
+#include <cwt/dom/node.hpp>
 
 namespace cwt { namespace dom {
 
-class node;
+class element;
 
-class attr : node
+class attr : public node
 {
+	pfs::string _name;      // readonly
+	bool        _specified; // readonly
+	pfs::string _value;
+	element *   _ownerElement; // readonly
+
 public:
-	pfs::string name () const { return _name; }
+	const pfs::string & name () const { return _name; }
+	bool specified () const { return _specified; }
 	const pfs::string & value () const { return _value; }
-	void setValue (const pfs::string & v) { _value = v; }
+	void setValue (const pfs::string & v) { _value = v; } // raises(DOMException)
+	const element * ownerElement () const { return _ownerElement; }
 
-private:
-	pfs::string _name;      // ro
-	bool        _specified; // ro
-	pfs::string _value;     // raises(DOMException) on setting
-
-  // Introduced in DOM Level 2:
-  readonly attribute Element          ownerElement;
 };
 
 }} // cwt::dom

@@ -15,11 +15,11 @@ namespace cwt { namespace dom {
 
 class node;
 
-class named_node_map : public cwt::map<pfs::string, node *>
+class namednodemap : public pfs::map<pfs::string, node *>
 {
-	typedef cwt::map<pfs::string, node *> base_class;
+	typedef pfs::map<pfs::string, node *> base_class;
 public:
-	named_node_map() : base_class() {}
+	namednodemap() : base_class() {}
 
 	node * getNamedItem (const pfs::string & name);
 	node * setNamedItem (node * arg); // raises(DOMException)
