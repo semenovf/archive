@@ -104,8 +104,8 @@ utf8string utf8string::fromUtf8 (const char * utf8, size_t size, ConvertState * 
 				++invalidChars;
 				++cursor;
 			} else {
-				r._pimpl->append(cursor, size_t(n) + 1);
-				cursor += size_t(n) + 1;
+				r._pimpl->append(cursor, size_t(n));
+				cursor += size_t(n);
 			}
 		}
 	}

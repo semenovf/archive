@@ -14,6 +14,9 @@ namespace pfs {
 
 class utf8string::impl : public std::string
 {
+	friend class ucchar_ref;
+	friend class ucchar_ptr;
+
 public:
 	size_t _length; // length in unicode code points
 

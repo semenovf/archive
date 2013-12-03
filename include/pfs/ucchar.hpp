@@ -39,7 +39,8 @@ public:
 	uint32_t value () const { return _value; }
 	uint32_t ucs4 () const { return _value; }
 	uint32_t unicode () const { return _value; }
-	size_t  encodeUtf8 (char utf8[7]);
+	size_t  encodeUtf8 (char utf8[6]);
+	int decodeUtf8 (const char * units, size_t len);
 
 	bool isSpace() const;
 	ucchar toLower () const;
@@ -49,16 +50,16 @@ public:
 	/* Low Surrogates: DC00-DFFF
 	 * Qt implementation: (ucs4 & 0xfffffc00) == 0xdc00;
 	 * */
-	static bool isLowSurrogate(const ucchar & ucs4) { return ucs4 >= LowSurrogateStart && ucs4 <= LowSurrogateEnd; }
+	static bool isLowSurrogate (const ucchar & ucs4) { return ucs4 >= LowSurrogateStart && ucs4 <= LowSurrogateEnd; }
 
 	/* High Surrogates: D800-DBFF
 	 * Qt implementation: (ucs4 & 0xfffffc00) == 0xd800
 	 * */
-	static bool isHiSurrogate(const ucchar & ucs4)      { return ucs4 >= HiSurrogateStart && ucs4 <= HiSurrogateEnd; }
-	static bool isSurrogate(const ucchar & ucs4)        { return (ucs4 - HiSurrogateStart < 2048u); }
-	static bool isValid(const ucchar & ch, const ucchar & min_uc = ucchar());
+	static bool isHiSurrogate (const ucchar & ucs4)      { return ucs4 >= HiSurrogateStart && ucs4 <= HiSurrogateEnd; }
+	static bool isSurrogate (const ucchar & ucs4)        { return (ucs4 - HiSurrogateStart < 2048u); }
+	static bool isValid (const ucchar & ch, const ucchar & min_uc = ucchar());
 
-	static int decodeUtf8(const char * units, size_t len, uint32_t & uc, uint32_t & min_uc);
+	static int decodeUtf8 (const char * units, size_t len, uint32_t & uc, uint32_t & min_uc);
 
 private:
 	uint32_t _value;

@@ -7,6 +7,7 @@
 
 #include <cwt/test.hpp>
 #include <pfs/utf8string.hpp>
+#include <pfs/bits/uccharptr.hpp>
 #include <cstring>
 #include <iostream>
 
@@ -366,6 +367,57 @@ void test_trim()
 	TEST_OK(s.trim()  == trimed);
 }
 
+void test_std_string ()
+{
+	std::string s("ABCDEF");
+	std::string::iterator it = s.begin();
+	std::string::iterator itBegin = s.begin();
+	TEST_OK(it == itBegin);
+	TEST_OK(--it < itBegin);
+	TEST_OK(--it < itBegin);
+	TEST_OK(++it < itBegin);
+	TEST_OK(++it == itBegin);
+	TEST_OK(it >= itBegin);
+	TEST_OK(++it > itBegin);
+	TEST_OK(*it == 'B');
+
+	*it = 'W';
+	TEST_OK(*it == 'W');
+	TEST_OK(s == "AWCDEF")
+}
+
+
+void test_ucchar_ptr ()
+{
+	pfs::utf8string s (_u8("ЁЖЗИЙЭЮЯGIJKLёжзийэюяgijkl"));
+
+	pfs::ucchar_ref uref0(0, s);
+	TEST_OK(uref0 == pfs::ucchar(0x401));
+
+	pfs::ucchar_ref uref1(1, s);
+	TEST_OK(uref1 == pfs::ucchar(0x416));
+
+	pfs::ucchar_ptr p(s);
+	TEST_OK(*p == pfs::ucchar(0x401));
+
+
+	// Test left bound
+	int n = 5;
+	while (n-- > 0) {
+		--p;
+		TEST_OK(p.isOutOfBounds());
+	}
+
+	n = 5;
+	while (n-- > 0) {
+		TEST_OK(p.isOutOfBounds());
+		++p;
+	}
+
+	TEST_OK(!p.isOutOfBounds());
+	TEST_OK(*p == pfs::ucchar(0x401));
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -388,6 +440,8 @@ int main(int argc, char *argv[])
     test_replace();
     test_split();
     test_trim();
+    test_std_string();
+    test_ucchar_ptr();
 
     END_TESTS;
 }

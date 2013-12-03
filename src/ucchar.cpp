@@ -47,7 +47,7 @@ ucchar ucchar::toUpper () const
  * @param utf8
  * @return Number of bytes required to store Unicode character encoded to UTF8.
  */
-size_t ucchar::encodeUtf8 (char utf8[7])
+size_t ucchar::encodeUtf8 (char utf8[6])
 {
 	char * cursor = utf8;
 
@@ -79,11 +79,18 @@ size_t ucchar::encodeUtf8 (char utf8[7])
     	*cursor++ = 0x80 | (byte_t(_value >> 6)  & 0x3F);
     	*cursor++ = 0x80 | byte_t(_value & 0x3F);
     }
-    *cursor = '\0';
+    //*cursor = '\0';
 
     return size_t(cursor - utf8);
 }
 
+
+int ucchar::decodeUtf8 (const char * units, size_t len)
+{
+	uint32_t min_uc = 0; // for 'Overlong' encodings recognition
+	int n = ucchar::decodeUtf8(units, len, _value, min_uc);
+	return n > 0 && !ucchar::isValid(_value, min_uc) ? -1 : n;
+}
 
 /* UTF-8
  *
@@ -105,7 +112,7 @@ size_t ucchar::encodeUtf8 (char utf8[7])
  * @param min_uc Minimal Unicode code point for overlong sequence recognition.
  * @return -1 if error,
  *         -2 if code units too few to decode,
- *         number of UTF-8 code units converted to Unicode code point minus 1.
+ *         number of UTF-8 code units converted to Unicode code point.
  */
 int ucchar::decodeUtf8(const char * units, size_t len, uint32_t & uc, uint32_t & min_uc)
 {
@@ -116,7 +123,7 @@ int ucchar::decodeUtf8(const char * units, size_t len, uint32_t & uc, uint32_t &
 
 	if (ch < 128) {
 		uc = uint32_t(ch);
-		return 0;
+		return 1;
 	} else if ((ch & 0xE0) == 0xC0) {
 		uc = ch & 0x1F;
 		need = 1;
@@ -159,7 +166,7 @@ int ucchar::decodeUtf8(const char * units, size_t len, uint32_t & uc, uint32_t &
 	}
 */
 
-	return need;
+	return need + 1;
 }
 } // pfs
 

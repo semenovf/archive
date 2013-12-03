@@ -6,8 +6,6 @@
 
 
 #include "../include/pfs/bits/utf8string_ptr.hpp"
-//#include "../include/pfs/utf8string.hpp"
-#include <pfs/utility.hpp>
 
 namespace pfs {
 
@@ -17,7 +15,7 @@ utf8string_ptr::value_type utf8string_ptr::value () const
 	uint32_t min_uc = 0; // for 'Overlong' encodings recognition
 	int n = ucchar::decodeUtf8(_p, 6, uc, min_uc);
 
-	if (n >= 0) {
+	if (n > 0) {
 		if (ucchar::isValid(uc, min_uc)) {
 			return uc;
 		}

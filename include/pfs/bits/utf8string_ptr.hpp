@@ -21,9 +21,10 @@ class uccharptr
 	ucchar _uc;
 public:
 	uccharptr (const ucchar & uc) : _uc(uc) {}
-	ucchar & operator * () { return _uc; }
-	const ucchar & operator * () const { return _uc; }
-	ucchar * operator -> () { return & _uc; }
+
+	ucchar &       operator *  () { return _uc; }
+	const ucchar & operator *  () const { return _uc; }
+	ucchar *       operator -> () { return & _uc; }
 	const ucchar * operator -> () const { return & _uc; }
 };
 
@@ -33,6 +34,7 @@ class uccharref
 	ucchar _uc;
 public:
 	uccharref (const ucchar & uc) : _uc(uc) {}
+
     operator ucchar () const { return _uc; }
 
     uccharref & operator = (ucchar c)
@@ -69,8 +71,8 @@ public:
 class DLL_API utf8string_ptr
 {
 public:
-	typedef ucchar     value_type;
-	typedef ptrdiff_t difference_type;
+	typedef ucchar          value_type;
+	typedef ptrdiff_t       difference_type;
 	typedef const uccharptr pointer;
 	typedef const uccharref reference;
 
@@ -85,7 +87,6 @@ public:
 	utf8string_ptr () : _p(nullptr) {}
 	utf8string_ptr (const std::string::pointer p) : _p(p) {}
 	utf8string_ptr (std::string::const_pointer p) : _p(p) {}
-	//utf8string_ptr (std::string::const_iterator p) : _p(& *p) {}
 
 	std::string::const_pointer ptr () const { return _p; }
 	const reference operator * () const { return reference(value()); }

@@ -97,9 +97,7 @@ void test_constptr()
 	TEST_OK(++ptr > end);
 	TEST_OK(--ptr > end);
 	TEST_OK(--ptr == end);
-
 }
-
 
 int main(int argc, char *argv[])
 {

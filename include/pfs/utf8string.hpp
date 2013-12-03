@@ -20,8 +20,14 @@
 
 namespace pfs {
 
+class ucchar_ref;
+class ucchar_ptr;
+
 class DLL_API utf8string
 {
+	friend class ucchar_ref;
+	friend class ucchar_ptr;
+
 private:
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC
