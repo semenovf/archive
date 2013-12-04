@@ -51,8 +51,8 @@ utf8string::utf8string (const_iterator begin, const_iterator end)
 	: _pimpl(new utf8string::impl())
 {
 	if (begin < end) {
-		std::string::const_pointer p1 = begin.base().ptr();
-		std::string::const_pointer p2 = end.base().ptr();
+		std::string::const_pointer p1 = begin.base()->ptr();
+		std::string::const_pointer p2 = end.base()->ptr();
 		_pimpl->append(p1, p2 - p1);
 		updateLength();
 	}
@@ -101,11 +101,14 @@ utf8string::utf8string (bool no_ut8_check, const char * utf8, size_t size)
 	}
 }
 
-void utf8string::updateLength()
+void utf8string::updateLength ()
 {
-	utf8string::impl::const_pointer end = _pimpl->data() + _pimpl->size();
-	utf8string::impl::const_pointer begin = _pimpl->data();
-	_pimpl->_length = utf8string_ptr(end) - utf8string_ptr(begin);
+	utf8string::const_iterator it(cbegin());
+	utf8string::const_iterator itEnd = cend();
+	_pimpl->_length = 0;
+
+	while (it ++ < itEnd)
+		++_pimpl->_length;
 }
 
 void utf8string::swap (utf8string & other)
@@ -136,9 +139,19 @@ void utf8string::clear ()
 	_pimpl->_length = 0;
 }
 
+utf8string::iterator utf8string::end ()
+{
+	ucchar_ref ref(_pimpl->size(), *this);
+	ucchar_ptr p(ref);
+	return iterator(p);
+}
+
+
 utf8string::const_iterator utf8string::end () const
 {
-	return const_iterator(data() + _pimpl->size());
+	ucchar_const_ref ref(_pimpl->size(), *this);
+	ucchar_const_ptr p(ref);
+	return const_iterator(p);
 }
 
 /**
@@ -164,19 +177,19 @@ utf8string::const_iterator utf8string::end () const
  * @param pos
  * @return
  */
-utf8string & utf8string::insert (size_t pos, const utf8string & s)
+utf8string & utf8string::insert (size_t offset, const utf8string & s)
 {
 	detach();
 
-	const_iterator it(cbegin() + pos);
+	const_iterator it(cbegin() + offset);
 
 	if (it > cend())
 		it = cend();
 	if (it < cbegin())
 		it = cbegin();
 
-	size_t off = it.distance(cbegin());
-	_pimpl->insert(off, s._pimpl->data(), s._pimpl->size());
+	size_t pos = it.base().distance(cbegin().base());
+	_pimpl->insert(pos, s._pimpl->data(), s._pimpl->size());
 	_pimpl->_length += s._pimpl->_length;
 	return *this;
 }
@@ -345,8 +358,8 @@ utf8string utf8string::substr(const const_iterator & from, size_t n) const
 		itEnd = end();
 
 	if (from >= begin() && from < itEnd) {
-		size_t pos = from.distance(begin());
-		size_t sz  = itEnd.distance(from);
+		size_t pos = from.base().distance(begin().base());
+		size_t sz  = itEnd.base().distance(from.base());
 		r._pimpl->assign(_pimpl->substr(pos, sz));
 		r.updateLength();
 	}
@@ -365,8 +378,8 @@ utf8string utf8string::substr(const const_iterator & begin, const const_iterator
 	if (e > cend())
 		e = cend();
 
-	size_t pos = b.distance(cbegin());
-	size_t sz  = b.distance(e);
+	size_t pos = b.base().distance(cbegin().base());
+	size_t sz  = b.base().distance(e.base());
 
 	utf8string r;
 	r._pimpl->assign(_pimpl->substr(pos, sz));
@@ -399,7 +412,9 @@ int utf8string::compare (const_iterator from, size_t len, const char * str, size
 	if (to > end())
 		to = end();
 
-	return _pimpl->compare(from.distance(begin()), to.distance(from), str, subpos, sublen);
+	return _pimpl->compare(from.base().distance(begin().base())
+			, to.base().distance(from.base())
+			, str, subpos, sublen);
 }
 
 int utf8string::compare (const utf8string & s) const
@@ -439,8 +454,8 @@ int utf8string::compare (size_t pos, size_t len, const utf8string & utf8, size_t
 
 	return compare (begin() + pos, len
 			, utf8.data()
-			, from.distance(utf8.begin())
-			, to.distance(from));
+			, from.base().distance(utf8.begin().base())
+			, to.base().distance(from.base()));
 }
 
 int utf8string::compare (const char * str) const
@@ -476,19 +491,20 @@ utf8string::const_iterator utf8string::find (const char * s, size_t pos, size_t 
 	if (pos >= length())
 		return end();
 
-	size_t off = (begin() + pos).distance(begin());
+	size_t off = (begin() + pos).base().distance(begin().base());
 	off = _pimpl->find(s, off, n);
 
 	if (off == _pimpl->npos)
 		return end();
 
-	return utf8string::const_iterator(data() + off);
+
+	return utf8string::const_iterator(ucchar_const_ptr(ucchar_const_ref(off, *this)));
 }
 
 utf8string::const_iterator utf8string::find (const utf8string & s, utf8string::const_iterator pos) const
 {
 	PFS_ASSERT(pos >= begin());
-	return find(s.constData(), pos - begin(), s._pimpl->size());
+	return find(s.constData(), pos.base().distance(begin().base()), s._pimpl->size());
 }
 
 utf8string::const_iterator utf8string::find (const char * s, size_t from) const
@@ -527,7 +543,7 @@ bool utf8string::startsWith (const char * s, size_t n) const
 bool utf8string::startsWith (const utf8string & s, const_iterator from) const
 {
 	PFS_ASSERT(from >= begin() && from < end());
-	size_t off = from.distance(cbegin());
+	size_t off = from.base().distance(cbegin().base());
 	return _pimpl->compare(off, s._pimpl->size(), s.constData(), s._pimpl->size()) == 0;
 }
 
@@ -536,7 +552,7 @@ utf8string utf8string::ltrim () const
 	const_iterator it = cbegin();
 	const_iterator itEnd = cend();
 
-	while (it != itEnd && it->isSpace())
+	while (it != itEnd && it->value().isSpace())
 		++it;
 
 	if (it != itEnd) {
@@ -554,7 +570,7 @@ utf8string utf8string::rtrim () const
 	if (itr != itrEnd && *itr == ucchar::Null) // skip null-terminator
 		++itr;
 
-	while (itr != itrEnd && itr->isSpace())
+	while (itr != itrEnd && (*itr).value().isSpace())
 		++itr;
 
 	if (itr != itrEnd) {
@@ -569,7 +585,7 @@ utf8string utf8string::trim () const
 	const_iterator it = cbegin();
 	const_iterator itEnd = cend();
 
-	while (it != itEnd && it->isSpace())
+	while (it != itEnd && it->value().isSpace())
 		++it;
 
 	const_reverse_iterator itr = crbegin();
@@ -578,7 +594,7 @@ utf8string utf8string::trim () const
 	if (itr != itrEnd && *itr == ucchar::Null) // skip null-terminator
 		++itr;
 
-	while (itr != itrEnd && itr->isSpace())
+	while (itr != itrEnd && (*itr).value().isSpace())
 		++itr;
 
 	if (itr != itrEnd) {
@@ -613,8 +629,8 @@ utf8string & utf8string::replace (size_t pos, size_t len, const utf8string & str
 
 	PFS_ASSERT(i1 >= cbegin() && i1 <= cend());
 	PFS_ASSERT(i2 >= cbegin() && i2 <= cend());
-	size_t off  = i1.distance(cbegin());
-	size_t size = i2.distance(i1);
+	size_t off  = i1.base().distance(cbegin().base());
+	size_t size = i2.base().distance(i1.base());
 
 	const_iterator str_i1 = str.cbegin() + subpos;
 	const_iterator str_i2 = str_i1 + sublen;
@@ -622,8 +638,8 @@ utf8string & utf8string::replace (size_t pos, size_t len, const utf8string & str
 		str_i2 = str.cend();
 	PFS_ASSERT(str_i1 >= str.cbegin() && str_i1 <= str.cend());
 	PFS_ASSERT(str_i2 >= str.cbegin() && str_i2 <= str.cend());
-	size_t str_off  = str_i1.distance(str.cbegin());
-	size_t str_size = str_i2.distance(str_i1);
+	size_t str_off  = str_i1.base().distance(str.cbegin().base());
+	size_t str_size = str_i2.base().distance(str_i1.base());
 
 	_pimpl->replace(off, size, *str._pimpl, str_off, str_size);
 	this->updateLength();
@@ -680,8 +696,8 @@ utf8string & utf8string::remove (size_t pos, size_t n)
 	if (pos < length()) {
 		n = pos + n > length() ? length() - pos : n;
 		const_iterator it(cbegin() + pos);
-		size_t off = it.distance(cbegin());
-		size_t sz  = it.distance(it + n);
+		size_t off = it.base().distance(cbegin().base());
+		size_t sz  = it.base().distance((it + n).base());
 		_pimpl->erase(off, sz);
 		updateLength();
 	}
@@ -751,7 +767,7 @@ utf8string utf8string::toLower () const
 	const_iterator itEnd = end();
 
 	while (it < itEnd) {
-		r.append(utf8string(1, it->toLower()));
+		r.append(utf8string(1, it->value().toLower()));
 		++it;
 	}
 	return r;
@@ -764,7 +780,7 @@ utf8string utf8string::toUpper () const
 	const_iterator itEnd = end();
 
 	while (it < itEnd) {
-		r.append(utf8string(1, it->toUpper()));
+		r.append(utf8string(1, it->value().toUpper()));
 		++it;
 	}
 	return r;

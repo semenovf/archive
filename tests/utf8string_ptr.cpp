@@ -6,16 +6,17 @@
  */
 
 #include <cwt/test.hpp>
-#include <pfs/bits/utf8string_ptr.hpp>
+#include <pfs/bits/uccharptr.hpp>
+#include <pfs/utf8string.hpp>
 #include <string>
 #include <iostream>
 
 void test_constptr()
 {
-	std::string s("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя");
-	pfs::utf8string_ptr ptr(s.data());
-	pfs::utf8string_ptr begin(s.data());
-	pfs::utf8string_ptr end(s.data() + s.size());
+	pfs::utf8string s("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя");
+	pfs::ucchar_ptr ptr(s);
+	pfs::ucchar_ptr begin(s);
+	pfs::ucchar_ptr end(int(s.size()), s);
 
 	std::cout << "Iterate through string \"" << s << '"' << std::endl;
 

@@ -20,13 +20,15 @@
 
 namespace pfs {
 
-class ucchar_ref;
-class ucchar_ptr;
-
 class DLL_API utf8string
 {
+	template <typename _Str>
+	friend class ucchar_ref_basic;
+
+	template <typename _Str, typename _Ref>
+	friend class ucchar_ptr_basic;
+
 	friend class ucchar_ref;
-	friend class ucchar_ptr;
 
 private:
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -53,11 +55,13 @@ public:
 	}
 
 public:
-    typedef utf8string_iterator<utf8string_ptr> const_iterator;
+    typedef utf8string_iterator<ucchar_ptr> iterator;
+    typedef utf8string_iterator<ucchar_const_ptr> const_iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
 private:
-	void updateLength();
+	void updateLength ();
 	int compare (const_iterator begin, size_t len, const char * s, size_t subpos, size_t sublen) const;
 	vector<utf8string> split (bool isOneSeparatorChar, const utf8string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
 
@@ -85,9 +89,11 @@ public:
 	bool   isEmpty () const { return size() == 0; }
 	void   clear   ();
 
-	ucchar charAt (size_t pos) const { utf8string_ptr p(this->data()); return p[pos]; }
+	ucchar charAt (size_t pos) const { return cbegin()[pos]; }
 	ucchar operator [] (size_t pos) const { return charAt(pos); }
 
+    iterator begin () { return iterator(*this); }
+    iterator end   ();
     const_iterator begin () const { return const_iterator(*this); }
     const_iterator end   () const;
     const_iterator cbegin() const { return begin(); }
@@ -241,11 +247,13 @@ public:
 	friend bool	operator >= (const utf8string & s1, const utf8string & s2);
 };
 
+/*
 template <typename _P>
-inline utf8string_iterator<_P>::utf8string_iterator(const utf8string & s)
-	: _p(s.data())
+inline utf8string_iterator<_P>::utf8string_iterator(utf8string & s)
+	: _p(s)
 {
 }
+*/
 
 inline vector<utf8string>
 utf8string::split(const utf8string & separator, bool keepEmpty, ucchar quoteChar) const

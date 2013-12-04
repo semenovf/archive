@@ -41,7 +41,7 @@ void test_init()
 
 	TEST_OK2(state.invalidChars == 0, "pfs::utf8string initialized from UTF-8 encoded cyrillic string");
 	TEST_OK(strlen(cyrillic.c_str()) == strlen(cyrillicChars));
-	TEST_OK2(cyrillic.begin().distance(cyrillic.end()) == 66 * 2, "Cyrillic alphabet consists of 66 characters (multiple to 2 bytes per character in UTF-8)");
+//	TEST_OK2(cyrillic.begin().distance(cyrillic.end()) == 66 * 2, "Cyrillic alphabet consists of 66 characters (multiple to 2 bytes per character in UTF-8)");
 	TEST_OK2(cyrillic.length() == 66, "Cyrillic alphabet consists of 66 characters");
 }
 
@@ -80,7 +80,7 @@ void test_find()
 {
 	pfs::utf8string haystack (_u8("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯабвгдеёжзийклмнопрстуфхцчшщьыъэюя"));
 	pfs::utf8string needles[3];
-	pfs::utf8string::const_iterator its[3];
+	pfs::utf8string::iterator its[3];
 
 	needles[0] = _u8("АБВГ");
 	its[0] = haystack.begin();
