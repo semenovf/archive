@@ -13,7 +13,7 @@
 
 void test_constptr()
 {
-	pfs::utf8string s("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя");
+	pfs::utf8string s(_u8("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя"));
 	pfs::ucchar_ptr ptr(s);
 	pfs::ucchar_ptr begin(s);
 	pfs::ucchar_ptr end(int(s.size()), s);

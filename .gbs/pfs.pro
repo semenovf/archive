@@ -9,6 +9,7 @@ CONFIG  += ordered
 SUBDIRS  = pfs       \
     tests/shared_ptr \
     tests/bytearray  \
+    tests/function   \
     tests/vector     \
     tests/map_hash   \
     tests/date       \

@@ -18,13 +18,13 @@ namespace pfs {
  * @param state
  * @return
  *
- * @note Need call Utf8String::calculateLength() after series of call this method with non-null @c state argument.
  */
 utf8string utf8string::fromLatin1 (const char * latin1, size_t length, ConvertState * state)
 {
 	utf8string r;
 	const char * end = latin1 + length;
 	size_t invalidChars = 0;
+	size_t len = 0;
 
 	char replacement[7];
 	size_t replacementSize = state
@@ -34,9 +34,11 @@ utf8string utf8string::fromLatin1 (const char * latin1, size_t length, ConvertSt
 	while (latin1 < end) {
 		if (*latin1 < 127) {
 			r._pimpl->append(1, *latin1);
+			++len;
 		} else {
 			r._pimpl->append(replacement, replacementSize);
 			++invalidChars;
+			++len;
 		}
 		++latin1;
 	}
@@ -44,7 +46,8 @@ utf8string utf8string::fromLatin1 (const char * latin1, size_t length, ConvertSt
 	if (state)
 		state->invalidChars += invalidChars;
 
-	r.updateLength();
+	//r.updateLength();
+	r._pimpl->_length = len;
 	return r;
 }
 
@@ -69,11 +72,12 @@ utf8string utf8string::fromUtf8 (const char * utf8, ConvertState * state)
 utf8string utf8string::fromUtf8 (const char * utf8, size_t size, ConvertState * state)
 {
 	utf8string r;
-	const char *cursor = utf8;
-	const char *end = utf8 + size;
+	const char * cursor = utf8;
+	const char * end = utf8 + size;
 	size_t invalidChars = 0;
 	size_t nremain = 0;
 	uint32_t min_uc = 0; // for 'Overlong' encodings recognition
+	size_t len = 0;
 
 	char replacement[7];
 	size_t replacementSize = state
@@ -88,6 +92,7 @@ utf8string utf8string::fromUtf8 (const char * utf8, size_t size, ConvertState * 
 			r._pimpl->append(replacement, replacementSize);
 			++invalidChars;
 			++cursor;
+			++len;
 		} else if (n == -2) {
 			if (state) {
 				nremain = size_t(end - cursor);
@@ -95,6 +100,7 @@ utf8string utf8string::fromUtf8 (const char * utf8, size_t size, ConvertState * 
 				for (size_t j = size_t(end - cursor); j > 0; --j) {
 					r._pimpl->append(replacement, replacementSize);
 					++invalidChars;
+					++len;
 				}
 			}
 			cursor = end;
@@ -103,9 +109,11 @@ utf8string utf8string::fromUtf8 (const char * utf8, size_t size, ConvertState * 
 				r._pimpl->append(replacement, replacementSize);
 				++invalidChars;
 				++cursor;
+				++len;
 			} else {
 				r._pimpl->append(cursor, size_t(n));
 				cursor += size_t(n);
+				++len;
 			}
 		}
 	}
@@ -115,7 +123,8 @@ utf8string utf8string::fromUtf8 (const char * utf8, size_t size, ConvertState * 
 		state->nremain = nremain;
 	}
 
-	r.updateLength();
+	//r.updateLength();
+	r._pimpl->_length = len;
 
 	return r;
 }
@@ -131,6 +140,7 @@ utf8string utf8string::fromUtf16 (const uint16_t * utf16, size_t size, ConvertSt
 	size_t nremain = 0;
 	const uint16_t * source = utf16;
 	const uint16_t * sourceEnd   = utf16 + size;
+	size_t len = 0;
 
 	uint32_t replacementChar = state ? uint32_t(state->replacementChar) : ucchar::ReplacementChar;
 
@@ -163,6 +173,7 @@ utf8string utf8string::fromUtf16 (const uint16_t * utf16, size_t size, ConvertSt
 		}
 
 		r.append(utf8string(1, ch));
+		++len;
 	}
 
 	if (state) {
@@ -170,7 +181,8 @@ utf8string utf8string::fromUtf16 (const uint16_t * utf16, size_t size, ConvertSt
 		state->nremain = nremain;
 	}
 
-	r.updateLength();
+	//r.updateLength();
+	r._pimpl->_length = len;
 
 	return r;
 }

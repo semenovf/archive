@@ -9,19 +9,26 @@
 
 namespace pfs {
 
-template <typename _utf8string>
-ucchar_ref_basic<_utf8string>::ucchar_ref_basic (difference_type offset, _utf8string & owner)
-	: _pos(0), _owner(& owner)
+
+static ucchar_ptr::difference_type __increment (
+		  ucchar_ptr::difference_type codePointsCount
+		, size_t codeUnitsSize
+		, std::string::const_pointer begin
+		, ucchar_ptr::difference_type codeUnitsOffset)
 {
-	if (offset < 0)
-		offset = owner.length() + offset;
-	PFS_ASSERT(offset >= 0);
+	std::string::const_pointer end    = begin + codeUnitsSize;
+	std::string::const_pointer first  = begin + codeUnitsOffset;
+	std::string::const_pointer p      = first;
 
-	typename _utf8string::impl::const_pointer first = _owner->_pimpl->data();
-	typename _utf8string::impl::const_pointer p = first;
+	// n is positive, see first line
+	while (codePointsCount > 0 && p < begin) {
+		++p;
+		--codePointsCount;
+	}
 
-	while(offset-- > 0) {
+	while (codePointsCount > 0 && p < end) {
 		byte_t ch = byte_t(p[0]);
+
 		if (ch < 128) {
 			++p;
 		} else if ((ch & 0xE0) == 0xC0) {
@@ -35,11 +42,32 @@ ucchar_ref_basic<_utf8string>::ucchar_ref_basic (difference_type offset, _utf8st
 		} else if ((ch & 0xFE) == 0xFC) {
 			p += 6;
 		} else {
-			PFS_ASSERT(0); // invalid;
+			PFS_ASSERT(0); // invalid data inside utf8 string
 		}
+
+		--codePointsCount;
 	}
 
-	_pos = p - first;
+	while (codePointsCount > 0) {
+		++p;
+		--codePointsCount;
+	}
+
+	return p - first;
+}
+
+template <typename _utf8string>
+ucchar_ref_basic<_utf8string>::ucchar_ref_basic (difference_type offset, _utf8string & owner)
+	: _pos(0), _owner(& owner)
+{
+	if (offset < 0)
+		offset = owner.length() + offset;
+
+	_pos = __increment(
+			  offset
+			, _owner->_pimpl->size()
+			, _owner->_pimpl->data()
+			, 0);
 }
 
 template <typename _utf8string>
@@ -58,14 +86,11 @@ template ucchar_ref_basic<const utf8string>::operator ucchar () const;
 
 ucchar_ref::ucchar_ref (difference_type offset, utf8string & owner)
 	: ucchar_ref_basic<utf8string>(offset, owner)
-{
-}
+{}
 
 ucchar_const_ref::ucchar_const_ref (difference_type offset, const utf8string & owner)
 	: ucchar_ref_basic<const utf8string>(offset, owner)
-{
-}
-
+{}
 
 ucchar_ref & ucchar_ref::operator = (ucchar c)
 {
@@ -91,38 +116,33 @@ ucchar_ref & ucchar_ref::operator = (ucchar c)
 	return *this;
 }
 
-#ifdef __COMMENT__
-ucchar_ref & ucchar_ref::operator = (const ucchar_ref & other)
+template <typename _Str, typename _Ref>
+ucchar_ptr_basic<_Str, _Ref> ucchar_ptr_basic<_Str, _Ref>::end (_Str & owner)
 {
-	size_t sz1 = _owner->_pimpl->size();
-	size_t sz2 = other._owner->_pimpl->size();
-
-	PFS_ASSERT(_pos >= 0 && size_t(_pos) < sz1);
-	PFS_ASSERT(other._pos >= 0 && size_t(other._pos) < sz2);
-
-	_owner->detach();
-
-	ucchar c1;
-	ucchar c2;
-	utf8string::impl::const_pointer p1 = _owner->_pimpl->data();
-	utf8string::impl::const_pointer p2 = other._owner->_pimpl->data();
-
-	size_t nremain1 = sz1 - _pos;
-	size_t nremain2 = sz2 - other._pos;
-
-	int n1 = c1.decodeUtf8(p1 + _pos, nremain1);
-	int n2 = c2.decodeUtf8(p2 + other._pos, nremain2);
-
-	PFS_ASSERT(n1 > 0 && n2 > 0);
-
-	_owner->_pimpl->replace(_pos, n1, p2, other._pos, n2);
-
-	return *this;
+	return ucchar_ptr_basic(ucchar_ref_basic<_Str>(owner, owner._pimpl->size()));
 }
-#endif
 
-template <typename _utf8string, typename _Ref>
-bool ucchar_ptr_basic<_utf8string, _Ref>::isOutOfBounds() const
+template ucchar_ptr_basic<utf8string, ucchar_ref>
+	ucchar_ptr_basic<utf8string, ucchar_ref>::end (utf8string & owner);
+
+template ucchar_ptr_basic<const utf8string, ucchar_const_ref>
+	ucchar_ptr_basic<const utf8string, ucchar_const_ref>::end (const utf8string & owner);
+
+template <typename _Str, typename _Ref>
+ucchar_ptr_basic<_Str, _Ref> ucchar_ptr_basic<_Str, _Ref>::middle (_Str & owner, difference_type pos)
+{
+	return ucchar_ptr_basic(ucchar_ref_basic<_Str>(owner, pos));
+}
+
+template ucchar_ptr_basic<utf8string, ucchar_ref>
+	ucchar_ptr_basic<utf8string, ucchar_ref>::middle (utf8string & owner, difference_type pos);
+
+template ucchar_ptr_basic<const utf8string, ucchar_const_ref>
+	ucchar_ptr_basic<const utf8string, ucchar_const_ref>::middle (const utf8string & owner, difference_type pos);
+
+
+template <typename _Str, typename _Ref>
+bool ucchar_ptr_basic<_Str, _Ref>::isOutOfBounds() const
 {
 	return _ref._pos < 0 || size_t(_ref._pos) >= _ref._owner->_pimpl->size();
 }
@@ -130,64 +150,18 @@ bool ucchar_ptr_basic<_utf8string, _Ref>::isOutOfBounds() const
 template bool ucchar_ptr_basic<utf8string, ucchar_ref>::isOutOfBounds() const;
 template bool ucchar_ptr_basic<const utf8string, ucchar_const_ref>::isOutOfBounds() const;
 
-
-static ucchar_ptr::difference_type __increment (
-		  ucchar_ptr::difference_type n
-		, size_t codeUnitsCount
-		, std::string::const_pointer begin
-		, ucchar_ptr::difference_type codeUnitsOffset)
-{
-	size_t sz = codeUnitsCount;
-	std::string::const_pointer end    = begin + sz;
-	std::string::const_pointer first  = begin + codeUnitsOffset;
-	std::string::const_pointer p      = first;
-
-	// n is positive, see first line
-	while (n > 0 && p < begin) {
-		++p;
-		--n;
-	}
-
-	while (n > 0 && p < end) {
-		byte_t ch = byte_t(p[0]);
-
-		if (ch < 128) {
-			++p;
-		} else if ((ch & 0xE0) == 0xC0) {
-			p += 2;
-		} else if ((ch & 0xF0) == 0xE0) {
-			p += 3;
-		} else if ((ch & 0xF8) == 0xF0) {
-			p += 4;
-		} else if ((ch & 0xFC) == 0xF8) {
-			p += 5;
-		} else if ((ch & 0xFE) == 0xFC) {
-			p += 6;
-		} else {
-			PFS_ASSERT(0); // invalid data inside utf8 string
-		}
-
-		--n;
-	}
-
-	while (n > 0) {
-		++p;
-		--n;
-	}
-
-	return p - first;
-}
-
 template <typename _utf8string, typename _Ref>
 ucchar_ptr_basic<_utf8string, _Ref> & ucchar_ptr_basic<_utf8string, _Ref>::operator += (difference_type n)
 {
 	if (n < 0)
 		return this->operator -= (0 - n);
-	_ref._pos += __increment(n
+
+	_ref._pos += __increment(
+			   n                          // code points
 			, _ref._owner->_pimpl->size() // code units count
 			, _ref._owner->_pimpl->data() // begin
-			, _ref._pos                   // offset in bytes from begin
-	);
+			, _ref._pos);                 // offset in bytes from begin
+
 	return *this;
 }
 
@@ -199,22 +173,22 @@ template ucchar_ptr_basic<const utf8string, ucchar_const_ref> &
 
 
 static ucchar_ptr::difference_type __decrement (
-		  ucchar_ptr::difference_type n
-		, size_t codeUnitsCount
+		  ucchar_ptr::difference_type codePointsCount
+		, size_t codeUnitsSize
 		, std::string::const_pointer begin
 		, ucchar_ptr::difference_type codeUnitsOffset)
 {
-	std::string::const_pointer end    = begin + codeUnitsCount;
+	std::string::const_pointer end    = begin + codeUnitsSize;
 	std::string::const_pointer first  = begin + codeUnitsOffset;
 	std::string::const_pointer p      = first;
 
 	// n is positive, see first line
-	while (n > 0 && p >= end) {
+	while (codePointsCount > 0 && p > end) {
 		--p;
-		--n;
+		--codePointsCount;
 	}
 
-	while(n > 0 && p > begin) {
+	while(codePointsCount > 0 && p > begin) {
 		if ((*(p - 1) & 0x80) == 0x00) {
 			--p;
 		} else if ((*(p - 2) & 0xE0) == 0xC0) {
@@ -230,11 +204,12 @@ static ucchar_ptr::difference_type __decrement (
 		} else {
 			PFS_ASSERT(0); // invalid data inside utf8 string
 		}
+		--codePointsCount;
 	}
 
-	while (n > 0) {
+	while (codePointsCount > 0) {
 		--p;
-		--n;
+		--codePointsCount;
 	}
 
 	return p - first;
@@ -250,8 +225,7 @@ ucchar_ptr_basic<_utf8string, _Ref> & ucchar_ptr_basic<_utf8string, _Ref>::opera
 	_ref._pos += __decrement(n
 			, _ref._owner->_pimpl->size() // code units count
 			, _ref._owner->_pimpl->data() // begin
-			, _ref._pos                   // offset in bytes from begin
-		);
+			, _ref._pos);                 // offset in bytes from begin
 
 	return *this;
 }

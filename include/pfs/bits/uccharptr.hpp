@@ -23,7 +23,7 @@ class ucchar_ref_basic;
 template <typename _Str, typename _Ref>
 class ucchar_ptr_basic;
 
-template <typename _utf8string>
+template <typename _Str>
 class ucchar_ref_basic
 {
 	friend class ucchar_ref;
@@ -31,10 +31,10 @@ class ucchar_ref_basic
 	friend class ucchar_ptr;
 	friend class ucchar_const_ptr;
 
-	template <typename _Str>
+	template <typename _Str1>
 	friend class ucchar_ref_basic;
 
-	template <typename _Str, typename _Ref>
+	template <typename _Str1, typename _Ref1>
 	friend class ucchar_ptr_basic;
 
 public:
@@ -42,34 +42,38 @@ public:
 	typedef ucchar    value_type;
 
 protected:
-	difference_type _pos;
-	_utf8string *   _owner;
+	difference_type _pos; // position in code_units/bytes,
+	                      // may be negative or greater than length of buffer.
+	_Str *   _owner;
+
+	// used by ucchar_ptr_basic
+	ucchar_ref_basic (_Str & owner, difference_type pos) : _pos(pos), _owner(& owner) {}
 
 public:
 	ucchar_ref_basic ()  : _pos(0), _owner(nullptr) {}
-	ucchar_ref_basic (difference_type offset, _utf8string & owner);
+	ucchar_ref_basic (difference_type offset, _Str & owner);
 
 	// Allow ucchar_ref to ucchar_const_ref conversion
 	template<typename _Str2>
-    ucchar_ref_basic(const ucchar_ref_basic<_Str2> & other)
+    ucchar_ref_basic (const ucchar_ref_basic<_Str2> & other)
     	: _pos(other._pos), _owner(other._owner) {}
 
 	operator ucchar () const;
 	value_type value () const { return this->operator ucchar (); }
 
-	const char * ptr () const { return _owner->data(); }
+	const char * ptr () const { return _owner->data() + _pos; }
 
-    bool operator == (const ucchar_ref_basic<_utf8string> & o) const { return ucchar(*this) == ucchar(o); }
+    bool operator == (const ucchar_ref_basic<_Str> & o) const { return ucchar(*this) == ucchar(o); }
     bool operator == (const ucchar & o) const     { return ucchar(*this) == o; }
-    bool operator != (const ucchar_ref_basic<_utf8string> & o) const { return ucchar(*this) != ucchar(o); }
+    bool operator != (const ucchar_ref_basic<_Str> & o) const { return ucchar(*this) != ucchar(o); }
     bool operator != (const ucchar & o) const     { return ucchar(*this) != o; }
-    bool operator >  (const ucchar_ref_basic<_utf8string> & o) const { return ucchar(*this) > ucchar(o); }
+    bool operator >  (const ucchar_ref_basic<_Str> & o) const { return ucchar(*this) > ucchar(o); }
     bool operator >  (const ucchar & o) const     { return ucchar(*this) > o; }
-    bool operator >= (const ucchar_ref_basic<_utf8string> & o) const { return ucchar(*this) >= ucchar(o); }
+    bool operator >= (const ucchar_ref_basic<_Str> & o) const { return ucchar(*this) >= ucchar(o); }
     bool operator >= (const ucchar & o) const     { return ucchar(*this) >= o; }
-    bool operator <  (const ucchar_ref_basic<_utf8string> & o) const { return ucchar(*this) < ucchar(o); }
+    bool operator <  (const ucchar_ref_basic<_Str> & o) const { return ucchar(*this) < ucchar(o); }
     bool operator <  (const ucchar & o) const     { return ucchar(*this) < o; }
-    bool operator <= (const ucchar_ref_basic<_utf8string> & o) const { return ucchar(*this) <= ucchar(o); }
+    bool operator <= (const ucchar_ref_basic<_Str> & o) const { return ucchar(*this) <= ucchar(o); }
     bool operator <= (const ucchar & o) const     { return ucchar(*this) <= o; }
 };
 
@@ -93,7 +97,7 @@ public:
 };
 
 
-template <typename _utf8string, typename _Ref>
+template <typename _Str, typename _Ref>
 class ucchar_ptr_basic
 {
 	template <typename _Str2, typename _Ref2>
@@ -106,30 +110,32 @@ public:
 	typedef typename _Ref::difference_type  difference_type;
 	typedef typename _Ref::value_type  value_type;
 	typedef _Ref reference;
-	typedef _utf8string owner_type;
+	typedef _Str owner_type;
 
 protected:
 	_Ref _ref;
 
 public:
 	ucchar_ptr_basic () : _ref() {}
-	ucchar_ptr_basic (difference_type offset, _utf8string & owner) : _ref(offset, owner) {}
-	ucchar_ptr_basic (_utf8string & s) : _ref(0, s) {}
+	ucchar_ptr_basic (difference_type offset, _Str & owner) : _ref(offset, owner) {}
+	ucchar_ptr_basic (_Str & s) : _ref(0, s) {}
 
     template<typename _Str2>
-    ucchar_ptr_basic(const ucchar_ref_basic<_Str2> & ref)
+    ucchar_ptr_basic (const ucchar_ref_basic<_Str2> & ref)
     	: _ref(ref) { }
 
     template<typename _Str2, typename _Ref2>
-    ucchar_ptr_basic(const ucchar_ptr_basic<_Str2, _Ref2> & p)
+    ucchar_ptr_basic (const ucchar_ptr_basic<_Str2, _Ref2> & p)
     	: _ref(p._ref) { }
+
+    static ucchar_ptr_basic begin (_Str & owner) { return ucchar_ptr_basic(ucchar_ref_basic<_Str>(owner, 0)); }
+    static ucchar_ptr_basic middle (_Str & owner, difference_type pos);
+    static ucchar_ptr_basic end (_Str & owner);
 
 	bool isOutOfBounds () const;
 
 	_Ref operator * () const { return _ref; }
     const _Ref * operator -> () const { return & _ref; }
-    //_Ref *       operator -> () { return & _ref; }
-	//_Ref         operator * () { return _ref; }
 
     ucchar_ptr_basic & operator ++ ()
 	{
@@ -238,9 +244,9 @@ inline ucchar_const_ptr::ucchar_const_ptr (const ucchar_ptr & p)
 
 template <typename _Str1, typename _Ref1, typename _Str2, typename _Ref2>
 inline typename ucchar_ptr_basic<_Str1, _Ref1>::difference_type
-operator - (const ucchar_ptr_basic<_Str1, _Ref1> & it1, const ucchar_ptr_basic<_Str2, _Ref2> & it2)
+operator - (const ucchar_ptr_basic<_Str1, _Ref1> & p1, const ucchar_ptr_basic<_Str2, _Ref2> & p2)
 {
-	return it1.difference(it2);
+	return p1.difference(p2);
 }
 
 } // pfs

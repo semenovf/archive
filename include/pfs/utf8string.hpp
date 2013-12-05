@@ -73,11 +73,12 @@ public:
 	explicit utf8string (const_iterator begin, const_iterator end);
 	explicit utf8string (size_t count, ucchar c);
 
-#define NO_UTF8_CHECK true
-#define UTF8_CHECK    false
+/* In any case need to update length of the resulting string, so below
+   constructors are meaningless:
 
 	explicit utf8string (bool no_ut8_check, const char * utf8);
 	explicit utf8string (bool no_ut8_check, const char * utf8, size_t size);
+*/
 
 	const char * data  () const;
 	const char * constData () const { return data(); }
