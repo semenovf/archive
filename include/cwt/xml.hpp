@@ -1,10 +1,18 @@
-#ifndef __@PROJECT@_HPP__
-#define __@PROJECT@_HPP__
+#ifndef __CWT_XML_HPP__
+#define __CWT_XML_HPP__
 
-#include <cwt/cwt.hpp>
+#include <pfs.hpp>
+#include <functional>
+#include <cstddef>
 
-CWT_NS_BEGIN
+namespace cwt { namespace xml {
 
-CWT_NS_END
+class reader
+{
+public:
+	reader ();
+};
 
-#endif /* __@PROJECT@_HPP__ */
+}} // cwt::xml
+
+#endif /* __CWT_XML_HPP__ */
