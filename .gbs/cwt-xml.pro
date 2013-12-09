@@ -6,4 +6,4 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = cwt-xml tests/expat
+SUBDIRS  = cwt-xml tests/expat tests/xml

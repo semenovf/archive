@@ -8,7 +8,7 @@ SOURCES += ../../expat2/lib/xmlparse.c
 SOURCES += ../../expat2/lib/xmlrole.c
 SOURCES += ../../expat2/lib/xmltok.c
 SOURCES += ../../expat2/lib/xmltok_ns.c
-#SOURCES += ../../src/*.cpp
+SOURCES += ../../src/*.cpp
 
 DEFINES += XML_DTD=1
 DEFINES += XML_NS=1
