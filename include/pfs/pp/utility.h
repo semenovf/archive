@@ -1,8 +1,6 @@
 #ifndef __PFS_PP_UTILITY_H__
 #define __PFS_PP_UTILITY_H__
 
-#define PFS_COMMA ,
-
 #define PFS_CAT(pfx,x) pfx ## x
 
 #define PFS_SWAP(a,b) b a

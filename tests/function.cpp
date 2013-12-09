@@ -60,7 +60,7 @@ void check2()
 
 struct Foo
 {
-	int smth(int x)
+	int smth(short x)
 	{
 		return x + 1;
 	}
@@ -69,11 +69,7 @@ struct Foo
 
 void check3()
 {
-//  int (Foo::*f1) (int x) = & Foo::smth;
-//	Foo foo;
-//	TEST_OK((foo.*f1)(5) == 6);
-
-	typedef pfs::function<int (Foo, int)> member_function_t;
+	typedef pfs::function<int (Foo, short)> member_function_t;
 
 	member_function_t f1(& Foo::smth);
 
@@ -86,7 +82,7 @@ int main (int argc, char *argv[])
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(8);
+	BEGIN_TESTS(9);
 
 	check1();
 	check2();

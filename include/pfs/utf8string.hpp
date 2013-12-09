@@ -85,6 +85,7 @@ public:
 	const char * c_str () const;
 	const char * utf8  () const { return c_str(); }
 
+	size_t sizeInBytes () const;
 	size_t length  () const { return size(); }
 	size_t size    () const;
 	bool   isEmpty () const { return size() == 0; }
@@ -234,6 +235,10 @@ public:
 	static utf8string number (uint_t n, int base = 10, bool uppercase = false);
 	static utf8string number (long_t n, int base = 10, bool uppercase = false);
 	static utf8string number (ulong_t n, int base = 10, bool uppercase = false);
+#ifndef PFS_OS_64BITS
+	static utf8string number (long n, int base = 10, bool uppercase = false) { return number(long_t(n), base, uppercase); }
+	static utf8string number (unsigned long n, int base = 10, bool uppercase = false) { return number(ulong_t(n), base, uppercase); }
+#endif
 
 	friend utf8string operator + (const utf8string & s1, const utf8string & s2);
 	friend utf8string operator + (const utf8string & s, const char * latin1) { return s + utf8string(latin1); }

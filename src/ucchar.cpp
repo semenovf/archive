@@ -160,11 +160,9 @@ int ucchar::decodeUtf8(const char * units, size_t len, uint32_t & uc, uint32_t &
 		}
 	}
 
-/*
 	if (uc == 0xFEFF) {
 		return 0; // skip the BOM
 	}
-*/
 
 	return need + 1;
 }

@@ -127,6 +127,11 @@ const char * utf8string::c_str () const
 	return _pimpl->c_str();
 }
 
+size_t utf8string::sizeInBytes () const
+{
+	return _pimpl->size();
+}
+
 size_t utf8string::size () const
 {
 	return _pimpl->_length;

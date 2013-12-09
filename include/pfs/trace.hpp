@@ -1,52 +1,56 @@
 #include <cstdio>
 
-#ifndef __CWT_TRACE_HPP__
-#define __CWT_TRACE_HPP__
+#ifndef __PFS_TRACE_HPP__
+#define __PFS_TRACE_HPP__
 
-#if defined(CWT_TRACE_ENABLE)
-#	define CWT_TRACE_FUNC() const CwtTraceFunc __cwt_trace__ (__PRETTY_FUNCTION__)
-#	define CWT_TRACE_METHOD() const CwtTraceMethod __cwt_trace__ (__PRETTY_FUNCTION__, this)
+#if defined(PFS_TRACE_ENABLE)
+#	define PFS_TRACE_FUNC() const pfs::trace_func __pfs_trace__ (__PRETTY_FUNCTION__)
+#	define PFS_TRACE_METHOD() const pfs::trace_method __pfs_trace__ (__PRETTY_FUNCTION__, this)
 
 #else
-#	undef CWT_TRACE_METHOD
-#	undef CWT_TRACE_FUNC
-#	define CWT_TRACE_METHOD()
-#	define CWT_TRACE_FUNC()
+#	undef PFS_TRACE_METHOD
+#	undef PFS_TRACE_FUNC
+#	define PFS_TRACE_METHOD()
+#	define PFS_TRACE_FUNC()
 #endif
 
-class CwtTraceFunc
+namespace pfs {
+
+class trace_func
 {
 public:
-	CwtTraceFunc (const char * pretty_func_name) : m_fname (pretty_func_name)
+	trace_func (const char * pretty_func_name) : _fname (pretty_func_name)
 	{
-		printf("===BEGIN: %s\n", m_fname);
+		printf("===BEGIN: %s\n", _fname);
 	}
 
-	~CwtTraceFunc ()
+	~trace_func ()
 	{
-		printf("=====END: %s\n", m_fname);
+		printf("=====END: %s\n", _fname);
 	}
 private:
-	const char * m_fname;
+	const char * _fname;
 };
 
-class CwtTraceMethod
+class trace_method
 {
 public:
-	CwtTraceMethod (const char * pretty_func_name, const void * instance)
-		: m_fname(pretty_func_name)
-		, m_instance(instance)
+	trace_method (const char * pretty_func_name, const void * instance)
+		: _fname(pretty_func_name)
+		, _instance(instance)
 	{
-		printf("===BEGIN: [%p]:%s\n", m_instance, m_fname);
+		printf("===BEGIN: [%p]:%s\n", _instance, _fname);
 	}
 
-	~CwtTraceMethod ()
+	~trace_method ()
 	{
-		printf("=====END: [%p]:%s\n", m_instance, m_fname);
+		printf("=====END: [%p]:%s\n", _instance, _fname);
 	}
 private:
-	const char * m_fname;
-	const void * m_instance;
+	const char * _fname;
+	const void * _instance;
 };
+
+} // pfs
 
 #endif

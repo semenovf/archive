@@ -26,7 +26,6 @@
 #if PFS_FUNCTION_MAX_ARGS > 1
 #	include <pfs/bits/function2.hpp>
 #endif
-/*
 #if PFS_FUNCTION_MAX_ARGS > 2
 #	include <pfs/bits/function3.hpp>
 #endif
@@ -45,7 +44,7 @@
 #if PFS_FUNCTION_MAX_ARGS > 7
 #	include <pfs/bits/function8.hpp>
 #endif
-*/
+
 #endif // __cplusplus < 201103L
 
 #endif /* __PFS_FUNCTIONAL_HPP__ */

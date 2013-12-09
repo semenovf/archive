@@ -5,6 +5,10 @@
 #include <pfs/pp/inc.h>
 #include <pfs/pp/utility.h>
 
+#ifndef PFS_COMMA
+#	define PFS_COMMA ,
+#endif
+
 #define PFS_ARGS_0(pfx)
 #define PFS_ARGS_1(pfx)  PFS_CAT(pfx,1)
 #define PFS_ARGS_2(pfx)  PFS_ARGS_1(pfx)  PFS_COMMA PFS_CAT(pfx,2)
@@ -49,22 +53,38 @@
 #define PFS_PARMS_19(pfx,pfa) PFS_PARMS_18(pfx,pfa) PFS_COMMA PFS_CAT(pfx,19) PFS_CAT(pfa,19)
 #define PFS_PARMS_20(pfx,pfa) PFS_PARMS_19(pfx,pfa) PFS_COMMA PFS_CAT(pfx,20) PFS_CAT(pfa,20)
 
-#define PFS_ARGS_CAT(n,pfx)      PFS_ARGS_ ## n(pfx)
-#define PFS_PARMS_CAT(n,pfx,pfa) PFS_PARMS_ ## n(pfx,pfa)
+/* Emulates right shift by 1 position */
+/* TODO need more flexible approach */
+#define PFS_ARGS_SHIFT1_0(pfx)
+#define PFS_ARGS_SHIFT1_1(pfx)
+#define PFS_ARGS_SHIFT1_2(pfx)  PFS_CAT(pfx,2)
+#define PFS_ARGS_SHIFT1_3(pfx)  PFS_ARGS_SHIFT1_2(pfx)  PFS_COMMA PFS_CAT(pfx,3)
+#define PFS_ARGS_SHIFT1_4(pfx)  PFS_ARGS_SHIFT1_3(pfx)  PFS_COMMA PFS_CAT(pfx,4)
+#define PFS_ARGS_SHIFT1_5(pfx)  PFS_ARGS_SHIFT1_4(pfx)  PFS_COMMA PFS_CAT(pfx,5)
+#define PFS_ARGS_SHIFT1_6(pfx)  PFS_ARGS_SHIFT1_5(pfx)  PFS_COMMA PFS_CAT(pfx,6)
+#define PFS_ARGS_SHIFT1_7(pfx)  PFS_ARGS_SHIFT1_6(pfx)  PFS_COMMA PFS_CAT(pfx,7)
+#define PFS_ARGS_SHIFT1_8(pfx)  PFS_ARGS_SHIFT1_7(pfx)  PFS_COMMA PFS_CAT(pfx,8)
+#define PFS_ARGS_SHIFT1_9(pfx)  PFS_ARGS_SHIFT1_8(pfx)  PFS_COMMA PFS_CAT(pfx,9)
+#define PFS_ARGS_SHIFT1_10(pfx) PFS_ARGS_SHIFT1_9(pfx)  PFS_COMMA PFS_CAT(pfx,10)
+#define PFS_ARGS_SHIFT1_11(pfx) PFS_ARGS_SHIFT1_10(pfx) PFS_COMMA PFS_CAT(pfx,11)
+#define PFS_ARGS_SHIFT1_12(pfx) PFS_ARGS_SHIFT1_11(pfx) PFS_COMMA PFS_CAT(pfx,12)
+#define PFS_ARGS_SHIFT1_13(pfx) PFS_ARGS_SHIFT1_12(pfx) PFS_COMMA PFS_CAT(pfx,13)
+#define PFS_ARGS_SHIFT1_14(pfx) PFS_ARGS_SHIFT1_13(pfx) PFS_COMMA PFS_CAT(pfx,14)
+#define PFS_ARGS_SHIFT1_15(pfx) PFS_ARGS_SHIFT1_14(pfx) PFS_COMMA PFS_CAT(pfx,15)
+#define PFS_ARGS_SHIFT1_16(pfx) PFS_ARGS_SHIFT1_15(pfx) PFS_COMMA PFS_CAT(pfx,16)
+#define PFS_ARGS_SHIFT1_17(pfx) PFS_ARGS_SHIFT1_16(pfx) PFS_COMMA PFS_CAT(pfx,17)
+#define PFS_ARGS_SHIFT1_18(pfx) PFS_ARGS_SHIFT1_17(pfx) PFS_COMMA PFS_CAT(pfx,18)
+#define PFS_ARGS_SHIFT1_19(pfx) PFS_ARGS_SHIFT1_18(pfx) PFS_COMMA PFS_CAT(pfx,19)
+#define PFS_ARGS_SHIFT1_20(pfx) PFS_ARGS_SHIFT1_19(pfx) PFS_COMMA PFS_CAT(pfx,20)
+
+#define PFS_ARGS_CAT(n,pfx)         PFS_ARGS_ ## n(pfx)
+#define PFS_ARGS_SHIFT1_CAT(n,pfx)  PFS_ARGS_SHIFT1_ ## n(pfx)
+#define PFS_PARMS_CAT(n,pfx,pfa)    PFS_PARMS_ ## n(pfx,pfa)
 
 #define PFS_JOIN_ARGS(n,pfx)          PFS_ARGS_CAT(n,pfx)
+#define PFS_JOIN_ARGS_SHIFT1(n,pfx)   PFS_ARGS_SHIFT1_CAT(n,pfx)
 #define PFS_JOIN_PARMS(n,pfx,pfa)     PFS_PARMS_CAT(n,pfx,pfa)
 #define PFS_JOIN_TEMPLATE_ARGS(n,pfx) PFS_JOIN_ARGS(n,typename pfx)
-
-#define PFS_ARGS_SHIFT_2(a1,a2) a2
-#define PFS_ARGS_SHIFT_3(a1,a2,a3) a2, a3
-#define PFS_ARGS_SHIFT_4(a1,a2,a3,a4) a2, a3, a4
-#define PFS_ARGS_SHIFT_5(a1,a2,a3,a4,a5) a2, a3, a4, a5
-
-#define PFS_PAREN(x) (x)
-PFS_ARGS_SHIFT(a,PFS_ARGS_SHIFT(1, 2))
-
-PFS_ARGS_SHIFT_4(PFS_JOIN_ARGS(4,_A))
 
 /*
 PFS_DEC(6) -> 5
@@ -78,16 +98,7 @@ PFS_JOIN_TEMPLATE_ARGS(3,_A) -> typename _A1, typename _A2, _typename _A3
 */
 
 /*
-#define PFS_ATOM(x) x
+PFS_JOIN_ARGS_SHIFT1(5,_a)   -> _a2 , _a3 , _a4 , _a5
 */
-
-/*
-#define PFS_REVERSE_D_3(dl,a,b,c) c dl b dl a
-#define PFS_REVERSE_3(a,b,c) c b a
-*/
-
-//PFS_JOIN(PFS_COMMA, PFS_JOIN(PFS_COMMA, 1, 2), 3)
-
-
 
 #endif

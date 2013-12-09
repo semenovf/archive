@@ -88,6 +88,12 @@ utf8string utf8string::fromUtf8 (const char * utf8, size_t size, ConvertState * 
 		uint32_t uc = 0;
 		int n = ucchar::decodeUtf8(cursor, size_t(end - cursor), uc, min_uc);
 
+		// skip the BOM
+		if (n == 0) {
+			cursor += 3;
+			continue;
+		}
+
 		if (n == -1) { // error
 			r._pimpl->append(replacement, replacementSize);
 			++invalidChars;
