@@ -6,7 +6,7 @@
  * @brief
  */
 
-#include "../../include/pfs/bitarray.hpp"
+#include "../include/pfs/bitarray.hpp"
 
 namespace pfs {
 

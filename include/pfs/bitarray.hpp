@@ -23,12 +23,21 @@ namespace pfs {
 
 class DLL_API bitarray
 {
-	struct impl {
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
+	struct DLL_API impl {
 		array<uint32_t> a;
 		size_t          nbits;
 	};
 
 	PFS_PIMPL_INLINE(bitarray, impl);
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 public:
 	bitarray ();
