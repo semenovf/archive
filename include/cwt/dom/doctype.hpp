@@ -16,24 +16,17 @@ class namednodemap;
 
 class doctype : public node
 {
-	pfs::string _name;           // readonly
-	pfs::shared_ptr<namednodemap>
-				_entities;       // readonly
-	pfs::shared_ptr<namednodemap>
-				_notations;      // readonly
-	pfs::string _publicId;       // readonly
-	pfs::string _systemId;       // readonly
-	pfs::string _internalSubset; // readonly
-
+	class impl;
+	impl * _pimpl;
 public:
 	doctype ();
 
-	const pfs::string & name ()       { return _name; }
-	const namednodemap * entities ()  { return _entities; }
-	const namednodemap * notations () { return _notations; }
-	const pfs::string & publicId ()   { return _publicId; }
-	const pfs::string & systemId ()   { return _systemId; }
-	const pfs::string & internalSubset () { return _internalSubset; }
+	const pfs::string & name () const           { return _name; }
+	const namednodemap & entities () const      { return _entities; }
+	const namednodemap & notations () const     { return _notations; }
+	const pfs::string & publicId () const       { return _publicId; }
+	const pfs::string & systemId () const       { return _systemId; }
+	const pfs::string & internalSubset () const { return _internalSubset; }
 };
 
 }} // cwt::dom

@@ -1,18 +1,18 @@
 /*
- * error.hpp
+ * exception.hpp
  *
  *  Created on: Nov 20, 2013
  *      Author: wladt
  */
 
-#ifndef __CWT_DOM_ERROR_HPP__
-#define __CWT_DOM_ERROR_HPP__
+#ifndef __CWT_DOM_EXCEPTION_HPP__
+#define __CWT_DOM_EXCEPTION_HPP__
 
-#include <cwt/cwt.hpp>
+#include <pfs.hpp>
 
 namespace cwt { namespace dom {
 
-class exception
+class DLL_API exception
 {
 public:
 	static const ushort_t INDEX_SIZE_ERR              = 1;
@@ -32,10 +32,11 @@ public:
 	static const ushort_t INVALID_ACCESS_ERR          = 15;
 
 private:
-	exception();
+	exception ();
 
 public:
 	exception (ushort_t code) : _code(code) {}
+	ushort_t code () const { return _code; }
 
 private:
 	ushort_t _code;
@@ -43,4 +44,4 @@ private:
 
 }} // cwt::dom
 
-#endif /* __CWT_DOM_ERROR_HPP__ */
+#endif /* __CWT_DOM_EXCEPTION_HPP__ */

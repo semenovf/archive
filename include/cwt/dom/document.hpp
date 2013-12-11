@@ -1,49 +1,57 @@
 #ifndef __CWT_DOM_DOCUMENT_HPP__
 #define __CWT_DOM_DOCUMENT_HPP__
 
-#include <cwt/dom/node.hpp>
+#include <pfs/string.hpp>
 
 namespace cwt { namespace dom {
 
-class dom;
-class doctype;
-class docfragment;
+class node;
+class document_type;
+class document_fragment;
+class dom_implementation;
 class element;
 class text;
 class comment;
 class cdatasection;
-class pinstruction;
-class entityref;
+class processing_instruction;
+class attr;
+class entity_reference;
+class nodelist;
 
-class document : public node
+class DLL_API document : public node
 {
-	doctype * _docType;         // readonly
-	dom *     _implementation;  // readonly
-	element * _docElement;      // readonly
+public:
+	class impl;
+
+protected:
+//	document (const pimpl_type & other) : _pimpl(other) {}
 
 public:
-	const doctype * docType { return _doctype; }
-	const dom *     implementation () { return _dom; }
-	const element * documentElement () { return _docElement; }
+    document () : node () {}
+//    explicit document (const pfs::string & name);
+//    explicit document (const document_type & doctype);
+//    document (const document & other);
+//    document & operator= (const document & other);
+//    ~document ();
 
-	element *       createElement (const pfs::string & tagName);  // raises(DOMException);
-	docfragment *   createDocumentFragment ();
-	text *          createTextNode (const pfs::string & data);
-	comment *       createComment (const pfs::string & data);
-	cdatasection *  createCDATASection (const pfs::string & data); // raises(DOMException);
-	pinstruction *  createProcessingInstruction (const pfs::string & target,
-			const pfs::string & data); // raises(DOMException);
-	attr *          createAttribute (const pfs::string & name); // raises(DOMException);
-	entityref *     createEntityReference (const pfs::string & name); // raises(DOMException);
-	nodelist *      getElementsByTagName (const pfs::string & tagname);
-	node *          importNode (node * importedNode, bool deep); // raises(DOMException);
-	element *       createElementNS (const pfs::string & namespaceURI,
-			const pfs::string & qualifiedName); // raises(DOMException);
-	attr *          createAttributeNS (const pfs::string & namespaceURI,
-			const pfs::string & qualifiedName); // raises(DOMException);
-	nodelist *      getElementsByTagNameNS (const pfs::string & namespaceURI,
-			const pfs::string & localName);
-	element *       getElementById (const pfs::string & elementId);};
+//	document_type docType () const;
+//	dom_implementation implementation () const;
+//	element documentElement () const;
+
+//	element           createElement (const pfs::string & tagName); // raises(DOMException)
+//	document_fragment createDocumentFragment ();
+//	text              createTextNode (const pfs::string & data);
+//	comment           createComment (const pfs::string & data);
+//	cdatasection      createCDATASection (const pfs::string & data); // raises(DOMException)
+//	processing_instruction createProcessingInstruction (const pfs::string & target, const pfs::string & data); // raises(DOMException);
+//	attr              createAttribute (const pfs::string & name); // raises(DOMException)
+//	entity_reference  createEntityReference (const pfs::string & name); // raises(DOMException)
+//	element           createElementNS (const pfs::string & namespaceURI, const pfs::string & qualifiedName); // raises(DOMException)
+//	attr              createAttributeNS (const pfs::string & namespaceURI, const pfs::string & qualifiedName); // raises(DOMException)
+//	node              importNode (const node & importedNode, bool deep); // raises(DOMException);
+//	nodelist          getElementsByTagName (const pfs::string & tagname);
+//	nodelist          getElementsByTagNameNS (const pfs::string & namespaceURI, const pfs::string & localName);
+//	element           getElementById (const pfs::string & elementId);
 };
 
 }} // cwt::dom

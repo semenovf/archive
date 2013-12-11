@@ -8,23 +8,20 @@
 #ifndef __CWT_DOM_NODELIST_HPP__
 #define __CWT_DOM_NODELIST_HPP__
 
-#include <pfs/list.hpp>
-#include <pfs/shared_ptr.hpp>
+#include <cwt/dom/pimpl.hpp>
 
 namespace cwt { namespace dom {
 
 class node;
-typedef pfs::shared_ptr<node> node_ptr;
 
-class DLL_API nodelist : public pfs::list<node_ptr>
+class DLL_API nodelist
 {
-	typedef pfs::list<node_ptr> base_class;
+	CWT_DOM_PIMPL_INLINE(nodelist)
 
 public:
-	nodelist() : base_class () {}
-
-	node_ptr item(size_t index);
-	size_t length () const { return base_class::size(); }
+	node item (size_t index) const;
+	size_t length () const;
+	size_t size () const { return length(); }
 };
 
 }} // cwt::dom
