@@ -49,6 +49,7 @@ public:
 
 	size_t 	       size () const { return _pimpl->size(); }
 	bool           remove (const Key & key) { detach(); return _pimpl->erase(key) > 0; }
+	void           remove (iterator pos) { detach(); _pimpl->erase(pos); }
 	bool	       operator != (const map<Key, T> & other) const { return !(*this == other); }
 	bool	       operator == (const map<Key, T> & other) const;
 
