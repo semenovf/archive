@@ -64,7 +64,7 @@ void test_basic ()
 	handlers h;
 	cwt::xml::reader xml(& h);
 
-	xml.setAcceptVersion(/*pfs::function<bool (int, int)> (*/__accept_version/*)*/);
+	xml.acceptVersion(__accept_version);
 	TEST_OK(xml.parse(pfs::string::fromUtf8(xml_data)));
 	if (xml.isError()) {
 		std::cout << xml.errorString() << std::endl;

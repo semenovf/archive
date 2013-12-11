@@ -36,7 +36,7 @@ public:
 	bool isError () const;
 	pfs::string errorString () const;
 	void setHandler (handlers * h);
-	void setAcceptVersion (pfs::function<bool (int, int)>);
+	void acceptVersion (pfs::function<bool (int, int)>);
 };
 
 }} // cwt::xml

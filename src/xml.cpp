@@ -19,7 +19,7 @@ void reader::setHandler (handlers * h)
 	_pimpl->setHandlers(h);
 }
 
-void reader::setAcceptVersion (pfs::function<bool (int, int)> acceptor)
+void reader::acceptVersion (pfs::function<bool (int, int)> acceptor)
 {
 	_pimpl->_acceptVersion = acceptor;
 }
