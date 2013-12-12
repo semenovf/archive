@@ -8,26 +8,24 @@
 #ifndef __CWT_DOM_ATTR_HPP__
 #define __CWT_DOM_ATTR_HPP__
 
-#include <cwt/dom/node.hpp>
+#include <pfs/string.hpp>
+#include <cwt/dom/pimpl.hpp>
 
 namespace cwt { namespace dom {
 
+class node;
 class element;
 
-class attr : public node
+class DLL_API attr : public node
 {
-	pfs::string _name;      // readonly
-	bool        _specified; // readonly
-	pfs::string _value;
-	element *   _ownerElement; // readonly
+	CWT_DOM_PIMPL_DERIVED(attr, node)
 
 public:
-	const pfs::string & name () const { return _name; }
-	bool specified () const { return _specified; }
-	const pfs::string & value () const { return _value; }
-	void setValue (const pfs::string & v) { _value = v; } // raises(DOMException)
-	const element * ownerElement () const { return _ownerElement; }
-
+	pfs::string name () const { return node::nodeName(); }
+	bool specified () const;
+	pfs::string value () const { return node::nodeValue(); }
+	void setValue (const pfs::string & v); // raises(DOMException)
+	element ownerElement () const;
 };
 
 }} // cwt::dom

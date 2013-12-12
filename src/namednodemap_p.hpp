@@ -17,16 +17,13 @@ class node;
 class namednodemap::impl
 {
 public:
-	typedef pfs::shared_ptr<node::impl> element_type;
-	typedef pfs::map<pfs::string, element_type> map_type;
+	typedef pfs::shared_ptr<node::impl> item_type;
+	typedef pfs::map<pfs::string, item_type> map_type;
 
 	typedef map_type::iterator iterator;
 	typedef map_type::const_iterator const_iterator;
 
     map_type _map;
-//    pfs::shared_ptr<node::impl> _parent;
-//    bool _readonly;
-//    bool _appendToParent;
 
 public:
 };

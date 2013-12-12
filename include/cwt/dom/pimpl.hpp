@@ -34,4 +34,23 @@ public:                                                        \
 	bool operator != (const Class & other) const               \
 			{ return _pimpl.operator != (other._pimpl); }
 
+
+#define CWT_DOM_PIMPL_DERIVED(Class,Base)                      \
+public:                                                        \
+	class impl;                                                \
+                                                               \
+protected:                                                     \
+	Class (const pfs::shared_ptr<impl> & other)                \
+		: Base(dynamic_pointer_cast<Base::impl>(other)) {}     \
+                                                               \
+public:                                                        \
+    Class () : Base () {}                                      \
+    Class (const Class & a) : Base(a) {}                       \
+    Class & operator = (const Class & a)                       \
+    {                                                          \
+    	Base::operator = (a);                                  \
+    	return *this;                                          \
+    }
+
+
 #endif /* __CWT_DOM_PIMPL_HPP__ */

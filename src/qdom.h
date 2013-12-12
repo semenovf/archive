@@ -370,14 +370,6 @@ public:
     // DOM functions
     pfs::string attribute(const pfs::string& name, const pfs::string& defValue = pfs::string() ) const;
     void setAttribute(const pfs::string& name, const pfs::string& value);
-    void setAttribute(const pfs::string& name, qlonglong value);
-    void setAttribute(const pfs::string& name, qulonglong value);
-    inline void setAttribute(const pfs::string& name, int value)
-        { setAttribute(name, qlonglong(value)); }
-    inline void setAttribute(const pfs::string& name, uint value)
-        { setAttribute(name, qulonglong(value)); }
-    void setAttribute(const pfs::string& name, float value);
-    void setAttribute(const pfs::string& name, double value);
     void removeAttribute(const pfs::string& name);
     QDomAttr attributeNode(const pfs::string& name);
     QDomAttr setAttributeNode(const QDomAttr& newAttr);
@@ -387,13 +379,6 @@ public:
 
     pfs::string attributeNS(const pfs::string nsURI, const pfs::string& localName, const pfs::string& defValue = pfs::string()) const;
     void setAttributeNS(const pfs::string nsURI, const pfs::string& qName, const pfs::string& value);
-    inline void setAttributeNS(const pfs::string nsURI, const pfs::string& qName, int value)
-        { setAttributeNS(nsURI, qName, qlonglong(value)); }
-    inline void setAttributeNS(const pfs::string nsURI, const pfs::string& qName, uint value)
-        { setAttributeNS(nsURI, qName, qulonglong(value)); }
-    void setAttributeNS(const pfs::string nsURI, const pfs::string& qName, qlonglong value);
-    void setAttributeNS(const pfs::string nsURI, const pfs::string& qName, qulonglong value);
-    void setAttributeNS(const pfs::string nsURI, const pfs::string& qName, double value);
     void removeAttributeNS(const pfs::string& nsURI, const pfs::string& localName);
     QDomAttr attributeNodeNS(const pfs::string& nsURI, const pfs::string& localName);
     QDomAttr setAttributeNodeNS(const QDomAttr& newAttr);
@@ -402,7 +387,6 @@ public:
 
     // DOM read only attributes
     pfs::string tagName() const;
-    void setTagName(const pfs::string& name); // Qt extension
 
     // Overridden from QDomNode
     QDomNamedNodeMap attributes() const;

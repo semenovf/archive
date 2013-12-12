@@ -19,28 +19,28 @@ class node::impl;
 class nodelist::impl
 {
 public:
-	typedef pfs::shared_ptr<node::impl> element_type;
-	typedef pfs::vector<element_type>   list_type;
+	typedef pfs::shared_ptr<node::impl> item_type;
+	typedef pfs::vector<item_type>   list_type;
 
-	element_type _node_impl;
+	item_type    _node_impl;
     pfs::string  _tagname;
     pfs::string  _namespaceURI;
 	list_type    _list;
     long_t       _timestamp;
 
 public:
-    impl (const element_type & node_impl)
+    impl (const item_type & node_impl)
     	: _node_impl(node_impl)
     	, _timestamp(0)
     {}
 
-    impl (const element_type & node_impl, const pfs::string & tagname)
+    impl (const item_type & node_impl, const pfs::string & tagname)
 		: _node_impl(node_impl)
     	, _tagname(tagname)
 		, _timestamp(0)
     {}
 
-    impl (const element_type & node_impl, const pfs::string & namespaceUri, const pfs::string & localName)
+    impl (const item_type & node_impl, const pfs::string & namespaceUri, const pfs::string & localName)
 		: _node_impl(node_impl)
 		, _tagname(localName)
     	, _namespaceURI(namespaceUri)

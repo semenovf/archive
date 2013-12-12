@@ -14,8 +14,8 @@
 namespace cwt { namespace dom {
 
 class document;
-//class nodelist;
-//class namednodemap;
+class nodelist;
+class namednodemap;
 
 class DLL_API node
 {
@@ -49,7 +49,7 @@ public:
 	node         previousSibling () const;
 	node         nextSibling ()     const;
 	nodelist     childNodes ()      const;
-//	namednodemap attributes ()      const;
+	namednodemap attributes ()      const;
 	pfs::string  namespaceURI ()    const;
 	pfs::string  prefix ()          const;
 	pfs::string  localName ()       const;
@@ -58,17 +58,19 @@ public:
 	bool isSupported (const pfs::string & feature, const pfs::string & version) const;
 
 	bool hasChildNodes () const;
-//	bool hasAttributes() const;
+	bool hasAttributes() const;
 
 //	void normalize ();
 	void setNodeValue (const pfs::string & value);
 	void setPrefix (const pfs::string & p);  // raises(DOMException)
 
-//	node insertBefore (const node & newChild, const node & refChild); // raises(DOMException)
+	node insertBefore (const node & newChild, const node & refChild); // raises(DOMException)
 //	node replaceChild (const node & newChild, const node & oldChild); // raises(DOMException)
 //	node removeChild (const node & oldChild); // raises(DOMException)
 //	node appendChild (const node & newChild); // raises(DOMException)
 //	node cloneNode (bool deep);
+
+	bool isNull() const { return _pimpl == nullptr; }
 };
 
 }} // cwt::dom

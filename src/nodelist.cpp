@@ -19,7 +19,7 @@ void nodelist::impl::populate ()
     if (doc && _timestamp != doc->_timestamp)
         _timestamp = doc->_timestamp;
 
-    element_type p = _node_impl->_first;
+    item_type p = _node_impl->_first;
 
     _list.clear();
 

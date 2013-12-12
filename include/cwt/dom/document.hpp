@@ -6,23 +6,20 @@
 namespace cwt { namespace dom {
 
 class node;
-class document_type;
-class document_fragment;
-class dom_implementation;
-class element;
-class text;
-class comment;
-class cdatasection;
-class processing_instruction;
-class attr;
-class entity_reference;
-class nodelist;
+//class document_type;
+//class document_fragment;
+//class dom_implementation;
+//class element;
+//class text;
+//class comment;
+//class cdatasection;
+//class processing_instruction;
+//class attr;
+//class entity_reference;
+//class nodelist;
 
 class DLL_API document : public node
 {
-public:
-	class impl;
-
 protected:
 //	document (const pimpl_type & other) : _pimpl(other) {}
 

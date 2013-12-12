@@ -30,23 +30,25 @@ public:
 	 */
 	pfs::string  _localName;
 
-	pfs::shared_ptr<node::impl> _parent;
-	pfs::shared_ptr<node::impl> _first;
-	pfs::shared_ptr<node::impl> _last;
-	pfs::shared_ptr<node::impl> _prev;
-	pfs::shared_ptr<node::impl> _next;
+	node::pimpl_type _parent;
+	node::pimpl_type _first;
+	node::pimpl_type _last;
+	node::pimpl_type _prev;
+	node::pimpl_type _next;
 
 public:
-//	impl (pfs::shared_ptr<document::impl> doc, pfs::shared_ptr<node::impl> parent = pfs::shared_ptr<node::impl>());
+	impl (node::pimpl_type & parent)
+		: _parent(parent) {}
 //	impl (const pfs::shared_ptr<node::impl> & n, bool deep);
 	virtual ~impl () {}
 
-	pfs::shared_ptr<node::impl> parent () { return _parent; }
+	node::pimpl_type parent () { return _parent; }
+	void setParent (node::pimpl_type parent) { _parent = parent; }
 //	bool isNull () const             { return nodeType() == NullNode; }
 	bool isAttribute () const        { return nodeType() == AttributeNode; }
 //	bool isCDATASection () const     { return nodeType() == CDATASectionNode; }
 	bool isDocument () const         { return nodeType() == DocumentNode; }
-//	bool isDocumentFragment () const { return nodeType() == DocumentFragmentNode; }
+	bool isDocumentFragment () const { return nodeType() == DocumentFragmentNode; }
 //	bool isDocumentType () const     { return nodeType() == DocumentTypeNode; }
 	bool isElement () const          { return nodeType() == ElementNode; }
 //	bool isEntity () const           { return nodeType() == EntityNode; }

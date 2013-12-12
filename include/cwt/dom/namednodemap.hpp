@@ -22,18 +22,18 @@ class namednodemap
 public:
 	node namedItem (const pfs::string & name) const
 		{ return getNamedItem (name); }
-//	node getNamedItem (const pfs::string & name) const;
-//	node setNamedItem (node arg); // raises(DOMException)
-//	node removeNamedItem (const pfs::string & name); // raises(DOMException)
-//	node item (size_t index) const;
+	node getNamedItem (const pfs::string & name) const;
+	node setNamedItem (const node & arg); // raises(DOMException)
+	node removeNamedItem (const pfs::string & name); // raises(DOMException)
+	node item (size_t index) const;
 //
-//	size_t length () const;
+	size_t length () const;
 
-	node namedItemNS(const pfs::string & namespaceURI, const pfs::string & localName) const
+	node namedItemNS (const pfs::string & namespaceURI, const pfs::string & localName) const
 		{ return getNamedItemNS(namespaceURI, localName); }
-//	node getNamedItemNS(const pfs::string & namespaceURI, const pfs::string & localName);
-//	node setNamedItemNS(const node & arg); //  raises(DOMException)
-//	node removeNamedItemNS(const pfs::string & namespaceURI, const pfs::string & localName); // raises(DOMException);
+	node getNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName) const;
+	node setNamedItemNS (const node & arg); //  raises(DOMException)
+	node removeNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName); // raises(DOMException);
 };
 
 }} // cwt::dom

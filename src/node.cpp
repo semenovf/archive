@@ -1,6 +1,8 @@
 #include "node_p.hpp"
 #include "nodelist_p.hpp"
 #include "namednodemap_p.hpp"
+#include "element_p.hpp"
+#include "document_p.hpp"
 
 namespace cwt { namespace dom {
 
@@ -164,6 +166,13 @@ bool node::hasChildNodes () const
 			: false;
 }
 
+bool node::hasAttributes() const
+{
+    if (!_pimpl || !_pimpl->isElement())
+        return false;
+
+    return dynamic_pointer_cast<element::impl>(_pimpl)->attrCount() > 0;
+}
 
 void node::setNodeValue (const pfs::string & value)
 {
@@ -201,18 +210,11 @@ nodelist node::childNodes () const
 
 namednodemap node::attributes () const
 {
-	return _pimpl
-			? _pimpl->_attributes
-			: namednodemap();
-}
+    if (!_pimpl || !_pimpl->isElement())
+        return namednodemap();
 
-bool node::hasAttributes() const
-{
-	return _pimpl
-			? _pimpl->_attributes.length() > 0
-			: false;
+    return dynamic_pointer_cast<element::impl>(_pimpl)->_attr;
 }
-
 
 /**
  * @details Inserts the node newChild before the existing child node refChild.
@@ -231,16 +233,90 @@ node node::insertBefore (const node & newChild, const node & refChild) // raises
 	if (_pimpl)
 		return node();
 
+	if (!newChild._pimpl)
+		return node();
+
 	if (newChild == refChild)
 		return node();
 
-	if (newChild.parentNode()) {
-		newChild.parentNode().removeChild(newChild);
+	if (refChild._pimpl && refChild.parentNode() != *this)
+		return node();
+
+	// "mark lists as dirty"
+	document::impl * const doc = _pimpl->ownerDocument();
+	if (doc)
+		++doc->_timestamp;
+
+	// Special handling for inserting a fragment. We just insert
+	// all elements of the fragment instead of the fragment itself.
+	if (newChild._pimpl->isDocumentFragment()) {
+		// Fragment is empty ?
+		if (!newChild._pimpl->_first)
+			return newChild;
+
+		// New parent
+		node::pimpl_type n = newChild._pimpl->_first;
+		while (n)  {
+			n->setParent(_pimpl); // FIXME
+			n = n->_next;
+		}
+
+		// Insert at the beginning ?
+		if (!refChild._pimpl || !refChild._pimpl->_prev) {
+			if (_pimpl->_first)
+				_pimpl->_first->_prev = newChild._pimpl->_last;
+
+			newChild._pimpl->_last->_next = _pimpl->_first;
+			if (!_pimpl->_last)
+				_pimpl->_last = newChild._pimpl->_last;
+			_pimpl->_first = newChild._pimpl->_first;
+		} else {
+			// Insert in the middle
+			newChild._pimpl->_last->_next = refChild._pimpl;
+			newChild._pimpl->_first->_prev = refChild._pimpl->_prev;
+			refChild._pimpl->_prev->_next = newChild._pimpl->_first;
+			refChild._pimpl->_prev = newChild._pimpl->_last;
+		}
+
+		// Remove the nodes from the fragment
+		node::pimpl_type null1;
+		node::pimpl_type null2;
+		newChild._pimpl->_first.swap(null1);
+		newChild._pimpl->_last.swap(null2);
+		return newChild;
 	}
 
-	if (refChild.isNull()) { // insert newChild at the end of the list of children
-		//return
+	if (newChild._pimpl->parent())
+		newChild->parent()->removeChild(newChild);
+
+	newChild->setParent(this);
+
+	if (!refChild) {
+		if (first)
+			first->prev = newChild;
+		newChild->next = first;
+		if (!last)
+			last = newChild;
+		first = newChild;
+		return newChild;
 	}
+
+	if (refChild->prev == 0) {
+		if (first)
+			first->prev = newChild;
+		newChild->next = first;
+		if (!last)
+			last = newChild;
+		first = newChild;
+		return newChild;
+	}
+
+	newChild->next = refChild;
+	newChild->prev = refChild->prev;
+	refChild->prev->next = newChild;
+	refChild->prev = newChild;
+
+	return newChild;
 }
 
 /**
@@ -251,25 +327,25 @@ node node::insertBefore (const node & newChild, const node & refChild) // raises
  * @return The node removed.
  * @throw @a cwt::dom::exception
  */
-node node::removeChild (const node & oldChild)
-{
-	if (!_pimpl || oldChild.isNull())
-		return node();
-
-	if (oldChild.parentNode() != *this)
-		return node();
-
-	// Just created and does not added to any container
-	if (oldChild.nextSibling().isNull()
-			&& oldChild.previousSibling().isNull()
-			&& oldChild != this->firstChild())
-		return node();
-
-	if (!oldChild._pimpl->_nextSibling.isNull())
-		oldChild._pimpl->_nextSibling._pimpl->_previousSibling = oldChild._pimpl->_previousSibling;
-
-	if (!oldChild._pimpl->_previousSibling.isNull())
-		oldChild._pimpl->_previousSibling._pimpl->_nextSibling = oldChild._pimpl->_nextSibling;
-}
+//node node::removeChild (const node & oldChild)
+//{
+//	if (!_pimpl || oldChild.isNull())
+//		return node();
+//
+//	if (oldChild.parentNode() != *this)
+//		return node();
+//
+//	// Just created and does not added to any container
+//	if (oldChild.nextSibling().isNull()
+//			&& oldChild.previousSibling().isNull()
+//			&& oldChild != this->firstChild())
+//		return node();
+//
+//	if (!oldChild._pimpl->_nextSibling.isNull())
+//		oldChild._pimpl->_nextSibling._pimpl->_previousSibling = oldChild._pimpl->_previousSibling;
+//
+//	if (!oldChild._pimpl->_previousSibling.isNull())
+//		oldChild._pimpl->_previousSibling._pimpl->_nextSibling = oldChild._pimpl->_nextSibling;
+//}
 
 }} // cwt::dom
