@@ -12,7 +12,7 @@ namespace cwt { namespace dom {
 
 void nodelist::impl::populate ()
 {
-    if (!_node_impl.get())
+    if (!_node_impl_ptr)
         return;
 
     const document::impl * const doc = _node_impl->ownerDocument();
@@ -68,31 +68,31 @@ void nodelist::impl::populate ()
     }
 }
 
-size_t nodelist::impl::size ()
-{
-    const document::impl * const doc = _pimpl->_node_impl->ownerDocument();
-    if (!doc || _pimpl->_timestamp != doc->_timestamp)
-    	_pimpl->populate();
-
-    return _pimpl->_list.size();
-}
-
-node nodelist::item (size_t index) const
-{
-	if (!_pimpl)
-		return node();
-
-    return index < _pimpl->size() // populated on demand
-    		? node(_pimpl->_list.at(index))
-    		: node();
-}
-
-size_t nodelist::length () const
-{
-	return _pimpl
-			? _pimpl->size() // populated on demand
-			: 0;
-}
+//size_t nodelist::impl::size ()
+//{
+//    const document::impl * const doc = _pimpl->_node_impl->ownerDocument();
+//    if (!doc || _pimpl->_timestamp != doc->_timestamp)
+//    	_pimpl->populate();
+//
+//    return _pimpl->_list.size();
+//}
+//
+//node nodelist::item (size_t index) const
+//{
+//	if (!_pimpl)
+//		return node();
+//
+//    return index < _pimpl->size() // populated on demand
+//    		? node(_pimpl->_list.at(index))
+//    		: node();
+//}
+//
+//size_t nodelist::length () const
+//{
+//	return _pimpl
+//			? _pimpl->size() // populated on demand
+//			: 0;
+//}
 
 }} // cwt::dom
 

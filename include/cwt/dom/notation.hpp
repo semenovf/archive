@@ -7,19 +7,22 @@
 #ifndef __CWT_DOM_NOTATION_HPP__
 #define __CWT_DOM_NOTATION_HPP__
 
+#include <pfs/shared_ptr.hpp>
 #include <cwt/dom/node.hpp>
 
 namespace cwt { namespace dom {
 
 class notation : public node
 {
-	pfs::string _publicId; // readonly
-	pfs::string _systemId; // readonly
+	class impl;
+	pfs::shared_ptr<impl> _pimpl;
+
+protected:
+	notation (); // deny
 
 public:
-	notation () : node () {}
-	const pfs::string & publicId () const { return _publicId; }
-	const pfs::string & systemId () const { return _systemId; }
+	const pfs::string & publicId () const;
+	const pfs::string & systemId () const;
 };
 
 }} // cwt::dom

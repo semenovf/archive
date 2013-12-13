@@ -11,19 +11,44 @@
 
 namespace cwt { namespace dom {
 
-class namednodemap;
+class node::impl;
+class attr::impl;
+class document::impl;
+class namednodemap::impl;
 
 class element::impl : public node::impl
 {
 public:
-	namednodemap _attr;
+    impl(document::impl *, node::impl* parent, const pfs::string& name);
+    impl(document::impl *, node::impl* parent, const pfs::string& nsURI, const pfs::string& qName);
+    impl(impl* n, bool deep);
+    ~impl();
 
-public:
-	virtual ~impl () {}
+    pfs::string attribute(const pfs::string& name, const pfs::string& defValue) const;
+    pfs::string attributeNS(const pfs::string& nsURI, const pfs::string& localName, const pfs::string& defValue) const;
+    void setAttribute(const pfs::string& name, const pfs::string& value);
+    void setAttributeNS(const pfs::string& nsURI, const pfs::string& qName, const pfs::string& newValue);
+    void removeAttribute(const pfs::string& name);
+    attr::impl* attributeNode(const pfs::string& name);
+    attr::impl* attributeNodeNS(const pfs::string& nsURI, const pfs::string& localName);
+    attr::impl* setAttributeNode(attr::impl* newAttr);
+    attr::impl* setAttributeNodeNS(attr::impl* newAttr);
+    attr::impl* removeAttributeNode(attr::impl* oldAttr);
+    bool hasAttribute(const pfs::string& name);
+    bool hasAttributeNS(const pfs::string& nsURI, const pfs::string& localName);
 
-	virtual node::type nodeType () const { return node::ElementNode; }
-	size_t attrCount () const { return _attr._pimpl->_map.size(); }
+    pfs::string text();
+
+    // Reimplemented from node::impl
+    namednodemap::impl * attributes() { return m_attr; }
+    bool hasAttributes() { return (m_attr->length() > 0); }
+    node::type nodeType() const { return node::ElementNode; }
+    node::impl* cloneNode(bool deep = true);
+
+    // Variables
+    namednodemap::impl * m_attr;
 };
+
 
 }} // cwt::dom
 

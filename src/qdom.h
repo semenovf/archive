@@ -1,7 +1,56 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the QtXml module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Digia gives you certain additional
+** rights.  These rights are described in the Digia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #ifndef QDOM_H
 #define QDOM_H
 
-#include <pfs/string.hpp>
+#include <QtXml/qtxmlglobal.h>
+#include <QtCore/qstring.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+
+#ifndef QT_NO_DOM
 
 class QIODevice;
 class QTextStream;
@@ -47,7 +96,7 @@ class QDomEntity;
 class QDomNotation;
 class QDomCharacterData;
 
-class  QDomImplementation
+class Q_XML_EXPORT QDomImplementation
 {
 public:
     QDomImplementation();
@@ -58,9 +107,9 @@ public:
     bool operator!= (const QDomImplementation&) const;
 
     // functions
-    bool hasFeature(const pfs::string& feature, const pfs::string& version) const;
-    QDomDocumentType createDocumentType(const pfs::string& qName, const pfs::string& publicId, const pfs::string& systemId);
-    QDomDocument createDocument(const pfs::string& nsURI, const pfs::string& qName, const QDomDocumentType& doctype);
+    bool hasFeature(const QString& feature, const QString& version) const;
+    QDomDocumentType createDocumentType(const QString& qName, const QString& publicId, const QString& systemId);
+    QDomDocument createDocument(const QString& nsURI, const QString& qName, const QDomDocumentType& doctype);
 
     enum InvalidDataPolicy { AcceptInvalidChars = 0, DropInvalidChars, ReturnNullNode };
     static InvalidDataPolicy invalidDataPolicy();
@@ -76,7 +125,7 @@ private:
     friend class QDomDocument;
 };
 
-class  QDomNode
+class Q_XML_EXPORT QDomNode
 {
 public:
     enum NodeType {
@@ -118,10 +167,10 @@ public:
     bool hasChildNodes() const;
     QDomNode cloneNode(bool deep = true) const;
     void normalize();
-    bool isSupported(const pfs::string& feature, const pfs::string& version) const;
+    bool isSupported(const QString& feature, const QString& version) const;
 
     // DOM read-only attributes
-    pfs::string nodeName() const;
+    QString nodeName() const;
     NodeType nodeType() const;
     QDomNode parentNode() const;
     QDomNodeList childNodes() const;
@@ -131,15 +180,63 @@ public:
     QDomNode nextSibling() const;
     QDomNamedNodeMap attributes() const;
     QDomDocument ownerDocument() const;
-    pfs::string namespaceURI() const;
-    pfs::string localName() const;
+    QString namespaceURI() const;
+    QString localName() const;
     bool hasAttributes() const;
 
     // DOM attributes
-    pfs::string nodeValue() const;
-    void setNodeValue(const pfs::string&);
-    pfs::string prefix() const;
-    void setPrefix(const pfs::string& pre);
+    QString nodeValue() const;
+    void setNodeValue(const QString&);
+    QString prefix() const;
+    void setPrefix(const QString& pre);
+
+    // Qt extensions
+    bool isAttr() const;
+    bool isCDATASection() const;
+    bool isDocumentFragment() const;
+    bool isDocument() const;
+    bool isDocumentType() const;
+    bool isElement() const;
+    bool isEntityReference() const;
+    bool isText() const;
+    bool isEntity() const;
+    bool isNotation() const;
+    bool isProcessingInstruction() const;
+    bool isCharacterData() const;
+    bool isComment() const;
+
+    /**
+     * Shortcut to avoid dealing with QDomNodeList
+     * all the time.
+     */
+    QDomNode namedItem(const QString& name) const;
+
+    bool isNull() const;
+    void clear();
+
+    QDomAttr toAttr() const;
+    QDomCDATASection toCDATASection() const;
+    QDomDocumentFragment toDocumentFragment() const;
+    QDomDocument toDocument() const;
+    QDomDocumentType toDocumentType() const;
+    QDomElement toElement() const;
+    QDomEntityReference toEntityReference() const;
+    QDomText toText() const;
+    QDomEntity toEntity() const;
+    QDomNotation toNotation() const;
+    QDomProcessingInstruction toProcessingInstruction() const;
+    QDomCharacterData toCharacterData() const;
+    QDomComment toComment() const;
+
+    void save(QTextStream&, int, EncodingPolicy=QDomNode::EncodingFromDocument) const;
+
+    QDomElement firstChildElement(const QString &tagName = QString()) const;
+    QDomElement lastChildElement(const QString &tagName = QString()) const;
+    QDomElement previousSiblingElement(const QString &tagName = QString()) const;
+    QDomElement nextSiblingElement(const QString &taName = QString()) const;
+
+    int lineNumber() const;
+    int columnNumber() const;
 
 protected:
     QDomNodePrivate* impl;
@@ -152,7 +249,7 @@ private:
     friend class QDomNamedNodeMap;
 };
 
-class  QDomNodeList
+class Q_XML_EXPORT QDomNodeList
 {
 public:
     QDomNodeList();
@@ -181,7 +278,7 @@ private:
     friend class QDomDocument;
 };
 
-class  QDomDocumentType : public QDomNode
+class Q_XML_EXPORT QDomDocumentType : public QDomNode
 {
 public:
     QDomDocumentType();
@@ -189,12 +286,12 @@ public:
     QDomDocumentType& operator= (const QDomDocumentType&);
 
     // DOM read only attributes
-    pfs::string name() const;
+    QString name() const;
     QDomNamedNodeMap entities() const;
     QDomNamedNodeMap notations() const;
-    pfs::string publicId() const;
-    pfs::string systemId() const;
-    pfs::string internalSubset() const;
+    QString publicId() const;
+    QString systemId() const;
+    QString internalSubset() const;
 
     // Overridden from QDomNode
     inline QDomNode::NodeType nodeType() const { return DocumentTypeNode; }
@@ -207,30 +304,31 @@ private:
     friend class QDomNode;
 };
 
-class  QDomDocument : public QDomNode
+class Q_XML_EXPORT QDomDocument : public QDomNode
 {
 public:
     QDomDocument();
-    explicit QDomDocument(const pfs::string& name);
+    explicit QDomDocument(const QString& name);
     explicit QDomDocument(const QDomDocumentType& doctype);
     QDomDocument(const QDomDocument& x);
     QDomDocument& operator= (const QDomDocument&);
+    ~QDomDocument();
 
     // DOM functions
-    QDomElement createElement(const pfs::string& tagName);
+    QDomElement createElement(const QString& tagName);
     QDomDocumentFragment createDocumentFragment();
-    QDomText createTextNode(const pfs::string& data);
-    QDomComment createComment(const pfs::string& data);
-    QDomCDATASection createCDATASection(const pfs::string& data);
-    QDomProcessingInstruction createProcessingInstruction(const pfs::string& target, const pfs::string& data);
-    QDomAttr createAttribute(const pfs::string& name);
-    QDomEntityReference createEntityReference(const pfs::string& name);
-    QDomNodeList elementsByTagName(const pfs::string& tagname) const;
+    QDomText createTextNode(const QString& data);
+    QDomComment createComment(const QString& data);
+    QDomCDATASection createCDATASection(const QString& data);
+    QDomProcessingInstruction createProcessingInstruction(const QString& target, const QString& data);
+    QDomAttr createAttribute(const QString& name);
+    QDomEntityReference createEntityReference(const QString& name);
+    QDomNodeList elementsByTagName(const QString& tagname) const;
     QDomNode importNode(const QDomNode& importedNode, bool deep);
-    QDomElement createElementNS(const pfs::string& nsURI, const pfs::string& qName);
-    QDomAttr createAttributeNS(const pfs::string& nsURI, const pfs::string& qName);
-    QDomNodeList elementsByTagNameNS(const pfs::string& nsURI, const pfs::string& localName);
-    QDomElement elementById(const pfs::string& elementId);
+    QDomElement createElementNS(const QString& nsURI, const QString& qName);
+    QDomAttr createAttributeNS(const QString& nsURI, const QString& qName);
+    QDomNodeList elementsByTagNameNS(const QString& nsURI, const QString& localName);
+    QDomElement elementById(const QString& elementId);
 
     // DOM read only attributes
     QDomDocumentType doctype() const;
@@ -240,13 +338,27 @@ public:
     // Overridden from QDomNode
     inline QDomNode::NodeType nodeType() const { return DocumentNode; }
 
+    // Qt extensions
+    bool setContent(const QByteArray& text, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
+    bool setContent(const QString& text, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
+    bool setContent(QIODevice* dev, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
+    bool setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
+    bool setContent(const QByteArray& text, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
+    bool setContent(const QString& text, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
+    bool setContent(QIODevice* dev, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
+    bool setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );
+
+    // Qt extensions
+    QString toString(int = 1) const;
+    QByteArray toByteArray(int = 1) const;
+
 private:
     QDomDocument(QDomDocumentPrivate*);
 
     friend class QDomNode;
 };
 
-class  QDomNamedNodeMap
+class Q_XML_EXPORT QDomNamedNodeMap
 {
 public:
     QDomNamedNodeMap();
@@ -257,13 +369,13 @@ public:
     ~QDomNamedNodeMap();
 
     // DOM functions
-    QDomNode namedItem(const pfs::string& name) const;
+    QDomNode namedItem(const QString& name) const;
     QDomNode setNamedItem(const QDomNode& newNode);
-    QDomNode removeNamedItem(const pfs::string& name);
+    QDomNode removeNamedItem(const QString& name);
     QDomNode item(int index) const;
-    QDomNode namedItemNS(const pfs::string& nsURI, const pfs::string& localName) const;
+    QDomNode namedItemNS(const QString& nsURI, const QString& localName) const;
     QDomNode setNamedItemNS(const QDomNode& newNode);
-    QDomNode removeNamedItemNS(const pfs::string& nsURI, const pfs::string& localName);
+    QDomNode removeNamedItemNS(const QString& nsURI, const QString& localName);
 
     // DOM read only attributes
     int length() const;
@@ -272,7 +384,7 @@ public:
     inline bool isEmpty() const { return length() == 0; } // Qt API consistency
 
     // Qt extension
-    bool contains(const pfs::string& name) const;
+    bool contains(const QString& name) const;
 
 private:
     QDomNamedNodeMapPrivate* impl;
@@ -283,7 +395,7 @@ private:
     friend class QDomElement;
 };
 
-class  QDomDocumentFragment : public QDomNode
+class Q_XML_EXPORT QDomDocumentFragment : public QDomNode
 {
 public:
     QDomDocumentFragment();
@@ -300,7 +412,7 @@ private:
     friend class QDomNode;
 };
 
-class  QDomCharacterData : public QDomNode
+class Q_XML_EXPORT QDomCharacterData : public QDomNode
 {
 public:
     QDomCharacterData();
@@ -308,18 +420,18 @@ public:
     QDomCharacterData& operator= (const QDomCharacterData&);
 
     // DOM functions
-    pfs::string substringData(unsigned long offset, unsigned long count);
-    void appendData(const pfs::string& arg);
-    void insertData(unsigned long offset, const pfs::string& arg);
+    QString substringData(unsigned long offset, unsigned long count);
+    void appendData(const QString& arg);
+    void insertData(unsigned long offset, const QString& arg);
     void deleteData(unsigned long offset, unsigned long count);
-    void replaceData(unsigned long offset, unsigned long count, const pfs::string& arg);
+    void replaceData(unsigned long offset, unsigned long count, const QString& arg);
 
     // DOM read only attributes
     int length() const;
 
     // DOM attributes
-    pfs::string data() const;
-    void setData(const pfs::string&);
+    QString data() const;
+    void setData(const QString&);
 
     // Overridden from QDomNode
     QDomNode::NodeType nodeType() const;
@@ -333,7 +445,7 @@ private:
     friend class QDomNode;
 };
 
-class  QDomAttr : public QDomNode
+class Q_XML_EXPORT QDomAttr : public QDomNode
 {
 public:
     QDomAttr();
@@ -341,13 +453,13 @@ public:
     QDomAttr& operator= (const QDomAttr&);
 
     // DOM read only attributes
-    pfs::string name() const;
+    QString name() const;
     bool specified() const;
     QDomElement ownerElement() const;
 
     // DOM attributes
-    pfs::string value() const;
-    void setValue(const pfs::string&);
+    QString value() const;
+    void setValue(const QString&);
 
     // Overridden from QDomNode
     inline QDomNode::NodeType nodeType() const { return AttributeNode; }
@@ -360,7 +472,7 @@ private:
     friend class QDomNode;
 };
 
-class  QDomElement : public QDomNode
+class Q_XML_EXPORT QDomElement : public QDomNode
 {
 public:
     QDomElement();
@@ -368,31 +480,47 @@ public:
     QDomElement& operator= (const QDomElement&);
 
     // DOM functions
-    pfs::string attribute(const pfs::string& name, const pfs::string& defValue = pfs::string() ) const;
-    void setAttribute(const pfs::string& name, const pfs::string& value);
-    void removeAttribute(const pfs::string& name);
-    QDomAttr attributeNode(const pfs::string& name);
+    QString attribute(const QString& name, const QString& defValue = QString() ) const;
+    void setAttribute(const QString& name, const QString& value);
+    void setAttribute(const QString& name, qlonglong value);
+    void setAttribute(const QString& name, qulonglong value);
+    inline void setAttribute(const QString& name, int value)
+        { setAttribute(name, qlonglong(value)); }
+    inline void setAttribute(const QString& name, uint value)
+        { setAttribute(name, qulonglong(value)); }
+    void setAttribute(const QString& name, float value);
+    void setAttribute(const QString& name, double value);
+    void removeAttribute(const QString& name);
+    QDomAttr attributeNode(const QString& name);
     QDomAttr setAttributeNode(const QDomAttr& newAttr);
     QDomAttr removeAttributeNode(const QDomAttr& oldAttr);
-    QDomNodeList elementsByTagName(const pfs::string& tagname) const;
-    bool hasAttribute(const pfs::string& name) const;
+    QDomNodeList elementsByTagName(const QString& tagname) const;
+    bool hasAttribute(const QString& name) const;
 
-    pfs::string attributeNS(const pfs::string nsURI, const pfs::string& localName, const pfs::string& defValue = pfs::string()) const;
-    void setAttributeNS(const pfs::string nsURI, const pfs::string& qName, const pfs::string& value);
-    void removeAttributeNS(const pfs::string& nsURI, const pfs::string& localName);
-    QDomAttr attributeNodeNS(const pfs::string& nsURI, const pfs::string& localName);
+    QString attributeNS(const QString nsURI, const QString& localName, const QString& defValue = QString()) const;
+    void setAttributeNS(const QString nsURI, const QString& qName, const QString& value);
+    inline void setAttributeNS(const QString nsURI, const QString& qName, int value)
+        { setAttributeNS(nsURI, qName, qlonglong(value)); }
+    inline void setAttributeNS(const QString nsURI, const QString& qName, uint value)
+        { setAttributeNS(nsURI, qName, qulonglong(value)); }
+    void setAttributeNS(const QString nsURI, const QString& qName, qlonglong value);
+    void setAttributeNS(const QString nsURI, const QString& qName, qulonglong value);
+    void setAttributeNS(const QString nsURI, const QString& qName, double value);
+    void removeAttributeNS(const QString& nsURI, const QString& localName);
+    QDomAttr attributeNodeNS(const QString& nsURI, const QString& localName);
     QDomAttr setAttributeNodeNS(const QDomAttr& newAttr);
-    QDomNodeList elementsByTagNameNS(const pfs::string& nsURI, const pfs::string& localName) const;
-    bool hasAttributeNS(const pfs::string& nsURI, const pfs::string& localName) const;
+    QDomNodeList elementsByTagNameNS(const QString& nsURI, const QString& localName) const;
+    bool hasAttributeNS(const QString& nsURI, const QString& localName) const;
 
     // DOM read only attributes
-    pfs::string tagName() const;
+    QString tagName() const;
+    void setTagName(const QString& name); // Qt extension
 
     // Overridden from QDomNode
     QDomNamedNodeMap attributes() const;
     inline QDomNode::NodeType nodeType() const { return ElementNode; }
 
-    pfs::string text() const;
+    QString text() const;
 
 private:
     QDomElement(QDomElementPrivate*);
@@ -402,7 +530,7 @@ private:
     friend class QDomAttr;
 };
 
-class  QDomText : public QDomCharacterData
+class Q_XML_EXPORT QDomText : public QDomCharacterData
 {
 public:
     QDomText();
@@ -423,7 +551,7 @@ private:
     friend class QDomNode;
 };
 
-class  QDomComment : public QDomCharacterData
+class Q_XML_EXPORT QDomComment : public QDomCharacterData
 {
 public:
     QDomComment();
@@ -440,7 +568,7 @@ private:
     friend class QDomNode;
 };
 
-class  QDomCDATASection : public QDomText
+class Q_XML_EXPORT QDomCDATASection : public QDomText
 {
 public:
     QDomCDATASection();
@@ -457,7 +585,7 @@ private:
     friend class QDomNode;
 };
 
-class  QDomNotation : public QDomNode
+class Q_XML_EXPORT QDomNotation : public QDomNode
 {
 public:
     QDomNotation();
@@ -465,8 +593,8 @@ public:
     QDomNotation& operator= (const QDomNotation&);
 
     // DOM read only attributes
-    pfs::string publicId() const;
-    pfs::string systemId() const;
+    QString publicId() const;
+    QString systemId() const;
 
     // Overridden from QDomNode
     inline QDomNode::NodeType nodeType() const { return NotationNode; }
@@ -478,7 +606,7 @@ private:
     friend class QDomNode;
 };
 
-class  QDomEntity : public QDomNode
+class Q_XML_EXPORT QDomEntity : public QDomNode
 {
 public:
     QDomEntity();
@@ -486,9 +614,9 @@ public:
     QDomEntity& operator= (const QDomEntity&);
 
     // DOM read only attributes
-    pfs::string publicId() const;
-    pfs::string systemId() const;
-    pfs::string notationName() const;
+    QString publicId() const;
+    QString systemId() const;
+    QString notationName() const;
 
     // Overridden from QDomNode
     inline QDomNode::NodeType nodeType() const { return EntityNode; }
@@ -499,7 +627,7 @@ private:
     friend class QDomNode;
 };
 
-class  QDomEntityReference : public QDomNode
+class Q_XML_EXPORT QDomEntityReference : public QDomNode
 {
 public:
     QDomEntityReference();
@@ -516,7 +644,7 @@ private:
     friend class QDomNode;
 };
 
-class  QDomProcessingInstruction : public QDomNode
+class Q_XML_EXPORT QDomProcessingInstruction : public QDomNode
 {
 public:
     QDomProcessingInstruction();
@@ -524,11 +652,11 @@ public:
     QDomProcessingInstruction& operator= (const QDomProcessingInstruction&);
 
     // DOM read only attributes
-    pfs::string target() const;
+    QString target() const;
 
     // DOM attributes
-    pfs::string data() const;
-    void setData(const pfs::string& d);
+    QString data() const;
+    void setData(const QString& d);
 
     // Overridden from QDomNode
     inline QDomNode::NodeType nodeType() const { return ProcessingInstructionNode; }
@@ -541,7 +669,12 @@ private:
 };
 
 
- QTextStream& operator<<(QTextStream&, const QDomNode&);
+Q_XML_EXPORT QTextStream& operator<<(QTextStream&, const QDomNode&);
 
+#endif // QT_NO_DOM
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QDOM_H

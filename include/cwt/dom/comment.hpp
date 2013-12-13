@@ -13,8 +13,10 @@ namespace cwt { namespace dom {
 
 class comment : chardata
 {
+	class impl;
+	impl * _pimpl;
 public:
-	comment () : chardata() {}
+//	comment () : chardata() {}
 };
 
 }} // cwt

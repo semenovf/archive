@@ -6,7 +6,8 @@
 namespace cwt { namespace dom {
 
 class node;
-//class document_type;
+class dom_implementation;
+class document_type;
 //class document_fragment;
 //class dom_implementation;
 //class element;
@@ -20,11 +21,18 @@ class node;
 
 class DLL_API document : public node
 {
+	friend class dom_implementation;
+
+	class impl;
+	impl * _pimpl;
+
 protected:
-//	document (const pimpl_type & other) : _pimpl(other) {}
+	document (const pfs::string & namespaceURI
+			, const pfs::string & qualifiedName
+			, const document_type & doctype);
 
 public:
-    document () : node () {}
+//    document () : node () {}
 //    explicit document (const pfs::string & name);
 //    explicit document (const document_type & doctype);
 //    document (const document & other);
@@ -40,12 +48,12 @@ public:
 //	text              createTextNode (const pfs::string & data);
 //	comment           createComment (const pfs::string & data);
 //	cdatasection      createCDATASection (const pfs::string & data); // raises(DOMException)
-//	processing_instruction createProcessingInstruction (const pfs::string & target, const pfs::string & data); // raises(DOMException);
+//	processing_instruction createProcessingInstruction (const pfs::string & target, const pfs::string & data); // raises(DOMException)
 //	attr              createAttribute (const pfs::string & name); // raises(DOMException)
 //	entity_reference  createEntityReference (const pfs::string & name); // raises(DOMException)
 //	element           createElementNS (const pfs::string & namespaceURI, const pfs::string & qualifiedName); // raises(DOMException)
 //	attr              createAttributeNS (const pfs::string & namespaceURI, const pfs::string & qualifiedName); // raises(DOMException)
-//	node              importNode (const node & importedNode, bool deep); // raises(DOMException);
+//	node              importNode (const node & importedNode, bool deep); // raises(DOMException)
 //	nodelist          getElementsByTagName (const pfs::string & tagname);
 //	nodelist          getElementsByTagNameNS (const pfs::string & namespaceURI, const pfs::string & localName);
 //	element           getElementById (const pfs::string & elementId);

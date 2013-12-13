@@ -8,65 +8,87 @@
 #define __CWT_DOM_NODE_P_HPP__
 
 #include "../include/cwt/dom/node.hpp"
+#include <pfs/atomic.hpp>
 
 namespace cwt { namespace dom {
 
-class nodelist::impl;
 class document::impl;
 
 class node::impl
 {
 public:
-	pfs::string  _name;
-	pfs::string  _value;
-	pfs::string  _namespaceURI;
-	pfs::string  _prefix;
+    impl(document::impl*, impl* parent = 0);
+    impl(impl* n, bool deep);
+    virtual ~impl();
 
-	/*
-	 * Local part of the qualified name of this node.
-	 * FIXME For nodes of any type other than ELEMENT_NODE and ATTRIBUTE_NODE
-	 * and nodes created with a DOM Level 1 method, such as createElement
-	 * from the Document interface, this is always null.
-	 */
-	pfs::string  _localName;
+    pfs::string nodeName() const { return name; }
+    pfs::string nodeValue() const { return value; }
+    virtual void setNodeValue(const pfs::string& v) { value = v; }
 
-	node::pimpl_type _parent;
-	node::pimpl_type _first;
-	node::pimpl_type _last;
-	node::pimpl_type _prev;
-	node::pimpl_type _next;
+    document::impl* ownerDocument();
+    void setOwnerDocument(document::impl* doc);
 
-public:
-	impl (node::pimpl_type & parent)
-		: _parent(parent) {}
-//	impl (const pfs::shared_ptr<node::impl> & n, bool deep);
-	virtual ~impl () {}
+    virtual impl* insertBefore(impl* newChild, impl* refChild);
+    virtual impl* insertAfter(impl* newChild, impl* refChild);
+    virtual impl* replaceChild(impl* newChild, impl* oldChild);
+    virtual impl* removeChild(impl* oldChild);
+    virtual impl* appendChild(impl* newChild);
 
-	node::pimpl_type parent () { return _parent; }
-	void setParent (node::pimpl_type parent) { _parent = parent; }
-//	bool isNull () const             { return nodeType() == NullNode; }
-	bool isAttribute () const        { return nodeType() == AttributeNode; }
-//	bool isCDATASection () const     { return nodeType() == CDATASectionNode; }
-	bool isDocument () const         { return nodeType() == DocumentNode; }
-	bool isDocumentFragment () const { return nodeType() == DocumentFragmentNode; }
-//	bool isDocumentType () const     { return nodeType() == DocumentTypeNode; }
-	bool isElement () const          { return nodeType() == ElementNode; }
-//	bool isEntity () const           { return nodeType() == EntityNode; }
-//	bool isEntityReference () const  { return nodeType() == EntityReferenceNode; }
-//	bool isNotation () const         { return nodeType() == NotationNode; }
-//	bool isProcessionInstriction () const { return nodeType() == ProcessingInstructionNode; }
-//	bool isComment () const          { return nodeType() == CommentNode; }
-//	bool isText () const
-//	{
-//		node::type t = nodeType();
-//		return t == TextNode || t == CDATASectionNode;
-//	}
-//
-	virtual void setNodeValue (const pfs::string & value) { _value = value; }
-	virtual node::type nodeType () const { return node::InvalidNode; }
-//	virtual node::impl * cloneNode (bool deep = true);
+    impl* namedItem(const pfs::string& name);
 
-	document::impl * ownerDocument ();
+    virtual impl* cloneNode(bool deep = true);
+    virtual void normalize();
+    virtual void clear();
+
+    inline impl* parent() const { return hasParent ? ownerNode : 0; }
+    inline void setParent(impl *p) { ownerNode = p; hasParent = true; }
+
+    void setNoParent() {
+        ownerNode = hasParent ? (impl*)ownerDocument() : 0;
+        hasParent = false;
+    }
+
+    // Dynamic cast
+    bool isAttr() const                     { return nodeType() == node::AttributeNode; }
+    bool isCDATASection() const             { return nodeType() == node::CDATASectionNode; }
+    bool isDocumentFragment() const         { return nodeType() == node::DocumentFragmentNode; }
+    bool isDocument() const                 { return nodeType() == node::DocumentNode; }
+    bool isDocumentType() const             { return nodeType() == node::DocumentTypeNode; }
+    bool isElement() const                  { return nodeType() == node::ElementNode; }
+    bool isEntityReference() const          { return nodeType() == node::EntityReferenceNode; }
+    bool isText() const                     { const node::type nt = nodeType();
+                                              return (nt == node::TextNode)
+                                                  || (nt == node::CDATASectionNode); }
+    bool isEntity() const                   { return nodeType() == node::EntityNode; }
+    bool isNotation() const                 { return nodeType() == node::NotationNode; }
+    bool isProcessingInstruction() const    { return nodeType() == node::ProcessingInstructionNode; }
+    bool isCharacterData() const            { const node::type nt = nodeType();
+                                              return (nt == node::CharacterDataNode)
+                                                  || (nt == node::TextNode)
+                                                  || (nt == node::CommentNode); }
+    bool isComment() const                  { return nodeType() == node::CommentNode; }
+
+    virtual node::type nodeType() const { return node::BaseNode; }
+
+    void setLocation(int lineNumber, int columnNumber);
+
+    // Variables
+    pfs::atomic_integer ref;
+    impl* prev;
+    impl* next;
+    impl* ownerNode; // either the node's parent or the node's owner document
+    impl* first;
+    impl* last;
+
+    pfs::string name; // this is the local name if prefix != null
+    pfs::string value;
+    pfs::string prefix; // set this only for ElementNode and AttributeNode
+    pfs::string namespaceURI; // set this only for ElementNode and AttributeNode
+    bool createdWithDom1Interface : 1;
+    bool hasParent                : 1;
+
+    int lineNumber;
+    int columnNumber;
 };
 
 

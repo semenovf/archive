@@ -12,21 +12,26 @@
 namespace cwt { namespace dom {
 
 class node::impl;
-class element::impl;
-class document;
+class document::impl;
 
 class attr::impl : public node::impl
 {
 public:
-	bool _specified;
+    impl(document::impl*, node::impl*, const pfs::string& name);
+    impl(document::impl*, node::impl*, const pfs::string& nsURI, const pfs::string& qName);
+    impl(impl* n, bool deep);
 
-public:
-	virtual ~impl () {}
-	impl (pfs::shared_ptr<node::impl> & parent, const pfs::string & name);
-	impl (pfs::shared_ptr<node::impl> & parent, const pfs::string & namespaceURI, const pfs::string & qualifiedName);
+    bool specified() const;
 
-	virtual node::type nodeType () const { return node::AttributeNode; }
+    // Reimplemented from node::impl
+    void setNodeValue(const pfs::string& v);
+    node::impl* cloneNode(bool deep = true);
+    node::type nodeType() const { return node::AttributeNode; }
+
+    // Variables
+    bool m_specified;
 };
+
 
 }} // cwt::dom
 

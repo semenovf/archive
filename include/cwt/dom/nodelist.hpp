@@ -8,7 +8,7 @@
 #ifndef __CWT_DOM_NODELIST_HPP__
 #define __CWT_DOM_NODELIST_HPP__
 
-#include <cwt/dom/pimpl.hpp>
+#include <pfs/shared_ptr.hpp>
 
 namespace cwt { namespace dom {
 
@@ -16,7 +16,9 @@ class node;
 
 class DLL_API nodelist
 {
-	CWT_DOM_PIMPL_INLINE(nodelist)
+private:
+	class impl;
+	pfs::shared_ptr<impl> _pimpl;
 
 public:
 	node item (size_t index) const;

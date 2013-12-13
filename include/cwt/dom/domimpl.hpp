@@ -8,7 +8,7 @@
 #define __CWT_DOM_DOMIMPL_HPP__
 
 #include <pfs/string.hpp>
-#include <cwt/dom/pimpl.hpp>
+#include <pfs/shared_ptr.hpp>
 
 namespace cwt { namespace dom {
 
@@ -17,18 +17,29 @@ class document_type;
 
 class DLL_API dom_implementation
 {
-	CWT_DOM_PIMPL_INLINE(dom_implementation)
+protected:
+	class impl;
+	impl * _pimpl;
+
+	dom_implementation (impl * p);
 
 public:
-	static bool hasFeature (const pfs::string & feature, const pfs::string & version);
+	dom_implementation ();
+	dom_implementation (const dom_implementation & x);
+	~dom_implementation ();
 
-//	static document_type createDocumentType (const pfs::string & qualifiedName
-//			, const pfs::string & publicId
-//			, const pfs::string & systemId); // raises(DOMException);
-//
-//	static document createDocument (const pfs::string & namespaceURI
-//			, const pfs::string & qualifiedName
-//			, const document_type & doctype); // raises(DOMException);
+
+	bool hasFeature (const pfs::string & feature, const pfs::string & version = pfs::string()) const;
+	bool hasFeature (const char * feature, const char * version = nullptr) const
+		{ return hasFeature(pfs::string(feature), pfs::string(version)); }
+
+	document createDocument (const pfs::string & namespaceURI
+			, const pfs::string & qualifiedName
+			, const document_type & doctype);   // raises(DOMException)
+
+	document_type createDocumentType (const pfs::string & qualifiedName
+			, const pfs::string & publicId
+			, const pfs::string & systemId); // raises(DOMException)
 };
 
 }} // cwt::dom

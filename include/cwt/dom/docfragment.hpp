@@ -7,14 +7,14 @@
 #ifndef __CWT_DOM_DOCFRAGMENT_HPP__
 #define __CWT_DOM_DOCFRAGMENT_HPP__
 
-#include <cwt/dom/node.hpp>
+#include <pfs.hpp>
 
 namespace cwt { namespace dom {
 
-class DLL_API docfragment : public node
+class node;
+
+class DLL_API document_fragment : public node
 {
-public:
-	docfragment() : node() {}
 };
 
 }} // cwt::dom

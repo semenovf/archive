@@ -9,13 +9,13 @@
 #define __CWT_DOM_NODE_HPP__
 
 #include <pfs/string.hpp>
-#include <cwt/dom/pimpl.hpp>
+//#include <cwt/dom/pimpl.hpp>
 
 namespace cwt { namespace dom {
 
-class document;
-class nodelist;
-class namednodemap;
+//class document;
+//class nodelist;
+//class namednodemap;
 
 class DLL_API node
 {
@@ -35,42 +35,54 @@ public:
 		, DocumentTypeNode           = 10
 		, DocumentFragmentNode       = 11
 		, NotationNode               = 12
+
+		// TODO Refuse from this
+        , BaseNode                   = 21// this is not in the standard
+        , CharacterDataNode          = 22 // this is not in the standard
+
 	};
 
-	CWT_DOM_PIMPL_INLINE(node)
+protected:
+	class impl;
+	impl * _pimpl;
+
+	// TODO Refuse from this
+	node (impl *);
 
 public:
-	pfs::string  nodeName ()        const;
-	pfs::string  nodeValue ()       const;
-	node::type   nodeType ()        const;
-	node         parentNode ()      const;
-	node         firstChild ()      const;
-	node         lastChild ()       const;
-	node         previousSibling () const;
-	node         nextSibling ()     const;
-	nodelist     childNodes ()      const;
-	namednodemap attributes ()      const;
-	pfs::string  namespaceURI ()    const;
-	pfs::string  prefix ()          const;
-	pfs::string  localName ()       const;
-	document     ownerDocument ()   const;
-
-	bool isSupported (const pfs::string & feature, const pfs::string & version) const;
-
-	bool hasChildNodes () const;
-	bool hasAttributes() const;
-
+//	pfs::string  nodeName ()        const;
+//	pfs::string  nodeValue ()       const;
+//	node::type   nodeType ()        const;
+//	node         parentNode ()      const;
+//	node         firstChild ()      const;
+//	node         lastChild ()       const;
+//	node         previousSibling () const;
+//	node         nextSibling ()     const;
+//	nodelist     childNodes ()      const;
+//	namednodemap attributes ()      const;
+//	pfs::string  namespaceURI ()    const;
+//	pfs::string  prefix ()          const;
+//	pfs::string  localName ()       const;
+//	document     ownerDocument ()   const;
+//
+//	bool isSupported (const pfs::string & feature, const pfs::string & version) const;
+//
+//	bool hasChildNodes () const;
+//	bool hasAttributes() const;
+//
 //	void normalize ();
-	void setNodeValue (const pfs::string & value);
-	void setPrefix (const pfs::string & p);  // raises(DOMException)
-
-	node insertBefore (const node & newChild, const node & refChild); // raises(DOMException)
+//	void setNodeValue (const pfs::string & value);
+//	void setPrefix (const pfs::string & p);  // raises(DOMException)
+//
+//	node insertBefore (const node & newChild, const node & refChild); // raises(DOMException)
 //	node replaceChild (const node & newChild, const node & oldChild); // raises(DOMException)
 //	node removeChild (const node & oldChild); // raises(DOMException)
 //	node appendChild (const node & newChild); // raises(DOMException)
 //	node cloneNode (bool deep);
-
-	bool isNull() const { return _pimpl == nullptr; }
+//
+//	node insertAfter (const node & newChild, const node & refChild); // non-DOM
+//
+//	bool isNull () const { return !_pimpl; }
 };
 
 }} // cwt::dom
