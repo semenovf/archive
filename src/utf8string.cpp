@@ -14,7 +14,7 @@
 namespace pfs {
 
 utf8string::utf8string ()
-	: _pimpl(new utf8string::impl())
+	: _pimpl()
 {
 }
 
@@ -135,6 +135,11 @@ size_t utf8string::sizeInBytes () const
 size_t utf8string::size () const
 {
 	return _pimpl->_length;
+}
+
+bool utf8string::isNull () const
+{
+	return _pimpl.get() == nullptr;
 }
 
 void utf8string::clear ()

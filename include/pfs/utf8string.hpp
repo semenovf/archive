@@ -88,6 +88,7 @@ public:
 	size_t sizeInBytes () const;
 	size_t length  () const { return size(); }
 	size_t size    () const;
+	bool   isNull  () const; // FIXME need to check compatibility with empty string.
 	bool   isEmpty () const { return size() == 0; }
 	void   clear   ();
 
