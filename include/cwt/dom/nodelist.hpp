@@ -8,19 +8,28 @@
 #ifndef __CWT_DOM_NODELIST_HPP__
 #define __CWT_DOM_NODELIST_HPP__
 
-#include <pfs/shared_ptr.hpp>
+#include <pfs.hpp>
 
 namespace cwt { namespace dom {
 
 class node;
+class nodelist_impl;
 
 class DLL_API nodelist
 {
+	friend class node;
+
 private:
-	class impl;
-	pfs::shared_ptr<impl> _pimpl;
+	nodelist_impl * _pimpl;
+
+	nodelist (nodelist_impl * p) : _pimpl(p) {}
 
 public:
+	nodelist () : _pimpl(nullptr) {}
+	nodelist (const nodelist & other);
+	nodelist & operator = (const nodelist & other);
+	~nodelist ();
+
 	node item (size_t index) const;
 	size_t length () const;
 	size_t size () const { return length(); }

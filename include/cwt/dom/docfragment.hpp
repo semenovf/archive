@@ -11,6 +11,7 @@
 
 namespace cwt { namespace dom {
 
+class document_fragment_impl;
 class node;
 
 class DLL_API document_fragment : public node

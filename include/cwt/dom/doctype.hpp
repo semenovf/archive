@@ -7,35 +7,36 @@
 #ifndef __CWT_DOM_DOCTYPE_HPP__
 #define __CWT_DOM_DOCTYPE_HPP__
 
-#include <cwt/dom/node.hpp>
-#include <pfs/shared_ptr.hpp>
+#include <pfs/string.hpp>
 
 namespace cwt { namespace dom {
 
+class document_type_impl;
+class node;
 class namednodemap;
 class dom_implementation;
 
-class document_type : public node
+class DLL_API document_type : public node
 {
 	friend class dom_implementation;
 
-	class impl;
-	pfs::shared_ptr<impl> _pimpl;
-
 protected:
-	document_type(); // deny default constructor
-	explicit document_type (const pfs::string & qualifiedName
-			, const pfs::string & publicId
-			, const pfs::string & systemId);
+	document_type (document_type_impl * nimpl);
 
 public:
-//
-//	const pfs::string & name () const           { return _name; }
-//	const namednodemap & entities () const      { return _entities; }
-//	const namednodemap & notations () const     { return _notations; }
-//	const pfs::string & publicId () const       { return _publicId; }
-//	const pfs::string & systemId () const       { return _systemId; }
-//	const pfs::string & internalSubset () const { return _internalSubset; }
+	document_type () : node () {}
+	document_type (const document_type & other) : node (other) {}
+	document_type & operator= (const document_type & other)
+	{
+	    return static_cast<document_type &>(node::operator = (other));
+	}
+
+	pfs::string name () const;
+	namednodemap entities () const;
+	namednodemap notations () const;
+	pfs::string publicId () const;
+	pfs::string systemId () const;
+	pfs::string internalSubset () const;
 };
 
 }} // cwt::dom

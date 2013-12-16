@@ -7,14 +7,16 @@
 #ifndef __CWT_DOM_CDATASECTION_HPP__
 #define __CWT_DOM_CDATASECTION_HPP__
 
-#include <cwt/dom/text.hpp>
+#include <pfs.hpp>
 
 namespace cwt { namespace dom {
 
-class cdatasection : public text
+class cdatasection_impl;
+
+class DLL_API cdatasection : public text
 {
 public:
-	cdatasection () : text() {}
+//	cdatasection () : text() {}
 };
 
 }} // cwt::dom

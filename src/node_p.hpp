@@ -12,43 +12,61 @@
 
 namespace cwt { namespace dom {
 
-class document::impl;
+class document_impl;
+class nodelist_impl;
 
-class node::impl
+class node_impl
 {
+	friend class nodelist_impl;
+
 public:
-    impl(document::impl*, impl* parent = 0);
-    impl(impl* n, bool deep);
-    virtual ~impl();
+    pfs::atomic_int ref;
+    node_impl * prev;
+    node_impl * next;
+    node_impl * ownerNode; // either the node's parent or the node's owner document
+    node_impl * first;
+    node_impl * last;
 
-    pfs::string nodeName() const { return name; }
-    pfs::string nodeValue() const { return value; }
-    virtual void setNodeValue(const pfs::string& v) { value = v; }
+    pfs::string name; // this is the local name if prefix != null
+    pfs::string value;
+    pfs::string prefix; // set this only for ElementNode and AttributeNode
+    pfs::string namespaceURI; // set this only for ElementNode and AttributeNode
+    bool createdWithDom1Interface : 1;
+    bool hasParent                : 1;
 
-    document::impl* ownerDocument();
-    void setOwnerDocument(document::impl* doc);
+public:
+//    node_impl (document_impl *, node_impl * parent = nullptr);
+    node_impl (node_impl * n, bool deep);
+    virtual ~node_impl ();
 
-    virtual impl* insertBefore(impl* newChild, impl* refChild);
-    virtual impl* insertAfter(impl* newChild, impl* refChild);
-    virtual impl* replaceChild(impl* newChild, impl* oldChild);
-    virtual impl* removeChild(impl* oldChild);
-    virtual impl* appendChild(impl* newChild);
+    pfs::string nodeName () const { return name; }
+    pfs::string nodeValue () const { return value; }
+    virtual void setNodeValue (const pfs::string & v) { value = v; }
 
-    impl* namedItem(const pfs::string& name);
+    document_impl * ownerDocument ();
+    void setOwnerDocument (document_impl * doc);
 
-    virtual impl* cloneNode(bool deep = true);
-    virtual void normalize();
-    virtual void clear();
+    virtual node_impl * insertBefore (node_impl * newChild, node_impl * refChild);
+    virtual node_impl * insertAfter  (node_impl * newChild, node_impl * refChild);
+    virtual node_impl * replaceChild (node_impl * newChild, node_impl * oldChild);
+    virtual node_impl * removeChild  (node_impl * oldChild);
+    virtual node_impl * appendChild  (node_impl * newChild);
 
-    inline impl* parent() const { return hasParent ? ownerNode : 0; }
-    inline void setParent(impl *p) { ownerNode = p; hasParent = true; }
+//    node_impl * namedItem (const pfs::string & name);
 
-    void setNoParent() {
-        ownerNode = hasParent ? (impl*)ownerDocument() : 0;
+    virtual node_impl * cloneNode (bool deep = true);
+    virtual void normalize ();
+//    virtual void clear ();
+
+    node_impl * parent () const { return hasParent ? ownerNode : 0; }
+    void setParent (node_impl * p) { ownerNode = p; hasParent = true; }
+
+    void setNoParent ()
+    {
+        ownerNode = hasParent ? (node_impl *)ownerDocument() : 0;
         hasParent = false;
     }
 
-    // Dynamic cast
     bool isAttr() const                     { return nodeType() == node::AttributeNode; }
     bool isCDATASection() const             { return nodeType() == node::CDATASectionNode; }
     bool isDocumentFragment() const         { return nodeType() == node::DocumentFragmentNode; }
@@ -69,26 +87,6 @@ public:
     bool isComment() const                  { return nodeType() == node::CommentNode; }
 
     virtual node::type nodeType() const { return node::BaseNode; }
-
-    void setLocation(int lineNumber, int columnNumber);
-
-    // Variables
-    pfs::atomic_integer ref;
-    impl* prev;
-    impl* next;
-    impl* ownerNode; // either the node's parent or the node's owner document
-    impl* first;
-    impl* last;
-
-    pfs::string name; // this is the local name if prefix != null
-    pfs::string value;
-    pfs::string prefix; // set this only for ElementNode and AttributeNode
-    pfs::string namespaceURI; // set this only for ElementNode and AttributeNode
-    bool createdWithDom1Interface : 1;
-    bool hasParent                : 1;
-
-    int lineNumber;
-    int columnNumber;
 };
 
 

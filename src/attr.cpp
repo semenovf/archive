@@ -6,8 +6,23 @@
 
 #include "node_p.hpp"
 #include "attr_p.hpp"
+#include "document_p.hpp"
 
 namespace cwt { namespace dom {
+
+//
+//pfs::string attr::name () const
+//{
+//	return node::nodeName ();
+//}
+//
+//pfs::string attr::value () const
+//{
+//	return node::nodeValue ();
+//}
+
+
+#ifdef __COMMENT__
 
 attr::impl::impl (pfs::shared_ptr<node::impl> & parent, const pfs::string & name)
 	: node::impl(parent)
@@ -54,6 +69,7 @@ element attr::ownerElement() const
         return element();
     return element(dynamic_pointer_cast<element::impl>(_pimpl->parent()));
 }
+#endif
 
 }} // cwt::dom
 

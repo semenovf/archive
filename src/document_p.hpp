@@ -12,60 +12,60 @@
 
 namespace cwt { namespace dom {
 
-class attr::impl;
-class comment::impl;
-class node::impl;
-class text::impl;
-class element::impl;
-class entity_reference::impl;
-class document_type::impl;
-class document_fragment::impl;
-class processing_instruction::impl;
-class dom_implementation::impl;
-class cdatasection::impl;
+class attr_impl;
+class comment_impl;
+class node_impl;
+class text_impl;
+class element_impl;
+class entity_reference_impl;
+class document_type_impl;
+class document_fragment_impl;
+class processing_instruction_impl;
+class dom_implementation_impl;
+class cdatasection_impl;
 
-class document::impl : public node::impl
+class document_impl : public node_impl
 {
 public:
-    document::impl();
-    document::impl(const pfs::string& name);
-    document::impl(document_type::impl* dt);
-    document::impl(document::impl* n, bool deep);
-    ~document::impl();
+    document_impl();
+    document_impl(const pfs::string& name);
+    document_impl(document_type_impl * dt);
+    document_impl(document_impl * n, bool deep);
+    ~document_impl();
 
-    bool setContent(QXmlInputSource *source, bool namespaceProcessing, pfs::string *errorMsg, int *errorLine, int *errorColumn);
-    bool setContent(QXmlInputSource *source, QXmlReader *reader, pfs::string *errorMsg, int *errorLine, int *errorColumn);
+//    bool setContent(QXmlInputSource *source, bool namespaceProcessing, pfs::string *errorMsg, int *errorLine, int *errorColumn);
+//    bool setContent(QXmlInputSource *source, QXmlReader *reader, pfs::string *errorMsg, int *errorLine, int *errorColumn);
 
     // Attributes
-    document_type::impl * doctype() { return type.data(); }
-    dom_implementation::impl * implementation() { return impl.data(); }
-    element::impl* documentElement();
+    document_type_impl * doctype() { return type.get(); }
+    dom_implementation_impl * implementation() { return impl.get(); }
+    element_impl* documentElement();
 
     // Factories
-    element::impl * createElement(const pfs::string& tagName);
-    element::impl *        createElementNS(const pfs::string& nsURI, const pfs::string& qName);
-    document_fragment::impl* createDocumentFragment();
-    text::impl* createTextNode(const pfs::string& data);
-    comment::impl* createComment(const pfs::string& data);
-    cdatasection::impl * createCDATASection(const pfs::string& data);
-    processing_instruction::impl * createProcessingInstruction(const pfs::string& target, const pfs::string& data);
-    attr::impl* createAttribute(const pfs::string& name);
-    attr::impl* createAttributeNS(const pfs::string& nsURI, const pfs::string& qName);
-    entity_reference::impl * createEntityReference(const pfs::string& name);
+    element_impl * createElement(const pfs::string& tagName);
+    element_impl * createElementNS(const pfs::string& nsURI, const pfs::string& qName);
+    document_fragment_impl * createDocumentFragment();
+    text_impl * createTextNode(const pfs::string& data);
+    comment_impl * createComment(const pfs::string& data);
+    cdatasection_impl * createCDATASection(const pfs::string& data);
+    processing_instruction_impl * createProcessingInstruction(const pfs::string& target, const pfs::string& data);
+    attr_impl * createAttribute(const pfs::string& name);
+    attr_impl * createAttributeNS(const pfs::string& nsURI, const pfs::string& qName);
+    entity_reference_impl * createEntityReference(const pfs::string& name);
 
-    node::impl * importNode(const node::impl* importedNode, bool deep);
+    node_impl * importNode(const node_impl* importedNode, bool deep);
 
-    // Reimplemented from node::impl
-    node::impl * cloneNode(bool deep = true);
+    // Reimplemented from node_impl
+    node_impl * cloneNode(bool deep = true);
     node::type nodeType() const { return node::DocumentNode; }
     void clear();
 
     // Variables
-//    QExplicitlySharedDataPointer<dom_implementation::impl> impl;
-//    QExplicitlySharedDataPointer<document_type::impl> type;
+//    QExplicitlySharedDataPointer<dom_implementation_impl> impl;
+//    QExplicitlySharedDataPointer<document_type_impl> type;
     // TODO Check equivalence to above declaration
-    pfs::shared_ptr<dom_implementation::impl> impl;
-    pfs::shared_ptr<document_type::impl> type;
+    pfs::shared_ptr<dom_implementation_impl> impl;
+    pfs::shared_ptr<document_type_impl> type;
 
     long nodeListTime;
 };

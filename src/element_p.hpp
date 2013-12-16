@@ -11,42 +11,41 @@
 
 namespace cwt { namespace dom {
 
-class node::impl;
-class attr::impl;
-class document::impl;
-class namednodemap::impl;
+class node_impl;
+class attr_impl;
+class document_impl;
+class namednodemap_impl;
 
-class element::impl : public node::impl
+class element_impl : public node_impl
 {
 public:
-    impl(document::impl *, node::impl* parent, const pfs::string& name);
-    impl(document::impl *, node::impl* parent, const pfs::string& nsURI, const pfs::string& qName);
-    impl(impl* n, bool deep);
-    ~impl();
+    namednodemap_impl * _attr;
 
-    pfs::string attribute(const pfs::string& name, const pfs::string& defValue) const;
-    pfs::string attributeNS(const pfs::string& nsURI, const pfs::string& localName, const pfs::string& defValue) const;
-    void setAttribute(const pfs::string& name, const pfs::string& value);
-    void setAttributeNS(const pfs::string& nsURI, const pfs::string& qName, const pfs::string& newValue);
-    void removeAttribute(const pfs::string& name);
-    attr::impl* attributeNode(const pfs::string& name);
-    attr::impl* attributeNodeNS(const pfs::string& nsURI, const pfs::string& localName);
-    attr::impl* setAttributeNode(attr::impl* newAttr);
-    attr::impl* setAttributeNodeNS(attr::impl* newAttr);
-    attr::impl* removeAttributeNode(attr::impl* oldAttr);
-    bool hasAttribute(const pfs::string& name);
-    bool hasAttributeNS(const pfs::string& nsURI, const pfs::string& localName);
-
-    pfs::string text();
-
-    // Reimplemented from node::impl
-    namednodemap::impl * attributes() { return m_attr; }
-    bool hasAttributes() { return (m_attr->length() > 0); }
-    node::type nodeType() const { return node::ElementNode; }
-    node::impl* cloneNode(bool deep = true);
-
-    // Variables
-    namednodemap::impl * m_attr;
+public:
+//    element_impl (document_impl *, node_impl* parent, const pfs::string & name);
+//    element_impl (document_impl *, node_impl* parent, const pfs::string & nsURI, const pfs::string & qName);
+//    element_impl (element_impl * n, bool deep);
+//    ~element_impl ();
+//
+//    pfs::string attribute (const pfs::string & name, const pfs::string & defValue) const;
+//    pfs::string attributeNS (const pfs::string & nsURI, const pfs::string & localName, const pfs::string & defValue) const;
+//    void setAttribute (const pfs::string & name, const pfs::string & value);
+//    void setAttributeNS (const pfs::string & nsURI, const pfs::string & qName, const pfs::string & newValue);
+//    void removeAttribute (const pfs::string & name);
+//    attr_impl * attributeNode (const pfs::string & name);
+//    attr_impl * attributeNodeNS (const pfs::string & nsURI, const pfs::string & localName);
+//    attr_impl * setAttributeNode (attr_impl * newAttr);
+//    attr_impl * setAttributeNodeNS (attr_impl * newAttr);
+//    attr_impl * removeAttributeNode (attr_impl * oldAttr);
+    bool hasAttribute (const pfs::string & name) const;
+//    bool hasAttributeNS (const pfs::string & nsURI, const pfs::string & localName);
+//
+//    pfs::string text ();
+//
+    namednodemap_impl * attributes () { return _attr; }
+    bool hasAttributes () const;
+//    node::type nodeType() const { return node::ElementNode; }
+//    node_impl * cloneNode(bool deep = true);
 };
 
 

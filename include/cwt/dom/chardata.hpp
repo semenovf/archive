@@ -7,15 +7,15 @@
 #ifndef __CWT_DOM_CHARDATA_HPP__
 #define __CWT_DOM_CHARDATA_HPP__
 
-#include <cwt/dom/node.hpp>
+#include <pfs.hpp>
 
 namespace cwt { namespace dom {
 
+class chardata_impl;
+class node;
+
 class chardata : public node
 {
-	class impl;
-	impl * _pimpl;
-
 public:
 //	chardata () : node () {}
 //

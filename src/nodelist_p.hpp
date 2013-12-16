@@ -8,42 +8,40 @@
 #define __CWT_DOM_NODELIST_P_HPP__
 
 #include "../include/cwt/dom/nodelist.hpp"
+#include <pfs/string.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/atomic.hpp>
 
 namespace cwt { namespace dom {
 
-class node::impl;
+class node_impl;
 
-class nodelist::impl
+class nodelist_impl
 {
-	typedef node::impl * item_type;
+public:
+	typedef node_impl * item_type;
 	typedef pfs::vector<item_type> list_type;
 
-    pfs::atomic_integer ref;
+    pfs::atomic_int _ref;
 
-    /*
-      This list contains the children of this node.
-     */
-    node::impl * node_impl;
-    pfs::string tagname;
-    pfs::string nsURI;
-    list_type list;
-    long timestamp;
+    node_impl * _node_impl;
+    pfs::string _tagname;
+    pfs::string _nsURI;
+    list_type   _list;
+    long        _timestamp;
 
 public:
-    impl (node::impl*);
-    impl (node::impl*, const pfs::string& );
-    impl (node::impl*, const pfs::string&, const pfs::string& );
-    ~impl();
-
-    bool operator== (const impl&) const;
-    bool operator!= (const impl&) const;
-
-    void createList();
-    node::impl* item(int index);
-    int length() const;
-
+    nodelist_impl (node_impl *);
+//    nodelist_impl (node_impl *, const pfs::string & );
+//    nodelist_impl (node_impl *, const pfs::string &, const pfs::string &);
+//    ~nodelist_impl();
+//
+//    bool operator == (const nodelist_impl &) const;
+//    bool operator != (const nodelist_impl &) const;
+//
+    void createList ();
+    node_impl * item (size_t index);
+    size_t length ();
 };
 
 }} // cwt::dom

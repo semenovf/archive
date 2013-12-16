@@ -7,14 +7,16 @@
 #ifndef __CWT_DOM_COMMENT_HPP__
 #define __CWT_DOM_COMMENT_HPP__
 
-#include <cwt/dom/chardata.hpp>
+#include <pfs.hpp>
 
 namespace cwt { namespace dom {
 
-class comment : chardata
+class comment_impl;
+class node;
+class chardata;
+
+class DLL_API comment : public chardata
 {
-	class impl;
-	impl * _pimpl;
 public:
 //	comment () : chardata() {}
 };

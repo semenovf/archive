@@ -11,11 +11,10 @@
 
 namespace cwt { namespace dom {
 
+class text_impl;
+
 class text : public chardata
 {
-	class impl;
-	impl * _pimpl;
-
 public:
 //	text () : chardata () {}
 //	text * splitText (size_t offset);  // raises(DOMException);

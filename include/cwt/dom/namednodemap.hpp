@@ -9,31 +9,44 @@
 #define __CWT_DOM_NAMEDNODEMAP_HPP__
 
 #include <pfs/string.hpp>
-#include <cwt/dom/pimpl.hpp>
 
 namespace cwt { namespace dom {
 
 class node;
+class namednodemap_impl;
+class document_type;
 
 class namednodemap
 {
-	CWT_DOM_PIMPL_INLINE(namednodemap)
+	friend class node;
+	friend class document_type;
+
+private:
+	namednodemap_impl * _pimpl;
+
+	namednodemap (namednodemap_impl *);
 
 public:
+	namednodemap () : _pimpl(nullptr) {}
+	namednodemap (const namednodemap & other);
+	namednodemap & operator = (const namednodemap & other);
+	~namednodemap ();
+
 	node namedItem (const pfs::string & name) const
 		{ return getNamedItem (name); }
 	node getNamedItem (const pfs::string & name) const;
-	node setNamedItem (const node & arg); // raises(DOMException)
-	node removeNamedItem (const pfs::string & name); // raises(DOMException)
-	node item (size_t index) const;
-//
-	size_t length () const;
-
 	node namedItemNS (const pfs::string & namespaceURI, const pfs::string & localName) const
 		{ return getNamedItemNS(namespaceURI, localName); }
 	node getNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName) const;
+
+	node setNamedItem (const node & arg); // raises(DOMException)
 	node setNamedItemNS (const node & arg); //  raises(DOMException)
+
+	node removeNamedItem (const pfs::string & name); // raises(DOMException)
 	node removeNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName); // raises(DOMException);
+
+	node item (size_t index) const;
+	size_t length () const;
 };
 
 }} // cwt::dom

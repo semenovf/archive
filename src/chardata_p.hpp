@@ -11,40 +11,25 @@
 
 namespace cwt { namespace dom {
 
-class node::impl;
-class document::impl;
+class node_impl;
+class document_impl;
 
-class chardata::impl : public node::impl
+class chardata_impl : public node_impl
 {
 public:
-    impl(document::impl*, QDomNodePrivate* parent, const pfs::string& data);
-    impl(impl* n, bool deep);
+	chardata_impl (document_impl *, node_impl * parent, const pfs::string & data);
+	chardata_impl (chardata_impl * n, bool deep);
 
-    int dataLength() const;
-    pfs::string substringData(unsigned long offset, unsigned long count) const;
-    void appendData(const pfs::string& arg);
-    void insertData(unsigned long offset, const pfs::string& arg);
-    void deleteData(unsigned long offset, unsigned long count);
-    void replaceData(unsigned long offset, unsigned long count, const pfs::string& arg);
+    int dataLength () const;
+    pfs::string substringData (unsigned long offset, unsigned long count) const;
+    void appendData  (const pfs::string & arg);
+    void insertData  (unsigned long offset, const pfs::string & arg);
+    void deleteData  (unsigned long offset, unsigned long count);
+    void replaceData (unsigned long offset, unsigned long count, const pfs::string & arg);
 
     // Reimplemented from QDomNodePrivate
-    node::type nodeType() const { return node::CharacterDataNode; }
-    node::impl * cloneNode(bool deep = true);
-};
-
-
-
-class document::impl;
-
-class chardata::impl : public node::impl
-{
-public:
-    impl (document::impl *, node::impl* parent = 0);
-    impl (node::impl* n, bool deep);
-
-    // Reimplemented from node::impl
-    virtual node::impl* cloneNode(bool deep = true);
-    node::type nodeType() const { return node::DocumentFragmentNode; }
+    node::type nodeType () const { return node::CharacterDataNode; }
+    node_impl * cloneNode (bool deep = true);
 };
 
 }} // cwt::dom

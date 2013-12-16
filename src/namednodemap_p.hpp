@@ -13,63 +13,69 @@
 
 namespace cwt { namespace dom {
 
-class node::impl;
+class node_impl;
 
-class namednodemap::impl
+class namednodemap_impl
 {
 public:
-	typedef node::impl * item_type;
+	typedef node_impl * item_type;
 	typedef pfs::map<pfs::string, item_type> map_type;
 
 	typedef map_type::iterator iterator;
 	typedef map_type::const_iterator const_iterator;
 
-    map_type _map;
-
-    pfs::atomic_integer ref;
-    map_type map;
-    node::impl * parent;
-    bool readonly;
-    bool appendToParent;
-
+    pfs::atomic_int _ref;
+    map_type        _map;
+    node_impl *     _parent;
+    bool            _readonly;
+    bool            _appendToParent;
 
 public:
-    impl(node::impl*);
-    ~impl();
+    namednodemap_impl (node_impl * nimpl)
+    	: _ref(1)
+    	, _parent(nimpl)
+    	, _readonly(false)
+    	, _appendToParent(false)
+    {}
 
-    node::impl* namedItem(const pfs::string& name) const;
-    node::impl* namedItemNS(const pfs::string& nsURI, const pfs::string& localName) const;
-    node::impl* setNamedItem(node::impl* arg);
-    node::impl* setNamedItemNS(node::impl* arg);
-    node::impl* removeNamedItem(const pfs::string& name);
-    node::impl* item(int index) const;
-    int length() const;
-    bool contains(const pfs::string& name) const;
-    bool containsNS(const pfs::string& nsURI, const pfs::string & localName) const;
+    ~namednodemap_impl () { clearMap(); }
 
-    /**
-     * Remove all children from the map.
-     */
-    void clearMap();
-    bool isReadOnly() { return readonly; }
-    void setReadOnly(bool r) { readonly = r; }
-    bool isAppendToParent() { return appendToParent; }
-    /**
-     * If true, then the node will redirect insert/remove calls
-     * to its parent by calling node::impl::appendChild or removeChild.
-     * In addition the map wont increase or decrease the reference count
-     * of the nodes it contains.
-     *
-     * By default this value is false and the map will handle reference counting
-     * by itself.
-     */
-    void setAppendToParent(bool b) { appendToParent = b; }
-
-    /**
-     * Creates a copy of the map. It is a deep copy
-     * that means that all children are cloned.
-     */
-    impl* clone(node::impl* parent);
+    node_impl * namedItem (const pfs::string & name) const;
+    node_impl * namedItemNS (const pfs::string & nsURI, const pfs::string & localName) const;
+    node_impl * setNamedItem (node_impl * arg);
+    node_impl * setNamedItemNS (node_impl * arg);
+    node_impl * removeNamedItem (const pfs::string & name);
+    node_impl * item (size_t index) const;
+    size_t length () const { return _map.size(); }
+    bool contains (const pfs::string & name) const { return _map.contains(name); }
+    bool containsNS (const pfs::string & nsURI, const pfs::string & localName) const
+    {
+    	return namedItemNS(nsURI, localName) != nullptr;
+    }
+//
+//    /**
+//     * Remove all children from the map.
+//     */
+    void clearMap ();
+//    bool isReadOnly () { return readonly; }
+//    void setReadOnly (bool r) { readonly = r; }
+//    bool isAppendToParent () { return appendToParent; }
+//    /**
+//     * If true, then the node will redirect insert/remove calls
+//     * to its parent by calling node_impl::appendChild or removeChild.
+//     * In addition the map wont increase or decrease the reference count
+//     * of the nodes it contains.
+//     *
+//     * By default this value is false and the map will handle reference counting
+//     * by itself.
+//     */
+    void setAppendToParent (bool b) { _appendToParent = b; }
+//
+//    /**
+//     * Creates a copy of the map. It is a deep copy
+//     * that means that all children are cloned.
+//     */
+//    namednodemap_impl * clone (node_impl * parent);
 };
 
 

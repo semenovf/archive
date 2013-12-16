@@ -9,23 +9,21 @@
 #define __CWT_DOM_ATTR_HPP__
 
 #include <pfs/string.hpp>
-#include <cwt/dom/pimpl.hpp>
 
 namespace cwt { namespace dom {
 
+class attr_impl;
 class node;
 class element;
 
 class DLL_API attr : public node
 {
-	CWT_DOM_PIMPL_DERIVED(attr, node)
-
 public:
-	pfs::string name () const { return node::nodeName(); }
-	bool specified () const;
-	pfs::string value () const { return node::nodeValue(); }
-	void setValue (const pfs::string & v); // raises(DOMException)
-	element ownerElement () const;
+//	pfs::string name () const { return node::nodeName (); }
+//	bool specified () const;
+//	pfs::string value () const { return node::nodeValue (); }
+//	void setValue (const pfs::string & v); // raises(DOMException)
+//	element ownerElement () const;
 };
 
 }} // cwt::dom

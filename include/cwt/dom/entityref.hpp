@@ -7,13 +7,17 @@
 #ifndef __CWT_DOM_ENTITYREF_HPP__
 #define __CWT_DOM_ENTITYREF_HPP__
 
-#include <cwt/dom/node.hpp>
+#include <pfs.hpp>
 
 namespace cwt { namespace dom {
 
-class entityref : public node {
-public:
-	entityref () : node () {}
+class node;
+class entityref_impl;
+
+class entityref : public node
+{
+//public:
+//	entityref () : node () {}
 };
 
 }} // cwt::dom

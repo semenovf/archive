@@ -12,13 +12,16 @@
 
 namespace cwt { namespace dom {
 
-class dom_implementation::impl
+class dom_implementation_impl
 {
 public:
-    impl () { ; }
+	pfs::atomic_int ref;
 
-    impl * clone();
-    pfs::atomic_integer ref;
+public:
+	dom_implementation_impl () { ; }
+
+	dom_implementation_impl * clone();
+
     //static QDomImplementation::InvalidDataPolicy invalidDataPolicy;
 };
 
