@@ -12,10 +12,7 @@
 #include <cwt/safeformat.hpp>
 #include <cwt/uri.hpp>
 
-CWT_NS_BEGIN
-
-namespace debby
-{
+namespace cwt { namespace debby {
 
 DbHandlerPtr DbHandler::open (const cwt::String & uri_str)
 {
@@ -101,8 +98,6 @@ StatementPtr DbHandler::prepare (const cwt::String & sql)
 	return StatementPtr();
 }
 
-} // namespace debby
-
-CWT_NS_END
+}} // cwt::debby
 
 

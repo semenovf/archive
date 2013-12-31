@@ -5,9 +5,9 @@
  *      Author: wladt
  */
 
-using namespace cwt;
-using namespace cwt::io;
-using namespace cwt::debby;
+//using namespace cwt;
+//using namespace cwt::io;
+//using namespace cwt::debby;
 
 class TraverseContext
 {
