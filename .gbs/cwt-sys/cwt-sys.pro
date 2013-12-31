@@ -1,16 +1,25 @@
 CWT_CONFIG=debug
-include($$(GBS_HOME)/common-app.pri)
-TARGET =
-INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../cwt-common/include
-INCLUDEPATH += ../../../cwt-core/include
+include($$(GBS_HOME)/common-dll.pri)
 
+TARGET = cwt-sys
+
+INCLUDEPATH += ../../include
+INCLUDEPATH += ../../../pfs/include
+
+HEADERS += ../../pcre8/*.h
 SOURCES += ../../src/*.cpp
+SOURCES += ../../pcre8/*.c
+
+# PCRE configuration
+DEFINES += HAVE_CONFIG_H
 
 unix {
-    LIBS += -lcwt
+    SOURCES += ../../src/unix/*.cpp
+    LIBS += -lpfs
+    LIBS += -ldl
 }
 
 win32 {
-    LIBS += cwt.lib
+    SOURCES += ..\\..\\src\\win32\\*.cpp
+    LIBS += pfs.lib
 }
