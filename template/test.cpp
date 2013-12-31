@@ -1,13 +1,12 @@
-#include <cwt/test.h>
+#include <cwt/test.hpp>
 
 int main(int argc, char *argv[])
 {
-    CWT_CHECK_SIZEOF_TYPES;
-    CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(1);
+    PFS_CHECK_SIZEOF_TYPES;
+    PFS_UNUSED2(argc, argv);
+    BEGIN_TESTS(1);
 
-    CWT_TEST_OK(true == true);
+    TEST_OK(true == true);
 
-    CWT_END_TESTS;
-    return 0;
+    END_TESTS;
 }
