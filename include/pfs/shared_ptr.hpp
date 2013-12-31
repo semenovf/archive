@@ -88,42 +88,42 @@ private:
 template <class T>
 class shared_ptr
 {
-private:
+protected:
     template <typename Deleter>
     void construct (T * ptr, Deleter deleter)
     {
         if (!ptr) {
-            d = 0;
+            _d = 0;
             return;
         }
-        d = new ref_count_with_deleter<T, Deleter>(ptr, deleter);
+        _d = new ref_count_with_deleter<T, Deleter>(ptr, deleter);
     }
 
 public:
-    shared_ptr () : value(0), d(0)
-    {
-    }
+    shared_ptr () : _value(0), _d(0)
+    {}
 
-    explicit shared_ptr (T * ptr) : value(ptr), d(0)
+    explicit shared_ptr (T * ptr) : _value(ptr), _d(0)
     {
-    	default_deleter<T> deleter;
-    	construct<default_deleter<T> >(ptr, deleter);
+    	if (ptr) {
+    		default_deleter<T> deleter;
+    		construct<default_deleter<T> >(ptr, deleter);
+    	}
     }
 
     template <typename Deleter>
-    shared_ptr (T * ptr, Deleter deleter) : value(ptr), d(0)
+    shared_ptr (T * ptr, Deleter deleter) : _value(ptr), _d(0)
     {
     	construct<Deleter>(ptr, deleter);
     }
 
     template <typename T1>
-    shared_ptr (const shared_ptr<T1> & other, T * p) : value(p), d(other.d)
-    {
-    }
+    shared_ptr (const shared_ptr<T1> & other, T * p) : _value(p), _d(other.d)
+    {}
 
-    shared_ptr (const shared_ptr<T> & other) : value(other.value), d(other.d)
+    shared_ptr (const shared_ptr<T> & other) : _value(other._value), _d(other._d)
     {
-    	if (d)
+    	if (_d)
     		ref();
     }
 
@@ -141,14 +141,14 @@ public:
 
     T & operator * () const
     {
-        PFS_ASSERT(value != 0);
-        return *value;
+        PFS_ASSERT(_value != 0);
+        return *_value;
     }
 
     T * operator -> () const
     {
-        PFS_ASSERT(value != 0);
-        return value;
+        PFS_ASSERT(_value != 0);
+        return _value;
     }
 
 	inline operator bool() const throw()
@@ -158,13 +158,13 @@ public:
 
     T * get() const
     {
-    	return value;
+    	return _value;
     }
 
     void swap(shared_ptr & other)
     {
-        ::pfs::swap<ref_count *>(d, other.d);
-        ::pfs::swap(this->value, other.value);
+        ::pfs::swap<ref_count *>(_d, other._d);
+        ::pfs::swap(this->_value, other._value);
     }
 
     inline void reset()
@@ -188,8 +188,8 @@ public:
 
     int use_count() const
     {
-    	if (value != 0)
-    		return d->strongref.load();
+    	if (_value != 0)
+    		return _d->strongref.load();
     	return 0;
     }
 
@@ -206,62 +206,62 @@ public:
     // comparaison operators
 	inline bool operator == (const shared_ptr & ptr) const
 	{
-		return (value == ptr.value);
+		return (_value == ptr._value);
 	}
 
 	inline bool operator == (const T * p) const
 	{
-		return (value == p);
+		return (_value == p);
 	}
 
 	inline bool operator != (const shared_ptr & ptr) const
 	{
-		return (value != ptr.value);
+		return (_value != ptr._value);
 	}
 
 	inline bool operator != (const T * p) const
 	{
-		return (value != p);
+		return (_value != p);
 	}
 
 	inline bool operator <= (const shared_ptr& ptr) const
 	{
-		return (value <= ptr.value);
+		return (_value <= ptr._value);
 	}
 
 	inline bool operator <= (const T * p) const
 	{
-		return (value <= p);
+		return (_value <= p);
 	}
 
 	inline bool operator < (const shared_ptr & ptr) const
 	{
-		return (value < ptr.value);
+		return (_value < ptr._value);
 	}
 
 	inline bool operator< (const T * p) const
 	{
-		return (value < p);
+		return (_value < p);
 	}
 
 	inline bool operator >= (const shared_ptr & ptr) const
 	{
-		return (value >= ptr.value);
+		return (_value >= ptr._value);
 	}
 
 	inline bool operator >= (const T * p) const
 	{
-		return (value >= p);
+		return (_value >= p);
 	}
 
 	inline bool operator > (const shared_ptr & ptr) const
 	{
-		return (value > ptr.value);
+		return (_value > ptr._value);
 	}
 
 	inline bool operator > (const T * p) const
 	{
-		return (value > p);
+		return (_value > p);
 	}
 
 private:
@@ -278,20 +278,20 @@ private:
 
     void deref()
     {
-    	deref(d);
+    	deref(_d);
     }
 
     void ref() const
     {
-    	d->weakref.ref();
-    	d->strongref.ref();
+    	_d->weakref.ref();
+    	_d->strongref.ref();
     }
 
-private:
+protected:
     template <typename T1> friend  class shared_ptr;
 
-    T * value;
-    ref_count * d;
+    T * _value;
+    ref_count * _d;
 };
 
 #endif // !HAVE_STD_SHARED_PTR

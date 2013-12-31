@@ -47,7 +47,8 @@ utf8string utf8string::fromLatin1 (const char * latin1, size_t length, ConvertSt
 		state->invalidChars += invalidChars;
 
 	//r.updateLength();
-	r._pimpl->_length = len;
+	r._pimpl->setLength(len);
+
 	return r;
 }
 
@@ -130,7 +131,7 @@ utf8string utf8string::fromUtf8 (const char * utf8, size_t size, ConvertState * 
 	}
 
 	//r.updateLength();
-	r._pimpl->_length = len;
+	r._pimpl->setLength(len);
 
 	return r;
 }
@@ -142,6 +143,7 @@ static const uint32_t __halfBase = uint32_t(0x0010000);
 utf8string utf8string::fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state)
 {
 	utf8string r;
+
 	size_t invalidChars = 0;
 	size_t nremain = 0;
 	const uint16_t * source = utf16;
@@ -188,7 +190,7 @@ utf8string utf8string::fromUtf16 (const uint16_t * utf16, size_t size, ConvertSt
 	}
 
 	//r.updateLength();
-	r._pimpl->_length = len;
+	r._pimpl->setLength(len);
 
 	return r;
 }

@@ -18,6 +18,8 @@
 
 #define _u8(s) pfs::utf8string::fromUtf8(s)
 
+// FIXME need to check behavior of member functions under null string
+
 namespace pfs {
 
 class DLL_API utf8string
@@ -88,7 +90,7 @@ public:
 	size_t sizeInBytes () const;
 	size_t length  () const { return size(); }
 	size_t size    () const;
-	bool   isNull  () const; // FIXME need to check compatibility with empty string.
+	bool   isNull  () const;
 	bool   isEmpty () const { return size() == 0; }
 	void   clear   ();
 
@@ -252,6 +254,20 @@ public:
 	friend bool	operator == (const utf8string & s1, const utf8string & s2);
 	friend bool	operator >  (const utf8string & s1, const utf8string & s2);
 	friend bool	operator >= (const utf8string & s1, const utf8string & s2);
+
+	friend bool	operator != (const char * s1, const utf8string & s2);
+	friend bool	operator <  (const char * s1, const utf8string & s2);
+	friend bool	operator <= (const char * s1, const utf8string & s2);
+	friend bool	operator == (const char * s1, const utf8string & s2);
+	friend bool	operator >  (const char * s1, const utf8string & s2);
+	friend bool	operator >= (const char * s1, const utf8string & s2);
+
+	friend bool	operator != (const utf8string & s1, const char * s2);
+	friend bool	operator <  (const utf8string & s1, const char * s2);
+	friend bool	operator <= (const utf8string & s1, const char * s2);
+	friend bool	operator == (const utf8string & s1, const char * s2);
+	friend bool	operator >  (const utf8string & s1, const char * s2);
+	friend bool	operator >= (const utf8string & s1, const char * s2);
 };
 
 /*
@@ -399,6 +415,65 @@ inline bool operator >= (const utf8string & s1, const utf8string & s2)
 	return s1.compare(s2) >= 0;
 }
 
+inline bool operator != (const char * s1, const utf8string & s2)
+{
+	return s2.compare(s1) != 0;
+}
+
+inline bool operator < (const char * s1, const utf8string & s2)
+{
+	return s2.compare(s1) > 0;
+}
+
+inline bool operator <= (const char * s1, const utf8string & s2)
+{
+	return s2.compare(s1) >= 0;
+}
+
+inline bool operator == (const char * s1, const utf8string & s2)
+{
+	return s2.compare(s1) == 0;
+}
+
+inline bool operator > (const char * s1, const utf8string & s2)
+{
+	return s2.compare(s1) < 0;
+}
+
+inline bool operator >= (const char * s1, const utf8string & s2)
+{
+	return s2.compare(s1) <= 0;
+}
+
+inline bool operator != (const utf8string & s1, const char * s2)
+{
+	return s1.compare(s2) != 0;
+}
+
+inline bool operator < (const utf8string & s1, const char * s2)
+{
+	return s1.compare(s2) < 0;
+}
+
+inline bool operator <= (const utf8string & s1, const char * s2)
+{
+	return s1.compare(s2) <= 0;
+}
+
+inline bool operator == (const utf8string & s1, const char * s2)
+{
+	return s1.compare(s2) == 0;
+}
+
+inline bool operator > (const utf8string & s1, const char * s2)
+{
+	return s1.compare(s2) > 0;
+}
+
+inline bool operator >= (const utf8string & s1, const char * s2)
+{
+	return s1.compare(s2) >= 0;
+}
 } // pfs
 
 #endif /* __PFS_UTF8STRING_HPP__ */

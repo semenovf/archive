@@ -13,8 +13,10 @@
 
 namespace pfs {
 
+const size_t utf8string::impl::npos = size_t(-1);
+
 utf8string::utf8string ()
-	: _pimpl()
+	: _pimpl(new utf8string::impl())
 {
 }
 
@@ -75,32 +77,6 @@ utf8string::utf8string (size_t count, ucchar c)
 	updateLength();
 }
 
-/*
-utf8string::utf8string (bool no_ut8_check, const char * utf8)
-	: _pimpl(new utf8string::impl())
-{
-	if (no_ut8_check) {
-		_pimpl->append(utf8, strlen(utf8));
-		updateLength();
-	} else {
-		utf8string d(fromUtf8(utf8, strlen(utf8)));
-		this->swap(d);
-	}
-}
-
-utf8string::utf8string (bool no_ut8_check, const char * utf8, size_t size)
-	: _pimpl(new utf8string::impl())
-{
-	if (no_ut8_check) {
-		_pimpl->append(utf8, size);
-		updateLength();
-	} else {
-		utf8string d(fromUtf8(utf8, size));
-		this->swap(d);
-	}
-}
-*/
-
 void utf8string::updateLength ()
 {
 	utf8string::const_iterator it(cbegin());
@@ -139,14 +115,16 @@ size_t utf8string::size () const
 
 bool utf8string::isNull () const
 {
-	return _pimpl.get() == nullptr;
+	return _pimpl->isNull();
 }
 
 void utf8string::clear ()
 {
-	detach();
-	_pimpl->clear();
-	_pimpl->_length = 0;
+	if (_pimpl) {
+		detach();
+		_pimpl->clear();
+		_pimpl->_length = 0;
+	}
 }
 
 utf8string::iterator utf8string::end ()

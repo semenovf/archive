@@ -55,7 +55,6 @@ public:
 	bool operator >= (const datetime & other) const { return ! (*this < other); }
 
 	static datetime fromMillisSinceEpoch (long_t millis);
-	static datetime currentDateTime ();
 };
 
 inline datetime & datetime::operator = (const datetime & other)
@@ -65,7 +64,7 @@ inline datetime & datetime::operator = (const datetime & other)
 	return *this;
 }
 
-inline datetime datetime::addDays(int ndays) const
+inline datetime datetime::addDays (int ndays) const
 {
     return datetime(_date.addDays(ndays), _time);
 }

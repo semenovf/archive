@@ -11,6 +11,28 @@
 #include <cstring>
 #include <iostream>
 
+void test_null ()
+{
+	pfs::utf8string nil;
+	TEST_OK(nil.isNull());
+	TEST_OK(nil.isEmpty());
+	TEST_OK(nil.sizeInBytes() == 0);
+	TEST_OK(nil.length() == 0);
+	TEST_OK(nil.size() == 0);
+	TEST_OK(nil.isNull());
+	TEST_OK(nil.isEmpty());
+
+	nil.clear();
+	TEST_OK2(nil.isNull(), "Null string is null after clearing");
+
+	pfs::utf8string empty("");
+	TEST_OK2(!empty.isNull(), "Empty string is not null");
+	TEST_OK(empty.isEmpty());
+	empty.clear();
+	TEST_OK2(!empty.isNull(), "Cleared empty string is not null");
+	TEST_OK2(empty.isEmpty(), "Cleared empty string is empty");
+}
+
 void test_basic()
 {
 	//const char * latin1Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -442,8 +464,9 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(171);
+	BEGIN_TESTS(183);
 
+	test_null();
 
     test_basic();
 	test_init();

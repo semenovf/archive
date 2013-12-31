@@ -53,7 +53,6 @@ public:
 	bool operator  > (const time & t) const { return _millis  > t._millis; }
 	bool operator >= (const time & t) const { return _millis >= t._millis; }
 
-	static time	currentTime ();
 	static bool isValid (int hour, int min, int sec, int millis = 0);
 	static int millis (int hour, int min, int sec, int millis = 0);
 };

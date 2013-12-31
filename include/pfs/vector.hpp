@@ -46,6 +46,8 @@ public:
 public:
 	typedef typename impl::iterator iterator;
 	typedef typename impl::const_iterator const_iterator;
+	typedef typename impl::reference reference;
+	typedef typename impl::const_reference const_reference;
 
 public:
 	vector () : _pimpl(new impl()) {}
@@ -62,6 +64,15 @@ public:
 	const T &    at (size_t i) const { return _pimpl->operator [] (i); }
 	T &          operator [] (size_t i) { detach(); return _pimpl->operator [] (i); }
 	const T &    operator [] (size_t i) const { return at(i); }
+
+	reference       front ()       { return _pimpl->front(); }
+	const_reference front () const { return _pimpl->front(); }
+	reference       first ()       { return _pimpl->front(); }
+	const_reference first () const { return _pimpl->front(); }
+	reference       back  ()       { return _pimpl->back(); }
+	const_reference back  () const { return _pimpl->back(); }
+	reference       last  ()       { return _pimpl->back(); }
+	const_reference last  () const { return _pimpl->back(); }
 
 	T *       data ()            { detach(); return _pimpl->data(); }
 	const T * data () const      { return _pimpl->data(); }

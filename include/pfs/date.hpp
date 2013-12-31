@@ -61,7 +61,6 @@ public:
 	static date   fromJulianDay (long_t julianDay);
 	static bool   isLeapYear (int year);
 	static bool   isValid (int year, int month, int day);
-	static date	  currentDate ();
 
 private:
 	long_t _jd; // Julian Day;

@@ -107,7 +107,7 @@ ucchar_ref & ucchar_ref::operator = (ucchar c)
 	PFS_ASSERT(n1 > 0);
 
 	char p2[6];
-	size_t n2 = c.encodeUtf8 (p2);
+	size_t n2 = c.encodeUtf8(p2);
 
 	_owner->_pimpl->replace(_pos, n1, p2, 0, n2);
 
