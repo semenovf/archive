@@ -3,6 +3,7 @@ include($$(GBS_HOME)/common-test.pri)
 TARGET = test_expat
 
 INCLUDEPATH += ../../../include
+INCLUDEPATH += ../../../expat2/lib
 
 SOURCES += ../../../expat2/tests/*.c
 
