@@ -13,8 +13,8 @@
 #include <pfs/bytearray.hpp>
 #include <pfs/shared_ptr.hpp>
 
-#define _Fr(s) cwt::SafeFormat(_u8(s))
-#define _F(s) cwt::SafeFormat(_u8(s))
+#define _Fr(s) cwt::safeformat(_u8(s))
+#define _F(s) cwt::safeformat(_u8(s))
 
 namespace cwt {
 
@@ -42,8 +42,9 @@ public:
 	};
 
 public:
-	safeformat() {}
-	safeformat(const pfs::string & format);
+	safeformat () {}
+	safeformat (const pfs::string & format);
+	safeformat (const char * latin1Format);
 
 	safeformat(const safeformat & sf) : m_context(sf.m_context) { }
 	safeformat & operator = (const safeformat & sf) { m_context = sf.m_context; return *this; }

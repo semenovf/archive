@@ -316,7 +316,7 @@ bool set_percent_char (const pfs::string::const_iterator & , const pfs::string::
 	return true;
 }
 
-bool bad_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void *context, void *)
+bool bad_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void * context, void *)
 {
 	safeformatcontext *ctx = reinterpret_cast<safeformatcontext *>(context);
 	PFS_ERROR(_Tr("Bad conversion specification in format string:"));
@@ -331,9 +331,16 @@ safeformat::safeformat(const pfs::string & format)
 	m_context->format = format;
 }
 
+safeformat::safeformat(const char * latin1Format)
+	: m_context(new safeformatcontext)
+{
+	__clear_context(*m_context);
+	m_context->format = pfs::string(latin1Format);
+}
+
 safeformat::operator pfs::string & ()
 {
-	fsm::fsm<pfs::string> fsm(format_fsm, m_context.get());
+	cwt::fsm::fsm<pfs::string> fsm(format_fsm, m_context.get());
 	ssize_t n = fsm.exec(0, m_context->format.begin(), m_context->format.end());
 	if (n < 0) {
 		;

@@ -30,9 +30,9 @@ protected:
 	errorable() {}
 
 public:
-	virtual ~errorable() { clearErrors(); }
-	void addSystemError(int errn, const pfs::string & caption);
-	void addError(const pfs::string & text);
+	virtual ~errorable () { clearErrors(); }
+	void addSystemError (int errn, const pfs::string & caption);
+	void addError (const pfs::string & text);
 
 	void clearErrors() { _errors.clear(); }
 	size_t errorCount() const;

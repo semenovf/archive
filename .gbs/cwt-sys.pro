@@ -11,4 +11,5 @@ SUBDIRS  = cwt-sys   \
 	tests/fsm    \
 	tests/regexp \
 	tests/safeformat \
-	tests/uri
+	tests/uri        \
+	examples/logger
