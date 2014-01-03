@@ -44,6 +44,7 @@ public:
 */
 
 public:
+	typedef T item_type;
 	typedef typename impl::iterator iterator;
 	typedef typename impl::const_iterator const_iterator;
 	typedef typename impl::reference reference;

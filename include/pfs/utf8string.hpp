@@ -57,6 +57,8 @@ public:
 	}
 
 public:
+	typedef ucchar char_type;
+	typedef ucchar item_type;
     typedef utf8string_iterator<ucchar_ptr> iterator;
     typedef utf8string_iterator<ucchar_const_ptr> const_iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
@@ -88,8 +90,17 @@ public:
 	const char * utf8  () const { return c_str(); }
 
 	size_t sizeInBytes () const;
-	size_t length  () const { return size(); }
 	size_t size    () const;
+	size_t length  () const { return size(); }
+	static size_t length (const iterator & begin, const iterator & end)
+	{
+		return utf8string(begin, end).length();
+	}
+	static size_t length (const const_iterator & begin, const const_iterator & end)
+	{
+		return utf8string(begin, end).length();
+	}
+
 	bool   isNull  () const;
 	bool   isEmpty () const { return size() == 0; }
 	void   clear   ();

@@ -50,6 +50,7 @@ public:
 	}
 
 public:
+	typedef char item_type;
 	typedef impl::iterator iterator;
 	typedef impl::const_iterator const_iterator;
 
