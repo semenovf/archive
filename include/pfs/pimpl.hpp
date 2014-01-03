@@ -57,6 +57,29 @@ public:                                                        \
     	pfs::swap(_pimpl, other._pimpl);                       \
     }
 
+// w/o copy constructor
+//
+#define PFS_PIMPL_DECL_NOCC(Class,Impl)                        \
+private:                                                       \
+	class Impl;                                                \
+	pfs::shared_ptr<Impl> _pimpl;                              \
+                                                               \
+	void detach();                                             \
+	Class (const Impl & other);                                \
+                                                               \
+public:                                                        \
+	Class & operator = (const Class & other)                   \
+	{                                                          \
+		_pimpl = other._pimpl;                                 \
+		return *this;                                          \
+	}                                                          \
+                                                               \
+    void swap (Class & other)                                  \
+    {                                                          \
+    	pfs::swap(_pimpl, other._pimpl);                       \
+    }
+
+
 #define PFS_PIMPL_DEF(Class,Impl)                              \
 void Class::detach()                                           \
 {                                                              \

@@ -14,7 +14,7 @@
 namespace pfs {
 
 #if defined(PFS_SINGLE_THREADED)
-#	define PFS_DEFAULT_MT_POLICY single_threaded
+#	define PFS_DEFAULT_MT_POLICY pfs::single_threaded
 
 class DLL_API single_threaded {
 public:
@@ -74,7 +74,7 @@ private:
 	mt_def(_mutex);
 };
 
-#	define PFS_DEFAULT_MT_POLICY multi_threaded_local
+#	define PFS_DEFAULT_MT_POLICY pfs::multi_threaded_local
 
 typedef multi_threaded_local mt_policy_t;
 typedef multi_threaded_local mutex;
