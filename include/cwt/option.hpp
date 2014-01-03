@@ -8,10 +8,11 @@
 #ifndef __CWT_OPTIONS_HPP__
 #define __CWT_OPTIONS_HPP__
 
-#include <cwt/vector.hpp>
+#include <pfs/vector.hpp>
+#include <pfs/string.hpp>
 #include <cwt/settings.hpp>
 
-CWT_NS_BEGIN
+namespace cwt {
 
 struct Option
 {
@@ -20,12 +21,12 @@ struct Option
 		, Windows
 	};
 
-	String       longname;     // long option or NULL
-	String       shortname;    // short option or 0
-	bool         has_arg;      // true if option has argument
-	String       xpath;        // path to appropriate settings node
-	String       defvalue;     // default value
-	String       desc;         // option's description (for automatically generated usage)
+	pfs::string longname;     // long option or NULL
+	pfs::string shortname;    // short option or 0
+	bool        has_arg;      // true if option has argument
+	pfs::string xpath;        // path to appropriate settings node
+	pfs::string defvalue;     // default value
+	pfs::string desc;         // option's description (for automatically generated usage)
 //	bool        (*validator)(const void*);  /* validation function for option argument */
 };
 
@@ -41,27 +42,27 @@ public:
 #endif
 	}
 
-	void setShortPrefix(const String & prefix) { _shortPrefix = prefix; }
-	void setLongPrefix(const String & prefix)  { _longPrefix = prefix; }
-	void setOptArgsSeparator(const String & separator) { _optArgSeparator = separator; }
-	void setQuoteChars(const String & quotes)  { _quoteChars = quotes; }
+	void setShortPrefix(const pfs::string & prefix) { _shortPrefix = prefix; }
+	void setLongPrefix(const pfs::string & prefix)  { _longPrefix = prefix; }
+	void setOptArgsSeparator(const pfs::string & separator) { _optArgSeparator = separator; }
+	void setQuoteChars(const pfs::string & quotes)  { _quoteChars = quotes; }
 	void setMode(Option::Mode mode);
 
-	bool parse(Settings & settings, int argc, char * argv[], size_t optc, const Option optv[], Vector<String> & args)
+	bool parse (Settings & settings, int argc, char * argv[], size_t optc, const Option optv[], pfs::vector<pfs::string> & args)
 		{ return parse_opts(settings, argc, argv, optc, optv, & args); }
-	bool parse(Settings & settings, int argc, char * argv[], size_t optc, const Option optv[])
+	bool parse (Settings & settings, int argc, char * argv[], size_t optc, const Option optv[])
 		{ return parse_opts(settings, argc, argv, optc, optv, nullptr); }
 
 private:
-	bool parse_opts(Settings & settings, int argc, char * argv[], size_t optc, const Option optv[], Vector<String> * args);
+	bool parse_opts(Settings & settings, int argc, char * argv[], size_t optc, const Option optv[], pfs::vector<pfs::string> * args);
 
 private:
-	String   _shortPrefix;
-	String   _longPrefix;
-	String   _optArgSeparator;
-	String   _quoteChars;
+	pfs::string   _shortPrefix;
+	pfs::string   _longPrefix;
+	pfs::string   _optArgSeparator;
+	pfs::string   _quoteChars;
 };
 
-CWT_NS_END
+} // cwt
 
 #endif /* __CWT_OPTIONS_HPP__ */

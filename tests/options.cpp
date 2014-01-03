@@ -6,7 +6,7 @@
  *  Modified on: 04.06.2013 Replaced with C++ implementation.
  */
 
-#include <cwt/test.h>
+#include <cwt/test.hpp>
 #include <cwt/app.hpp>
 
 using namespace cwt;
