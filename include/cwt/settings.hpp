@@ -31,9 +31,13 @@ private:
 	PFS_PIMPL_DECL_NOCC(settings, impl)
 
 public:
-	settings (const settings & other) : has_slots<>(), _pimpl(other._pimpl) {}
+	settings (const settings & other)
+		: has_slots<>()
+		, _format(DefaultFormat)
+		, _pimpl(other._pimpl) {}
 	settings (format f = DefaultFormat);
 	~settings ();
+
 	bool parse (const pfs::string & str);
 
 	pfs::unitype operator [] (const pfs::string & path) { return value(path); }

@@ -6,10 +6,11 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = cwt-sys   \
-	tests/dl     \
-	tests/fsm    \
-	tests/regexp \
+SUBDIRS  = cwt-sys       \
+	tests/dl         \
+	tests/fsm        \
+	tests/regexp     \
 	tests/safeformat \
+	tests/thread     \
 	tests/uri        \
 	examples/logger

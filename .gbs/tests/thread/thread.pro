@@ -1,14 +1,14 @@
 CWT_CONFIG=debug
 
-include($$(GBS_HOME)/common-app.pri)
+include($$(GBS_HOME)/common-test.pri)
 
-TARGET = example_logger
+TARGET = test_thread
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
 INCLUDEPATH += ../../../../cwt-sys/include
 
-SOURCES += ../../../examples/logger.cpp
+SOURCES += ../../../tests/thread.cpp
 
 unix {
     LIBS += -lpfs
