@@ -23,7 +23,8 @@ settings::settings (format f) : has_slots<>(), _format(f), _pimpl(new settings::
 {
 	cwt::dl dl;
 	pfs::string path = dl.buildDlFileName(_u8(__plugin_basenames[_format]));
-	PFS_ASSERT(dl.pluginOpen(_u8(__plugin_basenames[_format]), path, this->_pimpl.get()));
+	PFS_ASSERT_X(dl.pluginOpen(_u8(__plugin_basenames[_format]), path, this->_pimpl.get())
+			, dl.lastErrorText().c_str());
 }
 
 settings::~settings()
