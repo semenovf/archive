@@ -16,6 +16,8 @@
 #include <pfs/utility.hpp>
 #include <ostream>
 
+#define _latin1(s) pfs::utf8string::fromLatin1(s)
+#define _l1(s) pfs::utf8string::fromLatin1(s)
 #define _u8(s) pfs::utf8string::fromUtf8(s)
 
 // FIXME need to check behavior of member functions under null string
@@ -241,7 +243,7 @@ public:
 	static utf8string fromUtf8 (const bytearray & utf8, ConvertState * state = nullptr)
 		{ return fromUtf8(utf8.data(), utf8.size(), state);	}
 
-	utf8string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = nullptr);
+	static utf8string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = nullptr);
 
 	static utf8string number (double n, char fmt = 'g', int prec = 6);
 	//static utf8string number (float n, char fmt = 'g', int prec = 6);
