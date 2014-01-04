@@ -33,7 +33,7 @@ static void test_basic(void)
 
 	int argc = sizeof(argv)/sizeof(argv[0]);
 
-	cwt::Option optset[] = {
+	cwt::option optset[] = {
 //          longname  shortname has_arg  xpath     default value   desc
 //        ------------------------------------------------------------------------------------
 		  { "help",   "h",      false,   "/help",        "",           _Tr("output help info") }

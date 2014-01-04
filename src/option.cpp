@@ -6,17 +6,17 @@
  */
 
 #include "../include/cwt/option.hpp"
-#include <cwt/map.hpp>
+#include <pfs/map.hpp>
 #include <cwt/logger.hpp>
 
-CWT_NS_BEGIN
+namespace cwt {
 
-static const String __modes_data[][4] = {
-	  {"-", "--", "=", "\"'" } // Unix
-	, {"/", "/" , ":", "\"'" } // Windows
+static const pfs::string __modes_data[][4] = {
+	  {_u8("-"), _u8("--"), _u8("="), _u8("\"'") } // Unix
+	, {_u8("/"), _u8("/"), _u8(":"), _u8("\"'") } // Windows
 };
 
-void OptionsContext::setMode(Option::Mode mode)
+void OptionsContext::setMode(option::mode_type mode)
 {
 	_shortPrefix     = __modes_data[mode][0];
 	_longPrefix      = __modes_data[mode][1];
@@ -25,46 +25,46 @@ void OptionsContext::setMode(Option::Mode mode)
 }
 
 
-static void __split_long_arg(const String & arg
-		, const String & separator
-		, const String & quotes
-		, String & optname
-		, String & optval)
+static void __split_long_arg (const pfs::string & arg
+		, const pfs::string & separator
+		, const pfs::string & quotes
+		, pfs::string & optname
+		, pfs::string & optval)
 {
-	String::const_iterator it = arg.find(separator, arg.cbegin());
+	pfs::string::const_iterator it = arg.find(separator, arg.cbegin());
 	if (it == arg.cend()) {
 		optname = arg;
 	} else {
 		optname = arg.substr(arg.cbegin(), it);
 		optval  = arg.substr(++it);
-		if (!optval.isEmpty() && quotes.find(String(1, optval[0])) != quotes.cend()) { // optval starts with one of the quote char
+		if (!optval.isEmpty() && quotes.find(pfs::string(1, optval[0])) != quotes.cend()) { // optval starts with one of the quote char
 			if (optval.size() > 1) {
 				optval = optval.substr(1, optval.size() - 2);
 			} else {
-				Logger::error(_Fr("%s: bad option?") % arg);
+				log::error(_Fr("%s: bad option?") % arg);
 				optval.clear();
 			}
 		}
 	}
 }
 
-bool OptionsContext::parse_opts(Settings & settings
+bool OptionsContext::parse_opts(cwt::settings & settings
 		, int argc
 		, char * argv[]
 		, size_t optc
-		, const Option optv[]
-		, Vector<String> * args)
+		, const option optv[]
+		, pfs::vector<pfs::string> * args)
 {
 	if (argc <= 0)
 		return true;
 
 	bool r = true;
-	Map<String, const Option *> optmap;
+	pfs::map<pfs::string, const option *> optmap;
 
 	for (size_t i = 0; i < optc; ++i) {
 		if (!optv[i].shortname.isEmpty()) {
 			if(optmap.contains(optv[i].shortname)) {
-				Logger::error(_Fr("%s: duplication of short option") % optv[i].shortname);
+				log::error(_Fr("%s: duplication of short option") % optv[i].shortname);
 				return false;
 			}
 			optmap.insert(optv[i].shortname, & optv[i]);
@@ -72,7 +72,7 @@ bool OptionsContext::parse_opts(Settings & settings
 
 		if (!optv[i].longname.isEmpty()) {
 			if(optmap.contains(optv[i].longname)) {
-				Logger::error(_Fr("%s: duplication of long option") % optv[i].longname);
+				log::error(_Fr("%s: duplication of long option") % optv[i].longname);
 				return false;
 			}
 			optmap.insert(optv[i].longname, & optv[i]);
@@ -81,12 +81,12 @@ bool OptionsContext::parse_opts(Settings & settings
 
 	for (int i = 1; i < argc; ++i) {
 #if defined(CWT_OS_WIN32) || defined(CWT_OS_WIN64)
-		String arg = String::fromUtf16(argv[i]);
+		pfs::string arg = pfs::string::fromUtf16(argv[i]);
 #else
-		String arg = String::fromUtf8(argv[i]);
+		pfs::string arg = pfs::string::fromUtf8(argv[i]);
 #endif
-		String optname;
-		String optval;
+		pfs::string optname;
+		pfs::string optval;
 		bool skip = false;
 
 		if (arg.startsWith(_longPrefix)) {
@@ -94,7 +94,7 @@ bool OptionsContext::parse_opts(Settings & settings
 		} else if (arg.startsWith(_shortPrefix)) {
 			optname = arg.substr(_shortPrefix.length());
 			if (i + 1 < argc) {
-				optval = argv[i + 1];
+				optval = _u8(argv[i + 1]);
 				skip = true;
 			}
 		} else { // argument
@@ -104,15 +104,15 @@ bool OptionsContext::parse_opts(Settings & settings
 		}
 
 		if (optname.isEmpty() || !optmap.contains(optname)) {
-			Logger::warn(_Fr("%s: bad option") % optname);
+			log::warn(_Fr("%s: bad option") % optname);
 			continue;
 		}
 
-		const Option * opt = optmap[optname];
+		const option * opt = optmap[optname];
 
 		if (opt->has_arg) {
 			if (optval.isEmpty()) {
-				Logger::error(_Fr("%s: option need an argument") % optname);
+				log::error(_Fr("%s: option need an argument") % optname);
 				r = false;
 				break;
 			} else {
@@ -128,5 +128,4 @@ bool OptionsContext::parse_opts(Settings & settings
 	return r;
 }
 
-
-CWT_NS_END
+} // cwt

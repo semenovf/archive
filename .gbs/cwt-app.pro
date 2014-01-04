@@ -7,9 +7,9 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = cwt-app  \
-    tests/options   \
     tests/petaloid  \
     tests/sepaloid
+#    tests/options   \
 
 
 

@@ -1,20 +1,19 @@
 CWT_CONFIG=debug
-include($$(GBS_HOME)/common-app-qt.pri)
+include($$(GBS_HOME)/common-test.pri)
 TARGET = test_sepaloid
 
 INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../cwt-common/include
-INCLUDEPATH += ../../../../cwt-core/include
-INCLUDEPATH += ../../../../cwt-fs/include
+INCLUDEPATH += ../../../../pfs/include
+INCLUDEPATH += ../../../../cwt-sys/include
 INCLUDEPATH += ../../../../cwt-app/include
 
 SOURCES += ../../../tests/sepaloid.cpp
 
 unix {
-    LIBS += -lcwt
-    LIBS += -lcwt-json
-    LIBS += -lcwt-io
-    LIBS += -lcwt-fs
+    LIBS += -lpfs
+    LIBS += -lcwt-sys
+#    LIBS += -lcwt-json
+#    LIBS += -lcwt-io
     LIBS += -lcwt-app
 }
 

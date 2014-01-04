@@ -14,9 +14,9 @@
 
 namespace cwt {
 
-struct Option
+struct option
 {
-	enum Mode {
+	enum mode_type {
 		  Unix
 		, Windows
 	};
@@ -34,27 +34,28 @@ class DLL_API OptionsContext
 {
 public:
 	OptionsContext() {
-	// TODO Need more flexible approach to distinguish OS specific features (may by using global repository based on some DOM instance)
-#if defined(CWT_OS_WIN32) || defined(CWT_OS_WIN64)
-		setMode (Option::Windows);
+	// TODO Need more flexible approach to distinguish OS specific
+	// features (may by using global repository based on some DOM instance)
+#if defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)
+		setMode (option::Windows);
 #else
-		setMode (Option::Unix);
+		setMode (option::Unix);
 #endif
 	}
 
-	void setShortPrefix(const pfs::string & prefix) { _shortPrefix = prefix; }
-	void setLongPrefix(const pfs::string & prefix)  { _longPrefix = prefix; }
+	void setShortPrefix (const pfs::string & prefix) { _shortPrefix = prefix; }
+	void setLongPrefix  (const pfs::string & prefix)  { _longPrefix = prefix; }
 	void setOptArgsSeparator(const pfs::string & separator) { _optArgSeparator = separator; }
-	void setQuoteChars(const pfs::string & quotes)  { _quoteChars = quotes; }
-	void setMode(Option::Mode mode);
+	void setQuoteChars  (const pfs::string & quotes)  { _quoteChars = quotes; }
+	void setMode        (option::mode_type mode);
 
-	bool parse (Settings & settings, int argc, char * argv[], size_t optc, const Option optv[], pfs::vector<pfs::string> & args)
+	bool parse (cwt::settings & settings, int argc, char * argv[], size_t optc, const option optv[], pfs::vector<pfs::string> & args)
 		{ return parse_opts(settings, argc, argv, optc, optv, & args); }
-	bool parse (Settings & settings, int argc, char * argv[], size_t optc, const Option optv[])
+	bool parse (cwt::settings & settings, int argc, char * argv[], size_t optc, const option optv[])
 		{ return parse_opts(settings, argc, argv, optc, optv, nullptr); }
 
 private:
-	bool parse_opts(Settings & settings, int argc, char * argv[], size_t optc, const Option optv[], pfs::vector<pfs::string> * args);
+	bool parse_opts(cwt::settings & settings, int argc, char * argv[], size_t optc, const option optv[], pfs::vector<pfs::string> * args);
 
 private:
 	pfs::string   _shortPrefix;

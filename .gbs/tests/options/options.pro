@@ -2,17 +2,17 @@ include($$(GBS_HOME)/common-app-qt.pri)
 
 TARGET = test_options
 INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../cwt-common/include
-INCLUDEPATH += ../../../../cwt-core/include
+INCLUDEPATH += ../../../../pfs/include
+INCLUDEPATH += ../../../../cwt-sys/include
 
 SOURCES += ../../../tests/options.cpp
 
 unix {
-    LIBS += -lcwt
-    LIBS += -lcwt-json
-    LIBS += -lcwt-io
+    LIBS += -lpfs
+    LIBS += -lcwt-sys
+#    LIBS += -lcwt-json
+#    LIBS += -lcwt-io
     LIBS += -lcwt-app
-    LIBS += -lcwt-fs
 }
 
 win32 {

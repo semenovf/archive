@@ -10,44 +10,46 @@
 
 #include <cwt/sepaloid.hpp>
 #include <cwt/option.hpp>
-#include <cwt/vector.hpp>
+#include <pfs/vector.hpp>
 
-CWT_NS_BEGIN
+namespace cwt {
 
-class MainProc
+class DLL_API app
 {
-public:
-	MainProc() {}
-	virtual ~MainProc() {}
-	virtual int operator () () { return 0; }
-};
-
-class DLL_API App
-{
-	CWT_DENY_COPY(App);
-	CWT_IMPLEMENT_LOCKING(App);
+	PFS_DENY_COPY(app);
+	PFS_IMPLEMENT_LOCKING(app);
 
 public:
-	App(const String & progname = String());
-	~App() {}
+	class main_proc
+	{
+	public:
+		main_proc() {}
+		virtual ~main_proc() {}
+		virtual int operator () () { return 0; }
+	};
 
-	int exec() { return MainProc()(); }
-	int exec(MainProc & mainProc) { return mainProc(); }
-	int exec(Sepaloid & sepaloid) { return sepaloid.exec(); }
-	const Settings & settings() const { return _settings; }
-	Settings & settings() { return _settings; }
+public:
+	app(const pfs::string & progname = pfs::string());
+	~app() {}
 
-	static App * instance() { CWT_ASSERT(self); return self; }
-	static App * app()      { CWT_ASSERT(self); return self; }
+	int exec() { return main_proc()(); }
+	int exec(main_proc & mainProc) { return mainProc(); }
+	int exec(cwt::sepaloid & sepaloid) { return sepaloid.exec(); }
+
+	const cwt::settings & settings() const { return _settings; }
+	cwt::settings & settings() { return _settings; }
+
+	static app * instance() { PFS_ASSERT(self); return self; }
+	//static app * app()      { PFS_ASSERT(self); return self; }
 
 private:
-	String   _program;
-	Settings _settings;
+	pfs::string   _program;
+	cwt::settings _settings;
 
 private:
-	static App * self;
+	static app * self;
 };
 
-CWT_NS_END
+} // cwt
 
 #endif /* __CWT_APP_HPP__ */

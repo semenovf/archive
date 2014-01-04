@@ -8,16 +8,17 @@
 
 #include "../include/cwt/app.hpp"
 
-CWT_NS_BEGIN
+namespace cwt {
 
-App * App::self = nullptr;
+app * app::self = nullptr;
 
-App::App(const String & progname)
-	: _program(progname.isEmpty() ? "<anonymous>" : progname)
+app::app (const pfs::string & progname)
+	: _program()
 {
-	CWT_CHECK_SIZEOF_TYPES;
-	CWT_ASSERT(self == nullptr);
+	PFS_CHECK_SIZEOF_TYPES;
+	PFS_ASSERT(self == nullptr);
 	self = this;
+	_program = (progname.isEmpty() ? pfs::string("<anonymous>") : progname);
 }
 
-CWT_NS_END
+} // cwt
