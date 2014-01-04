@@ -5,7 +5,13 @@
 #include <pfs/global_cc.h>
 #include <pfs/global_endian.h>
 #include <pfs/global_bits.h>
-#include <stdlib.h>
+#ifdef __cplusplus
+#	include <cstdlib>
+#	include <cstring> // for strerror
+#else
+#	include <stdlib.h>
+#	include <string.h> // for strerror
+#endif
 
 
 #ifdef _MSC_VER

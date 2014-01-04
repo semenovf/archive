@@ -20,29 +20,6 @@ class vector
 	typedef std::vector<T> impl;
 	PFS_PIMPL_INLINE(vector, impl)
 
-/*
-private:
-	typedef std::vector<T> impl;
-	shared_ptr<impl> _pimpl;
-
-	void detach()
-	{
-		if (!_pimpl.unique()) {
-			shared_ptr<impl> d(new impl(*_pimpl));
-			_pimpl.swap(d);
-		}
-	}
-	vector (const impl & other) : _pimpl(new impl(other)) {}
-
-public:
-	vector (const vector & other) : _pimpl(other._pimpl) { }
-	vector & operator = (const vector & other)
-	{
-		_pimpl = other._pimpl;
-		return *this;
-	}
-*/
-
 public:
 	typedef T item_type;
 	typedef typename impl::iterator iterator;
@@ -88,7 +65,20 @@ public:
 	void append (const vector<T> & other) { append(other.constData(), other.size()); }
 
     void resize(size_t n, T v = T()) { detach(); _pimpl->resize(n, v); }
+
+    iterator erase (const_iterator pos) { detach(); return _pimpl->erase(pos); }
+    iterator erase (const_iterator first, const_iterator last) { detach(); return _pimpl->erase(first, last); }
+    void erase (size_t index) { detach(); _pimpl->erase(begin() + index); }
+
+    iterator remove (const_iterator pos) { return erase(pos); }
+    iterator remove (const_iterator first, const_iterator last) { return erase(first, last); }
+    void remove (size_t index) { erase(index); }
 };
+
+/*
+__gnu_cxx::__normal_iterator<cwt::thread* const*, std::vector<cwt::thread*, std::allocator<cwt::thread*> > >
+__gnu_cxx::__normal_iterator<cwt::thread**, std::vector<cwt::thread*, std::allocator<cwt::thread*> > >’
+*/
 
 template <typename T>
 vector<T>::vector (const T * values, size_t count)

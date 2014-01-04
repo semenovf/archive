@@ -145,19 +145,19 @@ protected:                                                      \
 	{                                                           \
 	public:                                                     \
 	auto_lock(ClassName * base)                                 \
-			: m_base(base) { m_base->_mutex.lock(); }           \
-		~auto_lock() { m_base->_mutex.unlock(); }               \
-		mutex * handlePtr() const { return & m_base->_mutex; }  \
+			: _base(base) { _base->_mutex.lock(); }             \
+		~auto_lock() { _base->_mutex.unlock(); }                \
+		pfs::mutex * handlePtr() const { return & _base->_mutex; }  \
 		                                                        \
-		void lock()    { m_base->_mutex.lock(); }               \
-		void tryLock() { m_base->_mutex.tryLock(); }            \
-		void unlock()  { m_base->_mutex.unlock(); }             \
+		void lock()    { _base->_mutex.lock(); }                \
+		void tryLock() { _base->_mutex.tryLock(); }             \
+		void unlock()  { _base->_mutex.unlock(); }              \
                                                                 \
 	private:                                                    \
 		ClassName * _base;                                      \
 	};                                                          \
 private:                                                        \
-	mutex _mutex;
+	pfs::mutex _mutex;
 
 } // pfs
 

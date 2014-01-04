@@ -16,5 +16,6 @@ SUBDIRS  = pfs       \
     tests/date       \
     tests/time       \
     tests/utf8string_ptr \
-    tests/utf8string \
+    tests/utf8string     \
+    tests/unitype        \
     tests/cow_ptr_qt
