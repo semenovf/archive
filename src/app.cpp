@@ -21,4 +21,12 @@ app::app (const pfs::string & progname)
 	_program = (progname.isEmpty() ? pfs::string("<anonymous>") : progname);
 }
 
+app::app (int argc, char * argv[])
+	: _program(argc > 0 ? _u8(argv[0]) : pfs::string("<anonymous>"))
+{
+	PFS_CHECK_SIZEOF_TYPES;
+	PFS_ASSERT(self == nullptr);
+	self = this;
+}
+
 } // cwt

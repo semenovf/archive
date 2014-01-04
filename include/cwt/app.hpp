@@ -29,22 +29,22 @@ public:
 	};
 
 public:
-	app(const pfs::string & progname = pfs::string());
-	~app() {}
+	app (const pfs::string & progname = pfs::string());
+	app (int argc, char * argv[]);
+	~app () {}
 
-	int exec() { return main_proc()(); }
-	int exec(main_proc & mainProc) { return mainProc(); }
-	int exec(cwt::sepaloid & sepaloid) { return sepaloid.exec(); }
+	int exec () { return main_proc()(); }
+	int exec (main_proc & mainProc) { return mainProc(); }
+	int exec (cwt::sepaloid & sepaloid) { return sepaloid.exec(); }
 
-	const cwt::settings & settings() const { return _settings; }
-	cwt::settings & settings() { return _settings; }
+//	const cwt::settings & settings() const { return _settings; }
+//	cwt::settings & settings() { return _settings; }
 
 	static app * instance() { PFS_ASSERT(self); return self; }
-	//static app * app()      { PFS_ASSERT(self); return self; }
 
 private:
 	pfs::string   _program;
-	cwt::settings _settings;
+//	cwt::settings _settings;
 
 private:
 	static app * self;
