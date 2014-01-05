@@ -13,7 +13,6 @@
 #include <pfs/time.hpp>
 #include <pfs/date.hpp>
 #include <pfs/datetime.hpp>
-#include <pfs/shared_ptr.hpp>
 #include <pfs/pimpl.hpp>
 
 // FIXME Need to apply concept of type erasure.
@@ -23,14 +22,14 @@ namespace pfs {
 
 class unitype;
 
-enum raw_type {
+enum unitype_type {
 	Null, Bool, Boolean = Bool, Integer, Float, String, Blob
 };
 
 struct unidata
 {
 	virtual ~unidata () {}
-	virtual raw_type  rawtype () const { return Null; }
+	virtual unitype_type  type () const { return Null; }
 	virtual bool      toBool   (bool & ok) const { ok = false; return false; }
 	virtual long_t    toLong   (bool & ok) const { ok = false; return long_t(0); }
 	virtual double    toDouble (bool & ok) const { ok = false; return double(0); }
@@ -43,7 +42,7 @@ struct DLL_API unidata_boolean : public unidata
 	bool _value;
 	unidata_boolean  (bool v) : _value(v) {}
 	unidata_boolean  (const unidata & d) : _value(false) { bool ok; _value = (d.toLong(ok) != long_t(0)); }
-	virtual raw_type  rawtype () const { return Boolean; }
+	virtual unitype_type  type () const { return Boolean; }
 	bool   toBool    (bool & ok) const { ok = true; return _value; }
 	long_t toLong    (bool & ok) const { ok = true; return _value ? long_t(1) : long_t(0); }
 	double toDouble  (bool & ok) const { ok = true; return _value ? double(1) : double(0); }
@@ -56,7 +55,7 @@ struct DLL_API unidata_long : public unidata
 	long_t _value;
 	unidata_long  (long_t v) : _value(v) {}
 	unidata_long  (const unidata & d) : _value(false) { bool ok; _value = d.toLong(ok); }
-	virtual raw_type  rawtype () const { return Integer; }
+	virtual unitype_type  type () const { return Integer; }
 	bool   toBool    (bool & ok) const { ok = true; return _value != long_t(0); }
 	long_t toLong    (bool & ok) const { ok = true; return _value; }
 	double toDouble  (bool & ok) const { ok = true; return double(_value); }
@@ -69,7 +68,7 @@ struct DLL_API unidata_double : public unidata
 	double _value;
 	unidata_double  (double v) : _value(v) {}
 	unidata_double  (const unidata & d) : _value(false) { bool ok; _value = d.toDouble(ok); }
-	virtual raw_type  rawtype () const { return Float; }
+	virtual unitype_type  type () const { return Float; }
 	bool   toBool    (bool & ok) const { ok = true; return _value != double(0); }
 	long_t toLong    (bool & ok) const
 	{
@@ -90,7 +89,7 @@ struct DLL_API unidata_string : public unidata
 	string _value;
 	unidata_string   (const string & v) : _value(v) {}
 	unidata_string   (const unidata & d) : _value() { bool ok; _value = d.toString(ok); }
-	virtual raw_type  rawtype () const { return String; }
+	virtual unitype_type  type () const { return String; }
 	bool   toBool    (bool & ok) const
 	{
 		ok = !_value.isEmpty();
@@ -113,7 +112,7 @@ struct DLL_API unidata_blob : public unidata
 	bytearray _value;
 	unidata_blob (const bytearray & v) : _value(v) {}
 	unidata_blob (const unidata & d) : _value() { bool ok; _value = d.toBlob(ok); }
-	virtual raw_type  rawtype () const { return Blob; }
+	virtual unitype_type  type () const { return Blob; }
 	bool toBool  (bool & ok) const
 	{
 		ok = !_value.isEmpty();
@@ -161,7 +160,7 @@ public:
 	template <typename T>
 	static unitype make_object ();
 */
-
+	unitype_type  type () const { return _pimpl->type(); }
 	bool isNull () const { return _pimpl.get() == nullptr || toBlob().isEmpty(); }
 
 
