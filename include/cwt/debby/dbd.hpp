@@ -20,8 +20,17 @@ namespace debby
 class schema;
 struct driver;
 
-struct handler_data   { driver * driver; };
-struct statement_data { driver * driver; };
+struct handler_data
+{
+	driver * _driver;
+};
+
+struct statement_data
+{
+	driver * _driver;
+	size_t   _bindCursor; // current bind index
+	statement_data() : _driver(nullptr), _bindCursor(0) {}
+};
 
 enum type {
 	  Null
@@ -60,6 +69,7 @@ struct column_meta
 		, has_timestamp     (false, false)
 		, has_index         (false, false)
 	{}
+
 	pfs::string             column_name;
 	cwt::debby::type        column_type;
 	pfs::string             native_type;
@@ -105,9 +115,6 @@ struct driver
 	bool                     (*fetchRowArray) (statement_data &, pfs::vector<pfs::unitype> & row);
 	bool                     (*fetchRowHash)  (statement_data &, pfs::map<pfs::string, pfs::unitype> & row);
 	bool                     (*bind)          (statement_data &, size_t index, const pfs::unitype & param);
-
-//	bool                     (*createSchema)  (handler_data &, const Schema & schema); // create schema
-//	bool                     (*dropSchema)    (handler_data &, const Schema & schema); // drop schema and close connection
 };
 
 }} // cwt::debby

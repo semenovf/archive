@@ -2,21 +2,19 @@ CWT_CONFIG=debug
 include($$(GBS_HOME)/common-dll.pri)
 TARGET = cwt-debby
 INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../cwt-common/include
-INCLUDEPATH += ../../../cwt-core/include
-INCLUDEPATH += ../../../cwt-io/include
-INCLUDEPATH += ../../../cwt-json/include
-INCLUDEPATH += ../../../cwt-uri/include
+INCLUDEPATH += ../../../pfs/include
+INCLUDEPATH += ../../../cwt-sys/include
+#INCLUDEPATH += ../../../cwt-io/include
+#INCLUDEPATH += ../../../cwt-json/include
+#INCLUDEPATH += ../../../cwt-uri/include
 
 SOURCES += ../../src/*.cpp
 
 unix {
 #    QMAKE_CXXFLAGS += -pg
-    LIBS += -lcwt
-    LIBS += -lcwt-io
-    LIBS += -lcwt-json
-    LIBS += -lcwt-fs
-    LIBS += -lcwt-uri
+    LIBS += -lpfs
+    LIBS += -lcwt-sys
+#    LIBS += -lcwt-json
 }
 
 win32 {

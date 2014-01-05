@@ -14,88 +14,65 @@
 
 namespace cwt { namespace debby {
 
-DbHandlerPtr DbHandler::open (const cwt::String & uri_str)
+bool handler::open (const pfs::string & uri_str)
 {
-	cwt::Uri uri;
+	cwt::uri uri;
 
 	if (!uri.parse(uri_str)) {
-		cwt::Logger::error(_Fr("Invalid URI specified for DB driver: %s") % uri_str);
-		return DbHandlerPtr();
+		cwt::log::error(_Fr("Invalid URI specified for DB driver: %s") % uri_str);
+		return false;
 	}
 
-	cwt::String debby_name = uri.scheme();
+	pfs::string debby_name = uri.scheme();
 
 	if (debby_name.isEmpty()) {
-		Logger::error(_Tr("Invalid URI specified for DB driver: DB driver name is empty."));
-		return DbHandlerPtr();
+		cwt::log::error(_Tr("Invalid URI specified for DB driver: DB driver name is empty."));
+		return false;
 	}
 
-	debby_name.prepend(cwt::String("cwt-debby-"));
-	DbDriver * driver = nullptr;
+	debby_name.prepend(pfs::string("cwt-debby-"));
+	driver * drv = nullptr;
+	cwt::dl dl;
 
-	cwt::String dlpath = cwt::Dl::buildDlFileName(debby_name);
-	if (!cwt::Dl::pluginOpen(debby_name, dlpath, & driver)) {
-		cwt::Logger::error(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
-		return DbHandlerPtr();
+	pfs::string dlpath = dl.buildDlFileName(debby_name);
+	if (!dl.pluginOpen(debby_name, dlpath, & drv)) {
+		cwt::log::error(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
+		return false;
 	}
 
-	cwt::Vector<cwt::String> userinfo = uri.userinfo().split(":");
-	cwt::Map<cwt::String, cwt::String> params;
+	pfs::vector<pfs::string> userinfo = uri.userinfo().split(_l1(":"));
+	pfs::map<pfs::string, pfs::string> params;
 
-	DbHandlerData * driverData = driver->open (uri.path()
-			, userinfo.size() > 0 ? userinfo[0] : cwt::String() // login
-			, userinfo.size() > 1 ? userinfo[1] : cwt::String() // password
+	handler_data * driverData = drv->open (uri.path()
+			, userinfo.size() > 0 ? userinfo[0] : pfs::string() // login
+			, userinfo.size() > 1 ? userinfo[1] : pfs::string() // password
 			, uri.queryItems());
 
 	if (!driverData)
-		return DbHandlerPtr();
-
-	DbHandlerPtr dbh(new DbHandler);
-	dbh->_dbhData = driverData;
-
-	return dbh;
-}
-
-/*
-bool DbHandler::deploySchema (DbHandler & dbh, const Schema & schema)
-{
-	if (!dbh._dbhData)
 		return false;
-	return dbh._dbhData->driver->createSchema(*dbh._dbhData, schema);
+
+	_pimpl.reset(driverData);
+	return true;
 }
 
-bool DbHandler::dropSchema (DbHandler & dbh, const Schema & schema)
+void handler::close ()
 {
-	if (!dbh._dbhData)
-		return false;
-	// Drop schema (connection closed automatically)
-	if (dbh._dbhData->driver->dropSchema(*dbh._dbhData, schema)) {
-		dbh._dbhData = nullptr;
-		return true;
-	}
-	return false;
-}
-*/
-
-void DbHandler::close ()
-{
-	if (_dbhData) {
-		_dbhData->driver->close(_dbhData);
-		_dbhData = nullptr;
+	if (_pimpl && _pimpl->_driver) {
+		_pimpl->_driver->close(_pimpl.get());
+		//_pimpl.reset();
 	}
 }
 
-StatementPtr DbHandler::prepare (const cwt::String & sql)
+statement handler::prepare (const pfs::string & sql)
 {
-	DbStatementData * d = _dbhData->driver->prepare(*_dbhData, sql);
+	statement_data * d = _pimpl->_driver->prepare(*_pimpl, sql);
 	if (d) {
-		StatementPtr sth(new Statement);
-		sth->m_sth = d;
-		sth->m_bindCursor = 0; // reset counter of bind parameters
+		statement sth(d);
+		sth._pimpl->_bindCursor = 0; // reset counter of bind parameters
 		return sth;
 	}
 
-	return StatementPtr();
+	return statement();
 }
 
 }} // cwt::debby

@@ -7,26 +7,23 @@
 
 #include "../include/cwt/debby/sth.hpp"
 
-CWT_NS_BEGIN
-
-namespace debby
-{
+namespace cwt { namespace debby {
 
 /**
  *
  */
-void Statement::close ()
+void statement::close ()
 {
-	if (m_sth) {
-		CWT_ASSERT(m_sth->driver);
-		m_sth->driver->closeStmt(m_sth);
-		m_sth = nullptr;
+	if (_pimpl) {
+		PFS_ASSERT(_pimpl->_driver);
+		_pimpl->_driver->closeStmt(_pimpl.get());
+		_pimpl.reset();
 	}
 }
 
 
 /**
- * @fn Vector<UniType> DbStatement::fetchRow()
+ * @fn pfs::vector<pfs::unitype> statement::fetchRow()
  *
  * @param sth
  * @return
@@ -40,17 +37,16 @@ void Statement::close ()
  * @param param
  * @return
  */
-Statement & Statement::bind (const cwt::UniType & param)
+statement & statement::bind (const pfs::unitype & param)
 {
-	CWT_ASSERT(m_sth);
-	CWT_ASSERT(m_sth->driver);
-	if (m_sth->driver->bind(*m_sth, m_bindCursor, param)) {
-		++m_bindCursor;
+	PFS_ASSERT(_pimpl);
+	PFS_ASSERT(_pimpl->_driver);
+
+	if (_pimpl->_driver->bind(*_pimpl, _pimpl->_bindCursor, param)) {
+		++_pimpl->_bindCursor;
 	}
 	return *this;
 }
 
-} // namespace debby
-
-CWT_NS_END
+}} // cwt::debby
 

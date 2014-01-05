@@ -10,38 +10,36 @@
 
 #include <cwt/debby/dbd.hpp>
 
-CWT_NS_BEGIN
+namespace cwt { namespace debby {
 
-namespace debby
+class handler;
+
+class statement
 {
+	friend class handler;
+	PFS_PIMPL_INLINE(statement, statement_data);
 
-class DbHandler;
-class Statement;
-
-typedef cwt::shared_ptr<Statement> StatementPtr;
-
-class Statement
-{
-	friend class DbHandler;
+protected:
+	statement (statement_data * p) : _pimpl(p) {}
+	statement () { PFS_ASSERT(true == false); }
 
 public:
-	Statement() : m_sth(nullptr), m_bindCursor(0) {}
-	~Statement() { close(); }
+	~statement() { close(); }
 
-	void        close();
-	bool        exec ()         { m_bindCursor = 0; return m_sth->driver->execStmt(*m_sth); }
-	bool        fetchRowArray(cwt::Vector<cwt::UniType> & row) { return m_sth->driver->fetchRowArray(*m_sth, row); }
-	bool        fetchRowHash (cwt::Map<cwt::String, cwt::UniType> & row) { return m_sth->driver->fetchRowHash(*m_sth, row); }
-	Statement & bind (const cwt::UniType & param);
-	Statement & bind (size_t index, const cwt::UniType & param) { m_sth->driver->bind(*m_sth, index, param); return *this; }
+	void close ();
 
-private:
-	DbStatementData * m_sth;
-	size_t            m_bindCursor; // current bind index
+	bool exec  ()
+		{ _pimpl->_bindCursor = 0; return _pimpl->_driver->execStmt(*_pimpl); }
+	bool fetchRowArray (pfs::vector<pfs::unitype> & row)
+		{ return _pimpl->_driver->fetchRowArray(*_pimpl, row); }
+	bool fetchRowHash (pfs::map<pfs::string, pfs::unitype> & row)
+		{ return _pimpl->_driver->fetchRowHash(*_pimpl, row); }
+
+	statement & bind (const pfs::unitype & param);
+	statement & bind (size_t index, const pfs::unitype & param)
+		{ _pimpl->_driver->bind(*_pimpl, index, param); return *this; }
 };
 
-} // namespace debby
-
-CWT_NS_END
+}} // cwt::debby
 
 #endif /* __CWT_DEBBY_STH_HPP__ */

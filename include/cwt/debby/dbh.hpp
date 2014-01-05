@@ -9,62 +9,56 @@
 #define __CWT_DEBBY_DBH_HPP__
 
 #include <cwt/debby/dbd.hpp>
-#include <cwt/vector.hpp>
-#include <cwt/shared_ptr.hpp>
+#include <pfs/vector.hpp>
+#include <pfs/pimpl.hpp>
 
-CWT_NS_BEGIN
+namespace cwt {
 
 namespace debby
 {
 
-class Statement;
-class DbHandler;
-class Schema;
-class Record;
+class statement;
+class handler;
 
-typedef cwt::shared_ptr<DbHandler> DbHandlerPtr;
-
-class DbHandler
+class handler
 {
+	PFS_PIMPL_INLINE(handler, handler_data);
+
 protected:
-	DbHandler() : _dbhData(nullptr) {}
+
+	handler (handler_data * p) : _pimpl(p) {}
 
 public:
-	~DbHandler() { close(); }
+	handler () : _pimpl(new handler_data) {}
+	~handler () { close(); }
 
-	static DbHandlerPtr open (const cwt::String & uri);
+	bool open (const pfs::string & uri);
+	bool opened() const { return _pimpl && _pimpl->_driver != nullptr; }
+	void close ();
 
-	bool     opened() const { return _dbhData != nullptr; }
-	void     close ();
+	bool query (const pfs::string & sql)
+		{ return _pimpl->_driver->query(*_pimpl, sql); }   // cannot be used for statements that contain binary data
 
-	bool     query (const cwt::String & sql) { return _dbhData->driver->query(*_dbhData, sql); }   // cannot be used for statements that contain binary data
+	statement prepare (const pfs::string & sql);
 
-	cwt::shared_ptr<Statement>
-		     prepare (const cwt::String & sql);
+	ulong_t  rows ()       { return _pimpl->_driver->rows(*_pimpl); }
+	ulong_t  lastId ()     { return _pimpl->_driver->lastId(*_pimpl); }
 
-	ulong_t  rows ()       { return _dbhData->driver->rows(*_dbhData); }
-	ulong_t  lastId ()     { return _dbhData->driver->lastId(*_dbhData); }
+	pfs::vector<pfs::string>
+		     tables ()    { return _pimpl->_driver->tables(*_pimpl); }
 
-	cwt::Vector<cwt::String>
-		     tables ()    { return _dbhData->driver->tables(*_dbhData); }
+	bool     tableExists   (const pfs::string & name) { return _pimpl->_driver->tableExists(*_pimpl, name); }
+	bool     setAutoCommit (bool on) { return _pimpl->_driver->setAutoCommit(*_pimpl, on); }
+	bool     autoCommit () { return _pimpl->_driver->autoCommit(*_pimpl); }
+	bool     begin ()      { return _pimpl->_driver->begin     (*_pimpl); }
+	bool     commit ()     { return _pimpl->_driver->commit    (*_pimpl); }
+	bool     rollback ()   { return _pimpl->_driver->rollback  (*_pimpl); }
+	long_t   errno ()      { return _pimpl->_driver->errno     (*_pimpl); }
 
-	bool     tableExists   (const cwt::String & name) { return _dbhData->driver->tableExists(*_dbhData, name); }
-	bool     setAutoCommit (bool on) { return _dbhData->driver->setAutoCommit(*_dbhData, on); }
-	bool     autoCommit () { return _dbhData->driver->autoCommit(*_dbhData); }
-	bool     begin ()      { return _dbhData->driver->begin(*_dbhData); }
-	bool     commit ()     { return _dbhData->driver->commit(*_dbhData); }
-	bool     rollback ()   { return _dbhData->driver->rollback(*_dbhData); }
-	long_t   errno ()      { return _dbhData->driver->errno(*_dbhData); }
-
-	bool     meta (const cwt::String & table, cwt::Vector<DbColumnMeta> & meta)
-			               { return _dbhData->driver->meta(*_dbhData, table, meta); }
-
-private:
-	DbHandlerData * _dbhData;
+	bool     meta (const pfs::string & table, pfs::vector<column_meta> & meta)
+			               { return _pimpl->_driver->meta(*_pimpl, table, meta); }
 };
 
-} // namespace debby
-
-CWT_NS_END
+}} // cwt::debby
 
 #endif /* __CWT_DEBBY_DBH_HPP__ */
