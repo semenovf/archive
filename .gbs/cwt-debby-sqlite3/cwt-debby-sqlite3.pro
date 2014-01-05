@@ -2,10 +2,10 @@ CWT_CONFIG=debug
 include($$(GBS_HOME)/common-dll.pri)
 TARGET = cwt-debby-sqlite3
 INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../cwt-common/include
-INCLUDEPATH += ../../../cwt-core/include
-INCLUDEPATH += ../../../cwt-json/include
+INCLUDEPATH += ../../../pfs/include
+INCLUDEPATH += ../../../cwt-sys/include
 INCLUDEPATH += ../../../cwt-debby/include
+#INCLUDEPATH += ../../../cwt-json/include
 
 HEADERS += ../../sqlite3/*.h
 HEADERS += ../../src/*.hpp
@@ -15,7 +15,8 @@ SOURCES += ../../src/*.cpp
 unix {
 #    QMAKE_CFLAGS += -pg
 #    QMAKE_CXXFLAGS += -pg
-    LIBS += -lcwt
+    LIBS += -lpfs
+    LIBS += -lcwt-sys
 }
 
 win32 {
