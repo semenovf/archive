@@ -33,7 +33,7 @@ public:                                                        \
                                                                \
     void swap (Class & other)                                  \
     {                                                          \
-    	pfs::swap(_pimpl, other._pimpl);                       \
+    	_pimpl.swap(other._pimpl);                             \
     }
 
 #define PFS_PIMPL_DECL(Class,Impl)                             \

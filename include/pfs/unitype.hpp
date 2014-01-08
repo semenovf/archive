@@ -140,8 +140,8 @@ public:
 	unitype (ushort_t v)          : _pimpl (new unidata_long(long_t(v))) { }
 	unitype (int_t v)             : _pimpl (new unidata_long(long_t(v))) { }
 	unitype (uint_t v)            : _pimpl (new unidata_long(long_t(v))) { }
-//#if PFS_OS_BITS == 32 // 'long_t' is 'long long'
-#ifdef HAVE_INT64
+#if PFS_OS_BITS == 32 // 'long_t' is 'long long'
+//#ifdef HAVE_INT64
 	unitype (long v)              : _pimpl (new unidata_long(long_t(v))) { }
 	unitype (unsigned long v)     : _pimpl (new unidata_long(long_t(v))) { }
 #endif

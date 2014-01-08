@@ -106,7 +106,7 @@ uint_t unitype::toUInt (bool * pok) const
 {
 	bool ok;
 	long_t r = _pimpl->toLong(ok);
-	ok = (r >= 0 && r <= PFS_UINT_MAX) ? ok : false;
+	ok = (r >= 0 && ulong_t(r) <= PFS_UINT_MAX) ? ok : false;
 	if (pok) *pok = ok;
 	return ok ? uint_t(r) : 0;
 }
