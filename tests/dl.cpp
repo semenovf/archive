@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	BEGIN_TESTS(3);
 
 	cwt::dl dl;
-	pfs::string dlname = dl.buildDlFileName(pfs::string("cwt-dl"));
+	pfs::string dlname = dl.buildDlFileName(pfs::string("cwt-sys"));
 	cwt::dl::handle dlhandle;
 	typedef int (*dl_test_fn)(void);
 	dl_test_fn dltest;

@@ -11,6 +11,7 @@ INCLUDEPATH += ../../../../cwt-sys/include
 SOURCES += ../../../tests/regexp.cpp
 
 unix {
+    LIBS += -lpfs
     LIBS += -lcwt-sys
 }
 

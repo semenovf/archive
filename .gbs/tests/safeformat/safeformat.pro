@@ -8,7 +8,7 @@ INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
 INCLUDEPATH += ../../../../cwt-sys/include
 
-SOURCES += ../../../tests/fsm.cpp
+SOURCES += ../../../tests/safeformat.cpp
 
 unix {
     LIBS += -lpfs
