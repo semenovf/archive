@@ -9,7 +9,7 @@ INCLUDEPATH += ../../../../pfs/include
 INCLUDEPATH += ../../../../cwt-sys/include
 INCLUDEPATH += ../../../../cwt-debby/include
 
-SOURCES += ../../../tests/core.cpp
+SOURCES += ../../../tests/test.cpp
 
 unix {
 #    QMAKE_CXXFLAGS += -pg

@@ -14,19 +14,12 @@
 
 struct Sqlite3DbHandler : public cwt::debby::handler_data
 {
-	sqlite3 * dbh_native;
+	sqlite3 * _dbh_native;
 };
 
 struct Sqlite3DbStatement : public cwt::debby::statement_data
 {
-	sqlite3_stmt * sth_native;
+	sqlite3_stmt * _sth_native;
 };
-
-
-bool s3_dbd_query (cwt::debby::handler_data & dbh, const pfs::string & sql);
-/*
-bool s3_create_schema (cwt::debby::handler_data & dbh, const Schema & schema);
-bool s3_drop_schema (cwt::debby::handler_data & dbh, const Schema & schema);
-*/
 
 #endif /* __CWT_DEBBY_SQLITE3_DBD_HPP__ */

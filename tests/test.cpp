@@ -8,6 +8,21 @@
 using namespace cwt;
 using namespace cwt::debby;
 
+void test_assignment()
+{
+	pfs::string dburi("sqlite3:///tmp/test.db?mode=rwc");
+
+	while (true) {
+		cwt::debby::handler dbh;
+		TEST_FAIL(dbh.open(dburi));
+		TEST_FAIL(dbh.opened());
+		dbh.close();
+		TEST_FAIL(!dbh.opened());
+		TEST_FAIL(dbh.open(dburi));
+		TEST_FAIL(dbh.opened());
+	}
+}
+
 void test_base()
 {
 	static pfs::string sql_create_table_0(
@@ -309,9 +324,13 @@ int main(int argc, char *argv[])
     cwt::fs fs;
 
     fs.unlink(_l1("/tmp/test.db"));
-   	test_base();
+
+    test_assignment();
+
+if (0) {
+    test_base();
     test_sqlite3_collation();
     test_columns();
-
+}
     END_TESTS;
 }
