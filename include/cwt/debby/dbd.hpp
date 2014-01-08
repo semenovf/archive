@@ -23,13 +23,20 @@ struct driver;
 struct handler_data
 {
 	driver * _driver;
+	handler_data () : _driver(nullptr) {}
+	//~handler_data ();
 };
 
 struct statement_data
 {
 	driver * _driver;
 	size_t   _bindCursor; // current bind index
-	statement_data() : _driver(nullptr), _bindCursor(0) {}
+	statement_data () : _driver(nullptr), _bindCursor(0) {}
+	statement_data (const statement_data & other)
+		: _driver(other._driver)
+		, _bindCursor(other._bindCursor)
+	{}
+	//~statement_data ();
 };
 
 enum type {
@@ -116,6 +123,22 @@ struct driver
 	bool                     (*fetchRowHash)  (statement_data &, pfs::map<pfs::string, pfs::unitype> & row);
 	bool                     (*bind)          (statement_data &, size_t index, const pfs::unitype & param);
 };
+
+/*
+inline handler_data::~handler_data ()
+{
+	if (_driver) {
+		_driver->close(this);
+	}
+}
+
+inline statement_data::~statement_data ()
+{
+	if (_driver) {
+		_driver->closeStmt(this);
+	}
+}
+*/
 
 }} // cwt::debby
 

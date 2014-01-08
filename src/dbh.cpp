@@ -51,7 +51,7 @@ bool handler::open (const pfs::string & uri_str)
 	if (!driverData)
 		return false;
 
-	_pimpl.reset(driverData);
+	_pimpl.reset(driverData, impl_deleter());
 	return true;
 }
 
@@ -59,13 +59,16 @@ void handler::close ()
 {
 	if (_pimpl && _pimpl->_driver) {
 		_pimpl->_driver->close(_pimpl.get());
-		//_pimpl.reset();
+		//_pimpl->_driver = nullptr;
+		_pimpl.reset();
 	}
 }
 
 statement handler::prepare (const pfs::string & sql)
 {
+	PFS_ASSERT(_pimpl && _pimpl->_driver);
 	statement_data * d = _pimpl->_driver->prepare(*_pimpl, sql);
+
 	if (d) {
 		statement sth(d);
 		sth._pimpl->_bindCursor = 0; // reset counter of bind parameters

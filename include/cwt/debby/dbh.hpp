@@ -22,14 +22,24 @@ class handler;
 
 class handler
 {
-	PFS_PIMPL_INLINE(handler, handler_data);
+	pfs::shared_ptr<handler_data> _pimpl;
 
 protected:
+	struct impl_deleter {
+		void operator () (handler_data * p) const {
+			if (p && p->_driver) {
+				p->_driver->close(p);
+				p->_driver = nullptr;
+			}
+		}
+	};
 
-	handler (handler_data * p) : _pimpl(p) {}
+	//handler (handler_data * p) : _pimpl(p, impl_deleter()) {}
 
 public:
-	handler () : _pimpl(new handler_data) {}
+	handler () : _pimpl(/*new handler_data, impl_deleter()*/) {}
+	handler (const handler & other) : _pimpl(other._pimpl) {}
+
 	~handler () { close(); }
 
 	bool open (const pfs::string & uri);

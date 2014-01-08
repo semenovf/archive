@@ -17,27 +17,30 @@ class handler;
 class statement
 {
 	friend class handler;
-	PFS_PIMPL_INLINE(statement, statement_data);
+
+	pfs::shared_ptr<statement_data> _pimpl;
 
 protected:
-	statement (statement_data * p) : _pimpl(p) {}
+	struct impl_deleter {
+		void operator () (statement_data * p) const {
+			if (p && p->_driver) {
+				p->_driver->closeStmt(p);
+			}
+		}
+	};
+
+	statement (statement_data * p) : _pimpl(p, impl_deleter()) {}
 	statement () { PFS_ASSERT(true == false); }
 
 public:
 	~statement() { close(); }
 
 	void close ();
-
-	bool exec  ()
-		{ _pimpl->_bindCursor = 0; return _pimpl->_driver->execStmt(*_pimpl); }
-	bool fetchRowArray (pfs::vector<pfs::unitype> & row)
-		{ return _pimpl->_driver->fetchRowArray(*_pimpl, row); }
-	bool fetchRowHash (pfs::map<pfs::string, pfs::unitype> & row)
-		{ return _pimpl->_driver->fetchRowHash(*_pimpl, row); }
-
+	bool exec  ();
+	bool fetchRowArray (pfs::vector<pfs::unitype> & row);
+	bool fetchRowHash (pfs::map<pfs::string, pfs::unitype> & row);
 	statement & bind (const pfs::unitype & param);
-	statement & bind (size_t index, const pfs::unitype & param)
-		{ _pimpl->_driver->bind(*_pimpl, index, param); return *this; }
+	statement & bind (size_t index, const pfs::unitype & param);
 };
 
 }} // cwt::debby
