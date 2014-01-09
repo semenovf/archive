@@ -20,6 +20,33 @@ nodelist_impl::nodelist_impl (node_impl * nimpl)
     _timestamp = 0;
 }
 
+nodelist_impl::nodelist_impl (node_impl * n_impl, const pfs::string & name)
+	: _ref(1)
+{
+    _node_impl = n_impl;
+    if (_node_impl)
+        _node_impl->ref.ref();
+    _tagname = name;
+    _timestamp = 0;
+}
+
+
+nodelist_impl::nodelist_impl (node_impl * n_impl, const pfs::string & nsURI, const pfs::string & localName)
+    : _ref(1)
+{
+    _node_impl = n_impl;
+    if (_node_impl)
+        _node_impl->ref.ref();
+    _tagname   = localName;
+    _nsURI     = nsURI;
+    _timestamp = 0;
+}
+
+nodelist_impl::~nodelist_impl()
+{
+    if (node_impl && !node_impl->ref.deref())
+        delete node_impl;
+}
 
 node_impl * nodelist_impl::item (size_t index)
 {

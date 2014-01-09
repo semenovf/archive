@@ -24,12 +24,12 @@ public:
     bool specified () const;
 
     // Reimplemented from node_impl
-    void setNodeValue (const pfs::string& v);
+    void setNodeValue (const pfs::string & v);
     node_impl * cloneNode (bool deep = true);
     node::type nodeType () const { return node::AttributeNode; }
 
     // Variables
-    bool m_specified;
+    bool _specified;
 };
 
 

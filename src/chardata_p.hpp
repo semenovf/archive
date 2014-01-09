@@ -20,16 +20,15 @@ public:
 	chardata_impl (document_impl *, node_impl * parent, const pfs::string & data);
 	chardata_impl (chardata_impl * n, bool deep);
 
-    int dataLength () const;
-    pfs::string substringData (unsigned long offset, unsigned long count) const;
+    size_t dataLength () const;
+    pfs::string substringData (size_t offset, size_t count) const;
     void appendData  (const pfs::string & arg);
-    void insertData  (unsigned long offset, const pfs::string & arg);
-    void deleteData  (unsigned long offset, unsigned long count);
-    void replaceData (unsigned long offset, unsigned long count, const pfs::string & arg);
+    void insertData  (size_t offset, const pfs::string & arg);
+    void deleteData  (size_t offset, size_t count);
+    void replaceData (size_t offset, size_t count, const pfs::string & arg);
 
-    // Reimplemented from QDomNodePrivate
-    node::type nodeType () const { return node::CharacterDataNode; }
-    node_impl * cloneNode (bool deep = true);
+    virtual node::type nodeType () const { return node::CharacterDataNode; }
+    virtual node_impl * cloneNode (bool deep = true);
 };
 
 }} // cwt::dom

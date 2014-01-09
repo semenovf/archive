@@ -77,8 +77,9 @@ public:
 	bool hasAttributes () const;
 
 	void normalize ();
+
 	void setNodeValue (const pfs::string & value);
-	void setPrefix (const pfs::string & p);  // raises(DOMException)
+	void setPrefix    (const pfs::string & p);  // raises(DOMException)
 
 	node insertAfter  (const node & newChild, const node & refChild); // non-DOM
 	node insertBefore (const node & newChild, const node & refChild); // raises(DOMException)

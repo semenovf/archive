@@ -16,16 +16,18 @@ class entity_impl;
 
 class DLL_API entity : public node
 {
-//	pfs::string _publicId;     // readonly
-//	pfs::string _systemId;     // readonly
-//	pfs::string _notationName; // readonly
-//
-//public:
-//	entity () : node () {}
-//
-//	const pfs::string & publicId () const { return _publicId; }
-//	const pfs::string & systemId () const { return _systemId; }
-//	const pfs::string & notationName () const { return _notationName; }
+
+protected:
+	entity (entity_impl *);
+
+public:
+	entity ();
+	entity (const entity & other);
+	entity & operator = (const entity & other);
+
+	pfs::string publicId () const;
+	pfs::string systemId () const;
+	pfs::string notationName () const;
 };
 
 }} // cwt::dom

@@ -70,12 +70,11 @@ public:
 //     * by itself.
 //     */
     void setAppendToParent (bool b) { _appendToParent = b; }
-//
-//    /**
-//     * Creates a copy of the map. It is a deep copy
-//     * that means that all children are cloned.
-//     */
-//    namednodemap_impl * clone (node_impl * parent);
+
+    /**
+     * Creates a deep copy (all children are cloned).
+     */
+    namednodemap_impl * clone (node_impl * parent);
 };
 
 

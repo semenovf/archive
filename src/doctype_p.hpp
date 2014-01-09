@@ -38,7 +38,6 @@ public:
     virtual node_impl * appendChild  (node_impl * newChild);
 
     virtual node_impl * cloneNode (bool deep = true);
-
     virtual node::type nodeType() const { return node::DocumentTypeNode; }
 };
 

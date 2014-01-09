@@ -32,9 +32,9 @@ public:
 
 public:
     nodelist_impl (node_impl *);
-//    nodelist_impl (node_impl *, const pfs::string & );
-//    nodelist_impl (node_impl *, const pfs::string &, const pfs::string &);
-//    ~nodelist_impl();
+    nodelist_impl (node_impl *, const pfs::string & );
+    nodelist_impl (node_impl *, const pfs::string &, const pfs::string &);
+    ~nodelist_impl();
 //
 //    bool operator == (const nodelist_impl &) const;
 //    bool operator != (const nodelist_impl &) const;

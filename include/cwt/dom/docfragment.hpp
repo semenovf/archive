@@ -16,6 +16,13 @@ class node;
 
 class DLL_API document_fragment : public node
 {
+protected:
+	document_fragment (document_fragment_impl *);
+
+public:
+	document_fragment ();
+	document_fragment (const document_fragment & other);
+	document_fragment & operator = (const document_fragment & other);
 };
 
 }} // cwt::dom

@@ -11,18 +11,18 @@
 
 namespace cwt { namespace dom {
 
-class node::impl;
-class document::impl;
+class node_impl;
+class chardata_impl;
+class document_impl;
 
-class comment::impl : public QDomCharacterDataPrivate
+class comment_impl : public chardata_impl
 {
 public:
-    impl(document::impl *, node::impl * parent, const pfs::string & val);
-    impl(impl* n, bool deep);
+	comment_impl (document_impl * d, node_impl * parent, const pfs::string & val);
+	comment_impl (comment_impl * n, bool deep);
 
-    // Reimplemented from QDomNodePrivate
-    node::impl * cloneNode(bool deep = true);
-    node::type nodeType() const { return node::CommentNode; }
+	virtual node_impl * cloneNode(bool deep = true);
+    virtual node::type nodeType() const { return node::CommentNode; }
 };
 
 }} // cwt::dom

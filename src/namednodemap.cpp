@@ -110,6 +110,24 @@ node_impl * namednodemap_impl::removeNamedItem (const pfs::string & name)
     return p;
 }
 
+namednodemap_impl * namednodemap_impl::clone (node_impl * p)
+{
+    namednodemap_impl * m = new namednodemap_impl(p);
+    m->_readonly = _readonly;
+    m->_appendToParent = _appendToParent;
+
+    pfs::map<pfs::string, node_impl*>::const_iterator it = _map.cbegin();
+
+    for (; it != _map.cend(); ++it) {
+        node_impl * new_node = it->second->cloneNode();
+        new_node->setParent(p);
+        m->setNamedItem(new_node);
+    }
+
+    m->_ref.deref();
+    return m;
+}
+
 namednodemap::namednodemap(namednodemap_impl * impl)
 {
     _pimpl = impl;

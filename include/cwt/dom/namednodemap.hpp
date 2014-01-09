@@ -39,11 +39,11 @@ public:
 		{ return getNamedItemNS(namespaceURI, localName); }
 	node getNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName) const;
 
-	node setNamedItem (const node & arg); // raises(DOMException)
-	node setNamedItemNS (const node & arg); //  raises(DOMException)
+	node setNamedItem (const node & arg);
+	node setNamedItemNS (const node & arg);
 
-	node removeNamedItem (const pfs::string & name); // raises(DOMException)
-	node removeNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName); // raises(DOMException);
+	node removeNamedItem (const pfs::string & name);
+	node removeNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName);
 
 	node item (size_t index) const;
 	size_t length () const;

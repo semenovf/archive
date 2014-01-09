@@ -17,8 +17,13 @@ class chardata;
 
 class DLL_API comment : public chardata
 {
+protected:
+	comment (comment_impl *);
+
 public:
-//	comment () : chardata() {}
+	comment ();
+	comment (const comment & other);
+	comment & operator = (const comment & other);
 };
 
 }} // cwt

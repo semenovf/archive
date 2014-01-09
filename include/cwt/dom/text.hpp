@@ -15,9 +15,15 @@ class text_impl;
 
 class text : public chardata
 {
+protected:
+	text (text_impl *);
+
 public:
-//	text () : chardata () {}
-//	text * splitText (size_t offset);  // raises(DOMException);
+	text ();
+	text (const chardata & other);
+	text & operator = (const text & other);
+
+	text splitText (size_t offset);
 };
 
 }} // cwt

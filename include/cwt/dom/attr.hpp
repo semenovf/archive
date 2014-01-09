@@ -18,12 +18,19 @@ class element;
 
 class DLL_API attr : public node
 {
+protected:
+	attr (attr_impl *);
+
 public:
-//	pfs::string name () const { return node::nodeName (); }
-//	bool specified () const;
-//	pfs::string value () const { return node::nodeValue (); }
-//	void setValue (const pfs::string & v); // raises(DOMException)
-//	element ownerElement () const;
+	attr ();
+	attr (const attr & other);
+	attr & operator = (const attr & other);
+
+	pfs::string name () const;
+	bool specified () const;
+	pfs::string value () const;
+	void setValue (const pfs::string & v);
+	element ownerElement () const;
 };
 
 }} // cwt::dom

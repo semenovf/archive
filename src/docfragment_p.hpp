@@ -11,18 +11,17 @@
 
 namespace cwt { namespace dom {
 
-class node::impl;
-class document::impl;
+class node_impl;
+class document_impl;
 
-class document_fragment::impl : public node::impl
+class document_fragment_impl : public node_impl
 {
 public:
-    impl (document::impl *, node::impl* parent = 0);
-    impl (node::impl* n, bool deep);
+	document_fragment_impl (document_impl * d, node_impl * p);
+	document_fragment_impl (node_impl * n, bool deep);
 
-    // Reimplemented from node::impl
-    virtual node::impl* cloneNode(bool deep = true);
-    node::type nodeType() const { return node::DocumentFragmentNode; }
+    virtual node_impl* cloneNode (bool deep = true);
+    virtual node::type nodeType() const { return node::DocumentFragmentNode; }
 };
 
 }} // cwt::dom
