@@ -22,23 +22,31 @@ class statement
 
 protected:
 	struct impl_deleter {
-		void operator () (statement_data * p) const {
+		void operator () (statement_data * p) const
+		{
 			if (p && p->_driver) {
 				p->_driver->closeStmt(p);
+				p->_driver = nullptr;
 			}
 		}
 	};
 
 	statement (statement_data * p) : _pimpl(p, impl_deleter()) {}
-	statement () { PFS_ASSERT(true == false); }
+	statement () : _pimpl() { PFS_ASSERT(true == false); }
 
 public:
-	~statement() { close(); }
+	statement (const statement & other) : _pimpl(other._pimpl) {}
+	statement & operator = (const statement & other)
+	{
+		_pimpl = other._pimpl;
+		return *this;
+	}
+	~statement () { /*close();*/ }
 
 	void close ();
 	bool exec  ();
-	bool fetchRowArray (pfs::vector<pfs::unitype> & row);
-	bool fetchRowHash (pfs::map<pfs::string, pfs::unitype> & row);
+	pfs::vector<pfs::unitype> fetchRowArray ();
+	pfs::map<pfs::string, pfs::unitype> fetchRowHash ();
 	statement & bind (const pfs::unitype & param);
 	statement & bind (size_t index, const pfs::unitype & param);
 };

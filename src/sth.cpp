@@ -22,18 +22,28 @@ void statement::close ()
 
 bool statement::exec  ()
 {
-	_pimpl->_bindCursor = 0;
-	return _pimpl->_driver->execStmt(*_pimpl);
+	if (_pimpl && _pimpl->_driver) {
+		_pimpl->_bindCursor = 0;
+		return _pimpl->_driver->execStmt(*_pimpl);
+	}
+
+	return false;
 }
 
-bool statement::fetchRowArray (pfs::vector<pfs::unitype> & row)
+pfs::vector<pfs::unitype> statement::fetchRowArray ()
 {
-	return _pimpl->_driver->fetchRowArray(*_pimpl, row);
+	pfs::vector<pfs::unitype> r;
+	if (_pimpl && _pimpl->_driver)
+		_pimpl->_driver->fetchRowArray(*_pimpl, r);
+	return r;
 }
 
-bool statement::fetchRowHash (pfs::map<pfs::string, pfs::unitype> & row)
+pfs::map<pfs::string, pfs::unitype> statement::fetchRowHash ()
 {
-	return _pimpl->_driver->fetchRowHash(*_pimpl, row);
+	pfs::map<pfs::string, pfs::unitype> r;
+	if (_pimpl && _pimpl->_driver)
+		_pimpl->_driver->fetchRowHash(*_pimpl, r);
+	return r;
 }
 
 
@@ -51,6 +61,7 @@ statement & statement::bind (size_t index, const pfs::unitype & param)
 {
 	PFS_ASSERT(_pimpl);
 	PFS_ASSERT(_pimpl->_driver);
+
 	_pimpl->_driver->bind(*_pimpl, index, param);
 	return *this;
 }

@@ -43,13 +43,9 @@ enum type {
 	  Null
 	, Bool
 	, Boolean = Bool
-	, Byte
-	, Short
-	, Int
-	, Integer = Int
-	, Long
-	, Float
+	, Integer
 	, Double
+	, Float   = Double
 	, String
 	, Text    = String
 	, Blob

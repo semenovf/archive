@@ -26,7 +26,8 @@ class handler
 
 protected:
 	struct impl_deleter {
-		void operator () (handler_data * p) const {
+		void operator () (handler_data * p) const
+		{
 			if (p && p->_driver) {
 				p->_driver->close(p);
 				p->_driver = nullptr;
@@ -37,10 +38,10 @@ protected:
 	//handler (handler_data * p) : _pimpl(p, impl_deleter()) {}
 
 public:
-	handler () : _pimpl(/*new handler_data, impl_deleter()*/) {}
+	handler () : _pimpl() {}
 	handler (const handler & other) : _pimpl(other._pimpl) {}
 
-	~handler () { close(); }
+	~handler () { /*close();*/ }
 
 	bool open (const pfs::string & uri);
 	bool opened() const { return _pimpl && _pimpl->_driver != nullptr; }

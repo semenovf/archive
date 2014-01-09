@@ -59,7 +59,6 @@ void handler::close ()
 {
 	if (_pimpl && _pimpl->_driver) {
 		_pimpl->_driver->close(_pimpl.get());
-		//_pimpl->_driver = nullptr;
 		_pimpl.reset();
 	}
 }
