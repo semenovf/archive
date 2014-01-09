@@ -26,7 +26,7 @@ enum unitype_type {
 	Null, Bool, Boolean = Bool, Integer, Float, String, Blob
 };
 
-struct unidata
+struct DLL_API unidata
 {
 	virtual ~unidata () {}
 	virtual unitype_type  type () const { return Null; }
@@ -131,7 +131,17 @@ struct DLL_API unidata_blob : public unidata
 
 class DLL_API unitype
 {
+// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 	PFS_PIMPL_INLINE(unitype, unidata);
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 public:
 	unitype ()                    : _pimpl (new unidata_null) {}
