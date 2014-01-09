@@ -220,13 +220,13 @@ cwt::debby::handler_data * s3_dbd_open(const pfs::string & path
 		++__refs;
 	}
 
-    return reinterpret_cast<cwt::debby::handler_data*>(dbh);
+    return static_cast<cwt::debby::handler_data*>(dbh);
 }
 
 
 static void s3_dbd_close (cwt::debby::handler_data * dbh)
 {
-	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler*>(dbh);
+	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler*>(dbh);
 
 	if (!dbh )
 		return;
@@ -259,7 +259,7 @@ bool s3_dbd_set_auto_commit (cwt::debby::handler_data & , bool)
 
 bool s3_dbd_auto_commit(cwt::debby::handler_data & dbh)
 {
-	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
 	return 0 == sqlite3_get_autocommit(s3_dbh->_dbh_native)
 			? false
 			: true;
@@ -267,7 +267,7 @@ bool s3_dbd_auto_commit(cwt::debby::handler_data & dbh)
 
 long_t s3_dbd_errno (cwt::debby::handler_data & dbh)
 {
-	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
 	int rc = sqlite3_errcode(s3_dbh->_dbh_native);
 	if (rc == SQLITE_OK
 			|| rc == SQLITE_DONE
@@ -286,7 +286,7 @@ pfs::string s3_dbd_strerror (cwt::debby::handler_data & dbh)
 
 bool s3_dbd_query (cwt::debby::handler_data & dbh, const pfs::string & sql)
 {
-	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
 	char * errmsg;
 
 	int rc = sqlite3_exec(s3_dbh->_dbh_native, sql.c_str(), NULL, NULL, & errmsg);
@@ -305,7 +305,7 @@ bool s3_dbd_query (cwt::debby::handler_data & dbh, const pfs::string & sql)
 
 cwt::debby::statement_data * s3_dbd_prepare(cwt::debby::handler_data & dbh, const pfs::string & sql)
 {
-	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
 	sqlite3_stmt * sth_native = nullptr;
 
 	int rc = sqlite3_prepare_v2(
@@ -329,19 +329,19 @@ cwt::debby::statement_data * s3_dbd_prepare(cwt::debby::handler_data & dbh, cons
 //	if (column_count > 0) { /* SELECT statement */
 //	}
 
-	return reinterpret_cast<cwt::debby::statement_data*>(sth);
+	return static_cast<cwt::debby::statement_data*>(sth);
 }
 
 ulong_t s3_dbd_affected_rows (cwt::debby::handler_data & dbh)
 {
-	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
 	int nrows = sqlite3_changes(s3_dbh->_dbh_native);
 	return nrows < 0 ? ulong_t(0) : ulong_t(nrows);
 }
 
 ulong_t s3_dbd_last_id (cwt::debby::handler_data & dbh)
 {
-	Sqlite3DbHandler * s3_dbh = reinterpret_cast<Sqlite3DbHandler *>(& dbh);
+	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
 	return ulong_t(sqlite3_last_insert_rowid(s3_dbh->_dbh_native));
 }
 
@@ -421,7 +421,7 @@ static cwt::debby::type __map_column_type (const pfs::string & ct)
 			|| ct.startsWith("DATETIME")
 			|| ct.startsWith("TIME")) {
 
-		return cwt::debby::Long;
+		return cwt::debby::Integer;
 
 	} else if (ct.startsWith("REAL")
 			|| ct.startsWith("DOUBLE")
@@ -527,7 +527,7 @@ bool s3_dbd_meta (cwt::debby::handler_data & dbh, const pfs::string & table, pfs
 void s3_dbd_stmt_close (cwt::debby::statement_data * sth)
 {
 	if (sth) {
-		Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(sth);
+		Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(sth);
 
 		int rc = sqlite3_finalize(s3_sth->_sth_native);
 		if (rc != SQLITE_OK) {
@@ -536,13 +536,12 @@ void s3_dbd_stmt_close (cwt::debby::statement_data * sth)
 		s3_sth->_sth_native = nullptr;
 		s3_sth->_driver = nullptr;
 		delete s3_sth;
-		s3_sth = nullptr;
 	}
 }
 
 bool s3_dbd_stmt_exec (cwt::debby::statement_data & sth)
 {
-	Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(& sth);
+	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
 	bool r = true;
 
 	if (sqlite3_column_count(s3_sth->_sth_native) > 0) { // SELECT statement
@@ -595,7 +594,7 @@ static int __fetch_helper (Sqlite3DbStatement * s3_sth)
 
 bool s3_dbd_stmt_fetch_row_array (cwt::debby::statement_data & sth, pfs::vector<pfs::unitype> & row)
 {
-	Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(& sth);
+	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
 	int rc = __fetch_helper(s3_sth);
 
 	if (rc == SQLITE_ROW) {
@@ -636,7 +635,7 @@ bool s3_dbd_stmt_fetch_row_array (cwt::debby::statement_data & sth, pfs::vector<
 
 bool s3_dbd_stmt_fetch_row_hash (cwt::debby::statement_data & sth, pfs::map<pfs::string, pfs::unitype> & row)
 {
-	Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(& sth);
+	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
 	int rc = __fetch_helper(s3_sth);
 
 	if (rc == SQLITE_ROW) {
@@ -681,7 +680,7 @@ bool s3_dbd_stmt_fetch_row_hash (cwt::debby::statement_data & sth, pfs::map<pfs:
 bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs::unitype & param)
 {
 	int rc;
-	Sqlite3DbStatement * s3_sth = reinterpret_cast<Sqlite3DbStatement*>(& sth);
+	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
 
 	/* 'sqlite3_bind_parameter_count' routine actually
 	 * returns the index of the largest (rightmost) parameter */

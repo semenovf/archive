@@ -1,18 +1,18 @@
 #include <cwt/test.hpp>
+#include <pfs/string.hpp>
 #include <cwt/safeformat.hpp>
 #include <cwt/fs.hpp>
 #include <cwt/debby/dbd.hpp>
 #include <cwt/debby/dbh.hpp>
 #include <cwt/debby/sth.hpp>
 
-using namespace cwt;
-using namespace cwt::debby;
-
 void test_assignment()
 {
 	pfs::string dburi("sqlite3:///tmp/test.db?mode=rwc");
 
-	while (true) {
+	int n = 1000;
+
+	while (--n) {
 		cwt::debby::handler dbh;
 		TEST_FAIL(dbh.open(dburi));
 		TEST_FAIL(dbh.opened());
@@ -99,8 +99,11 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	pfs::vector<pfs::unitype> result;
-	while (sth.fetchRowArray(result))
-		;
+	pfs::vector<pfs::unitype> row;
+
+	result.clear();
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 3);
 	TEST_OK(result[0].toInt() == 1);
@@ -114,8 +117,8 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 4);
 	TEST_OK(result[0].toInt() == 1);
@@ -131,8 +134,8 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 4);
 	TEST_OK(result[0].toInt() == 1);
@@ -147,8 +150,8 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 2);
 	TEST_OK(result[0].toInt() == 1);
@@ -161,8 +164,8 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 3);
 	TEST_OK(result[0].toInt() == 1);
@@ -176,8 +179,9 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
+
 	TEST_FAIL(result.size() == 3);
 	TEST_OK(result[0].toInt() == 1);
 	TEST_OK(result[1].toInt() == 2);
@@ -191,8 +195,9 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
+
 	TEST_FAIL(result.size() == 1);
 	TEST_OK(result[0].toInt() == 4);
 
@@ -204,8 +209,9 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
+
 	TEST_FAIL(result.size() == 3);
 	TEST_OK(result[0].toInt() == 1);
 	TEST_OK(result[1].toInt() == 1);
@@ -218,8 +224,9 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
+
 	TEST_FAIL(result.size() == 4);
 	TEST_OK(result[0].toInt() == 4);
 	TEST_OK(result[1].toInt() == 1);
@@ -233,8 +240,9 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
+
 	TEST_FAIL(result.size() == 4);
 	TEST_OK(result[0].toInt() == 4);
 	TEST_OK(result[1].toInt() == 2);
@@ -248,8 +256,9 @@ void test_sqlite3_collation()
 	TEST_OK(sth.exec());
 
 	result.clear();
-	while (sth.fetchRowArray(result))
-		;
+	while (!(row = sth.fetchRowArray()).isEmpty())
+		result.append(row[0]);
+
 	TEST_FAIL(result.size() == 4);
 	TEST_OK(result[0].toInt() == 2);
 	TEST_OK(result[1].toInt() == 4);
@@ -319,18 +328,15 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(98);
+    BEGIN_TESTS(5084);
 
     cwt::fs fs;
-
     fs.unlink(_l1("/tmp/test.db"));
 
-    test_assignment();
-
-if (0) {
+	test_assignment();
     test_base();
     test_sqlite3_collation();
     test_columns();
-}
+
     END_TESTS;
 }
