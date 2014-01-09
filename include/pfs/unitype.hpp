@@ -37,6 +37,8 @@ struct unidata
 	virtual bytearray toBlob   (bool & ok) const { ok = false; return bytearray(); }
 };
 
+typedef unidata unidata_null;
+
 struct DLL_API unidata_boolean : public unidata
 {
 	bool _value;
@@ -132,7 +134,7 @@ class DLL_API unitype
 	PFS_PIMPL_INLINE(unitype, unidata);
 
 public:
-	unitype ()                    : _pimpl () {}
+	unitype ()                    : _pimpl (new unidata_null) {}
 	unitype (bool v)              : _pimpl (new unidata_boolean(v)) { }
 	unitype (char v)              : _pimpl (new unidata_long(long_t(v))) { }
 	unitype (byte_t v)            : _pimpl (new unidata_long(long_t(v))) { }
