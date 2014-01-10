@@ -1,5 +1,5 @@
 #include <cwt/test.hpp>
-#include <cwt/xml.hpp>
+#include <cwt/xml/sax.hpp>
 #include <iostream>
 
 static const char * xml_data =

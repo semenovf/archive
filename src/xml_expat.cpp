@@ -36,12 +36,12 @@ reader::impl::impl ()
 
 //    XML_SetExternalEntityRefHandler(_parser);
 //    XML_SetExternalEntityRefHandlerArg(_parser);
-//    XML_SetSkippedEntityHandler(_parser);
+    XML_SetSkippedEntityHandler(_parser, xml_skippedEntityHandler);
 //    XML_SetUnknownEncodingHandler(_parser);
 
 // decl handlers
-//    XML_SetStartNamespaceDeclHandler(_parser);
-//    XML_SetEndNamespaceDeclHandler(_parser);
+    XML_SetStartNamespaceDeclHandler(_parser, xml_startNamespaceDeclHandler);
+    XML_SetEndNamespaceDeclHandler(_parser, xml_endNamespaceDeclHandler);
 //    XML_SetNamespaceDeclHandler(_parser);
     XML_SetXmlDeclHandler(_parser, xml_xmlDeclHandler);
 //    XML_SetStartDoctypeDeclHandler(_parser);
@@ -161,6 +161,18 @@ void XMLCALL reader::impl::xml_defaultHandler (
 	}
 }
 
+void XMLCALL reader::impl::xml_skippedEntityHandler (
+		  void * readerImpl
+		, const XML_Char * entityName
+		, int is_parameter_entity)
+{
+	reader::impl * p = static_cast<reader::impl *>(readerImpl);
+	if (p->_handlers) {
+		p->_handlers->skippedEntity(pfs::string::fromUtf8(entityName), is_parameter_entity != 0);
+	}
+}
+
+
 // The way to distinguish is that the version parameter will be NULL for text declarations.
 // The encoding parameter may be NULL for an XML declaration.
 // The standalone argument will contain -1, 0, or 1 indicating respectively
@@ -196,6 +208,27 @@ void XMLCALL reader::impl::xml_xmlDeclHandler (
 
 	if (!p->_acceptVersion(major, minor)) {
 		XML_StopParser(p->_parser, XML_FALSE);
+	}
+}
+
+void XMLCALL reader::impl::xml_startNamespaceDeclHandler (
+		  void * readerImpl
+		, const XML_Char * prefix
+		, const XML_Char * uri)
+{
+	reader::impl * p = static_cast<reader::impl *>(readerImpl);
+	if (p->_handlers) {
+		p->_handlers->startNamespaceDecl(pfs::string::fromUtf8(prefix), pfs::string::fromUtf8(uri));
+	}
+}
+
+void XMLCALL reader::impl::xml_endNamespaceDeclHandler (
+		  void * readerImpl
+		, const XML_Char * prefix)
+{
+	reader::impl * p = static_cast<reader::impl *>(readerImpl);
+	if (p->_handlers) {
+		p->_handlers->endNamespaceDecl(pfs::string::fromUtf8(prefix));
 	}
 }
 

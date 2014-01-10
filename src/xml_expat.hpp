@@ -73,11 +73,25 @@ public:
 	        , const XML_Char * s
 	        , int len);
 
+	static void XMLCALL xml_skippedEntityHandler (
+			  void * readerImpl
+			, const XML_Char * entityName
+			, int is_parameter_entity);
+
 	static void	XMLCALL xml_xmlDeclHandler (
-			void * readerImpl
+			  void * readerImpl
 			, const XML_Char * version
 			, const XML_Char * encoding
 			, int standalone);
+
+	static void XMLCALL xml_startNamespaceDeclHandler (
+			  void * readerImpl
+			, const XML_Char * prefix
+			, const XML_Char * uri);
+
+	static void XMLCALL xml_endNamespaceDeclHandler (
+			  void * readerImpl
+			, const XML_Char * prefix);
 };
 
 inline reader::impl::~impl ()

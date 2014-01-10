@@ -4,21 +4,23 @@
  * @date Dec 10, 2013
  */
 
-#ifndef __CWT_XML_DOCUMENT_HPP__
-#define __CWT_XML_DOCUMENT_HPP__
+#ifndef __CWT_XML_DOM_P_HPP__
+#define __CWT_XML_DOM_P_HPP__
 
-#include <cwt/xml.hpp>
+#include "../include/cwt/xml/sax.hpp"
 #include <cwt/dom/document.hpp>
 #include <cwt/dom/doctype.hpp>
 #include <cwt/dom/exception.hpp>
 
 namespace cwt { namespace xml {
 
-class DLL_API document_builder : public handlers
+class document_builder : public handlers
 {
 public:
-	document_builder () : handlers() {}
+	cwt::dom::document _doc;
 
+public:
+	document_builder () : handlers() {}
 	virtual ~document_builder () {}
 
 	virtual void startElement (const pfs::string &, const pfs::map<pfs::string, pfs::string> &);
@@ -29,13 +31,11 @@ public:
 	virtual void startCdataSection ();
 	virtual void endCdataSection ();
 	virtual void defaultData (const pfs::string &);
-
-	static cwt::dom::document * createDocument (const pfs::string & namespaceURI
-			, const pfs::string & qualifiedName
-			, const cwt::dom::doctype & doctype); // raises(DOMException);
-
+	virtual void skippedEntity (const pfs::string & entityName, bool is_parameter_entity);
+	virtual void startNamespaceDecl (const pfs::string & prefix, const pfs::string & uri);
+	virtual void endNamespaceDecl (const pfs::string & prefix);
 };
 
-} // cwt::xml
+}} // cwt::xml
 
-#endif /* __XML_CWT_DOCUMENT_HPP__ */
+#endif /* __CWT_XML_DOM_P_HPP__ */
