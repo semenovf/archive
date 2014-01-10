@@ -26,11 +26,11 @@ namespace pfs {
 
 class DLL_API utf8string
 {
-//	template <typename _Str>
-//	friend class ucchar_ref_basic;
-//
-//	template <typename _Str, typename _Ref>
-//	friend class ucchar_ptr_basic;
+	template <typename _Str>
+	friend class ucchar_ref_basic;
+
+	template <typename _Str, typename _Ref>
+	friend class ucchar_ptr_basic;
 
 	friend class ucchar_ref;
 	friend class ucchar_const_ref;

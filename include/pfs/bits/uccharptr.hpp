@@ -51,7 +51,7 @@ protected:
 
 public:
 	ucchar_ref_basic ()  : _pos(0), _owner(nullptr) {}
-	//ucchar_ref_basic (difference_type offset, _Str & owner);
+	ucchar_ref_basic (difference_type offset, _Str & owner);
 
 	// Allow ucchar_ref to ucchar_const_ref conversion
 	template<typename _Str2>

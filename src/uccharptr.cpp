@@ -55,8 +55,8 @@ static ucchar_ptr::difference_type __increment (
 	return p - first;
 }
 
-template <typename _utf8string>
-ucchar_ref_basic<_utf8string>::ucchar_ref_basic (difference_type offset, _utf8string & owner)
+template <typename _Str>
+ucchar_ref_basic<_Str>::ucchar_ref_basic (difference_type offset, _Str & owner)
 	: _pos(0), _owner(& owner)
 {
 	if (offset < 0)
@@ -88,7 +88,7 @@ ucchar ucchar_ref_basic<_Str>::value () const
 {
 	PFS_ASSERT(_pos >= 0 && size_t(_pos) < _owner->_pimpl->size());
 	ucchar r;
-	_Str::impl::const_pointer p = _owner->_pimpl->data();
+	typename _Str::impl::const_pointer p = _owner->_pimpl->data();
 	size_t nremain = _owner->_pimpl->size() - _pos;
 	PFS_ASSERT(r.decodeUtf8(p + _pos, nremain) > 0);
 	return r;
