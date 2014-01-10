@@ -26,13 +26,16 @@ namespace pfs {
 
 class DLL_API utf8string
 {
-	template <typename _Str>
-	friend class ucchar_ref_basic;
-
-	template <typename _Str, typename _Ref>
-	friend class ucchar_ptr_basic;
+//	template <typename _Str>
+//	friend class ucchar_ref_basic;
+//
+//	template <typename _Str, typename _Ref>
+//	friend class ucchar_ptr_basic;
 
 	friend class ucchar_ref;
+	friend class ucchar_const_ref;
+	friend class ucchar_ptr;
+	friend class ucchar_const_ptr;
 
 private:
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -107,7 +110,7 @@ public:
 	bool   isEmpty () const { return size() == 0; }
 	void   clear   ();
 
-	ucchar charAt (size_t pos) const { return cbegin()[pos]; }
+	ucchar charAt (size_t pos) const { return cbegin()[pos].value(); }
 	ucchar operator [] (size_t pos) const { return charAt(pos); }
 
     iterator begin () { return iterator(*this); }

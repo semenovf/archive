@@ -9,7 +9,6 @@
 
 namespace pfs {
 
-
 static ucchar_ptr::difference_type __increment (
 		  ucchar_ptr::difference_type codePointsCount
 		, size_t codeUnitsSize
@@ -70,19 +69,10 @@ ucchar_ref_basic<_utf8string>::ucchar_ref_basic (difference_type offset, _utf8st
 			, 0);
 }
 
-template <typename _utf8string>
-ucchar_ref_basic<_utf8string>::operator ucchar () const
-{
-	PFS_ASSERT(_pos >= 0 && size_t(_pos) < _owner->_pimpl->size());
-	ucchar r;
-	utf8string::impl::const_pointer p = _owner->_pimpl->data();
-	size_t nremain = _owner->_pimpl->size() - _pos;
-	PFS_ASSERT(r.decodeUtf8(p + _pos, nremain) > 0);
-	return r;
-}
-
-template ucchar_ref_basic<utf8string>::operator ucchar () const;
-template ucchar_ref_basic<const utf8string>::operator ucchar () const;
+/*
+template ucchar_ref_basic<utf8string>::ucchar_ref_basic (ucchar_ref_basic<utf8string>::difference_type offset, utf8string & owner);
+template ucchar_ref_basic<const utf8string>::ucchar_ref_basic (ucchar_ref_basic<const utf8string>::difference_type offset, const utf8string & owner);
+*/
 
 ucchar_ref::ucchar_ref (difference_type offset, utf8string & owner)
 	: ucchar_ref_basic<utf8string>(offset, owner)
@@ -91,6 +81,21 @@ ucchar_ref::ucchar_ref (difference_type offset, utf8string & owner)
 ucchar_const_ref::ucchar_const_ref (difference_type offset, const utf8string & owner)
 	: ucchar_ref_basic<const utf8string>(offset, owner)
 {}
+
+
+template <typename _Str>
+ucchar ucchar_ref_basic<_Str>::value () const
+{
+	PFS_ASSERT(_pos >= 0 && size_t(_pos) < _owner->_pimpl->size());
+	ucchar r;
+	_Str::impl::const_pointer p = _owner->_pimpl->data();
+	size_t nremain = _owner->_pimpl->size() - _pos;
+	PFS_ASSERT(r.decodeUtf8(p + _pos, nremain) > 0);
+	return r;
+}
+
+template ucchar ucchar_ref_basic<utf8string>::value () const;
+template ucchar ucchar_ref_basic<const utf8string>::value () const;
 
 ucchar_ref & ucchar_ref::operator = (ucchar c)
 {

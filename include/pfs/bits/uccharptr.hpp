@@ -44,22 +44,22 @@ public:
 protected:
 	difference_type _pos; // position in code_units/bytes,
 	                      // may be negative or greater than length of buffer.
-	_Str *   _owner;
+	_Str * _owner;
 
 	// used by ucchar_ptr_basic
 	ucchar_ref_basic (_Str & owner, difference_type pos) : _pos(pos), _owner(& owner) {}
 
 public:
 	ucchar_ref_basic ()  : _pos(0), _owner(nullptr) {}
-	ucchar_ref_basic (difference_type offset, _Str & owner);
+	//ucchar_ref_basic (difference_type offset, _Str & owner);
 
 	// Allow ucchar_ref to ucchar_const_ref conversion
 	template<typename _Str2>
     ucchar_ref_basic (const ucchar_ref_basic<_Str2> & other)
     	: _pos(other._pos), _owner(other._owner) {}
 
-	operator ucchar () const;
-	value_type value () const { return this->operator ucchar (); }
+	operator ucchar () const { return this->value(); }
+	value_type value () const;
 
 	const char * ptr () const { return _owner->data() + _pos; }
 
@@ -77,7 +77,7 @@ public:
     bool operator <= (const ucchar & o) const     { return ucchar(*this) <= o; }
 };
 
-class ucchar_const_ref : public ucchar_ref_basic<const utf8string>
+class DLL_API ucchar_const_ref : public ucchar_ref_basic<const utf8string>
 {
 public:
 	ucchar_const_ref () : ucchar_ref_basic() {};
@@ -85,7 +85,7 @@ public:
 	ucchar_const_ref (const ucchar_ref_basic & ref) : ucchar_ref_basic(ref) {}
 };
 
-class ucchar_ref : public ucchar_ref_basic<utf8string>
+class DLL_API ucchar_ref : public ucchar_ref_basic<utf8string>
 {
 public:
 	ucchar_ref () : ucchar_ref_basic() {};
@@ -201,7 +201,7 @@ public:
 };
 
 
-class ucchar_const_ptr : public ucchar_ptr_basic<const utf8string, ucchar_const_ref>
+class DLL_API ucchar_const_ptr : public ucchar_ptr_basic<const utf8string, ucchar_const_ref>
 {
 	friend class ucchar_ptr;
 public:
@@ -217,7 +217,7 @@ public:
 };
 
 
-class ucchar_ptr : public ucchar_ptr_basic<utf8string, ucchar_ref>
+class DLL_API ucchar_ptr : public ucchar_ptr_basic<utf8string, ucchar_ref>
 {
 	friend class ucchar_const_ptr;
 public:
