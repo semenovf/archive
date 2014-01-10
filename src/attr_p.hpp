@@ -17,21 +17,19 @@ class document_impl;
 class attr_impl : public node_impl
 {
 public:
+    bool _specified;
+
+public:
 	attr_impl (document_impl *, node_impl *, const pfs::string & name);
 	attr_impl (document_impl *, node_impl *, const pfs::string & nsURI, const pfs::string & qName);
 	attr_impl (attr_impl * n, bool deep);
 
     bool specified () const;
 
-    // Reimplemented from node_impl
     void setNodeValue (const pfs::string & v);
-    node_impl * cloneNode (bool deep = true);
-    node::type nodeType () const { return node::AttributeNode; }
-
-    // Variables
-    bool _specified;
+    virtual node_impl * cloneNode (bool deep = true);
+    virtual node::type nodeType () const { return node::AttributeNode; }
 };
-
 
 }} // cwt::dom
 

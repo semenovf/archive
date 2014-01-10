@@ -11,12 +11,14 @@
 
 namespace cwt { namespace dom {
 
-class comment_impl;
-class node;
+class document;
 class chardata;
+class comment_impl;
 
 class DLL_API comment : public chardata
 {
+	friend class document;
+
 protected:
 	comment (comment_impl *);
 

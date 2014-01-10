@@ -1,5 +1,12 @@
 #include <cwt/test.hpp>
-#include <pfs.hpp>
+#include <cwt/dom.hpp>
+
+void test_basic ()
+{
+	cwt::dom::document doc;
+	doc.createElement(_l1("html"));
+
+}
 
 int main(int argc, char *argv[])
 {
@@ -7,7 +14,7 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
     BEGIN_TESTS(1);
 
-    TEST_OK(true == true);
+    test_basic();
 
     END_TESTS;
 }

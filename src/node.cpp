@@ -1,6 +1,7 @@
 #include "node_p.hpp"
 #include "nodelist_p.hpp"
 #include "namednodemap_p.hpp"
+#include "attr_p.hpp"
 #include "element_p.hpp"
 #include "document_p.hpp"
 #include "domimpl_p.hpp"
@@ -11,56 +12,69 @@ namespace cwt { namespace dom {
 
 inline void node_impl::setOwnerDocument (document_impl * doc)
 {
-    ownerNode = doc;
-    hasParent = false;
+    _ownerNode = doc;
+    _hasParent = false;
 }
 
+node_impl::node_impl(document_impl * d, node_impl * parent) : ref(1)
+{
+    if (parent)
+        setParent (parent);
+    else
+        setOwnerDocument (d);
 
-node_impl::node_impl(node_impl *n, bool deep)
+    _prev  = nullptr;
+    _next  = nullptr;
+    _first = nullptr;
+    _last  = nullptr;
+    _createdWithDom1Interface = true;
+}
+
+node_impl::node_impl (node_impl * n, bool deep)
 	: ref(1)
 {
     setOwnerDocument(n->ownerDocument());
-    prev = 0;
-    next = 0;
-    first = 0;
-    last = 0;
+    _prev  = nullptr;
+    _next  = nullptr;
+    _first = nullptr;
+    _last  = nullptr;
 
-    name = n->name;
-    value = n->value;
-    prefix = n->prefix;
-    namespaceURI = n->namespaceURI;
-    createdWithDom1Interface = n->createdWithDom1Interface;
+    _name = n->_name;
+    _value = n->_value;
+    _prefix = n->_prefix;
+    _namespaceURI = n->_namespaceURI;
+    _createdWithDom1Interface = n->_createdWithDom1Interface;
 
     if (!deep)
         return;
 
-    for (node_impl* x = n->first; x; x = x->next)
+    for (node_impl * x = n->_first; x; x = x->_next)
         appendChild(x->cloneNode(true));
 }
 
 node_impl::~node_impl()
 {
-    node_impl* p = first;
-    node_impl* n;
+    node_impl * p = _first;
+    node_impl * n;
 
     while (p) {
-        n = p->next;
+        n = p->_next;
         if (!p->ref.deref())
             delete p;
         else
             p->setNoParent();
         p = n;
     }
-    first = 0;
-    last = 0;
+    _first = 0;
+    _last = 0;
 }
 
 document_impl * node_impl::ownerDocument()
 {
     node_impl * p = this;
     while (p && !p->isDocument()) {
-        if (!p->hasParent)
-            return (document_impl *)p->ownerNode;
+        if (!p->_hasParent)
+            return (document_impl *)p->_ownerNode;
         p = p->parent();
     }
 
@@ -89,45 +103,45 @@ node_impl * node_impl::insertAfter(node_impl * newChild, node_impl * refChild)
         return 0;
 
     // "mark lists as dirty"
-    document_impl *const doc = ownerDocument();
+    document_impl * const doc = ownerDocument();
     if(doc)
-        ++doc->nodeListTime;
+        ++doc->_nodeListTime;
 
     // Special handling for inserting a fragment. We just insert
     // all elements of the fragment instead of the fragment itself.
     if (newChild->isDocumentFragment()) {
         // Fragment is empty ?
-        if (newChild->first == 0)
+        if (newChild->_first == 0)
             return newChild;
 
         // New parent
-        node_impl* n = newChild->first;
+        node_impl* n = newChild->_first;
         while (n) {
             n->setParent(this);
-            n = n->next;
+            n = n->_next;
         }
 
         // Insert at the end
-        if (!refChild || refChild->next == 0) {
-            if (last)
-                last->next = newChild->first;
-            newChild->first->prev = last;
-            if (!first)
-                first = newChild->first;
-            last = newChild->last;
+        if (!refChild || refChild->_next == 0) {
+            if (_last)
+                _last->_next = newChild->_first;
+            newChild->_first->_prev = _last;
+            if (!_first)
+                _first = newChild->_first;
+            _last = newChild->_last;
         } else { // Insert in the middle
-            newChild->first->prev = refChild;
-            newChild->last->next = refChild->next;
-            refChild->next->prev = newChild->last;
-            refChild->next = newChild->first;
+            newChild->_first->_prev = refChild;
+            newChild->_last->_next = refChild->_next;
+            refChild->_next->_prev = newChild->_last;
+            refChild->_next = newChild->_first;
         }
 
         // No need to increase the reference since document_fragment
         // does not decrease the reference.
 
         // Remove the nodes from the fragment
-        newChild->first = 0;
-        newChild->last = 0;
+        newChild->_first = 0;
+        newChild->_last = 0;
         return newChild;
     }
 
@@ -143,29 +157,29 @@ node_impl * node_impl::insertAfter(node_impl * newChild, node_impl * refChild)
 
     // Insert at the end
     if (!refChild) {
-        if (last)
-            last->next = newChild;
-        newChild->prev = last;
-        if (!first)
-            first = newChild;
-        last = newChild;
+        if (_last)
+            _last->_next = newChild;
+        newChild->_prev = _last;
+        if (!_first)
+            _first = newChild;
+        _last = newChild;
         return newChild;
     }
 
-    if (refChild->next == 0) {
-        if (last)
-            last->next = newChild;
-        newChild->prev = last;
-        if (!first)
-            first = newChild;
-        last = newChild;
+    if (refChild->_next == 0) {
+        if (_last)
+            _last->_next = newChild;
+        newChild->_prev = _last;
+        if (!_first)
+            _first = newChild;
+        _last = newChild;
         return newChild;
     }
 
-    newChild->prev = refChild;
-    newChild->next = refChild->next;
-    refChild->next->prev = newChild;
-    refChild->next = newChild;
+    newChild->_prev = refChild;
+    newChild->_next = refChild->_next;
+    refChild->_next->_prev = newChild;
+    refChild->_next = newChild;
 
     return newChild;
 }
@@ -186,45 +200,45 @@ node_impl * node_impl::insertBefore(node_impl * newChild, node_impl * refChild)
 
     // "mark lists as dirty"
     document_impl * const doc = ownerDocument();
-    if(doc)
-        doc->nodeListTime++;
+    if (doc)
+        ++doc->_nodeListTime;
 
     // Special handling for inserting a fragment. We just insert
     // all elements of the fragment instead of the fragment itself.
     if (newChild->isDocumentFragment()) {
         // Fragment is empty ?
-        if (newChild->first == 0)
+        if (newChild->_first == 0)
             return newChild;
 
         // New parent
-        node_impl * n = newChild->first;
+        node_impl * n = newChild->_first;
         while (n)  {
             n->setParent(this);
-            n = n->next;
+            n = n->_next;
         }
 
         // Insert at the beginning ?
-        if (!refChild || refChild->prev == 0) {
-            if (first)
-                first->prev = newChild->last;
-            newChild->last->next = first;
-            if (!last)
-                last = newChild->last;
-            first = newChild->first;
+        if (!refChild || refChild->_prev == 0) {
+            if (_first)
+                _first->_prev = newChild->_last;
+            newChild->_last->_next = _first;
+            if (!_last)
+                _last = newChild->_last;
+            _first = newChild->_first;
         } else {
             // Insert in the middle
-            newChild->last->next = refChild;
-            newChild->first->prev = refChild->prev;
-            refChild->prev->next = newChild->first;
-            refChild->prev = newChild->last;
+            newChild->_last->_next = refChild;
+            newChild->_first->_prev = refChild->_prev;
+            refChild->_prev->_next = newChild->_first;
+            refChild->_prev = newChild->_last;
         }
 
         // No need to increase the reference since document_fragment
         // does not decrease the reference.
 
         // Remove the nodes from the fragment
-        newChild->first = 0;
-        newChild->last = 0;
+        newChild->_first = 0;
+        newChild->_last = 0;
         return newChild;
     }
 
@@ -238,35 +252,35 @@ node_impl * node_impl::insertBefore(node_impl * newChild, node_impl * refChild)
     newChild->setParent(this);
 
     if (!refChild) {
-        if (first)
-            first->prev = newChild;
+        if (_first)
+            _first->_prev = newChild;
 
-        newChild->next = first;
+        newChild->_next = _first;
 
-        if (!last)
-            last = newChild;
+        if (!_last)
+            _last = newChild;
 
-        first = newChild;
+        _first = newChild;
         return newChild;
     }
 
-    if (refChild->prev == 0) {
-        if (first)
-            first->prev = newChild;
+    if (refChild->_prev == 0) {
+        if (_first)
+            _first->_prev = newChild;
 
-        newChild->next = first;
+        newChild->_next = _first;
 
-        if (!last)
-            last = newChild;
+        if (!_last)
+            _last = newChild;
 
-        first = newChild;
+        _first = newChild;
         return newChild;
     }
 
-    newChild->next = refChild;
-    newChild->prev = refChild->prev;
-    refChild->prev->next = newChild;
-    refChild->prev = newChild;
+    newChild->_next = refChild;
+    newChild->_prev = refChild->_prev;
+    refChild->_prev->_next = newChild;
+    refChild->_prev = newChild;
 
     return newChild;
 }
@@ -286,28 +300,28 @@ node_impl * node_impl::removeChild (node_impl * oldChild)
     document_impl * const doc = ownerDocument();
 
     if(doc)
-        ++doc->nodeListTime;
+        ++doc->_nodeListTime;
 
     // Perhaps oldChild was just created with "createElement" or that. In this case
     // its parent is document but it is not part of the documents child list.
-    if (oldChild->next == 0 && oldChild->prev == 0 && first != oldChild)
+    if (oldChild->_next == 0 && oldChild->_prev == 0 && _first != oldChild)
         return 0;
 
-    if (oldChild->next)
-        oldChild->next->prev = oldChild->prev;
+    if (oldChild->_next)
+        oldChild->_next->_prev = oldChild->_prev;
 
-    if (oldChild->prev)
-        oldChild->prev->next = oldChild->next;
+    if (oldChild->_prev)
+        oldChild->_prev->_next = oldChild->_next;
 
-    if (last == oldChild)
-        last = oldChild->prev;
+    if (_last == oldChild)
+        _last = oldChild->_prev;
 
-    if (first == oldChild)
-        first = oldChild->next;
+    if (_first == oldChild)
+        _first = oldChild->_next;
 
     oldChild->setNoParent();
-    oldChild->next = 0;
-    oldChild->prev = 0;
+    oldChild->_next = 0;
+    oldChild->_prev = 0;
 
     // We are no longer interested in the old node
     oldChild->ref.deref();
@@ -329,48 +343,48 @@ node_impl * node_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
     // mark lists as dirty
     document_impl * const doc = ownerDocument();
     if(doc)
-        ++doc->nodeListTime;
+        ++doc->_nodeListTime;
 
     // Special handling for inserting a fragment. We just insert
     // all elements of the fragment instead of the fragment itself.
     if (newChild->isDocumentFragment()) {
         // Fragment is empty ?
-        if (newChild->first == 0)
+        if (newChild->_first == 0)
             return newChild;
 
         // New parent
-        node_impl * n = newChild->first;
+        node_impl * n = newChild->_first;
 
         while (n) {
             n->setParent(this);
-            n = n->next;
+            n = n->_next;
         }
 
-        if (oldChild->next)
-            oldChild->next->prev = newChild->last;
+        if (oldChild->_next)
+            oldChild->_next->_prev = newChild->_last;
 
-        if (oldChild->prev)
-            oldChild->prev->next = newChild->first;
+        if (oldChild->_prev)
+            oldChild->_prev->_next = newChild->_first;
 
-        newChild->last->next = oldChild->next;
-        newChild->first->prev = oldChild->prev;
+        newChild->_last->_next = oldChild->_next;
+        newChild->_first->_prev = oldChild->_prev;
 
-        if (first == oldChild)
-            first = newChild->first;
+        if (_first == oldChild)
+            _first = newChild->_first;
 
-        if (last == oldChild)
-            last = newChild->last;
+        if (_last == oldChild)
+            _last = newChild->_last;
 
         oldChild->setNoParent();
-        oldChild->next = 0;
-        oldChild->prev = 0;
+        oldChild->_next = 0;
+        oldChild->_prev = 0;
 
         // No need to increase the reference since document_fragment
         // does not decrease the reference.
 
         // Remove the nodes from the fragment
-        newChild->first = 0;
-        newChild->last = 0;
+        newChild->_first = 0;
+        newChild->_last = 0;
 
         // We are no longer interested in the old node
         if (oldChild)
@@ -389,22 +403,22 @@ node_impl * node_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
 
     newChild->setParent(this);
 
-    if (oldChild->next)
-        oldChild->next->prev = newChild;
-    if (oldChild->prev)
-        oldChild->prev->next = newChild;
+    if (oldChild->_next)
+        oldChild->_next->_prev = newChild;
+    if (oldChild->_prev)
+        oldChild->_prev->_next = newChild;
 
-    newChild->next = oldChild->next;
-    newChild->prev = oldChild->prev;
+    newChild->_next = oldChild->_next;
+    newChild->_prev = oldChild->_prev;
 
-    if (first == oldChild)
-        first = newChild;
-    if (last == oldChild)
-        last = newChild;
+    if (_first == oldChild)
+        _first = newChild;
+    if (_last == oldChild)
+        _last = newChild;
 
     oldChild->setNoParent();
-    oldChild->next = 0;
-    oldChild->prev = 0;
+    oldChild->_next = 0;
+    oldChild->_prev = 0;
 
     // We are no longer interested in the old node
     if (oldChild)
@@ -416,22 +430,22 @@ node_impl * node_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
 
 void node_impl::normalize()
 {
-    node_impl * p = this->first;
+    node_impl * p = this->_first;
     text_impl * t = nullptr;
 
     while (p) {
         if (p->isText()) {
             if (t) {
-                node_impl * tmp = p->next;
+                node_impl * tmp = p->_next;
                 t->appendData(p->nodeValue());
                 this->removeChild(p);
                 p = tmp;
             } else {
                 t = (text_impl*)p;
-                p = p->next;
+                p = p->_next;
             }
         } else {
-            p = p->next;
+            p = p->_next;
             t = nullptr;
         }
     }
@@ -503,9 +517,9 @@ pfs::string node::nodeName () const
     if (!_pimpl)
     	return pfs::string();
 
-    if (!_pimpl->prefix.isEmpty())
-    	return _pimpl->prefix + pfs::ucchar(':') + _pimpl->name;
-    return _pimpl->name;
+    if (!_pimpl->_prefix.isEmpty())
+    	return _pimpl->_prefix + pfs::ucchar(':') + _pimpl->_name;
+    return _pimpl->_name;
 }
 
 /**
@@ -528,7 +542,7 @@ pfs::string node::nodeName () const
 pfs::string node::nodeValue () const
 {
     return _pimpl
-    		? _pimpl->value
+    		? _pimpl->_value
     		: pfs::string();
 }
 
@@ -556,14 +570,14 @@ V
 node node::firstChild () const
 {
     return _pimpl
-    		? node(_pimpl->first)
+    		? node(_pimpl->_first)
     		: node();
 }
 
 node node::lastChild () const
 {
     return _pimpl
-    		? node(_pimpl->last)
+    		? node(_pimpl->_last)
     		: node();
 }
 
@@ -571,7 +585,7 @@ node node::lastChild () const
 node node::previousSibling() const
 {
     return _pimpl
-    	? node(_pimpl->prev)
+    	? node(_pimpl->_prev)
         : node();
 }
 
@@ -579,21 +593,21 @@ node node::previousSibling() const
 node node::nextSibling() const
 {
     return _pimpl
-    	? node(_pimpl->next)
+    	? node(_pimpl->_next)
         : node();
 }
 
 pfs::string node::namespaceURI() const
 {
     return _pimpl
-    	? _pimpl->namespaceURI
+    	? _pimpl->_namespaceURI
         : pfs::string();
 }
 
 pfs::string node::prefix() const
 {
     return _pimpl
-        ? _pimpl->prefix
+        ? _pimpl->_prefix
         : pfs::string();
 }
 
@@ -608,9 +622,9 @@ pfs::string node::prefix() const
  */
 pfs::string node::localName() const
 {
-    if (!_pimpl || _pimpl->createdWithDom1Interface)
+    if (!_pimpl || _pimpl->_createdWithDom1Interface)
         return pfs::string();
-    return _pimpl->name;
+    return _pimpl->_name;
 }
 
 
@@ -725,10 +739,10 @@ void node::setNodeValue (const pfs::string & v)
  */
 void node::setPrefix (const pfs::string & pre)
 {
-    if (!_pimpl || _pimpl->prefix.isNull())
+    if (!_pimpl || _pimpl->_prefix.isNull())
         return;
     if (_pimpl->isAttr() || _pimpl->isElement())
-        _pimpl->prefix = pre;
+        _pimpl->_prefix = pre;
 }
 
 nodelist node::childNodes() const
@@ -750,7 +764,7 @@ bool node::hasAttributes() const
 bool node::hasChildNodes () const
 {
 	return _pimpl
-			? _pimpl->first != nullptr
+			? _pimpl->_first != nullptr
 			: false;
 }
 

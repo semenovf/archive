@@ -4,7 +4,15 @@
  * @date Dec 10, 2013
  */
 
+
 #include "node_p.hpp"
+#include "nodelist_p.hpp"
+#include "namednodemap_p.hpp"
+#include "attr_p.hpp"
+#include "element_p.hpp"
+#include "chardata_p.hpp"
+#include "text_p.hpp"
+#include "comment_p.hpp"
 #include "doctype_p.hpp"
 #include "document_p.hpp"
 #include "namednodemap_p.hpp"
@@ -22,7 +30,7 @@ document_type_impl::document_type_impl (document_type_impl * n, bool deep)
 {
     init();
 
-    node_impl * p = first;
+    node_impl * p = _first;
 
     while (p) {
         if (p->isEntity())
@@ -33,7 +41,7 @@ document_type_impl::document_type_impl (document_type_impl * n, bool deep)
         	// FIXME
             // Don't use normal insert function since we would create infinite recursion
             _notations->_map.insert(p->nodeName(), p); // was _map.inserMulti(...)
-        p = p->next;
+        p = p->_next;
     }
 }
 
@@ -50,7 +58,7 @@ document_type_impl::~document_type_impl()
 void document_type_impl::init ()
 {
     _entities = new namednodemap_impl(this);
-//    QT_TRY {
+//    try {
 	_notations = new namednodemap_impl(this);
 	_publicId.clear();
 	_systemId.clear();
@@ -58,9 +66,9 @@ void document_type_impl::init ()
 
 	_entities->setAppendToParent(true);
 	_notations->setAppendToParent(true);
-//    } QT_CATCH(...) {
+//    } catch(...) {
 //        delete entities;
-//        QT_RETHROW;
+//        throw ...;
 //    }
 }
 
@@ -100,7 +108,7 @@ namednodemap document_type::notations () const
 
 node_impl * document_type_impl::insertBefore (node_impl * newChild, node_impl * refChild)
 {
-    // Call the origianl implementation
+    // Call the original implementation
     node_impl * p = node_impl::insertBefore(newChild, refChild);
 
     // Update the maps
@@ -129,7 +137,7 @@ node_impl * document_type_impl::insertAfter (node_impl * newChild, node_impl * r
 node_impl * document_type_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
 {
     // Call the origianl implementation
-    node_impl* p = node_impl::replaceChild(newChild, oldChild);
+    node_impl * p = node_impl::replaceChild(newChild, oldChild);
 
     // Update the maps
     if (p) {

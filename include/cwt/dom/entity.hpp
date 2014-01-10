@@ -7,11 +7,10 @@
 #ifndef __CWT_DOM_ENTITY_HPP__
 #define __CWT_DOM_ENTITY_HPP__
 
-#include <pfs.hpp>
+#include <cwt/dom/node.hpp>
 
 namespace cwt { namespace dom {
 
-class node;
 class entity_impl;
 
 class DLL_API entity : public node

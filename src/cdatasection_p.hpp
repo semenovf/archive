@@ -11,18 +11,18 @@
 
 namespace cwt { namespace dom {
 
-class node::impl;
-class document::impl;
+class node_impl;
+class text_impl;
+class document_impl;
 
-class cdatasection::impl : public text::impl
+class cdatasection_impl : public text_impl
 {
 public:
-    impl (document::impl*, node::impl* parent, const pfs::string& val);
-    impl (cdatasection::impl* n, bool deep);
+	cdatasection_impl (document_impl *, node_impl * parent, const pfs::string & val);
+	cdatasection_impl (cdatasection_impl* n, bool deep);
 
-    // Reimplemented from node::impl
-    node::impl* cloneNode(bool deep = true);
-    node::type nodeType() const { return node::CDATASectionNode; }
+    virtual node_impl * cloneNode (bool deep = true);
+    virtual node::type nodeType () const { return node::CDATASectionNode; }
 };
 
 }} // cwt::dom

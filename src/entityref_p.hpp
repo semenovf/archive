@@ -7,19 +7,21 @@
 #ifndef __CWT_DOM_ENTITYREF_P_HPP__
 #define __CWT_DOM_ENTITYREF_P_HPP__
 
-#include "../include/cwt/dom/docfragment.hpp"
+#include "../include/cwt/dom/entityref.hpp"
 
 namespace cwt { namespace dom {
 
-class entity_reference::impl : public node::impl
+class node_impl;
+class document_impl;
+
+class entityref_impl : public node_impl
 {
 public:
-    entity_reference::impl(document::impl*, node::impl* parent, const pfs::string& name);
-    entity_reference::impl(node::impl* n, bool deep);
+    entityref_impl (document_impl *, node_impl * parent, const pfs::string & name);
+    entityref_impl (node_impl * n, bool deep);
 
-    // Reimplemented from node::impl
-    node::impl* cloneNode(bool deep = true);
-    node::type nodeType() const { return node::EntityReferenceNode; }
+    virtual node_impl * cloneNode (bool deep = true);
+    virtual node::type nodeType () const { return node::EntityReferenceNode; }
 };
 
 }} // cwt::dom

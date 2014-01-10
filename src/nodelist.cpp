@@ -4,8 +4,11 @@
  * @date Dec 10, 2013
  */
 
-#include "nodelist_p.hpp"
 #include "node_p.hpp"
+#include "nodelist_p.hpp"
+#include "namednodemap_p.hpp"
+#include "attr_p.hpp"
+#include "element_p.hpp"
 #include "document_p.hpp"
 
 namespace cwt { namespace dom {
@@ -42,10 +45,10 @@ nodelist_impl::nodelist_impl (node_impl * n_impl, const pfs::string & nsURI, con
     _timestamp = 0;
 }
 
-nodelist_impl::~nodelist_impl()
+nodelist_impl::~nodelist_impl ()
 {
-    if (node_impl && !node_impl->ref.deref())
-        delete node_impl;
+    if (_node_impl && !_node_impl->ref.deref())
+        delete _node_impl;
 }
 
 node_impl * nodelist_impl::item (size_t index)
@@ -54,7 +57,7 @@ node_impl * nodelist_impl::item (size_t index)
         return nullptr;
 
     const document_impl * const doc = _node_impl->ownerDocument();
-    if (!doc || _timestamp != doc->nodeListTime)
+    if (!doc || _timestamp != doc->_nodeListTime)
         createList();
 
     if (index >= _list.size())
@@ -70,7 +73,7 @@ size_t nodelist_impl::length ()
 
     const document_impl * const doc = _node_impl->ownerDocument();
 
-    if (!doc || _timestamp != doc->nodeListTime) {
+    if (!doc || _timestamp != doc->_nodeListTime) {
         nodelist_impl *that = const_cast<nodelist_impl *>(this);
         that->createList();
     }
@@ -84,49 +87,49 @@ void nodelist_impl::createList()
         return;
 
     const document_impl *const doc = _node_impl->ownerDocument();
-    if (doc && _timestamp != doc->nodeListTime)
-        _timestamp = doc->nodeListTime;
+    if (doc && _timestamp != doc->_nodeListTime)
+        _timestamp = doc->_nodeListTime;
 
-    node_impl * p = _node_impl->first;
+    node_impl * p = _node_impl->_first;
 
     _list.clear();
     if (_tagname.isNull()) {
         while (p) {
             _list.append(p);
-            p = p->next;
+            p = p->_next;
         }
     } else if (_nsURI.isNull()) {
         while (p && p != _node_impl) {
             if (p->isElement() && p->nodeName() == _tagname) {
                 _list.append(p);
             }
-            if (p->first)
-                p = p->first;
-            else if (p->next)
-                p = p->next;
+            if (p->_first)
+                p = p->_first;
+            else if (p->_next)
+                p = p->_next;
             else {
                 p = p->parent();
-                while (p && p != _node_impl && !p->next)
+                while (p && p != _node_impl && !p->_next)
                     p = p->parent();
                 if (p && p != _node_impl)
-                    p = p->next;
+                    p = p->_next;
             }
         }
     } else {
         while (p && p != _node_impl) {
-            if (p->isElement() && p->name == _tagname && p->namespaceURI == _nsURI) {
+            if (p->isElement() && p->_name == _tagname && p->_namespaceURI == _nsURI) {
                 _list.append(p);
             }
-            if (p->first)
-                p = p->first;
-            else if (p->next)
-                p = p->next;
+            if (p->_first)
+                p = p->_first;
+            else if (p->_next)
+                p = p->_next;
             else {
                 p = p->parent();
-                while (p && p != _node_impl && !p->next)
+                while (p && p != _node_impl && !p->_next)
                     p = p->parent();
                 if (p && p != _node_impl)
-                    p = p->next;
+                    p = p->_next;
             }
         }
     }

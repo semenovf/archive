@@ -11,24 +11,22 @@
 
 namespace cwt { namespace dom {
 
-class node::impl;
-class document::impl;
+class node_impl;
+class document_impl;
 
-
-class notation::impl : public node::impl
+class notation_impl : public node_impl
 {
 public:
-    notation::impl(document::impl*, node::impl* parent, const pfs::string& name,
-                          const pfs::string& pub, const pfs::string& sys);
-    notation::impl(notation::impl* n, bool deep);
+    pfs::string _sys;
+    pfs::string _pub;
 
-    // Reimplemented from node::impl
-    node::impl* cloneNode(bool deep = true);
-    node::type nodeType() const { return node::NotationNode; }
+public:
+    notation_impl (document_impl *, node_impl * parent, const pfs::string & name,
+                          const pfs::string & pub, const pfs::string & sys);
+    notation_impl (notation_impl * n, bool deep);
 
-    // Variables
-    pfs::string m_sys;
-    pfs::string m_pub;
+    virtual node_impl * cloneNode (bool deep = true);
+    virtual node::type nodeType() const { return node::NotationNode; }
 };
 
 }} // cwt::dom

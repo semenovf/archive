@@ -1,29 +1,35 @@
 /**
  * @file attr.cpp
+
  * @author wladt
  * @date Dec 12, 2013
  */
 
 #include "node_p.hpp"
+#include "nodelist_p.hpp"
+#include "namednodemap_p.hpp"
 #include "attr_p.hpp"
-#include "document_p.hpp"
 #include "element_p.hpp"
+#include "chardata_p.hpp"
+#include "text_p.hpp"
+#include "document_p.hpp"
+#include "utils.hpp"
 
 namespace cwt { namespace dom {
 
 attr_impl::attr_impl (document_impl * d, node_impl * parent, const pfs::string & nodeName)
     : node_impl(d, parent)
 {
-    name = nodeName;
+    _name = nodeName;
     _specified = false;
 }
 
 attr_impl::attr_impl (document_impl * d, node_impl * p, const pfs::string & nsURI, const pfs::string & qName)
     : node_impl(d, p)
 {
-    qt_split_namespace(prefix, name, qName, !nsURI.isNull()); // FIXME
-    namespaceURI = nsURI;
-    createdWithDom1Interface = false;
+	split_namespace(_prefix, _name, qName);
+    _namespaceURI = nsURI;
+    _createdWithDom1Interface = false;
     _specified = false;
 }
 
@@ -40,11 +46,11 @@ bool attr_impl::specified() const
 
 void attr_impl::setNodeValue (const pfs::string & v)
 {
-    value = v;
+    _value = v;
     text_impl *t = new text_impl(0, this, v);
     t->ref.deref();
-    if (first) {
-        delete removeChild(first);
+    if (_first) {
+        delete removeChild(_first);
     }
     appendChild(t);
 }
@@ -57,17 +63,14 @@ node_impl* attr_impl::cloneNode(bool deep)
 }
 
 
-attr::attr()
-{
-}
+attr::attr() : node()
+{}
 
 attr::attr(const attr & other) : node(other)
-{
-}
+{}
 
 attr::attr (attr_impl * n) : node(n)
-{
-}
+{}
 
 attr & attr::operator = (const attr & other)
 {

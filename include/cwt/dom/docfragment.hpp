@@ -11,11 +11,14 @@
 
 namespace cwt { namespace dom {
 
-class document_fragment_impl;
 class node;
+class document;
+class document_fragment_impl;
 
 class DLL_API document_fragment : public node
 {
+	friend class document;
+
 protected:
 	document_fragment (document_fragment_impl *);
 

@@ -5,6 +5,10 @@
  */
 
 #include "node_p.hpp"
+#include "nodelist_p.hpp"
+#include "namednodemap_p.hpp"
+#include "attr_p.hpp"
+#include "element_p.hpp"
 #include "entity_p.hpp"
 #include "document_p.hpp"
 
@@ -13,15 +17,15 @@ namespace cwt { namespace dom {
 
 entity_impl::entity_impl (document_impl * d
 		, node_impl * parent
-        , const pfs::string & aname
+        , const pfs::string & name
         , const pfs::string & pub
         , const pfs::string & sys
         , const pfs::string & notation)
     : node_impl(d, parent)
 {
-    name  = aname;
-    _pub = pub;
-    _sys = sys;
+    _name = name;
+    _pub  = pub;
+    _sys  = sys;
     _notationName = notation;
 }
 

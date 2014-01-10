@@ -5,14 +5,21 @@
  */
 
 #include "node_p.hpp"
+#include "nodelist_p.hpp"
+#include "namednodemap_p.hpp"
+#include "attr_p.hpp"
+#include "element_p.hpp"
+#include "chardata_p.hpp"
 #include "text_p.hpp"
+#include "document_p.hpp"
+
 
 namespace cwt { namespace dom {
 
 text_impl::text_impl (document_impl * d, node_impl * parent, const pfs::string & val)
     : chardata_impl(d, parent, val)
 {
-    name = pfs::string("#text");
+    _name = pfs::string("#text");
 }
 
 text_impl::text_impl(text_impl * n, bool deep)
@@ -26,8 +33,8 @@ text_impl * text_impl::splitText (size_t offset)
         return nullptr;
     }
 
-    text_impl * t = new text_impl(ownerDocument(), 0, value.substr(offset));
-    value = value.left(offset);
+    text_impl * t = new text_impl(ownerDocument(), 0, _value.substr(offset));
+    _value = _value.left(offset);
 
     parent()->insertAfter(t, this);
 
@@ -42,16 +49,13 @@ node_impl * text_impl::cloneNode(bool deep)
 }
 
 text::text() : chardata()
-{
-}
+{}
 
 text::text (const text & other) : chardata(other)
-{
-}
+{}
 
 text::text (text_impl * n) : chardata(n)
-{
-}
+{}
 
 text & text::operator = (const text & other)
 {

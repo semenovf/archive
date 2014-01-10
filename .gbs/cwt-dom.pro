@@ -7,5 +7,6 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = cwt-dom  \
-    tests/domimpl \
-#    tests/node
+    tests/utils     \
+    tests/domimpl   \
+    tests/document

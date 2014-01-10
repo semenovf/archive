@@ -6,25 +6,26 @@
 
 #include "node_p.hpp"
 #include "attr_p.hpp"
-#include "element_p.hpp"
 #include "nodelist_p.hpp"
 #include "namednodemap_p.hpp"
+#include "element_p.hpp"
+#include "utils.hpp"
 
 namespace cwt { namespace dom {
 
 element_impl::element_impl (document_impl * d, node_impl * p, const pfs::string & tagname)
     : node_impl(d, p)
 {
-    name = tagname;
+    _name = tagname;
     _attr = new namednodemap_impl(this);
 }
 
 element_impl::element_impl (document_impl * d, node_impl * p, const pfs::string & nsURI, const pfs::string & qName)
     : node_impl(d, p)
 {
-    qt_split_namespace(prefix, name, qName, !nsURI.isNull());
-    namespaceURI = nsURI;
-    createdWithDom1Interface = false;
+    split_namespace(_prefix, _name, qName);
+    _namespaceURI = nsURI;
+    _createdWithDom1Interface = false;
     _attr = new namednodemap_impl(this);
 }
 
@@ -74,7 +75,7 @@ void element_impl::setAttributeNS (const pfs::string & nsURI, const pfs::string 
 {
     pfs::string prefix, localName;
 
-    qt_split_namespace(prefix, localName, qName, true);
+    split_namespace(prefix, localName, qName);
 
     node_impl * n = _attr->namedItemNS(nsURI, localName);
 
@@ -85,7 +86,7 @@ void element_impl::setAttributeNS (const pfs::string & nsURI, const pfs::string 
         _attr->setNamedItem(n);
     } else {
         n->setNodeValue(newValue);
-        n->prefix = prefix;
+        n->_prefix = prefix;
     }
 }
 
@@ -119,8 +120,8 @@ attr_impl* element_impl::setAttributeNodeNS(attr_impl* newAttr)
 {
     node_impl * n = nullptr;
 
-    if (!newAttr->prefix.isNull())
-        n = _attr->namedItemNS(newAttr->namespaceURI, newAttr->name);
+    if (!newAttr->_prefix.isNull())
+        n = _attr->namedItemNS(newAttr->_namespaceURI, newAttr->_name);
 
     _attr->setNamedItem(newAttr);
     return dynamic_cast<attr_impl *>(n);
@@ -214,7 +215,7 @@ void element::removeAttribute (const pfs::string& name)
     }
 }
 
-attr element::attributeNode (const pfs::string & name)
+attr element::getAttributeNode (const pfs::string & name)
 {
     return _pimpl
     		? attr(dynamic_cast<element_impl *>(_pimpl)->attributeNode(name))

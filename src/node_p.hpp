@@ -21,27 +21,27 @@ class node_impl
 
 public:
     pfs::atomic_int ref;
-    node_impl * prev;
-    node_impl * next;
-    node_impl * ownerNode; // either the node's parent or the node's owner document
-    node_impl * first;
-    node_impl * last;
+    node_impl * _prev;
+    node_impl * _next;
+    node_impl * _ownerNode; // either the node's parent or the node's owner document
+    node_impl * _first;
+    node_impl * _last;
 
-    pfs::string name; // this is the local name if prefix != null
-    pfs::string value;
-    pfs::string prefix; // set this only for ElementNode and AttributeNode
-    pfs::string namespaceURI; // set this only for ElementNode and AttributeNode
-    bool createdWithDom1Interface : 1;
-    bool hasParent                : 1;
+    pfs::string _name; // this is the local name if prefix != null
+    pfs::string _value;
+    pfs::string _prefix; // set this only for ElementNode and AttributeNode
+    pfs::string _namespaceURI; // set this only for ElementNode and AttributeNode
+    bool _createdWithDom1Interface : 1;
+    bool _hasParent                : 1;
 
 public:
-//    node_impl (document_impl *, node_impl * parent = nullptr);
+    node_impl (document_impl *, node_impl * parent = nullptr);
     node_impl (node_impl * n, bool deep);
     virtual ~node_impl ();
 
-    pfs::string nodeName () const { return name; }
-    pfs::string nodeValue () const { return value; }
-    virtual void setNodeValue (const pfs::string & v) { value = v; }
+    pfs::string nodeName () const { return _name; }
+    pfs::string nodeValue () const { return _value; }
+    virtual void setNodeValue (const pfs::string & v) { _value = v; }
 
     document_impl * ownerDocument ();
     void setOwnerDocument (document_impl * doc);
@@ -58,13 +58,13 @@ public:
     virtual void normalize ();
 //    virtual void clear ();
 
-    node_impl * parent () const { return hasParent ? ownerNode : 0; }
-    void setParent (node_impl * p) { ownerNode = p; hasParent = true; }
+    node_impl * parent () const { return _hasParent ? _ownerNode : 0; }
+    void setParent (node_impl * p) { _ownerNode = p; _hasParent = true; }
 
     void setNoParent ()
     {
-        ownerNode = hasParent ? (node_impl *)ownerDocument() : 0;
-        hasParent = false;
+        _ownerNode = _hasParent ? (node_impl *)ownerDocument() : 0;
+        _hasParent = false;
     }
 
     bool isAttr() const                     { return nodeType() == node::AttributeNode; }

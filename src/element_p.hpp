@@ -41,7 +41,7 @@ public:
     bool hasAttributeNS (const pfs::string & nsURI, const pfs::string & localName) const;
 
     namednodemap_impl * attributes () { return _attr; }
-    bool hasAttributes () const;
+    bool hasAttributes () const { return _attr->length() > 0; }
 
     virtual node::type nodeType() const { return node::ElementNode; }
     virtual node_impl * cloneNode (bool deep = true);

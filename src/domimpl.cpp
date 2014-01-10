@@ -4,14 +4,14 @@
  * @date Dec 11, 2013
  */
 
-#include "domimpl_p.hpp"
 #include "node_p.hpp"
 #include "nodelist_p.hpp"
 #include "namednodemap_p.hpp"
-#include "document_p.hpp"
 #include "doctype_p.hpp"
 #include "attr_p.hpp"
 #include "element_p.hpp"
+#include "document_p.hpp"
+#include "domimpl_p.hpp"
 
 namespace cwt { namespace dom {
 
@@ -20,24 +20,12 @@ dom_implementation_impl * dom_implementation_impl::clone()
     return new dom_implementation_impl;
 }
 
-bool dom_implementation::hasFeature (const pfs::string & feature, const pfs::string & version) const
-{
-    if (feature == pfs::string("XML")) {
-        if (version.isEmpty() || version == pfs::string("1.0")) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
 dom_implementation::dom_implementation()
 	: _pimpl(nullptr)
 {}
 
-
-dom_implementation::dom_implementation (const dom_implementation & x)
-	: _pimpl(x._pimpl)
+dom_implementation::dom_implementation (const dom_implementation & other)
+	: _pimpl(other._pimpl)
 {
     if (_pimpl)
         _pimpl->ref.ref();
@@ -50,36 +38,44 @@ dom_implementation::dom_implementation (dom_implementation_impl * p)
         _pimpl->ref.ref();
 }
 
-/*
-dom_implementation& dom_implementation::operator=(const dom_implementation &x)
+dom_implementation & dom_implementation::operator = (const dom_implementation & other)
 {
-    if (x.impl)
-        x.impl->ref.ref();
-    if (impl && !impl->ref.deref())
-        delete impl;
-    impl = x.impl;
+    if (other._pimpl)
+        other._pimpl->ref.ref();
+    if (_pimpl && !_pimpl->ref.deref())
+        delete _pimpl;
+    _pimpl = other._pimpl;
     return *this;
 }
-*/
-
-/*
-bool dom_implementation::operator==(const dom_implementation &x) const
-{
-    return (impl == x.impl);
-}
-*/
-
-/*
-bool dom_implementation::operator!=(const dom_implementation &x) const
-{
-    return (impl != x.impl);
-}
-*/
 
 dom_implementation::~dom_implementation()
 {
     if (_pimpl && !_pimpl->ref.deref())
         delete _pimpl;
+}
+
+bool dom_implementation::hasFeature (const pfs::string & feature, const pfs::string & version) const
+{
+    if (feature == pfs::string("XML")) {
+        if (version.isEmpty() || version == pfs::string("1.0")) {
+            return true;
+        }
+    }
+    return false;
+}
+
+document dom_implementation::createDocument(const pfs::string & nsURI
+		, const pfs::string & qName
+		, const document_type & doctype)
+{
+    document doc(doctype);
+    element root = doc.createElementNS(nsURI, qName);
+
+    if (root.isNull())
+        return document();
+
+    doc.appendChild(root);
+    return doc;
 }
 
 document_type dom_implementation::createDocumentType (const pfs::string & qName
@@ -102,7 +98,7 @@ document_type dom_implementation::createDocumentType (const pfs::string & qName
 */
 
     document_type_impl * dt = new document_type_impl(nullptr);
-    dt->name = qName; //fixedName;
+    dt->_name = qName; //fixedName;
     if (systemId.isNull()) {
         dt->_publicId.clear();
         dt->_systemId.clear();
@@ -113,35 +109,6 @@ document_type dom_implementation::createDocumentType (const pfs::string & qName
     dt->ref.deref();
     return document_type(dt);
 }
-
-/*!
-    Creates a DOM document with the document type \a doctype. This
-    function also adds a root element node with the qualified name \a
-    qName and the namespace URI \a nsURI.
-*/
-document dom_implementation::createDocument(const pfs::string & nsURI
-		, const pfs::string & qName
-		, const document_type & doctype)
-{
-    document doc(doctype);
-    element root = doc.createElementNS(nsURI, qName);
-
-    if (root.isNull())
-        return document();
-
-    doc.appendChild(root);
-    return doc;
-}
-
-//dom_implementation::InvalidDataPolicy dom_implementation::invalidDataPolicy()
-//{
-//    return dom_implementation_impl::invalidDataPolicy;
-//}
-//
-//void dom_implementation::setInvalidDataPolicy(InvalidDataPolicy policy)
-//{
-//    dom_implementation_impl::invalidDataPolicy = policy;
-//}
 
 }} // cwt::dom
 

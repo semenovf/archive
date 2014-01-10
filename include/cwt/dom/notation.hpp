@@ -7,18 +7,24 @@
 #ifndef __CWT_DOM_NOTATION_HPP__
 #define __CWT_DOM_NOTATION_HPP__
 
+#include <cwt/dom/node.hpp>
+
 namespace cwt { namespace dom {
 
 class notation_impl;
 
-class notation : public node
+class DLL_API notation : public node
 {
-//protected:
-//	notation (); // deny
-//
-//public:
-//	const pfs::string & publicId () const;
-//	const pfs::string & systemId () const;
+protected:
+	notation (notation_impl *);
+
+public:
+	notation ();
+	notation (const notation & other);
+	notation & operator = (const notation & other);
+
+	pfs::string publicId () const;
+	pfs::string systemId () const;
 };
 
 }} // cwt::dom

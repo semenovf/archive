@@ -5,6 +5,13 @@
  */
 
 #include "node_p.hpp"
+#include "nodelist_p.hpp"
+#include "namednodemap_p.hpp"
+#include "attr_p.hpp"
+#include "element_p.hpp"
+#include "chardata_p.hpp"
+#include "text_p.hpp"
+#include "comment_p.hpp"
 #include "document_p.hpp"
 #include "docfragment_p.hpp"
 
@@ -13,7 +20,7 @@ namespace cwt { namespace dom {
 document_fragment_impl::document_fragment_impl (document_impl * d, node_impl * p)
     : node_impl(d, p)
 {
-    name = pfs::string("#document-fragment");
+    _name = pfs::string("#document-fragment");
 }
 
 document_fragment_impl::document_fragment_impl (node_impl * n, bool deep)

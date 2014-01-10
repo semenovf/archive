@@ -36,9 +36,9 @@ node_impl * namednodemap_impl::namedItemNS(const pfs::string & nsURI, const pfs:
     for (; it != _map.cend(); ++it) {
         n = it->second;
 
-        if (!n->prefix.isNull()) {
+        if (!n->_prefix.isNull()) {
             // node has a namespace
-            if (n->namespaceURI == nsURI && n->name == localName)
+            if (n->_namespaceURI == nsURI && n->_name == localName)
                 return n;
         }
     }
@@ -67,9 +67,9 @@ node_impl * namednodemap_impl::setNamedItemNS (node_impl * arg)
     if (_appendToParent)
         return _parent->appendChild(arg);
 
-    if (!arg->prefix.isNull()) {
+    if (!arg->_prefix.isNull()) {
         // node has a namespace
-        node_impl *n = namedItemNS(arg->namespaceURI, arg->name);
+        node_impl *n = namedItemNS(arg->_namespaceURI, arg->_name);
         // We take a reference
         arg->ref.ref();
         _map.insert(arg->nodeName(), arg);
@@ -204,7 +204,7 @@ node namednodemap::removeNamedItemNS (const pfs::string& nsURI, const pfs::strin
 
     if (!n)
         return node();
-    return node(_pimpl->removeNamedItem(n->name));
+    return node(_pimpl->removeNamedItem(n->_name));
 }
 
 

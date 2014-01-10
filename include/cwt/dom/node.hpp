@@ -21,6 +21,7 @@ class DLL_API node
 {
 	friend class namednodemap;
 	friend class nodelist;
+	friend class document;
 
 public:
 	enum type {

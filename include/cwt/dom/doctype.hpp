@@ -11,17 +11,19 @@
 
 namespace cwt { namespace dom {
 
-class document_type_impl;
 class node;
 class namednodemap;
+class document;
 class dom_implementation;
+class document_type_impl;
 
 class DLL_API document_type : public node
 {
+	friend class document;
 	friend class dom_implementation;
 
 protected:
-	document_type (document_type_impl * nimpl);
+	document_type (document_type_impl * n);
 
 public:
 	document_type () : node () {}

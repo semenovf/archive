@@ -5,7 +5,13 @@
  */
 
 #include "node_p.hpp"
+#include "nodelist_p.hpp"
+#include "namednodemap_p.hpp"
+#include "attr_p.hpp"
+#include "element_p.hpp"
 #include "chardata_p.hpp"
+#include "text_p.hpp"
+#include "cdatasection_p.hpp"
 #include "document_p.hpp"
 
 namespace cwt { namespace dom {
@@ -13,8 +19,8 @@ namespace cwt { namespace dom {
 chardata_impl::chardata_impl (document_impl * d, node_impl * p, const pfs::string & data)
     : node_impl(d, p)
 {
-	value = data;
-	name = pfs::string("#character-data");
+	_value = data;
+	_name = pfs::string("#character-data");
 }
 
 chardata_impl::chardata_impl (chardata_impl* n, bool deep)
@@ -24,32 +30,32 @@ chardata_impl::chardata_impl (chardata_impl* n, bool deep)
 
 size_t chardata_impl::dataLength () const
 {
-    return value.length();
+    return _value.length();
 }
 
 pfs::string chardata_impl::substringData (size_t offset, size_t n) const
 {
-    return value.mid(offset, n);
+    return _value.mid(offset, n);
 }
 
 void chardata_impl::appendData(const pfs::string & arg)
 {
-    value += arg;
+    _value += arg;
 }
 
 void chardata_impl::insertData (size_t offset, const pfs::string & arg)
 {
-    value.insert(offset, arg);
+    _value.insert(offset, arg);
 }
 
 void chardata_impl::deleteData (size_t offset, size_t n)
 {
-    value.remove(offset, n);
+    _value.remove(offset, n);
 }
 
 void chardata_impl::replaceData (size_t offset, size_t n, const pfs::string & arg)
 {
-    value.replace(offset, n, arg);
+    _value.replace(offset, n, arg);
 }
 
 

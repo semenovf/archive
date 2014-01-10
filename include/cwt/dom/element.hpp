@@ -14,10 +14,14 @@ namespace cwt { namespace dom {
 class element_impl;
 class node;
 class attr;
+class document;
 class nodelist;
 
 class element : public node
 {
+	friend class attr;
+	friend class document;
+
 protected:
 	element (element_impl * n);
 

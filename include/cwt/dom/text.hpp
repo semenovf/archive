@@ -11,16 +11,19 @@
 
 namespace cwt { namespace dom {
 
+class document;
 class text_impl;
 
 class text : public chardata
 {
+	friend class document;
+
 protected:
 	text (text_impl *);
 
 public:
 	text ();
-	text (const chardata & other);
+	text (const text & other);
 	text & operator = (const text & other);
 
 	text splitText (size_t offset);

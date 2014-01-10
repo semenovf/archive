@@ -13,11 +13,15 @@
 namespace cwt { namespace dom {
 
 class node;
+class element;
+class document;
 class nodelist_impl;
 
 class DLL_API nodelist
 {
 	friend class node;
+	friend class element;
+	friend class document;
 
 private:
 	nodelist_impl * _pimpl;

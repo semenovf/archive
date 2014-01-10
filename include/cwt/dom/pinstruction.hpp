@@ -12,19 +12,23 @@
 namespace cwt { namespace dom {
 
 class pinstruction_impl;
+class document;
 
 class pinstruction : public node
 {
+	friend class document;
 
-//	pfs::string _target; // readonly
-//	pfs::string _data;
+protected:
+	pinstruction (pinstruction_impl *);
 
 public:
-//	pinstruction () : node () {}
-//
-//	const pfs::string & target () { return _target; }
-//	const pfs::string & data () const { return _data; }
-//	void setData (const pfs::string & data); // raises(DOMException) on setting
+	pinstruction ();
+	pinstruction (const pinstruction & other);
+	pinstruction & operator = (const pinstruction & other);
+
+	pfs::string target () const;
+	pfs::string data () const;
+	void setData (const pfs::string & d);
 };
 
 }} // cwt

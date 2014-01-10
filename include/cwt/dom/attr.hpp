@@ -15,9 +15,13 @@ namespace cwt { namespace dom {
 class attr_impl;
 class node;
 class element;
+class document;
 
 class DLL_API attr : public node
 {
+	friend class element;
+	friend class document;
+
 protected:
 	attr (attr_impl *);
 
