@@ -41,6 +41,7 @@ bool fs::isAbsolute(const pfs::string &path)
 
 bool fs::exists(const pfs::string & path)
 {
+	PFS_CHECK_SIZEOF_TYPE(wchar_t,2);
 	struct _stat st;
 	return _wstat(path.toUtf16().data(), & st ) == 0;
 }
@@ -75,7 +76,7 @@ bool fs::simpleBackup(const pfs::string &orig)
 {
 	pfs::string to(orig);
 	to.append(pfs::string(".bak"));
-	return FileSystem::rename(orig, to);
+	return fs::rename(orig, to);
 }
 
 } // cwt

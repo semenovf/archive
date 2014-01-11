@@ -15,11 +15,16 @@
 #include <pfs/vector.hpp>
 #include <cwt/errorable.hpp>
 
-#ifdef CWT_CC_MSC
+#ifdef PFS_CC_MSVC
 #	include <windows.h>
 #	include <windef.h>
 #else
 #	include <dlfcn.h>
+#endif
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
 #endif
 
 namespace cwt {
@@ -27,7 +32,7 @@ namespace cwt {
 class DLL_API dl : public errorable
 {
 public:
-#ifdef CWT_CC_MSC
+#ifdef PFS_CC_MSC
 	typedef HMODULE handle;
 	typedef FARPROC symbol;
 #else
@@ -64,5 +69,9 @@ private:
 EXTERN_C_BEGIN
 int DLL_API dl_only_for_testing_purpose (void);
 EXTERN_C_END
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /*__CWT_DL_HPP__ */

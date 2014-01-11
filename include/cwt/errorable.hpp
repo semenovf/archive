@@ -12,6 +12,11 @@
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
 
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace cwt {
 
 class DLL_API errorable
@@ -80,5 +85,9 @@ inline void errorable::addError(const pfs::string & text)
 }
 
 } // cwt
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __CWT_ERRORABLE_HPP__ */

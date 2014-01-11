@@ -151,7 +151,7 @@ public:
  *         specified by begin and end iterators.
  * */
 template <typename _P>
-bool fsm<_P>::belongsChar (fsm<_P>::char_type ch, const const_iterator & begin, const const_iterator & end)
+bool fsm<_P>::belongsChar (/*typename fsm<_P>::*/char_type ch, const const_iterator & begin, const const_iterator & end)
 {
 	const_iterator it(begin);
 	while (it < end) {

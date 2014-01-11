@@ -14,6 +14,11 @@
 #include <pfs/vector.hpp>
 #include <cwt/sigslot.hpp>
 
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace cwt {
 
 // MT-safe
@@ -64,5 +69,9 @@ public:
 };
 
 } // cwt
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __CWT_SETTINGS_HPP__ */

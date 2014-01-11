@@ -7,7 +7,6 @@
 
 #include "../threadcv_p.hpp"
 #include "../../include/cwt/logger.hpp"
-#include <pthread.h>
 #include <cerrno>
 
 // see Condition Variables (http://msdn.microsoft.com/en-us/library/windows/desktop/ms682052%28v=vs.85%29.aspx)
@@ -82,9 +81,6 @@ inline void thread_cv::impl::wakeAll ()
 
 bool thread_cv::impl::wait (pfs::mutex & lockedMutex, ulong_t timeout)
 {
-    if (! lockedMutex)
-        return false;
-
     m_mutex.lock();
 
     ++m_waiters;
@@ -92,7 +88,7 @@ bool thread_cv::impl::wait (pfs::mutex & lockedMutex, ulong_t timeout)
     // Sleeps on the specified condition variable and releases the specified critical section as an atomic operation.
     // TODO need to see into SleepConditionVariableCS call (and compare with POSIX implementation )
     BOOL r = SleepConditionVariableCS(& m_cond
-    		, lockedMutex->handlePtr()
+    		, lockedMutex.handlePtr()
     		, timeout == PFS_ULONG_MAX ? INFINITE : DWORD(timeout));
 
     m_mutex.unlock();

@@ -18,9 +18,9 @@ class random
 
 public:
 	random ();
-	random (uint_t seed);
-	int srand (uint_t seed);
-	int rand ();
+	random (uint_t seed);    // TODO obsolete
+	uint_t srand (uint_t seed); // TODO obsolete
+	uint_t rand ();
 };
 
 } // cwt

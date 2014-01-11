@@ -11,9 +11,12 @@
 #include <pfs.hpp>
 #include <pfs/pimpl.hpp>
 
-namespace cwt {
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
 
-//struct thread_data;
+namespace cwt {
 
 class DLL_API thread
 {
@@ -71,10 +74,12 @@ public:
 
 protected:
 	virtual void run () {}
-
-	friend class thread_data;
 };
 
 } // cwt
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __CWT_THREAD_HPP__ */

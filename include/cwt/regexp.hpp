@@ -12,6 +12,11 @@
 #include <pfs/vector.hpp>
 #include <pfs/pimpl.hpp>
 
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace cwt {
 
 class DLL_API regexp
@@ -51,5 +56,9 @@ public:
 };
 
 } // cwt
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __CWT_REGEXP_HPP__ */

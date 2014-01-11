@@ -1,14 +1,9 @@
 #include "../../include/cwt/dl.hpp"
+#include "../../include/cwt/fs.hpp"
 #include <pfs/mt.hpp>
 
 namespace cwt {
 
-inline bool __file_exists (const String & path)
-{
-	struct _stat st;
-	return ( _wstat(path.utf16(), &st ) == 0 );
-}
-// see cwt::fs
 inline bool __is_absolute_path (const pfs::string & path)
 {
 	static pfs::string __disks("abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -42,14 +37,15 @@ dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool glob
 	PFS_UNUSED(global);
 
 	realPath.clear();
+	cwt::fs fs;
 
-	if (!__file_exists(path)) {
+	if (!fs.exists(path)) {
 		if (!__is_absolute_path(path)) {
 			pfs::vector<pfs::string>::const_iterator it = searchPath.cbegin();
 			pfs::vector<pfs::string>::const_iterator itEnd = searchPath.cend();
 			while (it != itEnd) {
 				realPath = *it + pfs::string("/") + path;
-				if (!__file_exists(realPath))
+				if (!fs.exists(realPath))
 					break;
 				++it;
 			}

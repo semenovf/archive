@@ -76,7 +76,7 @@ inline int random::impl::rand ()
 
 random::random() : _pimpl(new random::impl) {}
 random::random(uint_t seed) : _pimpl(new random::impl(seed)) {}
-int random::srand (uint_t seed) { return _pimpl->srand(seed); }
-int random::rand () { return _pimpl->rand(); }
+uint_t random::srand (uint_t seed) { return uint_t(_pimpl->srand(seed)); }
+uint_t random::rand () { return uint_t(_pimpl->rand()); }
 
 } // cwt

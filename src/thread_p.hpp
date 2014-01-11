@@ -14,6 +14,8 @@
 
 namespace cwt {
 
+struct thread_data;
+
 enum thread_state
 {
 	  ThreadNotRunning
@@ -29,7 +31,7 @@ public:
 	~impl ();
 
 	void start (thread::priority_type priority = thread::InheritPriority, size_t stackSize = 0);
-	void setPriority(thread::priority_type priority);
+	void setPriority (thread::priority_type priority);
 
 	void terminate ();
 	bool wait (ulong_t time = PFS_ULONG_MAX);
@@ -42,19 +44,19 @@ public:
 	static void finalize (void * arg);
 
 private:
-	bool setStackSize (pthread_attr_t & attr, size_t stackSize = 0);
+	//bool setStackSize (pthread_attr_t & attr, size_t stackSize = 0);
 
 private:
-	pfs::mutex       m_mutex;
-	size_t           m_stackSize;
-	thread::priority_type m_priority;
-	thread_state     m_state;
-	thread_cv        m_threadFinished;
-	thread *  		 m_thread;
-	thread::data *   m_data;
+	pfs::mutex       _mutex;
+	size_t           _stackSize;
+	thread::priority_type _priority;
+	thread_state     _state;
+	thread_cv        _threadFinished;
+	thread *  		 _thread;
+	thread::data *   _data;
 
 	friend class thread;
-	friend struct thread_data;
+//	friend struct thread_data;
 };
 
 } // cwt

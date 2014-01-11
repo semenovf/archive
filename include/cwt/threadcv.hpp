@@ -13,6 +13,11 @@
 #include <pfs/pimpl.hpp>
 #include <pfs/mt.hpp>
 
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace cwt {
 
 class DLL_API thread_cv
@@ -46,5 +51,9 @@ public:
 };
 
 } // cwt
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __CWT_THREADCV_HPP__ */

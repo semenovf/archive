@@ -1,7 +1,10 @@
 1. Copy pcre.h.generic => pcre8/pcre.h
 2. Copy config.h.generic => pcre8/config.h
 3. Add line
-    DEFINE += HAVE_CONFIG_H
+    DEFINES += HAVE_CONFIG_H
+    DEFINES += PCRE_EXP_DECL=extern
+	DEFINES += PCRE_EXP_DEFN=
+	DEFINEs += PCRE_EXP_DATA_DEFN=
     to project file cwt-core.pro
 4. Edit pcre8/config.h
 5. Build default tables:

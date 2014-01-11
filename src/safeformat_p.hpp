@@ -24,7 +24,7 @@ struct ConversionSpec
 
 struct safeformatcontext
 {
-	typedef typename pfs::string::const_iterator const_iterator;
+	typedef pfs::string::const_iterator const_iterator;
 
 	pfs::string     format;
 	pfs::string     result;

@@ -12,16 +12,16 @@
 
 pfs::string __strerror (int_t errn)
 {
-    LPVOID lpMsgBuf;
+	LPWSTR lpMsgBuf;
 
     DWORD n = FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER |
-        FORMAT_MESSAGE_FROM_SYSTEM |
-        FORMAT_MESSAGE_IGNORE_INSERTS,
+          FORMAT_MESSAGE_ALLOCATE_BUFFER
+        | FORMAT_MESSAGE_FROM_SYSTEM
+        | FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL,
         (DWORD)errn,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR) & lpMsgBuf,
+        (LPWSTR) & lpMsgBuf,
         0, NULL );
 
     PFS_ASSERT(n > 0);

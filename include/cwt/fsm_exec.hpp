@@ -15,7 +15,7 @@
 namespace cwt { namespace fsm {
 
 template <typename _P>
-ssize_t fsm<_P>::exec(int state_cur, const fsm<_P>::const_iterator & begin, const fsm<_P>::const_iterator & end)
+ssize_t fsm<_P>::exec(int state_cur, const /*fsm<_P>::*/const_iterator & begin, const /*fsm<_P>::*/const_iterator & end)
 {
 	const_iterator ptr = begin;
 	size_t nchars_total_processed = 0;
