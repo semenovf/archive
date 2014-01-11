@@ -62,6 +62,8 @@ public:
 	}
 
 public:
+	typedef const char * const_codeunit_pointer;
+	typedef char * codeunit_pointer;
 	typedef ucchar char_type;
 	typedef ucchar item_type;
     typedef utf8string_iterator<ucchar_ptr> iterator;
@@ -95,6 +97,7 @@ public:
 	const char * utf8  () const { return c_str(); }
 
 	size_t sizeInBytes () const;
+	size_t sizeInCodeUnits () const { return sizeInBytes(); }
 	size_t size    () const;
 	size_t length  () const { return size(); }
 	static size_t length (const iterator & begin, const iterator & end)
