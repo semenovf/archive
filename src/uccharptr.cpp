@@ -94,8 +94,18 @@ ucchar ucchar_ref_basic<_Str>::value () const
 	return r;
 }
 
-template ucchar ucchar_ref_basic<utf8string>::value () const;
-template ucchar ucchar_ref_basic<const utf8string>::value () const;
+//template ucchar ucchar_ref_basic<utf8string>::value () const;
+//template ucchar ucchar_ref_basic<const utf8string>::value () const;
+ucchar ucchar_ref::value () const
+{
+	return ucchar_ref_basic<utf8string>::value ();
+}
+
+ucchar ucchar_const_ref::value () const
+{
+	return ucchar_ref_basic<const utf8string>::value ();
+}
+
 
 ucchar_ref & ucchar_ref::operator = (ucchar c)
 {

@@ -24,7 +24,7 @@ template <typename _Str, typename _Ref>
 class ucchar_ptr_basic;
 
 template <typename _Str>
-class ucchar_ref_basic
+class DLL_API ucchar_ref_basic
 {
 	friend class ucchar_ref;
 	friend class ucchar_const_ref;
@@ -83,6 +83,7 @@ public:
 	ucchar_const_ref () : ucchar_ref_basic() {};
 	ucchar_const_ref (difference_type offset, const utf8string & owner);
 	ucchar_const_ref (const ucchar_ref_basic & ref) : ucchar_ref_basic(ref) {}
+	value_type value () const;
 };
 
 class DLL_API ucchar_ref : public ucchar_ref_basic<utf8string>
@@ -94,11 +95,12 @@ public:
 	//ucchar_ref (const ucchar_ref & other) : ucchar_ref_basic(other) {}
 	ucchar_ref & operator = (ucchar c);
 	//ucchar_ref & operator = (const ucchar_ref & other);
+	value_type value () const;
 };
 
 
 template <typename _Str, typename _Ref>
-class ucchar_ptr_basic
+class DLL_API ucchar_ptr_basic
 {
 	template <typename _Str2, typename _Ref2>
 	friend class ucchar_ptr_basic;
