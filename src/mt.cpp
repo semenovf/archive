@@ -11,8 +11,10 @@
 
 namespace pfs {
 
+/*
 #if !defined(CWT_SINGLE_THREADED)
 mutex_t multi_threaded_global::g_mutex;
-#endif /* CWT_SINGLE_THREADED */
+#endif
+*/
 
 } // pfs

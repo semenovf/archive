@@ -16,6 +16,12 @@
 #include <pfs/utility.hpp>
 #include <ostream>
 
+// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 #define _latin1(s) pfs::utf8string::fromLatin1(s)
 #define _l1(s) pfs::utf8string::fromLatin1(s)
 #define _u8(s) pfs::utf8string::fromUtf8(s)
@@ -38,18 +44,9 @@ class DLL_API utf8string
 	friend class ucchar_const_ptr;
 
 private:
-// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
-#ifdef PFS_CC_MSVC
-#	pragma warning(push)
-#	pragma warning(disable:4251)
-#endif
 
 	class impl;
 	shared_ptr<impl> _pimpl;
-
-#ifdef PFS_CC_MSVC
-#	pragma warning(pop)
-#endif
 
 	void detach ();
 
@@ -493,6 +490,11 @@ inline bool operator >= (const utf8string & s1, const char * s2)
 {
 	return s1.compare(s2) >= 0;
 }
+
 } // pfs
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_UTF8STRING_HPP__ */

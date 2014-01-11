@@ -13,6 +13,11 @@
 #include <pfs/array.hpp>
 #include <pfs/pimpl.hpp>
 
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace pfs {
 
 // STL  std::bitset
@@ -23,21 +28,12 @@ namespace pfs {
 
 class DLL_API bitarray
 {
-#ifdef PFS_CC_MSVC
-#	pragma warning(push)
-#	pragma warning(disable:4251)
-#endif
-
-	struct DLL_API impl {
+	struct impl {
 		array<uint32_t> a;
 		size_t          nbits;
 	};
 
 	PFS_PIMPL_INLINE(bitarray, impl);
-
-#ifdef PFS_CC_MSVC
-#	pragma warning(pop)
-#endif
 
 public:
 	bitarray ();
@@ -108,5 +104,9 @@ inline bool bitarray::toggleBit(size_t i)
 }
 
 } // pfs
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_BITARRAY_HPP__ */

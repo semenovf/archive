@@ -13,6 +13,11 @@
 #include <string>
 #include <ostream>
 
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace pfs {
 
 class byteref;
@@ -21,17 +26,17 @@ class DLL_API bytearray
 {
 private:
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
-#ifdef PFS_CC_MSVC
-#	pragma warning(push)
-#	pragma warning(disable:4251)
-#endif
+//#ifdef PFS_CC_MSVC
+//#	pragma warning(push)
+//#	pragma warning(disable:4251)
+//#endif
 
 	typedef std::string impl;
 	shared_ptr<impl> _pimpl;
 
-#ifdef PFS_CC_MSVC
-#	pragma warning(pop)
-#endif
+//#ifdef PFS_CC_MSVC
+//#	pragma warning(pop)
+//#endif
 
 	void detach()
 	{
@@ -352,5 +357,9 @@ inline std::ostream & operator << (std::ostream & os, const bytearray & o) { os 
 //DLL_API uint_t hash_func(const bytearray & key, uint_t seed = 0);
 
 } // pfs
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_BYTEARRAY_HPP__ */

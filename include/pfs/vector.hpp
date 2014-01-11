@@ -9,7 +9,6 @@
 #define __PFS_VECTOR_HPP__
 
 #include <vector>
-#include <pfs/shared_ptr.hpp>
 #include <pfs/pimpl.hpp>
 
 namespace pfs {
@@ -74,11 +73,6 @@ public:
     iterator remove (const_iterator first, const_iterator last) { return erase(first, last); }
     void remove (size_t index) { erase(index); }
 };
-
-/*
-__gnu_cxx::__normal_iterator<cwt::thread* const*, std::vector<cwt::thread*, std::allocator<cwt::thread*> > >
-__gnu_cxx::__normal_iterator<cwt::thread**, std::vector<cwt::thread*, std::allocator<cwt::thread*> > >’
-*/
 
 template <typename T>
 vector<T>::vector (const T * values, size_t count)

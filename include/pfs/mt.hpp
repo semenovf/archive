@@ -31,7 +31,7 @@ typedef single_threaded mt_policy_t;
 typedef single_threaded mutex;
 
 #elif defined(PFS_WIN32_THREADS) || defined(PFS_POSIX_THREADS)
-
+#ifdef __DEPRECATED__ // TODO DELETE THIS CODE
 class DLL_API multi_threaded_global
 {
 public:
@@ -57,6 +57,7 @@ public:
 private:
 	static mt_def(g_mutex);
 };
+#endif // __DEPRECATED__
 
 class DLL_API multi_threaded_local
 {
@@ -119,6 +120,7 @@ private:
 	mt_policy * _mutex;
 };
 
+#ifdef __DEPRECATED__ // TODO DELETE THIS CODE
 class auto_lock_global
 {
 public:
@@ -135,7 +137,7 @@ public:
 	~auto_lock_global() { ; }
 #endif
 };
-
+#endif // __DEPRECATED__
 //
 // The AutoLock class is a helper that will hold the lock while in scope.
 //

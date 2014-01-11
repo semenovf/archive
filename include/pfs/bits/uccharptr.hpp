@@ -23,13 +23,13 @@ class ucchar_ref_basic;
 template <typename _Str, typename _Ref>
 class ucchar_ptr_basic;
 
-ptrdiff_t incrementCodePoints (
+DLL_API ptrdiff_t incrementCodePoints (
 		  ptrdiff_t codePointsCount
 		, size_t codeUnitsSize
 		, const char * begin
 		, ptrdiff_t codeUnitsOffset);
 
-ptrdiff_t decrementCodePoints (
+DLL_API ptrdiff_t decrementCodePoints (
 		  ptrdiff_t codePointsCount
 		, size_t codeUnitsSize
 		, const char * begin

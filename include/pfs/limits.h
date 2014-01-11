@@ -58,6 +58,13 @@
 
 #ifndef NDEBUG
 #   define PFS_CHECK_SIZEOF_TYPE(type,sz) PFS_ASSERT(sizeof(type) == (sz))
+
+#	ifdef PFS_CC_MSVC
+#		define PFS_CHECK_SIZEOF_WCHAR PFS_CHECK_SIZEOF_TYPE(wchar_t,2)
+#	else
+#		define PFS_CHECK_SIZEOF_WCHAR
+#	endif
+
 #	define PFS_CHECK_SIZEOF_TYPES                       \
 	PFS_CHECK_SIZEOF_TYPE(int8_t, 1);                   \
 	PFS_CHECK_SIZEOF_TYPE(uint8_t, 1);                  \
@@ -74,7 +81,8 @@
 	PFS_CHECK_SIZEOF_TYPE(int_t, 4);                    \
 	PFS_CHECK_SIZEOF_TYPE(uint_t, 4);                   \
 	PFS_CHECK_SIZEOF_TYPE(long_t, 8);                   \
-	PFS_CHECK_SIZEOF_TYPE(ulong_t, 8);
+	PFS_CHECK_SIZEOF_TYPE(ulong_t, 8);                  \
+	PFS_CHECK_SIZEOF_WCHAR
 #else
 #	define PFS_CHECK_SIZEOF_TYPES
 #endif

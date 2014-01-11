@@ -66,9 +66,11 @@
 #else
 #	define MT_LOCK   mt_lock(*mt_global_mutex())
 #	define MT_UNLOCK mt_unlock(*mt_global_mutex())
+/* DELETE this
 EXTERN_C_BEGIN
 DLL_API mutex_t * mt_global_mutex(void);
 EXTERN_C_END
+*/
 #endif
 
 #endif /* __PFS_MT_H__ */

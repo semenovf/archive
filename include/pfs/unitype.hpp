@@ -18,6 +18,13 @@
 // FIXME Need to apply concept of type erasure.
 // See excellent article at http://www.cplusplus.com/forum/articles/18756/
 
+// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
+
 namespace pfs {
 
 class unitype;
@@ -131,17 +138,7 @@ struct DLL_API unidata_blob : public unidata
 
 class DLL_API unitype
 {
-// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
-#ifdef PFS_CC_MSVC
-#	pragma warning(push)
-#	pragma warning(disable:4251)
-#endif
-
 	PFS_PIMPL_INLINE(unitype, unidata);
-
-#ifdef PFS_CC_MSVC
-#	pragma warning(pop)
-#endif
 
 public:
 	unitype ()                    : _pimpl (new unidata_null) {}
@@ -234,5 +231,9 @@ public:
 };
 
 } // pfs
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_UNITYPE_HPP__ */
