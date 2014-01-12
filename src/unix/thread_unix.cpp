@@ -85,18 +85,18 @@ thread::data::data()
 thread::data::~data ()
 {
 	PFS_TRACE_METHOD();
-	// automatically delete m_threadImpl
+	// automatically delete _threadImpl
 }
 
 
 thread::impl::impl (/*thread::data * threadData*/)
-	: m_mutex()
-	, m_stackSize(0)
-	, m_priority(thread::InheritPriority)
-	, m_state(ThreadNotRunning)
-	, m_threadFinished()
-	, m_thread(nullptr)
-	, m_data(nullptr)
+	: _mutex()
+	, _stackSize(0)
+	, _priority(thread::InheritPriority)
+	, _state(ThreadNotRunning)
+	, _threadFinished()
+	, _thread(nullptr)
+	, _data(nullptr)
 {
 	PFS_TRACE_METHOD();
 }
@@ -105,15 +105,15 @@ thread::impl::~impl()
 {
 	PFS_TRACE_METHOD();
 
-	// deleting m_data will destroy this instance
+	// deleting _data will destroy this instance
 
-	thread::data * d = m_data;
-	m_data = nullptr;
+	thread::data * d = _data;
+	_data = nullptr;
 	if (d) // if is in non-running state or already destroyed from thread::data::destroy()
 		delete d;
 
-	thread * t = m_thread;
-	m_thread = nullptr;
+	thread * t = _thread;
+	_thread = nullptr;
 	if (t) {
 		delete t;
 	}
@@ -122,21 +122,21 @@ thread::impl::~impl()
 thread::thread() : _pimpl(new thread::impl)
 {
 	PFS_TRACE_METHOD();
-	_pimpl->m_thread = this;
+	_pimpl->_thread = this;
 }
 
 thread::~thread ()
 {
 	PFS_TRACE_METHOD();
 
-	pfs::auto_lock<> locker(& _pimpl->m_mutex);
-    if (_pimpl->m_state == ThreadFinishing) {
+	pfs::auto_lock<> locker(& _pimpl->_mutex);
+    if (_pimpl->_state == ThreadFinishing) {
         locker.unlock();
         wait();
         locker.tryLock();
     }
 
-    if (_pimpl->m_state == ThreadRunning) {
+    if (_pimpl->_state == ThreadRunning) {
     	PFS_WARN(_Tr("Attempt to destroy thread while it is still running"));
     	locker.unlock();
     	terminate();
@@ -144,32 +144,32 @@ thread::~thread ()
     	locker.tryLock();
     }
 
-	_pimpl->m_thread = nullptr; // detach thread
+	_pimpl->_thread = nullptr; // detach thread
 }
 
 
 bool thread::isFinished () const
 {
-	pfs::auto_lock<>(& _pimpl->m_mutex);
-    return _pimpl->m_state == ThreadFinished || _pimpl->m_state == ThreadFinishing;
+	pfs::auto_lock<>(& _pimpl->_mutex);
+    return _pimpl->_state == ThreadFinished || _pimpl->_state == ThreadFinishing;
 }
 
 bool thread::isRunning () const
 {
-	pfs::auto_lock<>(& _pimpl->m_mutex);
-    return _pimpl->m_state == ThreadRunning;
+	pfs::auto_lock<>(& _pimpl->_mutex);
+    return _pimpl->_state == ThreadRunning;
 }
 
 thread::priority_type thread::priority () const
 {
-	pfs::auto_lock<>(& _pimpl->m_mutex);
-    return _pimpl->m_priority;
+	pfs::auto_lock<>(& _pimpl->_mutex);
+    return _pimpl->_priority;
 }
 
 size_t thread::stackSize () const
 {
-	pfs::auto_lock<>(& _pimpl->m_mutex);
-    return _pimpl->m_stackSize;
+	pfs::auto_lock<>(& _pimpl->_mutex);
+    return _pimpl->_stackSize;
 }
 
 void thread::yieldCurrentThread ()
@@ -193,8 +193,8 @@ bool thread::impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
     	PFS_VERIFY_ERRNO(!(rc = pthread_attr_setstacksize(& attr, stackSize)), rc);
     }
 
-    m_stackSize = 0;
-    PFS_VERIFY_ERRNO(!(rc = pthread_attr_getstacksize(& attr, & m_stackSize)), rc);
+    _stackSize = 0;
+    PFS_VERIFY_ERRNO(!(rc = pthread_attr_getstacksize(& attr, & _stackSize)), rc);
 
     return (rc == 0);
 }
@@ -204,16 +204,16 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
 {
 	PFS_TRACE_METHOD();
 	int rc = 0;
-	pfs::auto_lock<> locker(& m_mutex);
+	pfs::auto_lock<> locker(& _mutex);
 
-	if (m_state == ThreadFinishing)
-		m_threadFinished.wait(*locker.handlePtr());
+	if (_state == ThreadFinishing)
+		_threadFinished.wait(*locker.handlePtr());
 
-	if (m_state == ThreadRunning ) {
+	if (_state == ThreadRunning ) {
 		return;
 	}
 
-	m_state = ThreadRunning;
+	_state = ThreadRunning;
 
 	pthread_attr_t attr;
 
@@ -228,7 +228,7 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
 		if (rc)
 			break;
 
-		m_priority = priority;
+		_priority = priority;
 
 		if (priority == thread::InheritPriority) {
 			PFS_VERIFY_ERRNO(!(rc = pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED)), rc);
@@ -259,7 +259,7 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
 	                || pthread_attr_setschedparam(& attr, & sp) != 0) {
 
             	pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED);
-            	m_priority = priority;
+            	_priority = priority;
             }
 #endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
 		}
@@ -273,16 +273,16 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
 
 			pthread_t pth = 0;
 
-			m_data = new thread::data;
-			m_data->threadImpl = m_thread->_pimpl;
+			_data = new thread::data;
+			_data->threadImpl = _thread->_pimpl;
 
 			PFS_VERIFY_ERRNO(!(rc = pthread_create(& pth, & attr, & thread::impl::thread_routine, this)), rc);
 
 			if (rc) {
-				m_state = ThreadNotRunning;
-				if (m_data) {
-					delete m_data;
-					m_data = nullptr;
+				_state = ThreadNotRunning;
+				if (_data) {
+					delete _data;
+					_data = nullptr;
 				}
 #ifdef __COMMENT__
 #ifdef CWT_OS_LINUX
@@ -329,25 +329,25 @@ void * thread::impl::thread_routine (void * arg)
     PFS_VERIFY(!pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
 
 	thread::impl * threadImpl = static_cast<thread::impl *>(arg);
-	threadImpl->m_data->threadId = pthread_self();
+	threadImpl->_data->threadId = pthread_self();
 
     pthread_cleanup_push(& thread::impl::finalize, threadImpl);
 
-    thread::data::set(threadImpl->m_data); // set thread-specific data
+    thread::data::set(threadImpl->_data); // set thread-specific data
 
     PFS_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr));
     PFS_VERIFY(0 == pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr));
 
     pthread_testcancel();
 
-	thread * thisthread = threadImpl->m_thread;
+	thread * thisthread = threadImpl->_thread;
 
 	// This is the last checking if thread instance is a live (not destroyed)
 	// before call the 'run' routine.
 	if (! thisthread) {
 		// This order of deletion is important to prevent from double free.
-		thread::data * d = threadImpl->m_data;
-		threadImpl->m_data = nullptr;
+		thread::data * d = threadImpl->_data;
+		threadImpl->_data = nullptr;
 		delete d;
 		PFS_ASSERT_X(thisthread, _Tr("thread destroyed, may be you forget to wait() it")); // thread detached (container already destroyed)
 	}
@@ -366,11 +366,11 @@ void thread::impl::finalize (void * arg)
 
 	thread::impl * threadImpl = static_cast<thread::impl *>(arg);
 
-    pfs::auto_lock<> locker(& threadImpl->m_mutex);
+    pfs::auto_lock<> locker(& threadImpl->_mutex);
 
-    PFS_ASSERT(threadImpl->m_data->threadId);
+    PFS_ASSERT(threadImpl->_data->threadId);
 
-    threadImpl->m_state = ThreadFinishing;
+    threadImpl->_state = ThreadFinishing;
 
     // Delete thread storage data
 /*
@@ -379,9 +379,9 @@ void thread::impl::finalize (void * arg)
     locker.relock();
 */
 
-    threadImpl->m_data->threadId = 0;
-    threadImpl->m_state = ThreadFinished;
-    threadImpl->m_threadFinished.wakeAll();
+    threadImpl->_data->threadId = 0;
+    threadImpl->_state = ThreadFinished;
+    threadImpl->_threadFinished.wakeAll();
 }
 
 void thread::data::destroy (void * pdata)
@@ -391,7 +391,7 @@ void thread::data::destroy (void * pdata)
 	pthread_setspecific(threadKey, pdata);
 
 	thread::data * threadData = static_cast<thread::data *>(pdata);
-	threadData->threadImpl->m_data = nullptr;
+	threadData->threadImpl->_data = nullptr;
 	delete threadData;
 
     pthread_setspecific(threadKey, nullptr);
@@ -421,12 +421,12 @@ void thread::data::destroy (void * pdata)
 void thread::impl::terminate ()
 {
 //	CWT_TRACE_METHOD();
-    pfs::auto_lock<> locker(& m_mutex);
+    pfs::auto_lock<> locker(& _mutex);
 
-    if (m_data && m_data->threadId) {
+    if (_data && _data->threadId) {
     	int rc = 0;
-    	m_state = ThreadFinishing;
-    	PFS_VERIFY_ERRNO(!(rc = pthread_cancel(m_data->threadId)), rc); // thread termination error
+    	_state = ThreadFinishing;
+    	PFS_VERIFY_ERRNO(!(rc = pthread_cancel(_data->threadId)), rc); // thread termination error
     }
 }
 
@@ -434,21 +434,21 @@ bool thread::impl::wait (ulong_t timeout)
 {
 //	CWT_TRACE_METHOD();
 
-    pfs::auto_lock<> locker(& m_mutex);
+    pfs::auto_lock<> locker(& _mutex);
 
-    if (m_data) {
-		if (m_data->threadId == pthread_self()) {
+    if (_data) {
+		if (_data->threadId == pthread_self()) {
 			PFS_ERROR(_Tr("thread attempt to wait on itself"));
 			return false;
 		}
 
-		while (m_state == ThreadRunning) {
+		while (_state == ThreadRunning) {
 			if (timeout == PFS_ULONG_MAX) {
-				if (! m_threadFinished.wait(m_mutex)) {
+				if (! _threadFinished.wait(_mutex)) {
 					return false;
 				}
 			} else {
-				if (! m_threadFinished.wait(m_mutex, timeout)) {
+				if (! _threadFinished.wait(_mutex, timeout)) {
 					return false;
 				}
 			}
@@ -460,14 +460,14 @@ bool thread::impl::wait (ulong_t timeout)
 
 void thread::impl::setPriority(thread::priority_type priority)
 {
-    pfs::auto_lock<> locker(& m_mutex);
+    pfs::auto_lock<> locker(& _mutex);
 
-    if (m_state != ThreadRunning) {
+    if (_state != ThreadRunning) {
     	PFS_WARN("Unable to set thread priority: thread must be in running state");
         return;
     }
 
-    m_priority = priority;
+    _priority = priority;
 
 #ifdef CWT_HAVE_THREAD_PRIORITY_SCHEDULING
 
@@ -476,7 +476,7 @@ void thread::impl::setPriority(thread::priority_type priority)
 
     int rc;
 
-    PFS_VERIFY_ERRNO(!(rc = pthread_getschedparam(m_data->threadId, & posixPolicy, & param)), rc);
+    PFS_VERIFY_ERRNO(!(rc = pthread_getschedparam(_data->threadId, & posixPolicy, & param)), rc);
     if (rc)
         return;
 
@@ -488,14 +488,14 @@ void thread::impl::setPriority(thread::priority_type priority)
     }
 
     param.sched_priority = posixPriority;
-    PFS_VERIFY_ERRNO(!(rc = pthread_setschedparam(m_data->threadId, posixPolicy, & param)), rc);
+    PFS_VERIFY_ERRNO(!(rc = pthread_setschedparam(_data->threadId, posixPolicy, & param)), rc);
 
 #	ifdef SCHED_IDLE
     if (rc < 0 && posixPolicy == SCHED_IDLE && errno == EINVAL) {
     	// Set native thread's priority to minimal value
-        pthread_getschedparam(m_data->threadId, & posixPolicy, & param);
+        pthread_getschedparam(_data->threadId, & posixPolicy, & param);
         param.sched_priority = sched_get_priority_min(posixPolicy);
-        pthread_setschedparam(m_data->threadId, posixPolicy, & param);
+        pthread_setschedparam(_data->threadId, posixPolicy, & param);
     }
 #	endif
 #endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
