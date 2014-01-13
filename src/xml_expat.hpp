@@ -7,7 +7,7 @@
 #ifndef __CWT_XML_EXPAT_HPP__
 #define __CWT_XML_EXPAT_HPP__
 
-#include "../include/cwt/xml.hpp"
+#include "../include/cwt/xml/sax.hpp"
 #include "../expat2/lib/expat.h"
 
 #ifndef XMLCALL
@@ -92,6 +92,30 @@ public:
 	static void XMLCALL xml_endNamespaceDeclHandler (
 			  void * readerImpl
 			, const XML_Char * prefix);
+
+	static void	XMLCALL xml_startDoctypeDeclHandler (
+			  void * readerImpl
+			, const XML_Char * doctypeName
+			, const XML_Char * sysid
+			, const XML_Char * pubid
+			, int has_internal_subset);
+
+	static void XMLCALL xml_endDoctypeDeclHandler (void * readerImpl);
+
+	static void XMLCALL xml_unparsedEntityDeclHandler (
+			  void * readerImpl
+			, const XML_Char * entityName
+			, const XML_Char * base
+			, const XML_Char * systemId
+			, const XML_Char * publicId
+			, const XML_Char * notationName);
+
+	static void XMLCALL xml_notationDeclHandler (
+			  void * readerImpl
+	        , const XML_Char * notationName
+	        , const XML_Char * base
+	        , const XML_Char * systemId
+	        , const XML_Char * publicId);
 };
 
 inline reader::impl::~impl ()

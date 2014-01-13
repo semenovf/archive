@@ -26,9 +26,14 @@ void reader::acceptVersion (pfs::function<bool (int, int)> acceptor)
 
 bool reader::parse (const pfs::string & src)
 {
-	return _pimpl->parse(src);
+	if (!_pimpl->parse(src)) {
+		this->addError(_pimpl->errorString());
+		return false;
+	}
+	return true;
 }
 
+/*
 bool reader::isError () const
 {
 	return _pimpl->isError();
@@ -38,5 +43,6 @@ pfs::string reader::errorString () const
 {
 	return _pimpl->errorString();
 }
+*/
 
 }} // cwt::xml

@@ -3,6 +3,8 @@ include($$(GBS_HOME)/common-dll.pri)
 TARGET = cwt-xml
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../pfs/include
+INCLUDEPATH += ../../../cwt-sys/include
+INCLUDEPATH += ../../../cwt-dom/include
 
 SOURCES += ../../expat2/lib/xmlparse.c
 SOURCES += ../../expat2/lib/xmlrole.c
@@ -33,6 +35,8 @@ unix {
     QMAKE_CFLAGS += -Wno-missing-field-initializers
 
     LIBS += -lpfs
+    LIBS += -lcwt-dom
+    LIBS += -lcwt-sys
 }
 
 win32 {

@@ -5,7 +5,6 @@
  */
 
 #include "dom_p.hpp"
-#include <cwt/logger.hpp>
 
 namespace cwt { namespace xml {
 
@@ -15,38 +14,82 @@ static bool __accept_version(int major, int minor)
 }
 
 cwt::dom::document createDocument (const pfs::string & xml_source
-		, const pfs::string & namespaceURI
-		, const pfs::string & qualifiedName
-		, const cwt::dom::doctype & doctype)
+		, const pfs::string & /*namespaceURI*/
+		, const pfs::string & /*qualifiedName*/
+		, const cwt::dom::doctype & /*doctype*/)
 {
 	document_builder h;
 	reader xml_reader(& h);
 
-	if (!xml_reader.acceptVersion(__accept_version))
-		return cwt::dom::document();
+	xml_reader.acceptVersion(__accept_version);
 
 	if (!xml_reader.parse(xml_source))
 		return cwt::dom::document();
 
 	if (xml_reader.isError()) {
-		std::cout << xml_reader.errorString() << std::endl;
+		//std::cout << xml_reader.errorString() << std::endl; output error
 		return cwt::dom::document();
 	}
 
 	return h._doc;
 }
 
-void document_builder::startElement (const pfs::string & tagname, const pfs::map<pfs::string, pfs::string> & atts)
-{
+void document_builder::startElement (const pfs::string & /*tagname*/, const pfs::map<pfs::string, pfs::string> & /*atts*/)
+{}
 
-}
+void document_builder::endElement (const pfs::string & /*tagname*/)
+{}
 
-void document_builder::endElement (const pfs::string & tagname)
-{
+void document_builder::characterData (const pfs::string & /*text*/)
+{}
 
-}
+void document_builder::processingInstruction (const pfs::string & , const pfs::string & )
+{}
 
+void document_builder::comment (const pfs::string &)
+{}
 
+void document_builder::startCdataSection ()
+{}
+
+void document_builder::endCdataSection ()
+{}
+
+void document_builder::defaultData (const pfs::string &)
+{}
+
+void document_builder::skippedEntity (const pfs::string & /*entityName*/, bool /*is_parameter_entity*/)
+{}
+
+void document_builder::startNamespaceDecl (const pfs::string & /*prefix*/, const pfs::string & /*uri*/)
+{}
+
+void document_builder::endNamespaceDecl (const pfs::string & /*prefix*/)
+{}
+
+void document_builder::startDoctypeDecl (const pfs::string & /*doctypeName*/
+		, const pfs::string & /*systemId*/
+		, const pfs::string & /*publicId*/
+		, bool /*has_internal_subset*/)
+{}
+
+void document_builder::endDoctypeDecl ()
+{}
+
+void document_builder::unparsedEntityDecl (
+		  const pfs::string & /*entityName*/
+		, const pfs::string & /*base*/
+		, const pfs::string & /*systemId*/
+		, const pfs::string & /*publicId*/
+		, const pfs::string & /*notationName*/)
+{}
+
+void document_builder::notationDecl (
+		  const pfs::string & /*notationName*/
+        , const pfs::string & /*base*/
+        , const pfs::string & /*systemId*/
+        , const pfs::string & /*publicId*/)
+{}
 
 /*
 QDomHandler::QDomHandler(QDomDocumentPrivate* adoc, bool namespaceProcessing)

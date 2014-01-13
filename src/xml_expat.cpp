@@ -42,16 +42,16 @@ reader::impl::impl ()
 // decl handlers
     XML_SetStartNamespaceDeclHandler(_parser, xml_startNamespaceDeclHandler);
     XML_SetEndNamespaceDeclHandler(_parser, xml_endNamespaceDeclHandler);
-//    XML_SetNamespaceDeclHandler(_parser);
+//    XML_SetNamespaceDeclHandler(_parser); // equivalent to XML_SetStartNamespaceDeclHandler and XML_SetEndNamespaceDeclHandler calls
     XML_SetXmlDeclHandler(_parser, xml_xmlDeclHandler);
-//    XML_SetStartDoctypeDeclHandler(_parser);
-//    XML_SetEndDoctypeDeclHandler(_parser);
-//    XML_SetDoctypeDeclHandler(_parser);
+    XML_SetStartDoctypeDeclHandler(_parser, xml_startDoctypeDeclHandler);
+    XML_SetEndDoctypeDeclHandler(_parser, xml_endDoctypeDeclHandler);
+//    XML_SetDoctypeDeclHandler(_parser); // equivalent to XML_SetStartDoctypeDeclHandler and XML_SetEndDoctypeDeclHandler call
 //    XML_SetElementDeclHandler(_parser);
 //    XML_SetAttlistDeclHandler(_parser);
 //    XML_SetEntityDeclHandler(_parser);
-//    XML_SetUnparsedEntityDeclHandler(_parser);
-//    XML_SetNotationDeclHandler(_parser);
+    XML_SetUnparsedEntityDeclHandler(_parser, xml_unparsedEntityDeclHandler);
+    XML_SetNotationDeclHandler(_parser, xml_notationDeclHandler);
 
 
 //    XML_SetNotStandaloneHandler(_parser);
@@ -231,6 +231,62 @@ void XMLCALL reader::impl::xml_endNamespaceDeclHandler (
 		p->_handlers->endNamespaceDecl(pfs::string::fromUtf8(prefix));
 	}
 }
+
+void	XMLCALL reader::impl::xml_startDoctypeDeclHandler (
+		  void * readerImpl
+		, const XML_Char * doctypeName
+		, const XML_Char * sysid
+		, const XML_Char * pubid
+		, int has_internal_subset)
+{
+	reader::impl * p = static_cast<reader::impl *>(readerImpl);
+	if (p->_handlers) {
+		p->_handlers->startDoctypeDecl(_u8(doctypeName), _u8(sysid), _u8(pubid), has_internal_subset != 0);
+	}
+}
+
+void XMLCALL reader::impl::xml_endDoctypeDeclHandler (void * readerImpl)
+{
+	reader::impl * p = static_cast<reader::impl *>(readerImpl);
+	if (p->_handlers) {
+		p->_handlers->endDoctypeDecl();
+	}
+}
+
+void XMLCALL reader::impl::xml_unparsedEntityDeclHandler (
+			  void * readerImpl
+			, const XML_Char * entityName
+			, const XML_Char * base
+			, const XML_Char * systemId
+			, const XML_Char * publicId
+			, const XML_Char * notationName)
+{
+	reader::impl * p = static_cast<reader::impl *>(readerImpl);
+	if (p->_handlers) {
+		p->_handlers->unparsedEntityDecl(_u8(entityName)
+				, _u8(base)
+				, _u8(systemId)
+				, _u8(publicId)
+				, _u8(notationName));
+	}
+}
+
+void XMLCALL reader::impl::xml_notationDeclHandler (
+		  void * readerImpl
+        , const XML_Char * notationName
+        , const XML_Char * base
+        , const XML_Char * systemId
+        , const XML_Char * publicId)
+{
+	reader::impl * p = static_cast<reader::impl *>(readerImpl);
+	if (p->_handlers) {
+		p->_handlers->notationDecl(_u8(notationName)
+				, _u8(base)
+				, _u8(systemId)
+				, _u8(publicId));
+	}
+}
+
 
 
 }} // cwt::xml

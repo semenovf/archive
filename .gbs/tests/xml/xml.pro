@@ -2,8 +2,9 @@ include($$(GBS_HOME)/common-test.pri)
 
 TARGET = test_xml
 
-INCLUDEPATH += ../../../../pfs/include
 INCLUDEPATH += ../../../include
+INCLUDEPATH += ../../../../pfs/include
+INCLUDEPATH += ../../../../cwt-sys/include
 
 SOURCES += ../../../tests/test.cpp
 
@@ -17,6 +18,7 @@ unix {
 #    QMAKE_CFLAGS += -Wno-error=missing-field-initializers
 #    QMAKE_CFLAGS += -Wno-missing-field-initializers
 
+    LIBS += -lcwt-sys
     LIBS += -lcwt-xml
 }
 
