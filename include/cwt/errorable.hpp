@@ -11,6 +11,8 @@
 
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
+#include <cwt/logger.hpp>
+#include <ostream>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -46,7 +48,11 @@ public:
 	bool isError() const { return _errors.size() != 0; }
 	bool isGood() const { return _errors.size() == 0; }
 	const pfs::string lastErrorText() const;
+
+	void logOutput () const;
+	friend std::ostream & operator << (std::ostream &, const errorable &);
 };
+
 
 inline size_t errorable::errorCount() const
 {

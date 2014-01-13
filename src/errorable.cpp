@@ -27,4 +27,37 @@ void errorable::addSystemError (int errn, const pfs::string & caption)
 	}
 }
 
+void errorable::logOutput () const
+{
+	if (_errors.size() > 0) {
+		pfs::vector<errorable::erritem>::const_iterator it = _errors.cbegin();
+		pfs::vector<errorable::erritem>::const_iterator itEnd = _errors.cend();
+		for (; it != itEnd; ++it) {
+			pfs::string r;
+			if (it->_ntimes > 1) {
+				r << it->_errstr << "( " << _Tr("repeat") << ' ' << it->_ntimes << _Tr("times") << ") ";
+			} else {
+				r << it->_errstr;
+			}
+			log::error(r);
+		}
+	}
+}
+
+std::ostream & operator << (std::ostream & out, const errorable & er)
+{
+	if (er._errors.size() > 0) {
+		pfs::vector<errorable::erritem>::const_iterator it = er._errors.cbegin();
+		pfs::vector<errorable::erritem>::const_iterator itEnd = er._errors.cend();
+		for (; it != itEnd; ++it) {
+			if (it->_ntimes > 1) {
+				out << it->_errstr << "( " << _Tr("repeat") << ' ' << it->_ntimes << _Tr("times") << ") " << std::endl;
+			} else {
+				out << it->_errstr << std::endl;
+			}
+		}
+	}
+	return out;
+}
+
 } // cwt
