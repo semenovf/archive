@@ -16,7 +16,7 @@ class node_impl;
 class document_impl;
 class namednodemap_impl;
 
-class document_type_impl : public node_impl
+class doctype_impl : public node_impl
 {
 public:
     namednodemap_impl * _entities;
@@ -26,9 +26,9 @@ public:
     pfs::string _internalSubset;
 
 public:
-    document_type_impl (document_impl *, node_impl * parent = nullptr);
-    document_type_impl (document_type_impl * other, bool deep);
-    ~document_type_impl ();
+    doctype_impl (document_impl *, node_impl * parent = nullptr);
+    doctype_impl (doctype_impl * other, bool deep);
+    ~doctype_impl ();
     void init ();
 
     virtual node_impl * insertBefore (node_impl * newChild, node_impl * refChild);

@@ -66,7 +66,7 @@ bool dom_implementation::hasFeature (const pfs::string & feature, const pfs::str
 
 document dom_implementation::createDocument(const pfs::string & nsURI
 		, const pfs::string & qName
-		, const document_type & doctype)
+		, const doctype & doctype)
 {
     document doc(doctype);
     element root = doc.createElementNS(nsURI, qName);
@@ -78,7 +78,7 @@ document dom_implementation::createDocument(const pfs::string & nsURI
     return doc;
 }
 
-document_type dom_implementation::createDocumentType (const pfs::string & qName
+doctype dom_implementation::createDocumentType (const pfs::string & qName
 		, const pfs::string & publicId
 		, const pfs::string & systemId)
 {
@@ -97,7 +97,7 @@ document_type dom_implementation::createDocumentType (const pfs::string & qName
         return document_type();
 */
 
-    document_type_impl * dt = new document_type_impl(nullptr);
+    doctype_impl * dt = new doctype_impl(nullptr);
     dt->_name = qName; //fixedName;
     if (systemId.isNull()) {
         dt->_publicId.clear();
@@ -107,7 +107,7 @@ document_type dom_implementation::createDocumentType (const pfs::string & qName
         dt->_systemId = systemId; // fixedSystemId;
     }
     dt->ref.deref();
-    return document_type(dt);
+    return doctype(dt);
 }
 
 }} // cwt::dom

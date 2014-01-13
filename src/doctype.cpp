@@ -19,13 +19,13 @@
 
 namespace cwt { namespace dom {
 
-document_type_impl::document_type_impl (document_impl * doc, node_impl * parent)
+doctype_impl::doctype_impl (document_impl * doc, node_impl * parent)
     : node_impl(doc, parent)
 {
     init();
 }
 
-document_type_impl::document_type_impl (document_type_impl * n, bool deep)
+doctype_impl::doctype_impl (doctype_impl * n, bool deep)
     : node_impl(n, deep)
 {
     init();
@@ -46,7 +46,7 @@ document_type_impl::document_type_impl (document_type_impl * n, bool deep)
 }
 
 
-document_type_impl::~document_type_impl()
+doctype_impl::~doctype_impl()
 {
     if (!_entities->_ref.deref())
         delete _entities;
@@ -55,7 +55,7 @@ document_type_impl::~document_type_impl()
         delete _notations;
 }
 
-void document_type_impl::init ()
+void doctype_impl::init ()
 {
     _entities = new namednodemap_impl(this);
 //    try {
@@ -72,41 +72,41 @@ void document_type_impl::init ()
 //    }
 }
 
-node_impl * document_type_impl::cloneNode (bool deep)
+node_impl * doctype_impl::cloneNode (bool deep)
 {
-    node_impl * p = new document_type_impl(this, deep);
+    node_impl * p = new doctype_impl(this, deep);
     p->ref.deref();
     return p;
 }
 
 
-document_type::document_type (document_type_impl * nimpl)
+doctype::doctype (doctype_impl * nimpl)
 		: node(nimpl)
 {}
 
-pfs::string document_type::name () const
+pfs::string doctype::name () const
 {
 	return _pimpl
 			? _pimpl->nodeName()
 			: pfs::string();
 }
 
-namednodemap document_type::entities () const
+namednodemap doctype::entities () const
 {
 	return _pimpl
-			? namednodemap(static_cast<document_type_impl *>(_pimpl)->_entities)
+			? namednodemap(static_cast<doctype_impl *>(_pimpl)->_entities)
 			: namednodemap();
 }
 
 
-namednodemap document_type::notations () const
+namednodemap doctype::notations () const
 {
 	return _pimpl
-			? namednodemap(dynamic_cast<document_type_impl *>(_pimpl)->_notations)
+			? namednodemap(dynamic_cast<doctype_impl *>(_pimpl)->_notations)
 			: namednodemap();
 }
 
-node_impl * document_type_impl::insertBefore (node_impl * newChild, node_impl * refChild)
+node_impl * doctype_impl::insertBefore (node_impl * newChild, node_impl * refChild)
 {
     // Call the original implementation
     node_impl * p = node_impl::insertBefore(newChild, refChild);
@@ -120,7 +120,7 @@ node_impl * document_type_impl::insertBefore (node_impl * newChild, node_impl * 
     return p;
 }
 
-node_impl * document_type_impl::insertAfter (node_impl * newChild, node_impl * refChild)
+node_impl * doctype_impl::insertAfter (node_impl * newChild, node_impl * refChild)
 {
     // Call the origianl implementation
     node_impl * p = node_impl::insertAfter(newChild, refChild);
@@ -134,7 +134,7 @@ node_impl * document_type_impl::insertAfter (node_impl * newChild, node_impl * r
     return p;
 }
 
-node_impl * document_type_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
+node_impl * doctype_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
 {
     // Call the origianl implementation
     node_impl * p = node_impl::replaceChild(newChild, oldChild);
@@ -155,7 +155,7 @@ node_impl * document_type_impl::replaceChild (node_impl * newChild, node_impl * 
     return p;
 }
 
-node_impl * document_type_impl::removeChild (node_impl * oldChild)
+node_impl * doctype_impl::removeChild (node_impl * oldChild)
 {
     // Call the origianl implementation
     node_impl* p = node_impl::removeChild( oldChild);
@@ -169,23 +169,23 @@ node_impl * document_type_impl::removeChild (node_impl * oldChild)
     return p;
 }
 
-node_impl * document_type_impl::appendChild (node_impl * newChild)
+node_impl * doctype_impl::appendChild (node_impl * newChild)
 {
     return insertAfter(newChild, 0);
 }
 
 
-pfs::string document_type::publicId () const
+pfs::string doctype::publicId () const
 {
 	return _pimpl
-			? dynamic_cast<document_type_impl *>(_pimpl)->_publicId
+			? dynamic_cast<doctype_impl *>(_pimpl)->_publicId
 			: pfs::string();
 }
 
-pfs::string document_type::systemId () const
+pfs::string doctype::systemId () const
 {
 	return _pimpl
-			? dynamic_cast<document_type_impl *>(_pimpl)->_systemId
+			? dynamic_cast<doctype_impl *>(_pimpl)->_systemId
 			: pfs::string();
 }
 
@@ -196,10 +196,10 @@ pfs::string document_type::systemId () const
 
     \sa publicId(), systemId()
 */
-pfs::string document_type::internalSubset () const
+pfs::string doctype::internalSubset () const
 {
 	return _pimpl
-			? dynamic_cast<document_type_impl *>(_pimpl)->_internalSubset
+			? dynamic_cast<doctype_impl *>(_pimpl)->_internalSubset
 			: pfs::string();
 }
 

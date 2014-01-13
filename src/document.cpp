@@ -27,7 +27,7 @@ namespace cwt { namespace dom {
 document_impl::document_impl ()
     : node_impl(nullptr)
     , _impl(new dom_implementation_impl)
-	, _type(new document_type_impl(this, this))
+	, _type(new doctype_impl(this, this))
     , _nodeListTime(1)
 {
     _type->ref.deref();
@@ -38,7 +38,7 @@ document_impl::document_impl ()
 document_impl::document_impl (const pfs::string & aname)
     : node_impl(nullptr)
     , _impl(new dom_implementation_impl)
-	, _type(new document_type_impl(this, this))
+	, _type(new doctype_impl(this, this))
 	, _nodeListTime(1)
 {
     ;
@@ -48,7 +48,7 @@ document_impl::document_impl (const pfs::string & aname)
     _name = pfs::string("#document");
 }
 
-document_impl::document_impl (document_type_impl * dt)
+document_impl::document_impl (doctype_impl * dt)
     : node_impl(nullptr)
     , _impl(new dom_implementation_impl)
     , _nodeListTime(1)
@@ -56,7 +56,7 @@ document_impl::document_impl (document_type_impl * dt)
     if (dt != 0) {
         _type.reset(dt);
     } else {
-        _type.reset(new document_type_impl(this, this));
+        _type.reset(new doctype_impl(this, this));
         _type->ref.deref();
     }
 
@@ -66,7 +66,7 @@ document_impl::document_impl (document_type_impl * dt)
 document_impl::document_impl (document_impl * n, bool deep)
     : node_impl(n, deep)
 	, _impl(n->_impl->clone())
-	, _type(static_cast<document_type_impl*>(n->_type->cloneNode()))
+	, _type(static_cast<doctype_impl*>(n->_type->cloneNode()))
 	, _nodeListTime(1)
 {
     _type->setParent(this);
@@ -275,8 +275,8 @@ node_impl * document_impl::importNode (const node_impl * importedNode, bool deep
 document::document (const pfs::string & name) : node(new document_impl(name))
 {}
 
-document::document (const document_type & doctype)
-	: node(new document_impl((document_type_impl*)(doctype._pimpl)))
+document::document (const cwt::dom::doctype & dt)
+	: node(new document_impl((doctype_impl*)(dt._pimpl)))
 {}
 
 document::document (const document & other) : node(other)
@@ -290,11 +290,11 @@ document & document::operator = (const document & other)
     return (document &) node::operator = (other);
 }
 
-document_type document::doctype () const
+cwt::dom::doctype document::doctype () const
 {
 	return _pimpl
-			? document_type(dynamic_cast<document_impl *>(_pimpl)->doctype())
-			: document_type();
+			? cwt::dom::doctype(dynamic_cast<document_impl *>(_pimpl)->doctype())
+			: cwt::dom::doctype();
 }
 
 dom_implementation document::implementation () const

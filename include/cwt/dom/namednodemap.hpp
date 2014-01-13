@@ -14,12 +14,12 @@ namespace cwt { namespace dom {
 
 class node;
 class namednodemap_impl;
-class document_type;
+class doctype;
 
 class namednodemap
 {
 	friend class node;
-	friend class document_type;
+	friend class doctype;
 
 private:
 	namednodemap_impl * _pimpl;

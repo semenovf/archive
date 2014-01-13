@@ -12,6 +12,7 @@
 #include <cwt/dom/namednodemap.hpp>
 #include <cwt/dom/attr.hpp>
 #include <cwt/dom/element.hpp>
+#include <cwt/dom/doctype.hpp>
 #include <cwt/dom/document.hpp>
 
 #endif /* __CWT_DOM_HPP__ */

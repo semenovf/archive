@@ -12,7 +12,7 @@
 namespace cwt { namespace dom {
 
 class document;
-class document_type;
+class doctype;
 class dom_implementation_impl;
 
 class DLL_API dom_implementation
@@ -36,9 +36,9 @@ public:
 
 	document createDocument (const pfs::string & namespaceURI
 			, const pfs::string & qualifiedName
-			, const document_type & doctype);   // raises(DOMException)
+			, const doctype & doctype);   // raises(DOMException)
 
-	document_type createDocumentType (const pfs::string & qualifiedName
+	doctype createDocumentType (const pfs::string & qualifiedName
 			, const pfs::string & publicId
 			, const pfs::string & systemId); // raises(DOMException)
 };

@@ -8,7 +8,7 @@ namespace cwt { namespace dom {
 class document_impl;
 class node;
 class dom_implementation;
-class document_type;
+class doctype;
 class document_fragment;
 class element;
 class text;
@@ -29,12 +29,12 @@ protected:
 public:
 	document () : node() {}
 	explicit document (const pfs::string & name);
-	explicit document (const document_type & doctype);
+	explicit document (const doctype & dt);
 	document (const document & other);
 	document & operator = (const document & other);
 	~document () {}
 
-	document_type doctype () const;
+	cwt::dom::doctype doctype () const;
 	dom_implementation implementation () const;
 	element documentElement () const;
 

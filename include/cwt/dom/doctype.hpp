@@ -15,22 +15,22 @@ class node;
 class namednodemap;
 class document;
 class dom_implementation;
-class document_type_impl;
+class doctype_impl;
 
-class DLL_API document_type : public node
+class DLL_API doctype : public node
 {
 	friend class document;
 	friend class dom_implementation;
 
 protected:
-	document_type (document_type_impl * n);
+	doctype (doctype_impl * n);
 
 public:
-	document_type () : node () {}
-	document_type (const document_type & other) : node (other) {}
-	document_type & operator= (const document_type & other)
+	doctype () : node () {}
+	doctype (const doctype & other) : node (other) {}
+	doctype & operator= (const doctype & other)
 	{
-	    return static_cast<document_type &>(node::operator = (other));
+	    return static_cast<doctype &>(node::operator = (other));
 	}
 
 	pfs::string name () const;

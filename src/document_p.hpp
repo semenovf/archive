@@ -18,7 +18,7 @@ class node_impl;
 class text_impl;
 class element_impl;
 class entityref_impl;
-class document_type_impl;
+class doctype_impl;
 class document_fragment_impl;
 class pinstruction_impl;
 class domimpl_impl;
@@ -29,18 +29,18 @@ class document_impl : public node_impl
 {
 public:
     pfs::shared_ptr<dom_implementation_impl> _impl;
-    pfs::shared_ptr<document_type_impl> _type;
+    pfs::shared_ptr<doctype_impl> _type;
 
     long _nodeListTime;
 
 public:
     document_impl ();
     document_impl (const pfs::string & name);
-    document_impl (document_type_impl * dt);
+    document_impl (doctype_impl * dt);
     document_impl (document_impl * n, bool deep);
     ~document_impl ();
 
-    document_type_impl * doctype () { return _type.get(); }
+    doctype_impl * doctype () { return _type.get(); }
     dom_implementation_impl * implementation () { return _impl.get(); }
     element_impl * documentElement ();
 
