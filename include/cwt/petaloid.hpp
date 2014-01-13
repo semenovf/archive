@@ -45,15 +45,18 @@ public:
 	const pfs::string & name() const { return m_name; }
 //	const uuid_t & uuid() const { return m_uuid.uuid(); }
 
-	bool isRegistered() const { return m_sepaloidPtr != nullptr ? true : false; }
+	bool isRegistered () const { return m_sepaloidPtr != nullptr ? true : false; }
 
-	static void defaultDtor(petaloid *p) { PFS_ASSERT(p); delete p; }
+	static void defaultDtor (petaloid *p) { PFS_ASSERT(p); delete p; }
 
 	virtual const emitter_mapping * getEmitters (int * count)   { PFS_ASSERT(count); *count = 0; return 0; }
 	virtual const detector_mapping * getDetectors (int * count) { PFS_ASSERT(count); *count = 0; return 0; }
 
 	virtual void onStart () {}  // call from sepaloid::start()
 	virtual void onFinish () {} // call from sepaloid::finish()
+
+public: /*signal*/
+	cwt::signal2<const pfs::string &, bool &> petaloidRegistered;
 
 private:
 	pfs::string m_name;

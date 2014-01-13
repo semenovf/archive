@@ -129,8 +129,13 @@ public:
 	void start ();
 	int  exec ();
 
-// slots
-	//void quit();
+	bool isPetaloidRegistered (const pfs::string & pname);
+
+public: /*slots*/
+	void onPetaloidRegistered (const pfs::string & pname, bool & result)
+	{
+		result = isPetaloidRegistered (pname);
+	}
 
 protected:
 	bool registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dtor_t dtor);

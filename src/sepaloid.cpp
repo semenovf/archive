@@ -17,9 +17,9 @@ namespace cwt {
 class petaloid_threaded : public cwt::thread
 {
 public:
-	petaloid_threaded(cwt::petaloid * p) : cwt::thread() , m_petaloid(p) { PFS_ASSERT(m_petaloid); }
-	virtual ~petaloid_threaded() {}
-	const cwt::petaloid * petaloid() const { return m_petaloid; }
+	petaloid_threaded (cwt::petaloid * p) : cwt::thread() , m_petaloid(p) { PFS_ASSERT(m_petaloid); }
+	virtual ~petaloid_threaded () {}
+	const cwt::petaloid * petaloid () const { return m_petaloid; }
 
 protected:
 	virtual void run() { m_petaloid->run(m_petaloid); }
@@ -28,7 +28,7 @@ private:
 	cwt::petaloid * m_petaloid;
 };
 
-sepaloid::sepaloid(sepaloid::mapping_type mapping[], int n)
+sepaloid::sepaloid (sepaloid::mapping_type mapping[], int n)
 	: m_masterPetaloid(nullptr)
 {
 	for (int i = 0; i < n; i++) {
@@ -36,14 +36,14 @@ sepaloid::sepaloid(sepaloid::mapping_type mapping[], int n)
 	}
 }
 
-cwt::petaloid * sepaloid::registerLocalPetaloid(cwt::petaloid * petaloid, petaloid_dtor_t dtor)
+cwt::petaloid * sepaloid::registerLocalPetaloid (cwt::petaloid * petaloid, petaloid_dtor_t dtor)
 {
 	if (petaloid)
 		return registerPetaloid(*petaloid, nullptr, dtor) ? petaloid : nullptr;
 	return nullptr;
 }
 
-cwt::petaloid * sepaloid::registerPetaloidForPath(const pfs::string & path, const char * pname, int arg, char ** argv)
+cwt::petaloid * sepaloid::registerPetaloidForPath (const pfs::string & path, const char * pname, int arg, char ** argv)
 {
 	cwt::fs fs;
 
@@ -74,7 +74,7 @@ cwt::petaloid * sepaloid::registerPetaloidForPath(const pfs::string & path, cons
 	return nullptr;
 }
 
-petaloid * sepaloid::registerPetaloidForName(const pfs::string & name, const char * pname, int arg, char ** argv)
+petaloid * sepaloid::registerPetaloidForName (const pfs::string & name, const char * pname, int arg, char ** argv)
 {
 	pfs::string filename = dl::buildDlFileName(name);
 	pfs::string realPath;
@@ -90,11 +90,11 @@ petaloid * sepaloid::registerPetaloidForName(const pfs::string & name, const cha
 	return nullptr;
 }
 
-bool sepaloid::registerPetaloid(petaloid & petaloid, dl::handle ph, petaloid_dtor_t dtor)
+bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dtor_t dtor)
 {
 	int nemitters, ndetectors;
-	const emitter_mapping * emitters = petaloid.getEmitters(&nemitters);
-	const detector_mapping * detectors = petaloid.getDetectors(&ndetectors);
+	const emitter_mapping * emitters = petaloid.getEmitters(& nemitters);
+	const detector_mapping * detectors = petaloid.getDetectors(& ndetectors);
 
 	mapping_hash::iterator itEnd = m_mapping.end();
 
@@ -130,9 +130,12 @@ bool sepaloid::registerPetaloid(petaloid & petaloid, dl::handle ph, petaloid_dto
 		}
 	}
 
+	petaloid.petaloidRegistered.connect(this, & sepaloid::onPetaloidRegistered);
 	petaloid.m_sepaloidPtr = this;
 	petaloid_spec pspec(&petaloid, ph, dtor);
 	m_petaloids.append(pspec);
+
+
 
 	// petaloid must be run in a separate thread.
 	if (petaloid.run) {
@@ -180,6 +183,7 @@ void sepaloid::unregisterAll()
 
 	for (;it != itEnd; it++) {
 		PFS_ASSERT(it->p);
+		it->p->petaloidRegistered.disconnect(this);
 		pfs::string pname = it->p->name();
 		if (it->dtor) {
 			it->dtor(it->p);

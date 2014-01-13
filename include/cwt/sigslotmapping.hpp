@@ -22,7 +22,7 @@ public:
 	virtual void connectAll () = 0;
 	virtual void disconnectAll () = 0;
 	virtual void appendEmitter (emitter *e) = 0;
-	virtual void appendDetector(petaloid * petaloid, detector d) = 0;
+	virtual void appendDetector (petaloid * petaloid, detector d) = 0;
 };
 
 template <typename _emitterT, typename _detectorT>
