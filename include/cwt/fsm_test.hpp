@@ -40,7 +40,7 @@ static void fsm_test_entries(cwt::fsm::fsm<pfs::string> & fsm, FsmTestEntry * en
 	const char * const * valid_str  = & entry->valid_str[0];
 	FsmInvalidEntry *invalid_entries = & entry->invalid_entries[0];
 
-	fprintf(stdout, _Tr("Test '%s'...\n"), fsmname);
+	fprintf(stdout, "Test '%s'...\n", fsmname);
 	fsm.setTransitionTable(entry->trans_tab);
 
 	while( *valid_str != NULL ) {

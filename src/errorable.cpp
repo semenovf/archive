@@ -13,6 +13,19 @@ extern pfs::string __strerror (int_t errn);
 
 namespace cwt {
 
+void errorable::addError (const pfs::string & text)
+{
+	if (!text.isEmpty()) {
+		if (_errors.size() > 0 && _errors.last()._errstr == text) {
+			;
+		} else {
+			_errors.append(erritem(text));
+		}
+		_errors.last()._ntimes++;
+	}
+}
+
+
 void errorable::addSystemError (int errn, const pfs::string & caption)
 {
 	pfs::string errstr(__strerror(errn));

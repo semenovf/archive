@@ -159,7 +159,7 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 		ctx->spec.spec_char = pfs::ucchar('x');
 
 	if (ctx->argi >= ctx->bind_args.size()) {
-		PFS_WARN(_Tr("More arguments expected according to format string:"));
+		PFS_WARN(_Tr("More arguments expected according to format string:").c_str());
 		PFS_WARN(ctx->format.c_str());
 		ctx->result.append(pfs::string(begin, end));
 	} else {
@@ -204,13 +204,13 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 			r = pfs::string(1, char(ut.toSByte(&ok)));
 			expect = __EXPECT_CHAR;
 			if (ctx->spec.flags & safeformat::ZeroPadding) {
-				PFS_WARN(_Tr("'0' flag used with ‘%c’ specifier in format string"));
+				PFS_WARN(_Tr("'0' flag used with ‘%c’ specifier in format string").c_str());
 				PFS_WARN(ctx->format.c_str());
 				ctx->spec.flags &= ~safeformat::ZeroPadding;
 			}
 
 			if (ctx->spec.flags & safeformat::NeedSign) {
-				PFS_WARN(_Tr("'+' flag used with ‘%c’ specifier in format string"));
+				PFS_WARN(_Tr("'+' flag used with ‘%c’ specifier in format string").c_str());
 				PFS_WARN(ctx->format.c_str());
 				ctx->spec.flags &= ~safeformat::NeedSign;
 			}
@@ -219,12 +219,12 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 			r = ut.toString(&ok);
 			expect = __EXPECT_STRING;
 			if (ctx->spec.flags & safeformat::ZeroPadding) {
-				PFS_WARN(_Tr("'0' flag used with ‘%s’ specifier in format string"));
+				PFS_WARN(_Tr("'0' flag used with ‘%s’ specifier in format string").c_str());
 				PFS_WARN(ctx->format.c_str());
 				ctx->spec.flags &= ~safeformat::ZeroPadding;
 			}
 			if (ctx->spec.flags & safeformat::NeedSign) {
-				PFS_WARN(_Tr("'+' flag used with ‘%s’ specifier in format string"));
+				PFS_WARN(_Tr("'+' flag used with ‘%s’ specifier in format string").c_str());
 				PFS_WARN(ctx->format.c_str());
 				ctx->spec.flags &= ~safeformat::NeedSign;
 			}
@@ -236,7 +236,7 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 		PFS_ASSERT(expect != __EXPECT_UNKNOWN);
 
 		if (!ok) {
-			PFS_WARN(_Tr("Incompatible value for conversion specification in format string:"));
+			PFS_WARN(_Tr("Incompatible value for conversion specification in format string:").c_str());
 			PFS_WARN(ctx->format.c_str());
 		} else {
 
@@ -319,7 +319,7 @@ bool set_percent_char (const pfs::string::const_iterator & , const pfs::string::
 bool bad_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void * context, void *)
 {
 	safeformatcontext *ctx = reinterpret_cast<safeformatcontext *>(context);
-	PFS_ERROR(_Tr("Bad conversion specification in format string:"));
+	PFS_ERROR(_Tr("Bad conversion specification in format string:").c_str());
 	PFS_ERROR(ctx->format.c_str());
 	return false;
 }
