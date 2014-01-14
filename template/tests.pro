@@ -5,8 +5,8 @@ include($$(GBS_HOME)/common-app.pri)
 TARGET = test
 
 INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../cwt-common/include
-INCLUDEPATH += ../../../cwt-core/include
+INCLUDEPATH += ../../../pfs/include
+INCLUDEPATH += ../../../cwt-sys/include
 
 SOURCES += ../../tests/test.cpp
 

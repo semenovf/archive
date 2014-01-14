@@ -1,7 +1,7 @@
 #ifndef __@PROJECT@_HPP__
 #define __@PROJECT@_HPP__
 
-#include <cwt/cwt.hpp>
+#include <pfs.hpp>
 
 CWT_NS_BEGIN
 

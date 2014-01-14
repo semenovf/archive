@@ -2,6 +2,8 @@ include(common-app-qt.pri)
 #message(Process common-app-qt-gui.pri)
 
 QT += gui
+CONFIG += uic resources
+
 greaterThan(QT_MAJOR_VERSION, 4) {
     QT += widgets
     QMAKE_LIBS_OPENGL     -= -lGL
