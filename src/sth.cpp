@@ -20,11 +20,14 @@ void statement::close ()
 	}
 }
 
-bool statement::exec  ()
+bool statement::exec ()
 {
+	pfs::string errstr;
 	if (_pimpl && _pimpl->_driver) {
 		_pimpl->_bindCursor = 0;
-		return _pimpl->_driver->execStmt(*_pimpl);
+		bool r = _pimpl->_driver->execStmt(*_pimpl, errstr);
+		if (!r)
+			this->addError(errstr);
 	}
 
 	return false;

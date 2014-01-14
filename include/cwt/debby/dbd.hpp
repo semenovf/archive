@@ -29,8 +29,8 @@ struct handler_data
 
 struct statement_data
 {
-	driver * _driver;
-	size_t   _bindCursor; // current bind index
+	driver *    _driver;
+	size_t      _bindCursor; // current bind index
 	statement_data () : _driver(nullptr), _bindCursor(0) {}
 	statement_data (const statement_data & other)
 		: _driver(other._driver)
@@ -90,51 +90,38 @@ struct column_meta
 
 struct driver
 {
-	handler_data *          (*open)          (const pfs::string & path
+	handler_data *           (* open)          (const pfs::string & path
 			, const pfs::string & username
 			, const pfs::string & password
-			, const pfs::map<pfs::string, pfs::string> & params);
-	void                     (*close)         (handler_data *);
+			, const pfs::map<pfs::string, pfs::string> & params
+			, pfs::string & errstr);
+	void                     (* close)         (handler_data *);
 
-	bool                     (*query)         (handler_data &, const pfs::string & sql);   // cannot be used for statements that contain binary data
-	statement_data *         (*prepare)       (handler_data &, const pfs::string & sql);
-	ulong_t                  (*rows)          (handler_data &);
-	ulong_t 				 (*lastId)        (handler_data &);
-	pfs::vector<pfs::string> (*tables)        (handler_data &);
-	bool                     (*tableExists)   (handler_data &, const pfs::string & name);
-	bool                     (*setAutoCommit) (handler_data &, bool);
-	bool                     (*autoCommit)    (handler_data &);
-	bool                     (*begin)         (handler_data &);
-	bool                     (*commit)        (handler_data &);
-	bool                     (*rollback)      (handler_data &);
+	bool                     (* query)         (handler_data &, const pfs::string & sql, pfs::string & errstr);   // cannot be used for statements that contain binary data
+	statement_data *         (* prepare)       (handler_data &, const pfs::string & sql, pfs::string & errstr);
+	ulong_t                  (* rows)          (handler_data &);
+	ulong_t 				 (* lastId)        (handler_data &);
+	pfs::vector<pfs::string> (* tables)        (handler_data &);
+	bool                     (* tableExists)   (handler_data &, const pfs::string & name);
+	bool                     (* setAutoCommit) (handler_data &, bool);
+	bool                     (* autoCommit)    (handler_data &);
+	bool                     (* begin)         (handler_data &, pfs::string & errstr);
+	bool                     (* commit)        (handler_data &, pfs::string & errstr);
+	bool                     (* rollback)      (handler_data &, pfs::string & errstr);
 
-	long_t                   (*errno)         (handler_data &);
+	long_t                   (* errno)         (handler_data &);
 
-	bool                     (*meta)          (handler_data &, const pfs::string & table, pfs::vector<column_meta> & meta);
+	bool                     (* meta)          (handler_data &, const pfs::string & table
+			, pfs::vector<column_meta> & meta
+			, pfs::string & errstr);
 
 // Statement routines
-	void					 (*closeStmt)     (statement_data *);
-	bool					 (*execStmt)      (statement_data &);
-	bool                     (*fetchRowArray) (statement_data &, pfs::vector<pfs::unitype> & row);
-	bool                     (*fetchRowHash)  (statement_data &, pfs::map<pfs::string, pfs::unitype> & row);
-	bool                     (*bind)          (statement_data &, size_t index, const pfs::unitype & param);
+	void					 (* closeStmt)     (statement_data *);
+	bool					 (* execStmt)      (statement_data &, pfs::string & errstr);
+	bool                     (* fetchRowArray) (statement_data &, pfs::vector<pfs::unitype> & row);
+	bool                     (* fetchRowHash)  (statement_data &, pfs::map<pfs::string, pfs::unitype> & row);
+	bool                     (* bind)          (statement_data &, size_t index, const pfs::unitype & param);
 };
-
-/*
-inline handler_data::~handler_data ()
-{
-	if (_driver) {
-		_driver->close(this);
-	}
-}
-
-inline statement_data::~statement_data ()
-{
-	if (_driver) {
-		_driver->closeStmt(this);
-	}
-}
-*/
 
 }} // cwt::debby
 

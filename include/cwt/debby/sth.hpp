@@ -9,12 +9,13 @@
 #define __CWT_DEBBY_STH_HPP__
 
 #include <cwt/debby/dbd.hpp>
+#include <cwt/errorable.hpp>
 
 namespace cwt { namespace debby {
 
 class handler;
 
-class statement
+class statement : public errorable
 {
 	friend class handler;
 
