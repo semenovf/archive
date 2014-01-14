@@ -16,7 +16,6 @@
 #include <pfs/bytearray.hpp>
 #include <pfs/vector.hpp>
 #include <cwt/safeformat.hpp>
-#include <cwt/logger.hpp>
 
 static int __refs = 0;
 static cwt::debby::driver * __dbd = nullptr;
@@ -31,27 +30,31 @@ cwt::debby::handler_data *
 			   s3_dbd_open  (const pfs::string & driver_uri
 		, const pfs::string & username
 		, const pfs::string & password
-		, const pfs::map<pfs::string, pfs::string> & params);
+		, const pfs::map<pfs::string, pfs::string> & params
+		, pfs::string & errstr);
 static void    s3_dbd_close           (cwt::debby::handler_data * dbh);
 static bool    s3_dbd_set_auto_commit (cwt::debby::handler_data & dbh, bool on);
 static bool    s3_dbd_auto_commit     (cwt::debby::handler_data & dbh);
 static long_t  s3_dbd_errno           (cwt::debby::handler_data & dbh);
-static bool    s3_dbd_query           (cwt::debby::handler_data & dbh, const pfs::string & sql);
+static bool    s3_dbd_query           (cwt::debby::handler_data & dbh, const pfs::string & sql, pfs::string & errstr);
 static cwt::debby::statement_data *
-		       s3_dbd_prepare (cwt::debby::handler_data & dbh, const pfs::string & sql);
+		       s3_dbd_prepare (cwt::debby::handler_data & dbh, const pfs::string & sql, pfs::string & errstr);
 static ulong_t s3_dbd_affected_rows   (cwt::debby::handler_data & dbh);
 static ulong_t s3_dbd_last_id         (cwt::debby::handler_data & dbh);
 
 static pfs::vector<pfs::string>
-			   s3_dbd_tables   (cwt::debby::handler_data & dbh);
+			   s3_dbd_tables          (cwt::debby::handler_data & dbh);
 static bool    s3_dbd_table_exists    (cwt::debby::handler_data & dbh, const pfs::string & name);
-static bool    s3_dbd_begin           (cwt::debby::handler_data & dbh);
-static bool    s3_dbd_commit          (cwt::debby::handler_data & dbh);
-static bool    s3_dbd_rollback        (cwt::debby::handler_data & dbh);
-static bool    s3_dbd_meta            (cwt::debby::handler_data & dbh, const pfs::string & table, pfs::vector<cwt::debby::column_meta> & meta);
+static bool    s3_dbd_begin           (cwt::debby::handler_data & dbh, pfs::string & errstr);
+static bool    s3_dbd_commit          (cwt::debby::handler_data & dbh, pfs::string & errstr);
+static bool    s3_dbd_rollback        (cwt::debby::handler_data & dbh, pfs::string & errstr);
+static bool    s3_dbd_meta            (cwt::debby::handler_data & dbh
+		, const pfs::string & table
+		, pfs::vector<cwt::debby::column_meta> & meta
+		, pfs::string & errstr);
 
 static void    s3_dbd_stmt_close      (cwt::debby::statement_data * sth);
-static bool    s3_dbd_stmt_exec       (cwt::debby::statement_data & sth);
+static bool    s3_dbd_stmt_exec       (cwt::debby::statement_data & sth, pfs::string & errstr);
 static bool    s3_dbd_stmt_fetch_row_array (cwt::debby::statement_data & sth, pfs::vector<pfs::unitype> & row);
 static bool    s3_dbd_stmt_fetch_row_hash (cwt::debby::statement_data & sth, pfs::map<pfs::string, pfs::unitype> & row);
 static bool    s3_dbd_stmt_bind       (cwt::debby::statement_data & sth, size_t index, const pfs::unitype & param);
@@ -153,7 +156,8 @@ extern "C" bool __cwt_plugin_dtor__(void * pluggable)
 cwt::debby::handler_data * s3_dbd_open(const pfs::string & path
 		, const pfs::string & username
 		, const pfs::string & password
-		, const pfs::map<pfs::string, pfs::string> & params)
+		, const pfs::map<pfs::string, pfs::string> & params
+		, pfs::string & errstr)
 {
 	Sqlite3DbHandler * dbh = nullptr;
 	sqlite3 *  dbh_native = nullptr;
@@ -162,9 +166,10 @@ cwt::debby::handler_data * s3_dbd_open(const pfs::string & path
 	int        s3_flag_mode;
 
 	PFS_UNUSED2(username, password);
+	errstr.clear();
 
 	if (path.isEmpty()) {
-		cwt::log::error(_Tr("Path to database does not specified"));
+		errstr = _Tr("Path to database does not specified");
 		return nullptr;
 	}
 
@@ -190,11 +195,11 @@ cwt::debby::handler_data * s3_dbd_open(const pfs::string & path
 
 	if (rc != SQLITE_OK) {
 		if (!dbh_native) {
-			cwt::log::error(_Tr("Unable to allocate memory for database handler."));
+			errstr = _Tr("Unable to allocate memory for database handler.");
 		} else {
 			switch( rc ) {
 				case SQLITE_CANTOPEN:
-					cwt::log::error(_Fr("Unable to open the database file. Try to check path '%s'") % path);
+					errstr = _Fr("Unable to open the database file. Try to check path '%s'") % path;
 					break;
 				default: break;
 			}
@@ -257,7 +262,7 @@ bool s3_dbd_set_auto_commit (cwt::debby::handler_data & , bool)
 	return true;
 }
 
-bool s3_dbd_auto_commit(cwt::debby::handler_data & dbh)
+bool s3_dbd_auto_commit (cwt::debby::handler_data & dbh)
 {
 	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
 	return 0 == sqlite3_get_autocommit(s3_dbh->_dbh_native)
@@ -284,16 +289,16 @@ pfs::string s3_dbd_strerror (cwt::debby::handler_data & dbh)
 }
 */
 
-bool s3_dbd_query (cwt::debby::handler_data & dbh, const pfs::string & sql)
+bool s3_dbd_query (cwt::debby::handler_data & dbh, const pfs::string & sql, pfs::string & errstr)
 {
 	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
 	char * errmsg;
-
+	errstr.clear();
 	int rc = sqlite3_exec(s3_dbh->_dbh_native, sql.c_str(), NULL, NULL, & errmsg);
 
 	if (SQLITE_OK != rc) {
 		if (errmsg) {
-			cwt::log::error(pfs::string(errmsg));
+			errstr = pfs::string(errmsg);
 			sqlite3_free(errmsg);
 		}
 		return false;
@@ -303,10 +308,12 @@ bool s3_dbd_query (cwt::debby::handler_data & dbh, const pfs::string & sql)
 }
 
 
-cwt::debby::statement_data * s3_dbd_prepare(cwt::debby::handler_data & dbh, const pfs::string & sql)
+cwt::debby::statement_data * s3_dbd_prepare (cwt::debby::handler_data & dbh, const pfs::string & sql, pfs::string & errstr)
 {
 	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
 	sqlite3_stmt * sth_native = nullptr;
+
+	errstr.clear();
 
 	int rc = sqlite3_prepare_v2(
 			s3_dbh->_dbh_native
@@ -316,7 +323,7 @@ cwt::debby::statement_data * s3_dbd_prepare(cwt::debby::handler_data & dbh, cons
 			, NULL );          /* OUT: Pointer to unused portion of zSql */
 
 	if (rc != SQLITE_OK) {
-		cwt::log::error(pfs::string(sqlite3_errmsg(s3_dbh->_dbh_native)));
+		errstr = pfs::string(sqlite3_errmsg(s3_dbh->_dbh_native));
 		return nullptr;
 	}
 
@@ -348,12 +355,14 @@ ulong_t s3_dbd_last_id (cwt::debby::handler_data & dbh)
 pfs::vector<pfs::string> s3_dbd_tables (cwt::debby::handler_data & dbh)
 {
 	pfs::vector<pfs::string> r;
+	pfs::string errstr;
 
 	cwt::debby::statement_data * sth = s3_dbd_prepare(dbh
-			, pfs::string("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"));
+			, pfs::string("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+			, errstr);
 
 	if (sth) {
-		if (s3_dbd_stmt_exec(*sth)) {
+		if (s3_dbd_stmt_exec(*sth, errstr)) {
 			pfs::vector<pfs::unitype> row;
 			while (s3_dbd_stmt_fetch_row_array (*sth, row)) {
 				pfs::string table = row[0].toString();
@@ -368,17 +377,24 @@ pfs::vector<pfs::string> s3_dbd_tables (cwt::debby::handler_data & dbh)
 		}
 		s3_dbd_stmt_close(sth);
 	}
+
+	if (!errstr.isEmpty()) {
+		PFS_ERROR(errstr.c_str());
+	}
+
 	return r;
 }
 
 bool s3_dbd_table_exists (cwt::debby::handler_data & dbh, const pfs::string & name)
 {
 	bool r = false;
-	pfs::string sql(cwt::safeformat("SELECT COUNT(*) as table_count FROM sqlite_master WHERE type = 'table' AND name = '%s'") % name);
-	cwt::debby::statement_data * sth = s3_dbd_prepare(dbh, sql);
+	pfs::string sql("SELECT COUNT(*) as table_count FROM sqlite_master WHERE type = 'table' AND name = ");
+	sql << '\'' << name << '\'';
+	pfs::string errstr;
+	cwt::debby::statement_data * sth = s3_dbd_prepare(dbh, sql, errstr);
 
 	if (sth) {
-		if (s3_dbd_stmt_exec(*sth)) {
+		if (s3_dbd_stmt_exec(*sth, errstr)) {
 			pfs::vector<pfs::unitype> row;
 			s3_dbd_stmt_fetch_row_array (*sth, row);
 			PFS_ASSERT(row.size() == 1);
@@ -386,23 +402,28 @@ bool s3_dbd_table_exists (cwt::debby::handler_data & dbh, const pfs::string & na
 		}
 		s3_dbd_stmt_close(sth);
 	}
+
+	if (!errstr.isEmpty()) {
+		PFS_ERROR(errstr.c_str());
+	}
+
 	return r;
 }
 
 
-bool s3_dbd_begin (cwt::debby::handler_data & dbh)
+bool s3_dbd_begin (cwt::debby::handler_data & dbh, pfs::string & errstr)
 {
-	return s3_dbd_query(dbh, pfs::string("BEGIN"));
+	return s3_dbd_query(dbh, pfs::string("BEGIN"), errstr);
 }
 
-bool s3_dbd_commit (cwt::debby::handler_data & dbh)
+bool s3_dbd_commit (cwt::debby::handler_data & dbh, pfs::string & errstr)
 {
-	return s3_dbd_query(dbh, pfs::string("COMMIT"));
+	return s3_dbd_query(dbh, pfs::string("COMMIT"), errstr);
 }
 
-bool s3_dbd_rollback (cwt::debby::handler_data & dbh)
+bool s3_dbd_rollback (cwt::debby::handler_data & dbh, pfs::string & errstr)
 {
-	return s3_dbd_query(dbh, pfs::string("ROLLBACK"));
+	return s3_dbd_query(dbh, pfs::string("ROLLBACK"), errstr);
 }
 
 
@@ -449,7 +470,10 @@ static cwt::debby::type __map_column_type (const pfs::string & ct)
 
 // AUTOINCREMENT only applies to primary keys
 //
-bool s3_dbd_meta (cwt::debby::handler_data & dbh, const pfs::string & table, pfs::vector<cwt::debby::column_meta> & meta)
+bool s3_dbd_meta (cwt::debby::handler_data & dbh
+		, const pfs::string & table
+		, pfs::vector<cwt::debby::column_meta> & meta
+		, pfs::string & errstr)
 {
 	bool r = false;
 	pfs::string sqlForMeta;
@@ -460,11 +484,11 @@ bool s3_dbd_meta (cwt::debby::handler_data & dbh, const pfs::string & table, pfs
 			<< table
 			<< "\" AND sql LIKE \"%AUTOINCREMENT%\"";
 
-	cwt::debby::statement_data * sthForMeta    = s3_dbd_prepare(dbh, sqlForMeta);
-	cwt::debby::statement_data * sthForAutoinc = s3_dbd_prepare(dbh, sqlForAutoinc);
+	cwt::debby::statement_data * sthForMeta    = s3_dbd_prepare(dbh, sqlForMeta, errstr);
+	cwt::debby::statement_data * sthForAutoinc = s3_dbd_prepare(dbh, sqlForAutoinc, errstr);
 
 	if (sthForMeta && sthForAutoinc) {
-		if (s3_dbd_stmt_exec(*sthForMeta) && s3_dbd_stmt_exec(*sthForAutoinc)) {
+		if (s3_dbd_stmt_exec(*sthForMeta, errstr) && s3_dbd_stmt_exec(*sthForAutoinc, errstr)) {
 
 			pfs::vector<pfs::unitype> autoincRow;
 			uint_t autoinc = 0;
@@ -531,7 +555,8 @@ void s3_dbd_stmt_close (cwt::debby::statement_data * sth)
 
 		int rc = sqlite3_finalize(s3_sth->_sth_native);
 		if (rc != SQLITE_OK) {
-			cwt::log::error(_Fr("Failed to close statement: %s") % __s3_stmt_errmsg(s3_sth));
+			pfs::string errstr(_Fr("Failed to close statement: %s") % __s3_stmt_errmsg(s3_sth));
+			PFS_ERROR(errstr.c_str());
 		}
 		s3_sth->_sth_native = nullptr;
 		s3_sth->_driver = nullptr;
@@ -539,7 +564,7 @@ void s3_dbd_stmt_close (cwt::debby::statement_data * sth)
 	}
 }
 
-bool s3_dbd_stmt_exec (cwt::debby::statement_data & sth)
+bool s3_dbd_stmt_exec (cwt::debby::statement_data & sth, pfs::string & errstr)
 {
 	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
 	bool r = true;
@@ -558,7 +583,7 @@ bool s3_dbd_stmt_exec (cwt::debby::statement_data & sth)
 	}
 
 	if (!r) {
-		cwt::log::error(__s3_stmt_errmsg(s3_sth));
+		errstr = __s3_stmt_errmsg(s3_sth);
 	}
 
 	return r;
@@ -721,12 +746,12 @@ bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs
 		}
 		break;
 	default:
-		cwt::log::error(_Tr("Unsupported bind parameter type"));
+		PFS_ERROR(_Tr("Unsupported bind parameter type").c_str());
 		return false;
 	}
 
 	if (rc != SQLITE_OK) {
-		cwt::log::error(__s3_stmt_errmsg(s3_sth));
+		PFS_ERROR(__s3_stmt_errmsg(s3_sth).c_str());
 	}
 	return rc == SQLITE_OK ? true : false;
 }
