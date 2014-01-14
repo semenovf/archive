@@ -6,7 +6,7 @@
  */
 
 #include <cwt/test.hpp>
-#include <pfs/utf8string.hpp>
+#include <pfs/string.hpp>
 #include <pfs/bits/uccharptr.hpp>
 #include <cstring>
 #include <iostream>

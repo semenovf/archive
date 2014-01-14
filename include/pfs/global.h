@@ -98,7 +98,7 @@
 #define PFS_MIN(a,b)  (((a) < (b)) ? (a) : (b))
 #define PFS_MAX(a,b)  (((a) > (b)) ? (a) : (b))
 
-#define _Tr(s)  s
+//#define _Tr(s)  s // specified at pfs/string.hpp
 
 #if defined(PFS_OS_WIN) && defined(PFS_UNICODE)
 #	define __WIDEN(x) x /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
@@ -110,10 +110,10 @@
 
 #define PFS_FPRINT(stream,prefix,str) fprintf(stream, "%s (%s[%d]): %s\n", prefix, __TFILE__, __LINE__, str)
 #define PFS_PRINT(prefix,str) PFS_FPRINT(stdout,prefix,str)
-#define PFS_INFO(str)         PFS_FPRINT(stdout,_Tr("INFO"),str)
-#define PFS_WARN(str)         PFS_FPRINT(stderr,_Tr("WARN"),str)
-#define PFS_ERROR(str)        PFS_FPRINT(stderr,_Tr("ERROR"),str)
-#define PFS_FATAL(str)      { PFS_FPRINT(stderr,_Tr("FATAL"),str); abort(); }
+#define PFS_INFO(str)         PFS_FPRINT(stdout,"INFO",str)
+#define PFS_WARN(str)         PFS_FPRINT(stderr,"WARN",str)
+#define PFS_ERROR(str)        PFS_FPRINT(stderr,"ERROR",str)
+#define PFS_FATAL(str)      { PFS_FPRINT(stderr,"FATAL",str); abort(); }
 
 #define PFS_VERIFY(expr) if (! (expr)) { PFS_ERROR(#expr); }
 #define PFS_VERIFY_ERRNO(expr,errn) if (! (expr)) {                    \
@@ -125,8 +125,8 @@
 
 
 #ifndef NDEBUG
-#	define PFS_TRACE(str)        PFS_FPRINT(stdout,_Tr("TRACE"),str)
-#	define PFS_DEBUG(str)        PFS_FPRINT(stdout,_Tr("DEBUG"),str)
+#	define PFS_TRACE(str)        PFS_FPRINT(stdout,"TRACE",str)
+#	define PFS_DEBUG(str)        PFS_FPRINT(stdout,"DEBUG",str)
 #	ifdef __cplusplus
 #		include <cassert>
 #	else
@@ -141,11 +141,11 @@
 #	if defined(PFS_CC_BORLAND) /* && defined(__GRAPHICS_H) */
 #		define PFS_ASSERT_TRACE(p,trace_exp) if( !(p) ) { (void)trace_exp; \
 			(void) __assertfail(                                           \
-					_Tr("Assertion failed: %s, file %s, line %d") __ENDL__,   \
+					"Assertion failed: %s, file %s, line %d" __ENDL__,   \
                     #p, __FILE__, __LINE__ ); }
 #		define PFS_ASSERT_X(p,str) if( !(p) ) { PFS_ERROR(str); \
 			(void) __assertfail(                                           \
-					_Tr("Assertion failed: %s, file %s, line %d") __ENDL__,   \
+					"Assertion failed: %s, file %s, line %d" __ENDL__,   \
                     #p, __FILE__, __LINE__ ); }
 #	elif defined(__dj_include_assert_h_)
 #		define PFS_ASSERT_TRACE(p,trace_exp) if( !(p) ) { (void)trace_exp; \

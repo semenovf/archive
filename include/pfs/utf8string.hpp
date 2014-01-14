@@ -22,10 +22,6 @@
 #	pragma warning(disable:4251)
 #endif
 
-#define _latin1(s) pfs::utf8string::fromLatin1(s)
-#define _l1(s) pfs::utf8string::fromLatin1(s)
-#define _u8(s) pfs::utf8string::fromUtf8(s)
-
 // FIXME need to check behavior of member functions under null string
 
 namespace pfs {

@@ -315,108 +315,108 @@ void test_bool(void)
 	pfs::unitype uval;
 
 	uval.setBool(true);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("Boolean equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "Boolean equals to true");
 	uval.setBool(false);
-	TEST_OK2(uval.toBool(&ok) == false && ok, _Tr("Boolean equals to false"));
+	TEST_OK2(uval.toBool(&ok) == false && ok, "Boolean equals to false");
 
 	uval.setChar('W');
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("'W' equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "'W' equals to true");
 	uval.setChar('\0');
-	TEST_OK2(uval.toBool(&ok) == false && ok, _Tr("'\\0' equals to false"));
+	TEST_OK2(uval.toBool(&ok) == false && ok, "'\\0' equals to false");
 
 	uval.setInt(PFS_SBYTE_MIN);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_SBYTE_MIN equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_SBYTE_MIN equals to true");
 	uval.setInt(PFS_SBYTE_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_SBYTE_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_SBYTE_MAX equals to true");
 
 	uval.setUInt(PFS_BYTE_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_BYTE_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_BYTE_MAX equals to true");
 
 	uval.setInt(PFS_SHORT_MIN);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_SHORT_MIN equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_SHORT_MIN equals to true");
 	uval.setInt(PFS_SHORT_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_SHORT_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_SHORT_MAX equals to true");
 
 	uval.setUInt(PFS_USHORT_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_USHORT_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_USHORT_MAX equals to true");
 
 	uval.setInt(PFS_INT_MIN);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_INT_MIN equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_INT_MIN equals to true");
 	uval.setInt(PFS_INT_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_INT_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_INT_MAX equals to true");
 	uval.setInt(0);
-	TEST_OK2(uval.toBool(&ok) == false && ok, _Tr("Integer '0' equals to false"));
+	TEST_OK2(uval.toBool(&ok) == false && ok, "Integer '0' equals to false");
 
 	uval.setUInt(PFS_UINT_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_UINT_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_UINT_MAX equals to true");
 	uval.setUInt(0);
-	TEST_OK2(uval.toBool(&ok) == false && ok, _Tr("Unsigned integer '0' equals to false"));
+	TEST_OK2(uval.toBool(&ok) == false && ok, "Unsigned integer '0' equals to false");
 
 	uval.setLong(PFS_LONG_MIN);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_LONG_MIN equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_LONG_MIN equals to true");
 	uval.setLong(PFS_LONG_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_LONG_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_LONG_MAX equals to true");
 	uval.setLong(0L);
-	TEST_OK2(uval.toBool(&ok) == false && ok, _Tr("Long '0' equals to false"));
+	TEST_OK2(uval.toBool(&ok) == false && ok, "Long '0' equals to false");
 
 	uval.setULong(PFS_ULONG_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_ULONG_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_ULONG_MAX equals to true");
 	uval.setULong(0UL);
-	TEST_OK2(uval.toBool(&ok) == false && ok, _Tr("Unsigned long '0' equals to false"));
+	TEST_OK2(uval.toBool(&ok) == false && ok, "Unsigned long '0' equals to false");
 
 	uval.setFloat(PFS_FLOAT_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_FLOAT_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_FLOAT_MAX equals to true");
 
 	uval.setFloat(0.0f);
-	TEST_OK2(uval.toBool(&ok) == false && ok, _Tr("Float '0.0' equals to false"));
+	TEST_OK2(uval.toBool(&ok) == false && ok, "Float '0.0' equals to false");
 
 	uval.setDouble(PFS_DOUBLE_MAX);
-	TEST_OK2(uval.toBool(&ok) == true && ok, _Tr("PFS_DOUBLE_MAX equals to true"));
+	TEST_OK2(uval.toBool(&ok) == true && ok, "PFS_DOUBLE_MAX equals to true");
 
 	uval.setDouble(0.0f);
-	TEST_OK2(uval.toBool(&ok) == false && ok, _Tr("Double '0.0' equals to false"));
+	TEST_OK2(uval.toBool(&ok) == false && ok, "Double '0.0' equals to false");
 
 	uval.setString(pfs::string(""));
-	TEST_OK2(uval.toBool() == false, _Tr("<empty text> == false"));
+	TEST_OK2(uval.toBool() == false, "<empty text> == false");
 
 	uval.setString(pfs::string("false"));
-	TEST_OK2(uval.toBool() == false, _Tr("'false' == false"));
+	TEST_OK2(uval.toBool() == false, "'false' == false");
 
 	uval.setString(pfs::string("no"));
-	TEST_OK2(uval.toBool() == true, _Tr("'no' == true"));
+	TEST_OK2(uval.toBool() == true, "'no' == true");
 
 	uval.setString(pfs::string("FALSE"));
-	TEST_OK2(uval.toBool() == true, _Tr("'FALSE' == true"));
+	TEST_OK2(uval.toBool() == true, "'FALSE' == true");
 
 	uval.setString(pfs::string("FaLsE"));
-	TEST_OK2(uval.toBool() == true, _Tr("'FaLsE' == true"));
+	TEST_OK2(uval.toBool() == true, "'FaLsE' == true");
 
 	uval.setString(pfs::string("0"));
-	TEST_OK2(uval.toBool() == false, _Tr("'0' == false"));
+	TEST_OK2(uval.toBool() == false, "'0' == false");
 
 	uval.setString(pfs::string("text"));
-	TEST_OK2(uval.toBool() == true, _Tr("<any other text> is true"));
+	TEST_OK2(uval.toBool() == true, "<any other text> is true");
 
 	uval.setBlob("false", 5);
-	TEST_OK2(uval.toBool() == true, _Tr("Blob(\"false\") == true"));
+	TEST_OK2(uval.toBool() == true, "Blob(\"false\") == true");
 
 	uval.setBlob("no", 2);
-	TEST_OK2(uval.toBool() == true, _Tr("Blob(\"no\") == true"));
+	TEST_OK2(uval.toBool() == true, "Blob(\"no\") == true");
 
 	uval.setBlob("0", 1);
-	TEST_OK2(uval.toBool() == true, _Tr("Blob(\"0\") == true"));
+	TEST_OK2(uval.toBool() == true, "Blob(\"0\") == true");
 	uval.setBlob(pfs::bytearray());
-	TEST_OK2(uval.toBool() == false, _Tr("Blob() == false"));
-	TEST_OK2(uval.isNull(), _Tr("Blob() is Null"));
+	TEST_OK2(uval.toBool() == false, "Blob() == false");
+	TEST_OK2(uval.isNull(), "Blob() is Null");
 
 	uval.setBlob("abracadabra", 11);
-	TEST_OK2(uval.toBool() == true, _Tr("Blob(\"abracadabra\") == true"));
+	TEST_OK2(uval.toBool() == true, "Blob(\"abracadabra\") == true");
 
 	uval.setBlob("False", 5);
-	TEST_OK2(uval.toBool() == true, _Tr("Blob(\"False\") == true"));
+	TEST_OK2(uval.toBool() == true, "Blob(\"False\") == true");
 
 	uval.setBlob("nO", 2);
-	TEST_OK2(uval.toBool() == true, _Tr("Blob(\"nO\") == true"));
+	TEST_OK2(uval.toBool() == true, "Blob(\"nO\") == true");
 /*
 	{
 	    PFS_TIME tm;

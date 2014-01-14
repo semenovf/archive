@@ -720,7 +720,7 @@ vector<utf8string> utf8string::split(bool isOneSeparatorChar, const utf8string &
 		r.append(*this);
 
 
-	PFS_VERIFY_X(!quote, _Tr("Unbalanced quote"));
+	PFS_VERIFY_X(!quote, "Unbalanced quote");
 	if (quote)
 		r.clear();
 

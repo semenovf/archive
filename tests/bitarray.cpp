@@ -26,13 +26,13 @@ void test_set_bits()
 			--c;
 	}
 
-	TEST_OK2(c == 0, _Tr("Test interleaved bits"));
+	TEST_OK2(c == 0, "Test interleaved bits");
 	TEST_OK(ba.count(true) == ba.count(false));
 	TEST_OK(ba.count(true) == size/2);
 	TEST_OK(ba.count(false) == size/2);
 
 	ba.truncate(10);
-	TEST_OK2(ba.size() == 10, _Tr("Truncate successfull"));
+	TEST_OK2(ba.size() == 10, "Truncate successfull");
 
 	ba.fill(true);
 	TEST_OK(ba.count(true) == 10);
@@ -40,7 +40,7 @@ void test_set_bits()
 	for (size_t i = 0; i < 10; ++i)
 		ba.toggleBit(i);
 
-	TEST_OK2(ba.count(false) == 10, _Tr("Toggle bits successfull"));
+	TEST_OK2(ba.count(false) == 10, "Toggle bits successfull");
 }
 
 void test_logic_operations()

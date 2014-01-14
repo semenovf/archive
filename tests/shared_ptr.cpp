@@ -171,7 +171,7 @@ void test_basic_ptr()
             TEST_OK(123 == xPtr->m_val);
             TEST_OK(1 == Foo::g_instances);
         } else {
-            PFS_ERROR(_Tr("bool cast operator error"));
+            PFS_ERROR("bool cast operator error");
         }
 
         TEST_OK(true == xPtr);
