@@ -128,15 +128,15 @@ const cwt::detector_mapping* LocalPetaloidDetector::getDetectors(int *count)
 }
 
 static cwt::sepaloid::mapping_type app_mapping[] = {
-	  { 0 , new cwt::sigslot_mapping0_t, "ZeroArg()" }
-	, { 1 , new cwt::sigslot_mapping1_t<bool>, "OneArg(bool b)\n\t boolean value" }
-	, { 2 , new cwt::sigslot_mapping2_t<bool, char>, "TwoArgs(bool b, char ch)" }
-	, { 3 , new cwt::sigslot_mapping3_t<bool, char, short>, "ThreeArgs(bool b, char ch, short n)" }
-	, { 4 , new cwt::sigslot_mapping4_t<bool, char, short, int>, "FourArgs description" }
-	, { 5 , new cwt::sigslot_mapping5_t<bool, char, short, int, long>, "FiveArgs description" }
-	, { 6 , new cwt::sigslot_mapping6_t<bool, char, short, int, long, const char*>, "SixArgs description" }
-	, { 7 , new cwt::sigslot_mapping7_t<bool, char, short, int, long, const char*, const pfs::string &>, "SevenArgs description" }
-	, { 8 , new cwt::sigslot_mapping8_t<bool, char, short, int, long, long long, const char*, const pfs::string &>, "EightArgs description"}
+	  { 0 , new cwt::sigslot_mapping0_t, _l1("ZeroArg()") }
+	, { 1 , new cwt::sigslot_mapping1_t<bool>, _l1("OneArg(bool b)\n\t boolean value") }
+	, { 2 , new cwt::sigslot_mapping2_t<bool, char>, _l1("TwoArgs(bool b, char ch)") }
+	, { 3 , new cwt::sigslot_mapping3_t<bool, char, short>, _l1("ThreeArgs(bool b, char ch, short n)") }
+	, { 4 , new cwt::sigslot_mapping4_t<bool, char, short, int>, _l1("FourArgs description") }
+	, { 5 , new cwt::sigslot_mapping5_t<bool, char, short, int, long>, _l1("FiveArgs description") }
+	, { 6 , new cwt::sigslot_mapping6_t<bool, char, short, int, long, const char*>, _l1("SixArgs description") }
+	, { 7 , new cwt::sigslot_mapping7_t<bool, char, short, int, long, const char*, const pfs::string &>, _l1("SevenArgs description") }
+	, { 8 , new cwt::sigslot_mapping8_t<bool, char, short, int, long, long long, const char*, const pfs::string &>, _l1("EightArgs description") }
 };
 
 int main(int argc, char *argv[])
@@ -145,8 +145,8 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
     BEGIN_TESTS(14);
 
-    LocalPetaloidEmitter *emitter = new LocalPetaloidEmitter;
-    LocalPetaloidDetector *detector = new LocalPetaloidDetector;
+    LocalPetaloidEmitter * emitter = new LocalPetaloidEmitter;
+    LocalPetaloidDetector * detector = new LocalPetaloidDetector;
 
     cwt::sepaloid sepaloid(app_mapping, sizeof(app_mapping)/sizeof(app_mapping[0]));
     TEST_OK(sepaloid.registerLocalPetaloid(emitter));

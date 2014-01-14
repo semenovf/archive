@@ -29,10 +29,10 @@ private:
 };
 
 sepaloid::sepaloid (sepaloid::mapping_type mapping[], int n)
-	: m_masterPetaloid(nullptr)
+	: _masterPetaloid(nullptr)
 {
 	for (int i = 0; i < n; i++) {
-		m_mapping.insert(mapping[i].id, & mapping[i]);
+		_mapping.insert(mapping[i].id, & mapping[i]);
 	}
 }
 
@@ -96,12 +96,12 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 	const emitter_mapping * emitters = petaloid.getEmitters(& nemitters);
 	const detector_mapping * detectors = petaloid.getDetectors(& ndetectors);
 
-	mapping_hash::iterator itEnd = m_mapping.end();
+	mapping_hash::iterator itEnd = _mapping.end();
 
 	if (emitters) {
 		for (int i = 0; i < nemitters; i++) {
 			int emitter_id(emitters[i]._id);
-			mapping_hash::iterator it = m_mapping.find(emitter_id);
+			mapping_hash::iterator it = _mapping.find(emitter_id);
 			if (it != itEnd) {
 				it->second->map->appendEmitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
 			} else {
@@ -117,7 +117,7 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 	if (detectors) {
 		for (int i = 0; i < ndetectors; i++) {
 			int detector_id(detectors[i]._id);
-			mapping_hash::iterator it = m_mapping.find(detector_id);
+			mapping_hash::iterator it = _mapping.find(detector_id);
 			if (it != itEnd) {
 				it->second->map->appendDetector(& petaloid, detectors[i]._detector);
 			} else {
@@ -132,14 +132,13 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 
 	petaloid.petaloidRegistered.connect(this, & sepaloid::onPetaloidRegistered);
 	petaloid.m_sepaloidPtr = this;
-	petaloid_spec pspec(&petaloid, ph, dtor);
-	m_petaloids.append(pspec);
-
+	petaloid_spec pspec(& petaloid, ph, dtor);
+	_petaloids.insert(petaloid.m_name, pspec);
 
 
 	// petaloid must be run in a separate thread.
 	if (petaloid.run) {
-		m_threads.append(new petaloid_threaded(&petaloid));
+		_threads.append(new petaloid_threaded(&petaloid));
 		log::debug(_Fr("petaloid [%s] registered as threaded") % petaloid.name());
 	} else {
 		log::debug(_Fr("petaloid [%s] registered") % petaloid.name());
@@ -150,8 +149,8 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 
 void sepaloid::connectAll()
 {
-	mapping_hash::iterator it = m_mapping.begin();
-	mapping_hash::iterator itEnd = m_mapping.end();
+	mapping_hash::iterator it = _mapping.begin();
+	mapping_hash::iterator itEnd = _mapping.end();
 
 	for(; it != itEnd; it++ ) {
 		it->second->map->connectAll();
@@ -160,8 +159,8 @@ void sepaloid::connectAll()
 
 void sepaloid::disconnectAll()
 {
-	mapping_hash::iterator it = m_mapping.begin();
-	mapping_hash::iterator itEnd = m_mapping.end();
+	mapping_hash::iterator it = _mapping.begin();
+	mapping_hash::iterator itEnd = _mapping.end();
 
 	for(; it != itEnd; it++ ) {
 		it->second->map->disconnectAll();
@@ -170,41 +169,41 @@ void sepaloid::disconnectAll()
 
 void sepaloid::unregisterAll()
 {
-	pfs::vector<cwt::thread*>::iterator itThread = m_threads.begin();
-	pfs::vector<cwt::thread*>::iterator itThreadEnd = m_threads.end();
+	pfs::vector<cwt::thread *>::iterator itThread = _threads.begin();
+	pfs::vector<cwt::thread *>::iterator itThreadEnd = _threads.end();
 
 	for (; itThread != itThreadEnd; ++itThread) {
 		delete *itThread;
 	}
-	m_threads.clear();
+	_threads.clear();
 
-	pfs::vector<petaloid_spec>::iterator it = m_petaloids.begin();
-	pfs::vector<petaloid_spec>::iterator itEnd = m_petaloids.end();
+	petaloid_specs_type::iterator it = _petaloids.begin();
+	petaloid_specs_type::iterator itEnd = _petaloids.end();
 
 	for (;it != itEnd; it++) {
-		PFS_ASSERT(it->p);
-		it->p->petaloidRegistered.disconnect(this);
-		pfs::string pname = it->p->name();
-		if (it->dtor) {
-			it->dtor(it->p);
-			it->p = nullptr;
+		PFS_ASSERT(it->second.p);
+		it->second.p->petaloidRegistered.disconnect(this);
+		pfs::string pname = it->second.p->name();
+		if (it->second.dtor) {
+			it->second.dtor(it->second.p);
+			it->second.p = nullptr;
 		}
-		if (it->ph) {
-			dl::close(it->ph);
+		if (it->second.ph) {
+			dl::close(it->second.ph);
 		}
 		log::debug(_Fr("petaloid [%s] unregistered") % pname);
 	}
-	m_petaloids.clear();
+	_petaloids.clear();
 }
 
 void sepaloid::start()
 {
-	pfs::vector<petaloid_spec>::iterator it = m_petaloids.begin();
-	pfs::vector<petaloid_spec>::iterator itEnd = m_petaloids.end();
+	petaloid_specs_type::iterator it = _petaloids.begin();
+	petaloid_specs_type::iterator itEnd = _petaloids.end();
 
 	for (;it != itEnd; it++) {
-		PFS_ASSERT(it->p);
-		it->p->onStart();
+		PFS_ASSERT(it->second.p);
+		it->second.p->onStart();
 	}
 }
 
@@ -213,39 +212,39 @@ int sepaloid::exec()
 	int r = 0;
 
 	// Exclude master petaloid from threads pool of sepaloid
-	if (m_masterPetaloid) {
-		size_t size = m_threads.size();
+	if (_masterPetaloid) {
+		size_t size = _threads.size();
 		for (size_t i = 0; i < size; ++i) {
-			petaloid_threaded * pt = dynamic_cast<petaloid_threaded*>(m_threads[i]);
-			if (pt->petaloid() == m_masterPetaloid) {
-				m_threads.remove(i);
+			petaloid_threaded * pt = dynamic_cast<petaloid_threaded*>(_threads[i]);
+			if (pt->petaloid() == _masterPetaloid) {
+				_threads.remove(i);
 				delete pt;
 				break;
 			}
 		}
 	}
 
-	pfs::vector<cwt::thread*>::iterator itThread = m_threads.begin();
-	pfs::vector<cwt::thread*>::iterator itThreadEnd = m_threads.end();
+	pfs::vector<cwt::thread *>::iterator itThread = _threads.begin();
+	pfs::vector<cwt::thread *>::iterator itThreadEnd = _threads.end();
 
 	for (;itThread != itThreadEnd; itThread++) {
 		(*itThread)->start();
 	}
 
-	if (m_masterPetaloid && m_masterPetaloid->run) {
-		r = m_masterPetaloid->run(m_masterPetaloid);
+	if (_masterPetaloid && _masterPetaloid->run) {
+		r = _masterPetaloid->run(_masterPetaloid);
 	}
 
-	for (itThread = m_threads.begin(); itThread != itThreadEnd; itThread++) {
+	for (itThread = _threads.begin(); itThread != itThreadEnd; itThread++) {
 		(*itThread)->wait();
 	}
 
-	pfs::vector<petaloid_spec>::iterator itPetaloid = m_petaloids.begin();
-	pfs::vector<petaloid_spec>::iterator itPetaloidEnd = m_petaloids.end();
+	petaloid_specs_type::iterator itPetaloid = _petaloids.begin();
+	petaloid_specs_type::iterator itPetaloidEnd = _petaloids.end();
 
 	for (; itPetaloid != itPetaloidEnd; itPetaloid++) {
-		PFS_ASSERT(itPetaloid->p);
-		itPetaloid->p->onFinish();
+		PFS_ASSERT(itPetaloid->second.p);
+		itPetaloid->second.p->onFinish();
 	}
 
 	return r;
