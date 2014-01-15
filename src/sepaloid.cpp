@@ -48,7 +48,7 @@ cwt::petaloid * sepaloid::registerPetaloidForPath (const pfs::string & path, con
 	cwt::fs fs;
 
 	if (!fs.exists(path)) {
-		log::error(_Fr("petaloid not found by specified path: %s") % path);
+		this->addError(_Fr("petaloid not found by specified path or may be inconsistent: %s") % path);
 		return nullptr;
 	}
 
@@ -62,14 +62,14 @@ cwt::petaloid * sepaloid::registerPetaloidForPath (const pfs::string & path, con
 			if (p) {
 				return registerPetaloid(*p, ph, petaloid_dtor) ? p : nullptr;
 			} else {
-				log::error(_Fr("Failed to construct petaloid specified by path: %s") % path);
+				this->addError(_Fr("Failed to construct petaloid specified by path: %s") % path);
 			}
 		} else {
-			log::error(_Fr("Constructor not found for petaloid specified by path: %s") % path);
+			this->addError(_Fr("Constructor not found for petaloid specified by path: %s") % path);
 		}
 		cwt::dl::close(ph);
 	} else {
-		log::error(_Fr("Failed to open petaloid specified by path: %s") % path);
+		this->addError(_Fr("Failed to open petaloid specified by path: %s") % path);
 	}
 	return nullptr;
 }
@@ -86,7 +86,7 @@ petaloid * sepaloid::registerPetaloidForName (const pfs::string & name, const ch
 		return registerPetaloidForPath(realPath, pname, arg, argv);
 	}
 
-	log::error(_Fr("petaloid not found by specified name: %s") % name);
+	this->addError(_Fr("petaloid not found by specified name or may be inconsistent: %s") % name);
 	return nullptr;
 }
 
