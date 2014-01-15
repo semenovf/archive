@@ -552,10 +552,13 @@ void s3_dbd_stmt_close (cwt::debby::statement_data * sth)
 {
 	if (sth) {
 		Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(sth);
+		sqlite3 * dbh_native = sqlite3_db_handle(s3_sth->_sth_native);
+		return ;
 
 		int rc = sqlite3_finalize(s3_sth->_sth_native);
+
 		if (rc != SQLITE_OK) {
-			pfs::string errstr(_Fr("Failed to close statement: %s") % __s3_stmt_errmsg(s3_sth));
+			pfs::string errstr(_Fr("Failed to close statement: %s") % pfs::string(sqlite3_errmsg(dbh_native)));
 			PFS_ERROR(errstr.c_str());
 		}
 		s3_sth->_sth_native = nullptr;
