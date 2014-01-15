@@ -16,6 +16,7 @@ void statement::close ()
 {
 	if (_pimpl && _pimpl->_driver) {
 		_pimpl->_driver->closeStmt(_pimpl.get());
+		_pimpl->_driver = nullptr;
 		_pimpl.reset();
 	}
 }
@@ -23,14 +24,15 @@ void statement::close ()
 bool statement::exec ()
 {
 	pfs::string errstr;
+	bool r = false;
 	if (_pimpl && _pimpl->_driver) {
 		_pimpl->_bindCursor = 0;
-		bool r = _pimpl->_driver->execStmt(*_pimpl, errstr);
+		r = _pimpl->_driver->execStmt(*_pimpl, errstr);
 		if (!r)
 			this->addError(errstr);
 	}
 
-	return false;
+	return r;
 }
 
 pfs::vector<pfs::unitype> statement::fetchRowArray ()
