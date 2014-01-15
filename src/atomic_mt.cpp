@@ -10,7 +10,7 @@
 
 #if defined(HAVE_ATOMIC_MT)
 
-CWT_NS_BEGIN
+namespace pfs {
 
 template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<char>::g_mutex;
 template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<unsigned char>::g_mutex;
@@ -26,6 +26,6 @@ template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<long long int>::g_mut
 template <>CWT_DEFAULT_MT_POLICY atomic_integer_intrinsics<unsigned long long int>::g_mutex;
 #endif
 
-CWT_NS_END
+} // pfs
 
 #endif
