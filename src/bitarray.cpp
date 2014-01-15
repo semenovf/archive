@@ -23,7 +23,7 @@ bitarray::bitarray(size_t size, bool value) : _pimpl(new bitarray::impl)
         return;
     }
 
-    _pimpl->a.alloc(size/32 + (size % 32 ? 1 : 0));
+    _pimpl->a.alloc(size/32 + ((size % 32) ? 1 : 0));
     _pimpl->a.set(value ? 0xffffffff : 0);
 
     _pimpl->nbits = size;
@@ -176,7 +176,7 @@ void bitarray::resize (size_t new_size)
     	if (new_size > size()) {
     		array<uint32_t> *a = & _pimpl->a;
     		size_t old_nchunks = a->size();
-    		size_t new_nchunks = new_size/32 + (new_size % 32 ? 1 : 0);
+    		size_t new_nchunks = new_size/32 + ((new_size % 32) ? 1 : 0);
 
     		a->realloc(new_nchunks);
     		if (new_nchunks > old_nchunks) {
