@@ -9,12 +9,9 @@
 #define __CWT_IO_WRITER_HPP__
 
 #include <cwt/io/io.hpp>
-#include <cwt/shared_ptr.hpp>
+#include <pfs/shared_ptr.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
-
+namespace cwt { namespace io {
 
 template <typename Consumer, typename Encoder>
 class WriterTraits
@@ -23,18 +20,18 @@ public:
 	typedef typename Encoder::istring_type    istring_type;
 	typedef typename Encoder::ostring_type    ostring_type;
 
-	static bool convert(Encoder & encoder, ostring_type & output, const istring_type & input, size_t & remain)
+	static bool convert (Encoder & encoder, ostring_type & output, const istring_type & input, size_t & remain)
 		{ return encoder.convert(output, input, remain); }
-	static ssize_t write(Consumer & consumer, const ostring_type & o)
+	static ssize_t write (Consumer & consumer, const ostring_type & o)
 		{ return consumer.write(o); }
-	static istring_type istring_right(const istring_type & s, size_t n)
+	static istring_type istring_right (const istring_type & s, size_t n)
 		{ return s.right(n); }
 
-	static void istring_clear(istring_type & s) { s.clear(); }
-	static void ostring_clear(ostring_type & s) { s.clear(); }
+	static void istring_clear (istring_type & s) { s.clear(); }
+	static void ostring_clear (ostring_type & s) { s.clear(); }
 
-	static bool istring_is_empty(const istring_type & s) { return s.isEmpty(); }
-	static void istring_append(istring_type & s, const istring_type & other) { s.append(other); }
+	static bool istring_is_empty (const istring_type & s) { return s.isEmpty(); }
+	static void istring_append (istring_type & s, const istring_type & other) { s.append(other); }
 };
 
 
@@ -98,9 +95,6 @@ inline ssize_t Writer<Consumer, Encoder>::write(const istring_type & input)
 	return written;
 }
 
-
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_IO_WRITER_HPP__ */

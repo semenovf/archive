@@ -12,9 +12,7 @@
 #include <cwt/io/reader.hpp>
 #include <cwt/io/utf8codec.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 class DLL_API TextReader : public Reader<Device, Utf8Decoder>
 {
@@ -27,19 +25,17 @@ public:
 	typedef Reader<Device, Utf8Decoder>::iterator iterator;
 
 public:
-	TextReader(Device & dev, Utf8Decoder & decoder) : base_class(dev, decoder) {}
-	TextReader(Device & dev) : base_class(dev, DefaultUtf8Decoder) {}
+	TextReader (Device & dev, Utf8Decoder & decoder) : base_class(dev, decoder) {}
+	TextReader (Device & dev) : base_class(dev, DefaultUtf8Decoder) {}
 
-	Device * device() const { return & this->producer(); }
+	Device * device () const { return & this->producer(); }
 
-	Utf8String readAll()
+	pfs::utf8string readAll ()
 	{
 		return read(device()->available());
 	}
 };
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_IO_TEXTREADER_HPP__ */

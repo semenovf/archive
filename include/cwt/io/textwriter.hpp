@@ -12,9 +12,7 @@
 #include <cwt/io/writer.hpp>
 #include <cwt/io/utf8codec.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 class DLL_API TextWriter : public Writer<Device, Utf8Encoder>
 {
@@ -31,8 +29,6 @@ public:
 	Device * device() const { return consumer(); }
 };
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_IO_TEXTWRITER_HPP__ */

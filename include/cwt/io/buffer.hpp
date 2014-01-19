@@ -10,9 +10,7 @@
 
 #include <cwt/io/device.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 class DLL_API Buffer : public Device
 {
@@ -54,9 +52,6 @@ inline ssize_t Buffer::writeBytes (const char bytes[], size_t n)
 	return ssize_t(n);
 }
 
-
-} // namespace io
-
-CWT_NS_END
+} // cwt::io
 
 #endif /* __CWT_IO_BUFFER_HPP__ */

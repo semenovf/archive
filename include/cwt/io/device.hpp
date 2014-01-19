@@ -8,14 +8,11 @@
 #ifndef __CWT_IO_DEVICE_HPP__
 #define __CWT_IO_DEVICE_HPP__
 
-#include <cwt/cwt.hpp>
-#include <cwt/array.hpp>
-#include <cwt/bytearray.hpp>
-#include <cwt/string.hpp>
+#include <pfs/array.hpp>
+#include <pfs/bytearray.hpp>
+#include <pfs/string.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 class DLL_API Device
 {
@@ -58,19 +55,17 @@ public:
 	size_t       available() const       { return bytesAvailable(); }
 	bool         atEnd    () const       { return bytesAvailable() == ssize_t(0); }
 	ssize_t      read     (char bytes[], size_t n) { return readBytes(bytes, n); }
-	ssize_t      read     (ByteArray & ba, size_t n);
+	ssize_t      read     (pfs::bytearray & ba, size_t n);
 	ssize_t      write    (const char bytes[], size_t n) { return writeBytes(bytes, n); }
-	ssize_t      write    (const Array<char_type> bytes, size_t n) { return writeBytes(bytes.data(), n); }
-	ssize_t      write    (const ByteArray & bytes, size_t n) { return writeBytes(bytes.data(), CWT_MIN(n, bytes.size())); }
-	ssize_t      write    (const ByteArray & bytes) { return writeBytes(bytes.data(), bytes.size()); }
+	//ssize_t      write    (const Array<char_type> bytes, size_t n) { return writeBytes(bytes.data(), n); }
+	ssize_t      write    (const pfs::bytearray & bytes, size_t n) { return writeBytes(bytes.data(), PFS_MIN(n, bytes.size())); }
+	ssize_t      write    (const pfs::bytearray & bytes) { return writeBytes(bytes.data(), bytes.size()); }
 
 private:
 	char * m_inputBuffer;
 	size_t m_inputBufferSize;
 };
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_IO_DEVICE_HPP__ */

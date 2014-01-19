@@ -9,12 +9,10 @@
 #define __CWT_IO_READER_HPP__
 
 #include <cwt/io/io.hpp>
-#include <cwt/shared_ptr.hpp>
-#include <cwt/vector.hpp>
+#include <pfs/shared_ptr.hpp>
+#include <pfs/vector.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 template<class ForwardIterator1, class ForwardIterator2>
   ForwardIterator1 search ( ForwardIterator1 first1, ForwardIterator1 last1,
@@ -77,8 +75,8 @@ bool ReaderTraits<P, Decoder>::canReadLine (
 	, size_t count
 	, size_t maxSize)
 {
-	CWT_ASSERT(count > 0);
-	CWT_ASSERT(maxSize > 1);
+	PFS_ASSERT(count > 0);
+	PFS_ASSERT(maxSize > 1);
 
 	typename ostring_type::const_iterator itBegin = s.cbegin();
 	typename ostring_type::const_iterator it = itBegin;
@@ -99,8 +97,8 @@ typename ReaderTraits<P, Decoder>::ostring_type ReaderTraits<P, Decoder>::readLi
 	, size_t maxSize)
 {
 	ostring_type r;
-	CWT_ASSERT(count > 0);
-	CWT_ASSERT(maxSize > 1);
+	PFS_ASSERT(count > 0);
+	PFS_ASSERT(maxSize > 1);
 
 	typename ostring_type::const_iterator itBegin = s.cbegin();
 	typename ostring_type::const_iterator it = itBegin;
@@ -216,7 +214,7 @@ inline void Reader<P, Decoder>::resetCursor ()
 template <typename P, typename Decoder>
 bool Reader<P, Decoder>::readAndConvert (size_t maxSize)
 {
-	CWT_ASSERT(maxSize > 0);
+	PFS_ASSERT(maxSize > 0);
 	m_status = 1;
 
 	ssize_t nread = reader_traits::read(m_producerRef, m_inputBuffer, maxSize);
@@ -287,8 +285,8 @@ bool Reader<P, Decoder>::canReadLine (
 	, size_t count
 	, size_t maxSize)
 {
-	CWT_ASSERT(count > 0);
-	CWT_ASSERT(maxSize > 1);
+	PFS_ASSERT(count > 0);
+	PFS_ASSERT(maxSize > 1);
 
 	resetCursor();
 
@@ -306,8 +304,8 @@ typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::readLine (
 	, size_t count
 	, size_t maxSize)
 {
-	CWT_ASSERT(count > 0);
-	CWT_ASSERT(maxSize > 1);
+	PFS_ASSERT(count > 0);
+	PFS_ASSERT(maxSize > 1);
 
 	resetCursor();
 
@@ -400,8 +398,6 @@ bool Reader<P, Decoder>::iterator::canRead(size_t n)
 	return false;
 }
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_IO_READER_HPP__ */

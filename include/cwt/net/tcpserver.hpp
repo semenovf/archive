@@ -10,13 +10,12 @@
 
 #include <cwt/io/inetsocket.hpp>
 
-CWT_NS_BEGIN
-
-namespace net {
+namespace cwt { namespace net {
 
 class TcpServer
 {
 	CWT_PIMPL_IMPL(TcpServer);
+
 public:
 	TcpServer ();
 	bool open (const String hostname, uint16_t port, int32_t oflags = io::Device::ReadWrite);
@@ -28,8 +27,6 @@ public:
 	bool opened () const;
 };
 
-} // namespace net
-
-CWT_NS_END
+}} // cwt::net
 
 #endif /* __CWT_NET_TCPSERVER_HPP__ */

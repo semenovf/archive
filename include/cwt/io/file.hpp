@@ -8,17 +8,15 @@
 #ifndef __CWT_IO_FILE_HPP__
 #define __CWT_IO_FILE_HPP__
 
-#include <cwt/cwt.hpp>
-#include <cwt/pimpl.hpp>
+#include <pfs/pimpl.hpp>
 #include <cwt/io/device.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 class DLL_API File : public Device
 {
 	CWT_PIMPL_IMPL(File);
+
 public:
 	enum Permission {
 		  ReadOwner  = 0x4000 // The file is readable by the owner of the file.
@@ -44,19 +42,17 @@ protected:
 	virtual void    flushDevice    ();
 
 public:
-	File();
-	File(int fd);
-	File(const String & path, int32_t oflags = ReadWrite);
-	virtual ~File() { close(); }
-	bool open(const String & path, int32_t oflags = ReadWrite);
+	File ();
+	File (int fd);
+	File (const String & path, int32_t oflags = ReadWrite);
+	virtual ~File () { close(); }
+	bool open (const String & path, int32_t oflags = ReadWrite);
 
-	size_t size() const;
-	bool setPermissions(int32_t perms);
-	void rewind();
+	size_t size () const;
+	bool setPermissions (int32_t perms);
+	void rewind ();
 };
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_IO_FILE_HPP__ */

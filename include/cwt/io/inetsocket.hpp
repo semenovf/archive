@@ -8,18 +8,15 @@
 #ifndef __CWT_IO_SOCKET_HPP__
 #define __CWT_IO_SOCKET_HPP__
 
-#include <cwt/cwt.hpp>
-#include <cwt/pimpl.hpp>
+#include <pfs/pimpl.hpp>
 #include <cwt/io/device.hpp>
 #include <cwt/net/hostinfo.hpp>
 
-CWT_NS_BEGIN
-
-namespace net {
+namespace cwt { namespace net {
 class TcpServer;
 }
 
-namespace io {
+namespace cwt { namespace io {
 
 class DLL_API InetSocket : public Device
 {
@@ -41,6 +38,7 @@ public:
 class TcpSocket : public InetSocket
 {
 	friend class cwt::net::TcpServer;
+
 protected:
 	virtual ssize_t readBytes(char bytes[], size_t n);
 	virtual ssize_t writeBytes(const char bytes[], size_t n);
@@ -56,8 +54,6 @@ public:
 	}
 };
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_IO_SOCKET_HPP__ */

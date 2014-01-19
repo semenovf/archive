@@ -8,14 +8,11 @@
 #ifndef __CWT_UTF8CODEC_HPP__
 #define __CWT_UTF8CODEC_HPP__
 
-#include <cwt/unicode.hpp>
-#include <cwt/utf8string.hpp>
-#include <cwt/shared_ptr.hpp>
-#include <cwt/vector.hpp>
+#include <pfs/utf8string.hpp>
+#include <pfs/shared_ptr.hpp>
+#include <pfs/vector.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 #ifdef __OBSOLETE__
 template <typename T, uint32_t MaxCP>
@@ -90,8 +87,8 @@ extern template ssize_t Ucs4Decoder::convert(string_type output, const orig_char
 class DLL_API Utf8Decoder
 {
 public:
-	typedef ByteArray  istring_type;
-	typedef Utf8String ostring_type;
+	typedef pfs::bytearray  istring_type;
+	typedef pfs::utf8string ostring_type;
 
 public:
 	Utf8Decoder()
@@ -111,8 +108,8 @@ protected:
 class DLL_API Utf8Encoder
 {
 public:
-	typedef Utf8String istring_type;
-	typedef ByteArray  ostring_type;
+	typedef pfs::utf8string istring_type;
+	typedef pfs::bytearray  ostring_type;
 
 public:
 	Utf8Encoder()
@@ -133,8 +130,8 @@ typedef Utf8Decoder Utf8NullDecoder;
 class DLL_API Latin1Decoder : public Utf8Decoder
 {
 public:
-	typedef ByteArray  istring_type;
-	typedef Utf8String ostring_type;
+	typedef pfs::bytearray  istring_type;
+	typedef pfs::utf8string ostring_type;
 
 public:
 	Latin1Decoder() : Utf8Decoder() {}
@@ -144,8 +141,6 @@ public:
 
 typedef Utf8Encoder Utf8NullEncoder;
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_UTF8CODEC_HPP__ */

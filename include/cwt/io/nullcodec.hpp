@@ -8,9 +8,7 @@
 #ifndef __CWT_IO_NULLCODEC_HPP__
 #define __CWT_IO_NULLCODEC_HPP__
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 template <typename string_type>
 class NullCodec
@@ -31,8 +29,8 @@ public:
 class NullByteCodec
 {
 public:
-	typedef ByteArray istring_type;
-	typedef ByteArray ostring_type;
+	typedef pfs::bytearray istring_type;
+	typedef pfs::bytearray ostring_type;
 
 	bool convert(ostring_type & output, const istring_type & input, size_t & remain)
 	{
@@ -42,8 +40,6 @@ public:
 	}
 };
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_IO_NULLCODEC_HPP__ */

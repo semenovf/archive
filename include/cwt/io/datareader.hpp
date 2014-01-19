@@ -11,11 +11,9 @@
 #include <cwt/io/device.hpp>
 #include <cwt/io/reader.hpp>
 #include <cwt/io/nullcodec.hpp>
-#include <cwt/bytearray.hpp>
+#include <pfs/bytearray.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 class DLL_API DataReader : public Reader<Device, NullByteCodec>
 {
@@ -40,9 +38,6 @@ public:
 
 };
 
-} // namespace io
-
-CWT_NS_END
-
+}} // cwt::io
 
 #endif /* __CWT_IO_DATAREADER_HPP__ */
