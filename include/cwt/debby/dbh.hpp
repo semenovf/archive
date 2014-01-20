@@ -60,7 +60,7 @@ public:
 	bool     begin ();
 	bool     commit ();
 	bool     rollback ();
-	long_t   errno ()      { return _pimpl->_driver->errno     (*_pimpl); }
+	long_t   errno ()      { return _pimpl->_driver->errno(*_pimpl); }
 
 	bool     meta (const pfs::string & table, pfs::vector<column_meta> & meta);
 };
