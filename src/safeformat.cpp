@@ -8,6 +8,21 @@
 #include "safeformat_p.hpp"
 #include <cstring>
 
+/*
+ * conversion_specification := '%' *flag [ field_width ] [ prec ] conversion_specifier
+ * flag := '0' ; the value should be zero padded (ignored when 'prec' is specified)
+ * 		 / '-' ; the value is left-justified
+ * 		 / ' ' ; the value should be padded whith spaces (ignored when 'prec' is specified)
+ * 		 / '+'
+ *
+ * field_width := 1*DIGIT
+ * prec := '.' [ '-' ] *DIGIT
+ * conversion_specifier := 'd' / 'i' / 'o' / 'u' / 'x' / 'X'
+ * 		 / 'e' / 'E' / 'f' / 'F' / 'g' / 'G'
+ * 		 / 'c' / 's'
+ * 		 / 'p'
+ * */
+
 namespace cwt {
 
 static bool begin_spec  (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
@@ -35,24 +50,24 @@ static fsm::transition<pfs::string> plain_chars_fsm[] = {
 };
 
 static fsm::transition<pfs::string> percent_char_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_u8("%")) , FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_u8("%")) , FSM_ACCEPT, set_percent_char, nullptr }
+      { 1,-1, FSM_MATCH_CHAR(_l1("%")) , FSM_NORMAL, nullptr, nullptr }
+    , {-1,-1, FSM_MATCH_CHAR(_l1("%")) , FSM_ACCEPT, set_percent_char, nullptr }
 };
 
 static fsm::transition<pfs::string> prec_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_u8("."))            , FSM_NORMAL, nullptr, nullptr }
-    , { 2,-1, FSM_MATCH_OPT_CHAR(_u8("-"))        , FSM_NORMAL, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_CHAR(_l1("."))            , FSM_NORMAL, nullptr, nullptr }
+    , { 2,-1, FSM_MATCH_OPT_CHAR(_l1("-"))        , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RPT_CHAR(_SF_DIGIT,-1,-1) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 static fsm::transition<pfs::string> width_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_u8("123456789"))    , FSM_NORMAL, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_CHAR(_l1("123456789"))    , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RPT_CHAR(_SF_DIGIT,-1,-1) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 
 static fsm::transition<pfs::string> spec_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_u8("%"))                , FSM_NORMAL, begin_spec, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR(_l1("%"))                , FSM_NORMAL, begin_spec, nullptr }
 	, { 2, 5, FSM_MATCH_RPT_CHAR(_SF_FLAG_CHAR,-1,-1) , FSM_NORMAL, set_flags,  nullptr }
 	, { 3, 5, FSM_MATCH_OPT_FSM(width_fsm)            , FSM_NORMAL, set_width,  nullptr }
 	, { 4, 5, FSM_MATCH_OPT_FSM(prec_fsm)             , FSM_NORMAL, set_prec,  nullptr }

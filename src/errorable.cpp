@@ -7,6 +7,7 @@
  */
 
 #include "../include/cwt/errorable.hpp"
+#include <cwt/safeformat.hpp>
 #include <cstdarg>
 
 extern pfs::string __strerror (int_t errn);
@@ -48,7 +49,7 @@ void errorable::logOutput () const
 		for (; it != itEnd; ++it) {
 			pfs::string r;
 			if (it->_ntimes > 1) {
-				r << it->_errstr << "( " << _Tr("repeat") << ' ' << it->_ntimes << _Tr("times") << ") ";
+				r << (_Fr("%s (repeat %d times)") % it->_errstr % it->_ntimes);
 			} else {
 				r << it->_errstr;
 			}
