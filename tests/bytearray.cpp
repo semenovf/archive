@@ -10,7 +10,19 @@
 #include <cstring>
 #include <iostream>
 
-void test_append(void)
+void test_length ()
+{
+	pfs::bytearray ba("Hello");
+	TEST_OK(ba.length() == 5);
+	TEST_OK(pfs::bytearray::length(ba.cbegin(), ba.cend()) == 5);
+	TEST_OK(pfs::bytearray::length(ba.cend(), ba.cbegin()) == 5);
+	TEST_OK(pfs::bytearray::length(ba.cbegin()+1, ba.cend()) == 4);
+	TEST_OK(pfs::bytearray::length(ba.cbegin()+1, ba.cend()-1) == 3);
+	TEST_OK(pfs::bytearray::length(ba.cbegin(), ba.cbegin()) == 0);
+	TEST_OK(pfs::bytearray::length(ba.cend(), ba.cend()) == 0);
+}
+
+void test_append ()
 {
 	pfs::bytearray ba("One");
 	ba.append("Two");
@@ -62,8 +74,9 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(9);
+	BEGIN_TESTS(16);
 
+	test_length();
 	test_append();
 	test_convert_number();
 	test_base64();

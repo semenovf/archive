@@ -13,6 +13,7 @@
 #include <string>
 #include <ostream>
 
+// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
 #	pragma warning(disable:4251)
@@ -25,18 +26,9 @@ class byteref;
 class DLL_API bytearray
 {
 private:
-// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
-//#ifdef PFS_CC_MSVC
-//#	pragma warning(push)
-//#	pragma warning(disable:4251)
-//#endif
 
 	typedef std::string impl;
 	shared_ptr<impl> _pimpl;
-
-//#ifdef PFS_CC_MSVC
-//#	pragma warning(pop)
-//#endif
 
 	void detach()
 	{
@@ -55,9 +47,12 @@ public:
 	}
 
 public:
+	typedef char char_type;
 	typedef char item_type;
 	typedef impl::iterator iterator;
 	typedef impl::const_iterator const_iterator;
+
+	static const char_type EndOfLineChar;
 
 public:
 	bytearray () : _pimpl(new impl()) {}
@@ -65,6 +60,7 @@ public:
 	bytearray (const char * s) : _pimpl(new impl(s)) {}
 	bytearray (const char * s, size_t size) : _pimpl(new impl(s, size)) {}
 	bytearray (size_t size, char c) : _pimpl(new impl(size, c)) {}
+	bytearray (const_iterator begin, const_iterator end) : _pimpl(new impl(begin, end)) {}
 
 	const char * c_str() const { return _pimpl->c_str(); }
 	const char * data() const  { return _pimpl->data(); }
@@ -79,6 +75,20 @@ public:
 	bool	     isEmpty() const { return _pimpl->empty(); }
 	size_t       size () const { return _pimpl->size(); }
 	size_t       length () const { return size(); }
+
+	static size_t length (const iterator & begin, const iterator & end)
+	{
+		return begin <= end
+				? end - begin
+				: begin - end;
+	}
+	static size_t length (const const_iterator & begin, const const_iterator & end)
+	{
+		return begin <= end
+				? end - begin
+				: begin - end;
+	}
+
 
 	bytearray & append  (const bytearray & s) { return insert(s, end()); }
 	bytearray & append  (const char * s) { return insert(s, end()); }

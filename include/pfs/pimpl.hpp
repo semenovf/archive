@@ -10,7 +10,6 @@
 #include <pfs/shared_ptr.hpp>
 
 #define PFS_PIMPL_INLINE(Class,Impl)                           \
-private:                                                       \
 	pfs::shared_ptr<Impl> _pimpl;                              \
                                                                \
 	void detach()                                              \
@@ -37,7 +36,6 @@ public:                                                        \
     }
 
 #define PFS_PIMPL_DECL(Class,Impl)                             \
-private:                                                       \
 	class Impl;                                                \
 	pfs::shared_ptr<Impl> _pimpl;                              \
                                                                \
@@ -60,7 +58,6 @@ public:                                                        \
 // w/o copy constructor
 //
 #define PFS_PIMPL_DECL_NOCC(Class,Impl)                        \
-private:                                                       \
 	class Impl;                                                \
 	pfs::shared_ptr<Impl> _pimpl;                              \
                                                                \

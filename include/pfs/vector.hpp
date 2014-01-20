@@ -68,10 +68,12 @@ public:
     iterator erase (const_iterator pos) { detach(); return _pimpl->erase(pos); }
     iterator erase (const_iterator first, const_iterator last) { detach(); return _pimpl->erase(first, last); }
     void erase (size_t index) { detach(); _pimpl->erase(begin() + index); }
+    void erase (size_t index, size_t n) { detach(); _pimpl->erase(begin() + index, begin() + index + n); }
 
     iterator remove (const_iterator pos) { return erase(pos); }
     iterator remove (const_iterator first, const_iterator last) { return erase(first, last); }
     void remove (size_t index) { erase(index); }
+    void remove (size_t index, size_t n) { erase(index, n); }
 };
 
 template <typename T>

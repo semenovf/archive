@@ -16,7 +16,7 @@
 
 namespace pfs {
 
-//const bytearray bytearray::EndOfLine(1, '\n');
+const bytearray::char_type bytearray::EndOfLineChar('\n');
 
 /*
 DLL_API uint_t hash_func(const bytearray & key, uint_t seed)
@@ -24,6 +24,7 @@ DLL_API uint_t hash_func(const bytearray & key, uint_t seed)
 	return hash_bytes(reinterpret_cast<const byte_t *>(key.constData()), key.size(), seed);
 }
 */
+
 bytearray & bytearray::insert (const char * s, const const_iterator & pos)
 {
 	return insert(s, strlen(s), pos);

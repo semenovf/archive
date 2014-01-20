@@ -14,6 +14,7 @@
 namespace pfs {
 
 const size_t utf8string::impl::npos = size_t(-1);
+const utf8string::char_type utf8string::EndOfLineChar('\n');
 
 utf8string::utf8string ()
 	: _pimpl(new utf8string::impl())

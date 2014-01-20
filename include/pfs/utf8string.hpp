@@ -47,14 +47,6 @@ private:
 	void detach ();
 
 public:
-	utf8string (const utf8string & other) : _pimpl(other._pimpl) {}
-	utf8string & operator = (const utf8string & other)
-	{
-		_pimpl = other._pimpl;
-		return *this;
-	}
-
-public:
 	typedef const char * const_codeunit_pointer;
 	typedef char * codeunit_pointer;
 	typedef ucchar char_type;
@@ -63,6 +55,8 @@ public:
     typedef utf8string_iterator<ucchar_const_ptr> const_iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
+    static const char_type EndOfLineChar;
 
 private:
 	void updateLength ();
@@ -76,6 +70,13 @@ public:
 	explicit utf8string (size_t count, char latin1);
 	explicit utf8string (const_iterator begin, const_iterator end);
 	explicit utf8string (size_t count, ucchar c);
+
+	utf8string (const utf8string & other) : _pimpl(other._pimpl) {}
+	utf8string & operator = (const utf8string & other)
+	{
+		_pimpl = other._pimpl;
+		return *this;
+	}
 
 /* In any case need to update length of the resulting string, so below
    constructors are meaningless:
@@ -215,13 +216,9 @@ public:
 
 	utf8string & operator += (const utf8string & other) { return append(other); }
 	utf8string & operator += (const char * latin1) { return append(utf8string(latin1)); }
-	utf8string & operator += (ucchar ch) { return append(1, ch); }
-	utf8string & operator += (char latin1) { return append(1, ucchar(latin1)); }
 
 	utf8string & operator << (const utf8string & other) { return append(other); }
 	utf8string & operator << (const char * latin1) { return append(utf8string(latin1)); }
-	utf8string & operator << (ucchar ch) { return append(1, ch); }
-	utf8string & operator << (char latin1) { return append(1, ucchar(latin1)); }
 
 public:
 	struct ConvertState
