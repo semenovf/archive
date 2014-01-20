@@ -389,7 +389,7 @@ bool s3_dbd_table_exists (cwt::debby::handler_data & dbh, const pfs::string & na
 {
 	bool r = false;
 	pfs::string sql("SELECT COUNT(*) as table_count FROM sqlite_master WHERE type = 'table' AND name = ");
-	sql << '\'' << name << '\'';
+	sql << pfs::string(1,'\'') << name << pfs::string(1,'\'');
 	pfs::string errstr;
 	cwt::debby::statement_data * sth = s3_dbd_prepare(dbh, sql, errstr);
 
