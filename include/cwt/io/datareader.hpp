@@ -15,23 +15,23 @@
 
 namespace cwt { namespace io {
 
-class DLL_API DataReader : public Reader<Device, NullByteCodec>
+class DLL_API data_reader : public reader<cwt::io::device, nullbyte_codec>
 {
-	typedef Reader<Device, NullByteCodec> base_class;
-	static NullByteCodec DefaultByteDecoder;
+	typedef cwt::io::reader<cwt::io::device, nullbyte_codec> base_class;
+	static nullbyte_codec DefaultByteDecoder;
 
-	CWT_DENY_COPY(DataReader);
-
-public:
-	typedef Reader<Device, NullByteCodec>::iterator iterator;
+	PFS_DENY_COPY(data_reader);
 
 public:
-	DataReader(Device & dev) : base_class(dev, DefaultByteDecoder) {}
+	typedef reader<cwt::io::device, nullbyte_codec>::iterator iterator;
 
-	Device * device() const { return & this->producer(); }
-	const ByteArray & data() const { return base_class::m_outputBuffer; }
+public:
+	data_reader (cwt::io::device & dev) : base_class(dev, DefaultByteDecoder) {}
 
-	ByteArray readAll()
+	cwt::io::device * device () const { return & this->producer(); }
+	const pfs::bytearray & data () const { return base_class::m_outputBuffer; }
+
+	pfs::bytearray readAll()
 	{
 		return this->read(device()->available());
 	}

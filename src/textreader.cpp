@@ -7,14 +7,10 @@
 
 #include "../include/cwt/io/textreader.hpp"
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-namespace io {
+utf8nulldecoder text_reader::DefaultUtf8Decoder;
 
-Utf8NullDecoder TextReader::DefaultUtf8Decoder;
-
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 

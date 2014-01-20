@@ -11,16 +11,20 @@
 #include <pfs/array.hpp>
 #include <pfs/bytearray.hpp>
 #include <pfs/string.hpp>
+#include <cwt/errorable.hpp>
 
 namespace cwt { namespace io {
 
-class DLL_API Device
+class DLL_API device : public errorable
 {
+	char * m_inputBuffer;
+	size_t m_inputBufferSize;
+
 public:
 	typedef char char_type;
 
 protected:
-	Device() : m_inputBuffer(nullptr), m_inputBufferSize(0) {;}
+	device() : m_inputBuffer(nullptr), m_inputBufferSize(0) {;}
 
 public:
 	enum OpenMode {
@@ -41,7 +45,7 @@ protected:
 	virtual void    flushDevice    () = 0;
 
 public:
-	virtual ~Device()
+	virtual ~device()
 	{
 		if (m_inputBuffer)
 			delete[] m_inputBuffer;
@@ -57,13 +61,8 @@ public:
 	ssize_t      read     (char bytes[], size_t n) { return readBytes(bytes, n); }
 	ssize_t      read     (pfs::bytearray & ba, size_t n);
 	ssize_t      write    (const char bytes[], size_t n) { return writeBytes(bytes, n); }
-	//ssize_t      write    (const Array<char_type> bytes, size_t n) { return writeBytes(bytes.data(), n); }
 	ssize_t      write    (const pfs::bytearray & bytes, size_t n) { return writeBytes(bytes.data(), PFS_MIN(n, bytes.size())); }
 	ssize_t      write    (const pfs::bytearray & bytes) { return writeBytes(bytes.data(), bytes.size()); }
-
-private:
-	char * m_inputBuffer;
-	size_t m_inputBufferSize;
 };
 
 }} // cwt::io

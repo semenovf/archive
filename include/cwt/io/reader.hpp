@@ -33,15 +33,15 @@ template<class ForwardIterator1, class ForwardIterator2>
 	return last1;
 }
 
-template <typename Producer, typename Decoder>
-class ReaderTraits
+template <typename _Producer, typename _Decoder>
+class reader_traits
 {
 public:
-	typedef typename Decoder::istring_type    istring_type;
-	typedef typename Decoder::ostring_type    ostring_type;
+	typedef typename _Decoder::istring_type    istring_type;
+	typedef typename _Decoder::ostring_type    ostring_type;
 	typedef typename ostring_type::char_type  char_type;
 
-	static ssize_t read(Producer & producer, istring_type & in, size_t maxSize)
+	static ssize_t read(_Producer & producer, istring_type & in, size_t maxSize)
 		{ return producer.read(in, maxSize); }
 
 	static void ostring_remove(ostring_type & s, size_t pos, size_t n)
@@ -50,7 +50,7 @@ public:
 	static void istring_remove(istring_type & s, size_t pos, size_t n)
 		{ s.remove(pos, n); }
 
-	static bool convert(Decoder & decoder, ostring_type & output, const istring_type & input, size_t & remain)
+	static bool convert(_Decoder & decoder, ostring_type & output, const istring_type & input, size_t & remain)
 		{ return decoder.convert(output, input, remain); }
 
 	static void istring_clear(istring_type & s)
@@ -68,8 +68,8 @@ public:
 };
 
 
-template <typename P, typename Decoder>
-bool ReaderTraits<P, Decoder>::canReadLine (
+template <typename _P, typename _Decoder>
+bool reader_traits<_P, _Decoder>::canReadLine (
 	  ostring_type & s
 	, const ostring_type ends[]
 	, size_t count
@@ -89,8 +89,8 @@ bool ReaderTraits<P, Decoder>::canReadLine (
 	return it == s.cend() ? false : true;
 }
 
-template <typename P, typename Decoder>
-typename ReaderTraits<P, Decoder>::ostring_type ReaderTraits<P, Decoder>::readLine (
+template <typename _P, typename _Decoder>
+typename reader_traits<_P, _Decoder>::ostring_type reader_traits<_P, _Decoder>::readLine (
 	  ostring_type & s
 	, const ostring_type ends[]
 	, size_t count
@@ -114,7 +114,7 @@ typename ReaderTraits<P, Decoder>::ostring_type ReaderTraits<P, Decoder>::readLi
 	} else { // End-of-line found
 		size_t len = s.length(s.cbegin(), it);
 		r = s.left(len);
-		r.append(ostring_type::EndOfLine);
+		r.append(1, ostring_type::EndOfLineChar);
 		s.remove(0, len + ends[i-1].length());
 	}
 
@@ -122,30 +122,38 @@ typename ReaderTraits<P, Decoder>::ostring_type ReaderTraits<P, Decoder>::readLi
 }
 
 
-template <typename P, typename Decoder>
-class Reader
+template <typename _P, typename _Decoder>
+class reader
 {
 public:
 	static const size_t MaxChunkSize = 512;
 
-	typedef ReaderTraits<P, Decoder>              reader_traits;
-	typedef typename reader_traits::istring_type  istring_type;
-	typedef typename reader_traits::ostring_type  ostring_type;
-	typedef typename reader_traits::char_type     char_type;
+	typedef reader_traits<_P, _Decoder> reader_traits_type;
+	typedef typename reader_traits_type::istring_type  istring_type;
+	typedef typename reader_traits_type::ostring_type  ostring_type;
+	typedef typename reader_traits_type::char_type     char_type;
+
+protected:
+	_P &         m_producerRef;
+	_Decoder &   m_decoderRef;
+	istring_type m_inputBuffer;
+	ostring_type m_outputBuffer;
+	size_t       m_cursor;    // cursor for outputBuffer, used in iterator
+	int          m_status;    // -1 - error, 0 - at end, +1 - normal
 
 public:
     class iterator;
     friend class iterator;
 
 	class iterator {
-		friend class Reader;
-		Reader *  m_readerPtr;
+		friend class reader;
+		reader *  m_readerPtr;
 		char_type m_value;
 
 	public:
-		iterator() : m_readerPtr(nullptr) {}
-		iterator(Reader & reader);
-		iterator(const iterator & x) : m_readerPtr(x.m_readerPtr), m_value(x.m_value) {}
+		iterator () : m_readerPtr(nullptr) {}
+		iterator (reader & reader);
+		iterator (const iterator & x) : m_readerPtr(x.m_readerPtr), m_value(x.m_value) {}
 		~iterator() {}
 		char_type value() const               { return   m_value; }
 		const char_type & operator * () const { return   m_value; }
@@ -157,11 +165,11 @@ public:
 		iterator operator   ++ (int);
 		iterator & operator += (size_t index);
 		iterator at (size_t index);
-		bool canRead(size_t n);
+		bool canRead (size_t n);
 	};
 
 public:
-	Reader (P & producerRef, Decoder & decoderRef)
+	reader (_P & producerRef, _Decoder & decoderRef)
 		: m_producerRef    (producerRef)
 		, m_decoderRef     (decoderRef)
 		, m_inputBuffer ()
@@ -171,68 +179,59 @@ public:
 	{}
 
 	ostring_type read  (size_t maxSize);
-	bool        atEnd () const   { return reader_traits::ostring_length(m_outputBuffer) == 0 && m_status == 0; }
-	bool        isError() const  { return m_status < 0; }
-	P &         producer() const { return m_producerRef; }
+	bool         atEnd () const   { return reader_traits_type::ostring_length(m_outputBuffer) == 0 && m_status == 0; }
+	bool         isError() const  { return m_status < 0; }
+	_P &         producer() const { return m_producerRef; }
 
-	bool canReadLine(const ostring_type & end, size_t maxSize) {
+	bool canReadLine (const ostring_type & end, size_t maxSize) {
 		const ostring_type ends[1] = { end };
 		return canReadLine(ends, 1, maxSize);
 	}
-	bool canReadLine(const ostring_type ends[], size_t count, size_t maxSize);
+	bool canReadLine (const ostring_type ends[], size_t count, size_t maxSize);
 
-	ostring_type readLine(const ostring_type & end, size_t maxSize) {
+	ostring_type readLine (const ostring_type & end, size_t maxSize) {
 		const ostring_type ends[1] = { end };
 		return readLine(ends, 1, maxSize);
 	}
-	ostring_type readLine(const ostring_type ends[], size_t count, size_t maxSize);
+	ostring_type readLine (const ostring_type ends[], size_t count, size_t maxSize);
 
 protected:
-	void    resetCursor    ();
-	bool    readAndConvert (size_t maxSize);
-	bool    canRead        (size_t maxSize);
-
-protected:
-	P &                  m_producerRef;
-	Decoder &            m_decoderRef;
-	istring_type         m_inputBuffer;
-	ostring_type         m_outputBuffer;
-	size_t               m_cursor;    // cursor for outputBuffer, used in iterator
-	int                  m_status;    // -1 - error, 0 - at end, +1 - normal
+	void resetCursor ();
+	bool readAndConvert (size_t maxSize);
+	bool canRead (size_t maxSize);
 };
 
-
-template <typename P, typename Decoder>
-inline void Reader<P, Decoder>::resetCursor ()
+template <typename _P, typename _Decoder>
+inline void reader<_P, _Decoder>::resetCursor ()
 {
 	if (m_cursor != 0) {
-		reader_traits::ostring_remove(m_outputBuffer, 0, m_cursor);
+		reader_traits_type::ostring_remove(m_outputBuffer, 0, m_cursor);
 		m_cursor = 0;
 	}
 }
 
-template <typename P, typename Decoder>
-bool Reader<P, Decoder>::readAndConvert (size_t maxSize)
+template <typename _P, typename _Decoder>
+bool reader<_P, _Decoder>::readAndConvert (size_t maxSize)
 {
 	PFS_ASSERT(maxSize > 0);
 	m_status = 1;
 
-	ssize_t nread = reader_traits::read(m_producerRef, m_inputBuffer, maxSize);
+	ssize_t nread = reader_traits_type::read(m_producerRef, m_inputBuffer, maxSize);
 
 	if (nread > 0) {
 		size_t remain = 0;
-		if (reader_traits::convert(m_decoderRef, m_outputBuffer, m_inputBuffer, remain)) {
+		if (reader_traits_type::convert(m_decoderRef, m_outputBuffer, m_inputBuffer, remain)) {
 			if (remain > 0) {
-				reader_traits::istring_remove(m_inputBuffer, reader_traits::istring_length(m_inputBuffer) - remain, remain);
+				reader_traits_type::istring_remove(m_inputBuffer, reader_traits_type::istring_length(m_inputBuffer) - remain, remain);
 			} else {
-				reader_traits::istring_clear(m_inputBuffer);
+				reader_traits_type::istring_clear(m_inputBuffer);
 			}
 		}
 	} else if (nread < 0) {   // producer error
 		m_status = -1;
 	} else {                  // nread == 0, producer at end
 		//if (reader_traits::ostring_length(m_outputBuffer) == 0) {
-			if (reader_traits::istring_length(m_inputBuffer) == 0) { // reader at end
+			if (reader_traits_type::istring_length(m_inputBuffer) == 0) { // reader at end
 				m_status = 0;
 			} else {              // not all characters converted
 				m_status = -2;
@@ -244,8 +243,8 @@ bool Reader<P, Decoder>::readAndConvert (size_t maxSize)
 }
 
 
-template <typename P, typename Decoder>
-bool Reader<P, Decoder>::canRead(size_t maxSize)
+template <typename _P, typename _Decoder>
+bool reader<_P, _Decoder>::canRead(size_t maxSize)
 {
 	if (m_status < 0)
 		return false;
@@ -253,35 +252,35 @@ bool Reader<P, Decoder>::canRead(size_t maxSize)
 	if (m_cursor != 0)
 		resetCursor();
 
-	if (maxSize > reader_traits::ostring_length(m_outputBuffer)) {
+	if (maxSize > reader_traits_type::ostring_length(m_outputBuffer)) {
 		if (!readAndConvert(maxSize < MaxChunkSize ? MaxChunkSize : maxSize)) {
 			return false;
 		}
 	}
 
-	return reader_traits::ostring_length(m_outputBuffer) >= maxSize ? true : false;
+	return reader_traits_type::ostring_length(m_outputBuffer) >= maxSize ? true : false;
 }
 
 
-template <typename P, typename Decoder>
-typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::read (size_t maxSize)
+template <typename _P, typename _Decoder>
+typename reader<_P, _Decoder>::ostring_type reader<_P, _Decoder>::read (size_t maxSize)
 {
 	resetCursor();
 
-	if (maxSize > reader_traits::ostring_length(m_outputBuffer)) {
+	if (maxSize > reader_traits_type::ostring_length(m_outputBuffer)) {
 		if (!readAndConvert(maxSize)) {
-			return typename reader_traits::ostring_type();
+			return typename reader_traits_type::ostring_type();
 		}
 	}
 
-	ostring_type r = reader_traits::ostring_left(m_outputBuffer, maxSize);
-	reader_traits::ostring_remove(m_outputBuffer, 0, maxSize);
+	ostring_type r = reader_traits_type::ostring_left(m_outputBuffer, maxSize);
+	reader_traits_type::ostring_remove(m_outputBuffer, 0, maxSize);
 	return r;
 }
 
-template <typename P, typename Decoder>
-bool Reader<P, Decoder>::canReadLine (
-	  const Reader<P, Decoder>::ostring_type ends[]
+template <typename _P, typename _Decoder>
+bool reader<_P, _Decoder>::canReadLine (
+	  const reader<_P, _Decoder>::ostring_type ends[]
 	, size_t count
 	, size_t maxSize)
 {
@@ -294,13 +293,13 @@ bool Reader<P, Decoder>::canReadLine (
 		return false;
 	}
 
-	return reader_traits::canReadLine(m_outputBuffer, ends, count, maxSize);
+	return reader_traits_type::canReadLine(m_outputBuffer, ends, count, maxSize);
 }
 
 
-template <typename P, typename Decoder>
-typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::readLine (
-	  const Reader<P, Decoder>::ostring_type ends[]
+template <typename _P, typename _Decoder>
+typename reader<_P, _Decoder>::ostring_type reader<_P, _Decoder>::readLine (
+	  const reader<_P, _Decoder>::ostring_type ends[]
 	, size_t count
 	, size_t maxSize)
 {
@@ -313,12 +312,12 @@ typename Reader<P, Decoder>::ostring_type Reader<P, Decoder>::readLine (
 		return ostring_type();
 	}
 
-	return reader_traits::readLine(m_outputBuffer, ends, count, maxSize);
+	return reader_traits_type::readLine(m_outputBuffer, ends, count, maxSize);
 }
 
 
-template <typename P, typename Decoder>
-inline Reader<P, Decoder>::iterator::iterator(Reader<P, Decoder> & reader)
+template <typename _P, typename _Decoder>
+inline reader<_P, _Decoder>::iterator::iterator (reader<_P, _Decoder> & reader)
 	: m_readerPtr(& reader)
 {
 	if (!(m_readerPtr && canRead(1))) {
@@ -330,8 +329,8 @@ inline Reader<P, Decoder>::iterator::iterator(Reader<P, Decoder> & reader)
 }
 
 
-template <typename P, typename Decoder>
-typename Reader<P, Decoder>::iterator & Reader<P, Decoder>::iterator::operator ++ ()
+template <typename _P, typename _Decoder>
+typename reader<_P, _Decoder>::iterator & reader<_P, _Decoder>::iterator::operator ++ ()
 {
     if (m_readerPtr) {
     	++m_readerPtr->m_cursor;
@@ -345,16 +344,16 @@ typename Reader<P, Decoder>::iterator & Reader<P, Decoder>::iterator::operator +
     return *this;
 }
 
-template <typename P, typename Decoder>
-inline typename Reader<P, Decoder>::iterator Reader<P, Decoder>::iterator::operator ++ (int)
+template <typename _P, typename _Decoder>
+inline typename reader<_P, _Decoder>::iterator reader<_P, _Decoder>::iterator::operator ++ (int)
 {
     iterator r = *this;
     ++*this;
     return r;
 }
 
-template <typename P, typename Decoder>
-typename Reader<P, Decoder>::iterator & Reader<P, Decoder>::iterator::operator += (size_t count)
+template <typename _P, typename _Decoder>
+typename reader<_P, _Decoder>::iterator & reader<_P, _Decoder>::iterator::operator += (size_t count)
 {
 	if (m_readerPtr) {
 		if (count > 0) {
@@ -370,8 +369,8 @@ typename Reader<P, Decoder>::iterator & Reader<P, Decoder>::iterator::operator +
     return *this;
 }
 
-template <typename P, typename Decoder>
-inline typename Reader<P, Decoder>::iterator Reader<P, Decoder>::iterator::at (size_t index)
+template <typename _P, typename _Decoder>
+inline typename reader<_P, _Decoder>::iterator reader<_P, _Decoder>::iterator::at (size_t index)
 {
 	iterator r = *this;
 	if (m_readerPtr) {
@@ -387,11 +386,11 @@ inline typename Reader<P, Decoder>::iterator Reader<P, Decoder>::iterator::at (s
     return r;
 }
 
-template <typename P, typename Decoder>
-bool Reader<P, Decoder>::iterator::canRead(size_t n)
+template <typename _P, typename _Decoder>
+bool reader<_P, _Decoder>::iterator::canRead (size_t n)
 {
 	if (m_readerPtr) {
-		if (m_readerPtr->m_cursor + n <= reader_traits::ostring_length(m_readerPtr->m_outputBuffer))
+		if (m_readerPtr->m_cursor + n <= reader_traits_type::ostring_length(m_readerPtr->m_outputBuffer))
 			return true;
 		return m_readerPtr->canRead(n);
 	}

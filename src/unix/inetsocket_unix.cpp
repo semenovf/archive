@@ -12,56 +12,55 @@
 #include <cerrno>
 #include <cstring>
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-namespace io {
-
-InetSocket::InetSocket() : pimpl(new InetSocket::Impl)
+inet_socket::inet_socket() : _pimpl(new inet_socket::impl)
 {}
 
-uint32_t InetSocket::ipv4 () const
+uint32_t inet_socket::ipv4 () const
 {
 	if (opened()) {
-		return ntohl(pimpl->saddr.sin_addr.s_addr);
+		return ntohl(_pimpl->saddr.sin_addr.s_addr);
 	}
 	return 0;
 }
 
-String InetSocket::hostname () const
+pfs::string inet_socket::hostname () const
 {
 	return ipv4name(); // TODO need resolve name by IP
 }
 
-String InetSocket::ipv4name () const
+pfs::string inet_socket::ipv4name () const
 {
 	if (opened()) {
 		uint32_t ip = ipv4();
-		return 	_F("%d.%d.%d.%d")
-				% ((ip >> 24) & 0xFF)
-				% ((ip >> 16) & 0xFF)
-				% ((ip >> 8)  & 0xFF)
-				% (ip  & 0xFF);
+		pfs::string r;
+		r << pfs::string::number(((ip >> 24) & 0xFF))
+			<< pfs::string(1, '.') << pfs::string::number(((ip >> 16) & 0xFF))
+			<< pfs::string(1, '.') << pfs::string::number(((ip >> 8)  & 0xFF))
+			<< pfs::string(1, '.') << pfs::string::number((ip  & 0xFF));
+		return r;
 	}
-	return String();
+	return pfs::string();
 }
 
 
-uint16_t InetSocket::port () const
+uint16_t inet_socket::port () const
 {
 	return opened()
-		? pimpl->saddr.sin_port
+		? _pimpl->saddr.sin_port
 		: 0;
 }
 
-size_t InetSocket::bytesAvailable() const
+size_t inet_socket::bytesAvailable () const
 {
-	return pimpl->bytesAvailable();
+	return _pimpl->bytesAvailable();
 }
 
 
-bool InetSocket::deviceIsOpened () const
+bool inet_socket::deviceIsOpened () const
 {
-	return pimpl->opened();
+	return _pimpl->opened();
 }
 
 #ifdef __COMMENT__
@@ -200,6 +199,4 @@ ssize_t Socket::writeBytes(const char bytes[], size_t n)
 }
 #endif
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io

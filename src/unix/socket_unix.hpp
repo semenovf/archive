@@ -8,15 +8,16 @@
 #ifndef __CWT_SOCKET_UNIX_HPP__
 #define __CWT_SOCKET_UNIX_HPP__
 
-#include <cwt/string.hpp>
+#include <pfs/string.hpp>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-class NativeSocket {
+class native_socket
+{
 public:
-	NativeSocket () : sockfd(-1) {}
+	native_socket () : sockfd(-1) {}
 	bool open (int socktype, int proto, int32_t oflags);
 	bool opened () const { return sockfd >= 0; }
 	size_t bytesAvailable() const;
@@ -25,14 +26,14 @@ public:
 	int sockfd;
 };
 
-class NativeInetSocket : public NativeSocket
+class native_inet_socket : public native_socket
 {
 public:
-	NativeInetSocket() : NativeSocket() {}
-	bool open (const String & hostname, uint16_t port, int socktype, int proto, int32_t oflags);
+	native_inet_socket() : native_socket() {}
+	bool open (const pfs::string & hostname, uint16_t port, int socktype, int proto, int32_t oflags);
 	struct sockaddr_in saddr;
 };
 
-CWT_NS_END
+}} // cwt::net
 
 #endif /* __CWT_SOCKET_UNIX_HPP__ */

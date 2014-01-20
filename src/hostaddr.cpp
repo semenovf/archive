@@ -9,9 +9,7 @@
 //#include <netinet/in.h>
 //#include <arpa/inet.h>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 #ifdef __COMMENT__
 void HostAddress::setPath (const String & path)
@@ -37,6 +35,4 @@ void HostAddress::setAddress (uint32_t ipv4)
 }
 #endif
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io

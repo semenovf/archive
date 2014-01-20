@@ -1,24 +1,22 @@
-#include <cwt/test.h>
-#include <cwt/safeformat.hpp>
+#include <cwt/test.hpp>
+#include <pfs/string.hpp>
 #include "../include/cwt/net/hostinfo.hpp"
 #include <iostream>
 
-using namespace cwt;
-
 void test_addr_info()
 {
-	net::addrinfo_iterator it = net::addrinfo_iterator::begin("localhost");
-	net::addrinfo_iterator itEnd = net::addrinfo_iterator::end();
+	cwt::net::addrinfo_iterator it = cwt::net::addrinfo_iterator::begin(_l1("localhost"));
+	cwt::net::addrinfo_iterator itEnd = cwt::net::addrinfo_iterator::end();
 
-	CWT_TEST_OK(it.canonicalName() == String("localhost"));
+	TEST_OK(it.canonicalName() == "localhost");
 
 	while (it != itEnd) {
 		std::cout << it.ipv4name() << ':' << it.port() << std::endl;
 		++it;
 	}
 
-	it = net::addrinfo_iterator::begin("127.0.0.1");
-	CWT_TEST_OK(it.canonicalName() == String("127.0.0.1"));
+	it = cwt::net::addrinfo_iterator::begin(_l1("127.0.0.1"));
+	TEST_OK(it.canonicalName() == "127.0.0.1");
 
 	while (it != itEnd) {
 		++it;
@@ -28,12 +26,12 @@ void test_addr_info()
 
 int main(int argc, char *argv[])
 {
-    CWT_CHECK_SIZEOF_TYPES;
-    CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(2);
+    PFS_CHECK_SIZEOF_TYPES;
+    PFS_UNUSED2(argc, argv);
+    BEGIN_TESTS(2);
 
     test_addr_info();
 
-    CWT_END_TESTS;
+    END_TESTS;
     return 0;
 }

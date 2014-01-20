@@ -11,13 +11,13 @@
 namespace cwt { namespace io {
 
 template <typename string_type>
-class NullCodec
+class null_codec
 {
 public:
 	typedef string_type istring_type;
 	typedef string_type ostring_type;
 
-	bool convert(ostring_type & output, const istring_type & input, size_t & remain)
+	bool convert (ostring_type & output, const istring_type & input, size_t & remain)
 	{
 		output.append(input);
 		remain = 0;
@@ -26,7 +26,7 @@ public:
 };
 
 
-class NullByteCodec
+class nullbyte_codec
 {
 public:
 	typedef pfs::bytearray istring_type;

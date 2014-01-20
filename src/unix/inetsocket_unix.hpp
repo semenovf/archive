@@ -11,18 +11,14 @@
 #include "../../include/cwt/io/inetsocket.hpp"
 #include "socket_unix.hpp"
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-namespace io {
-
-class InetSocket::Impl : public NativeInetSocket
+class inet_socket::impl : public native_inet_socket
 {
 public:
-	Impl() : NativeInetSocket() {}
+	impl () : native_inet_socket() {}
 };
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 #endif /* __CWT_IO_INETSOCKET_UNIX_HPP__ */

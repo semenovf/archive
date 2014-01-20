@@ -12,8 +12,10 @@
 
 namespace cwt { namespace io {
 
-class DLL_API Buffer : public Device
+class DLL_API buffer : public device
 {
+	pfs::vector<char> m_buffer;
+
 protected:
 	virtual ssize_t readBytes      (char bytes[], size_t n);
 	virtual ssize_t writeBytes     (const char bytes[], size_t n);
@@ -23,35 +25,32 @@ protected:
 	virtual void    flushDevice    () {}
 
 public:
-	Buffer() : m_buffer() {}
-	virtual ~Buffer() { close(); }
+	buffer() : m_buffer() {}
+	virtual ~buffer() { close(); }
 
-	Vector<char> & buffer() { return m_buffer; }
-
-private:
-	Vector<char> m_buffer;
+	const pfs::vector<char> & data () const { return m_buffer; }
 };
 
 
-inline ssize_t Buffer::readBytes (char bytes[], size_t n)
+inline ssize_t buffer::readBytes (char bytes[], size_t n)
 {
 	size_t nbytes = 0;
 	if (n > 0 && m_buffer.size() > 0) {
-		nbytes = CWT_MIN(n, m_buffer.size());
-		CWT_ASSERT(nbytes <= CWT_SSIZE_MAX);
+		nbytes = PFS_MIN(n, m_buffer.size());
+		PFS_ASSERT(nbytes <= PFS_SSIZE_MAX);
 		memcpy(bytes, m_buffer.constData(), nbytes);
 		m_buffer.remove(0, nbytes);
 	}
 	return ssize_t(nbytes);
 }
 
-inline ssize_t Buffer::writeBytes (const char bytes[], size_t n)
+inline ssize_t buffer::writeBytes (const char bytes[], size_t n)
 {
-	CWT_ASSERT(n <= CWT_SSIZE_MAX);
+	PFS_ASSERT(n <= PFS_SSIZE_MAX);
 	m_buffer.append(bytes, n);
 	return ssize_t(n);
 }
 
-} // cwt::io
+}} // cwt::io
 
 #endif /* __CWT_IO_BUFFER_HPP__ */

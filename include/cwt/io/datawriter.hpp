@@ -16,21 +16,21 @@
 
 namespace cwt { namespace io {
 
-class DLL_API DataWriter : public Writer<Device, NullByteCodec>
+class DLL_API data_writer : public writer<cwt::io::device, nullbyte_codec>
 {
-	typedef Writer<Device, NullByteCodec> base_class;
-	static NullByteCodec DefaultByteEncoder;
+	typedef writer<cwt::io::device, nullbyte_codec> base_class;
+	static nullbyte_codec DefaultByteEncoder;
 
-	CWT_DENY_COPY(DataWriter);
+	PFS_DENY_COPY(data_writer);
 
 public:
-	DataWriter (Device & dev) : base_class(dev, DefaultByteEncoder) {}
+	data_writer (cwt::io::device & dev) : base_class(dev, DefaultByteEncoder) {}
 
-	Device * device () const { return consumer(); }
+	cwt::io::device * device () const { return consumer(); }
 
-	ssize_t write (const char chars[], size_t size) { return base_class::write(ByteArray(chars, size)); }
+	ssize_t write (const char chars[], size_t size) { return base_class::write(pfs::bytearray(chars, size)); }
 	ssize_t write (const pfs::bytearray & bytes) { return base_class::write(bytes); }
-	ssize_t write (const String & s) { return base_class::write(ByteArray(s.data(), s.size())); }
+	ssize_t write (const pfs::string & s) { return base_class::write(pfs::bytearray(s.data(), s.size())); }
 };
 
 }} // cwt::io

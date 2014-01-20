@@ -10,20 +10,20 @@
 
 #include <cwt/io/inetsocket.hpp>
 
-namespace cwt { namespace net {
+namespace cwt { namespace io {
 
-class TcpServer
+class tcp_server
 {
-	CWT_PIMPL_IMPL(TcpServer);
+	PFS_PIMPL_DECL(tcp_server, impl);
 
 public:
-	TcpServer ();
-	bool open (const String hostname, uint16_t port, int32_t oflags = io::Device::ReadWrite);
-	bool listen (const String hostname, uint16_t port, int32_t oflags = io::Device::ReadWrite)
+	tcp_server ();
+	bool open (const pfs::string hostname, uint16_t port, int32_t oflags = device::ReadWrite);
+	bool listen (const pfs::string hostname, uint16_t port, int32_t oflags = device::ReadWrite)
 	{
 		return open(hostname, port, oflags);
 	}
-	io::TcpSocket * accept ();
+	tcp_socket * accept ();
 	bool opened () const;
 };
 

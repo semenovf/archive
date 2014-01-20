@@ -27,10 +27,6 @@
  * 		http://www.kegel.com/dkftpbench/nonblocking.html
  */
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-namespace io {
-
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io

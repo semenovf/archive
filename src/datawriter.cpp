@@ -7,12 +7,8 @@
 
 #include "../include/cwt/io/datawriter.hpp"
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-namespace io {
+nullbyte_codec data_writer::DefaultByteEncoder;
 
-NullByteCodec DataWriter::DefaultByteEncoder;
-
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io

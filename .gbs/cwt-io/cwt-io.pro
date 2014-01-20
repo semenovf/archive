@@ -3,16 +3,17 @@ include($$(GBS_HOME)/common-dll.pri)
 TARGET = cwt-io
 
 INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../cwt-common/include
-INCLUDEPATH += ../../../cwt-core/include
+INCLUDEPATH += ../../../pfs/include
+INCLUDEPATH += ../../../cwt-sys/include
 
 HEADERS += ../../include/cwt/*.hpp
 HEADERS += ../../include/cwt/io/*.hpp
 SOURCES += ../../src/*.cpp
-SOURCES += ../../src/unix/*.cpp
 
 unix {
-    LIBS += -lcwt
+    SOURCES += ../../src/unix/*.cpp
+    LIBS += -lpfs
+    LIBS += -lcwt-sys
 }
 
 win32 {

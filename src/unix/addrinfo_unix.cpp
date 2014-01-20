@@ -23,9 +23,7 @@
 #endif
 
 
-CWT_NS_BEGIN
-
-namespace net {
+namespace cwt { namespace net {
 
 struct addrinfo_iterator_data
 {
@@ -58,7 +56,7 @@ addrinfo_iterator addrinfo_iterator::end()
 	return addrinfo_iterator();
 }
 
-addrinfo_iterator addrinfo_iterator::begin (const String & hostname)
+addrinfo_iterator addrinfo_iterator::begin (const pfs::string & hostname)
 {
 	addrinfo_iterator it;
 
@@ -77,15 +75,17 @@ addrinfo_iterator addrinfo_iterator::begin (const String & hostname)
 	hints.ai_addr      = nullptr;
 	hints.ai_next      = nullptr;
 
-	int rc = getaddrinfo (node , service, & hints, & result);
+	int rc = getaddrinfo (node, service, & hints, & result);
 	if (rc) {
-		Logger::error(_Fr("Failed to get address info: %s: %s")
-				% hostname
-				% gai_strerror(rc));
+		pfs::string errmsg;
+		errmsg << hostname
+				<< _Tr(": get address info failure: ")
+				<< gai_strerror(rc);
+		PFS_ERROR(errmsg.c_str());
 		return end();
 	}
 
-	shared_ptr<addrinfo_iterator_data> d(new addrinfo_iterator_data);
+	pfs::shared_ptr<addrinfo_iterator_data> d(new addrinfo_iterator_data);
 	d->result = result;
 	d->next = result;
 	it.m_data.swap(d);
@@ -134,13 +134,13 @@ addrinfo_iterator & addrinfo_iterator::operator ++ ()
  *
  * @return Official name of the host.
  */
-String addrinfo_iterator::canonicalName () const
+pfs::string addrinfo_iterator::canonicalName () const
 {
 	// Only field of the first of the addrinfo structures in the returned list
 	// is set to point to the official name of the host.
 	if (m_data->result)
-		return String(m_data->result->ai_canonname);
-	return String();
+		return pfs::string(m_data->result->ai_canonname);
+	return pfs::string();
 }
 
 uint16_t addrinfo_iterator::port () const
@@ -161,7 +161,7 @@ uint32_t addrinfo_iterator::ipv4 () const
 	return 0;
 }
 
-String addrinfo_iterator::ipv4name () const
+pfs::string addrinfo_iterator::ipv4name () const
 {
 	if (m_data->next) {
 		uint32_t ip = ipv4();
@@ -171,9 +171,7 @@ String addrinfo_iterator::ipv4name () const
 				% ((ip >> 8)  & 0xFF)
 				% (ip  & 0xFF);
 	}
-	return String();
+	return pfs::string();
 }
 
-} // namespace io
-
-CWT_NS_END
+}} // cwt::net

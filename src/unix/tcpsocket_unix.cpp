@@ -12,18 +12,16 @@
 #include <sys/socket.h>
 
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-namespace io {
-
-bool TcpSocket::open (const String & hostname, uint16_t port, int32_t oflags)
+bool tcp_socket::open (const pfs::string & hostname, uint16_t port, int32_t oflags)
 {
-	if (pimpl->open(hostname, port, SOCK_STREAM, 0, oflags)) {
+	if (_pimpl->open(hostname, port, SOCK_STREAM, 0, oflags)) {
 		int rc = 0;
 
-		CWT_VERIFY_ERRNO((rc = ::connect(pimpl->sockfd
-				, reinterpret_cast<struct sockaddr *>(& pimpl->saddr)
-				, sizeof(pimpl->saddr))) == 0, errno);
+		PFS_VERIFY_ERRNO((rc = ::connect(_pimpl->sockfd
+				, reinterpret_cast<struct sockaddr *>(& _pimpl->saddr)
+				, sizeof(_pimpl->saddr))) == 0, errno);
 
 		if (rc == 0)
 			return true;
@@ -44,59 +42,62 @@ bool TcpSocket::open (const String & hostname, uint16_t port, int32_t oflags)
 #endif
 		}
 
-		Logger::error(errno, _Fr("Connection to %s:%u failed")
-				% hostname
-				% port);
-		pimpl->close();
+		pfs::string errmsg;
+		errmsg << hostname << pfs::string(1, ':')
+			<< pfs::string::number(port)
+			<< _Tr(": connection failure");
+		this->addSystemError(errno, errmsg);
+		_pimpl->close();
 	}
 
 	return false;
 }
 
-ssize_t TcpSocket::readBytes (char bytes[], size_t n)
+ssize_t tcp_socket::readBytes (char bytes[], size_t n)
 {
 	ssize_t r;
 
-	CWT_ASSERT(pimpl->sockfd >= 0);
+	PFS_ASSERT(_pimpl->sockfd >= 0);
 
-	n = CWT_MIN(n, CWT_INT_MAX);
-	r = recv(pimpl->sockfd, bytes, n, 0);
+	n = PFS_MIN(n, PFS_INT_MAX);
+	r = recv(_pimpl->sockfd, bytes, n, 0);
 
 	if (r < 0) {
-		Logger::error(errno, _Tr("Receive data error"));
+		pfs::string errmsg;
+		errmsg << _Tr("receive data error");
+		this->addSystemError(errno, errmsg);
 	}
 
 	return r;
 }
 
-ssize_t TcpSocket::writeBytes(const char bytes[], size_t n)
+ssize_t tcp_socket::writeBytes (const char bytes[], size_t n)
 {
 	ssize_t r;
-	CWT_ASSERT(pimpl->sockfd >= 0);
+	PFS_ASSERT(_pimpl->sockfd >= 0);
 
-	r = send(pimpl->sockfd, bytes, n, 0);
+	r = send(_pimpl->sockfd, bytes, n, 0);
 
 	if (r < 0) {
-		Logger::error(errno, _Tr("Send data error"));
+		pfs::string errmsg;
+		errmsg << _Tr("send data error");
+		this->addSystemError(errno, errmsg);
 	}
 
     return r;
 }
 
 
-bool TcpSocket::closeDevice ()
+bool tcp_socket::closeDevice ()
 {
-	if (pimpl->sockfd < 0)
+	if (_pimpl->sockfd < 0)
 		return true;
 
 	int rc = 0;
-	CWT_VERIFY_ERRNO((rc = shutdown(pimpl->sockfd, SHUT_RDWR)) == 0, errno);
-	pimpl->close();
+	PFS_VERIFY_ERRNO((rc = shutdown(_pimpl->sockfd, SHUT_RDWR)) == 0, errno);
+	_pimpl->close();
 	return rc == 0;
 }
 
-} // namespace io
-
-CWT_NS_END
-
+}} // cwt::io
 

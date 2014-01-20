@@ -1,4 +1,4 @@
-#include <cwt/test.h>
+#include <cwt/test.hpp>
 #include <cwt/safeformat.hpp>
 #include "../include/cwt/io/reader.hpp"
 #include "../include/cwt/io/writer.hpp"
@@ -8,9 +8,6 @@
 #include "../include/cwt/io/datawriter.hpp"
 #include <cstring>
 #include <cstdio>
-
-using namespace std;
-using namespace cwt;
 
 const char *loremipsum =
 "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    \n\
@@ -100,38 +97,38 @@ const char *loremipsum_lines[] = {
 
 void test_writer()
 {
-	io::Buffer buffer;
-	io::DataWriter writer(buffer);
-    CWT_TEST_FAIL(ssize_t(strlen(loremipsum)) == writer.write(ByteArray(loremipsum, strlen(loremipsum))));
-    CWT_TEST_OK(buffer.buffer().size() == strlen(loremipsum));
-	CWT_TEST_OK(strncmp(buffer.buffer().data(), loremipsum, strlen(loremipsum)) == 0);
+	cwt::io::buffer buffer;
+	cwt::io::data_writer writer(buffer);
+    TEST_FAIL(ssize_t(strlen(loremipsum)) == writer.write(pfs::bytearray(loremipsum, strlen(loremipsum))));
+    TEST_OK(buffer.data().size() == strlen(loremipsum));
+	TEST_OK(strncmp(buffer.data().data(), loremipsum, strlen(loremipsum)) == 0);
 }
 
 void test_line_reader()
 {
-	io::Buffer buffer;
+	cwt::io::buffer buffer;
 	buffer.write(loremipsum, strlen(loremipsum));
-	CWT_TEST_FAIL(buffer.available() == strlen(loremipsum));
+	TEST_FAIL(buffer.available() == strlen(loremipsum));
 
-	io::DataReader lineReader(buffer);
+	cwt::io::data_reader lineReader(buffer);
 
 	size_t nlines = sizeof(loremipsum_lines)/sizeof(loremipsum_lines[0]);
 	size_t iline = 0;
 
-	ByteArray r;
-	while (!(r = lineReader.readLine(ByteArray(1, '\n'), 80)).isEmpty()) {
-		if (r.endsWith(ByteArray::EndOfLine)) {
-			CWT_TEST_OK(strncmp(loremipsum_lines[iline], r.constData(), r.size() - ByteArray::EndOfLine.size()) == 0);
+	pfs::bytearray r;
+	while (!(r = lineReader.readLine(pfs::bytearray(1, '\n'), 80)).isEmpty()) {
+		if (r.endsWith(pfs::bytearray(1, '\n'))) {
+			TEST_OK(strncmp(loremipsum_lines[iline], r.constData(), r.size() - 1) == 0);
 		} else {
-			CWT_TEST_OK(strncmp(loremipsum_lines[iline], r.constData(), r.size()) == 0);
+			TEST_OK(strncmp(loremipsum_lines[iline], r.constData(), r.size()) == 0);
 		}
 		++iline;
 	}
 
-	CWT_TEST_OK(lineReader.atEnd());
-	CWT_TEST_OK(!lineReader.isError());
+	TEST_OK(lineReader.atEnd());
+	TEST_OK(!lineReader.isError());
 
-	CWT_TEST_OK2(iline == nlines, String(_Fr("All lines are checked (%d from %d)") % iline % nlines).c_str());
+	TEST_OK2(iline == nlines, pfs::string(_Fr("All lines are checked (%d from %d)") % iline % nlines).c_str());
 }
 
 void test_reader_iterator()
@@ -139,69 +136,69 @@ void test_reader_iterator()
 	size_t nlines = sizeof(loremipsum_lines)/sizeof(loremipsum_lines[0]);
 
 	for (size_t iline = 0; iline < nlines; ++iline) {
-		Vector<char> r;
+		pfs::vector<char> r;
 
-		io::Buffer buffer;
+		cwt::io::buffer buffer;
 		buffer.write(loremipsum_lines[iline], strlen(loremipsum_lines[iline]));
-		CWT_TEST_FAIL(buffer.available() == strlen(loremipsum_lines[iline]));
+		TEST_FAIL(buffer.available() == strlen(loremipsum_lines[iline]));
 
-		io::DataReader charReader(buffer);
+		cwt::io::data_reader charReader(buffer);
 
-		io::DataReader::iterator it(charReader);
-		io::DataReader::iterator itEnd;
+		cwt::io::data_reader::iterator it(charReader);
+		cwt::io::data_reader::iterator itEnd;
 
 		while (it != itEnd) {
 			r.append(*it++);
 		}
 		r.append(0);
-		CWT_TEST_OK(strncmp(loremipsum_lines[iline], r.constData(), r.size()) == 0);
+		TEST_OK(strncmp(loremipsum_lines[iline], r.constData(), r.size()) == 0);
 	}
 }
 
 void test_reader_iterator_ext()
 {
 	const char * str = "Lorem ipsum dolor sit amet,";
-	io::Buffer buffer;
+	cwt::io::buffer buffer;
 	buffer.write(str, strlen(str));
-	CWT_TEST_FAIL(buffer.available() == strlen(str));
+	TEST_FAIL(buffer.available() == strlen(str));
 
-	io::DataReader charReader(buffer);
+	cwt::io::data_reader charReader(buffer);
 
-	io::DataReader::iterator it(charReader);
-	io::DataReader::iterator itEnd;
+	cwt::io::data_reader::iterator it(charReader);
+	cwt::io::data_reader::iterator itEnd;
 
-	CWT_TEST_OK(*it   == 'L');
-	CWT_TEST_OK(*it++ == 'L');
-	CWT_TEST_OK(*it++ == 'o');
-	CWT_TEST_OK(*it++ == 'r');
-	CWT_TEST_OK(*it   == 'e');
-	CWT_TEST_OK(*++it == 'm');
+	TEST_OK(*it   == 'L');
+	TEST_OK(*it++ == 'L');
+	TEST_OK(*it++ == 'o');
+	TEST_OK(*it++ == 'r');
+	TEST_OK(*it   == 'e');
+	TEST_OK(*++it == 'm');
 	it += 8;
-	CWT_TEST_OK(*it++ == 'd');
-	CWT_TEST_OK(*it++ == 'o');
-	CWT_TEST_OK(*it++ == 'l');
-	CWT_TEST_OK(*it++ == 'o');
-	CWT_TEST_OK(*it++ == 'r');
-	CWT_TEST_OK(*it++ == ' ');
+	TEST_OK(*it++ == 'd');
+	TEST_OK(*it++ == 'o');
+	TEST_OK(*it++ == 'l');
+	TEST_OK(*it++ == 'o');
+	TEST_OK(*it++ == 'r');
+	TEST_OK(*it++ == ' ');
 
-	CWT_TEST_OK(*it == 's');
-	CWT_TEST_OK(*it.at(0) == 's');
-	CWT_TEST_OK(*it.at(1) == 'i');
-	CWT_TEST_OK(*it.at(2) == 't');
-	CWT_TEST_OK(*it == 's');
-	CWT_TEST_OK(*it.at(8) == ',');
+	TEST_OK(*it == 's');
+	TEST_OK(*it.at(0) == 's');
+	TEST_OK(*it.at(1) == 'i');
+	TEST_OK(*it.at(2) == 't');
+	TEST_OK(*it == 's');
+	TEST_OK(*it.at(8) == ',');
 	it += 8;
-	CWT_TEST_OK(*it == ',');
+	TEST_OK(*it == ',');
 	++it;
 	//it += 100;
-	CWT_TEST_OK(it == itEnd);
+	TEST_OK(it == itEnd);
 }
 
 int main(int argc, char *argv[])
 {
-    CWT_CHECK_SIZEOF_TYPES;
-    CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(148);
+    PFS_CHECK_SIZEOF_TYPES;
+    PFS_UNUSED2(argc, argv);
+    BEGIN_TESTS(148);
 
    	test_line_reader();
     test_reader_iterator();
@@ -210,6 +207,6 @@ int main(int argc, char *argv[])
 
 //  test_mix_get_read(); // TODO
 
-    CWT_END_TESTS;
+    END_TESTS;
     return 0;
 }

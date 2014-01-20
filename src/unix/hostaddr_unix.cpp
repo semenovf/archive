@@ -5,18 +5,7 @@
  *      Author: wladt
  */
 
-//#include "../../include/cwt/io/socket.hpp"
-#include <cwt/logger.hpp>
-/*
-#include <cwt/safeformat.hpp>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-*/
-
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace net {
 
 #ifdef __COMMENT__
 bool init_inet_sockaddr (struct sockaddr_in & sockaddr, const HostAddress & /*hostAddr*/, uint16_t port)
@@ -63,6 +52,4 @@ bool init_inet_sockaddr (struct sockaddr_in & sockaddr, const HostAddress & /*ho
 	return true;
 }
 #endif
-} // namespace io
-
-CWT_NS_END
+}} // cwt::net

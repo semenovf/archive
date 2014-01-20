@@ -84,62 +84,67 @@ extern template ssize_t Ucs4Decoder::convert(string_type output, const orig_char
 
 #endif
 
-class DLL_API Utf8Decoder
+class DLL_API utf8decoder
 {
 public:
 	typedef pfs::bytearray  istring_type;
 	typedef pfs::utf8string ostring_type;
 
-public:
-	Utf8Decoder()
-		: m_strict(false)
-		, m_state() { m_state.replacementChar = UChar::ReplacementChar; }
-	Utf8Decoder(bool strict, UChar replacement = UChar::ReplacementChar)
-		: m_strict(strict)
-		, m_state() { m_state.replacementChar = replacement; }
-	virtual ~Utf8Decoder() {}
-	virtual bool convert(ostring_type & output, const istring_type & input, size_t & remain);
 protected:
 	bool m_strict;
-	Utf8String::ConvertState m_state;
+	pfs::utf8string::ConvertState m_state;
+
+public:
+	utf8decoder ()
+		: m_strict(false)
+		, m_state() { m_state.replacementChar = pfs::ucchar::ReplacementChar; }
+	utf8decoder (bool strict, pfs::ucchar replacement = pfs::ucchar::ReplacementChar)
+		: m_strict(strict)
+		, m_state() { m_state.replacementChar = replacement; }
+	virtual ~utf8decoder () {}
+
+	virtual bool convert(ostring_type & output, const istring_type & input, size_t & remain);
 };
 
 
-class DLL_API Utf8Encoder
+class DLL_API utf8encoder
 {
 public:
 	typedef pfs::utf8string istring_type;
 	typedef pfs::bytearray  ostring_type;
 
-public:
-	Utf8Encoder()
-		: m_strict(false)
-		, m_state() { m_state.replacementChar = UChar::ReplacementChar; }
-	Utf8Encoder(bool strict, UChar replacement = UChar::ReplacementChar)
-		: m_strict(strict)
-		, m_state() { m_state.replacementChar = replacement; }
-	virtual ~Utf8Encoder() {}
-	virtual bool convert(ostring_type & output, const istring_type & input, size_t & remain);
 protected:
 	bool m_strict;
-	Utf8String::ConvertState m_state;
+	pfs::utf8string::ConvertState m_state;
+
+public:
+	utf8encoder ()
+		: m_strict(false)
+		, m_state() { m_state.replacementChar = pfs::ucchar::ReplacementChar; }
+	utf8encoder (bool strict, pfs::ucchar replacement = pfs::ucchar::ReplacementChar)
+		: m_strict(strict)
+		, m_state() { m_state.replacementChar = replacement; }
+	virtual ~utf8encoder () {}
+
+	virtual bool convert (ostring_type & output, const istring_type & input, size_t & remain);
 };
 
-typedef Utf8Decoder Utf8NullDecoder;
+typedef utf8decoder utf8nulldecoder;
 
-class DLL_API Latin1Decoder : public Utf8Decoder
+class DLL_API latin1decoder : public utf8decoder
 {
 public:
 	typedef pfs::bytearray  istring_type;
 	typedef pfs::utf8string ostring_type;
 
 public:
-	Latin1Decoder() : Utf8Decoder() {}
-	Latin1Decoder(bool strict, UChar replacement = UChar::ReplacementChar) : Utf8Decoder(strict, replacement) {}
+	latin1decoder () : utf8decoder() {}
+	latin1decoder (bool strict, pfs::ucchar replacement = pfs::ucchar::ReplacementChar) : utf8decoder(strict, replacement) {}
+
 	virtual bool convert(ostring_type & output, const istring_type & input, size_t & remain);
 };
 
-typedef Utf8Encoder Utf8NullEncoder;
+typedef utf8encoder utf8nullencoder;
 
 }} // cwt::io
 

@@ -13,16 +13,16 @@
 
 namespace cwt { namespace io {
 
-template <typename Consumer, typename Encoder>
-class WriterTraits
+template <typename _Consumer, typename _Encoder>
+class writer_traits
 {
 public:
-	typedef typename Encoder::istring_type    istring_type;
-	typedef typename Encoder::ostring_type    ostring_type;
+	typedef typename _Encoder::istring_type    istring_type;
+	typedef typename _Encoder::ostring_type    ostring_type;
 
-	static bool convert (Encoder & encoder, ostring_type & output, const istring_type & input, size_t & remain)
+	static bool convert (_Encoder & encoder, ostring_type & output, const istring_type & input, size_t & remain)
 		{ return encoder.convert(output, input, remain); }
-	static ssize_t write (Consumer & consumer, const ostring_type & o)
+	static ssize_t write (_Consumer & consumer, const ostring_type & o)
 		{ return consumer.write(o); }
 	static istring_type istring_right (const istring_type & s, size_t n)
 		{ return s.right(n); }
@@ -35,16 +35,22 @@ public:
 };
 
 
-template <typename Consumer, typename Encoder>
-class Writer
+template <typename _Consumer, typename _Encoder>
+class writer
 {
 public:
-	typedef WriterTraits<Consumer, Encoder>       writer_traits;
-	typedef typename writer_traits::istring_type  istring_type;
-	typedef typename writer_traits::ostring_type  ostring_type;
+	typedef writer_traits<_Consumer, _Encoder> writer_traits_type;
+	typedef typename writer_traits_type::istring_type  istring_type;
+	typedef typename writer_traits_type::ostring_type  ostring_type;
+
+private:
+	_Consumer &   m_consumerRef;
+	_Encoder &    m_encoderRef;
+	istring_type  m_inputBuffer;
+	ostring_type  m_outputBuffer;
 
 public:
-	Writer (Consumer & consumerRef, Encoder & encoderRef)
+	writer (_Consumer & consumerRef, _Encoder & encoderRef)
 		: m_consumerRef(consumerRef)
 		, m_encoderRef(encoderRef)
 	{}
@@ -52,43 +58,37 @@ public:
 	bool isError() { return m_consumerRef->isError(); }
 	ssize_t write (const istring_type & input);
 
-	Consumer * consumer() const { return & m_consumerRef; }
-
-private:
-	Consumer &    m_consumerRef;
-	Encoder &     m_encoderRef;
-	istring_type  m_inputBuffer;
-	ostring_type  m_outputBuffer;
+	_Consumer * consumer() const { return & m_consumerRef; }
 };
 
 
-template <typename Consumer, typename Encoder>
-inline ssize_t Writer<Consumer, Encoder>::write(const istring_type & input)
+template <typename _Consumer, typename _Encoder>
+inline ssize_t writer<_Consumer, _Encoder>::write(const istring_type & input)
 {
 	size_t remain = 0;
 
-	writer_traits::ostring_clear(m_outputBuffer);
+	writer_traits_type::ostring_clear(m_outputBuffer);
 
-	if (!writer_traits::istring_is_empty(m_inputBuffer)) {
-		writer_traits::istring_append(m_inputBuffer, input);
+	if (!writer_traits_type::istring_is_empty(m_inputBuffer)) {
+		writer_traits_type::istring_append(m_inputBuffer, input);
 
-		if (!writer_traits::convert(m_encoderRef, m_outputBuffer, m_inputBuffer, remain))
+		if (!writer_traits_type::convert(m_encoderRef, m_outputBuffer, m_inputBuffer, remain))
 			return ssize_t(-1);
 	} else {
-		if (!writer_traits::convert(m_encoderRef, m_outputBuffer, input, remain))
+		if (!writer_traits_type::convert(m_encoderRef, m_outputBuffer, input, remain))
 			return ssize_t(-1);
 	}
 
-	ssize_t written = writer_traits::write(m_consumerRef, m_outputBuffer);
+	ssize_t written = writer_traits_type::write(m_consumerRef, m_outputBuffer);
 
 	if (written > 0) {
 		if (remain > 0) {
-			if (!writer_traits::istring_is_empty(m_inputBuffer))
-				m_inputBuffer = writer_traits::istring_right(m_inputBuffer, remain);
+			if (!writer_traits_type::istring_is_empty(m_inputBuffer))
+				m_inputBuffer = writer_traits_type::istring_right(m_inputBuffer, remain);
 			else
-				m_inputBuffer = writer_traits::istring_right(input, remain);
+				m_inputBuffer = writer_traits_type::istring_right(input, remain);
 		} else {
-			writer_traits::istring_clear(m_inputBuffer);
+			writer_traits_type::istring_clear(m_inputBuffer);
 		}
 	}
 

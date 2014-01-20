@@ -15,39 +15,39 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-size_t NativeSocket::bytesAvailable() const
+size_t native_socket::bytesAvailable() const
 {
 	int nbytes = 0;
-	CWT_ASSERT(sockfd >= 0 );
+	PFS_ASSERT(sockfd >= 0 );
 	int rc = 0;
-	CWT_VERIFY_ERRNO((rc = ioctl(sockfd, FIONREAD, & nbytes)) == 0, errno);
+	PFS_VERIFY_ERRNO((rc = ioctl(sockfd, FIONREAD, & nbytes)) == 0, errno);
 	return nbytes;
 }
 
 
-bool NativeSocket::open (int socktype, int proto, int32_t oflags)
+bool native_socket::open (int socktype, int proto, int32_t oflags)
 {
-	if (oflags & io::Device::NonBlocking)
+	if (oflags & device::NonBlocking)
 		socktype |= SOCK_NONBLOCK;
 
-	CWT_VERIFY_ERRNO((sockfd = ::socket(AF_INET, socktype, proto)) >= 0, errno);
+	PFS_VERIFY_ERRNO((sockfd = ::socket(AF_INET, socktype, proto)) >= 0, errno);
 
 	return sockfd >= 0 ? true : false;
 }
 
-bool NativeSocket::close()
+bool native_socket::close()
 {
 	int rc = 0;
-	CWT_VERIFY_ERRNO((rc = ::close(sockfd)) == 0, errno);
+	PFS_VERIFY_ERRNO((rc = ::close(sockfd)) == 0, errno);
 	sockfd = -1;
 	return rc == 0;
 }
 
-bool NativeInetSocket::open (const String & hostname, uint16_t port, int socktype, int proto, int32_t oflags)
+bool native_inet_socket::open (const pfs::string & hostname, uint16_t port, int socktype, int proto, int32_t oflags)
 {
-	if (NativeSocket::open(socktype, proto, oflags)) {
+	if (native_socket::open(socktype, proto, oflags)) {
 		memset(& saddr, sizeof(saddr), 0);
 		saddr.sin_family = AF_INET;
 		saddr.sin_port   = htons(port);
@@ -60,8 +60,10 @@ bool NativeInetSocket::open (const String & hostname, uint16_t port, int socktyp
 			if (it != cwt::net::addrinfo_iterator::end()) {
 				saddr.sin_addr.s_addr = htonl(it.ipv4());
 			} else {
-				Logger::error(_Fr("Can't resolve host name: %s") % hostname);
-				CWT_VERIFY_ERRNO(::close(sockfd) == 0, errno);
+				pfs::string errmsg(hostname);
+				errmsg << ": can't resolve host name";
+				PFS_ERROR(errmsg.c_str());
+				PFS_VERIFY_ERRNO(::close(sockfd) == 0, errno);
 				sockfd = -1;
 				return false;
 			}
@@ -71,4 +73,4 @@ bool NativeInetSocket::open (const String & hostname, uint16_t port, int socktyp
 	return true;
 }
 
-CWT_NS_END
+}} // cwt::io

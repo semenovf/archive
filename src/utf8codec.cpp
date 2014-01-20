@@ -7,11 +7,9 @@
 
 
 #include "../include/cwt/io/utf8codec.hpp"
-#include <cwt/utf8string.hpp>
+#include <pfs/utf8string.hpp>
 
-CWT_NS_BEGIN
-
-namespace io {
+namespace cwt { namespace io {
 
 #ifdef __OBSOLETE__
 /*
@@ -137,9 +135,9 @@ ssize_t UcsDecoder<T, MaxCP>::convert(char output[], size_t osize, const T input
 }
 #endif
 
-bool Utf8Decoder::convert(ostring_type & output, const istring_type & input, size_t & remain)
+bool utf8decoder::convert (ostring_type & output, const istring_type & input, size_t & remain)
 {
-	Utf8String s = Utf8String::fromUtf8(input, nullptr, & m_state);
+	pfs::utf8string s = pfs::utf8string::fromUtf8(input, & m_state);
 
 	if (m_strict && m_state.invalidChars > 0)
 		return false;
@@ -149,16 +147,16 @@ bool Utf8Decoder::convert(ostring_type & output, const istring_type & input, siz
 	return true;
 }
 
-bool Utf8Encoder::convert(ostring_type & output, const istring_type & input, size_t & remain)
+bool utf8encoder::convert (ostring_type & output, const istring_type & input, size_t & remain)
 {
-	output.append(ByteArray(input.data(), input.size()));
+	output.append(pfs::bytearray(input.data(), input.size()));
 	remain = 0;
 	return true;
 }
 
-bool Latin1Decoder::convert(ostring_type & output, const istring_type & input, size_t & remain)
+bool latin1decoder::convert (ostring_type & output, const istring_type & input, size_t & remain)
 {
-	Utf8String s = Utf8String::fromLatin1(input, nullptr, & m_state);
+	pfs::utf8string s = pfs::utf8string::fromLatin1(input, & m_state);
 
 	if (m_strict && m_state.invalidChars > 0)
 		return false;
@@ -168,6 +166,4 @@ bool Latin1Decoder::convert(ostring_type & output, const istring_type & input, s
 	return true;
 }
 
-} // namespace io
-
-CWT_NS_END
+}} // namespace cwt::io

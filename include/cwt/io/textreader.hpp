@@ -14,21 +14,22 @@
 
 namespace cwt { namespace io {
 
-class DLL_API TextReader : public Reader<Device, Utf8Decoder>
+class DLL_API text_reader : public reader<cwt::io::device, utf8decoder>
 {
 private:
-	typedef Reader<Device, Utf8Decoder> base_class;
-	static Utf8NullDecoder DefaultUtf8Decoder;
+	typedef reader<cwt::io::device, utf8decoder> base_class;
+	static utf8nulldecoder DefaultUtf8Decoder;
 
-	CWT_DENY_COPY(TextReader);
-public:
-	typedef Reader<Device, Utf8Decoder>::iterator iterator;
+	PFS_DENY_COPY(text_reader);
 
 public:
-	TextReader (Device & dev, Utf8Decoder & decoder) : base_class(dev, decoder) {}
-	TextReader (Device & dev) : base_class(dev, DefaultUtf8Decoder) {}
+	typedef reader<cwt::io::device, utf8decoder>::iterator iterator;
 
-	Device * device () const { return & this->producer(); }
+public:
+	text_reader (cwt::io::device & dev, utf8decoder & decoder) : base_class(dev, decoder) {}
+	text_reader (cwt::io::device & dev) : base_class(dev, DefaultUtf8Decoder) {}
+
+	cwt::io::device * device () const { return & this->producer(); }
 
 	pfs::utf8string readAll ()
 	{

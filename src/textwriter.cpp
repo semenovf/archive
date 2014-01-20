@@ -8,15 +8,11 @@
 
 #include "../include/cwt/io/textwriter.hpp"
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-namespace io {
+utf8nullencoder text_writer::DefaultUtf8Encoder;
 
-Utf8NullEncoder TextWriter::DefaultUtf8Encoder;
-
-} // namespace io
-
-CWT_NS_END
+}} // namespace cwt::io
 
 
 

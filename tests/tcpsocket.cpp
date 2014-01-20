@@ -1,30 +1,26 @@
-#include <cwt/test.h>
-#include <cwt/logger.hpp>
+#include <cwt/test.hpp>
+#include <pfs/bytearray.hpp>
 #include <cwt/safeformat.hpp>
+#include <cwt/logger.hpp>
 #include <cwt/thread.hpp>
 #include "../include/cwt/io/inetsocket.hpp"
-#include "../include/cwt/net/tcpserver.hpp"
+#include "../include/cwt/io/tcpserver.hpp"
 #include <iostream>
-
-using namespace cwt;
-using namespace cwt::io;
-using namespace cwt::net;
 
 static const uint16_t port = 3999;
 
-
-class ServerThread : public Thread
+class ServerThread : public cwt::thread
 {
 public:
-	ServerThread(TcpServer * server) : m_server(server) {}
+	ServerThread(cwt::io::tcp_server * server) : m_server(server) {}
 protected:
 	virtual void run ();
 
 private:
-	TcpServer * m_server;
+	cwt::io::tcp_server * m_server;
 };
 
-class ClientThread : public Thread
+class ClientThread : public cwt::thread
 {
 protected:
 	virtual void run ();
@@ -32,7 +28,7 @@ protected:
 
 void ServerThread::run ()
 {
-	TcpSocket * client = nullptr;
+	cwt::io::tcp_socket * client = nullptr;
 
 	if (m_server) {
 		while ((client = m_server->accept()) == nullptr) {
@@ -40,14 +36,14 @@ void ServerThread::run ()
 		}
 
 		if (client) {
-			Logger::debug(_Fr("Client accepted on: %s: %u") % client->hostname() % client->port());
+			std::cout << "Client accepted on: " << client->hostname() << ':' << client->port() << std::endl;
 		}
 
 		while (client) {
-			ByteArray ba;
-			if(client->read(ba, 1024) > 0) {
+			pfs::bytearray ba;
+			if (client->read(ba, 1024) > 0) {
 				std::cout << "Received: " << ba.c_str() << std::endl;
-				if (ba == ByteArray("quit")) {
+				if (ba == pfs::bytearray("quit")) {
 					std::cout << "Bye!" << std::endl;
 					delete client;
 					client = nullptr;
@@ -59,8 +55,9 @@ void ServerThread::run ()
 
 void ClientThread::run ()
 {
-	TcpSocket client;
-	CWT_TEST_OK(client.open("localhost", port));
+	cwt::io::tcp_socket client;
+	TEST_OK(client.open(_l1("localhost"), port));
+
 	if (client.opened()) {
 		client.write("Hello", 5);
 		sleep(1);
@@ -72,12 +69,12 @@ void ClientThread::run ()
 
 int main(int argc, char *argv[])
 {
-    CWT_CHECK_SIZEOF_TYPES;
-    CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(2);
+    PFS_CHECK_SIZEOF_TYPES;
+    PFS_UNUSED2(argc, argv);
+    BEGIN_TESTS(2);
 
-    TcpServer server;
-    CWT_TEST_FAIL(server.listen("localhost", port));
+    cwt::io::tcp_server server;
+    TEST_FAIL(server.listen(_l1("localhost"), port));
 
     ServerThread serverThread(& server);
     ClientThread clientThread;
@@ -85,9 +82,9 @@ int main(int argc, char *argv[])
     serverThread.start();
     clientThread.start();
 
-    clientThread.wait();
     serverThread.wait();
+    clientThread.wait();
 
-    CWT_END_TESTS;
+    END_TESTS;
     return 0;
 }

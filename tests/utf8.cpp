@@ -1,4 +1,4 @@
-#include <cwt/test.h>
+#include <cwt/test.hpp>
 #include "../include/cwt/io/reader.hpp"
 #include "../include/cwt/io/writer.hpp"
 #include "../include/cwt/io/buffer.hpp"
@@ -8,9 +8,7 @@
 #include <cstring>
 #include <cstdio>
 
-using namespace cwt;
-
-struct _FileSpec { const char *path; const char *opath; size_t size; size_t nchars; };
+struct _FileSpec { const char * path; const char * opath; size_t size; size_t nchars; };
 
 #ifdef __COMMENT__
 static _FileSpec utf8_ucs2_files[] = {
@@ -85,27 +83,27 @@ void test_Utf8UcsCodec(_FileSpec file_spec[], int nspecs)
 void test_Utf8Codec(_FileSpec file_spec[], int nspecs)
 {
     for (int i = 0; i < nspecs; i++) {
-    	io::File file;
-    	file.open(file_spec[i].path, io::Device::ReadOnly);
+    	cwt::io::file file;
+    	file.open(_l1(file_spec[i].path), cwt::io::device::ReadOnly);
 
     	printf("test_Utf8Codec: test file: %s...\n", file_spec[i].path);
-    	CWT_TEST_FAIL(file.opened());
-    	CWT_TEST_FAIL(file.size() == file_spec[i].size);
+    	TEST_FAIL(file.opened());
+    	TEST_FAIL(file.size() == file_spec[i].size);
 
-    	io::TextReader textReader(file);
-        io::DataReader dataReader(file);
+    	cwt::io::text_reader textReader(file);
+    	cwt::io::data_reader dataReader(file);
 
-    	String utf8 = textReader.read(file.size());
-    	CWT_TEST_OK(utf8.size() == file_spec[i].size);
-    	CWT_TEST_OK(utf8.length() == file_spec[i].nchars);
+    	pfs::string utf8 = textReader.read(file.size());
+    	TEST_OK(utf8.sizeInBytes() == file_spec[i].size);
+    	TEST_OK(utf8.length() == file_spec[i].nchars);
 
     	file.rewind();
 
-    	ByteArray raw = dataReader.read(file.size());
-    	CWT_TEST_OK(raw.size() == file_spec[i].size);
+    	pfs::bytearray raw = dataReader.read(file.size());
+    	TEST_OK(raw.size() == file_spec[i].size);
 
-        CWT_TEST_OK(raw.size() == utf8.size());
-        CWT_TEST_OK(strncmp(utf8.constData(), raw.constData(), raw.size()) == 0);
+        TEST_OK(raw.size() == utf8.sizeInBytes());
+        TEST_OK(strncmp(utf8.constData(), raw.constData(), raw.size()) == 0);
 
     	//file->close();
     }
@@ -113,9 +111,9 @@ void test_Utf8Codec(_FileSpec file_spec[], int nspecs)
 
 int main(int argc, char *argv[])
 {
-    CWT_CHECK_SIZEOF_TYPES;
-    CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(56);
+    PFS_CHECK_SIZEOF_TYPES;
+    PFS_UNUSED2(argc, argv);
+    BEGIN_TESTS(56);
 
 #ifdef __COMMENT__
    	test_Utf8UcsCodec<io::Ucs2Encoder, io::Ucs2Decoder>(utf8_ucs2_files, sizeof(utf8_ucs2_files)/sizeof(utf8_ucs2_files[0]));
@@ -123,6 +121,6 @@ int main(int argc, char *argv[])
 #endif
 	test_Utf8Codec(utf8_ucs4_files, sizeof(utf8_ucs4_files)/sizeof(utf8_ucs4_files[0]));
 
-    CWT_END_TESTS;
+    END_TESTS;
     return 0;
 }

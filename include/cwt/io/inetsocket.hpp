@@ -12,43 +12,42 @@
 #include <cwt/io/device.hpp>
 #include <cwt/net/hostinfo.hpp>
 
-namespace cwt { namespace net {
-class TcpServer;
-}
-
 namespace cwt { namespace io {
 
-class DLL_API InetSocket : public Device
+class tcp_server;
+
+class DLL_API inet_socket : public device
 {
-	CWT_PIMPL_IMPL(InetSocket);
+protected:
+	PFS_PIMPL_DECL(inet_socket, impl);
 
 protected:
-	virtual size_t  bytesAvailable() const;
+	virtual size_t  bytesAvailable () const;
 	virtual bool    deviceIsOpened () const;
 	virtual void    flushDevice    () {}
 
 public:
-	InetSocket();
+	inet_socket ();
 	uint32_t ipv4 () const;
-	String ipv4name () const;
-	String hostname () const;
+	pfs::string ipv4name () const;
+	pfs::string hostname () const;
 	uint16_t port () const;
 };
 
-class TcpSocket : public InetSocket
+class tcp_socket : public inet_socket
 {
-	friend class cwt::net::TcpServer;
+	friend class cwt::io::tcp_server;
 
 protected:
-	virtual ssize_t readBytes(char bytes[], size_t n);
-	virtual ssize_t writeBytes(const char bytes[], size_t n);
+	virtual ssize_t readBytes (char bytes[], size_t n);
+	virtual ssize_t writeBytes (const char bytes[], size_t n);
 	virtual bool    closeDevice ();
 
 public:
-	TcpSocket() : InetSocket() {}
-	virtual ~TcpSocket() { close(); }
-	bool open (const String & hostname, uint16_t port, int32_t oflags = ReadWrite);
-	bool connect (const String & hostname, uint16_t port, int32_t oflags = ReadWrite)
+	tcp_socket() : inet_socket() {}
+	virtual ~tcp_socket() { close(); }
+	bool open (const pfs::string & hostname, uint16_t port, int32_t oflags = ReadWrite);
+	bool connect (const pfs::string & hostname, uint16_t port, int32_t oflags = ReadWrite)
 	{
 		return open(hostname, port, oflags);
 	}

@@ -13,9 +13,9 @@
 
 namespace cwt { namespace io {
 
-class DLL_API File : public Device
+class DLL_API file : public device
 {
-	CWT_PIMPL_IMPL(File);
+	PFS_PIMPL_DECL(file, impl);
 
 public:
 	enum Permission {
@@ -42,11 +42,12 @@ protected:
 	virtual void    flushDevice    ();
 
 public:
-	File ();
-	File (int fd);
-	File (const String & path, int32_t oflags = ReadWrite);
-	virtual ~File () { close(); }
-	bool open (const String & path, int32_t oflags = ReadWrite);
+	file ();
+	file (int fd);
+	file (const pfs::string & path, int32_t oflags = ReadWrite);
+	virtual ~file () { close(); }
+
+	bool open (const pfs::string & path, int32_t oflags = ReadWrite);
 
 	size_t size () const;
 	bool setPermissions (int32_t perms);

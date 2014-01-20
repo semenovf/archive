@@ -7,14 +7,10 @@
 
 #include "../include/cwt/io/datareader.hpp"
 
-CWT_NS_BEGIN
+namespace cwt { namespace io {
 
-namespace io {
+nullbyte_codec data_reader::DefaultByteDecoder;
 
-NullByteCodec DataReader::DefaultByteDecoder;
-
-} // namespace io
-
-CWT_NS_END
+}} // cwt::io
 
 

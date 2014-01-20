@@ -14,19 +14,19 @@
 
 namespace cwt { namespace io {
 
-class DLL_API TextWriter : public Writer<Device, Utf8Encoder>
+class DLL_API text_writer : public writer<cwt::io::device, utf8encoder>
 {
 private:
-	typedef Writer<Device, Utf8Encoder> base_class;
-	static Utf8NullEncoder DefaultUtf8Encoder;
+	typedef writer<cwt::io::device, utf8encoder> base_class;
+	static utf8nullencoder DefaultUtf8Encoder;
 
-	CWT_DENY_COPY(TextWriter);
+	PFS_DENY_COPY(text_writer);
 
 public:
-	TextWriter(Device & dev) : base_class(dev, DefaultUtf8Encoder) {}
-	TextWriter(Device & dev, Utf8Encoder & encoder) : base_class(dev, encoder) {}
+	text_writer (cwt::io::device & dev) : base_class(dev, DefaultUtf8Encoder) {}
+	text_writer (cwt::io::device & dev, utf8encoder & encoder) : base_class(dev, encoder) {}
 
-	Device * device() const { return consumer(); }
+	cwt::io::device * device() const { return consumer(); }
 };
 
 }} // cwt::io
