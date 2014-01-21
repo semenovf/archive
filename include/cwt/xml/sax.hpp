@@ -59,10 +59,6 @@ public:
 	reader (handlers * h = nullptr);
 
 	bool parse (const pfs::string & src);
-/*
-	bool isError () const;
-	pfs::string errorString () const;
-*/
 	void setHandler (handlers * h);
 	void acceptVersion (pfs::function<bool (int, int)>);
 };

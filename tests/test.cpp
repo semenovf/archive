@@ -2,6 +2,8 @@
 #include <cwt/xml/sax.hpp>
 #include <iostream>
 
+extern void test_dom();
+
 static const char * xml_data =
 "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n"
 "<!DOCTYPE mydoc PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
@@ -153,7 +155,10 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
     BEGIN_TESTS(12);
 
+if(0) {
     test_basic();
+}
+    test_dom();
 
     END_TESTS;
     return 0;

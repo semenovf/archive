@@ -5,6 +5,7 @@
  */
 
 #include "dom_p.hpp"
+#include <cwt/logger.hpp>
 
 namespace cwt { namespace xml {
 
@@ -13,25 +14,24 @@ static bool __accept_version(int major, int minor)
 	return major == 1 && minor == 0;
 }
 
-cwt::dom::document createDocument (const pfs::string & xml_source
-		, const pfs::string & /*namespaceURI*/
-		, const pfs::string & /*qualifiedName*/
-		, const cwt::dom::doctype & /*doctype*/)
+//cwt::dom::document createDocument (const pfs::string & xml_source
+//		, const pfs::string & /*namespaceURI*/
+//		, const pfs::string & /*qualifiedName*/
+//		, const cwt::dom::doctype & /*doctype*/)
+cwt::dom::document createDocument (const pfs::string & xml_source)
 {
 	document_builder h;
 	reader xml_reader(& h);
 
 	xml_reader.acceptVersion(__accept_version);
 
-	if (!xml_reader.parse(xml_source))
-		return cwt::dom::document();
-
-	if (xml_reader.isError()) {
-		//std::cout << xml_reader.errorString() << std::endl; output error
+	if (!xml_reader.parse(xml_source)) {
+		xml_reader.logOutput();
+		delete h._doc;
 		return cwt::dom::document();
 	}
 
-	return h._doc;
+	return h._doc->createDocument(); // this call is safe: document implementation '_doc' is dynamically allocated.
 }
 
 void document_builder::startElement (const pfs::string & /*tagname*/, const pfs::map<pfs::string, pfs::string> & /*atts*/)
@@ -67,11 +67,15 @@ void document_builder::startNamespaceDecl (const pfs::string & /*prefix*/, const
 void document_builder::endNamespaceDecl (const pfs::string & /*prefix*/)
 {}
 
-void document_builder::startDoctypeDecl (const pfs::string & /*doctypeName*/
-		, const pfs::string & /*systemId*/
-		, const pfs::string & /*publicId*/
+void document_builder::startDoctypeDecl (const pfs::string & doctypeName
+		, const pfs::string & systemId
+		, const pfs::string & publicId
 		, bool /*has_internal_subset*/)
-{}
+{
+    _doc->doctype()->_name = doctypeName;
+    _doc->doctype()->_publicId = publicId;
+    _doc->doctype()->_systemId = systemId;
+}
 
 void document_builder::endDoctypeDecl ()
 {}
@@ -112,10 +116,10 @@ bool QDomHandler::endDocument()
 
 bool QDomHandler::startDTD(const QString& name, const QString& publicId, const QString& systemId)
 {
-    doc->doctype()->name = name;
-    doc->doctype()->publicId = publicId;
-    doc->doctype()->systemId = systemId;
-    return true;
+//    doc->doctype()->name = name;
+//    doc->doctype()->publicId = publicId;
+//    doc->doctype()->systemId = systemId;
+//    return true;
 }
 
 bool QDomHandler::startElement(const QString& nsURI, const QString&, const QString& qName, const QXmlAttributes& atts)

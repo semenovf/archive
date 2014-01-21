@@ -28,21 +28,8 @@ bool reader::parse (const pfs::string & src)
 {
 	if (!_pimpl->parse(src)) {
 		this->addError(_pimpl->errorString());
-		return false;
 	}
-	return true;
+	return this->isGood();
 }
-
-/*
-bool reader::isError () const
-{
-	return _pimpl->isError();
-}
-
-pfs::string reader::errorString () const
-{
-	return _pimpl->errorString();
-}
-*/
 
 }} // cwt::xml

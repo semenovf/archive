@@ -8,21 +8,32 @@
 #define __CWT_XML_DOM_P_HPP__
 
 #include "../include/cwt/xml/sax.hpp"
-#include <cwt/dom.hpp>
-/*
-#include <cwt/dom/doctype.hpp>
-#include <cwt/dom/exception.hpp>
-*/
+#include "../../cwt-dom/src/node_p.hpp"
+#include "../../cwt-dom/src/nodelist_p.hpp"
+#include "../../cwt-dom/src/namednodemap_p.hpp"
+#include "../../cwt-dom/src/attr_p.hpp"
+#include "../../cwt-dom/src/element_p.hpp"
+#include "../../cwt-dom/src/doctype_p.hpp"
+#include "../../cwt-dom/src/document_p.hpp"
 
 namespace cwt { namespace xml {
 
 class document_builder : public handlers
 {
 public:
-	cwt::dom::document _doc;
+	cwt::dom::document_impl * _doc;
+	cwt::dom::node_impl * _node;
+	bool _isCdata;
 
 public:
-	document_builder () : handlers() {}
+	document_builder ()
+		: handlers()
+		, _doc(new cwt::dom::document_impl)
+		, _node(nullptr)
+		, _isCdata(false)
+	{
+		_node = _doc;
+	}
 	virtual ~document_builder () {}
 
 	virtual void startElement (const pfs::string & tagname, const pfs::map<pfs::string, pfs::string> & atts);

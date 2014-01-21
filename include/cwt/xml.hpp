@@ -6,9 +6,11 @@
 
 namespace cwt { namespace xml {
 
-cwt::dom::document createDocument (const pfs::string & namespaceURI
-		, const pfs::string & qualifiedName
-		, const cwt::dom::doctype & doctype);
+//DLL_API cwt::dom::document createDocument (const pfs::string & namespaceURI
+//		, const pfs::string & qualifiedName
+//		, const cwt::dom::doctype & doctype);
+
+DLL_API cwt::dom::document createDocument (const pfs::string & xml_source);
 
 }} // cwt::xml
 
