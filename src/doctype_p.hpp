@@ -16,7 +16,7 @@ class node_impl;
 class document_impl;
 class namednodemap_impl;
 
-class doctype_impl : public node_impl
+class DLL_API doctype_impl : public node_impl
 {
 public:
     namednodemap_impl * _entities;

@@ -22,6 +22,7 @@ class nodelist;
 class DLL_API document : public node
 {
 	friend class node;
+	friend class document_impl;
 
 protected:
 	document (document_impl *);

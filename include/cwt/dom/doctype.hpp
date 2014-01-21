@@ -28,7 +28,7 @@ protected:
 public:
 	doctype () : node () {}
 	doctype (const doctype & other) : node (other) {}
-	doctype & operator= (const doctype & other)
+	doctype & operator = (const doctype & other)
 	{
 	    return static_cast<doctype &>(node::operator = (other));
 	}

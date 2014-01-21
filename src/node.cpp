@@ -52,8 +52,12 @@ node_impl::node_impl (node_impl * n, bool deep)
         appendChild(x->cloneNode(true));
 }
 
-node_impl::~node_impl()
+node_impl::~node_impl ()
 {
+	pfs::string tracemsg;
+	tracemsg << _l1("DESTRUCTOR: ~node_impl (") << nodeName() << _l1(")");
+	PFS_TRACE(tracemsg.c_str());
+
     node_impl * p = _first;
     node_impl * n;
 
@@ -69,7 +73,7 @@ node_impl::~node_impl()
     _last = 0;
 }
 
-document_impl * node_impl::ownerDocument()
+document_impl * node_impl::ownerDocument ()
 {
     node_impl * p = this;
     while (p && !p->isDocument()) {
@@ -88,7 +92,7 @@ node_impl * node_impl::cloneNode (bool deep)
     return p;
 }
 
-node_impl * node_impl::insertAfter(node_impl * newChild, node_impl * refChild)
+node_impl * node_impl::insertAfter (node_impl * newChild, node_impl * refChild)
 {
     // Error check
     if (!newChild)
@@ -184,7 +188,7 @@ node_impl * node_impl::insertAfter(node_impl * newChild, node_impl * refChild)
     return newChild;
 }
 
-node_impl * node_impl::insertBefore(node_impl * newChild, node_impl * refChild)
+node_impl * node_impl::insertBefore (node_impl * newChild, node_impl * refChild)
 {
     // Error check
     if (!newChild)
@@ -481,8 +485,16 @@ node & node::operator = (const node & other)
 
 node::~node ()
 {
+	pfs::string tracemsg;
+	tracemsg << _l1("DESTRUCTOR: ~node (") << nodeName() << _l1(")");
+	PFS_TRACE(tracemsg.c_str());
+
     if (_pimpl && !_pimpl->ref.deref()) {
-        delete _pimpl;
+        pfs::string tracemsg;
+    	tracemsg << _l1("DELETE: ~node (") << nodeName() << _l1(")");
+    	PFS_TRACE(tracemsg.c_str());
+
+    	delete _pimpl;
         _pimpl = nullptr;
     }
 }

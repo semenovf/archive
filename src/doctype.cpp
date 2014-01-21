@@ -46,8 +46,10 @@ doctype_impl::doctype_impl (doctype_impl * n, bool deep)
 }
 
 
-doctype_impl::~doctype_impl()
+doctype_impl::~doctype_impl ()
 {
+	PFS_TRACE("~doctype_impl()");
+
     if (!_entities->_ref.deref())
         delete _entities;
 
@@ -94,7 +96,7 @@ pfs::string doctype::name () const
 namednodemap doctype::entities () const
 {
 	return _pimpl
-			? namednodemap(static_cast<doctype_impl *>(_pimpl)->_entities)
+			? namednodemap(reinterpret_cast<doctype_impl *>(_pimpl)->_entities)
 			: namednodemap();
 }
 
@@ -102,7 +104,7 @@ namednodemap doctype::entities () const
 namednodemap doctype::notations () const
 {
 	return _pimpl
-			? namednodemap(dynamic_cast<doctype_impl *>(_pimpl)->_notations)
+			? namednodemap(reinterpret_cast<doctype_impl *>(_pimpl)->_notations)
 			: namednodemap();
 }
 

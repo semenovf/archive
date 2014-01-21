@@ -30,21 +30,18 @@ document_impl::document_impl ()
 	, _type(new doctype_impl(this, this))
     , _nodeListTime(1)
 {
-    _type->ref.deref();
-
+    //_type->ref.deref();
     _name = pfs::string("#document");
 }
 
-document_impl::document_impl (const pfs::string & aname)
+document_impl::document_impl (const pfs::string & name)
     : node_impl(nullptr)
     , _impl(new dom_implementation_impl)
 	, _type(new doctype_impl(this, this))
 	, _nodeListTime(1)
 {
-    ;
-    _type->ref.deref();
-    _type->_name = aname;
-
+    //_type->ref.deref();
+    _type->_name = name;
     _name = pfs::string("#document");
 }
 
@@ -84,7 +81,10 @@ element_impl* document_impl::documentElement()
 
 
 document_impl::~document_impl ()
-{}
+{
+	PFS_TRACE("~document_impl()");
+//	_type.reset(nullptr);
+}
 
 node_impl * document_impl::cloneNode (bool deep)
 {

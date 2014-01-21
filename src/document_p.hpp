@@ -25,7 +25,7 @@ class domimpl_impl;
 class cdatasection_impl;
 class dom_implementation_impl;
 
-class document_impl : public node_impl
+class DLL_API document_impl : public node_impl
 {
 public:
     pfs::shared_ptr<dom_implementation_impl> _impl;
@@ -39,6 +39,12 @@ public:
     document_impl (doctype_impl * dt);
     document_impl (document_impl * n, bool deep);
     ~document_impl ();
+
+    document createDocument () {
+    	document doc(this);
+    	this->ref.deref();
+    	return doc;
+    }
 
     doctype_impl * doctype () { return _type.get(); }
     dom_implementation_impl * implementation () { return _impl.get(); }
