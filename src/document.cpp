@@ -82,7 +82,6 @@ element_impl* document_impl::documentElement()
 
 document_impl::~document_impl ()
 {
-	PFS_TRACE("~document_impl()");
 //	_type.reset(nullptr);
 }
 
@@ -401,9 +400,12 @@ nodelist document::getElementsByTagNameNS (const pfs::string & nsURI, const pfs:
     return nodelist(new nodelist_impl(_pimpl, nsURI, localName));
 }
 
+// The DOM implementation must have information that says which attributes are of type ID.
+// Attributes with the name "ID" are not of type ID unless so defined.
+// Implementations that do not know whether attributes are of type ID or not are expected to return null.
 element document::getElementById (const pfs::string & /*elementId*/) const
 {
-    //qWarning("elementById() is not implemented and will always return a null node.");
+    // TODO Need to implement document::getElementById()
     return element();
 }
 

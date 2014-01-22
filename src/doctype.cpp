@@ -48,8 +48,6 @@ doctype_impl::doctype_impl (doctype_impl * n, bool deep)
 
 doctype_impl::~doctype_impl ()
 {
-	PFS_TRACE("~doctype_impl()");
-
     if (!_entities->_ref.deref())
         delete _entities;
 

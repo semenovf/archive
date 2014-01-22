@@ -54,10 +54,6 @@ node_impl::node_impl (node_impl * n, bool deep)
 
 node_impl::~node_impl ()
 {
-	pfs::string tracemsg;
-	tracemsg << _l1("DESTRUCTOR: ~node_impl (") << nodeName() << _l1(")");
-	PFS_TRACE(tracemsg.c_str());
-
     node_impl * p = _first;
     node_impl * n;
 
@@ -485,15 +481,7 @@ node & node::operator = (const node & other)
 
 node::~node ()
 {
-	pfs::string tracemsg;
-	tracemsg << _l1("DESTRUCTOR: ~node (") << nodeName() << _l1(")");
-	PFS_TRACE(tracemsg.c_str());
-
     if (_pimpl && !_pimpl->ref.deref()) {
-        pfs::string tracemsg;
-    	tracemsg << _l1("DELETE: ~node (") << nodeName() << _l1(")");
-    	PFS_TRACE(tracemsg.c_str());
-
     	delete _pimpl;
         _pimpl = nullptr;
     }
