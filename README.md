@@ -19,8 +19,6 @@ Fedor Semenov, < fedor.v.semenov at gmail.com >
 No documentation prepared yet.  
 This software is under development.
 
-###ACKNOWLEDGEMENTS
-
 ###LICENSE AND COPYRIGHT
 
 Copyright 2014 Fedor Semenov.
