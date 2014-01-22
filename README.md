@@ -1,6 +1,6 @@
 ###NAME
 
-**cwt-sys** - cross-platform system library.
+`cwt-sys` - cross-platform system library.
 
 ###VERSION
 
