@@ -5,7 +5,8 @@
  */
 
 #include <cwt/test.hpp>
-#include <cwt/xml.hpp>
+#include <cwt/xml/dom.hpp>
+#include <iostream>
 
 static const char * xml_source =
 "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n"
@@ -59,10 +60,21 @@ static const char * xml_source =
 
 void test_dom ()
 {
-	cwt::dom::document xmlDom = cwt::xml::createDocument(_u8(xml_source));
+	cwt::xml::dom xmlDom;
+	cwt::dom::document xmlDoc = xmlDom.createDocument(_u8(xml_source));
 
-	TEST_OK(!xmlDom.isNull());
-	TEST_OK(xmlDom.doctype().name() == "mydoc");
-	TEST_OK(xmlDom.doctype().systemId() == "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
-	TEST_OK(xmlDom.doctype().publicId() == "-//W3C//DTD XHTML 1.0 Transitional//EN");
+	if (!xmlDom.isError())
+		xmlDom.logErrors();
+
+	TEST_FAIL(!xmlDoc.isNull());
+	TEST_OK(xmlDoc.doctype().name() == "mydoc");
+	TEST_OK(xmlDoc.doctype().systemId() == "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
+	TEST_OK(xmlDoc.doctype().publicId() == "-//W3C//DTD XHTML 1.0 Transitional//EN");
+
+	cwt::dom::nodelist list = xmlDoc.getElementsByTagName(_l1("orders"));
+	TEST_OK(list.length() == 1);
+	TEST_OK(list.item(0).nodeName() == "orders");
+
+	cwt::dom::nodelist orders = xmlDoc.getElementsByTagName(_l1("order"));
+	TEST_OK(orders.length() == 6);
 }

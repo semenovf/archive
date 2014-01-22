@@ -4,8 +4,10 @@
 
 extern void test_dom();
 
+//"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n"
+
 static const char * xml_data =
-"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n"
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 "<!DOCTYPE mydoc PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
 " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\" [\n"
 "  <!ELEMENT mydoc ANY>\n"
@@ -13,8 +15,9 @@ static const char * xml_data =
 "  <!ENTITY % signature \" &#x2014; &author;.\">\n"
 "  <!ENTITY % question  \"Why couldn&#x2019;t I publish my books directly in &std;?\">\n"
 "  <!ENTITY % author    \"William Shakespeare\">\n"
+//"  <!ENTITY nbsp 'WWW'>\n"
 "]>\n"
-"﻿<orders>"
+"﻿<orders>&nbsp;"
 "   <order>"
 "    <date>1/1/2011</date>"
 "    <quantity>10</quantity>"
@@ -51,7 +54,7 @@ static const char * xml_data =
 " CDATA Text 0"
 " CDATA Text 1"
 " CDATA Text 2"
-"]]>"
+"]]>\n"
 "</orders>";
 
 
@@ -133,6 +136,21 @@ public:
 		std::cout << "Doctype end" << std::endl;
 	}
 
+	void skippedEntity (const pfs::string & entityName, bool /*is_parameter_entity*/)
+	{
+		std::cout << "***SKIPPED_ENITY***: " << entityName << std::endl;
+	}
+
+	void unparsedEntityDecl (
+			  const pfs::string & /*entityName*/
+			, const pfs::string & /*base*/
+			, const pfs::string & /*systemId*/
+			, const pfs::string & /*publicId*/
+			, const pfs::string & /*notationName*/)
+	{
+		std::cout << "***UNPARSED_ENITY_DECL***" << std::endl;
+	}
+
 };
 
 void test_basic ()
@@ -141,9 +159,9 @@ void test_basic ()
 	cwt::xml::reader xml(& h);
 
 	xml.acceptVersion(__accept_version);
-	TEST_OK(xml.parse(pfs::string::fromUtf8(xml_data)));
+	TEST_OK(xml.parse(_u8(xml_data)));
 	if (xml.isError()) {
-		std::cerr << xml;
+		xml.logErrors();
 	}
 
 	TEST_OK(h.orderCount() == 6);
@@ -153,13 +171,11 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(12);
+    BEGIN_TESTS(19);
 
-if(0) {
     test_basic();
-}
     test_dom();
 
     END_TESTS;
-    return 0;
+
 }

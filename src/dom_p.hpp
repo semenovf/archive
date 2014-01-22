@@ -7,12 +7,21 @@
 #ifndef __CWT_XML_DOM_P_HPP__
 #define __CWT_XML_DOM_P_HPP__
 
-#include "../include/cwt/xml/sax.hpp"
+#include "../include/cwt/xml/dom.hpp"
 #include "../../cwt-dom/src/node_p.hpp"
 #include "../../cwt-dom/src/nodelist_p.hpp"
 #include "../../cwt-dom/src/namednodemap_p.hpp"
 #include "../../cwt-dom/src/attr_p.hpp"
 #include "../../cwt-dom/src/element_p.hpp"
+#include "../../cwt-dom/src/element_p.hpp"
+#include "../../cwt-dom/src/chardata_p.hpp"
+#include "../../cwt-dom/src/text_p.hpp"
+#include "../../cwt-dom/src/cdatasection_p.hpp"
+#include "../../cwt-dom/src/comment_p.hpp"
+#include "../../cwt-dom/src/entity_p.hpp"
+#include "../../cwt-dom/src/entityref_p.hpp"
+#include "../../cwt-dom/src/notation_p.hpp"
+#include "../../cwt-dom/src/pinstruction_p.hpp"
 #include "../../cwt-dom/src/doctype_p.hpp"
 #include "../../cwt-dom/src/document_p.hpp"
 
@@ -40,7 +49,7 @@ public:
 	virtual void endElement (const pfs::string & tagname);
 	virtual void characterData (const pfs::string & text);
 	virtual void processingInstruction (const pfs::string & target, const pfs::string & data);
-	virtual void comment (const pfs::string &);
+	virtual void comment (const pfs::string & text);
 	virtual void startCdataSection ();
 	virtual void endCdataSection ();
 	virtual void defaultData (const pfs::string &);

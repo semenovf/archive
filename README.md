@@ -8,8 +8,16 @@ Version 1.00a
 
 ###SYNOPSIS
 
-See project's test subdirectory for examples.
+Create DOM Document:
 
+	#include <cwt/xml/dom.hpp>  
+	...  
+	cwt::xml::dom xmlDom;  
+	cwt::dom::document xmlDoc = xmlDom.createDocument(_u8(xml_source));  
+	  
+	if (!xmlDom.isError()) // or xmlDoc.isNull()  
+		xmlDom.logErrors();  
+	
 ###AUTHOR
 
 Fedor Semenov, < fedor.v.semenov at gmail.com >

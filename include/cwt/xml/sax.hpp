@@ -16,7 +16,7 @@
 
 namespace cwt { namespace xml {
 
-class DLL_API handlers
+class handlers
 {
 public:
 	handlers () {}
