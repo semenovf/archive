@@ -18,7 +18,7 @@ Version 1.00a
 
 ###AUTHOR
 
-Fedor Semenov, <fedor.v.semenov at gmail.com>
+Fedor Semenov, < fedor.v.semenov at gmail.com >
 
 ###SUPPORT
 
