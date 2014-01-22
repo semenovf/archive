@@ -1,16 +1,34 @@
-## Synopsis
-Cross-platform core library for 'cwt' family projects and derivatives Apps
-written on C++ version prior to C++11.  
+###NAME
 
-'pfs' is the rotated about axis 'std' ;)
+**pfs** - cross-platform core library written on C++ version prior to C++11.  
 
-## Notes
-Now supports only Windows (msvc) and Linux (gcc) platforms.
+`pfs` is the rotated about axis 'std' ;)
 
-## Classes
-Most classes uses CoW (Copy-on-write) optimization strategy.
+###VERSION
 
-#### String
-pfs::string is a Unicode string in Utf-8 encoding natively.
+Version 1.00b
 
-#### And More ...
+###SYNOPSIS
+
+See project's test subdirectory for examples.
+
+###NOTES
+
+Now supports only Windows (msvc) and Linux (gcc) platforms.  
+Most classes uses CoW (Copy-on-write) optimization strategy.  
+`pfs::string` is a Unicode string in Utf-8 encoding natively.
+
+###AUTHOR
+
+Fedor Semenov, < fedor.v.semenov at gmail.com >
+
+###SUPPORT
+
+No documentation prepared yet.  
+This software is under development.
+
+###ACKNOWLEDGEMENTS
+
+###LICENSE AND COPYRIGHT
+
+Copyright 2012-2014 Fedor Semenov.
