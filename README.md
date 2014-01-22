@@ -1,7 +1,6 @@
 ###NAME
 
-**pfs** - cross-platform core library written on C++ version prior to C++11.  
-
+`pfs` - cross-platform core library written on C++ version prior to C++11.  
 `pfs` is the rotated about axis 'std' ;)
 
 ###VERSION
@@ -16,7 +15,7 @@ See project's test subdirectory for examples.
 
 Now supports only Windows (msvc) and Linux (gcc) platforms.  
 Most classes uses CoW (Copy-on-write) optimization strategy.  
-`pfs::string` is a Unicode string in Utf-8 encoding natively.
+`pfs::string` is a Unicode string in Utf-8 encoding natively.  
 
 ###AUTHOR
 
