@@ -7,8 +7,8 @@ Version 1.00b
 
 ###CONFIGURATION
 
-Set environtment variable GBS_HOME to 'gbs' directory.  
-Set environtment variable GBS_PDIR to root directory for projects.  
+Set environtment variable `GBS_HOME` to 'gbs' directory.  
+Set environtment variable `GBS_PDIR` to root directory for projects.  
 
 ###AUTHOR
 
@@ -16,8 +16,8 @@ Fedor Semenov, < fedor.v.semenov at gmail.com >
 
 ###SUPPORT
 
-No documentation prepared yet.
-This software is under development.
+This software is under development.  
+No documentation prepared yet.  
 
 ###LICENSE AND COPYRIGHT
 
