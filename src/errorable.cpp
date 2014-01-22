@@ -41,7 +41,7 @@ void errorable::addSystemError (int errn, const pfs::string & caption)
 	}
 }
 
-void errorable::logOutput () const
+void errorable::logErrors () const
 {
 	if (_errors.size() > 0) {
 		pfs::vector<errorable::erritem>::const_iterator it = _errors.cbegin();

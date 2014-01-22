@@ -49,7 +49,7 @@ public:
 	bool isGood () const { return _errors.size() == 0; }
 	const pfs::string lastErrorText () const;
 
-	void logOutput () const;
+	void logErrors () const;
 	friend std::ostream & operator << (std::ostream &, const errorable &);
 };
 
