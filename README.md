@@ -1,9 +1,24 @@
-GBS - Griotte Build System
-============
+###NAME
 
-Core files for my own build system based on qmake.
+`gbs` - Griotte Build System based on qmake version 4.
 
-=== Configuration ===
+###VERSION
+Version 1.00b
 
-Set environtment variable GBS_HOME to 'gbs' directory.
-Set environtment variable GBS_PDIR to root directory for projects.
+###CONFIGURATION
+
+Set environtment variable GBS_HOME to 'gbs' directory.  
+Set environtment variable GBS_PDIR to root directory for projects.  
+
+###AUTHOR
+
+Fedor Semenov, < fedor.v.semenov at gmail.com >
+
+###SUPPORT
+
+No documentation prepared yet.
+This software is under development.
+
+###LICENSE AND COPYRIGHT
+
+Copyright 2012-2014 Fedor Semenov.
