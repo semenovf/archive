@@ -1,6 +1,6 @@
 ###NAME
 
-`gbs` - Griotte Build System based on qmake version 4.
+`gbs` - Griotte Build System based on qmake version 2.x.
 
 ###VERSION
 Version 1.00b
@@ -29,7 +29,7 @@ Version 1.00b
     $ $GBS_HOME/ws.sh -create myproject  
       
     Project 'myproject' created  
-    Modyfy '.gbs/myproject.pro' to add new subprojects  
+    Modify '.gbs/myproject.pro' to add new subprojects  
       
     $ cd $GBS_PDIR/myproject
     $ ./build.sh
@@ -42,7 +42,7 @@ Version 1.00b
     g++ -c -pipe -O0 -Werror ...  
     ...
     
-On success installation `build.sh` script will attempt to run `g++` compiler
+On successful installation `build.sh` script will attempt to run `g++` compiler.
 
 
 ###AUTHOR
