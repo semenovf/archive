@@ -26,7 +26,7 @@ bool handler::open (const pfs::string & uri_str)
 	pfs::string debby_name = uri.scheme();
 
 	if (debby_name.isEmpty()) {
-		this->addError(_Tr("Invalid URI specified for DB driver: DB driver name is empty"));
+		this->addError(_u8(_Tr("Invalid URI specified for DB driver: DB driver name is empty")));
 		return false;
 	}
 

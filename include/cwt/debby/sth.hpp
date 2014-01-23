@@ -32,11 +32,11 @@ protected:
 		}
 	};
 
-	statement (statement_data * p) : _pimpl(p, impl_deleter()) {}
-	statement () : _pimpl() { PFS_ASSERT(true == false); }
+	statement (statement_data * p) : errorable(), _pimpl(p, impl_deleter()) {}
+	statement () : errorable(), _pimpl() { PFS_ASSERT(true == false); }
 
 public:
-	statement (const statement & other) : _pimpl(other._pimpl) {}
+	statement (const statement & other) : errorable(), _pimpl(other._pimpl) {}
 	statement & operator = (const statement & other)
 	{
 		_pimpl = other._pimpl;

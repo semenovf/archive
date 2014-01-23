@@ -36,8 +36,8 @@ protected:
 	//handler (handler_data * p) : _pimpl(p, impl_deleter()) {}
 
 public:
-	handler () : _pimpl() {}
-	handler (const handler & other) : _pimpl(other._pimpl) {}
+	handler () : errorable(), _pimpl() {}
+	handler (const handler & other) : errorable(), _pimpl(other._pimpl) {}
 
 	~handler () { /*close();*/ }
 
