@@ -169,7 +169,7 @@ cwt::debby::handler_data * s3_dbd_open(const pfs::string & path
 	errstr.clear();
 
 	if (path.isEmpty()) {
-		errstr = _Tr("Path to database does not specified");
+		errstr = _u8(_Tr("Path to database does not specified"));
 		return nullptr;
 	}
 
@@ -195,7 +195,7 @@ cwt::debby::handler_data * s3_dbd_open(const pfs::string & path
 
 	if (rc != SQLITE_OK) {
 		if (!dbh_native) {
-			errstr = _Tr("Unable to allocate memory for database handler.");
+			errstr = _u8(_Tr("Unable to allocate memory for database handler."));
 		} else {
 			switch( rc ) {
 				case SQLITE_CANTOPEN:
@@ -749,7 +749,7 @@ bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs
 		}
 		break;
 	default:
-		PFS_ERROR(_Tr("Unsupported bind parameter type").c_str());
+		PFS_ERROR(_Tr("Unsupported bind parameter type"));
 		return false;
 	}
 
