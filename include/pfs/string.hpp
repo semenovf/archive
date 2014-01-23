@@ -19,11 +19,6 @@ typedef utf8string string;
 #define _l1(s) pfs::utf8string::fromLatin1(s)
 #define _u8(s) pfs::utf8string::fromUtf8(s)
 
-#ifdef _Tr
-#	undef _Tr
-#endif
-#define _Tr(s) _u8(s)
-
 } // pfs
 
 #endif /* __PFS_STRING_HPP__ */

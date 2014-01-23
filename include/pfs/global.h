@@ -98,7 +98,7 @@
 #define PFS_MIN(a,b)  (((a) < (b)) ? (a) : (b))
 #define PFS_MAX(a,b)  (((a) > (b)) ? (a) : (b))
 
-//#define _Tr(s)  s // specified at pfs/string.hpp
+#define _Tr(s)  s
 
 #if defined(PFS_OS_WIN) && defined(PFS_UNICODE)
 #	define __WIDEN(x) x /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
