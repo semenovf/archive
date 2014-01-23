@@ -15,9 +15,9 @@ Version 1.00b
     $ cd /path/to/root-dir-for-gbs
     $ git clone git@github.com:semenovf/gbs.git
     $ # -- Set environment variable `GBS_HOME` to 'gbs' home directory.  
-    $ echo "export GBS_HOME=/path/to/root-dir-for-gbs/gbs" >> ~/.profile
+    $ export GBS_HOME=/path/to/root-dir-for-gbs/gbs
     $ # -- Set environment variable `GBS_PDIR` to root directory for projects.  
-    $ echo "export GBS_PDIR=/path/to/root-dir-for-projects" >> ~/.profile
+    $ export GBS_PDIR=/path/to/root-dir-for-projects
       
     $ # -- Test installation
     $ cd $GBS_PDIR
