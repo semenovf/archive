@@ -10,15 +10,16 @@
 #include <pfs/string.hpp>
 #include <cwt/errorable.hpp>
 #include <cwt/dom.hpp>
-#include <cwt/xml/sax.hpp>
 
 namespace cwt { namespace xml {
 
-class DLL_API dom : public reader
+class DLL_API dom : public cwt::errorable
 {
 public:
 	dom ();
+
 	cwt::dom::document createDocument (const pfs::string & xml_source);
+	pfs::string toString () const;
 };
 
 }} // cwt::xml

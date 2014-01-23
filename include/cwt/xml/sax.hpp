@@ -51,9 +51,9 @@ public:
 	        , const pfs::string & /*publicId*/) {}
 };
 
-class DLL_API reader : public errorable
+class DLL_API reader : public cwt::errorable
 {
-	PFS_PIMPL_DECL(reader, impl);
+	PFS_PIMPL_DECL_NOCC(reader, impl);
 
 public:
 	reader (handlers * h = nullptr);

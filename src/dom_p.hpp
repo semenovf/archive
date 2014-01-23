@@ -8,6 +8,7 @@
 #define __CWT_XML_DOM_P_HPP__
 
 #include "../include/cwt/xml/dom.hpp"
+#include "../include/cwt/xml/sax.hpp"
 #include "../../cwt-dom/src/node_p.hpp"
 #include "../../cwt-dom/src/nodelist_p.hpp"
 #include "../../cwt-dom/src/namednodemap_p.hpp"

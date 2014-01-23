@@ -8,7 +8,7 @@
 
 namespace cwt { namespace xml {
 
-reader::reader (handlers * h) : _pimpl(new reader::impl)
+reader::reader (handlers * h) : cwt::errorable(), _pimpl(new reader::impl)
 {
 	_pimpl->setHandlers(h);
 }

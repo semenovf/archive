@@ -6,6 +6,7 @@
 
 #include "dom_p.hpp"
 #include <cwt/logger.hpp>
+#include <cwt/xml/sax.hpp>
 
 namespace cwt { namespace xml {
 
@@ -14,20 +15,23 @@ static bool __accept_version(int major, int minor)
 	return major == 1 && minor == 0;
 }
 
-dom::dom () : reader()
+dom::dom () : cwt::errorable()
 { }
 
 //cwt::dom::document createDocument (const pfs::string & xml_source
 //		, const pfs::string & /*namespaceURI*/
 //		, const pfs::string & /*qualifiedName*/
 //		, const cwt::dom::doctype & /*doctype*/)
+//{}
 cwt::dom::document dom::createDocument (const pfs::string & xml_source)
 {
 	document_builder h;
-	this->setHandler(& h);
-	this->acceptVersion(__accept_version);
+	cwt::xml::reader xml_reader;
+	xml_reader.setHandler(& h);
+	xml_reader.acceptVersion(__accept_version);
 
-	if (!this->parse(xml_source)) {
+	if (!xml_reader.parse(xml_source)) {
+		this->addErrors(xml_reader);
 		delete h._doc;
 		return cwt::dom::document();
 	}
@@ -164,6 +168,12 @@ void document_builder::notationDecl (
     		, systemId);
     n->ref.deref();
     _doc->doctype()->appendChild(n);
+}
+
+pfs::string dom::toString () const
+{
+	pfs::string r;
+	return r;
 }
 
 }} // cwt::xml
