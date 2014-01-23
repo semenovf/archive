@@ -11,11 +11,6 @@ Version 1.00b
     $ sudo apt-get install g++  
     $ sudo apt-get install qt4-qmake  
     $ sudo apt-get install qt4-default  
-    $ sudo touch /etc/ld.so.conf.d/devel.conf
-    $ # -- Edit devel.conf
-    $ cat /etc/ld.so.conf.d/devel.conf
-    /home/user/build/unix/x86/debug
-    /home/user/build/unix/x86/release
       
     $ cd /path/to/root-dir-for-gbs
     $ git clone git@github.com:semenovf/gbs.git
