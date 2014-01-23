@@ -27,6 +27,7 @@ class DLL_API errorable
 	{
 		erritem () : _ntimes(0), _errstr() {}
 		erritem (const pfs::string & s) : _ntimes(0), _errstr(s) {}
+		erritem (const erritem & e) : _ntimes(e._ntimes), _errstr(e._errstr) {}
 		int    _ntimes;
 		pfs::string _errstr;
 	};
@@ -34,12 +35,14 @@ class DLL_API errorable
 	pfs::vector<erritem> _errors;
 
 protected:
-	errorable() {}
+	errorable () {}
+	errorable (const errorable & e) : _errors(e._errors) {}
 
 public:
 	virtual ~errorable () { clearErrors(); }
 	void addSystemError (int errn, const pfs::string & caption);
 	void addError (const pfs::string & text);
+	void addErrors (const errorable & e) { _errors.append(e._errors); }
 
 	void clearErrors () { _errors.clear(); }
 	size_t errorCount () const;

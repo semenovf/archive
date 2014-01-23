@@ -137,7 +137,7 @@ thread::~thread ()
     }
 
     if (_pimpl->_state == ThreadRunning) {
-    	PFS_WARN(_Tr("Attempt to destroy thread while it is still running").c_str());
+    	PFS_WARN(_Tr("Attempt to destroy thread while it is still running"));
     	locker.unlock();
     	terminate();
     	wait();
@@ -247,7 +247,7 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
             int posixPriority;
 
             if (! __map_to_posix_priority(priority, & posixPolicy, & posixPriority)) {
-            	PFS_WARN(_Tr("Can not map to POSIX priority").c_str());
+            	PFS_WARN(_Tr("Can not map to POSIX priority"));
             	break;
             }
 
@@ -349,7 +349,7 @@ void * thread::impl::thread_routine (void * arg)
 		thread::data * d = threadImpl->_data;
 		threadImpl->_data = nullptr;
 		delete d;
-		PFS_ASSERT_X(thisthread, _Tr("thread destroyed, may be you forget to wait() it").c_str()); // thread detached (container already destroyed)
+		PFS_ASSERT_X(thisthread, _Tr("thread destroyed, may be you forget to wait() it")); // thread detached (container already destroyed)
 	}
 
    	thisthread->run(); // Do the job
@@ -438,7 +438,7 @@ bool thread::impl::wait (ulong_t timeout)
 
     if (_data) {
 		if (_data->threadId == pthread_self()) {
-			PFS_ERROR(_Tr("thread attempt to wait on itself").c_str());
+			PFS_ERROR(_Tr("thread attempt to wait on itself"));
 			return false;
 		}
 
@@ -483,7 +483,7 @@ void thread::impl::setPriority(thread::priority_type priority)
     int posixPriority;
 
     if (! __map_to_posix_priority(priority, & posixPolicy, & posixPriority)) {
-    	PFS_WARN(_Tr("Can not map to POSIX priority").c_str());
+    	PFS_WARN(_Tr("Can not map to POSIX priority"));
     	return;
     }
 
