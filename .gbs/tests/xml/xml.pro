@@ -20,7 +20,9 @@ unix {
 #    QMAKE_CFLAGS += -Wno-error=missing-field-initializers
 #    QMAKE_CFLAGS += -Wno-missing-field-initializers
 
-#    LIBS += -lcwt-sys
+    LIBS += -lpfs
+    LIBS += -lcwt-sys
+    LIBS += -lcwt-dom
     LIBS += -lcwt-xml
 }
 
