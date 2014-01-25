@@ -13,6 +13,8 @@ HEADERS += ../../../include/cwt/io/*.hpp
 SOURCES += ../../../tests/test.cpp
 
 unix {
+    LIBS += -lpfs
+    LIBS += -lcwt-sys
     LIBS += -lcwt-io
 }
 

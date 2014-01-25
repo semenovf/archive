@@ -14,6 +14,8 @@ HEADERS += ../../../include/cwt/io/*.hpp
 HEADERS += ../../../include/cwt/net/*.hpp
 
 unix {
+    LIBS += -lpfs
+    LIBS += -lcwt-sys
     LIBS += -lcwt-io
 }
 
