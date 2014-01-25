@@ -8,6 +8,7 @@ INCLUDEPATH += ../../../include
 SOURCES += ../../../tests/domimpl.cpp
 
 unix {
+    LIBS += -lpfs
     LIBS += -lcwt-dom
 }
 

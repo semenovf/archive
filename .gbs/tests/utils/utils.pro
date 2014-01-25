@@ -8,6 +8,7 @@ INCLUDEPATH += ../../../../pfs/include
 SOURCES += ../../../tests/utils.cpp
 
 unix {
+    LIBS += -lpfs
     LIBS += -lcwt-dom
 }
 
