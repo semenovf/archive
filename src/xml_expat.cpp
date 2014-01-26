@@ -61,7 +61,9 @@ reader::impl::impl ()
 bool reader::impl::parse (const pfs::string & src)
 {
 	int isFinal = 1; // this is the last piece of the document
+	_handlers->beginDocument();
 	XML_Status status = XML_Parse(_parser, src.c_str(), src.sizeInBytes(), isFinal);
+	_handlers->endDocument(status == XML_STATUS_OK);
 	return status == XML_STATUS_OK;
 }
 

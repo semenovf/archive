@@ -22,6 +22,8 @@ public:
 	handlers () {}
 	virtual ~handlers () {}
 
+	virtual void beginDocument () {}
+	virtual void endDocument (bool /*success*/) {}
 	virtual void startElement (const pfs::string & /*tagname*/, const pfs::map<pfs::string, pfs::string> & /*atts*/) {}
 	virtual void endElement (const pfs::string & /*tagname*/) {}
 	virtual void characterData (const pfs::string & /*text*/) {}
