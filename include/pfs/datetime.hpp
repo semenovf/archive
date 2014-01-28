@@ -46,6 +46,7 @@ public:
 
 	bool isValid () const { return _date.isValid() && _time.isValid(); }
 	string toString () const;
+	long_t toInteger () const;
 
 	bool operator == (const datetime & other) const;
 	bool operator != (const datetime & other) const { return ! (*this == other); }

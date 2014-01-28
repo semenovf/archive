@@ -115,6 +115,28 @@ string datetime::toString () const
 	return r;
 }
 
+/**
+ * @brief Returns integer representation of date & time in format YYYYMMDDhhmmss
+ *
+ * @return integer representation of date & time in format YYYYMMDDhhmmss
+ */
+long_t datetime::toInteger () const
+{
+	int Y = _date.year();
+	int M = _date.month();
+	int D = _date.day();
+
+	int	h = _time.hour();
+	int	m = _time.minute();
+	int	s = _time.second();
+
+	long_t r = long_t(10000000000) * Y + long_t(100000000) * M + long_t(1000000) * D
+			+ long_t(10000) * h + long_t(100) * m + s;
+
+	return r;
+}
+
+
 datetime datetime::fromMillisSinceEpoch (long_t millis) // static
 {
 	datetime d;

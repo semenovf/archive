@@ -31,33 +31,6 @@ typedef single_threaded mt_policy_t;
 typedef single_threaded mutex;
 
 #elif defined(PFS_WIN32_THREADS) || defined(PFS_POSIX_THREADS)
-#ifdef __DEPRECATED__ // TODO DELETE THIS CODE
-class DLL_API multi_threaded_global
-{
-public:
-	multi_threaded_global() {
-		static bool is_initialised = false;
-
-		if(!is_initialised) {
-			mt_init(g_mutex);
-			is_initialised = true;
-		}
-	}
-
-	multi_threaded_global(const multi_threaded_global&) { ; }
-	virtual ~multi_threaded_global() { mt_destroy(g_mutex); }
-
-	void lock()    { mt_lock(g_mutex); }
-	void tryLock() { mt_try_lock(g_mutex); }
-	void unlock()  { mt_unlock(g_mutex); }
-
-	static multi_threaded_global & getPolicy() { static multi_threaded_global mtp; return mtp; }
-	static mutex_t * handlePtr() { return & g_mutex; }
-
-private:
-	static mt_def(g_mutex);
-};
-#endif // __DEPRECATED__
 
 class DLL_API multi_threaded_local
 {
@@ -120,24 +93,6 @@ private:
 	mt_policy * _mutex;
 };
 
-#ifdef __DEPRECATED__ // TODO DELETE THIS CODE
-class auto_lock_global
-{
-public:
-#ifndef PFS_SINGLE_THREADED
-	auto_lock_global() { multi_threaded_global::getPolicy().lock(); }
-	~auto_lock_global() { multi_threaded_global::getPolicy().unlock(); }
-
-	void lock()    { multi_threaded_global::getPolicy().lock(); }
-	void tryLock() { multi_threaded_global::getPolicy().tryLock(); }
-	void unlock()  { multi_threaded_global::getPolicy().unlock(); }
-
-#else
-	auto_lock_global() { ; }
-	~auto_lock_global() { ; }
-#endif
-};
-#endif // __DEPRECATED__
 //
 // The AutoLock class is a helper that will hold the lock while in scope.
 //
