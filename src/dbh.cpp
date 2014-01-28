@@ -61,7 +61,7 @@ bool handler::open (const pfs::string & uri_str)
 
 void handler::close ()
 {
-	if (_pimpl && _pimpl->_driver) {
+	if (!isNull()) {
 		_pimpl->_driver->close(_pimpl.get());
 		_pimpl->_driver = nullptr;
 		_pimpl.reset();
@@ -70,61 +70,79 @@ void handler::close ()
 
 bool handler::query (const pfs::string & sql)
 {
-	pfs::string errstr;
-	bool r = _pimpl->_driver->query(*_pimpl, sql, errstr);
-	if (!r)
-		this->addError(errstr);
+	bool r = false;
+
+	if (!isNull()) {
+		pfs::string errstr;
+		r = _pimpl->_driver->query(*_pimpl, sql, errstr);
+		if (!r)
+			this->addError(errstr);
+	}
 	return r;
 }
 
 statement handler::prepare (const pfs::string & sql)
 {
-	PFS_ASSERT(_pimpl && _pimpl->_driver);
-	pfs::string errstr;
-	statement_data * d = _pimpl->_driver->prepare(*_pimpl, sql, errstr);
+	if (!isNull()) {
+		pfs::string errstr;
+		statement_data * d = _pimpl->_driver->prepare(*_pimpl, sql, errstr);
 
-	if (d) {
-		statement sth(d);
-		sth._pimpl->_bindCursor = 0; // reset counter of bind parameters
-		return sth;
+		if (d) {
+			statement sth(d);
+			sth._pimpl->_bindCursor = 0; // reset counter of bind parameters
+			return sth;
+		}
+		this->addError(errstr);
 	}
-	this->addError(errstr);
+
 	return statement();
 }
 
 bool handler::begin ()
 {
-	pfs::string errstr;
-	bool r = _pimpl->_driver->begin(*_pimpl, errstr);
-	if (!r)
-		this->addError(errstr);
+	bool r = false;
+	if (!isNull()) {
+		pfs::string errstr;
+		r = _pimpl->_driver->begin(*_pimpl, errstr);
+		if (!r)
+			this->addError(errstr);
+	}
 	return r;
 }
 
 bool handler::commit ()
 {
-	pfs::string errstr;
-	bool r = _pimpl->_driver->commit(*_pimpl, errstr);
-	if (!r)
-		this->addError(errstr);
+	bool r = false;
+	if (!isNull()) {
+		pfs::string errstr;
+		r = _pimpl->_driver->commit(*_pimpl, errstr);
+		if (!r)
+			this->addError(errstr);
+	}
 	return r;
 }
 
 bool handler::rollback ()
 {
-	pfs::string errstr;
-	bool r = _pimpl->_driver->rollback(*_pimpl, errstr);
-	if (!r)
-		this->addError(errstr);
+	bool r = false;
+	if (!isNull()) {
+		pfs::string errstr;
+		r = _pimpl->_driver->rollback(*_pimpl, errstr);
+		if (!r)
+			this->addError(errstr);
+	}
 	return r;
 }
 
 bool handler::meta (const pfs::string & table, pfs::vector<column_meta> & meta)
 {
-	pfs::string errstr;
-	bool r = _pimpl->_driver->meta(*_pimpl, table, meta, errstr);
-	if (!r)
-		this->addError(errstr);
+	bool r = false;
+	if (!isNull()) {
+		pfs::string errstr;
+		r = _pimpl->_driver->meta(*_pimpl, table, meta, errstr);
+		if (!r)
+			this->addError(errstr);
+	}
 	return r;
 }
 

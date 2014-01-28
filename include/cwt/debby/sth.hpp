@@ -33,7 +33,7 @@ protected:
 	};
 
 	statement (statement_data * p) : errorable(), _pimpl(p, impl_deleter()) {}
-	statement () : errorable(), _pimpl() { PFS_ASSERT(true == false); }
+	statement () : errorable(), _pimpl() {}
 
 public:
 	statement (const statement & other) : errorable(), _pimpl(other._pimpl) {}
@@ -44,6 +44,7 @@ public:
 	}
 	~statement () { /*close();*/ }
 
+	bool isNull () const { return !(_pimpl && _pimpl->_driver); }
 	void close ();
 	bool exec  ();
 	pfs::vector<pfs::unitype> fetchRowArray ();

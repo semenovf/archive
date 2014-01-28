@@ -38,8 +38,9 @@ protected:
 public:
 	handler () : errorable(), _pimpl() {}
 	handler (const handler & other) : errorable(), _pimpl(other._pimpl) {}
-
 	~handler () { /*close();*/ }
+
+	bool isNull () const { return !(_pimpl && _pimpl->_driver); }
 
 	bool open (const pfs::string & uri);
 	bool opened () const { return _pimpl && _pimpl->_driver != nullptr; }
