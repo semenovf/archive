@@ -65,9 +65,13 @@ create() {
     mkdir include/$PROJECT
     mkdir src
     mkdir tests
+    mkdir cppcheck
     cp $GBS_HOME/template/header.hpp include/$PROJECT/$PROJECT.hpp
     cp $GBS_HOME/template/main.cpp src/main.cpp
     cp $GBS_HOME/template/test.cpp tests/test.cpp
+    cp $GBS_HOME/template/cppcheck/includes-file cppcheck/includes-file
+    cp $GBS_HOME/template/cppcheck/sources-file cppcheck/sources-file
+    cp $GBS_HOME/template/cppcheck/options cppcheck/options
 
     cd .gbs
     echo "#************************************************************"  > $PROJECT.pro
