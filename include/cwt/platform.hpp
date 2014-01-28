@@ -13,18 +13,12 @@
 #include <pfs/date.hpp>
 #include <pfs/datetime.hpp>
 
-namespace cwt {
+namespace cwt { namespace platform {
 
-class DLL_API platform
-{
-	platform (); // disable constructor
+DLL_API pfs::time currentTime ();
+DLL_API pfs::date currentDate ();
+DLL_API pfs::datetime currentDateTime ();
 
-public:
-    static pfs::time currentTime ();
-	static pfs::date currentDate ();
-	static pfs::datetime currentDateTime ();
-};
-
-} // cwt
+}} // platform::cwt
 
 #endif /* __CWT_PLATFORM_HPP__ */

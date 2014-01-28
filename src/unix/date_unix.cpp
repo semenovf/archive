@@ -9,9 +9,9 @@
 #include <pfs/mt.hpp>
 #include <ctime>
 
-namespace cwt {
+namespace cwt { namespace platform {
 
-pfs::date platform::currentDate ()
+DLL_API pfs::date currentDate ()
 {
     time_t t;
     time(& t);
@@ -32,4 +32,4 @@ pfs::date platform::currentDate ()
     return pfs::date(tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday);
 }
 
-} // cwt
+}} // platform::cwt

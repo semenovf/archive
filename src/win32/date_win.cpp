@@ -8,9 +8,9 @@
 #include "../../include/cwt/platform.hpp"
 #include <windows.h>
 
-namespace cwt {
+namespace cwt { namespace platform {
 
-pfs::date platform::currentDate ()
+DLL_API pfs::date currentDate ()
 {
     SYSTEMTIME t;
     memset(& t, 0, sizeof(SYSTEMTIME));
@@ -18,4 +18,4 @@ pfs::date platform::currentDate ()
     return pfs::date(t.wYear, t.wMonth, t.wDay);
 }
 
-} // cwt
+}} // cwt::platform

@@ -10,9 +10,9 @@
 #include <ctime>
 #include <sys/time.h> // gettimeofday
 
-namespace cwt {
+namespace cwt { namespace platform {
 
-pfs::time platform::currentTime () // static
+DLL_API pfs::time currentTime ()
 {
     struct timeval tv;
     gettimeofday(& tv, nullptr);
@@ -35,5 +35,5 @@ pfs::time platform::currentTime () // static
     return pfs::time(tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec, tv.tv_usec/1000);
 }
 
-} // cwt
+}} // cwt
 

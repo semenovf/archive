@@ -9,9 +9,9 @@
 #include "../../include/cwt/platform.hpp"
 #include <windows.h>
 
-namespace cwt {
+namespace cwt { namespace platform {
 
-pfs::time platform::currentTime () // static
+DLL_API pfs::time currentTime () // static
 {
     SYSTEMTIME t;
     memset(& t, 0, sizeof(SYSTEMTIME));
@@ -19,5 +19,5 @@ pfs::time platform::currentTime () // static
     return pfs::time(t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
 }
 
-} // cwt
+}} // cwt::platform
 
