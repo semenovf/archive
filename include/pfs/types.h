@@ -8,7 +8,11 @@
 #	ifndef __cplusplus
 #		define nullptr ((void *)0)
 #	else
-#		define nullptr 0
+#		if __cplusplus >= 201103L
+#			define nullptr nullptr
+#		else
+#			define nullptr 0
+#		endif
 #	endif
 #else
 #	define nullptr NULL

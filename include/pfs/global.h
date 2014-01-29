@@ -187,15 +187,23 @@
 #define PFS_A2_NROWS(a)          sizeof(a)/sizeof((a)[0])
 #define PFS_A2_ELEM(a,ncols,i,j) (a)[(i) * (ncols) + (j)]
 
-#ifndef NULL
-#	define NULL ((void*)0)
-#endif
+//#ifndef NULL
+//#	define NULL ((void*)0)
+//#endif
 
 #ifdef __cplusplus
 #	define PFS_DENY_COPY(Class)             \
 	private:                                \
 		Class(const Class &);               \
 		Class & operator = (const Class &);
+#endif
+
+#ifdef __cplusplus
+#	if __cplusplus >= 201103L
+#		define override override
+#	else
+#		define override
+#	endif
 #endif
 
 
