@@ -201,8 +201,10 @@
 #ifdef __cplusplus
 #	if __cplusplus >= 201103L
 #		define override override
+#		define final final
 #	else
 #		define override
+#		define final
 #	endif
 #endif
 
