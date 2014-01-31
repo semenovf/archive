@@ -1,5 +1,3 @@
-CWT_CONFIG=debug
-
 include($$(GBS_HOME)/common-test.pri)
 
 TARGET = test_debby_sqlite3
