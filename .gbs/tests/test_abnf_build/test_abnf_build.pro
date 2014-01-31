@@ -1,4 +1,3 @@
-CWT_CONFIG=debug
 include($$(GBS_HOME)/common-app.pri)
 TARGET = test_abnf_build
 
