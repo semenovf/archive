@@ -1,5 +1,3 @@
-CWT_CONFIG=debug
-
 include($$(GBS_HOME)/common-petaloid.pri)
 
 TARGET = petaloid-tmpl
