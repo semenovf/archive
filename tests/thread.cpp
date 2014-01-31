@@ -6,7 +6,6 @@
  */
 
 #include <cwt/test.hpp>
-#include <pfs/trace.hpp>
 #include <pfs/string.hpp>
 #include <cwt/safeformat.hpp>
 #include <cwt/thread.hpp>

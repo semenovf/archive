@@ -19,8 +19,8 @@
 #endif
 #endif
 
-//#define PFS_TRACE_DISABLE
-#include <pfs/trace.hpp>
+//#define CWT_TRACE_ENABLE
+#include "../../include/cwt/trace.hpp"
 
 namespace cwt {
 
@@ -79,12 +79,12 @@ thread::data::data()
 	: threadImpl()
 	, threadId(0)
 {
-	PFS_TRACE_METHOD();
+	CWT_TRACE_METHOD();
 }
 
 thread::data::~data ()
 {
-	PFS_TRACE_METHOD();
+	CWT_TRACE_METHOD();
 	// automatically delete _threadImpl
 }
 
@@ -98,12 +98,12 @@ thread::impl::impl (/*thread::data * threadData*/)
 	, _thread(nullptr)
 	, _data(nullptr)
 {
-	PFS_TRACE_METHOD();
+	CWT_TRACE_METHOD();
 }
 
 thread::impl::~impl()
 {
-	PFS_TRACE_METHOD();
+	CWT_TRACE_METHOD();
 
 	// deleting _data will destroy this instance
 
@@ -121,13 +121,13 @@ thread::impl::~impl()
 
 thread::thread() : _pimpl(new thread::impl)
 {
-	PFS_TRACE_METHOD();
+	CWT_TRACE_METHOD();
 	_pimpl->_thread = this;
 }
 
 thread::~thread ()
 {
-	PFS_TRACE_METHOD();
+	CWT_TRACE_METHOD();
 
 	pfs::auto_lock<> locker(& _pimpl->_mutex);
     if (_pimpl->_state == ThreadFinishing) {
@@ -202,7 +202,7 @@ bool thread::impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
 
 void thread::impl::start (thread::priority_type priority, size_t stackSize)
 {
-	PFS_TRACE_METHOD();
+	CWT_TRACE_METHOD();
 	int rc = 0;
 	pfs::auto_lock<> locker(& _mutex);
 
@@ -321,7 +321,7 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
  */
 void * thread::impl::thread_routine (void * arg)
 {
-	PFS_TRACE_FUNC();
+	CWT_TRACE_FUNC();
 	PFS_ASSERT(arg);
 
 	// If a cancellation request is received,
@@ -361,7 +361,7 @@ void * thread::impl::thread_routine (void * arg)
 
 void thread::impl::finalize (void * arg)
 {
-	PFS_TRACE_FUNC();
+	CWT_TRACE_FUNC();
 	PFS_ASSERT(arg);
 
 	thread::impl * threadImpl = static_cast<thread::impl *>(arg);
@@ -386,7 +386,7 @@ void thread::impl::finalize (void * arg)
 
 void thread::data::destroy (void * pdata)
 {
-	PFS_TRACE_FUNC();
+	CWT_TRACE_FUNC();
 	PFS_ASSERT(pdata);
 	pthread_setspecific(threadKey, pdata);
 

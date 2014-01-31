@@ -1,4 +1,4 @@
-CWT_CONFIG=debug
+
 
 include($$(GBS_HOME)/common-app.pri)
 
