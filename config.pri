@@ -1,7 +1,8 @@
 #
-# Set this variable in project's .pro file
+# Set this variable in global.pri file
 #
 #CWT_CONFIG = release | debug
+include($$(GBS_PDIR)/global.pri)
 isEmpty(CWT_CONFIG) { CWT_CONFIG = debug }
 
 CWT_TARGET_PLATFORM=$$(CWT_TARGET_PLATFORM)
@@ -44,23 +45,33 @@ DEFINES += CWT_MT
 unix: CWT_ROOT_DIR = $$(HOME)
 win32: CWT_ROOT_DIR = \
 
+CONFIG(debug): CWT_TARGET_BUILD = debug
+CONFIG(release): CWT_TARGET_BUILD = release
+
 unix {
-    CWT_DESTDIR_APP = $$CWT_ROOT_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_CONFIG
-    CWT_DESTDIR_LIB = $$CWT_ROOT_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_CONFIG
+    CWT_DESTDIR_APP = $$CWT_ROOT_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_TARGET_BUILD
+    CWT_DESTDIR_LIB = $$CWT_ROOT_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_TARGET_BUILD
     INCLUDEPATH    += $$CWT_ROOT_DIR/include
 #    QMAKE_LINK = $$QMAKE_LINK_C
 }
 
 win32 {
-    CWT_DESTDIR_APP = $$CWT_ROOT_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_CONFIG
-    CWT_DESTDIR_LIB = $$CWT_ROOT_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_CONFIG
+    CWT_DESTDIR_APP = $$CWT_ROOT_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_TARGET_BUILD
+    CWT_DESTDIR_LIB = $$CWT_ROOT_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_TARGET_BUILD
     CWT_EXTLIBDIR   = $$CWT_ROOT_DIR\\extlib
 }
 
+contains(CWT_CONFIG, gprof) {
+    contains(CWT_CONFIG, debug) {
+	QMAKE_CFLAGS_DEBUG += -pg
+        QMAKE_CXXFLAGS_DEBUG += -pg
+	QMAKE_LFLAGS_DEBUG += -pg
+    }
+}
 
 #message(Target Platform : $${CWT_TARGET_PLATFORM})
 #message(Target CPU      : $${CWT_TARGET_CPU})
-#message(Configuration   : $${CWT_CONFIG})
+#message(Target Build    : $${CWT_TARGET_BUILD})
 #message(Workspace folder: $${CWT_ROOT_DIR})
 #message(CONFIG          : $${CONFIG})
 #message(QMAKESPEC       : $$QMAKESPEC)
