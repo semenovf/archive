@@ -14,7 +14,7 @@ namespace cwt { namespace dom {
 class node_impl;
 class document_impl;
 
-class pinstruction_impl : public node_impl
+class DLL_API pinstruction_impl : public node_impl
 {
 public:
     pinstruction_impl (document_impl *, node_impl * parent, const pfs::string & target, const pfs::string & data);

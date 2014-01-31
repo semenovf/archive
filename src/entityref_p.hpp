@@ -14,7 +14,7 @@ namespace cwt { namespace dom {
 class node_impl;
 class document_impl;
 
-class entityref_impl : public node_impl
+class DLL_API entityref_impl : public node_impl
 {
 public:
     entityref_impl (document_impl *, node_impl * parent, const pfs::string & name);

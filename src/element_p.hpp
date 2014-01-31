@@ -16,7 +16,7 @@ class attr_impl;
 class document_impl;
 class namednodemap_impl;
 
-class element_impl : public node_impl
+class DLL_API element_impl : public node_impl
 {
 public:
     namednodemap_impl * _attr;

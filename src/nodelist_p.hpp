@@ -16,7 +16,7 @@ namespace cwt { namespace dom {
 
 class node_impl;
 
-class nodelist_impl
+class DLL_API nodelist_impl
 {
 public:
 	typedef node_impl * item_type;

@@ -15,7 +15,7 @@ class node_impl;
 class text_impl;
 class document_impl;
 
-class cdatasection_impl : public text_impl
+class DLL_API cdatasection_impl : public text_impl
 {
 public:
 	cdatasection_impl (document_impl *, node_impl * parent, const pfs::string & val);

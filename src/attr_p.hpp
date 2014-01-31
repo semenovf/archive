@@ -14,7 +14,7 @@ namespace cwt { namespace dom {
 class node_impl;
 class document_impl;
 
-class attr_impl : public node_impl
+class DLL_API attr_impl : public node_impl
 {
 public:
     bool _specified;

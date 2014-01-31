@@ -15,7 +15,7 @@ namespace cwt { namespace dom {
 class document_impl;
 class nodelist_impl;
 
-class node_impl
+class DLL_API node_impl
 {
 	friend class nodelist_impl;
 

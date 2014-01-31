@@ -12,7 +12,7 @@
 
 namespace cwt { namespace dom {
 
-class dom_implementation_impl
+class DLL_API dom_implementation_impl
 {
 public:
 	pfs::atomic_int ref;

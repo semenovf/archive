@@ -15,7 +15,7 @@ class node_impl;
 class chardata_impl;
 class document_impl;
 
-class text_impl : public chardata_impl
+class DLL_API text_impl : public chardata_impl
 {
 public:
 	text_impl (document_impl *, node_impl * parent, const pfs::string & val);

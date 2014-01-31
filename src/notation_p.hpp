@@ -14,7 +14,7 @@ namespace cwt { namespace dom {
 class node_impl;
 class document_impl;
 
-class notation_impl : public node_impl
+class DLL_API notation_impl : public node_impl
 {
 public:
     pfs::string _sys;
