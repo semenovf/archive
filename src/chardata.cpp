@@ -140,7 +140,7 @@ node::type chardata::nodeType() const
 {
 	return _pimpl
 			? node::nodeType()
-			: CharacterDataNode;
+			: InvalidNode;
 }
 
 }} // cwt::dom

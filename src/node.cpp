@@ -550,7 +550,7 @@ node::type node::nodeType () const
 {
     return _pimpl
     		? _pimpl->nodeType()
-    		: node::BaseNode;
+    		: node::InvalidNode;
 }
 
 document node::ownerDocument () const
@@ -647,14 +647,6 @@ node node::insertAfter (const node & newChild, const node & refChild)
  * 		If refChild is null, insert newChild at the end of the list of children.
  * 		If newChild is a DocumentFragment object, all of its children are inserted,
  * 		in the same order, before refChild.
-
-nodelist node::childNodes () const
-{
-	return _pimpl
-			? nodelist(new nodelist_impl(_pimpl))
-			: nodelist();
-}
- *
  * 		If the newChild is already in the tree, it is first removed.
  *
  * @param newChild The node to insert.

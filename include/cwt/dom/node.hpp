@@ -39,17 +39,16 @@ public:
 		, DocumentTypeNode           = 10
 		, DocumentFragmentNode       = 11
 		, NotationNode               = 12
-
-		// TODO Refuse from this
-        , BaseNode                   = 21// this is not in the standard
-        , CharacterDataNode          = 22 // this is not in the standard
-
 	};
 
 protected:
 	node_impl * _pimpl;
 
 	node (node_impl *);
+
+public:
+	node_impl * pimpl () { return _pimpl; } // internal
+	const node_impl * pimpl () const { return _pimpl; } // internal
 
 public:
 	node () : _pimpl(nullptr) {}
@@ -80,13 +79,13 @@ public:
 	void normalize ();
 
 	void setNodeValue (const pfs::string & value);
-	void setPrefix    (const pfs::string & p);  // raises(DOMException)
+	void setPrefix    (const pfs::string & p);
 
-	node insertAfter  (const node & newChild, const node & refChild); // non-DOM
-	node insertBefore (const node & newChild, const node & refChild); // raises(DOMException)
-	node replaceChild (const node & newChild, const node & oldChild); // raises(DOMException)
-	node removeChild  (const node & oldChild); // raises(DOMException)
-	node appendChild  (const node & newChild); // raises(DOMException)
+	node insertAfter  (const node & newChild, const node & refChild);
+	node insertBefore (const node & newChild, const node & refChild);
+	node replaceChild (const node & newChild, const node & oldChild);
+	node removeChild  (const node & oldChild);
+	node appendChild  (const node & newChild);
 
 	node cloneNode (bool deep = true) const;
 

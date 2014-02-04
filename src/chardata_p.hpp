@@ -27,7 +27,7 @@ public:
     void deleteData  (size_t offset, size_t count);
     void replaceData (size_t offset, size_t count, const pfs::string & arg);
 
-    virtual node::type nodeType () const { return node::CharacterDataNode; }
+    virtual node::type nodeType () const { return node::InvalidNode; }
     virtual node_impl * cloneNode (bool deep = true);
 };
 

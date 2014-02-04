@@ -80,15 +80,10 @@ public:
     bool isEntity() const                   { return nodeType() == node::EntityNode; }
     bool isNotation() const                 { return nodeType() == node::NotationNode; }
     bool isProcessingInstruction() const    { return nodeType() == node::ProcessingInstructionNode; }
-    bool isCharacterData() const            { const node::type nt = nodeType();
-                                              return (nt == node::CharacterDataNode)
-                                                  || (nt == node::TextNode)
-                                                  || (nt == node::CommentNode); }
     bool isComment() const                  { return nodeType() == node::CommentNode; }
 
-    virtual node::type nodeType() const { return node::BaseNode; }
+    virtual node::type nodeType() const { return node::InvalidNode; }
 };
-
 
 }} // cwt
 

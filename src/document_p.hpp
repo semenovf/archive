@@ -47,6 +47,7 @@ public:
     }
 
     doctype_impl * doctype () { return _type.get(); }
+    const doctype_impl * doctype () const { return _type.get(); }
     dom_implementation_impl * implementation () { return _impl.get(); }
     element_impl * documentElement ();
 
