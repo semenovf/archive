@@ -12,11 +12,6 @@
 
 namespace pfs {
 
-/*
-template <typename _Ptr2>
-friend class utf8string_iterator;
-*/
-
 template <typename _Ptr>
 class utf8string_iterator
 	: public std::iterator<
