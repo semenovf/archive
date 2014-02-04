@@ -170,10 +170,4 @@ void document_builder::notationDecl (
     _doc->doctype()->appendChild(n);
 }
 
-pfs::string dom::toString () const
-{
-	pfs::string r;
-	return r;
-}
-
 }} // cwt::xml
