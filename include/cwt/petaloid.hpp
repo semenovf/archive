@@ -11,7 +11,6 @@
 
 #include <pfs/string.hpp>
 #include <cwt/sigslot.hpp>
-//#include <cwt/uuid.hpp>
 
 namespace cwt {
 
@@ -35,33 +34,30 @@ typedef void  (*petaloid_dtor_t)(petaloid*);
 class DLL_API petaloid : public has_slots<>
 {
 private:
-	petaloid() : m_name(nullptr), /*m_uuid(),*/ m_sepaloidPtr(nullptr), run(nullptr) {}
+	petaloid() : _name(nullptr), _sepaloidPtr(nullptr), run(nullptr) {}
 
 public:
-	petaloid (const char * name) : m_name(_u8(name)), /*m_uuid(), */m_sepaloidPtr(nullptr), run(nullptr) {}
-//	petaloid (const char * name, const uuid_t & uuid) : m_name(_u8(name)), /*m_uuid(uuid), */m_sepaloidPtr(nullptr), run(nullptr) {}
-//	petaloid (const char * name, const Uuid & uuid) : m_name(_u8(name)), /*m_uuid(uuid), */m_sepaloidPtr(nullptr), run(nullptr) {}
+	petaloid (const char * name) : _name(_u8(name)), _sepaloidPtr(nullptr), run(nullptr) {}
+	petaloid (const pfs::string & name) : _name(name), _sepaloidPtr(nullptr), run(nullptr) {}
 	virtual ~petaloid() {}
-	const pfs::string & name() const { return m_name; }
-//	const uuid_t & uuid() const { return m_uuid.uuid(); }
 
-	bool isRegistered () const { return m_sepaloidPtr != nullptr ? true : false; }
-
-	static void defaultDtor (petaloid *p) { PFS_ASSERT(p); delete p; }
+	const pfs::string & name() const { return _name; }
+	bool isRegistered () const { return _sepaloidPtr != nullptr ? true : false; }
 
 	virtual const emitter_mapping * getEmitters (int * count)   { PFS_ASSERT(count); *count = 0; return 0; }
 	virtual const detector_mapping * getDetectors (int * count) { PFS_ASSERT(count); *count = 0; return 0; }
 
-	virtual void onStart () {}  // call from sepaloid::start()
-	virtual void onFinish () {} // call from sepaloid::finish()
+	virtual bool onStart () { return true; }  // call from sepaloid::start()
+	virtual bool onFinish () { return true; } // call from sepaloid::finish()
+
+	static void defaultDtor (petaloid *p) { PFS_ASSERT(p); delete p; }
 
 public: /*signal*/
 	cwt::signal2<const pfs::string &, bool &> petaloidRegistered;
 
 private:
-	pfs::string m_name;
-//	Uuid        m_uuid;
-	sepaloid *  m_sepaloidPtr;
+	pfs::string _name;
+	sepaloid *  _sepaloidPtr;
 
 public:
 	int (* run) (petaloid *);

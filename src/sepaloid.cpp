@@ -62,14 +62,14 @@ cwt::petaloid * sepaloid::registerPetaloidForPath (const pfs::string & path, con
 			if (p) {
 				return registerPetaloid(*p, ph, petaloid_dtor) ? p : nullptr;
 			} else {
-				this->addError(_Fr("Failed to construct petaloid specified by path: %s") % path);
+				this->addError(_Fr("failed to construct petaloid specified by path: %s") % path);
 			}
 		} else {
-			this->addError(_Fr("Constructor not found for petaloid specified by path: %s") % path);
+			this->addError(_Fr("constructor not found for petaloid specified by path: %s") % path);
 		}
 		cwt::dl::close(ph);
 	} else {
-		this->addError(_Fr("Failed to open petaloid specified by path: %s") % path);
+		this->addError(_Fr("failed to open petaloid specified by path: %s") % path);
 	}
 	return nullptr;
 }
@@ -82,7 +82,7 @@ petaloid * sepaloid::registerPetaloidForName (const pfs::string & name, const ch
 
 	if (ph) {
 		dl::close(ph);
-		log::debug(_Fr("petaloid [%s] found at '%s'") % name % realPath);
+		log::debug(_Fr("%s: petaloid found at '%s'") % name % realPath);
 		return registerPetaloidForPath(realPath, pname, arg, argv);
 	}
 
@@ -106,9 +106,9 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 				it->second->map->appendEmitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
 			} else {
 				log::warn(
-					_Fr("Emitter '%s' not found while registering petaloid [%s] ...")
-					% emitters[i]._id
-					% petaloid.name());
+					_Fr("%s: emitter '%s' not found while registering petaloid ...")
+					% petaloid.name()
+					% emitters[i]._id);
 				log::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
@@ -122,32 +122,32 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 				it->second->map->appendDetector(& petaloid, detectors[i]._detector);
 			} else {
 				log::warn(
-					_Fr("Detector '%s' not found while registering petaloid [%s] ...")
-					% emitters[i]._id
-					% petaloid.name());
+					_Fr("%s: detector '%s' not found while registering petaloid [%s] ...")
+					% petaloid.name()
+					% emitters[i]._id);
 				log::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
 	}
 
 	petaloid.petaloidRegistered.connect(this, & sepaloid::onPetaloidRegistered);
-	petaloid.m_sepaloidPtr = this;
+	petaloid._sepaloidPtr = this;
 	petaloid_spec pspec(& petaloid, ph, dtor);
-	_petaloids.insert(petaloid.m_name, pspec);
+	_petaloids.insert(petaloid._name, pspec);
 
 
 	// petaloid must be run in a separate thread.
 	if (petaloid.run) {
 		_threads.append(new petaloid_threaded(&petaloid));
-		log::debug(_Fr("petaloid [%s] registered as threaded") % petaloid.name());
+		log::debug(_Fr("%s: petaloid registered as threaded") % petaloid.name());
 	} else {
-		log::debug(_Fr("petaloid [%s] registered") % petaloid.name());
+		log::debug(_Fr("%s: petaloid registered") % petaloid.name());
 	}
 
 	return true;
 }
 
-void sepaloid::connectAll()
+void sepaloid::connectAll ()
 {
 	mapping_hash::iterator it = _mapping.begin();
 	mapping_hash::iterator itEnd = _mapping.end();
@@ -157,7 +157,7 @@ void sepaloid::connectAll()
 	}
 }
 
-void sepaloid::disconnectAll()
+void sepaloid::disconnectAll ()
 {
 	mapping_hash::iterator it = _mapping.begin();
 	mapping_hash::iterator itEnd = _mapping.end();
@@ -167,7 +167,7 @@ void sepaloid::disconnectAll()
 	}
 }
 
-void sepaloid::unregisterAll()
+void sepaloid::unregisterAll ()
 {
 	pfs::vector<cwt::thread *>::iterator itThread = _threads.begin();
 	pfs::vector<cwt::thread *>::iterator itThreadEnd = _threads.end();
@@ -191,23 +191,30 @@ void sepaloid::unregisterAll()
 		if (it->second.ph) {
 			dl::close(it->second.ph);
 		}
-		log::debug(_Fr("petaloid [%s] unregistered") % pname);
+		log::debug(_Fr("%s: petaloid unregistered") % pname);
 	}
 	_petaloids.clear();
 }
 
-void sepaloid::start()
+bool sepaloid::start ()
 {
+	bool r = true;
+
 	petaloid_specs_type::iterator it = _petaloids.begin();
 	petaloid_specs_type::iterator itEnd = _petaloids.end();
 
 	for (;it != itEnd; it++) {
 		PFS_ASSERT(it->second.p);
-		it->second.p->onStart();
+		if (!it->second.p->onStart()) {
+			this->addError(_Fr("%s: failed to start petaloid") % it->second.p->name());
+			r = false;
+		}
 	}
+
+	return r;
 }
 
-int sepaloid::exec()
+int sepaloid::exec ()
 {
 	int r = 0;
 
@@ -227,7 +234,7 @@ int sepaloid::exec()
 	pfs::vector<cwt::thread *>::iterator itThread = _threads.begin();
 	pfs::vector<cwt::thread *>::iterator itThreadEnd = _threads.end();
 
-	for (;itThread != itThreadEnd; itThread++) {
+	for (; itThread != itThreadEnd; itThread++) {
 		(*itThread)->start();
 	}
 
@@ -249,18 +256,5 @@ int sepaloid::exec()
 
 	return r;
 }
-
-/*
-void sepaloid::quit()
-{
-	AutoLock(this);
-	pfs::vector<cwt::thread*>::iterator itThread = m_threads.begin();
-	pfs::vector<cwt::thread*>::iterator itThreadEnd = m_threads.end();
-
-	for (;itThread != itThreadEnd; itThread++) {
-		(*itThread)->quit();
-	}
-}
-*/
 
 } // cwt

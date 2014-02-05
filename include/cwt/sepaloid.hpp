@@ -135,7 +135,7 @@ public:
 	void connectAll ();
 	void disconnectAll ();
 	void unregisterAll ();
-	void start ();
+	bool start ();
 	int  exec ();
 
 	bool isPetaloidRegistered (const pfs::string & pname)
@@ -152,7 +152,6 @@ protected:
 
 private:
 	mapping_hash               _mapping;
-	//pfs::vector<petaloid_spec> _petaloids;
 	petaloid_specs_type        _petaloids;
 	pfs::vector<cwt::thread *> _threads;
 	petaloid *                 _masterPetaloid;
