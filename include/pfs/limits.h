@@ -45,8 +45,6 @@
 #	define PFS_LONG_MIN   PFS_INT32_MIN
 #endif
 
-
-
 #include <float.h>
 #define PFS_FLOAT_MIN  FLT_MIN /* 1.175494351e-38F */
 #define PFS_FLOAT_MAX  FLT_MAX /* 3.402823466e+38F */
@@ -85,6 +83,37 @@
 	PFS_CHECK_SIZEOF_WCHAR
 #else
 #	define PFS_CHECK_SIZEOF_TYPES
+#endif
+
+#ifdef __cplusplus
+namespace pfs {
+
+template <typename _number_type> _number_type max ();
+template <typename _number_type> _number_type min ();
+
+template<> inline int8_t   max<int8_t>   () { return int8_t(PFS_INT8_MAX); }
+template<> inline uint8_t  max<uint8_t>  () { return uint8_t(PFS_UINT8_MAX); }
+template<> inline int16_t  max<int16_t>  () { return int16_t(PFS_INT16_MAX); }
+template<> inline uint16_t max<uint16_t> () { return uint16_t(PFS_UINT16_MAX); }
+template<> inline int32_t  max<int32_t>  () { return int32_t(PFS_INT32_MAX); }
+template<> inline uint32_t max<uint32_t> () { return uint32_t(PFS_UINT32_MAX); }
+template<> inline int64_t  max<int64_t>  () { return int64_t(PFS_INT64_MAX); }
+template<> inline uint64_t max<uint64_t> () { return uint64_t(PFS_UINT64_MAX); }
+template<> inline float    max<float>    () { return float(PFS_FLOAT_MAX); }
+template<> inline double   max<double>   () { return double(PFS_DOUBLE_MAX); }
+
+template<> inline int8_t   min<int8_t>   () { return int8_t(PFS_INT8_MIN); }
+template<> inline uint8_t  min<uint8_t>  () { return uint8_t(0); }
+template<> inline int16_t  min<int16_t>  () { return int16_t(PFS_INT16_MIN); }
+template<> inline uint16_t min<uint16_t> () { return uint16_t(0); }
+template<> inline int32_t  min<int32_t>  () { return int32_t(PFS_INT32_MIN); }
+template<> inline uint32_t min<uint32_t> () { return uint32_t(0); }
+template<> inline int64_t  min<int64_t>  () { return int64_t(PFS_INT64_MIN); }
+template<> inline uint64_t min<uint64_t> () { return uint64_t(0); }
+template<> inline float    min<float>    () { return float(PFS_FLOAT_MIN); }
+template<> inline double   min<double>   () { return double(PFS_DOUBLE_MIN); }
+}
+
 #endif
 
 #endif /* __PFS_LIMITS_H__ */
