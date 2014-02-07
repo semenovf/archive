@@ -13,6 +13,9 @@ GBS_HOME=`dirname $0`
 cd $GBS_HOME
 GBS_HOME=`pwd`
 
+GIT_HOSTING_GITHUB=github
+GIT_HOSTING_BITBUCKET=bitbucket
+
 # Restore current working directory
 cd $CWD
 
@@ -24,12 +27,20 @@ if [ $? -ne 0 ]; then
 fi
 
 
-usage() {
+usage() 
+{
     echo "Usage:"
-    echo "   ws -create [-git] PROJECTNAME"
+    echo "   ws [-c|-create|--create] [GIT_OPTIONS] PROJECTNAME"
+    echo ""
+    echo "GIT OPTIONS:"
+    echo "    -git | --git        - initialize git local repo"
+    echo "    -git-hosting-YYY"
+    echo "    | --git-hosting-YYY - push to remote git hosting,"
+    echo "                          where YYY = github | bitbucket"
 }
 
-username() {
+username() 
+{
     USERNAME=`whoami`
 
     GREP=`which grep`
@@ -44,7 +55,8 @@ username() {
     fi
 }
 
-create() {
+create() 
+{
     if [ -e $PROJECT ]; then
 	echo "Error: Directory already exists: $PROJECT" >&2
 	exit 1
@@ -125,31 +137,54 @@ create() {
 	$GIT_EXE init
 	$GIT_EXE add -A .
 	$GIT_EXE commit -m "Initial commit"
-	$GIT_EXE remote add origin git@github.com:semenovf/${PROJECT}.git
-	$GIT_EXE push -u origin master
+
+	if [ "$GIT_HOSTING" == "$GIT_HOSTING_GITHUB" ] ; then
+	    $GIT_EXE remote add origin git@github.com:semenovf/${PROJECT}.git
+	    $GIT_EXE push -u origin master
+	elif [ "$GIT_HOSTING" == "$GIT_HOSTING_BITBUCKET" ] ; then
+	    $GIT_EXE remote add origin https://semenovf@bitbucket.org/semenovf/${PROJECT}.git
+	    $GIT_EXE push -u origin --all   # pushes up the repo and its refs for the first time
+	    $GIT_EXE push -u origin --tags  # pushes up any tags
+	fi
     fi
 
     echo "Project '$PROJECT' created"
     echo "Modyfy '.gbs/$PROJECT.pro' to add new subprojects"
 }
 
-case "$1" in
-    -create)
-	PROJECT=$2
-	GIT_OK=
-	if [ "$PROJECT" == "-git" ] ; then
-	    PROJECT=$3
-	    GIT_OK=yes
-	fi
-	if [ -z $PROJECT ]; then
-	    usage
-	    exit 1
-	fi
-	create
-	;;
-    *)
-	usage
-	;;
-esac
 
-exit 0
+
+while [ x$1 != x ] ; do
+    case $1 in 
+    -c | -create | --create)
+	CREATE_OK=yes
+        ;;
+    -git | --git)
+	GIT_OK=yes
+        ;;
+    -git-hosting-github | --git-hosting-github)
+        GIT_OK=yes
+        GIT_HOSTING=$GIT_HOSTING_GITHUB
+        ;;
+    -git-hosting-bitbucket | --git-hosting-bitbucket)
+        GIT_OK=yes
+        GIT_HOSTING=$GIT_HOSTING_BITBUCKET
+        ;;
+    *)
+        PROJECT=$1
+        ;;
+    esac
+    shift
+done
+
+if [ -z $PROJECT ]; then
+    usage
+    exit 1
+fi
+
+if [ "$CREATE_OK" == "yes" ] ; then
+    create
+    exit 0
+fi
+
+exit 1
