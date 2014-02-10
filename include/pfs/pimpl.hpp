@@ -12,7 +12,7 @@
 #define PFS_PIMPL_INLINE(Class,Impl)                           \
 	pfs::shared_ptr<Impl> _pimpl;                              \
                                                                \
-	void detach()                                              \
+	virtual void detach()                                      \
 	{                                                          \
 		if (!_pimpl.unique()) {                                \
 			pfs::shared_ptr<Impl> d(new Impl(*_pimpl));        \
@@ -39,7 +39,7 @@ public:                                                        \
 	class Impl;                                                \
 	pfs::shared_ptr<Impl> _pimpl;                              \
                                                                \
-	void detach();                                             \
+	virtual void detach();                                     \
 	Class (const Impl & other);                                \
                                                                \
 public:                                                        \
@@ -61,7 +61,7 @@ public:                                                        \
 	class Impl;                                                \
 	pfs::shared_ptr<Impl> _pimpl;                              \
                                                                \
-	void detach();                                             \
+	virtual void detach();                                     \
 	Class (const Impl & other);                                \
                                                                \
 public:                                                        \
