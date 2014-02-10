@@ -3,8 +3,8 @@
 #include <cwt/safeformat.hpp>
 #include <cwt/fs.hpp>
 #include <cwt/debby/dbd.hpp>
-#include <cwt/debby/dbh.hpp>
-#include <cwt/debby/sth.hpp>
+#include <cwt/debby/database.hpp>
+#include <cwt/debby/statement.hpp>
 
 void test_assignment()
 {
@@ -13,7 +13,7 @@ void test_assignment()
 	int n = 1000;
 
 	while (--n) {
-		cwt::debby::handler dbh;
+		cwt::debby::database dbh;
 		TEST_FAIL(dbh.open(dburi));
 		TEST_FAIL(dbh.opened());
 		dbh.close();
@@ -37,7 +37,7 @@ void test_base()
 			"col3 SMALLINT,"
 			"col4 TIMESTAMP)");
 
-	cwt::debby::handler dbh;
+	cwt::debby::database dbh;
     TEST_FAIL(dbh.open(_l1("sqlite3:///tmp/test.db?mode=rwc")));
     TEST_FAIL(dbh.opened());
 
@@ -62,7 +62,7 @@ void test_base()
 // source: http://www.sqlite.org/datatype3.html
 void test_sqlite3_collation()
 {
-	cwt::debby::handler dbh;
+	cwt::debby::database dbh;
 	TEST_FAIL(dbh.open(_l1("sqlite3:///tmp/test.db?mode=rwc")));
 
 	if(dbh.tableExists(_l1("t1"))) {
@@ -271,7 +271,7 @@ void test_sqlite3_collation()
 
 void test_columns()
 {
-	cwt::debby::handler dbh;
+	cwt::debby::database dbh;
 
 	TEST_FAIL(dbh.open(_l1("sqlite3:///tmp/test.db?mode=rwc")));
 

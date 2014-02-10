@@ -9,10 +9,9 @@
 #define __CWT_DEBBY_SQLITE3_DBD_HPP__
 
 #include <cwt/debby/dbd.hpp>
-#include <cwt/debby/dbh.hpp>
 #include "../sqlite3/sqlite3.h"
 
-struct Sqlite3DbHandler : public cwt::debby::handler_data
+struct Sqlite3DbHandler : public cwt::debby::database_data
 {
 	sqlite3 * _dbh_native;
 };
