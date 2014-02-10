@@ -1,23 +1,23 @@
 /*
- * sth.hpp
+ * statement.hpp
  *
  *  Created on: Aug 19, 2013
  *      Author: wladt
  */
 
-#ifndef __CWT_DEBBY_STH_HPP__
-#define __CWT_DEBBY_STH_HPP__
+#ifndef __CWT_DEBBY_STATEMENT_HPP__
+#define __CWT_DEBBY_STATEMENT_HPP__
 
 #include <cwt/debby/dbd.hpp>
 #include <cwt/errorable.hpp>
 
 namespace cwt { namespace debby {
 
-class handler;
+class database;
 
 class statement : public errorable
 {
-	friend class handler;
+	friend class database;
 
 	pfs::shared_ptr<statement_data> _pimpl;
 
@@ -55,4 +55,4 @@ public:
 
 }} // cwt::debby
 
-#endif /* __CWT_DEBBY_STH_HPP__ */
+#endif /* __CWT_DEBBY_STATEMENT_HPP__ */

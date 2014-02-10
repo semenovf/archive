@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/debby/dbh.hpp"
-#include "../include/cwt/debby/sth.hpp"
+#include "../include/cwt/debby/database.hpp"
+#include "../include/cwt/debby/statement.hpp"
 #include <cwt/dl.hpp>
 #include <cwt/logger.hpp>
 #include <cwt/safeformat.hpp>
@@ -14,7 +14,7 @@
 
 namespace cwt { namespace debby {
 
-bool handler::open (const pfs::string & uri_str)
+bool database::open (const pfs::string & uri_str)
 {
 	cwt::uri uri;
 
@@ -44,7 +44,7 @@ bool handler::open (const pfs::string & uri_str)
 	pfs::map<pfs::string, pfs::string> params;
 	pfs::string errstr;
 
-	handler_data * driverData = drv->open (uri.path()
+	database_data * driverData = drv->open (uri.path()
 			, userinfo.size() > 0 ? userinfo[0] : pfs::string() // login
 			, userinfo.size() > 1 ? userinfo[1] : pfs::string() // password
 			, uri.queryItems()
@@ -59,7 +59,7 @@ bool handler::open (const pfs::string & uri_str)
 	return true;
 }
 
-void handler::close ()
+void database::close ()
 {
 	if (!isNull()) {
 		_pimpl->_driver->close(_pimpl.get());
@@ -68,7 +68,7 @@ void handler::close ()
 	}
 }
 
-bool handler::query (const pfs::string & sql)
+bool database::query (const pfs::string & sql)
 {
 	bool r = false;
 
@@ -81,7 +81,7 @@ bool handler::query (const pfs::string & sql)
 	return r;
 }
 
-statement handler::prepare (const pfs::string & sql)
+statement database::prepare (const pfs::string & sql)
 {
 	if (!isNull()) {
 		pfs::string errstr;
@@ -98,7 +98,7 @@ statement handler::prepare (const pfs::string & sql)
 	return statement();
 }
 
-bool handler::begin ()
+bool database::begin ()
 {
 	bool r = false;
 	if (!isNull()) {
@@ -110,7 +110,7 @@ bool handler::begin ()
 	return r;
 }
 
-bool handler::commit ()
+bool database::commit ()
 {
 	bool r = false;
 	if (!isNull()) {
@@ -122,7 +122,7 @@ bool handler::commit ()
 	return r;
 }
 
-bool handler::rollback ()
+bool database::rollback ()
 {
 	bool r = false;
 	if (!isNull()) {
@@ -134,7 +134,7 @@ bool handler::rollback ()
 	return r;
 }
 
-bool handler::meta (const pfs::string & table, pfs::vector<column_meta> & meta)
+bool database::meta (const pfs::string & table, pfs::vector<column_meta> & meta)
 {
 	bool r = false;
 	if (!isNull()) {

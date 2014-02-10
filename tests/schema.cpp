@@ -1,49 +1,59 @@
 /*
- * scheme.cpp
+ * model.cpp
  *
- *  Created on: Sep 11, 2013
+ *  Created on: Feb 10, 2014
  *      Author: wladt
  */
 
-#include <cwt/test.h>
-#include <cwt/safeformat.hpp>
-#include <cwt/csv.hpp>
-#include <cwt/logger.hpp>
-#include <cwt/io/file.hpp>
-#include <cwt/io/textreader.hpp>
-#include <cwt/debby/record.hpp>
+#include <cwt/test.hpp>
+#include <pfs/string.hpp>
 #include <cwt/debby/schema.hpp>
-#include <cwt/debby/utils.hpp>
-
 
 // XXX Insertion in Sqlite3 is very slow (one transaction for each insertion), so it is good idea
 //     to wrap series of insertions with transaction.
 
-using namespace cwt;
-using namespace cwt::io;
-using namespace cwt::debby;
-
-
-#include <iostream>
-#include "populate.inc"
-
-static const char * currencyCsvPath = "rc/debby/currencies.csv";
-static const char * countryCsvPath  = "rc/debby/countries.csv";
-
-static void __prepare_schema (Schema & schema)
+class B
 {
-	Record & currency = schema.add("currency");
-	currency.addString("code").setPk();
-	currency.addString("name");
-	currency.addString("symbol");
-	currency.addString("country");
+public:
+	pfs::string _name;
+	double      _weight;
+	int         _height;
 
-	Record & country = schema.add("country");
-	country.addString("code").setPk();
-	country.addString("name");
-	country.addString("currency");
-	country.addString("timezone");
+	template<class _Archive>
+	void persist (_Archive & ar)
+	{
+		ar & HIBERLITE_NVP(_name);
+		ar & HIBERLITE_NVP(_weight);
+		ar & HIBERLITE_NVP(_height);
+	}
+};
+/*
+
+class B{
+	friend class hiberlite::access;
+	template<class Archive>
+	void hibernate(Archive & ar)
+	{
+		ar & HIBERLITE_NVP(name);
+		ar & HIBERLITE_NVP(weight);
+		ar & HIBERLITE_NVP(height);
+	}
+
+	public:
+		string name;
+		double weight;
+		int height;
+};
+*/
+
+CWT_DEBBY_EXPORT_CLASS(B)
+
+static void create_drop_schema ()
+{
+
 }
+
+#ifdef __COMMENT__
 
 static bool populate_currency (const Vector<String> & columns, Record currency)
 {
@@ -225,19 +235,17 @@ void test_load ()
 	CWT_TEST_OK2(peer.drop(*dbh), cwt::String(_Fr("Dropping '%s' ... ") % uri).utf8());
 }
 
-int main(int argc, char *argv[])
+#endif
+
+int main (int argc, char *argv[])
 {
-    CWT_CHECK_SIZEOF_TYPES;
-    CWT_UNUSED2(argc, argv);
-    CWT_BEGIN_TESTS(6);
+    PFS_CHECK_SIZEOF_TYPES;
+    PFS_UNUSED2(argc, argv);
+	BEGIN_TESTS(1);
 
-    test_deploy_drop();
-    test_create();
-    test_destroy();
-    test_load();
+	create_drop_schema();
 
-    CWT_END_TESTS;
-    return 0;
+    END_TESTS;
 }
 
 

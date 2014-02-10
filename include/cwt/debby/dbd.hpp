@@ -20,11 +20,10 @@ namespace debby
 class schema;
 struct driver;
 
-struct handler_data
+struct database_data
 {
 	driver * _driver;
-	handler_data () : _driver(nullptr) {}
-	//~handler_data ();
+	database_data () : _driver(nullptr) {}
 };
 
 struct statement_data
@@ -39,7 +38,7 @@ struct statement_data
 	//~statement_data ();
 };
 
-enum type {
+enum column_type {
 	  Null
 	, Bool
 	, Boolean = Bool
@@ -74,7 +73,7 @@ struct column_meta
 	{}
 
 	pfs::string             column_name;
-	cwt::debby::type        column_type;
+	cwt::debby::column_type        column_type;
 	pfs::string             native_type;
 	std::pair<bool, bool>   has_pk;
 	std::pair<bool, uint_t> has_autoinc;  // > 0 if column is autoincremented
@@ -90,28 +89,28 @@ struct column_meta
 
 struct driver
 {
-	handler_data *           (* open)          (const pfs::string & path
+	database_data *           (* open)          (const pfs::string & path
 			, const pfs::string & username
 			, const pfs::string & password
 			, const pfs::map<pfs::string, pfs::string> & params
 			, pfs::string & errstr);
-	void                     (* close)         (handler_data *);
+	void                     (* close)         (database_data *);
 
-	bool                     (* query)         (handler_data &, const pfs::string & sql, pfs::string & errstr);   // cannot be used for statements that contain binary data
-	statement_data *         (* prepare)       (handler_data &, const pfs::string & sql, pfs::string & errstr);
-	ulong_t                  (* rows)          (handler_data &);
-	ulong_t 				 (* lastId)        (handler_data &);
-	pfs::vector<pfs::string> (* tables)        (handler_data &);
-	bool                     (* tableExists)   (handler_data &, const pfs::string & name);
-	bool                     (* setAutoCommit) (handler_data &, bool);
-	bool                     (* autoCommit)    (handler_data &);
-	bool                     (* begin)         (handler_data &, pfs::string & errstr);
-	bool                     (* commit)        (handler_data &, pfs::string & errstr);
-	bool                     (* rollback)      (handler_data &, pfs::string & errstr);
+	bool                     (* query)         (database_data &, const pfs::string & sql, pfs::string & errstr);   // cannot be used for statements that contain binary data
+	statement_data *         (* prepare)       (database_data &, const pfs::string & sql, pfs::string & errstr);
+	ulong_t                  (* rows)          (database_data &);
+	ulong_t 				 (* lastId)        (database_data &);
+	pfs::vector<pfs::string> (* tables)        (database_data &);
+	bool                     (* tableExists)   (database_data &, const pfs::string & name);
+	bool                     (* setAutoCommit) (database_data &, bool);
+	bool                     (* autoCommit)    (database_data &);
+	bool                     (* begin)         (database_data &, pfs::string & errstr);
+	bool                     (* commit)        (database_data &, pfs::string & errstr);
+	bool                     (* rollback)      (database_data &, pfs::string & errstr);
 
-	long_t                   (* errno)         (handler_data &);
+	long_t                   (* errno)         (database_data &);
 
-	bool                     (* meta)          (handler_data &, const pfs::string & table
+	bool                     (* meta)          (database_data &, const pfs::string & table
 			, pfs::vector<column_meta> & meta
 			, pfs::string & errstr);
 

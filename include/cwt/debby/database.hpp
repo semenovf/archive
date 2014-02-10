@@ -1,12 +1,12 @@
 /*
- * dbh.hpp
+ * database.hpp
  *
  *  Created on: Aug 19, 2013
  *      Author: wladt
  */
 
-#ifndef __CWT_DEBBY_DBH_HPP__
-#define __CWT_DEBBY_DBH_HPP__
+#ifndef __CWT_DEBBY_DATABASE_HPP__
+#define __CWT_DEBBY_DATABASE_HPP__
 
 #include <cwt/debby/dbd.hpp>
 #include <pfs/vector.hpp>
@@ -16,15 +16,14 @@
 namespace cwt { namespace debby {
 
 class statement;
-class handler;
 
-class handler : public errorable
+class database : public errorable
 {
-	pfs::shared_ptr<handler_data> _pimpl;
+	pfs::shared_ptr<database_data> _pimpl;
 
 protected:
 	struct impl_deleter {
-		void operator () (handler_data * p) const
+		void operator () (database_data * p) const
 		{
 			if (p && p->_driver) {
 				p->_driver->close(p);
@@ -33,12 +32,12 @@ protected:
 		}
 	};
 
-	//handler (handler_data * p) : _pimpl(p, impl_deleter()) {}
+	//database (handler_data * p) : _pimpl(p, impl_deleter()) {}
 
 public:
-	handler () : errorable(), _pimpl() {}
-	handler (const handler & other) : errorable(), _pimpl(other._pimpl) {}
-	~handler () { /*close();*/ }
+	database () : errorable(), _pimpl() {}
+	database (const database & other) : errorable(), _pimpl(other._pimpl) {}
+	~database () { /*close();*/ }
 
 	bool isNull () const { return !(_pimpl && _pimpl->_driver); }
 
@@ -68,4 +67,4 @@ public:
 
 }} // cwt::debby
 
-#endif /* __CWT_DEBBY_DBH_HPP__ */
+#endif /* __CWT_DEBBY_DATABASE_HPP__ */
