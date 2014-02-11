@@ -20,6 +20,20 @@ static int __refs = 0;
 static cwt::debby::driver * __dbd = nullptr;
 static pfs::mutex __mutex;
 
+class mappings
+{
+	pfs::map<pfs::string, cwt::debby::column_type> _columnTypes;
+	pfs::map<int, cwt::debby::column_type>         _sqliteColumnTypes;
+
+public:
+	mappings ();
+
+	cwt::debby::column_type columnType (const pfs::string & type) { return _columnTypes.value(type, cwt::debby::Null); }
+	cwt::debby::column_type columnType (int sqlitetype) { return _sqliteColumnTypes.value(sqlitetype, cwt::debby::Null); }
+};
+
+static mappings __mappings;
+
 const int __MAX_SQL_TIMEOUT      = 10000; /* 10 seconds */
 const int __MAX_EXEC_RETRY_COUNT = 10;
 const int __MAX_EXEC_RETRY_SLEEP = 200;
@@ -37,9 +51,7 @@ static bool    s3_dbd_auto_commit     (cwt::debby::database_data & dbh);
 static long_t  s3_dbd_errno           (cwt::debby::database_data & dbh);
 static bool    s3_dbd_query           (cwt::debby::database_data & dbh, const pfs::string & sql, pfs::string & errstr);
 static cwt::debby::statement_data *
-		       s3_dbd_prepare (cwt::debby::database_data & dbh, const pfs::string & sql, pfs::string & errstr);
-static ulong_t s3_dbd_affected_rows   (cwt::debby::database_data & dbh);
-static ulong_t s3_dbd_last_id         (cwt::debby::database_data & dbh);
+		       s3_dbd_prepare         (cwt::debby::database_data & dbh, const pfs::string & sql, pfs::string & errstr);
 
 static pfs::vector<pfs::string>
 			   s3_dbd_tables          (cwt::debby::database_data & dbh);
@@ -52,11 +64,60 @@ static bool    s3_dbd_meta            (cwt::debby::database_data & dbh
 		, pfs::vector<cwt::debby::column_meta> & meta
 		, pfs::string & errstr);
 
-static void    s3_dbd_stmt_close      (cwt::debby::statement_data * sth);
-static bool    s3_dbd_stmt_exec       (cwt::debby::statement_data & sth, pfs::string & errstr);
+static void    s3_dbd_stmt_close (cwt::debby::statement_data * sth);
+static bool    s3_dbd_stmt_exec  (cwt::debby::statement_data & sth, pfs::string & errstr);
+static ulong_t s3_dbd_stmt_affected_rows   (cwt::debby::statement_data & sth);
+static long_t  s3_dbd_stmt_last_id         (cwt::debby::statement_data & sth);
 static bool    s3_dbd_stmt_fetch_row_array (cwt::debby::statement_data & sth, pfs::vector<pfs::unitype> & row);
 static bool    s3_dbd_stmt_fetch_row_hash (cwt::debby::statement_data & sth, pfs::map<pfs::string, pfs::unitype> & row);
-static bool    s3_dbd_stmt_bind       (cwt::debby::statement_data & sth, size_t index, const pfs::unitype & param);
+static bool    s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs::unitype & param);
+static size_t  s3_dbd_stmt_column_count (cwt::debby::statement_data & sth);
+static pfs::string s3_dbd_stmt_column_name (cwt::debby::statement_data &, size_t index);
+static cwt::debby::column_type s3_dbd_stmt_column_type (cwt::debby::statement_data &, size_t index);
+
+
+mappings::mappings ()
+{
+	_columnTypes.insert(_l1("BOOL"), cwt::debby::Bool);
+
+	_columnTypes.insert(_l1("INT")       , cwt::debby::Integer);
+	_columnTypes.insert(_l1("INTEGER")   , cwt::debby::Integer);
+	_columnTypes.insert(_l1("TINYINT")   , cwt::debby::Integer);
+	_columnTypes.insert(_l1("SMALLINT")  , cwt::debby::Integer);
+	_columnTypes.insert(_l1("MEDIUMINT") , cwt::debby::Integer);
+	_columnTypes.insert(_l1("BIGINT")    , cwt::debby::Integer);
+	_columnTypes.insert(_l1("UNSIGNED")  , cwt::debby::Integer);
+
+	_columnTypes.insert(_l1("DATE")      , cwt::debby::Date);
+	_columnTypes.insert(_l1("DATETIME")  , cwt::debby::DateTime);
+	_columnTypes.insert(_l1("TIME")      , cwt::debby::Time);
+
+	_columnTypes.insert(_l1("REAL")      , cwt::debby::Double);
+	_columnTypes.insert(_l1("DOUBLE")    , cwt::debby::Double);
+	_columnTypes.insert(_l1("FLOAT")     , cwt::debby::Double);
+	_columnTypes.insert(_l1("NUMERIC")   , cwt::debby::Double);
+	_columnTypes.insert(_l1("DECIMAL")   , cwt::debby::Double);
+
+	_columnTypes.insert(_l1("CHAR")      , cwt::debby::String);
+	_columnTypes.insert(_l1("VARCHAR")   , cwt::debby::String);
+	_columnTypes.insert(_l1("VARYING")   , cwt::debby::String);
+	_columnTypes.insert(_l1("NCHAR")     , cwt::debby::String);
+	_columnTypes.insert(_l1("NATIVE")    , cwt::debby::String);
+	_columnTypes.insert(_l1(" CHAR")     , cwt::debby::String);
+	_columnTypes.insert(_l1("NVARCHAR")  , cwt::debby::String);
+	_columnTypes.insert(_l1("TEXT")      , cwt::debby::String);
+	_columnTypes.insert(_l1("CLOB")      , cwt::debby::String);
+
+	_columnTypes.insert(_l1("BLOB")      , cwt::debby::Blob);
+	_columnTypes.insert(_l1("BINARY")    , cwt::debby::Blob);
+
+
+	_sqliteColumnTypes.insert(SQLITE_INTEGER, cwt::debby::Integer);
+	_sqliteColumnTypes.insert(SQLITE_FLOAT  , cwt::debby::Double);
+	_sqliteColumnTypes.insert(SQLITE_TEXT   , cwt::debby::String);
+	_sqliteColumnTypes.insert(SQLITE_BLOB   , cwt::debby::Blob);
+	_sqliteColumnTypes.insert(SQLITE_NULL   , cwt::debby::Null);
+}
 
 inline pfs::string __s3_stmt_errmsg (Sqlite3DbStatement * s3_sth)
 {
@@ -82,18 +143,22 @@ extern "C" bool __cwt_plugin_ctor__ (void * pluggable)
 		__dbd->tableExists   = s3_dbd_table_exists;
 		__dbd->query         = s3_dbd_query;
 		__dbd->prepare       = s3_dbd_prepare;
-		__dbd->rows          = s3_dbd_affected_rows;
-		__dbd->lastId        = s3_dbd_last_id;
 		__dbd->begin         = s3_dbd_begin;
 		__dbd->commit        = s3_dbd_commit;
 		__dbd->rollback      = s3_dbd_rollback;
 		__dbd->meta          = s3_dbd_meta;
 		__dbd->closeStmt     = s3_dbd_stmt_close;
 		__dbd->execStmt      = s3_dbd_stmt_exec;
+		__dbd->rows          = s3_dbd_stmt_affected_rows;
+		__dbd->lastId        = s3_dbd_stmt_last_id;
 		__dbd->fetchRowArray = s3_dbd_stmt_fetch_row_array;
 		__dbd->fetchRowHash  = s3_dbd_stmt_fetch_row_hash;
 		__dbd->bind          = s3_dbd_stmt_bind;
+		__dbd->columnCount   = s3_dbd_stmt_column_count;
+		__dbd->columnName    = s3_dbd_stmt_column_name;
+		__dbd->columnType    = s3_dbd_stmt_column_type;
 	}
+
 	*pdbd = __dbd;
 
 	return __dbd != nullptr;
@@ -338,19 +403,6 @@ cwt::debby::statement_data * s3_dbd_prepare (cwt::debby::database_data & dbh, co
 	return static_cast<cwt::debby::statement_data*>(sth);
 }
 
-ulong_t s3_dbd_affected_rows (cwt::debby::database_data & dbh)
-{
-	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
-	int nrows = sqlite3_changes(s3_dbh->_dbh_native);
-	return nrows < 0 ? ulong_t(0) : ulong_t(nrows);
-}
-
-ulong_t s3_dbd_last_id (cwt::debby::database_data & dbh)
-{
-	Sqlite3DbHandler * s3_dbh = static_cast<Sqlite3DbHandler *>(& dbh);
-	return ulong_t(sqlite3_last_insert_rowid(s3_dbh->_dbh_native));
-}
-
 pfs::vector<pfs::string> s3_dbd_tables (cwt::debby::database_data & dbh)
 {
 	pfs::vector<pfs::string> r;
@@ -425,48 +477,6 @@ bool s3_dbd_rollback (cwt::debby::database_data & dbh, pfs::string & errstr)
 	return s3_dbd_query(dbh, pfs::string("ROLLBACK"), errstr);
 }
 
-
-static cwt::debby::column_type __map_column_type (const pfs::string & ct)
-{
-	if (ct.startsWith("BOOL")) {
-		return cwt::debby::Bool;
-	} else if (ct.startsWith("INT")
-			|| ct.startsWith("INTEGER")
-			|| ct.startsWith("TINYINT")
-			|| ct.startsWith("SMALLINT")
-			|| ct.startsWith("MEDIUMINT")
-			|| ct.startsWith("BIGINT")
-			|| ct.startsWith("UNSIGNED")
-			|| ct.startsWith("DATE")
-			|| ct.startsWith("DATETIME")
-			|| ct.startsWith("TIME")) {
-
-		return cwt::debby::Integer;
-
-	} else if (ct.startsWith("REAL")
-			|| ct.startsWith("DOUBLE")
-			|| ct.startsWith("FLOAT")
-			|| ct.startsWith("NUMERIC")
-			|| ct.startsWith("DECIMAL")) {
-
-		return cwt::debby::Double;
-
-	} else if (ct.startsWith("CHAR")
-			|| ct.startsWith("VARCHAR")
-			|| ct.startsWith("VARYING")
-			|| ct.startsWith("NCHAR")
-			|| ct.startsWith("NATIVE CHAR")
-			|| ct.startsWith("NVARCHAR")
-			|| ct.startsWith("TEXT")
-			|| ct.startsWith("CLOB")) {
-
-		return cwt::debby::String;
-
-	}
-
-	return cwt::debby::Blob;
-}
-
 // AUTOINCREMENT only applies to primary keys
 //
 bool s3_dbd_meta (cwt::debby::database_data & dbh
@@ -499,7 +509,7 @@ bool s3_dbd_meta (cwt::debby::database_data & dbh
 				cwt::debby::column_meta m;
 				m.column_name       = row[_l1("name")].toString();
 				m.native_type       = row[_l1("type")].toString();
-				m.column_type       = __map_column_type(m.native_type);
+				m.column_type       = __mappings.columnType(m.native_type);
 
 				m.has_pk.first      = true;
 				m.has_pk.second     = row[_l1("pk")].toBool();
@@ -572,12 +582,24 @@ bool s3_dbd_stmt_exec (cwt::debby::statement_data & sth, pfs::string & errstr)
 	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
 	bool r = true;
 
-	if (sqlite3_column_count(s3_sth->_sth_native) > 0) { // SELECT statement
+	static pfs::mutex __local_mutex;
+	pfs::auto_lock<> lock(& __local_mutex);
+
+	s3_sth->reset();
+	s3_sth->_columnCount = sqlite3_column_count(s3_sth->_sth_native);
+
+	if (s3_sth->_columnCount > 0) { // SELECT statement
 		int rc = sqlite3_reset(s3_sth->_sth_native);
 		r = (rc == SQLITE_OK ? true : false);
 	} else {
 		int rc = sqlite3_step(s3_sth->_sth_native);
 		r = (rc == SQLITE_OK || rc == SQLITE_DONE ? true : false);
+
+		sqlite3 * dbh_native = sqlite3_db_handle(s3_sth->_sth_native);
+
+		int nrows = sqlite3_changes(dbh_native);
+		s3_sth->_nrows = nrows < 0 ? ulong_t(0) : ulong_t(nrows);
+		s3_sth->_lastId = ulong_t(sqlite3_last_insert_rowid(dbh_native));
 
 		if (rc == SQLITE_DONE) {
 			sqlite3_reset(s3_sth->_sth_native);
@@ -591,6 +613,20 @@ bool s3_dbd_stmt_exec (cwt::debby::statement_data & sth, pfs::string & errstr)
 
 	return r;
 }
+
+
+ulong_t s3_dbd_stmt_affected_rows (cwt::debby::statement_data & sth)
+{
+	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
+	return s3_sth->_nrows;
+}
+
+long_t s3_dbd_stmt_last_id (cwt::debby::statement_data & sth)
+{
+	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
+	return s3_sth->_lastId;
+}
+
 
 static int __fetch_helper (Sqlite3DbStatement * s3_sth)
 {
@@ -757,4 +793,24 @@ bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs
 		PFS_ERROR(__s3_stmt_errmsg(s3_sth).c_str());
 	}
 	return rc == SQLITE_OK ? true : false;
+}
+
+size_t s3_dbd_stmt_column_count (cwt::debby::statement_data & sth)
+{
+	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
+	return s3_sth->_columnCount;
+}
+
+pfs::string s3_dbd_stmt_column_name (cwt::debby::statement_data & sth, size_t index)
+{
+	PFS_ASSERT(index <= size_t(pfs::max_type<int>()));
+	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
+	return pfs::string(sqlite3_column_name(s3_sth->_sth_native, int(index)));
+}
+
+cwt::debby::column_type s3_dbd_stmt_column_type (cwt::debby::statement_data & sth, size_t index)
+{
+	PFS_ASSERT(index <= size_t(pfs::max_type<int>()));
+	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
+	return __mappings.columnType(sqlite3_column_type(s3_sth->_sth_native, int(index)));
 }
