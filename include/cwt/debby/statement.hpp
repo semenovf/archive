@@ -47,10 +47,18 @@ public:
 	bool isNull () const { return !(_pimpl && _pimpl->_driver); }
 	void close ();
 	bool exec  ();
+
+	ulong_t  rows ()       { return _pimpl->_driver->rows(*_pimpl); }
+	long_t   lastId ()     { return _pimpl->_driver->lastId(*_pimpl); }
+
 	pfs::vector<pfs::unitype> fetchRowArray ();
 	pfs::map<pfs::string, pfs::unitype> fetchRowHash ();
 	statement & bind (const pfs::unitype & param);
 	statement & bind (size_t index, const pfs::unitype & param);
+	size_t      columnCount ();
+	pfs::string columnName (size_t index);
+	column_type columnType (size_t index);
+
 };
 
 }} // cwt::debby

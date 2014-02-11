@@ -48,9 +48,6 @@ public:
 	bool query (const pfs::string & sql); // cannot be used for statements that contain binary data
 	statement prepare (const pfs::string & sql);
 
-	ulong_t  rows ()       { return _pimpl->_driver->rows(*_pimpl); }
-	ulong_t  lastId ()     { return _pimpl->_driver->lastId(*_pimpl); }
-
 	pfs::vector<pfs::string>
 		     tables ()    { return _pimpl->_driver->tables(*_pimpl); }
 

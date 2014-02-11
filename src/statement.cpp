@@ -88,5 +88,26 @@ statement & statement::bind (const pfs::unitype & param)
 	return *this;
 }
 
+size_t statement::columnCount ()
+{
+	return isNull()
+			? 0
+			: _pimpl->_driver->columnCount(*_pimpl);
+}
+
+pfs::string statement::columnName (size_t index)
+{
+	return isNull()
+			? pfs::string()
+			: _pimpl->_driver->columnName(*_pimpl, index);
+}
+
+column_type statement::columnType (size_t index)
+{
+	return isNull()
+			? cwt::debby::Null
+			: _pimpl->_driver->columnType(*_pimpl, index);
+}
+
 }} // cwt::debby
 

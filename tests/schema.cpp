@@ -22,9 +22,9 @@ public:
 	template<class _Archive>
 	void persist (_Archive & ar)
 	{
-		ar & HIBERLITE_NVP(_name);
-		ar & HIBERLITE_NVP(_weight);
-		ar & HIBERLITE_NVP(_height);
+		ar & CWT_DEBBY_NVP(_name);
+		ar & CWT_DEBBY_NVP(_weight);
+		ar & CWT_DEBBY_NVP(_height);
 	}
 };
 /*

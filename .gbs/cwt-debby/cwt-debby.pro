@@ -1,19 +1,16 @@
 include($$(GBS_HOME)/common-dll.pri)
 TARGET = cwt-debby
 INCLUDEPATH += ../../include
+INCLUDEPATH += ../../include/hiberlite
 INCLUDEPATH += ../../../pfs/include
 INCLUDEPATH += ../../../cwt-sys/include
-#INCLUDEPATH += ../../../cwt-io/include
-#INCLUDEPATH += ../../../cwt-json/include
-#INCLUDEPATH += ../../../cwt-uri/include
 
 SOURCES += ../../src/*.cpp
+SOURCES += ../../src/hiberlite/*.cpp
 
 unix {
-#    QMAKE_CXXFLAGS += -pg
     LIBS += -lpfs
     LIBS += -lcwt-sys
-#    LIBS += -lcwt-json
 }
 
 win32 {

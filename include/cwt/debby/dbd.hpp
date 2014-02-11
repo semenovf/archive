@@ -38,7 +38,8 @@ struct statement_data
 	//~statement_data ();
 };
 
-enum column_type {
+enum column_type
+{
 	  Null
 	, Bool
 	, Boolean = Bool
@@ -73,7 +74,7 @@ struct column_meta
 	{}
 
 	pfs::string             column_name;
-	cwt::debby::column_type        column_type;
+	cwt::debby::column_type column_type;
 	pfs::string             native_type;
 	std::pair<bool, bool>   has_pk;
 	std::pair<bool, uint_t> has_autoinc;  // > 0 if column is autoincremented
@@ -98,8 +99,6 @@ struct driver
 
 	bool                     (* query)         (database_data &, const pfs::string & sql, pfs::string & errstr);   // cannot be used for statements that contain binary data
 	statement_data *         (* prepare)       (database_data &, const pfs::string & sql, pfs::string & errstr);
-	ulong_t                  (* rows)          (database_data &);
-	ulong_t 				 (* lastId)        (database_data &);
 	pfs::vector<pfs::string> (* tables)        (database_data &);
 	bool                     (* tableExists)   (database_data &, const pfs::string & name);
 	bool                     (* setAutoCommit) (database_data &, bool);
@@ -117,9 +116,14 @@ struct driver
 // Statement routines
 	void					 (* closeStmt)     (statement_data *);
 	bool					 (* execStmt)      (statement_data &, pfs::string & errstr);
+	ulong_t                  (* rows)          (statement_data &);
+	long_t 				     (* lastId)        (statement_data &);
 	bool                     (* fetchRowArray) (statement_data &, pfs::vector<pfs::unitype> & row);
 	bool                     (* fetchRowHash)  (statement_data &, pfs::map<pfs::string, pfs::unitype> & row);
 	bool                     (* bind)          (statement_data &, size_t index, const pfs::unitype & param);
+	size_t                   (* columnCount)   (statement_data &);
+	pfs::string              (* columnName)    (statement_data &, size_t index);
+	column_type              (* columnType)    (statement_data &, size_t index);
 };
 
 }} // cwt::debby
