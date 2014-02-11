@@ -314,13 +314,6 @@ inline utf8string utf8string::number (double n, char fmt, int prec)
 	return utf8string().setNumber(n, fmt, prec);
 }
 
-/*
-inline utf8string utf8string::number (float n, char fmt, int prec)
-{
-	return utf8string().setNumber(n, fmt, prec);
-}
-*/
-
 inline utf8string utf8string::number (int_t n, int base, bool uppercase)
 {
 	return utf8string().setNumber(n, base, uppercase);
@@ -339,6 +332,30 @@ inline utf8string utf8string::number (long_t n, int base, bool uppercase)
 inline utf8string utf8string::number (ulong_t n, int base, bool uppercase)
 {
 	return utf8string().setNumber(n, base, uppercase);
+}
+
+template <typename _Int>
+inline utf8string stringify (_Int n, int base, bool uppercase = false)
+{
+	return utf8string().setNumber(n, base, uppercase);
+}
+
+template <typename _Int>
+inline utf8string stringify (_Int n)
+{
+	return utf8string().setNumber(n, 10, false);
+}
+
+template <>
+inline utf8string stringify (const utf8string & s)
+{
+	return utf8string(s);
+}
+
+template <>
+inline utf8string stringify (const bytearray & s)
+{
+	return utf8string(s.c_str());
 }
 
 /*

@@ -40,8 +40,8 @@ struct DLL_API unidata
 	virtual bool      toBool   (bool & ok) const { ok = false; return false; }
 	virtual long_t    toLong   (bool & ok) const { ok = false; return long_t(0); }
 	virtual double    toDouble (bool & ok) const { ok = false; return double(0); }
-	virtual string    toString (bool & ok) const { ok = false; return string(); }
-	virtual bytearray toBlob   (bool & ok) const { ok = false; return bytearray(); }
+	virtual pfs::string    toString (bool & ok) const { ok = false; return pfs::string(); }
+	virtual pfs::bytearray toBlob   (bool & ok) const { ok = false; return pfs::bytearray(); }
 };
 
 typedef unidata unidata_null;
@@ -55,8 +55,8 @@ struct DLL_API unidata_boolean : public unidata
 	bool   toBool    (bool & ok) const { ok = true; return _value; }
 	long_t toLong    (bool & ok) const { ok = true; return _value ? long_t(1) : long_t(0); }
 	double toDouble  (bool & ok) const { ok = true; return _value ? double(1) : double(0); }
-	string toString  (bool & ok) const { ok = true; return _value ? string("true") : string("false"); }
-	bytearray toBlob (bool & ok) const { ok = true; return _value ? bytearray(1, 1) : bytearray(1, 0); }
+	pfs::string toString  (bool & ok) const { ok = true; return _value ? pfs::string("true") : pfs::string("false"); }
+	pfs::bytearray toBlob (bool & ok) const { ok = true; return _value ? pfs::bytearray(1, 1) : pfs::bytearray(1, 0); }
 };
 
 struct DLL_API unidata_long : public unidata
@@ -68,8 +68,8 @@ struct DLL_API unidata_long : public unidata
 	bool   toBool    (bool & ok) const { ok = true; return _value != long_t(0); }
 	long_t toLong    (bool & ok) const { ok = true; return _value; }
 	double toDouble  (bool & ok) const { ok = true; return double(_value); }
-	string toString  (bool & ok) const { ok = true; return string::number(_value); }
-	bytearray toBlob (bool & ok) const { ok = true; return bytearray(reinterpret_cast<const char *>(& _value), sizeof(long_t)); }
+	pfs::string toString  (bool & ok) const { ok = true; return pfs::string::number(_value); }
+	pfs::bytearray toBlob (bool & ok) const { ok = true; return pfs::bytearray(reinterpret_cast<const char *>(& _value), sizeof(long_t)); }
 };
 
 struct DLL_API unidata_double : public unidata
@@ -89,37 +89,38 @@ struct DLL_API unidata_double : public unidata
 		return long_t(0);
 	}
 	double toDouble  (bool & ok) const { ok = true; return _value; }
-	string toString  (bool & ok) const { ok = true; return string::number(_value); }
-	bytearray toBlob (bool & ok) const { ok = true; return bytearray(reinterpret_cast<const char *>(& _value), sizeof(double)); }
+	pfs::string toString  (bool & ok) const { ok = true; return pfs::string::number(_value); }
+	pfs::bytearray toBlob (bool & ok) const { ok = true; return pfs::bytearray(reinterpret_cast<const char *>(& _value), sizeof(double)); }
 };
 
 struct DLL_API unidata_string : public unidata
 {
-	string _value;
-	unidata_string   (const string & v) : _value(v) {}
+	pfs::string _value;
+	unidata_string   (const pfs::string & v) : _value(v) {}
 	unidata_string   (const unidata & d) : _value() { bool ok; _value = d.toString(ok); }
 	virtual unitype_type  type () const { return String; }
 	bool   toBool    (bool & ok) const
 	{
 		ok = !_value.isEmpty();
 		return ok
-				? _value != string("0") && _value != string("false")
+				? _value != pfs::string("0") && _value != pfs::string("false")
 				: false;
 	}
 	long_t toLong    (bool & ok) const { return _value.toLong(& ok, 10); }
 	double toDouble  (bool & ok) const { return _value.toDouble(& ok); }
-	string toString  (bool & ok) const { ok = true; return _value; }
-	bytearray toBlob (bool & ok) const
+	pfs::string toString  (bool & ok) const { ok = true; return _value; }
+	pfs::bytearray toBlob (bool & ok) const
 	{
 		ok = true;
-		return bytearray(_value.data(), _value.cend().distance(_value.cbegin()));
+		return pfs::bytearray(_value.data(), _value.cend().distance(_value.cbegin()));
 	}
 };
 
 struct DLL_API unidata_blob : public unidata
 {
-	bytearray _value;
-	unidata_blob (const bytearray & v) : _value(v) {}
+	pfs::bytearray _value;
+
+	unidata_blob (const pfs::bytearray & v) : _value(v) {}
 	unidata_blob (const unidata & d) : _value() { bool ok; _value = d.toBlob(ok); }
 	virtual unitype_type  type () const { return Blob; }
 	bool toBool  (bool & ok) const
@@ -131,8 +132,8 @@ struct DLL_API unidata_blob : public unidata
 	}
 	long_t toLong     (bool & ok) const;
 	double toDouble   (bool & ok) const;
-	string toString   (bool & ok) const;
-	bytearray toBlob  (bool & ok) const { ok = true; return _value; }
+	pfs::string toString   (bool & ok) const;
+	pfs::bytearray toBlob  (bool & ok) const { ok = true; return _value; }
 };
 
 
@@ -158,12 +159,12 @@ public:
 	unitype (ulong_t v)           : _pimpl (new unidata_long(long_t(v))) { }
 	unitype (float v)             : _pimpl (new unidata_double(double(v))) { }
 	unitype (double v)            : _pimpl (new unidata_double(v)) { }
-	unitype (const string & v)    : _pimpl (new unidata_string(v)) { }
-	unitype (const char * v)      : _pimpl (new unidata_blob(bytearray(v))) { }
-	unitype (const bytearray & v) : _pimpl (new unidata_blob(v)) { }
-	unitype (const time & v)      : _pimpl (new unidata_long(v.millis())) { }
-	unitype (const date & v)      : _pimpl (new unidata_long(v.julianDay())) { }
-	unitype (const datetime & v)  : _pimpl (new unidata_long(v.millisSinceEpoch())) { }
+	unitype (const pfs::string & v)    : _pimpl (new unidata_string(v)) { }
+	unitype (const char * v)           : _pimpl (new unidata_blob(pfs::bytearray(v))) { }
+	unitype (const pfs::bytearray & v) : _pimpl (new unidata_blob(v)) { }
+	unitype (const pfs::time & v)      : _pimpl (new unidata_long(v.millis())) { }
+	unitype (const pfs::date & v)      : _pimpl (new unidata_long(v.julianDay())) { }
+	unitype (const pfs::datetime & v)  : _pimpl (new unidata_long(v.millisSinceEpoch())) { }
 
 /*
 	template <typename T>
@@ -175,7 +176,7 @@ public:
 
 	//void setNull       ();
 	//void set           (const unidata & d) { _pimpl = d; }
-	void setFromString (const string & s);
+	void setFromString (const pfs::string & s);
 	void setBool       (bool b)     { shared_ptr<unidata> d(new unidata_boolean(b)); _pimpl.swap(d); }
 	void setChar       (char c)     { setLong(long_t(c)); }
 	void setByte       (byte_t n)   { setLong(long_t(n)); }
@@ -187,13 +188,13 @@ public:
 	void setULong      (ulong_t n)  { setLong(long_t(n)); }
 	void setFloat      (float n)    { shared_ptr<unidata> d(new unidata_double(n)); _pimpl.swap(d); }
 	void setDouble     (double n)   { shared_ptr<unidata> d(new unidata_double(n)); _pimpl.swap(d); }
-	void setUCChar     (ucchar ch)  { setLong(long_t(ch)); }
-	void setString     (const string & s) { shared_ptr<unidata> d(new unidata_string(s)); _pimpl.swap(d); }
-	void setBlob       (const char * blob, size_t sz) { setBlob(bytearray(blob, sz)); }
-	void setBlob       (const bytearray & blob) { shared_ptr<unidata> d(new unidata_blob(blob)); _pimpl.swap(d); }
-	void setTime       (const time & n) { shared_ptr<unidata> d(new unidata_long(n.millis())); _pimpl.swap(d); }
-	void setDate       (const date & n) { shared_ptr<unidata> d(new unidata_long(n.julianDay())); _pimpl.swap(d); }
-	void setDateTime   (const datetime & n) { shared_ptr<unidata> d(new unidata_long(n.millisSinceEpoch())); _pimpl.swap(d); }
+	void setUCChar     (pfs::ucchar ch)  { setLong(long_t(ch)); }
+	void setString     (const pfs::string & s) { shared_ptr<unidata> d(new unidata_string(s)); _pimpl.swap(d); }
+	void setBlob       (const char * blob, size_t sz) { setBlob(pfs::bytearray(blob, sz)); }
+	void setBlob       (const pfs::bytearray & blob) { shared_ptr<unidata> d(new unidata_blob(blob)); _pimpl.swap(d); }
+	void setTime       (const pfs::time & n) { shared_ptr<unidata> d(new unidata_long(n.millis())); _pimpl.swap(d); }
+	void setDate       (const pfs::date & n) { shared_ptr<unidata> d(new unidata_long(n.julianDay())); _pimpl.swap(d); }
+	void setDateTime   (const pfs::datetime & n) { shared_ptr<unidata> d(new unidata_long(n.millisSinceEpoch())); _pimpl.swap(d); }
 
 	unitype & operator = (bool b)                 { setBool(b);      return *this; }
 	unitype & operator = (char c)                 { setChar(c);      return *this; }
@@ -207,11 +208,11 @@ public:
 	unitype & operator = (float n)                { setFloat(n);     return *this; }
 	unitype & operator = (double n)               { setDouble(n);    return *this; }
 	unitype & operator = (ucchar ch)              { setUCChar(ch);   return *this; }
-	unitype & operator = (const string & s)       { setString(s);    return *this; }
-	unitype & operator = (const bytearray & blob) { setBlob(blob);   return *this; }
-	unitype & operator = (const time & time)      { setTime(time);   return *this; }
-	unitype & operator = (const date & date)      { setDate(date);   return *this; }
-	unitype & operator = (const datetime & dt)    { setDateTime(dt); return *this; }
+	unitype & operator = (const pfs::string & s)       { setString(s);    return *this; }
+	unitype & operator = (const pfs::bytearray & blob) { setBlob(blob);   return *this; }
+	unitype & operator = (const pfs::time & time)      { setTime(time);   return *this; }
+	unitype & operator = (const pfs::date & date)      { setDate(date);   return *this; }
+	unitype & operator = (const pfs::datetime & dt)    { setDateTime(dt); return *this; }
 
 	bool      toBool   (bool * pok = nullptr) const;
 	byte_t    toByte   (bool * pok = nullptr) const;
@@ -224,9 +225,9 @@ public:
 	ulong_t   toULong  (bool * pok = nullptr) const;
 	float     toFloat  (bool * pok = nullptr) const;
 	double    toDouble (bool * pok = nullptr) const;
-	ucchar    toUCChar  (bool * pok = nullptr) const;
-	string    toString (bool * pok = nullptr) const;
-	bytearray toBlob   (bool * pok = nullptr) const;
+	pfs::ucchar    toUCChar (bool * pok = nullptr) const;
+	pfs::string    toString (bool * pok = nullptr) const;
+	pfs::bytearray toBlob   (bool * pok = nullptr) const;
 
 };
 
