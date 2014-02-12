@@ -70,7 +70,7 @@ static bool __map_to_posix_priority (thread::priority_type priority, int * posix
                                                                 //                                         |
                                                                 //                                         v
     *posixPriorityPtr = prio_min + ((priority - lowestPriority) * (prio_max - prio_min) / (highestPriority - lowestPriority));
-    *posixPriorityPtr = PFS_MAX(prio_min, PFS_MIN(prio_max, *posixPriorityPtr));
+    *posixPriorityPtr = pfs::max(prio_min, pfs::min(prio_max, *posixPriorityPtr));
     return true;
 }
 #endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING

@@ -52,8 +52,8 @@ public:
 	bool isGood () const { return _errors.size() == 0; }
 	const pfs::string lastErrorText () const;
 
-	void logErrors () const;
-	friend std::ostream & operator << (std::ostream &, const errorable &);
+	void logErrors ();
+	friend std::ostream & operator << (std::ostream &, errorable &);
 };
 
 

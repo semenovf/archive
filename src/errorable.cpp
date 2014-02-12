@@ -41,7 +41,12 @@ void errorable::addSystemError (int errn, const pfs::string & caption)
 	}
 }
 
-void errorable::logErrors () const
+/**
+ * @brief Output errors to error logger.
+ *
+ * @details Errors automatically cleared after output.
+ */
+void errorable::logErrors ()
 {
 	if (_errors.size() > 0) {
 		pfs::vector<errorable::erritem>::const_iterator it = _errors.cbegin();
@@ -56,9 +61,21 @@ void errorable::logErrors () const
 			log::error(r);
 		}
 	}
+	clearErrors();
 }
 
-std::ostream & operator << (std::ostream & out, const errorable & er)
+/**
+ *
+ * @brief Output errors to output stream.
+ *
+ * @details Errors automatically cleared after output.
+ *
+ * @param out Stream reference to output errors.
+ * @param er Errorable object reference.
+ * @return Output stream reference.
+ *
+ */
+std::ostream & operator << (std::ostream & out, errorable & er)
 {
 	if (er._errors.size() > 0) {
 		pfs::vector<errorable::erritem>::const_iterator it = er._errors.cbegin();
@@ -71,6 +88,7 @@ std::ostream & operator << (std::ostream & out, const errorable & er)
 			}
 		}
 	}
+	er.clearErrors();
 	return out;
 }
 
