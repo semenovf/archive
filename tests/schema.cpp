@@ -7,51 +7,82 @@
 
 #include <cwt/test.hpp>
 #include <pfs/string.hpp>
+#include <pfs/bytearray.hpp>
+#include <pfs/vector.hpp>
 #include <cwt/debby/schema.hpp>
 
 // XXX Insertion in Sqlite3 is very slow (one transaction for each insertion), so it is good idea
 //     to wrap series of insertions with transaction.
 
-class B
+
+struct A
 {
-public:
-	pfs::string _name;
-	double      _weight;
-	int         _height;
-
-	template<class _Archive>
-	void persist (_Archive & ar)
-	{
-		ar & CWT_DEBBY_NVP(_name);
-		ar & CWT_DEBBY_NVP(_weight);
-		ar & CWT_DEBBY_NVP(_height);
-	}
+	char ch;
+	short sh;
+	int i;
 };
-/*
 
-class B{
-	friend class hiberlite::access;
-	template<class Archive>
-	void hibernate(Archive & ar)
-	{
-		ar & HIBERLITE_NVP(name);
-		ar & HIBERLITE_NVP(weight);
-		ar & HIBERLITE_NVP(height);
-	}
-
-	public:
-		string name;
-		double weight;
-		int height;
-};
-*/
-
-CWT_DEBBY_EXPORT_CLASS(B)
-
-static void create_drop_schema ()
+struct B
 {
+	pfs::string text;
+	pfs::bytearray blob;
+};
 
+struct C
+{
+	A a;
+	pfs::vector<B> b;
+};
+
+void create_drop_schema ()
+{
+	pfs::string sql_a, sql_b, sql_c;
+
+	// sqlite3:///tmp/test.db?mode=rwc
+	cwt::debby::database db(pfs::string("sqlite3:///tmp/test_schema.sqlite3"));
+
+	TEST_FAIL_X(db.opened(), db.logErrors());
+
+	db.begin();
+	// drop schema
+	TEST_OK_X(db.query(_l1("DROP TABLE IF EXISTS a")), db.logErrors());
+	TEST_OK_X(db.query(_l1("DROP TABLE IF EXISTS b")), db.logErrors());
+	TEST_OK_X(db.query(_l1("DROP TABLE IF EXISTS c")), db.logErrors());
+
+
+	pfs::string pk("id INTEGER PRIMARY KEY NOT NULL"); // mandatory implicit field
+	pfs::string table_name;
+
+	table_name = pfs::string("a");
+	sql_a << "CREATE TABLE IF NOT EXISTS " << table_name
+			<< "(" << pk
+			<< ", ch INTEGER NOT NULL"
+			<< ", sh INTEGER NOT NULL"
+			<< ", i  INTEGER NOT NULL"
+			<< ")";
+
+	table_name = pfs::string("b");
+	sql_b << "CREATE TABLE IF NOT EXISTS " << table_name
+			<< "(" << pk
+			<< ", text TEXT NOT NULL"
+			<< ", blob BLOB NOT NULL"
+			<< ", c_id INTEGER NOT NULL"
+			<< ", CONSTRAINT c_fk FOREIGN KEY (c_id) REFERENCES c (id)"
+			<< ");";
+
+	table_name = pfs::string("c");
+	sql_c << "CREATE TABLE IF NOT EXISTS " << table_name
+			<< "(" << pk
+			<< ", a_id INTEGER NOT NULL"
+			<< ", CONSTRAINT a_fk FOREIGN KEY (a_id) REFERENCES a (id)"
+			<< ");";
+
+	TEST_OK_X(db.query(sql_a), db.logErrors());
+	TEST_OK_X(db.query(sql_b), db.logErrors());
+	TEST_OK_X(db.query(sql_c), db.logErrors());
+	db.commit();
 }
+
 
 #ifdef __COMMENT__
 

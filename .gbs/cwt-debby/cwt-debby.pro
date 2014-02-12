@@ -6,7 +6,6 @@ INCLUDEPATH += ../../../pfs/include
 INCLUDEPATH += ../../../cwt-sys/include
 
 SOURCES += ../../src/*.cpp
-SOURCES += ../../src/hiberlite/*.cpp
 
 unix {
     LIBS += -lpfs

@@ -10,7 +10,8 @@
 #ifndef __CWT_DEBBY_SCHEMA_HPP__
 #define __CWT_DEBBY_SCHEMA_HPP__
 
-#include <cwt/debby/hiberlite/hiberlite.h>
+#include <cwt/debby/database.hpp>
+#include <cwt/debby/statement.hpp>
 
 namespace cwt { namespace debby {
 

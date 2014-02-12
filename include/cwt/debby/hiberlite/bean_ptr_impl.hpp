@@ -12,14 +12,16 @@ real_bean<C>::~real_bean()
 }
 
 template<class C>
-void real_bean<C>::destroy() {
-	if(forgotten)
+void real_bean<C>::destroy()
+{
+	if (forgotten)
 		return;
+
 	Database::dbDelete(key, *obj);
 	delete obj;
-	forgotten=true;
-	obj=NULL;
-	key.id=Database::NULL_ID;
+	forgotten = true;
+	obj = NULL;
+	key.id = Database::NULL_ID;
 }
 
 template<class C>

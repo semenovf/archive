@@ -36,6 +36,8 @@ protected:
 
 public:
 	database () : errorable(), _pimpl() {}
+	database (const pfs::string & uri) : errorable(), _pimpl() { open (uri); }
+	database (const char * uri) : errorable(), _pimpl() { open (_l1(uri)); }
 	database (const database & other) : errorable(), _pimpl(other._pimpl) {}
 	~database () { /*close();*/ }
 
