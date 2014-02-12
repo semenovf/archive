@@ -238,7 +238,7 @@ cwt::debby::database_data * s3_dbd_open(const pfs::string & path
 	}
 
     s3_flags = SQLITE_OPEN_URI;
-	s3_flag_mode = SQLITE_OPEN_READONLY | SQLITE_OPEN_CREATE;
+	s3_flag_mode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 
 	pfs::map<pfs::string, pfs::string>::const_iterator mode = params.find(pfs::string("mode"));
 
@@ -260,6 +260,7 @@ cwt::debby::database_data * s3_dbd_open(const pfs::string & path
 	if (rc != SQLITE_OK) {
 		if (!dbh_native) {
 			errstr = _u8(_Tr("Unable to allocate memory for database handler."));
+			errstr << _Tr("Internal error code: ") << rc;
 		} else {
 			switch( rc ) {
 				case SQLITE_CANTOPEN:
