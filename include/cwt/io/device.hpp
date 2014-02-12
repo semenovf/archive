@@ -61,7 +61,7 @@ public:
 	ssize_t      read     (char bytes[], size_t n) { return readBytes(bytes, n); }
 	ssize_t      read     (pfs::bytearray & ba, size_t n);
 	ssize_t      write    (const char bytes[], size_t n) { return writeBytes(bytes, n); }
-	ssize_t      write    (const pfs::bytearray & bytes, size_t n) { return writeBytes(bytes.data(), PFS_MIN(n, bytes.size())); }
+	ssize_t      write    (const pfs::bytearray & bytes, size_t n) { return writeBytes(bytes.data(), pfs::min(n, bytes.size())); }
 	ssize_t      write    (const pfs::bytearray & bytes) { return writeBytes(bytes.data(), bytes.size()); }
 };
 

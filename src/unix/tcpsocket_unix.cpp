@@ -59,7 +59,7 @@ ssize_t tcp_socket::readBytes (char bytes[], size_t n)
 
 	PFS_ASSERT(_pimpl->sockfd >= 0);
 
-	n = PFS_MIN(n, PFS_INT_MAX);
+	n = pfs::min(n, size_t(pfs::max_type<int>()));
 	r = recv(_pimpl->sockfd, bytes, n, 0);
 
 	if (r < 0) {
