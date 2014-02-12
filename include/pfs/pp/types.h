@@ -1,7 +1,7 @@
 #ifndef __CWT_TYPES_H__
 #define __CWT_TYPES_H__
 
-#include <pfs/limits.h>
+#include <pfs/pp/limits.h>
 
 #ifndef HAVE_NULLPTR
 #ifndef NULL
@@ -67,42 +67,19 @@ typedef uint32_t           uint_t;
 typedef ssize_t offset_t;
 
 #ifndef HAVE_INTPTR_T
-#if PFS_OS_BITS == 64
-	typedef long int          intptr_t;
-#else
-	typedef int               intptr_t;
-#endif
+#	if PFS_OS_BITS == 64
+		typedef long int          intptr_t;
+#	else
+		typedef int               intptr_t;
+#	endif
 #endif
 
 #ifndef HAVE_UINTPTR_T
-#if PFS_OS_BITS == 64
-	typedef unsigned long int uintptr_t;
-#else
-	typedef unsigned int      uintptr_t;
-#endif
-#endif
-
-#ifdef __COMMENT__
-/* Unicode code units and points*/
-typedef int16_t  uc_char16_t;
-typedef int32_t  uc_char32_t;
-typedef uint16_t uc_uchar16_t;
-typedef uint32_t uc_uchar32_t;
-typedef uint8_t  uc_u8_t;     /* UTF-8 code unit */
-typedef uint16_t uc_u16_t;    /* UTF-16 code unit */
-typedef uint32_t uc_u32_t;    /* UTF-32 code unit */
-
-#ifdef CWT_UC_CHAR32
-typedef uc_char32_t     uc_char_t;   /* unicode code point*/
-typedef uc_uchar32_t    uc_uchar_t;   /* unicode code point*/
-#	define CWT_UC_CHAR_MIN  ((uc_char_t)0)
-#	define CWT_UC_CHAR_MAX  0x10FFFF
-#else
-typedef uc_char16_t     uc_char_t;   /* unicode code point*/
-typedef uc_uchar16_t    uc_uchar_t;
-#	define CWT_UC_CHAR_MIN  ((uc_char_t)0)
-#	define CWT_UC_CHAR_MAX  0xFFFF
-#endif
+#	if PFS_OS_BITS == 64
+		typedef unsigned long int uintptr_t;
+#	else
+		typedef unsigned int      uintptr_t;
+#	endif
 #endif
 
 #undef uuid_t

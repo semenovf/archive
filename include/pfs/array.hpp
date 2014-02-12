@@ -157,15 +157,15 @@ array<T>* array<T>::clone () const
 template <typename T>
 void array<T>::copy (array &to, const array &from, size_t off_to, size_t off_from, size_t n)
 {
-	n = PFS_MIN(from.m_capacity - off_from, n);
-	n = PFS_MIN(to.m_capacity - off_to, n);
+	n = pfs::min(from.m_capacity - off_from, n);
+	n = pfs::min(to.m_capacity - off_to, n);
 	memcpy(to.m_head + off_to, from.m_head + off_from, n * sizeof(T));
 }
 
 template <typename T>
 void array<T>::copy (array &to, const T *from, size_t off_to, size_t off_from, size_t n)
 {
-	n = PFS_MIN(to.m_capacity - off_to, n);
+	n = pfs::min(to.m_capacity - off_to, n);
 	memcpy(to.m_head + off_to, from + off_from, n * sizeof(T));
 }
 
@@ -180,8 +180,8 @@ void array<T>::deep_copy (T * to, const T * from, size_t n)
 template <typename T>
 void array<T>::deep_copy (array &to, const array &from, size_t off_to, size_t off_from, size_t n)
 {
-	n = PFS_MIN(from.m_capacity - off_from, n);
-	n = PFS_MIN(to.m_capacity - off_to, n);
+	n = pfs::min(from.m_capacity - off_from, n);
+	n = pfs::min(to.m_capacity - off_to, n);
 	for (size_t i = off_from, j = off_to; n > 0; --n, ++i, ++j) {
 		to.m_head[i] = from.m_head[j];
 	}
@@ -190,7 +190,7 @@ void array<T>::deep_copy (array &to, const array &from, size_t off_to, size_t of
 template <typename T>
 void array<T>::deep_copy (array &to, const T *from, size_t off_to, size_t off_from, size_t n)
 {
-	n = PFS_MIN(to.m_capacity - off_to, n);
+	n = pfs::min(to.m_capacity - off_to, n);
 	for (size_t i = off_from, j = off_to; n > 0; --n, ++i, ++j) {
 		to.m_head[i] = from[j];
 	}
@@ -218,7 +218,7 @@ void array<T>::realloc (size_t new_capacity)
 	if (new_capacity != m_capacity) {
 		T *new_head = new T[new_capacity];
 		if (m_head) {
-			deep_copy(new_head, m_head, PFS_MIN(m_capacity, new_capacity));
+			deep_copy(new_head, m_head, pfs::min(m_capacity, new_capacity));
 			delete[] m_head;
 		}
 		m_head = new_head;
@@ -241,8 +241,8 @@ void array<T>::move (size_t off_to, size_t off_from, size_t n)
 {
 	PFS_ASSERT(off_to + n <= m_capacity && off_from + n <= m_capacity);
 
-	n = PFS_MIN(n, m_capacity - off_from);
-	n = PFS_MIN(n, m_capacity - off_to);
+	n = pfs::min(n, m_capacity - off_from);
+	n = pfs::min(n, m_capacity - off_to);
 
 	memmove(m_head + off_to, m_head + off_from, n * sizeof(T));
 }

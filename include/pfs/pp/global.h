@@ -1,10 +1,10 @@
 #ifndef __PFS_GLOBAL_H__
 #define __PFS_GLOBAL_H__
 
-#include <pfs/global_os.h>
-#include <pfs/global_cc.h>
-#include <pfs/global_endian.h>
-#include <pfs/global_bits.h>
+#include <pfs/pp/global_os.h>
+#include <pfs/pp/global_cc.h>
+#include <pfs/pp/global_endian.h>
+#include <pfs/pp/global_bits.h>
 #ifdef __cplusplus
 #	include <cstdlib>
 #	include <cstring> // for strerror
@@ -80,6 +80,7 @@
 #	endif
 #endif
 
+#ifdef __DEPRECATED__
 #if defined(PFS_CC_MSVC)/* && defined(__cplusplus)*/
 /* for suppressing warning 'C4996' in MSVC warning :
  * 		'posix_name': The POSIX name for this item is deprecated.
@@ -90,13 +91,26 @@
 #else
 #	define PFS_ISO_CPP_NAME(posix_name) posix_name
 #endif
+#endif
 
+//#define WORD_LOW_BYTE(WORD) ((char)((WORD)&0x00FF))
+//#define WORD_HI_BYTE(WORD)  ((char)(((WORD)>>8)&0x00FF))
 
-#define WORD_LOW_BYTE(WORD) ((char)((WORD)&0x00FF))
-#define WORD_HI_BYTE(WORD)  ((char)(((WORD)>>8)&0x00FF))
+/*
+*/
 
-#define PFS_MIN(a,b)  (((a) < (b)) ? (a) : (b))
-#define PFS_MAX(a,b)  (((a) > (b)) ? (a) : (b))
+#ifdef __cplusplus
+	namespace pfs {
+		template <typename _T>
+		inline _T min(_T a, _T b) { return a <= b ? a : b; }
+
+		template <typename _T>
+		inline _T max(_T a, _T b) { return a >= b ? a : b; }
+	}
+#else
+#	define min(a,b)  (((a) <= (b)) ? (a) : (b))
+#	define max(a,b)  (((a) >= (b)) ? (a) : (b))
+#endif
 
 #define _Tr(s)  s
 
@@ -108,12 +122,14 @@
 #	define __TFILE__ __FILE__
 #endif
 
+// TODO DEPRECATED {
 #define PFS_FPRINT(stream,prefix,str) fprintf(stream, "%s (%s[%d]): %s\n", prefix, __TFILE__, __LINE__, str)
 #define PFS_PRINT(prefix,str) PFS_FPRINT(stdout,prefix,str)
 #define PFS_INFO(str)         PFS_FPRINT(stdout,"INFO",str)
 #define PFS_WARN(str)         PFS_FPRINT(stderr,"WARN",str)
 #define PFS_ERROR(str)        PFS_FPRINT(stderr,"ERROR",str)
 #define PFS_FATAL(str)      { PFS_FPRINT(stderr,"FATAL",str); abort(); }
+// }
 
 #define PFS_VERIFY(expr) if (! (expr)) { PFS_ERROR(#expr); }
 #define PFS_VERIFY_ERRNO(expr,errn) if (! (expr)) {                    \
@@ -176,20 +192,18 @@
 #define PFS_UNUSED2(x1,x2)    ((void)(x1));((void)(x2))
 #define PFS_UNUSED3(x1,x2,x3) ((void)(x1));((void)(x2));((void)(x3))
 
-#define PFS_MALLOCT(T)    ((T*)malloc(sizeof(T)))
-#define PFS_MALLOCA(T,n)  ((T*)malloc(sizeof(T)*(n)))
-#define PFS_MALLOC(sz)    malloc(sz)
-#define PFS_FREE(v)       free(v)
-#define PFS_REALLOC(p,sz) realloc(p,sz);
+//#define PFS_MALLOCT(T)    ((T*)malloc(sizeof(T)))
+//#define PFS_MALLOCA(T,n)  ((T*)malloc(sizeof(T)*(n)))
+//#define PFS_MALLOC(sz)    malloc(sz)
+//#define PFS_FREE(v)       free(v)
+//#define PFS_REALLOC(p,sz) realloc(p,sz);
 
 /* Two-dimensional array macros */
+/*
 #define PFS_A2_NCOLS(a)          sizeof((a)[0])/sizeof((a)[0][0])
 #define PFS_A2_NROWS(a)          sizeof(a)/sizeof((a)[0])
 #define PFS_A2_ELEM(a,ncols,i,j) (a)[(i) * (ncols) + (j)]
-
-//#ifndef NULL
-//#	define NULL ((void*)0)
-//#endif
+*/
 
 #ifdef __cplusplus
 #	define PFS_DENY_COPY(Class)             \
@@ -197,17 +211,6 @@
 		Class(const Class &);               \
 		Class & operator = (const Class &);
 #endif
-
-#ifdef __cplusplus
-#	if __cplusplus >= 201103L
-#		define override override
-#		define final final
-#	else
-#		define override
-#		define final
-#	endif
-#endif
-
 
 #endif /* __PFS_GLOBAL_H__ */
 

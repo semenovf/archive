@@ -61,7 +61,16 @@
 
 #ifdef __cplusplus
 #	if __cplusplus >= 201103L
-#		define HAVE_NULLPTR 1
+#		define HAVE_NULLPTR          1
+#		define HAVE_KEYWORD_DECLTYPE 1
+#		define HAVE_KEYWORD_FINAL    1
+#		define HAVE_KEYWORD_OVERRIDE 1
+
+#		define override override
+#		define final final
+#	else
+#		define override
+#		define final
 #	endif
 #endif
 

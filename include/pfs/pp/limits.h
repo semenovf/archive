@@ -6,8 +6,8 @@
  * @brief
  */
 
-#ifndef __PFS_LIMITS_H__
-#define __PFS_LIMITS_H__
+#ifndef __PFS_PP_LIMITS_H__
+#define __PFS_PP_LIMITS_H__
 
 #define PFS_INT8_MAX   127
 #define PFS_INT8_MIN   (-127-1)
@@ -117,4 +117,4 @@ template<> inline double   min_type<double>   () { return double(PFS_DOUBLE_MIN)
 
 #endif
 
-#endif /* __PFS_LIMITS_H__ */
+#endif /* __PFS_PP_LIMITS_H__ */

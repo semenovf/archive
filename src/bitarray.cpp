@@ -302,7 +302,7 @@ bitarray& bitarray::operator &= (const bitarray & other)
 {
 	detach();
 
-    resize(PFS_MAX(size(), other.size()));
+    resize(pfs::max(size(), other.size()));
 
     uint32_t * a1 = _pimpl->a.data();
     const uint32_t * a2 = other._pimpl->a.constData();
@@ -332,7 +332,7 @@ bitarray& bitarray::operator &= (const bitarray & other)
 bitarray& bitarray::operator ^= (const bitarray& other)
 {
 	detach();
-    resize(PFS_MAX(size(), other.size()));
+    resize(pfs::max(size(), other.size()));
 
     uint32_t *a1 = _pimpl->a.data();
     const uint32_t *a2 = other._pimpl->a.constData();
@@ -358,7 +358,7 @@ bitarray& bitarray::operator ^= (const bitarray& other)
 bitarray& bitarray::operator |= (const bitarray & other)
 {
 	detach();
-    resize(PFS_MAX(size(), other.size()));
+    resize(pfs::max(size(), other.size()));
 
     uint32_t *a1 = _pimpl->a.data();
     const uint32_t *a2 = other._pimpl->a.constData();

@@ -12,9 +12,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <pfs/global.h>
-#include <pfs/config.h>
-#include <pfs/types.h>
-#include <pfs/limits.h>
+#include <pfs/pp/config.h>
+#include <pfs/pp/global.h>
+#include <pfs/pp/types.h>
+#include <pfs/pp/limits.h>
 
 #endif /* __PFS_H__ */

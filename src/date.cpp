@@ -30,7 +30,7 @@ static inline date __valid_date(int y, int m, int d)
     date r(y, m, 1);
 
     // set date according to the number of days in the specified month.
-    r.setDate(y, m, PFS_MIN(d, r.daysInMonth()));
+    r.setDate(y, m, pfs::min(d, r.daysInMonth()));
     return r;
 }
 
