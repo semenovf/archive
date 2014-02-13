@@ -1,4 +1,4 @@
-include($$(GBS_HOME)/common-dll.pri)
+include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET = cwt-dom
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../pfs/include
