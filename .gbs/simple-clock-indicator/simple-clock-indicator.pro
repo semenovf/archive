@@ -1,5 +1,4 @@
-
-include($$(GBS_HOME)/common-app.pri)
+include($$(GBS_HOME)/qmake/common-app.pri)
 TARGET = simple-clock-indicator
 #INCLUDEPATH += /usr/include/libappindicator3-0.1
 
