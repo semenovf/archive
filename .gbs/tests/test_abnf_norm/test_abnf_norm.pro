@@ -1,4 +1,4 @@
-include($$(GBS_HOME)/common-app.pri)
+include($$(GBS_HOME)/qmake/common-app.pri)
 TARGET = test_abnf_norm
 
 INCLUDEPATH += ../../../include

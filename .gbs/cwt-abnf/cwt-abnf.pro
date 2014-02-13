@@ -1,4 +1,4 @@
-include($$(GBS_HOME)/common-dll.pri)
+include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET=cwt-abnf
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../cwt-common/include
