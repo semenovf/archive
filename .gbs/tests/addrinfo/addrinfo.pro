@@ -1,6 +1,4 @@
-
-
-include($$(GBS_HOME)/common-test.pri)
+include($$(GBS_HOME)/qmake/common-test.pri)
 
 TARGET = test_io_addrinfo
 
