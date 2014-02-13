@@ -1,5 +1,4 @@
-
-include($$(GBS_HOME)/common-dll.pri)
+include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET = pfs
 INCLUDEPATH += ../../include
 
