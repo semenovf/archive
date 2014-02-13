@@ -6,7 +6,7 @@
  * @brief
  */
 
-#ifndef __CWT_FILESYSTEM_HPP__
+#ifndef __CWT_FS_HPP__
 #define __CWT_FS_HPP__
 
 #include <pfs/string.hpp>
@@ -26,8 +26,9 @@ public:
 	bool remove (const pfs::string & path);
 	bool unlink (const pfs::string & path) { return remove(path); }
 	bool simpleBackup (const pfs::string & path);
+	pfs::string tempDirectory ();
 };
 
 } // cwt
 
-#endif /* __CWT_FILESYSTEM_HPP__ */
+#endif /* __CWT_FS_HPP__ */

@@ -1,6 +1,4 @@
-
-
-include($$(GBS_HOME)/common-app.pri)
+include($$(GBS_HOME)/qmake/common-app.pri)
 
 TARGET = example_logger
 

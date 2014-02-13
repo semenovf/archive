@@ -68,4 +68,21 @@ bool fs::simpleBackup (const pfs::string & orig)
 	return fs::rename(orig, to);
 }
 
+pfs::string fs::tempDirectory ()
+{
+	char * r = getenv("TMPDIR");
+
+	if (!r) {
+		r = getenv("TMP");
+		if (!r) {
+			r = getenv("TEMP");
+			if (!r) {
+				r = getenv("TEMPDIR");
+			}
+		}
+	}
+
+	return r ? _u8(r) : _u8("/tmp");
+}
+
 } // cwt

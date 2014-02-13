@@ -79,4 +79,42 @@ bool fs::simpleBackup(const pfs::string &orig)
 	return fs::rename(orig, to);
 }
 
+// TODO should be tested
+pfs::string fs::tempDirectory ()
+{
+	TCHAR path[256];
+	TCHAR *ppath = & path[0];
+	DWORD sz = ::GetTempPath(256, ppath);
+	pfs::string r;
+
+	if (sz > 256) {
+		ppath = (TCHAR*)malloc(sz * sizeof(TCHAR));
+		sz = ::GetTempPath(sz * sizeof(TCHAR), ppath);
+	}
+
+	if (sz == 0) {
+		addSystemError(GetLastError(), _Tr("Unable to get temporary directory"));
+	} else {
+		// String returned by GetTempPath ends with a backslash, for example, "C:\TEMP\",
+		// so need to remove it.
+		if (ppath[sz - 1] == TCHAR('\\')) {
+			ppath[sz - 1] == TCHAR('\x0');
+#ifdef _UNICODE
+			r = pfs::string::fromUtf16(ppath);
+#else
+			r = pfs::string::fromLatin1(ppath);
+#endif
+		} else {
+			addError(_Tr("Failed to get temporary directory"));
+		}
+	}
+
+	if (ppath && ppath != & path[0]) {
+		free(ppath);
+	}
+
+	return r;
+}
+
+
 } // cwt
