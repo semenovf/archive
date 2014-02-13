@@ -35,7 +35,7 @@ public:
 
 	int exec () { return main_proc()(); }
 	int exec (main_proc & mainProc) { return mainProc(); }
-	int exec (cwt::sepaloid & sepaloid) { return sepaloid.exec(); }
+	int exec (cwt::sepaloid & sepaloid);
 
 //	const cwt::settings & settings() const { return _settings; }
 //	cwt::settings & settings() { return _settings; }
@@ -49,6 +49,20 @@ private:
 private:
 	static app * self;
 };
+
+inline int app::exec (cwt::sepaloid & sepaloid)
+{
+	int r = EXIT_FAILURE;
+
+    sepaloid.connectAll();
+    if (sepaloid.start() && sepaloid.isGood()) {
+   		r = sepaloid.exec();
+    }
+    sepaloid.logErrors();
+
+	return r;
+}
+
 
 } // cwt
 

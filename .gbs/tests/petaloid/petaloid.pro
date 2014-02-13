@@ -1,4 +1,4 @@
-include($$(GBS_HOME)/common-petaloid.pri)
+include($$(GBS_HOME)/qmake/common-petaloid.pri)
 
 TARGET = petaloid-tmpl
 INCLUDEPATH += ../../../include

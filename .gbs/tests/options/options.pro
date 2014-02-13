@@ -1,4 +1,4 @@
-include($$(GBS_HOME)/common-app-qt.pri)
+include($$(GBS_HOME)/qmake/common-app-qt.pri)
 
 TARGET = test_options
 INCLUDEPATH += ../../../include
