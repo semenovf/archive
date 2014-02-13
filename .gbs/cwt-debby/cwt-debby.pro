@@ -1,4 +1,4 @@
-include($$(GBS_HOME)/common-dll.pri)
+include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET = cwt-debby
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../include/hiberlite

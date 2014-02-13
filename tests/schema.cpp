@@ -9,6 +9,7 @@
 #include <pfs/string.hpp>
 #include <pfs/bytearray.hpp>
 #include <pfs/vector.hpp>
+#include <cwt/fs.hpp>
 #include <cwt/debby/schema.hpp>
 
 // XXX Insertion in Sqlite3 is very slow (one transaction for each insertion), so it is good idea
@@ -34,21 +35,59 @@ struct C
 	pfs::vector<B> b;
 };
 
-void create_drop_schema ()
-{
-	pfs::string sql_a, sql_b, sql_c;
 
+class abstract_bean
+{
+public:
+	virtual bool create () = 0;
+	virtual bool read () = 0;
+	virtual bool update () = 0;
+	virtual bool destroy () = 0;
+};
+
+template <typename _Class>
+class bean : public abstract_bean
+{
+public:
+	virtual ~bean () {}
+	virtual bool create () override;
+	virtual bool read () override;
+	virtual bool update () override;
+	virtual bool destroy () override;
+};
+
+void open_schema (cwt::debby::database & db)
+{
 	// sqlite3:///tmp/test.db?mode=rwc
-	cwt::debby::database db(pfs::string("sqlite3:///tmp/test_schema.sqlite3"));
+	pfs::string uri;
+	cwt::fs fs;
+	uri << "sqlite3://"
+		<< fs.tempDirectory()
+		<< "/test_schema.sqlite3";
+
+	db.open(uri);
 
 	TEST_FAIL_X(db.opened(), db.logErrors());
+}
+
+void drop_schema (cwt::debby::database & db)
+{
+	db.begin();
+	TEST_OK_X(db.query(_l1("DROP TABLE IF EXISTS a")), db.logErrors());
+	TEST_OK_X(db.query(_l1("DROP TABLE IF EXISTS b")), db.logErrors());
+	TEST_OK_X(db.query(_l1("DROP TABLE IF EXISTS c")), db.logErrors());
+	db.commit();
+}
+
+void create_schema (cwt::debby::database & db)
+{
+	pfs::string sql_a, sql_b, sql_c;
 
 	db.begin();
 	// drop schema
 	TEST_OK_X(db.query(_l1("DROP TABLE IF EXISTS a")), db.logErrors());
 	TEST_OK_X(db.query(_l1("DROP TABLE IF EXISTS b")), db.logErrors());
 	TEST_OK_X(db.query(_l1("DROP TABLE IF EXISTS c")), db.logErrors());
-
 
 	pfs::string pk("id INTEGER PRIMARY KEY NOT NULL"); // mandatory implicit field
 	pfs::string table_name;
@@ -66,8 +105,8 @@ void create_drop_schema ()
 			<< "(" << pk
 			<< ", text TEXT NOT NULL"
 			<< ", blob BLOB NOT NULL"
-			<< ", c_id INTEGER NOT NULL"
-			<< ", CONSTRAINT c_fk FOREIGN KEY (c_id) REFERENCES c (id)"
+//			<< ", c_id INTEGER NOT NULL"
+//			<< ", CONSTRAINT c_fk FOREIGN KEY (c_id) REFERENCES c (id)"
 			<< ");";
 
 	table_name = pfs::string("c");
@@ -77,204 +116,66 @@ void create_drop_schema ()
 			<< ", CONSTRAINT a_fk FOREIGN KEY (a_id) REFERENCES a (id)"
 			<< ");";
 
+	// Represented vector field in class C
+	pfs::string sql_b_alter;
+	sql_b_alter << "ALTER TABLE b ADD COLUMN"
+			<< " c_id INTEGER NOT NULL DEFAULT 0"
+			<< " CONSTRAINT c_fk REFERENCES c (id)";
+
 	TEST_OK_X(db.query(sql_a), db.logErrors());
 	TEST_OK_X(db.query(sql_b), db.logErrors());
 	TEST_OK_X(db.query(sql_c), db.logErrors());
+	TEST_OK_X(db.query(sql_b_alter), db.logErrors());
 	db.commit();
 }
 
-
-#ifdef __COMMENT__
-
-static bool populate_currency (const Vector<String> & columns, Record currency)
+void persist_data_a (cwt::debby::database & db)
 {
-	// ingore fits column 'id'
-	currency["code"]    = columns[1];
-	currency["name"]    = columns[2];
-	currency["symbol"]  = columns[3];
-	currency["country"] = columns[4];
-	return true;
-}
+	A a;
+	a.ch = 'A';
+	a.sh = pfs::max_type<short int>();
+	a.i  = pfs::min_type<int>();
 
-static bool populate_country (const Vector<String> & columns, Record country)
-{
-	// ingore fits column 'id'
-	country["code"]      = columns[1];
-	country["name"]      = columns[2];
-/*
-	country["latitude"]  = columns[3];
-	country["longitude"] = columns[4];
-*/
-	country["currency"]  = columns[5];
-	country["timezone"]  = columns[6];
+	pfs::string table_name = _l1("a");
+	pfs::string fields     = _l1("ch, sh, i");
+	pfs::string wildcards  = _l1("?,?,?");
 
-	return true;
-}
+	pfs::string sql;
+	sql << "INSERT INTO " << table_name << "("
+		<< fields
+		<< ") VALUES (" << wildcards << ")";
 
+	cwt::debby::statement sth = db.prepare(sql)
+			.bind(a.ch)
+			.bind(a.sh)
+			.bind(a.i);
 
-static bool traverse (DbHandler & dbh, )
-{
-	File csvFile(currencyCsvPath);
-	io::TextReader reader(csvFile);
-
-	if (!reader.device()->opened())
-		return false;
-
-	CsvReader csvReader(reader, UChar(','));
-
-	Vector<String> csvRecord;
-	int line = 0;
-
-	csvReader.skipLines(2); // ignore header
-	line += 2;
-
-	dbh.begin();
-
-	// id, code, name, symbol, country
-	while (!(csvRecord = csvReader.readRecord()).isEmpty()) {
-		++line;
-		if (csvRecord.size() != 5) {
-			Logger::error(_Fr("%s: Incomplete number of columns (expected 5) at %d")
-					% currencyCsvPath
-					% line);
-			return false;
-		}
-
-		currency["code"]    = csvRecord[1];
-		currency["name"]    = csvRecord[2];
-		currency["symbol"]  = csvRecord[3];
-		currency["country"] = csvRecord[4];
-
-		if (!currency.create(dbh)) {
-			dbh.rollback();
-			return false;
-		}
-
+	db.begin();
+	bool r;
+	TEST_OK_X((r = sth.exec()), sth.logErrors());
+	if (r) {
+		db.commit();
+	} else {
+		db.rollback();
 	}
-	dbh.commit();
-	Logger::info(_Fr("%d lines added") % (line - 2));
-
-	return true;
 }
 
-
-static bool __traverse_countries (DbHandler & dbh, Record & country)
+void persist_data_c (cwt::debby::database & db)
 {
-	File csvFile(countryCsvPath);
-	io::TextReader reader(csvFile);
-
-	if (!reader.device()->opened())
-		return false;
-
-	CsvReader csvReader(reader, UChar(','));
-	csvReader.setIgnoreLeadingWS(false);
-	csvReader.setIgnoreTrailingWS(false);
-	csvReader.useEndLine(String(1, '\n'));
-
-	Vector<String> csvRecord;
-	int line = 0;
-
-	csvReader.skipLines(2); // ignore header
-	line += 2;
-
-	dbh.begin();
-	// id,code,name,latitude,longitude,currency,timezone
-	while (!(csvRecord = csvReader.readRecord()).isEmpty()) {
-		++line;
-		if (csvRecord.size() != 7) {
-			Logger::error(_Fr("%s: Incomplete number of columns (expected 7) at %d")
-					% currencyCsvPath
-					% line);
-			return false;
-		}
-
-		country["code"]      = csvRecord[1];
-		country["name"]      = csvRecord[2];
-/*
-		country["latitude"]  = csvRecord[3];
-		country["longitude"] = csvRecord[4];
-*/
-		country["currency"]  = csvRecord[5];
-		country["timezone"]  = csvRecord[6];
-
-		if (!country.create(dbh)) {
-			dbh.rollback();
-			return false;
-		}
-
-	}
-	dbh.commit();
-	Logger::info(_Fr("%d lines added") % (line - 2));
-
-	return true;
+	PFS_UNUSED(db);
 }
-
-void test_deploy_drop ()
-{
-	Schema schema;
-	String uri = buildSqlite3Uri("test_schema", "/tmp", "mode=rwc");
-	DbHandlerPtr dbh(DbHandler::open(uri));
-	CWT_TEST_FAIL(dbh.get());
-	__prepare_schema(schema);
-	CWT_TEST_FAIL2(schema.deploy(*dbh), String(_Fr("Deploying '%s' ... ") % uri).utf8());
-	CWT_TEST_OK2(schema.drop(*dbh), String(_Fr("Dropping '%s' ... ") % uri).utf8());
-}
-
-void test_create ()
-{
-	Schema schema;
-	String uri = buildSqlite3Uri("test_schema", "/tmp", "mode=rwc");
-	DbHandlerPtr dbh(DbHandler::open(uri));
-	CWT_TEST_FAIL(dbh.get());
-	__prepare_schema(schema);
-	CWT_TEST_FAIL2(schema.deploy(*dbh), String(_Fr("Deploying '%s' ... ") % uri).utf8());
-	CWT_TEST_FAIL(schema.contains("currency"));
-	CWT_TEST_FAIL(schema.contains("country"));
-	CWT_TEST_OK2(__traverse_currencies(*dbh, schema["currency"]), _Tr("Populating currencies ... "));
-	CWT_TEST_OK2(__traverse_countries(*dbh, schema["country"]), _Tr("Populating countries ... "));
-}
-
-
-void test_destroy ()
-{
-	Schema schema;
-	String uri = buildSqlite3Uri("test_schema", "/tmp", "mode=rwc");
-	DbHandlerPtr dbh(DbHandler::open(uri));
-	CWT_TEST_FAIL(dbh.get());
-	__prepare_schema(schema);
-	CWT_TEST_FAIL2(schema.deploy(*dbh), String(_Fr("Deploying '%s' ... ") % uri).utf8());
-	CWT_TEST_FAIL(schema.contains("currency"));
-	CWT_TEST_FAIL(schema.contains("country"));
-	CWT_TEST_OK2(__traverse_currencies(*dbh, schema["currency"]), _Tr("Populating currencies ... "));
-	CWT_TEST_OK2(__traverse_countries(*dbh, schema["country"]), _Tr("Populating countries ... "));
-}
-
-void test_load ()
-{
-	Schema schema;
-	__prepare_schema(schema);
-
-	String uri = buildSqlite3Uri("test_schema", "/tmp", "mode=rwc");
-	CWT_TEST_FAIL2(schema.create(uri), String(_Fr("Deploying '%s' ... ") % uri).utf8());
-
-	DbHandlerPtr dbh(DbHandler::open(uri));
-	CWT_TEST_FAIL(dbh.get());
-
-	Schema peer;
-	CWT_TEST_FAIL(peer.load(*dbh));
-
-	CWT_TEST_OK2(peer.drop(*dbh), cwt::String(_Fr("Dropping '%s' ... ") % uri).utf8());
-}
-
-#endif
 
 int main (int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(1);
+	BEGIN_TESTS(12);
 
-	create_drop_schema();
+	cwt::debby::database db;
+	open_schema(db);
+	drop_schema(db);
+	create_schema(db);
+	persist_data_a(db);
 
     END_TESTS;
 }
