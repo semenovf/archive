@@ -15,6 +15,7 @@ GBS_HOME=`pwd`
 
 GIT_HOSTING_GITHUB=github
 GIT_HOSTING_BITBUCKET=bitbucket
+GIT_HOSTING_NPCPROM=npcprom
 
 # Restore current working directory
 cd $CWD
@@ -36,7 +37,7 @@ usage()
     echo "    -git | --git        - initialize git local repo"
     echo "    -git-hosting-YYY"
     echo "    | --git-hosting-YYY - push to remote git hosting,"
-    echo "                          where YYY = github | bitbucket"
+    echo "                          where YYY = github | bitbucket | npcprom"
 }
 
 username() 
@@ -124,6 +125,11 @@ create()
     echo "tar -cjvf \${PREFIX}-\${DATE}.tar.bz2 ./" >> backup.sh
     chmod +x backup.sh
 
+    # Prepare cppcheck.sh
+    echo "#!/bin/sh"              > cppcheck.sh
+    echo '$GBS_HOME/cppcheck.sh' >> cppcheck.sh
+    chmod +x cppcheck.sh
+
     # Prepare .gitignore
     echo "!.gitignore"                > .gitignore
     cat $GBS_HOME/template/gitignore >> .gitignore
@@ -138,13 +144,18 @@ create()
 	$GIT_EXE add -A .
 	$GIT_EXE commit -m "Initial commit"
 
-	if [ "$GIT_HOSTING" == "$GIT_HOSTING_GITHUB" ] ; then
+	if   [ "$GIT_HOSTING" == "$GIT_HOSTING_GITHUB" ] ; then
 	    $GIT_EXE remote add origin git@github.com:semenovf/${PROJECT}.git
 	    $GIT_EXE push -u origin master
 	elif [ "$GIT_HOSTING" == "$GIT_HOSTING_BITBUCKET" ] ; then
-	    $GIT_EXE remote add origin https://semenovf@bitbucket.org/semenovf/${PROJECT}.git
+	    #$GIT_EXE remote add origin https://semenovf@bitbucket.org/semenovf/${PROJECT}.git
+	    $GIT_EXE remote add origin git@bitbucket.org:semenovf/${PROJECT}.git
 	    $GIT_EXE push -u origin --all   # pushes up the repo and its refs for the first time
 	    $GIT_EXE push -u origin --tags  # pushes up any tags
+	elif [ "$GIT_HOSTING" == "$GIT_HOSTING_NPCPROM" ] ; then
+	    sh ../git.config.npcprom
+	    $GIT_EXE remote add origin git@gitlab:${PROJECT}.git
+	    $GIT_EXE push -u origin master
 	fi
     fi
 
@@ -169,6 +180,10 @@ while [ x$1 != x ] ; do
     -git-hosting-bitbucket | --git-hosting-bitbucket)
         GIT_OK=yes
         GIT_HOSTING=$GIT_HOSTING_BITBUCKET
+        ;;
+    -git-hosting-npcprom | --git-hosting-npcprom)
+        GIT_OK=yes
+        GIT_HOSTING=$GIT_HOSTING_NPCPROM
         ;;
     *)
         PROJECT=$1

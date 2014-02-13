@@ -1,7 +1,5 @@
-CWT_CONFIG=debug
-include($$(GBS_HOME)/common-dll.pri)
+include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET =
-
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../pfs/include
 INCLUDEPATH += ../../../cwt-sys/include
