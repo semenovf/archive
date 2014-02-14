@@ -129,13 +129,22 @@ void create_schema (cwt::debby::database & db)
 	db.commit();
 }
 
-void persist_data_a (cwt::debby::database & db)
+bool execStatement (cwt::debby::statement & sth)
 {
-	A a;
-	a.ch = 'A';
-	a.sh = pfs::max_type<short int>();
-	a.i  = pfs::min_type<int>();
+	bool r;
+	TEST_OK_X((r = sth.exec()), sth.logErrors());
+	return r;
+}
 
+long_t create (cwt::debby::statement & sth)
+{
+	return execStatement (sth)
+			? sth.lastId()
+			: 0;
+}
+
+long_t persist_data_a (const A & a, cwt::debby::database & db)
+{
 	pfs::string table_name = _l1("a");
 	pfs::string fields     = _l1("ch, sh, i");
 	pfs::string wildcards  = _l1("?,?,?");
@@ -150,32 +159,99 @@ void persist_data_a (cwt::debby::database & db)
 			.bind(a.sh)
 			.bind(a.i);
 
-	db.begin();
-	bool r;
-	TEST_OK_X((r = sth.exec()), sth.logErrors());
-	if (r) {
-		db.commit();
-	} else {
-		db.rollback();
-	}
+	return create(sth);
 }
 
-void persist_data_c (cwt::debby::database & db)
+long_t persist_data_b (const B & b, long_t c_id, cwt::debby::database & db)
 {
-	PFS_UNUSED(db);
+	pfs::string table_name = _l1("b");
+	pfs::string fields     = _l1("text, blob, c_id");
+	pfs::string wildcards  = _l1("?,?,?");
+
+	pfs::string sql;
+	sql << "INSERT INTO " << table_name << "("
+		<< fields
+		<< ") VALUES (" << wildcards << ")";
+
+	cwt::debby::statement sth = db.prepare(sql)
+			.bind(b.text)
+			.bind(b.blob)
+			.bind(c_id);
+
+	return create(sth);
+}
+
+long_t persist_data_c (const C & c, cwt::debby::database & db)
+{
+	long_t a_id = persist_data_a(c.a, db);
+
+	pfs::string table_name = _l1("c");
+	pfs::string fields     = _l1("a_id");
+	pfs::string wildcards  = _l1("?");
+
+	pfs::string sql;
+	sql << "INSERT INTO " << table_name << "("
+		<< fields
+		<< ") VALUES (" << wildcards << ")";
+
+	cwt::debby::statement sth = db.prepare(sql)
+			.bind(a_id);
+
+	long_t c_id = create(sth);
+
+	pfs::vector<B>::const_iterator it = c.b.cbegin();
+	pfs::vector<B>::const_iterator itEnd = c.b.cend();
+
+	for (; it != itEnd; ++it) {
+		TEST_OK(persist_data_b(*it, c_id, db));
+	}
+
+	return c_id;
+}
+
+void persist_data (cwt::debby::database & db)
+{
+	A a;
+	a.ch = 'A';
+	a.sh = pfs::max_type<short int>();
+	a.i  = pfs::min_type<int>();
+
+	A a1;
+	a1.ch = 'Z';
+	a1.sh = pfs::min_type<short int>();
+	a1.i  = pfs::max_type<int>();
+
+	B b1;
+	b1.text = _l1("Hello");
+	b1.blob = pfs::bytearray("World");
+
+	B b2;
+	b2.text = _l1("Bye");
+	b2.blob = pfs::bytearray("Somebody");
+
+	C c;
+	c.a = a1;
+	c.b.append(b1);
+	c.b.append(b2);
+
+	db.begin();
+	bool r = true;
+	TEST_OK(r &= persist_data_a(a, db));
+	TEST_OK(r &= persist_data_c(c, db));
+	db.end(r);
 }
 
 int main (int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(12);
+	BEGIN_TESTS(20);
 
 	cwt::debby::database db;
 	open_schema(db);
 	drop_schema(db);
 	create_schema(db);
-	persist_data_a(db);
+	persist_data(db);
 
     END_TESTS;
 }
