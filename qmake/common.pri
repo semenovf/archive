@@ -3,7 +3,7 @@ include(config.pri)
 
 debug: OBJECTS_DIR = debug/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU
 release: OBJECTS_DIR = release/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU
-DEFINED += CWT_TARGET_CPU_$$CWT_TARGET_CPU
+# not used: DEFINED += CWT_TARGET_CPU_$$CWT_TARGET_CPU
 
 unix {
 

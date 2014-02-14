@@ -1,5 +1,6 @@
-include(common-app.pri)
+include(common.pri)
 
+DESTDIR=$$CWT_DESTDIR_TEST
 INCLUDEPATH=$$(GBS_PDIR)/cwt-test/include
 
 unix {
