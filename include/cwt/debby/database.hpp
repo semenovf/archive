@@ -11,13 +11,13 @@
 #include <cwt/debby/dbd.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/pimpl.hpp>
-#include <cwt/errorable.hpp>
+#include <cwt/dl.hpp>
 
 namespace cwt { namespace debby {
 
 class statement;
 
-class database : public errorable
+class database : public cwt::dl
 {
 	pfs::shared_ptr<database_data> _pimpl;
 
@@ -35,10 +35,10 @@ protected:
 	//database (handler_data * p) : _pimpl(p, impl_deleter()) {}
 
 public:
-	database () : errorable(), _pimpl() {}
-	database (const pfs::string & uri) : errorable(), _pimpl() { open (uri); }
-	database (const char * uri) : errorable(), _pimpl() { open (_l1(uri)); }
-	database (const database & other) : errorable(), _pimpl(other._pimpl) {}
+	database () : cwt::dl(), _pimpl() {}
+	database (const pfs::string & uri) : cwt::dl(), _pimpl() { open (uri); }
+	database (const char * uri) : cwt::dl(), _pimpl() { open (_l1(uri)); }
+	database (const database & other) : cwt::dl(), _pimpl(other._pimpl) {}
 	~database () { /*close();*/ }
 
 	bool isNull () const { return !(_pimpl && _pimpl->_driver); }
