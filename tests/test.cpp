@@ -1,14 +1,24 @@
 #include <cwt/test.hpp>
 #include <pfs/string.hpp>
-#include <cwt/safeformat.hpp>
+//#include <cwt/safeformat.hpp>
 #include <cwt/fs.hpp>
 #include <cwt/debby/dbd.hpp>
 #include <cwt/debby/database.hpp>
 #include <cwt/debby/statement.hpp>
 
+inline pfs::string __db_uri ()
+{
+	pfs::string r;
+	cwt::fs fs;
+	r << "sqlite3://"
+		<< fs.tempDirectory()
+		<< "/cwt-debby-sqlite3.sqlite";
+	return r;
+}
+
 void test_assignment()
 {
-	pfs::string dburi("sqlite3:///tmp/test.db?mode=rwc");
+	pfs::string dburi(__db_uri());
 
 	int n = 1000;
 
@@ -63,20 +73,20 @@ void test_base()
 void test_sqlite3_collation()
 {
 	cwt::debby::database dbh;
-	TEST_FAIL(dbh.open(_l1("sqlite3:///tmp/test.db?mode=rwc")));
+	TEST_FAIL_X(dbh.open(__db_uri()), dbh.logErrors());
 
 	if(dbh.tableExists(_l1("t1"))) {
 		dbh.query(_l1("DROP TABLE IF EXISTS t1"));
 	}
 
-	TEST_OK(dbh.query(_l1(
+	TEST_FAIL_X(dbh.query(_l1(
 			"CREATE TABLE t1("
 			"    x INTEGER PRIMARY KEY,"
 			"    a,"                 /* collating sequence BINARY */
 			"    b COLLATE BINARY,"  /* collating sequence BINARY */
 			"    c COLLATE RTRIM,"   /* collating sequence RTRIM  */
 			"    d COLLATE NOCASE"   /* collating sequence NOCASE */
-			")")));
+			")")), dbh.logErrors());
 
 	cwt::debby::statement sth = dbh.prepare(_l1("INSERT INTO t1 VALUES(?,?,?,?,?)"));
 
@@ -265,7 +275,7 @@ void test_sqlite3_collation()
 	TEST_OK(result[2].toInt() == 3);
 	TEST_OK(result[3].toInt() == 1);
 
-	TEST_OK(dbh.query(_l1("DROP TABLE IF EXISTS t1")));
+	TEST_OK_X(dbh.query(_l1("DROP TABLE IF EXISTS t1")), dbh.logErrors());
 }
 
 
@@ -273,7 +283,7 @@ void test_columns()
 {
 	cwt::debby::database dbh;
 
-	TEST_FAIL(dbh.open(_l1("sqlite3:///tmp/test.db?mode=rwc")));
+	TEST_FAIL(dbh.open(__db_uri()));
 
 	if (dbh.tableExists(_l1("t2"))) {
 		dbh.query(_l1("DROP TABLE IF EXISTS t2"));
@@ -288,12 +298,13 @@ void test_columns()
 			"    d NUMERIC,"
 			"    e VARCHAR(10),"
 			"    f NOTYPE,"
-			"    g BOOLEAN"
+			"    g BOOLEAN,"
+			"    h BLOB"
 			")")));
 
 	pfs::vector<cwt::debby::column_meta> meta;
 	TEST_FAIL(dbh.meta(_l1("t2"), meta));
-	TEST_FAIL(meta.size() == 8);
+	TEST_FAIL(meta.size() == 9);
 
 	for (size_t i = 0 ; i < meta.size(); ++i) {
 		if (meta[i].column_name == _l1("x")) {
@@ -309,9 +320,11 @@ void test_columns()
 		} else if (meta[i].column_name == _l1("e")) {
 			TEST_OK(meta[i].column_type == cwt::debby::String);
 		} else if (meta[i].column_name == _l1("f")) {
-			TEST_OK(meta[i].column_type == cwt::debby::Blob);
+			TEST_OK(meta[i].column_type == cwt::debby::Null);
 		} else if (meta[i].column_name == _l1("g")) {
 			TEST_OK(meta[i].column_type == cwt::debby::Bool);
+		} else if (meta[i].column_name == _l1("h")) {
+			TEST_OK(meta[i].column_type == cwt::debby::Blob);
 		}
 
 /*
@@ -328,10 +341,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(5084);
-
-    cwt::fs fs;
-    fs.unlink(_l1("/tmp/test.db"));
+    BEGIN_TESTS(5085);
 
 	test_assignment();
     test_base();

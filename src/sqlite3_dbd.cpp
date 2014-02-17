@@ -78,7 +78,8 @@ static cwt::debby::column_type s3_dbd_stmt_column_type (cwt::debby::statement_da
 
 mappings::mappings ()
 {
-	_columnTypes.insert(_l1("BOOL"), cwt::debby::Bool);
+	_columnTypes.insert(_l1("BOOL")      , cwt::debby::Bool);
+	_columnTypes.insert(_l1("BOOLEAN")   , cwt::debby::Bool);
 
 	_columnTypes.insert(_l1("INT")       , cwt::debby::Integer);
 	_columnTypes.insert(_l1("INTEGER")   , cwt::debby::Integer);
@@ -103,7 +104,6 @@ mappings::mappings ()
 	_columnTypes.insert(_l1("VARYING")   , cwt::debby::String);
 	_columnTypes.insert(_l1("NCHAR")     , cwt::debby::String);
 	_columnTypes.insert(_l1("NATIVE")    , cwt::debby::String);
-	_columnTypes.insert(_l1(" CHAR")     , cwt::debby::String);
 	_columnTypes.insert(_l1("NVARCHAR")  , cwt::debby::String);
 	_columnTypes.insert(_l1("TEXT")      , cwt::debby::String);
 	_columnTypes.insert(_l1("CLOB")      , cwt::debby::String);
@@ -510,6 +510,14 @@ bool s3_dbd_meta (cwt::debby::database_data & dbh
 				cwt::debby::column_meta m;
 				m.column_name       = row[_l1("name")].toString();
 				m.native_type       = row[_l1("type")].toString();
+
+				// ignore parentheses (length or scale/prec)
+				pfs::string::const_iterator it = m.native_type.find("(", 0);
+				if (it != m.native_type.cend()) {
+					m.native_type = m.native_type.substr(m.native_type.cbegin(), it).trim();
+				} else {
+					m.native_type = m.native_type.trim();
+				}
 				m.column_type       = __mappings.columnType(m.native_type);
 
 				m.has_pk.first      = true;
@@ -563,7 +571,6 @@ void s3_dbd_stmt_close (cwt::debby::statement_data * sth)
 	if (sth) {
 		Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(sth);
 		sqlite3 * dbh_native = sqlite3_db_handle(s3_sth->_sth_native);
-		return ;
 
 		int rc = sqlite3_finalize(s3_sth->_sth_native);
 
