@@ -5,7 +5,7 @@ void test_basic ()
 {
 	cwt::dom::document doc;
 	doc.createElement(_l1("html"));
-
+	TEST_OK(true == true);
 }
 
 int main(int argc, char *argv[])
