@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
 	typedef int (*dl_test_fn)(void);
 	dl_test_fn dltest;
 
+	dl.addSearchPath(pfs::string("."));
+	dl.addSearchPath(pfs::string(".."));
 	dlhandle = dl.open(dlname);
 	if (!dlhandle) {
 		std::cerr << dl.lastErrorText() << std::endl;

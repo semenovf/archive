@@ -4,69 +4,33 @@
 
 namespace cwt {
 
-inline bool __is_absolute_path (const pfs::string & path)
-{
-	static pfs::string __disks("abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-
-	if ( path.isEmpty()) {
-		return false;
-	}
-
-	if (path.startsWith(pfs::string("\\"))) {
-		return true;
-	}
-
-	if (path.length() > 2
-			&& __disks.find(pfs::string(1, path[0])) == __disks.cbegin()
-			&& path[1] == pfs::ucchar(':')) {
-		return true;
-	}
-
-	return false;
-}
-
-
 dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool global, bool resolve)
 {
 	static pfs::mutex __mutex;
 	pfs::auto_lock<> locker(&__mutex);
 
-	dl::handle h = NULL;
+	dl::handle h = nullptr;
 
 	DWORD dwFlags = 0;
 	PFS_UNUSED(global);
 
-	realPath.clear();
 	cwt::fs fs;
+	realPath = searchFile(path);
 
-	if (!fs.exists(path)) {
-		if (!__is_absolute_path(path)) {
-			pfs::vector<pfs::string>::const_iterator it = searchPath.cbegin();
-			pfs::vector<pfs::string>::const_iterator itEnd = searchPath.cend();
-			while (it != itEnd) {
-				realPath = *it + pfs::string("/") + path;
-				if (!fs.exists(realPath))
-					break;
-				++it;
-			}
+	if (!realPath.isEmpty()) {
+		if (!resolve)
+			dwFlags |= DONT_RESOLVE_DLL_REFERENCES;
+
+		h = LoadLibraryEx(realPath.toUtf16().data(), NULL, dwFlags);
+
+		if( !h ) {
+			pfs::string errcaption;
+			errcaption << path << ": "
+					<< _Tr("failed to open dynamic library");
+			addSystemError(int_t(GetLastError()), errcaption);
+		} else {
+		   /*use the result in a call to GetProcAddress*/
 		}
-	}
-
-	if (realPath.isEmpty())
-		realPath = path;
-
-	if (!resolve)
-		dwFlags |= DONT_RESOLVE_DLL_REFERENCES;
-
-	h = LoadLibraryEx(realPath.toUtf16().data(), NULL, dwFlags);
-
-	if( !h ) {
-		pfs::string errcaption;
-		errcaption << path << ": "
-				<< _Tr("failed to open dynamic library");
-		addSystemError(int_t(GetLastError()), errcaption);
-	} else {
-	   /*use the result in a call to GetProcAddress*/
 	}
 
 	return h;
@@ -74,7 +38,7 @@ dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool glob
 
 dl::symbol dl::ptr (dl::handle h, const char *symname)
 {
-	dl::symbol p = NULL;
+	dl::symbol p = nullptr;
 
 	PFS_ASSERT(symname);
 

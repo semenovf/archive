@@ -40,6 +40,11 @@ public:
 	typedef void * symbol;
 #endif
 
+private:
+	static pfs::vector<pfs::string> globalSearchPath;
+	pfs::vector<pfs::string> searchPath;
+	pfs::map<pfs::string, handle> plugins;
+
 public:
 	dl () {};
 	handle open (const pfs::string & path
@@ -53,15 +58,16 @@ public:
 	void   close           (handle h);
 	pfs::string buildDlFileName (const pfs::string & basename);
 	bool   find            (const pfs::string & path, pfs::string & realPath);
-	void   addSearchPath   (const pfs::string & dir) { searchPath.append(dir); }
 	void   clearSearchPath () { searchPath.clear(); }
 
 	bool   pluginOpen  (const pfs::string & name, const pfs::string & path, void * pluggable);
 	bool   pluginClose (const pfs::string & name, void * pluggable);
 
+	void   addSearchPath   (const pfs::string & dir) { searchPath.append(dir); }
+	static void addGlobalSearchPath   (const pfs::string & dir) { globalSearchPath.append(dir); }
+
 private:
-	pfs::vector<pfs::string> searchPath;
-	pfs::map<pfs::string, handle> plugins;
+	pfs::string searchFile (const pfs::string & filename);
 };
 
 } // cwt

@@ -2,55 +2,28 @@
 #include <pfs/mt.hpp>
 #include <sys/stat.h>
 
-/* TODO need error reporting */
-
 namespace cwt {
-
-inline bool __file_exists (const pfs::string & path)
-{
-	struct stat st;
-	return ( stat(path.c_str(), &st ) == 0 );
-}
-
-inline bool __is_absolute_path (const pfs::string & path)
-{
-	return path.startsWith(pfs::string("/"));
-}
 
 dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool global, bool resolve)
 {
 	static pfs::mutex __mutex;
 	pfs::auto_lock<> locker(& __mutex);
 
-	dl::handle h = NULL;
+	dl::handle h = nullptr;
 
-	realPath.clear();
+	realPath = searchFile(path);
 
-	if (!__file_exists(path)) {
-		if (!__is_absolute_path(path)) {
-			pfs::vector<pfs::string>::const_iterator it = searchPath.cbegin();
-			pfs::vector<pfs::string>::const_iterator itEnd = searchPath.cend();
-			while (it != itEnd) {
-				realPath = *it + pfs::string("/") + path;
-				if (!__file_exists(realPath))
-					break;
-				++it;
-			}
+	if (!realPath.isEmpty()) {
+		dlerror(); /* clear error */
+		h = dlopen(realPath.c_str(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ));
+		if (!h) {
+			pfs::string errstr;
+			errstr << path << " (" << realPath << "): "
+					<< _Tr("failed to open dynamic library")
+					<< ": "
+					<< pfs::string::fromUtf8(dlerror());
+			addError(errstr);
 		}
-	}
-
-	if (realPath.isEmpty())
-		realPath = path;
-
-	dlerror(); /* clear error */
-	h = dlopen(realPath.c_str(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ));
-	if (!h) {
-		pfs::string errstr;
-		errstr << path << " (" << realPath << "): "
-				<< _Tr("failed to open dynamic library")
-				<< ": "
-				<< pfs::string::fromUtf8(dlerror());
-		addError(errstr);
 	}
 	return h;
 }

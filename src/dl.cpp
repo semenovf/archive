@@ -1,6 +1,49 @@
 #include "../include/cwt/dl.hpp"
+#include "../../include/cwt/fs.hpp"
 
 namespace cwt {
+
+pfs::vector<pfs::string> dl::globalSearchPath;
+
+/**
+ * @brief Searches file in directories added by addSearchPath()
+ *
+ * @param filename
+ * @param realPath
+ * @return
+ */
+pfs::string dl::searchFile (const pfs::string & filename)
+{
+	cwt::fs fs;
+
+	if (fs.exists(filename)) {
+		return pfs::string(filename);
+	}
+
+	if (!fs.isAbsolute(filename)) {
+		pfs::vector<pfs::string>::const_iterator it = searchPath.cbegin();
+		pfs::vector<pfs::string>::const_iterator itEnd = searchPath.cend();
+		while (it != itEnd) {
+			pfs::string r = *it + fs.separator() + filename;
+			if (fs.exists(r))
+				return r;
+			++it;
+		}
+
+		it = globalSearchPath.cbegin();
+		itEnd = globalSearchPath.cend();
+		while (it != itEnd) {
+			pfs::string r = *it + fs.separator() + filename;
+			if (fs.exists(r))
+				return r;
+			++it;
+		}
+
+	}
+
+	return pfs::string();
+}
+
 
 /**
  * @fn pfs::string Dl::buildDlFileName (const pfs::string &basename)
