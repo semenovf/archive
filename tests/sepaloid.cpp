@@ -149,14 +149,15 @@ int main(int argc, char *argv[])
     LocalPetaloidDetector * detector = new LocalPetaloidDetector;
 
     cwt::sepaloid sepaloid(app_mapping, sizeof(app_mapping)/sizeof(app_mapping[0]));
-    TEST_OK(sepaloid.registerLocalPetaloid(emitter));
-    TEST_OK(sepaloid.registerLocalPetaloid(detector));
-    TEST_OK(sepaloid.registerPetaloidForPath(_u8("libpetaloid-tmpl.so")));
+    TEST_OK_X(sepaloid.registerLocalPetaloid(emitter), sepaloid.logErrors());
+    TEST_OK_X(sepaloid.registerLocalPetaloid(detector), sepaloid.logErrors());
+    TEST_OK_X(sepaloid.registerPetaloidForPath(_u8("../libpetaloid-tmpl.so")), sepaloid.logErrors());
     sepaloid.addSearchPath(_u8("."));
-    TEST_OK(sepaloid.registerPetaloidForName(_u8("petaloid-tmpl")));
+    sepaloid.addSearchPath(_u8(".."));
+    TEST_OK_X(!sepaloid.registerPetaloidForName(_u8("petaloid-tmpl")), sepaloid.logErrors());
     sepaloid.connectAll();
 
-    TEST_FAIL(sepaloid.count() == 4);
+    TEST_OK(sepaloid.count() == 3);
     cwt::sepaloid::const_iterator it = sepaloid.cbegin();
     cwt::sepaloid::const_iterator itEnd = sepaloid.cend();
 

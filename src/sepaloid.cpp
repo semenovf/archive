@@ -86,13 +86,19 @@ petaloid * sepaloid::registerPetaloidForName (const pfs::string & name, const ch
 		return registerPetaloidForPath(realPath, pname, arg, argv);
 	}
 
-	this->addError(_Fr("petaloid not found by specified name or may be inconsistent: %s") % name);
+	this->addError(_Fr("%s: petaloid not found by specified name or may be inconsistent") % name);
 	return nullptr;
 }
 
 bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dtor_t dtor)
 {
 	int nemitters, ndetectors;
+
+	if (_petaloids.find(petaloid._name) != _petaloids.cend()) {
+		this->addError(_Fr("%s: petaloid already registered") % petaloid._name);
+		return false;
+	}
+
 	const emitter_mapping * emitters = petaloid.getEmitters(& nemitters);
 	const detector_mapping * detectors = petaloid.getDetectors(& ndetectors);
 

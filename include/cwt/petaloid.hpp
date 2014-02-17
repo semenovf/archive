@@ -50,7 +50,7 @@ public:
 	virtual bool onStart () { return true; }  // call from sepaloid::start()
 	virtual bool onFinish () { return true; } // call from sepaloid::finish()
 
-	static void defaultDtor (petaloid *p) { PFS_ASSERT(p); delete p; }
+	static void defaultDtor (petaloid * p) { PFS_ASSERT(p); delete p; }
 
 public: /*signal*/
 	cwt::signal2<const pfs::string &, bool &> petaloidRegistered;
