@@ -1,6 +1,5 @@
 #include <cwt/test.hpp>
 #include <pfs/string.hpp>
-//#include <cwt/safeformat.hpp>
 #include <cwt/fs.hpp>
 #include <cwt/debby/dbd.hpp>
 #include <cwt/debby/database.hpp>
@@ -343,6 +342,8 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
     BEGIN_TESTS(5085);
 
+	cwt::debby::database::addGlobalSearchPath(pfs::string("."));
+	cwt::debby::database::addGlobalSearchPath(pfs::string(".."));
 	test_assignment();
     test_base();
     test_sqlite3_collation();
