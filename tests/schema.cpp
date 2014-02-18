@@ -247,8 +247,8 @@ int main (int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(20);
 
-	cwt::dl::addGlobalSearchPath(pfs::string("."));
-	cwt::dl::addGlobalSearchPath(pfs::string(".."));
+	cwt::debby::database::addGlobalSearchPath(pfs::string("."));
+	cwt::debby::database::addGlobalSearchPath(pfs::string(".."));
 	cwt::debby::database db;
 	open_schema(db);
 	drop_schema(db);
