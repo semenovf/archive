@@ -80,3 +80,46 @@ void test_dom ()
 
 	std::cout << xmlDoc << std::endl;
 }
+
+
+struct TraverseData
+{
+	int nodeCount;
+	int balance;
+	int indent;
+
+	TraverseData() : nodeCount(0), balance(0), indent(0) {}
+};
+
+static void __on_start (const cwt::dom::node & n, void * userData)
+{
+	TraverseData * d = static_cast<TraverseData *>(userData);
+	std::cout << std::string(d->indent * 4, ' ') << '<' <<  n.nodeName() << '>' << std::endl;
+	++d->nodeCount;
+	++d->balance;
+	++d->indent;
+}
+
+static void __on_end (const cwt::dom::node & n, void * userData)
+{
+	TraverseData * d = static_cast<TraverseData *>(userData);
+	--d->balance;
+	--d->indent;
+	std::cout << std::string(d->indent * 4, ' ') << "</" <<  n.nodeName() << '>' << std::endl;
+}
+
+void test_traverse ()
+{
+	cwt::xml::dom xmlDom;
+	cwt::dom::document xmlDoc = xmlDom.createDocument(_u8(xml_source));
+
+	if (!xmlDom.isError())
+		xmlDom.logErrors();
+
+	TraverseData userData;
+	xmlDom.traverse(xmlDoc, __on_start, __on_end, & userData);
+
+	TEST_OK(userData.nodeCount == 116);
+	TEST_OK(userData.balance == 0);
+	//std::cout << "userData.nodeCount = " << userData.nodeCount << std::endl;
+}

@@ -2,7 +2,8 @@
 #include <cwt/xml/sax.hpp>
 #include <iostream>
 
-extern void test_dom();
+extern void test_dom ();
+extern void test_traverse ();
 
 //"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n"
 
@@ -171,10 +172,11 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(19);
+    BEGIN_TESTS(21);
 
     test_basic();
     test_dom();
+    test_traverse();
 
     END_TESTS;
 

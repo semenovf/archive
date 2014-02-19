@@ -39,13 +39,15 @@ cwt::dom::document dom::createDocument (const pfs::string & xml_source)
 	return h._doc->createDocument(); // this call is safe: document implementation '_doc' is dynamically allocated.
 }
 
-void document_builder::startElement (const pfs::string & tagname, const pfs::map<pfs::string, pfs::string> & atts)
+void document_builder::startElement (const pfs::string & nsURI, const pfs::string & localName, const pfs::map<pfs::string, pfs::string> & atts)
 {
     cwt::dom::node_impl * n;
 
-    // TODO need to support namespace (createElementNS)
+    if (nsURI.isEmpty())
+    	n = _doc->createElement(localName);
+    else
+    	n = _doc->createElementNS(nsURI, localName);
 
-    n = _doc->createElement(tagname);
     PFS_ASSERT(n);
     _node->appendChild(n);
     _node = n;
@@ -62,7 +64,7 @@ void document_builder::startElement (const pfs::string & tagname, const pfs::map
     }
 }
 
-void document_builder::endElement (const pfs::string & /*tagname*/)
+void document_builder::endElement (const pfs::string & /*nsURI*/, const pfs::string & /*localName*/)
 {
     PFS_ASSERT(_node && _node != _doc);
     _node = _node->parent();
@@ -169,5 +171,32 @@ void document_builder::notationDecl (
     n->ref.deref();
     _doc->doctype()->appendChild(n);
 }
+
+
+void dom::traverse (const cwt::dom::node & beginNode
+		, void (* onStart) (const cwt::dom::node & n, void * d)
+		, void (* onEnd) (const cwt::dom::node & n, void * d)
+		, void * userData)
+{
+	if (!beginNode.pimpl())
+		return;
+
+	cwt::dom::nodelist children = beginNode.childNodes();
+
+	// No children
+	if (!children.size())
+		return;
+
+	for (size_t i = 0; i < children.size(); ++i) {
+		if (onStart)
+			onStart(children.item(i), userData);
+
+		traverse(children.item(i), onStart, onEnd, userData);
+
+		if (onEnd)
+			onEnd(children.item(i), userData);
+	}
+}
+
 
 }} // cwt::xml

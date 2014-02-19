@@ -26,6 +26,8 @@ class reader::impl
 {
 	friend class reader;
 
+	static const XML_Char NamespaceSeparator;
+
 	XML_Parser _parser;
 	handlers * _handlers;
 	pfs::function<bool (int, int)> _acceptVersion;
@@ -116,6 +118,9 @@ public:
 	        , const XML_Char * base
 	        , const XML_Char * systemId
 	        , const XML_Char * publicId);
+
+private:
+	static void split (const XML_Char * str, pfs::string & nsURI, pfs::string & localName);
 };
 
 inline reader::impl::~impl ()

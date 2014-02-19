@@ -7,6 +7,8 @@
 
 namespace cwt { namespace xml {
 
+const XML_Char reader::impl::NamespaceSeparator(0xFF);
+
 PFS_PIMPL_DEF(reader, impl);
 
 static bool __accept_version (int, int)
@@ -19,7 +21,7 @@ reader::impl::impl ()
 	, _handlers(nullptr)
 	, _acceptVersion(__accept_version)
 {
-	_parser = XML_ParserCreateNS("UTF-8", '\xFF');
+	_parser = XML_ParserCreateNS("UTF-8", NamespaceSeparator);
 	PFS_ASSERT(_parser);
 
     XML_SetStartElementHandler(_parser, xml_startElementHandler);
@@ -53,10 +55,31 @@ reader::impl::impl ()
     XML_SetUnparsedEntityDeclHandler(_parser, xml_unparsedEntityDeclHandler);
     XML_SetNotationDeclHandler(_parser, xml_notationDeclHandler);
 
-
 //    XML_SetNotStandaloneHandler(_parser);
 	XML_SetUserData(_parser, this);
 }
+
+void reader::impl::split (const XML_Char * str, pfs::string & nsURI, pfs::string & localName)
+{
+	nsURI.clear();
+	localName.clear();
+
+	const XML_Char * p = str;
+	const XML_Char * pbegin = str;
+	const XML_Char * pend = str + strlen(p);
+
+	while (p != pend) {
+		if (*p == NamespaceSeparator) {
+			nsURI = pfs::string::fromUtf8(pbegin, p-pbegin);
+			pbegin = ++p;
+			break;
+		}
+		++p;
+	}
+
+	localName = pfs::string::fromUtf8(pbegin);
+}
+
 
 bool reader::impl::parse (const pfs::string & src)
 {
@@ -75,7 +98,11 @@ void XMLCALL reader::impl::xml_startElementHandler (
 	reader::impl * p = static_cast<reader::impl *>(readerImpl);
 
 	if (p->_handlers) {
-		pfs::string tagname = pfs::string::fromUtf8(name);
+		pfs::string nsURI;
+		pfs::string localName;
+
+		split(name, nsURI, localName);
+
 		pfs::map<pfs::string, pfs::string> attributes;
 
 		while (*atts) {
@@ -84,7 +111,7 @@ void XMLCALL reader::impl::xml_startElementHandler (
 			attributes.insert(attname, attvalue);
 		}
 
-		p->_handlers->startElement(tagname, attributes);
+		p->_handlers->startElement(nsURI, localName, attributes);
 	}
 }
 
@@ -94,8 +121,11 @@ void XMLCALL reader::impl::xml_endElementHandler (
 {
 	reader::impl * p = static_cast<reader::impl *>(readerImpl);
 	if (p->_handlers) {
-		pfs::string tagname = pfs::string::fromUtf8(name);
-		p->_handlers->endElement(tagname);
+		pfs::string nsURI;
+		pfs::string localName;
+		split(name, nsURI, localName);
+
+		p->_handlers->endElement(nsURI, localName);
 	}
 }
 

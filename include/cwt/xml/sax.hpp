@@ -24,8 +24,8 @@ public:
 
 	virtual void beginDocument () {}
 	virtual void endDocument (bool /*success*/) {}
-	virtual void startElement (const pfs::string & /*tagname*/, const pfs::map<pfs::string, pfs::string> & /*atts*/) {}
-	virtual void endElement (const pfs::string & /*tagname*/) {}
+	virtual void startElement (const pfs::string & /*nsURI*/, const pfs::string & /*tagname*/, const pfs::map<pfs::string, pfs::string> & /*atts*/) {}
+	virtual void endElement (const pfs::string & /*nsURI*/, const pfs::string & /*tagname*/) {}
 	virtual void characterData (const pfs::string & /*text*/) {}
 	virtual void processingInstruction (const pfs::string & /*target*/, const pfs::string & /*data*/) {}
 	virtual void comment (const pfs::string & /*text*/) {}

@@ -46,8 +46,8 @@ public:
 	}
 	virtual ~document_builder () {}
 
-	virtual void startElement (const pfs::string & tagname, const pfs::map<pfs::string, pfs::string> & atts);
-	virtual void endElement (const pfs::string & tagname);
+	virtual void startElement (const pfs::string & nsURI, const pfs::string & localName, const pfs::map<pfs::string, pfs::string> & atts);
+	virtual void endElement (const pfs::string & nsURI, const pfs::string & localName);
 	virtual void characterData (const pfs::string & text);
 	virtual void processingInstruction (const pfs::string & target, const pfs::string & data);
 	virtual void comment (const pfs::string & text);
