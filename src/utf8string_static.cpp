@@ -21,6 +21,9 @@ namespace pfs {
  */
 utf8string utf8string::fromLatin1 (const char * latin1, size_t length, ConvertState * state)
 {
+	if (!latin1)
+		return utf8string();
+
 	utf8string r;
 	const char * end = latin1 + length;
 	size_t invalidChars = 0;
@@ -54,11 +57,17 @@ utf8string utf8string::fromLatin1 (const char * latin1, size_t length, ConvertSt
 
 utf8string utf8string::fromLatin1 (const char * latin1, ConvertState * state)
 {
+	if (!latin1)
+		return utf8string();
+
 	return fromLatin1(latin1, strlen(latin1), state);
 }
 
 utf8string utf8string::fromUtf8 (const char * utf8, ConvertState * state)
 {
+	if (!utf8)
+		return utf8string();
+
 	return fromUtf8(utf8, strlen(utf8), state);
 }
 
@@ -72,6 +81,9 @@ utf8string utf8string::fromUtf8 (const char * utf8, ConvertState * state)
  */
 utf8string utf8string::fromUtf8 (const char * utf8, size_t size, ConvertState * state)
 {
+	if (!utf8)
+		return utf8string();
+
 	utf8string r;
 	const char * cursor = utf8;
 	const char * end = utf8 + size;
@@ -142,8 +154,10 @@ static const uint32_t __halfBase = uint32_t(0x0010000);
 
 utf8string utf8string::fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state)
 {
-	utf8string r;
+	if (!utf16)
+		return utf8string();
 
+	utf8string r;
 	size_t invalidChars = 0;
 	size_t nremain = 0;
 	const uint16_t * source = utf16;

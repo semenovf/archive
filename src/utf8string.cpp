@@ -233,47 +233,47 @@ utf8string & utf8string::setNumber (double n, char f, int prec)
 }
 
 
-double utf8string::toDouble(bool * ok) const
+double utf8string::toDouble (bool * ok) const
 {
 	return bytearray(c_str()).toDouble(ok);
 }
 
-long_t utf8string::toLong(bool * ok, int base) const
+long_t utf8string::toLong (bool * ok, int base) const
 {
 	return bytearray(c_str()).toLong(ok, base);
 }
 
-ulong_t	utf8string::toULong(bool * ok, int base) const
+ulong_t	utf8string::toULong (bool * ok, int base) const
 {
 	return bytearray(c_str()).toULong(ok, base);
 }
 
-int_t utf8string::toInt(bool * ok, int base) const
+int_t utf8string::toInt (bool * ok, int base) const
 {
 	return bytearray(c_str()).toInt(ok, base);
 }
 
-uint_t utf8string::toUInt(bool * ok, int base) const
+uint_t utf8string::toUInt (bool * ok, int base) const
 {
 	return bytearray(c_str()).toUInt(ok, base);
 }
 
-short_t utf8string::toShort(bool * ok, int base) const
+short_t utf8string::toShort (bool * ok, int base) const
 {
 	return bytearray(c_str()).toShort(ok, base);
 }
 
-ushort_t utf8string::toUShort(bool * ok, int base) const
+ushort_t utf8string::toUShort (bool * ok, int base) const
 {
 	return bytearray(c_str()).toUShort(ok, base);
 }
 
-sbyte_t utf8string::toSByte(bool * ok, int base) const
+sbyte_t utf8string::toSByte (bool * ok, int base) const
 {
 	return bytearray(c_str()).toSByte(ok, base);
 }
 
-byte_t utf8string::toByte(bool * ok, int base) const
+byte_t utf8string::toByte (bool * ok, int base) const
 {
 	return bytearray(c_str()).toByte(ok, base);
 }
@@ -314,7 +314,7 @@ vector<uint16_t> utf8string::toUtf16 () const
 }
 
 
-vector<ucchar> utf8string::toUnicode() const
+vector<ucchar> utf8string::toUnicode () const
 {
 	vector<ucchar> r;
 
@@ -327,7 +327,7 @@ vector<ucchar> utf8string::toUnicode() const
 	return r;
 }
 
-utf8string utf8string::substr(const const_iterator & from, size_t n) const
+utf8string utf8string::substr (const const_iterator & from, size_t n) const
 {
 	utf8string r;
 	utf8string::const_iterator itEnd(from + n);
@@ -346,7 +346,7 @@ utf8string utf8string::substr(const const_iterator & from, size_t n) const
 }
 
 
-utf8string utf8string::substr(const const_iterator & begin, const const_iterator & end) const
+utf8string utf8string::substr (const const_iterator & begin, const const_iterator & end) const
 {
 	const_iterator b(begin);
 	const_iterator e(end);
@@ -392,7 +392,7 @@ int utf8string::compare (const_iterator from, size_t len, const char * str, size
 
 	size_t pos = from.distance(begin());
 	size_t n = to.distance(from);
-	return _pimpl->compare(pos, n, str, subpos, sublen);
+	return _pimpl->compare(pos, n, std::string(str ? str : ""), subpos, sublen);
 }
 
 int utf8string::compare (const utf8string & s) const
@@ -436,14 +436,14 @@ int utf8string::compare (size_t pos, size_t len, const utf8string & utf8, size_t
 			, to.distance(from));
 }
 
-int utf8string::compare (const char * str) const
+int utf8string::compare (const char * s) const
 {
-	return compare(begin(), length(), str, 0, strlen(str));
+	return compare(begin(), length(), s, 0, s ? strlen(s) : 0);
 }
 
-int utf8string::compare (size_t pos, size_t len, const char * str) const
+int utf8string::compare (size_t pos, size_t len, const char * s) const
 {
-	return compare(begin() + pos, len, str, 0, strlen(str));
+	return compare(begin() + pos, len, s, 0, s ? strlen(s) : 0);
 }
 
 int utf8string::compare (size_t pos, size_t len, const char * str, size_t n) const
@@ -453,7 +453,7 @@ int utf8string::compare (size_t pos, size_t len, const char * str, size_t n) con
 
 bool utf8string::contains (const char * s) const
 {
-	return find(s, 0, strlen(s)) != end();
+	return find(s, 0, s ? strlen(s) : 0) != end();
 }
 
 /**
@@ -494,7 +494,7 @@ utf8string::const_iterator utf8string::find (const utf8string & s, utf8string::c
 
 utf8string::const_iterator utf8string::find (const char * s, size_t from) const
 {
-	return find(s, from, strlen(s));
+	return find(s, from, s ? strlen(s) : 0);
 }
 
 
@@ -505,7 +505,7 @@ bool utf8string::endsWith (const utf8string & s) const
 
 bool utf8string::endsWith (const char * s) const
 {
-	return endsWith(s, strlen(s));
+	return endsWith(s, s ? strlen(s) : 0);
 }
 
 bool utf8string::endsWith (const char * s, size_t n) const
@@ -516,7 +516,7 @@ bool utf8string::endsWith (const char * s, size_t n) const
 
 bool utf8string::startsWith (const char * s) const
 {
-	return startsWith(s, strlen(s));
+	return startsWith(s, s ? strlen(s) : 0);
 }
 
 bool utf8string::startsWith (const char * s, size_t n) const

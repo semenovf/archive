@@ -211,6 +211,14 @@ void test_substr()
 
 void test_compare()
 {
+	TEST_OK(pfs::string("").compare(nullptr) == 0);
+	TEST_OK(pfs::string(nullptr).compare(nullptr) == 0);
+	TEST_OK(pfs::string().compare(nullptr) == 0);
+
+	TEST_OK(pfs::string("").compare("") == 0);
+	TEST_OK(pfs::string(nullptr).compare("") == 0);
+	TEST_OK(pfs::string().compare("") == 0);
+
 	TEST_OK(_u8("Б").compare(_u8("Б")) == 0);
 	TEST_OK(_u8("Б").compare(_u8("А")) > 0);
 	TEST_OK(_u8("Б").compare(_u8("В")) < 0);
@@ -466,10 +474,9 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(179);
+	BEGIN_TESTS(185);
 
 	test_null();
-
     test_basic();
 	test_init();
 	test_swap();

@@ -20,6 +20,9 @@ class utf8string::impl
 public:
 	std::string _buffer;
 	size_t _length; // length in unicode code points
+
+	// _initialized member variable is for emulation of a nullable interface.
+	// May be a good approach is to use boost::optional template class, but it is too complex.
 	bool _initialized;
 
 	typedef std::string::iterator iterator;
@@ -48,8 +51,10 @@ public:
 
 	void append (const char * s, size_t n)
 	{
-		_buffer.append(s, n);
-		_initialized = true;
+		if (s) {
+			_buffer.append(s, n);
+			_initialized = true;
+		}
 	}
 
 	void append (size_t n, char c)
@@ -81,8 +86,10 @@ public:
 
 	void insert (size_t pos, const char * s, size_t n)
 	{
-		_buffer.insert(pos, s, n);
-		_initialized = true;
+		if (s) {
+			_buffer.insert(pos, s, n);
+			_initialized = true;
+		}
 	}
 
 	size_t find (const char * s, size_t pos, size_t n) const
