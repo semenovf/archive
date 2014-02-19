@@ -194,19 +194,28 @@ void test_reader_iterator_ext()
 	TEST_OK(it == itEnd);
 }
 
+void test_file ()
+{
+	cwt::io::file file;
+	pfs::string unknownPath("!@#$%");
+	file.open(unknownPath, cwt::io::device::ReadOnly);
+
+	TEST_FAIL(!file.opened());
+	file.logErrors();
+}
+
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(148);
+    BEGIN_TESTS(149);
 
    	test_line_reader();
     test_reader_iterator();
     test_reader_iterator_ext();
     test_writer();
-
+    test_file();
 //  test_mix_get_read(); // TODO
 
     END_TESTS;
-    return 0;
 }
