@@ -519,6 +519,7 @@ pfs::string node::nodeName () const
 
     if (!_pimpl->_prefix.isEmpty())
     	return _pimpl->_prefix + pfs::ucchar(':') + _pimpl->_name;
+
     return _pimpl->_name;
 }
 
@@ -620,7 +621,7 @@ pfs::string node::prefix() const
  *
  * @return Returns the local part of the qualified name of this node.
  */
-pfs::string node::localName() const
+pfs::string node::localName () const
 {
     if (!_pimpl || _pimpl->_createdWithDom1Interface)
         return pfs::string();
@@ -628,7 +629,7 @@ pfs::string node::localName() const
 }
 
 
-bool node::isSupported(const pfs::string & feature, const pfs::string & version) const
+bool node::isSupported (const pfs::string & feature, const pfs::string & version) const
 {
     dom_implementation i;
     return i.hasFeature(feature, version);
