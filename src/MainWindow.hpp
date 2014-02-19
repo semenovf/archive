@@ -6,14 +6,15 @@
 #include <QTreeWidget>
 
 //class ToolBar;
-QT_FORWARD_DECLARE_CLASS(QMenu)
-QT_FORWARD_DECLARE_CLASS(QSignalMapper)
+class QMenu;
+class QSignalMapper;
+class SchemeCanvas;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    QTextEdit * _editorWidget;
+    SchemeCanvas * _editorWidget;
 //    QList<ToolBar*> toolBars;
     QMenu * dockWidgetMenu;
     QMenu * mainWindowMenu;
@@ -30,8 +31,8 @@ protected:
 
 public slots:
     void actionTriggered (QAction * action);
-    void saveLayout ();
-    void loadLayout ();
+//    void saveLayout ();
+//    void loadLayout ();
     void setCorner (int id);
 //    void switchLayoutDirection();
     void setDockOptions ();

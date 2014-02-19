@@ -1,5 +1,5 @@
-#include "mainwindow.hpp"
-#include <QApplication>
+#include "MainWindow.hpp"
+#include "Application.hpp"
 #include <QResource>
 
 class RegisterResources
@@ -13,7 +13,7 @@ public:
 int main(int argc, char **argv)
 {
 	RegisterResources resources;
-    QApplication app(argc, argv);
+    Application app(argc, argv);
     MainWindow mainWin;
     mainWin.resize(800, 600);
     mainWin.show();

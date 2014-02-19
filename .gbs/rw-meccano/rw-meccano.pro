@@ -5,6 +5,9 @@ QT += svg
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../pfs/include
 INCLUDEPATH += ../../../cwt-sys/include
+INCLUDEPATH += ../../../cwt-dom/include
+INCLUDEPATH += ../../../cwt-xml/include
+INCLUDEPATH += ../../../cwt-io/include
 
 HEADERS   += ../../src/*.hpp
 SOURCES   += ../../src/*.cpp
@@ -20,6 +23,7 @@ unix {
     LIBS += -lcwt-sys
     LIBS += -lcwt-dom
     LIBS += -lcwt-xml
+    LIBS += -lcwt-io
 }
 
 win32 {

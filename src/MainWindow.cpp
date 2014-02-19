@@ -1,4 +1,4 @@
-#include "mainwindow.hpp"
+#include "MainWindow.hpp"
 #include "colorswatch.hpp"
 #include "toolbar.hpp"
 
@@ -7,49 +7,50 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QStatusBar>
-#include <QTextEdit>
-#include <QFile>
-#include <QDataStream>
-#include <QFileDialog>
+//#include <QTextEdit>
+//#include <QFile>
+//#include <QDataStream>
+//#include <QFileDialog>
 #include <QMessageBox>
 #include <QSignalMapper>
-#include <QApplication>
-#include <QPainter>
-#include <QMouseEvent>
+//#include <QApplication>
+//#include <QPainter>
+//#include <QMouseEvent>
 #include <QLineEdit>
 #include <QComboBox>
 #include <QLabel>
 #include <QPushButton>
-#include <qdebug.h>
 
-static const char * const message =
-    "<p><b>Qt Main Window Example</b></p>"
+#include "Application.hpp"
+#include "SchemeCanvas.hpp"
 
-    "<p>This is a demonstration of the QMainWindow, QToolBar and "
-    "QDockWidget classes.</p>"
-
-    "<p>The tool bar and dock widgets can be dragged around and rearranged "
-    "using the mouse or via the menu.</p>"
-
-    "<p>Each dock widget contains a colored frame and a context "
-    "(right-click) menu.</p>"
-
-#ifdef Q_OS_MAC
-    "<p>On Mac OS X, the \"Black\" dock widget has been created as a "
-    "<em>Drawer</em>, which is a special kind of QDockWidget.</p>"
-#endif
-    ;
+//static const char * const message =
+//    "<p><b>Qt Main Window Example</b></p>"
+//
+//    "<p>This is a demonstration of the QMainWindow, QToolBar and "
+//    "QDockWidget classes.</p>"
+//
+//    "<p>The tool bar and dock widgets can be dragged around and rearranged "
+//    "using the mouse or via the menu.</p>"
+//
+//    "<p>Each dock widget contains a colored frame and a context "
+//    "(right-click) menu.</p>"
+//
+//#ifdef Q_OS_MAC
+//    "<p>On Mac OS X, the \"Black\" dock widget has been created as a "
+//    "<em>Drawer</em>, which is a special kind of QDockWidget.</p>"
+//#endif
+//    ;
 
 Q_DECLARE_METATYPE(QDockWidget::DockWidgetFeatures)
 
 MainWindow::MainWindow (QWidget * parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
-    setObjectName("MainWindow");
+    //setObjectName("MainWindow");
     setWindowTitle("rw-meccano");
 
-    _editorWidget = new QTextEdit(this);
-    _editorWidget->setReadOnly(true);
+    _editorWidget = new SchemeCanvas(dynamic_cast<Application *>(qApp)->scheme(), this);
     _editorWidget->setMinimumSize(400, 205);
     setCentralWidget(_editorWidget);
 
@@ -79,12 +80,13 @@ void MainWindow::setupToolBar()
 void MainWindow::setupMenuBar()
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
+    QAction * action = nullptr;
 
-    QAction *action = menu->addAction(tr("Save layout..."));
-    connect(action, SIGNAL(triggered()), this, SLOT(saveLayout()));
+//    action = menu->addAction(tr("Save layout..."));
+//    connect(action, SIGNAL(triggered()), this, SLOT(saveLayout()));
 
-    action = menu->addAction(tr("Load layout..."));
-    connect(action, SIGNAL(triggered()), this, SLOT(loadLayout()));
+//    action = menu->addAction(tr("Load layout..."));
+//    connect(action, SIGNAL(triggered()), this, SLOT(loadLayout()));
 
 //    action = menu->addAction(tr("Switch layout direction"));
 //    connect(action, SIGNAL(triggered()), this, SLOT(switchLayoutDirection()));
@@ -145,6 +147,7 @@ void MainWindow::setDockOptions()
     QMainWindow::setDockOptions(opts);
 }
 
+#ifdef __COMMENT__
 void MainWindow::saveLayout()
 {
     QString fileName
@@ -220,8 +223,13 @@ void MainWindow::loadLayout()
     }
 }
 
-QAction *addAction(QMenu *menu, const QString &text, QActionGroup *group, QSignalMapper *mapper,
-                    int id)
+#endif
+
+QAction * addAction (QMenu * menu
+		, const QString & text
+		, QActionGroup * group
+		, QSignalMapper * mapper
+		, int id)
 {
     bool first = group->actions().isEmpty();
     QAction *result = menu->addAction(text);
