@@ -75,9 +75,9 @@ public:
 	handlers() : cwt::xml::handlers(), _norders(0), _isCdata(false) {}
 	int orderCount () const { return _norders; }
 
-	virtual void startElement (const pfs::string & name, const pfs::map<pfs::string, pfs::string> &)
+	virtual void startElement (const pfs::string & /*nsURI*/, const pfs::string & localName, const pfs::vector<cwt::xml::attr_triplet> & /*atts*/)
 	{
-		if (name == pfs::string("order"))
+		if (localName == pfs::string("order"))
 			++_norders;
 	}
 
