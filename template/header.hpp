@@ -3,8 +3,8 @@
 
 #include <pfs.hpp>
 
-CWT_NS_BEGIN
+namespace cwt {
 
-CWT_NS_END
+} // cwt
 
 #endif /* __@PROJECT@_HPP__ */
