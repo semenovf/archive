@@ -11,6 +11,7 @@ INCLUDEPATH += ../../../cwt-io/include
 
 HEADERS   += ../../src/*.hpp
 SOURCES   += ../../src/*.cpp
+SOURCES   += ../../src/svg/*.cpp
 
 #RESOURCES += ../../rc/abtcws.qrc
 #FORMS = ../../src/ui/qt/ui/*.ui
@@ -23,6 +24,7 @@ unix {
     LIBS += -lcwt-sys
     LIBS += -lcwt-dom
     LIBS += -lcwt-xml
+    LIBS += -lcwt-svg
     LIBS += -lcwt-io
 }
 
