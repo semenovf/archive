@@ -52,11 +52,12 @@ public:
     {
     	return namedItemNS(nsURI, localName) != nullptr;
     }
-//
-//    /**
-//     * Remove all children from the map.
-//     */
+
+    /*
+     * Remove all children from the map.
+     */
     void clearMap ();
+
 //    bool isReadOnly () { return readonly; }
 //    void setReadOnly (bool r) { readonly = r; }
 //    bool isAppendToParent () { return appendToParent; }
@@ -71,7 +72,7 @@ public:
 //     */
     void setAppendToParent (bool b) { _appendToParent = b; }
 
-    /**
+    /*
      * Creates a deep copy (all children are cloned).
      */
     namednodemap_impl * clone (node_impl * parent);

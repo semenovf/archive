@@ -86,7 +86,7 @@ node_impl * namednodemap_impl::item (size_t index) const
 
 	namednodemap_impl::const_iterator it = _map.cbegin();
 	while (index--) {
-		--it;
+		++it;
 	}
 	return it->second;
 }

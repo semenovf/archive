@@ -16,6 +16,7 @@ class node_impl;
 class document;
 class nodelist;
 class namednodemap;
+class attr;
 
 class DLL_API node
 {
@@ -90,6 +91,11 @@ public:
 	node cloneNode (bool deep = true) const;
 
 	bool isNull () const { return _pimpl == nullptr; }
+
+
+	// Non-standard
+	attr toAttr () const;
+
 };
 
 }} // cwt::dom

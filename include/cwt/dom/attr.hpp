@@ -19,6 +19,7 @@ class document;
 
 class DLL_API attr : public node
 {
+	friend class node;
 	friend class element;
 	friend class document;
 

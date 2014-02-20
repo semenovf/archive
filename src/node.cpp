@@ -27,7 +27,7 @@ node_impl::node_impl(document_impl * d, node_impl * parent) : ref(1)
     _next  = nullptr;
     _first = nullptr;
     _last  = nullptr;
-    _createdWithDom1Interface = true;
+//    _createdWithDom1Interface = true;
 }
 
 node_impl::node_impl (node_impl * n, bool deep)
@@ -43,7 +43,7 @@ node_impl::node_impl (node_impl * n, bool deep)
     _value = n->_value;
     _prefix = n->_prefix;
     _namespaceURI = n->_namespaceURI;
-    _createdWithDom1Interface = n->_createdWithDom1Interface;
+//    _createdWithDom1Interface = n->_createdWithDom1Interface;
 
     if (!deep)
         return;
@@ -623,9 +623,14 @@ pfs::string node::prefix() const
  */
 pfs::string node::localName () const
 {
+/*
     if (!_pimpl || _pimpl->_createdWithDom1Interface)
         return pfs::string();
     return _pimpl->_name;
+*/
+    return _pimpl
+    		? _pimpl->_name
+    		: pfs::string();
 }
 
 
@@ -767,6 +772,14 @@ namednodemap node::attributes() const
         return namednodemap();
 
     return namednodemap(static_cast<element_impl *>(_pimpl)->attributes());
+}
+
+
+attr node::toAttr () const
+{
+	return (_pimpl && _pimpl->isAttr())
+		? attr(static_cast<attr_impl *>(_pimpl))
+		: attr();
 }
 
 }} // cwt::dom

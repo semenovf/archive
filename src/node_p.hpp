@@ -31,7 +31,7 @@ public:
     pfs::string _value;
     pfs::string _prefix; // set this only for ElementNode and AttributeNode
     pfs::string _namespaceURI; // set this only for ElementNode and AttributeNode
-    bool _createdWithDom1Interface : 1;
+//    bool _createdWithDom1Interface : 1;
     bool _hasParent                : 1;
 
 public:

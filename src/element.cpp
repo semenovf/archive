@@ -25,7 +25,7 @@ element_impl::element_impl (document_impl * d, node_impl * p, const pfs::string 
 {
     split_namespace(_prefix, _name, qName);
     _namespaceURI = nsURI;
-    _createdWithDom1Interface = false;
+//    _createdWithDom1Interface = false;
     _attr = new namednodemap_impl(this);
 }
 

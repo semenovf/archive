@@ -29,7 +29,7 @@ attr_impl::attr_impl (document_impl * d, node_impl * p, const pfs::string & nsUR
 {
 	split_namespace(_prefix, _name, qName);
     _namespaceURI = nsURI;
-    _createdWithDom1Interface = false;
+//    _createdWithDom1Interface = false;
     _specified = false;
 }
 
