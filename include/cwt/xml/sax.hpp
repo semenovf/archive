@@ -9,12 +9,20 @@
 
 #include <pfs/pimpl.hpp>
 #include <pfs/string.hpp>
-#include <pfs/map.hpp>
+//#include <pfs/map.hpp>
+#include <pfs/vector.hpp>
 #include <pfs/functional.hpp>
 #include <cwt/errorable.hpp>
 #include <utility>
 
 namespace cwt { namespace xml {
+
+struct attr_triplet
+{
+	pfs::string nsURI;
+	pfs::string localName;
+	pfs::string value;
+};
 
 class handlers
 {
@@ -24,7 +32,7 @@ public:
 
 	virtual void beginDocument () {}
 	virtual void endDocument (bool /*success*/) {}
-	virtual void startElement (const pfs::string & /*nsURI*/, const pfs::string & /*tagname*/, const pfs::map<pfs::string, pfs::string> & /*atts*/) {}
+	virtual void startElement (const pfs::string & /*nsURI*/, const pfs::string & /*tagname*/, const pfs::vector<attr_triplet> & /*atts*/) {}
 	virtual void endElement (const pfs::string & /*nsURI*/, const pfs::string & /*tagname*/) {}
 	virtual void characterData (const pfs::string & /*text*/) {}
 	virtual void processingInstruction (const pfs::string & /*target*/, const pfs::string & /*data*/) {}

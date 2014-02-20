@@ -39,7 +39,7 @@ cwt::dom::document dom::createDocument (const pfs::string & xml_source)
 	return h._doc->createDocument(); // this call is safe: document implementation '_doc' is dynamically allocated.
 }
 
-void document_builder::startElement (const pfs::string & nsURI, const pfs::string & localName, const pfs::map<pfs::string, pfs::string> & atts)
+void document_builder::startElement (const pfs::string & nsURI, const pfs::string & localName, const pfs::vector<attr_triplet> & atts)
 {
     cwt::dom::node_impl * n;
 
@@ -52,15 +52,16 @@ void document_builder::startElement (const pfs::string & nsURI, const pfs::strin
     _node->appendChild(n);
     _node = n;
 
-
-    pfs::map<pfs::string, pfs::string>::const_iterator it = atts.cbegin();
-    pfs::map<pfs::string, pfs::string>::const_iterator itEnd = atts.cend();
+    pfs::vector<attr_triplet>::const_iterator it = atts.cbegin();
+    pfs::vector<attr_triplet>::const_iterator itEnd = atts.cend();
 
     for ( ; it != itEnd; ++it)
     {
-    	// TODO need to support namespace (setAttributeNS)
-
-    	dynamic_cast<cwt::dom::element_impl *>(_node)->setAttribute(it->first, it->second);
+    	if (it->nsURI.isEmpty()) {
+    		dynamic_cast<cwt::dom::element_impl *>(_node)->setAttribute(it->localName, it->value);
+    	} else {
+    		dynamic_cast<cwt::dom::element_impl *>(_node)->setAttributeNS(it->nsURI, it->localName, it->value);
+    	}
     }
 }
 

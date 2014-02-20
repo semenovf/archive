@@ -103,12 +103,13 @@ void XMLCALL reader::impl::xml_startElementHandler (
 
 		split(name, nsURI, localName);
 
-		pfs::map<pfs::string, pfs::string> attributes;
+		pfs::vector<attr_triplet> attributes;
 
 		while (*atts) {
-			pfs::string attname = pfs::string::fromUtf8(*atts++);
-			pfs::string attvalue = pfs::string::fromUtf8(*atts++);
-			attributes.insert(attname, attvalue);
+			attr_triplet attr;
+			split(*atts++, attr.nsURI, attr.localName);
+			attr.value = _u8(*atts++);
+			attributes.append(attr);
 		}
 
 		p->_handlers->startElement(nsURI, localName, attributes);
