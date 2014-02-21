@@ -8,10 +8,10 @@ INCLUDEPATH += ../../../cwt-sys/include
 INCLUDEPATH += ../../../cwt-dom/include
 INCLUDEPATH += ../../../cwt-xml/include
 INCLUDEPATH += ../../../cwt-io/include
+INCLUDEPATH += ../../../cwt-svg/include
 
 HEADERS   += ../../src/*.hpp
 SOURCES   += ../../src/*.cpp
-SOURCES   += ../../src/svg/*.cpp
 
 #RESOURCES += ../../rc/abtcws.qrc
 #FORMS = ../../src/ui/qt/ui/*.ui

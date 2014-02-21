@@ -8,6 +8,7 @@
 #define __SCHEMECANVAS_HPP__
 
 #include <QWidget>
+#include <pfs/string.hpp>
 
 class SchemeDom;
 class QPaintEvent;
@@ -21,13 +22,14 @@ class SchemeCanvas : public QWidget
 	int _nativeHeight;
 
 public:
-	SchemeCanvas (SchemeDom & scheme, QWidget * parent = nullptr);
+	SchemeCanvas (SchemeDom & scheme, QWidget * parent = 0);
 	void attachScheme (SchemeDom & scheme);
+
+	void drawPath (const pfs::string & path);
 
 protected:
 	virtual void paintEvent (QPaintEvent *) override;
-	QPainterPath toPainterPath (const pfs::string & path) const;
-	void drawPath (QPainter * painter, const pfs::string & path);
+	static QPainterPath toPainterPath (const pfs::string & path);
 };
 
 
