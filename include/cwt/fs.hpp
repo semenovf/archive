@@ -20,20 +20,20 @@ class fs : public errorable
 public:
 	enum filter {
 		  NoFilter   = 0
-		, Dirs	     = 0x001	  // List directories that match the filters.
-		, AllDirs	 = 0x400	  // List all directories; i.e. don't apply the filters to directory names.
-		, Files	     = 0x002	  // List files.
-		, Drives	 = 0x004	  // List disk drives (ignored under Unix).
-		, NoSymLinks = 0x008      // Do not list symbolic links (ignored by operating systems that don't support symbolic links).
+		, Dirs	     = 0x0001	  // List directories that match the filters.
+		, AllDirs	 = 0x0400	  // List all directories; i.e. don't apply the filters to directory names.
+		, Files	     = 0x0002	  // List files.
+		, Drives	 = 0x0004	  // List disk drives (ignored under Unix).
+		, NoSymLinks = 0x0008      // Do not list symbolic links (ignored by operating systems that don't support symbolic links).
 		, NoDotAndDotDot = 0x1000 // Do not list the special entries "." and "..".
 		, NoDot      = 0x2000     // Do not list the special entry ".".
 		, NoDotDot   = 0x4000     // Do not list the special entry "..".
 		, AllEntries = Dirs | Files | Drives // List directories, files, drives and symlinks (this does not list broken symlinks unless you specify System).
-		, Readable   = 0x010      // List files for which the application has read access. The Readable value needs to be combined with Dirs or Files.
-		, Writable   = 0x020      // List files for which the application has write access. The Writable value needs to be combined with Dirs or Files.
-		, Executable = 0x040      // List files for which the application has execute access. The Executable value needs to be combined with Dirs or Files.
+		, Readable   = 0x0010      // List files for which the application has read access. The Readable value needs to be combined with Dirs or Files.
+		, Writable   = 0x0020      // List files for which the application has write access. The Writable value needs to be combined with Dirs or Files.
+		, Executable = 0x0040      // List files for which the application has execute access. The Executable value needs to be combined with Dirs or Files.
 		//, Modified   = 0x080      // Only list files that have been modified (ignored on Unix).
-		, Hidden     = 0x100      // List hidden files (on Unix, files starting with a ".").
+		, Hidden     = 0x0100      // List hidden files (on Unix, files starting with a ".").
 		//, System     = 0x200      // List system files (on Unix, FIFOs, sockets and device files are included; on Windows, .lnk files are included)
 		//, CaseSensitive = 0x800   // The filter should be case sensitive.
 	};
@@ -63,8 +63,8 @@ public:
 	bool unlink (const pfs::string & path) { return remove(path); }
 	bool simpleBackup (const pfs::string & path);
 	pfs::string tempDirectory ();
-
-	pfs::vector<pfs::string> entryList (const pfs::string & dir, uint_t filters = NoFilter, uint_t sort = NoSort) const;
+	pfs::string join (const pfs::string & dir, const pfs::string filename);
+	pfs::vector<pfs::string> entryList (const pfs::string & dir, uint_t filters = NoFilter, uint_t sort = NoSort);
 };
 
 } // cwt

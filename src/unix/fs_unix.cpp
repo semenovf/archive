@@ -86,7 +86,8 @@ pfs::string fs::tempDirectory ()
 	return r ? _u8(r) : _u8("/tmp");
 }
 
-pfs::vector<pfs::string> fs::entryList (const pfs::string & dir, uint_t filters = NoFilter, uint_t sort = NoSort) const
+// FIXME need to implement (Windows version too)
+pfs::vector<pfs::string> fs::entryList (const pfs::string & dir, uint_t filters, uint_t /*sort*/)
 {
 	pfs::vector<pfs::string> r;
 
@@ -104,9 +105,15 @@ pfs::vector<pfs::string> fs::entryList (const pfs::string & dir, uint_t filters 
 		struct stat st;
 		pfs::string path;
 		path << dir << separator() << _u8(d->d_name);
-		stat(path.c_str(), &st );
 
-		r << _u8(d->d_name);
+		if (stat(path.c_str(), & st ) != 0) {
+			addSystemError(errno, _l1("stat"));
+			return pfs::vector<pfs::string>();
+		}
+
+		if (S_ISDIR(st.st_mode) && (filters == NoFilter || (filters & Dirs))) {
+			r.append(_u8(d->d_name));
+		}
 	}
 
 	closedir(dirp);
