@@ -117,7 +117,7 @@ void test_traverse ()
 		xmlDom.logErrors();
 
 	TraverseData userData;
-	xmlDom.traverse(xmlDoc, __on_start, __on_end, & userData);
+	xmlDoc.traverse(__on_start, __on_end, & userData);
 
 	TEST_OK(userData.nodeCount == 116);
 	TEST_OK(userData.balance == 0);

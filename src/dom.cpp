@@ -173,31 +173,4 @@ void document_builder::notationDecl (
     _doc->doctype()->appendChild(n);
 }
 
-
-void dom::traverse (const cwt::dom::node & beginNode
-		, void (* onStart) (const cwt::dom::node & n, void * d)
-		, void (* onEnd) (const cwt::dom::node & n, void * d)
-		, void * userData)
-{
-	if (!beginNode.pimpl())
-		return;
-
-	cwt::dom::nodelist children = beginNode.childNodes();
-
-	// No children
-	if (!children.size())
-		return;
-
-	for (size_t i = 0; i < children.size(); ++i) {
-		if (onStart)
-			onStart(children.item(i), userData);
-
-		traverse(children.item(i), onStart, onEnd, userData);
-
-		if (onEnd)
-			onEnd(children.item(i), userData);
-	}
-}
-
-
 }} // cwt::xml

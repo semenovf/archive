@@ -21,10 +21,6 @@ public:
 
 	cwt::dom::document createDocument (const pfs::string & xml_source);
 	pfs::string toString (const cwt::dom::document & doc) const;
-	void traverse (const cwt::dom::node & beginNode
-			, void (* onStart) (const cwt::dom::node & n, void * d)
-			, void (* onEnd) (const cwt::dom::node & n, void * d)
-			, void * userData);
 };
 
 }} // cwt::xml
