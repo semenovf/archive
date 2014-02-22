@@ -95,7 +95,9 @@ public:
 
 	// Non-standard
 	attr toAttr () const;
-
+	void traverse (void (* onStart) (const cwt::dom::node & n, void * d)
+				, void (* onEnd) (const cwt::dom::node & n, void * d)
+				, void * userData);
 };
 
 }} // cwt::dom

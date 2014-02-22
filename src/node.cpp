@@ -782,4 +782,27 @@ attr node::toAttr () const
 		: attr();
 }
 
+void node::traverse (void (* onStart) (const cwt::dom::node & n, void * d)
+		, void (* onEnd) (const cwt::dom::node & n, void * d)
+		, void * userData)
+{
+	cwt::dom::nodelist children = childNodes();
+
+	// No children
+	if (!children.size())
+		return;
+
+	for (size_t i = 0; i < children.size(); ++i) {
+		if (onStart)
+			onStart(children.item(i), userData);
+
+		children.item(i).traverse(onStart, onEnd, userData);
+
+		if (onEnd)
+			onEnd(children.item(i), userData);
+	}
+}
+
+
+
 }} // cwt::dom
