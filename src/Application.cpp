@@ -11,13 +11,9 @@ Application::Application (int & argc, char ** argv)
 	: QApplication (argc, argv)
 {
 	if (argc > 1) {
-		_scheme.loadFromFile(_u8(argv[1]));
+		_symbolDir = _u8(argv[1]);
 	} else {
-		_scheme.loadFromFile(_l1("rw-meccano.svg"));
-	}
-
-	if (_scheme.isError()) {
-		_scheme.logErrors();
+		_symbolDir = _l1("rc/rw-meccano");
 	}
 }
 

@@ -8,18 +8,14 @@
 #define __APPLICATION_HPP__
 
 #include <QApplication>
-#include "SchemeDom.hpp"
-#include <errno.h>
 
 class Application : public QApplication
 {
-	SchemeDom _scheme;
-
+	pfs::string _symbolDir;
 public:
 	Application (int & argc, char ** argv);
 
-	const SchemeDom & scheme () const { return _scheme; }
-	SchemeDom & scheme () { return _scheme; }
+	pfs::string symbolDir () const { return _symbolDir; }
 };
 
 #endif /* __APPLICATION_HPP__ */

@@ -7,29 +7,28 @@
 #ifndef __SCHEMECANVAS_HPP__
 #define __SCHEMECANVAS_HPP__
 
-#include <QWidget>
+#include <QGraphicsView>
+#include <QGraphicsScene>
 #include <pfs/string.hpp>
+#include <pfs/vector.hpp>
 
-class SchemeDom;
-class QPaintEvent;
+//class QPaintEvent;
 class QPainter;
-class QPainterPath;
+//class QPainterPath;
+class SchemeSymbol;
 
-class SchemeCanvas : public QWidget
+class SchemeCanvas : public QGraphicsView
 {
-	SchemeDom & _scheme;
+	typedef pfs::vector<pfs::string, SchemeSymbol *> symbol_vector_type;
+	QGraphicsScene _scene;
+	symbol_vector_type _symbols;
+
 	int _nativeWidth;
 	int _nativeHeight;
 
 public:
 	SchemeCanvas (SchemeDom & scheme, QWidget * parent = 0);
-	void attachScheme (SchemeDom & scheme);
-
-	void drawPath (const pfs::string & path);
-
-protected:
-	virtual void paintEvent (QPaintEvent *) override;
-	static QPainterPath toPainterPath (const pfs::string & path);
+	void loadSymbols ();
 };
 
 
