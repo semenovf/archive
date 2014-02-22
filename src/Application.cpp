@@ -5,6 +5,7 @@
  */
 
 #include "Application.hpp"
+#include "SchemeSymbol.hpp"
 #include <pfs/string.hpp>
 
 Application::Application (int & argc, char ** argv)
@@ -15,5 +16,7 @@ Application::Application (int & argc, char ** argv)
 	} else {
 		_symbolDir = _l1("rc/rw-meccano");
 	}
+
+	SchemeSymbol::loadSymbols(_symbolDir);
 }
 

@@ -50,7 +50,7 @@ MainWindow::MainWindow (QWidget * parent, Qt::WindowFlags flags)
     //setObjectName("MainWindow");
     setWindowTitle("rw-meccano");
 
-    _editorWidget = new SchemeCanvas(dynamic_cast<Application *>(qApp)->scheme(), this);
+    _editorWidget = new SchemeCanvas(this);
     _editorWidget->setMinimumSize(400, 205);
     setCentralWidget(_editorWidget);
 
@@ -58,7 +58,7 @@ MainWindow::MainWindow (QWidget * parent, Qt::WindowFlags flags)
     setupMenuBar();
     setupDockWidgets(/*customSizeHints*/);
 
-    statusBar()->showMessage(tr("Status Bar"));
+    statusBar()->showMessage(_Tr("Status Bar"));
 }
 
 void MainWindow::actionTriggered(QAction *action)

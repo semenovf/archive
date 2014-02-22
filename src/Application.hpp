@@ -8,6 +8,11 @@
 #define __APPLICATION_HPP__
 
 #include <QApplication>
+#include <QString>
+#include <pfs/string.hpp>
+
+inline QString qcast (const pfs::string & s) { return QString(s.utf8()); }
+inline pfs::string qcast (const QString & s) { return pfs::string::fromUtf8(s.toUtf8()); }
 
 class Application : public QApplication
 {
@@ -15,7 +20,7 @@ class Application : public QApplication
 public:
 	Application (int & argc, char ** argv);
 
-	pfs::string symbolDir () const { return _symbolDir; }
+	pfs::string symbolDirectory () const { return _symbolDir; }
 };
 
 #endif /* __APPLICATION_HPP__ */

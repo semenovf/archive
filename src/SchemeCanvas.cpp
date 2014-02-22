@@ -5,34 +5,32 @@
  */
 
 #include "SchemeCanvas.hpp"
-#include <QFont>
-#include <QPainter>
-#include <QPaintEvent>
-#include <QPainterPath>
-#include <QPointF>
-#include <cwt/svg/path.hpp>
+#include "SchemeSymbol.hpp"
+#include "SchemeItem.hpp"
+#include <QPen>
+#include <QBrush>
+#include <cwt/logger.hpp>
 #include <iostream>
 
-SchemeCanvas::SchemeCanvas (SchemeDom & scheme, QWidget * parent)
+SchemeCanvas::SchemeCanvas (QWidget * parent)
 	: QGraphicsView(parent)
-	, _nativeWidth(0)
-	, _nativeHeight(0)
-{}
-
-void SchemeCanvas::loadSymbols ()
 {
+	SchemeItem p1(SchemeSymbol::getSymbolByName(_l1("circle-cross45")));
+	SchemeItem p2(SchemeSymbol::getSymbolByName(_l1("circle-cross90")));
 
-}
-/*
-void SchemeCanvas::attachScheme (SchemeDom & scheme)
-{
-	cwt::dom::node svg = _scheme.document().elementsByTagName(_l1("svg")).item(0);
-	if(svg.isNull()) {
-		cwt::log::error(_u8(_Tr("Invalid scheme: root <svg> element not found")));
-		return;
+	if (p1.isEmpty()) {
+		cwt::log::error(_l1("p1 is empty"));
 	}
 
-	_nativeWidth = svg.attributes().getNamedItem(_l1("width")).nodeValue().toInt();
-	_nativeHeight = svg.attributes().getNamedItem(_l1("height")).nodeValue().toInt();
+	if (p2.isEmpty()) {
+		cwt::log::error(_l1("p1 is empty"));
+	}
+
+	_scene.addPath(p1, QPen(QColor(79, 106, 25)));
+	_scene.addPath(p2, QPen(QColor(79, 106, 25)));
+
+	this->setScene(& _scene);
 }
-*/
+
+SchemeCanvas::~SchemeCanvas ()
+{}

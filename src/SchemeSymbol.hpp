@@ -1,33 +1,41 @@
 /*
- * SchemeItem.hpp
+ * SchemeSymbol.hpp
  *
  *  Created on: Feb 22, 2014
  *      Author: wladt
  */
 
-#ifndef __SCHEMEITEM_HPP__
-#define __SCHEMEITEM_HPP__
+#ifndef __SCHEMSYMBOL_HPP__
+#define __SCHEMSYMBOL_HPP__
 
-#include <QGraphicsItem>
+#include <pfs/string.hpp>
+#include <pfs/map.hpp>
 #include <cwt/xml/dom.hpp>
 
-class SchemeDom;
+class QPainterPath;
 
-class SchemeSymbol : public QGraphicsItem
+class SchemeSymbol
 {
 	cwt::dom::document _svgDoc;
 
-public:
-	SchemeSymbol (SchemeSymbol * parent = 0) : QGraphicsItem(parent) {}
-	void paint (QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0 ) override;
+private:
+	typedef pfs::map<pfs::string, SchemeSymbol> symbol_map_type;
+	static symbol_map_type _symbols;
+	static cwt::dom::document _dummyDoc;
 
+protected:
+	SchemeSymbol (const cwt::dom::document & svgDoc) : _svgDoc(svgDoc) {}
+
+public:
+	SchemeSymbol () {}
+
+	QPainterPath toPainterPath () const;
 	bool loadFromString (const pfs::string & str);
 	bool loadFromFile (const pfs::string & path);
 
-protected:
-	void drawPath (const pfs::string & path);
-	static QPainterPath toPainterPath (const pfs::string & path);
+	static bool loadSymbols (const pfs::string & symbolDirecory);
+	static SchemeSymbol getSymbolByName (const pfs::string & name);
 };
 
 
-#endif /* __SCHEMEITEM_HPP__ */
+#endif /* __SCHEMSYMBOL_HPP__ */

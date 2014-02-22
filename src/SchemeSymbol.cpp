@@ -5,46 +5,47 @@
  *      Author: wladt
  */
 
-#include "SchemeItem.hpp"
+#include "SchemeSymbol.hpp"
+#include "Application.hpp"
+#include "SchemeCanvas.hpp"
+#include <cwt/fs.hpp>
 #include <cwt/io/file.hpp>
 #include <cwt/io/textreader.hpp>
+#include <cwt/svg.hpp>
+#include <iostream>
+#include <QDir>
+#include <QStringList>
+
+SchemeSymbol::symbol_map_type SchemeSymbol::_symbols;
+cwt::dom::document SchemeSymbol::_dummyDoc;
 
 struct SchemePainterData
 {
 	int nodeCount;
 	int balance;
 	int indent;
-	SchemeCanvas & canvas;
+	//SchemeSymbol & symbol;
+	QPainterPath ppath;
 
-	SchemePainterData (SchemeCanvas & c) : nodeCount(0), balance(0), indent(0), canvas(c) {}
+	SchemePainterData (/*SchemeSymbol & s*/)
+		: nodeCount(0), balance(0), indent(0)/*, symbol(s)*/ { }
 };
 
 static void __on_start (const cwt::dom::node & n, void * userData);
 static void __on_end (const cwt::dom::node & n, void * userData);
 
-void SchemeSymbol::paint ( QPainter * painter, const QStyleOptionGraphicsItem * /*option*/, QWidget * /*widget*/)
-{
-//     painter.setPen(Qt::blue);
-    painter->setPen(QPen(QColor(79, 106, 25), 1, Qt::SolidLine,
-                         Qt::FlatCap, Qt::MiterJoin));
-    painter->setFont(QFont("Arial", 30));
-//    painter->drawText(rect(), Qt::AlignCenter, "Qt");
-
-    if (!_svgDoc.isNull()) {
-		 SchemePainterData userData(*this);
-		_svgDoc.traverse(__on_start, __on_end, & userData);
-    }
-}
 
 bool SchemeSymbol::loadFromString (const pfs::string & str)
 {
 	cwt::xml::dom dom;
 	_svgDoc = dom.createDocument(str);
 
-	if (!dom.isError())
+	if (dom.isError()) {
 		dom.logErrors();
+		return false;
+	}
 
-	return !_svgDoc.isNull();
+	return true;
 }
 
 bool SchemeSymbol::loadFromFile (const pfs::string & path)
@@ -63,6 +64,53 @@ bool SchemeSymbol::loadFromFile (const pfs::string & path)
 	return loadFromString(str);
 }
 
+bool SchemeSymbol::loadSymbols (const pfs::string & symbolDirectory)
+{
+	bool r = true;
+	QDir dir(qcast(symbolDirectory));
+	cwt::fs fs;
+
+	if (!dir.exists()) {
+		cwt::log::error(_Fr("%s: symbols' directory not found") % symbolDirectory);
+		return false;
+	}
+
+	QStringList nameFilters;
+
+	nameFilters << "*.svg";
+	dir.setNameFilters(nameFilters);
+	dir.setFilter(QDir::Files);
+
+	QStringList	symbolFiles = dir.entryList();
+
+	cwt::log::debug(_Fr("Number of symbols found: %d") % symbolFiles.size());
+
+	for (int i = 0; i < symbolFiles.size(); ++i) {
+		SchemeSymbol symbol;
+		pfs::string filename(qcast(symbolFiles[i]));
+		pfs::string path(fs.join(symbolDirectory, filename));
+		pfs::string name(filename.substr(0, filename.length() - 4)); // exclude suffix '.svg'
+
+		cwt::log::debug(_Fr("Load symbol from file: %s") % path);
+
+		if (symbol.loadFromFile(path)) {
+			_symbols.insert(name, symbol);
+			cwt::log::debug(_Fr("Inserted new symbol '%s' from file: %s") % name % path);
+			//PFS_ASSERT(_symbols.find(name) != _symbols.cend());
+		} else {
+			cwt::log::error(_Fr("Failed to load scheme symbol from file %s") % path);
+			r = false;
+		}
+	}
+	return r;
+}
+
+SchemeSymbol SchemeSymbol::getSymbolByName (const pfs::string & name)
+{
+	symbol_map_type::const_iterator it = _symbols.find(name);
+	return it == _symbols.cend() ? SchemeSymbol(_dummyDoc) : it->second;
+}
+
 struct PathParseHandlers : public cwt::svg::path_parse_handlers
 {
 	QPainterPath & _ppath;
@@ -71,7 +119,8 @@ struct PathParseHandlers : public cwt::svg::path_parse_handlers
 
 	virtual void begin () override {}
 	virtual void end (bool /*success*/) override {}
-	virtual void onClosePath (const cwt::svg::path_seg_closepath & /*pseg*/) override {}
+	virtual void onClosePath (const cwt::svg::path_seg_closepath & /*pseg*/) override
+		{ _ppath.closeSubpath(); }
 	virtual void onMoveToAbs (const cwt::svg::path_seg_moveto_abs & p) override
 		{ _ppath.moveTo(p.x(), p.y()); }
 	virtual void onMoveToRel (const cwt::svg::path_seg_moveto_rel & p) override
@@ -96,22 +145,16 @@ struct PathParseHandlers : public cwt::svg::path_parse_handlers
 	virtual void onCurveToQuadraticSmoothRel (const cwt::svg::path_seg_curveto_quadratic_smooth_rel & /*pseg*/) override {}
 };
 
-void SchemeSymbol::drawPath (const pfs::string & path)
+QPainterPath SchemeSymbol::toPainterPath () const
 {
-	QPainter painter(this);
-	QPainterPath ppath(toPainterPath(path));
-	painter.drawPath(ppath);
+	if (!_svgDoc.isNull()) {
+		SchemePainterData userData;
+		_svgDoc.traverse(__on_start, __on_end, & userData);
+		return userData.ppath;
+	}
+
+	return QPainterPath();
 }
-
-
-QPainterPath SchemeSymbol::toPainterPath (const pfs::string & path)
-{
-	QPainterPath r;
-	PathParseHandlers pph(r);
-	return cwt::svg::path_seg::parse(path, pph) ? r : QPainterPath();
-}
-
-
 
 static void __on_start (const cwt::dom::node & n, void * userData)
 {
@@ -122,18 +165,37 @@ static void __on_start (const cwt::dom::node & n, void * userData)
 		++d->balance;
 		++d->indent;
 
+		cwt::dom::namednodemap atts = n.attributes();
+
 		if (n.localName() == _l1("path")) {
 			if (n.hasAttributes()) {
-				cwt::dom::namednodemap atts = n.attributes();
 				for (size_t i = 0; i < atts.length(); ++i) {
 					cwt::dom::attr attr = atts.item(i).toAttr();
 					if (attr.localName() == _l1("d")) {
 						std::cout << attr.localName() << "=" << attr.value() << std::endl;
-						d->canvas.drawPath(attr.value());
-					}
 
+						QPainterPath pp;
+						PathParseHandlers pph(pp);
+						if (cwt::svg::path_seg::parse(attr.value(), pph)) {
+							d->ppath.addPath(pp);
+						}
+					}
 				}
 			}
+		} else if (n.localName() == _l1("ellipse")) {
+			QPointF center;
+			center.setX(atts.getNamedItem(_l1("cx")).toAttr().value().toDouble());
+			center.setY(atts.getNamedItem(_l1("cy")).toAttr().value().toDouble());
+			double rx = atts.getNamedItem(_l1("rx")).toAttr().value().toDouble();
+			double ry = atts.getNamedItem(_l1("ry")).toAttr().value().toDouble();;
+			d->ppath.addEllipse(center, rx, ry);
+		} else if (n.localName() == _l1("line")) {
+			double x1 = atts.getNamedItem(_l1("x1")).toAttr().value().toDouble();
+			double y1 = atts.getNamedItem(_l1("y1")).toAttr().value().toDouble();
+			double x2 = atts.getNamedItem(_l1("x2")).toAttr().value().toDouble();
+			double y2 = atts.getNamedItem(_l1("y2")).toAttr().value().toDouble();;
+			d->ppath.moveTo(x1, y1);
+			d->ppath.lineTo(x2, y2);
 		}
 	}
 }
