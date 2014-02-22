@@ -1,5 +1,7 @@
 #!/bin/sh
 
+MULTITHREAD=-j
+
 if [ -z $GBS_HOME ]; then
     echo "Error: GBS_HOME is not set, point it to the correct path of Griotte build system" >&2
     exit 1
@@ -20,7 +22,7 @@ case $1 in
     ;;
   all)
     qmake -makefile -r -o Makefile
-    make all
+    make $MULTITHREAD all
     if [ $? -ne 0 ] ; then exit 1 ; fi
     ;;
   *)
