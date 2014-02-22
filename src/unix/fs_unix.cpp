@@ -12,6 +12,7 @@
 #include <cstring>
 #include <cerrno>
 #include <unistd.h>
+#include <dirent.h>
 
 namespace cwt {
 
@@ -83,6 +84,35 @@ pfs::string fs::tempDirectory ()
 	}
 
 	return r ? _u8(r) : _u8("/tmp");
+}
+
+pfs::vector<pfs::string> fs::entryList (const pfs::string & dir, uint_t filters = NoFilter, uint_t sort = NoSort) const
+{
+	pfs::vector<pfs::string> r;
+
+//#ifdef  _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _BSD_SOURCE || _SVID_SOURCE || _POSIX_SOURCE
+//#else
+	struct dirent * d;
+	DIR * dirp = opendir(dir.c_str());
+
+	if (!dirp) {
+		addSystemError(errno, _l1("opendir"));
+		return pfs::vector<pfs::string>();
+	}
+
+	while ((d = readdir(dirp))) {
+		struct stat st;
+		pfs::string path;
+		path << dir << separator() << _u8(d->d_name);
+		stat(path.c_str(), &st );
+
+		r << _u8(d->d_name);
+	}
+
+	closedir(dirp);
+//#endif
+
+	return r;
 }
 
 } // cwt
