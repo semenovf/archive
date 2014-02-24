@@ -9,9 +9,11 @@
 #include "SchemeSymbol.hpp"
 #include <QPainter>
 
-SchemeItem::SchemeItem (const SchemeSymbol & symbol)
-	: QPainterPath(symbol.toPainterPath())
-{}
+SchemeItem::SchemeItem (const SchemeSymbol & /*symbol*/, SchemeItem * parent)
+	: QGraphicsItemGroup(parent)
+{
+	// TODO Populate scheme item from symbol
+}
 
 //void SchemeItem::paint (QPainter * painter, const QStyleOptionGraphicsItem * /*option*/, QWidget * /*widget*/)
 //{

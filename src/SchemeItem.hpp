@@ -9,19 +9,28 @@
 #define __SCHEMEITEM_HPP__
 
 #include <pfs.hpp>
-#include <QGraphicsItem>
-#include <QRectF>
+#include <QGraphicsItemGroup>
+#include <QPoint>
 
 class SchemeSymbol;
+class QWidget;
 class QPainter;
+class QGraphicsSceneMouseEvent;
+class QStyleOptionGraphicsItem;
 
-class SchemeItem : public QPainterPath
+class SchemeItem : public QGraphicsItemGroup
 {
-public:
-	SchemeItem (const QPainterPath & ppath) : QPainterPath(ppath) {}
-	SchemeItem (const SchemeSymbol & symbol);
+	QPoint _dragStartPosition;
 
-//	virtual void paint (QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0) override;
+public:
+	SchemeItem (SchemeItem * parent = nullptr) : QGraphicsItemGroup(parent) {}
+	SchemeItem (const SchemeSymbol & symbol, SchemeItem * parent);
+
+protected:
+	virtual void paint (QPainter * /*painter*/, const QStyleOptionGraphicsItem * /*option*/, QWidget * /*widget*/ = nullptr) override {};
+    virtual void mousePressEvent (QGraphicsSceneMouseEvent * event) override { QGraphicsItemGroup::mousePressEvent(event); }
+    virtual void mouseMoveEvent (QGraphicsSceneMouseEvent * event) override { QGraphicsItemGroup::mouseMoveEvent(event); }
+    virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent * event) override { QGraphicsItemGroup::mouseReleaseEvent(event); }
 };
 
 

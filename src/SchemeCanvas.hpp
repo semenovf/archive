@@ -19,6 +19,15 @@ class SchemeCanvas : public QGraphicsView
 public:
 	SchemeCanvas (QWidget * parent = 0);
 	virtual ~SchemeCanvas();
+
+protected:
+    virtual void dragEnterEvent (QGraphicsSceneDragDropEvent * event) override;
+    virtual void dragLeaveEvent (QGraphicsSceneDragDropEvent * event) override;
+    virtual void dropEvent (QGraphicsSceneDragDropEvent * event) override;
+
+//    QColor color;
+//    bool dragOver;
+
 };
 
 
