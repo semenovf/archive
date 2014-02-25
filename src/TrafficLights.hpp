@@ -16,6 +16,8 @@ public:
 	TrafficLights () : SchemeItem() {}
 	virtual QRectF boundingRect() const override;
 
+	QPixmap toPixmap () const;
+
 protected:
 	virtual void paint (QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = nullptr) override;
     virtual void mousePressEvent (QGraphicsSceneMouseEvent *event) override;

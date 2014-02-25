@@ -7,7 +7,7 @@
 
 #include "SchemeSymbol.hpp"
 #include "Application.hpp"
-#include "SchemeCanvas.hpp"
+#include "SchemeView.hpp"
 #include <pfs/stack.hpp>
 #include <cwt/fs.hpp>
 #include <cwt/io/file.hpp>

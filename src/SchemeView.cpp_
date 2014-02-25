@@ -4,7 +4,7 @@
  * @date Feb 19, 2014
  */
 
-#include "SchemeCanvas.hpp"
+#include "SchemeView.hpp"
 #include "SchemeSymbol.hpp"
 #include "TrafficLights.hpp"
 #include <QPen>
@@ -14,9 +14,11 @@
 #include <cwt/logger.hpp>
 #include <iostream>
 
-SchemeCanvas::SchemeCanvas (QWidget * parent)
+SchemeView::SchemeView (QWidget * parent)
 	: QGraphicsView(parent)
 {
+	setAcceptDrops(true);
+
 //	SchemeItem p1(SchemeSymbol::getSymbolByName(_l1("trafficlight-mast")));
 //	SchemeItem p2(SchemeSymbol::getSymbolByName(_l1("trafficlight-dwarf")));
 //
@@ -36,10 +38,11 @@ SchemeCanvas::SchemeCanvas (QWidget * parent)
 	this->setScene(& _scene);
 }
 
-SchemeCanvas::~SchemeCanvas ()
+SchemeView::~SchemeView ()
 {}
 
-void SchemeCanvas::dragEnterEvent (QGraphicsSceneDragDropEvent * event)
+#ifdef __COMMENT__
+void SchemeView::dragEnterEvent (QGraphicsSceneDragDropEvent * event)
 {
    if (event->mimeData()->hasColor()) {
 		event->setAccepted(true);
@@ -50,17 +53,17 @@ void SchemeCanvas::dragEnterEvent (QGraphicsSceneDragDropEvent * event)
 	}
 }
 
-void SchemeCanvas::dragLeaveEvent (QGraphicsSceneDragDropEvent * /*event*/)
+void SchemeView::dragLeaveEvent (QGraphicsSceneDragDropEvent * /*event*/)
 {
 //    dragOver = false;
     update();
 }
 
-void SchemeCanvas::dropEvent (QGraphicsSceneDragDropEvent * /*event*/)
+void SchemeView::dropEvent (QGraphicsSceneDragDropEvent * /*event*/)
 {
     //dragOver = false;
 //    if (event->mimeData()->hasColor())
 //        color = qvariant_cast<QColor>(event->mimeData()->colorData());
     update();
 }
-
+#endif

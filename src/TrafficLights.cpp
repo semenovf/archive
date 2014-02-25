@@ -11,6 +11,7 @@
 #include <QColor>
 #include <QBrush>
 #include <QPainter>
+#include <QPixmap>
 #include <QGraphicsSceneMouseEvent>
 #include <QMimeData>
 #include <QCursor>
@@ -36,6 +37,28 @@ void TrafficLights::paint (QPainter * painter, const QStyleOptionGraphicsItem * 
     painter->setPen(QPen(Qt::black, 1));
     painter->setBrush(QBrush(Qt::red));
     painter->drawEllipse(-15, -15, 30, 30);
+}
+
+QPixmap TrafficLights::toPixmap () const
+{
+//	QPen pen(QColor(79, 106, 25));
+//	pen.setWidth(20);
+//	painter->setPen(pen);
+//	painter->setBrush(QBrush(QColor("red")));
+//	painter->drawRect(0, 0, 100, 100);
+
+	QPixmap r(50, 50);
+	r.fill(Qt::transparent);
+
+	QPainter painter(& r);
+	painter.setPen(Qt::NoPen);
+    painter.setBrush(Qt::darkGray);
+    painter.drawEllipse(0, 0, 50, 50);
+    painter.setPen(QPen(Qt::black, 1));
+    painter.setBrush(QBrush(Qt::red));
+    painter.drawEllipse(5, 5, 40, 40);
+
+    return r;
 }
 
 void TrafficLights::mousePressEvent (QGraphicsSceneMouseEvent *)
