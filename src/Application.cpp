@@ -5,18 +5,18 @@
  */
 
 #include "Application.hpp"
-#include "SchemeSymbol.hpp"
+#include "Stencil.hpp"
 #include <pfs/string.hpp>
 
 Application::Application (int & argc, char ** argv)
 	: QApplication (argc, argv)
 {
 	if (argc > 1) {
-		_symbolDir = _u8(argv[1]);
+		_stencilDir = _u8(argv[1]);
 	} else {
-		_symbolDir = _l1("rc/rw-meccano");
+		_stencilDir = _l1("rc/rw-meccano");
 	}
 
-	SchemeSymbol::loadSymbols(_symbolDir);
+	Stencil::loadStencils(_stencilDir);
 }
 

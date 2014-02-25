@@ -18,9 +18,11 @@ QT_BEGIN_NAMESPACE
 class QMimeData;
 QT_END_NAMESPACE
 
+class Stencil;
+
 class StencilListModel : public QAbstractListModel
 {
-    Q_OBJECT
+//    Q_OBJECT
 
 public:
     StencilListModel (QObject * parent = 0);
@@ -37,7 +39,7 @@ public:
 
     Qt::DropActions supportedDropActions () const;
 
-    void addStencil (const QPixmap & pixmap);
+    void addStencil (const Stencil & stencil);
     void populateStencils ();
 
 private:

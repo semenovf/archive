@@ -7,16 +7,18 @@
 
 #include "TrafficLights.hpp"
 #include <QApplication>
-#include <QPen>
-#include <QColor>
-#include <QBrush>
-#include <QPainter>
-#include <QPixmap>
-#include <QGraphicsSceneMouseEvent>
-#include <QMimeData>
-#include <QCursor>
-#include <QDrag>
-#include <QBitmap>
+#include <QtGui>
+#include <QtSvg>
+#include <QGraphicsSvgItem>
+//#include <QColor>
+//#include <QBrush>
+//#include <QPainter>
+//#include <QPixmap>
+//#include <QGraphicsSceneMouseEvent>
+//#include <QMimeData>
+//#include <QCursor>
+//#include <QDrag>
+//#include <QBitmap>
 
 QRectF TrafficLights::boundingRect() const
 {
@@ -41,22 +43,25 @@ void TrafficLights::paint (QPainter * painter, const QStyleOptionGraphicsItem * 
 
 QPixmap TrafficLights::toPixmap () const
 {
-//	QPen pen(QColor(79, 106, 25));
-//	pen.setWidth(20);
-//	painter->setPen(pen);
-//	painter->setBrush(QBrush(QColor("red")));
-//	painter->drawRect(0, 0, 100, 100);
+	//QGraphicsSvgItem svgItem("");
+	QSvgRenderer renderer(QString("rc/rw-meccano/circle-cross45.svg"));
+//	QImage image(50, 50, QImage::Format_ARGB32);
+//	image.fill(Qt::transparent);
 
 	QPixmap r(50, 50);
 	r.fill(Qt::transparent);
 
 	QPainter painter(& r);
-	painter.setPen(Qt::NoPen);
-    painter.setBrush(Qt::darkGray);
-    painter.drawEllipse(0, 0, 50, 50);
-    painter.setPen(QPen(Qt::black, 1));
-    painter.setBrush(QBrush(Qt::red));
-    painter.drawEllipse(5, 5, 40, 40);
+	renderer.render(& painter);
+
+//
+//	QPainter painter(& r);
+//	painter.setPen(Qt::NoPen);
+//    painter.setBrush(Qt::darkGray);
+//    painter.drawEllipse(0, 0, 50, 50);
+//    painter.setPen(QPen(Qt::black, 1));
+//    painter.setBrush(QBrush(Qt::red));
+//    painter.drawEllipse(5, 5, 40, 40);
 
     return r;
 }

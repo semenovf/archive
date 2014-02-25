@@ -6,8 +6,6 @@
 
 #include "StencilListModel.hpp"
 #include "Stencil.hpp"
-#include "TrafficLights.hpp"
-
 #include <QtGui>
 
 
@@ -139,12 +137,12 @@ Qt::DropActions StencilListModel::supportedDropActions () const
 }
 
 
-void StencilListModel::addStencil (const QPixmap & pixmap/*, const QPoint & location*/)
+void StencilListModel::addStencil (const Stencil & stencil)
 {
     int row = _stencils.size();
 
     beginInsertRows(QModelIndex(), row, row);
-    _stencils.insert(row, pixmap);
+    _stencils.insert(row, stencil.toPixmap());
     endInsertRows();
 }
 
@@ -156,6 +154,17 @@ void StencilListModel::populateStencils ()
 		endRemoveRows();
 	}
 
-    TrafficLights trafficLights;
-    addStencil(trafficLights.toPixmap());
+    int row = _stencils.size();
+    const Stencil::map_type & stencilMap = Stencil::stencilMap();
+
+//    beginInsertRows(QModelIndex(), row, row + stencilMap.size());
+
+    Stencil::map_type::const_iterator it = stencilMap.cbegin();
+    Stencil::map_type::const_iterator itEnd = stencilMap.cend();
+
+    for (; it != itEnd; ++it) {
+    	_stencils.insert(row++, it->second.toPixmap());
+    }
+
+//    endInsertRows();
 }

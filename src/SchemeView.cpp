@@ -6,74 +6,13 @@
 
 #include "SchemeView.hpp"
 #include "Stencil.hpp"
-#include "TrafficLights.hpp"
 #include <QtGui>
 #include <QPixmap>
 
-SchemeView::SchemeView (QWidget * parent)
-    : QGraphicsView(parent)
-{
-    setAcceptDrops(true);
+SchemeScene::SchemeScene (QObject * parent) : QGraphicsScene(parent)
+{}
 
-//	SchemeItem p1(SchemeSymbol::getSymbolByName(_l1("trafficlight-mast")));
-//	SchemeItem p2(SchemeSymbol::getSymbolByName(_l1("trafficlight-dwarf")));
-//
-//	if (p1.isEmpty()) {
-//		cwt::log::error(_l1("p1 is empty"));
-//	}
-//
-//	if (p2.isEmpty()) {
-//		cwt::log::error(_l1("p2 is empty"));
-//	}
-
-//	TrafficLights * trafficLights = new TrafficLights;
-//	_scene.addItem(trafficLights);
-
-//	_scene.addPath(p1, QPen(QColor(79, 106, 25)));
-//	_scene.addPath(p2, QPen(QColor(79, 106, 25)));
-
-	this->setScene(& _scene);
-}
-
-void SchemeView::clear ()
-{
-    update();
-}
-
-void SchemeView::dragEnterEvent (QDragEnterEvent *event)
-{
-    if (event->mimeData()->hasFormat(Stencil::MimeType))
-        event->accept();
-    else
-        event->ignore();
-}
-
-void SchemeView::dragLeaveEvent (QDragLeaveEvent * event)
-{
-//    QRect updateRect = highlightedRect;
-//    highlightedRect = QRect();
-//    update(updateRect);
-	update();
-    event->accept();
-}
-
-void SchemeView::dragMoveEvent (QDragMoveEvent * event)
-{
-	qDebug() << "move pos: x=" << event->pos().x() << "; y=" << event->pos().y();
-	QPointF mappedPoint = mapToScene(event->pos());
-	qDebug() << "scene pos: x=" << mappedPoint.x() << "; y=" << mappedPoint.y();
-
-    if (event->mimeData()->hasFormat(Stencil::MimeType)) {
-        event->setDropAction(Qt::MoveAction);
-        event->accept();
-    } else {
-        event->ignore();
-    }
-
-//    update(updateRect);
-}
-
-void SchemeView::dropEvent (QDropEvent * event)
+void SchemeScene::dropEvent (QGraphicsSceneDragDropEvent * event)
 {
     if (event->mimeData()->hasFormat(Stencil::MimeType)) {
         QByteArray stencilData = event->mimeData()->data(Stencil::MimeType);
@@ -82,23 +21,19 @@ void SchemeView::dropEvent (QDropEvent * event)
         QPixmap pixmap;
         stream >> pixmap;
 
-//        QRectF sceneRect = _scene.sceneRect();
-        QGraphicsPixmapItem * pitem = _scene.addPixmap(pixmap);
+        QGraphicsPixmapItem * pitem = this->addPixmap(pixmap);
         QRectF boundRect =  pitem->boundingRect();
 
-        QPointF mappedPos = mapToScene(event->pos());
-
-        qDebug() << "drop pos: x=" << event->pos().x() << "; y=" << event->pos().y();
-        qDebug() << "mapped pos: x=" << mappedPos.x() << "; y=" << mappedPos.y();
+        qDebug() << "viewport pos: x=" << event->pos().x() << "; y=" << event->pos().y();
+        qDebug() << "scene pos: x=" << event->scenePos().x() << "; y=" << event->scenePos().y();
         qDebug() << "[0] bounding rect: x=" << boundRect.x()
         		<< "; y=" << boundRect.y()
         		<< "; width=" << boundRect.width()
         		<< "; height=" << boundRect.height();
 
-        pitem->setPos(mappedPos.x() - boundRect.width()/2
-        		, mappedPos.y() - boundRect.height()/2);
-
-//        _scene.setSceneRect(sceneRect);
+        pitem->setPos(event->scenePos().x() - boundRect.width()/2
+        		, event->scenePos().y() - boundRect.height()/2);
+        pitem->setFlag(QGraphicsItem::ItemIsMovable, true);
 
         qDebug() << "scene pos: x=" << pitem->scenePos().x() << "; y=" << pitem->scenePos().y();
 
@@ -111,11 +46,71 @@ void SchemeView::dropEvent (QDropEvent * event)
 
         event->setDropAction(Qt::CopyAction);
         event->accept();
-
     } else {
         event->ignore();
     }
 }
+
+void SchemeScene::dragEnterEvent  (QGraphicsSceneDragDropEvent * event)
+{
+    if (event->mimeData()->hasFormat(Stencil::MimeType))
+        event->accept();
+    else
+        event->ignore();
+}
+
+void SchemeScene::dragLeaveEvent (QGraphicsSceneDragDropEvent * event)
+{
+    event->accept();
+}
+
+void SchemeScene::dragMoveEvent (QGraphicsSceneDragDropEvent * event)
+{
+	qDebug() << "move pos: x=" << event->pos().x() << "; y=" << event->pos().y();
+	qDebug() << "scene pos: x=" << event->scenePos().x() << "; y=" << event->scenePos().y();
+
+    if (event->mimeData()->hasFormat(Stencil::MimeType)) {
+        event->setDropAction(Qt::MoveAction);
+        event->accept();
+    } else {
+        event->ignore();
+    }
+}
+
+void SchemeScene::mousePressEvent (QGraphicsSceneMouseEvent * event)
+{
+	//qDebug() << "press: pos: x=" << event->pos().x() << "; y=" << event->pos().y(); // NOTE always zero
+    qDebug() << "press: scene pos: x=" << event->scenePos().x() << "; y=" << event->scenePos().y();
+
+    QGraphicsItem * pitem = itemAt(event->scenePos());
+
+    if (pitem) {
+         qDebug() << "You clicked on item" << pitem;
+     } else {
+         qDebug() << "You didn't click on an item.";
+     }
+
+    QGraphicsScene::mousePressEvent(event);
+}
+
+SchemeView::SchemeView (QWidget * parent)
+    : QGraphicsView(parent)
+{
+    setAcceptDrops(true);
+	setScene(& _scene);
+	_scene.setSceneRect(QRect(QPoint(0,0), QPoint(200, 200)));
+	setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+	setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+}
+
+void SchemeView::resizeEvent (QResizeEvent * event)
+{
+//	_scene.setSceneRect(QRect(QPoint(0,0), event->size()));
+	_scene.setSceneRect(QRect(QPoint(0,0), QPoint(1000,1000)));
+	QGraphicsView::resizeEvent(event);
+}
+
+#ifdef __COMMENT__
 void SchemeView::mousePressEvent (QMouseEvent * event)
 {
 	QPointF mappedPoint = mapToScene(event->pos());
@@ -158,3 +153,4 @@ void SchemeView::mousePressEvent (QMouseEvent * event)
     }
 #endif
 }
+#endif

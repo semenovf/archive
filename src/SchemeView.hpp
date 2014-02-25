@@ -8,10 +8,6 @@
 #define __STENCILLISTWIDGET_HPP__
 
 #include <pfs.hpp>
-#include <QList>
-#include <QPoint>
-#include <QPixmap>
-#include <QWidget>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 
@@ -19,24 +15,33 @@ QT_BEGIN_NAMESPACE
 class QDragEnterEvent;
 class QDropEvent;
 class QMouseEvent;
+class QResizeEvent;
+class QGraphicsSceneDragDropEvent;
+class QGraphicsSceneMouseEvent;
 QT_END_NAMESPACE
+
+class SchemeScene : public QGraphicsScene
+{
+public:
+	SchemeScene (QObject * parent = 0);
+
+protected:
+    virtual void dragEnterEvent  (QGraphicsSceneDragDropEvent * event) override;
+    virtual void dragLeaveEvent  (QGraphicsSceneDragDropEvent * event) override;
+    virtual void dragMoveEvent   (QGraphicsSceneDragDropEvent * event) override;
+    virtual void dropEvent       (QGraphicsSceneDragDropEvent * event) override;
+    virtual void mousePressEvent (QGraphicsSceneMouseEvent  * event) override;
+};
 
 class SchemeView : public QGraphicsView
 {
-	QGraphicsScene _scene;
-
-    Q_OBJECT
+	SchemeScene _scene;
 
 public:
     SchemeView (QWidget * parent = 0);
-    void clear ();
 
 protected:
-    virtual void dragEnterEvent  (QDragEnterEvent * event) override;
-    virtual void dragLeaveEvent  (QDragLeaveEvent * event) override;
-    virtual void dragMoveEvent   (QDragMoveEvent  * event) override;
-    virtual void dropEvent       (QDropEvent      * event) override;
-    virtual void mousePressEvent (QMouseEvent     * event) override;
+    virtual void resizeEvent (QResizeEvent * event) override;
 };
 
 

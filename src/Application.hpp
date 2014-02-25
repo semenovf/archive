@@ -16,11 +16,11 @@ inline pfs::string qcast (const QString & s) { return pfs::string::fromUtf8(s.to
 
 class Application : public QApplication
 {
-	pfs::string _symbolDir;
+	pfs::string _stencilDir;
 public:
 	Application (int & argc, char ** argv);
 
-	pfs::string symbolDirectory () const { return _symbolDir; }
+	pfs::string symbolDirectory () const { return _stencilDir; }
 };
 
 #endif /* __APPLICATION_HPP__ */

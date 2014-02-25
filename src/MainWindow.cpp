@@ -244,7 +244,7 @@ void MainWindow::setupWidgets ()
     _stencilListView->setGridSize(QSize(Stencil::Size + 10, Stencil::Size + 10));
 //    _stencilListView->setSpacing(10);
 //    _stencilListView->setMovement(QListView::Free);
-    _stencilListView->setAcceptDrops(true);
+    _stencilListView->setAcceptDrops(false);
     _stencilListView->setDropIndicatorShown(true);
 
     _stencilListModel = new StencilListModel(this);
