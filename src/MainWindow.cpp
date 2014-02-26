@@ -21,12 +21,11 @@
 //#include <QLabel>
 //#include <QPushButton>
 #include <QListView>
-
-
 #include <QtGui>
 #include "Application.hpp"
 #include "Stencil.hpp"
 #include "SchemeView.hpp"
+#include "StencilListView.hpp"
 #include "StencilListModel.hpp"
 
 Q_DECLARE_METATYPE(QDockWidget::DockWidgetFeatures)
@@ -237,11 +236,11 @@ void MainWindow::setupWidgets ()
     _editorWidget->setMinimumSize(400, 205);
     setCentralWidget(_editorWidget);
 
-    _stencilListView = new QListView;
+    _stencilListView = new StencilListView;
     _stencilListView->setDragEnabled(true);
     _stencilListView->setViewMode(QListView::IconMode);
-    _stencilListView->setIconSize(QSize(Stencil::Size, Stencil::Size));
-    _stencilListView->setGridSize(QSize(Stencil::Size + 10, Stencil::Size + 10));
+    _stencilListView->setIconSize(QSize(Stencil::IconWidth, Stencil::IconHeight));
+    _stencilListView->setGridSize(QSize(Stencil::IconWidth + 10, Stencil::IconHeight + 10));
 //    _stencilListView->setSpacing(10);
 //    _stencilListView->setMovement(QListView::Free);
     _stencilListView->setAcceptDrops(false);

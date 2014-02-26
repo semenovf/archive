@@ -24,25 +24,26 @@ void SchemeScene::dropEvent (QGraphicsSceneDragDropEvent * event)
         QGraphicsPixmapItem * pitem = this->addPixmap(pixmap);
         QRectF boundRect =  pitem->boundingRect();
 
+/*
         qDebug() << "viewport pos: x=" << event->pos().x() << "; y=" << event->pos().y();
         qDebug() << "scene pos: x=" << event->scenePos().x() << "; y=" << event->scenePos().y();
         qDebug() << "[0] bounding rect: x=" << boundRect.x()
         		<< "; y=" << boundRect.y()
         		<< "; width=" << boundRect.width()
         		<< "; height=" << boundRect.height();
+*/
 
         pitem->setPos(event->scenePos().x() - boundRect.width()/2
         		, event->scenePos().y() - boundRect.height()/2);
         pitem->setFlag(QGraphicsItem::ItemIsMovable, true);
 
+/*
         qDebug() << "scene pos: x=" << pitem->scenePos().x() << "; y=" << pitem->scenePos().y();
-
         qDebug() << "[1] bounding rect: x=" << boundRect.x()
         		<< "; y=" << boundRect.y()
         		<< "; width=" << boundRect.width()
         		<< "; height=" << boundRect.height();
-
-//        _scene.update(pitem->boundingRect());
+*/
 
         event->setDropAction(Qt::CopyAction);
         event->accept();
@@ -66,8 +67,10 @@ void SchemeScene::dragLeaveEvent (QGraphicsSceneDragDropEvent * event)
 
 void SchemeScene::dragMoveEvent (QGraphicsSceneDragDropEvent * event)
 {
+/*
 	qDebug() << "move pos: x=" << event->pos().x() << "; y=" << event->pos().y();
 	qDebug() << "scene pos: x=" << event->scenePos().x() << "; y=" << event->scenePos().y();
+*/
 
     if (event->mimeData()->hasFormat(Stencil::MimeType)) {
         event->setDropAction(Qt::MoveAction);

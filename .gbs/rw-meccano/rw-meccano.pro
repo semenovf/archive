@@ -12,6 +12,7 @@ INCLUDEPATH += ../../../cwt-svg/include
 
 HEADERS   += ../../src/*.hpp
 SOURCES   += ../../src/*.cpp
+SOURCES   += ../../src/stencils/*.cpp
 
 #RESOURCES += ../../rc/abtcws.qrc
 #FORMS = ../../src/ui/qt/ui/*.ui

@@ -39,7 +39,7 @@ public:
 
     Qt::DropActions supportedDropActions () const;
 
-    void addStencil (const Stencil & stencil);
+//    void addStencil (const Stencil & stencil);
     void populateStencils ();
 
 private:

@@ -13,29 +13,98 @@
 #include <QPainter>
 #include <cwt/logger.hpp>
 #include <cwt/fs.hpp>
+#include <cwt/io/textreader.hpp>
+#include <cwt/io/file.hpp>
 
 const char * Stencil::MimeType = "image/x-rw-meccano-stencil";
-Stencil::map_type Stencil::_stencils;
+Stencil::document_map_type Stencil::_documents;
 
-Stencil Stencil::getStencilByName (const pfs::string & name)
+Stencil::Stencil (QGraphicsItem * parent)
+	: QGraphicsPixmapItem(parent)
+{}
+
+Stencil::Stencil (const pfs::string & name, QGraphicsItem * parent)
+	: QGraphicsPixmapItem(parent)
 {
-	map_type::const_iterator it = _stencils.find(name);
-	if (it == _stencils.cend()) {
-		return Stencil();
-	}
-
-	return it->second;
+	setFromDocument(documentByName(name));
 }
 
+Stencil::Stencil (const cwt::dom::document & doc, QGraphicsItem * parent)
+	: QGraphicsPixmapItem(parent)
+{
+	setFromDocument(doc);
+}
 
-bool Stencil::loadStencils (const pfs::string & stencilDirecory)
+QPixmap Stencil::toPixmap (int width, int height, const pfs::string & svg)
+{
+	QSvgRenderer renderer(QByteArray(svg.constData()));
+	QPixmap pm(width, height);
+	pm.fill(Qt::transparent);
+
+	QPainter painter(& pm);
+	renderer.render(& painter);
+	return pm;
+}
+
+void Stencil::setFromSvg (const pfs::string & svg)
+{
+	setPixmap(toPixmap(50, 50, svg)); // FIXME need real size
+}
+
+void Stencil::setFromDocument (const cwt::dom::document & doc)
+{
+	cwt::xml::dom dom;
+	setFromSvg(dom.toString(doc));
+}
+
+QPixmap Stencil::icon (const pfs::string & name)
+{
+	cwt::xml::dom dom;
+	return toPixmap(IconWidth, IconHeight, dom.toString(documentByName(name)));
+}
+
+cwt::dom::document Stencil::documentByName (const pfs::string & name)
+{
+	return _documents.value(name, cwt::dom::document());
+}
+
+cwt::dom::document Stencil::documentFromString (const pfs::string & str)
+{
+	cwt::xml::dom dom;
+	cwt::dom::document r = dom.createDocument(str);
+
+	if (dom.isError()) {
+		dom.logErrors();
+		return cwt::dom::document();
+	}
+
+	return r;
+}
+
+cwt::dom::document Stencil::documentFromFile (const pfs::string & path)
+{
+	cwt::io::file file;
+	file.open(path, cwt::io::device::ReadOnly);
+
+	if (!file.opened()) {
+		file.logErrors();
+		return cwt::dom::document();
+	}
+
+	cwt::io::text_reader textReader(file);
+
+	pfs::string str = textReader.read(file.size());
+	return documentFromString(str);
+}
+
+bool Stencil::loadStencils (const pfs::string & stencilDirectory)
 {
 	bool r = true;
-	QDir dir(qcast(stencilDirecory));
+	QDir dir(qcast(stencilDirectory));
 	cwt::fs fs;
 
 	if (!dir.exists()) {
-		cwt::log::error(_Fr("%s: symbols' directory not found") % stencilDirecory);
+		cwt::log::error(_Fr("%s: symbols' directory not found") % stencilDirectory);
 		return false;
 	}
 
@@ -51,24 +120,18 @@ bool Stencil::loadStencils (const pfs::string & stencilDirecory)
 
 	for (int i = 0; i < symbolFiles.size(); ++i) {
 		pfs::string filename(qcast(symbolFiles[i]));
-		pfs::string filepath(fs.join(stencilDirecory, filename));
+		pfs::string filepath(fs.join(stencilDirectory, filename));
 		pfs::string name(filename.substr(0, filename.length() - 4)); // exclude suffix '.svg'
 
-		cwt::log::debug(_Fr("Load symbol from file: %s") % filepath);
+		cwt::dom::document doc = documentFromFile(filepath);
 
-		_stencils.insert(name, Stencil(filepath));
-		cwt::log::debug(_Fr("Inserted new symbol '%s' from file: %s") % name % filepath);
+		if (doc.isNull()) {
+			cwt::log::error(_Fr("%s: bad source") % filepath);
+		} else {
+			cwt::log::info(_Fr("Stencil '%s' loaded from file: %s") % name % filepath);
+			_documents.insert(name, doc);
+		}
 	}
 	return r;
 }
 
-QPixmap Stencil::toPixmap () const
-{
-	QSvgRenderer renderer(qcast(_filepath));
-	QPixmap r(50, 50);
-	r.fill(Qt::transparent);
-
-	QPainter painter(& r);
-	renderer.render(& painter);
-    return r;
-}

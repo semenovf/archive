@@ -6,6 +6,7 @@
 
 #include "StencilListModel.hpp"
 #include "Stencil.hpp"
+#include "stencils/stencils.hpp"
 #include <QtGui>
 
 
@@ -19,7 +20,7 @@ QVariant StencilListModel::data (const QModelIndex & index, int role) const
         return QVariant();
 
     if (role == Qt::DecorationRole)
-        return QIcon(_stencils.value(index.row()).scaled(Stencil::Size, Stencil::Size,
+        return QIcon(_stencils.value(index.row()).scaled(Stencil::IconWidth, Stencil::IconHeight,
                          Qt::KeepAspectRatio, Qt::SmoothTransformation));
     else if (role == Qt::UserRole)
         return _stencils.value(index.row());
@@ -137,6 +138,7 @@ Qt::DropActions StencilListModel::supportedDropActions () const
 }
 
 
+/*
 void StencilListModel::addStencil (const Stencil & stencil)
 {
     int row = _stencils.size();
@@ -145,6 +147,9 @@ void StencilListModel::addStencil (const Stencil & stencil)
     _stencils.insert(row, stencil.toPixmap());
     endInsertRows();
 }
+*/
+
+
 
 void StencilListModel::populateStencils ()
 {
@@ -155,16 +160,12 @@ void StencilListModel::populateStencils ()
 	}
 
     int row = _stencils.size();
-    const Stencil::map_type & stencilMap = Stencil::stencilMap();
 
-//    beginInsertRows(QModelIndex(), row, row + stencilMap.size());
+    beginInsertRows(QModelIndex(), row, row);
 
-    Stencil::map_type::const_iterator it = stencilMap.cbegin();
-    Stencil::map_type::const_iterator itEnd = stencilMap.cend();
+    PFS_ASSERT(!Stencil::documentByName(_l1("station-name")).isNull());
+    _stencils.insert(row++, Stencil::icon(_l1("station-name")));
+    _stencils.insert(row++, Stencil::icon(_l1("block-section")));
 
-    for (; it != itEnd; ++it) {
-    	_stencils.insert(row++, it->second.toPixmap());
-    }
-
-//    endInsertRows();
+    endInsertRows();
 }
