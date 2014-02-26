@@ -141,14 +141,13 @@
 
 
 #ifndef NDEBUG
-#	define PFS_TRACE(str)        PFS_FPRINT(stdout,"TRACE",str)
-#	define PFS_DEBUG(str)        PFS_FPRINT(stdout,"DEBUG",str)
+#	define PFS_DEBUG(expr)       expr
 #	ifdef __cplusplus
 #		include <cassert>
 #	else
 #		include <assert.h>
 #	endif
-#	define PFS_ASSERT(p) assert(p)
+#	define PFS_ASSERT(expr) assert(expr)
 
 #   ifndef __ENDL__
 #		define __ENDL__ "\n"
@@ -174,11 +173,10 @@
 #	endif
 
 #else
-#	define PFS_TRACE(str)
-#	define PFS_DEBUG(str)
-#	define PFS_ASSERT(exp)
-#	define PFS_ASSERT_TRACE(exp,trace_exp)
-#	define PFS_ASSERT_X(exp,str)
+#	define PFS_DEBUG(expr)
+#	define PFS_ASSERT(expr)
+#	define PFS_ASSERT_TRACE(expr,trace_expr)
+#	define PFS_ASSERT_X(expr,msg)
 
 #endif /* !NDEBUG */
 
