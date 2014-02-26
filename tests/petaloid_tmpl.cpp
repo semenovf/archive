@@ -7,13 +7,14 @@
  */
 
 #include <cwt/petaloid.hpp>
+#include <cwt/logger.hpp>
 #include <cstdio>
 
 class PetaloidTemplate : public cwt::petaloid
 {
 public:
 	PetaloidTemplate() : petaloid("PetaloidTemplate") {}
-	virtual ~PetaloidTemplate() { PFS_TRACE("PetaloidTemplate::~PetaloidTemplate()"); }
+	virtual ~PetaloidTemplate() { }
 	virtual const cwt::emitter_mapping * getEmitters(int * count);
 	virtual const cwt::detector_mapping * getDetectors(int * count);
 
