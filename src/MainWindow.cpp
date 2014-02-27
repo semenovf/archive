@@ -237,20 +237,6 @@ void MainWindow::setupWidgets ()
     setCentralWidget(_editorWidget);
 
     _stencilListView = new StencilListView;
-    _stencilListView->setWordWrap(false);
-    _stencilListView->setDragEnabled(true);
-    _stencilListView->setViewMode(QListView::ListMode);
-    _stencilListView->setIconSize(QSize(Stencil::IconWidth, Stencil::IconHeight));
-    _stencilListView->setGridSize(QSize(Stencil::IconWidth + 10, Stencil::IconHeight + 10));
-//    _stencilListView->setSpacing(10);
-//    _stencilListView->setMovement(QListView::Free);
-    //_stencilListView->setFlow(QListView::TopToBottom);
-    _stencilListView->setAcceptDrops(false);
-    _stencilListView->setDropIndicatorShown(true);
-
-    _stencilListModel = new StencilListModel(this);
-    _stencilListModel->populateStencils();
-    _stencilListView->setModel(_stencilListModel);
 
     QDockWidget * stencilDockWidget = new QDockWidget(_Tr("Stencil List"), this, 0);
     addDockWidget(Qt::LeftDockWidgetArea, stencilDockWidget);
