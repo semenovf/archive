@@ -6,6 +6,7 @@
 
 #include "SchemeView.hpp"
 #include "Stencil.hpp"
+#include "qcast.hpp"
 #include <QtGui>
 #include <QPixmap>
 
@@ -14,36 +15,16 @@ SchemeScene::SchemeScene (QObject * parent) : QGraphicsScene(parent)
 
 void SchemeScene::dropEvent (QGraphicsSceneDragDropEvent * event)
 {
-    if (event->mimeData()->hasFormat(Stencil::MimeType)) {
-        QByteArray stencilData = event->mimeData()->data(Stencil::MimeType);
-        QDataStream stream(& stencilData, QIODevice::ReadOnly);
+    if (event->mimeData()->hasText()) {
+        QString stencilName = event->mimeData()->text();
+        Stencil stencil(qcast(stencilName));
 
-        QPixmap pixmap;
-        stream >> pixmap;
-
-        QGraphicsPixmapItem * pitem = this->addPixmap(pixmap);
+        QGraphicsPixmapItem * pitem = this->addPixmap(stencil.toPixmap());
         QRectF boundRect =  pitem->boundingRect();
-
-/*
-        qDebug() << "viewport pos: x=" << event->pos().x() << "; y=" << event->pos().y();
-        qDebug() << "scene pos: x=" << event->scenePos().x() << "; y=" << event->scenePos().y();
-        qDebug() << "[0] bounding rect: x=" << boundRect.x()
-        		<< "; y=" << boundRect.y()
-        		<< "; width=" << boundRect.width()
-        		<< "; height=" << boundRect.height();
-*/
 
         pitem->setPos(event->scenePos().x() - boundRect.width()/2
         		, event->scenePos().y() - boundRect.height()/2);
         pitem->setFlag(QGraphicsItem::ItemIsMovable, true);
-
-/*
-        qDebug() << "scene pos: x=" << pitem->scenePos().x() << "; y=" << pitem->scenePos().y();
-        qDebug() << "[1] bounding rect: x=" << boundRect.x()
-        		<< "; y=" << boundRect.y()
-        		<< "; width=" << boundRect.width()
-        		<< "; height=" << boundRect.height();
-*/
 
         event->setDropAction(Qt::CopyAction);
         event->accept();
@@ -54,7 +35,7 @@ void SchemeScene::dropEvent (QGraphicsSceneDragDropEvent * event)
 
 void SchemeScene::dragEnterEvent  (QGraphicsSceneDragDropEvent * event)
 {
-    if (event->mimeData()->hasFormat(Stencil::MimeType))
+    if (event->mimeData()->hasText())
         event->accept();
     else
         event->ignore();
@@ -72,7 +53,7 @@ void SchemeScene::dragMoveEvent (QGraphicsSceneDragDropEvent * event)
 	qDebug() << "scene pos: x=" << event->scenePos().x() << "; y=" << event->scenePos().y();
 */
 
-    if (event->mimeData()->hasFormat(Stencil::MimeType)) {
+    if (event->mimeData()->hasText()) {
         event->setDropAction(Qt::MoveAction);
         event->accept();
     } else {
@@ -82,18 +63,45 @@ void SchemeScene::dragMoveEvent (QGraphicsSceneDragDropEvent * event)
 
 void SchemeScene::mousePressEvent (QGraphicsSceneMouseEvent * event)
 {
-	//qDebug() << "press: pos: x=" << event->pos().x() << "; y=" << event->pos().y(); // NOTE always zero
-    qDebug() << "press: scene pos: x=" << event->scenePos().x() << "; y=" << event->scenePos().y();
-
     QGraphicsItem * pitem = itemAt(event->scenePos());
 
     if (pitem) {
-         qDebug() << "You clicked on item" << pitem;
-     } else {
-         qDebug() << "You didn't click on an item.";
+        qDebug() << "Mouse Press: scene pos" << event->scenePos() << "; item=" << pitem;
      }
 
     QGraphicsScene::mousePressEvent(event);
+}
+
+void SchemeScene::mouseReleaseEvent (QGraphicsSceneMouseEvent * event)
+{
+    QGraphicsItem * pitem = itemAt(event->scenePos());
+
+    if (pitem) {
+    	qDebug() << "Mouse Release: scene pos" << event->scenePos() << "; item=" << pitem;
+  		drawSelectionRect(pitem, event->scenePos());
+     }
+
+//    update();
+    QGraphicsScene::mouseReleaseEvent(event);
+}
+
+void SchemeScene::drawSelectionRect (QGraphicsItem * item, QPointF /*scenePos*/)
+{
+	if (item) {
+		views()[0]->centerOn(item);
+		//QRectF brect(scenePos, item->boundingRect().size());
+		QRectF brect(item->boundingRect());
+		QPen pen;
+		QBrush brush;
+
+		pen.setColor(Qt::black);
+		pen.setStyle(Qt::DashLine);
+		pen.setWidth(1);
+
+		qDebug() << "drawSelectionRect: " << brect;
+
+		addRect(brect, pen, brush);
+	}
 }
 
 SchemeView::SchemeView (QWidget * parent)
@@ -109,7 +117,8 @@ SchemeView::SchemeView (QWidget * parent)
 void SchemeView::resizeEvent (QResizeEvent * event)
 {
 //	_scene.setSceneRect(QRect(QPoint(0,0), event->size()));
-	_scene.setSceneRect(QRect(QPoint(0,0), QPoint(1000,1000)));
+//	_scene.setSceneRect(QRect(QPoint(0,0), QPoint(1000,1000)));
+// _scene.setSceneRect(_scene.itemsBoundingRect());
 	QGraphicsView::resizeEvent(event);
 }
 

@@ -28,6 +28,7 @@ public:
     StencilListModel (QObject * parent = 0);
 
     virtual int rowCount (const QModelIndex & parent) const override;
+    virtual int columnCount (const QModelIndex & /*parent*/) const override { return 1; }
     virtual QVariant data (const QModelIndex & index, int role = Qt::DisplayRole) const override;
     virtual Qt::ItemFlags flags (const QModelIndex & index) const override;
     virtual bool removeRows (int row, int count, const QModelIndex & parent) override;
@@ -44,7 +45,7 @@ public:
 
 private:
 //    QList<QPoint>  _locations;
-    QList<QPixmap> _stencils;
+    QList<QString> _stencils;
 };
 
 

@@ -7,45 +7,73 @@
 
 #include "Stencil.hpp"
 #include "Application.hpp"
+#include "qcast.hpp"
 #include <QDir>
 #include <QStringList>
 #include <QSvgRenderer>
+#include <QSvgWidget>
 #include <QPainter>
+#include <QDebug>
+#include <QGraphicsSvgItem>
 #include <cwt/logger.hpp>
 #include <cwt/fs.hpp>
 #include <cwt/io/textreader.hpp>
 #include <cwt/io/file.hpp>
 
-const char * Stencil::MimeType = "image/x-rw-meccano-stencil";
+//const char * Stencil::MimeType = "image/x-rw-meccano-stencil";
 Stencil::document_map_type Stencil::_documents;
 
-Stencil::Stencil (QGraphicsItem * parent)
-	: QGraphicsPixmapItem(parent)
+
+Stencil::Stencil (const pfs::string & name)
+	: _name(name)
 {}
 
-Stencil::Stencil (const pfs::string & name, QGraphicsItem * parent)
-	: QGraphicsPixmapItem(parent)
+Stencil::Stencil (const Stencil & other)
+	: _name(other._name)
+{}
+
+Stencil & Stencil::operator = (const Stencil & other)
 {
-	setFromDocument(documentByName(name));
+	_name = other._name;
+	return *this;
 }
 
-Stencil::Stencil (const cwt::dom::document & doc, QGraphicsItem * parent)
-	: QGraphicsPixmapItem(parent)
+QPixmap Stencil::toPixmap ()
 {
-	setFromDocument(doc);
+	// FIXME need actual size
+	return toPixmap(50, 50);
 }
 
-QPixmap Stencil::toPixmap (int width, int height, const pfs::string & svg)
+QPixmap Stencil::toPixmap (int /*scale*/)
 {
-	QSvgRenderer renderer(QByteArray(svg.constData()));
-	QPixmap pm(width, height);
-	pm.fill(Qt::transparent);
-
-	QPainter painter(& pm);
-	renderer.render(& painter);
-	return pm;
+	// FIXME need actual scaled pixmap
+	return toPixmap(50, 50);
 }
 
+QPixmap Stencil::toPixmap (int width, int height)
+{
+	if (!_name.isEmpty()) {
+		cwt::xml::dom dom;
+		pfs::string svgText = dom.toString(documentByName(_name));
+
+		// calculate actual size
+		QSvgWidget svgWidget;
+		svgWidget.load(QByteArray(svgText.constData()));
+
+//		PFS_DEBUG(qDebug() << "svgWidget: " << svgWidget);
+
+		QSvgRenderer renderer(QByteArray(svgText.constData()));
+		QPixmap pm(width, height);
+		pm.fill(Qt::transparent);
+
+		QPainter painter(& pm);
+		renderer.render(& painter);
+		return pm;
+	}
+	return QPixmap();
+}
+
+/*
 void Stencil::setFromSvg (const pfs::string & svg)
 {
 	setPixmap(toPixmap(50, 50, svg)); // FIXME need real size
@@ -56,11 +84,11 @@ void Stencil::setFromDocument (const cwt::dom::document & doc)
 	cwt::xml::dom dom;
 	setFromSvg(dom.toString(doc));
 }
+*/
 
-QPixmap Stencil::icon (const pfs::string & name)
+QPixmap Stencil::toIcon ()
 {
-	cwt::xml::dom dom;
-	return toPixmap(IconWidth, IconHeight, dom.toString(documentByName(name)));
+	return toPixmap(IconWidth, IconHeight);
 }
 
 cwt::dom::document Stencil::documentByName (const pfs::string & name)

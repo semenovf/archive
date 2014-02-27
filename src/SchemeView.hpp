@@ -26,11 +26,14 @@ public:
 	SchemeScene (QObject * parent = 0);
 
 protected:
-    virtual void dragEnterEvent  (QGraphicsSceneDragDropEvent * event) override;
-    virtual void dragLeaveEvent  (QGraphicsSceneDragDropEvent * event) override;
-    virtual void dragMoveEvent   (QGraphicsSceneDragDropEvent * event) override;
-    virtual void dropEvent       (QGraphicsSceneDragDropEvent * event) override;
-    virtual void mousePressEvent (QGraphicsSceneMouseEvent  * event) override;
+    virtual void dragEnterEvent    (QGraphicsSceneDragDropEvent * event) override;
+    virtual void dragLeaveEvent    (QGraphicsSceneDragDropEvent * event) override;
+    virtual void dragMoveEvent     (QGraphicsSceneDragDropEvent * event) override;
+    virtual void dropEvent         (QGraphicsSceneDragDropEvent * event) override;
+    virtual void mousePressEvent   (QGraphicsSceneMouseEvent    * event) override;
+    virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent    * event) override;
+
+    void drawSelectionRect (QGraphicsItem * item, QPointF scenePos);
 };
 
 class SchemeView : public QGraphicsView

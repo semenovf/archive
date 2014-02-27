@@ -7,6 +7,7 @@
 #include "StencilListModel.hpp"
 #include "Stencil.hpp"
 #include "stencils/stencils.hpp"
+#include "qcast.hpp"
 #include <QtGui>
 
 
@@ -19,11 +20,25 @@ QVariant StencilListModel::data (const QModelIndex & index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role == Qt::DecorationRole)
-        return QIcon(_stencils.value(index.row()).scaled(Stencil::IconWidth, Stencil::IconHeight,
-                         Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    else if (role == Qt::UserRole)
-        return _stencils.value(index.row());
+    QString stencilName = _stencils.value(index.row());
+
+    switch(role) {
+    case Qt::DecorationRole: {
+    	Stencil stencil(qcast(stencilName));
+    	return QIcon(stencil.toIcon().scaled(Stencil::IconWidth, Stencil::IconHeight,
+        		Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
+    	break;
+
+    case Qt::DisplayRole:
+    	return stencilName;
+
+    case Qt::ToolTipRole:
+    	return stencilName;
+
+    case Qt::UserRole:
+    	return stencilName;
+    }
 
     return QVariant();
 }
@@ -61,12 +76,25 @@ bool StencilListModel::removeRows (int row, int count, const QModelIndex & paren
 QStringList StencilListModel::mimeTypes () const
 {
     QStringList types;
-    types << Stencil::MimeType;
+    types << "text/plain"; //Stencil::MimeType;
     return types;
 }
 
 QMimeData * StencilListModel::mimeData (const QModelIndexList & indexes) const
 {
+	QMimeData * mimeData = new QMimeData();
+	QStringList stencilNames;
+
+    foreach (QModelIndex index, indexes) {
+        if (index.isValid()) {
+        	stencilNames << qvariant_cast<QString>(data(index, Qt::UserRole));
+        }
+    }
+
+    mimeData->setText(stencilNames.join(";"));
+    return mimeData;
+
+/*
     QMimeData * mimeData = new QMimeData();
     QByteArray encodedData;
 
@@ -75,12 +103,13 @@ QMimeData * StencilListModel::mimeData (const QModelIndexList & indexes) const
     foreach (QModelIndex index, indexes) {
         if (index.isValid()) {
             QPixmap pixmap = qvariant_cast<QPixmap>(data(index, Qt::UserRole));
-            stream << pixmap /*<< location*/;
+            stream << pixmap << location;
         }
     }
 
     mimeData->setData(Stencil::MimeType, encodedData);
     return mimeData;
+*/
 }
 
 /*bool StencilListModel::dropMimeData (const QMimeData * data, Qt::DropAction action,
@@ -134,22 +163,8 @@ int StencilListModel::rowCount (const QModelIndex & parent) const
 
 Qt::DropActions StencilListModel::supportedDropActions () const
 {
-    return Qt::CopyAction | Qt::MoveAction;
+    return Qt::IgnoreAction; //Qt::CopyAction | Qt::MoveAction;
 }
-
-
-/*
-void StencilListModel::addStencil (const Stencil & stencil)
-{
-    int row = _stencils.size();
-
-    beginInsertRows(QModelIndex(), row, row);
-    _stencils.insert(row, stencil.toPixmap());
-    endInsertRows();
-}
-*/
-
-
 
 void StencilListModel::populateStencils ()
 {
@@ -163,9 +178,15 @@ void StencilListModel::populateStencils ()
 
     beginInsertRows(QModelIndex(), row, row);
 
-    PFS_ASSERT(!Stencil::documentByName(_l1("station-name")).isNull());
-    _stencils.insert(row++, Stencil::icon(_l1("station-name")));
-    _stencils.insert(row++, Stencil::icon(_l1("block-section")));
+    //PFS_ASSERT(!Stencil::documentByName(_l1("station-name")).isNull());
+    _stencils.insert(row++, QString("station-name"));
+    _stencils.insert(row++, QString("block-section"));
+    _stencils.insert(row++, QString("direction-arrow"));
+    _stencils.insert(row++, QString("trafficlight-dwarf"));
+    _stencils.insert(row++, QString("trafficlight-mast"));
+
+    qDebug() << "columnCount=" << columnCount(QModelIndex());
+    qDebug() << "rowCount=" << rowCount(QModelIndex());
 
     endInsertRows();
 }

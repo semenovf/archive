@@ -11,9 +11,6 @@
 #include <QString>
 #include <pfs/string.hpp>
 
-inline QString qcast (const pfs::string & s) { return QString(s.utf8()); }
-inline pfs::string qcast (const QString & s) { return pfs::string::fromUtf8(s.toUtf8()); }
-
 class Application : public QApplication
 {
 	pfs::string _stencilDir;
