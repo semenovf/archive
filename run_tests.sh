@@ -7,7 +7,7 @@
 
 PREFIX=
 SUFFIX=.err
-FAILED=
+FAILED=no
 OUTDIR=output
 
 if [ ! -d $OUTDIR ] ; then
@@ -30,7 +30,7 @@ for i in test_* ; do
     fi
 done
 
-if [ -n $FAILED ] ; then
+if [ "$FAILED" = "yes" ] ; then
     echo "========================"
     echo "ERROR: some tests failed"
     exit 1
