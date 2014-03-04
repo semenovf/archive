@@ -19,6 +19,7 @@ class nodelist;
 
 class element : public node
 {
+	friend class node;
 	friend class attr;
 	friend class document;
 

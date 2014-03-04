@@ -14,5 +14,6 @@
 #include <cwt/dom/element.hpp>
 #include <cwt/dom/doctype.hpp>
 #include <cwt/dom/document.hpp>
+#include <cwt/dom/domimpl.hpp>
 
 #endif /* __CWT_DOM_HPP__ */

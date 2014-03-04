@@ -782,6 +782,13 @@ attr node::toAttr () const
 		: attr();
 }
 
+element node::toElement () const
+{
+	return (_pimpl && _pimpl->isElement())
+		? element(static_cast<element_impl *>(_pimpl))
+		: element();
+}
+
 void node::traverse (void (* onStart) (const cwt::dom::node & n, void * d)
 		, void (* onEnd) (const cwt::dom::node & n, void * d)
 		, void * userData) const
@@ -802,7 +809,5 @@ void node::traverse (void (* onStart) (const cwt::dom::node & n, void * d)
 			onEnd(children.item(i), userData);
 	}
 }
-
-
 
 }} // cwt::dom

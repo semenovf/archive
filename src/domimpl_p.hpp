@@ -19,12 +19,11 @@ public:
 
 public:
 	dom_implementation_impl () { ; }
+	virtual dom_implementation_impl * clone ();
 
-	dom_implementation_impl * clone();
-
-    //static QDomImplementation::InvalidDataPolicy invalidDataPolicy;
+	bool hasFeature (const pfs::string & feature, const pfs::string & version = pfs::string()) const;
+	virtual pfs::string idName () const { return _l1("id"); }
 };
-
 
 }} // cwt::dom
 

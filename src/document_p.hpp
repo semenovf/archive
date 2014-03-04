@@ -46,22 +46,22 @@ public:
     	return doc;
     }
 
-    doctype_impl * doctype () { return _type.get(); }
-    const doctype_impl * doctype () const { return _type.get(); }
+    doctype_impl *            doctype () { return _type.get(); }
+    const doctype_impl *      doctype () const { return _type.get(); }
     dom_implementation_impl * implementation () { return _impl.get(); }
-    element_impl * documentElement ();
+    element_impl *            documentElement ();
 
-    element_impl * createElement (const pfs::string & tagName);
-    element_impl * createElementNS (const pfs::string & nsURI, const pfs::string & qName);
+    element_impl *           createElement (const pfs::string & tagName);
+    element_impl *           createElementNS (const pfs::string & nsURI, const pfs::string & qName);
     document_fragment_impl * createDocumentFragment ();
-    text_impl * createTextNode (const pfs::string & data);
-    comment_impl * createComment (const pfs::string & data);
-    cdatasection_impl * createCDATASection (const pfs::string & data);
-    pinstruction_impl * createProcessingInstruction (const pfs::string & target, const pfs::string & data);
-    attr_impl * createAttribute (const pfs::string & name);
-    attr_impl * createAttributeNS (const pfs::string & nsURI, const pfs::string & qName);
-    entityref_impl * createEntityReference (const pfs::string & name);
-    node_impl * importNode (const node_impl * importedNode, bool deep);
+    text_impl *              createTextNode (const pfs::string & data);
+    comment_impl *           createComment (const pfs::string & data);
+    cdatasection_impl *      createCDATASection (const pfs::string & data);
+    pinstruction_impl *      createProcessingInstruction (const pfs::string & target, const pfs::string & data);
+    attr_impl *              createAttribute (const pfs::string & name);
+    attr_impl *              createAttributeNS (const pfs::string & nsURI, const pfs::string & qName);
+    entityref_impl *         createEntityReference (const pfs::string & name);
+    node_impl *              importNode (const node_impl * importedNode, bool deep);
 //
 //    void clear();
 

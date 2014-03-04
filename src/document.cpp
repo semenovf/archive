@@ -4,6 +4,7 @@
  * @date Dec 11, 2013
  */
 
+#include <pfs/stack.hpp>
 #include "node_p.hpp"
 #include "nodelist_p.hpp"
 #include "namednodemap_p.hpp"
@@ -403,10 +404,42 @@ nodelist document::getElementsByTagNameNS (const pfs::string & nsURI, const pfs:
 // The DOM implementation must have information that says which attributes are of type ID.
 // Attributes with the name "ID" are not of type ID unless so defined.
 // Implementations that do not know whether attributes are of type ID or not are expected to return null.
-element document::getElementById (const pfs::string & /*elementId*/) const
+element document::getElementById (const pfs::string & elementId) const
 {
-    // TODO Need to implement document::getElementById()
-    return element();
+	pfs::string idName = dynamic_cast<document_impl *>(_pimpl)->implementation()->idName();
+
+	if (idName.isEmpty())
+		return element();
+
+	cwt::dom::nodelist children = childNodes();
+
+	// No children
+	if (!children.size())
+		return element();
+
+	pfs::stack<cwt::dom::nodelist> stack;
+	stack.push(children);
+
+	while (stack.size() > 0) {
+		children = stack.top();
+		stack.pop();
+
+		for (size_t i = 0; i < children.size(); ++i) {
+			node n(children.item(i));
+
+			if (n.nodeType() == node::ElementNode) {
+				element e(n.toElement());
+
+				if (e.attribute(idName) == elementId)
+					return e;
+			}
+
+			if (n.hasChildNodes()) {
+				stack.push(n.childNodes());
+			}
+		}
+	}
+	return element();
 }
 
 }} // cwt::dom

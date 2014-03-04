@@ -20,9 +20,22 @@ dom_implementation_impl * dom_implementation_impl::clone()
     return new dom_implementation_impl;
 }
 
+bool dom_implementation_impl::hasFeature (const pfs::string & feature, const pfs::string & version) const
+{
+    if (feature == pfs::string("XML")) {
+        if (version.isEmpty() || version == pfs::string("1.0")) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 dom_implementation::dom_implementation()
-	: _pimpl(nullptr)
-{}
+	: _pimpl(new dom_implementation_impl)
+{
+	_pimpl->ref.ref();
+}
 
 dom_implementation::dom_implementation (const dom_implementation & other)
 	: _pimpl(other._pimpl)
@@ -30,6 +43,7 @@ dom_implementation::dom_implementation (const dom_implementation & other)
     if (_pimpl)
         _pimpl->ref.ref();
 }
+
 
 dom_implementation::dom_implementation (dom_implementation_impl * p)
 	: _pimpl(p)
@@ -56,12 +70,9 @@ dom_implementation::~dom_implementation()
 
 bool dom_implementation::hasFeature (const pfs::string & feature, const pfs::string & version) const
 {
-    if (feature == pfs::string("XML")) {
-        if (version.isEmpty() || version == pfs::string("1.0")) {
-            return true;
-        }
-    }
-    return false;
+    return _pimpl
+    			? _pimpl->hasFeature(feature, version)
+    			: false;
 }
 
 document dom_implementation::createDocument(const pfs::string & nsURI
@@ -108,6 +119,11 @@ doctype dom_implementation::createDocumentType (const pfs::string & qName
     }
     dt->ref.deref();
     return doctype(dt);
+}
+
+pfs::string dom_implementation::idName () const
+{
+	return _pimpl ? _pimpl->idName() : pfs::string();
 }
 
 }} // cwt::dom

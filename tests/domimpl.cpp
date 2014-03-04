@@ -3,11 +3,11 @@
 
 void test_feature ()
 {
-	cwt::dom::dom_implementation dimpl;
-	TEST_OK(dimpl.hasFeature("XML"));
-	TEST_OK(dimpl.hasFeature("XML", "1.0"));
-	TEST_OK(!dimpl.hasFeature("UnavailableFeature"));
-	TEST_OK(!dimpl.hasFeature("UnavailableFeature", "1.0"));
+	cwt::dom::dom_implementation dom_impl;
+	TEST_OK(dom_impl.hasFeature("XML"));
+	TEST_OK(dom_impl.hasFeature("XML", "1.0"));
+	TEST_OK(!dom_impl.hasFeature("UnavailableFeature"));
+	TEST_OK(!dom_impl.hasFeature("UnavailableFeature", "1.0"));
 }
 
 

@@ -19,9 +19,8 @@ class DLL_API dom_implementation
 {
 	friend class document;
 
-private:
+protected:
 	dom_implementation_impl * _pimpl;
-
 	dom_implementation (dom_implementation_impl * p);
 
 public:
@@ -41,6 +40,9 @@ public:
 	doctype createDocumentType (const pfs::string & qualifiedName
 			, const pfs::string & publicId
 			, const pfs::string & systemId); // raises(DOMException)
+
+	// non-standard
+	pfs::string idName () const; // used by node::getElementById() e.g.
 };
 
 }} // cwt::dom

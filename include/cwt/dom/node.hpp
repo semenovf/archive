@@ -17,6 +17,7 @@ class document;
 class nodelist;
 class namednodemap;
 class attr;
+class element;
 
 class DLL_API node
 {
@@ -95,6 +96,7 @@ public:
 
 	// Non-standard
 	attr toAttr () const;
+	element toElement () const;
 	void traverse (void (* onStart) (const cwt::dom::node & n, void * d)
 				, void (* onEnd) (const cwt::dom::node & n, void * d)
 				, void * userData) const;
