@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(21);
+    BEGIN_TESTS(28);
 
     test_basic();
     test_dom();

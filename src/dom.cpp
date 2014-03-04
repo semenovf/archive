@@ -15,14 +15,9 @@ static bool __accept_version(int major, int minor)
 	return major == 1 && minor == 0;
 }
 
-dom::dom () : cwt::errorable()
+dom::dom () : cwt::dom::dom_implementation(), cwt::errorable()
 { }
 
-//cwt::dom::document createDocument (const pfs::string & xml_source
-//		, const pfs::string & /*namespaceURI*/
-//		, const pfs::string & /*qualifiedName*/
-//		, const cwt::dom::doctype & /*doctype*/)
-//{}
 cwt::dom::document dom::createDocument (const pfs::string & xml_source)
 {
 	document_builder h;

@@ -14,7 +14,7 @@
 
 namespace cwt { namespace xml {
 
-class DLL_API dom : public cwt::errorable
+class DLL_API dom : public cwt::dom::dom_implementation, public cwt::errorable
 {
 public:
 	dom ();

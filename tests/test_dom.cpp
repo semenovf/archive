@@ -19,34 +19,34 @@ static const char * xml_source =
 "  <!ENTITY % author    \"William Shakespeare\">\n"
 "]>\n"
 "﻿<orders>\n"
-"   <order>\n"
+"   <order id=\"order0\">\n"
 "    <date>1/1/2011</date>\n"
 "    <quantity>10</quantity>\n"
 "    <description>Beverages</description>\n"
 "  </order>\n"
 "<?target processing instruction?>\n"
-"  <order>\n"
+"  <order id=\"order1\">\n"
 "    <date>2/2/2011</date>\n"
 "    <quantity>15</quantity>\n"
 "    <description>Condiments</description>\n"
 "  </order>\n"
 "<!--This is a comment text-->\n"
-"  <order>\n"
+"  <order id=\"order2\">\n"
 "    <date>3/3/2011</date>\n"
 "    <quantity>20</quantity>\n"
 "    <description>Grains/Cereals</description>\n"
 "  </order>\n"
-"  <order>\n"
+"  <order id=\"order3\">\n"
 "    <date>4/6/2011</date>\n"
 "    <quantity>30</quantity>\n"
 "    <description>Beverages</description>\n"
 "  </order>\n"
-"  <order>\n"
+"  <order id=\"order4\">\n"
 "    <date>5/10/2011</date>\n"
 "    <quantity>40</quantity>\n"
 "    <description>Beverages</description>\n"
 "  </order>\n"
-"  <order>\n"
+"  <order id=\"order5\">\n"
 "    <date>5/12/2011</date>\n"
 "    <quantity>50</quantity>\n"
 "    <description>Grains/Cereals</description>\n"
@@ -77,6 +77,14 @@ void test_dom ()
 
 	cwt::dom::nodelist orders = xmlDoc.getElementsByTagName(_l1("order"));
 	TEST_OK(orders.length() == 6);
+
+	TEST_OK(!xmlDoc.getElementById(_l1("order0")).isNull());
+	TEST_OK(!xmlDoc.getElementById(_l1("order1")).isNull());
+	TEST_OK(!xmlDoc.getElementById(_l1("order2")).isNull());
+	TEST_OK(!xmlDoc.getElementById(_l1("order3")).isNull());
+	TEST_OK(!xmlDoc.getElementById(_l1("order4")).isNull());
+	TEST_OK(!xmlDoc.getElementById(_l1("order5")).isNull());
+	TEST_OK(xmlDoc.getElementById(_l1("order6")).isNull());
 
 	std::cout << xmlDoc << std::endl;
 }
