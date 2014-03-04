@@ -13,4 +13,5 @@ SUBDIRS  = cwt-sys       \
 	tests/safeformat \
 	tests/thread     \
 	tests/uri        \
-	examples/logger
+	examples/logger  \
+	examples/display

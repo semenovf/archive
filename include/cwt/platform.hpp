@@ -19,6 +19,17 @@ DLL_API pfs::time currentTime ();
 DLL_API pfs::date currentDate ();
 DLL_API pfs::datetime currentDateTime ();
 
+
+struct display_data
+{
+	int pixelsWidth;
+	int pixelsHeight;
+	int mmWidth;  // width in millimeters
+	int mmHeight; // height in millimeters
+};
+
+DLL_API void displayParameters (display_data * d);
+
 }} // platform::cwt
 
 #endif /* __CWT_PLATFORM_HPP__ */
