@@ -15,7 +15,7 @@ namespace cwt { namespace io {
 
 class DLL_API file : public device
 {
-	PFS_PIMPL_DECL(file, impl);
+	PFS_PIMPL_DECL(file, protected, impl, protected);
 
 public:
 	enum Permission {

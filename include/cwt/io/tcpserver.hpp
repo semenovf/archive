@@ -14,7 +14,7 @@ namespace cwt { namespace io {
 
 class tcp_server
 {
-	PFS_PIMPL_DECL(tcp_server, impl);
+	PFS_PIMPL_DECL(tcp_server, protected, impl, protected);
 
 public:
 	tcp_server ();

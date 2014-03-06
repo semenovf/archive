@@ -18,8 +18,7 @@ class tcp_server;
 
 class DLL_API inet_socket : public device
 {
-protected:
-	PFS_PIMPL_DECL(inet_socket, impl);
+	PFS_PIMPL_DECL(inet_socket, protected, impl, protected);
 
 protected:
 	virtual size_t  bytesAvailable () const;
