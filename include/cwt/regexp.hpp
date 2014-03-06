@@ -21,7 +21,7 @@ namespace cwt {
 
 class DLL_API regexp
 {
-	PFS_PIMPL_DECL(regexp, impl);
+	PFS_PIMPL_DECL(regexp, private, impl, private);
 
 public:
 	enum LineBreak {

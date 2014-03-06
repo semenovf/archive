@@ -20,7 +20,7 @@ namespace cwt {
 
 class DLL_API thread
 {
-	PFS_PIMPL_DECL(thread, impl);
+	PFS_PIMPL_DECL(thread, protected, impl, protected);
 
 public:
 	struct data;

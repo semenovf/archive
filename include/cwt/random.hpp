@@ -14,7 +14,7 @@ namespace cwt {
 
 class random
 {
-	PFS_PIMPL_DECL(random, impl);
+	PFS_PIMPL_DECL(random, private, impl, private);
 
 public:
 	random ();
