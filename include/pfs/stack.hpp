@@ -17,7 +17,7 @@ template <typename T>
 class stack
 {
 	typedef std::stack<T> impl;
-	PFS_PIMPL_INLINE(stack, impl);
+	PFS_PIMPL_INLINE(stack, protected, impl);
 
 public:
 	typedef T item_type;

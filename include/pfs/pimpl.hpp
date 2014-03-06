@@ -9,9 +9,10 @@
 
 #include <pfs/shared_ptr.hpp>
 
-#define PFS_PIMPL_INLINE(Class,Impl)                           \
+#define PFS_PIMPL_INLINE(Class,ImplClassScope,Impl)            \
+ImplClassScope:                                                \
 	pfs::shared_ptr<Impl> _pimpl;                              \
-                                                               \
+protected:                                                     \
 	void detach()                                              \
 	{                                                          \
 		if (!_pimpl.unique()) {                                \
@@ -35,10 +36,12 @@ public:                                                        \
     	_pimpl.swap(other._pimpl);                             \
     }
 
-#define PFS_PIMPL_DECL(Class,Impl)                             \
+#define PFS_PIMPL_DECL(Class,ImplClassScope,Impl,PimplScope)   \
+ImplClassScope:                                                \
 	class Impl;                                                \
+PimplScope:	                                                   \
 	pfs::shared_ptr<Impl> _pimpl;                              \
-                                                               \
+protected:                                                     \
 	void detach();                                             \
 	Class (const Impl & other);                                \
                                                                \
@@ -62,6 +65,7 @@ public:                                                        \
 // ...
 // PFS_PIMPL_DECL1(Class, Class_impl)
 //
+/*
 #define PFS_PIMPL_DECL1(Class,Impl)                            \
 	pfs::shared_ptr<Impl> _pimpl;                              \
                                                                \
@@ -80,6 +84,7 @@ public:                                                        \
     {                                                          \
     	pfs::swap(_pimpl, other._pimpl);                       \
     }
+*/
 
 // w/o copy constructor
 //
@@ -116,6 +121,7 @@ Class::Class (const Class::Impl & other)                       \
 	: _pimpl(new Class::Impl(other)) {}
 
 
+/*
 #define PFS_PIMPL_DEF1(Class,Impl)                             \
 void Class::detach()                                           \
 {                                                              \
@@ -127,5 +133,6 @@ void Class::detach()                                           \
                                                                \
 Class::Class (const Impl & other)                              \
 	: _pimpl(new Impl(other)) {}
+*/
 
 #endif /* __PFS_PIMPL_HPP__ */

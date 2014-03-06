@@ -33,7 +33,7 @@ class DLL_API bitarray
 		size_t          nbits;
 	};
 
-	PFS_PIMPL_INLINE(bitarray, impl);
+	PFS_PIMPL_INLINE(bitarray, protected, impl);
 
 public:
 	bitarray ();

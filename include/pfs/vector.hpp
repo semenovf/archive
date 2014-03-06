@@ -17,7 +17,7 @@ template <typename T>
 class vector
 {
 	typedef std::vector<T> impl;
-	PFS_PIMPL_INLINE(vector, impl)
+	PFS_PIMPL_INLINE(vector, protected, impl)
 
 public:
 	typedef T item_type;

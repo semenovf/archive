@@ -139,7 +139,7 @@ struct DLL_API unidata_blob : public unidata
 
 class DLL_API unitype
 {
-	PFS_PIMPL_INLINE(unitype, unidata);
+	PFS_PIMPL_INLINE(unitype, protected, unidata);
 
 public:
 	unitype ()                    : _pimpl (new unidata_null) {}

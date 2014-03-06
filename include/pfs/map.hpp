@@ -20,7 +20,7 @@ template <typename Key, typename T>
 class map
 {
 	typedef std::map<Key,T> impl;
-	PFS_PIMPL_INLINE(map, impl)
+	PFS_PIMPL_INLINE(map, protected, impl)
 
 public:
 	typedef typename std::map<Key, T>::iterator iterator;
