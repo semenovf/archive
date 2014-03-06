@@ -12,7 +12,7 @@
 #include <cerrno>
 #include <sstream>
 #include <iomanip>
-//#include <cmath>
+#include <clocale>
 
 namespace pfs {
 
@@ -193,10 +193,17 @@ static ulong_t	__str_to_ulong_helper(const char *s, bool * pok, int base, ulong_
 }
 
 
-static double __str_to_double (const char * s, bool * pok)
+static double __str_to_double (const char * s, bool * pok, bool usePosixLocale)
 {
 	bool ok = true;
-	char *endptr = nullptr;
+	char * endptr = nullptr;
+
+	char * savedLocale = nullptr;
+
+	if (usePosixLocale) {
+		PFS_VERIFY((savedLocale = setlocale(LC_NUMERIC, nullptr)));
+		PFS_VERIFY(setlocale(LC_NUMERIC, "C"));
+	}
 
 	errno = 0;
 	double r = strtod(s, & endptr);
@@ -210,6 +217,10 @@ static double __str_to_double (const char * s, bool * pok)
 
 	if (pok)
 		*pok = ok;
+
+	if (usePosixLocale && savedLocale) {
+		PFS_VERIFY(setlocale(LC_NUMERIC, savedLocale)); // restore locale
+	}
 	return r;
 }
 
@@ -233,9 +244,9 @@ static float __str_to_float (const char * s, bool *pok)
 }
 */
 
-double bytearray::toDouble (bool * ok) const
+double bytearray::toDouble (bool * ok, bool usePosixLocale) const
 {
-	return __str_to_double(c_str(), ok);
+	return __str_to_double(c_str(), ok, usePosixLocale);
 }
 
 /*
