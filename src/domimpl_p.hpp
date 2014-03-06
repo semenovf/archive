@@ -18,7 +18,8 @@ public:
 	pfs::atomic_int ref;
 
 public:
-	dom_implementation_impl () { ; }
+	dom_implementation_impl () {}
+	virtual ~ dom_implementation_impl () {}
 	virtual dom_implementation_impl * clone ();
 
 	bool hasFeature (const pfs::string & feature, const pfs::string & version = pfs::string()) const;
