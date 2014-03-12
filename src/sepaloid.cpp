@@ -128,7 +128,7 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 				it->second->map->appendDetector(& petaloid, detectors[i]._detector);
 			} else {
 				log::warn(
-					_Fr("%s: detector '%s' not found while registering petaloid [%s] ...")
+					_Fr("%s: detector '%s' not found while registering petaloid ...")
 					% petaloid.name()
 					% emitters[i]._id);
 				log::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
