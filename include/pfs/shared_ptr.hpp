@@ -118,7 +118,7 @@ public:
     }
 
     template <typename T1>
-    shared_ptr (const shared_ptr<T1> & other, T * p) : _value(p), _d(other.d)
+    shared_ptr (const shared_ptr<T1> & other, T * p) : _value(p), _d(other._d)
     {}
 
     shared_ptr (const shared_ptr<T> & other) : _value(other._value), _d(other._d)
@@ -296,6 +296,7 @@ protected:
 
 #endif // !HAVE_STD_SHARED_PTR
 
+/*
 template <typename T>
 class shareable
 {
@@ -319,6 +320,7 @@ public:
 
 	shared_ptr<T> d;
 };
+*/
 
 template <typename T>
 inline shared_ptr<T> make_shared() { return shared_ptr<T>(new T); }

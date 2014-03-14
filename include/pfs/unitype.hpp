@@ -36,10 +36,10 @@ enum unitype_type {
 struct DLL_API unidata
 {
 	virtual ~unidata () {}
-	virtual unitype_type  type () const { return Null; }
-	virtual bool      toBool   (bool & ok) const { ok = false; return false; }
-	virtual long_t    toLong   (bool & ok) const { ok = false; return long_t(0); }
-	virtual double    toDouble (bool & ok) const { ok = false; return double(0); }
+	virtual unitype_type   type () const { return Null; }
+	virtual bool           toBool   (bool & ok) const { ok = false; return false; }
+	virtual long_t         toLong   (bool & ok) const { ok = false; return long_t(0); }
+	virtual double         toDouble (bool & ok) const { ok = false; return double(0); }
 	virtual pfs::string    toString (bool & ok) const { ok = false; return pfs::string(); }
 	virtual pfs::bytearray toBlob   (bool & ok) const { ok = false; return pfs::bytearray(); }
 };
@@ -171,8 +171,7 @@ public:
 	static unitype make_object ();
 */
 	unitype_type  type () const { return _pimpl->type(); }
-	bool isNull () const { return _pimpl.get() == nullptr || toBlob().isEmpty(); }
-
+	bool isEmpty () const { return isNull() || toBlob().isEmpty(); }
 
 	//void setNull       ();
 	//void set           (const unidata & d) { _pimpl = d; }
