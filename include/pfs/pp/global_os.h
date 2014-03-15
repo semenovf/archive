@@ -131,6 +131,7 @@
 #if defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64) || defined(PFS_OS_WINCE)
 #	define PFS_OS_WIN
 #endif
+
 #if defined(PFS_OS_DARWIN)
 #	define PFS_OS_MAC  /* is mostly for compatibility */
 #	define PFS_OS_MACX /* is only for compatibility */

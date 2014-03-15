@@ -28,7 +28,7 @@
 #ifdef DLL_API
 #	undef DLL_API
 #endif
-#if defined(PFS_CC_MSC) && defined(PFS_CC_MSVC)
+#if defined(PFS_CC_MSVC)
 #	define DLL_API_EXPORT __declspec(dllexport)
 #	define DLL_API_IMPORT __declspec(dllimport)
 #	ifdef DLL_EXPORTS
@@ -50,6 +50,7 @@
 #ifdef EXTERN_C_BEGIN
 #	undef EXTERN_C_BEGIN
 #endif
+
 #ifdef __cplusplus
 #	ifndef	EXTERN_C_BEGIN
 #		define EXTERN_C_BEGIN extern "C" {
@@ -99,22 +100,22 @@
 /*
 */
 
-#ifdef __cplusplus
-	namespace pfs {
-		template <typename _T>
-		inline _T min(_T a, _T b) { return a <= b ? a : b; }
+#ifndef PFS_CC_MSVC
+#	ifdef __cplusplus
+	template <typename T>
+	inline T min(T a, T b) { return a <= b ? a : b; }
 
-		template <typename _T>
-		inline _T max(_T a, _T b) { return a >= b ? a : b; }
-	}
-#else
-#	define min(a,b)  (((a) <= (b)) ? (a) : (b))
-#	define max(a,b)  (((a) >= (b)) ? (a) : (b))
+	template <typename T>
+	inline T max(T a, T b) { return a >= b ? a : b; }
+#	else
+#		define min(a,b)  (((a) <= (b)) ? (a) : (b))
+#		define max(a,b)  (((a) >= (b)) ? (a) : (b))
+#	endif
 #endif
 
 #define _Tr(s)  s
 
-#if defined(PFS_OS_WIN) && defined(PFS_UNICODE)
+#if defined(PFS_CC_MSVC) && defined(PFS_UNICODE)
 #	define __WIDEN(x) x /* http://msdn.microsoft.com/en-us/library/b0084kay(v=vs.80).aspx */
 #	define __TFILE__ __WIDEN(__FILE__)
 #else
