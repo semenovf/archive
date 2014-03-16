@@ -15,9 +15,6 @@
 #include <pfs/datetime.hpp>
 #include <pfs/pimpl.hpp>
 
-// FIXME Need to apply concept of type erasure.
-// See excellent article at http://www.cplusplus.com/forum/articles/18756/
-
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)

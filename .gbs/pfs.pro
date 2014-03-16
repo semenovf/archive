@@ -18,4 +18,5 @@ SUBDIRS  = pfs       \
     tests/utf8string_ptr \
     tests/utf8string     \
     tests/unitype        \
-    tests/cow_ptr_qt
+    tests/cow_ptr_qt     \
+    tests/pimpl
