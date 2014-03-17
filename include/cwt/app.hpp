@@ -11,12 +11,12 @@
 #include <cwt/sepaloid.hpp>
 #include <cwt/option.hpp>
 #include <pfs/vector.hpp>
+#include <pfs/noncopyable.hpp>
 
 namespace cwt {
 
-class DLL_API app
+class DLL_API app : pfs::noncopyable
 {
-	PFS_DENY_COPY(app);
 	PFS_IMPLEMENT_LOCKING(app);
 
 public:

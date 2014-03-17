@@ -12,6 +12,7 @@
 #include <pfs/mt.hpp>
 #include <pfs/map.hpp>
 #include <pfs/vector.hpp>
+#include <pfs/noncopyable.hpp>
 #include <cwt/dl.hpp>
 #include <cwt/thread.hpp>
 #include <cwt/sigslotmapping.hpp>
@@ -27,9 +28,8 @@ struct petaloid_spec
 	petaloid_dtor_t dtor; /* may be null (no destructor) */
 };
 
-class DLL_API sepaloid : public cwt::dl, public has_slots<>
+class DLL_API sepaloid : public cwt::dl, public has_slots<>, pfs::noncopyable
 {
-	PFS_DENY_COPY(sepaloid)
 	PFS_IMPLEMENT_LOCKING(sepaloid);
 
 public:
