@@ -11,6 +11,7 @@
 #define __CWT_THREADLS_HPP__
 
 #include <pfs/shared_ptr.hpp>
+#include <pfs/noncopyable.hpp>
 
 namespace cwt {
 
@@ -18,10 +19,8 @@ namespace cwt {
 
 
 template <typename T>
-class DLL_API thread_storage
+class DLL_API thread_storage : pfs::noncopyable
 {
-	PFS_DENY_COPY(thread_storage);
-
 public:
 
 	#ifdef __COMMENT__
