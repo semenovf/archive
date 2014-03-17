@@ -11,16 +11,15 @@
 #include <cwt/io/device.hpp>
 #include <cwt/io/reader.hpp>
 #include <cwt/io/utf8codec.hpp>
+#include <pfs/noncopyable.hpp>
 
 namespace cwt { namespace io {
 
-class DLL_API text_reader : public reader<cwt::io::device, utf8decoder>
+class DLL_API text_reader : public reader<cwt::io::device, utf8decoder>, pfs::noncopyable
 {
 private:
 	typedef reader<cwt::io::device, utf8decoder> base_class;
 	static utf8nulldecoder DefaultUtf8Decoder;
-
-	PFS_DENY_COPY(text_reader);
 
 public:
 	typedef reader<cwt::io::device, utf8decoder>::iterator iterator;

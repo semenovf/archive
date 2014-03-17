@@ -12,15 +12,14 @@
 #include <cwt/io/reader.hpp>
 #include <cwt/io/nullcodec.hpp>
 #include <pfs/bytearray.hpp>
+#include <pfs/noncopyable.hpp>
 
 namespace cwt { namespace io {
 
-class DLL_API data_reader : public reader<cwt::io::device, nullbyte_codec>
+class DLL_API data_reader : public reader<cwt::io::device, nullbyte_codec>, pfs::noncopyable
 {
 	typedef cwt::io::reader<cwt::io::device, nullbyte_codec> base_class;
 	static nullbyte_codec DefaultByteDecoder;
-
-	PFS_DENY_COPY(data_reader);
 
 public:
 	typedef reader<cwt::io::device, nullbyte_codec>::iterator iterator;

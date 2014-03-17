@@ -13,15 +13,14 @@
 #include <cwt/io/device.hpp>
 #include <cwt/io/writer.hpp>
 #include <cwt/io/nullcodec.hpp>
+#include <pfs/noncopyable.hpp>
 
 namespace cwt { namespace io {
 
-class DLL_API data_writer : public writer<cwt::io::device, nullbyte_codec>
+class DLL_API data_writer : public writer<cwt::io::device, nullbyte_codec>, pfs::noncopyable
 {
 	typedef writer<cwt::io::device, nullbyte_codec> base_class;
 	static nullbyte_codec DefaultByteEncoder;
-
-	PFS_DENY_COPY(data_writer);
 
 public:
 	data_writer (cwt::io::device & dev) : base_class(dev, DefaultByteEncoder) {}

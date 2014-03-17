@@ -11,16 +11,15 @@
 #include <cwt/io/device.hpp>
 #include <cwt/io/writer.hpp>
 #include <cwt/io/utf8codec.hpp>
+#include <pfs/noncopyable.hpp>
 
 namespace cwt { namespace io {
 
-class DLL_API text_writer : public writer<cwt::io::device, utf8encoder>
+class DLL_API text_writer : public writer<cwt::io::device, utf8encoder>, pfs::noncopyable
 {
 private:
 	typedef writer<cwt::io::device, utf8encoder> base_class;
 	static utf8nullencoder DefaultUtf8Encoder;
-
-	PFS_DENY_COPY(text_writer);
 
 public:
 	text_writer (cwt::io::device & dev) : base_class(dev, DefaultUtf8Encoder) {}
