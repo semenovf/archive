@@ -10,6 +10,7 @@
 #define __PFS_SHARED_PTR_HPP__
 
 #include <pfs.hpp>
+#include <pfs/noncopyable.hpp>
 
 #ifdef HAVE_STD_SHARED_PTR
 #	include <memory>
@@ -28,14 +29,16 @@ using shared_ptr = std::shared_ptr<T>;
 #else
 
 template <typename T>
-struct default_deleter {
+struct default_deleter
+{
 	void operator () (T * p) const {
 		delete p;
 	}
 };
 
 template <typename T>
-struct custom_deleter {
+struct custom_deleter
+{
 	void operator () (T *) const {}
 };
 
@@ -64,12 +67,8 @@ struct ref_count
 
 
 template <typename T, typename Deleter>
-class ref_count_with_deleter: public ref_count
+class ref_count_with_deleter: public ref_count, noncopyable
 {
-private:
-	ref_count_with_deleter();
-	PFS_DENY_COPY(ref_count_with_deleter)
-
 public:
 	ref_count_with_deleter(T * ptr, Deleter d) : ref_count(), m_ptr(ptr), m_deleter(d) { deleter_fn = deleter; }
 	~ref_count_with_deleter() { this->~ref_count(); }
@@ -88,6 +87,12 @@ private:
 template <class T>
 class shared_ptr
 {
+protected:
+    template <typename T1> friend  class shared_ptr;
+
+    T * _value;
+    ref_count * _d;
+
 protected:
     template <typename Deleter>
     void construct (T * ptr, Deleter deleter)
@@ -286,41 +291,9 @@ private:
     	_d->weakref.ref();
     	_d->strongref.ref();
     }
-
-protected:
-    template <typename T1> friend  class shared_ptr;
-
-    T * _value;
-    ref_count * _d;
 };
 
 #endif // !HAVE_STD_SHARED_PTR
-
-/*
-template <typename T>
-class shareable
-{
-private:
-	shareable();
-public:
-	shareable(const shareable & other) : d(other.d) {}
-	shareable & operator = (const shareable & other) { d = other.d; return *this; }
-	explicit shareable(T * ptr) : d(ptr) {}
-	void detach()
-	{
-		if (d.use_count() > 1) {
-			shared_ptr<T> dd(new T(*d));
-			d.swap(dd);
-		}
-	}
-
-    void swap(shareable & other) { d.swap(other.d); }
-	bool unique() const { return d.unique(); }
-	T * operator -> () const  { return d.get(); }
-
-	shared_ptr<T> d;
-};
-*/
 
 template <typename T>
 inline shared_ptr<T> make_shared() { return shared_ptr<T>(new T); }
@@ -339,14 +312,6 @@ inline shared_ptr<T> make_shared(Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4) { return sh
 
 template <class T, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5>
 inline shared_ptr<T> make_shared(Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5) { return shared_ptr<T>(new T(a1, a2, a3, a4, a5)); }
-
-/*
-template< class T>
-inline void swap (shared_ptr<T> & a, shared_ptr<T> & b )
-{
-	a.swap(b);
-}
-*/
 
 template <class T, class T1>
 inline shared_ptr<T> static_pointer_cast (const shared_ptr<T1> & r)
@@ -370,38 +335,5 @@ inline shared_ptr<T> const_pointer_cast (const shared_ptr<T1> & r)
 }
 
 } // namespace pfs
-
-/**
-@example Pattern of class based on shareable template
-
-class ShareableClass
-{
-public:
-	ShareableClass(const ShareableClass & other) : m_d(other.m_d) {}
-	ShareableClass & operator = (const ShareableClass & other);
-
-private:
-	struct SharedData
-	{
-		// SharedData members
-		...
-
-		SharedData  () {}
-		~SharedData () {
-			// destroy SharedData members
-			...
-		}
-		SharedData  (const SharedData & other) { / * clone shared data * / }
-		SharedData & operator (const SharedData & other) { / * clone shared data * / return *this; }
-	};
-	cwt::shareable<SharedData> m_d;
-};
-
-ShareableClass & ShareableClass::operator = (const ShareableClass & other)
-{
-	m_d = other.m_d;
-	return *this;
-}
-*/
 
 #endif /* __PFS_SHARED_PTR_HPP__ */

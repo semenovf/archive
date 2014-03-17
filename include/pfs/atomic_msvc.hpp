@@ -12,12 +12,13 @@
 #include <pfs.hpp>
 
 extern "C" {
-    long _InterlockedIncrement(long volatile *);
-    long _InterlockedDecrement(long volatile *);
-    long _InterlockedExchangeAdd(long volatile *, long);
+    long _InterlockedIncrement (long volatile *);
+    long _InterlockedDecrement (long volatile *);
+    long _InterlockedExchangeAdd (long volatile *, long);
+    long _InterlockedCompareExchange (long volatile * ptr, long Exchange, long Comparand);
 
 #ifdef HAVE_INT64
-    __int64 _InterlockedExchangeAdd64(__int64 volatile *, __int64);
+    __int64 _InterlockedExchangeAdd64 (__int64 volatile *, __int64);
 #endif
 }
 
@@ -28,29 +29,34 @@ struct atomic_integer_intrinsics
 {
 	typedef long Type;
 
-	static inline T load(const T &value)
+	static inline T load (const T &value)
 	{
 		return value;
 	}
 
-    static inline void store(T &value, T newValue)
+    static inline void store (T & value, T newValue)
     {
         value = (T)newValue;
     }
 
-    static inline bool ref(T &value)
+    static inline bool ref (T & value)
     {
-    	return _InterlockedIncrement((long volatile *)&value) != 0;
+    	return _InterlockedIncrement((long volatile *)& value) != 0;
     }
 
-    static inline bool deref(T &value)
+    static inline bool deref (T & value)
     {
-    	return _InterlockedDecrement((long volatile *)&value) != 0;
+    	return _InterlockedDecrement((long volatile *)& value) != 0;
     }
 
-    static inline T fetchAndAddRelaxed(T &value, T valueToAdd)
+    static inline T fetchAndAddRelaxed (T & value, T valueToAdd)
     {
-    	return _InterlockedExchangeAdd(&value, valueToAdd);
+    	return _InterlockedExchangeAdd(& value, valueToAdd);
+    }
+
+    static inline T compareAndSwap (T * ptr, T oldValue, T newValue)
+    {
+    	return _InterlockedCompareExchange ((long volatile *)ptr, newValue, oldValue);
     }
 };
 

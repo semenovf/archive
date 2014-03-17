@@ -191,25 +191,14 @@
 #define PFS_UNUSED2(x1,x2)    ((void)(x1));((void)(x2))
 #define PFS_UNUSED3(x1,x2,x3) ((void)(x1));((void)(x2));((void)(x3))
 
-//#define PFS_MALLOCT(T)    ((T*)malloc(sizeof(T)))
-//#define PFS_MALLOCA(T,n)  ((T*)malloc(sizeof(T)*(n)))
-//#define PFS_MALLOC(sz)    malloc(sz)
-//#define PFS_FREE(v)       free(v)
-//#define PFS_REALLOC(p,sz) realloc(p,sz);
-
-/* Two-dimensional array macros */
 /*
-#define PFS_A2_NCOLS(a)          sizeof((a)[0])/sizeof((a)[0][0])
-#define PFS_A2_NROWS(a)          sizeof(a)/sizeof((a)[0])
-#define PFS_A2_ELEM(a,ncols,i,j) (a)[(i) * (ncols) + (j)]
-*/
-
 #ifdef __cplusplus
 #	define PFS_DENY_COPY(Class)             \
 	private:                                \
 		Class(const Class &);               \
 		Class & operator = (const Class &);
 #endif
+*/
 
 #endif /* __PFS_GLOBAL_H__ */
 

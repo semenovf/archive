@@ -18,28 +18,28 @@ struct atomic_integer_intrinsics
 {
 	typedef int Type;
 
-	static inline T load(const T & value)
+	static inline T load (const T & value)
 	{
 		return value;
 	}
 
-    static inline void store(T & value, T newValue)
+    static inline void store (T & value, T newValue)
     {
         value = newValue;
     }
 
-    static inline bool ref(T & value)
+    static inline bool ref (T & value)
     {
         return fetchAndAddRelaxed(value, 1) != T(-1);
     }
 
-    static inline bool deref(T & value)
+    static inline bool deref (T & value)
     {
          return fetchAndAddRelaxed(value, -1) != T(1);
     }
 
 
-    static inline T fetchAndAddRelaxed(T & value, T valueToAdd)
+    static inline T fetchAndAddRelaxed (T & value, T valueToAdd)
     {
         // implement fetchAndAdd on top of testAndSet
         for(;;) {
@@ -50,10 +50,10 @@ struct atomic_integer_intrinsics
         return T(); // never reached
     }
 
-    static bool testAndSetRelaxed(int & value, int expectedValue, int newValue)
+    static bool testAndSetRelaxed (int & value, int expectedValue, int newValue)
     {
         bool rv = false;
-        auto_lock<> locker(& g_mutex);
+        auto_lock<> locker(& __mutex);
         if (value == expectedValue) {
             value = newValue;
             rv = true;
@@ -61,7 +61,16 @@ struct atomic_integer_intrinsics
         return rv;
     }
 
-    static PFS_DEFAULT_MT_POLICY g_mutex;
+    static inline T compareAndSwap (T * ptr, T oldValue, T newValue)
+    {
+    	auto_lock<> locker(& __mutex);
+    	 T r = *ptr;
+    	 if (*ptr == oldValue)
+    		 *ptr = newValue;
+    	 return r;
+    }
+
+    static PFS_DEFAULT_MT_POLICY __mutex;
 };
 
 } // pfs

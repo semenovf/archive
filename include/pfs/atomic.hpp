@@ -56,6 +56,16 @@ public:
     {
     	return intrinsics::fetchAndAddRelaxed(_value, valueToAdd);
     }
+
+    Type compareAndSwap (Type oldValue, Type newValue)
+    {
+    	return intrinsics::compareAndSwap(& _value, oldValue, newValue);
+    }
+
+//    void swap (atomic_integer<Type> & other)
+//    {
+//    	other.store(compareAndSwap(_value, other.load()));
+//    }
 };
 
 typedef atomic_integer<int> atomic_int;
@@ -81,6 +91,12 @@ public:
     {
     	return intrinsics::fetchAndAddRelaxed(_value, valueToAdd);
     }
+
+    Type compareAndSwap (Type oldValue, Type newValue)
+    {
+    	return intrinsics::compareAndSwap(& _value, oldValue, newValue);
+    }
+
 };
 
 } // pfs
