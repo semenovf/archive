@@ -98,13 +98,10 @@ thread::impl::impl (/*thread::data * threadData*/)
 	, _thread(nullptr)
 	, _data(nullptr)
 {
-	CWT_TRACE_METHOD();
 }
 
 thread::impl::~impl()
 {
-	CWT_TRACE_METHOD();
-
 	// deleting _data will destroy this instance
 
 	thread::data * d = _data;
@@ -121,14 +118,11 @@ thread::impl::~impl()
 
 thread::thread() : _pimpl(new thread::impl)
 {
-	CWT_TRACE_METHOD();
 	_pimpl->_thread = this;
 }
 
 thread::~thread ()
 {
-	CWT_TRACE_METHOD();
-
 	pfs::auto_lock<> locker(& _pimpl->_mutex);
     if (_pimpl->_state == ThreadFinishing) {
         locker.unlock();
@@ -202,7 +196,6 @@ bool thread::impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
 
 void thread::impl::start (thread::priority_type priority, size_t stackSize)
 {
-	CWT_TRACE_METHOD();
 	int rc = 0;
 	pfs::auto_lock<> locker(& _mutex);
 
@@ -321,7 +314,6 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
  */
 void * thread::impl::thread_routine (void * arg)
 {
-	CWT_TRACE_FUNC();
 	PFS_ASSERT(arg);
 
 	// If a cancellation request is received,
@@ -361,7 +353,6 @@ void * thread::impl::thread_routine (void * arg)
 
 void thread::impl::finalize (void * arg)
 {
-	CWT_TRACE_FUNC();
 	PFS_ASSERT(arg);
 
 	thread::impl * threadImpl = static_cast<thread::impl *>(arg);
@@ -386,7 +377,6 @@ void thread::impl::finalize (void * arg)
 
 void thread::data::destroy (void * pdata)
 {
-	CWT_TRACE_FUNC();
 	PFS_ASSERT(pdata);
 	pthread_setspecific(threadKey, pdata);
 
@@ -420,7 +410,6 @@ void thread::data::destroy (void * pdata)
  */
 void thread::impl::terminate ()
 {
-//	CWT_TRACE_METHOD();
     pfs::auto_lock<> locker(& _mutex);
 
     if (_data && _data->threadId) {
@@ -432,8 +421,6 @@ void thread::impl::terminate ()
 
 bool thread::impl::wait (ulong_t timeout)
 {
-//	CWT_TRACE_METHOD();
-
     pfs::auto_lock<> locker(& _mutex);
 
     if (_data) {

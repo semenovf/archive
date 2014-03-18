@@ -9,6 +9,7 @@
 #define __CWT_SINGLETON_HPP__
 
 #include <pfs/mt.hpp>
+#include <pfs/noncopyable.hpp>
 
 namespace cwt {
 
@@ -72,10 +73,8 @@ namespace cwt {
 // See http://en.wikipedia.org/wiki/Double-checked_locking
 
 template <class T>
-class singleton
+class singleton : pfs::noncopyable
 {
-	PFS_DENY_COPY(singleton);
-
 protected:
 	singleton() {}
 	virtual ~singleton() { _self = 0; }

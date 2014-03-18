@@ -44,13 +44,12 @@ inline thread_cv::impl::impl ()
     int rc;
     PFS_VERIFY_ERRNO(!(rc = pthread_mutex_init(& m_internalMutex, nullptr)), rc);
 
-    if (rc)
-    	PFS_FATAL(_Tr("Failed to initialize internal mutex for conditional variable"));
+    PFS_ASSERT_X(!rc, _Tr("Failed to initialize internal mutex for conditional variable"));
 
     PFS_VERIFY_ERRNO(!(rc = pthread_cond_init(& m_cond, nullptr)), rc);
     if (rc) {
         PFS_VERIFY(!pthread_mutex_destroy (& m_internalMutex));
-        PFS_FATAL(_Tr("Unable to initialize condition variable"));
+        PFS_ASSERT_X(!rc, _Tr("Unable to initialize condition variable"));
     }
 }
 
@@ -117,8 +116,7 @@ bool thread_cv::impl::wait (pfs::mutex & lockedMutex)
         lockedMutex.lock();
     }
 
-	if (rc)
-		PFS_FATAL(_Tr("Failed in pthread_cond_wait"));
+    PFS_ASSERT_X(!rc, _Tr("Failed in pthread_cond_wait"));
 
 	return true;
 }
