@@ -10,124 +10,92 @@
 #include <pfs/shared_ptr.hpp>
 #include <pfs/atomic.hpp>
 
-#ifdef __COMMENT__
+namespace pfs {
 
-template <typename ImplClass>
 class pimpl
 {
-protected:
-//    template <typename T1> friend  class shared_ptr;
-
-    ImplClass * _value;
-    atomic_int  _ref;
-
-private:
-    pimpl<ImplClass> & operator = (const pimpl<ImplClass> & other);
-/*
-        {
-            shared_ptr copy(other);
-            swap(copy);
-            return *this;
-        }
-*/
+	class impl_base;
+	impl_base * _holder;
 
 public:
-    pimpl () : _value(0), _ref(0)
-    {}
+	template<typename T>
+	pimpl (const T & p) : _holder(new impl_holder<T>(p)) {}
 
-    explicit pimpl (ImplClass * ptr) : _value(ptr), _ref(0)
-    {
-    	if (ptr) {
-    		_ref.ref();
-    	}
-    }
-
-    pimpl (const pimpl<ImplClass> & other) : _value(other._value), _ref(other._ref)
-    {
-    	if (other._value)
-    		_ref.ref();
-    }
-
-    ~pimpl ()
-    {
-        if (!_value)
-        	return;
-        if (!_ref.deref()) {
-            delete _value;
-            _value = nullptr;
-        }
-    }
-
-	bool isNull () const
+	pimpl (const pimpl & other) : _holder(other._holder)
 	{
-		return _value == nullptr;
+		PFS_ASSERT(_holder);
+		_holder->_ref.ref();
 	}
 
-    ImplClass & operator * ()
-    {
-        if (!_value) {
-        	_value = new ImplClass;
-        	_ref.ref();
-        }
-        return *_value;
-    }
+	pimpl & operator = (const pimpl & other)
+	{
+		if (_holder) {
+			deref();
+		}
 
-    ImplClass * operator -> ()
-    {
-        if (!_value) {
-        	_value = new ImplClass;
-        	_ref.ref();
-        }
-        return _value;
-    }
+		_holder = other._holder;
+		_holder->_ref.ref();
+		return *this;
+	}
 
-    ImplClass * get () const
-    {
-    	return _value;
-    }
+	~pimpl () { deref(); }
 
-    void swap (pimpl & other)
-    {
-        ::pfs::swap<ref_count *>(_d, other._d);
-        ::pfs::swap(this->_value, other._value);
-    }
+private:
+	void deref ()
+	{
+		if (!_holder->_ref.deref())
+			delete _holder;
+	}
+
+private:
+	struct impl_base
+	{
+		pfs::atomic_int _ref;
+		impl_base () : _ref(1) {}
+		virtual ~impl_base () {}
+		virtual impl_base * clone ()  = 0;
+	};
+
+	template<typename T>
+	struct impl_holder : impl_base
+	{
+		T _d;
+		impl_holder (const T & d) : impl_base(), _d(d) {}
+
+		T *       operator -> ()       { return & _d; }
+		const T * operator -> () const { return & _d; }
+		T &       operator *  ()       { return _d; }
+		const T & operator *  () const { return _d; }
+
+		impl_base * clone () { return new impl_holder(_d); }
+	};
 
 public:
-/*	template <typename ImplClass1>
 	void detach ()
 	{
-		if (_value != nullptr) {
-			if (_ref.load() != 0) {
-				pimpl<ImplClass> d(new Impl1(*_value));
-				swap<ImplClass1>(d);
-			}
+		if (_holder->_ref.load() > 1) { // not unique
+			_holder->_ref.deref();
+			_holder = _holder->clone();
 		}
 	}
 
-	template <typename Impl1>
-	Impl1 & cast ()
+	template <typename T>
+	const impl_holder<T> & cast () const
 	{
-		return *pfs::static_pointer_cast<Impl1,Impl>(_pimpl);
+		return *static_cast<impl_holder<T> *>(_holder); // not dynamic cast
 	}
 
-	template <typename Impl1>
-	const Impl1 & cast () const
+	template <typename T>
+	impl_holder<T> & cast ()
 	{
-		return *pfs::static_pointer_cast<Impl1,Impl>(_pimpl);
+		return *static_cast<impl_holder<T> *>(_holder); // not dynamic cast
 	}
-
-	template <typename Impl1>
-	Impl1 & assign ()
-	{
-		if (_pimpl.get() == nullptr)
-			_pimpl = pfs::dynamic_pointer_cast<Impl, Impl1>(pfs::make_shared<Impl1>());
-		return static_cast<Impl1 &>(*_pimpl);
-	}*/
 };
 
 } // pfs
 
-#endif
+
+// TODO DEPRECATED {
 
 #define PFS_PIMPL_INLINE(Class,ImplClassScope,Impl)            \
 ImplClassScope:                                                \
@@ -218,5 +186,7 @@ void Class::detach()                                           \
                                                                \
 Class::Class (const Class::Impl & other)                       \
 	: _pimpl(new Class::Impl(other)) {}
+
+// } TODO DEPRECATED
 
 #endif /* __PFS_PIMPL_HPP__ */

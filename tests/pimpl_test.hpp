@@ -7,47 +7,17 @@
 #ifndef __PFS_PIMPL_TEST_HPP__
 #define __PFS_PIMPL_TEST_HPP__
 
-#include "pimpl_test.hpp"
-#include <pfs/shared_ptr.hpp>
-
-template <typename ImplClass>
-class pimpl
-{
-	pfs::shared_ptr<ImplClass> _p;
-
-public:
-	pimpl (ImplClass * p) : _p(p) {}
-
-	template <typename ImplClass1>
-	ImplClass1 & cast () { return *static_cast<ImplClass1 *>(_p.get()); }
-
-	template <typename ImplClass1>
-	const ImplClass1 & cast () const { return *static_cast<ImplClass1 *>(_p.get()); }
-
-	template <typename ImplClass1>
-	ImplClass1 & assign () { detach<ImplClass1>(); return *static_cast<ImplClass1 *>(_p.get()); }
-
-	template <typename ImplClass1>
-	void detach ()
-	{
-		if (!_p.unique()) {
-			pfs::shared_ptr<ImplClass> p(new ImplClass1(*_p));
-			_p.swap(p);
-		}
-	}
-
-};
+#include <pfs/pimpl.hpp>
 
 class A
 {
 protected:
 	class Impl;
+	pfs::pimpl _d;
 
-protected:
-	pimpl<Impl> _d;
-
-protected:
-	A (Impl * p);
+	// if has derived class and it has own Impl class
+	template <typename T>
+	A (const T & p) : _d(p) {}
 
 public:
 	A ();
@@ -66,12 +36,15 @@ class B : public A
 protected:
 	class Impl;
 
+	// if has derived class and it has own Impl class
+	template <typename T>
+	B (const T & p) : A(p) {}
+
 public:
 	B ();
 	const char * getString () const;
 	virtual void setString (const char * s);
 };
-
 
 class C : public B
 {
@@ -79,8 +52,7 @@ public:
 	C ();
 	C (const B & b);
 	C (const C & c);
-
-	virtual void setString (const char * s) override;
+	virtual void setString (const char * s);
 };
 
 #endif /* __PFS_PIMPL_TEST_HPP__ */

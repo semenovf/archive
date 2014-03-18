@@ -125,14 +125,16 @@
 
 // TODO DEPRECATED {
 #define PFS_FPRINT(stream,prefix,str) fprintf(stream, "%s (%s[%d]): %s\n", prefix, __TFILE__, __LINE__, str)
-#define PFS_PRINT(prefix,str) PFS_FPRINT(stdout,prefix,str)
-#define PFS_INFO(str)         PFS_FPRINT(stdout,"INFO",str)
+//#define PFS_PRINT(prefix,str) PFS_FPRINT(stdout,prefix,str)
+//#define PFS_INFO(str)         PFS_FPRINT(stdout,"INFO",str)
 #define PFS_WARN(str)         PFS_FPRINT(stderr,"WARN",str)
 #define PFS_ERROR(str)        PFS_FPRINT(stderr,"ERROR",str)
-#define PFS_FATAL(str)      { PFS_FPRINT(stderr,"FATAL",str); abort(); }
+//#define PFS_FATAL(str)      { PFS_FPRINT(stderr,"FATAL",str); abort(); }
 // }
 
-#define PFS_VERIFY(expr) if (! (expr)) { PFS_ERROR(#expr); }
+#define PFS_VERIFY(expr) if (! (expr)) {                               \
+		fprintf(stderr, "ERROR (%s[%d]): %s\n"                         \
+				, __TFILE__, __LINE__, #expr); }
 #define PFS_VERIFY_ERRNO(expr,errn) if (! (expr)) {                    \
 		fprintf(stderr, "ERROR (%s[%d]): %s: [errno=%d]: %s\n"         \
 				, __TFILE__, __LINE__, #expr, errn, strerror(errn)); }
@@ -157,11 +159,11 @@
 #	if defined(PFS_CC_BORLAND) /* && defined(__GRAPHICS_H) */
 #		define PFS_ASSERT_TRACE(p,trace_exp) if( !(p) ) { (void)trace_exp; \
 			(void) __assertfail(                                           \
-					"Assertion failed: %s, file %s, line %d" __ENDL__,   \
+					"Assertion failed: %s, file %s, line %d" __ENDL__,     \
                     #p, __FILE__, __LINE__ ); }
-#		define PFS_ASSERT_X(p,str) if( !(p) ) { PFS_ERROR(str); \
+#		define PFS_ASSERT_X(p,str) if( !(p) ) {                            \
 			(void) __assertfail(                                           \
-					"Assertion failed: %s, file %s, line %d" __ENDL__,   \
+					"Assertion failed: %s, file %s, line %d" __ENDL__,     \
                     #p, __FILE__, __LINE__ ); }
 #	elif defined(__dj_include_assert_h_)
 #		define PFS_ASSERT_TRACE(p,trace_exp) if( !(p) ) { (void)trace_exp; \

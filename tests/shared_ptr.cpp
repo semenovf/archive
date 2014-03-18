@@ -50,9 +50,7 @@ void test_empty_ptr()
     TEST_OK(0 == xPtr.use_count());
     TEST_OK(NULL == xPtr.get());
 
-    if (xPtr) {
-        PFS_ERROR("bool cast operator error");
-    }
+    PFS_VERIFY_X(!xPtr, "bool cast operator error");
 
     // Reset to NULL (ie. do nothing)
     xPtr.reset();
@@ -170,9 +168,9 @@ void test_basic_ptr()
             TEST_OK(NULL != xPtr.get());
             TEST_OK(123 == xPtr->m_val);
             TEST_OK(1 == Foo::g_instances);
-        } else {
-            PFS_ERROR("bool cast operator error");
         }
+
+        PFS_VERIFY_X(xPtr, "bool cast operator error");
 
         TEST_OK(true == xPtr);
         TEST_OK(true == xPtr.unique());

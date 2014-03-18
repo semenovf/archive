@@ -156,42 +156,42 @@ public:
         return _value;
     }
 
-	inline operator bool() const throw()
+	inline operator bool () const throw()
 	{
 	   return (0 < use_count());
 	}
 
-    T * get() const
+    T * get () const
     {
     	return _value;
     }
 
-    void swap(shared_ptr & other)
+    void swap (shared_ptr & other)
     {
         ::pfs::swap<ref_count *>(_d, other._d);
         ::pfs::swap(this->_value, other._value);
     }
 
-    inline void reset()
+    inline void reset ()
     {
     	shared_ptr copy;
     	swap(copy);
     }
 
-    inline void reset(T * ptr)
+    inline void reset (T * ptr)
     {
     	shared_ptr copy(ptr);
     	swap(copy);
     }
 
     template <typename Deleter>
-    inline void reset(T * ptr, Deleter deleter)
+    inline void reset (T * ptr, Deleter deleter)
     {
     	shared_ptr copy(ptr, deleter);
     	swap(copy);
     }
 
-    int use_count() const
+    int use_count () const
     {
     	if (_value != 0)
     		return _d->strongref.load();
@@ -203,7 +203,7 @@ public:
      *
      * @return
      */
-    bool unique() const
+    bool unique () const
     {
     	return use_count() == 1 ? true : false;
     }
@@ -229,7 +229,7 @@ public:
 		return (_value != p);
 	}
 
-	inline bool operator <= (const shared_ptr& ptr) const
+	inline bool operator <= (const shared_ptr & ptr) const
 	{
 		return (_value <= ptr._value);
 	}
@@ -270,7 +270,7 @@ public:
 	}
 
 private:
-    static void deref(ref_count * d)
+    static void deref (ref_count * d)
     {
         if (!d)
         	return;
@@ -281,9 +281,9 @@ private:
             delete d;
     }
 
-    void deref()
+    void deref ()
     {
-    	deref(_d);
+    	deref (_d);
     }
 
     void ref() const
