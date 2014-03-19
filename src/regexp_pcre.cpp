@@ -69,7 +69,7 @@ public:
 	bool exec ();
 };
 
-PFS_PIMPL_DEF(regexp,impl)
+//PFS_PIMPL_DEF(regexp,impl)
 
 regexp::impl::~impl ()
 {
@@ -247,50 +247,52 @@ StringList RegExpMatch::captured() const
 
 
 regexp::regexp()
-	: _pimpl(new regexp::impl)
+	: _d(regexp::impl())
 {}
 
 regexp::regexp (const pfs::string & pattern)
-	: _pimpl(new regexp::impl)
+	: _d(regexp::impl())
 {
 	setPattern(pattern);
 }
 
 regexp::regexp (const char * latin1Pattern)
-	: _pimpl(new regexp::impl)
+	: _d(regexp::impl())
 {
 	setPattern(pfs::string::fromLatin1(latin1Pattern));
 }
 
 bool regexp::isError () const
 {
-	return _pimpl->_errstr.size() > 0;
+	return _d.cast<impl>()->_errstr.size() > 0;
 }
 
 void regexp::setLineBreak (int lineBreak)
 {
-	_pimpl->invalidate();
-	if (lineBreak & LineBreak_CR)         _pimpl->_lineBreak |= PCRE_NEWLINE_CR;
-	if (lineBreak & LineBreak_LF)         _pimpl->_lineBreak |= PCRE_NEWLINE_LF;
-	if (lineBreak & LineBreak_CRLF)       _pimpl->_lineBreak |= PCRE_NEWLINE_CRLF;
-	if (lineBreak & LineBreak_AnyCRLF)    _pimpl->_lineBreak |= PCRE_NEWLINE_ANYCRLF;
-	if (lineBreak & LineBreak_AnyUnicode) _pimpl->_lineBreak |= PCRE_NEWLINE_ANY;
+	impl & d = *_d.cast<impl>();
+	d.invalidate();
+	if (lineBreak & LineBreak_CR)         d._lineBreak |= PCRE_NEWLINE_CR;
+	if (lineBreak & LineBreak_LF)         d._lineBreak |= PCRE_NEWLINE_LF;
+	if (lineBreak & LineBreak_CRLF)       d._lineBreak |= PCRE_NEWLINE_CRLF;
+	if (lineBreak & LineBreak_AnyCRLF)    d._lineBreak |= PCRE_NEWLINE_ANYCRLF;
+	if (lineBreak & LineBreak_AnyUnicode) d._lineBreak |= PCRE_NEWLINE_ANY;
 }
 
 void regexp::setPattern (const pfs::string & pattern)
 {
-	_pimpl->invalidate();
-	_pimpl->_pattern = pattern;
+	impl & d = *_d.cast<impl>();
+	d.invalidate();
+	d._pattern = pattern;
 }
 
 const pfs::string & regexp::errorString () const
 {
-	return _pimpl->_errstr;
+	return _d.cast<impl>()->_errstr;
 }
 
 int regexp::errorOffset () const
 {
-	return _pimpl->_erroffset;
+	return _d.cast<impl>()->_erroffset;
 }
 
 bool regexp::match (const pfs::string & s)
@@ -300,59 +302,65 @@ bool regexp::match (const pfs::string & s)
 
 bool regexp::match (const char * s)
 {
+	impl & d = *_d.cast<impl>();
+
 	size_t len = strlen(s);
 	PFS_ASSERT(len <= PFS_INT_MAX);
 
-	_pimpl->_errstr.clear();
+	d._errstr.clear();
 
-	if (!_pimpl->_isReady) {
-		if (!_pimpl->compile())
+	if (!d._isReady) {
+		if (!d.compile())
 			return false;
 	}
 
-	_pimpl->_ovector.resize((_pimpl->_nsubpatterns + 1) * 3);
-	_pimpl->_exec_options = _pimpl->_lineBreak | PCRE_NO_UTF8_CHECK;
-	_pimpl->_subjectPtr = s;
-	_pimpl->_subjectLength = int(len);
+	d._ovector.resize((d._nsubpatterns + 1) * 3);
+	d._exec_options = d._lineBreak | PCRE_NO_UTF8_CHECK;
+	d._subjectPtr = s;
+	d._subjectLength = int(len);
 
-	return _pimpl->exec();
+	return d.exec();
 }
 
 bool regexp::matchNext ()
 {
-	_pimpl->_errstr.clear();
+	impl & d = *_d.cast<impl>();
+	d._errstr.clear();
 
-	if (!_pimpl->_isReady) {
-		if (!_pimpl->compile())
+	if (!d._isReady) {
+		if (!d.compile())
 			return false;
 	}
-	size_t offset = _pimpl->_ovector[1] - _pimpl->_ovector[0];
-	_pimpl->_subjectPtr += offset;
-	_pimpl->_subjectLength -= offset;
-	return _pimpl->exec();
+	size_t offset = d._ovector[1] - d._ovector[0];
+	d._subjectPtr += offset;
+	d._subjectLength -= offset;
+	return d.exec();
 }
 
 size_t	regexp::capturedCount() const
 {
-	return _pimpl->_capturedCount;
+	return _d.cast<impl>()->_capturedCount;
 }
 
 pfs::string regexp::captured (size_t index) const
 {
-	return (_pimpl->_capturedCount && index < _pimpl->_capturedCount)
-		? pfs::string::fromUtf8(_pimpl->_subjectPtr + _pimpl->_ovector[2 * index]
-	        , _pimpl->_ovector[2 * index + 1] - _pimpl->_ovector[2 * index])
+	const impl & d = *_d.cast<impl>();
+
+	return (d._capturedCount && index < d._capturedCount)
+		? pfs::string::fromUtf8(d._subjectPtr + d._ovector[2 * index]
+	        , d._ovector[2 * index + 1] - d._ovector[2 * index])
 		: pfs::string();
 }
 
 pfs::vector<pfs::string> regexp::groups() const
 {
+	const impl & d = *_d.cast<impl>();
 	pfs::vector<pfs::string> r;
 
-	if (_pimpl->_capturedCount > 1) {
-		for (size_t i = 1, j = 2; i < _pimpl->_capturedCount; ++i, j += 2) {
-			r.append(pfs::string::fromUtf8(_pimpl->_subjectPtr + _pimpl->_ovector[j]
-			    , _pimpl->_ovector[j + 1] - _pimpl->_ovector[j]));
+	if (d._capturedCount > 1) {
+		for (size_t i = 1, j = 2; i < d._capturedCount; ++i, j += 2) {
+			r.append(pfs::string::fromUtf8(d._subjectPtr + d._ovector[j]
+			    , d._ovector[j + 1] - d._ovector[j]));
 		}
 	}
 	return r;

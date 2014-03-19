@@ -11,6 +11,7 @@
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/pimpl.hpp>
+#include <pfs/noncopyable.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -19,9 +20,11 @@
 
 namespace cwt {
 
-class DLL_API regexp
+class DLL_API regexp : pfs::noncopyable
 {
-	PFS_PIMPL_DECL(regexp, private, impl, private);
+	class impl;
+	pfs::pimpl _d;
+	//PFS_PIMPL_DECL(regexp, private, impl, private);
 
 public:
 	enum LineBreak {

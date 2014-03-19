@@ -10,7 +10,7 @@
 #define __CWT_FS_HPP__
 
 #include <pfs/string.hpp>
-#include <pfs/vector.hpp>
+#include <pfs/stringlist.hpp>
 #include <cwt/errorable.hpp>
 
 namespace cwt {
@@ -29,12 +29,14 @@ public:
 		, NoDot      = 0x2000     // Do not list the special entry ".".
 		, NoDotDot   = 0x4000     // Do not list the special entry "..".
 		, AllEntries = Dirs | Files | Drives // List directories, files, drives and symlinks (this does not list broken symlinks unless you specify System).
-		, Readable   = 0x0010      // List files for which the application has read access. The Readable value needs to be combined with Dirs or Files.
-		, Writable   = 0x0020      // List files for which the application has write access. The Writable value needs to be combined with Dirs or Files.
-		, Executable = 0x0040      // List files for which the application has execute access. The Executable value needs to be combined with Dirs or Files.
-		//, Modified   = 0x080      // Only list files that have been modified (ignored on Unix).
 		, Hidden     = 0x0100      // List hidden files (on Unix, files starting with a ".").
-		//, System     = 0x200      // List system files (on Unix, FIFOs, sockets and device files are included; on Windows, .lnk files are included)
+		, System     = 0x0200      // List system files (on Unix, FIFOs, sockets and device files are included; on Windows, .lnk files are included)
+
+		// Use canRead | canWrite | canExec to check specific access of the application
+		//, Readable   = 0x0010      // List files for which the application has read access. The Readable value needs to be combined with Dirs or Files.
+		//, Writable   = 0x0020      // List files for which the application has write access. The Writable value needs to be combined with Dirs or Files.
+		//, Executable = 0x0040      // List files for which the application has execute access. The Executable value needs to be combined with Dirs or Files.
+		//, Modified   = 0x080      // Only list files that have been modified (ignored on Unix).
 		//, CaseSensitive = 0x800   // The filter should be case sensitive.
 	};
 
@@ -57,6 +59,7 @@ public:
 	pfs::ucchar separator ();
 	bool isAbsolute (const pfs::string & path);
 	bool isRelative (const pfs::string & path) { return !isAbsolute(path); }
+	bool isDirectory (const pfs::string & path);
 	bool exists (const pfs::string & path);
 	bool rename (const pfs::string & from, const pfs::string & to);
 	bool remove (const pfs::string & path);
@@ -64,7 +67,8 @@ public:
 	bool simpleBackup (const pfs::string & path);
 	pfs::string tempDirectory ();
 	pfs::string join (const pfs::string & dir, const pfs::string filename);
-	pfs::vector<pfs::string> entryList (const pfs::string & dir, uint_t filters = NoFilter, uint_t sort = NoSort);
+	pfs::stringlist entryListByRegExp (const pfs::string & dir, const pfs::stringlist & reNameFilters, uint_t filters, uint_t sort = NoSort);
+	pfs::stringlist entryListByWildcard (const pfs::string & dir, const pfs::stringlist & nameFilters, uint_t filters = NoFilter, uint_t sort = NoSort);
 };
 
 } // cwt
