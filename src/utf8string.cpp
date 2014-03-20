@@ -233,9 +233,9 @@ utf8string & utf8string::setNumber (double n, char f, int prec)
 }
 
 
-double utf8string::toDouble (bool * ok, bool usePosixLocale) const
+double utf8string::toDouble (bool * ok, char decimalPoint) const
 {
-	return bytearray(c_str()).toDouble(ok, usePosixLocale);
+	return bytearray(c_str()).toDouble(ok, decimalPoint);
 }
 
 long_t utf8string::toLong (bool * ok, int base) const

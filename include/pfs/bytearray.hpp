@@ -152,7 +152,7 @@ public:
 	bytearray left(size_t n) const                { return substr(0, n); }
 	bytearray right(size_t n) const               { return substr(length() - n, n); }
 
-	double	 toDouble (bool *ok = 0, bool usePosixLocale = true) const; // using locale flag is for decimal point ('.' or ',' or <any specified by system locale>)
+	double	 toDouble (bool *ok = 0, char decimalPoint = '.') const;
 	long_t   toLong   (bool *ok = 0, int base = 10) const;
 	ulong_t	 toULong  (bool *ok = 0, int base = 10) const;
 	int_t	 toInt    (bool *ok = 0, int base = 10) const;

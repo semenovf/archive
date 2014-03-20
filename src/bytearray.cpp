@@ -12,7 +12,6 @@
 #include <cerrno>
 #include <sstream>
 #include <iomanip>
-#include <clocale>
 
 namespace pfs {
 
@@ -193,20 +192,19 @@ static ulong_t	__str_to_ulong_helper(const char *s, bool * pok, int base, ulong_
 }
 
 
-static double __str_to_double (const char * s, bool * pok, bool usePosixLocale)
+extern "C" double vim_strtod ( const char *string
+    , char ** endPtr
+    , char decimalPoint);
+
+#define pfs_strtod vim_strtod
+
+static double __str_to_double (const char * s, bool * pok, char decimalPoint)
 {
 	bool ok = true;
 	char * endptr = nullptr;
 
-	char * savedLocale = nullptr;
-
-	if (usePosixLocale) {
-		PFS_VERIFY((savedLocale = setlocale(LC_NUMERIC, nullptr)));
-		PFS_VERIFY(setlocale(LC_NUMERIC, "C"));
-	}
-
 	errno = 0;
-	double r = strtod(s, & endptr);
+	double r = pfs_strtod(s, & endptr, decimalPoint);
 
 	if (errno == ERANGE
 			|| endptr == s
@@ -218,35 +216,12 @@ static double __str_to_double (const char * s, bool * pok, bool usePosixLocale)
 	if (pok)
 		*pok = ok;
 
-	if (usePosixLocale && savedLocale) {
-		PFS_VERIFY(setlocale(LC_NUMERIC, savedLocale)); // restore locale
-	}
 	return r;
 }
 
-/*
-static float __str_to_float (const char * s, bool *pok)
+double bytearray::toDouble (bool * ok, char decimalPoint) const
 {
-	bool ok = true;
-	double r = __str_to_double (s, & ok);
-
-	if (ok) {
-		if (r < double(PFS_FLOAT_MIN)
-				&& r > double(PFS_FLOAT_MAX)) {
-			ok = false;
-			r = double(0);
-		}
-	}
-
-	if (pok)
-		*pok = ok;
-	return r;
-}
-*/
-
-double bytearray::toDouble (bool * ok, bool usePosixLocale) const
-{
-	return __str_to_double(c_str(), ok, usePosixLocale);
+	return __str_to_double(c_str(), ok, decimalPoint);
 }
 
 /*

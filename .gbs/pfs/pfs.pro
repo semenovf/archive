@@ -4,8 +4,10 @@ INCLUDEPATH += ../../include
 
 unix {
     SOURCES += ../../src/*.cpp
+    SOURCES += ../../src/*.c
 }
 
 win32 {
     SOURCES += ..\\..\\src\\*.cpp
+    SOURCES += ..\\..\\src\\*.c
 }
