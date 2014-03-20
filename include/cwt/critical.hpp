@@ -10,6 +10,7 @@
 #define __CWT_CRITICAL_HPP__
 
 #include <pfs/string.hpp>
+#include <pfs/stringlist.hpp>
 #include <pfs/map.hpp>
 #include <cwt/errorable.hpp>
 
@@ -18,7 +19,7 @@ namespace cwt {
 class critical
 {
 	pfs::string _text;
-	pfs::vector<pfs::string> _detailList;
+	pfs::stringlist _detailList;
 
 public:
 	critical () : _text(), _detailList() {}
@@ -31,7 +32,7 @@ public:
 			_detailList.append(detail);
 	}
 
-	critical (const pfs::string & text, const pfs::vector<pfs::string> & details)
+	critical (const pfs::string & text, const pfs::stringlist & details)
 		: _text(text)
 		, _detailList()
 		{ addDetails(details); }
@@ -44,13 +45,13 @@ public:
 	void addDetail (const pfs::string & detail)
 		{ _detailList.append(detail); }
 
-	void addDetails (const pfs::vector<pfs::string> & details)
+	void addDetails (const pfs::stringlist & details)
 		{ _detailList.append(details); }
 
 	void addDetails (const cwt::errorable & details);
 
 	pfs::string text () const { return _text; }
-	pfs::vector<pfs::string> details () const { return _detailList; }
+	pfs::stringlist details () const { return _detailList; }
 };
 
 } // cwt
