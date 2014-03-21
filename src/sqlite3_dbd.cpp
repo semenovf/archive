@@ -260,7 +260,7 @@ cwt::debby::database_data * s3_dbd_open(const pfs::string & path
 	if (rc != SQLITE_OK) {
 		if (!dbh_native) {
 			errstr = _u8(_Tr("Unable to allocate memory for database handler."));
-			errstr << _Tr("Internal error code: ") << rc;
+			errstr << _Tr("Internal error code: ") << pfs::string::number(rc);
 		} else {
 			switch( rc ) {
 				case SQLITE_CANTOPEN:
