@@ -76,8 +76,8 @@ static pfs::string _LOGGER_DIGIT("0123456789");
 
 /* exclude '%' (0x25) */
 pfs::ucchar plain_char[] = {
-	  0x20u, 0x24u
-	, 0x26u, 0x10FFFFu
+	  pfs::ucchar(0x20u), pfs::ucchar(0x24u)
+	, pfs::ucchar(0x26u), pfs::ucchar(0x10FFFFu)
 };
 static cwt::fsm::transition<pfs::string> plain_char_fsm[] = {
       {-1, 1, FSM_MATCH_RANGE(plain_char[0], plain_char[1]) , FSM_ACCEPT, nullptr, nullptr }
@@ -98,9 +98,9 @@ static cwt::fsm::transition<pfs::string> format_mod_fsm[] = {
 
 /* format-spec = "{" *( <exclude '{' (0x7B) and '}' (0x7D) > ) "}" */
 pfs::ucchar format_spec_char[] = {
-	  0x20u, 0x7Au
-	, 0x7Cu, 0x7Cu
-	, 0x7Eu, 0x10FFFFu
+	  pfs::ucchar(0x20u), pfs::ucchar(0x7Au)
+	, pfs::ucchar(0x7Cu), pfs::ucchar(0x7Cu)
+	, pfs::ucchar(0x7Eu), pfs::ucchar(0x10FFFFu)
 };
 static cwt::fsm::transition<pfs::string> format_spec_char_fsm[] = {
 	  {-1, 1, FSM_MATCH_RANGE(format_spec_char[0], format_spec_char[1]) , FSM_ACCEPT, nullptr, nullptr }

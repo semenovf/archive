@@ -40,9 +40,9 @@ static pfs::string _SF_SPEC_CHAR("diouxXeEfFgGcsp");
 
 /* exclude '%' (0x25) */
 static fsm::transition<pfs::string> plain_char_fsm[] = {
-      {-1, 1, FSM_MATCH_RANGE(0x20u, 0x24u)     , FSM_ACCEPT, nullptr, nullptr }
-    , {-1, 2, FSM_MATCH_RANGE(0x26u, 0x10FFFFu) , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_RANGE(0x01u, 0x19u)     , FSM_ACCEPT, nullptr, nullptr }
+      {-1, 1, FSM_MATCH_RANGE(pfs::ucchar(0x20u), pfs::ucchar(0x24u))     , FSM_ACCEPT, nullptr, nullptr }
+    , {-1, 2, FSM_MATCH_RANGE(pfs::ucchar(0x26u), pfs::ucchar(0x10FFFFu)) , FSM_ACCEPT, nullptr, nullptr }
+    , {-1,-1, FSM_MATCH_RANGE(pfs::ucchar(0x01u), pfs::ucchar(0x19u))     , FSM_ACCEPT, nullptr, nullptr }
 };
 
 static fsm::transition<pfs::string> plain_chars_fsm[] = {
