@@ -407,7 +407,7 @@ void test_bool(void)
 	TEST_OK2(uval.toBool() == true, "Blob(\"0\") == true");
 	uval.setBlob(pfs::bytearray());
 	TEST_OK2(uval.toBool() == false, "Blob() == false");
-	TEST_OK2(uval.isNull(), "Blob() is Null");
+	TEST_OK2(!uval.isNull(), "Blob() is not Null");
 
 	uval.setBlob("abracadabra", 11);
 	TEST_OK2(uval.toBool() == true, "Blob(\"abracadabra\") == true");

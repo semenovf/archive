@@ -144,19 +144,19 @@ void test_iterator()
 	it = threechars.begin();
 	_iterator it2 = it;
 	TEST_OK(it2 == it);
-	TEST_OK(*it == 0x10346);
-	TEST_OK(*(++it) == 0x65e5);
-	TEST_OK((*it++) == 0x65e5);
-	TEST_OK(*it == 0x0448);
+	TEST_OK(*it == pfs::ucchar(0x10346));
+	TEST_OK(*(++it) == pfs::ucchar(0x65e5));
+	TEST_OK((*it++) == pfs::ucchar(0x65e5));
+	TEST_OK(*it == pfs::ucchar(0x0448));
 	TEST_OK(it != it2);
 	_iterator itEnd = threechars.end();
 	TEST_OK(++it == itEnd);
 	--it;
-	TEST_OK(*it == 0x0448);
-	TEST_OK((*it--) == 0x0448);
-	TEST_OK(*it == 0x65e5);
+	TEST_OK(*it == pfs::ucchar(0x0448));
+	TEST_OK((*it--) == pfs::ucchar(0x0448));
+	TEST_OK(*it == pfs::ucchar(0x65e5));
 	TEST_OK(--it == threechars.begin());
-	TEST_OK(*it == 0x10346);
+	TEST_OK(*it == pfs::ucchar(0x10346));
 }
 
 template <typename _reverse_iterator>
@@ -304,7 +304,7 @@ void test_replace()
 			== _u8("this is just a phrase."));
 	TEST_OK(str.replace(8, 6, _u8("a shorty"), 0, 7)
 			== _u8("this is a short phrase."));
-	TEST_OK(str.replace(22, 1, 3, '!')
+	TEST_OK(str.replace(22, 1, 3, pfs::ucchar('!'))
 			== _u8("this is a short phrase!!!"));
 
 	std::cout << '[' << str << ']' << std::endl;

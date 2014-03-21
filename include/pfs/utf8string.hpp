@@ -216,12 +216,12 @@ public:
 	utf8string & operator += (const utf8string & other) { return append(other); }
 	utf8string & operator += (const char * latin1) { return append(utf8string(latin1)); }
 	utf8string & operator += (const ucchar & ch) { return append(utf8string(1, ch)); }
-	utf8string & operator += (char ch) { return append(utf8string(1, ch)); }
+//	utf8string & operator += (char ch) { return append(utf8string(1, ch)); }
 
 	utf8string & operator << (const utf8string & other) { return append(other); }
 	utf8string & operator << (const char * latin1) { return append(utf8string(latin1)); }
 	utf8string & operator << (const ucchar & ch) { return append(utf8string(1, ch)); }
-	utf8string & operator << (char ch) { return append(utf8string(1, ch)); }
+	//utf8string & operator << (char ch) { return append(utf8string(1, ch)); }
 
 public:
 	struct ConvertState

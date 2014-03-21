@@ -119,8 +119,6 @@ public:                                                        \
 		return *this;                                          \
 	}                                                          \
                                                                \
-	bool isNull () const { return _pimpl.get() == nullptr; }   \
-	                                                           \
     void swap (Class & other)                                  \
     {                                                          \
     	_pimpl.swap(other._pimpl);                             \
@@ -144,8 +142,6 @@ public:                                                        \
 		return *this;                                          \
 	}                                                          \
                                                                \
-	bool isNull () const { return _pimpl.get() == nullptr; }   \
-	                                                           \
     void swap (Class & other)                                  \
     {                                                          \
     	pfs::swap(_pimpl, other._pimpl);                       \

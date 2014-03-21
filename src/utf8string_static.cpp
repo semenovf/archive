@@ -164,7 +164,7 @@ utf8string utf8string::fromUtf16 (const uint16_t * utf16, size_t size, ConvertSt
 	const uint16_t * sourceEnd   = utf16 + size;
 	size_t len = 0;
 
-	uint32_t replacementChar = state ? uint32_t(state->replacementChar) : ucchar::ReplacementChar;
+	uint32_t replacementChar = state ? uint32_t(state->replacementChar) : uint32_t(ucchar::ReplacementChar);
 
 	while (source < sourceEnd) {
 		uint32_t ch = *source++;

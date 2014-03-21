@@ -22,11 +22,11 @@ void test_constptr()
 
 	TEST_OK(ptr == begin);
 
-	TEST_OK(*ptr++ == 'G');
-	TEST_OK(*ptr++ == 'I');
-	TEST_OK(*ptr++ == 'J');
-	TEST_OK(*ptr++ == 'K');
-	TEST_OK(*ptr++ == 'L');
+	TEST_OK(*ptr++ == pfs::ucchar('G'));
+	TEST_OK(*ptr++ == pfs::ucchar('I'));
+	TEST_OK(*ptr++ == pfs::ucchar('J'));
+	TEST_OK(*ptr++ == pfs::ucchar('K'));
+	TEST_OK(*ptr++ == pfs::ucchar('L'));
 	TEST_OK2(*ptr++ == pfs::ucchar(0x401), "*ptr++ == 'Ё' (0x401, Cyrillic Capital Letter Io)");
 	TEST_OK2(*ptr++ == pfs::ucchar(0x416), "*ptr++ == 'Ж' (0x416, Cyrillic Capital Letter Zhe)");
 	TEST_OK2(*ptr++ == pfs::ucchar(0x417), "*ptr++ == 'З' (0x417, Cyrillic Capital Letter Ze)");
@@ -35,11 +35,11 @@ void test_constptr()
 	TEST_OK2(*ptr++ == pfs::ucchar(0x42D), "*ptr++ == 'Э' (0x42D, Cyrillic Capital Letter E)");
 	TEST_OK2(*ptr++ == pfs::ucchar(0x42E), "*ptr++ == 'Ю' (0x42E, Cyrillic Capital Letter Yu)");
 	TEST_OK2(*ptr++ == pfs::ucchar(0x42F), "*ptr++ == 'Я' (0x42F, Cyrillic Capital Letter Ya)");
-	TEST_OK(*ptr++ == 'g');
-	TEST_OK(*ptr++ == 'i');
-	TEST_OK(*ptr++ == 'j');
-	TEST_OK(*ptr++ == 'k');
-	TEST_OK(*ptr++ == 'l');
+	TEST_OK(*ptr++ == pfs::ucchar('g'));
+	TEST_OK(*ptr++ == pfs::ucchar('i'));
+	TEST_OK(*ptr++ == pfs::ucchar('j'));
+	TEST_OK(*ptr++ == pfs::ucchar('k'));
+	TEST_OK(*ptr++ == pfs::ucchar('l'));
 	TEST_OK2(*ptr++ == pfs::ucchar(0x451), "*ptr++ == 'ё' (0x451, Cyrillic Small Letter Io)");
 	TEST_OK2(*ptr++ == pfs::ucchar(0x436), "*ptr++ == 'ж' (0x436, Cyrillic Small Letter Zhe)");
 	TEST_OK2(*ptr++ == pfs::ucchar(0x437), "*ptr++ == 'з' (0x437, Cyrillic Small Letter Ze)");
@@ -54,11 +54,11 @@ void test_constptr()
 	ptr = begin;
 	TEST_OK(ptr == begin);
 
-	TEST_OK(ptr[0] == 'G');
-	TEST_OK(ptr[1] == 'I');
-	TEST_OK(ptr[2] == 'J');
-	TEST_OK(ptr[3] == 'K');
-	TEST_OK(ptr[4] == 'L');
+	TEST_OK(ptr[0] == pfs::ucchar('G'));
+	TEST_OK(ptr[1] == pfs::ucchar('I'));
+	TEST_OK(ptr[2] == pfs::ucchar('J'));
+	TEST_OK(ptr[3] == pfs::ucchar('K'));
+	TEST_OK(ptr[4] == pfs::ucchar('L'));
 	TEST_OK2(ptr[5] == pfs::ucchar(0x401),  "ptr[5] == 'Ё' (0x401, Cyrillic Capital Letter Io)");
 	TEST_OK2(ptr[6] == pfs::ucchar(0x416),  "ptr[6] == 'Ж' (0x416, Cyrillic Capital Letter Zhe)");
 	TEST_OK2(ptr[7] == pfs::ucchar(0x417),  "ptr[7] == 'З' (0x417, Cyrillic Capital Letter Ze)");
@@ -67,11 +67,11 @@ void test_constptr()
 	TEST_OK2(ptr[10] == pfs::ucchar(0x42D), "ptr[10] == 'Э' (0x42D, Cyrillic Capital Letter E)");
 	TEST_OK2(ptr[11] == pfs::ucchar(0x42E), "ptr[11] == 'Ю' (0x42E, Cyrillic Capital Letter Yu)");
 	TEST_OK2(ptr[12] == pfs::ucchar(0x42F), "ptr[12] == 'Я' (0x42F, Cyrillic Capital Letter Ya)");
-	TEST_OK(ptr[13] == 'g');
-	TEST_OK(ptr[14] == 'i');
-	TEST_OK(ptr[15] == 'j');
-	TEST_OK(ptr[16] == 'k');
-	TEST_OK(ptr[17] == 'l');
+	TEST_OK(ptr[13] == pfs::ucchar('g'));
+	TEST_OK(ptr[14] == pfs::ucchar('i'));
+	TEST_OK(ptr[15] == pfs::ucchar('j'));
+	TEST_OK(ptr[16] == pfs::ucchar('k'));
+	TEST_OK(ptr[17] == pfs::ucchar('l'));
 	TEST_OK2(ptr[18] == pfs::ucchar(0x451), "ptr[18] == 'ё' (0x451, Cyrillic Small Letter Io)");
 	TEST_OK2(ptr[19] == pfs::ucchar(0x436), "ptr[19] == 'ж' (0x436, Cyrillic Small Letter Zhe)");
 	TEST_OK2(ptr[20] == pfs::ucchar(0x437), "ptr[20] == 'з' (0x437, Cyrillic Small Letter Ze)");

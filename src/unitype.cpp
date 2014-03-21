@@ -52,7 +52,7 @@ string unidata_blob::toString (bool & ok) const
 bool unitype::toBool (bool * pok) const
 {
 	bool ok;
-	bool r = _pimpl->toBool(ok);
+	bool r = _d.cast<unidata>()->toBool(ok);
 	if (pok) *pok = ok;
 	return ok ? r : false;
 }
@@ -60,7 +60,7 @@ bool unitype::toBool (bool * pok) const
 byte_t unitype::toByte (bool * pok) const
 {
 	bool ok;
-	long_t r = _pimpl->toLong(ok);
+	long_t r = _d.cast<unidata>()->toLong(ok);
 	ok = (r >= 0 && r <= PFS_BYTE_MAX) ? ok : false;
 	if (pok) *pok = ok;
 	return ok ? byte_t(r) : 0;
@@ -69,7 +69,7 @@ byte_t unitype::toByte (bool * pok) const
 sbyte_t unitype::toSByte (bool * pok) const
 {
 	bool ok;
-	long_t r = _pimpl->toLong(ok);
+	long_t r = _d.cast<unidata>()->toLong(ok);
 	ok = (r >= PFS_SBYTE_MIN && r <= PFS_SBYTE_MAX) ? ok : false;
 	if (pok) *pok = ok;
 	return ok ? sbyte_t(r) : 0;
@@ -78,7 +78,7 @@ sbyte_t unitype::toSByte (bool * pok) const
 short_t unitype::toShort (bool * pok) const
 {
 	bool ok;
-	long_t r = _pimpl->toLong(ok);
+	long_t r = _d.cast<unidata>()->toLong(ok);
 	ok = (r >= PFS_SHORT_MIN && r <= PFS_SHORT_MAX) ? ok : false;
 	if (pok) *pok = ok;
 	return ok ? short_t(r) : 0;
@@ -87,7 +87,7 @@ short_t unitype::toShort (bool * pok) const
 ushort_t unitype::toUShort (bool * pok) const
 {
 	bool ok;
-	long_t r = _pimpl->toLong(ok);
+	long_t r = _d.cast<unidata>()->toLong(ok);
 	ok = (r >= 0 && r <= PFS_USHORT_MAX) ? ok : false;
 	if (pok) *pok = ok;
 	return ok ? ushort_t(r) : 0;
@@ -96,7 +96,7 @@ ushort_t unitype::toUShort (bool * pok) const
 int_t unitype::toInt (bool * pok) const
 {
 	bool ok;
-	long_t r = _pimpl->toLong(ok);
+	long_t r = _d.cast<unidata>()->toLong(ok);
 	ok = (r >= PFS_INT_MIN && r <= PFS_INT_MAX) ? ok : false;
 	if (pok) *pok = ok;
 	return ok ? int_t(r) : 0;
@@ -105,7 +105,7 @@ int_t unitype::toInt (bool * pok) const
 uint_t unitype::toUInt (bool * pok) const
 {
 	bool ok;
-	long_t r = _pimpl->toLong(ok);
+	long_t r = _d.cast<unidata>()->toLong(ok);
 	ok = (r >= 0 && ulong_t(r) <= PFS_UINT_MAX) ? ok : false;
 	if (pok) *pok = ok;
 	return ok ? uint_t(r) : 0;
@@ -114,7 +114,7 @@ uint_t unitype::toUInt (bool * pok) const
 long_t unitype::toLong (bool * pok) const
 {
 	bool ok;
-	long_t r = _pimpl->toLong(ok);
+	long_t r = _d.cast<unidata>()->toLong(ok);
 	if (pok) *pok = ok;
 	return r;
 }
@@ -122,7 +122,7 @@ long_t unitype::toLong (bool * pok) const
 ulong_t unitype::toULong (bool * pok) const
 {
 	bool ok;
-	long_t r = _pimpl->toLong(ok);
+	long_t r = _d.cast<unidata>()->toLong(ok);
 	if (pok) *pok = ok;
 	return ulong_t(r);
 }
@@ -131,7 +131,7 @@ ulong_t unitype::toULong (bool * pok) const
 float unitype::toFloat (bool * pok) const
 {
 	bool ok;
-	double r = _pimpl->toDouble(ok);
+	double r = _d.cast<unidata>()->toDouble(ok);
 	ok = (r >= double(PFS_FLOAT_MIN) && r <= double(PFS_FLOAT_MAX)) ? ok : false;
 	if (pok) *pok = ok;
 	return ok ? float(r) : float(0);
@@ -140,7 +140,7 @@ float unitype::toFloat (bool * pok) const
 double unitype::toDouble (bool * pok) const
 {
 	bool ok;
-	double r = _pimpl->toDouble(ok);
+	double r = _d.cast<unidata>()->toDouble(ok);
 	if (pok) *pok = ok;
 	return ok ? r : double(0);
 }
@@ -148,7 +148,7 @@ double unitype::toDouble (bool * pok) const
 ucchar unitype::toUCChar (bool * pok) const
 {
 	bool ok;
-	long_t r = _pimpl->toLong(ok);
+	long_t r = _d.cast<unidata>()->toLong(ok);
 	ok = (r >= 0 && r <= ucchar::MaxCodePoint) ? ok : false;
 	if (pok) *pok = ok;
 	return ok ? ucchar(uint32_t(r)) : ucchar(ucchar::Null);
@@ -158,7 +158,7 @@ ucchar unitype::toUCChar (bool * pok) const
 string unitype::toString(bool * pok) const
 {
 	bool ok;
-	string r = _pimpl->toString(ok);
+	string r = _d.cast<unidata>()->toString(ok);
 	if (pok) *pok = ok;
 	return ok ? r : string();
 }
@@ -166,7 +166,7 @@ string unitype::toString(bool * pok) const
 bytearray unitype::toBlob(bool * pok) const
 {
 	bool ok;
-	bytearray r = _pimpl->toBlob(ok);
+	bytearray r = _d.cast<unidata>()->toBlob(ok);
 	if (pok) *pok = ok;
 	return ok ? r : bytearray();
 }
