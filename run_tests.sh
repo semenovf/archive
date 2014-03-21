@@ -21,18 +21,25 @@ for i in test_* ; do
     printf "%-30s ... " $i
     ./$i > $OUTPUT 2>&1
 
-    if [ $? != 0 ] ; then
-	printf "[FAIL]\n"
-	FAILED="yes"
-    else
+    case $? in
+    0)
 	rm $OUTPUT
 	printf "[OK]\n"
-    fi
+	;;
+    1)
+	printf "[FAIL]\n"
+	FAILED="yes"
+	;;
+    2)
+	printf "[INCOMPLETE]\n"
+	FAILED="yes"
+	;;
+    esac
 done
 
 if [ "$FAILED" = "yes" ] ; then
     echo "========================"
-    echo "ERROR: some tests failed"
+    echo "ERROR: some tests failed or incomplete"
     exit 1
 fi
 
