@@ -101,7 +101,7 @@ static pfs::string __encodeText (const pfs::string & str
                     *it == pfs::ucchar(0xD) ||
                     *it == pfs::ucchar(0x9))) {
         	pfs::ucchar ch(*it);
-        	r << "&#x" << pfs::string::number(ch.unicode()) << ';';
+        	r << "&#x" << pfs::string::number(ch.unicode()) << pfs::ucchar(';');
         } else if (encodeEOLs && *it == pfs::ucchar(0xD)) {
             r << "&#xd;"; // Replace a single 0xD with a ref for 0xD
         } else {
@@ -199,7 +199,7 @@ void __stringify_element (const cwt::dom::node_impl & n, pfs::string & s, int de
             if (it->second->_namespaceURI.isEmpty()) {
                 s << it->second->_name << "=\"" << __encodeText(it->second->_value, true, true) << "\"";
             } else {
-                s << it->second->_prefix << ':' << it->second->_name << "=\"" << __encodeText(it->second->_value, true, true) << "\"";
+                s << it->second->_prefix << pfs::ucchar(':') << it->second->_name << "=\"" << __encodeText(it->second->_value, true, true) << "\"";
                 /* This is a fix for 138243, as good as it gets.
                  *
                  * QDomElementPrivate::save() output a namespace declaration if
@@ -253,9 +253,9 @@ void __stringify_element (const cwt::dom::node_impl & n, pfs::string & s, int de
 void __stringify_attribute (const cwt::dom::node_impl & n, pfs::string & s, int /*depth*/, int /*indent*/)
 {
     if (n._namespaceURI.isEmpty()) {
-        s << n._name << "=\"" << __encodeText(n._value, true, true) << '\"';
+        s << n._name << "=\"" << __encodeText(n._value, true, true) << pfs::ucchar('\"');
     } else {
-        s << n._prefix << ':' << n._name << "=\"" << __encodeText(n._value, true, true) << '\"';
+        s << n._prefix << pfs::ucchar(':') << n._name << "=\"" << __encodeText(n._value, true, true) << pfs::ucchar('\"');
         /* This is a fix for 138243, as good as it gets.
          *
          * QDomElementPrivate::save() output a namespace declaration if
@@ -269,7 +269,7 @@ void __stringify_attribute (const cwt::dom::node_impl & n, pfs::string & s, int 
          * arrive in those situations. */
         if (!n._ownerNode ||
            n._ownerNode->_prefix != n._prefix) {
-            s << " xmlns:" << n._prefix << "=\"" << __encodeText(n._namespaceURI, true, true) << '\"';
+            s << " xmlns:" << n._prefix << "=\"" << __encodeText(n._namespaceURI, true, true) << pfs::ucchar('\"');
         }
     }
 }
@@ -317,7 +317,7 @@ void __stringify_entity (const cwt::dom::node_impl & n, pfs::string & s, int /*d
 
 void __stringify_processingInstruction (const cwt::dom::node_impl & n, pfs::string & s, int /*depth*/, int /*indent*/)
 {
-	 s << "<?" << n._name << ' ' << n._value << "?>" << "\n";
+	 s << "<?" << n._name << pfs::ucchar(' ') << n._value << "?>" << "\n";
 }
 
 void __stringify_comment (const cwt::dom::node_impl & n, pfs::string & s, int depth, int indent)
@@ -328,7 +328,7 @@ void __stringify_comment (const cwt::dom::node_impl & n, pfs::string & s, int de
 
 	    s << "<!--" << n._value;
 	    if (n._value.endsWith("-"))
-	        s << ' '; // Ensures that XML comment doesn't end with --->
+	        s << pfs::ucchar(' '); // Ensures that XML comment doesn't end with --->
 	    s << "-->";
 
 	    if (!(n._next && n._next->isText()))
@@ -339,17 +339,17 @@ void __stringify_notation (const cwt::dom::node_impl & n, pfs::string & s, int /
 {
 	const cwt::dom::notation_impl & n1 = dynamic_cast<const cwt::dom::notation_impl &>(n);
 
-    s << "<!NOTATION " << n._name << ' ';
+    s << "<!NOTATION " << n._name << pfs::ucchar(' ');
 
     if (!n1._pub.isEmpty())  {
         s << "PUBLIC " << __quotedValue(n1._pub);
 
         if (!n1._sys.isEmpty())
-            s << ' ' << __quotedValue(n1._sys);
+            s << pfs::ucchar(' ') << __quotedValue(n1._sys);
     }  else {
         s << "SYSTEM " << __quotedValue(n1._sys);
     }
-    s << '>' << '\n';
+    s << ">\n";
 }
 
 void __stringify_documentType (const cwt::dom::node_impl & n, pfs::string & s, int /*depth*/, int indent)
@@ -364,7 +364,7 @@ void __stringify_documentType (const cwt::dom::node_impl & n, pfs::string & s, i
 	if (!n1._publicId.isEmpty()) {
 		s << " PUBLIC " << __quotedValue(n1._publicId);
 		if (!n1._systemId.isEmpty()) {
-			s << ' ' << __quotedValue(n1._systemId);
+			s << pfs::ucchar(' ') << __quotedValue(n1._systemId);
 		}
 	} else if (!n1._systemId.isEmpty()) {
 		s << " SYSTEM " << __quotedValue(n1._systemId);
@@ -391,7 +391,7 @@ void __stringify_document (const cwt::dom::node_impl & n, pfs::string & s, int d
 {
     const cwt::dom::node_impl * n1 = n._first;
 
-    s << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << '\n';
+    s << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << pfs::ucchar('\n');
 
     const cwt::dom::doctype_impl * dt = dynamic_cast<const cwt::dom::document_impl *>(& n)->doctype();
     if (dt) {
