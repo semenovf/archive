@@ -247,17 +247,17 @@ StringList RegExpMatch::captured() const
 
 
 regexp::regexp()
-	: _d(regexp::impl())
+	: _d(new regexp::impl)
 {}
 
 regexp::regexp (const pfs::string & pattern)
-	: _d(regexp::impl())
+	: _d(new regexp::impl)
 {
 	setPattern(pattern);
 }
 
 regexp::regexp (const char * latin1Pattern)
-	: _d(regexp::impl())
+	: _d(new regexp::impl)
 {
 	setPattern(pfs::string::fromLatin1(latin1Pattern));
 }
