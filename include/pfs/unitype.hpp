@@ -139,29 +139,29 @@ class DLL_API unitype
 	pfs::pimpl _d;
 
 public:
-	unitype ()                    : _d(unidata_null()) {}
-	unitype (bool v)              : _d(unidata_boolean(v)) { }
-	unitype (char v)              : _d(unidata_long(long_t(v))) { }
-	unitype (byte_t v)            : _d(unidata_long(long_t(v))) { }
-	unitype (short_t v)           : _d(unidata_long(long_t(v))) { }
-	unitype (ushort_t v)          : _d(unidata_long(long_t(v))) { }
-	unitype (int_t v)             : _d(unidata_long(long_t(v))) { }
-	unitype (uint_t v)            : _d(unidata_long(long_t(v))) { }
+	unitype ()                    : _d(new unidata_null()) {}
+	unitype (bool v)              : _d(new unidata_boolean(v)) { }
+	unitype (char v)              : _d(new unidata_long(long_t(v))) { }
+	unitype (byte_t v)            : _d(new unidata_long(long_t(v))) { }
+	unitype (short_t v)           : _d(new unidata_long(long_t(v))) { }
+	unitype (ushort_t v)          : _d(new unidata_long(long_t(v))) { }
+	unitype (int_t v)             : _d(new unidata_long(long_t(v))) { }
+	unitype (uint_t v)            : _d(new unidata_long(long_t(v))) { }
 #if PFS_OS_BITS == 32 // 'long_t' is 'long long'
 //#ifdef HAVE_INT64
-	unitype (long v)              : _d(unidata_long(long_t(v))) { }
-	unitype (unsigned long v)     : _d(unidata_long(long_t(v))) { }
+	unitype (long v)              : _d(new unidata_long(long_t(v))) { }
+	unitype (unsigned long v)     : _d(new unidata_long(long_t(v))) { }
 #endif
-	unitype (long_t v)            : _d(unidata_long(long_t(v))) { }
-	unitype (ulong_t v)           : _d(unidata_long(long_t(v))) { }
-	unitype (float v)             : _d(unidata_double(double(v))) { }
-	unitype (double v)            : _d(unidata_double(v)) { }
-	unitype (const pfs::string & v)    : _d(unidata_string(v)) { }
-	unitype (const char * v)           : _d(unidata_blob(pfs::bytearray(v))) { }
-	unitype (const pfs::bytearray & v) : _d(unidata_blob(v)) { }
-	unitype (const pfs::time & v)      : _d(unidata_long(v.millis())) { }
-	unitype (const pfs::date & v)      : _d(unidata_long(v.julianDay())) { }
-	unitype (const pfs::datetime & v)  : _d(unidata_long(v.millisSinceEpoch())) { }
+	unitype (long_t v)            : _d(new unidata_long(long_t(v))) { }
+	unitype (ulong_t v)           : _d(new unidata_long(long_t(v))) { }
+	unitype (float v)             : _d(new unidata_double(double(v))) { }
+	unitype (double v)            : _d(new unidata_double(v)) { }
+	unitype (const pfs::string & v)    : _d(new unidata_string(v)) { }
+	unitype (const char * v)           : _d(new unidata_blob(pfs::bytearray(v))) { }
+	unitype (const pfs::bytearray & v) : _d(new unidata_blob(v)) { }
+	unitype (const pfs::time & v)      : _d(new unidata_long(v.millis())) { }
+	unitype (const pfs::date & v)      : _d(new unidata_long(v.julianDay())) { }
+	unitype (const pfs::datetime & v)  : _d(new unidata_long(v.millisSinceEpoch())) { }
 
 /*
 	template <typename T>
@@ -171,24 +171,24 @@ public:
 	bool isNull () const { return _d.cast<unidata>()->type() == pfs::Null;}
 
 	void setFromString (const pfs::string & s);
-	void setBool       (bool b)     { _d.detach(); _d = pfs::pimpl(unidata_boolean(b)); }
+	void setBool       (bool b)     { _d.detach(); _d = pfs::pimpl(new unidata_boolean(b)); }
 	void setChar       (char c)     { setLong(long_t(c)); }
 	void setByte       (byte_t n)   { setLong(long_t(n)); }
 	void setShort      (short_t n)  { setLong(long_t(n)); }
 	void setUShort     (ushort_t n) { setLong(long_t(n)); }
 	void setInt        (int_t n)    { setLong(long_t(n)); }
 	void setUInt       (uint_t n)   { setLong(long_t(n)); }
-	void setLong       (long_t n)   { _d.detach(); _d = pfs::pimpl(unidata_long(n)); }
+	void setLong       (long_t n)   { _d.detach(); _d = pfs::pimpl(new unidata_long(n)); }
 	void setULong      (ulong_t n)  { setLong(long_t(n)); }
-	void setFloat      (float n)    { _d.detach(); _d = pfs::pimpl(unidata_double(n)); }
-	void setDouble     (double n)   { _d.detach(); _d = pfs::pimpl(unidata_double(n)); }
+	void setFloat      (float n)    { _d.detach(); _d = pfs::pimpl(new unidata_double(n)); }
+	void setDouble     (double n)   { _d.detach(); _d = pfs::pimpl(new unidata_double(n)); }
 	void setUCChar     (pfs::ucchar ch)  { setLong(long_t(ch)); }
-	void setString     (const pfs::string & s) { _d.detach(); _d = pfs::pimpl(unidata_string(s)); }
+	void setString     (const pfs::string & s) { _d.detach(); _d = pfs::pimpl(new unidata_string(s)); }
 	void setBlob       (const char * blob, size_t sz) { setBlob(pfs::bytearray(blob, sz)); }
-	void setBlob       (const pfs::bytearray & blob) { _d.detach(); _d = pfs::pimpl(unidata_blob(blob)); }
-	void setTime       (const pfs::time & n) { _d.detach(); _d = pfs::pimpl(unidata_long(n.millis())); }
-	void setDate       (const pfs::date & n) { _d.detach(); _d = pfs::pimpl(unidata_long(n.julianDay())); }
-	void setDateTime   (const pfs::datetime & n) { _d.detach(); _d = pfs::pimpl(unidata_long(n.millisSinceEpoch())); }
+	void setBlob       (const pfs::bytearray & blob) { _d.detach(); _d = pfs::pimpl(new unidata_blob(blob)); }
+	void setTime       (const pfs::time & n) { _d.detach(); _d = pfs::pimpl(new unidata_long(n.millis())); }
+	void setDate       (const pfs::date & n) { _d.detach(); _d = pfs::pimpl(new unidata_long(n.julianDay())); }
+	void setDateTime   (const pfs::datetime & n) { _d.detach(); _d = pfs::pimpl(new unidata_long(n.millisSinceEpoch())); }
 
 	unitype & operator = (bool b)                 { setBool(b);      return *this; }
 	unitype & operator = (char c)                 { setChar(c);      return *this; }

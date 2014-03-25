@@ -17,7 +17,7 @@ protected:
 
 	// if has derived class and it has own Impl class
 	template <typename T>
-	A (const T & p) : _d(p) {}
+	A (T * p) : _d(p) {}
 
 public:
 	A ();

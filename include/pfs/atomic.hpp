@@ -54,7 +54,7 @@ public:
 
     Type fetchAndAddRelaxed (Type valueToAdd)
     {
-    	return intrinsics::fetchAndAddRelaxed(_value, valueToAdd);
+    	return intrinsics::fetchAndAddRelaxed((Type &)_value, valueToAdd);
     }
 
     Type compareAndSwap (Type oldValue, Type newValue)

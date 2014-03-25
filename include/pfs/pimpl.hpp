@@ -19,7 +19,7 @@ class pimpl
 
 public:
 	template<typename T>
-	pimpl (const T & p) : _holder(new impl_holder<T>(p)) {}
+	pimpl (T * p) : _holder(new impl_holder<T>(p)) {}
 
 	pimpl (const pimpl & other) : _holder(other._holder)
 	{
@@ -59,15 +59,16 @@ private:
 	template<typename T>
 	struct impl_holder : impl_base
 	{
-		T _d;
-		impl_holder (const T & d) : impl_base(), _d(d) {}
+		T * _d;
+		impl_holder (T * p) : impl_base(), _d(p) {}
+		~impl_holder () { delete _d; }
 
-		T *       operator -> ()       { return & _d; }
-		const T * operator -> () const { return & _d; }
-		T &       operator *  ()       { return _d; }
-		const T & operator *  () const { return _d; }
+		T *       operator -> ()       { return _d; }
+		const T * operator -> () const { return _d; }
+		T &       operator *  ()       { return *_d; }
+		const T & operator *  () const { return *_d; }
 
-		impl_base * clone () { return new impl_holder(_d); }
+		impl_base * clone () { return new impl_holder(new T(*_d)); } // used in detach()
 	};
 
 public:

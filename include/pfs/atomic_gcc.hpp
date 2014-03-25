@@ -33,7 +33,7 @@ struct atomic_integer_intrinsics
         return fetchAndAddRelaxed(value, 1) != T(-1);
     }
 
-    static inline bool deref(T &value)
+    static inline bool deref(T & value)
     {
          return fetchAndAddRelaxed(value, -1) != T(1);
     }

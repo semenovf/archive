@@ -20,7 +20,7 @@ public:
 	const char * str;
 };
 
-A::A () : _d(A::Impl()) {}
+A::A () : _d(new A::Impl) {}
 char   A::getChar   () const   { return _d.cast<A::Impl>()->ch; }
 int    A::getInt    () const   { return _d.cast<A::Impl>()->i; }
 double A::getDouble () const   { return _d.cast<A::Impl>()->d; }
@@ -28,7 +28,7 @@ void   A::setChar   (char ch)  { _d.cast<A::Impl>()->ch = ch; }
 void   A::setInt    (int i)    { _d.cast<A::Impl>()->i = i; }
 void   A::setDouble (double d) { _d.cast<A::Impl>()->d = d; }
 
-B::B () : A(B::Impl()) {}
+B::B () : A(new B::Impl) {}
 const char * B::getString () const         { return _d.cast<B::Impl>()->str; }
 void         B::setString (const char * s) { _d.cast<B::Impl>()->str = s; }
 
