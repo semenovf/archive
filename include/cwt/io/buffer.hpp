@@ -36,7 +36,7 @@ inline ssize_t buffer::readBytes (char bytes[], size_t n)
 {
 	size_t nbytes = 0;
 	if (n > 0 && m_buffer.size() > 0) {
-		nbytes = min(n, m_buffer.size());
+		nbytes = pfs::min(n, m_buffer.size());
 		PFS_ASSERT(nbytes <= PFS_SSIZE_MAX);
 		memcpy(bytes, m_buffer.constData(), nbytes);
 		m_buffer.remove(0, nbytes);
