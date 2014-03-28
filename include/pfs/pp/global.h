@@ -97,19 +97,15 @@
 //#define WORD_LOW_BYTE(WORD) ((char)((WORD)&0x00FF))
 //#define WORD_HI_BYTE(WORD)  ((char)(((WORD)>>8)&0x00FF))
 
-/*
-*/
-
 #ifndef PFS_CC_MSVC
 #	ifdef __cplusplus
+namespace pfs {
 	template <typename T>
 	inline T min(T a, T b) { return a <= b ? a : b; }
 
 	template <typename T>
 	inline T max(T a, T b) { return a >= b ? a : b; }
-#	else
-#		define min(a,b)  (((a) <= (b)) ? (a) : (b))
-#		define max(a,b)  (((a) >= (b)) ? (a) : (b))
+}
 #	endif
 #endif
 
