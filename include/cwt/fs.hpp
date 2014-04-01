@@ -56,7 +56,7 @@ public:
 
 public:
 	fs () : errorable() {}
-	pfs::ucchar separator ();
+	pfs::ucchar separator () const;
 	bool isAbsolute (const pfs::string & path);
 	bool isRelative (const pfs::string & path) { return !isAbsolute(path); }
 	bool isDirectory (const pfs::string & path);
@@ -66,6 +66,7 @@ public:
 	bool unlink (const pfs::string & path) { return remove(path); }
 	bool simpleBackup (const pfs::string & path);
 	pfs::string tempDirectory ();
+	pfs::string basename (const pfs::string & path) const;
 	pfs::string join (const pfs::string & dir, const pfs::string filename);
 	pfs::stringlist entryListByRegExp (const pfs::string & dir, const pfs::stringlist & reNameFilters, uint_t filters, uint_t sort = NoSort);
 	pfs::stringlist entryListByWildcard (const pfs::string & dir, const pfs::stringlist & nameFilters, uint_t filters = NoFilter, uint_t sort = NoSort);

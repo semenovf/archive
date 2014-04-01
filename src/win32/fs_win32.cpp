@@ -12,7 +12,7 @@ namespace cwt {
 
 static pfs::string __separator("\\");
 
-pfs::ucchar fs::separator()
+pfs::ucchar fs::separator () const
 {
 	return __separator[0];
 }

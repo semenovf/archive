@@ -268,14 +268,13 @@ void test_rpt(void)
 	TEST_FAIL(fsm.exec(0, __rpt_chars.cbegin(), __rpt_chars.cend()) == ssize_t(__rpt_chars.length()));
 }
 
-
 int main(int argc, char *argv[])
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED(argc);
 	PFS_UNUSED(argv);
 
-	BEGIN_TESTS(227);
+	BEGIN_TESTS(225);
 
 	test_byte_helpers();
 	test_int_helpers();

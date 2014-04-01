@@ -17,5 +17,15 @@ pfs::string fs::join (const pfs::string & dir, const pfs::string filename)
 	return r;
 }
 
+pfs::string fs::basename (const pfs::string & path) const
+{
+	pfs::vector<pfs::string> s = path.split(separator(), true, pfs::ucchar('"'));
+	if (s.size() > 0) {
+		return s[s.size() - 1];
+	}
+	return pfs::string();
+}
+
+
 } // cwt
 

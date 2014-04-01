@@ -366,6 +366,10 @@ safeformat::operator pfs::string & ()
 	return m_context->result;
 }
 
+const pfs::string & safeformat::operator () ()
+{
+	return m_context->result;
+}
 
 safeformat & safeformat::operator () (const pfs::unitype & ut)
 {

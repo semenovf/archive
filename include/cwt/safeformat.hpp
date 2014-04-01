@@ -50,6 +50,7 @@ public:
 	safeformat & operator = (const safeformat & sf) { m_context = sf.m_context; return *this; }
 
 	operator pfs::string & ();
+	const pfs::string & operator () ();
 
 	safeformat & operator () (const pfs::unitype & ut);
 	safeformat & operator () (char c)               { return operator () (pfs::unitype(c)); }

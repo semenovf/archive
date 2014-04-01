@@ -25,7 +25,7 @@ inline bool __is_directory     (mode_t m) { return (m & S_IFMT) == S_IFDIR; }
 inline bool __is_char_device   (mode_t m) { return (m & S_IFMT) == S_IFCHR; }
 inline bool __is_fifo          (mode_t m) { return (m & S_IFMT) == S_IFIFO; }
 
-pfs::ucchar fs::separator()
+pfs::ucchar fs::separator () const
 {
 	return pfs::ucchar('/');
 }
