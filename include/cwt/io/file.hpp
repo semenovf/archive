@@ -15,10 +15,11 @@ namespace cwt { namespace io {
 
 class DLL_API file : public device
 {
-	PFS_PIMPL_DECL(file, protected, impl, protected);
+	class impl;
+	pfs::pimpl _d;
 
 public:
-	enum Permission {
+	enum permission {
 		  ReadOwner  = 0x4000 // The file is readable by the owner of the file.
 		, WriteOwner = 0x2000 // The file is writable by the owner of the file.
 		, ExeOwner	 = 0x1000 // The file is executable by the owner of the file.
@@ -34,12 +35,12 @@ public:
 	};
 
 protected:
-	virtual ssize_t readBytes(char bytes[], size_t n);
-	virtual ssize_t writeBytes(const char bytes[], size_t n);
-	virtual size_t  bytesAvailable() const;
-	virtual bool    closeDevice    ();
-	virtual bool    deviceIsOpened () const;
-	virtual void    flushDevice    ();
+	virtual ssize_t readBytes (char bytes[], size_t n) override;
+	virtual ssize_t writeBytes (const char bytes[], size_t n) override;
+	virtual size_t  bytesAvailable () const override;
+	virtual bool    closeDevice    () override;
+	virtual bool    deviceIsOpened () const override;
+	virtual void    flushDevice    () override;
 
 public:
 	file ();

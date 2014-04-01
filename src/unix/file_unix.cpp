@@ -25,8 +25,6 @@ public:
 	impl () : path(nullptr), fd(-1) { ; }
 };
 
-PFS_PIMPL_DEF(file, impl);
-
 static int __perms2mode (int32_t perms)
 {
 	int mode = 0;
@@ -63,15 +61,15 @@ static bool __set_permissions (const pfs::string & path, int32_t perms)
 	return true;
 }
 
-file::file() : _pimpl(new file::impl)
+file::file() : _d(new file::impl)
 { }
 
-file::file (int fd) : _pimpl(new file::impl)
+file::file (int fd) : _d(new file::impl)
 {
-	_pimpl->fd = ::dup(fd);
+	_d.cast<file::impl>()->fd = ::dup(fd);
 }
 
-file::file (const pfs::string & path, int32_t oflags) : _pimpl(new file::impl)
+file::file (const pfs::string & path, int32_t oflags) : _d(new file::impl)
 {
 	open(path, oflags);
 }
@@ -80,10 +78,10 @@ ssize_t file::readBytes (char bytes[], size_t n)
 {
 	ssize_t sz;
 
-	sz = ::read(_pimpl->fd, bytes, n);
+	sz = ::read(_d.cast<file::impl>()->fd, bytes, n);
 	if (sz < 0) {
 		pfs::string errmsg;
-		errmsg << _pimpl->path << ": " << _Tr("read failure");
+		errmsg << _d.cast<file::impl>()->path << ": " << _Tr("read failure");
 		this->addSystemError(errno, errmsg);
 	}
 	return sz;
@@ -92,11 +90,12 @@ ssize_t file::readBytes (char bytes[], size_t n)
 ssize_t file::writeBytes (const char bytes[], size_t n)
 {
 	ssize_t sz;
+	file::impl & d = *_d.cast<file::impl>();
 
-	sz = ::write(_pimpl->fd, bytes, n);
+	sz = ::write(d.fd, bytes, n);
 	if( sz < 0 ) {
 		pfs::string errmsg;
-		errmsg << _pimpl->path << ": " << _Tr("write failure");
+		errmsg << d.path << ": " << _Tr("write failure");
 		this->addSystemError(errno, errmsg);
 	}
 	return sz;
@@ -104,15 +103,17 @@ ssize_t file::writeBytes (const char bytes[], size_t n)
 
 size_t file::bytesAvailable () const
 {
-	PFS_ASSERT(_pimpl->fd  >= 0);
+	const file::impl & d = *_d.cast<file::impl>();
 
-	off_t cur = ::lseek(_pimpl->fd, off_t(0), SEEK_CUR);
+	PFS_ASSERT(d.fd  >= 0);
+
+	off_t cur = ::lseek(d.fd, off_t(0), SEEK_CUR);
 	PFS_ASSERT(cur >= off_t(0));
 
-	off_t total = ::lseek(_pimpl->fd, off_t(0), SEEK_END);
+	off_t total = ::lseek(d.fd, off_t(0), SEEK_END);
 	PFS_ASSERT(total >= off_t(0));
 
-	PFS_ASSERT(::lseek(_pimpl->fd, cur, SEEK_SET) >= off_t(0));
+	PFS_ASSERT(::lseek(d.fd, cur, SEEK_SET) >= off_t(0));
 	PFS_ASSERT(total >= cur);
 
 	return (size_t)(total - cur);
@@ -120,32 +121,32 @@ size_t file::bytesAvailable () const
 
 bool file::closeDevice ()
 {
+	file::impl & d = *_d.cast<file::impl>();
 	bool r = true;
 
-	if (_pimpl->fd > 0) {
-		if (::close(_pimpl->fd) < 0) {
+	if (d.fd > 0) {
+		if (::close(d.fd) < 0) {
 			pfs::string errmsg;
-			errmsg << _pimpl->path << ": " << _Tr("close failure");
+			errmsg << d.path << ": " << _Tr("close failure");
 			this->addSystemError(errno, errmsg);
 			r = false;
 		}
 	}
 
-	_pimpl->fd = -1;
-	_pimpl->path.clear();
+	d.fd = -1;
+	d.path.clear();
 	return r;
 }
 
 void file::flushDevice ()
 {
-	if (_pimpl->fd >= 0)
-		::fsync(_pimpl->fd);
+	if (_d.cast<file::impl>()->fd >= 0)
+		::fsync(_d.cast<file::impl>()->fd);
 }
-
 
 bool file::deviceIsOpened () const
 {
-	return _pimpl->fd >= 0;
+	return _d.cast<file::impl>()->fd >= 0;
 }
 
 bool file::open (const pfs::string & path, int32_t oflags)
@@ -172,7 +173,7 @@ bool file::open (const pfs::string & path, int32_t oflags)
 	if (oflags & device::NonBlocking)
 		native_oflags |= O_NONBLOCK;
 
-	_pimpl->path = path;
+	_d.cast<file::impl>()->path = path;
 
 	fd = ::open(path.c_str(), native_oflags);
 
@@ -183,7 +184,7 @@ bool file::open (const pfs::string & path, int32_t oflags)
 		return false;
 	}
 
-	_pimpl->fd = fd;
+	_d.cast<file::impl>()->fd = fd;
 
 	if (created) {
 		if (!__set_permissions(path, file::ReadOwner | file::WriteOwner)) {
@@ -201,18 +202,19 @@ bool file::open (const pfs::string & path, int32_t oflags)
 
 size_t file::size () const
 {
-	PFS_ASSERT(_pimpl->fd  >= 0);
+	const file::impl & d = *_d.cast<file::impl>();
+	PFS_ASSERT(d.fd  >= 0);
 
-	off_t cur   = ::lseek(_pimpl->fd, 0L, SEEK_CUR);
+	off_t cur   = ::lseek(d.fd, 0L, SEEK_CUR);
 	PFS_ASSERT(cur >= off_t(0));
 
-	off_t begin = ::lseek(_pimpl->fd, 0L, SEEK_SET);
+	off_t begin = ::lseek(d.fd, 0L, SEEK_SET);
 	PFS_ASSERT(begin >= off_t(0));
 
-	off_t end   = ::lseek(_pimpl->fd, 0L, SEEK_END);
+	off_t end   = ::lseek(d.fd, 0L, SEEK_END);
 	PFS_ASSERT(end >= off_t(0));
 
-	PFS_ASSERT(::lseek(_pimpl->fd, cur, SEEK_SET) >= off_t(0));
+	PFS_ASSERT(::lseek(d.fd, cur, SEEK_SET) >= off_t(0));
 
 	PFS_ASSERT(begin <= end);
 	return size_t(end - begin);
@@ -220,9 +222,11 @@ size_t file::size () const
 
 bool file::setPermissions (int32_t perms)
 {
-	if (!__set_permissions(_pimpl->path, perms)) {
+	file::impl & d = *_d.cast<file::impl>();
+
+	if (!__set_permissions(d.path, perms)) {
 		pfs::string errmsg;
-		errmsg << _pimpl->path << ": set file permissions failure";
+		errmsg << d.path << ": set file permissions failure";
 		this->addSystemError(errno, errmsg);
 		return false;
 	}
@@ -231,7 +235,7 @@ bool file::setPermissions (int32_t perms)
 
 void file::rewind()
 {
-	::lseek(_pimpl->fd, 0L, SEEK_SET);
+	::lseek(_d.cast<file::impl>()->fd, 0L, SEEK_SET);
 }
 
 }} // cwt::io
