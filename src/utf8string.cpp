@@ -673,9 +673,9 @@ utf8string & utf8string::remove (size_t pos, size_t n)
 	return *this;
 }
 
-vector<utf8string> utf8string::split(bool isOneSeparatorChar, const utf8string & separator, bool keepEmpty, ucchar quoteChar) const
+stringlist_basic<utf8string> utf8string::split (bool isOneSeparatorChar, const utf8string & separator, bool keepEmpty, ucchar quoteChar) const
 {
-	vector<utf8string> r;
+	stringlist_basic<utf8string> r;
 	utf8string::const_iterator it = cbegin();
 	utf8string::const_iterator itBegin = it;
 	utf8string::const_iterator itEnd = cend();

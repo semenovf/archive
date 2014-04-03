@@ -10,6 +10,7 @@
 
 #include <pfs.hpp>
 #include <pfs/bits/utf8string_iterator.hpp>
+#include <pfs/bits/stringlist_basic.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/bytearray.hpp>
 #include <pfs/shared_ptr.hpp>
@@ -61,7 +62,7 @@ public:
 private:
 	void updateLength ();
 	int compare (const_iterator begin, size_t len, const char * s, size_t subpos, size_t sublen) const;
-	vector<utf8string> split (bool isOneSeparatorChar, const utf8string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
+	stringlist_basic<utf8string> split (bool isOneSeparatorChar, const utf8string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
 
 public:
 	utf8string ();
@@ -209,9 +210,9 @@ public:
 
 	void reserve (size_t n);
 
-	vector<utf8string> split (const utf8string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
-	vector<utf8string> split (const ucchar & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
-	vector<utf8string> splitOneOf (const utf8string & separators, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
+	stringlist_basic<utf8string> split (const utf8string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
+	stringlist_basic<utf8string> split (const ucchar & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
+	stringlist_basic<utf8string> splitOneOf (const utf8string & separators, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
 
 	utf8string & operator += (const utf8string & other) { return append(other); }
 	utf8string & operator += (const char * latin1) { return append(utf8string(latin1)); }
@@ -290,19 +291,19 @@ inline utf8string_iterator<_P>::utf8string_iterator(utf8string & s)
 }
 */
 
-inline vector<utf8string>
+inline stringlist_basic<utf8string>
 utf8string::split(const utf8string & separator, bool keepEmpty, ucchar quoteChar) const
 {
 	return split(false, separator, keepEmpty, quoteChar);
 }
 
-inline vector<utf8string>
+inline stringlist_basic<utf8string>
 utf8string::split(const ucchar & separator, bool keepEmpty, ucchar quoteChar) const
 {
 	return split(false, utf8string(1, separator), keepEmpty, quoteChar);
 }
 
-inline vector<utf8string>
+inline stringlist_basic<utf8string>
 utf8string::splitOneOf(const utf8string & separators, bool keepEmpty, ucchar quoteChar) const
 {
 	return split(true, utf8string(separators), keepEmpty, quoteChar);
