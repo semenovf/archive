@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <cwt/fsm.hpp>
+#include <pfs/fsm.hpp>
 #include "../include/cwt/uri.hpp"
 #include "uri_rfc3986.hpp"
 
@@ -55,7 +55,7 @@ pfs::map<pfs::string, pfs::string> uri::queryItems(const pfs::string & valueDeli
 bool uri::parse(const pfs::string & uri)
 {
 	UriParseContext ctx = { & _uri };
-	fsm::fsm<pfs::string> fsm(uri_fsm, & ctx);
+	pfs::fsm::fsm<pfs::string> fsm(uri_fsm, & ctx);
 
 	_uri.clear();
 

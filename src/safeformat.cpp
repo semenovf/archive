@@ -39,34 +39,34 @@ static pfs::string _SF_FLAG_CHAR("0- +");
 static pfs::string _SF_SPEC_CHAR("diouxXeEfFgGcsp");
 
 /* exclude '%' (0x25) */
-static fsm::transition<pfs::string> plain_char_fsm[] = {
+static pfs::fsm::transition<pfs::string> plain_char_fsm[] = {
       {-1, 1, FSM_MATCH_RANGE(pfs::ucchar(0x20u), pfs::ucchar(0x24u))     , FSM_ACCEPT, nullptr, nullptr }
     , {-1, 2, FSM_MATCH_RANGE(pfs::ucchar(0x26u), pfs::ucchar(0x10FFFFu)) , FSM_ACCEPT, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RANGE(pfs::ucchar(0x01u), pfs::ucchar(0x19u))     , FSM_ACCEPT, nullptr, nullptr }
 };
 
-static fsm::transition<pfs::string> plain_chars_fsm[] = {
+static pfs::fsm::transition<pfs::string> plain_chars_fsm[] = {
       {-1,-1, FSM_MATCH_RPT_FSM(plain_char_fsm, 1,-1) , FSM_ACCEPT, plain_chars, nullptr }
 };
 
-static fsm::transition<pfs::string> percent_char_fsm[] = {
+static pfs::fsm::transition<pfs::string> percent_char_fsm[] = {
       { 1,-1, FSM_MATCH_CHAR(_l1("%")) , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_CHAR(_l1("%")) , FSM_ACCEPT, set_percent_char, nullptr }
 };
 
-static fsm::transition<pfs::string> prec_fsm[] = {
+static pfs::fsm::transition<pfs::string> prec_fsm[] = {
       { 1,-1, FSM_MATCH_CHAR(_l1("."))            , FSM_NORMAL, nullptr, nullptr }
     , { 2,-1, FSM_MATCH_OPT_CHAR(_l1("-"))        , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RPT_CHAR(_SF_DIGIT,-1,-1) , FSM_ACCEPT, nullptr, nullptr }
 };
 
-static fsm::transition<pfs::string> width_fsm[] = {
+static pfs::fsm::transition<pfs::string> width_fsm[] = {
       { 1,-1, FSM_MATCH_CHAR(_l1("123456789"))    , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RPT_CHAR(_SF_DIGIT,-1,-1) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 
-static fsm::transition<pfs::string> spec_fsm[] = {
+static pfs::fsm::transition<pfs::string> spec_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_l1("%"))                , FSM_NORMAL, begin_spec, nullptr }
 	, { 2, 5, FSM_MATCH_RPT_CHAR(_SF_FLAG_CHAR,-1,-1) , FSM_NORMAL, set_flags,  nullptr }
 	, { 3, 5, FSM_MATCH_OPT_FSM(width_fsm)            , FSM_NORMAL, set_width,  nullptr }
@@ -75,21 +75,21 @@ static fsm::transition<pfs::string> spec_fsm[] = {
 	, {-1,-1, FSM_MATCH_NOTHING                       , FSM_ACCEPT, bad_spec,  nullptr }
 };
 
-static fsm::transition<pfs::string> format_fsm[] = {
+static pfs::fsm::transition<pfs::string> format_fsm[] = {
 	  { 0, 1, FSM_MATCH_FSM(percent_char_fsm) , FSM_ACCEPT, nullptr, nullptr }
 	, { 0, 2, FSM_MATCH_FSM(spec_fsm)         , FSM_ACCEPT, nullptr, nullptr }
 	, { 0,-1, FSM_MATCH_FSM(plain_chars_fsm)  , FSM_ACCEPT, nullptr, nullptr }
 };
 
 
-bool begin_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void *context, void *)
+bool begin_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void * context, void *)
 {
 	safeformatcontext *ctx = reinterpret_cast<safeformatcontext *>(context);
 	__clear_spec(ctx->spec);
 	return true;
 }
 
-bool plain_chars (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+bool plain_chars (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void * context, void *)
 {
 	safeformatcontext *ctx = reinterpret_cast<safeformatcontext *>(context);
 	if (begin < end) {
@@ -98,7 +98,7 @@ bool plain_chars (const pfs::string::const_iterator & begin, const pfs::string::
 	return true;
 }
 
-bool set_flags (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+bool set_flags (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void * context, void *)
 {
 	safeformatcontext *ctx = reinterpret_cast<safeformatcontext *>(context);
 
@@ -125,7 +125,7 @@ bool set_flags (const pfs::string::const_iterator & begin, const pfs::string::co
 	return true;
 }
 
-bool set_width (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+bool set_width (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void * context, void *)
 {
 	safeformatcontext *ctx = reinterpret_cast<safeformatcontext *>(context);
 	if (begin < end) {
@@ -138,7 +138,7 @@ bool set_width (const pfs::string::const_iterator & begin, const pfs::string::co
 }
 
 // prec := '.' [ '-' ] *DIGIT
-bool set_prec (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+bool set_prec (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void * context, void *)
 {
 	safeformatcontext *ctx = reinterpret_cast<safeformatcontext *>(context);
 
@@ -355,7 +355,7 @@ safeformat::safeformat(const char * latin1Format)
 
 safeformat::operator pfs::string & ()
 {
-	cwt::fsm::fsm<pfs::string> fsm(format_fsm, m_context.get());
+	pfs::fsm::fsm<pfs::string> fsm(format_fsm, m_context.get());
 	ssize_t n = fsm.exec(0, m_context->format.begin(), m_context->format.end());
 	if (n < 0) {
 		;

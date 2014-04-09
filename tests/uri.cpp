@@ -9,7 +9,7 @@
 #include <cwt/uri.hpp>
 #include <cstdio>
 
-#include <cwt/fsm_test.hpp>
+#include <pfs/fsm_test.hpp>
 #include "../src/uri_rfc3986.hpp"
 
 using namespace cwt;
@@ -267,7 +267,7 @@ static FsmTestEntry __fsmTestEntries[] = {
 
 void test_uri_fsm()
 {
-	static fsm::fsm<pfs::string> fsm(nullptr, nullptr);
+	static pfs::fsm::fsm<pfs::string> fsm(nullptr, nullptr);
 	int nentries = sizeof(__fsmTestEntries)/sizeof(__fsmTestEntries[0]);
 
 	for( int i = 0; i < nentries; i++ )

@@ -16,7 +16,7 @@ extern pfs::string __strerror (int_t errn);
 
 namespace cwt { namespace log {
 
-static const int __SystemErrorBufLen = 256;
+//static const int __SystemErrorBufLen = 256;
 
 class emitter;
 
@@ -51,13 +51,27 @@ private:
 	}
 
 public:
-	~emitter() {
+	~emitter() { disconnectAll(); }
+
+	void disconnectAll ()
+	{
 		emitTrace.disconnect_all();
 		emitDebug.disconnect_all();
 		emitInfo.disconnect_all();
 		emitWarn.disconnect_all();
 		emitError.disconnect_all();
 		emitFatal.disconnect_all();
+	}
+
+	void restoreDefaultAppenders ()
+	{
+		disconnectAll();
+		emitTrace.connect (& logAppender, & default_appender::trace);
+		emitDebug.connect (& logAppender, & default_appender::debug);
+		emitInfo.connect  (& logAppender, & default_appender::info);
+		emitWarn.connect  (& logAppender, & default_appender::warn);
+		emitError.connect (& logAppender, & default_appender::error);
+		emitFatal.connect (& logAppender, & default_appender::fatal);
 	}
 
 	static pfs::shared_ptr<emitter> instance() {
@@ -119,7 +133,7 @@ pfs::string appender::patternify(priority level, const pfs::string & pattern, co
 	pattern_context ctx;
 	ctx.level = level;
 	ctx.msg = & msg;
-	cwt::fsm::fsm<pfs::string> fsm(pattern_fsm, &ctx);
+	pfs::fsm::fsm<pfs::string> fsm(pattern_fsm, &ctx);
 
 	ssize_t len = fsm.exec(0, pattern.begin(), pattern.end());
 
@@ -202,6 +216,16 @@ void fatal (int errn, const pfs::string & text)
 	} else {
 		log::fatal(safeformat(_u8("%s: %s")) % text % __strerror(errn));
 	}
+}
+
+void restoreDefaultAppenders ()
+{
+	emitter::instance()->restoreDefaultAppenders();
+}
+
+void disconnectAllAppenders ()
+{
+	emitter::instance()->disconnectAll();
 }
 
 }} // cwt::log

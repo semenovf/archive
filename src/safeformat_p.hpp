@@ -10,7 +10,7 @@
 
 #include "../include/cwt/safeformat.hpp"
 #include <pfs/vector.hpp>
-#include <cwt/fsm.hpp>
+#include <pfs/fsm.hpp>
 
 namespace cwt {
 

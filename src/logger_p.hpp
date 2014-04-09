@@ -10,7 +10,7 @@
 #define __CWT_LOGGER_P_HPP__
 
 #include "../include/cwt/logger.hpp"
-#include <cwt/fsm.hpp>
+#include <pfs/fsm.hpp>
 #include <ctime>
 
 namespace cwt { namespace log {
@@ -68,6 +68,8 @@ static bool set_format_spec   (const pfs::string::const_iterator & begin, const 
  * 		For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}.
  * 		If no date format specifier is given then ISO8601 format is assumed.
  * p    Priority (Trace, Debug, Info etc.).
+ * n    new line
+ * t    horizontal tab
  */
 
 //static pfs::string _LOGGER_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
@@ -79,18 +81,18 @@ pfs::ucchar plain_char[] = {
 	  pfs::ucchar(0x20u), pfs::ucchar(0x24u)
 	, pfs::ucchar(0x26u), pfs::ucchar(0x10FFFFu)
 };
-static cwt::fsm::transition<pfs::string> plain_char_fsm[] = {
+static pfs::fsm::transition<pfs::string> plain_char_fsm[] = {
       {-1, 1, FSM_MATCH_RANGE(plain_char[0], plain_char[1]) , FSM_ACCEPT, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RANGE(plain_char[2], plain_char[3]) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* format-mod = [ "-" ] *2DIGIT [ "." *2DIGIT ] */
-static cwt::fsm::transition<pfs::string> dot_digit_fsm[] = {
+static pfs::fsm::transition<pfs::string> dot_digit_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_u8("."))                , FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_RPT_CHAR(_LOGGER_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, nullptr }
 };
 
-static cwt::fsm::transition<pfs::string> format_mod_fsm[] = {
+static pfs::fsm::transition<pfs::string> format_mod_fsm[] = {
 	  { 1,-1, FSM_MATCH_OPT_CHAR(_u8("-"))            , FSM_NORMAL, set_left_justify, nullptr }
 	, { 2,-1, FSM_MATCH_RPT_CHAR(_LOGGER_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, nullptr }
 	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm)        , FSM_ACCEPT, nullptr, nullptr }
@@ -102,33 +104,33 @@ pfs::ucchar format_spec_char[] = {
 	, pfs::ucchar(0x7Cu), pfs::ucchar(0x7Cu)
 	, pfs::ucchar(0x7Eu), pfs::ucchar(0x10FFFFu)
 };
-static cwt::fsm::transition<pfs::string> format_spec_char_fsm[] = {
+static pfs::fsm::transition<pfs::string> format_spec_char_fsm[] = {
 	  {-1, 1, FSM_MATCH_RANGE(format_spec_char[0], format_spec_char[1]) , FSM_ACCEPT, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_RANGE(format_spec_char[2], format_spec_char[3]) , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_RANGE(format_spec_char[4], format_spec_char[5]) , FSM_ACCEPT, nullptr, nullptr }
 };
-static cwt::fsm::transition<pfs::string> format_spec_fsm[] = {
+static pfs::fsm::transition<pfs::string> format_spec_fsm[] = {
       { 1,-1, FSM_MATCH_CHAR(_u8("{"))                       , FSM_NORMAL, nullptr, nullptr }
     , { 2,-1, FSM_MATCH_RPT_FSM(format_spec_char_fsm, 0,256) , FSM_NORMAL, set_format_spec, nullptr }
     , {-1,-1, FSM_MATCH_CHAR(_u8("}"))                       , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* spec = "%" [ format-mod ] ( "m" / "d" / "p" ) [ format-spec ]*/
-static cwt::fsm::transition<pfs::string> spec_fsm[] = {
+static pfs::fsm::transition<pfs::string> spec_fsm[] = {
       { 1,-1, FSM_MATCH_CHAR(_u8("%"))           , FSM_NORMAL, begin_spec, nullptr }
     , { 2,-1, FSM_MATCH_OPT_FSM(format_mod_fsm)  , FSM_NORMAL, nullptr, nullptr }
-    , { 3,-1, FSM_MATCH_CHAR(_u8("mdp"))         , FSM_NORMAL, set_spec_char, nullptr }
+    , { 3,-1, FSM_MATCH_CHAR(_u8("mdpnt"))       , FSM_NORMAL, set_spec_char, nullptr }
     , {-1,-1, FSM_MATCH_OPT_FSM(format_spec_fsm) , FSM_ACCEPT, end_spec, nullptr }
 };
 
 /* pattern = *( spec-fsm / plain-char ) */
 /* spec-fsm / plain-char */
-static cwt::fsm::transition<pfs::string> pattern_unit_fsm[] = {
+static pfs::fsm::transition<pfs::string> pattern_unit_fsm[] = {
       {-1, 1, FSM_MATCH_FSM(spec_fsm)       , FSM_ACCEPT, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_FSM(plain_char_fsm) , FSM_ACCEPT, append_plain_char, nullptr }
 };
 
-static cwt::fsm::transition<pfs::string> pattern_fsm[] = {
+static pfs::fsm::transition<pfs::string> pattern_fsm[] = {
 	{-1,-1, FSM_MATCH_RPT_FSM(pattern_unit_fsm, 0,-1) , FSM_ACCEPT, nullptr, nullptr }
 };
 
@@ -144,13 +146,19 @@ static bool begin_spec (const pfs::string::const_iterator & , const pfs::string:
 	return true;
 }
 
-static bool end_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void *context, void *)
+static bool end_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	char spec_char = char(ctx->pspec.spec_char);
 	pfs::string result;
 
 	switch((char)spec_char) {
+	case 'n':
+		result << pfs::ucchar('\n');
+		break;
+	case 't':
+		result << pfs::ucchar('\t');
+		break;
 	case 'p':
 		result = __priority_str[ctx->level];
 		break;

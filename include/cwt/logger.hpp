@@ -10,7 +10,7 @@
 #define __CWT_LOG_HPP__
 
 #include <pfs/string.hpp>
-#include <pfs/vector.hpp>
+#include <pfs/stringlist.hpp>
 #include <cwt/safeformat.hpp>
 #include <cwt/sigslot.hpp>
 #include <cstdio>
@@ -53,11 +53,11 @@ public:
 public:
 	appender () : _connected(false), _pattern("%m"), _level(log::Trace) { }
 	appender (const pfs::string &pattern) : _connected(false), _pattern(pattern), _level(log::Trace) {}
-	virtual ~appender() { if(_connected) disconnect(); }
+	virtual ~appender () { if(_connected) disconnect(); }
 
 	void setPattern (const pfs::string & pattern) { _pattern = pattern; }
 	void setPriority (priority level);
-	log::priority level() { return _level; }
+	log::priority level () { return _level; }
 
 	virtual void trace (const pfs::string &) = 0;
 	virtual void debug (const pfs::string &) = 0;
@@ -94,8 +94,8 @@ public:
 class stdio_appender : public appender
 {
 public:
-	stdio_appender() {}
-	~stdio_appender() {}
+	stdio_appender () {}
+	~stdio_appender () {}
 	virtual void trace (const pfs::string & text) { ::fprintf(stdout, "%s\n", patternify(log::Trace, text).c_str()); }
 	virtual void debug (const pfs::string & text) { ::fprintf(stdout, "%s\n", patternify(log::Debug, text).c_str()); }
 	virtual void info  (const pfs::string & text) { ::fprintf(stdout, "%s\n", patternify(log::Info, text).c_str()); }
@@ -111,38 +111,39 @@ public:
 	~strings_appender() {}
 	virtual void trace (const pfs::string & text) { _traceStrings.append(patternify(log::Trace, text)); }
 	virtual void debug (const pfs::string & text) { _debugStrings.append(patternify(log::Debug, text)); }
-	virtual void info  (const pfs::string & text)  { _infoStrings.append(patternify (log::Info, text)); }
-	virtual void warn  (const pfs::string & text)  { _warnStrings.append(patternify (log::Warn, text)); }
+	virtual void info  (const pfs::string & text) { _infoStrings.append(patternify (log::Info, text)); }
+	virtual void warn  (const pfs::string & text) { _warnStrings.append(patternify (log::Warn, text)); }
 	virtual void error (const pfs::string & text) { _errorStrings.append(patternify(log::Error, text)); }
 	virtual void fatal (const pfs::string & text) { _fatalStrings.append(patternify(log::Fatal, text)); }
 
-	pfs::vector<pfs::string>& traceStrings() { return _traceStrings; }
-	pfs::vector<pfs::string>& debugStrings() { return _debugStrings; }
-	pfs::vector<pfs::string>& infoStrings()  { return _infoStrings; }
-	pfs::vector<pfs::string>& warnStrings()  { return _warnStrings; }
-	pfs::vector<pfs::string>& errorStrings() { return _errorStrings; }
-	pfs::vector<pfs::string>& fatalStrings() { return _fatalStrings; }
-	const pfs::vector<pfs::string>& traceStrings() const { return _traceStrings; }
-	const pfs::vector<pfs::string>& debugStrings() const { return _debugStrings; }
-	const pfs::vector<pfs::string>& infoStrings()  const { return _infoStrings; }
-	const pfs::vector<pfs::string>& warnStrings()  const { return _warnStrings; }
-	const pfs::vector<pfs::string>& errorStrings() const { return _errorStrings; }
-	const pfs::vector<pfs::string>& fatalStrings() const { return _fatalStrings; }
+	pfs::stringlist & traceStrings () { return _traceStrings; }
+	pfs::stringlist & debugStrings () { return _debugStrings; }
+	pfs::stringlist & infoStrings  () { return _infoStrings; }
+	pfs::stringlist & warnStrings  () { return _warnStrings; }
+	pfs::stringlist & errorStrings () { return _errorStrings; }
+	pfs::stringlist & fatalStrings () { return _fatalStrings; }
+	const pfs::stringlist & traceStrings () const { return _traceStrings; }
+	const pfs::stringlist & debugStrings () const { return _debugStrings; }
+	const pfs::stringlist & infoStrings  () const { return _infoStrings; }
+	const pfs::stringlist & warnStrings  () const { return _warnStrings; }
+	const pfs::stringlist & errorStrings () const { return _errorStrings; }
+	const pfs::stringlist & fatalStrings () const { return _fatalStrings; }
 
-	void clear();
+	void clear ();
 
 private:
-	pfs::vector<pfs::string> _traceStrings;
-	pfs::vector<pfs::string> _debugStrings;
-	pfs::vector<pfs::string> _infoStrings;
-	pfs::vector<pfs::string> _warnStrings;
-	pfs::vector<pfs::string> _errorStrings;
-	pfs::vector<pfs::string> _fatalStrings;
+	pfs::stringlist _traceStrings;
+	pfs::stringlist _debugStrings;
+	pfs::stringlist _infoStrings;
+	pfs::stringlist _warnStrings;
+	pfs::stringlist _errorStrings;
+	pfs::stringlist _fatalStrings;
 };
 
-inline void connectAppender(appender * appender) { appender->connect(); }
-inline void disconnectAppender(appender * appender) { appender->disconnect(); }
-
+inline void connectAppender (appender * appender) { appender->connect(); }
+inline void disconnectAppender (appender * appender) { appender->disconnect(); }
+void restoreDefaultAppenders ();
+void disconnectAllAppenders ();
 
 }} // cwt::log
 
