@@ -46,7 +46,7 @@ public:
 	file ();
 	file (int fd);
 	file (const pfs::string & path, int32_t oflags = ReadWrite);
-	virtual ~file () { close(); }
+	virtual ~file () {}
 
 	bool open (const pfs::string & path, int32_t oflags = ReadWrite);
 

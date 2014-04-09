@@ -26,7 +26,7 @@ protected:
 
 public:
 	buffer() : m_buffer() {}
-	virtual ~buffer() { close(); }
+	virtual ~buffer() {}
 
 	const pfs::vector<char> & data () const { return m_buffer; }
 };

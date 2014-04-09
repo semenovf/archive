@@ -44,7 +44,7 @@ protected:
 
 public:
 	tcp_socket() : inet_socket() {}
-	virtual ~tcp_socket() { close(); }
+	virtual ~tcp_socket() {}
 	bool open (const pfs::string & hostname, uint16_t port, int32_t oflags = ReadWrite);
 	bool connect (const pfs::string & hostname, uint16_t port, int32_t oflags = ReadWrite)
 	{

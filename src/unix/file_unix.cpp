@@ -23,6 +23,13 @@ public:
 	int    fd;
 
 	impl () : path(nullptr), fd(-1) { ; }
+	~impl ()
+	{
+		if (fd > 0) {
+			::close(fd);
+			fd = -1;
+		}
+	}
 };
 
 static int __perms2mode (int32_t perms)
