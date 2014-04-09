@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-app-qt.pri)
 
-TARGET = test_cow_ptr_qt
+TARGET = test_pfs_cow_ptr_qt
 
 INCLUDEPATH += ../../../include
 SOURCES += ../../../tests/cow_ptr_qt.cpp

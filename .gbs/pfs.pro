@@ -10,6 +10,7 @@ SUBDIRS  = pfs       \
     tests/shared_ptr \
     tests/bitarray   \
     tests/bytearray  \
+    tests/fsm        \
     tests/function   \
     tests/vector     \
     tests/map_hash   \

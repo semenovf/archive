@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_utf8string
+TARGET = test_pfs_utf8string
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include

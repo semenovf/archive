@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_shared_ptr
+TARGET = test_pfs_shared_ptr
 
 INCLUDEPATH += ../../../include
 SOURCES += ../../../tests/shared_ptr.cpp

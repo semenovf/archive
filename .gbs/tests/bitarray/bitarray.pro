@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_bitarray
+TARGET = test_pfs_bitarray
 
 INCLUDEPATH += ../../../include
 SOURCES += ../../../tests/bitarray.cpp

@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_map_hash
+TARGET = test_pfs_map_hash
 
 INCLUDEPATH += ../../../include
 SOURCES += ../../../tests/map_hash.cpp

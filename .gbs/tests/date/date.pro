@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_date
+TARGET = test_pfs_date
 
 INCLUDEPATH += ../../../include
 

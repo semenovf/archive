@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_vector
+TARGET = test_pfs_vector
 
 INCLUDEPATH += ../../../include
 
