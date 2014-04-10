@@ -149,7 +149,7 @@ bool utf8decoder::convert (ostring_type & output, const istring_type & input, si
 
 bool utf8encoder::convert (ostring_type & output, const istring_type & input, size_t & remain)
 {
-	output.append(pfs::bytearray(input.data(), input.size()));
+	output.append(pfs::bytearray(input.c_str(), input.sizeInBytes()));
 	remain = 0;
 	return true;
 }
