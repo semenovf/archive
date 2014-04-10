@@ -7,6 +7,7 @@
 
 #include <cwt/test.hpp>
 #include <pfs/bytearray.hpp>
+#include <pfs/endian.hpp>
 #include <cstring>
 #include <iostream>
 
@@ -71,6 +72,24 @@ void test_cow ()
 	std::cout << "s2 =" << s2.c_str() << std::endl;
 }
 
+
+void test_convert_to_bytes ()
+{
+/*
+	int  a4 = PFS_INT_MIN;
+*/
+
+	TEST_OK(pfs::bytearray("\xBC") == pfs::bytearray::toBytes('\xBC', pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\xBC") == pfs::bytearray::toBytes('\xBC', pfs::endian::BigEndian));
+	TEST_OK(pfs::bytearray("\xFF\x7F") == pfs::bytearray::toBytes(short(0x7FFF), pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\x7F\xFF") == pfs::bytearray::toBytes(short(0x7FFF), pfs::endian::BigEndian));
+	TEST_OK(pfs::bytearray("\x00\x80") == pfs::bytearray::toBytes(short(0x8000), pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\x80\x00") == pfs::bytearray::toBytes(short(0x8000), pfs::endian::BigEndian));
+
+	TEST_OK(pfs::bytearray("\xFF\xFF\xFF\x7F") == pfs::bytearray::toBytes(int(0x7FFFFFFF), pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\x7F\xFF\xFF\xFF") == pfs::bytearray::toBytes(int(0x7FFFFFFF), pfs::endian::BigEndian));
+}
+
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
@@ -82,6 +101,7 @@ int main(int argc, char *argv[])
 	test_convert_number();
 	test_base64();
 	test_cow();
+	test_convert_to_bytes();
 
     END_TESTS;
 }

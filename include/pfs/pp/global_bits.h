@@ -25,6 +25,7 @@
 
 #ifdef ULLONG_MAX
 #	define HAVE_INT64
+#	define HAVE_LONGLONG
 #endif
 
 #endif /* __PFS_GLOBAL_BITS_H__ */

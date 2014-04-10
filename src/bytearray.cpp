@@ -31,7 +31,7 @@ bytearray & bytearray::insert (const char * s, const const_iterator & pos)
 
 bytearray & bytearray::insert (const char * s, size_t n, const const_iterator & pos)
 {
-	detach();
+	_d.detach();
 	const_iterator it(pos);
 
 	if (it > end())
@@ -40,7 +40,7 @@ bytearray & bytearray::insert (const char * s, size_t n, const const_iterator & 
 		it = begin();
 
 	size_t i = it - begin();
-	_pimpl->insert(i, s, n);
+	_d.cast<impl>()->insert(i, s, n);
 	return *this;
 }
 
@@ -77,12 +77,11 @@ bytearray::const_iterator bytearray::find(const char * s, size_t pos, size_t n) 
 	if (pos >= length())
 		return end();
 
-	size_t find_pos = _pimpl->find(s, pos, n);
+	size_t find_pos = _d.cast<impl>()->find(s, pos, n);
 
-	if (find_pos == _pimpl->npos)
+	if (find_pos == _d.cast<impl>()->npos)
 		return end();
 
-	//return bytearray::const_iterator(data() + find_pos);
 	return bytearray::const_iterator(begin() + find_pos);
 }
 
@@ -91,9 +90,8 @@ bytearray::const_iterator bytearray::find(const char * s, size_t pos) const
 	return find(s, pos, strlen(s));
 }
 
-bytearray & bytearray::remove(const const_iterator & from, size_t n)
+bytearray & bytearray::remove (const const_iterator & from, size_t n)
 {
-	detach();
 	bytearray::const_iterator itEnd = from + n;
 
 	if (itEnd > end())
@@ -102,7 +100,9 @@ bytearray & bytearray::remove(const const_iterator & from, size_t n)
 	if (from >= begin() && from < itEnd) {
 		size_t pos = from - begin();
 		size_t sz  = itEnd - from;
-		_pimpl->erase(pos, sz);
+
+		_d.detach();
+		_d.cast<impl>()->erase(pos, sz);
 	}
 
 	return *this;
@@ -112,7 +112,7 @@ bytearray & bytearray::remove(const const_iterator & from, size_t n)
 // TODO need to implement without using the standard stream library
 bytearray & bytearray::setNumber (long_t n, int base)
 {
-	detach();
+	_d.detach();
 	std::ostringstream os;
 	os << std::setbase(base) << n;
 	*this = os.str();
@@ -122,7 +122,7 @@ bytearray & bytearray::setNumber (long_t n, int base)
 // TODO need to implement without using the standard stream library
 bytearray & bytearray::setNumber (ulong_t n, int base)
 {
-	detach();
+	_d.detach();
 	std::ostringstream os;
 	os << std::setbase(base) << n;
 	*this = os.str();
@@ -131,7 +131,7 @@ bytearray & bytearray::setNumber (ulong_t n, int base)
 
 bytearray & bytearray::setNumber (double n, char f, int prec)
 {
-	detach();
+	_d.detach();
 	char fmt[32];
 	char num[64];
 	if (prec)
@@ -141,7 +141,7 @@ bytearray & bytearray::setNumber (double n, char f, int prec)
 
 	PFS_ASSERT(::sprintf(num, fmt, n) > 0);
 	// TODO need to implement without using the standard stream library
-	_pimpl->assign(num);// TODO need to implement without using the standard stream library
+	_d.cast<impl>()->assign(num);// TODO need to implement without using the standard stream library
 	return *this;
 }
 
