@@ -22,6 +22,7 @@
 namespace pfs {
 
 class byteref;
+class utf8string;
 
 class DLL_API bytearray
 {
@@ -180,6 +181,9 @@ public:
 	static bytearray number (ulong_t n, int base = 10)               { return bytearray().setNumber(n, base); }
 
 	template <typename T>
+	size_t readNumber (T & v, size_t pos = 0, endian::type_enum order = endian::nativeOrder()) const;
+
+	template <typename T>
 	static bytearray toBytes (const T & v, endian::type_enum order = endian::nativeOrder());
 	static bytearray fromBase64 (const bytearray & base64);
 	bytearray toBase64 () const;
@@ -251,12 +255,12 @@ inline bytearray operator + (const bytearray & s1, const bytearray & s2)
 
 inline int bytearray::compare (const bytearray & s) const
 {
-	return _d.cast<impl>()->compare(s.constData());
+	return _d.cast<impl>()->compare(0, size(), s.constData(), s.size());
 }
 
 inline int bytearray::compare (size_t pos, size_t len, const bytearray & s) const
 {
-	return _d.cast<impl>()->compare(pos, len, s.constData());
+	return _d.cast<impl>()->compare(pos, len, s.constData(), s.size());
 }
 
 inline int bytearray::compare (size_t pos, size_t len, const bytearray & s, size_t subpos, size_t sublen) const
@@ -353,23 +357,43 @@ inline bool	operator >= (const bytearray & s1, const char * s2) { return s1.comp
 
 inline std::ostream & operator << (std::ostream & os, const bytearray & o) { os << o.c_str(); return os; }
 
-/*
 template <typename T>
-void __to_bytes (const T & v, byte_t * bytes)
+size_t bytearray::readNumber (T & v, size_t pos, endian::type_enum order) const
 {
-	for (int i = 0, j = 0; i < sizeof(T); ++i, j += 8) {
-		bytes[i] = (v >> j) & 0xFF;
-	}
+	if (size() - pos < sizeof(T))
+		return 0;
+	union u { const T v; const char b[sizeof(T)]; };
+	const char * s = constData() + pos;
+	const u * d = reinterpret_cast<const u *>(s/*constData() + pos*/);
+	v = order == endian::LittleEndian ? endian::toLittleEndian(d->v) : endian::toBigEndian(d->v);
+	return sizeof(T);
 }
-*/
 
 template <typename T>
-bytearray bytearray::toBytes (const T & v, endian::type_enum order)
+inline bytearray bytearray::toBytes (const T & v, endian::type_enum order)
 {
 	T a = order == endian::LittleEndian ? endian::toLittleEndian(v) : endian::toBigEndian(v);
 	union { T v; char b[sizeof(T)]; } d;
 	d.v = a;
 	return bytearray(d.b, sizeof(T));
+}
+
+template <>
+inline bytearray bytearray::toBytes<bool> (const bool & v, endian::type_enum order)
+{
+	return toBytes<char>(v ? '\x01' : '\x00', order);
+}
+
+template <>
+bytearray bytearray::toBytes<pfs::utf8string> (const pfs::utf8string & v, endian::type_enum /*order*/);
+//{
+//	return bytearray(v.constData(), v.sizeInBytes());
+//}
+
+template <>
+inline bytearray bytearray::toBytes<pfs::bytearray> (const pfs::bytearray & v, endian::type_enum /*order*/)
+{
+	return bytearray(v);
 }
 
 //DLL_API uint_t hash_func(const bytearray & key, uint_t seed = 0);

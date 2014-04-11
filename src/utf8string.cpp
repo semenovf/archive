@@ -382,7 +382,7 @@ utf8string utf8string::substr (const const_iterator & begin, const const_iterato
  * 		    	 match but the compared string is longer.
  *
  */
-int utf8string::compare (const_iterator from, size_t len, const char * str, size_t subpos, size_t sublen) const
+int utf8string::compare (const_iterator from, size_t len, const std::string & str/*const char * str*/, size_t subpos, size_t sublen) const
 {
 	PFS_ASSERT(from <= end());
 	const_iterator to(from + len);
@@ -392,17 +392,17 @@ int utf8string::compare (const_iterator from, size_t len, const char * str, size
 
 	size_t pos = from.distance(begin());
 	size_t n = to.distance(from);
-	return _pimpl->compare(pos, n, std::string(str ? str : ""), subpos, sublen);
+	return _pimpl->compare(pos, n, str/*std::string(str ? str : "")*/, subpos, sublen);
 }
 
 int utf8string::compare (const utf8string & s) const
 {
-	return compare(begin(), length(), s.data(), 0, s._pimpl->size());
+	return compare(begin(), length(), *s._pimpl, 0, s._pimpl->size());
 }
 
 int utf8string::compare (size_t pos, size_t len, const utf8string & utf8) const
 {
-	return compare(begin() + pos, len, utf8.data(), 0, utf8._pimpl->size());
+	return compare(begin() + pos, len, *utf8._pimpl, 0, utf8._pimpl->size());
 }
 
 /**

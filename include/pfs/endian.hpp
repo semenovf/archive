@@ -61,12 +61,17 @@ public:
 		return type() == LittleEndian ? swap(i) : i;
 	}
 
-	static short swap (char i) { return i; }
-	static short swap (short);
-	static int   swap (int);
-	static long  swap (long);
+	static char           swap (char i) { return i; }
+	static unsigned char  swap (unsigned char i) { return i; }
+	static short          swap (short);
+	static unsigned short swap (unsigned short i) { return (unsigned short)swap((short)i); }
+	static int            swap (int);
+	static unsigned int   swap (unsigned int i) { return (unsigned int)swap((int)i); }
+	static long           swap (long);
+	static unsigned long  swap (unsigned long i) { return (unsigned long)swap((long)i); }
 #ifdef HAVE_LONGLONG
-	static long long    swap (long long);
+	static long long          swap (long long);
+	static unsigned long long swap (unsigned long long i) { return (unsigned long long)swap((long long)i); }
 #endif
 	static float  swap (float);
 	static double swap (double);

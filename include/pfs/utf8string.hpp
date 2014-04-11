@@ -61,7 +61,7 @@ public:
 
 private:
 	void updateLength ();
-	int compare (const_iterator begin, size_t len, const char * s, size_t subpos, size_t sublen) const;
+	int compare (const_iterator begin, size_t len, const std::string & str/*const char * s*/, size_t subpos, size_t sublen) const;
 	stringlist_basic<utf8string> split (bool isOneSeparatorChar, const utf8string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
 
 public:

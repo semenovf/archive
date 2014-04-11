@@ -7,6 +7,7 @@
  */
 
 #include "../include/pfs/bytearray.hpp"
+#include "../include/pfs/string.hpp"
 #include <cstring>
 #include <cstdlib>
 #include <cerrno>
@@ -358,5 +359,12 @@ bytearray bytearray::toBase64 () const
 
     return tmp;
 }
+
+template <>
+bytearray bytearray::toBytes<pfs::string> (const pfs::string & v, endian::type_enum /*order*/)
+{
+	return bytearray(v.constData(), v.sizeInBytes());
+}
+
 
 } // pfs

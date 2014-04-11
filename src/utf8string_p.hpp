@@ -42,6 +42,9 @@ public:
 
 	bool isNull () const { return !_initialized; }
 
+	std::string & operator * () { return _buffer; }
+	const std::string & operator * () const { return _buffer; }
+
 	impl & assign (const std::string & str)
 	{
 		_buffer.assign(str);
