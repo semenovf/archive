@@ -10,36 +10,32 @@ SUFFIX=.err
 FAILED=no
 OUTDIR=output
 
+# For windows to search DLLs
+PATH=$PATH:..
+
 if [ ! -d $OUTDIR ] ; then
     mkdir $OUTDIR
 fi
 
 rm -f ${OUTDIR}/${PREFIX}*${SUFFIX}
 
-for i in test_* ; do
+for i in test_*.exe ; do
     OUTPUT=${OUTDIR}/${PREFIX}${i}${SUFFIX}
     printf "%-30s ... " $i
     ./$i > $OUTPUT 2>&1
 
-    case $? in
-    0)
-	rm $OUTPUT
-	printf "[OK]\n"
-	;;
-    1)
+    if [ $? != 0 ] ; then
 	printf "[FAIL]\n"
 	FAILED="yes"
-	;;
-    2)
-	printf "[INCOMPLETE]\n"
-	FAILED="yes"
-	;;
-    esac
+    else
+	rm $OUTPUT
+	printf "[OK]\n"
+    fi
 done
 
 if [ "$FAILED" = "yes" ] ; then
     echo "========================"
-    echo "ERROR: some tests failed or incomplete"
+    echo "ERROR: some tests failed"
     exit 1
 fi
 
