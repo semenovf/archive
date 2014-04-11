@@ -97,8 +97,16 @@
 //#define WORD_LOW_BYTE(WORD) ((char)((WORD)&0x00FF))
 //#define WORD_HI_BYTE(WORD)  ((char)(((WORD)>>8)&0x00FF))
 
-#ifndef PFS_CC_MSVC
-#	ifdef __cplusplus
+// max/min defined as macros in WinDef.h
+#ifdef max
+#	undef max
+#endif
+
+#ifdef min
+#	undef min
+#endif
+
+#ifdef __cplusplus
 namespace pfs {
 	template <typename T>
 	inline T min(T a, T b) { return a <= b ? a : b; }
@@ -106,7 +114,9 @@ namespace pfs {
 	template <typename T>
 	inline T max(T a, T b) { return a >= b ? a : b; }
 }
-#	endif
+#else
+#	define max(a,b)   (((a) > (b)) ? (a) : (b))
+#	define min(a,b)   (((a) < (b)) ? (a) : (b))
 #endif
 
 #define _Tr(s)  s

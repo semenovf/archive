@@ -397,12 +397,12 @@ int utf8string::compare (const_iterator from, size_t len, const std::string & st
 
 int utf8string::compare (const utf8string & s) const
 {
-	return compare(begin(), length(), *s._pimpl, 0, s._pimpl->size());
+	return compare(begin(), length(), **s._pimpl, 0, s._pimpl->size());
 }
 
 int utf8string::compare (size_t pos, size_t len, const utf8string & utf8) const
 {
-	return compare(begin() + pos, len, *utf8._pimpl, 0, utf8._pimpl->size());
+	return compare(begin() + pos, len, **utf8._pimpl, 0, utf8._pimpl->size());
 }
 
 /**
@@ -438,17 +438,29 @@ int utf8string::compare (size_t pos, size_t len, const utf8string & utf8, size_t
 
 int utf8string::compare (const char * s) const
 {
-	return compare(begin(), length(), s, 0, s ? strlen(s) : 0);
+	return compare(begin()
+			, length()
+			, s == nullptr ? "" : s // On windows failed with segfault if s == nullptr
+			, 0
+			, s ? strlen(s) : 0);
 }
 
 int utf8string::compare (size_t pos, size_t len, const char * s) const
 {
-	return compare(begin() + pos, len, s, 0, s ? strlen(s) : 0);
+	return compare(begin() + pos
+			, len
+			, s == nullptr ? "" : s // On windows failed with segfault if s == nullptr
+			, 0
+			, s ? strlen(s) : 0);
 }
 
-int utf8string::compare (size_t pos, size_t len, const char * str, size_t n) const
+int utf8string::compare (size_t pos, size_t len, const char * s, size_t n) const
 {
-	return compare(begin() + pos, len, str, 0, n);
+	return compare(begin() + pos
+			, len
+			, s == nullptr ? "" : s // On windows failed with segfault if s == nullptr
+			, 0
+			, n);
 }
 
 bool utf8string::contains (const char * s) const
