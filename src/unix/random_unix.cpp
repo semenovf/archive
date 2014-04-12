@@ -39,8 +39,6 @@ private:
 #endif
 };
 
-PFS_PIMPL_DEF(random, impl);
-
 inline random::impl::impl ()
 {
 #if defined CWT_HAVE_RANDOM_R
@@ -74,9 +72,20 @@ inline int random::impl::rand ()
 	return r;
 }
 
-random::random() : _pimpl(new random::impl) {}
-random::random(uint_t seed) : _pimpl(new random::impl(seed)) {}
-uint_t random::srand (uint_t seed) { return uint_t(_pimpl->srand(seed)); }
-uint_t random::rand () { return uint_t(_pimpl->rand()); }
+random::random() : _d(new random::impl)
+{}
+
+random::random(uint_t seed) : _d(new random::impl(seed))
+{}
+
+uint_t random::srand (uint_t seed)
+{
+	return uint_t(_d.cast<impl>()->srand(seed));
+}
+
+uint_t random::rand ()
+{
+	return uint_t(_d.cast<impl>()->rand());
+}
 
 } // cwt

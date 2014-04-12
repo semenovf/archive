@@ -22,7 +22,8 @@ namespace cwt {
 
 class DLL_API thread_cv
 {
-	PFS_PIMPL_DECL(thread_cv, protected, impl, protected);
+	class impl;
+	pfs::pimpl _d;
 
 public:
 	thread_cv ();

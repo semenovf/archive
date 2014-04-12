@@ -122,10 +122,27 @@ bool thread_cv::impl::wait (pfs::mutex & lockedMutex)
 }
 
 
-thread_cv::thread_cv () : _pimpl (new thread_cv::impl) {}
-bool thread_cv::wait (pfs::mutex & lockedMutex) { return _pimpl->wait(lockedMutex); }
-bool thread_cv::wait (pfs::mutex & lockedMutex, ulong_t timeout) { return _pimpl->wait(lockedMutex, timeout); }
-void thread_cv::wakeOne () { _pimpl->wakeOne(); }
-void thread_cv::wakeAll () { _pimpl->wakeAll(); }
+thread_cv::thread_cv () : _d (new thread_cv::impl)
+{}
+
+bool thread_cv::wait (pfs::mutex & lockedMutex)
+{
+	return _d.cast<impl>()->wait(lockedMutex);
+}
+
+bool thread_cv::wait (pfs::mutex & lockedMutex, ulong_t timeout)
+{
+	return _d.cast<impl>()->wait(lockedMutex, timeout);
+}
+
+void thread_cv::wakeOne ()
+{
+	_d.cast<impl>()->wakeOne();
+}
+
+void thread_cv::wakeAll ()
+{
+	_d.cast<impl>()->wakeAll();
+}
 
 } // cwt
