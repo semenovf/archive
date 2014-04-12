@@ -53,7 +53,7 @@ private:
 		pfs::atomic_int _ref;
 		impl_base () : _ref(1) {}
 		virtual ~impl_base () {}
-		virtual impl_base * clone () const = 0;
+		virtual impl_base * clone () const = 0;// { PFS_ASSERT(false); return nullptr; }
 	};
 
 	template<typename T>
@@ -68,7 +68,7 @@ private:
 		T &       operator *  ()       { return *_d; }
 		const T & operator *  () const { return *_d; }
 
-		impl_base * clone () const { return new impl_holder(new T(*_d)); } // used in detach()
+		impl_base * clone () const { return new impl_holder<T>(new T(*_d)); } // used in detach()
 	};
 
 public:
@@ -78,12 +78,6 @@ public:
 			_holder->_ref.deref();
 			_holder = _holder->clone();
 		}
-	}
-
-	template <typename T>
-	const T & cast1 () const
-	{
-		return *static_cast<impl_holder<T> *>(_holder); // not dynamic cast
 	}
 
 	template <typename T>
