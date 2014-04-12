@@ -17,7 +17,7 @@ template <typename T>
 class vector
 {
 	typedef std::vector<T> impl;
-	PFS_PIMPL_INLINE(vector, protected, impl)
+	pimpl _d;
 
 public:
 	typedef T item_type;
@@ -27,61 +27,63 @@ public:
 	typedef typename impl::const_reference const_reference;
 
 public:
-	vector () : _pimpl(new impl()) {}
-	explicit vector (size_t n, const T & v = T()) : _pimpl(new impl(n, v)) {}
+	vector () : _d(new impl()) {}
+	explicit vector (size_t n, const T & v = T()) : _d(new impl(n, v)) {}
 	explicit vector (const T * values, size_t size);
 
-    iterator       begin () { detach(); return _pimpl->begin(); }
-    iterator       end   () { detach(); return _pimpl->end(); }
-    const_iterator begin () const { return _pimpl->begin(); }
-    const_iterator end   () const { return _pimpl->end(); }
+    iterator       begin () { _d.detach(); return _d.cast<impl>()->begin(); }
+    iterator       end   () { _d.detach(); return _d.cast<impl>()->end(); }
+    const_iterator begin () const { return _d.cast<impl>()->begin(); }
+    const_iterator end   () const { return _d.cast<impl>()->end(); }
     const_iterator cbegin() const { return begin(); }
     const_iterator cend  () const { return end(); }
 
-	const T &    at (size_t i) const { return _pimpl->operator [] (i); }
-	T &          operator [] (size_t i) { detach(); return _pimpl->operator [] (i); }
+	const T &    at (size_t i) const { return _d.cast<impl>()->operator [] (i); }
+	T &          operator [] (size_t i) { _d.detach(); return _d.cast<impl>()->operator [] (i); }
 	const T &    operator [] (size_t i) const { return at(i); }
 
-	reference       front ()       { return _pimpl->front(); }
-	const_reference front () const { return _pimpl->front(); }
-	reference       first ()       { return _pimpl->front(); }
-	const_reference first () const { return _pimpl->front(); }
-	reference       back  ()       { return _pimpl->back(); }
-	const_reference back  () const { return _pimpl->back(); }
-	reference       last  ()       { return _pimpl->back(); }
-	const_reference last  () const { return _pimpl->back(); }
+	reference       front ()       { return _d.cast<impl>()->front(); }
+	const_reference front () const { return _d.cast<impl>()->front(); }
+	reference       first ()       { return _d.cast<impl>()->front(); }
+	const_reference first () const { return _d.cast<impl>()->front(); }
+	reference       back  ()       { return _d.cast<impl>()->back(); }
+	const_reference back  () const { return _d.cast<impl>()->back(); }
+	reference       last  ()       { return _d.cast<impl>()->back(); }
+	const_reference last  () const { return _d.cast<impl>()->back(); }
 
-	T *       data ()            { detach(); return _pimpl->data(); }
-	const T * data () const      { return _pimpl->data(); }
-	const T * constData () const { return _pimpl->data(); }
-	void      clear ()           { detach(); _pimpl->clear(); }
-	bool      isEmpty () const   { return _pimpl->empty(); }
-	size_t    size () const      { return _pimpl->size(); }
+	T *       data ()            { _d.detach(); return _d.cast<impl>()->data(); }
+	const T * data () const      { return _d.cast<impl>()->data(); }
+	const T * constData () const { return _d.cast<impl>()->data(); }
+	void      clear ()           { _d.detach(); _d.cast<impl>()->clear(); }
+	bool      isEmpty () const   { return _d.cast<impl>()->empty(); }
+	size_t    size () const      { return _d.cast<impl>()->size(); }
 	size_t    length () const    { return size(); }
 
-	void append (const T & value) { detach(); _pimpl->push_back(value); }
+	void append (const T & value) { _d.detach(); _d.cast<impl>()->push_back(value); }
 	void append (const T * values, size_t count);
 	void append (const vector<T> & other) { append(other.constData(), other.size()); }
 
-    void resize(size_t n, T v = T()) { detach(); _pimpl->resize(n, v); }
+    void resize(size_t n, T v = T()) { _d.detach(); _d.cast<impl>()->resize(n, v); }
 
-    iterator erase (iterator pos) { detach(); return _pimpl->erase(pos); }
-    iterator erase (iterator first, const_iterator last) { detach(); return _pimpl->erase(first, last); }
-    void erase (size_t index) { detach(); _pimpl->erase(begin() + index); }
-    void erase (size_t index, size_t n) { detach(); _pimpl->erase(begin() + index, begin() + index + n); }
+    iterator erase (iterator pos) { _d.detach(); return _d.cast<impl>()->erase(pos); }
+    iterator erase (iterator first, const_iterator last) { _d.detach(); return _d.cast<impl>()->erase(first, last); }
+    void erase (size_t index) { _d.detach(); _d.cast<impl>()->erase(begin() + index); }
+    void erase (size_t index, size_t n) { _d.detach(); _d.cast<impl>()->erase(begin() + index, begin() + index + n); }
 
     iterator remove (iterator pos) { return erase(pos); }
     iterator remove (iterator first, iterator last) { return erase(first, last); }
     void remove (size_t index) { erase(index); }
     void remove (size_t index, size_t n) { erase(index, n); }
+
+    void swap (vector & o) { _d.swap(o._d); }
 };
 
 template <typename T>
 vector<T>::vector (const T * values, size_t count)
-	: _pimpl(new impl)
+	: _d(new impl)
 {
 	size_t i = size();
-	_pimpl->resize(size() + count);
+	_d.cast<impl>()->resize(size() + count);
 	T * d = data();
 	for (size_t j = 0; j < count; ++i, ++j) {
 		d[i] = values[j];
@@ -91,9 +93,9 @@ vector<T>::vector (const T * values, size_t count)
 template <typename T>
 void vector<T>::append (const T * values, size_t count)
 {
-	detach();
+	_d.detach();
 	size_t i = size();
-	_pimpl->resize(size() + count);
+	_d.cast<impl>()->resize(size() + count);
 	T * d = data();
 	for (size_t j = 0; j < count; ++i, ++j) {
 		d[i] = values[j];

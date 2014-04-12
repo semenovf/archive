@@ -20,41 +20,41 @@ template <typename Key, typename T>
 class map
 {
 	typedef std::map<Key,T> impl;
-	PFS_PIMPL_INLINE(map, protected, impl)
+	pimpl _d;
 
 public:
 	typedef typename std::map<Key, T>::iterator iterator;
 	typedef typename std::map<Key, T>::const_iterator const_iterator;
 
 public:
-    map () : _pimpl(new impl()) {}
+    map () : _d(new impl()) {}
 
-	iterator	   find (const Key & key) { detach(); return _pimpl->find(key); }
-	const_iterator find (const Key & key) const { return _pimpl->find(key); }
-	void	       clear () { detach(); _pimpl->clear(); }
+	iterator	   find (const Key & key) { _d.detach(); return _d.cast<impl>()->find(key); }
+	const_iterator find (const Key & key) const { return _d.cast<impl>()->find(key); }
+	void	       clear () { _d.detach(); _d.cast<impl>()->clear(); }
 	bool           contains (const Key & key) const { return find(key) != cend(); }
-	bool	       isEmpty () const { return _pimpl->empty(); }
+	bool	       isEmpty () const { return _d.cast<impl>()->empty(); }
 
-	iterator       begin () { detach(); return _pimpl->begin(); }
-    const_iterator begin () const { return _pimpl->begin(); }
-    const_iterator cbegin () const { return _pimpl->begin(); }
-    iterator       end () { detach(); return _pimpl->end(); }
-    const_iterator end () const { return _pimpl->end(); }
-    const_iterator cend () const { return _pimpl->end(); }
+	iterator       begin () { _d.detach(); return _d.cast<impl>()->begin(); }
+    const_iterator begin () const { return _d.cast<impl>()->begin(); }
+    const_iterator cbegin () const { return _d.cast<impl>()->begin(); }
+    iterator       end () { _d.detach(); return _d.cast<impl>()->end(); }
+    const_iterator end () const { return _d.cast<impl>()->end(); }
+    const_iterator cend () const { return _d.cast<impl>()->end(); }
 
 	iterator       insert (const Key & key, const T & value);
 
 	const T	       value (const Key & key) const;
 	const T	       value (const Key & key, const T & defaultValue) const;
 
-	size_t 	       size () const { return _pimpl->size(); }
-	bool           remove (const Key & key) { detach(); return _pimpl->erase(key) > 0; }
-	void           remove (iterator pos) { detach(); _pimpl->erase(pos); }
+	size_t 	       size () const { return _d.cast<impl>()->size(); }
+	bool           remove (const Key & key) { _d.detach(); return _d.cast<impl>()->erase(key) > 0; }
+	void           remove (iterator pos) { _d.detach(); _d.cast<impl>()->erase(pos); }
 	bool	       operator != (const map<Key, T> & other) const { return !(*this == other); }
 	bool	       operator == (const map<Key, T> & other) const;
 
-	T &	           operator [] (const Key & key) { detach(); return _pimpl->operator [] (key); }
-	const T        operator [] (const Key & key) const { return _pimpl->at(key); }
+	T &	           operator [] (const Key & key) { _d.detach(); return _d.cast<impl>()->operator [] (key); }
+	const T        operator [] (const Key & key) const { return _d.cast<impl>()->at(key); }
 
 	map &          operator << (const std::pair<Key, T> & p) { this->insert(p.first, p.second); return *this; }
 	vector<Key>    keys() const;
@@ -64,8 +64,8 @@ public:
 template <typename Key, typename T>
 inline typename map<Key,T>::iterator map<Key,T>::insert(const Key & key, const T & value)
 {
-	detach();
-	std::pair<iterator,bool> r = _pimpl->insert(std::pair<Key,T>(key, value));
+	_d.detach();
+	std::pair<iterator,bool> r = _d.cast<impl>()->insert(std::pair<Key,T>(key, value));
 	if (!r.second) { // key already exists
 		r.first->second = value;
 	}
@@ -92,7 +92,8 @@ bool map<Key, T>::operator == (const map<Key, T> & other) const
 	if (this == & other)
 		return true;
 
-    if (_pimpl == other._pimpl)
+	pimpl & p = other._d;
+    if (*_d.cast<impl>() == *p.cast<impl>())
         return true;
 
     if (size() != other.size())

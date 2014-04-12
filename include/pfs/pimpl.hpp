@@ -40,6 +40,14 @@ public:
 
 	~pimpl () { deref(); }
 
+	void swap (pimpl & o)
+	{
+		impl_base * tmp;
+		tmp = _holder;
+		_holder = o._holder;
+		o._holder = tmp;
+	}
+
 private:
 	void deref ()
 	{
@@ -183,7 +191,6 @@ void Class::detach()                                           \
                                                                \
 Class::Class (const Class::Impl & other)                       \
 	: _pimpl(new Class::Impl(other)) {}
-
 // } TODO DEPRECATED
 
 #endif /* __PFS_PIMPL_HPP__ */

@@ -33,28 +33,28 @@ class DLL_API bitarray
 		size_t          nbits;
 	};
 
-	PFS_PIMPL_INLINE(bitarray, protected, impl);
+	pimpl _d;
 
 public:
 	bitarray ();
 	bitarray (size_t size, bool value = false);
 
 	bool	at        (size_t i) const { return testBit(i); }
-	void	clear     ()               { detach(); _pimpl->nbits = 0; }
+	void	clear     ()               { _d.detach(); _d.cast<impl>()->nbits = 0; }
 	void	clearBit  (size_t i);
 	void	setBit    (size_t i);
 	void	setBit    (size_t i, bool value) { if (value) setBit(i); else clearBit(i); }
 	bool	testBit   (size_t i) const;
 	bool	toggleBit (size_t i);
 
-	size_t  count () const { return _pimpl->nbits; }
-	size_t  size () const  { return _pimpl->nbits; }
+	size_t  count () const { return _d.cast<impl>()->nbits; }
+	size_t  size () const  { return _d.cast<impl>()->nbits; }
 	size_t  count (bool on) const;
 
 	void	fill (bool value) { fill(value, size()); }
-	void	fill (bool value, size_t size) { detach(); *this = bitarray(size, value); }
+	void	fill (bool value, size_t size) { _d.detach(); *this = bitarray(size, value); }
 	void	fill (bool value, size_t begin, size_t end);
-	bool	isEmpty () const { return _pimpl->nbits == 0; }
+	bool	isEmpty () const { return _d.cast<impl>()->nbits == 0; }
 	void	resize (size_t size);
 	void	truncate (size_t pos) { if (pos < size()) resize(pos); }
 
@@ -73,31 +73,31 @@ public:
 
 inline void bitarray::clearBit(size_t i)
 {
-	detach();
+	_d.detach();
 	PFS_ASSERT(i < size());
-	*(_pimpl->a.data() + (i >> 5)) &= ~ uint32_t(1 << (i & 31));
+	*(_d.cast<impl>()->a.data() + (i >> 5)) &= ~ uint32_t(1 << (i & 31));
 }
 
 inline void bitarray::setBit(size_t i)
 {
-	detach();
+	_d.detach();
 	PFS_ASSERT(i < size());
-	*(_pimpl->a.data() + (i >> 5)) |= uint32_t(1 << (i & 31));
+	*(_d.cast<impl>()->a.data() + (i >> 5)) |= uint32_t(1 << (i & 31));
 }
 
 
 inline bool bitarray::testBit(size_t i) const
 {
 	PFS_ASSERT(i < size());
-	return  (*(_pimpl->a.constData() + (i >> 5)) & (1 << (i & 31))) != 0;
+	return  (*(_d.cast<impl>()->a.constData() + (i >> 5)) & (1 << (i & 31))) != 0;
 }
 
 inline bool bitarray::toggleBit(size_t i)
 {
-	detach();
+	_d.detach();
 	PFS_ASSERT(i < size());
 	uint32_t b = uint32_t(1 << (i & 31));
-	uint32_t *p = _pimpl->a.data() + (i >> 5);
+	uint32_t *p = _d.cast<impl>()->a.data() + (i >> 5);
 	uint32_t c = uint32_t(*p & b);
 	*p ^= b;
 	return c != 0;

@@ -10,23 +10,23 @@
 
 namespace pfs {
 
-bitarray::bitarray() : _pimpl(new bitarray::impl)
+bitarray::bitarray() : _d(new bitarray::impl)
 {
-	_pimpl->nbits = 0;
+	_d.cast<impl>()->nbits = 0;
 }
 
-bitarray::bitarray(size_t size, bool value) : _pimpl(new bitarray::impl)
+bitarray::bitarray(size_t size, bool value) : _d(new bitarray::impl)
 {
     if (!size) {
-    	_pimpl->nbits = 0;
-        _pimpl->a.realloc(0);
+    	_d.cast<impl>()->nbits = 0;
+    	_d.cast<impl>()->a.realloc(0);
         return;
     }
 
-    _pimpl->a.alloc(size/32 + ((size % 32) ? 1 : 0));
-    _pimpl->a.set(value ? 0xffffffff : 0);
+    _d.cast<impl>()->a.alloc(size/32 + ((size % 32) ? 1 : 0));
+    _d.cast<impl>()->a.set(value ? 0xffffffff : 0);
 
-    _pimpl->nbits = size;
+    _d.cast<impl>()->nbits = size;
 }
 
 /**
@@ -71,7 +71,7 @@ size_t bitarray::count (bool on) const
     size_t len = size();
 
     // See http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-    const uint32_t *bits = _pimpl->a.data();
+    const uint32_t *bits = _d.cast<impl>()->a.data();
 
     while (len >= 32) {
     	uint32_t v = *bits;
@@ -127,7 +127,7 @@ void bitarray::fill (bool value, size_t begin, size_t end)
 {
 	PFS_ASSERT(end >= begin);
 
-	detach();
+	_d.detach();
 
     while (begin < end && (begin & 31))
         setBit(begin++, value);
@@ -138,7 +138,7 @@ void bitarray::fill (bool value, size_t begin, size_t end)
     	return;
 
     size_t sz = len & ~31;
-    uint32_t *c = _pimpl->a.data();
+    uint32_t *c = _d.cast<impl>()->a.data();
     memset(c + (begin >> 5), value ? 0xff : 0, sizeof(uint32_t) * sz);
     begin += sz * 32;
 
@@ -168,13 +168,13 @@ void bitarray::fill (bool value, size_t begin, size_t end)
  */
 void bitarray::resize (size_t new_size)
 {
-	detach();
+	_d.detach();
 
     if (!new_size) {
-    	_pimpl->nbits = 0;
+    	_d.cast<impl>()->nbits = 0;
     } else {
     	if (new_size > size()) {
-    		array<uint32_t> *a = & _pimpl->a;
+    		array<uint32_t> *a = & _d.cast<impl>()->a;
     		size_t old_nchunks = a->size();
     		size_t new_nchunks = new_size/32 + ((new_size % 32) ? 1 : 0);
 
@@ -183,11 +183,11 @@ void bitarray::resize (size_t new_size)
     			a->set(0, old_nchunks + 1);
     		}
 
-    		if (_pimpl->nbits % 32) {
-    			(*a)[old_nchunks] &= (1 << (_pimpl->nbits % 32)) - 1;
+    		if (_d.cast<impl>()->nbits % 32) {
+    			(*a)[old_nchunks] &= (1 << (_d.cast<impl>()->nbits % 32)) - 1;
     		}
     	}
-    	_pimpl->nbits = new_size;
+    	_d.cast<impl>()->nbits = new_size;
     }
 }
 
@@ -254,8 +254,8 @@ void bitarray::resize (size_t new_size)
  */
 bool bitarray::operator != (const bitarray & other) const
 {
-	return !(_pimpl->nbits == other._pimpl->nbits
-			&& _pimpl->a.compare(other._pimpl->a, _pimpl->a.size()) == 0);
+	return !(_d.cast<impl>()->nbits == other._d.cast<impl>()->nbits
+			&& _d.cast<impl>()->a.compare(other._d.cast<impl>()->a, _d.cast<impl>()->a.size()) == 0);
 }
 
 /**
@@ -268,8 +268,8 @@ bool bitarray::operator != (const bitarray & other) const
  */
 bool bitarray::operator == (const bitarray& other) const
 {
-	return _pimpl->nbits == other._pimpl->nbits
-			&& _pimpl->a.compare(other._pimpl->a, _pimpl->a.size()) == 0;
+	return _d.cast<impl>()->nbits == other._d.cast<impl>()->nbits
+			&& _d.cast<impl>()->a.compare(other._d.cast<impl>()->a, _d.cast<impl>()->a.size()) == 0;
 }
 
 
@@ -300,14 +300,14 @@ bool bitarray::operator == (const bitarray& other) const
 
 bitarray& bitarray::operator &= (const bitarray & other)
 {
-	detach();
+	_d.detach();
 
     resize(pfs::max(size(), other.size()));
 
-    uint32_t * a1 = _pimpl->a.data();
-    const uint32_t * a2 = other._pimpl->a.constData();
-    size_t n = other._pimpl->a.size();
-    size_t p = _pimpl->a.size() - n;
+    uint32_t * a1 = _d.cast<impl>()->a.data();
+    const uint32_t * a2 = other._d.cast<impl>()->a.constData();
+    size_t n = other._d.cast<impl>()->a.size();
+    size_t p = _d.cast<impl>()->a.size() - n;
 
     while (n-- > 0)
         *a1++ &= *a2++;
@@ -331,12 +331,12 @@ bitarray& bitarray::operator &= (const bitarray & other)
  */
 bitarray& bitarray::operator ^= (const bitarray& other)
 {
-	detach();
+	_d.detach();
     resize(pfs::max(size(), other.size()));
 
-    uint32_t *a1 = _pimpl->a.data();
-    const uint32_t *a2 = other._pimpl->a.constData();
-    size_t n = other._pimpl->a.size();
+    uint32_t *a1 = _d.cast<impl>()->a.data();
+    const uint32_t *a2 = other._d.cast<impl>()->a.constData();
+    size_t n = other._d.cast<impl>()->a.size();
     while (n-- > 0)
         *a1++ ^= *a2++;
     return *this;
@@ -357,12 +357,12 @@ bitarray& bitarray::operator ^= (const bitarray& other)
  */
 bitarray& bitarray::operator |= (const bitarray & other)
 {
-	detach();
+	_d.detach();
     resize(pfs::max(size(), other.size()));
 
-    uint32_t *a1 = _pimpl->a.data();
-    const uint32_t *a2 = other._pimpl->a.constData();
-    size_t n = other._pimpl->a.size();
+    uint32_t *a1 = _d.cast<impl>()->a.data();
+    const uint32_t *a2 = other._d.cast<impl>()->a.constData();
+    size_t n = other._d.cast<impl>()->a.size();
     while (n-- > 0)
         *a1++ |= *a2++;
     return *this;
@@ -380,15 +380,15 @@ bitarray bitarray::operator ~ () const
     size_t sz = size();
     bitarray a(sz);
 
-    const uint32_t *a1 = _pimpl->a.constData();
-    uint32_t *a2 = a._pimpl->a.data();
+    const uint32_t *a1 = _d.cast<impl>()->a.constData();
+    uint32_t *a2 = a._d.cast<impl>()->a.data();
 
-    size_t n = _pimpl->a.size();
+    size_t n = _d.cast<impl>()->a.size();
 
     while (n-- > 0)
         *a2++ = ~*a1++;
 
-//	if (_pimpl->nbits && _pimpl->nbits % 32) {
+//	if (_d.cast<impl>()->nbits && _d.cast<impl>()->nbits % 32) {
 //		*a2 &= (1 << (sz % 32)) - 1;
 //	}
 
