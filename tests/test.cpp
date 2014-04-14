@@ -23,7 +23,11 @@ void test_assignment()
 
 	while (--n) {
 		cwt::debby::database dbh;
-		TEST_FAIL(dbh.open(dburi));
+
+		if (!dbh.open(dburi)) {
+			dbh.logErrors();
+		}
+
 		TEST_FAIL(dbh.opened());
 		dbh.close();
 		TEST_FAIL(!dbh.opened());
@@ -115,9 +119,9 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 3);
-	TEST_OK(result[0].toInt() == 1);
-	TEST_OK(result[1].toInt() == 2);
-	TEST_OK(result[2].toInt() == 3);
+	TEST_OK(result[0].toInteger() == 1);
+	TEST_OK(result[1].toInteger() == 2);
+	TEST_OK(result[2].toInteger() == 3);
 
 	/* Text comparison a=b is performed using the RTRIM collating sequence. */
 	// SELECT x FROM t1 WHERE a = b COLLATE RTRIM ORDER BY x;
@@ -130,10 +134,10 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 4);
-	TEST_OK(result[0].toInt() == 1);
-	TEST_OK(result[1].toInt() == 2);
-	TEST_OK(result[2].toInt() == 3);
-	TEST_OK(result[3].toInt() == 4);
+	TEST_OK(result[0].toInteger() == 1);
+	TEST_OK(result[1].toInteger() == 2);
+	TEST_OK(result[2].toInteger() == 3);
+	TEST_OK(result[3].toInteger() == 4);
 
 	/* Text comparison d=a is performed using the NOCASE collating sequence. */
 	// SELECT x FROM t1 WHERE d = a ORDER BY x;
@@ -147,10 +151,10 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 4);
-	TEST_OK(result[0].toInt() == 1);
-	TEST_OK(result[1].toInt() == 2);
-	TEST_OK(result[2].toInt() == 3);
-	TEST_OK(result[3].toInt() == 4);
+	TEST_OK(result[0].toInteger() == 1);
+	TEST_OK(result[1].toInteger() == 2);
+	TEST_OK(result[2].toInteger() == 3);
+	TEST_OK(result[3].toInteger() == 4);
 
 	/* Text comparison a=d is performed using the BINARY collating sequence. */
 	// SELECT x FROM t1 WHERE a = d ORDER BY x;
@@ -163,8 +167,8 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 2);
-	TEST_OK(result[0].toInt() == 1);
-	TEST_OK(result[1].toInt() == 4);
+	TEST_OK(result[0].toInteger() == 1);
+	TEST_OK(result[1].toInteger() == 4);
 
 	/* Text comparison 'abc'=c is performed using the RTRIM collating sequence. */
 	// SELECT x FROM t1 WHERE 'abc' = c ORDER BY x;
@@ -177,9 +181,9 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 3);
-	TEST_OK(result[0].toInt() == 1);
-	TEST_OK(result[1].toInt() == 2);
-	TEST_OK(result[2].toInt() == 3);
+	TEST_OK(result[0].toInteger() == 1);
+	TEST_OK(result[1].toInteger() == 2);
+	TEST_OK(result[2].toInteger() == 3);
 
 	/* Text comparison c='abc' is performed using the RTRIM collating sequence. */
 	// SELECT x FROM t1 WHERE c = 'abc' ORDER BY x;
@@ -192,9 +196,9 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 3);
-	TEST_OK(result[0].toInt() == 1);
-	TEST_OK(result[1].toInt() == 2);
-	TEST_OK(result[2].toInt() == 3);
+	TEST_OK(result[0].toInteger() == 1);
+	TEST_OK(result[1].toInteger() == 2);
+	TEST_OK(result[2].toInteger() == 3);
 
 	/* Grouping is performed using the NOCASE collating sequence (Values
 	 ** 'abc', 'ABC', and 'Abc' are placed in the same group). */
@@ -208,7 +212,7 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 1);
-	TEST_OK(result[0].toInt() == 4);
+	TEST_OK(result[0].toInteger() == 4);
 
 	/* Grouping is performed using the BINARY collating sequence.  'abc' and
 	** 'ABC' and 'Abc' form different groups */
@@ -222,9 +226,9 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 3);
-	TEST_OK(result[0].toInt() == 1);
-	TEST_OK(result[1].toInt() == 1);
-	TEST_OK(result[2].toInt() == 2);
+	TEST_OK(result[0].toInteger() == 1);
+	TEST_OK(result[1].toInteger() == 1);
+	TEST_OK(result[2].toInteger() == 2);
 
 	/* Sorting or column c is performed using the RTRIM collating sequence. */
 	// SELECT x FROM t1 ORDER BY c, x;
@@ -237,10 +241,10 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 4);
-	TEST_OK(result[0].toInt() == 4);
-	TEST_OK(result[1].toInt() == 1);
-	TEST_OK(result[2].toInt() == 2);
-	TEST_OK(result[3].toInt() == 3);
+	TEST_OK(result[0].toInteger() == 4);
+	TEST_OK(result[1].toInteger() == 1);
+	TEST_OK(result[2].toInteger() == 2);
+	TEST_OK(result[3].toInteger() == 3);
 
 	/* Sorting of (c||'') is performed using the BINARY collating sequence. */
 	// SELECT x FROM t1 ORDER BY (c||''), x;
@@ -253,10 +257,10 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 4);
-	TEST_OK(result[0].toInt() == 4);
-	TEST_OK(result[1].toInt() == 2);
-	TEST_OK(result[2].toInt() == 3);
-	TEST_OK(result[3].toInt() == 1);
+	TEST_OK(result[0].toInteger() == 4);
+	TEST_OK(result[1].toInteger() == 2);
+	TEST_OK(result[2].toInteger() == 3);
+	TEST_OK(result[3].toInteger() == 1);
 
 	/* Sorting of column c is performed using the NOCASE collating sequence. */
 	// SELECT x FROM t1 ORDER BY c COLLATE NOCASE, x;
@@ -269,10 +273,10 @@ void test_sqlite3_collation()
 		result.append(row[0]);
 
 	TEST_FAIL(result.size() == 4);
-	TEST_OK(result[0].toInt() == 2);
-	TEST_OK(result[1].toInt() == 4);
-	TEST_OK(result[2].toInt() == 3);
-	TEST_OK(result[3].toInt() == 1);
+	TEST_OK(result[0].toInteger() == 2);
+	TEST_OK(result[1].toInteger() == 4);
+	TEST_OK(result[2].toInteger() == 3);
+	TEST_OK(result[3].toInteger() == 1);
 
 	TEST_OK_X(dbh.query(_l1("DROP TABLE IF EXISTS t1")), dbh.logErrors());
 }
@@ -340,7 +344,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(5085);
+    BEGIN_TESTS(4086);
 
 	cwt::debby::database::addGlobalSearchPath(pfs::string("."));
 	cwt::debby::database::addGlobalSearchPath(pfs::string(".."));

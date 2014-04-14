@@ -450,7 +450,7 @@ bool s3_dbd_table_exists (cwt::debby::database_data & dbh, const pfs::string & n
 			pfs::vector<pfs::unitype> row;
 			s3_dbd_stmt_fetch_row_array (*sth, row);
 			PFS_ASSERT(row.size() == 1);
-			r = (row[0].toInt() > 0);
+			r = (row[0].toInteger() > 0);
 		}
 		s3_dbd_stmt_close(sth);
 	}
@@ -521,20 +521,20 @@ bool s3_dbd_meta (cwt::debby::database_data & dbh
 				m.column_type       = __mappings.columnType(m.native_type);
 
 				m.has_pk.first      = true;
-				m.has_pk.second     = row[_l1("pk")].toBool();
+				m.has_pk.second     = row[_l1("pk")].toBoolean();
 
 				m.has_autoinc.first  = true;
 				m.has_autoinc.second = autoinc;
 
 				m.has_not_null.first  = true;
-				m.has_not_null.second =  row[_l1("notnull")].toBool();
+				m.has_not_null.second =  row[_l1("notnull")].toBoolean();
 
 				m.has_unique.first  = false;
 				m.has_unique.second = false;
 
 				m.has_default_value.first  = true;
 				// dequote
-				if (row[_l1("dflt_value")].type() == pfs::String) {
+				if (row[_l1("dflt_value")].type_id() == pfs::String) {
 					pfs::string dequoted = row[_l1("dflt_value")].toString();
 					if (dequoted.length() >= 2) {
 						pfs::ucchar first = dequoted[0];
@@ -724,7 +724,7 @@ bool s3_dbd_stmt_fetch_row_hash (cwt::debby::statement_data & sth, pfs::map<pfs:
 				break;
 			case SQLITE_TEXT: {
 				const char * text = reinterpret_cast<const char*>(sqlite3_column_text(s3_sth->_sth_native, i));
-				row.insert(column_name, pfs::unitype(text));
+				row.insert(column_name, pfs::unitype(_u8(text)));
 				break;
 			}
 			case SQLITE_BLOB: {
@@ -761,15 +761,15 @@ bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs
 
 	int s3_index = int(index) + 1;
 
-	switch (param.type()) {
+	switch (param.type_id()) {
 	case pfs::Null :
 		rc = sqlite3_bind_null(s3_sth->_sth_native, s3_index);
 		break;
 	case pfs::Bool:
-		rc = sqlite3_bind_int(s3_sth->_sth_native, s3_index, param.toBool());
+		rc = sqlite3_bind_int(s3_sth->_sth_native, s3_index, param.toBoolean());
 		break;
 	case pfs::Integer:
-		rc = sqlite3_bind_int64(s3_sth->_sth_native, s3_index, param.toLong());
+		rc = sqlite3_bind_int64(s3_sth->_sth_native, s3_index, param.toInteger());
 		break;
 	case pfs::Float:
 		rc = sqlite3_bind_double(s3_sth->_sth_native, s3_index, param.toDouble());
