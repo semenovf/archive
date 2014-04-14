@@ -178,7 +178,6 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 		PFS_WARN(ctx->format.c_str());
 		ctx->result.append(pfs::string(begin, end));
 	} else {
-		bool ok = false;
 		pfs::string r;
 
 		pfs::unitype ut = ctx->bind_args[ctx->argi++];
@@ -186,24 +185,24 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 		switch (char(ctx->spec.spec_char)) {
 		case 'd':
 		case 'i':
-			r.setNumber(ut.toLong(&ok), 10);
+			r.setNumber(ut.toInteger(), 10);
 			expect = __EXPECT_DECIMAL;
 			break;
 		case 'o':
-			r.setNumber(ut.toULong(&ok), 8);
+			r.setNumber(ulong_t(ut.toInteger()), 8);
 			expect = __EXPECT_DECIMAL;
 			break;
 		case 'u':
-			r.setNumber(ut.toULong(&ok), 10);
+			r.setNumber(ulong_t(ut.toInteger()), 10);
 			expect = __EXPECT_DECIMAL;
 			break;
 		case 'x':
 		//case 'p': - already replaced
-			r.setNumber(ut.toULong(&ok), 16, false);
+			r.setNumber(ulong_t(ut.toInteger()), 16, false);
 			expect = __EXPECT_DECIMAL;
 			break;
 		case 'X':
-			r.setNumber(ut.toULong(&ok), 16, true); // uppercase
+			r.setNumber(ulong_t(ut.toInteger()), 16, true); // uppercase
 			expect = __EXPECT_DECIMAL;
 			break;
 		case 'e':
@@ -212,11 +211,11 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 		case 'E':
 		case 'F':
 		case 'G':
-			r.setNumber(ut.toDouble(&ok), char(ctx->spec.spec_char), ctx->spec.prec > 0 ? ctx->spec.prec : 0);
+			r.setNumber(ut.toFloat(), char(ctx->spec.spec_char), ctx->spec.prec > 0 ? ctx->spec.prec : 0);
 			expect = __EXPECT_FLOAT;
 			break;
 		case 'c':
-			r = pfs::string(1, char(ut.toSByte(&ok)));
+			r = pfs::string(1, char(ut.toInteger()));
 			expect = __EXPECT_CHAR;
 			if (ctx->spec.flags & safeformat::ZeroPadding) {
 				PFS_WARN(_Tr("'0' flag used with ‘%c’ specifier in format string"));
@@ -231,7 +230,7 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 			}
 			break;
 		case 's':
-			r = ut.toString(&ok);
+			r = ut.toString();
 			expect = __EXPECT_STRING;
 			if (ctx->spec.flags & safeformat::ZeroPadding) {
 				PFS_WARN(_Tr("'0' flag used with ‘%s’ specifier in format string"));
@@ -250,10 +249,10 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 
 		PFS_ASSERT(expect != __EXPECT_UNKNOWN);
 
-		if (!ok) {
-			PFS_WARN(_Tr("Incompatible value for conversion specification in format string:"));
-			PFS_WARN(ctx->format.c_str());
-		} else {
+//		if (false) {
+//			PFS_WARN(_Tr("Incompatible value for conversion specification in format string:"));
+//			PFS_WARN(ctx->format.c_str());
+//		} else {
 
 			if (ctx->spec.flags & safeformat::ZeroPadding) {
 
@@ -316,7 +315,7 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 					r.prepend(pfs::string(count, paddingChar));
 			}
 
-		}
+//		}
 
 		ctx->result.append(r);
 	}
