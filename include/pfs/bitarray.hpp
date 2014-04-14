@@ -28,7 +28,8 @@ namespace pfs {
 
 class DLL_API bitarray
 {
-	struct impl {
+	struct impl
+	{
 		array<uint32_t> a;
 		size_t          nbits;
 	};
