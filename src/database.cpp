@@ -32,10 +32,9 @@ bool database::open (const pfs::string & uri_str)
 
 	debby_name.prepend(pfs::string("cwt-debby-"));
 	driver * drv = nullptr;
-	cwt::dl dl;
 
-	pfs::string dlpath = dl.buildDlFileName(debby_name);
-	if (!dl.pluginOpen(debby_name, dlpath, & drv)) {
+	pfs::string dlpath = this->buildDlFileName(debby_name);
+	if (!this->pluginOpen(debby_name, dlpath, & drv)) {
 		this->addError(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
 		return false;
 	}
