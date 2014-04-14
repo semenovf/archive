@@ -71,10 +71,12 @@ private:
 		impl_holder (T * p) : impl_base(), _d(p) {}
 		~impl_holder () { delete _d; }
 
+/*
 		T *       operator -> ()       { return _d; }
 		const T * operator -> () const { return _d; }
 		T &       operator *  ()       { return *_d; }
 		const T & operator *  () const { return *_d; }
+*/
 
 		impl_base * clone () const { return new impl_holder<T>(new T(*_d)); } // used in detach()
 	};
@@ -89,6 +91,23 @@ public:
 	}
 
 	template <typename T>
+	const T * cast () const
+	{
+		impl_holder<T> * holder = static_cast<impl_holder<T> *>(_holder);
+		PFS_ASSERT(holder);
+		return holder->_d;
+	}
+
+	template <typename T>
+	T * cast ()
+	{
+		impl_holder<T> * holder = static_cast<impl_holder<T> *>(_holder);
+		PFS_ASSERT(holder);
+		return holder->_d;
+	}
+
+/*
+	template <typename T>
 	const impl_holder<T> & cast () const
 	{
 		return *static_cast<impl_holder<T> *>(_holder); // not dynamic cast
@@ -99,6 +118,7 @@ public:
 	{
 		return *static_cast<impl_holder<T> *>(_holder); // not dynamic cast
 	}
+*/
 };
 
 } // pfs

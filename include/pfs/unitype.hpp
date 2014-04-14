@@ -1,8 +1,7 @@
-/*
- * unitype.hpp
- *
- *  Created on: Jun 3, 2013
- *      Author: wladt
+/**
+ * @file unitype.hpp
+ * @author wladt
+ * @date Apr 10, 2014
  */
 
 #ifndef __PFS_UNITYPE_HPP__
@@ -10,225 +9,257 @@
 
 #include <pfs/string.hpp>
 #include <pfs/bytearray.hpp>
-#include <pfs/time.hpp>
-#include <pfs/date.hpp>
-#include <pfs/datetime.hpp>
-#include <pfs/pimpl.hpp>
-
-// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
-#ifdef PFS_CC_MSVC
-#	pragma warning(push)
-#	pragma warning(disable:4251)
-#endif
-
 
 namespace pfs {
 
-class unitype;
+static const int Null      = 0;
+static const int Boolean   = 1;
+static const int Integer   = 2;
+static const int Float     = 3;
+static const int String    = 4;
+static const int ByteArray = 5;
+static const int Bool = Boolean;
+static const int Double = Float;
+static const int Blob = ByteArray;
 
-enum unitype_type {
-	Null, Bool, Boolean = Bool, Integer, Float, String, Blob
-};
+// Type Name
+template <typename T> pfs::string unitype_type_name ();
 
-struct DLL_API unidata
+template <> inline pfs::string unitype_type_name<bool> () { return _l1("bool"); }
+template <> inline pfs::string unitype_type_name<char> () { return _l1("char"); }
+template <> inline pfs::string unitype_type_name<unsigned char> () { return _l1("byte"); }
+template <> inline pfs::string unitype_type_name<short> () { return _l1("short int"); }
+template <> inline pfs::string unitype_type_name<unsigned short> () { return _l1("unsigned short int"); }
+template <> inline pfs::string unitype_type_name<int> () { return _l1("int"); }
+template <> inline pfs::string unitype_type_name<unsigned int> () { return _l1("unsigned int"); }
+template <> inline pfs::string unitype_type_name<long> () { return _l1("long int"); }
+template <> inline pfs::string unitype_type_name<unsigned long> () { return _l1("unsigned long int"); }
+template <> inline pfs::string unitype_type_name<float> () { return _l1("float"); }
+template <> inline pfs::string unitype_type_name<double> () { return _l1("double"); }
+#ifdef HAVE_LONGLONG
+template <> inline pfs::string unitype_type_name<long long> () { return _l1("long long int"); }
+template <> inline pfs::string unitype_type_name<unsigned long long> () { return _l1("unsigned long long int"); }
+#endif
+template <> inline pfs::string unitype_type_name<pfs::string> () { return _l1("pfs::string"); }
+template <> inline pfs::string unitype_type_name<pfs::bytearray> () { return _l1("pfs::bytearray"); }
+
+// Type Id
+template <typename T> int unitype_type_id ();
+
+template <> inline int unitype_type_id<bool> () { return Boolean; }
+template <> inline int unitype_type_id<char> () { return Integer; }
+template <> inline int unitype_type_id<unsigned char> () { return Integer; }
+template <> inline int unitype_type_id<short> () { return Integer; }
+template <> inline int unitype_type_id<unsigned short> () { return Integer; }
+template <> inline int unitype_type_id<int> () { return Integer; }
+template <> inline int unitype_type_id<unsigned int> () { return Integer; }
+template <> inline int unitype_type_id<long> () { return Integer; }
+template <> inline int unitype_type_id<unsigned long> () { return Integer; }
+template <> inline int unitype_type_id<float> () { return Float; }
+template <> inline int unitype_type_id<double> () { return Float; }
+#ifdef HAVE_LONGLONG
+template <> inline int unitype_type_id<long long> () { return Integer; }
+template <> inline int unitype_type_id<unsigned long long> () { return Integer; }
+#endif
+template <> inline int unitype_type_id<pfs::string> () { return String; }
+template <> inline int unitype_type_id<pfs::bytearray> () { return ByteArray; }
+
+
+class unitype_base
 {
-	virtual ~unidata () {}
-	virtual unitype_type   type () const { return Null; }
-	virtual bool           toBool   (bool & ok) const { ok = false; return false; }
-	virtual long_t         toLong   (bool & ok) const { ok = false; return long_t(0); }
-	virtual double         toDouble (bool & ok) const { ok = false; return double(0); }
-	virtual pfs::string    toString (bool & ok) const { ok = false; return pfs::string(); }
-	virtual pfs::bytearray toBlob   (bool & ok) const { ok = false; return pfs::bytearray(); }
-};
+public:
+	virtual pfs::string type_name () const = 0;
+	virtual int type_id () const { return -1; }
 
-typedef unidata unidata_null;
-
-struct DLL_API unidata_boolean : public unidata
-{
-	bool _value;
-	unidata_boolean  (bool v) : _value(v) {}
-	unidata_boolean  (const unidata & d) : _value(false) { bool ok; _value = (d.toLong(ok) != long_t(0)); }
-	virtual unitype_type  type () const { return Boolean; }
-	bool   toBool    (bool & ok) const { ok = true; return _value; }
-	long_t toLong    (bool & ok) const { ok = true; return _value ? long_t(1) : long_t(0); }
-	double toDouble  (bool & ok) const { ok = true; return _value ? double(1) : double(0); }
-	pfs::string toString  (bool & ok) const { ok = true; return _value ? pfs::string("true") : pfs::string("false"); }
-	pfs::bytearray toBlob (bool & ok) const { ok = true; return _value ? pfs::bytearray(1, 1) : pfs::bytearray(1, 0); }
-};
-
-struct DLL_API unidata_long : public unidata
-{
-	long_t _value;
-	unidata_long  (long_t v) : _value(v) {}
-	unidata_long  (const unidata & d) : _value(false) { bool ok; _value = d.toLong(ok); }
-	virtual unitype_type  type () const { return Integer; }
-	bool   toBool    (bool & ok) const { ok = true; return _value != long_t(0); }
-	long_t toLong    (bool & ok) const { ok = true; return _value; }
-	double toDouble  (bool & ok) const { ok = true; return double(_value); }
-	pfs::string toString  (bool & ok) const { ok = true; return pfs::string::number(_value); }
-	pfs::bytearray toBlob (bool & ok) const { ok = true; return pfs::bytearray(reinterpret_cast<const char *>(& _value), sizeof(long_t)); }
-};
-
-struct DLL_API unidata_double : public unidata
-{
-	double _value;
-	unidata_double  (double v) : _value(v) {}
-	unidata_double  (const unidata & d) : _value(false) { bool ok; _value = d.toDouble(ok); }
-	virtual unitype_type  type () const { return Float; }
-	bool   toBool    (bool & ok) const { ok = true; return _value != double(0); }
-	long_t toLong    (bool & ok) const
-	{
-		ok = false;
-		if (_value >= double(PFS_LONG_MIN) && _value <= double(PFS_LONG_MAX)) {
-			ok = true;
-			return long_t(_value);
-		}
-		return long_t(0);
-	}
-	double toDouble  (bool & ok) const { ok = true; return _value; }
-	pfs::string toString  (bool & ok) const { ok = true; return pfs::string::number(_value); }
-	pfs::bytearray toBlob (bool & ok) const { ok = true; return pfs::bytearray(reinterpret_cast<const char *>(& _value), sizeof(double)); }
-};
-
-struct DLL_API unidata_string : public unidata
-{
-	pfs::string _value;
-	unidata_string   (const pfs::string & v) : _value(v) {}
-	unidata_string   (const unidata & d) : _value() { bool ok; _value = d.toString(ok); }
-	virtual unitype_type  type () const { return String; }
-	bool   toBool    (bool & ok) const
-	{
-		ok = !_value.isEmpty();
-		return ok
-				? _value != pfs::string("0") && _value != pfs::string("false")
-				: false;
-	}
-	long_t toLong    (bool & ok) const { return _value.toLong(& ok, 10); }
-	double toDouble  (bool & ok) const { return _value.toDouble(& ok); }
-	pfs::string toString  (bool & ok) const { ok = true; return _value; }
-	pfs::bytearray toBlob (bool & ok) const
-	{
-		ok = true;
-		return pfs::bytearray(_value.data(), _value.cend().distance(_value.cbegin()));
-	}
-};
-
-struct DLL_API unidata_blob : public unidata
-{
-	pfs::bytearray _value;
-
-	unidata_blob (const pfs::bytearray & v) : _value(v) {}
-	unidata_blob (const unidata & d) : _value() { bool ok; _value = d.toBlob(ok); }
-	virtual unitype_type  type () const { return Blob; }
-	bool toBool  (bool & ok) const
-	{
-		ok = !_value.isEmpty();
-		return ok
-				? (_value.size() == 1 && _value[0] == 0 ? false : true)
-				: false;
-	}
-	long_t toLong     (bool & ok) const;
-	double toDouble   (bool & ok) const;
-	pfs::string toString   (bool & ok) const;
-	pfs::bytearray toBlob  (bool & ok) const { ok = true; return _value; }
+	virtual bool isNull () const = 0;
+	virtual bool toBoolean () const = 0;
+	virtual long_t toInteger () const = 0;
+	virtual double toFloat () const = 0;
+	virtual pfs::string toString () const = 0;
+	virtual pfs::bytearray toByteArray () const = 0;
+	pfs::bytearray toBlob () const { return toByteArray(); }
 };
 
 
-class DLL_API unitype
+class unitype_null : public unitype_base
 {
-	pfs::pimpl _d;
+public:
+	virtual pfs::string type_name () const override { return pfs::string(); }
+	virtual int type_id () const { return Null; }
+
+	virtual bool isNull () const { return true; }
+
+	virtual bool toBoolean () const  { return false; }
+	virtual long_t toInteger () const   { return 0; }
+	virtual double toFloat () const { return double(0.0f); }
+	virtual pfs::string toString () const { return pfs::string(); }
+	virtual pfs::bytearray toByteArray () const { return pfs::bytearray(); }
+};
+
+template <typename T> bool to_boolean_trait (const T & v);
+template <> inline bool to_boolean_trait<bool> (const bool & v) { return v; }
+template <> inline bool to_boolean_trait<char> (const char & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<unsigned char> (const unsigned char & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<short> (const short & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<unsigned short> (const unsigned short & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<int> (const int & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<unsigned int> (const unsigned int & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<long> (const long & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<unsigned long> (const unsigned long & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<float> (const float & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<double> (const double & v) { return v ? true : false; }
+#ifdef HAVE_LONGLONG
+template <> inline bool to_boolean_trait<long long> (const long long & v) { return v ? true : false; }
+template <> inline bool to_boolean_trait<unsigned long long> (const unsigned long long & v) { return v ? true : false; }
+#endif
+template <> inline bool to_boolean_trait<pfs::string> (const pfs::string & v)
+{
+	return v.isEmpty() ? false
+		: (v == "false" ? false : true);
+}
+template <> inline bool to_boolean_trait<pfs::bytearray> (const pfs::bytearray & v)
+{
+	return v.isEmpty() ? false
+		: (v[0] == '\x00' ? false : true);
+}
+
+template <typename T> long_t to_integer_trait (const T & v);
+template <> inline long_t to_integer_trait<bool> (const bool & v) { return v ? long_t(1) : long_t(0); }
+template <> inline long_t to_integer_trait<char> (const char & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<unsigned char> (const unsigned char & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<short> (const short & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<unsigned short> (const unsigned short & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<int> (const int & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<unsigned int> (const unsigned int & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<long> (const long & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<unsigned long> (const unsigned long & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<float> (const float & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<double> (const double & v) { return long_t(v); }
+#ifdef HAVE_LONGLONG
+template <> inline long_t to_integer_trait<long long> (const long long & v) { return long_t(v); }
+template <> inline long_t to_integer_trait<unsigned long long> (const unsigned long long & v) { return long_t(v); }
+#endif
+template <> inline long_t to_integer_trait<pfs::string> (const pfs::string & v) { return v.toLong(); }
+template <> inline long_t to_integer_trait<pfs::bytearray> (const pfs::bytearray & v) { return v.toLong(); }
+
+template <typename T> double to_float_trait (const T & v);
+template <> inline double to_float_trait<bool> (const bool & v) { return v ? double(1) : double(0); }
+template <> inline double to_float_trait<char> (const char & v) { return double(v); }
+template <> inline double to_float_trait<unsigned char> (const unsigned char & v) { return double(v); }
+template <> inline double to_float_trait<short> (const short & v) { return double(v); }
+template <> inline double to_float_trait<unsigned short> (const unsigned short & v) { return double(v); }
+template <> inline double to_float_trait<int> (const int & v) { return double(v); }
+template <> inline double to_float_trait<unsigned int> (const unsigned int & v) { return double(v); }
+template <> inline double to_float_trait<long> (const long & v) { return double(v); }
+template <> inline double to_float_trait<unsigned long> (const unsigned long & v) { return double(v); }
+template <> inline double to_float_trait<float> (const float & v) { return double(v); }
+template <> inline double to_float_trait<double> (const double & v) { return v; }
+#ifdef HAVE_LONGLONG
+template <> inline double to_float_trait<long long> (const long long & v) { return double(v); }
+template <> inline double to_float_trait<unsigned long long> (const unsigned long long & v) { return double(v); }
+#endif
+template <> inline double to_float_trait<pfs::string> (const pfs::string & v) { return v.toDouble(); }
+template <> inline double to_float_trait<pfs::bytearray> (const pfs::bytearray & v) { return v.toDouble(); }
+
+template <typename T> pfs::string to_string_trait (const T & v);
+template <> inline pfs::string to_string_trait<bool> (const bool & v) { return v ? pfs::string("true") : pfs::string("false"); }
+template <> inline pfs::string to_string_trait<char> (const char & v) { return pfs::string(1, v); }
+template <> inline pfs::string to_string_trait<unsigned char> (const unsigned char & v) { return pfs::string(1, (const char)v); }
+template <> inline pfs::string to_string_trait<short> (const short & v) { return pfs::string::number(v); }
+template <> inline pfs::string to_string_trait<unsigned short> (const unsigned short & v) { return pfs::string::number(v); }
+template <> inline pfs::string to_string_trait<int> (const int & v) { return pfs::string::number(v); }
+template <> inline pfs::string to_string_trait<unsigned int> (const unsigned int & v) { return pfs::string::number(v); }
+template <> inline pfs::string to_string_trait<long> (const long & v) { return pfs::string::number(v); }
+template <> inline pfs::string to_string_trait<unsigned long> (const unsigned long & v) { return pfs::string::number(v); }
+template <> inline pfs::string to_string_trait<float> (const float & v) { return pfs::string::number(v); }
+template <> inline pfs::string to_string_trait<double> (const double & v) { return pfs::string::number(v); }
+#ifdef HAVE_LONGLONG
+template <> inline pfs::string to_string_trait<long long> (const long long & v) { return pfs::string::number(v); }
+template <> inline pfs::string to_string_trait<unsigned long long> (const unsigned long long & v) { return pfs::string::number(v); }
+#endif
+template <> inline pfs::string to_string_trait<pfs::string> (const pfs::string & v) { return pfs::string(v); }
+template <> inline pfs::string to_string_trait<pfs::bytearray> (const pfs::bytearray & v) { return pfs::string::fromUtf8(v); }
+
+template <typename T> pfs::bytearray to_bytearray_trait (const T & v);
+template <> inline pfs::bytearray to_bytearray_trait<bool> (const bool & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<char> (const char & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<unsigned char> (const unsigned char & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<short> (const short & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<unsigned short> (const unsigned short & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<int> (const int & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<unsigned int> (const unsigned int & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<long> (const long & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<unsigned long> (const unsigned long & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<float> (const float & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<double> (const double & v) { return pfs::bytearray::toBytes(v); }
+#ifdef HAVE_LONGLONG
+template <> inline pfs::bytearray to_bytearray_trait<long long> (const long long & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray to_bytearray_trait<unsigned long long> (const unsigned long long & v) { return pfs::bytearray::toBytes(v); }
+#endif
+template <> inline pfs::bytearray to_bytearray_trait<pfs::string> (const pfs::string & v) { return pfs::bytearray(v.constData(), v.sizeInBytes()); }
+template <> inline pfs::bytearray to_bytearray_trait<pfs::bytearray> (const pfs::bytearray & v) { return pfs::bytearray(v); }
+
+
+// bool, integers, bytearray, string
+template <typename T>
+class unitype_impl : public unitype_base
+{
+	T _value;
 
 public:
-	unitype ()                    : _d(new unidata_null()) {}
-	unitype (bool v)              : _d(new unidata_boolean(v)) { }
-	unitype (char v)              : _d(new unidata_long(long_t(v))) { }
-	unitype (byte_t v)            : _d(new unidata_long(long_t(v))) { }
-	unitype (short_t v)           : _d(new unidata_long(long_t(v))) { }
-	unitype (ushort_t v)          : _d(new unidata_long(long_t(v))) { }
-	unitype (int_t v)             : _d(new unidata_long(long_t(v))) { }
-	unitype (uint_t v)            : _d(new unidata_long(long_t(v))) { }
-#if PFS_OS_BITS == 32 // 'long_t' is 'long long'
-//#ifdef HAVE_INT64
-	unitype (long v)              : _d(new unidata_long(long_t(v))) { }
-	unitype (unsigned long v)     : _d(new unidata_long(long_t(v))) { }
-#endif
-	unitype (long_t v)            : _d(new unidata_long(long_t(v))) { }
-	unitype (ulong_t v)           : _d(new unidata_long(long_t(v))) { }
-	unitype (float v)             : _d(new unidata_double(double(v))) { }
-	unitype (double v)            : _d(new unidata_double(v)) { }
-	unitype (const pfs::string & v)    : _d(new unidata_string(v)) { }
-	unitype (const char * v)           : _d(new unidata_blob(pfs::bytearray(v))) { }
-	unitype (const pfs::bytearray & v) : _d(new unidata_blob(v)) { }
-	unitype (const pfs::time & v)      : _d(new unidata_long(v.millis())) { }
-	unitype (const pfs::date & v)      : _d(new unidata_long(v.julianDay())) { }
-	unitype (const pfs::datetime & v)  : _d(new unidata_long(v.millisSinceEpoch())) { }
+	unitype_impl () {}
+	unitype_impl (const T & o) : _value(o) {}
 
-/*
-	template <typename T>
-	static unitype make_object ();
-*/
-	unitype_type  type () const { return _d.cast<unidata>()->type(); }
-	bool isNull () const { return _d.cast<unidata>()->type() == pfs::Null;}
+	virtual pfs::string type_name () const override { return unitype_type_name<T>(); }
+	virtual int type_id () const override { return unitype_type_id<T>(); }
 
-	void setFromString (const pfs::string & s);
-	void setBool       (bool b)     { _d.detach(); _d = pfs::pimpl(new unidata_boolean(b)); }
-	void setChar       (char c)     { setLong(long_t(c)); }
-	void setByte       (byte_t n)   { setLong(long_t(n)); }
-	void setShort      (short_t n)  { setLong(long_t(n)); }
-	void setUShort     (ushort_t n) { setLong(long_t(n)); }
-	void setInt        (int_t n)    { setLong(long_t(n)); }
-	void setUInt       (uint_t n)   { setLong(long_t(n)); }
-	void setLong       (long_t n)   { _d.detach(); _d = pfs::pimpl(new unidata_long(n)); }
-	void setULong      (ulong_t n)  { setLong(long_t(n)); }
-	void setFloat      (float n)    { _d.detach(); _d = pfs::pimpl(new unidata_double(n)); }
-	void setDouble     (double n)   { _d.detach(); _d = pfs::pimpl(new unidata_double(n)); }
-	void setUCChar     (pfs::ucchar ch)  { setLong(long_t(ch)); }
-	void setString     (const pfs::string & s) { _d.detach(); _d = pfs::pimpl(new unidata_string(s)); }
-	void setBlob       (const char * blob, size_t sz) { setBlob(pfs::bytearray(blob, sz)); }
-	void setBlob       (const pfs::bytearray & blob) { _d.detach(); _d = pfs::pimpl(new unidata_blob(blob)); }
-	void setTime       (const pfs::time & n) { _d.detach(); _d = pfs::pimpl(new unidata_long(n.millis())); }
-	void setDate       (const pfs::date & n) { _d.detach(); _d = pfs::pimpl(new unidata_long(n.julianDay())); }
-	void setDateTime   (const pfs::datetime & n) { _d.detach(); _d = pfs::pimpl(new unidata_long(n.millisSinceEpoch())); }
+	virtual bool isNull     () const { return false; }
 
-	unitype & operator = (bool b)                 { setBool(b);      return *this; }
-	unitype & operator = (char c)                 { setChar(c);      return *this; }
-	unitype & operator = (byte_t n)               { setByte(n);      return *this; }
-	unitype & operator = (short_t n)              { setShort(n);     return *this; }
-	unitype & operator = (ushort_t n)             { setUShort(n);    return *this; }
-	unitype & operator = (int_t n)                { setInt(n);       return *this; }
-	unitype & operator = (uint_t n)               { setUInt(n);      return *this; }
-	unitype & operator = (long_t n)               { setLong(n);      return *this; }
-	unitype & operator = (ulong_t n)              { setULong(n);     return *this; }
-	unitype & operator = (float n)                { setFloat(n);     return *this; }
-	unitype & operator = (double n)               { setDouble(n);    return *this; }
-	unitype & operator = (ucchar ch)              { setUCChar(ch);   return *this; }
-	unitype & operator = (const pfs::string & s)       { setString(s);    return *this; }
-	unitype & operator = (const pfs::bytearray & blob) { setBlob(blob);   return *this; }
-	unitype & operator = (const pfs::time & time)      { setTime(time);   return *this; }
-	unitype & operator = (const pfs::date & date)      { setDate(date);   return *this; }
-	unitype & operator = (const pfs::datetime & dt)    { setDateTime(dt); return *this; }
-
-	bool      toBool   (bool * pok = nullptr) const;
-	byte_t    toByte   (bool * pok = nullptr) const;
-	sbyte_t   toSByte  (bool * pok = nullptr) const;
-	short_t   toShort  (bool * pok = nullptr) const;
-	ushort_t  toUShort (bool * pok = nullptr) const;
-	int_t     toInt    (bool * pok = nullptr) const;
-	uint_t    toUInt   (bool * pok = nullptr) const;
-	long_t    toLong   (bool * pok = nullptr) const;
-	ulong_t   toULong  (bool * pok = nullptr) const;
-	float     toFloat  (bool * pok = nullptr) const;
-	double    toDouble (bool * pok = nullptr) const;
-	pfs::ucchar    toUCChar (bool * pok = nullptr) const;
-	pfs::string    toString (bool * pok = nullptr) const;
-	pfs::bytearray toBlob   (bool * pok = nullptr) const;
-
+	virtual bool           toBoolean   () const { return to_boolean_trait(_value); }
+	virtual long_t         toInteger   () const { return to_integer_trait(_value); }
+	virtual double         toFloat     () const { return to_float_trait(_value); }
+	virtual pfs::string    toString    () const { return to_string_trait(_value); }
+	virtual pfs::bytearray toByteArray () const { return to_bytearray_trait(_value); }
 };
 
-} // pfs
+class unitype
+{
+	pimpl _d;
 
-#ifdef PFS_CC_MSVC
-#	pragma warning(pop)
-#endif
+public:
+	unitype () : _d(new unitype_null) {}
+
+	template <typename T>
+	unitype (const T & o) : _d(new unitype_impl<T>(o)) {}
+
+	template <typename T>
+	unitype & operator = (const T & o)
+	{
+		_d = pimpl(new unitype_impl<T>(o));
+		return *this;
+	}
+
+	template <typename T>
+	static unitype make ()
+	{
+		return unitype(T());
+	}
+
+	pfs::string type_name () const override { return _d.cast<unitype_base>()->type_name(); }
+	int type_id () const override { return _d.cast<unitype_base>()->type_id(); }
+
+	bool           isNull      () const { return _d.cast<unitype_base>()->isNull(); }
+	bool           toBoolean   () const { return _d.cast<unitype_base>()->toBoolean(); }
+	long_t         toInteger   () const { return _d.cast<unitype_base>()->toInteger(); }
+	double         toFloat     () const { return _d.cast<unitype_base>()->toFloat(); }
+	pfs::string    toString    () const { return _d.cast<unitype_base>()->toString(); }
+	pfs::bytearray toByteArray () const { return _d.cast<unitype_base>()->toByteArray(); }
+
+	double         toDouble    () const { return toFloat(); }
+	pfs::bytearray toBlob      () const { return toByteArray(); }
+};
+
+
+} // pfs
 
 #endif /* __PFS_UNITYPE_HPP__ */

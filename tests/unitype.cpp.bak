@@ -35,128 +35,176 @@ decima et quinta decima. Eodem modo typi, qui nunc nobis      \
 videntur parum clari, fiant sollemnes in futurum.";
 
 
-void test_base(void)
+void test_00(void)
 {
-	TEST_OK(pfs::unitype(true).toBoolean() == true);
-	TEST_OK(pfs::unitype(false).toBoolean() == false);
-	TEST_OK(pfs::unitype(true).toInteger() != 0);
-	TEST_OK(pfs::unitype(false).toInteger() == 0);
-	TEST_OK(pfs::unitype(true).toString() == _l1("true"));
-	TEST_OK(pfs::unitype(false).toString() == _l1("false"));
-	TEST_OK(pfs::unitype(true).toBlob() == pfs::bytearray(1, '\x1'));
-	TEST_OK(pfs::unitype(false).toBlob() == pfs::bytearray(1, '\x0'));
+	bool ok;
 
-	TEST_OK(pfs::unitype('\x80').toBoolean() == true);
-	TEST_OK(pfs::unitype('\x00').toBoolean() == false);
+	pfs::unitype bool_val;
+	pfs::unitype char_val;
+	pfs::unitype sbyte_val;
+	pfs::unitype byte_val;
+	pfs::unitype short_val;
+	pfs::unitype ushort_val;
+	pfs::unitype int_val;
+	pfs::unitype uint_val;
+	pfs::unitype long_val;
+	pfs::unitype ulong_val;
+	pfs::unitype llong_val;
+	pfs::unitype ullong_val;
+	pfs::unitype float_val;
+	pfs::unitype double_val;
+	pfs::unitype text_val;
+	pfs::unitype blob_val;
+/*
+	pfs::unitype time_val;
+	pfs::unitype date_val;
+	pfs::unitype datetime_val;
+*/
 
-	for (int i = PFS_CHAR_MIN; i <= PFS_CHAR_MAX; ++i)
-		TEST_OK(pfs::unitype(char(i)).toInteger() == i);
+	bool_val.setBool(true);
+	TEST_OK(bool_val.toBool(&ok) == true);
+	TEST_OK2(ok, "bool_val == true");
 
-	TEST_OK(pfs::unitype(char(0)).toString().size() == 1);
-	TEST_OK(pfs::string("\x0", 1).size() == 1);
-	TEST_FAIL(pfs::unitype(char(0)).toString() == pfs::string(1,char(0)));
+	bool_val.setBool(false);
+	TEST_OK(bool_val.toBool(&ok) == false);
+	TEST_OK2(ok, "bool_val == false");
 
-	for (int i = PFS_CHAR_MIN; i <= PFS_CHAR_MAX; ++i)
-		TEST_OK(pfs::unitype(char(i)).toString() == pfs::string(1,char(i)));
+	char_val.setChar(pfs::ucchar('W'));
+	TEST_OK(char_val.toUCChar(&ok) == pfs::ucchar('W'));
+	TEST_OK2(ok, "char_val == 'W'");
 
-	for (int i = PFS_CHAR_MIN; i <= PFS_CHAR_MAX; ++i)
-		TEST_OK(pfs::unitype(char(i)).toBlob() == pfs::bytearray(1,char(i)));
+	sbyte_val.setInt(PFS_SBYTE_MIN);
+	TEST_OK(sbyte_val.toSByte(&ok) == PFS_SBYTE_MIN);
+	TEST_OK2(ok, "sbyte_val == PFS_SBYTE_MIN");
 
-//	sbyte_val.setInt(PFS_SBYTE_MIN);
-//	TEST_OK(sbyte_val.toSByte(&ok) == PFS_SBYTE_MIN);
-//	TEST_OK2(ok, "sbyte_val == PFS_SBYTE_MIN");
-//
-//	sbyte_val.setInt(PFS_SBYTE_MAX);
-//	TEST_OK(sbyte_val.toSByte(&ok) == PFS_SBYTE_MAX);
-//	TEST_OK2(ok, "sbyte_val == PFS_SBYTE_MAX");
-//
-//	byte_val.setUInt(0);
-//	TEST_OK(byte_val.toByte(&ok) == 0);
-//	TEST_OK2(ok, "byte_val == 0");
-//
-//	byte_val.setUInt(PFS_BYTE_MAX);
-//	TEST_OK(byte_val.toByte(&ok) == PFS_BYTE_MAX);
-//	TEST_OK2(ok, "byte_val == PFS_BYTE_MAX");
-//
-//	short_val.setInt(PFS_SHORT_MIN);
-//	TEST_OK(short_val.toShort(&ok) == PFS_SHORT_MIN);
-//	TEST_OK2(ok, "short_val == PFS_SHORT_MIN");
-//
-//	short_val.setInt(PFS_SHORT_MAX);
-//	TEST_OK(short_val.toShort(&ok) == PFS_SHORT_MAX);
-//	TEST_OK2(ok, "short_val == PFS_SHORT_MAX");
-//
-//	ushort_val.setUInt(0);
-//	TEST_OK(ushort_val.toUShort(&ok) == 0);
-//	TEST_OK2(ok, "ushort_val == 0");
-//
-//	ushort_val.setUInt(PFS_USHORT_MAX);
-//	TEST_OK(ushort_val.toUShort(&ok) == PFS_USHORT_MAX);
-//	TEST_OK2(ok, "ushort_val == PFS_USHORT_MAX");
-//
-//	int_val.setInt(PFS_INT_MIN);
-//	TEST_OK(int_val.toInt(&ok) == PFS_INT_MIN);
-//	TEST_OK2(ok, "int_val == PFS_INT_MIN");
-//
-//	int_val.setInt(PFS_INT_MAX);
-//	TEST_OK(int_val.toInt(&ok) == PFS_INT_MAX);
-//	TEST_OK2(ok, "int_val == PFS_INT_MAX");
-//
-//	uint_val.setUInt(0);
-//	TEST_OK(uint_val.toUInt(&ok) == 0);
-//	TEST_OK2(ok, "uint_val == 0");
-//
-//	uint_val.setUInt(PFS_UINT_MAX);
-//	TEST_OK(uint_val.toUInt(&ok) == PFS_UINT_MAX);
-//	TEST_OK2(ok, "uint_val == PFS_UINT_MAX");
-//
-//	long_val.setLong(PFS_LONG_MIN);
-//	TEST_OK(long_val.toLong(&ok) == PFS_LONG_MIN);
-//	TEST_OK2(ok, "long_val == PFS_LONG_MIN");
-//
-//	long_val.setLong(PFS_LONG_MAX);
-//	TEST_OK(long_val.toLong(&ok) == PFS_LONG_MAX);
-//	TEST_OK2(ok, "long_val == PFS_LONG_MAX");
-//
-//	ulong_val.setULong(0);
-//	TEST_OK(ulong_val.toULong(&ok) == 0);
-//	TEST_OK2(ok, "ulong_val == 0");
-//
-//	ulong_val.setULong(PFS_ULONG_MAX);
-//	TEST_OK(ulong_val.toULong(&ok) == PFS_ULONG_MAX);
-//	TEST_OK2(ok, "ulong_val == PFS_ULONG_MAX");
-//
-//	float_val.setFloat(PFS_FLOAT_MAX);
-//	TEST_OK(float_val.toFloat(&ok) == PFS_FLOAT_MAX);
-//	TEST_OK2(ok, "float_val == PFS_FLOAT_MAX");
-//
-//	double_val.setDouble(PFS_DOUBLE_MAX);
-//	TEST_OK(double_val.toDouble(&ok) == PFS_DOUBLE_MAX);
-//	TEST_OK2(ok, "double_val == PFS_DOUBLE_MAX");
-//
-//	pfs::string text_en(pfs::string::fromUtf8("The quick brown fox jumps over the lazy dog"));
-//	pfs::string text_ru(pfs::string::fromUtf8("Съешь ещё этих мягких французских булок, да выпей чаю"));
-//	pfs::string text;
-//
-//	text_val.setString(text_en);
-//	text = text_val.toString(&ok);
-//	TEST_OK(ok && text == text_en);
-//
-//	text_val.setString(text_ru);
-//	text = text_val.toString(&ok);
-//	TEST_OK(ok && text == text_ru);
-//
-//	pfs::bytearray blob;
-//	blob_val.setBlob(loremipsum, ::strlen(loremipsum));
-//	blob = blob_val.toBlob();
-//	TEST_OK(blob.size() == ::strlen(loremipsum));
-//	TEST_OK(::strcmp(loremipsum, blob.data()) == 0);
+	sbyte_val.setInt(PFS_SBYTE_MAX);
+	TEST_OK(sbyte_val.toSByte(&ok) == PFS_SBYTE_MAX);
+	TEST_OK2(ok, "sbyte_val == PFS_SBYTE_MAX");
 
+	byte_val.setUInt(0);
+	TEST_OK(byte_val.toByte(&ok) == 0);
+	TEST_OK2(ok, "byte_val == 0");
+
+	byte_val.setUInt(PFS_BYTE_MAX);
+	TEST_OK(byte_val.toByte(&ok) == PFS_BYTE_MAX);
+	TEST_OK2(ok, "byte_val == PFS_BYTE_MAX");
+
+	short_val.setInt(PFS_SHORT_MIN);
+	TEST_OK(short_val.toShort(&ok) == PFS_SHORT_MIN);
+	TEST_OK2(ok, "short_val == PFS_SHORT_MIN");
+
+	short_val.setInt(PFS_SHORT_MAX);
+	TEST_OK(short_val.toShort(&ok) == PFS_SHORT_MAX);
+	TEST_OK2(ok, "short_val == PFS_SHORT_MAX");
+
+	ushort_val.setUInt(0);
+	TEST_OK(ushort_val.toUShort(&ok) == 0);
+	TEST_OK2(ok, "ushort_val == 0");
+
+	ushort_val.setUInt(PFS_USHORT_MAX);
+	TEST_OK(ushort_val.toUShort(&ok) == PFS_USHORT_MAX);
+	TEST_OK2(ok, "ushort_val == PFS_USHORT_MAX");
+
+	int_val.setInt(PFS_INT_MIN);
+	TEST_OK(int_val.toInt(&ok) == PFS_INT_MIN);
+	TEST_OK2(ok, "int_val == PFS_INT_MIN");
+
+	int_val.setInt(PFS_INT_MAX);
+	TEST_OK(int_val.toInt(&ok) == PFS_INT_MAX);
+	TEST_OK2(ok, "int_val == PFS_INT_MAX");
+
+	uint_val.setUInt(0);
+	TEST_OK(uint_val.toUInt(&ok) == 0);
+	TEST_OK2(ok, "uint_val == 0");
+
+	uint_val.setUInt(PFS_UINT_MAX);
+	TEST_OK(uint_val.toUInt(&ok) == PFS_UINT_MAX);
+	TEST_OK2(ok, "uint_val == PFS_UINT_MAX");
+
+	long_val.setLong(PFS_LONG_MIN);
+	TEST_OK(long_val.toLong(&ok) == PFS_LONG_MIN);
+	TEST_OK2(ok, "long_val == PFS_LONG_MIN");
+
+	long_val.setLong(PFS_LONG_MAX);
+	TEST_OK(long_val.toLong(&ok) == PFS_LONG_MAX);
+	TEST_OK2(ok, "long_val == PFS_LONG_MAX");
+
+	ulong_val.setULong(0);
+	TEST_OK(ulong_val.toULong(&ok) == 0);
+	TEST_OK2(ok, "ulong_val == 0");
+
+	ulong_val.setULong(PFS_ULONG_MAX);
+	TEST_OK(ulong_val.toULong(&ok) == PFS_ULONG_MAX);
+	TEST_OK2(ok, "ulong_val == PFS_ULONG_MAX");
+
+	float_val.setFloat(PFS_FLOAT_MAX);
+	TEST_OK(float_val.toFloat(&ok) == PFS_FLOAT_MAX);
+	TEST_OK2(ok, "float_val == PFS_FLOAT_MAX");
+
+	double_val.setDouble(PFS_DOUBLE_MAX);
+	TEST_OK(double_val.toDouble(&ok) == PFS_DOUBLE_MAX);
+	TEST_OK2(ok, "double_val == PFS_DOUBLE_MAX");
+
+	pfs::string text_en(pfs::string::fromUtf8("The quick brown fox jumps over the lazy dog"));
+	pfs::string text_ru(pfs::string::fromUtf8("Съешь ещё этих мягких французских булок, да выпей чаю"));
+	pfs::string text;
+
+	text_val.setString(text_en);
+	text = text_val.toString(&ok);
+	TEST_OK(ok && text == text_en);
+
+	text_val.setString(text_ru);
+	text = text_val.toString(&ok);
+	TEST_OK(ok && text == text_ru);
+
+	pfs::bytearray blob;
+	blob_val.setBlob(loremipsum, ::strlen(loremipsum));
+	blob = blob_val.toBlob();
+	TEST_OK(blob.size() == ::strlen(loremipsum));
+	TEST_OK(::strcmp(loremipsum, blob.data()) == 0);
+
+/*
+	pfs::unitype object_val = pfs::unitype::make_object<pfs::string>(text_en);
+	text = object_val.toObject<pfs::string>();
+	TEST_OK(ok && text == text_en);
+*/
+
+/*
+	{
+		PFS_TIME tm1;
+		PFS_TIME tm2;
+
+		__utilsNS->now(&tm1);
+		__utNS->setTIME(time_val, &tm1);
+		__utNS->toTIME(time_val, &tm2, &ok);
+		TEST_OK(ok && tm2.hour == tm1.hour);
+		TEST_OK(ok && tm2.min == tm1.min);
+		TEST_OK(ok && tm2.sec == tm1.sec);
+
+		__utilsNS->now(&tm1);
+		__utNS->setDATE(date_val, &tm1);
+		__utNS->toDATE(date_val, &tm2, &ok);
+		TEST_OK(ok && tm2.year == tm1.year);
+		TEST_OK(ok && tm2.mon == tm1.mon);
+		TEST_OK(ok && tm2.day == tm1.day);
+
+
+		__utilsNS->now(&tm1);
+		__utNS->setDATETIME(datetime_val, &tm1);
+		__utNS->toDATETIME(datetime_val, &tm2, &ok);
+		TEST_OK(ok && tm2.hour == tm1.hour);
+		TEST_OK(ok && tm2.min == tm1.min);
+		TEST_OK(ok && tm2.sec == tm1.sec);
+		TEST_OK(ok && tm2.year == tm1.year);
+		TEST_OK(ok && tm2.mon == tm1.mon);
+		TEST_OK(ok && tm2.day == tm1.day);
+	}
+*/
 }
 
-void test_01 ()
+void test_01(void)
 {
-/*	bool ok;
+	bool ok;
 	pfs::unitype uval;
 
 	TEST_OK(uval.isNull());
@@ -228,12 +276,42 @@ void test_01 ()
 	uval.setBlob(loremipsum, ::strlen(loremipsum));
 	blob = uval.toBlob();
 	TEST_OK(blob.size() == ::strlen(loremipsum));
-	TEST_OK(::strcmp(loremipsum, blob.data()) == 0);*/
+	TEST_OK(::strcmp(loremipsum, blob.data()) == 0);
+/*
+	{
+		PFS_TIME tm1;
+		PFS_TIME tm2;
+
+		__utilsNS->now(&tm1);
+		__utNS->setTIME(uval, &tm1);
+		__utNS->toTIME(uval, &tm2, &ok);
+		TEST_OK(ok && tm2.hour == tm1.hour);
+		TEST_OK(ok && tm2.min == tm1.min);
+		TEST_OK(ok && tm2.sec == tm1.sec);
+
+		__utilsNS->now(&tm1);
+		__utNS->setDATE(uval, &tm1);
+		__utNS->toDATE(uval, &tm2, &ok);
+		TEST_OK(ok && tm2.year == tm1.year);
+		TEST_OK(ok && tm2.mon == tm1.mon);
+		TEST_OK(ok && tm2.day == tm1.day);
+
+
+		__utilsNS->now(&tm1);
+		__utNS->setDATETIME(uval, &tm1);
+		__utNS->toDATETIME(uval, &tm2, &ok);
+		TEST_OK(ok && tm2.hour == tm1.hour);
+		TEST_OK(ok && tm2.min == tm1.min);
+		TEST_OK(ok && tm2.sec == tm1.sec);
+		TEST_OK(ok && tm2.year == tm1.year);
+		TEST_OK(ok && tm2.mon == tm1.mon);
+		TEST_OK(ok && tm2.day == tm1.day);
+	}*/
 }
 
 void test_bool(void)
 {
-/*	bool ok;
+	bool ok;
 	pfs::unitype uval;
 
 	uval.setBool(true);
@@ -338,12 +416,27 @@ void test_bool(void)
 	TEST_OK2(uval.toBool() == true, "Blob(\"False\") == true");
 
 	uval.setBlob("nO", 2);
-	TEST_OK2(uval.toBool() == true, "Blob(\"nO\") == true");*/
+	TEST_OK2(uval.toBool() == true, "Blob(\"nO\") == true");
+/*
+	{
+	    PFS_TIME tm;
+
+		__utilsNS->now(&tm);
+		__utNS->setTIME(uval, &tm);
+		TEST_OK2(__utNS->toBool(uval, &ok) == false && !ok, _T("TIME does not cast to BOOL"));
+
+		__utNS->setDATE(uval, &tm);
+		TEST_OK2(__utNS->toBool(uval, &ok) == false && !ok, _T("DATE does not cast to BOOL"));
+
+		__utNS->setDATETIME(uval, &tm);
+		TEST_OK2(__utNS->toBool(uval, &ok) == false && !ok, _T("DATETIME does not cast to BOOL"));
+	}
+*/
 }
 
 void test_integer(void)
 {
-/*	bool ok;
+	bool ok;
 	short_t  s = 10;
 	int_t    d = 10;
 	pfs::unitype short_val;
@@ -359,12 +452,12 @@ void test_integer(void)
 	TEST_OK(int_val.toInt(&ok) == d && ok);
 
 	int_val.setFromString(pfs::string("10"));
-	TEST_OK(int_val.toInt(&ok) == 10 && ok);*/
+	TEST_OK(int_val.toInt(&ok) == 10 && ok);
 }
 
 void test_float(void)
 {
-/*	bool ok;
+	bool ok;
 	double d = 10.0f;
 	float  f = 10.0f;
 	pfs::unitype float_val;
@@ -383,10 +476,9 @@ void test_float(void)
 	double d1 = double_val.toDouble(&ok);
 	double d2 = pfs::string("3.14e+10").toDouble();
 	TEST_OK(d1 == d2);
-	TEST_OK(double_val.toDouble(&ok) == pfs::string("3.14e+10").toDouble() && ok);*/
+	TEST_OK(double_val.toDouble(&ok) == pfs::string("3.14e+10").toDouble() && ok);
 }
 
-#ifdef __COMMENT__
 struct TestElem
 {
 	TestElem  () : str()                        { /*puts("TestElem()");*/ }
@@ -404,8 +496,6 @@ struct TestElem
 	static int counter;
 	pfs::string str;
 };
-#endif
-
 
 #ifdef __COMMENT__
 
@@ -453,7 +543,7 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(116);
 
-	test_base();
+	test_00();
 	test_01();
 	test_bool();
 	test_integer();
