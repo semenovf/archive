@@ -178,7 +178,7 @@ template <> inline pfs::string to_string_trait<long long> (const long long & v) 
 template <> inline pfs::string to_string_trait<unsigned long long> (const unsigned long long & v) { return pfs::string::number(v); }
 #endif
 template <> inline pfs::string to_string_trait<pfs::string> (const pfs::string & v) { return pfs::string(v); }
-template <> inline pfs::string to_string_trait<pfs::bytearray> (const pfs::bytearray & v) { return pfs::string::fromUtf8(v); }
+template <> inline pfs::string to_string_trait<pfs::bytearray> (const pfs::bytearray & v) { return _l1(v.toBase64()); }
 
 template <typename T> pfs::bytearray to_bytearray_trait (const T & v);
 template <> inline pfs::bytearray to_bytearray_trait<bool> (const bool & v) { return pfs::bytearray::toBytes(v); }
