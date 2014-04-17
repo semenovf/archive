@@ -75,7 +75,7 @@ public:
     void remove (size_t index) { erase(index); }
     void remove (size_t index, size_t n) { erase(index, n); }
 
-    void swap (vector & o) { _d.swap(o._d); }
+    void swap (vector & o) { _d.swap<impl>(o._d); }
 };
 
 template <typename T>

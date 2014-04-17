@@ -9,6 +9,7 @@
 
 #include <pfs/shared_ptr.hpp>
 #include <pfs/atomic.hpp>
+#include <pfs/utility.hpp>
 
 namespace pfs {
 
@@ -40,12 +41,13 @@ public:
 
 	~pimpl () { deref(); }
 
+	template <typename T>
 	void swap (pimpl & o)
 	{
-		impl_base * tmp;
-		tmp = _holder;
-		_holder = o._holder;
-		o._holder = tmp;
+		PFS_ASSERT(_holder);
+		PFS_ASSERT(o._holder);
+		pfs::swap(static_cast<impl_holder<T> *>(_holder)->_d
+				, static_cast<impl_holder<T> *>(o._holder)->_d);
 	}
 
 private:

@@ -16,8 +16,10 @@ namespace pfs {
 template <typename T>
 class stack
 {
+protected:
 	typedef std::stack<T> impl;
-	PFS_PIMPL_INLINE(stack, protected, impl);
+
+	pimpl _d; //PFS_PIMPL_INLINE(stack, protected, impl);
 
 public:
 	typedef T item_type;
@@ -25,14 +27,16 @@ public:
 	typedef typename impl::value_type value_type;
 
 public:
-	stack () : _pimpl(new impl()) {}
+	stack () : _d(new impl()) {}
 
-	bool isEmpty() const { return _pimpl->empty(); }
-	size_type size() const { return _pimpl->size(); }
-	value_type & top() { return _pimpl->top(); }
-	const value_type & top() const { return _pimpl->top(); }
-	void push (const value_type & v) { _pimpl->push(v); }
-	void pop () { _pimpl->pop(); }
+	bool isEmpty() const { return _d.cast<impl>()->empty(); }
+	void clear() { stack s; swap(s); }
+	void swap(stack & o) { _d.swap<impl>(o._d); }
+	size_type size() const { return _d.cast<impl>()->size(); }
+	value_type & top() { return _d.cast<impl>()->top(); }
+	const value_type & top() const { return _d.cast<impl>()->top(); }
+	void push (const value_type & v) { _d.cast<impl>()->push(v); }
+	void pop () { _d.cast<impl>()->pop(); }
 };
 
 } // cwt
