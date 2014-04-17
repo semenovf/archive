@@ -9,21 +9,28 @@
 #ifndef __PFS_UTILITY_HPP__
 #define __PFS_UTILITY_HPP__
 
-namespace pfs {
+//namespace pfs {
 
 #if __cplusplus >= 201103L // C++11
 #	include <algorithm> // until C++11
 //#	include <utility>   // since C++11
 template<typename T>
-inline void swap(T & a, T & b)
+inline void pfs_swap (T & a, T & b)
 {
 	std::swap(a, b);
 }
 
+//#elif defined(_XUTILITY_) // MSVC
+//
+//template<typename T>
+//inline void swap (T & a, T & b)
+//{
+//	std::swap(a, b);
+//}
+//
 #else
-
 template<typename T>
-inline void swap(T & a, T & b)
+inline void pfs_swap (T & a, T & b)
 {
 	T tmp = a;
 	a = b;
@@ -31,18 +38,6 @@ inline void swap(T & a, T & b)
 }
 #endif
 
-/*template<typename T>
-inline T & max (T & a, T & b)
-{
-	return a >= b ? a : b;
-}
-
-template<typename T>
-inline T & min (T & a, T & b)
-{
-	return a <= b ? a : b;
-}*/
-
-} // pfs
+//} // pfs
 
 #endif /* __PFS_UTILITY_HPP__ */

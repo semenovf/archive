@@ -125,7 +125,7 @@ public:
 
 	void reserve (size_t n = 0);
 	void resize  (size_t size);
-	void swap (bytearray & other) { pfs::swap(_d, other._d); }
+	void swap (bytearray & other) { pfs_swap(_d, other._d); }
 
 	bytearray substr (size_t pos) const            { return substr(pos, length()); }
 	bytearray substr (size_t pos, size_t n) const;

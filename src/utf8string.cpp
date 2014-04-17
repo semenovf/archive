@@ -90,7 +90,7 @@ void utf8string::updateLength ()
 
 void utf8string::swap (utf8string & other)
 {
-	pfs::swap(_pimpl, other._pimpl);
+	pfs_swap(_pimpl, other._pimpl);
 }
 
 

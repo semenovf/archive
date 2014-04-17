@@ -13,7 +13,24 @@
 
 namespace pfs {
 
-class pimpl
+template <typename T>
+struct pimpl_default_cloner
+{
+	T * operator () (T * v) const {
+		return new T(*v);
+	}
+};
+
+template <typename T>
+struct pimpl_default_deleter
+{
+	void operator () (T * p) const {
+		delete p;
+	}
+};
+
+
+class DLL_API pimpl
 {
 	struct impl_base;
 	impl_base * _holder;
@@ -46,8 +63,8 @@ public:
 	{
 		PFS_ASSERT(_holder);
 		PFS_ASSERT(o._holder);
-		pfs::swap(static_cast<impl_holder<T> *>(_holder)->_d
-				, static_cast<impl_holder<T> *>(o._holder)->_d);
+		pfs_swap(static_cast<impl_cast_holder<T> *>(_holder)->_d
+				, static_cast<impl_cast_holder<T> *>(o._holder)->_d);
 	}
 
 private:
@@ -66,16 +83,26 @@ private:
 		virtual impl_base * clone () const = 0;// { PFS_ASSERT(false); return nullptr; }
 	};
 
+	// Need to avoid instantiation of T while casting to abstract class
+	// Matter for MSVC (critically)
 	template<typename T>
-	struct impl_holder : impl_base
+	struct impl_cast_holder : impl_base
 	{
 		T * _d;
-		impl_holder (T * p) : impl_base(), _d(p) {}
-		~impl_holder () { delete _d; }
+		impl_cast_holder (T * p) : impl_base(), _d(p) {}
+	};
+
+	template<typename T, typename Cloner = pimpl_default_cloner<T>, typename Deleter = pimpl_default_deleter<T> >
+	struct impl_holder : public impl_cast_holder<T>
+	{
+		Cloner _cloner;
+		Deleter _deleter;
+		impl_holder (T * p) : impl_cast_holder(p) {}
+		~impl_holder () { _deleter(_d); }
 
 		impl_base * clone () const
 		{
-			return new impl_holder<T>(new T(*_d));
+			return new impl_holder<T, Cloner>(_cloner(_d));
 		} // used in detach()
 	};
 
@@ -91,16 +118,16 @@ public:
 	template <typename T>
 	const T * cast () const
 	{
-		impl_holder<T> * holder = static_cast<impl_holder<T> *>(_holder);
-		PFS_ASSERT(holder);
+		PFS_ASSERT(_holder);
+		impl_cast_holder<T> * holder = static_cast<impl_cast_holder<T> *>(_holder);
 		return holder->_d;
 	}
 
 	template <typename T>
 	T * cast ()
 	{
-		impl_holder<T> * holder = static_cast<impl_holder<T> *>(_holder);
-		PFS_ASSERT(holder);
+		PFS_ASSERT(_holder);
+		impl_cast_holder<T> * holder = static_cast<impl_cast_holder<T> *>(_holder);
 		return holder->_d;
 	}
 };
