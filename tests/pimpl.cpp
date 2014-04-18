@@ -9,6 +9,8 @@
 #include <pfs/pimpl.hpp>
 #include <cstring>
 #include "pimpl_test.hpp"
+#include <iostream>
+#include <sstream>
 
 void test1 ()
 {
@@ -48,13 +50,63 @@ void test1 ()
 	TEST_OK(strcmp("Hello, World, again!", c.getString()) == 0);
 }
 
+
+struct implA
+{
+	std::ostream & _os;
+	implA (std::ostream & os) : _os(os) { os << "implA()"; }
+	virtual ~implA () { _os << "~implA()"; }
+};
+
+struct implB : public implA
+{
+	implB (std::ostream & os) : implA(os) { os << "implB()"; }
+	virtual ~implB () { _os << "~implB()"; }
+};
+
+struct AA
+{
+	pfs::pimpl _d;
+	AA (std::ostream & os) : _d(new implA(os)) {}
+	AA (std::ostream & os, int) : _d(new implB(os)) {}
+	void swap (AA & other)
+	{
+		_d.swap<implA>(other._d);
+	}
+};
+
+void test2 ()
+{
+	std::stringbuf buffer;
+	std::ostream os (& buffer);
+
+	AA * a  = new AA(os);   // implA()
+	os << "==";
+
+	AA * b = new AA(os,1); // implA()implB()
+	os << "==";
+
+	a->swap(*b);
+
+	delete b; // ~implA()
+
+	os << "==";
+
+	delete a; //~implB()~implA()
+
+	TEST_OK(std::string("implA()==implA()implB()==~implA()==~implB()~implA()") == buffer.str());
+	std::cout << buffer.str() << std::endl;
+}
+
+
 int main (int argc, char *argv[])
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(16);
+	BEGIN_TESTS(17);
 
 	test1();
+	test2();
 
 	END_TESTS;
 }

@@ -14,21 +14,15 @@
 namespace pfs {
 
 template <typename T>
-struct pimpl_default_cloner
+struct pimpl_default_helper
 {
-	T * operator () (T * v) const {
-		return new T(*v);
+	T * clone (T * p) const {
+		return new T(*p);
 	}
-};
-
-template <typename T>
-struct pimpl_default_deleter
-{
-	void operator () (T * p) const {
+	void destroy (T * p) const {
 		delete p;
 	}
 };
-
 
 class DLL_API pimpl
 {
@@ -92,17 +86,16 @@ private:
 		impl_cast_holder (T * p) : impl_base(), _d(p) {}
 	};
 
-	template<typename T, typename Cloner = pimpl_default_cloner<T>, typename Deleter = pimpl_default_deleter<T> >
+	template<typename T, typename Helper = pimpl_default_helper<T> >
 	struct impl_holder : public impl_cast_holder<T>
 	{
-		Cloner _cloner;
-		Deleter _deleter;
-		impl_holder (T * p) : impl_cast_holder(p) {}
-		~impl_holder () { _deleter(_d); }
+		Helper _helper;
+		impl_holder (T * p) : impl_cast_holder<T>(p) {}
+		~impl_holder () { _helper.destroy(impl_cast_holder<T>::_d); }
 
 		impl_base * clone () const
 		{
-			return new impl_holder<T, Cloner>(_cloner(_d));
+			return new impl_holder<T, Helper>(_helper.clone(impl_cast_holder<T>::_d));
 		} // used in detach()
 	};
 
@@ -184,7 +177,7 @@ public:                                                        \
                                                                \
     void swap (Class & other)                                  \
     {                                                          \
-    	pfs::swap(_pimpl, other._pimpl);                       \
+    	pfs_swap(_pimpl, other._pimpl);                       \
     }
 
 // w/o copy constructor
@@ -207,7 +200,7 @@ public:                                                        \
 	                                                           \
     void swap (Class & other)                                  \
     {                                                          \
-    	pfs::swap(_pimpl, other._pimpl);                       \
+    	pfs_swap(_pimpl, other._pimpl);                       \
     }
 
 

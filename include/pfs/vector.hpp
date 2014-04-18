@@ -39,8 +39,9 @@ public:
     const_iterator cend  () const { return end(); }
 
 	const T &    at (size_t i) const { return _d.cast<impl>()->operator [] (i); }
-	T &          operator [] (size_t i) { _d.detach(); return _d.cast<impl>()->operator [] (i); }
+	T &          at (size_t i) { _d.detach(); return _d.cast<impl>()->operator [] (i); }
 	const T &    operator [] (size_t i) const { return at(i); }
+	T &          operator [] (size_t i) { return at(i); }
 
 	reference       front ()       { return _d.cast<impl>()->front(); }
 	const_reference front () const { return _d.cast<impl>()->front(); }
