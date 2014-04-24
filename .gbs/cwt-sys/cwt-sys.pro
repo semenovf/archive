@@ -12,11 +12,17 @@ DEFINES += PCRE_EXP_DEFN=
 DEFINES += PCRE_EXP_DATA_DEFN=
 
 unix {
-    HEADERS += ../../pcre8/*.h
+    # Avoid warning:
+    # ... implicit declaration of function 'write' (read/lseek/close)
+    # while compiling 'zlib'
+    QMAKE_CFLAGS += -include unistd.h
+
     SOURCES += ../../src/*.cpp
     SOURCES += ../../pcre8/*.c
+    SOURCES += ../../zlib/*.c
     SOURCES += ../../src/unix/*.cpp
     SOURCES += ../../src/x11/*.cpp
+
     LIBS += -lpfs
     LIBS += -ldl
     LIBS += -lpthread
@@ -27,6 +33,7 @@ win32 {
     HEADERS += ..\\..\\pcre8\\*.h
     SOURCES += ..\\..\\src\\*.cpp
     SOURCES += ..\\..\\pcre8\\*.c
+    SOURCES += ..\\..\\zlib\\*.c
     SOURCES += ..\\..\\src\\win32\\*.cpp
     LIBS += pfs.lib
 }

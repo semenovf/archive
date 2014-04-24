@@ -64,6 +64,7 @@ public:
 	bool rename (const pfs::string & from, const pfs::string & to);
 	bool remove (const pfs::string & path);
 	bool unlink (const pfs::string & path) { return remove(path); }
+	size_t size (const pfs::string & path) const;
 	bool simpleBackup (const pfs::string & path);
 	pfs::string tempDirectory ();
 	pfs::string basename (const pfs::string & path) const;

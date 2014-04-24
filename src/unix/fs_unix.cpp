@@ -76,6 +76,13 @@ bool fs::remove (const pfs::string & path)
 	return true;
 }
 
+size_t fs::size (const pfs::string & path) const
+{
+	struct stat st;
+	return stat(path.c_str(), & st ) == 0
+			? st.st_size
+			: size_t(0);
+}
 
 bool fs::simpleBackup (const pfs::string & orig)
 {

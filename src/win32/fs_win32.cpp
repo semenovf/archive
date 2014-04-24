@@ -71,6 +71,13 @@ bool fs::remove(const pfs::string & path)
 	return true;
 }
 
+// FIXME
+size_t fs::size (const pfs::string & path) const
+{
+#	error "Need to implement";
+	return size_t(0);
+}
+
 
 bool fs::simpleBackup(const pfs::string &orig)
 {
