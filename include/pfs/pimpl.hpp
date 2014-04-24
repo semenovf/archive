@@ -30,27 +30,32 @@ class DLL_API pimpl
 	impl_base * _holder;
 
 public:
+	pimpl () : _holder(nullptr) {}
+
 	template<typename T>
-	pimpl (T * p) : _holder(new impl_holder<T>(p)) {}
+	pimpl (T * p) : _holder(new impl_holder<T>(p)) { }
 
 	pimpl (const pimpl & other) : _holder(other._holder)
 	{
-		PFS_ASSERT(_holder);
-		_holder->_ref.ref();
+		if (_holder) {
+			_holder->_ref.ref();
+		}
 	}
 
 	pimpl & operator = (const pimpl & other)
 	{
-		if (_holder) {
-			deref();
-		}
-
+		deref();
 		_holder = other._holder;
-		_holder->_ref.ref();
+
+		if (_holder)
+			_holder->_ref.ref();
+
 		return *this;
 	}
 
 	~pimpl () { deref(); }
+
+	bool isNull () const { return _holder == nullptr; }
 
 	template <typename T>
 	void swap (pimpl & o)
@@ -64,7 +69,7 @@ public:
 private:
 	void deref ()
 	{
-		if (!_holder->_ref.deref())
+		if (_holder && !_holder->_ref.deref())
 			delete _holder;
 	}
 
@@ -102,7 +107,7 @@ private:
 public:
 	void detach ()
 	{
-		if (_holder->_ref.load() > 1) { // not unique
+		if (_holder && _holder->_ref.load() > 1) { // not unique
 			_holder->_ref.deref();
 			_holder = _holder->clone();
 		}
@@ -123,6 +128,29 @@ public:
 		impl_cast_holder<T> * holder = static_cast<impl_cast_holder<T> *>(_holder);
 		return holder->_d;
 	}
+};
+
+
+template <typename T>
+class pimpl_lazy_init
+{
+	pimpl * _p;
+	T & get () const
+	{
+		if (_p->isNull()) {
+			*_p = pimpl(new T);
+		}
+		return *_p->cast<T>();
+	}
+
+public:
+	pimpl_lazy_init (pimpl & p) : _p (& p) {}
+	pimpl_lazy_init (const pimpl & p) : _p (const_cast<pimpl *>(& p)) {}
+
+	const T & operator *  () const { return get(); }
+	T &       operator *  ()       { return get(); }
+	const T * operator -> () const { return & get(); }
+	T *       operator -> ()       { return & get(); }
 };
 
 } // pfs

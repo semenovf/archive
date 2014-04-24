@@ -124,7 +124,7 @@ string time::toString (const char * format) const
 		}
 		++p;
 	}
-	return string::fromLatin1(ss.str());
+	return string::fromLatin1(ss.str().c_str());
 }
 
 /**

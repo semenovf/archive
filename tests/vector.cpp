@@ -14,11 +14,17 @@
 
 void test_int_vector(void)
 {
-	pfs::vector<int> v;
+	pfs::vector<int> v; // is nill
 	const int *pint;
+
+	TEST_OK(v.isNull());
+
+//	v = pfs::vector<int>(0);
 
 	for(int i = 0; i < _VECTOR_SIZE; i++)
 		v.append(i);
+
+	TEST_OK(v.size() == _VECTOR_SIZE);
 
 	for(int i = 0; i < _VECTOR_SIZE; i++)
 		TEST_FAIL(v[i] == i);
@@ -31,20 +37,20 @@ void test_int_vector(void)
 
 void test_long_vector(void)
 {
-	pfs::vector<int> v(_VECTOR_SIZE, 0);
+	pfs::vector<long_t> v(_VECTOR_SIZE, 0);
 	int i;
-	int *pint;
+	long_t * pint;
 
 	pint = v.data();
-	pint[0] = PFS_INT_MIN;
-	pint[_VECTOR_SIZE-1] = PFS_INT_MAX;
+	pint[0] = PFS_LONG_MIN;
+	pint[_VECTOR_SIZE-1] = PFS_LONG_MAX;
 
 	for(i = 1; i < _VECTOR_SIZE-1; i++) {
-		TEST_FAIL(v.at(i) == 0L);
+		TEST_FAIL(v.at(i) == long_t(0));
 	}
 
-	TEST_FAIL(v.at(0) == PFS_INT_MIN);
-	TEST_FAIL(v.at(_VECTOR_SIZE-1) == PFS_INT_MAX);
+	TEST_FAIL(v.at(0) == PFS_LONG_MIN);
+	TEST_FAIL(v.at(_VECTOR_SIZE-1) == PFS_LONG_MAX);
 }
 
 
@@ -87,7 +93,7 @@ struct Foo
 	Foo() : i(0), ch(0), j(0) {}
 };
 
-void test_vector_iterator(void)
+void test_vector_iterator ()
 {
 	const char* loremipsum  = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit";
 	int sz;
@@ -99,9 +105,9 @@ void test_vector_iterator(void)
 	v.resize(sz);
 
 	for (i = 0; i < sz; i++) {
-		v[i].i  = i;
-		v[i].j  = i;
-		v[i].ch = loremipsum[i];
+		v[i]->i  = i;
+		v[i]->j  = i;
+		v[i]->ch = loremipsum[i];
 	}
 
 	{
@@ -164,10 +170,10 @@ void test_swap()
 
 void test_vector_vector()
 {
-	pfs::vector<pfs::vector<int> > records;
+	pfs::vector<pfs::vector<int> > records(0);
 
 	for (int i = 0; size_t(i) < 33; ++i) {
-		pfs::vector<int> record;
+		pfs::vector<int> record(0);
 		for (int j = 0; size_t(j) < 33; ++j) {
 			record.append(j);
 		}
@@ -181,7 +187,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(1404);
+	BEGIN_TESTS(1406);
 
 	test_int_vector();
 	test_long_vector();

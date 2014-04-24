@@ -1,5 +1,5 @@
 /**
- * @file   bytearray_exp.cpp
+ * @file   bytearray.cpp
  * @author wladt
  * @date   May 15, 2013 4:37:44 PM
  *
@@ -8,6 +8,7 @@
 
 #include "../include/pfs/bytearray.hpp"
 #include "../include/pfs/string.hpp"
+#include <cstring>
 #include <cstdlib>
 #include <cerrno>
 #include <sstream>
@@ -15,32 +16,136 @@
 
 namespace pfs {
 
-const bytearray::char_type bytearray::TerminatorChar('\0');
 const bytearray::char_type bytearray::EndOfLineChar('\n');
 
-bytearray::bytearray (const char * s)
-	: base_class(s, strlen(s))
+/*
+DLL_API uint_t hash_func(const bytearray & key, uint_t seed)
 {
-	bytearray_terminator bt(this);
+	return hash_bytes(reinterpret_cast<const byte_t *>(key.constData()), key.size(), seed);
+}
+*/
+
+bytearray & bytearray::insert (const char * s, const const_iterator & pos)
+{
+	return insert(s, strlen(s), pos);
 }
 
-bytearray::bytearray (const char * s, size_t size)
-	: base_class(s, size)
+bytearray & bytearray::insert (const char * s, size_t n, const const_iterator & pos)
 {
-	bytearray_terminator bt(this);
+	_d.detach();
+	const_iterator it(pos);
+
+	if (it > end())
+		it = end();
+	if (it < begin())
+		it = begin();
+
+	size_t i = it - begin();
+	_d.cast<impl>()->insert(i, s, n);
+	return *this;
 }
 
-bytearray::bytearray (const std::string & s)
-	: base_class(s.c_str(), s.size())
+
+bool bytearray::endsWith(const char * s, size_t n) const
 {
-	bytearray_terminator bt(this);
+	size_t len = length();
+	if (len < n)
+		return false;
+	return compare(len - n, n, s, n) == 0;
 }
 
-bytearray::bytearray (size_t size, const char & c)
-	: base_class(size, c)
+bool bytearray::endsWith (const char * s) const
 {
-	bytearray_terminator bt(this);
+	return endsWith(s, strlen(s));
 }
+
+bool bytearray::startsWith(const char * s, size_t n) const
+{
+	size_t len = length();
+
+	if (len < n)
+		return false;
+	return compare(0, n, s, n) == 0;
+}
+
+bool bytearray::startsWith (const char * s) const
+{
+	return startsWith(s, strlen(s));
+}
+
+bytearray::const_iterator bytearray::find (const char * s, size_t pos, size_t n) const
+{
+	if (pos >= length())
+		return end();
+
+	size_t find_pos = _d.cast<impl>()->find(s, pos, n);
+
+	if (find_pos == _d.cast<impl>()->npos)
+		return end();
+
+	return bytearray::const_iterator(begin() + find_pos);
+}
+
+bytearray::const_iterator bytearray::find (const char * s, size_t pos) const
+{
+	return find(s, pos, strlen(s));
+}
+
+bytearray & bytearray::remove (const const_iterator & from, size_t n)
+{
+	bytearray::const_iterator itEnd = from + n;
+
+	if (itEnd > end())
+		itEnd = end();
+
+	if (from >= begin() && from < itEnd) {
+		size_t pos = from - begin();
+		size_t sz  = itEnd - from;
+
+		_d.detach();
+		_d.cast<impl>()->erase(pos, sz);
+	}
+
+	return *this;
+}
+
+
+// TODO need to implement without using the standard stream library
+bytearray & bytearray::setNumber (long_t n, int base)
+{
+	_d.detach();
+	std::ostringstream os;
+	os << std::setbase(base) << n;
+	*this = os.str();
+	return *this;
+}
+
+// TODO need to implement without using the standard stream library
+bytearray & bytearray::setNumber (ulong_t n, int base)
+{
+	_d.detach();
+	std::ostringstream os;
+	os << std::setbase(base) << n;
+	*this = os.str();
+	return *this;
+}
+
+bytearray & bytearray::setNumber (double n, char f, int prec)
+{
+	_d.detach();
+	char fmt[32];
+	char num[64];
+	if (prec)
+		PFS_ASSERT(::sprintf(fmt, "%%.%d%c", prec, f) > 0);
+	else
+		PFS_ASSERT(::sprintf(fmt, "%%%c", f) > 0);
+
+	PFS_ASSERT(::sprintf(num, fmt, n) > 0);
+	// TODO need to implement without using the standard stream library
+	_d.cast<impl>()->assign(num);// TODO need to implement without using the standard stream library
+	return *this;
+}
+
 
 static long_t __str_to_long_helper (const char *s, bool * pok, int base, long_t min_val, long_t max_val)
 {
@@ -86,6 +191,7 @@ static ulong_t	__str_to_ulong_helper (const char *s, bool * pok, int base, ulong
 		*pok = ok;
 	return r;
 }
+
 
 extern "C" double vim_strtod ( const char *string
     , char ** endPtr
@@ -164,43 +270,6 @@ sbyte_t bytearray::toSByte (bool * ok, int base) const
 byte_t bytearray::toByte (bool * ok, int base) const
 {
 	return byte_t(__str_to_ulong_helper(c_str(), ok, base, ulong_t(PFS_BYTE_MAX)));
-}
-
-
-// TODO need to implement without using the standard stream library
-void bytearray::setNumber (long_t n, int base)
-{
-	bytearray_terminator bt(this);
-	_d.detach();
-	std::ostringstream os;
-	os << std::setbase(base) << n;
-	*this = os.str();
-}
-
-// TODO need to implement without using the standard stream library
-void bytearray::setNumber (ulong_t n, int base)
-{
-	bytearray_terminator bt(this);
-	_d.detach();
-	std::ostringstream os;
-	os << std::setbase(base) << n;
-	*this = os.str();
-}
-
-void bytearray::setNumber (double n, char f, int prec)
-{
-	bytearray_terminator bt(this);
-	_d.detach();
-	char fmt[32];
-	char num[64];
-	if (prec)
-		PFS_ASSERT(::sprintf(fmt, "%%.%d%c", prec, f) > 0);
-	else
-		PFS_ASSERT(::sprintf(fmt, "%%%c", f) > 0);
-
-	PFS_ASSERT(::sprintf(num, fmt, n) > 0);
-	// TODO need to implement without using the standard stream library
-	*this = bytearray(num);
 }
 
 
@@ -297,98 +366,5 @@ bytearray bytearray::toBytes<pfs::string> (const pfs::string & v, endian::type_e
 	return bytearray(v.constData(), v.sizeInBytes());
 }
 
-/*
-DLL_API uint_t hash_func(const bytearray & key, uint_t seed)
-{
-	return hash_bytes(reinterpret_cast<const byte_t *>(key.constData()), key.size(), seed);
-}
-*/
-
-
-
-bool bytearray::endsWith(const char * s, size_t n) const
-{
-	size_t len = length();
-	if (len < n)
-		return false;
-	return compare(len - n, n, s, n) == 0;
-}
-
-bool bytearray::endsWith (const char * s) const
-{
-	return endsWith(s, strlen(s));
-}
-
-bool bytearray::startsWith(const char * s, size_t n) const
-{
-	size_t len = length();
-
-	if (len < n)
-		return false;
-	return compare(0, n, s, n) == 0;
-}
-
-bool bytearray::startsWith (const char * s) const
-{
-	return startsWith(s, strlen(s));
-}
-
-bytearray bytearray::substr (size_t pos, size_t n) const
-{
-	pos = size() > pos ? pos : size();
-	n = size() - pos > n ? n : size() - pos;
-
-	return n
-			? bytearray(this->constData() + pos, n)
-			: bytearray();
-}
-
-bytearray bytearray::substr (const const_iterator & from, size_t n) const
-{
-	return (from >= cbegin() && from < cend())
-			? substr(from - cbegin(), n)
-			: bytearray();
-}
-
-
-#ifdef __COMMENT__
-bytearray::const_iterator bytearray::find (const char * s, size_t pos, size_t n) const
-{
-	if (pos >= length())
-		return end();
-
-	size_t find_pos = _d.cast<impl>()->find(s, pos, n);
-
-	if (find_pos == _d.cast<impl>()->npos)
-		return end();
-
-	return bytearray::const_iterator(begin() + find_pos);
-}
-
-bytearray::const_iterator bytearray::find (const char * s, size_t pos) const
-{
-	return find(s, pos, strlen(s));
-}
-
-bytearray & bytearray::remove (const const_iterator & from, size_t n)
-{
-	bytearray::const_iterator itEnd = from + n;
-
-	if (itEnd > end())
-		itEnd = end();
-
-	if (from >= begin() && from < itEnd) {
-		size_t pos = from - begin();
-		size_t sz  = itEnd - from;
-
-		_d.detach();
-		_d.cast<impl>()->erase(pos, sz);
-	}
-
-	return *this;
-}
-
-
-#endif
 
 } // pfs

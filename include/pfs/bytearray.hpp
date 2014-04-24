@@ -10,7 +10,9 @@
 
 #include "pimpl.hpp"
 #include "endian.hpp"
+#include "vector.hpp"
 #include <string>
+#include <cstring>
 #include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -21,62 +23,182 @@
 
 namespace pfs {
 
-class byteref;
 class utf8string;
+class bytearray;
 
-class DLL_API bytearray
+struct bytearray_terminator
 {
-private:
-	typedef std::string impl;
-	pimpl _d;
+	bytearray * p;
+	bytearray_terminator (bytearray * ptr) : p(ptr) {}
+	~bytearray_terminator ();
+};
+
+
+template <class T>
+struct bytearray_allocator : public std::allocator<T>
+{
+	typedef std::allocator<T>      base_class;
+	typedef T value_type;
+
+	bytearray_allocator () : base_class() {}
+	bytearray_allocator (const std::allocator<T> & a) : base_class(a) {}
+
+	template <class U>
+	bytearray_allocator (const bytearray_allocator<U> &) : base_class() /*noexcept*/ {}
+
+	template <class U>
+	struct rebind
+	{
+	   typedef bytearray_allocator<U> other;
+	};
+
+	value_type * allocate (std::size_t n, const void * = 0)
+	{
+		return base_class::allocate(n+1);
+	}
+	void deallocate (value_type * p, std::size_t /*n*/)
+	{
+		base_class::deallocate(p, 0);
+	}
+};
+
+#ifdef __COMMENT__
+// see http://en.cppreference.com/w/cpp/concept/Allocator
+struct bytearray_allocator
+{
+	typedef char value_type;
+
+	//template<typename _Tp1>
+	struct rebind
+	{ typedef bytearray_allocator other; };
+
+	bytearray_allocator(/*ctor args*/) {}
+	bytearray_allocator (const bytearray_allocator &) {}
+	char * allocate (std::size_t n) { return static_cast<char *>(::operator new((n+1) * sizeof(char))) ; }
+	void deallocate (char * p, std::size_t) { ::operator delete(p); }
+};
+
+// Returns true only if the storage allocated by the allocator a1
+// can be deallocated through a2. Establishes reflexive, symmetric,
+// and transitive relationship. Does not throw exceptions.
+bool operator == (const bytearray_allocator & /*a1*/, const bytearray_allocator & /*a2*/) { return true; }
+// same as !(a1==a2)
+bool operator != (const bytearray_allocator & a1, const bytearray_allocator & a2) { return !(a1==a2); }
+#endif
+
+
+typedef item_ref<char, bytearray_allocator<char> > byteref;
+
+class DLL_API bytearray : public vector<char, bytearray_allocator<char> >
+{
+	friend struct bytearray_terminator;
 
 public:
-	typedef char char_type;
-	typedef char item_type;
-	typedef impl::iterator iterator;
-	typedef impl::const_iterator const_iterator;
+	typedef vector<char, bytearray_allocator<char> > base_class;
+	typedef base_class::value_type char_type;
+	typedef base_class::value_type item_type;
+	typedef base_class::iterator iterator;
+	typedef base_class::const_iterator const_iterator;
 
+	static const char_type TerminatorChar;
 	static const char_type EndOfLineChar;
 
 public:
-	bytearray () : _d(new impl) {}
-	bytearray (const impl & other) : _d(new impl(other)) {}
-	bytearray (const char * s) : _d(new impl(s)) {}
-	bytearray (const char * s, size_t size) : _d(new impl(s, size)) {}
-	bytearray (size_t size, char c) : _d(new impl(size, c)) {}
-	bytearray (const_iterator begin, const_iterator end) : _d(new impl(begin, end)) {}
+	bytearray () : base_class() {}
+//	bytearray (const impl & other) : _d(new impl(other)) {}
+	bytearray (const char * s);
+	bytearray (const char * s, size_t size);
+	bytearray (size_t n, const char & c);
+	bytearray (const std::string & s);
+//	bytearray (const_iterator begin, const_iterator end) : _d(new impl(begin, end)) {}
 
-	const char * c_str() const { return _d.cast<impl>()->c_str(); }
-	const char * data() const  { return _d.cast<impl>()->data(); }
-	const char * constData() const { return data(); }
+	virtual ~bytearray () {}
 
-	byteref      at (size_t pos);
-	const char & at (size_t pos) const { PFS_ASSERT(pos < size()); return _d.cast<impl>()->at(pos); }
-	byteref      operator [] (size_t pos);
-	const char & operator [] (size_t pos) const { return at(pos); }
+	virtual void resize (size_t n, char v = TerminatorChar)
+	{
+		bytearray_terminator bt(this);
+		base_class::resize(n, v);
+	}
 
-	void         clear() { _d.detach(); _d.cast<impl>()->clear(); }
-	bool	     isEmpty() const { return _d.cast<impl>()->empty(); }
-	size_t       size ()   const { return _d.cast<impl>()->size(); }
-	size_t       length () const { return size(); }
+	virtual void clear ()
+	{
+		bytearray_terminator bt(this);
+		base_class::clear();
+	}
+
+	virtual void insert (iterator position, const char * ptr, size_t n)
+	{
+		bytearray_terminator bt(this);
+		base_class::insert(position, ptr, n);
+	}
+
+	virtual void insert (iterator position, size_t n, const char & val)
+	{
+		bytearray_terminator bt(this);
+		base_class::insert(position, n, val);
+	}
+
+    virtual iterator erase (iterator first, iterator last)
+    {
+		bytearray_terminator bt(this);
+		return base_class::erase(first, last);
+    }
+
+    const char * c_str () const { return constData(); }
+
+//    bool contains (const char * s) const { return find(begin(), s) != end(); }
+
+    size_t length () const { return size(); }
 
 	static size_t length (const iterator & begin, const iterator & end)
 	{
-		return begin <= end
-				? end - begin
-				: begin - end;
-	}
-	static size_t length (const const_iterator & begin, const const_iterator & end)
-	{
-		return begin <= end
-				? end - begin
-				: begin - end;
+		return begin <= end ? end - begin : begin - end;
 	}
 
+	static size_t length (const const_iterator & begin, const const_iterator & end)
+	{
+		return begin <= end ? end - begin : begin - end;
+	}
+
+	void append (const char * s)
+	{
+		bytearray_terminator bt(this);
+		base_class::append(s, strlen(s));
+	}
+	void append (const bytearray & other)
+	{
+		bytearray_terminator bt(this);
+		base_class::append(other);
+	}
+	void prepend (const char * s)
+	{
+		bytearray_terminator bt(this);
+		base_class::prepend(s, strlen(s));
+	}
+
+	void prepend (const bytearray & other)
+	{
+		bytearray_terminator bt(this);
+		base_class::prepend(other);
+	}
+
+	void insert (iterator pos, const char * s)
+	{
+		bytearray_terminator bt(this);
+		base_class::insert(pos, s, strlen(s));
+	}
+
+	void insert (iterator pos, const bytearray & other)
+	{
+		bytearray_terminator bt(this);
+		base_class::insert(pos, other);
+	}
+
+	void append (size_t n, char ch) { base_class::append(n, ch); }
+
+/*
 	bytearray & append  (const bytearray & s) { return insert(s, end()); }
-	bytearray & append  (const char * s) { return insert(s, end()); }
 	bytearray & append  (const char * s, size_t n) { return insert(s, n, end()); }
-	bytearray & append  (size_t size, char ch) { append(bytearray(size, ch)); return *this; }
 	bytearray & prepend (const bytearray & s) { return insert(s, begin()); }
 	bytearray & prepend (const char * s) { return insert(s, begin()); }
 	bytearray & prepend (const char * s, size_t n)  { return insert(s, n, begin()); }
@@ -87,24 +209,8 @@ public:
 	bytearray & insert  (const char * s, size_t n, const const_iterator & pos);
 	bytearray & insert  (size_t size, char ch, size_t pos) { return insert(bytearray(size, ch), pos); }
 	bytearray & insert  (size_t size, char ch, const const_iterator & pos) { return insert(bytearray(size, ch), pos); }
+*/
 
-    iterator       begin () { _d.detach(); return _d.cast<impl>()->begin(); }
-    iterator       end   () { _d.detach(); return _d.cast<impl>()->end(); }
-    const_iterator begin () const { return _d.cast<impl>()->begin(); }
-    const_iterator end   () const { return _d.cast<impl>()->end(); }
-    const_iterator cbegin() const { return begin(); }
-    const_iterator cend  () const { return end(); }
-
-    int compare (const bytearray & s) const;
-    int compare (size_t pos, size_t len, const bytearray & s) const;
-    int compare (size_t pos, size_t len, const bytearray & s, size_t subpos, size_t sublen) const;
-    int compare (const char * s) const;
-    int compare (size_t pos, size_t len, const char * s) const;
-    int compare (size_t pos, size_t len, const char * s, size_t n) const;
-
-	bool contains (const bytearray & s) const { return find(s, begin()) != end(); }
-	bool contains (const char * s) const { return find(s, begin()) != end(); }
-	bool contains (const char * s, size_t n) const { return find(s, 0, n) != end(); }
 
 	bool endsWith (const bytearray & s) const { return endsWith(s.data(), s.size()); }
 	bool endsWith (const char * s) const;
@@ -114,26 +220,27 @@ public:
 	bool startsWith (const char * s) const;
 	bool startsWith (const char * s, size_t n) const;
 
-	const_iterator find (const bytearray & s, const_iterator pos) const;
-	const_iterator find (const char * s, size_t pos, size_t n) const;
-	const_iterator find (const char * s, size_t pos) const;
+//	const_iterator find (const_iterator pos, const bytearray & s) const;
+//	const_iterator find (size_t pos, const char * s, size_t n) const;
+//	const_iterator find (size_t pos, size_t len, const char * s, size_t n) const;
+//	const_iterator find (size_t pos, char ch) const;
 
-	bytearray & remove (size_t pos)                  { return remove(pos, length()); }
-	bytearray & remove (size_t pos, size_t n)        { return remove(begin() + pos, n); }
-	bytearray & remove (const const_iterator & from) { return remove(from, length()); }
-	bytearray & remove (const const_iterator & from, size_t n);
+//	bytearray & remove (size_t pos)                  { return remove(pos, length()); }
+//	bytearray & remove (size_t pos, size_t n)        { return remove(begin() + pos, n); }
+//	bytearray & remove (const const_iterator & from) { return remove(from, length()); }
+//	bytearray & remove (const const_iterator & from, size_t n);
 
-	void reserve (size_t n = 0);
-	void resize  (size_t size);
-	void swap (bytearray & other) { pfs_swap(_d, other._d); }
+//	void reserve (size_t n = 0);
+//	void resize  (size_t size);
+//	void swap (bytearray & other) { pfs_swap(_d, other._d); }
 
-	bytearray substr (size_t pos) const            { return substr(pos, length()); }
-	bytearray substr (size_t pos, size_t n) const;
-	bytearray substr (const const_iterator & from) const;
 	bytearray substr (const const_iterator & from, size_t n) const;
-	bytearray mid    (size_t pos, size_t n) const     { return substr(pos, n); }
-	bytearray left   (size_t n) const                { return substr(0, n); }
-	bytearray right  (size_t n) const               { return substr(length() - n, n); }
+	bytearray substr (size_t pos) const { return substr(pos, length()); }
+	bytearray substr (size_t pos, size_t n) const;
+	bytearray substr (const const_iterator & from) const { return substr(from, size()); }
+	bytearray mid    (size_t pos, size_t n) const { return substr(pos, n); }
+	bytearray left   (size_t n) const { return substr(0, n); }
+	bytearray right  (size_t n) const { return substr(length() - n, n); }
 
 	double	 toDouble (bool * ok = 0, char decimalPoint = '.') const;
 	long_t   toLong   (bool * ok = 0, int base = 10) const;
@@ -145,17 +252,17 @@ public:
 	sbyte_t  toSByte  (bool * ok = 0, int base = 10) const;
 	byte_t	 toByte   (bool * ok = 0, int base = 10) const;
 
-	bytearray & setNumber (long_t n, int base = 10);
-	bytearray & setNumber (ulong_t n, int base = 10);
-	bytearray & setNumber (int_t n, int base = 10)    { return setNumber(long_t(n), base); }
-	bytearray & setNumber (uint_t n, int base = 10)   { return setNumber(ulong_t(n), base); }
-	bytearray & setNumber (short_t n, int base = 10)  { return setNumber(long_t(n), base); }
-	bytearray & setNumber (ushort_t n, int base = 10) { return setNumber(ulong_t(n), base); }
-	bytearray & setNumber (sbyte_t n, int base = 10)  { return setNumber(long_t(n), base); }
-	bytearray & setNumber (byte_t n, int base = 10)   { return setNumber(ulong_t(n), base); }
-	bytearray & setNumber (double n, char f = 'g', int prec = 6);
+	void setNumber (long_t n, int base = 10);
+	void setNumber (ulong_t n, int base = 10);
+	void setNumber (int_t n, int base = 10)    { setNumber(long_t(n), base); }
+	void setNumber (uint_t n, int base = 10)   { setNumber(ulong_t(n), base); }
+	void setNumber (short_t n, int base = 10)  { setNumber(long_t(n), base); }
+	void setNumber (ushort_t n, int base = 10) { setNumber(ulong_t(n), base); }
+	void setNumber (sbyte_t n, int base = 10)  { setNumber(long_t(n), base); }
+	void setNumber (byte_t n, int base = 10)   { setNumber(ulong_t(n), base); }
+	void setNumber (double n, char f = 'g', int prec = 6);
 
-	bytearray & operator += (const bytearray & other) { return append(other); }
+	bytearray & operator += (const bytearray & other) { append(other); return *this; }
 
 	friend bytearray operator + (const bytearray & s1, const bytearray & s2);
 
@@ -173,12 +280,12 @@ public:
 	friend bool	operator >  (const bytearray & s1, const char * s2);
 	friend bool	operator >= (const bytearray & s1, const char * s2);
 
-	static bytearray number (double n, char fmt = 'g', int prec = 6) { return bytearray().setNumber(n, fmt, prec); }
-	static bytearray number (float n, char fmt = 'g', int prec = 6)  { return bytearray().setNumber(n, fmt, prec); }
-	static bytearray number (int_t n, int base = 10)                 { return bytearray().setNumber(n, base); }
-	static bytearray number (uint_t n, int base = 10)                { return bytearray().setNumber(n, base); }
-	static bytearray number (long_t n, int base = 10)                { return bytearray().setNumber(n, base); }
-	static bytearray number (ulong_t n, int base = 10)               { return bytearray().setNumber(n, base); }
+	static bytearray number (double n, char fmt = 'g', int prec = 6) { bytearray r; r.setNumber(n, fmt, prec); return r; }
+	static bytearray number (float n, char fmt = 'g', int prec = 6)  { bytearray r; r.setNumber(n, fmt, prec); return r; }
+	static bytearray number (int_t n, int base = 10)                 { bytearray r; r.setNumber(n, base); return r; }
+	static bytearray number (uint_t n, int base = 10)                { bytearray r; r.setNumber(n, base); return r; }
+	static bytearray number (long_t n, int base = 10)                { bytearray r; r.setNumber(n, base); return r; }
+	static bytearray number (ulong_t n, int base = 10)               { bytearray r; r.setNumber(n, base); return r; }
 
 	template <typename T>
 	size_t readNumber (T & v, size_t pos = 0, endian::type_enum order = endian::nativeOrder()) const;
@@ -186,64 +293,13 @@ public:
 	template <typename T>
 	static bytearray toBytes (const T & v, endian::type_enum order = endian::nativeOrder());
 	static bytearray fromBase64 (const bytearray & base64);
-	bytearray toBase64 () const;
-
-	friend class byteref;
+	bytearray        toBase64 () const;
 };
 
-
-class byteref
+inline bytearray_terminator::~bytearray_terminator ()
 {
-	bytearray & _a;
-    size_t _i;
-
-    inline byteref (bytearray & a, size_t index)
-        : _a(a), _i(index) {}
-
-    friend class bytearray;
-
-public:
-    operator char () const
-    {
-    	return _i < _a.size()
-    			? (*_a._d.cast<bytearray::impl>())[_i]
-    			: char(0);
-    }
-
-    byteref & operator = (char c)
-    {
-    	PFS_ASSERT(_i < _a.size());
-    	_a._d.detach();
-    	(*_a._d.cast<bytearray::impl>())[_i] = c;
-        return *this;
-    }
-
-    byteref & operator = (const byteref & c)
-    {
-    	PFS_ASSERT(_i < _a.size());
-    	_a._d.detach();
-        (*_a._d.cast<bytearray::impl>())[_i] = (*c._a._d.cast<bytearray::impl>())[c._i];
-        return *this;
-    }
-
-    bool operator == (char c) const { return (*_a._d.cast<bytearray::impl>())[_i] == c; }
-    bool operator != (char c) const { return (*_a._d.cast<bytearray::impl>())[_i] != c; }
-    bool operator >  (char c) const { return (*_a._d.cast<bytearray::impl>())[_i] > c; }
-    bool operator >= (char c) const { return (*_a._d.cast<bytearray::impl>())[_i] >= c; }
-    bool operator <  (char c) const { return (*_a._d.cast<bytearray::impl>())[_i] < c; }
-    bool operator <= (char c) const { return (*_a._d.cast<bytearray::impl>())[_i] <= c; }
-};
-
-
-inline byteref bytearray::at(size_t pos)
-{
-	PFS_ASSERT(pos < length());
-	return byteref(*this, pos);
-}
-
-inline byteref bytearray::operator [] (size_t pos)
-{
-	return at(pos);
+	//PFS_ASSERT(p->capacity() > p->size());
+	p->data()[p->size()] = bytearray::TerminatorChar;
 }
 
 inline bytearray operator + (const bytearray & s1, const bytearray & s2)
@@ -253,71 +309,6 @@ inline bytearray operator + (const bytearray & s1, const bytearray & s2)
 	return s;
 }
 
-inline int bytearray::compare (const bytearray & s) const
-{
-	return _d.cast<impl>()->compare(0, size(), s.constData(), s.size());
-}
-
-inline int bytearray::compare (size_t pos, size_t len, const bytearray & s) const
-{
-	return _d.cast<impl>()->compare(pos, len, s.constData(), s.size());
-}
-
-inline int bytearray::compare (size_t pos, size_t len, const bytearray & s, size_t subpos, size_t sublen) const
-{
-	return _d.cast<impl>()->compare(pos, len, s.constData(), subpos, sublen);
-}
-
-inline int bytearray::compare (const char * s) const
-{
-	return _d.cast<impl>()->compare(s);
-}
-
-inline int bytearray::compare (size_t pos, size_t len, const char * s) const
-{
-	return _d.cast<impl>()->compare(pos, len, s);
-}
-
-inline int bytearray::compare (size_t pos, size_t len, const char * s, size_t n) const
-{
-	return _d.cast<impl>()->compare(pos, len, s, n);
-}
-
-inline bytearray::const_iterator bytearray::find(const bytearray & s, const_iterator from) const
-{
-	return find(s.constData(), from - begin(), s.size());
-}
-
-inline void bytearray::reserve (size_t n)
-{
-	_d.detach();
-	_d.cast<impl>()->reserve(n);
-}
-
-inline void bytearray::resize (size_t size)
-{
-	_d.detach();
-	_d.cast<impl>()->resize(size);
-}
-
-inline bytearray bytearray::substr(size_t pos, size_t n) const
-{
-	bytearray ba(_d.cast<impl>()->substr(pos, n));
-	return ba;
-}
-
-inline bytearray bytearray::substr(const const_iterator & from) const
-{
-	bytearray ba(_d.cast<impl>()->substr(from - begin(), length()));
-	return ba;
-}
-
-inline bytearray bytearray::substr(const const_iterator & from, size_t n) const
-{
-	bytearray ba(_d.cast<impl>()->substr(from - begin(), n));
-	return ba;
-}
-
 inline bool operator != (const bytearray & s1, const bytearray & s2)
 {
 	return s1.compare(s2) != 0;
@@ -325,13 +316,14 @@ inline bool operator != (const bytearray & s1, const bytearray & s2)
 
 inline bool operator < (const bytearray &s1, const bytearray &s2)
 {
-	return s1.compare(s2) < 0;
+return s1.compare(s2) < 0;
 }
 
 inline bool operator <= (const bytearray &s1, const bytearray &s2)
 {
 	return s1.compare(s2) <= 0;
 }
+
 
 inline bool operator == (const bytearray &s1, const bytearray &s2)
 {
@@ -348,14 +340,18 @@ inline bool operator >= (const bytearray &s1, const bytearray &s2)
 	return s1.compare(s2) >= 0;
 }
 
-inline bool	operator != (const bytearray & s1, const char * s2) { return s1.compare(s2) != 0; }
-inline bool	operator <  (const bytearray & s1, const char * s2) { return s1.compare(s2) <  0; }
-inline bool	operator <= (const bytearray & s1, const char * s2) { return s1.compare(s2) <= 0; }
-inline bool	operator == (const bytearray & s1, const char * s2) { return s1.compare(s2) == 0; }
-inline bool	operator >  (const bytearray & s1, const char * s2) { return s1.compare(s2) >  0; }
-inline bool	operator >= (const bytearray & s1, const char * s2) { return s1.compare(s2) >= 0; }
+inline bool	operator != (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) != 0; }
+inline bool	operator <  (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) <  0; }
+inline bool	operator <= (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) <= 0; }
+inline bool	operator == (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) == 0; }
+inline bool	operator >  (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) >  0; }
+inline bool	operator >= (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) >= 0; }
 
-inline std::ostream & operator << (std::ostream & os, const bytearray & o) { os << o.c_str(); return os; }
+inline std::ostream & operator << (std::ostream & os, const bytearray & o)
+{
+	os << o.c_str();
+	return os;
+}
 
 template <typename T>
 size_t bytearray::readNumber (T & v, size_t pos, endian::type_enum order) const
@@ -386,15 +382,13 @@ inline bytearray bytearray::toBytes<bool> (const bool & v, endian::type_enum ord
 
 template <>
 bytearray bytearray::toBytes<pfs::utf8string> (const pfs::utf8string & v, endian::type_enum /*order*/);
-//{
-//	return bytearray(v.constData(), v.sizeInBytes());
-//}
 
 template <>
 inline bytearray bytearray::toBytes<pfs::bytearray> (const pfs::bytearray & v, endian::type_enum /*order*/)
 {
 	return bytearray(v);
 }
+
 
 //DLL_API uint_t hash_func(const bytearray & key, uint_t seed = 0);
 

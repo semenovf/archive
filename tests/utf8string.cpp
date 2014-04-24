@@ -323,7 +323,7 @@ void test_split()
 
 	tokens = _u8(",ББ,ВВ,ГГГ,Д,Е").split(pfs::utf8string(","));
 	TEST_FAIL(tokens.size() == 6);
-	TEST_OK(tokens[0].isEmpty());
+	TEST_OK(tokens[0]->isEmpty());
 	TEST_OK(tokens[1] == _u8("ББ"));
 	TEST_OK(tokens[2] == _u8("ВВ"));
 	TEST_OK(tokens[3] == _u8("ГГГ"));
@@ -332,12 +332,12 @@ void test_split()
 
 	tokens = _u8(",ББ,ВВ,ГГГ,Д,").split(pfs::utf8string(","));
 	TEST_FAIL(tokens.size() == 6);
-	TEST_OK(tokens[0].isEmpty());
+	TEST_OK(tokens[0]->isEmpty());
 	TEST_OK(tokens[1] == _u8("ББ"));
 	TEST_OK(tokens[2] == _u8("ВВ"));
 	TEST_OK(tokens[3] == _u8("ГГГ"));
 	TEST_OK(tokens[4] == _u8("Д"));
-	TEST_OK(tokens[5].isEmpty());
+	TEST_OK(tokens[5]->isEmpty());
 
 	tokens = _u8(",ББ,ВВ,ГГГ,Д,Е").split(pfs::utf8string(","), false); // do not keep empty
 	TEST_FAIL(tokens.size() == 5);

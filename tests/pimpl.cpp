@@ -99,14 +99,27 @@ void test2 ()
 }
 
 
+void test_lazy_init ()
+{
+	pfs::pimpl p;
+	pfs::pimpl_lazy_init<int> lazy(p);
+
+	TEST_OK(p.isNull());
+	*lazy = 345;
+	TEST_OK(!p.isNull());
+	TEST_OK(*p.cast<int>() == 345);
+	TEST_OK(*lazy == 345);
+}
+
 int main (int argc, char *argv[])
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(17);
+	BEGIN_TESTS(21);
 
 	test1();
 	test2();
+	test_lazy_init();
 
 	END_TESTS;
 }

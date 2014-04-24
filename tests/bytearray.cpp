@@ -11,6 +11,14 @@
 #include <cstring>
 #include <iostream>
 
+void test_reserve ()
+{
+	pfs::vector<int> v;
+	v.reserve(1);
+	pfs::bytearray ba;
+	ba.reserve(1);
+}
+
 void test_length ()
 {
 	pfs::bytearray ba("Hello");
@@ -147,19 +155,18 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    int ntests = 44;
+    int ntests = 40;
 #ifdef HAVE_LONGLONG
     ntests += 12;
 #endif
 	BEGIN_TESTS(ntests);
 
+	test_reserve();
 	test_length();
 	test_append();
-	test_convert_number();
-	test_base64();
-	test_cow();
 	test_convert_to_bytes();
 	test_read_number();
+	test_base64();
 
     END_TESTS;
 }
