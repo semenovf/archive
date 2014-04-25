@@ -105,7 +105,7 @@ typename reader_traits<_Producer, _Decoder>::ostring_type reader_traits<_Produce
 
 	size_t i = 0;
 	for (; i < count && it != s.cend(); ++i) {
-		it = search(itBegin, s.cend(), ends[i].cbegin(), ends[i].cend());
+		it = cwt::io::search(itBegin, s.cend(), ends[i].cbegin(), ends[i].cend());
 	}
 
 	if (it == s.cend()) { // End-of-line not found
