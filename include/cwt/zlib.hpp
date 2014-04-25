@@ -18,7 +18,7 @@ class DLL_API zlib : public errorable
 	static const size_t DefaultChunkSize = 16384;
 
 	enum level {
-		  NoCompression       = Z_NO_COMPRESSION
+		  NoCompression      = Z_NO_COMPRESSION
 		, BestSpeed          = Z_BEST_SPEED
 		, BestCompression    = Z_BEST_COMPRESSION
 		, DefaultCompression = Z_DEFAULT_COMPRESSION
@@ -35,8 +35,11 @@ public:
 	void setChunkSize (size_t sz) { _chunk_size = sz > 32 ? sz : DefaultChunkSize; }
 	size_t chunkSize () const { return _chunk_size; }
 
-	bool compress (const pfs::bytearray & src, pfs::bytearray & dest);
-	bool decompress (const pfs::bytearray & src, pfs::bytearray & dest);
+	bool compress (pfs::bytearray & dest, const pfs::bytearray & src);
+	bool decompress (pfs::bytearray & dest, size_t initialLen, const pfs::bytearray & src);
+
+	// FIXME implement
+	//bool decompress (pfs::bytearray & dest, const pfs::bytearray & src);
 };
 
 } // cwt
