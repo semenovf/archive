@@ -224,11 +224,12 @@ int sepaloid::exec ()
 {
 	int r = 0;
 
-	// Exclude master petaloid from threads pool of sepaloid
+	// Exclude master petaloid from sepaloid's threads pool
 	if (_masterPetaloid) {
 		size_t size = _threads.size();
 		for (size_t i = 0; i < size; ++i) {
-			petaloid_threaded * pt = dynamic_cast<petaloid_threaded*>(_threads[i]);
+			const cwt::thread * th = _threads[i];
+			const petaloid_threaded * pt = dynamic_cast<const petaloid_threaded*>(th);
 			if (pt->petaloid() == _masterPetaloid) {
 				_threads.remove(i);
 				delete pt;
