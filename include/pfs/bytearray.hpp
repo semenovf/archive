@@ -165,15 +165,41 @@ public:
 		bytearray_terminator bt(this);
 		base_class::append(s, strlen(s));
 	}
+
+	void append (const char * s, size_t n)
+	{
+		bytearray_terminator bt(this);
+		base_class::append(s, n);
+	}
+
+	void append (size_t n, const char & c)
+	{
+		bytearray_terminator bt(this);
+		base_class::append(n, c);
+	}
+
 	void append (const bytearray & other)
 	{
 		bytearray_terminator bt(this);
 		base_class::append(other);
 	}
+
 	void prepend (const char * s)
 	{
 		bytearray_terminator bt(this);
 		base_class::prepend(s, strlen(s));
+	}
+
+	void prepend (const char * s, size_t n)
+	{
+		bytearray_terminator bt(this);
+		base_class::prepend(s, n);
+	}
+
+	void prepend (size_t n, const char & c)
+	{
+		bytearray_terminator bt(this);
+		base_class::prepend(n, c);
 	}
 
 	void prepend (const bytearray & other)
@@ -188,13 +214,19 @@ public:
 		base_class::insert(pos, s, strlen(s));
 	}
 
+//	void insert (iterator pos, const char * s, size_t n)
+//	{
+//		bytearray_terminator bt(this);
+//		base_class::insert(pos, s, n);
+//	}
+
 	void insert (iterator pos, const bytearray & other)
 	{
 		bytearray_terminator bt(this);
 		base_class::insert(pos, other);
 	}
 
-	void append (size_t n, char ch) { base_class::append(n, ch); }
+	//void append (size_t n, char ch) { base_class::append(n, ch); }
 
 /*
 	bytearray & append  (const bytearray & s) { return insert(s, end()); }

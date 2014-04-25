@@ -26,6 +26,7 @@ struct pimpl_default_helper
 
 class DLL_API pimpl
 {
+protected:
 	struct impl_base;
 	impl_base * _holder;
 
@@ -66,14 +67,14 @@ public:
 				, static_cast<impl_cast_holder<T> *>(o._holder)->_d);
 	}
 
-private:
+protected:
 	void deref ()
 	{
 		if (_holder && !_holder->_ref.deref())
 			delete _holder;
 	}
 
-private:
+protected:
 	struct impl_base
 	{
 		pfs::atomic_int _ref;
@@ -130,27 +131,82 @@ public:
 	}
 };
 
+/*
+template <typename T>
+class pimpl_lazy_init
+{
+protected:
+	pimpl _d;
+
+	T & (*_get) ();
+
+	T & initial_get ()
+	{
+		if (!_d.isNull()) {
+			_d = pimpl(new T);
+		}
+		_get = get;
+		return *_d.cast<T>();
+	}
+
+	T & get ()
+	{
+		return *_d.cast<T>();
+	}
+
+	void detach () { _d.detach(); }
+
+public:
+	pimpl_lazy_init () : _d(), _get(initial_get) {}
+	pimpl_lazy_init (T * p) : _d(p), _get(get) { }
+	pimpl_lazy_init (const pimpl_lazy_init & other) : _d(other._d), _get(other._get) {}
+
+	bool isNull () const  { return _d.isNull(); }
+	void swap (pimpl_lazy_init & o) { _d.swap<T>(o._d);	}
+
+	const T & cast () const { return _get(); }
+	T &       cast ()       { return _get(); }
+};
+*/
 
 template <typename T>
 class pimpl_lazy_init
 {
-	pimpl * _p;
-	T & get () const
+	typedef void (pimpl_lazy_init::* init_func)();
+
+protected:
+	pimpl _d;
+	init_func _init;
+
+	void initial_init ()
 	{
-		if (_p->isNull()) {
-			*_p = pimpl(new T);
+		if (_d.isNull()) {
+			_d = new T;
 		}
-		return *_p->cast<T>();
+		_init = & pimpl_lazy_init::init;
 	}
 
-public:
-	pimpl_lazy_init (pimpl & p) : _p (& p) {}
-	pimpl_lazy_init (const pimpl & p) : _p (const_cast<pimpl *>(& p)) {}
+	void init () {}
 
-	const T & operator *  () const { return get(); }
-	T &       operator *  ()       { return get(); }
-	const T * operator -> () const { return & get(); }
-	T *       operator -> ()       { return & get(); }
+protected:
+	void detach () { _d.detach(); }
+
+public:
+	pimpl_lazy_init () : _d(), _init(& pimpl_lazy_init::initial_init) {}
+	pimpl_lazy_init (T * p) : _d(p), _init(& pimpl_lazy_init::init) { }
+	pimpl_lazy_init (const pimpl_lazy_init & other) : _d(other._d), _init(other._init) {}
+
+	bool isNull () const  { return _d.isNull(); }
+	void swap (pimpl_lazy_init & o) { _d.swap<T>(o._d);	}
+
+	/// @see http://www.possibility.com/Cpp/const.html
+	const T * cast () const
+	{
+		pimpl_lazy_init * self = const_cast<pimpl_lazy_init*>(this);
+		(self->*_init)();
+		return _d.cast<T>();
+	}
+	T * cast () { (this->*_init)(); return _d.cast<T>(); }
 };
 
 } // pfs

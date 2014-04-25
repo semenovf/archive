@@ -19,8 +19,6 @@ void test_int_vector(void)
 
 	TEST_OK(v.isNull());
 
-//	v = pfs::vector<int>(0);
-
 	for(int i = 0; i < _VECTOR_SIZE; i++)
 		v.append(i);
 
@@ -95,7 +93,7 @@ struct Foo
 
 void test_vector_iterator ()
 {
-	const char* loremipsum  = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit";
+	const char * loremipsum  = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit";
 	int sz;
 	int i;
 
