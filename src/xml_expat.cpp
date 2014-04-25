@@ -229,9 +229,9 @@ void XMLCALL reader::impl::xml_xmlDeclHandler (
 		pfs::vector<pfs::string> parts = ver.split(pfs::ucchar('.'), true);
 		if (parts.size() > 1) {
 			bool ok = false;
-			major = parts[0].toInt(& ok);
+			major = parts[0]->toInt(& ok);
 			if (ok) {
-				minor = parts[1].toInt(& ok);
+				minor = parts[1]->toInt(& ok);
 			}
 
 			if (!ok)
