@@ -417,7 +417,7 @@ pfs::vector<pfs::string> s3_dbd_tables (cwt::debby::database_data & dbh)
 		if (s3_dbd_stmt_exec(*sth, errstr)) {
 			pfs::vector<pfs::unitype> row;
 			while (s3_dbd_stmt_fetch_row_array (*sth, row)) {
-				pfs::string table = row[0].toString();
+				pfs::string table = row[0]->toString();
 
 				// ignore system tables
 				if (table == "sqlite_sequence")
@@ -450,7 +450,7 @@ bool s3_dbd_table_exists (cwt::debby::database_data & dbh, const pfs::string & n
 			pfs::vector<pfs::unitype> row;
 			s3_dbd_stmt_fetch_row_array (*sth, row);
 			PFS_ASSERT(row.size() == 1);
-			r = (row[0].toInteger() > 0);
+			r = (row[0]->toInteger() > 0);
 		}
 		s3_dbd_stmt_close(sth);
 	}
