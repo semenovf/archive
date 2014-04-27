@@ -202,7 +202,7 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
 	if (_state == ThreadFinishing)
 		_threadFinished.wait(*locker.handlePtr());
 
-	if (_state == ThreadRunning ) {
+	if (_state == ThreadRunning) {
 		return;
 	}
 

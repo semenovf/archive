@@ -51,7 +51,7 @@ bool zlib::compress (pfs::bytearray & dest, const pfs::bytearray & src)
 {
 	// Destination buffer size must be at least 0.1% larger than source buffer
 	// size plus 12 bytes.
-	uLong destLen = src.size() + src.size() * 0.001 + 1 + 12;
+	uLong destLen = src.size() + uLong(src.size() * 0.001) + 1 + 12;
 	dest.resize(destLen);
 
 	int rc = compress2(reinterpret_cast<byte_t *>(dest.data())
