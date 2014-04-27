@@ -233,28 +233,28 @@ inline int vector<T, Alloc>::compare (size_t pos, size_t len, const vector<T, Al
 
 template<typename T, class Alloc>
 typename vector<T, Alloc>::const_iterator
-vector<T, Alloc>::find (vector<T, Alloc>::const_iterator pos, const vector<T, Alloc> & v) const
+vector<T, Alloc>::find (typename vector<T, Alloc>::const_iterator pos, const vector<T, Alloc> & v) const
 {
-	return const_iterator(std::search(cbegin() + pos, cend(), v.cbegin(), v.cend()));
+	return const_iterator(std::search(pos, cend(), v.cbegin(), v.cend()));
 }
 
 template<typename T, class Alloc>
 typename vector<T, Alloc>::const_iterator
-vector<T, Alloc>::find (vector<T, Alloc>::const_iterator pos, size_t len, const vector<T, Alloc> & v) const
+vector<T, Alloc>::find (typename vector<T, Alloc>::const_iterator pos, size_t len, const vector<T, Alloc> & v) const
 {
-	return const_iterator(std::search(cbegin() + pos, cbegin() + pos + len, v.cbegin(), v.cend()));
+	return const_iterator(std::search(pos, pos + len, v.cbegin(), v.cend()));
 }
 
 template<typename T, class Alloc>
 typename vector<T, Alloc>::const_iterator
-vector<T, Alloc>::find (size_t pos, const vector<T, Alloc>::value_type * v, size_t n) const
+vector<T, Alloc>::find (size_t pos, const typename vector<T, Alloc>::value_type * v, size_t n) const
 {
 	return const_iterator(std::search(cbegin() + pos, cend(), v, v + n));
 }
 
 template<typename T, class Alloc>
 typename vector<T, Alloc>::const_iterator
-vector<T, Alloc>::find (size_t pos, size_t len, const vector<T, Alloc>::value_type * v, size_t n) const
+vector<T, Alloc>::find (size_t pos, size_t len, const typename vector<T, Alloc>::value_type * v, size_t n) const
 {
 	return const_iterator(std::search(cbegin() + pos, cbegin() + pos + len, v, v + n));
 }

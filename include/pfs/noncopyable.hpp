@@ -9,7 +9,7 @@
 
 namespace pfs {
 
-class noncopyable
+class DLL_API noncopyable
 {
 protected:
 	noncopyable() {}
