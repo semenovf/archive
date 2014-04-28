@@ -13,23 +13,23 @@
 #include <pfs/fsm.hpp>
 #include <ctime>
 
-namespace cwt { namespace log {
+namespace cwt {
 
 struct pattern_spec
 {
 	pfs::ucchar spec_char;
-	bool   left_justify;
-	size_t min_width;
-	size_t max_width;
+	bool        left_justify;
+	size_t      min_width;
+	size_t      max_width;
 	pfs::string fspec; /* format specifier */
 };
 
 struct pattern_context
 {
-	priority       level;
-	pfs::string    result;
+	cwt::log::priority  level;
+	pfs::string         result;
 	const pfs::string * msg;
-	pattern_spec   pspec;
+	pattern_spec        pspec;
 };
 
 const pfs::string __priority_str[] = {
@@ -270,6 +270,6 @@ static bool set_max_width (const pfs::string::const_iterator & begin, const pfs:
 	return true;
 }
 
-}} // cwt::log
+} // cwt::log
 
 #endif /* __CWT_LOGGER_P_HPP__ */

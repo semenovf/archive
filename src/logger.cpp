@@ -14,7 +14,46 @@
 
 extern pfs::string __strerror (int_t errn);
 
-namespace cwt { namespace log {
+namespace cwt {
+
+struct static_log_data
+{
+	cwt::log traceLog;
+	cwt::log debugLog;
+	cwt::log infoLog;
+	cwt::log warnLog;
+	cwt::log errorLog;
+	cwt::log fatalLog;
+
+	static_log_data () {
+
+	}
+} __static_log_data;
+
+
+cwt::log & trace () { return __static_log_data.traceLog; }
+cwt::log & debug () { return __static_log_data.debugLog; }
+cwt::log & info  () { return __static_log_data.infoLog;  }
+cwt::log & warn  () { return __static_log_data.warnLog;  }
+cwt::log & error () { return __static_log_data.errorLog; }
+cwt::log & fatal () { return __static_log_data.fatalLog; }
+
+
+void log::connect (appender & a)
+{
+	_emitter.connect()
+}
+
+void log::disconnect (appender & a)
+{
+	_emitter.disconnect(& a);
+}
+
+void log::disconnectAll ()
+{
+	_emitter.disconnect_all();
+}
+
 
 class emitter
 {
@@ -214,4 +253,4 @@ void disconnectAllAppenders ()
 	emitter::instance()->disconnectAll();
 }
 
-}} // cwt::log
+} // cwt

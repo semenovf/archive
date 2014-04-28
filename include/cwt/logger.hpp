@@ -15,11 +15,57 @@
 #include <cwt/sigslot.hpp>
 #include <cstdio>
 
-namespace cwt { namespace log {
-
-enum priority { Trace, Debug, Info, Warn, Error, Fatal, NoLog };
+namespace cwt {
 
 class appender;
+
+class log
+{
+public:
+	enum priority { Trace, Debug, Info, Warn, Error, Fatal, NoLog };
+
+private:
+	signal1<const pfs::string &> _emitter;
+	pfs::string _pattern;
+
+public:
+	void connect (appender &);
+	void disconnect (appender &);
+	void disconnectAll ();
+
+	pfs::string pattern () const { return _pattern; }
+	void setPattern (const pfs::string & pattern) { _pattern = pattern; }
+
+	static void setPriority (priority level);
+	static log::priority level ();
+
+protected:
+	static pfs::string patternify (log::priority level, const pfs::string & pattern, const pfs::string & text);
+	pfs::string patternify (log::priority level, const pfs::string & text) { return patternify(level, _pattern, text); }
+};
+
+class appender : public has_slots<>
+{
+protected:
+	pfs::string _pattern;
+
+public:
+	appender () : _pattern("%m") { }
+	appender (const pfs::string &pattern) : /*_connected(false), */_pattern(pattern) {}
+	virtual ~appender () {}
+
+	pfs::string pattern () const { return _pattern; }
+	void setPattern (const pfs::string & pattern) { _pattern = pattern; }
+
+	virtual void operator () (const pfs::string &) = 0;
+};
+
+cwt::log & trace ();
+cwt::log & debug ();
+cwt::log & info  ();
+cwt::log & warn  ();
+cwt::log & error ();
+cwt::log & fatal ();
 
 void trace (const pfs::string & text);
 void debug (const pfs::string & text);
@@ -45,6 +91,7 @@ inline void fatal (int errn, const char * latin1) { fatal(errn, pfs::string(lati
 /* Pattern flags:
  * 	m 	message associated with the logging event.
  * */
+#ifdef __COMMENT__
 class appender : public has_slots<>
 {
 public:
@@ -145,6 +192,8 @@ inline void disconnectAppender (appender * appender) { appender->disconnect(); }
 void restoreDefaultAppenders ();
 void disconnectAllAppenders ();
 
-}} // cwt::log
+#endif
+
+} // cwt
 
 #endif /* __CWT_LOG_HPP__ */

@@ -8,9 +8,9 @@ int main(int argc, char *argv[])
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
 
-    cwt::log::trace(_Fr("%s, %s!") % "Hello" % "World");
+    cwt::trace(_Fr("%s, %s!") % "Hello" % "World");
     pfs::string s(_Fr("%s, %s!") % "Hello" % "World");
-    cwt::log::trace(_Fr("%s") % s);
+    cwt::trace(_Fr("%s") % s);
 
     cwt::log::stdio_appender stdlogger;
     stdlogger.setPattern(pfs::string("%d{ABSOLUTE} [%p]: %m"));
@@ -18,11 +18,11 @@ int main(int argc, char *argv[])
     printf("--All messages will be print with date as ABSOLUTE specifier:\n");
     cwt::log::connectAppender(& stdlogger);
     stdlogger.setPriority(cwt::log::Trace);
-    cwt::log::trace("logging trace");
-    cwt::log::debug("logging debug");
-    cwt::log::info("logging info");
-    cwt::log::warn("logging warn");
-    cwt::log::error("logging error");
+    cwt::trace("logging trace");
+    cwt::debug("logging debug");
+    cwt::info("logging info");
+    cwt::warn("logging warn");
+    cwt::error("logging error");
 
     stdlogger.setPattern(pfs::string("%d{DATE} [%p]: %m"));
     printf("--All messages will be print excluding Trace and Debug with date as DATE specifier:\n");
