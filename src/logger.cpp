@@ -16,20 +16,6 @@ extern pfs::string __strerror (int_t errn);
 
 namespace cwt { namespace log {
 
-//static const int __SystemErrorBufLen = 256;
-
-class emitter;
-
-//class default_appender : public stdio_appender
-//{
-//public:
-//	typedef stdio_appender Base;
-//public:
-//	explicit default_appender() : stdio_appender() { _connected = true; _priority = log::Trace; }
-//	~default_appender() {} // override destructor (exclude disconnect() call)
-//};
-//
-
 class emitter
 {
 	typedef stdio_appender default_appender;

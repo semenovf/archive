@@ -31,13 +31,11 @@ static const struct zlib_rc_map
 zlib::zlib ()
 	: errorable()
 	, _level(DefaultCompression)
-	, _chunk_size(DefaultChunkSize)
 {}
 
-zlib::zlib (zlib::level l, size_t chunk_size)
+zlib::zlib (zlib::compression_level l)
 	: errorable()
 	, _level(l)
-	, _chunk_size(chunk_size)
 {}
 
 /**
@@ -98,6 +96,12 @@ bool zlib::decompress (pfs::bytearray & dest, size_t initialLen, const pfs::byte
 	}
 
 	return rc == Z_OK;
+}
+
+
+pfs::string zlib::strerror (int rc)
+{
+	return __zlib_rc_map(rc);
 }
 
 } // cwt

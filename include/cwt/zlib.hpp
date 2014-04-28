@@ -15,9 +15,9 @@ namespace cwt {
 
 class DLL_API zlib : public errorable
 {
-	static const size_t DefaultChunkSize = 16384;
-
-	enum level {
+//	static const size_t DefaultChunkSize = 16384;
+public:
+	enum compression_level {
 		  NoCompression      = Z_NO_COMPRESSION
 		, BestSpeed          = Z_BEST_SPEED
 		, BestCompression    = Z_BEST_COMPRESSION
@@ -25,21 +25,20 @@ class DLL_API zlib : public errorable
 	};
 
 private:
-	level  _level;
-	size_t _chunk_size;
+	compression_level  _level;
+//	size_t _chunk_size;
 
 public:
 	zlib ();
-	zlib (zlib::level l, size_t chunk_size = DefaultChunkSize);
-
-	void setChunkSize (size_t sz) { _chunk_size = sz > 32 ? sz : DefaultChunkSize; }
-	size_t chunkSize () const { return _chunk_size; }
+	zlib (zlib::compression_level l);
 
 	bool compress (pfs::bytearray & dest, const pfs::bytearray & src);
 	bool decompress (pfs::bytearray & dest, size_t initialLen, const pfs::bytearray & src);
 
 	// FIXME implement
 	//bool decompress (pfs::bytearray & dest, const pfs::bytearray & src);
+
+	static pfs::string strerror (int rc);
 };
 
 } // cwt
