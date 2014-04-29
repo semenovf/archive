@@ -9,6 +9,7 @@
 #define __CWT_IO_FILE_HPP__
 
 #include <pfs/pimpl.hpp>
+#include <cwt/zlib.hpp>
 #include <cwt/io/device.hpp>
 
 namespace cwt { namespace io {
@@ -53,6 +54,9 @@ public:
 	size_t size () const;
 	bool setPermissions (int32_t perms);
 	void rewind ();
+
+	bool compress (file & dest, cwt::zlib::compression_level level = cwt::zlib::DefaultCompression, size_t chunkSize = 0x4000);
+	bool uncompress (file & dest, size_t chunkSize = 0x4000);
 };
 
 }} // cwt::io
