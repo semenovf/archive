@@ -58,7 +58,7 @@ void errorable::logErrors ()
 			} else {
 				r << it->_errstr;
 			}
-			log::error(r);
+			cwt::error(r);
 		}
 	}
 	clearErrors();

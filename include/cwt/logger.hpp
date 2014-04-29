@@ -13,7 +13,7 @@
 #include <pfs/stringlist.hpp>
 #include <cwt/safeformat.hpp>
 #include <cwt/sigslot.hpp>
-#include <cstdio>
+#include <iostream>
 
 namespace cwt {
 
@@ -23,42 +23,88 @@ class log
 {
 public:
 	enum priority { Trace, Debug, Info, Warn, Error, Fatal, NoLog };
+	static pfs::string DefaultPattern;
 
 private:
-	signal1<const pfs::string &> _emitter;
-	pfs::string _pattern;
+	signal2<priority, const pfs::string &> _emitter;
 
 public:
+	log (appender & a) { connect(a); }
+	void print (log::priority level, const pfs::string & msg) { _emitter(level, msg); }
 	void connect (appender &);
 	void disconnect (appender &);
 	void disconnectAll ();
 
-	pfs::string pattern () const { return _pattern; }
-	void setPattern (const pfs::string & pattern) { _pattern = pattern; }
-
 	static void setPriority (priority level);
 	static log::priority level ();
-
-protected:
-	static pfs::string patternify (log::priority level, const pfs::string & pattern, const pfs::string & text);
-	pfs::string patternify (log::priority level, const pfs::string & text) { return patternify(level, _pattern, text); }
+	static void disconnectAllAppenders ();
+	static void restoreDefaultAppenders ();
 };
 
 class appender : public has_slots<>
 {
+	friend class log;
+
 protected:
 	pfs::string _pattern;
 
+protected:
+	virtual void print (const pfs::string & msg) = 0;
+
+	void print_helper (log::priority level, const pfs::string & msg);
+	static pfs::string patternify (log::priority level, const pfs::string & pattern, const pfs::string & text);
+
 public:
-	appender () : _pattern("%m") { }
-	appender (const pfs::string &pattern) : /*_connected(false), */_pattern(pattern) {}
+	appender () : _pattern() { }
+	appender (const pfs::string & pattern) : _pattern(pattern) {}
 	virtual ~appender () {}
 
 	pfs::string pattern () const { return _pattern; }
 	void setPattern (const pfs::string & pattern) { _pattern = pattern; }
-
-	virtual void operator () (const pfs::string &) = 0;
 };
+
+class stdout_appender : public appender
+{
+public:
+	stdout_appender () : appender() {}
+protected:
+	virtual void print (const pfs::string & msg) override { std::cout << msg << std::endl; }
+};
+
+class stderr_appender : public appender
+{
+public:
+	stderr_appender () : appender() {}
+protected:
+	virtual void print (const pfs::string & msg) override { std::cerr << msg << std::endl; }
+};
+
+class stringlist_appender : public appender
+{
+	pfs::stringlist _strings;
+public:
+	stringlist_appender () {}
+	const pfs::stringlist & data () const { return _strings; }
+	pfs::stringlist & data () { return _strings; }
+
+protected:
+	virtual void print (const pfs::string & msg) override { _strings.append(msg); }
+};
+
+inline void log::connect (appender & a)
+{
+	_emitter.connect(& a, & appender::print_helper);
+}
+
+inline void log::disconnect (appender & a)
+{
+	_emitter.disconnect(& a);
+}
+
+inline void log::disconnectAll ()
+{
+	_emitter.disconnect_all();
+}
 
 cwt::log & trace ();
 cwt::log & debug ();
@@ -86,113 +132,6 @@ inline void error (const char * latin1) { error(pfs::string(latin1)); }
 inline void error (int errn, const char * latin1) { error(errn, pfs::string(latin1)); }
 inline void fatal (const char * latin1) { fatal(pfs::string(latin1)); }
 inline void fatal (int errn, const char * latin1) { fatal(errn, pfs::string(latin1)); }
-
-
-/* Pattern flags:
- * 	m 	message associated with the logging event.
- * */
-#ifdef __COMMENT__
-class appender : public has_slots<>
-{
-public:
-	void connect ();
-	void disconnect ();
-public:
-	appender () : _connected(false), _pattern("%m"), _level(log::Trace) { }
-	appender (const pfs::string &pattern) : _connected(false), _pattern(pattern), _level(log::Trace) {}
-	virtual ~appender () { if(_connected) disconnect(); }
-
-	void setPattern (const pfs::string & pattern) { _pattern = pattern; }
-	void setPriority (priority level);
-	log::priority level () { return _level; }
-
-	virtual void trace (const pfs::string &) = 0;
-	virtual void debug (const pfs::string &) = 0;
-	virtual void info  (const pfs::string &) = 0;
-	virtual void warn  (const pfs::string &) = 0;
-	virtual void error (const pfs::string &) = 0;
-	virtual void fatal (const pfs::string &) = 0;
-
-protected:
-	static pfs::string patternify (priority level, const pfs::string & pattern, const pfs::string & text);
-	pfs::string patternify (priority level, const pfs::string & text) { return patternify(level, _pattern, text); }
-
-protected:
-	bool        _connected;
-	pfs::string _pattern;
-	priority    _level;
-};
-
-
-class null_appender : public appender
-{
-public:
-	null_appender () {}
-	~null_appender () {}
-	virtual void trace (const pfs::string &) {}
-	virtual void debug (const pfs::string &) {}
-	virtual void info  (const pfs::string &) {}
-	virtual void warn  (const pfs::string &) {}
-	virtual void error (const pfs::string &) {}
-	virtual void fatal (const pfs::string &) {}
-};
-
-
-class stdio_appender : public appender
-{
-public:
-	stdio_appender () {}
-	~stdio_appender () {}
-	virtual void trace (const pfs::string & text) { ::fprintf(stdout, "%s\n", patternify(log::Trace, text).c_str()); }
-	virtual void debug (const pfs::string & text) { ::fprintf(stdout, "%s\n", patternify(log::Debug, text).c_str()); }
-	virtual void info  (const pfs::string & text) { ::fprintf(stdout, "%s\n", patternify(log::Info, text).c_str()); }
-	virtual void warn  (const pfs::string & text) { ::fprintf(stderr, "%s\n", patternify(log::Warn, text).c_str()); }
-	virtual void error (const pfs::string & text) { ::fprintf(stderr, "%s\n", patternify(log::Error, text).c_str()); }
-	virtual void fatal (const pfs::string & text) { ::fprintf(stderr, "%s\n", patternify(log::Fatal, text).c_str()); }
-};
-
-class strings_appender : public appender
-{
-public:
-	strings_appender() {}
-	~strings_appender() {}
-	virtual void trace (const pfs::string & text) { _traceStrings.append(patternify(log::Trace, text)); }
-	virtual void debug (const pfs::string & text) { _debugStrings.append(patternify(log::Debug, text)); }
-	virtual void info  (const pfs::string & text) { _infoStrings.append(patternify (log::Info, text)); }
-	virtual void warn  (const pfs::string & text) { _warnStrings.append(patternify (log::Warn, text)); }
-	virtual void error (const pfs::string & text) { _errorStrings.append(patternify(log::Error, text)); }
-	virtual void fatal (const pfs::string & text) { _fatalStrings.append(patternify(log::Fatal, text)); }
-
-	pfs::stringlist & traceStrings () { return _traceStrings; }
-	pfs::stringlist & debugStrings () { return _debugStrings; }
-	pfs::stringlist & infoStrings  () { return _infoStrings; }
-	pfs::stringlist & warnStrings  () { return _warnStrings; }
-	pfs::stringlist & errorStrings () { return _errorStrings; }
-	pfs::stringlist & fatalStrings () { return _fatalStrings; }
-	const pfs::stringlist & traceStrings () const { return _traceStrings; }
-	const pfs::stringlist & debugStrings () const { return _debugStrings; }
-	const pfs::stringlist & infoStrings  () const { return _infoStrings; }
-	const pfs::stringlist & warnStrings  () const { return _warnStrings; }
-	const pfs::stringlist & errorStrings () const { return _errorStrings; }
-	const pfs::stringlist & fatalStrings () const { return _fatalStrings; }
-
-	void clear ();
-
-private:
-	pfs::stringlist _traceStrings;
-	pfs::stringlist _debugStrings;
-	pfs::stringlist _infoStrings;
-	pfs::stringlist _warnStrings;
-	pfs::stringlist _errorStrings;
-	pfs::stringlist _fatalStrings;
-};
-
-inline void connectAppender (appender * appender) { appender->connect(); }
-inline void disconnectAppender (appender * appender) { appender->disconnect(); }
-void restoreDefaultAppenders ();
-void disconnectAllAppenders ();
-
-#endif
 
 } // cwt
 
