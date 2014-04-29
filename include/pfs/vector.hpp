@@ -36,9 +36,8 @@ public:
 
     inline operator value_type () const
     {
-    	return _i < _a.size()
-    			? _a.__valueAt(_i)
-    			: value_type();
+    	PFS_ASSERT(_i < _a.size());
+    	return _a.__valueAt(_i);
     }
 
     inline value_type * operator -> () const
@@ -47,6 +46,11 @@ public:
     	return & _a.__refAt(_i);
     }
 
+    inline value_type & operator * () const
+    {
+    	PFS_ASSERT(_i < _a.size());
+    	return _a.__refAt(_i);
+    }
 
     item_ref & operator = (const value_type & v)
     {
@@ -112,6 +116,10 @@ public:
 
 	const T &     at (size_t i) const { PFS_ASSERT(i < size()); return base_class::cast()->operator [] (i); }
 	const T &     operator [] (size_t i) const { return at(i); }
+
+	// FIXME implement this methods instead of above two (see bits/uccharptr.hpp)
+//	const item_ref_type at (size_t i) const { PFS_ASSERT(i < size()); return item_ref_type(*this, i); }
+//	const item_ref_type operator [] (size_t i) const { return at(i); }
 
 	item_ref_type at (size_t i) { PFS_ASSERT(i < size()); return item_ref_type(*this, i); }
 	item_ref_type operator [] (size_t i) { return at(i); }
