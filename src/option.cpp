@@ -41,7 +41,7 @@ static void __split_long_arg (const pfs::string & arg
 			if (optval.size() > 1) {
 				optval = optval.substr(1, optval.size() - 2);
 			} else {
-				log::error(_Fr("%s: bad option?") % arg);
+				cwt::error(_Fr("%s: bad option?") % arg);
 				optval.clear();
 			}
 		}
@@ -64,7 +64,7 @@ bool OptionsContext::parse_opts(cwt::settings & settings
 	for (size_t i = 0; i < optc; ++i) {
 		if (!optv[i].shortname.isEmpty()) {
 			if(optmap.contains(optv[i].shortname)) {
-				log::error(_Fr("%s: duplication of short option") % optv[i].shortname);
+				cwt::error(_Fr("%s: duplication of short option") % optv[i].shortname);
 				return false;
 			}
 			optmap.insert(optv[i].shortname, & optv[i]);
@@ -72,7 +72,7 @@ bool OptionsContext::parse_opts(cwt::settings & settings
 
 		if (!optv[i].longname.isEmpty()) {
 			if(optmap.contains(optv[i].longname)) {
-				log::error(_Fr("%s: duplication of long option") % optv[i].longname);
+				cwt::error(_Fr("%s: duplication of long option") % optv[i].longname);
 				return false;
 			}
 			optmap.insert(optv[i].longname, & optv[i]);
@@ -104,7 +104,7 @@ bool OptionsContext::parse_opts(cwt::settings & settings
 		}
 
 		if (optname.isEmpty() || !optmap.contains(optname)) {
-			log::warn(_Fr("%s: bad option") % optname);
+			cwt::warn(_Fr("%s: bad option") % optname);
 			continue;
 		}
 
@@ -112,7 +112,7 @@ bool OptionsContext::parse_opts(cwt::settings & settings
 
 		if (opt->has_arg) {
 			if (optval.isEmpty()) {
-				log::error(_Fr("%s: option need an argument") % optname);
+				cwt::error(_Fr("%s: option need an argument") % optname);
 				r = false;
 				break;
 			} else {

@@ -82,7 +82,7 @@ petaloid * sepaloid::registerPetaloidForName (const pfs::string & name, const ch
 
 	if (ph) {
 		dl::close(ph);
-		log::debug(_Fr("%s: petaloid found at '%s'") % name % realPath);
+		cwt::debug(_Fr("%s: petaloid found at '%s'") % name % realPath);
 		return registerPetaloidForPath(realPath, pname, arg, argv);
 	}
 
@@ -111,11 +111,11 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 			if (it != itEnd) {
 				it->second->map->appendEmitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
 			} else {
-				log::warn(
+				cwt::warn(
 					_Fr("%s: emitter '%s' not found while registering petaloid ...")
 					% petaloid.name()
 					% emitters[i]._id);
-				log::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
+				cwt::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
 	}
@@ -127,11 +127,11 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 			if (it != itEnd) {
 				it->second->map->appendDetector(& petaloid, detectors[i]._detector);
 			} else {
-				log::warn(
+				cwt::warn(
 					_Fr("%s: detector '%s' not found while registering petaloid ...")
 					% petaloid.name()
 					% emitters[i]._id);
-				log::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
+				cwt::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
 	}
@@ -145,9 +145,9 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 	// petaloid must be run in a separate thread.
 	if (petaloid.run) {
 		_threads.append(new petaloid_threaded(&petaloid));
-		log::debug(_Fr("%s: petaloid registered as threaded") % petaloid.name());
+		cwt::debug(_Fr("%s: petaloid registered as threaded") % petaloid.name());
 	} else {
-		log::debug(_Fr("%s: petaloid registered") % petaloid.name());
+		cwt::debug(_Fr("%s: petaloid registered") % petaloid.name());
 	}
 
 	return true;
@@ -197,7 +197,7 @@ void sepaloid::unregisterAll ()
 		if (it->second.ph) {
 			dl::close(it->second.ph);
 		}
-		log::debug(_Fr("%s: petaloid unregistered") % pname);
+		cwt::debug(_Fr("%s: petaloid unregistered") % pname);
 	}
 	_petaloids.clear();
 }

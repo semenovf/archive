@@ -161,9 +161,9 @@ int main(int argc, char *argv[])
     cwt::sepaloid::const_iterator it = sepaloid.cbegin();
     cwt::sepaloid::const_iterator itEnd = sepaloid.cend();
 
-    cwt::log::debug("List of registered petaloids:");
+    cwt::debug("List of registered petaloids:");
     for (int i = 0; it != itEnd; ++it, ++i) {
-    	cwt::log::debug(_Fr("cwt::petaloid %02d: %s") % i % it->name());
+    	cwt::debug(_Fr("cwt::petaloid %02d: %s") % i % it->name());
     }
 
     emitter->emitZeroArg   ();
