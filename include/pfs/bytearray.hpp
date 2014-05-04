@@ -330,8 +330,11 @@ public:
 
 inline bytearray_terminator::~bytearray_terminator ()
 {
-	//PFS_ASSERT(p->capacity() > p->size());
-	p->data()[p->size()] = bytearray::TerminatorChar;
+	size_t sz = p->size();
+	char * d = p->data();
+
+	d[sz] = bytearray::TerminatorChar;
+//	p->data()[sz] = bytearray::TerminatorChar;
 }
 
 inline bytearray operator + (const bytearray & s1, const bytearray & s2)

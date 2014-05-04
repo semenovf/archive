@@ -171,7 +171,13 @@ public:
 		base_class::detach();
 		base_class::cast()->insert(position, n, val);
 	}
-    virtual iterator erase (iterator first, iterator last) { base_class::detach(); return base_class::cast()->erase(first, last); }
+    virtual iterator erase (iterator first, iterator last)
+    {
+    	base_class::detach();
+    	return base_class::cast()->erase(
+    		first >= begin() ? first : begin()
+    		, last < end() ? last : end());
+    }
 
 	void insert (iterator position, const T & val) { insert(position, 1, val); }
 	void insert (iterator position, const vector<T,Alloc> & val) { insert(position, val.data(), val.size()); }
