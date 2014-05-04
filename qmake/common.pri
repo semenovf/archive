@@ -21,10 +21,11 @@ unix {
 win32 {
 
     INCLUDEPATH   += $$CWT_ROOT_DIR\\include
-
+	
 # CXX flags
     # disbale 'depricated' warning
     DEFINES += _CRT_SECURE_NO_WARNINGS 
+    DEFINES += _CRT_NONSTDC_NO_DEPRECATE
 
     debug: QMAKE_CXXFLAGS += /Od
     QMAKE_CXXFLAGS += /EHs /EHc
