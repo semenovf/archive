@@ -9,6 +9,8 @@
 #include <cstring>
 #include <cstdio>
 
+#include <iostream> // TODO Remove
+
 const char *loremipsum =
 "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    \n\
 2.sed diam nonummy nibh euismod tincidunt ut laoreet dolore     \n\
@@ -51,8 +53,7 @@ const char *loremipsum =
 39.decima et quinta decima.\" Eodem modo typi, qui nunc nobis    \n\
 40.videntur parum clari, fiant sollemnes in futurum.";
 
-
-const char *loremipsum_lines[] = {
+const char * loremipsum_lines[] = {
    "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    "
 ,  "2.sed diam nonummy nibh euismod tincidunt ut laoreet dolore     "
 ,  "3.magna aliquam erat volutpat. Ut wisi enim ad minim veniam,    "
@@ -116,6 +117,7 @@ void test_line_reader()
 	size_t iline = 0;
 
 	pfs::bytearray r;
+
 	while (!(r = lineReader.readLine(pfs::bytearray(1, '\n'), 80)).isEmpty()) {
 		if (r.endsWith(pfs::bytearray(1, '\n'))) {
 			TEST_OK(strncmp(loremipsum_lines[iline], r.constData(), r.size() - 1) == 0);
