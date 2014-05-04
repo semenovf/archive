@@ -16,6 +16,55 @@
 
 namespace cwt {
 
+thread::thread() : _pimpl(new thread::impl)
+{
+	_pimpl->_thread = this;
+}
+
+thread::~thread ()
+{
+	pfs::auto_lock<> locker(& _pimpl->_mutex);
+    if (_pimpl->_state == ThreadFinishing) {
+        locker.unlock();
+        wait();
+        locker.tryLock();
+    }
+
+    if (_pimpl->_state == ThreadRunning) {
+    	PFS_WARN(_Tr("Attempt to destroy thread while it is still running"));
+    	locker.unlock();
+    	terminate();
+    	wait();
+    	locker.tryLock();
+    }
+
+	_pimpl->_thread = nullptr; // detach thread
+}
+
+bool thread::isFinished () const
+{
+	pfs::auto_lock<>(& _pimpl->_mutex);
+    return _pimpl->_state == ThreadFinished || _pimpl->_state == ThreadFinishing;
+}
+
+bool thread::isRunning () const
+{
+	pfs::auto_lock<>(& _pimpl->_mutex);
+    return _pimpl->_state == ThreadRunning;
+}
+
+thread::priority_type thread::priority () const
+{
+	pfs::auto_lock<>(& _pimpl->_mutex);
+    return _pimpl->_priority;
+}
+
+size_t thread::stackSize () const
+{
+	pfs::auto_lock<>(& _pimpl->_mutex);
+    return _pimpl->_stackSize;
+}
+
 void thread::setPriority (thread::priority_type priority)
 {
 	_pimpl->setPriority(priority);

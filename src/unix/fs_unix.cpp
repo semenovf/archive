@@ -67,7 +67,7 @@ bool fs::rename (const pfs::string & from, const pfs::string & to)
 
 bool fs::remove (const pfs::string & path)
 {
-	if( ::unlink(path.c_str()) != 0) {
+	if (::unlink(path.c_str()) != 0) {
 		pfs::string errstr;
 		errstr << _Tr("Unable to unlink (delete) file ") << path;
 		addSystemError(errno, errstr);

@@ -44,8 +44,11 @@ public:
 	static void finalize (void * arg);
 
 private:
-	//FIXME need Win32 specific
+//FIXME need Win32 specific
+#ifdef PFS_CC_MSVC
+#else
 	bool setStackSize (pthread_attr_t & attr, size_t stackSize = 0);
+#endif
 
 private:
 	pfs::mutex       _mutex;

@@ -49,8 +49,8 @@ public:
 	static tls_implementation_type tls_implementation ();
 
 public:
-	thread();
-	virtual ~thread();
+	thread ();
+	virtual ~thread ();
 
 	bool	 isFinished () const;
 	bool	 isRunning () const;

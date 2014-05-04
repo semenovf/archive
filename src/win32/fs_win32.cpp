@@ -71,13 +71,14 @@ bool fs::remove(const pfs::string & path)
 	return true;
 }
 
-// FIXME
 size_t fs::size (const pfs::string & path) const
 {
-#	error "Need to implement";
-	return size_t(0);
+	PFS_CHECK_SIZEOF_TYPE(wchar_t,2);
+	struct _stat st;
+	return _wstat(path.toUtf16().data(), & st ) == 0
+			? size_t(st.st_size)
+			: size_t(0);
 }
-
 
 bool fs::simpleBackup(const pfs::string &orig)
 {
@@ -100,19 +101,19 @@ pfs::string fs::tempDirectory ()
 	}
 
 	if (sz == 0) {
-		addSystemError(GetLastError(), _Tr("Unable to get temporary directory"));
+		addSystemError(GetLastError(), _u8(_Tr("Unable to get temporary directory")));
 	} else {
 		// String returned by GetTempPath ends with a backslash, for example, "C:\TEMP\",
 		// so need to remove it.
-		if (ppath[sz - 1] == TCHAR('\\')) {
-			ppath[sz - 1] == TCHAR('\x0');
+		if (ppath[sz - 1] == pfs::ucchar('\\')) {
+			ppath[sz - 1] = pfs::ucchar('\x0');
 #ifdef _UNICODE
-			r = pfs::string::fromUtf16(ppath);
+			r = pfs::string::fromUtf16(ppath, sz);
 #else
 			r = pfs::string::fromLatin1(ppath);
 #endif
 		} else {
-			addError(_Tr("Failed to get temporary directory"));
+			addError(_u8(_Tr("Failed to get temporary directory")));
 		}
 	}
 

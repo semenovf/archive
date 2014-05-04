@@ -8,16 +8,9 @@
 #include <pfs/mt.hpp>
 #include "../../include/cwt/safeformat.hpp"
 #include "../../include/cwt/threadcv.hpp"
-#include "thread_unix.hpp"
-#include <pthread.h>
-#include <sched.h>
-
-#ifdef __COMMENT__
-#ifdef CWT_OS_LINUX
-#	include <sys/time.h>
-#	include <sys/resource.h> // for getrlimit(2)
-#endif
-#endif
+#include "thread_win.hpp"
+//#include <pthread.h>
+//#include <sched.h>
 
 //#define CWT_TRACE_ENABLE
 #include "../../include/cwt/trace.hpp"
@@ -25,59 +18,12 @@
 namespace cwt {
 
 #ifdef CWT_HAVE_TLS
-	__thread thread::data * thread::data::currentThreadData = nullptr;
+	__declspec(thread) thread::data * thread::data::currentThreadData = nullptr;
 #else
-	pthread_once_t thread::data::threadKeyOnce = PTHREAD_ONCE_INIT;
-	pthread_key_t  thread::data::threadKey;
+	DWORD thread::data::tlsIndex = TLS_OUT_OF_INDEXES;
 #endif
-
-#ifdef 	CWT_HAVE_THREAD_PRIORITY_SCHEDULING
-// The  range  of  scheduling  priorities  may  vary  on  other POSIX systems,
-// thus it is a good idea for portable applications to use a virtual priority
-// range and map it to the interval given by sched_get_priority_max()
-// and sched_get_priority_min() (see sched_get_priority_max(2)).
-//
-static bool __map_to_posix_priority (thread::priority_type priority, int * posixPolicyPtr, int * posixPriorityPtr)
-{
-#ifdef SCHED_IDLE
-    if (priority == thread::IdlePriority) {
-        *posixPolicyPtr = SCHED_IDLE;
-        *posixPriorityPtr = 0;
-        return true;
-    }
-    const int lowestPriority = thread::LowestPriority;
-#else
-    const int lowestPriority = thread::IdlePriority;
-#endif
-    const int highestPriority = thread::TimeCriticalPriority;
-
-    int prio_min = sched_get_priority_min(*posixPolicyPtr);
-    int prio_max = sched_get_priority_max(*posixPolicyPtr);
-
-    if (prio_min < 0 || prio_max < 0)
-        return false;
-
-    // Scale priority using affine transformation:
-    //
-    // x' = a*x + c __
-    //                |
-    // x0' = a*x0 + c |               (x - x0) * (x1' - x0')
-    //                 >  x' = x0' + ----------------------
-    // x1' = a*x1 + c |                     (x1 - x0)
-    //              __|
-    //
-                                                                // XXX Qt5.0 ignores lowestPriority here---
-                                                                //                                         |
-                                                                //                                         v
-    *posixPriorityPtr = prio_min + ((priority - lowestPriority) * (prio_max - prio_min) / (highestPriority - lowestPriority));
-    *posixPriorityPtr = pfs::max(prio_min, pfs::min(prio_max, *posixPriorityPtr));
-    return true;
-}
-#endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
 
 thread::data::data()
-	: threadImpl()
-	, threadId(0)
 {
 	CWT_TRACE_METHOD();
 }
@@ -87,7 +33,6 @@ thread::data::~data ()
 	CWT_TRACE_METHOD();
 	// automatically delete _threadImpl
 }
-
 
 thread::impl::impl (/*thread::data * threadData*/)
 	: _mutex()
