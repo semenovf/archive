@@ -181,7 +181,7 @@ protected:
 	void initial_init ()
 	{
 		if (_d.isNull()) {
-			_d = new T;
+			_d = pimpl(new T);
 		}
 		_init = & pimpl_lazy_init::init;
 	}

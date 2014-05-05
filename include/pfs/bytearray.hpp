@@ -332,9 +332,9 @@ inline bytearray_terminator::~bytearray_terminator ()
 {
 	size_t sz = p->size();
 	char * d = p->data();
-
-	d[sz] = bytearray::TerminatorChar;
-//	p->data()[sz] = bytearray::TerminatorChar;
+	if (d) {
+		d[sz] = bytearray::TerminatorChar;
+	}
 }
 
 inline bytearray operator + (const bytearray & s1, const bytearray & s2)
