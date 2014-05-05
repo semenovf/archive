@@ -100,7 +100,9 @@ void test_writer()
 {
 	cwt::io::buffer buffer;
 	cwt::io::data_writer writer(buffer);
-    TEST_FAIL(ssize_t(strlen(loremipsum)) == writer.write(pfs::bytearray(loremipsum, strlen(loremipsum))));
+	pfs::bytearray ba(loremipsum, strlen(loremipsum));
+	size_t written = writer.write(ba);
+    TEST_FAIL(ssize_t(strlen(loremipsum)) == written);
     TEST_OK(buffer.data().size() == strlen(loremipsum));
 	TEST_OK(strncmp(buffer.data().data(), loremipsum, strlen(loremipsum)) == 0);
 }
@@ -212,11 +214,11 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
     BEGIN_TESTS(149);
 
-   	test_line_reader();
-    test_reader_iterator();
-    test_reader_iterator_ext();
-    test_writer();
-    test_file();
+    if(1) test_line_reader();
+	if(1) test_reader_iterator();
+	if(1) test_reader_iterator_ext();
+	if(1) test_writer();
+	if(1) test_file();
 //  test_mix_get_read(); // TODO
 
     END_TESTS;
