@@ -13,6 +13,7 @@ SUBDIRS  = cwt-sys       \
 	tests/thread     \
 	tests/uri        \
 	tests/atomic     \
+	tests/utils      \
 	tests/zlib       \
 	examples/logger  \
 	examples/display
