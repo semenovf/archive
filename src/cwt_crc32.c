@@ -51,27 +51,23 @@ static int32_t __crc32_lookup_table[] = {
  *
  * @param pdata data for checksum calculation
  * @param nbytes data length in bytes
- * @param crc32 initial value for checksum
+ * @param initial initial value for checksum
  * @return CRC32 checksum value
  *
  * @note Compatible with java.util.zip.CRC32;
  *
- * @see ���᭨⥫쭠� ����᪠ ����.466535.003 ��
  * @see http://en.wikipedia.org/wiki/Cyclic_redundancy_check
  */
 /*
 #define CRC32(oldcrc, curByte) (m_crc32table[BYTE(oldcrc)^BYTE(curByte)]^(DWORD(oldcrc)>>8))
-#define CRC64(oldcrc, curByte) (m_crc64table[BYTE(oldcrc)^BYTE(curByte)]^(QWORD(oldcrc)>>8))
 */
 
 int32_t cwt_crc32 (const void * pdata, size_t nbytes, int32_t initial)
 {
 	const byte_t * pbytes = (const byte_t *)pdata;
-	/*crc32 = 0xFFFFFFFF;*/
 	int32_t r = initial ^ 0xFFFFFFFF;
 	while( nbytes-- )
 		r =  __crc32_lookup_table[(r ^ *pbytes++) & 0xff ] ^ (((uint32_t)r) >> 8);
-	/*crc32 = ~crc32;*/
 	r = r ^ 0xFFFFFFFF;
 	return r;
 }
