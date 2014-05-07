@@ -17,7 +17,7 @@ namespace pfs {
 class DLL_API endian
 {
 public:
-	enum type_enum { LittleEndian, BigEndian };
+	enum type_enum { LittleEndian, BigEndian, NetworkEndian = BigEndian };
 
 private:
 	endian ();
