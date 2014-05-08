@@ -7,9 +7,14 @@ release: OBJECTS_DIR = release/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU
 
 unix {
 
-# CXX flags
-    QMAKE_CFLAGS += -O0 -Werror
-    QMAKE_CXXFLAGS += -O0 -Werror
+# C/CXX flags
+    QMAKE_CFLAGS += -O0
+    QMAKE_CXXFLAGS += -O0
+
+    contains(CWT_CONFIG, strict) {
+	QMAKE_CFLAGS += -Werror
+        QMAKE_CXXFLAGS += -Werror
+    }
 
 # linker flags
     LIBS += -L$$CWT_DESTDIR_LIB
@@ -31,8 +36,9 @@ win32 {
     QMAKE_CXXFLAGS += /EHs /EHc
 
    # Treat all compiler warnings as errors.
-    QMAKE_CXXFLAGS += /WX  
-
+    contains(CWT_CONFIG, strict) {
+        QMAKE_CXXFLAGS += /WX
+    }
 
 # en: /ZI parameter applied only for x86 target architecture while compiling
 # and it is not applied for x64 and Itanium (IPF).
