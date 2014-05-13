@@ -382,12 +382,6 @@ inline bool	operator == (const bytearray & s1, const char * s2) { return s1.comp
 inline bool	operator >  (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) >  0; }
 inline bool	operator >= (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) >= 0; }
 
-inline std::ostream & operator << (std::ostream & os, const bytearray & o)
-{
-	os << o.c_str();
-	return os;
-}
-
 template <typename T>
 size_t bytearray::readNumber (T & v, size_t pos, endian::type_enum order) const
 {
@@ -422,6 +416,12 @@ template <>
 inline bytearray bytearray::toBytes<pfs::bytearray> (const pfs::bytearray & v, endian::type_enum /*order*/)
 {
 	return bytearray(v);
+}
+
+inline std::ostream & operator << (std::ostream & os, const pfs::bytearray & o)
+{
+	os << o.c_str();
+	return os;
 }
 
 
