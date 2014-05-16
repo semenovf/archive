@@ -42,10 +42,11 @@ bytearray::bytearray (size_t size, const char & c)
 	bytearray_terminator bt(this);
 }
 
-static long_t __str_to_long_helper (const char *s, bool * pok, int base, long_t min_val, long_t max_val)
+static long_t __str_to_long_helper (const char * s, bool * pok, int base, long_t min_val, long_t max_val)
 {
+	PFS_ASSERT(s);
 	bool ok = true;
-	char *endptr = nullptr;
+	char * endptr = nullptr;
 
 	errno = 0;
 	long_t r = strtolong(s, & endptr, base);
@@ -65,8 +66,9 @@ static long_t __str_to_long_helper (const char *s, bool * pok, int base, long_t 
 }
 
 
-static ulong_t	__str_to_ulong_helper (const char *s, bool * pok, int base, ulong_t max_val)
+static ulong_t	__str_to_ulong_helper (const char * s, bool * pok, int base, ulong_t max_val)
 {
+	PFS_ASSERT(s);
 	bool ok = true;
 	char *endptr = nullptr;
 
@@ -87,7 +89,7 @@ static ulong_t	__str_to_ulong_helper (const char *s, bool * pok, int base, ulong
 	return r;
 }
 
-extern "C" double vim_strtod ( const char *string
+extern "C" double vim_strtod ( const char * string
     , char ** endPtr
     , char decimalPoint);
 
@@ -95,6 +97,7 @@ extern "C" double vim_strtod ( const char *string
 
 static double __str_to_double (const char * s, bool * pok, char decimalPoint)
 {
+	PFS_ASSERT(s);
 	bool ok = true;
 	char * endptr = nullptr;
 
@@ -116,7 +119,7 @@ static double __str_to_double (const char * s, bool * pok, char decimalPoint)
 
 double bytearray::toDouble (bool * ok, char decimalPoint) const
 {
-	return __str_to_double(c_str(), ok, decimalPoint);
+	return __str_to_double(isNull() ? "" : c_str(), ok, decimalPoint);
 }
 
 /*
@@ -128,42 +131,42 @@ float	 bytearray::toFloat (bool * ok) const
 
 long_t bytearray::toLong (bool * ok, int base) const
 {
-	return __str_to_long_helper(c_str(), ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
+	return __str_to_long_helper(isNull() ? "" : c_str(), ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
 }
 
 ulong_t bytearray::toULong (bool * ok, int base) const
 {
-	return __str_to_ulong_helper(c_str(), ok, base, PFS_ULONG_MAX);
+	return __str_to_ulong_helper(isNull() ? "" : c_str(), ok, base, PFS_ULONG_MAX);
 }
 
 int_t bytearray::toInt (bool * ok, int base) const
 {
-	return int_t(__str_to_long_helper(c_str(), ok, base, long_t(PFS_INT_MIN), long_t(PFS_INT_MAX)));
+	return int_t(__str_to_long_helper(isNull() ? "" : c_str(), ok, base, long_t(PFS_INT_MIN), long_t(PFS_INT_MAX)));
 }
 
 uint_t bytearray::toUInt (bool * ok, int base) const
 {
-	return uint_t(__str_to_ulong_helper(c_str(), ok, base, ulong_t(PFS_UINT_MAX)));
+	return uint_t(__str_to_ulong_helper(isNull() ? "" : c_str(), ok, base, ulong_t(PFS_UINT_MAX)));
 }
 
 short_t	 bytearray::toShort  (bool * ok, int base) const
 {
-	return short_t(__str_to_long_helper(c_str(), ok, base, long_t(PFS_SHORT_MIN), long_t(PFS_SHORT_MAX)));
+	return short_t(__str_to_long_helper(isNull() ? "" : c_str(), ok, base, long_t(PFS_SHORT_MIN), long_t(PFS_SHORT_MAX)));
 }
 
 ushort_t bytearray::toUShort (bool * ok, int base) const
 {
-	return ushort_t(__str_to_ulong_helper(c_str(), ok, base, ulong_t(PFS_USHORT_MAX)));
+	return ushort_t(__str_to_ulong_helper(isNull() ? "" : c_str(), ok, base, ulong_t(PFS_USHORT_MAX)));
 }
 
 sbyte_t bytearray::toSByte (bool * ok, int base) const
 {
-	return sbyte_t(__str_to_long_helper(c_str(), ok, base, long_t(PFS_SBYTE_MIN), long_t(PFS_SBYTE_MAX)));
+	return sbyte_t(__str_to_long_helper(isNull() ? "" : c_str(), ok, base, long_t(PFS_SBYTE_MIN), long_t(PFS_SBYTE_MAX)));
 }
 
 byte_t bytearray::toByte (bool * ok, int base) const
 {
-	return byte_t(__str_to_ulong_helper(c_str(), ok, base, ulong_t(PFS_BYTE_MAX)));
+	return byte_t(__str_to_ulong_helper(isNull() ? "" : c_str(), ok, base, ulong_t(PFS_BYTE_MAX)));
 }
 
 

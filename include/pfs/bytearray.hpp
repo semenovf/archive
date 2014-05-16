@@ -105,7 +105,6 @@ public:
 
 public:
 	bytearray () : base_class() {}
-//	bytearray (const impl & other) : _d(new impl(other)) {}
 	bytearray (const char * s);
 	bytearray (const char * s, size_t size);
 	bytearray (size_t n, const char & c);

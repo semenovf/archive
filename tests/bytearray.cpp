@@ -53,6 +53,10 @@ void test_convert_number()
 	printf("13.1415912345678 == %e\n", 13.1415912345678f);
 
 	TEST_OK(num.toInt(&ok) == 1234 && ok);
+
+	pfs::bytearray bnull;
+
+	TEST_OK(bnull.toLong() == long_t(0));
 }
 
 
@@ -155,7 +159,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    int ntests = 40;
+    int ntests = 42;
 #ifdef HAVE_LONGLONG
     ntests += 12;
 #endif
@@ -165,6 +169,7 @@ int main(int argc, char *argv[])
 	test_length();
 	test_append();
 	test_convert_to_bytes();
+	test_convert_number();
 	test_read_number();
 	test_base64();
 
