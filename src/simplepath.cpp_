@@ -1,0 +1,79 @@
+/*
+ * simplepath.cpp
+ *
+ *  Created on: Jun 5, 2013
+ *      Author: wladt
+ */
+
+#include "simplepath_fsm.hpp"
+
+namespace cwt { namespace json {
+
+bool simple_path::changeRoot (const pfs::string & jpath)
+{
+	json_value * jv = findValue(jpath);
+	if (jv) {
+		_root = jv;
+		return true;
+	}
+
+	return false;
+}
+
+json_value simple_path::find (const pfs::string & jpath) const
+{
+	const json_value * r = findValue(jpath);
+	return r ? *r : json_value();
+}
+
+json_value & simple_path::find (const pfs::string & jpath)
+{
+	json_value * r = findValue(jpath);
+	PFS_ASSERT(r);
+	return *r;
+}
+
+json_value * simple_path::findValue (const pfs::string & jpath) const
+{
+	simple_path_context ctx;
+	ctx.root = _root;
+	ctx.on_end_elem = __end_elem__for_find_value;
+
+	ctx.stack.push(ctx.root);
+
+	pfs::fsm::fsm<pfs::string> fsm(jpath_fsm, & ctx);
+	ssize_t result = fsm.exec(0, jpath.cbegin(), jpath.cend());
+
+	if (result > 0 && size_t(result) == jpath.length()) {
+		PFS_ASSERT(ctx.stack.size() > 0);
+		return ctx.stack.top();
+	}
+
+	return nullptr;
+}
+
+json_value * simple_path::makeTree (const pfs::string & jpath)
+{
+	simple_path_context ctx;
+	ctx.root = _root;
+	ctx.on_end_elem = __end_elem__for_make_tree;
+
+	pfs::fsm::fsm<pfs::string> fsm(jpath_fsm, & ctx);
+	ssize_t result = fsm.exec(0, jpath.cbegin(), jpath.cend());
+
+	if (result > 0 && size_t(result) == jpath.length()) {
+		PFS_ASSERT(ctx.stack.size() > 0);
+		return ctx.stack.top();
+	}
+
+	return nullptr;
+}
+
+json_value & simple_path::operator [] (const pfs::string & jpath)
+{
+	json_value * jv = makeTree(jpath);
+	PFS_ASSERT(jv);
+	return *jv;
+}
+
+}} // cwt::json
