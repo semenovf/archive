@@ -131,42 +131,51 @@ float	 bytearray::toFloat (bool * ok) const
 
 long_t bytearray::toLong (bool * ok, int base) const
 {
-	return __str_to_long_helper(isNull() ? "" : c_str(), ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
+	// FIXME c_str() must return empty string
+	const char * s  = c_str();
+	return __str_to_long_helper(s ? s : "", ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
 }
 
 ulong_t bytearray::toULong (bool * ok, int base) const
 {
-	return __str_to_ulong_helper(isNull() ? "" : c_str(), ok, base, PFS_ULONG_MAX);
+	const char * s  = c_str();
+	return __str_to_ulong_helper(s ? s : "", ok, base, PFS_ULONG_MAX);
 }
 
 int_t bytearray::toInt (bool * ok, int base) const
 {
-	return int_t(__str_to_long_helper(isNull() ? "" : c_str(), ok, base, long_t(PFS_INT_MIN), long_t(PFS_INT_MAX)));
+	const char * s  = c_str();
+	return int_t(__str_to_long_helper(s ? s : "", ok, base, long_t(PFS_INT_MIN), long_t(PFS_INT_MAX)));
 }
 
 uint_t bytearray::toUInt (bool * ok, int base) const
 {
-	return uint_t(__str_to_ulong_helper(isNull() ? "" : c_str(), ok, base, ulong_t(PFS_UINT_MAX)));
+	const char * s  = c_str();
+	return uint_t(__str_to_ulong_helper(s ? s : "", ok, base, ulong_t(PFS_UINT_MAX)));
 }
 
 short_t	 bytearray::toShort  (bool * ok, int base) const
 {
-	return short_t(__str_to_long_helper(isNull() ? "" : c_str(), ok, base, long_t(PFS_SHORT_MIN), long_t(PFS_SHORT_MAX)));
+	const char * s  = c_str();
+	return short_t(__str_to_long_helper(s ? s : "", ok, base, long_t(PFS_SHORT_MIN), long_t(PFS_SHORT_MAX)));
 }
 
 ushort_t bytearray::toUShort (bool * ok, int base) const
 {
-	return ushort_t(__str_to_ulong_helper(isNull() ? "" : c_str(), ok, base, ulong_t(PFS_USHORT_MAX)));
+	const char * s  = c_str();
+	return ushort_t(__str_to_ulong_helper(s ? s : "", ok, base, ulong_t(PFS_USHORT_MAX)));
 }
 
 sbyte_t bytearray::toSByte (bool * ok, int base) const
 {
-	return sbyte_t(__str_to_long_helper(isNull() ? "" : c_str(), ok, base, long_t(PFS_SBYTE_MIN), long_t(PFS_SBYTE_MAX)));
+	const char * s  = c_str();
+	return sbyte_t(__str_to_long_helper(s ? s : "", ok, base, long_t(PFS_SBYTE_MIN), long_t(PFS_SBYTE_MAX)));
 }
 
 byte_t bytearray::toByte (bool * ok, int base) const
 {
-	return byte_t(__str_to_ulong_helper(isNull() ? "" : c_str(), ok, base, ulong_t(PFS_BYTE_MAX)));
+	const char * s  = c_str();
+	return byte_t(__str_to_ulong_helper(s ? s : "", ok, base, ulong_t(PFS_BYTE_MAX)));
 }
 
 

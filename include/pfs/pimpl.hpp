@@ -131,44 +131,6 @@ public:
 	}
 };
 
-/*
-template <typename T>
-class pimpl_lazy_init
-{
-protected:
-	pimpl _d;
-
-	T & (*_get) ();
-
-	T & initial_get ()
-	{
-		if (!_d.isNull()) {
-			_d = pimpl(new T);
-		}
-		_get = get;
-		return *_d.cast<T>();
-	}
-
-	T & get ()
-	{
-		return *_d.cast<T>();
-	}
-
-	void detach () { _d.detach(); }
-
-public:
-	pimpl_lazy_init () : _d(), _get(initial_get) {}
-	pimpl_lazy_init (T * p) : _d(p), _get(get) { }
-	pimpl_lazy_init (const pimpl_lazy_init & other) : _d(other._d), _get(other._get) {}
-
-	bool isNull () const  { return _d.isNull(); }
-	void swap (pimpl_lazy_init & o) { _d.swap<T>(o._d);	}
-
-	const T & cast () const { return _get(); }
-	T &       cast ()       { return _get(); }
-};
-*/
-
 template <typename T>
 class pimpl_lazy_init
 {

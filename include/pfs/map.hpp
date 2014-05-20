@@ -27,7 +27,7 @@ public:
 	typedef typename std::map<Key, T>::const_iterator const_iterator;
 
 public:
-    map () : _d(new impl()) {}
+    map () : _d(new impl) {}
 
 	iterator	   find (const Key & key) { _d.detach(); return _d.cast<impl>()->find(key); }
 	const_iterator find (const Key & key) const { return _d.cast<impl>()->find(key); }

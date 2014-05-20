@@ -83,7 +83,7 @@ class vector : public pimpl_lazy_init<std::vector<T, Alloc> >
 
 protected:
 	typedef std::vector<T, Alloc> impl;
-	typedef pimpl_lazy_init<std::vector<T, Alloc> > base_class;
+	typedef pimpl_lazy_init<impl> base_class;
 
 public:
 	typedef T item_type;
