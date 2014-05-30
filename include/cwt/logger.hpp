@@ -24,6 +24,7 @@ class log
 public:
 	enum priority { Trace, Debug, Info, Warn, Error, Fatal, NoLog };
 	static pfs::string DefaultPattern;
+	static pfs::string NoPattern;
 
 private:
 	signal2<priority, const pfs::string &> _emitter;
@@ -55,7 +56,7 @@ protected:
 	static pfs::string patternify (log::priority level, const pfs::string & pattern, const pfs::string & text);
 
 public:
-	appender () : _pattern() { }
+	appender () : _pattern(log::DefaultPattern) { }
 	appender (const pfs::string & pattern) : _pattern(pattern) {}
 	virtual ~appender () {}
 

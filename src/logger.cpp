@@ -16,6 +16,7 @@ extern pfs::string __strerror (int_t errn);
 namespace cwt {
 
 pfs::string log::DefaultPattern("%d{ABSOLUTE} [%p]: %m");
+pfs::string log::NoPattern;
 pfs::atomic_integer<int> __priorityLevel;
 
 void log::setPriority (log::priority level) { __priorityLevel.store(level); }
