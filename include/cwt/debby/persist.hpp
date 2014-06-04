@@ -1,11 +1,11 @@
 /**
- * @file perists.hpp
+ * @file perist.hpp
  * @author wladt
  * @date Mar 14, 2014
  */
 
-#ifndef __CWT_DEBBY_PERISTS_HPP__
-#define __CWT_DEBBY_PERISTS_HPP__
+#ifndef __CWT_DEBBY_PERSIST_HPP__
+#define __CWT_DEBBY_PERSIST_HPP__
 
 #include <iostream>
 
@@ -85,4 +85,4 @@ public:
 
 }} // cwt
 
-#endif /* __CWT_DEBBY_PERISTS_HPP__ */
+#endif /* __CWT_DEBBY_PERSIST_HPP__ */

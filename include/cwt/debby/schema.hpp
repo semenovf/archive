@@ -84,11 +84,11 @@ class table_basic
 	typedef pfs::map<pfs::string, value_type> fields_map_type;
 
 	pfs::string     _name;
-	schema *        _holder;
+	schema *        _schema;
 	fields_map_type _fields;
 
 public:
-	table_basic (const pfs::string & name, schema & holder) : _name(name), _holder(& holder) {}
+	table_basic (const pfs::string & name, schema & holder) : _name(name), _schema(& holder) {}
 
 protected:
 	template <typename T>
