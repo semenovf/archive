@@ -14,41 +14,53 @@
 
 namespace pfs {
 
-template <typename T>
+//template <typename T>
+//class default_allocator
+//{
+//	typedef T value_type;
+//public:
+//	T * allocate (std::size_t n, const void * = 0) { return new value_type[n]; }
+//	void deallocate (value_type * p, std::size_t /*n*/) { if (p) delete [] p; }
+//};
+
+
+template <typename T/*, typename _Alloc = default_allocator<T> */>
 class array
 {
-	size_t   m_capacity;
-	uint16_t m_raw : 1; /* is raw data */
-	T *      m_head;
+//	typedef _Alloc allocator;
+
+	size_t   _capacity;
+	uint16_t _raw : 1; /* is raw data */
+	T *      _head;
 
 public:
-	array() : m_capacity(0), m_raw(0), m_head(nullptr) {}
-	array(T a[], size_t n);
-	array(size_t sz, bool zero = false);
-	~array();
+	array () : _capacity(0), _raw(0), _head(nullptr) {}
+	array (T a[], size_t n);
+	array (size_t sz, bool zero = false);
+	~array ();
 
 	array (const array & other);
-	array &	   operator = (const array & other);
+	array &	operator = (const array & other);
 
 	void        alloc (size_t capacity);
-	T &         at(size_t index) { PFS_ASSERT(index < m_capacity); return m_head[index]; }
-	const T &   at(size_t index) const { PFS_ASSERT(index < m_capacity); return m_head[index]; }
+	T &         at (size_t index) { PFS_ASSERT(index < _capacity); return _head[index]; }
+	const T &   at (size_t index) const { PFS_ASSERT(index < _capacity); return _head[index]; }
 	int         compare (size_t pos, const array & other, size_t subpos, size_t len) const;
 	int         compare (const array & other, size_t len) const { return compare(0, other, 0, len); }
-	int         compare (const array & other) const { return compare(0, other, 0, other.m_capacity); }
-	void        bzero ()      { if(m_head) ::memset(m_head, 0, m_capacity * sizeof(T)); }
-	void        set   (int c) { if(m_head) ::memset(m_head, c, m_capacity * sizeof(T)); }
-	void        set   (int c, size_t off) { PFS_ASSERT(off < m_capacity); if(m_head) ::memset(m_head + off, c, (m_capacity - off) * sizeof(T)); }
+	int         compare (const array & other) const { return compare(0, other, 0, other._capacity); }
+	void        bzero ()      { if(_head) ::memset(_head, 0, _capacity * sizeof(T)); }
+	void        set   (int c) { if(_head) ::memset(_head, c, _capacity * sizeof(T)); }
+	void        set   (int c, size_t off) { PFS_ASSERT(off < _capacity); if(_head) ::memset(_head + off, c, (_capacity - off) * sizeof(T)); }
 	array *     clone () const;
-	T *         data  ()       { return m_head; }
-	const T *   data  () const { return m_head; }
-	const T *   constData () const { return m_head; }
+	T *         data  ()       { return _head; }
+	const T *   data  () const { return _head; }
+	const T *   constData () const { return _head; }
 	bool        eq    (const array & a);
-	bool        isRaw() const { return m_raw; }
+	bool        isRaw() const { return _raw; }
 	void        move  (size_t off_to, size_t off_from, size_t n);
 	void        realloc (size_t new_capacity);
-	size_t      size  () const { return m_capacity; }
-	size_t      capacity() const { return m_capacity; }
+	size_t      size  () const { return _capacity; }
+	size_t      capacity() const { return _capacity; }
 	void        swap(array<T> & other);
 
 
@@ -65,37 +77,37 @@ public:
 
 template <typename T>
 inline array<T>::array (T a[], size_t n)
-	: m_capacity(0), m_raw(1), m_head(nullptr)
+	: _capacity(0), _raw(1), _head(nullptr)
 {
 	if (a) {
-		m_capacity = n;
-		m_head = & a[0];
+		_capacity = n;
+		_head = & a[0];
 	}
 }
 
 template <typename T>
 inline array<T>::array (const array & other)
-	: m_capacity(other.m_capacity), m_raw(0), m_head(nullptr)
+	: _capacity(other._capacity), _raw(0), _head(nullptr)
 {
-	if (other.m_capacity > 0) {
-		alloc(other.m_capacity);
-		deep_copy(*this, other, 0, 0, other.m_capacity);
+	if (other._capacity > 0) {
+		alloc(other._capacity);
+		deep_copy(*this, other, 0, 0, other._capacity);
 	}
 }
 
 template <typename T>
 inline array<T> & array<T>::operator = (const array & other)
 {
-	if (other.m_capacity > 0) {
-		alloc(other.m_capacity);
-		deep_copy(*this, other, 0, 0, other.m_capacity);
+	if (other._capacity > 0) {
+		alloc(other._capacity);
+		deep_copy(*this, other, 0, 0, other._capacity);
 	}
 	return *this;
 }
 
 template <typename T>
 inline array<T>::array (size_t sz, bool zero)
-	: m_capacity(0), m_raw(0), m_head(nullptr)
+	: _capacity(0), _raw(0), _head(nullptr)
 {
 	if (sz) {
 		alloc(sz);
@@ -109,34 +121,34 @@ inline array<T>::array (size_t sz, bool zero)
 template <typename T>
 inline array<T>::~array ()
 {
-	if(!m_raw)
-		delete[] m_head;
+	if(!_raw)
+		delete[] _head;
 }
 
 template <typename T>
 inline void array<T>::alloc (size_t size)
 {
-	if (!m_raw && m_head) {
-		delete[] m_head;
+	if (!_raw && _head) {
+		delete[] _head;
 	}
-	m_head = new T[size];
-	m_raw = 0;
-	m_capacity = size;
+	_head = new T[size];
+	_raw = 0;
+	_capacity = size;
 }
 
 template <typename T>
 inline int array<T>::compare (size_t pos, const array & other, size_t subpos, size_t len) const
 {
-	PFS_ASSERT(pos < m_capacity && subpos < other.m_capacity);
-	return memcmp(m_head + pos, other.m_head + subpos, len * sizeof(T));
+	PFS_ASSERT(pos < _capacity && subpos < other._capacity);
+	return memcmp(_head + pos, other._head + subpos, len * sizeof(T));
 }
 
 template <typename T>
 array<T>* array<T>::clone () const
 {
-	array<T> * clone = new array<T>(m_capacity);
+	array<T> * clone = new array<T>(_capacity);
 	if (clone)
-		copy(*clone, *this, 0, 0, m_capacity);
+		copy(*clone, *this, 0, 0, _capacity);
 	return clone;
 }
 
@@ -157,16 +169,16 @@ array<T>* array<T>::clone () const
 template <typename T>
 void array<T>::copy (array &to, const array &from, size_t off_to, size_t off_from, size_t n)
 {
-	n = min(from.m_capacity - off_from, n);
-	n = min(to.m_capacity - off_to, n);
-	memcpy(to.m_head + off_to, from.m_head + off_from, n * sizeof(T));
+	n = min(from._capacity - off_from, n);
+	n = min(to._capacity - off_to, n);
+	memcpy(to._head + off_to, from._head + off_from, n * sizeof(T));
 }
 
 template <typename T>
 void array<T>::copy (array &to, const T *from, size_t off_to, size_t off_from, size_t n)
 {
-	n = min(to.m_capacity - off_to, n);
-	memcpy(to.m_head + off_to, from + off_from, n * sizeof(T));
+	n = min(to._capacity - off_to, n);
+	memcpy(to._head + off_to, from + off_from, n * sizeof(T));
 }
 
 template <typename T>
@@ -180,19 +192,19 @@ void array<T>::deep_copy (T * to, const T * from, size_t n)
 template <typename T>
 void array<T>::deep_copy (array &to, const array &from, size_t off_to, size_t off_from, size_t n)
 {
-	n = pfs::min(from.m_capacity - off_from, n);
-	n = pfs::min(to.m_capacity - off_to, n);
+	n = pfs::min(from._capacity - off_from, n);
+	n = pfs::min(to._capacity - off_to, n);
 	for (size_t i = off_from, j = off_to; n > 0; --n, ++i, ++j) {
-		to.m_head[i] = from.m_head[j];
+		to._head[i] = from._head[j];
 	}
 }
 
 template <typename T>
 void array<T>::deep_copy (array &to, const T *from, size_t off_to, size_t off_from, size_t n)
 {
-	n = min(to.m_capacity - off_to, n);
+	n = min(to._capacity - off_to, n);
 	for (size_t i = off_from, j = off_to; n > 0; --n, ++i, ++j) {
-		to.m_head[i] = from[j];
+		to._head[i] = from[j];
 	}
 }
 
@@ -200,8 +212,8 @@ void array<T>::deep_copy (array &to, const T *from, size_t off_to, size_t off_fr
 template <typename T>
 inline bool array<T>::eq (const array &a)
 {
-	return m_capacity == a.m_capacity
-			&& memcmp(m_head, a.m_head, m_capacity * sizeof(T)) == 0
+	return _capacity == a._capacity
+			&& memcmp(_head, a._head, _capacity * sizeof(T)) == 0
 			? true : false;
 }
 
@@ -215,14 +227,14 @@ inline bool array<T>::eq (const array &a)
 template <typename T>
 void array<T>::realloc (size_t new_capacity)
 {
-	if (new_capacity != m_capacity) {
+	if (new_capacity != _capacity) {
 		T *new_head = new T[new_capacity];
-		if (m_head) {
-			deep_copy(new_head, m_head, pfs::min(m_capacity, new_capacity));
-			delete[] m_head;
+		if (_head) {
+			deep_copy(new_head, _head, pfs::min(_capacity, new_capacity));
+			delete[] _head;
 		}
-		m_head = new_head;
-		m_capacity = new_capacity;
+		_head = new_head;
+		_capacity = new_capacity;
 	}
 }
 
@@ -239,30 +251,29 @@ void array<T>::realloc (size_t new_capacity)
 template <typename T>
 void array<T>::move (size_t off_to, size_t off_from, size_t n)
 {
-	PFS_ASSERT(off_to + n <= m_capacity && off_from + n <= m_capacity);
+	PFS_ASSERT(off_to + n <= _capacity && off_from + n <= _capacity);
 
-	n = pfs::min(n, m_capacity - off_from);
-	n = pfs::min(n, m_capacity - off_to);
+	n = pfs::min(n, _capacity - off_from);
+	n = pfs::min(n, _capacity - off_to);
 
-	memmove(m_head + off_to, m_head + off_from, n * sizeof(T));
+	memmove(_head + off_to, _head + off_from, n * sizeof(T));
 }
 
 template <typename T>
 void array<T>::swap(array<T> & other)
 {
-	size_t   capacity = m_capacity;
-	uint16_t raw      = m_raw;
-	T       *head     = m_head;
+	size_t   capacity = _capacity;
+	uint16_t raw      = _raw;
+	T       *head     = _head;
 
-	m_capacity = other.m_capacity;
-	m_raw      = other.m_raw;
-	m_head     = other.m_head;
+	_capacity = other._capacity;
+	_raw      = other._raw;
+	_head     = other._head;
 
-	other.m_capacity = capacity;
-	other.m_raw      = raw;
-	other.m_head     = head;
+	other._capacity = capacity;
+	other._raw      = raw;
+	other._head     = head;
 }
-
 
 } // pfs
 

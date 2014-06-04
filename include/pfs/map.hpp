@@ -29,6 +29,7 @@ public:
 public:
     map () : _d(new impl) {}
 
+    // FIXME no need detach(), iterator has to support this feature
 	iterator	   find (const Key & key) { _d.detach(); return _d.cast<impl>()->find(key); }
 	const_iterator find (const Key & key) const { return _d.cast<impl>()->find(key); }
 	void	       clear () { _d.detach(); _d.cast<impl>()->clear(); }
@@ -53,6 +54,7 @@ public:
 	bool	       operator != (const map<Key, T> & other) const { return !(*this == other); }
 	bool	       operator == (const map<Key, T> & other) const;
 
+	// FIXME return reference (or iterator)
 	T &	           operator [] (const Key & key) { _d.detach(); return _d.cast<impl>()->operator [] (key); }
 	const T        operator [] (const Key & key) const { return _d.cast<impl>()->at(key); }
 
