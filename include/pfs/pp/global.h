@@ -138,15 +138,20 @@ namespace pfs {
 //#define PFS_FATAL(str)      { PFS_FPRINT(stderr,"FATAL",str); abort(); }
 // }
 
-#define PFS_VERIFY(expr) if (! (expr)) {                               \
-		fprintf(stderr, "ERROR (%s[%d]): %s\n"                         \
-				, __TFILE__, __LINE__, #expr); }
-#define PFS_VERIFY_ERRNO(expr,errn) if (! (expr)) {                    \
-		fprintf(stderr, "ERROR (%s[%d]): %s: [errno=%d]: %s\n"         \
-				, __TFILE__, __LINE__, #expr, errn, strerror(errn)); }
-#define PFS_VERIFY_X(expr,str) if (! (expr)) {                         \
-		fprintf(stderr, "ERROR (%s[%d]): %s: %s\n"                     \
-				, __TFILE__, __LINE__, #expr, (str)); }
+#define PFS_VERIFY_IF(expr) if (! (expr) &&            \
+	fprintf(stderr, "ERROR (%s[%d]): %s\n", __TFILE__, __LINE__, #expr))
+
+#define PFS_VERIFY_X_IF(expr,str) if (! (expr) &&      \
+		fprintf(stderr, "ERROR (%s[%d]): %s: %s\n", __TFILE__, __LINE__, #expr, (str)))
+
+#define PFS_VERIFY_ERRNO_IF(expr,errn) if (! (expr) && \
+		fprintf(stderr, "ERROR (%s[%d]): %s: [errno=%d]: %s\n", __TFILE__, __LINE__, #expr, errn, strerror(errn)));
+
+#define PFS_VERIFY(expr)            PFS_VERIFY_IF(expr)            {;}
+#define PFS_VERIFY_ERRNO(expr,errn) PFS_VERIFY_ERRNO_IF(expr,errn) {;}
+#define PFS_VERIFY_X(expr,str)      PFS_VERIFY_X_IF(expr,str)      {;}
+
+
 
 
 #ifndef NDEBUG
