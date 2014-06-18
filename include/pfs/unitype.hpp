@@ -68,6 +68,7 @@ template <> inline int unitype_type_id<pfs::bytearray> () { return ByteArray; }
 class unitype_base
 {
 public:
+	virtual ~unitype_base () {}
 	virtual pfs::string type_name () const = 0;
 	virtual int type_id () const { return -1; }
 
@@ -84,6 +85,7 @@ public:
 class unitype_null : public unitype_base
 {
 public:
+	virtual ~unitype_null () {}
 	virtual pfs::string type_name () const override { return pfs::string(); }
 	virtual int type_id () const { return Null; }
 
@@ -174,8 +176,8 @@ template <> inline pfs::string to_string_trait<unsigned long> (const unsigned lo
 template <> inline pfs::string to_string_trait<float> (const float & v) { return pfs::string::number(v); }
 template <> inline pfs::string to_string_trait<double> (const double & v) { return pfs::string::number(v); }
 #ifdef HAVE_LONGLONG
-template <> inline pfs::string to_string_trait<long long> (const long long & v) { return pfs::string::number(v); }
-template <> inline pfs::string to_string_trait<unsigned long long> (const unsigned long long & v) { return pfs::string::number(v); }
+template <> inline pfs::string to_string_trait<long long> (const long long & v) { return pfs::string::number(long_t(v)); }
+template <> inline pfs::string to_string_trait<unsigned long long> (const unsigned long long & v) { return pfs::string::number(ulong_t(v)); }
 #endif
 template <> inline pfs::string to_string_trait<pfs::string> (const pfs::string & v) { return pfs::string(v); }
 template <> inline pfs::string to_string_trait<pfs::bytearray> (const pfs::bytearray & v) { return _l1(v.toBase64()); }

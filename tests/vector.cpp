@@ -47,6 +47,7 @@ void test_long_vector(void)
 		TEST_FAIL(v.at(i) == long_t(0));
 	}
 
+//	TEST_FAIL(pint[0] == PFS_LONG_MIN);
 	TEST_FAIL(v.at(0) == PFS_LONG_MIN);
 	TEST_FAIL(v.at(_VECTOR_SIZE-1) == PFS_LONG_MAX);
 }
