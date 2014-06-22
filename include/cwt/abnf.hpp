@@ -8,45 +8,52 @@
 #ifndef __CWT_ABNF_HPP__
 #define __CWT_ABNF_HPP__
 
-#include <cwt/cwt.h>
-#include <cwt/string.hpp>
-#include <cwt/callback.hpp>
+#include <pfs/string.hpp>
+#include <pfs/pimpl.hpp>
+#include <cwt/errorable.hpp>
 
-CWT_NS_BEGIN
+namespace cwt { namespace abnf {
 
-struct AbnfSimpleApi {
-	Callback1<void *> beginDocument;
-	Callback2<bool, void *> endDocument;
-	Callback3<const String &, bool, void *> beginRule; // callback(rulename, incremental, abnfContext)
-	Callback1<void *> endRule;
-	Callback1<void *> beginAlternation;
-	Callback1<void *> endAlternation;
-	Callback1<void *> beginConcatenation;
-	Callback1<void *> endConcatenation;
-	Callback3<int, int, void *> beginRepetition; // callback(from, to, abnfContext)
-	Callback1<void *> endRepetition;
-	Callback1<void *> beginOption;
-	Callback1<void *> endOption;
-	Callback1<void *> beginGroup;
-	Callback1<void *> endGroup;
-	Callback2<const String &, void *> ruleRef;
-	Callback2<const String &, void *> charVal;
-	Callback2<const String &, void *> numVal;
-	Callback2<const String &, void *> proseVal;
-
-	Callback2<const String &, void *> comment;
-};
-
-class DLL_API Abnf
+class handlers
 {
 public:
-	Abnf() {}
-	~Abnf() {}
+	handlers () {}
+	virtual ~handlers () {}
 
-	bool parse(const String & abnf);
-	bool parse(const String & abnf, AbnfSimpleApi & api);
+	virtual void beginDocument () {}
+	virtual void endDocument (bool /*success*/) {}
+	virtual void beginRule (const pfs::string & rulename, bool incremental) {}
+	virtual void endRule () {}
+	virtual void beginAlternation () {}
+	virtual void endAlternation () {}
+	virtual void beginConcatenation () {}
+	virtual void endConcatenation () {}
+	virtual void beginRepetition (int /*from*/, int /*to*/) {}
+	virtual void endRepetition () {}
+	virtual void beginOption () {}
+	virtual void endOption () {}
+	virtual void beginGroup () {}
+	virtual void endGroup () {}
+	virtual void ruleRef (const pfs::string &) {}
+	virtual void charVal (const pfs::string &) {}
+	virtual void numVal (const pfs::string &) {}
+	virtual void proseVal (const pfs::string &) {}
+
+	virtual void comment (const pfs::string &) {}
 };
 
-CWT_NS_END
+class DLL_API reader : public cwt::errorable
+{
+	class impl;
+	pfs::pimpl _d;
+
+public:
+	reader (handlers * h = nullptr);
+
+	bool parse (const pfs::string & src);
+	void setHandlers (handlers * h);
+};
+
+}} // cwt::abnf
 
 #endif /* __CWT_ABNF_HPP__ */
