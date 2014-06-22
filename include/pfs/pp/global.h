@@ -145,7 +145,7 @@ namespace pfs {
 		fprintf(stderr, "ERROR (%s[%d]): %s: %s\n", __TFILE__, __LINE__, #expr, (str)))
 
 #define PFS_VERIFY_ERRNO_IF(expr,errn) if (! (expr) && \
-		fprintf(stderr, "ERROR (%s[%d]): %s: [errno=%d]: %s\n", __TFILE__, __LINE__, #expr, errn, strerror(errn)));
+		fprintf(stderr, "ERROR (%s[%d]): %s: [errno=%d]: %s\n", __TFILE__, __LINE__, #expr, errn, strerror(errn)))
 
 #define PFS_VERIFY(expr)            PFS_VERIFY_IF(expr)            {;}
 #define PFS_VERIFY_ERRNO(expr,errn) PFS_VERIFY_ERRNO_IF(expr,errn) {;}

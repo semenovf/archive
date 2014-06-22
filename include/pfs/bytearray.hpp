@@ -329,10 +329,9 @@ public:
 
 inline bytearray_terminator::~bytearray_terminator ()
 {
-	size_t sz = p->size();
 	char * d = p->data();
 	if (d) {
-		d[sz] = bytearray::TerminatorChar;
+		d[p->size()] = bytearray::TerminatorChar;
 	}
 }
 

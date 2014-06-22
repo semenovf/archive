@@ -101,20 +101,20 @@ void test_convert_to_bytes ()
 	TEST_OK(pfs::bytearray("\x78\x56\x34\x12", 4) == pfs::bytearray::toBytes(int(0x12345678), pfs::endian::LittleEndian));
 	TEST_OK(pfs::bytearray("\x12\x34\x56\x78", 4) == pfs::bytearray::toBytes(int(0x12345678), pfs::endian::BigEndian));
 
-if (sizeof(long) == 4) {
-	TEST_OK(pfs::bytearray("\xFF\xFF\xFF\x7F", 4) == pfs::bytearray::toBytes(0x7FFFFFFFL, pfs::endian::LittleEndian));
-	TEST_OK(pfs::bytearray("\x7F\xFF\xFF\xFF", 4) == pfs::bytearray::toBytes(0x7FFFFFFFL, pfs::endian::BigEndian));
-	TEST_OK(pfs::bytearray("\x00\x00\x00\x80", 4) == pfs::bytearray::toBytes(0x80000000L, pfs::endian::LittleEndian));
-	TEST_OK(pfs::bytearray("\x80\x00\x00\x00", 4) == pfs::bytearray::toBytes(0x80000000L, pfs::endian::BigEndian));
-	TEST_OK(pfs::bytearray("\x78\x56\x34\x12", 4) == pfs::bytearray::toBytes(0x12345678L, pfs::endian::LittleEndian));
-	TEST_OK(pfs::bytearray("\x12\x34\x56\x78", 4) == pfs::bytearray::toBytes(0x12345678L, pfs::endian::BigEndian));
+if (sizeof(long_t) == 4) {
+	TEST_OK(pfs::bytearray("\xFF\xFF\xFF\x7F", 4) == pfs::bytearray::toBytes(long_t(0x7FFFFFFFL), pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\x7F\xFF\xFF\xFF", 4) == pfs::bytearray::toBytes(long_t(0x7FFFFFFFL), pfs::endian::BigEndian));
+	TEST_OK(pfs::bytearray("\x00\x00\x00\x80", 4) == pfs::bytearray::toBytes(long_t(0x80000000L), pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\x80\x00\x00\x00", 4) == pfs::bytearray::toBytes(long_t(0x80000000L), pfs::endian::BigEndian));
+	TEST_OK(pfs::bytearray("\x78\x56\x34\x12", 4) == pfs::bytearray::toBytes(long_t(0x12345678L), pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\x12\x34\x56\x78", 4) == pfs::bytearray::toBytes(long_t(0x12345678L), pfs::endian::BigEndian));
 } else { // sizeof(long) == 8 - on x64
-	TEST_OK(pfs::bytearray("\xFF\xFF\xFF\x7F") == pfs::bytearray::toBytes(0x7FFFFFFF, pfs::endian::LittleEndian));
-	TEST_OK(pfs::bytearray("\x7F\xFF\xFF\xFF") == pfs::bytearray::toBytes(0x7FFFFFFF, pfs::endian::BigEndian));
-	TEST_OK(pfs::bytearray("\x00\x00\x00\x80") == pfs::bytearray::toBytes(0x80000000, pfs::endian::LittleEndian));
-	TEST_OK(pfs::bytearray("\x80\x00\x00\x00") == pfs::bytearray::toBytes(0x80000000, pfs::endian::BigEndian));
-	TEST_OK(pfs::bytearray("\x78\x56\x34\x12") == pfs::bytearray::toBytes(0x12345678, pfs::endian::LittleEndian));
-	TEST_OK(pfs::bytearray("\x12\x34\x56\x78") == pfs::bytearray::toBytes(0x12345678, pfs::endian::BigEndian));
+	TEST_OK(pfs::bytearray("\xFF\xFF\xFF\x7F\x00\x00\x00\x00", 8) == pfs::bytearray::toBytes(long_t(0x7FFFFFFFL), pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\x00\x00\x00\x00\x7F\xFF\xFF\xFF", 8) == pfs::bytearray::toBytes(long_t(0x7FFFFFFFL), pfs::endian::BigEndian));
+	TEST_OK(pfs::bytearray("\x00\x00\x00\x80\x00\x00\x00\x00", 8) == pfs::bytearray::toBytes(long_t(0x80000000L), pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\x00\x00\x00\x00\x80\x00\x00\x00", 8) == pfs::bytearray::toBytes(long_t(0x80000000L), pfs::endian::BigEndian));
+	TEST_OK(pfs::bytearray("\x78\x56\x34\x12\x00\x00\x00\x00", 8) == pfs::bytearray::toBytes(long_t(0x12345678L), pfs::endian::LittleEndian));
+	TEST_OK(pfs::bytearray("\x00\x00\x00\x00\x12\x34\x56\x78", 8) == pfs::bytearray::toBytes(long_t(0x12345678L), pfs::endian::BigEndian));
 }
 
 #ifdef HAVE_LONGLONG
