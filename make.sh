@@ -1,6 +1,7 @@
 #!/bin/sh
 
-MULTITHREAD=-j
+#MULTITHREAD=-j
+MULTITHREAD=
 
 if [ -z $GBS_HOME ]; then
     echo "Error: GBS_HOME is not set, point it to the correct path of Griotte build system" >&2
