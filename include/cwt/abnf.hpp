@@ -8,6 +8,7 @@
 #ifndef __CWT_ABNF_HPP__
 #define __CWT_ABNF_HPP__
 
+<<<<<<< HEAD
 #include <cwt/cwt.h>
 #include <cwt/string.hpp>
 #include <cwt/callback.hpp>
@@ -330,14 +331,51 @@ private:
 
 	// Options for generate transitions
 	Options        m_options;
-};
+=======
+#include <pfs/string.hpp>
+#include <pfs/pimpl.hpp>
+#include <cwt/errorable.hpp>
 
-class DLL_API Abnf
+namespace cwt { namespace abnf {
+
+class handlers
 {
 public:
-	Abnf() {}
-	~Abnf() {}
+	handlers () {}
+	virtual ~handlers () {}
 
+	virtual void beginDocument () {}
+	virtual void endDocument (bool /*success*/) {}
+	virtual void beginRule (const pfs::string & rulename, bool incremental) {}
+	virtual void endRule () {}
+	virtual void beginAlternation () {}
+	virtual void endAlternation () {}
+	virtual void beginConcatenation () {}
+	virtual void endConcatenation () {}
+	virtual void beginRepetition (int /*from*/, int /*to*/) {}
+	virtual void endRepetition () {}
+	virtual void beginOption () {}
+	virtual void endOption () {}
+	virtual void beginGroup () {}
+	virtual void endGroup () {}
+	virtual void ruleRef (const pfs::string &) {}
+	virtual void charVal (const pfs::string &) {}
+	virtual void numVal (const pfs::string &) {}
+	virtual void proseVal (const pfs::string &) {}
+
+	virtual void comment (const pfs::string &) {}
+>>>>>>> 272b46b780f5a3c27dc26af07c3a046d7a40b88e
+};
+
+class DLL_API reader : public cwt::errorable
+{
+	class impl;
+	pfs::pimpl _d;
+
+public:
+	reader (handlers * h = nullptr);
+
+<<<<<<< HEAD
 	bool parse (const String & abnf, AbnfRuleList & ruleset);
 
 	static AbnfAltern &   newAltern ()   { return * new AbnfAltern; }
@@ -408,5 +446,12 @@ inline String AbnfNumVal::toString () const
 
 
 CWT_NS_END
+=======
+	bool parse (const pfs::string & src);
+	void setHandlers (handlers * h);
+};
+
+}} // cwt::abnf
+>>>>>>> 272b46b780f5a3c27dc26af07c3a046d7a40b88e
 
 #endif /* __CWT_ABNF_HPP__ */
