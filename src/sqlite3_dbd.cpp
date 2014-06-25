@@ -430,9 +430,7 @@ pfs::vector<pfs::string> s3_dbd_tables (cwt::debby::database_data & dbh)
 		s3_dbd_stmt_close(sth);
 	}
 
-	if (!errstr.isEmpty()) {
-		PFS_ERROR(errstr.c_str());
-	}
+	PFS_VERIFY_X(errstr.isEmpty(), errstr.c_str());
 
 	return r;
 }
@@ -455,9 +453,7 @@ bool s3_dbd_table_exists (cwt::debby::database_data & dbh, const pfs::string & n
 		s3_dbd_stmt_close(sth);
 	}
 
-	if (!errstr.isEmpty()) {
-		PFS_ERROR(errstr.c_str());
-	}
+	PFS_VERIFY_X(errstr.isEmpty(), errstr.c_str());
 
 	return r;
 }
@@ -577,7 +573,7 @@ void s3_dbd_stmt_close (cwt::debby::statement_data * sth)
 		if (rc != SQLITE_OK) {
 			pfs::string errstr;
 			errstr << _Tr("Failed to close statement: ") << pfs::string(sqlite3_errmsg(dbh_native));
-			PFS_ERROR(errstr.c_str());
+			PFS_VERIFY_X(errstr.isEmpty(), errstr.c_str());
 		}
 		s3_sth->_sth_native = nullptr;
 		s3_sth->_driver = nullptr;
@@ -658,7 +654,7 @@ static int __fetch_helper (Sqlite3DbStatement * s3_sth)
 	} else if (rc == SQLITE_ROW) {
 		; // ok
 	} else {
-		PFS_ERROR(__s3_stmt_errmsg(s3_sth).c_str());
+		PFS_VERIFY_X(false, __s3_stmt_errmsg(s3_sth).c_str());
 	}
 
 	return rc;
@@ -793,13 +789,12 @@ bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs
 		}
 		break;
 	default:
-		PFS_ERROR(_Tr("Unsupported bind parameter type"));
+		PFS_VERIFY_X(false, _Tr("Unsupported bind parameter type"));
 		return false;
 	}
 
-	if (rc != SQLITE_OK) {
-		PFS_ERROR(__s3_stmt_errmsg(s3_sth).c_str());
-	}
+	PFS_VERIFY_X(rc == SQLITE_OK, __s3_stmt_errmsg(s3_sth).c_str());
+
 	return rc == SQLITE_OK ? true : false;
 }
 
