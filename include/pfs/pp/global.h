@@ -109,10 +109,13 @@
 #ifdef __cplusplus
 namespace pfs {
 	template <typename T>
-	inline T min(T a, T b) { return a <= b ? a : b; }
+	inline T min (T a, T b) { return a <= b ? a : b; }
 
 	template <typename T>
-	inline T max(T a, T b) { return a >= b ? a : b; }
+	inline T max (T a, T b) { return a >= b ? a : b; }
+
+	template <typename T>
+	inline T abs (T x) { return x < 0 ? x * T(-1) : x; }
 }
 #else
 #	define max(a,b)   (((a) > (b)) ? (a) : (b))
@@ -129,30 +132,29 @@ namespace pfs {
 #	define __TFILE__ __FILE__
 #endif
 
-// TODO DEPRECATED {
-#define PFS_FPRINT(stream,prefix,str) fprintf(stream, "%s (%s[%d]): %s\n", prefix, __TFILE__, __LINE__, str)
-//#define PFS_PRINT(prefix,str) PFS_FPRINT(stdout,prefix,str)
-//#define PFS_INFO(str)         PFS_FPRINT(stdout,"INFO",str)
-#define PFS_WARN(str)         PFS_FPRINT(stderr,"WARN",str)
-#define PFS_ERROR(str)        PFS_FPRINT(stderr,"ERROR",str)
-//#define PFS_FATAL(str)      { PFS_FPRINT(stderr,"FATAL",str); abort(); }
-// }
-
-#define PFS_VERIFY_IF(expr) if (! (expr) &&            \
-	fprintf(stderr, "ERROR (%s[%d]): %s\n", __TFILE__, __LINE__, #expr))
-
-#define PFS_VERIFY_X_IF(expr,str) if (! (expr) &&      \
-		fprintf(stderr, "ERROR (%s[%d]): %s: %s\n", __TFILE__, __LINE__, #expr, (str)))
-
-#define PFS_VERIFY_ERRNO_IF(expr,errn) if (! (expr) && \
-		fprintf(stderr, "ERROR (%s[%d]): %s: [errno=%d]: %s\n", __TFILE__, __LINE__, #expr, errn, strerror(errn)))
-
-#define PFS_VERIFY(expr)            PFS_VERIFY_IF(expr)            {;}
-#define PFS_VERIFY_ERRNO(expr,errn) PFS_VERIFY_ERRNO_IF(expr,errn) {;}
-#define PFS_VERIFY_X(expr,str)      PFS_VERIFY_X_IF(expr,str)      {;}
-
-
-
+#ifndef NDEBUG
+#	ifdef __cplusplus
+namespace pfs {
+struct __verify
+{
+	bool operator () (bool predicate
+			, const char * file, int lineno, const char * text) const
+	{
+		if (!predicate)
+			fprintf(stderr, "ERROR (%s[%d]): %s\n", file, lineno, text);
+		return predicate;
+	}
+};
+}
+#		define PFS_VERIFY(expr)       pfs::__verify()((expr), __TFILE__, __LINE__, #expr)
+#		define PFS_VERIFY_X(expr,text) pfs::__verify()((expr), __TFILE__, __LINE__, (text))
+#	else /* !__cplusplus */
+#
+#	endif
+#else /* !NDEBUG */
+#	define PFS_VERIFY(expr) (expr)
+#	define PFS_VERIFY_X(expr,text) (expr)
+#endif
 
 #ifndef NDEBUG
 #	define PFS_DEBUG(expr)       expr
@@ -182,8 +184,8 @@ namespace pfs {
 #		define PFS_ASSERT_X(p,str) if( !(p) ) { PFS_ERROR(str);            \
 			(void) __dj_assert(#p,__FILE__,__LINE__); }
 #	else
-#		define PFS_ASSERT_TRACE(p,trace_exp) if( !(p) ) { (void)trace_exp; assert(p); }
-#		define PFS_ASSERT_X(p,str) if( !(p) ) { PFS_ERROR(str); assert(p); }
+#		define PFS_ASSERT_TRACE(p,trace_exp) if (!(p)) { (void)trace_exp; assert(p); }
+#		define PFS_ASSERT_X(p,str) if (! PFS_VERIFY_X(p,str)) { assert(p); }
 #	endif
 
 #else
@@ -203,15 +205,6 @@ namespace pfs {
 #define PFS_UNUSED(x)         ((void)(x))
 #define PFS_UNUSED2(x1,x2)    ((void)(x1));((void)(x2))
 #define PFS_UNUSED3(x1,x2,x3) ((void)(x1));((void)(x2));((void)(x3))
-
-/*
-#ifdef __cplusplus
-#	define PFS_DENY_COPY(Class)             \
-	private:                                \
-		Class(const Class &);               \
-		Class & operator = (const Class &);
-#endif
-*/
 
 #endif /* __PFS_GLOBAL_H__ */
 
