@@ -30,8 +30,8 @@ thread::~thread ()
         locker.tryLock();
     }
 
-    if (_pimpl->_state == ThreadRunning) {
-    	PFS_WARN(_Tr("Attempt to destroy thread while it is still running"));
+    if (! PFS_VERIFY_X(_pimpl->_state != ThreadRunning
+    		, _Tr("Attempt to destroy thread while it is still running"))) {
     	locker.unlock();
     	terminate();
     	wait();

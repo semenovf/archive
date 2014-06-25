@@ -9,11 +9,12 @@
 #include "../../include/cwt/safeformat.hpp"
 #include "../../include/cwt/threadcv.hpp"
 #include "thread_unix.hpp"
+#include <cwt/platform.hpp>
 #include <pthread.h>
 #include <sched.h>
 
 #ifdef __COMMENT__
-#ifdef CWT_OS_LINUX
+#ifdef PFS_OS_LINUX
 #	include <sys/time.h>
 #	include <sys/resource.h> // for getrlimit(2)
 #endif
@@ -134,11 +135,11 @@ bool thread::impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
 #endif
 
     	stackSize = ((stackSize + page_size - 1) / page_size) * page_size;
-    	PFS_VERIFY_ERRNO(!(rc = pthread_attr_setstacksize(& attr, stackSize)), rc);
+    	rc = CWT_VERIFY_ERRNO(pthread_attr_setstacksize(& attr, stackSize));
     }
 
     _stackSize = 0;
-    PFS_VERIFY_ERRNO(!(rc = pthread_attr_getstacksize(& attr, & _stackSize)), rc);
+    rc = CWT_VERIFY_ERRNO(pthread_attr_getstacksize(& attr, & _stackSize));
 
     return (rc == 0);
 }
@@ -161,38 +162,38 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
 	pthread_attr_t attr;
 
 	while (true) {
-		PFS_VERIFY_ERRNO(!(rc = pthread_attr_init(& attr)), rc);
+		rc = CWT_VERIFY_ERRNO(pthread_attr_init(& attr));
 		if (rc)
 			break;
 
 		// Only threads that are created as joinable can be joined.
 		// If a thread is created as detached, it can never be joined.
-		PFS_VERIFY_ERRNO(!(rc = pthread_attr_setdetachstate(& attr, PTHREAD_CREATE_DETACHED)), rc);
+		rc = CWT_VERIFY_ERRNO(pthread_attr_setdetachstate(& attr, PTHREAD_CREATE_DETACHED));
 		if (rc)
 			break;
 
 		_priority = priority;
 
 		if (priority == thread::InheritPriority) {
-			PFS_VERIFY_ERRNO(!(rc = pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED)), rc);
+			rc = CWT_VERIFY_ERRNO(pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED));
 			if (rc)
 				break;
 		} else {
+
 #ifdef CWT_HAVE_THREAD_PRIORITY_SCHEDULING
 			int posixPolicy;
-			PFS_VERIFY_ERRNO(!(rc = pthread_attr_getschedpolicy(& attr, & posixPolicy)), rc);
-
+			rc = CWT_VERIFY_ERRNO(pthread_attr_getschedpolicy(& attr, & posixPolicy));
             if (rc) {
             	rc = 0; // ignore this error
             	break;
             }
 
             int posixPriority;
-
-            if (! __map_to_posix_priority(priority, & posixPolicy, & posixPriority)) {
-            	PFS_WARN(_Tr("Can not map to POSIX priority"));
+            bool ok;
+            PFS_VERIFY_X((ok = __map_to_posix_priority(priority, & posixPolicy, & posixPriority))
+            		, _Tr("Can not map to POSIX priority"));
+            if (!ok)
             	break;
-            }
 
             sched_param sp;
             sp.sched_priority = posixPriority;
@@ -219,7 +220,7 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
 			_data = new thread::data;
 			_data->threadImpl = _thread->_pimpl;
 
-			PFS_VERIFY_ERRNO(!(rc = pthread_create(& pth, & attr, & thread::impl::thread_routine, this)), rc);
+			rc = CWT_VERIFY_ERRNO(pthread_create(& pth, & attr, & thread::impl::thread_routine, this));
 
 			if (rc) {
 				_state = ThreadNotRunning;
@@ -268,7 +269,7 @@ void * thread::impl::thread_routine (void * arg)
 
 	// If a cancellation request is received,
     // it is blocked until cancelability is enabled.
-    PFS_VERIFY(!pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
+    CWT_VERIFY_ERRNO(pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
 
 	thread::impl * threadImpl = static_cast<thread::impl *>(arg);
 	threadImpl->_data->threadId = pthread_self();
@@ -277,8 +278,8 @@ void * thread::impl::thread_routine (void * arg)
 
     thread::data::set(threadImpl->_data); // set thread-specific data
 
-    PFS_VERIFY(0 == pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr));
-    PFS_VERIFY(0 == pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr));
+    CWT_VERIFY_ERRNO(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr));
+    CWT_VERIFY_ERRNO(pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr));
 
     pthread_testcancel();
 
@@ -291,7 +292,7 @@ void * thread::impl::thread_routine (void * arg)
 		thread::data * d = threadImpl->_data;
 		threadImpl->_data = nullptr;
 		delete d;
-		PFS_ASSERT_X(thisthread, _Tr("thread destroyed, may be you forget to wait() it")); // thread detached (container already destroyed)
+		PFS_ASSERT_X(thisthread, _Tr("Thread destroyed, may be you forget to wait() it")); // thread detached (container already destroyed)
 	}
 
    	thisthread->run(); // Do the job
@@ -363,9 +364,8 @@ void thread::impl::terminate ()
     pfs::auto_lock<> locker(& _mutex);
 
     if (_data && _data->threadId) {
-    	int rc = 0;
     	_state = ThreadFinishing;
-    	PFS_VERIFY_ERRNO(!(rc = pthread_cancel(_data->threadId)), rc); // thread termination error
+    	CWT_VERIFY_ERRNO(pthread_cancel(_data->threadId)); // thread termination error
     }
 }
 
@@ -374,10 +374,11 @@ bool thread::impl::wait (ulong_t timeout)
     pfs::auto_lock<> locker(& _mutex);
 
     if (_data) {
-		if (_data->threadId == pthread_self()) {
-			PFS_ERROR(_Tr("thread attempt to wait on itself"));
+    	bool ok;
+    	PFS_VERIFY_X((ok = (_data->threadId != pthread_self()))
+    			, _Tr("Thread attempt to wait on itself"));
+		if (!ok)
 			return false;
-		}
 
 		while (_state == ThreadRunning) {
 			if (timeout == PFS_ULONG_MAX) {
@@ -399,8 +400,8 @@ void thread::impl::setPriority(thread::priority_type priority)
 {
     pfs::auto_lock<> locker(& _mutex);
 
-    if (_state != ThreadRunning) {
-    	PFS_WARN("Unable to set thread priority: thread must be in running state");
+    if (! PFS_VERIFY_X(_state == ThreadRunning
+    		, _Tr("Unable to set thread priority: thread must be in running state"))) {
         return;
     }
 
@@ -411,21 +412,18 @@ void thread::impl::setPriority(thread::priority_type priority)
     int posixPolicy;
     sched_param param;
 
-    int rc;
-
-    PFS_VERIFY_ERRNO(!(rc = pthread_getschedparam(_data->threadId, & posixPolicy, & param)), rc);
+    int rc = CWT_VERIFY_ERRNO(pthread_getschedparam(_data->threadId, & posixPolicy, & param));
     if (rc)
         return;
 
     int posixPriority;
-
-    if (! __map_to_posix_priority(priority, & posixPolicy, & posixPriority)) {
-    	PFS_WARN(_Tr("Can not map to POSIX priority"));
+    bool ok = PFS_VERIFY_X(__map_to_posix_priority(priority, & posixPolicy, & posixPriority)
+    		, _Tr("Can not map to POSIX priority"));
+    if (! ok)
     	return;
-    }
 
     param.sched_priority = posixPriority;
-    PFS_VERIFY_ERRNO(!(rc = pthread_setschedparam(_data->threadId, posixPolicy, & param)), rc);
+    rc = CWT_VERIFY_ERRNO(pthread_setschedparam(_data->threadId, posixPolicy, & param));
 
 #	ifdef SCHED_IDLE
     if (rc < 0 && posixPolicy == SCHED_IDLE && errno == EINVAL) {

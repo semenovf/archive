@@ -10,7 +10,7 @@
 #include <cwt/safeformat.hpp>
 #include <cstdarg>
 
-extern pfs::string __strerror (int_t errn);
+extern pfs::string __cwt_strerror (int_t errn);
 
 namespace cwt {
 
@@ -29,7 +29,7 @@ void errorable::addError (const pfs::string & text)
 
 void errorable::addSystemError (int errn, const pfs::string & caption)
 {
-	pfs::string errstr(__strerror(errn));
+	pfs::string errstr(__cwt_strerror(errn));
 
 	if (caption.isEmpty()) {
 		addError(errstr);

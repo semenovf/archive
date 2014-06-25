@@ -173,9 +173,12 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 	if (ctx->spec.spec_char == pfs::ucchar('p'))
 		ctx->spec.spec_char = pfs::ucchar('x');
 
-	if (ctx->argi >= ctx->bind_args.size()) {
-		PFS_WARN(_Tr("More arguments expected according to format string:"));
-		PFS_WARN(ctx->format.c_str());
+	bool ok = PFS_VERIFY_X(
+			PFS_VERIFY_X(ctx->argi < ctx->bind_args.size()
+					, _Tr("More arguments expected according to format string:"))
+			, ctx->format.c_str());
+
+	if (! ok) {
 		ctx->result.append(pfs::string(begin, end));
 	} else {
 		pfs::string r;
@@ -217,31 +220,43 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 		case 'c':
 			r = pfs::string(1, char(ut.toInteger()));
 			expect = __EXPECT_CHAR;
-			if (ctx->spec.flags & safeformat::ZeroPadding) {
-				PFS_WARN(_Tr("'0' flag used with ‘%c’ specifier in format string"));
-				PFS_WARN(ctx->format.c_str());
-				ctx->spec.flags &= ~safeformat::ZeroPadding;
-			}
 
-			if (ctx->spec.flags & safeformat::NeedSign) {
-				PFS_WARN(_Tr("'+' flag used with ‘%c’ specifier in format string"));
-				PFS_WARN(ctx->format.c_str());
+			ok = PFS_VERIFY_X(
+				PFS_VERIFY_X(!(ctx->spec.flags & safeformat::ZeroPadding)
+					, _Tr("'0' flag used with ‘%c’ specifier in format string:"))
+				, ctx->format.c_str());
+
+			if (!ok)
+				ctx->spec.flags &= ~safeformat::ZeroPadding;
+
+			ok = PFS_VERIFY_X(
+				PFS_VERIFY_X(!(ctx->spec.flags & safeformat::NeedSign)
+					, _Tr("'+' flag used with ‘%c’ specifier in format string:"))
+				, ctx->format.c_str());
+
+			if (!ok)
 				ctx->spec.flags &= ~safeformat::NeedSign;
-			}
 			break;
+
 		case 's':
 			r = ut.toString();
 			expect = __EXPECT_STRING;
-			if (ctx->spec.flags & safeformat::ZeroPadding) {
-				PFS_WARN(_Tr("'0' flag used with ‘%s’ specifier in format string"));
-				PFS_WARN(ctx->format.c_str());
+
+			ok = PFS_VERIFY_X(
+				PFS_VERIFY_X(!(ctx->spec.flags & safeformat::ZeroPadding)
+					, _Tr("'0' flag used with ‘%s’ specifier in format string"))
+				, ctx->format.c_str());
+
+			if (!ok)
 				ctx->spec.flags &= ~safeformat::ZeroPadding;
-			}
-			if (ctx->spec.flags & safeformat::NeedSign) {
-				PFS_WARN(_Tr("'+' flag used with ‘%s’ specifier in format string"));
-				PFS_WARN(ctx->format.c_str());
+
+			ok = PFS_VERIFY_X(
+				PFS_VERIFY_X(!(ctx->spec.flags & safeformat::NeedSign)
+					, _Tr("'0' flag used with ‘%s’ specifier in format string"))
+				, ctx->format.c_str());
+
+			if (!ok)
 				ctx->spec.flags &= ~safeformat::NeedSign;
-			}
 			break;
 		default:
 			break;
@@ -332,9 +347,10 @@ bool set_percent_char (const pfs::string::const_iterator & , const pfs::string::
 
 bool bad_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void * context, void *)
 {
-	safeformatcontext *ctx = reinterpret_cast<safeformatcontext *>(context);
-	PFS_ERROR(_Tr("Bad conversion specification in format string:"));
-	PFS_ERROR(ctx->format.c_str());
+	safeformatcontext * ctx = reinterpret_cast<safeformatcontext *>(context);
+	PFS_VERIFY_X(
+		PFS_VERIFY_X(false, _Tr("Bad conversion specification in format string:"))
+		, ctx->format.c_str());
 	return false;
 }
 
