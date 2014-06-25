@@ -75,13 +75,14 @@ addrinfo_iterator addrinfo_iterator::begin (const pfs::string & hostname)
 	hints.ai_addr      = nullptr;
 	hints.ai_next      = nullptr;
 
+	// FIXME handle error with errorable interface
 	int rc = getaddrinfo (node, service, & hints, & result);
 	if (rc) {
-		pfs::string errmsg;
-		errmsg << hostname
-				<< _Tr(": get address info failure: ")
-				<< gai_strerror(rc);
-		PFS_ERROR(errmsg.c_str());
+//		pfs::string errmsg;
+//		errmsg << hostname
+//				<< _Tr(": get address info failure: ")
+//				<< gai_strerror(rc);
+//		PFS_ERROR(errmsg.c_str());
 		return end();
 	}
 

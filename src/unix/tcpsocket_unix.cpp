@@ -6,7 +6,7 @@
  */
 
 #include "inetsocket_unix.hpp"
-#include <cwt/logger.hpp>
+#include <cwt/platform.hpp>
 #include <cwt/safeformat.hpp>
 #include <cerrno>
 #include <sys/socket.h>
@@ -19,9 +19,9 @@ bool tcp_socket::open (const pfs::string & hostname, uint16_t port, int32_t ofla
 	if (_pimpl->open(hostname, port, SOCK_STREAM, 0, oflags)) {
 		int rc = 0;
 
-		PFS_VERIFY_ERRNO((rc = ::connect(_pimpl->sockfd
+		CWT_VERIFY_ERRNO_X(0 == (rc = ::connect(_pimpl->sockfd
 				, reinterpret_cast<struct sockaddr *>(& _pimpl->saddr)
-				, sizeof(_pimpl->saddr))) == 0, errno);
+				, sizeof(_pimpl->saddr))), errno);
 
 		if (rc == 0)
 			return true;
@@ -94,7 +94,7 @@ bool tcp_socket::closeDevice ()
 		return true;
 
 	int rc = 0;
-	PFS_VERIFY_ERRNO((rc = shutdown(_pimpl->sockfd, SHUT_RDWR)) == 0, errno);
+	CWT_VERIFY_ERRNO_X(0 == (rc = shutdown(_pimpl->sockfd, SHUT_RDWR)), errno);
 	_pimpl->close();
 	return rc == 0;
 }

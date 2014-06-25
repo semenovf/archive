@@ -5,7 +5,8 @@
  *      Author: wladt
  */
 
-#include "../../include/cwt/io/tcpserver.hpp"
+#include <cwt/io/tcpserver.hpp>
+#include <cwt/platform.hpp>
 #include "inetsocket_unix.hpp"
 #include "socket_unix.hpp"
 #include <sys/types.h>
@@ -44,25 +45,25 @@ bool tcp_server::open (const pfs::string hostname, uint16_t port, int32_t oflags
 			 * time expires
 			 */
 			int reuse = 1;
-			PFS_VERIFY_ERRNO((rc = ::setsockopt(_pimpl->sockfd
+			CWT_VERIFY_ERRNO_X(0 == (rc = ::setsockopt(_pimpl->sockfd
 					, SOL_SOCKET
 					, SO_REUSEADDR
 					, (char *) & reuse
-					, sizeof(reuse)) == 0)
+					, sizeof(reuse)))
 				, errno);
 
 			if (!rc)
 				break;
 
 			/* Bind the socket */
-			PFS_VERIFY_ERRNO((rc = ::bind(_pimpl->sockfd
+			CWT_VERIFY_ERRNO_X(0 == (rc = ::bind(_pimpl->sockfd
 					, reinterpret_cast<struct sockaddr *>(& _pimpl->saddr)
-					, sizeof(_pimpl->saddr))) == 0, errno);
+					, sizeof(_pimpl->saddr))), errno);
 			if( rc != 0 )
 				break;
 
 			/* Listen the socket */
-			PFS_VERIFY_ERRNO((rc = ::listen(_pimpl->sockfd, 10)) == 0, errno);
+			CWT_VERIFY_ERRNO_X(0 == (rc = ::listen(_pimpl->sockfd, 10)), errno);
 			if (rc < 0) {
 				break;
 			}
@@ -82,9 +83,9 @@ tcp_socket * tcp_server::accept ()
 	struct sockaddr_in saddr;
 	socklen_t socklen = sizeof(saddr);
 
-	PFS_VERIFY_ERRNO((sockfd = ::accept(_pimpl->sockfd
+	CWT_VERIFY_ERRNO_X(0 <= (sockfd = ::accept(_pimpl->sockfd
 			, reinterpret_cast<struct sockaddr *>(& saddr)
-			, & socklen)) >= 0
+			, & socklen))
 		, errno);
 
 	if (sockfd >= 0) {
