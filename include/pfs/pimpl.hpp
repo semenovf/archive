@@ -131,9 +131,17 @@ public:
 	}
 };
 
+
 template <typename T>
+struct default_allocator
+{
+	T * operator () () const { return new T; }
+};
+
+template <typename T, typename Alloc = default_allocator<T> >
 class pimpl_lazy_init
 {
+	typedef Alloc allocator;
 	typedef void (pimpl_lazy_init::* init_func)();
 
 protected:
@@ -142,9 +150,8 @@ protected:
 
 	void initial_init ()
 	{
-		if (_d.isNull()) {
-			_d = pimpl(new T);
-		}
+		PFS_ASSERT(_d.isNull());
+		_d = pimpl(allocator()());
 		_init = & pimpl_lazy_init::init;
 	}
 

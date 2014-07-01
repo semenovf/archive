@@ -9,6 +9,7 @@
 
 #include <cwt/test.hpp>
 #include <pfs/unitype.hpp>
+#include <pfs/detail/unitype.hpp>
 #include <cstring>
 #include <iostream>
 
@@ -447,6 +448,40 @@ void test_time(void)
 
 #endif
 
+
+void test_experimental ()
+{
+	using namespace pfs::unitype1;
+	using pfs::unitype1::unitype;
+	TEST_OK(unitype<bool>(true).get<bool>() == true);
+	TEST_OK(unitype<bool>(false).get<bool>() == false);
+	TEST_OK(unitype<int>(1).get<int>() != 0);
+	TEST_OK(unitype<int>(0).get<int>() == 0);
+	TEST_OK(unitype<int>(1).get<bool>() == true);
+	TEST_OK(unitype<int>(0).get<bool>() == false);
+//	TEST_OK(unitype(true).toString() == _l1("true"));
+//	TEST_OK(unitype(false).toString() == _l1("false"));
+//	TEST_OK(unitype(true).toBlob() == pfs::bytearray(1, '\x1'));
+//	TEST_OK(unitype(false).toBlob() == pfs::bytearray(1, '\x0'));
+
+//	TEST_OK(pfs::unitype('\x80').toBoolean() == true);
+//	TEST_OK(pfs::unitype('\x00').toBoolean() == false);
+
+	for (int i = PFS_CHAR_MIN; i <= PFS_CHAR_MAX; ++i)
+		TEST_OK(make_unitype(char(i)).get<int>() == i);
+
+//	TEST_OK(pfs::unitype(char(0)).toString().size() == 1);
+//	TEST_OK(pfs::string("\x0", 1).size() == 1);
+//	TEST_FAIL(pfs::unitype(char(0)).toString() == pfs::string(1,char(0)));
+//
+//	for (int i = PFS_CHAR_MIN; i <= PFS_CHAR_MAX; ++i)
+//		TEST_OK(pfs::unitype(char(i)).toString() == pfs::string(1,char(i)));
+//
+//	for (int i = PFS_CHAR_MIN; i <= PFS_CHAR_MAX; ++i)
+//		TEST_OK(pfs::unitype(char(i)).toBlob() == pfs::bytearray(1,char(i)));
+
+}
+
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
@@ -464,6 +499,7 @@ int main(int argc, char *argv[])
 	test_blob();
 	test_time();
 */
+	test_experimental();
 
 	END_TESTS;
 }
