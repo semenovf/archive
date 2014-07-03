@@ -11,6 +11,7 @@
 #include "pimpl.hpp"
 #include "endian.hpp"
 #include "vector.hpp"
+#include "bits/cast_traits.hpp"
 #include <string>
 #include <cstring>
 #include <ostream>
@@ -395,7 +396,7 @@ size_t bytearray::readNumber (T & v, size_t pos, endian::type_enum order) const
 template <typename T>
 inline bytearray bytearray::toBytes (const T & v, endian::type_enum order)
 {
-	T a = order == endian::LittleEndian ? endian::toLittleEndian(v) : endian::toBigEndian(v);
+	T a = (order == endian::LittleEndian ? endian::toLittleEndian(v) : endian::toBigEndian(v));
 	union { T v; char b[sizeof(T)]; } d;
 	d.v = a;
 	return bytearray(d.b, sizeof(T));
@@ -426,6 +427,44 @@ inline std::ostream & operator << (std::ostream & os, const pfs::bytearray & o)
 //DLL_API uint_t hash_func(const bytearray & key, uint_t seed = 0);
 
 } // pfs
+
+
+namespace pfs { namespace unitype1 {
+
+template <> inline bool cast_trait<bool, pfs::bytearray> (const pfs::bytearray & v)
+{
+	return v.isEmpty() ? false
+		: (v[0] == '\x00' ? false : true);
+}
+
+template <> inline int cast_trait<int, pfs::bytearray> (const pfs::bytearray & v) { return int(v.toInt()); }
+template <> inline unsigned int cast_trait<unsigned int, pfs::bytearray> (const pfs::bytearray & v) { return int(v.toUInt()); }
+template <> inline long cast_trait<long, pfs::bytearray> (const pfs::bytearray & v) { return long(v.toLong()); }
+#ifdef HAVE_LONGLONG
+template <> inline long long cast_trait<long long, pfs::bytearray> (const pfs::bytearray & v) { return (long long)v.toLong(); }
+#endif
+
+template <> inline float cast_trait<float, pfs::bytearray> (const pfs::bytearray & v) { return float(v.toDouble()); }
+template <> inline double cast_trait<double, pfs::bytearray> (const pfs::bytearray & v) { return v.toDouble(); }
+
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, bool> (const bool & v)                     { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, char> (const char & v)                     { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned char> (const unsigned char & v)   { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, short> (const short & v)                   { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned short> (const unsigned short & v) { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, int> (const int & v)                       { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned int> (const unsigned int & v)     { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, long> (const long & v)                     { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned long> (const unsigned long & v)   { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, float> (const float & v)                   { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, double> (const double & v)                 { return pfs::bytearray::toBytes(v); }
+#ifdef HAVE_LONGLONG
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, long long> (const long long & v)           { return pfs::bytearray::toBytes(v); }
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned long long> (const unsigned long long & v) { return pfs::bytearray::toBytes(v); }
+#endif
+template <> inline pfs::bytearray cast_trait<pfs::bytearray, pfs::bytearray> (const pfs::bytearray & v) { return pfs::bytearray(v); }
+
+}} // pfs::unitype1
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)

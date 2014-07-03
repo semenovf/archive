@@ -131,13 +131,14 @@ public:
 	}
 };
 
-
+// TODO must be DEPRICATED
 template <typename T>
 struct default_allocator
 {
 	T * operator () () const { return new T; }
 };
 
+// TODO must be DEPRICATED
 template <typename T, typename Alloc = default_allocator<T> >
 class pimpl_lazy_init
 {

@@ -75,6 +75,7 @@ public:
 	virtual bool isNull () const = 0;
 	virtual bool toBoolean () const = 0;
 	virtual long_t toInteger () const = 0;
+	virtual ulong_t toUInteger () const = 0;
 	virtual double toFloat () const = 0;
 	virtual pfs::string toString () const = 0;
 	virtual pfs::bytearray toByteArray () const = 0;
@@ -93,6 +94,7 @@ public:
 
 	virtual bool toBoolean () const  { return false; }
 	virtual long_t toInteger () const   { return 0; }
+	virtual ulong_t toUInteger () const   { return 0; }
 	virtual double toFloat () const { return double(0.0f); }
 	virtual pfs::string toString () const { return pfs::string(); }
 	virtual pfs::bytearray toByteArray () const { return pfs::bytearray(); }
@@ -143,6 +145,27 @@ template <> inline long_t to_integer_trait<unsigned long long> (const unsigned l
 #endif
 template <> inline long_t to_integer_trait<pfs::string> (const pfs::string & v) { return v.toLong(); }
 template <> inline long_t to_integer_trait<pfs::bytearray> (const pfs::bytearray & v) { return v.toLong(); }
+
+
+template <typename T> ulong_t to_uinteger_trait (const T & v);
+template <> inline ulong_t to_uinteger_trait<bool> (const bool & v) { return v ? ulong_t(1) : ulong_t(0); }
+template <> inline ulong_t to_uinteger_trait<char> (const char & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<unsigned char> (const unsigned char & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<short> (const short & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<unsigned short> (const unsigned short & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<int> (const int & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<unsigned int> (const unsigned int & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<long> (const long & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<unsigned long> (const unsigned long & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<float> (const float & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<double> (const double & v) { return ulong_t(v); }
+#ifdef HAVE_LONGLONG
+template <> inline ulong_t to_uinteger_trait<long long> (const long long & v) { return ulong_t(v); }
+template <> inline ulong_t to_uinteger_trait<unsigned long long> (const unsigned long long & v) { return ulong_t(v); }
+#endif
+template <> inline ulong_t to_uinteger_trait<pfs::string> (const pfs::string & v) { return v.toULong(); }
+template <> inline ulong_t to_uinteger_trait<pfs::bytearray> (const pfs::bytearray & v) { return v.toULong(); }
+
 
 template <typename T> double to_float_trait (const T & v);
 template <> inline double to_float_trait<bool> (const bool & v) { return v ? double(1) : double(0); }
@@ -219,6 +242,7 @@ public:
 
 	virtual bool           toBoolean   () const { return to_boolean_trait(_value); }
 	virtual long_t         toInteger   () const { return to_integer_trait(_value); }
+	virtual ulong_t        toUInteger  () const { return to_uinteger_trait(_value); }
 	virtual double         toFloat     () const { return to_float_trait(_value); }
 	virtual pfs::string    toString    () const { return to_string_trait(_value); }
 	virtual pfs::bytearray toByteArray () const { return to_bytearray_trait(_value); }
@@ -253,6 +277,7 @@ public:
 	bool           isNull      () const { return _d.cast<unitype_base>()->isNull(); }
 	bool           toBoolean   () const { return _d.cast<unitype_base>()->toBoolean(); }
 	long_t         toInteger   () const { return _d.cast<unitype_base>()->toInteger(); }
+	long_t         toUInteger  () const { return _d.cast<unitype_base>()->toUInteger(); }
 	double         toFloat     () const { return _d.cast<unitype_base>()->toFloat(); }
 	pfs::string    toString    () const { return _d.cast<unitype_base>()->toString(); }
 	pfs::bytearray toByteArray () const { return _d.cast<unitype_base>()->toByteArray(); }

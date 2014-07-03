@@ -8,13 +8,13 @@
 #ifndef __PFS_UTF8STRING_HPP__
 #define __PFS_UTF8STRING_HPP__
 
-#include <pfs.hpp>
-#include <pfs/bits/utf8string_iterator.hpp>
-#include <pfs/bits/stringlist_basic.hpp>
-#include <pfs/vector.hpp>
-#include <pfs/bytearray.hpp>
-#include <pfs/shared_ptr.hpp>
-#include <pfs/utility.hpp>
+#include "bits/utf8string_iterator.hpp"
+#include "bits/stringlist_basic.hpp"
+#include "bits/cast_traits.hpp"
+#include "vector.hpp"
+#include "bytearray.hpp"
+#include "shared_ptr.hpp"
+#include "utility.hpp"
 #include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -506,6 +506,44 @@ inline bool operator >= (const utf8string & s1, const char * s2)
 }
 
 } // pfs
+
+
+namespace pfs { namespace unitype1 {
+
+template <> inline bool cast_trait<bool, pfs::utf8string> (const pfs::utf8string & v)
+{
+	return v.isEmpty() ? false
+		: (v == "false" ? false : true);
+}
+
+template <> inline int cast_trait<int, pfs::utf8string> (const pfs::utf8string & v) { return int(v.toInt()); }
+template <> inline long cast_trait<long, pfs::utf8string> (const pfs::utf8string & v) { return long(v.toLong()); }
+
+#ifdef HAVE_LONGLONG
+template <> inline long long cast_trait<long long, pfs::utf8string> (const pfs::utf8string & v) { return (long long)v.toLong(); }
+#endif
+
+template <> inline float cast_trait<float, pfs::utf8string> (const pfs::utf8string & v) { return float(v.toDouble()); }
+template <> inline double cast_trait<double, pfs::utf8string> (const pfs::utf8string & v) { return v.toDouble(); }
+
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, bool> (const bool & v) { return v ? pfs::utf8string("true") : pfs::utf8string("false"); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, char> (const char & v) { return pfs::utf8string(1, v); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, unsigned char> (const unsigned char & v) { return pfs::utf8string(1, (const char)v); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, short> (const short & v) { return pfs::utf8string::number(v); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, unsigned short> (const unsigned short & v) { return pfs::utf8string::number(v); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, int> (const int & v) { return pfs::utf8string::number(v); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, unsigned int> (const unsigned int & v) { return pfs::utf8string::number(v); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, long> (const long & v) { return pfs::utf8string::number(v); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, unsigned long> (const unsigned long & v) { return pfs::utf8string::number(v); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, float> (const float & v) { return pfs::utf8string::number(v); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, double> (const double & v) { return pfs::utf8string::number(v); }
+#ifdef HAVE_LONGLONG
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, long long> (const long long & v) { return pfs::utf8string::number(long_t(v)); }
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, unsigned long long> (const unsigned long long & v) { return pfs::utf8string::number(ulong_t(v)); }
+#endif
+template <> inline pfs::utf8string cast_trait<pfs::utf8string, pfs::utf8string> (const pfs::utf8string & v) { return pfs::utf8string(v); }
+
+}} // pfs::unitype1
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)
