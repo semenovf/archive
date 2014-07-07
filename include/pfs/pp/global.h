@@ -138,16 +138,17 @@ namespace pfs {
 struct __verify
 {
 	bool operator () (bool predicate
+			, const char * prefix
 			, const char * file, int lineno, const char * text) const
 	{
 		if (!predicate)
-			fprintf(stderr, "WARN (%s[%d]): %s\n", file, lineno, text);
+			fprintf(stderr, "%s(%s[%d]): %s\n", prefix, file, lineno, text);
 		return predicate;
 	}
 };
 }
-#		define PFS_VERIFY(expr)       pfs::__verify()((expr), __TFILE__, __LINE__, #expr)
-#		define PFS_VERIFY_X(expr,text) pfs::__verify()((expr), __TFILE__, __LINE__, (text))
+#		define PFS_VERIFY(expr)       pfs::__verify()((expr), "WARN: ", __TFILE__, __LINE__, #expr)
+#		define PFS_VERIFY_X(expr,text) pfs::__verify()((expr), "WARN: ", __TFILE__, __LINE__, (text))
 #	else /* !__cplusplus */
 #
 #	endif
@@ -184,14 +185,14 @@ struct __verify
 #		define PFS_ASSERT_X(p,str) if( !(p) ) { PFS_ERROR(str);            \
 			(void) __dj_assert(#p,__FILE__,__LINE__); }
 #	else
-#		define PFS_ASSERT_TRACE(p,trace_exp) if (!(p)) { (void)trace_exp; assert(p); }
-#		define PFS_ASSERT_X(p,str) if (! PFS_VERIFY_X(p,str)) { assert(p); }
+//#		define PFS_ASSERT_TRACE(expr,trace_exp) if (!(expr)) { (void)trace_exp; assert(expr); }
+#		define PFS_ASSERT_X(expr,text) if (! pfs::__verify()((expr), "ERROR: ", __TFILE__, __LINE__, (text))) { exit(-1);/*assert(expr);*/ }
 #	endif
 
 #else
 #	define PFS_DEBUG(expr)
 #	define PFS_ASSERT(expr)
-#	define PFS_ASSERT_TRACE(expr,trace_expr)
+//#	define PFS_ASSERT_TRACE(expr,trace_expr)
 #	define PFS_ASSERT_X(expr,msg)
 
 #endif /* !NDEBUG */
