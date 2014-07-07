@@ -141,7 +141,7 @@ struct __verify
 			, const char * file, int lineno, const char * text) const
 	{
 		if (!predicate)
-			fprintf(stderr, "ERROR (%s[%d]): %s\n", file, lineno, text);
+			fprintf(stderr, "WARN (%s[%d]): %s\n", file, lineno, text);
 		return predicate;
 	}
 };
