@@ -29,9 +29,9 @@ public:
 		return r;
 	}
 
-	stringlist_basic & operator << ( const string_type & str )      { append(str); return *this; }
-	stringlist_basic & operator << ( const char * latin1 )          { append(string_type::fromLatin1(latin1)); return *this; }
-	stringlist_basic & operator << (const stringlist_basic & other) { append(other); return *this; }
+	stringlist_basic & operator << ( const string_type & str )      { this->append(str); return *this; }
+	stringlist_basic & operator << ( const char * latin1 )          { this->append(string_type::fromLatin1(latin1)); return *this; }
+	stringlist_basic & operator << (const stringlist_basic & other) { this->append(other); return *this; }
 };
 
 } // pfs
