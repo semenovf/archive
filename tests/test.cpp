@@ -101,7 +101,7 @@ void test_writer()
 	cwt::io::buffer buffer;
 	cwt::io::data_writer writer(buffer);
 	pfs::bytearray ba(loremipsum, strlen(loremipsum));
-	size_t written = writer.write(ba);
+	ssize_t written = writer.write(ba);
     TEST_FAIL(ssize_t(strlen(loremipsum)) == written);
     TEST_OK(buffer.data().size() == strlen(loremipsum));
 	TEST_OK(strncmp(buffer.data().data(), loremipsum, strlen(loremipsum)) == 0);
