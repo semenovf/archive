@@ -186,7 +186,7 @@ struct __verify
 			(void) __dj_assert(#p,__FILE__,__LINE__); }
 #	else
 //#		define PFS_ASSERT_TRACE(expr,trace_exp) if (!(expr)) { (void)trace_exp; assert(expr); }
-#		define PFS_ASSERT_X(expr,text) if (! pfs::__verify()((expr), "ERROR: ", __TFILE__, __LINE__, (text))) { exit(-1);/*assert(expr);*/ }
+#		define PFS_ASSERT_X(expr,text) if (! pfs::__verify()((expr), "ERROR: ", __TFILE__, __LINE__, (text))) { ::exit(-1);/*assert(expr);*/ }
 #	endif
 
 #else
