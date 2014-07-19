@@ -27,7 +27,7 @@ public:
 	static pfs::string NoPattern;
 
 private:
-	signal2<priority, const pfs::string &> _emitter;
+	cwt::signal2<priority, const pfs::string &> _emitter;
 
 public:
 	log (appender & a) { connect(a); }
@@ -42,7 +42,7 @@ public:
 	static void restoreDefaultAppenders ();
 };
 
-class appender : public has_slots<>
+class appender : public cwt::has_slots<>
 {
 	friend class log;
 
