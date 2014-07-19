@@ -18,6 +18,8 @@ unix: isEmpty(CWT_TARGET_PLATFORM)  { CWT_TARGET_PLATFORM=unix }
 # TARGET_CPU variable is set in WinSDK's SetEnv
 #
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=$$(TARGET_CPU) }
+
+isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=$$QMAKE_HOST.arch }
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=x86 }
 
 # qmake internal variables
