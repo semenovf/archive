@@ -31,7 +31,7 @@ fi
 usage() 
 {
     echo "Usage:"
-    echo "   ws [-c|-create|--create] [GIT_OPTIONS] PROJECTNAME"
+    echo "   ws [-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] PROJECTNAME"
     echo ""
     echo "GIT OPTIONS:"
     echo "    -git | --git        - initialize git local repo"
@@ -56,16 +56,8 @@ username()
     fi
 }
 
-create() 
+prepare_simple_app()
 {
-    if [ -e $PROJECT ]; then
-	echo "Error: Directory already exists: $PROJECT" >&2
-	exit 1
-    fi
-
-    DATE=`date`
-    username
-
     mkdir $PROJECT
     cd $PROJECT
     mkdir .gbs
@@ -97,6 +89,63 @@ create()
     echo "CONFIG  += ordered"                                            >> $PROJECT.pro
     echo "SUBDIRS  = $PROJECT tests"                                     >> $PROJECT.pro
     cd ..
+}
+
+prepare_sepaloid()
+{
+    mkdir $PROJECT
+    cd $PROJECT
+    mkdir .gbs
+    mkdir .gbs/$PROJECT
+#    cp $GBS_HOME/template/project.pro .gbs/$PROJECT/$PROJECT.pro
+    cp -R $GBS_HOME/template/sepaloid/.gbs/* .gbs/
+
+    mkdir include
+#    mkdir include/$PROJECT
+    mkdir src
+    mkdir cppcheck
+    cp $GBS_HOME/template/header.hpp include/$PROJECT/$PROJECT.hpp
+    cp $GBS_HOME/template/sepaloid.cpp src/main.cpp
+    cp -R $GBS_HOME/template/sepaloid/petaloids/* src/
+    cp $GBS_HOME/template/cppcheck/includes-file cppcheck/includes-file
+    cp $GBS_HOME/template/cppcheck/sources-file cppcheck/sources-file
+    cp $GBS_HOME/template/cppcheck/options cppcheck/options
+
+    cd .gbs
+    echo "#************************************************************"  > $PROJECT.pro
+    echo "#* Generated automatically by '$0'"                            >> $PROJECT.pro
+    echo "#* Command: $CMDLINE"                                          >> $PROJECT.pro
+    echo "#* Author:  $USERNAME"                                         >> $PROJECT.pro
+    echo "#* Date:    $DATE"                                             >> $PROJECT.pro
+    echo "#************************************************************" >> $PROJECT.pro
+    echo "TEMPLATE = subdirs"                                            >> $PROJECT.pro
+    echo "CONFIG  += ordered"                                            >> $PROJECT.pro
+    echo "SUBDIRS  = $PROJECT \\"                                        >> $PROJECT.pro
+    echo "           core \\"                                            >> $PROJECT.pro
+    echo "           db \\"                                              >> $PROJECT.pro
+    echo "           io \\"                                              >> $PROJECT.pro
+    echo "           logger \\"                                          >> $PROJECT.pro
+    echo "           prefs \\"                                           >> $PROJECT.pro
+    echo "           ui \\"                                              >> $PROJECT.pro
+    echo "           simulator"                                          >> $PROJECT.pro
+    cd ..
+}
+
+create() 
+{
+    if [ -e $PROJECT ]; then
+	echo "Error: Directory already exists: $PROJECT" >&2
+	exit 1
+    fi
+
+    DATE=`date`
+    username
+
+    if [ "$SEPALOID_OK" == "yes" ] ; then
+	prepare_sepaloid
+    else
+	prepare_simple_app
+    fi
 
     # Prepare make.sh (for use from IDE, e.g. Eclipse)
     echo "#!/bin/sh"             > make.sh
@@ -150,8 +199,9 @@ create()
 	elif [ "$GIT_HOSTING" == "$GIT_HOSTING_BITBUCKET" ] ; then
 	    #$GIT_EXE remote add origin https://semenovf@bitbucket.org/semenovf/${PROJECT}.git
 	    $GIT_EXE remote add origin git@bitbucket.org:semenovf/${PROJECT}.git
-	    $GIT_EXE push -u origin --all   # pushes up the repo and its refs for the first time
-	    $GIT_EXE push -u origin --tags  # pushes up any tags
+#	    $GIT_EXE push -u origin --all   # pushes up the repo and its refs for the first time
+#	    $GIT_EXE push -u origin --tags  # pushes up any tags
+	    $GIT_EXE push -u origin master
 	elif [ "$GIT_HOSTING" == "$GIT_HOSTING_NPCPROM" ] ; then
 	    sh ../git.config.npcprom
 	    $GIT_EXE remote add origin git@gitlab:${PROJECT}.git
@@ -170,6 +220,9 @@ while [ x$1 != x ] ; do
     -c | -create | --create)
 	CREATE_OK=yes
         ;;
+    -sepaloid | --sepaloid)
+	SEPALOID_OK=yes
+	;;
     -git | --git)
 	GIT_OK=yes
         ;;
