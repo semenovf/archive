@@ -52,7 +52,7 @@ cwt::petaloid * sepaloid::registerPetaloidForPath (const pfs::string & path, con
 		return nullptr;
 	}
 
-	dl::handle ph = dl::open(path);
+	dl::handle ph = dl::open(path, false, true);
 	if (ph) {
 		petaloid_ctor_t petaloid_ctor = reinterpret_cast<petaloid_ctor_t>(dl::ptr(ph, CWT_PETALOID_CONSTRUCTOR_NAME));
 		petaloid_dtor_t petaloid_dtor = reinterpret_cast<petaloid_dtor_t>(dl::ptr(ph, CWT_PETALOID_DESTRUCTOR_NAME));
@@ -78,7 +78,9 @@ petaloid * sepaloid::registerPetaloidForName (const pfs::string & name, const ch
 {
 	pfs::string filename = dl::buildDlFileName(name);
 	pfs::string realPath;
-	dl::handle ph = dl::open(filename, realPath); // try to find petaloid
+	bool global = false;  // Avoid name conflicts
+	bool resolve = true;
+	dl::handle ph = dl::open(filename, realPath, global, resolve); // try to find petaloid
 
 	if (ph) {
 		dl::close(ph);
