@@ -83,7 +83,9 @@ static const char * __plugin_dtor_sym = "__cwt_plugin_dtor__";
 
 bool dl::pluginOpen(const pfs::string & name, const pfs::string & path, void * pluggable)
 {
-	dl::handle dlh = dl::open(path);
+	bool global = false; // Avoid name conflicts
+	bool resolve = true;
+	dl::handle dlh = dl::open(path, global, resolve);
 
 	if (!dlh) {
 		pfs::string errstr;

@@ -48,11 +48,11 @@ private:
 public:
 	dl () {};
 	handle open (const pfs::string & path
-			, bool global = true
+			, bool global = false
 			, bool resolve = true) {
 		pfs::string unused; return open(path, unused, global, resolve);
 	}
-	handle open            (const pfs::string & path, pfs::string & realPath, bool global = true, bool resolve = true);
+	handle open            (const pfs::string & path, pfs::string & realPath, bool global = false, bool resolve = true);
 	symbol ptr             (handle h, const char * symname);
 	//static symbol symbol          (handle h, const char * symname) { return ptr(h, symname); }
 	void   close           (handle h);
