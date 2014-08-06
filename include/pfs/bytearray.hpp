@@ -429,7 +429,7 @@ inline std::ostream & operator << (std::ostream & os, const pfs::bytearray & o)
 } // pfs
 
 
-namespace pfs { namespace unitype1 {
+namespace pfs {
 
 template <> inline bool cast_trait<bool, pfs::bytearray> (const pfs::bytearray & v)
 {
@@ -464,7 +464,7 @@ template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned long long>
 #endif
 template <> inline pfs::bytearray cast_trait<pfs::bytearray, pfs::bytearray> (const pfs::bytearray & v) { return pfs::bytearray(v); }
 
-}} // pfs::unitype1
+} // pfs
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)

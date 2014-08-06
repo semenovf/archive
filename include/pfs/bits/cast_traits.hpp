@@ -7,7 +7,7 @@
 #ifndef __PFS_CAST_TRAITS_HPP__
 #define __PFS_CAST_TRAITS_HPP__
 
-namespace pfs { namespace unitype1 {
+namespace pfs {
 
 template <typename R, typename T> R cast_trait (const T &) { PFS_ASSERT_X(false, "Can't cast"); return R(); }
 
@@ -201,6 +201,6 @@ template <> inline double cast_trait<double, long long> (const long long & v)   
 template <> inline double cast_trait<double, unsigned long long> (const unsigned long long & v) { return static_cast<double>(v); }
 #endif
 
-}}
+}
 
 #endif /* __PFS_CAST_TRAITS_HPP__ */

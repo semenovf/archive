@@ -508,7 +508,7 @@ inline bool operator >= (const utf8string & s1, const char * s2)
 } // pfs
 
 
-namespace pfs { namespace unitype1 {
+namespace pfs {
 
 template <> inline bool cast_trait<bool, pfs::utf8string> (const pfs::utf8string & v)
 {
@@ -543,7 +543,7 @@ template <> inline pfs::utf8string cast_trait<pfs::utf8string, unsigned long lon
 #endif
 template <> inline pfs::utf8string cast_trait<pfs::utf8string, pfs::utf8string> (const pfs::utf8string & v) { return pfs::utf8string(v); }
 
-}} // pfs::unitype1
+} // pfs
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)
