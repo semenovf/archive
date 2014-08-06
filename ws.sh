@@ -96,22 +96,26 @@ prepare_sepaloid()
     mkdir $PROJECT
     cd $PROJECT
     mkdir .gbs
-    mkdir .gbs/$PROJECT
-#    cp $GBS_HOME/template/project.pro .gbs/$PROJECT/$PROJECT.pro
     cp -R $GBS_HOME/template/sepaloid/.gbs/* .gbs/
+    mv .gbs/app/app.pro .gbs/app/$PROJECT.pro
+    mv .gbs/app .gbs/$PROJECT
 
     mkdir include
-#    mkdir include/$PROJECT
     mkdir src
     mkdir cppcheck
-    cp $GBS_HOME/template/header.hpp include/$PROJECT/$PROJECT.hpp
-    cp $GBS_HOME/template/sepaloid.cpp src/main.cpp
-    cp -R $GBS_HOME/template/sepaloid/petaloids/* src/
+    cp -R $GBS_HOME/template/sepaloid/src/* src/
     cp $GBS_HOME/template/cppcheck/includes-file cppcheck/includes-file
     cp $GBS_HOME/template/cppcheck/sources-file cppcheck/sources-file
     cp $GBS_HOME/template/cppcheck/options cppcheck/options
 
+    echo "#define _APP_NAME \"$PROJECT\"" > src/app_name.h
+
     cd .gbs
+    mv common.pri common.pri~
+    echo "GBS_TARGET_NAME=$PROJECT" > common.pri
+    cat common.pri~ >> common.pri
+    rm common.pri~
+
     echo "#************************************************************"  > $PROJECT.pro
     echo "#* Generated automatically by '$0'"                            >> $PROJECT.pro
     echo "#* Command: $CMDLINE"                                          >> $PROJECT.pro

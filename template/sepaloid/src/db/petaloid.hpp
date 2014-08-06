@@ -1,20 +1,19 @@
 /**
  * @file petaloid.hpp
- *
- *  Created on: Jul 20, 2014
- *      Author: wladt
+ * @author
+ * @date
  */
 
-#ifndef __HG_BOOKER_PETALOID_DB_HPP__
-#define __HG_BOOKER_PETALOID_DB_HPP__
+#ifndef __DB_PETALOID_HPP__
+#define __DB_PETALOID_HPP__
 
 #include <cwt/petaloid.hpp>
 #include <pfs/unitype.hpp>
 #include "api.hpp"
 
-#define __PETALOID hg::booker::db::petaloid::self()
+#define __PETALOID db::petaloid::self()
 
-namespace hg { namespace booker { namespace db {
+namespace db {
 
 class petaloid : public cwt::petaloid
 {
@@ -25,7 +24,7 @@ public:
 	static petaloid * self () { return _self; }
 
 public:
-	petaloid () : cwt::petaloid("hg::booker::db")
+	petaloid () : cwt::petaloid("db")
 	{
 		PFS_ASSERT(_self == nullptr);
 		_self = this;
@@ -59,6 +58,6 @@ private: // slots
 	void onGuiReady (bool) {}
 };
 
-}}} // hg::booker::db
+} // db
 
-#endif /* __HG_BOOKER_PETALOID_DB_HPP__ */
+#endif /* __DB_PETALOID_HPP__ */

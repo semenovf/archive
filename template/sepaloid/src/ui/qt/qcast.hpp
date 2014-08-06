@@ -1,7 +1,7 @@
 /**
  * @file qcast.hpp
- * @author wladt
- * @date Feb 27, 2014
+ * @author
+ * @date
  */
 
 #ifndef __QCAST_HPP__

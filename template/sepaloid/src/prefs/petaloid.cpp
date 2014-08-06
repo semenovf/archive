@@ -1,7 +1,7 @@
 /**
  * @file petaloid.cpp
- * @author wladt
- * @date Jul 20, 2014
+ * @author
+ * @date
  */
 
 #include "petaloid.hpp"
@@ -10,7 +10,7 @@
 
 CWT_PETALOID_API cwt::petaloid * __petaloid_ctor__ (const char *, int /*argc*/, char * /*argv*/[])
 {
-	hg::booker::prefs::petaloid * p = new hg::booker::prefs::petaloid;
+	prefs::petaloid * p = new prefs::petaloid;
 	return p;
 }
 
@@ -19,7 +19,7 @@ CWT_PETALOID_API void  __petaloid_dtor__ (cwt::petaloid * p)
 	delete p;
 }
 
-namespace hg { namespace booker { namespace prefs {
+namespace prefs {
 
 petaloid * petaloid::_self = nullptr;
 
@@ -38,4 +38,4 @@ void petaloid::setPref (const pfs::string & key, const pfs::unitype & value)
 	}
 }
 
-}}}
+}

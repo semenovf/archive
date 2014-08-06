@@ -1,7 +1,7 @@
 /**
- * @file   mainwindow.hpp
- * @author wladt
- * @date   Feb 13, 2014
+ * @file MainWindow.hpp
+ * @author
+ * @date
  *
  * @brief
  */

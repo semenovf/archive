@@ -1,12 +1,11 @@
 /**
  * @file petaloid.hpp
- *
- *  Created on: Jul 20, 2014
- *      Author: wladt
+ * @author
+ * @date
  */
 
-#ifndef __HG_BOOKER_PETALOID_UI_QT_HPP__
-#define __HG_BOOKER_PETALOID_UI_QT_HPP__
+#ifndef __UI_QT_PETALOID_HPP__
+#define __UI_QT_PETALOID_HPP__
 
 #include <cwt/petaloid.hpp>
 #include <cwt/platform.hpp>
@@ -18,7 +17,11 @@
 
 class MainWindow;
 
-#define __PETALOID hg::booker::ui::petaloid::self()
+#define __PETALOID ui::petaloid::self()
+
+namespace ui {
+class petaloid;
+}
 
 class QtAdapter : public QObject
 {
@@ -37,11 +40,11 @@ Q_SIGNALS:
 	void emitWarn       (const pfs::datetime & dt, const pfs::string & msg);
 	void emitError      (const pfs::datetime & dt, const pfs::string & msg);
 
-//	friend class abtcws::ui::petaloid;
+	friend class ui::petaloid;
 };
 
 
-namespace hg { namespace booker { namespace ui {
+namespace ui {
 
 class petaloid : public cwt::petaloid
 {
@@ -65,17 +68,11 @@ public:
 
 public:
 	petaloid (int argc, char * argv[]);
-//	petaloid () : cwt::petaloid("hg::booker::ui")
-//	{
-
-//		_self = this;
-//	}
-
 	virtual bool onStart ();
 	virtual bool onFinish ();
 
 	CWT_PETALOID_EMITTERS_BEGIN
-	      CWT_PETALOID_EMITTER(API_QUIT      , emitQuit)
+	      CWT_PETALOID_EMITTER(API_QUIT          , emitQuit)
 		, CWT_PETALOID_EMITTER(API_CRITICAL  , emitCritical)
 		, CWT_PETALOID_EMITTER(API_INFO      , emitInfo)
 		, CWT_PETALOID_EMITTER(API_DEBUG     , emitDebug)
@@ -112,7 +109,7 @@ private: // slots
 	void onError (const pfs::string & msg)            { if(_guiReady) emit qt.emitError (cwt::platform::currentDateTime(), msg); }
 };
 
-}}} // hg::booker::ui
+} // ui
 
 
 inline QtAdapter::QtAdapter()
@@ -123,5 +120,5 @@ inline QtAdapter::QtAdapter()
 	connect(this, SIGNAL(emitCritical(const cwt::critical &)), SLOT(onCritical(const cwt::critical &)));
 }
 
-#endif /* __HG_BOOKER_PETALOID_UI_QT_HPP__ */
+#endif /* __UI_QT_PETALOID_HPP__ */
 

@@ -1,7 +1,7 @@
 /**
  * @file LogWidget.hpp
- * @author wladt
- * @date Mar 12, 2014
+ * @author
+ * @date
  */
 
 #ifndef __LOGWIDGET_HPP__

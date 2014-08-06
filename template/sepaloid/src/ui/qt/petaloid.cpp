@@ -1,7 +1,7 @@
 /**
- * @file   ui.cpp
- * @author wladt
- * @date   Feb 13, 2014
+ * @file petaloid.cpp
+ * @author
+ * @date
  *
  * @brief
  */
@@ -13,7 +13,7 @@
 
 CWT_PETALOID_API cwt::petaloid * __petaloid_ctor__ (const char *, int argc, char * argv[])
 {
-	hg::booker::ui::petaloid * p = new hg::booker::ui::petaloid(argc, argv);
+	ui::petaloid * p = new ui::petaloid(argc, argv);
 	return p;
 }
 
@@ -22,12 +22,12 @@ CWT_PETALOID_API void  __petaloid_dtor__ (cwt::petaloid * p)
 	delete p;
 }
 
-namespace hg { namespace booker { namespace ui {
+namespace ui {
 
 petaloid * petaloid::_self = nullptr;
 
 petaloid::petaloid (int argc, char * argv[])
-	: cwt::petaloid("hg::booker::ui::qt")
+	: cwt::petaloid("ui::qt")
 	, _hppmm(0), _vppmm(0)
 	, _argc(argc), _argv(argv)
 	, _guiReady(false)
@@ -95,5 +95,5 @@ void petaloid::onGuiReady (bool ready)
 		return;
 }
 
-}}}
+}
 

@@ -1,7 +1,7 @@
 /**
  * @file   MainWindow.cpp
- * @author wladt
- * @date   Feb 13, 2014
+ * @author
+ * @date
  *
  * @brief
  */

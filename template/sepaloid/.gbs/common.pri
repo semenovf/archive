@@ -1,5 +1,3 @@
-GBS_TARGET_NAME=hg-booker
-
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../src
 INCLUDEPATH += ../../../pfs/include

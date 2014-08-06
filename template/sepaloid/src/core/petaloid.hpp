@@ -1,20 +1,19 @@
 /**
  * @file petaloid.hpp
- *
- *  Created on: Jul 20, 2014
- *      Author: wladt
+ * @author
+ * @date
  */
 
-#ifndef __HG_BOOKER_PETALOID_CORE_HPP__
-#define __HG_BOOKER_PETALOID_CORE_HPP__
+#ifndef __CORE_PETALOID_HPP__
+#define __CORE_PETALOID_HPP__
 
 #include <cwt/petaloid.hpp>
 #include <pfs/unitype.hpp>
 #include "api.hpp"
 
-#define __PETALOID hg::booker::core::petaloid::self()
+#define __PETALOID core::petaloid::self()
 
-namespace hg { namespace booker { namespace core {
+namespace core {
 
 class petaloid : public cwt::petaloid
 {
@@ -25,7 +24,7 @@ public:
 	petaloid * self () { return _self; }
 
 public:
-	petaloid () : cwt::petaloid("hg::booker::core")
+	petaloid () : cwt::petaloid("core")
 	{
 		PFS_ASSERT(_self == nullptr);
 		_self = this;
@@ -39,7 +38,7 @@ public:
 		, CWT_PETALOID_EMITTER(API_DEBUG   , emitDebug)
 		, CWT_PETALOID_EMITTER(API_WARN    , emitWarn)
 		, CWT_PETALOID_EMITTER(API_ERROR   , emitError)
-	    , CWT_PETALOID_EMITTER(API_GET_PREF, emitPref)
+		, CWT_PETALOID_EMITTER(API_GET_PREF, emitPref)
 	CWT_PETALOID_EMITTERS_END
 
 	CWT_PETALOID_DETECTORS_BEGIN
@@ -59,6 +58,6 @@ private: // slots
 	void onGuiReady (bool) {}
 };
 
-}}} // hg::booker::core
+} // core
 
-#endif /* __HG_BOOKER_PETALOID_CORE_HPP__ */
+#endif /* __CORE_PETALOID_HPP__ */

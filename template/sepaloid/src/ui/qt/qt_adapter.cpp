@@ -1,8 +1,7 @@
-/*
- * qt_adapter.cpp
- *
- *  Created on: Jun 21, 2013
- *      Author: wladt
+/**
+ * @file qt_adapter.cpp
+ * @author
+ * @date
  */
 
 #include "petaloid.hpp"

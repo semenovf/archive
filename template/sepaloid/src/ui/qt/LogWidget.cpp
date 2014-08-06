@@ -1,7 +1,7 @@
 /**
  * @file LogWidget.cpp
- * @author wladt
- * @date Mar 12, 2014
+ * @author
+ * @date
  */
 
 

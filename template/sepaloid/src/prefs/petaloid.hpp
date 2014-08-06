@@ -1,21 +1,20 @@
 /**
  * @file petaloid.hpp
- *
- *  Created on: Jul 20, 2014
- *      Author: wladt
+ * @author
+ * @date
  */
 
-#ifndef __HG_BOOKER_PETALOID_PREFS_HPP__
-#define __HG_BOOKER_PETALOID_PREFS_HPP__
+#ifndef __PREFS_PETALOID_HPP__
+#define __PREFS_PETALOID_HPP__
 
 #include <cwt/petaloid.hpp>
 #include <pfs/unitype.hpp>
 #include <pfs/map.hpp>
 #include "api.hpp"
 
-#define __PETALOID hg::booker::prefs::petaloid::self()
+#define __PETALOID prefs::petaloid::self()
 
-namespace hg { namespace booker { namespace prefs {
+namespace prefs {
 
 class petaloid : public cwt::petaloid
 {
@@ -31,7 +30,7 @@ public:
 	static petaloid * self () { return _self; }
 
 public:
-	petaloid () : cwt::petaloid("hg::booker::prefs")
+	petaloid () : cwt::petaloid("prefs")
 	{
 		PFS_ASSERT(_self == nullptr);
 		_self = this;
@@ -71,6 +70,6 @@ private:
 	void setPref (const pfs::string & key, const pfs::string & value) { setPref(key, pfs::unitype(value)); }
 };
 
-}}} // hg::booker::prefs
+} // prefs
 
-#endif /* __HG_BOOKER_PETALOID_PREFS_HPP__ */
+#endif /* __PREFS_PETALOID_HPP__ */
