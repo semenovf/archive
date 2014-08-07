@@ -11,7 +11,7 @@
 
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
-#include <cwt/safeformat.hpp>
+#include <pfs/safeformat.hpp>
 #include <cwt/sigslot.hpp>
 #include <iostream>
 

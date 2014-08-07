@@ -5,11 +5,11 @@
  *      Author: wladt
  */
 
-#include <pfs/mt.hpp>
-#include "../../include/cwt/safeformat.hpp"
-#include "../../include/cwt/threadcv.hpp"
 #include "thread_unix.hpp"
-#include <cwt/platform.hpp>
+#include "cwt/threadcv.hpp"
+#include "cwt/platform.hpp"
+#include <pfs/mt.hpp>
+#include <pfs/safeformat.hpp>
 #include <pthread.h>
 #include <sched.h>
 

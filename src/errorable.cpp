@@ -6,26 +6,13 @@
  * @brief
  */
 
-#include "../include/cwt/errorable.hpp"
-#include <cwt/safeformat.hpp>
-#include <cstdarg>
+#include "cwt/errorable.hpp"
+#include "cwt/logger.hpp"
+//#include <cstdarg>
 
 extern pfs::string __cwt_strerror (int_t errn);
 
 namespace cwt {
-
-void errorable::addError (const pfs::string & text)
-{
-	if (!text.isEmpty()) {
-		if (_errors.size() > 0 && _errors.last()._errstr == text) {
-			;
-		} else {
-			_errors.append(erritem(text));
-		}
-		_errors.last()._ntimes++;
-	}
-}
-
 
 void errorable::addSystemError (int errn, const pfs::string & caption)
 {
@@ -54,7 +41,7 @@ void errorable::logErrors ()
 		for (; it != itEnd; ++it) {
 			pfs::string r;
 			if (it->_ntimes > 1) {
-				r << (_Fr("%s (repeat %d times)") % it->_errstr % it->_ntimes);
+				r << it->_errstr << _u8("(repeat ") << pfs::string::number(it->_ntimes) << _u8(" times)");
 			} else {
 				r << it->_errstr;
 			}
@@ -62,34 +49,6 @@ void errorable::logErrors ()
 		}
 	}
 	clearErrors();
-}
-
-/**
- *
- * @brief Output errors to output stream.
- *
- * @details Errors automatically cleared after output.
- *
- * @param out Stream reference to output errors.
- * @param er Errorable object reference.
- * @return Output stream reference.
- *
- */
-std::ostream & operator << (std::ostream & out, errorable & er)
-{
-	if (er._errors.size() > 0) {
-		pfs::vector<errorable::erritem>::const_iterator it = er._errors.cbegin();
-		pfs::vector<errorable::erritem>::const_iterator itEnd = er._errors.cend();
-		for (; it != itEnd; ++it) {
-			if (it->_ntimes > 1) {
-				out << it->_errstr << "( " << _Tr("repeat") << ' ' << it->_ntimes << _Tr("times") << ") " << std::endl;
-			} else {
-				out << it->_errstr << std::endl;
-			}
-		}
-	}
-	er.clearErrors();
-	return out;
 }
 
 } // cwt

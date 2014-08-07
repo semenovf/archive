@@ -4,7 +4,8 @@
  * @date Apr 23, 2014
  */
 
-#include "../include/cwt/zlib.hpp"
+#include "cwt/zlib.hpp"
+#include <pfs/safeformat.hpp>
 #include <pfs/map.hpp>
 
 namespace cwt {

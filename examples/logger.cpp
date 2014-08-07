@@ -1,7 +1,7 @@
 #include <cstdio>
-#include <cwt/logger.hpp>
+#include "cwt/logger.hpp"
 #include <pfs/string.hpp>
-#include <cwt/safeformat.hpp>
+#include <pfs/safeformat.hpp>
 
 int main(int argc, char *argv[])
 {

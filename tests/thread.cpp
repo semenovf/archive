@@ -6,10 +6,10 @@
  */
 
 #include <cwt/test.hpp>
+#include "cwt/thread.hpp"
+#include "cwt/random.hpp"
 #include <pfs/string.hpp>
-#include <cwt/safeformat.hpp>
-#include <cwt/thread.hpp>
-#include <cwt/random.hpp>
+#include <pfs/safeformat.hpp>
 #include <iostream>
 #include <cstdlib>
 
@@ -49,7 +49,7 @@ void test_threads(int nthreads)
 
 	// Initialize threads
 	for(int i = 0; i < nthreads; ++i) {
-		threads[i] = new TestThread(_F("Thread_%04d") % i);
+		threads[i] = new TestThread(pfs::safeformat("Thread_%04d") % i);
 		PFS_ASSERT(threads[i]);
 	}
 

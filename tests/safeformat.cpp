@@ -7,15 +7,15 @@
 
 #include <cwt/test.hpp>
 #include <pfs/string.hpp>
-#include "../include/cwt/safeformat.hpp"
+#include <pfs/safeformat.hpp>
 
 template <typename T>
 bool test_arg(const char * format, T v)
 {
 	char buf[64];
 	sprintf(buf, format, v);
-	printf("sprintf: \"%s\" == \"%s\" : SafeFormat\n", buf, pfs::string(cwt::safeformat(format) % v).c_str());
-	return cwt::safeformat(format) % v == pfs::string(buf);
+	printf("sprintf: \"%s\" == \"%s\" : SafeFormat\n", buf, pfs::string(pfs::safeformat(format) % v).c_str());
+	return pfs::safeformat(format) % v == pfs::string(buf);
 }
 
 
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 	BEGIN_TESTS(38);
 
 	// When 0 is printed with an explicit precision 0, the output is empty.
-	TEST_OK(cwt::safeformat("%.0d") % 0 != pfs::string("0"));
+	TEST_OK(pfs::safeformat("%.0d") % 0 != pfs::string("0"));
 	TEST_OK(test_arg<int>("%.0d", 0));
 
 	TEST_OK(test_arg<int>("% d", -245));
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	TEST_OK(test_arg<int>("%d\n", 245));
 
 	int i;
-	pfs::string s = cwt::safeformat("Hello, %s:\t iptr = %p! 0x%X 0x%x") % "World" % &i % 255 % 255;
+	pfs::string s = pfs::safeformat("Hello, %s:\t iptr = %p! 0x%X 0x%x") % "World" % &i % 255 % 255;
 	printf("%s\n", s.c_str());
 
 	END_TESTS;

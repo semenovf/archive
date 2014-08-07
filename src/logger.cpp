@@ -9,7 +9,7 @@
 #include "logger_p.hpp"
 #include <pfs/shared_ptr.hpp>
 #include <pfs/atomic.hpp>
-#include <cwt/safeformat.hpp>
+#include <pfs/safeformat.hpp>
 #include <cwt/platform.hpp>
 
 namespace cwt {
@@ -82,7 +82,7 @@ void warn  (int errn, const pfs::string & text)
 		if (text.isEmpty()) {
 			warn().print(log::Warn, cwt::platform::strerror(errn));
 		} else {
-			warn().print(log::Warn, safeformat(_u8("%s: %s")) % text % cwt::platform::strerror(errn));
+			warn().print(log::Warn, pfs::safeformat(_u8("%s: %s")) % text % cwt::platform::strerror(errn));
 		}
 	}
 }
@@ -93,7 +93,7 @@ void error (int errn, const pfs::string & text)
 		if (text.isEmpty()) {
 			error().print(log::Error, cwt::platform::strerror(errn));
 		} else {
-			error().print(log::Error, safeformat(_u8("%s: %s")) % text % cwt::platform::strerror(errn));
+			error().print(log::Error, pfs::safeformat(_u8("%s: %s")) % text % cwt::platform::strerror(errn));
 		}
 	}
 }
@@ -104,7 +104,7 @@ void fatal (int errn, const pfs::string & text)
 		if (text.isEmpty()) {
 			fatal().print(log::Fatal, cwt::platform::strerror(errn));
 		} else {
-			fatal().print(log::Fatal, safeformat(_u8("%s: %s")) % text % cwt::platform::strerror(errn));
+			fatal().print(log::Fatal, pfs::safeformat(_u8("%s: %s")) % text % cwt::platform::strerror(errn));
 		}
 	}
 	abort();
@@ -143,7 +143,7 @@ pfs::string appender::patternify (log::priority level, const pfs::string & patte
 	if (len >= 0 && size_t(len) == pattern.length()) {
 		return ctx.result;
 	}
-	return safeformat(_u8("[<!INVALID PATTERN!>]: %s")) % msg;
+	return pfs::safeformat(_u8("[<!INVALID PATTERN!>]: %s")) % msg;
 }
 
 void appender::print_helper (log::priority level, const pfs::string & msg)
