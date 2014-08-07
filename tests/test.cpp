@@ -1,11 +1,11 @@
 #include <cwt/test.hpp>
-#include <cwt/safeformat.hpp>
-#include "../include/cwt/io/reader.hpp"
-#include "../include/cwt/io/writer.hpp"
-#include "../include/cwt/io/file.hpp"
-#include "../include/cwt/io/buffer.hpp"
-#include "../include/cwt/io/datareader.hpp"
-#include "../include/cwt/io/datawriter.hpp"
+#include <pfs/safeformat.hpp>
+#include "cwt/io/reader.hpp"
+#include "cwt/io/writer.hpp"
+#include "cwt/io/file.hpp"
+#include "cwt/io/buffer.hpp"
+#include "cwt/io/datareader.hpp"
+#include "cwt/io/datawriter.hpp"
 #include <cstring>
 #include <cstdio>
 

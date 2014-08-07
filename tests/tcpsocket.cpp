@@ -1,10 +1,10 @@
 #include <cwt/test.hpp>
 #include <pfs/bytearray.hpp>
-#include <cwt/safeformat.hpp>
+#include <pfs/safeformat.hpp>
 #include <cwt/logger.hpp>
 #include <cwt/thread.hpp>
-#include "../include/cwt/io/inetsocket.hpp"
-#include "../include/cwt/io/tcpserver.hpp"
+#include "cwt/io/inetsocket.hpp"
+#include "cwt/io/tcpserver.hpp"
 #include <iostream>
 
 static const uint16_t port = 3999;

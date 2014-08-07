@@ -5,9 +5,9 @@
  *      Author: wladt
  */
 
-#include "../../include/cwt/net/hostinfo.hpp"
+#include "cwt/net/hostinfo.hpp"
 #include <cwt/logger.hpp>
-#include <cwt/safeformat.hpp>
+#include <pfs/safeformat.hpp>
 #include <netdb.h>
 
 #if (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 1) \
@@ -166,7 +166,7 @@ pfs::string addrinfo_iterator::ipv4name () const
 {
 	if (m_data->next) {
 		uint32_t ip = ipv4();
-		return 	_F("%d.%d.%d.%d")
+		return 	_Fr("%d.%d.%d.%d")
 				% ((ip >> 24) & 0xFF)
 				% ((ip >> 16) & 0xFF)
 				% ((ip >> 8)  & 0xFF)
