@@ -1,7 +1,7 @@
 #include <cwt/test.hpp>
 #include <cwt/sepaloid.hpp>
-#include <cwt/safeformat.hpp>
 #include <cwt/logger.hpp>
+#include <pfs/safeformat.hpp>
 #include <cstring>
 
 class LocalPetaloidEmitter : public cwt::petaloid

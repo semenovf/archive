@@ -6,8 +6,8 @@
  *  Removed to CWT on: Feb 12, 2013
  */
 
-#include "../include/cwt/sepaloid.hpp"
-#include <cwt/safeformat.hpp>
+#include "cwt/sepaloid.hpp"
+#include <pfs/safeformat.hpp>
 #include <cwt/logger.hpp>
 #include <cwt/fs.hpp>
 #include <cwt/dl.hpp>
