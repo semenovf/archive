@@ -5,12 +5,12 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/debby/database.hpp"
-#include "../include/cwt/debby/statement.hpp"
+#include "cwt/debby/database.hpp"
+#include "cwt/debby/statement.hpp"
 #include <cwt/dl.hpp>
 #include <cwt/logger.hpp>
-#include <cwt/safeformat.hpp>
 #include <cwt/uri.hpp>
+#include <pfs/safeformat.hpp>
 
 namespace cwt { namespace debby {
 
