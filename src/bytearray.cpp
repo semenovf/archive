@@ -89,25 +89,25 @@ static ulong_t	__str_to_ulong_helper (const char * s, bool * pok, int base, ulon
 	return r;
 }
 
-extern "C" double vim_strtod ( const char * string
+extern "C" double_t vim_strtod ( const char * string
     , char ** endPtr
     , char decimalPoint);
 
 #define pfs_strtod vim_strtod
 
-static double __str_to_double (const char * s, bool * pok, char decimalPoint)
+static double_t __str_to_double (const char * s, bool * pok, char decimalPoint)
 {
 	PFS_ASSERT(s);
 	bool ok = true;
 	char * endptr = nullptr;
 
 	errno = 0;
-	double r = pfs_strtod(s, & endptr, decimalPoint);
+	double_t r = pfs_strtod(s, & endptr, decimalPoint);
 
 	if (errno == ERANGE
 			|| endptr == s
 			|| *endptr != '\0' ) {
-		r = double(0);
+		r = double_t(0);
 		ok = false;
 	}
 
@@ -117,17 +117,10 @@ static double __str_to_double (const char * s, bool * pok, char decimalPoint)
 	return r;
 }
 
-double bytearray::toDouble (bool * ok, char decimalPoint) const
+double_t bytearray::toDouble (bool * ok, char decimalPoint) const
 {
 	return __str_to_double(isNull() ? "" : c_str(), ok, decimalPoint);
 }
-
-/*
-float	 bytearray::toFloat (bool * ok) const
-{
-	return __str_to_float(c_str(), ok);
-}
-*/
 
 long_t bytearray::toLong (bool * ok, int base) const
 {
@@ -154,7 +147,7 @@ uint_t bytearray::toUInt (bool * ok, int base) const
 	return uint_t(__str_to_ulong_helper(s ? s : "", ok, base, ulong_t(PFS_UINT_MAX)));
 }
 
-short_t	 bytearray::toShort  (bool * ok, int base) const
+short_t	bytearray::toShort  (bool * ok, int base) const
 {
 	const char * s  = c_str();
 	return short_t(__str_to_long_helper(s ? s : "", ok, base, long_t(PFS_SHORT_MIN), long_t(PFS_SHORT_MAX)));
@@ -199,16 +192,25 @@ void bytearray::setNumber (ulong_t n, int base)
 	*this = os.str();
 }
 
-void bytearray::setNumber (double n, char f, int prec)
+void bytearray::setNumber (double_t n, char f, int prec)
 {
 	bytearray_terminator bt(this);
 	_d.detach();
 	char fmt[32];
 	char num[64];
+
 	if (prec)
+#ifdef HAVE_INT64
+		PFS_ASSERT(::sprintf(fmt, "%%.%dL%c", prec, f) > 0);
+#else
 		PFS_ASSERT(::sprintf(fmt, "%%.%d%c", prec, f) > 0);
+#endif
 	else
+#ifdef HAVE_INT64
+		PFS_ASSERT(::sprintf(fmt, "%%L%c", f) > 0);
+#else
 		PFS_ASSERT(::sprintf(fmt, "%%%c", f) > 0);
+#endif
 
 	PFS_ASSERT(::sprintf(num, fmt, n) > 0);
 	// TODO need to implement without using the standard stream library

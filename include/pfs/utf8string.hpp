@@ -141,8 +141,11 @@ public:
 	utf8string & setNumber (ushort_t n, int base = 10, bool uppercase = false) { return setNumber(ulong_t(n), base, uppercase); }
 	utf8string & setNumber (sbyte_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
 	utf8string & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
+#ifdef HAVE_INT64
+	utf8string & setNumber (double n, char f = 'g', int prec = 6) { return setNumber(double_t(n), f, prec); }
+#endif
 	//utf8string & setNumber (float n, char f = 'g', int prec = 6)               { return setNumber(double(n), f, prec); }
-	utf8string & setNumber (double n, char f = 'g', int prec = 6);
+	utf8string & setNumber (double_t n, char f = 'g', int prec = 6);
 
 	utf8string substr (const const_iterator & begin, size_t n) const;
 	utf8string substr (const const_iterator & begin, const const_iterator & end) const;
@@ -153,7 +156,7 @@ public:
 	utf8string left   (size_t n) const                     { return substr(0, n); }
 	utf8string right  (size_t n) const                     { return substr(length() - n, n); }
 
-	double	 toDouble (bool * ok = 0, char decimalPoint = '.') const;
+	double_t toDouble (bool * ok = 0, char decimalPoint = '.') const;
 	long_t   toLong   (bool * ok = 0, int base = 10) const;
 	ulong_t	 toULong  (bool * ok = 0, int base = 10) const;
 	int_t	 toInt    (bool * ok = 0, int base = 10) const;

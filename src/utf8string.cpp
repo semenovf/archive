@@ -215,15 +215,23 @@ utf8string & utf8string::setNumber (ulong_t n, int base, bool uppercase)
  * @param prec
  * @return
  */
-utf8string & utf8string::setNumber (double n, char f, int prec)
+utf8string & utf8string::setNumber (double_t n, char f, int prec)
 {
 	detach();
 	char fmt[32];
 	char num[64];
 	if (prec)
+#ifdef HAVE_INT64
+		PFS_ASSERT(::sprintf(fmt, "%%.%dL%c", prec, f) > 0);
+#else
 		PFS_ASSERT(::sprintf(fmt, "%%.%d%c", prec, f) > 0);
+#endif
 	else
+#ifdef HAVE_INT64
+		PFS_ASSERT(::sprintf(fmt, "%%L%c", f) > 0);
+#else
 		PFS_ASSERT(::sprintf(fmt, "%%%c", f) > 0);
+#endif
 
 	PFS_ASSERT(::sprintf(num, fmt, n) > 0);
 
@@ -232,8 +240,7 @@ utf8string & utf8string::setNumber (double n, char f, int prec)
 	return *this;
 }
 
-
-double utf8string::toDouble (bool * ok, char decimalPoint) const
+double_t utf8string::toDouble (bool * ok, char decimalPoint) const
 {
 	return bytearray(c_str()).toDouble(ok, decimalPoint);
 }

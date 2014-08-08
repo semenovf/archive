@@ -12,6 +12,7 @@
 *       	to avoid gcc warning: passing argument 1 of ‘skipwhite’ discards ‘const’ qualifier from pointer target type
 * 		- added third argument decimalPoint:char
 * 		- '.' replaced by decimalPoint
+* 		- double replaced by double_t
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +21,7 @@
 #include <errno.h>
 
 #include <ctype.h>
+#include "pfs/pp/limits.h"
 
 static const char * skipwhite (const char * q)
 {
@@ -31,117 +33,119 @@ static const char * skipwhite (const char * q)
 
 #define vim_isdigit(x) isdigit(x)
 
+// Returns zero on error
+//
 double vim_strtod (const char * str, char ** end, char decimalPoint)
 {
-	double d = 0.0;
+	//double d = 0.0;
+	double_t d = 0.0;
 	int sign;
 	int n = 0;
 	const char *p, *a;
 
-a = p = str;
-p = skipwhite(p);
+	a = p = str;
+	p = skipwhite(p);
 
-/* decimal part */
-sign = 1;
-if (*p == '-')
-{
-sign = -1;
-++p;
-} else if (*p == '+')
-++p;
-if (vim_isdigit(*p))
-{
-d = (double)(*p++ - '0');
-while (*p && vim_isdigit(*p))
-{
-d = d * 10.0 + (double)(*p - '0');
-++p;
-++n;
-}
-a = p;
-} else if (*p != decimalPoint)
-goto done;
-d *= sign;
+	/* decimal part */
+	sign = 1;
 
-/* fraction part */
-if (*p == decimalPoint)
-{
-double f = 0.0;
-double base = 0.1;
-++p;
+	if (*p == '-') {
+		sign = -1;
+		++p;
+	} else if (*p == '+')
+		++p;
 
-if (vim_isdigit(*p))
-{
-while (*p && vim_isdigit(*p))
-{
-f += base * (*p - '0') ;
-base /= 10.0;
-++p;
-++n;
-}
-}
-d += f * sign;
-a = p;
-}
+	if (vim_isdigit(*p)) {
+		//d = (double)(*p++ - '0');
+		d = (double_t)(*p++ - '0');
 
-/* exponential part */
-if ((*p == 'E') || (*p == 'e'))
-{
-int e = 0;
-++p;
+		while (*p && vim_isdigit(*p)) {
+			//d = d * 10.0 + (double)(*p - '0');
+			d = d * 10.0 + (double_t)(*p - '0');
+			++p;
+			++n;
+		}
+		a = p;
+	} else if (*p != decimalPoint)
+		goto done;
 
-sign = 1;
-if (*p == '-')
-{
-sign = -1;
-++p;
-} else if (*p == '+')
-++p;
+	d *= sign;
 
-if (vim_isdigit(*p))
-{
-while (*p == '0')
-++p;
-e = (int)(*p++ - '0');
-while (*p && vim_isdigit(*p))
-{
-e = e * 10 + (int)(*p - '0');
-++p;
-}
-e *= sign;
-}
-else if (!vim_isdigit(*(a-1)))
-{
-a = str;
-goto done;
-}
-else if (*p == 0)
-goto done;
+	/* fraction part */
+	if (*p == decimalPoint) {
+		//double f = 0.0;
+		double_t f = 0.0;
+		//double base = 0.1;
+		double_t base = 0.1;
+		++p;
 
-if (d == 2.2250738585072011 && e == -308)
-{
-d = 0.0;
-a = p;
-errno = ERANGE;
-goto done;
-}
-if (d == 2.2250738585072012 && e <= -308)
-{
-d *= 1.0e-308;
-a = p;
-goto done;
-}
-d *= pow(10.0, (double) e);
-a = p;
-}
-else if (p > str && !vim_isdigit(*(p-1)))
-{
-a = str;
-goto done;
-}
+		if (vim_isdigit(*p)) {
+			while (*p && vim_isdigit(*p)) {
+				f += base * (*p - '0') ;
+				base /= 10.0;
+				++p;
+				++n;
+			}
+		}
+		d += f * sign;
+		a = p;
+	}
+
+	/* exponential part */
+	if ((*p == 'E') || (*p == 'e')) {
+		int e = 0;
+		++p;
+
+		sign = 1;
+		if (*p == '-') {
+			sign = -1;
+			++p;
+		} else if (*p == '+')
+			++p;
+
+		if (vim_isdigit(*p)) {
+			while (*p == '0') // skip leading zeros
+				++p;
+
+			e = (int)(*p++ - '0');
+
+			while (*p && vim_isdigit(*p)) {
+				e = e * 10 + (int)(*p - '0');
+				++p;
+			}
+			e *= sign;
+		} else if (!vim_isdigit(*(a-1))) {
+			a = str;
+			goto done;
+		} else if (*p == 0)
+			goto done;
+
+		//if (d == 2.2250738585072011 && e == -308) {
+		if (d == 2.2250738585072011 && e == PFS_DOUBLE_MIN_10_EXP - 1) { // TODO FIXME
+			d = 0.0;
+			a = p;
+			errno = ERANGE;
+			goto done;
+		}
+
+		//if (d == 2.2250738585072012 && e <= -308) {
+		if (d == 2.2250738585072012 && e <= PFS_DOUBLE_MIN_10_EXP - 1) { // TODO FIXME
+			//d *= 1.0e-308;
+			d = 0.0;
+			a = p;
+			goto done;
+		}
+
+		//d *= pow(10.0, (double) e);
+		d *= pow(10.0, (double_t) e);
+		a = p;
+	} else if (p > str && !vim_isdigit(*(p-1))) {
+		a = str;
+		goto done;
+	}
 
 done:
-if (end)
-*end = (char*)a;
-return d;
+	if (end)
+		*end = (char*)a;
+	return d;
 }

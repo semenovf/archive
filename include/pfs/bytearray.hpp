@@ -274,7 +274,7 @@ public:
 	bytearray left   (size_t n) const { return substr(0, n); }
 	bytearray right  (size_t n) const { return substr(length() - n, n); }
 
-	double	 toDouble (bool * ok = 0, char decimalPoint = '.') const;
+	double_t toDouble (bool * ok = 0, char decimalPoint = '.') const;
 	long_t   toLong   (bool * ok = 0, int base = 10) const;
 	ulong_t	 toULong  (bool * ok = 0, int base = 10) const;
 	int_t	 toInt    (bool * ok = 0, int base = 10) const;
@@ -292,7 +292,10 @@ public:
 	void setNumber (ushort_t n, int base = 10) { setNumber(ulong_t(n), base); }
 	void setNumber (sbyte_t n, int base = 10)  { setNumber(long_t(n), base); }
 	void setNumber (byte_t n, int base = 10)   { setNumber(ulong_t(n), base); }
-	void setNumber (double n, char f = 'g', int prec = 6);
+#ifdef HAVE_INT64
+	void setNumber (double n, char f = 'g', int prec = 6) { return setNumber(double_t(n), f, prec); }
+#endif
+	void setNumber (double_t n, char f = 'g', int prec = 6);
 
 	bytearray & operator += (const bytearray & other) { append(other); return *this; }
 
