@@ -10,6 +10,7 @@
 #include <cwt/petaloid.hpp>
 #include <cwt/platform.hpp>
 #include <cwt/critical.hpp>
+#include <pfs/unitype.hpp>
 #include "api.hpp"
 #include <QObject>
 #include <QString>

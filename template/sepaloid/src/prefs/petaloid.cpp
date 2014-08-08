@@ -6,7 +6,7 @@
 
 #include "petaloid.hpp"
 #include <cwt/platform.hpp>
-#include <cwt/safeformat.hpp>
+#include <pfs/safeformat.hpp>
 
 CWT_PETALOID_API cwt::petaloid * __petaloid_ctor__ (const char *, int /*argc*/, char * /*argv*/[])
 {

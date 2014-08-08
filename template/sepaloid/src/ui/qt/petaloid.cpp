@@ -8,7 +8,7 @@
 
 #include "petaloid.hpp"
 #include <QApplication>
-
+#include <iostream>
 #include "MainWindow.hpp"
 
 CWT_PETALOID_API cwt::petaloid * __petaloid_ctor__ (const char *, int argc, char * argv[])
