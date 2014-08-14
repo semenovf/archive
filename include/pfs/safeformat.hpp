@@ -17,7 +17,7 @@
 
 namespace pfs {
 
-struct safeformatcontext;
+struct safeformat_context;
 
 class safeformat
 {
@@ -102,7 +102,7 @@ public:
 #endif
 
 private:
-	pfs::shared_ptr<safeformatcontext> m_context;
+	pfs::shared_ptr<safeformat_context> m_context;
 };
 
 } // pfs

@@ -13,10 +13,10 @@
 #include <pfs/vector.hpp>
 #include <ostream>
 
-//#ifdef PFS_CC_MSVC
-//#	pragma warning(push)
-//#	pragma warning(disable:4251)
-//#endif
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
 
 namespace pfs {
 
@@ -83,8 +83,8 @@ inline const pfs::string errorable::lastErrorText () const
 
 } // pfs
 
-//#ifdef PFS_CC_MSVC
-//#	pragma warning(pop)
-//#endif
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_ERRORABLE_HPP__ */

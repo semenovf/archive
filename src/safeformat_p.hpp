@@ -14,7 +14,7 @@
 
 namespace pfs {
 
-struct ConversionSpec
+struct conversion_spec
 {
 	int    flags;
 	int    width;
@@ -22,18 +22,18 @@ struct ConversionSpec
 	pfs::ucchar spec_char;
 };
 
-struct safeformatcontext
+struct safeformat_context
 {
 	typedef pfs::string::const_iterator const_iterator;
 
 	pfs::string     format;
 	pfs::string     result;
-	ConversionSpec  spec;
+	conversion_spec  spec;
 	pfs::vector<pfs::unitype> bind_args;
 	size_t          argi; // index of current argument
 };
 
-inline void __clear_spec(ConversionSpec & spec)
+inline void clear_conversion_spec(conversion_spec & spec)
 {
 	spec.flags     = safeformat::NoFlag;
 	spec.width     =  0;
@@ -41,11 +41,11 @@ inline void __clear_spec(ConversionSpec & spec)
 	spec.spec_char = pfs::ucchar::Null;
 }
 
-inline void __clear_context(safeformatcontext & ctx)
+inline void clear_safeformat_context(safeformat_context & ctx)
 {
 	ctx.format.clear();
 	ctx.result.clear();
-	__clear_spec(ctx.spec);
+	clear_conversion_spec(ctx.spec);
 	ctx.bind_args.clear();
 	ctx.argi = 0;
 }
