@@ -24,7 +24,7 @@ struct pimpl_default_helper
 	}
 };
 
-class DLL_API pimpl
+class pimpl
 {
 protected:
 	struct impl_base;
