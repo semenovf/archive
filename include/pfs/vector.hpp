@@ -77,13 +77,13 @@ public:
 };
 
 template <typename T, typename Alloc = std::allocator<T> >
-class vector : public pimpl_lazy_init<std::vector<T, Alloc> >
+class vector : public nullable<std::vector<T, Alloc> >
 {
 	friend class item_ref<T,Alloc>;
 
 protected:
 	typedef std::vector<T, Alloc> impl;
-	typedef pimpl_lazy_init<impl> base_class;
+	typedef nullable<impl> base_class;
 
 public:
 	typedef T item_type;
@@ -190,32 +190,12 @@ public:
 	void prepend (const T * values, size_t n)    { insert(begin(), values, n); }
 	void prepend (const vector<T,Alloc> & other) { insert(begin(), other.constData(), other.size()); }
 
-    //iterator erase (iterator pos) { return erase(begin() + pos, begin() + pos + 1); }
-    void     erase (size_t index) { erase(index, 1); }
-    void     erase (size_t index, size_t n) { erase(begin() + index, begin() + index + n); }
+    void erase (size_t index) { erase(index, 1); }
+    void erase (size_t index, size_t n) { erase(begin() + index, begin() + index + n); }
 
-    //iterator remove (iterator pos) { return erase(pos); }
     iterator remove (iterator first, iterator last) { return erase(first, last); }
     void     remove (size_t index) { erase(index); }
     void     remove (size_t index, size_t n) { erase(index, n); }
-
-
-//    friend bool operator == (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
-//    {
-//    	return *(lhs._d.cast<vector<T, Alloc>::impl>())
-//    			==
-//    			*(rhs._d.cast<vector<T, Alloc>::impl>());
-//    }
-//    friend bool operator != (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
-//    		{ return *lhs._d.cast<impl>() != *rhs._d.cast<impl>(); }
-//    friend bool operator <  (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
-//    	{ return *lhs._d.cast<impl>() <  *rhs._d.cast<impl>(); }
-//    friend bool operator <= (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
-//    		{ return *lhs._d.cast<impl>() <= *rhs._d.cast<impl>(); }
-//    friend bool operator >  (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
-//    	{ return *lhs._d.cast<impl>() >  *rhs._d.cast<impl>(); }
-//    friend bool operator >= (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
-//    		{ return *lhs._d.cast<impl>() >= *rhs._d.cast<impl>(); }
 };
 
 template <typename T, class Alloc>

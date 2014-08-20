@@ -13,11 +13,11 @@
 * 		- added third argument decimalPoint:char
 * 		- '.' replaced by decimalPoint
 * 		- double replaced by double_t
+* 		- replaced 'pow' function from math.h by 'pow_by_integer'
 */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <errno.h>
 
 #include <ctype.h>
@@ -30,6 +30,20 @@ static const char * skipwhite (const char * q)
 	while (isspace(*p))
 		++p;
 	return p;
+}
+
+static double_t pow_by_integer (double_t a, int b)
+{
+	double_t r = 1;
+	int sign = b >= 0 ? 1 : -1;
+
+	if (sign < 0)
+		b *= -1;
+
+	while (b--)
+		r *= a;
+
+	return sign < 0 ? 1/r : r;
 }
 
 #define vim_isdigit(x) isdigit(x)
@@ -138,7 +152,7 @@ double vim_strtod (const char * str, char ** end, char decimalPoint)
 		}
 
 		//d *= pow(10.0, (double) e);
-		d *= pow(10.0, (double_t) e);
+		d *= pow_by_integer(10.0, e);
 		a = p;
 	} else if (p > str && !vim_isdigit(*(p-1))) {
 		a = str;

@@ -131,19 +131,17 @@ public:
 	}
 };
 
-// TODO must be DEPRICATED
 template <typename T>
 struct default_allocator
 {
 	T * operator () () const { return new T; }
 };
 
-// TODO must be DEPRICATED
 template <typename T, typename Alloc = default_allocator<T> >
-class pimpl_lazy_init
+class nullable
 {
 	typedef Alloc allocator;
-	typedef void (pimpl_lazy_init::* init_func)();
+	typedef void (nullable::* init_func)();
 
 protected:
 	pimpl _d;
@@ -153,7 +151,7 @@ protected:
 	{
 		PFS_ASSERT(_d.isNull());
 		_d = pimpl(allocator()());
-		_init = & pimpl_lazy_init::init;
+		_init = & nullable::init;
 	}
 
 	void init () {}
@@ -162,22 +160,65 @@ protected:
 	void detach () { _d.detach(); }
 
 public:
-	pimpl_lazy_init () : _d(), _init(& pimpl_lazy_init::initial_init) {}
-	pimpl_lazy_init (T * p) : _d(p), _init(& pimpl_lazy_init::init) { }
-	pimpl_lazy_init (const pimpl_lazy_init & other) : _d(other._d), _init(other._init) {}
+	nullable () : _d(), _init(& nullable::initial_init) {}
+	nullable (T * p) : _d(p), _init(& nullable::init) { }
+	nullable (const nullable & other) : _d(other._d), _init(other._init) {}
 
 	bool isNull () const  { return _d.isNull(); }
-	void swap (pimpl_lazy_init & o) { _d.swap<T>(o._d);	}
+	void swap (nullable & o) { _d.swap<T>(o._d);	}
 
 	/// @see http://www.possibility.com/Cpp/const.html
 	const T * cast () const
 	{
-		pimpl_lazy_init * self = const_cast<pimpl_lazy_init*>(this);
+		nullable * self = const_cast<nullable *>(this);
 		(self->*_init)();
 		return _d.cast<T>();
 	}
 	T * cast () { (this->*_init)(); return _d.cast<T>(); }
 };
+
+
+// TODO [[deprecated]], use 'nullable' instead (only names are different)
+//
+//template <typename T, typename Alloc = default_allocator<T> >
+//class pimpl_lazy_init
+//{
+//	typedef Alloc allocator;
+//	typedef void (pimpl_lazy_init::* init_func)();
+//
+//protected:
+//	pimpl _d;
+//	init_func _init;
+//
+//	void initial_init ()
+//	{
+//		PFS_ASSERT(_d.isNull());
+//		_d = pimpl(allocator()());
+//		_init = & pimpl_lazy_init::init;
+//	}
+//
+//	void init () {}
+//
+//protected:
+//	void detach () { _d.detach(); }
+//
+//public:
+//	pimpl_lazy_init () : _d(), _init(& pimpl_lazy_init::initial_init) {}
+//	pimpl_lazy_init (T * p) : _d(p), _init(& pimpl_lazy_init::init) { }
+//	pimpl_lazy_init (const pimpl_lazy_init & other) : _d(other._d), _init(other._init) {}
+//
+//	bool isNull () const  { return _d.isNull(); }
+//	void swap (pimpl_lazy_init & o) { _d.swap<T>(o._d);	}
+//
+//	/// @see http://www.possibility.com/Cpp/const.html
+//	const T * cast () const
+//	{
+//		pimpl_lazy_init * self = const_cast<pimpl_lazy_init*>(this);
+//		(self->*_init)();
+//		return _d.cast<T>();
+//	}
+//	T * cast () { (this->*_init)(); return _d.cast<T>(); }
+//};
 
 } // pfs
 
