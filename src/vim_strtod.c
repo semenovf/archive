@@ -21,8 +21,7 @@
 #include <errno.h>
 
 #include <ctype.h>
-#include "pfs/pp/types.h"
-#include "pfs/pp/limits.h"
+#include "pfs.h"
 
 static const char * skipwhite (const char * q)
 {
