@@ -141,12 +141,19 @@ template <typename T, typename Alloc = default_allocator<T> >
 class nullable
 {
 	typedef Alloc allocator;
+#ifdef __PFS_OLD_IMPL__
 	typedef void (nullable::* init_func)();
+#endif
 
 protected:
 	pimpl _d;
+#ifdef __PFS_OLD_IMPL__
 	init_func _init;
+#else
+	bool _initialized;
+#endif
 
+#ifdef __PFS_OLD_IMPL__
 	void initial_init ()
 	{
 		PFS_ASSERT(_d.isNull());
@@ -155,19 +162,34 @@ protected:
 	}
 
 	void init () {}
+#else
+	void init ()
+	{
+		PFS_ASSERT(_d.isNull());
+		_d = pimpl(allocator()());
+		_initialized = true;
+	}
+#endif
 
 protected:
 	void detach () { _d.detach(); }
 
 public:
+#ifdef __PFS_OLD_IMPL__
 	nullable () : _d(), _init(& nullable::initial_init) {}
 	nullable (T * p) : _d(p), _init(& nullable::init) { }
 	nullable (const nullable & other) : _d(other._d), _init(other._init) {}
+#else
+	nullable () : _d(), _initialized(false) {}
+	nullable (T * p) : _d(p), _initialized(p ? true : false) { }
+	nullable (const nullable & other) : _d(other._d), _initialized(other._initialized) {}
+#endif
 
 	bool isNull () const  { return _d.isNull(); }
 	void swap (nullable & o) { _d.swap<T>(o._d);	}
 
 	/// @see http://www.possibility.com/Cpp/const.html
+#ifdef __PFS_OLD_IMPL__
 	const T * cast () const
 	{
 		nullable * self = const_cast<nullable *>(this);
@@ -175,6 +197,22 @@ public:
 		return _d.cast<T>();
 	}
 	T * cast () { (this->*_init)(); return _d.cast<T>(); }
+#else
+	const T * cast () const
+	{
+		nullable * self = const_cast<nullable *>(this);
+		if (!self->_initialized)
+			self->init();
+		return _d.cast<T>();
+	}
+
+	T * cast ()
+	{
+		if (!_initialized)
+			init();
+		return _d.cast<T>();
+	}
+#endif
 };
 
 

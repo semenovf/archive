@@ -84,6 +84,10 @@ typedef ssize_t offset_t;
 #	endif
 #endif
 
+#ifndef HAVE_PTRDIFF_T
+	typedef long int ptrdiff_t;
+#endif
+
 #undef uuid_t
 typedef struct {
 	uint32_t  time_low;

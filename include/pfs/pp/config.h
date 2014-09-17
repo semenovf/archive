@@ -59,6 +59,10 @@
 #	define HAVE_UINTPTR_T 1
 #endif
 
+#if defined(__PTRDIFF_TYPE__)
+#	define HAVE_PTRDIFF_T 1
+#endif
+
 #ifdef __cplusplus
 #	if __cplusplus >= 201103L
 #		define HAVE_NULLPTR          1
