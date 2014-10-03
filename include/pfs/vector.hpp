@@ -8,258 +8,223 @@
 #ifndef __PFS_VECTOR_HPP__
 #define __PFS_VECTOR_HPP__
 
-#include <vector>
-#include <algorithm>
-#include <pfs/pimpl.hpp>
+#include "pimpl.hpp"
+#include "bits/vector_impl.hpp"
+#include "bits/algorithm.hpp"
 
 namespace pfs {
 
-template <typename T, typename Alloc>
-class vector;
-
-template <typename T, typename Alloc>
-class item_ref
+template <typename T, typename Alloc = allocator<T> >
+class vector : public nullable<vector_impl<T,Alloc> >
 {
-	friend class vector<T, Alloc>;
-
-	typedef vector<T, Alloc> vector_type;
-	typedef T value_type;
-
-	vector<T, Alloc> & _a;
-    size_t _i;
-
-    item_ref (vector_type & a, size_t index)
-        : _a(a), _i(index) {}
-
-public:
-    item_ref (const item_ref & o) : _a(o._a), _i(o._i) {}
-
-    inline operator value_type () const
-    {
-    	PFS_ASSERT(_i < _a.size());
-    	return _a.__valueAt(_i);
-    }
-
-    inline value_type * operator -> () const
-    {
-    	PFS_ASSERT(_i < _a.size());
-    	return & _a.__refAt(_i);
-    }
-
-    inline value_type & operator * () const
-    {
-    	PFS_ASSERT(_i < _a.size());
-    	return _a.__refAt(_i);
-    }
-
-    item_ref & operator = (const value_type & v)
-    {
-    	PFS_ASSERT(_i < _a.size());
-    	_a._d.detach();
-    	_a.__refAt(_i) = v;
-        return *this;
-    }
-
-    item_ref & operator = (const item_ref & v)
-    {
-    	PFS_ASSERT(_i < _a.size());
-    	_a._d.detach();
-        _a.__refAt(_i) = v._a.__valueAt(v._i);
-        return *this;
-    }
-
-    bool operator == (const value_type & v) const { return _a.__valueAt(_i) == v; }
-    bool operator != (const value_type & v) const { return _a.__valueAt(_i) != v; }
-    bool operator >  (const value_type & v) const { return _a.__valueAt(_i) >  v; }
-    bool operator >= (const value_type & v) const { return _a.__valueAt(_i) >= v; }
-    bool operator <  (const value_type & v) const { return _a.__valueAt(_i) <  v; }
-    bool operator <= (const value_type & v) const { return _a.__valueAt(_i) <= v; }
-};
-
-template <typename T, typename Alloc = std::allocator<T> >
-class vector : public nullable<std::vector<T, Alloc> >
-{
-	friend class item_ref<T,Alloc>;
+	friend class vector_impl<T,Alloc>;
 
 protected:
-	typedef std::vector<T, Alloc> impl;
-	typedef nullable<impl> base_class;
+	typedef nullable<vector_impl<T,Alloc> > base_class;
+	typedef vector<T, Alloc> self_class;
+	typedef vector_impl<T, Alloc> impl_class;
 
 public:
-	typedef T item_type;
-	typedef T value_type;
-	typedef typename impl::iterator iterator;
-	typedef typename impl::const_iterator const_iterator;
-	typedef typename impl::reference reference;
-	typedef typename impl::const_reference const_reference;
+	typedef typename impl_class::value_type             value_type;
+	typedef typename impl_class::pointer                pointer;
+	typedef typename impl_class::const_pointer          const_pointer;
+	typedef typename impl_class::size_type              size_type;
+	typedef typename impl_class::difference_type        difference_type;
 
-	typedef item_ref<T,Alloc> item_ref_type;
-
-	const T & __valueAt (size_t i) { PFS_ASSERT(i < size()); return base_class::cast()->operator [] (i); }
-	T & __refAt (size_t i) { PFS_ASSERT(i < size()); return base_class::cast()->operator [] (i); }
+	typedef pfs::reference<self_class>                  reference;
+	typedef pfs::reference<const self_class>            const_reference;
+	typedef pfs::random_access_iterator<self_class>     iterator;
+	typedef pfs::random_access_iterator<const self_class> const_iterator;
+    typedef std::reverse_iterator<iterator>		        reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
 
 public:
 	vector () : base_class() {}
-	vector (size_t n, const T & v = T()) : base_class(new impl(n, v)) {}
-	vector (const T * values, size_t n) : base_class(new impl) { append(values, n); }
+	vector (size_t n, const T & v = T()) : base_class(new impl_class(n, v)) {}
 	virtual ~vector () {}
 
 public:
 	bool isEmpty () const { return base_class::isNull() || base_class::cast()->empty(); }
+	bool empty () const { return isEmpty(); }
 
-    iterator       begin ()       { base_class::detach(); return base_class::cast()->begin(); }
-    iterator       end   ()       { base_class::detach(); return base_class::cast()->end(); }
-    const_iterator begin () const { return base_class::cast()->begin(); }
-    const_iterator end   () const { return base_class::cast()->end(); }
-    const_iterator cbegin() const { return begin(); }
-    const_iterator cend  () const { return end(); }
+    iterator begin () { return iterator(this, data()); }
+    iterator end   () { return iterator(this, data() + size()); }
+    const_iterator begin () const { return cbegin(); }
+    const_iterator end   () const { return cend(); }
+    const_iterator cbegin() const { return const_iterator(this, data()); }
+    const_iterator cend  () const { return const_iterator(this, data() + size()); }
+    reverse_iterator rbegin  ()   { return reverse_iterator(end()); }
+    reverse_iterator rend    ()   { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin  () const { return crbegin(); }
+    const_reverse_iterator rend    () const { return crend(); }
+    const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
+    const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
 
-	const T &     at (size_t i) const { PFS_ASSERT(i < size()); return base_class::cast()->operator [] (i); }
-	const T &     operator [] (size_t i) const { return at(i); }
-
-	// FIXME implement this methods instead of above two (see bits/uccharptr.hpp)
-//	const item_ref_type at (size_t i) const { PFS_ASSERT(i < size()); return item_ref_type(*this, i); }
-//	const item_ref_type operator [] (size_t i) const { return at(i); }
-
-	item_ref_type at (size_t i) { PFS_ASSERT(i < size()); return item_ref_type(*this, i); }
-	item_ref_type operator [] (size_t i) { return at(i); }
-
-	reference       front ()       { return base_class::cast()->front(); }
-	const_reference front () const { return base_class::cast()->front(); }
-	reference       first ()       { return base_class::cast()->front(); }
-	const_reference first () const { return base_class::cast()->front(); }
-	reference       back  ()       { return base_class::cast()->back(); }
-	const_reference back  () const { return base_class::cast()->back(); }
-	reference       last  ()       { return base_class::cast()->back(); }
-	const_reference last  () const { return base_class::cast()->back(); }
-
-	T *       data ()            { base_class::detach(); return base_class::cast()->data(); }
-	const T * data () const      { return base_class::cast()->data(); }
-	const T * constData () const { return base_class::cast()->data(); }
-
-	size_t size    () const { return base_class::cast()->size(); }
-	size_t length  () const { return size(); }
-	size_t capacity() const { return base_class::cast()->capacity(); }
-
-	int compare (const vector<T, Alloc> & v) const { return compare(0, size(), v, 0, v.size()); }
-	int compare (size_t pos, size_t len, const vector<T, Alloc> & v) const {  return compare(pos, len, v, 0, v.size());  }
-	int compare (size_t pos, size_t len, const vector<T, Alloc> & v, size_t subpos, size_t sublen) const;
-	int compare (size_t pos, size_t len, const T * v, size_t n) const;
-	int compare (const T * v, size_t n) const { return compare(0, size(), v, n); }
-
-	const_iterator find (const_iterator pos, const vector<T, Alloc> & v) const;
-	const_iterator find (const_iterator pos, size_t len, const vector<T, Alloc> & v) const;
-	const_iterator find (size_t pos, const value_type * v, size_t n) const;
-	const_iterator find (size_t pos, size_t len, const value_type * v, size_t n) const;
-	const_iterator find (size_t pos, const T & val) const;
-
-	bool contains (const vector<T, Alloc> & v) const { return find(begin(), v) != cend(); }
-	bool contains (const T * v, size_t n) const { return find(0, v, n) != cend(); }
-
-    void swap (vector & o) { base_class::swap(o); }
-    void reserve (size_t n) { base_class::detach(); base_class::cast()->reserve(n); }
-
-    virtual void resize (size_t n, T v = T()) { base_class::detach(); base_class::cast()->resize(n, v); }
-	virtual void clear () { base_class::detach(); base_class::cast()->clear(); }
-	virtual void insert (iterator position, const T * ptr, size_t n)
+	reference at (size_type index) const
 	{
-		base_class::detach();
-		base_class::cast()->insert(position, ptr, ptr + n);
+		PFS_ASSERT(index >= 0 && index < size());
+		return reference(*const_cast<self_class *>(this), const_cast<pointer>(data() + index));
 	}
-	virtual void insert (iterator position, size_t n, const T & val)
+
+	reference operator [] (size_type i) const { return at(i); }
+
+	iterator find (const T & value) const;
+
+	reference front () const { return at(0); }
+	reference first () const { return at(0); }
+	reference back  () const { return at(size()-1); }
+	reference last  () const { PFS_ASSERT(size() > 0); return at(size()-1); }
+
+	const T * constData () const { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
+	const T * data () const      { return base_class::isNull() ? nullptr : base_class::cast()->data(); }
+	T * data ()                  { return base_class::isNull() ? nullptr : base_class::cast()->data(); }
+
+	size_type size    () const { return base_class::isNull() ? 0 : base_class::cast()->size(); }
+	size_type length  () const { return size(); }
+	size_type capacity() const { return base_class::isNull() ? 0 : base_class::cast()->capacity(); }
+
+	bool contains (const vector<T, Alloc> & v) const { return pfs::search(cbegin(), cend(), v.cbegin(), v.cend()) != cend(); }
+	bool contains (const T & value) const   { return pfs::find(cbegin(), cend(), value) != cend(); }
+	bool startsWith (const T & value) const { return size() > 0 ? at(0) == value : false; }
+	bool startsWith (const vector<T, Alloc> & v) const { return pfs::search(cbegin(), cend(), v.cbegin(), v.cend()) == cbegin(); }
+	bool endsWith (const T & value) const   { return size() > 0 ? at(size()-1) == value : false; }
+	bool endsWith (const vector<T, Alloc> & v) const
 	{
-		base_class::detach();
-		base_class::cast()->insert(position, n, val);
+		// Ends with null (empty) vector
+		if (!v.size())
+			return true;
+		return size() >= v.size() ?
+			pfs::search(cbegin(), cend(), v.cbegin(), v.cend()) == (cend() - v.size())
+			: false;
 	}
-    virtual iterator erase (iterator first, iterator last)
-    {
-    	base_class::detach();
-    	return base_class::cast()->erase(
-    		first >= begin() ? first : begin()
-    		, last < end() ? last : end());
-    }
 
-	void insert (iterator position, const T & val) { insert(position, 1, val); }
-	void insert (iterator position, const vector<T,Alloc> & val) { insert(position, val.data(), val.size()); }
-	void append  (const T & value)               { insert(end(), 1, value); }
-	void append  (size_t n, const T & value)     { insert(end(), n, value); }
-	void append  (const T * ptr, size_t n)       { insert(end(), ptr, n); }
-	void append  (const vector<T,Alloc> & other) { append(other.constData(), other.size()); }
-	void prepend (const T & value)               { insert(begin(), 1, value); }
-	void prepend (size_t n, const T & value)     { insert(begin(), n, value); }
-	void prepend (const T * values, size_t n)    { insert(begin(), values, n); }
-	void prepend (const vector<T,Alloc> & other) { insert(begin(), other.constData(), other.size()); }
+	void clear   () { base_class::detach(); base_class::cast()->clear(); }
+    void reserve (size_type n) { base_class::detach(); base_class::cast()->reserve(n); }
+    void resize  (size_type n) { base_class::detach(); base_class::cast()->resize(n, value_type()); }
+    void resize  (size_type n, const value_type & value) { base_class::detach(); base_class::cast()->resize(n, value); }
+    void shrink_to_fit (); // introduced in C++11
 
-    void erase (size_t index) { erase(index, 1); }
-    void erase (size_t index, size_t n) { erase(begin() + index, begin() + index + n); }
+	iterator insert (const_iterator pos, size_type count, const T & value);
 
-    iterator remove (iterator first, iterator last) { return erase(first, last); }
-    void     remove (size_t index) { erase(index); }
-    void     remove (size_t index, size_t n) { erase(index, n); }
+	iterator insert (const_iterator pos, const T & value)
+	{
+		return insert(pos, 1, value);
+	}
+
+	template <typename InputIterator>
+	iterator insert (const_iterator pos, InputIterator first, InputIterator last);
+
+	iterator erase (const_iterator pos);
+	iterator erase (const_iterator first, const_iterator last);
+	iterator remove (const_iterator pos) { return erase(pos); }
+	iterator remove (const_iterator first, iterator last) { return erase(first, last); }
+	iterator remove (size_type index) { return erase(cbegin() + index); }
+	iterator remove (size_type index, size_t n) { return erase(cbegin() + index, cbegin() + index + n); }
+	void pop_back () { if(size() > 0) erase(cend() - 1); }
+	void pop_front () { if(size() > 0) erase(cbegin()); }
+
+	void push_back (const T & value) { insert(cend(), value); }
+	void append    (const T & value) { insert(cend(), value); }
+	void append    (size_type n, const T & value)  { insert(cend(), n, value); }
+	void append    (const vector & other) { insert(cend(), other.cbegin(), other.cend()); }
+
+	void push_front (const T & value) { insert(cbegin(), value); }
+	void prepend    (const T & value) { insert(cbegin(), value); }
+	void prepend    (size_type n, const T & value)  { insert(cbegin(), n, value); }
+	void prepend    (const vector & other) { insert(cbegin(), other.cbegin(), other.cend()); }
+
+	vector	 operator +  (const vector & o) const { vector r(*this); r.append(o); return r; }
+	vector & operator += (const vector & o) { append(o); return *this; }
+	vector & operator += (const T & value)  { append(value); return *this; }
+	vector & operator << (const T & value)  { append(value); return *this; }
+	vector & operator << (const vector & o) { append(o); return *this; }
+
+	void detach_and_assign (T * & p, const T & value); // pfs::reference class requirement
 };
 
-template <typename T, class Alloc>
-int vector<T, Alloc>::compare (size_t pos, size_t len, const T * v, size_t n) const
+template <typename T, typename Alloc>
+void vector<T, Alloc>::detach_and_assign (T * & p, const T & value)
 {
-	const T * p0 = constData() + pos;
-	const T * p1 = v;
-	const T * pend0 = p0 + len;
-	const T * pend1 = v + n;
-
-	for (; p0 < pend0 && p1 < pend1; ++p0, ++p1) {
-		if (*p0 > *p1 )
-			return 1;
-
-		if (*p0 < *p1 )
-			return -1;
-	}
-
-	return (p0 == pend0)
-			? (p1 == pend1) ? 0 : -1
-			: 1;
+	T * first = data();
+	difference_type offset = p - first;
+	base_class::detach();
+	p = data() + offset;
+	*p = value;
 }
 
 template <typename T, class Alloc>
-inline int vector<T, Alloc>::compare (size_t pos, size_t len, const vector<T, Alloc> & v, size_t subpos, size_t sublen) const
+inline bool operator == (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
 {
-	return compare(pos, len, v.constData() + subpos, sublen);
+	return compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend()) == 0;
 }
 
-template<typename T, class Alloc>
-typename vector<T, Alloc>::const_iterator
-vector<T, Alloc>::find (typename vector<T, Alloc>::const_iterator pos, const vector<T, Alloc> & v) const
+template <typename T, class Alloc>
+inline bool operator != (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
 {
-	return const_iterator(std::search(pos, cend(), v.cbegin(), v.cend()));
+	return compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend()) != 0;
 }
 
-template<typename T, class Alloc>
-typename vector<T, Alloc>::const_iterator
-vector<T, Alloc>::find (typename vector<T, Alloc>::const_iterator pos, size_t len, const vector<T, Alloc> & v) const
+template <typename T, class Alloc>
+inline bool operator < (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
 {
-	return const_iterator(std::search(pos, pos + len, v.cbegin(), v.cend()));
+	return compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend()) < 0;
 }
 
-template<typename T, class Alloc>
-typename vector<T, Alloc>::const_iterator
-vector<T, Alloc>::find (size_t pos, const typename vector<T, Alloc>::value_type * v, size_t n) const
+template <typename T, class Alloc>
+inline bool operator <= (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
 {
-	return const_iterator(std::search(cbegin() + pos, cend(), v, v + n));
+	return compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend()) <= 0;
 }
 
-template<typename T, class Alloc>
-typename vector<T, Alloc>::const_iterator
-vector<T, Alloc>::find (size_t pos, size_t len, const typename vector<T, Alloc>::value_type * v, size_t n) const
+template <typename T, class Alloc>
+inline bool operator > (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
 {
-	return const_iterator(std::search(cbegin() + pos, cbegin() + pos + len, v, v + n));
+	return compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend()) > 0;
 }
 
-template<typename T, class Alloc>
-typename vector<T, Alloc>::const_iterator
-vector<T, Alloc>::find (size_t pos, const T & val) const
+template <typename T, class Alloc>
+inline bool operator >= (const vector<T, Alloc> & lhs, const vector<T, Alloc> & rhs)
 {
-	return vector<T, Alloc>::const_iterator(std::find(cbegin() + pos, cend(), val));
+	return compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend()) >= 0;
 }
 
-} // cwt
+////template<typename T, class Alloc>
+////typename vector<T, Alloc>::const_iterator
+////vector<T, Alloc>::find (typename vector<T, Alloc>::const_iterator pos, const vector<T, Alloc> & v) const
+////{
+////	return const_iterator(std::search(pos, cend(), v.cbegin(), v.cend()));
+////}
+////
+////template<typename T, class Alloc>
+////typename vector<T, Alloc>::const_iterator
+////vector<T, Alloc>::find (typename vector<T, Alloc>::const_iterator pos, size_t len, const vector<T, Alloc> & v) const
+////{
+////	return const_iterator(std::search(pos, pos + len, v.cbegin(), v.cend()));
+////}
+////
+////template<typename T, class Alloc>
+////typename vector<T, Alloc>::const_iterator
+////vector<T, Alloc>::find (size_t pos, const typename vector<T, Alloc>::value_type * v, size_t n) const
+////{
+////	return const_iterator(std::search(cbegin() + pos, cend(), v, v + n));
+////}
+////
+////template<typename T, class Alloc>
+////typename vector<T, Alloc>::const_iterator
+////vector<T, Alloc>::find (size_t pos, size_t len, const typename vector<T, Alloc>::value_type * v, size_t n) const
+////{
+////	return const_iterator(std::search(cbegin() + pos, cbegin() + pos + len, v, v + n));
+////}
+////
+////template<typename T, class Alloc>
+////typename vector<T, Alloc>::const_iterator
+////vector<T, Alloc>::find (size_t pos, const T & val) const
+////{
+////	return vector<T, Alloc>::const_iterator(std::find(cbegin() + pos, cend(), val));
+////}
+
+} // pfs
+
+#include "bits/vector_impl.hpp"
 
 #endif /* __PFS_VECTOR_HPP__ */

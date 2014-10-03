@@ -88,8 +88,6 @@ bool operator != (const bytearray_allocator & a1, const bytearray_allocator & a2
 #endif
 
 
-typedef item_ref<char, bytearray_allocator<char> > byteref;
-
 class DLL_API bytearray : public vector<char, bytearray_allocator<char> >
 {
 	friend struct bytearray_terminator;
@@ -110,7 +108,6 @@ public:
 	bytearray (const char * s, size_t size);
 	bytearray (size_t n, const char & c);
 	bytearray (const std::string & s);
-//	bytearray (const_iterator begin, const_iterator end) : _d(new impl(begin, end)) {}
 
 	virtual ~bytearray () {}
 

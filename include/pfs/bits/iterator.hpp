@@ -1,0 +1,341 @@
+/**
+ * @file iterator.hpp
+ * @author wladt
+ * @date Aug 20, 2014
+ */
+
+#ifndef __PFS_BITS_ITERATOR_HPP__
+#define __PFS_BITS_ITERATOR_HPP__
+
+#include "type_traits.hpp"
+#include "reference.hpp"
+#include <pfs/utility.hpp>
+#include <pfs.hpp> // for PFS_ASSERT
+
+namespace pfs {
+
+template <typename Holder>
+class iterator
+{
+public:
+	typedef Holder  holder_class;
+	typedef typename constness<Holder>::pointer pointer;
+	typedef typename constness<Holder>::reference reference;
+	typedef typename holder_class::value_type value_type;
+	typedef typename holder_class::size_type size_type;
+	typedef typename holder_class::difference_type difference_type;
+
+protected:
+	holder_class * _holder;
+	pointer        _ptr;
+
+protected:
+	iterator (holder_class * holder, pointer ptr)
+		: _holder(holder), _ptr(ptr) {}
+
+public:
+	iterator (const iterator & o)
+		: _holder(o._holder), _ptr(o._ptr) {}
+
+	~iterator () {}
+
+	iterator & operator = (const iterator & o)
+	{
+		_holder = o._holder;
+		_ptr = o._ptr;
+		return *this;
+	}
+
+	void swap (iterator & i1, iterator & i2)
+	{
+		pfs_swap(i1._holder, i2._holder);
+		pfs_swap(i1._ptr, i2._ptr);
+	}
+
+	iterator & operator ++ () // prefix increment
+	{
+    	++_ptr;
+    	return *this;
+	}
+
+    reference operator * () const
+    {
+    	return reference(*_holder, _ptr);
+    }
+
+    pointer base () const
+    {
+    	return _ptr;
+    }
+
+    holder_class * holder () const
+    {
+    	return _holder;
+    }
+};
+
+
+template <typename Holder>
+class output_iterator : public iterator<Holder>
+{
+public:
+	typedef std::output_iterator_tag iterator_category;
+	typedef typename iterator<Holder>::holder_class holder_class;
+	typedef typename iterator<Holder>::pointer pointer;
+	typedef typename iterator<Holder>::value_type value_type;
+	typedef typename iterator<Holder>::reference reference;
+	typedef typename iterator<Holder>::size_type size_type;
+	typedef typename iterator<Holder>::difference_type difference_type;
+
+public:
+	output_iterator (holder_class * holder, pointer ptr)
+		: iterator<Holder>(holder, ptr) {}
+
+	explicit
+	output_iterator (const iterator<Holder> & it)
+		: iterator<Holder>(it) {}
+
+/*
+    reference operator * () const
+    {
+    	return reference(*this->_holder, this->_ptr);
+    }
+*/
+	output_iterator & operator ++ () // prefix increment
+	{
+    	++this->_ptr;
+    	return *this;
+	}
+
+
+	output_iterator operator ++ (int)
+	{
+		return output_iterator(this->_holder, this->_ptr++);
+	}
+};
+
+template <typename Holder>
+class input_iterator : public iterator<Holder>
+{
+public:
+	typedef std::input_iterator_tag iterator_category;
+	typedef typename iterator<Holder>::holder_class holder_class;
+	typedef typename iterator<Holder>::pointer pointer;
+	typedef typename iterator<Holder>::value_type value_type;
+	typedef typename iterator<Holder>::reference reference;
+	typedef typename iterator<Holder>::size_type size_type;
+	typedef typename iterator<Holder>::difference_type difference_type;
+
+public:
+	input_iterator (holder_class * holder, pointer ptr)
+		: iterator<Holder>(holder, ptr) {}
+
+	explicit
+	input_iterator (const iterator<Holder> & it)
+		: iterator<Holder>(it) {}
+
+    value_type operator * () const
+    {
+    	return reference(*this->_holder, this->_ptr);
+    }
+
+    pointer operator -> () const
+    {
+    	return this->_ptr;
+    }
+
+    input_iterator & operator ++ () // prefix increment
+	{
+    	++this->_ptr;
+    	return *this;
+	}
+
+    input_iterator operator ++ (int) // postfix increment
+	{
+		return input_iterator(this->_holder, this->_ptr++);
+	}
+};
+
+template <typename Holder1, typename Holder2>
+inline bool operator == (const input_iterator<Holder1> & i1, const input_iterator<Holder2> & i2)
+{
+	return i1.base() == i2.base();
+}
+
+template <typename Holder1, typename Holder2>
+inline bool operator != (const input_iterator<Holder1> & i1, const input_iterator<Holder2> & i2)
+{
+	return i1.base() != i2.base();
+}
+
+template <typename Holder>
+class forward_iterator : public input_iterator<Holder>
+{
+public:
+	typedef std::forward_iterator_tag iterator_category;
+	typedef typename iterator<Holder>::holder_class holder_class;
+	typedef typename iterator<Holder>::pointer pointer;
+	typedef typename iterator<Holder>::value_type value_type;
+	typedef typename iterator<Holder>::reference reference;
+	typedef typename iterator<Holder>::size_type size_type;
+	typedef typename iterator<Holder>::difference_type difference_type;
+
+public:
+	forward_iterator ()
+		: input_iterator<Holder>(nullptr, pointer()) {}
+
+	forward_iterator (holder_class * holder, pointer ptr)
+		: input_iterator<Holder>(holder, ptr) {}
+
+	explicit
+	forward_iterator (const iterator<Holder> & it)
+		: input_iterator<Holder>(it) {}
+
+    reference operator * () const
+    {
+    	return reference(*this->_holder, this->_ptr);
+    }
+
+	forward_iterator & operator ++ ()
+	{
+    	++this->_ptr;
+    	return *this;
+	}
+
+	forward_iterator operator ++ (int)
+	{
+		return forward_iterator(this->_holder, this->_ptr++);
+	}
+};
+
+template <typename Holder>
+class bidirectional_iterator : public forward_iterator<Holder>
+{
+public:
+	typedef std::bidirectional_iterator_tag iterator_category;
+	typedef typename iterator<Holder>::holder_class holder_class;
+	typedef typename iterator<Holder>::pointer pointer;
+	typedef typename iterator<Holder>::value_type value_type;
+	typedef typename iterator<Holder>::reference reference;
+	typedef typename iterator<Holder>::size_type size_type;
+	typedef typename iterator<Holder>::difference_type difference_type;
+
+public:
+	bidirectional_iterator ()
+		: forward_iterator<Holder>() {}
+
+	bidirectional_iterator (holder_class * holder, pointer ptr)
+		: forward_iterator<Holder>(holder, ptr) {}
+
+	explicit
+	bidirectional_iterator (const iterator<Holder> & it)
+		: forward_iterator<Holder>(it) {}
+
+	bidirectional_iterator & operator -- ()
+	{
+    	--this->_ptr;
+    	return *this;
+	}
+
+	bidirectional_iterator operator -- (int)
+	{
+		return bidirectional_iterator(*this->_holder, this->_ptr--);
+	}
+};
+
+template <typename Holder>
+class random_access_iterator : public bidirectional_iterator<Holder>
+{
+public:
+	typedef std::random_access_iterator_tag iterator_category;
+	typedef typename iterator<Holder>::holder_class holder_class;
+	typedef typename iterator<Holder>::pointer pointer;
+	typedef typename iterator<Holder>::value_type value_type;
+	typedef typename iterator<Holder>::reference reference;
+	typedef typename iterator<Holder>::size_type size_type;
+	typedef typename iterator<Holder>::difference_type difference_type;
+
+public:
+	random_access_iterator ()
+		: bidirectional_iterator<Holder>() {}
+
+	random_access_iterator (holder_class * holder, pointer ptr)
+		: bidirectional_iterator<Holder>(holder, ptr) {}
+
+	random_access_iterator (const random_access_iterator & it)
+		: bidirectional_iterator<Holder>(it) {}
+
+	explicit
+	random_access_iterator (const iterator<Holder> & it)
+		: bidirectional_iterator<Holder>(it) {}
+
+	random_access_iterator & operator += (size_type n)
+	{
+		this->_ptr += n;
+    	return *this;
+	}
+
+	random_access_iterator & operator -= (size_type n)
+	{
+    	this->_ptr -= n;
+    	return *this;
+	}
+
+	reference operator [] (size_type index)
+	{
+		return reference(*this->_holder, this->base() + index);
+	}
+};
+
+template <typename Holder1, typename Holder2>
+inline bool operator < (const iterator<Holder1> & i1, const iterator<Holder2> & i2)
+{
+	return i1.base() < i2.base();
+}
+
+template <typename Holder1, typename Holder2>
+inline bool operator > (const iterator<Holder1> & i1, const iterator<Holder2> & i2)
+{
+	return i1.base() > i2.base();
+}
+
+template <typename Holder1, typename Holder2>
+inline bool operator <= (const iterator<Holder1> & i1, const iterator<Holder2> & i2)
+{
+	return i1.base() <= i2.base();
+}
+
+template <typename Holder1, typename Holder2>
+inline bool operator >= (const iterator<Holder1> & i1, const iterator<Holder2> & i2)
+{
+	return i1.base() >= i2.base();
+}
+
+template <typename Holder>
+inline random_access_iterator<Holder> operator + (const random_access_iterator<Holder> & i, typename random_access_iterator<Holder>::size_type n)
+{
+	return random_access_iterator<Holder>(i.holder(), i.base() + n);
+}
+
+template <typename Holder>
+inline random_access_iterator<Holder> operator + (typename random_access_iterator<Holder>::size_type n, const random_access_iterator<Holder> & i)
+{
+	return random_access_iterator<Holder>(i.holder(), i.base() + n);
+}
+
+template <typename Holder>
+inline random_access_iterator<Holder> operator - (const random_access_iterator<Holder> & i, typename random_access_iterator<Holder>::size_type n)
+{
+	return random_access_iterator<Holder>(i.holder(), i.base() - n);
+}
+
+template <typename Holder1, typename Holder2>
+inline typename random_access_iterator<Holder1>::difference_type operator - (random_access_iterator<Holder1> i1, random_access_iterator<Holder2> i2)
+{
+	return i1.base() - i2.base();
+}
+
+
+} // pfs
+
+#endif /* __PFS_BITS_ITERATOR_HPP__ */
