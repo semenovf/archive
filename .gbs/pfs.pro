@@ -6,18 +6,19 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = pfs       \
-    tests/shared_ptr \
-    tests/bitarray   \
-    tests/bytearray  \
-    tests/fsm        \
-    tests/function   \
+SUBDIRS  = \
+#    pfs       \
+#    tests/shared_ptr \
+#    tests/bitarray   \
+#    tests/bytearray  \
+#    tests/fsm        \
+#    tests/function   \
     tests/vector     \
-    tests/map_hash   \
-    tests/date       \
-    tests/time       \
-    tests/utf8string_ptr \
-    tests/utf8string     \
-    tests/unitype        \
-#    tests/cow_ptr_qt     \
-    tests/pimpl
+#    tests/map_hash   \
+#    tests/date       \
+#    tests/time       \
+#    tests/utf8string_ptr \
+#    tests/utf8string     \
+#    tests/unitype        \
+##    tests/cow_ptr_qt     \
+#    tests/pimpl

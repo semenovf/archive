@@ -41,6 +41,13 @@ public:
 public:
 	vector () : base_class() {}
 	vector (size_t n, const T & v = T()) : base_class(new impl_class(n, v)) {}
+
+	template <typename InputIterator>
+	vector (InputIterator first, InputIterator last)
+	{
+		insert(cbegin(), first, last);
+	}
+
 	virtual ~vector () {}
 
 public:

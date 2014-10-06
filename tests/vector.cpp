@@ -9,9 +9,9 @@
 #include <iostream>
 #include <cwt/test.hpp>
 #include <cwt/stopwatch.hpp>
-#include "vector.hpp"
-#include "bits/pointer.hpp"
-#include "bits/iterator.hpp"
+#include "pfs/vector.hpp"
+#include "pfs/bits/pointer.hpp"
+#include "pfs/bits/iterator.hpp"
 
 //#include <iostream>
 
@@ -315,6 +315,18 @@ void test_vector_insert ()
 
 	TEST_OK2(ok, "Vector instance equals to other vector instance");
 	TEST_OK(it2 == v2.cend());
+
+	pfs::vector<char> v3(loremipsum, loremipsum + strlen(loremipsum));
+	TEST_OK(v3.size() == strlen(loremipsum));
+	TEST_OK(strncmp(loremipsum, v3.constData(), v3.size()) == 0);
+
+	pfs::vector<char> v4(loremipsum, loremipsum);
+	TEST_OK(v4.size() == 0);
+	TEST_OK(v4.isEmpty());
+	TEST_OK(!v4.isNull());
+
+	// Be careful to pass NULL, undefined behavior
+	// pfs::vector<char> v5(nullptr, end_ptr);
 }
 
 
@@ -597,9 +609,8 @@ int main(int argc, char * argv[])
 {
 //    PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(99);
+	BEGIN_TESTS(101);
 
-	if (1) {
 	test_vector_reference();
 	test_vector_of_vectors();
 	test_vector_iterator();
@@ -610,6 +621,6 @@ int main(int argc, char * argv[])
 	test_vector_search();
 	test_vector_find();
 	test_swap();
-	}
-    END_TESTS;
+
+	END_TESTS;
 }

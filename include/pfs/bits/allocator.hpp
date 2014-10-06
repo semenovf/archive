@@ -13,7 +13,8 @@ namespace pfs {
 template <class T>
 struct allocator : public std::allocator<T>
 {
-	typedef std::allocator<T>      base_class;
+	typedef std::allocator<T> base_class;
+	typedef typename std::allocator<T>::size_type size_type;
 	typedef T value_type;
 
 	allocator () : base_class() {}
