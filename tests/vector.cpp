@@ -590,7 +590,7 @@ void test_vector_find ()
 	//pfs::vector<int>::const_iterator it2(it1); // FIXME need iterator to const_iterator conversion
 }
 
-void test_swap ()
+void test_vector_swap ()
 {
 	pfs::vector<int> v1;
 	pfs::vector<int> v2;
@@ -620,7 +620,7 @@ int main(int argc, char * argv[])
 	test_vector_compare();
 	test_vector_search();
 	test_vector_find();
-	test_swap();
+	test_vector_swap();
 
 	END_TESTS;
 }

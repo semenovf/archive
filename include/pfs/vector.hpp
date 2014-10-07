@@ -124,7 +124,7 @@ public:
 	iterator erase (const_iterator pos);
 	iterator erase (const_iterator first, const_iterator last);
 	iterator remove (const_iterator pos) { return erase(pos); }
-	iterator remove (const_iterator first, iterator last) { return erase(first, last); }
+	iterator remove (const_iterator first, const_iterator last) { return erase(first, last); }
 	iterator remove (size_type index) { return erase(cbegin() + index); }
 	iterator remove (size_type index, size_t n) { return erase(cbegin() + index, cbegin() + index + n); }
 	void pop_back () { if(size() > 0) erase(cend() - 1); }
