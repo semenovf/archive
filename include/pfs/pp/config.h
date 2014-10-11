@@ -59,7 +59,8 @@
 #	define HAVE_UINTPTR_T 1
 #endif
 
-#if defined(__PTRDIFF_TYPE__)
+#if defined(__PTRDIFF_TYPE__) \
+	|| defined(_PTRDIFF_T_DEFINED) /* msvc */
 #	define HAVE_PTRDIFF_T 1
 #endif
 
