@@ -51,11 +51,15 @@ typedef uint32_t           uint_t;
 #ifdef HAVE_INT64
 	typedef int64_t        long_t;
 	typedef uint64_t       ulong_t;
-	typedef long double    double_t;
 #else
 	typedef long           long_t;
 	typedef unsigned long  ulong_t;
-	typedef double         double_t;
+#endif
+
+#ifdef HAVE_INT64
+	typedef long double    pfs_double_t;
+#else
+	typedef double 		   pfs_double_t;
 #endif
 
 #ifndef HAVE_SIZE_T

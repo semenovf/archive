@@ -9,6 +9,9 @@
 #ifndef __PFS_PP_LIMITS_H__
 #define __PFS_PP_LIMITS_H__
 
+#include <float.h>
+#include <math.h> /* for NAN */
+
 #define PFS_INT8_MAX   127
 #define PFS_INT8_MIN   (-127-1)
 #define PFS_UINT8_MAX  255
@@ -55,7 +58,6 @@
 #	define PFS_LONG_MIN   PFS_INT32_MIN
 #endif
 
-#include <float.h>
 #define PFS_FLOAT_MIN  FLT_MIN /* 1.175494351e-38F */
 #define PFS_FLOAT_MAX  FLT_MAX /* 3.402823466e+38F */
 #ifdef HAVE_INT64
@@ -70,8 +72,32 @@
 #	define PFS_DOUBLE_MAX_10_EXP DBL_MAX_10_EXP /* 308 */
 #endif
 
+#ifdef HAVE_INT64
+#	define PFS_DOUBLE_LITERAL(x) x##L
+#else
+#	define PFS_DOUBLE_LITERAL(x) x
+#endif
+
+
+#ifdef INFINITY
+#	define PFS_INFINITY INFINITY
+#else
+#	error "INFINITY is undefined"
+#endif
+
+#ifdef NAN
+#	define PFS_NAN NAN
+#else
+#	error "NAN is undefined"
+#endif
+
+/*
+#define PFS_INFINITY (PFS_DOUBLE_MAX+PFS_DOUBLE_MAX)
+#define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
+
 #define PFS_SIZE_MAX   PFS_UINT_MAX
 #define PFS_SSIZE_MAX  PFS_INT_MAX
+*/
 
 #ifndef NDEBUG
 #   define PFS_CHECK_SIZEOF_TYPE(type,sz) PFS_ASSERT(sizeof(type) == (sz))
