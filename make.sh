@@ -18,11 +18,13 @@ usage()
 
 case $1 in
   clean)
-    qmake -makefile -r -o Makefile
+#    qmake -makefile -r -o Makefile
+    qmake -makefile -o Makefile    
     make distclean
     ;;
   all)
-    qmake -makefile -r -o Makefile
+#    qmake -makefile -r -o Makefile
+    qmake -makefile -o Makefile
     make $MULTITHREAD all
     if [ $? -ne 0 ] ; then exit 1 ; fi
     ;;
