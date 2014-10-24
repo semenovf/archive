@@ -79,4 +79,8 @@
 #	endif
 #endif
 
+#if _XOPEN_SOURCE >= 600 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L
+#	define PFS_HAVE_STRTOLD 1
+#endif
+
 #endif /* __PFS_CONFIG_H__ */
