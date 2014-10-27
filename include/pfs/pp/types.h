@@ -56,10 +56,10 @@ typedef uint32_t           uint_t;
 	typedef unsigned long  ulong_t;
 #endif
 
-#ifdef HAVE_INT64
-	typedef long double    pfs_double_t;
+#ifdef PFS_HAVE_LONG_DOUBLE
+	typedef long double    real_t;
 #else
-	typedef double 		   pfs_double_t;
+	typedef double         real_t;
 #endif
 
 #ifndef HAVE_SIZE_T
