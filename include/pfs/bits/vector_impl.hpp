@@ -48,7 +48,7 @@ namespace pfs {
 
 template <typename T, typename Alloc>
 typename vector<T, Alloc>::iterator vector<T, Alloc>::insert (
-		vector<T, Alloc>::const_iterator pos, vector<T, Alloc>::size_type count
+		typename vector<T, Alloc>::const_iterator pos, typename vector<T, Alloc>::size_type count
 		, const T & value)
 {
 	base_class::detach();
@@ -66,7 +66,7 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::insert (
 template <typename T, typename Alloc>
 template <typename InputIterator>
 typename vector<T, Alloc>::iterator vector<T, Alloc>::insert (
-		vector<T, Alloc>::const_iterator pos
+		typename vector<T, Alloc>::const_iterator pos
 		, InputIterator first, InputIterator last)
 {
 	base_class::detach();
@@ -83,7 +83,7 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::insert (
 }
 
 template <typename T, typename Alloc>
-typename vector<T, Alloc>::iterator vector<T, Alloc>::erase (vector<T, Alloc>::const_iterator pos)
+typename vector<T, Alloc>::iterator vector<T, Alloc>::erase (typename vector<T, Alloc>::const_iterator pos)
 {
 	base_class::detach();
 	PFS_ASSERT(pos >= cbegin() && pos < cend());
@@ -100,8 +100,8 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::erase (vector<T, Alloc>::c
 
 template <typename T, typename Alloc>
 typename vector<T, Alloc>::iterator vector<T, Alloc>::erase (
-		vector<T, Alloc>::const_iterator first
-		, vector<T, Alloc>::const_iterator last)
+		  typename vector<T, Alloc>::const_iterator first
+		, typename vector<T, Alloc>::const_iterator last)
 {
 	base_class::detach();
 	PFS_ASSERT(first >= cbegin() && first <= cend());

@@ -98,14 +98,23 @@
 #ifdef INFINITY
 #	define PFS_INFINITY INFINITY
 #else
-#	error "INFINITY is undefined"
+#	ifdef PFS_CC_MSVC
+#		define PFS_INFINITY (LDBL_MAX+LDBL_MAX)
+#	else
+#		error INFINITY is undefined
+#	endif
 #endif
 
 #ifdef NAN
 #	define PFS_NAN NAN
 #else
-#	error "NAN is undefined"
+#	ifdef PFS_CC_MSVC
+#		define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
+#	else
+#		error NAN is undefined
+#	endif
 #endif
+
 
 /*
 #define PFS_INFINITY (PFS_DOUBLE_MAX+PFS_DOUBLE_MAX)
