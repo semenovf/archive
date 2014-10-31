@@ -119,10 +119,9 @@
 /*
 #define PFS_INFINITY (PFS_DOUBLE_MAX+PFS_DOUBLE_MAX)
 #define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
-
+*/
 #define PFS_SIZE_MAX   PFS_UINT_MAX
 #define PFS_SSIZE_MAX  PFS_INT_MAX
-*/
 
 #ifndef NDEBUG
 #   define PFS_CHECK_SIZEOF_TYPE(type,sz) PFS_ASSERT(sizeof(type) == (sz))
@@ -172,6 +171,10 @@ template<> inline uint64_t max_type<uint64_t> () { return uint64_t(PFS_UINT64_MA
 template<> inline float    max_type<float>    () { return float(PFS_FLOAT_MAX); }
 template<> inline double   max_type<double>   () { return double(PFS_DOUBLE_MAX); }
 
+#ifdef PFS_HAVE_LONG_DOUBLE
+template<> inline long double   max_type<long double>   () { return PFS_LONG_DOUBLE_MAX; }
+#endif
+
 template<> inline int8_t   min_type<int8_t>   () { return int8_t(PFS_INT8_MIN); }
 template<> inline uint8_t  min_type<uint8_t>  () { return uint8_t(0); }
 template<> inline int16_t  min_type<int16_t>  () { return int16_t(PFS_INT16_MIN); }
@@ -182,6 +185,10 @@ template<> inline int64_t  min_type<int64_t>  () { return int64_t(PFS_INT64_MIN)
 template<> inline uint64_t min_type<uint64_t> () { return uint64_t(0); }
 template<> inline float    min_type<float>    () { return float(PFS_FLOAT_MIN); }
 template<> inline double   min_type<double>   () { return double(PFS_DOUBLE_MIN); }
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+template<> inline long double   min_type<long double>   () { return PFS_LONG_DOUBLE_MIN; }
+#endif
 
 }
 

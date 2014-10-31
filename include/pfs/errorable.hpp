@@ -63,21 +63,21 @@ inline size_t errorable::errorCount () const
 inline const pfs::string errorable::errorTextAt (size_t index) const
 {
 	return index < _errors.size()
-			? pfs::string(_errors[index]._errstr)
+			? pfs::string((&_errors[index])->_errstr)
 			: pfs::string();
 }
 
 inline int errorable::errorRepeatCount (size_t index) const
 {
 	return index < _errors.size()
-			? _errors[index]._ntimes
+			? (&_errors[index])->_ntimes
 			: -1;
 }
 
 inline const pfs::string errorable::lastErrorText () const
 {
 	return _errors.size() > 0
-			? pfs::string(_errors.last()._errstr)
+			? pfs::string((&_errors.last())->_errstr)
 			: pfs::string();
 }
 

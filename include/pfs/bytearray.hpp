@@ -8,13 +8,13 @@
 #ifndef __PFS_BYTEARRAY_HPP__
 #define __PFS_BYTEARRAY_HPP__
 
-#include "pimpl.hpp"
-#include "endian.hpp"
 #include "vector.hpp"
-#include "bits/cast_traits.hpp"
+#include "bits/allocator.hpp"
+#include "endian.hpp"
+//#include "bits/cast_traits.hpp"
 #include <string>
 #include <cstring>
-#include <ostream>
+//#include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC
@@ -24,7 +24,7 @@
 
 namespace pfs {
 
-class utf8string;
+//class utf8string;
 class bytearray;
 
 struct bytearray_terminator
@@ -36,9 +36,10 @@ struct bytearray_terminator
 
 
 template <class T>
-struct bytearray_allocator : public std::allocator<T>
+struct bytearray_allocator : public pfs::allocator<T>
 {
-	typedef std::allocator<T>      base_class;
+	typedef pfs::allocator<T> base_class;
+	typedef typename pfs::allocator<T>::size_type size_type;
 	typedef T value_type;
 
 	bytearray_allocator () : base_class() {}
@@ -53,11 +54,11 @@ struct bytearray_allocator : public std::allocator<T>
 	   typedef bytearray_allocator<U> other;
 	};
 
-	value_type * allocate (std::size_t n, const void * = 0)
+	value_type * allocate (size_type n, const void * = 0)
 	{
 		return base_class::allocate(n+1);
 	}
-	void deallocate (value_type * p, std::size_t /*n*/)
+	void deallocate (value_type * p, size_type /*n*/)
 	{
 		base_class::deallocate(p, 0);
 	}
@@ -88,190 +89,262 @@ bool operator != (const bytearray_allocator & a1, const bytearray_allocator & a2
 #endif
 
 
-class DLL_API bytearray : public vector<char, bytearray_allocator<char> >
+class DLL_API bytearray : protected vector<char, bytearray_allocator<char> >
 {
 	friend struct bytearray_terminator;
 
-public:
+protected:
 	typedef vector<char, bytearray_allocator<char> > base_class;
-	typedef base_class::value_type char_type;
-	typedef base_class::value_type item_type;
-	typedef base_class::iterator iterator;
-	typedef base_class::const_iterator const_iterator;
+	typedef bytearray self_class;
 
-	static const char_type TerminatorChar;
-	static const char_type EndOfLineChar;
+public: // typedefs
+	typedef /*typename */base_class::value_type             value_type;
+	typedef /*typename */base_class::pointer                pointer;
+	typedef /*typename */base_class::const_pointer          const_pointer;
+	typedef /*typename */base_class::size_type              size_type;
+	typedef /*typename */base_class::difference_type        difference_type;
+
+	typedef /*typename */base_class::reference              reference;
+	typedef /*typename */base_class::const_reference        const_reference;
+	typedef /*typename */base_class::iterator               iterator;
+	typedef /*typename */base_class::const_iterator         const_iterator;
+	typedef /*typename */base_class::reverse_iterator	 	reverse_iterator;
+	typedef /*typename */base_class::const_reverse_iterator const_reverse_iterator;
+
+	typedef /*typename */base_class::value_type char_type;
+
+public: // static
+	static const char_type TerminatorChar/* = '\0'*/;
+	static const char_type EndOfLineChar/* = '\n'*/;
 
 public:
 	bytearray () : base_class() {}
-	bytearray (const char * s);
-	bytearray (const char * s, size_t size);
-	bytearray (size_t n, const char & c);
-	bytearray (const std::string & s);
+
+	bytearray(const char * s)
+		: base_class(s, s + (s != nullptr ? strlen(s) : 0))
+	{
+		bytearray_terminator bt(this);
+	}
+
+	bytearray(const char * s, size_type size)
+		: base_class(s, s + (s != nullptr ? size : 0))
+	{
+		bytearray_terminator bt(this);
+	}
+
+	bytearray(const std::string & s)
+		: base_class(s.begin(), s.end())
+	{
+		bytearray_terminator bt(this);
+	}
+
+	bytearray(size_type n, char ch)
+		: base_class(n, ch)
+	{
+		bytearray_terminator bt(this);
+	}
+
+	bytearray(const_iterator first, const_iterator last)
+		: base_class(first, last)
+	{
+		bytearray_terminator bt(this);
+	}
 
 	virtual ~bytearray () {}
 
-	virtual void resize (size_t n, char v = TerminatorChar)
-	{
-		bytearray_terminator bt(this);
-		base_class::resize(n, v);
-	}
+	bool isNull ()  const  { return base_class::isNull(); }
+	bool isEmpty () const  { return base_class::isEmpty(); }
+	bool empty ()   const  { return base_class::isEmpty(); }
 
-	virtual void clear ()
+    iterator begin () { return base_class::begin(); }
+    iterator end   () { return base_class::end(); }
+    const_iterator begin () const { return cbegin(); }
+    const_iterator end   () const { return cend(); }
+    const_iterator cbegin() const { return base_class::cbegin(); }
+    const_iterator cend  () const { return base_class::cend(); }
+    reverse_iterator rbegin  ()   { return base_class::rbegin(); }
+    reverse_iterator rend    ()   { return base_class::rend(); }
+    const_reverse_iterator rbegin  () const { return rbegin(); }
+    const_reverse_iterator rend    () const { return crend(); }
+    const_reverse_iterator crbegin () const { return base_class::crbegin(); }
+    const_reverse_iterator crend   () const { return base_class::crend(); }
+
+	reference at (size_type index) const { return base_class::at(index); }
+	reference operator [] (size_type i) const { return at(i); }
+
+	iterator find (char value) const { return base_class::find(value); }
+
+	reference front () const { return at(0); }
+	reference first () const { return at(0); }
+	reference back  () const { return at(size()-1); }
+	reference last  () const { PFS_ASSERT(size() > 0); return at(size()-1); }
+
+	const char * constData () const { return base_class::constData(); }
+	const char * data () const      { return base_class::data(); }
+	char * data ()                  { return base_class::data(); }
+    const char * c_str () const { return constData(); }
+
+	size_type size () const { return base_class::size(); }
+	size_type length () const { return base_class::size(); }
+	size_type capacity() const { return base_class::capacity() - 1; }
+
+
+	void clear ()
 	{
 		bytearray_terminator bt(this);
 		base_class::clear();
 	}
 
-	virtual void insert (iterator position, const char * ptr, size_t n)
-	{
-		bytearray_terminator bt(this);
-		base_class::insert(position, ptr, n);
-	}
-
-	virtual void insert (iterator position, size_t n, const char & val)
-	{
-		bytearray_terminator bt(this);
-		base_class::insert(position, n, val);
-	}
-
-    virtual iterator erase (iterator first, iterator last)
+    void reserve (size_type n)
     {
 		bytearray_terminator bt(this);
-		return base_class::erase(first, last);
+    	base_class::reserve(n);
     }
 
-    const char * c_str () const { return constData(); }
+    void resize (size_type n)
+    {
+    	resize(n, TerminatorChar);
+    }
 
-//    bool contains (const char * s) const { return find(begin(), s) != end(); }
+    void resize (size_type n, const value_type & value)
+    {
+    	bytearray_terminator bt(this);
+    	base_class::resize(n, value);
+    }
 
-    size_t length () const { return size(); }
+    void shrink_to_fit ()
+    {
+    	bytearray_terminator bt(this);
+    	base_class::shrink_to_fit();
+    }
 
-	static size_t length (const iterator & begin, const iterator & end)
+	iterator erase (const_iterator pos)
 	{
-		return begin <= end ? end - begin : begin - end;
+		bytearray_terminator bt(this);
+		return base_class::erase(pos);
 	}
 
-	static size_t length (const const_iterator & begin, const const_iterator & end)
+	iterator erase (const_iterator first, const_iterator last)
 	{
-		return begin <= end ? end - begin : begin - end;
+		bytearray_terminator bt(this);
+		return base_class::erase(first, last);
+	}
+
+	iterator remove (const_iterator pos) { return erase(pos); }
+	iterator remove (const_iterator first, const_iterator last) { return erase(first, last); }
+	iterator remove (size_type index) { return erase(cbegin() + index); }
+	iterator remove (size_type index, size_t n) { return erase(cbegin() + index, cbegin() + index + n); }
+	void pop_back () { if(size() > 0) erase(cend() - 1); }
+	void pop_front () { if(size() > 0) erase(cbegin()); }
+
+	iterator insert (const_iterator pos, size_type count, char value)
+	{
+		bytearray_terminator bt(this);
+		return base_class::insert(pos, count, value);
+	}
+
+	iterator insert (const_iterator pos, char value)
+	{
+		return insert(pos, 1, value);
+	}
+
+	iterator insert (const_iterator pos, const_iterator first, const_iterator last)
+	{
+		bytearray_terminator bt(this);
+		return insert(pos, first, last);
+	}
+
+	void push_back (char value) { insert(cend(), value); }
+	void append    (char value) { insert(cend(), value); }
+	void append    (size_type n, char value)  { insert(cend(), n, value); }
+	void append    (const bytearray & other) { insert(cend(), other.cbegin(), other.cend()); }
+	void append    (const char * s, size_type n)
+	{
+		if (s && n > 0) {
+			bytearray_terminator bt(this);
+			base_class::insert(cend(), s, s + n);
+		}
 	}
 
 	void append (const char * s)
 	{
-		bytearray_terminator bt(this);
-		base_class::append(s, strlen(s));
+		append(s, strlen(s));
 	}
 
-	void append (const char * s, size_t n)
+	void push_front (char value) { insert(cbegin(), value); }
+	void prepend    (char value) { insert(cbegin(), value); }
+	void prepend    (size_type n, char value)  { insert(cbegin(), n, value); }
+	void prepend    (const bytearray & other) { insert(cbegin(), other.cbegin(), other.cend()); }
+	void prepend    (const char * s, size_type n)
 	{
-		bytearray_terminator bt(this);
-		base_class::append(s, n);
-	}
-
-	void append (size_t n, const char & c)
-	{
-		bytearray_terminator bt(this);
-		base_class::append(n, c);
-	}
-
-	void append (const bytearray & other)
-	{
-		bytearray_terminator bt(this);
-		base_class::append(other);
+		if (s && n > 0) {
+			bytearray_terminator bt(this);
+			base_class::insert(cend(), s, s + n);
+		}
 	}
 
 	void prepend (const char * s)
 	{
-		bytearray_terminator bt(this);
-		base_class::prepend(s, strlen(s));
+		prepend(s, strlen(s));
 	}
 
-	void prepend (const char * s, size_t n)
+	bytearray   operator +  (const bytearray & o) const { bytearray r(*this); r.append(o); return r; }
+	bytearray & operator += (const bytearray & o) { append(o); return *this; }
+	bytearray & operator += (const char value)    { append(value); return *this; }
+	bytearray & operator << (const char value)    { append(value); return *this; }
+	bytearray & operator << (const bytearray & o) { append(o); return *this; }
+
+	bool contains   (const bytearray & ba) const     { return base_class::contains(ba); }
+	bool contains   (char value) const               { return base_class::contains(value); }
+	bool startsWith (char value) const               { return base_class::startsWith(value); }
+	bool startsWith (const bytearray & ba) const     { return base_class::startsWith(ba); }
+	bool startsWith (const char * s) const           { return startsWith(bytearray(s)); }
+	bool startsWith (const char * s, size_t n) const { return startsWith(bytearray(s, n)); }
+	bool endsWith   (char value) const               { return base_class::endsWith(value); }
+	bool endsWith   (const bytearray & ba) const     { return base_class::endsWith(ba); }
+	bool endsWith   (const char * s) const           { return endsWith(bytearray(s)); }
+	bool endsWith   (const char * s, size_t n) const { return endsWith(bytearray(s, n)); }
+
+	void swap (bytearray & other) { base_class::swap(other); }
+
+	bytearray substr (const_iterator from, const_iterator last) const
 	{
-		bytearray_terminator bt(this);
-		base_class::prepend(s, n);
+		return bytearray(from, last);
 	}
 
-	void prepend (size_t n, const char & c)
+	bytearray substr (size_type pos) const
 	{
-		bytearray_terminator bt(this);
-		base_class::prepend(n, c);
+		PFS_ASSERT(pos < size());
+		return substr(cbegin() + pos, cbegin() + pos + size());
 	}
 
-	void prepend (const bytearray & other)
+	bytearray substr (size_type pos, size_type n) const
 	{
-		bytearray_terminator bt(this);
-		base_class::prepend(other);
+		PFS_ASSERT(pos < size());
+		if (pos + n > size())
+			n = size() - pos;
+		return substr(cbegin() + pos, cbegin() + pos + n);
 	}
 
-	void insert (iterator pos, const char * s)
+	bytearray mid (size_type pos, size_type n) const
 	{
-		bytearray_terminator bt(this);
-		base_class::insert(pos, s, strlen(s));
+		return substr(pos, n);
 	}
 
-//	void insert (iterator pos, const char * s, size_t n)
-//	{
-//		bytearray_terminator bt(this);
-//		base_class::insert(pos, s, n);
-//	}
-
-	void insert (iterator pos, const bytearray & other)
+	bytearray left   (size_type n) const
 	{
-		bytearray_terminator bt(this);
-		base_class::insert(pos, other);
+		return size() <= n
+				? bytearray(*this)
+				: bytearray(cbegin(), cbegin() + n);
+	}
+	bytearray right  (size_type n) const
+	{
+		return (size() <= n)
+				? bytearray(*this)
+				: bytearray(cbegin() + n, cend());
 	}
 
-	//void append (size_t n, char ch) { base_class::append(n, ch); }
-
-/*
-	bytearray & append  (const bytearray & s) { return insert(s, end()); }
-	bytearray & append  (const char * s, size_t n) { return insert(s, n, end()); }
-	bytearray & prepend (const bytearray & s) { return insert(s, begin()); }
-	bytearray & prepend (const char * s) { return insert(s, begin()); }
-	bytearray & prepend (const char * s, size_t n)  { return insert(s, n, begin()); }
-	bytearray & prepend (size_t size, char ch) { prepend(bytearray(size, ch)); return *this; }
-	bytearray & insert  (const bytearray & s, size_t pos) { return insert(s, begin() + pos); }
-	bytearray & insert  (const bytearray & s, const const_iterator & pos) { return insert(s.constData(), s.size(), pos); }
-	bytearray & insert  (const char * s, const const_iterator & pos);
-	bytearray & insert  (const char * s, size_t n, const const_iterator & pos);
-	bytearray & insert  (size_t size, char ch, size_t pos) { return insert(bytearray(size, ch), pos); }
-	bytearray & insert  (size_t size, char ch, const const_iterator & pos) { return insert(bytearray(size, ch), pos); }
-*/
-
-
-	bool endsWith (const bytearray & s) const { return endsWith(s.data(), s.size()); }
-	bool endsWith (const char * s) const;
-	bool endsWith (const char * s, size_t n) const;
-
-	bool startsWith (const bytearray & s) const { return startsWith(s.data(), s.size()); }
-	bool startsWith (const char * s) const;
-	bool startsWith (const char * s, size_t n) const;
-
-//	const_iterator find (const_iterator pos, const bytearray & s) const;
-//	const_iterator find (size_t pos, const char * s, size_t n) const;
-//	const_iterator find (size_t pos, size_t len, const char * s, size_t n) const;
-//	const_iterator find (size_t pos, char ch) const;
-
-//	bytearray & remove (size_t pos)                  { return remove(pos, length()); }
-//	bytearray & remove (size_t pos, size_t n)        { return remove(begin() + pos, n); }
-//	bytearray & remove (const const_iterator & from) { return remove(from, length()); }
-//	bytearray & remove (const const_iterator & from, size_t n);
-
-//	void reserve (size_t n = 0);
-//	void resize  (size_t size);
-//	void swap (bytearray & other) { pfs_swap(_d, other._d); }
-
-	bytearray substr (const const_iterator & from, size_t n) const;
-	bytearray substr (size_t pos) const { return substr(pos, length()); }
-	bytearray substr (size_t pos, size_t n) const;
-	bytearray substr (const const_iterator & from) const { return substr(from, size()); }
-	bytearray mid    (size_t pos, size_t n) const { return substr(pos, n); }
-	bytearray left   (size_t n) const { return substr(0, n); }
-	bytearray right  (size_t n) const { return substr(length() - n, n); }
-
-	double_t toDouble (bool * ok = 0, char decimalPoint = '.') const;
+	real_t   toReal   (bool * ok = 0, char decimalPoint = '.') const;
 	long_t   toLong   (bool * ok = 0, int base = 10) const;
 	ulong_t	 toULong  (bool * ok = 0, int base = 10) const;
 	int_t	 toInt    (bool * ok = 0, int base = 10) const;
@@ -289,30 +362,16 @@ public:
 	void setNumber (ushort_t n, int base = 10) { setNumber(ulong_t(n), base); }
 	void setNumber (sbyte_t n, int base = 10)  { setNumber(long_t(n), base); }
 	void setNumber (byte_t n, int base = 10)   { setNumber(ulong_t(n), base); }
-#ifdef HAVE_INT64
-	void setNumber (double n, char f = 'g', int prec = 6) { return setNumber(double_t(n), f, prec); }
+	void setNumber (float n, char f = 'g', int prec = 6) { return setNumber(real_t(n), f, prec); }
+#ifdef PFS_HAVE_LONG_DOUBLE
+	void setNumber (double n, char f = 'g', int prec = 6) { return setNumber(real_t(n), f, prec); }
 #endif
-	void setNumber (double_t n, char f = 'g', int prec = 6);
+	void setNumber (real_t n, char f = 'g', int prec = 6);
 
-	bytearray & operator += (const bytearray & other) { append(other); return *this; }
-
-	friend bytearray operator + (const bytearray & s1, const bytearray & s2);
-
-	friend bool	operator != (const bytearray & s1, const bytearray & s2);
-	friend bool	operator <  (const bytearray & s1, const bytearray & s2);
-	friend bool	operator <= (const bytearray & s1, const bytearray & s2);
-	friend bool	operator == (const bytearray & s1, const bytearray & s2);
-	friend bool	operator >  (const bytearray & s1, const bytearray & s2);
-	friend bool	operator >= (const bytearray & s1, const bytearray & s2);
-
-	friend bool	operator != (const bytearray & s1, const char * s2);
-	friend bool	operator <  (const bytearray & s1, const char * s2);
-	friend bool	operator <= (const bytearray & s1, const char * s2);
-	friend bool	operator == (const bytearray & s1, const char * s2);
-	friend bool	operator >  (const bytearray & s1, const char * s2);
-	friend bool	operator >= (const bytearray & s1, const char * s2);
-
+	static bytearray number (real_t n, char fmt = 'g', int prec = 6) { bytearray r; r.setNumber(n, fmt, prec); return r; }
+#ifdef PFS_HAVE_LONG_DOUBLE
 	static bytearray number (double n, char fmt = 'g', int prec = 6) { bytearray r; r.setNumber(n, fmt, prec); return r; }
+#endif
 	static bytearray number (float n, char fmt = 'g', int prec = 6)  { bytearray r; r.setNumber(n, fmt, prec); return r; }
 	static bytearray number (int_t n, int base = 10)                 { bytearray r; r.setNumber(n, base); return r; }
 	static bytearray number (uint_t n, int base = 10)                { bytearray r; r.setNumber(n, base); return r; }
@@ -336,50 +395,26 @@ inline bytearray_terminator::~bytearray_terminator ()
 	}
 }
 
-inline bytearray operator + (const bytearray & s1, const bytearray & s2)
-{
-	bytearray s(s1);
-	s.append(s2);
-	return s;
-}
+inline bool	operator != (const bytearray & s1, const bytearray & s2) { return strcmp(s1.c_str(), s2.c_str()) != 0; }
+inline bool	operator <  (const bytearray & s1, const bytearray & s2) { return strcmp(s1.c_str(), s2.c_str()) <  0; }
+inline bool	operator <= (const bytearray & s1, const bytearray & s2) { return strcmp(s1.c_str(), s2.c_str()) <= 0; }
+inline bool	operator == (const bytearray & s1, const bytearray & s2) { return strcmp(s1.c_str(), s2.c_str()) == 0; }
+inline bool	operator >  (const bytearray & s1, const bytearray & s2) { return strcmp(s1.c_str(), s2.c_str()) >  0; }
+inline bool	operator >= (const bytearray & s1, const bytearray & s2) { return strcmp(s1.c_str(), s2.c_str()) >= 0; }
 
-inline bool operator != (const bytearray & s1, const bytearray & s2)
-{
-	return s1.compare(s2) != 0;
-}
+inline bool	operator != (const bytearray & s1, const char * s2) { return strcmp(s1.c_str(), s2) != 0; }
+inline bool	operator <  (const bytearray & s1, const char * s2) { return strcmp(s1.c_str(), s2) <  0; }
+inline bool	operator <= (const bytearray & s1, const char * s2) { return strcmp(s1.c_str(), s2) <= 0; }
+inline bool	operator == (const bytearray & s1, const char * s2) { return strcmp(s1.c_str(), s2) == 0; }
+inline bool	operator >  (const bytearray & s1, const char * s2) { return strcmp(s1.c_str(), s2) >  0; }
+inline bool	operator >= (const bytearray & s1, const char * s2) { return strcmp(s1.c_str(), s2) >= 0; }
 
-inline bool operator < (const bytearray &s1, const bytearray &s2)
-{
-return s1.compare(s2) < 0;
-}
-
-inline bool operator <= (const bytearray &s1, const bytearray &s2)
-{
-	return s1.compare(s2) <= 0;
-}
-
-
-inline bool operator == (const bytearray &s1, const bytearray &s2)
-{
-	return s1.compare(s2) == 0;
-}
-
-inline bool operator > (const bytearray & s1, const bytearray & s2)
-{
-	return s1.compare(s2) > 0;
-}
-
-inline bool operator >= (const bytearray &s1, const bytearray &s2)
-{
-	return s1.compare(s2) >= 0;
-}
-
-inline bool	operator != (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) != 0; }
-inline bool	operator <  (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) <  0; }
-inline bool	operator <= (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) <= 0; }
-inline bool	operator == (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) == 0; }
-inline bool	operator >  (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) >  0; }
-inline bool	operator >= (const bytearray & s1, const char * s2) { return s1.compare(s2, strlen(s2)) >= 0; }
+inline bool	operator != (const char * s2, const bytearray & s1) { return strcmp(s2, s1.c_str()) != 0; }
+inline bool	operator <  (const char * s2, const bytearray & s1) { return strcmp(s2, s1.c_str()) <  0; }
+inline bool	operator <= (const char * s2, const bytearray & s1) { return strcmp(s2, s1.c_str()) <= 0; }
+inline bool	operator == (const char * s2, const bytearray & s1) { return strcmp(s2, s1.c_str()) == 0; }
+inline bool	operator >  (const char * s2, const bytearray & s1) { return strcmp(s2, s1.c_str()) >  0; }
+inline bool	operator >= (const char * s2, const bytearray & s1) { return strcmp(s2, s1.c_str()) >= 0; }
 
 template <typename T>
 size_t bytearray::readNumber (T & v, size_t pos, endian::type_enum order) const
@@ -402,20 +437,22 @@ inline bytearray bytearray::toBytes (const T & v, endian::type_enum order)
 	return bytearray(d.b, sizeof(T));
 }
 
+// Specialization for bool
+//
 template <>
 inline bytearray bytearray::toBytes<bool> (const bool & v, endian::type_enum order)
 {
 	return toBytes<char>(v ? '\x01' : '\x00', order);
 }
 
-template <>
-bytearray bytearray::toBytes<pfs::utf8string> (const pfs::utf8string & v, endian::type_enum /*order*/);
-
-template <>
-inline bytearray bytearray::toBytes<pfs::bytearray> (const pfs::bytearray & v, endian::type_enum /*order*/)
-{
-	return bytearray(v);
-}
+//template <>
+//bytearray bytearray::toBytes<pfs::utf8string> (const pfs::utf8string & v, endian::type_enum /*order*/);
+//
+//template <>
+//inline bytearray bytearray::toBytes<pfs::bytearray> (const pfs::bytearray & v, endian::type_enum /*order*/)
+//{
+//	return bytearray(v);
+//}
 
 inline std::ostream & operator << (std::ostream & os, const pfs::bytearray & o)
 {
@@ -423,46 +460,44 @@ inline std::ostream & operator << (std::ostream & os, const pfs::bytearray & o)
 	return os;
 }
 
-
-//DLL_API uint_t hash_func(const bytearray & key, uint_t seed = 0);
+////DLL_API uint_t hash_func(const bytearray & key, uint_t seed = 0);
 
 } // pfs
 
-
 namespace pfs {
-
-template <> inline bool cast_trait<bool, pfs::bytearray> (const pfs::bytearray & v)
-{
-	return v.isEmpty() ? false
-		: (v[0] == '\x00' ? false : true);
-}
-
-template <> inline int cast_trait<int, pfs::bytearray> (const pfs::bytearray & v) { return int(v.toInt()); }
-template <> inline unsigned int cast_trait<unsigned int, pfs::bytearray> (const pfs::bytearray & v) { return int(v.toUInt()); }
-template <> inline long cast_trait<long, pfs::bytearray> (const pfs::bytearray & v) { return long(v.toLong()); }
-#ifdef HAVE_LONGLONG
-template <> inline long long cast_trait<long long, pfs::bytearray> (const pfs::bytearray & v) { return (long long)v.toLong(); }
-#endif
-
-template <> inline float cast_trait<float, pfs::bytearray> (const pfs::bytearray & v) { return float(v.toDouble()); }
-template <> inline double cast_trait<double, pfs::bytearray> (const pfs::bytearray & v) { return v.toDouble(); }
-
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, bool> (const bool & v)                     { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, char> (const char & v)                     { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned char> (const unsigned char & v)   { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, short> (const short & v)                   { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned short> (const unsigned short & v) { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, int> (const int & v)                       { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned int> (const unsigned int & v)     { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, long> (const long & v)                     { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned long> (const unsigned long & v)   { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, float> (const float & v)                   { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, double> (const double & v)                 { return pfs::bytearray::toBytes(v); }
-#ifdef HAVE_LONGLONG
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, long long> (const long long & v)           { return pfs::bytearray::toBytes(v); }
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned long long> (const unsigned long long & v) { return pfs::bytearray::toBytes(v); }
-#endif
-template <> inline pfs::bytearray cast_trait<pfs::bytearray, pfs::bytearray> (const pfs::bytearray & v) { return pfs::bytearray(v); }
+//
+//template <> inline bool cast_trait<bool, pfs::bytearray> (const pfs::bytearray & v)
+//{
+//	return v.isEmpty() ? false
+//		: (v[0] == '\x00' ? false : true);
+//}
+//
+//template <> inline int cast_trait<int, pfs::bytearray> (const pfs::bytearray & v) { return int(v.toInt()); }
+//template <> inline unsigned int cast_trait<unsigned int, pfs::bytearray> (const pfs::bytearray & v) { return int(v.toUInt()); }
+//template <> inline long cast_trait<long, pfs::bytearray> (const pfs::bytearray & v) { return long(v.toLong()); }
+//#ifdef HAVE_LONGLONG
+//template <> inline long long cast_trait<long long, pfs::bytearray> (const pfs::bytearray & v) { return (long long)v.toLong(); }
+//#endif
+//
+//template <> inline float cast_trait<float, pfs::bytearray> (const pfs::bytearray & v) { return float(v.toDouble()); }
+//template <> inline double cast_trait<double, pfs::bytearray> (const pfs::bytearray & v) { return v.toDouble(); }
+//
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, bool> (const bool & v)                     { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, char> (const char & v)                     { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned char> (const unsigned char & v)   { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, short> (const short & v)                   { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned short> (const unsigned short & v) { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, int> (const int & v)                       { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned int> (const unsigned int & v)     { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, long> (const long & v)                     { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned long> (const unsigned long & v)   { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, float> (const float & v)                   { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, double> (const double & v)                 { return pfs::bytearray::toBytes(v); }
+//#ifdef HAVE_LONGLONG
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, long long> (const long long & v)           { return pfs::bytearray::toBytes(v); }
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, unsigned long long> (const unsigned long long & v) { return pfs::bytearray::toBytes(v); }
+//#endif
+//template <> inline pfs::bytearray cast_trait<pfs::bytearray, pfs::bytearray> (const pfs::bytearray & v) { return pfs::bytearray(v); }
 
 } // pfs
 

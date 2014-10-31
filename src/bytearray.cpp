@@ -1,46 +1,25 @@
 /**
- * @file   bytearray_exp.cpp
+ * @file   bytearray.cpp
  * @author wladt
- * @date   May 15, 2013 4:37:44 PM
+ * @date   May 15, 2013
+ *         Oct  6, 2014
  *
  * @brief
  */
 
-#include "../include/pfs/bytearray.hpp"
-#include "../include/pfs/string.hpp"
+#include "pfs/bytearray.hpp"
 #include <cstdlib>
 #include <cerrno>
 #include <sstream>
 #include <iomanip>
+#include <string>
+
+extern "C" real_t pfs_strtoreal (const char * arg_string, char decimalPoint, char ** arg_endptr);
 
 namespace pfs {
 
 const bytearray::char_type bytearray::TerminatorChar('\0');
 const bytearray::char_type bytearray::EndOfLineChar('\n');
-
-bytearray::bytearray (const char * s)
-	: base_class(s, strlen(s))
-{
-	bytearray_terminator bt(this);
-}
-
-bytearray::bytearray (const char * s, size_t size)
-	: base_class(s, size)
-{
-	bytearray_terminator bt(this);
-}
-
-bytearray::bytearray (const std::string & s)
-	: base_class(s.c_str(), s.size())
-{
-	bytearray_terminator bt(this);
-}
-
-bytearray::bytearray (size_t size, const char & c)
-	: base_class(size, c)
-{
-	bytearray_terminator bt(this);
-}
 
 static long_t __str_to_long_helper (const char * s, bool * pok, int base, long_t min_val, long_t max_val)
 {
@@ -89,25 +68,22 @@ static ulong_t	__str_to_ulong_helper (const char * s, bool * pok, int base, ulon
 	return r;
 }
 
-extern "C" double_t vim_strtod ( const char * string
-    , char ** endPtr
-    , char decimalPoint);
+// Decimal point in standard 'strtod' function is locale-dependent.
+// Usually it is '.', but may be ',' (comma) or other char symbol
 
-#define pfs_strtod vim_strtod
-
-static double_t __str_to_double (const char * s, bool * pok, char decimalPoint)
+static real_t __str_to_real (const char * s, bool * pok, char decimalPoint)
 {
 	PFS_ASSERT(s);
 	bool ok = true;
 	char * endptr = nullptr;
 
 	errno = 0;
-	double_t r = pfs_strtod(s, & endptr, decimalPoint);
+	real_t r = pfs_strtoreal(s, decimalPoint, & endptr);
 
 	if (errno == ERANGE
 			|| endptr == s
 			|| *endptr != '\0' ) {
-		r = double_t(0);
+		r = real_t(0.0f);
 		ok = false;
 	}
 
@@ -117,9 +93,9 @@ static double_t __str_to_double (const char * s, bool * pok, char decimalPoint)
 	return r;
 }
 
-double_t bytearray::toDouble (bool * ok, char decimalPoint) const
+real_t bytearray::toReal (bool * ok, char decimalPoint) const
 {
-	return __str_to_double(isNull() ? "" : c_str(), ok, decimalPoint);
+	return __str_to_real(isNull() ? "" : c_str(), ok, decimalPoint);
 }
 
 long_t bytearray::toLong (bool * ok, int base) const
@@ -187,12 +163,13 @@ void bytearray::setNumber (ulong_t n, int base)
 {
 	bytearray_terminator bt(this);
 	_d.detach();
+
 	std::ostringstream os;
 	os << std::setbase(base) << n;
 	*this = os.str();
 }
 
-void bytearray::setNumber (double_t n, char f, int prec)
+void bytearray::setNumber (real_t n, char f, int prec)
 {
 	bytearray_terminator bt(this);
 	_d.detach();
@@ -200,20 +177,19 @@ void bytearray::setNumber (double_t n, char f, int prec)
 	char num[64];
 
 	if (prec)
-#ifdef HAVE_INT64
+#ifdef PFS_HAVE_LONG_DOUBLE
 		PFS_ASSERT(::sprintf(fmt, "%%.%dL%c", prec, f) > 0);
 #else
 		PFS_ASSERT(::sprintf(fmt, "%%.%d%c", prec, f) > 0);
 #endif
 	else
-#ifdef HAVE_INT64
+#ifdef PFS_HAVE_LONG_DOUBLE
 		PFS_ASSERT(::sprintf(fmt, "%%L%c", f) > 0);
 #else
 		PFS_ASSERT(::sprintf(fmt, "%%%c", f) > 0);
 #endif
 
 	PFS_ASSERT(::sprintf(num, fmt, n) > 0);
-	// TODO need to implement without using the standard stream library
 	*this = bytearray(num);
 }
 
@@ -305,104 +281,17 @@ bytearray bytearray::toBase64 () const
     return tmp;
 }
 
-template <>
-bytearray bytearray::toBytes<pfs::string> (const pfs::string & v, endian::type_enum /*order*/)
-{
-	return bytearray(v.constData(), v.sizeInBytes());
-}
-
-/*
-DLL_API uint_t hash_func(const bytearray & key, uint_t seed)
-{
-	return hash_bytes(reinterpret_cast<const byte_t *>(key.constData()), key.size(), seed);
-}
-*/
-
-
-
-bool bytearray::endsWith(const char * s, size_t n) const
-{
-	size_t len = length();
-	if (len < n)
-		return false;
-	return compare(len - n, n, s, n) == 0;
-}
-
-bool bytearray::endsWith (const char * s) const
-{
-	return endsWith(s, strlen(s));
-}
-
-bool bytearray::startsWith(const char * s, size_t n) const
-{
-	size_t len = length();
-
-	if (len < n)
-		return false;
-	return compare(0, n, s, n) == 0;
-}
-
-bool bytearray::startsWith (const char * s) const
-{
-	return startsWith(s, strlen(s));
-}
-
-bytearray bytearray::substr (size_t pos, size_t n) const
-{
-	pos = size() > pos ? pos : size();
-	n = size() - pos > n ? n : size() - pos;
-
-	return n
-			? bytearray(this->constData() + pos, n)
-			: bytearray();
-}
-
-bytearray bytearray::substr (const const_iterator & from, size_t n) const
-{
-	return (from >= cbegin() && from < cend())
-			? substr(from - cbegin(), n)
-			: bytearray();
-}
-
-
-#ifdef __COMMENT__
-bytearray::const_iterator bytearray::find (const char * s, size_t pos, size_t n) const
-{
-	if (pos >= length())
-		return end();
-
-	size_t find_pos = _d.cast<impl>()->find(s, pos, n);
-
-	if (find_pos == _d.cast<impl>()->npos)
-		return end();
-
-	return bytearray::const_iterator(begin() + find_pos);
-}
-
-bytearray::const_iterator bytearray::find (const char * s, size_t pos) const
-{
-	return find(s, pos, strlen(s));
-}
-
-bytearray & bytearray::remove (const const_iterator & from, size_t n)
-{
-	bytearray::const_iterator itEnd = from + n;
-
-	if (itEnd > end())
-		itEnd = end();
-
-	if (from >= begin() && from < itEnd) {
-		size_t pos = from - begin();
-		size_t sz  = itEnd - from;
-
-		_d.detach();
-		_d.cast<impl>()->erase(pos, sz);
-	}
-
-	return *this;
-}
-
-
-#endif
+//template <>
+//bytearray bytearray::toBytes<pfs::string> (const pfs::string & v, endian::type_enum /*order*/)
+//{
+//	return bytearray(v.constData(), v.sizeInBytes());
+//}
+//
+///*
+//DLL_API uint_t hash_func(const bytearray & key, uint_t seed)
+//{
+//	return hash_bytes(reinterpret_cast<const byte_t *>(key.constData()), key.size(), seed);
+//}
+//*/
 
 } // pfs

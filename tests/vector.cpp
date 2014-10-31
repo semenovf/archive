@@ -609,7 +609,7 @@ int main(int argc, char * argv[])
 {
 //    PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(101);
+	BEGIN_TESTS(104);
 
 	test_vector_reference();
 	test_vector_of_vectors();

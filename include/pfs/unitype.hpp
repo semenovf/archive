@@ -183,8 +183,8 @@ template <> inline double to_float_trait<double> (const double & v) { return v; 
 template <> inline double to_float_trait<long long> (const long long & v) { return double(v); }
 template <> inline double to_float_trait<unsigned long long> (const unsigned long long & v) { return double(v); }
 #endif
-template <> inline double to_float_trait<pfs::string> (const pfs::string & v) { return v.toDouble(); }
-template <> inline double to_float_trait<pfs::bytearray> (const pfs::bytearray & v) { return v.toDouble(); }
+template <> inline double to_float_trait<pfs::string> (const pfs::string & v) { return double(v.toReal()); }
+template <> inline double to_float_trait<pfs::bytearray> (const pfs::bytearray & v) { return double(v.toReal()); }
 
 template <typename T> pfs::string to_string_trait (const T & v);
 template <> inline pfs::string to_string_trait<bool> (const bool & v) { return v ? pfs::string("true") : pfs::string("false"); }

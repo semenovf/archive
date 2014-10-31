@@ -7,13 +7,14 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = \
-#    pfs       \
+     pfs              \
 #    tests/shared_ptr \
 #    tests/bitarray   \
-#    tests/bytearray  \
+     tests/bytearray  \
 #    tests/fsm        \
 #    tests/function   \
-    tests/vector     \
+     tests/strtoreal  \
+     tests/vector     \
 #    tests/map_hash   \
 #    tests/date       \
 #    tests/time       \

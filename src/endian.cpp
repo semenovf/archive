@@ -6,7 +6,7 @@
  *      Author: wladt
  */
 
-#include "endian.hpp"
+#include "pfs/endian.hpp"
 
 namespace pfs
 {

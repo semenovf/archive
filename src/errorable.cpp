@@ -14,12 +14,12 @@ namespace pfs {
 void errorable::addError (const pfs::string & text)
 {
 	if (!text.isEmpty()) {
-		if (_errors.size() > 0 && _errors.last()._errstr == text) {
+		if (_errors.size() > 0 && (&_errors.last())->_errstr == text) {
 			;
 		} else {
 			_errors.append(erritem(text));
 		}
-		_errors.last()._ntimes++;
+		(&_errors.last())->_ntimes++;
 	}
 }
 

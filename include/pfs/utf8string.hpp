@@ -141,11 +141,11 @@ public:
 	utf8string & setNumber (ushort_t n, int base = 10, bool uppercase = false) { return setNumber(ulong_t(n), base, uppercase); }
 	utf8string & setNumber (sbyte_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
 	utf8string & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
-#ifdef HAVE_INT64
-	utf8string & setNumber (double n, char f = 'g', int prec = 6) { return setNumber(double_t(n), f, prec); }
-#endif
+//#ifdef PFS_HAVE_LONG_DOUBLE
+//	utf8string & setNumber (double n, char f = 'g', int prec = 6) { return setNumber(double_t(n), f, prec); }
+//#endif
 	//utf8string & setNumber (float n, char f = 'g', int prec = 6)               { return setNumber(double(n), f, prec); }
-	utf8string & setNumber (double_t n, char f = 'g', int prec = 6);
+	utf8string & setNumber (real_t n, char f = 'g', int prec = 6);
 
 	utf8string substr (const const_iterator & begin, size_t n) const;
 	utf8string substr (const const_iterator & begin, const const_iterator & end) const;
@@ -156,7 +156,7 @@ public:
 	utf8string left   (size_t n) const                     { return substr(0, n); }
 	utf8string right  (size_t n) const                     { return substr(length() - n, n); }
 
-	double_t toDouble (bool * ok = 0, char decimalPoint = '.') const;
+	real_t   toReal   (bool * ok = 0, char decimalPoint = '.') const;
 	long_t   toLong   (bool * ok = 0, int base = 10) const;
 	ulong_t	 toULong  (bool * ok = 0, int base = 10) const;
 	int_t	 toInt    (bool * ok = 0, int base = 10) const;
@@ -526,8 +526,12 @@ template <> inline long cast_trait<long, pfs::utf8string> (const pfs::utf8string
 template <> inline long long cast_trait<long long, pfs::utf8string> (const pfs::utf8string & v) { return (long long)v.toLong(); }
 #endif
 
-template <> inline float cast_trait<float, pfs::utf8string> (const pfs::utf8string & v) { return float(v.toDouble()); }
-template <> inline double cast_trait<double, pfs::utf8string> (const pfs::utf8string & v) { return v.toDouble(); }
+template <> inline float cast_trait<float, pfs::utf8string> (const pfs::utf8string & v) { return float(v.toReal()); }
+template <> inline double cast_trait<double, pfs::utf8string> (const pfs::utf8string & v) { return v.toReal(); }
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+template <> inline long double cast_trait<long double, pfs::utf8string> (const pfs::utf8string & v) { return v.toReal(); }
+#endif
 
 template <> inline pfs::utf8string cast_trait<pfs::utf8string, bool> (const bool & v) { return v ? pfs::utf8string("true") : pfs::utf8string("false"); }
 template <> inline pfs::utf8string cast_trait<pfs::utf8string, char> (const char & v) { return pfs::utf8string(1, v); }
