@@ -98,20 +98,20 @@ protected:
 	typedef bytearray self_class;
 
 public: // typedefs
-	typedef /*typename */base_class::value_type             value_type;
-	typedef /*typename */base_class::pointer                pointer;
-	typedef /*typename */base_class::const_pointer          const_pointer;
-	typedef /*typename */base_class::size_type              size_type;
-	typedef /*typename */base_class::difference_type        difference_type;
+	typedef base_class::value_type             value_type;
+	typedef base_class::pointer                pointer;
+	typedef base_class::const_pointer          const_pointer;
+	typedef base_class::size_type              size_type;
+	typedef base_class::difference_type        difference_type;
 
-	typedef /*typename */base_class::reference              reference;
-	typedef /*typename */base_class::const_reference        const_reference;
-	typedef /*typename */base_class::iterator               iterator;
-	typedef /*typename */base_class::const_iterator         const_iterator;
-	typedef /*typename */base_class::reverse_iterator	 	reverse_iterator;
-	typedef /*typename */base_class::const_reverse_iterator const_reverse_iterator;
+	typedef base_class::reference              reference;
+	typedef base_class::const_reference        const_reference;
+	typedef base_class::iterator               iterator;
+	typedef base_class::const_iterator         const_iterator;
+	typedef base_class::reverse_iterator	   reverse_iterator;
+	typedef base_class::const_reverse_iterator const_reverse_iterator;
 
-	typedef /*typename */base_class::value_type char_type;
+	typedef base_class::value_type char_type;
 
 public: // static
 	static const char_type TerminatorChar/* = '\0'*/;
@@ -164,7 +164,7 @@ public:
     const_iterator cend  () const { return base_class::cend(); }
     reverse_iterator rbegin  ()   { return base_class::rbegin(); }
     reverse_iterator rend    ()   { return base_class::rend(); }
-    const_reverse_iterator rbegin  () const { return rbegin(); }
+    const_reverse_iterator rbegin  () const { return crbegin(); }
     const_reverse_iterator rend    () const { return crend(); }
     const_reverse_iterator crbegin () const { return base_class::crbegin(); }
     const_reverse_iterator crend   () const { return base_class::crend(); }
@@ -251,7 +251,7 @@ public:
 	iterator insert (const_iterator pos, const_iterator first, const_iterator last)
 	{
 		bytearray_terminator bt(this);
-		return insert(pos, first, last);
+		return base_class::insert(pos, first, last);
 	}
 
 	void push_back (char value) { insert(cend(), value); }

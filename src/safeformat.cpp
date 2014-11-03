@@ -1,8 +1,9 @@
-/*
- * safeformat.cpp
+/**
+ * @file safeformat.cpp
  *
- *  Created on: Jul 30, 2013
- *      Author: wladt
+ * Created on: Jul 30, 2013
+ * Modified on: Nov 01, 2014
+ * @author wladt
  */
 
 #include "safeformat_p.hpp"
@@ -22,7 +23,6 @@
  * 		 / 'c' / 's'
  * 		 / 'p'
  * */
-
 namespace pfs {
 
 static bool begin_spec  (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
@@ -55,24 +55,24 @@ static pfs::fsm::transition<pfs::string> percent_char_fsm[] = {
 };
 
 static pfs::fsm::transition<pfs::string> prec_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_l1("."))            , FSM_NORMAL, nullptr, nullptr }
-    , { 2,-1, FSM_MATCH_OPT_CHAR(_l1("-"))        , FSM_NORMAL, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_CHAR(_l1("."))           , FSM_NORMAL, nullptr, nullptr }
+    , { 2,-1, FSM_MATCH_OPT_CHAR(_l1("-"))       , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RPT_CHAR(SF_DIGIT,-1,-1) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 static pfs::fsm::transition<pfs::string> width_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_l1("123456789"))    , FSM_NORMAL, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_CHAR(_l1("123456789"))   , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RPT_CHAR(SF_DIGIT,-1,-1) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 
 static pfs::fsm::transition<pfs::string> spec_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_l1("%"))                , FSM_NORMAL, begin_spec, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR(_l1("%"))               , FSM_NORMAL, begin_spec, nullptr }
 	, { 2, 5, FSM_MATCH_RPT_CHAR(SF_FLAG_CHAR,-1,-1) , FSM_NORMAL, set_flags,  nullptr }
-	, { 3, 5, FSM_MATCH_OPT_FSM(width_fsm)            , FSM_NORMAL, set_width,  nullptr }
-	, { 4, 5, FSM_MATCH_OPT_FSM(prec_fsm)             , FSM_NORMAL, set_prec,  nullptr }
+	, { 3, 5, FSM_MATCH_OPT_FSM(width_fsm)           , FSM_NORMAL, set_width,  nullptr }
+	, { 4, 5, FSM_MATCH_OPT_FSM(prec_fsm)            , FSM_NORMAL, set_prec,  nullptr }
 	, {-1, 5, FSM_MATCH_CHAR(SF_SPEC_CHAR)           , FSM_ACCEPT, end_spec,  nullptr }
-	, {-1,-1, FSM_MATCH_NOTHING                       , FSM_ACCEPT, bad_spec,  nullptr }
+	, {-1,-1, FSM_MATCH_NOTHING                      , FSM_ACCEPT, bad_spec,  nullptr }
 };
 
 static pfs::fsm::transition<pfs::string> format_fsm[] = {
@@ -175,7 +175,7 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 
 	bool ok = PFS_VERIFY_X(
 			PFS_VERIFY_X(ctx->argi < ctx->bind_args.size()
-					, _Tr("More arguments expected according to format string:"))
+				, _Tr("More arguments expected according to format string:"))
 			, ctx->format.c_str());
 
 	if (! ok) {
@@ -314,7 +314,6 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 						r.prepend(pfs::string(" "));
 					}
 				}
-
 			}
 
 			// If the converted value has fewer characters than the field width, it will be padded with spaces
@@ -329,9 +328,7 @@ bool end_spec (const pfs::string::const_iterator & begin, const pfs::string::con
 				else
 					r.prepend(pfs::string(count, paddingChar));
 			}
-
 //		}
-
 		ctx->result.append(r);
 	}
 
@@ -355,40 +352,40 @@ bool bad_spec (const pfs::string::const_iterator & , const pfs::string::const_it
 }
 
 safeformat::safeformat(const pfs::string & format)
-	: m_context(new safeformat_context)
+	: _context(new safeformat_context)
 {
-	clear_safeformat_context(*m_context);
-	m_context->format = format;
+	clear_safeformat_context(*_context);
+	_context->format = format;
 }
 
 safeformat::safeformat(const char * latin1Format)
-	: m_context(new safeformat_context)
+	: _context(new safeformat_context)
 {
-	clear_safeformat_context(*m_context);
-	m_context->format = pfs::string(latin1Format);
+	clear_safeformat_context(*_context);
+	_context->format = pfs::string(latin1Format);
 }
 
 safeformat::operator pfs::string & ()
 {
-	pfs::fsm::fsm<pfs::string> fsm(format_fsm, m_context.get());
-	ssize_t n = fsm.exec(0, m_context->format.begin(), m_context->format.end());
+	pfs::fsm::fsm<pfs::string> fsm(format_fsm, _context.get());
+	ssize_t n = fsm.exec(0, _context->format.begin(), _context->format.end());
 	if (n < 0) {
 		;
 	} else {
 		// add tail
-		m_context->result.append(pfs::string(m_context->format.begin() + size_t(n), m_context->format.end()));
+		_context->result.append(pfs::string(_context->format.begin() + size_t(n), _context->format.end()));
 	}
-	return m_context->result;
+	return _context->result;
 }
 
 const pfs::string & safeformat::operator () ()
 {
-	return m_context->result;
+	return _context->result;
 }
 
 safeformat & safeformat::operator () (const pfs::unitype & ut)
 {
-	m_context->bind_args.append(ut);
+	_context->bind_args.append(ut);
 	return *this;
 }
 

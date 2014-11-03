@@ -10,6 +10,8 @@
 #include <pfs/string.hpp>
 #include <pfs/bytearray.hpp>
 
+#ifdef __COMMENT__
+
 namespace pfs {
 
 static const int Null      = 0;
@@ -288,5 +290,7 @@ public:
 
 
 } // pfs
+
+#endif
 
 #endif /* __PFS_UNITYPE_HPP__ */

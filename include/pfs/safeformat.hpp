@@ -45,53 +45,51 @@ public:
 	safeformat (const pfs::string & format);
 	safeformat (const char * latin1Format);
 
-	safeformat(const safeformat & sf) : m_context(sf.m_context) { }
-	safeformat & operator = (const safeformat & sf) { m_context = sf.m_context; return *this; }
+	safeformat(const safeformat & sf) : _context(sf._context) {}
+	safeformat & operator = (const safeformat & sf) { _context = sf._context; return *this; }
 
 	operator pfs::string & ();
 	const pfs::string & operator () ();
 
-	safeformat & operator () (const pfs::unitype & ut);
-	safeformat & operator () (char c)               { return operator () (pfs::unitype(c)); }
-	safeformat & operator () (int_t n)              { return operator () (pfs::unitype(n)); }
-	safeformat & operator () (uint_t n)             { return operator () (pfs::unitype(n)); }
-	safeformat & operator () (long_t n)             { return operator () (pfs::unitype(n)); }
-	safeformat & operator () (ulong_t n)            { return operator () (pfs::unitype(n)); }
-	safeformat & operator () (float n)              { return operator () (pfs::unitype(n)); }
-	safeformat & operator () (double n)             { return operator () (pfs::unitype(n)); }
-	safeformat & operator () (const char * latin1)  { return operator () (pfs::unitype(pfs::string(latin1))); }
-	safeformat & operator () (const void * ptr)     { return operator () (pfs::unitype(uintptr_t(ptr))); }
-	safeformat & operator () (const pfs::string & s)     { return operator () (pfs::unitype(s)); }
-	safeformat & operator () (const pfs::bytearray & ba) { return operator () (pfs::unitype(ba)); }
+//	safeformat & operator () (const pfs::unitype & ut);
+//	safeformat & operator () (char c)               { return operator () (pfs::unitype(c)); }
+//	safeformat & operator () (int_t n)              { return operator () (pfs::unitype(n)); }
+//	safeformat & operator () (uint_t n)             { return operator () (pfs::unitype(n)); }
+//	safeformat & operator () (long_t n)             { return operator () (pfs::unitype(n)); }
+//	safeformat & operator () (ulong_t n)            { return operator () (pfs::unitype(n)); }
+//	safeformat & operator () (real_t n)             { return operator () (pfs::unitype(n)); }
+//	safeformat & operator () (const char * latin1)  { return operator () (pfs::unitype(pfs::string(latin1))); }
+//	safeformat & operator () (const void * ptr)     { return operator () (pfs::unitype(uintptr_t(ptr))); }
+//	safeformat & operator () (const pfs::string & s)     { return operator () (pfs::unitype(s)); }
+//	safeformat & operator () (const pfs::bytearray & ba) { return operator () (pfs::unitype(ba)); }
+//
+//	// boost-like operators
+//	safeformat & operator % (const pfs::unitype & ut)   { return operator () (ut); }
+//	safeformat & operator % (char c)               { return operator () (c); }
+//	safeformat & operator % (int_t n)              { return operator () (n); }
+//	safeformat & operator % (uint_t n)             { return operator () (n); }
+//	safeformat & operator % (long_t n)             { return operator () (n); }
+//	safeformat & operator % (ulong_t n)            { return operator () (n); }
+//	safeformat & operator % (real_t n)             { return operator () (n); }
+//	safeformat & operator % (const char * latin1)  { return operator () (pfs::unitype(pfs::string(latin1))); }
+//	safeformat & operator % (const void * ptr)     { return operator () (pfs::unitype(uintptr_t(ptr))); }
+//	safeformat & operator % (const pfs::string & s)     { return operator () (pfs::unitype(s)); }
+//	safeformat & operator % (const pfs::bytearray & ba) { return operator () (pfs::unitype(ba)); }
+//
+//	// Qt-like methods
+//	safeformat & arg (const pfs::unitype & ut)   { return operator () (ut); }
+//	safeformat & arg (char c)               { return operator () (c); }
+//	safeformat & arg (int_t n)              { return operator () (n); }
+//	safeformat & arg (uint_t n)             { return operator () (n); }
+//	safeformat & arg (long_t n)             { return operator () (n); }
+//	safeformat & arg (ulong_t n)            { return operator () (n); }
+//	safeformat & arg (real_t n)             { return operator () (n); }
+//	safeformat & arg (const char * latin1)  { return operator () (pfs::unitype(pfs::string(latin1))); }
+//	safeformat & arg (const void * ptr)     { return operator () (pfs::unitype(uintptr_t(ptr))); }
+//	safeformat & arg (const pfs::string & s)     { return operator () (pfs::unitype(s)); }
+//	safeformat & arg (const pfs::bytearray & ba) { return operator () (pfs::unitype(ba)); }
 
-	// boost-like operators
-	safeformat & operator % (const pfs::unitype & ut)   { return operator () (ut); }
-	safeformat & operator % (char c)               { return operator () (c); }
-	safeformat & operator % (int_t n)              { return operator () (n); }
-	safeformat & operator % (uint_t n)             { return operator () (n); }
-	safeformat & operator % (long_t n)             { return operator () (n); }
-	safeformat & operator % (ulong_t n)            { return operator () (n); }
-	safeformat & operator % (float n)              { return operator () (n); }
-	safeformat & operator % (double n)             { return operator () (n); }
-	safeformat & operator % (const char * latin1)  { return operator () (pfs::unitype(pfs::string(latin1))); }
-	safeformat & operator % (const void * ptr)     { return operator () (pfs::unitype(uintptr_t(ptr))); }
-	safeformat & operator % (const pfs::string & s)     { return operator () (pfs::unitype(s)); }
-	safeformat & operator % (const pfs::bytearray & ba) { return operator () (pfs::unitype(ba)); }
-
-	// Qt-like methods
-	safeformat & arg (const pfs::unitype & ut)   { return operator () (ut); }
-	safeformat & arg (char c)               { return operator () (c); }
-	safeformat & arg (int_t n)              { return operator () (n); }
-	safeformat & arg (uint_t n)             { return operator () (n); }
-	safeformat & arg (long_t n)             { return operator () (n); }
-	safeformat & arg (ulong_t n)            { return operator () (n); }
-	safeformat & arg (float n)              { return operator () (n); }
-	safeformat & arg (double n)             { return operator () (n); }
-	safeformat & arg (const char * latin1)  { return operator () (pfs::unitype(pfs::string(latin1))); }
-	safeformat & arg (const void * ptr)     { return operator () (pfs::unitype(uintptr_t(ptr))); }
-	safeformat & arg (const pfs::string & s)     { return operator () (pfs::unitype(s)); }
-	safeformat & arg (const pfs::bytearray & ba) { return operator () (pfs::unitype(ba)); }
-
+/*
 #if CWT_OS_BITS == 32
 	safeformat & operator () (long n)             { return operator () (pfs::unitype(n)); }
 	safeformat & operator () (unsigned long n)    { return operator () (pfs::unitype(n)); }
@@ -100,9 +98,10 @@ public:
 	safeformat & arg         (long n)             { return operator () (n); }
 	safeformat & arg         (unsigned long n)    { return operator () (n); }
 #endif
+*/
 
 private:
-	pfs::shared_ptr<safeformat_context> m_context;
+	pfs::shared_ptr<safeformat_context> _context;
 };
 
 } // pfs
