@@ -120,31 +120,31 @@ public: // static
 public:
 	bytearray () : base_class() {}
 
-	bytearray(const char * s)
+	bytearray (const char * s)
 		: base_class(s, s + (s != nullptr ? strlen(s) : 0))
 	{
 		bytearray_terminator bt(this);
 	}
 
-	bytearray(const char * s, size_type size)
+	bytearray (const char * s, size_type size)
 		: base_class(s, s + (s != nullptr ? size : 0))
 	{
 		bytearray_terminator bt(this);
 	}
 
-	bytearray(const std::string & s)
+	bytearray (const std::string & s)
 		: base_class(s.begin(), s.end())
 	{
 		bytearray_terminator bt(this);
 	}
 
-	bytearray(size_type n, char ch)
+	bytearray (size_type n, char ch)
 		: base_class(n, ch)
 	{
 		bytearray_terminator bt(this);
 	}
 
-	bytearray(const_iterator first, const_iterator last)
+	bytearray (const_iterator first, const_iterator last)
 		: base_class(first, last)
 	{
 		bytearray_terminator bt(this);
