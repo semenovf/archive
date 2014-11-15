@@ -64,31 +64,6 @@ struct bytearray_allocator : public pfs::allocator<T>
 	}
 };
 
-#ifdef __COMMENT__
-// see http://en.cppreference.com/w/cpp/concept/Allocator
-struct bytearray_allocator
-{
-	typedef char value_type;
-
-	//template<typename _Tp1>
-	struct rebind
-	{ typedef bytearray_allocator other; };
-
-	bytearray_allocator(/*ctor args*/) {}
-	bytearray_allocator (const bytearray_allocator &) {}
-	char * allocate (std::size_t n) { return static_cast<char *>(::operator new((n+1) * sizeof(char))) ; }
-	void deallocate (char * p, std::size_t) { ::operator delete(p); }
-};
-
-// Returns true only if the storage allocated by the allocator a1
-// can be deallocated through a2. Establishes reflexive, symmetric,
-// and transitive relationship. Does not throw exceptions.
-bool operator == (const bytearray_allocator & /*a1*/, const bytearray_allocator & /*a2*/) { return true; }
-// same as !(a1==a2)
-bool operator != (const bytearray_allocator & a1, const bytearray_allocator & a2) { return !(a1==a2); }
-#endif
-
-
 class DLL_API bytearray : protected vector<char, bytearray_allocator<char> >
 {
 	friend struct bytearray_terminator;
@@ -111,7 +86,7 @@ public: // typedefs
 	typedef base_class::reverse_iterator	   reverse_iterator;
 	typedef base_class::const_reverse_iterator const_reverse_iterator;
 
-	typedef base_class::value_type char_type;
+	typedef value_type char_type;
 
 public: // static
 	static const char_type TerminatorChar/* = '\0'*/;

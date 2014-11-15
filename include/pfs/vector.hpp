@@ -112,7 +112,6 @@ public:
     void shrink_to_fit (); // introduced in C++11
 
 	iterator insert (const_iterator pos, size_type count, const T & value);
-
 	iterator insert (const_iterator pos, const T & value)
 	{
 		return insert(pos, 1, value);
@@ -232,6 +231,6 @@ inline bool operator >= (const vector<T, Alloc> & lhs, const vector<T, Alloc> & 
 
 } // pfs
 
-#include "bits/vector_impl.hpp"
+#include "bits/vector_impl_inc.hpp"
 
 #endif /* __PFS_VECTOR_HPP__ */
