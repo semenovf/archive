@@ -14,7 +14,8 @@
 
 namespace pfs {
 
-class DLL_API ucchar
+// TODO uncomment DLL_API below
+class /*DLL_API*/ ucchar
 {
 public:
 	static const ucchar MaxCodePoint;

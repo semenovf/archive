@@ -329,12 +329,12 @@ inline random_access_iterator<Holder> operator - (const random_access_iterator<H
 	return random_access_iterator<Holder>(i.holder(), i.base() - n);
 }
 
+// TODO is arguments must be a constant references? Check
 template <typename Holder1, typename Holder2>
 inline typename random_access_iterator<Holder1>::difference_type operator - (random_access_iterator<Holder1> i1, random_access_iterator<Holder2> i2)
 {
 	return i1.base() - i2.base();
 }
-
 
 } // pfs
 
