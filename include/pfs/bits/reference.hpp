@@ -9,7 +9,7 @@
 #define __PFS_BITS_REFERENCE_HPP__
 
 #include "type_traits.hpp"
-#include "pointer.hpp"
+//#include "pointer.hpp"
 
 namespace pfs {
 

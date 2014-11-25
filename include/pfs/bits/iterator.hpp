@@ -9,6 +9,7 @@
 
 #include "type_traits.hpp"
 #include "reference.hpp"
+#include <iterator>
 #include <pfs/utility.hpp>
 #include <pfs.hpp> // for PFS_ASSERT
 
