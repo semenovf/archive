@@ -11,7 +11,7 @@
 #include <string>
 #include <iostream>
 
-void test_constptr()
+void test_ptr()
 {
 	pfs::utf8string s(_u8("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя"));
 	pfs::ucchar_ptr ptr(s);
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(69);
 
-	test_constptr();
+	test_ptr();
 
     END_TESTS;
 }
