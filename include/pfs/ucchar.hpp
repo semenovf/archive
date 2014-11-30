@@ -1,5 +1,5 @@
 /**
- * uchar.hpp
+ * ucchar.hpp
  *
  *  Created on: Aug 14, 2013
  *      Author: wladt
@@ -14,8 +14,7 @@
 
 namespace pfs {
 
-// TODO uncomment DLL_API below
-class /*DLL_API*/ ucchar
+class DLL_API ucchar
 {
 public:
 	static const ucchar MaxCodePoint;
@@ -41,8 +40,14 @@ public:
 	uint32_t value () const    { return _value; }
 	uint32_t ucs4 () const     { return _value; }
 	uint32_t unicode () const  { return _value; }
-	size_t  encodeUtf8 (char utf8[6]);
+	size_t  encodeUtf8 (char * utf8, size_t sz);
 	int decodeUtf8 (const char * units, size_t len);
+
+	template <typename _CodeUnitT>
+	size_t encode (_CodeUnitT * units, size_t sz);
+
+	template <typename _CodeUnitT>
+	int decode (const _CodeUnitT * units, size_t len);
 
 	bool isSpace() const;
 	ucchar toLower () const;
@@ -67,9 +72,32 @@ public:
 
 	static int decodeUtf8 (const char * units, size_t len, uint32_t & uc, uint32_t & min_uc);
 
+	template <typename _CodeUnitT>
+	static int decode (const _CodeUnitT * units, size_t len, uint32_t & uc, uint32_t & min_uc);
+
+
 private:
 	uint32_t _value;
 };
+
+template <>
+inline size_t ucchar::encode<char> (char * units, size_t sz)
+{
+	return this->encodeUtf8(units, sz);
+}
+
+template <>
+inline int ucchar::decode<char> (const char * units, size_t len)
+{
+	return this->decodeUtf8(units, len);
+}
+
+template <>
+inline int ucchar::decode<char> (const char * units, size_t len, uint32_t & uc, uint32_t & min_uc)
+{
+	return decodeUtf8(units, len, uc, min_uc);
+}
+
 
 inline bool ucchar::isValid (const ucchar & ch, const ucchar & min_uc)
 {

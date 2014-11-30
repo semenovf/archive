@@ -1,12 +1,12 @@
 /*
- * type_traits.hpp
+ * constness.hpp
  *
  *  Created on: Sep 29, 2014
  *      Author: wladt
  */
 
-#ifndef __PFS_BITS_TYPE_TRAITS_HPP__
-#define __PFS_BITS_TYPE_TRAITS_HPP__
+#ifndef __PFS_BITS_CONSTNESS_HPP__
+#define __PFS_BITS_CONSTNESS_HPP__
 
 namespace pfs {
 
@@ -26,4 +26,4 @@ struct constness<const Holder>
 
 } // pfs
 
-#endif /* __PFS_BITS_TYPE_TRAITS_HPP__ */
+#endif /* __PFS_BITS_CONSTNESS_HPP__ */

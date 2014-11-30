@@ -7,11 +7,11 @@
 #ifndef __PFS_BITS_ITERATOR_HPP__
 #define __PFS_BITS_ITERATOR_HPP__
 
-#include "type_traits.hpp"
-#include "reference.hpp"
 #include <iterator>
-#include <pfs/utility.hpp>
 #include <pfs.hpp> // for PFS_ASSERT
+#include <pfs/bits/constness.hpp>
+#include <pfs/bits/reference.hpp>
+#include <pfs/utility.hpp>
 
 namespace pfs {
 

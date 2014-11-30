@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include "../include/pfs/ucchar.hpp"
+#include "pfs/ucchar.hpp"
 
 namespace pfs {
 
@@ -54,34 +54,40 @@ ucchar ucchar::toUpper () const
 /**
  * @brief Encodes Unicode character to UTF8 representation.
  *
- * @param utf8
+ * @param utf
  * @return Number of bytes required to store Unicode character encoded to UTF8.
  */
-size_t ucchar::encodeUtf8 (char utf8[6])
+size_t ucchar::encodeUtf8 (char * utf, size_t sz)
 {
-	char * cursor = utf8;
+	char * cursor = utf;
 
     if (_value < 0x80) {
+    	PFS_ASSERT(sz >= 1);
         *cursor++ = char(_value);
     } else if (_value < 0x0800) {
+    	PFS_ASSERT(sz >= 2);
     	*cursor++ = 0xC0 | byte_t(_value >> 6);
     	*cursor++ = 0x80 | byte_t(_value & 0x3f);
     } else if (_value < 0x10000) {
+    	PFS_ASSERT(sz >= 3);
     	*cursor++ = 0xE0 | byte_t(_value >> 12);
     	*cursor++ = 0x80 | (byte_t(_value >> 6)  & 0x3F);
     	*cursor++ = 0x80 | byte_t(_value & 0x3F);
     } else if (_value < 0x200000) {
+    	PFS_ASSERT(sz >= 4);
     	*cursor++ = 0xF0 | byte_t(_value >> 18);
     	*cursor++ = 0x80 | (byte_t(_value >> 12) & 0x3F);
     	*cursor++ = 0x80 | (byte_t(_value >> 6)  & 0x3F);
     	*cursor++ = 0x80 | byte_t(_value & 0x3F);
     } else if (_value < 0x4000000) {
+    	PFS_ASSERT(sz >= 5);
     	*cursor++ = 0xF8 | byte_t(_value >> 24);
     	*cursor++ = 0x80 | (byte_t(_value >> 18) & 0x3F);
     	*cursor++ = 0x80 | (byte_t(_value >> 12) & 0x3F);
     	*cursor++ = 0x80 | (byte_t(_value >> 6)  & 0x3F);
     	*cursor++ = 0x80 | byte_t(_value & 0x3F);
     } else if (_value < 0x80000000) {
+    	PFS_ASSERT(sz >= 6);
     	*cursor++ = 0xFC | byte_t(_value >> 30);
     	*cursor++ = 0x80 | (byte_t(_value >> 24) & 0x3F);
     	*cursor++ = 0x80 | (byte_t(_value >> 18) & 0x3F);
@@ -91,7 +97,7 @@ size_t ucchar::encodeUtf8 (char utf8[6])
     }
     //*cursor = '\0';
 
-    return size_t(cursor - utf8);
+    return size_t(cursor - utf);
 }
 
 

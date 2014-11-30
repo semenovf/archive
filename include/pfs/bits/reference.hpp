@@ -8,8 +8,7 @@
 #ifndef __PFS_BITS_REFERENCE_HPP__
 #define __PFS_BITS_REFERENCE_HPP__
 
-#include "type_traits.hpp"
-//#include "pointer.hpp"
+#include <pfs/bits/constness.hpp>
 
 namespace pfs {
 

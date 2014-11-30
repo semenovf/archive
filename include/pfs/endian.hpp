@@ -10,7 +10,7 @@
 #ifndef __PFS_ENDIAN_HPP__
 #define __PFS_ENDIAN_HPP__
 
-#include "pfs.hpp"
+#include <pfs.hpp>
 
 namespace pfs {
 
