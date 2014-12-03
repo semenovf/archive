@@ -15,7 +15,7 @@ SUBDIRS  = \
 #    tests/fsm        \
 #    tests/function   \
 #    tests/strtoreal  \
-#    tests/vector     \
+     tests/vector     \
 #    tests/map_hash   \
 #    tests/date       \
 #    tests/time       \

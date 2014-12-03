@@ -8,12 +8,12 @@
 #include "pfs/utility.hpp"
 #include "pfs/mbcs_string.hpp"
 
-namespace pfs {
-
-// see http://www.codesynthesis.com/~boris/blog/2010/01/18/dll-export-cxx-templates/
 template class DLL_API std::allocator<char>;
 template class DLL_API std::basic_string<char>;
 
+namespace pfs {
+
+// see http://www.codesynthesis.com/~boris/blog/2010/01/18/dll-export-cxx-templates/
 // Forward declaration to avoid
 // `specialization of ‘static mbcs_string_impl<char>::const_pointer mbcs_string_impl<char>::decrement ...’
 // after instantiation'
