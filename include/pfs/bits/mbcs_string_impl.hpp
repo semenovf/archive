@@ -54,6 +54,16 @@ public:
 		base_class::reserve(count);
 	}
 
+	size_type capacity() const
+	{
+		return base_class::capacity();
+	}
+
+    size_type max_size() const
+    {
+    	return base_class::max_size();
+    }
+
 	void append (const_pointer s , size_type n)
 	{
 		base_class::append(s, n);

@@ -111,6 +111,16 @@ public:
     	return base_class::isNull() ? 0 : base_class::cast()->length();
     }
 
+    size_type capacity() const
+    {
+    	return base_class::cast()->capacity();
+    }
+
+    size_type max_size() const
+    {
+    	return base_class::cast()->max_size();
+    }
+
     int compare (size_type pos1, size_type count1, const char * s, size_type count2) const;
     int compare (size_type pos1, size_type count1, const mbcs_string & s) const
     {
@@ -226,6 +236,35 @@ public:
     {
     	return insert(pos, first, last, mbcs_string_insert_trait<InputIt>());
     }
+
+    mbcs_string & replace (size_type pos, size_type count, const mbcs_string & str ); //	(1)
+    mbcs_string & replace (const_iterator first, const_iterator last, const basic_string & str); // 	(1)    	(2)
+    mbcs_string & replace (size_type pos, size_type count, const basic_string & str, size_type pos2, size_type count2 ); // (until C++14)
+    mbcs_string & replace (size_type pos, size_type count, const basic_string & str, size_type pos2, size_type count2 = npos); // (since C++14)
+
+    template< class InputIt >
+    mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2); // (3)
+    basic_string& replace (size_type pos, size_type count, const CharT* cstr, size_type count2);
+    	(4)
+    basic_string& replace( const_iterator first, const_iterator last,
+                           const CharT* cstr, size_type count2 );
+    	(4)
+    basic_string& replace( size_type pos, size_type count,
+                           const CharT* cstr );
+    	(5)
+    basic_string& replace( const_iterator first, const_iterator last,
+                           const CharT* cstr );
+    	(5)
+    basic_string& replace( size_type pos, size_type count,
+                           size_type count2, CharT ch );
+    	(6)
+    basic_string& replace( const_iterator first, const_iterator last,
+                           size_type count2, CharT ch );
+    	(6)
+    basic_string& replace( const_iterator first, const_iterator last,
+                           std::initializer_list<CharT> ilist );
+    	(7) 	(since C++11)
+
 
 	mbcs_string substr (size_type index, size_type count) const;
 
