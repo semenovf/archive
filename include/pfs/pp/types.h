@@ -73,19 +73,19 @@ typedef uint32_t           uint_t;
 typedef ssize_t offset_t;
 
 #ifndef HAVE_INTPTR_T
-//#	if PFS_OS_BITS == 64
+#	if PFS_OS_BITS == 64
 		typedef long int          intptr_t;
-//#	else
-//		typedef int               intptr_t;
-//#	endif
+#	else
+		typedef int               intptr_t;
+#	endif
 #endif
 
 #ifndef HAVE_UINTPTR_T
-//#	if PFS_OS_BITS == 64
+#	if PFS_OS_BITS == 64
 		typedef unsigned long int uintptr_t;
-//#	else
-//		typedef unsigned int      uintptr_t;
-//#	endif
+#	else
+		typedef unsigned int      uintptr_t;
+#	endif
 #endif
 
 #ifndef HAVE_PTRDIFF_T

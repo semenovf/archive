@@ -237,34 +237,25 @@ public:
     	return insert(pos, first, last, mbcs_string_insert_trait<InputIt>());
     }
 
-    mbcs_string & replace (size_type pos, size_type count, const mbcs_string & str ); //	(1)
-    mbcs_string & replace (const_iterator first, const_iterator last, const basic_string & str); // 	(1)    	(2)
-    mbcs_string & replace (size_type pos, size_type count, const basic_string & str, size_type pos2, size_type count2 ); // (until C++14)
-    mbcs_string & replace (size_type pos, size_type count, const basic_string & str, size_type pos2, size_type count2 = npos); // (since C++14)
+    mbcs_string & replace (size_type pos, size_type count, const mbcs_string & str)
+    {
+    	return replace(pos, count, str, 0, str.length());
+    }
 
-    template< class InputIt >
-    mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2); // (3)
-    basic_string& replace (size_type pos, size_type count, const CharT* cstr, size_type count2);
-    	(4)
-    basic_string& replace( const_iterator first, const_iterator last,
-                           const CharT* cstr, size_type count2 );
-    	(4)
-    basic_string& replace( size_type pos, size_type count,
-                           const CharT* cstr );
-    	(5)
-    basic_string& replace( const_iterator first, const_iterator last,
-                           const CharT* cstr );
-    	(5)
-    basic_string& replace( size_type pos, size_type count,
-                           size_type count2, CharT ch );
-    	(6)
-    basic_string& replace( const_iterator first, const_iterator last,
-                           size_type count2, CharT ch );
-    	(6)
-    basic_string& replace( const_iterator first, const_iterator last,
-                           std::initializer_list<CharT> ilist );
-    	(7) 	(since C++11)
+    mbcs_string & replace (size_type pos1, size_type count1, const basic_string & str, size_type pos2, size_type count2 );
 
+    mbcs_string & replace (const_iterator first, const_iterator last, const mbcs_string & str);
+
+
+//    template< class InputIt >
+//    mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2); // (3)
+//    basic_string& replace (size_type pos, size_type count, const CharT* cstr, size_type count2);      // (4)
+//    basic_string& replace( const_iterator first, const_iterator last, const CharT* cstr, size_type count2 ); // (4)
+//    basic_string& replace( size_type pos, size_type count, const CharT* cstr ); // (5)
+//    basic_string& replace( const_iterator first, const_iterator last, const CharT* cstr ); // (5)
+//    basic_string& replace( size_type pos, size_type count, size_type count2, CharT ch ); // (6)
+//    basic_string& replace( const_iterator first, const_iterator last, size_type count2, CharT ch ); // (6)
+//    basic_string& replace( const_iterator first, const_iterator last, std::initializer_list<CharT> ilist ); // (7) 	(since C++11)
 
 	mbcs_string substr (size_type index, size_type count) const;
 
@@ -275,7 +266,7 @@ public:
 
 //	template <typename _IntT>
 //	mbcs_string & setNumber (_IntT n, int base = 10, bool uppercase = false);
-//
+
 //	template <typename _FloatT>
 //	mbcs_string & setNumber (_FloatT n, char f = 'g', int prec = 6);
 

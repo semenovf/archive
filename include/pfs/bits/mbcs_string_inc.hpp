@@ -321,4 +321,39 @@ mbcs_string<_CodeUnitT> mbcs_string<_CodeUnitT>::substr (size_type index, size_t
 	return r;
 }
 
+
+template <typename _CodeUnitT>
+mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
+	  size_type pos1
+	, size_type count1
+	, const basic_string & s
+	, size_type pos2
+	, size_type count2)
+{
+	PFS_ASSERT(pos1 <= this->length());
+	PFS_ASSERT(pos1 + count1 <= this->length());
+	PFS_ASSERT(pos2 <= s.length());
+	PFS_ASSERT(pos2 + count2 <= s.length());
+
+	if (s.isEmpty()) {
+		;
+	} else if (this->isEmpty()) {
+		mbcs_string<_CodeUnitT> r(s.cbegin() + pos2, s.cbegin() + (pos2 + count2));
+		this->swap(r);
+	} else {
+		mbcs_string<_CodeUnitT> r(this->cbegin(), this->cbegin() + pos1);
+		r.append(s, pos2, count2);
+		this->swap(r);
+	}
+
+//	const impl_class * d = base_class::cast();
+//	const char * ptr1_begin = impl_class::increment(constData(), pos1);
+//	const char * ptr1_end   = impl_class::increment(ptr1_begin, count1);
+//
+//	const char * ptr2_begin = impl_class::increment(s.constData(), pos2);
+//	const char * ptr2_end   = impl_class::increment(ptr2_begin, count2);
+//
+	return *this TODO FIXMEs;
+}
+
 } // pfs
