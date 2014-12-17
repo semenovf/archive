@@ -273,7 +273,7 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (
 		  const_iterator pos
 		, const_iterator first
 		, const_iterator last
-		, mbcs_string_insert_trait<const_iterator>)
+		, mbcs_string_type_trait<const_iterator>)
 {
 	PFS_ASSERT(first.holder() == last.holder());
 	PFS_ASSERT(pos.holder() == this);
@@ -321,12 +321,11 @@ mbcs_string<_CodeUnitT> mbcs_string<_CodeUnitT>::substr (size_type index, size_t
 	return r;
 }
 
-
 template <typename _CodeUnitT>
 mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 	  size_type pos1
 	, size_type count1
-	, const basic_string & s
+	, const mbcs_string & s
 	, size_type pos2
 	, size_type count2)
 {
@@ -335,25 +334,65 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 	PFS_ASSERT(pos2 <= s.length());
 	PFS_ASSERT(pos2 + count2 <= s.length());
 
-	if (s.isEmpty()) {
-		;
-	} else if (this->isEmpty()) {
+	if (this->isEmpty()) {
+		// Target is empty, assign to replacement string
 		mbcs_string<_CodeUnitT> r(s.cbegin() + pos2, s.cbegin() + (pos2 + count2));
 		this->swap(r);
 	} else {
-		mbcs_string<_CodeUnitT> r(this->cbegin(), this->cbegin() + pos1);
-		r.append(s, pos2, count2);
-		this->swap(r);
+		const_data_pointer ptr1_begin = impl_class::increment(constData(), pos1);
+		const_data_pointer ptr1_end   = impl_class::increment(ptr1_begin, count1);
+
+		const_data_pointer ptr2_begin = impl_class::increment(s.constData(), pos2);
+		const_data_pointer ptr2_end   = impl_class::increment(ptr2_begin, count2);
+
+		base_class::detach();
+
+		impl_class * d = base_class::cast();
+		d->replace(ptr1_begin, ptr1_end - ptr1_begin, ptr2_begin, ptr2_end - ptr2_begin);
+
+		if (count2 > count1)
+			d->_length += count2 - count1;
+		else
+			d->_length -= count1 - count2;
 	}
 
-//	const impl_class * d = base_class::cast();
-//	const char * ptr1_begin = impl_class::increment(constData(), pos1);
-//	const char * ptr1_end   = impl_class::increment(ptr1_begin, count1);
-//
-//	const char * ptr2_begin = impl_class::increment(s.constData(), pos2);
-//	const char * ptr2_end   = impl_class::increment(ptr2_begin, count2);
-//
-	return *this TODO FIXMEs;
+	return *this;
+}
+
+
+template <typename _CodeUnitT>
+mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (const_iterator first
+		, const_iterator last
+		, const_iterator first2
+		, const_iterator last2
+		, mbcs_string_type_trait<const_iterator>)
+{
+	PFS_ASSERT(first.holder() == this);
+	PFS_ASSERT(first.holder() == last.holder());
+	PFS_ASSERT(first2.holder() == last2.holder());
+	PFS_ASSERT(first <= last);
+	PFS_ASSERT(first2 <= last2);
+
+	const_data_pointer ptr1_begin = first.base().base();
+	const_data_pointer ptr1_end   = last.base().base();
+
+	const_data_pointer ptr2_begin = first2.base().base();
+	const_data_pointer ptr2_end   = last2.base().base();
+
+	size_type count1 = last - first;
+	size_type count2 = last2 - first2;
+
+	base_class::detach();
+
+	impl_class * d = base_class::cast();
+	d->replace(ptr1_begin, ptr1_end - ptr1_begin, ptr2_begin, ptr2_end - ptr2_begin);
+
+	if (count2 > count1)
+		d->_length += count2 - count1;
+	else
+		d->_length -= count1 - count2;
+
+	return *this;
 }
 
 } // pfs

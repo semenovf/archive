@@ -74,6 +74,11 @@ public:
 		base_class::insert(index, s, n);
 	}
 
+	void replace (const_pointer ptr1, size_type count, const_pointer ptr2, size_type count2)
+	{
+		base_class::replace(ptr1 - constData(), count, ptr2, count2);
+	}
+
 	//int compareRawData (size_type pos1, size_type count1, const char * s, size_type count2)
 	int compare (const_pointer p1, size_type count1, const_pointer p2, size_type count2) const
 	{

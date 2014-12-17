@@ -14,6 +14,27 @@
 using std::cout;
 using std::endl;
 
+// FIXME Replace strcmp with compare_with and compare_with_utf8
+
+template <typename _CodeUnitT>
+int compare_with (const _CodeUnitT * ptr1, const _CodeUnitT * ptr2);
+
+template <typename _CodeUnitT>
+int compare_with_utf8 (const _CodeUnitT * ptr1, const char * ptr2);
+
+template <>
+inline int compare_with<char> (const char * ptr1, const char * ptr2)
+{
+	return strcmp(ptr1, ptr2);
+}
+
+template <>
+inline int compare_with_utf8<char> (const char * ptr1, const char * ptr2)
+{
+	return strcmp(ptr1, ptr2);
+}
+
+
 template <typename _CodeUnitT>
 void test_size_length ()
 {
@@ -402,6 +423,50 @@ void test_compare ()
 
 
 template <typename _CodeUnitT>
+void test_replace ()
+{
+	{
+		typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+		utfstring s(utfstring::fromUtf8("Привет, Мир!"));
+
+		s.replace(0, 6, utfstring::fromUtf8("Hello, World!"), 0, 5);
+		TEST_OK(s.size() == 14);
+		TEST_OK(s.length() == 11);
+		TEST_OK(compare_with_utf8(s.c_str(), "Hello, Мир!") == 0);
+
+		s.replace(7, 3, utfstring::fromUtf8("Hello, World!"), 7, 5);
+		TEST_OK(s.size() == 13);
+		TEST_OK(s.length() == 13);
+		TEST_OK(compare_with_utf8(s.c_str(), "Hello, World!") == 0);
+
+		// replace full string with empty string - get empty string
+		s.replace(0, s.length(), utfstring(), 0, 0);
+		TEST_OK(compare_with_utf8(s.c_str(), "") == 0);
+	}
+
+	{
+		typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+		utfstring s(utfstring::fromUtf8("Привет, Мир!"));
+		utfstring s1(utfstring::fromUtf8("Hello, World!"));
+
+		s.replace(s.cbegin(), s.cbegin() + 6, s1.cbegin(), s1.cbegin() + 5);
+		TEST_OK(s.size() == 14);
+		TEST_OK(s.length() == 11);
+		TEST_OK(compare_with_utf8(s.c_str(), "Hello, Мир!") == 0);
+
+		s.replace(s.cbegin() + 7, s.cbegin() + 10, s.cbegin() + 7, s.cbegin() + 12);
+		TEST_OK(s.size() == 13);
+		TEST_OK(s.length() == 13);
+		TEST_OK(compare_with_utf8(s.c_str(), "Hello, World!") == 0);
+
+		// replace full string with empty string - get empty string
+		utfstring nil;
+		s.replace(s.cbegin(), s.cend(), nil.cbegin(), nil.cend());
+		TEST_OK(compare_with_utf8(s.c_str(), "") == 0);
+	}
+}
+
+template <typename _CodeUnitT>
 void test_suite ()
 {
 	test_size_length<_CodeUnitT>();
@@ -415,6 +480,7 @@ void test_suite ()
 	test_substr<_CodeUnitT>();
 	test_pop_back<_CodeUnitT>();
 	test_compare<_CodeUnitT>();
+	test_replace<_CodeUnitT>();
 }
 
 int main(int argc, char *argv[])

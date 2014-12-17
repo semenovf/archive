@@ -23,7 +23,7 @@
 namespace pfs {
 
 template <typename T>
-struct mbcs_string_insert_trait { typedef T type; };
+struct mbcs_string_type_trait { typedef T type; };
 
 //TODO implement `class utf16string : protected vector<int16_t,allocator<int16_t, 1> >'
 
@@ -39,7 +39,7 @@ protected:
 	typedef mbcs_string_impl<_CodeUnitT>            impl_class;
 
 public:
-	typedef ucchar                           value_type; // Unicode character
+	typedef ucchar value_type; // Unicode character
 	typedef mbcs_string_ptr<_CodeUnitT, self_class>       pointer;
 	typedef mbcs_string_ptr<_CodeUnitT, const self_class> const_pointer;
 	typedef typename impl_class::size_type            size_type;
@@ -54,6 +54,7 @@ public:
 
 	typedef value_type char_type;
 
+	typedef typename impl_class::const_pointer const_data_pointer;
 public: // static
 	static const char TerminatorChar  = '\0';
 	static const char EndOfLineChar   = '\n';
@@ -91,9 +92,9 @@ public:
     const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
     const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
 
-	typename impl_class::const_pointer constData () const { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
-	typename impl_class::const_pointer data () const      { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
-	typename impl_class::const_pointer c_str () const     { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
+    const_data_pointer constData () const { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
+    const_data_pointer data () const      { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
+    const_data_pointer c_str () const     { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
 
     value_type valueAt (size_type index) const { return at(index); }
     reference at (size_type index) const { pointer p(*const_cast<self_class *>(this), 0); p += index; return p.ref(); }
@@ -234,28 +235,36 @@ public:
     template<class InputIt>
     iterator insert (const_iterator pos, InputIt first, InputIt last)
     {
-    	return insert(pos, first, last, mbcs_string_insert_trait<InputIt>());
+    	return insert(pos, first, last, mbcs_string_type_trait<InputIt>());
     }
+
+    mbcs_string & replace (size_type pos1, size_type count1, const mbcs_string & str, size_type pos2, size_type count2);
 
     mbcs_string & replace (size_type pos, size_type count, const mbcs_string & str)
     {
     	return replace(pos, count, str, 0, str.length());
     }
 
-    mbcs_string & replace (size_type pos1, size_type count1, const basic_string & str, size_type pos2, size_type count2 );
+    mbcs_string & replace (const_iterator first, const_iterator last, const mbcs_string & str)
+    {
+    	return replace(first, last, str.cbegin(), str.cend(), mbcs_string_type_trait<const_iterator>());
+    }
 
-    mbcs_string & replace (const_iterator first, const_iterator last, const mbcs_string & str);
+    template< class InputIt >
+    mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2)
+    {
+    	return replace(first, last, first2, last2, mbcs_string_type_trait<InputIt>());
+    }
 
+    mbcs_string & replace ( size_type pos, size_type count, size_type count2, ucchar ch )
+    {
+    	return replace (pos, count, mbcs_string(count2, ch));
+    }
 
-//    template< class InputIt >
-//    mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2); // (3)
-//    basic_string& replace (size_type pos, size_type count, const CharT* cstr, size_type count2);      // (4)
-//    basic_string& replace( const_iterator first, const_iterator last, const CharT* cstr, size_type count2 ); // (4)
-//    basic_string& replace( size_type pos, size_type count, const CharT* cstr ); // (5)
-//    basic_string& replace( const_iterator first, const_iterator last, const CharT* cstr ); // (5)
-//    basic_string& replace( size_type pos, size_type count, size_type count2, CharT ch ); // (6)
-//    basic_string& replace( const_iterator first, const_iterator last, size_type count2, CharT ch ); // (6)
-//    basic_string& replace( const_iterator first, const_iterator last, std::initializer_list<CharT> ilist ); // (7) 	(since C++11)
+    mbcs_string & replace (const_iterator first, const_iterator last, size_type count2, ucchar ch)
+    {
+    	return replace(first, last, mbcs_string(count2, ch));
+    }
 
 	mbcs_string substr (size_type index, size_type count) const;
 
@@ -267,8 +276,8 @@ public:
 //	template <typename _IntT>
 //	mbcs_string & setNumber (_IntT n, int base = 10, bool uppercase = false);
 
-//	template <typename _FloatT>
-//	mbcs_string & setNumber (_FloatT n, char f = 'g', int prec = 6);
+//	template <typename _RealT>
+//	mbcs_string & setNumber (_RealT n, char f = 'g', int prec = 6);
 
 //	utf8string & setNumber (long_t n, int base = 10, bool uppercase = false);
 //	utf8string & setNumber (ulong_t n, int base = 10, bool uppercase = false);
@@ -281,10 +290,15 @@ public:
 //	utf8string & setNumber (real_t n, char f = 'g', int prec = 6);
 
 private:
-    // Need to fix "error: explicit specialization in non-namespace scope ‘class pfs::mbcs_string’"
-    template<class InputIt>
-    iterator insert (const_iterator pos, InputIt first, InputIt last, mbcs_string_insert_trait<InputIt>);
-    iterator insert (const_iterator pos, const_iterator first, const_iterator last, mbcs_string_insert_trait<const_iterator>);
+    // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::mbcs_string’"
+    template <typename InputIt>
+    iterator insert (const_iterator pos, InputIt first, InputIt last, mbcs_string_type_trait<InputIt>);
+    iterator insert (const_iterator pos, const_iterator first, const_iterator last, mbcs_string_type_trait<const_iterator>);
+
+    // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::mbcs_string’"
+    template <typename InputIt>
+    mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, mbcs_string_type_trait<InputIt>);
+    mbcs_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, mbcs_string_type_trait<const_iterator>);
 
 public:
 	struct ConvertState
@@ -307,8 +321,8 @@ public:
 };
 
 template <typename _CodeUnitT>
-template<class InputIt>
-typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (const_iterator pos, InputIt first, InputIt last, mbcs_string_insert_trait<InputIt>)
+template <typename InputIt>
+typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (const_iterator pos, InputIt first, InputIt last, mbcs_string_type_trait<InputIt>)
 {
 	PFS_ASSERT(pos.holder() == this);
 
@@ -324,6 +338,27 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (cons
 	return iterator(this, pointer(*this, index + 1));
 }
 
+
+template <typename _CodeUnitT>
+template <typename InputIt>
+mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
+		  const_iterator first
+		, const_iterator last
+		, InputIt first2
+		, InputIt last2
+		, mbcs_string_type_trait<InputIt>)
+{
+	PFS_ASSERT(first.holder() == this);
+	PFS_ASSERT(last.holder() == this);
+
+	mbcs_string<_CodeUnitT> s;
+
+	for (InputIt it = first2; it < last2; ++it) {
+		s.append(*it);
+	}
+
+	return replace(first, last, s);
+}
 
 template <typename _CodeUnitT>
 inline std::ostream & operator << (std::ostream & os, const mbcs_string<_CodeUnitT> & o)

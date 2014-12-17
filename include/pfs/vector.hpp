@@ -8,9 +8,9 @@
 #ifndef __PFS_VECTOR_HPP__
 #define __PFS_VECTOR_HPP__
 
-#include "pimpl.hpp"
-#include "bits/vector_impl.hpp"
-#include "bits/algorithm.hpp"
+#include <pfs/pimpl.hpp>
+#include <pfs/bits/vector_impl.hpp>
+#include <pfs/bits/algorithm.hpp>
 
 namespace pfs {
 

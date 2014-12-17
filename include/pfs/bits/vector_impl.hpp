@@ -10,9 +10,9 @@
 
 #include <vector>
 #include <memory>
-#include "allocator.hpp"
-#include "reference.hpp"
-#include "iterator.hpp"
+#include <pfs/bits/allocator.hpp>
+#include <pfs/bits/reference.hpp>
+#include <pfs/bits/iterator.hpp>
 
 namespace pfs {
 
