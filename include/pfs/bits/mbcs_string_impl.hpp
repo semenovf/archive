@@ -189,7 +189,7 @@ inline typename mbcs_string_ptr<_CodeUnitT, Holder>::difference_type operator
 {
 	size_t invalidBytes = 0;
 	typename mbcs_string_ptr<_CodeUnitT, Holder>::difference_type r
-		= mbcs_string_impl<_CodeUnitT>::difference(p1.base(), p2.base(), & invalidBytes);
+		= mbcs_string_impl<_CodeUnitT>::difference(p2.base(), p1.base(), & invalidBytes);
 
 	PFS_ASSERT(invalidBytes == 0);
 	return r;

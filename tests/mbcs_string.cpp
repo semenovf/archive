@@ -454,7 +454,7 @@ void test_replace ()
 		TEST_OK(s.length() == 11);
 		TEST_OK(compare_with_utf8(s.c_str(), "Hello, Мир!") == 0);
 
-		s.replace(s.cbegin() + 7, s.cbegin() + 10, s.cbegin() + 7, s.cbegin() + 12);
+		s.replace(s.cbegin() + 7, s.cbegin() + 10, s1.cbegin() + 7, s1.cbegin() + 12);
 		TEST_OK(s.size() == 13);
 		TEST_OK(s.length() == 13);
 		TEST_OK(compare_with_utf8(s.c_str(), "Hello, World!") == 0);
@@ -487,7 +487,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(130);
+	BEGIN_TESTS(144);
 
 	test_suite<char>();
 
