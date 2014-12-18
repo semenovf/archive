@@ -467,6 +467,18 @@ void test_replace ()
 }
 
 template <typename _CodeUnitT>
+void test_find ()
+{
+	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	utfstring s(utfstring::fromUtf8("Привет, Мир!"));
+
+	TEST_OK(s.find(utfstring::fromUtf8("Привет")) == s.begin());
+	TEST_OK(s.find(utfstring::fromUtf8("Мир")) != s.begin());
+	TEST_OK(s.find(utfstring::fromUtf8("Мир")) == s.begin() + 8);
+	TEST_OK(s.find(utfstring::fromUtf8("Hello")) == s.end());
+}
+
+template <typename _CodeUnitT>
 void test_suite ()
 {
 	test_size_length<_CodeUnitT>();
@@ -481,6 +493,7 @@ void test_suite ()
 	test_pop_back<_CodeUnitT>();
 	test_compare<_CodeUnitT>();
 	test_replace<_CodeUnitT>();
+	test_find<_CodeUnitT>();
 }
 
 int main(int argc, char *argv[])

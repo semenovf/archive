@@ -395,4 +395,21 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (const_iterator first
 	return *this;
 }
 
+template <typename _CodeUnitT>
+typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::find (const mbcs_string & str, const_iterator pos) const
+{
+	PFS_ASSERT(pos >= cbegin());
+	PFS_ASSERT(pos <= cend());
+
+	size_type r = 0;
+	size_type index = pos.base().index();
+
+	mbcs_string * self = const_cast<mbcs_string *>(this);
+
+	return base_class::cast()->find(str.constData(), index, str.size(), r)
+		? iterator(self, pointer(*self, r))
+		: iterator(self, pointer(*self, size())); // end()
+}
+
+
 } // pfs
