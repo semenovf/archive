@@ -1,4 +1,4 @@
-include($$(GBS_HOME)/qmake/common-app.pri)
+include($$(GBS_HOME)/qmake/common-test.pri)
 TARGET =
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../pfs/include
