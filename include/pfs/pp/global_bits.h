@@ -8,6 +8,15 @@
 #ifndef __PFS_GLOBAL_BITS_H__
 #define __PFS_GLOBAL_BITS_H__
 
+#ifdef PFS_CC_BORLAND_REAL
+
+#	include <limits.h>
+
+#	define PFS_OS_16BITS
+#	define PFS_OS_BITS    16
+
+#else
+
 #include <stdint.h>
 #include <limits.h>
 
@@ -27,5 +36,7 @@
 #	define HAVE_INT64
 #	define HAVE_LONGLONG
 #endif
+
+#endif /* ! __BORLANDC__ */
 
 #endif /* __PFS_GLOBAL_BITS_H__ */

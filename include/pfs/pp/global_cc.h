@@ -56,6 +56,9 @@
 #	endif
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #	define PFS_CC_BORLAND
+#	if (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
+#		define PFS_CC_BORLAND_REAL
+#	endif
 #elif defined(__WATCOMC__)
 #	define PFS_CC_WATCOM
 #elif defined(__GCCE__) /* Symbian GCCE */

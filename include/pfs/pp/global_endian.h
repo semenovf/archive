@@ -62,7 +62,7 @@
 #  	elif defined(__MIPSEB__)
 #   	define PFS_BYTE_ORDER PFS_BIG_ENDIAN
 #  	else
-// PFS_BYTE_ORDER not defined, use endianness auto-detection
+/* PFS_BYTE_ORDER not defined, use endianness auto-detection */
 # 	endif
 
 /*
@@ -72,7 +72,12 @@
 #elif defined(__ppc__) || defined(__ppc) || defined(__powerpc__) \
       || defined(_ARCH_COM) || defined(_ARCH_PWR) || defined(_ARCH_PPC)  \
       || defined(_M_MPPC) || defined(_M_PPC)
-// PFS_BYTE_ORDER not defined, use endianness auto-detection
+/* PFS_BYTE_ORDER not defined, use endianness auto-detection */
+
+
+/* MS-DOS is an operation system for x86-based personal computers */
+#elif defined(MSDOS) || defined(__MSDOS__) || defined(_MSDOS)
+#	define PFS_BYTE_ORDER PFS_LITTLE_ENDIAN
 #endif
 
 /*

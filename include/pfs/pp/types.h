@@ -19,7 +19,7 @@
 #endif
 #endif /* HAVE_NULLPTR */
 
-#ifndef __cplusplus
+#if ! defined(__cplusplus) || defined(PFS_CC_BORLAND_REAL)
 	typedef unsigned char bool;
 #	define false 0
 #	define true (!(false))
@@ -27,19 +27,33 @@
 	/*typedef bool bool_t;*/
 #endif
 
-#ifndef HAVE_INT8_T
+
+#ifdef PFS_CC_BORLAND_REAL
 	typedef signed char        int8_t;
 	typedef unsigned char      uint8_t;
-	typedef signed short       int16_t;
-	typedef unsigned short     uint16_t;
-	typedef signed int         int32_t;
-	typedef unsigned int       uint32_t;
+	typedef signed int         int16_t;
+	typedef unsigned int       uint16_t;
+	typedef signed long        int32_t;
+	typedef unsigned long      uint32_t;
+	typedef float              real32_t;
+	typedef double             real64_t;
+#else
+#	ifndef HAVE_INT8_T
+		typedef signed char        int8_t;
+		typedef unsigned char      uint8_t;
+		typedef signed short       int16_t;
+		typedef unsigned short     uint16_t;
+		typedef signed int         int32_t;
+		typedef unsigned int       uint32_t;
+		typedef float              real32_t;
+		typedef double             real64_t;
 
-#	ifdef HAVE_INT64
-		typedef signed long long   int64_t;
-		typedef unsigned long long uint64_t;
+#		ifdef HAVE_INT64
+			typedef signed long long   int64_t;
+			typedef unsigned long long uint64_t;
+#		endif
 #	endif
-#endif
+#endif /* ! PFS_CC_BORLAND_REAL */
 
 typedef uint8_t            uchar_t;
 typedef int8_t             sbyte_t;

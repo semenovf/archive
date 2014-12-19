@@ -100,6 +100,8 @@
 #else
 #	ifdef PFS_CC_MSVC
 #		define PFS_INFINITY (LDBL_MAX+LDBL_MAX)
+#	elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
+#		define PFS_INFINITY (DBL_MAX+DBL_MAX)
 #	else
 #		error INFINITY is undefined
 #	endif
@@ -109,6 +111,8 @@
 #	define PFS_NAN NAN
 #else
 #	ifdef PFS_CC_MSVC
+#		define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
+#	elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
 #		define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
 #	else
 #		error NAN is undefined
@@ -154,7 +158,8 @@
 #	define PFS_CHECK_SIZEOF_TYPES
 #endif
 
-#ifdef __cplusplus
+
+#if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
 namespace pfs {
 
 template <typename _number_type> _number_type max_type ();
@@ -190,7 +195,7 @@ template<> inline double   min_type<double>   () { return double(PFS_DOUBLE_MIN)
 template<> inline long double   min_type<long double>   () { return PFS_LONG_DOUBLE_MIN; }
 #endif
 
-}
+} /* namespace pfs */
 
 #endif
 

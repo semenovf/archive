@@ -1,11 +1,19 @@
 #ifndef __PFS_GLOBAL_H__
 #define __PFS_GLOBAL_H__
 
-#include <pfs/pp/global_os.h>
-#include <pfs/pp/global_cc.h>
-#include <pfs/pp/global_endian.h>
-#include <pfs/pp/global_bits.h>
-#ifdef __cplusplus
+#if defined(MSDOS) || defined(__MSDOS__) || defined(_MSDOS)
+#	include <pfs/pp/g_os.h>
+#	include <pfs/pp/g_cc.h>
+#	include <pfs/pp/g_endian.h>
+#	include <pfs/pp/g_bits.h>
+#else
+#	include <pfs/pp/global_os.h>
+#	include <pfs/pp/global_cc.h>
+#	include <pfs/pp/global_endian.h>
+#	include <pfs/pp/global_bits.h>
+#endif /* !MS-DOS*/
+
+#if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
 #	include <cstdlib>
 #	include <cstring> // for strerror
 #else
@@ -106,7 +114,7 @@
 #	undef min
 #endif
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
 namespace pfs {
 	template <typename T>
 	inline T min (T a, T b) { return a <= b ? a : b; }
@@ -133,7 +141,7 @@ namespace pfs {
 #endif
 
 #ifndef NDEBUG
-#	ifdef __cplusplus
+#	if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
 namespace pfs {
 struct __verify
 {
@@ -159,7 +167,7 @@ struct __verify
 
 #ifndef NDEBUG
 #	define PFS_DEBUG(expr)       expr
-#	ifdef __cplusplus
+#	if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
 #		include <cassert>
 #	else
 #		include <assert.h>

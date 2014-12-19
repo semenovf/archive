@@ -40,7 +40,8 @@
 	|| defined(_SIZE_T_DEFINED)  \
 	|| defined(__DJ_size_t)      \
 	|| defined(__size_t_defined) \
-	|| defined(_SIZE_T_)
+	|| defined(_SIZE_T_)         \
+	|| defined(_SIZE_T)              /* borland c++ */
 #	define HAVE_SIZE_T
 #endif
 
@@ -59,8 +60,9 @@
 #	define HAVE_UINTPTR_T 1
 #endif
 
-#if defined(__PTRDIFF_TYPE__) \
-	|| defined(_PTRDIFF_T_DEFINED) /* msvc */
+#if defined(__PTRDIFF_TYPE__)      \
+	|| defined(_PTRDIFF_T_DEFINED)  /* msvc */ \
+	|| defined(_PTRDIFF_T)          /* borland c++ */
 #	define HAVE_PTRDIFF_T 1
 #endif
 
