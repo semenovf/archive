@@ -55,6 +55,7 @@ public:
 	typedef value_type char_type;
 
 	typedef typename impl_class::const_pointer const_data_pointer;
+
 public: // static
 	static const char TerminatorChar  = '\0';
 	static const char EndOfLineChar   = '\n';
@@ -99,6 +100,44 @@ public:
     value_type valueAt (size_type index) const { return at(index); }
     reference at (size_type index) const { pointer p(*const_cast<self_class *>(this), 0); p += index; return p.ref(); }
     reference operator [] (size_type index) const { return at(index); }
+
+    // Non-lexical find
+    iterator find (const mbcs_string & str, const_iterator pos) const;
+
+    iterator find (const mbcs_string & str) const
+    {
+    	return find(str, cbegin());
+    }
+
+    iterator find (const char * latin1, const_iterator pos, size_type count) const
+    {
+    	return find(mbcs_string::fromLatin1(latin1, count), pos);
+    }
+
+    iterator find (const char * latin1, const_iterator pos) const
+    {
+    	return find(mbcs_string::fromLatin1(latin1, strlen(latin1)), pos);
+    }
+
+    iterator find (char latin1, const_iterator pos) const
+    {
+    	return find(& latin1, pos, 1);
+    }
+
+    iterator find (char latin1) const
+    {
+    	return find(latin1, cbegin());
+    }
+
+    iterator find (ucchar ch, const_iterator pos) const
+    {
+    	return find(mbcs_string(1, ch), pos);
+    }
+
+    iterator find (ucchar ch) const
+    {
+    	return find(ch, cbegin());
+    }
 
     // Size in bytes
     size_type size () const

@@ -263,6 +263,8 @@ public:
 
 // TODO DEPRECATED {
 
+#ifdef __COMMENT__
+
 #define PFS_PIMPL_INLINE(Class,ImplClassScope,Impl)            \
 ImplClassScope:                                                \
 	pfs::shared_ptr<Impl> _pimpl;                              \
@@ -349,5 +351,6 @@ void Class::detach()                                           \
 Class::Class (const Class::Impl & other)                       \
 	: _pimpl(new Class::Impl(other)) {}
 // } TODO DEPRECATED
+#endif
 
 #endif /* __PFS_PIMPL_HPP__ */

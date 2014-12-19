@@ -79,10 +79,16 @@ public:
 		base_class::replace(ptr1 - constData(), count, ptr2, count2);
 	}
 
-	//int compareRawData (size_type pos1, size_type count1, const char * s, size_type count2)
 	int compare (const_pointer p1, size_type count1, const_pointer p2, size_type count2) const
 	{
 		return base_class::compare(p1 - constData(), count1, p2, count2);
+	}
+
+	// Non-lexical find
+	bool find (const_pointer s, size_type pos, size_type count, size_type & result) const
+	{
+		result = base_class::find(s, pos, count);
+		return result == base_class::npos ? false : true;
 	}
 
 	void clear ()
