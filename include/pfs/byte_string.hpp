@@ -9,7 +9,7 @@
 
 #include <pfs/pimpl.hpp>
 #include <pfs/bits/iterator.hpp>
-//#include <pfs/endian.hpp>
+#include <pfs/endian.hpp>
 //#include <pfs/bits/byte_string_impl.hpp>
 //#include <ostream>
 
@@ -61,9 +61,8 @@ public: // static
 
 public:
 	byte_string () : base_class() {}
-	explicit byte_string (const byte_t * bytes);
 	explicit byte_string (const char * str);
-	byte_string (const byte_t * bytes, size_type n);
+	byte_string (const_pointer bytes, size_type n);
 	byte_string (const char * str, size_type n);
 	byte_string (size_t count, byte_t ch);
 	byte_string (size_t count, char ch);
@@ -96,8 +95,8 @@ public:
 
 #endif
 
-    const byte_t * constData () const;
-    const byte_t * data () const;
+    const_pointer constData () const;
+    const_pointer data () const;
     const char   * c_str () const;
 
 #ifdef __COMMENT__
@@ -148,22 +147,33 @@ public:
     size_type capacity() const;
     size_type max_size() const;
 
-#ifdef __COMMENT__
+    int compare (size_type pos1, size_type count1, const_pointer bytes, size_type count2) const;
     int compare (size_type pos1, size_type count1, const char * s, size_type count2) const;
-    int compare (size_type pos1, size_type count1, const mbcs_string & s) const
+    int compare (size_type pos1, size_type count1, const byte_string & s, size_type pos2, size_type count2) const;
+    int compare (const_pointer bytes, size_type count2) const;
+    int compare (size_type pos1, size_type count1, const char * s) const;
+
+    int compare (size_type pos1, size_type count1, const byte_string & s) const
     {
     	return compare(pos1, count1, s.constData(), s.size());
     }
 
-    int compare (const mbcs_string & s) const
+    int compare (const byte_string & s) const
     {
-    	return compare(s.constData());
+    	return compare(s.constData(), s.length());
     }
 
-    int compare (size_type pos1, size_type count1, const mbcs_string & s, size_type pos2, size_type count2) const;
-    int compare (const char * s) const;
-    int compare (size_type pos, size_type count, const char * s) const;
+    int compare (const char *s, size_type count2) const
+    {
+    	return compare(0, this->length(), s, count2);
+    }
 
+    int compare (const char * s) const
+    {
+    	return compare(0, this->length(), s);
+    }
+
+#ifdef __COMMENT__
     void push_back (value_type ch)
     {
     	append(size_type(1), ch);
@@ -316,6 +326,7 @@ public:
 //	utf8string & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
 //	utf8string & setNumber (real_t n, char f = 'g', int prec = 6);
 #endif
+
 private:
 #ifdef __COMMENT__
     // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::mbcs_string’"
@@ -329,26 +340,8 @@ private:
     mbcs_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, mbcs_string_type_trait<const_iterator>);
 #endif
 public:
-
-#ifdef __COMMENT__
-	struct ConvertState
-	{
-		ConvertState() : nremain(0), invalidChars(0), replacementChar(ucchar::ReplacementChar) {}
-		size_type nremain;
-		size_type invalidChars;
-		ucchar    replacementChar;
-	};
-
-	static DLL_API mbcs_string fromLatin1 (const char * latin1, size_t n, ConvertState * state = nullptr);
-	static DLL_API mbcs_string fromLatin1 (const char * latin1, ConvertState * state = nullptr);
-//	static mbcs_string fromLatin1 (const pfs::bytearray & latin1, ConvertState * state = nullptr)
-//		{ return fromLatin1(latin1.data(), latin1.size(), state); }
-
-	static DLL_API mbcs_string fromUtf8 (const char * utf8, size_t size, ConvertState * state = nullptr);
-	static DLL_API mbcs_string fromUtf8 (const char * utf8, ConvertState * state = nullptr);
-//	static mbcs_string fromUtf8 (const bytearray & utf8, ConvertState * state = nullptr)
-//		{ return fromUtf8(utf8.data(), utf8.size(), state);	}
-#endif
+	template <typename T>
+	static byte_string toBytes (const T & v, endian::type_enum order = endian::nativeOrder());
 };
 
 #ifdef __COMMENT__
@@ -392,6 +385,63 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 	return replace(first, last, s);
 }
 #endif // __COMMENT__
+
+
+template <typename T>
+inline byte_string byte_string::toBytes (const T & v, endian::type_enum order)
+{
+	T a = (order == endian::LittleEndian ? endian::toLittleEndian(v) : endian::toBigEndian(v));
+	union { T v; char b[sizeof(T)]; } d;
+	d.v = a;
+	return byte_string(d.b, sizeof(T));
+}
+
+// Specialization for bool
+//
+template <>
+inline byte_string byte_string::toBytes<bool> (const bool & v, endian::type_enum order)
+{
+	return toBytes<char>(v ? '\x01' : '\x00', order);
+}
+
+//template <>
+//bytearray bytearray::toBytes<pfs::utf8string> (const pfs::utf8string & v, endian::type_enum /*order*/);
+//
+//template <>
+//inline bytearray bytearray::toBytes<pfs::bytearray> (const pfs::bytearray & v, endian::type_enum /*order*/)
+//{
+//	return bytearray(v);
+//}
+
+inline bool operator == (const byte_string & lhs, const byte_string & rhs)
+{
+	return lhs.compare(rhs) == 0;
+}
+
+inline bool operator != (const byte_string & lhs, const byte_string & rhs)
+{
+	return lhs.compare(rhs) != 0;
+}
+
+inline bool operator <  (const byte_string & lhs, const byte_string & rhs)
+{
+	return lhs.compare(rhs) < 0;
+}
+
+inline bool operator <= (const byte_string & lhs, const byte_string & rhs)
+{
+	return lhs.compare(rhs) <= 0;
+}
+
+inline bool operator >  (const byte_string & lhs, const byte_string & rhs)
+{
+	return lhs.compare(rhs) > 0;
+}
+
+inline bool operator >= (const byte_string & lhs, const byte_string & rhs)
+{
+	return lhs.compare(rhs) >= 0;
+}
 
 inline std::ostream & operator << (std::ostream & os, const byte_string & o)
 {

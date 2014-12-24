@@ -84,7 +84,6 @@ public:
 		return base_class::compare(p1 - constData(), count1, p2, count2);
 	}
 
-	// Non-lexical find
 	bool find (const_pointer s, size_type pos, size_type count, size_type & result) const
 	{
 		result = base_class::find(s, pos, count);

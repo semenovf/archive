@@ -101,7 +101,6 @@ public:
     reference at (size_type index) const { pointer p(*const_cast<self_class *>(this), 0); p += index; return p.ref(); }
     reference operator [] (size_type index) const { return at(index); }
 
-    // Non-lexical find
     iterator find (const mbcs_string & str, const_iterator pos) const;
 
     iterator find (const mbcs_string & str) const

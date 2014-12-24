@@ -11,21 +11,14 @@
 
 namespace pfs {
 
-byte_string::byte_string (const byte_t * bytes)
-	: base_class()
-{
-	if (bytes)
-		base_class::cast()->append(bytes, strlen(reinterpret_cast<const char *>(bytes)));
-}
-
 byte_string::byte_string (const char * str)
 	: base_class()
 {
 	if (str)
-		base_class::cast()->append(reinterpret_cast<const byte_t *>(str), strlen(str));
+		base_class::cast()->append(reinterpret_cast<const_pointer>(str), strlen(str));
 }
 
-byte_string::byte_string (const byte_t * bytes, size_type n)
+byte_string::byte_string (const_pointer bytes, size_type n)
 	: base_class()
 {
 	if (bytes && n > 0)
@@ -36,7 +29,7 @@ byte_string::byte_string (const char * str, size_type n)
 	: base_class()
 {
 	if (str && n > 0)
-		base_class::cast()->append(reinterpret_cast<const byte_t *>(str), n);
+		base_class::cast()->append(reinterpret_cast<const_pointer>(str), n);
 }
 
 byte_string::byte_string (size_type count, byte_t ch)
@@ -58,7 +51,7 @@ byte_string::byte_string (size_type count, char ch)
 		impl_class * d = base_class::cast();
 		d->reserve(count);
 		for (size_t i = 0; i < count; ++i) {
-			d->append(reinterpret_cast<byte_t *>(& ch), 1);
+			d->append(reinterpret_cast<const_pointer>(& ch), 1);
 		}
 	}
 }
@@ -79,7 +72,7 @@ void byte_string::clear ()
  *
  * @return raw data or @c null if byte string is null.
  */
-const byte_t * byte_string::constData () const
+byte_string::const_pointer byte_string::constData () const
 {
 	return base_class::isNull() ? nullptr : base_class::cast()->constData();
 }
@@ -89,7 +82,7 @@ const byte_t * byte_string::constData () const
  * @return raw data or @c null if byte string is null.
  * @see byte_string::constData()
  */
-const byte_t * byte_string::data () const
+byte_string::const_pointer byte_string::data () const
 {
 	return base_class::isNull() ? nullptr : base_class::cast()->constData();
 }
@@ -123,6 +116,49 @@ byte_string::size_type byte_string::capacity() const
 byte_string::size_type byte_string::max_size() const
 {
 	return base_class::cast()->max_size();
+}
+
+
+int byte_string::compare (size_type pos1, size_type count1, const_pointer bytes, size_type count2) const
+{
+	PFS_ASSERT(pos1 <= length());
+	PFS_ASSERT(pos1 + count1 <= length());
+
+	if (this->isEmpty()) {
+		return bytes == nullptr ? 0 : -1;
+	}
+
+	if (bytes == nullptr) {
+		return this->isEmpty() ? 0 : 1;
+	}
+
+	const impl_class * d = base_class::cast();
+	return d->compare(constData() + pos1, count1, bytes, count2);
+}
+
+int byte_string::compare (size_type pos1, size_type count1, const char * s, size_type count2) const
+{
+	return compare(pos1, count1, reinterpret_cast<const_pointer>(s), count2);
+}
+
+int byte_string::compare (size_type pos1, size_type count1, const byte_string & s, size_type pos2, size_type count2) const
+{
+	PFS_ASSERT(pos1 <= length());
+	PFS_ASSERT(pos1 + count1 <= length());
+	PFS_ASSERT(pos2 <= s.length());
+	PFS_ASSERT(pos2 + count2 <= s.length());
+
+	return compare(pos1, count1, s.constData() + pos2, count2);
+}
+
+int byte_string::compare (const_pointer bytes, size_type count) const
+{
+	return compare(0, length(), bytes, count);
+}
+
+int byte_string::compare (size_type pos, size_type count, const char * s) const
+{
+	return compare(pos, count, reinterpret_cast<const_pointer>(s), strlen(s));
 }
 
 }
