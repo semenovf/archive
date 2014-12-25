@@ -67,6 +67,46 @@ void byte_string::clear ()
 	base_class::cast()->clear();
 }
 
+byte_string & byte_string::erase (size_type index, size_type count)
+{
+	if (isEmpty() || index >= length())
+		return *this;
+
+	base_class::detach();
+	impl_class * d = base_class::cast();
+
+	if (index + count >= length()) {
+		count = length() - index;
+	}
+
+	d->erase(index, count);
+
+	return *this;
+}
+
+
+byte_string::iterator byte_string::erase (const_iterator first, const_iterator last)
+{
+	PFS_ASSERT(first >= cbegin());
+	PFS_ASSERT(last <= cend());
+
+	if (isEmpty())
+		iterator(this, pointer(*this, 0));
+
+	size_type pos_begin = first.base().index();
+	size_type pos_end = last.base().index();
+
+	if (pos_begin < pos_end) {
+		base_class::detach();
+		impl_class * d = base_class::cast();
+		size_type count = last - first;
+		d->erase(pos_begin, pos_end - pos_begin);
+		d->_length -= count;
+	}
+
+	return iterator(this, pointer(*this, pos_begin));
+}
+
 
 /**
  *

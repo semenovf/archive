@@ -74,9 +74,8 @@ public:
 	bool empty () const { return isEmpty(); }
 	void clear ();
 
-#ifdef __COMMENT__
-	mbcs_string & erase (size_type index = 0) { return erase(index, 1); }
-	mbcs_string & erase (size_type index, size_type count);
+	byte_string & erase (size_type index = 0) { return erase(index, 1); }
+	byte_string & erase (size_type index, size_type count);
 	iterator erase (const_iterator pos) { return erase(pos, pos + 1); }
 	iterator erase (const_iterator first, const_iterator last);
 
@@ -92,8 +91,6 @@ public:
     const_reverse_iterator rend    () const { return crend(); }
     const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
     const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
-
-#endif
 
     const_pointer constData () const;
     const_pointer data () const;
@@ -173,7 +170,6 @@ public:
     	return compare(0, this->length(), s);
     }
 
-#ifdef __COMMENT__
     void push_back (value_type ch)
     {
     	append(size_type(1), ch);
@@ -185,6 +181,7 @@ public:
     		erase(length() - 1);
     }
 
+#ifdef __COMMENT__
     mbcs_string & append (const mbcs_string & str, size_type index_str, size_type count)
     {
     	return insert(this->length(), str, index_str, count);

@@ -32,15 +32,15 @@ public:
 	size_type size ()          const { return base_class::size(); }
 	size_type length ()        const { return base_class::size(); }
 
-//	void erase (size_type index, size_type count)
-//	{
-//		base_class::erase(index, count);
-//	}
-//
-//	void resize (size_type count)
-//	{
-//		base_class::resize(count);
-//	}
+	void erase (size_type index, size_type count)
+	{
+		base_class::erase(index, count);
+	}
+
+	void resize (size_type count)
+	{
+		base_class::resize(count);
+	}
 
 	void reserve (size_type count)
 	{
@@ -62,38 +62,31 @@ public:
 		base_class::append(s, n);
 	}
 
-//	void insert (size_type index, const_pointer s, size_type n)
-//	{
-//		base_class::insert(index, s, n);
-//	}
-//
-//	void replace (const_pointer ptr1, size_type count, const_pointer ptr2, size_type count2)
-//	{
-//		base_class::replace(ptr1 - constData(), count, ptr2, count2);
-//	}
-//
+	void insert (size_type index, const_pointer s, size_type n)
+	{
+		base_class::insert(index, s, n);
+	}
+
+	void replace (const_pointer ptr1, size_type count, const_pointer ptr2, size_type count2)
+	{
+		base_class::replace(ptr1 - constData(), count, ptr2, count2);
+	}
+
 	int compare (const_pointer p1, size_type count1, const_pointer p2, size_type count2) const
 	{
 		return base_class::compare(p1 - constData(), count1, p2, count2);
 	}
 
-//	bool find (const_pointer s, size_type pos, size_type count, size_type & result) const
-//	{
-//		result = base_class::find(s, pos, count);
-//		return result == base_class::npos ? false : true;
-//	}
+	bool find (const_pointer s, size_type pos, size_type count, size_type & result) const
+	{
+		result = base_class::find(s, pos, count);
+		return result == base_class::npos ? false : true;
+	}
 
 	void clear ()
 	{
 		base_class::clear();
 	}
-
-//public: // static
-//	static DLL_API const_pointer   increment  (const_pointer start, difference_type n, size_type * invalidCodeUnits = nullptr);
-//	static DLL_API const_pointer   decrement  (const_pointer start, difference_type n, size_t * invalidCodeUnits = nullptr);
-//	static DLL_API size_type       length     (const_pointer from, const_pointer to, size_type * invalidCodeUnits = nullptr);
-//	static DLL_API size_type       size       (const_pointer start, difference_type nchars, size_type * invalidCodeUnits = nullptr);
-//	static DLL_API difference_type difference (const_pointer from, const_pointer to, size_type * invalidCodeUnits = nullptr);
 };
 
 } // pfs
