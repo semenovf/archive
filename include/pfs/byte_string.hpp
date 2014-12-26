@@ -10,8 +10,8 @@
 #include <pfs/pimpl.hpp>
 #include <pfs/bits/iterator.hpp>
 #include <pfs/endian.hpp>
-//#include <pfs/bits/byte_string_impl.hpp>
-//#include <ostream>
+#include <pfs/bits/byte_string_impl.hpp>
+#include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC
@@ -28,9 +28,6 @@ class byte_string_impl;
 
 class DLL_API byte_string : public nullable<byte_string_impl>
 {
-//	friend class utf8string_impl;
-//	friend class utf8string_ptr;
-
 protected:
 	typedef byte_string_impl     impl_class;
 	typedef nullable<impl_class> base_class;
@@ -38,10 +35,11 @@ protected:
 
 public:
 	typedef byte_t              value_type;
-	typedef byte_t *            pointer;
-	typedef const byte_t *      const_pointer;
 	typedef size_t              size_type;
-//	typedef impl_class::difference_type difference_type;
+	typedef ptrdiff_t           difference_type;
+
+	typedef byte_string_ptr<self_class>       pointer;
+	typedef byte_string_ptr<const self_class> const_pointer;
 
 	typedef pfs::reference<self_class>                    reference;
 	typedef pfs::reference<const self_class>              const_reference;
@@ -52,7 +50,7 @@ public:
 
 	typedef value_type char_type;
 
-//	typedef impl_class::const_pointer const_data_pointer;
+	typedef const byte_t * const_data_pointer;
 
 public: // static
 	static const char TerminatorChar  = '\0';
@@ -62,7 +60,7 @@ public: // static
 public:
 	byte_string () : base_class() {}
 	explicit byte_string (const char * str);
-	byte_string (const_pointer bytes, size_type n);
+	byte_string (const_data_pointer bytes, size_type n);
 	byte_string (const char * str, size_type n);
 	byte_string (size_t count, byte_t ch);
 	byte_string (size_t count, char ch);
@@ -79,12 +77,12 @@ public:
 	iterator erase (const_iterator pos) { return erase(pos, pos + 1); }
 	iterator erase (const_iterator first, const_iterator last);
 
-    iterator begin ()                       { return iterator(this, pointer(*this, 0)); }
-    iterator end   ()                       { return iterator(this, pointer(*this, size())); }
+	iterator begin ()                       { return iterator(this, pointer(this, 0)); }
+	iterator end   ()                       { return iterator(this, pointer(this, size())); }
     const_iterator begin () const           { return cbegin(); }
     const_iterator end   () const           { return cend(); }
-    const_iterator cbegin() const           { return const_iterator(this, const_pointer(*this, 0)); }
-    const_iterator cend  () const           { return const_iterator(this, const_pointer(*this, size())); }
+	const_iterator cbegin() const           { return const_iterator(this, const_pointer(this, 0)); }
+	const_iterator cend  () const           { return const_iterator(this, const_pointer(this, size())); }
     reverse_iterator rbegin  ()             { return reverse_iterator(end()); }
     reverse_iterator rend    ()             { return reverse_iterator(begin()); }
     const_reverse_iterator rbegin  () const { return crbegin(); }
@@ -92,15 +90,20 @@ public:
     const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
     const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
 
-    const_pointer constData () const;
-    const_pointer data () const;
+    const_data_pointer constData () const;
+    const_data_pointer data () const;
     const char   * c_str () const;
 
-#ifdef __COMMENT__
     value_type valueAt (size_type index) const { return at(index); }
-    reference at (size_type index) const { pointer p(*const_cast<self_class *>(this), 0); p += index; return p.ref(); }
+    reference at (size_type index) const
+    {
+    	pointer p(const_cast<self_class *>(this), 0);
+    	p += index;
+    	return p.ref();
+    }
     reference operator [] (size_type index) const { return at(index); }
 
+#ifdef __COMMENT__
     // Non-lexical find
     iterator find (const mbcs_string & str, const_iterator pos) const;
 
@@ -144,10 +147,10 @@ public:
     size_type capacity() const;
     size_type max_size() const;
 
-    int compare (size_type pos1, size_type count1, const_pointer bytes, size_type count2) const;
+    int compare (size_type pos1, size_type count1, const_data_pointer bytes, size_type count2) const;
     int compare (size_type pos1, size_type count1, const char * s, size_type count2) const;
     int compare (size_type pos1, size_type count1, const byte_string & s, size_type pos2, size_type count2) const;
-    int compare (const_pointer bytes, size_type count2) const;
+    int compare (const_data_pointer bytes, size_type count2) const;
     int compare (size_type pos1, size_type count1, const char * s) const;
 
     int compare (size_type pos1, size_type count1, const byte_string & s) const
@@ -170,10 +173,10 @@ public:
     	return compare(0, this->length(), s);
     }
 
-    void push_back (value_type ch)
-    {
-    	append(size_type(1), ch);
-    }
+//    void push_back (value_type ch)
+//    {
+//    	append(size_type(1), ch);
+//    }
 
     void pop_back ()
     {
@@ -448,7 +451,7 @@ inline std::ostream & operator << (std::ostream & os, const byte_string & o)
 
 } // pfs
 
-//#include <pfs/bits/mbcs_string_impl_inc.hpp>
+#include <pfs/bits/byte_string_impl_inc.hpp>
 //#include <pfs/bits/mbcs_string_inc.hpp>
 
 #ifdef PFS_CC_MSVC

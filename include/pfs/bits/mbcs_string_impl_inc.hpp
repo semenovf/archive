@@ -10,7 +10,7 @@
 namespace pfs {
 
 template <typename _CodeUnitT, typename Holder>
-reference<Holder> mbcs_string_ptr<_CodeUnitT, Holder>::ref () const
+inline reference<Holder> mbcs_string_ptr<_CodeUnitT, Holder>::ref () const
 {
 	return reference<Holder>(*_holder, *this);
 }

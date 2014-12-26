@@ -77,6 +77,82 @@ if (sizeof(long_t) == 4) {
 #endif
 }
 
+void test_erase ()
+{
+	{
+		pfs::byte_string sample("ABCDEFGHIJKLMabcdefghijklm");
+		pfs::byte_string s;
+
+		s = sample;
+		TEST_OK(strcmp(s.erase(0, 0).c_str(), "ABCDEFGHIJKLMabcdefghijklm") == 0);
+
+		s = sample;
+		TEST_OK(strcmp(s.erase(0, 1).c_str(), "BCDEFGHIJKLMabcdefghijklm") == 0);
+
+		s = sample;
+		TEST_OK(strcmp(s.erase(0, 5).c_str(), "FGHIJKLMabcdefghijklm") == 0);
+
+		s = sample;
+		TEST_OK(strcmp(s.erase(13, 5).c_str(), "ABCDEFGHIJKLMfghijklm") == 0);
+
+		s = sample;
+		TEST_OK(strcmp(s.erase(100, 5).c_str(), "ABCDEFGHIJKLMabcdefghijklm") == 0);
+
+		s = sample;
+		TEST_OK(strcmp(s.erase(13, 100).c_str(), "ABCDEFGHIJKLM") == 0);
+
+		s = sample;
+		TEST_OK(strcmp(s.erase(0, 100).c_str(), "") == 0);
+	}
+
+	{
+		pfs::byte_string sample("ABCDEFGHIJKLMabcdefghijklm");
+		pfs::byte_string s;
+
+		s = sample;
+		s.erase(s.cbegin(), s.cbegin());
+		TEST_OK(strcmp(s.c_str(), "ABCDEFGHIJKLMabcdefghijklm") == 0);
+
+		s = sample;
+		s.erase(s.cbegin(), s.cbegin() + 1);
+		TEST_OK(strcmp(s.c_str(), "BCDEFGHIJKLMabcdefghijklm") == 0);
+
+		s = sample;
+		s.erase(s.cbegin(), s.cbegin() + 5);
+		TEST_OK(strcmp(s.c_str(), "FGHIJKLMabcdefghijklm") == 0);
+
+		s = sample;
+		s.erase(s.cbegin() + 13, s.cbegin() + 18);
+		TEST_OK(strcmp(s.c_str(), "ABCDEFGHIJKLMfghijklm") == 0);
+
+		s = sample;
+		s.erase(s.cbegin(), s.cend());
+		TEST_OK(strcmp(s.c_str(), "") == 0);
+	}
+}
+
+
+void test_at ()
+{
+	pfs::byte_string s("ABCDEFGHIJKLMabcdefghijklm");
+	bool ok = true;
+	byte_t bytes[] = {
+		  0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D
+		, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D
+	};
+
+	TEST_OK(sizeof(bytes)/sizeof(bytes[0]) == s.length());
+	for (size_t i = 0; i < s.length(); ++i) {
+		if (s.valueAt(i) != bytes[i]) {
+			ok = false;
+			break;
+		}
+	}
+
+	TEST_OK2(ok, "pfs::byte_string(\"ABCDEFGHIJKLMabcdefghijklm\") equals to array of bytes");
+}
+
+
 #ifdef __COMMENT__
 
 void test_append ()
@@ -180,7 +256,9 @@ int main(int argc, char *argv[])
 	BEGIN_TESTS(ntests);
 
 	test_constructors();
+	test_at();
 //	test_append();
+	test_erase();
 	test_convert_to_bytes();
 //	test_read_number();
 //	test_convert_number();

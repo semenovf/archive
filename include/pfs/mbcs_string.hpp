@@ -40,10 +40,11 @@ protected:
 
 public:
 	typedef ucchar value_type; // Unicode character
+	typedef typename impl_class::size_type                size_type;
+	typedef typename impl_class::difference_type          difference_type;
+
 	typedef mbcs_string_ptr<_CodeUnitT, self_class>       pointer;
 	typedef mbcs_string_ptr<_CodeUnitT, const self_class> const_pointer;
-	typedef typename impl_class::size_type            size_type;
-	typedef typename impl_class::difference_type      difference_type;
 
 	typedef pfs::reference<self_class>                    reference;
 	typedef pfs::reference<const self_class>              const_reference;
