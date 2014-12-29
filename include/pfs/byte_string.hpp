@@ -173,10 +173,10 @@ public:
     	return compare(0, this->length(), s);
     }
 
-//    void push_back (value_type ch)
-//    {
-//    	append(size_type(1), ch);
-//    }
+    void push_back (value_type ch)
+    {
+    	append(size_type(1), ch);
+    }
 
     void pop_back ()
     {
@@ -184,7 +184,6 @@ public:
     		erase(length() - 1);
     }
 
-#ifdef __COMMENT__
     mbcs_string & append (const mbcs_string & str, size_type index_str, size_type count)
     {
     	return insert(this->length(), str, index_str, count);
@@ -275,6 +274,7 @@ public:
     	return insert(pos, first, last, mbcs_string_type_trait<InputIt>());
     }
 
+#ifdef __COMMENT__
     mbcs_string & replace (size_type pos1, size_type count1, const mbcs_string & str, size_type pos2, size_type count2);
 
     mbcs_string & replace (size_type pos, size_type count, const mbcs_string & str)
