@@ -154,6 +154,7 @@ public:
 	byte_string_ptr & operator += (difference_type n)
 	{
 		_off += n;
+		PFS_ASSERT(_off <= _holder->size());
 		return *this;
 	}
 

@@ -153,6 +153,57 @@ void test_at ()
 }
 
 
+void test_insert ()
+{
+	pfs::byte_string s;
+	pfs::byte_string s1("Hello");
+	pfs::byte_string s2("+++World!+++");
+	pfs::byte_string s3(", ");
+
+	s.insert(0, s1, 0, s1.length());
+	TEST_OK(s.size() == s1.size());
+	TEST_OK(s.length() == s1.length());
+	TEST_OK(strcmp(s.c_str(), s1.c_str()) == 0);
+	TEST_OK(strcmp(s.c_str(), "Hello") == 0);
+
+	s.insert(5, s2, 3, 6);
+	TEST_OK(strcmp(s.c_str(), "HelloWorld!") == 0);
+
+	s.insert(5, s3, 0, s3.length());
+	TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
+}
+
+void test_append ()
+{
+	{
+		const char * sample = "Hello, World!";
+		pfs::byte_string s;
+		pfs::byte_string s1("Hello");
+		pfs::byte_string s2(", ");
+		pfs::byte_string s3("World!");
+
+		s.append(s1).append(s2).append(s3);
+
+		TEST_OK(s.size() == strlen(sample));
+		TEST_OK(s.length() == s1.length() + s2.length() + s3.length());
+		TEST_OK(strcmp(s.c_str(), sample) == 0);
+	}
+
+	{
+		pfs::byte_string s;
+		s += pfs::byte_string("Hello");
+		s += ',';
+		s += ' ';
+		s += "World!";
+
+		TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
+		TEST_OK(s.size() == 13);
+		TEST_OK(s.length() == 13);
+	}
+}
+
+
+
 #ifdef __COMMENT__
 
 void test_append ()
@@ -260,6 +311,8 @@ int main(int argc, char *argv[])
 //	test_append();
 	test_erase();
 	test_convert_to_bytes();
+	test_insert();
+	test_append();
 //	test_read_number();
 //	test_convert_number();
 //	test_base64();

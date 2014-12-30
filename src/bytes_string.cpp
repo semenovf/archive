@@ -197,4 +197,30 @@ int byte_string::compare (size_type pos, size_type count, const char * s) const
 	return compare(pos, count, reinterpret_cast<const_data_pointer>(s), strlen(s));
 }
 
+
+byte_string & byte_string::insert (size_type index, const byte_string & str, size_type index_str, size_type count)
+{
+	if (str.length() == 0)
+		return *this;
+
+	base_class::detach();
+	PFS_ASSERT(index <= length());
+	PFS_ASSERT(index_str <= str.length());
+
+	impl_class * d = base_class::cast();
+
+	// Append
+	if (index == this->length() && index_str == 0 && count == str.length()) {
+		d->append(str.constData(), str.size());
+		return *this;
+	}
+
+	if (index_str + count > str.length())
+		count = str.length() - index_str;
+
+	d->insert(index, str.constData() + index_str, count);
+
+	return *this;
+}
+
 }

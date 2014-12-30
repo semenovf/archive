@@ -173,10 +173,10 @@ public:
     	return compare(0, this->length(), s);
     }
 
-    void push_back (value_type ch)
-    {
-    	append(size_type(1), ch);
-    }
+//    void push_back (value_type ch)
+//    {
+//    	append(size_type(1), ch);
+//    }
 
     void pop_back ()
     {
@@ -184,95 +184,105 @@ public:
     		erase(length() - 1);
     }
 
-    mbcs_string & append (const mbcs_string & str, size_type index_str, size_type count)
+    byte_string & append (const byte_string & str, size_type index_str, size_type count)
     {
     	return insert(this->length(), str, index_str, count);
     }
 
-    mbcs_string & append (size_type count, char latin1)
+    byte_string & append (size_type count, char ch)
     {
-    	return insert(this->length(), count, latin1);
+    	return insert(this->length(), count, ch);
     }
 
-    mbcs_string & append (size_type count, ucchar uc)
+    byte_string & append (size_type count, byte_t byte)
     {
-    	return insert(this->length(), count, uc);
+    	return insert(this->length(), count, byte);
     }
 
-    mbcs_string & append (const char * latin1)
+    byte_string & append (const char * s)
     {
-    	return insert(this->length(), latin1);
+    	return insert(this->length(), s);
     }
 
-    mbcs_string & append (const char * latin1, size_type n)
+    byte_string & append (const char * s, size_type n)
     {
-    	return insert(this->length(), latin1, n);
+    	return insert(this->length(), s, n);
     }
 
-    mbcs_string & append (const mbcs_string & str)
+    byte_string & append (const_data_pointer bytes, size_type n)
+    {
+    	return insert(this->length(), bytes, n);
+    }
+
+    byte_string & append (const byte_string & str)
     {
     	return insert(this->length(), str);
     }
 
-    template<class InputIt>
-    mbcs_string & append (InputIt first, InputIt last);
+//    template<class InputIt>
+//    byte_string & append (InputIt first, InputIt last);
 
-    mbcs_string & insert (size_type index, const mbcs_string & str, size_type index_str, size_type count);
+    byte_string & insert (size_type index, const byte_string & str, size_type index_str, size_type count);
 
-    mbcs_string & insert (size_type index, size_type count, char latin1)
+    byte_string & insert (size_type index, size_type count, char ch)
     {
-    	return insert(index, self_class(count, latin1));
+    	return insert(index, byte_string(count, ch));
     }
 
-    mbcs_string & insert (size_type index, size_type count, ucchar uc)
+    byte_string & insert (size_type index, size_type count, byte_t byte)
     {
-    	return insert(index, mbcs_string(count, uc));
+    	return insert(index, byte_string(count, byte));
     }
 
-    mbcs_string & insert (size_type index, const char * latin1)
+    byte_string & insert (size_type index, const char * s)
     {
-    	return insert(index, mbcs_string(latin1));
+    	return insert(index, byte_string(s));
     }
 
-    mbcs_string & insert (size_type index, const char * latin1, size_type n)
+    byte_string & insert (size_type index, const char * s, size_type n)
     {
-    	return insert(index, mbcs_string(latin1, n));
+    	return insert(index, byte_string(s, n));
     }
 
-    mbcs_string & insert (size_type index, const mbcs_string & str)
+    byte_string & insert (size_type index, const_data_pointer bytes, size_type n)
+    {
+    	return insert(index, byte_string(bytes, n));
+    }
+
+    byte_string & insert (size_type index, const byte_string & str)
     {
     	return insert(index, str, 0, str.length());
     }
 
-    iterator insert (const_iterator pos, char latin1)
-    {
-    	mbcs_string s(1, latin1);
-    	return insert(pos, s.cbegin(), s.cend());
-    }
-
-    iterator insert (const_iterator pos, ucchar ch)
-    {
-    	mbcs_string s(1, ch);
-    	return insert(pos, s.cbegin(), s.cend());
-    }
-
-    iterator insert (const_iterator pos, size_type count, char latin1)
-    {
-    	mbcs_string s(count, latin1);
-    	return insert(pos, s.cbegin(), s.cend());
-    }
-
-    iterator insert (const_iterator pos, size_type count, ucchar ch)
-    {
-    	mbcs_string s(count, ch);
-    	return insert(pos, s.cbegin(), s.cend());
-    }
-
-    template<class InputIt>
-    iterator insert (const_iterator pos, InputIt first, InputIt last)
-    {
-    	return insert(pos, first, last, mbcs_string_type_trait<InputIt>());
-    }
+//    iterator insert (const_iterator pos, char latin1)
+//    {
+//    	mbcs_string s(1, latin1);
+//    	return insert(pos, s.cbegin(), s.cend());
+//    }
+//
+//    iterator insert (const_iterator pos, ucchar ch)
+//    {
+//    	mbcs_string s(1, ch);
+//    	return insert(pos, s.cbegin(), s.cend());
+//    }
+//
+//    iterator insert (const_iterator pos, size_type count, char latin1)
+//    {
+//    	mbcs_string s(count, latin1);
+//    	return insert(pos, s.cbegin(), s.cend());
+//    }
+//
+//    iterator insert (const_iterator pos, size_type count, ucchar ch)
+//    {
+//    	mbcs_string s(count, ch);
+//    	return insert(pos, s.cbegin(), s.cend());
+//    }
+//
+//    template<class InputIt>
+//    iterator insert (const_iterator pos, InputIt first, InputIt last)
+//    {
+//    	return insert(pos, first, last, mbcs_string_type_trait<InputIt>());
+//    }
 
 #ifdef __COMMENT__
     mbcs_string & replace (size_type pos1, size_type count1, const mbcs_string & str, size_type pos2, size_type count2);
@@ -305,11 +315,6 @@ public:
 
 	mbcs_string substr (size_type index, size_type count) const;
 
-	mbcs_string & operator += (const mbcs_string & other) { return append(other); }
-	mbcs_string & operator += (const char * latin1) { return append(mbcs_string(latin1)); }
-	mbcs_string & operator += (const ucchar & ch) { return append(mbcs_string(1, ch)); }
-	mbcs_string & operator += (char latin1) { return append(mbcs_string(1, latin1)); }
-
 //	template <typename _IntT>
 //	mbcs_string & setNumber (_IntT n, int base = 10, bool uppercase = false);
 
@@ -326,6 +331,12 @@ public:
 //	utf8string & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
 //	utf8string & setNumber (real_t n, char f = 'g', int prec = 6);
 #endif
+
+	byte_string & operator += (const byte_string & other) { return append(other); }
+	byte_string & operator += (const char * s) { return append(s); }
+	byte_string & operator += (char ch) { return append(1, ch); }
+	byte_string & operator += (byte_t byte) { return append(1, byte); }
+
 
 private:
 #ifdef __COMMENT__
