@@ -102,41 +102,41 @@ public:
     reference at (size_type index) const { pointer p(*const_cast<self_class *>(this), 0); p += index; return p.ref(); }
     reference operator [] (size_type index) const { return at(index); }
 
-    iterator find (const mbcs_string & str, const_iterator pos) const;
+    iterator find (const_iterator pos, const mbcs_string & str) const;
 
     iterator find (const mbcs_string & str) const
     {
-    	return find(str, cbegin());
+    	return find(cbegin(), str);
     }
 
-    iterator find (const char * latin1, const_iterator pos, size_type count) const
+    iterator find (const_iterator pos, const char * latin1, size_type count) const
     {
-    	return find(mbcs_string::fromLatin1(latin1, count), pos);
+    	return find(pos, mbcs_string::fromLatin1(latin1, count));
     }
 
-    iterator find (const char * latin1, const_iterator pos) const
+    iterator find (const_iterator pos, const char * latin1) const
     {
-    	return find(mbcs_string::fromLatin1(latin1, strlen(latin1)), pos);
+    	return find(pos, mbcs_string::fromLatin1(latin1, strlen(latin1)));
     }
 
-    iterator find (char latin1, const_iterator pos) const
+    iterator find (const_iterator pos, char latin1) const
     {
-    	return find(& latin1, pos, 1);
+    	return find(pos, & latin1, 1);
     }
 
     iterator find (char latin1) const
     {
-    	return find(latin1, cbegin());
+    	return find(cbegin(), latin1);
     }
 
-    iterator find (ucchar ch, const_iterator pos) const
+    iterator find (const_iterator pos, ucchar ch) const
     {
-    	return find(mbcs_string(1, ch), pos);
+    	return find(pos, mbcs_string(1, ch));
     }
 
     iterator find (ucchar ch) const
     {
-    	return find(ch, cbegin());
+    	return find(cbegin(), ch);
     }
 
     // Size in bytes
@@ -295,7 +295,7 @@ public:
     	return replace(first, last, first2, last2, mbcs_string_type_trait<InputIt>());
     }
 
-    mbcs_string & replace ( size_type pos, size_type count, size_type count2, ucchar ch )
+    mbcs_string & replace (size_type pos, size_type count, size_type count2, ucchar ch)
     {
     	return replace (pos, count, mbcs_string(count2, ch));
     }

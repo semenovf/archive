@@ -202,19 +202,66 @@ void test_append ()
 	}
 }
 
+void test_find ()
+{
+	pfs::byte_string s("Hello, World!");
+
+	TEST_OK(s.find("Hello") == s.begin());
+	TEST_OK(s.find("World") != s.begin());
+	TEST_OK(s.find("World") == s.begin() + 7);
+	TEST_OK(s.find("Hallo") == s.end());
+}
+
+void test_replace ()
+{
+	{
+		pfs::byte_string s("Hallo Welt!");
+		const char * s1 = "Hello, World!";
+
+		s.replace(0, 5, s1, 6);
+		TEST_OK(s.length() == 12);
+		TEST_OK(strcmp(s.c_str(), "Hello, Welt!") == 0);
+
+		s.replace(7, 4, s1 + 7, 5);
+		TEST_OK(s.length() == 13);
+		TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
+
+		// replace full string with empty string - get empty string
+		s.replace(0, s.length(), "", 0);
+		TEST_OK(strcmp(s.c_str(), "") == 0);
+	}
+
+	{
+		pfs::byte_string s("Hallo Welt!");
+		pfs::byte_string s1("Hello, World!");
+
+		s.replace(s.cbegin(), s.cbegin() + 5, s1.cbegin(), s1.cbegin() + 6);
+		TEST_OK(s.length() == 12);
+		TEST_OK(strcmp(s.c_str(), "Hello, Welt!") == 0);
+
+		s.replace(s.cbegin() + 7, s.cbegin() + 11, s1.cbegin() + 7, s1.cbegin() + 12);
+		TEST_OK(s.length() == 13);
+		TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
+
+		// replace full string with empty string - get empty string
+		pfs::byte_string nil;
+		s.replace(s.cbegin(), s.cend(), nil.cbegin(), nil.cend());
+		TEST_OK(strcmp(s.c_str(), "") == 0);
+	}
+}
+
+void test_substr ()
+{
+	pfs::byte_string s(("ABCDEFabcdef"));
+	TEST_OK(s.substr(0,0).isEmpty());
+	TEST_OK(s.substr(s.length(),100).isEmpty());
+	TEST_OK(strcmp(s.substr(0,5).c_str(), "ABCDE") == 0);
+	TEST_OK(strcmp(s.substr(6,6).c_str(), "abcdef") == 0);
+	TEST_OK(strcmp(s.substr(6,s.length() + 1).c_str(), "abcdef") == 0);
+}
 
 
 #ifdef __COMMENT__
-
-void test_append ()
-{
-	pfs::byte_string ba("One");
-	ba.append("Two");
-
-	TEST_OK(ba.length() == 6);
-	TEST_OK(strlen(ba.constData()) == ba.size());
-	TEST_OK(ba == "OneTwo");
-}
 
 void test_read_number ()
 {
@@ -300,7 +347,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    int ntests = 54;
+    int ntests = 69;
 #ifdef HAVE_LONGLONG
     ntests += 12;
 #endif
@@ -308,11 +355,13 @@ int main(int argc, char *argv[])
 
 	test_constructors();
 	test_at();
-//	test_append();
 	test_erase();
 	test_convert_to_bytes();
 	test_insert();
 	test_append();
+	test_find();
+	test_replace();
+	test_substr();
 //	test_read_number();
 //	test_convert_number();
 //	test_base64();

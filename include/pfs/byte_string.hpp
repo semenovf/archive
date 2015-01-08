@@ -64,7 +64,7 @@ public:
 	byte_string (const char * str, size_type n);
 	byte_string (size_t count, byte_t ch);
 	byte_string (size_t count, char ch);
-//	mbcs_string (const_iterator first, const_iterator last);
+//	byte_string (const_iterator first, const_iterator last);
 
 	virtual ~byte_string () {}
 
@@ -103,45 +103,42 @@ public:
     }
     reference operator [] (size_type index) const { return at(index); }
 
-#ifdef __COMMENT__
-    // Non-lexical find
-    iterator find (const mbcs_string & str, const_iterator pos) const;
+    iterator find (const_iterator pos, const byte_string & str) const;
 
-    iterator find (const mbcs_string & str) const
+    iterator find (const byte_string & str) const
     {
-    	return find(str, cbegin());
+    	return find(cbegin(), str);
     }
 
-    iterator find (const char * latin1, const_iterator pos, size_type count) const
+    iterator find (const_iterator pos, const char * s, size_type count) const;
+    iterator find (const_iterator pos, const char * s) const;
+    iterator find (const char * s) const
     {
-    	return find(mbcs_string::fromLatin1(latin1, count), pos);
+    	return find(cbegin(), s);
     }
 
-    iterator find (const char * latin1, const_iterator pos) const
+    iterator find (const_iterator pos, const_data_pointer bytes, size_type count) const;
+
+    iterator find (const_iterator pos, char ch) const
     {
-    	return find(mbcs_string::fromLatin1(latin1, strlen(latin1)), pos);
+    	return find(pos, & ch, 1);
     }
 
-    iterator find (char latin1, const_iterator pos) const
+    iterator find (char ch) const
     {
-    	return find(& latin1, pos, 1);
+    	return find(cbegin(), & ch, 1);
     }
 
-    iterator find (char latin1) const
+    iterator find (const_iterator pos, byte_t byte) const
     {
-    	return find(latin1, cbegin());
+    	return find(pos, & byte, 1);
     }
 
-    iterator find (ucchar ch, const_iterator pos) const
+    iterator find (byte_t byte) const
     {
-    	return find(mbcs_string(1, ch), pos);
+    	return find(cbegin(), & byte, 1);
     }
 
-    iterator find (ucchar ch) const
-    {
-    	return find(ch, cbegin());
-    }
-#endif
     size_type size () const;
     size_type length () const; // Equivalent to size()
     size_type capacity() const;
@@ -173,10 +170,15 @@ public:
     	return compare(0, this->length(), s);
     }
 
-//    void push_back (value_type ch)
-//    {
-//    	append(size_type(1), ch);
-//    }
+    void push_back (char ch)
+    {
+    	append(size_type(1), ch);
+    }
+
+    void push_back (byte_t byte)
+    {
+    	append(size_type(1), byte);
+    }
 
     void pop_back ()
     {
@@ -284,36 +286,43 @@ public:
 //    	return insert(pos, first, last, mbcs_string_type_trait<InputIt>());
 //    }
 
-#ifdef __COMMENT__
-    mbcs_string & replace (size_type pos1, size_type count1, const mbcs_string & str, size_type pos2, size_type count2);
-
-    mbcs_string & replace (size_type pos, size_type count, const mbcs_string & str)
+    byte_string & replace (size_type pos1, size_type count1, const byte_string & str, size_type pos2, size_type count2);
+    byte_string & replace (size_type pos, size_type count, const byte_string & str)
     {
     	return replace(pos, count, str, 0, str.length());
     }
 
-    mbcs_string & replace (const_iterator first, const_iterator last, const mbcs_string & str)
+    byte_string & replace (size_type pos1, size_type count1, const_data_pointer bytes, size_type count2);
+    byte_string & replace (size_type pos1, size_type count1, const char * s, size_type count2)
     {
-    	return replace(first, last, str.cbegin(), str.cend(), mbcs_string_type_trait<const_iterator>());
+    	return replace(pos1, count1, reinterpret_cast<const_data_pointer>(s), count2);
+    }
+
+    byte_string & replace (size_type pos1, size_type count1, const char * s);
+
+    byte_string & replace (size_type pos, size_type count, size_type count2, byte_t byte)
+    {
+    	return replace(pos, count, byte_string(count2, byte));
+    }
+
+    byte_string & replace (size_type pos, size_type count, size_type count2, char ch)
+    {
+    	return replace(pos, count, byte_string(count2, ch));
+    }
+
+
+    byte_string & replace (const_iterator first, const_iterator last, const byte_string & str)
+    {
+    	return replace(first, last, str.cbegin(), str.cend(), extra_trait<const_iterator>());
     }
 
     template< class InputIt >
-    mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2)
+    byte_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2)
     {
-    	return replace(first, last, first2, last2, mbcs_string_type_trait<InputIt>());
+    	return replace(first, last, first2, last2, extra_trait<InputIt>());
     }
 
-    mbcs_string & replace ( size_type pos, size_type count, size_type count2, ucchar ch )
-    {
-    	return replace (pos, count, mbcs_string(count2, ch));
-    }
-
-    mbcs_string & replace (const_iterator first, const_iterator last, size_type count2, ucchar ch)
-    {
-    	return replace(first, last, mbcs_string(count2, ch));
-    }
-
-	mbcs_string substr (size_type index, size_type count) const;
+	byte_string substr (size_type index, size_type count) const;
 
 //	template <typename _IntT>
 //	mbcs_string & setNumber (_IntT n, int base = 10, bool uppercase = false);
@@ -330,26 +339,30 @@ public:
 //	utf8string & setNumber (sbyte_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
 //	utf8string & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
 //	utf8string & setNumber (real_t n, char f = 'g', int prec = 6);
-#endif
 
 	byte_string & operator += (const byte_string & other) { return append(other); }
 	byte_string & operator += (const char * s) { return append(s); }
 	byte_string & operator += (char ch) { return append(1, ch); }
 	byte_string & operator += (byte_t byte) { return append(1, byte); }
 
-
 private:
+
+	template <typename ExType>
+	struct extra_trait { typedef ExType type; };
+
 #ifdef __COMMENT__
     // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::mbcs_string’"
     template <typename InputIt>
     iterator insert (const_iterator pos, InputIt first, InputIt last, mbcs_string_type_trait<InputIt>);
     iterator insert (const_iterator pos, const_iterator first, const_iterator last, mbcs_string_type_trait<const_iterator>);
 
-    // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::mbcs_string’"
-    template <typename InputIt>
-    mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, mbcs_string_type_trait<InputIt>);
-    mbcs_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, mbcs_string_type_trait<const_iterator>);
 #endif
+
+    // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::byte_string’"
+    template <typename InputIt>
+    byte_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, extra_trait<InputIt>);
+    byte_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, extra_trait<const_iterator>);
+
 public:
 	template <typename T>
 	static byte_string toBytes (const T & v, endian::type_enum order = endian::nativeOrder());
@@ -373,21 +386,20 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (cons
 
 	return iterator(this, pointer(*this, index + 1));
 }
+#endif // __COMMENT__
 
-
-template <typename _CodeUnitT>
 template <typename InputIt>
-mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
+byte_string & byte_string::replace (
 		  const_iterator first
 		, const_iterator last
 		, InputIt first2
 		, InputIt last2
-		, mbcs_string_type_trait<InputIt>)
+		, extra_trait<InputIt>)
 {
 	PFS_ASSERT(first.holder() == this);
 	PFS_ASSERT(last.holder() == this);
 
-	mbcs_string<_CodeUnitT> s;
+	byte_string s;
 
 	for (InputIt it = first2; it < last2; ++it) {
 		s.append(*it);
@@ -395,7 +407,6 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 
 	return replace(first, last, s);
 }
-#endif // __COMMENT__
 
 
 template <typename T>

@@ -84,9 +84,19 @@ public:
 		return base_class::compare(p1 - constData(), count1, p2, count2);
 	}
 
-	bool find (const_pointer s, size_type pos, size_type count, size_type & result) const
+	/**
+	 * @brief Finds the first substring equal to the first @c count characters
+	 * of the character string pointed to by @c s. @c s can include null characters.
+	 *
+	 * @param index  position at which to start the search
+	 * @param s      string to search for
+	 * @param count  length of substring to search for
+	 * @param result position of the first character of the found substring or npos if no such substring is found
+	 * @return @c true if substring found, false if otherwise
+	 */
+	bool find (size_type index, const_pointer s, size_type count, size_type & result) const
 	{
-		result = base_class::find(s, pos, count);
+		result = base_class::find(s, index, count);
 		return result == base_class::npos ? false : true;
 	}
 

@@ -223,4 +223,106 @@ byte_string & byte_string::insert (size_type index, const byte_string & str, siz
 	return *this;
 }
 
+byte_string::iterator byte_string::find (const_iterator pos, const byte_string & str) const
+{
+	return find(pos, str.c_str(), str.length());
 }
+
+byte_string::iterator byte_string::find (const_iterator pos, const char * s, size_type count) const
+{
+	return find(pos, reinterpret_cast<const_data_pointer>(s), count);
+}
+
+byte_string::iterator byte_string::find (const_iterator pos, const char * s) const
+{
+	return find(pos, s, strlen(s));
+}
+
+byte_string::iterator byte_string::find (const_iterator pos, const_data_pointer bytes, size_type count) const
+{
+	PFS_ASSERT(pos >= cbegin());
+	PFS_ASSERT(pos <= cend());
+
+	size_type r = 0;
+	size_type index = pos.base().index();
+
+	byte_string * self = const_cast<byte_string *>(this);
+
+	return base_class::cast()->find(index, bytes, count, r)
+		? iterator(self, pointer(self, r))
+		: iterator(self, pointer(self, size())); // end()
+}
+
+byte_string & byte_string::replace (size_type pos1, size_type count1, const byte_string & str, size_type pos2, size_type count2)
+{
+	PFS_ASSERT(pos2 <= str.length());
+	PFS_ASSERT(pos2 + count2 <= str.length());
+	return replace(pos1, count1, str.constData() + pos2, count2);
+}
+
+byte_string & byte_string::replace (size_type pos1, size_type count1, const_data_pointer bytes, size_type count2)
+{
+	PFS_ASSERT(pos1 <= this->length());
+	PFS_ASSERT(pos1 + count1 <= this->length());
+
+	base_class::detach();
+
+	if (this->isEmpty()) {
+		// Target is empty, assign to replacement string
+		byte_string r(bytes, count2);
+		this->swap(r);
+	} else {
+		base_class::cast()->replace(constData() + pos1, count1, bytes, count2);
+	}
+
+	return *this;
+}
+
+byte_string & byte_string::replace (size_type pos1, size_type count1, const char * s)
+{
+	return replace(pos1, count1, s, strlen(s));
+}
+
+byte_string & byte_string::replace (
+		  const_iterator first
+		, const_iterator last
+		, const_iterator first2
+		, const_iterator last2
+		, extra_trait<const_iterator>)
+{
+	PFS_ASSERT(first.holder() == this);
+	PFS_ASSERT(last.holder() == this);
+	PFS_ASSERT(first2.holder() == last2.holder());
+	PFS_ASSERT(first <= last);
+	PFS_ASSERT(first2 <= last2);
+
+	const_data_pointer ptr1_begin = first.base().base();
+	const_data_pointer ptr1_end   = last.base().base();
+
+	const_data_pointer ptr2_begin = first2.base().base();
+	const_data_pointer ptr2_end   = last2.base().base();
+
+	base_class::detach();
+
+	impl_class * d = base_class::cast();
+	d->replace(ptr1_begin, ptr1_end - ptr1_begin, ptr2_begin, ptr2_end - ptr2_begin);
+
+	return *this;
+}
+
+byte_string byte_string::substr (size_type index, size_type count) const
+{
+	PFS_ASSERT(index <= length());
+
+	byte_string r;
+
+	if (index < length()) {
+		if (index + count > length()) {
+			count = length() - index;
+		}
+		r.append (*this, index, count);
+	}
+	return r;
+}
+
+} // pfs

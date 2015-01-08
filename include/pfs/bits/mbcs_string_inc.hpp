@@ -1,5 +1,5 @@
 /*
- * mbcs_string_cpp.hpp.cpp
+ * mbcs_string_inc.hpp
  *
  *  Created on: 13 нояб. 2014 г.
  *      Author: wladt
@@ -212,7 +212,7 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::erase (const
 	PFS_ASSERT(last <= cend());
 
 	if (isEmpty())
-		iterator(this, pointer(*this, 0));
+		return iterator(this, pointer(*this, 0));
 
 	size_type pos_begin = first.base().index();
 	size_type pos_end = last.base().index();
@@ -236,6 +236,7 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::insert (size_type index, cons
 		return *this;
 
 	base_class::detach();
+
 	PFS_ASSERT(index <= length());
 	PFS_ASSERT(index_str <= str.length());
 
@@ -334,6 +335,8 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 	PFS_ASSERT(pos2 <= s.length());
 	PFS_ASSERT(pos2 + count2 <= s.length());
 
+	base_class::detach();
+
 	if (this->isEmpty()) {
 		// Target is empty, assign to replacement string
 		mbcs_string<_CodeUnitT> r(s.cbegin() + pos2, s.cbegin() + (pos2 + count2));
@@ -344,8 +347,6 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 
 		const_data_pointer ptr2_begin = impl_class::increment(s.constData(), pos2);
 		const_data_pointer ptr2_end   = impl_class::increment(ptr2_begin, count2);
-
-		base_class::detach();
 
 		impl_class * d = base_class::cast();
 		d->replace(ptr1_begin, ptr1_end - ptr1_begin, ptr2_begin, ptr2_end - ptr2_begin);
@@ -361,7 +362,8 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 
 
 template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (const_iterator first
+mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
+		  const_iterator first
 		, const_iterator last
 		, const_iterator first2
 		, const_iterator last2
@@ -396,7 +398,7 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (const_iterator first
 }
 
 template <typename _CodeUnitT>
-typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::find (const mbcs_string & str, const_iterator pos) const
+typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::find (const_iterator pos, const mbcs_string & str) const
 {
 	PFS_ASSERT(pos >= cbegin());
 	PFS_ASSERT(pos <= cend());
@@ -406,7 +408,7 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::find (const 
 
 	mbcs_string * self = const_cast<mbcs_string *>(this);
 
-	return base_class::cast()->find(str.constData(), index, str.size(), r)
+	return base_class::cast()->find(index, str.constData(), str.size(), r)
 		? iterator(self, pointer(*self, r))
 		: iterator(self, pointer(*self, size())); // end()
 }
