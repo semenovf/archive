@@ -21,11 +21,6 @@
 
 namespace pfs {
 
-//template <typename T>
-//struct mbcs_string_type_trait { typedef T type; };
-
-class byte_string_impl;
-
 class DLL_API byte_string : public nullable<byte_string_impl>
 {
 protected:
@@ -64,13 +59,12 @@ public:
 	byte_string (const char * str, size_type n);
 	byte_string (size_t count, byte_t ch);
 	byte_string (size_t count, char ch);
-//	byte_string (const_iterator first, const_iterator last);
 
 	virtual ~byte_string () {}
 
-	bool isEmpty () const;
+	bool isEmpty () const { return base_class::isNull() || size() == 0; }
 	bool empty () const { return isEmpty(); }
-	void clear ();
+	void clear () { base_class::detach(); swap(byte_string()); }
 
 	byte_string & erase (size_type index = 0) { return erase(index, 1); }
 	byte_string & erase (size_type index, size_type count);
@@ -474,7 +468,6 @@ inline std::ostream & operator << (std::ostream & os, const byte_string & o)
 } // pfs
 
 #include <pfs/bits/byte_string_impl_inc.hpp>
-//#include <pfs/bits/mbcs_string_inc.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)

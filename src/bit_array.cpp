@@ -1,77 +1,36 @@
 /**
- * @file   bitarray.cpp
+ * @file   bit_array.cpp
  * @author wladt
  * @date   Jan 24, 2013 3:00:52 PM
  *
  * @brief
  */
 
-#include "../include/pfs/bitarray.hpp"
+#include "../include/pfs/bit_array.hpp"
 
 namespace pfs {
 
-bitarray::bitarray() : _d(new bitarray::impl)
-{
-	_d.cast<impl>()->nbits = 0;
-}
-
-bitarray::bitarray(size_t size, bool value) : _d(new bitarray::impl)
+bit_array_impl::bit_array_impl (size_type size, bool value)
 {
     if (!size) {
-    	_d.cast<impl>()->nbits = 0;
-    	_d.cast<impl>()->a.realloc(0);
+    	_nbits = 0;
+    	_a.realloc(0);
         return;
     }
 
-    _d.cast<impl>()->a.alloc(size/32 + ((size % 32) ? 1 : 0));
-    _d.cast<impl>()->a.set(value ? 0xffffffff : 0);
+    _a.alloc(size/32 + ((size % 32) ? 1 : 0));
+    _a.set(value ? 0xffffffff : 0);
 
-    _d.cast<impl>()->nbits = size;
+    _nbits = size;
 }
 
-/**
- * @fn bool bitarray::at (size_t i) const
- * @brief Returns the value of the bit at index position @c i.
- *
- * @param i Index position, must be a valid index position in the bit array (i.e., 0 <= i < size()).
- * @return The value of the bit at index position @c i.
- */
-
-/**
- * @fn void bitarray::clear()
- *
- * @brief Clears the contents of the bit array and makes it empty.
- */
-
-/**
- * @fn void bitarray::clearBit (size_t i)
- *
- * @brief Sets the bit at index position i to 0.
- *
- * @param i Index position, must be a valid index position in the bit array (i.e., 0 <= i < size()).
- */
-
-/**
- * @fn size_t bitarray::count () const
- *
- * @brief same as @c bitarray::size()
- */
-
-/**
- * @fn size_t  bitarray::count (bool on) const
- *
- * @brief Returns the number of 1-bits/0-bits stored in the bit array.
- *
- * @param on Specifies what result to return.
- * @return If @c on is @c true, this function returns the number of 1-bits stored in the bit array; otherwise the number of 0-bits is returned.
- */
-size_t bitarray::count (bool on) const
+bit_array_impl::size_type bit_array_impl::count (bool on) const
 {
-    size_t r = 0;
-    size_t len = size();
+    size_type r = 0;
+    size_type len = size();
 
     // See http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-    const uint32_t *bits = _d.cast<impl>()->a.data();
+    const uint32_t * bits = _a.data();
 
     while (len >= 32) {
     	uint32_t v = *bits;
@@ -93,8 +52,125 @@ size_t bitarray::count (bool on) const
     return on ? r : size() - r;
 }
 
+void bit_array_impl::fill (bool value, size_t begin, size_t end)
+{
+    while (begin < end && (begin & 31))
+        setBit(begin++, value);
+
+    size_t len = end - begin;
+
+    if (!len)
+    	return;
+
+    size_t sz = len & ~31;
+    uint32_t * c = _a.data();
+    memset(c + (begin >> 5), value ? 0xff : 0, sizeof(uint32_t) * sz);
+    begin += sz * 32;
+
+    while (begin < end)
+    	setBit(begin++, value);
+}
+
+void bit_array_impl::resize (size_type new_size)
+{
+    if (!new_size) {
+    	_nbits = 0;
+    } else {
+    	if (new_size > size()) {
+    		size_t old_nchunks = _a.size();
+    		size_t new_nchunks = new_size/32 + ((new_size % 32) ? 1 : 0);
+
+    		_a.realloc(new_nchunks);
+    		if (new_nchunks > old_nchunks) {
+    			_a.set(0, old_nchunks + 1);
+    		}
+
+    		if (_nbits % 32) {
+    			_a[old_nchunks] &= (1 << (_nbits % 32)) - 1;
+    		}
+    	}
+    	_nbits = new_size;
+    }
+}
+
+bit_array::bit_array (size_t size, bool value)
+	: base_class(new bit_array_impl(size, value))
+{}
+
 /**
- * @fn bool bitarray::fill (bool value)
+ * @brief Sets the bit at index position i to 0.
+ *
+ * @param i Index position, must be a valid index position in the bit array (i.e., 0 <= i < size()).
+ */
+void bit_array::clearBit (size_type i)
+{
+	PFS_ASSERT(i < size());
+	base_class::detach();
+	base_class::cast()->clearBit(i);
+}
+
+void bit_array::setBit (size_type i)
+{
+	PFS_ASSERT(i < size());
+	base_class::detach();
+	base_class::cast()->setBit(i);
+}
+
+void bit_array::setBit (size_type i, bool value)
+{
+	PFS_ASSERT(i < size());
+	base_class::detach();
+	base_class::cast()->setBit(i, value);
+}
+
+bool bit_array::testBit (size_type i) const
+{
+	PFS_ASSERT(i < size());
+	return base_class::cast()->testBit(i);
+}
+
+bool bit_array::toggleBit (size_type i)
+{
+	PFS_ASSERT(i < size());
+	base_class::detach();
+	return base_class::cast()->toggleBit(i);
+}
+
+/**
+ * @fn bool bit_array::at (size_t i) const
+ * @brief Returns the value of the bit at index position @c i.
+ *
+ * @param i Index position, must be a valid index position in the bit array (i.e., 0 <= i < size()).
+ * @return The value of the bit at index position @c i.
+ */
+
+/**
+ * @fn void bit_array::clear()
+ *
+ * @brief Clears the contents of the bit array and makes it empty.
+ */
+
+/**
+ * @fn size_t bit_array::count () const
+ *
+ * @brief same as @c bit_array::size()
+ */
+
+/**
+ * @fn size_t  bit_array::count (bool on) const
+ *
+ * @brief Returns the number of 1-bits/0-bits stored in the bit array.
+ *
+ * @param on Specifies what result to return.
+ * @return If @c on is @c true, this function returns the number of 1-bits stored in the bit array; otherwise the number of 0-bits is returned.
+ */
+bit_array::size_type bit_array::count (bool on) const
+{
+	return base_class::cast()->count(on);
+}
+
+/**
+ * @fn bool bit_array::fill (bool value)
  * @brief Sets every bit in the bit array to value.
  *
  * @param value Value to set every bit.
@@ -102,7 +178,7 @@ size_t bitarray::count (bool on) const
  */
 
 /**
- * @fn bool bitarray::fill (bool value, size_t size)
+ * @fn bool bit_array::fill (bool value, size_t size)
  *
  * @brief Sets every bit in the bit array to value.
  *
@@ -115,7 +191,7 @@ size_t bitarray::count (bool on) const
  */
 
 /**
- * @fn void bitarray::fill (bool value, size_t begin, size_t end)
+ * @fn void bit_array::fill (bool value, size_t begin, size_t end)
  *
  * @brief Sets bits at index positions @c begin up to and excluding @c end to @c value.
  *
@@ -123,31 +199,15 @@ size_t bitarray::count (bool on) const
  * @param begin Begin position, must be a valid index position in the bit array (i.e., 0 <= begin <= size()).
  * @param end End position, must be a valid index position in the bit array (i.e., 0 <= end <= size()).
  */
-void bitarray::fill (bool value, size_t begin, size_t end)
+void bit_array::fill (bool value, size_t begin, size_t end)
 {
 	PFS_ASSERT(end >= begin);
-
-	_d.detach();
-
-    while (begin < end && (begin & 31))
-        setBit(begin++, value);
-
-    size_t len = end - begin;
-
-    if (!len)
-    	return;
-
-    size_t sz = len & ~31;
-    uint32_t *c = _d.cast<impl>()->a.data();
-    memset(c + (begin >> 5), value ? 0xff : 0, sizeof(uint32_t) * sz);
-    begin += sz * 32;
-
-    while (begin < end)
-    	setBit(begin++, value);
+	base_class::detach();
+	base_class::cast()->fill(value, begin, end);
 }
 
 /**
- * @fn bool bitarray::isEmpty () const
+ * @fn bool bit_array::isEmpty () const
  *
  * @brief Checks if bit array is empty.
  *
@@ -155,7 +215,7 @@ void bitarray::fill (bool value, size_t begin, size_t end)
  */
 
 /**
- * @fn void bitarray::resize (size_t size)
+ * @fn void bit_array::resize (size_t size)
  *
  * @brief Resizes the bit array to size bits.
  *
@@ -166,33 +226,14 @@ void bitarray::fill (bool value, size_t begin, size_t end)
  *
  * @param size New bit array size.
  */
-void bitarray::resize (size_t new_size)
+void bit_array::resize (size_type new_size)
 {
-	_d.detach();
-
-    if (!new_size) {
-    	_d.cast<impl>()->nbits = 0;
-    } else {
-    	if (new_size > size()) {
-    		array<uint32_t> *a = & _d.cast<impl>()->a;
-    		size_t old_nchunks = a->size();
-    		size_t new_nchunks = new_size/32 + ((new_size % 32) ? 1 : 0);
-
-    		a->realloc(new_nchunks);
-    		if (new_nchunks > old_nchunks) {
-    			a->set(0, old_nchunks + 1);
-    		}
-
-    		if (_d.cast<impl>()->nbits % 32) {
-    			(*a)[old_nchunks] &= (1 << (_d.cast<impl>()->nbits % 32)) - 1;
-    		}
-    	}
-    	_d.cast<impl>()->nbits = new_size;
-    }
+	base_class::detach();
+	base_class::cast()->resize(new_size);
 }
 
 /**
- * @fn void bitarray::setBit (size_t i)
+ * @fn void bit_array::setBit (size_t i)
  *
  * @brief Sets the bit at index position @c i to 1.
  *
@@ -200,7 +241,7 @@ void bitarray::resize (size_t new_size)
  */
 
 /**
- * @fn void bitarray::setBit (size_t i, bool value)
+ * @fn void bit_array::setBit (size_t i, bool value)
  *
  * @brief Sets the bit at index position @c i to value.
  *
@@ -209,7 +250,7 @@ void bitarray::resize (size_t new_size)
  */
 
 /**
- * @fn size_t bitarray::size () const
+ * @fn size_t bit_array::size () const
  *
  * @brief Returns the number of bits stored in the bit array.
  *
@@ -217,7 +258,7 @@ void bitarray::resize (size_t new_size)
  */
 
 /**
- * @fn bool bitarray::testBit (size_t i) const
+ * @fn bool bit_array::testBit (size_t i) const
  *
  * @brief Tests the value of the bit in the specified pisition.
  *
@@ -226,7 +267,7 @@ void bitarray::resize (size_t new_size)
  */
 
 /**
- * @fn bool bitarray::toggleBit (size_t i)
+ * @fn bool bit_array::toggleBit (size_t i)
  *
  * @brief Inverts the value of the bit at index position i.
  *
@@ -235,7 +276,7 @@ void bitarray::resize (size_t new_size)
  */
 
 /**
- * @fn void bitarray::truncate (size_t pos)
+ * @fn void bit_array::truncate (size_t pos)
  *
  * @brief Truncates the bit array at index position @c pos.
  *
@@ -245,28 +286,28 @@ void bitarray::resize (size_t new_size)
  */
 
 /**
- * @fn bool bitarray::operator != (const bitarray& other) const
+ * @fn bool bit_array::operator != (const bit_array& other) const
  *
  * @brief Compares bit arrays for inequality.
  *
  * @param other bit array for comparison.
  * @return Returns @c true if other is not equal to this bit array; otherwise returns @c false.
  */
-bool bitarray::operator != (const bitarray & other) const
+bool bit_array::operator != (const bit_array & other) const
 {
 	return !(_d.cast<impl>()->nbits == other._d.cast<impl>()->nbits
 			&& _d.cast<impl>()->a.compare(other._d.cast<impl>()->a, _d.cast<impl>()->a.size()) == 0);
 }
 
 /**
- * @fn bool bitarray::operator != (const bitarray& other) const
+ * @fn bool bit_array::operator != (const bit_array& other) const
  *
  * @brief Compares bit arrays for equality.
  *
  * @param other bit array for comparison.
  * @return @c true if other is equal to this bit array; otherwise returns @c false.
  */
-bool bitarray::operator == (const bitarray& other) const
+bool bit_array::operator == (const bit_array& other) const
 {
 	return _d.cast<impl>()->nbits == other._d.cast<impl>()->nbits
 			&& _d.cast<impl>()->a.compare(other._d.cast<impl>()->a, _d.cast<impl>()->a.size()) == 0;
@@ -276,7 +317,7 @@ bool bitarray::operator == (const bitarray& other) const
 //QBitRef	operator[] ( uint i )
 
 /**
- * @fn bool bitarray::operator [] (size_t i ) const
+ * @fn bool bit_array::operator [] (size_t i ) const
  *
  * @brief Returns the bit value at index position @c i.
  *
@@ -285,7 +326,7 @@ bool bitarray::operator == (const bitarray& other) const
  */
 
 /**
- * @fn bitarray& bitarray::operator &= (const bitarray& other).
+ * @fn bit_array& bit_array::operator &= (const bit_array& other).
  *
  * @brief Performs the AND operation.
  *
@@ -298,7 +339,7 @@ bool bitarray::operator == (const bitarray& other) const
  * @return Reference to modified bit array.
  */
 
-bitarray& bitarray::operator &= (const bitarray & other)
+bit_array& bit_array::operator &= (const bit_array & other)
 {
 	_d.detach();
 
@@ -317,7 +358,7 @@ bitarray& bitarray::operator &= (const bitarray & other)
 }
 
 /**
- * @fn bitarray& bitarray::operator ^= (const bitarray& other)
+ * @fn bit_array& bit_array::operator ^= (const bit_array& other)
  *
  * @brief Performs the XOR operation.
  *
@@ -329,7 +370,7 @@ bitarray& bitarray::operator &= (const bitarray & other)
  * @param other Second argument for operation.
  * @return Reference to modified bit array.
  */
-bitarray& bitarray::operator ^= (const bitarray& other)
+bit_array& bit_array::operator ^= (const bit_array& other)
 {
 	_d.detach();
     resize(pfs::max(size(), other.size()));
@@ -343,7 +384,7 @@ bitarray& bitarray::operator ^= (const bitarray& other)
 }
 
 /**
- * @fn bitarray& bitarray::operator |= (const bitarray& other )
+ * @fn bit_array& bit_array::operator |= (const bit_array& other )
  *
  * @brief Performs the OR operation.
  *
@@ -355,7 +396,7 @@ bitarray& bitarray::operator ^= (const bitarray& other)
  * @param other Second argument for operation.
  * @return
  */
-bitarray& bitarray::operator |= (const bitarray & other)
+bit_array& bit_array::operator |= (const bit_array & other)
 {
 	_d.detach();
     resize(pfs::max(size(), other.size()));
@@ -369,16 +410,16 @@ bitarray& bitarray::operator |= (const bitarray & other)
 }
 
 /**
- * @fn bitarray bitarray::operator ~ () const
+ * @fn bit_array bit_array::operator ~ () const
  *
  * @brief Returns a bit array that contains the inverted bits of this bit array.
  *
  * @return A bit array that contains the inverted bits of this bit array.
  */
-bitarray bitarray::operator ~ () const
+bit_array bit_array::operator ~ () const
 {
     size_t sz = size();
-    bitarray a(sz);
+    bit_array a(sz);
 
     const uint32_t *a1 = _d.cast<impl>()->a.constData();
     uint32_t *a2 = a._d.cast<impl>()->a.data();
@@ -396,7 +437,7 @@ bitarray bitarray::operator ~ () const
 }
 
 /**
- * @fn bitarray operator & (const bitarray& a1, const bitarray& a2)
+ * @fn bit_array operator & (const bit_array& a1, const bit_array& a2)
  *
  * @brief Performs the AND operation.
  *
@@ -408,15 +449,15 @@ bitarray bitarray::operator ~ () const
  * @param a2 Second argument of operation.
  * @return Result of AND operation.
  */
-DLL_API bitarray operator & (const bitarray & a1, const bitarray & a2)
+DLL_API bit_array operator & (const bit_array & a1, const bit_array & a2)
 {
-	bitarray tmp(a1);
+	bit_array tmp(a1);
 	tmp &= a2;
 	return tmp;
 }
 
 /**
- * @fn bitarray operator ^ (const bitarray& a1, const bitarray& a2)
+ * @fn bit_array operator ^ (const bit_array& a1, const bit_array& a2)
  *
  * @brief Performs the XOR operation.
  *
@@ -428,15 +469,15 @@ DLL_API bitarray operator & (const bitarray & a1, const bitarray & a2)
  * @param a2 Second argument of operation.
  * @return Result of XOR operation.
  */
-DLL_API bitarray operator ^ (const bitarray & a1, const bitarray & a2)
+DLL_API bit_array operator ^ (const bit_array & a1, const bit_array & a2)
 {
-	bitarray tmp(a1);
+	bit_array tmp(a1);
 	tmp ^= a2;
 	return tmp;
 }
 
 /**
- * @fn bitarray operator | (const bitarray& a1, const bitarray& a2)
+ * @fn bit_array operator | (const bit_array& a1, const bit_array& a2)
  *
  * @brief Performs the OR operation.
  *
@@ -448,12 +489,11 @@ DLL_API bitarray operator ^ (const bitarray & a1, const bitarray & a2)
  * @param a2 Second argument of operation.
  * @return Result of OR operation.
  */
-DLL_API bitarray operator | (const bitarray & a1, const bitarray & a2)
+DLL_API bit_array operator | (const bit_array & a1, const bit_array & a2)
 {
-	bitarray tmp(a1);
+	bit_array tmp(a1);
 	tmp |= a2;
 	return tmp;
 }
-
 
 } // pfs

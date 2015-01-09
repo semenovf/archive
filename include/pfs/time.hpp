@@ -105,13 +105,6 @@ inline int time::secsTo(const time & t) const
     		: 0;
 }
 
-/*
-inline uint_t hash_func(const Time & key, uint_t seed)
-{
-	return hash_func(Time(0, 0, 0).millisTo(key), seed);
-}
-*/
-
 } // pfs
 
 #endif /* __CWT_TIME_HPP__ */

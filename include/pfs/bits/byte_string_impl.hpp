@@ -27,7 +27,6 @@ public:
 	byte_string_impl () : base_class() {}
 	virtual ~byte_string_impl () {}
 
-	bool isEmpty ()            const { return base_class::empty(); }
 	const_pointer constData () const { return base_class::data(); }
 	size_type size ()          const { return base_class::size(); }
 	size_type length ()        const { return base_class::size(); }
@@ -91,11 +90,6 @@ public:
 	{
 		result = base_class::find(s, index, count);
 		return result == base_class::npos ? false : true;
-	}
-
-	void clear ()
-	{
-		base_class::clear();
 	}
 };
 

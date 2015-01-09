@@ -55,17 +55,6 @@ byte_string::byte_string (size_type count, char ch)
 	}
 }
 
-bool byte_string::isEmpty () const
-{
-	return base_class::isNull() || base_class::cast()->isEmpty();
-}
-
-void byte_string::clear ()
-{
-	base_class::detach();
-	base_class::cast()->clear();
-}
-
 byte_string & byte_string::erase (size_type index, size_type count)
 {
 	if (isEmpty() || index >= length())

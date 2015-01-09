@@ -8,17 +8,18 @@ TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = \
      pfs               \
-#    tests/shared_ptr  \
-#    tests/bitarray    \
+     tests/shared_ptr  \
+     tests/bitarray    \
      tests/byte_string \
      tests/mbcs_string \
 #    tests/fsm        \
 #    tests/function   \
 #    tests/strtoreal  \
      tests/vector     \
+     tests/stack      \
 #    tests/map_hash   \
-#    tests/date       \
-#    tests/time       \
+     tests/date       \
+     tests/time       \
 #    tests/utf8string_ptr \
 #    tests/utf8string     \
 #    tests/unitype        \

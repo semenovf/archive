@@ -9,10 +9,11 @@
 #ifndef __PFS_STRING_HPP__
 #define __PFS_STRING_HPP__
 
-#include <pfs/utf8string.hpp>
+#include <pfs/mbcs_string.hpp>
 
 namespace pfs {
 
+typedef pfs::mbcs_string<char> utf8string;
 typedef utf8string string;
 
 #define _latin1(s) pfs::utf8string::fromLatin1(s)

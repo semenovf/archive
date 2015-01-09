@@ -50,7 +50,14 @@ public:
 	int         compare (const array & other) const { return compare(0, other, 0, other._capacity); }
 	void        bzero ()      { if(_head) ::memset(_head, 0, _capacity * sizeof(T)); }
 	void        set   (int c) { if(_head) ::memset(_head, c, _capacity * sizeof(T)); }
-	void        set   (int c, size_t off) { PFS_ASSERT(off < _capacity); if(_head) ::memset(_head + off, c, (_capacity - off) * sizeof(T)); }
+
+	void        set   (int c, size_t off)
+	{
+		PFS_ASSERT(off < _capacity);
+		if(_head)
+			memset(_head + off, c, (_capacity - off) * sizeof(T));
+	}
+
 	array *     clone () const;
 	T *         data  ()       { return _head; }
 	const T *   data  () const { return _head; }

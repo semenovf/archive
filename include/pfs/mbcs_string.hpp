@@ -72,9 +72,9 @@ public:
 
 	virtual ~mbcs_string () {}
 
-	bool isEmpty () const { return base_class::isNull() || base_class::cast()->isEmpty(); }
+	bool isEmpty () const { return base_class::isNull() || size() == 0; }
 	bool empty () const { return isEmpty(); }
-	void clear () { base_class::detach(); base_class::cast()->clear(); }
+	void clear () { base_class::detach(); swap(mbcs_string()); }
 
 	mbcs_string & erase (size_type index = 0) { return erase(index, 1); }
 	mbcs_string & erase (size_type index, size_type count);
@@ -397,6 +397,48 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 	}
 
 	return replace(first, last, s);
+}
+
+template <typename CodeUnitT>
+inline bool operator == ( const mbcs_string<CodeUnitT> & lhs
+		, const mbcs_string<CodeUnitT> & rhs )
+{
+	return lhs.compare(rhs) == 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator != ( const mbcs_string<CodeUnitT> & lhs
+		, const mbcs_string<CodeUnitT> & rhs )
+{
+	return lhs.compare(rhs) != 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator < ( const mbcs_string<CodeUnitT> & lhs
+		, const mbcs_string<CodeUnitT> & rhs )
+{
+	return lhs.compare(rhs) < 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator <= ( const mbcs_string<CodeUnitT> & lhs
+		, const mbcs_string<CodeUnitT> & rhs )
+{
+	return lhs.compare(rhs) <= 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator > ( const mbcs_string<CodeUnitT> & lhs
+		, const mbcs_string<CodeUnitT> & rhs )
+{
+	return lhs.compare(rhs) > 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator >= ( const mbcs_string<CodeUnitT> & lhs
+		, const mbcs_string<CodeUnitT> & rhs )
+{
+	return lhs.compare(rhs) >= 0;
 }
 
 template <typename _CodeUnitT>
