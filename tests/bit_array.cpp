@@ -1,18 +1,18 @@
 /*
- * bitarray.cpp
+ * bit_array.cpp
  *
  *  Created on: Jun 27, 2013
  *      Author: wladt
  */
 
 #include <cwt/test.hpp>
-#include <pfs/bitarray.hpp>
+#include <pfs/bit_array.hpp>
 #include <cstring>
 
 void test_set_bits()
 {
 	const size_t size = 20000;
-	pfs::bitarray ba(size, true); // set all bits to 1
+	pfs::bit_array ba(size, true); // set all bits to 1
 
 	for (size_t i = 0; i < size ; i += 2) {
 		ba.setBit(i, false);
@@ -46,7 +46,7 @@ void test_set_bits()
 void test_logic_operations()
 {
 	for(size_t sz = 2; sz < 1034; sz += 2) {
-		pfs::bitarray ba1(sz), ba2(sz);
+		pfs::bit_array ba1(sz), ba2(sz);
 
 		ba1.fill(true);
 		ba2.fill(false);
@@ -71,7 +71,7 @@ void test_logic_operations()
 		TEST_OK(ba2.count(true) == ba2.size()/2);
 		TEST_OK(ba1 != ba2);
 
-		pfs::bitarray ba = ba1 | ba2;
+		pfs::bit_array ba = ba1 | ba2;
 		TEST_OK(ba.size() == ba1.size());
 		TEST_OK(ba.count(true) == ba.size());
 

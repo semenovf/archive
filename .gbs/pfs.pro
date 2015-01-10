@@ -9,7 +9,7 @@ CONFIG  += ordered
 SUBDIRS  = \
      pfs               \
      tests/shared_ptr  \
-     tests/bitarray    \
+     tests/bit_array   \
      tests/byte_string \
      tests/mbcs_string \
 #    tests/fsm        \

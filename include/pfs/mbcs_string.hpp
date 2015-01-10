@@ -12,6 +12,8 @@
 #include <pfs/endian.hpp>
 #include <pfs/ucchar.hpp>
 #include <pfs/bits/mbcs_string_impl.hpp>
+#include <pfs/byte_string.hpp>
+#include <pfs/string.h>
 #include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -27,24 +29,24 @@ struct mbcs_string_type_trait { typedef T type; };
 
 //TODO implement `class utf16string : protected vector<int16_t,allocator<int16_t, 1> >'
 
-template <typename _CodeUnitT>
-class mbcs_string : public nullable<mbcs_string_impl<_CodeUnitT> >
+template <typename CodeUnitT>
+class mbcs_string : public nullable<mbcs_string_impl<CodeUnitT> >
 {
 //	friend class utf8string_impl;
 //	friend class utf8string_ptr;
 
 protected:
-	typedef nullable<mbcs_string_impl<_CodeUnitT> > base_class;
+	typedef nullable<mbcs_string_impl<CodeUnitT> > base_class;
 	typedef mbcs_string                             self_class;
-	typedef mbcs_string_impl<_CodeUnitT>            impl_class;
+	typedef mbcs_string_impl<CodeUnitT>            impl_class;
 
 public:
 	typedef ucchar value_type; // Unicode character
 	typedef typename impl_class::size_type                size_type;
 	typedef typename impl_class::difference_type          difference_type;
 
-	typedef mbcs_string_ptr<_CodeUnitT, self_class>       pointer;
-	typedef mbcs_string_ptr<_CodeUnitT, const self_class> const_pointer;
+	typedef mbcs_string_ptr<CodeUnitT, self_class>       pointer;
+	typedef mbcs_string_ptr<CodeUnitT, const self_class> const_pointer;
 
 	typedef pfs::reference<self_class>                    reference;
 	typedef pfs::reference<const self_class>              const_reference;
@@ -350,18 +352,32 @@ public:
 
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, size_t n, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, ConvertState * state = nullptr);
-//	static mbcs_string fromLatin1 (const pfs::bytearray & latin1, ConvertState * state = nullptr)
-//		{ return fromLatin1(latin1.data(), latin1.size(), state); }
+	static mbcs_string fromLatin1 (const pfs::byte_string & latin1, ConvertState * state = nullptr)
+	{
+		return fromLatin1(latin1.constData(), latin1.length(), state);
+	}
 
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, size_t size, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, ConvertState * state = nullptr);
-//	static mbcs_string fromUtf8 (const bytearray & utf8, ConvertState * state = nullptr)
-//		{ return fromUtf8(utf8.data(), utf8.size(), state);	}
+	static mbcs_string fromUtf8 (const byte_string & utf8, ConvertState * state = nullptr)
+	{
+		return fromUtf8(utf8.constData(), utf8.length(), state);
+	}
+
+	static mbcs_string toString (int value, int base = 10, bool uppercase = false);
+	static mbcs_string toString (long value, int base = 10, bool uppercase = false);
+	static mbcs_string toString (long long value, int base = 10, bool uppercase = false);
+	static mbcs_string toString (unsigned int value, int base = 10, bool uppercase = false);
+	static mbcs_string toString (unsigned long value, int base = 10, bool uppercase = false);
+	static mbcs_string toString (unsigned long long value, int base = 10, bool uppercase = false);
+	static mbcs_string toString (float value, char f = 'f', int prec = 6);
+	static mbcs_string toString (double value, char f = 'f', int prec = 6);
+	static mbcs_string toString (long double value, char f = 'f', int prec = 6);
 };
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 template <typename InputIt>
-typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (const_iterator pos, InputIt first, InputIt last, mbcs_string_type_trait<InputIt>)
+typename mbcs_string<CodeUnitT>::iterator mbcs_string<CodeUnitT>::insert (const_iterator pos, InputIt first, InputIt last, mbcs_string_type_trait<InputIt>)
 {
 	PFS_ASSERT(pos.holder() == this);
 
@@ -378,9 +394,9 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (cons
 }
 
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 template <typename InputIt>
-mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
+mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 		  const_iterator first
 		, const_iterator last
 		, InputIt first2
@@ -390,13 +406,85 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 	PFS_ASSERT(first.holder() == this);
 	PFS_ASSERT(last.holder() == this);
 
-	mbcs_string<_CodeUnitT> s;
+	mbcs_string<CodeUnitT> s;
 
 	for (InputIt it = first2; it < last2; ++it) {
 		s.append(*it);
 	}
 
 	return replace(first, last, s);
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (int value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long long value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned int value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long long value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (float value, char f, int prec)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_real_to_string(real_t(value), f, prec, buf, 65));
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (double value, char f, int prec)
+{
+	char buf[129];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_real_to_string(real_t(value), f, prec, buf, 129));
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long double value, char f, int prec)
+{
+	char buf[129];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_real_to_string(real_t(value), f, prec, buf, 129));
 }
 
 template <typename CodeUnitT>
@@ -441,8 +529,8 @@ inline bool operator >= ( const mbcs_string<CodeUnitT> & lhs
 	return lhs.compare(rhs) >= 0;
 }
 
-template <typename _CodeUnitT>
-inline std::ostream & operator << (std::ostream & os, const mbcs_string<_CodeUnitT> & o)
+template <typename CodeUnitT>
+inline std::ostream & operator << (std::ostream & os, const mbcs_string<CodeUnitT> & o)
 {
 // FIXME is c_str() that function to use in this case?
 	os << o.c_str();

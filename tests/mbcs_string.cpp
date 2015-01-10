@@ -6,21 +6,22 @@
  */
 
 #include <cwt/test.hpp>
-#include <cstring>
-#include <iostream>
 #include <pfs/ucchar.hpp>
 #include <pfs/mbcs_string.hpp>
+#include <cstring>
+#include <iostream>
+#include <cstdio>
 
 using std::cout;
 using std::endl;
 
 // FIXME Replace strcmp with compare_with and compare_with_utf8
 
-template <typename _CodeUnitT>
-int compare_with (const _CodeUnitT * ptr1, const _CodeUnitT * ptr2);
+template <typename CodeUnitT>
+int compare_with (const CodeUnitT * ptr1, const CodeUnitT * ptr2);
 
-template <typename _CodeUnitT>
-int compare_with_utf8 (const _CodeUnitT * ptr1, const char * ptr2);
+template <typename CodeUnitT>
+int compare_with_utf8 (const CodeUnitT * ptr1, const char * ptr2);
 
 template <>
 inline int compare_with<char> (const char * ptr1, const char * ptr2)
@@ -35,10 +36,10 @@ inline int compare_with_utf8<char> (const char * ptr1, const char * ptr2)
 }
 
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_size_length ()
 {
-	typedef pfs::mbcs_string_impl<_CodeUnitT> utfstring_impl;
+	typedef pfs::mbcs_string_impl<CodeUnitT> utfstring_impl;
 
 	//-----------------------0---------10--------20----
 	const char * latin1   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -56,10 +57,10 @@ void test_size_length ()
 	TEST_OK(utfstring_impl::length(cyrillic, cyrillic + strlen(cyrillic)) == 33);
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_constructors ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	utfstring nil;
 //	pfs::bytearray serial(10, 'W');
@@ -76,10 +77,10 @@ void test_constructors ()
 //	TEST_OK(strcmp(loremipsum, pfs::bytearray(std::string(loremipsum)).constData()) == 0);
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_insert_latin1 ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	utfstring s;
 	utfstring s1("Hello");
@@ -101,10 +102,10 @@ void test_insert_latin1 ()
 //	std::cout << "'" << s.c_str() << '"' << std::endl;
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_insert_cyrillic ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	{
 		utfstring s;
@@ -149,10 +150,10 @@ void test_insert_cyrillic ()
 	}
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_append_cyrillic ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	{
 		const char * sample = "Привет, Мир!";
@@ -181,10 +182,10 @@ void test_append_cyrillic ()
 	}
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_ptr ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	utfstring s(utfstring::fromUtf8("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя"));
 	typename utfstring::pointer ptr(s, 0);
@@ -266,10 +267,10 @@ void test_ptr ()
 }
 
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_at ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	utfstring s(utfstring::fromUtf8("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя"));
 	bool ok = true;
@@ -291,10 +292,10 @@ void test_at ()
 	TEST_OK2(ok, "utfstring(utfstring::fromUtf8(\"GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя\")) equals to array of unicode chars");
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_erase ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	{
 		utfstring sample(utfstring::fromUtf8("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя"));
@@ -348,10 +349,10 @@ void test_erase ()
 	}
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_substr ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	utfstring s(utfstring::fromUtf8("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя"));
 	TEST_OK(s.substr(0,0).isEmpty());
@@ -361,10 +362,10 @@ void test_substr ()
 	TEST_OK(strcmp(s.substr(5,s.length() + 1).c_str(), "ЁЖЗИЙЭЮЯgijklёжзийэюя") == 0);
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_pop_back ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	utfstring s(utfstring::fromUtf8("GIJЁЖЗgijёжз"));
 	s.pop_back();
@@ -407,10 +408,10 @@ void test_pop_back ()
 	TEST_OK(s.isEmpty());
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_compare ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	const char * cyr = "АБВГДЕЁЖЫИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
 	utfstring s(utfstring::fromUtf8("АБВГДЕЁЖЫИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"));
@@ -422,11 +423,11 @@ void test_compare ()
 }
 
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_replace ()
 {
 	{
-		typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+		typedef pfs::mbcs_string<CodeUnitT> utfstring;
 		utfstring s(utfstring::fromUtf8("Привет, Мир!"));
 
 		s.replace(0, 6, utfstring::fromUtf8("Hello, World!"), 0, 5);
@@ -445,7 +446,7 @@ void test_replace ()
 	}
 
 	{
-		typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+		typedef pfs::mbcs_string<CodeUnitT> utfstring;
 		utfstring s(utfstring::fromUtf8("Привет, Мир!"));
 		utfstring s1(utfstring::fromUtf8("Hello, World!"));
 
@@ -466,10 +467,10 @@ void test_replace ()
 	}
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
 void test_find ()
 {
-	typedef pfs::mbcs_string<_CodeUnitT> utfstring;
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 	utfstring s(utfstring::fromUtf8("Привет, Мир!"));
 
 	TEST_OK(s.find(utfstring::fromUtf8("Привет")) == s.begin());
@@ -478,29 +479,70 @@ void test_find ()
 	TEST_OK(s.find(utfstring::fromUtf8("Hello")) == s.end());
 }
 
-template <typename _CodeUnitT>
+template <typename CodeUnitT>
+void test_to_string ()
+{
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
+
+	TEST_OK(utfstring::toString(0) == utfstring("0"));
+	TEST_OK(utfstring::toString(127) == utfstring("127"));
+	TEST_OK(utfstring::toString(-128) == utfstring("-128"));
+	TEST_OK(utfstring::toString(255) == utfstring("255"));
+	TEST_OK(utfstring::toString(32767) == utfstring("32767"));
+	TEST_OK(utfstring::toString(-32768) == utfstring("-32768"));
+	TEST_OK(utfstring::toString(65535) == utfstring("65535"));
+	TEST_OK(utfstring::toString(8388607) == utfstring("8388607"));
+	TEST_OK(utfstring::toString(-8388608) == utfstring("-8388608"));
+	TEST_OK(utfstring::toString(16777215) == utfstring("16777215"));
+	TEST_OK(utfstring::toString(2147483647) == utfstring("2147483647"));
+	TEST_OK(utfstring::toString(PFS_LONG_LITERAL(-2147483648)) == utfstring("-2147483648"));
+	TEST_OK(utfstring::toString(PFS_ULONG_LITERAL(4294967295)) == utfstring("4294967295"));
+
+#ifdef HAVE_INT64
+	TEST_OK(utfstring::toString(PFS_LONG_LITERAL(9223372036854775807)) == utfstring("9223372036854775807"));
+	TEST_OK(utfstring::toString(PFS_LONG_LITERAL(-9223372036854775808)) == utfstring("-9223372036854775808"));
+	TEST_OK(utfstring::toString(PFS_ULONG_LITERAL(18446744073709551615)) == utfstring("18446744073709551615"));
+#endif
+
+	// Note: single-precision floating-point numbers have a 24-bit mantissa, which is approximately 7.2 decimal digits.
+	TEST_OK(utfstring::toString(0.0f, 'g') == utfstring("0"));
+	TEST_OK(utfstring::toString(0.0f, 'f', 6) == utfstring("0.000000"));
+	TEST_OK(utfstring::toString(0.0f, 'f', 0) == utfstring("0.000000"));
+	TEST_OK(utfstring::toString(0.0f, 'f', 1) == utfstring("0.0"));
+	TEST_OK(utfstring::toString(3.14159f, 'f', 5) == utfstring("3.14159"));
+	TEST_OK(utfstring::toString(1234567.875f, 'f', 3) == utfstring("1234567.875"));
+
+//	cout << "==" << utfstring::toString(0.0f, 'f', 1).c_str() << endl;
+}
+
+template <typename CodeUnitT>
 void test_suite ()
 {
-	test_size_length<_CodeUnitT>();
-	test_constructors<_CodeUnitT>();
-	test_insert_latin1<_CodeUnitT>();
-	test_insert_cyrillic<_CodeUnitT>();
-	test_append_cyrillic<_CodeUnitT>();
-	test_ptr<_CodeUnitT>();
-	test_at<_CodeUnitT>();
-	test_erase<_CodeUnitT>();
-	test_substr<_CodeUnitT>();
-	test_pop_back<_CodeUnitT>();
-	test_compare<_CodeUnitT>();
-	test_replace<_CodeUnitT>();
-	test_find<_CodeUnitT>();
+	test_size_length<CodeUnitT>();
+	test_constructors<CodeUnitT>();
+	test_insert_latin1<CodeUnitT>();
+	test_insert_cyrillic<CodeUnitT>();
+	test_append_cyrillic<CodeUnitT>();
+	test_ptr<CodeUnitT>();
+	test_at<CodeUnitT>();
+	test_erase<CodeUnitT>();
+	test_substr<CodeUnitT>();
+	test_pop_back<CodeUnitT>();
+	test_compare<CodeUnitT>();
+	test_replace<CodeUnitT>();
+	test_find<CodeUnitT>();
+	test_to_string<CodeUnitT>();
 }
 
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(148);
+    int ntests = 167;
+#ifdef HAVE_INT64
+    ntests += 3;
+#endif
+	BEGIN_TESTS(ntests);
 
 	test_suite<char>();
 

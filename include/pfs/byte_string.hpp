@@ -318,8 +318,8 @@ public:
 
 	byte_string substr (size_type index, size_type count) const;
 
-//	template <typename _IntT>
-//	mbcs_string & setNumber (_IntT n, int base = 10, bool uppercase = false);
+//	template <typename IntT>
+//	byte_string & setNumber (IntT n, int base = 10, bool uppercase = false);
 
 //	template <typename _RealT>
 //	mbcs_string & setNumber (_RealT n, char f = 'g', int prec = 6);
