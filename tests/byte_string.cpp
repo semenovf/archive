@@ -7,9 +7,11 @@
 
 #include <cwt/test.hpp>
 #include <cstring>
-//#include <iostream>
 //#include "pfs/endian.hpp"
 #include "pfs/byte_string.hpp"
+
+//#include <iostream>
+//using namespace std;
 
 void test_constructors ()
 {
@@ -202,6 +204,21 @@ void test_append ()
 	}
 }
 
+void test_prepend ()
+{
+	const char * sample = "Hello, World!";
+	pfs::byte_string s;
+	pfs::byte_string s1("Hello");
+	pfs::byte_string s2(", ");
+	pfs::byte_string s3("World!");
+
+	s.prepend(s3).prepend(s2).prepend(s1);
+
+	TEST_OK(s.size() == strlen(sample));
+	TEST_OK(s.length() == s1.length() + s2.length() + s3.length());
+	TEST_OK(strcmp(s.c_str(), sample) == 0);
+}
+
 void test_find ()
 {
 	pfs::byte_string s("Hello, World!");
@@ -210,6 +227,21 @@ void test_find ()
 	TEST_OK(s.find("World") != s.begin());
 	TEST_OK(s.find("World") == s.begin() + 7);
 	TEST_OK(s.find("Hallo") == s.end());
+
+	TEST_OK(s.contains(pfs::byte_string("World")));
+	TEST_OK(s.contains("World"));
+	TEST_OK(s.contains(byte_t('W')));
+	TEST_OK(s.contains('W'));
+
+//	TEST_OK(s.startsWith (const byte_string & str) const { return find(str) == cbegin(); }
+//	TEST_OK(s.startsWith (const char * s) const          { return find(s)   == cbegin(); }
+//	TEST_OK(s.startsWith (byte_t v) const                { return find(v)   == cbegin(); }
+//	TEST_OK(s.startsWith (char v) const                  { return find(v)   == cbegin(); }
+//
+//	TEST_OK(s.endsWith   (const byte_string & str) const { return find(str) == cend() - str.length(); }
+//	TEST_OK(s.endsWith   (const char * s) const          { return find(s)   == cend() - std::strlen(s); }
+//	TEST_OK(s.endsWith   (byte_t v) const                { return find(v)   == cend() - 1; }
+//	TEST_OK(s.endsWith   (char v) const                  { return find(v)   == cend() - 1; }
 }
 
 void test_replace ()
@@ -261,7 +293,38 @@ void test_substr ()
 }
 
 
-#ifdef __COMMENT__
+void test_to_string ()
+{
+	TEST_OK(pfs::byte_string::toString(0) == "0");
+	TEST_OK(pfs::byte_string::toString(127) == "127");
+	TEST_OK(pfs::byte_string::toString(-128) == "-128");
+	TEST_OK(pfs::byte_string::toString(255) == "255");
+	TEST_OK(pfs::byte_string::toString(32767) == "32767");
+	TEST_OK(pfs::byte_string::toString(-32768) == "-32768");
+	TEST_OK(pfs::byte_string::toString(65535) == "65535");
+	TEST_OK(pfs::byte_string::toString(8388607) == "8388607");
+	TEST_OK(pfs::byte_string::toString(-8388608) == "-8388608");
+	TEST_OK(pfs::byte_string::toString(16777215) == "16777215");
+	TEST_OK(pfs::byte_string::toString(2147483647) == "2147483647");
+	TEST_OK(pfs::byte_string::toString(PFS_LONG_LITERAL(-2147483648)) == "-2147483648");
+	TEST_OK(pfs::byte_string::toString(PFS_ULONG_LITERAL(4294967295)) == "4294967295");
+
+#ifdef HAVE_INT64
+	TEST_OK(pfs::byte_string::toString(PFS_LONG_LITERAL(9223372036854775807)) == "9223372036854775807");
+	TEST_OK(pfs::byte_string::toString(PFS_LONG_LITERAL(-9223372036854775808)) == "-9223372036854775808");
+	TEST_OK(pfs::byte_string::toString(PFS_ULONG_LITERAL(18446744073709551615)) == "18446744073709551615");
+#endif
+
+	// Note: single-precision floating-point numbers have a 24-bit mantissa, which is approximately 7.2 decimal digits.
+	TEST_OK(pfs::byte_string::toString(0.0f, 'g') == "0");
+	TEST_OK(pfs::byte_string::toString(0.0f, 'f', 6) == "0.000000");
+	TEST_OK(pfs::byte_string::toString(0.0f, 'f', 0) == "0.000000");
+	TEST_OK(pfs::byte_string::toString(0.0f, 'f', 1) == "0.0");
+	TEST_OK(pfs::byte_string::toString(3.14159f, 'f', 5) == "3.14159");
+	TEST_OK(pfs::byte_string::toString(1234567.875f, 'f', 3) == "1234567.875");
+
+//	cout << "==" << utfstring::toString(0.0f, 'f', 1).c_str() << endl;
+}
 
 void test_read_number ()
 {
@@ -294,25 +357,6 @@ void test_read_number ()
 	// TODO Add remaining tests (see test_convert_to_bytes)
 }
 
-
-void test_convert_number()
-{
-	pfs::byte_string num("1234");
-	bool ok;
-
-	pfs::byte_string ba_double;
-	ba_double.setNumber(double(13.14159));
-	printf("13.14159 == %s\n", ba_double.constData());
-	printf("13.14159 == %g\n", double(13.14159f));
-	printf("13.1415912345678 == %e\n", 13.1415912345678f);
-
-	TEST_OK(num.toInt(&ok) == 1234 && ok);
-
-	pfs::byte_string bnull;
-
-	TEST_OK(bnull.toLong() == long_t(0));
-}
-
 void test_base64 ()
 {
 	pfs::byte_string text("Qt is great!");
@@ -338,16 +382,14 @@ void test_cow ()
 
 	TEST_OK(s1 == "Hello!");
 	TEST_OK(s2 == "Hello?");
-//	std::cout << "s1: " << s1.c_str() << std::endl;
-//	std::cout << "s2: " << s2.c_str() << std::endl;
 }
-#endif
+
 
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    int ntests = 69;
+    int ntests = 118;
 #ifdef HAVE_LONGLONG
     ntests += 12;
 #endif
@@ -359,13 +401,14 @@ int main(int argc, char *argv[])
 	test_convert_to_bytes();
 	test_insert();
 	test_append();
+	test_prepend();
 	test_find();
 	test_replace();
 	test_substr();
-//	test_read_number();
-//	test_convert_number();
-//	test_base64();
-//	test_cow();
+	test_to_string();
+	test_read_number();
+	test_base64();
+	test_cow();
 
     END_TESTS;
 }

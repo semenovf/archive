@@ -18,6 +18,7 @@ class byte_string_impl : protected std::basic_string<byte_t>
 public:
 	typedef std::basic_string<byte_t> base_class;
 	typedef byte_string_impl          self_class;
+	typedef byte_t					  value_type;
 	typedef size_t                    size_type;
 	typedef ptrdiff_t                 difference_type;
 	typedef base_class::pointer       pointer;
@@ -36,9 +37,9 @@ public:
 		base_class::erase(index, count);
 	}
 
-	void resize (size_type count)
+	void resize (size_type count, const value_type & v)
 	{
-		base_class::resize(count);
+		base_class::resize(count, v);
 	}
 
 	void reserve (size_type count)
@@ -69,6 +70,11 @@ public:
 	void replace (const_pointer ptr1, size_type count, const_pointer ptr2, size_type count2)
 	{
 		base_class::replace(ptr1 - constData(), count, ptr2, count2);
+	}
+
+	void replace (size_type index, const value_type & val)
+	{
+		operator [] (index) = val;
 	}
 
 	int compare (const_pointer p1, size_type count1, const_pointer p2, size_type count2) const

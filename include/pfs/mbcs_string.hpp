@@ -314,22 +314,6 @@ public:
 	mbcs_string & operator += (const ucchar & ch) { return append(mbcs_string(1, ch)); }
 	mbcs_string & operator += (char latin1) { return append(mbcs_string(1, latin1)); }
 
-//	template <typename _IntT>
-//	mbcs_string & setNumber (_IntT n, int base = 10, bool uppercase = false);
-
-//	template <typename _RealT>
-//	mbcs_string & setNumber (_RealT n, char f = 'g', int prec = 6);
-
-//	utf8string & setNumber (long_t n, int base = 10, bool uppercase = false);
-//	utf8string & setNumber (ulong_t n, int base = 10, bool uppercase = false);
-//	utf8string & setNumber (int_t n, int base = 10, bool uppercase = false)    { return setNumber(long_t(n), base, uppercase); }
-//	utf8string & setNumber (uint_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
-//	utf8string & setNumber (short_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
-//	utf8string & setNumber (ushort_t n, int base = 10, bool uppercase = false) { return setNumber(ulong_t(n), base, uppercase); }
-//	utf8string & setNumber (sbyte_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
-//	utf8string & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
-//	utf8string & setNumber (real_t n, char f = 'g', int prec = 6);
-
 private:
     // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::mbcs_string’"
     template <typename InputIt>
@@ -416,7 +400,7 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 }
 
 template <typename CodeUnitT>
-mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (int value, int base, bool uppercase)
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (int value, int base, bool uppercase)
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
@@ -424,7 +408,7 @@ mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (int value, int base, bo
 }
 
 template <typename CodeUnitT>
-mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long value, int base, bool uppercase)
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long value, int base, bool uppercase)
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
@@ -432,7 +416,7 @@ mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long value, int base, b
 }
 
 template <typename CodeUnitT>
-mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long long value, int base, bool uppercase)
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long long value, int base, bool uppercase)
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
@@ -440,7 +424,7 @@ mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long long value, int ba
 }
 
 template <typename CodeUnitT>
-mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned int value, int base, bool uppercase)
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned int value, int base, bool uppercase)
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
@@ -448,7 +432,7 @@ mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned int value, int
 }
 
 template <typename CodeUnitT>
-mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long value, int base, bool uppercase)
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long value, int base, bool uppercase)
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
@@ -456,7 +440,7 @@ mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long value, in
 }
 
 template <typename CodeUnitT>
-mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long long value, int base, bool uppercase)
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long long value, int base, bool uppercase)
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
@@ -464,7 +448,7 @@ mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long long valu
 }
 
 template <typename CodeUnitT>
-mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (float value, char f, int prec)
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (float value, char f, int prec)
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
@@ -472,7 +456,7 @@ mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (float value, char f, in
 }
 
 template <typename CodeUnitT>
-mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (double value, char f, int prec)
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (double value, char f, int prec)
 {
 	char buf[129];
 	return mbcs_string<CodeUnitT>::fromLatin1(
@@ -480,7 +464,7 @@ mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (double value, char f, i
 }
 
 template <typename CodeUnitT>
-mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long double value, char f, int prec)
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long double value, char f, int prec)
 {
 	char buf[129];
 	return mbcs_string<CodeUnitT>::fromLatin1(

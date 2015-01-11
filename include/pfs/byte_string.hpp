@@ -11,6 +11,8 @@
 #include <pfs/bits/iterator.hpp>
 #include <pfs/endian.hpp>
 #include <pfs/bits/byte_string_impl.hpp>
+#include <pfs/string.h>
+#include <cstring>
 #include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -64,12 +66,25 @@ public:
 
 	bool isEmpty () const { return base_class::isNull() || size() == 0; }
 	bool empty () const { return isEmpty(); }
+
+    size_type size () const;
+    size_type length () const; // Equivalent to size()
+    size_type capacity() const;
+    size_type max_size() const;
+
 	void clear () { base_class::detach(); swap(byte_string()); }
+    void resize  (size_type n) { base_class::detach(); base_class::cast()->resize(n, 0); }
+    void resize  (size_type n, const value_type & value) { base_class::detach(); base_class::cast()->resize(n, value); }
+	void reserve (size_type n) { base_class::detach(); base_class::cast()->reserve(n); }
 
 	byte_string & erase (size_type index = 0) { return erase(index, 1); }
 	byte_string & erase (size_type index, size_type count);
-	iterator erase (const_iterator pos) { return erase(pos, pos + 1); }
-	iterator erase (const_iterator first, const_iterator last);
+	iterator      erase (const_iterator pos) { return erase(pos, pos + 1); }
+	iterator      erase (const_iterator first, const_iterator last);
+	byte_string & remove (size_type index = 0) { return erase(index, 1); }
+	byte_string & remove (size_type index, size_type count);
+	iterator      remove (const_iterator pos) { return erase(pos, pos + 1); }
+	iterator      remove (const_iterator first, const_iterator last) { return erase(first, last); }
 
 	iterator begin ()                       { return iterator(this, pointer(this, 0)); }
 	iterator end   ()                       { return iterator(this, pointer(this, size())); }
@@ -133,10 +148,20 @@ public:
     	return find(cbegin(), & byte, 1);
     }
 
-    size_type size () const;
-    size_type length () const; // Equivalent to size()
-    size_type capacity() const;
-    size_type max_size() const;
+	bool contains   (const byte_string & str) const { return find(str) != cend(); }
+	bool contains   (const char * s) const          { return find(s)   != cend(); }
+	bool contains   (byte_t v) const                { return find(v)   != cend(); }
+	bool contains   (char v) const                  { return find(v)   != cend(); }
+
+	bool startsWith (const byte_string & str) const { return find(str) == cbegin(); }
+	bool startsWith (const char * s) const          { return find(s)   == cbegin(); }
+	bool startsWith (byte_t v) const                { return find(v)   == cbegin(); }
+	bool startsWith (char v) const                  { return find(v)   == cbegin(); }
+
+	bool endsWith   (const byte_string & str) const { return find(str) == cend() - str.length(); }
+	bool endsWith   (const char * s) const          { return find(s)   == cend() - std::strlen(s); }
+	bool endsWith   (byte_t v) const                { return find(v)   == cend() - 1; }
+	bool endsWith   (char v) const                  { return find(v)   == cend() - 1; }
 
     int compare (size_type pos1, size_type count1, const_data_pointer bytes, size_type count2) const;
     int compare (size_type pos1, size_type count1, const char * s, size_type count2) const;
@@ -215,8 +240,56 @@ public:
     	return insert(this->length(), str);
     }
 
-//    template<class InputIt>
-//    byte_string & append (InputIt first, InputIt last);
+    void push_front (char ch)
+    {
+    	prepend(size_type(1), ch);
+    }
+
+    void push_front (byte_t byte)
+    {
+    	prepend(size_type(1), byte);
+    }
+
+    void pop_front ()
+    {
+    	if (!isEmpty())
+    		erase(0);
+    }
+
+    byte_string & prepend (const byte_string & str, size_type index_str, size_type count)
+    {
+    	return insert(0, str, index_str, count);
+    }
+
+    byte_string & prepend (size_type count, char ch)
+    {
+    	return insert(0, count, ch);
+    }
+
+    byte_string & prepend (size_type count, byte_t byte)
+    {
+    	return insert(0, count, byte);
+    }
+
+    byte_string & prepend (const char * s)
+    {
+    	return insert(0, s);
+    }
+
+    byte_string & prepend (const char * s, size_type n)
+    {
+    	return insert(0, s, n);
+    }
+
+    byte_string & prepend (const_data_pointer bytes, size_type n)
+    {
+    	return insert(0, bytes, n);
+    }
+
+    byte_string & prepend (const byte_string & str)
+    {
+    	return insert(0, str);
+    }
 
     byte_string & insert (size_type index, const byte_string & str, size_type index_str, size_type count);
 
@@ -304,7 +377,6 @@ public:
     	return replace(pos, count, byte_string(count2, ch));
     }
 
-
     byte_string & replace (const_iterator first, const_iterator last, const byte_string & str)
     {
     	return replace(first, last, str.cbegin(), str.cend(), extra_trait<const_iterator>());
@@ -318,26 +390,22 @@ public:
 
 	byte_string substr (size_type index, size_type count) const;
 
-//	template <typename IntT>
-//	byte_string & setNumber (IntT n, int base = 10, bool uppercase = false);
+	template <typename ValT>
+	size_t readNumber (ValT & v, size_t pos = 0, endian::type_enum order = endian::nativeOrder()) const;
 
-//	template <typename _RealT>
-//	mbcs_string & setNumber (_RealT n, char f = 'g', int prec = 6);
-
-//	utf8string & setNumber (long_t n, int base = 10, bool uppercase = false);
-//	utf8string & setNumber (ulong_t n, int base = 10, bool uppercase = false);
-//	utf8string & setNumber (int_t n, int base = 10, bool uppercase = false)    { return setNumber(long_t(n), base, uppercase); }
-//	utf8string & setNumber (uint_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
-//	utf8string & setNumber (short_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
-//	utf8string & setNumber (ushort_t n, int base = 10, bool uppercase = false) { return setNumber(ulong_t(n), base, uppercase); }
-//	utf8string & setNumber (sbyte_t n, int base = 10, bool uppercase = false)  { return setNumber(long_t(n), base, uppercase); }
-//	utf8string & setNumber (byte_t n, int base = 10, bool uppercase = false)   { return setNumber(ulong_t(n), base, uppercase); }
-//	utf8string & setNumber (real_t n, char f = 'g', int prec = 6);
+	byte_string        toBase64 () const;
+	static byte_string fromBase64 (const byte_string & base64);
 
 	byte_string & operator += (const byte_string & other) { return append(other); }
 	byte_string & operator += (const char * s) { return append(s); }
 	byte_string & operator += (char ch) { return append(1, ch); }
 	byte_string & operator += (byte_t byte) { return append(1, byte); }
+	byte_string & operator << (const byte_string & other) { return append(other); }
+	byte_string & operator << (const char * s) { return append(s); }
+	byte_string & operator << (char ch) { return append(1, ch); }
+	byte_string & operator << (byte_t byte) { return append(1, byte); }
+
+	void detach_and_assign (pointer & p, const value_type & value); // pfs::reference class requirement
 
 private:
 
@@ -360,7 +428,18 @@ private:
 public:
 	template <typename T>
 	static byte_string toBytes (const T & v, endian::type_enum order = endian::nativeOrder());
+
+	static byte_string toString (int value, int base = 10, bool uppercase = false);
+	static byte_string toString (long value, int base = 10, bool uppercase = false);
+	static byte_string toString (long long value, int base = 10, bool uppercase = false);
+	static byte_string toString (unsigned int value, int base = 10, bool uppercase = false);
+	static byte_string toString (unsigned long value, int base = 10, bool uppercase = false);
+	static byte_string toString (unsigned long long value, int base = 10, bool uppercase = false);
+	static byte_string toString (float value, char f = 'f', int prec = 6);
+	static byte_string toString (double value, char f = 'f', int prec = 6);
+	static byte_string toString (long double value, char f = 'f', int prec = 6);
 };
+
 
 #ifdef __COMMENT__
 template <typename _CodeUnitT>
@@ -423,11 +502,77 @@ inline byte_string byte_string::toBytes<bool> (const bool & v, endian::type_enum
 //template <>
 //bytearray bytearray::toBytes<pfs::utf8string> (const pfs::utf8string & v, endian::type_enum /*order*/);
 //
-//template <>
-//inline bytearray bytearray::toBytes<pfs::bytearray> (const pfs::bytearray & v, endian::type_enum /*order*/)
-//{
-//	return bytearray(v);
-//}
+template <>
+inline byte_string byte_string::toBytes<pfs::byte_string> (const byte_string & v, endian::type_enum /*order*/)
+{
+	return byte_string(v);
+}
+
+template <typename ValT>
+byte_string::size_type byte_string::readNumber (ValT & v, size_t pos, endian::type_enum order) const
+{
+	if (size() - pos < sizeof(ValT))
+		return 0;
+	union u { const ValT v; const char b[sizeof(ValT)]; };
+	const char * s = c_str() + pos;
+	const u * d = reinterpret_cast<const u *>(s/*constData() + pos*/);
+	v = order == endian::LittleEndian ? endian::toLittleEndian(d->v) : endian::toBigEndian(d->v);
+	return sizeof(ValT);
+}
+
+inline byte_string byte_string::toString (int value, int base, bool uppercase)
+{
+	char buf[65];
+	return byte_string(pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+}
+
+inline byte_string byte_string::toString (long value, int base, bool uppercase)
+{
+	char buf[65];
+	return byte_string(pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+}
+
+inline byte_string byte_string::toString (long long value, int base, bool uppercase)
+{
+	char buf[65];
+	return byte_string(pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+}
+
+inline byte_string byte_string::toString (unsigned int value, int base, bool uppercase)
+{
+	char buf[65];
+	return byte_string(pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+}
+
+inline byte_string byte_string::toString (unsigned long value, int base, bool uppercase)
+{
+	char buf[65];
+	return byte_string(pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+}
+
+inline byte_string byte_string::toString (unsigned long long value, int base, bool uppercase)
+{
+	char buf[65];
+	return byte_string(pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+}
+
+inline byte_string byte_string::toString (float value, char f, int prec)
+{
+	char buf[65];
+	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, 65));
+}
+
+inline byte_string byte_string::toString (double value, char f, int prec)
+{
+	char buf[129];
+	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, 129));
+}
+
+inline byte_string byte_string::toString (long double value, char f, int prec)
+{
+	char buf[129];
+	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, 129));
+}
 
 inline bool operator == (const byte_string & lhs, const byte_string & rhs)
 {
@@ -457,6 +602,126 @@ inline bool operator >  (const byte_string & lhs, const byte_string & rhs)
 inline bool operator >= (const byte_string & lhs, const byte_string & rhs)
 {
 	return lhs.compare(rhs) >= 0;
+}
+
+inline bool operator == (const byte_string & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) == 0;
+}
+
+inline bool operator != (const byte_string & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) != 0;
+}
+
+inline bool operator <  (const byte_string & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) < 0;
+}
+
+inline bool operator <= (const byte_string & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) <= 0;
+}
+
+inline bool operator >  (const byte_string & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) > 0;
+}
+
+inline bool operator >= (const byte_string & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) >= 0;
+}
+
+inline bool operator == (const char * lhs, const byte_string & rhs)
+{
+	return rhs.compare(lhs) == 0;
+}
+
+inline bool operator != (const char * lhs, const byte_string & rhs)
+{
+	return rhs.compare(lhs) != 0;
+}
+
+inline bool operator <  (const char * lhs, const byte_string & rhs)
+{
+	return rhs.compare(lhs) > 0;
+}
+
+inline bool operator <= (const char * lhs, const byte_string & rhs)
+{
+	return rhs.compare(lhs) >= 0;
+}
+
+inline bool operator >  (const char * lhs, const byte_string & rhs)
+{
+	return rhs.compare(lhs) < 0;
+}
+
+inline bool operator >= (const char * lhs, const byte_string & rhs)
+{
+	return rhs.compare(lhs) <= 0;
+}
+
+inline bool operator == (const byte_string::reference & o, char ch)
+{
+	return o == static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator == (const byte_string::const_reference & o, char ch)
+{
+	return o == static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator != (const byte_string::reference & o, char ch)
+{
+	return o != static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator != (const byte_string::const_reference & o, char ch)
+{
+	return o != static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator > (const byte_string::reference & o, char ch)
+{
+	return o > static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator > (const byte_string::const_reference & o, char ch)
+{
+	return o > static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator >= (const byte_string::reference & o, char ch)
+{
+	return o >= static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator >= (const byte_string::const_reference & o, char ch)
+{
+	return o >= static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator < (const byte_string::reference & o, char ch)
+{
+	return o < static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator < (const byte_string::const_reference & o, char ch)
+{
+	return o < static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator <= (const byte_string::reference & o, char ch)
+{
+	return o <= static_cast<byte_string::value_type>(ch);
+}
+
+inline bool operator <= (const byte_string::const_reference & o, char ch)
+{
+	return o <= static_cast<byte_string::value_type>(ch);
 }
 
 inline std::ostream & operator << (std::ostream & os, const byte_string & o)
