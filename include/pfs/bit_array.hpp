@@ -39,7 +39,7 @@ public:
 
 	bool isEmpty () const { return base_class::isNull() || size() == 0; }
 	bool empty () const { return isEmpty(); }
-	void clear () { base_class::detach(); swap(bit_array()); }
+	void clear ();
 
 	size_type  count () const { return size(); }
 	size_type  size () const;

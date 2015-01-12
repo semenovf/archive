@@ -178,15 +178,45 @@ public:
     // Random access iterator requirements
     value_type operator [] (difference_type n) const;
 
-    bool operator == (const byte_string_ptr & o) const { return _holder->constData() + _off == o._holder->constData() + o._off; }
-    bool operator != (const byte_string_ptr & o) const { return ! this->operator == (o); }
-	bool operator  > (const byte_string_ptr & o) const { return _holder->constData() + _off  > o._holder->constData() + o._off; }
-	bool operator >= (const byte_string_ptr & o) const { return _holder->constData() + _off >= o._holder->constData() + o._off; }
-	bool operator  < (const byte_string_ptr & o) const { return _holder->constData() + _off  < o._holder->constData() + o._off; }
-	bool operator <= (const byte_string_ptr & o) const { return _holder->constData() + _off <= o._holder->constData() + o._off; }
-
 	const byte_t * base () const { return _holder->constData() + _off; }
 };
+
+template <typename Holder1, typename Holder2>
+inline bool operator != (const byte_string_ptr<Holder1> & p1, const byte_string_ptr<Holder2> & p2)
+{
+	return p1.base() != p2.base();
+}
+
+template <typename Holder1, typename Holder2>
+inline bool operator == (const byte_string_ptr<Holder1> & p1, const byte_string_ptr<Holder2> & p2)
+{
+	return p1.base() == p2.base();
+}
+
+template <typename Holder1, typename Holder2>
+inline bool operator > (const byte_string_ptr<Holder1> & p1, const byte_string_ptr<Holder2> & p2)
+{
+	return p1.base() > p2.base();
+}
+
+template <typename Holder1, typename Holder2>
+inline bool operator >= (const byte_string_ptr<Holder1> & p1, const byte_string_ptr<Holder2> & p2)
+{
+	return p1.base() >= p2.base();
+}
+
+template <typename Holder1, typename Holder2>
+inline bool operator < (const byte_string_ptr<Holder1> & p1, const byte_string_ptr<Holder2> & p2)
+{
+	return p1.base() < p2.base();
+}
+
+template <typename Holder1, typename Holder2>
+inline bool operator <= (const byte_string_ptr<Holder1> & p1, const byte_string_ptr<Holder2> & p2)
+{
+	return p1.base() <= p2.base();
+}
+
 
 template <typename Holder>
 inline typename byte_string_ptr<Holder>::difference_type operator

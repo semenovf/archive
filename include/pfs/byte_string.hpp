@@ -72,7 +72,7 @@ public:
     size_type capacity() const;
     size_type max_size() const;
 
-	void clear () { base_class::detach(); swap(byte_string()); }
+	void clear ();// { base_class::detach(); swap(byte_string()); }
     void resize  (size_type n) { base_class::detach(); base_class::cast()->resize(n, 0); }
     void resize  (size_type n, const value_type & value) { base_class::detach(); base_class::cast()->resize(n, value); }
 	void reserve (size_type n) { base_class::detach(); base_class::cast()->reserve(n); }

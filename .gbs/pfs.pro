@@ -12,8 +12,8 @@ SUBDIRS  = \
      tests/bit_array   \
      tests/byte_string \
      tests/mbcs_string \
-#    tests/fsm        \
-#    tests/function   \
+     tests/fsm        \
+     tests/function   \
 #    tests/strtoreal  \
      tests/vector     \
      tests/stack      \
@@ -24,4 +24,4 @@ SUBDIRS  = \
 #    tests/utf8string     \
 #    tests/unitype        \
 ##    tests/cow_ptr_qt     \
-#    tests/pimpl
+     tests/pimpl

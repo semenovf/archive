@@ -12,8 +12,6 @@
 #include <pfs/string.hpp>
 #include <cstring>
 
-namespace pfs { namespace fsm {
-
 /* There are common predefined macros. */
 #define FSM_MATCH_SEQ(n)                 pfs::fsm::match<pfs::string>(new pfs::fsm::match_seq<pfs::string>(n))
 #define FSM_MATCH_RANGE(min,max)         pfs::fsm::match<pfs::string>(new pfs::fsm::match_range<pfs::string>(min,max))
@@ -37,6 +35,8 @@ namespace pfs { namespace fsm {
 #define FSM_REJECT  1
 #define FSM_ACCEPT  2
 
+namespace pfs { namespace fsm {
+
 template <typename _P>
 struct context;
 
@@ -57,7 +57,7 @@ public:
 
 	match_base() : _ref(1) {}
 	virtual ~match_base() {}
-	virtual ssize_t do_match (context<_P> *fsm, const const_iterator & begin, const const_iterator & end) const = 0;
+	virtual ssize_t do_match (context<_P> *fsm, const_iterator begin, const_iterator end) const = 0;
 	int _ref;
 };
 
@@ -69,7 +69,7 @@ class match
 public:
 	typedef typename _P::char_type char_type;
 	typedef typename _P::const_iterator const_iterator;
-	typedef ssize_t (* func_type)(context<_P> * fsm, void *fn_context, const typename _P::const_iterator & begin, const typename _P::const_iterator & end);
+	typedef ssize_t (* func_type)(context<_P> * fsm, void *fn_context, typename _P::const_iterator begin, typename _P::const_iterator end);
 
 private:
 	match() : _match(nullptr) {}
@@ -94,7 +94,8 @@ public:
 
 	~match () { deref(); }
 
-	ssize_t operator () (context<_P> * fsm, const const_iterator & begin, const const_iterator & end) const {
+	ssize_t operator () (context<_P> * fsm, const_iterator begin, const_iterator end) const
+	{
 		return _match->do_match(fsm, begin, end);
 	}
 };
@@ -109,7 +110,7 @@ struct transition
 	int _state_fail;
 	match<_P> _match;
 	int _status; /* last entry in the chain of ...*/
-	bool (* _action)(const const_iterator & begin, const const_iterator & end, void * context, void * action_args);
+	bool (* _action)(const_iterator begin, const_iterator end, void * context, void * action_args);
 	void * _action_args;
 };
 
@@ -127,7 +128,7 @@ class fsm
 	context<_P> * _context;
 
 public:
-	typedef typename _P::item_type char_type;
+	typedef typename _P::char_type char_type;
 	typedef typename _P::const_iterator const_iterator;
 
 public:
@@ -137,12 +138,12 @@ public:
 
 	void setTransitionTable (transition<_P> * trans) { _context->_trans_tab = trans; }
 	void setUserContext (void * userContext) { _context->_userContext = userContext; }
-	ssize_t exec (int state_cur, const const_iterator & begin, const const_iterator & end);
+	ssize_t exec (int state_cur, const_iterator begin, const_iterator end);
 
 public:
-	static bool belongsChar (char_type ch, const const_iterator & begin, const const_iterator & end);
-	static bool containsChars (const const_iterator & needle_begin, const const_iterator & needle_end
-			, const const_iterator & haystack_begin, const const_iterator & haystack_end);
+	static bool belongsChar (char_type ch, const_iterator begin, const_iterator end);
+	static bool containsChars (const_iterator needle_begin, const_iterator needle_end
+			, const_iterator haystack_begin, const_iterator haystack_end);
 	static bool rangeChar (char_type ch, char_type from, char_type to);
 };
 
@@ -151,7 +152,7 @@ public:
  *         specified by begin and end iterators.
  * */
 template <typename _P>
-bool fsm<_P>::belongsChar (/*typename fsm<_P>::*/char_type ch, const const_iterator & begin, const const_iterator & end)
+bool fsm<_P>::belongsChar (/*typename fsm<_P>::*/char_type ch, const_iterator begin, const_iterator end)
 {
 	const_iterator it(begin);
 	while (it < end) {
@@ -168,8 +169,8 @@ bool fsm<_P>::belongsChar (/*typename fsm<_P>::*/char_type ch, const const_itera
  *         (@c needle_begin and @c needle_end respectively).
  * */
 template <typename _P>
-bool fsm<_P>::containsChars (const const_iterator & needle_begin, const const_iterator & needle_end
-		, const const_iterator & haystack_begin, const const_iterator & haystack_end)
+bool fsm<_P>::containsChars (const_iterator needle_begin, const_iterator needle_end
+		, const_iterator haystack_begin, const_iterator haystack_end)
 {
 	const_iterator it_needle(needle_begin);
 	const_iterator it_haystack(haystack_begin);

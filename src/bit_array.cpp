@@ -34,6 +34,13 @@ bit_array::bit_array (size_t size, bool value)
     pd->_nbits = size;
 }
 
+void bit_array::clear ()
+{
+	base_class::detach();
+	bit_array nil;
+	swap(nil);
+}
+
 /**
  * @brief Returns the number of bits stored in the bit array.
  *
@@ -170,7 +177,8 @@ void bit_array::fill (bool value, size_type n)
 	if (n == size()) {
 		fill(value);
 	} else {
-		this->swap(bit_array(n, value));
+		bit_array ba(n, value);
+		this->swap(ba);
 	}
 }
 

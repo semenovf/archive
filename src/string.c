@@ -53,6 +53,8 @@ char * pfs_real_to_string (real_t n, char f, int prec, char * buf, int bufsz)
 {
 	char fmt[32];
 
+	PFS_UNUSED(bufsz);
+
 	if (prec)
 #ifdef PFS_HAVE_LONG_DOUBLE
 		PFS_ASSERT(sprintf(fmt, "%%.%dL%c", prec, f) > 0);

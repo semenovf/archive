@@ -38,9 +38,12 @@ public:
     typedef std::reverse_iterator<iterator>		        reverse_iterator;
     typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
 
+    typedef value_type             char_type; // used in FSM e.g.
+
 public:
 	vector () : base_class() {}
-	vector (size_t n, const T & v = T()) : base_class(new impl_class(n, v)) {}
+	vector (size_type n, const T & v = T()) : base_class(new impl_class(n, v)) {}
+	vector (size_type n, const T v[]);
 
 	template <typename InputIterator>
 	vector (InputIterator first, InputIterator last)
@@ -147,6 +150,17 @@ public:
 
 	void detach_and_assign (T * & p, const T & value); // pfs::reference class requirement
 };
+
+
+template <typename T, typename Alloc>
+vector<T,Alloc>::vector (size_type n, const T v[])
+	: base_class(new impl_class)
+{
+	for (size_type i = 0; i < n; ++i) {
+		append(v[i]);
+	}
+}
+
 
 template <typename T, typename Alloc>
 void vector<T, Alloc>::detach_and_assign (T * & p, const T & value)

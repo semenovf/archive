@@ -500,7 +500,7 @@ void test_to_string ()
 
 #ifdef HAVE_INT64
 	TEST_OK(utfstring::toString(PFS_LONG_LITERAL(9223372036854775807)) == utfstring("9223372036854775807"));
-	TEST_OK(utfstring::toString(PFS_LONG_LITERAL(-9223372036854775808)) == utfstring("-9223372036854775808"));
+	TEST_OK(utfstring::toString(PFS_INT64_MIN) == utfstring("-9223372036854775808"));
 	TEST_OK(utfstring::toString(PFS_ULONG_LITERAL(18446744073709551615)) == utfstring("18446744073709551615"));
 #endif
 
