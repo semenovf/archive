@@ -437,7 +437,12 @@ public:
 	static byte_string toString (unsigned long long value, int base = 10, bool uppercase = false);
 	static byte_string toString (float value, char f = 'f', int prec = 6);
 	static byte_string toString (double value, char f = 'f', int prec = 6);
+#ifdef PFS_HAVE_LONG_DOUBLE
 	static byte_string toString (long double value, char f = 'f', int prec = 6);
+#endif
+
+	static byte_string fromLatin1 (const char * latin1, size_t n) { return byte_string(latin1, n); }
+	static byte_string fromLatin1 (const char * latin1) { return byte_string(latin1); }  // used in safeformat e.g.
 };
 
 
@@ -532,12 +537,6 @@ inline byte_string byte_string::toString (long value, int base, bool uppercase)
 	return byte_string(pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
 }
 
-inline byte_string byte_string::toString (long long value, int base, bool uppercase)
-{
-	char buf[65];
-	return byte_string(pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
-}
-
 inline byte_string byte_string::toString (unsigned int value, int base, bool uppercase)
 {
 	char buf[65];
@@ -550,11 +549,19 @@ inline byte_string byte_string::toString (unsigned long value, int base, bool up
 	return byte_string(pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
 }
 
+#ifdef PFS_HAVE_LONGLONG
+inline byte_string byte_string::toString (long long value, int base, bool uppercase)
+{
+	char buf[65];
+	return byte_string(pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+}
+
 inline byte_string byte_string::toString (unsigned long long value, int base, bool uppercase)
 {
 	char buf[65];
 	return byte_string(pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
 }
+#endif
 
 inline byte_string byte_string::toString (float value, char f, int prec)
 {
@@ -568,11 +575,13 @@ inline byte_string byte_string::toString (double value, char f, int prec)
 	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, 129));
 }
 
+#ifdef PFS_HAVE_LONG_DOUBLE
 inline byte_string byte_string::toString (long double value, char f, int prec)
 {
 	char buf[129];
 	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, 129));
 }
+#endif
 
 inline bool operator == (const byte_string & lhs, const byte_string & rhs)
 {

@@ -13,11 +13,11 @@
 #include <math.h> /* for NAN */
 
 #if defined(HAVE_INT64) && ! defined(PFS_OS_64BITS)
-#		define PFS_LONG_LITERAL(x) x##LL
-#		define PFS_ULONG_LITERAL(x) x##ULL
+#	define PFS_LONG_LITERAL(x) x##LL
+#	define PFS_ULONG_LITERAL(x) x##ULL
 #else
-#		define PFS_LONG_LITERAL(x) x##L
-#		define PFS_ULONG_LITERAL(x) x##UL
+#	define PFS_LONG_LITERAL(x) x##L
+#	define PFS_ULONG_LITERAL(x) x##UL
 #endif
 
 #define PFS_INT8_MAX   127

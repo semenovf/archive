@@ -27,14 +27,16 @@
 	|| defined(__LP64__)
 #	define PFS_OS_64BITS
 #	define PFS_OS_BITS    64
+#	define HAVE_INT64 1        /* TODO deprecated */
+#	define PFS_HAVE_INT64 1
 #else
 #	define PFS_OS_32BITS
 #	define PFS_OS_BITS    32
 #endif
 
 #ifdef ULLONG_MAX
-#	define HAVE_INT64
-#	define HAVE_LONGLONG
+#	define HAVE_LONGLONG 1     /* TODO deprecated */
+#	define PFS_HAVE_LONGLONG 1
 #endif
 
 #endif /* ! __BORLANDC__ */

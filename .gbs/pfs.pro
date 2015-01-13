@@ -14,7 +14,7 @@ SUBDIRS  = \
      tests/mbcs_string \
      tests/fsm        \
      tests/function   \
-#    tests/strtoreal  \
+     tests/strtoreal  \
      tests/vector     \
      tests/stack      \
 #    tests/map_hash   \

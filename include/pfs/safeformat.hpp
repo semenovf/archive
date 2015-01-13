@@ -13,14 +13,18 @@
 #include "pfs/bytearray.hpp"
 #include "pfs/shared_ptr.hpp"
 
-#define _Fr(s) pfs::safeformat(_u8(s))
+//#define _Fr(s) pfs::safeformat(_u8(s))
 
 namespace pfs {
 
 struct safeformat_context;
 
+template <typename StringT>
 class safeformat
 {
+	typedef typename StringT::const_iterator const_iterator;
+	typedef typename StringT::value_type value_type;
+
 public:
 	enum Flag {
 		  NoFlag
@@ -40,16 +44,55 @@ public:
 		                                // @c NeedSign overrides a @c SpaceBeforePositive if both are used.
 	};
 
+	struct conversion_spec
+	{
+		int    flags;
+		int    width;
+		int    prec; // The default precision is 1
+		value_type spec_char;
+
+		void clear ()
+		{
+			flags     = safeformat::NoFlag;
+			width     = 0;
+			prec      = 1;
+			spec_char = 0;
+		}
+	};
+
+	struct context
+	{
+		StringT          format;
+		const_iterator   pos; // current position in format string
+		StringT          result;
+		conversion_spec  spec;
+	};
+
+private:
+	// Deny copy
+	safeformat (const safeformat & );
+	safeformat & operator = (const safeformat & sf);
+
+private:
+	value_type getc ();
+	void ungetc ();
+	void read_plain_chars ();
+	void read_tail ();
+	bool parse_spec ();
+
 public:
 	safeformat () {}
-	safeformat (const pfs::string & format);
-	safeformat (const char * latin1Format);
+	safeformat (const StringT & format)
+	{
+		_context.format = format;
+	}
+	safeformat (const char * latin1Format)
+	{
+		_context.format = StringT::fromLatin1(latin1Format);
+	}
 
-	safeformat(const safeformat & sf) : _context(sf._context) {}
-	safeformat & operator = (const safeformat & sf) { _context = sf._context; return *this; }
-
-	operator pfs::string & ();
-	const pfs::string & operator () ();
+//	operator pfs::string & ();
+//	const pfs::string & operator () ();
 
 //	safeformat & operator () (const pfs::unitype & ut);
 //	safeformat & operator () (char c)               { return operator () (pfs::unitype(c)); }
@@ -101,8 +144,10 @@ public:
 */
 
 private:
-	pfs::shared_ptr<safeformat_context> _context;
+	context _context;
 };
+
+#include "bits/safeformat_inc.hpp"
 
 } // pfs
 

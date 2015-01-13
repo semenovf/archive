@@ -314,6 +314,11 @@ public:
 	mbcs_string & operator += (const ucchar & ch) { return append(mbcs_string(1, ch)); }
 	mbcs_string & operator += (char latin1) { return append(mbcs_string(1, latin1)); }
 
+	mbcs_string & operator << (const mbcs_string & other) { return append(other); }
+	mbcs_string & operator << (const char * latin1) { return append(mbcs_string(latin1)); }
+	mbcs_string & operator << (const ucchar & ch) { return append(mbcs_string(1, ch)); }
+	mbcs_string & operator << (char latin1) { return append(mbcs_string(1, latin1)); }
+
 private:
     // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::mbcs_string’"
     template <typename InputIt>
@@ -324,6 +329,13 @@ private:
     template <typename InputIt>
     mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, mbcs_string_type_trait<InputIt>);
     mbcs_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, mbcs_string_type_trait<const_iterator>);
+
+
+public:
+    struct formatter
+	{
+
+    };
 
 public:
 	struct ConvertState
@@ -350,13 +362,19 @@ public:
 
 	static mbcs_string toString (int value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (long value, int base = 10, bool uppercase = false);
-	static mbcs_string toString (long long value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (unsigned int value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (unsigned long value, int base = 10, bool uppercase = false);
-	static mbcs_string toString (unsigned long long value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (float value, char f = 'f', int prec = 6);
 	static mbcs_string toString (double value, char f = 'f', int prec = 6);
+
+#ifdef PFS_HAVE_LONGLONG
+	static mbcs_string toString (long long value, int base = 10, bool uppercase = false);
+	static mbcs_string toString (unsigned long long value, int base = 10, bool uppercase = false);
+#endif
+
+#ifdef PFS_HAVE_LONG_DOUBLE
 	static mbcs_string toString (long double value, char f = 'f', int prec = 6);
+#endif
 };
 
 template <typename CodeUnitT>
@@ -416,14 +434,6 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long value, int 
 }
 
 template <typename CodeUnitT>
-inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long long value, int base, bool uppercase)
-{
-	char buf[65];
-	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
-}
-
-template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned int value, int base, bool uppercase)
 {
 	char buf[65];
@@ -439,6 +449,15 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long va
 			pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
 }
 
+#ifdef PFS_HAVE_LONGLONG
+template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long long value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+}
+
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long long value, int base, bool uppercase)
 {
@@ -446,6 +465,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long lo
 	return mbcs_string<CodeUnitT>::fromLatin1(
 			pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
 }
+#endif
 
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (float value, char f, int prec)
@@ -463,6 +483,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (double value, ch
 			pfs_real_to_string(real_t(value), f, prec, buf, 129));
 }
 
+#ifdef PFS_HAVE_LONG_DOUBLE
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long double value, char f, int prec)
 {
@@ -470,6 +491,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long double valu
 	return mbcs_string<CodeUnitT>::fromLatin1(
 			pfs_real_to_string(real_t(value), f, prec, buf, 129));
 }
+#endif
 
 template <typename CodeUnitT>
 inline bool operator == ( const mbcs_string<CodeUnitT> & lhs
