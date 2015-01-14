@@ -10,50 +10,38 @@
 
 namespace pfs {
 
-template <typename StringT>
-inline safeformat<StringT>::value_type safeformat<StringT>::getc ()
-{
-	return _context.pos != _context.format.cend() ? *_context.pos++ : value_type(0);
-}
-
-template <typename StringT>
-inline void safeformat<StringT>::ungetc ()
-{
-	PFS_ASSERT(_context.pos > _context.format.cbegin());
-	--_context.pos;
-}
+//template <typename StringT>
+//inline void safeformat<StringT>::ungetc ()
+//{
+//	PFS_ASSERT(_ctx.pos > _ctx.format.cbegin());
+//	--_ctx.pos;
+//}
 
 /**
  * @return '\0' at the end of string, '%' otherwise
  */
 template <typename StringT>
-void safeformat<StringT>::read_plain_chars ()
+void safeformat<StringT>::advance ()
 {
-	value_type v;
-	while ((v = getc()) != value_type(0)) {
-		if (v == value_type('%')) {
-			v = getc();
-			if (v == value_type('%')) {
-				_context.result.append(v);
+	char_type v;
+	while ((v = getc()) != char_type(0)) {
+		if (getc() == char_type('%')) {
+			nextc();
+			if (getc() == char_type('%')) {
+				_ctx.result.append(char_type('%'));
 			} else {
-				if (v != value_type(0)) {
-					ungetc();
-					return value_type('%');
-				} else {
-					return value_type(0);
-				}
 			}
 		} else {
-			_context.result.append(v);
+			_ctx.result.append(v);
 		}
 	}
 }
 
-template <typename StringT>
-inline void safeformat<StringT>::read_tail ()
-{
-	_context.result.append(_context.pos, _context.format.cend());
-}
+//template <typename StringT>
+//inline void safeformat<StringT>::read_tail ()
+//{
+//	_context.result.append(_context.pos, _context.format.cend());
+//}
 
 
 /*
@@ -71,26 +59,49 @@ inline void safeformat<StringT>::read_tail ()
  * 		 / 'p'
  * */
 template <typename StringT>
-bool safeformat<StringT>::parse_spec ()
+void safeformat<StringT>::parseFlags ()
 {
-	value_type v = read_plain_chars();
-
-	if (v == value_type('%')) {
-
-		// read flag char
-		v = getc();
-		if (v == value_type('0')) {
-
-		} else if (v == value_type('-')) {
-
-		} else if (v == value_type(' ')) {
-
-		} else if (v == value_type('+')) {
-
+	char_type v;
+	while ((v = getc()) != char_type(0)) {
+		if (v == char_type('0')) {
+			setZeroPadding();
+		} else if (v == char_type('-')) {
+			setLeftJustify();
+		} else if (v == char_type(' ')) {
+			setSpaceBeforePositive();
+		} else if (v == char_type('+')) {
+			setNeedSign();
 		} else {
-
+			break;
 		}
+		nextc();
 	}
+}
+
+template <typename StringT>
+void safeformat<StringT>::parseFieldWidth ()
+{
+	PFS_ASSERT_FORMAT(hasMore());
+	char_type v;
+	const_iterator p0 = _ctx.pos;
+
+	if (isDigitExcludeZero(getc())) {
+		while (isDigit(getc())) nextc();
+	}
+
+	if (_ctx.pos > p0) {
+		StringT s(p0, _ctx.pos);
+	}
+}
+
+template <typename StringT>
+void safeformat<StringT>::parseSpec ()
+{
+	char_type v;
+
+	advance();
+	PFS_ASSERT_FORMAT(hasMore());
+	parseFlags();
 }
 
 

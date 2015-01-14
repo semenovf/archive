@@ -23,7 +23,8 @@ template <typename StringT>
 class safeformat
 {
 	typedef typename StringT::const_iterator const_iterator;
-	typedef typename StringT::value_type value_type;
+	typedef typename StringT::char_type char_type;
+	//typedef typename StringT::difference_type difference_type;
 
 public:
 	enum Flag {
@@ -49,15 +50,7 @@ public:
 		int    flags;
 		int    width;
 		int    prec; // The default precision is 1
-		value_type spec_char;
-
-		void clear ()
-		{
-			flags     = safeformat::NoFlag;
-			width     = 0;
-			prec      = 1;
-			spec_char = 0;
-		}
+		char_type spec_char;
 	};
 
 	struct context
@@ -74,21 +67,68 @@ private:
 	safeformat & operator = (const safeformat & sf);
 
 private:
-	value_type getc ();
-	void ungetc ();
-	void read_plain_chars ();
-	void read_tail ();
-	bool parse_spec ();
+	char_type getc () { return hasMore() ? *_ctx.pos : char_type(0); }
+	void nextc ()      { if (hasMore()) ++_ctx.pos; }
+	bool hasMore ()    { return _ctx.pos != _ctx.format.cend(); }
+//	void ungetc ();
+
+	void advance ();
+//	void read_tail ();
+	void parseSpec ();
+	void clearSpec ()
+	{
+		_ctx.spec.flags     = safeformat::NoFlag;
+		_ctx.spec.width     = 0;
+		_ctx.spec.prec      = 1;
+		_ctx.spec.spec_char = 0;
+	}
+
+	bool isDigit (char_type v)
+	{
+		return (v == char_type('0')
+				|| v == char_type('1')
+				|| v == char_type('2')
+				|| v == char_type('3')
+				|| v == char_type('4')
+				|| v == char_type('5')
+				|| v == char_type('6')
+				|| v == char_type('7')
+				|| v == char_type('8')
+				|| v == char_type('9')) ? true : false;
+	}
+
+	bool isDigitExcludeZero (char_type v)
+	{
+		return (v == char_type('1')
+				|| v == char_type('2')
+				|| v == char_type('3')
+				|| v == char_type('4')
+				|| v == char_type('5')
+				|| v == char_type('6')
+				|| v == char_type('7')
+				|| v == char_type('8')
+				|| v == char_type('9')) ? true : false;
+	}
+
+
+	void parseFlags ();
+	void parseFieldWidth ();
+	void setZeroPadding () { _ctx.spec.flags |= ZeroPadding; }
+	void setLeftJustify () { _ctx.spec.flags |= LeftJustify; }
+	void setSpaceBeforePositive () { _ctx.spec.flags |= SpaceBeforePositive; }
+	void setNeedSign () { _ctx.spec.flags |= NeedSign; }
 
 public:
 	safeformat () {}
 	safeformat (const StringT & format)
 	{
-		_context.format = format;
+		_ctx.format = format;
+		clearSpec();
 	}
 	safeformat (const char * latin1Format)
 	{
-		_context.format = StringT::fromLatin1(latin1Format);
+		_ctx.format = StringT::fromLatin1(latin1Format);
+		clearSpec();
 	}
 
 //	operator pfs::string & ();
@@ -144,7 +184,7 @@ public:
 */
 
 private:
-	context _context;
+	context _ctx;
 };
 
 #include "bits/safeformat_inc.hpp"

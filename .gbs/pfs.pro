@@ -14,6 +14,7 @@ SUBDIRS  = \
      tests/mbcs_string \
      tests/fsm        \
      tests/function   \
+     tests/strtolong  \
      tests/strtoreal  \
      tests/vector     \
      tests/stack      \

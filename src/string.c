@@ -28,7 +28,7 @@ char * pfs_ulong_to_string (ulong_t n, int base, int uppercase, char * buf, int 
 {
 	char * p = & buf[bufsz - 1];
 
-	PFS_ASSERT(base > 1 && base <= 36);
+	PFS_ASSERT_RANGE(base >= 2 && base <= 36);
 
 	buf[bufsz - 1] = '\0';
 
@@ -72,4 +72,23 @@ char * pfs_real_to_string (real_t n, char f, int prec, char * buf, int bufsz)
 	return buf;
 }
 
+/**
+ * @brief Convert character to integer (according to radix from 2 to 36 including)
+ *
+ * @param latin1 Character to convert
+ * @return Converted digit, or -1
+ */
+int pfs_latin1_to_digit (char latin1)
+{
+	if (latin1 >= '0' && latin1 <= '9')
+		return latin1 - '0';
+
+	if (latin1 >= 'A' && latin1 <= 'Z')
+		return latin1 - 'A';
+
+	if (latin1 >= 'a' && latin1 <= 'z')
+		return latin1 - 'a';
+
+	return -1;
+}
 

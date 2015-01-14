@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <pfs/pp/config.h>
 #include <pfs/pp/global.h>
+#include <pfs/pp/assert.h>
 #include <pfs/pp/types.h>
 #include <pfs/pp/limits.h>
 

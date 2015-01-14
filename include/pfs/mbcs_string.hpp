@@ -332,12 +332,6 @@ private:
 
 
 public:
-    struct formatter
-	{
-
-    };
-
-public:
 	struct ConvertState
 	{
 		ConvertState() : nremain(0), invalidChars(0), replacementChar(ucchar::ReplacementChar) {}
