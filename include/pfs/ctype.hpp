@@ -21,6 +21,11 @@ bool is_space (CharT v)
 			|| v == CharT('\v');
 }
 
+template <typename CharT>
+bool is_latin1 (CharT v)
+{
+	return uint32_t(v) <= 127;
+}
 
 }
 

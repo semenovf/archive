@@ -75,6 +75,7 @@ struct __verify
 
 #define PFS_ASSERT_FORMAT(expr) PFS_ASSERT(expr)
 #define PFS_ASSERT_RANGE(expr) PFS_ASSERT(expr)
+#define PFS_ASSERT_OVERFLOW(expr) PFS_ASSERT(expr)
 
 
 #endif /* __PFS_ASSERT_H__ */

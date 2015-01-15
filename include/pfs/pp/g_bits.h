@@ -34,6 +34,13 @@
 #	define PFS_OS_BITS    32
 #endif
 
+#ifndef PFS_HAVE_INT64
+#	if defined(ULLONG_MAX) && defined(ULONG_MAX) && (ULLONG_MAX > ULONG_MAX)
+#		define HAVE_INT64 1        /* TODO deprecated */
+#		define PFS_HAVE_INT64 1
+#	endif
+#endif
+
 #ifdef ULLONG_MAX
 #	define HAVE_LONGLONG 1     /* TODO deprecated */
 #	define PFS_HAVE_LONGLONG 1

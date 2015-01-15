@@ -305,7 +305,7 @@ void test_to_string ()
 	TEST_OK(pfs::byte_string::toString(-8388608) == "-8388608");
 	TEST_OK(pfs::byte_string::toString(16777215) == "16777215");
 	TEST_OK(pfs::byte_string::toString(2147483647) == "2147483647");
-	TEST_OK(pfs::byte_string::toString(PFS_LONG_LITERAL(-2147483648)) == "-2147483648");
+	TEST_OK(pfs::byte_string::toString(PFS_INT32_MIN) == "-2147483648");
 	TEST_OK(pfs::byte_string::toString(PFS_ULONG_LITERAL(4294967295)) == "4294967295");
 
 #ifdef HAVE_INT64
@@ -383,7 +383,6 @@ void test_cow ()
 	TEST_OK(s2 == "Hello?");
 }
 
-
 void test_convert_to_number ()
 {
 	bool ok;
@@ -393,7 +392,10 @@ void test_convert_to_number ()
 
 	TEST_OK(pfs::byte_string("1").toUInt(& ok) == 1 && ok);
 	TEST_OK(pfs::byte_string("+1").toUInt(& ok) == 1 && ok);
-	TEST_OK(pfs::byte_string("-1").toUInt(& ok) == 0 && !ok);
+
+	TEST_OK(pfs::byte_string("-1").toUInt(& ok) == 0 && !ok); // FIXME (result valid for linux64 and win64)
+	//TEST_OK(pfs::byte_string("-1").toUInt(& ok) == PFS_UINT32_MAX && ok); // FIXME (result valid for win32)
+	//cout << pfs::byte_string("-1").toUInt(& ok) << endl;
 
 	TEST_OK(pfs::byte_string("123").toUInt(& ok) == 123 && ok);
 
@@ -401,10 +403,10 @@ void test_convert_to_number ()
 #	ifdef PFS_HAVE_LONGLONG
 	TEST_OK(pfs::byte_string("18446744073709551615").toULongLong(& ok) == PFS_ULONG_MAX && ok);
 #	else
-	TEST_OK(pfs::byte_string(("18446744073709551615").toULong(& ok) == PFS_ULONG_MAX) && ok);
+	TEST_OK(pfs::byte_string("18446744073709551615").toULong(& ok) == PFS_ULONG_MAX && ok);
 #	endif
 #else
-	TEST_OK(compare_unsigned("4294967295", PFS_ULONG_MAX));
+	TEST_OK(pfs::byte_string("4294967295").toULong(& ok) == PFS_ULONG_MAX && ok);
 #endif
 
 //	TEST_OK(compare_signed("0", 0));

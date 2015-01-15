@@ -135,26 +135,35 @@
 #	ifdef PFS_CC_MSVC
 #		define PFS_CHECK_SIZEOF_WCHAR PFS_CHECK_SIZEOF_TYPE(wchar_t,2)
 #	else
-#		define PFS_CHECK_SIZEOF_WCHAR
+#		define PFS_CHECK_SIZEOF_WCHAR PFS_CHECK_SIZEOF_TYPE(wchar_t,4)
 #	endif
 
-#	define PFS_CHECK_SIZEOF_TYPES                       \
-	PFS_CHECK_SIZEOF_TYPE(int8_t, 1);                   \
-	PFS_CHECK_SIZEOF_TYPE(uint8_t, 1);                  \
-	PFS_CHECK_SIZEOF_TYPE(int16_t, 2);                  \
-	PFS_CHECK_SIZEOF_TYPE(uint16_t, 2);                 \
-	PFS_CHECK_SIZEOF_TYPE(int32_t, 4);                  \
-	PFS_CHECK_SIZEOF_TYPE(uint32_t, 4);                 \
-	PFS_CHECK_SIZEOF_TYPE(int64_t, 8);                  \
-	PFS_CHECK_SIZEOF_TYPE(uint64_t, 8);                 \
-	PFS_CHECK_SIZEOF_TYPE(sbyte_t, 1);                  \
-	PFS_CHECK_SIZEOF_TYPE(byte_t, 1);                   \
-	PFS_CHECK_SIZEOF_TYPE(short_t, 2);                  \
-	PFS_CHECK_SIZEOF_TYPE(ushort_t, 2);                 \
-	PFS_CHECK_SIZEOF_TYPE(int_t, 4);                    \
-	PFS_CHECK_SIZEOF_TYPE(uint_t, 4);                   \
-	PFS_CHECK_SIZEOF_TYPE(long_t, 8);                   \
-	PFS_CHECK_SIZEOF_TYPE(ulong_t, 8);                  \
+#	ifdef PFS_HAVE_INT64
+#		define PFS_CHECK_SIZEOF_LONG              \
+			PFS_CHECK_SIZEOF_TYPE(int64_t, 8);    \
+			PFS_CHECK_SIZEOF_TYPE(uint64_t, 8);   \
+			PFS_CHECK_SIZEOF_TYPE(long_t, 8);     \
+			PFS_CHECK_SIZEOF_TYPE(ulong_t, 8);
+#	else
+#		define PFS_CHECK_SIZEOF_LONG              \
+			PFS_CHECK_SIZEOF_TYPE(long_t, 4);     \
+			PFS_CHECK_SIZEOF_TYPE(ulong_t, 4);
+#	endif
+
+#	define PFS_CHECK_SIZEOF_TYPES                 \
+	PFS_CHECK_SIZEOF_TYPE(int8_t, 1);             \
+	PFS_CHECK_SIZEOF_TYPE(uint8_t, 1);            \
+	PFS_CHECK_SIZEOF_TYPE(int16_t, 2);            \
+	PFS_CHECK_SIZEOF_TYPE(uint16_t, 2);           \
+	PFS_CHECK_SIZEOF_TYPE(int32_t, 4);            \
+	PFS_CHECK_SIZEOF_TYPE(uint32_t, 4);           \
+	PFS_CHECK_SIZEOF_TYPE(sbyte_t, 1);            \
+	PFS_CHECK_SIZEOF_TYPE(byte_t, 1);             \
+	PFS_CHECK_SIZEOF_TYPE(short_t, 2);            \
+	PFS_CHECK_SIZEOF_TYPE(ushort_t, 2);           \
+	PFS_CHECK_SIZEOF_TYPE(int_t, 4);              \
+	PFS_CHECK_SIZEOF_TYPE(uint_t, 4);             \
+	PFS_CHECK_SIZEOF_LONG                         \
 	PFS_CHECK_SIZEOF_WCHAR
 #else
 #	define PFS_CHECK_SIZEOF_TYPES
@@ -173,8 +182,10 @@ template<> inline int16_t  max_type<int16_t>  () { return int16_t(PFS_INT16_MAX)
 template<> inline uint16_t max_type<uint16_t> () { return uint16_t(PFS_UINT16_MAX); }
 template<> inline int32_t  max_type<int32_t>  () { return int32_t(PFS_INT32_MAX); }
 template<> inline uint32_t max_type<uint32_t> () { return uint32_t(PFS_UINT32_MAX); }
+#ifdef PFS_HAVE_INT64
 template<> inline int64_t  max_type<int64_t>  () { return int64_t(PFS_INT64_MAX); }
 template<> inline uint64_t max_type<uint64_t> () { return uint64_t(PFS_UINT64_MAX); }
+#endif
 template<> inline float    max_type<float>    () { return float(PFS_FLOAT_MAX); }
 template<> inline double   max_type<double>   () { return double(PFS_DOUBLE_MAX); }
 
@@ -188,8 +199,10 @@ template<> inline int16_t  min_type<int16_t>  () { return int16_t(PFS_INT16_MIN)
 template<> inline uint16_t min_type<uint16_t> () { return uint16_t(0); }
 template<> inline int32_t  min_type<int32_t>  () { return int32_t(PFS_INT32_MIN); }
 template<> inline uint32_t min_type<uint32_t> () { return uint32_t(0); }
+#ifdef PFS_HAVE_INT64
 template<> inline int64_t  min_type<int64_t>  () { return int64_t(PFS_INT64_MIN); }
 template<> inline uint64_t min_type<uint64_t> () { return uint64_t(0); }
+#endif
 template<> inline float    min_type<float>    () { return float(PFS_FLOAT_MIN); }
 template<> inline double   min_type<double>   () { return double(PFS_DOUBLE_MIN); }
 

@@ -163,16 +163,18 @@ public:
 
 	byte_string_ptr & operator += (difference_type n)
 	{
+		if (n > 0)
+			PFS_ASSERT_OVERFLOW(_off + n <= _holder->size());
+		else
+			PFS_ASSERT_OVERFLOW(_off >= size_type(- n));
+
 		_off += n;
-		PFS_ASSERT(_off <= _holder->size());
 		return *this;
 	}
 
 	byte_string_ptr & operator -= (difference_type n)
 	{
-		PFS_ASSERT(_off >= n);
-		_off -= n;
-		return *this;
+		return operator += (- n);
 	}
 
     // Random access iterator requirements

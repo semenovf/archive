@@ -15,8 +15,7 @@
 using std::cout;
 using std::endl;
 
-// FIXME Replace strcmp with compare_with and compare_with_utf8
-
+// FIXME Replace strcmp in test code with compare_with and compare_with_utf8
 template <typename CodeUnitT>
 int compare_with (const CodeUnitT * ptr1, const CodeUnitT * ptr2);
 
@@ -495,7 +494,7 @@ void test_to_string ()
 	TEST_OK(utfstring::toString(-8388608) == utfstring("-8388608"));
 	TEST_OK(utfstring::toString(16777215) == utfstring("16777215"));
 	TEST_OK(utfstring::toString(2147483647) == utfstring("2147483647"));
-	TEST_OK(utfstring::toString(PFS_LONG_LITERAL(-2147483648)) == utfstring("-2147483648"));
+	TEST_OK(utfstring::toString(PFS_INT_MIN) == utfstring("-2147483648"));
 	TEST_OK(utfstring::toString(PFS_ULONG_LITERAL(4294967295)) == utfstring("4294967295"));
 
 #ifdef HAVE_INT64
@@ -516,6 +515,62 @@ void test_to_string ()
 }
 
 template <typename CodeUnitT>
+void test_convert_to_number ()
+{
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
+
+	bool ok;
+	TEST_OK(utfstring("0").toUInt(& ok) == 0 && ok);
+	TEST_OK(utfstring("+0").toUInt(& ok) == 0 && ok);
+	TEST_OK(utfstring("-0").toUInt(& ok) == 0 && ok);
+
+	TEST_OK(utfstring("1").toUInt(& ok) == 1 && ok);
+	TEST_OK(utfstring("+1").toUInt(& ok) == 1 && ok);
+
+	TEST_OK(utfstring("-1").toUInt(& ok) == 0 && !ok); // FIXME (result valid for linux64 and win64)
+//	TEST_OK(utfstring("-1").toUInt(& ok) == PFS_UINT32_MAX && ok); // FIXME (result valid for win32)
+//	cout << utfstring("-1").toUInt(& ok) << endl;
+
+	TEST_OK(utfstring("123").toUInt(& ok) == 123 && ok);
+
+#ifdef PFS_HAVE_INT64
+#	ifdef PFS_HAVE_LONGLONG
+	TEST_OK(utfstring("18446744073709551615").toULongLong(& ok) == PFS_ULONG_MAX && ok);
+#	else
+	TEST_OK(utfstring("18446744073709551615").toULong(& ok) == PFS_ULONG_MAX && ok);
+#	endif
+#else
+	TEST_OK(utfstring("4294967295").toULong(& ok) == PFS_ULONG_MAX && ok);
+#endif
+
+#ifdef PFS_HAVE_INT64
+#	ifdef PFS_HAVE_LONGLONG
+	TEST_OK(utfstring("9223372036854775807").toLongLong(& ok) == PFS_LONG_MAX && ok);
+	TEST_OK(utfstring("-9223372036854775808").toLongLong(& ok) == PFS_LONG_MIN && ok);
+#	else
+	TEST_OK(utfstring("9223372036854775807").toLong(& ok) == PFS_LONG_MAX && ok);
+	TEST_OK(utfstring("-9223372036854775808").toLong(& ok) == PFS_LONG_MIN && ok);
+#	endif
+#else
+	TEST_OK(utfstring("2147483647").toLong(& ok) == PFS_LONG_MAX && ok);
+	TEST_OK(utfstring("-2147483648").toLong(& ok) == PFS_LONG_MIN && ok);
+#endif
+
+	TEST_OK(utfstring("0").toInt(& ok) == 0 && ok);
+//	TEST_OK(compare_signed("+0", 0));
+//	TEST_OK(compare_signed("-0", 0));
+//
+//	TEST_OK(compare_signed("1", 1));
+//	TEST_OK(compare_signed("+1", 1));
+//	TEST_OK(compare_signed("-1", -1));
+//
+//	TEST_OK(compare_signed("123", 123));
+//	TEST_OK(compare_signed("+123", 123));
+//	TEST_OK(compare_signed("-123", -123));
+
+}
+
+template <typename CodeUnitT>
 void test_suite ()
 {
 	test_size_length<CodeUnitT>();
@@ -532,13 +587,15 @@ void test_suite ()
 	test_replace<CodeUnitT>();
 	test_find<CodeUnitT>();
 	test_to_string<CodeUnitT>();
+
+	test_convert_to_number<CodeUnitT>();
 }
 
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    int ntests = 167;
+    int ntests = 178;
 #ifdef HAVE_INT64
     ntests += 3;
 #endif

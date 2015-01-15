@@ -13,7 +13,7 @@
 #include <pfs/ucchar.hpp>
 #include <pfs/bits/mbcs_string_impl.hpp>
 #include <pfs/byte_string.hpp>
-#include <pfs/string.h>
+#include <pfs/bits/strtolong.hpp>
 #include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -309,6 +309,18 @@ public:
 
 	mbcs_string substr (size_type index, size_type count) const;
 
+	short          toShort  (bool * ok = 0, int base = 10) const;
+	unsigned short toUShort (bool * ok = 0, int base = 10) const;
+	int	           toInt    (bool * ok = 0, int base = 10) const;
+	unsigned int   toUInt   (bool * ok = 0, int base = 10) const;
+	long           toLong   (bool * ok = 0, int base = 10) const;
+	unsigned long  toULong  (bool * ok = 0, int base = 10) const;
+
+#ifdef PFS_HAVE_LONGLONG
+	long long toLongLong (bool * ok = 0, int base = 10) const;
+	unsigned long long toULongLong (bool * ok = 0, int base = 10) const;
+#endif
+
 	mbcs_string & operator += (const mbcs_string & other) { return append(other); }
 	mbcs_string & operator += (const char * latin1) { return append(mbcs_string(latin1)); }
 	mbcs_string & operator += (const ucchar & ch) { return append(mbcs_string(1, ch)); }
@@ -410,6 +422,75 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 
 	return replace(first, last, s);
 }
+
+template <typename CodeUnitT>
+short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
+{
+	return (short)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_SHORT_MIN, PFS_SHORT_MAX);
+}
+
+template <typename CodeUnitT>
+unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
+{
+	return (unsigned short)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_USHORT_MAX);
+}
+
+template <typename CodeUnitT>
+int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
+{
+	return (int)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_INT_MIN, PFS_INT_MAX);
+}
+
+template <typename CodeUnitT>
+unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
+{
+	return (unsigned int)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_UINT_MAX);
+}
+
+template <typename CodeUnitT>
+long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
+{
+#ifdef PFS_HAVE_LONGLONG
+	return (long)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_INT_MIN, PFS_INT_MAX);
+#else
+	return (long)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
+#endif
+}
+
+template <typename CodeUnitT>
+unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
+{
+#ifdef PFS_HAVE_LONGLONG
+	return (unsigned long)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_UINT_MAX);
+#else
+	return (unsigned long)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_ULONG_MAX);
+#endif
+}
+
+#ifdef PFS_HAVE_LONGLONG
+template <typename CodeUnitT>
+long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
+{
+	return (long long)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
+}
+
+template <typename CodeUnitT>
+unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int base) const
+{
+	return (unsigned long long)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base, PFS_ULONG_MAX);
+}
+#endif
+
 
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (int value, int base, bool uppercase)

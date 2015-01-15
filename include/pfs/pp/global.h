@@ -1,17 +1,10 @@
 #ifndef __PFS_GLOBAL_H__
 #define __PFS_GLOBAL_H__
 
-#if defined(MSDOS) || defined(__MSDOS__) || defined(_MSDOS)
-#	include <pfs/pp/g_os.h>
-#	include <pfs/pp/g_cc.h>
-#	include <pfs/pp/g_endian.h>
-#	include <pfs/pp/g_bits.h>
-#else
-#	include <pfs/pp/global_os.h>
-#	include <pfs/pp/global_cc.h>
-#	include <pfs/pp/global_endian.h>
-#	include <pfs/pp/global_bits.h>
-#endif /* !MS-DOS*/
+#include <pfs/pp/g_os.h>
+#include <pfs/pp/g_cc.h>
+#include <pfs/pp/g_endian.h>
+#include <pfs/pp/g_bits.h>
 
 #if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
 #	include <cstdlib>

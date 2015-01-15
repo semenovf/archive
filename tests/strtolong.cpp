@@ -76,5 +76,7 @@ int main(int argc, char *argv[])
 	TEST_OK(compare_signed("-2147483648", PFS_LONG_MIN));
 #endif
 
+
+
     END_TESTS;
 }

@@ -14,6 +14,12 @@
 
 namespace pfs {
 
+template <typename CharT>
+inline char portable_cast_char (CharT ch)
+{
+	return char(uint32_t(ch));
+}
+
 /**
  * @brief Converts the initial part of the string bitween
  *        @c pos and @c end (excluding) to an @c ulong_t value
@@ -55,7 +61,7 @@ ulong_t strtoulong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 	if (pos < end) {
 
 		// Skip whitespaces
-		while (pos < end  && pfs::is_space(*pos)) {
+		while (pos < end  && pfs::is_space(portable_cast_char<CharT>(*pos))) {
 			++pos;
 		}
 
@@ -88,7 +94,10 @@ ulong_t strtoulong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 		}
 
 		while (pos != end) {
-			int digit = pfs_latin1_to_digit(*pos);
+			if (!pfs::is_latin1(portable_cast_char<CharT>(*pos)))
+				break;
+
+			int digit = pfs_latin1_to_digit(portable_cast_char<CharT>(*pos)); // portable for char and ucchar types
 
 			// non-digit
 			if (digit < 0)
@@ -108,7 +117,17 @@ ulong_t strtoulong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 		}
 
 		if (sign < 0)
+
+// Disable warning C4146: unary minus operator applied to unsigned type, result still unsigned
+// TODO need portable solution
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4146)
+#endif
 			r = - r;
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 	}
 
 	if (endref)
@@ -143,10 +162,10 @@ long_t strtolong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 
 	Iter pos = begin;
 	ulong_t r = ulong_t(0);
-	Iter endr;
+	Iter endr(begin); // fixing MSVC error C2512: 'pfs::mbcs_string_ptr<_CodeUnitT,Holder>::mbcs_string_ptr' : no appropriate default constructor available
 
 	// Skip whitespaces
-	while (pos < end  && pfs::is_space(*pos)) {
+	while (pos < end  && pfs::is_space(char(uint32_t(CharT(*pos))))) {
 		++pos;
 	}
 
@@ -174,6 +193,58 @@ long_t strtolong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 
 	return r;
 }
+
+
+template <typename CharT, typename IterT>
+long_t strtolong_helper (IterT begin, IterT end, bool * ok, int base, long_t min, long_t max)
+{
+	IterT endptr(begin);
+
+	long_t r = pfs::strtolong<CharT, IterT>(begin, end, base, & endptr);
+
+	if (ok)
+		*ok = false;
+
+    if ((errno == ERANGE && (r == PFS_LONG_MAX || r == PFS_LONG_MIN))
+            || (errno != 0 && r == 0)) {
+    	r = 0; // error
+    } else if (endptr == begin) {
+    	r = 0; // error
+    } else if (r < min || r > max) {
+    	r = 0; // error
+    } else {
+    	if (ok)
+    		*ok = true;
+    }
+
+	return r;
+}
+
+template <typename CharT, typename IterT>
+ulong_t strtoulong_helper (IterT begin, IterT end, bool * ok, int base, ulong_t max)
+{
+	IterT endptr(begin);
+
+	ulong_t r = pfs::strtoulong<CharT, IterT>(begin, end, base, & endptr);
+
+	if (ok)
+		*ok = false;
+
+    if ((errno == ERANGE && (r == PFS_ULONG_MAX))
+            || (errno != 0 && r == 0)) {
+    	r = 0; // error
+    } else if (endptr == begin) {
+    	r = 0; // error
+    } else if (r > max) {
+    	r = 0; // error
+    } else {
+    	if (ok)
+    		*ok = true;
+    }
+
+	return r;
+}
+
 
 } // pfs
 
