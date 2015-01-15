@@ -6,6 +6,7 @@
  */
 
 #include <pfs/byte_string.hpp>
+#include <pfs/bits/strtolong.hpp>
 #include <cstring>
 
 namespace pfs {
@@ -329,6 +330,109 @@ byte_string byte_string::substr (size_type index, size_type count) const
 	}
 	return r;
 }
+
+static ulong_t strtoulong_helper (const byte_string & s, bool * ok, int base, ulong_t max)
+{
+	const char * endptr = nullptr;
+	const char * begin  = (const char *)s.constData();
+	const char * end    = (const char *)(s.constData() + s.size());
+	ulong_t r = pfs::strtoulong<char, const char *>(begin, end, base, & endptr);
+
+	if (ok)
+		*ok = false;
+
+    if ((errno == ERANGE && (r == PFS_ULONG_MAX))
+            || (errno != 0 && r == 0)) {
+    	r = 0; // error
+    } else if (endptr == begin) {
+    	r = 0; // error
+    } else if (r > max) {
+    	r = 0; // error
+    } else {
+    	if (ok)
+    		*ok = true;
+    }
+
+	return r;
+}
+
+static long_t strtolong_helper (const byte_string & s, bool * ok, int base, long_t min, long_t max)
+{
+	const char * endptr = nullptr;
+	const char * begin  = (const char *)s.constData();
+	const char * end    = (const char *)(s.constData() + s.size());
+	long_t r = pfs::strtolong<char, const char *>(begin, end, base, & endptr);
+
+	if (ok)
+		*ok = false;
+
+    if ((errno == ERANGE && (r == PFS_LONG_MAX || r == PFS_LONG_MIN))
+            || (errno != 0 && r == 0)) {
+    	r = 0; // error
+    } else if (endptr == begin) {
+    	r = 0; // error
+    } else if (r < min || r > max) {
+    	r = 0; // error
+    } else {
+    	if (ok)
+    		*ok = true;
+    }
+
+	return r;
+}
+
+
+short byte_string::toShort (bool * ok, int base) const
+{
+	return strtolong_helper(*this, ok, base, PFS_SHORT_MIN, PFS_SHORT_MAX);
+}
+
+unsigned short byte_string::toUShort (bool * ok, int base) const
+{
+	return strtoulong_helper(*this, ok, base, PFS_USHORT_MAX);
+}
+
+int	byte_string::toInt (bool * ok, int base) const
+{
+	return strtolong_helper(*this, ok, base, PFS_INT_MIN, PFS_INT_MAX);
+}
+
+unsigned int byte_string::toUInt (bool * ok, int base) const
+{
+	return strtoulong_helper(*this, ok, base, PFS_UINT_MAX);
+}
+
+long byte_string::toLong (bool * ok, int base) const
+{
+#ifdef PFS_HAVE_LONGLONG
+	return strtolong_helper(*this, ok, base, PFS_INT_MIN, PFS_INT_MAX);
+#else
+	return strtolong_helper(*this, ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
+#endif
+}
+
+unsigned long byte_string::toULong (bool * ok, int base) const
+{
+#ifdef PFS_HAVE_LONGLONG
+	return strtoulong_helper(*this, ok, base, PFS_UINT_MAX);
+#else
+	return strtoulong_helper(*this, ok, base, PFS_ULONG_MAX);
+#endif
+
+}
+
+#ifdef PFS_HAVE_LONGLONG
+long long byte_string::toLongLong (bool * ok, int base) const
+{
+	return strtolong_helper(*this, ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
+}
+
+unsigned long long byte_string::toULongLong (bool * ok, int base) const
+{
+	return strtoulong_helper(*this, ok, base, PFS_ULONG_MAX);
+}
+#endif
+
 
 byte_string byte_string::fromBase64 (const byte_string & base64)
 {

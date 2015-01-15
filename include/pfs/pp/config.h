@@ -75,7 +75,8 @@
 #if defined(__PTRDIFF_TYPE__)      \
 	|| defined(_PTRDIFF_T_DEFINED)  /* msvc */ \
 	|| defined(_PTRDIFF_T)          /* borland c++ */
-#	define HAVE_PTRDIFF_T 1
+#	define HAVE_PTRDIFF_T 1         /* TODO deprecated */
+#	define PFS_HAVE_PTRDIFF_T 1
 #endif
 
 #ifdef __cplusplus

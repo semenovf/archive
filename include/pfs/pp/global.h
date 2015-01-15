@@ -71,6 +71,7 @@
 #	define EXTERN_C_END
 #endif
 
+/*
 #if defined(PFS_CC_MSVC)
 #	ifdef HAVE_INT64
 #		define strtolong  _strtoi64
@@ -88,6 +89,7 @@
 #		define strtoulong strtoull
 #	endif
 #endif
+*/
 
 #ifdef __DEPRECATED__
 #if defined(PFS_CC_MSVC)/* && defined(__cplusplus)*/

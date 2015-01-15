@@ -393,6 +393,18 @@ public:
 	template <typename ValT>
 	size_t readNumber (ValT & v, size_t pos = 0, endian::type_enum order = endian::nativeOrder()) const;
 
+	short          toShort  (bool * ok = 0, int base = 10) const;
+	unsigned short toUShort (bool * ok = 0, int base = 10) const;
+	int	           toInt    (bool * ok = 0, int base = 10) const;
+	unsigned int   toUInt   (bool * ok = 0, int base = 10) const;
+	long           toLong   (bool * ok = 0, int base = 10) const;
+	unsigned long  toULong  (bool * ok = 0, int base = 10) const;
+
+#ifdef PFS_HAVE_LONGLONG
+	long long toLongLong (bool * ok = 0, int base = 10) const;
+	unsigned long long toULongLong (bool * ok = 0, int base = 10) const;
+#endif
+
 	byte_string        toBase64 () const;
 	static byte_string fromBase64 (const byte_string & base64);
 
@@ -431,10 +443,12 @@ public:
 
 	static byte_string toString (int value, int base = 10, bool uppercase = false);
 	static byte_string toString (long value, int base = 10, bool uppercase = false);
-	static byte_string toString (long long value, int base = 10, bool uppercase = false);
 	static byte_string toString (unsigned int value, int base = 10, bool uppercase = false);
 	static byte_string toString (unsigned long value, int base = 10, bool uppercase = false);
+#ifdef PFS_HAVE_LONGLONG
+	static byte_string toString (long long value, int base = 10, bool uppercase = false);
 	static byte_string toString (unsigned long long value, int base = 10, bool uppercase = false);
+#endif
 	static byte_string toString (float value, char f = 'f', int prec = 6);
 	static byte_string toString (double value, char f = 'f', int prec = 6);
 #ifdef PFS_HAVE_LONG_DOUBLE

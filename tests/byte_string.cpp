@@ -10,8 +10,8 @@
 //#include "pfs/endian.hpp"
 #include "pfs/byte_string.hpp"
 
-//#include <iostream>
-//using namespace std;
+#include <iostream>
+using namespace std;
 
 void test_constructors ()
 {
@@ -384,11 +384,62 @@ void test_cow ()
 }
 
 
+void test_convert_to_number ()
+{
+	bool ok;
+	TEST_OK(pfs::byte_string("0").toUInt(& ok) == 0 && ok);
+	TEST_OK(pfs::byte_string("+0").toUInt(& ok) == 0 && ok);
+	TEST_OK(pfs::byte_string("-0").toUInt(& ok) == 0 && ok);
+
+	TEST_OK(pfs::byte_string("1").toUInt(& ok) == 1 && ok);
+	TEST_OK(pfs::byte_string("+1").toUInt(& ok) == 1 && ok);
+	TEST_OK(pfs::byte_string("-1").toUInt(& ok) == 0 && !ok);
+
+	TEST_OK(pfs::byte_string("123").toUInt(& ok) == 123 && ok);
+
+#ifdef PFS_HAVE_INT64
+#	ifdef PFS_HAVE_LONGLONG
+	TEST_OK(pfs::byte_string("18446744073709551615").toULongLong(& ok) == PFS_ULONG_MAX && ok);
+#	else
+	TEST_OK(pfs::byte_string(("18446744073709551615").toULong(& ok) == PFS_ULONG_MAX) && ok);
+#	endif
+#else
+	TEST_OK(compare_unsigned("4294967295", PFS_ULONG_MAX));
+#endif
+
+//	TEST_OK(compare_signed("0", 0));
+//	TEST_OK(compare_signed("+0", 0));
+//	TEST_OK(compare_signed("-0", 0));
+//
+//	TEST_OK(compare_signed("1", 1));
+//	TEST_OK(compare_signed("+1", 1));
+//	TEST_OK(compare_signed("-1", -1));
+//
+//	TEST_OK(compare_signed("123", 123));
+//	TEST_OK(compare_signed("+123", 123));
+//	TEST_OK(compare_signed("-123", -123));
+//
+
+
+#ifdef PFS_HAVE_INT64
+#	ifdef PFS_HAVE_LONGLONG
+	TEST_OK(pfs::byte_string("9223372036854775807").toLongLong(& ok) == PFS_LONG_MAX && ok);
+	TEST_OK(pfs::byte_string("-9223372036854775808").toLongLong(& ok) == PFS_LONG_MIN && ok);
+#	else
+	TEST_OK(pfs::byte_string("9223372036854775807").toLong(& ok) == PFS_LONG_MAX && ok);
+	TEST_OK(pfs::byte_string("-9223372036854775808").toLong(& ok) == PFS_LONG_MIN && ok);
+#	endif
+#else
+	TEST_OK(pfs::byte_string("2147483647").toLong(& ok) == PFS_LONG_MAX && ok);
+	TEST_OK(pfs::byte_string("-2147483648").toLong(& ok) == PFS_LONG_MIN && ok);
+#endif
+}
+
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    int ntests = 122;
+    int ntests = 132;
 #ifdef HAVE_LONGLONG
     ntests += 12;
 #endif
@@ -408,6 +459,8 @@ int main(int argc, char *argv[])
 	test_read_number();
 	test_base64();
 	test_cow();
+
+	test_convert_to_number();
 
     END_TESTS;
 }
