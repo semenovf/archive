@@ -28,6 +28,8 @@
  * double =   [sign] [integral-part] POINT fract-part [exp-part]
  * 			/ [sign] integral-part POINT [exp-part]
  *			/ [sign] integral-part exp-part
+ *			/ [sign] (N | n ) (A | a ) (N | n )
+ *			/ [sign] (I | i ) (N | n ) (F | f ) [(I | i ) (N | n ) (I | i ) (T | t ) (Y | y )]
  *
  * integral-part = digit-seq
  *

@@ -7,6 +7,7 @@
 
 #include <cwt/test.hpp>
 #include <pfs.hpp>
+#include <pfs/bits/strtoreal.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -15,6 +16,10 @@
 #include <cerrno>
 #include <cmath> // for isnan and ininf
 
+using namespace std;
+#define strtoreal(s,endptr) pfs::strtoreal<char, const char *>(s, s + strlen(s), '.', endptr)
+
+#ifdef __COMMENT__
 extern "C" real_t pfs_strtoreal (const char * nptr, char decimalPoint, char ** endptr);
 #define pfs_strtodx(x) pfs_strtoreal(x, '.', NULL)
 
@@ -61,6 +66,8 @@ bool __compare_with_strtold (const char * s)
 	return d1 == d2 && endptr1 == endptr2;
 }
 
+#endif
+
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
@@ -69,48 +76,53 @@ int main(int argc, char *argv[])
 	BEGIN_TESTS(ntests);
 
 	/* hack to get locale dependent decimal point char (spied at stackoverflow.com) */
-	setlocale(LC_NUMERIC, "C");
-	char fchars[10];
-	sprintf(fchars, "%f", 0.0f);
-	char decimalPoint = fchars[1];
-
-	TEST_FAIL2(decimalPoint == '.', "Decimal point character is a period");
+//	setlocale(LC_NUMERIC, "C");
+//	char fchars[10];
+//	sprintf(fchars, "%f", 0.0f);
+//	char decimalPoint = fchars[1];
+//
+//	TEST_FAIL2(decimalPoint == '.', "Decimal point character is a period");
 
 	TEST_OK(isinf(PFS_INFINITY));
 	TEST_OK(isinf(-PFS_INFINITY));
-	TEST_OK(isinf(pfs_strtodx("INFINITY")));
-	TEST_OK(isinf(pfs_strtodx("-INFINITY")));
-	TEST_OK(isinf(pfs_strtodx("+INFINITY")));
-	TEST_OK(isinf(pfs_strtodx("InFiNiTy")));
-	TEST_OK(isinf(pfs_strtodx("-infinity")));
-	TEST_OK(isinf(pfs_strtodx("+INFInity")));
-	TEST_OK(isinf(pfs_strtodx("INF")));
-	TEST_OK(isinf(pfs_strtodx("-INF")));
-	TEST_OK(isinf(pfs_strtodx("+INF")));
-	TEST_OK(isnan(pfs_strtodx("NAN")));
-	TEST_OK(isnan(pfs_strtodx("-NAN")));
-	TEST_OK(isnan(pfs_strtodx("+NAN")));
-	TEST_OK(isnan(pfs_strtodx("nAN")));
-	TEST_OK(isnan(pfs_strtodx("-nAn")));
-	TEST_OK(isnan(pfs_strtodx("+nan")));
 
-	char * endptr = NULL;
+	const char * endptr;
 
-	TEST_OK(isinf(pfs_strtoreal("INFINITY$%^", '.', & endptr)) && strcmp(endptr, "$%^") == 0);
-	TEST_OK(isinf(pfs_strtoreal("-INFINITY$%^", '.', & endptr)) && strcmp(endptr, "$%^") == 0);
-	TEST_OK(isinf(pfs_strtoreal("+INFINITY$%^", '.', & endptr)) && strcmp(endptr, "$%^") == 0);
-	TEST_OK(isinf(pfs_strtoreal("InFiNiTy$%^", '.', & endptr)) && strcmp(endptr, "$%^") == 0);
-	TEST_OK(isinf(pfs_strtoreal("-infinity $%^", '.', & endptr)) && strcmp(endptr, " $%^") == 0);
-	TEST_OK(isinf(pfs_strtoreal("+INFInity $%^", '.', & endptr)) && strcmp(endptr, " $%^") == 0);
-	TEST_OK(isinf(pfs_strtoreal("INF $%^", '.', & endptr)) && strcmp(endptr, " $%^") == 0);
-	TEST_OK(isinf(pfs_strtoreal("-INF $%^", '.', & endptr)) && strcmp(endptr, " $%^") == 0);
-	TEST_OK(isinf(pfs_strtoreal("+INF$%^", '.', & endptr)) && strcmp(endptr, "$%^") == 0);
-	TEST_OK(isnan(pfs_strtoreal("NAN$%^", '.', & endptr)) && strcmp(endptr, "$%^") == 0);
-	TEST_OK(isnan(pfs_strtoreal("-NAN $%^", '.', & endptr)) && strcmp(endptr, " $%^") == 0);
-	TEST_OK(isnan(pfs_strtoreal("+NAN   $%^", '.', & endptr)) && strcmp(endptr, "   $%^") == 0);
-	TEST_OK(isnan(pfs_strtoreal("nAN $%^", '.', & endptr)) && strcmp(endptr, " $%^") == 0);
-	TEST_OK(isnan(pfs_strtoreal("-nAnNAN", '.', & endptr)) && strcmp(endptr, "NAN") == 0);
-	TEST_OK(isnan(pfs_strtoreal("+nannan", '.', & endptr)) && strcmp(endptr, "nan") == 0);
+	TEST_OK(isinf(strtoreal("INFINITY", & endptr)));
+	TEST_OK(isinf(strtoreal("-INFINITY", & endptr)));
+	TEST_OK(isinf(strtoreal("+INFINITY", & endptr)));
+	TEST_OK(isinf(strtoreal("InFiNiTy", & endptr)));
+	TEST_OK(isinf(strtoreal("-infinity", & endptr)));
+	TEST_OK(isinf(strtoreal("+INFInity", & endptr)));
+	TEST_OK(isinf(strtoreal("INF", & endptr)));
+	TEST_OK(isinf(strtoreal("-INF", & endptr)));
+	TEST_OK(isinf(strtoreal("+INF", & endptr)));
+	TEST_OK(isnan(strtoreal("NAN", & endptr)));
+	TEST_OK(isnan(strtoreal("-NAN", & endptr)));
+	TEST_OK(isnan(strtoreal("+NAN", & endptr)));
+	TEST_OK(isnan(strtoreal("nAN", & endptr)));
+	TEST_OK(isnan(strtoreal("-nAn", & endptr)));
+	TEST_OK(isnan(strtoreal("+nan", & endptr)));
+
+	TEST_OK(isinf(strtoreal("INFINITY$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	cout << endptr << endl;
+
+	TEST_OK(isinf(strtoreal("-INFINITY$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isinf(strtoreal("+INFINITY$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isinf(strtoreal("InFiNiTy$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isinf(strtoreal("-infinity $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isinf(strtoreal("+INFInity $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isinf(strtoreal("INF $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isinf(strtoreal("-INF $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isinf(strtoreal("+INF$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isnan(strtoreal("NAN$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isnan(strtoreal("-NAN $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isnan(strtoreal("+NAN   $%^", & endptr)) && strcmp(endptr, "   $%^") == 0);
+	TEST_OK(isnan(strtoreal("nAN $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isnan(strtoreal("-nAnNAN", & endptr)) && strcmp(endptr, "NAN") == 0);
+	TEST_OK(isnan(strtoreal("+nannan", & endptr)) && strcmp(endptr, "nan") == 0);
+
+#ifdef __COMMENT__
 
 // TODO Tests not passed {
 #ifdef PFS_HAVE_LONG_DOUBLE
@@ -167,6 +179,7 @@ int main(int argc, char *argv[])
 //			<< "=='" << double_t(123.456) << "'"
 //			<< std::endl;
 //	TEST_FAIL(strtold("123.456", NULL) == double_t(123.456));
+#endif // __COMMENT__
 
     END_TESTS;
 }

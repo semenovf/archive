@@ -49,10 +49,10 @@ public:
 	template <typename _CodeUnitT>
 	int decode (const _CodeUnitT * units, size_t len);
 
-	bool isSpace() const;
+	bool isSpace () const;
+	bool isDigit () const;
 	ucchar toLower () const;
 	ucchar toUpper () const;
-
 
 	/* Low Surrogates: DC00-DFFF
 	 * Qt implementation: (ucs4 & 0xfffffc00) == 0xdc00;

@@ -31,6 +31,14 @@ bool ucchar::isSpace() const
 		? true : false;
 }
 
+
+bool ucchar::isDigit () const
+{
+	if (_value < 128)
+		return (char(_value) >= '0' && char(_value) <= '9');
+	return false;
+}
+
 // FIXME need full support of Unicode standard
 ucchar ucchar::toLower () const
 {
