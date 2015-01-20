@@ -96,6 +96,11 @@
 #	define PFS_REAL_MAX_10_EXP  PFS_DOUBLE_MAX_10_EXP
 #endif
 
+#ifdef PFS_HAVE_LONG_DOUBLE
+#	define PFS_HUGE_VAL HUGE_VALL
+#else
+#	define PFS_HUGE_VAL HUGE_VAL
+#endif
 
 #ifdef INFINITY
 #	define PFS_INFINITY INFINITY

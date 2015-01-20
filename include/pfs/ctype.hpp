@@ -94,20 +94,19 @@ inline bool is_digit<ucchar> (ucchar v)
 }
 
 template <>
-int to_digit<char> (char v)
+inline int to_digit<char> (char v)
 {
 	PFS_ASSERT(is_digit(v));
 	return v - '0';
 }
 
 template <>
-int to_digit<ucchar> (ucchar v)
+inline int to_digit<ucchar> (ucchar v)
 {
 	PFS_ASSERT(is_digit(v));
 	return v.value() - uint32_t('0');
 }
 
-
-}
+} // pfs
 
 #endif /* __PFS_CTYPE_HPP__ */
