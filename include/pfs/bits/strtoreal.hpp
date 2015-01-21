@@ -45,7 +45,6 @@ enum state_enum {
 	, parse_nan_state
 	, parse_inf_state
 	, parse_mantissa_state
-	, parse_exp_sign_state
 	, parse_exp_state
 	, finish_state
 	, nan_state
@@ -99,6 +98,50 @@ Iter check_str_inf (Iter begin, Iter end)
 }
 
 
+template <typename Iter>
+Iter parse_exp (Iter begin, Iter end, int & expSign, int & exp)
+{
+	Iter pos(begin);
+	exp = 0;
+	expSign = 1;
+
+	if (pos < end) {
+		if (!(eq_latin1(*pos, 'e') || eq_latin1(*pos, 'E')))
+			return begin;
+
+		++pos;
+
+		if (pos == end)
+			return begin;
+
+		if (eq_latin1(*pos, '-')) {
+			expSign = -1;
+			++pos;
+		} else if (eq_latin1(*pos, '+')) {
+			++pos;
+		}
+
+		if (pos == end)
+			return begin;
+
+		if (!is_digit(*pos))
+			return begin;
+
+		while (pos < end) {
+			if (is_digit(*pos)) {
+				int digit = to_digit(*pos);
+				exp = exp * 10 + digit;
+				PFS_ASSERT(exp >= 0);
+			} else {
+				break;
+			}
+			++pos;
+		}
+	}
+
+	return pos;
+}
+
 /**
  *
  * @param begin
@@ -112,39 +155,32 @@ template <typename CharT, typename Iter>
 real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = nullptr)
 {
 	Iter pos(begin);
-	Iter pos_saved(begin);
 	real_t r = real_t(0.0f);
 	int sign = 1;
 	int expSign = 1;
-	int fractExp = 0;
+	int integralSize = 0;
+	int fractSize = 0;
 	int exp = 0;
-	int expInc = 1;
-
-	uint32_t mant1 = 0
-		, mant2 = 0
-		, mant3 = 0
-		, mant4 = 0;
-	size_t mant_size = 0;
 	bool hasDecPoint = false;
 
 	/* Table giving binary powers of 10.  Entry
 	   is 10^2^i.  Used to convert decimal
 	   exponents into floating-point numbers. */
 	static real_t powersOf10[] = {
-	      10.
-	    , 100.
-		, 1.0e4
-		, 1.0e8
-		, 1.0e16
-		, 1.0e32
-		, 1.0e64
-		, 1.0e128
-		, 1.0e256
+		  PFS_REAL_LITERAL(10.)
+	    , PFS_REAL_LITERAL(100.)
+		, PFS_REAL_LITERAL(1.0e4)
+		, PFS_REAL_LITERAL(1.0e8)
+		, PFS_REAL_LITERAL(1.0e16)
+		, PFS_REAL_LITERAL(1.0e32)
+		, PFS_REAL_LITERAL(1.0e64)
+		, PFS_REAL_LITERAL(1.0e128)
+		, PFS_REAL_LITERAL(1.0e256)
 #ifdef PFS_HAVE_LONG_DOUBLE
-		, 1.0e512L
-		, 1.0e1024L
-		, 1.0e2048L
-		, 1.0e4096L
+		, PFS_REAL_LITERAL(1.0e512)
+		, PFS_REAL_LITERAL(1.0e1024)
+		, PFS_REAL_LITERAL(1.0e2048)
+		, PFS_REAL_LITERAL(1.0e4096)
 #endif
 	};
 
@@ -216,72 +252,31 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
 				if (is_digit(*pos)) {
 					int digit = to_digit(*pos);
 
-					if (mant_size < 9) {
-						mant1 = mant1 * 10 + digit;
-					} else if (mant_size < 18) {
-						mant2 = mant2 * 10 + digit;
-					} else if (mant_size < 27) {
-						mant3 = mant3 * 10 + digit;
-					} else if (mant_size < 36) {
-						mant4 = mant4 * 10 + digit;
-					} // else insignificant digits
-					fractExp += expInc;
-					++mant_size;
+					r = r * PFS_REAL_LITERAL(1.e1) + digit;
+
+					if (hasDecPoint) {
+						++fractSize;
+					} else {
+						++integralSize;
+					}
 				} else if (eq_latin1(*pos, decimalPoint)) {
 					if (!hasDecPoint) {
 						hasDecPoint = true;
-						expInc = -1;
-						if (mant_size > 0)
-							--fractExp;
 					} else {
 						state = finish_state;
 						break;
 					}
-				} else if (eq_latin1(*pos, 'e') || eq_latin1(*pos, 'E')) {
-					pos_saved = pos; // save position for state of incomplete of exponent part
-					state = parse_exp_sign_state;
-					++pos;
-					break;
-				} else {
-					state = finish_state;
+				} else  {
+					state = parse_exp_state;
 					break;
 				}
 				++pos;
     		}
     		break;
 
-    	case parse_exp_sign_state:
-    		if (eq_latin1(*pos, '-')) {
-    			expSign = -1;
-    			++pos;
-    		} else if (eq_latin1(*pos, '+')) {
-    			++pos;
-    		}
-
-    		state = parse_exp_state;
-    		break;
-
     	case parse_exp_state:
-//    		if (!is_digit(*pos)) {
-//    			pos = pos_saved; // exponent part is incomplete
-//    			state = finish_state;
-//    		} else {
-				while (pos < end) {
-					if (is_digit(*pos)) {
-						int digit = to_digit(*pos);
-						exp = exp * 10 + digit;
-						++pos;
-
-						if (exp > PFS_REAL_MAX_10_EXP) { // overflow
-							errno = ERANGE;
-							break;
-						}
-					} else {
-						state = finish_state;
-						break;
-					}
-				}
-//    		}
+    		pos = parse_exp(pos, end, expSign, exp);
+    		state = finish_state;
     		break;
 
     	case finish_state:
@@ -290,20 +285,18 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
     	}
     }
 
+	int mant_size = integralSize + fractSize;
+
     if (state > finish_state) {
     	;
     } else if (mant_size == 0) {
     	pos = begin;
     } else if (state <= finish_state) {
-
-//    	if (state != finish_state)
-//    		pos = pos_saved;
-    	(void)pos_saved;
-
 		if (expSign < 0)
 			exp = - exp;
 
-		exp += fractExp;
+		if (fractSize > 0)
+			exp -= fractSize;
 
 		if (exp < PFS_REAL_MIN_10_EXP) { // underflow
 			errno = ERANGE;
@@ -318,7 +311,7 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
 		} else {
 			real_t dblExp, *d;
 
-			dblExp = 1.0f;
+			dblExp = PFS_REAL_LITERAL(1.0);
 
 			if (exp < 0) {
 				exp = - exp;
@@ -332,8 +325,6 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
 					dblExp *= *d;
 				}
 			}
-
-			r = 1.e27 * mant4 + 1.e18 * mant3 + 1.e9 * mant2 + mant1;
 
 			if (expSign < 0) {
 				r /= dblExp;

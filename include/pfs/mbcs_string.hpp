@@ -321,6 +321,15 @@ public:
 	unsigned long long toULongLong (bool * ok = 0, int base = 10) const;
 #endif
 
+	// TODO Need to implement
+	real_t toReal (bool * ok) const;
+	float toFloat (bool * ok) const;
+	double toDouble (bool * ok) const;
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+	long double toLongDouble (bool * ok) const { return toReal(ok); }
+#endif
+
 	mbcs_string & operator += (const mbcs_string & other) { return append(other); }
 	mbcs_string & operator += (const char * latin1) { return append(mbcs_string(latin1)); }
 	mbcs_string & operator += (const ucchar & ch) { return append(mbcs_string(1, ch)); }

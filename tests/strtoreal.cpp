@@ -21,7 +21,7 @@ using namespace std;
 
 static char _MSG[512];
 
-bool __compare_with_strtold (const char * s)
+bool compare_with_strtold (const char * s)
 {
 	const char * endptr1 = NULL;
 	char * endptr2 = NULL;
@@ -49,11 +49,26 @@ bool __compare_with_strtold (const char * s)
 	return d1 == d2 && endptr1 == endptr2;
 }
 
+bool compare_with_literal (const char * s, real_t d2)
+{
+	real_t d1 = strtoreal(s, NULL);
+
+	sprintf(_MSG,
+#ifdef PFS_HAVE_LONG_DOUBLE
+		"%s: %.30Lg %s %.30Lg"
+#else
+		"%s: %.30g %s %.30g"
+#endif
+			, s
+			, d1
+			, (d1 == d2 /*&& endptr1 == endptr2*/ ? "==" : "!=")
+			, d2);
+
+	return d1 == d2;
+}
+
 
 #ifdef __COMMENT__
-extern "C" real_t pfs_strtoreal (const char * nptr, char decimalPoint, char ** endptr);
-#define pfs_strtodx(x) pfs_strtoreal(x, '.', NULL)
-
 char * doubleToHex (real_t x)
 {
     unsigned int i;
@@ -73,7 +88,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    int ntests = 42;
+    int ntests = 111;
 	BEGIN_TESTS(ntests);
 
 	/* hack to get locale dependent decimal point char (spied at stackoverflow.com) */
@@ -83,99 +98,143 @@ int main(int argc, char *argv[])
 //	char decimalPoint = fchars[1];
 //
 //	TEST_FAIL2(decimalPoint == '.', "Decimal point character is a period");
+	const char * endptr;
+	(void)endptr;
 
-//	const char * endptr;
+	TEST_OK(isinf(PFS_INFINITY));
+	TEST_OK(isinf(-PFS_INFINITY));
+	TEST_OK(isinf(strtoreal("INFINITY", & endptr)));
+	TEST_OK(isinf(strtoreal("-INFINITY", & endptr)));
+	TEST_OK(isinf(strtoreal("+INFINITY", & endptr)));
+	TEST_OK(isinf(strtoreal("InFiNiTy", & endptr)));
+	TEST_OK(isinf(strtoreal("-infinity", & endptr)));
+	TEST_OK(isinf(strtoreal("+INFInity", & endptr)));
+	TEST_OK(isinf(strtoreal("INF", & endptr)));
+	TEST_OK(isinf(strtoreal("-INF", & endptr)));
+	TEST_OK(isinf(strtoreal("+INF", & endptr)));
+	TEST_OK(isnan(strtoreal("NAN", & endptr)));
+	TEST_OK(isnan(strtoreal("-NAN", & endptr)));
+	TEST_OK(isnan(strtoreal("+NAN", & endptr)));
+	TEST_OK(isnan(strtoreal("nAN", & endptr)));
+	TEST_OK(isnan(strtoreal("-nAn", & endptr)));
+	TEST_OK(isnan(strtoreal("+nan", & endptr)));
 
-//	TEST_OK(isinf(PFS_INFINITY));
-//	TEST_OK(isinf(-PFS_INFINITY));
-//	TEST_OK(isinf(strtoreal("INFINITY", & endptr)));
-//	TEST_OK(isinf(strtoreal("-INFINITY", & endptr)));
-//	TEST_OK(isinf(strtoreal("+INFINITY", & endptr)));
-//	TEST_OK(isinf(strtoreal("InFiNiTy", & endptr)));
-//	TEST_OK(isinf(strtoreal("-infinity", & endptr)));
-//	TEST_OK(isinf(strtoreal("+INFInity", & endptr)));
-//	TEST_OK(isinf(strtoreal("INF", & endptr)));
-//	TEST_OK(isinf(strtoreal("-INF", & endptr)));
-//	TEST_OK(isinf(strtoreal("+INF", & endptr)));
-//	TEST_OK(isnan(strtoreal("NAN", & endptr)));
-//	TEST_OK(isnan(strtoreal("-NAN", & endptr)));
-//	TEST_OK(isnan(strtoreal("+NAN", & endptr)));
-//	TEST_OK(isnan(strtoreal("nAN", & endptr)));
-//	TEST_OK(isnan(strtoreal("-nAn", & endptr)));
-//	TEST_OK(isnan(strtoreal("+nan", & endptr)));
-//
-//	TEST_OK(isinf(strtoreal("INFINITY$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
-//	TEST_OK(isinf(strtoreal("-INFINITY$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
-//	TEST_OK(isinf(strtoreal("+INFINITY$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
-//	TEST_OK(isinf(strtoreal("InFiNiTy$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
-//	TEST_OK(isinf(strtoreal("-infinity $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
-//	TEST_OK(isinf(strtoreal("+INFInity $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
-//	TEST_OK(isinf(strtoreal("INF $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
-//	TEST_OK(isinf(strtoreal("-INF $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
-//	TEST_OK(isinf(strtoreal("+INF$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
-//	TEST_OK(isnan(strtoreal("NAN$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
-//	TEST_OK(isnan(strtoreal("-NAN $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
-//	TEST_OK(isnan(strtoreal("+NAN   $%^", & endptr)) && strcmp(endptr, "   $%^") == 0);
-//	TEST_OK(isnan(strtoreal("nAN $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
-//	TEST_OK(isnan(strtoreal("-nAnNAN", & endptr)) && strcmp(endptr, "NAN") == 0);
-//	TEST_OK(isnan(strtoreal("+nannan", & endptr)) && strcmp(endptr, "nan") == 0);
+	TEST_OK(isinf(strtoreal("INFINITY$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isinf(strtoreal("-INFINITY$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isinf(strtoreal("+INFINITY$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isinf(strtoreal("InFiNiTy$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isinf(strtoreal("-infinity $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isinf(strtoreal("+INFInity $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isinf(strtoreal("INF $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isinf(strtoreal("-INF $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isinf(strtoreal("+INF$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isnan(strtoreal("NAN$%^", & endptr)) && strcmp(endptr, "$%^") == 0);
+	TEST_OK(isnan(strtoreal("-NAN $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isnan(strtoreal("+NAN   $%^", & endptr)) && strcmp(endptr, "   $%^") == 0);
+	TEST_OK(isnan(strtoreal("nAN $%^", & endptr)) && strcmp(endptr, " $%^") == 0);
+	TEST_OK(isnan(strtoreal("-nAnNAN", & endptr)) && strcmp(endptr, "NAN") == 0);
+	TEST_OK(isnan(strtoreal("+nannan", & endptr)) && strcmp(endptr, "nan") == 0);
 
-//	TEST_OK(strtoreal("-", & endptr) == 0.0f && strcmp(endptr, "-") == 0);
-//	TEST_OK(strtoreal("+", & endptr) == 0.0f && strcmp(endptr, "+") == 0);
-//	TEST_OK(strtoreal("    ", & endptr) == 0.0f && strcmp(endptr, "    ") == 0);
+	TEST_OK(strtoreal("-", & endptr) == 0.0f && strcmp(endptr, "-") == 0);
+	TEST_OK(strtoreal("+", & endptr) == 0.0f && strcmp(endptr, "+") == 0);
+	TEST_OK(strtoreal("    ", & endptr) == 0.0f && strcmp(endptr, "    ") == 0);
 
-//	TEST_OK2(__compare_with_strtold(".1"), _MSG);
-//	TEST_OK2(__compare_with_strtold("0.1"), _MSG);
-//	TEST_OK2(__compare_with_strtold(" ."), _MSG);
-//	TEST_OK2(__compare_with_strtold(" 1.2e3"), _MSG);
-//	TEST_OK2(__compare_with_strtold(" +1.2e3"), _MSG);
-//	TEST_OK2(__compare_with_strtold("1.2e3"), _MSG);
-//	TEST_OK2(__compare_with_strtold("+1.2e3"), _MSG);
-//	TEST_OK2(__compare_with_strtold("+1.e3"), _MSG);
-//	TEST_OK2(__compare_with_strtold("-1.2e3"), _MSG);
-//	TEST_OK2(__compare_with_strtold("-1.2e3.5"), _MSG);
-//	TEST_OK2(__compare_with_strtold("-1.2e"), _MSG);
-	TEST_OK2(__compare_with_strtold("--1.2e3.5"), _MSG);
+	TEST_OK2(compare_with_strtold(".1"), _MSG);
+	TEST_OK2(compare_with_strtold("0.1"), _MSG);
+	TEST_OK2(compare_with_strtold(" ."), _MSG);
+	TEST_OK2(compare_with_strtold(" 1.2e3"), _MSG);
+	TEST_OK2(compare_with_strtold(" +1.2e3"), _MSG);
+	TEST_OK2(compare_with_strtold("1.2e3"), _MSG);
+	TEST_OK2(compare_with_strtold("+1.2e3"), _MSG);
+	TEST_OK2(compare_with_strtold("+1.e3"), _MSG);
+	TEST_OK2(compare_with_strtold("-1.2e3"), _MSG);
+	TEST_OK2(compare_with_strtold("-1.2e3.5"), _MSG);
+	TEST_OK2(compare_with_strtold("-1.2e"), _MSG);
+	TEST_OK2(compare_with_strtold("--1.2e3.5"), _MSG);
+	TEST_OK2(compare_with_strtold("--1-.2e3.5"), _MSG);
+	TEST_OK2(compare_with_strtold("-a"), _MSG);
+	TEST_OK2(compare_with_strtold("a"), _MSG);
+	TEST_OK2(compare_with_strtold(".1e"), _MSG);
+	TEST_OK2(compare_with_strtold(".1e3"), _MSG);
+	TEST_OK2(compare_with_strtold(".1e-3"), _MSG);
+	TEST_OK2(compare_with_strtold(".1e-"), _MSG);
+	TEST_OK2(compare_with_strtold(" .e-"), _MSG);
+	TEST_OK2(compare_with_strtold(" .e"), _MSG);
+	TEST_OK2(compare_with_strtold(" e"), _MSG);
+	TEST_OK2(compare_with_strtold(" e0"), _MSG);
+	TEST_OK2(compare_with_strtold(" ee"), _MSG);
+	TEST_OK2(compare_with_strtold(" -e"), _MSG);
+	TEST_OK2(compare_with_strtold(" .9"), _MSG);
+	TEST_OK2(compare_with_strtold(" 0.9"), _MSG);
+	TEST_OK2(compare_with_strtold(" ..9"), _MSG);
+	TEST_OK2(compare_with_strtold("9."), _MSG);
+	TEST_OK2(compare_with_strtold("9"), _MSG);
+	TEST_OK2(compare_with_strtold("9.0"), _MSG);
+	TEST_OK2(compare_with_strtold("9.0000"), _MSG);
+	TEST_OK2(compare_with_strtold("9.00001"), _MSG);
+	TEST_OK2(compare_with_strtold("009"), _MSG);
+	TEST_OK2(compare_with_strtold("0.09e02"), _MSG);
+	TEST_OK2(compare_with_strtold("0.9999999999999999999999999999999999"), _MSG);
+	TEST_OK2(compare_with_strtold("2.22e-308"), _MSG); // BUG
+	TEST_OK2(compare_with_strtold("1.34"), _MSG);
+	TEST_OK2(compare_with_strtold("12.34"), _MSG);
+	TEST_OK2(compare_with_strtold("123.456"), _MSG);
 
+	TEST_OK2(compare_with_strtold("2.22507385850720138309e-308"), _MSG);
+	TEST_OK2(compare_with_strtold("1.79769313486231570815e+308"), _MSG);
+	TEST_OK2(compare_with_strtold("3.36210314311209350626e-4932"), _MSG);
+	TEST_OK2(compare_with_strtold("1.18973149535723176502e+4932"), _MSG);
+	TEST_OK2(compare_with_strtold("1.18973149535723176502126385303e+4932"), _MSG);
+	TEST_OK2(compare_with_strtold("18973149535723176502126385303"), _MSG);
+	TEST_OK2(compare_with_strtold("12345678901234567890123456789"), _MSG);
+
+	TEST_OK2(compare_with_literal("1", PFS_REAL_LITERAL(1.0)), _MSG);
+	TEST_OK2(compare_with_literal("12", PFS_REAL_LITERAL(12.0)), _MSG);
+	TEST_OK2(compare_with_literal("123", PFS_REAL_LITERAL(123.0)), _MSG);
+	TEST_OK2(compare_with_literal("1234", PFS_REAL_LITERAL(1234.0)), _MSG);
+	TEST_OK2(compare_with_literal("12345", PFS_REAL_LITERAL(12345.0)), _MSG);
+	TEST_OK2(compare_with_literal("123456", PFS_REAL_LITERAL(123456.0)), _MSG);
+	TEST_OK2(compare_with_literal("1234567", PFS_REAL_LITERAL(1234567.0)), _MSG);
+	TEST_OK2(compare_with_literal("12345678", PFS_REAL_LITERAL(12345678.0)), _MSG);
+	TEST_OK2(compare_with_literal("123456789", PFS_REAL_LITERAL(123456789.0)), _MSG);
+	TEST_OK2(compare_with_literal("1234567890", PFS_REAL_LITERAL(1234567890.0)), _MSG);
+	TEST_OK2(compare_with_literal("12345678901", PFS_REAL_LITERAL(12345678901.0)), _MSG);
+	TEST_OK2(compare_with_literal("123456789012", PFS_REAL_LITERAL(123456789012.0)), _MSG);
+	TEST_OK2(compare_with_literal("1234567890123", PFS_REAL_LITERAL(1234567890123.0)), _MSG);
+	TEST_OK2(compare_with_literal("12345678901234", PFS_REAL_LITERAL(12345678901234.0)), _MSG);
+	TEST_OK2(compare_with_literal("123456789012345", PFS_REAL_LITERAL(123456789012345.0)), _MSG);
+	TEST_OK2(compare_with_literal("1234567890123456", PFS_REAL_LITERAL(1234567890123456.0)), _MSG);
+	TEST_OK2(compare_with_literal("12345678901234567", PFS_REAL_LITERAL(12345678901234567.0)), _MSG);
+	TEST_OK2(compare_with_literal("123456789012345678", PFS_REAL_LITERAL(123456789012345678.0)), _MSG);
+	TEST_OK2(compare_with_literal("1234567890123456789", PFS_REAL_LITERAL(1234567890123456789.0)), _MSG);
+	TEST_OK2(compare_with_literal("12345678901234567890", PFS_REAL_LITERAL(12345678901234567890.0)), _MSG);
+	TEST_OK2(compare_with_literal("123456789012345678901", PFS_REAL_LITERAL(123456789012345678901.0)), _MSG);
+	TEST_OK2(compare_with_literal("1234567890123456789012", PFS_REAL_LITERAL(1234567890123456789012.0)), _MSG);
+	TEST_OK2(compare_with_literal("12345678901234567890123", PFS_REAL_LITERAL(12345678901234567890123.0)), _MSG);
+	TEST_OK2(compare_with_literal("123456789012345678901234", PFS_REAL_LITERAL(123456789012345678901234.0)), _MSG);
+	TEST_OK2(compare_with_literal("1234567890123456789012345", PFS_REAL_LITERAL(1234567890123456789012345.0)), _MSG);
+	TEST_OK2(compare_with_literal("12345678901234567890123456", PFS_REAL_LITERAL(12345678901234567890123456.0)), _MSG);
+	TEST_OK2(compare_with_literal("123456789012345678901234567", PFS_REAL_LITERAL(123456789012345678901234567.0)), _MSG);
+	TEST_OK2(compare_with_literal("1234567890123456789012345678", PFS_REAL_LITERAL(1234567890123456789012345678.0)), _MSG);
+	TEST_OK2(compare_with_literal("12345678901234567890123456789", PFS_REAL_LITERAL(12345678901234567890123456789.0)), _MSG);
 
 #ifdef __COMMENT__
-	TEST_OK2(__compare_with_strtold("--1-.2e3.5"), _MSG);
-	TEST_OK2(__compare_with_strtold("-a"), _MSG);
-	TEST_OK2(__compare_with_strtold("a"), _MSG);
-	TEST_OK2(__compare_with_strtold(".1e"), _MSG);
-	TEST_OK2(__compare_with_strtold(".1e3"), _MSG);
-	TEST_OK2(__compare_with_strtold(".1e-3"), _MSG);
-	TEST_OK2(__compare_with_strtold(".1e-"), _MSG);
-	TEST_OK2(__compare_with_strtold(" .e-"), _MSG);
-	TEST_OK2(__compare_with_strtold(" .e"), _MSG);
-	TEST_OK2(__compare_with_strtold(" e"), _MSG);
-	TEST_OK2(__compare_with_strtold(" e0"), _MSG);
-	TEST_OK2(__compare_with_strtold(" ee"), _MSG);
-	TEST_OK2(__compare_with_strtold(" -e"), _MSG);
-	TEST_OK2(__compare_with_strtold(" .9"), _MSG);
-	TEST_OK2(__compare_with_strtold(" ..9"), _MSG);
-	TEST_OK2(__compare_with_strtold("009"), _MSG);
-	TEST_OK2(__compare_with_strtold("0.09e02"), _MSG);
-
-	// http://thread.gmane.org/gmane.editors.vim.devel/19268/
-	TEST_OK2(__compare_with_strtold("0.9999999999999999999999999999999999"), _MSG);
-	TEST_OK2(__compare_with_strtold("2.2250738585072010e-308"), _MSG); // BUG
 	// PHP (slashdot.jp): http://opensource.slashdot.jp/story/11/01/08/0527259/PHP%E3%81%AE%E6%B5%AE%E5%8B%95%E5%B0%8F%E6%95%B0%E7%82%B9%E5%87%A6%E7%90%86%E3%81%AB%E7%84%A1%E9%99%90%E3%83%AB%E3%83%BC%E3%83%97%E3%81%AE%E3%83%90%E3%82%B0
-	TEST_OK2(__compare_with_strtold("2.2250738585072011e-308"), _MSG);
+	TEST_OK2(compare_with_strtold("2.2250738585072011e-308"), _MSG);
 	// Gauche: http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-numbers-again
-	TEST_OK2(__compare_with_strtold("2.2250738585072012e-308"), _MSG);
-	TEST_OK2(__compare_with_strtold("2.2250738585072013e-308"), _MSG); // Hmm.
-	TEST_OK2(__compare_with_strtold("2.2250738585072014e-308"), _MSG); // Hmm.
+	TEST_OK2(compare_with_strtold("2.2250738585072012e-308"), _MSG);
+	TEST_OK2(compare_with_strtold("2.2250738585072013e-308"), _MSG); // Hmm.
+	TEST_OK2(compare_with_strtold("2.2250738585072014e-308"), _MSG); // Hmm.
 
-	TEST_OK2(__compare_with_strtold("123.456"), _MSG);
+	TEST_OK2(compare_with_strtold("123.456"), _MSG);
 
 // TODO Tests not passed {
 #ifdef PFS_HAVE_LONG_DOUBLE
-	TEST_OK2(__compare_with_strtold("3.36210314311209350626e-4932"), _MSG); // PFS_LONG_DOUBLE_MIN
-	TEST_OK2(__compare_with_strtold("1.18973149535723176502e+4932"), _MSG); // PFS_LONG_DOUBLE_MAX
+	TEST_OK2(compare_with_strtold("3.36210314311209350626e-4932"), _MSG); // PFS_LONG_DOUBLE_MIN
+	TEST_OK2(compare_with_strtold("1.18973149535723176502e+4932"), _MSG); // PFS_LONG_DOUBLE_MAX
 #else
-	TEST_OK2(__compare_with_strtold("2.22507385850720138309e-308"), _MSG); // PFS_DOUBLE_MIN
-	TEST_OK2(__compare_with_strtold("1.79769313486231570815e+308"), _MSG); // PFS_DOUBLE_MAX
+	TEST_OK2(compare_with_strtold("2.22507385850720138309e-308"), _MSG); // PFS_DOUBLE_MIN
+	TEST_OK2(compare_with_strtold("1.79769313486231570815e+308"), _MSG); // PFS_DOUBLE_MAX
 #endif
 // }
 
