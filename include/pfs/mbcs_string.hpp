@@ -536,7 +536,7 @@ float mbcs_string<CodeUnitT>::toFloat (bool * ok, ucchar decimalPoint) const
 		r = float(0.0f);
 	}
 	if (ok) *ok = ok1;
-	return r;
+	return float(r);
 }
 
 template <typename CodeUnitT>
@@ -552,7 +552,7 @@ double mbcs_string<CodeUnitT>::toDouble (bool * ok, ucchar decimalPoint) const
 		r = double(0.0f);
 	}
 	if (ok) *ok = ok1;
-	return r;
+	return double(r);
 #endif
 }
 

@@ -26,7 +26,11 @@ bool compare_with_strtold (const char * s)
 	const char * endptr1 = NULL;
 	char * endptr2 = NULL;
 	real_t d1 = strtoreal(s, & endptr1);
+#ifdef PFS_HAVE_LONG_DOUBLE
 	real_t d2 = strtold(s, & endptr2);
+#else
+	real_t d2 = strtod(s, & endptr2);
+#endif
 
 	sprintf(_MSG,
 #ifdef PFS_HAVE_LONG_DOUBLE

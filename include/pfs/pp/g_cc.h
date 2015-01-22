@@ -50,9 +50,16 @@
 #elif defined(_MSC_VER)
 #	define PFS_CC_MSVC
 #	define PFS_CC_MSC
+#	ifndef _MSC_VER
+#		error No macro (_MSC_VER) defined for MSC
+#	endif
+#	define PFS_CC_MSVC_VERSION _MSC_VER /* In Visual Studio 2010, _MSC_VER is defined as 1600 */
+#	define PFS_CC_MSC_VERSION  _MSC_VER
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #	if defined(__INTEL_COMPILER)
 #		define PFS_CC_INTEL
+#		define PFS_CC_INTEL_VERSION _MSC_VER
+#		define PFS_CC_INTEL_VERSION _MSC_VER
 #	endif
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #	define PFS_CC_BORLAND

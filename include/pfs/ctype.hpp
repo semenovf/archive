@@ -33,13 +33,7 @@ bool eq_latin1 (CharT v, char latin1);
 template <>
 inline bool is_space<char> (char v)
 {
-	return std::isspace(v);
-}
-
-template <>
-inline bool is_space<ucchar> (ucchar v)
-{
-	return v.isSpace();
+	return std::isspace(v) ? true : false;
 }
 
 template <>
@@ -49,21 +43,9 @@ inline char to_upper<char> (char v)
 }
 
 template <>
-inline ucchar to_upper<ucchar> (ucchar v)
-{
-	return v.toUpper();
-}
-
-template <>
 inline bool is_latin1<char> (char v)
 {
 	return v >= 0;// && v <= 127;
-}
-
-template <>
-inline bool is_latin1<ucchar> (ucchar v)
-{
-	return v.value() <= 127;
 }
 
 template <>
@@ -74,22 +56,9 @@ inline bool eq_latin1<char> (char v, char latin1)
 }
 
 template <>
-inline bool eq_latin1<ucchar> (ucchar v, char latin1)
-{
-	PFS_ASSERT(latin1 >= 0 /*&& latin1 <= 127*/);
-	return v.value() == uint32_t(latin1);
-}
-
-template <>
 inline bool is_digit<char> (char v)
 {
-	return isdigit(v);
-}
-
-template <>
-inline bool is_digit<ucchar> (ucchar v)
-{
-	return v.isDigit();
+	return isdigit(v) ? true : false;
 }
 
 template <>
@@ -97,13 +66,6 @@ inline int to_digit<char> (char v)
 {
 	PFS_ASSERT(is_digit(v));
 	return v - '0';
-}
-
-template <>
-inline int to_digit<ucchar> (ucchar v)
-{
-	PFS_ASSERT(is_digit(v));
-	return v.value() - uint32_t('0');
 }
 
 } // pfs

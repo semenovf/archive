@@ -64,13 +64,7 @@ private:
 	safeformat & operator = (const safeformat & sf);
 
 private:
-//	char_type getc () { return hasMore() ? *_ctx.pos : char_type(0); }
-//	void nextc ()     { if (hasMore()) ++_ctx.pos; }
-//	bool hasMore ()   { return _ctx.pos != _ctx.format.cend(); }
-
 	void advance ();
-//	void read_tail ();
-	void parseSpec ();
 	void clearSpec ()
 	{
 		_ctx.spec.flags     = safeformat::NoFlag;

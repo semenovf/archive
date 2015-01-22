@@ -447,7 +447,7 @@ float byte_string::toFloat (bool * ok, char decimalPoint) const
 		r = float(0.0f);
 	}
 	if (ok) *ok = ok1;
-	return r;
+	return float(r);
 }
 
 double byte_string::toDouble (bool * ok, char decimalPoint) const
@@ -462,7 +462,7 @@ double byte_string::toDouble (bool * ok, char decimalPoint) const
 		r = double(0.0f);
 	}
 	if (ok) *ok = ok1;
-	return r;
+	return double(r);
 #endif
 }
 

@@ -73,11 +73,18 @@
 #endif
 
 #ifdef LDBL_MIN
-#	define PFS_HAVE_LONG_DOUBLE 1
-#	define PFS_LONG_DOUBLE_MIN LDBL_MIN /* 3.36210314311209350626e-4932L */
-#	define PFS_LONG_DOUBLE_MAX LDBL_MAX /* 1.18973149535723176502e+4932L */
-#	define PFS_LONG_DOUBLE_MIN_10_EXP LDBL_MIN_10_EXP /* -4931 */
-#	define PFS_LONG_DOUBLE_MAX_10_EXP LDBL_MAX_10_EXP /* 4932 */
+#	if defined(PFS_CC_MSC_VERSION) && PFS_CC_MSC_VERSION <= 1600 /* <= VS 2010 */
+	/* TODO Need to check in newer versions */
+	/* LDBL_MIN is equal to DBL_MIN
+	 * no differences between double and long double
+	 * */
+#	else
+#		define PFS_HAVE_LONG_DOUBLE 1
+#		define PFS_LONG_DOUBLE_MIN LDBL_MIN /* 3.36210314311209350626e-4932L */
+#		define PFS_LONG_DOUBLE_MAX LDBL_MAX /* 1.18973149535723176502e+4932L */
+#		define PFS_LONG_DOUBLE_MIN_10_EXP LDBL_MIN_10_EXP /* -4931 */
+#		define PFS_LONG_DOUBLE_MAX_10_EXP LDBL_MAX_10_EXP /* 4932 */
+#	endif
 #else
 #	error LDBL_MIN is not defined
 #endif
@@ -89,7 +96,7 @@
 #	define PFS_REAL_MIN_10_EXP  PFS_LONG_DOUBLE_MIN_10_EXP
 #	define PFS_REAL_MAX_10_EXP  PFS_LONG_DOUBLE_MAX_10_EXP
 #else
-#	define PFS_REAL_LITERAL(x) x##f
+#	define PFS_REAL_LITERAL(x) x
 #	define PFS_REAL_MIN         PFS_DOUBLE_MIN
 #	define PFS_REAL_MAX         PFS_DOUBLE_MAX
 #	define PFS_REAL_MIN_10_EXP  PFS_DOUBLE_MIN_10_EXP
@@ -107,6 +114,7 @@
 #else
 #	ifdef PFS_CC_MSVC
 #		define PFS_INFINITY (LDBL_MAX+LDBL_MAX)
+#		define isinf(x) (!_finite(x))
 #	elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
 #		define PFS_INFINITY (DBL_MAX+DBL_MAX)
 #	else
@@ -119,6 +127,7 @@
 #else
 #	ifdef PFS_CC_MSVC
 #		define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
+#		define isnan(x) _isnan(x)
 #	elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
 #		define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
 #	else

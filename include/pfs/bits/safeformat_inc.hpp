@@ -179,6 +179,7 @@ void safeformat<StringT>::parseConvSpec ()
 template <typename StringT>
 void safeformat<StringT>::parseSpec ()
 {
+	clearSpec();
 	advance();
 	parseFlags();
 	parseFieldWidth();
