@@ -14,6 +14,7 @@
 #include <pfs/bits/mbcs_string_impl.hpp>
 #include <pfs/byte_string.hpp>
 #include <pfs/bits/strtolong.hpp>
+#include <pfs/bits/strtoreal.hpp>
 #include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -321,13 +322,12 @@ public:
 	unsigned long long toULongLong (bool * ok = 0, int base = 10) const;
 #endif
 
-	// TODO Need to implement
-	real_t toReal (bool * ok) const;
-	float toFloat (bool * ok) const;
-	double toDouble (bool * ok) const;
+	real_t toReal (bool * ok, ucchar decimalPoint = ucchar('.')) const;
+	float toFloat (bool * ok, ucchar decimalPoint = ucchar('.')) const;
+	double toDouble (bool * ok, ucchar decimalPoint = ucchar('.')) const;
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-	long double toLongDouble (bool * ok) const { return toReal(ok); }
+	long double toLongDouble (bool * ok, ucchar decimalPoint = ucchar('.')) const { return toReal(ok, decimalPoint); }
 #endif
 
 	mbcs_string & operator += (const mbcs_string & other) { return append(other); }
@@ -433,35 +433,35 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 }
 
 template <typename CodeUnitT>
-short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
+inline short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
 {
 	return (short)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base, PFS_SHORT_MIN, PFS_SHORT_MAX);
 }
 
 template <typename CodeUnitT>
-unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
+inline unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
 {
 	return (unsigned short)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base, PFS_USHORT_MAX);
 }
 
 template <typename CodeUnitT>
-int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
+inline int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
 {
 	return (int)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base, PFS_INT_MIN, PFS_INT_MAX);
 }
 
 template <typename CodeUnitT>
-unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
+inline unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
 {
 	return (unsigned int)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base, PFS_UINT_MAX);
 }
 
 template <typename CodeUnitT>
-long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
+inline long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
 {
 #ifdef PFS_HAVE_LONGLONG
 	return (long)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
@@ -473,7 +473,7 @@ long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
+inline unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
 {
 #ifdef PFS_HAVE_LONGLONG
 	return (unsigned long)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
@@ -486,19 +486,75 @@ unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
 
 #ifdef PFS_HAVE_LONGLONG
 template <typename CodeUnitT>
-long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
+inline long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
 {
 	return (long long)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
 }
 
 template <typename CodeUnitT>
-unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int base) const
+inline unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int base) const
 {
 	return (unsigned long long)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base, PFS_ULONG_MAX);
 }
 #endif
+
+
+/**
+ * @brief Converts the string to a real value.
+ *
+ * @param ok If a conversion error occurs, *ok is set to false; otherwise *ok is set to true.
+ * @param decimalPoint The separator between integral and fractal parts.
+ * @return The string converted to a real value. Returns 0.0 if the conversion fails.
+ */
+template <typename CodeUnitT>
+real_t mbcs_string<CodeUnitT>::toReal (bool * ok, ucchar decimalPoint) const
+{
+	const_iterator begin(cbegin());
+	const_iterator end(cend());
+	const_iterator endptr(end);
+	bool ok1 = true;
+
+	real_t r = pfs::strtoreal<ucchar, const_iterator>(begin, end, decimalPoint, & endptr);
+	if (errno || endptr != end) {
+		ok1 = false;
+		r = real_t(0.0f);
+	}
+
+	if (ok) *ok = ok1;
+	return r;
+}
+
+template <typename CodeUnitT>
+float mbcs_string<CodeUnitT>::toFloat (bool * ok, ucchar decimalPoint) const
+{
+	bool ok1;
+	real_t r = toReal(& ok1, decimalPoint);
+	if (!ok1 || r < PFS_FLOAT_MIN || r > PFS_FLOAT_MAX) {
+		ok1 = false;
+		r = float(0.0f);
+	}
+	if (ok) *ok = ok1;
+	return r;
+}
+
+template <typename CodeUnitT>
+double mbcs_string<CodeUnitT>::toDouble (bool * ok, ucchar decimalPoint) const
+{
+#ifndef PFS_HAVE_LONG_DOUBLE
+	return toReal(ok, decimalPoint);
+#else
+	bool ok1;
+	real_t r = toReal(& ok1, decimalPoint);
+	if (!ok1 || r < PFS_DOUBLE_MIN || r > PFS_DOUBLE_MAX) {
+		ok1 = false;
+		r = double(0.0f);
+	}
+	if (ok) *ok = ok1;
+	return r;
+#endif
+}
 
 
 template <typename CodeUnitT>

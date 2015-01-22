@@ -435,6 +435,27 @@ void test_convert_to_number ()
 	TEST_OK(pfs::byte_string("2147483647").toLong(& ok) == PFS_LONG_MAX && ok);
 	TEST_OK(pfs::byte_string("-2147483648").toLong(& ok) == PFS_LONG_MIN && ok);
 #endif
+
+	TEST_OK(pfs::byte_string("9.").toReal(& ok) == 9.0 && ok);
+	TEST_OK(pfs::byte_string("9").toReal(& ok) == 9.0 && ok);
+	TEST_OK(pfs::byte_string("9.0").toReal(& ok) == 9.0 && ok);
+	TEST_OK(pfs::byte_string("9.0000").toReal(& ok) == 9.0 && ok);
+	TEST_OK(pfs::byte_string("9.00001").toReal(& ok) == PFS_REAL_LITERAL(9.00001) && ok);
+	TEST_OK(pfs::byte_string("009").toReal(& ok) == 9.0 && ok);
+	TEST_OK(pfs::byte_string("0.09e02").toReal(& ok) == 9.0 && ok);
+	TEST_OK(pfs::byte_string("0.9999999999999999999999999999999999").toReal(& ok) == PFS_REAL_LITERAL(0.9999999999999999999999999999999999) && ok);
+	TEST_OK(pfs::byte_string("2.22e-308").toReal(& ok) == PFS_REAL_LITERAL(2.22e-308) && ok);
+	TEST_OK(pfs::byte_string("1.34").toReal(& ok) == PFS_REAL_LITERAL(1.34) && ok);
+	TEST_OK(pfs::byte_string("12.34").toReal(& ok) == PFS_REAL_LITERAL(12.34) && ok);
+	TEST_OK(pfs::byte_string("123.456").toReal(& ok) == PFS_REAL_LITERAL(123.456) && ok);
+
+	TEST_OK(pfs::byte_string("2.22507385850720138309e-308").toReal(& ok) == PFS_REAL_LITERAL(2.22507385850720138309e-308) && ok);
+	TEST_OK(pfs::byte_string("1.79769313486231570815e+308").toReal(& ok) == PFS_REAL_LITERAL(1.79769313486231570815e+308) && ok);
+	TEST_OK(pfs::byte_string("3.36210314311209350626e-4932").toReal(& ok) == PFS_REAL_LITERAL(3.36210314311209350626e-4932) && ok);
+	TEST_OK(pfs::byte_string("1.18973149535723176502e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502e+4932) && ok);
+	TEST_OK(pfs::byte_string("1.18973149535723176502126385303e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502126385303e+4932) && ok);
+	TEST_OK(pfs::byte_string("18973149535723176502126385303").toReal(& ok) == PFS_REAL_LITERAL(18973149535723176502126385303.0) && ok);
+	TEST_OK(pfs::byte_string("12345678901234567890123456789").toReal(& ok) == PFS_REAL_LITERAL(12345678901234567890123456789.0) && ok);
 }
 
 int main(int argc, char *argv[])

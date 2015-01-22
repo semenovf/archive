@@ -7,6 +7,7 @@
 
 #include <pfs/byte_string.hpp>
 #include <pfs/bits/strtolong.hpp>
+#include <pfs/bits/strtoreal.hpp>
 #include <cstring>
 
 namespace pfs {
@@ -411,6 +412,60 @@ unsigned long long byte_string::toULongLong (bool * ok, int base) const
 		(begin, end, ok, base, PFS_ULONG_MAX);
 }
 #endif
+
+
+/**
+ * @brief Converts the byte string to a real value.
+ *
+ * @param ok If a conversion error occurs, *ok is set to false; otherwise *ok is set to true.
+ * @param decimalPoint The separator between integral and fractal parts.
+ * @return The byte string converted to a real value. Returns 0.0 if the conversion fails.
+ */
+real_t byte_string::toReal (bool * ok, char decimalPoint) const
+{
+	const char * endptr;
+	const char * begin = reinterpret_cast<const char *>(constData());
+	const char * end = begin + size();
+	bool ok1 = true;
+
+	real_t r = pfs::strtoreal<char, const char *>(begin, end, decimalPoint, & endptr);
+	if (errno || endptr != end) {
+		ok1 = false;
+		r = real_t(0.0f);
+	}
+
+	if (ok) *ok = ok1;
+	return r;
+}
+
+float byte_string::toFloat (bool * ok, char decimalPoint) const
+{
+	bool ok1;
+	real_t r = toReal(& ok1, decimalPoint);
+	if (!ok1 || r < PFS_FLOAT_MIN || r > PFS_FLOAT_MAX) {
+		ok1 = false;
+		r = float(0.0f);
+	}
+	if (ok) *ok = ok1;
+	return r;
+}
+
+double byte_string::toDouble (bool * ok, char decimalPoint) const
+{
+#ifndef PFS_HAVE_LONG_DOUBLE
+	return toReal(ok, decimalPoint);
+#else
+	bool ok1;
+	real_t r = toReal(& ok1, decimalPoint);
+	if (!ok1 || r < PFS_DOUBLE_MIN || r > PFS_DOUBLE_MAX) {
+		ok1 = false;
+		r = double(0.0f);
+	}
+	if (ok) *ok = ok1;
+	return r;
+#endif
+}
+
 
 byte_string byte_string::fromBase64 (const byte_string & base64)
 {

@@ -5,45 +5,6 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_BITS_SAFEFORMAT_INC_HPP__
-#define __PFS_BITS_SAFEFORMAT_INC_HPP__
-
-namespace pfs {
-
-//template <typename StringT>
-//inline void safeformat<StringT>::ungetc ()
-//{
-//	PFS_ASSERT(_ctx.pos > _ctx.format.cbegin());
-//	--_ctx.pos;
-//}
-
-/**
- * @return '\0' at the end of string, '%' otherwise
- */
-template <typename StringT>
-void safeformat<StringT>::advance ()
-{
-	char_type v;
-	while ((v = getc()) != char_type(0)) {
-		if (getc() == char_type('%')) {
-			nextc();
-			if (getc() == char_type('%')) {
-				_ctx.result.append(char_type('%'));
-			} else {
-			}
-		} else {
-			_ctx.result.append(v);
-		}
-	}
-}
-
-//template <typename StringT>
-//inline void safeformat<StringT>::read_tail ()
-//{
-//	_context.result.append(_context.pos, _context.format.cend());
-//}
-
-
 /*
  * conversion_specification := '%' *flag [ field_width ] [ prec ] conversion_specifier
  * flag := '0' ; the value should be zero padded (ignored when 'prec' is specified)
@@ -58,51 +19,337 @@ void safeformat<StringT>::advance ()
  * 		 / 'c' / 's'
  * 		 / 'p'
  * */
+
+/*
+ * flag := '0' ; the value should be zero padded (ignored when 'prec' is specified)
+ * 	 / '-' ; the value is left-justified
+ * 	 / ' ' ; the value should be padded whith spaces (ignored when 'prec' is specified)
+ * 	 / '+'
+ */
+
+#ifndef __PFS_BITS_SAFEFORMAT_INC_HPP__
+#define __PFS_BITS_SAFEFORMAT_INC_HPP__
+
+#include <pfs/bits/strtolong.hpp>
+
+
+
+namespace pfs {
+
+/*
+ * Advances until '%' or end of string.
+ */
+template <typename StringT>
+void safeformat<StringT>::advance ()
+{
+	const_iterator pos(_ctx.pos);
+	const_iterator end(_ctx.format.cend());
+
+	while (pos < end) {
+		if (eq_latin1(char_type(*pos), '%')) {
+			++pos;
+			if (pos < end) {
+				if (eq_latin1(char_type(*pos), '%'))
+					_ctx.result.append(char_type('%'));
+				else
+					break;
+			} else { // trailing single '%'
+				_ctx.result.append(char_type('%'));
+				break;
+			}
+		} else {
+			_ctx.result.append(char_type(*pos));
+		}
+		++pos;
+	}
+	_ctx.pos = pos;
+}
+
+//template <typename StringT>
+//inline void safeformat<StringT>::read_tail ()
+//{
+//	_context.result.append(_context.pos, _context.format.cend());
+//}
+
+
 template <typename StringT>
 void safeformat<StringT>::parseFlags ()
 {
-	char_type v;
-	while ((v = getc()) != char_type(0)) {
-		if (v == char_type('0')) {
+	const_iterator pos(_ctx.pos);
+	const_iterator end(_ctx.format.cend());
+
+	while (pos < end) {
+		if (eq_latin1(char_type(*pos), '0')) {
 			setZeroPadding();
-		} else if (v == char_type('-')) {
+		} else if (eq_latin1(char_type(*pos), '-')) {
 			setLeftJustify();
-		} else if (v == char_type(' ')) {
+		} else if (eq_latin1(char_type(*pos), ' ')) {
 			setSpaceBeforePositive();
-		} else if (v == char_type('+')) {
+		} else if (eq_latin1(char_type(*pos), '+')) {
 			setNeedSign();
 		} else {
 			break;
 		}
-		nextc();
+		++pos;
 	}
 }
 
+/*
+ *  field_width := 1*DIGIT
+ */
 template <typename StringT>
 void safeformat<StringT>::parseFieldWidth ()
 {
-	PFS_ASSERT_FORMAT(hasMore());
-	char_type v;
-	const_iterator p0 = _ctx.pos;
+	const_iterator pos(_ctx.pos);
+	const_iterator end(_ctx.format.cend());
 
-	if (isDigitExcludeZero(getc())) {
-		while (isDigit(getc())) nextc();
-	}
+	if (isDigitExcludeZero(char_type(*pos))) {
+		long_t width = strtolong (pos, end, 10, & pos);
 
-	if (_ctx.pos > p0) {
-		StringT s(p0, _ctx.pos);
+		PFS_ASSERT(!errno && width >= 0 && width <= PFS_INT_MAX);
+
+		_ctx.pos = pos;
+		setFieldWidth(int(width));
 	}
 }
 
+
+/*
+ * prec := '.' [ '-' ] *DIGIT
+ *
+ * If the precision is given as just '.', the precision is taken to be zero.
+ * A negative precision is taken as if the precision were omitted.
+ */
+template <typename StringT>
+void safeformat<StringT>::parsePrecision ()
+{
+	const_iterator pos(_ctx.pos);
+	const_iterator end(_ctx.format.cend());
+	int sign = 1;
+	long_t prec = 0;
+
+	if (pos < end && eq_latin1(char_type(*pos), '.'))
+		++pos;
+
+	if (pos < end && eq_latin1(char_type(*pos), '-')) {
+		sign = -1;
+		++pos;
+	}
+
+	if (isDigit(char_type(*pos))) {
+		long_t prec = strtolong (pos, end, 10, & pos);
+		PFS_ASSERT(!errno && prec >= 0 && prec <= PFS_INT_MAX);
+	}
+
+	if (sign > 0)
+		setPrecision(int(prec));
+
+	_ctx.pos = pos;
+	return true;
+}
+
+
+/*
+ * conversion_specifier := 'd' / 'i' / 'o' / 'u' / 'x' / 'X'
+ * 		 / 'e' / 'E' / 'f' / 'F' / 'g' / 'G'
+ * 		 / 'c' / 's'
+ * 		 / 'p'
+ */
+template <typename StringT>
+void safeformat<StringT>::parseConvSpec ()
+{
+	const_iterator pos(_ctx.pos);
+	const_iterator end(_ctx.format.cend());
+
+	if (pos < end) {
+		StringT convSpecifiers("diouxXeEfFgGcsp");
+
+		PFS_ASSERT_X(convSpecifiers.contains(char_type(*pos))
+				, _Tr("Expected conversion specifier: one of 'diouxXeEfFgGcsp'"));
+		setConvSpecifier(char_type(*pos));
+		++pos;
+	}
+
+	_ctx.pos = pos;
+}
+
+/*
+ * conversion_specification := '%' *flag [ field_width ] [ prec ] conversion_specifier
+ */
 template <typename StringT>
 void safeformat<StringT>::parseSpec ()
 {
-	char_type v;
-
 	advance();
-	PFS_ASSERT_FORMAT(hasMore());
 	parseFlags();
+	parseFieldWidth();
+	parsePrecision();
+	parseConvSpec();
 }
+
+
+template <typename StringT>
+safeformat<StringT> & safeformat<StringT>::operator () (char c)
+{
+	parseSpec();
+
+	// Error, conversion specifiers too few.
+	if (_ctx.spec.spec_char == char_type(0)) {
+		return *this;
+	}
+
+	PFS_ASSERT(is_latin1(_ctx.spec.spec_char));
+	StringT r;
+
+	//pfs::unitype ut = ctx->bind_args[ctx->argi++];
+
+	switch (char(_ctx.spec.spec_char)) {
+	case 'd':
+	case 'i':
+		r.setNumber(cast_to<long_int>(c), 10);
+		break;
+
+	case 'o':
+			r.setNumber(ulong_t(ut.toInteger()), 8);
+			break;
+		case 'u':
+			r.setNumber(ulong_t(ut.toInteger()), 10);
+			expect = __EXPECT_DECIMAL;
+			break;
+		case 'x':
+		case 'p':
+			r.setNumber(ulong_t(ut.toInteger()), 16, false);
+			expect = __EXPECT_DECIMAL;
+			break;
+		case 'X':
+			r.setNumber(ulong_t(ut.toInteger()), 16, true); // uppercase
+			expect = __EXPECT_DECIMAL;
+			break;
+		case 'e':
+		case 'f':
+		case 'g':
+		case 'E':
+		case 'F':
+		case 'G':
+			r.setNumber(ut.toFloat(), char(ctx->spec.spec_char), ctx->spec.prec > 0 ? ctx->spec.prec : 0);
+			expect = __EXPECT_FLOAT;
+			break;
+		case 'c':
+			r = pfs::string(1, char(ut.toInteger()));
+			expect = __EXPECT_CHAR;
+
+			ok = PFS_VERIFY_X(
+				PFS_VERIFY_X(!(ctx->spec.flags & safeformat::ZeroPadding)
+					, _Tr("'0' flag used with ‘%c’ specifier in format string:"))
+				, ctx->format.c_str());
+
+			if (!ok)
+				ctx->spec.flags &= ~safeformat::ZeroPadding;
+
+			ok = PFS_VERIFY_X(
+				PFS_VERIFY_X(!(ctx->spec.flags & safeformat::NeedSign)
+					, _Tr("'+' flag used with ‘%c’ specifier in format string:"))
+				, ctx->format.c_str());
+
+			if (!ok)
+				ctx->spec.flags &= ~safeformat::NeedSign;
+			break;
+
+		case 's':
+			r = ut.toString();
+			expect = __EXPECT_STRING;
+
+			ok = PFS_VERIFY_X(
+				PFS_VERIFY_X(!(ctx->spec.flags & safeformat::ZeroPadding)
+					, _Tr("'0' flag used with ‘%s’ specifier in format string"))
+				, ctx->format.c_str());
+
+			if (!ok)
+				ctx->spec.flags &= ~safeformat::ZeroPadding;
+
+			ok = PFS_VERIFY_X(
+				PFS_VERIFY_X(!(ctx->spec.flags & safeformat::NeedSign)
+					, _Tr("'0' flag used with ‘%s’ specifier in format string"))
+				, ctx->format.c_str());
+
+			if (!ok)
+				ctx->spec.flags &= ~safeformat::NeedSign;
+			break;
+		default:
+			break;
+		}
+
+		PFS_ASSERT(expect != __EXPECT_UNKNOWN);
+
+//		if (false) {
+//			PFS_WARN(_Tr("Incompatible value for conversion specification in format string:"));
+//			PFS_WARN(ctx->format.c_str());
+//		} else {
+
+			if (ctx->spec.flags & safeformat::ZeroPadding) {
+
+				// If the 0 and - flags both appear, the 0 flag is ignored.
+				if (ctx->spec.flags & safeformat::LeftJustify)
+					ctx->spec.flags &= ~safeformat::ZeroPadding;
+
+				// If a precision is given with a numeric conversion (d, i, o, u, x, and X), the 0 flag is ignored.
+				if (ctx->spec.prec > -1
+						&& (  ctx->spec.spec_char == pfs::ucchar('d')
+							|| ctx->spec.spec_char == pfs::ucchar('i')
+							|| ctx->spec.spec_char == pfs::ucchar('o')
+							|| ctx->spec.spec_char == pfs::ucchar('u')
+							|| ctx->spec.spec_char == pfs::ucchar('x')
+							|| ctx->spec.spec_char == pfs::ucchar('X')
+							))
+					ctx->spec.flags &= ~safeformat::ZeroPadding;
+			}
+
+			// A + overrides a space if both are used
+			if ((ctx->spec.flags & safeformat::NeedSign)
+					&& (ctx->spec.flags & safeformat::SpaceBeforePositive))
+				ctx->spec.flags &= ~safeformat::SpaceBeforePositive;
+
+			if (expect == __EXPECT_DECIMAL || expect == __EXPECT_FLOAT) {
+				bool isNegative = r.startsWith("-");
+
+				// When 0 is printed with an explicit precision 0, the output is empty.
+				if (ctx->spec.prec == 0 && r == pfs::string("0"))
+					r.clear();
+
+				// The precision, if any, gives the minimum number of digits that must appear;
+				// if the converted value requires fewer digits, it is padded on the left with zeros.
+				if (ctx->spec.prec > 0 && r.length() < size_t(ctx->spec.prec))
+					r.prepend(pfs::string(ctx->spec.prec - r.length(), '0'));
+
+				if (! isNegative) {
+					// A sign (+ or -) should always be placed before a number produced by a signed conversion
+					if (ctx->spec.flags & safeformat::NeedSign) {
+						r.prepend(pfs::string("+"));
+					}
+					// A blank should be left before a positive number
+					else if (ctx->spec.flags & safeformat::SpaceBeforePositive) {
+						r.prepend(pfs::string(" "));
+					}
+				}
+			}
+
+			// If the converted value has fewer characters than the field width, it will be padded with spaces
+			// on the left (or right, if the left-adjustment flag has been given).
+			PFS_ASSERT(ctx->spec.width >= 0);
+			if (r.length() < size_t(ctx->spec.width)) {
+				size_t count = size_t(ctx->spec.width) - r.length();
+				char paddingChar = (ctx->spec.flags & safeformat::ZeroPadding) ? '0' : ' ';
+
+				if (ctx->spec.flags & safeformat::LeftJustify)
+					r.append(pfs::string(count, paddingChar));
+				else
+					r.prepend(pfs::string(count, paddingChar));
+			}
+//		}
+		ctx->result.append(r);
+
+	return true;
+}
+
 
 
 } // pfs

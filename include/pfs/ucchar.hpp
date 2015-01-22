@@ -11,6 +11,7 @@
 #define __PFS_UCHAR_HPP__
 
 #include <pfs.hpp>
+#include <pfs/ctype.hpp>
 
 namespace pfs {
 
@@ -114,6 +115,52 @@ inline bool ucchar::isValid (uint32_t ch, uint32_t min_uc)
 			&& (!isSurrogate(ch))
 			&& (ch <= MaxCodePoint._value);
 }
+
+
+//
+// cctype specializations {
+//
+template <>
+inline bool is_space<ucchar> (ucchar v)
+{
+	return v.isSpace();
+}
+
+template <>
+inline ucchar to_upper<ucchar> (ucchar v)
+{
+	return v.toUpper();
+}
+
+template <>
+inline bool is_latin1<ucchar> (ucchar v)
+{
+	return v.value() <= 127;
+}
+
+template <>
+inline bool eq_latin1<ucchar> (ucchar v, char latin1)
+{
+	PFS_ASSERT(latin1 >= 0 /*&& latin1 <= 127*/);
+	return v.value() == uint32_t(latin1);
+}
+
+template <>
+inline bool is_digit<ucchar> (ucchar v)
+{
+	return v.isDigit();
+}
+
+template <>
+inline int to_digit<ucchar> (ucchar v)
+{
+	PFS_ASSERT(is_digit(v));
+	return v.value() - uint32_t('0');
+}
+//
+// } cctype specializations
+//
+
 
 } // pfs
 

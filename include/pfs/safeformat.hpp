@@ -8,10 +8,7 @@
 #ifndef __PFS_SAFEFORMAT_HPP__
 #define __PFS_SAFEFORMAT_HPP__
 
-#include "pfs/unitype.hpp"
-#include "pfs/string.hpp"
-#include "pfs/bytearray.hpp"
-#include "pfs/shared_ptr.hpp"
+#include <pfs/ctype.hpp>
 
 //#define _Fr(s) pfs::safeformat(_u8(s))
 
@@ -67,10 +64,9 @@ private:
 	safeformat & operator = (const safeformat & sf);
 
 private:
-	char_type getc () { return hasMore() ? *_ctx.pos : char_type(0); }
-	void nextc ()      { if (hasMore()) ++_ctx.pos; }
-	bool hasMore ()    { return _ctx.pos != _ctx.format.cend(); }
-//	void ungetc ();
+//	char_type getc () { return hasMore() ? *_ctx.pos : char_type(0); }
+//	void nextc ()     { if (hasMore()) ++_ctx.pos; }
+//	bool hasMore ()   { return _ctx.pos != _ctx.format.cend(); }
 
 	void advance ();
 //	void read_tail ();
@@ -85,47 +81,38 @@ private:
 
 	bool isDigit (char_type v)
 	{
-		return (v == char_type('0')
-				|| v == char_type('1')
-				|| v == char_type('2')
-				|| v == char_type('3')
-				|| v == char_type('4')
-				|| v == char_type('5')
-				|| v == char_type('6')
-				|| v == char_type('7')
-				|| v == char_type('8')
-				|| v == char_type('9')) ? true : false;
+		return is_digit(v);
 	}
 
 	bool isDigitExcludeZero (char_type v)
 	{
-		return (v == char_type('1')
-				|| v == char_type('2')
-				|| v == char_type('3')
-				|| v == char_type('4')
-				|| v == char_type('5')
-				|| v == char_type('6')
-				|| v == char_type('7')
-				|| v == char_type('8')
-				|| v == char_type('9')) ? true : false;
+		return (isDigit(v) && v != char_type('0'));
 	}
-
 
 	void parseFlags ();
 	void parseFieldWidth ();
-	void setZeroPadding () { _ctx.spec.flags |= ZeroPadding; }
-	void setLeftJustify () { _ctx.spec.flags |= LeftJustify; }
+	void parsePrecision ();
+	void parseConvSpec ();
+	void parseSpec ();
+
+	void setZeroPadding ()         { _ctx.spec.flags |= ZeroPadding; }
+	void setLeftJustify ()         { _ctx.spec.flags |= LeftJustify; }
 	void setSpaceBeforePositive () { _ctx.spec.flags |= SpaceBeforePositive; }
-	void setNeedSign () { _ctx.spec.flags |= NeedSign; }
+	void setNeedSign ()            { _ctx.spec.flags |= NeedSign; }
+	void setFieldWidth (int w)     { _ctx.spec.width = w; }
+	void setPrecision (int p)      { _ctx.spec.prec = p; }
+	void setConvSpecifier (char_type c) { _ctx.spec.spec_char = c; }
 
 public:
 	safeformat () {}
-	safeformat (const StringT & format)
+
+	explicit safeformat (const StringT & format)
 	{
 		_ctx.format = format;
 		clearSpec();
 	}
-	safeformat (const char * latin1Format)
+
+	explicit safeformat (const char * latin1Format)
 	{
 		_ctx.format = StringT::fromLatin1(latin1Format);
 		clearSpec();
@@ -134,8 +121,30 @@ public:
 //	operator pfs::string & ();
 //	const pfs::string & operator () ();
 
-//	safeformat & operator () (const pfs::unitype & ut);
-//	safeformat & operator () (char c)               { return operator () (pfs::unitype(c)); }
+	safeformat & operator () (char c);
+	safeformat & operator () (unsigned char c);
+	safeformat & operator () (short n);
+	safeformat & operator () (unsigned short n);
+	safeformat & operator () (int n);
+	safeformat & operator () (unsigned int n);
+	safeformat & operator () (long n);
+	safeformat & operator () (unsigned long n);
+
+#ifdef PFS_HAVE_LONGLONG
+	safeformat & operator () (long long n);
+	safeformat & operator () (unsigned long long n);
+#endif
+
+	safeformat & operator () (float n);
+	safeformat & operator () (double n);
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+	safeformat & operator () (long double n);
+#endif
+
+	safeformat & operator () (const char * s);
+	safeformat & operator () (const StringT & s);
+
 //	safeformat & operator () (int_t n)              { return operator () (pfs::unitype(n)); }
 //	safeformat & operator () (uint_t n)             { return operator () (pfs::unitype(n)); }
 //	safeformat & operator () (long_t n)             { return operator () (pfs::unitype(n)); }
@@ -187,8 +196,8 @@ private:
 	context _ctx;
 };
 
-#include "bits/safeformat_inc.hpp"
-
 } // pfs
+
+#include "bits/safeformat_inc.hpp"
 
 #endif /* __PFS_SAFEFORMAT_HPP__ */

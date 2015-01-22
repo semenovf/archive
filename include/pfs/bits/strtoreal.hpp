@@ -51,14 +51,15 @@ enum state_enum {
 	, infinity_state
 };
 
-template <typename Iter>
+template <typename CharT, typename Iter>
 Iter check_str_nan (Iter begin, Iter end)
 {
+	typedef CharT char_type;
 	Iter pos(begin);
 
-	if (pos < end && (eq_latin1(*pos, 'N') || eq_latin1(*pos, 'n'))) {
-		if (++pos < end && (eq_latin1(*pos, 'A') || eq_latin1(*pos, 'a'))) {
-			if (++pos < end && (eq_latin1(*pos, 'N') || eq_latin1(*pos, 'n'))) {
+	if (pos < end && (eq_latin1(char_type(*pos), 'N') || eq_latin1(char_type(*pos), 'n'))) {
+		if (++pos < end && (eq_latin1(char_type(*pos), 'A') || eq_latin1(char_type(*pos), 'a'))) {
+			if (++pos < end && (eq_latin1(char_type(*pos), 'N') || eq_latin1(char_type(*pos), 'n'))) {
 				++pos;
 				return pos;
 			}
@@ -68,19 +69,21 @@ Iter check_str_nan (Iter begin, Iter end)
 	return begin;
 }
 
-template <typename Iter>
+template <typename CharT, typename Iter>
 Iter check_str_inf (Iter begin, Iter end)
 {
+	typedef CharT char_type;
+
 	Iter pos(begin);
 
-	if (pos < end && (eq_latin1(*pos, 'I') || eq_latin1(*pos, 'i'))) {
-		if (++pos < end && (eq_latin1(*pos, 'N') || eq_latin1(*pos, 'n'))) {
-			if (++pos < end && (eq_latin1(*pos, 'F') || eq_latin1(*pos, 'f'))) {
-				if (++pos < end && (eq_latin1(*pos, 'I') || eq_latin1(*pos, 'i'))) {
-					if (++pos < end && (eq_latin1(*pos, 'N') || eq_latin1(*pos, 'n'))) {
-						if (++pos < end && (eq_latin1(*pos, 'I') || eq_latin1(*pos, 'i'))) {
-							if (++pos < end && (eq_latin1(*pos, 'T') || eq_latin1(*pos, 't'))) {
-								if (++pos < end && (eq_latin1(*pos, 'Y') || eq_latin1(*pos, 'y'))) {
+	if (pos < end && (eq_latin1(char_type(*pos), 'I') || eq_latin1(char_type(*pos), 'i'))) {
+		if (++pos < end && (eq_latin1(char_type(*pos), 'N') || eq_latin1(char_type(*pos), 'n'))) {
+			if (++pos < end && (eq_latin1(char_type(*pos), 'F') || eq_latin1(char_type(*pos), 'f'))) {
+				if (++pos < end && (eq_latin1(char_type(*pos), 'I') || eq_latin1(char_type(*pos), 'i'))) {
+					if (++pos < end && (eq_latin1(char_type(*pos), 'N') || eq_latin1(char_type(*pos), 'n'))) {
+						if (++pos < end && (eq_latin1(char_type(*pos), 'I') || eq_latin1(char_type(*pos), 'i'))) {
+							if (++pos < end && (eq_latin1(char_type(*pos), 'T') || eq_latin1(char_type(*pos), 't'))) {
+								if (++pos < end && (eq_latin1(char_type(*pos), 'Y') || eq_latin1(char_type(*pos), 'y'))) {
 									++pos;
 									return pos;
 								}
@@ -98,15 +101,17 @@ Iter check_str_inf (Iter begin, Iter end)
 }
 
 
-template <typename Iter>
+template <typename CharT, typename Iter>
 Iter parse_exp (Iter begin, Iter end, int & expSign, int & exp)
 {
+	typedef CharT char_type;
+
 	Iter pos(begin);
 	exp = 0;
 	expSign = 1;
 
 	if (pos < end) {
-		if (!(eq_latin1(*pos, 'e') || eq_latin1(*pos, 'E')))
+		if (!(eq_latin1(char_type(*pos), 'e') || eq_latin1(char_type(*pos), 'E')))
 			return begin;
 
 		++pos;
@@ -114,22 +119,22 @@ Iter parse_exp (Iter begin, Iter end, int & expSign, int & exp)
 		if (pos == end)
 			return begin;
 
-		if (eq_latin1(*pos, '-')) {
+		if (eq_latin1(char_type(*pos), '-')) {
 			expSign = -1;
 			++pos;
-		} else if (eq_latin1(*pos, '+')) {
+		} else if (eq_latin1(char_type(*pos), '+')) {
 			++pos;
 		}
 
 		if (pos == end)
 			return begin;
 
-		if (!is_digit(*pos))
+		if (!is_digit(char_type(*pos)))
 			return begin;
 
 		while (pos < end) {
-			if (is_digit(*pos)) {
-				int digit = to_digit(*pos);
+			if (is_digit(char_type(*pos))) {
+				int digit = to_digit(char_type(*pos));
 				exp = exp * 10 + digit;
 				PFS_ASSERT(exp >= 0);
 			} else {
@@ -150,10 +155,14 @@ Iter parse_exp (Iter begin, Iter end, int & expSign, int & exp)
  * @return
  *          If no conversion is performed, zero is returned and the value of @c begin
  *          is stored in the location referenced by @c endref.
+ * 			If error occured @c errno set to @c ERANGE (overflow or underflow) or @c EINVAL
+ * 			(if infinity or NaN value)
  */
 template <typename CharT, typename Iter>
 real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = nullptr)
 {
+	typedef CharT char_type;
+
 	Iter pos(begin);
 	real_t r = real_t(0.0f);
 	int sign = 1;
@@ -195,7 +204,7 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
     //
     // Skip over any leading whitespace.
     //
-    while (pos < end && is_space(*pos )) {
+    while (pos < end && is_space(char_type(*pos))) {
     	++pos;
     }
 
@@ -204,10 +213,10 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
     while (state < finish_state && pos < end) {
     	switch (state) {
     	case parse_sign_state:
-    		if (eq_latin1(*pos, '-')) {
+    		if (eq_latin1(char_type(*pos), '-')) {
     			sign = -1;
     			++pos;
-    		} else if (eq_latin1(*pos, '+')) {
+    		} else if (eq_latin1(char_type(*pos), '+')) {
     			++pos;
     		}
 
@@ -215,8 +224,8 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
     		break;
 
     	case skip_zeros_state:
-    		if (eq_latin1(*pos, '0')) {
-    			while (pos < end && eq_latin1(*pos, '0'))
+    		if (eq_latin1(char_type(*pos), '0')) {
+    			while (pos < end && eq_latin1(char_type(*pos), '0'))
     				++pos;
     		} else {
     			state = parse_nan_state;
@@ -224,7 +233,7 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
     		break;
 
     	case parse_nan_state: {
-				Iter pos1 = check_str_nan(pos, end);
+				Iter pos1 = check_str_nan<CharT, Iter>(pos, end);
 				if (pos1 != pos) {
 					r = sign < 0 ? - real_t(PFS_NAN) : real_t(PFS_NAN);
 					pos = pos1;
@@ -236,7 +245,7 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
     		break;
 
     	case parse_inf_state: {
-				Iter pos1 = check_str_inf(pos, end);
+				Iter pos1 = check_str_inf<CharT, Iter>(pos, end);
 				if (pos1 != pos) {
 					r = sign < 0 ? - real_t(PFS_INFINITY) : real_t(PFS_INFINITY);
 					pos = pos1;
@@ -249,8 +258,8 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
 
     	case parse_mantissa_state:
     		while (pos < end) {
-				if (is_digit(*pos)) {
-					int digit = to_digit(*pos);
+				if (is_digit(char_type(*pos))) {
+					int digit = to_digit(char_type(*pos));
 
 					r = r * PFS_REAL_LITERAL(1.e1) + digit;
 
@@ -259,7 +268,7 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
 					} else {
 						++integralSize;
 					}
-				} else if (eq_latin1(*pos, decimalPoint)) {
+				} else if (eq_latin1(char_type(*pos), decimalPoint)) {
 					if (!hasDecPoint) {
 						hasDecPoint = true;
 					} else {
@@ -275,7 +284,7 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
     		break;
 
     	case parse_exp_state:
-    		pos = parse_exp(pos, end, expSign, exp);
+    		pos = parse_exp<CharT, Iter>(pos, end, expSign, exp);
     		state = finish_state;
     		break;
 
@@ -340,6 +349,9 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
     if (endref) {
     	*endref = pos;
     }
+
+    if (!errno && (isnan(r) || isinf(r)))
+    	errno = EINVAL;
 
     return r;
 }

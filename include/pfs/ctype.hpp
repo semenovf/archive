@@ -8,7 +8,6 @@
 #ifndef __PFS_CTYPE_HPP__
 #define __PFS_CTYPE_HPP__
 
-#include <pfs/ucchar.hpp>
 #include <cctype>
 
 namespace pfs {

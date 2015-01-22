@@ -405,13 +405,12 @@ public:
 	unsigned long long toULongLong (bool * ok = 0, int base = 10) const;
 #endif
 
-	// TODO Need to implement
-	real_t toReal (bool * ok) const;
-	float toFloat (bool * ok) const;
-	double toDouble (bool * ok) const;
+	real_t toReal (bool * ok, char decimalPoint = '.') const;
+	float toFloat (bool * ok, char decimalPoint = '.') const;
+	double toDouble (bool * ok, char decimalPoint = '.') const;
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-	long double toLongDouble (bool * ok) const { return toReal(ok); }
+	long double toLongDouble (bool * ok, char decimalPoint = '.') const { return toReal(ok, decimalPoint); }
 #endif
 
 	byte_string        toBase64 () const;

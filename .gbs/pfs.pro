@@ -21,6 +21,7 @@ SUBDIRS  = \
 #    tests/map_hash   \
      tests/date       \
      tests/time       \
+     tests/safeformat \
 #    tests/utf8string_ptr \
 #    tests/utf8string     \
 #    tests/unitype        \
