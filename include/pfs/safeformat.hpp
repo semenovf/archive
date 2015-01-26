@@ -136,6 +136,7 @@ public:
 	safeformat & operator () (long double n);
 #endif
 
+	safeformat & operator () (ucchar ch);
 	safeformat & operator () (const char * s);
 	safeformat & operator () (const StringT & s);
 

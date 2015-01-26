@@ -193,17 +193,19 @@ safeformat<StringT> & safeformat<StringT>::operator () (char c)
 {
 	parseSpec();
 
+	char_type spec_char(_ctx.spec.spec_char);
+
 	// Error, conversion specifiers too few.
-	if (_ctx.spec.spec_char == char_type(0)) {
+	if (spec_char == char_type(0)) {
 		return *this;
 	}
 
-	PFS_ASSERT(is_latin1(_ctx.spec.spec_char));
+	PFS_ASSERT(is_latin1(spec_char));
 	StringT r;
 
 	//pfs::unitype ut = ctx->bind_args[ctx->argi++];
 
-	switch (char(_ctx.spec.spec_char)) {
+	switch (char(spec_char)) {
 	case 'd':
 	case 'i':
 		r.setNumber(cast_to<long_int>(c), 10);
