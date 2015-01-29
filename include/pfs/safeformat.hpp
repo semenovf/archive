@@ -9,6 +9,7 @@
 #define __PFS_SAFEFORMAT_HPP__
 
 #include <pfs/ctype.hpp>
+#include <pfs/ucchar.hpp>
 
 //#define _Fr(s) pfs::safeformat(_u8(s))
 
@@ -40,6 +41,17 @@ public:
 		, NeedSign             = 0x0008 // A sign (+ or -) should always be placed before a number produced by a signed conversion.
 		                                // By default a sign is used only for negative numbers.
 		                                // @c NeedSign overrides a @c SpaceBeforePositive if both are used.
+		, Alternate            = 0x0010 // The value should be converted to an "alternate form".
+										// For o conversions, the first character of the output  string
+        								// is  made  zero  (by  prefixing  a 0 if it was not zero already).
+										// For x and X conversions, a nonzero result has the
+        								// string "0x" (or "0X" for X conversions) prepended to it.
+										// For a, A, e, E, f, F, g, and G  conversions,  the  result
+        								// will  always contain a decimal point, even if no digits follow it
+										// (normally, a decimal point appears in the results
+        								// of those conversions only if a digit follows).
+										// For g and G conversions, trailing zeros are not removed from the
+        								// result as they would otherwise be.  For other conversions, the result is undefined.
 	};
 
 	struct conversion_spec
@@ -83,19 +95,24 @@ private:
 		return (isDigit(v) && v != char_type('0'));
 	}
 
-	void parseFlags ();
-	void parseFieldWidth ();
-	void parsePrecision ();
-	void parseConvSpec ();
-	void parseSpec ();
+	bool parsePercentChar ();
+	bool parseFlags ();
+	bool parseFieldWidth ();
+	bool parsePrecision ();
+	bool parseConvSpec ();
+	bool parseSpec ();
 
 	void setZeroPadding ()         { _ctx.spec.flags |= ZeroPadding; }
 	void setLeftJustify ()         { _ctx.spec.flags |= LeftJustify; }
 	void setSpaceBeforePositive () { _ctx.spec.flags |= SpaceBeforePositive; }
 	void setNeedSign ()            { _ctx.spec.flags |= NeedSign; }
+	void setAlternate ()           { _ctx.spec.flags |= Alternate; }
 	void setFieldWidth (int w)     { _ctx.spec.width = w; }
 	void setPrecision (int p)      { _ctx.spec.prec = p; }
 	void setConvSpecifier (char_type c) { _ctx.spec.spec_char = c; }
+
+	safeformat & integerArg (long_t n);
+	safeformat & integerArg (ulong_t n);
 
 public:
 	safeformat () {}
@@ -111,9 +128,6 @@ public:
 		_ctx.format = StringT::fromLatin1(latin1Format);
 		clearSpec();
 	}
-
-//	operator pfs::string & ();
-//	const pfs::string & operator () ();
 
 	safeformat & operator () (char c);
 	safeformat & operator () (unsigned char c);
@@ -139,6 +153,9 @@ public:
 	safeformat & operator () (ucchar ch);
 	safeformat & operator () (const char * s);
 	safeformat & operator () (const StringT & s);
+
+	template <typename Arg>
+	safeformat & operator () (const Arg & a) { return operator () (a.toString()); }
 
 //	safeformat & operator () (int_t n)              { return operator () (pfs::unitype(n)); }
 //	safeformat & operator () (uint_t n)             { return operator () (pfs::unitype(n)); }
@@ -175,17 +192,6 @@ public:
 //	safeformat & arg (const void * ptr)     { return operator () (pfs::unitype(uintptr_t(ptr))); }
 //	safeformat & arg (const pfs::string & s)     { return operator () (pfs::unitype(s)); }
 //	safeformat & arg (const pfs::bytearray & ba) { return operator () (pfs::unitype(ba)); }
-
-/*
-#if CWT_OS_BITS == 32
-	safeformat & operator () (long n)             { return operator () (pfs::unitype(n)); }
-	safeformat & operator () (unsigned long n)    { return operator () (pfs::unitype(n)); }
-	safeformat & operator %  (long n)             { return operator () (n); }
-	safeformat & operator %  (unsigned long n)    { return operator () (n); }
-	safeformat & arg         (long n)             { return operator () (n); }
-	safeformat & arg         (unsigned long n)    { return operator () (n); }
-#endif
-*/
 
 private:
 	context _ctx;

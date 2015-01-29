@@ -32,8 +32,6 @@
 
 #include <pfs/bits/strtolong.hpp>
 
-
-
 namespace pfs {
 
 /*
@@ -45,38 +43,41 @@ void safeformat<StringT>::advance ()
 	const_iterator pos(_ctx.pos);
 	const_iterator end(_ctx.format.cend());
 
-	while (pos < end) {
-		if (eq_latin1(char_type(*pos), '%')) {
-			++pos;
-			if (pos < end) {
-				if (eq_latin1(char_type(*pos), '%'))
-					_ctx.result.append(char_type('%'));
-				else
-					break;
-			} else { // trailing single '%'
-				_ctx.result.append(char_type('%'));
-				break;
-			}
-		} else {
-			_ctx.result.append(char_type(*pos));
-		}
+	while (pos < end && !eq_latin1(char_type(*pos), '%'))  {
+		_ctx.result.append(char_type(*pos));
 		++pos;
 	}
 	_ctx.pos = pos;
 }
 
-//template <typename StringT>
-//inline void safeformat<StringT>::read_tail ()
-//{
-//	_context.result.append(_context.pos, _context.format.cend());
-//}
-
-
 template <typename StringT>
-void safeformat<StringT>::parseFlags ()
+inline bool safeformat<StringT>::parsePercentChar ()
 {
 	const_iterator pos(_ctx.pos);
 	const_iterator end(_ctx.format.cend());
+
+	if (pos < end && eq_latin1(char_type(*pos), '%'))  {
+		++pos;
+		if (pos < end && eq_latin1(char_type(*pos), '%')) {
+			_ctx.result.append(char_type('%'));
+			_ctx.pos = ++pos;
+			return true;
+		}
+	}
+	return false;
+}
+
+template <typename StringT>
+bool safeformat<StringT>::parseFlags ()
+{
+	const_iterator pos(_ctx.pos);
+	const_iterator end(_ctx.format.cend());
+
+	if (pos == end)
+		return false;
+
+	if (! eq_latin1(char_type(*pos), '%'))
+		return false;
 
 	while (pos < end) {
 		if (eq_latin1(char_type(*pos), '0')) {
@@ -87,18 +88,22 @@ void safeformat<StringT>::parseFlags ()
 			setSpaceBeforePositive();
 		} else if (eq_latin1(char_type(*pos), '+')) {
 			setNeedSign();
+		} else if (eq_latin1(char_type(*pos), '#')) {
+			setAlternate();
 		} else {
 			break;
 		}
 		++pos;
 	}
+
+	return true;
 }
 
 /*
  *  field_width := 1*DIGIT
  */
 template <typename StringT>
-void safeformat<StringT>::parseFieldWidth ()
+bool safeformat<StringT>::parseFieldWidth ()
 {
 	const_iterator pos(_ctx.pos);
 	const_iterator end(_ctx.format.cend());
@@ -106,11 +111,12 @@ void safeformat<StringT>::parseFieldWidth ()
 	if (isDigitExcludeZero(char_type(*pos))) {
 		long_t width = strtolong (pos, end, 10, & pos);
 
-		PFS_ASSERT(!errno && width >= 0 && width <= PFS_INT_MAX);
+		PFS_ASSERT(!errno && width >= 0 && width <= PFS_INT_MAX); // TODO need warning only instead of assertion
 
 		_ctx.pos = pos;
 		setFieldWidth(int(width));
 	}
+	return true;
 }
 
 
@@ -121,7 +127,7 @@ void safeformat<StringT>::parseFieldWidth ()
  * A negative precision is taken as if the precision were omitted.
  */
 template <typename StringT>
-void safeformat<StringT>::parsePrecision ()
+bool safeformat<StringT>::parsePrecision ()
 {
 	const_iterator pos(_ctx.pos);
 	const_iterator end(_ctx.format.cend());
@@ -138,7 +144,7 @@ void safeformat<StringT>::parsePrecision ()
 
 	if (isDigit(char_type(*pos))) {
 		long_t prec = strtolong (pos, end, 10, & pos);
-		PFS_ASSERT(!errno && prec >= 0 && prec <= PFS_INT_MAX);
+		PFS_ASSERT(!errno && prec >= 0 && prec <= PFS_INT_MAX); // TODO need warning only instead of assertion
 	}
 
 	if (sign > 0)
@@ -156,7 +162,7 @@ void safeformat<StringT>::parsePrecision ()
  * 		 / 'p'
  */
 template <typename StringT>
-void safeformat<StringT>::parseConvSpec ()
+bool safeformat<StringT>::parseConvSpec ()
 {
 	const_iterator pos(_ctx.pos);
 	const_iterator end(_ctx.format.cend());
@@ -171,23 +177,73 @@ void safeformat<StringT>::parseConvSpec ()
 	}
 
 	_ctx.pos = pos;
+	return true;
 }
 
 /*
  * conversion_specification := '%' *flag [ field_width ] [ prec ] conversion_specifier
  */
 template <typename StringT>
-void safeformat<StringT>::parseSpec ()
+bool safeformat<StringT>::parseSpec ()
 {
 	clearSpec();
 	advance();
-	parseFlags();
-	parseFieldWidth();
-	parsePrecision();
-	parseConvSpec();
+	if (!parsePercentChar()) {
+		if (parseFlags()
+				&& parseFieldWidth()
+				&& parsePrecision()
+				&& parseConvSpec())
+			;
+	}
+	advance();
+	return _ctx.spec.spec_char == char_type(0);
 }
 
 
+template <typename StringT>
+safeformat<StringT> & safeformat<StringT>::operator () (char c)
+{
+	if (!parseSpec())
+		return *this;
+
+	char_type spec_char(_ctx.spec.spec_char);
+	PFS_ASSERT(is_latin1(spec_char));
+	StringT r;
+
+	//pfs::unitype ut = ctx->bind_args[ctx->argi++];
+
+	switch (char(spec_char)) {
+	case 'd':
+	case 'i':
+		break;
+	case 'o':
+		break;
+	case 'u':
+		break;
+	case 'x':
+	case 'p':
+		break;
+	case 'X':
+		break;
+	case 'e':
+	case 'f':
+	case 'g':
+	case 'E':
+	case 'F':
+	case 'G':
+		break;
+	case 'c':
+		break;
+	case 's':
+		break;
+	default:
+		PFS_ASSERT(spec_char != spec_char); // TODO need exception: invalid conversion specifier
+		break;
+	}
+	return *this;
+}
+
+#ifdef __COMMENT__
 template <typename StringT>
 safeformat<StringT> & safeformat<StringT>::operator () (char c)
 {
@@ -352,8 +408,7 @@ safeformat<StringT> & safeformat<StringT>::operator () (char c)
 
 	return true;
 }
-
-
+#endif
 
 } // pfs
 
