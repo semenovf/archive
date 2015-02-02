@@ -38,7 +38,7 @@
 	typedef float              real32_t;
 	typedef double             real64_t;
 #else
-#	ifndef HAVE_INT8_T
+#	ifndef PFS_HAVE_INT8_T
 		typedef signed char        int8_t;
 		typedef unsigned char      uint8_t;
 		typedef signed short       int16_t;
@@ -48,7 +48,7 @@
 		typedef float              real32_t;
 		typedef double             real64_t;
 
-#		ifdef HAVE_INT64
+#		ifdef PFS_HAVE_INT64
 			typedef signed long long   int64_t;
 			typedef unsigned long long uint64_t;
 #		endif

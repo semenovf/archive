@@ -9,6 +9,7 @@
 #ifndef __PFS_UTILITY_HPP__
 #define __PFS_UTILITY_HPP__
 
+#include <pfs.hpp>
 //namespace pfs {
 
 #if __cplusplus >= 201103L // C++11
@@ -37,6 +38,21 @@ inline void pfs_swap (T & a, T & b)
 	b = tmp;
 }
 #endif
+
+EXTERN_C_BEGIN
+//
+// see https://sites.google.com/site/murmurhash
+//
+uint32_t pfs_hash32 (const void * key, int len, unsigned int seed);
+
+#ifdef PFS_HAVE_INT64
+#	ifdef PFS_OS_64BITS
+		uint64_t pfs_hash64 (const void * key, int len, unsigned int seed);
+#	else
+		uint64_t pfs_hash64 (const void * key, int len, unsigned int seed);
+#	endif
+#endif
+EXTERN_C_END
 
 //} // pfs
 

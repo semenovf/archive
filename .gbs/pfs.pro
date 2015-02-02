@@ -27,4 +27,5 @@ SUBDIRS  =                \
 #    tests/unitype        \
 ##    tests/cow_ptr_qt    \
      tests/pimpl          \
-     tests/alignof
+     tests/alignof        \
+     tests/variant
