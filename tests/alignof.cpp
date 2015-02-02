@@ -156,6 +156,8 @@ int main (int argc, char *argv[])
 #endif
 	PRINT_ALIGNOF (float);
 	PRINT_ALIGNOF (double);
+	std::cout << "alignof (double) == " << alignof(double)  << std::endl;
+	std::cout << "alignof (long long) == " << alignof(long long)  << std::endl;
 #ifdef PFS_HAVE_LONG_DOUBLE
 	PRINT_ALIGNOF (long double);
 #endif
