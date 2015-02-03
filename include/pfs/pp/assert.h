@@ -22,7 +22,7 @@ struct __verify
 		return predicate;
 	}
 };
-}
+} //pfs
 #		define PFS_VERIFY(expr)       pfs::__verify()((expr), "WARN: ", __TFILE__, __LINE__, #expr)
 #		define PFS_VERIFY_X(expr,text) pfs::__verify()((expr), "WARN: ", __TFILE__, __LINE__, (text))
 #	else /* !__cplusplus */
@@ -73,10 +73,11 @@ struct __verify
 
 #endif /* !NDEBUG */
 
-#define PFS_ASSERT_FORMAT(expr) PFS_ASSERT(expr)
-#define PFS_ASSERT_RANGE(expr) PFS_ASSERT(expr)
+#define PFS_ASSERT_FORMAT(expr)   PFS_ASSERT(expr)
+#define PFS_ASSERT_RANGE(expr)    PFS_ASSERT(expr)
 #define PFS_ASSERT_OVERFLOW(expr) PFS_ASSERT(expr)
 #define PFS_ASSERT_BAD_CAST(expr) PFS_ASSERT(expr)
+#define PFS_ASSERT_UNEXPECTED()   PFS_ASSERT(false)
 
 
 #endif /* __PFS_ASSERT_H__ */

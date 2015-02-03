@@ -10,19 +10,20 @@
 
 #include <pfs/ctype.hpp>
 #include <pfs/ucchar.hpp>
+#include <pfs/string.hpp>
+#include <pfs/byte_string.hpp>
+#include <pfs/variant.hpp>
 
 //#define _Fr(s) pfs::safeformat(_u8(s))
 
 namespace pfs {
 
-struct safeformat_context;
-
-template <typename StringT>
 class safeformat
 {
-	typedef typename StringT::const_iterator const_iterator;
-	typedef typename StringT::char_type char_type;
-	//typedef typename StringT::difference_type difference_type;
+public:
+	typedef typename string::const_iterator const_iterator;
+	typedef typename string::char_type char_type;
+	typedef pfs::variant<real_t, long_t, string, ucchar> variant_type;
 
 public:
 	enum Flag {
@@ -64,9 +65,9 @@ public:
 
 	struct context
 	{
-		StringT          format;
+		string           format;
 		const_iterator   pos; // current position in format string
-		StringT          result;
+		string           result;
 		conversion_spec  spec;
 	};
 
@@ -82,7 +83,7 @@ private:
 		_ctx.spec.flags     = safeformat::NoFlag;
 		_ctx.spec.width     = 0;
 		_ctx.spec.prec      = 1;
-		_ctx.spec.spec_char = 0;
+		_ctx.spec.spec_char = char_type(0);
 	}
 
 	bool isDigit (char_type v)
@@ -111,51 +112,59 @@ private:
 	void setPrecision (int p)      { _ctx.spec.prec = p; }
 	void setConvSpecifier (char_type c) { _ctx.spec.spec_char = c; }
 
-	safeformat & integerArg (long_t n);
-	safeformat & integerArg (ulong_t n);
+	void prependSign (string & r);
+	void doPadding (string & r);
+
+	safeformat & operator () (const variant_type & v);
 
 public:
 	safeformat () {}
 
-	explicit safeformat (const StringT & format)
+	explicit safeformat (const string & format)
 	{
 		_ctx.format = format;
+		_ctx.pos = _ctx.format.cbegin();
 		clearSpec();
 	}
 
 	explicit safeformat (const char * latin1Format)
 	{
-		_ctx.format = StringT::fromLatin1(latin1Format);
+		_ctx.format = string::fromLatin1(latin1Format);
+		_ctx.pos = _ctx.format.cbegin();
 		clearSpec();
 	}
 
-	safeformat & operator () (char c);
-	safeformat & operator () (unsigned char c);
-	safeformat & operator () (short n);
-	safeformat & operator () (unsigned short n);
-	safeformat & operator () (int n);
-	safeformat & operator () (unsigned int n);
-	safeformat & operator () (long n);
-	safeformat & operator () (unsigned long n);
+	safeformat & operator () (char c)           { return operator () (variant_type(long_t(c))); }
+	safeformat & operator () (unsigned char c)  { return operator () (variant_type(ulong_t(c))); }
+	safeformat & operator () (short n)          { return operator () (variant_type(long_t(n))); }
+	safeformat & operator () (unsigned short n) { return operator () (variant_type(ulong_t(n))); }
+	safeformat & operator () (int n)            { return operator () (variant_type(long_t(n))); }
+	safeformat & operator () (unsigned int n)   { return operator () (variant_type(ulong_t(n))); }
+	safeformat & operator () (long n)           { return operator () (variant_type(long_t(n))); }
+	safeformat & operator () (unsigned long n)  { return operator () (variant_type(ulong_t(n))); }
 
 #ifdef PFS_HAVE_LONGLONG
-	safeformat & operator () (long long n);
-	safeformat & operator () (unsigned long long n);
+	safeformat & operator () (long long n)      { return operator () (variant_type(long_t(n))); }
+	safeformat & operator () (unsigned long long n) { return operator () (variant_type(ulong_t(n))); }
 #endif
 
-	safeformat & operator () (float n);
-	safeformat & operator () (double n);
+	safeformat & operator () (float n)          { return operator () (variant_type(real_t(n))); }
+	safeformat & operator () (double n)         { return operator () (variant_type(real_t(n))); }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-	safeformat & operator () (long double n);
+	safeformat & operator () (long double n)    { return operator () (variant_type(real_t(n))); }
 #endif
 
-	safeformat & operator () (ucchar ch);
-	safeformat & operator () (const char * s);
-	safeformat & operator () (const StringT & s);
+	safeformat & operator () (ucchar ch)        { return operator () (variant_type(ch)); }
+	safeformat & operator () (const char * s)   { return operator () (variant_type(string(s))); }
+	safeformat & operator () (const pfs::string & s) { return operator () (variant_type(s)); }
+	safeformat & operator () (const pfs::byte_string & s) { return operator () (variant_type(string::fromUtf8(s))); }
+	safeformat & operator () (void * p)         { return operator () (variant_type(ulong_t(p))); }
 
-	template <typename Arg>
-	safeformat & operator () (const Arg & a) { return operator () (a.toString()); }
+	string & operator () () { return _ctx.result; }
+
+//	template <typename Arg>
+//	safeformat & operator () (const Arg & a) { return operator () (a.toString()); }
 
 //	safeformat & operator () (int_t n)              { return operator () (pfs::unitype(n)); }
 //	safeformat & operator () (uint_t n)             { return operator () (pfs::unitype(n)); }
@@ -198,7 +207,5 @@ private:
 };
 
 } // pfs
-
-#include "bits/safeformat_inc.hpp"
 
 #endif /* __PFS_SAFEFORMAT_HPP__ */

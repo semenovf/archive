@@ -28,4 +28,5 @@ SUBDIRS  =                \
 ##    tests/cow_ptr_qt    \
      tests/pimpl          \
      tests/alignof        \
-     tests/variant
+     tests/variant        \
+     tests/safeformat

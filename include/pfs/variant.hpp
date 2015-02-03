@@ -85,6 +85,7 @@ private:
 		_destroyer(& _data);
 		_hashCode = invalidHashCode();
 		_destroyer = nullptr;
+		_copier = nullptr;
 	}
 
 public:
@@ -120,6 +121,7 @@ public:
 
 	variant & operator = (const variant & other)
 	{
+		destroy();
 		_hashCode = other._hashCode;
 		_destroyer = other._destroyer;
 		_copier = other._copier;
@@ -157,6 +159,13 @@ public:
 	{
 		PFS_ASSERT_BAD_CAST(is<T>());
 		return *reinterpret_cast<T*>(& _data);
+	}
+
+	template <typename T>
+	const T & get () const
+	{
+		PFS_ASSERT_BAD_CAST(is<T>());
+		return *reinterpret_cast<const T *>(& _data);
 	}
 };
 

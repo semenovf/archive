@@ -38,7 +38,7 @@ class mbcs_string : public nullable<mbcs_string_impl<CodeUnitT> >
 
 protected:
 	typedef nullable<mbcs_string_impl<CodeUnitT> > base_class;
-	typedef mbcs_string                             self_class;
+	typedef mbcs_string                            self_class;
 	typedef mbcs_string_impl<CodeUnitT>            impl_class;
 
 public:
@@ -77,7 +77,7 @@ public:
 
 	bool isEmpty () const { return base_class::isNull() || size() == 0; }
 	bool empty () const { return isEmpty(); }
-	void clear () { base_class::detach(); swap(mbcs_string()); }
+	void clear () { base_class::detach(); mbcs_string nil; this->swap(nil); }
 
 	mbcs_string & erase (size_type index = 0) { return erase(index, 1); }
 	mbcs_string & erase (size_type index, size_type count);
@@ -102,6 +102,7 @@ public:
     const_data_pointer c_str () const     { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
 
     value_type valueAt (size_type index) const { return at(index); }
+    value_type charAt (size_type index) const { return at(index); }
     reference at (size_type index) const { pointer p(*const_cast<self_class *>(this), 0); p += index; return p.ref(); }
     reference operator [] (size_type index) const { return at(index); }
 
@@ -120,6 +121,11 @@ public:
     iterator find (const_iterator pos, const char * latin1) const
     {
     	return find(pos, mbcs_string::fromLatin1(latin1, strlen(latin1)));
+    }
+
+    iterator find (const char * latin1) const
+    {
+    	return find(cbegin(), latin1);
     }
 
     iterator find (const_iterator pos, char latin1) const
@@ -141,6 +147,23 @@ public:
     {
     	return find(cbegin(), ch);
     }
+
+	bool contains   (const mbcs_string & s) const { return find(s) != cend(); }
+	bool contains   (const char * s) const        { return find(s) != cend(); }
+	bool contains   (ucchar v) const              { return find(v) != cend(); }
+	bool contains   (char v) const                { return find(v) != cend(); }
+
+	// TODO Need tests
+	bool startsWith (const mbcs_string & s)  const { return find(s) == cbegin(); }
+	bool startsWith (const char * s) const         { return find(s) == cbegin(); }
+	bool startsWith (ucchar v) const               { return find(v) == cbegin(); }
+	bool startsWith (char v) const                 { return find(v) == cbegin(); }
+
+	// TODO Need tests
+	bool endsWith   (const mbcs_string & s) const  { return find(s) == cend() - s.length(); }
+	bool endsWith   (const char * s) const         { return find(s) == cend() - std::strlen(s); }
+	bool endsWith   (ucchar v) const               { return find(v) == cend() - 1; }
+	bool endsWith   (char v) const                 { return find(v) == cend() - 1; }
 
     // Size in bytes
     size_type size () const
@@ -220,8 +243,42 @@ public:
     	return insert(this->length(), str);
     }
 
-    template<class InputIt>
-    mbcs_string & append (InputIt first, InputIt last);
+//    template<class InputIt>
+//    mbcs_string & append (InputIt first, InputIt last);
+
+    mbcs_string & prepend (const mbcs_string & str, size_type index_str, size_type count)
+    {
+    	return insert(0, str, index_str, count);
+    }
+
+    mbcs_string & prepend (size_type count, char latin1)
+    {
+    	return insert(0, count, latin1);
+    }
+
+    mbcs_string & prepend (size_type count, ucchar uc)
+    {
+    	return insert(0, count, uc);
+    }
+
+    mbcs_string & prepend (const char * latin1)
+    {
+    	return insert(0, latin1);
+    }
+
+    mbcs_string & prepend (const char * latin1, size_type n)
+    {
+    	return insert(0, latin1, n);
+    }
+
+    mbcs_string & prepend (const mbcs_string & str)
+    {
+    	return insert(0, str);
+    }
+
+//    template<class InputIt>
+//    mbcs_string & prepend (InputIt first, InputIt last)
+
 
     mbcs_string & insert (size_type index, const mbcs_string & str, size_type index_str, size_type count);
 
@@ -322,12 +379,12 @@ public:
 	unsigned long long toULongLong (bool * ok = 0, int base = 10) const;
 #endif
 
-	real_t toReal (bool * ok, ucchar decimalPoint = ucchar('.')) const;
-	float toFloat (bool * ok, ucchar decimalPoint = ucchar('.')) const;
-	double toDouble (bool * ok, ucchar decimalPoint = ucchar('.')) const;
+	real_t toReal (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
+	float toFloat (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
+	double toDouble (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-	long double toLongDouble (bool * ok, ucchar decimalPoint = ucchar('.')) const { return toReal(ok, decimalPoint); }
+	long double toLongDouble (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const { return toReal(ok, decimalPoint); }
 #endif
 
 	mbcs_string & operator += (const mbcs_string & other) { return append(other); }
@@ -372,7 +429,7 @@ public:
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, ConvertState * state = nullptr);
 	static mbcs_string fromUtf8 (const byte_string & utf8, ConvertState * state = nullptr)
 	{
-		return fromUtf8(utf8.constData(), utf8.length(), state);
+		return fromUtf8(reinterpret_cast<const char *>(utf8.constData()), utf8.length(), state);
 	}
 
 	static mbcs_string toString (int value, int base = 10, bool uppercase = false);
@@ -632,6 +689,35 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long double valu
 			pfs_real_to_string(real_t(value), f, prec, buf, 129));
 }
 #endif
+
+
+template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> operator + (const mbcs_string<CodeUnitT> & lhs, const mbcs_string<CodeUnitT> & rhs)
+{
+	mbcs_string<CodeUnitT> r(lhs);
+	return r += rhs;
+}
+
+template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> operator + (const mbcs_string<CodeUnitT> & lhs, const char * latin1)
+{
+	mbcs_string<CodeUnitT> r(lhs);
+	return r += latin1;
+}
+
+template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> operator + (const mbcs_string<CodeUnitT> & lhs, const ucchar & ch)
+{
+	mbcs_string<CodeUnitT> r(lhs);
+	return r += ch;
+}
+
+template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> operator + (const mbcs_string<CodeUnitT> & lhs, char latin1)
+{
+	mbcs_string<CodeUnitT> r(lhs);
+	return r += latin1;
+}
 
 template <typename CodeUnitT>
 inline bool operator == ( const mbcs_string<CodeUnitT> & lhs

@@ -107,14 +107,14 @@ public: // static
 	static DLL_API difference_type difference (const_pointer from, const_pointer to, size_type * invalidCodeUnits = nullptr);
 };
 
-template <typename _CodeUnitT, typename Holder>
+template <typename CodeUnitT, typename Holder>
 class mbcs_string_ptr
 {
 	typedef typename constness<Holder>::pointer pointer;
 
 public:
-	typedef typename mbcs_string_impl<_CodeUnitT>::difference_type difference_type;
-	typedef typename mbcs_string_impl<_CodeUnitT>::size_type       size_type;
+	typedef typename mbcs_string_impl<CodeUnitT>::difference_type difference_type;
+	typedef typename mbcs_string_impl<CodeUnitT>::size_type       size_type;
 	typedef ucchar    value_type;
 
 protected:
@@ -122,6 +122,7 @@ protected:
 	size_type _off; // offset in code units
 
 public:
+	mbcs_string_ptr () : _holder(nullptr), _off(0) {}
 	mbcs_string_ptr (Holder & holder, size_type off) : _holder(& holder), _off(off) {}
 
 	size_type index () { return _off; }
@@ -182,15 +183,44 @@ public:
 //        return d < 0 ? d * -1 : d;
 //    }
 
-    bool operator == (const mbcs_string_ptr & o) const { return _holder->constData() + _off == o._holder->constData() + o._off; }
-    bool operator != (const mbcs_string_ptr & o) const { return ! this->operator == (o); }
-	bool operator  > (const mbcs_string_ptr & o) const { return _holder->constData() + _off  > o._holder->constData() + o._off; }
-	bool operator >= (const mbcs_string_ptr & o) const { return _holder->constData() + _off >= o._holder->constData() + o._off; }
-	bool operator  < (const mbcs_string_ptr & o) const { return _holder->constData() + _off  < o._holder->constData() + o._off; }
-	bool operator <= (const mbcs_string_ptr & o) const { return _holder->constData() + _off <= o._holder->constData() + o._off; }
-
-	const _CodeUnitT * base () const { return _holder->constData() + _off; }
+	const CodeUnitT * base () const { return _holder->constData() + _off; }
 };
+
+template <typename CodeUnitT, typename Holder1, typename Holder2>
+inline bool operator == (const mbcs_string_ptr<CodeUnitT, Holder1> & lhs, const mbcs_string_ptr<CodeUnitT, Holder2> & rhs)
+{
+	return lhs.base() == rhs.base();
+}
+
+template <typename CodeUnitT, typename Holder1, typename Holder2>
+inline bool operator != (const mbcs_string_ptr<CodeUnitT, Holder1> & lhs, const mbcs_string_ptr<CodeUnitT, Holder2> & rhs)
+{
+	return lhs.base() != rhs.base();
+}
+
+template <typename CodeUnitT, typename Holder1, typename Holder2>
+inline bool operator  > (const mbcs_string_ptr<CodeUnitT, Holder1> & lhs, const mbcs_string_ptr<CodeUnitT, Holder2> & rhs)
+{
+	return lhs.base() > rhs.base();
+}
+
+template <typename CodeUnitT, typename Holder1, typename Holder2>
+inline bool operator >= (const mbcs_string_ptr<CodeUnitT, Holder1> & lhs, const mbcs_string_ptr<CodeUnitT, Holder2> & rhs)
+{
+	return lhs.base() >= rhs.base();
+}
+
+template <typename CodeUnitT, typename Holder1, typename Holder2>
+inline bool operator  < (const mbcs_string_ptr<CodeUnitT, Holder1> & lhs, const mbcs_string_ptr<CodeUnitT, Holder2> & rhs)
+{
+	return lhs.base() < rhs.base();
+}
+
+template <typename CodeUnitT, typename Holder1, typename Holder2>
+inline bool operator <= (const mbcs_string_ptr<CodeUnitT, Holder1> & lhs, const mbcs_string_ptr<CodeUnitT, Holder2> & rhs)
+{
+	return lhs.base() <= rhs.base();
+}
 
 template <typename _CodeUnitT, typename Holder>
 inline typename mbcs_string_ptr<_CodeUnitT, Holder>::difference_type operator
