@@ -4,6 +4,7 @@ include(common-app.pri)
 QT += core
 CONFIG += qt
 INCLUDEPATH += $$(QT_HOME)/include
+DEFINES += PFS_HAVE_QT
 
 unix {
     LIBS += -L$$(QT_HOME)/lib
