@@ -30,7 +30,7 @@
 #include <pfs/safeformat.hpp>
 #include <pfs/bits/strtolong.hpp>
 
-#include <iostream>
+//#include <iostream>
 
 namespace pfs {
 
@@ -96,6 +96,7 @@ bool safeformat::parseFlags ()
 		++pos;
 	}
 
+	_ctx.pos = pos;
 	return true;
 }
 
@@ -130,7 +131,7 @@ bool safeformat::parsePrecision ()
 	const_iterator pos(_ctx.pos);
 	const_iterator end(_ctx.format.cend());
 	int sign = 1;
-	long_t prec = 0;
+	long_t prec = -1;
 
 	if (pos < end && eq_latin1(char_type(*pos), '.'))
 		++pos;
@@ -141,7 +142,7 @@ bool safeformat::parsePrecision ()
 	}
 
 	if (isDigit(char_type(*pos))) {
-		long_t prec = strtolong<ucchar, const_iterator>(pos, end, 10, & pos);
+		prec = strtolong<ucchar, const_iterator>(pos, end, 10, & pos);
 		PFS_ASSERT(!errno && prec >= 0 && prec <= PFS_INT_MAX); // TODO need warning only instead of assertion
 	}
 
@@ -167,7 +168,6 @@ bool safeformat::parseConvSpec ()
 	if (pos < end) {
 		string convSpecifiers("diouxXeEfFgGcsp");
 
-		std::cout << char(char_type(*pos)) << std::endl;
 		PFS_ASSERT_X(convSpecifiers.contains(char_type(*pos))
 				, _Tr("Expected conversion specifier: one of 'diouxXeEfFgGcsp'"));
 		setConvSpecifier(char_type(*pos));
@@ -183,8 +183,6 @@ bool safeformat::parseConvSpec ()
  */
 bool safeformat::parseSpec ()
 {
-	clearSpec();
-	advance();
 	if (!parsePercentChar()) {
 		if (parseFlags()
 				&& parseFieldWidth()
@@ -192,7 +190,6 @@ bool safeformat::parseSpec ()
 				&& parseConvSpec())
 		{ ; }
 	}
-	advance();
 
 	if (_ctx.spec.spec_char != char_type(0)) {
 		if (_ctx.spec.flags & safeformat::ZeroPadding) {
@@ -380,6 +377,8 @@ static string asString (const safeformat::variant_type & v)
 
 safeformat & safeformat::operator () (const variant_type & v)
 {
+	clearSpec();
+	advance();
 	if (!parseSpec())
 		return *this;
 
@@ -396,23 +395,28 @@ safeformat & safeformat::operator () (const variant_type & v)
 		break;
 	case 'o':
 		r = asInteger(v, 8, false, true);
-		prependSign(r);
+		// prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
 		doPadding(r);
 		break;
 	case 'u':
 		r = asInteger(v, 10, false, true);
-		prependSign(r);
+		// prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
 		doPadding(r);
 		break;
 	case 'x':
-	case 'p':
 		r = asInteger(v, 16, false, true);
-		prependSign(r);
+		// prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
 		doPadding(r);
 		break;
 	case 'X':
 		r = asInteger(v, 16, true, true); // uppercase
-		prependSign(r);
+		// prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
+		doPadding(r);
+		break;
+	case 'p':
+		r = asInteger(v, 16, false, true);
+		r.prepend("0x");
+		prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
 		doPadding(r);
 		break;
 	case 'e':
@@ -440,6 +444,7 @@ safeformat & safeformat::operator () (const variant_type & v)
 	}
 
 	_ctx.result.append(r);
+	advance();
 	return *this;
 }
 

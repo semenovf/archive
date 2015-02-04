@@ -27,6 +27,13 @@ void test_constructors ()
 
 	TEST_OK(strcmp(loremipsum, pfs::byte_string(loremipsum).c_str()) == 0);
 	TEST_OK(strcmp(loremipsum, pfs::byte_string(loremipsum, strlen(loremipsum)).c_str()) == 0);
+
+	nil.clear();
+	TEST_OK(nil.isNull());
+
+	serial.clear();
+	TEST_OK(!serial.isNull());
+	TEST_OK(serial.isEmpty());
 }
 
 

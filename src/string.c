@@ -84,10 +84,10 @@ int pfs_latin1_to_digit (char latin1)
 		return latin1 - '0';
 
 	if (latin1 >= 'A' && latin1 <= 'Z')
-		return latin1 - 'A';
+		return latin1 - 'A' + 10;
 
 	if (latin1 >= 'a' && latin1 <= 'z')
-		return latin1 - 'a';
+		return latin1 - 'a' + 10;
 
 	return -1;
 }

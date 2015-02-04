@@ -38,6 +38,8 @@ public:
 	size_type size ()          const { return base_class::size(); }
 	size_type length ()        const { return _length; }
 
+	void clear () { base_class::clear(); }
+
 	void erase (size_type index, size_type count)
 	{
 		base_class::erase(index, count);

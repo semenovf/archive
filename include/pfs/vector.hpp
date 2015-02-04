@@ -108,7 +108,13 @@ public:
 			: false;
 	}
 
-	void clear   () { base_class::detach(); base_class::cast()->clear(); }
+	void clear ()
+	{
+		if (!isEmpty()) {
+			base_class::detach();
+			base_class::cast()->clear();
+		}
+	}
     void reserve (size_type n) { base_class::detach(); base_class::cast()->reserve(n); }
     void resize  (size_type n) { base_class::detach(); base_class::cast()->resize(n, value_type()); }
     void resize  (size_type n, const value_type & value) { base_class::detach(); base_class::cast()->resize(n, value); }

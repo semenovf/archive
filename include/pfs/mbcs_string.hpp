@@ -77,7 +77,13 @@ public:
 
 	bool isEmpty () const { return base_class::isNull() || size() == 0; }
 	bool empty () const { return isEmpty(); }
-	void clear () { base_class::detach(); mbcs_string nil; this->swap(nil); }
+	void clear ()
+	{
+		if (!isEmpty()) {
+			base_class::detach();
+			base_class::cast()->clear();
+		}
+	}
 
 	mbcs_string & erase (size_type index = 0) { return erase(index, 1); }
 	mbcs_string & erase (size_type index, size_type count);
@@ -99,7 +105,7 @@ public:
 
     const_data_pointer constData () const { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
     const_data_pointer data () const      { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
-    const_data_pointer c_str () const     { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
+    const_data_pointer c_str () const     { return base_class::isNull() ? ""/*nullptr*/ : base_class::cast()->constData(); }
 
     value_type valueAt (size_type index) const { return at(index); }
     value_type charAt (size_type index) const { return at(index); }
@@ -757,6 +763,42 @@ inline bool operator > ( const mbcs_string<CodeUnitT> & lhs
 template <typename CodeUnitT>
 inline bool operator >= ( const mbcs_string<CodeUnitT> & lhs
 		, const mbcs_string<CodeUnitT> & rhs )
+{
+	return lhs.compare(rhs) >= 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator == (const mbcs_string<CodeUnitT> & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) == 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator != (const mbcs_string<CodeUnitT> & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) != 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator < (const mbcs_string<CodeUnitT> & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) < 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator <= (const mbcs_string<CodeUnitT> & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) <= 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator > (const mbcs_string<CodeUnitT> & lhs, const char * rhs)
+{
+	return lhs.compare(rhs) > 0;
+}
+
+template <typename CodeUnitT>
+inline bool operator >= (const mbcs_string<CodeUnitT> & lhs, const char * rhs)
 {
 	return lhs.compare(rhs) >= 0;
 }

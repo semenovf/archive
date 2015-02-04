@@ -66,13 +66,6 @@ void byte_string::detach_and_assign (pointer & p, const value_type & value)
 	base_class::cast()->replace(offset, value);
 }
 
-void byte_string::clear ()
-{
-	base_class::detach();
-	byte_string nil;
-	swap(nil);
-}
-
 byte_string & byte_string::erase (size_type index, size_type count)
 {
 	if (isEmpty() || index >= length())

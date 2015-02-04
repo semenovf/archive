@@ -161,7 +161,7 @@ long_t strtolong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 	typedef CharT char_type;
 
 	Iter pos = begin;
-	ulong_t r = ulong_t(0);
+	ulong_t r = 0;
 	Iter endr(begin); // fixing MSVC error C2512: 'pfs::mbcs_string_ptr<_CodeUnitT,Holder>::mbcs_string_ptr' : no appropriate default constructor available
 
 	// Skip whitespaces
@@ -191,7 +191,7 @@ long_t strtolong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 		}
 	}
 
-	return r;
+	return long_t(r);
 }
 
 

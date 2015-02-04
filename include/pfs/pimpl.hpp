@@ -186,7 +186,13 @@ public:
 #endif
 
 	bool isNull () const  { return _d.isNull(); }
-	void swap (nullable & o) { _d.swap<T>(o._d);	}
+	void swap (nullable & o)
+	{
+		PFS_ASSERT(_d.isNull() || o._d.isNull());
+		_d.swap<T>(o._d);
+//		if (_d.isNull())
+//			_initialized = false;
+	}
 
 	/// @see http://www.possibility.com/Cpp/const.html
 #ifdef __PFS_OLD_IMPL__
