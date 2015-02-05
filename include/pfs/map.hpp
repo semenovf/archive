@@ -20,23 +20,21 @@
 
 namespace pfs {
 
-template <typename Key, typename T, typename Compare = std::less<Key>, typename Allocator = pfs::allocator<std::pair<const Key, T> > >
-class map : public nullable<map_impl<Key, T, Compare, Allocator> >
+template <typename Key, typename T, typename Compare = std::less<Key>, typename Alloc = std::allocator<std::pair<const Key, T> > >
+class map : public nullable<map_impl<Key, T, Compare, Alloc> >
 {
 protected:
-	typedef map<Key, T, Compare, Allocator> self_class;
-	typedef map_impl<Key, T, Compare, Allocator>  impl_class;
-	typedef nullable<impl_class> base_class;
+	typedef map<Key, T, Compare, Alloc>       self_class;
+	typedef map_impl<Key, T, Compare, Alloc>  impl_class;
+	typedef nullable<impl_class>              base_class;
 
 public:
 	typedef typename impl_class::value_type             value_type;
-//	typedef typename impl_class::pointer                pointer;
-//	typedef typename impl_class::const_pointer          const_pointer;
 	typedef typename impl_class::size_type              size_type;
 	typedef typename impl_class::difference_type        difference_type;
 
-	typedef map_ptr<Key, T, Compare, Allocator, self_class>       pointer;
-	typedef map_ptr<Key, T, Compare, Allocator, const self_class> const_pointer;
+	typedef map_pointer<Key, T, Compare, Alloc, self_class>       pointer;
+	typedef map_pointer<Key, T, Compare, Alloc, const self_class> const_pointer;
 	typedef pfs::reference<self_class>                  reference;
 	typedef pfs::reference<const self_class>            const_reference;
 	typedef pfs::bidirectional_iterator<self_class>     iterator;
@@ -52,20 +50,20 @@ public:
 	bool isEmpty () const { return base_class::isNull() || base_class::cast()->empty(); }
 	bool empty () const { return isEmpty(); }
 
-	size_type size    () const { return base_class::isNull() ? 0 : base_class::cast()->size(); }
+	size_type size () const { return base_class::isNull() ? 0 : base_class::cast()->size(); }
 
-    iterator begin () { return iterator(this, impl_class::begin()); }
-    iterator end   () { return iterator(this, impl_class::end()); }
-    const_iterator begin () const { return cbegin(); }
-    const_iterator end   () const { return cend(); }
-    const_iterator cbegin() const { return const_iterator(this, impl_class::cbegin()); }
-    const_iterator cend  () const { return const_iterator(this, impl_class::cend()); }
-    reverse_iterator rbegin  ()   { return reverse_iterator(end()); }
-    reverse_iterator rend    ()   { return reverse_iterator(begin()); }
-    const_reverse_iterator rbegin  () const { return crbegin(); }
-    const_reverse_iterator rend    () const { return crend(); }
-    const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
-    const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
+//    iterator begin () { return iterator(this, impl_class::begin()); }
+//    iterator end   () { return iterator(this, impl_class::end()); }
+//    const_iterator begin () const { return cbegin(); }
+//    const_iterator end   () const { return cend(); }
+//    const_iterator cbegin() const { return const_iterator(this, impl_class::cbegin()); }
+//    const_iterator cend  () const { return const_iterator(this, impl_class::cend()); }
+//    reverse_iterator rbegin  ()   { return reverse_iterator(end()); }
+//    reverse_iterator rend    ()   { return reverse_iterator(begin()); }
+//    const_reverse_iterator rbegin  () const { return crbegin(); }
+//    const_reverse_iterator rend    () const { return crend(); }
+//    const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
+//    const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
 
 
 //    // FIXME no need detach(), iterator has to support this feature
@@ -80,12 +78,18 @@ public:
 //    const_iterator end () const { return _d.cast<impl>()->end(); }
 //    const_iterator cend () const { return _d.cast<impl>()->end(); }
 
-	std::pair<iterator, bool> insert (const value_type & value);
+	std::pair<iterator, bool> insert (const value_type & value)
+	{
+		base_class::detach();
+		std::pair<pointer, bool> r = base_class::cast()->insert(*this, value);
+		return std::pair<iterator, bool>(iterator(this, r.first), r.second);
+	}
+
 	std::pair<iterator, bool> insert (const Key & key, const T & value)
 	{
 		return insert(std::pair<Key, T>(key, value));
 	}
-//
+
 //	const T	       value (const Key & key) const;
 //	const T	       value (const Key & key, const T & defaultValue) const;
 //
@@ -94,13 +98,24 @@ public:
 //	bool	       operator != (const map<Key, T> & other) const { return !(*this == other); }
 //	bool	       operator == (const map<Key, T> & other) const;
 //
-//	// FIXME return reference (or iterator)
-    reference at (const Key & key) const { pointer p(*const_cast<self_class *>(this), 0); p += index; return p.ref(); }
-    reference operator [] (const Key & key) const { return at(key); }
 
-//	T &	           operator [] (const Key & key) { _d.detach(); return _d.cast<impl>()->operator [] (key); }
-//	const T        operator [] (const Key & key) const { return _d.cast<impl>()->at(key); }
-//
+	value_type valueAt (const Key & key) const
+	{
+		return value_type(at(key));
+	}
+
+	reference at (const Key & key) const
+	{
+		map * self = const_cast<map *>(this);
+		pointer p = self->base_class::cast()->find(*self, key);
+		return reference(*self, p);
+	}
+
+	reference operator [] (const Key & key) const
+    {
+    	return at(key);
+    }
+
 //	map &          operator << (const std::pair<Key, T> & p) { this->insert(p.first, p.second); return *this; }
 //	vector<Key>    keys() const;
 };
@@ -185,7 +200,7 @@ vector<Key> map<Key, T>::keys () const
 
 #endif
 
-#include <pfs/bits/map_impl_inc.hpp>
+//#include <pfs/bits/map_impl_inc.hpp>
 
 } // pfs
 

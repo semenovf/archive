@@ -9,12 +9,11 @@
 
 namespace pfs {
 
-template <typename _CodeUnitT, typename Holder>
-template <typename Key, typename T, typename Compare, typename Allocator, typename Holder>
-inline reference<Holder> map_ptr<Key, T, Compare, Allocator>::ref () const
-{
-	return reference<Holder>(*_holder, *this);
-}
+//template <typename Key, typename T, typename Compare, typename Alloc, typename Holder>
+//inline reference<Holder> map_ptr<Key, T, Compare, Alloc, Holder>::ref () const
+//{
+//	return reference<Holder>(*_holder, *this);
+//}
 
 //template <typename _CodeUnitT, typename Holder>
 //typename mbcs_string_ptr<_CodeUnitT, Holder>::value_type

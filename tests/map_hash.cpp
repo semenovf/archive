@@ -10,39 +10,48 @@
 #include <pfs/string.hpp>
 #include <pfs/map.hpp>
 //#include <pfs/hash.hpp>
+#include <string>
 #include <iostream>
-//#include <sstream>
+
+using namespace std;
 
 template <typename collection_type>
 void test_byte_string_collection()
 {
-	static const int __ENTRY_COUNT  = 10000;
+	static const int ENTRY_COUNT  = 10000;
 	collection_type collection;
 
-    for(int i = 0; i < __ENTRY_COUNT; i++) {
-    	pfs::byte_string key;
-    	pfs::byte_string value;
-    	key << "Test byte string " << pfs::byte_string::toString(i);
-    	value << "Test byte string " << pfs::byte_string::toString(i);
-    	collection.insert(key, value);
+    for (int i = 0; i < ENTRY_COUNT; ++i) {
+    	string key("Test byte string ");
+    	string value("Test byte string ");
+    	key += pfs::byte_string::toString(i).c_str();
+    	value += pfs::byte_string::toString(i).c_str();
+
+    	std::pair<typename collection_type::iterator, bool> it = collection.insert(key, value);
+    	TEST_OK(it.second == true);
+
+    	typename collection_type::pointer p = it.first.base();
+    	TEST_OK((*p).first == key);
     }
 
-    for(int i = 0; i < __ENTRY_COUNT; i++) {
-    	pfs::byte_string sample;
-//    	std::stringstream str;
-    	sample << "Test byte array " << pfs::byte_string::toString(i);
-//    	pfs::byte_string sample(str.str());
-    	pfs::byte_string value(collection[sample].second);
+    TEST_OK(collection.size() == ENTRY_COUNT);
 
-    	pfs::string ss;
-    	ss << '[' << value.c_str() << "] == [" << sample.c_str() << ']';
+    for (int i = 0; i < ENTRY_COUNT; ++i) {
+    	string sample("Test byte array ");
+    	sample += pfs::byte_string::toString(i).c_str();
+    	typename collection_type::reference ref = collection.at(sample);
+//    	typename collection_type::value_type value = collection.valueAt(sample);
+    	typename collection_type::value_type value = (*(& ref));
 
-    	TEST_OK2(value == sample, ss.c_str());
+    	string ss;
+    	ss += '[' + value.second + "] == [" + sample + ']';
+
+    	TEST_OK2(value.second == sample, ss.c_str());
     }
 }
 
 
-
+#ifdef __COMMENT__
 template <typename collection_type>
 void test_copy_pod_collection()
 {
@@ -101,6 +110,7 @@ void test_copy_collection()
 	TEST_OK(collectionCopy["Three"] == "Three Data");
 	TEST_OK(collectionCopy["Four"]  == "Copy of Four Data");
 }
+#endif
 
 
 int main(int argc, char *argv[])
@@ -109,12 +119,34 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(10020);
 
-//    test_bytearray_collection<Hash<pfs::bytearray, pfs::bytearray> >();
-    test_byte_string_collection<pfs::map<pfs::byte_string, pfs::byte_string> >();
-//    test_copy_pod_collection<Hash<int,int> >();
-    test_copy_pod_collection<pfs::map<int,int> >();
-//    test_copy_collection<Hash<pfs::string,pfs::string> >();
-    test_copy_collection<pfs::map<pfs::byte_string,std::string> >();
+	typedef pfs::map<string, string> map;
+	map m;
+	m.insert("First", "Hello");
+	m.insert("Second", "World");
+
+	TEST_OK(m.size() == 2);
+
+	map::reference ref = m.at("First");
+	map::value_type value = (*(& ref));
+	TEST_OK(value.second == "Hello");
+
+	map::reference ref1 = m.at("Second");
+	map::value_type value1 = (*(& ref1));
+	TEST_OK(value1.second == "World");
+
+	std::pair<const string, string> a("A","B");
+	std::pair<const string, string> b;
+
+	b = a;
+	a = b;
+
+//	std::pair<const string, string> & std::pair<const string, string>::operator = (const std::pair<const string, string> &)
+
+	if (0) {
+		test_byte_string_collection<pfs::map<string, string> >();
+	}
+//    test_copy_pod_collection<pfs::map<int,int> >();
+//    test_copy_collection<pfs::map<pfs::byte_string,std::string> >();
 
     END_TESTS;
 }
