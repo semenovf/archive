@@ -38,6 +38,36 @@ struct aligned_storage {
 
 #endif
 
+struct true_type { };
+struct false_type { };
+
+// Define a nested type if some predicate holds.
+template <bool, typename>
+struct enable_if
+{};
+
+template <typename T>
+struct enable_if<true, T>
+{
+	typedef T type;
+};
+
+// Compare for equality of types.
+template<typename, typename>
+struct are_same
+{
+	enum { value = 0 };
+    typedef false_type type;
+};
+
+template<typename T>
+struct are_same<T, T>
+{
+	enum { value = 1 };
+	typedef true_type type;
+};
+
+
 }
 
 #endif /* __PFS_TYPE_TRAITS_HPP__ */

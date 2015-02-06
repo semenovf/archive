@@ -394,6 +394,19 @@ void test_vector_erase ()
 		TEST_OK(v.size() == 0);
 	}
 
+	{
+		pfs::vector<char> v;
+
+		const char * loremipsum  = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit";
+		const char * p = loremipsum;
+
+		while (*p) {
+			v.insert(v.cend(), *p);
+			++p;
+		}
+
+		//TEST_OK(v.erase(v.find('L')) == b.begin());
+	}
 
 	{
 		std::vector<Bar> v;

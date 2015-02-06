@@ -51,6 +51,11 @@ public:
 		return base_class::size();
 	}
 
+	size_type remove (const key_type & key) { return base_class::erase(key); }
+	template <typename Holder>
+	map_pointer<Key, T, Compare, Alloc, Holder>
+	remove (const map_pointer<Key, T, Compare, Alloc, Holder> & ptr);
+
 	template <typename Holder>
 	std::pair<map_pointer<Key, T, Compare, Alloc, Holder>, bool>
 	insert (Holder & holder, const value_type & value);
@@ -58,6 +63,22 @@ public:
 	template <typename Holder>
 	map_pointer<Key, T, Compare, Alloc, Holder>
 	find (Holder & holder, const key_type & key) const;
+
+	template <typename Holder>
+	map_pointer<Key, T, Compare, Alloc, Holder>
+	beginPtr (Holder & holder);
+
+	template <typename Holder>
+	map_pointer<Key, T, Compare, Alloc, Holder>
+	cbeginPtr (Holder & holder) const;
+
+	template <typename Holder>
+	map_pointer<Key, T, Compare, Alloc, Holder>
+	endPtr (Holder & holder);
+
+	template <typename Holder>
+	map_pointer<Key, T, Compare, Alloc, Holder>
+	cendPtr (Holder & holder) const;
 };
 
 
@@ -67,8 +88,9 @@ class map_pointer
 public:
 	typedef typename Holder::difference_type difference_type;
 	typedef typename Holder::size_type       size_type;
+	typedef typename Holder::key_type        key_type;
+	typedef typename Holder::value_type      value_type;
 	typedef typename map_impl<Key, T, Compare, Alloc>::iterator_type iterator_type;
-	typedef typename map_impl<Key, T, Compare, Alloc>::value_type value_type;
 
 	Holder *      _holder;
 	iterator_type _ptr;
@@ -83,12 +105,23 @@ public:
 
 	reference<Holder> ref () const
 	{
+		PFS_ASSERT(_holder);
 		return reference<Holder>(*_holder, *this);
+	}
+
+	key_type key () const
+	{
+		return _ptr->first;
+	}
+
+	value_type value () const
+	{
+		return _ptr->second;
 	}
 
 	value_type operator * () const
 	{
-		return *_ptr;
+		return _ptr->second;
 	}
 
 	map_pointer & operator ++ ()
@@ -117,9 +150,17 @@ public:
 		return r;
 	}
 
-//	const byte_t * base () const { return _holder->constData() + _off; }
+	const iterator_type base () const { return _ptr; }
 };
 
+template <typename Key, typename T, typename Compare, typename Alloc>
+template <typename Holder>
+map_pointer<Key, T, Compare, Alloc, Holder>
+map_impl<Key, T, Compare, Alloc>::remove (const map_pointer<Key, T, Compare, Alloc, Holder> & ptr)
+{
+	iterator_type it = base_class::remove(ptr.base());
+	return map_pointer<Key, T, Compare, Alloc, Holder>(ptr._holder, it);
+}
 
 template <typename Key, typename T, typename Compare, typename Alloc>
 template <typename Holder>
@@ -144,7 +185,87 @@ map_impl<Key, T, Compare, Alloc>::find (Holder & holder, const key_type & key) c
 	return map_pointer<Key, T, Compare, Alloc, Holder>(& holder, r);
 }
 
+template <typename Key, typename T, typename Compare, typename Alloc>
+template <typename Holder>
+inline map_pointer<Key, T, Compare, Alloc, Holder>
+map_impl<Key, T, Compare, Alloc>::beginPtr (Holder & holder)
+{
+	return map_pointer<Key, T, Compare, Alloc, Holder>(& holder, this->base_class::begin());
+}
 
+template <typename Key, typename T, typename Compare, typename Alloc>
+template <typename Holder>
+inline map_pointer<Key, T, Compare, Alloc, Holder>
+map_impl<Key, T, Compare, Alloc>::cbeginPtr (Holder & holder) const
+{
+	map_impl * self = const_cast<map_impl *>(this);
+	return map_pointer<Key, T, Compare, Alloc, Holder>(& holder, self->base_class::begin());
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+template <typename Holder>
+inline map_pointer<Key, T, Compare, Alloc, Holder>
+map_impl<Key, T, Compare, Alloc>::endPtr (Holder & holder)
+{
+	return map_pointer<Key, T, Compare, Alloc, Holder>(& holder, this->base_class::end());
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+template <typename Holder>
+inline map_pointer<Key, T, Compare, Alloc, Holder>
+map_impl<Key, T, Compare, Alloc>::cendPtr (Holder & holder) const
+{
+	map_impl * self = const_cast<map_impl *>(this);
+	return map_pointer<Key, T, Compare, Alloc, Holder>(& holder, self->base_class::end());
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc, typename Holder1, typename Holder2>
+inline bool operator != (
+		  const map_pointer<Key, T, Compare, Alloc, Holder1> & p1
+		, const map_pointer<Key, T, Compare, Alloc, Holder2> & p2)
+{
+	return p1.base() != p2.base();
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc, typename Holder1, typename Holder2>
+inline bool operator == (
+		  const map_pointer<Key, T, Compare, Alloc, Holder1> & p1
+		, const map_pointer<Key, T, Compare, Alloc, Holder2> & p2)
+{
+	return p1.base() == p2.base();
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc, typename Holder1, typename Holder2>
+inline bool operator > (
+		  const map_pointer<Key, T, Compare, Alloc, Holder1> & p1
+		, const map_pointer<Key, T, Compare, Alloc, Holder2> & p2)
+{
+	return p1.base() > p2.base();
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc, typename Holder1, typename Holder2>
+inline bool operator >= (
+		  const map_pointer<Key, T, Compare, Alloc, Holder1> & p1
+		, const map_pointer<Key, T, Compare, Alloc, Holder2> & p2)
+{
+	return p1.base() >= p2.base();
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc, typename Holder1, typename Holder2>
+inline bool operator < (
+		  const map_pointer<Key, T, Compare, Alloc, Holder1> & p1
+		, const map_pointer<Key, T, Compare, Alloc, Holder2> & p2)
+{
+	return p1.base() < p2.base();
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc, typename Holder1, typename Holder2>
+inline bool operator <= (
+		  const map_pointer<Key, T, Compare, Alloc, Holder1> & p1
+		, const map_pointer<Key, T, Compare, Alloc, Holder2> & p2)
+{
+	return p1.base() <= p2.base();
+}
 
 } // pfs
 

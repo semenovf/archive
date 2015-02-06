@@ -57,6 +57,7 @@ public:
 	~pimpl () { deref(); }
 
 	bool isNull () const { return _holder == nullptr; }
+	bool isUnique () const { PFS_ASSERT(_holder); return _holder->_ref.load() == 1; }
 
 	template <typename T>
 	void swap (pimpl & o)
@@ -186,6 +187,8 @@ public:
 #endif
 
 	bool isNull () const  { return _d.isNull(); }
+	bool isUnique () const  { return _d.isUnique(); }
+
 	void swap (nullable & o)
 	{
 		PFS_ASSERT(_d.isNull() || o._d.isNull());

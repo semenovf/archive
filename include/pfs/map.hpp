@@ -11,9 +11,10 @@
 #include <pfs/pimpl.hpp>
 #include <pfs/bits/map_impl.hpp>
 #include <pfs/bits/algorithm.hpp>
+#include <pfs/vector.hpp>
+#include <pfs/type_traits.hpp>
 
 //#include <pfs.hpp>
-//#include <pfs/vector.hpp>
 //#include <pfs/shared_ptr.hpp>
 //#include <pfs/pimpl.hpp>
 //#include <map>
@@ -29,18 +30,50 @@ protected:
 	typedef nullable<impl_class>              base_class;
 
 public:
-	typedef typename impl_class::value_type             value_type;
-	typedef typename impl_class::size_type              size_type;
-	typedef typename impl_class::difference_type        difference_type;
+	typedef T                                    value_type;
+	typedef Key                                  key_type;
+	typedef typename impl_class::size_type       size_type;
+	typedef typename impl_class::difference_type difference_type;
+
+	// TODO Rename
+	template <typename Holder>
+	class iterator_helper : public bidirectional_iterator<Holder>
+	{
+		typedef typename bidirectional_iterator<Holder>::pointer pointer;
+		typedef constness<Holder> ConstnessHolder;
+
+	public:
+		iterator_helper ()
+			: bidirectional_iterator<Holder>() {}
+
+		iterator_helper (Holder * holder, pointer ptr)
+			: bidirectional_iterator<Holder>(holder, ptr) {}
+
+	    // Allow iterator to const_iterator conversion
+		// Magic from GNU libc :)
+	    iterator_helper(const iterator_helper<typename enable_if<
+	    		(are_same<Pointer, typename ConstnessHolder::pointer>::value), Holder>::type> & it)
+				: bidirectional_iterator<Holder>(it->holder(), it->base())
+//	      : _M_current(__i.base())
+		{ ; }
+
+		explicit
+		iterator_helper (const iterator<Holder> & it)
+			: bidirectional_iterator<Holder>(it) {}
+
+		key_type key () { return this->base().key(); }
+		value_type value () { return this->base().value(); }
+	};
+
 
 	typedef map_pointer<Key, T, Compare, Alloc, self_class>       pointer;
 	typedef map_pointer<Key, T, Compare, Alloc, const self_class> const_pointer;
-	typedef pfs::reference<self_class>                  reference;
-	typedef pfs::reference<const self_class>            const_reference;
-	typedef pfs::bidirectional_iterator<self_class>     iterator;
-	typedef pfs::bidirectional_iterator<const self_class> const_iterator;
-    typedef std::reverse_iterator<iterator>		        reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
+	typedef pfs::reference<self_class>             reference;
+	typedef pfs::reference<const self_class>       const_reference;
+	typedef iterator_helper<self_class>            iterator;
+	typedef iterator_helper<const self_class>      const_iterator;
+    typedef std::reverse_iterator<iterator>		   reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
 
 public:
     map () : base_class() {}
@@ -52,86 +85,133 @@ public:
 
 	size_type size () const { return base_class::isNull() ? 0 : base_class::cast()->size(); }
 
-//    iterator begin () { return iterator(this, impl_class::begin()); }
-//    iterator end   () { return iterator(this, impl_class::end()); }
-//    const_iterator begin () const { return cbegin(); }
-//    const_iterator end   () const { return cend(); }
-//    const_iterator cbegin() const { return const_iterator(this, impl_class::cbegin()); }
-//    const_iterator cend  () const { return const_iterator(this, impl_class::cend()); }
-//    reverse_iterator rbegin  ()   { return reverse_iterator(end()); }
-//    reverse_iterator rend    ()   { return reverse_iterator(begin()); }
-//    const_reverse_iterator rbegin  () const { return crbegin(); }
-//    const_reverse_iterator rend    () const { return crend(); }
-//    const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
-//    const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
+    iterator begin () { return iterator(this, base_class::cast()->beginPtr(*this)); }
+    iterator end   () { return iterator(this, base_class::cast()->endPtr(*this)); }
+    const_iterator begin () const { return cbegin(); }
+    const_iterator end   () const { return cend(); }
+    const_iterator cbegin() const { return const_iterator(this, base_class::cast()->cbeginPtr(*this)); }
+    const_iterator cend  () const { return const_iterator(this, base_class::cast()->cendPtr(*this)); }
+    reverse_iterator rbegin  ()   { return reverse_iterator(end()); }
+    reverse_iterator rend    ()   { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin  () const { return crbegin(); }
+    const_reverse_iterator rend    () const { return crend(); }
+    const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
+    const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
 
+	iterator find (const key_type & key) const
+	{
+		map * self = const_cast<map *>(this);
+		pointer p = self->base_class::cast()->find(*self, key);
+		return iterator(self, p);
+	}
 
-//    // FIXME no need detach(), iterator has to support this feature
-//	iterator	   find (const Key & key) { _d.detach(); return _d.cast<impl>()->find(key); }
-//	const_iterator find (const Key & key) const { return _d.cast<impl>()->find(key); }
-//	bool           contains (const Key & key) const { return find(key) != cend(); }
-//
-//	iterator       begin () { _d.detach(); return _d.cast<impl>()->begin(); }
-//    const_iterator begin () const { return _d.cast<impl>()->begin(); }
-//    const_iterator cbegin () const { return _d.cast<impl>()->begin(); }
-//    iterator       end () { _d.detach(); return _d.cast<impl>()->end(); }
-//    const_iterator end () const { return _d.cast<impl>()->end(); }
-//    const_iterator cend () const { return _d.cast<impl>()->end(); }
+	bool contains (const key_type & key) const { return find(key) != cend(); }
 
-	std::pair<iterator, bool> insert (const value_type & value)
+	/**
+	 * @brief Inserts a new item with the key @c key and a value of @c value.
+	 *
+	 * @details If there is already an item with the key @c key, that item's value is replaced with @c value.
+	 *          If there are multiple items with the key @c key, the most recently inserted item's
+	 *          value is replaced with @c value.
+	 *
+	 * @param key Key for insertion value.
+	 * @param value Value to insert.
+	 * @return iterator Position pointed to insertion value.
+	 */
+	iterator insert (const key_type & key, const T & value);
+
+	size_type remove (const key_type & key)
 	{
 		base_class::detach();
-		std::pair<pointer, bool> r = base_class::cast()->insert(*this, value);
-		return std::pair<iterator, bool>(iterator(this, r.first), r.second);
+		return base_class::cast()->remove(key);
 	}
 
-	std::pair<iterator, bool> insert (const Key & key, const T & value)
+	iterator remove (const_iterator pos)
 	{
-		return insert(std::pair<Key, T>(key, value));
+		base_class::detach();
+		pointer p = base_class::cast()->remove(pos);
+		return iterator(this, p);
 	}
 
-//	const T	       value (const Key & key) const;
-//	const T	       value (const Key & key, const T & defaultValue) const;
-//
+
 //	bool           remove (const Key & key) { _d.detach(); return _d.cast<impl>()->erase(key) > 0; }
 //	void           remove (iterator pos) { _d.detach(); _d.cast<impl>()->erase(pos); }
 //	bool	       operator != (const map<Key, T> & other) const { return !(*this == other); }
 //	bool	       operator == (const map<Key, T> & other) const;
-//
 
-	value_type valueAt (const Key & key) const
+	value_type valueAt (const key_type & key) const
 	{
-		return value_type(at(key));
+		reference r = at(key);
+		return *(& r);
 	}
 
-	reference at (const Key & key) const
+	value_type valueAt (const key_type & key, const T & defaultValue) const
+	{
+		iterator it = find(key);
+		return it != cend() ? it.value() : defaultValue;
+	}
+
+	reference at (const key_type & key) const
 	{
 		map * self = const_cast<map *>(this);
-		pointer p = self->base_class::cast()->find(*self, key);
-		return reference(*self, p);
+		iterator it = find(key);
+		PFS_ASSERT(it != cend());
+		return reference(*self, it.base());
 	}
 
-	reference operator [] (const Key & key) const
+	reference operator [] (const key_type & key) const
     {
     	return at(key);
     }
 
-//	map &          operator << (const std::pair<Key, T> & p) { this->insert(p.first, p.second); return *this; }
-//	vector<Key>    keys() const;
+	vector<key_type>   keys() const;
+
+	map & operator << (const std::pair<Key, T> & p) { this->insert(p.first, p.second); return *this; }
+
+	void detach_and_assign (pointer & p, const T & value); // pfs::reference class requirement
 };
 
-#ifdef __COMMENT__
-template <typename Key, typename T>
-inline typename map<Key,T>::iterator map<Key,T>::insert(const Key & key, const T & value)
+template <typename Key, typename T, typename Compare, typename Alloc>
+void map<Key, T, Compare, Alloc>::detach_and_assign (
+		typename map<Key, T, Compare, Alloc>::pointer & p
+      , const typename map<Key, T, Compare, Alloc>::value_type & value)
 {
-	_d.detach();
-	std::pair<iterator,bool> r = _d.cast<impl>()->insert(std::pair<Key,T>(key, value));
-	if (!r.second) { // key already exists
-		r.first->second = value;
+	if (!base_class::isUnique()) {
+		base_class::detach();
+		pointer pp = this->base_class::cast()->find(*this, p.base()->first);
+		pp.base()->second = value;
+	} else {
+		p.base()->second = value;
 	}
-	return r.first;
 }
 
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+typename map<Key, T, Compare, Alloc>::iterator map<Key, T, Compare, Alloc>::insert (const Key & key, const T & value)
+{
+	base_class::detach();
+	std::pair<pointer, bool> r = base_class::cast()->insert(*this, std::pair<Key, T>(key, value));
+	if (!r.second) { // not inserted
+		reference ref = r.first.ref();
+		ref = value;
+	}
+	return iterator(this, r.first);
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+vector<Key> map<Key, T, Compare, Alloc>::keys () const
+{
+	vector<Key> r;
+	const_iterator it = this->cbegin();
+	const_iterator itEnd = cend();
+	for (; it != itEnd; ++it) {
+		r.append(it.key());
+	}
+	return r;
+}
+
+
+#ifdef __COMMENT__
 template <class Key, class T>
 inline const T map<Key, T>::value (const Key & key) const
 {
@@ -186,17 +266,6 @@ MapData<Key, T> * MapData<Key, T>::clone () const
 }
 */
 
-template <typename Key, typename T>
-vector<Key> map<Key, T>::keys () const
-{
-	vector<Key> r;
-	const_iterator it = cbegin();
-	const_iterator itEnd = cend();
-	for (; it != itEnd; ++it) {
-		r.append(it->first);
-	}
-	return r;
-}
 
 #endif
 

@@ -22,36 +22,42 @@ void test_byte_string_collection()
 	collection_type collection;
 
     for (int i = 0; i < ENTRY_COUNT; ++i) {
-    	string key("Test byte string ");
-    	string value("Test byte string ");
+    	typename collection_type::key_type key("Test byte string ");
+    	typename collection_type::value_type value("Test byte string ");
     	key += pfs::byte_string::toString(i).c_str();
     	value += pfs::byte_string::toString(i).c_str();
 
-    	std::pair<typename collection_type::iterator, bool> it = collection.insert(key, value);
-    	TEST_OK(it.second == true);
-
-    	typename collection_type::pointer p = it.first.base();
-    	TEST_OK((*p).first == key);
+    	typename collection_type::iterator it = collection.insert(key, value);
     }
 
     TEST_OK(collection.size() == ENTRY_COUNT);
 
-    for (int i = 0; i < ENTRY_COUNT; ++i) {
-    	string sample("Test byte array ");
-    	sample += pfs::byte_string::toString(i).c_str();
-    	typename collection_type::reference ref = collection.at(sample);
-//    	typename collection_type::value_type value = collection.valueAt(sample);
-    	typename collection_type::value_type value = (*(& ref));
+    std::string ss;
+    int i;
+    for (i = 0; i < ENTRY_COUNT; ++i) {
+    	typename collection_type::key_type key("Test byte string ");
+    	key += pfs::byte_string::toString(i).c_str();
+//    	typename collection_type::reference ref = collection.at(sample);
+    	typename collection_type::value_type value = collection.valueAt(key);
 
-    	string ss;
-    	ss += '[' + value.second + "] == [" + sample + ']';
-
-    	TEST_OK2(value.second == sample, ss.c_str());
+    	ss.clear();
+    	ss += "expected: `";
+    	ss += key.c_str();
+    	ss += "', got: `";
+    	ss += value.c_str();
+    	ss += '\'';
+    	cout << i << '\r';
+    	if (value != key)
+    		break;
     }
+
+    if (i != ENTRY_COUNT) {
+    	cout << "Failed when: " << ss << endl;
+    }
+    TEST_FAIL2(i == ENTRY_COUNT, "Insertion and accession of pfs::byte_string type values");
 }
 
 
-#ifdef __COMMENT__
 template <typename collection_type>
 void test_copy_pod_collection()
 {
@@ -110,43 +116,60 @@ void test_copy_collection()
 	TEST_OK(collectionCopy["Three"] == "Three Data");
 	TEST_OK(collectionCopy["Four"]  == "Copy of Four Data");
 }
-#endif
 
+template <typename collection_type>
+void test_get_keys ()
+{
+	collection_type collection;
+
+	collection.insert("One"   , "One Data");
+	collection.insert("Two"   , "Two Data");
+	collection.insert("Three" , "Three Data");
+	collection.insert("Four"  , "Four Data");
+
+	TEST_OK(collection.contains("One"));
+	TEST_OK(collection.contains("Two"));
+	TEST_OK(collection.contains("Three"));
+	TEST_OK(collection.contains("Four"));
+
+	// Default value
+	TEST_OK(collection.valueAt("Five", "Not found") == "Not found");
+
+	pfs::vector<typename collection_type::key_type> keys = collection.keys();
+	TEST_OK(keys.contains("One"));
+	TEST_OK(keys.contains("Two"));
+	TEST_OK(keys.contains("Three"));
+	TEST_OK(keys.contains("Four"));
+
+	// Remove
+	TEST_OK(collection.size() == 4);
+	TEST_OK(collection.remove("One") == 1);
+	TEST_OK(collection.remove("Five") == 0);
+	TEST_OK(collection.remove("One") == 0);
+	TEST_OK(!collection.contains("One"));
+	TEST_OK(collection.size() == 3);
+
+//	TEST_OK(collection.remove(collection.find("Two")) != collection.end());
+//	TEST_OK(collection.remove(collection.find("Five")) == collection.end());
+//	TEST_OK(!collection.contains("Two"));
+//	TEST_OK(collection.size() == 2);
+}
 
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(10020);
+	BEGIN_TESTS(37);
 
-	typedef pfs::map<string, string> map;
-	map m;
-	m.insert("First", "Hello");
-	m.insert("Second", "World");
+	typedef pfs::map<int, int> map;
 
-	TEST_OK(m.size() == 2);
+	map::iterator it;
+	map::const_iterator it1(it);
 
-	map::reference ref = m.at("First");
-	map::value_type value = (*(& ref));
-	TEST_OK(value.second == "Hello");
-
-	map::reference ref1 = m.at("Second");
-	map::value_type value1 = (*(& ref1));
-	TEST_OK(value1.second == "World");
-
-	std::pair<const string, string> a("A","B");
-	std::pair<const string, string> b;
-
-	b = a;
-	a = b;
-
-//	std::pair<const string, string> & std::pair<const string, string>::operator = (const std::pair<const string, string> &)
-
-	if (0) {
-		test_byte_string_collection<pfs::map<string, string> >();
-	}
-//    test_copy_pod_collection<pfs::map<int,int> >();
-//    test_copy_collection<pfs::map<pfs::byte_string,std::string> >();
+	if (1) test_byte_string_collection<pfs::map<pfs::byte_string, pfs::byte_string> >();
+	if (1) test_copy_pod_collection<pfs::map<int,int> >();
+    if (1) test_copy_collection<pfs::map<std::string,std::string> >();
+    if (1) test_get_keys<pfs::map<std::string,std::string> >();
 
     END_TESTS;
 }
