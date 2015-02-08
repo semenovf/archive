@@ -12,6 +12,7 @@
 #include <pfs/bits/constness.hpp>
 #include <pfs/bits/reference.hpp>
 #include <pfs/utility.hpp>
+#include <pfs/type_traits.hpp>
 
 namespace pfs {
 

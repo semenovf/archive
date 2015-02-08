@@ -15,7 +15,9 @@
 */
 #include <pfs.h>
 
-uint32_t pfs_hash32 (const void * key, int len, unsigned int seed)
+namespace pfs {
+
+DLL_API uint32_t hash32 (const void * key, int len, unsigned int seed)
 {
 /*
 	'm' and 'r' are mixing constants generated offline.
@@ -68,3 +70,5 @@ uint32_t pfs_hash32 (const void * key, int len, unsigned int seed)
 
 	return h;
 } 
+
+} // pfs

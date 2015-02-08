@@ -51,11 +51,16 @@ public:
 
 	    // Allow iterator to const_iterator conversion
 		// Magic from GNU libc :)
-	    iterator_helper(const iterator_helper<typename enable_if<
-	    		(are_same<Pointer, typename ConstnessHolder::pointer>::value), Holder>::type> & it)
-				: bidirectional_iterator<Holder>(it->holder(), it->base())
-//	      : _M_current(__i.base())
-		{ ; }
+//	    iterator_helper(const iterator_helper<typename enable_if<
+//	    		(are_same<Pointer, typename ConstnessHolder::pointer>::value), Holder>::type> & it)
+//				: bidirectional_iterator<Holder>(it->holder(), it->base())
+//		{ ; }
+
+		template <typename H>
+		iterator_helper (const iterator_helper<H> & it)
+			: bidirectional_iterator<Holder>(it.holder(), it.base())
+		{}
+
 
 		explicit
 		iterator_helper (const iterator<Holder> & it)

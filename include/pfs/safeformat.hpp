@@ -18,11 +18,11 @@
 
 namespace pfs {
 
-class safeformat
+class DLL_API safeformat
 {
 public:
-	typedef typename string::const_iterator const_iterator;
-	typedef typename string::char_type char_type;
+	typedef /*typename */string::const_iterator const_iterator;
+	typedef /*typename */string::char_type char_type;
 	typedef pfs::variant<real_t, long_t, string, ucchar> variant_type;
 
 public:

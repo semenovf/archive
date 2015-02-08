@@ -6,7 +6,9 @@
 */
 /*typedef unsigned __int64 uint64_t;*/
 
-#include <pfs.h>
+#include <pfs/utility.hpp>
+
+namespace pfs {
 
 #ifdef PFS_HAVE_INT64
 
@@ -14,7 +16,7 @@
 
 #ifdef PFS_OS_64BITS
 
-uint64_t pfs_hash64 (const void * key, int len, unsigned int seed)
+DLL_API uint64_t hash64 (const void * key, int len, unsigned int seed)
 {
 	const uint64_t m = 0xc6a4a7935bd1e995;
 	const int r = 47;
@@ -60,39 +62,38 @@ uint64_t pfs_hash64 (const void * key, int len, unsigned int seed)
 #else /* ! PFS_OS_64BITS */
 /* 64-bit hash for 32-bit platforms */
 
-uint64_t pfs_hash64 (const void * key, int len, unsigned int seed)
+DLL_API uint64_t hash64 (const void * key, int len, unsigned int seed)
 {
 	const unsigned int m = 0x5bd1e995;
 	const int r = 24;
 
+	uint64_t h;
 	unsigned int h1 = seed ^ len;
 	unsigned int h2 = 0;
 
 	const unsigned int * data = (const unsigned int *)key;
 
-	while(len >= 8)
-	{
-		unsigned int k1 = *data++;
+	while(len >= 8) {
+		unsigned int k1, k2;
+		k1 = *data++;
 		k1 *= m; k1 ^= k1 >> r; k1 *= m;
 		h1 *= m; h1 ^= k1;
 		len -= 4;
 
-		unsigned int k2 = *data++;
+		k2 = *data++;
 		k2 *= m; k2 ^= k2 >> r; k2 *= m;
 		h2 *= m; h2 ^= k2;
 		len -= 4;
 	}
 
-	if(len >= 4)
-	{
+	if(len >= 4) {
 		unsigned int k1 = *data++;
 		k1 *= m; k1 ^= k1 >> r; k1 *= m;
 		h1 *= m; h1 ^= k1;
 		len -= 4;
 	}
 
-	switch(len)
-	{
+	switch(len) {
 	case 3: h2 ^= ((unsigned char*)data)[2] << 16;
 	case 2: h2 ^= ((unsigned char*)data)[1] << 8;
 	case 1: h2 ^= ((unsigned char*)data)[0];
@@ -104,7 +105,7 @@ uint64_t pfs_hash64 (const void * key, int len, unsigned int seed)
 	h1 ^= h2 >> 17; h1 *= m;
 	h2 ^= h1 >> 19; h2 *= m;
 
-	uint64_t h = h1;
+	h = h1;
 
 	h = (h << 32) | h2;
 
@@ -112,3 +113,5 @@ uint64_t pfs_hash64 (const void * key, int len, unsigned int seed)
 } 
 #endif /* PFS_OS_64BITS */
 #endif /* PFS_HAVE_INT64 */
+
+} // pfs

@@ -39,21 +39,20 @@ inline void pfs_swap (T & a, T & b)
 }
 #endif
 
-EXTERN_C_BEGIN
+namespace pfs {
 //
 // see https://sites.google.com/site/murmurhash
 //
-uint32_t pfs_hash32 (const void * key, int len, unsigned int seed);
+DLL_API uint32_t hash32 (const void * key, int len, unsigned int seed);
 
 #ifdef PFS_HAVE_INT64
 #	ifdef PFS_OS_64BITS
-		uint64_t pfs_hash64 (const void * key, int len, unsigned int seed);
+		DLL_API uint64_t hash64 (const void * key, int len, unsigned int seed);
 #	else
-		uint64_t pfs_hash64 (const void * key, int len, unsigned int seed);
+		DLL_API uint64_t hash64 (const void * key, int len, unsigned int seed);
 #	endif
 #endif
-EXTERN_C_END
 
-//} // pfs
+} // pfs
 
 #endif /* __PFS_UTILITY_HPP__ */
