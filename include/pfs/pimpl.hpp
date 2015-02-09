@@ -362,4 +362,9 @@ Class::Class (const Class::Impl & other)                       \
 // } TODO DEPRECATED
 #endif
 
+// TODO implement for nullable:
+// 	nil.swap(non-nil)
+//	non-nil.swap(nil)
+//	nil.swap(nil)
+
 #endif /* __PFS_PIMPL_HPP__ */
