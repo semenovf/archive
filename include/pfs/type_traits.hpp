@@ -148,6 +148,61 @@ struct are_same<T, T>
 template<class T> struct is_const          : false_type {};
 template<class T> struct is_const<const T> : true_type {};
 
+template <bool B, typename T1, typename T2>
+struct conditional
+{
+	typedef T1 type;
+};
+
+template <typename T1, typename T2>
+struct conditional<false, T1, T2>
+{
+	typedef T2 type;
+};
+
+// Define a nested type if some predicate holds.
+template <bool, typename T1, typename>
+struct if_else
+{
+	typedef T1 type;
+};
+
+template <typename T1, typename T2>
+struct if_else<false, T1, T2>
+{
+	typedef T2 type;
+};
+
+template<typename T>
+struct remove_const
+{
+	typedef T type;
+};
+
+template<typename T>
+struct remove_const<const T>
+{
+	typedef T type;
+};
+
+template<typename T>
+struct remove_volatile
+{
+	typedef T type;
+};
+
+template<typename T>
+struct remove_volatile<volatile T>
+{
+	typedef T type;
+};
+
+template<typename T>
+struct remove_cv
+{
+	typedef typename remove_volatile<typename remove_const<T>::type>::type type;
+};
+
 }
 
 #endif /* __PFS_TYPE_TRAITS_HPP__ */
