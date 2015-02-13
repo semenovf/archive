@@ -35,48 +35,52 @@ public:
 	typedef typename impl_class::size_type       size_type;
 	typedef typename impl_class::difference_type difference_type;
 
-	// TODO Rename
 	template <typename Holder>
-	class iterator_helper : public bidirectional_iterator<Holder>
+	class base_iterator : public bidirectional_iterator<Holder>
 	{
-		typedef typename bidirectional_iterator<Holder>::pointer pointer;
-		typedef constness<Holder> ConstnessHolder;
-
 	public:
-		iterator_helper ()
+		typedef typename bidirectional_iterator<Holder>::pointer pointer;
+
+		base_iterator ()
 			: bidirectional_iterator<Holder>() {}
 
-		iterator_helper (Holder * holder, pointer ptr)
+		base_iterator (Holder * holder, pointer ptr)
 			: bidirectional_iterator<Holder>(holder, ptr) {}
 
-	    // Allow iterator to const_iterator conversion
-		// Magic from GNU libc :)
-//	    iterator_helper(const iterator_helper<typename enable_if<
-//	    		(are_same<Pointer, typename ConstnessHolder::pointer>::value), Holder>::type> & it)
-//				: bidirectional_iterator<Holder>(it->holder(), it->base())
-//		{ ; }
-
-		template <typename H>
-		iterator_helper (const iterator_helper<H> & it)
-			: bidirectional_iterator<Holder>(it.holder(), it.base())
-		{}
-
-
-		explicit
-		iterator_helper (const iterator<Holder> & it)
-			: bidirectional_iterator<Holder>(it) {}
+		base_iterator (const base_iterator<Holder> & it)
+			: bidirectional_iterator<Holder>(it.holder(), it.base()) {}
 
 		key_type key () { return this->base().key(); }
 		value_type value () { return this->base().value(); }
 	};
 
+	class iterator : public base_iterator<self_class>
+	{
+	public:
+		typedef typename base_iterator<self_class>::pointer pointer;
+
+		iterator () : base_iterator<self_class>() {}
+		iterator (self_class * holder, pointer ptr) : base_iterator<self_class>(holder, ptr) {}
+		iterator (const iterator & it) : base_iterator<self_class>(it.holder(), it.base())	{}
+	};
+
+	class const_iterator : public base_iterator<const self_class>
+	{
+	public:
+		typedef typename base_iterator<const self_class>::pointer pointer;
+
+		const_iterator () : base_iterator<const self_class>() {}
+		const_iterator (const self_class * holder, pointer ptr) : base_iterator<const self_class>(holder, ptr) {}
+		const_iterator (const const_iterator & it) : base_iterator<const self_class>(it.holder(), it.base()) {}
+		const_iterator (const iterator & it) : base_iterator<const self_class>(it.holder(), pointer(it.holder(), it.base().base())) {}
+	};
 
 	typedef map_pointer<Key, T, Compare, Alloc, self_class>       pointer;
 	typedef map_pointer<Key, T, Compare, Alloc, const self_class> const_pointer;
 	typedef pfs::reference<self_class>             reference;
 	typedef pfs::reference<const self_class>       const_reference;
-	typedef iterator_helper<self_class>            iterator;
-	typedef iterator_helper<const self_class>      const_iterator;
+//	typedef normal_iterator<self_class>            iterator;
+//	typedef normal_iterator<const self_class>      const_iterator;
     typedef std::reverse_iterator<iterator>		   reverse_iterator;
     typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
 
