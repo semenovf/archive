@@ -35,6 +35,7 @@ public:
 	explicit ucchar(int ucs)       : _value(ucs)    { }
 	explicit ucchar(uint32_t ucs4) : _value(ucs4)   { }
 	ucchar(const ucchar & ucs4)    : _value(ucs4._value) { }
+	~ucchar () {}
 
 	operator uint32_t () const { return _value; }
 	operator uint32_t & ()     { return _value; }

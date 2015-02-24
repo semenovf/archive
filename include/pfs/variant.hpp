@@ -71,7 +71,7 @@ class variant
 	hash_type _hashCode;
 	data_type _data;
 
-	void (* _destroyer) (void * p);
+	void (* _destroyer) (void *);
 	void (* _copier) (void * dest, const void * src);
 
 private:
@@ -82,7 +82,8 @@ private:
 	}
 
 	void destroy () {
-		_destroyer(& _data);
+		if (_destroyer)
+			_destroyer(& _data);
 		_hashCode = invalidHashCode();
 		_destroyer = nullptr;
 		_copier = nullptr;
@@ -100,7 +101,8 @@ public:
 		, _destroyer(other._destroyer)
 		, _copier(other._copier)
 	{
-		_copier(& _data, & other._data);
+		if (_copier)
+			_copier(& _data, & other._data);
 	}
 
 	template <typename T>
@@ -109,7 +111,7 @@ public:
 		, _destroyer(nullptr)
 		, _copier(nullptr)
 	{
-		set(v);
+		set<T>(v);
 	}
 
 	~variant () { destroy(); }
@@ -125,14 +127,15 @@ public:
 		_hashCode = other._hashCode;
 		_destroyer = other._destroyer;
 		_copier = other._copier;
-		_copier(& _data, & other._data);
+		if (_copier)
+			_copier(& _data, & other._data);
 		return *this;
 	}
 
 	template <typename T>
 	variant & operator = (const T & v)
 	{
-		set(v);
+		set<T>(v);
 		return *this;
 	}
 

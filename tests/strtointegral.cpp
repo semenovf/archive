@@ -6,26 +6,27 @@
  */
 
 #include <cwt/test.hpp>
-#include <pfs/bits/strtolong.hpp>
+#include <pfs/bits/strtointegral.hpp>
 #include <cstring>
 
-bool compare_unsigned (const char * s, ulong_t num, int radix = 10)
+bool compare_unsigned (const char * s, uintegral_t num, int radix = 10)
 {
 	const char * endptr;
 	const char * begin = s;
 	const char * end = s + std::strlen(s);
 
-	return pfs::strtoulong<char,const char *>(begin, end, radix, & endptr) == num
+	return pfs::strtouintegral<char,const char *>(begin, end, radix,pfs::max_type<uintegral_t>(), & endptr) == num
 			&& endptr == end && errno == 0;
 }
 
-bool compare_signed (const char * s, long_t num, int radix = 10)
+bool compare_signed (const char * s, integral_t num, int radix = 10)
 {
 	const char * endptr;
 	const char * begin = s;
 	const char * end = s + std::strlen(s);
 
-	return pfs::strtolong<char,const char *>(begin, end, radix, & endptr) == num
+	return pfs::strtointegral<char,const char *>(begin, end, radix
+			, pfs::min_type<integral_t>(), pfs::max_type<uintegral_t>(), & endptr) == num
 			&& endptr == end && errno == 0;
 }
 

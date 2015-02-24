@@ -13,7 +13,7 @@
 #include <pfs/ucchar.hpp>
 #include <pfs/bits/mbcs_string_impl.hpp>
 #include <pfs/byte_string.hpp>
-#include <pfs/bits/strtolong.hpp>
+#include <pfs/bits/strtointegral.hpp>
 #include <pfs/bits/strtoreal.hpp>
 #include <ostream>
 
@@ -438,8 +438,10 @@ public:
 		return fromUtf8(reinterpret_cast<const char *>(utf8.constData()), utf8.length(), state);
 	}
 
+	static mbcs_string toString (short value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (int value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (long value, int base = 10, bool uppercase = false);
+	static mbcs_string toString (unsigned short value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (unsigned int value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (unsigned long value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (float value, char f = 'f', int prec = 6);
@@ -498,68 +500,70 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 template <typename CodeUnitT>
 inline short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
 {
-	return (short)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_SHORT_MIN, PFS_SHORT_MAX);
+	return (short)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, integral_t(pfs::min_type<short>)
+		, uintegral_t(pfs::max_type<short>));
 }
 
 template <typename CodeUnitT>
 inline unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
 {
-	return (unsigned short)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_USHORT_MAX);
+	return (unsigned short)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, uintegral_t(pfs::max_type<unsigned short>));
 }
 
 template <typename CodeUnitT>
 inline int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
 {
-	return (int)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_INT_MIN, PFS_INT_MAX);
+	return (int)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, integral_t(pfs::min_type<int>)
+		, uintegral_t(pfs::max_type<int>));
 }
 
 template <typename CodeUnitT>
 inline unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
 {
-	return (unsigned int)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_UINT_MAX);
+	return (unsigned int)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, uintegral_t(pfs::max_type<unsigned int>));
 }
 
 template <typename CodeUnitT>
 inline long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
 {
-#ifdef PFS_HAVE_LONGLONG
-	return (long)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_INT_MIN, PFS_INT_MAX);
-#else
-	return (long)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
-#endif
+	return (long)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, integral_t(pfs::min_type<long>)
+		, uintegral_t(pfs::max_type<long>));
 }
 
 template <typename CodeUnitT>
 inline unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
 {
-#ifdef PFS_HAVE_LONGLONG
-	return (unsigned long)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_UINT_MAX);
-#else
-	return (unsigned long)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_ULONG_MAX);
-#endif
+	return (unsigned long)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, uintegral_t(pfs::max_type<unsigned long>));
 }
 
 #ifdef PFS_HAVE_LONGLONG
 template <typename CodeUnitT>
 inline long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
 {
-	return (long long)strtolong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_LONG_MIN, PFS_LONG_MAX);
+	return (long long)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, integral_t(pfs::min_type<long long>)
+		, uintegral_t(pfs::max_type<long long>));
 }
 
 template <typename CodeUnitT>
 inline unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int base) const
 {
-	return (unsigned long long)strtoulong_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
-		(cbegin(), cend(), ok, base, PFS_ULONG_MAX);
+	return (unsigned long long)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, uintegral_t(pfs::max_type<unsigned long long>));
 }
 #endif
 
@@ -619,13 +623,20 @@ double mbcs_string<CodeUnitT>::toDouble (bool * ok, ucchar decimalPoint) const
 #endif
 }
 
+template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (short value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
+}
 
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (int value, int base, bool uppercase)
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
 template <typename CodeUnitT>
@@ -633,7 +644,15 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long value, int 
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
+}
+
+template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned short value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
 template <typename CodeUnitT>
@@ -641,7 +660,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned int val
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
 template <typename CodeUnitT>
@@ -649,7 +668,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long va
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
 #ifdef PFS_HAVE_LONGLONG
@@ -658,7 +677,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long long value,
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
 template <typename CodeUnitT>
@@ -666,7 +685,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long lo
 {
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 #endif
 

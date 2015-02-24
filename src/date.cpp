@@ -42,13 +42,13 @@ static inline date __valid_date(int y, int m, int d)
  * @param day   Day.
  * @return JD value.
  */
-long_t date::julianDay (int year, int month, int day) // static
+integral_t date::julianDay (int year, int month, int day) // static
 {
 	if (year < 0) // there is no 0 year
 		++year;
 
 	int    a = math::floorDiv(14 - month, 12);
-	long_t y = long_t(year) + 4800 - a;
+	integral_t y = integral_t(year) + 4800 - a;
 	int    m = month + 12 * a - 3;
 
 	// Gregorian calendar: >= 15.10.1582
@@ -73,14 +73,14 @@ long_t date::julianDay (int year, int month, int day) // static
  *
  * @note see http://www.tondering.dk/claus/cal/julperiod.php.
  */
-void date::fromJulianDay (long_t julianDay, int * yearPtr, int * monthPtr, int * dayPtr) // static
+void date::fromJulianDay (integral_t julianDay, int * yearPtr, int * monthPtr, int * dayPtr) // static
 {
-	long_t b = 0;
-	long_t c = 0;
+	integral_t b = 0;
+	integral_t c = 0;
 
 	// Gregorian calendar
 	if (julianDay >= 2299161) {
-		long_t a = julianDay + 32044;
+		integral_t a = julianDay + 32044;
 		b = math::floorDiv(4 * a + 3, 146097);
 		c = a - math::floorDiv(146097 * b, 4);
 	} else {
@@ -88,13 +88,13 @@ void date::fromJulianDay (long_t julianDay, int * yearPtr, int * monthPtr, int *
 		c = julianDay + 32082;
 	}
 
-    long_t    d = math::floorDiv(4 * c + 3, 1461);
-    long_t    e = c - math::floorDiv(1461 * d, 4);
-    long_t    m = math::floorDiv(5 * e + 2, 153);
+    integral_t    d = math::floorDiv(4 * c + 3, 1461);
+    integral_t    e = c - math::floorDiv(1461 * d, 4);
+    integral_t    m = math::floorDiv(5 * e + 2, 153);
 
-    long_t    day = e - math::floorDiv(153 * m + 2, 5) + 1;
-    long_t    month = m + 3 - 12 * math::floorDiv(m, 10);
-    long_t    year = 100 * b + d - 4800 + math::floorDiv(m, 10);
+    integral_t    day = e - math::floorDiv(153 * m + 2, 5) + 1;
+    integral_t    month = m + 3 - 12 * math::floorDiv(m, 10);
+    integral_t    year = 100 * b + d - 4800 + math::floorDiv(m, 10);
 
     if (year <= 0)
         --year ;

@@ -98,14 +98,184 @@ void test2 ()
 	std::cout << buffer.str() << std::endl;
 }
 
+
+struct Int
+{
+	int _i;
+	Int () : _i(0) {}
+	Int (int i) : _i(i) {}
+};
+
+void test3 ()
+{
+	{
+		pfs::nullable<Int> nil1;
+		pfs::nullable<Int> nil2;
+
+		TEST_OK(nil1.isNull());
+		TEST_OK(nil2.isNull());
+
+		nil1.swap(nil2);
+
+		TEST_OK(nil1.isNull());
+		TEST_OK(nil2.isNull());
+	}
+
+	{
+		pfs::nullable<Int> nil;
+		pfs::nullable<Int> i(new Int(123));
+
+		TEST_FAIL(i.cast()->_i == 123);
+
+		nil.swap(i);
+
+		TEST_FAIL(!nil.isNull());
+		TEST_FAIL(i.isNull());
+		TEST_FAIL(nil.cast()->_i == 123);
+	}
+
+	{
+		pfs::nullable<Int> nil;
+		pfs::nullable<Int> i1(new Int(123));
+		pfs::nullable<Int> i2(i1);
+
+		TEST_FAIL(i1.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 123);
+
+		nil.swap(i1);
+
+		TEST_FAIL(!nil.isNull());
+		TEST_FAIL(i1.isNull());
+		TEST_FAIL(!i2.isNull());
+		TEST_FAIL(nil.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 123);
+	}
+
+	{
+		pfs::nullable<Int> nil;
+		pfs::nullable<Int> i1(new Int(123));
+		pfs::nullable<Int> i2(i1);
+
+		TEST_FAIL(i1.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 123);
+
+		nil.swap(i2);
+
+		TEST_FAIL(!nil.isNull());
+		TEST_FAIL(i2.isNull());
+		TEST_FAIL(!i1.isNull());
+		TEST_FAIL(nil.cast()->_i == 123);
+		TEST_FAIL(i1.cast()->_i == 123);
+	}
+
+	{
+		pfs::nullable<Int> nil;
+		pfs::nullable<Int> i(new Int(123));
+
+		TEST_FAIL(i.cast()->_i == 123);
+
+		i.swap(nil);
+
+		TEST_FAIL(!nil.isNull());
+		TEST_FAIL(i.isNull());
+		TEST_FAIL(nil.cast()->_i == 123);
+	}
+
+	{
+		pfs::nullable<Int> nil;
+		pfs::nullable<Int> i1(new Int(123));
+		pfs::nullable<Int> i2(i1);
+
+		TEST_FAIL(i1.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 123);
+
+		i1.swap(nil);
+
+		TEST_FAIL(!nil.isNull());
+		TEST_FAIL(i1.isNull());
+		TEST_FAIL(!i2.isNull());
+		TEST_FAIL(nil.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 123);
+	}
+
+	{
+		pfs::nullable<Int> nil;
+		pfs::nullable<Int> i1(new Int(123));
+		pfs::nullable<Int> i2(i1);
+
+		TEST_FAIL(i1.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 123);
+
+		i2.swap(nil);
+
+		TEST_FAIL(!nil.isNull());
+		TEST_FAIL(i2.isNull());
+		TEST_FAIL(!i1.isNull());
+		TEST_FAIL(nil.cast()->_i == 123);
+		TEST_FAIL(i1.cast()->_i == 123);
+	}
+
+	{
+		pfs::nullable<Int> i1(new Int(123));
+		pfs::nullable<Int> i2(new Int(456));
+
+		TEST_FAIL(i1.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 456);
+
+		i1.swap(i2);
+
+		TEST_FAIL(i1.cast()->_i == 456);
+		TEST_FAIL(i2.cast()->_i == 123);
+	}
+
+	{
+		pfs::nullable<Int> i1(new Int(123));
+		pfs::nullable<Int> i2(new Int(456));
+		pfs::nullable<Int> i3(i1);
+		pfs::nullable<Int> i4(i2);
+
+		TEST_FAIL(i1.cast()->_i == 123);
+		TEST_FAIL(i3.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 456);
+		TEST_FAIL(i4.cast()->_i == 456);
+
+		i1.swap(i2);
+
+		TEST_FAIL(i1.cast()->_i == 456);
+		TEST_FAIL(i3.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 123);
+		TEST_FAIL(i4.cast()->_i == 456);
+	}
+
+	{
+		pfs::nullable<Int> i1(new Int(123));
+		pfs::nullable<Int> i2(new Int(456));
+		pfs::nullable<Int> i3(i1);
+		pfs::nullable<Int> i4(i2);
+
+		TEST_FAIL(i1.cast()->_i == 123);
+		TEST_FAIL(i3.cast()->_i == 123);
+		TEST_FAIL(i2.cast()->_i == 456);
+		TEST_FAIL(i4.cast()->_i == 456);
+
+		i3.swap(i4);
+
+		TEST_FAIL(i1.cast()->_i == 123);
+		TEST_FAIL(i3.cast()->_i == 456);
+		TEST_FAIL(i2.cast()->_i == 456);
+		TEST_FAIL(i4.cast()->_i == 123);
+	}
+}
+
 int main (int argc, char *argv[])
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(17);
+	BEGIN_TESTS(77);
 
 	test1();
 	test2();
+	test3();
 
 	END_TESTS;
 }

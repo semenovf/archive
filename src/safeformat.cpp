@@ -28,11 +28,36 @@
  */
 
 #include <pfs/safeformat.hpp>
-#include <pfs/bits/strtolong.hpp>
+#include <pfs/bits/strtointegral.hpp>
+#include <pfs/atomic.hpp>
 
 //#include <iostream>
 
 namespace pfs {
+
+atomic_integer<int> g_safeformatCompat(safeformat::CompatGCC);
+
+template <typename T>
+struct __sf_default_traits : public __sf_base_traits
+{
+	T _val;
+	__sf_default_traits (const T & v) : __sf_base_traits(), _val(v) {}
+	virtual string asInteger (int /*base*/, bool /*uppercase*/, bool /*isUnsigned*/) const;
+	virtual string asFloat ( char /*f*/, int /*prec*/) const { return string(); }
+	virtual string asChar () const;
+	virtual string asString () const  { return string(); }
+};
+
+
+void safeformat::setGlobalCompat (Compat c) // [static]
+{
+	g_safeformatCompat.store(c);
+}
+
+int safeformat::globalCompat ()
+{
+	return g_safeformatCompat.load();
+}
 
 /*
  * Advances until '%' or end of string.
@@ -109,7 +134,7 @@ bool safeformat::parseFieldWidth ()
 	const_iterator end(_ctx.format.cend());
 
 	if (isDigitExcludeZero(char_type(*pos))) {
-		long_t width = strtolong<ucchar, const_iterator>(pos, end, 10, & pos);
+		integral_t width = strtointegral<ucchar, const_iterator>(pos, end, 10, PFS_INTEGRAL_MIN, PFS_UINTEGRAL_MAX, & pos);
 
 		PFS_ASSERT(!errno && width >= 0 && width <= PFS_INT_MAX); // TODO need warning only instead of assertion
 
@@ -131,7 +156,7 @@ bool safeformat::parsePrecision ()
 	const_iterator pos(_ctx.pos);
 	const_iterator end(_ctx.format.cend());
 	int sign = 1;
-	long_t prec = -1;
+	integral_t prec = -1;
 
 	if (pos < end && eq_latin1(char_type(*pos), '.'))
 		++pos;
@@ -142,7 +167,7 @@ bool safeformat::parsePrecision ()
 	}
 
 	if (isDigit(char_type(*pos))) {
-		prec = strtolong<ucchar, const_iterator>(pos, end, 10, & pos);
+		prec = strtointegral<ucchar, const_iterator>(pos, end, 10, PFS_INTEGRAL_MIN, PFS_UINTEGRAL_MAX, & pos);
 		PFS_ASSERT(!errno && prec >= 0 && prec <= PFS_INT_MAX); // TODO need warning only instead of assertion
 	}
 
@@ -274,14 +299,445 @@ void safeformat::doPadding (string & r)
 	}
 }
 
+safeformat & safeformat::operator () (char c)
+{
+	__sf_default_traits<char> t(c);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (signed char n)
+{
+	__sf_default_traits<signed char> t(n);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (unsigned char n)
+{
+	__sf_default_traits<unsigned char> t(n);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (short n)
+{
+	__sf_default_traits<short> t(n);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (unsigned short n)
+{
+	__sf_default_traits<unsigned short> t(n);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (int n)
+{
+	__sf_default_traits<int> t(n);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (unsigned int n)
+{
+	__sf_default_traits<unsigned int> t(n);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (long n)
+{
+	__sf_default_traits<long> t(n);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (unsigned long n)
+{
+	__sf_default_traits<unsigned long> t(n);
+	return arg(& t);
+}
+
+#ifdef PFS_HAVE_LONGLONG
+safeformat & safeformat::operator () (long long n)
+{
+	__sf_default_traits<long long> t(n);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (unsigned long long n)
+{
+	__sf_default_traits<unsigned long long> t(n);
+	return arg(& t);
+}
+#endif
+
+template <>
+string __sf_default_traits<char>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString((unsigned int)_val, base, uppercase)
+		    : string::toString(_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<signed char>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString((unsigned int)_val, base, uppercase)
+		    : string::toString(_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<unsigned char>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString(_val, base, uppercase)
+		    : string::toString((int)_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<short>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString((unsigned int)_val, base, uppercase)
+		    : string::toString(_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<unsigned short>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString(_val, base, uppercase)
+		    : string::toString((int)_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<int>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString((unsigned int)_val, base, uppercase)
+		    : string::toString(_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<unsigned int>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString(_val, base, uppercase)
+		    : string::toString((int)_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<long>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString((unsigned long)_val, base, uppercase)
+		    : string::toString((long)_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<unsigned long>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString(_val, base, uppercase)
+		    : string::toString((long)_val, base, uppercase);
+}
+
+#ifdef PFS_HAVE_LONGLONG
+template <>
+string __sf_default_traits<long long>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString((unsigned long long)_val, base, uppercase)
+		    : string::toString(_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<unsigned long long>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString(_val, base, uppercase)
+		    : string::toString((long long)_val, base, uppercase);
+}
+#endif // PFS_HAVE_LONGLONG
+
+template <>
+string __sf_default_traits<char>::asChar () const
+{
+	return string(1, _val);
+}
+
+template <>
+string __sf_default_traits<signed char>::asChar () const
+{
+	return string(1, ucchar(char(_val)));
+}
+
+template <>
+string __sf_default_traits<unsigned char>::asChar () const
+{
+	return string(1, ucchar(char(_val)));
+}
+
+template <>
+string __sf_default_traits<short>::asChar () const
+{
+	return string(1, ucchar(uint32_t(_val)));
+}
+
+template <>
+string __sf_default_traits<unsigned short>::asChar () const
+{
+	return string(1, ucchar(uint32_t(_val)));
+}
+
+template <>
+string __sf_default_traits<int>::asChar () const
+{
+	return string(1, ucchar(uint32_t(_val)));
+}
+
+template <>
+string __sf_default_traits<unsigned int>::asChar () const
+{
+	return string(1, ucchar(uint32_t(_val)));
+}
+
+template <>
+string __sf_default_traits<long>::asChar () const
+{
+	return string(1, ucchar(uint32_t(_val)));
+}
+
+template <>
+string __sf_default_traits<unsigned long>::asChar () const
+{
+	return string(1, ucchar(uint32_t(_val)));
+}
+
+#ifdef PFS_HAVE_LONGLONG
+template <>
+string __sf_default_traits<long long>::asChar () const
+{
+	return string(1, ucchar(uint32_t(_val)));
+}
+
+template <>
+string __sf_default_traits<unsigned long long>::asChar () const
+{
+	return string(1, ucchar(uint32_t(_val)));
+}
+#endif
+
+
+//string __sf_traits<char>::asFloat (char f, int prec) const
+//{
+//	return string::toString(float(_val), f, prec);
+//}
+
+//string __sf_traits<signed char>::asFloat (char f, int prec) const
+//{
+//	return string::toString(float(_val), f, prec);
+//}
+//
+//
+//string __sf_traits<signed char>::asString () const
+//{
+//	return string::toString(_val);
+//}
+//
+////--- unsigned char
+//
+//string __sf_traits<unsigned char>::asFloat (char f, int prec) const
+//{
+//	return string::toString(float(_val), f, prec);
+//}
+//
+//string __sf_traits<unsigned char>::asString () const
+//{
+//	return string::toString(_val);
+//}
+//
+//
+////--- short int
+//string __sf_traits<short>::asFloat (char f, int prec) const
+//{
+//	return string::toString(float(_val), f, prec);
+//}
+//
+//
+//string __sf_traits<short>::asString () const
+//{
+//	return string::toString(_val);
+//}
+//
+////--- unsigned short int
+//
+//string __sf_traits<unsigned short>::asFloat (char f, int prec) const
+//{
+//	return string::toString(float(_val), f, prec);
+//}
+//
+//
+//string __sf_traits<unsigned short>::asString () const
+//{
+//	return string::toString(_val);
+//}
+//
+//
+//
+//string __sf_traits<int>::asFloat (char f, int prec) const
+//{
+//	return string::toString(real_t(_val), f, prec);
+//}
+//
+
+//string __sf_traits<int>::asString () const
+//{
+//	return string::toString(_val);
+//}
+//
+////--- float
+//string __sf_traits<float>::asInteger (int base, bool uppercase, bool isUnsigned) const
+//{
+//	return isUnsigned
+//			? string::toString(uint_t(_val), base, uppercase)
+//		    : string::toString(int_t(_val), base, uppercase);
+//}
+//
+//string __sf_traits<float>::asFloat (char f, int prec) const
+//{
+//	return string::toString(_val, f, prec);
+//}
+//
+//string __sf_traits<float>::asChar () const
+//{
+//	return string(1, ucchar(uint32_t(_val)));
+//}
+//
+//string __sf_traits<float>::asString () const
+//{
+//	return string::toString(_val);
+//}
+//
+////--- double
+//string __sf_traits<double>::asInteger (int base, bool uppercase, bool isUnsigned) const
+//{
+//	return isUnsigned
+//			? string::toString(ulong_t(_val), base, uppercase)
+//		    : string::toString(long_t(_val), base, uppercase);
+//}
+//
+//string __sf_traits<double>::asFloat (char f, int prec) const
+//{
+//	return string::toString(_val, f, prec);
+//}
+//
+//string __sf_traits<double>::asChar () const
+//{
+//	return string(1, ucchar(uint32_t(_val)));
+//}
+//
+//string __sf_traits<double>::asString () const
+//{
+//	return string::toString(_val);
+//}
+//
+////--- long double
+//#ifdef PFS_HAVE_LONG_DOUBLE
+//string __sf_traits<long double>::asInteger (int base, bool uppercase, bool isUnsigned) const
+//{
+//	return isUnsigned
+//			? string::toString(ulong_t(_val), base, uppercase)
+//		    : string::toString(long_t(_val), base, uppercase);
+//}
+//
+//string __sf_traits<long double>::asFloat (char f, int prec) const
+//{
+//	return string::toString(_val, f, prec);
+//}
+//
+//string __sf_traits<long double>::asChar () const
+//{
+//	return string(1, ucchar(uint32_t(_val)));
+//}
+//
+//string __sf_traits<long double>::asString () const
+//{
+//	return string::toString(_val);
+//}
+//#endif
+//
+////--- string
+//string __sf_traits<string>::asInteger (int base, bool uppercase, bool isUnsigned) const
+//{
+//	string r;
+//	if (isUnsigned) {
+//		ulong_t n = _val
+//	#ifdef PFS_HAVE_LONGLONG
+//			.toULongLong(nullptr, 10);
+//	#else
+//			.toULong(nullptr, 10);
+//	#endif
+//		r = string::toString(n, base, uppercase);
+//	} else {
+//		long_t n = _val
+//	#ifdef PFS_HAVE_LONGLONG
+//			.toLongLong(nullptr, 10);
+//	#else
+//			.toLong(nullptr, 10);
+//	#endif
+//		r = string::toString(n, base, uppercase);
+//	}
+//	return r;
+//}
+//
+//string __sf_traits<string>::asFloat (char f, int prec) const
+//{
+//	real_t n = _val.toReal();
+//	return string::toString(n, f, prec);
+//}
+//
+//string __sf_traits<string>::asChar () const
+//{
+//	return string(1
+//		, _val.length() > 0
+//			? _val.charAt(0)
+//			: ucchar::ReplacementChar);
+//}
+//
+//string __sf_traits<string>::asString () const
+//{
+//	return _val;
+//}
+//
+////--- void *
+//string __sf_traits<void *>::asInteger (int base, bool uppercase, bool /*isUnsigned*/) const
+//{
+//	return string::toString(ptrdiff_t(_val), base, uppercase);
+//}
+//
+//string __sf_traits<void *>::asFloat (char f, int prec) const
+//{
+//	return string::toString(real_t(ptrdiff_t(_val)), f, prec);
+//}
+//
+//string __sf_traits<void *>::asChar () const
+//{
+//	return string(1, ucchar(ptrdiff_t(_val)));
+//}
+//
+//string __sf_traits<void *>::asString () const
+//{
+//	return string::toString(ptrdiff_t(_val));
+//}
 
 //
 // isUnsigned is applicable to string only
 //
-static string asInteger (const safeformat::variant_type & v, int base, bool uppercase, bool isUnsigned)
+/*static string asInteger (const safeformat::variant_type & v, int base, bool uppercase, bool isUnsigned)
 {
 	string r;
-	if (v.is<long_t>()) {
+	if (v.is<char>()) {
+		char n = v.get<char>();
+		r = string::toString((int)n, base, uppercase);
+	} else if (v.is<long_t>()) {
 		long_t n = v.get<long_t>();
 		r = string::toString(n, base, uppercase);
 	} else if (v.is<ulong_t>()) {
@@ -311,13 +767,15 @@ static string asInteger (const safeformat::variant_type & v, int base, bool uppe
 	}
 
 	return r;
-}
+}*/
 
-static string asFloat (const safeformat::variant_type & v, char f, int prec)
+/*static string asFloat (const safeformat::variant_type & v, char f, int prec)
 {
 	string r;
 
-	if (v.is<long_t>()) {
+	if (v.is<char>()) {
+		r = string::toString(real_t(v.get<char>()), f, prec);
+	} else if (v.is<long_t>()) {
 		r = string::toString(real_t(v.get<long_t>()), f, prec);
 	} else if (v.is<ulong_t>()) {
 		r = string::toString(real_t(v.get<ulong_t>()), f, prec);
@@ -331,13 +789,15 @@ static string asFloat (const safeformat::variant_type & v, char f, int prec)
 	}
 
 	return r;
-}
+}*/
 
-static string asChar (const safeformat::variant_type & v)
+/*static string asChar (const safeformat::variant_type & v)
 {
 	string r;
 
-	if (v.is<long_t>()) {
+	if (v.is<char>()) {
+		r = string(1, ucchar(int(v.get<char>())));
+	} if (v.is<long_t>()) {
 		r = string(1, ucchar(int(v.get<long_t>())));
 	} else if (v.is<ulong_t>()) {
 		r = string(1, ucchar(int(v.get<ulong_t>())));
@@ -353,13 +813,15 @@ static string asChar (const safeformat::variant_type & v)
 				: ucchar::ReplacementChar);
 	}
 	return r;
-}
+}*/
 
-static string asString (const safeformat::variant_type & v)
+/*static string asString (const safeformat::variant_type & v)
 {
 	string r;
 
-	if (v.is<long_t>()) {
+	if (v.is<char>()) {
+		r = string(1, ucchar(int(v.get<char>())));
+	} else if (v.is<long_t>()) {
 		r = string::toString(v.get<long_t>());
 	} else if (v.is<ulong_t>()) {
 		r = string::toString(v.get<ulong_t>());
@@ -372,10 +834,9 @@ static string asString (const safeformat::variant_type & v)
 	}
 
 	return r;
-}
+}*/
 
-
-safeformat & safeformat::operator () (const variant_type & v)
+safeformat & safeformat::arg (const __sf_base_traits * v)
 {
 	clearSpec();
 	advance();
@@ -389,35 +850,43 @@ safeformat & safeformat::operator () (const variant_type & v)
 	switch (char(spec_char)) {
 	case 'd':
 	case 'i':
-		r = asInteger(v, 10, false, false);
+		r = v->asInteger(10, false, false);
 		prependSign(r);
 		doPadding(r);
 		break;
 	case 'o':
-		r = asInteger(v, 8, false, true);
+		r = v->asInteger(8, false, true);
 		// prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
 		doPadding(r);
 		break;
 	case 'u':
-		r = asInteger(v, 10, false, true);
+		r = v->asInteger(10, false, true);
 		// prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
 		doPadding(r);
 		break;
 	case 'x':
-		r = asInteger(v, 16, false, true);
+		r = v->asInteger(16, false, true);
 		// prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
 		doPadding(r);
 		break;
 	case 'X':
-		r = asInteger(v, 16, true, true); // uppercase
+		r = v->asInteger(16, true, true); // uppercase
 		// prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
 		doPadding(r);
 		break;
 	case 'p':
-		r = asInteger(v, 16, false, true);
-		r.prepend("0x");
-		prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
-		doPadding(r);
+		if (_ctx.compat == CompatMSC) {
+			setZeroPadding();
+			setFieldWidth(sizeof(void *) * 2); // two hex chars per byte
+			setRightJustify();
+			r = v->asInteger(16, true, true);  // in upper case
+			doPadding(r);
+		} else { // default is CompatGCC
+			r = v->asInteger(16, false, true);
+			r.prepend("0x");
+			prependSign(r); // ISO specifies the '+' and ' ' only for signed conversions
+			doPadding(r);
+		}
 		break;
 	case 'e':
 	case 'f':
@@ -425,17 +894,17 @@ safeformat & safeformat::operator () (const variant_type & v)
 	case 'E':
 	case 'F':
 	case 'G':
-		r = asFloat(v, char(_ctx.spec.spec_char)
+		r = v->asFloat(char(_ctx.spec.spec_char)
 				, _ctx.spec.prec > 0 ? _ctx.spec.prec : 0);
 		prependSign(r);
 		doPadding(r);
 		break;
 	case 'c':
-		r = asChar(v);
+		r = v->asChar();
 		doPadding(r);
 		break;
 	case 's':
-		r = asString(v);
+		r = v->asString();
 		doPadding(r);
 		break;
 	default:

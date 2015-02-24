@@ -1,12 +1,12 @@
 /*
- * strtolong.hpp
+ * strtointegral.hpp
  *
  *  Created on: Jan 14, 2015
  *      Author: wladt
  */
 
-#ifndef __PFS_BITS_STRTOLONG_HPP__
-#define __PFS_BITS_STRTOLONG_HPP__
+#ifndef __PFS_BITS_STRTOINTEGRAL_HPP__
+#define __PFS_BITS_STRTOINTEGRAL_HPP__
 
 #include <pfs/string.h>
 #include <pfs/ctype.hpp>
@@ -22,7 +22,7 @@ inline char portable_cast_char (CharT ch)
 
 /**
  * @brief Converts the initial part of the string bitween
- *        @c pos and @c end (excluding) to an @c ulong_t value
+ *        @c pos and @c end (excluding) to an @c uintegral_t value
  *        according to the given base, which must be
  *        between 2 and 36 inclusive, or be the special value 0.
  *
@@ -41,11 +41,11 @@ inline char portable_cast_char (CharT ch)
  * @return
  */
 template <typename CharT, typename Iter>
-ulong_t strtoulong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
+uintegral_t strtouintegral (Iter begin, Iter end, int radix, uintegral_t max_value, Iter * endref = nullptr)
 {
 	typedef CharT char_type;
 	Iter pos = begin;
-	ulong_t r = ulong_t(0);
+	uintegral_t r = uintegral_t(0);
 	int sign = 1;
 
 	errno = 0;
@@ -55,7 +55,7 @@ ulong_t strtoulong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 			*endref = pos;
 		}
 		//errno = ERANGE;
-		return ulong_t(0);
+		return uintegral_t(0);
 	}
 
 	if (pos < end) {
@@ -107,9 +107,9 @@ ulong_t strtoulong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 			if (digit >= radix)
 				break;
 
-			if (r > (PFS_ULONG_MAX - digit)/radix || r * radix > PFS_ULONG_MAX - digit) {
+			if (r > (max_value - digit)/radix || r * radix > max_value - digit) {
 				errno = ERANGE;
-				r = PFS_ULONG_MAX;
+				r = pfs::max_type<uintegral_t>();
 			} else {
 				r = r * radix + digit;
 			}
@@ -137,14 +137,14 @@ ulong_t strtoulong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 
 
 /**
- * @brief The strtolong() function converts the initial part of the string bitween
- *        @c pos and @c end (excluding) a @c long_t value according to the given
+ * @brief The strtointegral() function converts the initial part of the string bitween
+ *        @c pos and @c end (excluding) a @c integral_t value according to the given
  *        @c base, which must be between 2 and 36 inclusive, or be the special value 0.
  *
- * @details The strtolong() function returns the result of the conversion,
+ * @details The strtointegral() function returns the result of the conversion,
  *          unless the value would underflow or overflow.
- *          If an underflow occurs, strtolong() returns @c min.
- *          If an overflow occurs, strtolong() returns @c max.
+ *          If an underflow occurs, strtointegral() returns @c min.
+ *          If an overflow occurs, strtointegral() returns @c max.
  *          In both cases, @c errno is set to ERANGE.
  *
  * @param pos
@@ -156,12 +156,12 @@ ulong_t strtoulong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
  * @return
  */
 template <typename CharT, typename Iter>
-long_t strtolong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
+integral_t strtointegral (Iter begin, Iter end, int radix, integral_t min_value, uintegral_t max_value, Iter * endref = nullptr)
 {
 	typedef CharT char_type;
 
 	Iter pos = begin;
-	ulong_t r = 0;
+	uintegral_t r = 0;
 	Iter endr(begin); // fixing MSVC error C2512: 'pfs::mbcs_string_ptr<_CodeUnitT,Holder>::mbcs_string_ptr' : no appropriate default constructor available
 
 	// Skip whitespaces
@@ -169,7 +169,7 @@ long_t strtolong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 		++pos;
 	}
 
-	r = strtoulong<CharT, Iter>(pos, end, radix, & endr);
+	r = strtouintegral<CharT, Iter>(pos, end, radix, max_value, & endr);
 
 	if (endref) {
 		if (pos == endr) {
@@ -180,39 +180,44 @@ long_t strtolong (Iter begin, Iter end, int radix, Iter * endref = nullptr)
 	}
 
 	if (*pos == char_type('-')) {
-		if (long_t(r) > 0) {
+		if (integral_t(r) > 0) {
 			errno = ERANGE;
-			return PFS_LONG_MIN;
+			return pfs::min_type<integral_t>();
 		}
 	} else {
-		if (long_t(r) < 0) {
+		if (integral_t(r) < 0) {
 			errno = ERANGE;
-			return PFS_LONG_MAX;
+			return pfs::max_type<integral_t>();
 		}
 	}
 
-	return long_t(r);
+	if (integral_t(r) < min_value) {
+		errno = ERANGE;
+		return pfs::min_type<integral_t>();
+	}
+
+	return integral_t(r);
 }
 
 
 template <typename CharT, typename IterT>
-long_t strtolong_helper (IterT begin, IterT end, bool * ok, int base, long_t min, long_t max)
+integral_t strtointegral_helper (IterT begin, IterT end, bool * ok, int base, integral_t min_value, uintegral_t max_value)
 {
 	IterT endptr(begin);
 
-	long_t r = pfs::strtolong<CharT, IterT>(begin, end, base, & endptr);
+	integral_t r = pfs::strtointegral<CharT, IterT>(begin, end, base, min_value, max_value, & endptr);
 
 	if (ok)
 		*ok = false;
 
-    if ((errno == ERANGE && (r == PFS_LONG_MAX || r == PFS_LONG_MIN))
+    if ((errno == ERANGE && (r == pfs::max_type<integral_t>() || r == pfs::min_type<integral_t>()))
             || (errno != 0 && r == 0)) {
     	r = 0; // error
-    } else if (endptr == begin) {
+    } /*else if (endptr == begin) {
     	r = 0; // error
-    } else if (r < min || r > max) {
+    } else if (r < min_value || r > max_value) {
     	r = 0; // error
-    } else {
+    } */else {
     	if (ok)
     		*ok = true;
     }
@@ -221,23 +226,23 @@ long_t strtolong_helper (IterT begin, IterT end, bool * ok, int base, long_t min
 }
 
 template <typename CharT, typename IterT>
-ulong_t strtoulong_helper (IterT begin, IterT end, bool * ok, int base, ulong_t max)
+uintegral_t strtouintegral_helper (IterT begin, IterT end, bool * ok, int base, uintegral_t max_value)
 {
 	IterT endptr(begin);
 
-	ulong_t r = pfs::strtoulong<CharT, IterT>(begin, end, base, & endptr);
+	uintegral_t r = pfs::strtouintegral<CharT, IterT>(begin, end, base, max_value, & endptr);
 
 	if (ok)
 		*ok = false;
 
-    if ((errno == ERANGE && (r == PFS_ULONG_MAX))
+    if ((errno == ERANGE && (r == pfs::max_type<uintegral_t>()))
             || (errno != 0 && r == 0)) {
     	r = 0; // error
-    } else if (endptr == begin) {
+    } /*else if (endptr == begin) {
     	r = 0; // error
-    } else if (r > max) {
+    } else if (r > max_value) {
     	r = 0; // error
-    } else {
+    }*/ else {
     	if (ok)
     		*ok = true;
     }
@@ -248,4 +253,4 @@ ulong_t strtoulong_helper (IterT begin, IterT end, bool * ok, int base, ulong_t 
 
 } // pfs
 
-#endif /* __PFS_BITS_STRTOLONG_HPP__ */
+#endif /* __PFS_BITS_STRTOINTEGRAL_HPP__ */

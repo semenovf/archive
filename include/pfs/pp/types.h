@@ -63,11 +63,15 @@ typedef uint16_t           ushort_t;
 typedef int32_t            int_t;
 typedef uint32_t           uint_t;
 #ifdef HAVE_INT64
-	typedef int64_t        long_t;
-	typedef uint64_t       ulong_t;
+//	typedef int64_t        long_t;
+//	typedef uint64_t       ulong_t;
+	typedef int64_t        integral_t;
+	typedef uint64_t       uintegral_t;
 #else
-	typedef long           long_t;
-	typedef unsigned long  ulong_t;
+//	typedef long           long_t;
+//	typedef unsigned long  ulong_t;
+	typedef long           integral_t;
+	typedef unsigned long  uintegral_t;
 #endif
 
 #ifdef PFS_HAVE_LONG_DOUBLE

@@ -96,7 +96,7 @@ void test_valid (void)
 	 int year;
 	 int month;
 	 int day;
-	 long_t jd = long_t(2456575);
+	 integral_t jd = integral_t(2456575);
 	 pfs::date::fromJulianDay(jd, & year, & month, & day);
 
 	 std::stringstream ss;

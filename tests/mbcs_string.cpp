@@ -497,10 +497,10 @@ void test_to_string ()
 	TEST_OK(utfstring::toString(PFS_INT_MIN) == utfstring("-2147483648"));
 	TEST_OK(utfstring::toString(PFS_ULONG_LITERAL(4294967295)) == utfstring("4294967295"));
 
-#ifdef HAVE_INT64
-	TEST_OK(utfstring::toString(PFS_LONG_LITERAL(9223372036854775807)) == utfstring("9223372036854775807"));
-	TEST_OK(utfstring::toString(PFS_INT64_MIN) == utfstring("-9223372036854775808"));
-	TEST_OK(utfstring::toString(PFS_ULONG_LITERAL(18446744073709551615)) == utfstring("18446744073709551615"));
+#ifdef HAVE_LONGLONG
+	TEST_OK(utfstring::toString(PFS_LLONG_MAX) == utfstring("9223372036854775807"));
+	TEST_OK(utfstring::toString(PFS_LLONG_MIN) == utfstring("-9223372036854775808"));
+	TEST_OK(utfstring::toString(PFS_ULLONG_MAX) == utfstring("18446744073709551615"));
 #endif
 
 	// Note: single-precision floating-point numbers have a 24-bit mantissa, which is approximately 7.2 decimal digits.
@@ -535,9 +535,9 @@ void test_convert_to_number ()
 
 #ifdef PFS_HAVE_INT64
 #	ifdef PFS_HAVE_LONGLONG
-	TEST_OK(utfstring("18446744073709551615").toULongLong(& ok) == PFS_ULONG_MAX && ok);
+	TEST_OK(utfstring("18446744073709551615").toULongLong(& ok) == PFS_ULLONG_MAX && ok);
 #	else
-	TEST_OK(utfstring("18446744073709551615").toULong(& ok) == PFS_ULONG_MAX && ok);
+	TEST_OK(utfstring("18446744073709551615").toULong(& ok) == PFS_ULLONG_MAX && ok);
 #	endif
 #else
 	TEST_OK(utfstring("4294967295").toULong(& ok) == PFS_ULONG_MAX && ok);
@@ -545,8 +545,8 @@ void test_convert_to_number ()
 
 #ifdef PFS_HAVE_INT64
 #	ifdef PFS_HAVE_LONGLONG
-	TEST_OK(utfstring("9223372036854775807").toLongLong(& ok) == PFS_LONG_MAX && ok);
-	TEST_OK(utfstring("-9223372036854775808").toLongLong(& ok) == PFS_LONG_MIN && ok);
+	TEST_OK(utfstring("9223372036854775807").toLongLong(& ok) == PFS_LLONG_MAX && ok);
+	TEST_OK(utfstring("-9223372036854775808").toLongLong(& ok) == PFS_LLONG_MIN && ok);
 #	else
 	TEST_OK(utfstring("9223372036854775807").toLong(& ok) == PFS_LONG_MAX && ok);
 	TEST_OK(utfstring("-9223372036854775808").toLong(& ok) == PFS_LONG_MIN && ok);

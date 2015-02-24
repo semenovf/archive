@@ -12,7 +12,7 @@ int main (int argc, char *argv[])
 
 	BEGIN_TESTS(ntests);
 
-	typedef pfs::variant<real_t, long_t, pfs::byte_string, pfs::utf8string, pfs::ucchar> variant_t;
+	typedef pfs::variant<real_t, integral_t, pfs::byte_string, pfs::utf8string, pfs::ucchar> variant_t;
 
 	variant_t v1(int(123));
 	variant_t v2(3.14159f);

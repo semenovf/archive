@@ -60,19 +60,21 @@ public:
 	bool isUnique () const { PFS_ASSERT(_holder); return _holder->_ref.load() == 1; }
 
 	template <typename T>
-	void swap (pimpl & o)
-	{
-		PFS_ASSERT(_holder);
-		PFS_ASSERT(o._holder);
-		pfs_swap(static_cast<impl_cast_holder<T> *>(_holder)->_d
-				, static_cast<impl_cast_holder<T> *>(o._holder)->_d);
-	}
+	void swap (pimpl & o);
+//	{
+//		PFS_ASSERT(_holder);
+//		PFS_ASSERT(o._holder);
+//		pfs_swap(static_cast<impl_cast_holder<T> *>(_holder)->_d
+//				, static_cast<impl_cast_holder<T> *>(o._holder)->_d);
+//	}
 
 protected:
 	void deref ()
 	{
-		if (_holder && !_holder->_ref.deref())
+		if (_holder && !_holder->_ref.deref()) {
 			delete _holder;
+			_holder = nullptr;
+		}
 	}
 
 protected:
@@ -100,10 +102,13 @@ protected:
 		impl_holder (T * p) : impl_cast_holder<T>(p) {}
 		~impl_holder () { _helper.destroy(impl_cast_holder<T>::_d); }
 
+		//
+		// used in detach()
+		//
 		impl_base * clone () const
 		{
 			return new impl_holder<T, Helper>(_helper.clone(impl_cast_holder<T>::_d));
-		} // used in detach()
+		}
 	};
 
 public:
@@ -133,6 +138,31 @@ public:
 };
 
 template <typename T>
+void pimpl::swap (pimpl & o)
+{
+	if (!this->isNull())
+		this->detach();
+
+	if (!o.isNull())
+		o.detach();
+
+	pfs_swap(_holder, o._holder);
+
+//	if (this->isNull() && o.isNull()) {
+//		;
+//	} else if (this->isNull() && !o.isNull()) {
+//		o.detach();
+//		pfs_swap(_holder, o._holder);
+//	} else if (!this->isNull() && o.isNull()) {
+//		this->detach();
+//		pfs_swap(_holder, o._holder);
+//	} else {
+//		pfs_swap(static_cast<impl_cast_holder<T> *>(_holder)->_d
+//				, static_cast<impl_cast_holder<T> *>(o._holder)->_d);
+//	}
+}
+
+template <typename T>
 struct default_allocator
 {
 	T * operator () () const { return new T; }
@@ -151,7 +181,7 @@ protected:
 #ifdef __PFS_OLD_IMPL__
 	init_func _init;
 #else
-	bool _initialized;
+	//bool _initialized;
 #endif
 
 #ifdef __PFS_OLD_IMPL__
@@ -167,8 +197,9 @@ protected:
 	void init ()
 	{
 		PFS_ASSERT(_d.isNull());
+		//if (_d.isNull())
 		_d = pimpl(allocator()());
-		_initialized = true;
+		//_initialized = true;
 	}
 #endif
 
@@ -181,9 +212,9 @@ public:
 	nullable (T * p) : _d(p), _init(& nullable::init) { }
 	nullable (const nullable & other) : _d(other._d), _init(other._init) {}
 #else
-	nullable () : _d(), _initialized(false) {}
-	nullable (T * p) : _d(p), _initialized(p ? true : false) { }
-	nullable (const nullable & other) : _d(other._d), _initialized(other._initialized) {}
+	nullable () : _d()/*, _initialized(false)*/ {}
+	nullable (T * p) : _d(p)/*, _initialized(p ? true : false)*/ { }
+	nullable (const nullable & other) : _d(other._d)/*, _initialized(other._initialized)*/ {}
 #endif
 
 	bool isNull () const  { return _d.isNull(); }
@@ -191,10 +222,9 @@ public:
 
 	void swap (nullable & o)
 	{
-		PFS_ASSERT(_d.isNull() || o._d.isNull());
 		_d.swap<T>(o._d);
-//		if (_d.isNull())
-//			_initialized = false;
+//		_initialized = _d.isNull() ? false : true;
+//		o._initialized = o._d.isNull() ? false : true;
 	}
 
 	/// @see http://www.possibility.com/Cpp/const.html
@@ -210,20 +240,34 @@ public:
 	const T * cast () const
 	{
 		nullable * self = const_cast<nullable *>(this);
-		if (!self->_initialized)
+		//if (!self->_initialized)
+		if (_d.isNull())
 			self->init();
 		return _d.cast<T>();
 	}
 
 	T * cast ()
 	{
-		if (!_initialized)
+		//if (!_initialized)
+		if (_d.isNull())
 			init();
 		return _d.cast<T>();
 	}
 #endif
 };
 
+//
+//template <typename T, typename Alloc>
+//void nullable<T,Alloc>::swap (nullable & o)
+//{
+//	if (_d.isNull() && o._d.isNull()) {
+//		;
+//	} else if(_d.isNull() && !o._d.isNull()) {
+//		o.detach();
+//		pfs_swap(_d, o._d);
+//		this->_initialized = true;
+//	}
+//}
 
 // TODO [[deprecated]], use 'nullable' instead (only names are different)
 //

@@ -79,8 +79,6 @@ public:
 	typedef map_pointer<Key, T, Compare, Alloc, const self_class> const_pointer;
 	typedef pfs::reference<self_class>             reference;
 	typedef pfs::reference<const self_class>       const_reference;
-//	typedef normal_iterator<self_class>            iterator;
-//	typedef normal_iterator<const self_class>      const_iterator;
     typedef std::reverse_iterator<iterator>		   reverse_iterator;
     typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
 

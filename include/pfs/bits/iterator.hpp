@@ -289,6 +289,7 @@ public:
 	}
 };
 
+
 template <typename Holder1, typename Holder2>
 inline bool operator < (const iterator<Holder1> & i1, const iterator<Holder2> & i2)
 {

@@ -12,18 +12,45 @@
 #include <pfs/ucchar.hpp>
 #include <pfs/string.hpp>
 #include <pfs/byte_string.hpp>
-#include <pfs/variant.hpp>
 
 //#define _Fr(s) pfs::safeformat(_u8(s))
 
 namespace pfs {
 
+struct __sf_base_traits
+{
+	virtual string asInteger (int /*base*/, bool /*uppercase*/, bool /*isUnsigned*/) const = 0;
+	virtual string asFloat ( char f, int prec) const = 0;
+	virtual string asChar () const = 0;
+	virtual string asString () const = 0;
+	virtual ~__sf_base_traits () {}
+};
+
+template <typename T>
+struct __sf_traits : public __sf_base_traits
+{
+	T _val;
+	__sf_traits (const T & v) : __sf_base_traits(), _val(v) {}
+	virtual string asInteger (int /*base*/, bool /*uppercase*/, bool /*isUnsigned*/) const { return string(); }
+	virtual string asFloat ( char /*f*/, int /*prec*/) const { return string(); }
+	virtual string asChar () const { return string(); }
+	virtual string asString () const { return string(); }
+};
+
+//template <>
+//string __sf_traits<char>::asInteger (int base, bool uppercase, bool isUnsigned) const
+//{
+//	return isUnsigned
+//			? string::toString((unsigned int)_val, base, uppercase)
+//		    : string::toString(_val, base, uppercase);
+//}
+
+
 class DLL_API safeformat
 {
 public:
-	typedef /*typename */string::const_iterator const_iterator;
-	typedef /*typename */string::char_type char_type;
-	typedef pfs::variant<real_t, long_t, string, ucchar> variant_type;
+	typedef string::const_iterator const_iterator;
+	typedef string::char_type char_type;
 
 public:
 	enum Flag {
@@ -55,6 +82,16 @@ public:
         								// result as they would otherwise be.  For other conversions, the result is undefined.
 	};
 
+	/*       Value     CompatGCC         CompatMSC
+	 * 	%p   123ABC     0x123abc           00123ABC
+	 *  %+o	  -2875        -5473        37777772305
+	 */
+	enum Compat {
+		  CompatGCC = 0
+		, CompatMSC
+		, CompatMSVC = CompatMSC
+	};
+
 	struct conversion_spec
 	{
 		int    flags;
@@ -69,6 +106,7 @@ public:
 		const_iterator   pos; // current position in format string
 		string           result;
 		conversion_spec  spec;
+		Compat           compat;
 	};
 
 private:
@@ -105,6 +143,7 @@ private:
 
 	void setZeroPadding ()         { _ctx.spec.flags |= ZeroPadding; }
 	void setLeftJustify ()         { _ctx.spec.flags |= LeftJustify; }
+	void setRightJustify ()        { _ctx.spec.flags &= ~LeftJustify; }
 	void setSpaceBeforePositive () { _ctx.spec.flags |= SpaceBeforePositive; }
 	void setNeedSign ()            { _ctx.spec.flags |= NeedSign; }
 	void setAlternate ()           { _ctx.spec.flags |= Alternate; }
@@ -115,7 +154,8 @@ private:
 	void prependSign (string & r);
 	void doPadding (string & r);
 
-	safeformat & operator () (const variant_type & v);
+	//safeformat & operator () (const variant_type & v);
+	safeformat & arg (const __sf_base_traits * v);
 
 public:
 	safeformat () {}
@@ -124,6 +164,7 @@ public:
 	{
 		_ctx.format = format;
 		_ctx.pos = _ctx.format.cbegin();
+		setCompat((Compat)globalCompat());
 		clearSpec();
 	}
 
@@ -131,35 +172,91 @@ public:
 	{
 		_ctx.format = string::fromLatin1(latin1Format);
 		_ctx.pos = _ctx.format.cbegin();
+		setCompat((Compat)globalCompat());
 		clearSpec();
 	}
 
-	safeformat & operator () (char c)           { return operator () (variant_type(long_t(c))); }
-	safeformat & operator () (unsigned char c)  { return operator () (variant_type(ulong_t(c))); }
-	safeformat & operator () (short n)          { return operator () (variant_type(long_t(n))); }
-	safeformat & operator () (unsigned short n) { return operator () (variant_type(ulong_t(n))); }
-	safeformat & operator () (int n)            { return operator () (variant_type(long_t(n))); }
-	safeformat & operator () (unsigned int n)   { return operator () (variant_type(ulong_t(n))); }
-	safeformat & operator () (long n)           { return operator () (variant_type(long_t(n))); }
-	safeformat & operator () (unsigned long n)  { return operator () (variant_type(ulong_t(n))); }
+	/**
+	 * @brief Set compatibility flag.
+	 *
+	 * @param c Compatibility flag to set.
+	 * @return Instance itself.
+	 */
+	safeformat & setCompat (Compat c) { _ctx.compat = c; return *this; }
+
+	/**
+	 * @brief Set compatibility flag globally
+	 *
+	 * @param c Compatibility flag to set.
+	 */
+	static void setGlobalCompat (Compat c);
+
+	/**
+	 * @brief Set global compatibility flag.
+	 *
+	 * @return Compatibility flag.
+	 */
+	static int globalCompat ();
+
+	template <typename T>
+	safeformat & operator () (const T & v)
+	{
+		__sf_traits<T> t(v);
+		return arg(& t);
+	}
+
+	safeformat & operator () (char c);
+	safeformat & operator () (signed char n);
+	safeformat & operator () (unsigned char n);
+	safeformat & operator () (short n);
+	safeformat & operator () (unsigned short n);
+	safeformat & operator () (int n);
+	safeformat & operator () (unsigned int n);
+	safeformat & operator () (long n);
+	safeformat & operator () (unsigned long n);
 
 #ifdef PFS_HAVE_LONGLONG
-	safeformat & operator () (long long n)      { return operator () (variant_type(long_t(n))); }
-	safeformat & operator () (unsigned long long n) { return operator () (variant_type(ulong_t(n))); }
+	safeformat & operator () (long long n);
+	safeformat & operator () (unsigned long long n);
 #endif
 
-	safeformat & operator () (float n)          { return operator () (variant_type(real_t(n))); }
-	safeformat & operator () (double n)         { return operator () (variant_type(real_t(n))); }
+//	safeformat & operator () (float n)
+//	{
+//		__sf_traits<float> t(n);
+//		return arg(& t);
+//	}
+//
+//	safeformat & operator () (double n)
+//	{
+//		__sf_traits<double> t(n);
+//		return arg(& t);
+//	}
+//
+//#ifdef PFS_HAVE_LONG_DOUBLE
+//	safeformat & operator () (long double n)
+//	{
+//		__sf_traits<long double> t(n);
+//		return arg(& t);
+//	}
+//#endif
+//
+////	safeformat & operator () (ucchar ch)        { return operator () (variant_type(ch)); }
 
-#ifdef PFS_HAVE_LONG_DOUBLE
-	safeformat & operator () (long double n)    { return operator () (variant_type(real_t(n))); }
-#endif
-
-	safeformat & operator () (ucchar ch)        { return operator () (variant_type(ch)); }
-	safeformat & operator () (const char * s)   { return operator () (variant_type(string(s))); }
-	safeformat & operator () (const pfs::string & s) { return operator () (variant_type(s)); }
-	safeformat & operator () (const pfs::byte_string & s) { return operator () (variant_type(string::fromUtf8(s))); }
-	safeformat & operator () (void * p)         { return operator () (variant_type(ulong_t(p))); }
+//	safeformat & operator () (const char * s)
+//	{
+//		string ss(s);
+//		__sf_traits<string> t(ss);
+//		return arg(& t);
+//	}
+////	struct pfs::__sf_traits<class pfs::mbcs_string<char> >  t(class pfs::mbcs_string<char>)
+//
+////	safeformat & operator () (const pfs::string & s) { return operator () (variant_type(s)); }
+////	safeformat & operator () (const pfs::byte_string & s) { return operator () (variant_type(string::fromUtf8(s))); }
+//	safeformat & operator () (void * p)
+//	{
+//		__sf_traits<void *> t(p);
+//		return arg(& t);
+//	}
 
 	string & operator () () { return _ctx.result; }
 

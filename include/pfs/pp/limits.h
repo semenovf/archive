@@ -38,26 +38,38 @@
 #	define PFS_UINT64_MAX PFS_ULONG_LITERAL(18446744073709551615)
 #endif
 
-#define PFS_BYTE_MAX   PFS_UINT8_MAX
-#define PFS_SBYTE_MAX  PFS_INT8_MAX
-#define PFS_SBYTE_MIN  PFS_INT8_MIN
-#define PFS_CHAR_MAX   PFS_INT8_MAX
-#define PFS_CHAR_MIN   PFS_INT8_MIN
-#define PFS_USHORT_MAX PFS_UINT16_MAX
-#define PFS_SHORT_MAX  PFS_INT16_MAX
-#define PFS_SHORT_MIN  PFS_INT16_MIN
-#define PFS_UINT_MAX   PFS_UINT32_MAX
-#define PFS_INT_MAX    PFS_INT32_MAX
-#define PFS_INT_MIN    PFS_INT32_MIN
+#define PFS_BYTE_MAX   UCHAR_MAX
+#define PFS_SBYTE_MAX  SCHAR_MAX
+#define PFS_SBYTE_MIN  SCHAR_MIN
+#define PFS_SCHAR_MAX  SCHAR_MAX
+#define PFS_SCHAR_MIN  SCHAR_MIN
+#define PFS_UCHAR_MAX  UCHAR_MAX
+#define PFS_CHAR_MAX   CHAR_MAX
+#define PFS_CHAR_MIN   CHAR_MIN
+#define PFS_USHORT_MAX USHRT_MAX
+#define PFS_SHORT_MAX  SHRT_MAX
+#define PFS_SHORT_MIN  SHRT_MIN
+#define PFS_UINT_MAX   UINT_MAX
+#define PFS_INT_MAX    INT_MAX
+#define PFS_INT_MIN    INT_MIN
+#define PFS_ULONG_MAX  ULONG_MAX
+#define PFS_LONG_MAX   LONG_MAX
+#define PFS_LONG_MIN   LONG_MIN
 
-#ifdef PFS_HAVE_INT64
-#	define PFS_ULONG_MAX  PFS_UINT64_MAX
-#	define PFS_LONG_MAX   PFS_INT64_MAX
-#	define PFS_LONG_MIN   PFS_INT64_MIN
+#ifdef PFS_HAVE_LONGLONG
+#	define PFS_ULLONG_MAX  ULLONG_MAX
+#	define PFS_LLONG_MAX   LLONG_MAX
+#	define PFS_LLONG_MIN   LLONG_MIN
+#endif
+
+#if defined(PFS_HAVE_INT64) && defined(PFS_HAVE_LONGLONG)
+#	define PFS_UINTEGRAL_MAX PFS_ULLONG_MAX
+#	define PFS_INTEGRAL_MAX  PFS_LLONG_MAX
+#	define PFS_INTEGRAL_MIN  PFS_LLONG_MIN
 #else
-#	define PFS_ULONG_MAX  PFS_UINT32_MAX
-#	define PFS_LONG_MAX   PFS_INT32_MAX
-#	define PFS_LONG_MIN   PFS_INT32_MIN
+#	define PFS_UINTEGRAL_MAX PFS_ULONG_MAX
+#	define PFS_INTEGRAL_MAX  PFS_LONG_MAX
+#	define PFS_INTEGRAL_MIN  PFS_LONG_MIN
 #endif
 
 #define PFS_FLOAT_MIN  FLT_MIN /* 1.175494351e-38F */
@@ -153,15 +165,15 @@
 #	endif
 
 #	ifdef PFS_HAVE_INT64
-#		define PFS_CHECK_SIZEOF_LONG              \
-			PFS_CHECK_SIZEOF_TYPE(int64_t, 8);    \
-			PFS_CHECK_SIZEOF_TYPE(uint64_t, 8);   \
-			PFS_CHECK_SIZEOF_TYPE(long_t, 8);     \
-			PFS_CHECK_SIZEOF_TYPE(ulong_t, 8);
+#		define PFS_CHECK_SIZEOF_LONG               \
+			PFS_CHECK_SIZEOF_TYPE(int64_t, 8);     \
+			PFS_CHECK_SIZEOF_TYPE(uint64_t, 8);    \
+			PFS_CHECK_SIZEOF_TYPE(integral_t, 8);  \
+			PFS_CHECK_SIZEOF_TYPE(uintegral_t, 8);
 #	else
-#		define PFS_CHECK_SIZEOF_LONG              \
-			PFS_CHECK_SIZEOF_TYPE(long_t, 4);     \
-			PFS_CHECK_SIZEOF_TYPE(ulong_t, 4);
+#		define PFS_CHECK_SIZEOF_LONG               \
+			PFS_CHECK_SIZEOF_TYPE(integral_t, 4);  \
+			PFS_CHECK_SIZEOF_TYPE(uintegral_t, 4);
 #	endif
 
 #	define PFS_CHECK_SIZEOF_TYPES                 \
@@ -190,35 +202,45 @@ namespace pfs {
 template <typename _number_type> _number_type max_type ();
 template <typename _number_type> _number_type min_type ();
 
-template<> inline int8_t   max_type<int8_t>   () { return int8_t(PFS_INT8_MAX); }
-template<> inline uint8_t  max_type<uint8_t>  () { return uint8_t(PFS_UINT8_MAX); }
-template<> inline int16_t  max_type<int16_t>  () { return int16_t(PFS_INT16_MAX); }
-template<> inline uint16_t max_type<uint16_t> () { return uint16_t(PFS_UINT16_MAX); }
-template<> inline int32_t  max_type<int32_t>  () { return int32_t(PFS_INT32_MAX); }
-template<> inline uint32_t max_type<uint32_t> () { return uint32_t(PFS_UINT32_MAX); }
-#ifdef PFS_HAVE_INT64
-template<> inline int64_t  max_type<int64_t>  () { return int64_t(PFS_INT64_MAX); }
-template<> inline uint64_t max_type<uint64_t> () { return uint64_t(PFS_UINT64_MAX); }
+template<> inline char           max_type<char>           () { return (char)PFS_CHAR_MAX; }
+template<> inline signed char    max_type<signed char>    () { return (signed char)PFS_SCHAR_MAX; }
+template<> inline unsigned char  max_type<unsigned char>  () { return (unsigned char)PFS_UCHAR_MAX; }
+template<> inline short          max_type<short>          () { return (short)PFS_SHORT_MAX; }
+template<> inline unsigned short max_type<unsigned short> () { return (unsigned short)PFS_USHORT_MAX; }
+template<> inline int            max_type<int>            () { return (int)PFS_INT_MAX; }
+template<> inline unsigned int   max_type<unsigned int>   () { return (unsigned int)PFS_UINT_MAX; }
+template<> inline long           max_type<long>           () { return (long)PFS_LONG_MAX; }
+template<> inline unsigned long  max_type<unsigned long>  () { return (unsigned long)PFS_ULONG_MAX; }
+
+#ifdef PFS_HAVE_LONGLONG
+template<> inline long long  max_type<long long>  () { return (long long)PFS_LLONG_MAX; }
+template<> inline unsigned long long max_type<unsigned long long> () { return (unsigned long long)PFS_ULLONG_MAX; }
 #endif
-template<> inline float    max_type<float>    () { return float(PFS_FLOAT_MAX); }
-template<> inline double   max_type<double>   () { return double(PFS_DOUBLE_MAX); }
+
+template<> inline float    max_type<float>    () { return (float)PFS_FLOAT_MAX; }
+template<> inline double   max_type<double>   () { return (double)PFS_DOUBLE_MAX; }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
 template<> inline long double   max_type<long double>   () { return PFS_LONG_DOUBLE_MAX; }
 #endif
 
-template<> inline int8_t   min_type<int8_t>   () { return int8_t(PFS_INT8_MIN); }
-template<> inline uint8_t  min_type<uint8_t>  () { return uint8_t(0); }
-template<> inline int16_t  min_type<int16_t>  () { return int16_t(PFS_INT16_MIN); }
-template<> inline uint16_t min_type<uint16_t> () { return uint16_t(0); }
-template<> inline int32_t  min_type<int32_t>  () { return int32_t(PFS_INT32_MIN); }
-template<> inline uint32_t min_type<uint32_t> () { return uint32_t(0); }
-#ifdef PFS_HAVE_INT64
-template<> inline int64_t  min_type<int64_t>  () { return int64_t(PFS_INT64_MIN); }
-template<> inline uint64_t min_type<uint64_t> () { return uint64_t(0); }
+template<> inline char           min_type<char>           () { return (char)PFS_CHAR_MIN; }
+template<> inline signed char    min_type<signed char>    () { return (signed char)PFS_SCHAR_MIN; }
+template<> inline unsigned char  min_type<unsigned char>  () { return (unsigned char)0; }
+template<> inline short          min_type<short>          () { return (short)PFS_SHORT_MIN; }
+template<> inline unsigned short min_type<unsigned short> () { return (unsigned short)0; }
+template<> inline int            min_type<int>            () { return (int)PFS_INT_MIN; }
+template<> inline unsigned int   min_type<unsigned int>   () { return (unsigned int)0; }
+template<> inline long           min_type<long>           () { return (long)PFS_LONG_MIN; }
+template<> inline unsigned long  min_type<unsigned long>  () { return (unsigned long)0; }
+
+#ifdef PFS_HAVE_LONGLONG
+template<> inline long long  min_type<long long>  () { return (long long)PFS_LLONG_MIN; }
+template<> inline unsigned long long min_type<unsigned long long> () { return (unsigned long long)0; }
 #endif
-template<> inline float    min_type<float>    () { return float(PFS_FLOAT_MIN); }
-template<> inline double   min_type<double>   () { return double(PFS_DOUBLE_MIN); }
+
+template<> inline float    min_type<float>    () { return (float)PFS_FLOAT_MIN; }
+template<> inline double   min_type<double>   () { return (double)PFS_DOUBLE_MIN; }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
 template<> inline long double   min_type<long double>   () { return PFS_LONG_DOUBLE_MIN; }

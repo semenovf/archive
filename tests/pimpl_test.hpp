@@ -42,6 +42,8 @@ protected:
 
 public:
 	B ();
+	virtual ~B () {}
+
 	const char * getString () const;
 	virtual void setString (const char * s);
 };
@@ -52,6 +54,8 @@ public:
 	C ();
 	C (const B & b);
 	C (const C & c);
+	virtual ~C () {}
+
 	virtual void setString (const char * s);
 };
 

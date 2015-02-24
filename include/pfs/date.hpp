@@ -17,10 +17,10 @@ namespace pfs {
 class DLL_API date
 {
 public:
-	static const long_t NullJulianDay  = PFS_LONG_MIN;
-	static const long_t MinJulianDay   = long_t(-784366681008); // Date::julianDay(CWT_INT_MIN, 1, 1)
-	static const long_t MaxJulianDay   = long_t(784354017364);  // Date::julianDay(CWT_INT_MAX, 12, 31)
-    static const long_t EpochJulianDay = long_t(2440588);       // Date::julianDay(1970, 1, 1)
+	static const integral_t NullJulianDay  = PFS_LONG_MIN;
+	static const integral_t MinJulianDay   = integral_t(-784366681008); // Date::julianDay(CWT_INT_MIN, 1, 1)
+	static const integral_t MaxJulianDay   = integral_t(784354017364);  // Date::julianDay(CWT_INT_MAX, 12, 31)
+    static const integral_t EpochJulianDay = integral_t(2440588);       // Date::julianDay(1970, 1, 1)
 
 public:
 	date () : _jd (NullJulianDay) {}
@@ -36,7 +36,7 @@ public:
 	int dayOfYear   () const;
 	int daysInMonth () const;
 	int daysInYear  () const;
-	long_t daysTo   (const date & d) const;
+	integral_t daysTo   (const date & d) const;
 	bool setDate    (int year, int month, int day);
 	void split      (int * year, int * month, int * day);
 
@@ -44,7 +44,7 @@ public:
 	int month () const;
 	int day   () const;
 
-	long_t julianDay() const { return _jd; }
+	integral_t julianDay() const { return _jd; }
 
 	string toString (const char * format) const;
 	string toString () const;
@@ -56,17 +56,17 @@ public:
 	bool operator  > ( const date & other ) const { return _jd >  other._jd; }
 	bool operator >= ( const date & other ) const { return _jd >= other._jd; }
 
-	static long_t julianDay (int year, int month, int day);
-	static void   fromJulianDay (long_t julianDay, int * yearPtr, int * monthPtr, int * dayPtr);
-	static date   fromJulianDay (long_t julianDay);
+	static integral_t julianDay (int year, int month, int day);
+	static void   fromJulianDay (integral_t julianDay, int * yearPtr, int * monthPtr, int * dayPtr);
+	static date   fromJulianDay (integral_t julianDay);
 	static bool   isLeapYear (int year);
 	static bool   isValid (int year, int month, int day);
 
 private:
-	long_t _jd; // Julian Day;
+	integral_t _jd; // Julian Day;
 };
 
-inline date date::fromJulianDay (long_t julianDay)
+inline date date::fromJulianDay (integral_t julianDay)
 {
 	date d;
 	if (julianDay >= MinJulianDay && julianDay <= MaxJulianDay)
@@ -99,7 +99,7 @@ inline bool date::isLeapYear(int year)
     return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
 }
 
-inline long_t date::daysTo (const date & d) const
+inline integral_t date::daysTo (const date & d) const
 {
 	return isValid() && d.isValid()
 			? d._jd - _jd

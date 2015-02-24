@@ -556,38 +556,38 @@ byte_string::size_type byte_string::readNumber (ValT & v, size_t pos, endian::ty
 inline byte_string byte_string::toString (int value, int base, bool uppercase)
 {
 	char buf[65];
-	return byte_string(pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+	return byte_string(pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
 inline byte_string byte_string::toString (long value, int base, bool uppercase)
 {
 	char buf[65];
-	return byte_string(pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+	return byte_string(pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
 inline byte_string byte_string::toString (unsigned int value, int base, bool uppercase)
 {
 	char buf[65];
-	return byte_string(pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+	return byte_string(pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
 inline byte_string byte_string::toString (unsigned long value, int base, bool uppercase)
 {
 	char buf[65];
-	return byte_string(pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+	return byte_string(pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
 #ifdef PFS_HAVE_LONGLONG
 inline byte_string byte_string::toString (long long value, int base, bool uppercase)
 {
 	char buf[65];
-	return byte_string(pfs_long_to_string(long_t(value), base, int(uppercase), buf, 65));
+	return byte_string(pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
 inline byte_string byte_string::toString (unsigned long long value, int base, bool uppercase)
 {
 	char buf[65];
-	return byte_string(pfs_ulong_to_string(ulong_t(value), base, int(uppercase), buf, 65));
+	return byte_string(pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 #endif
 

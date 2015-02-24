@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <utility>
+#include <typeinfo>
 
 #ifdef PFS_HAVE_QT
 #include <QString>
@@ -26,7 +27,7 @@ Integral2 randomInt (Integral1 low, Integral2 up)
     low2 = low,
            n = up - low;
 
-    assert(n > 0);
+    PFS_ASSERT(n > 0);
 
     const size_t bucket_size = RAND_MAX / n;
     PFS_ASSERT(bucket_size > 0);
@@ -79,12 +80,13 @@ bool testCase (const pfs::string & fmt, T value)
 
 void test0 ()
 {
-	TEST_OK(pfs::safeformat("%d")(2)() == "2");
-	TEST_OK(pfs::safeformat("%.5f")(3.14159f)() == "3.14159");
-	TEST_OK(pfs::safeformat("eqfhxeuvkmybvuuwwxpathgycwbxewqiovqmbljlyinueisbhicbqjbshcrlaiuofmcg|%+0 s|pmbwvdynnahudahdjcsopvuohomcugbktdhqggeuhmplmwpvaikpegemuroqxqbstjkbqpvxcmjojylkiwandfaywppvgrpbb")("HELLO")()
-				== "eqfhxeuvkmybvuuwwxpathgycwbxewqiovqmbljlyinueisbhicbqjbshcrlaiuofmcg|HELLO|pmbwvdynnahudahdjcsopvuohomcugbktdhqggeuhmplmwpvaikpegemuroqxqbstjkbqpvxcmjojylkiwandfaywppvgrpbb");
+//	TEST_FAIL(pfs::safeformat("%d")(2)() == "2");
+//	TEST_FAIL(pfs::safeformat("%.5f")(3.14159f)() == "3.14159");
+//	TEST_FAIL(pfs::safeformat("eqfhxeuvkmybvuuwwxpathgycwbxewqiovqmbljlyinueisbhicbqjbshcrlaiuofmcg|%+0 s|pmbwvdynnahudahdjcsopvuohomcugbktdhqggeuhmplmwpvaikpegemuroqxqbstjkbqpvxcmjojylkiwandfaywppvgrpbb")("HELLO")()
+//				== "eqfhxeuvkmybvuuwwxpathgycwbxewqiovqmbljlyinueisbhicbqjbshcrlaiuofmcg|HELLO|pmbwvdynnahudahdjcsopvuohomcugbktdhqggeuhmplmwpvaikpegemuroqxqbstjkbqpvxcmjojylkiwandfaywppvgrpbb");
 }
 
+#ifdef __COMMENT__
 void test1 ()
 {
     //srand(time(0));
@@ -181,7 +183,9 @@ void test1 ()
         }
     }
 }
+#endif
 
+#ifdef __COMMENT__
 // test speed
 void test2 ()
 {
@@ -231,20 +235,107 @@ void test2 ()
 #endif
 		 ;
 }
+#endif
+
+
+template <typename T>
+void testCaseIntegral()
+{
+	cout << "\n\nTesting with [T = " << typeid(T).name() << "]\n";
+
+	TEST_FAIL(testCase<T>(_l1("%o") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+o"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%o") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+o"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%o") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+o"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%x") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+x"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%x") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+x"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%x") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+x"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%d") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+d"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%d") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+d"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%d") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+d"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%u") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+u"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%u") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+u"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%u") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+u"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%c"), T('W')));
+
+//	TEST_FAIL(testCase<T>(_l1("%g"), pfs::min_type<T>()));
+//	TEST_FAIL(testCase<T>(_l1("%g"), pfs::min_type<T>()));
+//	TEST_FAIL(testCase<T>(_l1("%g"), 0));
+
+//	TEST_FAIL(testCase<T>(_l1("%s") , pfs::min_type<T>()));
+//	TEST_FAIL(testCase<T>(_l1("%s") , pfs::max_type<T>()));
+}
+
+void test3 ()
+{
+	TEST_FAIL(testCase<long>(_l1("%u") , -1L));
+
+	return;
+	testCaseIntegral<char>();
+	testCaseIntegral<signed char>();
+	testCaseIntegral<unsigned char>();
+	testCaseIntegral<short>();
+	testCaseIntegral<unsigned short>();
+	testCaseIntegral<int>();
+	testCaseIntegral<unsigned int>();
+	testCaseIntegral<long>();
+	testCaseIntegral<unsigned long>();
+
+#ifdef PFS_HAVE_LONGLONG
+	testCaseIntegral<long long>();
+	testCaseIntegral<unsigned long long>();
+#endif
+
+//	TEST_FAIL(testCase<double>(_l1("mrkh|%  +g|pwvnlnsfcyxumgjphjpggs"), PFS_DOUBLE_MIN));
+//	TEST_FAIL(testCase<double>(_l1("mrkh|%  +g|pwvnlnsfcyxumgjphjpggs"), PFS_DOUBLE_MAX));
+//
+//#ifdef PFS_HAVE_LONG_DOUBLE
+//	TEST_FAIL(testCase<long double>(_l1("mrkh|%  +g|pwvnlnsfcyxumgjphjpggs"), PFS_REAL_MIN));
+//	TEST_FAIL(testCase<long double>(_l1("mrkh|%  +g|pwvnlnsfcyxumgjphjpggs"), PFS_REAL_MAX));
+//#endif
+
+}
+
 
 int main(int argc, char** argv)
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED2(argc, argv);
 	int ntests = 24;
+#ifdef PFS_HAVE_LONG_DOUBLE
+	ntests += 2;
+#endif
 	BEGIN_TESTS(ntests);
 
-	if (argc > 1) {
-		if (1) test2();
-	} else {
-		if (1) test0();
-		if (1) test1();
-	}
+#ifdef PFS_CC_MSC
+	pfs::safeformat::setGlobalCompat(pfs::safeformat::CompatMSC);
+#else
+	pfs::safeformat::setGlobalCompat(pfs::safeformat::CompatGCC);
+#endif
+
+	test3();
+
+//	if (argc > 1) {
+//		if (1) test2();
+//	} else {
+//		if (1) test0();
+//		if (1) test1();
+//	}
 
 	END_TESTS;
 }

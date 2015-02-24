@@ -18,12 +18,12 @@ void datetime::setDate (const date & d)
 }
 
 
-datetime datetime::addMillis (long_t millis) const
+datetime datetime::addMillis (integral_t millis) const
 {
 	datetime r;
 
-    long_t dd = _date.julianDay();
-    long_t tt = time(0, 0, 0).millisTo(_time);
+    integral_t dd = _date.julianDay();
+    integral_t tt = time(0, 0, 0).millisTo(_time);
     int sign = 1;
 
     if (millis < 0) {
@@ -31,7 +31,7 @@ datetime datetime::addMillis (long_t millis) const
         sign = -1;
     }
 
-    if (millis >= long_t(time::MillisPerDay)) {
+    if (millis >= integral_t(time::MillisPerDay)) {
         dd += sign * (millis / time::MillisPerDay);
         millis %= time::MillisPerDay;
     }
@@ -55,32 +55,32 @@ datetime datetime::addMillis (long_t millis) const
     return r;
 }
 
-long_t datetime::secsTo (const datetime & other) const
+integral_t datetime::secsTo (const datetime & other) const
 {
     return isValid() && other.isValid()
-    		? _date.daysTo(other._date) * time::SecondsPerDay + long_t(_time.secsTo(other._time))
+    		? _date.daysTo(other._date) * time::SecondsPerDay + integral_t(_time.secsTo(other._time))
     		: 0;
 }
 
-long_t datetime::millisTo (const datetime & other) const
+integral_t datetime::millisTo (const datetime & other) const
 {
 
     return isValid() && other.isValid()
     		? _date.daysTo(other._date) * time::MillisPerDay
-    				+ long_t(_time.millisTo(other._time))
+    				+ integral_t(_time.millisTo(other._time))
     		: 0;
 }
 
-long_t datetime::millisSinceEpoch () const
+integral_t datetime::millisSinceEpoch () const
 {
-    long_t jd = _date.julianDay() - date::EpochJulianDay;
+    integral_t jd = _date.julianDay() - date::EpochJulianDay;
     return (jd * time::MillisPerDay) + time(0, 0, 0).millisTo(_time);
 }
 
 
-void datetime::setMillisSinceEpoch (long_t millis)
+void datetime::setMillisSinceEpoch (integral_t millis)
 {
-    long_t days = millis / time::MillisPerDay;
+    integral_t days = millis / time::MillisPerDay;
     millis %= time::MillisPerDay;
 
     if (millis < 0) {
@@ -120,7 +120,7 @@ string datetime::toString () const
  *
  * @return integer representation of date & time in format YYYYMMDDhhmmss
  */
-long_t datetime::toInteger () const
+integral_t datetime::toInteger () const
 {
 	int Y = _date.year();
 	int M = _date.month();
@@ -130,14 +130,14 @@ long_t datetime::toInteger () const
 	int	m = _time.minute();
 	int	s = _time.second();
 
-	long_t r = long_t(10000000000) * Y + long_t(100000000) * M + long_t(1000000) * D
-			+ long_t(10000) * h + long_t(100) * m + s;
+	integral_t r = integral_t(10000000000) * Y + integral_t(100000000) * M + integral_t(1000000) * D
+			+ integral_t(10000) * h + integral_t(100) * m + s;
 
 	return r;
 }
 
 
-datetime datetime::fromMillisSinceEpoch (long_t millis) // static
+datetime datetime::fromMillisSinceEpoch (integral_t millis) // static
 {
 	datetime d;
 	d.setMillisSinceEpoch(millis);

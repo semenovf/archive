@@ -623,6 +623,14 @@ int main(int argc, char * argv[])
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(104);
 
+	//
+	// Iterator to const_iterator conversion check at compile time.
+	// If no compile time error occurred so the conversion is Ok.
+	//
+//	typedef pfs::vector<int> vector;
+//	vector::iterator it;
+//	vector::const_iterator it1(it);
+
 	test_vector_reference();
 	test_vector_of_vectors();
 	test_vector_iterator();
