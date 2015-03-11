@@ -272,20 +272,13 @@ void testCaseIntegral()
 	TEST_FAIL(testCase<T>(_l1("%+u"), 0));
 
 	TEST_FAIL(testCase<T>(_l1("%c"), T('W')));
-
-//	TEST_FAIL(testCase<T>(_l1("%g"), pfs::min_type<T>()));
-//	TEST_FAIL(testCase<T>(_l1("%g"), pfs::min_type<T>()));
-//	TEST_FAIL(testCase<T>(_l1("%g"), 0));
-
-//	TEST_FAIL(testCase<T>(_l1("%s") , pfs::min_type<T>()));
-//	TEST_FAIL(testCase<T>(_l1("%s") , pfs::max_type<T>()));
 }
 
 void test3 ()
 {
-	TEST_FAIL(testCase<long>(_l1("%u") , -1L));
-
-	return;
+//	TEST_FAIL(testCase<long>(_l1("%u") , -1L));
+//
+//	return;
 	testCaseIntegral<char>();
 	testCaseIntegral<signed char>();
 	testCaseIntegral<unsigned char>();
