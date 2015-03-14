@@ -43,9 +43,9 @@ struct __sf_default_traits : public __sf_base_traits
 	T _val;
 	__sf_default_traits (const T & v) : __sf_base_traits(), _val(v) {}
 	virtual string asInteger (int /*base*/, bool /*uppercase*/, bool /*isUnsigned*/) const;
-	virtual string asFloat ( char /*f*/, int /*prec*/) const { return string(); }
+	virtual string asFloat ( char /*f*/, int /*prec*/) const;
 	virtual string asChar () const;
-	virtual string asString () const  { return string(); }
+	virtual string asString () const;
 };
 
 
@@ -293,9 +293,9 @@ void safeformat::doPadding (string & r)
 		char paddingChar = (_ctx.spec.flags & safeformat::ZeroPadding) ? '0' : ' ';
 
 		if (_ctx.spec.flags & safeformat::LeftJustify)
-			r.append(pfs::string(count, paddingChar));
+			r.append(string(count, paddingChar));
 		else
-			r.prepend(pfs::string(count, paddingChar));
+			r.prepend(string(count, paddingChar));
 	}
 }
 
@@ -367,6 +367,45 @@ safeformat & safeformat::operator () (unsigned long long n)
 }
 #endif
 
+safeformat & safeformat::operator () (float n)
+{
+	__sf_default_traits<float> t(n);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (double n)
+{
+	__sf_default_traits<double> t(n);
+	return arg(& t);
+}
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+safeformat & safeformat::operator () (long double n)
+{
+	__sf_default_traits<long double> t(n);
+	return arg(& t);
+}
+#endif
+
+safeformat & safeformat::operator () (ucchar c)
+{
+	__sf_default_traits<ucchar> t(c);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (const string & s)
+{
+	__sf_default_traits<string> t(s);
+	return arg(& t);
+}
+
+safeformat & safeformat::operator () (void * p)
+{
+	__sf_default_traits<void *> t(p);
+	return arg(& t);
+}
+
+//{{{ asInteger () -------------------------------------------------
 template <>
 string __sf_default_traits<char>::asInteger (int base, bool uppercase, bool isUnsigned) const
 {
@@ -458,383 +497,397 @@ string __sf_default_traits<unsigned long long>::asInteger (int base, bool upperc
 #endif // PFS_HAVE_LONGLONG
 
 template <>
-string __sf_default_traits<char>::asChar () const
+string __sf_default_traits<float>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString((uintegral_t)_val, base, uppercase)
+		    : string::toString((integral_t)_val, base, uppercase);
+}
+
+template <>
+string __sf_default_traits<double>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString((uintegral_t)_val, base, uppercase)
+		    : string::toString((integral_t)_val, base, uppercase);
+}
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+template <>
+string __sf_default_traits<long double>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	return isUnsigned
+			? string::toString((uintegral_t)_val, base, uppercase)
+		    : string::toString((integral_t)_val, base, uppercase);
+}
+#endif
+
+template <>
+string __sf_default_traits<ucchar>::asInteger (int base, bool uppercase, bool /*isUnsigned*/) const
+{
+	return string::toString(int32_t(_val), base, uppercase);
+}
+
+template <>
+string __sf_default_traits<string>::asInteger (int base, bool uppercase, bool isUnsigned) const
+{
+	string r;
+
+	if (isUnsigned) {
+		uintegral_t n = _val.toUIntegral(nullptr, 10);
+		r = string::toString(n, base, uppercase);
+	} else {
+		integral_t n = _val.toIntegral(nullptr, 10);
+		r = string::toString(n, base, uppercase);
+	}
+
+	return r;
+}
+
+template <>
+string __sf_default_traits<void *>::asInteger (int base, bool uppercase, bool /*isUnsigned*/) const
+{
+	return string::toString(ptrdiff_t(_val), base, uppercase);
+}
+
+//}}} asInteger () -------------------------------------------------
+
+
+//{{{ asChar () -------------------------------------------------
+template <>
+inline string __sf_default_traits<char>::asChar () const
 {
 	return string(1, _val);
 }
 
 template <>
-string __sf_default_traits<signed char>::asChar () const
+inline string __sf_default_traits<signed char>::asChar () const
 {
 	return string(1, ucchar(char(_val)));
 }
 
 template <>
-string __sf_default_traits<unsigned char>::asChar () const
+inline string __sf_default_traits<unsigned char>::asChar () const
 {
 	return string(1, ucchar(char(_val)));
 }
 
 template <>
-string __sf_default_traits<short>::asChar () const
+inline string __sf_default_traits<short>::asChar () const
 {
 	return string(1, ucchar(uint32_t(_val)));
 }
 
 template <>
-string __sf_default_traits<unsigned short>::asChar () const
+inline string __sf_default_traits<unsigned short>::asChar () const
 {
 	return string(1, ucchar(uint32_t(_val)));
 }
 
 template <>
-string __sf_default_traits<int>::asChar () const
+inline string __sf_default_traits<int>::asChar () const
 {
 	return string(1, ucchar(uint32_t(_val)));
 }
 
 template <>
-string __sf_default_traits<unsigned int>::asChar () const
+inline string __sf_default_traits<unsigned int>::asChar () const
 {
 	return string(1, ucchar(uint32_t(_val)));
 }
 
 template <>
-string __sf_default_traits<long>::asChar () const
+inline string __sf_default_traits<long>::asChar () const
 {
 	return string(1, ucchar(uint32_t(_val)));
 }
 
 template <>
-string __sf_default_traits<unsigned long>::asChar () const
+inline string __sf_default_traits<unsigned long>::asChar () const
 {
 	return string(1, ucchar(uint32_t(_val)));
 }
 
 #ifdef PFS_HAVE_LONGLONG
 template <>
-string __sf_default_traits<long long>::asChar () const
+inline string __sf_default_traits<long long>::asChar () const
 {
 	return string(1, ucchar(uint32_t(_val)));
 }
 
 template <>
-string __sf_default_traits<unsigned long long>::asChar () const
+inline string __sf_default_traits<unsigned long long>::asChar () const
 {
 	return string(1, ucchar(uint32_t(_val)));
 }
 #endif
 
-
-//string __sf_traits<char>::asFloat (char f, int prec) const
-//{
-//	return string::toString(float(_val), f, prec);
-//}
-
-//string __sf_traits<signed char>::asFloat (char f, int prec) const
-//{
-//	return string::toString(float(_val), f, prec);
-//}
-//
-//
-//string __sf_traits<signed char>::asString () const
-//{
-//	return string::toString(_val);
-//}
-//
-////--- unsigned char
-//
-//string __sf_traits<unsigned char>::asFloat (char f, int prec) const
-//{
-//	return string::toString(float(_val), f, prec);
-//}
-//
-//string __sf_traits<unsigned char>::asString () const
-//{
-//	return string::toString(_val);
-//}
-//
-//
-////--- short int
-//string __sf_traits<short>::asFloat (char f, int prec) const
-//{
-//	return string::toString(float(_val), f, prec);
-//}
-//
-//
-//string __sf_traits<short>::asString () const
-//{
-//	return string::toString(_val);
-//}
-//
-////--- unsigned short int
-//
-//string __sf_traits<unsigned short>::asFloat (char f, int prec) const
-//{
-//	return string::toString(float(_val), f, prec);
-//}
-//
-//
-//string __sf_traits<unsigned short>::asString () const
-//{
-//	return string::toString(_val);
-//}
-//
-//
-//
-//string __sf_traits<int>::asFloat (char f, int prec) const
-//{
-//	return string::toString(real_t(_val), f, prec);
-//}
-//
-
-//string __sf_traits<int>::asString () const
-//{
-//	return string::toString(_val);
-//}
-//
-////--- float
-//string __sf_traits<float>::asInteger (int base, bool uppercase, bool isUnsigned) const
-//{
-//	return isUnsigned
-//			? string::toString(uint_t(_val), base, uppercase)
-//		    : string::toString(int_t(_val), base, uppercase);
-//}
-//
-//string __sf_traits<float>::asFloat (char f, int prec) const
-//{
-//	return string::toString(_val, f, prec);
-//}
-//
-//string __sf_traits<float>::asChar () const
-//{
-//	return string(1, ucchar(uint32_t(_val)));
-//}
-//
-//string __sf_traits<float>::asString () const
-//{
-//	return string::toString(_val);
-//}
-//
-////--- double
-//string __sf_traits<double>::asInteger (int base, bool uppercase, bool isUnsigned) const
-//{
-//	return isUnsigned
-//			? string::toString(ulong_t(_val), base, uppercase)
-//		    : string::toString(long_t(_val), base, uppercase);
-//}
-//
-//string __sf_traits<double>::asFloat (char f, int prec) const
-//{
-//	return string::toString(_val, f, prec);
-//}
-//
-//string __sf_traits<double>::asChar () const
-//{
-//	return string(1, ucchar(uint32_t(_val)));
-//}
-//
-//string __sf_traits<double>::asString () const
-//{
-//	return string::toString(_val);
-//}
-//
-////--- long double
-//#ifdef PFS_HAVE_LONG_DOUBLE
-//string __sf_traits<long double>::asInteger (int base, bool uppercase, bool isUnsigned) const
-//{
-//	return isUnsigned
-//			? string::toString(ulong_t(_val), base, uppercase)
-//		    : string::toString(long_t(_val), base, uppercase);
-//}
-//
-//string __sf_traits<long double>::asFloat (char f, int prec) const
-//{
-//	return string::toString(_val, f, prec);
-//}
-//
-//string __sf_traits<long double>::asChar () const
-//{
-//	return string(1, ucchar(uint32_t(_val)));
-//}
-//
-//string __sf_traits<long double>::asString () const
-//{
-//	return string::toString(_val);
-//}
-//#endif
-//
-////--- string
-//string __sf_traits<string>::asInteger (int base, bool uppercase, bool isUnsigned) const
-//{
-//	string r;
-//	if (isUnsigned) {
-//		ulong_t n = _val
-//	#ifdef PFS_HAVE_LONGLONG
-//			.toULongLong(nullptr, 10);
-//	#else
-//			.toULong(nullptr, 10);
-//	#endif
-//		r = string::toString(n, base, uppercase);
-//	} else {
-//		long_t n = _val
-//	#ifdef PFS_HAVE_LONGLONG
-//			.toLongLong(nullptr, 10);
-//	#else
-//			.toLong(nullptr, 10);
-//	#endif
-//		r = string::toString(n, base, uppercase);
-//	}
-//	return r;
-//}
-//
-//string __sf_traits<string>::asFloat (char f, int prec) const
-//{
-//	real_t n = _val.toReal();
-//	return string::toString(n, f, prec);
-//}
-//
-//string __sf_traits<string>::asChar () const
-//{
-//	return string(1
-//		, _val.length() > 0
-//			? _val.charAt(0)
-//			: ucchar::ReplacementChar);
-//}
-//
-//string __sf_traits<string>::asString () const
-//{
-//	return _val;
-//}
-//
-////--- void *
-//string __sf_traits<void *>::asInteger (int base, bool uppercase, bool /*isUnsigned*/) const
-//{
-//	return string::toString(ptrdiff_t(_val), base, uppercase);
-//}
-//
-//string __sf_traits<void *>::asFloat (char f, int prec) const
-//{
-//	return string::toString(real_t(ptrdiff_t(_val)), f, prec);
-//}
-//
-//string __sf_traits<void *>::asChar () const
-//{
-//	return string(1, ucchar(ptrdiff_t(_val)));
-//}
-//
-//string __sf_traits<void *>::asString () const
-//{
-//	return string::toString(ptrdiff_t(_val));
-//}
-
-//
-// isUnsigned is applicable to string only
-//
-/*static string asInteger (const safeformat::variant_type & v, int base, bool uppercase, bool isUnsigned)
+template <>
+inline string __sf_default_traits<float>::asChar () const
 {
-	string r;
-	if (v.is<char>()) {
-		char n = v.get<char>();
-		r = string::toString((int)n, base, uppercase);
-	} else if (v.is<long_t>()) {
-		long_t n = v.get<long_t>();
-		r = string::toString(n, base, uppercase);
-	} else if (v.is<ulong_t>()) {
-		r = string::toString(v.get<ulong_t>(), base, uppercase);
-	} else if (v.is<real_t>()) {
-		r = string::toString(long_t(v.get<real_t>()), base, uppercase);
-	} else if (v.is<ucchar>()) {
-		r = string::toString(ulong_t(v.get<ucchar>().value()), base, uppercase);
-	} else if (v.is<pfs::string>()) {
-		if (isUnsigned) {
-			ulong_t n = v.get<pfs::string>()
+	return string(1, ucchar(int(_val)));
+}
+
+template <>
+inline string __sf_default_traits<double>::asChar () const
+{
+	return string(1, ucchar(int(_val)));
+}
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+template <>
+inline string __sf_default_traits<long double>::asChar () const
+{
+	return string(1, ucchar(int(_val)));
+}
+#endif
+
+inline string __sf_default_traits<ucchar>::asChar () const
+{
+	return string(1, _val);
+}
+
+template <>
+inline string __sf_default_traits<string>::asChar () const
+{
+	return string(1
+		, _val.length() > 0
+			? _val.charAt(0)
+			: ucchar::ReplacementChar);
+}
+
+inline string __sf_default_traits<void *>::asChar () const
+{
+	return string(1, ucchar(ptrdiff_t(_val)));
+}
+//}}} asChar () -------------------------------------------------
+
+//{{{ asFloat () -------------------------------------------------
+template <>
+inline string __sf_default_traits<char>::asFloat (char f, int prec) const
+{
+	return string::toString(float(_val), f, prec);
+}
+
+template <>
+inline string __sf_default_traits<signed char>::asFloat (char f, int prec) const
+{
+	return string::toString(float(_val), f, prec);
+}
+
+template <>
+inline string __sf_default_traits<unsigned char>::asFloat (char f, int prec) const
+{
+	return string::toString(float(_val), f, prec);
+}
+
+template <>
+inline string __sf_default_traits<short>::asFloat (char f, int prec) const
+{
+	return string::toString(float(_val), f, prec);
+}
+
+template <>
+inline string __sf_default_traits<unsigned short>::asFloat (char f, int prec) const
+{
+	return string::toString(float(_val), f, prec);
+}
+
+template <>
+inline string __sf_default_traits<int>::asFloat (char f, int prec) const
+{
+	return string::toString(double(_val), f, prec);
+}
+
+template <>
+inline string __sf_default_traits<unsigned int>::asFloat (char f, int prec) const
+{
+	return string::toString(double(_val), f, prec);
+}
+
+template <>
+inline string __sf_default_traits<long>::asFloat (char f, int prec) const
+{
+	return string::toString(double(_val), f, prec);
+}
+
+template <>
+inline string __sf_default_traits<unsigned long>::asFloat (char f, int prec) const
+{
+	return string::toString(double(_val), f, prec);
+}
+
 #ifdef PFS_HAVE_LONGLONG
-					.toULongLong(nullptr, 10);
+template <>
+inline string __sf_default_traits<long long>::asFloat (char f, int prec) const
+{
+#ifdef PFS_HAVE_LONG_DOUBLE
+	return string::toString((long double)_val, f, prec);
 #else
-					.toULong(nullptr, 10);
+	return string::toString((double)_val, f, prec);
 #endif
-			r = string::toString(n, base, uppercase);
-		} else {
-			long_t n = v.get<pfs::string>()
-#ifdef PFS_HAVE_LONGLONG
-					.toLongLong(nullptr, 10);
+}
+
+template <>
+inline string __sf_default_traits<unsigned long long>::asFloat (char f, int prec) const
+{
+#ifdef PFS_HAVE_LONG_DOUBLE
+	return string::toString((long double)_val, f, prec);
 #else
-					.toLong(nullptr, 10);
+	return string::toString((double)_val, f, prec);
 #endif
-			r = string::toString(n, base, uppercase);
-		}
-	}
+}
+#endif
 
-	return r;
-}*/
-
-/*static string asFloat (const safeformat::variant_type & v, char f, int prec)
+template <>
+inline string __sf_default_traits<float>::asFloat (char f, int prec) const
 {
-	string r;
+	return string::toString(_val, f, prec);
+}
 
-	if (v.is<char>()) {
-		r = string::toString(real_t(v.get<char>()), f, prec);
-	} else if (v.is<long_t>()) {
-		r = string::toString(real_t(v.get<long_t>()), f, prec);
-	} else if (v.is<ulong_t>()) {
-		r = string::toString(real_t(v.get<ulong_t>()), f, prec);
-	} else if (v.is<real_t>()) {
-		r = string::toString(v.get<real_t>(), f, prec);
-	} else if (v.is<ucchar>()) {
-		r = string::toString(real_t(v.get<ucchar>().value()), f, prec);
-	} else if (v.is<pfs::string>()) {
-		real_t n = v.get<pfs::string>().toReal();
-		r = string::toString(n, f, prec);
-	}
-
-	return r;
-}*/
-
-/*static string asChar (const safeformat::variant_type & v)
+template <>
+inline string __sf_default_traits<double>::asFloat (char f, int prec) const
 {
-	string r;
+	return string::toString(_val, f, prec);
+}
 
-	if (v.is<char>()) {
-		r = string(1, ucchar(int(v.get<char>())));
-	} if (v.is<long_t>()) {
-		r = string(1, ucchar(int(v.get<long_t>())));
-	} else if (v.is<ulong_t>()) {
-		r = string(1, ucchar(int(v.get<ulong_t>())));
-	} else if (v.is<real_t>()) {
-		r = string(1, ucchar(int(v.get<real_t>())));
-	} else if (v.is<ucchar>()) {
-		r = string(1, v.get<ucchar>());
-	} else if (v.is<pfs::string>()) {
-		string s = v.get<pfs::string>();
-		r = string(1
-			, s.length() > 0
-				? s.charAt(0)
-				: ucchar::ReplacementChar);
-	}
-	return r;
-}*/
-
-/*static string asString (const safeformat::variant_type & v)
+#ifdef PFS_HAVE_LONG_DOUBLE
+template <>
+inline string __sf_default_traits<long double>::asFloat (char f, int prec) const
 {
-	string r;
+	return string::toString(_val, f, prec);
+}
+#endif
 
-	if (v.is<char>()) {
-		r = string(1, ucchar(int(v.get<char>())));
-	} else if (v.is<long_t>()) {
-		r = string::toString(v.get<long_t>());
-	} else if (v.is<ulong_t>()) {
-		r = string::toString(v.get<ulong_t>());
-	} else if (v.is<real_t>()) {
-		r = string::toString(v.get<real_t>());
-	} else if (v.is<ucchar>()) {
-		r = string(1, v.get<ucchar>());
-	} else if (v.is<pfs::string>()) {
-		r = v.get<pfs::string>();
-	}
+template <>
+inline string __sf_default_traits<ucchar>::asFloat (char f, int prec) const
+{
+	return string::toString(real_t(_val.value()), f, prec);
+}
 
-	return r;
-}*/
+template <>
+inline string __sf_default_traits<string>::asFloat (char f, int prec) const
+{
+	real_t n = _val.toReal();
+	return string::toString(n, f, prec);
+}
+
+template <>
+inline string __sf_default_traits<void *>::asFloat (char f, int prec) const
+{
+	return string::toString(real_t(ptrdiff_t(_val)), f, prec);
+}
+//}}} asFloat () -------------------------------------------------
+
+//{{{ asString () -------------------------------------------------
+template <>
+inline string __sf_default_traits<char>::asString () const
+{
+	return string(1, _val);
+}
+
+template <>
+inline string __sf_default_traits<signed char>::asString () const
+{
+	return string::toString(_val);
+}
+
+template <>
+inline string __sf_default_traits<unsigned char>::asString () const
+{
+	return string::toString(_val);
+}
+
+template <>
+inline string __sf_default_traits<short>::asString () const
+{
+	return string::toString(_val);
+}
+
+template <>
+inline string __sf_default_traits<unsigned short>::asString () const
+{
+	return string::toString(_val);
+}
+
+template <>
+inline string __sf_default_traits<int>::asString () const
+{
+	return string::toString(_val);
+}
+
+template <>
+inline string __sf_default_traits<unsigned int>::asString () const
+{
+	return string::toString(_val);
+}
+
+template <>
+inline string __sf_default_traits<long>::asString () const
+{
+	return string::toString(_val);
+}
+
+template <>
+inline string __sf_default_traits<unsigned long>::asString () const
+{
+	return string::toString(_val);
+}
+
+#ifdef PFS_HAVE_LONGLONG
+template <>
+inline string __sf_default_traits<long long>::asString () const
+{
+	return string::toString(_val);
+}
+
+template <>
+inline string __sf_default_traits<unsigned long long>::asString () const
+{
+	return string::toString(_val);
+}
+#endif
+
+template <>
+inline string __sf_default_traits<float>::asString () const
+{
+	return string::toString(_val);
+}
+
+template <>
+inline string __sf_default_traits<double>::asString () const
+{
+	return string::toString(_val);
+}
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+template <>
+inline string __sf_default_traits<long double>::asString () const
+{
+	return string::toString(_val);
+}
+#endif
+
+template <>
+inline string __sf_default_traits<ucchar>::asString () const
+{
+	return string(1, _val);
+}
+
+template <>
+inline string __sf_default_traits<string>::asString () const
+{
+	return _val;
+}
+
+template <>
+inline string __sf_default_traits<void *>::asString () const
+{
+	return string::toString(ptrdiff_t(_val));
+}
+
+//}}} asString () -------------------------------------------------
+
 
 safeformat & safeformat::arg (const __sf_base_traits * v)
 {

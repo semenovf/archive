@@ -9,7 +9,10 @@
 
 namespace pfs {
 
-class /*DLL_API*/ noncopyable
+// Note: DLL_API need to avoid MSVC warning C4275: non dll-interface
+// class 'BaseClass' used as base for dll-interface class 'DerivedClass'
+//
+class DLL_API noncopyable
 {
 protected:
 	noncopyable() {}

@@ -413,5 +413,65 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::find (const_
 		: iterator(self, pointer(*self, size())); // end()
 }
 
+template <typename _CodeUnitT>
+stringlist_basic<mbcs_string<_CodeUnitT> > mbcs_string<_CodeUnitT>::split (
+		  bool isOneSeparatorChar
+		, const mbcs_string & separator
+		, bool keepEmpty
+		, ucchar quoteChar) const
+{
+	stringlist_basic<mbcs_string> r;
+	const_iterator it = cbegin();
+	const_iterator itBegin = it;
+	const_iterator itEnd = cend();
+	size_t separatorLength = separator.length();
+	bool quote = false;
+
+	while (it != itEnd) {
+		if (quoteChar != ucchar::Null && *it == quoteChar) {
+			if (quote) {
+				quote = false;
+			} else {
+				quote = true;
+			}
+			++it;
+		} else if (!quote
+				&& ((isOneSeparatorChar && separator.contains(*it))
+					|| (!isOneSeparatorChar && this->startsWith(it, separator)))) {
+			mbcs_string s(itBegin, it);
+			if (!s.isEmpty()) {
+				r.append(s);
+			} else {
+				if (keepEmpty)
+					r.append(s);
+			}
+			it += isOneSeparatorChar ? 1 : separatorLength;
+			itBegin = it;
+		} else {
+			++it;
+		}
+	}
+
+	if (itBegin != it || itBegin == itEnd) {
+		mbcs_string s(itBegin, it);
+		if (!s.isEmpty()) {
+			r.append(s);
+		} else {
+			if (keepEmpty)
+				r.append(s);
+		}
+	}
+
+	if (r.isEmpty())
+		r.append(*this);
+
+
+	PFS_VERIFY_X(!quote, "Unbalanced quote");
+	if (quote)
+		r.clear();
+
+	return r;
+}
+
 
 } // pfs

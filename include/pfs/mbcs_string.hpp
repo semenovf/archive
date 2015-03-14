@@ -15,6 +15,7 @@
 #include <pfs/byte_string.hpp>
 #include <pfs/bits/strtointegral.hpp>
 #include <pfs/bits/strtoreal.hpp>
+#include <pfs/bits/stringlist.hpp>
 #include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -33,9 +34,6 @@ struct mbcs_string_type_trait { typedef T type; };
 template <typename CodeUnitT>
 class mbcs_string : public nullable<mbcs_string_impl<CodeUnitT> >
 {
-//	friend class utf8string_impl;
-//	friend class utf8string_ptr;
-
 protected:
 	typedef nullable<mbcs_string_impl<CodeUnitT> > base_class;
 	typedef mbcs_string                            self_class;
@@ -160,10 +158,17 @@ public:
 	bool contains   (char v) const                { return find(v) != cend(); }
 
 	// TODO Need tests
+	// FIXME need optimization like startsWith (char v)
 	bool startsWith (const mbcs_string & s)  const { return find(s) == cbegin(); }
+	bool startsWith (const_iterator pos, const mbcs_string & s) const
+	{
+		return find(pos, s) == pos;
+	}
+	// FIXME need optimization like startsWith (char v)
 	bool startsWith (const char * s) const         { return find(s) == cbegin(); }
-	bool startsWith (ucchar v) const               { return find(v) == cbegin(); }
-	bool startsWith (char v) const                 { return find(v) == cbegin(); }
+
+	bool startsWith (ucchar v) const               { return isEmpty() ? false : *(cbegin()) == v; }
+	bool startsWith (char v) const                 { return isEmpty() ? false : *(cbegin()) == ucchar(v); }
 
 	// TODO Need tests
 	bool endsWith   (const mbcs_string & s) const  { return find(s) == cend() - s.length(); }
@@ -373,6 +378,24 @@ public:
 
 	mbcs_string substr (size_type index, size_type count) const;
 
+	stringlist_basic<mbcs_string> split (const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const
+	{
+		return split(false, separator, keepEmpty, quoteChar);
+	}
+
+	stringlist_basic<mbcs_string> split (const ucchar & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const
+	{
+		return split(false, mbcs_string(1, separator), keepEmpty, quoteChar);
+	}
+
+	stringlist_basic<mbcs_string> splitOneOf (const mbcs_string & separators, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const
+	{
+		return split(true, mbcs_string(separators), keepEmpty, quoteChar);
+	}
+
+	integral_t toIntegral (bool * ok = 0, int base = 10) const;
+	uintegral_t toUIntegral (bool * ok = 0, int base = 10) const;
+
 	short          toShort  (bool * ok = 0, int base = 10) const;
 	unsigned short toUShort (bool * ok = 0, int base = 10) const;
 	int	           toInt    (bool * ok = 0, int base = 10) const;
@@ -414,6 +437,7 @@ private:
     mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, mbcs_string_type_trait<InputIt>);
     mbcs_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, mbcs_string_type_trait<const_iterator>);
 
+    stringlist_basic<mbcs_string> split (bool isOneSeparatorChar, const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
 
 public:
 	struct ConvertState
@@ -438,19 +462,22 @@ public:
 		return fromUtf8(reinterpret_cast<const char *>(utf8.constData()), utf8.length(), state);
 	}
 
+	static mbcs_string toString (signed char value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (short value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (int value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (long value, int base = 10, bool uppercase = false);
+	static mbcs_string toString (unsigned char value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (unsigned short value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (unsigned int value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (unsigned long value, int base = 10, bool uppercase = false);
-	static mbcs_string toString (float value, char f = 'f', int prec = 6);
-	static mbcs_string toString (double value, char f = 'f', int prec = 6);
 
 #ifdef PFS_HAVE_LONGLONG
 	static mbcs_string toString (long long value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (unsigned long long value, int base = 10, bool uppercase = false);
 #endif
+
+	static mbcs_string toString (float value, char f = 'f', int prec = 6);
+	static mbcs_string toString (double value, char f = 'f', int prec = 6);
 
 #ifdef PFS_HAVE_LONG_DOUBLE
 	static mbcs_string toString (long double value, char f = 'f', int prec = 6);
@@ -498,12 +525,30 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 }
 
 template <typename CodeUnitT>
+inline integral_t mbcs_string<CodeUnitT>::toIntegral (bool * ok, int base) const
+{
+	return (short)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, integral_t(pfs::min_type<integral_t>())
+		, uintegral_t(pfs::max_type<integral_t>()));
+}
+
+template <typename CodeUnitT>
+inline uintegral_t mbcs_string<CodeUnitT>::toUIntegral (bool * ok, int base) const
+{
+	return (unsigned short)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+		(cbegin(), cend(), ok, base
+		, uintegral_t(pfs::max_type<uintegral_t>()));
+}
+
+
+template <typename CodeUnitT>
 inline short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
 {
 	return (short)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, integral_t(pfs::min_type<short>)
-		, uintegral_t(pfs::max_type<short>));
+		, integral_t(pfs::min_type<short>())
+		, uintegral_t(pfs::max_type<short>()));
 }
 
 template <typename CodeUnitT>
@@ -511,7 +556,7 @@ inline unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) con
 {
 	return (unsigned short)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, uintegral_t(pfs::max_type<unsigned short>));
+		, uintegral_t(pfs::max_type<unsigned short>()));
 }
 
 template <typename CodeUnitT>
@@ -519,8 +564,8 @@ inline int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
 {
 	return (int)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, integral_t(pfs::min_type<int>)
-		, uintegral_t(pfs::max_type<int>));
+		, integral_t(pfs::min_type<int>())
+		, uintegral_t(pfs::max_type<int>()));
 }
 
 template <typename CodeUnitT>
@@ -528,7 +573,7 @@ inline unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
 {
 	return (unsigned int)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, uintegral_t(pfs::max_type<unsigned int>));
+		, uintegral_t(pfs::max_type<unsigned int>()));
 }
 
 template <typename CodeUnitT>
@@ -536,8 +581,8 @@ inline long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
 {
 	return (long)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, integral_t(pfs::min_type<long>)
-		, uintegral_t(pfs::max_type<long>));
+		, integral_t(pfs::min_type<long>())
+		, uintegral_t(pfs::max_type<long>()));
 }
 
 template <typename CodeUnitT>
@@ -545,7 +590,7 @@ inline unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
 {
 	return (unsigned long)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, uintegral_t(pfs::max_type<unsigned long>));
+		, uintegral_t(pfs::max_type<unsigned long>()));
 }
 
 #ifdef PFS_HAVE_LONGLONG
@@ -554,8 +599,8 @@ inline long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
 {
 	return (long long)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, integral_t(pfs::min_type<long long>)
-		, uintegral_t(pfs::max_type<long long>));
+		, integral_t(pfs::min_type<long long>())
+		, uintegral_t(pfs::max_type<long long>()));
 }
 
 template <typename CodeUnitT>
@@ -563,7 +608,7 @@ inline unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int ba
 {
 	return (unsigned long long)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, uintegral_t(pfs::max_type<unsigned long long>));
+		, uintegral_t(pfs::max_type<unsigned long long>()));
 }
 #endif
 
@@ -624,6 +669,14 @@ double mbcs_string<CodeUnitT>::toDouble (bool * ok, ucchar decimalPoint) const
 }
 
 template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (signed char value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
+}
+
+template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (short value, int base, bool uppercase)
 {
 	char buf[65];
@@ -645,6 +698,14 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long value, int 
 	char buf[65];
 	return mbcs_string<CodeUnitT>::fromLatin1(
 			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
+}
+
+template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned char value, int base, bool uppercase)
+{
+	char buf[65];
+	return mbcs_string<CodeUnitT>::fromLatin1(
+			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
 template <typename CodeUnitT>

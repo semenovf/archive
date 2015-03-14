@@ -8,6 +8,7 @@
 #include <cwt/test.hpp>
 #include <pfs/ucchar.hpp>
 #include <pfs/mbcs_string.hpp>
+#include <pfs/stringlist.hpp>
 #include <cstring>
 #include <iostream>
 #include <cstdio>
@@ -592,6 +593,60 @@ void test_convert_to_number ()
 	TEST_OK(utfstring("12345678901234567890123456789").toReal(& ok) == PFS_REAL_LITERAL(12345678901234567890123456789.0) && ok);
 }
 
+
+template <typename CodeUnitT>
+void test_split ()
+{
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
+
+	utfstring nil; // nil
+	utfstring s1("This/is/a/test/string");
+	utfstring s2("This//is//a//test//string/");
+	utfstring s3("This is a test string");
+	utfstring sep1(1, '/');
+	bool keepEmpty = true;
+	bool noKeepEmpty = false;
+	pfs::ucchar noQuoteChar = pfs::ucchar::Null;
+
+	pfs::stringlist slist = nil.split(sep1, keepEmpty, noQuoteChar);
+	TEST_OK(slist.size() == 1);
+	TEST_OK(slist.valueAt(0).isNull()); // Inspect if valueAt(0) must be null or not
+	TEST_OK(slist.valueAt(0).isEmpty());
+
+	slist = s1.split(sep1, keepEmpty, noQuoteChar);
+	TEST_OK(slist.size() == 5);
+	TEST_OK(slist.valueAt(0) == "This");
+	TEST_OK(slist.valueAt(1) == "is");
+	TEST_OK(slist.valueAt(2) == "a");
+	TEST_OK(slist.valueAt(3) == "test");
+	TEST_OK(slist.valueAt(4) == "string");
+
+	slist = s2.split(sep1, keepEmpty, noQuoteChar);
+	TEST_OK(slist.size() == 10);
+	TEST_OK(slist.valueAt(0) == "This");
+	TEST_OK(slist.valueAt(1).isEmpty());
+	TEST_OK(slist.valueAt(2) == "is");
+	TEST_OK(slist.valueAt(3).isEmpty());
+	TEST_OK(slist.valueAt(4) == "a");
+	TEST_OK(slist.valueAt(5).isEmpty());
+	TEST_OK(slist.valueAt(6) == "test");
+	TEST_OK(slist.valueAt(7).isEmpty());
+	TEST_OK(slist.valueAt(8) == "string");
+	TEST_OK(slist.valueAt(9).isEmpty());
+
+	slist = s2.split(sep1, noKeepEmpty, noQuoteChar);
+	TEST_OK(slist.size() == 5);
+	TEST_OK(slist.valueAt(0) == "This");
+	TEST_OK(slist.valueAt(1) == "is");
+	TEST_OK(slist.valueAt(2) == "a");
+	TEST_OK(slist.valueAt(3) == "test");
+	TEST_OK(slist.valueAt(4) == "string");
+
+	slist = s3.split(sep1, keepEmpty, noQuoteChar);
+	TEST_OK(slist.size() == 1);
+	TEST_OK(slist.valueAt(0) == s3);
+}
+
 template <typename CodeUnitT>
 void test_suite ()
 {
@@ -611,13 +666,14 @@ void test_suite ()
 	test_to_string<CodeUnitT>();
 
 	test_convert_to_number<CodeUnitT>();
+	test_split<CodeUnitT>();
 }
 
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    int ntests = 178;
+    int ntests = 222;
 #ifdef HAVE_INT64
     ntests += 3;
 #endif

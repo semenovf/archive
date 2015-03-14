@@ -82,7 +82,7 @@ template <typename _P>
 class match_range : public match_base<_P>
 {
 public:
-	typedef typename _P::item_type char_type;
+	typedef typename _P::char_type char_type;
 	typedef typename _P::const_iterator const_iterator;
 
 private:

@@ -78,6 +78,8 @@ public:
 
 	reference operator [] (size_type i) const { return at(i); }
 
+	T valueAt (size_type i) const { return at(i); }
+
 	iterator find (const T & value) const;
 
 	reference front () const { return at(0); }

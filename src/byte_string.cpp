@@ -330,7 +330,7 @@ short byte_string::toShort (bool * ok, int base) const
 	const char * begin = reinterpret_cast<const char *>(constData());
 	const char * end = reinterpret_cast<const char *>(constData() + size());
 	return (short)strtointegral_helper<char, const char *>
-		(begin, end, ok, base, integral_t(pfs::min_type<short>), uintegral_t(pfs::max_type<short>));
+		(begin, end, ok, base, integral_t(pfs::min_type<short>()), uintegral_t(pfs::max_type<short>()));
 }
 
 unsigned short byte_string::toUShort (bool * ok, int base) const
@@ -338,7 +338,7 @@ unsigned short byte_string::toUShort (bool * ok, int base) const
 	const char * begin = reinterpret_cast<const char *>(constData());
 	const char * end = reinterpret_cast<const char *>(constData() + size());
 	return (unsigned short)strtouintegral_helper<char, const char *>
-		(begin, end, ok, base, uintegral_t(pfs::max_type<unsigned short>));
+		(begin, end, ok, base, uintegral_t(pfs::max_type<unsigned short>()));
 }
 
 int	byte_string::toInt (bool * ok, int base) const
@@ -347,8 +347,8 @@ int	byte_string::toInt (bool * ok, int base) const
 	const char * end = reinterpret_cast<const char *>(constData() + size());
 	return (int)strtointegral_helper<char, const char *>
 		(begin, end, ok, base
-		, integral_t(pfs::min_type<int>)
-		, uintegral_t(pfs::max_type<int>));
+		, integral_t(pfs::min_type<int>())
+		, uintegral_t(pfs::max_type<int>()));
 }
 
 unsigned int byte_string::toUInt (bool * ok, int base) const
@@ -357,7 +357,7 @@ unsigned int byte_string::toUInt (bool * ok, int base) const
 	const char * end = reinterpret_cast<const char *>(constData() + size());
 	return (unsigned int)strtouintegral_helper<char, const char *>
 		(begin, end, ok, base
-		, uintegral_t(pfs::max_type<unsigned int>));
+		, uintegral_t(pfs::max_type<unsigned int>()));
 }
 
 long byte_string::toLong (bool * ok, int base) const
@@ -367,7 +367,7 @@ long byte_string::toLong (bool * ok, int base) const
 
 	return (long)strtointegral_helper<char, const char *>
 		(begin, end, ok, base
-		, integral_t(pfs::min_type<long>), uintegral_t(pfs::max_type<long>));
+		, integral_t(pfs::min_type<long>()), uintegral_t(pfs::max_type<long>()));
 }
 
 unsigned long byte_string::toULong (bool * ok, int base) const
@@ -377,7 +377,7 @@ unsigned long byte_string::toULong (bool * ok, int base) const
 
 	return (unsigned long)strtouintegral_helper<char, const char *>
 		(begin, end, ok, base
-		, uintegral_t(pfs::max_type<unsigned long>));
+		, uintegral_t(pfs::max_type<unsigned long>()));
 }
 
 #ifdef PFS_HAVE_LONGLONG
@@ -388,8 +388,8 @@ long long byte_string::toLongLong (bool * ok, int base) const
 
 	return (long long)strtointegral_helper<char, const char *>
 		(begin, end, ok, base
-		, integral_t(pfs::min_type<long long>)
-		, uintegral_t(pfs::max_type<long long>));
+		, integral_t(pfs::min_type<long long>())
+		, uintegral_t(pfs::max_type<long long>()));
 }
 
 unsigned long long byte_string::toULongLong (bool * ok, int base) const
@@ -399,7 +399,7 @@ unsigned long long byte_string::toULongLong (bool * ok, int base) const
 
 	return (unsigned long long)strtouintegral_helper<char, const char *>
 		(begin, end, ok, base
-		, uintegral_t(pfs::max_type<unsigned long long>));
+		, uintegral_t(pfs::max_type<unsigned long long>()));
 }
 #endif
 
