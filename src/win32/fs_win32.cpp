@@ -6,7 +6,7 @@
  */
 
 #include <cwt/fs.hpp>
-#include <cwt/safeformat.hpp>
+#include <pfs/safeformat.hpp>
 
 namespace cwt {
 

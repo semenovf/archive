@@ -148,7 +148,7 @@ bool regexp::impl::exec ()
 		case PCRE_ERROR_NOMATCH:
 			break;
 		default:
-			_errstr << _Tr("pcre_error: failed with error code ") << pfs::string::number(rc);
+			_errstr << _Tr("pcre_error: failed with error code ") << pfs::string::toString(rc);
 			break;
 		}
 		return false;

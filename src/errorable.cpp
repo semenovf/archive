@@ -41,7 +41,7 @@ void errorable::logErrors ()
 		for (; it != itEnd; ++it) {
 			pfs::string r;
 			if (it->_ntimes > 1) {
-				r << it->_errstr << _u8("(repeat ") << pfs::string::number(it->_ntimes) << _u8(" times)");
+				r << it->_errstr << _Tr("(repeat ") << pfs::string::toString(it->_ntimes) << _Tr(" times)");
 			} else {
 				r << it->_errstr;
 			}

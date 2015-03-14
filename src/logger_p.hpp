@@ -41,14 +41,14 @@ const pfs::string __priority_str[] = {
 	, _u8("Fatal")
 };
 
-static bool begin_spec        (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool end_spec          (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool append_plain_char (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_left_justify  (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_min_width     (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_max_width     (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_spec_char     (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_format_spec   (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
+static bool begin_spec        (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
+static bool end_spec          (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
+static bool append_plain_char (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
+static bool set_left_justify  (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
+static bool set_min_width     (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
+static bool set_max_width     (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
+static bool set_spec_char     (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
+static bool set_format_spec   (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
 
 /**
  * Each conversion specifier starts with a percent sign (%)
@@ -74,7 +74,7 @@ static bool set_format_spec   (const pfs::string::const_iterator & begin, const 
 
 //static pfs::string _LOGGER_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
 //static pfs::string _LOGGER_WS(" \t");
-static pfs::string _LOGGER_DIGIT("0123456789");
+static pfs::string LOGGER_DIGIT("0123456789");
 
 /* exclude '%' (0x25) */
 pfs::ucchar plain_char[] = {
@@ -88,14 +88,14 @@ static pfs::fsm::transition<pfs::string> plain_char_fsm[] = {
 
 /* format-mod = [ "-" ] *2DIGIT [ "." *2DIGIT ] */
 static pfs::fsm::transition<pfs::string> dot_digit_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_u8("."))                , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_CHAR(_LOGGER_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR(_u8("."))               , FSM_NORMAL, nullptr, nullptr }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(LOGGER_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, nullptr }
 };
 
 static pfs::fsm::transition<pfs::string> format_mod_fsm[] = {
-	  { 1,-1, FSM_MATCH_OPT_CHAR(_u8("-"))            , FSM_NORMAL, set_left_justify, nullptr }
-	, { 2,-1, FSM_MATCH_RPT_CHAR(_LOGGER_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, nullptr }
-	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm)        , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_OPT_CHAR(_u8("-"))           , FSM_NORMAL, set_left_justify, nullptr }
+	, { 2,-1, FSM_MATCH_RPT_CHAR(LOGGER_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, nullptr }
+	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm)       , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* format-spec = "{" *( <exclude '{' (0x7B) and '}' (0x7D) > ) "}" */
@@ -135,7 +135,7 @@ static pfs::fsm::transition<pfs::string> pattern_fsm[] = {
 };
 
 
-static bool begin_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void *context, void *)
+static bool begin_spec (pfs::string::const_iterator, pfs::string::const_iterator,  void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	ctx->pspec.spec_char = pfs::ucchar();
@@ -146,7 +146,7 @@ static bool begin_spec (const pfs::string::const_iterator & , const pfs::string:
 	return true;
 }
 
-static bool end_spec (const pfs::string::const_iterator & , const pfs::string::const_iterator & , void * context, void *)
+static bool end_spec (pfs::string::const_iterator, pfs::string::const_iterator, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	char spec_char = char(ctx->pspec.spec_char);
@@ -192,7 +192,7 @@ static bool end_spec (const pfs::string::const_iterator & , const pfs::string::c
 
 	/* truncate */
 	if (ctx->pspec.max_width > 0 && result.length() > ctx->pspec.max_width) {
-		result = result.substr(result.begin(), ctx->pspec.max_width);
+		result = result.substr(0, ctx->pspec.max_width);
 	}
 
 	/* pad */
@@ -210,7 +210,7 @@ static bool end_spec (const pfs::string::const_iterator & , const pfs::string::c
 	return true;
 }
 
-static bool set_spec_char (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_spec_char (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
 {
 	PFS_ASSERT(begin < end);
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
@@ -218,7 +218,7 @@ static bool set_spec_char (const pfs::string::const_iterator & begin, const pfs:
 	return true;
 }
 
-static bool set_format_spec (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_format_spec (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	ctx->pspec.fspec = pfs::string(begin, end);
@@ -226,14 +226,14 @@ static bool set_format_spec (const pfs::string::const_iterator & begin, const pf
 }
 
 
-static bool append_plain_char (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool append_plain_char (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	ctx->result.append(pfs::string(begin, end));
 	return true;
 }
 
-static bool set_left_justify (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_left_justify (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	if (begin + 1 == end) {
@@ -242,7 +242,7 @@ static bool set_left_justify (const pfs::string::const_iterator & begin, const p
 	return true;
 }
 
-static bool set_min_width (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_min_width (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	if (begin < end) {
@@ -254,7 +254,7 @@ static bool set_min_width (const pfs::string::const_iterator & begin, const pfs:
 	return true;
 }
 
-static bool set_max_width (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_max_width (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	if (begin < end) {

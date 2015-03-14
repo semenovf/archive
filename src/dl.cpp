@@ -23,8 +23,11 @@ pfs::string dl::searchFile (const pfs::string & filename)
 	if (!fs.isAbsolute(filename)) {
 		pfs::vector<pfs::string>::const_iterator it = searchPath.cbegin();
 		pfs::vector<pfs::string>::const_iterator itEnd = searchPath.cend();
+
 		while (it != itEnd) {
-			pfs::string r = *it + fs.separator() + filename;
+						pfs::string r(*it);
+			r += fs.separator();
+			r += filename;
 			if (fs.exists(r))
 				return r;
 			++it;
@@ -32,8 +35,11 @@ pfs::string dl::searchFile (const pfs::string & filename)
 
 		it = globalSearchPath.cbegin();
 		itEnd = globalSearchPath.cend();
+
 		while (it != itEnd) {
-			pfs::string r = *it + fs.separator() + filename;
+			pfs::string r(*it);
+			r += fs.separator();
+			r += filename;
 			if (fs.exists(r))
 				return r;
 			++it;
@@ -110,7 +116,7 @@ bool dl::pluginOpen(const pfs::string & name, const pfs::string & path, void * p
 	return ctor(pluggable);
 }
 
-bool dl::pluginClose(const pfs::string & name, void * pluggable)
+bool dl::pluginClose (const pfs::string & name, void * pluggable)
 {
 	pfs::map<pfs::string, dl::handle>::iterator it = dl::plugins.find(name);
 
@@ -123,7 +129,7 @@ bool dl::pluginClose(const pfs::string & name, void * pluggable)
 		return false;
 	}
 
-	dl::handle dlh = it->second;
+	dl::handle dlh = it.value();
 	PFS_ASSERT(dlh);
 
 	__plugin_dtor dtor = reinterpret_cast<__plugin_dtor>(dl::ptr(dlh, __plugin_dtor_sym));
