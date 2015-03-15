@@ -23,4 +23,4 @@ inline IntT1 floorDiv(IntT1 a, IntT2 b)
 
 }} // pfs::math
 
-#endif /* __CWT_MATH_HPP__ */
+#endif /* __PFS_MATH_HPP__ */

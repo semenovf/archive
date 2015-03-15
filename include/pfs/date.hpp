@@ -115,4 +115,4 @@ inline uint_t hash_func(const date & key, uint_t seed)
 
 } // pfs
 
-#endif /* __CWT_DATE_HPP__ */
+#endif /* __PFS_DATE_HPP__ */

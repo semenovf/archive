@@ -2,6 +2,7 @@
 #include <pfs/variant.hpp>
 #include <pfs/string.hpp>
 #include <pfs/byte_string.hpp>
+#include <pfs/vector.hpp>
 #include <iostream>
 
 int main (int argc, char *argv[])
@@ -60,6 +61,14 @@ int main (int argc, char *argv[])
 	v7 = v6;
 	TEST_FAIL(v7.is<pfs::byte_string>());
 	TEST_OK(strcmp(v7.get<pfs::byte_string>().c_str(), "BYTE_STRING") == 0);
+
+
+	// Try vector of variants
+	// MSVC at compile time output
+	// error C2719: '_Val': formal parameter with __declspec(align('8')) won't be aligned
+	// FIXME
+	pfs::vector<variant_t> vec;
+	vec << v1 << v2 << v3 << v4 << v5 << v6 << v7;
 
 	END_TESTS;
 }

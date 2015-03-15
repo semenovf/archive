@@ -1,5 +1,5 @@
-#ifndef __CWT_TYPES_H__
-#define __CWT_TYPES_H__
+#ifndef __PFS_TYPES_H__
+#define __PFS_TYPES_H__
 
 #include <pfs/pp/limits.h>
 
@@ -122,4 +122,4 @@ typedef struct {
 
 //#define CWT_NULL_UUID { 0, 0, 0, 0, 0, { 0, 0, 0, 0, 0, 0}}
 
-#endif /* ! __CWT_TYPES_H__ */
+#endif /* ! __PFS_TYPES_H__ */

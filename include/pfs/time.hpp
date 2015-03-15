@@ -107,4 +107,4 @@ inline int time::secsTo(const time & t) const
 
 } // pfs
 
-#endif /* __CWT_TIME_HPP__ */
+#endif /* __PFS_TIME_HPP__ */
