@@ -84,8 +84,8 @@ pfs::string dl::searchFile (const pfs::string & filename)
 
 typedef bool (* __plugin_ctor) (void *);
 typedef bool (* __plugin_dtor) (void *);
-static const char * __plugin_ctor_sym = "__cwt_plugin_ctor__";
-static const char * __plugin_dtor_sym = "__cwt_plugin_dtor__";
+static const char * __plugin_ctor_sym = "__plugin_ctor__";
+static const char * __plugin_dtor_sym = "__plugin_dtor__";
 
 bool dl::pluginOpen(const pfs::string & name, const pfs::string & path, void * pluggable)
 {

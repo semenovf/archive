@@ -18,6 +18,11 @@ class settings_impl : public settings_adapter
 {
 	settings::format _format;
 public:
+
+	settings_impl ()
+		: settings_adapter()
+		, _format(settings::DefaultFormat) {}
+
 	settings_impl (settings::format f)
 		: settings_adapter()
 		, _format(f) {}

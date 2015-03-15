@@ -43,7 +43,7 @@ struct thread::data
 	static pthread_key_t  threadKey;
 #endif
 
-	pfs::shared_ptr<thread::impl> threadImpl;
+	pfs::shared_ptr<thread_impl> threadImpl;
 	pthread_t threadId;
 };
 

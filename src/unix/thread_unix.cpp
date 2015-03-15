@@ -90,7 +90,7 @@ thread::data::~data ()
 }
 
 
-thread::impl::impl (/*thread::data * threadData*/)
+thread_impl::thread_impl (/*thread::data * threadData*/)
 	: _mutex()
 	, _stackSize(0)
 	, _priority(thread::InheritPriority)
@@ -101,7 +101,7 @@ thread::impl::impl (/*thread::data * threadData*/)
 {
 }
 
-thread::impl::~impl()
+thread_impl::~thread_impl ()
 {
 	// deleting _data will destroy this instance
 
@@ -122,7 +122,7 @@ void thread::yieldCurrentThread ()
 	sched_yield();
 }
 
-bool thread::impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
+bool thread_impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
 {
 	int rc = 0;
 
@@ -145,7 +145,7 @@ bool thread::impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
 }
 
 
-void thread::impl::start (thread::priority_type priority, size_t stackSize)
+void thread_impl::start (thread::priority_type priority, size_t stackSize)
 {
 	int rc = 0;
 	pfs::auto_lock<> locker(& _mutex);
@@ -220,7 +220,7 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
 			_data = new thread::data;
 			_data->threadImpl = _thread->_pimpl;
 
-			rc = CWT_VERIFY_ERRNO(pthread_create(& pth, & attr, & thread::impl::thread_routine, this));
+			rc = CWT_VERIFY_ERRNO(pthread_create(& pth, & attr, & thread_impl::thread_routine, this));
 
 			if (rc) {
 				_state = ThreadNotRunning;
@@ -263,7 +263,7 @@ void thread::impl::start (thread::priority_type priority, size_t stackSize)
  * 3. Only functions that are cancel-safe may be called from a
  *    thread that is asynchronously cancelable.
  */
-void * thread::impl::thread_routine (void * arg)
+void * thread_impl::thread_routine (void * arg)
 {
 	PFS_ASSERT(arg);
 
@@ -271,10 +271,10 @@ void * thread::impl::thread_routine (void * arg)
     // it is blocked until cancelability is enabled.
     CWT_VERIFY_ERRNO(pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
 
-	thread::impl * threadImpl = static_cast<thread::impl *>(arg);
+	thread_impl * threadImpl = static_cast<thread_impl *>(arg);
 	threadImpl->_data->threadId = pthread_self();
 
-    pthread_cleanup_push(& thread::impl::finalize, threadImpl);
+    pthread_cleanup_push(& thread_impl::finalize, threadImpl);
 
     thread::data::set(threadImpl->_data); // set thread-specific data
 
@@ -302,11 +302,11 @@ void * thread::impl::thread_routine (void * arg)
     return nullptr;
 }
 
-void thread::impl::finalize (void * arg)
+void thread_impl::finalize (void * arg)
 {
 	PFS_ASSERT(arg);
 
-	thread::impl * threadImpl = static_cast<thread::impl *>(arg);
+	thread_impl * threadImpl = static_cast<thread_impl *>(arg);
 
     pfs::auto_lock<> locker(& threadImpl->_mutex);
 
@@ -359,7 +359,7 @@ void thread::data::destroy (void * pdata)
  *
  *  The above steps happen asynchronously.
  */
-void thread::impl::terminate ()
+void thread_impl::terminate ()
 {
     pfs::auto_lock<> locker(& _mutex);
 
@@ -369,7 +369,7 @@ void thread::impl::terminate ()
     }
 }
 
-bool thread::impl::wait (uintegral_t timeout)
+bool thread_impl::wait (uintegral_t timeout)
 {
     pfs::auto_lock<> locker(& _mutex);
 
@@ -396,7 +396,7 @@ bool thread::impl::wait (uintegral_t timeout)
 }
 
 
-void thread::impl::setPriority(thread::priority_type priority)
+void thread_impl::setPriority(thread::priority_type priority)
 {
     pfs::auto_lock<> locker(& _mutex);
 
@@ -451,19 +451,19 @@ inline void __nanosleep (struct timespec & ts)
 		;
 }
 
-void thread::impl::sleep (uintegral_t secs)
+void thread_impl::sleep (uintegral_t secs)
 {
 	struct timespec ts =  __make_timespec(secs, 0);
     __nanosleep(ts);
 }
 
-void thread::impl::msleep (uintegral_t msecs)
+void thread_impl::msleep (uintegral_t msecs)
 {
 	struct timespec ts = __make_timespec(msecs / 1000, msecs % 1000 * 1000 * 1000);
     __nanosleep(ts);
 }
 
-void thread::impl::usleep (uintegral_t usecs)
+void thread_impl::usleep (uintegral_t usecs)
 {
 	struct timespec ts = __make_timespec(usecs / 1000 / 1000, usecs % (1000*1000) * 1000);
     __nanosleep(ts);

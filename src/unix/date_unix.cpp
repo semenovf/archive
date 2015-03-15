@@ -14,7 +14,7 @@ namespace pfs { namespace platform {
 DLL_API pfs::date currentDate ()
 {
     time_t t;
-    time(& t);
+    ::time(& t);
 
     struct tm * tmPtr = nullptr;
 
