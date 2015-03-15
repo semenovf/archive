@@ -9,10 +9,9 @@
 #include "logger_p.hpp"
 #include <pfs/shared_ptr.hpp>
 #include <pfs/atomic.hpp>
-#include <pfs/safeformat.hpp>
-#include <cwt/platform.hpp>
+#include <pfs/platform.hpp>
 
-namespace cwt {
+namespace pfs {
 
 pfs::string log::DefaultPattern("%d{ABSOLUTE} [%p]: %m");
 pfs::string log::NoPattern;
@@ -33,39 +32,39 @@ appender & default_err_appender ()
 	return *appender;
 }
 
-cwt::log & trace ()
+log & trace ()
 {
-	static pfs::shared_ptr<cwt::log> traceLog(new cwt::log(default_out_appender()));
+	static pfs::shared_ptr<log> traceLog(new log(default_out_appender()));
 	return *traceLog;
 }
 
-cwt::log & debug ()
+log & debug ()
 {
-	static pfs::shared_ptr<cwt::log> debugLog(new cwt::log(default_out_appender()));
+	static pfs::shared_ptr<log> debugLog(new log(default_out_appender()));
 	return *debugLog;
 }
 
-cwt::log & info  ()
+log & info  ()
 {
-	static pfs::shared_ptr<cwt::log> infoLog(new cwt::log(default_out_appender()));
+	static pfs::shared_ptr<log> infoLog(new log(default_out_appender()));
 	return *infoLog;
 }
 
-cwt::log & warn  ()
+log & warn  ()
 {
-	static pfs::shared_ptr<cwt::log> warnLog(new cwt::log(default_err_appender()));
+	static pfs::shared_ptr<log> warnLog(new log(default_err_appender()));
 	return *warnLog;
 }
 
-cwt::log & error ()
+log & error ()
 {
-	static pfs::shared_ptr<cwt::log> errorLog(new cwt::log(default_err_appender()));
+	static pfs::shared_ptr<log> errorLog(new log(default_err_appender()));
 	return *errorLog;
 }
 
-cwt::log & fatal ()
+log & fatal ()
 {
-	static pfs::shared_ptr<cwt::log> fatalLog(new cwt::log(default_err_appender()));
+	static pfs::shared_ptr<log> fatalLog(new log(default_err_appender()));
 	return *fatalLog;
 }
 
@@ -80,10 +79,10 @@ void warn  (int errn, const pfs::string & text)
 {
 	if (log::level() < log::Error) {
 		if (text.isEmpty()) {
-			warn().print(log::Warn, cwt::platform::strerror(errn));
+			warn().print(log::Warn, platform::strerror(errn));
 		} else {
 			pfs::string msg;
-			msg << text << ": " << cwt::platform::strerror(errn);
+			msg << text << ": " << platform::strerror(errn);
 			warn().print(log::Warn, msg);
 		}
 	}
@@ -93,10 +92,10 @@ void error (int errn, const pfs::string & text)
 {
 	if (log::level() < log::Fatal) {
 		if (text.isEmpty()) {
-			error().print(log::Error, cwt::platform::strerror(errn));
+			error().print(log::Error, platform::strerror(errn));
 		} else {
 			pfs::string msg;
-			msg << text << cwt::platform::strerror(errn);
+			msg << text << platform::strerror(errn);
 			error().print(log::Error, msg);
 		}
 	}
@@ -106,10 +105,10 @@ void fatal (int errn, const pfs::string & text)
 {
 	if (log::level() < log::NoLog) {
 		if (text.isEmpty()) {
-			fatal().print(log::Fatal, cwt::platform::strerror(errn));
+			fatal().print(log::Fatal, platform::strerror(errn));
 		} else {
 			pfs::string msg;
-			msg << text << cwt::platform::strerror(errn);
+			msg << text << platform::strerror(errn);
 			fatal().print(log::Fatal, msg);
 		}
 	}
@@ -162,4 +161,4 @@ void appender::print_helper (log::priority level, const pfs::string & msg)
 			: patternify(level, _pattern, msg));
 }
 
-} // cwt
+} // pfs

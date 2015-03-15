@@ -6,16 +6,16 @@
  * @brief
  */
 
-#ifndef __CWT_LOG_HPP__
-#define __CWT_LOG_HPP__
+#ifndef __PFS_LOG_HPP__
+#define __PFS_LOG_HPP__
 
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
 #include <pfs/safeformat.hpp>
-#include <cwt/sigslot.hpp>
+#include <pfs/sigslot.hpp>
 #include <iostream>
 
-namespace cwt {
+namespace pfs {
 
 class appender;
 
@@ -27,7 +27,7 @@ public:
 	static pfs::string NoPattern;
 
 private:
-	cwt::signal2<priority, const pfs::string &> _emitter;
+	pfs::signal2<priority, const pfs::string &> _emitter;
 
 public:
 	log (appender & a) { connect(a); }
@@ -42,7 +42,7 @@ public:
 	static void restoreDefaultAppenders ();
 };
 
-class appender : public cwt::has_slots<>
+class appender : public has_slots<>
 {
 	friend class log;
 
@@ -107,12 +107,12 @@ inline void log::disconnectAll ()
 	_emitter.disconnect_all();
 }
 
-cwt::log & trace ();
-cwt::log & debug ();
-cwt::log & info  ();
-cwt::log & warn  ();
-cwt::log & error ();
-cwt::log & fatal ();
+log & trace ();
+log & debug ();
+log & info  ();
+log & warn  ();
+log & error ();
+log & fatal ();
 
 void trace (const pfs::string & text);
 void debug (const pfs::string & text);
@@ -134,6 +134,6 @@ inline void error (int errn, const char * latin1) { error(errn, pfs::string(lati
 inline void fatal (const char * latin1) { fatal(pfs::string(latin1)); }
 inline void fatal (int errn, const char * latin1) { fatal(errn, pfs::string(latin1)); }
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_LOG_HPP__ */
+#endif /* __PFS_LOG_HPP__ */

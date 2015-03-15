@@ -13,23 +13,23 @@
 #include <iostream>
 #include <cstdlib>
 
-class TestThread : public cwt::thread
+class TestThread : public pfs::thread
 {
 public:
-	TestThread() : cwt::thread(),  m_name(pfs::string("unknown")) {}
+	TestThread() : pfs::thread(),  m_name(pfs::string("unknown")) {}
 	TestThread(const pfs::string & name) : m_name(name) {}
 
 	virtual void run()
 	{
 		PFS_ASSERT(isRunning());
 
-		cwt::random r (12345/*time(nullptr)*/);
+		pfs::random r (12345/*time(nullptr)*/);
 		int t = r.rand();
 		t = t < 1000000
 				? 1000000
 				: t > 3000000 ? 3000000 : t;
 
-		std::cout << "cwt::thread [" << m_name.c_str() << _Tr("]: Sleeping for ") << t << " microseconds" << std::endl;
+		std::cout << "pfs::thread [" << m_name.c_str() << _Tr("]: Sleeping for ") << t << " microseconds" << std::endl;
 		msleep(500);
 	}
 private:
@@ -55,7 +55,7 @@ void test_threads(int nthreads)
 
 	for(int i = 0; i < nthreads; ++i) {
 		if (threads[i]) {
-			threads[i]->start(cwt::thread::InheritPriority);
+			threads[i]->start(pfs::thread::InheritPriority);
 		}
 	}
 
@@ -76,10 +76,10 @@ void test_threads(int nthreads)
 
 void test_wait_timeout ()
 {
-	struct X : public cwt::thread
+	struct X : public pfs::thread
 	{
 		bool finished;
-		X() : cwt::thread(), finished(false) {}
+		X() : pfs::thread(), finished(false) {}
 
 		virtual void run ()
 		{
@@ -88,10 +88,10 @@ void test_wait_timeout ()
 		}
 	};
 
-	struct Y : public cwt::thread
+	struct Y : public pfs::thread
 	{
 		bool finished;
-		Y() : cwt::thread(), finished(false) {}
+		Y() : pfs::thread(), finished(false) {}
 
 		virtual void run ()
 		{
@@ -100,10 +100,10 @@ void test_wait_timeout ()
 		}
 	};
 
-	struct Z : public cwt::thread
+	struct Z : public pfs::thread
 	{
 		bool finished;
-		Z() : cwt::thread(), finished(false) {}
+		Z() : pfs::thread(), finished(false) {}
 
 		virtual void run ()
 		{
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 	if (1) test_threads(350);
 	if (1) test_wait_timeout();
 
-    END_TESTS; // exits with cwt::thread::exit
+    END_TESTS; // exits with pfs::thread::exit
 }
 
 

@@ -5,12 +5,12 @@
  *      Author: wladt
  */
 
-#include "../../include/cwt/platform.hpp"
+#include <pfs/platform.hpp>
 #include <pfs/mt.hpp>
 #include <ctime>
 #include <sys/time.h> // gettimeofday
 
-namespace cwt { namespace platform {
+namespace pfs { namespace platform {
 
 DLL_API pfs::time currentTime ()
 {
@@ -35,5 +35,5 @@ DLL_API pfs::time currentTime ()
     return pfs::time(tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec, tv.tv_usec/1000);
 }
 
-}} // cwt
+}} // pfs::platform
 

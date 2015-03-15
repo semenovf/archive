@@ -112,7 +112,7 @@ static int64_t __crc64_lookup_table[] = {
 #define CRC64(oldcrc, curByte) (crc64table[BYTE(oldcrc)^BYTE(curByte)]^(QWORD(oldcrc)>>8))
 */
 
-int64_t cwt_crc64_iso (const void * pdata, size_t nbytes, int64_t initial)
+int64_t pfs_crc64_iso (const void * pdata, size_t nbytes, int64_t initial)
 {
 	const byte_t *pbytes = (const byte_t *)pdata;
 	int64_t r = initial;

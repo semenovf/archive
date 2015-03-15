@@ -6,16 +6,16 @@
  * @brief
  */
 
-#ifndef __CWT_FS_HPP__
-#define __CWT_FS_HPP__
+#ifndef __PFS_FS_HPP__
+#define __PFS_FS_HPP__
 
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
-#include <cwt/errorable.hpp>
+#include <pfs/errorable_ext.hpp>
 
-namespace cwt {
+namespace pfs {
 
-class fs : public errorable
+class fs : public errorable_ext
 {
 public:
 	enum filter {
@@ -55,7 +55,7 @@ public:
 	};
 
 public:
-	fs () : errorable() {}
+	fs () : errorable_ext() {}
 	pfs::ucchar separator () const;
 	bool isAbsolute (const pfs::string & path);
 	bool isRelative (const pfs::string & path) { return !isAbsolute(path); }
@@ -73,6 +73,6 @@ public:
 	pfs::stringlist entryListByWildcard (const pfs::string & dir, const pfs::stringlist & nameFilters, uint_t filters = NoFilter, uint_t sort = NoSort);
 };
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_FS_HPP__ */
+#endif /* __PFS_FS_HPP__ */

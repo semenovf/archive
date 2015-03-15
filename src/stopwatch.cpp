@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/stopwatch.hpp"
+#include "pfs/stopwatch.hpp"
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -25,7 +25,7 @@
 // [QueryPerformanceCounter - бомба замедленного действия](http://devdoc.web-ide.ru/index.php/content/view/queryPerformanceCounter.htm)
 #endif
 
-namespace cwt {
+namespace pfs {
 
 void stopwatch::start ()
 {
@@ -68,5 +68,4 @@ std::string stopwatch::stringifyTime (double t)
 	return ss.str();
 }
 
-
-} // cwt
+} // pfs

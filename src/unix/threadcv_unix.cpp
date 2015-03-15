@@ -5,16 +5,16 @@
  *      Author: wladt
  */
 
-#include "../../include/cwt/logger.hpp"
+#include <pfs/logger.hpp>
+#include <pfs/platform.hpp>
 #include <pthread.h>
 #include <cerrno>
 #include <sys/time.h>
 #include "../threadcv_p.hpp"
-#include <cwt/platform.hpp>
 
-namespace cwt {
+namespace pfs {
 
-static inline void __calculate_abstime (ulong_t timeout, timespec * ts)
+static inline void __calculate_abstime (uintegral_t timeout, timespec * ts)
 {
     struct timeval tv;
     gettimeofday(& tv, nullptr);
@@ -30,7 +30,7 @@ public:
 	impl ();
 	~impl ();
 	bool wait (pfs::mutex & lockedMutex);
-	bool wait (pfs::mutex & lockedMutex, ulong_t timeout);
+	bool wait (pfs::mutex & lockedMutex, uintegral_t timeout);
 	void wakeOne ();
 	void wakeAll ();
 
@@ -77,7 +77,7 @@ inline void thread_cv::impl::wakeAll ()
 
 // see section "Timed Condition Wait" in pthread_cond_timedwait(P) manual page.
 //
-bool thread_cv::impl::wait (pfs::mutex & lockedMutex, ulong_t timeout)
+bool thread_cv::impl::wait (pfs::mutex & lockedMutex, uintegral_t timeout)
 {
 	int rc = 0;
 	{
@@ -126,7 +126,7 @@ bool thread_cv::wait (pfs::mutex & lockedMutex)
 	return _d.cast<impl>()->wait(lockedMutex);
 }
 
-bool thread_cv::wait (pfs::mutex & lockedMutex, ulong_t timeout)
+bool thread_cv::wait (pfs::mutex & lockedMutex, uintegral_t timeout)
 {
 	return _d.cast<impl>()->wait(lockedMutex, timeout);
 }
@@ -141,4 +141,4 @@ void thread_cv::wakeAll ()
 	_d.cast<impl>()->wakeAll();
 }
 
-} // cwt
+} // pfs

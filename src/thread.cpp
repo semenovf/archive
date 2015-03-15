@@ -6,7 +6,7 @@
  */
 
 #include "thread_p.hpp"
-#include "../include/cwt/logger.hpp"
+#include "pfs/logger.hpp"
 
 // Sources:
 // * POSIX Threads Programming
@@ -14,23 +14,25 @@
 // * Завершение работы нитей
 //	http://pic.dhe.ibm.com/infocenter/aix/v6r1/topic/com.ibm.aix.genprogc/doc/genprogc/term_threads.htm#term_threads__cleanup
 
-namespace cwt {
+namespace pfs {
 
-thread::thread() : _pimpl(new thread::impl)
+thread::thread () : base_class(new thread_impl)
 {
-	_pimpl->_thread = this;
+	base_class::cast()->_thread = this;
 }
 
 thread::~thread ()
 {
-	pfs::auto_lock<> locker(& _pimpl->_mutex);
-    if (_pimpl->_state == ThreadFinishing) {
+	impl_class * d = base_class::cast();
+	pfs::auto_lock<> locker(& d->_mutex);
+
+    if (d->_state == ThreadFinishing) {
         locker.unlock();
         wait();
         locker.tryLock();
     }
 
-    if (! PFS_VERIFY_X(_pimpl->_state != ThreadRunning
+    if (! PFS_VERIFY_X(d->_state != ThreadRunning
     		, _Tr("Attempt to destroy thread while it is still running"))) {
     	locker.unlock();
     	terminate();
@@ -38,66 +40,66 @@ thread::~thread ()
     	locker.tryLock();
     }
 
-	_pimpl->_thread = nullptr; // detach thread
+	d->_thread = nullptr; // detach thread
 }
 
 bool thread::isFinished () const
 {
-	pfs::auto_lock<>(& _pimpl->_mutex);
-    return _pimpl->_state == ThreadFinished || _pimpl->_state == ThreadFinishing;
+	const impl_class * d = base_class::cast();
+    return d->_state == ThreadFinished || d->_state == ThreadFinishing;
 }
 
 bool thread::isRunning () const
 {
-	pfs::auto_lock<>(& _pimpl->_mutex);
-    return _pimpl->_state == ThreadRunning;
+	const impl_class * d = base_class::cast();
+    return d->_state == ThreadRunning;
 }
 
 thread::priority_type thread::priority () const
 {
-	pfs::auto_lock<>(& _pimpl->_mutex);
-    return _pimpl->_priority;
+	const impl_class * d = base_class::cast();
+    return d->_priority;
 }
 
 size_t thread::stackSize () const
 {
-	pfs::auto_lock<>(& _pimpl->_mutex);
-    return _pimpl->_stackSize;
+	const impl_class * d = base_class::cast();
+    return d->_stackSize;
 }
 
 void thread::setPriority (thread::priority_type priority)
 {
-	_pimpl->setPriority(priority);
+	base_class::cast()->setPriority(priority);
 }
 
 void thread::start (thread::priority_type priority, size_t stackSize)
 {
-	_pimpl->start(priority, stackSize);
+	base_class::cast()->start(priority, stackSize);
 }
 
 void thread::terminate ()
 {
-	_pimpl->terminate();
+	base_class::cast()->terminate();
 }
 
-bool thread::wait (ulong_t timeout)
+bool thread::wait (uintegral_t timeout)
 {
-	return _pimpl->wait(timeout);
+	return base_class::cast()->wait(timeout);
 }
 
-void thread::sleep(ulong_t secs)
+void thread::sleep (uintegral_t secs)
 {
-    thread::impl::sleep(secs);
+    thread_impl::sleep(secs);
 }
 
-void thread::msleep(ulong_t msecs)
+void thread::msleep (uintegral_t msecs)
 {
-	thread::impl::msleep(msecs);
+	thread_impl::msleep(msecs);
 }
 
-void thread::usleep(ulong_t usecs)
+void thread::usleep (uintegral_t usecs)
 {
-	thread::impl::usleep(usecs);
+	thread_impl::usleep(usecs);
 }
 
-} // cwt
+} // pfs

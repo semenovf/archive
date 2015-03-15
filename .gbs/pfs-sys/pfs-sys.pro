@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-dll.pri)
 
-TARGET = cwt-sys
+TARGET = pfs-sys
 
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../pfs/include

@@ -5,12 +5,12 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_RANDOM_HPP__
-#define __CWT_RANDOM_HPP__
+#ifndef __PFS_RANDOM_HPP__
+#define __PFS_RANDOM_HPP__
 
 #include <pfs/pimpl.hpp>
 
-namespace cwt {
+namespace pfs {
 
 class random
 {
@@ -24,6 +24,6 @@ public:
 	uint_t rand ();
 };
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_RANDOM_HPP__ */
+#endif /* __PFS_RANDOM_HPP__ */

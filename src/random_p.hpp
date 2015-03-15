@@ -5,9 +5,9 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_RANDOM_P_HPP__
-#define __CWT_RANDOM_P_HPP__
+#ifndef __PFS_RANDOM_P_HPP__
+#define __PFS_RANDOM_P_HPP__
 
-#include "../include/cwt/random.hpp"
+#include "pfs/random.hpp"
 
-#endif /* __CWT_RANDOM_P_HPP__ */
+#endif /* __PFS_RANDOM_P_HPP__ */

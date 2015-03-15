@@ -10,10 +10,10 @@ SOURCES += ../../../tests/utils.cpp
 
 unix {
     LIBS += -lpfs
-    LIBS += -lcwt-sys
+    LIBS += -lpfs-sys
 }
 
 win32 {
     LIBS += pfs.lib
-    LIBS += cwt-sys.lib
+    LIBS += pfs-sys.lib
 }

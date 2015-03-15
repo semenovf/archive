@@ -6,10 +6,10 @@
  */
 
 #include <pfs/fsm.hpp>
-#include "../include/cwt/uri.hpp"
+#include "pfs/uri.hpp"
 #include "uri_rfc3986.hpp"
 
-namespace cwt {
+namespace pfs {
 
 void uri_data::clear()
 {
@@ -97,8 +97,8 @@ pfs::string uri::toString() const
 		}
 
 		if (_uri.port > 0) {
-			uri += pfs::string(":");
-			uri += pfs::string::number(_uri.port);
+			uri += string(":");
+			uri += string::toString(_uri.port);
 		}
 
 		if (!_uri.path.isEmpty()) {
@@ -119,4 +119,4 @@ pfs::string uri::toString() const
 	return uri;
 }
 
-} // cwt
+} // pfs

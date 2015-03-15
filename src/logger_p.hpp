@@ -6,14 +6,14 @@
  * @brief
  */
 
-#ifndef __CWT_LOGGER_P_HPP__
-#define __CWT_LOGGER_P_HPP__
+#ifndef __PFS_LOGGER_P_HPP__
+#define __PFS_LOGGER_P_HPP__
 
-#include "../include/cwt/logger.hpp"
+#include "pfs/logger.hpp"
 #include <pfs/fsm.hpp>
 #include <ctime>
 
-namespace cwt {
+namespace pfs {
 
 struct pattern_spec
 {
@@ -26,7 +26,7 @@ struct pattern_spec
 
 struct pattern_context
 {
-	cwt::log::priority  level;
+	pfs::log::priority  level;
 	pfs::string         result;
 	const pfs::string * msg;
 	pattern_spec        pspec;
@@ -266,6 +266,6 @@ static bool set_max_width (pfs::string::const_iterator begin, pfs::string::const
 	return true;
 }
 
-} // cwt::log
+} // pfs
 
-#endif /* __CWT_LOGGER_P_HPP__ */
+#endif /* __PFS_LOGGER_P_HPP__ */

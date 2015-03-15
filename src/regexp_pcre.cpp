@@ -5,12 +5,12 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/regexp.hpp"
+#include "pfs/regexp.hpp"
 #include "../pcre8/pcre.h"
 #include <pfs/vector.hpp>
 #include <string.h>
 
-namespace cwt {
+namespace pfs {
 
 class regexp::impl
 {
@@ -366,4 +366,4 @@ pfs::vector<pfs::string> regexp::groups() const
 	return r;
 }
 
-} // cwt
+} // pfs

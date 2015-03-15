@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_THREAD_UNIX_HPP__
-#define __CWT_THREAD_UNIX_HPP__
+#ifndef __PFS_THREAD_UNIX_HPP__
+#define __PFS_THREAD_UNIX_HPP__
 
 #include "../thread_p.hpp"
 #include <cerrno>
@@ -23,7 +23,7 @@
 //#	define CWT_HAVE_TLS
 //#endif
 
-namespace cwt {
+namespace pfs {
 
 struct thread::data
 {
@@ -81,6 +81,6 @@ inline void thread::data::createKey ()
     pthread_key_create(& threadKey, destroy);
 }
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_THREAD_UNIX_HPP__ */
+#endif /* __PFS_THREAD_UNIX_HPP__ */

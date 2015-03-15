@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_THREAD_HPP__
-#define __CWT_THREAD_HPP__
+#ifndef __PFS_THREAD_HPP__
+#define __PFS_THREAD_HPP__
 
 #include <pfs.hpp>
 #include <pfs/pimpl.hpp>
@@ -16,11 +16,17 @@
 #	pragma warning(disable:4251)
 #endif
 
-namespace cwt {
+namespace pfs {
 
-class DLL_API thread
+class thread_impl;
+
+class DLL_API thread : public nullable<thread_impl>
 {
-	PFS_PIMPL_DECL(thread, protected, impl, protected);
+//	PFS_PIMPL_DECL(thread, protected, impl, protected);
+protected:
+	typedef nullable<thread_impl> base_class;
+	typedef thread                self_class;
+	typedef thread_impl           impl_class;
 
 public:
 	struct data;
@@ -57,7 +63,7 @@ public:
 	priority_type priority () const;
 	void	 setPriority (priority_type priority);
 	size_t	 stackSize () const;
-	bool	 wait (ulong_t timeout = PFS_ULONG_MAX);
+	bool	 wait (uintegral_t timeout = PFS_UINTEGRAL_MAX);
 	void	 start (priority_type prty = InheritPriority, size_t stackSize = 0);
 	void	 terminate ();
 
@@ -68,18 +74,18 @@ public:
 	static void exit (); // equivalent to pthread_exit() for POSIX systems
 
 public:
-	static void sleep (ulong_t secs);
-	static void msleep (ulong_t msecs);
-	static void usleep (ulong_t usecs);
+	static void sleep (uintegral_t secs);
+	static void msleep (uintegral_t msecs);
+	static void usleep (uintegral_t usecs);
 
 protected:
 	virtual void run () {}
 };
 
-} // cwt
+} // pfs
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)
 #endif
 
-#endif /* __CWT_THREAD_HPP__ */
+#endif /* __PFS_THREAD_HPP__ */

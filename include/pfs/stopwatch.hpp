@@ -5,12 +5,12 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_STOPWATCH_HPP__
-#define __CWT_STOPWATCH_HPP__
+#ifndef __PFS_STOPWATCH_HPP__
+#define __PFS_STOPWATCH_HPP__
 
 #include <pfs/string.hpp>
 
-namespace cwt {
+namespace pfs {
 
 class stopwatch
 {
@@ -24,6 +24,6 @@ public:
 	static std::string stringifyTime (double t);
 };
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_STOPWATCH_HPP__ */
+#endif /* __PFS_STOPWATCH_HPP__ */

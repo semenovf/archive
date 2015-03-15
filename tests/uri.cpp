@@ -12,7 +12,7 @@
 #include <pfs/fsm_test.hpp>
 #include "../src/uri_rfc3986.hpp"
 
-using namespace cwt;
+using namespace pfs;
 
 static FsmTestEntry __fsmTestEntries[] = {
 
@@ -297,7 +297,7 @@ void test_uri_parse()
 		, query
 		, fragment);
 
-	cwt::uri uri(pfs::string::fromUtf8(uri_string));
+	pfs::uri uri(pfs::string::fromUtf8(uri_string));
 
 	TEST_FAIL(uri.scheme() == pfs::string::fromUtf8(scheme));
 	TEST_FAIL(uri.userinfo() == pfs::string::fromUtf8(userinfo));

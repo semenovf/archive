@@ -7,13 +7,13 @@
  * @brief Implements Thread Local Storage
  */
 
-#ifndef __CWT_THREADLS_HPP__
-#define __CWT_THREADLS_HPP__
+#ifndef __PFS_THREADLS_HPP__
+#define __PFS_THREADLS_HPP__
 
 #include <pfs/shared_ptr.hpp>
 #include <pfs/noncopyable.hpp>
 
-namespace cwt {
+namespace pfs {
 
 // FIXME Implement
 
@@ -98,6 +98,6 @@ public:
 #endif
 };
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_THREADLS_HPP__ */
+#endif /* __PFS_THREADLS_HPP__ */

@@ -5,13 +5,13 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_SINGLETON_HPP__
-#define __CWT_SINGLETON_HPP__
+#ifndef __PFS_SINGLETON_HPP__
+#define __PFS_SINGLETON_HPP__
 
 #include <pfs/mt.hpp>
 #include <pfs/noncopyable.hpp>
 
-namespace cwt {
+namespace pfs {
 
 /**
  * @details Использованы материалы:
@@ -131,6 +131,6 @@ void singleton<T>::forceFree()
 	}
 }
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_SINGLETON_HPP__ */
+#endif /* __PFS_SINGLETON_HPP__ */

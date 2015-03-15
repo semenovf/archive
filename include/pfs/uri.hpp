@@ -6,18 +6,22 @@
  * @brief
  */
 
-#ifndef __CWT_URI_HPP__
-#define __CWT_URI_HPP__
+#ifndef __PFS_URI_HPP__
+#define __PFS_URI_HPP__
 
 #include <pfs/string.hpp>
 #include <pfs/map.hpp>
 
-namespace cwt {
+namespace pfs {
 
 /* C#   System.Uri
  * Java java.net.URI
  * Qt   QUrl, QUrlQuery (for query string parsing)
  */
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
 
 struct DLL_API uri_data
 {
@@ -60,6 +64,10 @@ public:
 	pfs::string toString () const;
 };
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_URI_HPP__ */
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
+
+#endif /* __PFS_URI_HPP__ */

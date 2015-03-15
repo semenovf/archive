@@ -7,9 +7,9 @@
 
 #define _CRT_RAND_S
 #include <stdlib.h>
-#include "../../include/cwt/random.hpp"
+#include "pfs/random.hpp"
 
-namespace cwt {
+namespace pfs {
 
 class random::impl
 {
@@ -43,4 +43,4 @@ uint_t random::rand ()
 	return _d.cast<impl>()->rand();
 }
 
-} // cwt
+} // pfs

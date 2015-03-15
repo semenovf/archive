@@ -5,11 +5,11 @@
  *      Author: wladt
  */
 
-#include "../../include/cwt/platform.hpp"
+#include "../../include/pfs/platform.hpp"
 #include <pfs/mt.hpp>
 #include <ctime>
 
-namespace cwt { namespace platform {
+namespace pfs { namespace platform {
 
 DLL_API pfs::date currentDate ()
 {
@@ -32,4 +32,4 @@ DLL_API pfs::date currentDate ()
     return pfs::date(tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday);
 }
 
-}} // platform::cwt
+}} // pfs::platform

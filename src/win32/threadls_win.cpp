@@ -6,10 +6,10 @@
  */
 
 
-#include "../../include/cwt/thread.hpp"
-#include "../../include/cwt/threadls.hpp"
+#include "pfs/thread.hpp"
+#include "pfs/threadls.hpp"
 
-namespace cwt {
+namespace pfs {
 
 thread::tls_implementation_type thread::tls_implementation ()
 {
@@ -34,7 +34,7 @@ DLL_API void * cwt_get_tls_data (void const * key)
 }
 */
 
-} // cwt
+} // pfs
 
 
 

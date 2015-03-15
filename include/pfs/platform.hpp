@@ -6,14 +6,14 @@
  * @brief
  */
 
-#ifndef __CWT_PLATFORM_HPP__
-#define __CWT_PLATFORM_HPP__
+#ifndef __PFS_PLATFORM_HPP__
+#define __PFS_PLATFORM_HPP__
 
 #include <pfs/time.hpp>
 #include <pfs/date.hpp>
 #include <pfs/datetime.hpp>
 
-namespace cwt { namespace platform {
+namespace pfs { namespace platform {
 
 DLL_API pfs::time currentTime ();
 DLL_API pfs::date currentDate ();
@@ -30,17 +30,17 @@ struct display_data
 
 DLL_API void displayParameters (display_data * d);
 
-}} // platform::cwt
+}} // pfs::platform
 
 #ifndef NDEBUG
-namespace cwt { namespace platform {
+namespace pfs { namespace platform {
 struct __verify_errno
 {
 	int operator () (const char * file, int lineno, const char * exprtext, int errn) const
 	{
 		if (0 != errn)
 			fprintf(stderr, "ERROR (%s[%d]): %s: %s [errno=%d]\n"
-					, file, lineno, exprtext, cwt::platform::strerror(errn).c_str(), errn);
+					, file, lineno, exprtext, platform::strerror(errn).c_str(), errn);
 		return errn;
 	}
 
@@ -48,16 +48,16 @@ struct __verify_errno
 	{
 		if (! predicate)
 			fprintf(stderr, "ERROR (%s[%d]): %s: %s [errno=%d]\n"
-					, file, lineno, exprtext, cwt::platform::strerror(errn).c_str(), errn);
+					, file, lineno, exprtext, platform::strerror(errn).c_str(), errn);
 		return predicate;
 	}
 };
 }}
-#	define CWT_VERIFY_ERRNO(errn) cwt::platform::__verify_errno()(__TFILE__, __LINE__, #errn, (errn))
-#	define CWT_VERIFY_ERRNO_X(expr,errn) cwt::platform::__verify_errno()((expr), __TFILE__, __LINE__, #expr, (errn))
+#	define CWT_VERIFY_ERRNO(errn) platform::__verify_errno()(__TFILE__, __LINE__, #errn, (errn))
+#	define CWT_VERIFY_ERRNO_X(expr,errn) platform::__verify_errno()((expr), __TFILE__, __LINE__, #expr, (errn))
 #else /* !NDEBUG */
 #	define CWT_VERIFY_ERRNO(errn) (errn)
 #	define CWT_VERIFY_ERRNO_X(expr,errn) (expr)
 #endif
 
-#endif /* __CWT_PLATFORM_HPP__ */
+#endif /* __PFS_PLATFORM_HPP__ */

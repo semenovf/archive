@@ -8,7 +8,7 @@
 #include "../random_p.hpp"
 #include <cstdlib>
 
-namespace cwt {
+namespace pfs {
 
 #if defined(_SVID_SOURCE) || defined(_BSD_SOURCE)
 #	define CWT_HAVE_RANDOM_R
@@ -88,4 +88,4 @@ uint_t random::rand ()
 	return uint_t(_d.cast<impl>()->rand());
 }
 
-} // cwt
+} // pfs

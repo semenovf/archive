@@ -12,7 +12,7 @@
 
 // FIXME Need to support system locale
 
-pfs::string __cwt_strerror (int_t errn)
+pfs::string pfs_strerror (int_t errn)
 {
 #if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
 	static const int __MaxBufLen = 128;

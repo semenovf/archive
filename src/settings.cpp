@@ -6,67 +6,130 @@
  */
 
 #include "settings_p.hpp"
-#include "../include/cwt/dl.hpp"
+#include "pfs/dl.hpp"
 
-namespace cwt {
+namespace pfs {
 
-static const char * __plugin_basenames[] = {
-	"cwt-settings-json"
+static const pfs::string __plugin_basenames[] = {
+	_u8("pfs-settings-json")
 };
 
-class settings::impl : public settings_adapter
-{};
-
-PFS_PIMPL_DEF(settings, impl);
-
-settings::settings (format f) : has_slots<>(), _format(f), _pimpl(new settings::impl)
+class settings_impl : public settings_adapter
 {
-	cwt::dl dl;
-	pfs::string path = dl.buildDlFileName(_u8(__plugin_basenames[_format]));
-	PFS_ASSERT_X(dl.pluginOpen(_u8(__plugin_basenames[_format]), path, this->_pimpl.get())
+	settings::format _format;
+public:
+	settings_impl (settings::format f)
+		: settings_adapter()
+		, _format(f) {}
+
+	settings::format format () const { return _format; }
+};
+
+settings::settings (format f)
+	: base_class(new settings_impl(f))
+{
+	pfs::dl dl;
+	pfs::string path = dl.buildDlFileName(__plugin_basenames[f]);
+	PFS_ASSERT_X(
+			dl.pluginOpen(__plugin_basenames[f], path, base_class::cast())
 			, dl.lastErrorText().c_str());
 }
 
 settings::~settings()
 {
-	cwt::dl dl;
-	dl.pluginClose(_u8(__plugin_basenames[_format]), this->_pimpl.get());
+	pfs::dl dl;
+	impl_class * d = base_class::cast();
+	dl.pluginClose(__plugin_basenames[d->format()], d);
 }
 
-bool settings::parse(const pfs::string & str) { return _pimpl->parse(this->_pimpl.get(), str); }
+bool settings::parse(const pfs::string & str)
+{
+	impl_class * d = base_class::cast();
+	return d->parse(d, str);
+}
 
-void settings::set (const pfs::string & path, bool value)          { _pimpl->setBool   (this->_pimpl.get(), path, value); }
-void settings::set (const pfs::string & path, double value)        { _pimpl->setDouble (this->_pimpl.get(), path, value); }
-void settings::set (const pfs::string & path, float value)         { _pimpl->setFloat  (this->_pimpl.get(), path, value); }
-void settings::set (const pfs::string & path, long_t value)        { _pimpl->setLong   (this->_pimpl.get(), path, value); }
-void settings::set (const pfs::string & path, ulong_t value)       { _pimpl->setULong  (this->_pimpl.get(), path, value); }
-void settings::set (const pfs::string & path, int_t value)         { _pimpl->setInt    (this->_pimpl.get(), path, value); }
-void settings::set (const pfs::string & path, uint_t value)        { _pimpl->setUInt   (this->_pimpl.get(), path, value); }
-void settings::set (const pfs::string & path, const pfs::string & s)    { _pimpl->setString (this->_pimpl.get(), path, s); }
-void settings::set (const pfs::string & path, const char * latin1) { _pimpl->setLatin1 (this->_pimpl.get(), path, latin1); }
+settings::property
+settings::value (const pfs::string & path
+		, const property & defaultValue) const
+{
+	const impl_class * d = base_class::cast();
+	return d->value(d, path, defaultValue);
+}
 
-pfs::unitype settings::value (const pfs::string & path, const pfs::unitype & defaultValue) const
-	{ return _pimpl->value(this->_pimpl.get(), path, defaultValue); }
+bool
+settings::booleanValue (const pfs::string & path
+		, bool defaultValue) const
+{
+	const impl_class * d = base_class::cast();
+	return d->booleanValue(d, path, defaultValue);
+}
 
-bool settings::boolean (const pfs::string & path, bool defaultValue) const
-	{ return _pimpl->boolean(this->_pimpl.get(), path, defaultValue); }
+integral_t
+settings::integralValue (const pfs::string & path
+		, integral_t defaultValue) const
+{
+	const impl_class * d = base_class::cast();
+	return d->integralValue(d, path, defaultValue);
+}
 
-long_t settings::integer (const pfs::string & path, long_t defaultValue) const
-	{ return _pimpl->integer(this->_pimpl.get(), path, defaultValue); }
+real_t
+settings::realValue (const pfs::string & path
+		, real_t defaultValue) const
+{
+	const impl_class * d = base_class::cast();
+	return d->realValue(d, path, defaultValue);
+}
 
-double  settings::number (const pfs::string & path, double defaultValue) const
-	{ return _pimpl->number(this->_pimpl.get(), path, defaultValue); }
+pfs::string
+settings::stringValue (const pfs::string & path
+		, const pfs::string & defaultValue) const
+{
+	const impl_class * d = base_class::cast();
+	return d->stringValue(d, path, defaultValue);
+}
 
-pfs::string settings::string (const pfs::string & path, const pfs::string & defaultValue) const
-	{ return _pimpl->string(this->_pimpl.get(), path, defaultValue); }
-
-pfs::vector<pfs::unitype> settings::array (const pfs::string & path, const pfs::vector<pfs::unitype> & defaultValue) const
-	{ return _pimpl->array(this->_pimpl.get(), path, defaultValue); }
+pfs::vector<settings::property>
+settings::arrayValue (const pfs::string & path
+		, const pfs::vector<property> & defaultValue) const
+{
+	const impl_class * d = base_class::cast();
+	return d->arrayValue(d, path, defaultValue);
+}
 
 bool settings::contains (const pfs::string & path) const
-	{ return _pimpl->contains(this->_pimpl.get(), path); }
+{
+	const impl_class * d = base_class::cast();
+	return d->contains(d, path);
+}
 
-//pfs::unitype::Type settings::type (const pfs::string & path) const
-//	{ return _pimpl->type(this->_pimpl.get(), path); }
+void settings::set (const pfs::string & path, bool value)
+{
+	impl_class * d = base_class::cast();
+	d->setBool(d, path, value);
+}
 
-} // cwt
+void settings::set (const pfs::string & path, integral_t value)
+{
+	impl_class * d = base_class::cast();
+	d->setIntegral(d, path, value);
+}
+
+void settings::set (const pfs::string & path, uintegral_t value)
+{
+	impl_class * d = base_class::cast();
+	d->setUIntegral(d, path, value);
+}
+
+void settings::set (const pfs::string & path, real_t value)
+{
+	impl_class * d = base_class::cast();
+	d->setReal(d, path, value);
+}
+
+void settings::set (const pfs::string & path, const pfs::string & value)
+{
+	impl_class * d = base_class::cast();
+	d->setString(d, path, value);
+}
+
+} // pfs

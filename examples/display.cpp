@@ -4,13 +4,13 @@
  * @date Mar 4, 2014
  */
 
-#include <cwt/platform.hpp>
+#include <pfs/platform.hpp>
 #include <iostream>
 
 int main(int /*argc*/, char ** /*argv*/)
 {
-	cwt::platform::display_data d;
-	cwt::platform::displayParameters(& d);
+	pfs::platform::display_data d;
+	pfs::platform::displayParameters(& d);
 
 	std::cout << "geometry in pixels: " << d.pixelsWidth << 'x' << d.pixelsHeight << std::endl
 			<< "geometry in millimeters: " << d.mmWidth << 'x' << d.mmHeight << std::endl;

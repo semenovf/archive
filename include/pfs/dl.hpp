@@ -6,14 +6,14 @@
  */
 
 
-#ifndef __CWT_DL_HPP__
-#define __CWT_DL_HPP__
+#ifndef __PFS_DL_HPP__
+#define __PFS_DL_HPP__
 
 /* see http://en.wikipedia.org/wiki/Dynamic_loading */
 #include <pfs/string.hpp>
 #include <pfs/map.hpp>
 #include <pfs/vector.hpp>
-#include <cwt/errorable.hpp>
+#include <pfs/errorable_ext.hpp>
 
 #ifdef PFS_CC_MSVC
 #	include <windows.h>
@@ -27,9 +27,9 @@
 #	pragma warning(disable:4251)
 #endif
 
-namespace cwt {
+namespace pfs {
 
-class DLL_API dl : public errorable
+class DLL_API dl : public errorable_ext
 {
 public:
 #ifdef PFS_CC_MSC
@@ -70,7 +70,7 @@ private:
 	pfs::string searchFile (const pfs::string & filename);
 };
 
-} // cwt
+} // pfs
 
 EXTERN_C_BEGIN
 int DLL_API dl_only_for_testing_purpose (void);
@@ -80,4 +80,4 @@ EXTERN_C_END
 #	pragma warning(pop)
 #endif
 
-#endif /*__CWT_DL_HPP__ */
+#endif /*__PFS_DL_HPP__ */

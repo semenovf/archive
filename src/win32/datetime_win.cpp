@@ -5,10 +5,10 @@
  *      Author: wladt
  */
 
-#include "../../include/cwt/platform.hpp"
+#include "pfs/platform.hpp"
 #include <windows.h>
 
-namespace cwt { namespace platform {
+namespace pfs { namespace platform {
 
 DLL_API pfs::datetime currentDateTime ()
 {
@@ -25,4 +25,4 @@ DLL_API pfs::datetime currentDateTime ()
     return pfs::datetime(date, time);
 }
 
-}} // cwt::platform
+}} // pfs::platform

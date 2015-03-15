@@ -211,19 +211,19 @@ void test_crc32 ()
 		bytes256[i] = 256 - i;
 	}
 
-	crc32 = cwt::crc32(bytes, sizeof(bytes), 0);
+	crc32 = pfs::crc32(bytes, sizeof(bytes), 0);
 	TEST_OK2(1164760902 == crc32
 		, "CRC32({0..9}) == 1164760902");
 
-	crc32 = cwt::crc32(chars, strlen(chars), 0);
+	crc32 = pfs::crc32(chars, strlen(chars), 0);
 	TEST_OK2( -1764981246 == crc32
 		, "CRC32(\"ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\") == -1764981246");
 
-	crc32 = cwt::crc32(bytes256, sizeof(bytes256), 0);
+	crc32 = pfs::crc32(bytes256, sizeof(bytes256), 0);
 	TEST_OK2( -1386202695 == crc32
 		, "CRC32({256..1}) == -1386202695");
 
-	crc32 = cwt::crc32(bytes256, sizeof(bytes256), -1386202695);
+	crc32 = pfs::crc32(bytes256, sizeof(bytes256), -1386202695);
 	TEST_OK2( 2043667161 == crc32
 		, "CRC32({256..1}) == 2043667161 (with initial = -1386202695)");
 
@@ -240,16 +240,16 @@ void test_crc64 ()
 		bytes256[i] = 256 - i;
 	}
 
-	TEST_OK2( -4480566129418311872LL == cwt::crc64(chars, strlen(chars), 0)
+	TEST_OK2( -4480566129418311872LL == pfs::crc64(chars, strlen(chars), 0)
 		, "CRC64(\"ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\") == -4480566129418311872");
 
-	TEST_OK2( 6302932907043766995LL == cwt::crc64(bytes, sizeof(bytes), 0)
+	TEST_OK2( 6302932907043766995LL == pfs::crc64(bytes, sizeof(bytes), 0)
 		, "CRC64({1..9}) == 6302932907043766995");
 
-	TEST_OK2( 2876295860935205507LL == cwt::crc64(bytes256, sizeof(bytes256), 0)
+	TEST_OK2( 2876295860935205507LL == pfs::crc64(bytes256, sizeof(bytes256), 0)
 		, "CRC64({256..1}) == 2876295860935205507");
 
-	TEST_OK2( -6008134657629535LL == cwt::crc64(bytes256, sizeof(bytes256), 128)
+	TEST_OK2( -6008134657629535LL == pfs::crc64(bytes256, sizeof(bytes256), 128)
 		, "CRC64({256..1}) == -6008134657629535 (with initial = 128)");
 }
 

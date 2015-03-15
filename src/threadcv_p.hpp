@@ -5,13 +5,13 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_THREADCV_P_HPP__
-#define __CWT_THREADCV_P_HPP__
+#ifndef __PFS_THREADCV_P_HPP__
+#define __PFS_THREADCV_P_HPP__
 
-#include "../include/cwt/threadcv.hpp"
+#include "pfs/threadcv.hpp"
 
-namespace cwt {
+namespace pfs {
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_THREADCV_P_HPP__ */
+#endif /* __PFS_THREADCV_P_HPP__ */

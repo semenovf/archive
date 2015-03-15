@@ -11,7 +11,7 @@
 
 void test_simple_match()
 {
-	cwt::regexp rx("\\d\\d \\w+");
+	pfs::regexp rx("\\d\\d \\w+");
 	TEST_OK(rx.match("abc123 def"));
 	TEST_OK(rx.match("12 abc 45 def"));
 	std::cout << "Captured: '" << rx.captured() << '\'' << std::endl;

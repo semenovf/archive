@@ -22,22 +22,22 @@
  */
 
 
-#ifndef __CWT_URI_RFC3986_HPP__
-#define __CWT_URI_RFC3986_HPP__
+#ifndef __PFS_URI_RFC3986_HPP__
+#define __PFS_URI_RFC3986_HPP__
 
 #include <pfs/fsm.hpp>
 
-namespace cwt {
+namespace pfs {
 
 struct UriParseContext {
 	uri_data   *uridata;
 };
 
 
-#ifdef __CWT_TEST__
+#ifdef __PFS_TEST__
 #	define __TRACE_ACT __trace
 #	define __TRACE_ARGS(arg) (reinterpret_cast<void*>(const_cast<char*>(arg)))
-	static bool __trace(const pfs::string::const_iterator &, const pfs::string::const_iterator &, void *, void * action_args)
+	static bool __trace(const string::const_iterator &, const string::const_iterator &, void *, void * action_args)
 	{
 		CWT_TRACE(reinterpret_cast<const char *>(action_args));
 		return true;
@@ -47,15 +47,15 @@ struct UriParseContext {
 #	define __TRACE_ARGS(arg) nullptr
 #endif
 
-static bool set_scheme    (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_query     (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_fragment  (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_path      (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_userinfo  (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool unset_userinfo(const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_host      (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_port      (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
-static bool set_host_is_ip(const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *action_args);
+static bool set_scheme    (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_query     (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_fragment  (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_path      (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_userinfo  (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool unset_userinfo(string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_host      (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_port      (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_host_is_ip(string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
 /*static void __check_host_is_ip(const void *data, size_t len, void *context, void *action_args);*/
 
 /*
@@ -146,27 +146,27 @@ static bool set_host_is_ip(const pfs::string::const_iterator & begin, const pfs:
                  / "*" / "+" / "," / ";" / "="
   */
 
-static pfs::string _URI_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-static pfs::string _URI_DIGIT("0123456789");
-static pfs::string _URI_HEXDIGIT("0123456789ABCDEFabcdef"); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
+static string _URI_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+static string _URI_DIGIT("0123456789");
+static string _URI_HEXDIGIT("0123456789ABCDEFabcdef"); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
 
-static pfs::fsm::transition<pfs::string> digit_fsm[] = {
+static pfs::fsm::transition<string> digit_fsm[] = {
     {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, nullptr, nullptr }
 };
 
-static pfs::fsm::transition<pfs::string> hexdig_fsm[] = {
+static pfs::fsm::transition<string> hexdig_fsm[] = {
     {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* ALPHA / DIGIT / "-" / "." / "_" / "~" */
-static pfs::fsm::transition<pfs::string> unreserved_fsm[] = {
+static pfs::fsm::transition<string> unreserved_fsm[] = {
       {-1, 1, FSM_MATCH_CHAR(_URI_ALPHA) , FSM_ACCEPT, nullptr, nullptr }
     , {-1, 2, FSM_MATCH_CHAR(_URI_DIGIT) , FSM_ACCEPT, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_CHAR(_u8("-._~")), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* "%" HEXDIG HEXDIG */
-static pfs::fsm::transition<pfs::string> pct_encoded_fsm[] = {
+static pfs::fsm::transition<string> pct_encoded_fsm[] = {
       { 1,-1, FSM_MATCH_STR(_u8("%"))      , FSM_NORMAL, nullptr, nullptr }
     , { 2,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
@@ -175,12 +175,12 @@ static pfs::fsm::transition<pfs::string> pct_encoded_fsm[] = {
 /* "!" / "$" / "&" / "'" / "(" / ")"
        / "*" / "+" / "," / ";" / "="
 */
-static pfs::fsm::transition<pfs::string> sub_delims_fsm[] = {
+static pfs::fsm::transition<string> sub_delims_fsm[] = {
     {-1,-1, FSM_MATCH_CHAR(_u8("!$&'()*+,;=")), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* unreserved / pct-encoded / sub-delims / ":" / "@" */
-static pfs::fsm::transition<pfs::string> pchar_fsm[] = {
+static pfs::fsm::transition<string> pchar_fsm[] = {
       {-1, 1, FSM_MATCH_FSM(unreserved_fsm) , FSM_ACCEPT, nullptr, nullptr }
     , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, nullptr, nullptr }
     , {-1, 3, FSM_MATCH_FSM(sub_delims_fsm) , FSM_ACCEPT, nullptr, nullptr }
@@ -189,31 +189,31 @@ static pfs::fsm::transition<pfs::string> pchar_fsm[] = {
 
 
 /* 1*pchar */
-static pfs::fsm::transition<pfs::string> segment_nz_fsm[] = {
+static pfs::fsm::transition<string> segment_nz_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(pchar_fsm),     FSM_ACCEPT, nullptr, nullptr }
 	, { 1,-1, FSM_MATCH_FSM(pchar_fsm),     FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* *pchar */
-static pfs::fsm::transition<pfs::string> segment_fsm[] = {
+static pfs::fsm::transition<string> segment_fsm[] = {
       { 0, 1, FSM_MATCH_FSM(pchar_fsm), FSM_ACCEPT, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_NOTHING,        FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* "/" segment */
-static pfs::fsm::transition<pfs::string> slash_segment_fsm[] = {
+static pfs::fsm::transition<string> slash_segment_fsm[] = {
       { 1,-1, FSM_MATCH_STR(_u8("/"))   , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_FSM(segment_fsm), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* segment-nz *slash_segment */
-static pfs::fsm::transition<pfs::string> segment_nz_slash_fsm[] = {
+static pfs::fsm::transition<string> segment_nz_slash_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(segment_nz_fsm)              , FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* "/" [ segment-nz *slash_segment ] */
-static pfs::fsm::transition<pfs::string> path_absolute_fsm[] = {
+static pfs::fsm::transition<string> path_absolute_fsm[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("/"))                 , FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_OPT_FSM(segment_nz_slash_fsm) , FSM_ACCEPT, nullptr, nullptr }
 };
@@ -221,30 +221,30 @@ static pfs::fsm::transition<pfs::string> path_absolute_fsm[] = {
 /* 1*( unreserved / pct-encoded / sub-delims / "@" )
    		; non-zero-length segment without any colon ":"
 */
-static pfs::fsm::transition<pfs::string> segment_nc_fsm[] = {
+static pfs::fsm::transition<string> segment_nc_fsm[] = {
       {-1, 1, FSM_MATCH_FSM(unreserved_fsm) , FSM_ACCEPT, nullptr, nullptr }
     , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, nullptr, nullptr }
     , {-1, 3, FSM_MATCH_FSM(sub_delims_fsm) , FSM_ACCEPT, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_CHAR(_u8("@"))      , FSM_ACCEPT, nullptr, nullptr }
 };
 
-static pfs::fsm::transition<pfs::string> segment_nz_nc_fsm[] = {
+static pfs::fsm::transition<string> segment_nz_nc_fsm[] = {
     {-1,-1, FSM_MATCH_RPT_FSM(segment_nc_fsm, 1, -1),  FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* segment-nz-nc *slash-segment */
-static pfs::fsm::transition<pfs::string> path_noscheme_fsm[] = {
+static pfs::fsm::transition<string> path_noscheme_fsm[] = {
       { 1,-1, FSM_MATCH_FSM(segment_nz_nc_fsm), FSM_ACCEPT, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* 0<pchar> */
-static pfs::fsm::transition<pfs::string> path_empty_fsm[] = {
+static pfs::fsm::transition<string> path_empty_fsm[] = {
     {-1,-1, FSM_MATCH_NOTHING, FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* 1*4HEXDIG */
-static pfs::fsm::transition<pfs::string> h16_fsm[] = {
+static pfs::fsm::transition<string> h16_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
 	, { 3,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
@@ -252,27 +252,27 @@ static pfs::fsm::transition<pfs::string> h16_fsm[] = {
 };
 
 /* "25" %x30-35        ; 250-255 */
-static pfs::fsm::transition<pfs::string> dec_octet_fsm_4[] = {
+static pfs::fsm::transition<string> dec_octet_fsm_4[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("25"))      , FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_CHAR(_u8("012345")) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* "2" %x30-34 DIGIT   ; 200-249 */
-static pfs::fsm::transition<pfs::string> dec_octet_fsm_3[] = {
+static pfs::fsm::transition<string> dec_octet_fsm_3[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("2"))        , FSM_NORMAL, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_CHAR(_u8("01234"))   , FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* "1" 2DIGIT  ; 100-199 */
-static pfs::fsm::transition<pfs::string> dec_octet_fsm_2[] = {
+static pfs::fsm::transition<string> dec_octet_fsm_2[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("1"))   , FSM_NORMAL, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* %x31-39 DIGIT       ; 10-99*/
-static pfs::fsm::transition<pfs::string> dec_octet_fsm_1[] = {
+static pfs::fsm::transition<string> dec_octet_fsm_1[] = {
       { 1,-1, FSM_MATCH_CHAR(_u8("123456789")), FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT) , FSM_ACCEPT, nullptr, nullptr }
 };
@@ -284,7 +284,7 @@ static pfs::fsm::transition<pfs::string> dec_octet_fsm_1[] = {
   / "2" %x30-34 DIGIT   ; 200-249
   / "25" %x30-35        ; 250-255
 */
-static pfs::fsm::transition<pfs::string> dec_octet_fsm[] = {
+static pfs::fsm::transition<string> dec_octet_fsm[] = {
       {-1, 1, FSM_MATCH_FSM(dec_octet_fsm_4), FSM_ACCEPT, nullptr, nullptr } /* 250 - 255 */
     , {-1, 2, FSM_MATCH_FSM(dec_octet_fsm_3), FSM_ACCEPT, nullptr, nullptr } /* 200 - 249 */
     , {-1, 3, FSM_MATCH_FSM(dec_octet_fsm_2), FSM_ACCEPT, nullptr, nullptr } /* 100 - 199 */
@@ -293,7 +293,7 @@ static pfs::fsm::transition<pfs::string> dec_octet_fsm[] = {
 };
 
 /* dec-octet "." dec-octet "." dec-octet "." dec-octet */
-static pfs::fsm::transition<pfs::string> ipv4address_fsm[] = {
+static pfs::fsm::transition<string> ipv4address_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_NORMAL, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_STR(_u8("."))     , FSM_NORMAL, nullptr, nullptr }
 	, { 3,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_NORMAL, nullptr, nullptr }
@@ -304,7 +304,7 @@ static pfs::fsm::transition<pfs::string> ipv4address_fsm[] = {
 };
 
 /* ( h16 ":" h16 ) / IPv4address */
-static pfs::fsm::transition<pfs::string> ls32_fsm[] = {
+static pfs::fsm::transition<string> ls32_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(ipv4address_fsm), FSM_ACCEPT, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_FSM(h16_fsm)        , FSM_NORMAL, nullptr, nullptr }
 	, { 3,-1, FSM_MATCH_STR(_u8(":"))       , FSM_NORMAL, nullptr, nullptr }
@@ -312,68 +312,68 @@ static pfs::fsm::transition<pfs::string> ls32_fsm[] = {
 };
 
 /* h16 ":" */
-static pfs::fsm::transition<pfs::string> h16_semi_fsm[] = {
+static pfs::fsm::transition<string> h16_semi_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(h16_fsm)  , FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_STR(_u8(":")) , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* *1( h16 ":" ) h16 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_4_1[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_4_1[] = {
 	  { 1,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 1), FSM_NORMAL, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* *2( h16 ":" ) h16 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_5_1[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_5_1[] = {
 	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 2), FSM_NORMAL, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* *3( h16 ":" ) h16 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_6_1[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_6_1[] = {
 	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 3), FSM_NORMAL, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* *4( h16 ":" ) h16 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_7_1[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_7_1[] = {
 	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 4), FSM_NORMAL, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* *5( h16 ":" ) h16 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_8_1[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_8_1[] = {
 	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 5), FSM_NORMAL, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* *6( h16 ":" ) h16 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_9_1[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_9_1[] = {
 	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 6), FSM_NORMAL, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* 6( h16 ":" ) ls32 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_1[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_1[] = {
       { 1,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 6, 6), FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_FSM(ls32_fsm)              , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* "::" 5( h16 ":" ) ls32 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_2[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_2[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("::"))             , FSM_NORMAL, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 5, 5), FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(ls32_fsm)              , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* [ h16 ] "::" 4( h16 ":" ) ls32 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_3[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_3[] = {
       { 1, 1, FSM_MATCH_FSM(h16_fsm)               , FSM_NORMAL, nullptr, nullptr }
     , { 2,-1, FSM_MATCH_STR(_u8("::"))             , FSM_NORMAL, nullptr, nullptr }
     , { 3,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 4, 4), FSM_NORMAL, nullptr, nullptr }
@@ -381,7 +381,7 @@ static pfs::fsm::transition<pfs::string> ipv6address_fsm_3[] = {
 };
 
 /* [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_4[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_4[] = {
       { 1, 1, FSM_MATCH_FSM(ipv6address_fsm_4_1), FSM_NORMAL, nullptr, nullptr }
 
     , { 2,-1, FSM_MATCH_STR(_u8("::"))    , FSM_NORMAL, nullptr, nullptr }
@@ -392,7 +392,7 @@ static pfs::fsm::transition<pfs::string> ipv6address_fsm_4[] = {
 };
 
 /* [ *2( h16 ":" ) h16 ] "::" 2( h16 ":" ) ls32 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_5[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_5[] = {
 	  { 1, 2, FSM_MATCH_FSM(ipv6address_fsm_5_1), FSM_NORMAL, nullptr, nullptr }
 	, { 2, 2, FSM_MATCH_FSM(ipv6address_fsm_5_1), FSM_NORMAL, nullptr, nullptr }
 
@@ -403,7 +403,7 @@ static pfs::fsm::transition<pfs::string> ipv6address_fsm_5[] = {
 };
 
 /* [ *3( h16 ":" ) h16 ] "::" h16 ":"   ls32 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_6[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_6[] = {
 	  { 1, 3, FSM_MATCH_FSM(ipv6address_fsm_6_1), FSM_NORMAL, nullptr, nullptr }
 	, { 2, 3, FSM_MATCH_FSM(ipv6address_fsm_6_1), FSM_NORMAL, nullptr, nullptr }
 	, { 3, 3, FSM_MATCH_FSM(ipv6address_fsm_6_1), FSM_NORMAL, nullptr, nullptr }
@@ -415,7 +415,7 @@ static pfs::fsm::transition<pfs::string> ipv6address_fsm_6[] = {
 
 
 /* [ *4( h16 ":" ) h16 ] "::" ls32 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_7[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_7[] = {
 	  { 1, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, nullptr, nullptr }
 	, { 2, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, nullptr, nullptr }
 	, { 3, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, nullptr, nullptr }
@@ -426,7 +426,7 @@ static pfs::fsm::transition<pfs::string> ipv6address_fsm_7[] = {
 };
 
 /* [ *5( h16 ":" ) h16 ] "::"              h16 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_8[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_8[] = {
 	  { 1, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, nullptr, nullptr }
 	, { 2, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, nullptr, nullptr }
 	, { 3, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, nullptr, nullptr }
@@ -439,7 +439,7 @@ static pfs::fsm::transition<pfs::string> ipv6address_fsm_8[] = {
 
 
 /* [ *6( h16 ":" ) h16 ] "::" */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm_9[] = {
+static pfs::fsm::transition<string> ipv6address_fsm_9[] = {
 	  { 1, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, nullptr, nullptr }
 	, { 2, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, nullptr, nullptr }
 	, { 3, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, nullptr, nullptr }
@@ -461,7 +461,7 @@ static pfs::fsm::transition<pfs::string> ipv6address_fsm_9[] = {
 	/ [ *5( h16 ":" ) h16 ] "::"              h16
 	/ [ *6( h16 ":" ) h16 ] "::"
 */
-static pfs::fsm::transition<pfs::string> ipv6address_fsm[] = {
+static pfs::fsm::transition<string> ipv6address_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(ipv6address_fsm_1), FSM_ACCEPT, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_FSM(ipv6address_fsm_2), FSM_ACCEPT, nullptr, nullptr }
 	, {-1, 3, FSM_MATCH_FSM(ipv6address_fsm_3), FSM_ACCEPT, nullptr, nullptr }
@@ -474,13 +474,13 @@ static pfs::fsm::transition<pfs::string> ipv6address_fsm[] = {
 };
 
 /* "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" ) */
-static pfs::fsm::transition<pfs::string> ipvfuture_tail_fsm[] = {
+static pfs::fsm::transition<string> ipvfuture_tail_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(unreserved_fsm), FSM_ACCEPT, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_FSM(sub_delims_fsm), FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_STR(_u8(":"))      , FSM_ACCEPT, nullptr, nullptr }
 };
 
-static pfs::fsm::transition<pfs::string> ipvfuture_fsm[] = {
+static pfs::fsm::transition<string> ipvfuture_fsm[] = {
       { 1,-1, FSM_MATCH_STR(_u8("v"))                     , FSM_NORMAL, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_RPT_FSM(hexdig_fsm, 1, -1)        , FSM_NORMAL, nullptr, nullptr }
     , { 3,-1, FSM_MATCH_STR(_u8("."))                     , FSM_NORMAL, nullptr, nullptr }
@@ -488,28 +488,28 @@ static pfs::fsm::transition<pfs::string> ipvfuture_fsm[] = {
 };
 
 /* "[" ( IPv6address / IPvFuture  ) "]" */
-static pfs::fsm::transition<pfs::string> ip_literal_entry_fsm[] = {
+static pfs::fsm::transition<string> ip_literal_entry_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(ipv6address_fsm), FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(ipvfuture_fsm)  , FSM_ACCEPT, nullptr, nullptr }
 };
-static pfs::fsm::transition<pfs::string> ip_literal_fsm[] = {
+static pfs::fsm::transition<string> ip_literal_fsm[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("["))            , FSM_NORMAL, nullptr, nullptr }
 	, { 2,-1, FSM_MATCH_FSM(ip_literal_entry_fsm), FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_STR(_u8("]"))            , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* *( unreserved / pct-encoded / sub-delims ) */
-static pfs::fsm::transition<pfs::string> reg_name_entry_fsm[] = {
+static pfs::fsm::transition<string> reg_name_entry_fsm[] = {
       {-1, 1, FSM_MATCH_FSM(unreserved_fsm),  FSM_ACCEPT, nullptr, nullptr }
     , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_FSM(sub_delims_fsm),  FSM_ACCEPT, nullptr, nullptr }
 };
-static pfs::fsm::transition<pfs::string> reg_name_fsm[] = {
+static pfs::fsm::transition<string> reg_name_fsm[] = {
       {-1,-1, FSM_MATCH_RPT_FSM(reg_name_entry_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /*  host = IP-literal / IPv4address / reg-name */
-static pfs::fsm::transition<pfs::string> host_fsm[] = {
+static pfs::fsm::transition<string> host_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(ip_literal_fsm), FSM_ACCEPT, set_host_is_ip, nullptr}
 	, {-1, 2, FSM_MATCH_FSM(ipv4address_fsm), FSM_ACCEPT, set_host_is_ip, nullptr}
 
@@ -521,18 +521,18 @@ static pfs::fsm::transition<pfs::string> host_fsm[] = {
 };
 
 /* *DIGIT */
-static pfs::fsm::transition<pfs::string> port_fsm[] = {
+static pfs::fsm::transition<string> port_fsm[] = {
       {-1,-1, FSM_MATCH_RPT_FSM(digit_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* ":" port */
-static pfs::fsm::transition<pfs::string> authority_fsm_2[] = {
+static pfs::fsm::transition<string> authority_fsm_2[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8(":")), FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(port_fsm), FSM_ACCEPT, set_port, nullptr}
 };
 
 /* *( unreserved / pct-encoded / sub-delims / ":" ) */
-static pfs::fsm::transition<pfs::string> userinfo_fsm[] = {
+static pfs::fsm::transition<string> userinfo_fsm[] = {
 	  { 0, 1, FSM_MATCH_FSM(unreserved_fsm) , FSM_ACCEPT, __TRACE_ACT, __TRACE_ARGS("userinfo_fsm: FSM_MATCH_FSM(unreserved_fsm)") }
 	, { 0, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, __TRACE_ACT, __TRACE_ARGS("userinfo_fsm: FSM_MATCH_FSM(pct_encoded_fsm)") }
 	, { 0, 3, FSM_MATCH_FSM(sub_delims_fsm) , FSM_ACCEPT, __TRACE_ACT, __TRACE_ARGS("userinfo_fsm: FSM_MATCH_FSM(sub_delims_fsm)") }
@@ -541,14 +541,14 @@ static pfs::fsm::transition<pfs::string> userinfo_fsm[] = {
 };
 
 /* userinfo "@" */
-static pfs::fsm::transition<pfs::string> authority_fsm_1[] = {
+static pfs::fsm::transition<string> authority_fsm_1[] = {
 	  { 1,-1, FSM_MATCH_FSM(userinfo_fsm), FSM_NORMAL, set_userinfo, nullptr }
 	, {-1,-1, FSM_MATCH_STR(_u8("@"))    , FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* [ userinfo "@" ] host [ ":" port ] */
 /* [ authority_fsm_1 ] host [ authority_fsm_2 ] */
-static pfs::fsm::transition<pfs::string> authority_fsm[] = {
+static pfs::fsm::transition<string> authority_fsm[] = {
 	  { 1, 3, FSM_MATCH_OPT_FSM(authority_fsm_1) , FSM_NORMAL, __TRACE_ACT, __TRACE_ARGS("FSM_MATCH_OPT_FSM(authority_fsm_1)") }
 	, { 2, 3, FSM_MATCH_FSM(host_fsm)            , FSM_NORMAL, set_host, nullptr }
 	, {-1, 3, FSM_MATCH_OPT_FSM(authority_fsm_2) , FSM_ACCEPT, __TRACE_ACT, __TRACE_ARGS("FSM_MATCH_OPT_FSM(authority_fsm_2)") }
@@ -556,7 +556,7 @@ static pfs::fsm::transition<pfs::string> authority_fsm[] = {
 };
 
 /*  *( "/" segment ) */
-static pfs::fsm::transition<pfs::string> path_abempty_fsm[] = {
+static pfs::fsm::transition<string> path_abempty_fsm[] = {
       {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
 };
 
@@ -566,7 +566,7 @@ relative-part = "//" authority path-abempty
               / path-noscheme`
               / path-empty
 */
-static pfs::fsm::transition<pfs::string> relative_part_fsm[] = {
+static pfs::fsm::transition<string> relative_part_fsm[] = {
 	  { 1, 3, FSM_MATCH_STR(_u8("//"))       , FSM_NORMAL, nullptr, nullptr }
 	, { 2, 3, FSM_MATCH_FSM(authority_fsm)   , FSM_NORMAL, set_path, nullptr }
 	, {-1, 3, FSM_MATCH_FSM(path_abempty_fsm), FSM_ACCEPT, set_path, nullptr }
@@ -577,51 +577,51 @@ static pfs::fsm::transition<pfs::string> relative_part_fsm[] = {
 };
 
 /* *( pchar / "/" / "?" ) */
-static pfs::fsm::transition<pfs::string> query_chars_fsm[] = {
+static pfs::fsm::transition<string> query_chars_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(pchar_fsm)  , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_CHAR(_u8("/?")) , FSM_ACCEPT, nullptr, nullptr }
 };
-static pfs::fsm::transition<pfs::string> query_fsm[] = {
+static pfs::fsm::transition<string> query_fsm[] = {
     {-1,-1, FSM_MATCH_RPT_FSM(query_chars_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* "?" query */
-static pfs::fsm::transition<pfs::string> relative_ref_fsm_1[] = {
+static pfs::fsm::transition<string> relative_ref_fsm_1[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("?")) , FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(query_fsm), FSM_ACCEPT, set_query, nullptr }
 };
 
 /* *( pchar / "/" / "?" ) */
-static pfs::fsm::transition<pfs::string> fragment_fsm[] = {
+static pfs::fsm::transition<string> fragment_fsm[] = {
 	{-1,-1, FSM_MATCH_RPT_FSM(query_chars_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* "#" fragment */
-static pfs::fsm::transition<pfs::string> relative_ref_fsm_2[] = {
+static pfs::fsm::transition<string> relative_ref_fsm_2[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("#"))    , FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, set_fragment, nullptr}
 };
 
 /* relative-part [ "?" query ] [ "#" fragment ] */
-static pfs::fsm::transition<pfs::string> relative_ref_fsm[] = {
+static pfs::fsm::transition<string> relative_ref_fsm[] = {
       { 1,-1, FSM_MATCH_FSM(relative_part_fsm)       , FSM_NORMAL, nullptr, nullptr }
     , { 2,-1, FSM_MATCH_RPT_FSM(relative_ref_fsm_1, 0, 1), FSM_NORMAL, nullptr, nullptr }
     , {-1,-1, FSM_MATCH_RPT_FSM(relative_ref_fsm_2, 0, 1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) */
-static pfs::fsm::transition<pfs::string> scheme_chars_fsm[] = {
+static pfs::fsm::transition<string> scheme_chars_fsm[] = {
 	  {-1, 1, FSM_MATCH_CHAR(_URI_ALPHA) , FSM_ACCEPT, nullptr, nullptr }
 	, {-1, 2, FSM_MATCH_CHAR(_URI_DIGIT) , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_CHAR(_u8("+-.")) , FSM_ACCEPT, nullptr, nullptr }
 };
-static pfs::fsm::transition<pfs::string> scheme_fsm[] = {
+static pfs::fsm::transition<string> scheme_fsm[] = {
 	  { 1,-1, FSM_MATCH_CHAR(_URI_ALPHA), FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_RPT_FSM(scheme_chars_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
 };
 
 /* segment-nz *( "/" segment ) */
-static pfs::fsm::transition<pfs::string> path_rootless_fsm[] = {
+static pfs::fsm::transition<string> path_rootless_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(segment_nz_fsm)              , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
 };
@@ -632,7 +632,7 @@ static pfs::fsm::transition<pfs::string> path_rootless_fsm[] = {
 	 	 / path-rootless
 	 	 / path-empty
 */
-static pfs::fsm::transition<pfs::string> hier_part_fsm[] = {
+static pfs::fsm::transition<string> hier_part_fsm[] = {
 	  { 1, 3, FSM_MATCH_STR(_u8("//"))       , FSM_NORMAL, nullptr, nullptr }
 	, { 2, 3, FSM_MATCH_FSM(authority_fsm)   , FSM_NORMAL, set_path, nullptr }
 	, {-1, 3, FSM_MATCH_FSM(path_abempty_fsm), FSM_ACCEPT, set_path, nullptr }
@@ -644,20 +644,20 @@ static pfs::fsm::transition<pfs::string> hier_part_fsm[] = {
 
 
 /* "?" query */
-static pfs::fsm::transition<pfs::string> uri_fsm_1[] = {
+static pfs::fsm::transition<string> uri_fsm_1[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("?")) , FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(query_fsm), FSM_ACCEPT, set_query, nullptr }
 };
 
 /* "#" fragment */
-static pfs::fsm::transition<pfs::string> uri_fsm_2[] = {
+static pfs::fsm::transition<string> uri_fsm_2[] = {
 	  { 1,-1, FSM_MATCH_STR(_u8("#"))    , FSM_NORMAL, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, set_fragment, nullptr }
 };
 
 
 /* scheme ":" hier-part [ "?" query ] [ "#" fragment ] */
-static pfs::fsm::transition<pfs::string> uri_fsm[] = {
+static pfs::fsm::transition<string> uri_fsm[] = {
 	  { 1,-1, FSM_MATCH_FSM(scheme_fsm)         , FSM_NORMAL, set_scheme, nullptr }
     , { 2,-1, FSM_MATCH_STR(_u8(":"))           , FSM_NORMAL, nullptr, nullptr }
 	, { 3,-1, FSM_MATCH_FSM(hier_part_fsm)      , FSM_NORMAL, nullptr, nullptr }
@@ -667,17 +667,20 @@ static pfs::fsm::transition<pfs::string> uri_fsm[] = {
 
 
 /* URI / relative-ref */
-static pfs::fsm::transition<pfs::string> uri_reference_fsm[] = {
+static pfs::fsm::transition<string> uri_reference_fsm[] = {
 	  {-1, 1, FSM_MATCH_FSM(uri_fsm)         , FSM_ACCEPT, nullptr, nullptr }
 	, {-1,-1, FSM_MATCH_FSM(relative_ref_fsm), FSM_ACCEPT, nullptr, nullptr }
 };
 
 
-static bool set_port (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_port (string::const_iterator begin
+		, string::const_iterator end
+		, void * context
+		, void *)
 {
 	if (context) {
 		UriParseContext *ctx = reinterpret_cast<UriParseContext*>(context);
-		pfs::string digits(begin, end);
+		string digits(begin, end);
 
 		bool ok;
 		ctx->uridata->port = digits.toUShort(&ok, 10);
@@ -689,7 +692,10 @@ static bool set_port (const pfs::string::const_iterator & begin, const pfs::stri
 	return true;
 }
 
-static bool set_host_is_ip(const pfs::string::const_iterator &, const pfs::string::const_iterator &, void *context, void *)
+static bool set_host_is_ip (string::const_iterator
+		, string::const_iterator
+		, void * context
+		, void *)
 {
 	if (context) {
 		UriParseContext *ctx = reinterpret_cast<UriParseContext*>(context);
@@ -698,7 +704,10 @@ static bool set_host_is_ip(const pfs::string::const_iterator &, const pfs::strin
 	return true;
 }
 
-static bool unset_userinfo(const pfs::string::const_iterator & , const pfs::string::const_iterator & , void * context, void *)
+static bool unset_userinfo (string::const_iterator
+		, string::const_iterator
+		, void * context
+		, void *)
 {
 	if (context) {
 		UriParseContext *ctx = reinterpret_cast<UriParseContext*>(context);
@@ -707,54 +716,72 @@ static bool unset_userinfo(const pfs::string::const_iterator & , const pfs::stri
 	return true;
 }
 
-static bool set_scheme (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_scheme (string::const_iterator begin
+		, string::const_iterator end
+		, void * context
+		, void *)
 {
 	if (context) {
-		reinterpret_cast<UriParseContext*>(context)->uridata->scheme = pfs::string(begin, end);
+		reinterpret_cast<UriParseContext*>(context)->uridata->scheme = string(begin, end);
 	}
 	return true;
 }
 
-static bool set_userinfo  (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_userinfo (string::const_iterator begin
+		, string::const_iterator end
+		, void * context
+		, void *)
 {
 	if (context) {
-		reinterpret_cast<UriParseContext*>(context)->uridata->userinfo = pfs::string(begin, end);
+		reinterpret_cast<UriParseContext*>(context)->uridata->userinfo = string(begin, end);
 	}
 	return true;
 }
 
-static bool set_host (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_host (string::const_iterator begin
+		, string::const_iterator end
+		, void * context
+		, void *)
 {
 	if (context) {
-		reinterpret_cast<UriParseContext*>(context)->uridata->host = pfs::string(begin, end);
+		reinterpret_cast<UriParseContext*>(context)->uridata->host = string(begin, end);
 	}
 	return true;
 }
 
-static bool set_path (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_path (string::const_iterator begin
+		, string::const_iterator end
+		, void * context
+		, void *)
 {
 	if (context) {
-		reinterpret_cast<UriParseContext*>(context)->uridata->path = pfs::string(begin, end);
+		reinterpret_cast<UriParseContext*>(context)->uridata->path = string(begin, end);
 	}
 	return true;
 }
 
-static bool set_query (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_query (string::const_iterator begin
+		, string::const_iterator end
+		, void * context
+		, void *)
 {
 	if (context) {
-		reinterpret_cast<UriParseContext*>(context)->uridata->query = pfs::string(begin, end);
+		reinterpret_cast<UriParseContext*>(context)->uridata->query = string(begin, end);
 	}
 	return true;
 }
 
-static bool set_fragment (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void *context, void *)
+static bool set_fragment (string::const_iterator begin
+		, string::const_iterator end
+		, void * context
+		, void *)
 {
 	if (context) {
-		reinterpret_cast<UriParseContext*>(context)->uridata->fragment = pfs::string(begin, end);
+		reinterpret_cast<UriParseContext*>(context)->uridata->fragment = string(begin, end);
 	}
 	return true;
 }
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_URI_RFC3986_HPP__ */
+#endif /* __PFS_URI_RFC3986_HPP__ */

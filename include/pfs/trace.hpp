@@ -1,12 +1,12 @@
 #include <cstdio>
-#include <cwt/stopwatch.hpp>
+#include <pfs/stopwatch.hpp>
 
-#ifndef __CWT_TRACE_HPP__
-#define __CWT_TRACE_HPP__
+#ifndef __PFS_TRACE_HPP__
+#define __PFS_TRACE_HPP__
 
 #if defined(CWT_TRACE_ENABLE)
-#	define CWT_TRACE_FUNC() const cwt::trace_func __pfs_trace__ (__PRETTY_FUNCTION__)
-#	define CWT_TRACE_METHOD() const cwt::trace_method __pfs_trace__ (__PRETTY_FUNCTION__, this)
+#	define CWT_TRACE_FUNC() const trace_func __pfs_trace__ (__PRETTY_FUNCTION__)
+#	define CWT_TRACE_METHOD() const trace_method __pfs_trace__ (__PRETTY_FUNCTION__, this)
 
 #else
 #	undef CWT_TRACE_METHOD
@@ -15,7 +15,7 @@
 #	define CWT_TRACE_FUNC()
 #endif
 
-namespace cwt {
+namespace pfs {
 
 class trace_func
 {
@@ -53,6 +53,6 @@ public:
 	}
 };
 
-} // cwt
+} // pfs
 
 #endif

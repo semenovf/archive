@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_THREAD_WIN_HPP__
-#define __CWT_THREAD_WIN_HPP__
+#ifndef __PFS_THREAD_WIN_HPP__
+#define __PFS_THREAD_WIN_HPP__
 
 #include "../thread_p.hpp"
 #include <cerrno>
@@ -23,7 +23,7 @@
 //#	define CWT_HAVE_TLS
 //#endif
 
-namespace cwt {
+namespace pfs {
 
 // @see http://msdn.microsoft.com/en-us/library/ms686991%28v=vs.85%29.aspx
 // @see http://msdn.microsoft.com/en-us/library/ms686997%28v=vs.85%29.aspx
@@ -96,6 +96,6 @@ inline void thread::data::clear ()
 #endif
 }
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_THREAD_WIN_HPP__ */
+#endif /* __PFS_THREAD_WIN_HPP__ */

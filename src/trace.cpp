@@ -4,11 +4,11 @@
  * @date Jan 31, 2014
  */
 
-#include "../include/cwt/trace.hpp"
+#include "pfs/trace.hpp"
 
-namespace cwt {
+namespace pfs {
 
 stopwatch trace_func::__sw;
 stopwatch trace_method::__sw;
 
-} // cwt
+} // pfs

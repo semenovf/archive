@@ -1,8 +1,8 @@
-#include "../../include/cwt/dl.hpp"
-#include "../../include/cwt/fs.hpp"
+#include "pfs/dl.hpp"
+#include "pfs/fs.hpp"
 #include <pfs/mt.hpp>
 
-namespace cwt {
+namespace pfs {
 
 dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool global, bool resolve)
 {
@@ -14,7 +14,7 @@ dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool glob
 	DWORD dwFlags = 0;
 	PFS_UNUSED(global);
 
-	cwt::fs fs;
+	pfs::fs fs;
 	realPath = searchFile(path);
 
 	if (!realPath.isEmpty()) {
@@ -77,4 +77,4 @@ pfs::string dl::buildDlFileName (const pfs::string & basename)
 	return libname;
 }
 
-} // cwt
+} // pfs

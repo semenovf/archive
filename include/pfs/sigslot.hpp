@@ -79,14 +79,14 @@
 // !!! Do not name methods with same name as for signals and regular methods
 //
 
-#ifndef __CWT_SIGSLOT_HPP__
-#define __CWT_SIGSLOT_HPP__
+#ifndef __PFS_SIGSLOT_HPP__
+#define __PFS_SIGSLOT_HPP__
 
 #include <set>
 #include <list>
 #include <pfs/mt.hpp>
 
-namespace cwt {
+namespace pfs {
 
 	template<class mt_policy>
 	class lock_block
@@ -2362,7 +2362,7 @@ namespace cwt {
 		}
 	};
 
-}; // cwt
+}; // pfs
 
-#endif // __CWT_SIGSLOT_HPP__
+#endif // __PFS_SIGSLOT_HPP__
 

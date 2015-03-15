@@ -6,10 +6,10 @@
  */
 
 
-#include "../../include/cwt/platform.hpp"
+#include "pfs/platform.hpp"
 #include <windows.h>
 
-namespace cwt { namespace platform {
+namespace pfs { namespace platform {
 
 DLL_API pfs::time currentTime () // static
 {
@@ -19,5 +19,5 @@ DLL_API pfs::time currentTime () // static
     return pfs::time(t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
 }
 
-}} // cwt::platform
+}} // pfs::platform
 

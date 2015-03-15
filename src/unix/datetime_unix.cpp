@@ -5,12 +5,12 @@
  *      Author: wladt
  */
 
-#include "../../include/cwt/platform.hpp"
+#include "../../include/pfs/platform.hpp"
 #include <pfs/mt.hpp>
 #include <ctime>
 #include <sys/time.h> // gettimeofday
 
-namespace cwt { namespace platform {
+namespace pfs { namespace platform {
 
 DLL_API pfs::datetime currentDateTime ()
 {
@@ -40,5 +40,5 @@ DLL_API pfs::datetime currentDateTime ()
     return pfs::datetime(date, time);
 }
 
-}} // cwt::platform
+}} // pfs::platform
 

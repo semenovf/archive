@@ -34,13 +34,13 @@ videntur parum clari, fiant sollemnes in futurum.";
 
 void test_compress ()
 {
-	pfs::bytearray src(loremipsum);
-	pfs::bytearray uncompressed;
-	pfs::bytearray compressed;
-	cwt::zlib z;
+	pfs::byte_string src(loremipsum);
+	pfs::byte_string uncompressed;
+	pfs::byte_string compressed;
+	pfs::zlib z;
 
-	TEST_OK(z.compress(compressed, src));
-	TEST_OK(z.decompress(uncompressed, ::strlen(loremipsum), compressed));
+	TEST_OK(!(compressed = z.compress(src)).isNull());
+	TEST_OK(!(uncompressed = z.decompress(::strlen(loremipsum), compressed)).isNull());
 	TEST_OK(src == uncompressed);
 	TEST_OK(compressed.size() < uncompressed.size());
 }

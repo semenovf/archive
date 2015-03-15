@@ -7,10 +7,10 @@
 
 
 #include <pfs/vector.hpp>
-#include "../../include/cwt/threadls.hpp"
+#include <pfs/threadls.hpp>
 #include "thread_unix.hpp" // for CWT_HAVE_TLS
 
-namespace cwt {
+namespace pfs {
 // FIXME Implement these !
 
 thread::tls_implementation_type thread::tls_implementation ()
@@ -85,4 +85,4 @@ struct tss_data_node
 
 #endif
 
-} // cwt
+} // pfs

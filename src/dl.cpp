@@ -1,7 +1,7 @@
-#include "../include/cwt/dl.hpp"
-#include "../include/cwt/fs.hpp"
+#include "pfs/dl.hpp"
+#include "pfs/fs.hpp"
 
-namespace cwt {
+namespace pfs {
 
 pfs::vector<pfs::string> dl::globalSearchPath;
 
@@ -14,7 +14,7 @@ pfs::vector<pfs::string> dl::globalSearchPath;
  */
 pfs::string dl::searchFile (const pfs::string & filename)
 {
-	cwt::fs fs;
+	pfs::fs fs;
 
 	if (fs.exists(filename)) {
 		return pfs::string(filename);
@@ -148,7 +148,7 @@ bool dl::pluginClose (const pfs::string & name, void * pluggable)
 	return dtor(pluggable);
 }
 
-} // cwt
+} // pfs
 
 extern "C" int DLL_API dl_only_for_testing_purpose (void)
 {

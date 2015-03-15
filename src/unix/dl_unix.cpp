@@ -1,8 +1,8 @@
-#include "../../include/cwt/dl.hpp"
+#include "../../include/pfs/dl.hpp"
 #include <pfs/mt.hpp>
 #include <sys/stat.h>
 
-namespace cwt {
+namespace pfs {
 
 dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool global, bool resolve)
 {
@@ -80,4 +80,4 @@ pfs::string dl::buildDlFileName (const pfs::string & basename)
 	return libname;
 }
 
-} //cwt
+} //pfs

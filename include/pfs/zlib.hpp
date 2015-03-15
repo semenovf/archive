@@ -4,16 +4,16 @@
  * @date Apr 23, 2014
  */
 
-#ifndef __CWT_ZLIB_HPP__
-#define __CWT_ZLIB_HPP__
+#ifndef __PFS_ZLIB_HPP__
+#define __PFS_ZLIB_HPP__
 
 #include "bits/zlib.h"
-#include <pfs/bytearray.hpp>
-#include <cwt/errorable.hpp>
+#include <pfs/byte_string.hpp>
+#include <pfs/errorable_ext.hpp>
 
-namespace cwt {
+namespace pfs {
 
-class DLL_API zlib : public errorable
+class DLL_API zlib : public errorable_ext
 {
 //	static const size_t DefaultChunkSize = 16384;
 public:
@@ -32,15 +32,15 @@ public:
 	zlib ();
 	zlib (zlib::compression_level l);
 
-	bool compress (pfs::bytearray & dest, const pfs::bytearray & src);
-	bool decompress (pfs::bytearray & dest, size_t initialLen, const pfs::bytearray & src);
+	byte_string compress (const byte_string & src);
+	byte_string decompress (size_t initialLen, const byte_string & src);
 
 	// FIXME implement
-	//bool decompress (pfs::bytearray & dest, const pfs::bytearray & src);
+	//bool decompress (pfs::byte_string & dest, const pfs::byte_string & src);
 
-	static pfs::string strerror (int rc);
+	static string strerror (int rc);
 };
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_ZLIB_HPP__ */
+#endif /* __PFS_ZLIB_HPP__ */

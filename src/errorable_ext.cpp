@@ -1,22 +1,21 @@
 /**
- * @file   errorable.cpp
+ * @file   errorable_ext.cpp
  * @author wladt
  * @date   Feb 25, 2013 3:50:17 PM
  *
  * @brief
  */
 
-#include "cwt/errorable.hpp"
-#include "cwt/logger.hpp"
-//#include <cstdarg>
+#include "pfs/errorable_ext.hpp"
+#include "pfs/logger.hpp"
 
-extern pfs::string __cwt_strerror (int_t errn);
+extern pfs::string pfs_strerror (int_t errn);
 
-namespace cwt {
+namespace pfs {
 
-void errorable::addSystemError (int errn, const pfs::string & caption)
+void errorable_ext::addSystemError (int errn, const pfs::string & caption)
 {
-	pfs::string errstr(__cwt_strerror(errn));
+	pfs::string errstr(pfs_strerror(errn));
 
 	if (caption.isEmpty()) {
 		addError(errstr);
@@ -33,7 +32,7 @@ void errorable::addSystemError (int errn, const pfs::string & caption)
  *
  * @details Errors automatically cleared after output.
  */
-void errorable::logErrors ()
+void errorable_ext::logErrors ()
 {
 	if (_errors.size() > 0) {
 		pfs::vector<errorable::erritem>::const_iterator it = _errors.cbegin();
@@ -45,10 +44,10 @@ void errorable::logErrors ()
 			} else {
 				r << it->_errstr;
 			}
-			cwt::error(r);
+			pfs::error(r);
 		}
 	}
 	clearErrors();
 }
 
-} // cwt
+} // pfs

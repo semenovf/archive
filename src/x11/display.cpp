@@ -4,12 +4,12 @@
  * @date Mar 4, 2014
  */
 
-#include "../../include/cwt/platform.hpp"
+#include "pfs/platform.hpp"
 #include <X11/Xlib.h>
 
 static const char * __default_display_name = ":0";
 
-namespace cwt { namespace platform {
+namespace pfs { namespace platform {
 
 DLL_API void displayParameters (display_data * d)
 {
@@ -31,4 +31,4 @@ DLL_API void displayParameters (display_data * d)
 	}
 }
 
-}} // cwt::platform
+}} // pfs::platform

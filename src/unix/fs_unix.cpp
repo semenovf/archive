@@ -6,16 +6,15 @@
  *
  */
 
-#include "cwt/fs.hpp"
-#include "cwt/regexp.hpp"
-#include <pfs/safeformat.hpp>
+#include "pfs/fs.hpp"
+#include "pfs/regexp.hpp"
 #include <sys/stat.h>
 #include <cstring>
 #include <cerrno>
 #include <unistd.h>
 #include <dirent.h>
 
-namespace cwt {
+namespace pfs {
 
 inline bool __is_regular_file  (mode_t m) { return (m & S_IFMT) == S_IFREG; }
 inline bool __is_socket        (mode_t m) { return (m & S_IFMT) == S_IFSOCK; }
@@ -180,7 +179,7 @@ pfs::stringlist fs::entryListByRegExp (const pfs::string & dir, const pfs::strin
 				; it != reNameFilters.cend()
 				; ++it) {
 
-			cwt::regexp re(*it);
+			regexp re(*it);
 
 			if (re.match(fname))
 				r.append(fname);
@@ -213,4 +212,4 @@ pfs::stringlist fs::entryListByWildcard (const pfs::string & dir, const pfs::str
 	return entryListByRegExp(dir, reNameFilters, filters, sort);
 }
 
-} // cwt
+} // pfs

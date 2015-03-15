@@ -62,7 +62,7 @@ static int32_t __crc32_lookup_table[] = {
 #define CRC32(oldcrc, curByte) (m_crc32table[BYTE(oldcrc)^BYTE(curByte)]^(DWORD(oldcrc)>>8))
 */
 
-int32_t cwt_crc32 (const void * pdata, size_t nbytes, int32_t initial)
+int32_t pfs_crc32 (const void * pdata, size_t nbytes, int32_t initial)
 {
 	const byte_t * pbytes = (const byte_t *)pdata;
 	int32_t r = initial ^ 0xFFFFFFFF;

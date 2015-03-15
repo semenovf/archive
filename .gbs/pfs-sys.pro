@@ -6,10 +6,9 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = cwt-sys       \
+SUBDIRS  = pfs-sys       \
 	tests/dl         \
 	tests/regexp     \
-	tests/safeformat \
 	tests/thread     \
 	tests/uri        \
 	tests/atomic     \

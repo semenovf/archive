@@ -5,14 +5,14 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_THREAD_P_HPP__
-#define __CWT_THREAD_P_HPP__
+#ifndef __PFS_THREAD_P_HPP__
+#define __PFS_THREAD_P_HPP__
 
 #include <pfs/mt.hpp>
-#include "../include/cwt/thread.hpp"
-#include "../include/cwt/threadcv.hpp"
+#include "pfs/thread.hpp"
+#include "pfs/threadcv.hpp"
 
-namespace cwt {
+namespace pfs {
 
 struct thread_data;
 
@@ -24,21 +24,21 @@ enum thread_state
 	, ThreadFinished
 };
 
-class thread::impl
+class thread_impl
 {
 public:
-	explicit impl ();
-	~impl ();
+	explicit thread_impl ();
+	~thread_impl ();
 
 	void start (thread::priority_type priority = thread::InheritPriority, size_t stackSize = 0);
 	void setPriority (thread::priority_type priority);
 
 	void terminate ();
-	bool wait (ulong_t time = PFS_ULONG_MAX);
+	bool wait (uintegral_t time = PFS_UINTEGRAL_MAX);
 
-	static void sleep (ulong_t secs);
-	static void msleep (ulong_t msecs);
-	static void usleep (ulong_t usecs);
+	static void sleep (uintegral_t secs);
+	static void msleep (uintegral_t msecs);
+	static void usleep (uintegral_t usecs);
 
 	static void * thread_routine (void * arg);
 	static void finalize (void * arg);
@@ -63,6 +63,6 @@ private:
 //	friend struct thread_data;
 };
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_THREAD_P_HPP__ */
+#endif /* __PFS_THREAD_P_HPP__ */

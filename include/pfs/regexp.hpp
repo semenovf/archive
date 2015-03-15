@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_REGEXP_HPP__
-#define __CWT_REGEXP_HPP__
+#ifndef __PFS_REGEXP_HPP__
+#define __PFS_REGEXP_HPP__
 
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
@@ -18,7 +18,7 @@
 #	pragma warning(disable:4251)
 #endif
 
-namespace cwt {
+namespace pfs {
 
 class DLL_API regexp : pfs::noncopyable
 {
@@ -58,10 +58,10 @@ public:
 	pfs::vector<pfs::string> groups () const;
 };
 
-} // cwt
+} // pfs
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)
 #endif
 
-#endif /* __CWT_REGEXP_HPP__ */
+#endif /* __PFS_REGEXP_HPP__ */

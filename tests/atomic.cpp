@@ -19,7 +19,7 @@ static const int __niters = 1000;
 static const int __nthreads = 50;
 static const int __totalCounter = __niters * __nthreads;
 
-class TestThread : public cwt::thread
+class TestThread : public pfs::thread
 {
 public:
 	virtual void run()
@@ -34,7 +34,7 @@ public:
 };
 
 /*
-class AtomicSwapThread : public cwt::thread
+class AtomicSwapThread : public pfs::thread
 {
 public:
 	virtual void run()
@@ -64,7 +64,7 @@ void test_atomic_ref ()
 
 	for(int i = 0; i < __nthreads; ++i) {
 		if (threads[i]) {
-			threads[i]->start(cwt::thread::InheritPriority);
+			threads[i]->start(pfs::thread::InheritPriority);
 		}
 	}
 
@@ -101,7 +101,7 @@ void test_atomic_swap ()
 
 	for(int i = 0; i < __nthreads; ++i) {
 		if (threads[i]) {
-			threads[i]->start(cwt::thread::InheritPriority);
+			threads[i]->start(pfs::thread::InheritPriority);
 		}
 	}
 

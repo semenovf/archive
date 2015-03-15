@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/threadcv.hpp"
+#include "pfs/threadcv.hpp"
 
 /*
  * ThreadCV cond;
@@ -58,14 +58,14 @@
  */
 
 
-namespace cwt {
+namespace pfs {
 
 /**
- * @fn bool ConditionVariable::wait (Mutex * lockedMutex, ulong_t timeout)
+ * @fn bool ConditionVariable::wait (Mutex * lockedMutex, uintegral_t timeout)
  *
  * @param lockedMutex
  * @param timeout Timeout in milliseconds.
  * @return
  */
 
-} // cwt
+} // pfs

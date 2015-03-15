@@ -6,9 +6,9 @@
  */
 
 
-#include "../include/cwt/fs.hpp"
+#include "pfs/fs.hpp"
 
-namespace cwt {
+namespace pfs {
 
 pfs::string fs::join (const pfs::string & dir, const pfs::string filename)
 {
@@ -26,6 +26,5 @@ pfs::string fs::basename (const pfs::string & path) const
 	return pfs::string();
 }
 
-
-} // cwt
+} // pfs
 

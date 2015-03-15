@@ -5,10 +5,9 @@
  *      Author: wladt
  */
 
-#include <cwt/fs.hpp>
-#include <pfs/safeformat.hpp>
+#include "pfs/fs.hpp"
 
-namespace cwt {
+namespace pfs {
 
 static pfs::string __separator("\\");
 
@@ -124,5 +123,4 @@ pfs::string fs::tempDirectory ()
 	return r;
 }
 
-
-} // cwt
+} // pfs

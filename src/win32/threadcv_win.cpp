@@ -6,7 +6,7 @@
  */
 
 #include "../threadcv_p.hpp"
-#include "../../include/cwt/logger.hpp"
+#include "pfs/logger.hpp"
 #include <cerrno>
 
 // see Condition Variables (http://msdn.microsoft.com/en-us/library/windows/desktop/ms682052%28v=vs.85%29.aspx)
@@ -14,7 +14,7 @@
 // XXX Valid since Vista and Windows Server 2008.
 // Windows Server 2003 and Windows XP:  Condition variables are not supported.
 
-namespace cwt {
+namespace pfs {
 
 class thread_cv::impl
 {
@@ -22,7 +22,7 @@ public:
 	impl ();
 	~impl ();
 	bool wait (pfs::mutex & lockedMutex);
-	bool wait (pfs::mutex & lockedMutex, ulong_t timeout);
+	bool wait (pfs::mutex & lockedMutex, uintegral_t timeout);
 	void wakeOne ();
 	void wakeAll ();
 
@@ -39,12 +39,12 @@ class WinThreadCVImpl : public ThreadCVImpl
 public:
 	WinThreadCVImpl();
 	~WinThreadCVImpl();
-	bool wait (pfs::mutex * lockedMutex, ulong_t timeout = PFS_ULONG_MAX);
+	bool wait (pfs::mutex * lockedMutex, uintegral_t timeout = PFS_ULONG_MAX);
 	void wakeOne ();
 	void wakeAll ();
 
 private:
-	bool wait (ulong_t timeout);
+	bool wait (uintegral_t timeout);
 
 private:
 };
@@ -79,7 +79,7 @@ inline void thread_cv::impl::wakeAll ()
 	m_mutex.unlock();
 }
 
-bool thread_cv::impl::wait (pfs::mutex & lockedMutex, ulong_t timeout)
+bool thread_cv::impl::wait (pfs::mutex & lockedMutex, uintegral_t timeout)
 {
     m_mutex.lock();
 
@@ -97,8 +97,8 @@ bool thread_cv::impl::wait (pfs::mutex & lockedMutex, ulong_t timeout)
 }
 
 thread_cv::thread_cv () : _pimpl (new thread_cv::impl) {}
-bool thread_cv::wait (pfs::mutex & lockedMutex, ulong_t timeout) { return _pimpl->wait(lockedMutex, timeout); }
+bool thread_cv::wait (pfs::mutex & lockedMutex, uintegral_t timeout) { return _pimpl->wait(lockedMutex, timeout); }
 void thread_cv::wakeOne () { _pimpl->wakeOne(); }
 void thread_cv::wakeAll () { _pimpl->wakeAll(); }
 
-} // cwt
+} // pfs

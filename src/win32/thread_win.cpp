@@ -6,16 +6,16 @@
  */
 
 #include <pfs/mt.hpp>
-#include "../../include/cwt/safeformat.hpp"
-#include "../../include/cwt/threadcv.hpp"
+#include "pfs/safeformat.hpp"
+#include "pfs/threadcv.hpp"
 #include "thread_win.hpp"
 //#include <pthread.h>
 //#include <sched.h>
 
 //#define CWT_TRACE_ENABLE
-#include "../../include/cwt/trace.hpp"
+#include "pfs/trace.hpp"
 
-namespace cwt {
+namespace pfs {
 
 #ifdef CWT_HAVE_TLS
 	__declspec(thread) thread::data * thread::data::currentThreadData = nullptr;
@@ -314,7 +314,7 @@ void thread::impl::terminate ()
     }
 }
 
-bool thread::impl::wait (ulong_t timeout)
+bool thread::impl::wait (uintegral_t timeout)
 {
     pfs::auto_lock<> locker(& _mutex);
 
@@ -383,7 +383,7 @@ void thread::impl::setPriority(thread::priority_type priority)
 #endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
 }
 
-inline struct timespec __make_timespec(time_t secs, long_t nsecs)
+inline struct timespec __make_timespec(time_t secs, integral_t nsecs)
 {
     struct timespec ts;
     ts.tv_sec = secs;
@@ -398,19 +398,19 @@ inline void __nanosleep (struct timespec & ts)
 		;
 }
 
-void thread::impl::sleep(ulong_t secs)
+void thread::impl::sleep (uintegral_t secs)
 {
 	struct timespec ts =  __make_timespec(secs, 0);
     __nanosleep(ts);
 }
 
-void thread::impl::msleep(ulong_t msecs)
+void thread::impl::msleep (uintegral_t msecs)
 {
 	struct timespec ts = __make_timespec(msecs / 1000, msecs % 1000 * 1000 * 1000);
     __nanosleep(ts);
 }
 
-void thread::impl::usleep(ulong_t usecs)
+void thread::impl::usleep (uintegral_t usecs)
 {
 	struct timespec ts = __make_timespec(usecs / 1000 / 1000, usecs % (1000*1000) * 1000);
     __nanosleep(ts);
@@ -422,4 +422,4 @@ void thread::exit ()
 	pthread_exit(nullptr);
 }
 
-} // cwt
+} // pfs
