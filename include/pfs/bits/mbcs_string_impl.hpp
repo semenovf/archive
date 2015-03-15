@@ -125,7 +125,7 @@ protected:
 
 public:
 	mbcs_string_ptr () : _holder(nullptr), _off(0) {}
-	mbcs_string_ptr (Holder & holder, size_type off) : _holder(& holder), _off(off) {}
+	mbcs_string_ptr (Holder * holder, size_type off) : _holder(holder), _off(off) {}
 
 	size_type index () { return _off; }
 

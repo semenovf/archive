@@ -40,17 +40,85 @@ protected:
 	typedef mbcs_string_impl<CodeUnitT>            impl_class;
 
 public:
+	class iterator : public random_access_iterator<self_class>
+	{
+	public:
+		typedef typename random_access_iterator<self_class>::pointer pointer;
+		typedef typename random_access_iterator<self_class>::size_type size_type;
+		typedef typename random_access_iterator<self_class>::difference_type difference_type;
+
+		iterator () : random_access_iterator<self_class>() {}
+		iterator (self_class * holder, pointer ptr) : random_access_iterator<self_class>(holder, ptr) {}
+		iterator (const iterator & it) : random_access_iterator<self_class>(it.holder(), it.base())	{}
+
+		friend iterator operator + (const iterator & i, size_type n)
+		{
+			return iterator(i.holder(), i.base() + n);
+		}
+
+		friend iterator operator + (size_type n, const iterator & i)
+		{
+			return iterator(i.holder(), i.base() + n);
+		}
+
+		friend iterator operator - (const iterator & i, size_type n)
+		{
+			return iterator(i.holder(), i.base() - n);
+		}
+
+		friend difference_type operator - (const iterator & i1, const iterator & i2)
+		{
+			return i1.base() - i2.base();
+		}
+	};
+
+	class const_iterator : public random_access_iterator<const self_class>
+	{
+	public:
+		typedef typename random_access_iterator<const self_class>::pointer pointer;
+		typedef typename random_access_iterator<const self_class>::size_type size_type;
+		typedef typename random_access_iterator<const self_class>::difference_type difference_type;
+
+		const_iterator () : random_access_iterator<const self_class>() {}
+		const_iterator (const self_class * holder, pointer ptr) : random_access_iterator<const self_class>(holder, ptr) {}
+		const_iterator (const const_iterator & it) : random_access_iterator<const self_class>(it.holder(), it.base()) {}
+		const_iterator (const iterator & it)
+			: random_access_iterator<const self_class>(it.holder()
+					, pointer(it.holder(), it.base().index())) {}
+
+		friend const_iterator operator + (const const_iterator & i, size_type n)
+		{
+			return const_iterator(i.holder(), i.base() + n);
+		}
+
+		friend const_iterator operator + (size_type n, const const_iterator & i)
+		{
+			return const_iterator(i.holder(), i.base() + n);
+		}
+
+		friend const_iterator operator - (const const_iterator & i, size_type n)
+		{
+			return const_iterator(i.holder(), i.base() - n);
+		}
+
+		friend difference_type operator - (const const_iterator & i1, const const_iterator & i2)
+		{
+			return i1.base() - i2.base();
+		}
+};
+
+
 	typedef ucchar value_type; // Unicode character
 	typedef typename impl_class::size_type                size_type;
 	typedef typename impl_class::difference_type          difference_type;
 
-	typedef mbcs_string_ptr<CodeUnitT, self_class>       pointer;
-	typedef mbcs_string_ptr<CodeUnitT, const self_class> const_pointer;
+	typedef mbcs_string_ptr<CodeUnitT, self_class>        pointer;
+	typedef mbcs_string_ptr<CodeUnitT, const self_class>  const_pointer;
 
 	typedef pfs::reference<self_class>                    reference;
 	typedef pfs::reference<const self_class>              const_reference;
-	typedef pfs::random_access_iterator<self_class>       iterator;
-	typedef pfs::random_access_iterator<const self_class> const_iterator;
+//	typedef pfs::random_access_iterator<self_class>       iterator;
+//	typedef pfs::random_access_iterator<const self_class> const_iterator;
 	typedef std::reverse_iterator<iterator>		          reverse_iterator;
 	typedef std::reverse_iterator<const_iterator>         const_reverse_iterator;
 
@@ -88,12 +156,12 @@ public:
 	iterator erase (const_iterator pos) { return erase(pos, pos + 1); }
 	iterator erase (const_iterator first, const_iterator last);
 
-    iterator begin ()                       { return iterator(this, pointer(*this, 0)); }
-    iterator end   ()                       { return iterator(this, pointer(*this, size())); }
+    iterator begin ()                       { return iterator(this, pointer(this, 0)); }
+    iterator end   ()                       { return iterator(this, pointer(this, size())); }
     const_iterator begin () const           { return cbegin(); }
     const_iterator end   () const           { return cend(); }
-    const_iterator cbegin() const           { return const_iterator(this, const_pointer(*this, 0)); }
-    const_iterator cend  () const           { return const_iterator(this, const_pointer(*this, size())); }
+    const_iterator cbegin() const           { return const_iterator(this, const_pointer(this, 0)); }
+    const_iterator cend  () const           { return const_iterator(this, const_pointer(this, size())); }
     reverse_iterator rbegin  ()             { return reverse_iterator(end()); }
     reverse_iterator rend    ()             { return reverse_iterator(begin()); }
     const_reverse_iterator rbegin  () const { return crbegin(); }
@@ -107,7 +175,7 @@ public:
 
     value_type valueAt (size_type index) const { return at(index); }
     value_type charAt (size_type index) const { return at(index); }
-    reference at (size_type index) const { pointer p(*const_cast<self_class *>(this), 0); p += index; return p.ref(); }
+    reference at (size_type index) const { pointer p(const_cast<self_class *>(this), 0); p += index; return p.ref(); }
     reference operator [] (size_type index) const { return at(index); }
 
     iterator find (const_iterator pos, const mbcs_string & str) const;
@@ -376,6 +444,8 @@ public:
     	return replace(first, last, mbcs_string(count2, ch));
     }
 
+    mbcs_string & replace ( const mbcs_string & before, const mbcs_string & after);
+
 	mbcs_string substr (size_type index, size_type count) const;
 
 	stringlist_basic<mbcs_string> split (const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const
@@ -493,13 +563,13 @@ typename mbcs_string<CodeUnitT>::iterator mbcs_string<CodeUnitT>::insert (const_
 	size_type index = pos.base().index();
 
 	if (first >= last)
-		return iterator(this, pointer(*this, index));
+		return iterator(this, pointer(this, index));
 
 	for (InputIt it = first; it < last; ++it) {
 		this->insert(pos++, *it);
 	}
 
-	return iterator(this, pointer(*this, index + 1));
+	return iterator(this, pointer(this, index + 1));
 }
 
 

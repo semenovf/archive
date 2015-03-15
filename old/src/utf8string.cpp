@@ -617,42 +617,6 @@ utf8string & utf8string::replace (size_t pos, size_t len, const utf8string & str
 	return *this;
 }
 
-/**
- * @brief Replaces every occurrence of the string @c before with the string
- *        @c after and returns a reference to this string.
- * @param before Replaceable string.
- * @param after Replacement string.
- * @return
- */
-utf8string & utf8string::replace (const utf8string & before, const utf8string & after)
-{
-	detach();
-	utf8string r;
-	const_iterator it1 = cbegin();
-	const_iterator it2 = find(before, it1);
-	size_t beforeLength = before.length();
-
-	// nothing to replace
-	while (it2 != cend()) {
-		r.append(utf8string(it1, it2));
-		r.append(after);
-
-		it1 = it2;
-		it1 += beforeLength;
-		it2 = find(before, it1);
-	}
-
-
-	if (it1 != cend()) {
-		r.append(utf8string(it1, cend()));
-	}
-
-	if (!r.isEmpty()) {
-		this->swap(r);
-	}
-
-	return *this;
-}
 
 void utf8string::reserve (size_t n)
 {

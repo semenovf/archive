@@ -642,6 +642,7 @@ inline string __sf_default_traits<long double>::asChar () const
 }
 #endif
 
+template <>
 inline string __sf_default_traits<ucchar>::asChar () const
 {
 	return string(1, _val);
@@ -656,6 +657,7 @@ inline string __sf_default_traits<string>::asChar () const
 			: ucchar::ReplacementChar);
 }
 
+template <>
 inline string __sf_default_traits<void *>::asChar () const
 {
 	return string(1, ucchar(ptrdiff_t(_val)));

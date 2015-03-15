@@ -188,9 +188,9 @@ void test_ptr ()
 	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	utfstring s(utfstring::fromUtf8("GIJKLЁЖЗИЙЭЮЯgijklёжзийэюя"));
-	typename utfstring::pointer ptr(s, 0);
-	typename utfstring::pointer begin(s, 0);
-	typename utfstring::pointer end(s, s.size());
+	typename utfstring::pointer ptr(& s, 0);
+	typename utfstring::pointer begin(& s, 0);
+	typename utfstring::pointer end(& s, s.size());
 
 	std::cout << "Iterate through string \"" << s << '"' << std::endl;
 
@@ -426,8 +426,9 @@ void test_compare ()
 template <typename CodeUnitT>
 void test_replace ()
 {
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
+
 	{
-		typedef pfs::mbcs_string<CodeUnitT> utfstring;
 		utfstring s(utfstring::fromUtf8("Привет, Мир!"));
 
 		s.replace(0, 6, utfstring::fromUtf8("Hello, World!"), 0, 5);
@@ -446,7 +447,6 @@ void test_replace ()
 	}
 
 	{
-		typedef pfs::mbcs_string<CodeUnitT> utfstring;
 		utfstring s(utfstring::fromUtf8("Привет, Мир!"));
 		utfstring s1(utfstring::fromUtf8("Hello, World!"));
 
@@ -464,6 +464,14 @@ void test_replace ()
 		utfstring nil;
 		s.replace(s.cbegin(), s.cend(), nil.cbegin(), nil.cend());
 		TEST_OK(compare_with_utf8(s.c_str(), "") == 0);
+	}
+
+	{
+		utfstring s(utfstring::fromUtf8("This/is/a/test/string"));
+		utfstring s1(utfstring::fromUtf8("This--is--a--test--string"));
+
+		s.replace(utfstring::fromUtf8("/"), utfstring::fromUtf8("--"));
+		TEST_OK2(s == s1, "Replace character sequence by another");
 	}
 }
 

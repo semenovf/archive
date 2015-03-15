@@ -212,7 +212,7 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::erase (const
 	PFS_ASSERT(last <= cend());
 
 	if (isEmpty())
-		return iterator(this, pointer(*this, 0));
+		return iterator(this, pointer(this, 0));
 
 	size_type pos_begin = first.base().index();
 	size_type pos_end = last.base().index();
@@ -225,7 +225,7 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::erase (const
 		d->_length -= count;
 	}
 
-	return iterator(this, pointer(*this, pos_begin));
+	return iterator(this, pointer(this, pos_begin));
 }
 
 
@@ -283,19 +283,19 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (
 	size_type index = pos.base().index();
 
 	if (first >= last)
-		return iterator(this, pointer(*this, index));
+		return iterator(this, pointer(this, index));
 
 	base_class::detach();
 
 	if (this->isEmpty()) {
 		(*this) = s;
-		return iterator(this, pointer(*this, 0));
+		return iterator(this, pointer(this, 0));
 	}
 
 	impl_class * d = base_class::cast();
 	d->insert(index, s.constData(), s.size());
 	d->_length += s.length();
-	return iterator(this, pointer(*this, index + 1));
+	return iterator(this, pointer(this, index + 1));
 }
 
 
@@ -409,8 +409,8 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::find (const_
 	mbcs_string * self = const_cast<mbcs_string *>(this);
 
 	return base_class::cast()->find(index, str.constData(), str.size(), r)
-		? iterator(self, pointer(*self, r))
-		: iterator(self, pointer(*self, size())); // end()
+		? iterator(self, pointer(self, r))
+		: iterator(self, pointer(self, size())); // end()
 }
 
 template <typename _CodeUnitT>
@@ -471,6 +471,48 @@ stringlist_basic<mbcs_string<_CodeUnitT> > mbcs_string<_CodeUnitT>::split (
 		r.clear();
 
 	return r;
+}
+
+
+/**
+ * @brief Replaces every occurrence of the string @c before with the string
+ *        @c after and returns a reference to this string.
+ * @param before Replaceable string.
+ * @param after Replacement string.
+ * @return
+ */
+template <typename _CodeUnitT>
+mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace
+		( const mbcs_string & before
+		, const mbcs_string & after)
+{
+	base_class::detach();
+
+	mbcs_string r;
+	const_iterator it1 = cbegin();
+	iterator it2 = find(it1, before);
+	size_t beforeLength = before.length();
+
+	// nothing to replace
+	while (it2 != cend()) {
+		r.append(mbcs_string(it1, it2));
+		r.append(after);
+
+		it1 = it2;
+		it1 += beforeLength;
+		it2 = find(it1, before);
+	}
+
+
+	if (it1 != cend()) {
+		r.append(mbcs_string(it1, cend()));
+	}
+
+	if (!r.isEmpty()) {
+		this->swap(r);
+	}
+
+	return *this;
 }
 
 
