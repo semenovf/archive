@@ -17,7 +17,7 @@
 namespace pfs {
 
 template <typename Holder>
-class iterator
+class iterator_base
 {
 public:
 	typedef Holder  holder_class;
@@ -32,29 +32,29 @@ protected:
 	pointer        _ptr;
 
 protected:
-	iterator (holder_class * holder, pointer ptr)
+	iterator_base (holder_class * holder, pointer ptr)
 		: _holder(holder), _ptr(ptr) {}
 
 public:
-	iterator (const iterator & o)
+	iterator_base (const iterator_base & o)
 		: _holder(o._holder), _ptr(o._ptr) {}
 
-	~iterator () {}
+	~iterator_base () {}
 
-	iterator & operator = (const iterator & o)
+	iterator_base & operator = (const iterator_base & o)
 	{
 		_holder = o._holder;
 		_ptr = o._ptr;
 		return *this;
 	}
 
-	void swap (iterator & i1, iterator & i2)
+	void swap (iterator_base & i1, iterator_base & i2)
 	{
 		pfs_swap(i1._holder, i2._holder);
 		pfs_swap(i1._ptr, i2._ptr);
 	}
 
-	iterator & operator ++ () // prefix increment
+	iterator_base & operator ++ () // prefix increment
 	{
     	++_ptr;
     	return *this;
@@ -78,24 +78,24 @@ public:
 
 
 template <typename Holder>
-class output_iterator : public iterator<Holder>
+class output_iterator : public iterator_base<Holder>
 {
 public:
 	typedef std::output_iterator_tag iterator_category;
-	typedef typename iterator<Holder>::holder_class holder_class;
-	typedef typename iterator<Holder>::pointer pointer;
-	typedef typename iterator<Holder>::value_type value_type;
-	typedef typename iterator<Holder>::reference reference;
-	typedef typename iterator<Holder>::size_type size_type;
-	typedef typename iterator<Holder>::difference_type difference_type;
+	typedef typename iterator_base<Holder>::holder_class holder_class;
+	typedef typename iterator_base<Holder>::pointer pointer;
+	typedef typename iterator_base<Holder>::value_type value_type;
+	typedef typename iterator_base<Holder>::reference reference;
+	typedef typename iterator_base<Holder>::size_type size_type;
+	typedef typename iterator_base<Holder>::difference_type difference_type;
 
 public:
 	output_iterator (holder_class * holder, pointer ptr)
-		: iterator<Holder>(holder, ptr) {}
+		: iterator_base<Holder>(holder, ptr) {}
 
 	explicit
-	output_iterator (const iterator<Holder> & it)
-		: iterator<Holder>(it) {}
+	output_iterator (const iterator_base<Holder> & it)
+		: iterator_base<Holder>(it) {}
 
 /*
     reference operator * () const
@@ -117,24 +117,24 @@ public:
 };
 
 template <typename Holder>
-class input_iterator : public iterator<Holder>
+class input_iterator : public iterator_base<Holder>
 {
 public:
 	typedef std::input_iterator_tag iterator_category;
-	typedef typename iterator<Holder>::holder_class holder_class;
-	typedef typename iterator<Holder>::pointer pointer;
-	typedef typename iterator<Holder>::value_type value_type;
-	typedef typename iterator<Holder>::reference reference;
-	typedef typename iterator<Holder>::size_type size_type;
-	typedef typename iterator<Holder>::difference_type difference_type;
+	typedef typename iterator_base<Holder>::holder_class holder_class;
+	typedef typename iterator_base<Holder>::pointer pointer;
+	typedef typename iterator_base<Holder>::value_type value_type;
+	typedef typename iterator_base<Holder>::reference reference;
+	typedef typename iterator_base<Holder>::size_type size_type;
+	typedef typename iterator_base<Holder>::difference_type difference_type;
 
 public:
 	input_iterator (holder_class * holder, pointer ptr)
-		: iterator<Holder>(holder, ptr) {}
+		: iterator_base<Holder>(holder, ptr) {}
 
 	explicit
-	input_iterator (const iterator<Holder> & it)
-		: iterator<Holder>(it) {}
+	input_iterator (const iterator_base<Holder> & it)
+		: iterator_base<Holder>(it) {}
 
     value_type operator * () const
     {
@@ -175,12 +175,12 @@ class forward_iterator : public input_iterator<Holder>
 {
 public:
 	typedef std::forward_iterator_tag iterator_category;
-	typedef typename iterator<Holder>::holder_class holder_class;
-	typedef typename iterator<Holder>::pointer pointer;
-	typedef typename iterator<Holder>::value_type value_type;
-	typedef typename iterator<Holder>::reference reference;
-	typedef typename iterator<Holder>::size_type size_type;
-	typedef typename iterator<Holder>::difference_type difference_type;
+	typedef typename iterator_base<Holder>::holder_class holder_class;
+	typedef typename iterator_base<Holder>::pointer pointer;
+	typedef typename iterator_base<Holder>::value_type value_type;
+	typedef typename iterator_base<Holder>::reference reference;
+	typedef typename iterator_base<Holder>::size_type size_type;
+	typedef typename iterator_base<Holder>::difference_type difference_type;
 
 public:
 	forward_iterator ()
@@ -190,7 +190,7 @@ public:
 		: input_iterator<Holder>(holder, ptr) {}
 
 	explicit
-	forward_iterator (const iterator<Holder> & it)
+	forward_iterator (const iterator_base<Holder> & it)
 		: input_iterator<Holder>(it) {}
 
     reference operator * () const
@@ -215,12 +215,12 @@ class bidirectional_iterator : public forward_iterator<Holder>
 {
 public:
 	typedef std::bidirectional_iterator_tag iterator_category;
-	typedef typename iterator<Holder>::holder_class holder_class;
-	typedef typename iterator<Holder>::pointer pointer;
-	typedef typename iterator<Holder>::value_type value_type;
-	typedef typename iterator<Holder>::reference reference;
-	typedef typename iterator<Holder>::size_type size_type;
-	typedef typename iterator<Holder>::difference_type difference_type;
+	typedef typename iterator_base<Holder>::holder_class holder_class;
+	typedef typename iterator_base<Holder>::pointer pointer;
+	typedef typename iterator_base<Holder>::value_type value_type;
+	typedef typename iterator_base<Holder>::reference reference;
+	typedef typename iterator_base<Holder>::size_type size_type;
+	typedef typename iterator_base<Holder>::difference_type difference_type;
 
 public:
 	bidirectional_iterator ()
@@ -230,7 +230,7 @@ public:
 		: forward_iterator<Holder>(holder, ptr) {}
 
 	explicit
-	bidirectional_iterator (const iterator<Holder> & it)
+	bidirectional_iterator (const iterator_base<Holder> & it)
 		: forward_iterator<Holder>(it) {}
 
 	bidirectional_iterator & operator -- ()
@@ -250,12 +250,12 @@ class random_access_iterator : public bidirectional_iterator<Holder>
 {
 public:
 	typedef std::random_access_iterator_tag iterator_category;
-	typedef typename iterator<Holder>::holder_class holder_class;
-	typedef typename iterator<Holder>::pointer pointer;
-	typedef typename iterator<Holder>::value_type value_type;
-	typedef typename iterator<Holder>::reference reference;
-	typedef typename iterator<Holder>::size_type size_type;
-	typedef typename iterator<Holder>::difference_type difference_type;
+	typedef typename iterator_base<Holder>::holder_class holder_class;
+	typedef typename iterator_base<Holder>::pointer pointer;
+	typedef typename iterator_base<Holder>::value_type value_type;
+	typedef typename iterator_base<Holder>::reference reference;
+	typedef typename iterator_base<Holder>::size_type size_type;
+	typedef typename iterator_base<Holder>::difference_type difference_type;
 
 public:
 	random_access_iterator ()
@@ -268,7 +268,7 @@ public:
 		: bidirectional_iterator<Holder>(it) {}
 
 	explicit
-	random_access_iterator (const iterator<Holder> & it)
+	random_access_iterator (const iterator_base<Holder> & it)
 		: bidirectional_iterator<Holder>(it) {}
 
 	random_access_iterator & operator += (size_type n)
@@ -291,25 +291,25 @@ public:
 
 
 template <typename Holder1, typename Holder2>
-inline bool operator < (const iterator<Holder1> & i1, const iterator<Holder2> & i2)
+inline bool operator < (const iterator_base<Holder1> & i1, const iterator_base<Holder2> & i2)
 {
 	return i1.base() < i2.base();
 }
 
 template <typename Holder1, typename Holder2>
-inline bool operator > (const iterator<Holder1> & i1, const iterator<Holder2> & i2)
+inline bool operator > (const iterator_base<Holder1> & i1, const iterator_base<Holder2> & i2)
 {
 	return i1.base() > i2.base();
 }
 
 template <typename Holder1, typename Holder2>
-inline bool operator <= (const iterator<Holder1> & i1, const iterator<Holder2> & i2)
+inline bool operator <= (const iterator_base<Holder1> & i1, const iterator_base<Holder2> & i2)
 {
 	return i1.base() <= i2.base();
 }
 
 template <typename Holder1, typename Holder2>
-inline bool operator >= (const iterator<Holder1> & i1, const iterator<Holder2> & i2)
+inline bool operator >= (const iterator_base<Holder1> & i1, const iterator_base<Holder2> & i2)
 {
 	return i1.base() >= i2.base();
 }

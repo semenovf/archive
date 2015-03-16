@@ -19,11 +19,12 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::insert (
 	PFS_ASSERT(pos >= cbegin() && pos <= cend());
 	difference_type offset = pos - cbegin();
 
-#	if __cplusplus >= 201103L
-	base_class::cast()->insert(base_class::cast()->cbegin() + offset), count, value);
-#	else
-	base_class::cast()->insert(base_class::cast()->begin() + offset, count, value);
-#	endif
+	base_class::cast()->insert(offset, count, value);
+//#	if __cplusplus >= 201103L
+//	base_class::cast()->insert(base_class::cast()->cbegin() + offset, count, value);
+//#	else
+//	base_class::cast()->insert(base_class::cast()->begin() + offset, count, value);
+//#	endif
 	return vector<T, Alloc>::iterator(this, data() + offset);
 }
 
@@ -37,11 +38,12 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::insert (
 	PFS_ASSERT(pos >= cbegin() && pos <= cend());
 	difference_type offset = pos - cbegin();
 
-#	if __cplusplus >= 201103L
-	base_class::cast()->insert(base_class::cast()->cbegin() + offset, first, last);
-#	else
-	base_class::cast()->insert(base_class::cast()->begin() + offset, first, last);
-#	endif
+	base_class::cast()->insert(offset, first, last);
+//#	if __cplusplus >= 201103L
+//	base_class::cast()->insert(base_class::cast()->cbegin() + offset, first, last);
+//#	else
+//	base_class::cast()->insert(base_class::cast()->begin() + offset, first, last);
+//#	endif
 
 	return vector<T, Alloc>::iterator(this, data() + offset);
 }
@@ -53,11 +55,12 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::erase (typename vector<T, 
 	PFS_ASSERT(pos >= cbegin() && pos < cend());
 	difference_type offset = pos - cbegin();
 
-#	if __cplusplus >= 201103L
-	base_class::cast()->erase(base_class::cast()->cbegin() + offset);
-#	else
-	base_class::cast()->erase(base_class::cast()->begin() + offset);
-#	endif
+	base_class::cast()->erase(offset);
+//#	if __cplusplus >= 201103L
+//	base_class::cast()->erase(base_class::cast()->cbegin() + offset);
+//#	else
+//	base_class::cast()->erase(base_class::cast()->begin() + offset);
+//#	endif
 
 	return vector<T, Alloc>::iterator(this, data() + offset);
 }
@@ -77,11 +80,12 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::erase (
 	difference_type from = first - cbegin();
 	difference_type to = last - cbegin();
 
-#	if __cplusplus >= 201103L
-	base_class::cast()->erase(base_class::cast()->cbegin() + from, base_class::cast()->cbegin() + to);
-#	else
-	base_class::cast()->erase(base_class::cast()->begin() + from, base_class::cast()->begin() + to);
-#	endif
+	base_class::cast()->erase(from, to);
+//#	if __cplusplus >= 201103L
+//	base_class::cast()->erase(base_class::cast()->cbegin() + from, base_class::cast()->cbegin() + to);
+//#	else
+//	base_class::cast()->erase(base_class::cast()->begin() + from, base_class::cast()->begin() + to);
+//#	endif
 
 	return vector<T, Alloc>::iterator(this, data() + from);
 }

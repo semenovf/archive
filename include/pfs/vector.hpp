@@ -54,7 +54,7 @@ public:
 	virtual ~vector () {}
 
 public:
-	bool isEmpty () const { return base_class::isNull() || base_class::cast()->empty(); }
+	bool isEmpty () const { return base_class::isNull() || base_class::cast()->isEmpty(); }
 	bool empty () const { return isEmpty(); }
 
     iterator begin () { return iterator(this, data()); }
@@ -88,7 +88,7 @@ public:
 	reference last  () const { PFS_ASSERT(size() > 0); return at(size()-1); }
 
 	const T * constData () const { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
-	const T * data () const      { return base_class::isNull() ? nullptr : base_class::cast()->data(); }
+	const T * data () const      { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
 	T * data ()                  { return base_class::isNull() ? nullptr : base_class::cast()->data(); }
 
 	size_type size    () const { return base_class::isNull() ? 0 : base_class::cast()->size(); }

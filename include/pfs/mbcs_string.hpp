@@ -86,6 +86,13 @@ public:
 			: random_access_iterator<const self_class>(it.holder()
 					, pointer(it.holder(), it.base().index())) {}
 
+//		const_iterator & operator = (const iterator & it)
+//		{
+//			this->_holder = it.holder();
+//			this->_ptr = pointer(it.holder(), it.base().index());
+//			return *this;
+//		}
+
 		friend const_iterator operator + (const const_iterator & i, size_type n)
 		{
 			return const_iterator(i.holder(), i.base() + n);
@@ -105,7 +112,7 @@ public:
 		{
 			return i1.base() - i2.base();
 		}
-};
+	};
 
 
 	typedef ucchar value_type; // Unicode character

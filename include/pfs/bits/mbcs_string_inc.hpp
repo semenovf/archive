@@ -490,7 +490,7 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace
 
 	mbcs_string r;
 	const_iterator it1 = cbegin();
-	iterator it2 = find(it1, before);
+	mbcs_string::iterator it2 = find(it1, before);
 	size_t beforeLength = before.length();
 
 	// nothing to replace
