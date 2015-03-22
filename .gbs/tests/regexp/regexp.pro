@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_regexp
+TARGET = test_pfs_regexp
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include

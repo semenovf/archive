@@ -20,35 +20,49 @@
 
 namespace pfs {
 
+class thread_cv_impl;
+
 class DLL_API thread_cv
 {
-	class impl;
 	pfs::pimpl _d;
 
 public:
 	thread_cv ();
+    ~thread_cv ();
 
-	bool wait (pfs::mutex & lockedMutex);
-	bool wait (pfs::mutex & lockedMutex, uintegral_t timeout);
-	void wakeOne ();
-	void wakeAll ();
+    bool wait (pfs::mutex & lockedMutex, uintegral_t time = pfs::max_type<uintegral_t>());
+//    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time = ULONG_MAX);
 
-    template <typename predicate_type>
-    void wait (pfs::mutex & lockedMutex, predicate_type predicate)
-    {
-        while (!predicate())
-        	wait(lockedMutex);
-    }
+    void wakeOne();
+    void wakeAll();
 
-    template <typename predicate_type>
-    bool wait (pfs::mutex & lockedMutex, uintegral_t timeout, predicate_type predicate)
-    {
-        while (!predicate()) {
-            if(!wait(lockedMutex, timeout))
-                return predicate();
-        }
-        return true;
-    }
+private:
+//    thread_cv (const thread_cv &);
+
+//public:
+//	thread_cv ();
+//
+//	bool wait (pfs::mutex & lockedMutex);
+//	bool wait (pfs::mutex & lockedMutex, uintegral_t timeout);
+//	void wakeOne ();
+//	void wakeAll ();
+//
+//    template <typename predicate_type>
+//    void wait (pfs::mutex & lockedMutex, predicate_type predicate)
+//    {
+//        while (!predicate())
+//        	wait(lockedMutex);
+//    }
+//
+//    template <typename predicate_type>
+//    bool wait (pfs::mutex & lockedMutex, uintegral_t timeout, predicate_type predicate)
+//    {
+//        while (!predicate()) {
+//            if(!wait(lockedMutex, timeout))
+//                return predicate();
+//        }
+//        return true;
+//    }
 };
 
 } // pfs

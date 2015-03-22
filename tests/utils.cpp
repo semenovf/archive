@@ -5,7 +5,7 @@
  */
 
 #include <cwt/test.hpp>
-#include <cwt/utils.hpp>
+#include <pfs/utils.hpp>
 
 #define PFS_INT32_C(x) int32_t(x##L)
 #define PFS_INT64_C(x) int64_t(x##LL)

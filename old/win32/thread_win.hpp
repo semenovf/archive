@@ -14,7 +14,7 @@
 
 // TODO Check for Windows
 //#if defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
-//#	define CWT_HAVE_THREAD_PRIORITY_SCHEDULING
+//#	define PFS_HAVE_THREAD_PRIORITY_SCHEDULING
 //#endif
 
 // TODO add new supporting platforms

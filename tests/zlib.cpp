@@ -7,7 +7,7 @@
  */
 
 #include <cwt/test.hpp>
-#include <cwt/zlib.hpp>
+#include <pfs/zlib.hpp>
 
 
 const char * loremipsum =

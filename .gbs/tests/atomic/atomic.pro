@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_cwt_atomic
+TARGET = test_pfs_atomic
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include

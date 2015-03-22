@@ -6,7 +6,7 @@
  * @brief URI testing
  */
 
-#include <cwt/uri.hpp>
+#include <pfs/uri.hpp>
 #include <cstdio>
 
 #include <pfs/fsm_test.hpp>

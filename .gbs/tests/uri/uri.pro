@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_uri
+TARGET = test_pfs_uri
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include

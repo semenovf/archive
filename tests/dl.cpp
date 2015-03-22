@@ -7,7 +7,7 @@
  */
 
 #include <cwt/test.hpp>
-#include <cwt/dl.hpp>
+#include <pfs/dl.hpp>
 #include <pfs/string.hpp>
 #include <iostream>
 
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	BEGIN_TESTS(3);
 
 	pfs::dl dl;
-	pfs::string dlname = dl.buildDlFileName(pfs::string("cwt-sys"));
+	pfs::string dlname = dl.buildDlFileName(pfs::string("pfs-sys"));
 	pfs::dl::handle dlhandle;
 	typedef int (*dl_test_fn)(void);
 	dl_test_fn dltest;

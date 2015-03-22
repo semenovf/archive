@@ -10,9 +10,9 @@ int main(int argc, char *argv[])
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
 
-    trace(_Fr("%s, %s!") % "Hello" % "World");
-    pfs::string s(_Fr("%s, %s!") % "Hello" % "World");
-    trace(_Fr("%s") % s);
+    trace(safeformat("%s, %s!")("Hello")("World")());
+    pfs::string s(safeformat("%s, %s!")("Hello")("World")());
+    trace(safeformat("%s")(s)());
 
     stdout_appender stdout_appender;
     stderr_appender stderr_appender;

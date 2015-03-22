@@ -24,121 +24,124 @@ static inline void __calculate_abstime (uintegral_t timeout, timespec * ts)
     ts->tv_nsec %= 1000000000;
 }
 
-class thread_cv::impl
+static void __initialize_pthread_cond (pthread_cond_t * cond)
+{
+    pthread_condattr_t condattr;
+
+    pthread_condattr_init(& condattr);
+//#if !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID) && (_POSIX_MONOTONIC_CLOCK-0 >= 0)
+//    if (QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
+//        pthread_condattr_setclock(& condattr, CLOCK_MONOTONIC);
+//#endif
+    PFS_VERIFY_ERRNO(pthread_cond_init(cond, & condattr));
+    pthread_condattr_destroy(& condattr);
+}
+
+class thread_cv_impl
 {
 public:
-	impl ();
-	~impl ();
-	bool wait (pfs::mutex & lockedMutex);
-	bool wait (pfs::mutex & lockedMutex, uintegral_t timeout);
-	void wakeOne ();
-	void wakeAll ();
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+    int waiters;
+    int wakeups;
 
-private:
-	pthread_mutex_t m_internalMutex;
-	pthread_cond_t  m_cond;
+    int wait_relative (uintegral_t time)
+    {
+        timespec ti;
+        __calculate_abstime(time, & ti);
+        return pthread_cond_timedwait(& cond, & mutex, & ti);
+    }
+
+    bool wait (uintegral_t time)
+    {
+        int code;
+        for(;;) {
+            if (time != pfs::max_type<uintegral_t>()) {
+                code = wait_relative(time);
+            } else {
+                code = pthread_cond_wait(& cond, & mutex);
+            }
+            if (code == 0 && wakeups == 0) {
+                // many vendors warn of spurious wakeups from
+                // pthread_cond_wait(), especially after signal delivery,
+                // even though POSIX doesn't allow for it... sigh
+                continue;
+            }
+            break;
+        }
+
+        PFS_ASSERT_X(waiters > 0, "pfs::thread_cv_impl::wait(): internal error (waiters)");
+
+        --waiters;
+
+        if (code == 0) {
+        	PFS_ASSERT_X(wakeups > 0, "pfs::thread_cv_impl::wait(): internal error (wakeups)");
+            --wakeups;
+        }
+
+        PFS_VERIFY_ERRNO(pthread_mutex_unlock(& mutex));
+
+        if (code && code != ETIMEDOUT)
+        	PFS_VERIFY_ERRNO(code);
+
+        return (code == 0);
+    }
 };
 
-
-inline thread_cv::impl::impl ()
+thread_cv::thread_cv ()
+	: _d(new thread_cv_impl)
 {
-    int rc;
-    rc = CWT_VERIFY_ERRNO(pthread_mutex_init(& m_internalMutex, nullptr));
-
-    PFS_ASSERT_X(!rc, _Tr("Failed to initialize internal mutex for conditional variable"));
-
-    rc = CWT_VERIFY_ERRNO(pthread_cond_init(& m_cond, nullptr));
-    if (rc) {
-        PFS_VERIFY(!pthread_mutex_destroy (& m_internalMutex));
-        PFS_ASSERT_X(!rc, _Tr("Unable to initialize condition variable"));
-    }
+	thread_cv_impl * d = _d.cast<thread_cv_impl>();
+	PFS_VERIFY_ERRNO(pthread_mutex_init(& d->mutex, NULL));
+    __initialize_pthread_cond(& d->cond);
+    d->waiters = d->wakeups = 0;
 }
 
-inline thread_cv::impl::~impl ()
+thread_cv::~thread_cv ()
 {
-	CWT_VERIFY_ERRNO(pthread_mutex_destroy(& m_internalMutex));
-	CWT_VERIFY_ERRNO(pthread_cond_destroy(& m_cond));
+	thread_cv_impl * d = _d.cast<thread_cv_impl>();
+	PFS_VERIFY_ERRNO(pthread_cond_destroy(& d->cond));
+	PFS_VERIFY_ERRNO(pthread_mutex_destroy(& d->mutex));
 }
 
-
-inline void thread_cv::impl::wakeOne ()
-{
-	CWT_VERIFY_ERRNO(pthread_mutex_lock(& m_internalMutex));
-	CWT_VERIFY_ERRNO(pthread_cond_signal(& m_cond));
-	CWT_VERIFY_ERRNO(pthread_mutex_unlock(& m_internalMutex));
-}
-
-inline void thread_cv::impl::wakeAll ()
-{
-	CWT_VERIFY_ERRNO(pthread_mutex_lock(& m_internalMutex));
-	CWT_VERIFY_ERRNO(pthread_cond_broadcast(& m_cond));
-	CWT_VERIFY_ERRNO(pthread_mutex_unlock(& m_internalMutex));
-}
-
-// see section "Timed Condition Wait" in pthread_cond_timedwait(P) manual page.
-//
-bool thread_cv::impl::wait (pfs::mutex & lockedMutex, uintegral_t timeout)
-{
-	int rc = 0;
-	{
-    	// XXX Does the order of lock/unlock operations matter?
-		CWT_VERIFY_ERRNO(pthread_mutex_lock(& m_internalMutex));
-        lockedMutex.unlock();
-
-		timespec abstime;
-		__calculate_abstime(timeout, & abstime);
-		rc = pthread_cond_timedwait(& m_cond, & m_internalMutex, & abstime);
-
-		CWT_VERIFY_ERRNO(pthread_mutex_unlock(& m_internalMutex));
-        lockedMutex.lock();
-	}
-
-	if (rc == ETIMEDOUT)
-		return false;
-
-	return (rc == 0);
-}
-
-bool thread_cv::impl::wait (pfs::mutex & lockedMutex)
-{
-    int rc = 0;
-    {
-    	CWT_VERIFY_ERRNO(pthread_mutex_lock(& m_internalMutex));
-        lockedMutex.unlock();
-
-        CWT_VERIFY_ERRNO(pthread_cond_wait(& m_cond, & m_internalMutex));
-
-        CWT_VERIFY_ERRNO(pthread_mutex_unlock(& m_internalMutex));
-        lockedMutex.lock();
-    }
-
-    PFS_ASSERT_X(!rc, _Tr("Failed in pthread_cond_wait"));
-
-	return true;
-}
-
-
-thread_cv::thread_cv () : _d (new thread_cv::impl)
-{}
-
-bool thread_cv::wait (pfs::mutex & lockedMutex)
-{
-	return _d.cast<impl>()->wait(lockedMutex);
-}
-
-bool thread_cv::wait (pfs::mutex & lockedMutex, uintegral_t timeout)
-{
-	return _d.cast<impl>()->wait(lockedMutex, timeout);
-}
 
 void thread_cv::wakeOne ()
 {
-	_d.cast<impl>()->wakeOne();
+	thread_cv_impl * d = _d.cast<thread_cv_impl>();
+	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex));
+    d->wakeups = pfs::min(d->wakeups + 1, d->waiters);
+    PFS_VERIFY_ERRNO(pthread_cond_signal(& d->cond));
+    PFS_VERIFY_ERRNO(pthread_mutex_unlock(& d->mutex));
 }
 
 void thread_cv::wakeAll ()
 {
-	_d.cast<impl>()->wakeAll();
+	thread_cv_impl * d = _d.cast<thread_cv_impl>();
+	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex));
+    d->wakeups = d->waiters;
+    PFS_VERIFY_ERRNO(pthread_cond_broadcast(&d->cond));
+    PFS_VERIFY_ERRNO(pthread_mutex_unlock(&d->mutex));
+}
+
+// see section "Timed Condition Wait" in pthread_cond_timedwait(P) manual page.
+bool thread_cv::wait (pfs::mutex & lockedMutex, uintegral_t time)
+{
+	thread_cv_impl * d = _d.cast<thread_cv_impl>();
+
+//	if (lockedMutex.isRecursive()) {
+//        qWarning("QWaitCondition: cannot wait on recursive mutexes");
+//        return false;
+//    }
+
+	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex));
+    ++d->waiters;
+    lockedMutex.unlock();
+
+    bool returnValue = d->wait(time);
+
+    lockedMutex.lock();
+
+    return returnValue;
 }
 
 } // pfs

@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_cwt_utils
+TARGET = test_pfs_utils
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include

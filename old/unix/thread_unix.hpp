@@ -14,7 +14,7 @@
 #include <unistd.h> // for _POSIX_PRIORITY_SCHEDULING macro
 
 #if defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
-#	define CWT_HAVE_THREAD_PRIORITY_SCHEDULING
+#	define PFS_HAVE_THREAD_PRIORITY_SCHEDULING
 #endif
 
 // TODO add new supporting platforms
@@ -43,7 +43,8 @@ struct thread::data
 	static pthread_key_t  threadKey;
 #endif
 
-	pfs::shared_ptr<thread_impl> threadImpl;
+//	pimpl/*pfs::shared_ptr<thread_impl>*/ threadImpl;
+	thread_impl   * threadImpl;
 	pthread_t threadId;
 };
 

@@ -19,19 +19,25 @@
 namespace pfs {
 
 class thread_impl;
+class thread_data;
 
-class DLL_API thread : public nullable<thread_impl>
+class DLL_API thread
 {
-//	PFS_PIMPL_DECL(thread, protected, impl, protected);
-protected:
-	typedef nullable<thread_impl> base_class;
-	typedef thread                self_class;
-	typedef thread_impl           impl_class;
+	friend class thread_impl;
+	friend class thread_data;
+private:
+	pimpl _d;
 
 public:
-	struct data;
+//    static Qt::HANDLE currentThreadId ();
+    static thread * currentThread ();
+    static int idealThreadCount ();
+    static void yieldCurrentThread ();
 
-	enum priority_type {
+    explicit thread ();
+    virtual ~thread ();
+
+	enum Priority {
 		  IdlePriority         // scheduled only when no other threads are running.
 		, LowestPriority       // scheduled less often than LowPriority.
 		, LowPriority          // scheduled less often than NormalPriority.
@@ -41,6 +47,52 @@ public:
 		, TimeCriticalPriority // scheduled as often as possible.
 		, InheritPriority      // use the same priority as the creating thread. This is the default.
 	};
+
+    void setPriority (Priority priority);
+    Priority priority () const;
+
+    bool isFinished () const;
+    bool isRunning () const;
+
+    void requestInterruption ();
+    bool isInterruptionRequested () const;
+
+    void setStackSize (size_t stackSize);
+    size_t stackSize () const;
+
+public:
+    void start (Priority = InheritPriority/*, size_t stackSize = 0*/);
+    void terminate ();
+    void quit ();
+
+public:
+    // default argument causes thread to block indefinetely
+    bool wait (uintegral_t timeout = max_type<uintegral_t>());
+
+public:
+	static void sleep  (uintegral_t secs);
+	static void msleep (uintegral_t msecs);
+	static void usleep (uintegral_t usecs);
+
+protected:
+    virtual void run () = 0;
+    static void setTerminationEnabled (bool enabled = true);
+
+
+#ifdef __COMMENT__
+	// Terminate main() function with Thread::exit() this call instead of exit(3) to make
+	// normal cleanup for application threads (including thread's specific data destruction)
+	static void exit (); // equivalent to pthread_exit() for POSIX systems
+
+//	PFS_PIMPL_DECL(thread, protected, impl, protected);
+
+protected:
+//	typedef nullable<thread_impl> base_class;
+	typedef thread                self_class;
+	typedef thread_impl           impl_class;
+
+public:
+	struct data;
 
 	// http://en.wikipedia.org/wiki/Thread-local_storage
 	enum tls_implementation_type
@@ -53,33 +105,7 @@ public:
 	};
 
 	static tls_implementation_type tls_implementation ();
-
-public:
-	thread ();
-	virtual ~thread ();
-
-	bool	 isFinished () const;
-	bool	 isRunning () const;
-	priority_type priority () const;
-	void	 setPriority (priority_type priority);
-	size_t	 stackSize () const;
-	bool	 wait (uintegral_t timeout = PFS_UINTEGRAL_MAX);
-	void	 start (priority_type prty = InheritPriority, size_t stackSize = 0);
-	void	 terminate ();
-
-	static void yieldCurrentThread ();
-
-	// Terminate main() function with Thread::exit() this call instead of exit(3) to make
-	// normal cleanup for application threads (including thread's specific data destruction)
-	static void exit (); // equivalent to pthread_exit() for POSIX systems
-
-public:
-	static void sleep (uintegral_t secs);
-	static void msleep (uintegral_t msecs);
-	static void usleep (uintegral_t usecs);
-
-protected:
-	virtual void run () {}
+#endif // __COMMENT__
 };
 
 } // pfs

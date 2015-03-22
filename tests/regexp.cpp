@@ -6,7 +6,7 @@
  */
 
 #include <cwt/test.hpp>
-#include <cwt/regexp.hpp>
+#include <pfs/regexp.hpp>
 #include <iostream>
 
 void test_simple_match()
@@ -30,9 +30,9 @@ void test_simple_match()
 
 	pfs::vector<pfs::string> groups = rx.groups();
 	TEST_FAIL(groups.size() == 3);
-	TEST_OK(groups[0] == "08");
-	TEST_OK(groups[1] == "12");
-	TEST_OK(groups[2] == "1985");
+	TEST_OK(groups[0] == _l1("08"));
+	TEST_OK(groups[1] == _l1("12"));
+	TEST_OK(groups[2] == _l1("1985"));
 }
 
 int main(int argc, char *argv[])

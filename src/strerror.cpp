@@ -6,13 +6,13 @@
 
 #include <pfs/string.hpp>
 
-extern pfs::string __cwt_strerror (int_t errn);
+extern pfs::string pfs_strerror (int_t errn);
 
 namespace pfs { namespace platform {
 
 DLL_API pfs::string strerror (int errn)
 {
-	return __cwt_strerror(errn);
+	return pfs_strerror(errn);
 }
 
 }} // pfs::platform

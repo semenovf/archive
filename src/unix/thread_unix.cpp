@@ -1,442 +1,219 @@
-/*
- * thread_unix.cpp
- *
- *  Created on: Sep 16, 2013
- *      Author: wladt
- */
-
-#include "thread_unix.hpp"
-#include "pfs/threadcv.hpp"
+#include "pfs/thread.hpp"
 #include "pfs/platform.hpp"
-#include <pfs/mt.hpp>
-#include <pfs/safeformat.hpp>
+#include "../thread_p.hpp"
 #include <pthread.h>
+
 #include <sched.h>
+#include <errno.h>
+#include <unistd.h>
 
-#ifdef __COMMENT__
-#ifdef PFS_OS_LINUX
-#	include <sys/time.h>
-#	include <sys/resource.h> // for getrlimit(2)
-#endif
+#if defined(PFS_OS_LINUX) && !defined(SCHED_IDLE)
+// from linux/sched.h
+#	define SCHED_IDLE    5
 #endif
 
-//#define CWT_TRACE_ENABLE
-#include "../../include/pfs/trace.hpp"
+#if defined(PFS_OS_DARWIN) || !defined(PFS_OS_OPENBSD) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
+#	define PFS_HAS_THREAD_PRIORITY_SCHEDULING
+#endif
 
 namespace pfs {
 
-#ifdef CWT_HAVE_TLS
-	__thread thread::data * thread::data::currentThreadData = nullptr;
-#else
-	pthread_once_t thread::data::threadKeyOnce = PTHREAD_ONCE_INIT;
-	pthread_key_t  thread::data::threadKey;
+static struct main_thread
+{
+	pthread_t _threadId;
+	main_thread () { _threadId = pthread_self(); }
+	bool equalsTo (pthread_t otherThreadId) { return (pthread_equal(_threadId, otherThreadId) != 0); }
+} __main_thread;
+
+enum { ThreadPriorityResetFlag = 0x80000000 };
+
+#if defined(PFS_OS_LINUX) && defined(__GLIBC__) && (defined(PFS_CC_GNU) || defined(PFS_CC_INTEL)) && !defined(PFS_LINUXBASE)
+/* LSB doesn't have __thread, https://lsbbugs.linuxfoundation.org/show_bug.cgi?id=993 */
+#	define PFS_HAVE_TLS
 #endif
 
-#ifdef 	CWT_HAVE_THREAD_PRIORITY_SCHEDULING
-// The  range  of  scheduling  priorities  may  vary  on  other POSIX systems,
-// thus it is a good idea for portable applications to use a virtual priority
-// range and map it to the interval given by sched_get_priority_max()
-// and sched_get_priority_min() (see sched_get_priority_max(2)).
+#if defined(PFS_CC_XLC) || defined (PFS_CC_SUN)
+#	define PFS_HAVE_TLS
+#endif
+
+#ifdef PFS_HAVE_TLS
+static __thread thread_data * currentThreadData = 0;
+#endif
+
+static pthread_once_t current_thread_data_once = PTHREAD_ONCE_INIT;
+static pthread_key_t current_thread_data_key;
+
+static void destroy_current_thread_data (void *p)
+{
+    // POSIX says the value in our key is set to zero before calling
+    // this destructor function, so we need to set it back to the
+    // right value...
+    pthread_setspecific(current_thread_data_key, p);
+    thread_data * data = static_cast<thread_data *>(p);
+//    if (data->isAdopted) {
+//        QThread *thread = data->thread;
+//        Q_ASSERT(thread);
+//        QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
+//        Q_ASSERT(!thread_p->finished);
+//        thread_p->finish(thread);
+//    }
+    data->deref();
+
+    // ... but we must reset it to zero before returning so we aren't
+    // called again (POSIX allows implementations to call destructor
+    // functions repeatedly until all values are zero)
+    pthread_setspecific(current_thread_data_key, 0);
+}
+
+static void create_current_thread_data_key ()
+{
+    pthread_key_create(& current_thread_data_key, destroy_current_thread_data);
+}
+
+//static void destroy_current_thread_data_key ()
+//{
+//    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+//    pthread_key_delete(current_thread_data_key);
 //
-static bool __map_to_posix_priority (thread::priority_type priority, int * posixPolicyPtr, int * posixPriorityPtr)
+//    // Reset current_thread_data_once in case we end up recreating
+//    // the thread-data in the rare case of QObject construction
+//    // after destroying the QThreadData.
+//    pthread_once_t pthread_once_init = PTHREAD_ONCE_INIT;
+//    current_thread_data_once = pthread_once_init;
+//}
+//Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
+
+
+// Utility functions for getting, setting and clearing thread specific data.
+static thread_data * get_thread_data ()
 {
-#ifdef SCHED_IDLE
-    if (priority == thread::IdlePriority) {
-        *posixPolicyPtr = SCHED_IDLE;
-        *posixPriorityPtr = 0;
-        return true;
-    }
-    const int lowestPriority = thread::LowestPriority;
+#ifdef PFS_HAVE_TLS
+    return currentThreadData;
 #else
-    const int lowestPriority = thread::IdlePriority;
+    pthread_once(& current_thread_data_once, create_current_thread_data_key);
+    return reinterpret_cast<thread_data *>(pthread_getspecific(current_thread_data_key));
 #endif
-    const int highestPriority = thread::TimeCriticalPriority;
-
-    int prio_min = sched_get_priority_min(*posixPolicyPtr);
-    int prio_max = sched_get_priority_max(*posixPolicyPtr);
-
-    if (prio_min < 0 || prio_max < 0)
-        return false;
-
-    // Scale priority using affine transformation:
-    //
-    // x' = a*x + c __
-    //                |
-    // x0' = a*x0 + c |               (x - x0) * (x1' - x0')
-    //                 >  x' = x0' + ----------------------
-    // x1' = a*x1 + c |                     (x1 - x0)
-    //              __|
-    //
-                                                                // XXX Qt5.0 ignores lowestPriority here---
-                                                                //                                         |
-                                                                //                                         v
-    *posixPriorityPtr = prio_min + ((priority - lowestPriority) * (prio_max - prio_min) / (highestPriority - lowestPriority));
-    *posixPriorityPtr = pfs::max(prio_min, pfs::min(prio_max, *posixPriorityPtr));
-    return true;
-}
-#endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
-
-thread::data::data()
-	: threadImpl()
-	, threadId(0)
-{
-	CWT_TRACE_METHOD();
 }
 
-thread::data::~data ()
+static void set_thread_data (thread_data * data)
 {
-	CWT_TRACE_METHOD();
-	// automatically delete _threadImpl
-}
-
-
-thread_impl::thread_impl (/*thread::data * threadData*/)
-	: _mutex()
-	, _stackSize(0)
-	, _priority(thread::InheritPriority)
-	, _state(ThreadNotRunning)
-	, _threadFinished()
-	, _thread(nullptr)
-	, _data(nullptr)
-{
-}
-
-thread_impl::~thread_impl ()
-{
-	// deleting _data will destroy this instance
-
-	thread::data * d = _data;
-	_data = nullptr;
-	if (d) // if is in non-running state or already destroyed from thread::data::destroy()
-		delete d;
-
-	thread * t = _thread;
-	_thread = nullptr;
-	if (t) {
-		delete t;
-	}
-}
-
-void thread::yieldCurrentThread ()
-{
-	sched_yield();
-}
-
-bool thread_impl::setStackSize (pthread_attr_t & attr, size_t stackSize)
-{
-	int rc = 0;
-
-    if (stackSize > 0) {
-    	size_t page_size = getpagesize();
-
-#ifdef PTHREAD_STACK_MIN
-    	if (stackSize < PTHREAD_STACK_MIN)
-    		stackSize = PTHREAD_STACK_MIN;
+#ifdef PFS_HAVE_TLS
+    currentThreadData = data;
 #endif
+    pthread_once(& current_thread_data_once, create_current_thread_data_key);
+    pthread_setspecific(current_thread_data_key, data);
+}
 
-    	stackSize = ((stackSize + page_size - 1) / page_size) * page_size;
-    	rc = CWT_VERIFY_ERRNO(pthread_attr_setstacksize(& attr, stackSize));
+//static void clear_thread_data ()
+//{
+//#ifdef PFS_HAVE_TLS
+//    currentThreadData = 0;
+//#endif
+//    pthread_setspecific(current_thread_data_key, 0);
+//}
+
+//void thread_data::clearCurrentThreadData()
+//{
+//    clear_thread_data();
+//}
+
+thread_data * thread_data::current ()
+{
+	thread_data * data = get_thread_data();
+	PFS_ASSERT(data);
+    return data;
+}
+
+bool thread_impl::isMainThread () const
+{
+	return __main_thread.equalsTo(_threadId);
+}
+
+void * thread_impl::start (void * arg)
+{
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+    pthread_cleanup_push(thread_impl::finish, arg);
+
+    thread * thr = reinterpret_cast<thread *>(arg);
+    thread_data * data = thread_data::get2(thr);
+
+    {
+    	thread_impl * d = thr->_d.cast<thread_impl>();
+    	pfs::auto_lock<> locker(& d->_mutex);
+
+        // do we need to reset the thread priority?
+        if (int(d->_priority) & ThreadPriorityResetFlag) {
+            d->setPriority(thread::Priority(d->_priority & ~ThreadPriorityResetFlag));
+        }
+
+        data->_threadId = pthread_self();
+        set_thread_data(data);
+
+        data->ref();
+        data->_quitNow = d->_exited;
     }
 
-    _stackSize = 0;
-    rc = CWT_VERIFY_ERRNO(pthread_attr_getstacksize(& attr, & _stackSize));
+//#if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
+//    // sets the name of the current thread.
+//    QString objectName = thr->objectName();
+//
+//    if (Q_LIKELY(objectName.isEmpty()))
+//        setCurrentThreadName(thr->d_func()->thread_id, thr->metaObject()->className());
+//    else
+//        setCurrentThreadName(thr->d_func()->thread_id, objectName.toLocal8Bit());
+//#endif
 
-    return (rc == 0);
-}
-
-
-void thread_impl::start (thread::priority_type priority, size_t stackSize)
-{
-	int rc = 0;
-	pfs::auto_lock<> locker(& _mutex);
-
-	if (_state == ThreadFinishing)
-		_threadFinished.wait(*locker.handlePtr());
-
-	if (_state == ThreadRunning) {
-		return;
-	}
-
-	_state = ThreadRunning;
-
-	pthread_attr_t attr;
-
-	while (true) {
-		rc = CWT_VERIFY_ERRNO(pthread_attr_init(& attr));
-		if (rc)
-			break;
-
-		// Only threads that are created as joinable can be joined.
-		// If a thread is created as detached, it can never be joined.
-		rc = CWT_VERIFY_ERRNO(pthread_attr_setdetachstate(& attr, PTHREAD_CREATE_DETACHED));
-		if (rc)
-			break;
-
-		_priority = priority;
-
-		if (priority == thread::InheritPriority) {
-			rc = CWT_VERIFY_ERRNO(pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED));
-			if (rc)
-				break;
-		} else {
-
-#ifdef CWT_HAVE_THREAD_PRIORITY_SCHEDULING
-			int posixPolicy;
-			rc = CWT_VERIFY_ERRNO(pthread_attr_getschedpolicy(& attr, & posixPolicy));
-            if (rc) {
-            	rc = 0; // ignore this error
-            	break;
-            }
-
-            int posixPriority;
-            bool ok;
-            PFS_VERIFY_X((ok = __map_to_posix_priority(priority, & posixPolicy, & posixPriority))
-            		, _Tr("Can not map to POSIX priority"));
-            if (!ok)
-            	break;
-
-            sched_param sp;
-            sp.sched_priority = posixPriority;
-
-            if (pthread_attr_setinheritsched(& attr, PTHREAD_EXPLICIT_SCHED) != 0
-            		|| pthread_attr_setschedpolicy(& attr, posixPolicy) != 0
-	                || pthread_attr_setschedparam(& attr, & sp) != 0) {
-
-            	pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED);
-            	_priority = priority;
-            }
-#endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
-		}
-		break;
-	}
-
-	if (rc == 0) {
-		while (true) {
-			if (! setStackSize(attr, stackSize))
-				break;
-
-			pthread_t pth = 0;
-
-			_data = new thread::data;
-			_data->threadImpl = _thread->_pimpl;
-
-			rc = CWT_VERIFY_ERRNO(pthread_create(& pth, & attr, & thread_impl::thread_routine, this));
-
-			if (rc) {
-				_state = ThreadNotRunning;
-				if (_data) {
-					delete _data;
-					_data = nullptr;
-				}
-#ifdef __COMMENT__
-#ifdef CWT_OS_LINUX
-				if (rc == EAGAIN) {
-					struct rlimit rlim;
-					getrlimit(RLIMIT_NPROC, & rlim);
-//					String msg(_Tr("May be the limit of threads (processes) has been exceeded: soft limit = %u, hard limit = %u")
-//							% ulong_t(rlim.rlim_cur) % ulong_t(rlim.rlim_max));
-					CWT_ERROR(_Tr("May be the limit of threads (processes) has been exceeded"));
-				}
-#endif
-#endif
-				break;
-			}
-
-			break;
-		}
-	}
-
-	pthread_attr_destroy(& attr);
-}
-
-
-/*
- * 1. Cancelability should only be disabled on  entry  to  an  object,
- * 	  never  explicitly  enabled.  On  exit from an object, the cancelability
- * 	  state should always be restored to its value on entry to the object.
- *
- * 2. The cancelability type may be explicitly set to either deferred
- *    or asynchronous upon entry to an object.  But as with the cancelability
- *    state, on exit from an object the cancelability type should  always  be
- *    restored to its value on entry to the object.
- *
- * 3. Only functions that are cancel-safe may be called from a
- *    thread that is asynchronously cancelable.
- */
-void * thread_impl::thread_routine (void * arg)
-{
-	PFS_ASSERT(arg);
-
-	// If a cancellation request is received,
-    // it is blocked until cancelability is enabled.
-    CWT_VERIFY_ERRNO(pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr));
-
-	thread_impl * threadImpl = static_cast<thread_impl *>(arg);
-	threadImpl->_data->threadId = pthread_self();
-
-    pthread_cleanup_push(& thread_impl::finalize, threadImpl);
-
-    thread::data::set(threadImpl->_data); // set thread-specific data
-
-    CWT_VERIFY_ERRNO(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr));
-    CWT_VERIFY_ERRNO(pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr));
-
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_testcancel();
 
-	thread * thisthread = threadImpl->_thread;
+    thr->run();
 
-	// This is the last checking if thread instance is a live (not destroyed)
-	// before call the 'run' routine.
-	if (! thisthread) {
-		// This order of deletion is important to prevent from double free.
-		thread::data * d = threadImpl->_data;
-		threadImpl->_data = nullptr;
-		delete d;
-		PFS_ASSERT_X(thisthread, _Tr("Thread destroyed, may be you forget to wait() it")); // thread detached (container already destroyed)
-	}
+    pthread_cleanup_pop(1);
 
-   	thisthread->run(); // Do the job
-
-    pthread_cleanup_pop(true); // calls finalize() routine
-
-    return nullptr;
+    return 0;
 }
 
-void thread_impl::finalize (void * arg)
+void thread_impl::finish (void * arg)
 {
-	PFS_ASSERT(arg);
+    thread * thr = reinterpret_cast<thread *>(arg);
+    thread_impl * d = thr->_d.cast<thread_impl>();
+    pfs::auto_lock<> locker(& d->_mutex);
 
-	thread_impl * threadImpl = static_cast<thread_impl *>(arg);
+    d->_isInFinish = true;
+    d->_priority = thread::InheritPriority;
+//    void * data = & d->_data->_tls;
+//    locker.unlock();
+//    QThreadStorageData::finish((void **)data);
+//    locker.relock();
 
-    pfs::auto_lock<> locker(& threadImpl->_mutex);
+    d->_threadId = 0;
+    d->_running = false;
+    d->_finished = true;
+    d->_isInFinish = false;
+    d->_interruptionRequested = false;
 
-    PFS_ASSERT(threadImpl->_data->threadId);
-
-    threadImpl->_state = ThreadFinishing;
-
-    // Delete thread storage data
-/*
-    locker.unlock();
-    QthreadStorageData::finish((void **)data);
-    locker.relock();
-*/
-
-    threadImpl->_data->threadId = 0;
-    threadImpl->_state = ThreadFinished;
-    threadImpl->_threadFinished.wakeAll();
+    d->_threadDone.wakeAll();
 }
 
-void thread::data::destroy (void * pdata)
+//Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
+//{
+//    // requires a C cast here otherwise we run into trouble on AIX
+//    return (Qt::HANDLE)pthread_self();
+//}
+
+int thread::idealThreadCount ()
 {
-	PFS_ASSERT(pdata);
-	pthread_setspecific(threadKey, pdata);
-
-	thread::data * threadData = static_cast<thread::data *>(pdata);
-	threadData->threadImpl->_data = nullptr;
-	delete threadData;
-
-    pthread_setspecific(threadKey, nullptr);
+    int cores = -1;
+    cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    return cores;
 }
 
-
-/*
- *   |              thread                    pthread
- *   | terminate()     |                         |
- *   ----------------->|     pthread_cancel()    |
- *                     |------------------------>|
- *                                               |----
- *                                               |   | 1. Cancellation clean-up handlers are popped
- *                                               |   |    (in the reverse of the order in which they were pushed)
- *                                           ----|   |    and called (see pthread_cleanup_push(3))
- *       2. thread-specific data destructors |   |<---
- *          are called, in an unspecified    |   |
- *          order (see pthread_key_create(3))|   |----
- *                                           --->|   |
- *                                               |   | 3. The thread is terminated (see pthread_exit(3))
- *                                               |   |
- *                                               |<---
- *                                               |
- *
- *  The above steps happen asynchronously.
- */
-void thread_impl::terminate ()
+void thread::yieldCurrentThread()
 {
-    pfs::auto_lock<> locker(& _mutex);
-
-    if (_data && _data->threadId) {
-    	_state = ThreadFinishing;
-    	CWT_VERIFY_ERRNO(pthread_cancel(_data->threadId)); // thread termination error
-    }
+    sched_yield();
 }
 
-bool thread_impl::wait (uintegral_t timeout)
-{
-    pfs::auto_lock<> locker(& _mutex);
-
-    if (_data) {
-    	bool ok;
-    	PFS_VERIFY_X((ok = (_data->threadId != pthread_self()))
-    			, _Tr("Thread attempt to wait on itself"));
-		if (!ok)
-			return false;
-
-		while (_state == ThreadRunning) {
-			if (timeout == PFS_ULONG_MAX) {
-				if (! _threadFinished.wait(_mutex)) {
-					return false;
-				}
-			} else {
-				if (! _threadFinished.wait(_mutex, timeout)) {
-					return false;
-				}
-			}
-		}
-    }
-    return true;
-}
-
-
-void thread_impl::setPriority(thread::priority_type priority)
-{
-    pfs::auto_lock<> locker(& _mutex);
-
-    if (! PFS_VERIFY_X(_state == ThreadRunning
-    		, _Tr("Unable to set thread priority: thread must be in running state"))) {
-        return;
-    }
-
-    _priority = priority;
-
-#ifdef CWT_HAVE_THREAD_PRIORITY_SCHEDULING
-
-    int posixPolicy;
-    sched_param param;
-
-    int rc = CWT_VERIFY_ERRNO(pthread_getschedparam(_data->threadId, & posixPolicy, & param));
-    if (rc)
-        return;
-
-    int posixPriority;
-    bool ok = PFS_VERIFY_X(__map_to_posix_priority(priority, & posixPolicy, & posixPriority)
-    		, _Tr("Can not map to POSIX priority"));
-    if (! ok)
-    	return;
-
-    param.sched_priority = posixPriority;
-    rc = CWT_VERIFY_ERRNO(pthread_setschedparam(_data->threadId, posixPolicy, & param));
-
-#	ifdef SCHED_IDLE
-    if (rc < 0 && posixPolicy == SCHED_IDLE && errno == EINVAL) {
-    	// Set native thread's priority to minimal value
-        pthread_getschedparam(_data->threadId, & posixPolicy, & param);
-        param.sched_priority = sched_get_priority_min(posixPolicy);
-        pthread_setschedparam(_data->threadId, posixPolicy, & param);
-    }
-#	endif
-#endif // CWT_HAVE_THREAD_PRIORITY_SCHEDULING
-}
-
-inline struct timespec __make_timespec(time_t secs, integral_t nsecs)
+static timespec __make_timespec (time_t secs, integral_t nsecs)
 {
     struct timespec ts;
     ts.tv_sec = secs;
@@ -451,28 +228,249 @@ inline void __nanosleep (struct timespec & ts)
 		;
 }
 
-void thread_impl::sleep (uintegral_t secs)
+void thread::sleep (uintegral_t secs)
 {
 	struct timespec ts =  __make_timespec(secs, 0);
     __nanosleep(ts);
 }
 
-void thread_impl::msleep (uintegral_t msecs)
+void thread::msleep (uintegral_t msecs)
 {
 	struct timespec ts = __make_timespec(msecs / 1000, msecs % 1000 * 1000 * 1000);
     __nanosleep(ts);
 }
 
-void thread_impl::usleep (uintegral_t usecs)
+void thread::usleep (uintegral_t usecs)
 {
 	struct timespec ts = __make_timespec(usecs / 1000 / 1000, usecs % (1000*1000) * 1000);
     __nanosleep(ts);
 }
 
-
-void thread::exit ()
+#ifdef PFS_HAS_THREAD_PRIORITY_SCHEDULING
+// Does some magic and calculate the Unix scheduler priorities
+// sched_policy is IN/OUT: it must be set to a valid policy before calling this function
+// sched_priority is OUT only
+static bool calculateUnixPriority (int priority, int *sched_policy, int *sched_priority)
 {
-	pthread_exit(nullptr);
+#ifdef SCHED_IDLE
+    if (priority == thread::IdlePriority) {
+        *sched_policy = SCHED_IDLE;
+        *sched_priority = 0;
+        return true;
+    }
+    const int lowestPriority = thread::LowestPriority;
+#else
+    const int lowestPriority = thread::IdlePriority;
+#endif
+    const int highestPriority = thread::TimeCriticalPriority;
+
+	int prio_min = sched_get_priority_min(*sched_policy);
+	int prio_max = sched_get_priority_max(*sched_policy);
+
+    if (prio_min == -1 || prio_max == -1)
+        return false;
+
+    int prio;
+    // crudely scale our priority enum values to the prio_min/prio_max
+    prio = ((priority - lowestPriority) * (prio_max - prio_min) / highestPriority) + prio_min;
+    prio = pfs::max(prio_min, pfs::min(prio_max, prio));
+
+    *sched_priority = prio;
+    return true;
+}
+#endif
+
+void thread::start (Priority priority)
+{
+	thread_impl * d = _d.cast<thread_impl>();
+	pfs::auto_lock<> locker(& d->_mutex);
+
+    if (d->_isInFinish)
+        d->_threadDone.wait(locker.mutexRef());
+
+    if (d->_running)
+        return;
+
+    d->_running = true;
+    d->_finished = false;
+    d->_returnCode = 0;
+    d->_exited = false;
+    d->_interruptionRequested = false;
+
+    pthread_attr_t attr;
+    pthread_attr_init(& attr);
+    pthread_attr_setdetachstate(& attr, PTHREAD_CREATE_DETACHED);
+
+    d->_priority = priority;
+
+#if defined(PFS_HAS_THREAD_PRIORITY_SCHEDULING)
+    switch (priority) {
+    case InheritPriority:
+        {
+            pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED);
+            break;
+        }
+
+    default:
+        {
+            int sched_policy;
+            if (pthread_attr_getschedpolicy(& attr, & sched_policy) != 0) {
+                // failed to get the scheduling policy, don't bother
+                // setting the priority
+                PFS_DEBUG(fprintf(stderr, "pfs::thread::start(): cannot determine default scheduler policy\n"));
+                break;
+            }
+
+            int prio;
+            if (!calculateUnixPriority(priority, &sched_policy, &prio)) {
+                // failed to get the scheduling parameters, don't
+                // bother setting the priority
+            	PFS_DEBUG(fprintf(stderr, "pfs::thread::start(): cannot determine scheduler priority range\n"));
+                break;
+            }
+
+            sched_param sp;
+            sp.sched_priority = prio;
+
+            if (pthread_attr_setinheritsched(& attr, PTHREAD_EXPLICIT_SCHED) != 0
+                || pthread_attr_setschedpolicy(& attr, sched_policy) != 0
+                || pthread_attr_setschedparam(& attr, &sp) != 0) {
+                // could not set scheduling hints, fallback to inheriting them
+                // we'll try again from inside the thread
+                pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED);
+                d->_priority = Priority(priority | ThreadPriorityResetFlag);
+            }
+            break;
+        }
+    }
+#endif // PFS_HAS_THREAD_PRIORITY_SCHEDULING
+
+    if (d->_stackSize > 0) {
+#if defined(_POSIX_THREAD_ATTR_STACKSIZE) && (_POSIX_THREAD_ATTR_STACKSIZE-0 > 0)
+        int rc = pthread_attr_setstacksize(& attr, d->_stackSize);
+#else
+        int rc = ENOSYS; // stack size not supported, automatically fail
+#endif // _POSIX_THREAD_ATTR_STACKSIZE
+
+        if (rc) {
+        	PFS_DEBUG(fprintf(stderr, "pfs::thread::start(): thread stack size error: %s\n"
+        			, platform::strerror(rc).c_str()));
+
+            // we failed to set the stacksize, and as the documentation states,
+            // the thread will fail to run...
+            d->_running = false;
+            d->_finished = false;
+            return;
+        }
+    }
+
+    int rc =
+        pthread_create(& d->_threadId, & attr, pfs::thread_impl::start, this);
+
+    if (rc == EPERM) {
+        // caller does not have permission to set the scheduling
+        // parameters/policy
+#if defined(PFS_HAS_THREAD_PRIORITY_SCHEDULING)
+        pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED);
+#endif
+        rc =
+            pthread_create(& d->_threadId, & attr, thread_impl::start, this);
+    }
+
+    pthread_attr_destroy(& attr);
+
+    if (rc) {
+    	PFS_DEBUG(fprintf(stderr
+    			, "pfs::thread::start(): thread creation error: %s\n"
+				, platform::strerror(rc).c_str()));
+
+        d->_running = false;
+        d->_finished = false;
+        d->_threadId = 0;
+    }
 }
 
+void thread::terminate ()
+{
+	thread_impl * d = _d.cast<thread_impl>();
+	pfs::auto_lock<> locker(& d->_mutex);
+
+    if (!d->_threadId)
+        return;
+
+    PFS_VERIFY_ERRNO(pthread_cancel(d->_threadId));
+}
+
+bool thread::wait (uintegral_t timeout)
+{
+	thread_impl * d = _d.cast<thread_impl>();
+	pfs::auto_lock<> locker(& d->_mutex);
+
+	if (! PFS_VERIFY_X((d->_data->_threadId != pthread_self())
+			, _Tr("Thread attempt to wait on itself"))) {
+		return false;
+	}
+
+    if (d->_finished || ! d->_running)
+        return true;
+
+    while (d->_running) {
+        if (!d->_threadDone.wait(locker.mutexRef(), timeout))
+            return false;
+    }
+    return true;
+}
+
+void thread::setTerminationEnabled (bool enabled)
+{
+	thread * thr = currentThread();
+    PFS_ASSERT_X(thr != 0
+    		, _Tr("pfs::thread::setTerminationEnabled(): current thread was not started with pfs::thread."));
+
+	PFS_UNUSED(thr);
+    pthread_setcancelstate(enabled ? PTHREAD_CANCEL_ENABLE : PTHREAD_CANCEL_DISABLE, NULL);
+    if (enabled)
+        pthread_testcancel();
+}
+
+// Caller must lock the mutex
+void thread_impl::setPriority (thread::Priority threadPriority)
+{
+    _priority = threadPriority;
+
+#ifdef PFS_HAS_THREAD_PRIORITY_SCHEDULING
+    int sched_policy;
+    sched_param param;
+
+    if (pthread_getschedparam(_threadId, & sched_policy, & param) != 0) {
+        // failed to get the scheduling policy, don't bother setting
+        // the priority
+        PFS_DEBUG(fprintf(stderr, "pfs::thread_impl::setPriority(): cannot get scheduler parameters\n"));
+        return;
+    }
+
+    int prio;
+    if (!calculateUnixPriority(_priority, & sched_policy, & prio)) {
+        // failed to get the scheduling parameters, don't
+        // bother setting the priority
+        PFS_DEBUG(fprintf(stderr, "pfs::thread_impl::setPriority(): cannot determine scheduler priority range\n"));
+        return;
+    }
+
+    param.sched_priority = prio;
+    int status = pthread_setschedparam(_threadId, sched_policy, & param);
+
+#	ifdef SCHED_IDLE
+    // were we trying to set to idle priority and failed?
+    if (status == -1 && sched_policy == SCHED_IDLE && errno == EINVAL) {
+        // reset to lowest priority possible
+        pthread_getschedparam(_threadId, & sched_policy, & param);
+        param.sched_priority = sched_get_priority_min(sched_policy);
+        pthread_setschedparam(_threadId, sched_policy, & param);
+    }
+#	else
+    PFS_UNUSED(status);
+#	endif // SCHED_IDLE
+#endif
+}
 } // pfs

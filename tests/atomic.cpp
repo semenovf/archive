@@ -6,7 +6,7 @@
 
 #include <cwt/test.hpp>
 #include <pfs/atomic.hpp>
-#include <cwt/thread.hpp>
+#include <pfs/thread.hpp>
 #include <iostream>
 
 static int nonAtomicCounter = 0;

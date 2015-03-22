@@ -6,12 +6,14 @@
  */
 
 #include <cwt/test.hpp>
-#include "cwt/thread.hpp"
-#include "cwt/random.hpp"
+#include "pfs/thread.hpp"
+#include "pfs/random.hpp"
 #include <pfs/string.hpp>
 #include <pfs/safeformat.hpp>
 #include <iostream>
 #include <cstdlib>
+
+//#include <QThread>
 
 class TestThread : public pfs::thread
 {
@@ -46,10 +48,11 @@ void test_thread ()
 void test_threads(int nthreads)
 {
 	TestThread ** threads = new TestThread * [nthreads];
+	TEST_FAIL(threads);
 
 	// Initialize threads
 	for(int i = 0; i < nthreads; ++i) {
-		threads[i] = new TestThread(pfs::safeformat("Thread_%04d") % i);
+		threads[i] = new TestThread(pfs::safeformat("Thread_%04d")(i)());
 		PFS_ASSERT(threads[i]);
 	}
 
@@ -91,7 +94,10 @@ void test_wait_timeout ()
 	struct Y : public pfs::thread
 	{
 		bool finished;
-		Y() : pfs::thread(), finished(false) {}
+		Y() : pfs::thread(), finished(false) { }
+
+		virtual ~Y ()
+		{}
 
 		virtual void run ()
 		{
@@ -112,6 +118,17 @@ void test_wait_timeout ()
 		}
 	};
 
+//	struct Q : public QThread
+//	{
+//		bool finished;
+//		Q() : QThread(), finished(false) {}
+//
+//		virtual void run ()
+//		{
+//			sleep(5);
+//			finished = true;
+//		}
+//	};
 
 	X x;
 	x.start();
@@ -124,7 +141,6 @@ void test_wait_timeout ()
 	TEST_OK(!y.finished);
 	y.terminate();
 
-
 	Z z;
 	z.start();
 	TEST_OK(z.wait()); // ok => thread's routine finished;
@@ -132,17 +148,27 @@ void test_wait_timeout ()
 
 	Y y0;
 	y0.start();
+	//pfs::thread::sleep(1);
 	y0.terminate();
 	y0.wait();
+	TEST_FAIL(y0.isFinished());
 
-	Y y1;
-	y1.start();
-	y1.terminate();
+//	Q q;
+//	q.start();
+//	q.terminate();
+//	q.wait();
+//	TEST_FAIL(q.isFinished());
+
+//  This code may abort the program
+//	Y y1;
+//	y1.start();
+//	y1.terminate();
 
 	Z z0;
 
-	Z z1;
-	z1.start();
+//	Z z1;
+//	z1.start(); // Will warn: "Attempt to destroy thread while it is still running"
+//	            // at program exit
 
 	Z z2;
 	z2.start();
@@ -153,11 +179,13 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(6);
+	BEGIN_TESTS(7);
 
-	if (1) test_thread();
-	if (1) test_threads(350);
-	if (1) test_wait_timeout();
+	do {
+		if (1) test_thread();
+		if (1) test_threads(350);
+		if (1) test_wait_timeout();
+	} while (argc > 1);
 
     END_TESTS; // exits with pfs::thread::exit
 }

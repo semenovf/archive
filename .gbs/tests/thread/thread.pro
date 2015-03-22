@@ -1,6 +1,6 @@
-include($$(GBS_HOME)/qmake/common-test.pri)
+include($$(GBS_HOME)/qmake/common-test-qt.pri)
 
-TARGET = test_thread
+TARGET = test_pfs_thread
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
