@@ -57,7 +57,10 @@ public:
 	~pimpl () { deref(); }
 
 	bool isNull () const { return _holder == nullptr; }
-	bool isUnique () const { PFS_ASSERT(_holder); return _holder->_ref.load() == 1; }
+	bool isUnique () const
+	{
+		return isNull() || _holder->_ref.load() == 1;
+	}
 
 	template <typename T>
 	void swap (pimpl & o);

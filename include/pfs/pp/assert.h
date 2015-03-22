@@ -29,12 +29,12 @@ struct __verify
 #
 #	endif
 #else /* !NDEBUG */
-#	define PFS_VERIFY(expr) (expr)
-#	define PFS_VERIFY_X(expr,text) (expr)
+#	define PFS_VERIFY(x) (x)
+#	define PFS_VERIFY_X(x,text) (x)
 #endif
 
 #ifndef NDEBUG
-#	define PFS_DEBUG(expr)       expr
+#	define PFS_DEBUG(x)       x
 #	if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
 #		include <cassert>
 #	else
@@ -66,18 +66,17 @@ struct __verify
 #	endif
 
 #else
-#	define PFS_DEBUG(expr)
-#	define PFS_ASSERT(expr)
+#	define PFS_DEBUG(x)
+#	define PFS_ASSERT(x)
 //#	define PFS_ASSERT_TRACE(expr,trace_expr)
-#	define PFS_ASSERT_X(expr,msg)
+#	define PFS_ASSERT_X(x,msg)
 
 #endif /* !NDEBUG */
 
-#define PFS_ASSERT_FORMAT(expr)   PFS_ASSERT(expr)
-#define PFS_ASSERT_RANGE(expr)    PFS_ASSERT(expr)
-#define PFS_ASSERT_OVERFLOW(expr) PFS_ASSERT(expr)
-#define PFS_ASSERT_BAD_CAST(expr) PFS_ASSERT(expr)
-#define PFS_ASSERT_UNEXPECTED()   PFS_ASSERT(false)
-
+#define PFS_ASSERT_FORMAT(x)    PFS_ASSERT(x)
+#define PFS_ASSERT_RANGE(x)     PFS_ASSERT(x)
+#define PFS_ASSERT_OVERFLOW(x)  PFS_ASSERT(x)
+#define PFS_ASSERT_BAD_CAST(x)  PFS_ASSERT(x)
+#define PFS_ASSERT_UNEXPECTED() PFS_ASSERT(false)
 
 #endif /* __PFS_ASSERT_H__ */

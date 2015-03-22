@@ -72,7 +72,8 @@ public:
 	void tryLock() { _mutex->tryLock(); }
 	void unlock()  { _mutex->unlock(); }
 
-	mt_policy * handlePtr() const { return _mutex; }
+	mt_policy * mutexPtr() const { return _mutex; }
+	mt_policy & mutexRef() const { return *_mutex; }
 private:
 	mt_policy * _mutex;
 };
@@ -88,7 +89,9 @@ public:
 	void tryLock() { _mutex->tryLock(); }
 	void unlock()  { _mutex->unlock(); }
 
-	mt_policy * handlePtr() const { return _mutex; }
+	mt_policy * mutexPtr() const { return _mutex; }
+	mt_policy & mutexRef() const { return *_mutex; }
+
 private:
 	mt_policy * _mutex;
 };
