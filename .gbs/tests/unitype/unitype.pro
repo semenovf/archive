@@ -4,7 +4,6 @@ TARGET = test_pfs_unitype
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
-#INCLUDEPATH += ../../../../cwt-test/include
 
 SOURCES     += ../../../tests/unitype.cpp
 

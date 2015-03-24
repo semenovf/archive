@@ -4,7 +4,6 @@ TARGET = test_pfs_utf8string
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
-#INCLUDEPATH += ../../../../cwt-test/include
 
 SOURCES     += ../../../tests/utf8string.cpp
 

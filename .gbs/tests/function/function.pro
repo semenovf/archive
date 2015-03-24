@@ -4,7 +4,6 @@ TARGET = test_pfs_function
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
-#INCLUDEPATH += ../../../../cwt-test/include
 
 SOURCES += ../../../tests/function.cpp
 
