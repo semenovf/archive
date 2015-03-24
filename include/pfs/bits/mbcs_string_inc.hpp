@@ -322,6 +322,29 @@ mbcs_string<_CodeUnitT> mbcs_string<_CodeUnitT>::substr (size_type index, size_t
 	return r;
 }
 
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::substr (const_iterator begin, size_t count) const
+{
+	mbcs_string<CodeUnitT> r;
+	const_iterator end = cend();
+	const_iterator it(begin);
+	while (it != end && count-- > 0) {
+		r.append(1, *it++);
+	}
+	return r;
+}
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::substr (const_iterator begin, const_iterator end) const
+{
+	mbcs_string<CodeUnitT> r;
+	const_iterator it(begin);
+	while (it != end) {
+		r.append(1, *it++);
+	}
+	return r;
+}
+
 template <typename _CodeUnitT>
 mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 	  size_type pos1

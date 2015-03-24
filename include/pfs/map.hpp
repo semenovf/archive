@@ -14,11 +14,6 @@
 #include <pfs/vector.hpp>
 #include <pfs/type_traits.hpp>
 
-//#include <pfs.hpp>
-//#include <pfs/shared_ptr.hpp>
-//#include <pfs/pimpl.hpp>
-//#include <map>
-
 namespace pfs {
 
 template <typename Key, typename T, typename Compare = std::less<Key>, typename Alloc = std::allocator<std::pair<const Key, T> > >
@@ -34,6 +29,10 @@ public:
 	typedef Key                                  key_type;
 	typedef typename impl_class::size_type       size_type;
 	typedef typename impl_class::difference_type difference_type;
+	typedef map_pointer<Key, T, Compare, Alloc, self_class>       pointer;
+	typedef map_pointer<Key, T, Compare, Alloc, const self_class> const_pointer;
+	typedef pfs::reference<self_class>             reference;
+	typedef pfs::reference<const self_class>       const_reference;
 
 	template <typename Holder>
 	class base_iterator : public bidirectional_iterator<Holder>
@@ -50,8 +49,8 @@ public:
 		base_iterator (const base_iterator<Holder> & it)
 			: bidirectional_iterator<Holder>(it.holder(), it.base()) {}
 
-		key_type key () { return this->base().key(); }
-		value_type value () { return this->base().value(); }
+		key_type key () const { return this->base().key(); }
+		value_type value () const { return this->base().value(); }
 	};
 
 	class iterator : public base_iterator<self_class>
@@ -75,10 +74,6 @@ public:
 		const_iterator (const iterator & it) : base_iterator<const self_class>(it.holder(), pointer(it.holder(), it.base().base())) {}
 	};
 
-	typedef map_pointer<Key, T, Compare, Alloc, self_class>       pointer;
-	typedef map_pointer<Key, T, Compare, Alloc, const self_class> const_pointer;
-	typedef pfs::reference<self_class>             reference;
-	typedef pfs::reference<const self_class>       const_reference;
     typedef std::reverse_iterator<iterator>		   reverse_iterator;
     typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
 
@@ -87,8 +82,13 @@ public:
     virtual ~map () {}
 
 public:
-	bool isEmpty () const { return base_class::isNull() || base_class::cast()->empty(); }
+	bool isEmpty () const { return base_class::isNull() || base_class::cast()->isEmpty(); }
 	bool empty () const { return isEmpty(); }
+	void clear ()
+	{
+		if (!isEmpty())
+			base_class::cast()->clear();
+	}
 
 	size_type size () const { return base_class::isNull() ? 0 : base_class::cast()->size(); }
 

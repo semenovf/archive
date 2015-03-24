@@ -399,6 +399,9 @@ public:
 	template <typename ValT>
 	size_t readNumber (ValT & v, size_t pos = 0, endian::type_enum order = endian::nativeOrder()) const;
 
+	integral_t toIntegral (bool * ok = 0, int base = 10) const;
+	uintegral_t toUIntegral (bool * ok = 0, int base = 10) const;
+
 	short          toShort  (bool * ok = 0, int base = 10) const;
 	unsigned short toUShort (bool * ok = 0, int base = 10) const;
 	int	           toInt    (bool * ok = 0, int base = 10) const;
@@ -411,12 +414,12 @@ public:
 	unsigned long long toULongLong (bool * ok = 0, int base = 10) const;
 #endif
 
-	real_t toReal (bool * ok, char decimalPoint = '.') const;
-	float toFloat (bool * ok, char decimalPoint = '.') const;
-	double toDouble (bool * ok, char decimalPoint = '.') const;
+	real_t toReal (bool * ok = 0, char decimalPoint = '.') const;
+	float toFloat (bool * ok = 0, char decimalPoint = '.') const;
+	double toDouble (bool * ok = 0, char decimalPoint = '.') const;
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-	long double toLongDouble (bool * ok, char decimalPoint = '.') const { return toReal(ok, decimalPoint); }
+	long double toLongDouble (bool * ok = 0, char decimalPoint = '.') const { return toReal(ok, decimalPoint); }
 #endif
 
 	byte_string        toBase64 () const;

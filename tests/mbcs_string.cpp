@@ -360,6 +360,13 @@ void test_substr ()
 	TEST_OK(strcmp(s.substr(0,5).c_str(), "GIJKL") == 0);
 	TEST_OK(strcmp(s.substr(5,8).c_str(), "ЁЖЗИЙЭЮЯ") == 0);
 	TEST_OK(strcmp(s.substr(5,s.length() + 1).c_str(), "ЁЖЗИЙЭЮЯgijklёжзийэюя") == 0);
+
+	TEST_OK(strcmp(s.substr(s.cbegin() + 5, 8).c_str(), "ЁЖЗИЙЭЮЯ") == 0);
+	TEST_OK(strcmp(s.substr(s.cbegin() + 13, 100).c_str(), "gijklёжзийэюя") == 0);
+
+	TEST_OK(strcmp(s.substr(s.cbegin() + 5, s.cbegin() + 13).c_str(), "ЁЖЗИЙЭЮЯ") == 0);
+	TEST_OK(strcmp(s.substr(s.cbegin() + 13, s.cend()).c_str(), "gijklёжзийэюя") == 0);
+
 }
 
 template <typename CodeUnitT>

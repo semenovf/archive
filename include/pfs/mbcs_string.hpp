@@ -454,6 +454,33 @@ public:
     mbcs_string & replace ( const mbcs_string & before, const mbcs_string & after);
 
 	mbcs_string substr (size_type index, size_type count) const;
+	mbcs_string substr (const_iterator begin, size_t count) const;
+	mbcs_string substr (const_iterator begin, const_iterator end) const;
+
+	mbcs_string substr (const_iterator begin) const
+	{
+		return substr(begin, length());
+	}
+
+	mbcs_string substr (size_t index) const
+	{
+		return substr(index, length());
+	}
+
+	mbcs_string mid (size_t index, size_t count) const
+	{
+		return substr(index, count);
+	}
+
+	mbcs_string left (size_t count) const
+	{
+		return substr(0, count);
+	}
+
+	mbcs_string right  (size_t count) const
+	{
+		return substr(length() - count, count);
+	}
 
 	stringlist_basic<mbcs_string> split (const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const
 	{
@@ -602,26 +629,39 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 }
 
 template <typename CodeUnitT>
-inline integral_t mbcs_string<CodeUnitT>::toIntegral (bool * ok, int base) const
+integral_t mbcs_string<CodeUnitT>::toIntegral (bool * ok, int base) const
 {
-	return (short)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
+	return strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, integral_t(pfs::min_type<integral_t>())
 		, uintegral_t(pfs::max_type<integral_t>()));
 }
 
 template <typename CodeUnitT>
-inline uintegral_t mbcs_string<CodeUnitT>::toUIntegral (bool * ok, int base) const
+uintegral_t mbcs_string<CodeUnitT>::toUIntegral (bool * ok, int base) const
 {
-	return (unsigned short)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
+	return strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, uintegral_t(pfs::max_type<uintegral_t>()));
 }
 
 
 template <typename CodeUnitT>
-inline short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
+short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
+
 	return (short)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, integral_t(pfs::min_type<short>())
@@ -629,16 +669,24 @@ inline short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-inline unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
+unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
 	return (unsigned short)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, uintegral_t(pfs::max_type<unsigned short>()));
 }
 
 template <typename CodeUnitT>
-inline int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
+int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
 	return (int)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, integral_t(pfs::min_type<int>())
@@ -646,16 +694,24 @@ inline int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-inline unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
+unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
 	return (unsigned int)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, uintegral_t(pfs::max_type<unsigned int>()));
 }
 
 template <typename CodeUnitT>
-inline long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
+long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
 	return (long)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, integral_t(pfs::min_type<long>())
@@ -663,8 +719,13 @@ inline long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-inline unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
+unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
+
 	return (unsigned long)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, uintegral_t(pfs::max_type<unsigned long>()));
@@ -672,8 +733,12 @@ inline unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
 
 #ifdef PFS_HAVE_LONGLONG
 template <typename CodeUnitT>
-inline long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
+long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
 	return (long long)strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, integral_t(pfs::min_type<long long>())
@@ -681,8 +746,12 @@ inline long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-inline unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int base) const
+unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int base) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return 0;
+	}
 	return (unsigned long long)strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
 		, uintegral_t(pfs::max_type<unsigned long long>()));
@@ -700,6 +769,10 @@ inline unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int ba
 template <typename CodeUnitT>
 real_t mbcs_string<CodeUnitT>::toReal (bool * ok, ucchar decimalPoint) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return real_t(.0);
+	}
 	const_iterator begin(cbegin());
 	const_iterator end(cend());
 	const_iterator endptr(end);
@@ -708,7 +781,7 @@ real_t mbcs_string<CodeUnitT>::toReal (bool * ok, ucchar decimalPoint) const
 	real_t r = pfs::strtoreal<ucchar, const_iterator>(begin, end, decimalPoint, & endptr);
 	if (errno || endptr != end) {
 		ok1 = false;
-		r = real_t(0.0f);
+		r = real_t(.0);
 	}
 
 	if (ok) *ok = ok1;
@@ -718,6 +791,11 @@ real_t mbcs_string<CodeUnitT>::toReal (bool * ok, ucchar decimalPoint) const
 template <typename CodeUnitT>
 float mbcs_string<CodeUnitT>::toFloat (bool * ok, ucchar decimalPoint) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return float(.0);
+	}
+
 	bool ok1;
 	real_t r = toReal(& ok1, decimalPoint);
 	if (!ok1 || r < PFS_FLOAT_MIN || r > PFS_FLOAT_MAX) {
@@ -731,6 +809,11 @@ float mbcs_string<CodeUnitT>::toFloat (bool * ok, ucchar decimalPoint) const
 template <typename CodeUnitT>
 double mbcs_string<CodeUnitT>::toDouble (bool * ok, ucchar decimalPoint) const
 {
+	if (this->isNull()) {
+		if (ok) *ok = false;
+		return double(.0);
+	}
+
 #ifndef PFS_HAVE_LONG_DOUBLE
 	return toReal(ok, decimalPoint);
 #else
@@ -830,26 +913,27 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long lo
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (float value, char f, int prec)
 {
-	char buf[65];
+	char buf[5020];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_real_to_string(real_t(value), f, prec, buf, 65));
+			pfs_real_to_string(real_t(value), f, prec, buf, 5020));
 }
 
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (double value, char f, int prec)
 {
-	char buf[129];
+	char buf[5020];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_real_to_string(real_t(value), f, prec, buf, 129));
+			pfs_real_to_string(real_t(value), f, prec, buf, 5020));
 }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
+// 1.18973e+4932 with 'f' flag has length 4940
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long double value, char f, int prec)
 {
-	char buf[129];
+	char buf[5020];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_real_to_string(real_t(value), f, prec, buf, 129));
+			pfs_real_to_string(real_t(value), f, prec, buf, 5020));
 }
 #endif
 

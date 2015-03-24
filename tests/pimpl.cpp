@@ -106,7 +106,7 @@ struct Int
 	Int (int i) : _i(i) {}
 };
 
-void test3 ()
+void test0 ()
 {
 	{
 		pfs::nullable<Int> nil1;
@@ -275,7 +275,7 @@ int main (int argc, char *argv[])
 
 	test1();
 	test2();
-	test3();
+	test0();
 
 	END_TESTS;
 }

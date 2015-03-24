@@ -5,11 +5,11 @@
 #include <cwt/test.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/string.hpp>
+#include <pfs/typeinfo.hpp>
 #include <cwt/stopwatch.hpp>
 #include <iostream>
 #include <sstream>
 #include <utility>
-#include <typeinfo>
 
 #ifdef PFS_HAVE_QT
 #include <QString>
@@ -55,35 +55,28 @@ pfs::string randomString (unsigned int maxSize)
 }
 
 template <class T>
-bool testCase (const pfs::string & fmt, T value)
+bool testCase (const pfs::string & fmt1, const pfs::string & fmt2, T value)
 {
-    char buf[4096];
-    pfs::string s = pfs::safeformat(fmt)(value)();
+    char buf[5020];
+    pfs::string s = pfs::safeformat(fmt1)(value)();
 
 #ifdef PFS_CC_MSC
-    int i2 =_snprintf(buf, sizeof(buf), fmt.c_str(), value);
+    int i2 =_snprintf(buf, sizeof(buf), fmt2.c_str(), value);
 #else
-    int i2 = snprintf(buf, sizeof(buf), fmt.c_str(), value);
+    int i2 = snprintf(buf, sizeof(buf), fmt2.c_str(), value);
 #endif
 
     if (s.length() != i2 || s != pfs::string(buf)) {
     	cout<< endl
         << "Reference: " << i2 << "; Actual: " << s.length() << ", Difference = " << i2 - int(s.length()) << endl
         << "V: [" << value << "]" << endl
-        << "F: [" << fmt << "]" << endl
+        << "F1: [" << fmt1 << "]" << endl
+		<< "F2: [" << fmt2 << "]" << endl
         << "R: [" << buf << "]" << endl
         << "A: [" << s.c_str() << "]" << endl;
         return false;
     }
     return true;
-}
-
-void test0 ()
-{
-//	TEST_FAIL(pfs::safeformat("%d")(2)() == "2");
-//	TEST_FAIL(pfs::safeformat("%.5f")(3.14159f)() == "3.14159");
-//	TEST_FAIL(pfs::safeformat("eqfhxeuvkmybvuuwwxpathgycwbxewqiovqmbljlyinueisbhicbqjbshcrlaiuofmcg|%+0 s|pmbwvdynnahudahdjcsopvuohomcugbktdhqggeuhmplmwpvaikpegemuroqxqbstjkbqpvxcmjojylkiwandfaywppvgrpbb")("HELLO")()
-//				== "eqfhxeuvkmybvuuwwxpathgycwbxewqiovqmbljlyinueisbhicbqjbshcrlaiuofmcg|HELLO|pmbwvdynnahudahdjcsopvuohomcugbktdhqggeuhmplmwpvaikpegemuroqxqbstjkbqpvxcmjojylkiwandfaywppvgrpbb");
 }
 
 #ifdef __COMMENT__
@@ -185,7 +178,6 @@ void test1 ()
 }
 #endif
 
-#ifdef __COMMENT__
 // test speed
 void test2 ()
 {
@@ -235,122 +227,157 @@ void test2 ()
 #endif
 		 ;
 }
-#endif
-
-
-#ifdef __COMMENT__
-template <typename T>
-bool test_arg(const char * format, T v)
-{
-	char buf[64];
-	sprintf(buf, format, v);
-	printf("sprintf: \"%s\" == \"%s\" : SafeFormat\n", buf, pfs::string(pfs::safeformat(format) % v).c_str());
-	return pfs::safeformat(format) % v == pfs::string(buf);
-}
-
-
-int main(int argc, char *argv[])
-{
-	PFS_CHECK_SIZEOF_TYPES;
-	PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(38);
-
-	// When 0 is printed with an explicit precision 0, the output is empty.
-	TEST_OK(pfs::safeformat("%.0d") % 0 != pfs::string("0"));
-	TEST_OK(test_arg<int>("%.0d", 0));
-
-	TEST_OK(test_arg<int>("% d", -245));
-	TEST_OK(test_arg<int>("% d",  245));
-	TEST_OK(test_arg<int>("%+d", -245));
-	TEST_OK(test_arg<int>("%+d",  245));
-
-	TEST_OK(test_arg<int>("%.6d" , 245));
-	TEST_OK(test_arg<int>("%06d" , 245));
-	TEST_OK(test_arg<int>("%6d"  , 245));
-	TEST_OK(test_arg<int>("%6.6d", 245));
-	TEST_OK(test_arg<int>("%7.6d", 245));
-	TEST_OK(test_arg<int>("%6.5d", 245));
-	TEST_OK(test_arg<int>("%7.6o", 245));
-	TEST_OK(test_arg<int>("%7.6X", 245));
-
-	TEST_OK(test_arg<int>("%.6d" , 2147483647));
-	TEST_OK(test_arg<int>("%06d" , 2147483647));
-	TEST_OK(test_arg<int>("%6d"  , 2147483647));
-	TEST_OK(test_arg<int>("%6.6d", 2147483647));
-	TEST_OK(test_arg<int>("%7.6d", 2147483647));
-	TEST_OK(test_arg<int>("%6.5d", 2147483647));
-
-	TEST_OK(test_arg<float>("%.6f"   , 245.9876542f));
-	TEST_OK(test_arg<float>("%06f"   , 245.9876542f));
-	TEST_OK(test_arg<float>("%6f"    , 245.9876542f));
-	TEST_OK(test_arg<float>("%6.6f"  , 245.9876542f));
-	TEST_OK(test_arg<float>("%7.6f"  , 245.9876542f));
-	TEST_OK(test_arg<float>("%6.5f"  , 245.9876542f));
-	TEST_OK(test_arg<float>("%-20f"  , 245.9876542f));
-	TEST_OK(test_arg<float>("%-20.5f", 245.98f     ));
-	TEST_OK(test_arg<float>("%.6f"   , 245.98f     ));
-	TEST_OK(test_arg<float>("%06f"   , 245.98f     ));
-	TEST_OK(test_arg<float>("%6f"    , 245.98f     ));
-	TEST_OK(test_arg<float>("%6.6f"  , 245.98f     ));
-	TEST_OK(test_arg<float>("%7.6f"  , 245.98f     ));
-	TEST_OK(test_arg<float>("%6.5f"  , 245.98f     ));
-
-	TEST_OK(test_arg<char>("%05c" , 'A')); // gcc warning: '0' flag used with ‘%c’ gnu_printf format
-	TEST_OK(test_arg<char>("%-5c" , 'A'));
-	TEST_OK(test_arg<char>("%+5c" , 'A')); // gcc warning: '+' flag used with ‘%c’ gnu_printf format
-
-	TEST_OK(test_arg<int>("%d\n", 245));
-
-	int i;
-	pfs::string s = pfs::safeformat("Hello, %s:\t iptr = %p! 0x%X 0x%x") % "World" % &i % 255 % 255;
-	printf("%s\n", s.c_str());
-
-	END_TESTS;
-}
-#endif
-
 
 template <typename T>
 void testCaseIntegral()
 {
-	cout << "\n\nTesting with [T = " << typeid(T).name() << "]\n";
+	cout << "\n\nTesting with [T = " << pfs::type_name<T>() << "]\n";
 
-	TEST_FAIL(testCase<T>(_l1("%o") , pfs::min_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%+o"), pfs::min_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%o") , pfs::max_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%+o"), pfs::max_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%o") , 0));
-	TEST_FAIL(testCase<T>(_l1("%+o"), 0));
+	TEST_FAIL(testCase<T>(_l1("%o") , _l1("%o") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+o"), _l1("%+o"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%o") , _l1("%o") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+o"), _l1("%+o"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%o") , _l1("%o") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+o"), _l1("%+o"), 0));
 
-	TEST_FAIL(testCase<T>(_l1("%x") , pfs::min_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%+x"), pfs::min_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%x") , pfs::max_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%+x"), pfs::max_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%x") , 0));
-	TEST_FAIL(testCase<T>(_l1("%+x"), 0));
+	TEST_FAIL(testCase<T>(_l1("%x") , _l1("%x") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+x"), _l1("%+x"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%x") , _l1("%x") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+x"), _l1("%+x"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%x") , _l1("%x") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+x"), _l1("%+x"), 0));
 
-	TEST_FAIL(testCase<T>(_l1("%d") , pfs::min_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%+d"), pfs::min_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%d") , pfs::max_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%+d"), pfs::max_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%d") , 0));
-	TEST_FAIL(testCase<T>(_l1("%+d"), 0));
+	TEST_FAIL(testCase<T>(_l1("%d") , _l1("%d") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+d"), _l1("%+d"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%d") , _l1("%d") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+d"), _l1("%+d"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%d") , _l1("%d") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+d"), _l1("%+d"), 0));
 
-	TEST_FAIL(testCase<T>(_l1("%u") , pfs::min_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%+u"), pfs::min_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%u") , pfs::max_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%+u"), pfs::max_type<T>()));
-	TEST_FAIL(testCase<T>(_l1("%u") , 0));
-	TEST_FAIL(testCase<T>(_l1("%+u"), 0));
+	TEST_FAIL(testCase<T>(_l1("%u") , _l1("%u") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+u"), _l1("%+u"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%u") , _l1("%u") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+u"), _l1("%+u"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%u") , _l1("%u") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+u"), _l1("%+u"), 0));
 
-	TEST_FAIL(testCase<T>(_l1("%c"), T('W')));
+	TEST_FAIL(testCase<T>(_l1("%c") , _l1("%c"), T('W')));
 }
 
-void test3 ()
+template <typename T>
+void testCaseLongIntegral()
 {
-//	TEST_FAIL(testCase<long>(_l1("%u") , -1L));
-//
-//	return;
+	cout << "\n\nTesting with [T = " << pfs::type_name<T>() << "]\n";
+
+	TEST_FAIL(testCase<T>(_l1("%o") , _l1("%lo") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+o"), _l1("%+lo"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%o") , _l1("%lo") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+o"), _l1("%+lo"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%o") , _l1("%lo") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+o"), _l1("%+lo"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%x") , _l1("%lx") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+x"), _l1("%+lx"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%x") , _l1("%lx") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+x"), _l1("%+lx"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%x") , _l1("%lx") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+x"), _l1("%+lx"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%d") , _l1("%ld") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+d"), _l1("%+ld"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%d") , _l1("%ld") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+d"), _l1("%+ld"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%d") , _l1("%ld") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+d"), _l1("%+ld"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%u") , _l1("%lu") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+u"), _l1("%+lu"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%u") , _l1("%lu") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+u"), _l1("%+lu"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%u") , _l1("%lu") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+u"), _l1("%+lu"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%c") , _l1("%lc"), T('W')));
+}
+
+#ifdef PFS_HAVE_LONGLONG
+template <typename T>
+void testCaseLongLongIntegral()
+{
+	cout << "\n\nTesting with [T = " << pfs::type_name<T>() << "]\n";
+
+	TEST_FAIL(testCase<T>(_l1("%o") , _l1("%llo") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+o"), _l1("%+llo"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%o") , _l1("%llo") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+o"), _l1("%+llo"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%o") , _l1("%llo") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+o"), _l1("%+llo"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%x") , _l1("%llx") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+x"), _l1("%+llx"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%x") , _l1("%llx") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+x"), _l1("%+llx"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%x") , _l1("%llx") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+x"), _l1("%+llx"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%d") , _l1("%lld") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+d"), _l1("%+lld"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%d") , _l1("%lld") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+d"), _l1("%+lld"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%d") , _l1("%lld") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+d"), _l1("%+lld"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%u") , _l1("%llu") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+u"), _l1("%+llu"), pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%u") , _l1("%llu") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%+u"), _l1("%+llu"), pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%u") , _l1("%llu") , 0));
+	TEST_FAIL(testCase<T>(_l1("%+u"), _l1("%+llu"), 0));
+
+	TEST_FAIL(testCase<T>(_l1("%c") , _l1("%llc"), T('W')));
+}
+#endif
+
+template <typename T>
+void testCaseFloat()
+{
+	cout << "\n\nTesting with [T = " << pfs::type_name<T>() << "]\n";
+
+	TEST_FAIL(testCase<T>(_l1("%e") , _l1("%e") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%e") , _l1("%e") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%E") , _l1("%E") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%E") , _l1("%E") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%f") , _l1("%f") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%f") , _l1("%f") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%g") , _l1("%g") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%g") , _l1("%g") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%G") , _l1("%G") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%G") , _l1("%G") , pfs::max_type<T>()));
+}
+
+template <typename T>
+void testCaseLongDouble ()
+{
+	cout << "\n\nTesting with [T = " << pfs::type_name<T>() << "]\n";
+
+	TEST_FAIL(testCase<T>(_l1("%e") , _l1("%Le") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%e") , _l1("%Le") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%E") , _l1("%LE") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%E") , _l1("%LE") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%f") , _l1("%Lf") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%f") , _l1("%Lf") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%g") , _l1("%Lg") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%g") , _l1("%Lg") , pfs::max_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%G") , _l1("%LG") , pfs::min_type<T>()));
+	TEST_FAIL(testCase<T>(_l1("%G") , _l1("%LG") , pfs::max_type<T>()));
+}
+
+
+void test0 ()
+{
+	pfs::string s = pfs::safeformat("%f")(pfs::max_type<double>())();
+	cout << s << endl;
+
 	testCaseIntegral<char>();
 	testCaseIntegral<signed char>();
 	testCaseIntegral<unsigned char>();
@@ -358,22 +385,20 @@ void test3 ()
 	testCaseIntegral<unsigned short>();
 	testCaseIntegral<int>();
 	testCaseIntegral<unsigned int>();
-	testCaseIntegral<long>();
-	testCaseIntegral<unsigned long>();
+	testCaseLongIntegral<long>();
+	testCaseLongIntegral<unsigned long>();
 
 #ifdef PFS_HAVE_LONGLONG
-	testCaseIntegral<long long>();
-	testCaseIntegral<unsigned long long>();
+	testCaseLongLongIntegral<long long>();
+	testCaseLongLongIntegral<unsigned long long>();
 #endif
 
-//	TEST_FAIL(testCase<double>(_l1("mrkh|%  +g|pwvnlnsfcyxumgjphjpggs"), PFS_DOUBLE_MIN));
-//	TEST_FAIL(testCase<double>(_l1("mrkh|%  +g|pwvnlnsfcyxumgjphjpggs"), PFS_DOUBLE_MAX));
-//
-//#ifdef PFS_HAVE_LONG_DOUBLE
-//	TEST_FAIL(testCase<long double>(_l1("mrkh|%  +g|pwvnlnsfcyxumgjphjpggs"), PFS_REAL_MIN));
-//	TEST_FAIL(testCase<long double>(_l1("mrkh|%  +g|pwvnlnsfcyxumgjphjpggs"), PFS_REAL_MAX));
-//#endif
+	testCaseFloat<float>();
+	testCaseFloat<double>();
 
+#ifdef PFS_HAVE_LONG_DOUBLE
+	testCaseLongDouble<long double>();
+#endif
 }
 
 
@@ -381,9 +406,12 @@ int main(int argc, char** argv)
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED2(argc, argv);
-	int ntests = 24;
+	int ntests = 245;
+#ifdef PFS_HAVE_LONGLONG
+	ntests += 50;
+#endif
 #ifdef PFS_HAVE_LONG_DOUBLE
-	ntests += 2;
+	ntests += 10;
 #endif
 	BEGIN_TESTS(ntests);
 
@@ -393,12 +421,12 @@ int main(int argc, char** argv)
 	pfs::safeformat::setGlobalCompat(pfs::safeformat::CompatGCC);
 #endif
 
-	test3();
+	test0();
+	test2();
 
 //	if (argc > 1) {
 //		if (1) test2();
 //	} else {
-//		if (1) test0();
 //		if (1) test1();
 //	}
 

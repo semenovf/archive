@@ -68,7 +68,12 @@ char * pfs_real_to_string (real_t n, char f, int prec, char * buf, int bufsz)
 		PFS_ASSERT(sprintf(fmt, "%%%c", f) > 0);
 #endif
 
-	PFS_ASSERT(sprintf(buf, fmt, n) > 0);
+#ifdef PFS_CC_MSC
+		PFS_ASSERT(_snprintf(buf, bufsz - 1, fmt, n));
+#else
+		PFS_ASSERT(snprintf(buf, bufsz - 1, fmt, n));
+#endif
+
 	return buf;
 }
 
