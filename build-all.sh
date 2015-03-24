@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIRS="cwt-test pfs cwt-sys cwt-app cwt-dom cwt-xml cwt-debby cwt-debby-sqlite3 cwt-io cwt-griotte"
+DIRS="pfs-test pfs pfs-sys pfs-app pfs-dom pfs-xml pfs-debby pfs-debby-sqlite3 pfs-io pfs-griotte"
 
 for dir in $DIRS ; do
     cd $dir

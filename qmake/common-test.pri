@@ -1,12 +1,12 @@
 include(common.pri)
 
 DESTDIR=$$CWT_DESTDIR_TEST
-INCLUDEPATH=$$(GBS_PDIR)/cwt-test/include
+INCLUDEPATH=$$(GBS_PDIR)/pfs-test/include
 
 unix {
-    LIBS += -lcwt-test
+    LIBS += -lpfs-test
 }
 
 win32 {
-    LIBS += cwt-test.lib
+    LIBS += pfs-test.lib
 }
