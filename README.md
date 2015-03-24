@@ -1,6 +1,6 @@
 ###NAME
 
-`cwt-sys` - cross-platform system library.
+`pfs-sys` - cross-platform system library.
 
 ###VERSION
 
