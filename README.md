@@ -1,6 +1,6 @@
 ###NAME
 
-`cwt-app` - manages the application's control flow and main settings.
+`pfs-app` - manages the application's control flow and main settings.
 
 ###VERSION
 
