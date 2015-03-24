@@ -5,17 +5,17 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_APP_HPP__
-#define __CWT_APP_HPP__
+#ifndef __PFS_APP_HPP__
+#define __PFS_APP_HPP__
 
-#include <cwt/sepaloid.hpp>
-#include <cwt/option.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/noncopyable.hpp>
+#include <pfs/option.hpp>
+#include <pfs/sepaloid.hpp>
 
-namespace cwt {
+namespace pfs {
 
-class DLL_API app : pfs::noncopyable
+class DLL_API app : noncopyable
 {
 	PFS_IMPLEMENT_LOCKING(app);
 
@@ -29,13 +29,13 @@ public:
 	};
 
 public:
-	app (const pfs::string & progname = pfs::string());
+	app (const string & progname = pfs::string());
 	app (int argc, char * argv[]);
 	~app () {}
 
 	int exec () { return main_proc()(); }
 	int exec (main_proc & mainProc) { return mainProc(); }
-	int exec (cwt::sepaloid & sepaloid);
+	int exec (sepaloid & sepaloid);
 
 //	const cwt::settings & settings() const { return _settings; }
 //	cwt::settings & settings() { return _settings; }
@@ -43,14 +43,14 @@ public:
 	static app * instance() { PFS_ASSERT(self); return self; }
 
 private:
-	pfs::string   _program;
+	string   _program;
 //	cwt::settings _settings;
 
 private:
 	static app * self;
 };
 
-inline int app::exec (cwt::sepaloid & sepaloid)
+inline int app::exec (sepaloid & sepaloid)
 {
 	int r = EXIT_FAILURE;
 
@@ -64,6 +64,6 @@ inline int app::exec (cwt::sepaloid & sepaloid)
 }
 
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_APP_HPP__ */
+#endif /* __PFS_APP_HPP__ */

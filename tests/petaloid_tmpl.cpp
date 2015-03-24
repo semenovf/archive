@@ -6,26 +6,26 @@
  * @brief
  */
 
-#include <cwt/petaloid.hpp>
-#include <cwt/logger.hpp>
+#include <pfs/logger.hpp>
+#include <pfs/petaloid.hpp>
 #include <cstdio>
 
-class PetaloidTemplate : public cwt::petaloid
+class PetaloidTemplate : public pfs::petaloid
 {
 public:
 	PetaloidTemplate() : petaloid("PetaloidTemplate") {}
 	virtual ~PetaloidTemplate() { }
-	virtual const cwt::emitter_mapping * getEmitters(int * count);
-	virtual const cwt::detector_mapping * getDetectors(int * count);
+	virtual const pfs::emitter_mapping * getEmitters(int * count);
+	virtual const pfs::detector_mapping * getDetectors(int * count);
 
 public: /*signal*/
-	cwt::signal0<> emitZeroArg;
-	cwt::signal1<bool> emitOneArg;
-	cwt::signal2<bool, char> emitTwoArgs;
-	cwt::signal3<bool, char, short> emitThreeArgs;
-	cwt::signal4<bool, char, short, int> emitFourArgs;
-	cwt::signal5<bool, char, short, int, long> emitFiveArgs;
-	cwt::signal6<bool, char, short, int, long, const char*> emitSixArgs;
+	pfs::signal0<> emitZeroArg;
+	pfs::signal1<bool> emitOneArg;
+	pfs::signal2<bool, char> emitTwoArgs;
+	pfs::signal3<bool, char, short> emitThreeArgs;
+	pfs::signal4<bool, char, short, int> emitFourArgs;
+	pfs::signal5<bool, char, short, int, long> emitFiveArgs;
+	pfs::signal6<bool, char, short, int, long, const char*> emitSixArgs;
 
 public: /*slots*/
 	void onZeroArg();
@@ -38,9 +38,9 @@ public: /*slots*/
 
 };
 
-const cwt::emitter_mapping* PetaloidTemplate::getEmitters(int * count)
+const pfs::emitter_mapping* PetaloidTemplate::getEmitters(int * count)
 {
-	static cwt::emitter_mapping emitter_mapping[] = {
+	static pfs::emitter_mapping emitter_mapping[] = {
 		  { 0 , EMITTER_CAST(emitZeroArg) }
 		, { 1 , EMITTER_CAST(emitOneArg) }
 		, { 2 , EMITTER_CAST(emitTwoArgs) }
@@ -56,9 +56,9 @@ const cwt::emitter_mapping* PetaloidTemplate::getEmitters(int * count)
 }
 
 
-const cwt::detector_mapping* PetaloidTemplate::getDetectors(int *count)
+const pfs::detector_mapping* PetaloidTemplate::getDetectors(int *count)
 {
-	static cwt::detector_mapping detector_mapping[] = {
+	static pfs::detector_mapping detector_mapping[] = {
 		  { 0 , DETECTOR_CAST(PetaloidTemplate::onZeroArg) }
 		, { 1 , DETECTOR_CAST(PetaloidTemplate::onOneArg) }
 		, { 2 , DETECTOR_CAST(PetaloidTemplate::onTwoArgs) }
@@ -109,5 +109,5 @@ inline void PetaloidTemplate::onSixArgs(bool ok, char, short, int, long, const c
 }
 
 
-CWT_PETALOID_API cwt::petaloid * __petaloid_ctor__(const char *, int , char **) { return dynamic_cast<cwt::petaloid *>(new PetaloidTemplate()); }
-CWT_PETALOID_API void  __petaloid_dtor__(cwt::petaloid * p) { PFS_ASSERT(p); delete p; }
+CWT_PETALOID_API pfs::petaloid * __petaloid_ctor__(const char *, int , char **) { return dynamic_cast<pfs::petaloid *>(new PetaloidTemplate()); }
+CWT_PETALOID_API void  __petaloid_dtor__(pfs::petaloid * p) { PFS_ASSERT(p); delete p; }

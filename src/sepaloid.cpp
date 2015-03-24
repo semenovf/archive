@@ -6,26 +6,26 @@
  *  Removed to CWT on: Feb 12, 2013
  */
 
-#include "cwt/sepaloid.hpp"
-#include <pfs/safeformat.hpp>
-#include <cwt/logger.hpp>
-#include <cwt/fs.hpp>
-#include <cwt/dl.hpp>
+#include "pfs/sepaloid.hpp"
+#include "pfs/safeformat.hpp"
+#include "pfs/logger.hpp"
+#include "pfs/fs.hpp"
+#include "pfs/dl.hpp"
 
-namespace cwt {
+namespace pfs {
 
-class petaloid_threaded : public cwt::thread
+class petaloid_threaded : public thread
 {
 public:
-	petaloid_threaded (cwt::petaloid * p) : cwt::thread() , m_petaloid(p) { PFS_ASSERT(m_petaloid); }
+	petaloid_threaded (petaloid * p) : thread() , _petaloid(p) { PFS_ASSERT(_petaloid); }
 	virtual ~petaloid_threaded () {}
-	const cwt::petaloid * petaloid () const { return m_petaloid; }
+	const petaloid * petaloidPtr () const { return _petaloid; }
 
 protected:
-	virtual void run() { m_petaloid->run(m_petaloid); }
+	virtual void run() { _petaloid->run(_petaloid); }
 
 private:
-	cwt::petaloid * m_petaloid;
+	petaloid * _petaloid;
 };
 
 sepaloid::sepaloid (sepaloid::mapping_type mapping[], int n)
@@ -36,19 +36,20 @@ sepaloid::sepaloid (sepaloid::mapping_type mapping[], int n)
 	}
 }
 
-cwt::petaloid * sepaloid::registerLocalPetaloid (cwt::petaloid * petaloid, petaloid_dtor_t dtor)
+petaloid * sepaloid::registerLocalPetaloid (petaloid * petaloid, petaloid_dtor_t dtor)
 {
 	if (petaloid)
 		return registerPetaloid(*petaloid, nullptr, dtor) ? petaloid : nullptr;
 	return nullptr;
 }
 
-cwt::petaloid * sepaloid::registerPetaloidForPath (const pfs::string & path, const char * pname, int arg, char ** argv)
+petaloid * sepaloid::registerPetaloidForPath (const string & path, const char * pname, int arg, char ** argv)
 {
-	cwt::fs fs;
+	fs fs;
 
 	if (!fs.exists(path)) {
-		this->addError(_Fr("petaloid not found by specified path or may be inconsistent: %s") % path);
+		string m;
+		this->addError(m << _Tr("petaloid not found by specified path or may be inconsistent" << ": " << path));
 		return nullptr;
 	}
 
@@ -62,33 +63,38 @@ cwt::petaloid * sepaloid::registerPetaloidForPath (const pfs::string & path, con
 			if (p) {
 				return registerPetaloid(*p, ph, petaloid_dtor) ? p : nullptr;
 			} else {
-				this->addError(_Fr("failed to construct petaloid specified by path: %s") % path);
+				string m;
+				this->addError(m << _Tr("failed to construct petaloid specified by path") << ": " << path);
 			}
 		} else {
-			this->addError(_Fr("constructor not found for petaloid specified by path: %s") % path);
+			string m;
+			this->addError(m << _Tr("constructor not found for petaloid specified by path") << ": " << path);
 		}
-		cwt::dl::close(ph);
+		dl::close(ph);
 	} else {
-		this->addError(_Fr("failed to open petaloid specified by path: %s") % path);
+		string m;
+		this->addError(m << _Tr("failed to open petaloid specified by path") << ": " << path);
 	}
 	return nullptr;
 }
 
-petaloid * sepaloid::registerPetaloidForName (const pfs::string & name, const char * pname, int arg, char ** argv)
+petaloid * sepaloid::registerPetaloidForName (const string & name, const char * pname, int arg, char ** argv)
 {
-	pfs::string filename = dl::buildDlFileName(name);
-	pfs::string realPath;
+	string filename = dl::buildDlFileName(name);
+	string realPath;
 	bool global = false;  // Avoid name conflicts
 	bool resolve = true;
 	dl::handle ph = dl::open(filename, realPath, global, resolve); // try to find petaloid
 
 	if (ph) {
 		dl::close(ph);
-		cwt::debug(_Fr("%s: petaloid found at '%s'") % name % realPath);
+		string m(name);
+		debug(m << ": " << _Tr("petaloid found at ") << realPath);
 		return registerPetaloidForPath(realPath, pname, arg, argv);
 	}
 
-	this->addError(_Fr("%s: petaloid not found by specified name or may be inconsistent") % name);
+	string m(name);
+	this->addError(m << ": " << _Tr("petaloid not found by specified name or may be inconsistent"));
 	return nullptr;
 }
 
@@ -97,7 +103,8 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 	int nemitters, ndetectors;
 
 	if (_petaloids.find(petaloid._name) != _petaloids.cend()) {
-		this->addError(_Fr("%s: petaloid already registered") % petaloid._name);
+		string m(petaloid._name);
+		this->addError(m << ": " << _Tr("petaloid already registered"));
 		return false;
 	}
 
@@ -111,13 +118,11 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 			int emitter_id(emitters[i]._id);
 			mapping_hash::iterator it = _mapping.find(emitter_id);
 			if (it != itEnd) {
-				it->second->map->appendEmitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
+				it.value()->map->appendEmitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
 			} else {
-				cwt::warn(
-					_Fr("%s: emitter '%s' not found while registering petaloid ...")
-					% petaloid.name()
-					% emitters[i]._id);
-				cwt::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
+				string m(petaloid.name());
+				warn(m << ": " << _Tr("emitter") << " '" << emitters[i]._id << "' " _Tr("not found while registering petaloid ..."));
+				warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
 	}
@@ -127,13 +132,12 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 			int detector_id(detectors[i]._id);
 			mapping_hash::iterator it = _mapping.find(detector_id);
 			if (it != itEnd) {
-				it->second->map->appendDetector(& petaloid, detectors[i]._detector);
+				it.value()->map->appendDetector(& petaloid, detectors[i]._detector);
 			} else {
-				cwt::warn(
-					_Fr("%s: detector '%s' not found while registering petaloid ...")
-					% petaloid.name()
-					% emitters[i]._id);
-				cwt::warn(_Tr("... may be signal/slot mapping is not supported for this application"));
+				string m(petaloid.name());
+				warn(m << ": " << _Tr("detector") << " '" << emitters[i]._id << "' "
+					<< _Tr("not found while registering petaloid ..."));
+				warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
 	}
@@ -143,13 +147,14 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 	petaloid_spec pspec(& petaloid, ph, dtor);
 	_petaloids.insert(petaloid._name, pspec);
 
-
 	// petaloid must be run in a separate thread.
 	if (petaloid.run) {
-		_threads.append(new petaloid_threaded(&petaloid));
-		cwt::debug(_Fr("%s: petaloid registered as threaded") % petaloid.name());
+		_threads.append(new petaloid_threaded(& petaloid));
+		string m(petaloid.name());
+		debug(m << ": " << _Tr("petaloid registered as threaded"));
 	} else {
-		cwt::debug(_Fr("%s: petaloid registered") % petaloid.name());
+		string m(petaloid.name());
+		debug(m << ": " << _Tr("petaloid registered"));
 	}
 
 	return true;
@@ -161,7 +166,7 @@ void sepaloid::connectAll ()
 	mapping_hash::iterator itEnd = _mapping.end();
 
 	for(; it != itEnd; it++ ) {
-		it->second->map->connectAll();
+		it.value()->map->connectAll();
 	}
 }
 
@@ -171,14 +176,14 @@ void sepaloid::disconnectAll ()
 	mapping_hash::iterator itEnd = _mapping.end();
 
 	for(; it != itEnd; it++ ) {
-		it->second->map->disconnectAll();
+		it.value()->map->disconnectAll();
 	}
 }
 
 void sepaloid::unregisterAll ()
 {
-	pfs::vector<cwt::thread *>::iterator itThread = _threads.begin();
-	pfs::vector<cwt::thread *>::iterator itThreadEnd = _threads.end();
+	vector<thread *>::iterator itThread = _threads.begin();
+	vector<thread *>::iterator itThreadEnd = _threads.end();
 
 	for (; itThread != itThreadEnd; ++itThread) {
 		delete *itThread;
@@ -189,17 +194,19 @@ void sepaloid::unregisterAll ()
 	petaloid_specs_type::iterator itEnd = _petaloids.end();
 
 	for (;it != itEnd; it++) {
-		PFS_ASSERT(it->second.p);
-		it->second.p->petaloidRegistered.disconnect(this);
-		pfs::string pname = it->second.p->name();
-		if (it->second.dtor) {
-			it->second.dtor(it->second.p);
-			it->second.p = nullptr;
+		petaloid_spec pspec = it.value();
+		petaloid * p = pspec.p;
+		PFS_ASSERT(p);
+		p->petaloidRegistered.disconnect(this);
+		string pname = p->name();
+		if (pspec.dtor) {
+			pspec.dtor(p);
 		}
-		if (it->second.ph) {
-			dl::close(it->second.ph);
+		if (pspec.ph) {
+			dl::close(pspec.ph);
 		}
-		cwt::debug(_Fr("%s: petaloid unregistered") % pname);
+		string m(pname);
+		debug(m << ": " << _Tr("petaloid unregistered"));
 	}
 	_petaloids.clear();
 }
@@ -212,9 +219,13 @@ bool sepaloid::start ()
 	petaloid_specs_type::iterator itEnd = _petaloids.end();
 
 	for (;it != itEnd; it++) {
-		PFS_ASSERT(it->second.p);
-		if (!it->second.p->onStart()) {
-			this->addError(_Fr("%s: failed to start petaloid") % it->second.p->name());
+		petaloid_spec pspec = it.value();
+		petaloid * p = pspec.p;
+		PFS_ASSERT(p);
+
+		if (!p->onStart()) {
+			string m(p->name());
+			this->addError(m << ": " << _Tr("failed to start petaloid"));
 			r = false;
 		}
 	}
@@ -230,9 +241,9 @@ int sepaloid::exec ()
 	if (_masterPetaloid) {
 		size_t size = _threads.size();
 		for (size_t i = 0; i < size; ++i) {
-			const cwt::thread * th = _threads[i];
+			const thread * th = _threads[i];
 			const petaloid_threaded * pt = dynamic_cast<const petaloid_threaded*>(th);
-			if (pt->petaloid() == _masterPetaloid) {
+			if (pt->petaloidPtr() == _masterPetaloid) {
 				_threads.remove(i);
 				delete pt;
 				break;
@@ -240,30 +251,34 @@ int sepaloid::exec ()
 		}
 	}
 
-	pfs::vector<cwt::thread *>::iterator itThread = _threads.begin();
-	pfs::vector<cwt::thread *>::iterator itThreadEnd = _threads.end();
+	vector<thread *>::iterator itThread = _threads.begin();
+	vector<thread *>::iterator itThreadEnd = _threads.end();
 
-	for (; itThread != itThreadEnd; itThread++) {
-		(*itThread)->start();
+	for (; itThread != itThreadEnd; ++itThread) {
+		thread * t = *itThread;
+		t->start();
 	}
 
 	if (_masterPetaloid && _masterPetaloid->run) {
 		r = _masterPetaloid->run(_masterPetaloid);
 	}
 
-	for (itThread = _threads.begin(); itThread != itThreadEnd; itThread++) {
-		(*itThread)->wait();
+	for (itThread = _threads.begin(); itThread != itThreadEnd; ++itThread) {
+		thread * t = *itThread;
+		t->wait();
 	}
 
 	petaloid_specs_type::iterator itPetaloid = _petaloids.begin();
 	petaloid_specs_type::iterator itPetaloidEnd = _petaloids.end();
 
 	for (; itPetaloid != itPetaloidEnd; itPetaloid++) {
-		PFS_ASSERT(itPetaloid->second.p);
-		itPetaloid->second.p->onFinish();
+		petaloid_spec pspec = itPetaloid.value();
+		petaloid * p = pspec.p;
+		PFS_ASSERT(p);
+		p->onFinish();
 	}
 
 	return r;
 }
 
-} // cwt
+} // pfs

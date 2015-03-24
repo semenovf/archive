@@ -6,15 +6,15 @@
  *  Removed to CWT on: Feb 12, 2013
  */
 
-#ifndef __CWT_PETALOID_HPP__
-#define __CWT_PETALOID_HPP__
+#ifndef __PFS_PETALOID_HPP__
+#define __PFS_PETALOID_HPP__
 
 #include <pfs/string.hpp>
-#include <cwt/sigslot.hpp>
+#include <pfs/sigslot.hpp>
 
-namespace cwt {
+namespace pfs {
 
-#define DETECTOR_CAST(slot) reinterpret_cast<cwt::detector>(& slot)
+#define DETECTOR_CAST(slot) reinterpret_cast<pfs::detector>(& slot)
 #define EMITTER_CAST(e)     reinterpret_cast<void *>(& e)
 
 class sepaloid;
@@ -38,10 +38,10 @@ private:
 
 public:
 	petaloid (const char * name) : _name(_u8(name)), _sepaloidPtr(nullptr), run(nullptr) {}
-	petaloid (const pfs::string & name) : _name(name), _sepaloidPtr(nullptr), run(nullptr) {}
+	petaloid (const string & name) : _name(name), _sepaloidPtr(nullptr), run(nullptr) {}
 	virtual ~petaloid() {}
 
-	const pfs::string & name() const { return _name; }
+	const string & name() const { return _name; }
 	bool isRegistered () const { return _sepaloidPtr != nullptr ? true : false; }
 
 	virtual const emitter_mapping * getEmitters (int * count)   { PFS_ASSERT(count); *count = 0; return 0; }
@@ -53,10 +53,10 @@ public:
 	static void defaultDtor (petaloid * p) { PFS_ASSERT(p); delete p; }
 
 public: /*signal*/
-	cwt::signal2<const pfs::string &, bool &> petaloidRegistered;
+	signal2<const string &, bool &> petaloidRegistered;
 
 private:
-	pfs::string _name;
+	string _name;
 	sepaloid *  _sepaloidPtr;
 
 public:
@@ -73,15 +73,15 @@ struct detector_pair
 	detector   _detector;
 };
 
-} // cwt
+} // pfs
 
 #define CWT_PETALOID_EMITTER(id, em) { id , EMITTER_CAST(em) }
 #define CWT_PETALOID_DETECTOR(id, dt) { id , DETECTOR_CAST(dt) }
 
 #define CWT_PETALOID_EMITTERS_BEGIN                                 \
-const cwt::emitter_mapping * getEmitters (int *count)               \
+const emitter_mapping * getEmitters (int *count)               \
 {                                                                   \
-	static cwt::emitter_mapping __emitter_mapping[] = {
+	static emitter_mapping __emitter_mapping[] = {
 
 #define CWT_PETALOID_EMITTERS_END                                   \
 	};                                                              \
@@ -91,9 +91,9 @@ const cwt::emitter_mapping * getEmitters (int *count)               \
 
 
 #define CWT_PETALOID_DETECTORS_BEGIN                                \
-const cwt::detector_mapping * getDetectors(int *count)               \
+const detector_mapping * getDetectors(int *count)               \
 {                                                                   \
-	static cwt::detector_mapping __detector_mapping[] = {
+	static detector_mapping __detector_mapping[] = {
 
 #define CWT_PETALOID_DETECTORS_END		                            \
 	};                                                              \
@@ -101,4 +101,4 @@ const cwt::detector_mapping * getDetectors(int *count)               \
 	return & __detector_mapping[0];                                 \
 }
 
-#endif /* __CWT_PETALOID_HPP__ */
+#endif /* __PFS_PETALOID_HPP__ */

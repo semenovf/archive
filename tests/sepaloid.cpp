@@ -1,32 +1,32 @@
+#include <pfs/sepaloid.hpp>
 #include <cwt/test.hpp>
-#include <cwt/sepaloid.hpp>
-#include <cwt/logger.hpp>
+#include <pfs/logger.hpp>
 #include <pfs/safeformat.hpp>
 #include <cstring>
 
-class LocalPetaloidEmitter : public cwt::petaloid
+class LocalPetaloidEmitter : public pfs::petaloid
 {
 public:
-	LocalPetaloidEmitter() : cwt::petaloid("LocalPetalodEmitter") {}
+	LocalPetaloidEmitter() : pfs::petaloid("LocalPetalodEmitter") {}
 	virtual ~LocalPetaloidEmitter() {}
-	virtual const cwt::emitter_mapping * getEmitters (int * count);
-	virtual const cwt::detector_mapping * getDetectors (int * count) { PFS_UNUSED(count); return NULL; }
+	virtual const pfs::emitter_mapping * getEmitters (int * count);
+	virtual const pfs::detector_mapping * getDetectors (int * count) { PFS_UNUSED(count); return NULL; }
 
 public: /*signal*/
-	cwt::signal0<> emitZeroArg;
-	cwt::signal1<bool> emitOneArg;
-	cwt::signal2<bool, char> emitTwoArgs;
-	cwt::signal3<bool, char, short> emitThreeArgs;
-	cwt::signal4<bool, char, short, int> emitFourArgs;
-	cwt::signal5<bool, char, short, int, long> emitFiveArgs;
-	cwt::signal6<bool, char, short, int, long, const char *> emitSixArgs;
-	cwt::signal7<bool, char, short, int, long, const char *, const pfs::string &> emitSevenArgs;
-	cwt::signal8<bool, char, short, int, long, long long, const char*, const pfs::string &> emitEightArgs;
+	pfs::signal0<> emitZeroArg;
+	pfs::signal1<bool> emitOneArg;
+	pfs::signal2<bool, char> emitTwoArgs;
+	pfs::signal3<bool, char, short> emitThreeArgs;
+	pfs::signal4<bool, char, short, int> emitFourArgs;
+	pfs::signal5<bool, char, short, int, long> emitFiveArgs;
+	pfs::signal6<bool, char, short, int, long, const char *> emitSixArgs;
+	pfs::signal7<bool, char, short, int, long, const char *, const pfs::string &> emitSevenArgs;
+	pfs::signal8<bool, char, short, int, long, long long, const char*, const pfs::string &> emitEightArgs;
 };
 
-const cwt::emitter_mapping* LocalPetaloidEmitter::getEmitters(int *count)
+const pfs::emitter_mapping* LocalPetaloidEmitter::getEmitters(int *count)
 {
-	static cwt::emitter_mapping local_emitter_mapping[] = {
+	static pfs::emitter_mapping local_emitter_mapping[] = {
 		  { 0 , EMITTER_CAST(emitZeroArg) }
 		, { 1 , EMITTER_CAST(emitOneArg) }
 		, { 2 , EMITTER_CAST(emitTwoArgs) }
@@ -43,13 +43,13 @@ const cwt::emitter_mapping* LocalPetaloidEmitter::getEmitters(int *count)
 	return &local_emitter_mapping[0];
 }
 
-class LocalPetaloidDetector : public cwt::petaloid
+class LocalPetaloidDetector : public pfs::petaloid
 {
 public:
-	LocalPetaloidDetector() : cwt::petaloid("LocalPetaloidDetector") {}
+	LocalPetaloidDetector() : pfs::petaloid("LocalPetaloidDetector") {}
 	virtual ~LocalPetaloidDetector() {}
-	virtual const cwt::emitter_mapping* getEmitters(int *count) { PFS_UNUSED(count); return NULL; }
-	virtual const cwt::detector_mapping* getDetectors(int *count);
+	virtual const pfs::emitter_mapping* getEmitters(int *count) { PFS_UNUSED(count); return NULL; }
+	virtual const pfs::detector_mapping* getDetectors(int *count);
 
 public: /*slots*/
 	void onZeroArg();
@@ -108,9 +108,9 @@ inline void LocalPetaloidDetector::onEightArgs(bool ok, char, short, int, long, 
 	TEST_OK2(ok == true && i == PFS_LONG_MAX, "onEightArgs(bool,..., CWT_LONG_MAX,...)");
 }
 
-const cwt::detector_mapping* LocalPetaloidDetector::getDetectors(int *count)
+const pfs::detector_mapping* LocalPetaloidDetector::getDetectors(int *count)
 {
-	static cwt::detector_mapping local_detector_mapping[] = {
+	static pfs::detector_mapping local_detector_mapping[] = {
 		  { 0 , DETECTOR_CAST(LocalPetaloidDetector::onZeroArg) }
 		, { 1 , DETECTOR_CAST(LocalPetaloidDetector::onOneArg) }
 		, { 2 , DETECTOR_CAST(LocalPetaloidDetector::onTwoArgs) }
@@ -127,16 +127,16 @@ const cwt::detector_mapping* LocalPetaloidDetector::getDetectors(int *count)
 	return &local_detector_mapping[0];
 }
 
-static cwt::sepaloid::mapping_type app_mapping[] = {
-	  { 0 , new cwt::sigslot_mapping0_t, _l1("ZeroArg()") }
-	, { 1 , new cwt::sigslot_mapping1_t<bool>, _l1("OneArg(bool b)\n\t boolean value") }
-	, { 2 , new cwt::sigslot_mapping2_t<bool, char>, _l1("TwoArgs(bool b, char ch)") }
-	, { 3 , new cwt::sigslot_mapping3_t<bool, char, short>, _l1("ThreeArgs(bool b, char ch, short n)") }
-	, { 4 , new cwt::sigslot_mapping4_t<bool, char, short, int>, _l1("FourArgs description") }
-	, { 5 , new cwt::sigslot_mapping5_t<bool, char, short, int, long>, _l1("FiveArgs description") }
-	, { 6 , new cwt::sigslot_mapping6_t<bool, char, short, int, long, const char*>, _l1("SixArgs description") }
-	, { 7 , new cwt::sigslot_mapping7_t<bool, char, short, int, long, const char*, const pfs::string &>, _l1("SevenArgs description") }
-	, { 8 , new cwt::sigslot_mapping8_t<bool, char, short, int, long, long long, const char*, const pfs::string &>, _l1("EightArgs description") }
+static pfs::sepaloid::mapping_type app_mapping[] = {
+	  { 0 , new pfs::sigslot_mapping0_t, _l1("ZeroArg()") }
+	, { 1 , new pfs::sigslot_mapping1_t<bool>, _l1("OneArg(bool b)\n\t boolean value") }
+	, { 2 , new pfs::sigslot_mapping2_t<bool, char>, _l1("TwoArgs(bool b, char ch)") }
+	, { 3 , new pfs::sigslot_mapping3_t<bool, char, short>, _l1("ThreeArgs(bool b, char ch, short n)") }
+	, { 4 , new pfs::sigslot_mapping4_t<bool, char, short, int>, _l1("FourArgs description") }
+	, { 5 , new pfs::sigslot_mapping5_t<bool, char, short, int, long>, _l1("FiveArgs description") }
+	, { 6 , new pfs::sigslot_mapping6_t<bool, char, short, int, long, const char*>, _l1("SixArgs description") }
+	, { 7 , new pfs::sigslot_mapping7_t<bool, char, short, int, long, const char*, const pfs::string &>, _l1("SevenArgs description") }
+	, { 8 , new pfs::sigslot_mapping8_t<bool, char, short, int, long, long long, const char*, const pfs::string &>, _l1("EightArgs description") }
 };
 
 int main(int argc, char *argv[])
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
     LocalPetaloidEmitter * emitter = new LocalPetaloidEmitter;
     LocalPetaloidDetector * detector = new LocalPetaloidDetector;
 
-    cwt::sepaloid sepaloid(app_mapping, sizeof(app_mapping)/sizeof(app_mapping[0]));
+    pfs::sepaloid sepaloid(app_mapping, sizeof(app_mapping)/sizeof(app_mapping[0]));
     TEST_OK_X(sepaloid.registerLocalPetaloid(emitter), sepaloid.logErrors());
     TEST_OK_X(sepaloid.registerLocalPetaloid(detector), sepaloid.logErrors());
     TEST_OK_X(sepaloid.registerPetaloidForPath(_u8("../libpetaloid-tmpl.so")), sepaloid.logErrors());
@@ -158,13 +158,14 @@ int main(int argc, char *argv[])
     sepaloid.connectAll();
 
     TEST_OK(sepaloid.count() == 3);
-    cwt::sepaloid::const_iterator it = sepaloid.cbegin();
-    cwt::sepaloid::const_iterator itEnd = sepaloid.cend();
-
-    cwt::debug("List of registered petaloids:");
-    for (int i = 0; it != itEnd; ++it, ++i) {
-    	cwt::debug(_Fr("cwt::petaloid %02d: %s") % i % it->name());
-    }
+//    pfs::sepaloid::const_iterator it = sepaloid.cbegin();
+//    pfs::sepaloid::const_iterator itEnd = sepaloid.cend();
+//
+//    pfs::debug("List of registered petaloids:");
+//    for (int i = 0; it != itEnd; ++it, ++i) {
+//    	pfs::string m(pfs::safeformat("pfs::petaloid %02d: %s")(i)(it->name())());
+//    	pfs::debug(m);
+//    }
 
     emitter->emitZeroArg   ();
     emitter->emitOneArg    (true);

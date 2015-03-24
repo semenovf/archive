@@ -6,7 +6,7 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = cwt-app  \
+SUBDIRS  = pfs-app  \
     tests/petaloid  \
     tests/sepaloid
 #    tests/options   \

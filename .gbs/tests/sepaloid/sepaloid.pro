@@ -1,5 +1,5 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
-TARGET = test_sepaloid
+TARGET = test_pfs_sepaloid
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
@@ -10,10 +10,8 @@ SOURCES += ../../../tests/sepaloid.cpp
 
 unix {
     LIBS += -lpfs
-    LIBS += -lcwt-sys
-#    LIBS += -lcwt-json
-#    LIBS += -lcwt-io
-    LIBS += -lcwt-app
+    LIBS += -lpfs-sys
+    LIBS += -lpfs-app
 }
 
 win32 {

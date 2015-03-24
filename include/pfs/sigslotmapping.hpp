@@ -7,13 +7,13 @@
  */
 
 
-#ifndef __CWT_SIGSLOT_MAPPING_HPP__
-#define __CWT_SIGSLOT_MAPPING_HPP__
+#ifndef __PFS_SIGSLOT_MAPPING_HPP__
+#define __PFS_SIGSLOT_MAPPING_HPP__
 
-#include <cwt/sigslot.hpp>
-#include <cwt/petaloid.hpp>
+#include <pfs/sigslot.hpp>
+#include <pfs/petaloid.hpp>
 
-namespace cwt {
+namespace pfs {
 
 class sigslot_mapping_t
 {
@@ -28,8 +28,8 @@ public:
 template <typename _emitterT, typename _detectorT>
 struct _base_sigslot_mapping_t : public sigslot_mapping_t
 {
-	typedef pfs::vector<_emitterT*>    emitter_vector_t;
-	typedef pfs::vector<detector_pair> detector_vector_t;
+	typedef vector<_emitterT*>    emitter_vector_t;
+	typedef vector<detector_pair> detector_vector_t;
 
 	emitter_vector_t  emitters;
 	detector_vector_t detectors;
@@ -51,7 +51,8 @@ void _base_sigslot_mapping_t<_emitterT, _detectorT>::connectAll()
 
 	for( typename emitter_vector_t::const_iterator it = emitters.cbegin(); it != itEnd; it++ ) {
 		for( typename detector_vector_t::const_iterator itd = detectors.cbegin(); itd != itdEnd; itd++ ) {
-			(*it)->connect(itd->_petaloid, reinterpret_cast<_detectorT>(itd->_detector));
+			_emitterT * em = *it;
+			em->connect(itd->_petaloid, reinterpret_cast<_detectorT>(itd->_detector));
 		}
 	}
 }
@@ -62,7 +63,8 @@ void _base_sigslot_mapping_t<_emitterT, _detectorT>::disconnectAll()
     typename emitter_vector_t::const_iterator itEnd = emitters.cend();
 
 	for( typename emitter_vector_t::const_iterator it = emitters.cbegin(); it != itEnd; it++ ) {
-		(*it)->disconnect_all();
+		_emitterT * em = *it;
+		em->disconnect_all();
 	}
 }
 
@@ -94,6 +96,6 @@ struct sigslot_mapping7_t : public _base_sigslot_mapping_t<signal7<a0, a1, a2, a
 template <typename a0, typename a1, typename a2, typename a3, typename a4, typename a5, typename a6, typename a7>
 struct sigslot_mapping8_t : public _base_sigslot_mapping_t<signal8<a0, a1, a2, a3, a4, a5, a6, a7>, void (petaloid::*)(a0, a1, a2, a3, a4, a5, a6, a7)> {};
 
-} // cwt
+} // pfs
 
-#endif /* __CWT_SIGSLOT_MAPPING_HPP__ */
+#endif /* __PFS_SIGSLOT_MAPPING_HPP__ */

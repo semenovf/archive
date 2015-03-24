@@ -6,27 +6,27 @@
  */
 
 
-#include "../include/cwt/app.hpp"
+#include "pfs/app.hpp"
 
-namespace cwt {
+namespace pfs {
 
 app * app::self = nullptr;
 
-app::app (const pfs::string & progname)
+app::app (const string & progname)
 	: _program()
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_ASSERT(self == nullptr);
 	self = this;
-	_program = (progname.isEmpty() ? pfs::string("<anonymous>") : progname);
+	_program = (progname.isEmpty() ? string("<anonymous>") : progname);
 }
 
 app::app (int argc, char * argv[])
-	: _program(argc > 0 ? _u8(argv[0]) : pfs::string("<anonymous>"))
+	: _program(argc > 0 ? _u8(argv[0]) : string("<anonymous>"))
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_ASSERT(self == nullptr);
 	self = this;
 }
 
-} // cwt
+} // pfs

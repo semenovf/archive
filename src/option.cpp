@@ -5,13 +5,13 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/option.hpp"
-#include <pfs/map.hpp>
-#include <cwt/logger.hpp>
+#include "pfs/option.hpp"
+#include "pfs/map.hpp"
+#include "pfs/logger.hpp"
 
-namespace cwt {
+namespace pfs {
 
-static const pfs::string __modes_data[][4] = {
+static const string __modes_data[][4] = {
 	  {_u8("-"), _u8("--"), _u8("="), _u8("\"'") } // Unix
 	, {_u8("/"), _u8("/"), _u8(":"), _u8("\"'") } // Windows
 };
@@ -25,46 +25,49 @@ void OptionsContext::setMode(option::mode_type mode)
 }
 
 
-static void __split_long_arg (const pfs::string & arg
-		, const pfs::string & separator
-		, const pfs::string & quotes
-		, pfs::string & optname
-		, pfs::string & optval)
+static void __split_long_arg (const string & arg
+		, const string & separator
+		, const string & quotes
+		, string & optname
+		, string & optval)
 {
-	pfs::string::const_iterator it = arg.find(separator, arg.cbegin());
+	string::const_iterator it = arg.find(arg.cbegin(), separator);
 	if (it == arg.cend()) {
 		optname = arg;
 	} else {
 		optname = arg.substr(arg.cbegin(), it);
-		optval  = arg.substr(++it);
-		if (!optval.isEmpty() && quotes.find(pfs::string(1, optval[0])) != quotes.cend()) { // optval starts with one of the quote char
+		++it;
+		optval  = arg.substr(it);
+		if (!optval.isEmpty() && quotes.find(string(1, optval[0])) != quotes.cend()) { // optval starts with one of the quote char
 			if (optval.size() > 1) {
 				optval = optval.substr(1, optval.size() - 2);
 			} else {
-				cwt::error(_Fr("%s: bad option?") % arg);
+				string m(arg);
+				error(m << ": " << _Tr("bad option?"));
 				optval.clear();
 			}
 		}
 	}
 }
 
-bool OptionsContext::parse_opts(cwt::settings & settings
+bool OptionsContext::parse_opts(settings & settings
 		, int argc
 		, char * argv[]
 		, size_t optc
 		, const option optv[]
-		, pfs::vector<pfs::string> * args)
+		, vector<string> * args)
 {
 	if (argc <= 0)
 		return true;
 
 	bool r = true;
-	pfs::map<pfs::string, const option *> optmap;
+	map<string, const option *> optmap;
 
 	for (size_t i = 0; i < optc; ++i) {
 		if (!optv[i].shortname.isEmpty()) {
 			if(optmap.contains(optv[i].shortname)) {
-				cwt::error(_Fr("%s: duplication of short option") % optv[i].shortname);
+				string m(optv[i].shortname);
+				error(m << ": " << _Tr("duplication of short option"));
 				return false;
 			}
 			optmap.insert(optv[i].shortname, & optv[i]);
@@ -72,7 +75,8 @@ bool OptionsContext::parse_opts(cwt::settings & settings
 
 		if (!optv[i].longname.isEmpty()) {
 			if(optmap.contains(optv[i].longname)) {
-				cwt::error(_Fr("%s: duplication of long option") % optv[i].longname);
+				string m(optv[i].longname);
+				error(m << ": " << _Tr("duplication of long option"));
 				return false;
 			}
 			optmap.insert(optv[i].longname, & optv[i]);
@@ -80,13 +84,13 @@ bool OptionsContext::parse_opts(cwt::settings & settings
 	}
 
 	for (int i = 1; i < argc; ++i) {
-#if defined(CWT_OS_WIN32) || defined(CWT_OS_WIN64)
-		pfs::string arg = pfs::string::fromUtf16(argv[i]);
+#if defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)
+		string arg = string::fromUtf16(argv[i]);
 #else
-		pfs::string arg = pfs::string::fromUtf8(argv[i]);
+		string arg = string::fromUtf8(argv[i]);
 #endif
-		pfs::string optname;
-		pfs::string optval;
+		string optname;
+		string optval;
 		bool skip = false;
 
 		if (arg.startsWith(_longPrefix)) {
@@ -104,7 +108,9 @@ bool OptionsContext::parse_opts(cwt::settings & settings
 		}
 
 		if (optname.isEmpty() || !optmap.contains(optname)) {
-			cwt::warn(_Fr("%s: bad option") % optname);
+			string m(optname);
+			m << ": " << _Tr("bad option");
+			warn(m);
 			continue;
 		}
 
@@ -112,7 +118,8 @@ bool OptionsContext::parse_opts(cwt::settings & settings
 
 		if (opt->has_arg) {
 			if (optval.isEmpty()) {
-				cwt::error(_Fr("%s: option need an argument") % optname);
+				string m(optname);
+				error(m << ": " << _Tr("option need an argument"));
 				r = false;
 				break;
 			} else {
@@ -128,4 +135,4 @@ bool OptionsContext::parse_opts(cwt::settings & settings
 	return r;
 }
 
-} // cwt
+} // pfs

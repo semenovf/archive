@@ -7,9 +7,7 @@
  */
 
 #include <cwt/test.hpp>
-#include <cwt/app.hpp>
-
-using namespace cwt;
+#include <pfs/app.hpp>
 
 static void test_basic(void)
 {
@@ -33,7 +31,7 @@ static void test_basic(void)
 
 	int argc = sizeof(argv)/sizeof(argv[0]);
 
-	cwt::option optset[] = {
+	pfs::option optset[] = {
 //          longname  shortname has_arg  xpath     default value   desc
 //        ------------------------------------------------------------------------------------
 		  { "help",   "h",      false,   "/help",        "",           _Tr("output help info") }
@@ -48,44 +46,43 @@ static void test_basic(void)
 		, { "",       "num",    true,    "/number",      "1234.56789", _Tr("number") }
 	};
 
-	cwt::App app;
-	cwt::Vector<cwt::String> args;
+	pfs::app app;
+	pfs::vector<pfs::string> args;
 	OptionsContext optctx;
-	cwt::Settings & settings = app.settings();
+	pfs::settings & settings = app.settings();
 
-	CWT_TEST_FAIL(optctx.parse(settings, argc, const_cast<char**>(argv), sizeof(optset)/sizeof(optset[0]), optset, args));
+	TEST_FAIL(optctx.parse(settings, argc, const_cast<char**>(argv), sizeof(optset)/sizeof(optset[0]), optset, args));
 
-	CWT_TEST_OK(settings.boolean("/help") == true);
-	CWT_TEST_OK(settings.boolean("/man") == true);
-	CWT_TEST_OK(settings.boolean("/interactive") == true);
-	CWT_TEST_OK(settings.boolean("/server") == true);
-	CWT_TEST_OK(settings.boolean("/noserver") == false);
+	TEST_OK(settings.boolean("/help") == true);
+	TEST_OK(settings.boolean("/man") == true);
+	TEST_OK(settings.boolean("/interactive") == true);
+	TEST_OK(settings.boolean("/server") == true);
+	TEST_OK(settings.boolean("/noserver") == false);
 
-	CWT_TEST_OK(settings.integer("/bitrate") == long_t(36600));
-	CWT_TEST_OK(settings.integer("/databits") == long_t(7));
-	CWT_TEST_OK(settings.integer("/stopbits") == long_t(2));
-	CWT_TEST_OK(settings.string("/parity") == "even");
-	CWT_TEST_OK(settings.string("/number") ==  "4321.9876");
+	TEST_OK(settings.integer("/bitrate") == long_t(36600));
+	TEST_OK(settings.integer("/databits") == long_t(7));
+	TEST_OK(settings.integer("/stopbits") == long_t(2));
+	TEST_OK(settings.string("/parity") == "even");
+	TEST_OK(settings.string("/number") ==  "4321.9876");
 
 	bool ok = false;
-	CWT_TEST_OK(settings["/number"].toDouble(& ok) && ok);
+	TEST_OK(settings["/number"].toDouble(& ok) && ok);
 
-	CWT_TEST_FAIL(args.size() == 3);
-	CWT_TEST_OK(args[0] =="arg1");
-	CWT_TEST_OK(args[1] =="arg2");
-	CWT_TEST_OK(args[2] =="arg3");
+	TEST_FAIL(args.size() == 3);
+	TEST_OK(args[0] =="arg1");
+	TEST_OK(args[1] =="arg2");
+	TEST_OK(args[2] =="arg3");
 }
 
 int main(int argc, char *argv[])
 {
-    CWT_CHECK_SIZEOF_TYPES;
-	CWT_UNUSED(argc);
-	CWT_UNUSED(argv);
-	CWT_BEGIN_TESTS(16);
+    PFS_CHECK_SIZEOF_TYPES;
+	PFS_UNUSED2(argc, argv);
+	BEGIN_TESTS(16);
 
 	test_basic();
 
-	CWT_END_TESTS;
+	END_TESTS;
 }
 
 
