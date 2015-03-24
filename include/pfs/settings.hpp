@@ -39,7 +39,7 @@ public:
 
 	class property
 	{
-		typedef pfs::variant<bool, integral_t, real_t, pfs::string> value_type;
+		typedef variant<bool, integral_t, real_t, string> value_type;
 	private:
 		value_type _val;
 	public:
@@ -51,46 +51,46 @@ public:
 	settings (format f = DefaultFormat);
 	~settings ();
 
-	bool parse (const pfs::string & str);
+	bool parse (const string & str);
 
 	property
-	operator [] (const pfs::string & path)
+	operator [] (const string & path)
 	{
 		return value(path);
 	}
 
 	property
-	value (const pfs::string & path
+	value (const string & path
 			, const property & defaultValue = property()) const;
 
 	bool
-	booleanValue (const pfs::string & path
+	booleanValue (const string & path
 			, bool defaultValue = false) const;
 
 	integral_t
-	integralValue (const pfs::string & path
+	integralValue (const string & path
 			, integral_t defaultValue = integral_t(0)) const;
 
 	real_t
-	realValue (const pfs::string & path
+	realValue (const string & path
 			, real_t defaultValue = real_t(.0f)) const;
 
-	pfs::string
-	stringValue (const pfs::string & path
-			, const pfs::string & defaultValue = pfs::string()) const;
+	string
+	stringValue (const string & path
+			, const string & defaultValue = string()) const;
 
-	pfs::vector<property>
-	arrayValue (const pfs::string & path
-			, const pfs::vector<property> & defaultValue = pfs::vector<property>()) const;
+	vector<property>
+	arrayValue (const string & path
+			, const vector<property> & defaultValue = vector<property>()) const;
 
-	bool contains (const pfs::string & path) const;
+	bool contains (const string & path) const;
 
 /* slots */
-	void set (const pfs::string & path, bool value);
-	void set (const pfs::string & path, integral_t value);
-	void set (const pfs::string & path, uintegral_t value);
-	void set (const pfs::string & path, real_t value);
-	void set (const pfs::string & path, const pfs::string & s);
+	void set (const string & path, bool value);
+	void set (const string & path, integral_t value);
+	void set (const string & path, uintegral_t value);
+	void set (const string & path, real_t value);
+	void set (const string & path, const string & s);
 };
 
 } // pfs

@@ -21,7 +21,7 @@
 namespace pfs {
 // Extended errorable class
 //
-class DLL_API errorable_ext : public pfs::errorable
+class DLL_API errorable_ext : public errorable
 {
 public:
 	void addSystemError (int errn, const string & caption);

@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(7);
+	BEGIN_TESTS(8);
 
 	do {
 		if (1) test_thread();
