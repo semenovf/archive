@@ -5,7 +5,7 @@
  *  Author: wladt
  */
 
-#include <cwt/test.hpp>
+#include <pfs/test.hpp>
 #include <pfs/ucchar.hpp>
 #include <pfs/mbcs_string.hpp>
 #include <pfs/stringlist.hpp>
@@ -495,6 +495,30 @@ void test_find ()
 }
 
 template <typename CodeUnitT>
+void test_starts_ends_with ()
+{
+	typedef pfs::mbcs_string<CodeUnitT> utfstring;
+	utfstring s(utfstring::fromUtf8("[Привет, Мир!]"));
+
+	TEST_FAIL(s.startsWith('['));
+	TEST_FAIL(s.endsWith(']'));
+	TEST_FAIL(s.startsWith("["));
+	TEST_FAIL(s.endsWith("]"));
+	TEST_FAIL(s.startsWith(_u8("[Привет,")));
+	TEST_FAIL(s.endsWith(_u8(" Мир!]")));
+	TEST_FAIL(s.endsWith(_u8("!]")));
+
+	utfstring s1(utfstring::fromUtf8("\"Привет, Мир!\""));
+	TEST_FAIL(s1.startsWith('"'));
+	TEST_FAIL(s1.endsWith('"'));
+	TEST_FAIL(s1.startsWith("\""));
+	TEST_FAIL(s1.endsWith("\""));
+	TEST_FAIL(s1.startsWith(_u8("\"Привет,")));
+	TEST_FAIL(s1.endsWith(_u8(" Мир!\"")));
+	TEST_FAIL(s1.endsWith(_u8("!\"")));
+}
+
+template <typename CodeUnitT>
 void test_to_string ()
 {
 	typedef pfs::mbcs_string<CodeUnitT> utfstring;
@@ -678,6 +702,7 @@ void test_suite ()
 	test_compare<CodeUnitT>();
 	test_replace<CodeUnitT>();
 	test_find<CodeUnitT>();
+	test_starts_ends_with<CodeUnitT>();
 	test_to_string<CodeUnitT>();
 
 	test_convert_to_number<CodeUnitT>();

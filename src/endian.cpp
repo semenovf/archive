@@ -123,5 +123,33 @@ double endian::swap (double f)
 	return d2.f;
 }
 
+#ifdef PFS_HAVE_LONG_DOUBLE
+long double endian::swap (long double f)
+{
+	union {
+		long double f;
+		char b[16];
+	} d1, d2;
+
+	d1.f = f;
+	d2.b[0] = d1.b[15];
+	d2.b[1] = d1.b[14];
+	d2.b[2] = d1.b[13];
+	d2.b[3] = d1.b[12];
+	d2.b[4] = d1.b[11];
+	d2.b[5] = d1.b[10];
+	d2.b[6] = d1.b[9];
+	d2.b[7] = d1.b[8];
+	d2.b[8] = d1.b[7];
+	d2.b[9] = d1.b[6];
+	d2.b[10] = d1.b[5];
+	d2.b[11] = d1.b[4];
+	d2.b[12] = d1.b[3];
+	d2.b[13] = d1.b[2];
+	d2.b[14] = d1.b[1];
+	d2.b[15] = d1.b[0];
+	return d2.f;
+}
+#endif
 
 } // namespace cdtl

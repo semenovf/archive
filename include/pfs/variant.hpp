@@ -11,6 +11,7 @@
 #include <pfs.hpp>
 #include <pfs/type_traits.hpp>
 #include <pfs/utility.hpp>
+#include <pfs/pp/alignof.h>
 #include <cstring>
 #include <typeinfo>
 
@@ -30,7 +31,7 @@ struct max_alignof
 
 inline uint32_t variant_hash_code (const char * name)
 {
-	return hash32(name, strlen(name), static_cast<uint_t>(0xc70f6907UL));
+	return hash32(name, strlen(name), static_cast<unsigned int>(0xc70f6907UL));
 }
 
 template <typename T>

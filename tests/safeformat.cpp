@@ -2,11 +2,11 @@
  * This tests based on loki::SafeFormat tests
  */
 
-#include <cwt/test.hpp>
+#include <pfs/test.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/string.hpp>
 #include <pfs/typeinfo.hpp>
-#include <cwt/stopwatch.hpp>
+#include <pfs/stopwatch.hpp>
 #include <iostream>
 #include <sstream>
 #include <utility>
@@ -182,7 +182,7 @@ void test1 ()
 void test2 ()
 {
 	char buf[512];
-	using cwt::test::stopwatch;
+	using pfs::test::stopwatch;
 	stopwatch sw;
 
 	int loop = 100;

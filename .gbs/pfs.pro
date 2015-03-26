@@ -17,15 +17,11 @@ SUBDIRS  =                \
      tests/strtointegral  \
      tests/strtoreal      \
      tests/vector         \
-     tests/stack          \
      tests/map_hash       \
      tests/date           \
      tests/time           \
-#    tests/utf8string_ptr \
-#    tests/utf8string     \
-#    tests/unitype        \
-##    tests/cow_ptr_qt    \
      tests/pimpl          \
      tests/alignof        \
      tests/variant        \
-     tests/safeformat
+     tests/safeformat     \
+     tests/stack

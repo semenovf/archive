@@ -137,6 +137,8 @@ public:
     	deref();
     }
 
+    bool isNull () const { return _value == nullptr; }
+
     inline shared_ptr<T> & operator = (const shared_ptr<T> & other)
     {
         shared_ptr copy(other);

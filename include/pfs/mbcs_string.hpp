@@ -12,7 +12,6 @@
 #include <pfs/endian.hpp>
 #include <pfs/ucchar.hpp>
 #include <pfs/bits/mbcs_string_impl.hpp>
-#include <pfs/byte_string.hpp>
 #include <pfs/bits/strtointegral.hpp>
 #include <pfs/bits/strtoreal.hpp>
 #include <pfs/bits/stringlist.hpp>
@@ -25,6 +24,8 @@
 #endif
 
 namespace pfs {
+
+class byte_string;
 
 template <typename T>
 struct mbcs_string_type_trait { typedef T type; };
@@ -227,6 +228,51 @@ public:
     	return find(cbegin(), ch);
     }
 
+    // TODO Need to implement
+#ifdef __COMMENT__
+    iterator rfind (const_iterator pos, const mbcs_string & str) const;
+
+    iterator rfind (const mbcs_string & str) const
+    {
+    	return rfind(cbegin(), str);
+    }
+
+    iterator rfind (const_iterator pos, const char * latin1, size_type count) const
+    {
+    	return rfind(pos, mbcs_string::fromLatin1(latin1, count));
+    }
+
+    iterator rfind (const_iterator pos, const char * latin1) const
+    {
+    	return rfind(pos, mbcs_string::fromLatin1(latin1, strlen(latin1)));
+    }
+
+    iterator rfind (const char * latin1) const
+    {
+    	return rfind(cbegin(), latin1);
+    }
+
+    iterator rfind (const_iterator pos, char latin1) const
+    {
+    	return rfind(pos, & latin1, 1);
+    }
+
+    iterator rfind (char latin1) const
+    {
+    	return rfind(cbegin(), latin1);
+    }
+
+    iterator rfind (const_iterator pos, ucchar ch) const
+    {
+    	return rfind(pos, mbcs_string(1, ch));
+    }
+
+    iterator rfind (ucchar ch) const
+    {
+    	return rfind(cbegin(), ch);
+    }
+#endif
+
 	bool contains   (const mbcs_string & s) const { return find(s) != cend(); }
 	bool contains   (const char * s) const        { return find(s) != cend(); }
 	bool contains   (ucchar v) const              { return find(v) != cend(); }
@@ -246,10 +292,10 @@ public:
 	bool startsWith (char v) const                 { return isEmpty() ? false : *(cbegin()) == ucchar(v); }
 
 	// TODO Need tests
-	bool endsWith   (const mbcs_string & s) const  { return find(s) == cend() - s.length(); }
-	bool endsWith   (const char * s) const         { return find(s) == cend() - std::strlen(s); }
-	bool endsWith   (ucchar v) const               { return find(v) == cend() - 1; }
-	bool endsWith   (char v) const                 { return find(v) == cend() - 1; }
+	bool endsWith   (const mbcs_string & s) const  { return length() >= s.length() ? startsWith(cend() - s.length(), s) : false; }
+	bool endsWith   (const char * s) const         { return endsWith(mbcs_string(s)); }
+	bool endsWith   (ucchar v) const               { return endsWith(mbcs_string(1, v)); }
+	bool endsWith   (char v) const                 { return endsWith(mbcs_string(1, v)); }
 
     // Size in bytes
     size_type size () const
@@ -554,17 +600,11 @@ public:
 
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, size_t n, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, ConvertState * state = nullptr);
-	static mbcs_string fromLatin1 (const pfs::byte_string & latin1, ConvertState * state = nullptr)
-	{
-		return fromLatin1(latin1.constData(), latin1.length(), state);
-	}
+	static mbcs_string fromLatin1 (const pfs::byte_string & latin1, ConvertState * state = nullptr);
 
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, size_t size, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, ConvertState * state = nullptr);
-	static mbcs_string fromUtf8 (const byte_string & utf8, ConvertState * state = nullptr)
-	{
-		return fromUtf8(reinterpret_cast<const char *>(utf8.constData()), utf8.length(), state);
-	}
+	static mbcs_string fromUtf8 (const byte_string & utf8, ConvertState * state = nullptr);
 
 	static mbcs_string toString (signed char value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (short value, int base = 10, bool uppercase = false);

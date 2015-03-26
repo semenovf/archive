@@ -101,6 +101,12 @@ public:
 		return result == base_class::npos ? false : true;
 	}
 
+	bool rfind (size_type index, const_pointer s, size_type count, size_type & result) const
+	{
+		result = base_class::rfind(s, index, count);
+		return result == base_class::npos ? false : true;
+	}
+
 public: // static
 	static DLL_API const_pointer   increment  (const_pointer start, difference_type n, size_type * invalidCodeUnits = nullptr);
 	static DLL_API const_pointer   decrement  (const_pointer start, difference_type n, size_t * invalidCodeUnits = nullptr);

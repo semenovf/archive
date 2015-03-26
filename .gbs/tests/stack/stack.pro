@@ -6,5 +6,5 @@ INCLUDEPATH += ../../../include
 
 SOURCES += ../../../tests/stack.cpp
 
-#unix  { LIBS += -lpfs }
-#win32 { LIBS += pfs.lib }
+unix  { LIBS += -lpfs }
+win32 { LIBS += pfs.lib }

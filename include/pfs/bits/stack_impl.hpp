@@ -12,14 +12,16 @@
 
 namespace pfs {
 
-template <typename T, typename Container>
-class stack_impl : protected std::stack<T, Container>
+template <typename T>
+class stack_impl : protected std::stack<T, std::deque<T> >
 {
 public:
-	typedef std::stack<T, Container> base_class;
+	typedef std::stack<T, std::deque<T> > base_class;
 	typedef stack_impl     self_class;
 	typedef size_t         size_type;
 	typedef T              value_type;
+//	typedef typename base_class::reference       reference;
+//	typedef typename base_class::const_reference const_reference;
 
 public:
 	stack_impl () : base_class() {}
@@ -30,7 +32,9 @@ public:
 	void push ( const value_type & value ) { base_class::push(value); }
 	void pop () { base_class::pop(); }
 
-	value_type top () const { return base_class::top(); }
+	T * topPtr () { return & base_class::top(); }
+	T & topRef () { return base_class::top(); }
+	const T & topRef () const { return base_class::top(); }
 };
 
 } // pfs

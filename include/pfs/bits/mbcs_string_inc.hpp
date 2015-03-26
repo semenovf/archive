@@ -153,10 +153,10 @@ template <typename _CodeUnitT>
 int mbcs_string<_CodeUnitT>::compare (const char * latin1) const
 {
 	if (this->isEmpty()) {
-		return latin1 == nullptr ? 0 : -1;
+		return latin1 == nullptr || strlen(latin1) == 0 ? 0 : -1;
 	}
 
-	if (latin1 == nullptr) {
+	if (latin1 == nullptr || strlen(latin1) == 0) {
 		return this->isEmpty() ? 0 : 1;
 	}
 
@@ -435,6 +435,24 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::find (const_
 		? iterator(self, pointer(self, r))
 		: iterator(self, pointer(self, size())); // end()
 }
+
+#ifdef __COMMENT__
+template <typename _CodeUnitT>
+typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::rfind (const_iterator pos, const mbcs_string & str) const
+{
+	PFS_ASSERT(pos >= cbegin());
+	PFS_ASSERT(pos <= cend());
+
+	size_type r = 0;
+	size_type index = pos.base().index();
+
+	mbcs_string * self = const_cast<mbcs_string *>(this);
+
+	return base_class::cast()->rfind(index, str.constData(), str.size(), r)
+		? iterator(self, pointer(self, r))
+		: iterator(self, pointer(self, size())); // end()
+}
+#endif
 
 template <typename _CodeUnitT>
 stringlist_basic<mbcs_string<_CodeUnitT> > mbcs_string<_CodeUnitT>::split (

@@ -7,8 +7,8 @@
 
 #include <cstring>
 #include <iostream>
-#include <cwt/test.hpp>
-#include <cwt/stopwatch.hpp>
+#include <pfs/test.hpp>
+#include <pfs/stopwatch.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/bits/iterator.hpp>
 
@@ -79,7 +79,7 @@ void test_vector_of_vectors ()
 {
 	typedef std::vector<int> std_int_vector;
 	typedef pfs::vector<int> pfs_int_vector;
-	using cwt::test::stopwatch;
+	using pfs::test::stopwatch;
 
 	stopwatch sw;
 	double ellapsed;

@@ -5,10 +5,10 @@
  *      Author: wladt
  */
 
+#include <pfs/test.hpp>
+#include <pfs/stack.hpp>
 #include <cstring>
 #include <iostream>
-#include <cwt/test.hpp>
-#include <pfs/stack.hpp>
 
 void test_stack_reference ()
 {
@@ -36,6 +36,21 @@ void test_stack_reference ()
 	TEST_OK(s2.size() == 2)
 	TEST_OK(s1.top() == 32);
 	TEST_OK(s2.top() == 6);
+
+	pfs::stack<int> s3;
+	s3.push(10);
+	s3.push(11);
+	s3.push(12);
+	s3.push(13);
+	s3.push(14);
+
+	pfs::stack<int>::reference r = s3.top();
+	TEST_OK(r == 14);
+	r = 32;
+	r = s3.top();
+	TEST_OK(r == 32);
+	s3.pop();
+	TEST_OK(s3.top() == 13);
 }
 
 void test_stack_swap ()

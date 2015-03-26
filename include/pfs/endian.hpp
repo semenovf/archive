@@ -69,12 +69,15 @@ public:
 	static unsigned int   swap (unsigned int i) { return (unsigned int)swap((int)i); }
 	static long           swap (long);
 	static unsigned long  swap (unsigned long i) { return (unsigned long)swap((long)i); }
-#ifdef HAVE_LONGLONG
+#ifdef PFS_HAVE_LONGLONG
 	static long long          swap (long long);
 	static unsigned long long swap (unsigned long long i) { return (unsigned long long)swap((long long)i); }
 #endif
 	static float  swap (float);
 	static double swap (double);
+#ifdef PFS_HAVE_LONG_DOUBLE
+	static long double swap (long double);
+#endif
 };
 
 } // namespace jq

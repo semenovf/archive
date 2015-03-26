@@ -11,6 +11,7 @@
 #include <pfs/bits/iterator.hpp>
 #include <pfs/endian.hpp>
 #include <pfs/bits/byte_string_impl.hpp>
+#include <pfs/string.hpp>
 #include <pfs/string.h>
 #include <cstring>
 #include <ostream>
@@ -535,13 +536,16 @@ inline byte_string byte_string::toBytes<bool> (const bool & v, endian::type_enum
 	return toBytes<char>(v ? '\x01' : '\x00', order);
 }
 
-//template <>
-//bytearray bytearray::toBytes<pfs::utf8string> (const pfs::utf8string & v, endian::type_enum /*order*/);
-//
 template <>
-inline byte_string byte_string::toBytes<pfs::byte_string> (const byte_string & v, endian::type_enum /*order*/)
+inline byte_string byte_string::toBytes<byte_string> (const byte_string & v, endian::type_enum /*order*/)
 {
 	return byte_string(v);
+}
+
+template <>
+inline byte_string byte_string::toBytes<utf8string> (const utf8string & v, endian::type_enum /*order*/)
+{
+	return byte_string(v.c_str(), v.size());
 }
 
 template <typename ValT>

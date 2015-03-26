@@ -7,6 +7,7 @@
 
 #include "pfs/utility.hpp"
 #include "pfs/mbcs_string.hpp"
+#include "pfs/byte_string.hpp"
 
 template class DLL_API std::allocator<char>;
 template class DLL_API std::basic_string<char>;
@@ -331,6 +332,18 @@ mbcs_string<char> mbcs_string<char>::fromUtf8 (const char * utf8, size_t size, C
 	d->_length = len;
 
 	return r;
+}
+
+template <>
+mbcs_string<char> mbcs_string<char>::fromLatin1 (const pfs::byte_string & latin1, ConvertState * state)
+{
+	return fromLatin1(reinterpret_cast<const char *>(latin1.constData()), latin1.length(), state);
+}
+
+template <>
+mbcs_string<char> mbcs_string<char>::fromUtf8 (const byte_string & utf8, ConvertState * state)
+{
+	return fromUtf8(reinterpret_cast<const char *>(utf8.constData()), utf8.length(), state);
 }
 
 

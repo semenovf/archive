@@ -169,11 +169,18 @@
 			PFS_CHECK_SIZEOF_TYPE(int64_t, 8);     \
 			PFS_CHECK_SIZEOF_TYPE(uint64_t, 8);    \
 			PFS_CHECK_SIZEOF_TYPE(integral_t, 8);  \
-			PFS_CHECK_SIZEOF_TYPE(uintegral_t, 8);
+			PFS_CHECK_SIZEOF_TYPE(uintegral_t, 8)
 #	else
 #		define PFS_CHECK_SIZEOF_LONG               \
 			PFS_CHECK_SIZEOF_TYPE(integral_t, 4);  \
-			PFS_CHECK_SIZEOF_TYPE(uintegral_t, 4);
+			PFS_CHECK_SIZEOF_TYPE(uintegral_t, 4)
+#	endif
+
+
+#	ifdef PFS_HAVE_LONG_DOUBLE
+#		define PFS_CHECK_SIZEOF_LONG_DOUBLE PFS_CHECK_SIZEOF_TYPE(long double,16)
+#	else
+#		define PFS_CHECK_SIZEOF_LONG_DOUBLE
 #	endif
 
 #	define PFS_CHECK_SIZEOF_TYPES                 \
@@ -189,8 +196,11 @@
 	PFS_CHECK_SIZEOF_TYPE(ushort_t, 2);           \
 	PFS_CHECK_SIZEOF_TYPE(int_t, 4);              \
 	PFS_CHECK_SIZEOF_TYPE(uint_t, 4);             \
-	PFS_CHECK_SIZEOF_LONG                         \
-	PFS_CHECK_SIZEOF_WCHAR
+	PFS_CHECK_SIZEOF_TYPE(float, 4);              \
+	PFS_CHECK_SIZEOF_TYPE(double, 8);             \
+	PFS_CHECK_SIZEOF_LONG;                        \
+	PFS_CHECK_SIZEOF_WCHAR;                       \
+	PFS_CHECK_SIZEOF_LONG_DOUBLE;
 #else
 #	define PFS_CHECK_SIZEOF_TYPES
 #endif

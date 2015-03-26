@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <cwt/test.hpp>
+#include <pfs/test.hpp>
 #include <pfs.hpp>
 #include <pfs/bits/strtoreal.hpp>
 #include <cstdio>

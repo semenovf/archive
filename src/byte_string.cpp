@@ -6,6 +6,7 @@
  */
 
 #include <pfs/byte_string.hpp>
+#include <pfs/string.hpp>
 #include <pfs/bits/strtointegral.hpp>
 #include <pfs/bits/strtoreal.hpp>
 #include <cstring>

@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <cwt/test.hpp>
+#include <pfs/test.hpp>
 #include <pfs/time.hpp>
 
 void test_base (void)
