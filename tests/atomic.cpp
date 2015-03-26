@@ -4,7 +4,7 @@
  * @date Mar 17, 2014
  */
 
-#include <cwt/test.hpp>
+#include <pfs/test.hpp>
 #include <pfs/atomic.hpp>
 #include <pfs/thread.hpp>
 #include <iostream>

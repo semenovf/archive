@@ -6,7 +6,7 @@
  * @brief zlib testing
  */
 
-#include <cwt/test.hpp>
+#include <pfs/test.hpp>
 #include <pfs/zlib.hpp>
 
 
