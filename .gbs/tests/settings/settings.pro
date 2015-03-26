@@ -1,21 +1,20 @@
 include($$(GBS_HOME)/qmake/common-app-qt.pri)
 
-TARGET = test_settings
+TARGET = test_pfs_settings
 DEFINES += __CWT_TEST__
 
 INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../cwt-sys/include
-INCLUDEPATH += ../../../../cwt-app/include
+INCLUDEPATH += ../../../../pfs-sys/include
+INCLUDEPATH += ../../../../pfs-app/include
 
 SOURCES     += ../../../tests/settings.cpp
 
 unix {
     LIBS += -lpfs
-    LIBS += -lcwt-sys
-#    LIBS += -lcwt-json
-    LIBS += -lcwt-app
+    LIBS += -lpfs-sys
+    LIBS += -lpfs-app
 }
 
 win32 {
-#    LIBS += cwt.lib
+#    LIBS += pfs.lib
 }

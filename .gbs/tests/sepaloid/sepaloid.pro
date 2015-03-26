@@ -3,8 +3,8 @@ TARGET = test_pfs_sepaloid
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
-INCLUDEPATH += ../../../../cwt-sys/include
-INCLUDEPATH += ../../../../cwt-app/include
+INCLUDEPATH += ../../../../pfs-sys/include
+INCLUDEPATH += ../../../../pfs-app/include
 
 SOURCES += ../../../tests/sepaloid.cpp
 

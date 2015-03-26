@@ -2,7 +2,7 @@ include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET = pfs-app
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../pfs/include
-INCLUDEPATH += ../../../cwt-sys/include
+INCLUDEPATH += ../../../pfs-sys/include
 
 HEADERS += ../../include/pfs/*.hpp
 SOURCES += ../../src/*.cpp

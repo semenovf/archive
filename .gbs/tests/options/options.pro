@@ -3,7 +3,7 @@ include($$(GBS_HOME)/qmake/common-app-qt.pri)
 TARGET = test_pfs_options
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
-INCLUDEPATH += ../../../../cwt-sys/include
+INCLUDEPATH += ../../../../pfs-sys/include
 
 SOURCES += ../../../tests/options.cpp
 
@@ -14,5 +14,5 @@ unix {
 }
 
 win32 {
-#    LIBS += cwt.lib
+#    LIBS += pfs.lib
 }

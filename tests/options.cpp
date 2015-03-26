@@ -6,7 +6,7 @@
  *  Modified on: 04.06.2013 Replaced with C++ implementation.
  */
 
-#include <cwt/test.hpp>
+#include <pfs/test.hpp>
 #include <pfs/app.hpp>
 
 static void test_basic(void)

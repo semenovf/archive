@@ -1,5 +1,5 @@
 #include <pfs/sepaloid.hpp>
-#include <cwt/test.hpp>
+#include <pfs/test.hpp>
 #include <pfs/logger.hpp>
 #include <pfs/safeformat.hpp>
 #include <cstring>
