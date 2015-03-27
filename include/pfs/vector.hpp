@@ -11,6 +11,7 @@
 #include <pfs/pimpl.hpp>
 #include <pfs/bits/vector_impl.hpp>
 #include <pfs/bits/algorithm.hpp>
+#include <pfs/bits/allocator.hpp>
 
 namespace pfs {
 
