@@ -1,19 +1,18 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_io_addrinfo
+TARGET = test_pfs_io_addrinfo
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
-INCLUDEPATH += ../../../../cwt-sys/include
-INCLUDEPATH += ../../../../cwt-io/include
+INCLUDEPATH += ../../../../pfs-sys/include
+INCLUDEPATH += ../../../../pfs-io/include
 
 SOURCES += ../../../tests/addrinfo.cpp
-HEADERS += ../../../include/cwt/io/*.hpp
-HEADERS += ../../../include/cwt/net/*.hpp
 
 unix {
     LIBS += -lpfs
-    LIBS += -lcwt-io
+    LIBS += -lpfs-sys
+    LIBS += -lpfs-io
 }
 
 win32 {

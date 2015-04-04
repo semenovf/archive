@@ -6,7 +6,7 @@
 #************************************************************
 TEMPLATE = subdirs                                           
 CONFIG  += ordered                                           
-SUBDIRS  = cwt-io   \
+SUBDIRS  = pfs-io   \
     tests/basic     \
     tests/utf8      \
     tests/addrinfo  \
