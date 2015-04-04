@@ -25,12 +25,8 @@
 // ----------------------------------------------------------------
 
 #include <typeinfo>
-//#include <cassert>
-
-//#include <string>
-
 #include <pfs/test.hpp>
-#include <pfs.hpp>
+#include <pfs/string.hpp>
 #include <pfs/bits/alignof.h>
 #include <iostream>
 
@@ -46,6 +42,32 @@ struct TypeInfo
 class DI { DI () {} double d; int i; };
 class DS { DS () {} double d; };
 class X { X () {} int i; char c; };
+
+static void check_native_alignof_helper (bool predicate
+    , const char * typestr
+    , size_t sz1
+    , size_t sz2)
+{
+    const char * cmpstr = predicate ? "==" : "!=";
+    pfs::string s;
+
+    s << "ALIGNOF(" << typestr << ") "
+	<< cmpstr << " alignof(" << typestr << ')'
+	<< " => " << pfs::string::toString(sz1) 
+	<< ' ' << cmpstr << ' ' << pfs::string::toString(sz2);
+
+    TEST_OK2(predicate, s.c_str());
+}
+
+template <typename T>
+inline void check_native_alignof (const char * typestr)
+{
+    check_native_alignof_helper(ALIGNOF(T) == alignof(T)
+	, typestr
+	, ALIGNOF(T)
+	, alignof(T));
+}
+
 
 int main (int argc, char *argv[])
 {
@@ -122,7 +144,7 @@ int main (int argc, char *argv[])
 	CHECK_ALIGNOF_DIVIDES_SIZEOF (X);
 
 #ifdef PFS_HAVE_ALIGNOF // have native implementation (gnuc's or C++11)
-#define CHECK_NATIVE_ALIGNOF(type) TEST_OK(ALIGNOF(type) == alignof(type))
+#define CHECK_NATIVE_ALIGNOF(type) check_native_alignof<type>(#type)
 
 	CHECK_NATIVE_ALIGNOF(char);
 	CHECK_NATIVE_ALIGNOF(short);
@@ -143,30 +165,6 @@ int main (int argc, char *argv[])
 	CHECK_NATIVE_ALIGNOF(DS);
 	CHECK_NATIVE_ALIGNOF(X);
 #endif
-
-#define PRINT_ALIGNOF(type) \
-		std::cout << "ALIGNOF (" #type ") == " << ALIGNOF(type)  << std::endl
-
-	PRINT_ALIGNOF (char);
-	PRINT_ALIGNOF (short);
-	PRINT_ALIGNOF (int);
-	PRINT_ALIGNOF (long);
-#ifdef PFS_HAVE_LONGLONG
-	PRINT_ALIGNOF (long long);
-#endif
-	PRINT_ALIGNOF (float);
-	PRINT_ALIGNOF (double);
-	std::cout << "alignof (double) == " << alignof(double)  << std::endl;
-	std::cout << "alignof (long long) == " << alignof(long long)  << std::endl;
-#ifdef PFS_HAVE_LONG_DOUBLE
-	PRINT_ALIGNOF (long double);
-#endif
-	PRINT_ALIGNOF (X (X::*)());
-	PRINT_ALIGNOF (void *);
-	PRINT_ALIGNOF (void (*)());
-	PRINT_ALIGNOF (DI);
-	PRINT_ALIGNOF (DS);
-	PRINT_ALIGNOF (X);
 
 #define PRINT_ALIGN_POD(type) \
 		std::cout << "ALIGN_POD_TYPE (" #type ") ==> " \

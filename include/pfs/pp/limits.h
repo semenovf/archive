@@ -178,7 +178,14 @@
 
 
 #	ifdef PFS_HAVE_LONG_DOUBLE
-#		define PFS_CHECK_SIZEOF_LONG_DOUBLE PFS_CHECK_SIZEOF_TYPE(long double,16)
+#		if defined(PFS_OS_64BITS)
+#			define PFS_CHECK_SIZEOF_LONG_DOUBLE PFS_CHECK_SIZEOF_TYPE(long double,16)
+#		elif defined(PFS_OS_32BITS)
+#			define PFS_CHECK_SIZEOF_LONG_DOUBLE PFS_CHECK_SIZEOF_TYPE(long double,12)
+#		else
+#			error Unsupported platform
+#		endif
+#	
 #	else
 #		define PFS_CHECK_SIZEOF_LONG_DOUBLE
 #	endif
