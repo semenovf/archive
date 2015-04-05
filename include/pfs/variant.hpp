@@ -18,12 +18,6 @@
 namespace pfs {
 
 template <typename T, size_t Size = 0>
-struct max_sizeof
-{
-	enum { result = sizeof(T) > Size ? sizeof(T) : Size };
-};
-
-template <typename T, size_t Size = 0>
 struct max_alignof
 {
 	enum { result = alignof(T) > Size ? alignof(T) : Size };

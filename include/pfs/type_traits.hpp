@@ -3,25 +3,33 @@
  *
  *  Created on: Jan 30, 2015
  *      Author: wladt
+ *
+ *  @note Usage by MSC see below notes
  */
 
 #ifndef __PFS_TYPE_TRAITS_HPP__
 #define __PFS_TYPE_TRAITS_HPP__
 
 #include <pfs.hpp>
+#include <pfs/bits/type_traits.hpp>
 
 #if __cplusplus >= 201103L // C++11
 #	include <type_traits>
 #endif
 
-namespace pfs {
+
+#ifndef PFS_USE_DEFAULT_ALIGN_STORAGE
 
 #if __cplusplus >= 201103L // C++11
-#	include <type_traits>
+
+namespace pfs {
 template <size_t Len, size_t Align>
 using aligned_storage = std::aligned_storage<Len, Align>;
+} //pfs
 
 #elif defined(PFS_CC_GNUC)
+
+namespace pfs {
 
 template <size_t Len, size_t Align>
 struct aligned_storage {
@@ -29,8 +37,15 @@ struct aligned_storage {
 		unsigned char data[Len] __attribute__((aligned(Align)));
 	};
 };
+} // pfs
 
 #elif defined(PFS_CC_MSC)
+// In MSC version <= 1600 std::vector avoid of use aligned items:
+//		error C2719: '_Val': formal parameter with __declspec(align('8')) won't be aligned.
+// This case compile source with PFS_USE_DEFAULT_ALIGN_STORAGE macro set.
+//
+
+namespace pfs {
 
 template <size_t Len, size_t Align>
 struct aligned_storage;
@@ -111,98 +126,15 @@ struct aligned_storage<Len,1024> {
 		__declspec(align(1024)) unsigned char data[Len];
 	};
 };
+} // pfs
 
 #else
 #	error Do not know how to apply alignment!
+#	error Compile with PFS_USE_DEFAULT_ALIGN_STORAGE macro set
 #endif
 
-struct true_type { enum {value = 1}; };
-struct false_type { enum {value = 0}; };
-
-// Define a nested type if some predicate holds.
-template <bool, typename>
-struct enable_if
-{};
-
-template <typename T>
-struct enable_if<true, T>
-{
-	typedef T type;
-};
-
-// Compare for equality of types.
-template<typename, typename>
-struct are_same
-{
-	enum { value = 0 };
-    typedef false_type type;
-};
-
-template<typename T>
-struct are_same<T, T>
-{
-	enum { value = 1 };
-	typedef true_type type;
-};
-
-template<class T> struct is_const          : false_type {};
-template<class T> struct is_const<const T> : true_type {};
-
-template <bool B, typename T1, typename T2>
-struct conditional
-{
-	typedef T1 type;
-};
-
-template <typename T1, typename T2>
-struct conditional<false, T1, T2>
-{
-	typedef T2 type;
-};
-
-// Define a nested type if some predicate holds.
-template <bool, typename T1, typename>
-struct if_else
-{
-	typedef T1 type;
-};
-
-template <typename T1, typename T2>
-struct if_else<false, T1, T2>
-{
-	typedef T2 type;
-};
-
-template<typename T>
-struct remove_const
-{
-	typedef T type;
-};
-
-template<typename T>
-struct remove_const<const T>
-{
-	typedef T type;
-};
-
-template<typename T>
-struct remove_volatile
-{
-	typedef T type;
-};
-
-template<typename T>
-struct remove_volatile<volatile T>
-{
-	typedef T type;
-};
-
-template<typename T>
-struct remove_cv
-{
-	typedef typename remove_volatile<typename remove_const<T>::type>::type type;
-};
-
-}
+#else // PFS_USE_DEFAULT_ALIGN_STORAGE
+#	include <pfs/bits/aligned_storage.hpp>
+#endif
 
 #endif /* __PFS_TYPE_TRAITS_HPP__ */

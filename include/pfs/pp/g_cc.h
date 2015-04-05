@@ -50,9 +50,16 @@
 #elif defined(_MSC_VER)
 #	define PFS_CC_MSVC
 #	define PFS_CC_MSC
-#	ifndef _MSC_VER
-#		error No macro (_MSC_VER) defined for MSC
-#	endif
+// see http://stackoverflow.com/questions/70013/how-to-detect-if-im-compiling-code-with-visual-studio-2008
+//MSVC++ 12.0 _MSC_VER == 1800 (Visual Studio 2013)
+//MSVC++ 11.0 _MSC_VER == 1700 (Visual Studio 2012)
+//MSVC++ 10.0 _MSC_VER == 1600 (Visual Studio 2010)
+//MSVC++ 9.0  _MSC_VER == 1500 (Visual Studio 2008)
+//MSVC++ 8.0  _MSC_VER == 1400 (Visual Studio 2005)
+//MSVC++ 7.1  _MSC_VER == 1310 (Visual Studio 2003)
+//MSVC++ 7.0  _MSC_VER == 1300
+//MSVC++ 6.0  _MSC_VER == 1200
+//MSVC++ 5.0  _MSC_VER == 1100
 #	define PFS_CC_MSVC_VERSION _MSC_VER /* In Visual Studio 2010, _MSC_VER is defined as 1600 */
 #	define PFS_CC_MSC_VERSION  _MSC_VER
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */

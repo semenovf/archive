@@ -5,13 +5,15 @@
 #include <pfs/vector.hpp>
 #include <iostream>
 
+using std::cout;
+using std::endl;
+
 int main (int argc, char *argv[])
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED2(argc, argv);
-	int ntests = 24;
 
-	BEGIN_TESTS(ntests);
+	BEGIN_TESTS(24);
 
 	typedef pfs::variant<real_t, integral_t, pfs::byte_string, pfs::utf8string, pfs::ucchar> variant_t;
 
@@ -70,5 +72,12 @@ int main (int argc, char *argv[])
 	pfs::vector<variant_t> vec;
 	vec << v1 << v2 << v3 << v4 << v5 << v6 << v7;
 
+	ADD_TESTS(6);
+	TEST_OK(sizeof(pfs::aligned_storage<10, 1>::type) == 10);
+	TEST_OK(sizeof(pfs::aligned_storage<10, 2>::type) == 10);
+	TEST_OK(sizeof(pfs::aligned_storage<9, 2>::type) == 10);
+	TEST_OK(sizeof(pfs::aligned_storage<8, 2>::type) == 8);
+	TEST_OK(sizeof(pfs::aligned_storage<10, 128>::type) == 128);
+	TEST_OK(sizeof(pfs::aligned_storage<20, 8>::type) == 24);
 	END_TESTS;
 }
