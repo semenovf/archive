@@ -68,94 +68,88 @@ inline void check_native_alignof (const char * typestr)
 	, alignof(T));
 }
 
+template <typename T>
+inline void check_native_alignment_of (const char * typestr)
+{
+    check_native_alignof_helper(ALIGNOF(T) == pfs::alignment_of<T>::value
+		, typestr
+		, ALIGNOF(T)
+		, pfs::alignment_of<T>::value);
+}
+
 
 int main (int argc, char *argv[])
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED2(argc, argv);
-	int ntests = 24;
 
-#ifdef PFS_HAVE_LONGLONG
-	ntests += 2;
-#endif
-
-#ifdef PFS_HAVE_LONG_DOUBLE
-	ntests += 2;
-#endif
-
-#ifdef PFS_HAVE_ALIGNOF
-	ntests += 12;
-#	ifdef PFS_HAVE_LONGLONG
-	ntests += 1;
-#	endif
-
-#	ifdef PFS_HAVE_LONG_DOUBLE
-	ntests += 1;
-#	endif
-#endif
-
-	BEGIN_TESTS(ntests);
-
-//  using Alignment::POD::types;
-//  using Alignment::POD::TYPES_COUNT;
+	BEGIN_TESTS(25);
 
 #define CHECK_ALIGNOF_LE_SIZEOF(type) \
 		TEST_OK(ALIGNOF(type) <= sizeof (type))
 
-	CHECK_ALIGNOF_LE_SIZEOF (char);
-	CHECK_ALIGNOF_LE_SIZEOF (short);
-	CHECK_ALIGNOF_LE_SIZEOF (int);
-	CHECK_ALIGNOF_LE_SIZEOF (long);
+	CHECK_ALIGNOF_LE_SIZEOF(char);
+	CHECK_ALIGNOF_LE_SIZEOF(short);
+	CHECK_ALIGNOF_LE_SIZEOF(int);
+	CHECK_ALIGNOF_LE_SIZEOF(long);
 #ifdef PFS_HAVE_LONGLONG
-	CHECK_ALIGNOF_LE_SIZEOF (long long);
+	ADD_TESTS(1);
+	CHECK_ALIGNOF_LE_SIZEOF(long long);
 #endif
-	CHECK_ALIGNOF_LE_SIZEOF (float);
-	CHECK_ALIGNOF_LE_SIZEOF (double);
+	CHECK_ALIGNOF_LE_SIZEOF(float);
+	CHECK_ALIGNOF_LE_SIZEOF(double);
 #ifdef PFS_HAVE_LONG_DOUBLE
-	CHECK_ALIGNOF_LE_SIZEOF (long double);
+	ADD_TESTS(1);
+	CHECK_ALIGNOF_LE_SIZEOF(long double);
 #endif
-	CHECK_ALIGNOF_LE_SIZEOF (void *);
-	CHECK_ALIGNOF_LE_SIZEOF (void (*)());
-	CHECK_ALIGNOF_LE_SIZEOF (X (X::*)());
-	CHECK_ALIGNOF_LE_SIZEOF (DI);
-	CHECK_ALIGNOF_LE_SIZEOF (DS);
-	CHECK_ALIGNOF_LE_SIZEOF (X);
+	CHECK_ALIGNOF_LE_SIZEOF(void *);
+	CHECK_ALIGNOF_LE_SIZEOF(void (*)());
+	CHECK_ALIGNOF_LE_SIZEOF(X (X::*)());
+	CHECK_ALIGNOF_LE_SIZEOF(DI);
+	CHECK_ALIGNOF_LE_SIZEOF(DS);
+	CHECK_ALIGNOF_LE_SIZEOF(X);
 
 #define CHECK_ALIGNOF_DIVIDES_SIZEOF(type) \
 		TEST_OK((sizeof (type) % ALIGNOF (type)) == 0)
 
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (char);
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (short);
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (int);
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (long);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(char);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(short);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(int);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(long);
 #ifdef PFS_HAVE_LONGLONG
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (long long);
+	ADD_TESTS(1);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(long long);
 #endif
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (float);
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (double);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(float);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(double);
 #ifdef PFS_HAVE_LONG_DOUBLE
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (long double);
+	ADD_TESTS(1);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(long double);
 #endif
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (void *);
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (void (*)());
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (X (X::*)());
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (DI);
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (DS);
-	CHECK_ALIGNOF_DIVIDES_SIZEOF (X);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(void *);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(void (*)());
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(X (X::*)());
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(DI);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(DS);
+	CHECK_ALIGNOF_DIVIDES_SIZEOF(X);
 
 #ifdef PFS_HAVE_ALIGNOF // have native implementation (gnuc's or C++11)
 #define CHECK_NATIVE_ALIGNOF(type) check_native_alignof<type>(#type)
+#define CHECK_NATIVE_ALIGNMENT_OF(type) check_native_alignment_of<type>(#type)
 
 	CHECK_NATIVE_ALIGNOF(char);
+	CHECK_NATIVE_ALIGNMENT_OF(char);
 	CHECK_NATIVE_ALIGNOF(short);
 	CHECK_NATIVE_ALIGNOF(int);
 	CHECK_NATIVE_ALIGNOF(long);
 #ifdef PFS_HAVE_LONGLONG
+	ADD_TESTS(1);
 	CHECK_NATIVE_ALIGNOF(long long);
 #endif
 	CHECK_NATIVE_ALIGNOF(float);
 	CHECK_NATIVE_ALIGNOF(double);
 #ifdef PFS_HAVE_LONG_DOUBLE
+	ADD_TESTS(1);
 	CHECK_NATIVE_ALIGNOF(long double);
 #endif
 	CHECK_NATIVE_ALIGNOF(void *);
@@ -174,11 +168,13 @@ int main (int argc, char *argv[])
 	PRINT_ALIGN_POD (int);
 	PRINT_ALIGN_POD (long);
 #ifdef PFS_HAVE_LONGLONG
+	ADD_TESTS(1);
 	PRINT_ALIGN_POD (long long);
 #endif
 	PRINT_ALIGN_POD (float);
 	PRINT_ALIGN_POD (double);
 #ifdef PFS_HAVE_LONG_DOUBLE
+	ADD_TESTS(1);
 	PRINT_ALIGN_POD (long double);
 #endif
 	PRINT_ALIGN_POD (char *);

@@ -69,8 +69,8 @@ int main (int argc, char *argv[])
 	// MSVC at compile time output
 	// error C2719: '_Val': formal parameter with __declspec(align('8')) won't be aligned
 	// FIXME
-	pfs::vector<variant_t> vec;
-	vec << v1 << v2 << v3 << v4 << v5 << v6 << v7;
+//	pfs::vector<variant_t> vec;
+//	vec << v1 << v2 << v3 << v4 << v5 << v6 << v7;
 
 	ADD_TESTS(6);
 	TEST_OK(sizeof(pfs::aligned_storage<10, 1>::type) == 10);
