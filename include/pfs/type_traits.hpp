@@ -17,9 +17,6 @@
 #	include <type_traits>
 #endif
 
-
-#ifndef PFS_USE_DEFAULT_ALIGN_STORAGE
-
 #if __cplusplus >= 201103L // C++11
 
 namespace pfs {
@@ -129,12 +126,7 @@ struct aligned_storage<Len,1024> {
 } // pfs
 
 #else
-#	error Do not know how to apply alignment!
-#	error Compile with PFS_USE_DEFAULT_ALIGN_STORAGE macro set
-#endif
-
-#else // PFS_USE_DEFAULT_ALIGN_STORAGE
-#	include <pfs/bits/aligned_storage.hpp>
+#	error Need to implement aligned_storage
 #endif
 
 #endif /* __PFS_TYPE_TRAITS_HPP__ */

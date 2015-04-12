@@ -22,6 +22,6 @@ SUBDIRS  =                \
      tests/time           \
      tests/pimpl          \
 #     tests/alignof        \
-#     tests/variant        \
+     tests/variant        \
      tests/safeformat     \
      tests/stack

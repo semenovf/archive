@@ -22,15 +22,17 @@
 #	if defined (__GNUC__) && (__GNUC__ >= 2)
 #		define alignof(type) __alignof__(type)
 #		define PFS_HAVE_ALIGNOF 1
-#	elif defined(PFS_CC_MSVC_VERSION) && && PFS_CC_MSVC_VERSION >= 1600
+#	elif defined(PFS_CC_MSVC_VERSION) && PFS_CC_MSVC_VERSION >= 1600
 #		define alignof(type) __alignof(type)
 #		define PFS_HAVE_ALIGNOF 1
 #	else
-#		include <pfs/bits/alignof.h>       /* TODO DEPRICATED */
-#		define alignof(type) ALIGNOF(type) /* TODO DEPRICATED */
+#		error Need to implement alignof
+/*#		include <pfs/bits/alignof.h> */       /* TODO DEPRICATED */
+/*#		define alignof(type) ALIGNOF(type) */ /* TODO DEPRICATED */
 #	endif
 #endif
 
+#ifdef __COMMENT__
 #ifdef __cplusplus
 	template <class T>
 	struct alignment_of
@@ -48,5 +50,6 @@
 #endif
 	};
 #endif
+#endif /* __COMMENT__ */
 
 #endif /* __PFS_PP_ALIGNOF_H__ */

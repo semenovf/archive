@@ -11,7 +11,6 @@
 #include <pfs.hpp>
 #include <pfs/type_traits.hpp>
 #include <pfs/utility.hpp>
-#include <pfs/pp/alignof.h>
 #include <cstring>
 #include <typeinfo>
 
