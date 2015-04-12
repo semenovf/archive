@@ -80,17 +80,17 @@ inline void LocalPetaloidDetector::onTwoArgs(bool ok, char ch)
 
 inline void LocalPetaloidDetector::onThreeArgs(bool ok, char, short i)
 {
-	TEST_OK2(ok == true && i == PFS_SHORT_MAX, "onThreeArgs(bool,..., CWT_SHORT_MAX)");
+	TEST_OK2(ok == true && i == PFS_SHORT_MAX, "onThreeArgs(bool,..., PFS_SHORT_MAX)");
 }
 
 inline void LocalPetaloidDetector::onFourArgs(bool ok, char, short, int i)
 {
-	TEST_OK2(ok == true && i == PFS_INT_MAX, "onFourArgs(bool,..., CWT_INT_MAX)");
+	TEST_OK2(ok == true && i == PFS_INT_MAX, "onFourArgs(bool,..., PFS_INT_MAX)");
 }
 
 inline void LocalPetaloidDetector::onFiveArgs(bool ok, char, short, int, long i)
 {
-	TEST_OK2(ok == true && i == PFS_INT_MAX, "onFiveArgs(bool,... CWT_INT_MAX)");
+	TEST_OK2(ok == true && i == PFS_INT_MAX, "onFiveArgs(bool,... PFS_INT_MAX)");
 }
 
 inline void LocalPetaloidDetector::onSixArgs(bool ok, char, short, int, long, const char *hello)
@@ -105,7 +105,7 @@ inline void LocalPetaloidDetector::onSevenArgs(bool ok, char, short, int, long, 
 
 inline void LocalPetaloidDetector::onEightArgs(bool ok, char, short, int, long, long long i, const char*, const pfs::string&)
 {
-	TEST_OK2(ok == true && i == PFS_LONG_MAX, "onEightArgs(bool,..., CWT_LONG_MAX,...)");
+	TEST_OK2(ok == true && i == PFS_LONG_MAX, "onEightArgs(bool,..., PFS_LONG_MAX,...)");
 }
 
 const pfs::detector_mapping* LocalPetaloidDetector::getDetectors(int *count)
