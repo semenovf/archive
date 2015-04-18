@@ -10,7 +10,6 @@
 #include <pthread.h>
 #include <cerrno>
 #include <sys/time.h>
-#include "../threadcv_p.hpp"
 
 namespace pfs {
 

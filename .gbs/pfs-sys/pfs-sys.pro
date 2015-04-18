@@ -31,11 +31,11 @@ unix {
 }
 
 win32 {
-    HEADERS += ..\\..\\pcre8\\*.h
+#    HEADERS += ..\\..\\pcre8\\*.h
     SOURCES += ..\\..\\src\\*.cpp
     SOURCES += ..\\..\\src\\*.c
+    SOURCES += ..\\..\\src\\win\\*.cpp
     SOURCES += ..\\..\\pcre8\\*.c
     SOURCES += ..\\..\\zlib\\*.c
-    SOURCES += ..\\..\\src\\win32\\*.cpp
     LIBS += pfs.lib
 }

@@ -37,14 +37,15 @@ public:
 		, DefaultFormat = JsonFormat
 	};
 
+	// FIXME
 	class property
 	{
-		typedef variant<bool, integral_t, real_t, string> value_type;
-	private:
-		value_type _val;
-	public:
-		property () : _val(integral_t(0)) {}
-		property (bool v) : _val(v) {}
+//		typedef variant<bool, integral_t, real_t, string> value_type;
+//	private:
+//		value_type _val;
+//	public:
+//		property () : _val(integral_t(0)) {}
+//		property (bool v) : _val(v) {}
 	};
 
 public:

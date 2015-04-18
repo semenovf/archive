@@ -30,11 +30,11 @@ public:
 	thread_cv ();
     ~thread_cv ();
 
-    bool wait (pfs::mutex & lockedMutex, uintegral_t time = pfs::max_type<uintegral_t>());
+    bool wait (pfs::mutex & lockedMutex, uintegral_t time = PFS_UINTEGRAL_MAX);
 //    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time = ULONG_MAX);
 
-    void wakeOne();
-    void wakeAll();
+    void wakeOne ();
+    void wakeAll ();
 
 private:
 //    thread_cv (const thread_cv &);

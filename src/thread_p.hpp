@@ -48,8 +48,7 @@ public:
     static unsigned int __stdcall start (void *);
     static void finish (void *, bool lockAnyway = true);
 
-    Qt::HANDLE _handle;
-
+    HANDLE _handle;
     unsigned int _id;
     int _waiters;
     bool _terminationEnabled;
@@ -79,7 +78,7 @@ public:
 #ifdef PFS_OS_UNIX
     pthread_t _threadId;
 #elif defined(PFS_OS_WIN)
-    Qt::HANDLE _threadId;
+    HANDLE _threadId;
 #endif
 //    vector<void *> _tls;
 
