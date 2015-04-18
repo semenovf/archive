@@ -30,7 +30,14 @@ class byte_string;
 template <typename T>
 struct mbcs_string_type_trait { typedef T type; };
 
-//TODO implement `class utf16string : protected vector<int16_t,allocator<int16_t, 1> >'
+struct ConvertState
+{
+	ConvertState() : nremain(0), invalidChars(0), replacementChar(ucchar::ReplacementChar) {}
+	size_t nremain;
+	size_t invalidChars;
+	ucchar replacementChar;
+};
+
 
 template <typename CodeUnitT>
 class mbcs_string : public nullable<mbcs_string_impl<CodeUnitT> >
@@ -566,6 +573,9 @@ public:
 	long double toLongDouble (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const { return toReal(ok, decimalPoint); }
 #endif
 
+	DLL_API mbcs_string<char> toUtf8 () const;
+	DLL_API mbcs_string<uint16_t> toUtf16 () const;
+
 	mbcs_string & operator += (const mbcs_string & other) { return append(other); }
 	mbcs_string & operator += (const char * latin1) { return append(mbcs_string(latin1)); }
 	mbcs_string & operator += (const ucchar & ch) { return append(mbcs_string(1, ch)); }
@@ -590,14 +600,6 @@ private:
     stringlist_basic<mbcs_string> split (bool isOneSeparatorChar, const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
 
 public:
-	struct ConvertState
-	{
-		ConvertState() : nremain(0), invalidChars(0), replacementChar(ucchar::ReplacementChar) {}
-		size_type nremain;
-		size_type invalidChars;
-		ucchar    replacementChar;
-	};
-
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, size_t n, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, ConvertState * state = nullptr);
 	static mbcs_string fromLatin1 (const pfs::byte_string & latin1, ConvertState * state = nullptr);
@@ -605,6 +607,8 @@ public:
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, size_t size, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, ConvertState * state = nullptr);
 	static mbcs_string fromUtf8 (const byte_string & utf8, ConvertState * state = nullptr);
+
+	static DLL_API mbcs_string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = nullptr);
 
 	static mbcs_string toString (signed char value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (short value, int base = 10, bool uppercase = false);

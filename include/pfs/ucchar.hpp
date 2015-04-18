@@ -17,11 +17,14 @@ namespace pfs {
 
 class DLL_API ucchar
 {
+	uint32_t _value;
+
 public:
 	static const ucchar MaxCodePoint;
 	static const ucchar Null;
 	static const ucchar ReplacementChar;
 	static const ucchar MaxBMP;
+	static const ucchar BomChar;
 
 	static const ucchar HiSurrogateStart;
 	static const ucchar HiSurrogateEnd;
@@ -42,8 +45,12 @@ public:
 	uint32_t value () const    { return _value; }
 	uint32_t ucs4 () const     { return _value; }
 	uint32_t unicode () const  { return _value; }
-	size_t  encodeUtf8 (char * utf8, size_t sz);
-	int decodeUtf8 (const char * units, size_t len);
+
+	size_t encodeUtf8  (char * utf8, size_t sz);
+	size_t encodeUtf16 (uint16_t * utf16, size_t sz);
+
+	int decodeUtf8  (const char * units, size_t len); // TODO reimplement using backward_utf8_char()
+	int decodeUtf16 (const uint16_t * units, size_t len);
 
 	template <typename _CodeUnitT>
 	size_t encode (_CodeUnitT * units, size_t sz);
@@ -51,6 +58,8 @@ public:
 	template <typename _CodeUnitT>
 	int decode (const _CodeUnitT * units, size_t len);
 
+	void invalidate ();
+	bool isValid (const ucchar & min_uc = ucchar()) const;
 	bool isSpace () const;
 	bool isDigit () const;
 	ucchar toLower () const;
@@ -74,13 +83,20 @@ public:
 
 	static int decodeUtf8 (const char * units, size_t len, uint32_t & uc, uint32_t & min_uc);
 
-	template <typename _CodeUnitT>
-	static int decode (const _CodeUnitT * units, size_t len, uint32_t & uc, uint32_t & min_uc);
-
-
-private:
-	uint32_t _value;
+//	template <typename _CodeUnitT>
+//	static int decode (const _CodeUnitT * units, size_t len, uint32_t & uc, uint32_t & min_uc);
 };
+
+inline void ucchar::invalidate ()
+{
+	PFS_ASSERT(MaxCodePoint._value < max_type<uint32_t>());
+	_value = MaxCodePoint._value + 1;
+}
+
+inline bool ucchar::isValid (const ucchar & min_uc) const
+{
+	return isValid(_value, min_uc._value);
+}
 
 template <>
 inline size_t ucchar::encode<char> (char * units, size_t sz)
@@ -89,24 +105,34 @@ inline size_t ucchar::encode<char> (char * units, size_t sz)
 }
 
 template <>
+inline size_t ucchar::encode<uint16_t> (uint16_t * units, size_t sz)
+{
+	return this->encodeUtf16(units, sz);
+}
+
+
+template <>
 inline int ucchar::decode<char> (const char * units, size_t len)
 {
 	return this->decodeUtf8(units, len);
 }
 
 template <>
-inline int ucchar::decode<char> (const char * units, size_t len, uint32_t & uc, uint32_t & min_uc)
+inline int ucchar::decode<uint16_t> (const uint16_t * units, size_t len)
 {
-	return decodeUtf8(units, len, uc, min_uc);
+	return this->decodeUtf16(units, len);
 }
+
+//template <>
+//inline int ucchar::decode<char> (const char * units, size_t len, uint32_t & uc, uint32_t & min_uc)
+//{
+//	return decodeUtf8(units, len, uc, min_uc);
+//}
 
 
 inline bool ucchar::isValid (const ucchar & ch, const ucchar & min_uc)
 {
-	return (ch._value >= min_uc._value) // overlong
-			&& (ch._value != 0xFEFF)    // the BOM
-			&& (!isSurrogate(ch))
-			&& (ch._value <= MaxCodePoint._value);
+	return isValid(ch._value, min_uc._value);
 }
 
 inline bool ucchar::isValid (uint32_t ch, uint32_t min_uc)
@@ -161,7 +187,6 @@ inline int to_digit<ucchar> (ucchar v)
 //
 // } cctype specializations
 //
-
 
 } // pfs
 

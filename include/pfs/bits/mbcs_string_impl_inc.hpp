@@ -42,10 +42,10 @@ mbcs_string_ptr<_CodeUnitT, Holder> & mbcs_string_ptr<_CodeUnitT, Holder>::opera
 += (typename mbcs_string_ptr<_CodeUnitT, Holder>::difference_type n)
 {
 	size_t invalidBytes = 0;
-	const char * start = _holder->constData() + _off;
-	const char * begin = _holder->constData();
-	const char * end   = _holder->constData() + _holder->size();
-	const char * p = mbcs_string_impl<_CodeUnitT>::increment(start, n, & invalidBytes);
+	const _CodeUnitT * start = _holder->constData() + _off;
+	const _CodeUnitT * begin = _holder->constData();
+	const _CodeUnitT * end   = _holder->constData() + _holder->size();
+	const _CodeUnitT * p = mbcs_string_impl<_CodeUnitT>::increment(start, n, & invalidBytes);
 	//PFS_ASSERT(p >= begin && p <= end && invalidBytes == 0);
 	PFS_ASSERT(p >= begin);
 	PFS_ASSERT(p <= end);
@@ -59,10 +59,10 @@ mbcs_string_ptr<_CodeUnitT, Holder> & mbcs_string_ptr<_CodeUnitT, Holder>::opera
 -= (typename mbcs_string_ptr<_CodeUnitT, Holder>::difference_type n)
 {
 	size_t invalidBytes = 0;
-	const char * start = _holder->constData() + _off;
-	const char * begin = _holder->constData();
-	const char * end   = _holder->constData() + _holder->size();
-	const char * p = mbcs_string_impl<_CodeUnitT>::decrement(start, n, & invalidBytes);
+	const _CodeUnitT * start = _holder->constData() + _off;
+	const _CodeUnitT * begin = _holder->constData();
+	const _CodeUnitT * end   = _holder->constData() + _holder->size();
+	const _CodeUnitT * p = mbcs_string_impl<_CodeUnitT>::decrement(start, n, & invalidBytes);
 	//PFS_ASSERT(p >= begin && p <= end && invalidBytes == 0);
 	PFS_ASSERT(p >= begin);
 	PFS_ASSERT(p <= end);

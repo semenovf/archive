@@ -14,6 +14,11 @@ template class DLL_API std::basic_string<char>;
 
 namespace pfs {
 
+extern int advance_utf16_char (
+		  const uint16_t * units
+		, size_t len
+		, ucchar * pch);
+
 // see http://www.codesynthesis.com/~boris/blog/2010/01/18/dll-export-cxx-templates/
 // Forward declaration to avoid
 // `specialization of ‘static mbcs_string_impl<char>::const_pointer mbcs_string_impl<char>::decrement ...’
@@ -24,9 +29,9 @@ mbcs_string_impl<char>::const_pointer mbcs_string_impl<char>::decrement (
 
 
 /**
- * @brief Increments char pointer by @c n utf8 chars
+ * @brief Increments char pointer by @c n utf8-encoded chars
  * @param start start position
- * @param n     number of utf8 chars
+ * @param n     number of utf8-encoded chars
  * @return      incremented position in successful or @c nullptr if out of bounds or invalid char found.
  */
 template <>
@@ -70,9 +75,9 @@ mbcs_string_impl<char>::const_pointer mbcs_string_impl<char>::increment (
 
 
 /**
- * @brief Decrements char pointer by @c n utf8 chars
+ * @brief Decrements char pointer by @c n utf8-encoded chars
  * @param start start position
- * @param n     number of utf8 chars
+ * @param n     number of utf8-encoded chars
  * @return      incremented position in successful or @c nullptr if out of bounds or invalid char found.
  */
 template <>
@@ -156,32 +161,6 @@ mbcs_string_impl<char>::size_type mbcs_string_impl<char>::length (const_pointer 
 
 	return r;
 }
-
-template <>
-mbcs_string_impl<char>::size_type mbcs_string_impl<char>::size (const_pointer start, difference_type n, size_t * invalidCodeUnits)
-{
-	const char * p = increment(start, n, invalidCodeUnits);
-	return (start > p)
-			? start - p
-			: p - start;
-}
-
-template <>
-mbcs_string_impl<char>::difference_type mbcs_string_impl<char>::difference (const_pointer from, const_pointer to, size_type * invalidCodeUnits)
-{
-	int sign = 1;
-
-	if (to < from) {
-		pfs_swap(from, to);
-		sign = -1;
-	}
-
-	size_type r = length(from, to, invalidCodeUnits);
-	PFS_ASSERT(size_type(pfs::max_type<difference_type>()) >= r);
-
-	return r * sign;
-}
-
 
 /**
  *
@@ -286,7 +265,7 @@ mbcs_string<char> mbcs_string<char>::fromUtf8 (const char * utf8, size_t size, C
 
 	while (cursor < end) {
 		uint32_t uc = 0;
-		int n = ucchar::decode<char>(cursor, size_t(end - cursor), uc, min_uc);
+		int n = ucchar::decodeUtf8(cursor, size_t(end - cursor), uc, min_uc);
 
 		// skip the BOM
 		if (n == 0) {
@@ -345,6 +324,103 @@ mbcs_string<char> mbcs_string<char>::fromUtf8 (const byte_string & utf8, Convert
 {
 	return fromUtf8(reinterpret_cast<const char *>(utf8.constData()), utf8.length(), state);
 }
+
+template <>
+mbcs_string<char> mbcs_string<char>::fromUtf16 (
+		  const uint16_t * utf16
+		, size_t size
+		, ConvertState * state)
+{
+	if (!utf16)
+		return mbcs_string<char>();
+
+	mbcs_string<char> r;
+
+	const uint16_t * cursor = utf16;
+	const uint16_t * end = utf16 + size;
+	size_t invalidChars = 0;
+	size_t nremain = 0;
+	size_type len = 0;
+
+	char replacement[7];
+	size_t replacementSize = state
+			? state->replacementChar.encode<char>(replacement, 7)
+			: ucchar(ucchar::ReplacementChar).encode<char>(replacement, 7);
+
+	impl_class * d = r.base_class::cast();
+
+	while (cursor < end) {
+		ucchar ch;
+		int n = advance_utf16_char(cursor, size_t(end - cursor), & ch);
+
+		if (ch == ucchar::BomChar) {
+			++cursor;
+			continue;
+		}
+
+		if (n == -1) { // error
+			d->append(replacement, replacementSize);
+			++invalidChars;
+			++cursor;
+			++len;
+		} else if (n == -2) {
+			if (state) {
+				nremain = size_t(end - cursor);
+			} else {
+				for (size_t j = size_t(end - cursor); j > 0; --j) {
+					d->append(replacement, replacementSize);
+					++invalidChars;
+					++len;
+				}
+			}
+			cursor = end;
+		} else {
+			if (!ch.isValid()) {
+				d->append(replacement, replacementSize);
+				++invalidChars;
+				++cursor;
+				++len;
+			} else {
+				d->append(cursor, size_type(n));
+				cursor += size_t(n);
+				++len;
+			}
+		}
+	}
+
+	if (state) {
+		state->invalidChars += invalidChars;
+		state->nremain = nremain;
+	}
+
+	d->_length = len;
+
+	return r;
+}
+
+
+template <>
+mbcs_string<char> mbcs_string<char>::toUtf8 () const
+{
+	return *this;
+}
+
+template <>
+mbcs_string<uint16_t> mbcs_string<char>::toUtf16 () const
+{
+	mbcs_string<uint16_t> r;
+
+	mbcs_string<char>::const_iterator it = this->cbegin();
+	mbcs_string<char>::const_iterator itEnd = this->cend();
+
+	for (; it != itEnd; ++it) {
+		ucchar ch = *it;
+		r.append(1, ch);
+	}
+
+	return r;
+}
+
 
 
 } // pfs

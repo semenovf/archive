@@ -48,7 +48,7 @@ mbcs_string<_CodeUnitT>::mbcs_string (size_t count, ucchar ch)
 {
 	_CodeUnitT utf[10]; // 6 max need for UTF-8 character encoding
 
-	if (!ucchar::isValid(ch))
+	if (!ch.isValid())
 		ch = ucchar(ucchar::ReplacementChar);
 
 	size_t sz = ch.encode<_CodeUnitT>(utf, 10);

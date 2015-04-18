@@ -36,14 +36,31 @@ inline int compare_with_utf8<char> (const char * ptr1, const char * ptr2)
 }
 
 
+template <typename CodeUnitT> const CodeUnitT * latin_alphabet_caps ();
+template <typename CodeUnitT> const CodeUnitT * cyrillic_alphabet_caps ();
+template <> const char * latin_alphabet_caps<char> ()
+		{ return "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+template <> const char * cyrillic_alphabet_caps<char> ()
+		{ return "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"; }
+template <> const uint16_t * latin_alphabet_caps<uint16_t> ()
+{
+	static uint16_t r[] = {10};
+	return r;
+}
+template <> const uint16_t * cyrillic_alphabet_caps<uint16_t> ()
+{
+	static uint16_t r[] = {10};
+	return r;
+}
+
 template <typename CodeUnitT>
 void test_size_length ()
 {
 	typedef pfs::mbcs_string_impl<CodeUnitT> utfstring_impl;
 
 	//-----------------------0---------10--------20----
-	const char * latin1   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	const char * cyrillic = "АБВГДЕЁЖЫИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+	const CodeUnitT * latin1   = latin_alphabet_caps<CodeUnitT>();
+	const CodeUnitT * cyrillic = cyrillic_alphabet_caps<CodeUnitT>();
 
 	TEST_OK(utfstring_impl::size(latin1, 0) == 0);
 	TEST_OK(utfstring_impl::size(latin1, 1) == 1);
@@ -720,6 +737,7 @@ int main(int argc, char *argv[])
 	BEGIN_TESTS(ntests);
 
 	test_suite<char>();
+//	test_suite<uint16_t>();
 
     END_TESTS;
 }
