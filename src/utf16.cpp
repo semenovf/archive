@@ -36,53 +36,84 @@ inline uint32_t construct_codepoint (uint32_t w1, uint32_t w2)
 // 5) Add 0x10000 to U' to obtain the character value U. Terminate.
 //
 
-bool can_advance_utf16_char (const uint16_t * begin, const uint16_t * end)
-{
-	const uint16_t * p = begin;
-	if (p < end) {
-		if (*p < 0xD800 || *p > 0xDFFF)
-			return true;
-		if (*p >= 0xD800 && *p <= 0xDBFF)
-			return (p + 1 < end) ? true : false;
-	}
-	return false;
-}
-
-
+/**
+ *
+ * @param begin Pointer to first code unit.
+ * @param end Pointer to after last code unit.
+ * @param pnremain Pointer to store number of requested code units.
+ * @param pinvalid Pointer to store incremented number of invalid chars.
+ * @param pch Pointer store resulting unicode char.
+ * 		Recommended to pass replacement char in *pch.
+ * @return If successfully recognized UTF16-encoded char:
+ * 				- return @c begin pointer incremented by valid code units
+ * 				- *pnremain stores zero
+ * 				- *pinvalid is undefined
+ * 				- *pch stores valid unicode char
+ *
+ * 		   If need to request more units (one in this case)
+ * 		   to recognized UTF16-encoded char:
+ * 				- return @c begin pointer
+ * 				- *pnremain stores number of requested units (one in this case)
+ * 				- *pinvalid undefined
+ * 				- *pch unmodified
+ *
+ * 		   If code unit sequence is invalid:
+ * 				- return @c begin pointer incremented by one (skipped one code unit)
+ * 				- *pnremain stores zero
+ * 				- *pinvalid incremented by 1
+ * 				- *pch unmodified
+ */
 const uint16_t * advance_utf16_char (
-		  const uint16_t * p
-		, size_t * invalid
+		  const uint16_t * begin
+		, const uint16_t * end
+		, size_t * pnremain
+		, size_t * pinvalid
 		, ucchar * pch)
 {
+	PFS_ASSERT(begin < end);
+	const uint16_t * p = begin;
 	bool isInvalid = false;
+	size_t nremain = 0; // number of requested units
 
 	uint16_t w1 = *p;
 	uint16_t w2 = 0;
 
 	if (w1 < 0xD800 || w1 > 0xDFFF) {
+		// Valid unit
 		++p;
+	} else if (w1 >= 0xD800 && w1 <= 0xDBFF) {
+		if (p + 1 < end) {
+			w2 = *(p + 1);
+			if (w2 >= 0xDC00 && w2 <= 0xDFFF) {
+				// Valid unit sequence
+				p += 2;
+			} else {
+				// Invalid unit, skip it
+				isInvalid = true;
+				++p;
+			}
+		} else {
+			// need more units
+			nremain = 1;
+			p = begin;
+		}
 	} else {
-		uint16_t w2 = *(p + 1);
-		if (w1 >= 0xD800 && w1 <= 0xDBFF
-				&& w2 >= 0xDC00 && w2 <= 0xDFFF) {
-			p += 2;
-		} else {
-			isInvalid = true;
-			++p;
-		}
+		// Invalid unit, skip it
+		isInvalid = true;
+		++p;
 	}
 
-	if (pch) {
-		if (!isInvalid) {
+	if (nremain) {
+		if (pnremain)
+			*pnremain = nremain;
+	} else {
+		if (pch && !isInvalid) {
 			*pch = ucchar(construct_codepoint(w1, w2));
-		} else {
-			pch->invalidate();
 		}
 	}
 
-
-	if (invalid && isInvalid)
-		++ *invalid;
+	if (pinvalid && isInvalid)
+		++*pinvalid;
 
 	return p;
 }

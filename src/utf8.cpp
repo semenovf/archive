@@ -10,6 +10,26 @@
 
 namespace pfs {
 
+bool can_advance_utf8_char (const char * begin, const char * end)
+{
+	const char * p = begin;
+
+	if (*p < 128)
+		return end - begin > 0;
+	else if ((*p & 0xE0) == 0xC0)
+		return end - begin > 1;
+	else if ((*p & 0xF0) == 0xE0)
+		return end - begin > 2;
+	else if ((*p & 0xF8) == 0xF0)
+		return end - begin > 3;
+	else if ((*p & 0xFC) == 0xF8)
+		return end - begin > 4;
+	else if ((*p & 0xFE) == 0xFC)
+		return end - begin > 5;
+
+	return false;
+}
+
 //
 // TODO rewrite as advance_utf16_char
 //
