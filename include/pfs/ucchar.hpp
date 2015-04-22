@@ -32,12 +32,12 @@ public:
 	static const ucchar LowSurrogateEnd;
 
 public:
-	ucchar() : _value(Null) {}
-	explicit ucchar(char latin1)   : _value(latin1) { PFS_ASSERT(byte_t(latin1) <= 127); }
-	explicit ucchar(uchar_t latin1): _value(latin1) { PFS_ASSERT(latin1 <= 127); }
-	explicit ucchar(int ucs)       : _value(ucs)    { }
-	explicit ucchar(uint32_t ucs4) : _value(ucs4)   { }
-	ucchar(const ucchar & ucs4)    : _value(ucs4._value) { }
+	ucchar () : _value(Null) {}
+	explicit ucchar (char latin1)   : _value(latin1) { PFS_ASSERT(uint8_t(latin1) <= 127); }
+	explicit ucchar (uchar_t latin1): _value(latin1) { PFS_ASSERT(latin1 <= 127); }
+	explicit ucchar (int ucs)       : _value(ucs)    { }
+	explicit ucchar (uint32_t ucs4) : _value(ucs4)   { }
+	ucchar (const ucchar & ucs4)    : _value(ucs4._value) { }
 	~ucchar () {}
 
 	operator uint32_t () const { return _value; }
@@ -45,18 +45,6 @@ public:
 	uint32_t value () const    { return _value; }
 	uint32_t ucs4 () const     { return _value; }
 	uint32_t unicode () const  { return _value; }
-
-	size_t encodeUtf8  (char * utf8, size_t sz);
-	size_t encodeUtf16 (uint16_t * utf16, size_t sz);
-
-	int decodeUtf8  (const char * units, size_t len); // TODO reimplement using backward_utf8_char()
-	int decodeUtf16 (const uint16_t * units, size_t len);
-
-	template <typename _CodeUnitT>
-	size_t encode (_CodeUnitT * units, size_t sz);
-
-	template <typename _CodeUnitT>
-	int decode (const _CodeUnitT * units, size_t len);
 
 	void invalidate ();
 	bool isValid (const ucchar & min_uc = ucchar()) const;
@@ -81,10 +69,24 @@ public:
 	static bool isValid (const ucchar & ch, const ucchar & min_uc = ucchar());
 	static bool isValid (uint32_t ch, uint32_t min_uc);
 
-	static int decodeUtf8 (const char * units, size_t len, uint32_t & uc, uint32_t & min_uc);
+//	static int decodeUtf8 (const char * units, size_t len, uint32_t & uc, uint32_t & min_uc);
 
 //	template <typename _CodeUnitT>
 //	static int decode (const _CodeUnitT * units, size_t len, uint32_t & uc, uint32_t & min_uc);
+
+    size_t encodeUtf8  (uint8_t * buffer, size_t sz);
+    size_t encodeUtf16 (uint16_t * buffer, size_t sz);
+
+	// Decode from trusted source
+    size_t decodeUtf8  (const uint8_t * units, size_t sz);
+    size_t decodeUtf16 (const uint16_t * units, size_t sz);
+
+    template <typename CodeUnitT>
+    size_t encode (CodeUnitT * buffer, size_t sz);
+
+    // Decode from trusted source
+    template <typename CodeUnitT>
+    size_t decode (const CodeUnitT * buffer, size_t sz);
 };
 
 inline void ucchar::invalidate ()
@@ -99,28 +101,28 @@ inline bool ucchar::isValid (const ucchar & min_uc) const
 }
 
 template <>
-inline size_t ucchar::encode<char> (char * units, size_t sz)
+inline size_t ucchar::encode<uint8_t> (uint8_t * buffer, size_t sz)
 {
-	return this->encodeUtf8(units, sz);
+	return this->encodeUtf8(buffer, sz);
 }
 
 template <>
-inline size_t ucchar::encode<uint16_t> (uint16_t * units, size_t sz)
+inline size_t ucchar::encode<uint16_t> (uint16_t * buffer, size_t sz)
 {
-	return this->encodeUtf16(units, sz);
+	return this->encodeUtf16(buffer, sz);
 }
 
 
 template <>
-inline int ucchar::decode<char> (const char * units, size_t len)
+inline size_t ucchar::decode<uint8_t> (const uint8_t * begin, size_t sz)
 {
-	return this->decodeUtf8(units, len);
+	return this->decodeUtf8(begin, sz);
 }
 
 template <>
-inline int ucchar::decode<uint16_t> (const uint16_t * units, size_t len)
+inline size_t ucchar::decode<uint16_t> (const uint16_t * begin, size_t sz)
 {
-	return this->decodeUtf16(units, len);
+	return this->decodeUtf16(begin, sz);
 }
 
 //template <>

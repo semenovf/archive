@@ -113,17 +113,17 @@ public:
 	}
 
 public: // static
-	static DLL_API const_pointer   increment  (const_pointer start, difference_type n, size_type * invalidCodeUnits = nullptr);
-	static DLL_API const_pointer   decrement  (const_pointer start, difference_type n, size_t * invalidCodeUnits = nullptr);
-	static DLL_API size_type       length     (const_pointer from, const_pointer to, size_type * invalidCodeUnits = nullptr);
-	static size_type size (const_pointer start, difference_type nchars, size_type * invalidCodeUnits = nullptr)
+	static DLL_API const_pointer   increment  (const_pointer start, difference_type n/*, size_type * invalidCodeUnits = nullptr*/);
+	static DLL_API const_pointer   decrement  (const_pointer start, difference_type n/*, size_t * invalidCodeUnits = nullptr*/);
+	static DLL_API size_type       length     (const_pointer from, const_pointer to/*, size_type * invalidCodeUnits = nullptr*/);
+	static size_type size (const_pointer start, difference_type nchars/*, size_type * invalidCodeUnits = nullptr*/)
 	{
-		const_pointer p = increment(start, nchars, invalidCodeUnits);
+		const_pointer p = increment(start, nchars/*, invalidCodeUnits*/);
 		return (start > p)
 				? start - p
 				: p - start;
 	}
-	static difference_type difference (const_pointer from, const_pointer to, size_type * invalidCodeUnits = nullptr);
+	static difference_type difference (const_pointer from, const_pointer to/*, size_type * invalidCodeUnits = nullptr*/);
 };
 
 template <typename CodeUnitT, typename Holder>
@@ -210,8 +210,8 @@ template <typename CodeUnitT>
 typename mbcs_string_impl<CodeUnitT>::difference_type
 mbcs_string_impl<CodeUnitT>::difference (
 		  const_pointer from
-		, const_pointer to
-		, size_type * invalidCodeUnits)
+		, const_pointer to/*
+		, size_type * invalidCodeUnits*/)
 {
 	int sign = 1;
 
@@ -220,7 +220,7 @@ mbcs_string_impl<CodeUnitT>::difference (
 		sign = -1;
 	}
 
-	size_type r = length(from, to, invalidCodeUnits);
+	size_type r = length(from, to/*, invalidCodeUnits*/);
 	PFS_ASSERT(size_type(pfs::max_type<difference_type>()) >= r);
 
 	return r * sign;
@@ -267,11 +267,11 @@ template <typename CodeUnitT, typename Holder>
 inline typename mbcs_string_ptr<CodeUnitT, Holder>::difference_type operator
 - (const mbcs_string_ptr<CodeUnitT, Holder> & p1, const mbcs_string_ptr<CodeUnitT, Holder> & p2)
 {
-	size_t invalidBytes = 0;
+//	size_t invalidBytes = 0;
 	typename mbcs_string_ptr<CodeUnitT, Holder>::difference_type r
-		= mbcs_string_impl<CodeUnitT>::difference(p2.base(), p1.base(), & invalidBytes);
+		= mbcs_string_impl<CodeUnitT>::difference(p2.base(), p1.base()/*, & invalidBytes*/);
 
-	PFS_ASSERT(invalidBytes == 0);
+//	PFS_ASSERT(invalidBytes == 0);
 	return r;
 }
 

@@ -186,12 +186,41 @@ public:
 
     const_data_pointer constData () const { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
     const_data_pointer data () const      { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
-    const_data_pointer c_str () const     { return base_class::isNull() ? ""/*nullptr*/ : base_class::cast()->constData(); }
+
+    // Applicable only for UTF8-encoded string
+    const char * c_str () const;
 
     value_type valueAt (size_type index) const { return at(index); }
     value_type charAt (size_type index) const { return at(index); }
     reference at (size_type index) const { pointer p(const_cast<self_class *>(this), 0); p += index; return p.ref(); }
     reference operator [] (size_type index) const { return at(index); }
+
+    int compare (size_type pos1, size_type count1, const mbcs_string & s, size_type pos2, size_type count2) const;
+
+    int compare (size_type pos1, size_type count1, const char * latin1, size_type count2) const
+    {
+        return this->compare(pos1, count1, mbcs_string(latin1), 0, count2);
+    }
+
+    int compare (size_type pos, size_type count, const mbcs_string & s) const
+    {
+        return compare(pos, count, s, 0, s.length());
+    }
+
+    int compare (const mbcs_string & s) const
+    {
+        return compare(0, this->length(), s);
+    }
+
+    int compare (const char * latin1) const
+    {
+        return compare(mbcs_string(latin1));
+    }
+
+    int compare (size_type pos, size_type count, const char * latin1) const
+    {
+        return compare(pos, count, mbcs_string(latin1));
+    }
 
     iterator find (const_iterator pos, const mbcs_string & str) const;
 
@@ -202,12 +231,12 @@ public:
 
     iterator find (const_iterator pos, const char * latin1, size_type count) const
     {
-    	return find(pos, mbcs_string::fromLatin1(latin1, count));
+    	return find(pos, mbcs_string(latin1, count));
     }
 
     iterator find (const_iterator pos, const char * latin1) const
     {
-    	return find(pos, mbcs_string::fromLatin1(latin1, strlen(latin1)));
+    	return find(pos, mbcs_string(latin1, strlen(latin1)));
     }
 
     iterator find (const char * latin1) const
@@ -281,9 +310,9 @@ public:
 #endif
 
 	bool contains   (const mbcs_string & s) const { return find(s) != cend(); }
-	bool contains   (const char * s) const        { return find(s) != cend(); }
-	bool contains   (ucchar v) const              { return find(v) != cend(); }
-	bool contains   (char v) const                { return find(v) != cend(); }
+	bool contains   (const char * latin1) const   { return find(latin1) != cend(); }
+	bool contains   (ucchar ch) const             { return find(ch) != cend(); }
+	bool contains   (char latin1) const           { return find(latin1) != cend(); }
 
 	// TODO Need tests
 	// FIXME need optimization like startsWith (char v)
@@ -293,16 +322,16 @@ public:
 		return find(pos, s) == pos;
 	}
 	// FIXME need optimization like startsWith (char v)
-	bool startsWith (const char * s) const         { return find(s) == cbegin(); }
+	bool startsWith (const char * latin1) const    { return find(latin1) == cbegin(); }
 
-	bool startsWith (ucchar v) const               { return isEmpty() ? false : *(cbegin()) == v; }
-	bool startsWith (char v) const                 { return isEmpty() ? false : *(cbegin()) == ucchar(v); }
+	bool startsWith (ucchar ch) const              { return isEmpty() ? false : *(cbegin()) == ch; }
+	bool startsWith (char latin1) const            { return isEmpty() ? false : *(cbegin()) == ucchar(latin1); }
 
 	// TODO Need tests
 	bool endsWith   (const mbcs_string & s) const  { return length() >= s.length() ? startsWith(cend() - s.length(), s) : false; }
-	bool endsWith   (const char * s) const         { return endsWith(mbcs_string(s)); }
-	bool endsWith   (ucchar v) const               { return endsWith(mbcs_string(1, v)); }
-	bool endsWith   (char v) const                 { return endsWith(mbcs_string(1, v)); }
+	bool endsWith   (const char * latin1) const    { return endsWith(mbcs_string(latin1)); }
+	bool endsWith   (ucchar ch) const              { return endsWith(mbcs_string(1, ch)); }
+	bool endsWith   (char latin1) const            { return endsWith(mbcs_string(1, latin1)); }
 
     // Size in bytes
     size_type size () const
@@ -326,21 +355,6 @@ public:
     	return base_class::cast()->max_size();
     }
 
-    int compare (size_type pos1, size_type count1, const char * s, size_type count2) const;
-    int compare (size_type pos1, size_type count1, const mbcs_string & s) const
-    {
-    	return compare(pos1, count1, s.constData(), s.size());
-    }
-
-    int compare (const mbcs_string & s) const
-    {
-    	return compare(s.constData());
-    }
-
-    int compare (size_type pos1, size_type count1, const mbcs_string & s, size_type pos2, size_type count2) const;
-    int compare (const char * s) const;
-    int compare (size_type pos, size_type count, const char * s) const;
-
     void push_back (value_type ch)
     {
     	append(size_type(1), ch);
@@ -351,6 +365,64 @@ public:
     	if (!isEmpty())
     		erase(length() - 1);
     }
+
+    mbcs_string & insert (size_type index, const mbcs_string & str, size_type index_str, size_type count);
+
+    mbcs_string & insert (size_type index, size_type count, char latin1)
+    {
+      return insert(index, mbcs_string(count, latin1));
+    }
+
+    mbcs_string & insert (size_type index, size_type count, ucchar uc)
+    {
+        return insert(index, mbcs_string(count, uc));
+    }
+
+    mbcs_string & insert (size_type index, const char * latin1)
+    {
+      return insert(index, mbcs_string(latin1));
+    }
+
+    mbcs_string & insert (size_type index, const char * latin1, size_type n)
+    {
+      return insert(index, mbcs_string(latin1, n));
+    }
+
+    mbcs_string & insert (size_type index, const mbcs_string & str)
+    {
+        return insert(index, str, 0, str.length());
+    }
+
+    iterator insert (const_iterator pos, char latin1)
+    {
+      mbcs_string s(1, latin1);
+      return insert(pos, s.cbegin(), s.cend());
+    }
+
+    iterator insert (const_iterator pos, ucchar ch)
+    {
+        mbcs_string s(1, ch);
+        return insert(pos, s.cbegin(), s.cend());
+    }
+
+    iterator insert (const_iterator pos, size_type count, char latin1)
+    {
+      mbcs_string s(count, latin1);
+      return insert(pos, s.cbegin(), s.cend());
+    }
+
+    iterator insert (const_iterator pos, size_type count, ucchar ch)
+    {
+        mbcs_string s(count, ch);
+        return insert(pos, s.cbegin(), s.cend());
+    }
+
+    template<class InputIt>
+    iterator insert (const_iterator pos, InputIt first, InputIt last)
+    {
+        return insert(pos, first, last, mbcs_string_type_trait<InputIt>());
+    }
+
 
     mbcs_string & append (const mbcs_string & str, size_type index_str, size_type count)
     {
@@ -418,63 +490,6 @@ public:
 //    template<class InputIt>
 //    mbcs_string & prepend (InputIt first, InputIt last)
 
-
-    mbcs_string & insert (size_type index, const mbcs_string & str, size_type index_str, size_type count);
-
-    mbcs_string & insert (size_type index, size_type count, char latin1)
-    {
-    	return insert(index, self_class(count, latin1));
-    }
-
-    mbcs_string & insert (size_type index, size_type count, ucchar uc)
-    {
-    	return insert(index, mbcs_string(count, uc));
-    }
-
-    mbcs_string & insert (size_type index, const char * latin1)
-    {
-    	return insert(index, mbcs_string(latin1));
-    }
-
-    mbcs_string & insert (size_type index, const char * latin1, size_type n)
-    {
-    	return insert(index, mbcs_string(latin1, n));
-    }
-
-    mbcs_string & insert (size_type index, const mbcs_string & str)
-    {
-    	return insert(index, str, 0, str.length());
-    }
-
-    iterator insert (const_iterator pos, char latin1)
-    {
-    	mbcs_string s(1, latin1);
-    	return insert(pos, s.cbegin(), s.cend());
-    }
-
-    iterator insert (const_iterator pos, ucchar ch)
-    {
-    	mbcs_string s(1, ch);
-    	return insert(pos, s.cbegin(), s.cend());
-    }
-
-    iterator insert (const_iterator pos, size_type count, char latin1)
-    {
-    	mbcs_string s(count, latin1);
-    	return insert(pos, s.cbegin(), s.cend());
-    }
-
-    iterator insert (const_iterator pos, size_type count, ucchar ch)
-    {
-    	mbcs_string s(count, ch);
-    	return insert(pos, s.cbegin(), s.cend());
-    }
-
-    template<class InputIt>
-    iterator insert (const_iterator pos, InputIt first, InputIt last)
-    {
-    	return insert(pos, first, last, mbcs_string_type_trait<InputIt>());
-    }
 
     mbcs_string & replace (size_type pos1, size_type count1, const mbcs_string & str, size_type pos2, size_type count2);
 
@@ -573,7 +588,7 @@ public:
 	long double toLongDouble (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const { return toReal(ok, decimalPoint); }
 #endif
 
-	DLL_API mbcs_string<char> toUtf8 () const;
+	DLL_API mbcs_string<uint8_t> toUtf8 () const;
 	DLL_API mbcs_string<uint16_t> toUtf16 () const;
 
 	mbcs_string & operator += (const mbcs_string & other) { return append(other); }
@@ -602,11 +617,11 @@ private:
 public:
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, size_t n, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, ConvertState * state = nullptr);
-	static mbcs_string fromLatin1 (const pfs::byte_string & latin1, ConvertState * state = nullptr);
+	static DLL_API mbcs_string fromLatin1 (const pfs::byte_string & latin1, ConvertState * state = nullptr);
 
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, size_t size, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, ConvertState * state = nullptr);
-	static mbcs_string fromUtf8 (const byte_string & utf8, ConvertState * state = nullptr);
+	static DLL_API mbcs_string fromUtf8 (const byte_string & utf8, ConvertState * state = nullptr);
 
 	static DLL_API mbcs_string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = nullptr);
 
@@ -631,6 +646,33 @@ public:
 	static mbcs_string toString (long double value, char f = 'f', int prec = 6);
 #endif
 };
+
+// Forward declaration to avoid
+// `specialization after instantiation error'
+template <>
+mbcs_string<uint8_t> mbcs_string<uint8_t>::toUtf8 () const;
+
+// Forward declaration to avoid
+// `specialization after instantiation error'
+template <>
+mbcs_string<uint8_t> mbcs_string<uint16_t>::toUtf8 () const;
+
+
+/**
+ * @brief Returns C-string representation of UTF8-encoded string
+ *
+ * @return C-string representation of UTF8-encoded string.
+ *
+ * @note Applicable only for UTF8-encoded string
+ */
+template <>
+inline const char * mbcs_string<uint8_t>::c_str () const
+{
+    return base_class::isNull()
+        ? ""
+        : reinterpret_cast<const char *>(base_class::cast()->constData());
+}
+
 
 template <typename CodeUnitT>
 template <typename InputIt>
@@ -1089,11 +1131,34 @@ inline bool operator >= (const mbcs_string<CodeUnitT> & lhs, const char * rhs)
 }
 
 template <typename CodeUnitT>
-inline std::ostream & operator << (std::ostream & os, const mbcs_string<CodeUnitT> & o)
+inline std::ostream & operator << (std::ostream & os, const mbcs_string<CodeUnitT> & o);
+//{
+//// FIXME is c_str() that function to use in this case?
+//	os << o.c_str();
+//	return os;
+//}
+
+template <>
+inline std::ostream & operator << <uint8_t> (std::ostream & os, const mbcs_string<uint8_t> & s)
 {
-// FIXME is c_str() that function to use in this case?
-	os << o.c_str();
-	return os;
+    os << reinterpret_cast<const char *>(s.constData());
+    return os;
+}
+
+//
+/**
+ * @brief Converts UTF16-encoded to UTF8-encoded and output to stream.
+ *
+ * @param os Output stream.
+ * @param o UTF16-encoded string.
+ * @return Output stream.
+ */
+template <>
+inline std::ostream & operator << <uint16_t> (std::ostream & os, const mbcs_string<uint16_t> & s)
+{
+    mbcs_string<uint8_t> s1(s.toUtf8());
+    os << s1.constData();
+    return os;
 }
 
 } // pfs

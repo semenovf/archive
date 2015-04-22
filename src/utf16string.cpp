@@ -14,22 +14,34 @@ template class DLL_API std::basic_string<uint16_t>;
 
 namespace pfs {
 
-extern const uint16_t * advance_utf16_char (const uint16_t * p, size_t * invalid, ucchar * pch);
-extern const uint16_t * backward_utf16_char (const uint16_t * p, size_t * invalid, ucchar * pch);
+extern const uint16_t * advance_utf16_char (
+          const uint16_t * begin
+        , const uint16_t * end
+        , size_t * pnremain
+        , size_t * pinvalid
+        , ucchar * pch);
+
+extern const uint16_t * advance_utf16_char (
+          const uint16_t * begin
+        , ucchar * pch);
+
+extern const uint16_t * backward_utf16_char (
+          const uint16_t * rbegin
+        , ucchar * pch);
+
 
 // see http://www.codesynthesis.com/~boris/blog/2010/01/18/dll-export-cxx-templates/
 // Forward declaration to avoid
-// `specialization of ‘static mbcs_string_impl<char>::const_pointer mbcs_string_impl<char>::decrement ...’
+// `specialization of ‘static mbcs_string_impl<uint16_t>::const_pointer mbcs_string_impl<uint16_t>::decrement ...’
 // after instantiation'
 template <>
 mbcs_string_impl<uint16_t>::const_pointer mbcs_string_impl<uint16_t>::decrement (
 		  const_pointer start
-		, difference_type n
-		, size_type * invalidCodeUnits);
+		, difference_type n);
 
 
 /**
- * @brief Increments char pointer by @c n utf16-encoded chars
+ * @brief Increments char pointer by @c n UTF16-encoded chars
  * @param start start position
  * @param n     number of utf16-encoded chars
  * @return      incremented position in successful or @c nullptr if out of bounds or invalid char found.
@@ -39,21 +51,16 @@ mbcs_string_impl<uint16_t>::const_pointer mbcs_string_impl<uint16_t>::decrement 
 template <>
 mbcs_string_impl<uint16_t>::const_pointer mbcs_string_impl<uint16_t>::increment (
 		  const_pointer start
-		, difference_type n
-		, size_type * invalidCodeUnits)
+		, difference_type n)
 {
 	if (n < 0)
-		return mbcs_string_impl<uint16_t>::decrement(start, 0 - n, invalidCodeUnits);
+		return mbcs_string_impl<uint16_t>::decrement(start, 0 - n);
 
-	size_t invalid = 0;
 	const_pointer p = start;
 
 	while (n-- > 0) {
-		p = advance_utf16_char(p, & invalid, nullptr);
+		p = advance_utf16_char(p, nullptr);
 	}
-
-	if (invalidCodeUnits)
-		*invalidCodeUnits = invalid;
 
 	return p;
 }
@@ -68,21 +75,16 @@ mbcs_string_impl<uint16_t>::const_pointer mbcs_string_impl<uint16_t>::increment 
 template <>
 mbcs_string_impl<uint16_t>::const_pointer mbcs_string_impl<uint16_t>::decrement (
 		  const_pointer start
-		, difference_type n
-		, size_type * invalidCodeUnits)
+		, difference_type n)
 {
 	if (n < 0)
-		return increment(start, 0 - n, invalidCodeUnits);
+		return increment(start, 0 - n);
 
-	size_t invalid = 0;
 	const_pointer p = start;
 
 	while (n-- > 0) {
-		p = backward_utf16_char(p, & invalid, nullptr);
+		p = backward_utf16_char(p, nullptr);
 	}
-
-	if (invalidCodeUnits)
-		*invalidCodeUnits = invalid;
 
 	return p;
 }
@@ -96,11 +98,9 @@ mbcs_string_impl<uint16_t>::const_pointer mbcs_string_impl<uint16_t>::decrement 
 template <>
 mbcs_string_impl<uint16_t>::size_type mbcs_string_impl<uint16_t>::length (
 		  const_pointer from
-		, const_pointer to
-		, size_type * invalidCodeUnits)
+		, const_pointer to)
 {
 	size_type r = 0;
-	size_t invalid = 0;
 
 	if (from > to)
 		pfs_swap(from, to);
@@ -108,12 +108,9 @@ mbcs_string_impl<uint16_t>::size_type mbcs_string_impl<uint16_t>::length (
 	const_pointer p = from;
 
 	while (p < to) {
-		p = advance_utf16_char(p, & invalid, nullptr);
+		p = advance_utf16_char(p, nullptr);
 		++r;
 	}
-
-	if (invalidCodeUnits)
-		*invalidCodeUnits = invalid;
 
 	return r;
 }
@@ -135,10 +132,10 @@ mbcs_string<uint16_t> mbcs_string<uint16_t>::fromLatin1 (
 		return mbcs_string<uint16_t>();
 
 	mbcs_string<uint16_t> r;
-	mbcs_string<char> s(mbcs_string<char>::fromLatin1(latin1, size, state));
+	mbcs_string<uint8_t> s(mbcs_string<uint8_t>::fromLatin1(latin1, n, state));
 
-	mbcs_string<char>::const_iterator it = s.cbegin();
-	mbcs_string<char>::const_iterator itEnd = s.cend();
+	mbcs_string<uint8_t>::const_iterator it = s.cbegin();
+	mbcs_string<uint8_t>::const_iterator itEnd = s.cend();
 
 	for (; it != itEnd; ++it) {
 		ucchar ch = *it;
@@ -173,16 +170,6 @@ mbcs_string<uint16_t> mbcs_string<uint16_t>::fromLatin1 (
 	return fromLatin1(reinterpret_cast<const char *>(latin1.constData()), latin1.length(), state);
 }
 
-#ifdef __COMMENT__
-// Forward declaration to avoid `specialization of ‘static pfs::mbcs_string<_CodeUnitT> ...’ after instantiation'
-template <>
-mbcs_string<uint16_t> mbcs_string<uint16_t>::fromUtf8 (
-		  const char * utf8
-		, size_t size
-		, ConvertState * state);
-
-#endif
-
 /**
  * @param utf8 string expected in UTF-8 format
  * @param size size of @c utf8 in code points (bytes)
@@ -199,10 +186,10 @@ mbcs_string<uint16_t> mbcs_string<uint16_t>::fromUtf8 (
 		return mbcs_string<uint16_t>();
 
 	mbcs_string<uint16_t> r;
-	mbcs_string<char> s(mbcs_string<char>::fromUtf8(utf8, size, state));
+	mbcs_string<uint8_t> s(mbcs_string<uint8_t>::fromUtf8(utf8, size, state));
 
-	mbcs_string<char>::const_iterator it = s.cbegin();
-	mbcs_string<char>::const_iterator itEnd = s.cend();
+	mbcs_string<uint8_t>::const_iterator it = s.cbegin();
+	mbcs_string<uint8_t>::const_iterator itEnd = s.cend();
 
 	for (; it != itEnd; ++it) {
 		ucchar ch = *it;
@@ -232,9 +219,79 @@ mbcs_string<uint16_t> mbcs_string<uint16_t>::fromUtf8 (
 }
 
 template <>
-mbcs_string<char> mbcs_string<uint16_t>::toUtf8 () const
+mbcs_string<uint16_t> mbcs_string<uint16_t>::fromUtf16 (
+          const uint16_t * utf16
+        , size_t size
+        , ConvertState * state)
 {
-	mbcs_string<char> r;
+    if (!utf16)
+        return mbcs_string<uint16_t>();
+
+    mbcs_string<uint16_t> r;
+    const uint16_t * cursor = reinterpret_cast<const uint16_t *>(utf16);
+    const uint16_t * end = cursor + size;
+    size_t invalidChars = 0;
+    size_t nremain = 0;
+    size_type len = 0;
+
+    uint16_t replacement[2];
+    uint16_t encodedChar[2];
+    size_t replacementSize = state
+            ? state->replacementChar.encode<uint16_t>(replacement, 2)
+            : ucchar(ucchar::ReplacementChar).encode<uint16_t>(replacement, 2);
+
+    impl_class * d = r.base_class::cast();
+
+    while (cursor < end) {
+        ucchar ch;
+
+        cursor = advance_utf16_char(
+                  cursor
+                , end
+                , & nremain
+                , & invalidChars
+                , & ch);
+
+        if (ch.isValid()) {
+            // skip the BOM
+            if (ch == ucchar::BomChar)
+                continue;
+
+            size_t sz = ch.encodeUtf16(encodedChar, 2);
+            d->append(encodedChar, sz);
+            ++len;
+        } else {
+            if (nremain > 0) {
+                for (size_t j = nremain; j > 0; --j) {
+                    d->append(replacement, replacementSize);
+                    ++invalidChars;
+                    ++len;
+
+                }
+                cursor += nremain;
+                PFS_ASSERT(cursor >= end);
+            } else {
+                d->append(replacement, replacementSize);
+                ++cursor;
+                ++len;
+            }
+        }
+    }
+
+    if (state) {
+        state->invalidChars += invalidChars;
+        state->nremain = nremain;
+    }
+
+    d->_length = len;
+
+    return r;
+}
+
+template <>
+mbcs_string<uint8_t> mbcs_string<uint16_t>::toUtf8 () const
+{
+	mbcs_string<uint8_t> r;
 
 	mbcs_string<uint16_t>::const_iterator it = this->cbegin();
 	mbcs_string<uint16_t>::const_iterator itEnd = this->cend();

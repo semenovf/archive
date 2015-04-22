@@ -14,9 +14,7 @@
 
 namespace pfs {
 
-//typedef pfs::mbcs_string<char> utf8string;
-typedef pfs::mbcs_string<char> utf8string;
-// TODO need to select type of string by OS (Linux/Mac: ut8string; Windows: utf16string)
+typedef pfs::mbcs_string<uint8_t> utf8string;
 typedef utf8string string;
 
 #define _latin1(s) pfs::utf8string::fromLatin1(s)

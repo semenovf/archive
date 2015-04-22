@@ -11,8 +11,8 @@
 
 namespace pfs {
 
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT>::mbcs_string (const char * latin1)
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT>::mbcs_string (const char * latin1)
 	: base_class()
 {
 	if (latin1) {
@@ -20,16 +20,16 @@ mbcs_string<_CodeUnitT>::mbcs_string (const char * latin1)
 	}
 }
 
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT>::mbcs_string (const char * latin1, size_t n)
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT>::mbcs_string (const char * latin1, size_t n)
 {
 	if (latin1) {
 		*this = fromLatin1(latin1, n);
 	}
 }
 
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT>::mbcs_string (size_t count, char latin1)
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT>::mbcs_string (size_t count, char latin1)
 {
 	if (byte_t(latin1) > 127)
 		latin1 = ReplacementChar;
@@ -37,21 +37,21 @@ mbcs_string<_CodeUnitT>::mbcs_string (size_t count, char latin1)
 	impl_class * d = base_class::cast();
 	d->reserve(count);
 	for (size_t i = 0; i < count; ++i) {
-		d->append(& latin1, 1);
+		d->append(reinterpret_cast<const_data_pointer>(& latin1), 1);
 		//(*d)[i] = latin1;
 	}
 	d->_length = count;
 }
 
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT>::mbcs_string (size_t count, ucchar ch)
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT>::mbcs_string (size_t count, ucchar ch)
 {
-	_CodeUnitT utf[10]; // 6 max need for UTF-8 character encoding
+	CodeUnitT utf[10]; // 6 max need for UTF-8 character encoding
 
 	if (!ch.isValid())
 		ch = ucchar(ucchar::ReplacementChar);
 
-	size_t sz = ch.encode<_CodeUnitT>(utf, 10);
+	size_t sz = ch.encode<CodeUnitT>(utf, 10);
 	impl_class * d = base_class::cast();
 	d->reserve(count * 4);
 
@@ -62,8 +62,8 @@ mbcs_string<_CodeUnitT>::mbcs_string (size_t count, ucchar ch)
 	d->_length = count;
 }
 
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT>::mbcs_string (const_iterator first, const_iterator last)
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT>::mbcs_string (const_iterator first, const_iterator last)
 {
 	impl_class * d = base_class::cast();
 
@@ -74,38 +74,10 @@ mbcs_string<_CodeUnitT>::mbcs_string (const_iterator first, const_iterator last)
 	size_type index_end = last.base().index();
 
 	if (index_end >= index_begin) {
-		const char * p = first.holder()->constData();
+		const_data_pointer p = first.holder()->constData();
 		d->insert(0, p + index_begin, index_end - index_begin);
 		d->_length = impl_class::length(p + index_begin, p + index_end);
 	}
-}
-
-/**
- *
- * @param pos1
- * @param count1
- * @param s
- * @param count2
- * @return
- */
-template <typename _CodeUnitT>
-int mbcs_string<_CodeUnitT>::compare (size_type pos1, size_type count1, const char * latin1, size_type count2) const
-{
-	PFS_ASSERT(pos1 <= this->length());
-	PFS_ASSERT(pos1 + count1 <= this->length());
-
-	if (this->isEmpty()) {
-		return latin1 == nullptr ? 0 : -1;
-	}
-
-	if (latin1 == nullptr) {
-		return this->isEmpty() ? 0 : 1;
-	}
-
-	const impl_class * d = base_class::cast();
-	const char * ptr_begin = impl_class::increment(constData(), pos1);
-	const char * ptr_end = impl_class::increment(ptr_begin, count1);
-	return d->compare(ptr_begin, ptr_end - ptr_begin, latin1, count2);
 }
 
 /**
@@ -117,9 +89,9 @@ int mbcs_string<_CodeUnitT>::compare (size_type pos1, size_type count1, const ch
  * @param count2
  * @return
  */
-template <typename _CodeUnitT>
-int mbcs_string<_CodeUnitT>::compare (size_type pos1, size_type count1
-		, const mbcs_string<_CodeUnitT> & s, size_type pos2, size_type count2) const
+template <typename CodeUnitT>
+int mbcs_string<CodeUnitT>::compare (size_type pos1, size_type count1
+		, const mbcs_string<CodeUnitT> & s, size_type pos2, size_type count2) const
 {
 	PFS_ASSERT(pos1 <= this->length());
 	PFS_ASSERT(pos1 + count1 <= this->length());
@@ -135,39 +107,20 @@ int mbcs_string<_CodeUnitT>::compare (size_type pos1, size_type count1
 	}
 
 	const impl_class * d = base_class::cast();
-	const char * ptr1_begin = impl_class::increment(constData(), pos1);
-	const char * ptr1_end   = impl_class::increment(ptr1_begin, count1);
 
-	const char * ptr2_begin = impl_class::increment(s.constData(), pos2);
-	const char * ptr2_end   = impl_class::increment(ptr2_begin, count2);
+	if (pos1 == 0 && pos2 == 0
+	        && count1 == this->length() && count2 == s.length()) {
+	    return d->compare(this->constData(), this->size(), s.constData(), s.size());
+	}
+
+	// else
+	const_data_pointer ptr1_begin = impl_class::increment(constData(), pos1);
+	const_data_pointer ptr1_end   = impl_class::increment(ptr1_begin, count1);
+
+	const_data_pointer ptr2_begin = impl_class::increment(s.constData(), pos2);
+	const_data_pointer ptr2_end   = impl_class::increment(ptr2_begin, count2);
 
 	return d->compare(ptr1_begin, ptr1_end - ptr1_begin, ptr2_begin, ptr2_end - ptr2_begin);
-}
-
-/**
- *
- * @param s
- * @return
- */
-template <typename _CodeUnitT>
-int mbcs_string<_CodeUnitT>::compare (const char * latin1) const
-{
-	if (this->isEmpty()) {
-		return latin1 == nullptr || strlen(latin1) == 0 ? 0 : -1;
-	}
-
-	if (latin1 == nullptr || strlen(latin1) == 0) {
-		return this->isEmpty() ? 0 : 1;
-	}
-
-	return base_class::cast()->compare(this->constData(), this->size(), latin1, strlen(latin1));
-}
-
-
-template <typename _CodeUnitT>
-inline int mbcs_string<_CodeUnitT>::compare (size_type pos, size_type count, const char * latin1) const
-{
-	return compare(pos, count, latin1, strlen(latin1));
 }
 
 /**
@@ -176,8 +129,8 @@ inline int mbcs_string<_CodeUnitT>::compare (size_type pos, size_type count, con
  * @param count
  * @return
  */
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::erase (size_type index, size_type count)
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::erase (size_type index, size_type count)
 {
 	if (isEmpty() || index >= length())
 		return *this;
@@ -203,8 +156,8 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::erase (size_type index, size_
 	return *this;
 }
 
-template <typename _CodeUnitT>
-typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::erase (const_iterator first, const_iterator last)
+template <typename CodeUnitT>
+typename mbcs_string<CodeUnitT>::iterator mbcs_string<CodeUnitT>::erase (const_iterator first, const_iterator last)
 {
 	PFS_ASSERT(first.holder() == this);
 	PFS_ASSERT(first.holder() == last.holder());
@@ -229,8 +182,8 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::erase (const
 }
 
 
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::insert (size_type index, const mbcs_string<_CodeUnitT> & str, size_type index_str, size_type count)
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::insert (size_type index, const mbcs_string<CodeUnitT> & str, size_type index_str, size_type count)
 {
 	if (str.length() == 0)
 		return *this;
@@ -269,8 +222,8 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::insert (size_type index, cons
 	return *this;
 }
 
-template <typename _CodeUnitT>
-typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (
+template <typename CodeUnitT>
+typename mbcs_string<CodeUnitT>::iterator mbcs_string<CodeUnitT>::insert (
 		  const_iterator pos
 		, const_iterator first
 		, const_iterator last
@@ -279,7 +232,7 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (
 	PFS_ASSERT(first.holder() == last.holder());
 	PFS_ASSERT(pos.holder() == this);
 
-	mbcs_string<_CodeUnitT> s(first, last);
+	mbcs_string<CodeUnitT> s(first, last);
 	size_type index = pos.base().index();
 
 	if (first >= last)
@@ -306,12 +259,12 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (
  * @param count
  * @return
  */
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT> mbcs_string<_CodeUnitT>::substr (size_type index, size_type count) const
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::substr (size_type index, size_type count) const
 {
 	PFS_ASSERT(index <= length());
 
-	mbcs_string<_CodeUnitT> r;
+	mbcs_string<CodeUnitT> r;
 
 	if (index < length()) {
 		if (index + count > length()) {
@@ -345,8 +298,8 @@ mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::substr (const_iterator begin, con
 	return r;
 }
 
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 	  size_type pos1
 	, size_type count1
 	, const mbcs_string & s
@@ -362,7 +315,7 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 
 	if (this->isEmpty()) {
 		// Target is empty, assign to replacement string
-		mbcs_string<_CodeUnitT> r(s.cbegin() + pos2, s.cbegin() + (pos2 + count2));
+		mbcs_string<CodeUnitT> r(s.cbegin() + pos2, s.cbegin() + (pos2 + count2));
 		this->swap(r);
 	} else {
 		const_data_pointer ptr1_begin = impl_class::increment(constData(), pos1);
@@ -384,8 +337,8 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 }
 
 
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 		  const_iterator first
 		, const_iterator last
 		, const_iterator first2
@@ -420,8 +373,8 @@ mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace (
 	return *this;
 }
 
-template <typename _CodeUnitT>
-typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::find (const_iterator pos, const mbcs_string & str) const
+template <typename CodeUnitT>
+typename mbcs_string<CodeUnitT>::iterator mbcs_string<CodeUnitT>::find (const_iterator pos, const mbcs_string & str) const
 {
 	PFS_ASSERT(pos >= cbegin());
 	PFS_ASSERT(pos <= cend());
@@ -437,8 +390,8 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::find (const_
 }
 
 #ifdef __COMMENT__
-template <typename _CodeUnitT>
-typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::rfind (const_iterator pos, const mbcs_string & str) const
+template <typename CodeUnitT>
+typename mbcs_string<CodeUnitT>::iterator mbcs_string<CodeUnitT>::rfind (const_iterator pos, const mbcs_string & str) const
 {
 	PFS_ASSERT(pos >= cbegin());
 	PFS_ASSERT(pos <= cend());
@@ -454,8 +407,8 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::rfind (const
 }
 #endif
 
-template <typename _CodeUnitT>
-stringlist_basic<mbcs_string<_CodeUnitT> > mbcs_string<_CodeUnitT>::split (
+template <typename CodeUnitT>
+stringlist_basic<mbcs_string<CodeUnitT> > mbcs_string<CodeUnitT>::split (
 		  bool isOneSeparatorChar
 		, const mbcs_string & separator
 		, bool keepEmpty
@@ -522,8 +475,8 @@ stringlist_basic<mbcs_string<_CodeUnitT> > mbcs_string<_CodeUnitT>::split (
  * @param after Replacement string.
  * @return
  */
-template <typename _CodeUnitT>
-mbcs_string<_CodeUnitT> & mbcs_string<_CodeUnitT>::replace
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace
 		( const mbcs_string & before
 		, const mbcs_string & after)
 {

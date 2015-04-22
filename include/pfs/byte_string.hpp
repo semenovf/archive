@@ -545,7 +545,7 @@ inline byte_string byte_string::toBytes<byte_string> (const byte_string & v, end
 template <>
 inline byte_string byte_string::toBytes<utf8string> (const utf8string & v, endian::type_enum /*order*/)
 {
-	return byte_string(v.c_str(), v.size());
+	return byte_string(v.constData(), v.size());
 }
 
 template <typename ValT>

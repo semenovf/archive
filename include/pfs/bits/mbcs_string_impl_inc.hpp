@@ -9,64 +9,58 @@
 
 namespace pfs {
 
-template <typename _CodeUnitT, typename Holder>
-inline reference<Holder> mbcs_string_ptr<_CodeUnitT, Holder>::ref () const
+template <typename CodeUnitT, typename Holder>
+inline reference<Holder> mbcs_string_ptr<CodeUnitT, Holder>::ref () const
 {
 	return reference<Holder>(*_holder, *this);
 }
 
-template <typename _CodeUnitT, typename Holder>
-typename mbcs_string_ptr<_CodeUnitT, Holder>::value_type
-mbcs_string_ptr<_CodeUnitT, Holder>::operator * () const
+template <typename CodeUnitT, typename Holder>
+typename mbcs_string_ptr<CodeUnitT, Holder>::value_type
+mbcs_string_ptr<CodeUnitT, Holder>::operator * () const
 {
 	ucchar r;
-	size_type nremain = _holder->size() - _off;
-	PFS_ASSERT(r.decode<_CodeUnitT>(_holder->constData() + _off, nremain) > 0);
+	size_type sz = _holder->size() - _off;
+	PFS_ASSERT(r.decode<CodeUnitT>(_holder->constData() + _off, sz) > 0);
 	return r;
 }
 
-template <typename _CodeUnitT, typename Holder>
-typename mbcs_string_ptr<_CodeUnitT, Holder>::value_type
-mbcs_string_ptr<_CodeUnitT, Holder>::operator [] (difference_type n) const
+template <typename CodeUnitT, typename Holder>
+typename mbcs_string_ptr<CodeUnitT, Holder>::value_type
+mbcs_string_ptr<CodeUnitT, Holder>::operator [] (difference_type n) const
 {
 //	utf8string_ptr p(*this);
 //	p += n;
 //	return reference<Holder>(p->_holder, *this);
-	mbcs_string_ptr<_CodeUnitT, Holder> p(*this);
+	mbcs_string_ptr<CodeUnitT, Holder> p(*this);
 	p += n;
 	return *p;
 }
 
-template <typename _CodeUnitT, typename Holder>
-mbcs_string_ptr<_CodeUnitT, Holder> & mbcs_string_ptr<_CodeUnitT, Holder>::operator
-+= (typename mbcs_string_ptr<_CodeUnitT, Holder>::difference_type n)
+template <typename CodeUnitT, typename Holder>
+mbcs_string_ptr<CodeUnitT, Holder> & mbcs_string_ptr<CodeUnitT, Holder>::operator
++= (typename mbcs_string_ptr<CodeUnitT, Holder>::difference_type n)
 {
-	size_t invalidBytes = 0;
-	const _CodeUnitT * start = _holder->constData() + _off;
-	const _CodeUnitT * begin = _holder->constData();
-	const _CodeUnitT * end   = _holder->constData() + _holder->size();
-	const _CodeUnitT * p = mbcs_string_impl<_CodeUnitT>::increment(start, n, & invalidBytes);
-	//PFS_ASSERT(p >= begin && p <= end && invalidBytes == 0);
+	const CodeUnitT * start = _holder->constData() + _off;
+	const CodeUnitT * begin = _holder->constData();
+	const CodeUnitT * end   = _holder->constData() + _holder->size();
+	const CodeUnitT * p = mbcs_string_impl<CodeUnitT>::increment(start, n);
 	PFS_ASSERT(p >= begin);
 	PFS_ASSERT(p <= end);
-	PFS_ASSERT(invalidBytes == 0);
 	_off = p - begin;
 	return *this;
 }
 
-template <typename _CodeUnitT, typename Holder>
-mbcs_string_ptr<_CodeUnitT, Holder> & mbcs_string_ptr<_CodeUnitT, Holder>::operator
--= (typename mbcs_string_ptr<_CodeUnitT, Holder>::difference_type n)
+template <typename CodeUnitT, typename Holder>
+mbcs_string_ptr<CodeUnitT, Holder> & mbcs_string_ptr<CodeUnitT, Holder>::operator
+-= (typename mbcs_string_ptr<CodeUnitT, Holder>::difference_type n)
 {
-	size_t invalidBytes = 0;
-	const _CodeUnitT * start = _holder->constData() + _off;
-	const _CodeUnitT * begin = _holder->constData();
-	const _CodeUnitT * end   = _holder->constData() + _holder->size();
-	const _CodeUnitT * p = mbcs_string_impl<_CodeUnitT>::decrement(start, n, & invalidBytes);
-	//PFS_ASSERT(p >= begin && p <= end && invalidBytes == 0);
+	const CodeUnitT * start = _holder->constData() + _off;
+	const CodeUnitT * begin = _holder->constData();
+	const CodeUnitT * end   = _holder->constData() + _holder->size();
+	const CodeUnitT * p = mbcs_string_impl<CodeUnitT>::decrement(start, n);
 	PFS_ASSERT(p >= begin);
 	PFS_ASSERT(p <= end);
-	PFS_ASSERT(invalidBytes == 0);
 	_off = p - begin;
 	return *this;
 }

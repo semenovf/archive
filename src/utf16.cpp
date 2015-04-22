@@ -11,10 +11,14 @@ namespace pfs {
 
 inline uint32_t construct_codepoint (uint32_t w1, uint32_t w2)
 {
-	uint32_t r = (w1 & 0x03FF) << 10;
-	r |= w2 & 0x03FF;
-	r += 0x10000;
-	return r;
+    if (!w2) {
+        uint32_t r = (w1 & 0x03FF) << 10;
+        r |= w2 & 0x03FF;
+        r += 0x10000;
+        return r;
+    }
+
+    return w1;
 }
 
 //2.2 Decoding UTF-16
@@ -37,6 +41,8 @@ inline uint32_t construct_codepoint (uint32_t w1, uint32_t w2)
 //
 
 /**
+ * @note For internal use only. Used for parse untrusted source
+ *       as UTF16-encoded sequence.
  *
  * @param begin Pointer to first code unit.
  * @param end Pointer to after last code unit.
@@ -47,21 +53,21 @@ inline uint32_t construct_codepoint (uint32_t w1, uint32_t w2)
  * @return If successfully recognized UTF16-encoded char:
  * 				- return @c begin pointer incremented by valid code units
  * 				- *pnremain stores zero
- * 				- *pinvalid is undefined
+ * 				- *pinvalid unmodified
  * 				- *pch stores valid unicode char
  *
  * 		   If need to request more units (one in this case)
  * 		   to recognized UTF16-encoded char:
  * 				- return @c begin pointer
  * 				- *pnremain stores number of requested units (one in this case)
- * 				- *pinvalid undefined
- * 				- *pch unmodified
+ * 				- *pinvalid unmodified
+ * 				- *pch stores invalid unicode char
  *
  * 		   If code unit sequence is invalid:
  * 				- return @c begin pointer incremented by one (skipped one code unit)
  * 				- *pnremain stores zero
  * 				- *pinvalid incremented by 1
- * 				- *pch unmodified
+ * 				- *pch stores invalid unicode char
  */
 const uint16_t * advance_utf16_char (
 		  const uint16_t * begin
@@ -98,85 +104,104 @@ const uint16_t * advance_utf16_char (
 			p = begin;
 		}
 	} else {
-		// Invalid unit, skip it
 		isInvalid = true;
-		++p;
 	}
 
-	if (nremain) {
-		if (pnremain)
-			*pnremain = nremain;
+	if (!isInvalid) {
+        if (nremain) {
+            if (pnremain)
+                *pnremain = nremain;
+            if (pch)
+                pch->invalidate();
+        } else {
+            if (pch && !isInvalid) {
+                *pch = ucchar(construct_codepoint(w1, w2));
+            }
+        }
 	} else {
-		if (pch && !isInvalid) {
-			*pch = ucchar(construct_codepoint(w1, w2));
-		}
-	}
+        ++p;
 
-	if (pinvalid && isInvalid)
-		++*pinvalid;
+	    if (pinvalid)
+	        ++*pinvalid;
+
+        if (pch)
+            pch->invalidate();
+	}
 
 	return p;
 }
 
-bool can_backward_utf16_char (const uint16_t * begin, const uint16_t * end)
+
+#define ASSERT_INVALID_UTF16 PFS_ASSERT_X(false, "invalid (untrusted) UTF16-encoded sequence")
+
+/**
+ * @note For internal use only.
+ *       Used for forward movement through valid (trusted)
+ *       UTF16-encoded sequence.
+ *
+ * @param begin
+ * @param pch
+ * @return
+ */
+const uint16_t * advance_utf16_char (
+          const uint16_t * begin
+        , ucchar * pch)
 {
-	const uint16_t * p = end;
-	if (p > begin) {
-		--p;
+    uint16_t w1 = 0;
+    uint16_t w2 = 0;
+    const uint16_t * p = begin;
 
-		if (*p < 0xD800 || *p > 0xDFFF)
-			return true;
-		if (*p >= 0xD800 && *p <= 0xDBFF)
-			return (p + 1 < end) ? true : false;
-	}
-	return false;
+    if (*p < 0xD800 || *p > 0xDFFF) {
+        w1 = *p;
+        ++p;
+    } else if (*p >= 0xD800 && *p <= 0xDBFF
+            && *(p + 1) >= 0xDC00 && *(p + 1) <= 0xDFFF) {
+        w1 = *p;
+        w2 = *(p + 1);
+        p += 2;
+    } else {
+        ASSERT_INVALID_UTF16;
+    }
 
-	if (len > 0) {
-		if (*p < 0xD800 || *p > 0xDFFF)
-			return true;
-		if (*p >= 0xD800 && *p <= 0xDBFF)
-			return len > 1 ? true : false;
-	}
-	return false;
+    if (pch)
+        *pch = ucchar(construct_codepoint(w1, w2));
+
+    return p;
 }
 
 
+/**
+ * @note For internal use only.
+ *       Used for backward movement through valid (trusted)
+ *       UTF16-encoded sequence.
+ *
+ * @param rbegin
+ * @param pch
+ * @return
+ */
 const uint16_t * backward_utf16_char (
-		  const uint16_t * p
-		, size_t * invalid
-		, ucchar * pch)
+          const uint16_t * rbegin
+        , ucchar * pch)
 {
-	bool isInvalid = false;
-	uint16_t w1 = *(p - 1);
-	uint16_t w2 = 0;
+    uint16_t w1 = 0;
+    uint16_t w2 = 0;
+    const uint16_t * p = rbegin - 1;
 
-	if (w1 < 0xD800 || w1 > 0xDFFF) {
-		--p;
-	} else {
-		w1 = *(p - 2);
-		uint16_t w2 = *(p - 1);
+    if (*p < 0xD800 || *p > 0xDFFF) {
+        w1 = *p;
+    } else if (*(p - 1) >= 0xD800 && *(p - 1) <= 0xDBFF
+            && *p >= 0xDC00 && *p <= 0xDFFF) {
+        w1 = *(p - 1);
+        w2 = *p;
+        --p;
+    } else {
+        ASSERT_INVALID_UTF16;
+    }
 
-		if (w1 >= 0xD800 && w1 <= 0xDBFF
-				&& w2 >= 0xDC00 && w2 <= 0xDFFF) {
-			p -= 2;
-		} else {
-			--p;
-			isInvalid = true;
-		}
-	}
+    if (pch)
+        *pch = ucchar(construct_codepoint(w1, w2));
 
-	if (pch) {
-		if (!isInvalid) {
-			*pch = ucchar(construct_codepoint(w1, w2));
-		} else {
-			pch->invalidate();
-		}
-	}
-
-	if (invalid && isInvalid)
-		++ *invalid;
-
-	return p;
+    return p;
 }
 
 //
@@ -208,21 +233,23 @@ const uint16_t * backward_utf16_char (
 //   W1 = 110110yyyyyyyyyy
 //   W2 = 110111xxxxxxxxxx
 //
-size_t ucchar::encodeUtf16 (uint16_t * s, size_t sz)
+size_t ucchar::encodeUtf16 (uint16_t * buffer, size_t sz)
 {
+    uint16_t * p = buffer;
+
 	if (_value < 0x10000) {
-		PFS_ASSERT(sz >= 1);
-		*s = _value;
+		PFS_ASSERT_X(sz >= 1, "buffer must be at least 1 unit size");
+		*p = _value;
 		return 1;
 	}
 
-	PFS_ASSERT(sz >= 2);
+	PFS_ASSERT_X(sz >= 2, "buffer must be at least 2 units size");
 
 	uint32_t u1 = _value - 0x10000;
 	uint16_t w1 = 0xD800 | (u1 >> 10);
 	uint16_t w2 = 0xDC00 | (u1 & 0x03FF);
-	*s = w1;
-	++*s = w2;
+	*p++ = w1;
+	*p = w2;
 
 	return 2;
 }
@@ -254,13 +281,16 @@ size_t ucchar::encodeUtf16 (uint16_t * s, size_t sz)
 //
 //   5) Add 0x10000 to U' to obtain the character value U. Terminate.
 //
-int ucchar::decodeUtf16 (const uint16_t * units, size_t len)
+size_t ucchar::decodeUtf16 (const uint16_t * begin, size_t sz)
 {
-	const uint16_t * p = advance_utf16_char(units, nullptr, this);
-	int r = p - units;
-	PFS_ASSERT(r < 0);
-	return size_t(r) <= len && this->isValid() ? r : -1;
-}
+    const uint16_t * end = begin + sz;
+    const uint16_t * p = advance_utf16_char(begin, end
+            , nullptr // pnremain
+            , nullptr // pinvalid
+            , this);
 
+    PFS_ASSERT(p >= begin && p <= end);
+    return this->isValid() ? p - begin : 0;
+}
 
 } // pfs
