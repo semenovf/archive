@@ -23,7 +23,7 @@ struct option
 
 	string longname;     // long option or NULL
 	string shortname;    // short option or 0
-	bool        has_arg;      // true if option has argument
+	bool   has_arg;      // true if option has argument
 	string xpath;        // path to appropriate settings node
 	string defvalue;     // default value
 	string desc;         // option's description (for automatically generated usage)
@@ -32,6 +32,11 @@ struct option
 
 class DLL_API OptionsContext
 {
+    string   _shortPrefix;
+    string   _longPrefix;
+    string   _optArgSeparator;
+    string   _quoteChars;
+
 public:
 	OptionsContext() {
 	// TODO Need more flexible approach to distinguish OS specific
@@ -50,18 +55,22 @@ public:
 	void setMode        (option::mode_type mode);
 
 	bool parse (settings & settings, int argc, char * argv[], size_t optc, const option optv[], vector<string> & args)
-		{ return parse_opts(settings, argc, argv, optc, optv, & args); }
+	{
+	    return parseOpts(settings, argc, argv, optc, optv, & args);
+	}
+
 	bool parse (settings & settings, int argc, char * argv[], size_t optc, const option optv[])
-		{ return parse_opts(settings, argc, argv, optc, optv, nullptr); }
+	{
+	    return parseOpts(settings, argc, argv, optc, optv, nullptr);
+	}
 
 private:
-	bool parse_opts(settings & settings, int argc, char * argv[], size_t optc, const option optv[], vector<string> * args);
-
-private:
-	string   _shortPrefix;
-	string   _longPrefix;
-	string   _optArgSeparator;
-	string   _quoteChars;
+	bool parseOpts (settings & settings
+	        , int argc
+	        , char * argv[]
+	        , size_t optc
+	        , const option optv[]
+	        , vector<string> * args);
 };
 
 } // pfs

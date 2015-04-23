@@ -7,7 +7,7 @@
 
 #include "pfs/option.hpp"
 #include "pfs/map.hpp"
-#include "pfs/logger.hpp"
+#include <pfs/logger.hpp>
 
 namespace pfs {
 
@@ -25,7 +25,7 @@ void OptionsContext::setMode(option::mode_type mode)
 }
 
 
-static void __split_long_arg (const string & arg
+static void split_long_arg (const string & arg
 		, const string & separator
 		, const string & quotes
 		, string & optname
@@ -50,7 +50,7 @@ static void __split_long_arg (const string & arg
 	}
 }
 
-bool OptionsContext::parse_opts(settings & settings
+bool OptionsContext::parseOpts(settings & settings
 		, int argc
 		, char * argv[]
 		, size_t optc
@@ -94,7 +94,7 @@ bool OptionsContext::parse_opts(settings & settings
 		bool skip = false;
 
 		if (arg.startsWith(_longPrefix)) {
-			__split_long_arg(arg.substr(_longPrefix.length()), _optArgSeparator, _quoteChars, optname, optval);
+			split_long_arg(arg.substr(_longPrefix.length()), _optArgSeparator, _quoteChars, optname, optval);
 		} else if (arg.startsWith(_shortPrefix)) {
 			optname = arg.substr(_shortPrefix.length());
 			if (i + 1 < argc) {
