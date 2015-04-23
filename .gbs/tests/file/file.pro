@@ -1,13 +1,13 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_pfs_io
+TARGET = test_pfs_io_file
 
 INCLUDEPATH += ../../../include
 INCLUDEPATH += ../../../../pfs/include
 INCLUDEPATH += ../../../../pfs-sys/include
 INCLUDEPATH += ../../../../pfs-io/include
 
-SOURCES += ../../../tests/basic.cpp
+SOURCES += ../../../tests/file.cpp
 
 unix {
     LIBS += -lpfs

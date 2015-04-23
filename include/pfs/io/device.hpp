@@ -5,26 +5,73 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_IO_DEVICE_HPP__
-#define __CWT_IO_DEVICE_HPP__
+#ifndef __PFS_IO_DEVICE_HPP__
+#define __PFS_IO_DEVICE_HPP__
 
-#include <pfs/array.hpp>
-#include <pfs/bytearray.hpp>
+//#include <pfs/array.hpp>
+#include <pfs/pimpl.hpp>
+#include <pfs/byte_string.hpp>
 #include <pfs/string.hpp>
-#include <cwt/errorable.hpp>
+#include <pfs/errorable_ext.hpp>
+#include <pfs/zlib.hpp>
 
-namespace cwt { namespace io {
+namespace pfs { namespace io {
 
-class DLL_API device : public errorable
+struct device_impl
 {
-	char * m_inputBuffer;
-	size_t m_inputBufferSize;
+    virtual ~device_impl () {}
+
+    virtual ssize_t readBytes (byte_t [] /*bytes*/, size_t /*n*/, errorable_ext & /*ex*/)
+    {
+        PFS_ASSERT_UNEXPECTED();
+        return -1;
+    }
+
+    virtual ssize_t writeBytes (const byte_t [] /*bytes*/, size_t /*n*/, errorable_ext & /*ex*/)
+    {
+        PFS_ASSERT_UNEXPECTED();
+        return -1;
+    }
+
+    virtual size_t  bytesAvailable () const
+    {
+        PFS_ASSERT_UNEXPECTED();
+        return -1;
+    }
+
+    virtual bool closeDevice (errorable_ext & /*ex*/)
+    {
+        PFS_ASSERT_UNEXPECTED();
+        return false;
+    }
+
+    virtual bool deviceIsOpened () const
+    {
+        PFS_ASSERT_UNEXPECTED();
+        return false;
+    }
+
+    virtual void flushDevice ()
+    {
+        PFS_ASSERT_UNEXPECTED();
+    }
+};
+
+class DLL_API device : public errorable_ext
+{
+protected:
+    pimpl _d;
 
 public:
 	typedef char char_type;
 
+private:
+	device (const device & other);
+	device & operator = (const device & other);
+
 protected:
-	device() : m_inputBuffer(nullptr), m_inputBufferSize(0) {;}
+    device () {}
+	device (device_impl * d) : _d(d) {}
 
 public:
 	enum OpenMode {
@@ -36,35 +83,80 @@ public:
 		, Unbuffered  = 0x0008
 	};
 
-protected:
-	virtual ssize_t readBytes      (char bytes[], size_t n) = 0;
-	virtual ssize_t writeBytes     (const char bytes[], size_t n) = 0;
-	virtual size_t  bytesAvailable () const = 0;
-	virtual bool    closeDevice    ()  = 0;
-	virtual bool    deviceIsOpened () const = 0;
-	virtual void    flushDevice    () = 0;
-
 public:
-	virtual ~device()
+	bool isNull() const
 	{
-		if (m_inputBuffer)
-			delete[] m_inputBuffer;
-		m_inputBuffer = nullptr;
-		m_inputBufferSize = 0;
+	    return _d.isNull();
 	}
 
-	bool         opened   () const       { return deviceIsOpened(); }
-	void         flush    ()             { flushDevice(); }
-	bool         close    ()             { return closeDevice(); }
-	size_t       available() const       { return bytesAvailable(); }
-	bool         atEnd    () const       { return bytesAvailable() == ssize_t(0); }
-	ssize_t      read     (char bytes[], size_t n) { return readBytes(bytes, n); }
-	ssize_t      read     (pfs::bytearray & ba, size_t n);
-	ssize_t      write    (const char bytes[], size_t n) { return writeBytes(bytes, n); }
-	ssize_t      write    (const pfs::bytearray & bytes, size_t n) { return writeBytes(bytes.data(), pfs::min(n, bytes.size())); }
-	ssize_t      write    (const pfs::bytearray & bytes) { return writeBytes(bytes.data(), bytes.size()); }
+	bool opened () const
+	{
+	    return _d.isNull()
+	            ? false
+	            : _d.cast<device_impl>()->deviceIsOpened();
+	}
+
+	void flush ()
+	{
+	    if (!_d.isNull())
+	        _d.cast<device_impl>()->flushDevice();
+	}
+
+	bool close ()
+	{
+	    return _d.isNull()
+	            ? true
+	            : _d.cast<device_impl>()->closeDevice(*this);
+	}
+
+	size_t available () const
+	{
+	    return _d.isNull()
+	            ? 0
+	            : _d.cast<device_impl>()->bytesAvailable();
+	}
+
+	bool atEnd () const
+	{
+	    return _d.isNull()
+	            ? true
+	            : _d.cast<device_impl>()->bytesAvailable() == ssize_t(0);
+	}
+
+	ssize_t read (byte_t bytes[], size_t n)
+	{
+	    return _d.isNull()
+	            ? 0
+	            : _d.cast<device_impl>()->readBytes(bytes, n, *this);
+	}
+
+	byte_string read (size_t n);
+
+	ssize_t write (const byte_t bytes[], size_t n)
+	{
+	    return _d.isNull()
+	            ? 0
+	            : _d.cast<device_impl>()->writeBytes(bytes, n, *this);
+	}
+
+	ssize_t write (const byte_string & bytes, size_t n)
+	{
+	    return _d.isNull()
+	            ? 0
+	            : _d.cast<device_impl>()->writeBytes(bytes.data(), pfs::min(n, bytes.size()), *this);
+	}
+
+	ssize_t write (const byte_string & bytes)
+	{
+	    return _d.isNull()
+	            ? 0
+	            : _d.cast<device_impl>()->writeBytes(bytes.data(), bytes.size(), *this);
+	}
+
+    bool compress (device & dest, zlib::compression_level level = zlib::DefaultCompression, size_t chunkSize = 0x4000);
+    bool uncompress (device & dest, size_t chunkSize = 0x4000);
 };
 
-}} // cwt::io
+}} // pfs::io
 
-#endif /* __CWT_IO_DEVICE_HPP__ */
+#endif /* __PFS_IO_DEVICE_HPP__ */

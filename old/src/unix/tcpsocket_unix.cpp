@@ -6,13 +6,12 @@
  */
 
 #include "inetsocket_unix.hpp"
-#include <cwt/platform.hpp>
-#include <pfs/safeformat.hpp>
+#include <pfs/platform.hpp>
 #include <cerrno>
 #include <sys/socket.h>
 
 
-namespace cwt { namespace io {
+namespace pfs { namespace io {
 
 bool tcp_socket::open (const pfs::string & hostname, uint16_t port, int32_t oflags)
 {
@@ -37,7 +36,7 @@ bool tcp_socket::open (const pfs::string & hostname, uint16_t port, int32_t ofla
 			explaining the reason for the failure).
 		*/
 		if (rc != 0 && errno == EINPROGRESS) { // TODO implement
-#if CWT_HAVE_POLL
+#if PFS_HAVE_POLL
 			;
 #endif
 		}

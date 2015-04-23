@@ -5,19 +5,16 @@
  *      Author: wladt
  */
 
-#ifndef __CWT_IO_FILE_HPP__
-#define __CWT_IO_FILE_HPP__
+#ifndef __PFS_IO_FILE_HPP__
+#define __PFS_IO_FILE_HPP__
 
-#include <pfs/pimpl.hpp>
-#include <cwt/zlib.hpp>
-#include <cwt/io/device.hpp>
+#include <pfs/io/device.hpp>
 
-namespace cwt { namespace io {
+namespace pfs { namespace io {
 
 class DLL_API file : public device
 {
-	class impl;
-	pfs::pimpl _d;
+    typedef device base_class;
 
 public:
 	enum permission {
@@ -35,16 +32,8 @@ public:
 		, ExeOther	 = 0x0001 // The file is executable by anyone.
 	};
 
-protected:
-	virtual ssize_t readBytes (char bytes[], size_t n) override;
-	virtual ssize_t writeBytes (const char bytes[], size_t n) override;
-	virtual size_t  bytesAvailable () const override;
-	virtual bool    closeDevice    () override;
-	virtual bool    deviceIsOpened () const override;
-	virtual void    flushDevice    () override;
-
 public:
-	file ();
+	file () : device() {}
 	file (int fd);
 	file (const pfs::string & path, int32_t oflags = ReadWrite);
 	virtual ~file () {}
@@ -54,11 +43,8 @@ public:
 	size_t size () const;
 	bool setPermissions (int32_t perms);
 	void rewind ();
-
-	bool compress (file & dest, cwt::zlib::compression_level level = cwt::zlib::DefaultCompression, size_t chunkSize = 0x4000);
-	bool uncompress (file & dest, size_t chunkSize = 0x4000);
 };
 
-}} // cwt::io
+}} // pfs::io
 
-#endif /* __CWT_IO_FILE_HPP__ */
+#endif /* __PFS_IO_FILE_HPP__ */
