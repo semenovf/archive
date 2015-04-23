@@ -26,4 +26,4 @@ You can find documentation for this software...
 
 ###LICENSE AND COPYRIGHT
 
-Copyright 2014 Fedor Semenov.  
+Copyright 2015 Fedor Semenov.  
