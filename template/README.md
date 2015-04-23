@@ -24,8 +24,6 @@ Fedor Semenov, < fedor.v.semenov at gmail.com >
 
 You can find documentation for this software...
 
-###ACKNOWLEDGEMENTS
-
 ###LICENSE AND COPYRIGHT
 
 Copyright 2014 Fedor Semenov.  
