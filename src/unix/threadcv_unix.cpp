@@ -7,6 +7,7 @@
 
 #include <pfs/logger.hpp>
 #include <pfs/platform.hpp>
+#include "pfs/threadcv.hpp"
 #include <pthread.h>
 #include <cerrno>
 #include <sys/time.h>

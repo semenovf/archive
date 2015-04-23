@@ -11,36 +11,36 @@
 
 namespace pfs {
 
-class random::impl
+class random_impl
 {
 public:
-	impl () : _randomValue(0) {}
-	uint_t rand ();
+    random_impl () : _randomValue(0) {}
+	uint32_t rand ();
 
 private:
-	uint_t _randomValue;
+	uint32_t _randomValue;
 };
 
-inline uint_t random::impl::rand ()
+inline uint32_t random_impl::rand ()
 {
 	PFS_VERIFY(rand_s(& _randomValue) == 0);
 	return _randomValue;
 }
 
-random::random() : _d(new random::impl)
+random::random() : _d(new random_impl)
 {}
 
-random::random(uint_t ) : _d(new random::impl)
+random::random(uint32_t ) : _d(new random_impl)
 {}
 
-uint_t random::srand (uint_t )
+uint32_t random::srand (uint32_t )
 {
 	return 0;
 }
 
-uint_t random::rand ()
+uint32_t random::rand ()
 {
-	return _d.cast<impl>()->rand();
+	return _d.cast<random_impl>()->rand();
 }
 
 } // pfs

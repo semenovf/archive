@@ -14,14 +14,13 @@ namespace pfs {
 
 class random
 {
-	class impl;
-	pfs::pimpl _d;
+	pimpl _d;
 
 public:
 	random ();
-	random (uint_t seed);       // TODO obsolete
-	uint_t srand (uint_t seed); // TODO obsolete
-	uint_t rand ();
+	random (uint32_t seed);         // TODO obsolete
+	uint32_t srand (uint32_t seed); // TODO obsolete
+	uint32_t rand ();
 };
 
 } // pfs
