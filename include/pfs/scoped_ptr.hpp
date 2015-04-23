@@ -12,7 +12,9 @@
 
 namespace pfs {
 
-// Simple implementation
+/**
+ * @brief Stores a pointer to a dynamically allocated object, and deletes it upon destruction.
+ */
 template <typename T>
 class scoped_ptr : noncopyable
 {
@@ -126,7 +128,9 @@ public:
 
 };
 
-// Simple implementation
+/**
+ * @brief Stores a pointer to a dynamically allocated array of objects, and deletes it upon destruction.
+ */
 template <typename T>
 class scoped_array_ptr : public scoped_ptr<T>
 {

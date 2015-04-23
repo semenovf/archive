@@ -89,7 +89,7 @@ public:
 	iterator      erase (const_iterator pos) { return erase(pos, pos + 1); }
 	iterator      erase (const_iterator first, const_iterator last);
 	byte_string & remove (size_type index = 0) { return erase(index, 1); }
-	byte_string & remove (size_type index, size_type count);
+	byte_string & remove (size_type index, size_type count) { return erase(index, count); }
 	iterator      remove (const_iterator pos) { return erase(pos, pos + 1); }
 	iterator      remove (const_iterator first, const_iterator last) { return erase(first, last); }
 

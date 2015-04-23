@@ -10,7 +10,7 @@
 
 namespace pfs {
 
-template <class T, std::size_t nextra = 0>
+template <class T, size_t nextra = 0>
 struct allocator : public std::allocator<T>
 {
 	typedef std::allocator<T> base_class;
@@ -29,12 +29,12 @@ struct allocator : public std::allocator<T>
 	   typedef allocator<U, nextra> other;
 	};
 
-	value_type * allocate (std::size_t n, const void * = 0)
+	value_type * allocate (size_t n, const void * = 0)
 	{
 		return base_class::allocate(n + nextra);
 	}
 
-	void deallocate (value_type * p, std::size_t /*n*/)
+	void deallocate (value_type * p, size_t /*n*/)
 	{
 		base_class::deallocate(p, 0);
 	}

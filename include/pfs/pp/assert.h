@@ -78,5 +78,7 @@ struct __verify
 #define PFS_ASSERT_OVERFLOW(x)  PFS_ASSERT(x)
 #define PFS_ASSERT_BAD_CAST(x)  PFS_ASSERT(x)
 #define PFS_ASSERT_UNEXPECTED() PFS_ASSERT(false)
+#define PFS_ASSERT_NULLPTR(x)   PFS_ASSERT((x) != nullptr)
+#define PFS_ASSERT_IS_NULL(x)   PFS_ASSERT(!(x).isNull())
 
 #endif /* __PFS_ASSERT_H__ */

@@ -717,7 +717,7 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 template <typename CodeUnitT>
 integral_t mbcs_string<CodeUnitT>::toIntegral (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -730,7 +730,7 @@ integral_t mbcs_string<CodeUnitT>::toIntegral (bool * ok, int base) const
 template <typename CodeUnitT>
 uintegral_t mbcs_string<CodeUnitT>::toUIntegral (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -743,7 +743,7 @@ uintegral_t mbcs_string<CodeUnitT>::toUIntegral (bool * ok, int base) const
 template <typename CodeUnitT>
 short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -757,7 +757,7 @@ short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
 template <typename CodeUnitT>
 unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -769,7 +769,7 @@ unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
 template <typename CodeUnitT>
 int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -782,7 +782,7 @@ int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
 template <typename CodeUnitT>
 unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -794,7 +794,7 @@ unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
 template <typename CodeUnitT>
 long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -807,7 +807,7 @@ long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
 template <typename CodeUnitT>
 unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -821,7 +821,7 @@ unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
 template <typename CodeUnitT>
 long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -834,7 +834,7 @@ long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
 template <typename CodeUnitT>
 unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int base) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return 0;
 	}
@@ -855,7 +855,7 @@ unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int base) con
 template <typename CodeUnitT>
 real_t mbcs_string<CodeUnitT>::toReal (bool * ok, ucchar decimalPoint) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return real_t(.0);
 	}
@@ -877,7 +877,7 @@ real_t mbcs_string<CodeUnitT>::toReal (bool * ok, ucchar decimalPoint) const
 template <typename CodeUnitT>
 float mbcs_string<CodeUnitT>::toFloat (bool * ok, ucchar decimalPoint) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return float(.0);
 	}
@@ -895,7 +895,7 @@ float mbcs_string<CodeUnitT>::toFloat (bool * ok, ucchar decimalPoint) const
 template <typename CodeUnitT>
 double mbcs_string<CodeUnitT>::toDouble (bool * ok, ucchar decimalPoint) const
 {
-	if (this->isNull()) {
+	if (this->isEmpty()) {
 		if (ok) *ok = false;
 		return double(.0);
 	}
