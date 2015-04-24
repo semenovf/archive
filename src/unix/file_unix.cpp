@@ -19,7 +19,7 @@ struct file_impl : public device_impl
 	string _path;
 	int    _fd;
 
-	file_impl () : _path(nullptr), _fd(-1) { ; }
+	file_impl () : _fd(-1) { ; }
 	~file_impl ()
 	{
 		if (_fd > 0) {
@@ -73,26 +73,26 @@ static bool set_permissions (const pfs::string & path, int32_t perms)
 
 ssize_t file_impl::readBytes (byte_t bytes[], size_t n, errorable_ext & ex)
 {
+    PFS_ASSERT(_fd  >= 0);
     ssize_t sz;
 
     sz = ::read(_fd, bytes, n);
     if (sz < 0) {
-        pfs::string errmsg;
-        errmsg << _path << ": " << _Tr("read failure");
-        ex.addSystemError(errno, errmsg);
+        ex.addSystemError(errno
+                , string() << _path << ": " << _Tr("read failure"));
     }
     return sz;
 }
 
 ssize_t file_impl::writeBytes (const byte_t bytes[], size_t n, errorable_ext & ex)
 {
+    PFS_ASSERT(_fd  >= 0);
     ssize_t sz;
 
     sz = ::write(_fd, bytes, n);
     if( sz < 0 ) {
-        pfs::string errmsg;
-        errmsg << _path << ": " << _Tr("write failure");
-        ex.addSystemError(errno, errmsg);
+        ex.addSystemError(errno
+                , string() << _path << ": " << _Tr("write failure"));
     }
     return sz;
 }
@@ -119,9 +119,8 @@ bool file_impl::closeDevice (errorable_ext & ex)
 
     if (_fd > 0) {
         if (::close(_fd) < 0) {
-            pfs::string errmsg;
-            errmsg << _path << ": " << _Tr("close failure");
-            ex.addSystemError(errno, errmsg);
+            ex.addSystemError(errno
+                    , string() << _path << ": " << _Tr("close failure"));
             r = false;
         }
     }
@@ -138,8 +137,13 @@ bool file_impl::deviceIsOpened () const
 
 void file_impl::flushDevice ()
 {
-    if (_fd >= 0)
-        ::fsync(_fd);
+    PFS_ASSERT(_fd  >= 0);
+
+#ifdef PFS_HAVE_FSYNC
+    ::fsync(_fd);
+#else
+#   error "Don't know how to sync file"
+#endif
 }
 
 file::file (int fd) : device(new file_impl)

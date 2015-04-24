@@ -130,6 +130,11 @@ public:
 	            : _d.cast<device_impl>()->readBytes(bytes, n, *this);
 	}
 
+    ssize_t read (char chars[], size_t n)
+    {
+        return read(reinterpret_cast<byte_t *>(chars), n);
+    }
+
 	byte_string read (size_t n);
 
 	ssize_t write (const byte_t bytes[], size_t n)
@@ -138,6 +143,11 @@ public:
 	            ? 0
 	            : _d.cast<device_impl>()->writeBytes(bytes, n, *this);
 	}
+
+    ssize_t write (const char * chars, size_t n)
+    {
+        return write(reinterpret_cast<const byte_t *>(chars), n);
+    }
 
 	ssize_t write (const byte_string & bytes, size_t n)
 	{

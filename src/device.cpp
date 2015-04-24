@@ -10,6 +10,30 @@
 
 namespace pfs { namespace io {
 
+static const size_t DEFAULT_READ_BUFSZ = 256;
+
+byte_string device::read (size_t n)
+{
+    byte_t buffer[DEFAULT_READ_BUFSZ];
+    byte_t * pbuffer = buffer;
+    byte_string r;
+
+    if (n > DEFAULT_READ_BUFSZ) {
+        pbuffer = new byte_t[n];
+    }
+
+    ssize_t sz = read(pbuffer, n);
+
+    if (sz > 0) {
+        r = byte_string(pbuffer, size_t(sz));
+    }
+
+    if (n > DEFAULT_READ_BUFSZ)
+        delete [] pbuffer;
+
+    return r;
+}
+
 bool device::compress (device & dest, zlib::compression_level level, size_t chunkSize)
 {
     if (isNull())

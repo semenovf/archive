@@ -1,12 +1,8 @@
 #include <pfs/test.hpp>
 #include "pfs/fs.hpp"
 #include "pfs/io/file.hpp"
-//#include <cstring>
-//#include <cstdio>
 
-#ifdef __COMMENT__
-
-const char *loremipsum =
+const char * loremipsum =
 "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    \n\
 2.sed diam nonummy nibh euismod tincidunt ut laoreet dolore     \n\
 3.magna aliquam erat volutpat. Ut wisi enim ad minim veniam,    \n\
@@ -47,6 +43,8 @@ const char *loremipsum =
 38.anteposuerit litterarum formas humanitatis per seacula quarta \n\
 39.decima et quinta decima.\" Eodem modo typi, qui nunc nobis    \n\
 40.videntur parum clari, fiant sollemnes in futurum.";
+
+#ifdef __COMMENT__
 
 const char * loremipsum_lines[] = {
    "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    "
@@ -195,29 +193,43 @@ void test_reader_iterator_ext()
 
 #endif
 
-void test_write_read ()
-{
-    pfs::io::file file();
-
-}
-
 void test_open_absent_file ()
 {
-	pfs::io::file file;
-	pfs::string unknownPath("!@#$%");
-	file.open(unknownPath, pfs::io::device::ReadOnly);
+    pfs::io::file file;
+    pfs::string unknownPath("!@#$%");
+    file.open(unknownPath, pfs::io::device::ReadOnly);
 
-	TEST_FAIL(!file.opened());
-	file.logErrors();
+    TEST_FAIL(!file.opened());
+    file.logErrors();
+}
+
+void test_write_read ()
+{
+    pfs::fs fs;
+    pfs::string fileName = fs.tempFile(_u8("pfs-io-"), _u8(".tmp"));
+    TEST_FAIL2(!fileName.isEmpty(), "Build temporary file name");
+    pfs::io::file file(fileName);
+
+    TEST_FAIL(file.write(loremipsum, ::strlen(loremipsum)) == ssize_t(::strlen(loremipsum)));
+
+    file.rewind();
+    pfs::byte_string bs = file.read(::strlen(loremipsum));
+
+
+
+    TEST_OK(file.close());
+    TEST_OK(bs == loremipsum);
+    TEST_FAIL2(fs.unlink(fileName), "Temporary file unlink");
 }
 
 int main(int argc, char *argv[])
 {
     PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(1);
+    BEGIN_TESTS(6);
 
     if (1) test_open_absent_file();
+    if (1) test_write_read();
 
     END_TESTS;
 }
