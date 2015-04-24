@@ -6,6 +6,8 @@
 */
 
 #include "../random_p.hpp"
+#include <pfs/platform.hpp>
+#include <sys/time.h>
 #include <cstdlib>
 
 namespace pfs {
@@ -42,7 +44,8 @@ private:
 inline random_impl::random_impl ()
 {
 #if defined PFS_HAVE_RANDOM_R
-	init_random_r_version(1);
+    pfs::time ct = platform::currentTime();
+	init_random_r_version(uint32_t(ct.millis()));
 #endif
 }
 

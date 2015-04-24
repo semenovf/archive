@@ -67,7 +67,11 @@ public:
 	size_t size (const pfs::string & path) const;
 	bool simpleBackup (const pfs::string & path);
 	pfs::string tempDirectory ();
-	pfs::string tempFile (const string & prefix, const string & suffix);
+	pfs::string tempFile (const string & prefix, const string & suffix, const string & dir, int nattempts = 10);
+	pfs::string tempFile (const string & prefix, const string & suffix, int nattempts = 10)
+	{
+	    return tempFile(prefix, suffix, tempDirectory(), nattempts);
+	}
 	pfs::string basename (const pfs::string & path) const;
 	pfs::string join (const pfs::string & dir, const pfs::string filename);
 	pfs::stringlist entryListByRegExp (const pfs::string & dir, const pfs::stringlist & reNameFilters, uint_t filters, uint_t sort = NoSort);

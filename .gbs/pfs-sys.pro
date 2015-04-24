@@ -8,6 +8,8 @@ TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = pfs-sys       \
 	tests/dl         \
+	tests/fs         \
+	tests/random     \
 	tests/regexp     \
 	tests/thread     \
 	tests/uri        \

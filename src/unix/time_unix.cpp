@@ -20,7 +20,7 @@ DLL_API pfs::time currentTime ()
 
     struct tm * tmPtr = nullptr;
 
-#if CWT_HAVE_LOCALTIME_R
+#ifdef PFS_HAVE_LOCALTIME_R
     tzset();
     struct tm res;
     tmPtr = localtime_r(& t, & res);

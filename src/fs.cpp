@@ -27,20 +27,19 @@ string fs::basename (const string & path) const
 	return pfs::string();
 }
 
-string fs::tempFile (const string & prefix, const string & suffix)
+string fs::tempFile (const string & prefix, const string & suffix, const string & dir, int nattempts)
 {
     string r;
-    string tmpDir = tempDirectory();
-    size_t ntries = 100;
+    pfs::random rnd;
 
     do {
-        random rand;
         string s;
-        s << prefix << string::toString(rand.rand(), 16) << suffix;
-        r = join(tmpDir, s);
-    } while (!exists(r) && --ntries);
+        uint32_t d = rnd.rand();
+        s << prefix << string::toString(d, 16) << suffix;
+        r = join(dir, s);
+    } while (exists(r) && --nattempts);
 
-    if (!ntries) {
+    if (nattempts <= 0) {
         return string();
     }
 
