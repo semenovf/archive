@@ -51,7 +51,7 @@ public:
 	bool isGood () const { return _errors.size() == 0; }
 	const pfs::string lastErrorText () const;
 
-	friend std::ostream & operator << (std::ostream &, errorable &);
+	void print (std::ostream &);
 };
 
 
@@ -80,6 +80,13 @@ inline const pfs::string errorable::lastErrorText () const
 			? pfs::string((&_errors.last())->_errstr)
 			: pfs::string();
 }
+
+inline std::ostream & operator << (std::ostream & out, errorable & ex)
+{
+   ex.print(out);
+   return out;
+}
+
 
 } // pfs
 

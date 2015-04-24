@@ -30,25 +30,21 @@ void errorable::addError (const pfs::string & text)
  * @details Errors automatically cleared after output.
  *
  * @param out Stream reference to output errors.
- * @param er Errorable object reference.
- * @return Output stream reference.
- *
  */
-std::ostream & operator << (std::ostream & out, errorable & er)
+void errorable::print (std::ostream & out)
 {
-	if (er._errors.size() > 0) {
-		pfs::vector<errorable::erritem>::const_iterator it = er._errors.cbegin();
-		pfs::vector<errorable::erritem>::const_iterator itEnd = er._errors.cend();
-		for (; it != itEnd; ++it) {
-			if (it->_ntimes > 1) {
-				out << it->_errstr << _u8("(repeat ") << it->_ntimes << _u8(" times)") << std::endl;
-			} else {
-				out << it->_errstr << std::endl;
-			}
-		}
-	}
-	er.clearErrors();
-	return out;
+    if (_errors.size() > 0) {
+        pfs::vector<errorable::erritem>::const_iterator it = _errors.cbegin();
+        pfs::vector<errorable::erritem>::const_iterator itEnd = _errors.cend();
+        for (; it != itEnd; ++it) {
+            if (it->_ntimes > 1) {
+                out << it->_errstr << _u8("(repeat ") << it->_ntimes << _u8(" times)") << std::endl;
+            } else {
+                out << it->_errstr << std::endl;
+            }
+        }
+    }
+    clearErrors();
 }
 
 } // pfs

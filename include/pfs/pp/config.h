@@ -102,4 +102,8 @@
 #	define PFS_HAVE_STRTOLD 1
 #endif
 
+#if _BSD_SOURCE || _XOPEN_SOURCE || _POSIX_C_SOURCE >= 200112L
+#   define PFS_HAVE_FSYNC 1
+#endif
+
 #endif /* __PFS_CONFIG_H__ */
