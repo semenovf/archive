@@ -62,14 +62,21 @@ public:
 		return isNull() || _holder->_ref.load() == 1;
 	}
 
-	template <typename T>
-	void swap (pimpl & o);
-//	{
+	void swap (pimpl & o)
+	{
+	    if (!this->isNull())
+	        this->detach();
+
+	    if (!o.isNull())
+	        o.detach();
+
+	    pfs_swap(_holder, o._holder);
+
 //		PFS_ASSERT(_holder);
 //		PFS_ASSERT(o._holder);
 //		pfs_swap(static_cast<impl_cast_holder<T> *>(_holder)->_d
 //				, static_cast<impl_cast_holder<T> *>(o._holder)->_d);
-//	}
+	}
 
 protected:
 	void deref ()
@@ -141,31 +148,6 @@ public:
 };
 
 template <typename T>
-void pimpl::swap (pimpl & o)
-{
-	if (!this->isNull())
-		this->detach();
-
-	if (!o.isNull())
-		o.detach();
-
-	pfs_swap(_holder, o._holder);
-
-//	if (this->isNull() && o.isNull()) {
-//		;
-//	} else if (this->isNull() && !o.isNull()) {
-//		o.detach();
-//		pfs_swap(_holder, o._holder);
-//	} else if (!this->isNull() && o.isNull()) {
-//		this->detach();
-//		pfs_swap(_holder, o._holder);
-//	} else {
-//		pfs_swap(static_cast<impl_cast_holder<T> *>(_holder)->_d
-//				, static_cast<impl_cast_holder<T> *>(o._holder)->_d);
-//	}
-}
-
-template <typename T>
 struct default_allocator
 {
 	T * operator () () const { return new T; }
@@ -225,9 +207,7 @@ public:
 
 	void swap (nullable & o)
 	{
-		_d.swap<T>(o._d);
-//		_initialized = _d.isNull() ? false : true;
-//		o._initialized = o._d.isNull() ? false : true;
+		_d.swap(o._d);
 	}
 
 	/// @see http://www.possibility.com/Cpp/const.html

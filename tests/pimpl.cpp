@@ -71,7 +71,7 @@ struct AA
 	AA (std::ostream & os, int) : _d(new implB(os)) {}
 	void swap (AA & other)
 	{
-		_d.swap<implA>(other._d);
+		_d.swap(other._d);
 	}
 };
 
