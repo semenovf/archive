@@ -64,10 +64,10 @@ public:
 
 	size_type size () const { return base_class::cast()->size(); }
 
-	T & topValueRef () { return base_class::cast()->topRef(); }
-	const T & topValueRef () const { return base_class::cast()->topRef(); }
+	T & topRef () { return base_class::cast()->topRef(); }
+	const T & topRef () const { return base_class::cast()->topRef(); }
 
-	value_type topValue () const { return topValueRef(); }
+	value_type topValue () const { return topRef(); }
 	reference top () const
 	{
 		stack * self = const_cast<stack *>(this);

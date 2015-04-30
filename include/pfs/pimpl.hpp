@@ -54,7 +54,10 @@ public:
 		return *this;
 	}
 
-	~pimpl () { deref(); }
+	~pimpl ()
+	{
+	    deref();
+	}
 
 	bool isNull () const { return _holder == nullptr; }
 	bool isUnique () const
@@ -77,6 +80,12 @@ public:
 //		pfs_swap(static_cast<impl_cast_holder<T> *>(_holder)->_d
 //				, static_cast<impl_cast_holder<T> *>(o._holder)->_d);
 	}
+
+    void reset ()
+    {
+        pimpl copy;
+        swap(copy);
+    }
 
 protected:
 	void deref ()
@@ -124,9 +133,19 @@ protected:
 public:
 	void detach ()
 	{
+#ifdef _NDEBUG
 		if (_holder && _holder->_ref.load() > 1) { // not unique
-			_holder->_ref.deref();
-			_holder = _holder->clone();
+#else
+	    if (_holder) {
+	        int rf = _holder->_ref.load();
+	        PFS_ASSERT(rf > 0);
+	        if (rf > 1) {
+#endif
+	            _holder->_ref.deref();
+	            _holder = _holder->clone();
+#ifndef _NDEBUG
+	        }
+#endif
 		}
 	}
 
