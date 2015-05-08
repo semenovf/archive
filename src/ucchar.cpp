@@ -9,17 +9,6 @@
 
 namespace pfs {
 
-const ucchar ucchar::MaxCodePoint      (0x10ffff);
-const ucchar ucchar::Null              (0x0000);
-const ucchar ucchar::ReplacementChar   (uint32_t(0x0000FFFD));
-const ucchar ucchar::MaxBMP            (uint32_t(0x0000FFFF));
-const ucchar ucchar::BomChar           (uint32_t(0xFEFF));
-const ucchar ucchar::HiSurrogateStart  (uint32_t(0xD800));
-const ucchar ucchar::HiSurrogateEnd    (uint32_t(0xDBFF));
-const ucchar ucchar::LowSurrogateStart (uint32_t(0xDC00));
-const ucchar ucchar::LowSurrogateEnd   (uint32_t(0xDFFF));
-
-
 bool ucchar::isSpace() const
 {
 // TODO need to use Unicode Database (UCD) to extend the notion of 'space' symbol.
@@ -31,7 +20,6 @@ bool ucchar::isSpace() const
 		|| _value == uint32_t('\r')
 		? true : false;
 }
-
 
 bool ucchar::isDigit () const
 {

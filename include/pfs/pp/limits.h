@@ -84,19 +84,27 @@
 #	error DBL_MIN is not defined
 #endif
 
+
 #ifdef LDBL_MIN
+#	define PFS_HAVE_LONG_DOUBLE 1
+#endif
+
+#ifdef PFS_HAVE_LONG_DOUBLE
 #	if defined(PFS_CC_MSC_VERSION) && PFS_CC_MSC_VERSION <= 1600 /* <= VS 2010 */
 	/* TODO Need to check in newer versions */
 	/* LDBL_MIN is equal to DBL_MIN
 	 * no differences between double and long double
 	 * */
+#		define PFS_HAVE_REAL64 1
 #	else
-#		define PFS_HAVE_LONG_DOUBLE 1
-#		define PFS_LONG_DOUBLE_MIN LDBL_MIN /* 3.36210314311209350626e-4932L */
-#		define PFS_LONG_DOUBLE_MAX LDBL_MAX /* 1.18973149535723176502e+4932L */
-#		define PFS_LONG_DOUBLE_MIN_10_EXP LDBL_MIN_10_EXP /* -4931 */
-#		define PFS_LONG_DOUBLE_MAX_10_EXP LDBL_MAX_10_EXP /* 4932 */
+//      TODO need to check other cases
+#		define PFS_HAVE_REAL128 1
 #	endif
+
+#	define PFS_LONG_DOUBLE_MIN LDBL_MIN /* 3.36210314311209350626e-4932L */
+#	define PFS_LONG_DOUBLE_MAX LDBL_MAX /* 1.18973149535723176502e+4932L */
+#	define PFS_LONG_DOUBLE_MIN_10_EXP LDBL_MIN_10_EXP /* -4931 */
+#	define PFS_LONG_DOUBLE_MAX_10_EXP LDBL_MAX_10_EXP /* 4932 */
 #else
 #	error LDBL_MIN is not defined
 #endif
@@ -115,7 +123,7 @@
 #	define PFS_REAL_MAX_10_EXP  PFS_DOUBLE_MAX_10_EXP
 #endif
 
-#ifdef PFS_HAVE_LONG_DOUBLE
+#ifdef HUGE_VALL
 #	define PFS_HUGE_VAL HUGE_VALL
 #else
 #	define PFS_HUGE_VAL HUGE_VAL
@@ -177,18 +185,14 @@
 #	endif
 
 
-#	ifdef PFS_HAVE_LONG_DOUBLE
-#		if defined(PFS_OS_64BITS)
-#			define PFS_CHECK_SIZEOF_LONG_DOUBLE PFS_CHECK_SIZEOF_TYPE(long double,16)
-#		elif defined(PFS_OS_32BITS)
-#			define PFS_CHECK_SIZEOF_LONG_DOUBLE PFS_CHECK_SIZEOF_TYPE(long double,12)
-#		else
-#			error Unsupported platform
-#		endif
-#	
+#	if defined(PFS_HAVE_REAL128)
+#		define PFS_CHECK_SIZEOF_REAL PFS_CHECK_SIZEOF_TYPE(real_t,16)
+#	elif defined(PFS_HAVE_REAL64)
+#		define PFS_CHECK_SIZEOF_REAL PFS_CHECK_SIZEOF_TYPE(real_t,8)
 #	else
-#		define PFS_CHECK_SIZEOF_LONG_DOUBLE
+#		error "Unsupported platform"
 #	endif
+#
 
 #	define PFS_CHECK_SIZEOF_TYPES                 \
 	PFS_CHECK_SIZEOF_TYPE(int8_t, 1);             \
@@ -207,7 +211,7 @@
 	PFS_CHECK_SIZEOF_TYPE(double, 8);             \
 	PFS_CHECK_SIZEOF_LONG;                        \
 	PFS_CHECK_SIZEOF_WCHAR;                       \
-	PFS_CHECK_SIZEOF_LONG_DOUBLE;
+	PFS_CHECK_SIZEOF_REAL;
 #else
 #	define PFS_CHECK_SIZEOF_TYPES
 #endif
@@ -219,48 +223,48 @@ namespace pfs {
 template <typename _number_type> _number_type max_type ();
 template <typename _number_type> _number_type min_type ();
 
-template<> inline char           max_type<char>           () { return (char)PFS_CHAR_MAX; }
-template<> inline signed char    max_type<signed char>    () { return (signed char)PFS_SCHAR_MAX; }
-template<> inline unsigned char  max_type<unsigned char>  () { return (unsigned char)PFS_UCHAR_MAX; }
-template<> inline short          max_type<short>          () { return (short)PFS_SHORT_MAX; }
-template<> inline unsigned short max_type<unsigned short> () { return (unsigned short)PFS_USHORT_MAX; }
-template<> inline int            max_type<int>            () { return (int)PFS_INT_MAX; }
-template<> inline unsigned int   max_type<unsigned int>   () { return (unsigned int)PFS_UINT_MAX; }
-template<> inline long           max_type<long>           () { return (long)PFS_LONG_MAX; }
-template<> inline unsigned long  max_type<unsigned long>  () { return (unsigned long)PFS_ULONG_MAX; }
+template<> inline char           max_type<char>           () { return static_cast<char>(PFS_CHAR_MAX); }
+template<> inline signed char    max_type<signed char>    () { return static_cast<signed char>(PFS_SCHAR_MAX); }
+template<> inline unsigned char  max_type<unsigned char>  () { return static_cast<unsigned char>(PFS_UCHAR_MAX); }
+template<> inline short          max_type<short>          () { return static_cast<short>(PFS_SHORT_MAX); }
+template<> inline unsigned short max_type<unsigned short> () { return static_cast<unsigned short>(PFS_USHORT_MAX); }
+template<> inline int            max_type<int>            () { return static_cast<int>(PFS_INT_MAX); }
+template<> inline unsigned int   max_type<unsigned int>   () { return static_cast<unsigned int>(PFS_UINT_MAX); }
+template<> inline long           max_type<long>           () { return static_cast<long>(PFS_LONG_MAX); }
+template<> inline unsigned long  max_type<unsigned long>  () { return static_cast<unsigned long>(PFS_ULONG_MAX); }
 
 #ifdef PFS_HAVE_LONGLONG
-template<> inline long long  max_type<long long>  () { return (long long)PFS_LLONG_MAX; }
-template<> inline unsigned long long max_type<unsigned long long> () { return (unsigned long long)PFS_ULLONG_MAX; }
+template<> inline long long  max_type<long long>  () { return static_cast<long long>(PFS_LLONG_MAX); }
+template<> inline unsigned long long max_type<unsigned long long> () { return static_cast<unsigned long long>(PFS_ULLONG_MAX); }
 #endif
 
-template<> inline float    max_type<float>    () { return (float)PFS_FLOAT_MAX; }
-template<> inline double   max_type<double>   () { return (double)PFS_DOUBLE_MAX; }
+template<> inline float    max_type<float>    () { return static_cast<float>(PFS_FLOAT_MAX); }
+template<> inline double   max_type<double>   () { return static_cast<double>(PFS_DOUBLE_MAX); }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-template<> inline long double   max_type<long double>   () { return PFS_LONG_DOUBLE_MAX; }
+template<> inline long double   max_type<long double>   () { return static_cast<long double>(PFS_LONG_DOUBLE_MAX); }
 #endif
 
-template<> inline char           min_type<char>           () { return (char)PFS_CHAR_MIN; }
-template<> inline signed char    min_type<signed char>    () { return (signed char)PFS_SCHAR_MIN; }
-template<> inline unsigned char  min_type<unsigned char>  () { return (unsigned char)0; }
-template<> inline short          min_type<short>          () { return (short)PFS_SHORT_MIN; }
-template<> inline unsigned short min_type<unsigned short> () { return (unsigned short)0; }
-template<> inline int            min_type<int>            () { return (int)PFS_INT_MIN; }
-template<> inline unsigned int   min_type<unsigned int>   () { return (unsigned int)0; }
-template<> inline long           min_type<long>           () { return (long)PFS_LONG_MIN; }
-template<> inline unsigned long  min_type<unsigned long>  () { return (unsigned long)0; }
+template<> inline char           min_type<char>           () { return static_cast<char>(PFS_CHAR_MIN); }
+template<> inline signed char    min_type<signed char>    () { return static_cast<signed char>(PFS_SCHAR_MIN); }
+template<> inline unsigned char  min_type<unsigned char>  () { return static_cast<unsigned char>(0); }
+template<> inline short          min_type<short>          () { return static_cast<short>(PFS_SHORT_MIN); }
+template<> inline unsigned short min_type<unsigned short> () { return static_cast<unsigned short>(0); }
+template<> inline int            min_type<int>            () { return static_cast<int>(PFS_INT_MIN); }
+template<> inline unsigned int   min_type<unsigned int>   () { return static_cast<unsigned int>(0); }
+template<> inline long           min_type<long>           () { return static_cast<long>(PFS_LONG_MIN); }
+template<> inline unsigned long  min_type<unsigned long>  () { return static_cast<unsigned long>(0); }
 
 #ifdef PFS_HAVE_LONGLONG
-template<> inline long long  min_type<long long>  () { return (long long)PFS_LLONG_MIN; }
-template<> inline unsigned long long min_type<unsigned long long> () { return (unsigned long long)0; }
+template<> inline long long  min_type<long long>  () { return static_cast<long long>(PFS_LLONG_MIN); }
+template<> inline unsigned long long min_type<unsigned long long> () { return static_cast<unsigned long long>(0); }
 #endif
 
-template<> inline float    min_type<float>    () { return (float)PFS_FLOAT_MIN; }
-template<> inline double   min_type<double>   () { return (double)PFS_DOUBLE_MIN; }
+template<> inline float    min_type<float>    () { return static_cast<float>(PFS_FLOAT_MIN); }
+template<> inline double   min_type<double>   () { return static_cast<double>(PFS_DOUBLE_MIN); }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-template<> inline long double   min_type<long double>   () { return PFS_LONG_DOUBLE_MIN; }
+template<> inline long double   min_type<long double>   () { return static_cast<long double>(PFS_LONG_DOUBLE_MIN); }
 #endif
 
 } /* namespace pfs */

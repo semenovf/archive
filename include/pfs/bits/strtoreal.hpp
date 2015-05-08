@@ -185,7 +185,7 @@ real_t strtoreal (Iter begin, Iter end, CharT decimalPoint, Iter * endref = null
 		, PFS_REAL_LITERAL(1.0e64)
 		, PFS_REAL_LITERAL(1.0e128)
 		, PFS_REAL_LITERAL(1.0e256)
-#ifdef PFS_HAVE_LONG_DOUBLE
+#ifdef PFS_HAVE_REAL128
 		, PFS_REAL_LITERAL(1.0e512)
 		, PFS_REAL_LITERAL(1.0e1024)
 		, PFS_REAL_LITERAL(1.0e2048)

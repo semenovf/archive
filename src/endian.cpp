@@ -8,8 +8,7 @@
 
 #include "pfs/endian.hpp"
 
-namespace pfs
-{
+namespace pfs {
 
 endian::type_enum endian::type ()
 {
@@ -128,10 +127,16 @@ long double endian::swap (long double f)
 {
 	union {
 		long double f;
+#if defined(PFS_HAVE_REAL128)
 		char b[16];
+#elif defined(PFS_HAVE_REAL64)
+		char b[8];
+#endif
 	} d1, d2;
 
 	d1.f = f;
+
+#if defined(PFS_HAVE_REAL128)
 	d2.b[0] = d1.b[15];
 	d2.b[1] = d1.b[14];
 	d2.b[2] = d1.b[13];
@@ -148,8 +153,18 @@ long double endian::swap (long double f)
 	d2.b[13] = d1.b[2];
 	d2.b[14] = d1.b[1];
 	d2.b[15] = d1.b[0];
+#elif defined(PFS_HAVE_REAL64)
+	d2.b[0] = d1.b[7];
+	d2.b[1] = d1.b[6];
+	d2.b[2] = d1.b[5];
+	d2.b[3] = d1.b[4];
+	d2.b[4] = d1.b[3];
+	d2.b[5] = d1.b[2];
+	d2.b[6] = d1.b[1];
+	d2.b[7] = d1.b[0];
+#endif
 	return d2.f;
 }
 #endif
 
-} // namespace cdtl
+} // namespace pfs

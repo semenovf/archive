@@ -19,9 +19,10 @@ SUBDIRS  =                \
      tests/vector         \
      tests/map_hash       \
      tests/date           \
+     tests/real_cast      \
      tests/time           \
      tests/pimpl          \
-#     tests/alignof        \
      tests/variant        \
      tests/safeformat     \
      tests/stack
+#     tests/alignof        \

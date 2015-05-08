@@ -20,19 +20,43 @@ class DLL_API ucchar
 	uint32_t _value;
 
 public:
-	static const ucchar MaxCodePoint;
-	static const ucchar Null;
-	static const ucchar ReplacementChar;
-	static const ucchar MaxBMP;
-	static const ucchar BomChar;
+	// NOTE!!!
+	//
+	// ucchar.hpp
+	// ---
+	// static const ucchar MaxCodePoint;
+	// ...
+	//
+	// ---
+	// ucchar.cpp
+	// ---
+	// const ucchar ucchar::MaxCodePoint(0x10ffff);
+	// ...
+	//
+	// Using static member in such manner (see above) can cause in MSVC:
+	// error LNK2001: unresolved external symbol "public: static class pfs::ucchar const pfs::ucchar::MaxCodePoint"
+	// while linking with dependent library
+	//
+	// Resolve:
+	// 1. Use MaxCodePoint definition as below
+	// or
+	// 2. Do not use MaxCodePoint in headers
+	//
 
-	static const ucchar HiSurrogateStart;
-	static const ucchar HiSurrogateEnd;
-	static const ucchar LowSurrogateStart;
-	static const ucchar LowSurrogateEnd;
+	static const uint32_t MaxCodePoint      = 0x10ffff;
+	static const uint32_t Null              = 0x0000;
+	static const uint32_t ReplacementChar   = uint32_t(0x0000FFFD);
+	static const uint32_t MaxBMP            = uint32_t(0x0000FFFF);
+	static const uint32_t BomChar           = uint32_t(0xFEFF);
+
+	static const uint32_t HiSurrogateStart  = uint32_t(0xD800);
+	static const uint32_t HiSurrogateEnd    = uint32_t(0xDBFF);
+	static const uint32_t LowSurrogateStart = uint32_t(0xDC00);
+	static const uint32_t LowSurrogateEnd   = uint32_t(0xDFFF);
 
 public:
 	ucchar () : _value(Null) {}
+
 	explicit ucchar (char latin1)   : _value(latin1) { PFS_ASSERT(uint8_t(latin1) <= 127); }
 	explicit ucchar (uchar_t latin1): _value(latin1) { PFS_ASSERT(latin1 <= 127); }
 	explicit ucchar (int ucs)       : _value(ucs)    { }
@@ -56,16 +80,16 @@ public:
 	/* Low Surrogates: DC00-DFFF
 	 * Qt implementation: (ucs4 & 0xfffffc00) == 0xdc00;
 	 * */
-	static bool isLowSurrogate (const ucchar & ucs4) { return ucs4._value >= LowSurrogateStart._value && ucs4._value <= LowSurrogateEnd._value; }
-	static bool isLowSurrogate (uint32_t ucs4) { return ucs4 >= LowSurrogateStart._value && ucs4 <= LowSurrogateEnd._value; }
+	static bool isLowSurrogate (const ucchar & ucs4) { return ucs4._value >= LowSurrogateStart && ucs4._value <= LowSurrogateEnd; }
+	static bool isLowSurrogate (uint32_t ucs4)       { return ucs4 >= LowSurrogateStart && ucs4 <= LowSurrogateEnd; }
 
 	/* High Surrogates: D800-DBFF
 	 * Qt implementation: (ucs4 & 0xfffffc00) == 0xd800
 	 * */
-	static bool isHiSurrogate (const ucchar & ucs4)      { return ucs4._value >= HiSurrogateStart._value && ucs4._value <= HiSurrogateEnd._value; }
-	static bool isHiSurrogate (uint32_t ucs4)            { return ucs4 >= HiSurrogateStart._value && ucs4 <= HiSurrogateEnd._value; }
-	static bool isSurrogate (const ucchar & ucs4)        { return (ucs4._value - HiSurrogateStart._value < 2048u); }
-	static bool isSurrogate (uint32_t ucs4)              { return (ucs4 - HiSurrogateStart._value < 2048u); }
+	static bool isHiSurrogate (const ucchar & ucs4)      { return ucs4._value >= HiSurrogateStart && ucs4._value <= HiSurrogateEnd; }
+	static bool isHiSurrogate (uint32_t ucs4)            { return ucs4 >= HiSurrogateStart && ucs4 <= HiSurrogateEnd; }
+	static bool isSurrogate (const ucchar & ucs4)        { return (ucs4._value - HiSurrogateStart < 2048u); }
+	static bool isSurrogate (uint32_t ucs4)              { return (ucs4 - HiSurrogateStart < 2048u); }
 	static bool isValid (const ucchar & ch, const ucchar & min_uc = ucchar());
 	static bool isValid (uint32_t ch, uint32_t min_uc);
 
@@ -91,8 +115,8 @@ public:
 
 inline void ucchar::invalidate ()
 {
-	PFS_ASSERT(MaxCodePoint._value < max_type<uint32_t>());
-	_value = MaxCodePoint._value + 1;
+	PFS_ASSERT(MaxCodePoint < max_type<uint32_t>());
+	_value = MaxCodePoint + 1;
 }
 
 inline bool ucchar::isValid (const ucchar & min_uc) const
@@ -142,9 +166,8 @@ inline bool ucchar::isValid (uint32_t ch, uint32_t min_uc)
 	return (ch >= min_uc) // overlong
 			&& (ch != 0xFEFF)    // the BOM
 			&& (!isSurrogate(ch))
-			&& (ch <= MaxCodePoint._value);
+			&& (ch <= MaxCodePoint);
 }
-
 
 //
 // cctype specializations {

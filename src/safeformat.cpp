@@ -660,7 +660,7 @@ inline string __sf_default_traits<string>::asChar () const
 template <>
 inline string __sf_default_traits<void *>::asChar () const
 {
-	return string(1, ucchar::ReplacementChar);
+	return string(1, ucchar(ucchar::ReplacementChar));
 }
 //}}} asChar () -------------------------------------------------
 
