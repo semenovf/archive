@@ -19,7 +19,7 @@ void test_compare_fp_cast (T min, T max)
 			<< pfs::type_name<Fp>()
 			<< ", "
 			<< pfs::type_name<T>()
-			<< ">()\n{\n";
+			<< ">(min, max)\n{\n";
 
 	real_t rmin = static_cast<Fp>(pfs::min_type<T>());
 	real_t rmax = static_cast<Fp>(pfs::max_type<T>());

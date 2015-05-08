@@ -8,7 +8,6 @@
 #ifndef __PFS_DATE_HPP__
 #define __PFS_DATE_HPP__
 
-//#include <pfs/hash.hpp>
 #include <pfs.hpp>
 #include <pfs/string.hpp>
 
@@ -17,7 +16,7 @@ namespace pfs {
 class DLL_API date
 {
 public:
-	static const integral_t NullJulianDay  = PFS_LONG_MIN;
+	static const integral_t NullJulianDay  = PFS_INTEGRAL_MIN;
 	static const integral_t MinJulianDay   = integral_t(-784366681008); // Date::julianDay(CWT_INT_MIN, 1, 1)
 	static const integral_t MaxJulianDay   = integral_t(784354017364);  // Date::julianDay(CWT_INT_MAX, 12, 31)
     static const integral_t EpochJulianDay = integral_t(2440588);       // Date::julianDay(1970, 1, 1)

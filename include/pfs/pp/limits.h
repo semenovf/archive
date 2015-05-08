@@ -81,32 +81,37 @@
 #	define PFS_DOUBLE_MIN_10_EXP DBL_MIN_10_EXP /* -307 */
 #	define PFS_DOUBLE_MAX_10_EXP DBL_MAX_10_EXP /* 308 */
 #else
-#	error DBL_MIN is not defined
+#	error "DBL_MIN is not defined"
 #endif
 
+/*
+ * sizeof(FLT) * 8 = FLT_MANT_DIG + lg(FLT_MAX_EXP) + 1
+ * 32: FLT_MANT_DIG = 24, FLT_MAX_EXP = 128
+ * 64: DBL_MANT_DIG = 53, DBL_MAX_EXP = 1024
+ * 128: LDBL_MANT_DIG = 113, LDBL_MAX_EXP = 16384
+ *
+ * x86 Extended Precision Format:
+ * @see http://en.wikipedia.org/wiki/Extended_precision
+ * sizeof(FLT) * 8 = FLT_MANT_DIG + lg(FLT_MAX_EXP) + 1 + 1
+ * 80: LDBL_MANT_DIG = 64, LDBL_MAX_EXP = 16384: 64 + 14 + 1 + 1 = 80
+ */
 
 #ifdef LDBL_MIN
-#	define PFS_HAVE_LONG_DOUBLE 1
-#endif
-
-#ifdef PFS_HAVE_LONG_DOUBLE
-#	if defined(PFS_CC_MSC_VERSION) && PFS_CC_MSC_VERSION <= 1600 /* <= VS 2010 */
-	/* TODO Need to check in newer versions */
-	/* LDBL_MIN is equal to DBL_MIN
-	 * no differences between double and long double
-	 * */
+#	if LDBL_MANT_DIG == 53
 #		define PFS_HAVE_REAL64 1
-#	else
-//      TODO need to check other cases
+#	elif LDBL_MANT_DIG == 64
+#		define PFS_HAVE_REAL80 1
+#	elif LDBL_MANT_DIG == 113
 #		define PFS_HAVE_REAL128 1
+#	else
+#		error "Unsupported platform"
 #	endif
 
-#	define PFS_LONG_DOUBLE_MIN LDBL_MIN /* 3.36210314311209350626e-4932L */
-#	define PFS_LONG_DOUBLE_MAX LDBL_MAX /* 1.18973149535723176502e+4932L */
-#	define PFS_LONG_DOUBLE_MIN_10_EXP LDBL_MIN_10_EXP /* -4931 */
-#	define PFS_LONG_DOUBLE_MAX_10_EXP LDBL_MAX_10_EXP /* 4932 */
-#else
-#	error LDBL_MIN is not defined
+#	define PFS_HAVE_LONG_DOUBLE 1
+#	define PFS_LONG_DOUBLE_MIN LDBL_MIN
+#	define PFS_LONG_DOUBLE_MAX LDBL_MAX
+#	define PFS_LONG_DOUBLE_MIN_10_EXP LDBL_MIN_10_EXP
+#	define PFS_LONG_DOUBLE_MAX_10_EXP LDBL_MAX_10_EXP
 #endif
 
 #ifdef PFS_HAVE_LONG_DOUBLE
@@ -138,7 +143,7 @@
 #	elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
 #		define PFS_INFINITY (DBL_MAX+DBL_MAX)
 #	else
-#		error INFINITY is undefined
+#		error "INFINITY is undefined"
 #	endif
 #endif
 
@@ -151,7 +156,7 @@
 #	elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
 #		define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
 #	else
-#		error NAN is undefined
+#		error "NAN is undefined"
 #	endif
 #endif
 
@@ -187,12 +192,11 @@
 
 #	if defined(PFS_HAVE_REAL128)
 #		define PFS_CHECK_SIZEOF_REAL PFS_CHECK_SIZEOF_TYPE(real_t,16)
+#	elif defined(PFS_HAVE_REAL80)
+#		define PFS_CHECK_SIZEOF_REAL PFS_CHECK_SIZEOF_TYPE(real_t,12)
 #	elif defined(PFS_HAVE_REAL64)
 #		define PFS_CHECK_SIZEOF_REAL PFS_CHECK_SIZEOF_TYPE(real_t,8)
-#	else
-#		error "Unsupported platform"
 #	endif
-#
 
 #	define PFS_CHECK_SIZEOF_TYPES                 \
 	PFS_CHECK_SIZEOF_TYPE(int8_t, 1);             \
