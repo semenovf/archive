@@ -1,6 +1,7 @@
 #include "pfs/thread.hpp"
 #include "pfs/mt.hpp"
 #include "thread_p.hpp"
+#include <iostream>
 
 namespace pfs {
 
@@ -16,7 +17,7 @@ namespace pfs {
 
 
 thread_data::thread_data (int initialRefCount)
-    : _ref(initialRefCount), _thread(0), _threadId(0),
+    : _ref(initialRefCount), _thread(0), _threadHandle(0),
       _quitNow(false), _canWait(true)
 {}
 
@@ -24,31 +25,9 @@ thread_data::~thread_data()
 {
     PFS_ASSERT(_ref.load() == 0);
 
-    // In the odd case that Qt is running on a secondary thread, the main
-    // thread instance will have been dereffed asunder because of the deref in
-    // QThreadData::current() and the deref in the pthread_destroy. To avoid
-    // crashing during QCoreApplicationData's global static cleanup we need to
-    // safeguard the main thread here.. This fix is a bit crude, but it solves
-    // the problem...
-//    FIXME: if (this->_thread == QCoreApplicationPrivate::theMainThread) {
-//       QCoreApplicationPrivate::theMainThread = 0;
-//       thread_data::clearCurrentThreadData();
-//    }
-
     thread * t = _thread;
     _thread = 0;
     delete t;
-
-//    for (int i = 0; i < postEventList.size(); ++i) {
-//        const QPostEvent &pe = postEventList.at(i);
-//        if (pe.event) {
-//            --pe.receiver->d_func()->postedEvents;
-//            pe.event->posted = false;
-//            delete pe.event;
-//        }
-//    }
-//
-//    // fprintf(stderr, "QThreadData %p destroyed\n", this);
 }
 
 void thread_data::ref()
@@ -74,14 +53,15 @@ thread_impl::thread_impl ()
 	, _priority(thread::InheritPriority)
 	, _data(/*d*/0)
 {
-#if defined (PFS_OS_UNIX)
+#if defined (PFS_CC_GCC)
+    _threadHandle = 0;
+#elif defined (PFS_CC_MSVC)
+    _threadHandle = 0;
     _threadId = 0;
-#elif defined (PFS_OS_WIN)
-    _handle = 0;
     _waiters = 0;
 #endif
 
-#if defined (PFS_OS_WIN)
+#if defined (PFS_CC_MSVC)
     _terminationEnabled = true;
     _terminatePending = false;
 #endif
@@ -120,7 +100,8 @@ thread::~thread()
 	}
 
 	if (d->_running && !d->_finished) {
-		PFS_DEBUG(fprintf(stderr, "pfs::thread: destroyed while thread is still running\n"));
+		PFS_DEBUG(std::cerr
+				<< "pfs::thread: destroyed while thread is still running\n");
 	}
 
 	d->_data->_thread = nullptr;
@@ -164,7 +145,8 @@ void thread::setPriority (Priority priority)
 	pfs::auto_lock<> locker(& d->_mutex);
 
 	if (!d->_running) {
-		PFS_DEBUG(fprintf(stderr, "pfs::thread::setPriority(): cannot set priority, thread is not running\n"));
+		PFS_DEBUG(std::cerr
+				<< "pfs::thread::setPriority(): cannot set priority, thread is not running\n");
         return;
     }
     d->setPriority(priority);
@@ -188,7 +170,8 @@ void thread::requestInterruption ()
         return;
 
     if (d->isMainThread()) {
-        PFS_DEBUG(fprintf(stderr, "pfs::thread::requestInterruption has no effect on the main thread\n"));
+        PFS_DEBUG(std::cerr
+        		<< "pfs::thread::requestInterruption has no effect on the main thread\n");
         return;
     }
     d->_interruptionRequested = true;

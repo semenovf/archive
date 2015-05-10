@@ -18,7 +18,7 @@ unix {
     QMAKE_CFLAGS += -include unistd.h
 
     SOURCES += ../../src/*.cpp
-    SOURCES += ../../src/*.c
+ #   SOURCES += ../../src/*.c
     SOURCES += ../../pcre8/*.c
     SOURCES += ../../zlib/*.c
     SOURCES += ../../src/unix/*.cpp
@@ -33,7 +33,7 @@ unix {
 win32 {
 #    HEADERS += ..\\..\\pcre8\\*.h
     SOURCES += ..\\..\\src\\*.cpp
-    SOURCES += ..\\..\\src\\*.c
+#    SOURCES += ..\\..\\src\\*.c
     SOURCES += ..\\..\\src\\win\\*.cpp
     SOURCES += ..\\..\\pcre8\\*.c
     SOURCES += ..\\..\\zlib\\*.c

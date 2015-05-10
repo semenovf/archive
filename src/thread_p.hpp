@@ -38,22 +38,22 @@ public:
 
     bool isMainThread () const;
 
-#ifdef PFS_OS_UNIX
+#ifdef PFS_CC_GCC
     pthread_t _threadId;
     thread_cv _threadDone;
 
     static void * start (void * arg);
     static void finish (void *);
-#elif defined(PFS_OS_WIN)
+#elif defined(PFS_CC_MSVC)
     static unsigned int __stdcall start (void *);
     static void finish (void *, bool lockAnyway = true);
 
-    HANDLE _handle;
-    unsigned int _id;
+    HANDLE _threadHandle;
+    unsigned int _threadId;
     int _waiters;
     bool _terminationEnabled;
     bool _terminatePending;
-#endif // PFS_OS_WIN
+#endif // PFS_CC_MSVC
 
     thread_data * _data;
 
@@ -75,10 +75,10 @@ private:
 
 public:
     thread *   _thread;
-#ifdef PFS_OS_UNIX
-    pthread_t _threadId;
-#elif defined(PFS_OS_WIN)
-    HANDLE _threadId;
+#ifdef PFS_CC_GCC
+    pthread_t _threadHandle;
+#elif defined(PFS_CC_MSVC)
+    HANDLE _threadHandle;
 #endif
 //    vector<void *> _tls;
 
@@ -90,7 +90,7 @@ public:
     ~thread_data ();
 
     static thread_data * current ();
-    //static void clearCurrentThreadData ();
+    static void clearCurrentThreadData ();
     static thread_data * get2 (thread * thr)
     {
     	PFS_ASSERT_X(thr != 0, "pfs::thread_data::get2(): internal error");

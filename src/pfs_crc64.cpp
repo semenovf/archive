@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <pfs.h>
+#include "pfs/utils.hpp"
 
 #define PFS_INT64_C(x) x##LL
 
@@ -112,7 +112,7 @@ static int64_t __crc64_lookup_table[] = {
 #define CRC64(oldcrc, curByte) (crc64table[BYTE(oldcrc)^BYTE(curByte)]^(QWORD(oldcrc)>>8))
 */
 
-int64_t pfs_crc64_iso (const void * pdata, size_t nbytes, int64_t initial)
+static int64_t pfs_crc64_iso (const void * pdata, size_t nbytes, int64_t initial)
 {
 	const byte_t *pbytes = (const byte_t *)pdata;
 	int64_t r = initial;
@@ -120,3 +120,18 @@ int64_t pfs_crc64_iso (const void * pdata, size_t nbytes, int64_t initial)
 		r = __crc64_lookup_table[(r ^ *pbytes++) & 0xff ] ^ (((uint64_t)r) >> 8);
 	return r;
 }
+
+namespace pfs {
+
+int64_t crc64 (const void * pdata, size_t nbytes, int64_t initial)
+{
+	return pfs_crc64_iso(pdata, nbytes, initial);
+}
+
+int64_t crc64 (const byte_string & pdata, int64_t initial)
+{
+	return pfs_crc64_iso(pdata.data(), pdata.size(), initial);
+}
+
+} // pfs
+

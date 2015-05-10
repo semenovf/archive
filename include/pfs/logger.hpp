@@ -15,11 +15,17 @@
 #include <pfs/sigslot.hpp>
 #include <iostream>
 
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace pfs {
 
 class appender;
 
-class log
+class DLL_API log
 {
 public:
 	enum priority { Trace, Debug, Info, Warn, Error, Fatal, NoLog };
@@ -107,22 +113,22 @@ inline void log::disconnectAll ()
 	_emitter.disconnect_all();
 }
 
-log & trace ();
-log & debug ();
-log & info  ();
-log & warn  ();
-log & error ();
-log & fatal ();
+DLL_API log & trace ();
+DLL_API log & debug ();
+DLL_API log & info  ();
+DLL_API log & warn  ();
+DLL_API log & error ();
+DLL_API log & fatal ();
 
-void trace (const pfs::string & text);
-void debug (const pfs::string & text);
-void info  (const pfs::string & text);
-void warn  (const pfs::string & text);
-void warn  (int errn, const pfs::string & text);
-void error (const pfs::string & text);
-void error (int errn, const pfs::string & text);
-void fatal (const pfs::string & text);
-void fatal (int errn, const pfs::string & text);
+DLL_API void trace (const pfs::string & text);
+DLL_API void debug (const pfs::string & text);
+DLL_API void info  (const pfs::string & text);
+DLL_API void warn  (const pfs::string & text);
+DLL_API void warn  (int errn, const pfs::string & text);
+DLL_API void error (const pfs::string & text);
+DLL_API void error (int errn, const pfs::string & text);
+DLL_API void fatal (const pfs::string & text);
+DLL_API void fatal (int errn, const pfs::string & text);
 
 inline void trace (const char * latin1) { trace(pfs::string(latin1)); }
 inline void debug (const char * latin1) { debug(pfs::string(latin1)); }
@@ -135,5 +141,9 @@ inline void fatal (const char * latin1) { fatal(pfs::string(latin1)); }
 inline void fatal (int errn, const char * latin1) { fatal(errn, pfs::string(latin1)); }
 
 } // pfs
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_LOG_HPP__ */

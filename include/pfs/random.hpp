@@ -10,9 +10,14 @@
 
 #include <pfs/pimpl.hpp>
 
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace pfs {
 
-class random
+class DLL_API random
 {
 	pimpl _d;
 
@@ -24,5 +29,9 @@ public:
 };
 
 } // pfs
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_RANDOM_HPP__ */

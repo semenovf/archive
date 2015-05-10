@@ -9,7 +9,7 @@
 
 namespace pfs {
 
-static pfs::string __separator("\\");
+static string __separator("\\");
 
 pfs::ucchar fs::separator () const
 {
@@ -17,9 +17,9 @@ pfs::ucchar fs::separator () const
 }
 
 
-bool fs::isAbsolute(const pfs::string &path)
+bool fs::isAbsolute(const string &path)
 {
-	static pfs::string __disks("abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	static string __disks("abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
 	if ( path.isEmpty()) {
 		return false;
@@ -30,7 +30,7 @@ bool fs::isAbsolute(const pfs::string &path)
 	}
 
 	if (path.length() > 2
-			&& __disks.find(pfs::string(1, path[0])) == __disks.cbegin()
+			&& __disks.find(string(1, path[0])) == __disks.cbegin()
 			&& path[1] == pfs::ucchar(':')) {
 		return true;
 	}
@@ -38,7 +38,7 @@ bool fs::isAbsolute(const pfs::string &path)
 	return false;
 }
 
-bool fs::exists(const pfs::string & path)
+bool fs::exists(const string & path)
 {
 	PFS_CHECK_SIZEOF_TYPE(wchar_t,2);
 	struct _stat st;
@@ -46,10 +46,10 @@ bool fs::exists(const pfs::string & path)
 }
 
 
-bool fs::rename(const pfs::string & from, const pfs::string & to)
+bool fs::rename(const string & from, const string & to)
 {
 	if (!MoveFile(from.toUtf16().data(), to.toUtf16().data())) {
-		pfs::string errstr;
+		string errstr;
 		errstr << _Tr("Unable to rename file")
 				<< _Tr(" from ") << from
 				<< _Tr(" to ") << to;
@@ -59,10 +59,10 @@ bool fs::rename(const pfs::string & from, const pfs::string & to)
 	return true;
 }
 
-bool fs::remove(const pfs::string & path)
+bool fs::remove(const string & path)
 {
 	if (!DeleteFile(path.toUtf16().data())) {
-		pfs::string errstr;
+		string errstr;
 		errstr << _Tr("Unable to unlink (delete) file ") << path;
 		addSystemError(GetLastError(), errstr);
 		return false;
@@ -70,7 +70,7 @@ bool fs::remove(const pfs::string & path)
 	return true;
 }
 
-size_t fs::size (const pfs::string & path) const
+size_t fs::size (const string & path) const
 {
 	PFS_CHECK_SIZEOF_TYPE(wchar_t,2);
 	struct _stat st;
@@ -79,20 +79,20 @@ size_t fs::size (const pfs::string & path) const
 			: size_t(0);
 }
 
-bool fs::simpleBackup(const pfs::string &orig)
+bool fs::simpleBackup(const string &orig)
 {
-	pfs::string to(orig);
-	to.append(pfs::string(".bak"));
+	string to(orig);
+	to.append(string(".bak"));
 	return fs::rename(orig, to);
 }
 
 // TODO should be tested
-pfs::string fs::tempDirectory ()
+string fs::tempDirectory ()
 {
 	TCHAR path[256];
 	TCHAR *ppath = & path[0];
 	DWORD sz = ::GetTempPath(256, ppath);
-	pfs::string r;
+	string r;
 
 	if (sz > 256) {
 		ppath = (TCHAR*)malloc(sz * sizeof(TCHAR));
@@ -107,9 +107,9 @@ pfs::string fs::tempDirectory ()
 		if (ppath[sz - 1] == pfs::ucchar('\\')) {
 			ppath[sz - 1] = pfs::ucchar('\x0');
 #ifdef _UNICODE
-			r = pfs::string::fromUtf16(ppath, sz);
+			r = string::fromUtf16(ppath, sz);
 #else
-			r = pfs::string::fromLatin1(ppath);
+			r = string::fromLatin1(ppath);
 #endif
 		} else {
 			addError(_u8(_Tr("Failed to get temporary directory")));

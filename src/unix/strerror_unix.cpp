@@ -12,7 +12,7 @@
 
 // FIXME Need to support system locale
 
-pfs::string pfs_strerror (int_t errn)
+pfs::string pfs_strerror (int errn)
 {
 #if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
 	static const int __MaxBufLen = 128;
@@ -31,8 +31,8 @@ pfs::string pfs_strerror (int_t errn)
 #	endif
 
 #else
-	static mutex __mutex;
-	auto_lock<> locker(&__mutex);
+	static pfs::mutex __mutex;
+	pfs::auto_lock<pfs::mutex> locker(&__mutex);
 	return pfs::string::fromUtf8(strerror(errn));
 #endif
 }

@@ -1,11 +1,13 @@
 #include "pfs/thread.hpp"
 #include "pfs/platform.hpp"
 #include "../thread_p.hpp"
+#include <pfs/pp/utility.h>
 #include <pthread.h>
 
 #include <sched.h>
 #include <errno.h>
 #include <unistd.h>
+#include <iostream>
 
 #if defined(PFS_OS_LINUX) && !defined(SCHED_IDLE)
 // from linux/sched.h
@@ -20,9 +22,12 @@ namespace pfs {
 
 static struct main_thread
 {
-	pthread_t _threadId;
-	main_thread () { _threadId = pthread_self(); }
-	bool equalsTo (pthread_t otherThreadId) { return (pthread_equal(_threadId, otherThreadId) != 0); }
+	pthread_t _threadHandle;
+	main_thread () { _threadHandle = pthread_self(); }
+	bool equalsTo (pthread_t otherThreadHandle) const
+	{
+		return (pthread_equal(_threadHandle, otherThreadHandle) != 0);
+	}
 } __main_thread;
 
 enum { ThreadPriorityResetFlag = 0x80000000 };
@@ -70,18 +75,18 @@ static void create_current_thread_data_key ()
     pthread_key_create(& current_thread_data_key, destroy_current_thread_data);
 }
 
-//static void destroy_current_thread_data_key ()
-//{
-//    pthread_once(&current_thread_data_once, create_current_thread_data_key);
-//    pthread_key_delete(current_thread_data_key);
-//
-//    // Reset current_thread_data_once in case we end up recreating
-//    // the thread-data in the rare case of QObject construction
-//    // after destroying the QThreadData.
-//    pthread_once_t pthread_once_init = PTHREAD_ONCE_INIT;
-//    current_thread_data_once = pthread_once_init;
-//}
-//Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
+static void destroy_current_thread_data_key ()
+{
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    pthread_key_delete(current_thread_data_key);
+
+    // Reset current_thread_data_once in case we end up recreating
+    // the thread-data in the rare case of QObject construction
+    // after destroying the QThreadData.
+    pthread_once_t pthread_once_init = PTHREAD_ONCE_INIT;
+    current_thread_data_once = pthread_once_init;
+}
+PFS_AUTO_DTOR_FUNCTION(destroy_current_thread_data_key)
 
 
 // Utility functions for getting, setting and clearing thread specific data.
@@ -104,18 +109,13 @@ static void set_thread_data (thread_data * data)
     pthread_setspecific(current_thread_data_key, data);
 }
 
-//static void clear_thread_data ()
-//{
-//#ifdef PFS_HAVE_TLS
-//    currentThreadData = 0;
-//#endif
-//    pthread_setspecific(current_thread_data_key, 0);
-//}
-
-//void thread_data::clearCurrentThreadData()
-//{
-//    clear_thread_data();
-//}
+void thread_data::clearCurrentThreadData()
+{
+	#ifdef PFS_HAVE_TLS
+		currentThreadData = 0;
+	#endif
+		pthread_setspecific(current_thread_data_key, 0);
+}
 
 thread_data * thread_data::current ()
 {
@@ -126,7 +126,7 @@ thread_data * thread_data::current ()
 
 bool thread_impl::isMainThread () const
 {
-	return __main_thread.equalsTo(_threadId);
+	return __main_thread.equalsTo(_threadHandle);
 }
 
 void * thread_impl::start (void * arg)
@@ -146,7 +146,7 @@ void * thread_impl::start (void * arg)
             d->setPriority(thread::Priority(d->_priority & ~ThreadPriorityResetFlag));
         }
 
-        data->_threadId = pthread_self();
+        data->_threadHandle = pthread_self();
         set_thread_data(data);
 
         data->ref();
@@ -173,7 +173,7 @@ void * thread_impl::start (void * arg)
     return 0;
 }
 
-void thread_impl::finish (void * arg)
+void thread_impl::finish (void * arg, bool /*lockAnyway*/)
 {
     thread * thr = reinterpret_cast<thread *>(arg);
     thread_impl * d = thr->_d.cast<thread_impl>();
@@ -186,7 +186,7 @@ void thread_impl::finish (void * arg)
 //    QThreadStorageData::finish((void **)data);
 //    locker.relock();
 
-    d->_threadId = 0;
+    d->_threadHandle = 0;
     d->_running = false;
     d->_finished = true;
     d->_isInFinish = false;
@@ -317,7 +317,8 @@ void thread::start (Priority priority)
             if (pthread_attr_getschedpolicy(& attr, & sched_policy) != 0) {
                 // failed to get the scheduling policy, don't bother
                 // setting the priority
-                PFS_DEBUG(fprintf(stderr, "pfs::thread::start(): cannot determine default scheduler policy\n"));
+                PFS_DEBUG(std::cerr
+                		<< "pfs::thread::start(): cannot determine default scheduler policy\n");
                 break;
             }
 
@@ -325,7 +326,8 @@ void thread::start (Priority priority)
             if (!calculateUnixPriority(priority, &sched_policy, &prio)) {
                 // failed to get the scheduling parameters, don't
                 // bother setting the priority
-            	PFS_DEBUG(fprintf(stderr, "pfs::thread::start(): cannot determine scheduler priority range\n"));
+            	PFS_DEBUG(std::cerr
+            			<< "pfs::thread::start(): cannot determine scheduler priority range\n");
                 break;
             }
 
@@ -353,8 +355,9 @@ void thread::start (Priority priority)
 #endif // _POSIX_THREAD_ATTR_STACKSIZE
 
         if (rc) {
-        	PFS_DEBUG(fprintf(stderr, "pfs::thread::start(): thread stack size error: %s\n"
-        			, platform::strerror(rc).c_str()));
+        	PFS_DEBUG(std::cerr
+        			<< "pfs::thread::start(): thread stack size error: "
+        			<< platform::strerror(rc) << std::endl);
 
             // we failed to set the stacksize, and as the documentation states,
             // the thread will fail to run...
@@ -365,7 +368,7 @@ void thread::start (Priority priority)
     }
 
     int rc =
-        pthread_create(& d->_threadId, & attr, pfs::thread_impl::start, this);
+        pthread_create(& d->_threadHandle, & attr, pfs::thread_impl::start, this);
 
     if (rc == EPERM) {
         // caller does not have permission to set the scheduling
@@ -374,19 +377,19 @@ void thread::start (Priority priority)
         pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED);
 #endif
         rc =
-            pthread_create(& d->_threadId, & attr, thread_impl::start, this);
+            pthread_create(& d->_threadHandle, & attr, thread_impl::start, this);
     }
 
     pthread_attr_destroy(& attr);
 
     if (rc) {
-    	PFS_DEBUG(fprintf(stderr
-    			, "pfs::thread::start(): thread creation error: %s\n"
-				, platform::strerror(rc).c_str()));
+    	PFS_DEBUG(std::cerr
+    			<< "pfs::thread::start(): thread creation error: "
+				<< platform::strerror(rc) << std::endl);
 
         d->_running = false;
         d->_finished = false;
-        d->_threadId = 0;
+        d->_threadHandle = 0;
     }
 }
 
@@ -395,10 +398,10 @@ void thread::terminate ()
 	thread_impl * d = _d.cast<thread_impl>();
 	pfs::auto_lock<> locker(& d->_mutex);
 
-    if (!d->_threadId)
+    if (!d->_threadHandle)
         return;
 
-    PFS_VERIFY_ERRNO(pthread_cancel(d->_threadId));
+    PFS_VERIFY_ERRNO(pthread_cancel(d->_threadHandle));
 }
 
 bool thread::wait (uintegral_t timeout)
@@ -406,7 +409,7 @@ bool thread::wait (uintegral_t timeout)
 	thread_impl * d = _d.cast<thread_impl>();
 	pfs::auto_lock<> locker(& d->_mutex);
 
-	if (! PFS_VERIFY_X((d->_data->_threadId != pthread_self())
+	if (! PFS_VERIFY_X((d->_data->_threadHandle != pthread_self())
 			, _Tr("Thread attempt to wait on itself"))) {
 		return false;
 	}
@@ -442,10 +445,11 @@ void thread_impl::setPriority (thread::Priority threadPriority)
     int sched_policy;
     sched_param param;
 
-    if (pthread_getschedparam(_threadId, & sched_policy, & param) != 0) {
+    if (pthread_getschedparam(_threadHandle, & sched_policy, & param) != 0) {
         // failed to get the scheduling policy, don't bother setting
         // the priority
-        PFS_DEBUG(fprintf(stderr, "pfs::thread_impl::setPriority(): cannot get scheduler parameters\n"));
+        PFS_DEBUG(std::cerr
+        		<< "pfs::thread_impl::setPriority(): cannot get scheduler parameters\n");
         return;
     }
 
@@ -453,20 +457,21 @@ void thread_impl::setPriority (thread::Priority threadPriority)
     if (!calculateUnixPriority(_priority, & sched_policy, & prio)) {
         // failed to get the scheduling parameters, don't
         // bother setting the priority
-        PFS_DEBUG(fprintf(stderr, "pfs::thread_impl::setPriority(): cannot determine scheduler priority range\n"));
+        PFS_DEBUG(std::cerr
+        		<< "pfs::thread_impl::setPriority(): cannot determine scheduler priority range\n");
         return;
     }
 
     param.sched_priority = prio;
-    int status = pthread_setschedparam(_threadId, sched_policy, & param);
+    int status = pthread_setschedparam(_threadHandle, sched_policy, & param);
 
 #	ifdef SCHED_IDLE
     // were we trying to set to idle priority and failed?
     if (status == -1 && sched_policy == SCHED_IDLE && errno == EINVAL) {
         // reset to lowest priority possible
-        pthread_getschedparam(_threadId, & sched_policy, & param);
+        pthread_getschedparam(_threadHandle, & sched_policy, & param);
         param.sched_priority = sched_get_priority_min(sched_policy);
-        pthread_setschedparam(_threadId, sched_policy, & param);
+        pthread_setschedparam(_threadHandle, sched_policy, & param);
     }
 #	else
     PFS_UNUSED(status);

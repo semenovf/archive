@@ -29,32 +29,32 @@ pfs::ucchar fs::separator () const
 	return pfs::ucchar('/');
 }
 
-bool fs::isAbsolute(const pfs::string & path)
+bool fs::isAbsolute(const string & path)
 {
 	if( path.isEmpty() )
 		return false;
 
-	return path.startsWith(pfs::string(1, separator()));
+	return path.startsWith(string(1, separator()));
 }
 
-bool fs::isDirectory (const pfs::string & path)
+bool fs::isDirectory (const string & path)
 {
 	struct stat st;
 	return (stat(path.c_str(), & st ) == 0
 			&& __is_directory(st.st_mode));
 }
 
-bool fs::exists (const pfs::string & path)
+bool fs::exists (const string & path)
 {
 	struct stat st;
 	return ( stat(path.c_str(), &st ) == 0 );
 }
 
 
-bool fs::rename (const pfs::string & from, const pfs::string & to)
+bool fs::rename (const string & from, const string & to)
 {
 	if (::rename(from.c_str(), to.c_str()) != 0) {
-		pfs::string errstr;
+		string errstr;
 		errstr << _Tr("Unable to rename file")
 				<< _Tr(" from ") << from
 				<< _Tr(" to ") << to;
@@ -64,10 +64,10 @@ bool fs::rename (const pfs::string & from, const pfs::string & to)
 	return true;
 }
 
-bool fs::remove (const pfs::string & path)
+bool fs::remove (const string & path)
 {
 	if (::unlink(path.c_str()) != 0) {
-		pfs::string errstr;
+		string errstr;
 		errstr << _Tr("Unable to unlink (delete) file ") << path;
 		addSystemError(errno, errstr);
 		return false;
@@ -75,7 +75,7 @@ bool fs::remove (const pfs::string & path)
 	return true;
 }
 
-size_t fs::size (const pfs::string & path) const
+size_t fs::size (const string & path) const
 {
 	struct stat st;
 	return stat(path.c_str(), & st ) == 0
@@ -83,14 +83,14 @@ size_t fs::size (const pfs::string & path) const
 			: size_t(0);
 }
 
-bool fs::simpleBackup (const pfs::string & orig)
+bool fs::simpleBackup (const string & orig)
 {
-	pfs::string to(orig);
-	to.append(pfs::string(1, '~'));
+	string to(orig);
+	to.append(string(1, '~'));
 	return fs::rename(orig, to);
 }
 
-pfs::string fs::tempDirectory ()
+string fs::tempDirectory ()
 {
 	char * r = getenv("TMPDIR");
 
@@ -107,10 +107,12 @@ pfs::string fs::tempDirectory ()
 	return r ? _u8(r) : _u8("/tmp");
 }
 
-// FIXME need to implement (Windows version too)
-pfs::stringlist fs::entryListByRegExp (const pfs::string & dir, const pfs::stringlist & reNameFilters, uint_t filters, uint_t /*sort*/)
+// TODO need to implement (Windows version too)
+stringlist fs::entryListByRegExp (const string & dir
+		, const stringlist & reNameFilters
+		, int filters, int /*sort*/)
 {
-	pfs::stringlist r;
+	stringlist r;
 
 //#ifdef  _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _BSD_SOURCE || _SVID_SOURCE || _POSIX_SOURCE
 //#else
@@ -119,17 +121,17 @@ pfs::stringlist fs::entryListByRegExp (const pfs::string & dir, const pfs::strin
 
 	if (!dirp) {
 		addSystemError(errno, _l1("opendir"));
-		return pfs::stringlist();
+		return stringlist();
 	}
 
 	while ((d = readdir(dirp))) {
 		struct stat st;
-		pfs::string fname(_u8(d->d_name));
-		pfs::string path(join(dir, fname));
+		string fname(_u8(d->d_name));
+		string path(join(dir, fname));
 
 		if (stat(path.c_str(), & st ) != 0) {
 			addSystemError(errno, _l1("stat"));
-			return pfs::stringlist();
+			return stringlist();
 		}
 
 		if (filters == NoFilter) {
@@ -175,7 +177,7 @@ pfs::stringlist fs::entryListByRegExp (const pfs::string & dir, const pfs::strin
 
 		// Check name filters
 		//
-		for (pfs::stringlist::const_iterator it = reNameFilters.cbegin()
+		for (stringlist::const_iterator it = reNameFilters.cbegin()
 				; it != reNameFilters.cend()
 				; ++it) {
 
@@ -192,17 +194,20 @@ pfs::stringlist fs::entryListByRegExp (const pfs::string & dir, const pfs::strin
 	return r;
 }
 
-pfs::stringlist fs::entryListByWildcard (const pfs::string & dir, const pfs::stringlist & nameFilters, uint_t filters, uint_t sort)
+stringlist fs::entryListByWildcard (const string & dir
+		, const stringlist & nameFilters
+		, int filters
+		, int sort)
 {
-	pfs::stringlist reNameFilters;
+	stringlist reNameFilters;
 
 	// Convert wildcards to regexp
 	//
-	for (pfs::stringlist::const_iterator it = nameFilters.cbegin()
+	for (stringlist::const_iterator it = nameFilters.cbegin()
 			; it != nameFilters.cend()
 			; ++it) {
 
-		pfs::string restr(*it);
+		string restr(*it);
 		restr.replace(_l1("."), _l1("\\."));
 		restr.replace(_l1("*"), _l1(".*"));
 		restr.replace(_l1("?"), _l1("."));

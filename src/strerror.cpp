@@ -6,7 +6,7 @@
 
 #include <pfs/string.hpp>
 
-extern pfs::string pfs_strerror (int_t errn);
+extern pfs::string pfs_strerror (int errn);
 
 namespace pfs { namespace platform {
 

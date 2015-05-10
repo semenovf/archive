@@ -10,7 +10,7 @@
 #include <windows.h>
 #include <pfs/string.hpp>
 
-pfs::string pfs_strerror (int_t errn)
+pfs::string pfs_strerror (int errn)
 {
 	LPWSTR lpMsgBuf;
 

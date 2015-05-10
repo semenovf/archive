@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <pfs.h>
+#include "pfs/utils.hpp"
 
 static int32_t __crc32_lookup_table[] = {
 	  0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3
@@ -62,7 +62,7 @@ static int32_t __crc32_lookup_table[] = {
 #define CRC32(oldcrc, curByte) (m_crc32table[BYTE(oldcrc)^BYTE(curByte)]^(DWORD(oldcrc)>>8))
 */
 
-int32_t pfs_crc32 (const void * pdata, size_t nbytes, int32_t initial)
+static int32_t pfs_crc32 (const void * pdata, size_t nbytes, int32_t initial)
 {
 	const byte_t * pbytes = (const byte_t *)pdata;
 	int32_t r = initial ^ 0xFFFFFFFF;
@@ -71,3 +71,17 @@ int32_t pfs_crc32 (const void * pdata, size_t nbytes, int32_t initial)
 	r = r ^ 0xFFFFFFFF;
 	return r;
 }
+
+namespace pfs {
+
+int32_t crc32 (const void * pdata, size_t nbytes, int32_t initial)
+{
+	return pfs_crc32(pdata, nbytes, initial);
+}
+
+int32_t crc32 (const byte_string & pdata, int32_t initial)
+{
+	return pfs_crc32(pdata.data(), pdata.size(), initial);
+}
+
+} // pfs

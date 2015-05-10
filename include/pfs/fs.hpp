@@ -15,7 +15,7 @@
 
 namespace pfs {
 
-class fs : public errorable_ext
+class DLL_API fs : public errorable_ext
 {
 public:
 	enum filter {
@@ -57,25 +57,30 @@ public:
 public:
 	fs () : errorable_ext() {}
 	pfs::ucchar separator () const;
-	bool isAbsolute (const pfs::string & path);
-	bool isRelative (const pfs::string & path) { return !isAbsolute(path); }
-	bool isDirectory (const pfs::string & path);
-	bool exists (const pfs::string & path);
-	bool rename (const pfs::string & from, const pfs::string & to);
-	bool remove (const pfs::string & path);
-	bool unlink (const pfs::string & path) { return remove(path); }
-	size_t size (const pfs::string & path) const;
-	bool simpleBackup (const pfs::string & path);
-	pfs::string tempDirectory ();
-	pfs::string tempFile (const string & prefix, const string & suffix, const string & dir, int nattempts = 10);
-	pfs::string tempFile (const string & prefix, const string & suffix, int nattempts = 10)
+	bool isAbsolute (const string & path);
+	bool isRelative (const string & path) { return !isAbsolute(path); }
+	bool isDirectory (const string & path);
+	bool exists (const string & path);
+	bool rename (const string & from, const string & to);
+	bool remove (const string & path);
+	bool unlink (const string & path) { return remove(path); }
+	size_t size (const string & path) const;
+	bool simpleBackup (const string & path);
+	string tempDirectory ();
+	string tempFile (const string & prefix, const string & suffix, const string & dir, int nattempts = 10);
+	string tempFile (const string & prefix, const string & suffix, int nattempts = 10)
 	{
 	    return tempFile(prefix, suffix, tempDirectory(), nattempts);
 	}
-	pfs::string basename (const pfs::string & path) const;
-	pfs::string join (const pfs::string & dir, const pfs::string filename);
-	pfs::stringlist entryListByRegExp (const pfs::string & dir, const pfs::stringlist & reNameFilters, uint_t filters, uint_t sort = NoSort);
-	pfs::stringlist entryListByWildcard (const pfs::string & dir, const pfs::stringlist & nameFilters, uint_t filters = NoFilter, uint_t sort = NoSort);
+	string basename (const string & path) const;
+	string join (const string & dir, const string filename);
+	stringlist entryListByRegExp (const string & dir
+			, const stringlist & reNameFilters
+			, int filters
+			, int sort = NoSort);
+	stringlist entryListByWildcard (const string & dir
+			, const stringlist & nameFilters
+			, int filters = NoFilter, int sort = NoSort);
 };
 
 } // pfs

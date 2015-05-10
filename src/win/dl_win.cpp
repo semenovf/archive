@@ -27,7 +27,7 @@ dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool glob
 			pfs::string errcaption;
 			errcaption << path << ": "
 					<< _Tr("failed to open dynamic library");
-			addSystemError(int_t(GetLastError()), errcaption);
+			addSystemError(int(GetLastError()), errcaption);
 		} else {
 		   /*use the result in a call to GetProcAddress*/
 		}
@@ -47,7 +47,7 @@ dl::symbol dl::ptr (dl::handle h, const char *symname)
 		pfs::string errcaption;
 		errcaption << symname << ": "
 				<< _Tr("symbol not found");
-		addSystemError(int_t(GetLastError()), errcaption);
+		addSystemError(int(GetLastError()), errcaption);
 	}
 	return p;
 }

@@ -9,7 +9,7 @@
 #include "pfs/errorable_ext.hpp"
 #include "pfs/logger.hpp"
 
-extern pfs::string pfs_strerror (int_t errn);
+extern pfs::string pfs_strerror (int errn);
 
 namespace pfs {
 

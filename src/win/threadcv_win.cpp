@@ -5,7 +5,8 @@
  *      Author: wladt
  */
 
-#include <pfs/mt.hpp>
+#include "pfs/mt.hpp"
+#include "pfs/threadcv.hpp"
 #include <list> // FIXME need pfs::list implementation
 //#include "pfs/logger.hpp"
 //#include <cerrno>
@@ -31,7 +32,7 @@ struct tread_cv_event // QWaitConditionEvent
     ~tread_cv_event() { CloseHandle(_event); }
 };
 
-typedef std::list<tread_cv_event *> cv_event_queue_t;
+typedef std::list<tread_cv_event *> cv_event_queue_t; // FIXME need to use pfs::list
 
 class thread_cv_impl
 {
@@ -84,7 +85,7 @@ bool thread_cv_impl::wait (tread_cv_event * cve, uintegral_t time)
     // wait for the event
     bool r = false;
 
-    switch (WaitForSingleObject(cve->_event, time)) {
+    switch (WaitForSingleObject(cve->_event, static_cast<DWORD>(time))) {
     default: break;
     case WAIT_OBJECT_0:
         r = true;
