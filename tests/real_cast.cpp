@@ -24,6 +24,16 @@ void test_compare_fp_cast (T min, T max)
 	real_t rmin = static_cast<Fp>(pfs::min_type<T>());
 	real_t rmax = static_cast<Fp>(pfs::max_type<T>());
 
+	TEST_FAIL(rmin == rmin);
+	TEST_FAIL(rmax == rmax);
+	TEST_FAIL(pfs::min_type<T>() == pfs::min_type<T>());
+	TEST_FAIL(pfs::max_type<T>() == pfs::max_type<T>());
+
+//	TEST_FAIL(!isinf(static_cast<Fp>(max)));
+//	TEST_FAIL(!isnan(static_cast<Fp>(max)));
+//	TEST_FAIL(!isinf(static_cast<Fp>(pfs::max_type<T>())));
+//	TEST_FAIL(!isnan(static_cast<Fp>(pfs::max_type<T>())));
+
 	TEST_OK(pfs::min_type<T>() == min);
 	TEST_OK(pfs::max_type<T>() == max);
 
@@ -76,6 +86,50 @@ void test_compare_fp_cast ()
 	ADD_TESTS(12);
 	test_compare_fp_cast<Fp, long double>(PFS_LONG_DOUBLE_MIN, PFS_LONG_DOUBLE_MAX);
 #endif
+}
+
+
+// Code with strange behavior
+//
+inline long long  max_ll () { return static_cast<long long>(PFS_LLONG_MAX); }
+//Windows specific
+//inline __int64  max_i64 () { return 9223372036854775807i64; /*static_cast<__int64>(PFS_LLONG_MAX);*/ }
+inline double  max_double_ll () { return static_cast<double>(PFS_LLONG_MAX); }
+
+void vary_strange_behavior ()
+{
+	// FIXME
+	// Windows specific
+	// OK
+//	TEST_OK(static_cast<real_t>(9223372036854775807i64)
+//			== static_cast<real_t>(9223372036854775807i64));
+
+	// OK
+	TEST_OK(static_cast<real_t>(9223372036854775807LL)
+			== static_cast<real_t>(9223372036854775807LL));
+
+	// Windows specific
+	// OK
+//	long long n = 9223372036854775807i64;
+//	TEST_OK(static_cast<real_t>(n)
+//			== static_cast<real_t>(n));
+
+	// OK
+	TEST_OK(static_cast<double>(max_double_ll())
+			== static_cast<double>(max_double_ll()));
+
+	// Windows specific
+	// FAIL
+//	TEST_OK(static_cast<double>(max_i64())
+//			== static_cast<double>(max_i64()));
+
+	// FAIL
+	TEST_OK(static_cast<double>(max_ll())
+			== static_cast<double>(max_ll()));
+
+	// FAIL
+	TEST_OK(static_cast<double>(pfs::max_type<long long>())
+			== static_cast<double>(pfs::max_type<long long>()));
 }
 
 

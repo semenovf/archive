@@ -630,4 +630,40 @@ byte_string byte_string::toBase64 () const
     return r;
 }
 
+
+//
+// TODO
+//
+template <>
+byte_string::size_type byte_string::readNumber<float> (float & v, size_t pos, endian::type_enum order) const
+{
+	PFS_UNUSED3(v, pos, order);
+	PFS_ASSERT_TODO();
+	return 0;
+}
+
+//
+// TODO
+//
+template <>
+byte_string::size_type byte_string::readNumber<double> (double & v, size_t pos, endian::type_enum order) const
+{
+	PFS_UNUSED3(v, pos, order);
+	PFS_ASSERT_TODO();
+	return 0;
+}
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+//
+// TODO
+//
+template <>
+byte_string::size_type byte_string::readNumber<long double> (long double & v, size_t pos, endian::type_enum order) const
+{
+	PFS_UNUSED3(v, pos, order);
+	PFS_ASSERT_TODO();
+	return 0;
+}
+#endif // PFS_HAVE_LONG_DOUBLE
+
 } // pfs

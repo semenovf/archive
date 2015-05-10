@@ -60,7 +60,10 @@ public:
 
 inline bool time::isValid (int hour, int min, int sec, int millis) // static
 {
-	return uint_t(hour) < 24 && uint_t(min) < 60 && uint_t(sec) < 60 && uint_t(millis) < 1000;
+	return static_cast<unsigned int>(hour) < 24
+			&& static_cast<unsigned int>(min) < 60
+			&& static_cast<unsigned int>(sec) < 60
+			&& static_cast<unsigned int>(millis) < 1000;
 }
 
 inline int time::millis (int hour, int min, int sec, int millis) // static

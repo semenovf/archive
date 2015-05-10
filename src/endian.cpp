@@ -26,11 +26,33 @@ endian::type_enum endian::type ()
 #endif
 }
 
-
-short endian::swap (short int i)
+bool endian::isBigEndianSystem ()
 {
-	PFS_ASSERT(sizeof(i) == 2);
+	return type() == LittleEndian ? false : true;
+}
 
+bool endian::isLittleEndianSystem ()
+{
+	return type() == LittleEndian ? true : false;
+}
+
+char endian::swap (char i)
+{
+	return i;
+}
+
+int8_t endian::swap (int8_t i)
+{
+	return i;
+}
+
+uint8_t endian::swap (uint8_t i)
+{
+	return i;
+}
+
+int16_t endian::swap (int16_t i)
+{
 	byte_t b1, b2;
 
 	b1 = i & 255;
@@ -39,11 +61,13 @@ short endian::swap (short int i)
 	return r;
 }
 
-int endian::swap (int i)
+uint16_t endian::swap (uint16_t i)
 {
-	if (sizeof(i) == 2)
-		return int(swap(short(i)));
+	return static_cast<uint16_t>(swap(static_cast<int16_t>(i)));
+}
 
+int32_t endian::swap (int32_t i)
+{
 	byte_t b1, b2, b3, b4;
 
 	b1 = i & 255;
@@ -54,17 +78,14 @@ int endian::swap (int i)
 	return ((int)b1 << 24) + ((int)b2 << 16) + ((int)b3 << 8) + b4;
 }
 
-long endian::swap (long i)
+uint32_t endian::swap (uint32_t i)
 {
-	if (sizeof(i) == 4)
-		return long(swap(int(i)));
-
-	PFS_ASSERT(sizeof(i) == 8);
-	return long(swap((long long)i));
+	return static_cast<uint32_t>(swap(static_cast<int32_t>(i)));
 }
 
-#ifdef HAVE_LONGLONG
-long long endian::swap (long long i)
+
+#ifdef PFS_HAVE_INT64
+int64_t endian::swap (int64_t i)
 {
 	byte_t b1, b2, b3, b4, b5, b6, b7, b8;
 
@@ -86,84 +107,10 @@ long long endian::swap (long long i)
 			+ (((long long)b7) <<  8)
 			+ b8;
 }
-#endif
 
-float endian::swap (float f)
+uint64_t endian::swap (uint64_t i)
 {
-	union {
-		float f;
-		char b[4];
-	} d1, d2;
-
-	d1.f = f;
-	d2.b[0] = d1.b[3];
-	d2.b[1] = d1.b[2];
-	d2.b[2] = d1.b[1];
-	d2.b[3] = d1.b[0];
-	return d2.f;
-}
-
-double endian::swap (double f)
-{
-	union {
-		double f;
-		char b[8];
-	} d1, d2;
-
-	d1.f = f;
-	d2.b[0] = d1.b[7];
-	d2.b[1] = d1.b[6];
-	d2.b[2] = d1.b[5];
-	d2.b[3] = d1.b[4];
-	d2.b[4] = d1.b[3];
-	d2.b[5] = d1.b[2];
-	d2.b[6] = d1.b[1];
-	d2.b[7] = d1.b[0];
-	return d2.f;
-}
-
-#ifdef PFS_HAVE_LONG_DOUBLE
-long double endian::swap (long double f)
-{
-	union {
-		long double f;
-#if defined(PFS_HAVE_REAL128)
-		char b[16];
-#elif defined(PFS_HAVE_REAL64)
-		char b[8];
-#endif
-	} d1, d2;
-
-	d1.f = f;
-
-#if defined(PFS_HAVE_REAL128)
-	d2.b[0] = d1.b[15];
-	d2.b[1] = d1.b[14];
-	d2.b[2] = d1.b[13];
-	d2.b[3] = d1.b[12];
-	d2.b[4] = d1.b[11];
-	d2.b[5] = d1.b[10];
-	d2.b[6] = d1.b[9];
-	d2.b[7] = d1.b[8];
-	d2.b[8] = d1.b[7];
-	d2.b[9] = d1.b[6];
-	d2.b[10] = d1.b[5];
-	d2.b[11] = d1.b[4];
-	d2.b[12] = d1.b[3];
-	d2.b[13] = d1.b[2];
-	d2.b[14] = d1.b[1];
-	d2.b[15] = d1.b[0];
-#elif defined(PFS_HAVE_REAL64)
-	d2.b[0] = d1.b[7];
-	d2.b[1] = d1.b[6];
-	d2.b[2] = d1.b[5];
-	d2.b[3] = d1.b[4];
-	d2.b[4] = d1.b[3];
-	d2.b[5] = d1.b[2];
-	d2.b[6] = d1.b[1];
-	d2.b[7] = d1.b[0];
-#endif
-	return d2.f;
+	return static_cast<uint64_t>(swap(static_cast<int64_t>(i)));
 }
 #endif
 

@@ -58,7 +58,7 @@ public:
 	ucchar () : _value(Null) {}
 
 	explicit ucchar (char latin1)   : _value(latin1) { PFS_ASSERT(uint8_t(latin1) <= 127); }
-	explicit ucchar (uchar_t latin1): _value(latin1) { PFS_ASSERT(latin1 <= 127); }
+	explicit ucchar (uint8_t latin1): _value(latin1) { PFS_ASSERT(latin1 <= 127); }
 	explicit ucchar (int ucs)       : _value(ucs)    { }
 	explicit ucchar (uint32_t ucs4) : _value(ucs4)   { }
 	ucchar (const ucchar & ucs4)    : _value(ucs4._value) { }

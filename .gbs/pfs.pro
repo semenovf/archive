@@ -11,6 +11,7 @@ SUBDIRS  =                \
      tests/shared_ptr     \
      tests/bit_array      \
      tests/byte_string    \
+     tests/endian         \
      tests/mbcs_string    \
      tests/fsm            \
      tests/function       \

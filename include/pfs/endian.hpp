@@ -3,6 +3,7 @@
  *
  *  Created on: Jan 27, 2009
  *  Modified on: Apr 10, 2014
+ *  Modified on: May 08, 2015
  *
  *  Author: wladt
  */
@@ -26,16 +27,8 @@ public:
 	static type_enum type ();
 	static type_enum nativeOrder () { return type(); }
 
-	static bool isBigEndianSystem ()
-	{
-		return type() == LittleEndian ? false : true;
-	}
-
-	static bool isLittleEndianSystem ()
-	{
-		return type() == LittleEndian ? true : false;
-	}
-
+	static bool isBigEndianSystem ();
+	static bool isLittleEndianSystem ();
 
 	template<typename T>
 	static T toBigEndian (T i)
@@ -61,25 +54,20 @@ public:
 		return type() == LittleEndian ? swap(i) : i;
 	}
 
-	static char           swap (char i) { return i; }
-	static unsigned char  swap (unsigned char i) { return i; }
-	static short          swap (short);
-	static unsigned short swap (unsigned short i) { return (unsigned short)swap((short)i); }
-	static int            swap (int);
-	static unsigned int   swap (unsigned int i) { return (unsigned int)swap((int)i); }
-	static long           swap (long);
-	static unsigned long  swap (unsigned long i) { return (unsigned long)swap((long)i); }
-#ifdef PFS_HAVE_LONGLONG
-	static long long          swap (long long);
-	static unsigned long long swap (unsigned long long i) { return (unsigned long long)swap((long long)i); }
-#endif
-	static float  swap (float);
-	static double swap (double);
-#ifdef PFS_HAVE_LONG_DOUBLE
-	static long double swap (long double);
+	static char       swap (char i);
+	static int8_t     swap (int8_t i);
+	static uint8_t    swap (uint8_t i);
+	static int16_t    swap (int16_t i);
+	static uint16_t   swap (uint16_t i);
+	static int32_t    swap (int32_t i);
+	static uint32_t   swap (uint32_t i);
+
+#ifdef PFS_HAVE_INT64
+	static int64_t    swap (int64_t i);
+	static uint64_t   swap (uint64_t i);
 #endif
 };
 
-} // namespace jq
+} // namespace pfs
 
 #endif /* __PFS_ENDIAN_HPP__ */

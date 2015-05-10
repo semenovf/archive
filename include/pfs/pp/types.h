@@ -3,7 +3,7 @@
 
 #include <pfs/pp/limits.h>
 
-#ifndef HAVE_NULLPTR
+#ifndef PFS_HAVE_NULLPTR
 #ifndef NULL
 #	ifndef __cplusplus
 #		define nullptr ((void *)0)
@@ -17,7 +17,7 @@
 #else
 #	define nullptr NULL
 #endif
-#endif /* HAVE_NULLPTR */
+#endif /* PFS_HAVE_NULLPTR */
 
 #if ! defined(__cplusplus) || defined(PFS_CC_BORLAND_REAL)
 	typedef unsigned char bool;
@@ -35,8 +35,8 @@
 	typedef unsigned int       uint16_t;
 	typedef signed long        int32_t;
 	typedef unsigned long      uint32_t;
-	typedef float              real32_t;
-	typedef double             real64_t;
+//	typedef float              real32_t;
+//	typedef double             real64_t;
 #else
 #	ifndef PFS_HAVE_INT8_T
 		typedef signed char        int8_t;
@@ -45,8 +45,6 @@
 		typedef unsigned short     uint16_t;
 		typedef signed int         int32_t;
 		typedef unsigned int       uint32_t;
-		typedef float              real32_t;
-		typedef double             real64_t;
 
 #		ifdef PFS_HAVE_INT64
 			typedef signed long long   int64_t;
@@ -55,23 +53,14 @@
 #	endif
 #endif /* ! PFS_CC_BORLAND_REAL */
 
-typedef uint8_t            uchar_t;
-typedef int8_t             sbyte_t;
-typedef uint8_t            byte_t;
-typedef int16_t            short_t;
-typedef uint16_t           ushort_t;
-typedef int32_t            int_t;
-typedef uint32_t           uint_t;
-#ifdef HAVE_INT64
-//	typedef int64_t        long_t;
-//	typedef uint64_t       ulong_t;
-	typedef int64_t        integral_t;
-	typedef uint64_t       uintegral_t;
+typedef uint8_t byte_t;
+
+#ifdef PFS_HAVE_LONGLONG
+	typedef long long          integral_t;
+	typedef unsigned long long uintegral_t;
 #else
-//	typedef long           long_t;
-//	typedef unsigned long  ulong_t;
-	typedef long           integral_t;
-	typedef unsigned long  uintegral_t;
+	typedef long               integral_t;
+	typedef unsigned long      uintegral_t;
 #endif
 
 #ifdef PFS_HAVE_LONG_DOUBLE

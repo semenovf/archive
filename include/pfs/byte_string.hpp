@@ -397,8 +397,8 @@ public:
 
 	byte_string substr (size_type index, size_type count) const;
 
-	template <typename ValT>
-	size_t readNumber (ValT & v, size_t pos = 0, endian::type_enum order = endian::nativeOrder()) const;
+	template <typename T>
+	size_t readNumber (T & v, size_t pos = 0, endian::type_enum order = endian::nativeOrder()) const;
 
 	integral_t toIntegral (bool * ok = 0, int base = 10) const;
 	uintegral_t toUIntegral (bool * ok = 0, int base = 10) const;
@@ -518,7 +518,9 @@ byte_string & byte_string::replace (
 	return replace(first, last, s);
 }
 
-
+//
+// For integers only supported by endian class
+//
 template <typename T>
 inline byte_string byte_string::toBytes (const T & v, endian::type_enum order)
 {
@@ -528,6 +530,7 @@ inline byte_string byte_string::toBytes (const T & v, endian::type_enum order)
 	return byte_string(d.b, sizeof(T));
 }
 
+//
 // Specialization for bool
 //
 template <>
@@ -536,28 +539,75 @@ inline byte_string byte_string::toBytes<bool> (const bool & v, endian::type_enum
 	return toBytes<char>(v ? '\x01' : '\x00', order);
 }
 
+//
+// Specialization for float
+// TODO as mentioned at http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization
+//
+template <>
+inline byte_string byte_string::toBytes<float> (const float & v, endian::type_enum order)
+{
+	PFS_UNUSED2(v, order);
+	PFS_ASSERT_TODO();
+	return byte_string();
+}
+
+//
+// Specialization for double
+// TODO as for float
+//
+template <>
+inline byte_string byte_string::toBytes<double> (const double & v, endian::type_enum order)
+{
+	PFS_UNUSED2(v, order);
+	PFS_ASSERT_TODO();
+	return byte_string();
+}
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+//
+// Specialization for long double
+// TODO as for float
+//
+template <>
+inline byte_string byte_string::toBytes<long double> (const long double & v, endian::type_enum order)
+{
+	PFS_UNUSED2(v, order);
+	PFS_ASSERT_TODO();
+	return byte_string();
+}
+#endif // PFS_HAVE_LONG_DOUBLE
+
+//
+// Specialization for byte_string
+//
 template <>
 inline byte_string byte_string::toBytes<byte_string> (const byte_string & v, endian::type_enum /*order*/)
 {
 	return byte_string(v);
 }
 
+//
+// Specialization for utf8_string
+//
 template <>
-inline byte_string byte_string::toBytes<utf8string> (const utf8string & v, endian::type_enum /*order*/)
+inline byte_string byte_string::toBytes<utf8_string> (const utf8_string & v, endian::type_enum /*order*/)
 {
 	return byte_string(v.constData(), v.size());
 }
 
-template <typename ValT>
-byte_string::size_type byte_string::readNumber (ValT & v, size_t pos, endian::type_enum order) const
+//
+// For integers only supported by endian class
+//
+template <typename T>
+byte_string::size_type byte_string::readNumber (T & v, size_t pos, endian::type_enum order) const
 {
-	if (size() - pos < sizeof(ValT))
+	if (size() - pos < sizeof(T))
 		return 0;
-	union u { const ValT v; const char b[sizeof(ValT)]; };
+	union u { const T v; const char b[sizeof(T)]; };
 	const char * s = c_str() + pos;
 	const u * d = reinterpret_cast<const u *>(s/*constData() + pos*/);
 	v = order == endian::LittleEndian ? endian::toLittleEndian(d->v) : endian::toBigEndian(d->v);
-	return sizeof(ValT);
+	return sizeof(T);
 }
 
 inline byte_string byte_string::toString (int value, int base, bool uppercase)

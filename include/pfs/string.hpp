@@ -14,8 +14,8 @@
 
 namespace pfs {
 
-typedef pfs::mbcs_string<uint8_t> utf8string;
-typedef utf8string string;
+typedef pfs::mbcs_string<uint8_t> utf8_string;
+typedef utf8_string string;
 
 #define _latin1(s) pfs::string::fromLatin1(s)
 #define _l1(s)     pfs::string::fromLatin1(s)

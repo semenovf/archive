@@ -16,7 +16,6 @@
 #include <pfs/pp/global.h>
 #include <pfs/pp/assert.h>
 #include <pfs/pp/types.h>
-#include <pfs/pp/limits.h>
 #include <pfs/pp/alignof.h>
 
 #endif /* __PFS_H__ */

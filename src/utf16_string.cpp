@@ -1,5 +1,5 @@
 /*
- * utf16string.cpp
+ * utf16_string.cpp
  *
  *  Created on: Apr 18, 2015
  *      Author: wladt

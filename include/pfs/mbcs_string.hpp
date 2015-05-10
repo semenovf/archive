@@ -550,7 +550,9 @@ public:
 		return substr(length() - count, count);
 	}
 
-	stringlist_basic<mbcs_string> split (const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const
+	stringlist_basic<mbcs_string> split (const mbcs_string & separator
+			, bool keepEmpty = true
+			, ucchar quoteChar = ucchar(ucchar::Null)) const
 	{
 		return split(false, separator, keepEmpty, quoteChar);
 	}

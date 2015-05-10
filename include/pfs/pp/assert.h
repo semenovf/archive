@@ -68,7 +68,7 @@ struct __verify
 #else
 #	define PFS_DEBUG(x)
 #	define PFS_ASSERT(x)
-//#	define PFS_ASSERT_TRACE(expr,trace_expr)
+/*#	define PFS_ASSERT_TRACE(expr,trace_expr)*/
 #	define PFS_ASSERT_X(x,msg)
 
 #endif /* !NDEBUG */
@@ -80,5 +80,11 @@ struct __verify
 #define PFS_ASSERT_UNEXPECTED() PFS_ASSERT(false)
 #define PFS_ASSERT_NULLPTR(x)   PFS_ASSERT((x) != nullptr)
 #define PFS_ASSERT_IS_NULL(x)   PFS_ASSERT(!(x).isNull())
+
+/*
+ * Special case of assert.
+ * Used when need to implement some code.
+ */
+#define PFS_ASSERT_TODO() PFS_ASSERT(false)
 
 #endif /* __PFS_ASSERT_H__ */
