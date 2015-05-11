@@ -18,6 +18,7 @@
 5. [Implementing alignof](http://www.wambold.com/Martin/writings/alignof.html)
 6. [Style Case Study #3: Construction Unions (Herb Sutter)](http://www.gotw.ca/gotw/085.htm)
 7. [std::vector of Aligned Elements](http://ofekshilon.com/2010/05/05/stdvector-of-aligned-elements/)
+8. [Особенности выравнивания данных в структурах](http://precious-cpp.blogspot.ru/2010/09/blog-post.html)
 
 ### Floating point arithmetic
 

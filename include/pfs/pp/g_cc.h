@@ -81,6 +81,7 @@
 #	define PFS_CC_RVCT
 #elif defined(__GNUC__)
 #  	define PFS_CC_GNUC
+#	define PFS_CC_GCC
 #	if defined(__MINGW32__)
 #		define PFS_CC_MINGW
 #	endif
