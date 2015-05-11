@@ -173,7 +173,7 @@ void * thread_impl::start (void * arg)
     return 0;
 }
 
-void thread_impl::finish (void * arg, bool /*lockAnyway*/)
+void thread_impl::finish (void * arg)
 {
     thread * thr = reinterpret_cast<thread *>(arg);
     thread_impl * d = thr->_d.cast<thread_impl>();
