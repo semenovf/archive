@@ -175,10 +175,11 @@ bool thread::wait (uintegral_t timeout)
 
     bool ret = false;
 
-    PFS_ASSERT(timeout <= PFS_UINT32_MAX);
+    DWORD dwMilliseconds = (timeout <= PFS_UINT32_MAX
+    		? static_cast<DWORD>(timeout)
+    		: INFINITE);
 
-    switch (WaitForSingleObject(d->_threadHandle
-    		, integral_cast_check<DWORD, uintegral_t>(timeout))) {
+    switch (WaitForSingleObject(d->_threadHandle, dwMilliseconds)) {
     case WAIT_OBJECT_0:
         ret = true;
         break;
