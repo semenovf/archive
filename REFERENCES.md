@@ -33,3 +33,8 @@
 3. [Writing endian-independent code in C](http://www.ibm.com/developerworks/aix/library/au-endianc/)
 4. [Endianness: Big and Little Endian Byte Order (with list of Processor Endianness)](http://www.yolinux.com/TUTORIALS/Endian-Byte-Order.html)
 5. Something about endianness at ["Serialization—How to Pack Data"](http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization)
+ 
+### Pimpl
+
+1. [The Fast Pimpl Idiom](http://www.gotw.ca/gotw/028.htm)
+2. [Why every C++ developer should know about the pimpl idiom pattern](https://tonka2013.wordpress.com/2013/08/31/why-every-c-developer-should-know-about-the-pimpl-idiom-pattern/)
