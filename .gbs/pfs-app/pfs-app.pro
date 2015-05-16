@@ -5,14 +5,15 @@ INCLUDEPATH += ../../../pfs/include
 INCLUDEPATH += ../../../pfs-sys/include
 
 HEADERS += ../../include/pfs/*.hpp
-SOURCES += ../../src/*.cpp
 
 unix {
+    SOURCES += ../../src/*.cpp
     LIBS += -lpfs
     LIBS += -lpfs-sys
 }
 
 win32 {
+    SOURCES += ..\\..\\src\\*.cpp
     LIBS += lpfs.lib
     LIBS += lpfs-sys.lib
 }

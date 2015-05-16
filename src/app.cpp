@@ -21,12 +21,33 @@ app::app (const string & progname)
 	_program = (progname.isEmpty() ? string("<anonymous>") : progname);
 }
 
-app::app (int argc, char * argv[])
-	: _program(argc > 0 ? _u8(argv[0]) : string("<anonymous>"))
+app::app (int argc
+#if (defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)) && defined(PFS_UNICODE)
+			, wchar_t * argv[])
+		: _program(argc > 0 ? string::fromUtf16(argv[0], wcslen(argv[0])) : string("<anonymous>"))
+
+#else
+			, char * argv[])
+		: _program(argc > 0 ? string::fromUtf8(argv[0]) : string("<anonymous>")) // FIXME for string::fromLocal8Bit()
+#endif
 {
 	PFS_CHECK_SIZEOF_TYPES;
 	PFS_ASSERT(self == nullptr);
 	self = this;
 }
+
+int app::exec (sepaloid & sepaloid)
+{
+	int r = EXIT_FAILURE;
+
+    sepaloid.connectAll();
+    if (sepaloid.start() && sepaloid.isGood()) {
+   		r = sepaloid.exec();
+    }
+    sepaloid.logErrors();
+
+	return r;
+}
+
 
 } // pfs

@@ -12,6 +12,11 @@
 #include <pfs/string.hpp>
 #include <pfs/sigslot.hpp>
 
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace pfs {
 
 #define DETECTOR_CAST(slot) reinterpret_cast<pfs::detector>(& slot)
@@ -100,5 +105,9 @@ const detector_mapping * getDetectors(int *count)               \
 	*count = sizeof(__detector_mapping)/sizeof(__detector_mapping[0]) ; \
 	return & __detector_mapping[0];                                 \
 }
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_PETALOID_HPP__ */

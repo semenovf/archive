@@ -8,16 +8,26 @@
 #ifndef __PFS_APP_HPP__
 #define __PFS_APP_HPP__
 
-#include <pfs/vector.hpp>
-#include <pfs/noncopyable.hpp>
-#include <pfs/option.hpp>
+//#include <pfs/noncopyable.hpp>
+//#include <pfs/option.hpp>
 #include <pfs/sepaloid.hpp>
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
 
 namespace pfs {
 
-class DLL_API app : noncopyable
+class DLL_API app// : noncopyable
 {
 	PFS_IMPLEMENT_LOCKING(app);
+
+private:
+	string   _program;
+
+private:
+	static app * self;
 
 public:
 	class main_proc
@@ -30,40 +40,26 @@ public:
 
 public:
 	app (const string & progname = pfs::string());
-	app (int argc, char * argv[]);
+	app (int argc
+#if (defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)) && defined(PFS_UNICODE)
+			, wchar_t * argv[]
+#else
+			, char * argv[]
+#endif
+	);
 	~app () {}
 
 	int exec () { return main_proc()(); }
 	int exec (main_proc & mainProc) { return mainProc(); }
 	int exec (sepaloid & sepaloid);
 
-//	const cwt::settings & settings() const { return _settings; }
-//	cwt::settings & settings() { return _settings; }
-
 	static app * instance() { PFS_ASSERT(self); return self; }
-
-private:
-	string   _program;
-//	cwt::settings _settings;
-
-private:
-	static app * self;
 };
 
-inline int app::exec (sepaloid & sepaloid)
-{
-	int r = EXIT_FAILURE;
-
-    sepaloid.connectAll();
-    if (sepaloid.start() && sepaloid.isGood()) {
-   		r = sepaloid.exec();
-    }
-    sepaloid.logErrors();
-
-	return r;
-}
-
-
 } // pfs
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_APP_HPP__ */

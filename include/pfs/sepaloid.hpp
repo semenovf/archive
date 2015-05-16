@@ -17,6 +17,11 @@
 #include <pfs/thread.hpp>
 #include <pfs/sigslotmapping.hpp>
 
+#ifdef PFS_CC_MSVC
+#	pragma warning(push)
+#	pragma warning(disable:4251)
+#endif
+
 namespace pfs {
 
 struct petaloid_spec
@@ -127,5 +132,9 @@ protected:
 };
 
 } // pfs
+
+#ifdef PFS_CC_MSVC
+#	pragma warning(pop)
+#endif
 
 #endif /* __PFS_SEPALOID_HPP__ */

@@ -16,7 +16,7 @@ static const string __modes_data[][4] = {
 	, {_u8("/"), _u8("/"), _u8(":"), _u8("\"'") } // Windows
 };
 
-void OptionsContext::setMode(option::mode_type mode)
+void options_context::setMode(option::mode_type mode)
 {
 	_shortPrefix     = __modes_data[mode][0];
 	_longPrefix      = __modes_data[mode][1];
@@ -50,9 +50,13 @@ static void split_long_arg (const string & arg
 	}
 }
 
-bool OptionsContext::parseOpts(settings & settings
+bool options_context::parseOpts (settings & settings
 		, int argc
-		, char * argv[]
+#if (defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)) && defined(PFS_UNICODE)
+			, wchar_t * argv[]
+#else
+			, char * argv[]
+#endif
 		, size_t optc
 		, const option optv[]
 		, vector<string> * args)
@@ -85,9 +89,14 @@ bool OptionsContext::parseOpts(settings & settings
 
 	for (int i = 1; i < argc; ++i) {
 #if defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)
-		string arg = string::fromUtf16(argv[i]);
+#	ifdef PFS_UNICODE
+		string arg = string::fromUtf16(argv[i], wcslen(argv[i])); // TODO Check this
+#	else
+		string arg = string::fromLatin1(argv[i]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
+		//string arg = string::fromLocal8Bit(argv[i]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
+#	endif
 #else
-		string arg = string::fromUtf8(argv[i]);
+		string arg = string::fromUtf8(argv[i]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
 #endif
 		string optname;
 		string optval;
@@ -98,7 +107,15 @@ bool OptionsContext::parseOpts(settings & settings
 		} else if (arg.startsWith(_shortPrefix)) {
 			optname = arg.substr(_shortPrefix.length());
 			if (i + 1 < argc) {
-				optval = _u8(argv[i + 1]);
+#if defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)
+#	ifdef PFS_UNICODE
+				optval = string::fromUtf16(argv[i + 1], wcslen(argv[i + 1])); // TODO Check this
+#	else
+				optval = string::fromLatin1(argv[i + 1]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
+#	endif
+#else
+				optval = string::fromUtf8(argv[i + 1]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
+#endif
 				skip = true;
 			}
 		} else { // argument
