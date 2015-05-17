@@ -95,7 +95,6 @@ public:
 		base_class::erase(base_class::begin() + from, base_class::begin() + to);
 #endif
 	}
-
 };
 
 } // pfs

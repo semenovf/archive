@@ -73,20 +73,38 @@ public:
 
 	reference at (size_type index) const
 	{
-		PFS_ASSERT(index >= 0 && index < size());
+		PFS_ASSERT_RANGE(index >= 0 && index < size());
 		return reference(*const_cast<self_class *>(this), const_cast<pointer>(data() + index));
 	}
 
 	reference operator [] (size_type i) const { return at(i); }
 
-	T valueAt (size_type i) const { return at(i); }
+	T valueAt (size_type index) const
+	{
+		PFS_ASSERT_RANGE(index >= 0 && index < size());
+		return *(data() + index);
+	}
+
+	const T & refAt (size_type index) const
+	{
+		PFS_ASSERT_RANGE(index >= 0 && index < size());
+		return *(data() + index);
+	}
+
+	T & refAt (size_type index)
+	{
+		if (index >= size()) {
+			resize(index + 1);
+		}
+		return *(data() + index);
+	}
 
 	iterator find (const T & value) const;
 
 	reference front () const { return at(0); }
 	reference first () const { return at(0); }
 	reference back  () const { return at(size()-1); }
-	reference last  () const { PFS_ASSERT(size() > 0); return at(size()-1); }
+	reference last  () const { PFS_ASSERT_RANGE(size() > 0); return at(size()-1); }
 
 	const T * constData () const { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
 	const T * data () const      { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
@@ -118,6 +136,7 @@ public:
 			base_class::cast()->clear();
 		}
 	}
+
     void reserve (size_type n) { base_class::detach(); base_class::cast()->reserve(n); }
     void resize  (size_type n) { base_class::detach(); base_class::cast()->resize(n, value_type()); }
     void resize  (size_type n, const value_type & value) { base_class::detach(); base_class::cast()->resize(n, value); }

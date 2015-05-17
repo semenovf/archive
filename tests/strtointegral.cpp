@@ -51,9 +51,9 @@ int main(int argc, char *argv[])
 	TEST_OK(compare_unsigned("-123", -123));
 
 #ifdef PFS_HAVE_INT64
-	TEST_OK(compare_unsigned("18446744073709551615", PFS_ULONG_MAX));
+	TEST_OK(compare_unsigned("18446744073709551615", PFS_UINTEGRAL_MAX));
 #else
-	TEST_OK(compare_unsigned("4294967295", PFS_ULONG_MAX));
+	TEST_OK(compare_unsigned("4294967295", PFS_UINTEGRAL_MAX));
 #endif
 
 
@@ -70,14 +70,12 @@ int main(int argc, char *argv[])
 	TEST_OK(compare_signed("-123", -123));
 
 #ifdef PFS_HAVE_INT64
-	TEST_OK(compare_signed("9223372036854775807", PFS_LONG_MAX));
-	TEST_OK(compare_signed("-9223372036854775808", PFS_LONG_MIN));
+	TEST_OK(compare_signed("9223372036854775807", PFS_INTEGRAL_MAX));
+	TEST_OK(compare_signed("-9223372036854775808", PFS_INTEGRAL_MIN));
 #else
-	TEST_OK(compare_signed("2147483647", PFS_LONG_MAX));
-	TEST_OK(compare_signed("-2147483648", PFS_LONG_MIN));
+	TEST_OK(compare_signed("2147483647", PFS_INTEGRAL_MAX));
+	TEST_OK(compare_signed("-2147483648", PFS_INTEGRAL_MIN));
 #endif
-
-
 
     END_TESTS;
 }

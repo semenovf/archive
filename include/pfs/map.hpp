@@ -158,13 +158,15 @@ public:
 		return it != cend() ? it.value() : defaultValue;
 	}
 
-	reference at (const key_type & key) const
+	const T & refAt (const key_type & key) const
 	{
-		map * self = const_cast<map *>(this);
-		iterator it = find(key);
-		PFS_ASSERT(it != cend());
-		return reference(*self, it.base());
+		reference r = at(key);
+		return *(& r);
 	}
+
+	T & refAt (const key_type & key);
+
+	reference at (const key_type & key) const;
 
 	reference operator [] (const key_type & key) const
     {
@@ -177,6 +179,28 @@ public:
 
 	void detach_and_assign (pointer & p, const T & value); // pfs::reference class requirement
 };
+
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+T & map<Key, T, Compare, Alloc>::refAt (const key_type & key)
+{
+	iterator it = find(key);
+	if (it == end())
+		it = insert(key, T());
+
+	return *it.base();
+}
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+typename map<Key, T, Compare, Alloc>::reference
+map<Key, T, Compare, Alloc>::at (const key_type & key) const
+{
+	map * self = const_cast<map *>(this);
+	iterator it = find(key);
+	PFS_ASSERT_RANGE(it != cend());
+	return reference(*self, it.base());
+}
+
 
 template <typename Key, typename T, typename Compare, typename Alloc>
 void map<Key, T, Compare, Alloc>::detach_and_assign (

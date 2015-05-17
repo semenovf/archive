@@ -119,7 +119,12 @@ public:
 		return _ptr->second;
 	}
 
-	value_type operator * () const
+	const T & operator * () const
+	{
+		return _ptr->second;
+	}
+
+	T & operator * ()
 	{
 		return _ptr->second;
 	}

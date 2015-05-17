@@ -1,5 +1,8 @@
 ## External resources
 
+### C++
+1. [Prototypes of member access operators](http://en.cppreference.com/w/cpp/language/operator_member_access)
+
 ### Unicode 
 1. [UTF-8, UTF-16, UTF-32 & BOM](http://unicode.org/faq/utf_bom.html)
 2. [RFC-2781. UTF-16, an encoding of ISO 10646](https://www.ietf.org/rfc/rfc2781.txt)

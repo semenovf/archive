@@ -74,11 +74,6 @@ public:
 	        o.detach();
 
 	    pfs_swap(_holder, o._holder);
-
-//		PFS_ASSERT(_holder);
-//		PFS_ASSERT(o._holder);
-//		pfs_swap(static_cast<impl_cast_holder<T> *>(_holder)->_d
-//				, static_cast<impl_cast_holder<T> *>(o._holder)->_d);
 	}
 
     void reset ()
