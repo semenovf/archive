@@ -3,29 +3,31 @@
 
 namespace pfs {
 
-pfs::vector<pfs::string> dl::globalSearchPath;
+stringlist dl::_globalSearchPath;
 
 /**
+ * @note  internal
+ *
  * @brief Searches file in directories added by addSearchPath()
  *
  * @param filename
  * @param realPath
  * @return
  */
-pfs::string dl::searchFile (const pfs::string & filename)
+string dl::searchFile (const string & filename)
 {
 	pfs::fs fs;
 
 	if (fs.exists(filename)) {
-		return pfs::string(filename);
+		return string(filename);
 	}
 
 	if (!fs.isAbsolute(filename)) {
-		pfs::vector<pfs::string>::const_iterator it = searchPath.cbegin();
-		pfs::vector<pfs::string>::const_iterator itEnd = searchPath.cend();
+		stringlist::const_iterator it = _searchPath.cbegin();
+		stringlist::const_iterator itEnd = _searchPath.cend();
 
 		while (it != itEnd) {
-						pfs::string r(*it);
+						string r(*it);
 			r += fs.separator();
 			r += filename;
 			if (fs.exists(r))
@@ -33,11 +35,11 @@ pfs::string dl::searchFile (const pfs::string & filename)
 			++it;
 		}
 
-		it = globalSearchPath.cbegin();
-		itEnd = globalSearchPath.cend();
+		it = _globalSearchPath.cbegin();
+		itEnd = _globalSearchPath.cend();
 
 		while (it != itEnd) {
-			pfs::string r(*it);
+			string r(*it);
 			r += fs.separator();
 			r += filename;
 			if (fs.exists(r))
@@ -47,26 +49,27 @@ pfs::string dl::searchFile (const pfs::string & filename)
 
 	}
 
-	return pfs::string();
+	return string();
 }
 
 
 /**
- * @fn pfs::string Dl::buildDlFileName (const pfs::string &basename)
+ * @fn string dl::buildDlFileName (const string & basename)
  *
- * @brief Builds dynamic library full name according to platform.
+ * @brief Builds dynamic library file name according to platform.
  *
- * @param name base name of dynamic lubrary
- * @param libname full library name to store
+ * @param name Base name of dynamic library.
+ *
+ * @return Platform specific dynamic library file name.
  */
 
 
 /**
- * @fn Dl::Handle Dl::open (const pfs::string & path, bool global, bool resolve)
+ * @fn dl::handle dl::open (const string & path, bool global, bool resolve)
  *
  * @brief Loads the dynamic library file named by the @c path.
  *
- * @param path    Path to file with dynamic library.
+ * @param path    Platform specific path to dynamic library file.
  * @param global  If @c true the symbols defined by this library
  *                will be made available for symbol resolution of
  *                subsequently loaded libraries, otherwise symbols
@@ -78,7 +81,8 @@ pfs::string dl::searchFile (const pfs::string & filename)
  *                If the symbol is never referenced, then it is never resolved.
  *                Lazy binding is only performed for function references; references
  *                to variables are always immediately bound when the library is loaded.
- * @return
+ *
+ * @return Handler to the opened dynamic library file.
  */
 
 
@@ -87,45 +91,96 @@ typedef bool (* __plugin_dtor) (void *);
 static const char * __plugin_ctor_sym = "__plugin_ctor__";
 static const char * __plugin_dtor_sym = "__plugin_dtor__";
 
-bool dl::pluginOpen(const pfs::string & name, const pfs::string & path, void * pluggable)
+/**
+ * @brief Opens plug-in specified by path.
+ *
+ * @param name Unique name for plug-in.
+ * @param path Platform specific path to the plug-in.
+ * @param pluggable Pointer to pluggable interface.
+  */
+bool dl::openPlugin (const string & name, const string & path, pfs::pluggable * pluggable)
 {
+    if (!pluggable) {
+        addError(string() << _Tr("Plaggable is null"));
+        return false;
+    }
+
 	bool global = false; // Avoid name conflicts
 	bool resolve = true;
 	dl::handle dlh = dl::open(path, global, resolve);
 
+	if (_plugins.contains(name)) {
+        addError(string() << _Tr("Duplicate plug-in with name: ") << name);
+        return false;
+	}
+
 	if (!dlh) {
-		pfs::string errstr;
-		errstr << _Tr("Unable to load plugin from ")
-				<< path;
-		addError(errstr);
+		addError(string() << _Tr("Unable to load plug-in from ") << path);
 		return false;
 	}
 
 	__plugin_ctor ctor = reinterpret_cast<__plugin_ctor>(dl::ptr(dlh, __plugin_ctor_sym));
 	if (!ctor) {
-		pfs::string errstr;
-		errstr << path
-				<< ": "
-				<< _Tr("Constructor not found");
-		addError(errstr);
+		addError(string() << _Tr("Constructor not found for plug-in: ")
+		        << name << " [" << path << ']');
 		return false;
 	}
 
-	dl::plugins.insert(name, dlh);
+	dl::_plugins.insert(name, dlh);
 
 	return ctor(pluggable);
 }
 
-bool dl::pluginClose (const pfs::string & name, void * pluggable)
+/**
+ * @brief Opens plug-in specified by name.
+ *
+ * @details Builds platform specific path for plug-in based on @c name, then attempts to find
+ *          dynamic library file using @c dl::searchFile() method.
+ *
+ * @param name Plug-in name (used as base name for filename).
+ * @param pluggable Pointer to pluggable interface.
+ * @return @c true if plug-in successfully opened, @c false otherwise.
+ *         In latter case error will be saved.
+ */
+bool dl::openPlugin (const string & name, pfs::pluggable * pluggable)
 {
-	pfs::map<pfs::string, dl::handle>::iterator it = dl::plugins.find(name);
+    if (!pluggable) {
+        addError(string() << _Tr("Plaggable is null"));
+        return false;
+    }
 
-	if (it == dl::plugins.end()) {
-		pfs::string errstr;
-		errstr << name
-				<< ": "
-				<< _Tr("Plugin not found, may be it was not load before");
-		addError(errstr);
+    string filename = buildDlFileName(name);
+    string path = searchFile(filename);
+
+    if (path.isEmpty()) {
+        addError(string() << _Tr("Unable to find plug-in specified by name: ")
+                << name);
+        return false;
+    }
+
+    return openPlugin(name, path, pluggable);
+}
+
+/**
+ * @brief Closes the plug-in previously opened by @c dl::openPluggin() method.
+ *
+ * @param name Plug-in name.
+ * @param pluggable Pointer to pluggable interface.
+ * @return @c true if plug-in successfully closed, @c false otherwise.
+ *         In latter case error will be saved.
+ */
+bool dl::closePlugin (const string & name, pfs::pluggable * pluggable)
+{
+    if (!pluggable) {
+        addError(string() << _Tr("Plaggable is null"));
+        return false;
+    }
+
+	pfs::map<string, dl::handle>::iterator it = dl::_plugins.find(name);
+
+	if (it == dl::_plugins.end()) {
+		addError(string() << _Tr("Plug-in not found, may be it was not load before: ")
+                << name);
 		return false;
 	}
 
@@ -135,15 +190,11 @@ bool dl::pluginClose (const pfs::string & name, void * pluggable)
 	__plugin_dtor dtor = reinterpret_cast<__plugin_dtor>(dl::ptr(dlh, __plugin_dtor_sym));
 
 	if (!dtor) {
-		pfs::string errstr;
-		errstr << name
-				<< ": "
-				<< _Tr("Destructor not found");
-		addError(errstr);
+		addError(string() << _Tr("Destructor not found for plug-in: ") << name);
 		return false;
 	}
 
-	dl::plugins.remove(name);
+	dl::_plugins.remove(name);
 
 	return dtor(pluggable);
 }
@@ -153,6 +204,6 @@ bool dl::pluginClose (const pfs::string & name, void * pluggable)
 extern "C" int DLL_API dl_only_for_testing_purpose (void)
 {
 	int i = 0;
-	i++;
+	++i;
 	return i;
 }

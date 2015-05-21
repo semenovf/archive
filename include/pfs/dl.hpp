@@ -12,8 +12,9 @@
 /* see http://en.wikipedia.org/wiki/Dynamic_loading */
 #include <pfs/string.hpp>
 #include <pfs/map.hpp>
-#include <pfs/vector.hpp>
+#include <pfs/stringlist.hpp>
 #include <pfs/errorable_ext.hpp>
+#include <pfs/pluggable.hpp>
 
 #ifdef PFS_CC_MSVC
 #	include <windows.h>
@@ -41,33 +42,32 @@ public:
 #endif
 
 private:
-	static pfs::vector<pfs::string> globalSearchPath;
-	pfs::vector<pfs::string> searchPath;
-	pfs::map<pfs::string, handle> plugins;
+	static stringlist _globalSearchPath;
+	stringlist _searchPath;
+	pfs::map<string, handle> _plugins;
 
 public:
 	dl () {};
-	handle open (const pfs::string & path
+	handle open (const string & path
 			, bool global = false
 			, bool resolve = true) {
-		pfs::string unused; return open(path, unused, global, resolve);
+		string unused; return open(path, unused, global, resolve);
 	}
-	handle open            (const pfs::string & path, pfs::string & realPath, bool global = false, bool resolve = true);
-	symbol ptr             (handle h, const char * symname);
-	//static symbol symbol          (handle h, const char * symname) { return ptr(h, symname); }
-	void   close           (handle h);
-	pfs::string buildDlFileName (const pfs::string & basename);
-	bool   find            (const pfs::string & path, pfs::string & realPath);
-	void   clearSearchPath () { searchPath.clear(); }
+	handle open  (const string & path, string & realPath, bool global = false, bool resolve = true);
+	symbol ptr   (handle h, const char * symname);
+	void   close (handle h);
 
-	bool   pluginOpen  (const pfs::string & name, const pfs::string & path, void * pluggable);
-	bool   pluginClose (const pfs::string & name, void * pluggable);
+	bool   openPlugin  (const string & name, const string & path, pfs::pluggable * pluggable);
+	bool   openPlugin  (const string & name, pfs::pluggable * pluggable);
+	bool   closePlugin (const string & name, pfs::pluggable * pluggable);
 
-	void   addSearchPath   (const pfs::string & dir) { searchPath.append(dir); }
-	static void addGlobalSearchPath   (const pfs::string & dir) { globalSearchPath.append(dir); }
+    string buildDlFileName (const string & basename);
+	void   clearSearchPath () { _searchPath.clear(); }
+	void   addSearchPath   (const string & dir) { _searchPath.append(dir); }
+	static void addGlobalSearchPath   (const string & dir) { _globalSearchPath.append(dir); }
 
 private:
-	pfs::string searchFile (const pfs::string & filename);
+	string searchFile (const string & filename);
 };
 
 } // pfs

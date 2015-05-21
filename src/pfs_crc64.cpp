@@ -9,7 +9,7 @@
 
 #define PFS_INT64_C(x) x##LL
 
-static int64_t __crc64_lookup_table[] = {
+static uint64_t __crc64_lookup_table[] = {
 	PFS_INT64_C(0x0000000000000000), PFS_INT64_C(0x01b0000000000000), PFS_INT64_C(0x0360000000000000),
 	PFS_INT64_C(0x02d0000000000000), PFS_INT64_C(0x06c0000000000000), PFS_INT64_C(0x0770000000000000),
 	PFS_INT64_C(0x05a0000000000000), PFS_INT64_C(0x0410000000000000), PFS_INT64_C(0x0d80000000000000),
@@ -115,10 +115,10 @@ static int64_t __crc64_lookup_table[] = {
 static int64_t pfs_crc64_iso (const void * pdata, size_t nbytes, int64_t initial)
 {
 	const byte_t *pbytes = (const byte_t *)pdata;
-	int64_t r = initial;
+	uint64_t r = initial;
 	while( nbytes-- )
-		r = __crc64_lookup_table[(r ^ *pbytes++) & 0xff ] ^ (((uint64_t)r) >> 8);
-	return r;
+		r = __crc64_lookup_table[(r ^ *pbytes++) & 0xff ] ^ (r >> 8);
+	return static_cast<int64_t>(r);
 }
 
 namespace pfs {
