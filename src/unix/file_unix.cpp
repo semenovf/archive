@@ -168,7 +168,7 @@ bool file::open (const pfs::string & path, int32_t oflags)
 	    close();
 	} else {
 	    pimpl d(new file_impl);
-	    _d.swap<file_impl>(d);
+	    _d.swap(d);
 	}
 
 	file_impl * d = _d.cast<file_impl>();
