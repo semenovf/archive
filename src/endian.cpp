@@ -36,22 +36,84 @@ bool endian::isLittleEndianSystem ()
 	return type() == LittleEndian ? true : false;
 }
 
-char endian::swap (char i)
+char endian::bswap (char i)
 {
-	return i;
+    return i;
 }
 
-int8_t endian::swap (int8_t i)
+signed char endian::bswap (signed char i)
 {
-	return i;
+    return i;
 }
 
-uint8_t endian::swap (uint8_t i)
+unsigned char endian::bswap (unsigned char i)
 {
-	return i;
+    return i;
 }
 
-int16_t endian::swap (int16_t i)
+short endian::bswap (short i)
+{
+    return static_cast<short>(bswap_16(static_cast<int16_t>(i)));
+}
+
+unsigned short endian::bswap (unsigned short i)
+{
+    return static_cast<unsigned short>(bswap_16(static_cast<int16_t>(i)));
+}
+
+int endian::bswap (int i)
+{
+    return sizeof(i) == 4
+            ? static_cast<int>(bswap_32(static_cast<int32_t>(i)))
+#ifdef PFS_HAVE_INT64 // for ILP64
+            : static_cast<int>(bswap_64(static_cast<int64_t>(i)));
+#else // for 16-bit OS (MS-DOS)
+            : static_cast<int>(bswap_16(static_cast<int16_t>(i)));
+#endif
+}
+
+unsigned int endian::bswap (unsigned int i)
+{
+    return static_cast<unsigned int>(bswap(static_cast<int>(i)));
+}
+
+long endian::bswap (long i)
+{
+    return sizeof(i) == 4
+            ? static_cast<long>(bswap_32(static_cast<int32_t>(i)))
+#ifdef PFS_HAVE_INT64 // for LP64 and ILP64
+            : static_cast<long>(bswap_64(static_cast<int64_t>(i)));
+#else // for 16-bit OS (MS-DOS)
+            : static_cast<long>(bswap_32(static_cast<int32_t>(i)));
+#endif
+}
+
+unsigned long endian::bswap (unsigned long i)
+{
+    return static_cast<unsigned long>(bswap(static_cast<long>(i)));
+}
+
+#ifdef PFS_HAVE_LONGLONG
+long long endian::bswap (long long i)
+{
+    // TODO Check for Win32
+
+    return sizeof(i) == 4
+            ? static_cast<long long>(bswap_32(static_cast<int32_t>(i)))
+#ifdef PFS_HAVE_INT64
+            : static_cast<long long>(bswap_64(static_cast<int64_t>(i)));
+#else // for 16-bit OS (MS-DOS)
+            : static_cast<long long>(bswap_32(static_cast<int32_t>(i)));
+#endif
+}
+
+unsigned long long endian::bswap (unsigned long long i)
+{
+    return static_cast<unsigned long long>(bswap(static_cast<long long>(i)));
+}
+#endif
+
+int16_t endian::bswap_16 (int16_t i)
 {
 	byte_t b1, b2;
 
@@ -61,12 +123,7 @@ int16_t endian::swap (int16_t i)
 	return r;
 }
 
-uint16_t endian::swap (uint16_t i)
-{
-	return static_cast<uint16_t>(swap(static_cast<int16_t>(i)));
-}
-
-int32_t endian::swap (int32_t i)
+int32_t endian::bswap_32 (int32_t i)
 {
 	byte_t b1, b2, b3, b4;
 
@@ -78,14 +135,8 @@ int32_t endian::swap (int32_t i)
 	return ((int)b1 << 24) + ((int)b2 << 16) + ((int)b3 << 8) + b4;
 }
 
-uint32_t endian::swap (uint32_t i)
-{
-	return static_cast<uint32_t>(swap(static_cast<int32_t>(i)));
-}
-
-
 #ifdef PFS_HAVE_INT64
-int64_t endian::swap (int64_t i)
+int64_t endian::bswap_64 (int64_t i)
 {
 	byte_t b1, b2, b3, b4, b5, b6, b7, b8;
 
@@ -106,11 +157,6 @@ int64_t endian::swap (int64_t i)
 			+ (((long long)b6) << 16)
 			+ (((long long)b7) <<  8)
 			+ b8;
-}
-
-uint64_t endian::swap (uint64_t i)
-{
-	return static_cast<uint64_t>(swap(static_cast<int64_t>(i)));
 }
 #endif
 

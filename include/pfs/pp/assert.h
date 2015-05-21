@@ -8,6 +8,8 @@
 #ifndef __PFS_PP_ASSERT_H__
 #define __PFS_PP_ASSERT_H__
 
+#include <stdio.h>
+
 #ifndef NDEBUG
 #	if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
 namespace pfs {

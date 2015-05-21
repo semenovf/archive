@@ -12,7 +12,7 @@
 #include <float.h>
 #include <math.h> /* for NAN */
 
-#if defined(HAVE_INT64) && ! defined(PFS_OS_64BITS)
+#if defined(PFS_HAVE_INT64) && ! defined(PFS_OS_64BITS)
 #	define PFS_LONG_LITERAL(x) x##LL
 #	define PFS_ULONG_LITERAL(x) x##ULL
 #else

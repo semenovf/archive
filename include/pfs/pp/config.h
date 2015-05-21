@@ -9,6 +9,9 @@
 #ifndef __PFS_CONFIG_H__
 #define __PFS_CONFIG_H__
 
+#include <sys/types.h>
+#include <stddef.h>
+
 #if _POSIX_C_SOURCE >= 199309L
 #	define HAVE_NANOSLEEP      /* TODO deprecated */
 #	define PFS_HAVE_NANOSLEEP

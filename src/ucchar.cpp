@@ -21,6 +21,11 @@ bool ucchar::isSpace() const
 		? true : false;
 }
 
+/**
+ * @brief Checks if character is decimal digit (0-9)
+ *
+ * @return @c true if if character is decimal digit, otherwise returns @c false.
+ */
 bool ucchar::isDigit () const
 {
 	if (_value < 128)

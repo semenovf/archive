@@ -15,7 +15,7 @@
 #endif
 
 
-#ifdef _MSC_VER
+#ifdef PFS_CC_MSVC
 #   define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
 #endif

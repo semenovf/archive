@@ -33,13 +33,13 @@ public:
 	template<typename T>
 	static T toBigEndian (T i)
 	{
-		return type() == LittleEndian ? swap(i) :  i;
+		return type() == LittleEndian ? bswap(i) : i;
 	}
 
 	template<typename T>
 	static T toLittleEndian (T i)
 	{
-		return type() == LittleEndian ? i : swap(i);
+		return type() == LittleEndian ? i : bswap(i);
 	}
 
 	template<typename T>
@@ -54,17 +54,26 @@ public:
 		return type() == LittleEndian ? swap(i) : i;
 	}
 
-	static char       swap (char i);
-	static int8_t     swap (int8_t i);
-	static uint8_t    swap (uint8_t i);
-	static int16_t    swap (int16_t i);
-	static uint16_t   swap (uint16_t i);
-	static int32_t    swap (int32_t i);
-	static uint32_t   swap (uint32_t i);
+	static char           bswap (char i);
+	static signed char    bswap (signed char i);
+	static unsigned char  bswap (unsigned char i);
+    static short          bswap (short i);
+    static unsigned short bswap (unsigned short i);
+    static int            bswap (int i);
+    static unsigned int   bswap (unsigned int i);
+    static long           bswap (long i);
+    static unsigned long  bswap (unsigned long i);
+
+#ifdef PFS_HAVE_LONGLONG
+    static long long  bswap (long long i);
+    static unsigned long long bswap (unsigned long long i);
+#endif
+
+	static int16_t    bswap_16 (int16_t i);
+	static int32_t    bswap_32 (int32_t i);
 
 #ifdef PFS_HAVE_INT64
-	static int64_t    swap (int64_t i);
-	static uint64_t   swap (uint64_t i);
+	static int64_t    bswap_64 (int64_t i);
 #endif
 };
 

@@ -20,8 +20,8 @@ void test_swap_integral (T min, T max)
 	bool ok = true;
 
 	for (T i = min; i < max; ++i) { // i < max: to avoid from infinite loop
-		T i0 = pfs::endian::swap(i);
-		T i1 = pfs::endian::swap(i0);
+		T i0 = pfs::endian::bswap(i);
+		T i1 = pfs::endian::bswap(i0);
 		if (i != i1) {
 			cout << "Failed with value: " << i << endl;
 			ok = false;
@@ -31,8 +31,8 @@ void test_swap_integral (T min, T max)
 
 	// And now check for max value
 	if (ok) {
-		T i0 = pfs::endian::swap(max);
-		T i1 = pfs::endian::swap(i0);
+		T i0 = pfs::endian::bswap(max);
+		T i1 = pfs::endian::bswap(i0);
 		if (max != i1) {
 			cout << "Failed with value: " << max << endl;
 			ok = false;
@@ -51,8 +51,8 @@ void test_swap_big_integral (T min, T max)
 	bool ok = true;
 
 	for (T i = min, j = 1 ; ok && j < PFS_INT16_MAX; i = min / j++) {
-		T i0 = pfs::endian::swap(i);
-		T i1 = pfs::endian::swap(i0);
+		T i0 = pfs::endian::bswap(i);
+		T i1 = pfs::endian::bswap(i0);
 		if (i != i1) {
 			cout << "min: Failed on step " << j - 1 << " with value: " << i << endl;
 			ok = false;
@@ -61,8 +61,8 @@ void test_swap_big_integral (T min, T max)
 	}
 
 	for (T i = max, j = 1 ; ok && j < PFS_INT16_MAX; i = max / j++) {
-		T i0 = pfs::endian::swap(i);
-		T i1 = pfs::endian::swap(i0);
+		T i0 = pfs::endian::bswap(i);
+		T i1 = pfs::endian::bswap(i0);
 		if (i != i1) {
 			cout << "max: Failed on step " << j - 1 << " with value: " << i << endl;
 			ok = false;

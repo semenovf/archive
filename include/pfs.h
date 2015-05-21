@@ -9,9 +9,6 @@
 #ifndef __PFS_H__
 #define __PFS_H__
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <pfs/pp/config.h>
 #include <pfs/pp/global.h>
 #include <pfs/pp/assert.h>

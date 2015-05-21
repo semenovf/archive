@@ -55,12 +55,12 @@
 
 typedef uint8_t byte_t;
 
-#ifdef PFS_HAVE_LONGLONG
-	typedef long long          integral_t;
-	typedef unsigned long long uintegral_t;
+#ifdef PFS_HAVE_INT64
+	typedef int64_t  integral_t;
+	typedef uint64_t uintegral_t;
 #else
-	typedef long               integral_t;
-	typedef unsigned long      uintegral_t;
+    typedef int32_t  integral_t;
+    typedef uint32_t uintegral_t;
 #endif
 
 #ifdef PFS_HAVE_LONG_DOUBLE

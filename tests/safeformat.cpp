@@ -66,7 +66,7 @@ bool testCase (const pfs::string & fmt1, const pfs::string & fmt2, T value)
     int i2 = snprintf(buf, sizeof(buf), fmt2.c_str(), value);
 #endif
 
-    if (s.length() != i2 || s != pfs::string(buf)) {
+    if (s.length() != static_cast<size_t>(i2) || s != pfs::string(buf)) {
     	cout<< endl
         << "Reference: " << i2 << "; Actual: " << s.length() << ", Difference = " << i2 - int(s.length()) << endl
         << "V: [" << value << "]" << endl
