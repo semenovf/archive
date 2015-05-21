@@ -7,6 +7,7 @@
 
 #include "pfs/settings.hpp"
 
+#ifdef __COMMENT__
 namespace pfs {
 
 class settings_adapter
@@ -104,3 +105,5 @@ public:
 //};
 
 } // pfs
+
+#endif

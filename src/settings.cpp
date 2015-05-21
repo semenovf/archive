@@ -8,6 +8,7 @@
 #include "settings_p.hpp"
 #include "pfs/dl.hpp"
 
+#ifdef __COMMENT__
 namespace pfs {
 
 static const pfs::string __plugin_basenames[] = {
@@ -128,5 +129,6 @@ void settings::set (const pfs::string & path, const pfs::string & value)
 	impl_class * d = base_class::cast();
 	d->setString(d, path, value);
 }
+#endif
 
 } // pfs

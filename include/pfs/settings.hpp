@@ -19,6 +19,8 @@
 #	pragma warning(disable:4251)
 #endif
 
+#ifdef __COMMENT__
+
 namespace pfs {
 
 // MT-safe
@@ -85,6 +87,8 @@ public:
 };
 
 } // pfs
+
+#endif
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)
