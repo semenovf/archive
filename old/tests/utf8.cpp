@@ -111,7 +111,6 @@ void test_Utf8Codec(_FileSpec file_spec[], int nspecs)
 
 int main(int argc, char *argv[])
 {
-    PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
     BEGIN_TESTS(56);
 
