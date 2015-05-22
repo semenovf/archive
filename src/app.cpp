@@ -15,7 +15,6 @@ app * app::self = nullptr;
 app::app (const string & progname)
 	: _program()
 {
-	PFS_CHECK_SIZEOF_TYPES;
 	PFS_ASSERT(self == nullptr);
 	self = this;
 	_program = (progname.isEmpty() ? string("<anonymous>") : progname);
@@ -31,7 +30,6 @@ app::app (int argc
 		: _program(argc > 0 ? string::fromUtf8(argv[0]) : string("<anonymous>")) // FIXME for string::fromLocal8Bit()
 #endif
 {
-	PFS_CHECK_SIZEOF_TYPES;
 	PFS_ASSERT(self == nullptr);
 	self = this;
 }
