@@ -3,8 +3,8 @@
 
 #include <pfs.hpp>
 
-namespace cwt {
+namespace pfs {
 
-} // cwt
+} // pfs
 
 #endif /* __@PROJECT@_HPP__ */

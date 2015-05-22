@@ -6,15 +6,15 @@
 
 #include "petaloid.hpp"
 #include <pfs/stringlist.hpp>
-#include <cwt/logger.hpp>
+#include <pfs/logger.hpp>
 
-CWT_PETALOID_API cwt::petaloid * __petaloid_ctor__ (const char *, int /*argc*/, char * /*argv*/[])
+PFS_PETALOID_API pfs::petaloid * __petaloid_ctor__ (const char *, int /*argc*/, char * /*argv*/[])
 {
 	logger::petaloid * p = new logger::petaloid;
 	return p;
 }
 
-CWT_PETALOID_API void  __petaloid_dtor__ (cwt::petaloid * p)
+PFS_PETALOID_API void  __petaloid_dtor__ (pfs::petaloid * p)
 {
 	delete p;
 }
@@ -25,7 +25,7 @@ petaloid * petaloid::_self = nullptr;
 
 // TODO Where to output/archive this kind of messages?
 //
-void petaloid::onCritical (const cwt::critical & critical)
+void petaloid::onCritical (const pfs::critical & critical)
 {
 	pfs::string details;
 
@@ -39,29 +39,29 @@ void petaloid::onCritical (const cwt::critical & critical)
 	}
 
 	if (details.length() > 0)
-		cwt::error(_Fr("%s%s") % critical.text() % details);
+		pfs::error(_Fr("%s%s") % critical.text() % details);
 	else
-		cwt::error(critical.text());
+		pfs::error(critical.text());
 }
 
 void petaloid::onInfo  (const pfs::string & msg)
 {
-	cwt::info(msg);
+	pfs::info(msg);
 }
 
 void petaloid::onDebug (const pfs::string & msg)
 {
-	cwt::debug(msg);
+	pfs::debug(msg);
 }
 
 void petaloid::onWarn  (const pfs::string & msg)
 {
-	cwt::warn(msg);
+	pfs::warn(msg);
 }
 
 void petaloid::onError (const pfs::string & msg)
 {
-	cwt::error(msg);
+	pfs::error(msg);
 }
 
 }

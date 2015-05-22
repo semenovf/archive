@@ -1,4 +1,4 @@
-#include <cwt/app.hpp>
+#include <pfs/app.hpp>
 
 #define _INCLUDE_SEPALOID_MAPPING
 #include "api.hpp"
@@ -6,9 +6,7 @@
 
 int main (int argc, char **argv)
 {
-    PFS_CHECK_SIZEOF_TYPES;
-
-    cwt::sepaloid sepaloid(API, sizeof(API)/sizeof(API[0]));
+    pfs::sepaloid sepaloid(API, sizeof(API)/sizeof(API[0]));
     sepaloid.addSearchPath(_l1("."));
 
     sepaloid.registerPetaloidForName(_l1(_APP_NAME "-core"));
@@ -21,9 +19,9 @@ int main (int argc, char **argv)
     sepaloid.registerPetaloidForName(_l1(_APP_NAME "-simulator"));
 #endif
 
-    cwt::petaloid * uiPetaloid = sepaloid.registerPetaloidForName(_l1(_APP_NAME "-ui")); // load UI
+    pfs::petaloid * uiPetaloid = sepaloid.registerPetaloidForName(_l1(_APP_NAME "-ui")); // load UI
     sepaloid.setMasterPetaloid(uiPetaloid);
 
-    cwt::app app(argc, argv);
+    pfs::app app(argc, argv);
     return app.exec(sepaloid);
 }

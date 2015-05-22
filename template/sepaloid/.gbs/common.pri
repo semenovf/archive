@@ -1,14 +1,14 @@
 INCLUDEPATH += ../../include
 INCLUDEPATH += ../../src
 INCLUDEPATH += ../../../pfs/include
-INCLUDEPATH += ../../../cwt-sys/include
-INCLUDEPATH += ../../../cwt-app/include
+INCLUDEPATH += ../../../pfs-sys/include
+INCLUDEPATH += ../../../pfs-app/include
 
 DEFINES += _SIMULATOR
 
 unix {
     LIBS += -lpfs
-    LIBS += -lcwt-sys
+    LIBS += -lpfs-sys
 }
 
 win32 {

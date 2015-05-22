@@ -7,9 +7,9 @@
 #ifndef __UI_QT_PETALOID_HPP__
 #define __UI_QT_PETALOID_HPP__
 
-#include <cwt/petaloid.hpp>
-#include <cwt/platform.hpp>
-#include <cwt/critical.hpp>
+#include <pfs/petaloid.hpp>
+#include <pfs/platform.hpp>
+#include <pfs/critical.hpp>
 #include <pfs/unitype.hpp>
 #include "api.hpp"
 #include <QObject>
@@ -32,10 +32,10 @@ public:
 	QtAdapter ();
 
 public Q_SLOTS:
-	void onCritical (const cwt::critical & critical);
+	void onCritical (const pfs::critical & critical);
 
 Q_SIGNALS:
-	void emitCritical   (const cwt::critical & critical);
+	void emitCritical   (const pfs::critical & critical);
 	void emitInfo       (const pfs::datetime & dt, const pfs::string & msg);
 	void emitDebug      (const pfs::datetime & dt, const pfs::string & msg);
 	void emitWarn       (const pfs::datetime & dt, const pfs::string & msg);
@@ -47,7 +47,7 @@ Q_SIGNALS:
 
 namespace ui {
 
-class petaloid : public cwt::petaloid
+class petaloid : public pfs::petaloid
 {
 private:
 	double      _hppmm;
@@ -72,42 +72,42 @@ public:
 	virtual bool onStart ();
 	virtual bool onFinish ();
 
-	CWT_PETALOID_EMITTERS_BEGIN
-	      CWT_PETALOID_EMITTER(API_QUIT          , emitQuit)
-		, CWT_PETALOID_EMITTER(API_CRITICAL  , emitCritical)
-		, CWT_PETALOID_EMITTER(API_INFO      , emitInfo)
-		, CWT_PETALOID_EMITTER(API_DEBUG     , emitDebug)
-		, CWT_PETALOID_EMITTER(API_WARN      , emitWarn)
-		, CWT_PETALOID_EMITTER(API_ERROR     , emitError)
-        , CWT_PETALOID_EMITTER(API_GET_PREF  , emitPref)
-	    , CWT_PETALOID_EMITTER(API_GUI_READY , emitGuiReady)
-	CWT_PETALOID_EMITTERS_END
+	PFS_PETALOID_EMITTERS_BEGIN
+	      PFS_PETALOID_EMITTER(API_QUIT          , emitQuit)
+	    , PFS_PETALOID_EMITTER(API_CRITICAL  , emitCritical)
+	    , PFS_PETALOID_EMITTER(API_INFO      , emitInfo)
+	    , PFS_PETALOID_EMITTER(API_DEBUG     , emitDebug)
+	    , PFS_PETALOID_EMITTER(API_WARN      , emitWarn)
+	    , PFS_PETALOID_EMITTER(API_ERROR     , emitError)
+	    , PFS_PETALOID_EMITTER(API_GET_PREF  , emitPref)
+	    , PFS_PETALOID_EMITTER(API_GUI_READY , emitGuiReady)
+	PFS_PETALOID_EMITTERS_END
 
-	CWT_PETALOID_DETECTORS_BEGIN
-	  	  CWT_PETALOID_DETECTOR(API_QUIT, petaloid::onQuit)
-		, CWT_PETALOID_DETECTOR(API_GUI_READY, petaloid::onGuiReady)
-	CWT_PETALOID_DETECTORS_END
+	PFS_PETALOID_DETECTORS_BEGIN
+	      PFS_PETALOID_DETECTOR(API_QUIT, petaloid::onQuit)
+	    , PFS_PETALOID_DETECTOR(API_GUI_READY, petaloid::onGuiReady)
+	PFS_PETALOID_DETECTORS_END
 
-	static int main_loop (cwt::petaloid *);
+	static int main_loop (pfs::petaloid *);
 
 public: // signals
-	cwt::signal0<>                      emitQuit;
-	cwt::signal1<const cwt::critical &> emitCritical;
-	cwt::signal1<const pfs::string &>   emitInfo;
-	cwt::signal1<const pfs::string &>   emitDebug;
-	cwt::signal1<const pfs::string &>   emitWarn;
-	cwt::signal1<const pfs::string &>   emitError;
-	cwt::signal2<const pfs::string &, pfs::unitype &> emitPref;
-	cwt::signal1<bool>                  emitGuiReady;
+	pfs::signal0<>                      emitQuit;
+	pfs::signal1<const pfs::critical &> emitCritical;
+	pfs::signal1<const pfs::string &>   emitInfo;
+	pfs::signal1<const pfs::string &>   emitDebug;
+	pfs::signal1<const pfs::string &>   emitWarn;
+	pfs::signal1<const pfs::string &>   emitError;
+	pfs::signal2<const pfs::string &, pfs::unitype &> emitPref;
+	pfs::signal1<bool>                  emitGuiReady;
 
 private: // slots
 	void onQuit () {}
 	void onGuiReady (bool);
-	void onCritical (const cwt::critical & critical)  { if(_guiReady) emit qt.emitCritical(critical); }
-	void onInfo  (const pfs::string & msg)            { if(_guiReady) emit qt.emitInfo  (cwt::platform::currentDateTime(), msg); }
-	void onDebug (const pfs::string & msg)            { if(_guiReady) emit qt.emitDebug (cwt::platform::currentDateTime(), msg); }
-	void onWarn  (const pfs::string & msg)            { if(_guiReady) emit qt.emitWarn  (cwt::platform::currentDateTime(), msg); }
-	void onError (const pfs::string & msg)            { if(_guiReady) emit qt.emitError (cwt::platform::currentDateTime(), msg); }
+	void onCritical (const pfs::critical & critical)  { if(_guiReady) emit qt.emitCritical(critical); }
+	void onInfo  (const pfs::string & msg)            { if(_guiReady) emit qt.emitInfo  (pfs::platform::currentDateTime(), msg); }
+	void onDebug (const pfs::string & msg)            { if(_guiReady) emit qt.emitDebug (pfs::platform::currentDateTime(), msg); }
+	void onWarn  (const pfs::string & msg)            { if(_guiReady) emit qt.emitWarn  (pfs::platform::currentDateTime(), msg); }
+	void onError (const pfs::string & msg)            { if(_guiReady) emit qt.emitError (pfs::platform::currentDateTime(), msg); }
 };
 
 } // ui
@@ -116,9 +116,9 @@ private: // slots
 inline QtAdapter::QtAdapter()
 {
 	qRegisterMetaType<pfs::datetime>("pfs::string");
-	qRegisterMetaType<cwt::critical>("cwt::critical");
+	qRegisterMetaType<pfs::critical>("pfs::critical");
 	qRegisterMetaType<size_t>("size_t");
-	connect(this, SIGNAL(emitCritical(const cwt::critical &)), SLOT(onCritical(const cwt::critical &)));
+	connect(this, SIGNAL(emitCritical(const pfs::critical &)), SLOT(onCritical(const pfs::critical &)));
 }
 
 #endif /* __UI_QT_PETALOID_HPP__ */

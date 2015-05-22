@@ -11,13 +11,13 @@
 #include <iostream>
 #include "MainWindow.hpp"
 
-CWT_PETALOID_API cwt::petaloid * __petaloid_ctor__ (const char *, int argc, char * argv[])
+PFS_PETALOID_API pfs::petaloid * __petaloid_ctor__ (const char *, int argc, char * argv[])
 {
 	ui::petaloid * p = new ui::petaloid(argc, argv);
 	return p;
 }
 
-CWT_PETALOID_API void  __petaloid_dtor__ (cwt::petaloid * p)
+PFS_PETALOID_API void  __petaloid_dtor__ (pfs::petaloid * p)
 {
 	delete p;
 }
@@ -27,7 +27,7 @@ namespace ui {
 petaloid * petaloid::_self = nullptr;
 
 petaloid::petaloid (int argc, char * argv[])
-	: cwt::petaloid("ui::qt")
+	: pfs::petaloid("ui::qt")
 	, _hppmm(0), _vppmm(0)
 	, _argc(argc), _argv(argv)
 	, _guiReady(false)
@@ -38,7 +38,7 @@ petaloid::petaloid (int argc, char * argv[])
 	_self = this;
 }
 
-int petaloid::main_loop (cwt::petaloid * ptr)
+int petaloid::main_loop (pfs::petaloid * ptr)
 {
 	petaloid * p = dynamic_cast<petaloid *>(ptr);
 
@@ -66,8 +66,8 @@ int petaloid::main_loop (cwt::petaloid * ptr)
 
 bool petaloid::onStart ()
 {
-	cwt::platform::display_data d;
-	cwt::platform::displayParameters(& d);
+	pfs::platform::display_data d;
+	pfs::platform::displayParameters(& d);
 
 	_hppmm = double(d.pixelsWidth)/double(d.mmWidth);
 	_vppmm = double(d.pixelsHeight)/double(d.mmHeight);

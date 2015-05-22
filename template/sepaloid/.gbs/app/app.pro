@@ -7,7 +7,10 @@ HEADERS += ../../include/*.hpp
 SOURCES += ../../src/*.cpp
 
 unix {
-    LIBS += -lcwt-app
+    LIBS += -lpfs
+    LIBS += -lpfs-sys
+    LIBS += -lpfs-settings
+    LIBS += -lpfs-app
 }
 
 win32 {

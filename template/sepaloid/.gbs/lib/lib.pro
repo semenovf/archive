@@ -6,10 +6,10 @@ TARGET = $$GBS_TARGET_NAME
 HEADERS += ../../include/*.hpp
 SOURCES += ../../src/lib/*.cpp
 
-INCLUDEPATH += ../../../cwt-io/include
+INCLUDEPATH += ../../../pfs-io/include
 
 unix {
-    LIBS += -lcwt-io
+    LIBS += -lpfs-io
 }
 
 win32 {

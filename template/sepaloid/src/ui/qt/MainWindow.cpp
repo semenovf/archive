@@ -8,7 +8,7 @@
 
 #include "MainWindow.hpp"
 #include "qcast.hpp"
-#include <cwt/logger.hpp>
+#include <pfs/logger.hpp>
 #include <QApplication>
 #include <QMenuBar>
 #include <QAction>

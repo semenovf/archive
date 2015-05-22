@@ -14,41 +14,41 @@
 
 #include <pfs/string.hpp>
 #include <pfs/unitype.hpp>
-#include <cwt/sepaloid.hpp>
-#include <cwt/critical.hpp>
+#include <pfs/sepaloid.hpp>
+#include <pfs/critical.hpp>
 
-static cwt::sepaloid::mapping_type API[] = {
+static pfs::sepaloid::mapping_type API[] = {
 
 	  { API_QUIT
-			, new cwt::sigslot_mapping0_t
+			, new pfs::sigslot_mapping0_t
 			, _u8("Quit application") }
 
 	, { API_CRITICAL
-			, new cwt::sigslot_mapping1_t<const cwt::critical &>
+			, new pfs::sigslot_mapping1_t<const pfs::critical &>
 			, _u8("Runtime error") }
 
 	, { API_INFO
-			, new cwt::sigslot_mapping1_t<const pfs::string &>
+			, new pfs::sigslot_mapping1_t<const pfs::string &>
 			, _u8("Runtime info message") }
 
 	, { API_DEBUG
-			, new cwt::sigslot_mapping1_t<const pfs::string &>
+			, new pfs::sigslot_mapping1_t<const pfs::string &>
 			, _u8("Runtime debug message") }
 
 	, { API_WARN
-			, new cwt::sigslot_mapping1_t<const pfs::string &>
+			, new pfs::sigslot_mapping1_t<const pfs::string &>
 			, _u8("Runtime warning message") }
 
 	, { API_ERROR
-			, new cwt::sigslot_mapping1_t<const pfs::string &>
+			, new pfs::sigslot_mapping1_t<const pfs::string &>
 			, _u8("Runtime error message") }
 
 	, { API_GUI_READY
-			, new cwt::sigslot_mapping1_t<bool>
+			, new pfs::sigslot_mapping1_t<bool>
 			, _u8("User interface ready (or not) to interact") }
 
 	, { API_GET_PREF
-			, new cwt::sigslot_mapping2_t<const pfs::string &, pfs::unitype &>
+			, new pfs::sigslot_mapping2_t<const pfs::string &, pfs::unitype &>
 			, _u8("Get preference value") }
 
 };

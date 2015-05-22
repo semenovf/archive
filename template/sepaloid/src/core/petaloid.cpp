@@ -6,13 +6,13 @@
 
 #include "petaloid.hpp"
 
-CWT_PETALOID_API cwt::petaloid * __petaloid_ctor__ (const char *, int /*argc*/, char * /*argv*/[])
+PFS_PETALOID_API pfs::petaloid * __petaloid_ctor__ (const char *, int /*argc*/, char * /*argv*/[])
 {
 	core::petaloid * p = new core::petaloid;
 	return p;
 }
 
-CWT_PETALOID_API void  __petaloid_dtor__ (cwt::petaloid * p)
+PFS_PETALOID_API void  __petaloid_dtor__ (pfs::petaloid * p)
 {
 	delete p;
 }

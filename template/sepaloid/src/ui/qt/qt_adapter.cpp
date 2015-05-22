@@ -11,7 +11,7 @@
 #include <QMessageBox>
 
 
-void QtAdapter::onCritical (const cwt::critical & critical)
+void QtAdapter::onCritical (const pfs::critical & critical)
 {
 	QMessageBox msgBox(qApp->activeWindow());
 
