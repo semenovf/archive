@@ -191,12 +191,10 @@ ssize_t match_rpt<_P>::do_match (context<_P> * ctx, const_iterator begin, const_
 		}
 	}
 
-	PFS_ASSERT(nchars_total_processed <= PFS_SSIZE_MAX);
-
 	if( i < from )
 		return ssize_t(-1);
 
-	return ssize_t(nchars_total_processed);
+	return integral_cast_check<ssize_t, size_t>(nchars_total_processed);
 }
 
 template <typename _P>

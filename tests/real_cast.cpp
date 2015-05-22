@@ -15,6 +15,7 @@ using std::endl;
 template <typename Fp, typename T>
 void test_compare_fp_cast (T min, T max)
 {
+    ADD_TESTS(16);
 	cout << "\ntest_compare_fp_cast<"
 			<< pfs::type_name<Fp>()
 			<< ", "
@@ -71,7 +72,6 @@ void test_compare_fp_cast ()
 	test_compare_fp_cast<Fp, unsigned long>(0, PFS_ULONG_MAX);
 
 #ifdef PFS_HAVE_LONGLONG
-	ADD_TESTS(24);
 	// FIXME Below expression executed with failure under MSVC while comparing with
 	// casting max value of long long to any of floating type (float, double, long double)
 	test_compare_fp_cast<Fp, long long>(PFS_LLONG_MIN, PFS_LLONG_MAX);
@@ -83,12 +83,12 @@ void test_compare_fp_cast ()
 	test_compare_fp_cast<Fp, double>(PFS_DOUBLE_MIN, PFS_DOUBLE_MAX);
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-	ADD_TESTS(12);
 	test_compare_fp_cast<Fp, long double>(PFS_LONG_DOUBLE_MIN, PFS_LONG_DOUBLE_MAX);
 #endif
 }
 
 
+#ifdef __COMMENT__
 // Code with strange behavior
 //
 inline long long  max_ll () { return static_cast<long long>(PFS_LLONG_MAX); }
@@ -98,6 +98,7 @@ inline double  max_double_ll () { return static_cast<double>(PFS_LLONG_MAX); }
 
 void vary_strange_behavior ()
 {
+    ADD_TESTS(4);
 	// FIXME
 	// Windows specific
 	// OK
@@ -124,26 +125,27 @@ void vary_strange_behavior ()
 //			== static_cast<double>(max_i64()));
 
 	// FAIL
+	double d1 = static_cast<double>(max_ll());
+	double d2 = static_cast<double>(max_ll());
+	TEST_OK(d1 == d2); // ok
 	TEST_OK(static_cast<double>(max_ll())
-			== static_cast<double>(max_ll()));
+			== static_cast<double>(max_ll())); // fail
 
 	// FAIL
 	TEST_OK(static_cast<double>(pfs::max_type<long long>())
 			== static_cast<double>(pfs::max_type<long long>()));
 }
-
+#endif
 
 int main (int argc, char * argv[])
 {
-    PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(264);
+	BEGIN_TESTS(0);
 
 	test_compare_fp_cast<float>();
 	test_compare_fp_cast<double>();
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-	ADD_TESTS(132);
 	test_compare_fp_cast<real_t>();
 #endif
 

@@ -100,7 +100,6 @@ void test_copy_collection()
 
 int main(int argc, char *argv[])
 {
-    PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(10020);
 

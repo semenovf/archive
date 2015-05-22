@@ -1,13 +1,13 @@
 /**
- * @file   global_endian.h
+ * @file   endian.h
  * @author wladt
  * @date   Feb 21, 2013 13:58:00 AM
  *
  * @brief This file based on source from Qt Project
  */
 
-#ifndef __PFS_GLOBAL_ENDIAN_H__
-#define __PFS_GLOBAL_ENDIAN_H__
+#ifndef __PFS_SYS_ENDIAN_H__
+#define __PFS_SYS_ENDIAN_H__
 
 /* Machine byte-order, reuse preprocessor provided macros when available */
 #if defined(__ORDER_BIG_ENDIAN__)
@@ -104,4 +104,4 @@
 #endif
 
 
-#endif /* __PFS_GLOBAL_ENDIAN_H__ */
+#endif /* __PFS_SYS_ENDIAN_H__ */

@@ -9,10 +9,13 @@
 #ifndef __PFS_H__
 #define __PFS_H__
 
-#include <pfs/pp/config.h>
-#include <pfs/pp/global.h>
-#include <pfs/pp/assert.h>
-#include <pfs/pp/types.h>
-#include <pfs/pp/alignof.h>
+#include <pfs/sys/config.h>
+#include <pfs/sys/compiler.h>
+#include <pfs/sys/os.h> // TODO deprecated
+#include <pfs/sys/types.h>
+#include <pfs/sys/assert.h>
+#include <pfs/sys/limits.h>
+#include <pfs/sys/endian.h>
+#include <pfs/sys/alignof.h>
 
 #endif /* __PFS_H__ */

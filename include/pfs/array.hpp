@@ -10,6 +10,7 @@
 #define __PFS_ARRAY_HPP__
 
 #include <pfs.hpp>
+#include <pfs/utility.hpp>
 #include <cstring>
 
 namespace pfs {

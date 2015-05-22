@@ -6,8 +6,8 @@
  * @brief This file based on source from Qt Project
  */
 
-#ifndef __PFS_GLOBAL_OS_H__
-#define __PFS_GLOBAL_OS_H__
+#ifndef __PFS_SYS_OS_H__
+#define __PFS_SYS_OS_H__
 
 /*
    The operating system, must be one of: (PFS_OS_x)
@@ -148,4 +148,23 @@
 #	define PFS_OS_UNIX
 #endif
 
-#endif /* __PFS_GLOBAL_OS_H__ */
+
+#if (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) \
+    || (defined(__TURBOC__) && __TURBOC__ <= 0x410)
+#   define PFS_OS_16BITS
+#   define PFS_OS_BITS    16
+#elif (defined(__WORDSIZE) && __WORDSIZE == 64)                       \
+    || (defined(UINTPTR_MAX) && UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF)    \
+    || defined(_WIN64)                                                \
+    || (defined(__GNUC__) && (__x86_64__ || __ppc64__))               \
+    || defined(__LP64__)                                              \
+    || defined(_LP64)
+#   define PFS_OS_64BITS
+#   define PFS_OS_BITS    64
+#else
+#   define PFS_OS_32BITS
+#   define PFS_OS_BITS    32
+#endif
+
+
+#endif /* __PFS_SYS_OS_H__ */

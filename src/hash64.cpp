@@ -110,7 +110,7 @@ DLL_API uint64_t hash64 (const void * key, int len, unsigned int seed)
 	h = (h << 32) | h2;
 
 	return h;
-} 
+}
 #endif /* PFS_OS_64BITS */
 #endif /* PFS_HAVE_INT64 */
 

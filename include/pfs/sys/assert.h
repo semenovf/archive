@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_PP_ASSERT_H__
-#define __PFS_PP_ASSERT_H__
+#ifndef __PFS_SYS_ASSERT_H__
+#define __PFS_SYS_ASSERT_H__
 
 #include <stdio.h>
 
@@ -89,4 +89,4 @@ struct __verify
  */
 #define PFS_ASSERT_TODO() PFS_ASSERT(false)
 
-#endif /* __PFS_ASSERT_H__ */
+#endif /* __PFS_SYS_ASSERT_H__ */

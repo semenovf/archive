@@ -8,6 +8,7 @@
 
 1. [Перенос Linux-приложений на 64-разрядные системы](http://www.ibm.com/developerworks/ru/library/l-port64/)
 2. [64-Bit Transition Guide for Cocoa Touch. Major 64-Bit Changes](https://developer.apple.com/library/ios/documentation/General/Conceptual/CocoaTouch64BitGuide/Major64-BitChanges/Major64-BitChanges.html)
+3. [Модель данных](http://www.viva64.com/ru/t/0012/)
 
 ### Unicode 
 1. [UTF-8, UTF-16, UTF-32 & BOM](http://unicode.org/faq/utf_bom.html)

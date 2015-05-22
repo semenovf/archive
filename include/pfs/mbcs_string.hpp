@@ -15,6 +15,7 @@
 #include <pfs/bits/strtointegral.hpp>
 #include <pfs/bits/strtoreal.hpp>
 #include <pfs/bits/stringlist.hpp>
+#include <cstring>
 #include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html

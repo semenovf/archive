@@ -1,23 +1,19 @@
-/**
- * @file   limits.h
- * @author wladt
- * @date   Jan 23, 2013 4:19:14 PM
+/*
+ * limits.h
  *
- * @brief
+ *  Created on: May 22, 2015
+ *      Author: wladt
  */
 
-#ifndef __PFS_PP_LIMITS_H__
-#define __PFS_PP_LIMITS_H__
-
-#include <float.h>
-#include <math.h> /* for NAN */
+#ifndef __PFS_SYS_LIMITS_H__
+#define __PFS_SYS_LIMITS_H__
 
 #if defined(PFS_HAVE_INT64) && ! defined(PFS_OS_64BITS)
-#	define PFS_LONG_LITERAL(x) x##LL
-#	define PFS_ULONG_LITERAL(x) x##ULL
+#   define PFS_LONG_LITERAL(x) x##LL
+#   define PFS_ULONG_LITERAL(x) x##ULL
 #else
-#	define PFS_LONG_LITERAL(x) x##L
-#	define PFS_ULONG_LITERAL(x) x##UL
+#   define PFS_LONG_LITERAL(x) x##L
+#   define PFS_ULONG_LITERAL(x) x##UL
 #endif
 
 #define PFS_INT8_MAX   127
@@ -25,22 +21,22 @@
 #define PFS_UINT8_MAX  255
 #define PFS_UINT8_MIN  0
 #define PFS_INT16_MAX  32767
-#define	PFS_INT16_MIN  (-32768)
-#define	PFS_UINT16_MAX 65535
-#define	PFS_UINT16_MIN 0
-#define	PFS_INT24_MAX  8388607
-#define	PFS_INT24_MIN  (-8388608)
-#define	PFS_UINT24_MAX 16777215
-#define	PFS_UINT24_MIN 0
+#define PFS_INT16_MIN  (-32768)
+#define PFS_UINT16_MAX 65535
+#define PFS_UINT16_MIN 0
+#define PFS_INT24_MAX  8388607
+#define PFS_INT24_MIN  (-8388608)
+#define PFS_UINT24_MAX 16777215
+#define PFS_UINT24_MIN 0
 #define PFS_INT32_MAX  2147483647
-#define	PFS_INT32_MIN  (-2147483647-1)
-#define	PFS_UINT32_MAX 4294967295UL
-#define	PFS_UINT32_MIN 0
+#define PFS_INT32_MIN  (-2147483647-1)
+#define PFS_UINT32_MAX 4294967295UL
+#define PFS_UINT32_MIN 0
 #ifdef PFS_HAVE_INT64
-#	define PFS_INT64_MAX  PFS_LONG_LITERAL(9223372036854775807)
-#	define PFS_INT64_MIN (-PFS_INT64_MAX-PFS_LONG_LITERAL(1))
-#	define PFS_UINT64_MAX PFS_ULONG_LITERAL(18446744073709551615)
-#	define PFS_UINT64_MIN 0
+#   define PFS_INT64_MAX  PFS_LONG_LITERAL(9223372036854775807)
+#   define PFS_INT64_MIN (-PFS_INT64_MAX-PFS_LONG_LITERAL(1))
+#   define PFS_UINT64_MAX PFS_ULONG_LITERAL(18446744073709551615)
+#   define PFS_UINT64_MIN 0
 #endif
 
 #define PFS_CHAR_MAX   CHAR_MAX
@@ -67,34 +63,39 @@
 #define PFS_LONG_MIN   LONG_MIN
 
 #ifdef PFS_HAVE_LONGLONG
-#	define PFS_LLONG_MAX   LLONG_MAX
-#	define PFS_LLONG_MIN   LLONG_MIN
-#	define PFS_ULLONG_MAX  ULLONG_MAX
-#	define PFS_ULLONG_MIN  0
+#   define PFS_LLONG_MAX   LLONG_MAX
+#   define PFS_LLONG_MIN   LLONG_MIN
+#   define PFS_ULLONG_MAX  ULLONG_MAX
+#   define PFS_ULLONG_MIN  0
 #endif
 
 #if defined(PFS_HAVE_INT64) && defined(PFS_HAVE_LONGLONG)
-#	define PFS_INTEGRAL_MAX  PFS_LLONG_MAX
-#	define PFS_INTEGRAL_MIN  PFS_LLONG_MIN
-#	define PFS_UINTEGRAL_MAX PFS_ULLONG_MAX
-#	define PFS_UINTEGRAL_MIN 0
+#   define PFS_INTEGRAL_MAX  PFS_LLONG_MAX
+#   define PFS_INTEGRAL_MIN  PFS_LLONG_MIN
+#   define PFS_UINTEGRAL_MAX PFS_ULLONG_MAX
+#   define PFS_UINTEGRAL_MIN 0
 #else
-#	define PFS_INTEGRAL_MAX  PFS_LONG_MAX
-#	define PFS_INTEGRAL_MIN  PFS_LONG_MIN
-#	define PFS_UINTEGRAL_MAX PFS_ULONG_MAX
-#	define PFS_UINTEGRAL_MIN 0
+#   define PFS_INTEGRAL_MAX  PFS_LONG_MAX
+#   define PFS_INTEGRAL_MIN  PFS_LONG_MIN
+#   define PFS_UINTEGRAL_MAX PFS_ULONG_MAX
+#   define PFS_UINTEGRAL_MIN 0
+#endif
+
+#ifdef PFS_HAVE_SIZE_T
+#   define PFS_SIZE_MAX   SIZE_MAX
+#   define PFS_SSIZE_MAX  SSIZE_MAX
 #endif
 
 #define PFS_FLOAT_MIN  FLT_MIN /* 1.175494351e-38F */
 #define PFS_FLOAT_MAX  FLT_MAX /* 3.402823466e+38F */
 
 #ifdef DBL_MIN
-#	define PFS_DOUBLE_MIN DBL_MIN /* 2.22507385850720138309e-308 */
-#	define PFS_DOUBLE_MAX DBL_MAX /* 1.79769313486231570815e+308 */
-#	define PFS_DOUBLE_MIN_10_EXP DBL_MIN_10_EXP /* -307 */
-#	define PFS_DOUBLE_MAX_10_EXP DBL_MAX_10_EXP /* 308 */
+#   define PFS_DOUBLE_MIN DBL_MIN /* 2.22507385850720138309e-308 */
+#   define PFS_DOUBLE_MAX DBL_MAX /* 1.79769313486231570815e+308 */
+#   define PFS_DOUBLE_MIN_10_EXP DBL_MIN_10_EXP /* -307 */
+#   define PFS_DOUBLE_MAX_10_EXP DBL_MAX_10_EXP /* 308 */
 #else
-#	error "DBL_MIN is not defined"
+#   error "Unsupported platform yet: DBL_MIN is undefined"
 #endif
 
 /*
@@ -108,119 +109,74 @@
  * sizeof(FLT) * 8 = FLT_MANT_DIG + lg(FLT_MAX_EXP) + 1 + 1
  * 80: LDBL_MANT_DIG = 64, LDBL_MAX_EXP = 16384: 64 + 14 + 1 + 1 = 80
  */
+/*
+#ifdef LDBL_MIN
+#   if LDBL_MANT_DIG == 53
+#       define PFS_HAVE_REAL64 1
+#   elif LDBL_MANT_DIG == 64
+#       define PFS_HAVE_REAL80 1
+#   elif LDBL_MANT_DIG == 113
+#       define PFS_HAVE_REAL128 1
+#   else
+#       error "Unsupported platform"
+#   endif
+#endif
+*/
 
 #ifdef LDBL_MIN
-#	if LDBL_MANT_DIG == 53
-#		define PFS_HAVE_REAL64 1
-#	elif LDBL_MANT_DIG == 64
-#		define PFS_HAVE_REAL80 1
-#	elif LDBL_MANT_DIG == 113
-#		define PFS_HAVE_REAL128 1
-#	else
-#		error "Unsupported platform"
-#	endif
-
-#	define PFS_HAVE_LONG_DOUBLE 1
-#	define PFS_LONG_DOUBLE_MIN LDBL_MIN
-#	define PFS_LONG_DOUBLE_MAX LDBL_MAX
-#	define PFS_LONG_DOUBLE_MIN_10_EXP LDBL_MIN_10_EXP
-#	define PFS_LONG_DOUBLE_MAX_10_EXP LDBL_MAX_10_EXP
+#   define PFS_LONG_DOUBLE_MIN LDBL_MIN
+#   define PFS_LONG_DOUBLE_MAX LDBL_MAX
+#   define PFS_LONG_DOUBLE_MIN_10_EXP LDBL_MIN_10_EXP
+#   define PFS_LONG_DOUBLE_MAX_10_EXP LDBL_MAX_10_EXP
 #endif
 
 #ifdef PFS_HAVE_LONG_DOUBLE
-#	define PFS_REAL_LITERAL(x) x##L
-#	define PFS_REAL_MIN         PFS_LONG_DOUBLE_MIN
-#	define PFS_REAL_MAX         PFS_LONG_DOUBLE_MAX
-#	define PFS_REAL_MIN_10_EXP  PFS_LONG_DOUBLE_MIN_10_EXP
-#	define PFS_REAL_MAX_10_EXP  PFS_LONG_DOUBLE_MAX_10_EXP
+#   define PFS_REAL_LITERAL(x) x##L
+#   define PFS_REAL_MIN         PFS_LONG_DOUBLE_MIN
+#   define PFS_REAL_MAX         PFS_LONG_DOUBLE_MAX
+#   define PFS_REAL_MIN_10_EXP  PFS_LONG_DOUBLE_MIN_10_EXP
+#   define PFS_REAL_MAX_10_EXP  PFS_LONG_DOUBLE_MAX_10_EXP
 #else
-#	define PFS_REAL_LITERAL(x) x
-#	define PFS_REAL_MIN         PFS_DOUBLE_MIN
-#	define PFS_REAL_MAX         PFS_DOUBLE_MAX
-#	define PFS_REAL_MIN_10_EXP  PFS_DOUBLE_MIN_10_EXP
-#	define PFS_REAL_MAX_10_EXP  PFS_DOUBLE_MAX_10_EXP
+#   define PFS_REAL_LITERAL(x) x
+#   define PFS_REAL_MIN         PFS_DOUBLE_MIN
+#   define PFS_REAL_MAX         PFS_DOUBLE_MAX
+#   define PFS_REAL_MIN_10_EXP  PFS_DOUBLE_MIN_10_EXP
+#   define PFS_REAL_MAX_10_EXP  PFS_DOUBLE_MAX_10_EXP
 #endif
 
 #ifdef HUGE_VALL
-#	define PFS_HUGE_VAL HUGE_VALL
+#   define PFS_HUGE_VAL HUGE_VALL
 #else
-#	define PFS_HUGE_VAL HUGE_VAL
+#   define PFS_HUGE_VAL HUGE_VAL
 #endif
 
 #ifdef INFINITY
-#	define PFS_INFINITY INFINITY
+#   define PFS_INFINITY INFINITY
 #else
-#	ifdef PFS_CC_MSVC
-#		define PFS_INFINITY (LDBL_MAX+LDBL_MAX)
-#		define isinf(x) (!_finite(x))
-#	elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
-#		define PFS_INFINITY (DBL_MAX+DBL_MAX)
-#	else
-#		error "INFINITY is undefined"
-#	endif
+#   ifdef PFS_CC_MSVC
+#       define PFS_INFINITY (LDBL_MAX+LDBL_MAX)
+#       define isinf(x) (!_finite(x))
+#   elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
+#       define PFS_INFINITY (DBL_MAX+DBL_MAX)
+#   else
+#       error "Unsupported platform yet: INFINITY is undefined"
+#   endif
 #endif
 
 #ifdef NAN
-#	define PFS_NAN NAN
+#   define PFS_NAN NAN
 #else
-#	ifdef PFS_CC_MSVC
-#		define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
-#		define isnan(x) _isnan(x)
-#	elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
-#		define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
-#	else
-#		error "NAN is undefined"
-#	endif
+#   ifdef PFS_CC_MSVC
+#       define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
+#       define isnan(x) _isnan(x)
+#   elif (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
+#       define PFS_NAN (PFS_INFINITY-PFS_INFINITY)
+#   else
+#       error "Unsupported platform yet: NAN is undefined"
+#   endif
 #endif
 
-#define PFS_SIZE_MAX   PFS_UINT_MAX
-#define PFS_SSIZE_MAX  PFS_INT_MAX
-
-#ifndef NDEBUG
-#   define PFS_CHECK_SIZEOF_TYPE(type,sz) PFS_ASSERT(sizeof(type) == (sz))
-
-#	ifdef PFS_CC_MSVC
-#		define PFS_CHECK_SIZEOF_WCHAR PFS_CHECK_SIZEOF_TYPE(wchar_t,2)
-#	else
-#		define PFS_CHECK_SIZEOF_WCHAR PFS_CHECK_SIZEOF_TYPE(wchar_t,4)
-#	endif
-
-#	ifdef PFS_HAVE_INT64
-#		define PFS_CHECK_SIZEOF_LONG               \
-			PFS_CHECK_SIZEOF_TYPE(integral_t, 8);  \
-			PFS_CHECK_SIZEOF_TYPE(uintegral_t, 8)
-#	else
-#		define PFS_CHECK_SIZEOF_LONG               \
-			PFS_CHECK_SIZEOF_TYPE(integral_t, 4);  \
-			PFS_CHECK_SIZEOF_TYPE(uintegral_t, 4)
-#	endif
-
-#	if defined(PFS_HAVE_REAL128)
-#		define PFS_CHECK_SIZEOF_REAL PFS_CHECK_SIZEOF_TYPE(real_t,16)
-#	elif defined(PFS_HAVE_REAL80)
-#		define PFS_CHECK_SIZEOF_REAL PFS_CHECK_SIZEOF_TYPE(real_t,12)
-#	elif defined(PFS_HAVE_REAL64)
-#		define PFS_CHECK_SIZEOF_REAL PFS_CHECK_SIZEOF_TYPE(real_t,8)
-#	endif
-
-#	define PFS_CHECK_SIZEOF_TYPES                 \
-	PFS_CHECK_SIZEOF_TYPE(int8_t, 1);             \
-	PFS_CHECK_SIZEOF_TYPE(uint8_t, 1);            \
-	PFS_CHECK_SIZEOF_TYPE(int16_t, 2);            \
-	PFS_CHECK_SIZEOF_TYPE(uint16_t, 2);           \
-	PFS_CHECK_SIZEOF_TYPE(int32_t, 4);            \
-	PFS_CHECK_SIZEOF_TYPE(uint32_t, 4);           \
-	PFS_CHECK_SIZEOF_TYPE(float, 4);              \
-	PFS_CHECK_SIZEOF_TYPE(double, 8);             \
-	PFS_CHECK_SIZEOF_LONG;                        \
-	PFS_CHECK_SIZEOF_WCHAR;                       \
-	PFS_CHECK_SIZEOF_REAL;
-#else
-#	define PFS_CHECK_SIZEOF_TYPES
-#endif
-
-
-#if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
+#if defined(__cplusplus) /*&& ! defined(PFS_CC_BORLAND_REAL)*/
 namespace pfs {
 
 template <typename _number_type> _number_type max_type ();
@@ -274,12 +230,14 @@ template<> inline long double   min_type<long double>   () { return static_cast<
 template <typename T1, typename T2>
 inline T1 integral_cast_check (T2 x)
 {
-	PFS_ASSERT(x >= min_type<T1>() && x <= max_type<T1>());
-	return static_cast<T1>(x);
+    PFS_ASSERT_RANGE(static_cast<T1>(x) >= min_type<T1>()
+            && static_cast<T1>(x) <= max_type<T1>());
+    return static_cast<T1>(x);
 }
 
 } /* pfs */
 
 #endif
 
-#endif /* __PFS_PP_LIMITS_H__ */
+
+#endif /* __PFS_SYS_LIMITS_H__ */

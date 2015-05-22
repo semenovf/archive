@@ -269,7 +269,6 @@ void test_rpt(void)
 
 int main(int argc, char *argv[])
 {
-	PFS_CHECK_SIZEOF_TYPES;
 	PFS_UNUSED(argc);
 	PFS_UNUSED(argv);
 

@@ -74,10 +74,8 @@ ssize_t fsm<_P>::exec (int state_cur, const_iterator begin, const_iterator end)
 
 	} while( true );
 
-	PFS_ASSERT(nchars_total_accepted <= PFS_SSIZE_MAX);
-
 	return accepted
-			? (ssize_t)nchars_total_accepted
+			? integral_cast_check<ssize_t, size_t>(nchars_total_accepted)
 			: (ssize_t)-1;
 }
 

@@ -727,7 +727,6 @@ void test_suite ()
 
 int main(int argc, char *argv[])
 {
-    PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
     int ntests = 222;
 #ifdef HAVE_INT64

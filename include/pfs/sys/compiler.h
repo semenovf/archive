@@ -6,8 +6,8 @@
  * @brief
  */
 
-#ifndef __PFS_GLOBAL_CC_H__
-#define __PFS_GLOBAL_CC_H__
+#ifndef __PFS_SYS_COMPILER_H__
+#define __PFS_SYS_COMPILER_H__
 
 /*
    The compiler, must be one of: (CWT_CC_x)
@@ -95,4 +95,4 @@
 #	endif
 #endif
 
-#endif /* __PFS_GLOBAL_CC_H__ */
+#endif /* __PFS_SYS_COMPILER_H__ */

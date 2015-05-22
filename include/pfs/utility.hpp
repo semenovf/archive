@@ -10,7 +10,6 @@
 #define __PFS_UTILITY_HPP__
 
 #include <pfs.hpp>
-//namespace pfs {
 
 #if __cplusplus >= 201103L // C++11
 #	include <algorithm> // until C++11
@@ -40,6 +39,16 @@ inline void pfs_swap (T & a, T & b)
 #endif
 
 namespace pfs {
+
+template <typename T>
+inline T min (T a, T b) { return a <= b ? a : b; }
+
+template <typename T>
+inline T max (T a, T b) { return a >= b ? a : b; }
+
+template <typename T>
+inline T abs (T x) { return x < 0 ? x * T(-1) : x; }
+
 //
 // see https://sites.google.com/site/murmurhash
 //
@@ -54,5 +63,17 @@ DLL_API uint32_t hash32 (const void * key, int len, unsigned int seed);
 #endif
 
 } // pfs
+
+
+#define PFS_AUTO_CTOR_FUNCTION(func)           \
+    static const struct func ## _ctor_struct { \
+        func ## _ctor_struct () { func(); }    \
+    } func ## _ctor_struct;
+
+#define PFS_AUTO_DTOR_FUNCTION(func)           \
+    static const struct func ## _dtor_struct { \
+        func ## _dtor_struct () { }            \
+        ~ func ## _dtor_struct () { func(); }  \
+    } func ## _dtor_instance;
 
 #endif /* __PFS_UTILITY_HPP__ */

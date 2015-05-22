@@ -5,12 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_PP_ALIGNOF_H__
-#define __PFS_PP_ALIGNOF_H__
-
-#ifndef __PFS_H__
-#	error Do not need to include this file directly
-#endif
+#ifndef __PFS_SYS_ALIGNOF_H__
+#define __PFS_SYS_ALIGNOF_H__
 
 /*
  * See http://www.wambold.com/Martin/writings/alignof.html
@@ -52,4 +48,4 @@
 #endif
 #endif /* __COMMENT__ */
 
-#endif /* __PFS_PP_ALIGNOF_H__ */
+#endif /* __PFS_SYS_ALIGNOF_H__ */

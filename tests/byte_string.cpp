@@ -469,7 +469,6 @@ void test_convert_to_number ()
 
 int main(int argc, char *argv[])
 {
-    PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
     int ntests = 132;
 #ifdef HAVE_LONGLONG

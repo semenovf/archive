@@ -18,7 +18,7 @@
 #elif defined(PFS_OS_WIN)
 #	define PFS_WIN32_THREADS
 #	include <windows.h>
-#elif defined(HAVE_PTHREAD)
+#elif defined(PFS_HAVE_PTHREAD)
 #	define PFS_POSIX_THREADS
 #	include <pthread.h>
 #else
