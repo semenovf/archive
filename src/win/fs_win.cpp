@@ -40,7 +40,7 @@ bool fs::isAbsolute(const string &path)
 
 bool fs::exists(const string & path)
 {
-	PFS_CHECK_SIZEOF_TYPE(wchar_t,2);
+	PFS_ASSERT_RANGE(sizeof(wchar_t) == 2);
 	struct _stat st;
 	return _wstat(path.toUtf16().data(), & st ) == 0;
 }
@@ -72,7 +72,7 @@ bool fs::remove(const string & path)
 
 size_t fs::size (const string & path) const
 {
-	PFS_CHECK_SIZEOF_TYPE(wchar_t,2);
+	PFS_ASSERT_RANGE(sizeof(wchar_t) == 2);
 	struct _stat st;
 	return _wstat(path.toUtf16().data(), & st ) == 0
 			? size_t(st.st_size)

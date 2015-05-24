@@ -71,7 +71,7 @@ static bool __map_to_posix_priority (thread::priority_type priority, int * posix
                                                                 //                                         |
                                                                 //                                         v
     *posixPriorityPtr = prio_min + ((priority - lowestPriority) * (prio_max - prio_min) / (highestPriority - lowestPriority));
-    *posixPriorityPtr = pfs::max(prio_min, pfs::min(prio_max, *posixPriorityPtr));
+    *posixPriorityPtr = pfs_max(prio_min, pfs_min(prio_max, *posixPriorityPtr));
     return true;
 }
 #endif // PFS_HAVE_THREAD_PRIORITY_SCHEDULING

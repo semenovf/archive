@@ -42,7 +42,6 @@ public:
 #endif
 
 private:
-	static stringlist _globalSearchPath;
 	stringlist _searchPath;
 	pfs::map<string, handle> _plugins;
 
@@ -64,7 +63,7 @@ public:
     string buildDlFileName (const string & basename);
 	void   clearSearchPath () { _searchPath.clear(); }
 	void   addSearchPath   (const string & dir) { _searchPath.append(dir); }
-	static void addGlobalSearchPath   (const string & dir) { _globalSearchPath.append(dir); }
+	static void addGlobalSearchPath   (const string & dir);
 
 private:
 	string searchFile (const string & filename);

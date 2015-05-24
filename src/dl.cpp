@@ -3,7 +3,12 @@
 
 namespace pfs {
 
-stringlist dl::_globalSearchPath;
+static stringlist globalSearchPath;
+
+void dl::addGlobalSearchPath (const string & dir)
+{
+	globalSearchPath.append(dir);
+}
 
 /**
  * @note  internal
@@ -35,8 +40,8 @@ string dl::searchFile (const string & filename)
 			++it;
 		}
 
-		it = _globalSearchPath.cbegin();
-		itEnd = _globalSearchPath.cend();
+		it = globalSearchPath.cbegin();
+		itEnd = globalSearchPath.cend();
 
 		while (it != itEnd) {
 			string r(*it);
