@@ -19,14 +19,28 @@
 /*
  * C99-specific header
  */
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) \
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) /* c99 or higher */ \
+	|| (defined(_MSC_VER) && _MSC_VER >= 1600) /* msvc >= MSVC++ 10.0 */           \
     || defined(__INT8_TYPE__) /* gcc w/o -std=c99 or higher option */
 #   include <stdint.h>
+
+#	define PFS_HAVE_INT8_T 1 // TODO deprecated
+#   define PFS_HAVE_STDINT 1
 #endif
 
 #ifdef _MSC_VER
 #   define WIN32_LEAN_AND_MEAN
 #   include <windows.h>
+#endif
+
+/* Defined in WinDef.h (included in windows.h) */
+#ifdef max
+#	undef max
+#endif
+
+/* Defined in WinDef.h (included in windows.h) */
+#ifdef min
+#	undef min
 #endif
 
 #ifdef __DEPRECATED__
@@ -67,7 +81,7 @@
 #ifdef DLL_API
 #   undef DLL_API
 #endif
-#if defined(PFS_CC_MSVC)
+#if defined(_MSC_VER)
 #   define DLL_API_EXPORT __declspec(dllexport)
 #   define DLL_API_IMPORT __declspec(dllimport)
 #   ifdef DLL_EXPORTS
@@ -108,12 +122,6 @@
 #	define NDEBUG 1
 #endif
 
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) \
-    || defined(__int8_t_defined)
-#	define PFS_HAVE_INT8_T 1 // TODO deprecated
-#   define PFS_HAVE_STDINT 1
-#endif
-
 #if defined(_SIZE_T_DEFINED_)    \
 	|| defined(_SIZE_T_DEFINED)  \
 	|| defined(__DJ_size_t)      \
@@ -130,7 +138,7 @@
 #	define PFS_HAVE_SSIZE_T 1
 #endif
 
-#if defined(_INTPTR_T_DEFINED) \
+#if defined(_INTPTR_T_DEFINED) /* msvc */     \
     || defined(__intptr_t_defined) /* gcc */
 #	define PFS_HAVE_INTPTR_T 1
 #endif
@@ -140,7 +148,7 @@
 #	define PFS_HAVE_UINTPTR_T 1
 #endif
 
-#if defined(__PTRDIFF_TYPE__)      \
+#if defined(__PTRDIFF_TYPE__)                  \
 	|| defined(_PTRDIFF_T_DEFINED)  /* msvc */ \
 	|| defined(_PTRDIFF_T)          /* borland c++ */
 #	define PFS_HAVE_PTRDIFF_T 1

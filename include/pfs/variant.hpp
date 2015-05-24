@@ -24,7 +24,7 @@ struct max_alignof
 
 inline uint32_t variant_hash_code (const char * name)
 {
-	return hash32(name, strlen(name), static_cast<unsigned int>(0xc70f6907UL));
+	return pfs::hash32(name, strlen(name), static_cast<unsigned int>(0xc70f6907UL));
 }
 
 template <typename T>

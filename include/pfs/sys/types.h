@@ -63,8 +63,11 @@ typedef uint8_t byte_t;
 #ifdef PFS_HAVE_SSIZE_T
     typedef ssize_t ssize_t;
 #else
-    /*typedef long int ssize_t;*/
-#   error "Unsupported platform yet: PFS_HAVE_SIZE_T is undefined"
+#	ifdef PFS_HAVE_INT64
+    	typedef int64_t ssize_t;
+    #else
+    	typedef long int ssize_t;
+#	endif
 #endif
 
 typedef ssize_t offset_t;

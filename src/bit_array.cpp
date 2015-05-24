@@ -351,7 +351,7 @@ bit_array & bit_array::operator &= (const bit_array & other)
 	bit_array_pdata * pd = base_class::cast();
 	const bit_array_pdata * pdo = other.base_class::cast();
 
-    resize(pfs::max(size(), other.size()));
+    resize(pfs_max(size(), other.size()));
 
     uint32_t * a1 = pd->_a.data();
     const uint32_t * a2 = pdo->_a.constData();
@@ -382,7 +382,7 @@ bit_array& bit_array::operator ^= (const bit_array & other)
 	bit_array_pdata * pd = base_class::cast();
 	const bit_array_pdata * pdo = other.base_class::cast();
 
-    resize(pfs::max(size(), other.size()));
+    resize(pfs_max(size(), other.size()));
 
     uint32_t * a1 = pd->_a.data();
     const uint32_t * a2 = pdo->_a.constData();
@@ -409,7 +409,7 @@ bit_array & bit_array::operator |= (const bit_array & other)
 	bit_array_pdata * pd = base_class::cast();
 	const bit_array_pdata * pdo = other.base_class::cast();
 
-    resize(pfs::max(size(), other.size()));
+    resize(pfs_max(size(), other.size()));
 
     uint32_t * a1 = pd->_a.data();
     const uint32_t * a2 = pdo->_a.constData();

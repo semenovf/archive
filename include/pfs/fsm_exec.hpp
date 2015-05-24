@@ -44,7 +44,7 @@ ssize_t fsm<_P>::exec (int state_cur, const_iterator begin, const_iterator end)
 			}
 
 			ptr += size_t(nchars_processed);
-			nchars_total_processed += nchars_processed;
+			nchars_total_processed += size_t(nchars_processed);
 
 			if (trans->_status == FSM_ACCEPT)
 				nchars_total_accepted = nchars_total_processed;
