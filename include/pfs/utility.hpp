@@ -61,6 +61,22 @@ DLL_API uint32_t hash32 (const void * key, int len, unsigned int seed);
 #	endif
 #endif
 
+template <typename T>
+inline T min (T a, T b) { return a <= b ? a : b; }
+
+template <typename T>
+inline T max (T a, T b) { return a >= b ? a : b; }
+
+template <typename T>
+inline T abs (T x) { return x < 0 ? x * T(-1) : x; }
+
+template <typename T, typename U, typename W>
+inline bool approx_eq (T a, U b, W diff)
+{
+    T d = a - b;
+    return d < 0 ? d + diff >= 0 : d <= diff;
+}
+
 } // pfs
 
 #define PFS_AUTO_CTOR_FUNCTION(func)           \
