@@ -90,50 +90,43 @@ string dl::searchFile (const string & filename)
  * @return Handler to the opened dynamic library file.
  */
 
-
-typedef bool (* __plugin_ctor) (void *);
-typedef bool (* __plugin_dtor) (void *);
-static const char * __plugin_ctor_sym = "__plugin_ctor__";
-static const char * __plugin_dtor_sym = "__plugin_dtor__";
+//static const char * plugin_ctor_sym = "__plugin_ctor__";
+//static const char * plugin_dtor_sym = "__plugin_dtor__";
 
 /**
  * @brief Opens plug-in specified by path.
  *
  * @param name Unique name for plug-in.
  * @param path Platform specific path to the plug-in.
- * @param pluggable Pointer to pluggable interface.
-  */
-bool dl::openPlugin (const string & name, const string & path, pfs::pluggable * pluggable)
+ *
+ * @return Pointer to pluggable interface.
+ */
+pfs::pluggable * dl::openPlugin (const string & name, const string & path)
 {
-    if (!pluggable) {
-        addError(string() << _Tr("Plaggable is null"));
-        return false;
-    }
-
 	bool global = false; // Avoid name conflicts
 	bool resolve = true;
 	dl::handle dlh = dl::open(path, global, resolve);
 
 	if (_plugins.contains(name)) {
         addError(string() << _Tr("Duplicate plug-in with name: ") << name);
-        return false;
+        return nullptr;
 	}
 
 	if (!dlh) {
 		addError(string() << _Tr("Unable to load plug-in from ") << path);
-		return false;
+		return nullptr;
 	}
 
-	__plugin_ctor ctor = reinterpret_cast<__plugin_ctor>(dl::ptr(dlh, __plugin_ctor_sym));
+	plugin_ctor_t ctor = reinterpret_cast<plugin_ctor_t>(dl::ptr(dlh, PFS_PLUGIN_CTOR_NAME));
 	if (!ctor) {
 		addError(string() << _Tr("Constructor not found for plug-in: ")
 		        << name << " [" << path << ']');
-		return false;
+		return nullptr;
 	}
 
 	dl::_plugins.insert(name, dlh);
 
-	return ctor(pluggable);
+	return ctor();
 }
 
 /**
@@ -143,27 +136,22 @@ bool dl::openPlugin (const string & name, const string & path, pfs::pluggable * 
  *          dynamic library file using @c dl::searchFile() method.
  *
  * @param name Plug-in name (used as base name for filename).
- * @param pluggable Pointer to pluggable interface.
- * @return @c true if plug-in successfully opened, @c false otherwise.
+ * @param pluggable .
+ * @return Pointer to pluggable interface if plug-in successfully opened, @c nullptr otherwise.
  *         In latter case error will be saved.
  */
-bool dl::openPlugin (const string & name, pfs::pluggable * pluggable)
+pfs::pluggable * dl::openPlugin (const string & name)
 {
-    if (!pluggable) {
-        addError(string() << _Tr("Plaggable is null"));
-        return false;
-    }
-
     string filename = buildDlFileName(name);
     string path = searchFile(filename);
 
     if (path.isEmpty()) {
         addError(string() << _Tr("Unable to find plug-in specified by name: ")
                 << name);
-        return false;
+        return nullptr;
     }
 
-    return openPlugin(name, path, pluggable);
+    return openPlugin(name, path);
 }
 
 /**
@@ -174,9 +162,9 @@ bool dl::openPlugin (const string & name, pfs::pluggable * pluggable)
  * @return @c true if plug-in successfully closed, @c false otherwise.
  *         In latter case error will be saved.
  */
-bool dl::closePlugin (const string & name, pfs::pluggable * pluggable)
+bool dl::closePlugin (const string & name, pfs::pluggable * plugin)
 {
-    if (!pluggable) {
+    if (!plugin) {
         addError(string() << _Tr("Plaggable is null"));
         return false;
     }
@@ -192,7 +180,7 @@ bool dl::closePlugin (const string & name, pfs::pluggable * pluggable)
 	dl::handle dlh = it.value();
 	PFS_ASSERT(dlh);
 
-	__plugin_dtor dtor = reinterpret_cast<__plugin_dtor>(dl::ptr(dlh, __plugin_dtor_sym));
+	plugin_dtor_t dtor = reinterpret_cast<plugin_dtor_t>(dl::ptr(dlh, PFS_PLUGIN_DTOR_NAME));
 
 	if (!dtor) {
 		addError(string() << _Tr("Destructor not found for plug-in: ") << name);
@@ -201,7 +189,8 @@ bool dl::closePlugin (const string & name, pfs::pluggable * pluggable)
 
 	dl::_plugins.remove(name);
 
-	return dtor(pluggable);
+	dtor(plugin);
+	return true;
 }
 
 } // pfs

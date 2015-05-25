@@ -56,9 +56,9 @@ public:
 	symbol ptr   (handle h, const char * symname);
 	void   close (handle h);
 
-	bool   openPlugin  (const string & name, const string & path, pfs::pluggable * pluggable);
-	bool   openPlugin  (const string & name, pfs::pluggable * pluggable);
-	bool   closePlugin (const string & name, pfs::pluggable * pluggable);
+	pfs::pluggable *  openPlugin  (const string & name, const string & path);
+	pfs::pluggable *  openPlugin  (const string & name);
+	bool closePlugin (const string & name, pfs::pluggable * pluggable);
 
     string buildDlFileName (const string & basename);
 	void   clearSearchPath () { _searchPath.clear(); }
