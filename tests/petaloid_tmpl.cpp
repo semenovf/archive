@@ -109,5 +109,5 @@ inline void PetaloidTemplate::onSixArgs(bool ok, char, short, int, long, const c
 }
 
 
-CWT_PETALOID_API pfs::petaloid * __petaloid_ctor__(const char *, int , char **) { return dynamic_cast<pfs::petaloid *>(new PetaloidTemplate()); }
-CWT_PETALOID_API void  __petaloid_dtor__(pfs::petaloid * p) { PFS_ASSERT(p); delete p; }
+PFS_PETALOID_API pfs::petaloid * __petaloid_ctor__(const char *, int , char **) { return dynamic_cast<pfs::petaloid *>(new PetaloidTemplate()); }
+PFS_PETALOID_API void  __petaloid_dtor__(pfs::petaloid * p) { PFS_ASSERT(p); delete p; }
