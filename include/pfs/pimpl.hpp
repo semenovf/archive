@@ -45,12 +45,13 @@ public:
 
 	pimpl & operator = (const pimpl & other)
 	{
-		deref();
-		_holder = other._holder;
+	    if (_holder != other._holder) {
+	        deref();
+	        _holder = other._holder;
 
-		if (_holder)
-			_holder->_ref.ref();
-
+	        if (_holder)
+	            _holder->_ref.ref();
+	    }
 		return *this;
 	}
 
