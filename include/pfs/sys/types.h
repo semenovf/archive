@@ -105,6 +105,12 @@ typedef ssize_t offset_t;
 #   error "Unsupported platform yet: PFS_HAVE_PTRDIFF_T is undefined"
 #endif
 
+#if (defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)) && defined(PFS_UNICODE)
+	typedef wchar_t argv_t;
+#else
+	typedef char argv_t;
+#endif
+
 #undef uuid_t
 typedef struct {
     uint32_t  time_low;
