@@ -1,5 +1,5 @@
 /*
- * options.hpp
+ * command_line.hpp
  *
  *  Created on: Jun 4, 2013
  *      Author: wladt
@@ -8,8 +8,9 @@
 #ifndef __PFS_OPTIONS_HPP__
 #define __PFS_OPTIONS_HPP__
 
+#include <pfs/command_line.hpp>
 #include <pfs/string.hpp>
-#include <pfs/vector.hpp>
+#include <pfs/stringlist.hpp>
 #include <pfs/settings.hpp>
 
 #ifdef PFS_CC_MSVC
@@ -35,7 +36,7 @@ struct option
 //	bool        (*validator)(const void*);  /* validation function for option argument */
 };
 
-class DLL_API options_context
+class DLL_API command_line
 {
     string _shortPrefix;
     string _longPrefix;
@@ -43,15 +44,7 @@ class DLL_API options_context
     string _quoteChars;
 
 public:
-	options_context () {
-	// TODO Need more flexible approach to distinguish OS specific
-	// features (may by using global repository based on some DOM instance)
-#if defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)
-		setMode (option::Windows);
-#else
-		setMode (option::Unix);
-#endif
-	}
+	command_line ();
 
 	void setShortPrefix (const string & prefix) { _shortPrefix = prefix; }
 	void setLongPrefix  (const string & prefix)  { _longPrefix = prefix; }
@@ -59,39 +52,24 @@ public:
 	void setQuoteChars  (const string & quotes)  { _quoteChars = quotes; }
 	void setMode        (option::mode_type mode);
 
-	bool parse (settings & settings, int argc
-#if (defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)) && defined(PFS_UNICODE)
-			, wchar_t * argv[]
-#else
-			, char * argv[]
-#endif
-			, size_t optc, const option optv[], vector<string> & args)
+	bool parse (settings & s, int argc, argv_t * argv[]
+			, size_t optc, const option optv[], stringlist & args)
 	{
-	    return parseOpts(settings, argc, argv, optc, optv, & args);
+	    return parseOpts(s, argc, argv, optc, optv, & args);
 	}
 
-	bool parse (settings & settings, int argc
-#if (defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)) && defined(PFS_UNICODE)
-			, wchar_t * argv[]
-#else
-			, char * argv[]
-#endif
-			, size_t optc, const option optv[])
+	bool parse (settings & s, int argc, argv_t * argv[], size_t optc, const option optv[])
 	{
-	    return parseOpts(settings, argc, argv, optc, optv, nullptr);
+	    return parseOpts(s, argc, argv, optc, optv, nullptr);
 	}
 
 private:
-	bool parseOpts (settings & settings
-	        , int argc
-#if (defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)) && defined(PFS_UNICODE)
-			, wchar_t * argv[]
-#else
-			, char * argv[]
-#endif
+	bool parseOpts (settings & s
+			, int argc
+			, argv_t * argv[]
 	        , size_t optc
 	        , const option optv[]
-	        , vector<string> * args);
+	        , stringlist * args);
 };
 
 } // pfs

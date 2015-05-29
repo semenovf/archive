@@ -8,8 +8,8 @@ TEMPLATE = subdirs
 CONFIG  += ordered
 SUBDIRS  = pfs-app  \
     tests/petaloid  \
-    tests/sepaloid
-#    tests/options   \
+    tests/sepaloid  \
+    tests/command_line
 
 
 

@@ -10,14 +10,16 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+
 #if defined(_POSIX_SOURCE) || _POSIX_C_SOURCE >= 1 || defined(_XOPEN_SOURCE)
 #	include <signal.h>
 #else
-#	error Need to support sigaction
+#	error "Need to support sigaction"
 #endif
 
-namespace cwt {
+namespace pfs {
 
+#ifdef __COMMENT__
 class posix_signals : public pfs::noncopyable
 {
 	int max_signum;
@@ -94,5 +96,5 @@ void posix_signals::reset(int signum)
 {
 	signal(signum, SIG_DFL);
 }
-
+#endif
 } // cwt

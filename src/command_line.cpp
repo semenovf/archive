@@ -5,23 +5,57 @@
  *      Author: wladt
  */
 
-#include "pfs/option.hpp"
+#include <pfs/command_line.hpp>
 #include "pfs/map.hpp"
 #include <pfs/logger.hpp>
 
 namespace pfs {
 
-static const string __modes_data[][4] = {
-	  {_u8("-"), _u8("--"), _u8("="), _u8("\"'") } // Unix
-	, {_u8("/"), _u8("/"), _u8(":"), _u8("\"'") } // Windows
+static const string modes_data[][4] = {
+	  {_l1("-"), _l1("--"), _l1("="), _l1("\"'") } // Unix
+	, {_l1("/"), _l1("/"), _l1(":"), _l1("\"'") } // Windows
 };
 
-void options_context::setMode(option::mode_type mode)
+
+//
+// Do not want to include <wchar.h>
+//
+static size_t argvlen (const argv_t * p)
 {
-	_shortPrefix     = __modes_data[mode][0];
-	_longPrefix      = __modes_data[mode][1];
-	_optArgSeparator = __modes_data[mode][2];
-	_quoteChars      = __modes_data[mode][3];
+	size_t r = 0;
+	while (*p != 0) ++r;
+	return r;
+}
+
+static string argv_to_string (const argv_t * arg)
+{
+	switch (sizeof(argv_t)) {
+	case 1: // char
+#ifdef PFS_UNICODE
+		return string::fromUtf8(arg);
+#else
+		// TODO Need to implement string::fromLocal8Bit()/toLocal8Bit()
+#		error "Need to implement string::fromLocal8Bit()/toLocal8Bit()"
+#endif
+
+	case 2:  // Microsoft wchar_t
+		return string::fromUtf16(reinterpret_cast<const uint16_t*>(arg), argvlen(arg));
+		break;
+
+	case 4:  // Unix wchar_t
+	default:
+		PFS_ASSERT_UNEXPECTED();
+	}
+	return string();
+}
+
+
+void command_line::setMode(option::mode_type mode)
+{
+	_shortPrefix     = modes_data[mode][0];
+	_longPrefix      = modes_data[mode][1];
+	_optArgSeparator = modes_data[mode][2];
+	_quoteChars      = modes_data[mode][3];
 }
 
 
@@ -32,6 +66,7 @@ static void split_long_arg (const string & arg
 		, string & optval)
 {
 	string::const_iterator it = arg.find(arg.cbegin(), separator);
+
 	if (it == arg.cend()) {
 		optname = arg;
 	} else {
@@ -50,16 +85,12 @@ static void split_long_arg (const string & arg
 	}
 }
 
-bool options_context::parseOpts (settings & settings
+bool command_line::parseOpts (settings & s
 		, int argc
-#if (defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)) && defined(PFS_UNICODE)
-			, wchar_t * argv[]
-#else
-			, char * argv[]
-#endif
+		, argv_t * argv[]
 		, size_t optc
 		, const option optv[]
-		, vector<string> * args)
+		, stringlist * args)
 {
 	if (argc <= 0)
 		return true;
@@ -88,16 +119,7 @@ bool options_context::parseOpts (settings & settings
 	}
 
 	for (int i = 1; i < argc; ++i) {
-#if defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)
-#	ifdef PFS_UNICODE
-		string arg = string::fromUtf16(argv[i], wcslen(argv[i])); // TODO Check this
-#	else
-		string arg = string::fromLatin1(argv[i]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
-		//string arg = string::fromLocal8Bit(argv[i]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
-#	endif
-#else
-		string arg = string::fromUtf8(argv[i]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
-#endif
+		string arg = argv_to_string(argv[i]);
 		string optname;
 		string optval;
 		bool skip = false;
@@ -106,16 +128,9 @@ bool options_context::parseOpts (settings & settings
 			split_long_arg(arg.substr(_longPrefix.length()), _optArgSeparator, _quoteChars, optname, optval);
 		} else if (arg.startsWith(_shortPrefix)) {
 			optname = arg.substr(_shortPrefix.length());
+
 			if (i + 1 < argc) {
-#if defined(PFS_OS_WIN32) || defined(PFS_OS_WIN64)
-#	ifdef PFS_UNICODE
-				optval = string::fromUtf16(argv[i + 1], wcslen(argv[i + 1])); // TODO Check this
-#	else
-				optval = string::fromLatin1(argv[i + 1]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
-#	endif
-#else
-				optval = string::fromUtf8(argv[i + 1]); // FIXME Need to implement string::fromLocal8Bit()/toLocal8Bit()
-#endif
+				optval = argv_to_string(argv[i + 1]);
 				skip = true;
 			}
 		} else { // argument
@@ -140,12 +155,12 @@ bool options_context::parseOpts (settings & settings
 				r = false;
 				break;
 			} else {
-				settings.set(opt->xpath, optval);
+				s.setString(opt->xpath, optval);
 				if (skip) // skip argument for short option
 					++i;
 			}
 		} else {
-			settings.set(opt->xpath, true);
+			s.setBoolean(opt->xpath, true);
 		}
 	}
 

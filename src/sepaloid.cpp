@@ -55,8 +55,8 @@ petaloid * sepaloid::registerPetaloidForPath (const string & path, const char * 
 
 	dl::handle ph = dl::open(path, false, true);
 	if (ph) {
-		petaloid_ctor_t petaloid_ctor = reinterpret_cast<petaloid_ctor_t>(dl::ptr(ph, CWT_PETALOID_CONSTRUCTOR_NAME));
-		petaloid_dtor_t petaloid_dtor = reinterpret_cast<petaloid_dtor_t>(dl::ptr(ph, CWT_PETALOID_DESTRUCTOR_NAME));
+		petaloid_ctor_t petaloid_ctor = reinterpret_cast<petaloid_ctor_t>(dl::ptr(ph, PFS_PETALOID_CTOR_NAME));
+		petaloid_dtor_t petaloid_dtor = reinterpret_cast<petaloid_dtor_t>(dl::ptr(ph, PFS_PETALOID_DTOR_NAME));
 
 		if (petaloid_ctor) {
 			petaloid * p = reinterpret_cast<petaloid*>(petaloid_ctor(pname, arg, argv));

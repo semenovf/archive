@@ -30,8 +30,8 @@ typedef struct { int _id; void * _emitter; } emitter_mapping;
 typedef struct { int _id; detector _detector; } detector_mapping;
 
 #define PFS_PETALOID_API extern "C" DLL_API
-#define PFS_PETALOID_CONSTRUCTOR_NAME "__petaloid_ctor__"
-#define PFS_PETALOID_DESTRUCTOR_NAME "__petaloid_dtor__"
+#define PFS_PETALOID_CTOR_NAME "__petaloid_ctor__"
+#define PFS_PETALOID_DTOR_NAME "__petaloid_dtor__"
 typedef petaloid* (*petaloid_ctor_t)(const char * name, int argc, char ** argv);
 typedef void  (*petaloid_dtor_t)(petaloid*);
 
