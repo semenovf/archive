@@ -18,7 +18,10 @@
 
 namespace pfs {
 
-typedef pfs::mbcs_string<uint8_t> utf8_string;
+typedef pfs::mbcs_string<uint8_t>  utf8_string;
+typedef pfs::mbcs_string<uint16_t> utf16_string;
+typedef pfs::mbcs_string<uint32_t> utf32_string;
+
 typedef utf8_string string;
 
 } // pfs

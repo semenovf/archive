@@ -11,7 +11,7 @@ namespace pfs {
 
 inline uint32_t construct_codepoint (uint32_t w1, uint32_t w2)
 {
-    if (!w2) {
+    if (w2) {
         uint32_t r = (w1 & 0x03FF) << 10;
         r |= w2 & 0x03FF;
         r += 0x10000;

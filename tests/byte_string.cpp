@@ -399,21 +399,23 @@ void test_convert_to_number ()
 	TEST_OK(pfs::byte_string("1").toUInt(& ok) == 1 && ok);
 	TEST_OK(pfs::byte_string("+1").toUInt(& ok) == 1 && ok);
 
-	TEST_OK(pfs::byte_string("-1").toUInt(& ok) == 0 && !ok); // FIXME (result valid for linux64 and win64)
-	//TEST_OK(pfs::byte_string("-1").toUInt(& ok) == PFS_UINT32_MAX && ok); // FIXME (result valid for win32)
+	TEST_OK(pfs::byte_string("-1").toUInt(& ok) == PFS_UINT32_MAX && ok);
 	//cout << pfs::byte_string("-1").toUInt(& ok) << endl;
 
 	TEST_OK(pfs::byte_string("123").toUInt(& ok) == 123 && ok);
 
-#ifdef PFS_HAVE_INT64
-#	ifdef PFS_HAVE_LONGLONG
-	TEST_OK(pfs::byte_string("18446744073709551615").toULongLong(& ok) == PFS_ULONG_MAX && ok);
-#	else
-	TEST_OK(pfs::byte_string("18446744073709551615").toULong(& ok) == PFS_ULONG_MAX && ok);
-#	endif
-#else
-	TEST_OK(pfs::byte_string("4294967295").toULong(& ok) == PFS_ULONG_MAX && ok);
+
+#ifdef PFS_HAVE_LONGLONG
+	if (sizeof(long long) == 8) {
+		TEST_OK(pfs::byte_string("18446744073709551615").toULongLong(& ok) == PFS_ULLONG_MAX && ok);
+	}
 #endif
+
+	if (sizeof(long) == 8) {
+		TEST_OK(pfs::byte_string("18446744073709551615").toULong(& ok) == PFS_ULLONG_MAX && ok);
+	} else {
+		TEST_OK(pfs::byte_string("4294967295").toULong(& ok) == PFS_ULONG_MAX && ok);
+	}
 
 //	TEST_OK(compare_signed("0", 0));
 //	TEST_OK(compare_signed("+0", 0));
@@ -428,19 +430,22 @@ void test_convert_to_number ()
 //	TEST_OK(compare_signed("-123", -123));
 //
 
+#ifdef PFS_HAVE_LONGLONG
+	if (sizeof(long long) == 8) {
+		TEST_OK(pfs::byte_string("9223372036854775807").toLongLong(& ok) == PFS_LLONG_MAX && ok);
+		TEST_OK(pfs::byte_string("-9223372036854775808").toLongLong(& ok) == PFS_LLONG_MIN && ok);
+		cout << pfs::byte_string("-9223372036854775808").toLongLong(& ok) << endl;
+		TEST_OK(pfs::byte_string("-9223372036854775807").toLongLong(& ok) == (PFS_LLONG_MIN + 1) && ok);
+	}
+#endif
 
-#ifdef PFS_HAVE_INT64
-#	ifdef PFS_HAVE_LONGLONG
-	TEST_OK(pfs::byte_string("9223372036854775807").toLongLong(& ok) == PFS_LONG_MAX && ok);
-	TEST_OK(pfs::byte_string("-9223372036854775808").toLongLong(& ok) == PFS_LONG_MIN && ok);
-#	else
+if (sizeof(long) == 8) {
 	TEST_OK(pfs::byte_string("9223372036854775807").toLong(& ok) == PFS_LONG_MAX && ok);
 	TEST_OK(pfs::byte_string("-9223372036854775808").toLong(& ok) == PFS_LONG_MIN && ok);
-#	endif
-#else
+} else {
 	TEST_OK(pfs::byte_string("2147483647").toLong(& ok) == PFS_LONG_MAX && ok);
 	TEST_OK(pfs::byte_string("-2147483648").toLong(& ok) == PFS_LONG_MIN && ok);
-#endif
+}
 
 	TEST_OK(pfs::byte_string("9.").toReal(& ok) == 9.0 && ok);
 	TEST_OK(pfs::byte_string("9").toReal(& ok) == 9.0 && ok);
@@ -457,14 +462,24 @@ void test_convert_to_number ()
 
 	TEST_OK(pfs::byte_string("2.22507385850720138309e-308").toReal(& ok) == PFS_REAL_LITERAL(2.22507385850720138309e-308) && ok);
 	TEST_OK(pfs::byte_string("1.79769313486231570815e+308").toReal(& ok) == PFS_REAL_LITERAL(1.79769313486231570815e+308) && ok);
-#ifdef PFS_HAVE_REAL128
-	ADD_TESTS(3);
-	TEST_OK(pfs::byte_string("3.36210314311209350626e-4932").toReal(& ok) == PFS_REAL_LITERAL(3.36210314311209350626e-4932) && ok);
-	TEST_OK(pfs::byte_string("1.18973149535723176502e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502e+4932) && ok);
-	TEST_OK(pfs::byte_string("1.18973149535723176502126385303e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502126385303e+4932) && ok);
-#endif
+//#ifdef PFS_HAVE_REAL128
+//	ADD_TESTS(3);
+//	TEST_OK(pfs::byte_string("3.36210314311209350626e-4932").toReal(& ok) == PFS_REAL_LITERAL(3.36210314311209350626e-4932) && ok);
+//	TEST_OK(pfs::byte_string("1.18973149535723176502e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502e+4932) && ok);
+//	TEST_OK(pfs::byte_string("1.18973149535723176502126385303e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502126385303e+4932) && ok);
+//#endif
+	cout.precision(50);
 	TEST_OK(pfs::byte_string("18973149535723176502126385303").toReal(& ok) == PFS_REAL_LITERAL(18973149535723176502126385303.0) && ok);
-	TEST_OK(pfs::byte_string("12345678901234567890123456789").toReal(& ok) == PFS_REAL_LITERAL(12345678901234567890123456789.0) && ok);
+	TEST_OK(pfs::approx_eq(pfs::byte_string("12345678901234567890123456789").toReal(& ok)
+					, PFS_REAL_LITERAL(12345678901234567890123456789.0)
+					, 10.0) && ok);
+	cout << pfs::byte_string("12345678901234567890123456789").toReal(& ok) << endl;
+	cout << PFS_REAL_LITERAL(12345678901234567890123456789.0) << endl;
+	real_t rr = pfs::byte_string("12345678901234567890123456789").toReal(& ok) - PFS_REAL_LITERAL(12345678901234567890123456789.0);
+	cout << (pfs::byte_string("12345678901234567890123456789").toReal(& ok) - PFS_REAL_LITERAL(12345678901234567890123456789.0)) << endl;
+
+
+	cout << rr << endl;
 }
 
 int main(int argc, char *argv[])

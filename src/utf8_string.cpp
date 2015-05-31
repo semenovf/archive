@@ -124,7 +124,7 @@ mbcs_string_impl<uint8_t>::size_type mbcs_string_impl<uint8_t>::length (
  */
 template <>
 mbcs_string<uint8_t> mbcs_string<uint8_t>::fromLatin1 (
-          const char * latin1
+          const uint8_t * latin1
         , size_t n
         , ConvertState * state)
 {
@@ -132,7 +132,7 @@ mbcs_string<uint8_t> mbcs_string<uint8_t>::fromLatin1 (
 		return mbcs_string<uint8_t>();
 
 	mbcs_string<uint8_t> r;
-	const char * end = latin1 + n;
+	const uint8_t * end = latin1 + n;
 	size_t invalidChars = 0;
 	size_t len = 0;
 
@@ -163,6 +163,15 @@ mbcs_string<uint8_t> mbcs_string<uint8_t>::fromLatin1 (
 	return r;
 }
 
+mbcs_string<uint8_t> mbcs_string<uint8_t>::fromLatin1 (
+          const char * latin1
+        , size_t n
+        , ConvertState * state)
+{
+	return fromLatin1(reinterpret_cast<const uint8_t *>(latin1), n, state);
+
+}
+
 /**
  *
  * @param latin1
@@ -174,10 +183,7 @@ mbcs_string<uint8_t> mbcs_string<uint8_t>::fromLatin1 (
           const char * latin1
         , ConvertState * state)
 {
-	if (!latin1)
-		return mbcs_string<uint8_t>();
-
-	return fromLatin1(latin1, strlen(latin1), state);
+	return fromLatin1(reinterpret_cast<const uint8_t *>(latin1), strlen(latin1), state);
 }
 
 
@@ -186,7 +192,7 @@ mbcs_string<uint8_t> mbcs_string<uint8_t>::fromLatin1 (
           const pfs::byte_string & latin1
         , ConvertState * state)
 {
-    return fromLatin1(reinterpret_cast<const char *>(latin1.constData()), latin1.length(), state);
+    return fromLatin1(reinterpret_cast<const uint8_t *>(latin1.constData()), latin1.length(), state);
 }
 
 
@@ -198,7 +204,7 @@ mbcs_string<uint8_t> mbcs_string<uint8_t>::fromLatin1 (
  */
 template <>
 mbcs_string<uint8_t> mbcs_string<uint8_t>::fromUtf8 (
-          const char * utf8
+          const uint8_t * utf8
         , size_t size
         , ConvertState * state)
 {
@@ -206,7 +212,7 @@ mbcs_string<uint8_t> mbcs_string<uint8_t>::fromUtf8 (
         return mbcs_string<uint8_t>();
 
     mbcs_string<uint8_t> r;
-    const uint8_t * cursor = reinterpret_cast<const uint8_t *>(utf8);
+    const uint8_t * cursor = utf8;
     const uint8_t * end = cursor + size;
     size_t invalidChars = 0;
     size_t nremain = 0;
@@ -271,12 +277,18 @@ mbcs_string<uint8_t> mbcs_string<uint8_t>::fromUtf8 (
 template <>
 mbcs_string<uint8_t> mbcs_string<uint8_t>::fromUtf8 (
           const char * utf8
+        , size_t n
         , ConvertState * state)
 {
-	if (!utf8)
-		return mbcs_string<uint8_t>();
+	return mbcs_string<uint8_t>::fromUtf8(reinterpret_cast<const uint8_t *>(utf8), n, state);
+}
 
-	return mbcs_string<uint8_t>::fromUtf8(utf8, strlen(utf8), state);
+template <>
+mbcs_string<uint8_t> mbcs_string<uint8_t>::fromUtf8 (
+          const char * utf8
+        , ConvertState * state)
+{
+	return mbcs_string<uint8_t>::fromUtf8(reinterpret_cast<const uint8_t *>(utf8), strlen(utf8), state);
 }
 
 
@@ -285,7 +297,7 @@ mbcs_string<uint8_t> mbcs_string<uint8_t>::fromUtf8 (
           const byte_string & utf8
         , ConvertState * state)
 {
-	return fromUtf8(reinterpret_cast<const char *>(utf8.constData()), utf8.length(), state);
+	return fromUtf8(reinterpret_cast<const uint8_t *>(utf8.constData()), utf8.size(), state);
 }
 
 

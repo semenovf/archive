@@ -29,9 +29,6 @@ template <typename CodeUnitT, typename Holder>
 typename mbcs_string_ptr<CodeUnitT, Holder>::value_type
 mbcs_string_ptr<CodeUnitT, Holder>::operator [] (difference_type n) const
 {
-//	utf8string_ptr p(*this);
-//	p += n;
-//	return reference<Holder>(p->_holder, *this);
 	mbcs_string_ptr<CodeUnitT, Holder> p(*this);
 	p += n;
 	return *p;

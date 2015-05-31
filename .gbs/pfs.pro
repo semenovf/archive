@@ -25,5 +25,7 @@ SUBDIRS  =                \
      tests/pimpl          \
      tests/variant        \
      tests/safeformat     \
-     tests/stack
+     tests/stack          \
+     tests/utf8           \
+     tests/utf16          \
 #     tests/alignof        \

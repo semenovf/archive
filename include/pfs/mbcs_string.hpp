@@ -618,10 +618,12 @@ private:
     stringlist_basic<mbcs_string> split (bool isOneSeparatorChar, const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
 
 public:
+    static DLL_API mbcs_string fromLatin1 (const uint8_t * latin1, size_t n, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, size_t n, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromLatin1 (const char * latin1, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromLatin1 (const pfs::byte_string & latin1, ConvertState * state = nullptr);
 
+	static DLL_API mbcs_string fromUtf8 (const uint8_t * utf8, size_t size, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, size_t size, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromUtf8 (const char * utf8, ConvertState * state = nullptr);
 	static DLL_API mbcs_string fromUtf8 (const byte_string & utf8, ConvertState * state = nullptr);
