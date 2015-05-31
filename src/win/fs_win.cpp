@@ -86,11 +86,10 @@ bool fs::simpleBackup(const string &orig)
 	return fs::rename(orig, to);
 }
 
-// TODO should be tested
 string fs::tempDirectory ()
 {
 	TCHAR path[256];
-	TCHAR *ppath = & path[0];
+	TCHAR * ppath = & path[0];
 	DWORD sz = ::GetTempPath(256, ppath);
 	string r;
 
@@ -106,10 +105,10 @@ string fs::tempDirectory ()
 		// so need to remove it.
 		if (ppath[sz - 1] == pfs::ucchar('\\')) {
 			ppath[sz - 1] = pfs::ucchar('\x0');
-#ifdef _UNICODE
+#ifdef PFS_UNICODE
 			r = string::fromUtf16(ppath, sz);
 #else
-			r = string::fromLatin1(ppath);
+			r = string::fromLatin1(ppath); // TODO Replace with fromLocal8Bit()
 #endif
 		} else {
 			addError(_u8(_Tr("Failed to get temporary directory")));

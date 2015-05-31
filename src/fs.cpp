@@ -9,6 +9,8 @@
 #include "pfs/fs.hpp"
 #include "pfs/random.hpp"
 
+#include <iostream>
+
 namespace pfs {
 
 pfs::string fs::join (const pfs::string & dir, const pfs::string filename)
@@ -32,12 +34,16 @@ string fs::tempFile (const string & prefix, const string & suffix, const string 
     string r;
     pfs::random rnd;
 
+    std::cout << nattempts << std::endl;
+
     do {
         string s;
         uint32_t d = rnd.rand();
         s << prefix << string::toString(d, 16) << suffix;
         r = join(dir, s);
     } while (exists(r) && --nattempts);
+
+    std::cout << nattempts << std::endl;
 
     if (nattempts <= 0) {
         return string();
