@@ -534,7 +534,7 @@ string __sf_default_traits<string>::asInteger (int base, bool uppercase, bool is
 	string r;
 
 	if (isUnsigned) {
-		uintegral_t n = _val.toUIntegral(nullptr, 10);
+		uintegral_t n = _val.toUnsignedIntegral(nullptr, 10);
 		r = string::toString(n, base, uppercase);
 	} else {
 		integral_t n = _val.toIntegral(nullptr, 10);

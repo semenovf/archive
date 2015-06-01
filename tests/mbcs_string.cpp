@@ -12,6 +12,7 @@
 #include <cstring>
 #include <iostream>
 #include <cstdio>
+#include <cerrno>
 
 using std::cout;
 using std::endl;
@@ -563,7 +564,7 @@ void test_to_string ()
 	TEST_OK(utfstring::toString(PFS_INT_MIN) == utfstring("-2147483648"));
 	TEST_OK(utfstring::toString(PFS_ULONG_LITERAL(4294967295)) == utfstring("4294967295"));
 
-#ifdef HAVE_LONGLONG
+#ifdef PFS_HAVE_LONGLONG
 	TEST_OK(utfstring::toString(PFS_LLONG_MAX) == utfstring("9223372036854775807"));
 	TEST_OK(utfstring::toString(PFS_LLONG_MIN) == utfstring("-9223372036854775808"));
 	TEST_OK(utfstring::toString(PFS_ULLONG_MAX) == utfstring("18446744073709551615"));
@@ -583,80 +584,145 @@ void test_to_string ()
 template <typename CodeUnitT>
 void test_convert_to_number ()
 {
+    ADD_TESTS(39);
 	typedef pfs::mbcs_string<CodeUnitT> utfstring;
 
 	bool ok;
-	TEST_OK(utfstring("0").toUInt(& ok) == 0 && ok);
-	TEST_OK(utfstring("+0").toUInt(& ok) == 0 && ok);
-	TEST_OK(utfstring("-0").toUInt(& ok) == 0 && ok);
-
-	TEST_OK(utfstring("1").toUInt(& ok) == 1 && ok);
-	TEST_OK(utfstring("+1").toUInt(& ok) == 1 && ok);
-
-	TEST_OK(utfstring("-1").toUInt(& ok) == 0 && !ok); // FIXME (result valid for linux64 and win64)
-//	TEST_OK(utfstring("-1").toUInt(& ok) == PFS_UINT32_MAX && ok); // FIXME (result valid for win32)
-//	cout << utfstring("-1").toUInt(& ok) << endl;
-
-	TEST_OK(utfstring("123").toUInt(& ok) == 123 && ok);
-
-#ifdef PFS_HAVE_INT64
-#	ifdef PFS_HAVE_LONGLONG
-	TEST_OK(utfstring("18446744073709551615").toULongLong(& ok) == PFS_ULLONG_MAX && ok);
-#	else
-	TEST_OK(utfstring("18446744073709551615").toULong(& ok) == PFS_ULLONG_MAX && ok);
-#	endif
-#else
-	TEST_OK(utfstring("4294967295").toULong(& ok) == PFS_ULONG_MAX && ok);
-#endif
-
-#ifdef PFS_HAVE_INT64
-#	ifdef PFS_HAVE_LONGLONG
-	TEST_OK(utfstring("9223372036854775807").toLongLong(& ok) == PFS_LLONG_MAX && ok);
-	TEST_OK(utfstring("-9223372036854775808").toLongLong(& ok) == PFS_LLONG_MIN && ok);
-#	else
-	TEST_OK(utfstring("9223372036854775807").toLong(& ok) == PFS_LONG_MAX && ok);
-	TEST_OK(utfstring("-9223372036854775808").toLong(& ok) == PFS_LONG_MIN && ok);
-#	endif
-#else
-	TEST_OK(utfstring("2147483647").toLong(& ok) == PFS_LONG_MAX && ok);
-	TEST_OK(utfstring("-2147483648").toLong(& ok) == PFS_LONG_MIN && ok);
-#endif
-
-	TEST_OK(utfstring("0").toInt(& ok) == 0 && ok);
-//	TEST_OK(compare_signed("+0", 0));
-//	TEST_OK(compare_signed("-0", 0));
+//	TEST_OK(utfstring("0").toUInt(& ok) == 0 && ok);
+//	TEST_OK(utfstring("+0").toUInt(& ok) == 0 && ok);
+//	TEST_OK(utfstring("-0").toUInt(& ok) == 0 && ok);
+//	TEST_OK(utfstring("1").toUInt(& ok) == 1 && ok);
+//	TEST_OK(utfstring("+1").toUInt(& ok) == 1 && ok);
+//	TEST_OK(utfstring("-1").toUInt(& ok) == 0 && !ok);
+//	TEST_OK(utfstring("123").toUInt(& ok) == 123 && ok);
 //
-//	TEST_OK(compare_signed("1", 1));
-//	TEST_OK(compare_signed("+1", 1));
-//	TEST_OK(compare_signed("-1", -1));
+
+	//
+	// Check signed and unsigned char specific methods for boundary values
+	//
+//    TEST_OK(utfstring("255").toUnsignedChar(& ok)  == pfs::max_type<unsigned char>() && ok);
+//    TEST_OK(utfstring("127").toUnsignedChar(& ok)  == static_cast<unsigned char>(pfs::max_type<signed char>()) && ok);
+//    TEST_OK(utfstring("-128").toUnsignedChar(& ok) == static_cast<unsigned char>(pfs::min_type<signed char>()) && ok);
+//    TEST_OK(utfstring("127").toSignedChar(& ok)   == pfs::max_type<signed char>() && ok);
+    TEST_OK(utfstring("-128").toSignedChar(& ok)  == pfs::min_type<signed char>() && ok);
+
+    TEST_OK(utfstring("256").toUnsignedChar(& ok)  == 0 && !ok && errno == ERANGE); // + 1 more overflow
+    TEST_OK(utfstring("257").toUnsignedChar(& ok)  == 0 && !ok && errno == ERANGE); // + 2 more overflow
+    TEST_OK(utfstring("258").toUnsignedChar(& ok)  == 0 && !ok && errno == ERANGE); // + 3 more overflow
+
+    TEST_OK(utfstring("-129").toUnsignedChar(& ok)  == static_cast<unsigned char>(127) && ok); // - 1 more underflow
+    TEST_OK(utfstring("-130").toUnsignedChar(& ok)  == static_cast<unsigned char>(126) && ok); // - 2 more underflow
+    TEST_OK(utfstring("-131").toUnsignedChar(& ok)  == static_cast<unsigned char>(125) && ok); // - 3 more underflow
+
+    TEST_OK(utfstring("128").toSignedChar(& ok)   == 0 && !ok && errno == ERANGE); // + 1 more overflow
+    TEST_OK(utfstring("129").toSignedChar(& ok)   == 0 && !ok && errno == ERANGE); // + 2 more overflow
+    TEST_OK(utfstring("130").toSignedChar(& ok)   == 0 && !ok && errno == ERANGE); // + 3 more overflow
+
+    TEST_OK(utfstring("-129").toSignedChar(& ok)  == 0 && !ok && errno == ERANGE); // - 1 more underflow
+    TEST_OK(utfstring("-130").toSignedChar(& ok)  == 0 && !ok && errno == ERANGE); // - 2 more underflow
+    TEST_OK(utfstring("-131").toSignedChar(& ok)  == 0 && !ok && errno == ERANGE); // - 3 more underflow
+
+
+//    if (sizeof(short) == 4) {
+//        TEST_OK(utfstring("4294967295").toUnsignedShort(& ok)  == PFS_USHORT_MAX && ok);
+//        TEST_OK(utfstring("2147483647").toUnsignedShort(& ok)  == PFS_SHORT_MAX && ok);
+//        TEST_OK(utfstring("-2147483648").toUnsignedShort(& ok) == static_cast<unsigned short>(PFS_SHORT_MIN) && ok);
+//        TEST_OK(utfstring("2147483647").toShort(& ok)   == PFS_SHORT_MAX && ok);
+//        TEST_OK(utfstring("-2147483648").toShort(& ok)  == PFS_SHORT_MIN && ok);
+//    } else {
+//        TEST_OK(utfstring("65535").toUShort(& ok)  == PFS_USHORT_MAX && ok);
+//        TEST_OK(utfstring("32767").toUShort(& ok)  == PFS_SHORT_MAX && ok);
+//        TEST_OK(utfstring("-32768").toUShort(& ok) == static_cast<unsigned short>(PFS_SHORT_MIN) && ok);
+//        TEST_OK(utfstring("32767").toShort(& ok)   == PFS_SHORT_MAX && ok);
+//        TEST_OK(utfstring("-32768").toShort(& ok)  == PFS_SHORT_MIN && ok);
+//        cout << utfstring("-32768").toShort(& ok) << endl;
+//        TEST_OK(utfstring("65536").toUShort(& ok)  == 0 && !ok && errno == ERANGE);
+//        TEST_OK(utfstring("32768").toShort(& ok)   == 0 && !ok && errno == ERANGE);
+//        TEST_OK(utfstring("-32769").toShort(& ok)  == 0 && !ok && errno == ERANGE);
+//    }
+
+//    if (sizeof(int) == 8) {
+//        TEST_OK(utfstring("18446744073709551615").toUInt(& ok) == PFS_UINT_MAX && ok);
+//        TEST_OK(utfstring("9223372036854775807").toInt(& ok)   == PFS_INT_MAX && ok);
+//        TEST_OK(utfstring("-9223372036854775808").toInt(& ok)  == PFS_INT_MIN && ok);
+//    } else {
+//        TEST_OK(utfstring("4294967295").toUInt(& ok) == PFS_UINT_MAX && ok);
+//        TEST_OK(utfstring("2147483647").toInt(& ok)  == PFS_INT_MAX && ok);
+//        TEST_OK(utfstring("-2147483648").toInt(& ok) == PFS_INT_MIN && ok);
+//    }
 //
-//	TEST_OK(compare_signed("123", 123));
-//	TEST_OK(compare_signed("+123", 123));
-//	TEST_OK(compare_signed("-123", -123));
-
-	TEST_OK(utfstring("9.").toReal(& ok) == 9.0 && ok);
-	TEST_OK(utfstring("9").toReal(& ok) == 9.0 && ok);
-	TEST_OK(utfstring("9.0").toReal(& ok) == 9.0 && ok);
-	TEST_OK(utfstring("9.0000").toReal(& ok) == 9.0 && ok);
-	TEST_OK(utfstring("9.00001").toReal(& ok) == PFS_REAL_LITERAL(9.00001) && ok);
-	TEST_OK(utfstring("009").toReal(& ok) == 9.0 && ok);
-	TEST_OK(utfstring("0.09e02").toReal(& ok) == 9.0 && ok);
-	TEST_OK(utfstring("0.9999999999999999999999999999999999").toReal(& ok) == PFS_REAL_LITERAL(0.9999999999999999999999999999999999) && ok);
-	TEST_OK(utfstring("2.22e-308").toReal(& ok) == PFS_REAL_LITERAL(2.22e-308) && ok);
-	TEST_OK(utfstring("1.34").toReal(& ok) == PFS_REAL_LITERAL(1.34) && ok);
-	TEST_OK(utfstring("12.34").toReal(& ok) == PFS_REAL_LITERAL(12.34) && ok);
-	TEST_OK(utfstring("123.456").toReal(& ok) == PFS_REAL_LITERAL(123.456) && ok);
-
-	TEST_OK(utfstring("2.22507385850720138309e-308").toReal(& ok) == PFS_REAL_LITERAL(2.22507385850720138309e-308) && ok);
-	TEST_OK(utfstring("1.79769313486231570815e+308").toReal(& ok) == PFS_REAL_LITERAL(1.79769313486231570815e+308) && ok);
-#ifdef PFS_HAVE_REAL128
-	ADD_TESTS(3);
-	TEST_OK(utfstring("3.36210314311209350626e-4932").toReal(& ok) == PFS_REAL_LITERAL(3.36210314311209350626e-4932) && ok);
-	TEST_OK(utfstring("1.18973149535723176502e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502e+4932) && ok);
-	TEST_OK(utfstring("1.18973149535723176502126385303e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502126385303e+4932) && ok);
-#endif
-	TEST_OK(utfstring("18973149535723176502126385303").toReal(& ok) == PFS_REAL_LITERAL(18973149535723176502126385303.0) && ok);
-	TEST_OK(utfstring("12345678901234567890123456789").toReal(& ok) == PFS_REAL_LITERAL(12345678901234567890123456789.0) && ok);
+//    if (sizeof(long) == 8) {
+//        TEST_OK(utfstring("18446744073709551615").toULong(& ok) == PFS_ULONG_MAX && ok);
+//        TEST_OK(utfstring("9223372036854775807").toLong(& ok)   == PFS_LONG_MAX && ok);
+//        TEST_OK(utfstring("-9223372036854775808").toLong(& ok)  == PFS_LONG_MIN && ok);
+//    } else {
+//        TEST_OK(utfstring("4294967295").toULong(& ok) == PFS_ULONG_MAX && ok);
+//        TEST_OK(utfstring("2147483647").toLong(& ok)  == PFS_LONG_MAX && ok);
+//        TEST_OK(utfstring("-2147483648").toLong(& ok) == PFS_LONG_MIN && ok);
+//    }
+//
+//
+//#ifdef PFS_HAVE_LONGLONG
+//    ADD_TESTS(3);
+//	if (sizeof(long long) == 8) {
+//	    TEST_OK(utfstring("18446744073709551615").toULongLong(& ok) == PFS_ULLONG_MAX && ok);
+//	    TEST_OK(utfstring("9223372036854775807").toLongLong(& ok)   == PFS_LLONG_MAX && ok);
+//	    TEST_OK(utfstring("-9223372036854775808").toLongLong(& ok)  == PFS_LLONG_MIN && ok);
+//	} else {
+//	    TEST_OK(utfstring("4294967295").toULongLong(& ok) == PFS_ULLONG_MAX && ok);
+//	    TEST_OK(utfstring("2147483647").toLongLong(& ok) == PFS_LLONG_MAX && ok);
+//	    TEST_OK(utfstring("-2147483648").toLongLong(& ok) == PFS_LLONG_MIN && ok);
+//	}
+//#endif
+//
+//    if (sizeof(integral_t) == 8) {
+//        TEST_OK(utfstring("18446744073709551615").toUIntegral(& ok) == PFS_UINTEGRAL_MAX && ok);
+//        TEST_OK(utfstring("9223372036854775807").toIntegral(& ok) == PFS_INTEGRAL_MAX && ok);
+//        TEST_OK(utfstring("-9223372036854775808").toIntegral(& ok) == PFS_INTEGRAL_MIN && ok);
+//    } else {
+//        TEST_OK(utfstring("4294967295").toUIntegral(& ok) == PFS_UINTEGRAL_MAX && ok);
+//        TEST_OK(utfstring("2147483647").toIntegral(& ok) == PFS_INTEGRAL_MAX && ok);
+//        TEST_OK(utfstring("-2147483648").toIntegral(& ok) == PFS_INTEGRAL_MIN && ok);
+//    }
+//
+//
+//	TEST_OK(utfstring("0").toInt(& ok) == 0 && ok);
+////	TEST_OK(compare_signed("+0", 0));
+////	TEST_OK(compare_signed("-0", 0));
+////
+////	TEST_OK(compare_signed("1", 1));
+////	TEST_OK(compare_signed("+1", 1));
+////	TEST_OK(compare_signed("-1", -1));
+////
+////	TEST_OK(compare_signed("123", 123));
+////	TEST_OK(compare_signed("+123", 123));
+////	TEST_OK(compare_signed("-123", -123));
+//
+//	TEST_OK(utfstring("9.").toReal(& ok) == 9.0 && ok);
+//	TEST_OK(utfstring("9").toReal(& ok) == 9.0 && ok);
+//	TEST_OK(utfstring("9.0").toReal(& ok) == 9.0 && ok);
+//	TEST_OK(utfstring("9.0000").toReal(& ok) == 9.0 && ok);
+//	TEST_OK(utfstring("9.00001").toReal(& ok) == PFS_REAL_LITERAL(9.00001) && ok);
+//	TEST_OK(utfstring("009").toReal(& ok) == 9.0 && ok);
+//	TEST_OK(utfstring("0.09e02").toReal(& ok) == 9.0 && ok);
+//	TEST_OK(utfstring("0.9999999999999999999999999999999999").toReal(& ok) == PFS_REAL_LITERAL(0.9999999999999999999999999999999999) && ok);
+//	TEST_OK(utfstring("2.22e-308").toReal(& ok) == PFS_REAL_LITERAL(2.22e-308) && ok);
+//	TEST_OK(utfstring("1.34").toReal(& ok) == PFS_REAL_LITERAL(1.34) && ok);
+//	TEST_OK(utfstring("12.34").toReal(& ok) == PFS_REAL_LITERAL(12.34) && ok);
+//	TEST_OK(utfstring("123.456").toReal(& ok) == PFS_REAL_LITERAL(123.456) && ok);
+//
+//	TEST_OK(utfstring("2.22507385850720138309e-308").toReal(& ok) == PFS_REAL_LITERAL(2.22507385850720138309e-308) && ok);
+//	TEST_OK(utfstring("1.79769313486231570815e+308").toReal(& ok) == PFS_REAL_LITERAL(1.79769313486231570815e+308) && ok);
+//
+//#if PFS_REAL_MAX_10_EXP == 4932
+//	ADD_TESTS(3);
+//	TEST_OK(utfstring("3.36210314311209350626e-4932").toReal(& ok) == PFS_REAL_LITERAL(3.36210314311209350626e-4932) && ok);
+//	TEST_OK(utfstring("1.18973149535723176502e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502e+4932) && ok);
+//	TEST_OK(utfstring("1.18973149535723176502126385303e+4932").toReal(& ok) == PFS_REAL_LITERAL(1.18973149535723176502126385303e+4932) && ok);
+//#endif
+//
+//	TEST_OK(utfstring("18973149535723176502126385303").toReal(& ok) == PFS_REAL_LITERAL(18973149535723176502126385303.0) && ok);
+//	TEST_OK(utfstring("12345678901234567890123456789").toReal(& ok) == PFS_REAL_LITERAL(12345678901234567890123456789.0) && ok);
 }
 
 
@@ -716,34 +782,30 @@ void test_split ()
 template <typename CodeUnitT>
 void test_suite ()
 {
-	test_size_length<CodeUnitT>();
-	test_constructors<CodeUnitT>();
-	test_insert_latin1<CodeUnitT>();
-	test_insert_cyrillic<CodeUnitT>();
-	test_append_cyrillic<CodeUnitT>();
-	test_ptr<CodeUnitT>();
-	test_at<CodeUnitT>();
-	test_erase<CodeUnitT>();
-	test_substr<CodeUnitT>();
-	test_pop_back<CodeUnitT>();
-	test_compare<CodeUnitT>();
-	test_replace<CodeUnitT>();
-	test_find<CodeUnitT>();
-	test_starts_ends_with<CodeUnitT>();
-	test_to_string<CodeUnitT>();
+//	test_size_length<CodeUnitT>();
+//	test_constructors<CodeUnitT>();
+//	test_insert_latin1<CodeUnitT>();
+//	test_insert_cyrillic<CodeUnitT>();
+//	test_append_cyrillic<CodeUnitT>();
+//	test_ptr<CodeUnitT>();
+//	test_at<CodeUnitT>();
+//	test_erase<CodeUnitT>();
+//	test_substr<CodeUnitT>();
+//	test_pop_back<CodeUnitT>();
+//	test_compare<CodeUnitT>();
+//	test_replace<CodeUnitT>();
+//	test_find<CodeUnitT>();
+//	test_starts_ends_with<CodeUnitT>();
+//	test_to_string<CodeUnitT>();
 
 	test_convert_to_number<CodeUnitT>();
-	test_split<CodeUnitT>();
+//	test_split<CodeUnitT>();
 }
 
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
-    int ntests = 222;
-#ifdef HAVE_INT64
-    ntests += 3;
-#endif
-	BEGIN_TESTS(ntests);
+	BEGIN_TESTS(0);
 
 	cout << "*************************************************" << endl;
 	cout << "*********** TEST UTF8-encoded strings ***********" << endl;

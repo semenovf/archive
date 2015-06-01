@@ -93,6 +93,13 @@ uintegral_t strtouintegral (Iter begin, Iter end, int radix, uintegral_t max_val
 			}
 		}
 
+
+		//
+		// Fix for case when treats negative numbers
+		//
+		if (sign < 0 && max_value < pfs::max_type<uintegral_t>())
+		    ++max_value;
+
 		while (pos != end) {
 			if (!pfs::is_latin1(portable_cast_char<CharT>(*pos)))
 				break;
@@ -162,7 +169,7 @@ integral_t strtointegral (Iter begin, Iter end, int radix, integral_t min_value,
 
 	Iter pos = begin;
 	uintegral_t r = 0;
-	Iter endr(begin); // fixing MSVC error C2512: 'pfs::mbcs_string_ptr<_CodeUnitT,Holder>::mbcs_string_ptr' : no appropriate default constructor available
+	Iter endr(begin); // fixing MSVC 2010 error C2512: 'pfs::mbcs_string_ptr<_CodeUnitT,Holder>::mbcs_string_ptr' : no appropriate default constructor available
 
 	// Skip whitespaces
 	while (pos < end  && pfs::is_space(char(uint32_t(CharT(*pos))))) {
@@ -213,11 +220,7 @@ integral_t strtointegral_helper (IterT begin, IterT end, bool * ok, int base, in
     if ((errno == ERANGE && (r == pfs::max_type<integral_t>() || r == pfs::min_type<integral_t>()))
             || (errno != 0 && r == 0)) {
     	r = 0; // error
-    } /*else if (endptr == begin) {
-    	r = 0; // error
-    } else if (r < min_value || r > max_value) {
-    	r = 0; // error
-    } */else {
+    } else {
     	if (ok)
     		*ok = true;
     }
@@ -238,11 +241,7 @@ uintegral_t strtouintegral_helper (IterT begin, IterT end, bool * ok, int base, 
     if ((errno == ERANGE && (r == pfs::max_type<uintegral_t>()))
             || (errno != 0 && r == 0)) {
     	r = 0; // error
-    } /*else if (endptr == begin) {
-    	r = 0; // error
-    } else if (r > max_value) {
-    	r = 0; // error
-    }*/ else {
+    } else {
     	if (ok)
     		*ok = true;
     }

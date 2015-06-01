@@ -568,23 +568,30 @@ public:
 		return split(true, mbcs_string(separators), keepEmpty, quoteChar);
 	}
 
-	integral_t toIntegral (bool * ok = 0, int base = 10) const;
-	uintegral_t toUIntegral (bool * ok = 0, int base = 10) const;
+	integral_t     toIntegral (bool * ok = 0, int base = 10) const { return toSignedIntegral(ok, base); }
+	integral_t     toSignedIntegral (bool * ok = 0, int base = 10) const;
+	uintegral_t    toUnsignedIntegral (bool * ok = 0, int base = 10) const;
 
-	short          toShort  (bool * ok = 0, int base = 10) const;
-	unsigned short toUShort (bool * ok = 0, int base = 10) const;
-	int	           toInt    (bool * ok = 0, int base = 10) const;
-	unsigned int   toUInt   (bool * ok = 0, int base = 10) const;
-	long           toLong   (bool * ok = 0, int base = 10) const;
-	unsigned long  toULong  (bool * ok = 0, int base = 10) const;
+	signed char    toSignedChar   (bool * ok = 0, int radix = 10) const;
+	unsigned char  toUnsignedChar (bool * ok = 0, int radix = 10) const;
+	short          toShort  (bool * ok = 0, int base = 10) const { return toSignedShort(ok, base); }
+	short          toSignedShort  (bool * ok = 0, int base = 10) const;
+	unsigned short toUnsignedShort (bool * ok = 0, int base = 10) const;
+	int            toInt    (bool * ok = 0, int base = 10) const { return toSignedInt(ok, base); }
+	int	           toSignedInt    (bool * ok = 0, int base = 10) const;
+	unsigned int   toUnsignedInt   (bool * ok = 0, int base = 10) const;
+	long           toLong   (bool * ok = 0, int base = 10) const { return toSignedLong(ok, base); }
+	long           toSignedLong   (bool * ok = 0, int base = 10) const;
+	unsigned long  toUnsignedLong  (bool * ok = 0, int base = 10) const;
 
 #ifdef PFS_HAVE_LONGLONG
-	long long toLongLong (bool * ok = 0, int base = 10) const;
-	unsigned long long toULongLong (bool * ok = 0, int base = 10) const;
+	long long toLongLong (bool * ok = 0, int base = 10) const { return toSignedLongLong(ok, base); }
+	long long toSignedLongLong (bool * ok = 0, int base = 10) const;
+	unsigned long long toUnsignedLongLong (bool * ok = 0, int base = 10) const;
 #endif
 
 	real_t toReal (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
-	float toFloat (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
+	float  toFloat (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
 	double toDouble (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
 
 #ifdef PFS_HAVE_LONG_DOUBLE
@@ -720,7 +727,7 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 }
 
 template <typename CodeUnitT>
-integral_t mbcs_string<CodeUnitT>::toIntegral (bool * ok, int base) const
+integral_t mbcs_string<CodeUnitT>::toSignedIntegral (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -733,7 +740,7 @@ integral_t mbcs_string<CodeUnitT>::toIntegral (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-uintegral_t mbcs_string<CodeUnitT>::toUIntegral (bool * ok, int base) const
+uintegral_t mbcs_string<CodeUnitT>::toUnsignedIntegral (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -745,8 +752,53 @@ uintegral_t mbcs_string<CodeUnitT>::toUIntegral (bool * ok, int base) const
 }
 
 
+/**
+ * @brief Converts string to signed char value.
+ *
+ * @param ok Pointer to store result of conversion.
+ * @param radix Radix, must be 0 or from 2 to 36 inclusively.
+ * @return On successful returns signed char value converted from string.
+ *         On error returns @c 0.
+ *         If @c ok is not @c null @c *ok will store @c true on successful or @c false if otherwise.
+ */
 template <typename CodeUnitT>
-short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
+signed char mbcs_string<CodeUnitT>::toSignedChar (bool * ok, int radix) const
+{
+    if (this->isEmpty()) {
+        if (ok) *ok = false;
+        return 0;
+    }
+
+    return static_cast<signed char>(strtointegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+        (cbegin(), cend(), ok, radix
+        , integral_t(pfs::min_type<signed char>())
+        , uintegral_t(pfs::max_type<signed char>())));
+}
+
+/**
+ * @brief Converts string to unsigned char value.
+ *
+ * @param ok Pointer to store result of conversion.
+ * @param radix Radix, must be 0 or from 2 to 36 inclusively.
+ * @return On successful returns unsigned char value converted from string.
+ *         On error returns @c 0.
+ *         If @c ok is not @c null @c *ok will store @c true on successful or @c false if otherwise.
+ */
+template <typename CodeUnitT>
+unsigned char mbcs_string<CodeUnitT>::toUnsignedChar (bool * ok, int radix) const
+{
+    if (this->isEmpty()) {
+        if (ok) *ok = false;
+        return 0;
+    }
+    return static_cast<unsigned char>(strtouintegral_helper<mbcs_string<CodeUnitT>::char_type, mbcs_string<CodeUnitT>::const_iterator >
+        (cbegin(), cend(), ok, radix
+        , uintegral_t(pfs::max_type<unsigned char>())));
+}
+
+
+template <typename CodeUnitT>
+short mbcs_string<CodeUnitT>::toSignedShort (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -760,7 +812,7 @@ short mbcs_string<CodeUnitT>::toShort (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
+unsigned short mbcs_string<CodeUnitT>::toUnsignedShort (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -772,7 +824,7 @@ unsigned short mbcs_string<CodeUnitT>::toUShort (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
+int	mbcs_string<CodeUnitT>::toSignedInt (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -785,7 +837,7 @@ int	mbcs_string<CodeUnitT>::toInt (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
+unsigned int mbcs_string<CodeUnitT>::toUnsignedInt (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -797,7 +849,7 @@ unsigned int mbcs_string<CodeUnitT>::toUInt (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
+long mbcs_string<CodeUnitT>::toSignedLong (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -810,7 +862,7 @@ long mbcs_string<CodeUnitT>::toLong (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
+unsigned long mbcs_string<CodeUnitT>::toUnsignedLong (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -824,7 +876,7 @@ unsigned long mbcs_string<CodeUnitT>::toULong (bool * ok, int base) const
 
 #ifdef PFS_HAVE_LONGLONG
 template <typename CodeUnitT>
-long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
+long long mbcs_string<CodeUnitT>::toSignedLongLong (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -837,7 +889,7 @@ long long mbcs_string<CodeUnitT>::toLongLong (bool * ok, int base) const
 }
 
 template <typename CodeUnitT>
-unsigned long long mbcs_string<CodeUnitT>::toULongLong (bool * ok, int base) const
+unsigned long long mbcs_string<CodeUnitT>::toUnsignedLongLong (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;

@@ -163,6 +163,7 @@ mbcs_string<uint8_t> mbcs_string<uint8_t>::fromLatin1 (
 	return r;
 }
 
+template <>
 mbcs_string<uint8_t> mbcs_string<uint8_t>::fromLatin1 (
           const char * latin1
         , size_t n
