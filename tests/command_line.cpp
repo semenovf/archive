@@ -34,7 +34,7 @@ static void test_basic(void)
 
 	pfs::option optset[] = {
 //          longname  shortname has_arg  xpath     default value   desc
-//        ------------------------------------------------------------------------------------
+//        ------------------------------------------------------------------------------------------------------------------------------
 		  { _l1("help"),     _l1("h"),      false,   _l1("/help"),        _l1(""),           _u8(_Tr("output help info")) }
 		, { _l1("man"),      _l1(""),       false,   _l1("/man"),         _l1(""),           _u8(_Tr("output help info in man style")) }
 		, { _l1(""),         _l1("i"),      false,   _l1("/interactive"), _l1(""),           _u8(_Tr("interactive mode")) }
@@ -47,16 +47,12 @@ static void test_basic(void)
 		, { _l1(""),         _l1("num"),    true,    _l1("/number"),      _l1("1234.56789"), _u8(_Tr("number")) }
 	};
 
-	pfs::app app;
-	pfs::stringlist args;
 	pfs::command_line cmdLine;
-	pfs::settings & settings = app.settings();
-    pfs::stringlist dirs;
+	pfs::stringlist args;
+	pfs::settings settings;
 
-    dirs << "." << "..";
-    TEST_FAIL(settings.load("pfs-settings-json", dirs));
-
-	TEST_FAIL(cmdLine.parse(settings, argc, const_cast<char**>(argv), sizeof(optset)/sizeof(optset[0]), optset, args));
+	TEST_FAIL(settings.load("pfs-settings-json", pfs::stringlist() << "." << ".."));
+	TEST_FAIL(cmdLine.parse(settings, argc, const_cast<char**>(argv), sizeof(optset)/sizeof(optset[0]), optset, & args));
 
 	TEST_OK(settings.getBoolean("/help") == true);
 	TEST_OK(settings.getBoolean("/man") == true);

@@ -53,9 +53,9 @@ public:
 	void setMode        (option::mode_type mode);
 
 	bool parse (settings & s, int argc, argv_t * argv[]
-			, size_t optc, const option optv[], stringlist & args)
+			, size_t optc, const option optv[], stringlist * args = nullptr)
 	{
-	    return parseOpts(s, argc, argv, optc, optv, & args);
+	    return parseOpts(s, argc, argv, optc, optv, args);
 	}
 
 	bool parse (settings & s, int argc, argv_t * argv[], size_t optc, const option optv[])
