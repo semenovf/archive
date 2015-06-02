@@ -683,7 +683,7 @@ static bool set_port (string::const_iterator begin
 		string digits(begin, end);
 
 		bool ok;
-		ctx->uridata->port = digits.toUShort(&ok, 10);
+		ctx->uridata->port = digits.toUnsignedShort(&ok, 10);
 		if (!ok) {
 			//Logger::error(_Tr("Invalid port"));
 			return false;

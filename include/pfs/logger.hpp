@@ -6,8 +6,8 @@
  * @brief
  */
 
-#ifndef __PFS_LOG_HPP__
-#define __PFS_LOG_HPP__
+#ifndef __PFS_LOGGER_HPP__
+#define __PFS_LOGGER_HPP__
 
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
@@ -146,4 +146,4 @@ inline void fatal (int errn, const char * latin1) { fatal(errn, pfs::string(lati
 #	pragma warning(pop)
 #endif
 
-#endif /* __PFS_LOG_HPP__ */
+#endif /* __PFS_LOGGER_HPP__ */

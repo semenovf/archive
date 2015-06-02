@@ -248,7 +248,7 @@ static bool set_min_width (pfs::string::const_iterator begin, pfs::string::const
 	if (begin < end) {
 		bool ok;
 		pfs::string n(begin, end);
-		ctx->pspec.min_width = n.toUInt(&ok);
+		ctx->pspec.min_width = n.toUnsignedInt(&ok);
 		PFS_VERIFY_X(ok, _Tr("Bad padding value in Logger pattern"));
 	}
 	return true;
@@ -260,7 +260,7 @@ static bool set_max_width (pfs::string::const_iterator begin, pfs::string::const
 	if (begin < end) {
 		bool ok;
 		pfs::string n(begin, end);
-		ctx->pspec.max_width = n.toUInt(&ok);
+		ctx->pspec.max_width = n.toUnsignedInt(&ok);
 		PFS_VERIFY_X(ok, _Tr("Bad truncation value in Logger pattern"));
 	}
 	return true;
