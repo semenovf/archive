@@ -16,6 +16,12 @@
 #define _u8(s)     pfs::string::fromUtf8(s)
 #define _u16(s)    pfs::string::fromUtf16(s)
 
+#ifdef _Tr
+#   undef _Tr
+#endif
+
+#define _Tr(s) _u8(s).c_str()
+
 namespace pfs {
 
 typedef pfs::mbcs_string<uint8_t>  utf8_string;

@@ -153,7 +153,7 @@ void test_compare_values ()
 template <>
 void test_compare_values<uintegral_t, integral_t> ()
 {
-    ADD_TESTS(24);
+    ADD_TESTS(25);
     char buf[64];
     uintegral_t umax = pfs::max_type<uintegral_t>();
     integral_t smax = pfs::max_type<integral_t>();
@@ -197,6 +197,9 @@ int main(int argc, char *argv[])
 #endif
 
     test_compare_values<uintegral_t, integral_t>();
+
+    for (integral_t i = 0; i <= pfs::max_type<integral_t>(); ++i)
+        ;
 
     END_TESTS;
 }

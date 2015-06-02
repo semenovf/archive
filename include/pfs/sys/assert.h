@@ -11,25 +11,16 @@
 #include <stdio.h>
 
 #ifndef NDEBUG
-#	if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
-namespace pfs {
-struct __verify
-{
-	bool operator () (bool predicate
-			, const char * prefix
-			, const char * file, int lineno, const char * text) const
-	{
-		if (!predicate)
-			fprintf(stderr, "%s(%s[%d]): %s\n", prefix, file, lineno, text);
-		return predicate;
-	}
-};
-} //pfs
-#		define PFS_VERIFY(expr)       pfs::__verify()((expr), "WARN: ", __TFILE__, __LINE__, #expr)
-#		define PFS_VERIFY_X(expr,text) pfs::__verify()((expr), "WARN: ", __TFILE__, __LINE__, (text))
-#	else /* !__cplusplus */
-#
-#	endif
+/*
+ * PFS_VERIFY_IMPL emulates this code
+ * if (!predicate)
+ *      fprintf(stderr, "%s(%s[%d]): %s\n", prefix, file, lineno, text);
+ * return predicate;
+ */
+#   define PFS_VERIFY_IMPL(predicate,prefix,file,lineno,text) \
+        (!(!(predicate) && fprintf(stderr, "%s(%s[%d]): %s\n", prefix, file, lineno, text)) || (predicate))
+#   define PFS_VERIFY(expr) PFS_VERIFY_IMPL((expr), "WARN: ", __TFILE__, __LINE__, #expr)
+#   define PFS_VERIFY_X(expr,text) PFS_VERIFY_IMPL((expr), "WARN: ", __TFILE__, __LINE__, (text))
 #else /* !NDEBUG */
 #	define PFS_VERIFY(x) (x)
 #	define PFS_VERIFY_X(x,text) (x)
@@ -64,7 +55,7 @@ struct __verify
 			(void) __dj_assert(#p,__FILE__,__LINE__); }
 #	else
 //#		define PFS_ASSERT_TRACE(expr,trace_exp) if (!(expr)) { (void)trace_exp; assert(expr); }
-#		define PFS_ASSERT_X(expr,text) if (! pfs::__verify()((expr), "ERROR: ", __TFILE__, __LINE__, (text))) { ::exit(-1);/*assert(expr);*/ }
+#		define PFS_ASSERT_X(expr,text) if (! PFS_VERIFY_IMPL((expr), "ERROR: ", __TFILE__, __LINE__, (text))) { ::exit(-1);/*assert(expr);*/ }
 #	endif
 
 #else

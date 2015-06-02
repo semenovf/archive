@@ -194,7 +194,7 @@ bool safeformat::parseConvSpec ()
 		string convSpecifiers("diouxXeEfFgGcsp");
 
 		PFS_ASSERT_X(convSpecifiers.contains(char_type(*pos))
-				, _Tr("Expected conversion specifier: one of 'diouxXeEfFgGcsp'"));
+				, "Expected conversion specifier: one of 'diouxXeEfFgGcsp'");
 		setConvSpecifier(char_type(*pos));
 		++pos;
 	}
