@@ -6,15 +6,15 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = pfs-sys       \
-	tests/dl         \
-	tests/fs         \
-	tests/random     \
-	tests/regexp     \
-	tests/thread     \
-	tests/uri        \
-	tests/atomic     \
-	tests/utils      \
-	tests/zlib       \
-	examples/logger  \
-	examples/display
+SUBDIRS += pfs-sys
+SUBDIRS += tests/dl
+SUBDIRS += tests/fs
+SUBDIRS += tests/random
+SUBDIRS += tests/regexp
+SUBDIRS += tests/thread
+SUBDIRS += tests/uri
+SUBDIRS += tests/atomic
+SUBDIRS += tests/utils
+SUBDIRS += tests/zlib
+SUBDIRS += examples/logger
+SUBDIRS += examples/display

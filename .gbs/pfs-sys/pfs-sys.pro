@@ -31,7 +31,6 @@ unix {
 }
 
 win32 {
-#    HEADERS += ..\\..\\pcre8\\*.h
     SOURCES += ..\\..\\src\\*.cpp
 #    SOURCES += ..\\..\\src\\*.c
     SOURCES += ..\\..\\src\\win\\*.cpp
@@ -39,3 +38,6 @@ win32 {
     SOURCES += ..\\..\\zlib\\*.c
     LIBS += pfs.lib
 }
+
+HEADERS += ../../include/*
+include($$(GBS_HOME)/qmake/deploy.pri)
