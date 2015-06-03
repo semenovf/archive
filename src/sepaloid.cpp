@@ -49,7 +49,7 @@ petaloid * sepaloid::registerPetaloidForPath (const string & path, const char * 
 
 	if (!fs.exists(path)) {
 		string m;
-		this->addError(m << _Tr("petaloid not found by specified path or may be inconsistent" << ": " << path));
+		this->addError(m << _Tr("petaloid not found by specified path or may be inconsistent") << ": " << path);
 		return nullptr;
 	}
 
@@ -121,7 +121,7 @@ bool sepaloid::registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dt
 				it.value()->map->appendEmitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
 			} else {
 				string m(petaloid.name());
-				warn(m << ": " << _Tr("emitter") << " '" << emitters[i]._id << "' " _Tr("not found while registering petaloid ..."));
+				warn(m << ": " << _Tr("emitter") << " '" << emitters[i]._id << "' " << _Tr("not found while registering petaloid ..."));
 				warn(_Tr("... may be signal/slot mapping is not supported for this application"));
 			}
 		}

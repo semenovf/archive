@@ -6,10 +6,11 @@
 #************************************************************
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = pfs-app  \
-    tests/petaloid  \
-    tests/sepaloid  \
-    tests/command_line
+
+SUBDIRS += pfs-app
+SUBDIRS += tests/petaloid
+SUBDIRS += tests/sepaloid
+SUBDIRS += tests/command_line
 
 
 
