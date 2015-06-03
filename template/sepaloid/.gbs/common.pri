@@ -1,8 +1,4 @@
 INCLUDEPATH += ../../include
-INCLUDEPATH += ../../src
-INCLUDEPATH += ../../../pfs/include
-INCLUDEPATH += ../../../pfs-sys/include
-INCLUDEPATH += ../../../pfs-app/include
 
 DEFINES += _SIMULATOR
 
@@ -12,4 +8,6 @@ unix {
 }
 
 win32 {
+    LIBS += pfs.lib
+    LIBS += pfs-sys.lib
 }

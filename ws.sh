@@ -15,7 +15,7 @@ GBS_HOME=`pwd`
 
 GIT_HOSTING_GITHUB=github
 GIT_HOSTING_BITBUCKET=bitbucket
-GIT_HOSTING_NPCPROM=npcprom
+#GIT_HOSTING_NPCPROM=npcprom
 
 # Restore current working directory
 cd $CWD
@@ -97,8 +97,8 @@ prepare_sepaloid()
     cd $PROJECT
     mkdir .gbs
     cp -R $GBS_HOME/template/sepaloid/.gbs/* .gbs/
-    mv .gbs/app/app.pro .gbs/app/$PROJECT.pro
-    mv .gbs/app .gbs/$PROJECT
+#    mv .gbs/app/app.pro .gbs/app/$PROJECT.pro
+#    mv .gbs/app .gbs/$PROJECT
 
     mkdir include
     mkdir src
@@ -124,13 +124,13 @@ prepare_sepaloid()
     echo "#************************************************************" >> $PROJECT.pro
     echo "TEMPLATE = subdirs"                                            >> $PROJECT.pro
     echo "CONFIG  += ordered"                                            >> $PROJECT.pro
-    echo "SUBDIRS  = $PROJECT \\"                                        >> $PROJECT.pro
-    echo "           core \\"                                            >> $PROJECT.pro
-    echo "           db \\"                                              >> $PROJECT.pro
-    echo "           io \\"                                              >> $PROJECT.pro
+    echo "SUBDIRS  = app    \\"                                          >> $PROJECT.pro
+    echo "           core   \\"                                          >> $PROJECT.pro
+    echo "           db     \\"                                          >> $PROJECT.pro
+    echo "           io     \\"                                          >> $PROJECT.pro
     echo "           logger \\"                                          >> $PROJECT.pro
-    echo "           prefs \\"                                           >> $PROJECT.pro
-    echo "           ui \\"                                              >> $PROJECT.pro
+    echo "           prefs  \\"                                          >> $PROJECT.pro
+    echo "           ui     \\"                                          >> $PROJECT.pro
     echo "           simulator"                                          >> $PROJECT.pro
     cd ..
 }
@@ -152,35 +152,29 @@ create()
     fi
 
     # Prepare make.sh (for use from IDE, e.g. Eclipse)
-    echo "#!/bin/sh"             > make.sh
-    echo 'cd .gbs'              >> make.sh
-    echo '$GBS_HOME/make.sh $*' >> make.sh
-    chmod +x make.sh
+#    echo "#!/bin/sh"             > make.sh
+#    echo 'cd .gbs'              >> make.sh
+#    echo '$GBS_HOME/make.sh $*' >> make.sh
+#    chmod +x make.sh
 
-    # Prepare clean.sh
-    echo "#!/bin/sh"                > clean.sh
-    echo "cd .gbs"                 >> clean.sh
-    echo '$GBS_HOME/make.sh clean' >> clean.sh
+    # Install clean script
+    cp  $GBS_HOME/template/clean.sh clean.sh
     chmod +x clean.sh
-    
-    # Prepare build.sh
-    echo "#!/bin/sh"                > build.sh
-    echo "cd .gbs"                 >> build.sh
-    echo '$GBS_HOME/make.sh clean' >> build.sh
-    echo '$GBS_HOME/make.sh all'   >> build.sh
+
+    # Install build script
+    cp  $GBS_HOME/template/build.sh build.sh
     chmod +x build.sh
 
-    # Prepare backup.sh
-    echo "#!/bin/sh"                  > backup.sh
-    echo "./clean.sh"                >> backup.sh
-    echo "DATE=\`date +%Y%m%d\`"     >> backup.sh
-    echo "PREFIX=\`pwd\`"            >> backup.sh
-    echo "tar -cjvf \${PREFIX}-\${DATE}.tar.bz2 ./" >> backup.sh
+    # Install deploy script
+    cp  $GBS_HOME/template/deploy.sh deploy.sh
+    chmod +x deploy.sh
+
+    # Prepare backup script
+    cp  $GBS_HOME/template/backup.sh backup.sh
     chmod +x backup.sh
 
-    # Prepare cppcheck.sh
-    echo "#!/bin/sh"              > cppcheck.sh
-    echo '$GBS_HOME/cppcheck.sh' >> cppcheck.sh
+    # Prepare cppcheck script
+    cp  $GBS_HOME/utils/cppcheck.sh cppcheck.sh
     chmod +x cppcheck.sh
 
     # Prepare .gitignore
@@ -206,10 +200,10 @@ create()
 #	    $GIT_EXE push -u origin --all   # pushes up the repo and its refs for the first time
 #	    $GIT_EXE push -u origin --tags  # pushes up any tags
 	    $GIT_EXE push -u origin master
-	elif [ "$GIT_HOSTING" == "$GIT_HOSTING_NPCPROM" ] ; then
-	    sh ../git.config.npcprom
-	    $GIT_EXE remote add origin git@gitlab:${PROJECT}.git
-	    $GIT_EXE push -u origin master
+#	elif [ "$GIT_HOSTING" == "$GIT_HOSTING_NPCPROM" ] ; then
+#	    sh ../git.config.npcprom
+#	    $GIT_EXE remote add origin git@gitlab:${PROJECT}.git
+#	    $GIT_EXE push -u origin master
 	fi
     fi
 
@@ -238,10 +232,10 @@ while [ x$1 != x ] ; do
         GIT_OK=yes
         GIT_HOSTING=$GIT_HOSTING_BITBUCKET
         ;;
-    -git-hosting-npcprom | --git-hosting-npcprom)
-        GIT_OK=yes
-        GIT_HOSTING=$GIT_HOSTING_NPCPROM
-        ;;
+#    -git-hosting-npcprom | --git-hosting-npcprom)
+#        GIT_OK=yes
+#        GIT_HOSTING=$GIT_HOSTING_NPCPROM
+#        ;;
     *)
         PROJECT=$1
         ;;

@@ -2,6 +2,7 @@
 # Set this variable in global.pri file
 #
 #CWT_CONFIG = release | debug
+#
 include($$(GBS_PDIR)/global.pri)
 isEmpty(CWT_CONFIG) { CWT_CONFIG = debug }
 
@@ -18,7 +19,6 @@ unix: isEmpty(CWT_TARGET_PLATFORM)  { CWT_TARGET_PLATFORM=unix }
 # TARGET_CPU variable is set in WinSDK's SetEnv
 #
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=$$(TARGET_CPU) }
-
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=$$QMAKE_HOST.arch }
 isEmpty(CWT_TARGET_CPU) { CWT_TARGET_CPU=x86 }
 
@@ -35,9 +35,6 @@ DEFINES += CWT_TARGET_PLATFORM=$$CWT_TARGET_PLATFORM
 
 # Multi-threading support
 DEFINES += CWT_MT
-
-unix: CWT_ROOT_DIR = $$(HOME)
-win32: CWT_ROOT_DIR = \
 
 CONFIG(debug): CWT_TARGET_BUILD = debug
 CONFIG(release): CWT_TARGET_BUILD = release

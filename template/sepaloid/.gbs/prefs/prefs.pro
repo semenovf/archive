@@ -3,7 +3,6 @@ include(../common.pri)
 
 TARGET = $$GBS_TARGET_NAME-prefs
 
-HEADERS   += ../../src/prefs/*.hpp
 SOURCES   += ../../src/prefs/*.cpp
 
 unix {

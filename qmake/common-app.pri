@@ -1,5 +1,7 @@
 include(common.pri)
 
+CWT_CONFIG += gbs_app
+
 DESTDIR=$$CWT_DESTDIR_APP
 
 win32 {

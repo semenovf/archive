@@ -3,7 +3,6 @@ include(../common.pri)
 
 TARGET = $$GBS_TARGET_NAME-ui
 
-HEADERS   += ../../src/ui/qt/*.hpp
 SOURCES   += ../../src/ui/qt/*.cpp
 
 unix {
