@@ -11,3 +11,6 @@ win32 {
     SOURCES += ..\\..\\src\\*.cpp
     SOURCES += ..\\..\\src\\*.c
 }
+
+HEADERS += ../../include/*
+include($$(GBS_HOME)/qmake/deploy.pri)

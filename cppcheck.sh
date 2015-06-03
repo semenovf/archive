@@ -1,2 +1,3 @@
 #!/bin/sh
-$GBS_HOME/cppcheck.sh
+cd .gbs
+$GBS_HOME/make.sh cppcheck

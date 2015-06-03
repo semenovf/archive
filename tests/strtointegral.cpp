@@ -198,8 +198,17 @@ int main(int argc, char *argv[])
 
     test_compare_values<uintegral_t, integral_t>();
 
-    for (integral_t i = 0; i <= pfs::max_type<integral_t>(); ++i)
-        ;
+//    int quant = pfs::max_type<int>()/100;
+//    int percent = 0;
+//
+//    printf("quant = %d; %d\n", quant, 0 % quant);
+//
+//    for (int i = 0; i <= pfs::max_type<int>(); ++i) {
+//        if (i % quant == 0) {
+//            printf("%d\r", percent);
+//            ++percent;
+//        }
+//    }
 
     END_TESTS;
 }
