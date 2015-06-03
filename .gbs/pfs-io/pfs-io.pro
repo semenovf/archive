@@ -5,8 +5,6 @@ INCLUDEPATH += ../../include
 INCLUDEPATH += ../../../pfs/include
 INCLUDEPATH += ../../../pfs-sys/include
 
-HEADERS += ../../include/pfs/*.hpp
-HEADERS += ../../include/pfs/io/*.hpp
 SOURCES += ../../src/*.cpp
 
 unix {
@@ -16,4 +14,10 @@ unix {
 }
 
 win32 {
+    SOURCES += ..\\..\\src\\win\\*.cpp
+    LIBS += pfs.lib
+    LIBS += pfs-sys.lib
 }
+
+HEADERS += ../../include/*
+include($$(GBS_HOME)/qmake/deploy.pri)

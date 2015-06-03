@@ -9,7 +9,9 @@ doc/
 
 
 Makefile
+Makefile.*
 makefile
+makefile.*
 *.mk
 *.exe
 *.err
