@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/byte_string.hpp>
 #include <pfs/string.hpp>
 #include <pfs/map.hpp>

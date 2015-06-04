@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/endian.hpp>
 #include <pfs/typeinfo.hpp>
 #include <iostream>

@@ -10,7 +10,7 @@
 #ifndef __PFS_FSM_TEST_HPP__
 #define __PFS_FSM_TEST_HPP__
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/fsm.hpp>
 #include <pfs/string.hpp>
 #include <cstdio>

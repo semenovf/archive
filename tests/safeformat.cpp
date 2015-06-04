@@ -2,11 +2,12 @@
  * This tests based on loki::SafeFormat tests
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
+#include <pfs/test/stopwatch.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/string.hpp>
 #include <pfs/typeinfo.hpp>
-#include <pfs/stopwatch.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <utility>

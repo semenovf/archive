@@ -7,7 +7,7 @@
  */
 
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/fsm.hpp>
 #include <pfs/string.hpp>
 #include <pfs/byte_string.hpp>

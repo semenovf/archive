@@ -5,7 +5,7 @@
  *  Author: wladt
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/ucchar.hpp>
 #include <pfs/mbcs_string.hpp>
 #include <pfs/stringlist.hpp>

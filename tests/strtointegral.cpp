@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/bits/strtointegral.hpp>
 #include <cstring>
 #include <iostream>

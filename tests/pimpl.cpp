@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/pimpl.hpp>
 #include <cstring>
 #include "pimpl_test.hpp"

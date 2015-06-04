@@ -5,12 +5,12 @@
  *      Author: wladt
  */
 
+#include <pfs/test/test.hpp>
+#include <pfs/test/stopwatch.hpp>
+#include <pfs/vector.hpp>
+
 #include <cstring>
 #include <iostream>
-#include <pfs/test.hpp>
-#include <pfs/stopwatch.hpp>
-#include <pfs/vector.hpp>
-#include <pfs/bits/iterator.hpp>
 
 //#include <iostream>
 

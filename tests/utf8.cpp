@@ -6,7 +6,7 @@
  */
 
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/ucchar.hpp>
 #include <pfs/string.hpp>
 #include <cstring>

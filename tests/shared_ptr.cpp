@@ -6,7 +6,7 @@
  * @brief
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <cstdio>
 

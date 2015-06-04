@@ -25,7 +25,7 @@
 // ----------------------------------------------------------------
 
 #include <typeinfo>
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/string.hpp>
 #include <pfs/bits/alignof.h>
 #include <iostream>
