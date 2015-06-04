@@ -1,7 +1,6 @@
 include(common.pri)
 
 DESTDIR=$$CWT_DESTDIR_TEST
-INCLUDEPATH=$$(GBS_PDIR)/pfs-test/include
 
 CONFIG += qt
 QT += core

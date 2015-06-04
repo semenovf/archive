@@ -3,8 +3,31 @@
 #
 #CWT_CONFIG = release | debug
 #
-include($$(GBS_PDIR)/global.pri)
-isEmpty(CWT_CONFIG) { CWT_CONFIG = debug }
+
+include(find_file.pri)
+GlobalPri = $$scanParentDirsToFindFile($$OUT_PWD, global.pri)
+
+isEmpty(GlobalPri) {
+    error("global.pri not found, it must be placed in workspace root directory")
+} else {
+    include($$GlobalPri)
+}
+
+!contains(CWT_CONFIG, debug) {
+    !contains(CWT_CONFIG, release) {
+	!contains(CWT_CONFIG, debug_and_release) {
+	    !contains(CWT_CONFIG, debug_and_release_target) {
+		CWT_CONFIG = debug
+	    }
+	}
+    }
+}
+
+!contains(CWT_CONFIG, no-strict) {
+    !contains(CWT_CONFIG, strict) {
+	CWT_CONFIG += strict
+    }
+}
 
 CWT_TARGET_PLATFORM=$$(CWT_TARGET_PLATFORM)
 CWT_TARGET_CPU=$$(CWT_TARGET_CPU)
@@ -41,30 +64,29 @@ CONFIG(release): CWT_TARGET_BUILD = release
 
 unix {
     isEmpty(CWT_DESTDIR_APP) {
-	CWT_DESTDIR_APP = $$CWT_ROOT_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_TARGET_BUILD
+	CWT_DESTDIR_APP = $$CWT_WS_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_TARGET_BUILD
     }
+
     isEmpty(CWT_DESTDIR_LIB) {
-	CWT_DESTDIR_LIB = $$CWT_ROOT_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_TARGET_BUILD
+	CWT_DESTDIR_LIB = $$CWT_WS_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_TARGET_BUILD
     }
 
     isEmpty(CWT_DESTDIR_TEST) {
-	CWT_DESTDIR_TEST = $$CWT_ROOT_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_TARGET_BUILD/tests
+	CWT_DESTDIR_TEST = $$CWT_WS_DIR/build/$$CWT_TARGET_PLATFORM/$$CWT_TARGET_CPU/$$CWT_TARGET_BUILD/tests
     }
-
-    INCLUDEPATH    += $$CWT_ROOT_DIR/include
 }
 
 win32 {
     isEmpty(CWT_DESTDIR_APP) {
-	CWT_DESTDIR_APP = $$CWT_ROOT_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_TARGET_BUILD
+	CWT_DESTDIR_APP = $$CWT_WS_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_TARGET_BUILD
     }
 
     isEmpty(CWT_DESTDIR_LIB) {
-	CWT_DESTDIR_LIB = $$CWT_ROOT_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_TARGET_BUILD
+	CWT_DESTDIR_LIB = $$CWT_WS_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_TARGET_BUILD
     }
 
     isEmpty(CWT_DESTDIR_TEST) {
-	CWT_DESTDIR_TEST = $$CWT_ROOT_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_TARGET_BUILD\\tests
+	CWT_DESTDIR_TEST = $$CWT_WS_DIR\\build\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU\\$$CWT_TARGET_BUILD\\tests
     }
 }
 

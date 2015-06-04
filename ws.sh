@@ -151,10 +151,8 @@ create()
 	prepare_simple_app
     fi
 
-    # Prepare make.sh (for use from IDE, e.g. Eclipse)
-#    echo "#!/bin/sh"             > make.sh
-#    echo 'cd .gbs'              >> make.sh
-#    echo '$GBS_HOME/make.sh $*' >> make.sh
+    # Install make.sh script (for use from IDE, e.g. Eclipse)
+#    cp  $GBS_HOME/template/make.sh make.sh
 #    chmod +x make.sh
 
     # Install clean script
@@ -164,10 +162,6 @@ create()
     # Install build script
     cp  $GBS_HOME/template/build.sh build.sh
     chmod +x build.sh
-
-    # Install deploy script
-    cp  $GBS_HOME/template/deploy.sh deploy.sh
-    chmod +x deploy.sh
 
     # Prepare backup script
     cp  $GBS_HOME/template/backup.sh backup.sh

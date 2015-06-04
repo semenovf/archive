@@ -3,7 +3,6 @@ include(common.pri)
 CWT_CONFIG += gbs_test
 
 DESTDIR=$$CWT_DESTDIR_TEST
-INCLUDEPATH=$$(GBS_PDIR)/pfs-test/include
 
 unix {
     LIBS += -lpfs-test

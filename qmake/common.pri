@@ -21,12 +21,12 @@ unix {
 # add current directory to shared files search path
 #    LIBS += -R ./
     LIBS += -Xlinker -rpath=.
+    LIBS += -L$$CWT_LIB_DIR
+
+    INCLUDEPATH += $$CWT_H_DIR
 }
 
 win32 {
-
-    INCLUDEPATH   += $$CWT_ROOT_DIR\\include
-	
 # CXX flags
     # disbale 'depricated' warning
     DEFINES += _CRT_SECURE_NO_WARNINGS 
@@ -64,8 +64,11 @@ win32 {
     QMAKE_LFLAGS += /map
 
     LIBS += /LIBPATH:$$CWT_DESTDIR_LIB
+    LIBS += /LIBPATH:$$CWT_LIB_LIB
     LIBS += /LIBPATH:$$CWT_EXTLIBDIR\\$$CWT_TARGET_BUILD
     LIBS += /LIBPATH:$$CWT_EXTLIBDIR\\$$CWT_TARGET_PLATFORM\\$$CWT_TARGET_CPU
+
+    INCLUDEPATH += $$CWT_H_DIR
 }
 
 

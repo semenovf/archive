@@ -11,32 +11,30 @@ Version 1.00b
     $ sudo apt-get install g++  
     $ sudo apt-get install qt4-qmake  
     $ sudo apt-get install qt4-default  
-      
+
     $ cd /path/to/root-dir-for-gbs
     $ git clone git@github.com:semenovf/gbs.git
     $ # -- Set environment variable `GBS_HOME` to 'gbs' home directory.  
     $ export GBS_HOME=/path/to/root-dir-for-gbs/gbs
-    $ # -- Set environment variable `GBS_PDIR` to root directory for projects.  
-    $ export GBS_PDIR=/path/to/root-dir-for-projects
-      
+
     $ # -- Test installation
-    $ cd $GBS_PDIR
+    $ cd /path/to/workspace
     $ $GBS_HOME/ws.sh -create myproject  
-      
+
     Project 'myproject' created  
     Modify '.gbs/myproject.pro' to add new subprojects  
-      
-    $ cd $GBS_PDIR/myproject
+
+    $ cd /path/to/workspace/myproject
     $ ./build.sh
-      
+
     Reading /path/to/myproject/.gbs/myproject/myproject.pro  
     Reading /path/to/myproject/.gbs/tests/tests.pro  
     cd myproject/ && make -f Makefile distclean  
-    ...  
+    ...
     make[1]: Entering directory `/path/to/myproject/.gbs/myproject'  
     g++ -c -pipe -O0 -Werror ...  
     ...
-    
+
 On successful installation `build.sh` script will attempt to run `g++` compiler.
 
 
@@ -51,4 +49,4 @@ No documentation prepared yet.
 
 ###LICENSE AND COPYRIGHT
 
-Copyright 2012-2014 Fedor Semenov.
+Copyright 2012-2015 Fedor Semenov.
