@@ -1,4 +1,4 @@
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include "pfs/fs.hpp"
 #include "pfs/io/file.hpp"
 

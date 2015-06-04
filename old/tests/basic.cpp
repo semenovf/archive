@@ -1,4 +1,4 @@
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/safeformat.hpp>
 #include "pfs/io/reader.hpp"
 #include "pfs/io/writer.hpp"
