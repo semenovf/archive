@@ -6,7 +6,7 @@
  * @brief URI testing
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/dl.hpp>
 #include <pfs/string.hpp>
 #include <iostream>

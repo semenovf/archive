@@ -4,7 +4,7 @@
  * @date May 6, 2014
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/utils.hpp>
 
 #define PFS_INT32_C(x) int32_t(x##L)

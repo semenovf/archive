@@ -3,7 +3,6 @@ include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET = pfs-sys
 
 INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../pfs/include
 
 # PCRE configuration
 DEFINES += HAVE_CONFIG_H
@@ -18,7 +17,6 @@ unix {
     QMAKE_CFLAGS += -include unistd.h
 
     SOURCES += ../../src/*.cpp
- #   SOURCES += ../../src/*.c
     SOURCES += ../../pcre8/*.c
     SOURCES += ../../zlib/*.c
     SOURCES += ../../src/unix/*.cpp
@@ -32,7 +30,6 @@ unix {
 
 win32 {
     SOURCES += ..\\..\\src\\*.cpp
-#    SOURCES += ..\\..\\src\\*.c
     SOURCES += ..\\..\\src\\win\\*.cpp
     SOURCES += ..\\..\\pcre8\\*.c
     SOURCES += ..\\..\\zlib\\*.c

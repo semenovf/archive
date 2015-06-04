@@ -4,7 +4,7 @@
  * @date Apr 24, 2015
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/random.hpp>
 #include <map>
 #include <cstdio>

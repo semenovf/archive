@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include "pfs/thread.hpp"
 #include "pfs/random.hpp"
 #include <pfs/string.hpp>
