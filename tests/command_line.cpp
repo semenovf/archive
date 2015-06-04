@@ -6,7 +6,7 @@
  *  Modified on: 04.06.2013 Replaced with C++ implementation.
  */
 
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/app.hpp>
 #include <pfs/command_line.hpp>
 

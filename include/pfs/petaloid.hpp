@@ -80,27 +80,27 @@ struct detector_pair
 
 } // pfs
 
-#define CWT_PETALOID_EMITTER(id, em) { id , EMITTER_CAST(em) }
-#define CWT_PETALOID_DETECTOR(id, dt) { id , DETECTOR_CAST(dt) }
+#define PFS_PETALOID_EMITTER(id, em) { id , EMITTER_CAST(em) }
+#define PFS_PETALOID_DETECTOR(id, dt) { id , DETECTOR_CAST(dt) }
 
-#define CWT_PETALOID_EMITTERS_BEGIN                                 \
-const emitter_mapping * getEmitters (int *count)               \
+#define PFS_PETALOID_EMITTERS_BEGIN                                 \
+const pfs::emitter_mapping * getEmitters (int *count)               \
 {                                                                   \
-	static emitter_mapping __emitter_mapping[] = {
+	static pfs::emitter_mapping __emitter_mapping[] = {
 
-#define CWT_PETALOID_EMITTERS_END                                   \
+#define PFS_PETALOID_EMITTERS_END                                   \
 	};                                                              \
 	*count = sizeof(__emitter_mapping)/sizeof(__emitter_mapping[0]) ;   \
 	return & __emitter_mapping[0];                                  \
 }
 
 
-#define CWT_PETALOID_DETECTORS_BEGIN                                \
-const detector_mapping * getDetectors(int *count)               \
+#define PFS_PETALOID_DETECTORS_BEGIN                                \
+const pfs::detector_mapping * getDetectors(int *count)               \
 {                                                                   \
-	static detector_mapping __detector_mapping[] = {
+	static pfs::detector_mapping __detector_mapping[] = {
 
-#define CWT_PETALOID_DETECTORS_END		                            \
+#define PFS_PETALOID_DETECTORS_END		                            \
 	};                                                              \
 	*count = sizeof(__detector_mapping)/sizeof(__detector_mapping[0]) ; \
 	return & __detector_mapping[0];                                 \
