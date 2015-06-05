@@ -31,7 +31,7 @@ fi
 usage() 
 {
     echo "Usage:"
-    echo "   ws [-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] PROJECTNAME"
+    echo "   ws [-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] SOLUTIONNAME"
     echo ""
     echo "GIT OPTIONS:"
     echo "    -git | --git        - initialize git local repo"
@@ -58,20 +58,20 @@ username()
 
 prepare_simple_app()
 {
-    mkdir $PROJECT
-    cd $PROJECT
+    mkdir $SOLUTION
+    cd $SOLUTION
     mkdir .gbs
     mkdir .gbs/tests
-    mkdir .gbs/$PROJECT
+    mkdir .gbs/$SOLUTION
     cp $GBS_HOME/template/tests.pro .gbs/tests/tests.pro
-    cp $GBS_HOME/template/project.pro .gbs/$PROJECT/$PROJECT.pro
+    cp $GBS_HOME/template/project.pro .gbs/$SOLUTION/$SOLUTION.pro
 
     mkdir include
-    mkdir include/$PROJECT
+    mkdir include/$SOLUTION
     mkdir src
     mkdir tests
     mkdir cppcheck
-    cp $GBS_HOME/template/header.hpp include/$PROJECT/$PROJECT.hpp
+    cp $GBS_HOME/template/header.hpp include/$SOLUTION/$SOLUTION.hpp
     cp $GBS_HOME/template/main.cpp src/main.cpp
     cp $GBS_HOME/template/test.cpp tests/test.cpp
     cp $GBS_HOME/template/cppcheck/includes-file cppcheck/includes-file
@@ -79,66 +79,59 @@ prepare_simple_app()
     cp $GBS_HOME/template/cppcheck/options cppcheck/options
 
     cd .gbs
-    echo "#************************************************************"  > $PROJECT.pro
-    echo "#* Generated automatically by '$0'"                            >> $PROJECT.pro
-    echo "#* Command: $CMDLINE"                                          >> $PROJECT.pro
-    echo "#* Author:  $USERNAME"                                         >> $PROJECT.pro
-    echo "#* Date:    $DATE"                                             >> $PROJECT.pro
-    echo "#************************************************************" >> $PROJECT.pro
-    echo "TEMPLATE = subdirs"                                            >> $PROJECT.pro
-    echo "CONFIG  += ordered"                                            >> $PROJECT.pro
-    echo "SUBDIRS  = $PROJECT tests"                                     >> $PROJECT.pro
+    echo "#************************************************************"  > solution.pro
+    echo "#* Generated automatically by '$0'"                            >> solution.pro
+    echo "#* Command: $CMDLINE"                                          >> solution.pro
+    echo "#* Author:  $USERNAME"                                         >> solution.pro
+    echo "#* Date:    $DATE"                                             >> solution.pro
+    echo "#************************************************************" >> solution.pro
+    echo "TEMPLATE = subdirs"                                            >> solution.pro
+    echo "CONFIG  += ordered"                                            >> solution.pro
+    echo "SUBDIRS  = $SOLUTION tests"                                    >> solution.pro
     cd ..
 }
 
 prepare_sepaloid()
 {
-    mkdir $PROJECT
-    cd $PROJECT
+    mkdir $SOLUTION
+    cd $SOLUTION
     mkdir .gbs
     cp -R $GBS_HOME/template/sepaloid/.gbs/* .gbs/
-#    mv .gbs/app/app.pro .gbs/app/$PROJECT.pro
-#    mv .gbs/app .gbs/$PROJECT
 
     mkdir include
     mkdir src
     mkdir cppcheck
     cp -R $GBS_HOME/template/sepaloid/src/* src/
+    cp -R $GBS_HOME/template/sepaloid/include/* include/
     cp $GBS_HOME/template/cppcheck/includes-file cppcheck/includes-file
     cp $GBS_HOME/template/cppcheck/sources-file cppcheck/sources-file
     cp $GBS_HOME/template/cppcheck/options cppcheck/options
 
-    echo "#define _APP_NAME \"$PROJECT\"" > src/app_name.h
+    echo "#define APP_NAME \"$SOLUTION\"" > include/app_name.h
 
     cd .gbs
     mv common.pri common.pri~
-    echo "GBS_TARGET_NAME=$PROJECT" > common.pri
+    echo "GBS_TARGET_NAME=$SOLUTION" > common.pri
     cat common.pri~ >> common.pri
     rm common.pri~
 
-    echo "#************************************************************"  > $PROJECT.pro
-    echo "#* Generated automatically by '$0'"                            >> $PROJECT.pro
-    echo "#* Command: $CMDLINE"                                          >> $PROJECT.pro
-    echo "#* Author:  $USERNAME"                                         >> $PROJECT.pro
-    echo "#* Date:    $DATE"                                             >> $PROJECT.pro
-    echo "#************************************************************" >> $PROJECT.pro
-    echo "TEMPLATE = subdirs"                                            >> $PROJECT.pro
-    echo "CONFIG  += ordered"                                            >> $PROJECT.pro
-    echo "SUBDIRS  = app    \\"                                          >> $PROJECT.pro
-    echo "           core   \\"                                          >> $PROJECT.pro
-    echo "           db     \\"                                          >> $PROJECT.pro
-    echo "           io     \\"                                          >> $PROJECT.pro
-    echo "           logger \\"                                          >> $PROJECT.pro
-    echo "           prefs  \\"                                          >> $PROJECT.pro
-    echo "           ui     \\"                                          >> $PROJECT.pro
-    echo "           simulator"                                          >> $PROJECT.pro
+    mv solution.pro solution.pro~
+    echo "#************************************************************"  > solution.pro
+    echo "#* Generated automatically by '$0'"                            >> solution.pro
+    echo "#* Command: $CMDLINE"                                          >> solution.pro
+    echo "#* Author:  $USERNAME"                                         >> solution.pro
+    echo "#* Date:    $DATE"                                             >> solution.pro
+    echo "#************************************************************" >> solution.pro
+    cat solution.pro~ >> solution.pro
+    rm solution.pro~
+
     cd ..
 }
 
-create() 
+create()
 {
-    if [ -e $PROJECT ]; then
-	echo "Error: Directory already exists: $PROJECT" >&2
+    if [ -e $SOLUTION ]; then
+	echo "Error: Directory already exists: $SOLUTION" >&2
 	exit 1
     fi
 
@@ -168,7 +161,7 @@ create()
     chmod +x backup.sh
 
     # Prepare cppcheck script
-    cp  $GBS_HOME/utils/cppcheck.sh cppcheck.sh
+    cp  $GBS_HOME/template/cppcheck.sh cppcheck.sh
     chmod +x cppcheck.sh
 
     # Prepare .gitignore
@@ -186,23 +179,33 @@ create()
 	$GIT_EXE commit -m "Initial commit"
 
 	if   [ "$GIT_HOSTING" == "$GIT_HOSTING_GITHUB" ] ; then
-	    $GIT_EXE remote add origin git@github.com:semenovf/${PROJECT}.git
+	    $GIT_EXE remote add origin git@github.com:semenovf/${SOLUTION}.git
 	    $GIT_EXE push -u origin master
 	elif [ "$GIT_HOSTING" == "$GIT_HOSTING_BITBUCKET" ] ; then
-	    #$GIT_EXE remote add origin https://semenovf@bitbucket.org/semenovf/${PROJECT}.git
-	    $GIT_EXE remote add origin git@bitbucket.org:semenovf/${PROJECT}.git
+	    #$GIT_EXE remote add origin https://semenovf@bitbucket.org/semenovf/${SOLUTION}.git
+	    $GIT_EXE remote add origin git@bitbucket.org:semenovf/${SOLUTION}.git
 #	    $GIT_EXE push -u origin --all   # pushes up the repo and its refs for the first time
 #	    $GIT_EXE push -u origin --tags  # pushes up any tags
 	    $GIT_EXE push -u origin master
 #	elif [ "$GIT_HOSTING" == "$GIT_HOSTING_NPCPROM" ] ; then
 #	    sh ../git.config.npcprom
-#	    $GIT_EXE remote add origin git@gitlab:${PROJECT}.git
+#	    $GIT_EXE remote add origin git@gitlab:${SOLUTION}.git
 #	    $GIT_EXE push -u origin master
 	fi
     fi
 
-    echo "Project '$PROJECT' created"
-    echo "Modyfy '.gbs/$PROJECT.pro' to add new subprojects"
+    #
+    # Add solution to list of solutions in the workspace
+    #
+    # cd to workspace directory
+    cd ..
+    if [ ! -f solutions.txt ] ; then
+	touch solutions.txt
+    fi
+    echo "$SOLUTION" >> solutions.txt
+
+    echo "Solution '$SOLUTION' created"
+    echo "Modyfy '.gbs/solution.pro' to add new projects"
 }
 
 
@@ -231,13 +234,13 @@ while [ x$1 != x ] ; do
 #        GIT_HOSTING=$GIT_HOSTING_NPCPROM
 #        ;;
     *)
-        PROJECT=$1
+        SOLUTION=$1
         ;;
     esac
     shift
 done
 
-if [ -z $PROJECT ]; then
+if [ -z $SOLUTION ]; then
     usage
     exit 1
 fi

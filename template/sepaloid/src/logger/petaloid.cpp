@@ -39,7 +39,7 @@ void petaloid::onCritical (const pfs::critical & critical)
 	}
 
 	if (details.length() > 0)
-		pfs::error(_Fr("%s%s") % critical.text() % details);
+		pfs::error(pfs::string() << critical.text() << details);
 	else
 		pfs::error(critical.text());
 }

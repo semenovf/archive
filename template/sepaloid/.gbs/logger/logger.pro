@@ -5,8 +5,8 @@ TARGET = $$GBS_TARGET_NAME-logger
 
 SOURCES   += ../../src/logger/*.cpp
 
-unix {
-}
+unix {}
 
-win32 {
-}
+win32 {}
+
+include($$(GBS_HOME)/qmake/deploy.pri)

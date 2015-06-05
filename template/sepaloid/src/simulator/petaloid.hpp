@@ -8,7 +8,6 @@
 #define __SIMULATOR_PETALOID_HPP__
 
 #include <pfs/petaloid.hpp>
-#include <pfs/unitype.hpp>
 #include "api.hpp"
 
 #define __PETALOID simulator::petaloid::self()
@@ -38,7 +37,10 @@ public:
 		, PFS_PETALOID_EMITTER(API_DEBUG   , emitDebug)
 		, PFS_PETALOID_EMITTER(API_WARN    , emitWarn)
 		, PFS_PETALOID_EMITTER(API_ERROR   , emitError)
-	    , PFS_PETALOID_EMITTER(API_GET_PREF, emitPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_BOOLEAN, emitGetBooleanPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_INTEGER, emitGetIntegerPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_NUMBER , emitGetNumberPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_STRING , emitGetStringPref)
 	PFS_PETALOID_EMITTERS_END
 
 	PFS_PETALOID_DETECTORS_BEGIN
@@ -51,7 +53,10 @@ public: // signals
 	pfs::signal1<const pfs::string &> emitDebug;
 	pfs::signal1<const pfs::string &> emitWarn;
 	pfs::signal1<const pfs::string &> emitError;
-	pfs::signal2<const pfs::string &, pfs::unitype &> emitPref;
+	pfs::signal2<const pfs::string &, bool *>        emitGetBooleanPref;
+	pfs::signal2<const pfs::string &, integral_t *>  emitGetIntegerPref;
+	pfs::signal2<const pfs::string &, real_t *>      emitGetNumberPref;
+	pfs::signal2<const pfs::string &, pfs::string *> emitGetStringPref;
 
 private: // slots
 	void onQuit () {}

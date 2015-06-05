@@ -8,12 +8,14 @@
 #define API_WARN                    5
 #define API_ERROR                   6
 #define API_GUI_READY               7
-#define API_GET_PREF                8
+#define API_GET_PREF_BOOLEAN        8
+#define API_GET_PREF_INTEGER        9
+#define API_GET_PREF_NUMBER        10
+#define API_GET_PREF_STRING        11
 
-#ifdef _INCLUDE_SEPALOID_MAPPING
+#ifdef INCLUDE_SEPALOID_MAPPING
 
 #include <pfs/string.hpp>
-#include <pfs/unitype.hpp>
 #include <pfs/sepaloid.hpp>
 #include <pfs/critical.hpp>
 
@@ -47,12 +49,23 @@ static pfs::sepaloid::mapping_type API[] = {
 			, new pfs::sigslot_mapping1_t<bool>
 			, _u8("User interface ready (or not) to interact") }
 
-	, { API_GET_PREF
-			, new pfs::sigslot_mapping2_t<const pfs::string &, pfs::unitype &>
-			, _u8("Get preference value") }
+	, { API_GET_PREF_BOOLEAN
+			, new pfs::sigslot_mapping2_t<const pfs::string &, bool *>
+			, _u8("Get preference's boolean value") }
 
+	, { API_GET_PREF_INTEGER
+			, new pfs::sigslot_mapping2_t<const pfs::string &, integral_t *>
+			, _u8("Get preference's integer value") }
+
+	, { API_GET_PREF_NUMBER
+			, new pfs::sigslot_mapping2_t<const pfs::string &, real_t *>
+			, _u8("Get preference's number value") }
+
+	, { API_GET_PREF_STRING
+			, new pfs::sigslot_mapping2_t<const pfs::string &, pfs::string *>
+			, _u8("Get preference's string value") }
 };
 
-#endif // _INCLUDE_SEPALOID_MAPPING
+#endif // INCLUDE_SEPALOID_MAPPING
 
 #endif /* __API_HPP__ */

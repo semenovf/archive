@@ -24,6 +24,7 @@ class LogWidget : public QTableWidget
 
 public:
 	LogWidget (QWidget * parent = nullptr);
+	virtual ~LogWidget () {}
 
 private:
 	void log (const pfs::string & pixname, QColor fg, QColor bg, pfs::datetime dt, pfs::string msg);

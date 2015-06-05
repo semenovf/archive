@@ -3,10 +3,14 @@ include(../common.pri)
 
 TARGET = $$GBS_TARGET_NAME-ui
 
-SOURCES   += ../../src/ui/qt/*.cpp
+SOURCES += ../../src/ui/qt/*.cpp
+#
+# For generate moc_* files
+#
+HEADERS += ../../src/ui/qt/*.hpp
 
-unix {
-}
+unix {}
 
-win32 {
-}
+win32 {}
+
+include($$(GBS_HOME)/qmake/deploy.pri)

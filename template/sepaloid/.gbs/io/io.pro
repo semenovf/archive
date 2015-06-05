@@ -5,8 +5,8 @@ TARGET = $$GBS_TARGET_NAME-io
 
 SOURCES += ../../src/io/*.cpp
 
-unix {
-}
+unix {}
 
-win32 {
-}
+win32 {}
+
+include($$(GBS_HOME)/qmake/deploy.pri)

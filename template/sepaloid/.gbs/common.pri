@@ -1,7 +1,5 @@
 INCLUDEPATH += ../../include
 
-DEFINES += _SIMULATOR
-
 unix {
     LIBS += -lpfs
     LIBS += -lpfs-sys

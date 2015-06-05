@@ -10,7 +10,6 @@
 #include <pfs/petaloid.hpp>
 #include <pfs/platform.hpp>
 #include <pfs/critical.hpp>
-#include <pfs/unitype.hpp>
 #include "api.hpp"
 #include <QObject>
 #include <QString>
@@ -73,14 +72,17 @@ public:
 	virtual bool onFinish ();
 
 	PFS_PETALOID_EMITTERS_BEGIN
-	      PFS_PETALOID_EMITTER(API_QUIT          , emitQuit)
+	      PFS_PETALOID_EMITTER(API_QUIT      , emitQuit)
 	    , PFS_PETALOID_EMITTER(API_CRITICAL  , emitCritical)
 	    , PFS_PETALOID_EMITTER(API_INFO      , emitInfo)
 	    , PFS_PETALOID_EMITTER(API_DEBUG     , emitDebug)
 	    , PFS_PETALOID_EMITTER(API_WARN      , emitWarn)
 	    , PFS_PETALOID_EMITTER(API_ERROR     , emitError)
-	    , PFS_PETALOID_EMITTER(API_GET_PREF  , emitPref)
 	    , PFS_PETALOID_EMITTER(API_GUI_READY , emitGuiReady)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_BOOLEAN, emitGetBooleanPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_INTEGER, emitGetIntegerPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_NUMBER , emitGetNumberPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_STRING , emitGetStringPref)
 	PFS_PETALOID_EMITTERS_END
 
 	PFS_PETALOID_DETECTORS_BEGIN
@@ -97,8 +99,11 @@ public: // signals
 	pfs::signal1<const pfs::string &>   emitDebug;
 	pfs::signal1<const pfs::string &>   emitWarn;
 	pfs::signal1<const pfs::string &>   emitError;
-	pfs::signal2<const pfs::string &, pfs::unitype &> emitPref;
 	pfs::signal1<bool>                  emitGuiReady;
+	pfs::signal2<const pfs::string &, bool *>        emitGetBooleanPref;
+	pfs::signal2<const pfs::string &, integral_t *>  emitGetIntegerPref;
+	pfs::signal2<const pfs::string &, real_t *>      emitGetNumberPref;
+	pfs::signal2<const pfs::string &, pfs::string *> emitGetStringPref;
 
 private: // slots
 	void onQuit () {}

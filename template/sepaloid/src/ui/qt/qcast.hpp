@@ -10,7 +10,7 @@
 #include <pfs/string.hpp>
 #include <QString>
 
-inline QString qcast (const pfs::string & s) { return QString::fromUtf8(s.utf8()); }
+inline QString qcast (const pfs::string & s) { return QString::fromUtf8(s.toUtf8().c_str()); }
 inline pfs::string qcast (const QString & s) { return pfs::string::fromUtf8(s.toUtf8()); }
 
 #endif /* __QCAST_HPP__ */

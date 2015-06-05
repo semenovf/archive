@@ -9,7 +9,6 @@
 
 #include <pfs/petaloid.hpp>
 #include <pfs/critical.hpp>
-#include <pfs/unitype.hpp>
 #include "api.hpp"
 
 #define __PETALOID logger::petaloid::self()
@@ -35,7 +34,10 @@ public:
 	virtual bool onFinish () override { return true; }
 
 	PFS_PETALOID_EMITTERS_BEGIN
-	      PFS_PETALOID_EMITTER(API_GET_PREF, emitPref)
+		  PFS_PETALOID_EMITTER(API_GET_PREF_BOOLEAN, emitGetBooleanPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_INTEGER, emitGetIntegerPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_NUMBER , emitGetNumberPref)
+		, PFS_PETALOID_EMITTER(API_GET_PREF_STRING , emitGetStringPref)
 	PFS_PETALOID_EMITTERS_END
 
 	PFS_PETALOID_DETECTORS_BEGIN
@@ -46,11 +48,13 @@ public:
 		, PFS_PETALOID_DETECTOR(API_ERROR    , petaloid::onError)
 	    , PFS_PETALOID_DETECTOR(API_CRITICAL , petaloid::onCritical)
 		, PFS_PETALOID_DETECTOR(API_GUI_READY, petaloid::onGuiReady)
-
 	PFS_PETALOID_DETECTORS_END
 
 public: // signals
-	pfs::signal2<const pfs::string &, pfs::unitype &> emitPref;
+	pfs::signal2<const pfs::string &, bool *>        emitGetBooleanPref;
+	pfs::signal2<const pfs::string &, integral_t *>  emitGetIntegerPref;
+	pfs::signal2<const pfs::string &, real_t *>      emitGetNumberPref;
+	pfs::signal2<const pfs::string &, pfs::string *> emitGetStringPref;
 
 private: // slots
 	void onInfo (const pfs::string &);
