@@ -8,7 +8,6 @@
 #ifndef __PFS_IO_DEVICE_HPP__
 #define __PFS_IO_DEVICE_HPP__
 
-//#include <pfs/array.hpp>
 #include <pfs/pimpl.hpp>
 #include <pfs/byte_string.hpp>
 #include <pfs/string.hpp>
