@@ -1,6 +1,6 @@
 include(find_file.pri)
 
-path = $$scanParentDirsToFindFile(./, .profile)
+path = $$scanParentDirsToFindFile(./, ws.sh)
 fileNotFound = $$scanParentDirsToFindFile(./, abrakadabra)
 
 message(Found $$path)

@@ -1,6 +1,5 @@
-message($$CWT_CONFIG)
+#message($$CWT_CONFIG)
 
-unix {
 contains(CWT_CONFIG, gbs_dll) {
     header_files.files = $$HEADERS
     target.path = $$CWT_LIB_DIR
@@ -20,5 +19,4 @@ contains(CWT_CONFIG, gbs_petaloid) {
 }
 
 contains(CWT_CONFIG, gbs_test) {
-}
 }

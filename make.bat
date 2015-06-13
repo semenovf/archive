@@ -41,21 +41,40 @@ goto error_SetEnv
 :: if errorlevel goto error_nmakeNotFound
 
 :begin
+
 call "%SETENV%" %ARGS% 2>&1
-if "%ACTION%" == "clean" goto makeclean
-if "%ACTION%" == "all" goto makeall
+qmake -makefile -r -o Makefile
+
+if "%ACTION%" == "clean" goto clean
+if "%ACTION%" == "distclean" goto distclean
+if "%ACTION%" == "install" goto install
+if "%ACTION%" == "uninstall" goto uninstall
+if "%ACTION%" == "all" goto all
+if "%ACTION%" == "" goto all
 
 goto end
 
-:makeclean
+:clean
+nmake uninstall
+nmake clean
+goto end
+
+:distclean
 nmake distclean
 del Makefile
-qmake -makefile -r -o Makefile
 goto end
 
+:install
+nmake install
+goto end
 
-:makeall
-nmake %1
+:uninstall
+nmake uninstall
+goto end
+
+:all
+nmake
+nmake install
 goto end
 
 :error_SetEnv
