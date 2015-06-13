@@ -36,5 +36,5 @@ win32 {
     LIBS += pfs.lib
 }
 
-HEADERS += ../../include/*
+HEADERS += ../../include/
 include($$(GBS_HOME)/qmake/deploy.pri)
