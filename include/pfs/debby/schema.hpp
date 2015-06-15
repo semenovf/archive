@@ -7,17 +7,16 @@
  * @note Based on [hiberlite](https://code.google.com/p/hiberlite/) library
  */
 
-#ifndef __CWT_DEBBY_SCHEMA_HPP__
-#define __CWT_DEBBY_SCHEMA_HPP__
+#ifndef __PFS_DEBBY_SCHEMA_HPP__
+#define __PFS_DEBBY_SCHEMA_HPP__
 
-#include <cwt/debby/database.hpp>
-#include <cwt/debby/statement.hpp>
+#include <pfs/debby/database.hpp>
+#include <pfs/debby/statement.hpp>
 #include <pfs/date.hpp>
 #include <pfs/time.hpp>
 #include <pfs/datetime.hpp>
 
-
-namespace cwt { namespace debby {
+namespace pfs { namespace debby {
 
 class schema;
 class table_basic;
@@ -126,9 +125,9 @@ public:
 
 class schema
 {
-	typedef pfs::shared_ptr<table_basic> value_type;
+	typedef shared_ptr<table_basic> value_type;
 
-	pfs::map<pfs::string, value_type> _tables;
+	map<pfs::string, value_type> _tables;
 
 public:
 	schema () {}
@@ -141,7 +140,7 @@ inline field_basic & table_basic::addField<bool> (const pfs::string & name, bool
 }
 
 template <>
-inline field_basic & table_basic::addField<char> (const pfs::string & name, char & ar)
+inline field_basic & table_basic::addField<char> (const string & name, char & ar)
 {
 	return addScalarField(name, ar);
 }
@@ -241,6 +240,6 @@ public:
 
 #endif
 
-}} // cwt::debby
+}} // pfs::debby
 
-#endif /* __CWT_DEBBY_SCHEMA_HPP__ */
+#endif /* __PFS_DEBBY_SCHEMA_HPP__ */

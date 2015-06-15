@@ -1,6 +1,6 @@
 ###NAME
 
-`cwt-debby` - database interface (DBI)
+`pfs-debby` - database interface (DBI)
 
 ###VERSION
 
@@ -14,4 +14,4 @@ Fedor Semenov, < fedor.v.semenov at gmail.com >
 
 ###LICENSE AND COPYRIGHT
 
-Copyright 2012-2014 Fedor Semenov.  
+Copyright 2012-2015 Fedor Semenov.  

@@ -4,13 +4,10 @@
  * @date Mar 14, 2014
  */
 
-#ifndef __CWT_DEBBY_PERSIST_HPP__
-#define __CWT_DEBBY_PERSIST_HPP__
+#ifndef __PFS_DEBBY_PERSIST_HPP__
+#define __PFS_DEBBY_PERSIST_HPP__
 
-#include <iostream>
-
-namespace cwt { namespace debby {
-
+namespace pfs { namespace debby {
 
 template <typename T>
 class storage_type
@@ -83,6 +80,6 @@ public:
 	persistent (Model * model) : _model (model) {}
 };
 
-}} // cwt
+}} // pfs::debby
 
-#endif /* __CWT_DEBBY_PERSIST_HPP__ */
+#endif /* __PFS_DEBBY_PERSIST_HPP__ */

@@ -5,9 +5,11 @@
 #* Date:    Thu Aug 15 12:25:56 YEKT 2013
 #************************************************************
 TEMPLATE = subdirs
-CONFIG  += ordered
-SUBDIRS  = cwt-debby \
-    tests/schema
-#    tests/hiberlite
-#    tools/csv2db
-# tools/debby
+CONFIG   += ordered
+
+SUBDIRS += pfs-debby
+SUBDIRS += tests/schema
+
+#SUBDIRS += tests/hiberlite
+#SUBDIRS += tools/csv2db
+#SUBDIRS += tools/debby
