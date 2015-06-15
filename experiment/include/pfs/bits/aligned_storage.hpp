@@ -34,7 +34,7 @@ typedef cons<
         , void *
         , unknown_class (*)(unknown_class)
         , unknown_class* unknown_class::*
-        , unknown_class (unknown_class::*)(Unknown)
+        , unknown_class (unknown_class::*)(unknown_class)
         , structify<char>
         , structify<short int>
         , structify<int>
