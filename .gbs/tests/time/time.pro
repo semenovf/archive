@@ -2,8 +2,7 @@ include($$(GBS_HOME)/qmake/common-test.pri)
 
 TARGET = test_pfs_time
 
-INCLUDEPATH += ../../../include
-
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tests/time.cpp
 
 unix  { LIBS += -lpfs }

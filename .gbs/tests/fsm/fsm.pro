@@ -2,9 +2,7 @@ include($$(GBS_HOME)/qmake/common-test.pri)
 
 TARGET = test_pfs_fsm
 
-INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../pfs/include
-
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tests/fsm.cpp
 
 unix {

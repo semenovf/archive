@@ -2,7 +2,7 @@ include($$(GBS_HOME)/qmake/common-test.pri)
 
 TARGET = test_pfs_variant
 
-INCLUDEPATH += ../../../include
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tests/variant.cpp
 
 unix  { LIBS += -lpfs }

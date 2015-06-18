@@ -2,8 +2,7 @@ include($$(GBS_HOME)/qmake/common-test.pri)
 
 TARGET = test_pfs_vector
 
-INCLUDEPATH += ../../../include
-
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tests/vector.cpp
 
 #unix  { LIBS += -lpfs }

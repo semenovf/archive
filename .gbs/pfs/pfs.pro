@@ -1,6 +1,6 @@
 include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET = pfs
-INCLUDEPATH += ../../include
+INCLUDEPATH = $$prependIncludePath(../../include)
 
 unix {
     SOURCES += ../../src/*.cpp
@@ -12,5 +12,7 @@ win32 {
     SOURCES += ..\\..\\src\\*.c
 }
 
-HEADERS += ../../include/
+HEADERS += ../../include/*.h
+HEADERS += ../../include/*.hpp
+HEADERS += ../../include/pfs
 include($$(GBS_HOME)/qmake/deploy.pri)
