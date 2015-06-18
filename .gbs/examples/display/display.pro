@@ -2,10 +2,7 @@ include($$(GBS_HOME)/qmake/common-app.pri)
 
 TARGET = example_display
 
-INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../pfs/include
-INCLUDEPATH += ../../../../cwt-sys/include
-
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../examples/display.cpp
 
 unix {

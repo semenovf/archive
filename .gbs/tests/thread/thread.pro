@@ -2,10 +2,7 @@ include($$(GBS_HOME)/qmake/common-test-qt.pri)
 
 TARGET = test_pfs_thread
 
-INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../pfs/include
-INCLUDEPATH += ../../../../cwt-sys/include
-
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tests/thread.cpp
 
 unix {

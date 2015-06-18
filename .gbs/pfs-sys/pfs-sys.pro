@@ -2,7 +2,7 @@ include($$(GBS_HOME)/qmake/common-dll.pri)
 
 TARGET = pfs-sys
 
-INCLUDEPATH += ../../include
+INCLUDEPATH = $$prependIncludePath(../../include)
 
 # PCRE configuration
 DEFINES += HAVE_CONFIG_H
@@ -36,5 +36,5 @@ win32 {
     LIBS += pfs.lib
 }
 
-HEADERS += ../../include/
+HEADERS += ../../include/pfs/
 include($$(GBS_HOME)/qmake/deploy.pri)

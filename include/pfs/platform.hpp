@@ -53,11 +53,11 @@ struct __verify_errno
 	}
 };
 }}
-#	define PFS_VERIFY_ERRNO(errn) platform::__verify_errno()(__TFILE__, __LINE__, #errn, (errn))
-#	define PFS_VERIFY_ERRNO_X(expr,errn) platform::__verify_errno()((expr), __TFILE__, __LINE__, #expr, (errn))
-#else /* !NDEBUG */
-#	define PFS_VERIFY_ERRNO(errn) (errn)
-#	define PFS_VERIFY_ERRNO_X(expr,errn) (expr)
+//#	define PFS_VERIFY_ERRNO(errn) platform::__verify_errno()(__TFILE__, __LINE__, #errn, (errn))
+//#	define PFS_VERIFY_ERRNO_X(expr,errn) platform::__verify_errno()((expr), __TFILE__, __LINE__, #expr, (errn))
+//#else /* !NDEBUG */
+//#	define PFS_VERIFY_ERRNO(errn) (errn)
+//#	define PFS_VERIFY_ERRNO_X(expr,errn) (expr)
 #endif
 
 #endif /* __PFS_PLATFORM_HPP__ */
