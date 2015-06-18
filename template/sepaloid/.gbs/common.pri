@@ -1,4 +1,4 @@
-INCLUDEPATH += ../../include
+INCLUDEPATH = $$prependIncludePath(../../include)
 
 unix {
     LIBS += -lpfs

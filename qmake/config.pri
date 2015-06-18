@@ -5,6 +5,7 @@
 #
 
 include(find_file.pri)
+include(prepend_include.pri)
 GlobalPri = $$scanParentDirsToFindFile($$OUT_PWD, global.pri)
 
 isEmpty(GlobalPri) {

@@ -1,8 +1,7 @@
 include($$(GBS_HOME)/qmake/common-app.pri)
 TARGET =
-INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../pfs/include
-INCLUDEPATH += ../../../pfs-sys/include
+
+INCLUDEPATH = $$prependIncludePath(../../include)
 
 SOURCES += ../../src/*.cpp
 
