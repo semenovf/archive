@@ -2,11 +2,7 @@ include($$(GBS_HOME)/qmake/common-test.pri)
 
 TARGET = test_pfs_io_utf8
 
-INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../pfs/include
-INCLUDEPATH += ../../../../pfs-sys/include
-INCLUDEPATH += ../../../../pfs-io/include
-
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tests/utf8.cpp
 
 unix {
