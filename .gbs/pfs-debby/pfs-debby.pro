@@ -1,7 +1,7 @@
 include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET = pfs-debby
 
-INCLUDEPATH += ../../include
+INCLUDEPATH = $$prependIncludePath(../../include)
 
 SOURCES += ../../src/*.cpp
 

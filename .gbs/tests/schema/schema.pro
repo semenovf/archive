@@ -2,8 +2,7 @@ include($$(GBS_HOME)/qmake/common-test.pri)
 
 TARGET = test_pfs_debby_schema
 
-INCLUDEPATH += ../../../include
-
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tests/schema.cpp
 
 unix {

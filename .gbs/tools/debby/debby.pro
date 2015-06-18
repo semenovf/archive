@@ -2,13 +2,7 @@ include($$(GBS_HOME)/qmake/common-app.pri)
 
 TARGET = debby
 
-INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../cwt-common/include
-INCLUDEPATH += ../../../../cwt-core/include
-INCLUDEPATH += ../../../../cwt-io/include
-INCLUDEPATH += ../../../../cwt-json/include
-INCLUDEPATH += ../../../../cwt-app/include
-
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tools/debby/*.cpp
 
 unix {
