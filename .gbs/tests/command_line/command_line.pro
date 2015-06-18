@@ -1,11 +1,8 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
 TARGET = test_pfs_command_line
-INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../pfs/include
-INCLUDEPATH += ../../../../pfs-sys/include
-INCLUDEPATH += ../../../../pfs-settings/include
 
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tests/command_line.cpp
 
 unix {

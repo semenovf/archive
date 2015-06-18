@@ -1,11 +1,7 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 TARGET = test_pfs_sepaloid
 
-INCLUDEPATH += ../../../include
-INCLUDEPATH += ../../../../pfs/include
-INCLUDEPATH += ../../../../pfs-sys/include
-INCLUDEPATH += ../../../../pfs-app/include
-
+INCLUDEPATH = $$prependIncludePath(../../../include)
 SOURCES += ../../../tests/sepaloid.cpp
 
 unix {

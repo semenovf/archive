@@ -1,9 +1,7 @@
 include($$(GBS_HOME)/qmake/common-dll.pri)
 TARGET = pfs-app
-INCLUDEPATH += ../../include
-INCLUDEPATH += ../../../pfs/include
-INCLUDEPATH += ../../../pfs-sys/include
-INCLUDEPATH += ../../../pfs-settings/include
+
+INCLUDEPATH = $$prependIncludePath(../../include)
 
 unix {
     SOURCES += ../../src/*.cpp
@@ -21,5 +19,5 @@ win32 {
     LIBS += pfs-settings.lib
 }
 
-HEADERS += ../../include/
+HEADERS += ../../include/pfs/
 include($$(GBS_HOME)/qmake/deploy.pri)
