@@ -15,21 +15,9 @@
 
 namespace pfs {
 
-//template <typename T>
-//class default_allocator
-//{
-//	typedef T value_type;
-//public:
-//	T * allocate (std::size_t n, const void * = 0) { return new value_type[n]; }
-//	void deallocate (value_type * p, std::size_t /*n*/) { if (p) delete [] p; }
-//};
-
-
-template <typename T/*, typename _Alloc = default_allocator<T> */>
+template <typename T>
 class array
 {
-//	typedef _Alloc allocator;
-
 	size_t   _capacity;
 	uint16_t _raw : 1; /* is raw data */
 	T *      _head;
@@ -67,20 +55,61 @@ public:
 	bool        isRaw() const { return _raw; }
 	void        move  (size_t off_to, size_t off_from, size_t n);
 	void        realloc (size_t new_capacity);
+	void        resize (size_t new_capacity) { realloc(new_capacity); }
 	size_t      size  () const { return _capacity; }
 	size_t      capacity() const { return _capacity; }
 	void        swap(array<T> & other);
 
-
 	T &         operator [] (size_t index) { return at(index); }
 	const T &   operator [] (size_t index) const { return at(index); }
 
+	void copyFrom (const array & from, size_t off_from, size_t n)
+	{
+		copy(*this, from, 0, off_from, n);
+	}
+
+	void copyFrom (const array & from, size_t n)
+	{
+		copy(*this, from, 0, 0, n);
+	}
+
+	void copyFrom (const array & from)
+	{
+		copy(*this, from, 0, 0, from._capacity);
+	}
+
+	void copyFrom (const T * from, size_t n)
+	{
+		copy (*this, from, 0, 0, n);
+	}
+
+	void copyTo (array & to, size_t off_to, size_t n) const
+	{
+		copy(to, *this, off_to, 0, n);
+	}
+
+	void copyTo (const array & to, size_t n)
+	{
+		copy(to, *this, 0, 0, n);
+	}
+
+	void copyTo (const array & to)
+	{
+		copy(to, *this, 0, 0, _capacity);
+	}
+
+	void copyTo (T * to, size_t n)
+	{
+		copy(to, *this, 0, n);
+	}
+
 	static void copy (array & to, const array & from, size_t off_to, size_t off_from, size_t n);
-	static void copy (array & to, const T *from, size_t off_to, size_t off_from, size_t n);
+	static void copy (array & to, const T * from, size_t off_to, size_t n);
+	static void copy (T * to, const array & from, size_t off_to, size_t n);
 
 	static void deep_copy (T * to, const T * from, size_t n);
-	static void deep_copy (array &to, const array & from, size_t off_to, size_t off_from, size_t n);
-	static void deep_copy (array &to, const T * from, size_t off_to, size_t off_from, size_t n);
+	static void deep_copy (array & to, const array & from, size_t off_to, size_t off_from, size_t n);
+	static void deep_copy (array & to, const T * from, size_t off_to, size_t n);
 };
 
 template <typename T>
@@ -175,18 +204,25 @@ array<T>* array<T>::clone () const
 * @return Actually items copied.
 */
 template <typename T>
-void array<T>::copy (array &to, const array &from, size_t off_to, size_t off_from, size_t n)
+void array<T>::copy (array & to, const array & from, size_t off_to, size_t off_from, size_t n)
 {
 	n = pfs_min(from._capacity - off_from, n);
 	n = pfs_min(to._capacity - off_to, n);
-	memcpy(to._head + off_to, from._head + off_from, n * sizeof(T));
+	::memcpy(to._head + off_to, from._head + off_from, n * sizeof(T));
 }
 
 template <typename T>
-void array<T>::copy (array &to, const T *from, size_t off_to, size_t off_from, size_t n)
+void array<T>::copy (array & to, const T * from, size_t off_to, size_t n)
 {
 	n = pfs_min(to._capacity - off_to, n);
-	memcpy(to._head + off_to, from + off_from, n * sizeof(T));
+	::memcpy(to._head + off_to, from, n * sizeof(T));
+}
+
+template <typename T>
+void array<T>::copy (T * to, const array & from, size_t off_from, size_t n)
+{
+	n = pfs::min(from._capacity - off_from, n);
+	::memcpy(to, from._head + off_from, n * sizeof(T));
 }
 
 template <typename T>
@@ -198,7 +234,7 @@ void array<T>::deep_copy (T * to, const T * from, size_t n)
 }
 
 template <typename T>
-void array<T>::deep_copy (array &to, const array &from, size_t off_to, size_t off_from, size_t n)
+void array<T>::deep_copy (array & to, const array & from, size_t off_to, size_t off_from, size_t n)
 {
 	n = pfs_min(from._capacity - off_from, n);
 	n = pfs_min(to._capacity - off_to, n);
@@ -208,10 +244,10 @@ void array<T>::deep_copy (array &to, const array &from, size_t off_to, size_t of
 }
 
 template <typename T>
-void array<T>::deep_copy (array &to, const T *from, size_t off_to, size_t off_from, size_t n)
+void array<T>::deep_copy (array & to, const T * from, size_t off_to, size_t n)
 {
 	n = pfs_min(to._capacity - off_to, n);
-	for (size_t i = off_from, j = off_to; n > 0; --n, ++i, ++j) {
+	for (size_t i = off_to, j = 0; j < n; ++i, ++j) {
 		to._head[i] = from[j];
 	}
 }
