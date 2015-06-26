@@ -33,7 +33,7 @@ private:
 		PFS_VERIFY(setstate_r(_stateBuf, & _rdata) == 0);
 	}
 
-	static const size_t StateSize = 64;
+	static const size_t StateSize = 128;
 	char _stateBuf[StateSize];
 	struct random_data _rdata;
 #else
@@ -54,7 +54,6 @@ inline random_impl::random_impl (uint32_t seed)
 #if defined PFS_HAVE_RANDOM_R
 	init_random_r_version(seed);
 #endif
-	srandom(seed);
 }
 
 inline bool random_impl::srand (uint32_t seed)
