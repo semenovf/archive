@@ -524,7 +524,7 @@ byte_string & byte_string::replace (
 template <typename T>
 inline byte_string byte_string::toBytes (const T & v, endian::type_enum order)
 {
-	T a = (order == endian::LittleEndian ? endian::toLittleEndian<T>(v) : endian::toBigEndian<T>(v));
+	T a = ((order == endian::LittleEndian) ? endian::toLittleEndian<T>(v) : endian::toBigEndian<T>(v));
 	union { T v; char b[sizeof(T)]; } d;
 	d.v = a;
 	return byte_string(d.b, sizeof(T));
@@ -606,7 +606,7 @@ byte_string::size_type byte_string::readNumber (T & v, size_t pos, endian::type_
 	union u { const T v; const char b[sizeof(T)]; };
 	const char * s = c_str() + pos;
 	const u * d = reinterpret_cast<const u *>(s/*constData() + pos*/);
-	v = order == endian::LittleEndian ? endian::toLittleEndian(d->v) : endian::toBigEndian(d->v);
+	v = (order == endian::LittleEndian) ? endian::toLittleEndian(d->v) : endian::toBigEndian(d->v);
 	return sizeof(T);
 }
 

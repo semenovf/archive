@@ -162,7 +162,7 @@ int byte_string::compare (size_type pos1, size_type count1, const_data_pointer b
 	PFS_ASSERT(pos1 + count1 <= length());
 
 	if (this->isEmpty()) {
-		return bytes == nullptr ? 0 : -1;
+		return (bytes == nullptr) ? 0 : -1;
 	}
 
 	if (bytes == nullptr) {

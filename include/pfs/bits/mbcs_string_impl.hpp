@@ -103,13 +103,13 @@ public:
 	bool find (size_type index, const_pointer s, size_type count, size_type & result) const
 	{
 		result = base_class::find(s, index, count);
-		return result == base_class::npos ? false : true;
+		return (result == base_class::npos) ? false : true;
 	}
 
 	bool rfind (size_type index, const_pointer s, size_type count, size_type & result) const
 	{
 		result = base_class::rfind(s, index, count);
-		return result == base_class::npos ? false : true;
+		return (result == base_class::npos) ? false : true;
 	}
 
 public: // static

@@ -329,7 +329,7 @@ public:
 	bool startsWith (char latin1) const            { return isEmpty() ? false : *(cbegin()) == ucchar(latin1); }
 
 	// TODO Need tests
-	bool endsWith   (const mbcs_string & s) const  { return length() >= s.length() ? startsWith(cend() - s.length(), s) : false; }
+	bool endsWith   (const mbcs_string & s) const  { return (length() >= s.length()) ? startsWith(cend() - s.length(), s) : false; }
 	bool endsWith   (const char * latin1) const    { return endsWith(mbcs_string(latin1)); }
 	bool endsWith   (ucchar ch) const              { return endsWith(mbcs_string(1, ch)); }
 	bool endsWith   (char latin1) const            { return endsWith(mbcs_string(1, latin1)); }
