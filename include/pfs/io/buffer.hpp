@@ -9,7 +9,6 @@
 #define __PFS_IO_BUFFER_HPP__
 
 #include <pfs/io/device.hpp>
-#include <pfs/byte_string.hpp>
 
 namespace pfs { namespace io {
 
@@ -19,9 +18,9 @@ public:
 	buffer () : device() {}
 	virtual ~buffer() {}
 
-	const byte_t * constData () const;
-	size_t size () const;
-	byte_string data () const;
+	bool open (byte_t a[], size_t n, uint32_t oflags = ReadWrite);
+	bool open (size_t sz, uint32_t oflags = ReadWrite);
+    size_t size () const;
 };
 
 }} // pfs::io

@@ -27,12 +27,14 @@ struct file_impl : public device_impl
 			_fd = -1;
 		}
 	}
-    virtual ssize_t readBytes      (byte_t bytes[], size_t n, errorable_ext & ex);
-    virtual ssize_t writeBytes     (const byte_t bytes[], size_t n, errorable_ext & ex);
+
     virtual size_t  bytesAvailable () const;
-    virtual bool    closeDevice    (errorable_ext & ex);
+    virtual ssize_t readBytes      (byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &);
+    virtual ssize_t writeBytes     (const byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &);
+    virtual bool    closeDevice    (errorable_ext &);
     virtual bool    deviceIsOpened () const;
     virtual void    flushDevice    ();
+    virtual void    setNonBlocking ();
 };
 
 static int perms2mode (int32_t perms)
@@ -146,9 +148,15 @@ void file_impl::flushDevice ()
 #endif
 }
 
+void file_impl::setNonBlocking ()
+{
+    int flags = fcntl(_fd, F_GETFL, 0);
+    fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
+}
+
 file::file (int fd) : device(new file_impl)
 {
-    file_impl * d = _d.cast<file_impl>();
+    file_impl * d = dynamic_cast<file_impl *>(_d);
 	d->_fd = ::dup(fd);
 }
 
@@ -164,14 +172,10 @@ bool file::open (const pfs::string & path, int32_t oflags)
 
 	bool created = false;
 
-	if (!_d.isNull()) {
-	    close();
-	} else {
-	    pimpl d(new file_impl);
-	    _d.swap(d);
-	}
+    if (!checkNotOpened())
+        return false;
 
-	file_impl * d = _d.cast<file_impl>();
+	file_impl * d = dynamic_cast<file_impl * >(_d);
 
 	if (oflags & device::ReadWrite) {
 		native_oflags |= O_RDWR;
@@ -222,7 +226,7 @@ size_t file::size () const
     if (isNull())
         return 0;
 
-	const file_impl * d = _d.cast<file_impl>();
+    const file_impl * d = dynamic_cast<const file_impl * >(_d);
 
 	PFS_ASSERT(d->_fd  >= 0);
 
@@ -246,7 +250,7 @@ bool file::setPermissions (int32_t perms)
     if (isNull())
         return false;
 
-    const file_impl * d = _d.cast<file_impl>();
+    const file_impl * d = dynamic_cast<const file_impl * >(_d);
 
 	if (!set_permissions(d->_path, perms)) {
 		pfs::string errmsg;
@@ -260,7 +264,7 @@ bool file::setPermissions (int32_t perms)
 void file::rewind ()
 {
     if (!isNull()) {
-        file_impl * d = _d.cast<file_impl>();
+        file_impl * d = dynamic_cast<file_impl * >(_d);
         ::lseek(d->_fd, 0L, SEEK_SET);
     }
 }

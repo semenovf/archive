@@ -20,46 +20,20 @@ struct device_impl
 {
     virtual ~device_impl () {}
 
-    virtual ssize_t readBytes (byte_t [] /*bytes*/, size_t /*n*/, errorable_ext & /*ex*/)
-    {
-        PFS_ASSERT_UNEXPECTED();
-        return -1;
-    }
-
-    virtual ssize_t writeBytes (const byte_t [] /*bytes*/, size_t /*n*/, errorable_ext & /*ex*/)
-    {
-        PFS_ASSERT_UNEXPECTED();
-        return -1;
-    }
-
-    virtual size_t  bytesAvailable () const
-    {
-        PFS_ASSERT_UNEXPECTED();
-        return -1;
-    }
-
-    virtual bool closeDevice (errorable_ext & /*ex*/)
-    {
-        PFS_ASSERT_UNEXPECTED();
-        return false;
-    }
-
-    virtual bool deviceIsOpened () const
-    {
-        PFS_ASSERT_UNEXPECTED();
-        return false;
-    }
-
-    virtual void flushDevice ()
-    {
-        PFS_ASSERT_UNEXPECTED();
-    }
+    virtual size_t  bytesAvailable () const = 0;
+    virtual ssize_t readBytes      (byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &) = 0;
+    virtual ssize_t writeBytes     (const byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &) = 0;
+    virtual bool    closeDevice    (errorable_ext &) = 0;
+    virtual bool    deviceIsOpened () const = 0;
+    virtual void    flushDevice    () = 0;
+    virtual void    setNonBlocking () = 0;
 };
 
 class DLL_API device : public errorable_ext
 {
 protected:
-    pimpl _d;
+    device_impl * _d;
+    uint32_t      _oflags;
 
 public:
 	typedef char char_type;
@@ -69,64 +43,95 @@ private:
 	device & operator = (const device & other);
 
 protected:
-    device () {}
-	device (device_impl * d) : _d(d) {}
+	device (device_impl * d) : _d(d), _oflags(0) {}
+
+	bool checkNotOpened ()
+	{
+	    if (opened()) {
+            this->addError(_u8("device is already opened"));
+            return false;
+	    }
+	    return true;
+	}
+
+	bool checkReadable ()
+	{
+        if (!isReadable()) {
+            this->addError(_u8("device is not readable"));
+            return false;
+        }
+        return true;
+	}
+
+    bool checkWritable ()
+    {
+        if (!isWritable()) {
+            this->addError(_u8("device is not writable"));
+            return false;
+        }
+        return true;
+    }
 
 public:
 	enum OpenMode {
-		  ReadOnly    = 0
-		, WriteOnly   = 0x0001
-		, ReadWrite   = 0x0002
+	      NotOpen     = 0
+		, ReadOnly    = 0x0001
+		, WriteOnly   = 0x0002
+		, ReadWrite   = ReadOnly | WriteOnly
 		, WriteRead   = ReadWrite
 		, NonBlocking = 0x0004
-		, Unbuffered  = 0x0008
+//		, Unbuffered  = 0x0008
 	};
 
 public:
-	bool isNull() const
-	{
-	    return _d.isNull();
-	}
+    device () : _d(nullptr), _oflags(NotOpen) {}
+    ~device () {
+        if (_d) {
+            close();
+            delete _d;
+            _d = nullptr;
+        }
+    }
+
+    bool isNull() const { return _d == nullptr; }
+
+	bool isReadable () const { return _d && (_oflags & ReadOnly); }
+	bool isWritable () const { return _d && (_oflags & WriteOnly); }
+	bool isNonBlocking () const { return _d && (_oflags & NonBlocking); }
 
 	bool opened () const
 	{
-	    return _d.isNull()
-	            ? false
-	            : _d.cast<device_impl>()->deviceIsOpened();
+	    return _d ? _d->deviceIsOpened() : false;
 	}
 
 	void flush ()
 	{
-	    if (!_d.isNull())
-	        _d.cast<device_impl>()->flushDevice();
+	    if (_d) _d->flushDevice();
 	}
+
+    virtual void setNonBlocking ()
+    {
+        if (_d) _d->setNonBlocking();
+    }
 
 	bool close ()
 	{
-	    return _d.isNull()
-	            ? true
-	            : _d.cast<device_impl>()->closeDevice(*this);
+	    return _d ? _d->closeDevice(*this) : true;
 	}
 
 	size_t available () const
 	{
-	    return _d.isNull()
-	            ? 0
-	            : _d.cast<device_impl>()->bytesAvailable();
+	    return _d ? _d->bytesAvailable() : 0;
 	}
 
 	bool atEnd () const
 	{
-	    return _d.isNull()
-	            ? true
-	            : _d.cast<device_impl>()->bytesAvailable() == ssize_t(0);
+	    return _d ? _d->bytesAvailable() == ssize_t(0) : true;
 	}
 
 	ssize_t read (byte_t bytes[], size_t n)
 	{
-	    return _d.isNull()
-	            ? 0
-	            : _d.cast<device_impl>()->readBytes(bytes, n, *this);
+	    return checkReadable() ? _d->readBytes(bytes, n, *this) : -1;
 	}
 
     ssize_t read (char chars[], size_t n)
@@ -138,9 +143,7 @@ public:
 
 	ssize_t write (const byte_t bytes[], size_t n)
 	{
-	    return _d.isNull()
-	            ? 0
-	            : _d.cast<device_impl>()->writeBytes(bytes, n, *this);
+	    return checkWritable() ? _d->writeBytes(bytes, n, *this) : -1;
 	}
 
     ssize_t write (const char * chars, size_t n)
@@ -150,16 +153,12 @@ public:
 
 	ssize_t write (const byte_string & bytes, size_t n)
 	{
-	    return _d.isNull()
-	            ? 0
-	            : _d.cast<device_impl>()->writeBytes(bytes.data(), pfs::min(n, bytes.size()), *this);
+	    return checkWritable() ? _d->writeBytes(bytes.data(), pfs::min(n, bytes.size()), *this) : -1;
 	}
 
 	ssize_t write (const byte_string & bytes)
 	{
-	    return _d.isNull()
-	            ? 0
-	            : _d.cast<device_impl>()->writeBytes(bytes.data(), bytes.size(), *this);
+	    return checkWritable() ? _d->writeBytes(bytes.data(), bytes.size(), *this) : -1;
 	}
 
     bool compress (device & dest, zlib::compression_level level = zlib::DefaultCompression, size_t chunkSize = 0x4000);

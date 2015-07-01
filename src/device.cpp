@@ -14,6 +14,12 @@ static const size_t DEFAULT_READ_BUFSZ = 256;
 
 byte_string device::read (size_t n)
 {
+    if (!checkReadable())
+        return byte_string();
+
+    if (!n)
+        return byte_string();
+
     byte_t buffer[DEFAULT_READ_BUFSZ];
     byte_t * pbuffer = buffer;
     byte_string r;

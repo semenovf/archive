@@ -8,6 +8,7 @@ TEMPLATE = subdirs
 CONFIG  += ordered
 
 SUBDIRS += pfs-io
+SUBDIRS += tests/buffer
 SUBDIRS += tests/file
 #SUBDIRS += tests/basic
 #SUBDIRS += tests/utf8

@@ -6,59 +6,111 @@
  */
 
 #include "pfs/io/buffer.hpp"
+#include <pfs/array.hpp>
 
 namespace pfs { namespace io {
 
 struct buffer_impl : public device_impl
 {
-    byte_string _buffer;
+    typedef array<byte_t> buffer_type;
 
-    virtual ssize_t readBytes (byte_t bytes[], size_t n, errorable_ext & ex);
-    virtual ssize_t writeBytes (const byte_t bytes[], size_t n, errorable_ext &)
-    {
-        PFS_ASSERT(n <= PFS_SSIZE_MAX);
-        _buffer.append(bytes, n);
-        return ssize_t(n);
-    }
+    buffer_type _buffer;
+    size_t _pos;
 
-    virtual size_t bytesAvailable () const
-    {
-        return _buffer.size();
-    }
+    buffer_impl () : _pos(0) {}
+    buffer_impl (byte_t a[], size_t n)
+        : _buffer(a, n)
+        , _pos(0)
+    {}
 
-    virtual bool closeDevice (errorable_ext & /*ex*/)
-    {
-        return true;
-    }
+    buffer_impl (size_t sz)
+        : _buffer(sz, true)
+        , _pos(0)
+    {}
 
-    virtual bool deviceIsOpened () const
-    {
-        return true;
-    }
 
-    virtual void flushDevice ()
-    { ; }
+    virtual size_t  bytesAvailable () const { return _buffer.size() - _pos; }
+    virtual ssize_t readBytes      (byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &);
+    virtual ssize_t writeBytes     (const byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &);
+    virtual bool    closeDevice    (errorable_ext &) { return true; }
+    virtual bool    deviceIsOpened () const { return true; }
+    virtual void    flushDevice    () {}
+    virtual void    setNonBlocking () {}
 };
 
 ssize_t buffer_impl::readBytes (byte_t bytes[], size_t n, errorable_ext &)
 {
-    size_t nbytes = 0;
-    if (n > 0 && _buffer.size() > 0) {
-        nbytes = pfs::min(n, _buffer.size());
-        PFS_ASSERT(nbytes <= PFS_SSIZE_MAX);
-        memcpy(bytes, _buffer.constData(), nbytes);
-        _buffer.remove(0, nbytes);
-    }
-    return ssize_t(nbytes);
+    if (_pos >= _buffer.size())
+        return 0;
+
+    n = pfs::min(n, _buffer.size() - _pos);
+    buffer_type::copy(bytes, _buffer,  _pos, n);
+    _pos += n;
+
+    return ssize_t(n);
 }
 
-const byte_t * buffer::constData () const
+ssize_t buffer_impl::writeBytes (const byte_t bytes[], size_t n, errorable_ext &)
 {
-    if (isNull())
-        return nullptr;
+    PFS_ASSERT(max_type<size_t>() - _pos >= n);
 
-    const buffer_impl * d = _d.cast<buffer_impl>();
-    return d->_buffer.constData();
+    size_t sizeAvailable = _buffer.size() - _pos;
+
+    if (sizeAvailable < n)
+        _buffer.realloc(_buffer.size() + n - sizeAvailable);
+
+    buffer_type::copy(_buffer, bytes, _pos, n);
+
+    return integral_cast_check<ssize_t>(n);
+}
+
+
+/**
+ * @brief Opens buffer device and initializes
+ *        it with raw byte array @c a of size @c n
+ *
+ * @param a Raw byte array.
+ * @param n Raw byte array size
+ * @param oflags Open mode flags.
+ *
+ * @return @c true if open is successful, @c false otherwise
+ *         (i.e. buffer device is already opened).
+ */
+bool buffer::open (byte_t a[], size_t n, uint32_t oflags)
+{
+    if (!checkNotOpened())
+        return false;
+
+    if (_d)
+        delete _d;
+
+    _d = new buffer_impl(a, n);
+    _oflags = oflags;
+
+    return _d != nullptr;
+}
+
+/**
+ * @brief Opens buffer device and initializes it byte array @c a of size @c sz.
+ *
+ * @param sz Raw byte array size.
+ * @param oflags Open mode flags.
+ *
+ * @return @c true if open is successful, @c false otherwise
+ *         (i.e. buffer device is already opened).
+ */
+bool buffer::open (size_t sz, uint32_t oflags)
+{
+    if (!checkNotOpened())
+        return false;
+
+    if (_d)
+        delete _d;
+
+    _d = new buffer_impl(sz);
+    _oflags = oflags;
+
+    return _d != nullptr;
 }
 
 size_t buffer::size () const
@@ -66,17 +118,8 @@ size_t buffer::size () const
     if (isNull())
         return 0;
 
-    const buffer_impl * d = _d.cast<buffer_impl>();
+    const buffer_impl * d = dynamic_cast<buffer_impl *>(_d);
     return d->_buffer.size();
-}
-
-byte_string buffer::data () const
-{
-    if (isNull())
-        return byte_string();
-
-    const buffer_impl * d = _d.cast<buffer_impl>();
-    return d->_buffer;
 }
 
 }} // pfs::io

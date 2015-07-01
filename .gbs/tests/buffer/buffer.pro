@@ -1,9 +1,9 @@
 include($$(GBS_HOME)/qmake/common-test.pri)
 
-TARGET = test_pfs_io_addrinfo
+TARGET = test-pfs-io-buffer
 
 INCLUDEPATH = $$prependIncludePath(../../../include)
-SOURCES += ../../../tests/addrinfo.cpp
+SOURCES += ../../../tests/buffer.cpp
 
 unix {
     LIBS += -lpfs
@@ -12,4 +12,7 @@ unix {
 }
 
 win32 {
+    LIBS += pfs.lib
+    LIBS += pfs-sys.lib
+    LIBS += pfs-io.lib
 }
