@@ -26,7 +26,7 @@ struct device_impl
     virtual bool    closeDevice    (errorable_ext &) = 0;
     virtual bool    deviceIsOpened () const = 0;
     virtual void    flushDevice    () = 0;
-    virtual void    setNonBlocking () = 0;
+    virtual bool    setNonBlocking () = 0;
 };
 
 class DLL_API device : public errorable_ext
@@ -109,9 +109,9 @@ public:
 	    if (_d) _d->flushDevice();
 	}
 
-    virtual void setNonBlocking ()
+    virtual bool setNonBlocking ()
     {
-        if (_d) _d->setNonBlocking();
+        return _d ? _d->setNonBlocking() : false;
     }
 
 	bool close ()

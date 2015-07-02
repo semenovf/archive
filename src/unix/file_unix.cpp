@@ -34,7 +34,7 @@ struct file_impl : public device_impl
     virtual bool    closeDevice    (errorable_ext &);
     virtual bool    deviceIsOpened () const;
     virtual void    flushDevice    ();
-    virtual void    setNonBlocking ();
+    virtual bool    setNonBlocking ();
 };
 
 static int perms2mode (int32_t perms)
@@ -148,10 +148,10 @@ void file_impl::flushDevice ()
 #endif
 }
 
-void file_impl::setNonBlocking ()
+bool file_impl::setNonBlocking ()
 {
     int flags = fcntl(_fd, F_GETFL, 0);
-    fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
+    return fcntl(_fd, F_SETFL, flags | O_NONBLOCK) >= 0;
 }
 
 file::file (int fd) : device(new file_impl)
@@ -219,7 +219,6 @@ bool file::open (const pfs::string & path, int32_t oflags)
 
 	return true;
 }
-
 
 size_t file::size () const
 {

@@ -35,7 +35,7 @@ struct buffer_impl : public device_impl
     virtual bool    closeDevice    (errorable_ext &) { return true; }
     virtual bool    deviceIsOpened () const { return true; }
     virtual void    flushDevice    () {}
-    virtual void    setNonBlocking () {}
+    virtual bool    setNonBlocking () { return true; }
 };
 
 ssize_t buffer_impl::readBytes (byte_t bytes[], size_t n, errorable_ext &)
