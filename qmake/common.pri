@@ -73,7 +73,6 @@ win32 {
 
 
 x64 {
-	message(x64)
     debug: QMAKE_CFLAGS_DEBUG = /Zi /MDd /WX
     release: QMAKE_CFLAGS_DEBUG = /Zi /MD /WX
 
