@@ -1,152 +1,6 @@
 #!/usr/bin/lua
 
--- Application variables
-local gbs_solutions_file = "solutions.txt";
-
-function print_error (m)
-    print("ERROR: " .. m);
-end
-
-function parse_option (opt)
-    local optname, optarg = opt:match("^[-][-]([%a%d_-]-)=(.-)$");
-    
-    if optname == nil then
-        optname = opt:match("^[-][-]([%a%d_-]-)$");
-    end
-    
-    if optarg == nil or optarg:len() == 0 then
-        optarg = nil;
-    end
-
-    return optname, optarg;
-end
-
-function is_valid_name (name)
-    local r = name:match("^([%a%d_-]-)$");
-    
-    if r == nil then
-        return false;
-    end
-
-    return true;
-end
-
-function file_exists (path)
-    --if type(path)~="string" then return false end
-    return os.rename(path,path) and true or false;
-end
-
-function touch_file (path)
-    local fh, errstr = io.open(path, "w");
-    if fh == nil then
-        print_error(path .. ": can't touch file: " .. errstr); 
-        return false;
-    end
-    io.close(fh);
-    return true;
-end
-
-function create_dir (path)
-    if not os.execute("mkdir " .. path) then
-        return false;
-    end
-    return true;
-end
-
---function change_dir (path)
---    if not os.execute("cd " .. path) then
---        print_error(path .. "failed to change directory");
---        return false;
---    end
---    return true;
---end
-
-function usage ()
-    print("NAME");
-    print("    gbs - utitlity for prepare development environment");
-    print("");
-    print("SYNOPSYS");
-    print("    gbs ACTION OPTIONS");
-    print("");
-    print("    (1) gbs help");
-    print("    (2) gbs create-workspace WORKSPACE_PATH");
-    print("    (3) gbs create-ws WORKSPACE_PATH");
-    print("    (4) gbs create-solution SOLUTION_NAME [GIT_OPTIONS]");
-    print("    (5) gbs create-sepaloid SEPALOID_NAME --sepaloid=SEPALOID_PREDEFINED_SET");
-    print("    (6) gbs create-sepaloid SEPALOID_NAME [--petaloid=PETALOID_NAME [--petaloid=PETALOID_NAME ...]]");
-    print("    (7) gbs create-project PROJECT_NAME --project-type=PROJECT_TYPE");
---    print("    (8) gbs --create-ws=PATH[-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] SOLUTIONNAME");
-    print("");
-    print("DESCRIPTION");
-    print("    (1)        - output this help and exit");
-    print("    (2) or (3) - create workspace at specified directory WORKSPACE_PATH");
-    print("    (4)        - create solution with name SOLUTION_NAME and type SOLUTION_TYPE");
-    print("");
-    print("ARGUMENTS");
-    print("    WORKSPACE_PATH  - valid file system path for directory");
-    print("    SOLUTION_NAME   - valid file system name for directory (not to be confused with full directory path)");
-    print("    SEPALOID_NAME   - valid file system name for directory");
-    print("    SEPALOID_PREDEFINED_SET - one of { default | gui-qt4 }");
-    print("    PETALOID_NAME   - valid file system name for directory");
-    print("    PROJECT_NAME    - valid file system name for directory");
-    print("    PROJECT_TYPE    - one of { app | lib | static | example | test }");
-    print("    GIT_OPTIONS     - options specific for 'git' revision control system. See 'GIT OPTIONS' section");
-    print("");
-    print("GIT OPTIONS");
-    print("    --git");
-    print("        initialize only git local repo");
-    print("    --git-hosting-github");
-    print("        initialize git local repo and synchronize it with remote repository"); 
-    print("        on GitHub (must be created previously)");
-    print("    --git-hosting-bitbucket");
-    print("        initialize git local repo and synchronize it with remote repository");
-    print("        on Bitbucket (must be created previously)");
-end
-
-function create_workspace (path)
-    if file_exists(path) then
-        print_error(path .. ": can't create workspace: directory already exists");
-        return false
-    end
-    
-    if not create_dir(path) then
-        print_error(path .. ": failed to create workspace directory");
-        return false; 
-    end
-    
---    if not change_dir(path) then
---        print_error(path .. ": failed to change the current directory to workspace directory");
---        return false; 
---    end
-    
-    local gbs_solutions_path = path .. "/" .. gbs_solutions_file;
-    
-    if not touch_file(gbs_solutions_path) then
-        print_error(gbs_solutions_path .. ": can't create file");
-        return false;
-    end
-    
-    return true;
-end
-
-function create_solution (name)
-    if not is_valid_name(name) then
-        print_error("invalid solution name, only alphanumeric characters, underscore ('_') and dash ('-') are valid");
-        return false;
-    end
-    
-    if not file_exists(gbs_solutions_file) then
-        print_error("can't create solution outside of workspace directory");
-        return false;
-    end
-    
-    if not create_dir(name) then
-        print_error(name .. ": failed to create solution");
-        return false; 
-    end
-    
-    return true;
-end
+gbs_solutions_file = "solutions.txt";
 
 -- Check GBS_HOME environment variable is set
 local gbs_home = os.getenv("GBS_HOME");
@@ -156,67 +10,33 @@ if gbs_home == nil or gbs_home:len() == 0 then
     os.exit(1);
 end
 
-local gbs_action = arg[1];
+package.path = gbs_home .. '/?.lua;' .. package.path;
+
+require "lua/utils"
+require "lua/domain/help";
+require "lua/domain/workspace";
+require "lua/domain/solution";
+
+local gbs_domain = arg[1];
+local exit_code = 0;
 
 if #arg == 0 then
     print_error("action must be specified, type `" .. arg[0] .. " help' to display usage.");
-    os.exit(1);
-elseif gbs_action == "help" then
+    exit_code = 1;
+elseif gbs_domain == "help" then
     usage();
-    os.exit(0);
-elseif gbs_action == "create-workspace" or gbs_action == "create-ws" then
-    local path = arg[2];
-    if path == nil then
-        print_error("workspace path must be specified");
-        os.exit(1);
-    end
-    
-    if not create_workspace(path) then
-        os.exit(1);
-    end
-elseif gbs_action == "create-solution" then
-    local name = arg[2];
-    if name == nil then
-        print_error("solution name must be specified");
-        os.exit(1);
-    end
-    
-    if not create_solution(name) then
-        os.exit(1);
-    end
+    exit_code = 0;
+elseif gbs_domain == "workspace" or gbs_domain == "ws" then
+    exit_code = workspace(2);
+elseif gbs_domain == "solution" then
+    exit_code = solution(2);
 else
-    print_error("bad action, type `" .. arg[0] .. " help' to display usage.");
-    os.exit(1);
+    print_error("bad domain, type `" .. arg[0] .. " help' to display usage.");
+    exit_code = 1;
 end
  
-os.exit(0);
+os.exit(exit_code);
 
---local args_index = 0;
---
---for i = 1, #arg do
---    if arg[i]:find("--", 1, true) == 1 then
---        if arg[i] == "--help" then
---            usage();
---            os.exit(0);
---        else
---            local opt, optarg = parse_option(arg[i]);
---            
---            if opt == "create-workspace" or opt == "create-ws" then
---                gbs_prefs.workspace_name = optarg;
---            else
---                print_error(arg[i] .. ": bad option");
---                os.exit(1);
---            end
---        end
---    else
---        args_index = args_index + 1;
---        gbs_prefs.args[args_index] = arg[i];
---    end
---end
-
---for i = 1, #gbs_prefs.args do
---    print(gbs_prefs.args[i]);
---end
 
 --[[
 
