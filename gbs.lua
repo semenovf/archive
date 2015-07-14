@@ -9,58 +9,14 @@ if gbs_home == nil or gbs_home:len() == 0 then
 end
 
 package.path = gbs_home .. '/?.lua;' .. package.path;
+package.path = gbs_home .. '/lua/?.lua;' .. package.path;
 
-require "lua/lib"
-require "lua/domain/help";
-require "lua/domain/workspace";
-require "lua/domain/solution";
-require "lua/domain/project";
+local Lib = require("lua/lib");
+local Gbs = require "lua/gbsdata";
 
-GbsPrefs = {
-      opts = {}
-    , workspace_file = "workspace.gbs"
-    , solution_file = "solution.gbs"
-};
-
-if #arg == 0 then
-    print_error("action must be specified, type `gbs help' to display usage.");
-    os.exit(1);
-end
-
-GbsPrefs.opts = parse_options(arg, #arg, 1);
-
-if GbsPrefs.opts == nil then
-    print_error("failed to parse command line arguments");
-    os.exit(1);
-end
-
---print("Arguments: " .. #GbsPrefs.opts);
---
---for key, value in pairs(GbsPrefs.opts) do
---  print(key, value);
---end
---
---os.exit(0);
-
-local gbs_domain = GbsPrefs.opts[1];
-local exit_code = 0;
-
-if gbs_domain == "help" then
-    usage();
-    exit_code = 0;
-elseif gbs_domain == "workspace" or gbs_domain == "ws" then
-    exit_code = workspace(2);
-elseif gbs_domain == "solution" then
-    exit_code = solution(2);
-elseif gbs_domain == "project" then
-    exit_code = project(2);
-else
-    print_error("bad domain, type `" .. arg[0] .. " help' to display usage.");
-    exit_code = 1;
-end
- 
-os.exit(exit_code);
-
+local gbs = Gbs:new();
+Lib.assert(gbs:parse_opts(#arg, arg));
+return gbs:run();
 
 --[[
 

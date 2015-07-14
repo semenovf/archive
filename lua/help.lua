@@ -1,4 +1,9 @@
-function usage ()
+function Gbs:doHelp ()
+    self:usage();
+    return true;
+end
+
+function Gbs:usage ()
     print("NAME");
     print("    gbs - utitlity for manage development environment");
     print("");
@@ -6,12 +11,12 @@ function usage ()
     print("    gbs DOMAIN [ACTION [OPTIONS]]");
     print("");
     print("    (1) gbs help");
-    print("    (2) gbs workspace create WORKSPACE_PATH");
-    print("    (3) gbs ws create WORKSPACE_PATH");
-    print("    (4) gbs solution create SOLUTION_NAME [GIT_OPTIONS]");
-    print("    (5) gbs sepaloid create SEPALOID_NAME --sepaloid=SEPALOID_PREDEFINED_SET");
-    print("    (6) gbs sepaloid create SEPALOID_NAME [--petaloid=PETALOID_NAME [--petaloid=PETALOID_NAME ...]]");
-    print("    (7) gbs project create PROJECT_NAME --project-type=PROJECT_TYPE");
+    print("    (2) gbs workspace create PATH");
+    print("    (3) gbs ws create PATH");
+    print("    (4) gbs solution create NAME [GIT_OPTIONS]");
+    print("    (5) gbs sepaloid create NAME --sepaloid=SEPALOID_SET");
+    print("    (6) gbs sepaloid create NAME [--petaloid=NAME [--petaloid=NAME ...]]");
+    print("    (7) gbs project create NAME --project-type=PROJECT_TYPE");
 --    print("    (8) gbs --create-ws=PATH[-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] SOLUTIONNAME");
     print("");
     print("DESCRIPTION");
@@ -26,15 +31,12 @@ function usage ()
     print("    sepaloid");
     print("    project");
     print("");
-    print("ARGUMENTS");
-    print("    WORKSPACE_PATH  - valid file system path for directory");
-    print("    SOLUTION_NAME   - valid file system name for directory (not to be confused with full directory path)");
-    print("    SEPALOID_NAME   - valid file system name for directory");
-    print("    SEPALOID_PREDEFINED_SET - one of { default | gui-qt4 }");
-    print("    PETALOID_NAME   - valid file system name for directory");
-    print("    PROJECT_NAME    - valid file system name for directory");
-    print("    PROJECT_TYPE    - one of { console-app | gui-app | shared-lib | static-lib | example | test }");
-    print("    GIT_OPTIONS     - options specific for 'git' revision control system. See 'GIT OPTIONS' section");
+    print("VALUES");
+    print("    PATH         - valid file system path for directory");
+    print("    NAME         - valid only alphanumeric characters, underscore ('_') and dash ('-')");
+    print("    SEPALOID_SET - one of { default | gui-qt4 }");
+    print("    PROJECT_TYPE - one of { console-app | gui-app | shared-lib | static-lib | example | test }");
+    print("    GIT_OPTIONS  - options specific for 'git' revision control system. See 'GIT OPTIONS' section");
     print("");
     print("GIT OPTIONS");
     print("    --git");

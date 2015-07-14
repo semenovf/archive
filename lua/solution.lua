@@ -10,6 +10,7 @@ function solution (start_arg_index)
 end
 
 function solution_create (name)
+    is_valid_name(name) or error("bad solution name");
     validate_name(name, "solution name");
     
     local workspace_filepath = join_path(".gbs", GbsPrefs.workspace_file);
