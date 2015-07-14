@@ -1,7 +1,5 @@
 #!/usr/bin/lua
 
-gbs_solutions_file = "solutions.txt";
-
 -- Check GBS_HOME environment variable is set
 local gbs_home = os.getenv("GBS_HOME");
 
@@ -12,24 +10,50 @@ end
 
 package.path = gbs_home .. '/?.lua;' .. package.path;
 
-require "lua/utils"
+require "lua/lib"
 require "lua/domain/help";
 require "lua/domain/workspace";
 require "lua/domain/solution";
+require "lua/domain/project";
 
-local gbs_domain = arg[1];
-local exit_code = 0;
+GbsPrefs = {
+      opts = {}
+    , workspace_file = "workspace.gbs"
+    , solution_file = "solution.gbs"
+};
 
 if #arg == 0 then
-    print_error("action must be specified, type `" .. arg[0] .. " help' to display usage.");
-    exit_code = 1;
-elseif gbs_domain == "help" then
+    print_error("action must be specified, type `gbs help' to display usage.");
+    os.exit(1);
+end
+
+GbsPrefs.opts = parse_options(arg, #arg, 1);
+
+if GbsPrefs.opts == nil then
+    print_error("failed to parse command line arguments");
+    os.exit(1);
+end
+
+--print("Arguments: " .. #GbsPrefs.opts);
+--
+--for key, value in pairs(GbsPrefs.opts) do
+--  print(key, value);
+--end
+--
+--os.exit(0);
+
+local gbs_domain = GbsPrefs.opts[1];
+local exit_code = 0;
+
+if gbs_domain == "help" then
     usage();
     exit_code = 0;
 elseif gbs_domain == "workspace" or gbs_domain == "ws" then
     exit_code = workspace(2);
 elseif gbs_domain == "solution" then
     exit_code = solution(2);
+elseif gbs_domain == "project" then
+    exit_code = project(2);
 else
     print_error("bad domain, type `" .. arg[0] .. " help' to display usage.");
     exit_code = 1;

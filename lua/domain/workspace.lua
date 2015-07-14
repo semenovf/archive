@@ -26,18 +26,18 @@ function workspace_create (path)
         return false;
     end
     
-    local solutions_filepath = join_path(path, ".gbs", gbs_solutions_file);
+    local workspace_filepath = join_path(path, ".gbs", GbsPrefs.workspace_file);
     
     if not (create_dir(path)
             and create_dir(join_path(path, ".gbs"))
-            and touch_file(solutions_filepath)) then
+            and touch_file(workspace_filepath)) then
         print_error(path .. ": failed to create workspace");
         return false; 
     end
     
-    local fh, errstr = io.open(solutions_filepath, "a+");
+    local fh, errstr = io.open(workspace_filepath, "a+");
     if fh == nil then
-        print_error(solutions_filepath .. ": can't open file: " .. errstr); 
+        print_error(workspace_filepath .. ": can't open file: " .. errstr); 
         return false;
     end
     

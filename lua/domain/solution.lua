@@ -10,14 +10,11 @@ function solution (start_arg_index)
 end
 
 function solution_create (name)
-    if not is_valid_name(name) then
-        print_error("invalid solution name, only alphanumeric characters, underscore ('_') and dash ('-') are valid");
-        return false;
-    end
+    validate_name(name, "solution name");
     
-    local solutions_filepath = join_path(".gbs", gbs_solutions_file);
+    local workspace_filepath = join_path(".gbs", GbsPrefs.workspace_file);
      
-    if not file_exists(solutions_filepath) then
+    if not file_exists(workspace_filepath) then
         print_error("can't create solution outside of workspace directory");
         return false;
     end
@@ -27,9 +24,9 @@ function solution_create (name)
         return false; 
     end
 
-    local fh, errstr = io.open(solutions_filepath, "a+");
+    local fh, errstr = io.open(workspace_filepath, "a+");
     if fh == nil then
-        print_error(solutions_filepath .. ": can't open file: " .. errstr); 
+        print_error(workspace_filepath .. ": can't open file: " .. errstr); 
         return false;
     end
     
