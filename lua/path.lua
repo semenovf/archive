@@ -40,7 +40,7 @@ function Path.touch (path)
     return true;
 end
 
-function Path.create_dir (path)
+function Path.mkdir (path)
     if not os.execute("mkdir " .. path) then
         return false;
     end

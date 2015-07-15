@@ -1,8 +1,8 @@
 local File = {};
 
-local Lib = require('lib');
+local Lib = require("lib");
 
-function File.append_lines (filepath, lines)
+function File.appendLines (filepath, lines)
 
     local fh, errstr = io.open(filepath, "a+");
     if fh == nil then
@@ -16,7 +16,8 @@ function File.append_lines (filepath, lines)
 
     fh:flush();
     fh:close();
-
+    
+    return true;
 end
 
 return File;

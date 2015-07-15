@@ -18,18 +18,20 @@ end
 
 
 function Gbs:createWorkspace ()
-    local path = self:workspacePath() or Lib.throw();
+    local path = self:workspacePath() or Lib.throw("workspace path must be specified");
+    
     Lib.assert(not Path.exists(path), path .. ": path already exists");
     
-    local workspace_filepath = Path.join(path, ".gbs", self:workspaceFile());
+    local workspaceFilepath = Path.join(path, ".gbs", self:workspaceFile());
 
-    Lib.assert(Path.create_dir(path));
-    Lib.assert(Path.create_dir(Path.join(path, ".gbs")));
-    Lib.assert(Path.touch(workspace_filepath));
-    Lib.assert(File.append_lines(workspace_filepath, {
+    Lib.assert(Path.mkdir(path));
+    Lib.assert(Path.mkdir(Path.join(path, ".gbs")));
+    Lib.assert(Path.mkdir(Path.join(path, ".build")));
+    Lib.assert(Path.touch(workspaceFilepath));
+    Lib.assert(File.appendLines(workspaceFilepath, {
               "#************************************************************"
-            , "#* Generated automatically by " .. App.name()
-            , "#* Command: " .. App.cmdline()
+            , "#* Generated automatically by `" .. App.name() .. "'"
+            , "#* Command: `" .. App.cmdline() .. "'"
             , "#* Date:    " .. os.date() 
             , "#************************************************************"
         }));    

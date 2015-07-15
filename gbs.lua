@@ -15,7 +15,7 @@ local Lib = require("lua/lib");
 local Gbs = require "lua/gbsdata";
 
 local gbs = Gbs:new();
-Lib.assert(gbs:parse_opts(#arg, arg));
+Lib.assert(gbs:parseCommandLine(#arg, arg));
 return gbs:run();
 
 --[[
