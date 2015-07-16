@@ -40,11 +40,27 @@ function Path.touch (path)
     return true;
 end
 
-function Path.mkdir (path)
-    if not os.execute("mkdir " .. path) then
-        return false;
+function Path.execute (program, argv)
+    local exe = program;
+    
+    if type(argv) == "table" then
+        for i = 1, #argv do
+            exe = exe .. ' ' .. argv[i];
+        end
+    else
+        exe = exe .. ' ' .. argv;
     end
+    
+    if not os.execute(exe) then return false end;
     return true;
+end
+
+function Path.mkdir (path)
+    return Path.execute("mkdir", path);
+end
+
+function Path.copy (src, dest)
+    return Path.execute("cp", {src, dest});
 end
 
 return Path;

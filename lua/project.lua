@@ -1,14 +1,54 @@
-local Project = {}
+local Project = {};
 
 local Lib  = require("lib");
 local Path = require("path");
 local File = require("file");
 
-function Project:new ()
+function Project:new (gbs)
+    local solutionName = nil;
+    local solutionFilepath = Path.join(".gbs", gbs:solutionFileName());
+    
+    if Path.exists(solutionFilepath) then
+        solutionName = gbs:getSolutionNameFromFile(solutionFilepath)
+            or Lib.throw(solutionFilepath .. ": unable to take solution name, may be solution file is absent or corrupted");
+    end
+    
     local o = {
---          _opts = nil
---        , _solutionName = nil
+          name = function ()
+                local r = gbs:optarg("name") or Lib.throw("project name must be specified");
+                Lib.assert(Lib.is_valid_name(r), "bad project name");
+                return r; 
+          end
+        , homeDir           = function () return gbs:homeDir(); end
+        , action = function () return gbs:action() or Lib.throw("action must be specified"); end
+        , solutionName = function () return solutionName; end
+        , type = function ()
+            if not gbs:hasOpt("type") then return "console-app"; end
+            local t = gbs:optarg("type");
+        
+            if     t == "console-app"
+                or t == "gui-app"
+                or t == "shared-lib"
+                or t == "static-lib"
+                or t == "test" then
+                return t;
+            end
+            Lib.throw("bad project type");
+            return nil; 
+          end
+          
+        , language = function () 
+            if not gbs:hasOpt("lang") then return "C++"; end
+            local l = gbs:optarg("lang");
+            if     l == "C++"
+                or l == "C" then
+                return l;
+            end
+            Lib.throw("bad project language");
+            return nil; 
+          end
     }; 
+    
     self.__index = self;
     return setmetatable(o, self);
 end
@@ -26,48 +66,9 @@ function Project:run ()
     return true;
 end
 
-function Project:action ()
-    if #self._opts > 1 then
-        return self.opts[2];
-    end
-    Lib.print_error("action must be specified");
-    return nil;
-end
-
-function Project:name ()
-    local r = self._opts[name] or Lib.throw("project name must be specified");
-    Lib.assert(Lib.is_valid_name(r), "bad project name");
-    return r; 
-end
-
-function Project:type () 
-    if self._opts[type] == nil then return "console-app"; end
-    
-    if self._opts[type] == "console-app"
-            or self._opts[type] == "gui-app"
-            or self._opts[type] == "shared-lib"
-            or self._opts[type] == "static-lib"
-            or self._opts[type] == "test"
-        return self._opts[type];
-    end
-    Lib.throw("bad project type");
-    return nil; 
-end
-
-function Project:language () 
-    if self._opts[lang] == nil then return "C++"; end
-    if self._opts[lang] == "C++"
-            or self._opts[lang] == "C"
-        return self._opts[lang];
-    end
-    Lib.throw("bad project language");
-    return nil; 
-end
-
-function Project:solutionName () 
-    return self._solutionName or Lib.throw("unknown solution name"); 
-end
-
+---
+--- @see https://github.com/premake/premake-core/wiki/kind
+---
 function Project:premakeKind ()
     local kind = self:type();
     
@@ -85,6 +86,9 @@ function Project:premakeKind ()
     return nil;
 end
 
+---
+--- @see https://github.com/premake/premake-core/wiki/language
+--- 
 function Project:premakeLang ()
     local lang = self:language();
     
@@ -96,29 +100,42 @@ function Project:premakeLang ()
     return nil;
 end
 
-function Project:create ()
-    local name = self:name();
+function Project:isExists(name)
+    local solutionFile = Path.join(".gbs", "solution.gbs");
+    for line in io.lines(solutionFile) do
+        r = line:match('^project%s"([^%s]-)"');
+        if r == name then
+            return true; 
+        end
+    end
+    return false;
+end
 
-    if not Path.exists('src') then
-         Lib.assert(Path.mkdir('src'));
+function Project:create ()
+    local proName = self:name();
+    local proLanguage = self:language();
+    local solutionFile = Path.join(".gbs", "solution.gbs");
+    
+    if self:isExists(proName) then
+        Lib.print_error(proName .. ': project already exists');
+        return false;
     end
     
---    if self:isStaticLib
-    local solutionName = self:solutionName();
-    local kind     = self:premakeKind();
-    local language = self:premakeLang();
-    local location = "../../.build/" .. solution_name .. '/' .. name;
-        
-    Lib.assert(File.appendLines(Path.join(".gbs", "solution.gbs"), {
-              ''
-            , '-- BEGIN PROJECT'
-            , 'project '      .. Lib.quote(name)
-            , '    kind     ' .. Lib.quote(kind)
-            , '    language ' .. Lib.quote(language)
-            , '    location ' .. Lib.quote(location)
-            , '-- END PROJECT'
-        }));    
+    Lib.assert(File.appendLines(solutionFile, {
+          ''
+        , '-- BEGIN PROJECT'
+        , 'project ' .. Lib.quote(proName)
+    }));    
     
+    if proLanguage == 'C++' or proLanguage == 'C' then
+        local Plugin = require('plugin/cpp');
+        local p = Plugin:new(self);
+        p:create();
+    end
+
+    Lib.assert(File.appendLines(solutionFile, {
+        '-- END PROJECT'
+    }));    
     return true;
 end
 

@@ -1,21 +1,25 @@
-function Gbs:doHelp ()
-    self:usage();
-    return true;
+local Help = {};
+
+function Help:new ()
+    local o = {};
+    self.__index = self;
+    return setmetatable(o, self);
 end
 
-function Gbs:usage ()
+function Help:usage ()
     print("NAME");
     print("    gbs - utitlity for manage development environment");
     print("");
     print("SYNOPSYS");
-    print("    gbs DOMAIN [ACTION [OPTIONS]]");
+    print("    gbs DOMAIN [ACTION [OPTIONS]] [--dump]");
     print("");
     print("    (1) gbs help");
-    print("    (2) gbs workspace create PATH");
-    print("    (3) gbs solution create NAME [GIT_OPTIONS]");
-    print("    (4) gbs sepaloid create NAME --sepaloid=SEPALOID_SET");
-    print("    (5) gbs sepaloid create NAME [--petaloid=NAME [--petaloid=NAME ...]]");
+    print("    (2) gbs workspace create --path=PATH");
+    print("    (3) gbs solution create --name=NAME [GIT_OPTIONS]");
+    print("    (4) gbs sepaloid create --name=NAME --sepaloid=SEPALOID_SET");
+    print("    (5) gbs sepaloid create --name=NAME [--petaloid=NAME [--petaloid=NAME ...]]");
     print("    (6) gbs project create --name=NAME [--type=PROJECT_TYPE] [--lang=LANG]");
+    print("    (7) gbs project build --name=NAME");
 --    print("    (8) gbs --create-ws=PATH[-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] SOLUTIONNAME");
     print("");
     print("DESCRIPTION");
@@ -33,12 +37,15 @@ function Gbs:usage ()
     print("VALUES");
     print("    PATH         - valid file system path for directory");
     print("    NAME         - valid only alphanumeric characters, underscore ('_') and dash ('-')");
-    print("    SEPALOID_SET - `default' | `gui-qt4' }";
-    print("    PROJECT_TYPE - `console-app' | `gui-app' | `shared-lib' | `static-lib' | `test'.
+    print("    SEPALOID_SET - `default' | `gui-qt4' }");
+    print("    PROJECT_TYPE - `console-app' | `gui-app' | `shared-lib' | `static-lib' | `test'");
     print("                   Default is `console-app'");
-    print("    LANG         - language identifier: C++ | C. Default is C++");
+    print("    LANG         - language identifier: C++ | C | Lua | Perl. Default is C++");
     print("    GIT_OPTIONS  - options specific for 'git' revision control system. See 'GIT OPTIONS' section");
     print("");
+    print("OPTIONS");
+    print("    --dump");
+    print("        dump options and exit execution");
     print("GIT OPTIONS");
     print("    --git");
     print("        initialize only git local repo");
@@ -49,3 +56,5 @@ function Gbs:usage ()
     print("        initialize git local repo and synchronize it with remote repository");
     print("        on Bitbucket (must be created previously)");
 end
+
+return Help;

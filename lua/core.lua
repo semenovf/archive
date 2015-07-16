@@ -1,17 +1,25 @@
 Gbs = {};
 
-local Lib = require("lib");
-local Path = require("path");
-require "help";
-require "workspace";
-require "solution";
-local Project = require("project");
+require "dumper"; -- http://lua-users.org/wiki/DataDumper
+local Lib       = require("lib");
+local Path      = require("path");
+local Help      = require("help");
+local Workspace = require("workspace");
+local Solution  = require("solution");
+local Project   = require("project");
+
+-- Define a shortcut function for testing
+function dump (...)
+    print(DataDumper(...));
+end
 
 function Gbs:new ()
     local o = {
-            _opts = {}
-          , workspaceFile = function () return 'workspace.txt'; end
-          , solutionFile  = function () return 'solution.gbs'; end
+          _opts = {}
+        , homeDir           = function () return os.getenv("GBS_HOME"); end 
+        , solutionFileName  = function () return 'solution.gbs'; end
+        , workspaceFileName = function () return 'workspace.txt'; end
+        
     }; 
     self.__index = self;
     return setmetatable(o, self);
@@ -39,7 +47,16 @@ function Gbs:parseCommandLine (argc, argv)
                 end
                 self._opts[optname] = true;
             else
-                self._opts[optname] = optarg;
+                if self._opts[optname] == nil then
+                    self._opts[optname] = optarg;
+                else
+                    if type(self._opts[optname]) ~= "table" then 
+                        local x = self._opts[optname];
+                        self._opts[optname] = {};
+                        table.insert(self._opts[optname], x);
+                    end
+                    table.insert(self._opts[optname], optarg);
+                end
             end
         else
             self._opts[k] = argv[i];
@@ -53,11 +70,6 @@ function Gbs:parseCommandLine (argc, argv)
 --      print(key, value);
 --    end
 
-    if #self._opts < 1 then
-        Lib.print_error("domain must be specified");
-        return false;
-    end
-    
     return true;
 end
 
@@ -72,27 +84,20 @@ function Gbs:action ()
     if #self._opts > 1 then
         return self._opts[2];
     end
-    Lib.print_error("action must be specified");
     return nil;
 end
 
-function Gbs:workspacePath ()
-    if #self._opts > 2 then
-        return self._opts[3];
-    end
-    return nil;
+function Gbs:hasOpt (optname)
+    return self._opts[optname] ~= nil;
 end
 
-function Gbs:solutionName ()
-    if #self._opts > 2 then
-        return self._opts[3];
-    end
-    return nil;
+function Gbs:optarg (optname)
+    return self._opts[optname] or Lib.throw(optname .. ": option must be specified");
 end
 
-function Gbs:getSolutionNameFromFile(solutionFilepath)
+function Gbs:getSolutionNameFromFile(solutionFile)
     local r = nil;
-    for line in io.lines(solutionFilepath) do
+    for line in io.lines(solutionFile) do
         r = line:match('^solution%s"([^%s]-)"');
         if r ~= nil then
             break;
@@ -101,38 +106,29 @@ function Gbs:getSolutionNameFromFile(solutionFilepath)
     return r;
 end
 
-function Gbs:newProject ()
-{
-    local solutionName = nil;
-    local solutionFilepath = Path.join(".gbs", self:solutionFileName());
-    
-    if Path.exists(solutionFilepath) then
-        solutionName = getSolutionNameFromFile(solutionFilepath)
-            or Lib.throw(solutionFilepath .. ": unable to take solution name, may be solution file is absent or corrupted");
-    end
-    
-    local project = Project:new();
-    project._name = self._opts[name];
-    project._solutionName = solutionName;
-    
-    return project;
-}
-
 function Gbs:run ()
+    if self:hasOpt("dump") then
+        dump(self._opts);
+        return 0;
+    end
+
     local domain = self:domain();
     local r = true;
-    
+   
     if domain == "help" then
-        r = self:doHelp();
+        local help = Help:new();
+        help:usage();
     elseif domain == "workspace" or domain == "ws" then
-        local project = self:newProject();
-        r = project:run();
+        local ws = Workspace:new(self);
+        r = ws:run();
     elseif domain == "solution" or domain == "sln" then
-        r = self:doSolution();
+        local sln = Solution:new(self);
+        r = sln:run();
     elseif domain == "project"  or domain == "pro" then
-        r = self:doProject();
+        local pro = Project:new(self);
+        r = pro:run();
     else
-        Lib.print_error("bad domain");
+        Lib.print_error("bad domain or it must be specified");
         r = false;
     end
 

@@ -12,11 +12,12 @@ package.path = gbs_home .. '/?.lua;' .. package.path;
 package.path = gbs_home .. '/lua/?.lua;' .. package.path;
 
 local Lib = require("lua/lib");
-local Gbs = require "lua/gbsdata";
+local Gbs = require "lua/core";
 
 local gbs = Gbs:new();
-Lib.assert(gbs:parseCommandLine(#arg, arg));
-return gbs:run();
+if gbs:parseCommandLine(#arg, arg) then
+    return gbs:run();
+end
 
 --[[
 
