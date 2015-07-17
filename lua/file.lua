@@ -10,8 +10,12 @@ function File.appendLines (filepath, lines)
         return false;
     end
     
-    for i = 1, #lines do
-        fh:write(lines[i] .. "\n");
+    if type(lines) == "table" then
+        for i = 1, #lines do
+            fh:write(lines[i] .. "\n");
+        end
+    else
+        fh:write(lines .. "\n");
     end
 
     fh:flush();

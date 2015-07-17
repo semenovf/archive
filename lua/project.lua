@@ -5,48 +5,8 @@ local Path = require("path");
 local File = require("file");
 
 function Project:new (gbs)
-    local solutionName = nil;
-    local solutionFilepath = Path.join(".gbs", gbs:solutionFileName());
-    
-    if Path.exists(solutionFilepath) then
-        solutionName = gbs:getSolutionNameFromFile(solutionFilepath)
-            or Lib.throw(solutionFilepath .. ": unable to take solution name, may be solution file is absent or corrupted");
-    end
-    
     local o = {
-          name = function ()
-                local r = gbs:optarg("name") or Lib.throw("project name must be specified");
-                Lib.assert(Lib.is_valid_name(r), "bad project name");
-                return r; 
-          end
-        , homeDir           = function () return gbs:homeDir(); end
-        , action = function () return gbs:action() or Lib.throw("action must be specified"); end
-        , solutionName = function () return solutionName; end
-        , type = function ()
-            if not gbs:hasOpt("type") then return "console-app"; end
-            local t = gbs:optarg("type");
-        
-            if     t == "console-app"
-                or t == "gui-app"
-                or t == "shared-lib"
-                or t == "static-lib"
-                or t == "test" then
-                return t;
-            end
-            Lib.throw("bad project type");
-            return nil; 
-          end
-          
-        , language = function () 
-            if not gbs:hasOpt("lang") then return "C++"; end
-            local l = gbs:optarg("lang");
-            if     l == "C++"
-                or l == "C" then
-                return l;
-            end
-            Lib.throw("bad project language");
-            return nil; 
-          end
+        gbs = function () return gbs; end
     }; 
     
     self.__index = self;
@@ -54,7 +14,8 @@ function Project:new (gbs)
 end
 
 function Project:run ()
-    local action = self:action() or Lib.throw();
+    local gbs = self:gbs();
+    local action = gbs:action() or Lib.throw("action for project must be specified");
         
     if action == "create" then
         return self:create();
@@ -64,6 +25,44 @@ function Project:run ()
     end
     
     return true;
+end
+
+function Project:name ()
+    local gbs = self:gbs();
+    local r = gbs:optarg("name") or Lib.throw("project name must be specified");
+    Lib.assert(Lib.is_valid_name(r), "bad project name");
+    return r; 
+end
+
+function Project:type ()
+    local gbs = self:gbs();
+    if not gbs:hasOpt("type") then return "console-app"; end
+    local t = gbs:optarg("type");
+    
+    if     t == "console-app"
+        or t == "gui-app"
+        or t == "shared-lib"
+        or t == "static-lib"
+        or t == "test" then
+        return t;
+    end
+    Lib.throw("bad project type");
+    return nil; 
+end
+
+          
+function Project:language () 
+    local gbs = self:gbs();
+    
+    if not gbs:hasOpt("lang") then return "C++"; end
+    
+    local l = gbs:optarg("lang");
+    if     l == "C++"
+        or l == "C" then
+        return l;
+    end
+    Lib.throw("bad project language");
+    return nil; 
 end
 
 ---
@@ -101,7 +100,9 @@ function Project:premakeLang ()
 end
 
 function Project:isExists(name)
-    local solutionFile = Path.join(".gbs", "solution.gbs");
+    local gbs = self:gbs();
+    local solutionFile = Path.join(".gbs", gbs:solutionFileName());
+    
     for line in io.lines(solutionFile) do
         r = line:match('^project%s"([^%s]-)"');
         if r == name then
@@ -112,20 +113,34 @@ function Project:isExists(name)
 end
 
 function Project:create ()
+    local gbs = self:gbs();
     local proName = self:name();
+    local proDir = Path.join(".gbs", proName);
     local proLanguage = self:language();
-    local solutionFile = Path.join(".gbs", "solution.gbs");
+    local solutionFile = Path.join(".gbs", gbs:solutionFileName());
     
     if self:isExists(proName) then
-        Lib.print_error(proName .. ': project already exists');
+        Lib.print_error(proName .. ': project already registered');
         return false;
     end
+    
+    if Path.exists(proDir) then
+        Lib.print_error(proDir .. ': project directory already exists');
+        return false;
+    end
+    
+    if not Path.mkdir(proDir) then
+        Lib.print_error(proDir .. ': failed to create project directory');
+        return false;
+    end
+    
     
     Lib.assert(File.appendLines(solutionFile, {
           ''
         , '-- BEGIN PROJECT'
         , 'project ' .. Lib.quote(proName)
-    }));    
+        , '    dofile(' .. Lib.quote(proName .. '/' .. gbs:projectFileName()) ..')' 
+    }));
     
     if proLanguage == 'C++' or proLanguage == 'C' then
         local Plugin = require('plugin/cpp');

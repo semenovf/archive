@@ -3,10 +3,6 @@ Gbs = {};
 require "dumper"; -- http://lua-users.org/wiki/DataDumper
 local Lib       = require("lib");
 local Path      = require("path");
-local Help      = require("help");
-local Workspace = require("workspace");
-local Solution  = require("solution");
-local Project   = require("project");
 
 -- Define a shortcut function for testing
 function dump (...)
@@ -19,7 +15,7 @@ function Gbs:new ()
         , homeDir           = function () return os.getenv("GBS_HOME"); end 
         , solutionFileName  = function () return 'solution.gbs'; end
         , workspaceFileName = function () return 'workspace.txt'; end
-        
+        , projectFileName   = function () return 'project.gbs'; end
     }; 
     self.__index = self;
     return setmetatable(o, self);
@@ -106,6 +102,19 @@ function Gbs:getSolutionNameFromFile(solutionFile)
     return r;
 end
 
+function Gbs:solutionName ()
+    local solutionFilePath = Path.join(".gbs", self:solutionFileName());
+    
+    if not Path.exists(solutionFilePath) then
+        Lib.throw(solutionFilePath .. ": solution file not found");
+    end
+
+    local solutionName = self:getSolutionNameFromFile(solutionFilePath)
+            or Lib.throw(solutionFilePath .. ": unable to take solution name, solution file may be corrupted");
+    return solutionName;
+end
+
+
 function Gbs:run ()
     if self:hasOpt("dump") then
         dump(self._opts);
@@ -116,15 +125,19 @@ function Gbs:run ()
     local r = true;
    
     if domain == "help" then
+        local Help = require("help");
         local help = Help:new();
         help:usage();
     elseif domain == "workspace" or domain == "ws" then
+        local Workspace = require("workspace");
         local ws = Workspace:new(self);
         r = ws:run();
     elseif domain == "solution" or domain == "sln" then
+        local Solution = require("solution");
         local sln = Solution:new(self);
         r = sln:run();
     elseif domain == "project"  or domain == "pro" then
+        local Project = require("project");
         local pro = Project:new(self);
         r = pro:run();
     else

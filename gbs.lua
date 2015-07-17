@@ -11,7 +11,7 @@ end
 package.path = gbs_home .. '/?.lua;' .. package.path;
 package.path = gbs_home .. '/lua/?.lua;' .. package.path;
 
-local Lib = require("lua/lib");
+--local Lib = require("lua/lib");
 local Gbs = require "lua/core";
 
 local gbs = Gbs:new();

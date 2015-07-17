@@ -18,7 +18,7 @@ function Help:usage ()
     print("    (3) gbs solution create --name=NAME [GIT_OPTIONS]");
     print("    (4) gbs sepaloid create --name=NAME --sepaloid=SEPALOID_SET");
     print("    (5) gbs sepaloid create --name=NAME [--petaloid=NAME [--petaloid=NAME ...]]");
-    print("    (6) gbs project create --name=NAME [--type=PROJECT_TYPE] [--lang=LANG]");
+    print("    (6) gbs project create --name=NAME [--type=PROJECT_TYPE] [--lang=LANG] [--depend=NAME [--depend=NAME ...]]");
     print("    (7) gbs project build --name=NAME");
 --    print("    (8) gbs --create-ws=PATH[-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] SOLUTIONNAME");
     print("");
@@ -46,6 +46,8 @@ function Help:usage ()
     print("OPTIONS");
     print("    --dump");
     print("        dump options and exit execution");
+    print("    --depend");
+    print("        specify one more sibling project names (inside solution)");
     print("GIT OPTIONS");
     print("    --git");
     print("        initialize only git local repo");

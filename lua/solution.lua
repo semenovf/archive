@@ -7,22 +7,23 @@ local App  = require("app");
 
 function Solution:new (gbs)
     local o = {
-          name = function ()
-                local r = gbs:optarg("name") or Lib.throw("project name must be specified");
-                Lib.assert(Lib.is_valid_name(r), "bad project name");
-                return r; 
-          end
-        , action = function () return gbs:action() or Lib.throw("action must be specified"); end
-        , workspaceFileName = function () return gbs:workspaceFileName(); end
-        , solutionFileName = function () return gbs:solutionFileName(); end
+        gbs = function () return gbs; end
     }; 
     
     self.__index = self;
     return setmetatable(o, self);
 end
 
+function Solution:name ()
+    local gbs = self:gbs();
+    local r = gbs:optarg("name") or Lib.throw("project name must be specified");
+    Lib.assert(Lib.is_valid_name(r), "bad project name");
+    return r; 
+end
+
 function Solution:run ()
-    local action = self:action() or Lib.throw();
+    local gbs = self:gbs();
+    local action = gbs:action() or Lib.throw("action for solution must be specified");
         
     if action == "create" then
         return self:create();
@@ -33,20 +34,34 @@ function Solution:run ()
 end
 
 function Solution:create ()
-    local name = self:name();
-    local workspaceFile = Path.join(".gbs", self:workspaceFileName());
+    local gbs = self:gbs();
+    local wsFile = Path.join(".gbs", gbs:workspaceFileName());
+    local slnName = self:name();
+--    local slnFileName = Path.join(".gbs", gbs:solutionFileName());
 
-    Lib.assert(Path.exists(workspaceFile), "can't create solution outside of workspace directory");
-    Lib.assert(Path.mkdir(name), "failed to create solution");
-    Lib.assert(Path.mkdir(Path.join(name, ".gbs")));
-    Lib.assert(File.appendLines(workspaceFile, { name }));
-    Lib.assert(File.appendLines(Path.join(name, ".gbs", "solution.gbs"), {
+    if not Path.exists(wsFile) then
+        Lib.print_error("can't create solution outside of workspace directory");
+        return false;
+    end
+    
+    if not Path.mkdir(slnName) then
+        Lib.print_error("failed to create solution");
+        return false;
+    end
+
+    if not Path.mkdir(Path.join(slnName, ".gbs")) then
+        Lib.print_error("failed to create solution `.gbs' directory");
+        return false;
+    end
+    
+    Lib.assert(File.appendLines(wsFile, { slnName }));
+    Lib.assert(File.appendLines(Path.join(slnName, ".gbs", gbs:solutionFileName()), {
               "--************************************************************"
             , "--* Generated automatically by `" .. App.name() .. "'"
             , "--* Command: `" .. App.cmdline() .. "'"
             , "--* Date:    " .. os.date() 
             , "--************************************************************"
-            , 'solution ' .. Lib.quote(name)
+            , 'solution ' .. Lib.quote(slnName)
             , '    configurations {"debug", "release"}'
         }));    
     
