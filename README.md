@@ -1,6 +1,6 @@
 ###NAME
 
-`gbs` - Griotte Build System based on qmake version 2.x.
+`gbs` - build system based on qmake version 2.x.
 
 ###VERSION
 Version 1.00b
