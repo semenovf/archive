@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#include "../include/pfs/date.hpp"
-#include "../include/pfs/math.hpp"
+#include "pfs/date.hpp"
+#include "pfs/math.hpp"
 #include <cstring>
 #include <sstream>
 #include <iomanip>

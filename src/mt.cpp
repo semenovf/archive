@@ -7,7 +7,7 @@
  */
 
 
-#include "../include/pfs/mt.hpp"
+#include "pfs/mt.hpp"
 
 namespace pfs {
 

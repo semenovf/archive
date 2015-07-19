@@ -6,7 +6,7 @@
  * @brief
  */
 
-#include "../include/pfs/atomic.hpp"
+#include "pfs/atomic.hpp"
 
 #if defined(HAVE_ATOMIC_MT)
 

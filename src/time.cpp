@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include "../include/pfs/time.hpp"
+#include "pfs/time.hpp"
 #include <cstring>
 #include <sstream>
 #include <iomanip>
