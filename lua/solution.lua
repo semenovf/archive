@@ -56,14 +56,19 @@ function Solution:create ()
     
     Lib.assert(File.appendLines(wsFile, { slnName }));
     Lib.assert(File.appendLines(Path.join(slnName, ".gbs", gbs:solutionFileName()), {
-              "--************************************************************"
-            , "--* Generated automatically by `" .. App.name() .. "'"
-            , "--* Command: `" .. App.cmdline() .. "'"
-            , "--* Date:    " .. os.date() 
-            , "--************************************************************"
-            , 'solution ' .. Lib.quote(slnName)
-            , '    configurations {"debug", "release"}'
-        }));    
+          "--************************************************************"
+        , "--* Generated automatically by `" .. App.name() .. "'"
+        , "--* Command: `" .. App.cmdline() .. "'"
+        , "--* Date:    " .. os.date() 
+        , "--************************************************************"
+        , 'solution ' .. Lib.quote(slnName)
+        , '    configurations {"debug", "release"}'
+        , '    platforms {"unix32", "unix64", "win32", "win64"}'
+        , '    filter "platforms:*32"'
+        , '        architecture "x32"'
+        , '    filter "platforms:*64"'
+        , '        architecture "x64"'
+    }));  
     
     return true;
 end

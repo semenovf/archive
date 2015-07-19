@@ -16,10 +16,23 @@ function Gbs:new ()
         , solutionFileName  = function () return 'solution.gbs'; end
         , workspaceFileName = function () return 'workspace.txt'; end
         , projectFileName   = function () return 'project.gbs'; end
+        , sourcesDirName    = function () return 'src'; end
+        , testsDirName      = function () return 'tests'; end
     }; 
     self.__index = self;
     return setmetatable(o, self);
 end
+
+--function binDir ()
+--end
+--
+--function libDir ()
+--end
+--
+--function includeDir ()
+--end
+
+
 
 ---
 --- @brief Parses command line arguments

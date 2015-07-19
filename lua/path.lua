@@ -16,12 +16,42 @@ function Path.separator ()
     return package.config:sub(1,1);
 end
 
-function Path.join (a, b, ...)
+function Path.join (a, ...)
     local separator = Path.separator();
-    local r = a .. separator .. b;
+    local r = '';
+
+    local ta = a;
     
-    for i = 1, select('#',...) do
-        r = r .. separator .. select(i, ...);
+    if type(a) ~= "table" then
+        ta = { a };
+    end
+    
+    if #ta > 0 then
+        r = ta[1];
+    end
+    for i = 2, #ta do
+        if ta[i]:find(separator, 1, true) == 1 then -- Absolute path
+            r = ta[i];
+        else
+            r = r .. separator .. ta[i];
+        end
+    end
+    
+    for i = 1, select('#', ...) do
+        local b = select(i, ...);
+        local tb = b;
+        
+        if type(b) ~= "table" then
+            tb = { b };
+        end
+        
+        for j = 1, #tb do
+            if tb[j]:find(separator, 1, true) == 1 then -- Absolute path
+                r = tb[j];
+            else
+                r = r .. separator .. tb[j];
+            end
+        end
     end
     return r;
 end

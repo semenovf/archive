@@ -99,7 +99,7 @@ function Project:premakeLang ()
     return nil;
 end
 
-function Project:isExists(name)
+function Project:exists (name)
     local gbs = self:gbs();
     local solutionFile = Path.join(".gbs", gbs:solutionFileName());
     
@@ -119,7 +119,13 @@ function Project:create ()
     local proLanguage = self:language();
     local solutionFile = Path.join(".gbs", gbs:solutionFileName());
     
-    if self:isExists(proName) then
+    if not Path.exists(solutionFile) then
+        Lib.print_error("can't create project outside of solution directory");
+        return false;
+    end
+    
+    
+    if self:exists(proName) then
         Lib.print_error(proName .. ': project already registered');
         return false;
     end
@@ -139,7 +145,7 @@ function Project:create ()
           ''
         , '-- BEGIN PROJECT'
         , 'project ' .. Lib.quote(proName)
-        , '    dofile(' .. Lib.quote(proName .. '/' .. gbs:projectFileName()) ..')' 
+        , '    include(' .. Lib.quote(proName .. '/' .. gbs:projectFileName()) ..')' 
     }));
     
     if proLanguage == 'C++' or proLanguage == 'C' then
