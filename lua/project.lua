@@ -140,7 +140,6 @@ function Project:create ()
         return false;
     end
     
-    
     Lib.assert(File.appendLines(solutionFile, {
           ''
         , '-- BEGIN PROJECT'

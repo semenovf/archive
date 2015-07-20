@@ -54,6 +54,14 @@ function Solution:create ()
         return false;
     end
     
+    if gbs:hasOpt("git") then
+        if not Path.exists(".gitignore") then
+            local src = Path.join(gbs:homeDir(), "scripts", "gitignore");
+            local dest = ".gitignore";
+            Lib.assert(Path.copy(src, dest));
+        end
+    end
+    
     Lib.assert(File.appendLines(wsFile, { slnName }));
     Lib.assert(File.appendLines(Path.join(slnName, ".gbs", gbs:solutionFileName()), {
           "--************************************************************"
