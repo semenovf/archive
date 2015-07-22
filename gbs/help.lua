@@ -1,12 +1,12 @@
-local Help = {};
+local help = {};
 
-function Help:new ()
+function help:new ()
     local o = {};
     self.__index = self;
     return setmetatable(o, self);
 end
 
-function Help:usage ()
+function help:usage ()
     print("NAME");
     print("    gbs - utitlity for manage development environment");
     print("");
@@ -57,6 +57,8 @@ function Help:usage ()
     print("    --git=bitbucket");
     print("        initialize git local repo and synchronize it with remote repository");
     print("        on Bitbucket (must be created previously)");
+    print("    --git-login=LOGIN");
+    print("        login name to access remote git repository");
 end
 
-return Help;
+return help;

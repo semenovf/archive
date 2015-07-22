@@ -70,6 +70,9 @@ function Path.touch (path)
     return true;
 end
 
+--
+-- DEPRECATED. Use gbs.fs instead
+--
 function Path.execute (program, argv)
     local exe = program;
     

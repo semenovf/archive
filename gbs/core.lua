@@ -1,8 +1,8 @@
 local gbs = {};
 
-require "dumper"; -- http://lua-users.org/wiki/DataDumper
-local lib       = require("gbs/lib");
-local Path      = require("path");
+require "gbs.sys.dumper"; -- http://lua-users.org/wiki/DataDumper
+local lib   = require("gbs.sys.lib");
+local fs    = require("gbs.sys.fs");
 
 -- Define a shortcut function for testing
 function dump (...)
@@ -116,9 +116,9 @@ function gbs:getSolutionNameFromFile(solutionFile)
 end
 
 function gbs:solutionName ()
-    local solutionFilePath = Path.join(".gbs", self:solutionFileName());
+    local solutionFilePath = fs.join(".gbs", self:solutionFileName());
     
-    if not Path.exists(solutionFilePath) then
+    if not fs.exists(solutionFilePath) then
         lib.throw(solutionFilePath .. ": solution file not found");
     end
 
@@ -138,16 +138,13 @@ function gbs:run ()
     local r = true;
    
     if domain == "help" then
-        local Help = require("help");
-        local help = Help:new();
+        local help = require("gbs.help"):new();
         help:usage();
     elseif domain == "workspace" or domain == "ws" then
-        local Workspace = require("workspace");
-        local ws = Workspace:new(self);
+        local ws = require("gbs.workspace"):new(self);
         r = ws:run();
     elseif domain == "solution" or domain == "sln" then
-        local Solution = require("solution");
-        local sln = Solution:new(self);
+        local sln = require("gbs.solution"):new(self);
         r = sln:run();
     elseif domain == "project"  or domain == "pro" then
         local Project = require("project");

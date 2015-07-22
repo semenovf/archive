@@ -9,14 +9,12 @@ if gbs_home == nil or gbs_home:len() == 0 then
 end
 
 package.path = gbs_home .. '/?.lua;' .. package.path;
-package.path = gbs_home .. '/lua/?.lua;' .. package.path;
 
---local Lib = require("lua/lib");
-local Gbs = require "lua/core";
+local gbs_class = require("gbs.core");
 
-local gbs = Gbs:new();
-if gbs:parseCommandLine(#arg, arg) then
-    return gbs:run();
+Gbs = gbs_class:new();
+if Gbs:parseCommandLine(#arg, arg) then
+    return Gbs:run();
 end
 
 --[[
