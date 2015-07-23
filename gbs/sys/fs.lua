@@ -20,6 +20,10 @@ function fs.execute (program, ...)
     return true;
 end
 
+function fs.executePremake (...)
+    return fs.execute("premake5", ...);
+end
+
 function fs.separator ()
     return package.config:sub(1,1);
 end
@@ -105,7 +109,7 @@ function fs.touch (path)
     return true;
 end
 
-function fs.appendLines (filepath, lines)
+function fs.appendLines (filepath, ...)
 
     local fh, errstr = io.open(filepath, "a+");
     if fh == nil then
@@ -113,13 +117,28 @@ function fs.appendLines (filepath, lines)
         return false;
     end
     
-    if type(lines) == "table" then
-        for i = 1, #lines do
-            fh:write(lines[i] .. "\n");
+    for i = 1, select('#', ...) do
+        local line = select(i, ...);
+        local lines;
+        
+        if type(line) == "table" then
+            lines = line;
+        else
+            lines = { line };
         end
-    else
-        fh:write(lines .. "\n");
+        
+        for j = 1, #lines do
+            fh:write(lines[j] .. "\n");
+        end
     end
+    
+--    if type(lines) == "table" then
+--        for i = 1, #lines do
+--            fh:write(lines[i] .. "\n");
+--        end
+--    else
+--        fh:write(lines .. "\n");
+--    end
 
     fh:flush();
     fh:close();

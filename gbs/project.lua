@@ -1,10 +1,11 @@
-local Project = {};
+local project = {};
 
-local Lib  = require("lib");
-local Path = require("path");
-local File = require("file");
+require("gbs.sys.string");
 
-function Project:new (gbs)
+local lib = require("gbs.sys.lib");
+local fs  = require("gbs.sys.fs");
+
+function project:new (gbs)
     local o = {
         gbs = function () return gbs; end
     }; 
@@ -13,28 +14,24 @@ function Project:new (gbs)
     return setmetatable(o, self);
 end
 
-function Project:run ()
+function project:run ()
     local gbs = self:gbs();
-    local action = gbs:action() or Lib.throw("action for project must be specified");
-        
-    if action == "create" then
-        return self:create();
-    else
-        Lib.print_error(action .. ": bad action");
-        return false;
-    end
+    local action = gbs:action() or lib.throw("action for project must be specified");
     
-    return true;
+    return lib.runAction(action, {
+          create = function () return self:create(); end
+        , build  = function () return self:build(); end
+    });
 end
 
-function Project:name ()
+function project:name ()
     local gbs = self:gbs();
-    local r = gbs:optarg("name") or Lib.throw("project name must be specified");
-    Lib.assert(Lib.is_valid_name(r), "bad project name");
+    local r = gbs:optarg("name") or lib.throw("project name must be specified");
+    lib.assert(lib.is_valid_name(r), "bad project name");
     return r; 
 end
 
-function Project:type ()
+function project:type ()
     local gbs = self:gbs();
     if not gbs:hasOpt("type") then return "console-app"; end
     local t = gbs:optarg("type");
@@ -46,12 +43,12 @@ function Project:type ()
         or t == "test" then
         return t;
     end
-    Lib.throw("bad project type");
+    lib.throw("bad project type");
     return nil; 
 end
 
           
-function Project:language () 
+function project:language () 
     local gbs = self:gbs();
     
     if not gbs:hasOpt("lang") then return "C++"; end
@@ -61,14 +58,14 @@ function Project:language ()
         or l == "C" then
         return l;
     end
-    Lib.throw("bad project language");
+    lib.throw("bad project language");
     return nil; 
 end
 
 ---
 --- @see https://github.com/premake/premake-core/wiki/kind
 ---
-function Project:premakeKind ()
+function project:premakeKind ()
     local kind = self:type();
     
     if kind == "console-app" then
@@ -88,7 +85,7 @@ end
 ---
 --- @see https://github.com/premake/premake-core/wiki/language
 --- 
-function Project:premakeLang ()
+function project:premakeLang ()
     local lang = self:language();
     
     if lang == "C++" then
@@ -99,9 +96,9 @@ function Project:premakeLang ()
     return nil;
 end
 
-function Project:exists (name)
+function project:exists (name)
     local gbs = self:gbs();
-    local solutionFile = Path.join(".gbs", gbs:solutionFileName());
+    local solutionFile = fs.join(".gbs", gbs:solutionFileName());
     
     for line in io.lines(solutionFile) do
         r = line:match('^project%s"([^%s]-)"');
@@ -112,51 +109,60 @@ function Project:exists (name)
     return false;
 end
 
-function Project:create ()
+function project:create ()
     local gbs = self:gbs();
     local proName = self:name();
-    local proDir = Path.join(".gbs", proName);
+    local proDir = fs.join(".gbs", proName);
     local proLanguage = self:language();
-    local solutionFile = Path.join(".gbs", gbs:solutionFileName());
+    local solutionFile = fs.join(".gbs", gbs:solutionFileName());
     
-    if not Path.exists(solutionFile) then
-        Lib.print_error("can't create project outside of solution directory");
+    if not fs.exists(solutionFile) then
+        lib.print_error("can't create project outside of solution directory");
         return false;
     end
     
     
     if self:exists(proName) then
-        Lib.print_error(proName .. ': project already registered');
+        lib.print_error(proName .. ': project already registered');
         return false;
     end
     
-    if Path.exists(proDir) then
-        Lib.print_error(proDir .. ': project directory already exists');
+    if fs.exists(proDir) then
+        lib.print_error(proDir .. ': project directory already exists');
         return false;
     end
     
-    if not Path.mkdir(proDir) then
-        Lib.print_error(proDir .. ': failed to create project directory');
+    if not fs.mkdir(proDir) then
+        lib.print_error(proDir .. ': failed to create project directory');
         return false;
     end
     
-    Lib.assert(File.appendLines(solutionFile, {
+    lib.assert(fs.appendLines(solutionFile, {
           ''
         , '-- BEGIN PROJECT'
-        , 'project ' .. Lib.quote(proName)
-        , '    include(' .. Lib.quote(proName .. '/' .. gbs:projectFileName()) ..')' 
+        , 'project ' .. string.quote(proName)
+        , '    include(' .. string.quote(proName .. '/' .. gbs:projectFileName()) ..')' 
     }));
     
     if proLanguage == 'C++' or proLanguage == 'C' then
-        local Plugin = require('plugin/cpp');
-        local p = Plugin:new(self);
+        local p = require('gbs.plugin.cpp'):new(self);
         p:create();
     end
 
-    Lib.assert(File.appendLines(solutionFile, {
+    lib.assert(fs.appendLines(solutionFile, {
         '-- END PROJECT'
     }));    
     return true;
 end
 
-return Project;
+function project:build ()
+    local gbs = self:gbs();
+    local proName = self:name();
+    
+    local config = gbs:hasOpt("config") and gbs:optarg("config") or "debug";
+    local platform = gbs:hasOpt("platform") and gbs:optarg("platform") or "debug";
+    
+    fs.executePremake();
+end
+
+return project;

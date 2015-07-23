@@ -37,42 +37,17 @@ function lib.is_valid_name (name)
     return true;
 end
 
-function lib.quote (x)
-    if type(x) == "table" then
-        local r = {};
-        for i = 1, #x do
-            table.insert(r, '"' .. x[i] .. '"');
-        end
-        return r;
-    end
-    return '"' .. x .. '"';
-end 
-
-function lib.join (separator, a, ...)
-    local r = '';
-
-    if type(a) == "table" then
-        if #a > 0 then
-            r = a[1];
-        end
-        for i = 2, #a do
-            r = r .. separator .. a[i];
-        end
-    else
-        r = a;
+function lib.runAction (action, actions)
+    lib.assert(type(action) == "string");
+    lib.assert(type(actions) == "table");
+    
+    local func = actions[action];
+    if type(func) == "function" then
+        return func();
     end
     
-    for i = 1, select('#', ...) do
-        local b = select(i, ...);
-        if type(b) == "table" then
-            for j = 1, #b do
-                r = r .. separator .. b[j];
-            end
-        else
-            r = r .. separator .. b;
-        end
-    end
-    return r;
+    lib.print_error(action .. ": bad action");
+    return false;
 end
 
 return lib;

@@ -23,13 +23,11 @@ function workspace:run ()
     local gbs = self:gbs();
     local action = gbs:action() 
         or lib.throw("action for workspace must be specified");
-        
-    if action == "create" then
-        return self:create();
-    else
-        lib.print_error(action .. ": bad action");
-        return false;
-    end
+
+    return lib.runAction(action, {
+          create = function () return self:create(); end
+--        , build  = function () return self:build(); end
+    });
 end
 
 

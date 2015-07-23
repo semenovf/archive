@@ -19,13 +19,15 @@ function help:usage ()
     print("    (4) gbs sepaloid create --name=NAME --sepaloid=SEPALOID_SET");
     print("    (5) gbs sepaloid create --name=NAME [--petaloid=NAME [--petaloid=NAME ...]]");
     print("    (6) gbs project create --name=NAME [--type=PROJECT_TYPE] [--lang=LANG] [--depend=NAME [--depend=NAME ...]]");
-    print("    (7) gbs project build --name=NAME");
+    print("    (7) gbs project build --name=NAME [--config={debug | release}] [--platform={x32 | x64}]");
 --    print("    (8) gbs --create-ws=PATH[-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] SOLUTIONNAME");
     print("");
     print("DESCRIPTION");
     print("    (1) - output this help and exit");
     print("    (2) - create workspace at specified directory by PATH");
     print("    (3) - create solution with name NAME");
+    print("    ...");
+    print("    (7) - build project NAME");
     print("");
     print("DOMAINS");
     print("    help");

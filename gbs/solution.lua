@@ -1,9 +1,10 @@
 local solution = {};
 
+require("gbs.sys.string");
+
 local lib = require("gbs.sys.lib");
 local fs  = require("gbs.sys.fs");
 local app = require("gbs.sys.app");
-require("gbs.sys.string");
 
 function solution:new (gbs)
     local o = {
@@ -30,12 +31,10 @@ function solution:run ()
     local gbs = self:gbs();
     local action = gbs:action() or lib.throw("action for solution must be specified");
         
-    if action == "create" then
-        return self:create();
-    else
-        lib.print_error(action .. ": bad action");
-        return false;
-    end
+    return lib.runAction(action, {
+          create = function () return self:create(); end
+--        , build  = function () return self:build(); end
+    });
 end
 
 function solution:create ()
@@ -74,7 +73,7 @@ function solution:create ()
         , "--* Command: `" .. app.cmdline() .. "'"
         , "--* Date:    " .. os.date() 
         , "--************************************************************"
-        , 'solution ' .. lib.quote(slnName)
+        , 'solution ' .. string.quote(slnName)
         , '    configurations {"debug", "release"}'
         , '    platforms {"unix32", "unix64", "win32", "win64"}'
         , '    filter "platforms:*32"'

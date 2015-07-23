@@ -147,8 +147,7 @@ function gbs:run ()
         local sln = require("gbs.solution"):new(self);
         r = sln:run();
     elseif domain == "project"  or domain == "pro" then
-        local Project = require("project");
-        local pro = Project:new(self);
+        local pro = require("gbs.project"):new(self);
         r = pro:run();
     else
         lib.print_error("bad domain or it must be specified");
