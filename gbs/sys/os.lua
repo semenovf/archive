@@ -1,3 +1,9 @@
+os.type = function ()
+  local path_separator = package.config:sub(1,1);
+  if path_separator == "/" then return "unix"; end
+  if path_separator == "\\" then return "mswin"; end
+  return nil;
+end
 
 --- 
 --- @brief  Returns hardware and OS specific information.
@@ -11,15 +17,14 @@
 os.info = function ()
     local r = {
           bits = 0
-        , type = "unknown"
+        , type = nil
         , os   = "unknown"
         , cpu  = "unknown"
     };
-    local path_separator = package.config:sub(1,1);
     
-    if path_separator == "/" then
-        r.type = "unix";
-        
+    r.type = os.type();
+    
+    if r.type == "unix" then
         local popen_status, popen_result = pcall(io.popen, "");
         if popen_status then
             popen_result:close()
@@ -76,9 +81,9 @@ os.info = function ()
             error("unsupported popen() call");
         end
             
-    elseif path_separator == "\\" then
-        r.type = "mswin";
+    elseif r.type == "mswin" then
         r.os   = "mswin";
+        
         --
         -- http://blogs.msdn.com/b/david.wang/archive/2006/03/26/howto-detect-process-bitness.aspx
         -- =======================================================================================

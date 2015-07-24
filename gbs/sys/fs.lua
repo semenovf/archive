@@ -1,5 +1,7 @@
 local fs = {}
 
+require("gbs.sys.os");
+
 local lib = require("gbs.sys.lib");
 
 function fs.execute (program, ...)
@@ -29,9 +31,23 @@ function fs.separator ()
 end
 
 function fs.exists (path)
-    local f = io.open(path, "r");
-    if f ~= nil then io.close(f) return true else return false end
---    return os.rename(path,path) and true or false;
+    if type(path) ~= "string" then return false; end
+    return os.rename(path,path) and true or false;
+end
+
+function fs.isFile(path)
+    if type(path)~="string" then return false; end
+    if not fs.exist(path) then return false; end
+    local fh = io.open(path);
+    if fh then
+        fh:close();
+        return true;
+    end
+    return false;
+end
+
+function fs.isDir(name)
+    return (exist(name) and not isFile(name));
 end
 
 function fs.mkdir (dir)
@@ -39,11 +55,12 @@ function fs.mkdir (dir)
 end
 
 function fs.chdir (dir)
-    -- need to support Windows specific cd '/d' 
+    if os.type() == "mswin" then return fs.execute("cd", "/d", dir); end
     return fs.execute("cd", dir);
 end
 
 function fs.copy (src, dest)
+    if os.type() == "mswin" then return fs.execute("copy", src, dest, " > nul"); end 
     return fs.execute("cp", src, dest);
 end
 

@@ -147,10 +147,8 @@ function plugin:create ()
         lib.assert(fs.appendLines(proFile, "dependson { " .. proDependson .." }")); 
     end
 
-    local inc1 = [[include(os.getenv("GBS_HOME") .. "]] 
-        .. fs.separator() 
-        .. fs.join("premake", "filter_action_gmake_install") 
-        .. [[")]];
+    local inc1 = [[include(os.getenv("GBS_HOME") .. ]] 
+        .. [["/premake/filter_action_gmake_install")]];
     
     lib.assert(fs.appendLines(proFile
         , ""
