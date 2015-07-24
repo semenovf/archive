@@ -75,7 +75,7 @@ function solution:create ()
         , "--************************************************************"
         , 'solution ' .. string.quote(slnName)
         , '    configurations {"debug", "release"}'
-        , '    platforms {"unix32", "unix64", "win32", "win64"}'
+        , '    platforms {"unix32", "unix64", "mswin32", "mswin64"}'
         , '    filter "platforms:*32"'
         , '        architecture "x32"'
         , '    filter "platforms:*64"'

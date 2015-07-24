@@ -9,11 +9,10 @@ end
 
 function lib.throw (m)
     if m ~= nil and m:len() > 0 then
-        lib.print_error(m);
-        os.exit(1);
+        error("ERROR: " .. m);
+    else
+        error("ERROR: exception!", 2);
     end
-    error("ERROR: exception!", 2);
-    os.exit(1);
 end
 
 function lib.assert (predicate, m)

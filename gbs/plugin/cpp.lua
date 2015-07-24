@@ -100,8 +100,8 @@ function plugin:create ()
     end    
 
     local proDependson = nil;
-    if gbs:hasOpt("depend") then
-        local t = string.quote(gbs:optarg("depend"));
+    if gbs:hasOpt("depends") then
+        local t = string.quote(gbs:optarg("depends"));
         proDependson = string.join(", ", t);
     end
 

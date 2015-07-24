@@ -101,7 +101,7 @@ function gbs:hasOpt (optname)
 end
 
 function gbs:optarg (optname)
-    return self._opts[optname] or lib.throw(optname .. ": option must be specified");
+    return self._opts[optname];-- or lib.throw(optname .. ": option must be specified");
 end
 
 function gbs:getSolutionNameFromFile(solutionFile)

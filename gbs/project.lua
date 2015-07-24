@@ -1,6 +1,7 @@
 local project = {};
 
 require("gbs.sys.string");
+require("gbs.sys.os");
 
 local lib = require("gbs.sys.lib");
 local fs  = require("gbs.sys.fs");
@@ -21,6 +22,7 @@ function project:run ()
     return lib.runAction(action, {
           create = function () return self:create(); end
         , build  = function () return self:build(); end
+        , clean  = function () return self:clean(); end
     });
 end
 
@@ -82,6 +84,39 @@ function project:premakeKind ()
     return nil;
 end
 
+function project:buildOptions ()
+    local gbs = self:gbs();
+    local os_info   = nil;
+    local config   = gbs:optarg("config") or "debug";
+    local platform = gbs:optarg("platform") or nil;
+    local target   = gbs:optarg("target") or nil;
+
+    if platform == nil then
+        os_info = os_info or os.info();
+        platform = os_info.type .. os_info.bits;
+    end
+
+    if target == nil then
+        os_info = os_info or os.info();
+        if os_info.os == "linux" then
+            target = "gmake";
+        end
+    end
+
+    if platform ~= "unix32" 
+            and platform ~= "unix64" 
+            and platform ~= "mswin32"
+            and platform ~= "mswin64" then
+        platform = nil;
+    end
+    
+    if config ~= "debug" and config ~= "release" then
+        config = nil;
+    end
+    
+    return config, platform, target;
+end
+
 ---
 --- @see https://github.com/premake/premake-core/wiki/language
 --- 
@@ -121,7 +156,6 @@ function project:create ()
         return false;
     end
     
-    
     if self:exists(proName) then
         lib.print_error(proName .. ': project already registered');
         return false;
@@ -158,11 +192,44 @@ end
 function project:build ()
     local gbs = self:gbs();
     local proName = self:name();
+    local config, platform, target = self:buildOptions();
     
-    local config = gbs:hasOpt("config") and gbs:optarg("config") or "debug";
-    local platform = gbs:hasOpt("platform") and gbs:optarg("platform") or "debug";
-    
-    fs.executePremake();
+    if config == nil then
+        lib.throw("bad or unknown config");
+    end
+
+    if platform == nil then
+        lib.throw("bad or unknown platform, supported 'unix{32|64}' and 'mswin{32|64}' only");
+    end
+
+    if target == nil then
+        lib.throw("bad or unknown target, target value must be equals to one of premake's actions");
+    end
+
+    if target == "gmake" then
+        config = config .. "_" .. "unix64";
+        fs.executePremake("--file=.gbs/solution.gbs", target);
+        fs.execute("make", "-C", ".gbs", "config=" .. config, proName);
+    end
+end
+
+function project:clean ()
+    local gbs = self:gbs();
+    local proName = self:name();
+
+    if fs.exists(fs.join(".gbs", proName .. ".make")) then
+        fs.execute("make", "-C", ".gbs", "-f", proName .. ".make", "clean");--, "config=debug_unix32", proName);
+--        fs.execute("make", "-C", ".gbs", "clean", "config=debug_unix64", proName);
+--        fs.execute("make", "-C", ".gbs", "clean", "config=debug_mswin32", proName);
+--        fs.execute("make", "-C", ".gbs", "clean", "config=debug_mswin64", proName);
+    end
+    fs.executePremake("clean", proName);
+
+--    if target == "gmake" then
+--        config = config .. "_" .. "unix64";
+--        fs.executePremake("--file=.gbs/solution.gbs", target);
+--        fs.execute("make", "-C", ".gbs", "config=" .. config, proName);
+--    end
 end
 
 return project;
