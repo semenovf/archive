@@ -89,17 +89,29 @@ function project:buildOptions ()
     local os_info   = nil;
     local config   = gbs:optarg("config") or "debug";
     local platform = gbs:optarg("platform") or nil;
-    local target   = gbs:optarg("target") or nil;
+    local premakeAction   = gbs:optarg("target") or nil;
 
     if platform == nil then
-        os_info = os_info or os.info();
-        platform = os_info.type .. os_info.bits;
+        local platformFile = fs.join("..", ".gbs", gbs:platformFileName());
+
+        if fs.exists(platformFile) then
+            platform = fs.readFirstLine(platformFile);
+        else
+            os_info = os_info or os.info();
+            platform = os_info.type .. os_info.bits;
+        end
     end
 
-    if target == nil then
-        os_info = os_info or os.info();
-        if os_info.os == "linux" then
-            target = "gmake";
+    if premakeAction == nil then
+        local premakeActionFile = fs.join("..", ".gbs", gbs:premakeActionFileName());
+
+        if fs.exists(premakeActionFile) then
+            premakeAction = fs.readFirstLine(premakeActionFile);
+        else
+            os_info = os_info or os.info();
+            if os_info.os == "linux" then
+                premakeAction = "gmake";
+            end
         end
     end
 
@@ -114,7 +126,7 @@ function project:buildOptions ()
         config = nil;
     end
     
-    return config, platform, target;
+    return config, platform, premakeAction;
 end
 
 ---
@@ -171,46 +183,54 @@ function project:create ()
         return false;
     end
     
-    lib.assert(fs.appendLines(solutionFile, {
-          ''
+    lib.assert(fs.appendLines(solutionFile
+        , ''
         , '-- BEGIN PROJECT'
         , 'project ' .. string.quote(proName)
         , '    include(' .. string.quote(proName .. '/' .. gbs:projectFileName()) ..')' 
-    }));
+    ));
     
     if proLanguage == 'C++' or proLanguage == 'C' then
         local p = require('gbs.plugin.cpp'):new(self);
         p:create();
     end
 
-    lib.assert(fs.appendLines(solutionFile, {
-        '-- END PROJECT'
-    }));    
+    lib.assert(fs.appendLines(solutionFile, '-- END PROJECT'));    
     return true;
 end
 
 function project:build ()
     local gbs = self:gbs();
     local proName = self:name();
-    local config, platform, target = self:buildOptions();
+    local config, platform, premakeAction = self:buildOptions();
     
     if config == nil then
-        lib.throw("bad or unknown config");
+        lib.print_error("bad or unknown config");
+        return false;
     end
 
     if platform == nil then
-        lib.throw("bad or unknown platform, supported 'unix{32|64}' and 'mswin{32|64}' only");
+        lib.print_error("bad or unknown platform, supported 'unix{32|64}' and 'mswin{32|64}' only");
+        return false;
     end
 
-    if target == nil then
-        lib.throw("bad or unknown target, target value must be equals to one of premake's actions");
+    if premakeAction == nil then
+        lib.print_error("bad or unknown premake action");
+        return false;
     end
 
-    if target == "gmake" then
+    if premakeAction == "gmake" then
         config = config .. "_" .. "unix64";
-        fs.executePremake("--file=.gbs/solution.gbs", target);
+        fs.executePremake("--file=.gbs/solution.gbs", premakeAction);
         fs.execute("make", "-C", ".gbs", "config=" .. config, proName);
+    elseif premakeAction:match("^vs*") then
+        fs.executePremake("--file=.gbs/solution.gbs", premakeAction);
+    else
+        lib.print_error("bad or unknown premake action");
+        return false;
     end
+    
+    return true;
 end
 
 function project:clean ()

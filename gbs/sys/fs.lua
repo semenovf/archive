@@ -24,6 +24,7 @@ end
 
 function fs.executePremake (...)
     return fs.execute("premake5", ...);
+--    return fs.execute("premake4", ...);
 end
 
 function fs.separator ()
@@ -161,6 +162,24 @@ function fs.appendLines (filepath, ...)
     fh:close();
     
     return true;
+end
+
+function fs.readFirstLine (filepath)
+    local fh, errstr = io.open(filepath, "r");
+    if fh == nil then
+        lib.print_error(filepath .. ": can't open file: " .. errstr); 
+        return nil;
+    end
+    local line = fh:read("*l");
+    fh:close();
+    return line;
+end
+
+function fs.readAll(filepath)
+    local f = io.open(filepath, "rb");
+    local content = f:read("*a");
+    f:close();
+    return content;
 end
 
 return fs;

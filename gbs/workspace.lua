@@ -1,5 +1,7 @@
 local workspace = {};
 
+require("gbs.sys.os");
+
 local lib  = require("gbs.sys.lib");
 local fs   = require("gbs.sys.fs");
 local app  = require("gbs.sys.app");
@@ -19,6 +21,21 @@ function workspace:path ()
         or lib.throw("workspace path must be specified");
 end
 
+function workspace:premakeAction ()
+    local gbs = self:gbs();
+    return gbs:optarg("premake-action") 
+        or lib.throw("premake action must be specified");
+end
+
+function workspace:platform ()
+  local gbs = self:gbs();
+  if not gbs:hasOpt("platform") then
+      return "";
+  end
+  
+  return gbs:optarg("platform");
+end
+
 function workspace:run ()
     local gbs = self:gbs();
     local action = gbs:action() 
@@ -35,6 +52,8 @@ function workspace:create ()
     local gbs = self:gbs();
     local path = self:path();
     local workspaceFile = fs.join(path, ".gbs", gbs:workspaceFileName());
+    local premakeActionFile = fs.join(path, ".gbs", gbs:premakeActionFileName());
+    local platformFile = fs.join(path, ".gbs", gbs:platformFileName());
     
     if fs.exists(path) then
         lib.print_error(path .. ": can't create workspace: path already exists");
@@ -47,7 +66,10 @@ function workspace:create ()
             and fs.touch(workspaceFile)) then
         return false;
     end
-            
+    
+    lib.assert(fs.appendLines(premakeActionFile, self:premakeAction()));
+    lib.assert(fs.appendLines(platformFile, self:platform()));
+    
     lib.assert(fs.appendLines(workspaceFile, {
           "#************************************************************"
         , "#* Generated automatically by `" .. app.name() .. "'"

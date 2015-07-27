@@ -15,6 +15,8 @@ function gbs:new ()
         , homeDir           = function () return os.getenv("GBS_HOME"); end 
         , solutionFileName  = function () return 'solution.gbs'; end
         , workspaceFileName = function () return 'workspace.txt'; end
+        , premakeActionFileName = function () return 'premake-action.txt'; end
+        , platformFileName  = function () return 'platform.txt'; end
         , projectFileName   = function () return 'project.gbs'; end
         , sourcesDirName    = function () return 'src'; end
         , testsDirName      = function () return 'tests'; end

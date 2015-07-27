@@ -14,12 +14,15 @@ function help:usage ()
     print("    gbs DOMAIN [ACTION [OPTIONS]] [--dump]");
     print("");
     print("    (1) gbs help");
-    print("    (2) gbs workspace create --path=PATH");
+    print("    (2) gbs workspace create --path=PATH --premake-action=PREMAKE_ACTION \\");
+    print("            [--platform=BUILD_PLATFORM]");
     print("    (3) gbs solution create --name=NAME [GIT_OPTIONS]");
     print("    (4) gbs sepaloid create --name=NAME --sepaloid=SEPALOID_SET");
     print("    (5) gbs sepaloid create --name=NAME [--petaloid=NAME [--petaloid=NAME ...]]");
-    print("    (6) gbs project create --name=NAME [--type=PROJECT_TYPE] [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
-    print("    (7) gbs project build --name=NAME [--config={debug | release}] [--platform=BUILD_PLATFORM] [--target=PREMAKE_ACTION]");
+    print("    (6) gbs project create --name=NAME [--type=PROJECT_TYPE] \\");
+    print("            [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
+    print("    (7) gbs project build --name=NAME [--config={debug | release}] \\");
+    print("            [--premake-action=PREMAKE_ACTION] [--platform=BUILD_PLATFORM]");
 --    print("    (8) gbs --create-ws=PATH[-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] SOLUTIONNAME");
     print("");
     print("DESCRIPTION");
