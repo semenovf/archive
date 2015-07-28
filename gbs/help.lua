@@ -23,7 +23,6 @@ function help:usage ()
     print("            [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
     print("    (7) gbs project build --name=NAME [--config={debug | release}] \\");
     print("            [--premake-action=PREMAKE_ACTION] [--platform=BUILD_PLATFORM]");
---    print("    (8) gbs --create-ws=PATH[-c|-create|--create] [-sepaloid|--sepaloid] [GIT_OPTIONS] SOLUTIONNAME");
     print("");
     print("DESCRIPTION");
     print("    (1) - output this help and exit");
@@ -56,6 +55,7 @@ function help:usage ()
     print("        dump options and exit execution");
     print("    --depend");
     print("        specify one more sibling project names (inside solution)");
+    print("");
     print("GIT OPTIONS");
     print("    --git");
     print("        initialize only git local repo");
