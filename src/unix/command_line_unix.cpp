@@ -11,7 +11,7 @@ namespace pfs {
 
 command_line::command_line ()
 {
-	setMode (option::Unix);
+	setMode(option::Unix);
 }
 
 }

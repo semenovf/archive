@@ -22,9 +22,10 @@ namespace pfs {
 
 struct option
 {
-	enum mode_type {
-		  Unix
-		, Windows
+	enum ModeType {
+		  Unix     = 1
+		, Windows  = 2
+		, UnixOrWindows = Unix | Windows // is default
 	};
 
 	string longname;     // long option or NULL
@@ -50,7 +51,7 @@ public:
 	void setLongPrefix  (const string & prefix)  { _longPrefix = prefix; }
 	void setOptArgsSeparator(const string & separator) { _optArgSeparator = separator; }
 	void setQuoteChars  (const string & quotes)  { _quoteChars = quotes; }
-	void setMode        (option::mode_type mode);
+	void setMode        (option::ModeType mode);
 
 	bool parse (settings & s, int argc, argv_t * argv[]
 			, size_t optc, const option optv[], stringlist * args = nullptr)
