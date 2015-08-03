@@ -11,7 +11,8 @@ namespace pfs {
 
 command_line::command_line ()
 {
-	setMode(option::Unix);
+	setOptionFormat(option_format::UnixShortOption
+			, option_format::UnixLongOption);
 }
 
 }

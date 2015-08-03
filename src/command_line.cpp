@@ -7,9 +7,32 @@
 
 #include <pfs/command_line.hpp>
 #include "pfs/map.hpp"
-#include <pfs/logger.hpp>
+//#include <pfs/logger.hpp>
 
 namespace pfs {
+
+option & command_line::boolean (const string & optname, ...)
+{
+
+}
+
+option & command_line::integer (const string & optname, ...)
+{
+
+}
+
+option & command_line::number (const string & optname, ...)
+{
+
+}
+
+option & command_line::string (const string & optname, ...)
+{
+
+}
+
+#ifdef __COMMENT__
+
 
 static const string modes_data[][4] = {
 	  {_l1("-"), _l1("--"), _l1("="), _l1("\"'") } // Unix
@@ -44,18 +67,12 @@ static string argv_to_string (const argv_t * arg)
 
 	case 4:  // Unix wchar_t
 	default:
+		// TODO Need to implement mbcs_string::fromUtf32()
+		//return string::fromUtf32(reinterpret_cast<const uint32_t*>(arg), argvlen(arg));
 		PFS_ASSERT_UNEXPECTED();
+		break;
 	}
 	return string();
-}
-
-
-void command_line::setMode(option::mode_type mode)
-{
-	_shortPrefix     = modes_data[mode][0];
-	_longPrefix      = modes_data[mode][1];
-	_optArgSeparator = modes_data[mode][2];
-	_quoteChars      = modes_data[mode][3];
 }
 
 
@@ -166,5 +183,5 @@ bool command_line::parseOpts (settings & s
 
 	return r;
 }
-
+#endif
 } // pfs

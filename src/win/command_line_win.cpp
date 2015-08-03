@@ -11,7 +11,8 @@ namespace pfs {
 
 command_line::command_line ()
 {
-	setMode (option::Windows);
+	setOptionFormat(option_format::WindowsShortOption
+			, option_format::WindowsLongOption);
 }
 
 } // pfs
