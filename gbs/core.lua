@@ -1,13 +1,7 @@
 local gbs = {};
 
-require "gbs.sys.dumper"; -- http://lua-users.org/wiki/DataDumper
 local lib   = require("gbs.sys.lib");
 local fs    = require("gbs.sys.fs");
-
--- Define a shortcut function for testing
-function dump (...)
-    print(DataDumper(...));
-end
 
 function gbs:new ()
     local o = {
@@ -24,17 +18,6 @@ function gbs:new ()
     self.__index = self;
     return setmetatable(o, self);
 end
-
---function binDir ()
---end
---
---function libDir ()
---end
---
---function includeDir ()
---end
-
-
 
 ---
 --- @brief Parses command line arguments
@@ -91,12 +74,12 @@ function gbs:domain ()
     return nil;
 end
 
-function gbs:action ()
-    if #self._opts > 1 then
-        return self._opts[2];
-    end
-    return nil;
-end
+--function gbs:action ()
+--    if #self._opts > 1 then
+--        return self._opts[2];
+--    end
+--    return nil;
+--end
 
 function gbs:hasOpt (optname)
     return self._opts[optname] ~= nil;
@@ -139,7 +122,7 @@ function gbs:run ()
     local domain = self:domain();
     local r = true;
    
-    if domain == "help" then
+    if domain == "help" or self._opts then
         local help = require("gbs.help"):new();
         help:usage();
     elseif domain == "workspace" or domain == "ws" then

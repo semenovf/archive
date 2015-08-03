@@ -49,11 +49,11 @@ end
 
 
 function workspace:create ()
-    local gbs = self:gbs();
+    local gbs  = self:gbs();
     local path = self:path();
-    local workspaceFile = fs.join(path, ".gbs", gbs:workspaceFileName());
+    local workspaceFile     = fs.join(path, ".gbs", gbs:workspaceFileName());
     local premakeActionFile = fs.join(path, ".gbs", gbs:premakeActionFileName());
-    local platformFile = fs.join(path, ".gbs", gbs:platformFileName());
+    local platformFile      = fs.join(path, ".gbs", gbs:platformFileName());
     
     if fs.exists(path) then
         lib.print_error(path .. ": can't create workspace: path already exists");

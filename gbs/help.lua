@@ -14,13 +14,13 @@ function help:usage ()
     print("    gbs DOMAIN [ACTION [OPTIONS]] [--dump]");
     print("");
     print("    (1) gbs help");
-    print("    (2) gbs workspace create --path=PATH");
+    print("    (2) gbs workspace --create --path=PATH");
     print("            --build-tool=BUILD_TOOL");
     print("            [--target-platform=TARGET_PLATFORM]");
-    print("    (3) gbs solution create --name=NAME [GIT_OPTIONS]");
-    print("    (4) gbs project create --name=NAME [--type=PROJECT_TYPE]");
+    print("    (3) gbs solution --create --name=NAME [GIT_OPTIONS]");
+    print("    (4) gbs project --create --name=NAME [--type=PROJECT_TYPE]");
     print("            [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
-    print("    (5) gbs project build --name=NAME");
+    print("    (5) gbs project --build --name=NAME");
     print("            [--config={debug | release}]");
     print("            [--build-tool=BUILD_TOOL]");
     print("            [--target-platform=TARGET_PLATFORM]");
@@ -37,7 +37,6 @@ function help:usage ()
     print("    (5) - build project with NAME");
     print("");
     print("DOMAINS");
-    print("    help");
     print("    workspace | ws");
     print("    solution | sln");
     print("    sepaloid");
