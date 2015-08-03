@@ -14,6 +14,7 @@
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
 #include <pfs/settings.hpp>
+#include <pfs/errorable.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -46,22 +47,52 @@ namespace option_format {
 	static const int None = 0;
 }
 
-struct option
+
+template <typename T>
+class DLL_API command_option
 {
-//	string longname;     // long option or NULL
-//	string shortname;    // short option or 0
-//	bool   has_arg;      // true if option has argument
-//	string xpath;        // path to appropriate settings node
-//	string defvalue;     // default value
-//	string desc;         // option's description (for automatically generated usage)
-////	bool        (*validator)(const void*);  /* validation function for option argument */
+public:
+    struct validator
+    {
+        bool operator () (const T &);
+    };
+
+    struct settings_handler
+    {
+        bool operator () (settings & s, const string & key) { s.}
+    };
+
+protected:
+	bool   _hasArg;       // true if option has argument
+	string _description;  // option description (for automatically generated usage)
+	T      _defaultValue;
+	vector<bool (*) ()>  _validators;
+
+public:
+	command_option () : _hasArg () {}
+
+	command_option & defaultValue (const T & v)
+	{
+	    _defaultValue = v;
+	    return *this;
+	}
+
+	command_option & validate (bool (* validator) (const T & v))
+	{
+	    _validators.append(validator);
+	    return *this;
+	}
+
+	command_option & handle (settings & s, const string & key);
+	command_option & handle (settings & s, const string & key);
 };
 
-class DLL_API command_line
+class DLL_API command_line : public errorable
 {
 	int _shortoptFormat;
 	int _longoptFormat;
-	map<string, shared_ptr<option> > _options;
+//	command_option _dummyOption;
+	map<string, shared_ptr<command_option> > _options;
 
 public:
     // Default constructor depends on OS platform
@@ -83,25 +114,30 @@ public:
 		_longoptFormat  = longoptFormat;
 	}
 
+	template <typename T>
+	command_option<T> & addOption (const char * optname)
+	    { return addOption<T>(string::fromLatin1(optname)); }
+
+	template <typename T>
+	command_option & addOption (const string & optname)
+		{ return addOption<T>(stringlist() << optname); }
+
+	template <typename T>
+    command_option<T> & addOption (const char * optname1, const char * optname2)
+        { return addOption<T>(string::fromLatin1(optname1), string::fromLatin1(optname1)); }
+
+	template <typename T>
+	command_option<T> & addOption (const string & optname1, const string & optname2)
+	    { return addOption<T>(stringlist() << optname1 << optname2); }
+
+	template <typename T>
+	command_option<T> & addOption (const stringlist & optnames);
+
 private:
-	option & booleanOption (const string & optname)
-		{ return booleanOption(stringlist() << optname); }
-	option & integerOption (const string & optname)
-		{ return integerOption(stringlist() << optname); }
-	option & numberOption (const string & optname);
-	option & stringOption (const string & optname);
 
-	option & booleanOption (const string & optname1, const string & optname1);
-	option & integerOption (const string & optname1, const string & optname1);
-	option & numberOption (const string & optname1, const string & optname1);
-	option & stringOption (const string & optname1, const string & optname1);
+//    command_option & getOption (const stringlist & optnames);
 
-	option & booleanOption (const stringlist & optnames);
-	option & integerOption (const stringlist & optnames);
-	option & numberOption (const stringlist & optnames);
-	option & stringOption (const stringlist & optnames);
-
-//	bool parse (settings & s, int argc, argv_t * argv[]
+	//	bool parse (settings & s, int argc, argv_t * argv[]
 //			, size_t optc, const option optv[], stringlist * args = nullptr)
 //	{
 //	    return parseOpts(s, argc, argv, optc, optv, args);
@@ -120,6 +156,20 @@ private:
 //	        , const option optv[]
 //	        , stringlist * args);
 };
+
+template <typename T>
+command_option<T> & command_line::addOption (const stringlist & optnames)
+{
+    stringlist::const_iterator itEnd = optnames.cend();
+    for (stringlist::const_iterator it = optnames.cbegin()
+            ; it != itEnd; ++it) {
+        if (_options.contains(*it)) {
+            addError(*it + _u8(": option already exists"));
+            return _dummyOption;
+        }
+    }
+}
+
 
 } // pfs
 

@@ -1,35 +1,41 @@
 /*
- * option.cpp
+ * command_line.cpp
  *
  *  Created on: Jun 4, 2013
  *      Author: wladt
  */
 
-#include <pfs/command_line.hpp>
-#include "pfs/map.hpp"
-//#include <pfs/logger.hpp>
+#include "pfs/command_line.hpp"
+#include <pfs/map.hpp>
 
 namespace pfs {
 
-option & command_line::boolean (const string & optname, ...)
+command_option & command_line::getOption (const stringlist & optnames)
 {
-
+    stringlist::const_iterator itEnd = optnames.cend();
+    for (stringlist::const_iterator it = optnames.cbegin()
+            ; it != itEnd; ++it) {
+        if (_options.contains(*it)) {
+            addError(*it + _u8(": option already exists"));
+            return _dummyOption;
+        }
+    }
 }
 
-option & command_line::integer (const string & optname, ...)
+command_option & command_line::booleanOption (const stringlist & optnames)
 {
-
 }
 
-option & command_line::number (const string & optname, ...)
-{
+command_option & command_line::integerOption (const stringlist & optnames)
+{}
 
-}
+command_option & command_line::numberOption (const stringlist & optnames)
+{}
 
-option & command_line::string (const string & optname, ...)
-{
+command_option & command_line::stringOption (const stringlist & optnames)
+{}
 
-}
+} // pfs
 
 #ifdef __COMMENT__
 

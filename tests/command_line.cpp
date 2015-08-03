@@ -9,6 +9,7 @@
 #include <pfs/test/test.hpp>
 #include <pfs/app.hpp>
 #include <pfs/command_line.hpp>
+#include <pfs/stringlist.hpp>
 
 static void test_basic(void)
 {
@@ -53,28 +54,28 @@ static void test_basic(void)
 	 * void finish ()   { exit(0); }
 	 * void validateBitrate (integral_t)
 	 */
-	 int longopt_format = option_format::Any;
-	 int shortopt_format = option_format::UnixShortOption;
+	 int longopt_format = pfs::option_format::Any;
+	 int shortopt_format = pfs::option_format::UnixShortOption;
 
 	 // Apply all option formats
 	 pfs::command_line cmdLine;
 	 pfs::settings settings;
 
 	 cmdLine.setOptionFormat(shortopt_format, longopt_format);
-	 cmdLine.boolean("help", "h")
+	 cmdLine.booleanOption("help", "h")
 //	        .handle(usage)
 //	        .handle(finish)
 			;
-	 cmdLine.boolean("man")
+	 cmdLine.booleanOption("man")
 //			 .handle(man).handle(finish);
 		;
-	 cmdLine.boolean("i")
+	 cmdLine.booleanOption("i")
 //	        .handle(settings, "/interactive");
 		;
-	 cmdLine.boolean("server")
+	 cmdLine.booleanOption("server")
 //	        .handle(settings, "/server");
 		;
-	 cmdLine.integer("speed", "bitrate", "b")
+	 cmdLine.integerOption(pfs::stringlist() << "speed" << "bitrate" << "b")
 //	        .defaultValue(9600)
 //	        .validate(validateBitrate)
 //	        .description(_u8("speed (bitrate) for serial port"))
