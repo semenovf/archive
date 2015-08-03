@@ -23,17 +23,17 @@ end
 
 function workspace:premakeAction ()
     local gbs = self:gbs();
-    return gbs:optarg("premake-action") 
+    return gbs:optarg("build-tool") 
         or lib.throw("premake action must be specified");
 end
 
 function workspace:platform ()
   local gbs = self:gbs();
-  if not gbs:hasOpt("platform") then
+  if not gbs:hasOpt("target-platform") then
       return "";
   end
   
-  return gbs:optarg("platform");
+  return gbs:optarg("target-platform");
 end
 
 function workspace:run ()

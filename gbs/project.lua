@@ -202,6 +202,7 @@ end
 function project:build ()
     local gbs = self:gbs();
     local proName = self:name();
+    local solutionFile = fs.join(".gbs", gbs:solutionFileName());
     local config, platform, premakeAction = self:buildOptions();
     
     if config == nil then
@@ -221,10 +222,10 @@ function project:build ()
 
     if premakeAction == "gmake" then
         config = config .. "_" .. "unix64";
-        fs.executePremake("--file=.gbs/solution.gbs", premakeAction);
+        fs.executePremake("--file=" .. solutionFile, premakeAction);
         fs.execute("make", "-C", ".gbs", "config=" .. config, proName);
     elseif premakeAction:match("^vs*") then
-        fs.executePremake("--file=.gbs/solution.gbs", premakeAction);
+        fs.executePremake("--file=" .. solutionFile, premakeAction);
     else
         lib.print_error("bad or unknown premake action");
         return false;
