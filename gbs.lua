@@ -13,6 +13,7 @@ package.path = gbs_home .. '/?.lua;' .. package.path;
 local gbs_class = require("gbs.core");
 
 Gbs = gbs_class:new();
+Gbs:loadPrefs();
 if Gbs:parseCommandLine(#arg, arg) then
     return Gbs:run();
 end

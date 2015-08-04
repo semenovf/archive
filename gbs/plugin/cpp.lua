@@ -16,21 +16,21 @@ function plugin:new (prj)
 end
 
 function plugin:create ()
-    local pro = self:project();
-    local gbs = pro:gbs(); 
+    local project = self:project();
+    local gbs = project:gbs(); 
     local gbsHomeDir = gbs:homeDir();
     
-    local proName = pro:name();
-    local proDir  = fs.join(".gbs", proName);
-    local proFile = fs.join(proDir, gbs:projectFileName());
-    local proLanguage = pro:language();
-    local proType = pro:type();
-    local proSrcFileList = {};
-    local proIncludeDirList = {};
+    local projectName = project:name();
+    local projectDir  = fs.join(".gbs", projectName);
+    local projectFile = fs.join(projectDir, gbs:projectFileName());
+    local projectLanguage = project:language();
+    local projectType = project:type();
+    local projectSrcFileList = {};
+    local projectIncludeDirList = {};
     
     -- Create source directory
     local srcDir = gbs:sourcesDirName();
-    if proType == "test" then
+    if projectType == "test" then
         srcDir = gbs:testsDirName();
     end
     
@@ -38,24 +38,24 @@ function plugin:create ()
         lib.assert(fs.mkdir(srcDir));
     end
     
-    local proSrcDir = fs.join(srcDir, proName);
-    if not fs.exists(proSrcDir) then
-         lib.assert(fs.mkdir(proSrcDir));
+    local projectSrcDir = fs.join(srcDir, projectName);
+    if not fs.exists(projectSrcDir) then
+         lib.assert(fs.mkdir(projectSrcDir));
     end
     
     --
     -- Create `include' directory if project is a library
     --
-    if proType == "shared-lib" or proType == "static-lib" then
+    if projectType == "shared-lib" or projectType == "static-lib" then
         if not fs.exists("include") then
             lib.assert(fs.mkdir("include"));
         end
-        table.insert(proIncludeDirList, string.quote("../../include"))
-        if proLanguage == "C++" then
-            table.insert(proSrcFileList, string.quote("../../include/**.hpp"));
-            table.insert(proSrcFileList, string.quote("../../include/**.h"));
-        elseif proLanguage == "C" then
-            table.insert(proSrcFileList, string.quote("../../include/**.h"));
+        table.insert(projectIncludeDirList, string.quote("../../include"))
+        if projectLanguage == "C++" then
+            table.insert(projectSrcFileList, string.quote("../../include/**.hpp"));
+            table.insert(projectSrcFileList, string.quote("../../include/**.h"));
+        elseif projectLanguage == "C" then
+            table.insert(projectSrcFileList, string.quote("../../include/**.h"));
         end
     end
     
@@ -63,32 +63,32 @@ function plugin:create ()
     local mainSrc = nil;
     local mainDest = nil;
     
-    if proType == "test" then
-        if proLanguage == "C++" then
+    if projectType == "test" then
+        if projectLanguage == "C++" then
             templateDir = fs.join(gbsHomeDir, "template", "cpp");
-            mainSrc = fs.join(templateDir, proType .. ".cpp");
-            mainDest = fs.join(proSrcDir, "test.cpp");
-            table.insert(proSrcFileList, string.quote("../../" .. gbs:testsDirName() .. "/" .. proName .. "/**.cpp"));
-        elseif proLanguage == "C" then
+            mainSrc = fs.join(templateDir, projectType .. ".cpp");
+            mainDest = fs.join(projectSrcDir, "test.cpp");
+            table.insert(projectSrcFileList, string.quote("../../" .. gbs:testsDirName() .. "/" .. projectName .. "/**.cpp"));
+        elseif projectLanguage == "C" then
             templateDir = fs.join(gbsHomeDir, "template", "c");
-            mainSrc = fs.join(templateDir, proType .. ".c");
-            mainDest = fs.join(proSrcDir, "test.c");
-            table.insert(proSrcFileList, string.quote("../../" .. gbs:testsDirName() .. "/" .. proName .. "/**.c"));
+            mainSrc = fs.join(templateDir, projectType .. ".c");
+            mainDest = fs.join(projectSrcDir, "test.c");
+            table.insert(projectSrcFileList, string.quote("../../" .. gbs:testsDirName() .. "/" .. projectName .. "/**.c"));
         end
     else
-        if proLanguage == "C++" then
+        if projectLanguage == "C++" then
             templateDir = fs.join(gbsHomeDir, "template", "cpp");
-            mainSrc = fs.join(templateDir, proType .. ".cpp");
-            mainDest = fs.join(proSrcDir, "main.cpp");
-            table.insert(proSrcFileList, string.quote("../../" .. gbs:sourcesDirName() .. "/" .. proName .. "/**.cpp"));
-    --        table.insert(proSrcFileList, "src/" .. proName .. "/**.hpp");
-    --        table.insert(proSrcFileList, "src/" .. proName .. "/**.h");
-        elseif proLanguage == "C" then
+            mainSrc = fs.join(templateDir, projectType .. ".cpp");
+            mainDest = fs.join(projectSrcDir, "main.cpp");
+            table.insert(projectSrcFileList, string.quote("../../" .. gbs:sourcesDirName() .. "/" .. projectName .. "/**.cpp"));
+    --        table.insert(projectSrcFileList, "src/" .. projectName .. "/**.hpp");
+    --        table.insert(projectSrcFileList, "src/" .. projectName .. "/**.h");
+        elseif projectLanguage == "C" then
             templateDir = fs.join(gbsHomeDir, "template", "c");
-            mainSrc = fs.join(templateDir, proType .. ".c");
-            mainDest = fs.join(proSrcDir, "main.c");
-            table.insert(proSrcFileList, string.quote("../../" .. gbs:sourcesDirName() .. "/" .. proName .. "/**.c"));
-    --        table.insert(proSrcFileList, "src/" .. proName .. "/**.h");
+            mainSrc = fs.join(templateDir, projectType .. ".c");
+            mainDest = fs.join(projectSrcDir, "main.c");
+            table.insert(projectSrcFileList, string.quote("../../" .. gbs:sourcesDirName() .. "/" .. projectName .. "/**.c"));
+    --        table.insert(projectSrcFileList, "src/" .. projectName .. "/**.h");
         end
     end
     
@@ -99,26 +99,24 @@ function plugin:create ()
         lib.assert(fs.copy(mainSrc, mainDest));
     end    
 
-    local proDependson = nil;
+    local projectDependson = nil;
     if gbs:hasOpt("depends") then
         local t = string.quote(gbs:optarg("depends"));
-        proDependson = string.join(", ", t);
+        projectDependson = string.join(", ", t);
     end
 
-    local slnName        = gbs:solutionName();
-    local proKind        = pro:premakeKind();
-    local proLang        = pro:premakeLang();
-    local proObjDir      = string.join("/", "../../../.build", slnName, proName);
+    local solutionName = gbs:solutionName();
+    local projecObjDir    = string.join("/", "../../../.build", solutionName, projectName);
     
-    local proTargetDir   = string.join("/", "../../../.build");
-    if proType == "test" then
-        proTargetDir = string.join("/", "../../../.build", "tests");
+    local projectTargetDir   = string.join("/", "../../../.build");
+    if projectType == "test" then
+        projectTargetDir = string.join("/", "../../../.build", "tests");
     end
     
-    local proSrcFiles    = string.join(", ", proSrcFileList);
-    local proIncludeDirs = string.join(", ", proIncludeDirList);
+    local proSrcFiles    = string.join(", ", projectSrcFileList);
+    local proIncludeDirs = string.join(", ", projectIncludeDirList);
     
-    lib.assert(fs.appendLines(proFile, {
+    lib.assert(fs.appendLines(projectFile, {
           "--************************************************************"
         , "--* Generated automatically by `" .. app.name() .. "'"
         , "--* Command: `" .. app.cmdline() .. "'"
@@ -126,33 +124,34 @@ function plugin:create ()
         , "--************************************************************"
     }));    
     
-    lib.assert(fs.appendLines(proFile, {
-          "kind          " .. string.quote(proKind)
-        , "language      " .. string.quote(proLang)
-        , "targetname    " .. string.quote(proName)
+    lib.assert(fs.appendLines(projectFile, {
+          "kind          " .. string.quote(project:premakeKind())
+        , "language      " .. string.quote(project:premakeLang())
+        , "targetname    " .. string.quote(projectName)
         , "includedirs { " .. proIncludeDirs .. " }"
         , "files { " .. proSrcFiles .. " }"
         , ""
         , "configuration " .. string.quote("debug")
-        , "    objdir       " .. string.quote(proObjDir .. "/debug")
-        , "    targetdir    " .. string.quote(proTargetDir)
+        , "    objdir       " .. string.quote(projecObjDir .. "/debug")
+        , "    targetdir    " .. string.quote(projectTargetDir)
         , "    targetsuffix " .. string.quote("-d")
         , ""
         , "configuration " .. string.quote("release")
-        , "    objdir       " .. string.quote(proObjDir .. "/release")
-        , "    targetdir    " .. string.quote(proTargetDir)
+        , "    objdir       " .. string.quote(projecObjDir .. "/release")
+        , "    targetdir    " .. string.quote(projectTargetDir)
     }));
     
-    if proDependson then
-        lib.assert(fs.appendLines(proFile, "dependson { " .. proDependson .." }")); 
+    if projectDependson then
+        lib.assert(fs.appendLines(projectFile, "dependson { " .. projectDependson .." }")); 
     end
 
     local inc1 = [[include(os.getenv("GBS_HOME") .. ]] 
         .. [["/premake/filter_action_gmake_install")]];
     
-    lib.assert(fs.appendLines(proFile
+    lib.assert(fs.appendLines(projectFile
         , ""
-        , inc1
+        , [[filter "action:gmake"]]
+        , "    " .. inc1
     ));
    
     return true;

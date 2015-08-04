@@ -15,68 +15,64 @@ function workspace:new (gbs)
     return setmetatable(o, self);
 end
 
-function workspace:path ()
-    local gbs = self:gbs();
-    return gbs:optarg("path") 
-        or lib.throw("workspace path must be specified");
-end
-
-function workspace:premakeAction ()
-    local gbs = self:gbs();
-    return gbs:optarg("build-tool") 
-        or lib.throw("premake action must be specified");
-end
-
-function workspace:platform ()
-  local gbs = self:gbs();
-  if not gbs:hasOpt("target-platform") then
-      return "";
-  end
-  
-  return gbs:optarg("target-platform");
+function workspace.usage ()
+    print("NAME");
+    print("    gbs { workspace | ws } - workspace manipulation");
+    print("");
+    print("SYNOPSYS");
+    print("    (1) gbs workspace --create");
+    print("        --path=PATH");
+    print("        --build-tool=BUILD_TOOL");
+    print("        --target-platform=TARGET_PLATFORM");
+    print("");
+    print("DESCRIPTION");
+    print("    (1) - create workspace at specified directory by PATH");
+    print("");
+    print("VALUES");
+    print("    PATH");
+    print("        Valid file system path for directory");
+    print("    BUILD_TOOL");
+    print("        `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'");
+    print("    TARGET_PLATFORM"); 
+    print("        `unix32' | `unix64' | `mswin32' | `mswin64'");
 end
 
 function workspace:run ()
     local gbs = self:gbs();
-    local action = gbs:action() 
-        or lib.throw("action for workspace must be specified");
-
-    return lib.runAction(action, {
-          create = function () return self:create(); end
---        , build  = function () return self:build(); end
-    });
+    
+    if gbs:hasOpt("create") then
+        return self:create();
+    else
+        lib.print_error("action for workspace must be specified");
+    end
+    return false;
 end
-
 
 function workspace:create ()
     local gbs  = self:gbs();
-    local path = self:path();
-    local workspaceFile     = fs.join(path, ".gbs", gbs:workspaceFileName());
-    local premakeActionFile = fs.join(path, ".gbs", gbs:premakeActionFileName());
-    local platformFile      = fs.join(path, ".gbs", gbs:platformFileName());
     
-    if fs.exists(path) then
-        lib.print_error(path .. ": can't create workspace: path already exists");
-        return false;
-    end
+    local path = gbs:optarg("path") or lib.die("`path' must be specified");
+    local buildTool = gbs:optarg("build-tool") or lib.die("`build-tool' must be specified");
+    local targetPlatform = gbs:optarg("target-platform") or lib.die("`target-platform' must be specified");
+    local workspaceFile = fs.join(path, ".gbs", gbs:workspaceFileName());
+  
+    if fs.exists(path) then lib.die(path .. ": can't create workspace: path already exists"); end
 
     if not (fs.mkdir(path)
             and fs.mkdir(fs.join(path, ".gbs"))
-            and fs.mkdir(fs.join(path, ".build"))
-            and fs.touch(workspaceFile)) then
-        return false;
+            and fs.mkdir(fs.join(path, ".build"))) then
+        lib.die(path .. ": can't create workspace");
     end
     
-    lib.assert(fs.appendLines(premakeActionFile, self:premakeAction()));
-    lib.assert(fs.appendLines(platformFile, self:platform()));
-    
-    lib.assert(fs.appendLines(workspaceFile, {
+    if fs.appendLines(workspaceFile, 
           "#************************************************************"
         , "#* Generated automatically by `" .. app.name() .. "'"
         , "#* Command: `" .. app.cmdline() .. "'"
         , "#* Date:    " .. os.date() 
         , "#************************************************************"
-    }));
+        , "build-tool=" .. buildTool
+        , "target-platform=" .. targetPlatform
+    ) or lib.die("failed to update " .. workspaceFile ) then end
     
     return true;
 end

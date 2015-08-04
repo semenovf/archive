@@ -5,12 +5,13 @@ local fs    = require("gbs.sys.fs");
 
 function gbs:new ()
     local o = {
-          _opts = {}
+          _opts  = require("gbs.sys.map"):new()
+        , _args  = require("gbs.sys.array"):new()
         , homeDir           = function () return os.getenv("GBS_HOME"); end 
         , solutionFileName  = function () return 'solution.gbs'; end
         , workspaceFileName = function () return 'workspace.txt'; end
-        , premakeActionFileName = function () return 'premake-action.txt'; end
-        , platformFileName  = function () return 'platform.txt'; end
+--        , buildToolFileName = function () return 'build-tool.txt'; end
+--        , platformFileName  = function () return 'platform.txt'; end
         , projectFileName   = function () return 'project.gbs'; end
         , sourcesDirName    = function () return 'src'; end
         , testsDirName      = function () return 'tests'; end
@@ -39,54 +40,76 @@ function gbs:parseCommandLine (argc, argv)
                     lib.print_error(argv[i] .. ": bad option");
                     return false;
                 end
-                self._opts[optname] = true;
+                self._opts:insert(optname, true);
             else
-                if self._opts[optname] == nil then
-                    self._opts[optname] = optarg;
+                if not self._opts:contains(optname) then
+                    self._opts:insert(optname, optarg);
                 else
-                    if type(self._opts[optname]) ~= "table" then 
-                        local x = self._opts[optname];
-                        self._opts[optname] = {};
-                        table.insert(self._opts[optname], x);
+                    local optval = self._opts:at(optname);
+                    
+                    if type(optval) ~= "table" then
+                        local arr = require("gbs.sys.array"):new();
+                        arr:append(optval);
+                        self._opts:insert(optname, arr);
+                        optval = self._opts:at(optname);
                     end
-                    table.insert(self._opts[optname], optarg);
+                    optval:append(optarg);    
                 end
             end
         else
-            self._opts[k] = argv[i];
-            k = k + 1;
+            self._args:append(argv[i]);
         end
     end
 
---    print("Free arguments: " .. #self._opts);
---    
---    for key, value in pairs(self._opts) do
---      print(key, value);
---    end
-
+--    print("Options: " .. tostring(self._opts));
+--    print("Free arguments: " .. tostring(self._args));
     return true;
 end
 
+function gbs:loadPrefs ()
+
+    local workspaceFile = fs.join(".gbs", self:workspaceFileName());
+    
+    print("Searching " .. workspaceFile .. "...");
+    
+    for i = 1, 4 do
+        print("Try " .. workspaceFile .. "...");
+        if fs.exists(workspaceFile) then
+            print(workspaceFile .. ": file found");
+            break;
+        end
+        
+        workspaceFile = fs.join("..", workspaceFile);
+    end
+    
+    if not fs.exists(workspaceFile) then
+        print(self:workspaceFileName() .. ": not found");
+        return false;
+    end
+
+    for line in io.lines(workspaceFile) do
+        if not line:match('^#') then
+            local key, value = line:match('^([^=]-)=(.-)$');
+            if key ~= nil then
+                self._opts:insert(key, value);
+            end
+        end
+    end
+end
+
 function gbs:domain ()
-    if #self._opts > 0 then
-        return self._opts[1];
+    if self._args:size() > 0 then
+        return self._args:at(0);
     end
     return nil;
 end
 
---function gbs:action ()
---    if #self._opts > 1 then
---        return self._opts[2];
---    end
---    return nil;
---end
-
 function gbs:hasOpt (optname)
-    return self._opts[optname] ~= nil;
+    return self._opts:contains(optname);
 end
 
 function gbs:optarg (optname)
-    return self._opts[optname];-- or lib.throw(optname .. ": option must be specified");
+    return self._opts:at(optname);-- or lib.throw(optname .. ": option must be specified");
 end
 
 function gbs:getSolutionNameFromFile(solutionFile)
@@ -115,27 +138,36 @@ end
 
 function gbs:run ()
     if self:hasOpt("dump") then
-        dump(self._opts);
+        print("Options: " .. tostring(self._opts));
+        print("Free arguments: " .. tostring(self._args));
         return 0;
     end
 
     local domain = self:domain();
     local r = true;
    
-    if domain == "help" or self._opts then
+    if domain == "help" then
         local help = require("gbs.help"):new();
-        help:usage();
+        
+        if self._args:size() > 1 then
+            help:help(self._args:at(1));
+        else
+            help:usage();
+        end
     elseif domain == "workspace" or domain == "ws" then
         local ws = require("gbs.workspace"):new(self);
         r = ws:run();
-    elseif domain == "solution" or domain == "sln" then
+    elseif domain == "solution" 
+            or domain == "sln" then
         local sln = require("gbs.solution"):new(self);
         r = sln:run();
-    elseif domain == "project"  or domain == "pro" then
+    elseif domain == "project" 
+            or domain == "pro"
+            or domain == "prj" then
         local pro = require("gbs.project"):new(self);
         r = pro:run();
     else
-        lib.print_error("bad domain or it must be specified");
+        lib.print_error("bad domain or it must be specified (try `gbs help')");
         r = false;
     end
 

@@ -3,6 +3,11 @@ local lib = {};
 function __FILE__() return debug.getinfo(2,'S').source end
 function __LINE__() return debug.getinfo(2, 'l').currentline end
 
+function lib.die (m)
+    print("ERROR: " .. m);
+    os.exit(1);
+end
+
 function lib.print_error (m)
     print("ERROR: " .. m);
 end
@@ -36,6 +41,8 @@ function lib.is_valid_name (name)
     return true;
 end
 
+
+--TODO OBSOLETE
 function lib.runAction (action, actions)
     lib.assert(type(action) == "string");
     lib.assert(type(actions) == "table");

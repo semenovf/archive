@@ -15,21 +15,63 @@ function project:new (gbs)
     return setmetatable(o, self);
 end
 
+function project.usage ()
+    print("NAME");
+    print("    gbs { project | pro | prj } - project manipulation");
+    print("");
+    print("SYNOPSYS");
+    print("    (1) gbs project --create");
+    print("        --name=NAME [--type=PROJECT_TYPE]");
+    print("        [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
+    print("    (2) gbs project --build");
+    print("        --name=NAME");
+    print("        [--config={debug | release}]");
+    print("        [--build-tool=BUILD_TOOL]");
+    print("        [--target-platform=TARGET_PLATFORM]");
+    print("");
+    print("DESCRIPTION");
+    print("    (1) - create project with name NAME");
+    print("    (2) - build project with NAME");
+    print("");
+    print("OPTIONS");
+    print("    --depends");
+    print("        specify one more sibling project names (inside solution)");
+    print("");
+    print("VALUES");
+    print("    NAME");
+    print("        Valid only alphanumeric characters, underscore ('_') and dash ('-')");
+    print("    PROJECT_TYPE");
+    print("        `console-app' | `gui-app' | `shared-lib' | `static-lib' | `test'");
+    print("        Default is `console-app'");
+    print("    LANG");
+    print("        Language identifier: `C++' | `C'. Default is C++");
+    print("    BUILD_TOOL");
+    print("        `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'");
+    print("    TARGET_PLATFORM"); 
+    print("        `unix32' | `unix64' | `mswin32' | `mswin64'");
+end
+
 function project:run ()
     local gbs = self:gbs();
-    local action = gbs:action() or lib.throw("action for project must be specified");
     
-    return lib.runAction(action, {
-          create = function () return self:create(); end
-        , build  = function () return self:build(); end
-        , clean  = function () return self:clean(); end
-    });
+    if gbs:hasOpt("create") then
+        return self:create();
+    elseif gbs:hasOpt("build") then
+        return self:build();
+    elseif gbs:hasOpt("clean") then
+        return self:clean();
+    else
+        lib.print_error("action for project must be specified");
+    end
+    return false;
 end
 
 function project:name ()
     local gbs = self:gbs();
-    local r = gbs:optarg("name") or lib.throw("project name must be specified");
-    lib.assert(lib.is_valid_name(r), "bad project name");
+    r = gbs:optarg("name");
+    
+    if r == nil then return nil; end
+    if not lib.is_valid_name(r) then return nil; end
     return r; 
 end
 
@@ -45,7 +87,7 @@ function project:type ()
         or t == "test" then
         return t;
     end
-    lib.throw("bad project type");
+--    lib.throw("bad project type");
     return nil; 
 end
 
@@ -60,7 +102,6 @@ function project:language ()
         or l == "C" then
         return l;
     end
-    lib.throw("bad project language");
     return nil; 
 end
 
@@ -84,51 +125,6 @@ function project:premakeKind ()
     return nil;
 end
 
-function project:buildOptions ()
-    local gbs = self:gbs();
-    local os_info   = nil;
-    local config   = gbs:optarg("config") or "debug";
-    local platform = gbs:optarg("platform") or nil;
-    local premakeAction   = gbs:optarg("target") or nil;
-
-    if platform == nil then
-        local platformFile = fs.join("..", ".gbs", gbs:platformFileName());
-
-        if fs.exists(platformFile) then
-            platform = fs.readFirstLine(platformFile);
-        else
-            os_info = os_info or os.info();
-            platform = os_info.type .. os_info.bits;
-        end
-    end
-
-    if premakeAction == nil then
-        local premakeActionFile = fs.join("..", ".gbs", gbs:premakeActionFileName());
-
-        if fs.exists(premakeActionFile) then
-            premakeAction = fs.readFirstLine(premakeActionFile);
-        else
-            os_info = os_info or os.info();
-            if os_info.os == "linux" then
-                premakeAction = "gmake";
-            end
-        end
-    end
-
-    if platform ~= "unix32" 
-            and platform ~= "unix64" 
-            and platform ~= "mswin32"
-            and platform ~= "mswin64" then
-        platform = nil;
-    end
-    
-    if config ~= "debug" and config ~= "release" then
-        config = nil;
-    end
-    
-    return config, platform, premakeAction;
-end
-
 ---
 --- @see https://github.com/premake/premake-core/wiki/language
 --- 
@@ -143,7 +139,7 @@ function project:premakeLang ()
     return nil;
 end
 
-function project:exists (name)
+function project:registered (name)
     local gbs = self:gbs();
     local solutionFile = fs.join(".gbs", gbs:solutionFileName());
     
@@ -158,39 +154,35 @@ end
 
 function project:create ()
     local gbs = self:gbs();
-    local proName = self:name();
-    local proDir = fs.join(".gbs", proName);
-    local proLanguage = self:language();
+    local projectName = self:name() or lib.die("`name' is bad or must be specified");
+    local projectLanguage = self:language() or lib.die("`language' is bad or must be specified");
+    local projectDir  = fs.join(".gbs", projectName);
     local solutionFile = fs.join(".gbs", gbs:solutionFileName());
     
     if not fs.exists(solutionFile) then
-        lib.print_error("can't create project outside of solution directory");
-        return false;
+        lib.die("can't create project outside of solution directory");
     end
     
-    if self:exists(proName) then
-        lib.print_error(proName .. ': project already registered');
-        return false;
+    if self:registered(projectName) then
+        lib.die(projectName .. ': project already registered');
     end
     
-    if fs.exists(proDir) then
-        lib.print_error(proDir .. ': project directory already exists');
-        return false;
+    if fs.exists(projectDir) then
+        lib.die(projectDir .. ': project directory already exists');
     end
     
-    if not fs.mkdir(proDir) then
-        lib.print_error(proDir .. ': failed to create project directory');
-        return false;
+    if not fs.mkdir(projectDir) then
+        lib.die(projectDir .. ': failed to create project directory');
     end
     
     lib.assert(fs.appendLines(solutionFile
         , ''
         , '-- BEGIN PROJECT'
-        , 'project ' .. string.quote(proName)
-        , '    include(' .. string.quote(proName .. '/' .. gbs:projectFileName()) ..')' 
+        , 'project ' .. string.quote(projectName)
+        , '    include(' .. string.quote(projectName .. '/' .. gbs:projectFileName()) ..')' 
     ));
     
-    if proLanguage == 'C++' or proLanguage == 'C' then
+    if projectLanguage == 'C++' or projectLanguage == 'C' then
         local p = require('gbs.plugin.cpp'):new(self);
         p:create();
     end
@@ -200,35 +192,29 @@ function project:create ()
 end
 
 function project:build ()
+
     local gbs = self:gbs();
-    local proName = self:name();
+    local projectName = self:name();
     local solutionFile = fs.join(".gbs", gbs:solutionFileName());
-    local config, platform, premakeAction = self:buildOptions();
     
-    if config == nil then
-        lib.print_error("bad or unknown config");
-        return false;
+    if not fs.exists(solutionFile) then
+        lib.die("can't build project outside of solution directory");
     end
+        
+    local config = gbs:optarg("config") or "debug";
+    local buildTool = gbs:optarg("build-tool") or lib.die("unspecified build tool");
+    local targetPlatform = gbs:optarg("target-platform") or lib.die("unspecified target platform");
 
-    if platform == nil then
-        lib.print_error("bad or unknown platform, supported 'unix{32|64}' and 'mswin{32|64}' only");
-        return false;
-    end
+    print(targetPlatform);
 
-    if premakeAction == nil then
-        lib.print_error("bad or unknown premake action");
-        return false;
-    end
-
-    if premakeAction == "gmake" then
-        config = config .. "_" .. "unix64";
-        fs.executePremake("--file=" .. solutionFile, premakeAction);
-        fs.execute("make", "-C", ".gbs", "config=" .. config, proName);
-    elseif premakeAction:match("^vs*") then
-        fs.executePremake("--file=" .. solutionFile, premakeAction);
+    if buildTool == "gmake" then
+        config = config .. "_" .. targetPlatform;
+        fs.executePremake("--file=" .. solutionFile, buildTool);
+        fs.execute("make", "-C", ".gbs", "config=" .. config, projectName);
+    elseif buildTool:match("^vs*") then
+        fs.executePremake("--file=" .. solutionFile, buildTool);
     else
-        lib.print_error("bad or unknown premake action");
-        return false;
+        lib.die(buildTool .. ": unsupported build tool")
     end
     
     return true;
@@ -236,21 +222,25 @@ end
 
 function project:clean ()
     local gbs = self:gbs();
-    local proName = self:name();
+    local projectName = self:name();
+    local solutionFile = fs.join(".gbs", gbs:solutionFileName());
+    
+    if not fs.exists(solutionFile) then
+        lib.die("can't build project outside of solution directory");
+    end
 
-    if fs.exists(fs.join(".gbs", proName .. ".make")) then
-        fs.execute("make", "-C", ".gbs", "-f", proName .. ".make", "clean");--, "config=debug_unix32", proName);
+    local buildTool = gbs:optarg("build-tool") or lib.die("unspecified build tool");    
+
+    if buildTool == "gmake" then
+        fs.execute("make", "-C", ".gbs", "-f", projectName .. ".make", "clean");--, "config=debug_unix32", proName);
 --        fs.execute("make", "-C", ".gbs", "clean", "config=debug_unix64", proName);
 --        fs.execute("make", "-C", ".gbs", "clean", "config=debug_mswin32", proName);
 --        fs.execute("make", "-C", ".gbs", "clean", "config=debug_mswin64", proName);
+    elseif buildTool:match("^vs*") then
+    else
+        lib.die(buildTool .. ": unsupported build tool")
     end
-    fs.executePremake("clean", proName);
-
---    if target == "gmake" then
---        config = config .. "_" .. "unix64";
---        fs.executePremake("--file=.gbs/solution.gbs", target);
---        fs.execute("make", "-C", ".gbs", "config=" .. config, proName);
---    end
+    --fs.executePremake("clean", projectName);
 end
 
 return project;
