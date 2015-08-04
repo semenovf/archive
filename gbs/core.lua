@@ -70,20 +70,18 @@ function gbs:loadPrefs ()
 
     local workspaceFile = fs.join(".gbs", self:workspaceFileName());
     
-    print("Searching " .. workspaceFile .. "...");
+--    print("Searching " .. workspaceFile .. " ...");
     
     for i = 1, 4 do
-        print("Try " .. workspaceFile .. "...");
         if fs.exists(workspaceFile) then
-            print(workspaceFile .. ": file found");
+--            print("... " .. workspaceFile .. ": file found");
             break;
         end
-        
         workspaceFile = fs.join("..", workspaceFile);
     end
     
     if not fs.exists(workspaceFile) then
-        print(self:workspaceFileName() .. ": not found");
+--        print("... " .. self:workspaceFileName() .. " not found");
         return false;
     end
 
