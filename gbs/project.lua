@@ -21,17 +21,17 @@ function project.usage ()
     print("");
     print("SYNOPSYS");
     print("    (1) gbs project --create");
-    print("        --name=NAME [--type=PROJECT_TYPE]");
-    print("        [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
+    print("            --name=NAME [--type=PROJECT_TYPE]");
+    print("            [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
     print("    (2) gbs project --build");
-    print("        [--name=NAME]");
-    print("        [--config={debug | release}]");
-    print("        [--build-tool=BUILD_TOOL]");
-    print("        [--target-platform=TARGET_PLATFORM]");
+    print("            [--name=NAME]");
+    print("            [--config={debug | release}]");
+    print("            [--build-tool=BUILD_TOOL]");
+    print("            [--target-platform=TARGET_PLATFORM]");
     print("");
     print("DESCRIPTION");
     print("    (1) - create project with name NAME");
-    print("    (2) - build project with NAME");
+    print("    (2) - build project or solution en masse");
     print("");
     print("OPTIONS");
     print("    --depends");
@@ -192,22 +192,25 @@ function project:create ()
 end
 
 --
+-- solutionName not used.
 -- Valid tragets: all, clean, <project-name>
+-- Valid config: debug, release
+-- targetPlatform
 --
-function project:_gmake (gmakeTarget)
-    local gbs = self:gbs();
+function project:_gmake (solutionName, config, targetPlatform, gmakeTarget)
+--    local gbs = self:gbs();
     local projectName = self:name() or "";
-    local solutionFile = fs.join(".gbs", gbs:solutionFileName());
-    
-    if not fs.exists(solutionFile) then
-        lib.die("can't build project outside of solution directory");
-    end
+--    local solutionFile = fs.join(".gbs", gbs:solutionFileName());
+--    
+--    if not fs.exists(solutionFile) then
+--        lib.die("can't build project outside of solution directory");
+--    end
         
-    local targetPlatform = gbs:optarg("target-platform") or lib.die("unspecified target platform");
-    local config = gbs:optarg("config") or "debug";
+--    local targetPlatform = gbs:optarg("target-platform") or lib.die("unspecified target platform");
+--    local config = gbs:optarg("config") or "debug";
     
     config = config .. "_" .. targetPlatform;
-    fs.executePremake("--file=" .. solutionFile, "gmake");
+--    fs.executePremake("--file=" .. solutionFile, "gmake");
     
     if string.isEmpty(gmakeTarget) then
         gmakeTarget = "all"
@@ -221,7 +224,20 @@ function project:_gmake (gmakeTarget)
 end
 
 -- FIXME
-function project:_msbuild ()
+function project:_msbuild (solutionName, config, targetPlatform, msbuildTarget)
+    local projectName = self:name() or "";
+
+    if string.isEmpty(projectName) then
+        fs.execute("msbuild"
+            , "/t:" .. msbuildTarget
+            , "/p:Configuration=" .. config
+            , "/p:Platform=" .. targetPlatform
+--            , "/v:quiet"
+            , fs.join(".gbs", solutionName .. ".sln"));
+    else
+--        fs.execute("make", "-f", projectName .. ".make", "-C", ".gbs", "config=" .. config, gmakeTarget);
+    end
+
 end
 
 
@@ -229,12 +245,22 @@ function project:build ()
     local gbs = self:gbs();
     local projectName = self:name() or "";
     local buildTool = gbs:optarg("build-tool") or lib.die("unspecified build tool");
+    local solutionFile = fs.join(".gbs", gbs:solutionFileName());
+    local targetPlatform = gbs:optarg("target-platform") or lib.die("unspecified target platform");
+    local config = gbs:optarg("config") or "debug";
+    
+    if not fs.exists(solutionFile) then
+        lib.die("can't build project outside of solution directory");
+    end
+    
+    local solutionName = gbs:solutionName();
 
     if buildTool == "gmake" then
-        self:_gmake("all")
+        fs.executePremake("--file=" .. solutionFile, buildTool);
+        self:_gmake(solutionName, config, targetPlatform, "all")
     elseif buildTool:match("^vs*") then
-        self:_msbuild(); -- FIXME
---        fs.executePremake("--file=" .. solutionFile, buildTool);
+        fs.executePremake("--file=" .. solutionFile, buildTool);
+        self:_msbuild(solutionName, config, targetPlatform, "Build");
     else
         lib.die(buildTool .. ": unsupported build tool")
     end
@@ -254,8 +280,9 @@ function project:clean ()
     local buildTool = gbs:optarg("build-tool") or lib.die("unspecified build tool");    
 
     if buildTool == "gmake" then
-        self:_gmake("clean")
+        -- self:_gmake("clean") --FIXME
     elseif buildTool:match("^vs*") then
+        --self:_msbuild(solutionName, config, targetPlatform, "Clean");
         self:_msbuild(); -- FIXME
     else
         lib.die(buildTool .. ": unsupported build tool")

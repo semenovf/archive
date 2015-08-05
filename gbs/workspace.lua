@@ -21,9 +21,9 @@ function workspace.usage ()
     print("");
     print("SYNOPSYS");
     print("    (1) gbs workspace --create");
-    print("        --path=PATH");
-    print("        --build-tool=BUILD_TOOL");
-    print("        --target-platform=TARGET_PLATFORM");
+    print("            --path=PATH");
+    print("            --build-tool=BUILD_TOOL");
+    print("            --target-platform=TARGET_PLATFORM");
     print("");
     print("DESCRIPTION");
     print("    (1) - create workspace at specified directory by PATH");
@@ -35,6 +35,29 @@ function workspace.usage ()
     print("        `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'");
     print("    TARGET_PLATFORM"); 
     print("        `unix32' | `unix64' | `mswin32' | `mswin64'");
+end
+
+function _isValidBuildTool (bt)
+    if bt == "gmake"
+            or bt == "vs2005"
+            or bt == "vs2008"
+            or bt == "vs2010"
+            or bt == "vs2012"
+            or bt == "vs2013"
+            or bt == "vs2015" then
+        return true;
+    end
+    return false;
+end
+
+function _isValidTargetPlatform (tp)
+    if tp == "unix32"
+            or tp == "unix64"
+            or tp == "mswin32"
+            or tp == "mswin64" then
+        return true;
+    end
+    return false;
 end
 
 function workspace:run ()
@@ -56,6 +79,9 @@ function workspace:create ()
     local targetPlatform = gbs:optarg("target-platform") or lib.die("`target-platform' must be specified");
     local workspaceFile = fs.join(path, ".gbs", gbs:workspaceFileName());
   
+    if not _isValidBuildTool(buildTool) then lib.die("invalid build tool"); end
+    if not _isValidTargetPlatform(targetPlatform) then lib.die("invalid target platform"); end
+    
     if fs.exists(path) then lib.die(path .. ": can't create workspace: path already exists"); end
 
     if not (fs.mkdir(path)

@@ -32,6 +32,7 @@ function lib.assert (predicate, m)
 end
 
 function lib.is_valid_name (name)
+    if type(name) ~= "string" then return false; end
     local r = name:match("^[%a%d_-]-$");
     
     if r == nil then

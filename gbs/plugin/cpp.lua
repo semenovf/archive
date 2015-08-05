@@ -23,8 +23,8 @@ function plugin:create ()
     local projectName = project:name();
     local projectDir  = fs.join(".gbs", projectName);
     local projectFile = fs.join(projectDir, gbs:projectFileName());
-    local projectLanguage = project:language();
-    local projectType = project:type();
+    local projectLanguage = project:language() or lib.die("invalid project language");
+    local projectType = project:type() or lib.die("invalid project type");
     local projectSrcFileList = {};
     local projectIncludeDirList = {};
     

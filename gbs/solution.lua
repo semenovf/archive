@@ -21,7 +21,7 @@ function solution.usage ()
     print("");
     print("SYNOPSYS");
     print("    (1) gbs solution --create");
-    print("        --name=NAME [GIT_OPTIONS]");
+    print("            --name=NAME [GIT_OPTIONS]");
 --    print("    (2) gbs solution --build");
 --    print("        [--config={debug | release}]");
 --    print("        [--build-tool=BUILD_TOOL]");

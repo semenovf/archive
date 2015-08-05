@@ -110,7 +110,7 @@ function gbs:optarg (optname)
     return self._opts:at(optname);-- or lib.throw(optname .. ": option must be specified");
 end
 
-function gbs:getSolutionNameFromFile(solutionFile)
+function _getSolutionNameFromFile(solutionFile)
     local r = nil;
     for line in io.lines(solutionFile) do
         r = line:match('^solution%s"([^%s]-)"');
@@ -128,7 +128,7 @@ function gbs:solutionName ()
         lib.throw(solutionFilePath .. ": solution file not found");
     end
 
-    local solutionName = self:getSolutionNameFromFile(solutionFilePath)
+    local solutionName = _getSolutionNameFromFile(solutionFilePath)
             or lib.throw(solutionFilePath .. ": unable to take solution name, solution file may be corrupted");
     return solutionName;
 end
