@@ -22,6 +22,10 @@ function solution.usage ()
     print("SYNOPSYS");
     print("    (1) gbs solution --create");
     print("        --name=NAME [GIT_OPTIONS]");
+--    print("    (2) gbs solution --build");
+--    print("        [--config={debug | release}]");
+--    print("        [--build-tool=BUILD_TOOL]");
+--    print("        [--target-platform=TARGET_PLATFORM]");
     print("");
     print("DESCRIPTION");
     print("    (1) - create solution with name NAME");
@@ -48,6 +52,8 @@ function solution:run ()
     
     if gbs:hasOpt("create") then
         return self:create();
+--    elseif gbs:hasOpt("build") then
+--        return self:build();
     else
         lib.print_error("action for solution must be specified");
     end
