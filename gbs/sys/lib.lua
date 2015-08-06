@@ -3,6 +3,9 @@ local lib = {};
 function __FILE__() return debug.getinfo(2,'S').source end
 function __LINE__() return debug.getinfo(2, 'l').currentline end
 
+--
+-- TODO Deprecated see die.lua
+--
 function lib.die (m)
     print("ERROR: " .. m);
     os.exit(1);

@@ -134,6 +134,46 @@ function gbs:solutionName ()
 end
 
 
+function gbs:runDeprecated ()
+    if self:hasOpt("dump") then
+        print("Options: " .. tostring(self._opts));
+        print("Free arguments: " .. tostring(self._args));
+        return 0;
+    end
+
+    local domain = self:domain();
+    local r = true;
+   
+    if domain == "help" then
+        local help = require("gbs.help"):new();
+        
+        if self._args:size() > 1 then
+            help:help(self._args:at(1));
+        else
+            help:usage();
+        end
+    elseif domain == "workspace" or domain == "ws" then
+        local ws = require("gbs.workspace"):new(self);
+        r = ws:run();
+    elseif domain == "solution" 
+            or domain == "sln" then
+        local sln = require("gbs.solution"):new(self);
+        r = sln:run();
+    elseif domain == "project" 
+            or domain == "pro"
+            or domain == "prj" then
+        local pro = require("gbs.project"):new(self);
+        r = pro:run();
+    else
+        lib.print_error("bad domain or it must be specified (try `gbs help')");
+        r = false;
+    end
+
+    if r then return 0; end
+    return 1;
+end
+
+
 function gbs:run ()
     if self:hasOpt("dump") then
         print("Options: " .. tostring(self._opts));
