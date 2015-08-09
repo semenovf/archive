@@ -21,14 +21,14 @@ function _object:new (m)
     return setmetatable(o, self);
 end
 
-function _object:now ()
+function _object:_print ()
     local m = self._m;
     local endl = "";
 
     if m == nil or not m:match("\n$") then
         endl = "\n";
-        local s = debug.getinfo(2,'S').source; -- caller source file
-        local l = debug.getinfo(2,'l').currentline; -- caller current line
+        local s = debug.getinfo(3,'S').source; -- caller source file
+        local l = debug.getinfo(3,'l').currentline; -- caller current line
         m = (m or "died") .. " at " .. s .. " line " .. l;
     end
     
@@ -36,14 +36,18 @@ function _object:now ()
     os.exit(-1);
 end
 
+function _object:now ()
+    self:_print();
+end
+
 function _object:unless (predicate)
     if not predicate then 
-        self:now(); 
+        self:_print(); 
     end
 end
 
 function _object:when (predicate)
     if predicate then 
-        self:now(); 
+        self:_print();
     end
 end

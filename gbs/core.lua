@@ -181,35 +181,53 @@ function gbs:run ()
         return 0;
     end
 
-    local domain = self:domain();
-    local r = true;
-   
-    if domain == "help" then
-        local help = require("gbs.help"):new();
-        
-        if self._args:size() > 1 then
-            help:help(self._args:at(1));
-        else
-            help:usage();
-        end
-    elseif domain == "workspace" or domain == "ws" then
-        local ws = require("gbs.workspace"):new(self);
-        r = ws:run();
-    elseif domain == "solution" 
-            or domain == "sln" then
-        local sln = require("gbs.solution"):new(self);
-        r = sln:run();
-    elseif domain == "project" 
-            or domain == "pro"
-            or domain == "prj" then
-        local pro = require("gbs.project"):new(self);
-        r = pro:run();
-    else
-        lib.print_error("bad domain or it must be specified (try `gbs help')");
-        r = false;
-    end
+    local router_type = require("gbs.sys.router");
+    local help_type = require("gbs.sys.router");
 
-    if r then return 0; end
+    router_type:new()
+        :a("help")
+        :a({"workspace", "ws", "solution", "sln", "project", "pro", "prj"})
+        :h(function (r)
+                help_type:new():help(r:actionAt(2));
+           end);
+    
+    router_type:new()
+        :a("help")
+        :h(function () 
+                help_type:new():usage();
+           end);
+
+    router_type.run(self._opts, self._args);
+               
+--    local domain = self:domain();
+--    local r = true;
+--   
+--    if domain == "help" then
+--        local help = require("gbs.help"):new();
+--        
+--        if self._args:size() > 1 then
+--            help:help(self._args:at(1));
+--        else
+--            help:usage();
+--        end
+--    elseif domain == "workspace" or domain == "ws" then
+--        local ws = require("gbs.workspace"):new(self);
+--        r = ws:run();
+--    elseif domain == "solution" 
+--            or domain == "sln" then
+--        local sln = require("gbs.solution"):new(self);
+--        r = sln:run();
+--    elseif domain == "project" 
+--            or domain == "pro"
+--            or domain == "prj" then
+--        local pro = require("gbs.project"):new(self);
+--        r = pro:run();
+--    else
+--        lib.print_error("bad domain or it must be specified (try `gbs help')");
+--        r = false;
+--    end
+--
+--    if r then return 0; end
     return 1;
 end
 

@@ -19,4 +19,5 @@ Gbs = gbs_class:new();
 Gbs:loadPrefs();
 if Gbs:parseCommandLine(#arg, arg) then
     return Gbs:runDeprecated();
+--    return Gbs:run();
 end
