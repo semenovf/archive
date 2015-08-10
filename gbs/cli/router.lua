@@ -178,7 +178,6 @@ function router:_match (opts, args)
         
         -- Option matching failed
         if not ok then
-            print("NOT MATCH");
             return nil;
         end
     end

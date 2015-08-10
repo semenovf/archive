@@ -10,9 +10,4 @@ end
 
 package.path = gbs_home .. '/?.lua;' .. package.path;
 
---local gbs_class = require("gbs.core");
-
---local router = require("gbs.sys.router"):new();
---router:a("ws"):b("create"):s("path"):dump();
-
-return require("gbs.core"):run();
+return require("gbs.core").run();

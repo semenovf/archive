@@ -1,43 +1,35 @@
 local gbs = {};
 
-local lib   = require("gbs.sys.lib");
-local fs    = require("gbs.sys.fs");
+local lib = require("gbs.sys.lib");
+local fs  = require("gbs.sys.fs");
 
-function gbs:_instance ()
-    return require("gbs.sys.app"):_instance();
-end
+--#arg, arg
+function gbs.homeDir ()           return os.getenv("GBS_HOME"); end 
+function gbs.solutionFileName ()  return 'solution.gbs'; end
+function gbs.workspaceFileName () return 'workspace.txt'; end
+function gbs.projectFileName ()   return 'project.gbs'; end
+function gbs.sourcesDirName ()    return 'src'; end
+function gbs.testsDirName ()      return 'tests'; end
 
-function gbs:homeDir ()           return os.getenv("GBS_HOME"); end 
-function gbs:solutionFileName ()  return 'solution.gbs'; end
-function gbs:workspaceFileName () return 'workspace.txt'; end
-function gbs:projectFileName ()   return 'project.gbs'; end
-function gbs:sourcesDirName ()    return 'src'; end
-function gbs:testsDirName ()      return 'tests'; end
-
-function gbs:loadPrefs ()
-
-    local workspaceFile = fs.join(".gbs", self:workspaceFileName());
-    
---    print("Searching " .. workspaceFile .. " ...");
+function gbs.loadPrefs (opts)
+    local workspaceFile = fs.join(".gbs", gbs.workspaceFileName());
     
     for i = 1, 4 do
         if fs.exists(workspaceFile) then
---            print("... " .. workspaceFile .. ": file found");
             break;
         end
         workspaceFile = fs.join("..", workspaceFile);
     end
     
     if not fs.exists(workspaceFile) then
---        print("... " .. self:workspaceFileName() .. " not found");
         return false;
     end
 
     for line in io.lines(workspaceFile) do
         if not line:match('^#') then
-            local key, value = line:match('^([^=]-)=(.-)$');
-            if key ~= nil then
-                self._opts:insert(key, value);
+            local k, v = line:match('^([^=]-)=(.-)$');
+            if k ~= nil then
+                opts:insert(k, v);
             end
         end
     end
@@ -65,7 +57,6 @@ function gbs:solutionName ()
             or lib.throw(solutionFilePath .. ": unable to take solution name, solution file may be corrupted");
     return solutionName;
 end
-
 
 --function gbs:runDeprecated ()
 --    if self:hasOpt("dump") then
@@ -107,23 +98,26 @@ end
 --end
 
 
-function gbs:run ()
-
---    Gbs:loadPrefs();
-    local cmdline = self:cmdline();
+function gbs.run ()
+    local cmdline = require("gbs.cli.cmdline"):new();
+    gbs.loadPrefs(cmdline:opts());
     
-    if not cmdline:parse() then
+    if not cmdline:parse(#arg, arg) then
         return -1;
     end
-
-    if cmdline:hasOpt("dump") then
-        print("Options: " .. tostring(self._opts));
-        print("Free arguments: " .. tostring(self._args));
-        return 0;
-    end
+    
+    gbs.programName = function () cmdline:programName(); end
+    gbs.cmdlineString = function () cmdline:toString(#arg, arg); end
 
     local router_type = require("gbs.cli.router");
     local help_type = require("gbs.help");
+
+    router_type:new()
+        :b("dump")
+        :h(function (r)
+                print("Options: " .. tostring(cmdline:opts()));
+                print("Free arguments: " .. tostring(cmdline:args()));
+           end);
 
     router_type:new()
         :a("help")

@@ -5,7 +5,6 @@ require("gbs.sys.die");
 
 local lib  = require("gbs.sys.lib");
 local fs   = require("gbs.sys.fs");
-local app  = require("gbs.sys.app");
 
 function workspace:new ()
     local o = {}; 
@@ -59,7 +58,7 @@ function _isValidTargetPlatform (tp)
 end
 
 function workspace:create (router)
---    local gbs  = self:gbs();
+    local gbs = require("gbs.core");
     
     local path = router:optArg("path");
     local buildTool = router:optArg("build-tool");
@@ -76,12 +75,10 @@ function workspace:create (router)
         die(path .. ": can't create workspace"):now();
     end
     
-    local cmdline = app:
-    
     if fs.appendLines(workspaceFile, 
           "#************************************************************"
-        , "#* Generated automatically by `" .. app:cmdline():name() .. "'"
-        , "#* Command: `" .. app:cmdlineToString() .. "'"
+        , "#* Generated automatically by `" .. gbs.programName() .. "'"
+        , "#* Command: `" .. gbs.cmdlineString() .. "'"
         , "#* Date:    " .. os.date() 
         , "#************************************************************"
         , "build-tool=" .. buildTool

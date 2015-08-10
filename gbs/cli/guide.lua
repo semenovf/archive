@@ -40,10 +40,8 @@ function guide:setArticle (title, text)
 end
 
 function guide:usage ()
-    local app = require("gbs.sys.app"):instance();
-    
     print("Usage:");
-    print("    " .. app:path() .. " [OPTIONS]");
+    print("    " .. "gbs" .. " [OPTIONS]");
     print("");
     print("COMMANDS");
     print("");
