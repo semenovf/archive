@@ -1,16 +1,14 @@
 local workspace = {};
 
 require("gbs.sys.os");
+require("gbs.sys.die");
 
 local lib  = require("gbs.sys.lib");
 local fs   = require("gbs.sys.fs");
 local app  = require("gbs.sys.app");
 
-function workspace:new (gbs)
-    local o = {
-        gbs = function () return gbs; end
-    }; 
-    
+function workspace:new ()
+    local o = {}; 
     self.__index = self;
     return setmetatable(o, self);
 end
@@ -60,45 +58,35 @@ function _isValidTargetPlatform (tp)
     return false;
 end
 
-function workspace:run ()
-    local gbs = self:gbs();
+function workspace:create (router)
+--    local gbs  = self:gbs();
     
-    if gbs:hasOpt("create") then
-        return self:create();
-    else
-        lib.print_error("action for workspace must be specified");
-    end
-    return false;
-end
-
-function workspace:create ()
-    local gbs  = self:gbs();
-    
-    local path = gbs:optarg("path") or lib.die("`path' must be specified");
-    local buildTool = gbs:optarg("build-tool") or lib.die("`build-tool' must be specified");
-    local targetPlatform = gbs:optarg("target-platform") or lib.die("`target-platform' must be specified");
+    local path = router:optArg("path");
+    local buildTool = router:optArg("build-tool");
+    local targetPlatform = router:optArg("target-platform");
     local workspaceFile = fs.join(path, ".gbs", gbs:workspaceFileName());
   
-    if not _isValidBuildTool(buildTool) then lib.die("invalid build tool"); end
-    if not _isValidTargetPlatform(targetPlatform) then lib.die("invalid target platform"); end
-    
-    if fs.exists(path) then lib.die(path .. ": can't create workspace: path already exists"); end
+    die("invalid build tool"):unless(_isValidBuildTool(buildTool));
+    die("invalid target platform"):unless(_isValidTargetPlatform(targetPlatform));
+    die(path .. ": can't create workspace: path already exists"):when(fs.exists(path));
 
     if not (fs.mkdir(path)
             and fs.mkdir(fs.join(path, ".gbs"))
             and fs.mkdir(fs.join(path, ".build"))) then
-        lib.die(path .. ": can't create workspace");
+        die(path .. ": can't create workspace"):now();
     end
+    
+    local cmdline = app:
     
     if fs.appendLines(workspaceFile, 
           "#************************************************************"
-        , "#* Generated automatically by `" .. app.name() .. "'"
-        , "#* Command: `" .. app.cmdline() .. "'"
+        , "#* Generated automatically by `" .. app:cmdline():name() .. "'"
+        , "#* Command: `" .. app:cmdlineToString() .. "'"
         , "#* Date:    " .. os.date() 
         , "#************************************************************"
         , "build-tool=" .. buildTool
         , "target-platform=" .. targetPlatform
-    ) or lib.die("failed to update " .. workspaceFile ) then end
+    ) or die("failed to update " .. workspaceFile):now() then end
     
     return true;
 end
