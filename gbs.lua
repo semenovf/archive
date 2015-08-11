@@ -9,5 +9,6 @@ if gbs_home == nil or gbs_home:len() == 0 then
 end
 
 package.path = gbs_home .. '/?.lua;' .. package.path;
+require("gbs.core");
 
-return require("gbs.core").run();
+return gbs.instance().run();

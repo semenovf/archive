@@ -1,18 +1,44 @@
-local gbs = {};
+require("gbs.sys.die");
 
 local lib = require("gbs.sys.lib");
 local fs  = require("gbs.sys.fs");
 
---#arg, arg
-function gbs.homeDir ()           return os.getenv("GBS_HOME"); end 
-function gbs.solutionFileName ()  return 'solution.gbs'; end
-function gbs.workspaceFileName () return 'workspace.txt'; end
-function gbs.projectFileName ()   return 'project.gbs'; end
-function gbs.sourcesDirName ()    return 'src'; end
-function gbs.testsDirName ()      return 'tests'; end
+gbs = {};
 
-function gbs.loadPrefs (opts)
-    local workspaceFile = fs.join(".gbs", gbs.workspaceFileName());
+local _instance = nil;
+
+function gbs.instance ()
+    if not _instance then
+        _instance = gbs;
+        _instance._argc             = #arg;
+        _instance._argv             = arg;
+        _instance._cmdline          = require("gbs.cli.cmdline"):new();
+        _instance._cmdlineString    = _instance._cmdline.toString(_instance._argc, _instance._argv);
+        
+        _instance.argc              = function () return _instance._argc; end
+        _instance.argv              = function () return _instance._argv; end
+        _instance.homeDir           = function () return os.getenv("GBS_HOME"); end
+        _instance.solutionFileName  = function () return "solution.gbs"; end
+        _instance.workspaceFileName = function () return "workspace.txt"; end
+        _instance.projectFileName   = function () return "project.gbs"; end
+        _instance.sourcesDirName    = function () return "src"; end
+        _instance.testsDirName      = function () return "tests"; end
+        _instance.cmdline           = function () return _instance._cmdline; end
+        _instance.programName       = function () return _instance._cmdline:programName(); end 
+        _instance.cmdlineString     = function () return _instance._cmdlineString; end
+        _instance.loadPreferences   = function () 
+            return _loadPreferences(_instance.workspaceFileName
+                , _instance._cmdline:opts());
+        end
+        _instance.solutionName      = function () return _solitionName(_instance.solutionFileName); end
+        _instance.run               = function () return _run(); end
+    end 
+    return _instance;
+end
+
+function _loadPreferences (workspaceFileName, opts)
+    local g = gbs.instance();
+    local workspaceFile = fs.join(".gbs", workspaceFileName);
     
     for i = 1, 4 do
         if fs.exists(workspaceFile) then
@@ -35,7 +61,7 @@ function gbs.loadPrefs (opts)
     end
 end
 
-function _getSolutionNameFromFile(solutionFile)
+function _getSolutionNameFromFile (solutionFile)
     local r = nil;
     for line in io.lines(solutionFile) do
         r = line:match('^solution%s"([^%s]-)"');
@@ -46,15 +72,13 @@ function _getSolutionNameFromFile(solutionFile)
     return r;
 end
 
-function gbs:solutionName ()
-    local solutionFilePath = fs.join(".gbs", self:solutionFileName());
+function _solutionName (solutionFileName)
+    local solutionFile = fs.join(".gbs", solutionFileName);
     
-    if not fs.exists(solutionFilePath) then
-        lib.throw(solutionFilePath .. ": solution file not found");
-    end
-
-    local solutionName = _getSolutionNameFromFile(solutionFilePath)
-            or lib.throw(solutionFilePath .. ": unable to take solution name, solution file may be corrupted");
+    die(solutionFile .. ": solution file not found"):unless(fs.exists(solutionFile));
+    local solutionName = _getSolutionNameFromFile(solutionFile);
+    die(solutionFile .. ": unable to take solution name, solution file may be corrupted")
+        :when(solutionName == nil);
     return solutionName;
 end
 
@@ -98,17 +122,14 @@ end
 --end
 
 
-function gbs.run ()
-    local cmdline = require("gbs.cli.cmdline"):new();
-    gbs.loadPrefs(cmdline:opts());
-    
-    if not cmdline:parse(#arg, arg) then
-        return -1;
-    end
-    
-    gbs.programName = function () cmdline:programName(); end
-    gbs.cmdlineString = function () cmdline:toString(#arg, arg); end
+function _run ()
+    local instance = gbs.instance();
+    local cmdline = instance.cmdline();
+    local status, msg = cmdline:parse(instance.argc(), instance.argv());
+    die(msg):unless(status);
 
+    instance.loadPreferences();
+    
     local router_type = require("gbs.cli.router");
     local help_type = require("gbs.help");
 
@@ -142,7 +163,7 @@ function gbs.run ()
         :s("target-platform")
         :h(function (r)
                 local ws = require("gbs.workspace"):new();
-                return ws:create();
+                return ws:create(r);
            end);
 
     router_type:new()
@@ -152,7 +173,7 @@ function gbs.run ()
         :h(function (r)
                 local sln = require("gbs.solution"):new();
                 sln:setName(r.optArg("name"));
-                return sln:create();
+                return sln:create(r);
            end);
         
     router_type:new()
@@ -193,5 +214,3 @@ function gbs.run ()
 --    if r then return 0; end
     return 1;
 end
-
-return gbs;

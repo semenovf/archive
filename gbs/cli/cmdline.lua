@@ -53,7 +53,7 @@ function cmdline:clearArgs ()
     self._args = require("gbs.sys.array"):new();
 end
 
-function cmdline.tostring (argc, argv)
+function cmdline.toString (argc, argv)
     local r = argv[0];
     for i = 1, #argv do
         r = r .. ' ' .. argv[i]; 
@@ -84,8 +84,7 @@ function cmdline:parse (argc, argv)
             if optname == nil then
                 optname = argv[i]:match("^[-][-]([%a%d_-]-)$");
                 if optname == nil then
-                    lib.print_error(argv[i] .. ": bad option");
-                    return false;
+                    return false, argv[i] .. ": bad option";
                 end
                 self._opts:insert(optname, true);
             else
