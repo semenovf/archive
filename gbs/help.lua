@@ -1,9 +1,10 @@
-local help = {};
-
+require("gbs.sys.die");
 local lib   = require("gbs.sys.lib");
 
-function help:new ()
-    local o = {};
+local help = {};
+
+function help:new (o)
+    local o = o or {};
     self.__index = self;
     return setmetatable(o, self);
 end
@@ -39,19 +40,21 @@ function help:usage ()
     print("    Copyright (C) 2015 Fedor Semenov.");
 end
 
-function help:help (domain)
-    if domain == "workspace" 
-            or domain == "ws" then
+function help:help ()
+    die("Expected domain hor help"):unless(self.domain);
+    
+    if self.domain == "workspace" 
+            or self.domain == "ws" then
         require("gbs.workspace").usage();
-    elseif domain == "solution" 
-            or domain == "sln" then
+    elseif self.domain == "solution" 
+            or self.domain == "sln" then
         require("gbs.solution").usage();
-    elseif domain == "project" 
-            or domain == "prj" 
-            or domain == "pro" then
+    elseif help.domain == "project" 
+            or self.domain == "prj" 
+            or self.domain == "pro" then
         require("gbs.project").usage();
     else
-        lib.print_error("bad domain for help");
+        warn("bad domain for help");
         return false;
     end 
     

@@ -58,7 +58,8 @@ function _isValidTargetPlatform (tp)
 end
 
 function workspace:create (router)
-    local gbs = require("gbs.core");
+--    local gbs = require("gbs.core");
+    local gbs = gbs.instance();
     
     local path = router:optArg("path");
     local buildTool = router:optArg("build-tool");

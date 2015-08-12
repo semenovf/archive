@@ -112,25 +112,32 @@ function router:_match (opts, args)
         die("Expected string or table type value for action")
             :unless(type(a) == "string" or type(a) == "table");
         
-        local atable = {};
-        
-        if type(a) == "string" then
-            atable = { a };
+        --
+        -- Empty table means any action value
+        --
+        if type(a) == "table" and #a == 0 then
+            r._actions:append(args:at(i));        
         else
-            atable = a;
+            local atable = {};
+            
+            if type(a) == "string" then
+                atable = { a };
+            else
+                atable = a;
+            end
+            
+            local ok = false;
+            
+            for j = 1, #atable do
+                if atable[j] == args:at(i) then
+                    r._actions:append(atable[j]);
+                    ok = true;
+                    break;
+                end  
+            end
+            if not ok then break; end
         end
-        
-        local ok = false;
-        
-        for j = 1, #atable do
-            if atable[j] == args:at(i) then
-                r._actions:append(atable[j]);
-                ok = true;
-                break;
-            end  
-        end
-        
-        if not ok then break; end
+
         i = i + 1;
     end
     

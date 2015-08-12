@@ -27,7 +27,7 @@ function gbs.instance ()
         _instance.programName       = function () return _instance._cmdline:programName(); end 
         _instance.cmdlineString     = function () return _instance._cmdlineString; end
         _instance.loadPreferences   = function () 
-            return _loadPreferences(_instance.workspaceFileName
+            return _loadPreferences(_instance.workspaceFileName()
                 , _instance._cmdline:opts());
         end
         _instance.solutionName      = function () return _solitionName(_instance.solutionFileName); end
@@ -142,9 +142,10 @@ function _run ()
 
     router_type:new()
         :a("help")
-        :a({"workspace", "ws", "solution", "sln", "project", "pro", "prj"})
+        --:a({"workspace", "ws", "solution", "sln", "project", "pro", "prj"})
+        :a({})
         :h(function (r)
-                help_type:new():help(r:actionAt(1));
+                help_type:new({domain = r:actionAt(1)}):help();
                 return true;
            end);
     

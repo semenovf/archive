@@ -13,6 +13,12 @@ function die (m)
     return _object:new((type(m) == "string" and m) or nil);
 end
 
+function warn (m)
+    if m ~= nil then
+        io.stderr:write("ERROR: " .. tostring(m) .. "\n");
+    end    
+end
+
 function _object:new (m)
     local o = {
         _m = m
