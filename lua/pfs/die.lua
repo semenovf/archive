@@ -13,9 +13,19 @@ function die (m)
     return _object:new((type(m) == "string" and m) or nil);
 end
 
-function warn (m)
+function throw (m)
+    error(m);
+end
+
+function print_error (m)
     if m ~= nil then
         io.stderr:write("ERROR: " .. tostring(m) .. "\n");
+    end    
+end
+
+function print_warn (m)
+    if m ~= nil then
+        io.stderr:write("WARN: " .. tostring(m) .. "\n");
     end    
 end
 

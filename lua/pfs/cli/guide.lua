@@ -1,4 +1,4 @@
-require("gbs.sys.die");
+require("pfs.die");
 
 local guide = {};
 

@@ -1,10 +1,8 @@
+require "pfs.string";
+
+local fs  = require("pfs.sys.fs");
+
 local plugin = {};
-
-require("gbs.sys.string");
-
-local lib = require("gbs.sys.lib");
-local fs  = require("gbs.sys.fs");
-local app = require("gbs.sys.app");
 
 function plugin:new (prj)
     local o = {

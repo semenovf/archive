@@ -1,8 +1,7 @@
+require "pfs.die";
+require "pfs.sys.os";
+
 local fs = {}
-
-require("gbs.sys.os");
-
-local lib = require("gbs.sys.lib");
 
 function fs.execute (program, ...)
     local cmd = program;
@@ -131,7 +130,7 @@ function fs.appendLines (filepath, ...)
 
     local fh, errstr = io.open(filepath, "a+");
     if fh == nil then
-        lib.print_error(filepath .. ": can't open file: " .. errstr); 
+        warn(filepath .. ": can't open file: " .. errstr); 
         return false;
     end
     
@@ -149,14 +148,6 @@ function fs.appendLines (filepath, ...)
             fh:write(lines[j] .. "\n");
         end
     end
-    
---    if type(lines) == "table" then
---        for i = 1, #lines do
---            fh:write(lines[i] .. "\n");
---        end
---    else
---        fh:write(lines .. "\n");
---    end
 
     fh:flush();
     fh:close();
@@ -167,7 +158,7 @@ end
 function fs.readFirstLine (filepath)
     local fh, errstr = io.open(filepath, "r");
     if fh == nil then
-        lib.print_error(filepath .. ": can't open file: " .. errstr); 
+        warn(filepath .. ": can't open file: " .. errstr); 
         return nil;
     end
     local line = fh:read("*l");

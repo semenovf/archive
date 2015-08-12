@@ -1,19 +1,17 @@
-require("gbs.sys.die");
+require("pfs.die");
 
 local router = {};
-local _routers = require("gbs.sys.array"):new();
 
 function router:new ()
     local o = {
-          _actions = require("gbs.sys.array"):new()
-        , _opts    = require("gbs.sys.map"):new()
+          _actions = require("pfs.array"):new()
+        , _opts    = require("pfs.map"):new()
         , _h       = nil -- handler
-        , _args    = require("gbs.sys.array"):new() -- free arguments
+        , _args    = require("pfs.array"):new() -- free arguments
         , _ropts   = nil -- filled by run() method, contains pairs {optname, optarg}
     }; 
     self.__index = self;
     local r = setmetatable(o, self);
-    _routers:append(r);
     return r; 
 end
 
@@ -154,7 +152,7 @@ function router:_match (opts, args)
     local k = nil;
     local v = nil;
     
-    r._ropts = require("gbs.sys.map"):new();
+    r._ropts = require("pfs.map"):new();
     
     for k, v in self._opts:pairs() do
         local ok = false; -- using as flag for successful option matching
@@ -193,22 +191,8 @@ function router:_match (opts, args)
     return r;
 end
 
-function router.run (cmdline)
-    local n = _routers:size();
-    for i = 0, n - 1 do
-        local r = _routers:at(i):_match(cmdline:opts(), cmdline:args());
-        
-        if r then
-            if r._h ~= nil then
-                return r._h(r);
-            end 
-        end
-    end
-    return false;
-end
-
 function router.guide ()
-    local g = require("gbs.cli.guide"):new();
+    local g = require("pfs.cli.guide"):new();
     return g;
 end
 

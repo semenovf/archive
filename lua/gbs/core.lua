@@ -1,40 +1,41 @@
-require("gbs.sys.die");
+require "pfs.die";
 
-local lib = require("gbs.sys.lib");
-local fs  = require("gbs.sys.fs");
+local fs = require("pfs.sys.fs");
+local Settings = require("pfs.settings"):new("gbs.");
+
+Settings:set("HomeDir"          , os.getenv("GBS_HOME"));
+Settings:set("SolutionFileName" , "solution.gbs");
+Settings:set("WorkspaceFileName", "workspace.txt");
+Settings:set("ProjectFileName"  , "project.gbs");
+Settings:set("SourcesDirName"   , "src");
+Settings:set("TestsDirName"     , "tests");
 
 gbs = {};
 
 local _instance = nil;
 
-function gbs.instance ()
-    if not _instance then
-        _instance = gbs;
-        _instance._argc             = #arg;
-        _instance._argv             = arg;
-        _instance._cmdline          = require("gbs.cli.cmdline"):new();
-        _instance._cmdlineString    = _instance._cmdline.toString(_instance._argc, _instance._argv);
-        
-        _instance.argc              = function () return _instance._argc; end
-        _instance.argv              = function () return _instance._argv; end
-        _instance.homeDir           = function () return os.getenv("GBS_HOME"); end
-        _instance.solutionFileName  = function () return "solution.gbs"; end
-        _instance.workspaceFileName = function () return "workspace.txt"; end
-        _instance.projectFileName   = function () return "project.gbs"; end
-        _instance.sourcesDirName    = function () return "src"; end
-        _instance.testsDirName      = function () return "tests"; end
-        _instance.cmdline           = function () return _instance._cmdline; end
-        _instance.programName       = function () return _instance._cmdline:programName(); end 
-        _instance.cmdlineString     = function () return _instance._cmdlineString; end
-        _instance.loadPreferences   = function () 
-            return _loadPreferences(_instance.workspaceFileName()
-                , _instance._cmdline:opts());
-        end
-        _instance.solutionName      = function () return _solitionName(_instance.solutionFileName); end
-        _instance.run               = function () return _run(); end
-    end 
-    return _instance;
-end
+--function gbs.instance ()
+--    if not _instance then
+--        _instance = gbs;
+----        _instance._argc             = #arg;
+----        _instance._argv             = arg;
+----        _instance._cmdline          = require("gbs.cli.cmdline"):new();
+----        _instance._cmdlineString    = _instance._cmdline.toString(_instance._argc, _instance._argv);
+--        
+----        _instance.argc              = function () return _instance._argc; end
+----        _instance.argv              = function () return _instance._argv; end
+--        _instance.cmdline           = function () return _instance._cmdline; end
+--        _instance.programName       = function () return _instance._cmdline:programName(); end 
+--        _instance.cmdlineString     = function () return _instance._cmdlineString; end
+--        _instance.loadPreferences   = function () 
+--            return _loadPreferences(_instance.workspaceFileName()
+--                , _instance._cmdline:opts());
+--        end
+--        _instance.solutionName      = function () return _solitionName(_instance.solutionFileName); end
+--        _instance.run               = function () return _run(); end
+--    end 
+--    return _instance;
+--end
 
 function _loadPreferences (workspaceFileName, opts)
     local g = gbs.instance();
@@ -122,41 +123,44 @@ end
 --end
 
 
-function _run ()
-    local instance = gbs.instance();
-    local cmdline = instance.cmdline();
-    local status, msg = cmdline:parse(instance.argc(), instance.argv());
+function gbs.run (argc, argv)
+    local cli = require("pfs.cli.cli"):new();
+    
+    local status, msg = cli:parse(#arg, arg);
     die(msg):unless(status);
 
-    instance.loadPreferences();
+ 
+
+    --instance.loadPreferences();
     
-    local router_type = require("gbs.cli.router");
+--    local router_type = require("gbs.cli.router");
     local help_type = require("gbs.help");
 
-    router_type:new()
+    cli:router()
         :b("dump")
         :h(function (r)
-                print("Options: " .. tostring(cmdline:opts()));
-                print("Free arguments: " .. tostring(cmdline:args()));
+                print("Options: " .. tostring(cli:opts()));
+                print("Free arguments: " .. tostring(cli:args()));
            end);
 
-    router_type:new()
+    cli:router()
         :a("help")
-        --:a({"workspace", "ws", "solution", "sln", "project", "pro", "prj"})
-        :a({})
+        :a({"workspace", "ws", "solution", "sln", "project", "pro", "prj"})
+        --:a({})
         :h(function (r)
-                help_type:new({domain = r:actionAt(1)}):help();
+                Settings:set("Domain", r:actionAt(1));
+                help_type:new(Settings):help();
                 return true;
            end);
     
-    router_type:new()
+    cli:router()
         :a("help")
         :h(function (r) 
-                router_type.guide():usage();
+                cli:guide():usage();
                 return true;
            end);
            
-    router_type:new()
+    cli:router()
         :a({"workspace", "ws"})
         :b("create")
         :s("path")
@@ -167,7 +171,7 @@ function _run ()
                 return ws:create(r);
            end);
 
-    router_type:new()
+    cli:router()
         :a({"solution", "sln"})
         :b("create")
         :s("name")
@@ -177,12 +181,12 @@ function _run ()
                 return sln:create(r);
            end);
         
-    router_type:new()
+    cli:router()
         :h(function (r)
-                lib.print_error("Try `gbs help' for usage");
+                print_error("Try `gbs help' for usage");
            end);
 
-    if router_type.run(cmdline) then return 0; end
+    if cli:run() then return 0; end
                
 --    local domain = self:domain();
 --    local r = true;

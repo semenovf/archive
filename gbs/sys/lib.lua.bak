@@ -45,19 +45,4 @@ function lib.is_valid_name (name)
     return true;
 end
 
-
---TODO OBSOLETE
-function lib.runAction (action, actions)
-    lib.assert(type(action) == "string");
-    lib.assert(type(actions) == "table");
-    
-    local func = actions[action];
-    if type(func) == "function" then
-        return func();
-    end
-    
-    lib.print_error(action .. ": bad action");
-    return false;
-end
-
 return lib;

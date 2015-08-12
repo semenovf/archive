@@ -1,59 +1,58 @@
-local cmdline = {}
+local fs  = require("pfs.sys.fs");
 
-local fs  = require("gbs.sys.fs");
-local lib = require("gbs.sys.lib");
+local cli = {}
 
-function cmdline:new (argc, argv)
+function cli:new (argc, argv)
     local o = {
-          _opts = require("gbs.sys.map"):new()
-        , _args = require("gbs.sys.array"):new()
-        , _program = ""
+          _opts    = require("pfs.map"):new()
+        , _args    = require("pfs.array"):new()
+        , _routers = require("pfs.array"):new();
     }
     self.__index = self;
     return setmetatable(o, self);
 end
 
-function cmdline:program ()
-    return self._program;
-end
+--function cli:program ()
+--    return self._program;
+--end
 
-function cmdline:programName ()
-    return fs.basename(self._program);
-end
+--function cli:programName ()
+--    return fs.basename(self._program);
+--end
 
-function cmdline:opts ()
+function cli:opts ()
     return self._opts;
 end
 
-function cmdline:args ()
+function cli:args ()
     return self._args;
 end
 
-function cmdline:hasOpt (optname)
+function cli:hasOpt (optname)
     return self._opts:contains(optname);
 end
 
-function cmdline:optArg (optname)
+function cli:optArg (optname)
     return self._opts:at(optname);-- or lib.throw(optname .. ": option must be specified");
 end
 
-function cmdline:insertOpt (optname, optarg)
+function cli:insertOpt (optname, optarg)
     self._opts:insert(optname, optarg);
 end
 
-function cmdline:appendArg (a)
+function cli:appendArg (a)
     self._args:append(a);
 end
 
-function cmdline:clearOpts ()
-    self._opts = require("gbs.sys.map"):new();
+function cli:clearOpts ()
+    self._opts = require("pfs.map"):new();
 end
 
-function cmdline:clearArgs ()
-    self._args = require("gbs.sys.array"):new();
+function cli:clearArgs ()
+    self._args = require("pfs.array"):new();
 end
 
-function cmdline.toString (argc, argv)
+function cli.toString (argc, argv)
     local r = argv[0];
     for i = 1, #argv do
         r = r .. ' ' .. argv[i]; 
@@ -68,7 +67,7 @@ end
 --- @param argv Array of command line arguments
 --- @return @c true if command line parsed successfully, or @c false on error.
 ---
-function cmdline:parse (argc, argv)
+function cli:parse (argc, argv)
     local i;
     local k = 1;
     
@@ -94,7 +93,7 @@ function cmdline:parse (argc, argv)
                     local optval = self._opts:at(optname);
                     
                     if type(optval) ~= "table" then
-                        local arr = require("gbs.sys.array"):new();
+                        local arr = require("pfs.array"):new();
                         arr:append(optval);
                         self._opts:insert(optname, arr);
                         optval = self._opts:at(optname);
@@ -112,4 +111,29 @@ function cmdline:parse (argc, argv)
     return true;
 end
 
-return cmdline;
+function cli:router ()
+    local r = require("pfs.cli.router"):new();
+    self._routers:append(r);
+    return r;
+end
+
+function cli:run ()
+    local n = self._routers:size();
+    for i = 0, n - 1 do
+        local r = self._routers:at(i):_match(self._opts, self._args);
+        
+        if r then
+            if r._h ~= nil then
+                return r._h(r);
+            end 
+        end
+    end
+    return false;
+end
+
+function cli:guide ()
+    local r = require("pfs.cli.guide"):new();
+    return r;
+end
+
+return cli;

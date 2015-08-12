@@ -1,5 +1,4 @@
-require("gbs.sys.die");
-local lib   = require("gbs.sys.lib");
+require "pfs.die";
 
 local help = {};
 
@@ -41,20 +40,20 @@ function help:usage ()
 end
 
 function help:help ()
-    die("Expected domain hor help"):unless(self.domain);
+    local domain = self:get("Domain") or throw("Domain expected");
     
-    if self.domain == "workspace" 
-            or self.domain == "ws" then
+    if domain == "workspace" 
+            or domain == "ws" then
         require("gbs.workspace").usage();
-    elseif self.domain == "solution" 
-            or self.domain == "sln" then
+    elseif domain == "solution" 
+            or domain == "sln" then
         require("gbs.solution").usage();
-    elseif help.domain == "project" 
-            or self.domain == "prj" 
-            or self.domain == "pro" then
+    elseif domain == "project" 
+            or domain == "prj" 
+            or domain == "pro" then
         require("gbs.project").usage();
     else
-        warn("bad domain for help");
+        print_warn("bad domain for help");
         return false;
     end 
     

@@ -57,7 +57,7 @@ function _isValidTargetPlatform (tp)
     return false;
 end
 
-function workspace:create (router)
+function workspace:create (settings)
 --    local gbs = require("gbs.core");
     local gbs = gbs.instance();
     

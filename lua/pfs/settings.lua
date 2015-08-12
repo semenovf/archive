@@ -1,7 +1,5 @@
 local settings = {};
 
-
-
 ---
 -- @brief Creates new settings instance
 -- 
