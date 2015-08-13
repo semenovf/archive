@@ -1,3 +1,5 @@
+require "pfs.die";
+
 local settings = {};
 
 ---
@@ -41,6 +43,13 @@ end
 ---
 function settings:get (key, defaultValue)
     return self[self._key_prefix .. key] or defaultValue;
+end
+
+function settings:get_or_throw (key, defaultValue)
+    local r = self[self._key_prefix .. key];
+    if r == nil then r = defaultValue; end
+    if r == nil then throw_undefined(key); end
+    return r;
 end
 
 return settings;

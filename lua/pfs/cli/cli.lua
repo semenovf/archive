@@ -6,7 +6,7 @@ function cli:new (argc, argv)
     local o = {
           _opts    = require("pfs.map"):new()
         , _args    = require("pfs.array"):new()
-        , _routers = require("pfs.array"):new();
+        , _routers = require("pfs.array"):new()
     }
     self.__index = self;
     return setmetatable(o, self);
@@ -20,12 +20,20 @@ end
 --    return fs.basename(self._program);
 --end
 
-function cli:opts ()
-    return self._opts;
+--function cli:opts ()
+--    return self._opts;
+--end
+--
+--function cli:args ()
+--    return self._args;
+--end
+
+function cli:dumpOpts ()
+    return tostring(self._opts);
 end
 
-function cli:args ()
-    return self._args;
+function cli:dumpArgs ()
+    return tostring(self._args);
 end
 
 function cli:hasOpt (optname)
@@ -53,8 +61,8 @@ function cli:clearArgs ()
 end
 
 function cli.toString (argc, argv)
-    local r = argv[0];
-    for i = 1, #argv do
+    local r = argv[1] or "";
+    for i = 2, #argv do
         r = r .. ' ' .. argv[i]; 
     end
     return r;
@@ -78,10 +86,10 @@ function cli:parse (argc, argv)
     self._program = argv[0];
     
     for i = 1, argc do
-        if argv[i]:find('--', 1, true) == 1 then
-            local optname, optarg = argv[i]:match("^[-][-]([%a%d_-]-)=(.-)$");
+        if argv[i]:find('-', 1, true) == 1 then
+            local optname, optarg = argv[i]:match("^[-][-]?([%a%d_][%a%d_-]-)=(.-)$");
             if optname == nil then
-                optname = argv[i]:match("^[-][-]([%a%d_-]-)$");
+                optname = argv[i]:match("^[-][-]?([%a%d_][%a%d_-]-)$");
                 if optname == nil then
                     return false, argv[i] .. ": bad option";
                 end
@@ -124,7 +132,11 @@ function cli:run ()
         
         if r then
             if r._h ~= nil then
-                return r._h(r);
+                if not r._continue then
+                    return r._h(r);
+                else
+                    r._h(r);
+                end
             end 
         end
     end

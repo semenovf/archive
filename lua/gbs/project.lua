@@ -1,125 +1,104 @@
+require "pfs.string";
+
+local fs  = require("pfs.sys.fs");
+
 local project = {};
 
-require("gbs.sys.string");
-require("gbs.sys.os");
-
-local lib = require("gbs.sys.lib");
-local fs  = require("gbs.sys.fs");
-
-function project:new (gbs)
-    local o = {
-        gbs = function () return gbs; end
-    }; 
-    
+function project:new ()
+    local o = {}; 
     self.__index = self;
     return setmetatable(o, self);
 end
 
-function project.usage ()
-    print("NAME");
-    print("    gbs { project | pro | prj } - project manipulation");
-    print("");
-    print("SYNOPSYS");
-    print("    (1) gbs project --create");
-    print("            --name=NAME [--type=PROJECT_TYPE]");
-    print("            [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
-    print("    (2) gbs project --build");
-    print("            [--name=NAME]");
-    print("            [--config={debug | release}]");
-    print("            [--build-tool=BUILD_TOOL]");
-    print("            [--target-platform=TARGET_PLATFORM]");
-    print("");
-    print("DESCRIPTION");
-    print("    (1) - create project with name NAME");
-    print("    (2) - build project or solution en masse");
-    print("");
-    print("OPTIONS");
-    print("    --depends");
-    print("        specify one more sibling project names (inside solution)");
-    print("");
-    print("VALUES");
-    print("    NAME");
-    print("        Valid only alphanumeric characters, underscore ('_') and dash ('-')");
-    print("    PROJECT_TYPE");
-    print("        `console-app' | `gui-app' | `shared-lib' | `static-lib' | `test'");
-    print("        Default is `console-app'");
-    print("    LANG");
-    print("        Language identifier: `C++' | `C'. Default is C++");
-    print("    BUILD_TOOL");
-    print("        `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'");
-    print("    TARGET_PLATFORM"); 
-    print("        `unix32' | `unix64' | `mswin32' | `mswin64'");
-end
+--function project.usage ()
+--    print("NAME");
+--    print("    gbs { project | pro | prj } - project manipulation");
+--    print("");
+--    print("SYNOPSYS");
+--    print("    (1) gbs project --create");
+--    print("            --name=NAME [--type=PROJECT_TYPE]");
+--    print("            [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
+--    print("    (2) gbs project --build");
+--    print("            [--name=NAME]");
+--    print("            [--config={debug | release}]");
+--    print("            [--build-tool=BUILD_TOOL]");
+--    print("            [--target-platform=TARGET_PLATFORM]");
+--    print("");
+--    print("DESCRIPTION");
+--    print("    (1) - create project with name NAME");
+--    print("    (2) - build project or solution en masse");
+--    print("");
+--    print("OPTIONS");
+--    print("    --depends");
+--    print("        specify one more sibling project names (inside solution)");
+--    print("");
+--    print("VALUES");
+--    print("    NAME");
+--    print("        Valid only alphanumeric characters, underscore ('_') and dash ('-')");
+--    print("    PROJECT_TYPE");
+--    print("        `console-app' | `gui-app' | `shared-lib' | `static-lib' | `test'");
+--    print("        Default is `console-app'");
+--    print("    LANG");
+--    print("        Language identifier: `C++' | `C'. Default is C++");
+--    print("    BUILD_TOOL");
+--    print("        `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'");
+--    print("    TARGET_PLATFORM"); 
+--    print("        `unix32' | `unix64' | `mswin32' | `mswin64'");
+--end
 
-function project:run ()
-    local gbs = self:gbs();
-    
-    if gbs:hasOpt("create") then
-        return self:create();
-    elseif gbs:hasOpt("build") then
-        return self:build();
-    elseif gbs:hasOpt("clean") then
-        return self:clean();
-    else
-        lib.print_error("action for project must be specified");
-    end
-    return false;
-end
+--function project:run ()
+--    local gbs = self:gbs();
+--    
+--    if gbs:hasOpt("create") then
+--        return self:create();
+--    elseif gbs:hasOpt("build") then
+--        return self:build();
+--    elseif gbs:hasOpt("clean") then
+--        return self:clean();
+--    else
+--        lib.print_error("action for project must be specified");
+--    end
+--    return false;
+--end
+--
+--function project:name ()
+--    local gbs = self:gbs();
+--    r = gbs:optarg("name");
+--    
+--    if r == nil then return nil; end
+--    if not lib.is_valid_name(r) then return nil; end
+--    return r; 
+--end
 
-function project:name ()
-    local gbs = self:gbs();
-    r = gbs:optarg("name");
-    
-    if r == nil then return nil; end
-    if not lib.is_valid_name(r) then return nil; end
-    return r; 
-end
-
-function project:type ()
-    local gbs = self:gbs();
-    if not gbs:hasOpt("type") then return "console-app"; end
-    local t = gbs:optarg("type");
-    
-    if     t == "console-app"
-        or t == "gui-app"
-        or t == "shared-lib"
-        or t == "static-lib"
-        or t == "test" then
-        return t;
-    end
---    lib.throw("bad project type");
-    return nil; 
-end
-
-          
-function project:language () 
-    local gbs = self:gbs();
-    
-    if not gbs:hasOpt("lang") then return "C++"; end
-    
-    local l = gbs:optarg("lang");
-    if     l == "C++"
-        or l == "C" then
-        return l;
-    end
-    return nil; 
-end
+--function project:type ()
+--    local gbs = self:gbs();
+--    if not gbs:hasOpt("type") then return "console-app"; end
+--    local t = gbs:optarg("type");
+--    
+--    if     t == "console-app"
+--        or t == "gui-app"
+--        or t == "shared-lib"
+--        or t == "static-lib"
+--        or t == "test" then
+--        return t;
+--    end
+----    lib.throw("bad project type");
+--    return nil; 
+--end
 
 ---
 --- @see https://github.com/premake/premake-core/wiki/kind
 ---
-function project:premakeKind ()
-    local kind = self:type();
-    
-    if kind == "console-app" then
+function project.premakeKind (projectType)
+    if projectType == "console-app" then
         return "ConsoleApp";
-    elseif kind == "gui-app" then
+    elseif projectType == "gui-app" then
         return "WindowedApp";
-    elseif kind == "shared-lib" then
+    elseif projectType == "shared-lib" then
         return "SharedLib";
-    elseif kind == "static-lib" then
+    elseif projectType == "static-lib" then
         return "StaticLib";
-    elseif kind == "test" then
+    elseif projectType == "test" then
         return "ConsoleApp";
     end
     return nil;
@@ -128,20 +107,18 @@ end
 ---
 --- @see https://github.com/premake/premake-core/wiki/language
 --- 
-function project:premakeLang ()
-    local lang = self:language();
-    
-    if lang == "C++" then
+function project.premakeLang (projectLang)
+    if projectLang == "C++" then
         return "C++";
-    elseif lang == "C" then
+    elseif projectLang == "C" then
         return "C";
     end
     return nil;
 end
 
-function project:registered (name)
-    local gbs = self:gbs();
-    local solutionFile = fs.join(".gbs", gbs:solutionFileName());
+function project.registered (args)
+    local solutionFile = args[1] or throw_expected_arg(1);
+    local projectName  = args[2] or throw_expected_arg(2);
     
     for line in io.lines(solutionFile) do
         r = line:match('^project%s"([^%s]-)"');
@@ -152,43 +129,38 @@ function project:registered (name)
     return false;
 end
 
-function project:create ()
-    local gbs = self:gbs();
-    local projectName = self:name() or lib.die("`name' is bad or must be specified");
-    local projectLanguage = self:language() or lib.die("`language' is bad or must be specified");
-    local projectDir  = fs.join(".gbs", projectName);
-    local solutionFile = fs.join(".gbs", gbs:solutionFileName());
+function project:create (settings)
+    local projectFileName  = settings:get_or_throw("ProjectFileName");
+    local projectName      = settings:get_or_throw("ProjectName");
+    local projectType      = settings:get_or_throw("ProjectType");
+    local projectLang      = settings:get_or_throw("ProjectLanguage");
+    local projectDepends   = settings:get("Dependecies");
+    local solutionFileName = settings:get_or_throw("SolutionFileName");
+
+    local projectDir   = fs.join(".gbs", projectName);
+    local solutionFile = fs.join(".gbs", solutionFileName);
     
-    if not fs.exists(solutionFile) then
-        lib.die("can't create project outside of solution directory");
-    end
+    local trn = require("gbs.transaction"):begin();
+    trn:append(PathExists, {solutionFile}, "Can't create project outside of solution directory");
+    trn:append(PathNotExists, {projectName}, projectDir .. ": project directory already exists"); 
+    trn:append(project.registered, {solutionFile, projectName}, projectName .. ": project already registered");
+    trn:append(MakeDir, {projectDir}, projectDir .. ": failed to create project directory");
     
-    if self:registered(projectName) then
-        lib.die(projectName .. ': project already registered');
-    end
-    
-    if fs.exists(projectDir) then
-        lib.die(projectDir .. ': project directory already exists');
-    end
-    
-    if not fs.mkdir(projectDir) then
-        lib.die(projectDir .. ': failed to create project directory');
-    end
-    
-    lib.assert(fs.appendLines(solutionFile
-        , ''
-        , '-- BEGIN PROJECT'
-        , 'project ' .. string.quote(projectName)
-        , '    include(' .. string.quote(projectName .. '/' .. gbs:projectFileName()) ..')' 
-    ));
-    
-    if projectLanguage == 'C++' or projectLanguage == 'C' then
-        local p = require('gbs.plugin.cpp'):new(self);
-        p:create();
+    if projectLang == 'C++' or projectLang == 'C' then
+--        local plugin = require('gbs.plugin.cpp'):new(self);
+--        plugin:create();
+        trn:append(AppendLinesToFile, {
+              solutionFile
+            , {
+                  ""
+                , "-- BEGIN PROJECT"
+                , "project " .. string.quote(projectName)
+                , "    include(" .. string.quote(projectName .. "/" .. projectFileName) .. ")"
+                , "-- END PROJECT" 
+            }}, "Update solution configration file: " .. solutionFile);
     end
 
-    lib.assert(fs.appendLines(solutionFile, '-- END PROJECT'));    
-    return true;
+    return trn:exec();
 end
 
 --

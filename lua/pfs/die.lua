@@ -14,7 +14,15 @@ function die (m)
 end
 
 function throw (m)
-    error(m);
+    error(tostring(m));
+end
+
+function throw_undefined (m)
+    error("`" .. tostring(m) .. "' must be specified");
+end
+
+function throw_expected_arg (i)
+    error("Expected arg #" .. tostring(i));
 end
 
 function print_error (m)

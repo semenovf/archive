@@ -3,7 +3,7 @@ require "pfs.die";
 local fs = require("pfs.sys.fs");
 local Settings = require("pfs.settings"):new("gbs.");
 
-Settings:set("HomeDir"          , os.getenv("GBS_HOME"));
+Settings:set("GbsHomeDir"       , os.getenv("GBS_HOME"));
 Settings:set("SolutionFileName" , "solution.gbs");
 Settings:set("WorkspaceFileName", "workspace.txt");
 Settings:set("ProjectFileName"  , "project.gbs");
@@ -12,7 +12,7 @@ Settings:set("TestsDirName"     , "tests");
 
 gbs = {};
 
-local _instance = nil;
+--local _instance = nil;
 
 --function gbs.instance ()
 --    if not _instance then
@@ -37,51 +37,50 @@ local _instance = nil;
 --    return _instance;
 --end
 
-function _loadPreferences (workspaceFileName, opts)
-    local g = gbs.instance();
-    local workspaceFile = fs.join(".gbs", workspaceFileName);
+function loadPreferences ()
+    local workspaceFilePath = fs.join(".gbs", Settings:get("WorkspaceFileName"));
     
     for i = 1, 4 do
-        if fs.exists(workspaceFile) then
+        if fs.exists(workspaceFilePath) then
             break;
         end
-        workspaceFile = fs.join("..", workspaceFile);
+        workspaceFilePath = fs.join("..", workspaceFilePath);
     end
     
-    if not fs.exists(workspaceFile) then
+    if not fs.exists(workspaceFilePath) then
         return false;
     end
 
-    for line in io.lines(workspaceFile) do
+    for line in io.lines(workspaceFilePath) do
         if not line:match('^#') then
             local k, v = line:match('^([^=]-)=(.-)$');
             if k ~= nil then
-                opts:insert(k, v);
+                Settings:set(k, v);
             end
         end
     end
 end
 
-function _getSolutionNameFromFile (solutionFile)
-    local r = nil;
-    for line in io.lines(solutionFile) do
-        r = line:match('^solution%s"([^%s]-)"');
-        if r ~= nil then
-            break;
-        end
-    end
-    return r;
-end
-
-function _solutionName (solutionFileName)
-    local solutionFile = fs.join(".gbs", solutionFileName);
-    
-    die(solutionFile .. ": solution file not found"):unless(fs.exists(solutionFile));
-    local solutionName = _getSolutionNameFromFile(solutionFile);
-    die(solutionFile .. ": unable to take solution name, solution file may be corrupted")
-        :when(solutionName == nil);
-    return solutionName;
-end
+--function _getSolutionNameFromFile (solutionFile)
+--    local r = nil;
+--    for line in io.lines(solutionFile) do
+--        r = line:match('^solution%s"([^%s]-)"');
+--        if r ~= nil then
+--            break;
+--        end
+--    end
+--    return r;
+--end
+--
+--function _solutionName (solutionFileName)
+--    local solutionFile = fs.join(".gbs", solutionFileName);
+--    
+--    die(solutionFile .. ": solution file not found"):unless(fs.exists(solutionFile));
+--    local solutionName = _getSolutionNameFromFile(solutionFile);
+--    die(solutionFile .. ": unable to take solution name, solution file may be corrupted")
+--        :when(solutionName == nil);
+--    return solutionName;
+--end
 
 --function gbs:runDeprecated ()
 --    if self:hasOpt("dump") then
@@ -125,22 +124,29 @@ end
 
 function gbs.run (argc, argv)
     local cli = require("pfs.cli.cli"):new();
+    Settings:set("CommandLineString", cli.toString(#arg, arg));
+    Settings:set("ProgramName", fs.basename(arg[0]));
     
     local status, msg = cli:parse(#arg, arg);
     die(msg):unless(status);
-
- 
-
-    --instance.loadPreferences();
     
---    local router_type = require("gbs.cli.router");
+    loadPreferences();
+    
     local help_type = require("gbs.help");
 
     cli:router()
+        :b("verbose")
+        :h(function (r)
+                Settings:set("Verbose", true);
+                return true;
+           end)
+        :continue();
+    
+    cli:router()
         :b("dump")
         :h(function (r)
-                print("Options: " .. tostring(cli:opts()));
-                print("Free arguments: " .. tostring(cli:args()));
+                print("Options: " .. cli:dumpOpts());
+                print("Free arguments: " .. cli:dumpArgs());
            end);
 
     cli:router()
@@ -167,18 +173,39 @@ function gbs.run (argc, argv)
         :s("build-tool")
         :s("target-platform")
         :h(function (r)
-                local ws = require("gbs.workspace"):new();
-                return ws:create(r);
+                Settings:set("WorkspacePath", r:optArg("path"));
+                Settings:set("build-tool", r:optArg("build-tool"));
+                Settings:set("target-platform", r:optArg("target-platform"));
+                return require("gbs.workspace"):new():create(Settings);
            end);
 
     cli:router()
         :a({"solution", "sln"})
         :b("create")
         :s("name")
+        :b("git", false)
         :h(function (r)
-                local sln = require("gbs.solution"):new();
-                sln:setName(r.optArg("name"));
-                return sln:create(r);
+                Settings:set("SolutionName", r:optArg("name"));
+                Settings:set("EnableGitRepo", r:optArg("git"));
+                return require("gbs.solution"):new():create(Settings);
+           end);
+
+--    print("            --name=NAME [--type=PROJECT_TYPE]");
+--    print("            [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
+
+    cli:router()
+        :a({"project", "pro", "prj"})
+        :b("create")
+        :s("name")
+        :s("type", "console-app")
+        :s("lang", "C++")
+        :s("depends", {})
+        :h(function (r)
+                Settings:set("ProjectName", r:optArg("name"));
+                Settings:set("ProjectType", r:optArg("type"));
+                Settings:set("ProjectLanguage", r:optArg("lang"));
+                Settings:set("Dependecies", r:optArg("depends"));
+                return require("gbs.project"):new():create(Settings);
            end);
         
     cli:router()
@@ -188,34 +215,5 @@ function gbs.run (argc, argv)
 
     if cli:run() then return 0; end
                
---    local domain = self:domain();
---    local r = true;
---   
---    if domain == "help" then
---        local help = require("gbs.help"):new();
---        
---        if self._args:size() > 1 then
---            help:help(self._args:at(1));
---        else
---            help:usage();
---        end
---    elseif domain == "workspace" or domain == "ws" then
---        local ws = require("gbs.workspace"):new(self);
---        r = ws:run();
---    elseif domain == "solution" 
---            or domain == "sln" then
---        local sln = require("gbs.solution"):new(self);
---        r = sln:run();
---    elseif domain == "project" 
---            or domain == "pro"
---            or domain == "prj" then
---        local pro = require("gbs.project"):new(self);
---        r = pro:run();
---    else
---        lib.print_error("bad domain or it must be specified (try `gbs help')");
---        r = false;
---    end
---
---    if r then return 0; end
     return 1;
 end

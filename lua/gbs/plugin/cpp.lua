@@ -5,9 +5,7 @@ local fs  = require("pfs.sys.fs");
 local plugin = {};
 
 function plugin:new (prj)
-    local o = {
-        project = function () return prj; end
-    }; 
+    local o = {}; 
     
     self.__index = self;
     return setmetatable(o, self);

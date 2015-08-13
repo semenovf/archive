@@ -1,10 +1,10 @@
+require "pfs.sys.os";
+require "pfs.die";
+require "gbs.utils";
+
+local fs = require("pfs.sys.fs");
+
 local workspace = {};
-
-require("gbs.sys.os");
-require("gbs.sys.die");
-
-local lib  = require("gbs.sys.lib");
-local fs   = require("gbs.sys.fs");
 
 function workspace:new ()
     local o = {}; 
@@ -12,27 +12,27 @@ function workspace:new ()
     return setmetatable(o, self);
 end
 
-function workspace.usage ()
-    print("NAME");
-    print("    gbs { workspace | ws } - workspace manipulation");
-    print("");
-    print("SYNOPSYS");
-    print("    (1) gbs workspace --create");
-    print("            --path=PATH");
-    print("            --build-tool=BUILD_TOOL");
-    print("            --target-platform=TARGET_PLATFORM");
-    print("");
-    print("DESCRIPTION");
-    print("    (1) - create workspace at specified directory by PATH");
-    print("");
-    print("VALUES");
-    print("    PATH");
-    print("        Valid file system path for directory");
-    print("    BUILD_TOOL");
-    print("        `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'");
-    print("    TARGET_PLATFORM"); 
-    print("        `unix32' | `unix64' | `mswin32' | `mswin64'");
-end
+--function workspace.usage ()
+--    print("NAME");
+--    print("    gbs { workspace | ws } - workspace manipulation");
+--    print("");
+--    print("SYNOPSYS");
+--    print("    (1) gbs workspace --create");
+--    print("            --path=PATH");
+--    print("            --build-tool=BUILD_TOOL");
+--    print("            --target-platform=TARGET_PLATFORM");
+--    print("");
+--    print("DESCRIPTION");
+--    print("    (1) - create workspace at specified directory by PATH");
+--    print("");
+--    print("VALUES");
+--    print("    PATH");
+--    print("        Valid file system path for directory");
+--    print("    BUILD_TOOL");
+--    print("        `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'");
+--    print("    TARGET_PLATFORM"); 
+--    print("        `unix32' | `unix64' | `mswin32' | `mswin64'");
+--end
 
 function _isValidBuildTool (bt)
     if bt == "gmake"
@@ -58,35 +58,34 @@ function _isValidTargetPlatform (tp)
 end
 
 function workspace:create (settings)
---    local gbs = require("gbs.core");
-    local gbs = gbs.instance();
+    local verbose           = settings:get("Verbose") or false;
+    local path              = settings:get_or_throw("WorkspacePath");
+    local buildTool         = settings:get_or_throw("build-tool");
+    local targetPlatform    = settings:get_or_throw("target-platform");
+    local workspaceFileName = settings:get_or_throw("WorkspaceFileName");
+    local cmdlineString     = settings:get_or_throw("CommandLineString");
+    local programName       = settings:get_or_throw("ProgramName");
     
-    local path = router:optArg("path");
-    local buildTool = router:optArg("build-tool");
-    local targetPlatform = router:optArg("target-platform");
-    local workspaceFile = fs.join(path, ".gbs", gbs:workspaceFileName());
+    local workspaceFile = fs.join(path, ".gbs", workspaceFileName);
   
-    die("invalid build tool"):unless(_isValidBuildTool(buildTool));
-    die("invalid target platform"):unless(_isValidTargetPlatform(targetPlatform));
-    die(path .. ": can't create workspace: path already exists"):when(fs.exists(path));
+    local trn = require("gbs.transaction"):begin(verbose);
+  
+    trn:append(function (args) return _isValidBuildTool(args[1]) end, {buildTool}, "Valid build tool");
+    trn:append(function (args) return _isValidTargetPlatform(args[1]) end, {targetPlatform}, "Valid target platform");
+    trn:append(PathNotExists, {path}, "Workspace directory does not exist");
+    trn:append(MakeDir, {path}, "Create workspace directory");
+    trn:append(MakeDir, {fs.join(path, ".gbs")}, "Create workspace system subdirectory");
+    trn:append(MakeDir, {fs.join(path, ".build")}, "Create workspace build subdirectory");
 
-    if not (fs.mkdir(path)
-            and fs.mkdir(fs.join(path, ".gbs"))
-            and fs.mkdir(fs.join(path, ".build"))) then
-        die(path .. ": can't create workspace"):now();
-    end
+    trn:append(AppendLinesToFile, {
+          workspaceFile
+        , {
+              utils.fileTitle(programName, cmdlineString)
+            , "build-tool=" .. buildTool
+            , "target-platform=" .. targetPlatform
+        }}, "Update workspace configuration file: " .. workspaceFile);
     
-    if fs.appendLines(workspaceFile, 
-          "#************************************************************"
-        , "#* Generated automatically by `" .. gbs.programName() .. "'"
-        , "#* Command: `" .. gbs.cmdlineString() .. "'"
-        , "#* Date:    " .. os.date() 
-        , "#************************************************************"
-        , "build-tool=" .. buildTool
-        , "target-platform=" .. targetPlatform
-    ) or die("failed to update " .. workspaceFile):now() then end
-    
-    return true;
+    return trn:exec();
 end
 
 return workspace;

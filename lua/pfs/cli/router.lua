@@ -4,11 +4,12 @@ local router = {};
 
 function router:new ()
     local o = {
-          _actions = require("pfs.array"):new()
-        , _opts    = require("pfs.map"):new()
-        , _h       = nil -- handler
-        , _args    = require("pfs.array"):new() -- free arguments
-        , _ropts   = nil -- filled by run() method, contains pairs {optname, optarg}
+          _actions  = require("pfs.array"):new()
+        , _opts     = require("pfs.map"):new()
+        , _h        = nil -- handler
+        , _args     = require("pfs.array"):new() -- free arguments
+        , _ropts    = nil   -- filled by run() method, contains pairs {optname, optarg}
+        , _continue = false -- if `true' stops after successful matching 
     }; 
     self.__index = self;
     local r = setmetatable(o, self);
@@ -39,7 +40,8 @@ end
 
 function router:b (name, defaultValue)
     if defaultValue ~= nil then
-        die("Expected boolean value"):unless(type(defaultValue) == "boolean");
+        die("Expected boolean value")
+            :unless(type(defaultValue) == "boolean" or type(defaultValue) == "table");
     end
     self:_set(name, "b", defaultValue);
     return self;
@@ -47,7 +49,8 @@ end
 
 function router:n (name, defaultValue)
     if defaultValue ~= nil then
-        die("Expected number value"):unless(type(defaultValue) == "number");
+        die("Expected number value")
+            :unless(type(defaultValue) == "number" or type(defaultValue) == "table");
     end
     self:_set(name, "n", defaultValue);
     return self;
@@ -55,7 +58,8 @@ end
 
 function router:s (name, defaultValue)
     if defaultValue ~= nil then
-        die("Expected string value"):unless(type(defaultValue) == "string");
+        die("Expected string value")
+            :unless(type(defaultValue) == "string" or type(defaultValue) == "table");
     end
     self:_set(name, "s", defaultValue);
     return self;
@@ -65,6 +69,11 @@ function router:h (handler)
     die("Handler must be specified"):when(handler == nil);
     die("Handler must be a function"):unless(type(handler) == "function");
     self._h = handler;
+    return self;
+end
+
+function router:continue ()
+    self._continue = true;
     return self;
 end
 
@@ -188,6 +197,7 @@ function router:_match (opts, args)
     end
     
     r._h = self._h;
+    r._continue = self._continue;
     return r;
 end
 
