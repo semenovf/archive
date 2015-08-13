@@ -18,7 +18,7 @@ function throw (m)
 end
 
 function throw_undefined (m)
-    error("`" .. tostring(m) .. "' must be specified");
+    error("`" .. tostring(m) .. "' is undefined");
 end
 
 function throw_expected_arg (i)

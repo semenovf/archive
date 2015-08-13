@@ -1,4 +1,5 @@
 require "pfs.sys.os";
+require "pfs.string";
 require "pfs.die";
 require "gbs.utils";
 
@@ -6,8 +7,8 @@ local fs = require("pfs.sys.fs");
 
 local workspace = {};
 
-function workspace:new ()
-    local o = {}; 
+function workspace:new (settings)
+    local o = { _settings = settings }; 
     self.__index = self;
     return setmetatable(o, self);
 end
@@ -34,56 +35,66 @@ end
 --    print("        `unix32' | `unix64' | `mswin32' | `mswin64'");
 --end
 
-function _isValidBuildTool (bt)
-    if bt == "gmake"
-            or bt == "vs2005"
-            or bt == "vs2008"
-            or bt == "vs2010"
-            or bt == "vs2012"
-            or bt == "vs2013"
-            or bt == "vs2015" then
+function workspace.isValidBuildTool (buildTool)
+    if buildTool == "gmake"
+            or buildTool == "vs2005"
+            or buildTool == "vs2008"
+            or buildTool == "vs2010"
+            or buildTool == "vs2012"
+            or buildTool == "vs2013"
+            or buildTool == "vs2015" then
         return true;
     end
     return false;
 end
 
-function _isValidTargetPlatform (tp)
-    if tp == "unix32"
-            or tp == "unix64"
-            or tp == "mswin32"
-            or tp == "mswin64" then
+function workspace.isValidTargetPlatform (platform)
+    if platform == "unix32"
+            or platform == "unix64"
+            or platform == "mswin32"
+            or platform == "mswin64" then
         return true;
     end
     return false;
 end
 
-function workspace:create (settings)
+function workspace:create ()
+    local settings          = self._settings;
+    
     local verbose           = settings:get("Verbose") or false;
     local path              = settings:get_or_throw("WorkspacePath");
     local buildTool         = settings:get_or_throw("build-tool");
-    local targetPlatform    = settings:get_or_throw("target-platform");
+    local targetPlatform    = settings:get("target-platform");
     local workspaceFileName = settings:get_or_throw("WorkspaceFileName");
     local cmdlineString     = settings:get_or_throw("CommandLineString");
     local programName       = settings:get_or_throw("ProgramName");
+    
+    if string.isEmpty(targetPlatform) then
+        local osi = os.info();
+        die("Unable to recognize OS type"):unless(osi.type);
+        die("Unable to recognize OS bits"):unless(osi.bits);
+        targetPlatform = tostring(osi.type) .. tostring(osi.bits);
+        
+        if verbose then print("Target platform detected: " ..  targetPlatform); end
+    end
+    
     
     local workspaceFile = fs.join(path, ".gbs", workspaceFileName);
   
     local trn = require("gbs.transaction"):begin(verbose);
   
-    trn:append(function (args) return _isValidBuildTool(args[1]) end, {buildTool}, "Valid build tool");
-    trn:append(function (args) return _isValidTargetPlatform(args[1]) end, {targetPlatform}, "Valid target platform");
-    trn:append(PathNotExists, {path}, "Workspace directory does not exist");
-    trn:append(MakeDir, {path}, "Create workspace directory");
-    trn:append(MakeDir, {fs.join(path, ".gbs")}, "Create workspace system subdirectory");
-    trn:append(MakeDir, {fs.join(path, ".build")}, "Create workspace build subdirectory");
+    trn:Function(function () return workspace.isValidBuildTool(buildTool) end, "Validate build tool");
+    trn:Function(function () return workspace.isValidTargetPlatform(targetPlatform) end, "Validate target platform");
+    trn:PathNotExists(path, "Workspace directory does not exist");
+    trn:MakeDir(path, "Create workspace directory");
+    trn:MakeDir(fs.join(path, ".gbs"), "Create workspace system subdirectory");
+    trn:MakeDir(fs.join(path, ".build"), "Create workspace build subdirectory");
 
-    trn:append(AppendLinesToFile, {
-          workspaceFile
-        , {
-              utils.fileTitle(programName, cmdlineString)
+    trn:AppendLinesToFile(workspaceFile
+        , { utils.fileTitle(programName, cmdlineString)
             , "build-tool=" .. buildTool
             , "target-platform=" .. targetPlatform
-        }}, "Update workspace configuration file: " .. workspaceFile);
+        }, "Update workspace configuration file: " .. workspaceFile);
     
     return trn:exec();
 end

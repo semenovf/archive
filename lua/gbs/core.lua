@@ -12,31 +12,6 @@ Settings:set("TestsDirName"     , "tests");
 
 gbs = {};
 
---local _instance = nil;
-
---function gbs.instance ()
---    if not _instance then
---        _instance = gbs;
-----        _instance._argc             = #arg;
-----        _instance._argv             = arg;
-----        _instance._cmdline          = require("gbs.cli.cmdline"):new();
-----        _instance._cmdlineString    = _instance._cmdline.toString(_instance._argc, _instance._argv);
---        
-----        _instance.argc              = function () return _instance._argc; end
-----        _instance.argv              = function () return _instance._argv; end
---        _instance.cmdline           = function () return _instance._cmdline; end
---        _instance.programName       = function () return _instance._cmdline:programName(); end 
---        _instance.cmdlineString     = function () return _instance._cmdlineString; end
---        _instance.loadPreferences   = function () 
---            return _loadPreferences(_instance.workspaceFileName()
---                , _instance._cmdline:opts());
---        end
---        _instance.solutionName      = function () return _solitionName(_instance.solutionFileName); end
---        _instance.run               = function () return _run(); end
---    end 
---    return _instance;
---end
-
 function loadPreferences ()
     local workspaceFilePath = fs.join(".gbs", Settings:get("WorkspaceFileName"));
     
@@ -61,69 +36,31 @@ function loadPreferences ()
     end
 end
 
---function _getSolutionNameFromFile (solutionFile)
---    local r = nil;
---    for line in io.lines(solutionFile) do
---        r = line:match('^solution%s"([^%s]-)"');
---        if r ~= nil then
---            break;
---        end
---    end
---    return r;
---end
---
---function _solutionName (solutionFileName)
---    local solutionFile = fs.join(".gbs", solutionFileName);
---    
---    die(solutionFile .. ": solution file not found"):unless(fs.exists(solutionFile));
---    local solutionName = _getSolutionNameFromFile(solutionFile);
---    die(solutionFile .. ": unable to take solution name, solution file may be corrupted")
---        :when(solutionName == nil);
---    return solutionName;
---end
+function _getSolutionNameFromFile (solutionFile)
+    local r = nil;
+    for line in io.lines(solutionFile) do
+        r = line:match('^solution%s"([^%s]-)"');
+        if r ~= nil then
+            break;
+        end
+    end
+    return r;
+end
 
---function gbs:runDeprecated ()
---    if self:hasOpt("dump") then
---        print("Options: " .. tostring(self._opts));
---        print("Free arguments: " .. tostring(self._args));
---        return 0;
---    end
---
---    local domain = self:domain();
---    local r = true;
---   
---    if domain == "help" then
---        local help = require("gbs.help"):new();
---        
---        if self._args:size() > 1 then
---            help:help(self._args:at(1));
---        else
---            help:usage();
---        end
---    elseif domain == "workspace" or domain == "ws" then
---        local ws = require("gbs.workspace"):new(self);
---        r = ws:run();
---    elseif domain == "solution" 
---            or domain == "sln" then
---        local sln = require("gbs.solution"):new(self);
---        r = sln:run();
---    elseif domain == "project" 
---            or domain == "pro"
---            or domain == "prj" then
---        local pro = require("gbs.project"):new(self);
---        r = pro:run();
---    else
---        lib.print_error("bad domain or it must be specified (try `gbs help')");
---        r = false;
---    end
---
---    if r then return 0; end
---    return 1;
---end
-
+function solutionName ()
+    local solutionFileName  = settings:get_or_throw("SolutionFileName"); 
+    local solutionFile = fs.join(".gbs", solutionFileName);
+    
+    die(solutionFile .. ": solution file not found"):unless(fs.exists(solutionFile));
+    local solutionName = _getSolutionNameFromFile(solutionFile);
+    die(solutionFile .. ": unable to take solution name, solution file may be corrupted")
+        :when(solutionName == nil);
+    return solutionName;
+end
 
 function gbs.run (argc, argv)
     local cli = require("pfs.cli.cli"):new();
+
     Settings:set("CommandLineString", cli.toString(#arg, arg));
     Settings:set("ProgramName", fs.basename(arg[0]));
     
@@ -171,12 +108,12 @@ function gbs.run (argc, argv)
         :b("create")
         :s("path")
         :s("build-tool")
-        :s("target-platform")
+        :s("target-platform", "")
         :h(function (r)
                 Settings:set("WorkspacePath", r:optArg("path"));
                 Settings:set("build-tool", r:optArg("build-tool"));
                 Settings:set("target-platform", r:optArg("target-platform"));
-                return require("gbs.workspace"):new():create(Settings);
+                return require("gbs.workspace"):new(Settings):create();
            end);
 
     cli:router()
@@ -187,11 +124,8 @@ function gbs.run (argc, argv)
         :h(function (r)
                 Settings:set("SolutionName", r:optArg("name"));
                 Settings:set("EnableGitRepo", r:optArg("git"));
-                return require("gbs.solution"):new():create(Settings);
+                return require("gbs.solution"):new(Settings):create();
            end);
-
---    print("            --name=NAME [--type=PROJECT_TYPE]");
---    print("            [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
 
     cli:router()
         :a({"project", "pro", "prj"})
@@ -201,11 +135,12 @@ function gbs.run (argc, argv)
         :s("lang", "C++")
         :s("depends", {})
         :h(function (r)
+                Settings:set("SolutionName", solutionName());
                 Settings:set("ProjectName", r:optArg("name"));
                 Settings:set("ProjectType", r:optArg("type"));
                 Settings:set("ProjectLanguage", r:optArg("lang"));
                 Settings:set("Dependecies", r:optArg("depends"));
-                return require("gbs.project"):new():create(Settings);
+                return require("gbs.project"):new(Settings):create();
            end);
         
     cli:router()

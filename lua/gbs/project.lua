@@ -4,8 +4,8 @@ local fs  = require("pfs.sys.fs");
 
 local project = {};
 
-function project:new ()
-    local o = {}; 
+function project:new (settings)
+    local o = {_settings = settings}; 
     self.__index = self;
     return setmetatable(o, self);
 end
@@ -116,10 +116,7 @@ function project.premakeLang (projectLang)
     return nil;
 end
 
-function project.registered (args)
-    local solutionFile = args[1] or throw_expected_arg(1);
-    local projectName  = args[2] or throw_expected_arg(2);
-    
+function project.registered (solutionFile, projectName)
     for line in io.lines(solutionFile) do
         r = line:match('^project%s"([^%s]-)"');
         if r == name then
@@ -129,26 +126,29 @@ function project.registered (args)
     return false;
 end
 
-function project:create (settings)
+function project:create ()
+    local settings         = self._settings;
+    
     local projectFileName  = settings:get_or_throw("ProjectFileName");
     local projectName      = settings:get_or_throw("ProjectName");
     local projectType      = settings:get_or_throw("ProjectType");
     local projectLang      = settings:get_or_throw("ProjectLanguage");
     local projectDepends   = settings:get("Dependecies");
     local solutionFileName = settings:get_or_throw("SolutionFileName");
-
+    
     local projectDir   = fs.join(".gbs", projectName);
     local solutionFile = fs.join(".gbs", solutionFileName);
     
     local trn = require("gbs.transaction"):begin();
-    trn:append(PathExists, {solutionFile}, "Can't create project outside of solution directory");
-    trn:append(PathNotExists, {projectName}, projectDir .. ": project directory already exists"); 
-    trn:append(project.registered, {solutionFile, projectName}, projectName .. ": project already registered");
-    trn:append(MakeDir, {projectDir}, projectDir .. ": failed to create project directory");
+    
+    trn:append(PathExists, {solutionFile}, "Check if creating project is inside of solution directory");
+    trn:append(PathNotExists, {projectName}, "Project directory already exists: " .. projectDir); 
+    trn:append(function (args) return project.registered(args[1], args[2]); end
+        , {solutionFile, projectName}, "Project already registered: " .. projectName);
+    trn:append(MakeDir, {projectDir}, "Create project directory: " .. projectDir);
     
     if projectLang == 'C++' or projectLang == 'C' then
---        local plugin = require('gbs.plugin.cpp'):new(self);
---        plugin:create();
+        trn:append(Transaction, {require("gbs.plugin.cpp"):new(self):transactionsForCreate()});
         trn:append(AppendLinesToFile, {
               solutionFile
             , {

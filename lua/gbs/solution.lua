@@ -5,8 +5,8 @@ local fs = require("pfs.sys.fs");
 
 local solution = {};
 
-function solution:new ()
-    local o = {}; 
+function solution:new (settings)
+    local o = {_settings = settings};
     self.__index = self;
     return setmetatable(o, self);
 end
@@ -39,7 +39,9 @@ end
 ----    print("        login name to access remote git repository");
 --end
 
-function solution:create (settings)
+function solution:create ()
+    local settings          = self._settings;
+    
     local verbose           = settings:get("Verbose") or false;
     local gbsHomeDir        = settings:get_or_throw("GbsHomeDir");
     local programName       = settings:get_or_throw("ProgramName");
@@ -49,14 +51,13 @@ function solution:create (settings)
     local cmdlineString     = settings:get_or_throw("CommandLineString");
     local enableGitRepo     = settings:get_or_throw("EnableGitRepo");
         
-    die("Invalid name for solution"):unless(utils.isValidName(solutionName));
-        
     local workspaceFile = fs.join(".gbs", workspaceFileName);
     local solutionFile  = fs.join(solutionName, ".gbs", solutionFileName);
     
     local trn = require("gbs.transaction"):begin(verbose);
 
-    trn:append(PathExists, {workspaceFile}, "Check if creating solution is inside workspace directory");
+    trn:append(function (args) return utils.isValidName(args[1]); end, {solutionName}, "Validate solution name");
+    trn:append(PathExists, {workspaceFile}, "Check if creating solution is inside of workspace directory");
     trn:append(MakeDir, {solutionName}, "Create solution directory");
     trn:append(MakeDir, {fs.join(solutionName, ".gbs")}, "Create solution system subdirectory");
     
