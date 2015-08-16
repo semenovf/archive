@@ -63,8 +63,8 @@ function workspace:create ()
     
     local verbose           = settings:get("Verbose") or false;
     local path              = settings:get_or_throw("WorkspacePath");
-    local buildTool         = settings:get_or_throw("build-tool");
-    local targetPlatform    = settings:get("target-platform");
+    local buildTool         = settings:get_or_throw("BuildTool");
+    local targetPlatform    = settings:get("TargetPlatform");
     local workspaceFileName = settings:get_or_throw("WorkspaceFileName");
     local cmdlineString     = settings:get_or_throw("CommandLineString");
     local programName       = settings:get_or_throw("ProgramName");
@@ -91,9 +91,9 @@ function workspace:create ()
     trn:MakeDir(fs.join(path, ".build"), "Create workspace build subdirectory");
 
     trn:AppendLinesToFile(workspaceFile
-        , { utils.fileTitle(programName, cmdlineString)
-            , "build-tool=" .. buildTool
-            , "target-platform=" .. targetPlatform
+        , { utils.fileTitle("#", programName, cmdlineString)
+            , "BuildTool=" .. buildTool
+            , "TargetPlatform=" .. targetPlatform
         }, "Update workspace configuration file: " .. workspaceFile);
     
     return trn:exec();

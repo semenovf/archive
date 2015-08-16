@@ -12,22 +12,6 @@ function cli:new (argc, argv)
     return setmetatable(o, self);
 end
 
---function cli:program ()
---    return self._program;
---end
-
---function cli:programName ()
---    return fs.basename(self._program);
---end
-
---function cli:opts ()
---    return self._opts;
---end
---
---function cli:args ()
---    return self._args;
---end
-
 function cli:dumpOpts ()
     return tostring(self._opts);
 end

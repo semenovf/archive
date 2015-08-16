@@ -16,6 +16,8 @@ function router:new ()
     return r; 
 end
 
+--function router.AnyValue () end
+
 function router:dump ()
     print("Options: " .. tostring(self._opts));
     print("Actions: " .. tostring(self._actions));
@@ -40,7 +42,7 @@ end
 
 function router:b (name, defaultValue)
     if defaultValue ~= nil then
-        die("Expected boolean value")
+        die("Expected boolean or table value")
             :unless(type(defaultValue) == "boolean" or type(defaultValue) == "table");
     end
     self:_set(name, "b", defaultValue);
@@ -49,7 +51,7 @@ end
 
 function router:n (name, defaultValue)
     if defaultValue ~= nil then
-        die("Expected number value")
+        die("Expected number or table value")
             :unless(type(defaultValue) == "number" or type(defaultValue) == "table");
     end
     self:_set(name, "n", defaultValue);
@@ -58,7 +60,7 @@ end
 
 function router:s (name, defaultValue)
     if defaultValue ~= nil then
-        die("Expected string value")
+        die("Expected string or table value")
             :unless(type(defaultValue) == "string" or type(defaultValue) == "table");
     end
     self:_set(name, "s", defaultValue);

@@ -5,29 +5,66 @@ local fs  = require("pfs.sys.fs");
 
 local plugin = {};
 
-function plugin:new (project)
-    local o = {_project = project}; 
+function plugin:new (settings)
+    local o = {
+        _settings = settings
+    }; 
     self.__index = self;
     return setmetatable(o, self);
 end
 
-function plugin:transactionsForCreate ()
-    local project = self._project or throw_undefined();
-    local settings = project._settings or throw_undefined();
+---
+--- @see https://github.com/premake/premake-core/wiki/kind
+---
+function plugin.premakeKind (projectType)
+    if projectType == "console-app" then
+        return "ConsoleApp";
+    elseif projectType == "gui-app" then
+        return "WindowedApp";
+    elseif projectType == "shared-lib" then
+        return "SharedLib";
+    elseif projectType == "static-lib" then
+        return "StaticLib";
+    elseif projectType == "test" then
+        return "ConsoleApp";
+    end
+    return nil;
+end
 
+
+---
+--- @see https://github.com/premake/premake-core/wiki/language
+--- 
+function plugin.premakeLang (projectLang)
+    if projectLang == "C++" then
+        return "C++";
+    elseif projectLang == "C" then
+        return "C";
+    end
+    return nil;
+end
+
+
+function plugin:transaction ()
+    local settings = self._settings;
+    
+    local verbose = settings:get("Verbose") or false;
     local cmdlineString   = settings:get_or_throw("CommandLineString");
-    local programNam      = settings:get_or_throw("ProgramName");
+    local programName     = settings:get_or_throw("ProgramName");
     local gbsHomeDir      = settings:get_or_throw("GbsHomeDir");
+    local solutionName    = settings:get_or_throw("SolutionName");
     local projectName     = settings:get_or_throw("ProjectName");
     local projectFileName = settings:get_or_throw("ProjectFileName");
     local projectLang     = settings:get_or_throw("ProjectLanguage");
-    local projectDir      = fs.join(".gbs", projectName);
-    local projectFile     = fs.join(projectDir, projectFileName);
     local sourcesDirName  = settings:get_or_throw("SourcesDirName");
     local testsDirName    = settings:get_or_throw("TestsDirName");
     local projectType     = settings:get_or_throw("ProjectType");
-    
-    local trn = require("gbs.transaction"):begin();
+    local projectDependencies = settings:get_or_throw("ProjectDependencies");
+
+    local projectDir      = fs.join(".gbs", projectName);
+    local projectFile     = fs.join(projectDir, projectFileName);
+        
+    local trn = require("gbs.transaction"):begin(verbose);
     
     local srcDir = sourcesDirName;
     if projectType == "test" then
@@ -36,52 +73,36 @@ function plugin:transactionsForCreate ()
 
     local projectSrcDir = fs.join(srcDir, projectName);
     
-    trn:append(MakeDirIfNotExists, {srcDir}, "Create solution source directory");
-    trn:append(MakeDirIfNotExists, {projectSrcDir}, "Create project source directory: " .. projectSrcDir);
+    trn:MakeDirIfNotExists(srcDir, "Create solution source directory");
+    trn:MakeDirIfNotExists(projectSrcDir, "Create project source directory: " .. projectSrcDir);
     
     if projectType == "shared-lib" or projectType == "static-lib" then
-        trn:append(MakeDirIfNotExists, {"include"}, "Create solution include directory");
+        trn:MakeDirIfNotExists("include", "Create solution include directory");
     end
    
     local templateDir = fs.join(gbsHomeDir, "template");
     
     if projectType == "test" then
         if projectLang == "C++" then
-            trn:append(CopyFileIfNotExists, {
+            trn:CopyFileIfNotExists(
                       fs.join(templateDir, "cpp", projectType .. ".cpp")
-                    , fs.join(projectSrcDir, "test.cpp")}, "");
+                    , fs.join(projectSrcDir, "test.cpp"));
         elseif projectLang == "C" then
-            trn:append(CopyFileIfNotExists, {
+            trn:CopyFileIfNotExists(
                       fs.join(templateDir, "c", projectType .. ".c")
-                    , fs.join(projectSrcDir, "test.c")}, "");
+                    , fs.join(projectSrcDir, "test.c"));
         end
     else
         if projectLang == "C++" then
-            trn:append(CopyFileIfNotExists, {
+            trn:CopyFileIfNotExists(
                       fs.join(templateDir, "cpp", projectType .. ".cpp")
-                    , fs.join(projectSrcDir, "main.cpp")}, "");
+                    , fs.join(projectSrcDir, "main.cpp"));
         elseif projectLang == "C" then
-            trn:append(CopyFileIfNotExists, {
+            trn:CopyFileIfNotExists(
                       fs.join(templateDir, "c", projectType .. ".c")
-                    , fs.join(projectSrcDir, "main.c")}, "");
+                    , fs.join(projectSrcDir, "main.c"));
         end
     end
-
-
---    local projectDependencies = nil;
---    if gbs:hasOpt("depends") then
---        local t = string.quote(gbs:optarg("depends"));
---        projectDependencies = string.join(", ", t);
---    end
---
---    local solutionName = gbs:solutionName();
---    local projecObjDir    = string.join("/", "../../../.build", solutionName, projectName);
---    
---    local projectTargetDir   = string.join("/", "../../../.build");
---    if projectType == "test" then
---        projectTargetDir = string.join("/", "../../../.build", "tests");
---    end
-    
 
     local projectSrcFileList = {};
     local projectIncludeDirList = {};
@@ -114,13 +135,18 @@ function plugin:transactionsForCreate ()
             table.insert(projectSrcFileList, string.quote("../../include/**.h"));
         end
     end
+
+    local projecObjDir     = string.join("/", "../../../.build", solutionName, projectName);
+    local projectTargetDir = string.join("/", "../../../.build");
+    if projectType == "test" then
+       projectTargetDir = projectTargetDir .. "/" .. "tests";
+    end
     
-    trn:append(AppendLinesToFile, {    
-          projectFile
+    trn:AppendLinesToFile(projectFile
         , {
-               utils.fileTitle(programName, cmdlineString) 
-            , "kind          " .. string.quote(project:premakeKind())
-            , "language      " .. string.quote(project:premakeLang())
+               utils.fileTitle("--", programName, cmdlineString) 
+            , "kind          " .. string.quote(plugin.premakeKind(projectType))
+            , "language      " .. string.quote(plugin.premakeLang(projectLang))
             , "targetname    " .. string.quote(projectName)
             , "includedirs { " .. string.join(", ", projectIncludeDirList) .. " }"
             , "files { " .. string.join(", ", projectSrcFileList) .. " }"
@@ -133,22 +159,23 @@ function plugin:transactionsForCreate ()
             , "configuration " .. string.quote("release")
             , "    objdir       " .. string.quote(projecObjDir .. "/release")
             , "    targetdir    " .. string.quote(projectTargetDir)
-        }}, "Update project configuration file: " .. projectFile);  
+        }, "Update project configuration file: " .. projectFile);  
     
-    
-    if projectDependson then
-        trn:append(AppendLinesToFile, {
-            projectFile, {"dependson { " .. projectDependson .." }"}});
-    end
 
+    if #projectDependencies > 0 then
+        local deplist = string.quote(projectDependencies);
+        trn:AppendLinesToFile(projectFile, {"dependson { " .. string.join(", ", deplist) .." }"});
+    end
+    
     local inc1 = [[include(os.getenv("GBS_HOME") .. ]] 
         .. [["/premake/filter_action_gmake_install")]];
 
-    trn:append(AppendLinesToFile, {
-        projectFile, {
+    trn:AppendLinesToFile(projectFile
+        , {
               ""
             , [[filter "action:gmake"]]
-            , "    " .. inc1}});
+            , "    " .. inc1
+        });
    
     return trn;
 end

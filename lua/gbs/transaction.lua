@@ -57,57 +57,30 @@ function transaction:AppendLinesToFile (path, lines, description)
     return self;
 end
 
-
-function PathExists (args)
-    local path = args[1] or throw_expected_arg(1);
-    return fs.exists(path);
+function transaction:CopyFile (src, dst, description)
+    self:append(function () return fs.copy(src, dst); end, {}, description);
+    return self;
 end
 
-function PathNotExists (args)
-    local path = args[1] or throw_expected_arg(1);
-    return not fs.exists(path);
+function transaction:CopyFileIfNotExists (src, dst, description)
+    self:append(function ()
+            if not fs.exists(dst) then
+                return fs.copy(src, dst); 
+            end
+            return true;
+        end, {}, description);
+    return self;
 end
 
-function MakeDir (args)
-    local dir = args[1] or throw_expected_arg(1);
-    return fs.mkdir(dir);
-end
-
-function MakeDirIfNotExists (args)
-    local dir = args[1] or throw_expected_arg(1);
-    if not fs.exists(dir) then return fs.mkdir(dir); end
-    return true;
-end
-
-function CopyFile (args)
-    local src = args[1] or throw_expected_arg(1);
-    local dst = args[2] or throw_expected_arg(2);
-    return fs.copy(src, dst);
-end
-
-function CopyFileIfNotExists (args)
-    local src = args[1] or throw_expected_arg(1);
-    local dst = args[2] or throw_expected_arg(2);
-    if not fs.exists(dst) then return fs.copy(src, dst); end
-    return true;
-end
-
-function AppendLinesToFile (args)
-    local path = args[1] or throw_expected_arg(1);
-    local lines = args[2] or throw_expected_arg(2);
-    return fs.appendLines(path, lines);
-end
-
-function Transaction (args)
-    local tr = args[1] or throw_expected_arg(1);
-    return tr:exec();
+function transaction:Transaction (trn, description)
+    if trn then 
+        self:append(function () return trn:exec() end, {}, description);
+    end
+    return self;
 end
 
 function transaction:append (command, args, description)
     die():unless(type(command) == "function");
---    die():unless(type(args) == "table");
-    die():unless(type(description) == "string");
-    
     self._sequence:append({command, args, description});
 end
 

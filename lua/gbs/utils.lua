@@ -2,12 +2,12 @@ require "pfs.sys.os";
 
 utils = {};
 
-function utils.fileTitle (programName, cmdlineString)
-    return "#************************************************************\n"
-        .. "#* Generated automatically by `" .. programName .. "'\n"
-        .. "#* Command: `" .. programName .. " " .. cmdlineString .. "'\n"
-        .. "#* Date:    " .. os.date() .. "\n"
-        .. "#************************************************************\n";
+function utils.fileTitle (inlineCommentSeq, programName, cmdlineString)
+    return inlineCommentSeq .. "************************************************************\n"
+        .. inlineCommentSeq .. "* Generated automatically by `" .. programName .. "'\n"
+        .. inlineCommentSeq .. "* Command: `" .. programName .. " " .. cmdlineString .. "'\n"
+        .. inlineCommentSeq .. "* Date:    " .. os.date() .. "\n"
+        .. inlineCommentSeq .. "************************************************************\n";
 end
 
 function utils.isValidName (name)

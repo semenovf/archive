@@ -56,24 +56,21 @@ function solution:create ()
     
     local trn = require("gbs.transaction"):begin(verbose);
 
-    trn:append(function (args) return utils.isValidName(args[1]); end, {solutionName}, "Validate solution name");
-    trn:append(PathExists, {workspaceFile}, "Check if creating solution is inside of workspace directory");
-    trn:append(MakeDir, {solutionName}, "Create solution directory");
-    trn:append(MakeDir, {fs.join(solutionName, ".gbs")}, "Create solution system subdirectory");
+    trn:Function(function () return utils.isValidName(solutionName); end, "Validate solution name");
+    trn:PathExists(workspaceFile, "Check if creating solution is inside of workspace directory");
+    trn:MakeDir(solutionName, "Create solution directory");
+    trn:MakeDir(fs.join(solutionName, ".gbs"), "Create solution system subdirectory");
     
     if enableGitRepo then
         local srcFile  = fs.join(gbsHomeDir, "template", "git", "gitignore");
         local destFile = fs.join(solutionName, ".gitignore");
         
-        if not fs.exists(destFile) then
-            trn:append(CopyFile, {srcFile, destFile}, "Deploy '.gitignore'");
-        end
+        trn:CopyFileIfNotExists(srcFile, destFile, "Deploy '.gitignore'");
     end
     
-    trn:append(AppendLinesToFile, {    
-          solutionFile
+    trn:AppendLinesToFile(solutionFile
         , {
-               utils.fileTitle(programName, cmdlineString) 
+               utils.fileTitle("--", programName, cmdlineString) 
             , 'solution ' .. string.quote(solutionName)
             , '    configurations {"debug", "release"}'
             , '    platforms {"unix32", "unix64", "mswin32", "mswin64"}'
@@ -81,7 +78,7 @@ function solution:create ()
             , '        architecture "x32"'
             , '    filter "platforms:*64"'
             , '        architecture "x64"'
-        }}, "Update solution configuration file: " .. solutionFile);  
+        }, "Update solution configuration file: " .. solutionFile);  
     
     return trn:exec();
 end

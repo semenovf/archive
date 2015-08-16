@@ -14,6 +14,10 @@ function settings:new (key_prefix)
         , self);
 end
 
+function settings:has (key)
+    return self[self._key_prefix .. key] ~= nil;
+end
+
 ---
 -- @brief Associates value @c value with key @c key.
 -- 

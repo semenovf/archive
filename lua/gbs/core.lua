@@ -1,4 +1,5 @@
 require "pfs.die";
+require "pfs.cli.router";
 
 local fs = require("pfs.sys.fs");
 local Settings = require("pfs.settings"):new("gbs.");
@@ -48,7 +49,7 @@ function _getSolutionNameFromFile (solutionFile)
 end
 
 function solutionName ()
-    local solutionFileName  = settings:get_or_throw("SolutionFileName"); 
+    local solutionFileName  = Settings:get_or_throw("SolutionFileName"); 
     local solutionFile = fs.join(".gbs", solutionFileName);
     
     die(solutionFile .. ": solution file not found"):unless(fs.exists(solutionFile));
@@ -111,8 +112,8 @@ function gbs.run (argc, argv)
         :s("target-platform", "")
         :h(function (r)
                 Settings:set("WorkspacePath", r:optArg("path"));
-                Settings:set("build-tool", r:optArg("build-tool"));
-                Settings:set("target-platform", r:optArg("target-platform"));
+                Settings:set("BuildTool", r:optArg("build-tool"));
+                Settings:set("TargetPlatform", r:optArg("target-platform"));
                 return require("gbs.workspace"):new(Settings):create();
            end);
 
@@ -135,12 +136,42 @@ function gbs.run (argc, argv)
         :s("lang", "C++")
         :s("depends", {})
         :h(function (r)
-                Settings:set("SolutionName", solutionName());
-                Settings:set("ProjectName", r:optArg("name"));
-                Settings:set("ProjectType", r:optArg("type"));
-                Settings:set("ProjectLanguage", r:optArg("lang"));
-                Settings:set("Dependecies", r:optArg("depends"));
+                Settings:set("SolutionName"       , solutionName());
+                Settings:set("ProjectName"        , r:optArg("name"));
+                Settings:set("ProjectType"        , r:optArg("type"));
+                Settings:set("ProjectLanguage"    , r:optArg("lang"));
+                Settings:set("ProjectDependencies", r:optArg("depends"));
                 return require("gbs.project"):new(Settings):create();
+           end);
+
+    cli:router()
+        :a({"project", "pro", "prj"})
+        :b("build")
+        :s("name", "")
+        :s("config", "debug")
+        :s("build-tool", Settings:get("BuildTool"))
+        :s("target-platform", Settings:get("TargetPlatform"))
+        :h(function (r)
+                Settings:set("ProjectName"   , r:optArg("name"));
+                Settings:set("BuildConfig"   , r:optArg("config"));
+                Settings:set("BuildTool"     , r:optArg("build-tool"));
+                Settings:set("TargetPlatform", r:optArg("target-platform"));
+                return require("gbs.project"):new(Settings):build();
+           end);
+
+    cli:router()
+        :a({"project", "pro", "prj"})
+        :b("clean")
+        :s("name", "")
+        :s("config", "debug")
+        :s("build-tool", Settings:get("BuildTool"))
+        :s("target-platform", Settings:get("TargetPlatform"))
+        :h(function (r)
+                Settings:set("ProjectName"   , r:optArg("name"));
+                Settings:set("BuildConfig"   , r:optArg("config"));
+                Settings:set("BuildTool"     , r:optArg("build-tool"));
+                Settings:set("TargetPlatform", r:optArg("target-platform"));
+                return require("gbs.project"):new(Settings):clean();
            end);
         
     cli:router()
