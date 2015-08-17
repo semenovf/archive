@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-utf16'
+--* Date:    Mon Aug 17 21:48:41 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-utf16"
+includedirs {  }
+files { "../../tests/test-utf16/**.c", "../../tests/test-utf16/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-utf16/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-utf16/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

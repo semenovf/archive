@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-pimpl'
+--* Date:    Mon Aug 17 21:47:10 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-pimpl"
+includedirs {  }
+files { "../../tests/test-pimpl/**.c", "../../tests/test-pimpl/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-pimpl/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-pimpl/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

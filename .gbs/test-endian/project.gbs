@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --name=test-endian --type=test --depends=pfs'
+--* Date:    Mon Aug 17 21:46:04 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-endian"
+includedirs {  }
+files { "../../tests/test-endian/**.c", "../../tests/test-endian/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-endian/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-endian/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

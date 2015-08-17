@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-real_cast'
+--* Date:    Mon Aug 17 21:47:19 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-real_cast"
+includedirs {  }
+files { "../../tests/test-real_cast/**.c", "../../tests/test-real_cast/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-real_cast/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-real_cast/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

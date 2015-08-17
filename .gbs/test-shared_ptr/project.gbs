@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-shared_ptr'
+--* Date:    Mon Aug 17 21:47:52 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-shared_ptr"
+includedirs {  }
+files { "../../tests/test-shared_ptr/**.c", "../../tests/test-shared_ptr/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-shared_ptr/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-shared_ptr/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

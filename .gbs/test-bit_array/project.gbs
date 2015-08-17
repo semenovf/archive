@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --name=test-bit_array --type=test --depends=pfs'
+--* Date:    Mon Aug 17 20:53:13 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-bit_array"
+includedirs {  }
+files { "../../tests/test-bit_array/**.c", "../../tests/test-bit_array/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-bit_array/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-bit_array/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

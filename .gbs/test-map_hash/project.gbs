@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-map_hash'
+--* Date:    Mon Aug 17 21:46:45 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-map_hash"
+includedirs {  }
+files { "../../tests/test-map_hash/**.c", "../../tests/test-map_hash/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-map_hash/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-map_hash/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

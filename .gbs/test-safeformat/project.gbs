@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-safeformat'
+--* Date:    Mon Aug 17 21:47:37 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-safeformat"
+includedirs {  }
+files { "../../tests/test-safeformat/**.c", "../../tests/test-safeformat/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-safeformat/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-safeformat/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

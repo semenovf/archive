@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-vector'
+--* Date:    Mon Aug 17 21:49:11 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-vector"
+includedirs {  }
+files { "../../tests/test-vector/**.c", "../../tests/test-vector/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-vector/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-vector/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

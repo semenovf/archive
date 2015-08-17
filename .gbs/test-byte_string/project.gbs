@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --name=test-byte_string --type=test --depends=pfs'
+--* Date:    Mon Aug 17 21:43:43 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-byte_string"
+includedirs {  }
+files { "../../tests/test-byte_string/**.c", "../../tests/test-byte_string/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-byte_string/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-byte_string/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

@@ -1,0 +1,24 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-strtoreal'
+--* Date:    Mon Aug 17 21:48:22 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-strtoreal"
+includedirs {  }
+files { "../../tests/test-strtoreal/**.c", "../../tests/test-strtoreal/**.cpp" }
+
+configuration "debug"
+    objdir       "../../../.build/pfs/test-strtoreal/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+
+configuration "release"
+    objdir       "../../../.build/pfs/test-strtoreal/release"
+    targetdir    "../../../.build/tests"
+dependson { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

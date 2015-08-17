@@ -1,0 +1,118 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs sln --create --name=pfs'
+--* Date:    Mon Aug 17 20:32:07 2015
+--************************************************************
+
+solution "pfs"
+    configurations {"debug", "release"}
+    platforms {"unix32", "unix64", "mswin32", "mswin64"}
+    filter "platforms:*32"
+        architecture "x32"
+    filter "platforms:*64"
+        architecture "x64"
+
+-- BEGIN PROJECT
+project "pfs"
+    include("pfs/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "bit_array"
+    include("test-bit_array/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-byte_string"
+    include("test-byte_string/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-date"
+    include("test-date/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-endian"
+    include("test-endian/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-fsm"
+    include("test-fsm/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-function"
+    include("test-function/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-map_hash"
+    include("test-map_hash/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-mbcs_string"
+    include("test-mbcs_string/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pimpl"
+    include("test-pimpl/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-real_cast"
+    include("test-real_cast/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-safeformat"
+    include("test-safeformat/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-shared_ptr"
+    include("test-shared_ptr/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-stack"
+    include("test-stack/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-strtointegral"
+    include("test-strtointegral/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-strtoreal"
+    include("test-strtoreal/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-time"
+    include("test-time/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-utf16"
+    include("test-utf16/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-utf8"
+    include("test-utf8/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-variant"
+    include("test-variant/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-vector"
+    include("test-vector/project.gbs")
+-- END PROJECT
