@@ -176,7 +176,7 @@ function gbs.run (argc, argv)
         
     cli:router()
         :h(function (r)
-                print_error("Try `gbs help' for usage");
+                print("Type `gbs help' for usage");
            end);
 
     if cli:run() then return 0; end

@@ -78,7 +78,6 @@ function workspace:create ()
         if verbose then print("Target platform detected: " ..  targetPlatform); end
     end
     
-    
     local workspaceFile = fs.join(path, ".gbs", workspaceFileName);
   
     local trn = require("gbs.transaction"):begin(verbose);
@@ -92,7 +91,7 @@ function workspace:create ()
 
     trn:AppendLinesToFile(workspaceFile
         , { utils.fileTitle("#", programName, cmdlineString)
-            , "BuildTool=" .. buildTool
+            , "BuildTool="      .. buildTool
             , "TargetPlatform=" .. targetPlatform
         }, "Update workspace configuration file: " .. workspaceFile);
     

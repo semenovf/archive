@@ -138,8 +138,11 @@ function plugin:transaction ()
 
     local projecObjDir     = string.join("/", "../../../.build", solutionName, projectName);
     local projectTargetDir = string.join("/", "../../../.build");
+    local targetName       = projectName;
+    
     if projectType == "test" then
        projectTargetDir = projectTargetDir .. "/" .. "tests";
+--       targetName       = "test-" .. targetName;
     end
     
     trn:AppendLinesToFile(projectFile
@@ -147,7 +150,7 @@ function plugin:transaction ()
                utils.fileTitle("--", programName, cmdlineString) 
             , "kind          " .. string.quote(plugin.premakeKind(projectType))
             , "language      " .. string.quote(plugin.premakeLang(projectLang))
-            , "targetname    " .. string.quote(projectName)
+            , "targetname    " .. string.quote(targetName)
             , "includedirs { " .. string.join(", ", projectIncludeDirList) .. " }"
             , "files { " .. string.join(", ", projectSrcFileList) .. " }"
             , ""
