@@ -151,7 +151,7 @@ function plugin:transaction ()
             , "kind          " .. string.quote(plugin.premakeKind(projectType))
             , "language      " .. string.quote(plugin.premakeLang(projectLang))
             , "targetname    " .. string.quote(targetName)
-            , "includedirs { " .. string.join(", ", projectIncludeDirList) .. " }"
+            , "includedirs   { " .. string.join(", ", projectIncludeDirList) .. " }"
             , "files { " .. string.join(", ", projectSrcFileList) .. " }"
             , ""
             , "configuration " .. string.quote("debug")
