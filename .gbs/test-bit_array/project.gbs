@@ -7,7 +7,7 @@
 kind          "ConsoleApp"
 language      "C++"
 targetname    "test-bit_array"
-includedirs {  }
+includedirs   { "../../../../include" }
 files { "../../tests/test-bit_array/**.c", "../../tests/test-bit_array/**.cpp" }
 
 configuration "debug"
