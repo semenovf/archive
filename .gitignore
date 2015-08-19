@@ -11,6 +11,7 @@ Makefile
 Makefile.*
 makefile
 makefile.*
+*.make
 *.mk
 *.exe
 *.err

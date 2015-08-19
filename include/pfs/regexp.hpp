@@ -9,7 +9,7 @@
 #define __PFS_REGEXP_HPP__
 
 #include <pfs/string.hpp>
-#include <pfs/vector.hpp>
+#include <pfs/stringlist.hpp>
 #include <pfs/pimpl.hpp>
 #include <pfs/noncopyable.hpp>
 
@@ -24,7 +24,6 @@ class DLL_API regexp : pfs::noncopyable
 {
 	class impl;
 	pfs::pimpl _d;
-	//PFS_PIMPL_DECL(regexp, private, impl, private);
 
 public:
 	enum LineBreak {
@@ -37,25 +36,25 @@ public:
 
 public:
 	regexp ();
-	regexp (const pfs::string & pattern);
+	regexp (const string & pattern);
 	regexp (const char * latin1Pattern);
 
 	void setLineBreak (int lineBreak);
-	void setPattern (const pfs::string & pattern);
+	void setPattern (const string & pattern);
 	void setPattern (const char * latin1Pattern)
 	{
-		setPattern(pfs::string::fromLatin1(latin1Pattern));
+		setPattern(string::fromLatin1(latin1Pattern));
 	}
-	const pfs::string & errorString () const;
+	const string & errorString () const;
 	int errorOffset () const;
 	bool isError () const;
 
-	bool match (const pfs::string & s);
+	bool match (const string & s);
 	bool match (const char * s);
 	bool matchNext ();
 	size_t capturedCount () const;
-	pfs::string captured (size_t index = 0) const;
-	pfs::vector<pfs::string> groups () const;
+	string captured (size_t index = 0) const;
+	stringlist groups () const;
 };
 
 } // pfs

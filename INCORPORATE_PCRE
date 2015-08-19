@@ -5,9 +5,16 @@
     DEFINES += PCRE_EXP_DECL=extern
 	DEFINES += PCRE_EXP_DEFN=
 	DEFINEs += PCRE_EXP_DATA_DEFN=
-    to project file cwt-core.pro
+    to project file
 4. Edit pcre8/config.h
-5. Build default tables:
+
+5. In pcre8/pcre_printint.c:
+   ...
+   /* For pcretest program. */
+   #define PRIV(name) name  <== Comment this line
+   ...
+
+6. Build default tables:
     cd pcre8/dftables
     run compiler specific shell script ./build_<compiler>[.sh|.cmd]
     will be generated source file ../dftables.c

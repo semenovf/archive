@@ -1,0 +1,36 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=test-pfs-sys-random --type=test --depends=pfs-sys'
+--* Date:    Wed Aug 19 15:38:13 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-pfs-sys-random"
+defines       {  }
+includedirs   {   "../../include"
+                , "../../../pfs-test/include"
+                , "../../../pfs/include"
+              }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-pfs-sys-random/*.c", "../../tests/test-pfs-sys-random/*.cpp" }
+
+configuration "debug"
+    flags        { "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-sys/test-pfs-sys-random/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
+
+configuration "release"
+    flags        {  }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-sys/test-pfs-sys-random/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs", "pfs-sys" }
+
+dependson { "pfs-sys" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

@@ -1,0 +1,57 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs pro --create --name=pfs-sys --type=shared-lib'
+--* Date:    Wed Aug 19 11:50:26 2015
+--************************************************************
+
+kind          "SharedLib"
+language      "C++"
+targetname    "pfs-sys"
+
+-- PCRE configuration
+defines       {   "HAVE_CONFIG_H"
+                , "PCRE_EXP_DECL=extern"
+                , "PCRE_EXP_DEFN="
+                , "PCRE_EXP_DATA_DEFN="
+              }
+undefines     {  }
+
+includedirs   { "../../include", "../../../pfs/include" }
+libdirs       { "../../../.build" }
+files         {
+                  "../../src/pfs-sys/*.c"
+                , "../../src/pfs-sys/*.cpp"
+                , "../../include/**.hpp"
+                , "../../include/**.h"
+                , "../../pcre8/*.c"
+                , "../../zlib/*.c"
+              }
+
+configuration "debug"
+    flags        { "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-sys/pfs-sys/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d" }
+
+configuration "release"
+    flags        {  }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-sys/pfs-sys/release"
+    targetdir    "../../../.build"
+    links        { "pfs" }
+
+filter "platforms:unix*"
+    files {   "../../src/pfs-sys/unix/*.cpp"
+            , "../../src/pfs-sys/x11/*.cpp"
+            , "../../src/pfs-sys/unix/*.hpp"
+            , "../../src/pfs-sys/x11/*.hpp" }
+    links { "dl", "pthread", "X11" }
+
+filter "platforms:mswin*"
+    files {   "../../src/pfs-sys/win/*.cpp"
+            , "../../src/pfs-sys/win/*.hpp" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
