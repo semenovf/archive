@@ -109,25 +109,25 @@ function plugin:transaction ()
 
     if projectType == "test" then
         table.insert(projectSrcFileList
-            , string.quote("../../" .. testsDirName .. "/" .. projectName .. "/**.c"));
+            , string.quote("../../" .. testsDirName .. "/" .. projectName .. "/*.c"));
         
         if projectLang == "C++" then
             table.insert(projectSrcFileList
-                , string.quote("../../" .. testsDirName .. "/" .. projectName .. "/**.cpp"));
+                , string.quote("../../" .. testsDirName .. "/" .. projectName .. "/*.cpp"));
         end
     else
         table.insert(projectSrcFileList
-            , string.quote("../../" .. sourcesDirName .. "/" .. projectName .. "/**.c"));
+            , string.quote("../../" .. sourcesDirName .. "/" .. projectName .. "/*.c"));
             
         if projectLang == "C++" then
             table.insert(projectSrcFileList
-                , string.quote("../../" .. sourcesDirName .. "/" .. projectName .. "/**.cpp"));
+                , string.quote("../../" .. sourcesDirName .. "/" .. projectName .. "/*.cpp"));
         end
     end
+
+    table.insert(projectIncludeDirList, string.quote("../../include"))
     
     if projectType == "shared-lib" or projectType == "static-lib" then
-        table.insert(projectIncludeDirList, string.quote("../../include"))
-        
         if projectLang == "C++" then
             table.insert(projectSrcFileList, string.quote("../../include/**.hpp"));
             table.insert(projectSrcFileList, string.quote("../../include/**.h"));
@@ -139,35 +139,48 @@ function plugin:transaction ()
     local projecObjDir     = string.join("/", "../../../.build", solutionName, projectName);
     local projectTargetDir = string.join("/", "../../../.build");
     local targetName       = projectName;
+    local projectLibDirs   = "../../../.build";
     
     if projectType == "test" then
        projectTargetDir = projectTargetDir .. "/" .. "tests";
 --       targetName       = "test-" .. targetName;
     end
-    
+
     trn:AppendLinesToFile(projectFile
         , {
                utils.fileTitle("--", programName, cmdlineString) 
             , "kind          " .. string.quote(plugin.premakeKind(projectType))
             , "language      " .. string.quote(plugin.premakeLang(projectLang))
             , "targetname    " .. string.quote(targetName)
+            , "defines       {  }"
             , "includedirs   { " .. string.join(", ", projectIncludeDirList) .. " }"
-            , "files { " .. string.join(", ", projectSrcFileList) .. " }"
+            , "libdirs       { " .. string.quote(projectLibDirs) .. " }"
+            , "files         { " .. string.join(", ", projectSrcFileList) .. " }"
             , ""
             , "configuration " .. string.quote("debug")
+            , "    flags        { \"Symbols\" }"
+            , "    defines      { \"DEBUG\" }"
             , "    objdir       " .. string.quote(projecObjDir .. "/debug")
             , "    targetdir    " .. string.quote(projectTargetDir)
             , "    targetsuffix " .. string.quote("-d")
+            , "    links        {  }"
             , ""
             , "configuration " .. string.quote("release")
+            , "    flags        {  }"
+            , "    defines      { \"NDEBUG\" }"
             , "    objdir       " .. string.quote(projecObjDir .. "/release")
             , "    targetdir    " .. string.quote(projectTargetDir)
+            , "    links        {  }"
         }, "Update project configuration file: " .. projectFile);  
     
 
     if #projectDependencies > 0 then
         local deplist = string.quote(projectDependencies);
-        trn:AppendLinesToFile(projectFile, {"dependson { " .. string.join(", ", deplist) .." }"});
+        trn:AppendLinesToFile(projectFile
+            , {
+                  ""
+                , "dependson { " .. string.join(", ", deplist) .." }"
+            });
     end
     
     local inc1 = [[include(os.getenv("GBS_HOME") .. ]] 

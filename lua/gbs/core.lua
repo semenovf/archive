@@ -1,6 +1,7 @@
 require "pfs.die";
 require "pfs.string";
 require "pfs.cli.router";
+require "pfs.sys.os";
 
 local fs = require("pfs.sys.fs");
 local Settings = require("pfs.settings"):new("gbs.");
@@ -36,6 +37,7 @@ function loadPreferences ()
             end
         end
     end
+    return true;
 end
 
 function _getSolutionNameFromFile (solutionFile)
@@ -60,14 +62,13 @@ function solutionName ()
     return solutionName;
 end
 
-function _selectStringValue (initial, key)
-    die("String expected"):unless(type(initial) == "string");
-    if string.isEmpty(initial) then
-        initial = Settings:get(key) 
-            or die("`" .. key .. "' must be specified for workspace\n"):now();
-    end
-    return initial;
+--
+-- Empty string equivalent to nil
+--
+function _esn (s)
+    return string.isEmpty(s) and nil or s;
 end
+
 
 function gbs.run (argc, argv)
     local cli = require("pfs.cli.cli"):new();
@@ -120,10 +121,12 @@ function gbs.run (argc, argv)
         :s("path")
         :s("build-tool")
         :s("target-platform", "")
+        :s("config", "debug")
         :h(function (r)
-                Settings:set("WorkspacePath", r:optArg("path"));
-                Settings:set("BuildTool", r:optArg("build-tool"));
+                Settings:set("WorkspacePath" , r:optArg("path"));
+                Settings:set("BuildTool"     , r:optArg("build-tool"));
                 Settings:set("TargetPlatform", r:optArg("target-platform"));
+                Settings:set("BuildConfig"   , r:optArg("config"));
                 return require("gbs.workspace"):new(Settings):create();
            end);
 
@@ -158,14 +161,25 @@ function gbs.run (argc, argv)
         :a({"project", "pro", "prj"})
         :b("build")
         :s("name", "")
-        :s("config", "debug")
-        :s("build-tool", "")
-        :s("target-platform", "")
+        :s("config", Settings:get("BuildConfig") or "")
+        :s("build-tool", Settings:get("BuildTool") or "")
+        :s("target-platform", Settings:get("TragetPlatform") or "")
         :h(function (r)
-                Settings:set("ProjectName"   , r:optArg("name"));
-                Settings:set("BuildConfig"   , r:optArg("config"));
-                Settings:set("BuildTool"     , _selectStringValue(r:optArg("build-tool"), "BuildTool"));
-                Settings:set("TargetPlatform", _selectStringValue(r:optArg("target-platform"), "TargetPlatform"));
+                Settings:set("ProjectName"   , _esn(r:optArg("name")));
+                Settings:set("BuildConfig"   , _esn(r:optArg("config")));
+                Settings:set("BuildTool"     , _esn(r:optArg("build-tool")));
+                Settings:set("TargetPlatform", _esn(r:optArg("target-platform")));
+                return require("gbs.project"):new(Settings):build();
+           end);
+
+    -- Synonym for `gbs project --build' 
+    cli:router()
+        :a("all")
+        :h(function (r)
+                Settings:set("ProjectName"   , "");
+                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
+                Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
+                Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
                 return require("gbs.project"):new(Settings):build();
            end);
 
@@ -173,14 +187,25 @@ function gbs.run (argc, argv)
         :a({"project", "pro", "prj"})
         :b("clean")
         :s("name", "")
-        :s("config", "debug")
-        :s("build-tool", "")
-        :s("target-platform", "")
+        :s("config", Settings:get("BuildConfig") or "")
+        :s("build-tool", Settings:get("BuildTool") or "")
+        :s("target-platform", Settings:get("TragetPlatform") or "")
         :h(function (r)
-                Settings:set("ProjectName"   , r:optArg("name"));
-                Settings:set("BuildConfig"   , r:optArg("config"));
-                Settings:set("BuildTool"     , _selectStringValue(r:optArg("build-tool"), "BuildTool"));
-                Settings:set("TargetPlatform", _selectStringValue(r:optArg("target-platform"), "TargetPlatform"));
+                Settings:set("ProjectName"   , _esn(r:optArg("name")));
+                Settings:set("BuildConfig"   , _esn(r:optArg("config")));
+                Settings:set("BuildTool"     , _esn(r:optArg("build-tool")));
+                Settings:set("TargetPlatform", _esn(r:optArg("target-platform")));
+                return require("gbs.project"):new(Settings):clean();
+           end);
+
+    -- Synonym for `gbs project --clean' 
+    cli:router()
+        :a("clean")
+        :h(function (r)
+                Settings:set("ProjectName"   , "");
+                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
+                Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
+                Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
                 return require("gbs.project"):new(Settings):clean();
            end);
         

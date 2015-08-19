@@ -58,6 +58,14 @@ function workspace.isValidTargetPlatform (platform)
     return false;
 end
 
+function workspace.isValidConfig (config)
+    if config == "debug"
+            or config == "release" then
+        return true;
+    end
+    return false;
+end
+
 function workspace:create ()
     local settings          = self._settings;
     
@@ -68,6 +76,7 @@ function workspace:create ()
     local workspaceFileName = settings:get_or_throw("WorkspaceFileName");
     local cmdlineString     = settings:get_or_throw("CommandLineString");
     local programName       = settings:get_or_throw("ProgramName");
+    local config            = settings:get_or_throw("Config");
     
     if string.isEmpty(targetPlatform) then
         local osi = os.info();
@@ -84,6 +93,7 @@ function workspace:create ()
   
     trn:Function(function () return workspace.isValidBuildTool(buildTool) end, "Validate build tool");
     trn:Function(function () return workspace.isValidTargetPlatform(targetPlatform) end, "Validate target platform");
+    trn:Function(function () return workspace.isValidConfig(config) end, "Validate config (debug or release)");
     trn:PathNotExists(path, "Workspace directory does not exist");
     trn:MakeDir(path, "Create workspace directory");
     trn:MakeDir(fs.join(path, ".gbs"), "Create workspace system subdirectory");
@@ -93,6 +103,7 @@ function workspace:create ()
         , { utils.fileTitle("#", programName, cmdlineString)
             , "BuildTool="      .. buildTool
             , "TargetPlatform=" .. targetPlatform
+            , "Config="         .. config
         }, "Update workspace configuration file: " .. workspaceFile);
     
     return trn:exec();
