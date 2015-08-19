@@ -7,17 +7,25 @@
 kind          "ConsoleApp"
 language      "C++"
 targetname    "test-mbcs_string"
-includedirs {  }
+includedirs   { "../../include", "../../../pfs-test/include" }
+libdirs       { "../../../.build" }
 files { "../../tests/test-mbcs_string/**.c", "../../tests/test-mbcs_string/**.cpp" }
 
 configuration "debug"
+    flags        { "Symbols" }
+    defines      { "DEBUG" }
     objdir       "../../../.build/pfs/test-mbcs_string/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d" }
 
 configuration "release"
+    flags        {  }
+    defines      { "NDEBUG" }
     objdir       "../../../.build/pfs/test-mbcs_string/release"
     targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs" }
+
 dependson { "pfs" }
 
 filter "action:gmake"

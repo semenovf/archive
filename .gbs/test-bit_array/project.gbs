@@ -7,17 +7,27 @@
 kind          "ConsoleApp"
 language      "C++"
 targetname    "test-bit_array"
-includedirs   { "../../../../include" }
-files { "../../tests/test-bit_array/**.c", "../../tests/test-bit_array/**.cpp" }
+includedirs   { "../../include", "../../../pfs-test/include" }
+libdirs       { "../../../.build" }
+files         {   "../../tests/test-bit_array/**.c"
+                , "../../tests/test-bit_array/**.cpp" 
+              }
 
 configuration "debug"
+    flags        { "Symbols" }
+    defines      { "DEBUG" }
     objdir       "../../../.build/pfs/test-bit_array/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d" }
 
 configuration "release"
+    flags        {  }
+    defines      { "NDEBUG" }
     objdir       "../../../.build/pfs/test-bit_array/release"
     targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs" }
+
 dependson { "pfs" }
 
 filter "action:gmake"

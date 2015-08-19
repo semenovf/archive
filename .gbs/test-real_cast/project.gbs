@@ -7,17 +7,25 @@
 kind          "ConsoleApp"
 language      "C++"
 targetname    "test-real_cast"
-includedirs {  }
+includedirs   { "../../include", "../../../pfs-test/include" }
+libdirs       { "../../../.build" }
 files { "../../tests/test-real_cast/**.c", "../../tests/test-real_cast/**.cpp" }
 
 configuration "debug"
+    flags        { "Symbols" }
+    defines      { "DEBUG" }
     objdir       "../../../.build/pfs/test-real_cast/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d" }
 
 configuration "release"
+    flags        {  }
+    defines      { "NDEBUG" }
     objdir       "../../../.build/pfs/test-real_cast/release"
     targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs" }
+
 dependson { "pfs" }
 
 filter "action:gmake"

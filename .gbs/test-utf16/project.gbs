@@ -7,17 +7,25 @@
 kind          "ConsoleApp"
 language      "C++"
 targetname    "test-utf16"
-includedirs {  }
+includedirs   { "../../include", "../../../pfs-test/include" }
+libdirs       { "../../../.build" }
 files { "../../tests/test-utf16/**.c", "../../tests/test-utf16/**.cpp" }
 
 configuration "debug"
+    flags        { "Symbols" }
+    defines      { "DEBUG" }
     objdir       "../../../.build/pfs/test-utf16/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d" }
 
 configuration "release"
+    flags        {  }
+    defines      { "NDEBUG" }
     objdir       "../../../.build/pfs/test-utf16/release"
     targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs" }
+
 dependson { "pfs" }
 
 filter "action:gmake"

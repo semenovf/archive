@@ -7,15 +7,19 @@
 kind          "SharedLib"
 language      "C++"
 targetname    "pfs"
-includedirs { "../../include" }
-files { "../../src/pfs/**.c", "../../src/pfs/**.cpp", "../../include/**.hpp", "../../include/**.h" }
+includedirs   { "../../include" }
+files         { "../../src/pfs/**.c", "../../src/pfs/**.cpp", "../../include/**.hpp", "../../include/**.h" }
 
 configuration "debug"
+    flags        { "Symbols" }
+    defines      { "DEBUG" }
     objdir       "../../../.build/pfs/pfs/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
 
 configuration "release"
+    flags        {  }
+    defines      { "NDEBUG" }
     objdir       "../../../.build/pfs/pfs/release"
     targetdir    "../../../.build"
 
