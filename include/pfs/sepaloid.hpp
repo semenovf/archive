@@ -24,13 +24,13 @@
 
 namespace pfs {
 
-struct petaloid_spec
+struct module_spec
 {
-	petaloid_spec () : p(nullptr), ph(nullptr), dtor(nullptr) {}
-	petaloid_spec (petaloid * a, dl::handle b, petaloid_dtor_t c) : p(a), ph(b), dtor(c) {}
-	petaloid * p;
+	module_spec () : mod(nullptr), ph(nullptr), dtor(nullptr) {}
+	module_spec (module * a, dl::handle b, module_dtor_t c) : mod(a), ph(b), dtor(c) {}
+	module * mod;
 	dl::handle ph;        /* null for local */
-	petaloid_dtor_t dtor; /* may be null (no destructor) */
+	module_dtor_t dtor;   /* may be null (no destructor) */
 };
 
 class DLL_API sepaloid : public dl, public has_slots<>, noncopyable
@@ -40,54 +40,16 @@ class DLL_API sepaloid : public dl, public has_slots<>, noncopyable
 public:
 	typedef struct { int id; sigslot_mapping_t * map; string desc; } mapping_type;
 	typedef map<int, mapping_type *> mapping_hash;
-	typedef map<string, petaloid_spec> petaloid_specs_type;
+	typedef map<string, module_spec> module_specs_type;
 
 private:
-	mapping_hash        _mapping;
-	petaloid_specs_type _petaloids;
-	vector<thread *>    _threads;
-	petaloid *          _masterPetaloid;
-
-public:
-//    class iterator
-//    {
-//    public:
-//		petaloid_specs_type::iterator it;
-//
-//        inline iterator () : it()  {}
-//        inline iterator (const iterator & o): it(o.it) {}
-//        inline iterator (const petaloid_specs_type::iterator & o): it(o) { }
-//        inline petaloid & operator *  () const                   { return it.valueRef(); }
-//        inline petaloid * operator -> () const                   { return it->second.p; }
-//        inline bool       operator == (const iterator & o) const { return it == o.it; }
-//        inline bool       operator != (const iterator & o) const { return it != o.it; }
-//        inline iterator & operator ++ ()                         { ++it; return *this; }
-//        inline iterator   operator ++ (int)                      { petaloid_specs_type::iterator n(it); ++it; return iterator(n); }
-//    };
-//    friend class iterator;
-//
-//    class const_iterator
-//    {
-//    public:
-//    	petaloid_specs_type::const_iterator it;
-//
-//        inline const_iterator() : it() {}
-//        inline const_iterator(const const_iterator & o): it(o.it)     {}
-//        inline explicit const_iterator(const iterator &o): it(o.it)   {}
-//        inline const_iterator(const petaloid_specs_type::const_iterator & o): it(o) {}
-//        inline const petaloid & operator *  () const              { return it.valueRef(); }
-//        inline const petaloid * operator -> () const              { return it->second.p; }
-//        inline bool       operator == (const const_iterator & o) const { return it == o.it; }
-//        inline bool       operator != (const const_iterator & o) const { return it != o.it; }
-//        inline const_iterator & operator ++ ()    { ++it; return *this; }
-//        inline const_iterator   operator ++ (int) { petaloid_specs_type::const_iterator n(it); ++it; return const_iterator(n); }
-//        inline const_iterator & operator -- ()    { it--; return *this; }
-//        inline const_iterator   operator -- (int) { petaloid_specs_type::const_iterator n(it); it--; return n; }
-//    };
-//    friend class const_iterator;
+	mapping_hash      _mapping;
+	module_specs_type _modules;
+	vector<thread *>  _threads;
+	module *          _masterModule;
 
 protected:
-    sepaloid() : dl(), _masterPetaloid(nullptr) {}
+    sepaloid() : dl(), _masterModule(nullptr) {}
 
 public:
 	sepaloid (mapping_type mapping[], int n);
@@ -97,20 +59,14 @@ public:
 	}
 
 	//void addSearchPath (const string & dir) { dl::addSearchPath(dir); }
-	petaloid * registerLocalPetaloid (petaloid * petaloid, petaloid_dtor_t dtor = petaloid::defaultDtor);
-	petaloid * registerPetaloidForPath (const string & path, const char * pname = nullptr, int argc = 0, char ** argv = nullptr);
-	petaloid * registerPetaloidForName (const string & name, const char * pname = nullptr, int argc = 0, char ** argv = nullptr);
-	void setMasterPetaloid (petaloid * p) { _masterPetaloid = p; }
-	size_t count () const  { return _petaloids.size(); }
-//    iterator       begin ()        { return iterator(_petaloids.begin()); }
-//    iterator       end   ()        { return iterator(_petaloids.end()); }
-//    const_iterator begin () const  { return const_iterator(_petaloids.begin()); }
-//    const_iterator end   () const  { return const_iterator(_petaloids.end()); }
-//    const_iterator cbegin() const  { return const_iterator(_petaloids.cbegin()); }
-//    const_iterator cend  () const  { return const_iterator(_petaloids.cend()); }
+	module * registerLocalModule (module * mod, module_dtor_t dtor = module::defaultDtor);
+	module * registerModuleForPath (const string & path, const char * modname = nullptr, int argc = 0, char ** argv = nullptr);
+	module * registerModuleForName (const string & name, const char * modname = nullptr, int argc = 0, char ** argv = nullptr);
+	void setMasterModule (module * mod) { _masterModule = mod; }
+	size_t count () const  { return _modules.size(); }
 
 /* TODO need implementation
-	bool registerPetaloidForUrl(const string &url);
+	bool registerModuleForUrl(const string &url);
 */
 	void connectAll ();
 	void disconnectAll ();
@@ -118,17 +74,17 @@ public:
 	bool start ();
 	int  exec ();
 
-	bool isPetaloidRegistered (const string & pname)
-		{ return _petaloids.contains(pname); }
+	bool isModuleRegistered (const string & pname)
+		{ return _modules.contains(pname); }
 
 public: /*slots*/
-	void onPetaloidRegistered (const string & pname, bool & result)
+	void onModuleRegistered (const string & pname, bool & result)
 	{
-		result = isPetaloidRegistered (pname);
+		result = isModuleRegistered (pname);
 	}
 
 protected:
-	bool registerPetaloid (petaloid & petaloid, dl::handle ph, petaloid_dtor_t dtor);
+	bool registerModule (module & m, dl::handle ph, module_dtor_t dtor);
 };
 
 } // pfs
