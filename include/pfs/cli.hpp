@@ -1,19 +1,17 @@
 /*
- * command_line.hpp
+ * cli.hpp
  *
- *  Created on: Jun 4, 2013
+ *  Created on: Aug 20, 2015
  *      Author: wladt
  */
 
-#ifndef __PFS_OPTIONS_HPP__
-#define __PFS_OPTIONS_HPP__
+#ifndef __PFS_CLI_HPP__
+#define __PFS_CLI_HPP__
 
-#include <pfs/command_line.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <pfs/map.hpp>
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
-#include <pfs/settings.hpp>
 #include <pfs/errorable.hpp>
 
 #ifdef PFS_CC_MSVC
@@ -21,7 +19,17 @@
 #	pragma warning(disable:4251)
 #endif
 
-namespace pfs {
+namespace pfs { namespace cli {
+
+class cli
+{
+public:
+	cli () {}
+	bool parse () { return false; }
+};
+
+
+#ifdef __COMMENT__
 
 namespace option_format {
 	enum {
@@ -170,11 +178,12 @@ command_option<T> & command_line::addOption (const stringlist & optnames)
     }
 }
 
+#endif // __COMMENT__
 
-} // pfs
+} } // pfs::cli
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)
 #endif
 
-#endif /* __PFS_OPTIONS_HPP__ */
+#endif /* __PFS_CLI_HPP__ */

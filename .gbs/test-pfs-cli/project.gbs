@@ -1,0 +1,33 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=test-pfs-cli --type=test --depends=pfs-cli'
+--* Date:    Thu Aug 20 12:22:15 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-pfs-cli"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-pfs-cli/*.c", "../../tests/test-pfs-cli/*.cpp" }
+
+configuration "debug"
+    flags        { "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-cli/test-pfs-cli/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        {  }
+
+configuration "release"
+    flags        {  }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-cli/test-pfs-cli/release"
+    targetdir    "../../../.build/tests"
+    links        {  }
+
+dependson { "pfs-cli" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

@@ -16,3 +16,8 @@ solution "pfs-cli"
 project "pfs-cli"
     include("pfs-cli/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-cli"
+    include("test-pfs-cli/project.gbs")
+-- END PROJECT
