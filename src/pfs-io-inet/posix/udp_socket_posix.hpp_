@@ -1,0 +1,70 @@
+/*
+ * inet_p.hpp
+ *
+ *  Created on: Jun 25, 2015
+ *      Author: wladt
+ */
+
+#ifndef __PFS_UNIX_INET_P_HPP__
+#define __PFS_UNIX_INET_P_HPP__
+
+#include "pfs/io/inet_addr.hpp"
+#include "pfs/io/udp.hpp"
+#include <pfs/array.hpp>
+#include <netinet/in.h>
+
+namespace pfs { namespace io {
+
+void buildNativeAddr (const inet_addr & addr, sockaddr_in * result);
+
+struct udp_socket_impl : public device_impl
+{
+	static const size_t DefaultCapacity = 128;
+	static const size_t DefaultIncrement = 128;
+
+	typedef array<byte_t> buffer_type;
+
+	int           _sockfd;
+	sockaddr_in   _sockaddr;
+	buffer_type   _ibuf;   // input buffer
+	size_t        _icount; // number of bytes in the input buffer
+
+	udp_socket_impl () : _sockfd(-1), _icount(0) {}
+
+	udp_socket_impl (int fd, const sockaddr_in & saddr, const buffer_type buf, size_t count)
+		: _sockfd(fd), _icount(count)
+	{
+		memcpy(& _sockaddr, & saddr, sizeof(saddr));
+		_ibuf.resize(count);
+		_ibuf.copyFrom(buf, count);
+	}
+
+    virtual ssize_t readBytes      (byte_t bytes[], size_t n, errorable_ext & ex);
+    virtual ssize_t writeBytes     (const byte_t bytes[], size_t n, errorable_ext & ex);
+    virtual size_t  bytesAvailable () const;
+    virtual bool    closeDevice    (errorable_ext & ex);
+    virtual bool    deviceIsOpened () const { return _sockfd >= 0; }
+    virtual void    flushDevice    () {}
+
+    bool open (const inet_addr & addr, int32_t oflags, errorable_ext & ex);
+
+    ssize_t recvfrom (sockaddr_in * saddr);
+};
+
+struct udp_socket_peer_impl : public udp_socket_impl
+{
+	udp_socket_peer_impl (int sockfd
+			, const sockaddr_in & sockaddr
+			, const buffer_type buf
+			, size_t count)
+		: udp_socket_impl(sockfd, sockaddr, buf, count)
+	{}
+
+	virtual ssize_t readBytes (byte_t bytes[], size_t n, errorable_ext & ex);
+	ssize_t writeBytes (const byte_t bytes[], size_t n, errorable_ext & ex);
+    virtual bool closeDevice (errorable_ext & ) { return true; }
+};
+
+}} // pfs::io
+
+#endif /* __PFS_UNIX_INET_P_HPP__ */

@@ -1,0 +1,207 @@
+/*
+ * inet_unix.cpp
+ *
+ *  Created on: Jun 25, 2015
+ *      Author: wladt
+ */
+
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <arpa/inet.h>
+
+#include "inet_socket_posix.hpp"
+
+namespace pfs { namespace io {
+
+void buildNativeAddr (const inet_addr & addr, sockaddr_in * result)
+{
+    memset(result, 0, sizeof(sockaddr_in));
+    result->sin_family = PF_INET;
+    result->sin_port = htons(addr.port());
+    result->sin_addr.s_addr = htonl(addr.addrData());
+}
+
+ssize_t udp_socket_impl::recvfrom (sockaddr_in * saddr)
+{
+	socklen_t saddrLen = sizeof(*saddr);
+	ssize_t n;
+
+    buffer_type::pointer pdata = _ibuf.data() + _icount;
+    size_t size = _ibuf.capacity() - _icount;
+
+    if (!size)
+        _ibuf.realloc(_ibuf.capacity() + udp_socket_impl::DefaultIncrement);
+
+	while (true) {
+        pdata = _ibuf.data() + _icount;
+        size = _ibuf.capacity() - _icount;
+
+		n = ::recvfrom(_sockfd, pdata, size, MSG_PEEK, reinterpret_cast<sockaddr *>(saddr), & saddrLen);
+
+		if (n < 0 && errno == EINTR)
+			continue;
+
+		//
+		// man 2 recvfrom:
+		// ----------------------------------------------------------
+		// If no messages are available at the socket,
+		// the receive calls wait for a message  to  arrive,
+		// unless  the socket  is  nonblocking  (see  fcntl(2)),
+		// in which case the value -1 is returned and
+		// the external variable errno is set to EAGAIN or EWOULDBLOCK.
+		//
+		if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
+			break;
+
+		if (n >= 0 && static_cast<size_t>(n) < size) {
+			ssize_t n1 = 0;
+
+			// Actually read data
+			do {
+				n1 = ::recvfrom(_sockfd, pdata, size, 0, reinterpret_cast<sockaddr *>(saddr), & saddrLen);
+			} while (n1 < 0 && errno == EINTR);
+
+			PFS_ASSERT(n1 == n);
+			PFS_ASSERT(saddrLen == sizeof(*saddr));
+			_icount += n;
+			break;
+		}
+
+		//
+		// Other errors
+		//
+		if (!PFS_VERIFY_ERRNO(n > 0)) {
+			break;
+		}
+
+		_ibuf.realloc(_ibuf.capacity() + udp_socket_impl::DefaultIncrement);
+	}
+
+	return n;
+}
+
+size_t udp_socket_impl::bytesAvailable () const
+{
+    if (_sockfd < 0 )
+        return 0;
+
+    int r = 0;
+    PFS_ASSERT(0 == ::ioctl(_sockfd, FIONREAD, & r));
+    return r + _icount;
+}
+
+bool udp_socket_impl::open (const inet_addr & addr, int32_t oflags, errorable_ext & ex)
+{
+    if (_sockfd >= 0) {
+		ex.addError(_u8("UDP socket: already opened"));
+		return false;
+    }
+
+    int socktype = SOCK_DGRAM;
+
+	if (oflags & device::NonBlocking)
+		socktype |= SOCK_NONBLOCK;
+
+   	_sockfd = ::socket(PF_INET, socktype, IPPROTO_UDP);
+
+	if (_sockfd < 0) {
+		ex.addSystemError(errno, _u8("failed to open UDP socket"));
+		return false;
+	}
+
+	buildNativeAddr(addr, & _sockaddr);
+
+	int rc = ::bind(_sockfd, reinterpret_cast<sockaddr *>(& _sockaddr), sizeof(sockaddr_in));
+
+	if (rc < 0) {
+		ex.addSystemError(errno, _u8("failed to bind UDP socket"));
+		::close(_sockfd);
+		_sockfd = -1;
+		return false;
+	}
+
+	if (!_ibuf.capacity())
+		_ibuf.realloc(udp_socket_impl::DefaultCapacity);
+
+	return true;
+}
+
+ssize_t udp_socket_impl::readBytes (byte_t bytes[], size_t n, errorable_ext & /*ex*/)
+{
+    ssize_t rb = this->recvfrom(nullptr);
+
+    if (rb > 0) {
+	    size_t count = pfs::min(n, _icount);
+
+	    _ibuf.copyTo(bytes, count);
+
+	    // Left data move to begin of array
+	    if (_icount > count)
+	        _ibuf.move(0, count, _icount - count);
+
+	    _icount -= count;
+	    return static_cast<ssize_t>(count);
+	}
+
+	return rb;
+}
+
+ssize_t udp_socket_impl::writeBytes (const byte_t bytes[], size_t n, errorable_ext & ex)
+{
+	ssize_t r = ::sendto(_sockfd, bytes, n, 0, nullptr, 0);
+
+	if (r < 0) {
+		ex.addSystemError(errno, _u8("write to UDP socket failure"));
+		return -1;
+	}
+	return r;
+}
+
+bool udp_socket_impl::closeDevice (errorable_ext & ex)
+{
+	bool r = true;
+
+	if (_sockfd > 0) {
+		PFS_VERIFY_ERRNO(0 == shutdown(_sockfd, SHUT_RDWR));
+
+		if (::close(_sockfd) < 0) {
+			ex.addSystemError(errno, _u8("UDP socket close failure"));
+			r = false;
+		}
+	}
+
+    _sockfd = -1;
+    return r;
+}
+
+ssize_t udp_socket_peer_impl::readBytes (byte_t bytes[], size_t n, errorable_ext & /*ex*/)
+{
+    size_t count = pfs::min(n, _icount);
+
+    _ibuf.copyTo(bytes, count);
+
+    // Left data move to begin of array
+    if (_icount > count)
+        _ibuf.move(0, count, _icount - count);
+
+    _icount -= count;
+    return static_cast<ssize_t>(count);
+}
+
+
+ssize_t udp_socket_peer_impl::writeBytes (const byte_t bytes[], size_t n, errorable_ext & ex)
+{
+	ssize_t r = ::sendto(_sockfd, bytes, n, 0, reinterpret_cast<sockaddr *>(& _sockaddr), sizeof(sockaddr_in));
+
+	if (r < 0) {
+		ex.addSystemError(errno, _u8("write to UDP socket failure"));
+		return -1;
+	}
+	return r;
+}
+
+}} // pfs::io
+
+

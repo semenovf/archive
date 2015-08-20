@@ -1,0 +1,33 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=test-pfs-io-file --type=test --depends=pfs-io'
+--* Date:    Thu Aug 20 14:36:12 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-pfs-io-file"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-pfs-io-file/*.c", "../../tests/test-pfs-io-file/*.cpp" }
+
+configuration "debug"
+    flags        { "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-io/test-pfs-io-file/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        {  }
+
+configuration "release"
+    flags        {  }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-io/test-pfs-io-file/release"
+    targetdir    "../../../.build/tests"
+    links        {  }
+
+dependson { "pfs-io" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

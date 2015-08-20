@@ -1,0 +1,48 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs solution --create --name=pfs-io'
+--* Date:    Thu Aug 20 14:31:40 2015
+--************************************************************
+
+solution "pfs-io"
+    configurations {"debug", "release"}
+    platforms {"unix32", "unix64", "mswin32", "mswin64"}
+    filter "platforms:*32"
+        architecture "x32"
+    filter "platforms:*64"
+        architecture "x64"
+
+-- BEGIN PROJECT
+project "pfs-io"
+    include("pfs-io/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "pfs-io-serial"
+    include("pfs-io-serial/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "pfs-io-ipx"
+    include("pfs-io-ipx/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "pfs-io-inet"
+    include("pfs-io-inet/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-io-buffer"
+    include("test-pfs-io-buffer/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-io-file"
+    include("test-pfs-io-file/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-io-inet-addr"
+    include("test-pfs-io-inet-addr/project.gbs")
+-- END PROJECT

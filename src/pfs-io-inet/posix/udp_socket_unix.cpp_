@@ -1,0 +1,70 @@
+/*
+ * udp_socket_unix.cpp
+ *
+ *  Created on: Jun 25, 2015
+ *      Author: wladt
+ */
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
+#include "inet_socket_posix.hpp"
+
+namespace pfs { namespace io {
+
+bool udp_socket::open (const inet_addr & addr, int32_t oflags)
+{
+    if (opened()) {
+		this->addError(_u8("UDP socket: already opened"));
+		return false;
+    }
+
+	udp_socket_impl * simpl = new udp_socket_impl;
+
+	if (!simpl->open(addr, oflags, *this)) {
+		delete simpl;
+		return false;
+	}
+
+	pimpl d(simpl);
+	_d.swap(d);
+
+	return true;
+}
+
+bool udp_socket::connect (const inet_addr & addr)
+{
+	if (!opened())
+		return false;
+
+	sockaddr_in saddr;
+	buildNativeAddr(addr, & saddr);
+
+	//
+	// man 2 connect:
+	//----------------------------------------------------------------
+	// If  the  socket  sockfd  is  of  type  SOCK_DGRAM then addr
+	// is the address to which datagrams are sent by
+	// default, and the only address from which datagrams are received
+	//
+	if (::connect(_d.cast<udp_socket_impl>()->_sockfd
+			, reinterpret_cast<sockaddr *>(& saddr)
+			, sizeof(saddr)) < 0) {
+		this->addSystemError(errno, _u8("failed to connect UDP socket"));
+		return false;
+	}
+
+	return true;
+}
+
+inet_addr udp_socket::address () const
+{
+    if (!opened())
+        return inet_addr();
+
+    const udp_socket_impl * d = _d.cast<udp_socket_impl>();
+    return inet_addr(ntohl(d->_sockaddr.sin_addr.s_addr), ntohs(d->_sockaddr.sin_port));
+}
+
+}} // pfs::io
