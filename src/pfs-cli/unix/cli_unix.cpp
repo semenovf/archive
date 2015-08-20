@@ -1,18 +1,24 @@
 /*
- * command_line_unix.cpp
+ * cli_unix.cpp
  *
- *  Created on: May 29, 2015
+ *  Created on: Aug 20, 2015
  *      Author: wladt
  */
 
-#include "pfs/command_line.hpp"
+#include "pfs/cli.hpp"
 
-namespace pfs {
+namespace pfs { namespace cli {
 
-command_line::command_line ()
+cli::cli ()
 {
-	setOptionFormat(option_format::UnixShortOption
-			, option_format::UnixLongOption);
+	allowShortOption(true);
+	allowLongOption(true);
+	setCaseSensitive(true);
+
+	setShortOptionPrefix("-");
+	setLongOptionPrefix("--");
+	setShortOptargSeparator(" ");
+	setLongOptargSeparator("=");
 }
 
-}
+}}

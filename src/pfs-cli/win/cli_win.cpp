@@ -1,19 +1,25 @@
 /*
- * command_line_win.cpp
+ * cli_win.cpp
  *
  *  Created on: May 29, 2015
  *      Author: wladt
  */
 
-#include "pfs/command_line.hpp"
+#include "pfs/cli.hpp"
 
-namespace pfs {
+namespace pfs { namespace cli {
 
-command_line::command_line ()
+cli::cli ()
 {
-	setOptionFormat(option_format::WindowsShortOption
-			, option_format::WindowsLongOption);
+	allowShortOption(true);
+	allowLongOption(true);
+	setCaseSensitive(true);
+
+	setShortOptionPrefix("/");
+	setLongOptionPrefix("/");
+	setShortOptargSeparator(":");
+	setLongOptargSeparator(":");
 }
 
-} // pfs
+}}
 

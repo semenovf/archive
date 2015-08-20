@@ -10,6 +10,7 @@
 
 #include <pfs/shared_ptr.hpp>
 #include <pfs/map.hpp>
+#include <pfs/vector.hpp>
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
 #include <pfs/errorable.hpp>
@@ -21,13 +22,118 @@
 
 namespace pfs { namespace cli {
 
-class cli
+class DLL_API router
 {
+	typedef vector<vector<string> > action_list_type;
+
+	action_list_type _actions;
+
 public:
-	cli () {}
-	bool parse () { return false; }
+	router () {}
+
+	router & a (const vector<string> & actions);
+	router & a (const string & action);
+	router & a (const char * action);
+	router & alt (const string & action);
+	router & alt (const char * action);
+
+	router & b (const string & optname, bool defaultValue = false);
+	router & b (const char * optname, bool defaultValue = false);
+
+	router & i (const string & optname, integral_t defaultValue = 0);
+	router & i (const char * optname, integral_t defaultValue = 0);
+
+	router & n (const string & optname, real_t defaultValue = .0);
+	router & n (const char * optname, real_t defaultValue = .0);
+
+	router & s (const string & optname, const string & defaultValue = string());
+	router & s (const char * optname, const string & defaultValue = string());
+
+//	router & alt (integral_t value);
+//	router & alt (real_t value);
+//	router & alt (const string & value);
+//	router & alt (const char * value);
 };
 
+class DLL_API cli
+{
+	string _shortOptionPrefix;
+	string _longOptionPrefix;
+	string _shortOptargSeparator;
+	string _longOptargSeparator;
+	uint32_t _flags;
+	vector<router> _routers;
+
+public:
+	enum {
+		  AllowShortOption = 0x0001
+		, AllowLongOption  = 0x0002
+		, CaseSensitive    = 0x0004
+	};
+public:
+	cli ();
+	bool parse () { return false; }
+
+	void allowShortOption (bool b)
+	{
+		if (b) _flags |= AllowShortOption;
+		else   _flags &= ~AllowShortOption;
+	}
+
+	void allowLongOption (bool b)
+	{
+		if (b) _flags |= AllowLongOption;
+		else   _flags &= ~AllowLongOption;
+	}
+
+	void setCaseSensitive (bool b)
+	{
+		if (b) _flags |= CaseSensitive;
+		else   _flags &= ~CaseSensitive;
+	}
+
+	void setShortOptionPrefix (const string & prefix)
+	{
+		_shortOptionPrefix = prefix;
+	}
+
+	void setShortOptionPrefix (const char * prefix)
+	{
+		setShortOptionPrefix(string::fromLatin1(prefix));
+	}
+
+	void setLongOptionPrefix (const string & prefix)
+	{
+		_longOptionPrefix = prefix;
+	}
+
+	void setLongOptionPrefix (const char * prefix)
+	{
+		setLongOptionPrefix(string::fromLatin1(prefix));
+	}
+
+	void setShortOptargSeparator (const string & separator)
+	{
+		_shortOptargSeparator = separator;
+	}
+
+	void setShortOptargSeparator (const char * separator)
+	{
+		setShortOptargSeparator(string::fromLatin1(separator));
+	}
+
+	void setLongOptargSeparator (const string & separator)
+	{
+		_longOptargSeparator = separator;
+	}
+
+	void setLongOptargSeparator (const char * separator)
+	{
+		setLongOptargSeparator(string::fromLatin1(separator));
+	}
+
+	router & addRouter ();
+};
 
 #ifdef __COMMENT__
 

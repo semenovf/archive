@@ -8,9 +8,13 @@ kind          "SharedLib"
 language      "C++"
 targetname    "pfs-cli"
 defines       {  }
-includedirs   { "../../include" }
+includedirs   {   "../../include"
+                , "../../../pfs/include" }
 libdirs       { "../../../.build" }
-files         { "../../src/pfs-cli/*.c", "../../src/pfs-cli/*.cpp", "../../include/**.hpp", "../../include/**.h" }
+files         {   "../../src/pfs-cli/*.c"
+                , "../../src/pfs-cli/*.cpp"
+                , "../../include/**.hpp"
+                , "../../include/**.h" }
 
 configuration "debug"
     flags        { "Symbols" }
@@ -18,14 +22,20 @@ configuration "debug"
     objdir       "../../../.build/pfs-cli/pfs-cli/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
-    links        {  }
+    links        { "pfs-d" }
 
 configuration "release"
     flags        {  }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-cli/pfs-cli/release"
     targetdir    "../../../.build"
-    links        {  }
+    links        { "pfs" }
+
+filter "platforms:unix*"
+    files        { "../../src/pfs-cli/unix/*.cpp" }
+
+filter "platforms:mswin*"
+    files        { "../../src/pfs-cli/win/*.cpp" }
 
 filter "action:gmake"
     include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

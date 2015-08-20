@@ -5,10 +5,18 @@
  *      Author: wladt
  */
 
-#include "pfs/command_line.hpp"
+#include "pfs/cli.hpp"
 #include <pfs/map.hpp>
 
-namespace pfs {
+namespace pfs { namespace cli {
+
+router & cli::addRouter ()
+{
+	_routers.append(router());
+	return _routers.refAt(_routers.size() - 1);
+}
+
+#ifdef __COMMENT__
 
 command_option & command_line::getOption (const stringlist & optnames)
 {
@@ -35,7 +43,9 @@ command_option & command_line::numberOption (const stringlist & optnames)
 command_option & command_line::stringOption (const stringlist & optnames)
 {}
 
-} // pfs
+#endif
+
+//} // pfs::cli
 
 #ifdef __COMMENT__
 
@@ -190,4 +200,4 @@ bool command_line::parseOpts (settings & s
 	return r;
 }
 #endif
-} // pfs
+} } // pfs::cli
