@@ -8,9 +8,14 @@ for dir in $DIRS ; do
 	    echo ===========================================================
 	    echo Git pushing for $dir ...
 	    cd $dir
-	    echo Cleaning ...
-	    gbs clean
-	    git add -A && git commit && git push
+	
+	    if [ -f .gbs/solution.gbs ] ; then
+		echo Cleaning ...
+		gbs clean
+	    fi
+
+	    git add -A && git commit
+	    git push
 
 	    if [ "$?" != "0" ] ; then
 		echo Git pushing failed. >&2
