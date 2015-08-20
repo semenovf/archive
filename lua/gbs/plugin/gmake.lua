@@ -17,7 +17,7 @@ end
 function plugin:make (stage)
     local settings         = self._settings;
     local verbose          = settings:get("Verbose") or false;
-    local projectName      = settings:get_or_throw("ProjectName");
+    local projectName      = settings:get("ProjectName");
     local buildConfig      = settings:get_or_throw("BuildConfig");
     local buildTool        = settings:get_or_throw("BuildTool");
     local targetPlatform   = settings:get_or_throw("TargetPlatform");
@@ -50,10 +50,12 @@ function plugin:make (stage)
                 , gmakeTarget);
         end);
     else
+        print("TargetPlatform: "..targetPlatform);
+        print(configOpt
+                , verboseOpt
+                , gmakeTarget);
         trn:Function(function ()
             fs.execute("make"
-                , "-f"
-                , projectName .. ".make"
                 , "-C", ".gbs"
                 , configOpt
                 , verboseOpt

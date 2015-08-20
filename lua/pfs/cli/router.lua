@@ -175,15 +175,23 @@ function router:_match (opts, args)
                 if type(optarg) == "boolean" then
                     r._ropts:insert(k, optarg);
                     ok = true;
+                else
+                    -- print_warn(k .. ": expected boolean"); -- TODO need to avoid warning duplication while parsing
                 end
             elseif v._type == "n" then
                 if tonumber(optarg) ~= nil then
                     r._ropts:insert(k, optarg);
                     ok = true;
+                else
+                    -- print_warn(k .. ": expected number"); -- TODO see above
                 end
-            elseif v._type == "s" then 
-                r._ropts:insert(k, optarg);
-                ok = true;
+            elseif v._type == "s" then
+                if type(optarg) == "string" then
+                    r._ropts:insert(k, optarg);
+                    ok = true;
+                else
+                    -- print_warn(k .. ": expected string"); -- TODO see above
+                end
             else
                 die("Unexpected type or router may be corrupted"):now();
             end

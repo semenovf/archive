@@ -163,7 +163,7 @@ function gbs.run (argc, argv)
         :s("name", "")
         :s("config", Settings:get("BuildConfig") or "")
         :s("build-tool", Settings:get("BuildTool") or "")
-        :s("target-platform", Settings:get("TragetPlatform") or "")
+        :s("target-platform", Settings:get("TargetPlatform") or "")
         :h(function (r)
                 Settings:set("ProjectName"   , _esn(r:optArg("name")));
                 Settings:set("BuildConfig"   , _esn(r:optArg("config")));
@@ -176,7 +176,7 @@ function gbs.run (argc, argv)
     cli:router()
         :a("all")
         :h(function (r)
-                Settings:set("ProjectName"   , "");
+                Settings:set("ProjectName"   , nil);
                 Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
                 Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
                 Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
@@ -189,7 +189,7 @@ function gbs.run (argc, argv)
         :s("name", "")
         :s("config", Settings:get("BuildConfig") or "")
         :s("build-tool", Settings:get("BuildTool") or "")
-        :s("target-platform", Settings:get("TragetPlatform") or "")
+        :s("target-platform", Settings:get("TargetPlatform") or "")
         :h(function (r)
                 Settings:set("ProjectName"   , _esn(r:optArg("name")));
                 Settings:set("BuildConfig"   , _esn(r:optArg("config")));
