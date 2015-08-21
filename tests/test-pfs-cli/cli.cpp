@@ -117,7 +117,7 @@ int main (int /*argc*/, char ** /*argv*/)
 	int argc = sizeof(argv)/sizeof(argv[0]);
 	pfs::cli::cli cli;
 
-    cli.addRouter();
+    cli.r();
 //        :b("verbose")
 //        :h(function (r)
 //                Settings:set("Verbose", true);
@@ -125,14 +125,14 @@ int main (int /*argc*/, char ** /*argv*/)
 //           end)
 //        :continue();
 //
-//    cli::addRouter()
+    cli.r();
 //        :b("dump")
 //        :h(function (r)
 //                print("Options: " .. cli:dumpOpts());
 //                print("Free arguments: " .. cli:dumpArgs());
 //           end);
 //
-    cli.addRouter()
+    cli.r()
         .a("help")
         .a("workspace").alt("ws")
         	.alt("solution").alt("sln")
@@ -144,15 +144,15 @@ int main (int /*argc*/, char ** /*argv*/)
 //                return true;
 //           end);
 //
-//    cli:router()
-//        :a("help")
+    cli.r()
+        .a("help");
 //        :h(function (r)
 //                cli:guide():usage();
 //                return true;
 //           end);
 //
-//    cli:router()
-//        :a({"workspace", "ws"})
+    cli.r()
+        .a("workspace").alt("ws");
 //        :b("create")
 //        :s("path")
 //        :s("build-tool")
@@ -166,8 +166,8 @@ int main (int /*argc*/, char ** /*argv*/)
 //                return require("gbs.workspace"):new(Settings):create();
 //           end);
 //
-//    cli:router()
-//        :a({"solution", "sln"})
+    cli.r()
+        .a("solution").a("sln");
 //        :b("create")
 //        :s("name")
 //        :b("git", false)
@@ -177,8 +177,8 @@ int main (int /*argc*/, char ** /*argv*/)
 //                return require("gbs.solution"):new(Settings):create();
 //           end);
 //
-//    cli:router()
-//        :a({"project", "pro", "prj"})
+    cli.r()
+        .a("project").alt("pro").alt("prj");
 //        :b("create")
 //        :s("name")
 //        :s("type", "console-app")
@@ -193,8 +193,8 @@ int main (int /*argc*/, char ** /*argv*/)
 //                return require("gbs.project"):new(Settings):create();
 //           end);
 //
-//    cli:router()
-//        :a({"project", "pro", "prj"})
+    cli.r()
+        .a("project").alt("pro").alt("prj");
 //        :b("build")
 //        :s("name", "")
 //        :s("config", Settings:get("BuildConfig") or "")
@@ -209,8 +209,8 @@ int main (int /*argc*/, char ** /*argv*/)
 //           end);
 //
 //    -- Synonym for `gbs project --build'
-//    cli:router()
-//        :a("all")
+    cli.r()
+        .a("all");
 //        :h(function (r)
 //                Settings:set("ProjectName"   , nil);
 //                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
@@ -219,8 +219,8 @@ int main (int /*argc*/, char ** /*argv*/)
 //                return require("gbs.project"):new(Settings):build();
 //           end);
 //
-//    cli:router()
-//        :a({"project", "pro", "prj"})
+    cli.r()
+        .a("project").alt("pro").alt("prj");
 //        :b("clean")
 //        :s("name", "")
 //        :s("config", Settings:get("BuildConfig") or "")
@@ -235,8 +235,8 @@ int main (int /*argc*/, char ** /*argv*/)
 //           end);
 //
 //    -- Synonym for `gbs project --clean'
-//    cli:router()
-//        :a("clean")
+    cli.r()
+        .a("clean");
 //        :h(function (r)
 //                Settings:set("ProjectName"   , "");
 //                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
@@ -245,12 +245,12 @@ int main (int /*argc*/, char ** /*argv*/)
 //                return require("gbs.project"):new(Settings):clean();
 //           end);
 //
-//    cli:router()
+    cli.r();
 //        :h(function (r)
 //                print("Type `gbs help' for usage");
 //           end);
 //
-//    if cli:run() then return 0; end
+    cli.parse(argc, argv);
 
 	END_TESTS;
 }

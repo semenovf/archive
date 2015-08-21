@@ -24,9 +24,21 @@ namespace pfs { namespace cli {
 
 class DLL_API router
 {
+	struct optdata
+	{
+
+	};
+
 	typedef vector<vector<string> > action_list_type;
+	typedef map<string,optdata>     option_list_type;
+	typedef vector<string>          args_list_type;
 
 	action_list_type _actions;
+	option_list_type _options;
+	args_list_type   _args;
+
+public:
+	static const vector<string> AnyAction;
 
 public:
 	router () {}
@@ -42,12 +54,18 @@ public:
 
 	router & i (const string & optname, integral_t defaultValue = 0);
 	router & i (const char * optname, integral_t defaultValue = 0);
+	router & i (const string & optname, const vector<integral_t> & validValues);
+	router & i (const char * optname, const vector<integral_t> & validValues);
 
 	router & n (const string & optname, real_t defaultValue = .0);
 	router & n (const char * optname, real_t defaultValue = .0);
+	router & n (const string & optname, const vector<real_t> & validValues);
+	router & n (const char * optname, const vector<real_t> & validValues);
 
 	router & s (const string & optname, const string & defaultValue = string());
 	router & s (const char * optname, const string & defaultValue = string());
+	router & s (const string & optname, const vector<string> & validValues);
+	router & s (const char * optname, const vector<string> & validValues);
 
 //	router & alt (integral_t value);
 //	router & alt (real_t value);
@@ -72,7 +90,7 @@ public:
 	};
 public:
 	cli ();
-	bool parse () { return false; }
+	bool parse (int /*argc*/, const char * argv[]) { return false; }
 
 	void allowShortOption (bool b)
 	{
@@ -132,7 +150,7 @@ public:
 		setLongOptargSeparator(string::fromLatin1(separator));
 	}
 
-	router & addRouter ();
+	router & r ();
 };
 
 #ifdef __COMMENT__

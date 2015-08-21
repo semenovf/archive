@@ -1,16 +1,15 @@
 /*
- * command_line.cpp
+ * cli.cpp
  *
- *  Created on: Jun 4, 2013
+ *  Created on: Aug 20, 2015
  *      Author: wladt
  */
 
 #include "pfs/cli.hpp"
-#include <pfs/map.hpp>
 
 namespace pfs { namespace cli {
 
-router & cli::addRouter ()
+router & cli::r ()
 {
 	_routers.append(router());
 	return _routers.refAt(_routers.size() - 1);
