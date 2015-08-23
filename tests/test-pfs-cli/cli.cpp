@@ -117,16 +117,16 @@ int main (int /*argc*/, char ** /*argv*/)
 	int argc = sizeof(argv)/sizeof(argv[0]);
 	pfs::cli::cli cli;
 
-    cli.r();
-//        :b("verbose")
+    cli.r()
+        .b("verbose");
 //        :h(function (r)
 //                Settings:set("Verbose", true);
 //                return true;
 //           end)
 //        :continue();
-//
-    cli.r();
-//        :b("dump")
+
+    cli.r()
+        .b("dump");
 //        :h(function (r)
 //                print("Options: " .. cli:dumpOpts());
 //                print("Free arguments: " .. cli:dumpArgs());
@@ -138,12 +138,12 @@ int main (int /*argc*/, char ** /*argv*/)
         	.alt("solution").alt("sln")
         	.alt("project").alt("pro").alt("prj");
 //        --:a({})
-//        :h(function (r)
+//        .h(function (r)
 //                Settings:set("Domain", r:actionAt(1));
 //                help_type:new(Settings):help();
 //                return true;
 //           end);
-//
+
     cli.r()
         .a("help");
 //        :h(function (r)

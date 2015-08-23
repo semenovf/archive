@@ -14,6 +14,7 @@
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
 #include <pfs/errorable.hpp>
+//#include <pfs/variant.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -26,9 +27,14 @@ class DLL_API router
 {
 	struct optdata
 	{
-
+		// > 0 - index of default value or index of value after parsing
+		//  -1 - if there is no default value or specified option did not found
+		int index;
+		int first;
+		int count;
 	};
 
+//	typedef variant<bool, integral_t, real_t, string> variant_type;
 	typedef vector<vector<string> > action_list_type;
 	typedef map<string,optdata>     option_list_type;
 	typedef vector<string>          args_list_type;
@@ -49,28 +55,49 @@ public:
 	router & alt (const string & action);
 	router & alt (const char * action);
 
-	router & b (const string & optname, bool defaultValue = false);
-	router & b (const char * optname, bool defaultValue = false);
+	template <typename T>
+	router & o (const string & optname);
 
-	router & i (const string & optname, integral_t defaultValue = 0);
-	router & i (const char * optname, integral_t defaultValue = 0);
-	router & i (const string & optname, const vector<integral_t> & validValues);
-	router & i (const char * optname, const vector<integral_t> & validValues);
+	template <typename T>
+	router & o (const char * optname)
+	{
+		return o<T>(string::fromLatin1(optname));
+	}
 
-	router & n (const string & optname, real_t defaultValue = .0);
-	router & n (const char * optname, real_t defaultValue = .0);
-	router & n (const string & optname, const vector<real_t> & validValues);
-	router & n (const char * optname, const vector<real_t> & validValues);
+	template <typename T>
+	router & o (const string & optname, const T & defaultValue);
 
-	router & s (const string & optname, const string & defaultValue = string());
-	router & s (const char * optname, const string & defaultValue = string());
-	router & s (const string & optname, const vector<string> & validValues);
-	router & s (const char * optname, const vector<string> & validValues);
+	template <typename T>
+	router & o (const char * optname, const T & defaultValue)
+	{
+		return o<T>(string::fromLatin1(optname), defaultValue);
+	}
 
-//	router & alt (integral_t value);
-//	router & alt (real_t value);
-//	router & alt (const string & value);
-//	router & alt (const char * value);
+	template <typename T>
+	router & operator () (const T & validValue);
+
+//	router & b (const string & optname);
+//	router & b (const char *   optname);
+//	router & b (const string & optname, bool defaultValue);
+//	router & b (const char *   optname, bool defaultValue);
+//
+//	router & i (const string & optname);
+//	router & i (const char *   optname);
+//	router & i (const string & optname, integral_t defaultValue);
+//	router & i (const char *   optname, integral_t defaultValue);
+//	router & operator () (integral_t validValue);
+//
+//	router & n (const string & optname);
+//	router & n (const char *   optname);
+//	router & n (const string & optname, real_t defaultValue);
+//	router & n (const char *   optname, real_t defaultValue);
+//	router & operator () (real_t validValue);
+//
+//	router & s (const string & optname);
+//	router & s (const char *   optname);
+//	router & s (const string & optname, const string & defaultValue);
+//	router & s (const char *   optname, const string & defaultValue);
+//	router & operator () (const string & validValue);
 };
 
 class DLL_API cli
@@ -152,6 +179,14 @@ public:
 
 	router & r ();
 };
+
+
+template <typename T>
+router & router::o (const string & optname)
+{
+	return *this;
+}
+
 
 #ifdef __COMMENT__
 
