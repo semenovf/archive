@@ -3,7 +3,7 @@
 .cproject
 debug/
 release/
-doxygen/html
+doxygen/
 
 Makefile
 Makefile.*
