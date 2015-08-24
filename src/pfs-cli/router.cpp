@@ -24,6 +24,12 @@ router & router::a (const vector<string> & alts)
 	return *this;
 }
 
+/**
+ * @brief Appends action.
+ *
+ * @param action Action.
+ * @return Router.
+ */
 router & router::a (const string & action)
 {
 	if (action.isEmpty())
@@ -42,12 +48,14 @@ router & router::a (const char * action)
 }
 
 /**
- * @brief Adds alternative value for action.
+ * @brief Adds synonym for action.
  *
- * @param action Alternative value for action.
+ * @param action Synonym for action.
  * @return Reference to router itself.
+ *
+ * @see router::synonym(const char * action)
  */
-router & router::alt (const string & action)
+router & router::synonym (const string & action)
 {
 	if (!action.isEmpty()) {
 		if (_actions.size() > 0) {
@@ -60,11 +68,19 @@ router & router::alt (const string & action)
 	return *this;
 }
 
-router & router::alt (const char * action)
+/**
+ * @brief Adds synonym for action.
+ *
+ * @param action
+ * 		Synonym for action.
+ * @return Reference to router itself.
+ *
+ * @see router::synonym(const string & action)
+ */
+router & router::synonym (const char * action)
 {
-	return alt(string::fromLatin1(action));
+	return synonym(string::fromLatin1(action));
 }
-
 
 }} // pfs::cli
 

@@ -52,8 +52,10 @@ public:
 	router & a (const vector<string> & actions);
 	router & a (const string & action);
 	router & a (const char * action);
-	router & alt (const string & action);
-	router & alt (const char * action);
+	router & synonym (const string & action);
+	router & synonym (const char * action);
+	router & syn (const string & action) { return synonym(action); }
+	router & syn (const char * action) { return synonym(action); }
 
 	template <typename T>
 	router & o (const string & optname);
