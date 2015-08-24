@@ -50,7 +50,6 @@ function plugin:make (stage)
                 , gmakeTarget);
         end);
     else
-        print("TargetPlatform: "..targetPlatform);
         print(configOpt
                 , verboseOpt
                 , gmakeTarget);

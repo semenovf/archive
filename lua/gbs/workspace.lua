@@ -109,4 +109,51 @@ function workspace:create ()
     return trn:exec();
 end
 
+function workspace:build ()
+    local settings          = self._settings;
+    
+    local verbose        = settings:get("Verbose") or false;
+    local buildTool      = settings:get_or_throw("BuildTool");
+    local targetPlatform = settings:get("TargetPlatform");
+    local config         = settings:get_or_throw("BuildConfig");
+    
+    if string.isEmpty(targetPlatform) then
+        local osi = os.info();
+        die("Unable to recognize OS type"):unless(osi.type);
+        die("Unable to recognize OS bits"):unless(osi.bits);
+        targetPlatform = tostring(osi.type) .. tostring(osi.bits);
+        
+        if verbose then print("Target platform detected: " ..  targetPlatform); end
+    end
+    
+    local workspaceFile = fs.join(path, ".gbs", workspaceFileName);
+  
+    local trn = require("gbs.transaction"):begin(verbose);
+  
+    trn:Function(function () return workspace.isValidBuildTool(buildTool) end, "Validate build tool");
+    trn:Function(function () return workspace.isValidTargetPlatform(targetPlatform) end, "Validate target platform");
+    trn:Function(function () return workspace.isValidConfig(config) end, "Validate config (debug or release)");
+    trn:PathExists(fs.join(".gbs", settings:get_or_throw("WorkspaceFileName")), "Inside workspace directory");
+    trn:PathExists("solutions.txt", "Found list of solutions to build");
+    trn:Function(function ()
+        local file = assert(io.open("solutions.txt", "r"));
+
+        for solution in file:lines() do
+            if solution:len() > 0 then -- skip empty lines
+                solution = string.trim(solution);
+        
+                if solution:len() > 0 then
+                    if not solution:match("^#") then -- skip comment lines
+                        local command = "cd " .. solution .. " && " .. "gbs pro --build";
+                        if verbose then  command = command .. " --verbose"; end
+                        die("Failed to build solution: " .. solution):unless(fs.execute(command));
+                    end
+                end
+            end
+        end
+    end, "Build solutions");
+    
+    return trn:exec();
+end
+
 return workspace;

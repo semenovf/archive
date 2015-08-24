@@ -131,6 +131,20 @@ function gbs.run (argc, argv)
            end);
 
     cli:router()
+        :a({"workspace", "ws"})
+        :b("build")
+--        :s("config", Settings:get("BuildConfig") or "")
+--        :s("build-tool", Settings:get("BuildTool") or "")
+--        :s("target-platform", Settings:get("TargetPlatform") or "")
+        :h(function (r)
+--                Settings:set("BuildConfig"   , _esn(r:optArg("config")));
+--                Settings:set("BuildTool"     , _esn(r:optArg("build-tool")));
+--                Settings:set("TargetPlatform", _esn(r:optArg("target-platform")));
+                return require("gbs.workspace"):new(Settings):build();
+           end);
+
+
+    cli:router()
         :a({"solution", "sln"})
         :b("create")
         :s("name")
