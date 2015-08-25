@@ -133,7 +133,6 @@ public:
 		return *this;
 	}
 
-
 	template <typename T>
 	bool is () const
 	{
