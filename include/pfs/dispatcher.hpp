@@ -1,13 +1,14 @@
 /*
- * sepaloid.hpp
+ * dispatcher.hpp
  *
  *  Created on: Feb 9, 2011
  *      Author: wladt
- *  Removed to CWT on: Feb 12, 2013
+ *  Removed to CWT on Feb 12, 2013
+ *  Renamed to dispatcher Aug 25, 2015
  */
 
-#ifndef __PFS_SEPALOID_HPP__
-#define __PFS_SEPALOID_HPP__
+#ifndef __PFS_DISPATCHER_HPP__
+#define __PFS_DISPATCHER_HPP__
 
 #include <pfs/mt.hpp>
 #include <pfs/map.hpp>
@@ -33,27 +34,27 @@ struct module_spec
 	module_dtor_t dtor;   /* may be null (no destructor) */
 };
 
-class DLL_API sepaloid : public dl, public has_slots<>, noncopyable
+class DLL_API dispatcher : public dl, public has_slots<>, noncopyable
 {
-	PFS_IMPLEMENT_LOCKING(sepaloid);
+	PFS_IMPLEMENT_LOCKING(dispatcher);
 
 public:
 	typedef struct { int id; sigslot_mapping_t * map; string desc; } mapping_type;
-	typedef map<int, mapping_type *> mapping_hash;
+	typedef map<int, mapping_type *> mapping_collection_type;
 	typedef map<string, module_spec> module_specs_type;
 
 private:
-	mapping_hash      _mapping;
+	mapping_collection_type _mapping;
 	module_specs_type _modules;
 	vector<thread *>  _threads;
 	module *          _masterModule;
 
 protected:
-    sepaloid() : dl(), _masterModule(nullptr) {}
+    dispatcher() : dl(), _masterModule(nullptr) {}
 
 public:
-	sepaloid (mapping_type mapping[], int n);
-	virtual ~sepaloid() {
+	dispatcher (mapping_type mapping[], int n);
+	virtual ~dispatcher() {
 	    disconnectAll();
 	    unregisterAll();
 	}
@@ -80,7 +81,7 @@ public:
 public: /*slots*/
 	void onModuleRegistered (const string & pname, bool & result)
 	{
-		result = isModuleRegistered (pname);
+		result = isModuleRegistered(pname);
 	}
 
 protected:
@@ -93,4 +94,4 @@ protected:
 #	pragma warning(pop)
 #endif
 
-#endif /* __PFS_SEPALOID_HPP__ */
+#endif /* __PFS_DISPATCHER_HPP__ */

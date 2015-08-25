@@ -1,12 +1,12 @@
 /*
- * sepaloid.cpp
+ * dispacther.cpp
  *
  *  Created on: Feb 9, 2011
  *      Author: wladt
  *  Removed to CWT on: Feb 12, 2013
  */
 
-#include "pfs/sepaloid.hpp"
+#include "pfs/dispatcher.hpp"
 #include "pfs/safeformat.hpp"
 #include "pfs/logger.hpp"
 #include "pfs/fs.hpp"
@@ -28,7 +28,7 @@ private:
 	module * _mod;
 };
 
-sepaloid::sepaloid (sepaloid::mapping_type mapping[], int n)
+dispatcher::dispatcher (dispatcher::mapping_type mapping[], int n)
 	: _masterModule(nullptr)
 {
 	for (int i = 0; i < n; i++) {
@@ -36,14 +36,14 @@ sepaloid::sepaloid (sepaloid::mapping_type mapping[], int n)
 	}
 }
 
-module * sepaloid::registerLocalModule (module * mod, module_dtor_t dtor)
+module * dispatcher::registerLocalModule (module * mod, module_dtor_t dtor)
 {
 	if (mod)
 		return registerModule(*mod, nullptr, dtor) ? mod : nullptr;
 	return nullptr;
 }
 
-module * sepaloid::registerModuleForPath (const string & path, const char * pname, int arg, char ** argv)
+module * dispatcher::registerModuleForPath (const string & path, const char * pname, int arg, char ** argv)
 {
 	fs fs;
 
@@ -78,7 +78,7 @@ module * sepaloid::registerModuleForPath (const string & path, const char * pnam
 	return nullptr;
 }
 
-module * sepaloid::registerModuleForName (const string & name, const char * modname, int arg, char ** argv)
+module * dispatcher::registerModuleForName (const string & name, const char * modname, int arg, char ** argv)
 {
 	string filename = dl::buildDlFileName(name);
 	string realPath;
@@ -98,7 +98,7 @@ module * sepaloid::registerModuleForName (const string & name, const char * modn
 	return nullptr;
 }
 
-bool sepaloid::registerModule (module & mod, dl::handle ph, module_dtor_t dtor)
+bool dispatcher::registerModule (module & mod, dl::handle ph, module_dtor_t dtor)
 {
 	int nemitters, ndetectors;
 
@@ -111,12 +111,12 @@ bool sepaloid::registerModule (module & mod, dl::handle ph, module_dtor_t dtor)
 	const emitter_mapping * emitters = mod.getEmitters(& nemitters);
 	const detector_mapping * detectors = mod.getDetectors(& ndetectors);
 
-	mapping_hash::iterator itEnd = _mapping.end();
+	mapping_collection_type::iterator itEnd = _mapping.end();
 
 	if (emitters) {
 		for (int i = 0; i < nemitters; i++) {
 			int emitter_id(emitters[i]._id);
-			mapping_hash::iterator it = _mapping.find(emitter_id);
+			mapping_collection_type::iterator it = _mapping.find(emitter_id);
 			if (it != itEnd) {
 				it.value()->map->appendEmitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
 			} else {
@@ -130,7 +130,7 @@ bool sepaloid::registerModule (module & mod, dl::handle ph, module_dtor_t dtor)
 	if (detectors) {
 		for (int i = 0; i < ndetectors; i++) {
 			int detector_id(detectors[i]._id);
-			mapping_hash::iterator it = _mapping.find(detector_id);
+			mapping_collection_type::iterator it = _mapping.find(detector_id);
 			if (it != itEnd) {
 				it.value()->map->appendDetector(& mod, detectors[i]._detector);
 			} else {
@@ -142,8 +142,8 @@ bool sepaloid::registerModule (module & mod, dl::handle ph, module_dtor_t dtor)
 		}
 	}
 
-	mod.moduleRegistered.connect(this, & sepaloid::onModuleRegistered);
-	mod._sepaloidPtr = this;
+	mod.moduleRegistered.connect(this, & dispatcher::onModuleRegistered);
+	mod._dispatcherPtr = this;
 	module_spec pspec(& mod, ph, dtor);
 	_modules.insert(mod._name, pspec);
 
@@ -160,27 +160,27 @@ bool sepaloid::registerModule (module & mod, dl::handle ph, module_dtor_t dtor)
 	return true;
 }
 
-void sepaloid::connectAll ()
+void dispatcher::connectAll ()
 {
-	mapping_hash::iterator it = _mapping.begin();
-	mapping_hash::iterator itEnd = _mapping.end();
+	mapping_collection_type::iterator it = _mapping.begin();
+	mapping_collection_type::iterator itEnd = _mapping.end();
 
 	for(; it != itEnd; it++ ) {
 		it.value()->map->connectAll();
 	}
 }
 
-void sepaloid::disconnectAll ()
+void dispatcher::disconnectAll ()
 {
-	mapping_hash::iterator it = _mapping.begin();
-	mapping_hash::iterator itEnd = _mapping.end();
+	mapping_collection_type::iterator it = _mapping.begin();
+	mapping_collection_type::iterator itEnd = _mapping.end();
 
 	for(; it != itEnd; it++ ) {
 		it.value()->map->disconnectAll();
 	}
 }
 
-void sepaloid::unregisterAll ()
+void dispatcher::unregisterAll ()
 {
 	vector<thread *>::iterator itThread = _threads.begin();
 	vector<thread *>::iterator itThreadEnd = _threads.end();
@@ -211,7 +211,7 @@ void sepaloid::unregisterAll ()
 	_modules.clear();
 }
 
-bool sepaloid::start ()
+bool dispatcher::start ()
 {
 	bool r = true;
 
@@ -233,11 +233,11 @@ bool sepaloid::start ()
 	return r;
 }
 
-int sepaloid::exec ()
+int dispatcher::exec ()
 {
 	int r = 0;
 
-	// Exclude master module from sepaloid's threads pool
+	// Exclude master module from dispatcher's threads pool
 	if (_masterModule) {
 		size_t size = _threads.size();
 		for (size_t i = 0; i < size; ++i) {

@@ -21,7 +21,7 @@ namespace pfs {
 #define DETECTOR_CAST(slot) reinterpret_cast<pfs::detector>(& slot)
 #define EMITTER_CAST(e)     reinterpret_cast<void *>(& e)
 
-class sepaloid;
+class dispatcher;
 class module;
 typedef signal1<void *> emitter;
 typedef void (module::* detector)(void *);
@@ -38,15 +38,15 @@ typedef void  (* module_dtor_t)(module *);
 class DLL_API module : public has_slots<>
 {
 private:
-	module() : _name(nullptr), _sepaloidPtr(nullptr), run(nullptr) {}
+	module() : _name(nullptr), _dispatcherPtr(nullptr), run(nullptr) {}
 
 public:
-	module (const char * name) : _name(_u8(name)), _sepaloidPtr(nullptr), run(nullptr) {}
-	module (const string & name) : _name(name), _sepaloidPtr(nullptr), run(nullptr) {}
+	module (const char * name) : _name(_u8(name)), _dispatcherPtr(nullptr), run(nullptr) {}
+	module (const string & name) : _name(name), _dispatcherPtr(nullptr), run(nullptr) {}
 	virtual ~module() {}
 
 	const string & name() const { return _name; }
-	bool isRegistered () const { return _sepaloidPtr != nullptr ? true : false; }
+	bool isRegistered () const { return _dispatcherPtr != nullptr ? true : false; }
 
 	virtual const emitter_mapping * getEmitters (int * count)   { PFS_ASSERT(count); *count = 0; return 0; }
 	virtual const detector_mapping * getDetectors (int * count) { PFS_ASSERT(count); *count = 0; return 0; }
@@ -61,12 +61,12 @@ public: /*signal*/
 
 private:
 	string _name;
-	sepaloid *  _sepaloidPtr;
+	dispatcher *  _dispatcherPtr;
 
 public:
 	int (* run) (module *);
 
-	friend class sepaloid;
+	friend class dispatcher;
 };
 
 struct detector_pair

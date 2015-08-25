@@ -8,7 +8,7 @@
 #ifndef __PFS_APP_HPP__
 #define __PFS_APP_HPP__
 
-#include <pfs/sepaloid.hpp>
+#include <pfs/dispatcher.hpp>
 #include <pfs/settings.hpp>
 
 #ifdef PFS_CC_MSVC
@@ -42,7 +42,7 @@ public:
 
 	int exec () { return main_proc()(); }
 	int exec (main_proc & mainProc) { return mainProc(); }
-	int exec (sepaloid & sepaloid);
+	int exec (dispatcher & d);
 
 	pfs::settings & settings () { return _settings; }
 	static app * instance() { PFS_ASSERT(self); return self; }

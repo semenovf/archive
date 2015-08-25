@@ -20,15 +20,15 @@ app::app (const string & progname)
 	_program = (progname.isEmpty() ? string("<anonymous>") : progname);
 }
 
-int app::exec (sepaloid & sepaloid)
+int app::exec (dispatcher & d)
 {
 	int r = EXIT_FAILURE;
 
-    sepaloid.connectAll();
-    if (sepaloid.start() && sepaloid.isGood()) {
-   		r = sepaloid.exec();
+    d.connectAll();
+    if (d.start() && d.isGood()) {
+   		r = d.exec();
     }
-    sepaloid.logErrors();
+    d.logErrors();
 
 	return r;
 }
