@@ -8,13 +8,9 @@
 #ifndef __PFS_CLI_HPP__
 #define __PFS_CLI_HPP__
 
-#include <pfs/shared_ptr.hpp>
-#include <pfs/map.hpp>
-#include <pfs/vector.hpp>
 #include <pfs/string.hpp>
-#include <pfs/stringlist.hpp>
-#include <pfs/errorable.hpp>
-//#include <pfs/variant.hpp>
+#include <pfs/vector.hpp>
+#include <pfs/cli/router.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -22,85 +18,6 @@
 #endif
 
 namespace pfs { namespace cli {
-
-class DLL_API router
-{
-	struct optdata
-	{
-		// > 0 - index of default value or index of value after parsing
-		//  -1 - if there is no default value or specified option did not found
-		int index;
-		int first;
-		int count;
-	};
-
-//	typedef variant<bool, integral_t, real_t, string> variant_type;
-	typedef vector<vector<string> > action_list_type;
-	typedef map<string,optdata>     option_list_type;
-	typedef vector<string>          args_list_type;
-
-	action_list_type _actions;
-	option_list_type _options;
-	args_list_type   _args;
-
-public:
-	static const vector<string> AnyAction;
-
-public:
-	router () {}
-
-	router & a (const vector<string> & actions);
-	router & a (const string & action);
-	router & a (const char * action);
-	router & synonym (const string & action);
-	router & synonym (const char * action);
-	router & syn (const string & action) { return synonym(action); }
-	router & syn (const char * action) { return synonym(action); }
-
-	template <typename T>
-	router & o (const string & optname);
-
-	template <typename T>
-	router & o (const char * optname)
-	{
-		return o<T>(string::fromLatin1(optname));
-	}
-
-	template <typename T>
-	router & o (const string & optname, const T & defaultValue);
-
-	template <typename T>
-	router & o (const char * optname, const T & defaultValue)
-	{
-		return o<T>(string::fromLatin1(optname), defaultValue);
-	}
-
-	template <typename T>
-	router & operator () (const T & validValue);
-
-//	router & b (const string & optname);
-//	router & b (const char *   optname);
-//	router & b (const string & optname, bool defaultValue);
-//	router & b (const char *   optname, bool defaultValue);
-//
-//	router & i (const string & optname);
-//	router & i (const char *   optname);
-//	router & i (const string & optname, integral_t defaultValue);
-//	router & i (const char *   optname, integral_t defaultValue);
-//	router & operator () (integral_t validValue);
-//
-//	router & n (const string & optname);
-//	router & n (const char *   optname);
-//	router & n (const string & optname, real_t defaultValue);
-//	router & n (const char *   optname, real_t defaultValue);
-//	router & operator () (real_t validValue);
-//
-//	router & s (const string & optname);
-//	router & s (const char *   optname);
-//	router & s (const string & optname, const string & defaultValue);
-//	router & s (const char *   optname, const string & defaultValue);
-//	router & operator () (const string & validValue);
-};
 
 class DLL_API cli
 {
@@ -181,14 +98,6 @@ public:
 
 	router & r ();
 };
-
-
-template <typename T>
-router & router::o (const string & optname)
-{
-	return *this;
-}
-
 
 #ifdef __COMMENT__
 

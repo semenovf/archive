@@ -117,16 +117,16 @@ int main (int /*argc*/, char ** /*argv*/)
 	int argc = sizeof(argv)/sizeof(argv[0]);
 	pfs::cli::cli cli;
 
-    cli.r()
-        .b("verbose");
+    cli.r();
+//        .b("verbose");
 //        :h(function (r)
 //                Settings:set("Verbose", true);
 //                return true;
 //           end)
 //        :continue();
 
-    cli.r()
-        .b("dump");
+    cli.r();
+//        .b("dump");
 //        :h(function (r)
 //                print("Options: " .. cli:dumpOpts());
 //                print("Free arguments: " .. cli:dumpArgs());
@@ -134,9 +134,9 @@ int main (int /*argc*/, char ** /*argv*/)
 //
     cli.r()
         .a("help")
-        .a("workspace").alt("ws")
-        	.alt("solution").alt("sln")
-        	.alt("project").alt("pro").alt("prj");
+        .a("workspace").syn("ws")
+        	.syn("solution").syn("sln")
+        	.syn("project").syn("pro").syn("prj");
 //        --:a({})
 //        .h(function (r)
 //                Settings:set("Domain", r:actionAt(1));
@@ -152,7 +152,7 @@ int main (int /*argc*/, char ** /*argv*/)
 //           end);
 //
     cli.r()
-        .a("workspace").alt("ws");
+        .a("workspace").syn("ws");
 //        :b("create")
 //        :s("path")
 //        :s("build-tool")
@@ -167,7 +167,7 @@ int main (int /*argc*/, char ** /*argv*/)
 //           end);
 //
     cli.r()
-        .a("solution").a("sln");
+        .a("solution").syn("sln");
 //        :b("create")
 //        :s("name")
 //        :b("git", false)
@@ -178,7 +178,7 @@ int main (int /*argc*/, char ** /*argv*/)
 //           end);
 //
     cli.r()
-        .a("project").alt("pro").alt("prj");
+        .a("project").syn("pro").syn("prj");
 //        :b("create")
 //        :s("name")
 //        :s("type", "console-app")
@@ -194,7 +194,7 @@ int main (int /*argc*/, char ** /*argv*/)
 //           end);
 //
     cli.r()
-        .a("project").alt("pro").alt("prj");
+        .a("project").syn("pro").syn("prj");
 //        :b("build")
 //        :s("name", "")
 //        :s("config", Settings:get("BuildConfig") or "")
@@ -220,7 +220,7 @@ int main (int /*argc*/, char ** /*argv*/)
 //           end);
 //
     cli.r()
-        .a("project").alt("pro").alt("prj");
+        .a("project").syn("pro").syn("prj");
 //        :b("clean")
 //        :s("name", "")
 //        :s("config", Settings:get("BuildConfig") or "")

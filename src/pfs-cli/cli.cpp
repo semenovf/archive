@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include "pfs/cli.hpp"
+#include "pfs/cli/cli.hpp"
 
 namespace pfs { namespace cli {
 
