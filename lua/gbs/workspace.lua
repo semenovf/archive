@@ -146,11 +146,12 @@ function workspace:build ()
                     if not solution:match("^#") then -- skip comment lines
                         local command = "cd " .. solution .. " && " .. "gbs pro --build";
                         if verbose then  command = command .. " --verbose"; end
-                        die("Failed to build solution: " .. solution):unless(fs.execute(command));
+                        if not fs.execute(command) then return false; end
                     end
                 end
             end
         end
+        return true;
     end, "Build solutions");
     
     return trn:exec();
