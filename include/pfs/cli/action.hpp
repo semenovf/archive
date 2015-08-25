@@ -23,12 +23,12 @@ public:
 
 	action (const string & name)
 	{
-		_synonyms.append(name);
+		add(name);
 	}
 
-	action & add (const string & synonym)
+	action & add (const string & name)
 	{
-		_synonyms.append(synonym);
+		_synonyms.append(name);
 		return *this;
 	}
 

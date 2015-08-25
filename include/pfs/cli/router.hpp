@@ -8,7 +8,11 @@
 #ifndef __PFS_CLI_ROUTER_HPP__
 #define __PFS_CLI_ROUTER_HPP__
 
+#include <pfs/map.hpp>
+#include <pfs/stringlist.hpp>
+#include <pfs/shared_ptr.hpp>
 #include <pfs/cli/action.hpp>
+#include <pfs/cli/option.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -19,48 +23,31 @@ namespace pfs { namespace cli {
 
 class DLL_API router
 {
-	struct optdata
-	{
-		// > 0 - index of default value or index of value after parsing
-		//  -1 - if there is no default value or specified option did not found
-		int index;
-		int first;
-		int count;
+	typedef map<string, shared_ptr<option> > option_collection_type;
 
-		optdata () : index(-1), first(-1), count(0) {}
-	};
+	vector<action>         _actions;
+	option_collection_type _options;
+	stringlist             _args;
 
-//	typedef vector<stringlist>  stringlist_collection_type;
-//	typedef map<string,optdata> option_collection_type;
-
-	vector<action> _actions;
-//	option_collection_type     _options;
-//	stringlist                 _args;
-//	optdata                    _activeOptdata;
-//	bool                       _booleanValues[2];
-//	vector<integral_t>         _integralValues;
-//	vector<real_t>             _realValues;
-//	stringlist                 _stringValues;
+private:
+	template <typename T>
+	router & o (const string & optname);
 
 public:
-	router () {
-//		_booleanValues[0] = false;
-//		_booleanValues[1] = true;
+	router () {}
+
+	router & a (const string & name);
+	router & a (const char * name);
+	router & synonym (const string & name);
+	router & synonym (const char * name);
+	router & syn (const string & name) { return synonym(name); }
+	router & syn (const char * name) { return synonym(name); }
+
+	router & b (const string & optname);
+	router & b (const char *   optname)
+	{
+		return b(string::fromLatin1(optname));
 	}
-
-//	router & a (const stringlist & actions);
-	router & a (const string & action);
-	router & a (const char * action);
-	router & synonym (const string & action);
-	router & synonym (const char * action);
-	router & syn (const string & action) { return synonym(action); }
-	router & syn (const char * action) { return synonym(action); }
-
-//	router & b (const string & optname);
-//	router & b (const char *   optname)
-//	{
-//		return b(string::fromLatin1(optname));
-//	}
 //	router & b (const string & optname, bool defaultValue);
 //	router & b (const char *   optname, bool defaultValue)
 //	{

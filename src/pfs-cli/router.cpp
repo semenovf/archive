@@ -28,24 +28,24 @@ router & router::a (const stringlist & synonyms)
 /**
  * @brief Appends action.
  *
- * @param action Action.
- * @return Router.
+ * @param name
+ * 		Action name.
+ * @return Reference to router itself.
  */
-router & router::a (const string & action)
+router & router::a (const string & name)
 {
-	if (action.isEmpty())
-		return a(action::any());
-
-	stringlist actions;
-	actions.append(action);
-	return a(actions);
+	if (name.isEmpty())
+		_actions.append(action::any());
+	else
+		_actions.append(action(name));
+	return *this;
 }
 
-router & router::a (const char * action)
+router & router::a (const char * name)
 {
-	if (!action)
-		return a(action::any());
-	return a(string::fromLatin1(action));
+	if (!name)
+		return a(string());
+	return a(string::fromLatin1(name));
 }
 
 /**
@@ -56,14 +56,14 @@ router & router::a (const char * action)
  *
  * @see router::synonym(const char *)
  */
-router & router::synonym (const string & action)
+router & router::synonym (const string & name)
 {
-	if (!action.isEmpty()) {
+	if (!name.isEmpty()) {
 		if (_actions.size() > 0) {
-			stringlist a = _actions.last();
-			a.append(action);
+			action act = _actions.last();
+			act.add(name);
 		} else {
-			a(action);
+			a(name);
 		}
 	}
 	return *this;
@@ -95,13 +95,23 @@ router & router::synonym (const char * action)
  * @see router::synonym(const char *)
  */
 
-#ifdef __COMMENT__
-router & router::b (const string & optname)
+
+template <typename T>
+router & router::o (const string & optname)
 {
-	_activeOptdata(optdata()); // reset
-	_options.insert(optname, _activeOptdata);
+	shared_ptr<option> opt = make_option<T>(optname);
+	opt->setOptional(false);
+	_options.insert(optname, opt);
 	return *this;
 }
+
+
+router & router::b (const string & optname)
+{
+	return o<bool>(optname);
+}
+
+#ifdef __COMMENT__
 
 /**
  *

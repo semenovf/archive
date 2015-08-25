@@ -7,8 +7,7 @@
  */
 
 #include <pfs/test/test.hpp>
-#include <pfs/cli.hpp>
-#include <pfs/stringlist.hpp>
+#include <pfs/cli/cli.hpp>
 
 const char * argv[] = {
 	  "prog-name"

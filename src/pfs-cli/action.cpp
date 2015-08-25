@@ -9,8 +9,6 @@
 
 namespace pfs { namespace cli {
 
-const stringlist action::Any = stringlist();
-
 }}
 
 
