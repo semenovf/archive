@@ -9,8 +9,8 @@
 #define __PFS_CLI_ROUTER_HPP__
 
 #include <pfs/map.hpp>
+#include <pfs/vector.hpp>
 #include <pfs/stringlist.hpp>
-#include <pfs/shared_ptr.hpp>
 #include <pfs/cli/action.hpp>
 #include <pfs/cli/option.hpp>
 
@@ -23,15 +23,18 @@ namespace pfs { namespace cli {
 
 class DLL_API router
 {
-	typedef map<string, shared_ptr<option> > option_collection_type;
+	typedef vector<action>      action_collection;
+	typedef map<string, option> option_collection;
 
-	vector<action>         _actions;
-	option_collection_type _options;
-	stringlist             _args;
+	action_collection _actions;
+	option_collection _options;
 
 private:
 	template <typename T>
 	router & o (const string & optname);
+
+	template <typename T>
+	router & o (const string & optname, const T & defaultValue);
 
 public:
 	router () {}
@@ -48,34 +51,50 @@ public:
 	{
 		return b(string::fromLatin1(optname));
 	}
-//	router & b (const string & optname, bool defaultValue);
-//	router & b (const char *   optname, bool defaultValue)
-//	{
-//		return b(string::fromLatin1(optname), defaultValue);
-//	}
-//
-//	router & i (const string & optname);
-//	router & i (const char *   optname)
-//	{
-//		return i(string::fromLatin1(optname));
-//	}
-//	router & i (const string & optname, integral_t defaultValue);
-//	router & i (const char *   optname, integral_t defaultValue)
-//	{
-//		return i(string::fromLatin1(optname), defaultValue);
-//	}
+
+	router & b (const string & optname, bool defaultValue);
+	router & b (const char *   optname, bool defaultValue)
+	{
+		return b(string::fromLatin1(optname), defaultValue);
+	}
+
+	router & i (const string & optname);
+	router & i (const char *   optname)
+	{
+		return i(string::fromLatin1(optname));
+	}
+
+	router & i (const string & optname, integral_t defaultValue);
+	router & i (const char *   optname, integral_t defaultValue)
+	{
+		return i(string::fromLatin1(optname), defaultValue);
+	}
 //	router & operator () (integral_t validValue);
 
-//	router & n (const string & optname);
-//	router & n (const char *   optname);
-//	router & n (const string & optname, real_t defaultValue);
-//	router & n (const char *   optname, real_t defaultValue);
+	router & n (const string & optname);
+	router & n (const char *   optname)
+	{
+		return n(string::fromLatin1(optname));
+	}
+
+	router & n (const string & optname, real_t defaultValue);
+	router & n (const char *   optname, real_t defaultValue)
+	{
+		return n(string::fromLatin1(optname), defaultValue);
+	}
 //	router & operator () (real_t validValue);
-//
-//	router & s (const string & optname);
-//	router & s (const char *   optname);
-//	router & s (const string & optname, const string & defaultValue);
-//	router & s (const char *   optname, const string & defaultValue);
+
+	router & s (const string & optname);
+	router & s (const char *   optname)
+	{
+		return n(string::fromLatin1(optname));
+	}
+
+	router & s (const string & optname, const string & defaultValue);
+	router & s (const char *   optname, const string & defaultValue)
+	{
+		return s(string::fromLatin1(optname), defaultValue);
+	}
 //	router & operator () (const string & validValue);
 };
 

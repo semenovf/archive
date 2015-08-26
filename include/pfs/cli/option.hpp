@@ -8,7 +8,6 @@
 #ifndef __PFS_CLI_OPTION_HPP__
 #define __PFS_CLI_OPTION_HPP__
 
-#include <pfs/shared_ptr.hpp>
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
 
@@ -20,24 +19,25 @@ public:
 	enum type_enum {
 		  Boolean
 		, Integer
-		, Real
+		, Number
 		, String
 	};
 
 protected:
-	string _name;
-	string _description;
-	bool   _optional;
+	type_enum _type;
+	string    _name;
+	string    _description;    // option description
+	string    _default;        // default value
+	                           // null means option is mandatory
+	vector<string> _choices;   // the set of permissible values
 
 public:
-	option (const string & name)
-		: _name(name)
-		, _optional(false)
+	option (const string & name, type_enum type = Boolean)
+		: _type(type)
+		, _name(name)
 	{}
 
-	virtual ~option () {}
-
-	virtual type_enum type () const = 0;
+	~option () {}
 
 	void setName (const string & name)
 	{
@@ -49,70 +49,75 @@ public:
 		_description = text;
 	}
 
-	void setOptional (bool b)
+	template <typename T>
+	bool is () const;
+
+	template <typename T>
+	void setDefault (const T & value)
 	{
-		_optional = b;
+		PFS_ASSERT(is<T>());
+		_default = string::toString(value);
+	}
+
+	template <typename T>
+	void addChoice (const T & value)
+	{
+		PFS_ASSERT(is<T>());
+		_choices.append(string::toString(value));
 	}
 };
-
-
-class boolean_option : public option
-{
-	bool   _defaultValue;
-	size_t _count;
-
-public:
-	boolean_option (const string & name)
-		: option(name)
-		, _defaultValue(false)
-		, _count(0)
-	{}
-
-	virtual type_enum type () const override
-	{
-		return option::Boolean;
-	}
-
-	void setDefaultValue (bool value)
-	{
-		_defaultValue = value;
-	}
-};
-
-class integer_option : public option
-{
-	integral_t  _defaultValue;
-	vector<integral_t> _choices;
-
-public:
-	integer_option (const string & name)
-		: option(name)
-		, _defaultValue(0)
-	{}
-
-	virtual type_enum type () const override
-	{
-		return option::Boolean;
-	}
-
-	void setDefaultValue (bool value)
-	{
-		_defaultValue = value;
-	}
-};
-
-
-template <typename T>
-shared_ptr<option> make_option (const string & name);
 
 template <>
-inline shared_ptr<option> make_option<bool> (const string & name)
+inline bool option::is<bool> () const
 {
-	return shared_ptr<option>(new boolean_option(name));
+	return _type == Boolean;
 }
 
+template <>
+inline bool option::is<integral_t> () const
+{
+	return _type == Integer;
+}
+
+template <>
+inline bool option::is<real_t> () const
+{
+	return _type == Number;
+}
+
+template <>
+inline bool option::is<string> () const
+{
+	return _type == String;
+}
+
+template <typename T>
+option make_option (const string & name);
+
+template <>
+inline option make_option<bool> (const string & name)
+{
+	return option(name, option::Boolean);
+}
+
+template <>
+inline option make_option<integral_t> (const string & name)
+{
+	return option(name, option::Integer);
+}
+
+template <>
+inline option make_option<real_t> (const string & name)
+{
+	return option(name, option::Number);
+}
+
+template <>
+inline option make_option<string> (const string & name)
+{
+	return option(name, option::String);
+}
 
 }}
-
 
 #endif /* __PFS_CLI_OPTION_HPP__ */
