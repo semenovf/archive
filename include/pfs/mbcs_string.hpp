@@ -568,6 +568,7 @@ public:
 		return split(true, mbcs_string(separators), keepEmpty, quoteChar);
 	}
 
+	bool           toBoolean (bool * ok = 0) const;
 	integral_t     toIntegral (bool * ok = 0, int base = 10) const { return toSignedIntegral(ok, base); }
 	integral_t     toSignedIntegral (bool * ok = 0, int base = 10) const;
 	uintegral_t    toUnsignedIntegral (bool * ok = 0, int base = 10) const;
@@ -637,6 +638,7 @@ public:
 
 	static DLL_API mbcs_string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = nullptr);
 
+	static mbcs_string toString (bool value);
 	static mbcs_string toString (signed char value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (short value, int base = 10, bool uppercase = false);
 	static mbcs_string toString (int value, int base = 10, bool uppercase = false);
@@ -724,6 +726,26 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 	}
 
 	return replace(first, last, s);
+}
+
+template <typename CodeUnitT>
+bool mbcs_string<CodeUnitT>::toBoolean (bool * ok) const
+{
+	bool okk = false;
+	bool r = false;
+
+	if (*this == "true") {
+		r = true;
+		okk = true;
+	} else if (*this == "false") {
+		r = false;
+		okk = true;
+	}
+
+	if (ok)
+		*ok = okk;
+
+	return r;
 }
 
 template <typename CodeUnitT>
@@ -969,6 +991,12 @@ double mbcs_string<CodeUnitT>::toDouble (bool * ok, ucchar decimalPoint) const
 	if (ok) *ok = ok1;
 	return double(r);
 #endif
+}
+
+template <typename CodeUnitT>
+inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (bool value)
+{
+	return mbcs_string<CodeUnitT>::fromLatin1( value ? "true" : "false");
 }
 
 template <typename CodeUnitT>
