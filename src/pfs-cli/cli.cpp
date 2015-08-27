@@ -9,10 +9,11 @@
 
 namespace pfs { namespace cli {
 
-router & cli::r ()
+composer cli::r ()
 {
 	_routers.append(router());
-	return _routers.refAt(_routers.size() - 1);
+	router & routerRef = _routers.refAt(_routers.size() - 1);
+	return composer(this, & routerRef);
 }
 
 #ifdef __COMMENT__

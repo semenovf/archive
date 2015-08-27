@@ -13,6 +13,7 @@
 #include <pfs/stringlist.hpp>
 #include <pfs/cli/action.hpp>
 #include <pfs/cli/option.hpp>
+#include <pfs/cli/composer.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -23,6 +24,8 @@ namespace pfs { namespace cli {
 
 class DLL_API router
 {
+	friend class composer;
+
 	typedef vector<action>      action_collection;
 	typedef map<string, option> option_collection;
 
@@ -39,12 +42,7 @@ private:
 public:
 	router () {}
 
-	router & a (const string & name);
-	router & a (const char * name);
-	router & synonym (const string & name);
-	router & synonym (const char * name);
-	router & syn (const string & name) { return synonym(name); }
-	router & syn (const char * name) { return synonym(name); }
+	void appendAction (const action & a) { _actions.append(a); }
 
 	router & b (const string & optname);
 	router & b (const char *   optname)

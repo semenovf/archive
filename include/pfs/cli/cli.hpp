@@ -11,6 +11,7 @@
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/cli/router.hpp>
+#include <pfs/cli/composer.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -96,7 +97,7 @@ public:
 		setLongOptargSeparator(string::fromLatin1(separator));
 	}
 
-	router & r ();
+	composer r ();
 };
 
 #ifdef __COMMENT__
