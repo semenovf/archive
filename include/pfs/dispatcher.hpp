@@ -59,7 +59,6 @@ public:
 	    unregisterAll();
 	}
 
-	//void addSearchPath (const string & dir) { dl::addSearchPath(dir); }
 	module * registerLocalModule (module * mod, module_dtor_t dtor = module::defaultDtor);
 	module * registerModuleForPath (const string & path, const char * modname = nullptr, int argc = 0, char ** argv = nullptr);
 	module * registerModuleForName (const string & name, const char * modname = nullptr, int argc = 0, char ** argv = nullptr);

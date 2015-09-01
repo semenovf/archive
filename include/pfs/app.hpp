@@ -9,7 +9,6 @@
 #define __PFS_APP_HPP__
 
 #include <pfs/dispatcher.hpp>
-#include <pfs/settings.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -22,8 +21,7 @@ class DLL_API app
 {
 	PFS_IMPLEMENT_LOCKING(app);
 
-    string        _program;
-    pfs::settings _settings;
+	string _program;
 
 private:
 	static app * self;
@@ -44,7 +42,6 @@ public:
 	int exec (main_proc & mainProc) { return mainProc(); }
 	int exec (dispatcher & d);
 
-	pfs::settings & settings () { return _settings; }
 	static app * instance() { PFS_ASSERT(self); return self; }
 };
 

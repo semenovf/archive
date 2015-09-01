@@ -11,7 +11,6 @@ defines       {  }
 includedirs   {   "../../include"
                 , "../../../pfs/include"
                 , "../../../pfs-sys/include"
-                , "../../../pfs-settings/include"
               }
 libdirs       { "../../../.build" }
 files         { "../../src/pfs-app/*.c", "../../src/pfs-app/*.cpp", "../../include/**.hpp", "../../include/**.h" }
@@ -22,14 +21,14 @@ configuration "debug"
     objdir       "../../../.build/pfs-app/pfs-app/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
-    links        { "pfs-d", "pfs-sys-d", "pfs-settings-d" }
+    links        { "pfs-d", "pfs-sys-d" }
 
 configuration "release"
     flags        {  }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-app/pfs-app/release"
     targetdir    "../../../.build"
-    links        { "pfs", "pfs-sys", "pfs-settings" }
+    links        { "pfs", "pfs-sys" }
 
 filter "platforms:unix*"
     files {   "../../src/pfs-app/unix/*.cpp"
