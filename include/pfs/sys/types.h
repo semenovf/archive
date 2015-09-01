@@ -47,6 +47,9 @@ typedef uint8_t byte_t;
     typedef double         real_t;
 #endif
 
+typedef float real32_t;
+typedef double real64_t;
+
 #if ! defined(__cplusplus) || defined(PFS_CC_BORLAND_REAL)
     typedef unsigned char bool;
 #   define false 0
