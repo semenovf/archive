@@ -11,14 +11,14 @@ includedirs   { "../../include" }
 files         { "../../src/pfs/**.c", "../../src/pfs/**.cpp", "../../include/**.hpp", "../../include/**.h" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs/pfs/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs/pfs/release"
     targetdir    "../../../.build"

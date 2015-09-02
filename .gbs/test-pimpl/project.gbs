@@ -12,7 +12,7 @@ libdirs       { "../../../.build" }
 files { "../../tests/test-pimpl/**.c", "../../tests/test-pimpl/**.cpp" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs/test-pimpl/debug"
     targetdir    "../../../.build/tests"
@@ -20,7 +20,7 @@ configuration "debug"
     links        { "pfs-test-d", "pfs-d" }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs/test-pimpl/release"
     targetdir    "../../../.build/tests"
