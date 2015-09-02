@@ -17,7 +17,7 @@ files         {   "../../src/pfs-cli/*.c"
                 , "../../include/**.h" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs-cli/pfs-cli/debug"
     targetdir    "../../../.build"
@@ -25,7 +25,7 @@ configuration "debug"
     links        { "pfs-d" }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-cli/pfs-cli/release"
     targetdir    "../../../.build"

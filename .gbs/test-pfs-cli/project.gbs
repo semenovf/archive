@@ -15,7 +15,7 @@ libdirs       { "../../../.build" }
 files         { "../../tests/test-pfs-cli/*.c", "../../tests/test-pfs-cli/*.cpp" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs-cli/test-pfs-cli/debug"
     targetdir    "../../../.build/tests"
@@ -23,7 +23,7 @@ configuration "debug"
     links        { "pfs-test-d", "pfs-d", "pfs-cli-d" }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-cli/test-pfs-cli/release"
     targetdir    "../../../.build/tests"
