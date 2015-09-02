@@ -158,7 +158,7 @@ function plugin:transaction ()
             , "files         { " .. string.join(", ", projectSrcFileList) .. " }"
             , ""
             , "configuration " .. string.quote("debug")
-            , "    flags        { \"Symbols\" }"
+            , "    flags        { \"FatalWarnings\", \"Symbols\" }"
             , "    defines      { \"DEBUG\" }"
             , "    objdir       " .. string.quote(projecObjDir .. "/debug")
             , "    targetdir    " .. string.quote(projectTargetDir)
@@ -166,13 +166,12 @@ function plugin:transaction ()
             , "    links        {  }"
             , ""
             , "configuration " .. string.quote("release")
-            , "    flags        {  }"
+            , "    flags        { \"FatalWarnings\" }"
             , "    defines      { \"NDEBUG\" }"
             , "    objdir       " .. string.quote(projecObjDir .. "/release")
             , "    targetdir    " .. string.quote(projectTargetDir)
             , "    links        {  }"
         }, "Update project configuration file: " .. projectFile);  
-    
 
     if #projectDependencies > 0 then
         local deplist = string.quote(projectDependencies);

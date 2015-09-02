@@ -143,6 +143,13 @@ function gbs.run (argc, argv)
                 return require("gbs.workspace"):new(Settings):build();
            end);
 
+    cli:router()
+        :a({"workspace", "ws"})
+        :b("clean")
+        :h(function (r)
+                return require("gbs.workspace"):new(Settings):clean();
+           end);
+
 
     cli:router()
         :a({"solution", "sln"})

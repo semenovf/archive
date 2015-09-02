@@ -11,4 +11,4 @@ end
 package.path = gbs_home .. '/lua/?.lua;' .. package.path;
 require("gbs.core");
 
-return gbs.run(#arg, arg);
+os.exit(gbs.run(#arg, arg));

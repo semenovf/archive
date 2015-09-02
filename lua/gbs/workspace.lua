@@ -109,7 +109,10 @@ function workspace:create ()
     return trn:exec();
 end
 
-function workspace:build ()
+--
+-- actionStr := { "build" | "clean" }
+--
+function workspace:_make (actionStr, actionDescription)
     local settings          = self._settings;
     
     local verbose        = settings:get("Verbose") or false;
@@ -144,7 +147,7 @@ function workspace:build ()
         
                 if solution:len() > 0 then
                     if not solution:match("^#") then -- skip comment lines
-                        local command = "cd " .. solution .. " && " .. "gbs pro --build";
+                        local command = "cd " .. solution .. " && " .. "gbs pro --" .. actionStr;
                         if verbose then  command = command .. " --verbose"; end
                         if not fs.execute(command) then return false; end
                     end
@@ -152,9 +155,17 @@ function workspace:build ()
             end
         end
         return true;
-    end, "Build solutions");
+    end, actionDescription);
     
     return trn:exec();
+end
+
+function workspace:build ()
+    return self:_make("build", "Build solutions");
+end
+
+function workspace:clean ()
+    return self:_make("clean", "Clean solutions");
 end
 
 return workspace;
