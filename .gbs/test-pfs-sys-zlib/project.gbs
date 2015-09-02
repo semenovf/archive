@@ -16,7 +16,7 @@ libdirs       { "../../../.build" }
 files         { "../../tests/test-pfs-sys-zlib/*.c", "../../tests/test-pfs-sys-zlib/*.cpp" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs-sys/test-pfs-sys-zlib/debug"
     targetdir    "../../../.build/tests"
@@ -24,7 +24,7 @@ configuration "debug"
     links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-sys/test-pfs-sys-zlib/release"
     targetdir    "../../../.build/tests"

@@ -18,7 +18,7 @@ files         {   "../../tests/test-pfs-sys-fs/*.c"
               }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs-sys/test-pfs-sys-fs/debug"
     targetdir    "../../../.build/tests"
@@ -26,7 +26,7 @@ configuration "debug"
     links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-sys/test-pfs-sys-fs/release"
     targetdir    "../../../.build/tests"
