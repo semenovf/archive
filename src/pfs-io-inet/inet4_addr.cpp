@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include "pfs/io/inet_addr.hpp"
+#include "pfs/io/inet4_addr.hpp"
 #include <pfs/stringlist.hpp>
 #include <netinet/in.h>
 
@@ -13,7 +13,7 @@ namespace pfs { namespace io {
 
 static const int32_t InvalidInetPort = -1;
 
-inline uint32_t make_inet_addr (uint8_t a, uint8_t b, uint8_t c, uint8_t d)
+inline uint32_t make_inet4_addr (uint8_t a, uint8_t b, uint8_t c, uint8_t d)
 {
     uint32_t r = 0;
     r |= (static_cast<uint32_t>(a) << 24);
@@ -23,7 +23,7 @@ inline uint32_t make_inet_addr (uint8_t a, uint8_t b, uint8_t c, uint8_t d)
     return r;
 }
 
-inline uint32_t make_inet_addr (uint8_t a, uint8_t b, uint16_t c)
+inline uint32_t make_inet4_addr (uint8_t a, uint8_t b, uint16_t c)
 {
     uint32_t r = 0;
     r |= (static_cast<uint32_t>(a) << 24);
@@ -32,7 +32,7 @@ inline uint32_t make_inet_addr (uint8_t a, uint8_t b, uint16_t c)
     return r;
 }
 
-inline uint32_t make_inet_addr (uint8_t a, uint32_t b)
+inline uint32_t make_inet4_addr (uint8_t a, uint32_t b)
 {
     uint32_t r = 0;
     r |= (static_cast<uint32_t>(a) << 24);
@@ -40,12 +40,12 @@ inline uint32_t make_inet_addr (uint8_t a, uint32_t b)
     return r;
 }
 
-inline uint32_t make_inet_addr (uint32_t a)
+inline uint32_t make_inet4_addr (uint32_t a)
 {
     return a;
 }
 
-bool parse_inet_addr_part_helper (const string & part, uintegral_t & result)
+bool parse_inet4_addr_part_helper (const string & part, uintegral_t & result)
 {
     bool ok;
     uintegral_t r;
@@ -71,11 +71,11 @@ bool parse_inet_addr_part_helper (const string & part, uintegral_t & result)
 }
 
 template <typename UInt>
-bool parse_inet_addr_part (const string & part, UInt & result)
+bool parse_inet4_addr_part (const string & part, UInt & result)
 {
     uintegral_t r;
 
-    if (!parse_inet_addr_part_helper(part, r))
+    if (!parse_inet4_addr_part_helper(part, r))
         return false;
 
     if (r > max_type<UInt>())
@@ -85,7 +85,7 @@ bool parse_inet_addr_part (const string & part, UInt & result)
     return true;
 }
 
-static bool parse_inet_addr (const string & addrStr, uint32_t & addr, int32_t & port)
+static bool parse_inet4_addr (const string & addrStr, uint32_t & addr, int32_t & port)
 {
     stringlist parts = addrStr.split(_l1(":"));
 
@@ -100,7 +100,7 @@ static bool parse_inet_addr (const string & addrStr, uint32_t & addr, int32_t & 
     if (parts.size() == 2) {
         uintegral_t r;
 
-        if (!parse_inet_addr_part_helper(parts[1], r))
+        if (!parse_inet4_addr_part_helper(parts[1], r))
             return false;
 
         if (r > max_type<uint16_t>())
@@ -120,42 +120,42 @@ static bool parse_inet_addr (const string & addrStr, uint32_t & addr, int32_t & 
     if (octets.size() == 4) {
         uint8_t a, b, c, d;
 
-        if (!(parse_inet_addr_part<uint8_t> (octets[0], a)
-                && parse_inet_addr_part<uint8_t> (octets[1], b)
-                && parse_inet_addr_part<uint8_t> (octets[2], c)
-                && parse_inet_addr_part<uint8_t> (octets[3], d)))
+        if (!(parse_inet4_addr_part<uint8_t> (octets[0], a)
+                && parse_inet4_addr_part<uint8_t> (octets[1], b)
+                && parse_inet4_addr_part<uint8_t> (octets[2], c)
+                && parse_inet4_addr_part<uint8_t> (octets[3], d)))
             return false;
 
-        addr = make_inet_addr(a, b, c, d);
+        addr = make_inet4_addr(a, b, c, d);
     } else if (octets.size() == 3) {
         uint8_t a, b;
         uint16_t c;
 
-        if (!(parse_inet_addr_part<uint8_t> (octets[0], a)
-                && parse_inet_addr_part<uint8_t> (octets[1], b)
-                && parse_inet_addr_part<uint16_t> (octets[2], c)))
+        if (!(parse_inet4_addr_part<uint8_t> (octets[0], a)
+                && parse_inet4_addr_part<uint8_t> (octets[1], b)
+                && parse_inet4_addr_part<uint16_t> (octets[2], c)))
             return false;
 
-        addr = make_inet_addr(a, b, c);
+        addr = make_inet4_addr(a, b, c);
     } else if (octets.size() == 2) {
         uint8_t a;
         uint32_t b;
 
-        if (!(parse_inet_addr_part<uint8_t> (octets[0], a)
-                && parse_inet_addr_part<uint32_t> (octets[1], b)))
+        if (!(parse_inet4_addr_part<uint8_t> (octets[0], a)
+                && parse_inet4_addr_part<uint32_t> (octets[1], b)))
             return false;
 
         if (b > PFS_UINT24_MAX)
             return false;
 
-        addr = make_inet_addr(a, b);
+        addr = make_inet4_addr(a, b);
     } else {
         uint32_t a;
 
-        if (!(parse_inet_addr_part<uint32_t> (octets[0], a)))
+        if (!(parse_inet4_addr_part<uint32_t> (octets[0], a)))
             return false;
 
-        addr = make_inet_addr(a);
+        addr = make_inet4_addr(a);
     }
 
     return true;
@@ -164,7 +164,7 @@ static bool parse_inet_addr (const string & addrStr, uint32_t & addr, int32_t & 
 /**
  * @brief Constructs invalid @c inet_addr.
  */
-inet_addr::inet_addr ()
+inet4_addr::inet4_addr ()
     : _addr(0)
     , _port(InvalidInetPort)
 {}
@@ -175,7 +175,7 @@ inet_addr::inet_addr ()
  *
  * @param addr Other @c inet_addr instance.
  */
-inet_addr::inet_addr (const inet_addr & addr)
+inet4_addr::inet4_addr (const inet4_addr & addr)
     : _addr(addr._addr)
     , _port(addr._port)
 {}
@@ -193,11 +193,11 @@ inet_addr::inet_addr (const inet_addr & addr)
  * @param a3 Fourth numeric part.
  * @param port Port number.
  */
-inet_addr::inet_addr (uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port)
+inet4_addr::inet4_addr (uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port)
     : _addr(0)
     , _port(static_cast<int32_t>(port))
 {
-    _addr = make_inet_addr(a, b, c, d);
+    _addr = make_inet4_addr(a, b, c, d);
 }
 
 /**
@@ -213,11 +213,11 @@ inet_addr::inet_addr (uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port)
  * @param c Third numeric parts.
  * @param port Port number.
  */
-inet_addr::inet_addr (uint8_t a, uint8_t b, uint16_t c, uint16_t port)
+inet4_addr::inet4_addr (uint8_t a, uint8_t b, uint16_t c, uint16_t port)
     : _addr(0)
     , _port(static_cast<int32_t>(port))
 {
-    _addr = make_inet_addr(a, b, c);
+    _addr = make_inet4_addr(a, b, c);
 }
 
 /**
@@ -233,11 +233,11 @@ inet_addr::inet_addr (uint8_t a, uint8_t b, uint16_t c, uint16_t port)
  * @param b Second numeric part
  * @param port Port number.
  */
-inet_addr::inet_addr (uint8_t a, uint32_t b, uint16_t port)
+inet4_addr::inet4_addr (uint8_t a, uint32_t b, uint16_t port)
     : _addr(0)
     , _port(static_cast<int32_t>(port))
 {
-    _addr = make_inet_addr(a, b);
+    _addr = make_inet4_addr(a, b);
 }
 
 /**
@@ -246,11 +246,11 @@ inet_addr::inet_addr (uint8_t a, uint32_t b, uint16_t port)
  * @param a Numeric part.
  * @param port Port number.
  */
-inet_addr::inet_addr (uint32_t a, uint16_t port)
+inet4_addr::inet4_addr (uint32_t a, uint16_t port)
     : _addr(0)
     , _port(static_cast<int32_t>(port))
 {
-    _addr = make_inet_addr(a);
+    _addr = make_inet4_addr(a);
 }
 
 /**
@@ -265,11 +265,11 @@ inet_addr::inet_addr (uint32_t a, uint16_t port)
  * @param addrStr String represented the IPv4 address.
  * @param port Port number.
  */
-inet_addr::inet_addr (const string & addrStr, uint16_t port)
+inet4_addr::inet4_addr (const string & addrStr, uint16_t port)
     : _addr(0)
     , _port(static_cast<int32_t>(port))
 {
-    if (!parse_inet_addr(addrStr, _addr, _port)) {
+    if (!parse_inet4_addr(addrStr, _addr, _port)) {
         invalidate();
     }
 }
@@ -286,11 +286,11 @@ inet_addr::inet_addr (const string & addrStr, uint16_t port)
  *
  * @param addrStr String represented the IPv4 address.
  */
-inet_addr::inet_addr (const string & addrStr)
+inet4_addr::inet4_addr (const string & addrStr)
     : _addr(0)
     , _port(InvalidInetPort)
 {
-    if (!parse_inet_addr(addrStr, _addr, _port)) {
+    if (!parse_inet4_addr(addrStr, _addr, _port)) {
         invalidate();
     }
 }
@@ -301,19 +301,19 @@ inet_addr::inet_addr (const string & addrStr)
  * @param addr
  * @return
  */
-inet_addr & inet_addr::operator = (const inet_addr & addr)
+inet4_addr & inet4_addr::operator = (const inet4_addr & addr)
 {
     _addr = addr._addr;
     _port = addr._port;
     return *this;
 }
 
-bool inet_addr::isValid () const
+bool inet4_addr::isValid () const
 {
     return _port != InvalidInetPort;
 }
 
-inline void inet_addr::invalidate ()
+inline void inet4_addr::invalidate ()
 {
     _port = InvalidInetPort;
 }
@@ -350,7 +350,7 @@ static int format_type (const string & format)
  * @param
  * @return
  */
-string inet_addr::toString (const string & format, int base) const
+string inet4_addr::toString (const string & format, int base) const
 {
     string r;
     string basePrefix;

@@ -8,12 +8,14 @@ kind          "SharedLib"
 language      "C++"
 targetname    "pfs-io-inet"
 defines       {  }
-includedirs   { "../../include" }
+includedirs   {   "../../include"
+                , "../../../pfs/include" 
+                , "../../../pfs-sys/include" }
 libdirs       { "../../../.build" }
 files         { "../../src/pfs-io-inet/*.c", "../../src/pfs-io-inet/*.cpp", "../../include/**.hpp", "../../include/**.h" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs-io/pfs-io-inet/debug"
     targetdir    "../../../.build"
@@ -21,7 +23,7 @@ configuration "debug"
     links        {  }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-io/pfs-io-inet/release"
     targetdir    "../../../.build"

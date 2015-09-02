@@ -43,6 +43,6 @@ project "test-pfs-io-file"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-io-inet-addr"
-    include("test-pfs-io-inet-addr/project.gbs")
+project "test-pfs-io-inet4-addr"
+    include("test-pfs-io-inet4-addr/project.gbs")
 -- END PROJECT

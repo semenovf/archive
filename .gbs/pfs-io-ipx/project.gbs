@@ -8,12 +8,14 @@ kind          "SharedLib"
 language      "C++"
 targetname    "pfs-io-ipx"
 defines       {  }
-includedirs   { "../../include" }
+includedirs   {   "../../include"
+                , "../../../pfs/include" 
+                , "../../../pfs-sys/include" }
 libdirs       { "../../../.build" }
 files         { "../../src/pfs-io-ipx/*.c", "../../src/pfs-io-ipx/*.cpp", "../../include/**.hpp", "../../include/**.h" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs-io/pfs-io-ipx/debug"
     targetdir    "../../../.build"
@@ -21,7 +23,7 @@ configuration "debug"
     links        {  }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-io/pfs-io-ipx/release"
     targetdir    "../../../.build"

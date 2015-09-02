@@ -30,7 +30,7 @@ protected:
 
     bool open     (inet_proto_enum proto, int32_t oflags, errorable_ext & ex);
     bool bind     (errorable_ext & ex); // using getaddrinfo()
-    bool bind     (const inet_addr & addr, errorable_ext & ex);
+    bool bind     (const inet4_addr & addr, errorable_ext & ex);
     bool listen   (errorable_ext & ex);
     bool connect  (errorable_ext & ex);
     bool shutdown (errorable_ext & ex);

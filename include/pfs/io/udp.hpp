@@ -16,9 +16,9 @@ public:
     udp_socket () : device() {}
     virtual ~udp_socket () {}
 
-    bool open (const inet_addr & addr, int32_t oflags = device::NonBlocking);
-    bool connect (const inet_addr & addr);
-    inet_addr address () const;
+    bool open (const inet4_addr & addr, int32_t oflags = device::NonBlocking);
+    bool connect (const inet4_addr & addr);
+    inet4_addr address () const;
 };
 
 class DLL_API udp_server : public errorable_ext
@@ -30,9 +30,9 @@ public:
     udp_server () : errorable_ext() {}
 
     bool opened () const;
-    bool open (const inet_addr & addr, int32_t oflags = device::NonBlocking);
+    bool open (const inet4_addr & addr, int32_t oflags = device::NonBlocking);
     bool accept (udp_socket * sock);
-    inet_addr address () const;
+    inet4_addr address () const;
 };
 
 }} // pfs:io

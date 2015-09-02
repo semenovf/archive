@@ -1,12 +1,12 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-pfs-io-file --type=test --depends=pfs-io'
---* Date:    Thu Aug 20 14:36:12 2015
+--* Command: `gbs project --create --name=test-pfs-io-inet4-addr --type=test --depends=pfs-io'
+--* Date:    Thu Aug 20 14:41:02 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-pfs-io-file"
+targetname    "test-pfs-io-inet4-addr"
 defines       {  }
 includedirs   {   "../../include"
                 , "../../../pfs-test/include"
@@ -14,15 +14,16 @@ includedirs   {   "../../include"
                 , "../../../pfs-sys/include"
               }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-pfs-io-file/*.c", "../../tests/test-pfs-io-file/*.cpp" }
+files         { "../../tests/test-pfs-io-inet4-addr/*.c", "../../tests/test-pfs-io-inet4-addr/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-io/test-pfs-io-file/debug"
+    objdir       "../../../.build/pfs-io/test-pfs-io-inet4-addr/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
-    links        {  "pfs-io-d"
+    links        {  "pfs-io-inet-d"
+                  , "pfs-io-d"
                   , "pfs-test-d"
                   , "pfs-d"
                   , "pfs-sys-d"
@@ -31,9 +32,10 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-io/test-pfs-io-file/release"
+    objdir       "../../../.build/pfs-io/test-pfs-io-inet4-addr/release"
     targetdir    "../../../.build/tests"
-    links        {  "pfs-io"
+    links        {  "pfs-io-inet"
+                  , "pfs-io"
                   , "pfs-test"
                   , "pfs"
                   , "pfs-sys"

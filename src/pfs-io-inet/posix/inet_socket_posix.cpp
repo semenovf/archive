@@ -196,7 +196,7 @@ bool inet_socket_impl::bind (errorable_ext & ex) // using getaddrinfo()
     return false;
 }
 
-bool inet_socket_impl::bind (const inet_addr & addr, errorable_ext & ex)
+bool inet_socket_impl::bind (const inet4_addr & addr, errorable_ext & ex)
 {
     PFS_UNUSED(ex);
     PFS_UNUSED(addr);

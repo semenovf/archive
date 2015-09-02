@@ -8,24 +8,36 @@ kind          "ConsoleApp"
 language      "C++"
 targetname    "test-pfs-io-buffer"
 defines       {  }
-includedirs   { "../../include" }
+includedirs   {   "../../include"
+                , "../../../pfs-test/include"
+                , "../../../pfs/include"
+                , "../../../pfs-sys/include"
+              }
 libdirs       { "../../../.build" }
 files         { "../../tests/test-pfs-io-buffer/*.c", "../../tests/test-pfs-io-buffer/*.cpp" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs-io/test-pfs-io-buffer/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
-    links        {  }
+    links        {  "pfs-io-d"
+                  , "pfs-test-d"
+                  , "pfs-d"
+                  , "pfs-sys-d"
+                 }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-io/test-pfs-io-buffer/release"
     targetdir    "../../../.build/tests"
-    links        {  }
+    links        {   "pfs-io"
+                   , "pfs-test"
+                   , "pfs"
+                   , "pfs-sys"
+                 }
 
 dependson { "pfs-io" }
 
