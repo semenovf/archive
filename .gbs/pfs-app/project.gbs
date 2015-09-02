@@ -16,7 +16,7 @@ libdirs       { "../../../.build" }
 files         { "../../src/pfs-app/*.c", "../../src/pfs-app/*.cpp", "../../include/**.hpp", "../../include/**.h" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs-app/pfs-app/debug"
     targetdir    "../../../.build"
@@ -24,7 +24,7 @@ configuration "debug"
     links        { "pfs-d", "pfs-sys-d" }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-app/pfs-app/release"
     targetdir    "../../../.build"

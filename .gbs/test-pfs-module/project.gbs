@@ -13,7 +13,7 @@ libdirs       { "../../../.build" }
 files         { "../../tests/test-pfs-module/*.c", "../../tests/test-pfs-module/*.cpp" }
 
 configuration "debug"
-    flags        { "Symbols" }
+    flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
     objdir       "../../../.build/pfs-app/test-pfs-module/debug"
     targetdir    "../../../.build/tests"
@@ -21,7 +21,7 @@ configuration "debug"
     links        {  }
 
 configuration "release"
-    flags        {  }
+    flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-app/test-pfs-module/release"
     targetdir    "../../../.build/tests"
