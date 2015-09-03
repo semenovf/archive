@@ -8,7 +8,8 @@ Version 1.00a
 
 ###SYNOPSIS
 
-See project's test subdirectory for examples.
+Offers tools for implement character user interface (CUI, Console User Interface).
+Used in Command line driver applications.
 
 ###AUTHOR
 
