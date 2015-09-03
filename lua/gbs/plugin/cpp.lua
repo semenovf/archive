@@ -189,7 +189,10 @@ function plugin:transaction ()
         , {
               ""
             , [[filter "action:gmake"]]
-            , "    " .. inc1
+            , "    buildoptions {}"
+            , "    linkoptions  {}"
+            , ""
+            , "" .. inc1
         });
    
     return trn;
