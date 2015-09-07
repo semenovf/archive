@@ -104,7 +104,7 @@ public:
 	reference front () const { return at(0); }
 	reference first () const { return at(0); }
 	reference back  () const { return at(size()-1); }
-	reference last  () const { PFS_ASSERT_RANGE(size() > 0); return at(size()-1); }
+	reference last  () const { return at(size()-1); }
 
 	const T * constData () const { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
 	const T * data () const      { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
