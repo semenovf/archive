@@ -91,6 +91,13 @@ inline bool option::is<string> () const
 	return _type == String;
 }
 
+template <>
+inline void option::setDefault<string> (const string & value)
+{
+	PFS_ASSERT(is<string>());
+	_default = value;
+}
+
 template <typename T>
 option make_option (const string & name);
 

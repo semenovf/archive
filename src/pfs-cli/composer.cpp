@@ -5,6 +5,8 @@
  *      Author: wladt
  */
 
+#include "pfs/cli/action.hpp"
+#include "pfs/cli/router.hpp"
 #include "pfs/cli/composer.hpp"
 
 namespace pfs { namespace cli {
@@ -19,11 +21,11 @@ namespace pfs { namespace cli {
 composer & composer::a (const string & name)
 {
 	_prouter->appendAction(
-			name.isEmpty()
+		name.isEmpty()
 			? action::any()
 			: action(name));
-	_state = StateAction;
-	_action = &
+	_state  = StateAction;
+	_paction = _prouter->lastActionPtr();
 	return *this;
 }
 
@@ -44,14 +46,9 @@ composer & composer::a (const char * name)
  */
 composer & composer::synonym (const string & name)
 {
-	if (!name.isEmpty()) {
-		if (_actions.size() > 0) {
-			action act = _actions.last();
-			act.add(name);
-		} else {
-			a(name);
-		}
-	}
+	PFS_ASSERT_NULLPTR(_paction);
+	PFS_ASSERT(_state == StateAction);
+	_paction->add(name);
 	return *this;
 }
 
@@ -70,7 +67,7 @@ composer & composer::synonym (const string & name)
  *
  * @see router::synonym(const string &)
  */
-router & composer::composer (const char * action)
+composer & composer::synonym (const char * action)
 {
 	return synonym(string::fromLatin1(action));
 }
@@ -80,6 +77,23 @@ router & composer::composer (const char * action)
  * @brief Synonym for router::synonym(const char *).
  * @see router::synonym(const char *)
  */
+
+
+template <typename T>
+composer & composer::o (const string & optname)
+{
+	option opt = make_option<T>(optname);
+	_prouter->insertOption(optname, opt);
+	_poption = _prouter->optionPtr(optname);
+	_state  = StateOption;
+	return *this;
+}
+
+
+composer & composer::b (const string & optname)
+{
+	return o<bool>(optname);
+}
 
 }} // pfs::cli
 

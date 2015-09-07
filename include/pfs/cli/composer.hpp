@@ -8,6 +8,8 @@
 #ifndef __PFS_CLI_COMPOSER_HPP__
 #define __PFS_CLI_COMPOSER_HPP__
 
+#include <pfs/string.hpp>
+
 namespace pfs { namespace cli {
 
 class cli;
@@ -29,6 +31,10 @@ class composer
 	option * _poption;
 	int      _state;
 
+private:
+	template <typename T>
+	composer & o (const string & optname);
+
 public:
 	composer (cli * pcli, router * prouter)
 		: _pcli(pcli)
@@ -44,6 +50,12 @@ public:
 	composer & synonym (const char * name);
 	composer & syn (const string & name) { return synonym(name); }
 	composer & syn (const char * name) { return synonym(name); }
+
+	composer & b (const string & optname);
+	composer & b (const char *   optname)
+	{
+		return b(string::fromLatin1(optname));
+	}
 };
 
 }} // pfs::cli

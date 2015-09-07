@@ -9,24 +9,6 @@
 
 namespace pfs { namespace cli {
 
-#ifdef __COMMENT__
-/**
- * @brief Appends action (first element of vector) and it's alternatives.
- *
- * @param alts Contains action and it's alternatives.
- *        @c alts can be null value means any action (@see AnyAction)
- * @return Reference to router itself.
- *
- */
-router & router::a (const stringlist & synonyms)
-{
-	_actions.append(synonyms);
-	return *this;
-}
-#endif
-
-
-
 template <typename T>
 router & router::o (const string & optname)
 {

@@ -8,6 +8,7 @@
 
 #include <pfs/test/test.hpp>
 #include <pfs/cli/cli.hpp>
+#include <pfs/cli/result.hpp>
 
 const char * argv[] = {
 	  "prog-name"
@@ -109,12 +110,19 @@ static void test_basic(void)
 #endif
 
 
+void bool hello_world_action (const pfs::cli::result & r)
+{
+	TEST_OK
+}
+
 int main (int /*argc*/, char ** /*argv*/)
 {
 	BEGIN_TESTS(17);
 
 	int argc = sizeof(argv)/sizeof(argv[0]);
 	pfs::cli::cli cli;
+
+	cli.r().a("hello").a("world").h();
 
     cli.r();
 //        .b("verbose");
