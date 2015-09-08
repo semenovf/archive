@@ -33,11 +33,6 @@ class DLL_API router
 	option_collection _options;
 
 private:
-	action * lastActionPtr ()
-	{
-		return & _actions.refAt(_actions.size() - 1);
-	}
-
 	void appendAction (const action & a)
 	{
 		_actions.append(a);
@@ -48,13 +43,29 @@ private:
 		_options.insert(optname, opt);
 	}
 
+	size_t actionCount () const
+	{
+		return _actions.size();
+	}
+
+	action * actionPtr (size_t index)
+	{
+		return & _actions[index];
+	}
+
+	bool containsOption (const string & optname)
+	{
+		return _options.contains(optname);
+	}
+
 	option * optionPtr (const string & optname)
 	{
-		return & _option.refAt(optname);
+		return & _options.refAt(optname);
 	}
 
 public:
 	router () {}
+
 
 //	router & b (const string & optname);
 //	router & b (const char *   optname)

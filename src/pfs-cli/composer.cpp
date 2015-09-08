@@ -25,7 +25,7 @@ composer & composer::a (const string & name)
 			? action::any()
 			: action(name));
 	_state  = StateAction;
-	_paction = _prouter->lastActionPtr();
+	_paction = _prouter->actionPtr(_prouter->actionCount() - 1);
 	return *this;
 }
 
@@ -96,4 +96,3 @@ composer & composer::b (const string & optname)
 }
 
 }} // pfs::cli
-

@@ -9,22 +9,22 @@
 
 namespace pfs { namespace cli {
 
-template <typename T>
-router & router::o (const string & optname)
-{
-	option opt = make_option<T>(optname);
-	_options.insert(optname, opt);
-	return *this;
-}
-
-template <typename T>
-router & router::o (const string & optname, const T & defaultValue)
-{
-	option opt = make_option<T>(optname);
-	opt.setDefault(defaultValue);
-	_options.insert(optname, opt);
-	return *this;
-}
+//template <typename T>
+//router & router::o (const string & optname)
+//{
+//	option opt = make_option<T>(optname);
+//	_options.insert(optname, opt);
+//	return *this;
+//}
+//
+//template <typename T>
+//router & router::o (const string & optname, const T & defaultValue)
+//{
+//	option opt = make_option<T>(optname);
+//	opt.setDefault(defaultValue);
+//	_options.insert(optname, opt);
+//	return *this;
+//}
 
 //template <typename T>
 //router & router::o (const string & optname, const string & description)
@@ -35,45 +35,45 @@ router & router::o (const string & optname, const T & defaultValue)
 //	return *this;
 //}
 
-router & router::b (const string & optname)
-{
-	return o<bool>(optname);
-}
-
-router & router::i (const string & optname)
-{
-	return o<integral_t>(optname);
-}
-
-router & router::n (const string & optname)
-{
-	return o<real_t>(optname);
-}
-
-router & router::s (const string & optname)
-{
-	return o<string>(optname);
-}
-
-router & router::b (const string & optname, bool defaultValue)
-{
-	return o<bool>(optname, defaultValue);
-}
-
-router & router::i (const string & optname, integral_t defaultValue)
-{
-	return o<integral_t>(optname, defaultValue);
-}
-
-router & router::n (const string & optname, real_t defaultValue)
-{
-	return o<real_t>(optname, defaultValue);
-}
-
-router & router::s (const string & optname, const string & defaultValue)
-{
-	return o<string>(optname, defaultValue);
-}
+//router & router::b (const string & optname)
+//{
+//	return o<bool>(optname);
+//}
+//
+//router & router::i (const string & optname)
+//{
+//	return o<integral_t>(optname);
+//}
+//
+//router & router::n (const string & optname)
+//{
+//	return o<real_t>(optname);
+//}
+//
+//router & router::s (const string & optname)
+//{
+//	return o<string>(optname);
+//}
+//
+//router & router::b (const string & optname, bool defaultValue)
+//{
+//	return o<bool>(optname, defaultValue);
+//}
+//
+//router & router::i (const string & optname, integral_t defaultValue)
+//{
+//	return o<integral_t>(optname, defaultValue);
+//}
+//
+//router & router::n (const string & optname, real_t defaultValue)
+//{
+//	return o<real_t>(optname, defaultValue);
+//}
+//
+//router & router::s (const string & optname, const string & defaultValue)
+//{
+//	return o<string>(optname, defaultValue);
+//}
 
 #ifdef __COMMENT__
 /**

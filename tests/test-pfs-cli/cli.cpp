@@ -28,6 +28,48 @@ const char * argv[] = {
 	, "arg3"
 };
 
+/**
+ * 1. @c router contains zero or more @c actions:
+ * @code
+ *		command
+ *		command action
+ * 		command action1 action2 ...
+ * @endcode
+ *
+ * 2. @c router contains zero or more @c options
+ * @code
+ * 		command
+ * 		command --optname=optvalue
+ * 		command --optname=optvalue -b -o value
+ * @endcode
+ *
+ * 3. @c action identified by name and zero or more synonyms
+ * @code
+ * 		command { a | act | action } ...
+ * @endcode
+ *
+ * 4. @c actions has an order
+ * @code
+ * 		command precendent_action action following_action ...
+ * @endcode
+ *
+ * 5. @c option identified by name and zero or more synonyms
+ * @code
+ * 		command { --name=string | -n string | --my-name=string } ...
+ * 		command { --help | -h | -? | --usage } ...
+ * @endcode
+ *
+ * 6. @c options is unordered
+ * Below code lines are equivalent
+ * @code
+ * 		command --bitrate=9600 --parity=even --server -i
+ * 		command --server --bitrate=9600 -i --parity=even
+ * 		command -i --parity=even --server --bitrate=9600
+ * @endcode
+ *
+ */
+
+
 #ifdef __COMMENT__
 static void test_basic(void)
 {
@@ -110,153 +152,190 @@ static void test_basic(void)
 #endif
 
 
-void bool hello_world_action (const pfs::cli::result & r)
+void bool test_single_action (const pfs::cli::result & r)
 {
-	TEST_OK
+	return r.actionAt(0) == "action";
+}
+
+void bool test_action_synonyms (const pfs::cli::result & r)
+{
+	return r.actionAt(0) == "a"
+			|| r.actionAt(0) == "act"
+			|| r.actionAt(0) == "action";
+}
+
+void test_cli_router (
+	, const pfs::cli::composer & composer
+	, int argc
+	, char **argv)
+{
+	pfs::cli::cli cli;
+	TEST_OK(cli.parse(argc, argv));
+}
+
+#define TEST_CLI_ROUTER(composer, argv_array) \
+{
+	char * argv[] = argv_array;
+	int argc = sizeof(argv)/sizeof(argv[0]);
+	test_cli_router(composer, argc, argv);
 }
 
 int main (int /*argc*/, char ** /*argv*/)
 {
-	BEGIN_TESTS(17);
+	BEGIN_TESTS(2);
 
-	int argc = sizeof(argv)/sizeof(argv[0]);
-	pfs::cli::cli cli;
+	TEST_CLI_ROUTER(r().a("action").h(handler)
+		, {"action"}
+		, test_single_action)
+//	{
+//		pfs::cli::cli cli;
+//		cli.r().a("action").h(test_single_action);
+//		char * argv[] = { "action" };
+//		int argc = sizeof(argv)/sizeof(argv[0]);
+//		TEST_OK(cli.parse(argc, argv));
+//	}
 
-	cli.r().a("hello").a("world").h();
+//	{
+//		pfs::cli::cli cli;
+//		cli.r().a("action").h(test_action_synonyms);
+//		char * argv[] = { "action" };
+//		int argc = sizeof(argv)/sizeof(argv[0]);
+//		TEST_OK(cli.parse(argc, argv));
+//	}
 
-    cli.r();
-//        .b("verbose");
-//        :h(function (r)
-//                Settings:set("Verbose", true);
-//                return true;
-//           end)
-//        :continue();
-
-    cli.r();
-//        .b("dump");
-//        :h(function (r)
-//                print("Options: " .. cli:dumpOpts());
-//                print("Free arguments: " .. cli:dumpArgs());
-//           end);
+//    cli.r();
+////        .b("verbose");
+////        :h(function (r)
+////                Settings:set("Verbose", true);
+////                return true;
+////           end)
+////        :continue();
 //
-    cli.r()
-        .a("help")
-        .a("workspace").syn("ws")
-        	.syn("solution").syn("sln")
-        	.syn("project").syn("pro").syn("prj");
-//        --:a({})
-//        .h(function (r)
-//                Settings:set("Domain", r:actionAt(1));
-//                help_type:new(Settings):help();
-//                return true;
-//           end);
-
-    cli.r()
-        .a("help");
-//        :h(function (r)
-//                cli:guide():usage();
-//                return true;
-//           end);
+//    cli.r();
+////        .b("dump");
+////        :h(function (r)
+////                print("Options: " .. cli:dumpOpts());
+////                print("Free arguments: " .. cli:dumpArgs());
+////           end);
+////
+//    cli.r()
+//        .a("help")
+//        .a("workspace").syn("ws")
+//        	.syn("solution").syn("sln")
+//        	.syn("project").syn("pro").syn("prj");
+////        --:a({})
+////        .h(function (r)
+////                Settings:set("Domain", r:actionAt(1));
+////                help_type:new(Settings):help();
+////                return true;
+////           end);
 //
-    cli.r()
-        .a("workspace").syn("ws");
-//        :b("create")
-//        :s("path")
-//        :s("build-tool")
-//        :s("target-platform", "")
-//        :s("config", "debug")
-//        :h(function (r)
-//                Settings:set("WorkspacePath" , r:optArg("path"));
-//                Settings:set("BuildTool"     , r:optArg("build-tool"));
-//                Settings:set("TargetPlatform", r:optArg("target-platform"));
-//                Settings:set("BuildConfig"   , r:optArg("config"));
-//                return require("gbs.workspace"):new(Settings):create();
-//           end);
-//
-    cli.r()
-        .a("solution").syn("sln");
-//        :b("create")
-//        :s("name")
-//        :b("git", false)
-//        :h(function (r)
-//                Settings:set("SolutionName", r:optArg("name"));
-//                Settings:set("EnableGitRepo", r:optArg("git"));
-//                return require("gbs.solution"):new(Settings):create();
-//           end);
-//
-    cli.r()
-        .a("project").syn("pro").syn("prj");
-//        :b("create")
-//        :s("name")
-//        :s("type", "console-app")
-//        :s("lang", "C++")
-//        :s("depends", {})
-//        :h(function (r)
-//                Settings:set("SolutionName"       , solutionName());
-//                Settings:set("ProjectName"        , r:optArg("name"));
-//                Settings:set("ProjectType"        , r:optArg("type"));
-//                Settings:set("ProjectLanguage"    , r:optArg("lang"));
-//                Settings:set("ProjectDependencies", r:optArg("depends"));
-//                return require("gbs.project"):new(Settings):create();
-//           end);
-//
-    cli.r()
-        .a("project").syn("pro").syn("prj");
-//        :b("build")
-//        :s("name", "")
-//        :s("config", Settings:get("BuildConfig") or "")
-//        :s("build-tool", Settings:get("BuildTool") or "")
-//        :s("target-platform", Settings:get("TargetPlatform") or "")
-//        :h(function (r)
-//                Settings:set("ProjectName"   , _esn(r:optArg("name")));
-//                Settings:set("BuildConfig"   , _esn(r:optArg("config")));
-//                Settings:set("BuildTool"     , _esn(r:optArg("build-tool")));
-//                Settings:set("TargetPlatform", _esn(r:optArg("target-platform")));
-//                return require("gbs.project"):new(Settings):build();
-//           end);
-//
-//    -- Synonym for `gbs project --build'
-    cli.r()
-        .a("all");
-//        :h(function (r)
-//                Settings:set("ProjectName"   , nil);
-//                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
-//                Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
-//                Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
-//                return require("gbs.project"):new(Settings):build();
-//           end);
-//
-    cli.r()
-        .a("project").syn("pro").syn("prj");
-//        :b("clean")
-//        :s("name", "")
-//        :s("config", Settings:get("BuildConfig") or "")
-//        :s("build-tool", Settings:get("BuildTool") or "")
-//        :s("target-platform", Settings:get("TargetPlatform") or "")
-//        :h(function (r)
-//                Settings:set("ProjectName"   , _esn(r:optArg("name")));
-//                Settings:set("BuildConfig"   , _esn(r:optArg("config")));
-//                Settings:set("BuildTool"     , _esn(r:optArg("build-tool")));
-//                Settings:set("TargetPlatform", _esn(r:optArg("target-platform")));
-//                return require("gbs.project"):new(Settings):clean();
-//           end);
-//
-//    -- Synonym for `gbs project --clean'
-    cli.r()
-        .a("clean");
-//        :h(function (r)
-//                Settings:set("ProjectName"   , "");
-//                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
-//                Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
-//                Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
-//                return require("gbs.project"):new(Settings):clean();
-//           end);
-//
-    cli.r();
-//        :h(function (r)
-//                print("Type `gbs help' for usage");
-//           end);
-//
+//    cli.r()
+//        .a("help");
+////        :h(function (r)
+////                cli:guide():usage();
+////                return true;
+////           end);
+////
+//    cli.r()
+//        .a("workspace").syn("ws");
+////        :b("create")
+////        :s("path")
+////        :s("build-tool")
+////        :s("target-platform", "")
+////        :s("config", "debug")
+////        :h(function (r)
+////                Settings:set("WorkspacePath" , r:optArg("path"));
+////                Settings:set("BuildTool"     , r:optArg("build-tool"));
+////                Settings:set("TargetPlatform", r:optArg("target-platform"));
+////                Settings:set("BuildConfig"   , r:optArg("config"));
+////                return require("gbs.workspace"):new(Settings):create();
+////           end);
+////
+//    cli.r()
+//        .a("solution").syn("sln");
+////        :b("create")
+////        :s("name")
+////        :b("git", false)
+////        :h(function (r)
+////                Settings:set("SolutionName", r:optArg("name"));
+////                Settings:set("EnableGitRepo", r:optArg("git"));
+////                return require("gbs.solution"):new(Settings):create();
+////           end);
+////
+//    cli.r()
+//        .a("project").syn("pro").syn("prj");
+////        :b("create")
+////        :s("name")
+////        :s("type", "console-app")
+////        :s("lang", "C++")
+////        :s("depends", {})
+////        :h(function (r)
+////                Settings:set("SolutionName"       , solutionName());
+////                Settings:set("ProjectName"        , r:optArg("name"));
+////                Settings:set("ProjectType"        , r:optArg("type"));
+////                Settings:set("ProjectLanguage"    , r:optArg("lang"));
+////                Settings:set("ProjectDependencies", r:optArg("depends"));
+////                return require("gbs.project"):new(Settings):create();
+////           end);
+////
+//    cli.r()
+//        .a("project").syn("pro").syn("prj");
+////        :b("build")
+////        :s("name", "")
+////        :s("config", Settings:get("BuildConfig") or "")
+////        :s("build-tool", Settings:get("BuildTool") or "")
+////        :s("target-platform", Settings:get("TargetPlatform") or "")
+////        :h(function (r)
+////                Settings:set("ProjectName"   , _esn(r:optArg("name")));
+////                Settings:set("BuildConfig"   , _esn(r:optArg("config")));
+////                Settings:set("BuildTool"     , _esn(r:optArg("build-tool")));
+////                Settings:set("TargetPlatform", _esn(r:optArg("target-platform")));
+////                return require("gbs.project"):new(Settings):build();
+////           end);
+////
+////    -- Synonym for `gbs project --build'
+//    cli.r()
+//        .a("all");
+////        :h(function (r)
+////                Settings:set("ProjectName"   , nil);
+////                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
+////                Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
+////                Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
+////                return require("gbs.project"):new(Settings):build();
+////           end);
+////
+//    cli.r()
+//        .a("project").syn("pro").syn("prj");
+////        :b("clean")
+////        :s("name", "")
+////        :s("config", Settings:get("BuildConfig") or "")
+////        :s("build-tool", Settings:get("BuildTool") or "")
+////        :s("target-platform", Settings:get("TargetPlatform") or "")
+////        :h(function (r)
+////                Settings:set("ProjectName"   , _esn(r:optArg("name")));
+////                Settings:set("BuildConfig"   , _esn(r:optArg("config")));
+////                Settings:set("BuildTool"     , _esn(r:optArg("build-tool")));
+////                Settings:set("TargetPlatform", _esn(r:optArg("target-platform")));
+////                return require("gbs.project"):new(Settings):clean();
+////           end);
+////
+////    -- Synonym for `gbs project --clean'
+//    cli.r()
+//        .a("clean");
+////        :h(function (r)
+////                Settings:set("ProjectName"   , "");
+////                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
+////                Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
+////                Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
+////                return require("gbs.project"):new(Settings):clean();
+////           end);
+////
+//    cli.r();
+////        :h(function (r)
+////                print("Type `gbs help' for usage");
+////           end);
+////
     cli.parse(argc, argv);
 
 	END_TESTS;
