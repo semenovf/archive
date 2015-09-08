@@ -76,7 +76,7 @@ function workspace:create ()
     local workspaceFileName = settings:get_or_throw("WorkspaceFileName");
     local cmdlineString     = settings:get_or_throw("CommandLineString");
     local programName       = settings:get_or_throw("ProgramName");
-    local config            = settings:get_or_throw("Config");
+    local config            = settings:get_or_throw("BuildConfig");
     
     if string.isEmpty(targetPlatform) then
         local osi = os.info();
@@ -103,7 +103,7 @@ function workspace:create ()
         , { utils.fileTitle("#", programName, cmdlineString)
             , "BuildTool="      .. buildTool
             , "TargetPlatform=" .. targetPlatform
-            , "Config="         .. config
+            , "BuildConfig="    .. config
         }, "Update workspace configuration file: " .. workspaceFile);
     
     return trn:exec();
