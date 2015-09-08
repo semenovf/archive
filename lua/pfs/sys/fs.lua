@@ -130,7 +130,7 @@ function fs.appendLines (filepath, ...)
 
     local fh, errstr = io.open(filepath, "a+");
     if fh == nil then
-        warn(filepath .. ": can't open file: " .. errstr); 
+        print_warn(filepath .. ": can't open file: " .. errstr); 
         return false;
     end
     
@@ -158,7 +158,7 @@ end
 function fs.readFirstLine (filepath)
     local fh, errstr = io.open(filepath, "r");
     if fh == nil then
-        warn(filepath .. ": can't open file: " .. errstr); 
+        print_warn(filepath .. ": can't open file: " .. errstr); 
         return nil;
     end
     local line = fh:read("*l");
