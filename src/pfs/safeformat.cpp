@@ -895,6 +895,7 @@ safeformat & safeformat::arg (const __sf_base_traits * v)
 {
 	clearSpec();
 	advance();
+
 	if (!parseSpec())
 		return *this;
 
