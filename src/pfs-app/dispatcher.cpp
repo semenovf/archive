@@ -54,6 +54,7 @@ module * dispatcher::registerModuleForPath (const string & path, const char * pn
 	}
 
 	dl::handle ph = dl::open(path, false, true);
+
 	if (ph) {
 		module_ctor_t module_ctor = reinterpret_cast<module_ctor_t>(dl::ptr(ph, PFS_MODULE_CTOR_NAME));
 		module_dtor_t module_dtor = reinterpret_cast<module_dtor_t>(dl::ptr(ph, PFS_MODULE_DTOR_NAME));
