@@ -9,6 +9,7 @@
 #define __PFS_CLI_HPP__
 
 #include <pfs/string.hpp>
+#include <pfs/stringlist.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/cli/router.hpp>
 #include <pfs/cli/composer.hpp>
@@ -31,13 +32,16 @@ class DLL_API cli
 
 public:
 	enum {
-		  AllowShortOption = 0x0001
-		, AllowLongOption  = 0x0002
-		, CaseSensitive    = 0x0004
+		  AllowShortOption    = 0x0001
+		, AllowLongOption     = 0x0002
+		, AllowCombineOptions = 0x0004 //
+		, CaseSensitive       = 0x0008
 	};
+
 public:
 	cli ();
-	bool parse (int /*argc*/, const char * argv[]) { return false; }
+	//bool parse (int argc, const char * argv[]);
+	bool parse (const stringlist & argv);
 
 	void allowShortOption (bool b)
 	{
