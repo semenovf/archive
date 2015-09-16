@@ -19,11 +19,27 @@ void dl::addGlobalSearchPath (const string & dir)
  * @param realPath
  * @return
  */
+
+
 string dl::searchFile (const string & filename)
 {
 	pfs::fs fs;
 
 	if (fs.exists(filename)) {
+		/*
+		 * If filename is not an absolute path
+		 * and does not start with current directory prefix (i.e. "./" on unix)
+		 * then append prefix and return result
+		 */
+		if (!fs.isAbsolute(filename)) {
+			string result(".");
+			result.append(1, fs.separator());
+
+			if (!filename.startsWith(result)) {
+				result.append(filename);
+				return result;
+			}
+		}
 		return string(filename);
 	}
 
@@ -32,9 +48,10 @@ string dl::searchFile (const string & filename)
 		stringlist::const_iterator itEnd = _searchPath.cend();
 
 		while (it != itEnd) {
-						string r(*it);
+			string r(*it);
 			r += fs.separator();
 			r += filename;
+
 			if (fs.exists(r))
 				return r;
 			++it;

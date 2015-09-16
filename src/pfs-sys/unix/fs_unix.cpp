@@ -47,7 +47,7 @@ bool fs::isDirectory (const string & path)
 bool fs::exists (const string & path)
 {
 	struct stat st;
-	return ( stat(path.c_str(), &st ) == 0 );
+	return stat(path.c_str(), &st ) == 0;
 }
 
 
