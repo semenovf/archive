@@ -13,7 +13,9 @@
 namespace pfs {
 
 #if defined(_SVID_SOURCE) || defined(_BSD_SOURCE)
-#	define PFS_HAVE_RANDOM_R
+#	define PFS_HAVE_RANDOM_R 1
+#else
+#	error Expected support of random_r() call
 #endif
 
 class random_impl
@@ -25,8 +27,6 @@ public:
 	int32_t rand ();
 
 private:
-
-#ifdef PFS_HAVE_RANDOM_R
 	void init_random_r_version (uint32_t seed) {
 		memset(& _rdata, 0, sizeof(struct random_data));
 		PFS_VERIFY(initstate_r(seed, _stateBuf, StateSize, & _rdata) == 0);
@@ -36,40 +36,29 @@ private:
 	static const size_t StateSize = 128;
 	char _stateBuf[StateSize];
 	struct random_data _rdata;
-#else
-#	error "random does not implemented yet"
-#endif
 };
 
 inline random_impl::random_impl ()
 {
-#if defined PFS_HAVE_RANDOM_R
     pfs::time ct = platform::currentTime();
 	init_random_r_version(uint32_t(ct.millis()));
-#endif
 }
 
 inline random_impl::random_impl (uint32_t seed)
 {
-#if defined PFS_HAVE_RANDOM_R
 	init_random_r_version(seed);
-#endif
 }
 
 inline bool random_impl::srand (uint32_t seed)
 {
-#if defined PFS_HAVE_RANDOM_R
 	return 0 == srandom_r(seed, & _rdata);
-#endif
 }
 
 inline int32_t random_impl::rand ()
 {
 	int32_t r = 0;
 
-#if defined PFS_HAVE_RANDOM_R
 	PFS_VERIFY(random_r(& _rdata, & r) == 0);
-#endif
 
 	return r;
 }
