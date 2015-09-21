@@ -61,6 +61,11 @@ function plugin:transaction ()
     local projectType     = settings:get_or_throw("ProjectType");
     local projectDependencies = settings:get_or_throw("ProjectDependencies");
 
+    local premakeKind = plugin.premakeKind(projectType);
+    local premakeLang = plugin.premakeLang(projectLang);
+    die(projectType .. ": invalid project type\n"):unless(premakeKind);
+    die(projectType .. ": invalid project language\n"):unless(premakeLang);
+
     local projectDir      = fs.join(".gbs", projectName);
     local projectFile     = fs.join(projectDir, projectFileName);
         
@@ -149,8 +154,8 @@ function plugin:transaction ()
     trn:AppendLinesToFile(projectFile
         , {
                utils.fileTitle("--", programName, cmdlineString) 
-            , "kind          " .. string.quote(plugin.premakeKind(projectType))
-            , "language      " .. string.quote(plugin.premakeLang(projectLang))
+            , "kind          " .. string.quote(premakeKind)
+            , "language      " .. string.quote(premakeLang)
             , "targetname    " .. string.quote(targetName)
             , "defines       {  }"
             , "includedirs   { " .. string.join(", ", projectIncludeDirList) .. " }"
