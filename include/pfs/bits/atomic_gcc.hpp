@@ -6,8 +6,8 @@
  * @brief
  */
 
-#ifndef __PFS_ATOMIC_GCC_HPP__
-#define __PFS_ATOMIC_GCC_HPP__
+#ifndef __PFS_BITS_ATOMIC_GCC_HPP__
+#define __PFS_BITS_ATOMIC_GCC_HPP__
 
 #include <pfs.hpp>
 
@@ -18,12 +18,12 @@ struct atomic_integer_intrinsics
 {
 	typedef int Type;
 
-	static inline T load (const T &value)
+	static inline T load (const T & value)
 	{
 		return value;
 	}
 
-    static inline void store(T &value, T newValue)
+    static inline void store (T & value, T newValue)
     {
         value = newValue;
     }
@@ -33,7 +33,7 @@ struct atomic_integer_intrinsics
         return fetchAndAddRelaxed(value, 1) != T(-1);
     }
 
-    static inline bool deref(T & value)
+    static inline bool deref (T & value)
     {
          return fetchAndAddRelaxed(value, -1) != T(1);
     }
@@ -47,8 +47,15 @@ struct atomic_integer_intrinsics
     {
     	return __sync_val_compare_and_swap(ptr, oldValue, newValue);
     }
+
+/* FIXME add support of this
+    type __sync_fetch_and_sub (type *ptr, type value, ...)
+    type __sync_fetch_and_or (type *ptr, type value, ...)
+    type __sync_fetch_and_and (type *ptr, type value, ...)
+    type __sync_fetch_and_xor (type *ptr, type value, ...)
+*/
 };
 
 } // pfs
 
-#endif /* __PFS_ATOMIC_GCC_HPP__ */
+#endif /* __PFS_BITS_ATOMIC_GCC_HPP__ */

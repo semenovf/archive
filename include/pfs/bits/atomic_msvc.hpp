@@ -6,8 +6,8 @@
  * @brief
  */
 
-#ifndef __PFS_ATOMIC_MSVC_HPP__
-#define __PFS_ATOMIC_MSVC_HPP__
+#ifndef __PFS_BITS_ATOMIC_MSVC_HPP__
+#define __PFS_BITS_ATOMIC_MSVC_HPP__
 
 #include <pfs.hpp>
 
@@ -62,4 +62,4 @@ struct atomic_integer_intrinsics
 
 } // pfs
 
-#endif /* __PFS_ATOMIC_MSVC_HPP__ */
+#endif /* __PFS_BITS_ATOMIC_MSVC_HPP__ */
