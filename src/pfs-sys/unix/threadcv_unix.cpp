@@ -33,7 +33,7 @@ static void __initialize_pthread_cond (pthread_cond_t * cond)
 //    if (QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
 //        pthread_condattr_setclock(& condattr, CLOCK_MONOTONIC);
 //#endif
-    PFS_VERIFY_ERRNO(pthread_cond_init(cond, & condattr));
+    PFS_VERIFY_ERRNO(pthread_cond_init(cond, & condattr) == 0);
     pthread_condattr_destroy(& condattr);
 }
 
@@ -79,7 +79,7 @@ public:
             --wakeups;
         }
 
-        PFS_VERIFY_ERRNO(pthread_mutex_unlock(& mutex));
+        PFS_VERIFY_ERRNO(pthread_mutex_unlock(& mutex) == 0);
 
         if (code && code != ETIMEDOUT)
         	PFS_VERIFY_ERRNO(code);
@@ -92,7 +92,7 @@ thread_cv::thread_cv ()
 	: _d(new thread_cv_impl)
 {
 	thread_cv_impl * d = _d.cast<thread_cv_impl>();
-	PFS_VERIFY_ERRNO(pthread_mutex_init(& d->mutex, NULL));
+	PFS_VERIFY_ERRNO(pthread_mutex_init(& d->mutex, NULL) == 0);
     __initialize_pthread_cond(& d->cond);
     d->waiters = d->wakeups = 0;
 }
@@ -100,27 +100,27 @@ thread_cv::thread_cv ()
 thread_cv::~thread_cv ()
 {
 	thread_cv_impl * d = _d.cast<thread_cv_impl>();
-	PFS_VERIFY_ERRNO(pthread_cond_destroy(& d->cond));
-	PFS_VERIFY_ERRNO(pthread_mutex_destroy(& d->mutex));
+	PFS_VERIFY_ERRNO(pthread_cond_destroy(& d->cond) == 0);
+	PFS_VERIFY_ERRNO(pthread_mutex_destroy(& d->mutex) == 0);
 }
 
 
 void thread_cv::wakeOne ()
 {
 	thread_cv_impl * d = _d.cast<thread_cv_impl>();
-	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex));
+	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex) == 0);
     d->wakeups = pfs_min(d->wakeups + 1, d->waiters);
-    PFS_VERIFY_ERRNO(pthread_cond_signal(& d->cond));
-    PFS_VERIFY_ERRNO(pthread_mutex_unlock(& d->mutex));
+    PFS_VERIFY_ERRNO(pthread_cond_signal(& d->cond) == 0);
+    PFS_VERIFY_ERRNO(pthread_mutex_unlock(& d->mutex) == 0);
 }
 
 void thread_cv::wakeAll ()
 {
 	thread_cv_impl * d = _d.cast<thread_cv_impl>();
-	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex));
+	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex) == 0);
     d->wakeups = d->waiters;
-    PFS_VERIFY_ERRNO(pthread_cond_broadcast(&d->cond));
-    PFS_VERIFY_ERRNO(pthread_mutex_unlock(&d->mutex));
+    PFS_VERIFY_ERRNO(pthread_cond_broadcast(&d->cond) == 0);
+    PFS_VERIFY_ERRNO(pthread_mutex_unlock(&d->mutex) == 0);
 }
 
 // see section "Timed Condition Wait" in pthread_cond_timedwait(P) manual page.
@@ -133,7 +133,7 @@ bool thread_cv::wait (pfs::mutex & lockedMutex, uintegral_t time)
 //        return false;
 //    }
 
-	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex));
+	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex) == 0);
     ++d->waiters;
     lockedMutex.unlock();
 

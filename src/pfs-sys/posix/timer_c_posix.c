@@ -132,7 +132,9 @@ int timeout_unset (const int timeout)
         return (state & TIMEOUT_PASSED) ? 1 : 0;
 
     } else {
-        /* Invalid timeout number. */
+        /*
+         *  Invalid timeout number
+         */
         return -1;
     }
 }
@@ -144,21 +146,23 @@ int timeout_set (const double seconds)
     double            next;
     int               timeout, i;
 
-    /* Timeout must be in the future. */
+    /* Timeout must be in the future */
     if (seconds <= 0.0)
         return -1;
 
     /* Get current time, */
-    if (clock_gettime(CLOCK_REALTIME, &now))
+    if (clock_gettime(CLOCK_REALTIME, & now))
         return -1;
 
     /* and calculate when the timeout should fire. */
     then = now;
     timespec_add(& then, seconds);
 
-    /* Find an unused timeout. */
+    /*
+     * Find an unused timeout
+     */
     for (timeout = 0; timeout < TIMEOUTS; timeout++)
-        if (!(__sync_fetch_and_or(&timeout_state[timeout], TIMEOUT_USED) & TIMEOUT_USED))
+        if (!(__sync_fetch_and_or(& timeout_state[timeout], TIMEOUT_USED) & TIMEOUT_USED))
             break;
 
     /* No unused timeouts? */
@@ -185,18 +189,20 @@ int timeout_set (const double seconds)
         }
 
     /* Calculate duration when to fire the timeout next, */
-    timespec_set(&when.it_value, next);
+    timespec_set(& when.it_value, next);
     when.it_interval.tv_sec = 0;
     when.it_interval.tv_nsec = 0L;
 
-    /* and arm the timer. */
+    /* and arm the timer */
     if (timer_settime(timeout_timer, 0, & when, NULL)) {
-        /* Failed. */
-        __sync_and_and_fetch(&timeout_state[timeout], 0);
+        /* Failed */
+        __sync_and_and_fetch(& timeout_state[timeout], 0);
         return -1;
     }
 
-    /* Return the timeout number. */
+    /*
+     * Return the timeout number
+     */
     return timeout;
 }
 
@@ -308,13 +314,18 @@ int timeout_done (void)
     struct itimerspec arm;
     int               errors = 0;
 
-    /* Ignore the timeout signals. */
+    /*
+     * Ignore the timeout signals
+     */
     sigemptyset(&act.sa_mask);
     act.sa_handler = SIG_IGN;
+
     if (sigaction(TIMEOUT_SIGNAL, &act, NULL))
         if (!errors) errors = errno;
 
-    /* Disarm any current timeouts. */
+    /*
+     * Disarm any current timeouts
+     */
     arm.it_value.tv_sec = 0;
     arm.it_value.tv_nsec = 0L;
     arm.it_interval.tv_sec = 0;
@@ -322,14 +333,20 @@ int timeout_done (void)
     if (timer_settime(timeout_timer, 0, &arm, NULL))
         if (!errors) errors = errno;
 
-    /* Destroy the timer itself. */
+    /*
+     * Destroy the timer itself
+     */
     if (timer_delete(timeout_timer))
         if (!errors) errors = errno;
 
-    /* If any errors occurred, set errno. */
+    /*
+     * If any errors occurred, set errno
+     */
     if (errors)
         errno = errors;
 
-    /* Return 0 if success, errno otherwise. */
+    /*
+     * Return 0 if success, errno otherwise
+     */
     return errors;
 }

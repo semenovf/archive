@@ -401,7 +401,7 @@ void thread::terminate ()
     if (!d->_threadHandle)
         return;
 
-    PFS_VERIFY_ERRNO(pthread_cancel(d->_threadHandle));
+    PFS_VERIFY_ERRNO(pthread_cancel(d->_threadHandle) == 0);
 }
 
 bool thread::wait (uintegral_t timeout)

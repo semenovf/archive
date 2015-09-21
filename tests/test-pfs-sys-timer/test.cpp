@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
     cout << "You have five seconds to type something" << endl;
     t1 = timeout_set(2.5);
-    warned1 = 0;
+//    warned1 = 0;
     t2 = timeout_set(5.0);
 
     while (1) {
