@@ -8,6 +8,8 @@
 #include "pfs.h"
 #include <errno.h>
 
+/* TODO DEPRECATED */
+
 bool pfs_verify (bool predicate, const char * prefix, const char * file, int line, const char * text)
 {
 	if (!predicate)

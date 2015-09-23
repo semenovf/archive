@@ -9,7 +9,11 @@
 #ifndef __PFS_MT_HPP__
 #define __PFS_MT_HPP__
 
-#include <pfs/mt.h>
+#error "Use pfs/mutex.hpp instead"
+
+#if __DEPRECATED__
+
+#include <pfs/bits/mutex.h>
 
 namespace pfs {
 
@@ -120,5 +124,7 @@ private:                                                        \
 	pfs::mutex _mutex;
 
 } // pfs
+
+#endif
 
 #endif /* __PFS_MT_HPP__ */
