@@ -116,3 +116,8 @@ project "test-variant"
 project "test-vector"
     include("test-vector/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "pfs-test-ring_buffer"
+    include("test-pfs-ring_buffer/project.gbs")
+-- END PROJECT

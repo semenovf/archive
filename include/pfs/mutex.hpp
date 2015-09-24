@@ -79,7 +79,7 @@ public:
 
 	void lock ()
 	{
-		ex = pfs_mutex_lock(_mutex);
+		int ex = pfs_mutex_lock(_mutex);
 
 		if (ex)
 			PFS_THROW_SYSERR(ex);
@@ -121,7 +121,7 @@ public:
 
 	void lock ()
 	{
-		ex = pfs_recursive_mutex_lock(_mutex);
+		int ex = pfs_recursive_mutex_lock(_mutex);
 
 		if (ex)
 			PFS_THROW_SYSERR(ex);
@@ -129,12 +129,12 @@ public:
 
 	bool try_lock()
 	{
-		return ! pfs_recursive_mutex_trylock(& _mutex);
+		return ! pfs_recursive_mutex_try_lock(_mutex);
 	}
 
 	void unlock()
 	{
-		pfs_recursive_mutex_unlock(& _mutex);
+		pfs_recursive_mutex_unlock(_mutex);
 	}
 
 	native_handle_type native_handle ()

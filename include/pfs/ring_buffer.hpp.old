@@ -1,0 +1,154 @@
+/*
+ * ring_buffer.hpp
+ *
+ *  Created on: Sep 23, 2015
+ *      Author: wladt
+ */
+
+#ifndef __PFS_RING_BUFFER_HPP__
+#define __PFS_RING_BUFFER_HPP__
+
+#include <pfs.hpp>
+#include <pfs/noncopyable.hpp>
+#include <queue>
+
+namespace pfs {
+
+struct pod_dtor
+{
+	void operator () (void *) {}
+};
+
+template <size_t ItemSize, size_t MaxCount, typename Dtor = pod_dtor>
+class ring_buffer : noncopyable
+{
+public:
+	struct item {
+		byte_t data[ItemSize];
+	};
+
+	typedef size_t size_type;
+	typedef item item_type;
+
+private:
+	size_type  _head;
+	size_type  _count;
+	item_type  _data[MaxCount];
+
+public:
+	ring_buffer ()
+		: _head(0)
+		, _count(0)
+	{}
+
+	~ring_buffer ();
+
+	bool isEmpty () const
+	{
+		return _count == 0;
+	}
+
+	bool empty () const
+	{
+		return _count == 0;
+	}
+
+	size_type size () const
+	{
+		return _count;
+	}
+
+	size_type count () const
+	{
+		return _count;
+	}
+
+	bool canPush (size_type count = 1) const
+	{
+		return MaxCount - _count >= count;
+	}
+
+	/**
+	 * @brief Adds data to the end of the rung buffer.
+	 * @param value Data to be added.
+	 *
+	 * @note @a T must be copyable.
+	 */
+	template <typename T>
+	void push (const T & value);
+
+	void pop ();
+
+	template <typename T>
+	T & front ();
+
+	template <typename T>
+	T front () const;
+};
+
+template <size_t ItemSize, size_t MaxCount, typename Dtor>
+ring_buffer<ItemSize, MaxCount, Dtor>::~ring_buffer ()
+{
+	while (_count) {
+		pop();
+	}
+}
+
+template <size_t ItemSize, size_t MaxCount, typename Dtor>
+template <typename T>
+void ring_buffer<ItemSize, MaxCount, Dtor>::push (const T & value)
+{
+	PFS_ASSERT(sizeof(T) <= ItemSize);
+	PFS_ASSERT(canPush(1));
+
+	size_type index = _count;
+
+	//
+	// Is there a space at the right of the head or not ?
+	//
+	if (_head + _count > MaxCount ) {
+		//
+		// No space at the right of the head,
+		// calculate index to push new data
+		//
+		index = _head - (MaxCount - _count);
+	}
+
+	new (& _data[index]) T(value); // apply placement new
+	++_count;
+}
+
+template <size_t ItemSize, size_t MaxCount, typename Dtor>
+void ring_buffer<ItemSize, MaxCount, Dtor>::pop ()
+{
+	if (_count > 0) {
+		Dtor()(& _data[_head]);
+
+		if (_head < MaxCount - 1)
+			++_head;
+		else
+			_head = 0;
+
+		--_count;
+	}
+}
+
+template <size_t ItemSize, size_t MaxCount, typename Dtor>
+template <typename T>
+T & ring_buffer<ItemSize, MaxCount, Dtor>::front ()
+{
+	PFS_ASSERT(_count > 0);
+	return *reinterpret_cast<T *>(& _data[_head]);
+}
+
+template <size_t ItemSize, size_t MaxCount, typename Dtor>
+template <typename T>
+T ring_buffer<ItemSize, MaxCount, Dtor>::front () const
+{
+	PFS_ASSERT(_count > 0);
+	return *reinterpret_cast<T *>(& _data[_head]);
+}
+
+} // pfs
+
+#endif /* __PFS_RING_BUFFER_HPP__ */

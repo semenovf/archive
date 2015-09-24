@@ -11,6 +11,8 @@
 #ifndef __PFS_BITS_MUTEX_H__
 #define __PFS_BITS_MUTEX_H__
 
+#include <pfs.h>
+
 #if !defined(PFS_NO_MT)
 /*#	define PFS_SINGLE_THREADED*/
 #	if defined(PFS_OS_WIN)
@@ -21,6 +23,7 @@
 #		include <pthread.h>
 #	else
 #		error "No native support for threads"
+#	endif
 #endif
 
 #if defined(PFS_NO_MT)

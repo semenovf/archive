@@ -9,6 +9,9 @@
 #define __PFS_BITS_EXCEPTION_H__
 
 #include <stdio.h>
+#include <string.h>
+
+/* FIXME Need to implement thread-safe and platform independent of strerror call */
 
 /*
  * System error exception
@@ -18,7 +21,7 @@
 		fprintf(stderr, "ERROR: (%s[%d]): %s (errno=%d)\n"  \
 				, __TFILE__                                 \
 				, __LINE__                                  \
-				, text                                      \
+				, strerror(errno)                           \
 				, xerrno);                                  \
 		::exit(-1);                                         \
 	}
