@@ -138,8 +138,8 @@ void * thread_impl::start (void * arg)
     thread_data * data = thread_data::get2(thr);
 
     {
-    	thread_impl * d = thr->_d.cast<thread_impl>();
-    	pfs::auto_lock<> locker(& d->_mutex);
+    	thread_impl * d = thr->_d;
+    	pfs::lock_guard<pfs::mutex> locker(d->_mutex);
 
         // do we need to reset the thread priority?
         if (int(d->_priority) & ThreadPriorityResetFlag) {
@@ -176,8 +176,8 @@ void * thread_impl::start (void * arg)
 void thread_impl::finish (void * arg)
 {
     thread * thr = reinterpret_cast<thread *>(arg);
-    thread_impl * d = thr->_d.cast<thread_impl>();
-    pfs::auto_lock<> locker(& d->_mutex);
+    thread_impl * d = thr->_d;
+    pfs::lock_guard<pfs::mutex> locker(d->_mutex);
 
     d->_isInFinish = true;
     d->_priority = thread::InheritPriority;
@@ -282,26 +282,25 @@ static bool calculateUnixPriority (int priority, int *sched_policy, int *sched_p
 
 void thread::start (Priority priority)
 {
-	thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	pfs::lock_guard<pfs::mutex> locker(_d->_mutex);
 
-    if (d->_isInFinish)
-        d->_threadDone.wait(locker.mutexRef());
+    if (_d->_isInFinish)
+        _d->_threadDone.wait(_d->_mutex);
 
-    if (d->_running)
+    if (_d->_running)
         return;
 
-    d->_running = true;
-    d->_finished = false;
-    d->_returnCode = 0;
-    d->_exited = false;
-    d->_interruptionRequested = false;
+    _d->_running = true;
+    _d->_finished = false;
+    _d->_returnCode = 0;
+    _d->_exited = false;
+    _d->_interruptionRequested = false;
 
     pthread_attr_t attr;
     pthread_attr_init(& attr);
     pthread_attr_setdetachstate(& attr, PTHREAD_CREATE_DETACHED);
 
-    d->_priority = priority;
+    _d->_priority = priority;
 
 #if defined(PFS_HAS_THREAD_PRIORITY_SCHEDULING)
     switch (priority) {
@@ -340,16 +339,16 @@ void thread::start (Priority priority)
                 // could not set scheduling hints, fallback to inheriting them
                 // we'll try again from inside the thread
                 pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED);
-                d->_priority = Priority(priority | ThreadPriorityResetFlag);
+                _d->_priority = Priority(priority | ThreadPriorityResetFlag);
             }
             break;
         }
     }
 #endif // PFS_HAS_THREAD_PRIORITY_SCHEDULING
 
-    if (d->_stackSize > 0) {
+    if (_d->_stackSize > 0) {
 #if defined(_POSIX_THREAD_ATTR_STACKSIZE) && (_POSIX_THREAD_ATTR_STACKSIZE-0 > 0)
-        int rc = pthread_attr_setstacksize(& attr, d->_stackSize);
+        int rc = pthread_attr_setstacksize(& attr, _d->_stackSize);
 #else
         int rc = ENOSYS; // stack size not supported, automatically fail
 #endif // _POSIX_THREAD_ATTR_STACKSIZE
@@ -361,14 +360,14 @@ void thread::start (Priority priority)
 
             // we failed to set the stacksize, and as the documentation states,
             // the thread will fail to run...
-            d->_running = false;
-            d->_finished = false;
+            _d->_running = false;
+            _d->_finished = false;
             return;
         }
     }
 
     int rc =
-        pthread_create(& d->_threadHandle, & attr, pfs::thread_impl::start, this);
+        pthread_create(& _d->_threadHandle, & attr, pfs::thread_impl::start, this);
 
     if (rc == EPERM) {
         // caller does not have permission to set the scheduling
@@ -377,7 +376,7 @@ void thread::start (Priority priority)
         pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED);
 #endif
         rc =
-            pthread_create(& d->_threadHandle, & attr, thread_impl::start, this);
+            pthread_create(& _d->_threadHandle, & attr, thread_impl::start, this);
     }
 
     pthread_attr_destroy(& attr);
@@ -387,38 +386,36 @@ void thread::start (Priority priority)
     			<< "pfs::thread::start(): thread creation error: "
 				<< platform::strerror(rc) << std::endl);
 
-        d->_running = false;
-        d->_finished = false;
-        d->_threadHandle = 0;
+        _d->_running = false;
+        _d->_finished = false;
+        _d->_threadHandle = 0;
     }
 }
 
 void thread::terminate ()
 {
-	thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	pfs::lock_guard<pfs::mutex> locker(_d->_mutex);
 
-    if (!d->_threadHandle)
+    if (!_d->_threadHandle)
         return;
 
-    PFS_VERIFY_ERRNO(pthread_cancel(d->_threadHandle) == 0);
+    PFS_VERIFY_ERRNO(pthread_cancel(_d->_threadHandle) == 0);
 }
 
 bool thread::wait (uintegral_t timeout)
 {
-	thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	pfs::lock_guard<pfs::mutex> locker(_d->_mutex);
 
-	if (! PFS_VERIFY_X((d->_data->_threadHandle != pthread_self())
+	if (! PFS_VERIFY_X((_d->_data->_threadHandle != pthread_self())
 			, _Tr("Thread attempt to wait on itself"))) {
 		return false;
 	}
 
-    if (d->_finished || ! d->_running)
+    if (_d->_finished || ! _d->_running)
         return true;
 
-    while (d->_running) {
-        if (!d->_threadDone.wait(locker.mutexRef(), timeout))
+    while (_d->_running) {
+        if (!_d->_threadDone.wait(_d->_mutex, timeout))
             return false;
     }
     return true;

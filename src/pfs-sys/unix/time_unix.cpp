@@ -5,10 +5,14 @@
  *      Author: wladt
  */
 
-#include <pfs/platform.hpp>
-#include <pfs/mt.hpp>
 #include <ctime>
 #include <sys/time.h> // gettimeofday
+
+#if ! PFS_HAVE_LOCALTIME_R
+#	include <pfs/mutex.hpp>
+#endif
+
+#include <pfs/platform.hpp>
 
 namespace pfs { namespace platform {
 
@@ -20,13 +24,13 @@ DLL_API pfs::time currentTime ()
 
     struct tm * tmPtr = nullptr;
 
-#ifdef PFS_HAVE_LOCALTIME_R
+#if PFS_HAVE_LOCALTIME_R
     tzset();
     struct tm res;
     tmPtr = localtime_r(& t, & res);
 #else
-    static pfs::mutex __mutex;
-    pfs::auto_lock<> locker(&__mutex);
+    static pfs::mutex mtx;
+    pfs::lock_guard<pfs::mutex> locker(mtx);
     tmPtr = localtime(& t);
 #endif
 

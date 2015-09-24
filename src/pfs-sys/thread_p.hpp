@@ -1,7 +1,7 @@
 #ifndef __PFS_THREAD_P_HPP_
 #define __PFS_THREAD_P_HPP_
 
-#include "pfs/mt.hpp"
+#include "pfs/mutex.hpp"
 #include "pfs/threadcv.hpp"
 #include "pfs/atomic.hpp"
 #include "pfs/vector.hpp"
@@ -13,6 +13,10 @@ class thread_data;
 class thread_impl
 {
 	friend class thread;
+
+private:
+    thread_impl (const thread_impl &);
+    thread_impl & operator = (const thread_impl &);
 
 public:
 	thread_impl ();
@@ -100,7 +104,7 @@ public:
     static thread_data * get2 (thread * thr)
     {
     	PFS_ASSERT_X(thr != 0, "pfs::thread_data::get2(): internal error");
-    	return thr->_d.cast<thread_impl>()->_data;
+    	return thr->_d->_data;
     }
 
     void ref ();

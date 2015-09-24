@@ -5,9 +5,12 @@
  *      Author: wladt
  */
 
-#include "pfs/platform.hpp"
-#include <pfs/mt.hpp>
 #include <ctime>
+#include "pfs/platform.hpp"
+
+#if ! PFS_HAVE_LOCALTIME_R
+#	include <pfs/mutex.hpp>
+#endif
 
 namespace pfs { namespace platform {
 
@@ -23,8 +26,8 @@ DLL_API pfs::date currentDate ()
     struct tm res;
     tmPtr = localtime_r(& t, & res);
 #else
-    static pfs::mutex __mutex;
-    pfs::auto_lock<> locker(&__mutex);
+    static pfs::mutex mtx;
+    pfs::lock_guard<pfs::mutex> locker(mtx);
     tmPtr = localtime(& t);
 #endif
 

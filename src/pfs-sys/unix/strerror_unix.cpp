@@ -8,7 +8,7 @@
 
 #include <string.h>
 #include <pfs/string.hpp>
-#include <pfs/mt.hpp>
+#include <pfs/mutex.hpp>
 
 // FIXME Need to support system locale
 
@@ -31,8 +31,8 @@ pfs::string pfs_strerror (int errn)
 #	endif
 
 #else
-	static pfs::mutex __mutex;
-	pfs::auto_lock<pfs::mutex> locker(&__mutex);
+	static pfs::mutex mtx;
+	pfs::lock_guard<pfs::mutex> locker(mtx);
 	return pfs::string::fromUtf8(strerror(errn));
 #endif
 }

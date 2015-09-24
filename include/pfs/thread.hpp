@@ -25,8 +25,13 @@ class DLL_API thread
 {
 	friend class thread_impl;
 	friend class thread_data;
+
 private:
-	pimpl _d;
+	thread_impl * _d;
+
+private:
+    thread (const thread &);
+    thread & operator = (const thread &);
 
 public:
 //    static Qt::HANDLE currentThreadId ();

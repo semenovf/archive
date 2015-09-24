@@ -1,13 +1,13 @@
-#include "pfs/dl.hpp"
-#include <pfs/mt.hpp>
+#include <pfs/mutex.hpp>
 #include <sys/stat.h>
+#include "pfs/dl.hpp"
 
 namespace pfs {
 
 dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool global, bool resolve)
 {
-	static pfs::mutex __mutex;
-	pfs::auto_lock<> locker(& __mutex);
+	static pfs::mutex mtx;
+	pfs::lock_guard<pfs::mutex> locker(mtx);
 
 	dl::handle h = nullptr;
 
@@ -55,8 +55,8 @@ dl::symbol dl::ptr (dl::handle h, const char * symname)
 
 void dl::close (dl::handle h)
 {
-	static pfs::mutex __mutex;
-	pfs::auto_lock<> locker(& __mutex);
+	static pfs::mutex mtx;
+	pfs::lock_guard<pfs::mutex> locker(mtx);
 
 	if( h != (dl::handle)0) {
 		dlerror(); /*clear error*/

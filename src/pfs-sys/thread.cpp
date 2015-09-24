@@ -1,5 +1,5 @@
 #include "pfs/thread.hpp"
-#include "pfs/mt.hpp"
+#include "pfs/mutex.hpp"
 #include "thread_p.hpp"
 #include <iostream>
 
@@ -85,106 +85,98 @@ thread * thread::currentThread()
 thread::thread ()
     : _d(new thread_impl)
 {
-    _d.cast<thread_impl>()->_data->_thread = this;
+    _d->_data->_thread = this;
 }
 
 thread::~thread()
 {
-	thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	_d->_mutex.lock();
 
-	if (d->_isInFinish) {
-		locker.unlock();
+	if (_d->_isInFinish) {
+		_d->_mutex.unlock();
 		wait();
-		locker.lock();
+		_d->_mutex.lock();
 	}
 
-	if (d->_running && !d->_finished) {
+	if (_d->_running && !_d->_finished) {
 		PFS_DEBUG(std::cerr
 				<< "pfs::thread: destroyed while thread is still running\n");
 	}
 
-	d->_data->_thread = nullptr;
+	_d->_data->_thread = nullptr;
+	_d->_mutex.unlock();
 }
 
 bool thread::isFinished() const
 {
-	const thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
-    return d->_finished || d->_isInFinish;
+	lock_guard<mutex> locker(_d->_mutex);
+    return _d->_finished || _d->_isInFinish;
 }
 
 bool thread::isRunning() const
 {
-	const thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
-    return d->_running && !d->_isInFinish;
+	lock_guard<mutex> locker(_d->_mutex);
+    return _d->_running && !_d->_isInFinish;
 }
 
 void thread::setStackSize (size_t stackSize)
 {
-	thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	lock_guard<mutex> locker(_d->_mutex);
 
-    PFS_ASSERT_X(!d->_running
+    PFS_ASSERT_X(!_d->_running
     		, _Tr("pfs:thread::setStackSize(): cannot change stack size while the thread is running"));
-    d->_stackSize = stackSize;
+    _d->_stackSize = stackSize;
 }
 
 size_t thread::stackSize() const
 {
-	const thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	lock_guard<mutex> locker(_d->_mutex);
 
-	return d->_stackSize;
+	return _d->_stackSize;
 }
 
 void thread::setPriority (Priority priority)
 {
-	thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	lock_guard<mutex> locker(_d->_mutex);
 
-	if (!d->_running) {
+	if (!_d->_running) {
 		PFS_DEBUG(std::cerr
 				<< "pfs::thread::setPriority(): cannot set priority, thread is not running\n");
         return;
     }
-    d->setPriority(priority);
+    _d->setPriority(priority);
 }
 
 thread::Priority thread::priority() const
 {
-	const thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	lock_guard<mutex> locker(_d->_mutex);
 
     // mask off the high bits that are used for flags
-    return Priority(d->_priority & 0xffff);
+    return Priority(_d->_priority & 0xffff);
 }
 
 void thread::requestInterruption ()
 {
-	thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	lock_guard<mutex> locker(_d->_mutex);
 
-	if (!d->_running || d->_finished || d->_isInFinish)
+	if (!_d->_running || _d->_finished || _d->_isInFinish)
         return;
 
-    if (d->isMainThread()) {
+    if (_d->isMainThread()) {
         PFS_DEBUG(std::cerr
         		<< "pfs::thread::requestInterruption has no effect on the main thread\n");
         return;
     }
-    d->_interruptionRequested = true;
+    _d->_interruptionRequested = true;
 }
 
 bool thread::isInterruptionRequested() const
 {
-	const thread_impl * d = _d.cast<thread_impl>();
-	pfs::auto_lock<> locker(& d->_mutex);
+	lock_guard<mutex> locker(_d->_mutex);
 
-	if (!d->_running || d->_finished || d->_isInFinish)
+	if (!_d->_running || _d->_finished || _d->_isInFinish)
         return false;
-    return d->_interruptionRequested;
+    return _d->_interruptionRequested;
 }
 
 } // pfs

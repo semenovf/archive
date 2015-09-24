@@ -11,7 +11,7 @@
 #define __PFS_THREADCV_HPP__
 
 #include <pfs/pimpl.hpp>
-#include <pfs/mt.hpp>
+#include <pfs/mutex.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
