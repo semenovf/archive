@@ -19,8 +19,6 @@ namespace pfs {
 
 class DLL_API app
 {
-	PFS_IMPLEMENT_LOCKING(app);
-
 	string _program;
 
 private:

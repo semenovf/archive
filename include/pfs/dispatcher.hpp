@@ -10,11 +10,11 @@
 #ifndef __PFS_DISPATCHER_HPP__
 #define __PFS_DISPATCHER_HPP__
 
-#include <pfs/mt.hpp>
 #include <pfs/map.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/noncopyable.hpp>
 #include <pfs/dl.hpp>
+#include <pfs/mutex.hpp>
 #include <pfs/thread.hpp>
 #include <pfs/sigslotmapping.hpp>
 
@@ -36,8 +36,6 @@ struct module_spec
 
 class DLL_API dispatcher : public dl, public has_slots<>, noncopyable
 {
-	PFS_IMPLEMENT_LOCKING(dispatcher);
-
 public:
 	typedef struct { int id; sigslot_mapping_t * map; string desc; } mapping_type;
 	typedef map<int, mapping_type *> mapping_collection_type;
