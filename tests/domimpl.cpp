@@ -1,9 +1,9 @@
-#include <cwt/test.hpp>
-#include <cwt/dom/domimpl.hpp>
+#include <pfs/test.hpp>
+#include <pfs/dom/domimpl.hpp>
 
 void test_feature ()
 {
-	cwt::dom::dom_implementation dom_impl;
+	pfs::dom::dom_implementation dom_impl;
 	TEST_OK(dom_impl.hasFeature("XML"));
 	TEST_OK(dom_impl.hasFeature("XML", "1.0"));
 	TEST_OK(!dom_impl.hasFeature("UnavailableFeature"));

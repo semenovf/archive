@@ -1,4 +1,4 @@
-#include <cwt/test.hpp>
+#include <pfs/test.hpp>
 #include "../src/utils.hpp"
 
 void test_split_namespace ()
@@ -7,32 +7,32 @@ void test_split_namespace ()
 	pfs::string name;
 
 	pfs::string qName("prefix:name");
-	cwt::dom::split_namespace(prefix, name, qName);
+	pfs::dom::split_namespace(prefix, name, qName);
 	TEST_OK(prefix == "prefix");
 	TEST_OK(name == "name");
 
 	qName = pfs::string(":name");
-	cwt::dom::split_namespace(prefix, name, qName);
+	pfs::dom::split_namespace(prefix, name, qName);
 	TEST_OK(prefix.isEmpty());
 	TEST_OK(name == "name");
 
 	qName = pfs::string("prefix:");
-	cwt::dom::split_namespace(prefix, name, qName);
+	pfs::dom::split_namespace(prefix, name, qName);
 	TEST_OK(prefix == "prefix");
 	TEST_OK(name.isEmpty());
 
 	qName = pfs::string(":");
-	cwt::dom::split_namespace(prefix, name, qName);
+	pfs::dom::split_namespace(prefix, name, qName);
 	TEST_OK(prefix.isEmpty());
 	TEST_OK(name.isEmpty());
 
 	qName = pfs::string("");
-	cwt::dom::split_namespace(prefix, name, qName);
+	pfs::dom::split_namespace(prefix, name, qName);
 	TEST_OK(prefix.isEmpty());
 	TEST_OK(name.isEmpty());
 
 	qName = pfs::string();
-	cwt::dom::split_namespace(prefix, name, qName);
+	pfs::dom::split_namespace(prefix, name, qName);
 	TEST_OK(prefix.isEmpty());
 	TEST_OK(name.isEmpty());
 }

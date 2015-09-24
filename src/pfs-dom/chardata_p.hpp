@@ -1,0 +1,36 @@
+/**
+ * @file chardata_p.hpp
+ * @author wladt
+ * @date Dec 13, 2013
+ */
+
+#ifndef __PFS_DOM_CHARDATA_P_HPP__
+#define __PFS_DOM_CHARDATA_P_HPP__
+
+#include "pfs/dom/chardata.hpp"
+
+namespace pfs { namespace dom {
+
+class node_impl;
+class document_impl;
+
+class DLL_API chardata_impl : public node_impl
+{
+public:
+	chardata_impl (document_impl *, node_impl * parent, const pfs::string & data);
+	chardata_impl (chardata_impl * n, bool deep);
+
+    size_t dataLength () const;
+    pfs::string substringData (size_t offset, size_t count) const;
+    void appendData  (const pfs::string & arg);
+    void insertData  (size_t offset, const pfs::string & arg);
+    void deleteData  (size_t offset, size_t count);
+    void replaceData (size_t offset, size_t count, const pfs::string & arg);
+
+    virtual node::type nodeType () const { return node::InvalidNode; }
+    virtual node_impl * cloneNode (bool deep = true);
+};
+
+}} // pfs::dom
+
+#endif /* __PFS_DOM_CHARDATA_P_HPP__ */

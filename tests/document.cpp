@@ -1,9 +1,9 @@
-#include <cwt/test.hpp>
-#include <cwt/dom.hpp>
+#include <pfs/test.hpp>
+#include <pfs/dom.hpp>
 
 void test_basic ()
 {
-	cwt::dom::document doc;
+	pfs::dom::document doc;
 	doc.createElement(_l1("html"));
 	TEST_OK(true == true);
 }

@@ -1,0 +1,33 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs solution --create --name=pfs-dom'
+--* Date:    Wed Aug 19 11:46:48 2015
+--************************************************************
+
+solution "pfs-dom"
+    configurations {"debug", "release"}
+    platforms {"unix32", "unix64", "mswin32", "mswin64"}
+    filter "platforms:*32"
+        architecture "x32"
+    filter "platforms:*64"
+        architecture "x64"
+
+-- BEGIN PROJECT
+project "pfs-dom"
+    include("pfs-dom/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+--project "test-pfs-dom-document"
+--    include("test-pfs-dom-document/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+--project "test-pfs-dom-domimpl"
+--    include("test-pfs-dom-domimpl/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+--project "test-pfs-dom-utils"
+--    include("test-pfs-dom-utils/project.gbs")
+-- END PROJECT

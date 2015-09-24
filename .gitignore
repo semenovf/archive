@@ -7,9 +7,11 @@ release/
 doxygen/html
 doc/
 
-
 Makefile
+Makefile.*
 makefile
+makefile.*
+*.make
 *.mk
 *.exe
 *.err

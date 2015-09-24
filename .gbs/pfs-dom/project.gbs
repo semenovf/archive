@@ -1,0 +1,36 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs pro --create --name=pfs-dom --type=shared-lib'
+--* Date:    Wed Sep 24 19:14:26 2015
+--************************************************************
+
+kind          "SharedLib"
+language      "C++"
+targetname    "pfs-dom"
+
+includedirs   { "../../include", "../../../pfs/include" }
+libdirs       { "../../../.build" }
+files         {
+                  "../../src/pfs-dom/*.c"
+                , "../../src/pfs-dom/*.cpp"
+                , "../../include/**.hpp"
+                , "../../include/**.h"
+              }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-dom/pfs-dom/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-dom/pfs-dom/release"
+    targetdir    "../../../.build"
+    links        { "pfs" }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

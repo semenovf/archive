@@ -1,0 +1,197 @@
+/**
+ * @file json_simplpath_fsm.hpp
+ * @author wladt
+ * @date Apr 17, 2014
+ */
+
+#include "node_p.hpp"
+#include <pfs/fsm.hpp>
+#include <pfs/functional.hpp>
+#include <pfs/stack.hpp>
+
+namespace pfs { namespace dom {
+
+struct simple_path_context;
+
+static bool __end_elem__for_find_value (simple_path_context * ctx);
+
+struct simple_path_context
+{
+	node * root;
+	pfs::stack<node *> stack;
+	pfs::string key;
+	pfs::string subscript;
+//	pfs::function<bool (simple_path_context *)> on_end_elem;
+};
+
+static ssize_t __is_key_char(pfs::fsm::context<pfs::string> * fsm
+		, void * fn_context
+		, const pfs::string::const_iterator & begin
+		, const pfs::string::const_iterator & end);
+
+static pfs::string __ROOT_OP("/");
+static pfs::string __CHILD_OP("/");
+static pfs::string __PARENT("..");
+static pfs::string __CURRENT(".");
+static pfs::string __SUBSCRIPT_OPEN("[");
+static pfs::string __SUBSCRIPT_CLOSE("]");
+static pfs::string __DIGIT("0123456789");
+
+static bool __go_root (const pfs::string::const_iterator & /*begin*/, const pfs::string::const_iterator & /*end*/, void * /*context*/, void * /*action_args*/);
+static bool __begin_elem (const pfs::string::const_iterator & /*begin*/, const pfs::string::const_iterator & /*end*/, void * /*context*/, void * /*action_args*/);
+static bool __end_elem (const pfs::string::const_iterator & /*begin*/, const pfs::string::const_iterator & /*end*/, void * /*context*/, void * /*action_args*/);
+static bool __key (const pfs::string::const_iterator & /*begin*/, const pfs::string::const_iterator & /*end*/, void * /*context*/, void * /*action_args*/);
+static bool __subscript (const pfs::string::const_iterator & /*begin*/, const pfs::string::const_iterator & /*end*/, void * /*context*/, void * /*action_args*/);
+
+/* Examples
+ *
+ * jpath = [ '/' ] elems
+ * elems = elem *( '/' elem )
+ * elem  = ( key subscript ) | key | subscript
+ * key   = <string excluding '[', ']' and '/'>
+ * subscript = '[' DIGIT1_9 *DIGIT ']'
+ *
+ * /store/book[0]/title
+ * /[1]/book[0]/title
+ * [1]/[2]/[3]/title
+ *
+ */
+
+static pfs::fsm::transition<pfs::string> key_fsm[] = {
+      {-1,-1, FSM_MATCH_RPT_FUNC(__is_key_char, nullptr, 1,-1) , FSM_ACCEPT, nullptr, nullptr }
+};
+
+static pfs::fsm::transition<pfs::string> subscript_fsm[] = {
+      { 1,-1, FSM_MATCH_CHAR(__SUBSCRIPT_OPEN) , FSM_NORMAL, nullptr, nullptr }
+    , { 2,-1, FSM_MATCH_CHAR(__DIGIT)          , FSM_NORMAL, nullptr, nullptr }
+    , { 3,-1, FSM_MATCH_RPT_CHAR(__DIGIT,0,-1) , FSM_NORMAL, nullptr, nullptr }
+    , {-1,-1, FSM_MATCH_CHAR(__SUBSCRIPT_CLOSE), FSM_ACCEPT, nullptr, nullptr }
+};
+
+static pfs::fsm::transition<pfs::string> key_subscript_fsm[] = {
+      { 1,-1, FSM_MATCH_FSM(key_fsm)       , FSM_NORMAL, __key, nullptr }
+    , {-1,-1, FSM_MATCH_FSM(subscript_fsm) , FSM_ACCEPT, __subscript, nullptr }
+};
+
+static pfs::fsm::transition<pfs::string> elem_fsm[] = {
+	  { 1,-1, FSM_MATCH_NOTHING                , FSM_NORMAL, __begin_elem, nullptr }
+    , { 4, 2, FSM_MATCH_FSM(key_subscript_fsm) , FSM_ACCEPT, nullptr, nullptr }
+    , { 4, 3, FSM_MATCH_FSM(subscript_fsm)     , FSM_ACCEPT, __subscript, nullptr }
+    , { 4,-1, FSM_MATCH_FSM(key_fsm)           , FSM_ACCEPT, __key, nullptr }
+	, {-1,-1, FSM_MATCH_NOTHING                , FSM_ACCEPT, __end_elem, nullptr }
+};
+
+static pfs::fsm::transition<pfs::string> next_elem_fsm[] = {
+      { 1,-1, FSM_MATCH_CHAR(__CHILD_OP) , FSM_NORMAL, nullptr, nullptr }
+    , {-1,-1, FSM_MATCH_FSM(elem_fsm)    , FSM_ACCEPT, nullptr, nullptr }
+};
+
+static pfs::fsm::transition<pfs::string> elems_fsm[] = {
+	  { 1,-1, FSM_MATCH_FSM(elem_fsm)               , FSM_NORMAL, nullptr, nullptr }
+	, {-1,-1, FSM_MATCH_RPT_FSM(next_elem_fsm,0,-1) , FSM_ACCEPT, nullptr, nullptr }
+};
+
+static pfs::fsm::transition<pfs::string> jpath_fsm[] = {
+      { 1,-1, FSM_MATCH_OPT_CHAR(__ROOT_OP) , FSM_NORMAL, __go_root, nullptr }
+    , {-1,-1, FSM_MATCH_OPT_FSM(elems_fsm)  , FSM_ACCEPT, nullptr, nullptr }
+};
+
+ssize_t __is_key_char (pfs::fsm::context<pfs::string> * /*fsm*/, void * /*fn_context*/
+		, const pfs::string::const_iterator & begin
+		, const pfs::string::const_iterator & end)
+{
+	if (begin < end) {
+		if ( !(*begin == pfs::ucchar('/') || *begin == pfs::ucchar('[') || *begin == pfs::ucchar(']')) )
+			return ssize_t(1);
+	}
+	return ssize_t(-1);
+}
+
+static bool __go_root (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void * context, void * /*action_args*/)
+{
+	if (context) {
+		if (begin < end) {
+			simple_path_context * ctx = static_cast<simple_path_context *>(context);
+			ctx->stack.clear();
+			ctx->stack.push(ctx->root);
+		}
+	}
+	return true;
+}
+
+bool __key (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void * context, void * /*action_args*/)
+{
+	if (context) {
+		simple_path_context * ctx = static_cast<simple_path_context *>(context);
+		ctx->key = pfs::string(begin, end);
+	}
+	return true;
+}
+
+
+bool __subscript (const pfs::string::const_iterator & begin, const pfs::string::const_iterator & end, void * context, void * /*action_args*/)
+{
+	if (context) {
+		simple_path_context * ctx = static_cast<simple_path_context*>(context);
+		ctx->subscript = pfs::string(begin + 1, end - 1);
+	}
+	return true;
+}
+
+bool __begin_elem (const pfs::string::const_iterator & /*begin*/, const pfs::string::const_iterator & /*end*/, void * context, void * /*action_args*/)
+{
+	if (context) {
+		simple_path_context * ctx = static_cast<simple_path_context*>(context);
+		ctx->key.clear();
+		ctx->subscript.clear();
+	}
+	return true;
+}
+
+bool __end_elem (const pfs::string::const_iterator & /*begin*/, const pfs::string::const_iterator & /*end*/, void * context, void * /*action_args*/)
+{
+	if (context) {
+		simple_path_context * ctx = static_cast<simple_path_context *>(context);
+		//json_value & current = ctx->stack.top();
+
+		if (!ctx->key.isEmpty()) {
+			if (ctx->key == __CURRENT) {       // current
+				return true;                   // nothing to do
+			} else if (ctx->key == __PARENT) { // parent
+				if (ctx->stack.size() > 2)     //
+					ctx->stack.pop();
+			} else {
+				; //return ctx->on_end_elem(ctx);//->m_tmp = & ctx->m_tmp->at(ctx->m_key);
+			}
+		}
+
+		node * current = ctx->stack.top();
+
+		if (!ctx->key.isEmpty()) {
+			if (current->contains(ctx->key)) {
+				ctx->stack.push(& current->refAt(ctx->key));
+				current = ctx->stack.top();
+			} else {
+				return false;
+			}
+		}
+
+		if (!ctx->subscript.isEmpty()) {
+			bool ok;
+			size_t index = ctx->subscript.toUInt(& ok);
+
+			if (ok) {
+				if (current->contains(index))
+					ctx->stack.push(& current->refAt(index));
+			} else {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+}} // pfs::dom
+
+
