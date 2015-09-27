@@ -36,11 +36,11 @@ doctype_impl::doctype_impl (doctype_impl * n, bool deep)
         if (p->isEntity())
         	// FIXME
             // Don't use normal insert function since we would create infinite recursion
-            _entities->_map.insert(p->nodeName(), p); // _map.inserMulti(...)
+            _entities->_map.insert(p->nodeName(), p); // _map.insertMulti(...)
         if (p->isNotation())
         	// FIXME
             // Don't use normal insert function since we would create infinite recursion
-            _notations->_map.insert(p->nodeName(), p); // was _map.inserMulti(...)
+            _notations->_map.insert(p->nodeName(), p); // was _map.insertMulti(...)
         p = p->_next;
     }
 }

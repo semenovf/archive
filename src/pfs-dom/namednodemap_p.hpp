@@ -7,12 +7,11 @@
 #ifndef __PFS_DOM_NAMEDNODEMAP_P_HPP__
 #define __PFS_DOM_NAMEDNODEMAP_P_HPP__
 
-//#include <pfs/map.hpp>
-#include <map>
+#include <pfs/map.hpp>
 #include <pfs/atomic.hpp>
-#include "dom/namednodemap.hpp"
+#include "pfs/dom/namednodemap.hpp"
 
-using std::map;
+using pfs::map; // TODO Need to use pfs::map
 using pfs::string;
 
 namespace pfs { namespace dom {
@@ -50,8 +49,18 @@ public:
     node_impl * setNamedItemNS (node_impl * arg);
     node_impl * removeNamedItem (const string & name);
     node_impl * item (size_t index) const;
-    size_t length () const { return _map.size(); }
-    bool contains (const string & name) const { return _map.contains(name); }
+
+    size_t length () const
+    {
+    	return _map.size();
+    }
+
+    bool contains (const string & name) const
+    {
+    	// return _map.contains(name);
+    	return _map.find(name) != _map.end();
+    }
+
     bool containsNS (const string & nsURI, const string & localName) const
     {
     	return namedItemNS(nsURI, localName) != nullptr;
