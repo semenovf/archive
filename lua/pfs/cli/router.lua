@@ -9,14 +9,12 @@ function router:new ()
         , _h        = nil -- handler
         , _args     = require("pfs.array"):new() -- free arguments
         , _ropts    = nil   -- filled by run() method, contains pairs {optname, optarg}
-        , _continue = false -- if `true' stops after successful matching 
+        , _continue = false -- if `true' stops after successful matching
     }; 
     self.__index = self;
     local r = setmetatable(o, self);
     return r; 
 end
-
---function router.AnyValue () end
 
 function router:dump ()
     print("Options: " .. tostring(self._opts));
@@ -98,16 +96,19 @@ end
 
 function router:_match (opts, args)
     -- Empty router always matches
+    --
     if self._actions:size() == 0 and self._opts:size() == 0 then
         return self:new();
     end
     
     -- Expected action(s)
+    --
     if self._actions:size() > 0 and args:size() == 0 then
         return nil;
     end
 
     -- Too few actions
+    --
     if self._actions:size() > args:size() then
         return nil;
     end
@@ -121,7 +122,6 @@ function router:_match (opts, args)
         die("Expected string or table type value for action")
             :unless(type(a) == "string" or type(a) == "table");
         
-        --
         -- Empty table means any action value
         --
         if type(a) == "table" and #a == 0 then
@@ -144,6 +144,7 @@ function router:_match (opts, args)
                     break;
                 end  
             end
+            
             if not ok then break; end
         end
 
@@ -154,8 +155,8 @@ function router:_match (opts, args)
         return nil;
     end
     
-    local nargs = args:size() - i;
-    
+--    local nargs = args:size() - i;
+
     for i = i, args:size() - 1 do
         r._args:append(args:at(i));
     end

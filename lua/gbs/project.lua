@@ -49,42 +49,6 @@ function project:cleanPlugin ()
     return require("gbs.plugin.dummy"):new(settings);
 end
 
---function project.usage ()
---    print("NAME");
---    print("    gbs { project | pro | prj } - project manipulation");
---    print("");
---    print("SYNOPSYS");
---    print("    (1) gbs project --create");
---    print("            --name=NAME [--type=PROJECT_TYPE]");
---    print("            [--lang=LANG] [--depends=NAME [--depends=NAME ...]]");
---    print("    (2) gbs project --build");
---    print("            [--name=NAME]");
---    print("            [--config={debug | release}]");
---    print("            [--build-tool=BUILD_TOOL]");
---    print("            [--target-platform=TARGET_PLATFORM]");
---    print("");
---    print("DESCRIPTION");
---    print("    (1) - create project with name NAME");
---    print("    (2) - build project or solution en masse");
---    print("");
---    print("OPTIONS");
---    print("    --depends");
---    print("        specify one more sibling project names (inside solution)");
---    print("");
---    print("VALUES");
---    print("    NAME");
---    print("        Valid only alphanumeric characters, underscore ('_') and dash ('-')");
---    print("    PROJECT_TYPE");
---    print("        `console-app' | `gui-app' | `shared-lib' | `static-lib' | `test'");
---    print("        Default is `console-app'");
---    print("    LANG");
---    print("        Language identifier: `C++' | `C'. Default is C++");
---    print("    BUILD_TOOL");
---    print("        `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'");
---    print("    TARGET_PLATFORM"); 
---    print("        `unix32' | `unix64' | `mswin32' | `mswin64'");
---end
-
 function project.registered (solutionFile, projectName)
     for line in io.lines(solutionFile) do
         r = line:match('^project%s"([^%s]-)"');

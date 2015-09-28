@@ -1,0 +1,15 @@
+NAME
+    gbs { solution | sln } - solution manipulation
+
+SYNOPSYS
+    (1) gbs solution --create --name=NAME
+
+DESCRIPTION
+    (1) - create solution with specified name NAME.
+    	  
+    All commands must be run inside of workspace directory.
+
+VALUES
+    NAME
+        Solution name.
+        Must be valid file system name for directory.

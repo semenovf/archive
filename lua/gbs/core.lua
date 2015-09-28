@@ -101,7 +101,6 @@ function gbs.run (argc, argv)
     cli:router()
         :a("help")
         :a({"workspace", "ws", "solution", "sln", "project", "pro", "prj"})
-        --:a({})
         :h(function (r)
                 Settings:set("Domain", r:actionAt(1));
                 help_type:new(Settings):help();
@@ -111,9 +110,14 @@ function gbs.run (argc, argv)
     cli:router()
         :a("help")
         :h(function (r) 
-                cli:guide():usage();
-                return true;
-           end);
+            help_type:new(Settings):help();
+            return true;
+        end);
+--      TODO Really help must be generated automatically (need to implement)
+--        :h(function (r) 
+--                cli:guide():usage();
+--                return true;
+--           end);
            
     cli:router()
         :a({"workspace", "ws"})
@@ -133,13 +137,7 @@ function gbs.run (argc, argv)
     cli:router()
         :a({"workspace", "ws"})
         :b("build")
---        :s("config", Settings:get("BuildConfig") or "")
---        :s("build-tool", Settings:get("BuildTool") or "")
---        :s("target-platform", Settings:get("TargetPlatform") or "")
         :h(function (r)
---                Settings:set("BuildConfig"   , _esn(r:optArg("config")));
---                Settings:set("BuildTool"     , _esn(r:optArg("build-tool")));
---                Settings:set("TargetPlatform", _esn(r:optArg("target-platform")));
                 return require("gbs.workspace"):new(Settings):build();
            end);
 

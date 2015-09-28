@@ -1,0 +1,41 @@
+NAME
+    gbs { workspace | ws } - workspace manipulation
+
+SYNOPSYS
+    (1) gbs workspace --create
+            --path=PATH
+            --build-tool=BUILD_TOOL
+            --target-platform=TARGET_PLATFORM
+            [ --config=CONFIG ]
+
+    (2) gbs workspace --build
+
+    (3) gbs workspace --clean
+
+DESCRIPTION
+    (1) - create workspace at specified directory (PATH).
+    
+    (2) - build solutions in workspace listed in `solutions.txt' file
+          that placed in root of workspace directory (*).
+
+    (3) - clean solutions in workspace listed in `solutions.txt' file
+          that placed in root of workspace directory (*).
+
+    (*) Must be run inside of workspace directory.
+	
+VALUES
+    PATH
+        Valid file system path for directory.
+        
+    BUILD_TOOL
+    	Default build tool used to build solution/projects in workspace.
+        Valid values: `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'.
+        
+    TARGET_PLATFORM 
+        Default target platform used to build solutions/projects in workspace.
+        Valid values: `unix32' | `unix64' | `mswin32' | `mswin64'.
+        
+    CONFIG
+        Default configuration while building solutions/projects.
+        Valid values: `debug' | `release'. 
+        Default is `debug'.
