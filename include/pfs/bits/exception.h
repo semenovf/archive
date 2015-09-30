@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 /* FIXME Need to implement thread-safe and platform independent of strerror call */
 

@@ -10,22 +10,24 @@
 
 #include <pfs.hpp>
 #include <pfs/noncopyable.hpp>
-#include <queue>
+#include <pfs/mutex.hpp>
 
 namespace pfs {
 
-template <typename T>
+template <typename T, typename Lockable = faked_mutex>
 class ring_buffer : noncopyable
 {
 public:
+	typedef Lockable mutex_type;
 	typedef size_t size_type;
 	typedef T      item_type;
 
 private:
-	size_type  _head;
-	size_type  _count;
-	size_type  _maxSize;
-	item_type  * _data;
+	mutex_type  _mutex;
+	size_type   _head;
+	size_type   _count;
+	size_type   _maxSize;
+	item_type * _data;
 
 public:
 	ring_buffer (size_type maxSize)
@@ -94,6 +96,8 @@ template <typename T>
 template <typename U>
 void ring_buffer<T>::push (const U & value)
 {
+	pfs::lock_guard<mutex_type> locker(_mutex);
+
 	PFS_ASSERT(sizeof(U) <= sizeof(T));
 	PFS_ASSERT(canPush(1));
 
@@ -117,6 +121,8 @@ void ring_buffer<T>::push (const U & value)
 template <typename T>
 void ring_buffer<T>::pop ()
 {
+	pfs::lock_guard<mutex_type> locker(_mutex);
+
 	if (_count > 0) {
 		_data[_head].~T();
 
@@ -133,6 +139,7 @@ template <typename T>
 template <typename U>
 U & ring_buffer<T>::front ()
 {
+	pfs::lock_guard<mutex_type> locker(_mutex);
 	PFS_ASSERT(_count > 0);
 	return *reinterpret_cast<U *>(& _data[_head]);
 }
@@ -141,6 +148,7 @@ template <typename T>
 template <typename U>
 U ring_buffer<T>::front () const
 {
+	pfs::lock_guard<mutex_type> locker(_mutex);
 	PFS_ASSERT(_count > 0);
 	return *reinterpret_cast<U *>(& _data[_head]);
 }
