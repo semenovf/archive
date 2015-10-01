@@ -16,8 +16,8 @@
 namespace pfs { namespace io {
 
 void buildNativeAddr (const ipx_addr & addr, sockaddr_ipx * result);
-uint8_t nativeFrameType (ipx_frame_t frameType);
-ipx_frame_t frameType (uint8_t nativeFrameType);
+uint8_t nativeFrameType (ipx_frame_enum frameType);
+ipx_frame_enum frameType (uint8_t nativeFrameType);
 
 struct ipx_socket_impl : public device_impl
 {
@@ -48,7 +48,7 @@ struct ipx_socket_impl : public device_impl
     virtual void    flushDevice    () {}
 
     bool open (const ipx_addr & addr, int32_t oflags, errorable_ext & ex);
-    ipx_frame_t frameType () const;
+    ipx_frame_enum frameType () const;
 
     ssize_t recvfrom (sockaddr_ipx * saddr);
 };

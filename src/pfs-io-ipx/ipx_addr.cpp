@@ -24,7 +24,7 @@ ipx_addr::ipx_addr (const ipx_addr & addr)
 	memcpy(_addr, addr._addr, IpxNodeLen * sizeof(unsigned char));
 }
 
-ipx_addr::ipx_addr (const char * addr, uint16_t port, ipx_frame_t frameType)
+ipx_addr::ipx_addr (const char * addr, uint16_t port, ipx_frame_enum frameType)
     : _port(port)
     , _frameType(frameType)
 {
@@ -34,7 +34,7 @@ ipx_addr::ipx_addr (const char * addr, uint16_t port, ipx_frame_t frameType)
 	memcpy(_addr, reinterpret_cast<const unsigned char *>(addr), IpxNodeLen * sizeof(unsigned char));
 }
 
-ipx_addr::ipx_addr (const unsigned char addr[IpxNodeLen], uint16_t port, ipx_frame_t frameType)
+ipx_addr::ipx_addr (const unsigned char addr[IpxNodeLen], uint16_t port, ipx_frame_enum frameType)
     : _port(port)
     , _frameType(frameType)
 {
@@ -47,7 +47,7 @@ ipx_addr::ipx_addr (unsigned char a0
 		, unsigned char a3
 		, unsigned char a4
 		, unsigned char a5
-		, uint16_t port, ipx_frame_t frameType)
+		, uint16_t port, ipx_frame_enum frameType)
     : _port(port)
     , _frameType(frameType)
 {
@@ -80,12 +80,12 @@ static const struct {
     , { _l1("IpxFrameTr8022"),  _l1("Tr802.2") }
 };
 
-string ipx_addr::frameTypeToString (ipx_frame_t frameType)
+string ipx_addr::frameTypeToString (ipx_frame_enum frameType)
 {
     return FrameTypeStrings[frameType].name;
 }
 
-string ipx_addr::frameTypeToCanonicalName (ipx_frame_t frameType)
+string ipx_addr::frameTypeToCanonicalName (ipx_frame_enum frameType)
 {
     return FrameTypeStrings[frameType].canonical;
 }

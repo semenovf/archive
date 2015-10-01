@@ -12,7 +12,7 @@ using std::endl;
 struct options
 {
     bool         isServer;
-    ipx_frame_t  frameType;
+    ipx_frame_enum  frameType;
     unsigned int port;
 };
 

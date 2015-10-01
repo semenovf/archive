@@ -23,7 +23,7 @@ void buildNativeAddr (const ipx_addr & addr, sockaddr_ipx * result)
     result->sipx_type = nativeFrameType(addr.frameType());
 }
 
-ipx_frame_t frameType (uint8_t nativeFrameType)
+ipx_frame_enum frameType (uint8_t nativeFrameType)
 {
 	switch(nativeFrameType) {
 	case IPX_FRAME_NONE    : return IpxFrameNone;
@@ -38,7 +38,7 @@ ipx_frame_t frameType (uint8_t nativeFrameType)
 	return IpxFrameNone;
 }
 
-uint8_t nativeFrameType (ipx_frame_t frameType)
+uint8_t nativeFrameType (ipx_frame_enum frameType)
 {
 	switch(frameType) {
 	case IpxFrameNone   : return IPX_FRAME_NONE;
@@ -53,7 +53,7 @@ uint8_t nativeFrameType (ipx_frame_t frameType)
 	return IPX_FRAME_NONE;
 }
 
-ipx_frame_t ipx_socket_impl::frameType () const
+ipx_frame_enum ipx_socket_impl::frameType () const
 {
     return pfs::io::frameType(_sockaddr.sipx_type);
 }
