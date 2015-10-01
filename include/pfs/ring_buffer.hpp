@@ -10,24 +10,24 @@
 
 #include <pfs.hpp>
 #include <pfs/noncopyable.hpp>
-#include <pfs/mutex.hpp>
 
 namespace pfs {
 
-template <typename T, typename Lockable = faked_mutex>
+template <typename T>
 class ring_buffer : noncopyable
 {
 public:
-	typedef Lockable mutex_type;
 	typedef size_t size_type;
 	typedef T      item_type;
 
 private:
-	mutex_type  _mutex;
 	size_type   _head;
 	size_type   _count;
 	size_type   _maxSize;
 	item_type * _data;
+
+private:
+	void destroy_and_remove (size_t count);
 
 public:
 	ring_buffer (size_type maxSize)
@@ -38,7 +38,11 @@ public:
 		_data = reinterpret_cast<T *>(new char[maxSize * sizeof(T)]);
 	}
 
-	~ring_buffer ();
+	~ring_buffer ()
+	{
+		destroy_and_remove(_count);
+		delete [] reinterpret_cast<char *>(_data);
+	}
 
 	bool isEmpty () const
 	{
@@ -74,40 +78,32 @@ public:
 	template <typename U>
 	void push (const U & value);
 
-	void pop ();
-
-	template <typename U>
-	U & front ();
-
-	template <typename U>
-	U front () const;
-};
-
-template <typename T>
-ring_buffer<T>::~ring_buffer ()
-{
-	while (_count) {
-		pop();
+	void pop ()
+	{
+		destroy_and_remove(1);
 	}
-	delete [] reinterpret_cast<char *>(_data);
-}
+
+	template <typename U>
+	void pop (U & x)
+	{
+		PFS_ASSERT(_count > 0);
+		x = reinterpret_cast<U &>(_data[_head]);
+		destroy_and_remove(1);
+	}
+};
 
 template <typename T>
 template <typename U>
 void ring_buffer<T>::push (const U & value)
 {
-	pfs::lock_guard<mutex_type> locker(_mutex);
-
 	PFS_ASSERT(sizeof(U) <= sizeof(T));
 	PFS_ASSERT(canPush(1));
 
 	size_type index = _count;
 
-	//
 	// Is there a space at the right of the head or not ?
 	//
 	if (_head + _count > _maxSize ) {
-		//
 		// No space at the right of the head,
 		// calculate index to push new data
 		//
@@ -119,11 +115,12 @@ void ring_buffer<T>::push (const U & value)
 }
 
 template <typename T>
-void ring_buffer<T>::pop ()
+void ring_buffer<T>::destroy_and_remove (size_t count)
 {
-	pfs::lock_guard<mutex_type> locker(_mutex);
+	if (count > _count)
+		count = _count;
 
-	if (_count > 0) {
+	while (count > 0) {
 		_data[_head].~T();
 
 		if (_head < _maxSize - 1)
@@ -132,25 +129,8 @@ void ring_buffer<T>::pop ()
 			_head = 0;
 
 		--_count;
+		--count;
 	}
-}
-
-template <typename T>
-template <typename U>
-U & ring_buffer<T>::front ()
-{
-	pfs::lock_guard<mutex_type> locker(_mutex);
-	PFS_ASSERT(_count > 0);
-	return *reinterpret_cast<U *>(& _data[_head]);
-}
-
-template <typename T>
-template <typename U>
-U ring_buffer<T>::front () const
-{
-	pfs::lock_guard<mutex_type> locker(_mutex);
-	PFS_ASSERT(_count > 0);
-	return *reinterpret_cast<U *>(& _data[_head]);
 }
 
 } // pfs

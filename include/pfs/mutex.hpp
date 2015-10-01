@@ -33,7 +33,7 @@ public:
 	void try_lock() {}
 	void unlock()   {}
 
-	native_handle_type native_handle () { return (native_handle_type *)0; }
+	native_handle_type native_handle () { return (native_handle_type)0; }
 };
 
 #if __cplusplus >= 201103L
@@ -249,11 +249,11 @@ public:
 
 	void lock ()
 	{
-		if (!_mtx)
+		if (!_mtx) {
 			PFS_THROW_SYSERR(EPERM); // Operation not permitted (POSIX.1)
-		else if (_owns)
+		} else if (_owns) {
 			PFS_THROW_SYSERR(EDEADLK); // Resource deadlock avoided (POSIX.1)
-		else {
+		} else {
 			_mtx->lock();
 			_owns = true;
 		}
@@ -261,11 +261,11 @@ public:
 
 	bool try_lock()
 	{
-		if (!_mtx)
+		if (!_mtx) {
 			PFS_THROW_SYSERR(EPERM);
-		else if (_owns)
+		} else if (_owns) {
 			PFS_THROW_SYSERR(EDEADLK);
-		else {
+		} else {
 			_owns = _mtx->try_lock();
 			return _owns;
 		}
@@ -305,9 +305,9 @@ public:
 
 	void unlock ()
 	{
-		if (!_owns)
+		if (!_owns) {
 			PFS_THROW_SYSERR(EPERM);
-		else if (_mtx) {
+		} else if (_mtx) {
 			_mtx->unlock();
 			_owns = false;
 		}
@@ -333,7 +333,7 @@ public:
 		return _owns;
 	}
 
-	explicit operator bool () const // XXX noexcept
+	/*explicit */operator bool () const // XXX noexcept
 	{
 		return owns_lock();
 	}
@@ -386,8 +386,8 @@ public:
 	bool try_lock () { return true; }
 	void unlock () {}
 	mutex_type * release () { return 0; }
-	bool owns_lock () const { return true; }
-	explicit operator bool () const { return owns_lock(); }
+	bool owns_lock () const { return true; } // FIXME what value should return this method ?
+	/*explicit */operator bool () const { return owns_lock(); }
 	mutex_type * mutex () const { return 0; }
 };
 

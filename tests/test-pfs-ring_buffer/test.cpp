@@ -77,31 +77,30 @@ void test_pod ()
 	for (int i = 0; i < 4; ++i) {
 		TEST_FAIL(!rbuffer.isEmpty());
 
-		A & x = rbuffer.front<A>();
-
+		A x;
+		rbuffer.pop<A>(x);
 		TEST_OK(x.a == i);
-		rbuffer.pop();
 	}
 
 	for (int i = 0; i < 4; ++i) {
 		TEST_FAIL(!rbuffer.isEmpty());
 
-		B & x = rbuffer.front<B>();
+		B x;
+		rbuffer.pop<B>(x);
 
 		TEST_OK(x.a == i);
 		TEST_OK(x.b == 'W');
-		rbuffer.pop();
 	}
 
 	for (int i = 0; i < 4; ++i) {
 		TEST_FAIL(!rbuffer.isEmpty());
 
-		C & x = rbuffer.front<C>();
+		C x;
+		rbuffer.pop<C>(x);
 
 		TEST_OK(x.a == i);
 		TEST_OK(x.b == 'W');
 		TEST_OK(x.c == 3.14);
-		rbuffer.pop();
 	}
 
 	TEST_FAIL(rbuffer.isEmpty());
