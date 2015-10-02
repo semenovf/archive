@@ -19,7 +19,13 @@ struct file_impl : public device_impl
 	string _path;
 	int    _fd;
 
-	file_impl () : _fd(-1) { ; }
+	file_impl () : _fd(-1)
+	{ }
+
+	file_impl (const string & path, int fd)
+		: _path(path), _fd(fd)
+	{ }
+
 	~file_impl ()
 	{
 		if (_fd > 0) {
@@ -175,7 +181,10 @@ bool file::open (const pfs::string & path, int32_t oflags)
     if (!checkNotOpened())
         return false;
 
-	file_impl * d = dynamic_cast<file_impl * >(_d);
+    if (_d) {
+        delete _d;
+        _d = nullptr;
+    }
 
 	if (oflags & device::ReadWrite) {
 		native_oflags |= O_RDWR;
@@ -194,8 +203,6 @@ bool file::open (const pfs::string & path, int32_t oflags)
 	if (oflags & device::NonBlocking)
 		native_oflags |= O_NONBLOCK;
 
-	d->_path = path;
-
 	fd = ::open(path.c_str(), native_oflags);
 
 	if (fd < 0) {
@@ -205,8 +212,6 @@ bool file::open (const pfs::string & path, int32_t oflags)
 		return false;
 	}
 
-	d->_fd = fd;
-
 	if (created) {
 		if (!set_permissions(path, file::ReadOwner | file::WriteOwner)) {
 			pfs::string errmsg;
@@ -214,16 +219,17 @@ bool file::open (const pfs::string & path, int32_t oflags)
 			this->addSystemError(errno, errmsg);
 			return false;
 		}
-		return true;
 	}
+
+	_d = new file_impl(path, fd);
+	this->setFlags(oflags);
 
 	return true;
 }
 
 size_t file::size () const
 {
-    if (isNull())
-        return 0;
+	PFS_ASSERT(_d);
 
     const file_impl * d = dynamic_cast<const file_impl * >(_d);
 
@@ -246,8 +252,7 @@ size_t file::size () const
 
 bool file::setPermissions (int32_t perms)
 {
-    if (isNull())
-        return false;
+	PFS_ASSERT(_d);
 
     const file_impl * d = dynamic_cast<const file_impl * >(_d);
 
@@ -262,10 +267,24 @@ bool file::setPermissions (int32_t perms)
 
 void file::rewind ()
 {
-    if (!isNull()) {
-        file_impl * d = dynamic_cast<file_impl * >(_d);
-        ::lseek(d->_fd, 0L, SEEK_SET);
-    }
+	PFS_ASSERT(_d);
+	file_impl * d = dynamic_cast<file_impl * >(_d);
+	::lseek(d->_fd, 0L, SEEK_SET);
+}
+
+
+size_t file::offset () const
+{
+	PFS_ASSERT(_d);
+	file_impl * d = dynamic_cast<file_impl * >(_d);
+	return ::lseek(d->_fd, 0L, SEEK_CUR);
+}
+
+void file::setOffset (size_t off)
+{
+	PFS_ASSERT(_d);
+	file_impl * d = dynamic_cast<file_impl * >(_d);
+	::lseek(d->_fd, off, SEEK_SET);
 }
 
 }} // cwt::io

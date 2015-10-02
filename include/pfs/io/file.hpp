@@ -35,14 +35,22 @@ public:
 public:
 	file () : device() {}
 	file (int fd);
-	file (const pfs::string & path, int32_t oflags = ReadWrite);
+	file (const string & path, int32_t oflags = ReadWrite);
 	virtual ~file () {}
 
-	bool open (const pfs::string & path, int32_t oflags = ReadWrite);
+	bool open (const string & path, int32_t oflags = ReadWrite);
 
 	size_t size () const;
 	bool setPermissions (int32_t perms);
 	void rewind ();
+	size_t offset () const;
+	void setOffset (size_t off);
+
+	string readAll ()
+	{
+		return string::fromUtf8(read(available()));
+	}
+
 };
 
 }} // pfs::io

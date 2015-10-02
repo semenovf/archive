@@ -14,6 +14,8 @@
 #include <pfs/errorable_ext.hpp>
 #include <pfs/zlib.hpp>
 
+// TODO Apply support of device types: RandomAccessDevice and StreamDevice
+
 namespace pfs { namespace io {
 
 struct device_impl
@@ -72,6 +74,11 @@ protected:
         return true;
     }
 
+    void setFlags (uint32_t oflags)
+    {
+    	_oflags = oflags;
+    }
+
 public:
 	enum OpenMode {
 	      NotOpen     = 0
@@ -92,6 +99,11 @@ public:
             _d = nullptr;
         }
     }
+
+    operator bool () const
+	{
+    	return opened();
+	}
 
     bool isNull() const { return _d == nullptr; }
 

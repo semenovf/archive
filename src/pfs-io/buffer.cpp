@@ -85,7 +85,7 @@ bool buffer::open (byte_t a[], size_t n, uint32_t oflags)
         delete _d;
 
     _d = new buffer_impl(a, n);
-    _oflags = oflags;
+    this->setFlags(oflags);
 
     return _d != nullptr;
 }
