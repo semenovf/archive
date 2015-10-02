@@ -78,7 +78,7 @@ void test_pod ()
 		TEST_FAIL(!rbuffer.isEmpty());
 
 		A x;
-		rbuffer.pop<A>(x);
+		rbuffer.pop<A>(& x);
 		TEST_OK(x.a == i);
 	}
 
@@ -86,7 +86,7 @@ void test_pod ()
 		TEST_FAIL(!rbuffer.isEmpty());
 
 		B x;
-		rbuffer.pop<B>(x);
+		rbuffer.pop<B>(& x);
 
 		TEST_OK(x.a == i);
 		TEST_OK(x.b == 'W');
@@ -96,7 +96,7 @@ void test_pod ()
 		TEST_FAIL(!rbuffer.isEmpty());
 
 		C x;
-		rbuffer.pop<C>(x);
+		rbuffer.pop<C>(& x);
 
 		TEST_OK(x.a == i);
 		TEST_OK(x.b == 'W');

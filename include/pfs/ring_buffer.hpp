@@ -13,12 +13,12 @@
 
 namespace pfs {
 
-template <typename T>
+template <typename _Copyable>
 class ring_buffer : noncopyable
 {
 public:
-	typedef size_t size_type;
-	typedef T      item_type;
+	typedef size_t    size_type;
+	typedef _Copyable item_type;
 
 private:
 	size_type   _head;
@@ -35,7 +35,7 @@ public:
 		, _count(0)
 		, _maxSize(maxSize)
 	{
-		_data = reinterpret_cast<T *>(new char[maxSize * sizeof(T)]);
+		_data = reinterpret_cast<_Copyable *>(new char[maxSize * sizeof(_Copyable)]);
 	}
 
 	~ring_buffer ()
@@ -72,8 +72,6 @@ public:
 	/**
 	 * @brief Adds data to the end of the rung buffer.
 	 * @param value Data to be added.
-	 *
-	 * @note @a T must be copyable.
 	 */
 	template <typename U>
 	void push (const U & value);
@@ -84,26 +82,33 @@ public:
 	}
 
 	template <typename U>
-	void pop (U & x)
+	void pull (U * x)
 	{
 		PFS_ASSERT(_count > 0);
-		x = reinterpret_cast<U &>(_data[_head]);
+		*x = reinterpret_cast<U &>(_data[_head]);
+	}
+
+	template <typename U>
+	void pop (U * x)
+	{
+		PFS_ASSERT(_count > 0);
+		*x = reinterpret_cast<U &>(_data[_head]);
 		destroy_and_remove(1);
 	}
 };
 
-template <typename T>
+template <typename _Copyable>
 template <typename U>
-void ring_buffer<T>::push (const U & value)
+void ring_buffer<_Copyable>::push (const U & value)
 {
-	PFS_ASSERT(sizeof(U) <= sizeof(T));
+	PFS_ASSERT(sizeof(U) <= sizeof(item_type));
 	PFS_ASSERT(canPush(1));
 
-	size_type index = _count;
+	size_type index = _head + _count;
 
 	// Is there a space at the right of the head or not ?
 	//
-	if (_head + _count > _maxSize ) {
+	if (index > _maxSize ) {
 		// No space at the right of the head,
 		// calculate index to push new data
 		//
@@ -114,14 +119,14 @@ void ring_buffer<T>::push (const U & value)
 	++_count;
 }
 
-template <typename T>
-void ring_buffer<T>::destroy_and_remove (size_t count)
+template <typename _Copyable>
+void ring_buffer<_Copyable>::destroy_and_remove (size_t count)
 {
 	if (count > _count)
 		count = _count;
 
 	while (count > 0) {
-		_data[_head].~T();
+		_data[_head].~item_type();
 
 		if (_head < _maxSize - 1)
 			++_head;

@@ -20,7 +20,7 @@
 #   undef _Tr
 #endif
 
-#define _Tr(s) _u8(s).c_str()
+#define _Tr(s) _u8(s).c_str() // TODO DELETE
 
 namespace pfs {
 
