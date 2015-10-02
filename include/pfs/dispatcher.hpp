@@ -34,7 +34,7 @@ struct module_spec
 	module_dtor_t dtor;   /* may be null (no destructor) */
 };
 
-class DLL_API dispatcher : public dl, public has_slots<>, noncopyable
+class DLL_API dispatcher : public errorable_ext, public has_slots<>, noncopyable
 {
 public:
 	typedef struct { int id; sigslot_mapping_t * map; string desc; } mapping_type;
@@ -48,7 +48,7 @@ private:
 	module *          _masterModule;
 
 protected:
-    dispatcher() : dl(), _masterModule(nullptr) {}
+    dispatcher() : _masterModule(nullptr) {}
 
 public:
 	dispatcher (mapping_type mapping[], int n);
@@ -56,6 +56,8 @@ public:
 	    disconnectAll();
 	    unregisterAll();
 	}
+
+	void addSearchPath (const string & dir);
 
 	module * registerLocalModule (module * mod, module_dtor_t dtor = module::defaultDtor);
 	module * registerModuleForPath (const string & path, const char * modname = nullptr, int argc = 0, char ** argv = nullptr);

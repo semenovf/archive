@@ -36,6 +36,12 @@ dispatcher::dispatcher (dispatcher::mapping_type mapping[], int n)
 	}
 }
 
+void dispatcher::addSearchPath (const string & dir)
+{
+	pfs::dl & dl = pfs::dl::getDL();
+	dl.addSearchPath(dir);
+}
+
 module * dispatcher::registerLocalModule (module * mod, module_dtor_t dtor)
 {
 	if (mod)
@@ -53,11 +59,12 @@ module * dispatcher::registerModuleForPath (const string & path, const char * pn
 		return nullptr;
 	}
 
-	dl::handle ph = dl::open(path, false, true);
+	pfs::dl & dl = pfs::dl::getDL();
+	dl::handle ph = dl.open(path, false, true);
 
 	if (ph) {
-		module_ctor_t module_ctor = reinterpret_cast<module_ctor_t>(dl::ptr(ph, PFS_MODULE_CTOR_NAME));
-		module_dtor_t module_dtor = reinterpret_cast<module_dtor_t>(dl::ptr(ph, PFS_MODULE_DTOR_NAME));
+		module_ctor_t module_ctor = reinterpret_cast<module_ctor_t>(dl.ptr(ph, PFS_MODULE_CTOR_NAME));
+		module_dtor_t module_dtor = reinterpret_cast<module_dtor_t>(dl.ptr(ph, PFS_MODULE_DTOR_NAME));
 
 		if (module_ctor) {
 			module * mod = reinterpret_cast<module*>(module_ctor(pname, arg, argv));
@@ -71,7 +78,7 @@ module * dispatcher::registerModuleForPath (const string & path, const char * pn
 			string m;
 			this->addError(m << _Tr("constructor not found for module specified by path") << ": " << path);
 		}
-		dl::close(ph);
+		dl.close(ph);
 	} else {
 		string m;
 		this->addError(m << _Tr("failed to open module specified by path") << ": " << path);
@@ -81,14 +88,15 @@ module * dispatcher::registerModuleForPath (const string & path, const char * pn
 
 module * dispatcher::registerModuleForName (const string & name, const char * modname, int arg, char ** argv)
 {
-	string filename = dl::buildDlFileName(name);
+	pfs::dl & dl = pfs::dl::getDL();
+	string filename = dl.buildDlFileName(name);
 	string realPath;
 	bool global = false;  // Avoid name conflicts
 	bool resolve = true;
-	dl::handle ph = dl::open(filename, realPath, global, resolve); // try to find module
+	dl::handle ph = dl.open(filename, realPath, global, resolve); // try to find module
 
 	if (ph) {
-		dl::close(ph);
+		dl.close(ph);
 		string m(name);
 		debug(m << ": " << _Tr("module found at ") << realPath);
 		return registerModuleForPath(realPath, modname, arg, argv);
@@ -204,7 +212,8 @@ void dispatcher::unregisterAll ()
 			pspec.dtor(mod);
 		}
 		if (pspec.ph) {
-			dl::close(pspec.ph);
+			pfs::dl & dl = pfs::dl::getDL();
+			dl.close(pspec.ph);
 		}
 		string m(pname);
 		debug(m << ": " << _Tr("module unregistered"));
