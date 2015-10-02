@@ -15,6 +15,7 @@
 #include <pfs/stringlist.hpp>
 #include <pfs/errorable_ext.hpp>
 #include <pfs/pluggable.hpp>
+#include <pfs/noncopyable.hpp>
 
 #ifdef PFS_CC_MSVC
 #	include <windows.h>
@@ -30,7 +31,7 @@
 
 namespace pfs {
 
-class DLL_API dl : public errorable_ext
+class DLL_API dl : public errorable_ext, noncopyable
 {
 public:
 #ifdef PFS_CC_MSC
@@ -41,12 +42,21 @@ public:
 	typedef void * symbol;
 #endif
 
+	typedef pfs::map<string, handle> plugin_map_type;
+
 private:
 	stringlist _searchPath;
-	pfs::map<string, handle> _plugins;
+	plugin_map_type _plugins;
+
+protected:
+	dl () {};
 
 public:
-	dl () {};
+	~dl ();
+
+	static dl & getPluginLoader () { return getDL(); }
+	static dl & getDL ();
+
 	handle open (const string & path
 			, bool global = false
 			, bool resolve = true) {
@@ -63,7 +73,6 @@ public:
     string buildDlFileName (const string & basename);
 	void   clearSearchPath () { _searchPath.clear(); }
 	void   addSearchPath   (const string & dir) { _searchPath.append(dir); }
-	static void addGlobalSearchPath   (const string & dir);
 
 private:
 	string searchFile (const string & filename);

@@ -3,11 +3,29 @@
 
 namespace pfs {
 
-static stringlist globalSearchPath;
+//static stringlist globalSearchPath;
+//
+//void dl::addGlobalSearchPath (const string & dir)
+//{
+//	globalSearchPath.append(dir);
+//}
 
-void dl::addGlobalSearchPath (const string & dir)
+dl & dl::getDL ()
 {
-	globalSearchPath.append(dir);
+	static pfs::dl dl;
+	return dl;
+}
+
+dl::~dl ()
+{
+    plugin_map_type::iterator it = dl::_plugins.begin();
+    plugin_map_type::iterator itEnd = dl::_plugins.end();
+
+    for (; it != itEnd; ++it) {
+		dl::handle dlh = it.value();
+		PFS_ASSERT(dlh);
+		close(dlh);
+	}
 }
 
 /**
@@ -56,19 +74,6 @@ string dl::searchFile (const string & filename)
 				return r;
 			++it;
 		}
-
-		it = globalSearchPath.cbegin();
-		itEnd = globalSearchPath.cend();
-
-		while (it != itEnd) {
-			string r(*it);
-			r += fs.separator();
-			r += filename;
-			if (fs.exists(r))
-				return r;
-			++it;
-		}
-
 	}
 
 	return string();
@@ -125,18 +130,18 @@ pfs::pluggable * dl::openPlugin (const string & name, const string & path)
 	dl::handle dlh = dl::open(path, global, resolve);
 
 	if (_plugins.contains(name)) {
-        addError(string() << _Tr("Duplicate plug-in with name: ") << name);
+        addError(string() << _u8("Duplicate plug-in with name: ") << name);
         return nullptr;
 	}
 
 	if (!dlh) {
-		addError(string() << _Tr("Unable to load plug-in from ") << path);
+		addError(string() << _u8("Unable to load plug-in from ") << path);
 		return nullptr;
 	}
 
 	plugin_ctor_t ctor = reinterpret_cast<plugin_ctor_t>(dl::ptr(dlh, PFS_PLUGIN_CTOR_NAME));
 	if (!ctor) {
-		addError(string() << _Tr("Constructor not found for plug-in: ")
+		addError(string() << _u8("Constructor not found for plug-in: ")
 		        << name << " [" << path << ']');
 		return nullptr;
 	}
@@ -163,7 +168,7 @@ pfs::pluggable * dl::openPlugin (const string & name)
     string path = searchFile(filename);
 
     if (path.isEmpty()) {
-        addError(string() << _Tr("Unable to find plug-in specified by name: ")
+        addError(string() << _u8("Unable to find plug-in specified by name: ")
                 << name);
         return nullptr;
     }
@@ -182,14 +187,14 @@ pfs::pluggable * dl::openPlugin (const string & name)
 bool dl::closePlugin (const string & name, pfs::pluggable * plugin)
 {
     if (!plugin) {
-        addError(string() << _Tr("Plaggable is null"));
+        addError(string() << _u8("Plaggable is null"));
         return false;
     }
 
-	pfs::map<string, dl::handle>::iterator it = dl::_plugins.find(name);
+    plugin_map_type::iterator it = dl::_plugins.find(name);
 
 	if (it == dl::_plugins.end()) {
-		addError(string() << _Tr("Plug-in not found, may be it was not load before: ")
+		addError(string() << _u8("Plug-in not found, may be it was not load before: ")
                 << name);
 		return false;
 	}
@@ -200,7 +205,7 @@ bool dl::closePlugin (const string & name, pfs::pluggable * plugin)
 	plugin_dtor_t dtor = reinterpret_cast<plugin_dtor_t>(dl::ptr(dlh, PFS_PLUGIN_DTOR_NAME));
 
 	if (!dtor) {
-		addError(string() << _Tr("Destructor not found for plug-in: ") << name);
+		addError(string() << _u8("Destructor not found for plug-in: ") << name);
 		return false;
 	}
 

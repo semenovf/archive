@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(3);
 
-	pfs::dl dl;
+	pfs::dl & dl = pfs::dl::getDL();
 	pfs::string dlname = dl.buildDlFileName(pfs::string("pfs-sys"));
 	pfs::dl::handle dlhandle;
 	typedef int (*dl_test_fn)(void);
