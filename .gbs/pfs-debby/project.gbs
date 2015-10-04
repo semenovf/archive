@@ -1,0 +1,38 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs pro --create --name=pfs-debby --type=shared-lib'
+--* Date:    Sun Oct  4 17:52:47 2015
+--************************************************************
+
+kind          "SharedLib"
+language      "C++"
+targetname    "pfs-debby"
+defines       {  }
+includedirs   {
+                  "../../include"
+                , "../../../pfs/include"
+                , "../../../pfs-sys/include" 
+              }
+libdirs       { "../../../.build" }
+files         { "../../src/pfs-debby/*.c", "../../src/pfs-debby/*.cpp", "../../include/**.hpp", "../../include/**.h" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-debby/pfs-debby/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d", "pfs-sys-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-debby/pfs-debby/release"
+    targetdir    "../../../.build"
+    links        { "pfs", "pfs-sys" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

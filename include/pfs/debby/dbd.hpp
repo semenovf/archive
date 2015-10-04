@@ -11,12 +11,26 @@
 #include <pfs/vector.hpp>
 #include <pfs/map.hpp>
 #include <pfs/string.hpp>
+#include <pfs/byte_string.hpp>
+#include <pfs/variant.hpp>
+#include <pfs/time.hpp>
+#include <pfs/date.hpp>
+#include <pfs/datetime.hpp>
 #include <utility>
 
 namespace pfs { namespace debby {
 
 class schema;
 struct driver;
+
+typedef pfs::variant<bool
+		, integral_t
+		, real_t
+		, pfs::string
+		, pfs::byte_string
+		, pfs::time
+		, pfs::date
+		, pfs::datetime> variant_type;
 
 struct database_data
 {
@@ -65,7 +79,7 @@ struct column_meta
 		, has_autoinc       (false, 0)
 		, has_not_null      (false, true)
         , has_unique        (false, false)
-		, has_default_value (false, pfs::unitype())
+		, has_default_value (false, variant_type())
 		, has_size          (false, 0)
 		, has_decimals      (false, 0)
 		, has_unsigned      (false, false)
@@ -80,7 +94,7 @@ struct column_meta
 	std::pair<bool, unsigned int> has_autoinc;  // > 0 if column is autoincremented
 	std::pair<bool, bool>   has_not_null; // has not_null value, value set in 'not_null' property
 	std::pair<bool, bool>   has_unique;
-	std::pair<bool, pfs::unitype> has_default_value;
+	std::pair<bool, variant_type> has_default_value;
 	std::pair<bool, size_t> has_size;
 	std::pair<bool, size_t> has_decimals;
 	std::pair<bool, bool>   has_unsigned;
@@ -120,9 +134,9 @@ struct driver
 	virtual bool		execStmt      (statement_data &, string & errstr) = 0;
 	virtual uintegral_t rows          (statement_data &) = 0;
 	virtual integral_t 	lastId        (statement_data &) = 0;
-	virtual bool        fetchRowArray (statement_data &, vector<pfs::unitype> & row) = 0;
-	virtual bool        fetchRowHash  (statement_data &, map<string, pfs::unitype> & row) = 0;
-	virtual bool        bind          (statement_data &, size_t index, const pfs::unitype & param) = 0;
+	virtual bool        fetchRowArray (statement_data &, vector<variant_type> & row) = 0;
+	virtual bool        fetchRowHash  (statement_data &, map<string, variant_type> & row) = 0;
+	virtual bool        bind          (statement_data &, size_t index, const variant_type & param) = 0;
 	virtual size_t      columnCount   (statement_data &) = 0;
 	virtual pfs::string columnName    (statement_data &, size_t index) = 0;
 	virtual column_type columnType    (statement_data &, size_t index) = 0;

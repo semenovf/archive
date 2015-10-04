@@ -5,9 +5,9 @@
  *      Author: wladt
  */
 
-#include "../include/cwt/debby/statement.hpp"
+#include "pfs/debby/statement.hpp"
 
-namespace cwt { namespace debby {
+namespace pfs { namespace debby {
 
 /**
  *
@@ -105,9 +105,9 @@ pfs::string statement::columnName (size_t index)
 column_type statement::columnType (size_t index)
 {
 	return isNull()
-			? cwt::debby::Null
+			? pfs::debby::Null
 			: _pimpl->_driver->columnType(*_pimpl, index);
 }
 
-}} // cwt::debby
+}} // pfs::debby
 

@@ -5,37 +5,39 @@
  *      Author: wladt
  */
 
-#include "cwt/debby/database.hpp"
-#include "cwt/debby/statement.hpp"
-#include <cwt/dl.hpp>
-#include <cwt/logger.hpp>
-#include <cwt/uri.hpp>
+#include "pfs/debby/database.hpp"
+#include "pfs/debby/statement.hpp"
+#include <pfs/dl.hpp>
+#include <pfs/logger.hpp>
+#include <pfs/uri.hpp>
 #include <pfs/safeformat.hpp>
 
-namespace cwt { namespace debby {
+namespace pfs { namespace debby {
 
 bool database::open (const pfs::string & uri_str)
 {
-	cwt::uri uri;
+	pfs::uri uri;
 
 	if (!uri.parse(uri_str)) {
-		this->addError(_Fr("Invalid URI specified for DB driver: %s") % uri_str);
+		this->addError(safeformat("Invalid URI specified for DB driver: %s")(uri_str)());
 		return false;
 	}
 
 	pfs::string debby_name = uri.scheme();
 
 	if (debby_name.isEmpty()) {
-		this->addError(_u8(_Tr("Invalid URI specified for DB driver: DB driver name is empty")));
+		this->addError(_u8("Invalid URI specified for DB driver: DB driver name is empty"));
 		return false;
 	}
 
-	debby_name.prepend(pfs::string("cwt-debby-"));
+	debby_name.prepend(pfs::string("pfs-debby-"));
 	driver * drv = nullptr;
+	pfs::dl & dl = pfs::dl::getDL();
 
-	pfs::string dlpath = this->buildDlFileName(debby_name);
-	if (!this->pluginOpen(debby_name, dlpath, & drv)) {
-		this->addError(_Fr("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath);
+	string dlpath = dl.buildDlFileName(debby_name);
+	pfs::pluggable *
+	if (!dl.openPlugin(debby_name, dlpath, & drv)) {
+		this->addError(string(safeformat("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath));
 		return false;
 	}
 
@@ -145,7 +147,6 @@ bool database::meta (const pfs::string & table, pfs::vector<column_meta> & meta)
 	return r;
 }
 
-
-}} // cwt::debby
+}} // pfs::debby
 
 

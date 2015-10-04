@@ -51,10 +51,10 @@ public:
 	uintegral_t  rows ()       { return _pimpl->_driver->rows(*_pimpl); }
 	integral_t   lastId ()     { return _pimpl->_driver->lastId(*_pimpl); }
 
-	vector<unitype> fetchRowArray ();
-	map<string, unitype> fetchRowHash ();
-	statement & bind (const unitype & param);
-	statement & bind (size_t index, const unitype & param);
+	vector<variant_type> fetchRowArray ();
+	map<string, variant_type> fetchRowHash ();
+	statement & bind (const variant_type & param);
+	statement & bind (size_t index, const variant_type & param);
 	size_t      columnCount ();
 	string      columnName (size_t index);
 	column_type columnType (size_t index);

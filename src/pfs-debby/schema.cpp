@@ -4,11 +4,11 @@
  * @date Feb 10, 2014
  */
 
-#include "../include/cwt/debby/schema.hpp"
+#include "pfs/debby/schema.hpp"
 
-namespace cwt { namespace debby {
+namespace pfs { namespace debby {
 
-bool table_basic::deploy (cwt::debby::database & db)
+bool table_basic::deploy (pfs::debby::database & db)
 {
 	pfs::string sql;
 
@@ -28,10 +28,10 @@ bool table_basic::deploy (cwt::debby::database & db)
 	}
 	sql << ")";
 
-	cwt::debby::statement st = db.prepare(sql);
+	pfs::debby::statement st = db.prepare(sql);
 	return st.exec();
 }
 
-}} // cwt::debby
+}} // pfs::debby
 
 
