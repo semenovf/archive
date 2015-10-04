@@ -1,5 +1,5 @@
-#include <pfs/test.hpp>
-#include "../src/utils.hpp"
+#include <pfs/test/test.hpp>
+#include "../../src/pfs-dom/utils.hpp"
 
 void test_split_namespace ()
 {
@@ -39,7 +39,6 @@ void test_split_namespace ()
 
 int main(int argc, char *argv[])
 {
-    PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
     BEGIN_TESTS(12);
 

@@ -1,4 +1,4 @@
-#include <pfs/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/dom/domimpl.hpp>
 
 void test_feature ()
@@ -13,7 +13,6 @@ void test_feature ()
 
 int main(int argc, char *argv[])
 {
-    PFS_CHECK_SIZEOF_TYPES;
     PFS_UNUSED2(argc, argv);
     BEGIN_TESTS(4);
 

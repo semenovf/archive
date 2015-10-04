@@ -11,9 +11,6 @@
 #include <pfs/atomic.hpp>
 #include "pfs/dom/namednodemap.hpp"
 
-using pfs::map; // TODO Need to use pfs::map
-using pfs::string;
-
 namespace pfs { namespace dom {
 
 class node_impl;

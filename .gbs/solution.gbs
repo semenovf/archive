@@ -31,3 +31,18 @@ project "pfs-dom"
 --project "test-pfs-dom-utils"
 --    include("test-pfs-dom-utils/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-dom-document"
+    include("test-pfs-dom-document/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-dom-domimpl"
+    include("test-pfs-dom-domimpl/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-dom-utils"
+    include("test-pfs-dom-utils/project.gbs")
+-- END PROJECT

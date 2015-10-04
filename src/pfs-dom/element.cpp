@@ -92,7 +92,7 @@ void element_impl::setAttributeNS (const pfs::string & nsURI, const pfs::string 
 
 void element_impl::removeAttribute (const pfs::string & attname)
 {
-    node_impl* p = _attr->removeNamedItem(attname);
+    node_impl * p = _attr->removeNamedItem(attname);
     if (p && p->ref.load() == 0)
         delete p;
 }
@@ -102,7 +102,7 @@ attr_impl * element_impl::attributeNode (const pfs::string & attname)
     return dynamic_cast<attr_impl*>(_attr->namedItem(attname));
 }
 
-attr_impl* element_impl::attributeNodeNS(const pfs::string& nsURI, const pfs::string& localName)
+attr_impl * element_impl::attributeNodeNS(const pfs::string& nsURI, const pfs::string& localName)
 {
     return dynamic_cast<attr_impl*>(_attr->namedItemNS(nsURI, localName));
 }

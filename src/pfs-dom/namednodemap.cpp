@@ -12,19 +12,24 @@ namespace pfs { namespace dom {
 void namednodemap_impl::clearMap()
 {
     // Dereference all of our children if we took references
+	//
     if (!_appendToParent) {
         map_type::const_iterator it = _map.cbegin();
+        map_type::const_iterator itEnd = _map.cend();
 
-        for (; it != _map.cend(); ++it)
-            if (!it->second->ref.deref())
-                delete it->second;
+        for (; it != itEnd; ++it) {
+        	node_impl * n = it.value();
+
+            if (!n->ref.deref())
+                delete n;
+        }
     }
     _map.clear();
 }
 
 node_impl * namednodemap_impl::namedItem (const pfs::string & name) const
 {
-	node_impl * p = _map.value(name, nullptr);
+	node_impl * p = _map.valueAt(name, nullptr);
 	return p;
 }
 
@@ -34,7 +39,7 @@ node_impl * namednodemap_impl::namedItemNS(const pfs::string & nsURI, const pfs:
     node_impl * n;
 
     for (; it != _map.cend(); ++it) {
-        n = it->second;
+        n = it.value();
 
         if (!n->_prefix.isNull()) {
             // node has a namespace
@@ -53,7 +58,7 @@ node_impl * namednodemap_impl::setNamedItem(node_impl * arg)
     if (_appendToParent)
         return _parent->appendChild(arg);
 
-    node_impl *n = _map.value(arg->nodeName());
+    node_impl * n = _map.valueAt(arg->nodeName());
     arg->ref.ref();
     _map.insert(arg->nodeName(), arg);
     return n;
@@ -69,7 +74,7 @@ node_impl * namednodemap_impl::setNamedItemNS (node_impl * arg)
 
     if (!arg->_prefix.isNull()) {
         // node has a namespace
-        node_impl *n = namedItemNS(arg->_namespaceURI, arg->_name);
+        node_impl * n = namedItemNS(arg->_namespaceURI, arg->_name);
         // We take a reference
         arg->ref.ref();
         _map.insert(arg->nodeName(), arg);
@@ -88,7 +93,8 @@ node_impl * namednodemap_impl::item (size_t index) const
 	while (index--) {
 		++it;
 	}
-	return it->second;
+
+	return it.value();
 }
 
 node_impl * namednodemap_impl::removeNamedItem (const pfs::string & name)
@@ -119,7 +125,7 @@ namednodemap_impl * namednodemap_impl::clone (node_impl * p)
     pfs::map<pfs::string, node_impl*>::const_iterator it = _map.cbegin();
 
     for (; it != _map.cend(); ++it) {
-        node_impl * new_node = it->second->cloneNode();
+        node_impl * new_node = it.value()->cloneNode();
         new_node->setParent(p);
         m->setNamedItem(new_node);
     }
