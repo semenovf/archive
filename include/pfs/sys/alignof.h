@@ -28,24 +28,4 @@
 #	endif
 #endif
 
-#ifdef __COMMENT__
-#ifdef __cplusplus
-	template <class T>
-	struct alignment_of
-	{
-#if __cplusplus >= 201103L // >= C++11
-		/* already have alignment_of */
-#else
-		struct helper
-		{
-			char a;
-			T b;
-		};
-
-		enum { value = sizeof(helper) - sizeof(T) };
-#endif
-	};
-#endif
-#endif /* __COMMENT__ */
-
 #endif /* __PFS_SYS_ALIGNOF_H__ */

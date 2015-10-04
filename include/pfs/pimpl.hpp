@@ -74,7 +74,7 @@ public:
 	    if (!o.isNull())
 	        o.detach();
 
-	    pfs_swap(_holder, o._holder);
+	    pfs::swap(_holder, o._holder);
 	}
 
     void reset ()

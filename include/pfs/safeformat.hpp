@@ -236,7 +236,7 @@ public:
 
 	safeformat & operator () (void * p);
 
-	string & operator () () { return _ctx.result; }
+	const string & operator () () const { return _ctx.result; }
 
 //--- boost-like operators
 	safeformat & operator % (char c)               { return operator () (c); }

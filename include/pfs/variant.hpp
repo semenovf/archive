@@ -28,10 +28,16 @@ inline uint32_t variant_hash_code (const char * name)
 }
 
 template <typename T>
-void variant_destroyer (void * p) { reinterpret_cast<T*>(p)->~T(); }
+void variant_destroyer (void * p)
+{
+	reinterpret_cast<T*>(p)->~T();
+}
 
 template <typename T>
-void variant_copier (void * dest, const void * src) { new (dest) T(*reinterpret_cast<const T*>(src)); }
+void variant_copier (void * dest, const void * src)
+{
+	new (dest) T(*reinterpret_cast<const T*>(src));
+}
 
 template <typename T1 = char, typename T2 = char, typename T3 = char
 		, typename T4 = char, typename T5 = char, typename T6 = char
@@ -65,45 +71,38 @@ class variant
 	hash_type _hashCode;
 	data_type _data;
 
-	void (* _destroyer) (void *);
-	void (* _copier) (void * dest, const void * src);
+	void (* _destroy) (void *);
+	void (* _copy) (void * dest, const void * src);
 
 private:
 	static hash_type invalidHashCode ()
 	{
-		static hash_type invalid_hash_code = variant_hash_code(typeid(void).name());
-		return invalid_hash_code;
+		return variant_hash_code(typeid(void).name());
 	}
 
-	void destroy () {
-		if (_destroyer)
-			_destroyer(& _data);
-		_hashCode = invalidHashCode();
-		_destroyer = nullptr;
-		_copier = nullptr;
-	}
+	void destroy ();
 
 public:
 	variant ()
 		: _hashCode(invalidHashCode())
-		, _destroyer(nullptr)
-		, _copier(nullptr)
+		, _destroy(nullptr)
+		, _copy(nullptr)
 	{}
 
 	variant (const variant & other)
 		: _hashCode(other._hashCode)
-		, _destroyer(other._destroyer)
-		, _copier(other._copier)
+		, _destroy(other._destroy)
+		, _copy(other._copy)
 	{
-		if (_copier)
-			_copier(& _data, & other._data);
+		if (_copy)
+			_copy(& _data, & other._data);
 	}
 
 	template <typename T>
 	explicit variant (const T & v)
 		: _hashCode(invalidHashCode())
-		, _destroyer(nullptr)
-		, _copier(nullptr)
+		, _destroy(nullptr)
+		, _copy(nullptr)
 	{
 		set<T>(v);
 	}
@@ -115,16 +114,7 @@ public:
 		return _hashCode != invalidHashCode();
 	}
 
-	variant & operator = (const variant & other)
-	{
-		destroy();
-		_hashCode = other._hashCode;
-		_destroyer = other._destroyer;
-		_copier = other._copier;
-		if (_copier)
-			_copier(& _data, & other._data);
-		return *this;
-	}
+	variant & operator = (const variant & other);
 
 	template <typename T>
 	variant & operator = (const T & v)
@@ -140,15 +130,7 @@ public:
 	}
 
 	template <typename T>
-	void set (const T & v)
-	{
-		if (isValid())
-			destroy();
-		_destroyer = variant_destroyer<T>;
-		_copier    = variant_copier<T>;
-		new (& _data) T(v);
-		_hashCode = variant_hash_code(typeid(T).name());
-	}
+	void set (const T & v);
 
 	template <typename T>
 	T & get ()
@@ -164,6 +146,51 @@ public:
 		return *reinterpret_cast<const T *>(& _data);
 	}
 };
+
+template <typename T1, typename T2, typename T3
+		, typename T4, typename T5, typename T6
+		, typename T7, typename T8, typename T9
+		, typename T10, typename T11, typename T12>
+void variant<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>::destroy ()
+{
+	if (_destroy)
+		_destroy(& _data);
+	_hashCode = invalidHashCode();
+	_destroy = nullptr;
+	_copy = nullptr;
+}
+
+template <typename T1, typename T2, typename T3
+		, typename T4, typename T5, typename T6
+		, typename T7, typename T8, typename T9
+		, typename T10, typename T11, typename T12>
+variant<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> &
+variant<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>::operator = (
+		const variant<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> & other)
+{
+	destroy();
+	_hashCode = other._hashCode;
+	_destroy = other._destroy;
+	_copy = other._copy;
+	if (_copy)
+		_copy(& _data, & other._data);
+	return *this;
+}
+
+template <typename T1, typename T2, typename T3
+		, typename T4, typename T5, typename T6
+		, typename T7, typename T8, typename T9
+		, typename T10, typename T11, typename T12>
+template <typename T>
+void variant<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>::set (const T & v)
+{
+	if (isValid())
+		destroy();
+	_destroy = variant_destroyer<T>;
+	_copy    = variant_copier<T>;
+	new (& _data) T(v);
+	_hashCode = variant_hash_code(typeid(T).name());
+}
 
 } // pfs
 

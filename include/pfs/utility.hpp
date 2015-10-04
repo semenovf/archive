@@ -14,8 +14,14 @@
 #if __cplusplus >= 201103L // C++11
 #	include <algorithm> // until C++11
 //#	include <utility>   // since C++11
+#endif
+
+namespace pfs {
+
+#if __cplusplus >= 201103L // C++11
+
 template<typename T>
-inline void pfs_swap (T & a, T & b)
+inline void swap (T & a, T & b)
 {
 	std::swap(a, b);
 }
@@ -30,22 +36,32 @@ inline void pfs_swap (T & a, T & b)
 //
 #else
 template<typename T>
-inline void pfs_swap (T & a, T & b)
+inline void swap (T & a, T & b)
 {
-	T tmp = a;
+	T & tmp = a;
 	a = b;
 	b = tmp;
 }
 #endif
 
-template <typename T>
-inline T pfs_min (T a, T b) { return a <= b ? a : b; }
+} // pfs
 
-template <typename T>
-inline T pfs_max (T a, T b) { return a >= b ? a : b; }
+//template <typename T>
+//inline T pfs_min (T a, T b) { return a <= b ? a : b; }
+//
+//template <typename T>
+//inline T pfs_max (T a, T b) { return a >= b ? a : b; }
+//
+//template <typename T>
+//inline T pfs_abs (T x) { return x < 0 ? x * T(-1) : x; }
 
-template <typename T>
-inline T pfs_abs (T x) { return x < 0 ? x * T(-1) : x; }
+#ifdef max
+#	undef max
+#endif
+
+#ifdef min
+#	undef min
+#endif
 
 namespace pfs {
 //

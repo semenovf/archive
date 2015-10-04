@@ -216,7 +216,7 @@ mbcs_string_impl<CodeUnitT>::difference (
 	int sign = 1;
 
 	if (to < from) {
-		pfs_swap(from, to);
+		pfs::swap(from, to);
 		sign = -1;
 	}
 
