@@ -55,7 +55,14 @@ public:
 
 	void close ();
 
-	bool query (const string & sql); // cannot be used for statements that contain binary data
+	/**
+	 *
+	 * @param sql
+	 * @return
+	 *
+	 * @note Cannot be used for statements that contain binary data
+	 */
+	bool query (const string & sql);
 	statement prepare (const string & sql);
 
 	vector<string> tables ()

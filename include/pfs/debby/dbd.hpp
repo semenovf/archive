@@ -43,7 +43,9 @@ struct statement_data
 	driver * _driver;
 	size_t   _bindCursor; // current bind index
 
-	statement_data () : _driver(nullptr), _bindCursor(0)
+	statement_data ()
+		: _driver(nullptr)
+		, _bindCursor(0)
 	{}
 
 	statement_data (const statement_data & other)
@@ -111,6 +113,7 @@ struct driver
 			, const string & password
 			, const map<string, string> & params
 			, string & errstr) = 0;
+
 	virtual void close (database_data *) = 0;
 
 	virtual bool             query         (database_data &, const string & sql, string & errstr) = 0;   // cannot be used for statements that contain binary data
@@ -123,7 +126,7 @@ struct driver
 	virtual bool             commit        (database_data &, string & errstr) = 0;
 	virtual bool             rollback      (database_data &, string & errstr) = 0;
 
-	virtual integral_t       errorCode    (database_data &) = 0;
+	virtual integral_t       errorCode     (database_data &) = 0;
 
 	virtual bool             meta          (database_data &, const string & table
 											   , vector<column_meta> & meta
