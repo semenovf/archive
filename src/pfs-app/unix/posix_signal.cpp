@@ -83,7 +83,7 @@ bool posix_signals::accept (int signum)
 	if (sigaction(signum, & sa, NULL) != 0)
 		return false;
 
-	max_signum = pfs_max(max_signum, signum);
+	max_signum = pfs::max(max_signum, signum);
 }
 
 /**
