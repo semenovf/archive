@@ -109,7 +109,7 @@ void thread_cv::wakeOne ()
 {
 	thread_cv_impl * d = _d.cast<thread_cv_impl>();
 	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex) == 0);
-    d->wakeups = pfs_min(d->wakeups + 1, d->waiters);
+    d->wakeups = pfs::min(d->wakeups + 1, d->waiters);
     PFS_VERIFY_ERRNO(pthread_cond_signal(& d->cond) == 0);
     PFS_VERIFY_ERRNO(pthread_mutex_unlock(& d->mutex) == 0);
 }
