@@ -7,4 +7,4 @@
 
 
 
-
+class settings_plugin : public pfs::settings_plugin
