@@ -6,40 +6,37 @@
  * @brief
  */
 
-#include "sqlite3_dbd.hpp"
-
-#include <cstdlib>
-#include <pfs/mt.hpp>
+#include <pfs/mutex.hpp>
 #include <pfs/string.hpp>
 #include <pfs/map.hpp>
-#include <pfs/unitype.hpp>
-#include <pfs/bytearray.hpp>
+#include <pfs/byte_string.hpp>
 #include <pfs/vector.hpp>
+#include "sqlite3_dbd.hpp"
 
 static int __refs = 0;
-static cwt::debby::driver * __dbd = nullptr;
+static pfs::debby::driver * __dbd = 0;
 static pfs::mutex __mutex;
 
 class mappings
 {
-	pfs::map<pfs::string, cwt::debby::column_type> _columnTypes;
-	pfs::map<int, cwt::debby::column_type>         _sqliteColumnTypes;
+	pfs::map<pfs::string, pfs::debby::column_type> _columnTypes;
+	pfs::map<int, pfs::debby::column_type>         _sqliteColumnTypes;
 
 public:
 	mappings ();
 
-	cwt::debby::column_type columnType (const pfs::string & type) { return _columnTypes.value(type, cwt::debby::Null); }
-	cwt::debby::column_type columnType (int sqlitetype) { return _sqliteColumnTypes.value(sqlitetype, cwt::debby::Null); }
+	pfs::debby::column_type columnType (const pfs::string & type) { return _columnTypes.value(type, cwt::debby::Null); }
+	pfs::debby::column_type columnType (int sqlitetype) { return _sqliteColumnTypes.value(sqlitetype, cwt::debby::Null); }
 };
 
 static mappings __mappings;
 
-const int __MAX_SQL_TIMEOUT      = 10000; /* 10 seconds */
-const int __MAX_EXEC_RETRY_COUNT = 10;
-const int __MAX_EXEC_RETRY_SLEEP = 200;
+const int MaxSqlTimeout      = 10000; /* 10 seconds */
+const int MaxExecRetryCount = 10;
+const int MaxExecRetrySleep = 200;
 
 /* DBI API functions implementations */
-cwt::debby::database_data *
+pfs::debby::database_data *
 			   s3_dbd_open  (const pfs::string & driver_uri
 		, const pfs::string & username
 		, const pfs::string & password
@@ -78,10 +75,10 @@ static cwt::debby::column_type s3_dbd_stmt_column_type (cwt::debby::statement_da
 
 mappings::mappings ()
 {
-	_columnTypes.insert(_l1("BOOL")      , cwt::debby::Bool);
-	_columnTypes.insert(_l1("BOOLEAN")   , cwt::debby::Bool);
+	_columnTypes.insert(_l1("BOOL")      , pfs::debby::Bool);
+	_columnTypes.insert(_l1("BOOLEAN")   , pfs::debby::Bool);
 
-	_columnTypes.insert(_l1("INT")       , cwt::debby::Integer);
+	_columnTypes.insert(_l1("INT")       , pfs::debby::Integer);
 	_columnTypes.insert(_l1("INTEGER")   , cwt::debby::Integer);
 	_columnTypes.insert(_l1("TINYINT")   , cwt::debby::Integer);
 	_columnTypes.insert(_l1("SMALLINT")  , cwt::debby::Integer);
@@ -121,54 +118,54 @@ mappings::mappings ()
 
 inline pfs::string __s3_stmt_errmsg (Sqlite3DbStatement * s3_sth)
 {
-	sqlite3 * dbh_native = sqlite3_db_handle(s3_sth->_sth_native);
+	sqlite3 * dbh_native = sqlite3_db_handle(s3_sth->_native_handler);
 	return pfs::string(sqlite3_errmsg(dbh_native));
 }
 
-extern "C" bool __cwt_plugin_ctor__ (void * pluggable)
-{
-	PFS_ASSERT(pluggable);
-	cwt::debby::driver ** pdbd = static_cast<cwt::debby::driver **>(pluggable);
-
-	pfs::auto_lock<> lock(& __mutex);
-	if (!__dbd) {
-		__dbd = new cwt::debby::driver;
-
-		__dbd->open          = s3_dbd_open;
-		__dbd->close         = s3_dbd_close;
-		__dbd->autoCommit    = s3_dbd_auto_commit;
-		__dbd->setAutoCommit = s3_dbd_set_auto_commit;
-		__dbd->errno         = s3_dbd_errno;
-		__dbd->tables        = s3_dbd_tables;
-		__dbd->tableExists   = s3_dbd_table_exists;
-		__dbd->query         = s3_dbd_query;
-		__dbd->prepare       = s3_dbd_prepare;
-		__dbd->begin         = s3_dbd_begin;
-		__dbd->commit        = s3_dbd_commit;
-		__dbd->rollback      = s3_dbd_rollback;
-		__dbd->meta          = s3_dbd_meta;
-		__dbd->closeStmt     = s3_dbd_stmt_close;
-		__dbd->execStmt      = s3_dbd_stmt_exec;
-		__dbd->rows          = s3_dbd_stmt_affected_rows;
-		__dbd->lastId        = s3_dbd_stmt_last_id;
-		__dbd->fetchRowArray = s3_dbd_stmt_fetch_row_array;
-		__dbd->fetchRowHash  = s3_dbd_stmt_fetch_row_hash;
-		__dbd->bind          = s3_dbd_stmt_bind;
-		__dbd->columnCount   = s3_dbd_stmt_column_count;
-		__dbd->columnName    = s3_dbd_stmt_column_name;
-		__dbd->columnType    = s3_dbd_stmt_column_type;
-	}
-
-	*pdbd = __dbd;
-
-	return __dbd != nullptr;
-}
-
-extern "C" bool __cwt_plugin_dtor__(void * pluggable)
-{
-	PFS_UNUSED(pluggable);
-	return true;
-}
+//extern "C" bool __cwt_plugin_ctor__ (void * pluggable)
+//{
+//	PFS_ASSERT(pluggable);
+//	cwt::debby::driver ** pdbd = static_cast<cwt::debby::driver **>(pluggable);
+//
+//	pfs::auto_lock<> lock(& __mutex);
+//	if (!__dbd) {
+//		__dbd = new cwt::debby::driver;
+//
+//		__dbd->open          = s3_dbd_open;
+//		__dbd->close         = s3_dbd_close;
+//		__dbd->autoCommit    = s3_dbd_auto_commit;
+//		__dbd->setAutoCommit = s3_dbd_set_auto_commit;
+//		__dbd->errno         = s3_dbd_errno;
+//		__dbd->tables        = s3_dbd_tables;
+//		__dbd->tableExists   = s3_dbd_table_exists;
+//		__dbd->query         = s3_dbd_query;
+//		__dbd->prepare       = s3_dbd_prepare;
+//		__dbd->begin         = s3_dbd_begin;
+//		__dbd->commit        = s3_dbd_commit;
+//		__dbd->rollback      = s3_dbd_rollback;
+//		__dbd->meta          = s3_dbd_meta;
+//		__dbd->closeStmt     = s3_dbd_stmt_close;
+//		__dbd->execStmt      = s3_dbd_stmt_exec;
+//		__dbd->rows          = s3_dbd_stmt_affected_rows;
+//		__dbd->lastId        = s3_dbd_stmt_last_id;
+//		__dbd->fetchRowArray = s3_dbd_stmt_fetch_row_array;
+//		__dbd->fetchRowHash  = s3_dbd_stmt_fetch_row_hash;
+//		__dbd->bind          = s3_dbd_stmt_bind;
+//		__dbd->columnCount   = s3_dbd_stmt_column_count;
+//		__dbd->columnName    = s3_dbd_stmt_column_name;
+//		__dbd->columnType    = s3_dbd_stmt_column_type;
+//	}
+//
+//	*pdbd = __dbd;
+//
+//	return __dbd != nullptr;
+//}
+//
+//extern "C" bool __cwt_plugin_dtor__(void * pluggable)
+//{
+//	PFS_UNUSED(pluggable);
+//	return true;
+//}
 
 /**
  *
@@ -276,7 +273,7 @@ cwt::debby::database_data * s3_dbd_open(const pfs::string & path
 		dbh = new Sqlite3DbHandler;
 
 		// TODO what for this call ?
-		sqlite3_busy_timeout(dbh_native, __MAX_SQL_TIMEOUT);
+		sqlite3_busy_timeout(dbh_native, MaxSqlTimeout);
 
 		// Enable extended result codes
 		sqlite3_extended_result_codes(dbh_native, 1);
@@ -290,7 +287,7 @@ cwt::debby::database_data * s3_dbd_open(const pfs::string & path
 		++__refs;
 	}
 
-    return static_cast<cwt::debby::database_data*>(dbh);
+    return static_cast<pfs::debby::database_data *>(dbh);
 }
 
 
@@ -395,7 +392,7 @@ cwt::debby::statement_data * s3_dbd_prepare (cwt::debby::database_data & dbh, co
 	Sqlite3DbStatement * sth = new Sqlite3DbStatement;
 	PFS_ASSERT(__dbd);
 	sth->_driver = __dbd;
-	sth->_sth_native = sth_native;
+	sth->_native_handler = sth_native;
 
 //	int column_count = sqlite3_column_count(sth->sth_native);
 //	if (column_count > 0) { /* SELECT statement */
@@ -566,16 +563,16 @@ void s3_dbd_stmt_close (cwt::debby::statement_data * sth)
 {
 	if (sth) {
 		Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(sth);
-		sqlite3 * dbh_native = sqlite3_db_handle(s3_sth->_sth_native);
+		sqlite3 * dbh_native = sqlite3_db_handle(s3_sth->_native_handler);
 
-		int rc = sqlite3_finalize(s3_sth->_sth_native);
+		int rc = sqlite3_finalize(s3_sth->_native_handler);
 
 		if (rc != SQLITE_OK) {
 			pfs::string errstr;
 			errstr << _Tr("Failed to close statement: ") << pfs::string(sqlite3_errmsg(dbh_native));
 			PFS_VERIFY_X(errstr.isEmpty(), errstr.c_str());
 		}
-		s3_sth->_sth_native = nullptr;
+		s3_sth->_native_handler = nullptr;
 		s3_sth->_driver = nullptr;
 		delete s3_sth;
 	}
@@ -590,24 +587,24 @@ bool s3_dbd_stmt_exec (cwt::debby::statement_data & sth, pfs::string & errstr)
 	pfs::auto_lock<> lock(& __local_mutex);
 
 	s3_sth->reset();
-	s3_sth->_columnCount = sqlite3_column_count(s3_sth->_sth_native);
+	s3_sth->_columnCount = sqlite3_column_count(s3_sth->_native_handler);
 
 	if (s3_sth->_columnCount > 0) { // SELECT statement
-		int rc = sqlite3_reset(s3_sth->_sth_native);
+		int rc = sqlite3_reset(s3_sth->_native_handler);
 		r = (rc == SQLITE_OK ? true : false);
 	} else {
-		int rc = sqlite3_step(s3_sth->_sth_native);
+		int rc = sqlite3_step(s3_sth->_native_handler);
 		r = (rc == SQLITE_OK || rc == SQLITE_DONE ? true : false);
 
-		sqlite3 * dbh_native = sqlite3_db_handle(s3_sth->_sth_native);
+		sqlite3 * dbh_native = sqlite3_db_handle(s3_sth->_native_handler);
 
 		int nrows = sqlite3_changes(dbh_native);
 		s3_sth->_nrows = nrows < 0 ? ulong_t(0) : ulong_t(nrows);
 		s3_sth->_lastId = ulong_t(sqlite3_last_insert_rowid(dbh_native));
 
 		if (rc == SQLITE_DONE) {
-			sqlite3_reset(s3_sth->_sth_native);
-			sqlite3_clear_bindings(s3_sth->_sth_native);
+			sqlite3_reset(s3_sth->_native_handler);
+			sqlite3_clear_bindings(s3_sth->_native_handler);
 		}
 	}
 
@@ -635,16 +632,16 @@ long_t s3_dbd_stmt_last_id (cwt::debby::statement_data & sth)
 static int __fetch_helper (Sqlite3DbStatement * s3_sth)
 {
 	int rc = SQLITE_OK;
-	int nretries = __MAX_EXEC_RETRY_COUNT;
+	int nretries = MaxExecRetryCount;
 
 	do {
-		rc = sqlite3_step(s3_sth->_sth_native);
+		rc = sqlite3_step(s3_sth->_native_handler);
 
 		if ( rc == SQLITE_BUSY ) {
-			if (nretries++ > __MAX_EXEC_RETRY_COUNT) {
+			if (nretries++ > MaxExecRetryCount) {
 				break;
 			} else {
-				sqlite3_sleep(__MAX_EXEC_RETRY_SLEEP);
+				sqlite3_sleep(MaxExecRetrySleep);
 			}
 		}
 	} while (rc == SQLITE_BUSY);
@@ -666,25 +663,25 @@ bool s3_dbd_stmt_fetch_row_array (cwt::debby::statement_data & sth, pfs::vector<
 	int rc = __fetch_helper(s3_sth);
 
 	if (rc == SQLITE_ROW) {
-		int ncols = sqlite3_column_count(s3_sth->_sth_native);
+		int ncols = sqlite3_column_count(s3_sth->_native_handler);
 		for (int i = 0; i < ncols; ++i) {
 			//pfs::string column_name (sqlite3_column_name(s3_sth->sth_native, i));
 
-			switch (sqlite3_column_type(s3_sth->_sth_native, i)) {
+			switch (sqlite3_column_type(s3_sth->_native_handler, i)) {
 			case SQLITE_INTEGER:
-				row.append(pfs::unitype(long_t(sqlite3_column_int64(s3_sth->_sth_native, i))));
+				row.append(pfs::unitype(long_t(sqlite3_column_int64(s3_sth->_native_handler, i))));
 				break;
 			case SQLITE_FLOAT:
-				row.append(pfs::unitype(sqlite3_column_double(s3_sth->_sth_native, i)));
+				row.append(pfs::unitype(sqlite3_column_double(s3_sth->_native_handler, i)));
 				break;
 			case SQLITE_TEXT: {
-				const char * text = reinterpret_cast<const char*>(sqlite3_column_text(s3_sth->_sth_native, i));
+				const char * text = reinterpret_cast<const char*>(sqlite3_column_text(s3_sth->_native_handler, i));
 				row.append(pfs::unitype(pfs::string(text)));
 				}
 				break;
 			case SQLITE_BLOB: {
-				const char * bytes = reinterpret_cast<const char*>(sqlite3_column_blob(s3_sth->_sth_native, i));
-				int nbytes = sqlite3_column_bytes(s3_sth->_sth_native, i);
+				const char * bytes = reinterpret_cast<const char*>(sqlite3_column_blob(s3_sth->_native_handler, i));
+				int nbytes = sqlite3_column_bytes(s3_sth->_native_handler, i);
 				PFS_ASSERT(nbytes >= 0);
 				row.append(pfs::unitype(pfs::bytearray(bytes, size_t(nbytes))));
 				}
@@ -707,25 +704,25 @@ bool s3_dbd_stmt_fetch_row_hash (cwt::debby::statement_data & sth, pfs::map<pfs:
 	int rc = __fetch_helper(s3_sth);
 
 	if (rc == SQLITE_ROW) {
-		int ncols = sqlite3_column_count(s3_sth->_sth_native);
+		int ncols = sqlite3_column_count(s3_sth->_native_handler);
 		for (int i = 0; i < ncols; ++i) {
-			pfs::string column_name (sqlite3_column_name(s3_sth->_sth_native, i));
+			pfs::string column_name (sqlite3_column_name(s3_sth->_native_handler, i));
 
-			switch (sqlite3_column_type(s3_sth->_sth_native, i)) {
+			switch (sqlite3_column_type(s3_sth->_native_handler, i)) {
 			case SQLITE_INTEGER:
-				row.insert(column_name, pfs::unitype(long_t(sqlite3_column_int64(s3_sth->_sth_native, i))));
+				row.insert(column_name, pfs::unitype(long_t(sqlite3_column_int64(s3_sth->_native_handler, i))));
 				break;
 			case SQLITE_FLOAT:
-				row.insert(column_name, pfs::unitype(sqlite3_column_double(s3_sth->_sth_native, i)));
+				row.insert(column_name, pfs::unitype(sqlite3_column_double(s3_sth->_native_handler, i)));
 				break;
 			case SQLITE_TEXT: {
-				const char * text = reinterpret_cast<const char*>(sqlite3_column_text(s3_sth->_sth_native, i));
+				const char * text = reinterpret_cast<const char*>(sqlite3_column_text(s3_sth->_native_handler, i));
 				row.insert(column_name, pfs::unitype(_u8(text)));
 				break;
 			}
 			case SQLITE_BLOB: {
-				const char * bytes = reinterpret_cast<const char*>(sqlite3_column_blob(s3_sth->_sth_native, i));
-				int nbytes = sqlite3_column_bytes(s3_sth->_sth_native, i);
+				const char * bytes = reinterpret_cast<const char*>(sqlite3_column_blob(s3_sth->_native_handler, i));
+				int nbytes = sqlite3_column_bytes(s3_sth->_native_handler, i);
 				PFS_ASSERT(nbytes >= 0);
 				row.insert(column_name, pfs::unitype(pfs::bytearray(bytes, size_t(nbytes))));
 				}
@@ -752,23 +749,23 @@ bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs
 
 	/* 'sqlite3_bind_parameter_count' routine actually
 	 * returns the index of the largest (rightmost) parameter */
-	if (index >= size_t(sqlite3_bind_parameter_count(s3_sth->_sth_native)))
+	if (index >= size_t(sqlite3_bind_parameter_count(s3_sth->_native_handler)))
 		return false;
 
 	int s3_index = int(index) + 1;
 
 	switch (param.type_id()) {
 	case pfs::Null :
-		rc = sqlite3_bind_null(s3_sth->_sth_native, s3_index);
+		rc = sqlite3_bind_null(s3_sth->_native_handler, s3_index);
 		break;
 	case pfs::Bool:
-		rc = sqlite3_bind_int(s3_sth->_sth_native, s3_index, param.toBoolean());
+		rc = sqlite3_bind_int(s3_sth->_native_handler, s3_index, param.toBoolean());
 		break;
 	case pfs::Integer:
-		rc = sqlite3_bind_int64(s3_sth->_sth_native, s3_index, param.toInteger());
+		rc = sqlite3_bind_int64(s3_sth->_native_handler, s3_index, param.toInteger());
 		break;
 	case pfs::Float:
-		rc = sqlite3_bind_double(s3_sth->_sth_native, s3_index, param.toDouble());
+		rc = sqlite3_bind_double(s3_sth->_native_handler, s3_index, param.toDouble());
 		break;
 	case pfs::String: {
 		pfs::string text = param.toString();
@@ -776,7 +773,7 @@ bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs
 		PFS_ASSERT(sz <= PFS_INT_MAX);
 		// Fifth argument - SQLITE_TRANSIENT - SQLite makes its own private copy of the data immediately,
 		// before the sqlite3_bind_*() routine returns.
-		rc = sqlite3_bind_text(s3_sth->_sth_native, s3_index, text.c_str(), int(sz), SQLITE_TRANSIENT);
+		rc = sqlite3_bind_text(s3_sth->_native_handler, s3_index, text.c_str(), int(sz), SQLITE_TRANSIENT);
 		}
 		break;
 	case pfs::Blob: {
@@ -785,7 +782,7 @@ bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs
 		PFS_ASSERT(sz <= PFS_INT_MAX);
 		// Fifth argument - SQLITE_TRANSIENT - SQLite makes its own private copy of the data immediately,
 		// before the sqlite3_bind_*() routine returns.
-		rc = sqlite3_bind_blob(s3_sth->_sth_native, s3_index, blob.data(), int(sz), SQLITE_TRANSIENT);
+		rc = sqlite3_bind_blob(s3_sth->_native_handler, s3_index, blob.data(), int(sz), SQLITE_TRANSIENT);
 		}
 		break;
 	default:
@@ -808,12 +805,25 @@ pfs::string s3_dbd_stmt_column_name (cwt::debby::statement_data & sth, size_t in
 {
 	PFS_ASSERT(index <= size_t(pfs::max_type<int>()));
 	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
-	return pfs::string(sqlite3_column_name(s3_sth->_sth_native, int(index)));
+	return pfs::string(sqlite3_column_name(s3_sth->_native_handler, int(index)));
 }
 
 cwt::debby::column_type s3_dbd_stmt_column_type (cwt::debby::statement_data & sth, size_t index)
 {
 	PFS_ASSERT(index <= size_t(pfs::max_type<int>()));
 	Sqlite3DbStatement * s3_sth = static_cast<Sqlite3DbStatement*>(& sth);
-	return __mappings.columnType(sqlite3_column_type(s3_sth->_sth_native, int(index)));
+	return __mappings.columnType(sqlite3_column_type(s3_sth->_native_handler, int(index)));
+}
+
+
+PFS_PLUGIN_API pfs::pluggable * __plugin_ctor__ (void)
+{
+	return dynamic_cast<pfs::pluggable *>(new settings_plugin);
+}
+
+PFS_PLUGIN_API void __plugin_dtor__ (pfs::pluggable * p)
+{
+	if (p) {
+		delete dynamic_cast<settings_plugin *>(p);
+	}
 }

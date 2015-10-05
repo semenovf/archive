@@ -1,14 +1,14 @@
-#include <cwt/test.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/string.hpp>
-#include <cwt/fs.hpp>
-#include <cwt/debby/dbd.hpp>
-#include <cwt/debby/database.hpp>
-#include <cwt/debby/statement.hpp>
+#include <pfs/fs.hpp>
+#include <pfs/debby/dbd.hpp>
+#include <pfs/debby/database.hpp>
+#include <pfs/debby/statement.hpp>
 
 inline pfs::string __db_uri ()
 {
 	pfs::string r;
-	cwt::fs fs;
+	pfs::fs fs;
 	r << "sqlite3://"
 		<< fs.tempDirectory()
 		<< "/cwt-debby-sqlite3.sqlite";
@@ -22,7 +22,7 @@ void test_assignment()
 	int n = 1000;
 
 	while (--n) {
-		cwt::debby::database dbh;
+		pfs::debby::database dbh;
 
 		if (!dbh.open(dburi)) {
 			dbh.logErrors();
@@ -50,7 +50,7 @@ void test_base()
 			"col3 SMALLINT,"
 			"col4 TIMESTAMP)");
 
-	cwt::debby::database dbh;
+	pfs::debby::database dbh;
     TEST_FAIL(dbh.open(_l1("sqlite3:///tmp/test.db?mode=rwc")));
     TEST_FAIL(dbh.opened());
 
@@ -75,7 +75,7 @@ void test_base()
 // source: http://www.sqlite.org/datatype3.html
 void test_sqlite3_collation()
 {
-	cwt::debby::database dbh;
+	pfs::debby::database dbh;
 	TEST_FAIL_X(dbh.open(__db_uri()), dbh.logErrors());
 
 	if(dbh.tableExists(_l1("t1"))) {
@@ -91,7 +91,7 @@ void test_sqlite3_collation()
 			"    d COLLATE NOCASE"   /* collating sequence NOCASE */
 			")")), dbh.logErrors());
 
-	cwt::debby::statement sth = dbh.prepare(_l1("INSERT INTO t1 VALUES(?,?,?,?,?)"));
+	pfs::debby::statement sth = dbh.prepare(_l1("INSERT INTO t1 VALUES(?,?,?,?,?)"));
 
 	sth.bind(int(1)).bind(_l1("abc")).bind(_l1("abc")).bind(_l1("abc  ")).bind(_l1("abc"));
 	TEST_OK(sth.exec());
@@ -284,7 +284,7 @@ void test_sqlite3_collation()
 
 void test_columns()
 {
-	cwt::debby::database dbh;
+	pfs::debby::database dbh;
 
 	TEST_FAIL(dbh.open(__db_uri()));
 
@@ -305,33 +305,33 @@ void test_columns()
 			"    h BLOB"
 			")")));
 
-	pfs::vector<cwt::debby::column_meta> meta;
+	pfs::vector<pfs::debby::column_meta> meta;
 	TEST_FAIL(dbh.meta(_l1("t2"), meta));
 	TEST_FAIL(meta.size() == 9);
 
 	for (size_t i = 0 ; i < meta.size(); ++i) {
 		if (meta[i]->column_name == _l1("x")) {
-			TEST_OK(meta[i]->column_type == cwt::debby::Integer);
+			TEST_OK(meta[i]->column_type == pfs::debby::Integer);
 		} else if (meta[i]->column_name == _l1("a")) {
-			TEST_OK(meta[i]->column_type == cwt::debby::String);
+			TEST_OK(meta[i]->column_type == pfs::debby::String);
 		} else if (meta[i]->column_name == _l1("b")) {
-			TEST_OK(meta[i]->column_type == cwt::debby::Float);
+			TEST_OK(meta[i]->column_type == pfs::debby::Float);
 		} else if (meta[i]->column_name == _l1("c")) {
-			TEST_OK(meta[i]->column_type == cwt::debby::Double);
+			TEST_OK(meta[i]->column_type == pfs::debby::Double);
 		} else if (meta[i]->column_name == _l1("d")) {
-			TEST_OK(meta[i]->column_type == cwt::debby::Double);
+			TEST_OK(meta[i]->column_type == pfs::debby::Double);
 		} else if (meta[i]->column_name == _l1("e")) {
-			TEST_OK(meta[i]->column_type == cwt::debby::String);
+			TEST_OK(meta[i]->column_type == pfs::debby::String);
 		} else if (meta[i]->column_name == _l1("f")) {
-			TEST_OK(meta[i]->column_type == cwt::debby::Null);
+			TEST_OK(meta[i]->column_type == pfs::debby::Null);
 		} else if (meta[i]->column_name == _l1("g")) {
-			TEST_OK(meta[i]->column_type == cwt::debby::Bool);
+			TEST_OK(meta[i]->column_type == pfs::debby::Bool);
 		} else if (meta[i]->column_name == _l1("h")) {
-			TEST_OK(meta[i]->column_type == cwt::debby::Blob);
+			TEST_OK(meta[i]->column_type == pfs::debby::Blob);
 		}
 
 /*
-		PFS_DEBUG(pfs::string(cwt::safeformat("SQL Type (%s) maps to pfs::unitype type (%s)")
+		PFS_DEBUG(pfs::string(pfs::safeformat("SQL Type (%s) maps to pfs::unitype type (%s)")
 				% meta[i]->native_type
 				% pfs::unitype::typeToString(meta[i]->column_type)) . c_str() );
 */
@@ -346,8 +346,8 @@ int main(int argc, char *argv[])
     PFS_UNUSED2(argc, argv);
     BEGIN_TESTS(4086);
 
-	cwt::debby::database::addGlobalSearchPath(pfs::string("."));
-	cwt::debby::database::addGlobalSearchPath(pfs::string(".."));
+	pfs::debby::database::addGlobalSearchPath(pfs::string("."));
+	pfs::debby::database::addGlobalSearchPath(pfs::string(".."));
 	test_assignment();
     test_base();
     test_sqlite3_collation();
