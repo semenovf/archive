@@ -38,22 +38,13 @@ inline void swap (T & a, T & b)
 template<typename T>
 inline void swap (T & a, T & b)
 {
-	T & tmp = a;
+	T tmp = a;
 	a = b;
 	b = tmp;
 }
 #endif
 
 } // pfs
-
-//template <typename T>
-//inline T pfs_min (T a, T b) { return a <= b ? a : b; }
-//
-//template <typename T>
-//inline T pfs_max (T a, T b) { return a >= b ? a : b; }
-//
-//template <typename T>
-//inline T pfs_abs (T x) { return x < 0 ? x * T(-1) : x; }
 
 #ifdef max
 #	undef max

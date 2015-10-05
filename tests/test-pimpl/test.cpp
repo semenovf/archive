@@ -93,9 +93,8 @@ void test2 ()
 	os << "==";
 
 	delete a; //~implB()~implA()
-
-	TEST_OK(std::string("implA()==implA()implB()==~implA()==~implB()~implA()") == buffer.str());
 	std::cout << buffer.str() << std::endl;
+	TEST_OK(std::string("implA()==implA()implB()==~implA()==~implB()~implA()") == buffer.str());
 }
 
 
