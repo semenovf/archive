@@ -5,6 +5,8 @@
  *      Author: wladt
  */
 
+#include "database.hpp"
 
+namespace pfs { namespace debby { namespace sqlite3 {
 
-class settings_plugin : public pfs::settings_plugin
+}}} // pfs::debby::sqlite3
