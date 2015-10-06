@@ -9,56 +9,9 @@
 #include "pfs/debby/statement.hpp"
 #include <pfs/dl.hpp>
 #include <pfs/logger.hpp>
-#include <pfs/uri.hpp>
 #include <pfs/safeformat.hpp>
 
 namespace pfs { namespace debby {
-
-bool database::open (const pfs::string & uri_str)
-{
-	pfs::uri uri;
-
-	if (!uri.parse(uri_str)) {
-		this->addError(safeformat("Invalid URI specified for DB driver: %s")(uri_str)());
-		return false;
-	}
-
-	pfs::string debby_name = uri.scheme();
-
-	if (debby_name.isEmpty()) {
-		this->addError(_u8("Invalid URI specified for DB driver: DB driver name is empty"));
-		return false;
-	}
-
-	debby_name.prepend(pfs::string("pfs-debby-"));
-	driver * drv = nullptr;
-	pfs::dl & dl = pfs::dl::getDL();
-
-	string dlpath = dl.buildDlFileName(debby_name);
-	pfs::pluggable *
-	if (!dl.openPlugin(debby_name, dlpath, & drv)) {
-		this->addError(string(safeformat("Fatal error while loading DB driver for %s from %s") % uri.scheme() % dlpath));
-		return false;
-	}
-
-	pfs::vector<pfs::string> userinfo = uri.userinfo().split(_l1(":"));
-	pfs::map<pfs::string, pfs::string> params;
-	pfs::string errstr;
-
-	database_data * driverData = drv->open (uri.path()
-			, userinfo.size() > 0 ? userinfo[0] : pfs::string() // login
-			, userinfo.size() > 1 ? userinfo[1] : pfs::string() // password
-			, uri.queryItems()
-			, errstr);
-
-	if (!driverData) {
-		this->addError(errstr);
-		return false;
-	}
-
-	_pimpl.reset(driverData, impl_deleter());
-	return true;
-}
 
 void database::close ()
 {

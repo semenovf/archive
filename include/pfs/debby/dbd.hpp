@@ -116,7 +116,7 @@ struct driver
 
 	virtual void close (database_data *) = 0;
 
-	virtual bool             query         (database_data &, const string & sql, string & errstr) = 0;   // cannot be used for statements that contain binary data
+	virtual bool             query         (database_data &, const string & sql, string & errstr) = 0; // cannot be used for statements that contain binary data
 	virtual statement_data * prepare       (database_data &, const string & sql, string & errstr) = 0;
 	virtual vector<string>   tables        (database_data &) = 0;
 	virtual bool             tableExists   (database_data &, const string & name) = 0;

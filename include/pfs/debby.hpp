@@ -7,7 +7,9 @@
 #ifndef __PFS_DEBBY_HPP__
 #define __PFS_DEBBY_HPP__
 
+#include <pfs/debby/debby.hpp>
 #include <pfs/debby/database.hpp>
 #include <pfs/debby/statement.hpp>
+
 
 #endif /* __PFS_DEBBY_HPP__ */
