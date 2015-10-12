@@ -16,12 +16,13 @@
 #include <pfs/time.hpp>
 #include <pfs/date.hpp>
 #include <pfs/datetime.hpp>
-#include <utility>
+#include <pfs/errorable.hpp>
+//#include <utility>
 
 namespace pfs { namespace debby {
 
-class schema;
-struct driver;
+//class schema;
+//struct driver;
 
 typedef pfs::variant<bool
 		, integral_t
@@ -32,27 +33,27 @@ typedef pfs::variant<bool
 		, pfs::date
 		, pfs::datetime> variant_type;
 
-struct database_data
-{
-	driver * _driver;
-	database_data () : _driver(nullptr) {}
-};
-
-struct statement_data
-{
-	driver * _driver;
-	size_t   _bindCursor; // current bind index
-
-	statement_data ()
-		: _driver(nullptr)
-		, _bindCursor(0)
-	{}
-
-	statement_data (const statement_data & other)
-		: _driver(other._driver)
-		, _bindCursor(other._bindCursor)
-	{}
-};
+//struct database_data
+//{
+//	driver * _driver;
+//	database_data () : _driver(nullptr) {}
+//};
+//
+//struct statement_data
+//{
+//	driver * _driver;
+//	size_t   _bindCursor; // current bind index
+//
+//	statement_data ()
+//		: _driver(nullptr)
+//		, _bindCursor(0)
+//	{}
+//
+//	statement_data (const statement_data & other)
+//		: _driver(other._driver)
+//		, _bindCursor(other._bindCursor)
+//	{}
+//};
 
 enum column_type
 {
@@ -104,45 +105,44 @@ struct column_meta
 	std::pair<bool, bool>   has_index;
 };
 
-struct driver
+struct database_impl : public errorable
 {
-	virtual ~driver () {}
+	virtual ~database_impl () {}
 
-	virtual database_data * open  (const pfs::string & path
+	virtual database_impl * open  (const pfs::string & path
 			, const string & username
 			, const string & password
-			, const map<string, string> & params
-			, string & errstr) = 0;
+			, const map<string, string> & params) = 0;
 
-	virtual void close (database_data *) = 0;
+	virtual void close () = 0;
 
-	virtual bool             query         (database_data &, const string & sql, string & errstr) = 0; // cannot be used for statements that contain binary data
-	virtual statement_data * prepare       (database_data &, const string & sql, string & errstr) = 0;
-	virtual vector<string>   tables        (database_data &) = 0;
-	virtual bool             tableExists   (database_data &, const string & name) = 0;
-	virtual bool             setAutoCommit (database_data &, bool) = 0;
-	virtual bool             autoCommit    (database_data &) = 0;
-	virtual bool             begin         (database_data &, string & errstr) = 0;
-	virtual bool             commit        (database_data &, string & errstr) = 0;
-	virtual bool             rollback      (database_data &, string & errstr) = 0;
+	virtual bool query (const string & sql) = 0;
+	virtual statement_impl * prepare (const string & sql) = 0;
+	virtual stringlist tables () = 0;
+	virtual bool tableExists (const string & name) = 0;
+	virtual bool setAutoCommit (bool) = 0;
+	virtual bool autoCommit () = 0;
+	virtual bool begin () = 0;
+	virtual bool commit () = 0;
+	virtual bool rollback () = 0;
+	virtual integral_t errorCode () const = 0;
+	virtual bool meta (const string & table, vector<column_meta> & meta) = 0;
+};
 
-	virtual integral_t       errorCode     (database_data &) = 0;
+struct statement_impl : public errorable
+{
+	virtual ~statement_impl () {}
 
-	virtual bool             meta          (database_data &, const string & table
-											   , vector<column_meta> & meta
-											   , string & errstr) = 0;
-
-// Statement routines
-	virtual void		closeStmt     (statement_data *) = 0;
-	virtual bool		execStmt      (statement_data &, string & errstr) = 0;
-	virtual uintegral_t rows          (statement_data &) = 0;
-	virtual integral_t 	lastId        (statement_data &) = 0;
-	virtual bool        fetchRowArray (statement_data &, vector<variant_type> & row) = 0;
-	virtual bool        fetchRowHash  (statement_data &, map<string, variant_type> & row) = 0;
-	virtual bool        bind          (statement_data &, size_t index, const variant_type & param) = 0;
-	virtual size_t      columnCount   (statement_data &) = 0;
-	virtual pfs::string columnName    (statement_data &, size_t index) = 0;
-	virtual column_type columnType    (statement_data &, size_t index) = 0;
+	virtual void close () = 0;
+	virtual bool exec () = 0;
+	virtual uintegral_t rows () const = 0;
+	virtual integral_t lastId () const = 0;
+	virtual vector<variant_type> fetchRowArray () = 0;
+	virtual map<string, variant_type> fetchRowHash () = 0;
+	virtual bool bind (size_t index, const variant_type & param) = 0;
+	virtual size_t columnCount () = 0;
+	virtual string columnName (size_t index) const = 0;
+	virtual column_type columnType (size_t index) const = 0;
 };
 
 }} // pfs::debby

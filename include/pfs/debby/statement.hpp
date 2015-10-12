@@ -9,52 +9,45 @@
 #define __PFS_DEBBY_STATEMENT_HPP__
 
 #include <pfs/errorable.hpp>
-#include <pfs/noncopyable.hpp>
+#include <pfs/map.hpp>
+#include <pfs/vector.hpp>
+#include "dbd.hpp"
 
 namespace pfs { namespace debby {
 
 class database;
+class statement_impl;
 
-class statement : public errorable, noncopyable
+class statement : public pfs::nullable<statement_impl>, public errorable_ext
 {
 //	friend class database;
-//
-//	shared_ptr<statement_data> _pimpl;
+private:
+	statement (const statement & other);
+//		: _d(other._d)
+//	{}
 
-protected:
-//	struct impl_deleter {
-//		void operator () (statement_data * p) const
-//		{
-//			if (p && p->_driver) {
-//				p->_driver->closeStmt(p);
-//				p->_driver = nullptr;
-//			}
-//		}
-//	};
-
-public:
-//	statement (const statement & other) : errorable(), _pimpl(other._pimpl) {}
-//	statement & operator = (const statement & other)
+	statement & operator = (const statement & other);
 //	{
-//		_pimpl = other._pimpl;
+//		_d = other._d;
 //		return *this;
 //	}
+
+public:
 	virtual ~statement ();// { /*close();*/ }
 
-	virtual bool isNull () const = 0; //{ return !(_pimpl && _pimpl->_driver); }
-	virtual void close () = 0;
-	virtual bool exec  () = 0;
+	void close ();
+	bool exec ();
 
-	virtual uintegral_t rows () = 0; //       { return _pimpl->_driver->rows(*_pimpl); }
-	virtual integral_t  lastId () = 0; //    { return _pimpl->_driver->lastId(*_pimpl); }
+	uintegral_t rows () const;
+	integral_t  lastId () const;
 
-	virtual vector<variant_type> fetchRowArray () = 0;
-	virtual map<string, variant_type> fetchRowHash () = 0;
-	virtual statement & bind (const variant_type & param) = 0;
-	virtual statement & bind (size_t index, const variant_type & param) = 0;
-	virtual size_t      columnCount () = 0;
-	virtual string      columnName (size_t index) = 0;
-	virtual column_type columnType (size_t index) = 0;
+	vector<variant_type> fetchRowArray ();
+	map<string, variant_type> fetchRowHash ();
+	statement & bind (const variant_type & param);
+	statement & bind (size_t index, const variant_type & param);
+	size_t columnCount () const;
+	string columnName (size_t index) const;
+	column_type columnType (size_t index) const;
 };
 
 }} // pfs::debby

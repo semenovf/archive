@@ -10,14 +10,19 @@
 
 #include <pfs/noncopyable.hpp>
 #include <pfs/string.hpp>
-#include "pfs/debby/database.hpp"
+#include <pfs/errorable.hpp>
+#include "database.hpp"
 
 namespace pfs { namespace debby {
 
-class debby : noncopyable
+class debby : public errorable, noncopyable
 {
 public:
-	static database connect (const pfs::string & uristr, pfs::string * perrorstr = 0);
+	debby ()
+		: errorable()
+	{}
+
+	database connect (const pfs::string & uri);
 };
 
 }} // pfs::debby

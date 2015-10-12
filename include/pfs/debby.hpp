@@ -11,5 +11,4 @@
 #include <pfs/debby/database.hpp>
 #include <pfs/debby/statement.hpp>
 
-
 #endif /* __PFS_DEBBY_HPP__ */

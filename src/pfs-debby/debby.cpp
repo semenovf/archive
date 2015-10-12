@@ -16,22 +16,21 @@ namespace pfs { namespace debby {
 
 static const pfs::string PluginPrefix("pfs-debby-");
 
-database debby::connect (const pfs::string & uristr, pfs::string * perrorstr)
+database debby::connect (const pfs::string & uristr)
 {
 	pfs::uri uri;
-	pfs::string errorstr;
 	database result;
 
 	do {
 		if (!uri.parse(uristr)) {
-			errorstr << _u8("Invalid URI specified for DB driver: ") << uristr;
-			break;
+			this->addError(_u8("Invalid URI specified for DB driver: ") << uristr);
+			return database();
 		}
 
 		pfs::string debby_name = uri.scheme();
 
 		if (debby_name.isEmpty()) {
-			errorstr = _u8("Invalid URI specified for DB driver: DB driver name is empty");
+			this->addError(_u8("Invalid URI specified for DB driver: DB driver name is empty"));
 			break;
 		}
 
@@ -42,7 +41,7 @@ database debby::connect (const pfs::string & uristr, pfs::string * perrorstr)
 		database_impl * impl = dynamic_cast<database_impl *>(dl.openPlugin(debby_name));
 
 		if (!impl) {
-			errorstr = dl.lastErrorText();
+			this->addError(dl.lastErrorText());
 			break;
 		}
 
@@ -64,9 +63,6 @@ database debby::connect (const pfs::string & uristr, pfs::string * perrorstr)
 
 		ok = true;
 	} while (false);
-
-	if (!ok && perrorstr)
-		*perrorstr = errorstr;
 
 	return database();
 }

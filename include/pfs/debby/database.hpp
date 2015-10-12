@@ -8,10 +8,10 @@
 #ifndef __PFS_DEBBY_DATABASE_HPP__
 #define __PFS_DEBBY_DATABASE_HPP__
 
-#include <pfs/debby/dbd.hpp>
-#include <pfs/vector.hpp>
 #include <pfs/pimpl.hpp>
-#include <pfs/errorable_ext.hpp>
+#include <pfs/stringlist.hpp>
+#include <pfs/vector.hpp>
+#include "dbd.hpp"
 
 namespace pfs { namespace debby {
 
@@ -19,50 +19,64 @@ class debby;
 class statement;
 class database_impl;
 
-class database : public pfs::nullable<database_impl>, public errorable_ext
+class database : public pfs::nullable<database_impl>
 {
 	friend class debby;
 
-	pimpl _d;
-//	shared_ptr<database_data> _pdd;
-protected:
-	database (const database & other)
-		: _d(other._d)
-	{}
-
-	database & operator = (const database & other)
-	{
-		_d = other._d;
-		return *this;
-	}
+	typedef database_impl     impl_class;
+	typedef nullable<impl_class> base_class;
+	typedef database          self_class;
 
 public:
-//	database ()
-//		: _pdd()
-//	{}
-//
-//	database (const string & uri)
-//		: _pdd()
-//	{
-//		open(uri);
-//	}
-//
-//	database (const char * uri)
-//		: _pdd()
-//	{
-//		open(_l1(uri));
-//	}
+	database () {}
 
-	~database (); // { /*close();*/ }
+	/**
+	 */
+	~database ()
+	{
+		close();
+		_d.reset();
+	}
 
-	virtual bool open (const string & uri) = 0;
+	/**
+	 * @brief
+	 *
+	 * @param uri
+	 * @return
+	 * @see database::open().
+	 */
+	bool connect (const string & uri)
+	{
+		return open(uri);
+	}
 
-	virtual bool opened () const = 0;
-//	{
-//		return _pdd && _pdd->_driver != nullptr;
-//	}
+	/**
+	 * @brief Establish connection to the database specified by URI.
+	 * @param uri URI for connection
+	 * @return @c true if connection to the database has been established,
+	 *         @c false otherwise.
+	 */
+	bool open (const string & uri);
 
-	virtual void close () = 0;
+	/**
+	 * @brief Checks if if connection to the database has been established.
+	 *
+	 * @return @c true if connection to the database has been established before,
+	 *         @c false otherwise.
+	 */
+	bool opened () const
+	{
+		return !this->isNull();
+	}
+
+	/**
+	 * @brief Close connection to the database if it was established before.
+	 */
+	void close ()
+	{
+		if (opened())
+			base_class::cast()->close();
+	}
 
 	/**
 	 *
@@ -71,43 +85,26 @@ public:
 	 *
 	 * @note Cannot be used for statements that contain binary data
 	 */
-	virtual bool query (const string & sql) = 0;
-	virtual statement * prepare (const string & sql) = 0;
+	bool query (const string & sql);
+	statement * prepare (const string & sql);
+	stringlist tables () const;
+	bool tableExists (const string & name) const;
+	bool setAutoCommit (bool on);
+	bool autoCommit () const;
+	bool begin ();
+	bool commit ();
+	bool rollback ();
+	bool end (bool success)
+	{
+		return success ? commit() : rollback();
+	}
 
-	virtual vector<string> tables () = 0
-//	{
-//		return _pdd->_driver->tables(*_pdd);
-//	}
-
-	virtual bool tableExists (const string & name) = 0;
-//	{
-//		return _pdd->_driver->tableExists(*_pdd, name);
-//	}
-
-	virtual bool setAutoCommit (bool on) = 0;
-//	{
-//		return _pdd->_driver->setAutoCommit(*_pdd, on);
-//	}
-
-	virtual bool autoCommit () = 0;
-//	{
-//		return _pdd->_driver->autoCommit(*_pdd);
-//	}
-
-	virtual bool begin () = 0;
-	virtual bool commit () = 0;
-	virtual bool rollback () = 0;
-	virtual bool end (bool success) = 0;
-//	{
-//		return success ? commit() : rollback();
-//	}
-
-	virtual integral_t errorCode () = 0;
+	integral_t errorCode ();
 //	{
 //		return _pdd->_driver->errorCode(*_pdd);
 //	}
 
-	virtual bool meta (const string & table, pfs::vector<column_meta> & meta) = 0;
+	vector<column_meta> meta (const string & table);
 };
 
 }} // pfs::debby
