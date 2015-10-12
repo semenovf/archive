@@ -197,9 +197,7 @@ protected:
 	void init ()
 	{
 		PFS_ASSERT(_d.isNull());
-		//if (_d.isNull())
 		_d = pimpl(allocator()());
-		//_initialized = true;
 	}
 #endif
 
@@ -238,7 +236,6 @@ public:
 	const T * cast () const
 	{
 		nullable * self = const_cast<nullable *>(this);
-		//if (!self->_initialized)
 		if (_d.isNull())
 			self->init();
 		return _d.cast<T>();
@@ -246,7 +243,6 @@ public:
 
 	T * cast ()
 	{
-		//if (!_initialized)
 		if (_d.isNull())
 			init();
 		return _d.cast<T>();
@@ -254,154 +250,6 @@ public:
 #endif
 };
 
-//
-//template <typename T, typename Alloc>
-//void nullable<T,Alloc>::swap (nullable & o)
-//{
-//	if (_d.isNull() && o._d.isNull()) {
-//		;
-//	} else if(_d.isNull() && !o._d.isNull()) {
-//		o.detach();
-//		pfs_swap(_d, o._d);
-//		this->_initialized = true;
-//	}
-//}
-
-// TODO [[deprecated]], use 'nullable' instead (only names are different)
-//
-//template <typename T, typename Alloc = default_allocator<T> >
-//class pimpl_lazy_init
-//{
-//	typedef Alloc allocator;
-//	typedef void (pimpl_lazy_init::* init_func)();
-//
-//protected:
-//	pimpl _d;
-//	init_func _init;
-//
-//	void initial_init ()
-//	{
-//		PFS_ASSERT(_d.isNull());
-//		_d = pimpl(allocator()());
-//		_init = & pimpl_lazy_init::init;
-//	}
-//
-//	void init () {}
-//
-//protected:
-//	void detach () { _d.detach(); }
-//
-//public:
-//	pimpl_lazy_init () : _d(), _init(& pimpl_lazy_init::initial_init) {}
-//	pimpl_lazy_init (T * p) : _d(p), _init(& pimpl_lazy_init::init) { }
-//	pimpl_lazy_init (const pimpl_lazy_init & other) : _d(other._d), _init(other._init) {}
-//
-//	bool isNull () const  { return _d.isNull(); }
-//	void swap (pimpl_lazy_init & o) { _d.swap<T>(o._d);	}
-//
-//	/// @see http://www.possibility.com/Cpp/const.html
-//	const T * cast () const
-//	{
-//		pimpl_lazy_init * self = const_cast<pimpl_lazy_init*>(this);
-//		(self->*_init)();
-//		return _d.cast<T>();
-//	}
-//	T * cast () { (this->*_init)(); return _d.cast<T>(); }
-//};
-
 } // pfs
-
-
-// TODO DEPRECATED {
-
-#ifdef __COMMENT__
-
-#define PFS_PIMPL_INLINE(Class,ImplClassScope,Impl)            \
-ImplClassScope:                                                \
-	pfs::shared_ptr<Impl> _pimpl;                              \
-protected:                                                     \
-	void detach()                                              \
-	{                                                          \
-		if (!_pimpl.unique()) {                                \
-			pfs::shared_ptr<Impl> d(new Impl(*_pimpl));        \
-			_pimpl.swap(d);                                    \
-		}                                                      \
-	}                                                          \
-                                                               \
-	Class (const Impl & other) : _pimpl(new Impl(other)) {}    \
-                                                               \
-public:                                                        \
-	Class (const Class & other) : _pimpl(other._pimpl) { }     \
-	Class & operator = (const Class & other)                   \
-	{                                                          \
-		_pimpl = other._pimpl;                                 \
-		return *this;                                          \
-	}                                                          \
-                                                               \
-    void swap (Class & other)                                  \
-    {                                                          \
-    	_pimpl.swap(other._pimpl);                             \
-    }
-
-
-#define PFS_PIMPL_DECL(Class,ImplClassScope,Impl,PimplScope)   \
-ImplClassScope:                                                \
-	class Impl;                                                \
-PimplScope:	                                                   \
-	pfs::shared_ptr<Impl> _pimpl;                              \
-protected:                                                     \
-	void detach();                                             \
-	Class (const Impl & other);                                \
-                                                               \
-public:                                                        \
-	Class (const Class & other) : _pimpl(other._pimpl) { }     \
-	Class & operator = (const Class & other)                   \
-	{                                                          \
-		_pimpl = other._pimpl;                                 \
-		return *this;                                          \
-	}                                                          \
-                                                               \
-    void swap (Class & other)                                  \
-    {                                                          \
-    	pfs_swap(_pimpl, other._pimpl);                       \
-    }
-
-// w/o copy constructor
-//
-#define PFS_PIMPL_DECL_NOCC(Class,Impl)                        \
-	class Impl;                                                \
-	pfs::shared_ptr<Impl> _pimpl;                              \
-                                                               \
-	void detach();                                             \
-	Class (const Impl & other);                                \
-                                                               \
-public:                                                        \
-	Class & operator = (const Class & other)                   \
-	{                                                          \
-		_pimpl = other._pimpl;                                 \
-		return *this;                                          \
-	}                                                          \
-                                                               \
-	bool isNull () const { return _pimpl.get() == nullptr; }   \
-	                                                           \
-    void swap (Class & other)                                  \
-    {                                                          \
-    	pfs_swap(_pimpl, other._pimpl);                       \
-    }
-
-
-#define PFS_PIMPL_DEF(Class,Impl)                              \
-void Class::detach()                                           \
-{                                                              \
-	if (!_pimpl.unique()) {                                    \
-		pfs::shared_ptr<Class::Impl> d(new Class::Impl(*_pimpl)); \
-		_pimpl.swap(d);                                        \
-	}                                                          \
-}                                                              \
-                                                               \
-Class::Class (const Class::Impl & other)                       \
-	: _pimpl(new Class::Impl(other)) {}
-// } TODO DEPRECATED
-#endif
 
 #endif /* __PFS_PIMPL_HPP__ */
