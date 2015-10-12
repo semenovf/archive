@@ -8,15 +8,15 @@
 #ifndef __PFS_DEBBY_SQLITE3_DATABASE_HPP__
 #define __PFS_DEBBY_SQLITE3_DATABASE_HPP__
 
-#include <pfs/debby/database.hpp>
+#include <pfs/debby/dbd.hpp>
 #include "sqlite3/sqlite3.h"
 
 namespace pfs { namespace debby { namespace sqlite3 {
 
-class database : public pfs::debby::database
+class database_impl : public pfs::debby::database_impl
 {
 	typedef sqlite3 * native_handle_type;
-	native_handle_type _dbh_native;
+	native_handle_type _dbh;
 };
 
 }}} // pfs::debby::sqlite3
