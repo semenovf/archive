@@ -8,12 +8,12 @@
 #ifndef __PFS_DEBBY_SQLITE3_STATEMENT_HPP__
 #define __PFS_DEBBY_SQLITE3_STATEMENT_HPP__
 
-#include <pfs/debby/statement.hpp>
+#include <pfs/debby/dbd.hpp>
 #include "sqlite3/sqlite3.h"
 
 namespace pfs { namespace debby { namespace sqlite3 {
 
-struct statement : public pfs::debby::statement
+struct statement : public pfs::debby::statement_impl
 {
 	typedef sqlite3_stmt * native_handle_type;
 

@@ -777,7 +777,7 @@ bool s3_dbd_stmt_bind (cwt::debby::statement_data & sth, size_t index, const pfs
 		}
 		break;
 	case pfs::Blob: {
-		pfs::bytearray blob = param.toBlob();
+		pfs::byte_string blob = param.toBlob();
 		size_t sz = blob.size();
 		PFS_ASSERT(sz <= PFS_INT_MAX);
 		// Fifth argument - SQLITE_TRANSIENT - SQLite makes its own private copy of the data immediately,
