@@ -10,19 +10,16 @@
 
 #include <pfs/vector.hpp>
 #include <pfs/map.hpp>
+#include <pfs/errorable.hpp>
+#include <pfs/pluggable.hpp>
 #include <pfs/string.hpp>
 #include <pfs/byte_string.hpp>
-#include <pfs/variant.hpp>
 #include <pfs/time.hpp>
 #include <pfs/date.hpp>
 #include <pfs/datetime.hpp>
-#include <pfs/errorable.hpp>
-//#include <utility>
+#include <pfs/variant.hpp>
 
 namespace pfs { namespace debby {
-
-//class schema;
-//struct driver;
 
 typedef pfs::variant<bool
 		, integral_t
@@ -32,28 +29,6 @@ typedef pfs::variant<bool
 		, pfs::time
 		, pfs::date
 		, pfs::datetime> variant_type;
-
-//struct database_data
-//{
-//	driver * _driver;
-//	database_data () : _driver(nullptr) {}
-//};
-//
-//struct statement_data
-//{
-//	driver * _driver;
-//	size_t   _bindCursor; // current bind index
-//
-//	statement_data ()
-//		: _driver(nullptr)
-//		, _bindCursor(0)
-//	{}
-//
-//	statement_data (const statement_data & other)
-//		: _driver(other._driver)
-//		, _bindCursor(other._bindCursor)
-//	{}
-//};
 
 enum column_type
 {
@@ -105,14 +80,15 @@ struct column_meta
 	std::pair<bool, bool>   has_index;
 };
 
-struct database_impl : public errorable
+struct database_impl : public pfs::pluggable
 {
 	virtual ~database_impl () {}
 
 	virtual database_impl * open  (const pfs::string & path
 			, const string & username
 			, const string & password
-			, const map<string, string> & params) = 0;
+			, const map<string, string> & params
+			, errorable * ex) = 0;
 
 	virtual void close () = 0;
 
@@ -129,7 +105,7 @@ struct database_impl : public errorable
 	virtual bool meta (const string & table, vector<column_meta> & meta) = 0;
 };
 
-struct statement_impl : public errorable
+struct statement_impl
 {
 	virtual ~statement_impl () {}
 

@@ -476,7 +476,6 @@ endif
 
 OBJECTS := \
 	$(OBJDIR)/database.o \
-	$(OBJDIR)/debby.o \
 	$(OBJDIR)/schema.o \
 	$(OBJDIR)/statement.o \
 
@@ -537,9 +536,6 @@ $(GCH): $(PCH)
 endif
 
 $(OBJDIR)/database.o: ../src/pfs-debby/database.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/debby.o: ../src/pfs-debby/debby.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/schema.o: ../src/pfs-debby/schema.cpp

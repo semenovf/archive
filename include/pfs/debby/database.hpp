@@ -8,35 +8,31 @@
 #ifndef __PFS_DEBBY_DATABASE_HPP__
 #define __PFS_DEBBY_DATABASE_HPP__
 
-#include <pfs/pimpl.hpp>
 #include <pfs/stringlist.hpp>
+#include <pfs/errorable.hpp>
 #include <pfs/vector.hpp>
-#include "dbd.hpp"
+#include <pfs/debby/dbd.hpp>
 
 namespace pfs { namespace debby {
 
-class debby;
 class statement;
 class database_impl;
 
-class database : public pfs::nullable<database_impl>
+class database : public errorable
 {
-	friend class debby;
-
-	typedef database_impl     impl_class;
-	typedef nullable<impl_class> base_class;
-	typedef database          self_class;
+	database_impl * _d;
+	string _pluginPrefix;
 
 public:
-	database () {}
+	database ()	: _d(0) {}
 
 	/**
 	 */
-	~database ()
-	{
-		close();
-		_d.reset();
-	}
+	~database ();
+//	{
+//		close();
+//		_d.reset();
+//	}
 
 	/**
 	 * @brief
@@ -64,19 +60,25 @@ public:
 	 * @return @c true if connection to the database has been established before,
 	 *         @c false otherwise.
 	 */
+	bool connected () const
+	{
+		return opened();
+	}
+
 	bool opened () const
 	{
-		return !this->isNull();
+		return _d != 0;
 	}
+
 
 	/**
 	 * @brief Close connection to the database if it was established before.
 	 */
-	void close ()
-	{
-		if (opened())
-			base_class::cast()->close();
-	}
+	void close ();
+//	{
+//		if (opened())
+//			base_class::cast()->close();
+//	}
 
 	/**
 	 *
@@ -86,7 +88,7 @@ public:
 	 * @note Cannot be used for statements that contain binary data
 	 */
 	bool query (const string & sql);
-	statement * prepare (const string & sql);
+	statement prepare (const string & sql);
 	stringlist tables () const;
 	bool tableExists (const string & name) const;
 	bool setAutoCommit (bool on);

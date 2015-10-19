@@ -11,29 +11,24 @@
 #include <pfs/errorable.hpp>
 #include <pfs/map.hpp>
 #include <pfs/vector.hpp>
-#include "dbd.hpp"
+#include <pfs/debby/dbd.hpp>
 
 namespace pfs { namespace debby {
 
 class database;
 class statement_impl;
 
-class statement : public pfs::nullable<statement_impl>, public errorable_ext
+class statement
 {
 //	friend class database;
+	statement_impl * _d;
+
 private:
 	statement (const statement & other);
-//		: _d(other._d)
-//	{}
-
 	statement & operator = (const statement & other);
-//	{
-//		_d = other._d;
-//		return *this;
-//	}
 
 public:
-	virtual ~statement ();// { /*close();*/ }
+	virtual ~statement ();
 
 	void close ();
 	bool exec ();
