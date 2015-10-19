@@ -90,7 +90,51 @@ bool fs::simpleBackup (const string & orig)
 	return fs::rename(orig, to);
 }
 
-string fs::tempDirectory ()
+string fs::currentDirectory () const
+{
+	string result;
+
+#if _GNU_SOURCE
+	char * str = get_current_dir_name();
+	PFS_ASSERT(str);
+	result = pfs::string::fromUtf8(str);
+	free(str);
+#else
+	char buf[256];
+	size_t size = 256;
+
+	char * str = getcwd(buf, size);
+
+	if (str)
+		return pfs::string::fromUtf8(str);
+
+	do {
+		if (errno != ERANGE) {
+			this->addSystemError(errno, _u8("Get current working directory"));
+			break;
+		}
+
+		size *= 2;
+
+		if (size > pfs::max_type<int16_t>()) {
+			this->addError(_u8("Directory name too big"));
+			break;
+		}
+
+		buf = new char[size];
+		str = getcwd(buf, size);
+
+		if (str)
+			result = pfs::string::fromUtf8(str);
+
+		delete [] buf;
+	} while (!str);
+#endif
+
+	return result;
+}
+
+string fs::tempDirectory () const
 {
 	char * r = getenv("TMPDIR");
 

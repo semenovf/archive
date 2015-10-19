@@ -1,0 +1,36 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs pro --create --name=getcwd --type=console-app --depends=pfs-sys'
+--* Date:    Mon Oct 19 21:50:22 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "getcwd"
+defines       {  }
+includedirs   { "../../include", "../../../pfs/include" }
+libdirs       { "../../../.build" }
+files         { "../../src/getcwd/*.c", "../../src/getcwd/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-sys/getcwd/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d", "pfs-sys-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-sys/getcwd/release"
+    targetdir    "../../../.build"
+    links        { "pfs", "pfs-sys" }
+
+dependson { "pfs-sys" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

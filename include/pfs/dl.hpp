@@ -55,17 +55,24 @@ public:
 	static dl & getPluginLoader () { return getDL(); }
 	static dl & getDL ();
 
-	handle open (const string & path
-			, bool global = false
-			, bool resolve = true) {
-		string unused; return open(path, unused, global, resolve);
+	handle open (const string & path, string * realPath, bool global, bool resolve);
+
+	handle open (const string & path, bool global, bool resolve)
+	{
+		return open(path, 0, global, resolve);
 	}
-	handle open  (const string & path, string & realPath, bool global = false, bool resolve = true);
+
+	handle open (const string & path)
+	{
+		string unused; return open(path, 0, false, true);
+	}
+
+
 	symbol ptr   (handle h, const char * symname);
 	void   close (handle h);
 
-	pfs::pluggable *  openPlugin  (const string & name, const string & path);
-	pfs::pluggable *  openPlugin  (const string & name);
+	pfs::pluggable * openPlugin (const string & name, const string & path);
+	pfs::pluggable * openPlugin (const string & name);
 	bool closePlugin (const string & name, pfs::pluggable * pluggable);
 
     string buildDlFileName (const string & basename);

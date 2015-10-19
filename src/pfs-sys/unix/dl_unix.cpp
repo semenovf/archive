@@ -1,21 +1,34 @@
-#include <pfs/mutex.hpp>
+//#include <pfs/mutex.hpp>
 #include <sys/stat.h>
 #include "pfs/dl.hpp"
 
 namespace pfs {
 
-dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool global, bool resolve)
+/**
+ * @brief Open dynamic library (shared object)
+ *
+ * @param path path to dynamic library file (relative or absolute)
+ * @param realPathPtr
+ * @param global
+ * @param resolve
+ * @return
+ */
+dl::handle dl::open (const pfs::string & path, pfs::string * realPathPtr, bool global, bool resolve)
 {
-	static pfs::mutex mtx;
-	pfs::lock_guard<pfs::mutex> locker(mtx);
+//	static pfs::mutex mtx;
+//	pfs::lock_guard<pfs::mutex> locker(mtx);
 
 	dl::handle h = nullptr;
 
-	realPath = searchFile(path);
+	if (realPathPtr)
+		realPathPtr->clear();
+
+	pfs::string realPath = searchFile(path);
 
 	if (!realPath.isEmpty()) {
 		dlerror(); /* clear error */
 		h = dlopen(realPath.c_str(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ));
+
 		if (!h) {
 			pfs::string errstr;
 			errstr << path << " (" << realPath << "): "
@@ -24,7 +37,11 @@ dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool glob
 					<< pfs::string::fromUtf8(dlerror());
 			addError(errstr);
 		}
+
+		if (realPathPtr)
+			*realPathPtr = realPath;
 	}
+
 	return h;
 }
 
@@ -55,8 +72,8 @@ dl::symbol dl::ptr (dl::handle h, const char * symname)
 
 void dl::close (dl::handle h)
 {
-	static pfs::mutex mtx;
-	pfs::lock_guard<pfs::mutex> locker(mtx);
+//	static pfs::mutex mtx;
+//	pfs::lock_guard<pfs::mutex> locker(mtx);
 
 	if( h != (dl::handle)0) {
 		dlerror(); /*clear error*/

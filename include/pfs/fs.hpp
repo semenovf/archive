@@ -66,7 +66,8 @@ public:
 	bool unlink (const string & path) { return remove(path); }
 	size_t size (const string & path) const;
 	bool simpleBackup (const string & path);
-	string tempDirectory ();
+	string currentDirectory () const;
+	string tempDirectory () const;
 	string tempFile (const string & prefix, const string & suffix, const string & dir, int nattempts = 10);
 	string tempFile (const string & prefix, const string & suffix, int nattempts = 10)
 	{
