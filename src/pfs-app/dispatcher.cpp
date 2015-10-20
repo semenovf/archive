@@ -93,7 +93,7 @@ module * dispatcher::registerModuleForName (const string & name, const char * mo
 	string realPath;
 	bool global = false;  // Avoid name conflicts
 	bool resolve = true;
-	dl::handle ph = dl.open(filename, realPath, global, resolve); // try to find module
+	dl::handle ph = dl.open(filename, & realPath, global, resolve); // try to find module
 
 	if (ph) {
 		dl.close(ph);
