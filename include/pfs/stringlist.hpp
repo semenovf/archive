@@ -8,11 +8,30 @@
 #define __PFS_STRINGLIST_HPP__
 
 #include <pfs/string.hpp>
-#include <pfs/bits/stringlist.hpp>
+#include <pfs/vector.hpp>
 
 namespace pfs {
 
-typedef stringlist_basic<string> stringlist;
+typedef string::stringlist stringlist;
+
+inline stringlist & operator << (stringlist & sl, const string & s)
+{
+	sl.append(s);
+	return sl;
+}
+
+inline stringlist & operator << (stringlist & sl, const char * latin1)
+{
+	sl.append(string::fromLatin1(latin1));
+	return sl;
+}
+
+inline stringlist & operator << (stringlist & sl, const stringlist & other)
+{
+	sl.append(other);
+	return sl;
+}
+
 
 } // pfs
 

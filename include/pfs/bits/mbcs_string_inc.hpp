@@ -408,13 +408,13 @@ typename mbcs_string<CodeUnitT>::iterator mbcs_string<CodeUnitT>::rfind (const_i
 #endif
 
 template <typename CodeUnitT>
-stringlist_basic<mbcs_string<CodeUnitT> > mbcs_string<CodeUnitT>::split (
+vector<mbcs_string<CodeUnitT> > mbcs_string<CodeUnitT>::split (
 		  bool isOneSeparatorChar
 		, const mbcs_string & separator
 		, bool keepEmpty
 		, ucchar quoteChar) const
 {
-	stringlist_basic<mbcs_string> r;
+	vector<mbcs_string> r;
 	const_iterator it = cbegin();
 	const_iterator itBegin = it;
 	const_iterator itEnd = cend();

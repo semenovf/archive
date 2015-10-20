@@ -14,7 +14,8 @@
 #include <pfs/bits/mbcs_string_impl.hpp>
 #include <pfs/bits/strtointegral.hpp>
 #include <pfs/bits/strtoreal.hpp>
-#include <pfs/bits/stringlist.hpp>
+#include <pfs/bits/strtoreal.hpp>
+#include <pfs/vector.hpp>
 #include <cstring>
 #include <ostream>
 
@@ -47,6 +48,9 @@ protected:
 	typedef nullable<mbcs_string_impl<CodeUnitT> > base_class;
 	typedef mbcs_string                            self_class;
 	typedef mbcs_string_impl<CodeUnitT>            impl_class;
+
+public:
+	typedef vector<self_class> stringlist;
 
 public:
 	// Helper variables for split method
@@ -559,19 +563,23 @@ public:
 		return substr(length() - count, count);
 	}
 
-	stringlist_basic<mbcs_string> split (const mbcs_string & separator
+	stringlist split (const mbcs_string & separator
 			, bool keepEmpty = KeepEmpty
 			, ucchar quoteChar = ucchar(ucchar::Null)) const
 	{
 		return split(false, separator, keepEmpty, quoteChar);
 	}
 
-	stringlist_basic<mbcs_string> split (const ucchar & separator, bool keepEmpty = KeepEmpty, ucchar quoteChar = ucchar::Null) const
+	stringlist split (const ucchar & separator
+			, bool keepEmpty = KeepEmpty
+			, ucchar quoteChar = ucchar(ucchar::Null)) const
 	{
 		return split(false, mbcs_string(1, separator), keepEmpty, quoteChar);
 	}
 
-	stringlist_basic<mbcs_string> splitOneOf (const mbcs_string & separators, bool keepEmpty = KeepEmpty, ucchar quoteChar = ucchar::Null) const
+	stringlist splitOneOf (const mbcs_string & separators
+			, bool keepEmpty = KeepEmpty
+			, ucchar quoteChar = ucchar(ucchar::Null)) const
 	{
 		return split(true, mbcs_string(separators), keepEmpty, quoteChar);
 	}
@@ -631,7 +639,7 @@ private:
     mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, mbcs_string_type_trait<InputIt>);
     mbcs_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, mbcs_string_type_trait<const_iterator>);
 
-    stringlist_basic<mbcs_string> split (bool isOneSeparatorChar, const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const;
+    stringlist split (bool isOneSeparatorChar, const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar(ucchar::Null)) const;
 
 public:
     static DLL_API mbcs_string fromLatin1 (const uint8_t * latin1, size_t n, ConvertState * state = nullptr);
