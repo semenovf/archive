@@ -13,6 +13,10 @@ Settings:set("ProjectFileName"  , "project.gbs");
 Settings:set("SourcesDirName"   , "src");
 Settings:set("TestsDirName"     , "tests");
 
+-- Specifies the number of jobs (commands) to run simultaneously.
+-- Gmake's option --jobs=JOBS (value `1' signals to ignore this option)
+Settings:set("Jobs", 1); 
+
 gbs = {};
 
 function loadPreferences ()
@@ -87,6 +91,14 @@ function gbs.run (argc, argv)
         :b("verbose")
         :h(function (r)
                 Settings:set("Verbose", true);
+                return true;
+           end)
+        :continue();
+
+    cli:router()
+        :n("jobs", Settings:get("Jobs"))
+        :h(function (r)
+                Settings:set("Jobs", tonumber(r:optArg("jobs")));
                 return true;
            end)
         :continue();

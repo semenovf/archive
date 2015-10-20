@@ -22,10 +22,16 @@ function plugin:make (stage)
     local buildTool        = settings:get_or_throw("BuildTool");
     local targetPlatform   = settings:get_or_throw("TargetPlatform");
     local solutionFileName = settings:get_or_throw("SolutionFileName");
+    local jobsCount        = settings:get("Jobs");
 
     local solutionFile = fs.join(".gbs", solutionFileName);
     local configOpt    = "config=" .. buildConfig .. "_" .. targetPlatform;
     local verboseOpt   = verbose and "verbose=yes" or "";
+    local jobsOpt      = "";
+    
+    if jobsCount > 1 then
+        jobsOpt = "--jobs=" .. jobsCount;
+    end 
     
     local gmakeTarget = "all";
     
@@ -45,17 +51,16 @@ function plugin:make (stage)
         trn:Function(function () 
             return fs.execute("make"
                 , "-C", ".gbs"
+                , jobsOpt
                 , configOpt
                 , verboseOpt
                 , gmakeTarget);
         end);
     else
-        print(configOpt
-                , verboseOpt
-                , gmakeTarget);
         trn:Function(function ()
             fs.execute("make"
                 , "-C", ".gbs"
+                , jobsOpt
                 , configOpt
                 , verboseOpt
                 , gmakeTarget);
