@@ -17,6 +17,7 @@ namespace pfs {
 
 class DLL_API fs : public errorable_ext
 {
+	pfs::ucchar _separator;
 public:
 	enum filter {
 		  NoFilter   = 0
@@ -55,12 +56,16 @@ public:
 	};
 
 public:
-	fs () : errorable_ext() {}
-	pfs::ucchar separator () const;
-	bool isAbsolute (const string & path);
-	bool isRelative (const string & path) { return !isAbsolute(path); }
-	bool isDirectory (const string & path);
-	bool exists (const string & path);
+	fs ();
+	pfs::ucchar separator () const { return _separator; }
+	pfs::ucchar separatorChar () const { return _separator; }
+	void setSeparatorChar(char latin1) { _separator = ucchar(latin1); }
+	void setSeparatorChar(pfs::ucchar ch) { _separator = ch; }
+
+	bool isAbsolute (const string & path) const;
+	bool isRelative (const string & path) const { return !isAbsolute(path); }
+	bool isDirectory (const string & path) const;
+	bool exists (const string & path) const;
 	bool rename (const string & from, const string & to);
 	bool remove (const string & path);
 	bool unlink (const string & path) { return remove(path); }
@@ -85,7 +90,7 @@ public:
 			, int filters = NoFilter, int sort = NoSort);
 
 //	string findFile (const string & filename, const stringlist & dirs) const;
-//	string normalizePath (const string & path) const;
+	string normalizePath (const string & path) const;
 };
 
 } // pfs

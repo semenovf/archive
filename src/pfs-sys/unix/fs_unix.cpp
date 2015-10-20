@@ -24,12 +24,11 @@ inline bool __is_directory     (mode_t m) { return (m & S_IFMT) == S_IFDIR; }
 inline bool __is_char_device   (mode_t m) { return (m & S_IFMT) == S_IFCHR; }
 inline bool __is_fifo          (mode_t m) { return (m & S_IFMT) == S_IFIFO; }
 
-pfs::ucchar fs::separator () const
-{
-	return pfs::ucchar('/');
-}
+fs::fs ()
+	: _separator('/')
+{}
 
-bool fs::isAbsolute(const string & path)
+bool fs::isAbsolute (const string & path) const
 {
 	if( path.isEmpty() )
 		return false;
@@ -37,19 +36,18 @@ bool fs::isAbsolute(const string & path)
 	return path.startsWith(string(1, separator()));
 }
 
-bool fs::isDirectory (const string & path)
+bool fs::isDirectory (const string & path) const
 {
 	struct stat st;
 	return (stat(path.c_str(), & st ) == 0
 			&& __is_directory(st.st_mode));
 }
 
-bool fs::exists (const string & path)
+bool fs::exists (const string & path) const
 {
 	struct stat st;
-	return stat(path.c_str(), &st ) == 0;
+	return stat(path.c_str(), & st ) == 0;
 }
-
 
 bool fs::rename (const string & from, const string & to)
 {

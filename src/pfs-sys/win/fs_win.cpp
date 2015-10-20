@@ -11,13 +11,11 @@ namespace pfs {
 
 static string __separator("\\");
 
-pfs::ucchar fs::separator () const
-{
-	return __separator[0];
-}
+fs::fs ()
+	: _separator(__separator[0])
+{}
 
-
-bool fs::isAbsolute(const string &path)
+bool fs::isAbsolute (const string & path) const
 {
 	static string __disks("abcdefghigklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
@@ -38,7 +36,7 @@ bool fs::isAbsolute(const string &path)
 	return false;
 }
 
-bool fs::exists(const string & path)
+bool fs::exists (const string & path) const
 {
 	PFS_ASSERT_RANGE(sizeof(wchar_t) == 2);
 	struct _stat st;
