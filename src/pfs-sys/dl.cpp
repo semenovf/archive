@@ -3,13 +3,6 @@
 
 namespace pfs {
 
-//static stringlist globalSearchPath;
-//
-//void dl::addGlobalSearchPath (const string & dir)
-//{
-//	globalSearchPath.append(dir);
-//}
-
 dl & dl::getDL ()
 {
 	static pfs::dl dl;
@@ -32,16 +25,19 @@ dl::~dl ()
  * @note  internal
  *
  * @brief Searches file in directories added by addSearchPath()
+ *        and returns absolute path.
  *
- * @param filename
- * @param realPath
- * @return
+ * @param filename File name to search. May be absolute or relative.
+ * @return Absolute file path.
+ *         If @c filename was empty or if error occurred returns empty string.
+ *         Error can be raised if pfs::fs::currentDirectory() failed.
  */
-
-
 string dl::searchFile (const string & filename)
 {
 	pfs::fs fs;
+
+	if (filename.isEmpty())
+		return string();
 
 	if (fs.exists(filename)) {
 		/*
@@ -50,6 +46,11 @@ string dl::searchFile (const string & filename)
 		 * then append prefix and return result
 		 */
 		if (!fs.isAbsolute(filename)) {
+
+			string cwd = fs.currentDirectory();
+			if (cwd.isEmpty())
+				return string();
+
 			string result(".");
 			result.append(1, fs.separator());
 

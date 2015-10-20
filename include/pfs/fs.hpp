@@ -74,7 +74,8 @@ public:
 	    return tempFile(prefix, suffix, tempDirectory(), nattempts);
 	}
 	string basename (const string & path) const;
-	string join (const string & dir, const string filename);
+	string join (const string & dir, const string filename) const;
+	string join (const stringlist & items) const;
 	stringlist entryListByRegExp (const string & dir
 			, const stringlist & reNameFilters
 			, int filters
@@ -82,6 +83,9 @@ public:
 	stringlist entryListByWildcard (const string & dir
 			, const stringlist & nameFilters
 			, int filters = NoFilter, int sort = NoSort);
+
+//	string findFile (const string & filename, const stringlist & dirs) const;
+//	string normalizePath (const string & path) const;
 };
 
 } // pfs
