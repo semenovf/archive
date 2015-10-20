@@ -49,6 +49,12 @@ protected:
 	typedef mbcs_string_impl<CodeUnitT>            impl_class;
 
 public:
+	// Helper variables for split method
+	//
+	static const bool KeepEmpty = true;
+	static const bool DontKeepEmpty = false;
+
+public:
 	class iterator : public random_access_iterator<self_class>
 	{
 	public:
@@ -334,13 +340,15 @@ public:
 	bool endsWith   (ucchar ch) const              { return endsWith(mbcs_string(1, ch)); }
 	bool endsWith   (char latin1) const            { return endsWith(mbcs_string(1, latin1)); }
 
-    // Size in bytes
+    // Size in code units
+	//
     size_type size () const
     {
     	return base_class::isNull() ? 0 : base_class::cast()->size();
     }
 
     // Length in unicode chars
+    //
     size_type length () const
     {
     	return base_class::isNull() ? 0 : base_class::cast()->length();
@@ -552,18 +560,18 @@ public:
 	}
 
 	stringlist_basic<mbcs_string> split (const mbcs_string & separator
-			, bool keepEmpty = true
+			, bool keepEmpty = KeepEmpty
 			, ucchar quoteChar = ucchar(ucchar::Null)) const
 	{
 		return split(false, separator, keepEmpty, quoteChar);
 	}
 
-	stringlist_basic<mbcs_string> split (const ucchar & separator, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const
+	stringlist_basic<mbcs_string> split (const ucchar & separator, bool keepEmpty = KeepEmpty, ucchar quoteChar = ucchar::Null) const
 	{
 		return split(false, mbcs_string(1, separator), keepEmpty, quoteChar);
 	}
 
-	stringlist_basic<mbcs_string> splitOneOf (const mbcs_string & separators, bool keepEmpty = true, ucchar quoteChar = ucchar::Null) const
+	stringlist_basic<mbcs_string> splitOneOf (const mbcs_string & separators, bool keepEmpty = KeepEmpty, ucchar quoteChar = ucchar::Null) const
 	{
 		return split(true, mbcs_string(separators), keepEmpty, quoteChar);
 	}
