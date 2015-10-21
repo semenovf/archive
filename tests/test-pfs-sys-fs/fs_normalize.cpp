@@ -21,7 +21,10 @@ struct TestNormalize
 };
 
 static TestNormalize test_norm_data[] = {
-		{ "/a/b/c/.././../d/f/", "/a/d/f" }
+      { "/a/b/c/.././../d/f/", "/a/d/f" }
+	, { "/", "/" }
+    , { "//", "/" }
+    , { "///", "/" }
 //	, { { "/",  0 },  "/" }
 //	, { { "/", "/", 0 },  "/" }
 //	, { { "/", "/", "/", 0 },  "/" }
@@ -43,12 +46,15 @@ string normalize (const string & path)
 		return string();
 
 	pfs::fs fs;
-	stringlist sl = path.split(fs.separatorChar(), string::KeepEmpty);
+	stringlist sl = path.split(fs.separatorChar(), string::DontKeepEmpty);
 
 	stringlist::const_iterator it = sl.cbegin();
 	stringlist::const_iterator itEnd = sl.cend();
 
 	stringlist result;
+
+	if (path.startsWith(fs.separatorChar()))
+		result.append(string(1, fs.separatorChar()));
 
 	while (it != itEnd) {
 		cout << "[" << static_cast<string>(*it) << "]" << endl;
@@ -58,16 +64,14 @@ string normalize (const string & path)
 		} else if (*it == string(".")) {
 			; // nothing to do
 		} else {
-			result.prepend(*it);
+			result.append(*it);
 		}
 
-		if (it == itEnd)
-			break;
-
-		++it;
+		if (it != itEnd)
+			++it;
 	}
 
-	return result;
+	return fs.join(result);
 }
 
 void test_normalize ()
