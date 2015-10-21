@@ -55,8 +55,8 @@ public:
 public:
 	// Helper variables for split method
 	//
-	static const bool KeepEmpty = true;
-	static const bool DontKeepEmpty = false;
+	static const bool KeepEmpty = true; // TODO DEPRECATED
+	static const bool DontKeepEmpty = false; // TODO DEPRECATED
 
 public:
 	class iterator : public random_access_iterator<self_class>
@@ -233,43 +233,52 @@ public:
         return compare(pos, count, mbcs_string(latin1));
     }
 
+    // TODO DEPRECATED
     iterator find (const_iterator pos, const mbcs_string & str) const;
 
+    // TODO DEPRECATED
     iterator find (const mbcs_string & str) const
     {
     	return find(cbegin(), str);
     }
 
+    // TODO DEPRECATED
     iterator find (const_iterator pos, const char * latin1, size_type count) const
     {
     	return find(pos, mbcs_string(latin1, count));
     }
 
+    // TODO DEPRECATED
     iterator find (const_iterator pos, const char * latin1) const
     {
     	return find(pos, mbcs_string(latin1, strlen(latin1)));
     }
 
+    // TODO DEPRECATED
     iterator find (const char * latin1) const
     {
     	return find(cbegin(), latin1);
     }
 
+    // TODO DEPRECATED
     iterator find (const_iterator pos, char latin1) const
     {
     	return find(pos, & latin1, 1);
     }
 
+    // TODO DEPRECATED
     iterator find (char latin1) const
     {
     	return find(cbegin(), latin1);
     }
 
+    // TODO DEPRECATED
     iterator find (const_iterator pos, ucchar ch) const
     {
     	return find(pos, mbcs_string(1, ch));
     }
 
+    // TODO DEPRECATED
     iterator find (ucchar ch) const
     {
     	return find(cbegin(), ch);
@@ -563,6 +572,7 @@ public:
 		return substr(length() - count, count);
 	}
 
+#if __DEPRECATED__
 	stringlist split (const mbcs_string & separator
 			, bool keepEmpty = KeepEmpty
 			, ucchar quoteChar = ucchar(ucchar::Null)) const
@@ -583,7 +593,7 @@ public:
 	{
 		return split(true, mbcs_string(separators), keepEmpty, quoteChar);
 	}
-
+#endif
 	bool           toBoolean (bool * ok = 0) const;
 	integral_t     toIntegral (bool * ok = 0, int base = 10) const { return toSignedIntegral(ok, base); }
 	integral_t     toSignedIntegral (bool * ok = 0, int base = 10) const;
@@ -639,7 +649,9 @@ private:
     mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, mbcs_string_type_trait<InputIt>);
     mbcs_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, mbcs_string_type_trait<const_iterator>);
 
+#if __DEPRECATED__
     stringlist split (bool isOneSeparatorChar, const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar(ucchar::Null)) const;
+#endif
 
 public:
     static DLL_API mbcs_string fromLatin1 (const uint8_t * latin1, size_t n, ConvertState * state = nullptr);

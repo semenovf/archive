@@ -407,6 +407,7 @@ typename mbcs_string<CodeUnitT>::iterator mbcs_string<CodeUnitT>::rfind (const_i
 }
 #endif
 
+#if __DEPRECATED__
 template <typename CodeUnitT>
 vector<mbcs_string<CodeUnitT> > mbcs_string<CodeUnitT>::split (
 		  bool isOneSeparatorChar
@@ -466,7 +467,7 @@ vector<mbcs_string<CodeUnitT> > mbcs_string<CodeUnitT>::split (
 
 	return r;
 }
-
+#endif
 
 /**
  * @brief Replaces every occurrence of the string @c before with the string
