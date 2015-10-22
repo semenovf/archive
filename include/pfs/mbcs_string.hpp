@@ -59,6 +59,8 @@ public:
 	static const bool DontKeepEmpty = false; // TODO DEPRECATED
 
 public:
+	class const_iterator;
+
 	class iterator : public random_access_iterator<self_class>
 	{
 	public:
@@ -69,6 +71,7 @@ public:
 		iterator () : random_access_iterator<self_class>() {}
 		iterator (self_class * holder, pointer ptr) : random_access_iterator<self_class>(holder, ptr) {}
 		iterator (const iterator & it) : random_access_iterator<self_class>(it.holder(), it.base())	{}
+		iterator (const const_iterator & it);
 
 		friend iterator operator + (const iterator & i, size_type n)
 		{
@@ -132,7 +135,6 @@ public:
 			return i1.base() - i2.base();
 		}
 	};
-
 
 	typedef ucchar value_type; // Unicode character
 	typedef typename impl_class::size_type                size_type;
@@ -572,7 +574,7 @@ public:
 		return substr(length() - count, count);
 	}
 
-#if __DEPRECATED__
+	// TODO DEPRECATED
 	stringlist split (const mbcs_string & separator
 			, bool keepEmpty = KeepEmpty
 			, ucchar quoteChar = ucchar(ucchar::Null)) const
@@ -580,6 +582,7 @@ public:
 		return split(false, separator, keepEmpty, quoteChar);
 	}
 
+	// TODO DEPRECATED
 	stringlist split (const ucchar & separator
 			, bool keepEmpty = KeepEmpty
 			, ucchar quoteChar = ucchar(ucchar::Null)) const
@@ -587,13 +590,14 @@ public:
 		return split(false, mbcs_string(1, separator), keepEmpty, quoteChar);
 	}
 
+	// TODO DEPRECATED
 	stringlist splitOneOf (const mbcs_string & separators
 			, bool keepEmpty = KeepEmpty
 			, ucchar quoteChar = ucchar(ucchar::Null)) const
 	{
 		return split(true, mbcs_string(separators), keepEmpty, quoteChar);
 	}
-#endif
+
 	bool           toBoolean (bool * ok = 0) const;
 	integral_t     toIntegral (bool * ok = 0, int base = 10) const { return toSignedIntegral(ok, base); }
 	integral_t     toSignedIntegral (bool * ok = 0, int base = 10) const;
@@ -649,9 +653,9 @@ private:
     mbcs_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, mbcs_string_type_trait<InputIt>);
     mbcs_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, mbcs_string_type_trait<const_iterator>);
 
-#if __DEPRECATED__
+    // TODO DEPRECATED
     stringlist split (bool isOneSeparatorChar, const mbcs_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar(ucchar::Null)) const;
-#endif
+
 
 public:
     static DLL_API mbcs_string fromLatin1 (const uint8_t * latin1, size_t n, ConvertState * state = nullptr);
@@ -688,6 +692,13 @@ public:
 	static mbcs_string toString (long double value, char f = 'f', int prec = 6);
 #endif
 };
+
+template <typename CodeUnitT>
+mbcs_string<CodeUnitT>::iterator::iterator (const const_iterator & it)
+	: random_access_iterator<self_class>(const_cast<self_class *>(it.holder())
+			, pointer(const_cast<self_class *>(it.holder()), it.base().index()))
+{}
+
 
 // Forward declaration to avoid
 // `specialization after instantiation error'
