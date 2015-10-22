@@ -19,13 +19,13 @@ ifeq ($(config),debug_unix32)
   INCLUDES += -I../include -I../../pfs/include -I../../pfs-sys/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m32 -Werror -g -fPIC
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Werror -g -m32 -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lpfs-d -lpfs-sys-d
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -L../../.build -m32 -shared
-  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -L../../.build -shared -m32
+  LINKCMD = $(CXX) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -77,13 +77,13 @@ ifeq ($(config),debug_unix64)
   INCLUDES += -I../include -I../../pfs/include -I../../pfs-sys/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -g -fPIC
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Werror -g -m64 -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lpfs-d -lpfs-sys-d
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -L../../.build -m64 -shared
-  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -L../../.build -shared -m64
+  LINKCMD = $(CXX) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -135,13 +135,13 @@ ifeq ($(config),debug_mswin32)
   INCLUDES += -I../include -I../../pfs/include -I../../pfs-sys/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m32 -Werror -g -fPIC
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Werror -g -m32 -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lpfs-d -lpfs-sys-d
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -L../../.build -m32 -shared
-  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -L../../.build -shared -m32
+  LINKCMD = $(CXX) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -193,13 +193,13 @@ ifeq ($(config),debug_mswin64)
   INCLUDES += -I../include -I../../pfs/include -I../../pfs-sys/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -g -fPIC
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Werror -g -m64 -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lpfs-d -lpfs-sys-d
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -L../../.build -m64 -shared
-  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -L../../.build -shared -m64
+  LINKCMD = $(CXX) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -251,13 +251,13 @@ ifeq ($(config),release_unix32)
   INCLUDES += -I../include -I../../pfs/include -I../../pfs-sys/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m32 -Werror -fPIC
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Werror -m32 -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lpfs -lpfs-sys
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -L../../.build -m32 -s -shared
-  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -L../../.build -s -shared -m32
+  LINKCMD = $(CXX) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -309,13 +309,13 @@ ifeq ($(config),release_unix64)
   INCLUDES += -I../include -I../../pfs/include -I../../pfs-sys/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -fPIC
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Werror -m64 -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lpfs -lpfs-sys
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -L../../.build -m64 -s -shared
-  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -L../../.build -s -shared -m64
+  LINKCMD = $(CXX) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -367,13 +367,13 @@ ifeq ($(config),release_mswin32)
   INCLUDES += -I../include -I../../pfs/include -I../../pfs-sys/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m32 -Werror -fPIC
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Werror -m32 -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lpfs -lpfs-sys
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -L../../.build -m32 -s -shared
-  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib32 -L../../.build -s -shared -m32
+  LINKCMD = $(CXX) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
@@ -425,13 +425,13 @@ ifeq ($(config),release_mswin64)
   INCLUDES += -I../include -I../../pfs/include -I../../pfs-sys/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -fPIC
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Werror -m64 -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lpfs -lpfs-sys
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -L../../.build -m64 -s -shared
-  LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -L../../.build -s -shared -m64
+  LINKCMD = $(CXX) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
