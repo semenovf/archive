@@ -1032,12 +1032,14 @@ double mbcs_string<CodeUnitT>::toDouble (bool * ok, ucchar decimalPoint) const
 #endif
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (bool value)
 {
 	return mbcs_string<CodeUnitT>::fromLatin1( value ? "true" : "false");
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (signed char value, int base, bool uppercase)
 {
@@ -1046,6 +1048,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (signed char valu
 			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (short value, int base, bool uppercase)
 {
@@ -1054,6 +1057,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (short value, int
 			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (int value, int base, bool uppercase)
 {
@@ -1062,6 +1066,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (int value, int b
 			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long value, int base, bool uppercase)
 {
@@ -1070,6 +1075,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long value, int 
 			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned char value, int base, bool uppercase)
 {
@@ -1078,6 +1084,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned char va
 			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned short value, int base, bool uppercase)
 {
@@ -1086,6 +1093,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned short v
 			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned int value, int base, bool uppercase)
 {
@@ -1094,6 +1102,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned int val
 			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long value, int base, bool uppercase)
 {
@@ -1103,6 +1112,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long va
 }
 
 #ifdef PFS_HAVE_LONGLONG
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long long value, int base, bool uppercase)
 {
@@ -1111,6 +1121,7 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long long value,
 			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long long value, int base, bool uppercase)
 {
@@ -1120,20 +1131,24 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (unsigned long lo
 }
 #endif
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (float value, char f, int prec)
 {
+	int sz = 5020;
 	char buf[5020];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_real_to_string(real_t(value), f, prec, buf, 5020));
+			pfs_real_to_string(real_t(value), f, prec, buf, & sz));
 }
 
+// XXX DEPRECATED
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (double value, char f, int prec)
 {
+	int sz = 5020;
 	char buf[5020];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_real_to_string(real_t(value), f, prec, buf, 5020));
+			pfs_real_to_string(real_t(value), f, prec, buf, & sz));
 }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
@@ -1141,9 +1156,10 @@ inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (double value, ch
 template <typename CodeUnitT>
 inline mbcs_string<CodeUnitT> mbcs_string<CodeUnitT>::toString (long double value, char f, int prec)
 {
+	int sz = 5020;
 	char buf[5020];
 	return mbcs_string<CodeUnitT>::fromLatin1(
-			pfs_real_to_string(real_t(value), f, prec, buf, 5020));
+			pfs_real_to_string(real_t(value), f, prec, buf, & sz));
 }
 #endif
 

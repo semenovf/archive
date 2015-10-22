@@ -49,30 +49,74 @@ char * pfs_uintegral_to_string (uintegral_t n, int base, int uppercase, char * b
 	return p;
 }
 
-char * pfs_real_to_string (real_t n, char f, int prec, char * buf, int bufsz)
+/**
+ * @brief Convert floating point number to string.
+ *
+ * @param n Floating point number.
+ * @param f Floating point format for output.
+ * @param prec Floating point precision.
+ * @param buf Pointer to buffer @c buf.
+ * @param bufsz Buffer @c buf size.
+ * @return Pointer to @c buf if conversion is successful
+ *         or NULL if not enough space to store string
+ *         representation of floating point number.
+ *         In case of failure *bufsz contains final buffer size
+ *         or actual number of characters written in success.
+ */
+char * pfs_real_to_string (real_t n, char f, int prec, char * buf, int * bufsz)
 {
+	PFS_ASSERT(bufsz);
+
 	char fmt[32];
 
-	PFS_UNUSED(bufsz);
-
-	if (prec)
+	if (prec) {
 #ifdef PFS_HAVE_LONG_DOUBLE
 		PFS_ASSERT(sprintf(fmt, "%%.%dL%c", prec, f) > 0);
 #else
 		PFS_ASSERT(sprintf(fmt, "%%.%d%c", prec, f) > 0);
 #endif
-	else
+	} else {
 #ifdef PFS_HAVE_LONG_DOUBLE
 		PFS_ASSERT(sprintf(fmt, "%%L%c", f) > 0);
 #else
 		PFS_ASSERT(sprintf(fmt, "%%%c", f) > 0);
 #endif
+	}
 
-#ifdef PFS_CC_MSC
-		PFS_ASSERT(_snprintf(buf, bufsz - 1, fmt, n));
+
+#if PFS_HAVE_SNPRINTF
+
+	/* The functions snprintf() and vsnprintf() do not write  more  than  size  bytes
+	 * (including the terminating null byte ('\0')).  If the output was truncated due
+	 * to this limit then the return value is the number of characters (excluding the
+	 * terminating  null  byte)  which would have been written to the final string if
+	 * enough space had been available. Thus, a return value of size or  more  means
+	 * that the output was truncated.
+	 *
+	 * The glibc implementation of the functions snprintf() and vsnprintf()  conforms
+	 * to  the C99 standard, that is, behaves as described above, since glibc version
+	 * 2.1.  Until glibc 2.0.6 they would return -1 when the output was truncated.
+	 */
+
+	// FIXME Need the recognition of GLIBC version.
+	// Supporting modern behavior only now.
+	int sz = snprintf(buf, *bufsz, fmt, n);
+
+	*bufsz = sz;
+
+	// Truncated
+	//
+	if (sz >= *bufsz)
+		return NULL;
+
 #else
-		PFS_ASSERT(snprintf(buf, bufsz - 1, fmt, n));
+#	error "Need implementation of snprintf"
 #endif
+
+//#ifdef PFS_CC_MSC
+//	// FIXME make checks as below code for PFS_CC_GNUC
+//	PFS_ASSERT(_snprintf(buf, bufsz - 1, fmt, n) > 0);
+//#endif
 
 	return buf;
 }

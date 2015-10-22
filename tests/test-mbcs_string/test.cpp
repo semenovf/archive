@@ -813,13 +813,17 @@ int main(int argc, char *argv[])
 	cout << "*********** TEST UTF8-encoded strings ***********" << endl;
 	cout << "*************************************************" << endl;
 	test_suite<uint8_t>();
-	test_find();
 
 //	cout << endl;
 //	cout << "***************************************************" << endl;
 //	cout <<  "*********** TEST UTF16-encoded strings ***********" << endl;
 //	cout << "***************************************************" << endl;
 //	test_suite<uint16_t>();
+
+	cout << "*************************************************" << endl;
+	cout << "************* TEST string algorithms ************" << endl;
+	cout << "*************************************************" << endl;
+	test_find();
 
     END_TESTS;
 }

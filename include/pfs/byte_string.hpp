@@ -459,6 +459,8 @@ public:
 	template <typename T>
 	static byte_string toBytes (const T & v, endian::type_enum order = endian::nativeOrder());
 
+
+	// XXX DEPRECATED toString() functions, use lexical_cast() instead.
 	static byte_string toString (int value, int base = 10, bool uppercase = false);
 	static byte_string toString (long value, int base = 10, bool uppercase = false);
 	static byte_string toString (unsigned int value, int base = 10, bool uppercase = false);
@@ -610,24 +612,28 @@ byte_string::size_type byte_string::readNumber (T & v, size_t pos, endian::type_
 	return sizeof(T);
 }
 
+//XXX DEPRECATED
 inline byte_string byte_string::toString (int value, int base, bool uppercase)
 {
 	char buf[65];
 	return byte_string(pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
+//XXX DEPRECATED
 inline byte_string byte_string::toString (long value, int base, bool uppercase)
 {
 	char buf[65];
 	return byte_string(pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
+//XXX DEPRECATED
 inline byte_string byte_string::toString (unsigned int value, int base, bool uppercase)
 {
 	char buf[65];
 	return byte_string(pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
 }
 
+//XXX DEPRECATED
 inline byte_string byte_string::toString (unsigned long value, int base, bool uppercase)
 {
 	char buf[65];
@@ -635,12 +641,14 @@ inline byte_string byte_string::toString (unsigned long value, int base, bool up
 }
 
 #ifdef PFS_HAVE_LONGLONG
+//XXX DEPRECATED
 inline byte_string byte_string::toString (long long value, int base, bool uppercase)
 {
 	char buf[65];
 	return byte_string(pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
 }
 
+//XXX DEPRECATED
 inline byte_string byte_string::toString (unsigned long long value, int base, bool uppercase)
 {
 	char buf[65];
@@ -648,23 +656,29 @@ inline byte_string byte_string::toString (unsigned long long value, int base, bo
 }
 #endif
 
+//XXX DEPRECATED
 inline byte_string byte_string::toString (float value, char f, int prec)
 {
+	int sz = 65;
 	char buf[65];
-	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, 65));
+	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, & sz));
 }
 
+//XXX DEPRECATED
 inline byte_string byte_string::toString (double value, char f, int prec)
 {
+	int sz = 129;
 	char buf[129];
-	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, 129));
+	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, & sz));
 }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
+//XXX DEPRECATED
 inline byte_string byte_string::toString (long double value, char f, int prec)
 {
+	int sz = 129;
 	char buf[129];
-	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, 129));
+	return byte_string(pfs_real_to_string(real_t(value), f, prec, buf, & sz));
 }
 #endif
 

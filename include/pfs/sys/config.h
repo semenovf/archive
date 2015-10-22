@@ -177,6 +177,11 @@
 #   define PFS_HAVE_FSYNC 1
 #endif
 
+#if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L
+#	define PFS_HAVE_SNPRINTF  1
+#	define PFS_HAVE_VSNPRINTF 1
+#endif
+
 
 /* @see http://www.ibm.com/developerworks/ru/library/l-port64/
  *

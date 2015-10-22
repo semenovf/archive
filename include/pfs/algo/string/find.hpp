@@ -12,12 +12,11 @@ namespace pfs {
 
 template <typename String>
 typename String::iterator find (
-		  typename String::const_iterator haystackBegin
-		, typename String::const_iterator haystackEnd
-		, typename String::const_iterator needleBegin
-		, typename String::const_iterator needleEnd)
+		  typename String::iterator haystackBegin
+		, typename String::iterator haystackEnd
+		, typename String::iterator needleBegin
+		, typename String::iterator needleEnd)
 {
-	typedef typename String::const_iterator const_iterator;
 	typedef typename String::iterator iterator;
 
 	if (haystackEnd < haystackBegin)
@@ -28,8 +27,8 @@ typename String::iterator find (
 
 	while (haystackBegin != haystackEnd) {
 		if (*haystackBegin == *needleBegin) {
-			const_iterator it(haystackBegin);
-			const_iterator it1(needleBegin);
+			iterator it(haystackBegin);
+			iterator it1(needleBegin);
 
 			++it;
 			++it1;
@@ -41,7 +40,7 @@ typename String::iterator find (
 				++it1;
 			}
 
-			if (it == haystackEnd && it1 == needleEnd)
+			if (it1 == needleEnd)
 				return iterator(haystackBegin);
 		}
 
