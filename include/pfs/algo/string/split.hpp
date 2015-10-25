@@ -8,6 +8,10 @@
 #ifndef __PFS_ALGO_STRING_SPLIT_HPP__
 #define __PFS_ALGO_STRING_SPLIT_HPP__
 
+#include <pfs/algo/string/find.hpp>
+#include <pfs/bits/iterator/advance.hpp>
+#include <pfs/bits/iterator/distance.hpp>
+
 namespace pfs {
 
 enum {
@@ -16,28 +20,85 @@ enum {
 };
 
 // Sequence must provide push_back(const String &) methods
+// String::empty()
 //
-template <typename Sequence>
-void split (
-		  Sequence * result
-		, Sequence::value_type::const_iterator itBegin
-		, Sequence::value_type::const_iterator itEnd
-		, bool isOneSeparatorChar
-		, const Sequence::value_type separator
+template <typename InputIterator, typename Sequence>
+Sequence & split (
+		  InputIterator itBegin
+		, InputIterator itEnd
+		, InputIterator separatorBegin
+		, InputIterator separatorEnd
 		, bool keepEmpty
-		, ucchar openQuoteChar
-		, ucchar closeQuoteChar)
+		, Sequence & result)
+{
+	typedef typename Sequence::value_type value_type;
+	typedef typename InputIterator::difference_type difference_type;
+
+	if (itBegin == itEnd)
+		return result;
+
+	difference_type n = pfs::distance(separatorBegin, separatorEnd);
+
+	// "/"
+
+	while (itBegin != itEnd) {
+		InputIterator it = pfs::find(itBegin
+				, itEnd
+				, separatorBegin
+				, separatorEnd);
+
+		if (it == itEnd)
+			break;
+
+		value_type v(itBegin, it);
+
+		if (!(v.empty() && !keepEmpty)) {
+			result.push_back(v);
+		}
+
+		// Skip separator
+		//
+		pfs::advance(it, n);
+		itBegin = it;
+	}
+
+	if (itBegin != itEnd)
+		result.push_back(value_type(itBegin, itEnd));
+	else {
+		if (keepEmpty)
+			result.push_back(value_type());
+	}
+
+	return result;
+}
+
+/*
+template <typename String, typename Sequence>
+void split (
+		  String::const_iterator itBegin
+		, String::const_iterator itEnd
+		, bool isOneSeparatorChar
+		, const String & separator
+		, bool keepEmpty
+		, const String & openQuote
+		, const String & closeQuote
+		, Sequence & result)
 {
 	Sequence::value_type::const_iterator it = itBegin;
 	size_t separatorLength = separator.length();
 	bool quote = false;
-	bool allowQuoting = false;
+	String qopen(openQuote);
+	String qclose(closeQuote);
 
-	if (openQuoteChar != ucchar::Null)
-		allowQuoting = true;
+	if (qclose.empty()) {
+		if (!qopen.empty())
+			qclose= qopen;
+	}
 
-	if (allowQuoting && closeQuoteChar == ucchar::Null)
-		closeQuoteChar = openQuoteChar;
+	if (qopen.empty()) {
+		if (!qclose.empty())
+			qopen = qclose;
+	}
 
 	while (it != itEnd) {
 		if (openQuoteChar != ucchar::Null && *it == openQuoteChar) {
@@ -86,6 +147,7 @@ void split (
 
 	return r;
 }
+*/
 
 //stringlist split (const mbcs_string & separator
 //		, bool keepEmpty = KeepEmpty

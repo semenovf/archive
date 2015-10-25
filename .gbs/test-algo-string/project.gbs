@@ -1,0 +1,36 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --name=test-algo-string --type=test --depends=pfs'
+--* Date:    Sun Oct 25 15:41:46 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-algo-string"
+defines       {  }
+includedirs   { "../../include", "../../../pfs-test/include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-algo-string/*.c", "../../tests/test-algo-string/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs/test-algo-string/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs/test-algo-string/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs" }
+
+dependson { "pfs" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

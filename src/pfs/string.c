@@ -5,24 +5,10 @@
  *      Author: wladt
  */
 
-#include <pfs/string.h>
+#include <pfs.h>
 #include <ctype.h>
 
 static const char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
-
-char * pfs_integral_to_string (integral_t n, int base, int uppercase, char * buf, int bufsz)
-{
-	char * p = NULL;
-
-	if (n < 0) {
-		p = pfs_uintegral_to_string((uintegral_t)(n * -1), base, uppercase, buf, bufsz);
-		*--p = '-';
-	} else {
-		p = pfs_uintegral_to_string((uintegral_t)n, base, uppercase, buf, bufsz);
-	}
-
-	return p;
-}
 
 char * pfs_uintegral_to_string (uintegral_t n, int base, int uppercase, char * buf, int bufsz)
 {
@@ -44,6 +30,20 @@ char * pfs_uintegral_to_string (uintegral_t n, int base, int uppercase, char * b
 		}
 	} else { /* n == 0 */
 		*--p = '0';
+	}
+
+	return p;
+}
+
+char * pfs_integral_to_string (integral_t n, int base, int uppercase, char * buf, int bufsz)
+{
+	char * p = NULL;
+
+	if (n < 0) {
+		p = pfs_uintegral_to_string((uintegral_t)(n * -1), base, uppercase, buf, bufsz);
+		*--p = '-';
+	} else {
+		p = pfs_uintegral_to_string((uintegral_t)n, base, uppercase, buf, bufsz);
 	}
 
 	return p;

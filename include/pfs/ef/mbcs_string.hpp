@@ -1,23 +1,20 @@
 /*
  * mbcs_string.hpp
  *
+ *  Created on: Oct 25, 2015
  *      Author: wladt
  */
 
-#ifndef __PFS_MBCS_STRING_HPP__
-#define __PFS_MBCS_STRING_HPP__
+#ifndef __PFS_EF_MBCS_STRING_HPP__
+#define __PFS_EF_MBCS_STRING_HPP__
 
-#include <pfs/pimpl.hpp>
-#include <pfs/bits/iterator.hpp>
+namespace pfs { namespace ef {
+
+#include <string>
 #include <pfs/endian.hpp>
 #include <pfs/ucchar.hpp>
-#include <pfs/bits/mbcs_string_impl.hpp>
-#include <pfs/bits/strtointegral.hpp>
-#include <pfs/bits/strtoreal.hpp>
-#include <pfs/cast/string.hpp>
-#include <pfs/vector.hpp>
-#include <cstring>
-#include <ostream>
+#include <pfs/cast/latin1.hpp>
+//#include <pfs/cast/string.hpp>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC
@@ -25,159 +22,135 @@
 #	pragma warning(disable:4251)
 #endif
 
-namespace pfs {
-
-class byte_string;
-
-template <typename T>
-struct mbcs_string_type_trait { typedef T type; };
-
-struct ConvertState
-{
-	ConvertState() : nremain(0), invalidChars(0), replacementChar(ucchar::ReplacementChar) {}
-	size_t nremain;
-	size_t invalidChars;
-	ucchar replacementChar;
-};
-
+namespace pfs { namespace ef {
 
 template <typename CodeUnitT>
-class mbcs_string : public nullable<mbcs_string_impl<CodeUnitT> >
+class mbcs_string
 {
-protected:
-	typedef nullable<mbcs_string_impl<CodeUnitT> > base_class;
-	typedef mbcs_string                            self_class;
-	typedef mbcs_string_impl<CodeUnitT>            impl_class;
+	typedef std::basic_string<CodeUnitT> impl_class;
 
 public:
-	typedef vector<self_class> stringlist;
+	// Types
+    typedef impl_class::traits_type	             traits_type;
+    typedef impl_class::value_type		         value_type;
+//    typedef impl_class::allocator_type	     allocator_type;
+    typedef typename impl_class::size_type	     size_type;
+    typedef typename impl_class::difference_type difference_type;
+    typedef typename impl_class::reference	     reference;
+    typedef typename impl_class::const_reference const_reference;
+    typedef typename impl_class::pointer	     pointer;
+    typedef typename impl_class::const_pointer   const_pointer;
+    typedef impl_class::iterator                 iterator;
+    typedef impl_class::const_iterator           const_iterator;
+    typedef impl_class::const_reverse_iterator   const_reverse_iterator;
+    typedef impl_class::reverse_iterator         reverse_iterator;
 
-public:
-	// Helper variables for split method
-	//
-	static const bool KeepEmpty = true; // TODO DEPRECATED
-	static const bool DontKeepEmpty = false; // TODO DEPRECATED
+    typedef value_type char_type;
 
-public:
-	class const_iterator;
-
-	class iterator : public random_access_iterator<self_class>
-	{
-	public:
-		typedef typename random_access_iterator<self_class>::pointer pointer;
-		typedef typename random_access_iterator<self_class>::size_type size_type;
-		typedef typename random_access_iterator<self_class>::difference_type difference_type;
-
-		iterator () : random_access_iterator<self_class>() {}
-		iterator (self_class * holder, pointer ptr) : random_access_iterator<self_class>(holder, ptr) {}
-		iterator (const iterator & it) : random_access_iterator<self_class>(it.holder(), it.base())	{}
-		iterator (const const_iterator & it);
-
-		friend iterator operator + (const iterator & i, size_type n)
-		{
-			return iterator(i.holder(), i.base() + n);
-		}
-
-		friend iterator operator + (size_type n, const iterator & i)
-		{
-			return iterator(i.holder(), i.base() + n);
-		}
-
-		friend iterator operator - (const iterator & i, size_type n)
-		{
-			return iterator(i.holder(), i.base() - n);
-		}
-
-		friend difference_type operator - (const iterator & i1, const iterator & i2)
-		{
-			return i1.base() - i2.base();
-		}
-	};
-
-	class const_iterator : public random_access_iterator<const self_class>
-	{
-	public:
-		typedef typename random_access_iterator<const self_class>::pointer pointer;
-		typedef typename random_access_iterator<const self_class>::size_type size_type;
-		typedef typename random_access_iterator<const self_class>::difference_type difference_type;
-
-		const_iterator () : random_access_iterator<const self_class>() {}
-		const_iterator (const self_class * holder, pointer ptr) : random_access_iterator<const self_class>(holder, ptr) {}
-		const_iterator (const const_iterator & it) : random_access_iterator<const self_class>(it.holder(), it.base()) {}
-		const_iterator (const iterator & it)
-			: random_access_iterator<const self_class>(it.holder()
-					, pointer(it.holder(), it.base().index())) {}
-
-//		const_iterator & operator = (const iterator & it)
-//		{
-//			this->_holder = it.holder();
-//			this->_ptr = pointer(it.holder(), it.base().index());
-//			return *this;
-//		}
-
-		friend const_iterator operator + (const const_iterator & i, size_type n)
-		{
-			return const_iterator(i.holder(), i.base() + n);
-		}
-
-		friend const_iterator operator + (size_type n, const const_iterator & i)
-		{
-			return const_iterator(i.holder(), i.base() + n);
-		}
-
-		friend const_iterator operator - (const const_iterator & i, size_type n)
-		{
-			return const_iterator(i.holder(), i.base() - n);
-		}
-
-		friend difference_type operator - (const const_iterator & i1, const const_iterator & i2)
-		{
-			return i1.base() - i2.base();
-		}
-	};
-
-	typedef ucchar value_type; // Unicode character
-	typedef typename impl_class::size_type                size_type;
-	typedef typename impl_class::difference_type          difference_type;
-
-	typedef mbcs_string_ptr<CodeUnitT, self_class>        pointer;
-	typedef mbcs_string_ptr<CodeUnitT, const self_class>  const_pointer;
-
-	typedef pfs::reference<self_class>                    reference;
-	typedef pfs::reference<const self_class>              const_reference;
-//	typedef pfs::random_access_iterator<self_class>       iterator;
-//	typedef pfs::random_access_iterator<const self_class> const_iterator;
-	typedef std::reverse_iterator<iterator>		          reverse_iterator;
-	typedef std::reverse_iterator<const_iterator>         const_reverse_iterator;
-
-	typedef value_type char_type;
-
-	typedef typename impl_class::const_pointer const_data_pointer;
+private:
+	std::basic_string<CodeUnitT> _d;
+	size_type _length; // length in Unicode chars
 
 public: // static
-	static const char TerminatorChar  = '\0';
-	static const char EndOfLineChar   = '\n';
-	static const char ReplacementChar = '?';
+	static const uint32_t TerminatorChar  = '\0';
+	static const uint32_t EndOfLineChar   = '\n';
+	static const uint32_t ReplacementChar = '?';
+	static const size_type npos = -1;
 
 public:
-	mbcs_string () : base_class() {}
-	explicit mbcs_string (const char * latin1);
+	mbcs_string () : _d(), _length(0) {}
+	mbcs_string (const mbcs_string & str);
+	mbcs_string (const mbcs_string & str, size_t pos, size_t len = npos);
+	mbcs_string (const char * latin1);
 	mbcs_string (const char * latin1, size_t n);
-	mbcs_string (size_t count, char latin1);
-	mbcs_string (size_t count, ucchar ch);
-	mbcs_string (const_iterator first, const_iterator last);
+	mbcs_string (const ucchar * unicode, size_t n);
+	mbcs_string (size_t n, char c);
+	mbcs_string (size_t n, ucchar c);
+
+	template <class InputIterator>
+	mbcs_string (InputIterator first, InputIterator last);
 
 	virtual ~mbcs_string () {}
 
-	bool isEmpty () const { return base_class::isNull() || size() == 0; }
-	bool empty () const { return isEmpty(); }
+    const CodeUnitT * constData () const
+    {
+    	return this->data();
+    }
+
+    const CodeUnitT * data () const
+    {
+    	return _d.data();
+    }
+
+    const CodeUnitT * c_str () const
+    {
+    	return _d.c_str();
+    }
+
+    bool empty () const
+    {
+    	return _d.empty();
+    }
+
+	bool isEmpty () const
+	{
+		return this->empty();
+	}
+
 	void clear ()
 	{
-		if (!isEmpty()) {
-			base_class::detach();
-			base_class::cast()->clear();
-		}
+		_d.clear();
+		_length = 0;
 	}
+
+	mbcs_string & append (const mbcs_string & str)
+	{
+		_d.append(str._d);
+		_length += _d.length;
+		return *this;
+	}
+
+	mbcs_string & append (const mbcs_string & str, size_t subpos, size_t sublen);
+	mbcs_string & append (const char * s);
+	mbcs_string & append (const char * s, size_t n);
+	mbcs_string & append (size_t n, char c);
+	mbcs_string & append (size_t n, uint32_t c);
+	mbcs_string & append (size_t n, ucchar c)
+	{
+		while (n-- > 0) {
+			this->push_back(c);
+		}
+		return *this;
+	}
+
+	template <class InputIterator>
+	mbcs_string & append (InputIterator first, InputIterator last)
+	{
+		while (first != last) {
+			push_back(*first++);
+		}
+		return *this;
+	}
+
+	mbcs_string & push_back (char latin1)
+	{
+		//return this->append(1, latin1);
+		return latin1_cast (const char * latin1, size_t n, *this);
+	}
+
+	mbcs_string & push_back (uint32_t c)
+	{
+		//return this->append(1, c);
+		return *this;
+	}
+
+	mbcs_string & push_back (ucchar c)
+	{
+		//return this->append(1, c);
+		return *this;
+	}
+
+#if __COMMENT__
 
 	mbcs_string & erase (size_type index = 0) { return erase(index, 1); }
 	mbcs_string & erase (size_type index, size_type count);
@@ -197,11 +170,6 @@ public:
     const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
     const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
 
-    const_data_pointer constData () const { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
-    const_data_pointer data () const      { return base_class::isNull() ? nullptr : base_class::cast()->constData(); }
-
-    // Applicable only for UTF8-encoded string
-    const char * c_str () const;
 
     value_type valueAt (size_type index) const { return at(index); }
     value_type charAt (size_type index) const { return at(index); }
@@ -658,15 +626,6 @@ private:
 
 
 public:
-    static DLL_API mbcs_string fromLatin1 (const uint8_t * latin1, size_t n, ConvertState * state = nullptr);
-	static DLL_API mbcs_string fromLatin1 (const char * latin1, size_t n, ConvertState * state = nullptr);
-	static DLL_API mbcs_string fromLatin1 (const char * latin1, ConvertState * state = nullptr);
-	static DLL_API mbcs_string fromLatin1 (const pfs::byte_string & latin1, ConvertState * state = nullptr);
-
-	static DLL_API mbcs_string fromUtf8 (const uint8_t * utf8, size_t size, ConvertState * state = nullptr);
-	static DLL_API mbcs_string fromUtf8 (const char * utf8, size_t size, ConvertState * state = nullptr);
-	static DLL_API mbcs_string fromUtf8 (const char * utf8, ConvertState * state = nullptr);
-	static DLL_API mbcs_string fromUtf8 (const byte_string & utf8, ConvertState * state = nullptr);
 
 	static DLL_API mbcs_string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = nullptr);
 
@@ -691,8 +650,11 @@ public:
 #ifdef PFS_HAVE_LONG_DOUBLE
 	static mbcs_string toString (long double value, char f = 'f', int prec = 6);
 #endif
+
+#endif // __COMMENT__
 };
 
+#if __COMMENT__
 template <typename CodeUnitT>
 mbcs_string<CodeUnitT>::iterator::iterator (const const_iterator & it)
 	: random_access_iterator<self_class>(const_cast<self_class *>(it.holder())
@@ -1301,13 +1263,12 @@ inline std::ostream & operator << <uint16_t> (std::ostream & os, const mbcs_stri
     return os;
 }
 
-} // pfs
+#endif // __COMMENT__
 
-#include <pfs/bits/mbcs_string_impl_inc.hpp>
-#include <pfs/bits/mbcs_string_inc.hpp>
+}} // pfs::ef
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)
 #endif
 
-#endif /* __PFS_MBCS_STRING_HPP__ */
+#endif /* __PFS_EF_MBCS_STRING_HPP__ */

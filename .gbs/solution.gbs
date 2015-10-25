@@ -121,3 +121,8 @@ project "test-vector"
 project "pfs-test-ring_buffer"
     include("test-pfs-ring_buffer/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-algo-string"
+    include("test-algo-string/project.gbs")
+-- END PROJECT

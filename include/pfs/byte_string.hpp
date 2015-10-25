@@ -12,7 +12,6 @@
 #include <pfs/endian.hpp>
 #include <pfs/bits/byte_string_impl.hpp>
 #include <pfs/string.hpp>
-#include <pfs/string.h>
 #include <cstring>
 #include <ostream>
 

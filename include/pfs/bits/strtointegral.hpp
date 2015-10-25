@@ -8,9 +8,14 @@
 #ifndef __PFS_BITS_STRTOINTEGRAL_HPP__
 #define __PFS_BITS_STRTOINTEGRAL_HPP__
 
-#include <pfs/string.h>
 #include <pfs/ctype.hpp>
 #include <cerrno>
+
+EXTERN_C_BEGIN
+
+DLL_API int    pfs_latin1_to_digit (char latin1);
+
+EXTERN_C_END
 
 namespace pfs {
 

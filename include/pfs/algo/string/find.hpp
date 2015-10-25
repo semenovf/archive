@@ -10,25 +10,23 @@
 
 namespace pfs {
 
-template <typename String>
-typename String::iterator find (
-		  typename String::iterator haystackBegin
-		, typename String::iterator haystackEnd
-		, typename String::iterator needleBegin
-		, typename String::iterator needleEnd)
+template <typename InputIterator>
+InputIterator find (
+		  InputIterator haystackBegin
+		, InputIterator haystackEnd
+		, InputIterator needleBegin
+		, InputIterator needleEnd)
 {
-	typedef typename String::iterator iterator;
-
 	if (haystackEnd < haystackBegin)
-		return iterator(haystackEnd);
+		return InputIterator(haystackEnd);
 
 	if (needleEnd <= needleBegin)
-		return iterator(haystackEnd);
+		return InputIterator(haystackEnd);
 
 	while (haystackBegin != haystackEnd) {
 		if (*haystackBegin == *needleBegin) {
-			iterator it(haystackBegin);
-			iterator it1(needleBegin);
+			InputIterator it(haystackBegin);
+			InputIterator it1(needleBegin);
 
 			++it;
 			++it1;
@@ -41,13 +39,13 @@ typename String::iterator find (
 			}
 
 			if (it1 == needleEnd)
-				return iterator(haystackBegin);
+				return InputIterator(haystackBegin);
 		}
 
 		++haystackBegin;
 	}
 
-	return iterator(haystackEnd);
+	return InputIterator(haystackEnd);
 }
 
 } // pfs

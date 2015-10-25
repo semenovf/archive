@@ -71,7 +71,7 @@ void test_find ()
 		if (test->needle.end > 0)
 			needleEnd = needleBegin + test->needle.end;
 
-		string::iterator it = pfs::find<string>(
+		string::iterator it = pfs::find(
 			  haystackBegin
 			, haystackEnd
 			, needleBegin
@@ -101,7 +101,3 @@ void test_find ()
 		++test;
 	}
 }
-
-
-
-

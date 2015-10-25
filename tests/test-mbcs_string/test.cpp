@@ -17,8 +17,6 @@
 using std::cout;
 using std::endl;
 
-extern void test_find ();
-
 const uint8_t cyrillic_alphabet_utf8[] = {
 	      0xD0, 0x90, 0xD0, 0x91, 0xD0, 0x92, 0xD0, 0x93, 0xD0, 0x94, 0xD0, 0x95, 0xD0, 0x81, 0xD0, 0x96
 		, 0xD0, 0x97, 0xD0, 0x98, 0xD0, 0x99, 0xD0, 0x9A, 0xD0, 0x9B, 0xD0, 0x9C, 0xD0, 0x9D, 0xD0, 0x9E
@@ -819,11 +817,6 @@ int main(int argc, char *argv[])
 //	cout <<  "*********** TEST UTF16-encoded strings ***********" << endl;
 //	cout << "***************************************************" << endl;
 //	test_suite<uint16_t>();
-
-	cout << "*************************************************" << endl;
-	cout << "************* TEST string algorithms ************" << endl;
-	cout << "*************************************************" << endl;
-	test_find();
 
     END_TESTS;
 }
