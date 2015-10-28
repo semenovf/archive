@@ -157,6 +157,7 @@ const uint8_t * advance_utf8_char (
 
 #define ASSERT_INVALID_UTF8 PFS_ASSERT_X(false, "invalid (untrusted) UTF8-encoded sequence")
 
+// TODO DEPRECATED
 /**
  * @note For internal use only.
  *       Used for forward movement through valid (trusted)

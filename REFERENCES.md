@@ -4,6 +4,10 @@
 
 1. [Prototypes of member access operators](http://en.cppreference.com/w/cpp/language/operator_member_access)
 
+### STL
+
+1. [STL & Generic Programming: Writing Your Own Iterators](http://www.drdobbs.com/stl-generic-programming-writing-your-ow/184401417)
+
 ### 32/64-bits
 
 1. [Перенос Linux-приложений на 64-разрядные системы](http://www.ibm.com/developerworks/ru/library/l-port64/)
