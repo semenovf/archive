@@ -67,8 +67,12 @@ public:
 	__utf8_iterator operator ++ (int);
 	value_type operator * () const;
 	pointer operator -> () const;
-	friend bool operator == (const __utf8_iterator &, const __utf8_iterator &);
-    friend bool operator != (const __utf8_iterator &, const __utf8_iterator &);
+
+	template <typename Iter>
+	friend bool operator == (const __utf8_iterator<Iter> &, const __utf8_iterator<Iter> &);
+
+	template <typename Iter>
+    friend bool operator != (const __utf8_iterator<Iter> &, const __utf8_iterator<Iter> &);
 
 	// bidirectional iterator traits
     //
@@ -77,8 +81,11 @@ public:
 
     pointer base () const { return _p; }
 
-	friend void swap (__utf8_iterator & lhs, __utf8_iterator & rhs);
-	friend void advance (__utf8_iterator & i, __utf8_iterator::difference_type n);
+    template <typename Iter>
+	friend void swap (__utf8_iterator<Iter> & lhs, __utf8_iterator<Iter> & rhs);
+
+    template <typename Iter>
+	friend void advance (__utf8_iterator<Iter> & i, typename __utf8_iterator<Iter>::difference_type n);
 };
 
 template <typename Iterator>
@@ -95,12 +102,12 @@ void __advance (const char *  & p
 inline void __advance (char *  & p
 		, __utf8_iterator<char *>::difference_type n)
 {
-	__advance(reinterpret_cast<const char * &>(p), n);
+	__advance(const_cast<const char * &>(p), n);
 }
 
 template <typename Iterator>
 inline void advance (__utf8_iterator<Iterator> & i
-		, __utf8_iterator<Iterator>::difference_type n)
+		, typename __utf8_iterator<Iterator>::difference_type n)
 {
     __advance(i._p, n);
 }

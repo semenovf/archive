@@ -45,7 +45,7 @@ static void advance_forward (const char *  & p
 		, utf8_iterator::difference_type n)
 {
     while (n--) {
-    	uint8_t b = *reinterpret_cast<uint8_t * &>(p);
+    	uint8_t b = *reinterpret_cast<const uint8_t * &>(p);
 
         if (b < 128) {
             ++p;
