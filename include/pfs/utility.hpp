@@ -35,6 +35,7 @@ inline void swap (T & a, T & b)
 //}
 //
 #else
+
 template<typename T>
 inline void swap (T & a, T & b)
 {
@@ -42,6 +43,7 @@ inline void swap (T & a, T & b)
 	a = b;
 	b = tmp;
 }
+
 #endif
 
 } // pfs
