@@ -52,3 +52,8 @@
 
 1. [The Fast Pimpl Idiom](http://www.gotw.ca/gotw/028.htm)
 2. [Why every C++ developer should know about the pimpl idiom pattern](https://tonka2013.wordpress.com/2013/08/31/why-every-c-developer-should-know-about-the-pimpl-idiom-pattern/)
+
+### Misc
+
+1. [Embedding resource files in a C++ program binary on Linux/*NIX](http://www.atwillys.de/content/cc/embedding-resource-files-in-a-c-plus-plus-program-binary-on-linux-unix/?lang=en)
+2. [Embedding a File in an Executable, aka Hello World, Version 5967](http://www.linuxjournal.com/content/embedding-file-executable-aka-hello-world-version-5967)
