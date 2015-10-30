@@ -103,8 +103,8 @@ public:
 
 	friend void swap (utf8_iterator & lhs, utf8_iterator & rhs)
 	{
-		pfs::swap(lhs._p, rhs._p);
-		pfs::swap(lhs._replacement_char, rhs._replacement_char);
+		std::swap(lhs._p, rhs._p);
+		std::swap(lhs._replacement_char, rhs._replacement_char);
 	}
 
 	friend void advance (utf8_iterator & i, typename utf8_iterator::difference_type n)

@@ -316,8 +316,8 @@ public:
 //  TODO Implement
 //	void swap (unique_lock & u) // XXX noexcept
 //	{
-//		pfs::swap(_mtx, u._mtx);
-//		pfs::swap(_owns, u._owns);
+//		std::swap(_mtx, u._mtx);
+//		std::swap(_owns, u._owns);
 //	}
 
 	mutex_type * release () // XXX noexcept

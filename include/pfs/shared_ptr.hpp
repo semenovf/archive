@@ -170,8 +170,8 @@ public:
 
     void swap (shared_ptr & other)
     {
-        pfs::swap<ref_count *>(_d, other._d);
-        pfs::swap(this->_value, other._value);
+        std::swap<ref_count *>(_d, other._d);
+        std::swap(this->_value, other._value);
     }
 
     inline void reset ()

@@ -11,30 +11,23 @@
 
 #include <pfs.hpp>
 
+// std::swap
+
 #if __cplusplus >= 201103L // C++11
-#	include <algorithm> // until C++11
-//#	include <utility>   // since C++11
+//#	include <algorithm> // until C++11
+#	include <utility>   // since C++11
+#	define PFS_HAVE_STD_SWAP 1
+
+#elif __cplusplus < 201103L
+#	include <algorithm>
+
+#	define PFS_HAVE_STD_SWAP 1
 #endif
 
-namespace pfs {
 
-#if __cplusplus >= 201103L // C++11
+#if ! PFS_HAVE_STD_SWAP
 
-template<typename T>
-inline void swap (T & a, T & b)
-{
-	std::swap(a, b);
-}
-
-//#elif defined(_XUTILITY_) // MSVC
-//
-//template<typename T>
-//inline void swap (T & a, T & b)
-//{
-//	std::swap(a, b);
-//}
-//
-#else
+namespace std {
 
 template<typename T>
 inline void swap (T & a, T & b)
@@ -44,9 +37,9 @@ inline void swap (T & a, T & b)
 	b = tmp;
 }
 
-#endif
+} // std
 
-} // pfs
+#endif
 
 #ifdef max
 #	undef max

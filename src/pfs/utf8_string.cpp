@@ -103,7 +103,7 @@ mbcs_string_impl<uint8_t>::size_type mbcs_string_impl<uint8_t>::length (
     size_type r = 0;
 
     if (from > to)
-        pfs::swap(from, to);
+        std::swap(from, to);
 
     const_pointer p = from;
 

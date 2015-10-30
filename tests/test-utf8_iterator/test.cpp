@@ -9,7 +9,7 @@
 #include <pfs/test/test.hpp>
 #include <pfs/utf8_iterator.hpp>
 #include <string>
-#include <cstring>
+#include <sstream>
 #include <iostream>
 
 using std::cout;
@@ -106,14 +106,15 @@ void test (const char * itertype)
 			++count;
 		}
 
-		char desc[256];
-		sprintf(desc
-			, "Using `%s' as pointer. String `%s'. Number of unicode chars %d, expected %d"
-			, itertype
-			, data[i].name
-			, count
-			, data[i].nchars);
-		TEST_OK2(count == data[i].nchars, desc);
+		std::ostringstream desc;
+
+		desc << "Using `" << itertype << "' as pointer. String `"
+				<< data[i].name
+				<< "'. Number of unicode chars "
+				<< count
+				<< ", expected "
+				<< data[i].nchars;
+		TEST_OK2(count == data[i].nchars, desc.str().c_str());
 	}
 }
 
