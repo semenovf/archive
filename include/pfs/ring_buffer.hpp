@@ -9,133 +9,112 @@
 #define __PFS_RING_BUFFER_HPP__
 
 #include <pfs.hpp>
-#include <pfs/noncopyable.hpp>
+#include <pfs/iterator.hpp>
 
 namespace pfs {
 
-template <typename _Copyable>
-class ring_buffer : noncopyable
+// InputIterator requirements:
+// 		operator < (const InputIterator & other)
+//
+template <typename InputIterator>
+class ring_buffer
 {
 public:
-	typedef size_t    size_type;
-	typedef _Copyable item_type;
+	typedef typename std::iterator_traits<InputIterator>::value_type value_type;
 
 private:
-	size_type   _head;
-	size_type   _count;
-	size_type   _maxSize;
-	item_type * _data;
-
-private:
-	void destroy_and_remove (size_t count);
+	InputIterator _begin;
+	InputIterator _end;
+	InputIterator _head;
+	InputIterator _tail;
 
 public:
-	ring_buffer (size_type maxSize)
-		: _head(0)
-		, _count(0)
-		, _maxSize(maxSize)
-	{
-		_data = reinterpret_cast<_Copyable *>(new char[maxSize * sizeof(_Copyable)]);
-	}
+	ring_buffer (InputIterator begin, InputIterator end)
+		: _begin(begin)
+		, _end(end)
+		, _head(begin)
+		, _tail(begin)
+	{}
 
-	~ring_buffer ()
-	{
-		destroy_and_remove(_count);
-		delete [] reinterpret_cast<char *>(_data);
-	}
-
-	bool isEmpty () const
-	{
-		return _count == 0;
-	}
+	~ring_buffer () {}
 
 	bool empty () const
 	{
-		return _count == 0;
+		return _head == _tail;
 	}
 
-	size_type size () const
+	/**
+	 * @brief Returns maximum elements can store buffer.
+	 * @return Maximum value count.
+	 */
+	size_t capacity () const
 	{
-		return _count;
+		return std::distance(_begin, _end);
 	}
 
-	size_type count () const
+	size_t size () const
 	{
-		return _count;
+		if (_head <= _tail)
+			return std::distance(_head, _tail);
+
+		return std::distance(_begin, _tail) + std::distance(_head, _end);
 	}
 
-	bool canPush (size_type count = 1) const
+	/**
+	 * @brief Checks if buffer can store one element.
+	 * @return
+	 */
+	bool can_push () const
 	{
-		return _maxSize - _count >= count;
+		return can_push(1);
+	}
+
+	bool can_push (size_t count) const
+	{
+		return capacity() - size() >= count;
 	}
 
 	/**
 	 * @brief Adds data to the end of the rung buffer.
 	 * @param value Data to be added.
 	 */
-	template <typename U>
-	void push (const U & value);
+	void push (const value_type & value);
 
-	void pop ()
+	void pop ();
+
+	void pull (value_type * x)
 	{
-		destroy_and_remove(1);
+		PFS_ASSERT(!empty());
+		*x = *_head;
 	}
 
-	template <typename U>
-	void pull (U * x)
+	void pull_and_pop (value_type * x)
 	{
-		PFS_ASSERT(_count > 0);
-		*x = reinterpret_cast<U &>(_data[_head]);
-	}
-
-	template <typename U>
-	void pop (U * x)
-	{
-		PFS_ASSERT(_count > 0);
-		*x = reinterpret_cast<U &>(_data[_head]);
-		destroy_and_remove(1);
+		pull(x);
+		pop();
 	}
 };
 
-template <typename _Copyable>
-template <typename U>
-void ring_buffer<_Copyable>::push (const U & value)
+template <typename InputIterator>
+void ring_buffer<InputIterator>::push (const value_type & value)
 {
-	PFS_ASSERT(sizeof(U) <= sizeof(item_type));
-	PFS_ASSERT(canPush(1));
+	PFS_ASSERT(can_push(1));
 
-	size_type index = _head + _count;
+	if (_tail == _end)
+		_tail = _begin;
 
-	// Is there a space at the right of the head or not ?
-	//
-	if (index > _maxSize ) {
-		// No space at the right of the head,
-		// calculate index to push new data
-		//
-		index = _head - (_maxSize - _count);
-	}
-
-	new (& _data[index]) U(value); // apply placement new
-	++_count;
+	*_tail = value;
+	++_tail;
 }
 
-template <typename _Copyable>
-void ring_buffer<_Copyable>::destroy_and_remove (size_t count)
+template <typename InputIterator>
+void ring_buffer<InputIterator>::pop ()
 {
-	if (count > _count)
-		count = _count;
+	if (empty())
+		return;
 
-	while (count > 0) {
-		_data[_head].~item_type();
-
-		if (_head < _maxSize - 1)
-			++_head;
-		else
-			_head = 0;
-
-		--_count;
-		--count;
-	}
+	_head->~value_type();
+	++_head;
 }
 
 } // pfs

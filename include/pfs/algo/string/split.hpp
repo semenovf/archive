@@ -19,8 +19,9 @@ enum {
 	, KeepEmpty = true
 };
 
-// Sequence must provide push_back(const String &) methods
-// String::empty()
+// Sequence must provide methods:
+// 		String::push_back(const value_type &) - appends symbol to sequence
+// 		String::empty() - checks for empty
 //
 template <typename InputIterator, typename Sequence>
 Sequence & split (
