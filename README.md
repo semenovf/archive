@@ -1,42 +1,21 @@
 ###NAME
 
-`gbs` - build system based on qmake version 2.x.
+`gbs` - build system based on premake5
 
 ###VERSION
-Version 1.00b
+Version 2.00b
 
 ###INSTALLATION
 #### Linux (Ubuntu)
 
-    $ sudo apt-get install g++  
-    $ sudo apt-get install qt4-qmake  
-    $ sudo apt-get install qt4-default  
+Run on terminal:
+
+    $ sudo apt-get install lua5.2  
 
     $ cd /path/to/root-dir-for-gbs
     $ git clone git@github.com:semenovf/gbs.git
     $ # -- Set environment variable `GBS_HOME` to 'gbs' home directory.  
     $ export GBS_HOME=/path/to/root-dir-for-gbs/gbs
-
-    $ # -- Test installation
-    $ cd /path/to/workspace
-    $ $GBS_HOME/ws.sh -create myproject  
-
-    Project 'myproject' created  
-    Modify '.gbs/myproject.pro' to add new subprojects  
-
-    $ cd /path/to/workspace/myproject
-    $ ./build.sh
-
-    Reading /path/to/myproject/.gbs/myproject/myproject.pro  
-    Reading /path/to/myproject/.gbs/tests/tests.pro  
-    cd myproject/ && make -f Makefile distclean  
-    ...
-    make[1]: Entering directory `/path/to/myproject/.gbs/myproject'  
-    g++ -c -pipe -O0 -Werror ...  
-    ...
-
-On successful installation `build.sh` script will attempt to run `g++` compiler.
-
 
 ###AUTHOR
 
