@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_UTF8_ITERATOR_HPP__
-#define __PFS_UTF8_ITERATOR_HPP__
+#ifndef __PFS_ITERATOR_UTF8_ITERATOR_HPP__
+#define __PFS_ITERATOR_UTF8_ITERATOR_HPP__
 
 #include <iterator>
 #include <pfs/utility.hpp>
@@ -53,7 +53,12 @@ public:
 
 	// iterator traits
 	//
-	utf8_iterator (const utf8_iterator &);
+
+    utf8_iterator (const utf8_iterator & other)
+	: _p(other._p)
+	, _replacement_char(other._replacement_char)
+    {}
+
 	~utf8_iterator () {}
 
 	utf8_iterator & operator = (const utf8_iterator & other)
@@ -137,7 +142,7 @@ public:
 
 	friend bool operator > (const utf8_iterator & lhs, const utf8_iterator & rhs)
 	{
-		return lhs._p >= rhs._p;
+		return lhs._p > rhs._p;
 	}
 
 	friend bool operator >= (const utf8_iterator & lhs, const utf8_iterator & rhs)
@@ -194,6 +199,13 @@ void utf8_iterator<Iterator>::advance_backward_trusted (utf8_iterator::differenc
     }
 }
 
+//template <typename Iterator>
+//utf8_iterator<Iterator>::value_type
+//	utf8_iterator<Iterator>::operator * () const
+//{
+//
+//}
+
 } // pfs
 
 namespace std {
@@ -207,4 +219,4 @@ namespace std {
 
 } // std
 
-#endif /* __PFS_UTF8_ITERATOR_HPP__ */
+#endif /* __PFS_ITERATOR_UTF8_ITERATOR_HPP__ */

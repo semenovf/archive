@@ -6,8 +6,8 @@
  * @brief testing ...
  */
 
+#include <pfs/iterator/utf8_iterator.hpp>
 #include <pfs/test/test.hpp>
-#include <pfs/utf8_iterator.hpp>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -92,7 +92,7 @@ std::string::const_iterator iter_cast<std::string::const_iterator> (unsigned cha
 
 
 template <typename Iterator>
-void test (const char * itertype)
+void test_forward (const char * itertype)
 {
 	ADD_TESTS(8);
 
@@ -108,7 +108,7 @@ void test (const char * itertype)
 
 		std::ostringstream desc;
 
-		desc << "Using `" << itertype << "' as pointer. String `"
+		desc << "Forward: using `" << itertype << "' as pointer. String `"
 				<< data[i].name
 				<< "'. Number of unicode chars "
 				<< count
@@ -118,17 +118,49 @@ void test (const char * itertype)
 	}
 }
 
+template <typename Iterator>
+void test_backward (const char * itertype)
+{
+	ADD_TESTS(8);
+
+	for (int i = 0; i < sizeof(data)/sizeof(data[0]); ++i) {
+		pfs::utf8_iterator<Iterator> itBegin(iter_cast<Iterator>(data[i].text));
+		pfs::utf8_iterator<Iterator> it(iter_cast<Iterator>(data[i].text) + data[i].len);
+		size_t count = 0;
+
+		while (it-- > itBegin) {
+			++count;
+		}
+
+		std::ostringstream desc;
+
+		desc << "Backward: using `" << itertype << "' as pointer. String `"
+				<< data[i].name
+				<< "'. Number of unicode chars "
+				<< count
+				<< ", expected "
+				<< data[i].nchars;
+		TEST_OK2(count == data[i].nchars, desc.str().c_str());
+	}
+}
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(0);
 
-	test<unsigned char *>("unsigned char *");
-	test<const unsigned char *>("const unsigned char *");
-	test<char *>("char *");
-	test<const char *>("const char *");
-	test<std::string::iterator>("std::string::iterator");
-	test<std::string::const_iterator>("std::string::const_iterator");
+	test_forward<unsigned char *>("unsigned char *");
+	test_forward<const unsigned char *>("const unsigned char *");
+	test_forward<char *>("char *");
+	test_forward<const char *>("const char *");
+	test_forward<std::string::iterator>("std::string::iterator");
+	test_forward<std::string::const_iterator>("std::string::const_iterator");
+
+	test_backward<unsigned char *>("unsigned char *");
+	test_backward<const unsigned char *>("const unsigned char *");
+	test_backward<char *>("char *");
+	test_backward<const char *>("const char *");
+	test_backward<std::string::iterator>("std::string::iterator");
+	test_backward<std::string::const_iterator>("std::string::const_iterator");
 
     END_TESTS;
 }

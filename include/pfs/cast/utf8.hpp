@@ -8,8 +8,7 @@
 #ifndef __PFS_CAST_UTF8_HPP__
 #define __PFS_CAST_UTF8_HPP__
 
-#include <pfs.hpp>
-#include <ucchar.hpp>
+#include <pfs/iterator/utf8_iterator.hpp>
 
 namespace pfs {
 
