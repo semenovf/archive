@@ -126,8 +126,3 @@ project "pfs-test-ring_buffer"
 project "test-algo-string"
     include("test-algo-string/project.gbs")
 -- END PROJECT
-
--- BEGIN PROJECT
-project "test-utf8_iterator"
-    include("test-utf8_iterator/project.gbs")
--- END PROJECT

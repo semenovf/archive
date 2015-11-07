@@ -5,11 +5,12 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_ITERATOR_UTF8_ITERATOR_HPP__
-#define __PFS_ITERATOR_UTF8_ITERATOR_HPP__
+#ifndef __PFS_UTF8_ITERATOR_HPP__
+#define __PFS_UTF8_ITERATOR_HPP__
 
 #include <iterator>
 #include <pfs/utility.hpp>
+#include <pfs/utf8/decode.hpp>
 
 /* UTF-8
  *
@@ -24,16 +25,16 @@
 
 using std::bidirectional_iterator_tag;
 
-namespace pfs {
+namespace pfs { namespace utf8 {
 
-template <typename Iterator>
-class utf8_iterator
+template <typename OctetIterator>
+class iterator
 {
 public:
     typedef bidirectional_iterator_tag iterator_category;
     typedef uint32_t                   value_type;
     typedef ptrdiff_t                  difference_type;
-    typedef Iterator                   pointer;
+    typedef OctetIterator              pointer;
     typedef uint32_t &                 reference;
 
 protected:
@@ -41,63 +42,67 @@ protected:
 	uint32_t _replacement_char;
 
 public:
-    explicit utf8_iterator (pointer i)
+    explicit iterator (pointer i)
     	: _p(i)
     	, _replacement_char('?')
     {}
 
-    utf8_iterator (pointer i, uint32_t replacement_char)
+    iterator (pointer i, uint32_t replacement_char)
     	: _p(i)
     	, _replacement_char(replacement_char)
     {}
 
+    //
 	// iterator traits
 	//
 
-    utf8_iterator (const utf8_iterator & other)
+    iterator (const iterator & other)
 	: _p(other._p)
 	, _replacement_char(other._replacement_char)
     {}
 
-	~utf8_iterator () {}
+	~iterator () {}
 
-	utf8_iterator & operator = (const utf8_iterator & other)
+	iterator & operator = (const iterator & other)
 	{
     	_p = other._p;
     	_replacement_char = other._replacement_char;
 		return *this;
 	}
 
-	utf8_iterator & operator ++ ()
+	iterator & operator ++ ()
 	{
-    	advance_forward_trusted(1);
+    	advance_forward(1);
     	return *this;
 	}
 
+	//
 	// input iterator traits
 	//
-	utf8_iterator operator ++ (int)
+	iterator operator ++ (int)
 	{
-    	utf8_iterator r(*this);
-    	advance_forward_trusted(1);
+    	iterator r(*this);
+    	advance_forward(1);
     	return r;
 	}
 
 	value_type operator * () const;
-	pointer operator -> () const;
 
+//	pointer operator -> () const;
+
+	//
 	// bidirectional iterator traits
     //
-    utf8_iterator & operator -- ()
+    iterator & operator -- ()
 	{
-    	advance_backward_trusted(1);
+    	advance_backward(1);
     	return *this;
 	}
 
-    utf8_iterator operator -- (int)
+    iterator operator -- (int)
 	{
-    	utf8_iterator r(*this);
-    	advance_backward_trusted(1);
+    	iterator r(*this);
+    	advance_backward(1);
     	return r;
 	}
 
@@ -106,57 +111,57 @@ public:
     	return _p;
     }
 
-	friend void swap (utf8_iterator & lhs, utf8_iterator & rhs)
+	friend void swap (iterator & lhs, iterator & rhs)
 	{
 		std::swap(lhs._p, rhs._p);
 		std::swap(lhs._replacement_char, rhs._replacement_char);
 	}
 
-	friend void advance (utf8_iterator & i, typename utf8_iterator::difference_type n)
+	friend void advance (iterator & i, typename iterator::difference_type n)
 	{
 		if (n > 0)
-			i.advance_forward_trusted(n);
+			i.advance_forward(n);
 		else if (n < 0)
-			i.advance_backward_trusted(-n);
+			i.advance_backward(-n);
 	}
 
-	friend bool operator == (const utf8_iterator & lhs, const utf8_iterator & rhs)
+	friend bool operator == (const iterator & lhs, const iterator & rhs)
 	{
 		return lhs._p == rhs._p;
 	}
 
-    friend bool operator != (const utf8_iterator & lhs, const utf8_iterator & rhs)
+    friend bool operator != (const iterator & lhs, const iterator & rhs)
 	{
     	return lhs._p != rhs._p;
 	}
 
-	friend bool operator < (const utf8_iterator & lhs, const utf8_iterator & rhs)
+	friend bool operator < (const iterator & lhs, const iterator & rhs)
 	{
 		return lhs._p < rhs._p;
 	}
 
-	friend bool operator <= (const utf8_iterator & lhs, const utf8_iterator & rhs)
+	friend bool operator <= (const iterator & lhs, const iterator & rhs)
 	{
 		return lhs._p <= rhs._p;
 	}
 
-	friend bool operator > (const utf8_iterator & lhs, const utf8_iterator & rhs)
+	friend bool operator > (const iterator & lhs, const iterator & rhs)
 	{
 		return lhs._p > rhs._p;
 	}
 
-	friend bool operator >= (const utf8_iterator & lhs, const utf8_iterator & rhs)
+	friend bool operator >= (const iterator & lhs, const iterator & rhs)
 	{
 		return lhs._p >= rhs._p;
 	}
 
 private:
-    void advance_forward_trusted (utf8_iterator::difference_type n);
-    void advance_backward_trusted (utf8_iterator::difference_type n);
+    void advance_forward (iterator::difference_type n);
+    void advance_backward (iterator::difference_type n);
 };
 
-template <typename Iterator>
-void utf8_iterator<Iterator>::advance_forward_trusted (utf8_iterator::difference_type n)
+template <typename OctetIterator>
+void iterator<OctetIterator>::advance_forward (iterator::difference_type n)
 {
     while (n--) {
         if ((*_p & 0x80) == 0x00) {
@@ -177,8 +182,8 @@ void utf8_iterator<Iterator>::advance_forward_trusted (utf8_iterator::difference
     }
 }
 
-template <typename Iterator>
-void utf8_iterator<Iterator>::advance_backward_trusted (utf8_iterator::difference_type n)
+template <typename OctetIterator>
+void iterator<OctetIterator>::advance_backward (iterator::difference_type n)
 {
     while (n--) {
         if ((*(_p - 1) & 0x80) == 0x00) {
@@ -199,24 +204,41 @@ void utf8_iterator<Iterator>::advance_backward_trusted (utf8_iterator::differenc
     }
 }
 
-//template <typename Iterator>
-//utf8_iterator<Iterator>::value_type
-//	utf8_iterator<Iterator>::operator * () const
-//{
-//
-//}
+template <typename OctetIterator>
+typename iterator<OctetIterator>::value_type iterator<OctetIterator>::operator * () const
+{
+	value_type result;
+	decode<OctetIterator>(*this, result);
+	return result;
+}
 
-} // pfs
+}} // pfs::utf8
 
 namespace std {
 
-//template <typename Iterator>
-//inline void advance<pfs::utf8_iterator<Iterator>, pfs::utf8_iterator<Iterator>::difference_type>
-//	(pfs::utf8_iterator<Iterator> & i, pfs::utf8_iterator<Iterator>::difference_type n)
-//{
-//	pfs::advance(i, n);
-//}
+//#if __cplusplus >= 201103L
+//
+//template <>
+//inline _ForwardIterator
+//    next(_ForwardIterator __x, typename
+//	 iterator_traits<_ForwardIterator>::difference_type __n = 1)
+//    {
+//      std::advance(__x, __n);
+//      return __x;
+//    }
+//
+//  template<typename _BidirectionalIterator>
+//    inline _BidirectionalIterator
+//    prev(_BidirectionalIterator __x, typename
+//	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1)
+//    {
+//      std::advance(__x, -__n);
+//      return __x;
+//    }
+//
+//#endif // C++11
+
 
 } // std
 
-#endif /* __PFS_ITERATOR_UTF8_ITERATOR_HPP__ */
+#endif /* __PFS_UTF8_ITERATOR_HPP__ */

@@ -20,6 +20,8 @@
 
 namespace pfs {
 
+// XXX DEPRECATED. Use notification class
+//
 class DLL_API errorable
 {
 protected:
@@ -86,7 +88,6 @@ inline std::ostream & operator << (std::ostream & out, errorable & ex)
    ex.print(out);
    return out;
 }
-
 
 } // pfs
 

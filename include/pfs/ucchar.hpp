@@ -15,6 +15,7 @@
 
 namespace pfs {
 
+// XXX DEPRECATED (use pfs::unicode)
 class DLL_API ucchar
 {
 	uint32_t _value;
