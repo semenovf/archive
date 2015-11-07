@@ -52,8 +52,8 @@ protected:
 public:
 	~dl ();
 
-//	static dl & getPluginLoader () { return getDL(); }
-//	static dl & getDL ();
+	static dl & getPluginLoader () { return getDL(); }
+	static dl & getDL ();
 
 	handle open (const string & path, string * realPath, bool global, bool resolve);
 

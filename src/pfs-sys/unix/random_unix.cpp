@@ -5,10 +5,11 @@
 * Author: wladt
 */
 
-#include "../random_p.hpp"
-#include <pfs/platform.hpp>
 #include <sys/time.h>
 #include <cstdlib>
+#include <stdlib.h>
+#include <pfs/platform.hpp>
+#include "../random_p.hpp"
 
 namespace pfs {
 
