@@ -45,6 +45,8 @@ configuration "release"
 filter "platforms:unix*"
     files {   "../../src/pfs-sys/unix/*.cpp"
             , "../../src/pfs-sys/x11/*.cpp"
+	    , "../../src/pfs-sys/fs/*.cpp"
+            , "../../src/pfs-sys/fs/posix/*.cpp"
             , "../../src/pfs-sys/posix/timer_c_posix.c"
             , "../../src/pfs-sys/posix/timer_posix.cpp"
             , "../../src/pfs-sys/unix/*.hpp"
@@ -53,7 +55,8 @@ filter "platforms:unix*"
 
 filter "platforms:mswin*"
     files {   "../../src/pfs-sys/win/*.cpp"
-            , "../../src/pfs-sys/win/*.hpp" }
+            , "../../src/pfs-sys/win/*.hpp"
+    }
 
 filter "action:gmake"
     include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

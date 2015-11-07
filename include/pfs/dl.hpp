@@ -52,8 +52,8 @@ protected:
 public:
 	~dl ();
 
-	static dl & getPluginLoader () { return getDL(); }
-	static dl & getDL ();
+//	static dl & getPluginLoader () { return getDL(); }
+//	static dl & getDL ();
 
 	handle open (const string & path, string * realPath, bool global, bool resolve);
 
@@ -66,7 +66,6 @@ public:
 	{
 		string unused; return open(path, 0, false, true);
 	}
-
 
 	symbol ptr   (handle h, const char * symname);
 	void   close (handle h);

@@ -15,6 +15,9 @@
 
 namespace pfs {
 
+
+// XXX DEPRECATED. Use pfs::fs namespace instead
+//
 class DLL_API fs : public errorable_ext
 {
 	pfs::ucchar _separator;

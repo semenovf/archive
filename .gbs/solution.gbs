@@ -71,3 +71,8 @@ project "test-pfs-sys-timer"
 project "getcwd"
     include("getcwd/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-fs-path"
+    include("test-pfs-fs-path/project.gbs")
+-- END PROJECT

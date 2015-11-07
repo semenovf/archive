@@ -1,0 +1,36 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=test-pfs-fs-path --type=test --depends=pfs-sys'
+--* Date:    Sat Nov  7 22:08:20 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-pfs-fs-path"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-pfs-fs-path/*.c", "../../tests/test-pfs-fs-path/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-sys/test-pfs-fs-path/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        {  }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-sys/test-pfs-fs-path/release"
+    targetdir    "../../../.build/tests"
+    links        {  }
+
+dependson { "pfs-sys" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
