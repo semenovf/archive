@@ -23,17 +23,17 @@ enum {
 // 		String::push_back(const value_type &) - appends symbol to sequence
 // 		String::empty() - checks for empty
 //
-template <typename InputIterator, typename Sequence>
+template <typename InputIt1, typename InputIt2, typename Sequence>
 Sequence & split (
-		  InputIterator itBegin
-		, InputIterator itEnd
-		, InputIterator separatorBegin
-		, InputIterator separatorEnd
+		  InputIt1 itBegin
+		, InputIt1 itEnd
+		, InputIt2 separatorBegin
+		, InputIt2 separatorEnd
 		, bool keepEmpty
 		, Sequence & result)
 {
 	typedef typename Sequence::value_type value_type;
-	typedef typename InputIterator::difference_type difference_type;
+	typedef typename InputIt2::difference_type difference_type;
 
 	if (itBegin == itEnd)
 		return result;
@@ -43,7 +43,7 @@ Sequence & split (
 	// "/"
 
 	while (itBegin != itEnd) {
-		InputIterator it = pfs::find(itBegin
+		InputIt1 it = pfs::find(itBegin
 				, itEnd
 				, separatorBegin
 				, separatorEnd);

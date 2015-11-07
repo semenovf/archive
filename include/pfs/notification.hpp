@@ -8,9 +8,10 @@
 #ifndef __PFS_NOTIFICATION_HPP__
 #define __PFS_NOTIFICATION_HPP__
 
+#include <memory> // for std::allocator
+#include <ostream>
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
-#include <ostream>
 
 namespace pfs {
 
@@ -37,31 +38,40 @@ public:
 	void increment () { ++_repetitions; }
 };
 
-template <typename String, typename Container>
+template <typename String, template <typename, typename = std::allocator<notification_value<String> > > typename Container>
 struct notification_traits
 {
+	typedef String string_type;
 	typedef notification_value<String> value_type;
-	typedef typename Container<value_type> container_type;
+	typedef Container<value_type, std::allocator<value_type> > container_type;
 	typedef typename container_type::iterator iterator;
 	typedef typename container_type::const_iterator const_iterator;
 };
 
-template <typename String, typename Container>
-class basic_notification : public notification_traits<String, Container>
+template <typename String, template <typename, typename = std::allocator<notification_value<String> > > typename Container>
+class basic_notification// : public notification_traits<String, Container>
 {
+public:
+	typedef notification_traits<String, Container> traits_type;
+	typedef typename traits_type::string_type string_type;
+	typedef typename traits_type::value_type value_type;
+	typedef typename traits_type::container_type container_type;
+	typedef typename traits_type::iterator iterator;
+	typedef typename traits_type::const_iterator const_iterator;
+
 protected:
 	container_type _notifications;
 
 protected:
 	basic_notification () {}
-	basic_notification (const notification & other)
-		: basic_notification(other._notifications)
+	basic_notification (const basic_notification & other)
+		: _notifications(other._notifications)
 	{}
 
 public:
 	virtual ~basic_notification () { }
 	void append (const string_type & text);
-	void concat (const notification & other) { _notifications.append(other._notifications); }
+	void concat (const basic_notification & other) { _notifications.append(other._notifications); }
 
 	void clear ()
 	{
@@ -127,7 +137,7 @@ public:
 	}
 };
 
-template <typename String, typename Container>
+template <typename String, template <typename, typename> typename Container>
 void basic_notification<String, Container>::append (const string_type & text)
 {
 	if (!text.isEmpty()) {
@@ -139,7 +149,7 @@ void basic_notification<String, Container>::append (const string_type & text)
 }
 
 
-template <typename String, typename Container>
+template <typename String, template <typename, typename> typename Container>
 std::ostream & operator << (std::ostream & out, const basic_notification<String, Container> & nx)
 {
     if (nx.count() > 0) {

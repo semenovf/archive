@@ -10,23 +10,23 @@
 
 namespace pfs {
 
-template <typename InputIterator>
-InputIterator find (
-		  InputIterator haystackBegin
-		, InputIterator haystackEnd
-		, InputIterator needleBegin
-		, InputIterator needleEnd)
+template <typename InputIt1, typename InputIt2>
+InputIt1 find (
+		  InputIt1 haystackBegin
+		, InputIt1 haystackEnd
+		, InputIt2 needleBegin
+		, InputIt2 needleEnd)
 {
 	if (haystackEnd < haystackBegin)
-		return InputIterator(haystackEnd);
+		return InputIt1(haystackEnd);
 
 	if (needleEnd <= needleBegin)
-		return InputIterator(haystackEnd);
+		return InputIt1(haystackEnd);
 
 	while (haystackBegin != haystackEnd) {
 		if (*haystackBegin == *needleBegin) {
-			InputIterator it(haystackBegin);
-			InputIterator it1(needleBegin);
+			InputIt1 it(haystackBegin);
+			InputIt2 it1(needleBegin);
 
 			++it;
 			++it1;
@@ -39,13 +39,13 @@ InputIterator find (
 			}
 
 			if (it1 == needleEnd)
-				return InputIterator(haystackBegin);
+				return InputIt1(haystackBegin);
 		}
 
 		++haystackBegin;
 	}
 
-	return InputIterator(haystackEnd);
+	return InputIt1(haystackEnd);
 }
 
 } // pfs
