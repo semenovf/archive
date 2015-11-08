@@ -162,10 +162,11 @@ public: // static
 public:
 	mbcs_string () : base_class() {}
 	explicit mbcs_string (const char * latin1);
+	explicit mbcs_string (const std::string & s);
 	mbcs_string (const char * latin1, size_t n);
 	mbcs_string (size_t count, char latin1);
 	mbcs_string (size_t count, ucchar ch);
-	mbcs_string (const_iterator first, const_iterator last);
+		mbcs_string (const_iterator first, const_iterator last);
 
 	virtual ~mbcs_string () {}
 

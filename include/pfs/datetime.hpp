@@ -24,29 +24,27 @@ public:
 	datetime (const date & d) : _date(d), _time() {}
 	datetime (const date & d, const time & t) : _date(d), _time(t) {}
 
-	datetime(const datetime & other) : _date(other._date), _time(other._time) {}
+	datetime (const datetime & other) : _date(other._date), _time(other._time) {}
 	datetime & operator = (const datetime & other);
 
-	datetime addDays   (int ndays) const;
-	datetime addMonths (int nmonths) const;
-	datetime addYears  (int nyears) const;
-	datetime addMillis (integral_t millis) const;
-	datetime addSecs   (integral_t secs) const;
+	datetime add_days   (int ndays) const;
+	datetime add_months (int nmonths) const;
+	datetime add_years  (int nyears) const;
+	datetime add_millis (integral_t millis) const;
+	datetime add_seconds   (integral_t secs) const;
 
-	integral_t daysTo   (const datetime & other) const;
-	integral_t secsTo   (const datetime & other) const;
-	integral_t millisTo (const datetime & other) const;
-	integral_t millisSinceEpoch () const;
+	integral_t days_to   (const datetime & other) const;
+	integral_t seconds_to   (const datetime & other) const;
+	integral_t millis_to (const datetime & other) const;
+	integral_t millis_since_epoch () const;
 
-	date getDate () const { return _date; }
-	time getTime () const { return _time; }
-	void setDate (const date & d);
-	void setTime (const time & t) { _time = t; }
-	void setMillisSinceEpoch (integral_t millis);
+	date get_date () const { return _date; }
+	time get_time () const { return _time; }
+	void set_date (const date & d);
+	void set_time (const time & t) { _time = t; }
+	void set_millis_since_epoch (integral_t millis);
 
-	bool isValid () const { return _date.isValid() && _time.isValid(); }
-	string toString () const;
-	integral_t toInteger () const;
+	bool valid () const { return _date.valid() && _time.valid(); }
 
 	bool operator == (const datetime & other) const;
 	bool operator != (const datetime & other) const { return ! (*this == other); }
@@ -55,7 +53,7 @@ public:
 	bool operator  > (const datetime & other) const { return other < *this; }
 	bool operator >= (const datetime & other) const { return ! (*this < other); }
 
-	static datetime fromMillisSinceEpoch (integral_t millis);
+	static datetime from_millis_since_epoch (integral_t millis);
 };
 
 inline datetime & datetime::operator = (const datetime & other)
@@ -65,29 +63,29 @@ inline datetime & datetime::operator = (const datetime & other)
 	return *this;
 }
 
-inline datetime datetime::addDays (int ndays) const
+inline datetime datetime::add_days (int ndays) const
 {
-    return datetime(_date.addDays(ndays), _time);
+    return datetime(_date.add_days(ndays), _time);
 }
 
-inline datetime datetime::addMonths(int nmonths) const
+inline datetime datetime::add_months(int nmonths) const
 {
-    return datetime(_date.addMonths(nmonths), _time);
+    return datetime(_date.add_months(nmonths), _time);
 }
 
-inline datetime datetime::addYears(int nyears) const
+inline datetime datetime::add_years(int nyears) const
 {
-    return datetime(_date.addYears(nyears), _time);
+    return datetime(_date.add_years(nyears), _time);
 }
 
-inline datetime datetime::addSecs(integral_t secs) const
+inline datetime datetime::add_seconds(integral_t secs) const
 {
-    return addMillis(secs * 1000);
+    return add_millis(secs * 1000);
 }
 
-inline integral_t datetime::daysTo(const datetime & other) const
+inline integral_t datetime::days_to(const datetime & other) const
 {
-    return _date.daysTo(other._date);
+    return _date.days_to(other._date);
 }
 
 inline bool datetime::operator == (const datetime & other) const
@@ -103,12 +101,33 @@ inline bool datetime::operator < (const datetime & other) const
 			: _time < other._time;
 }
 
-/*
-inline uint_t hash_func(const datetime & key, uint_t seed)
+/**
+ * @brief Converts date and time to string.
+ *
+ * @details The string format corresponds to the ISO 8601 specification,
+ *          taking the form YYYY-MM-DDTHH:mm:ss, where YYYY is the year,
+ *          MM is the month of the year (between 01 and 12),
+ *          and DD is the day of the month between 01 and 31.
+ *
+ * @return The date and time as string.
+ */
+template <typename String>
+String & lexical_cast (const datetime & dt, String & result)
 {
-	return hash_func(key.millisSinceEpoch(), seed);
+	String r;
+	lexical_cast<String>(dt.get_date(), result);
+	result.push_back('T');
+	lexical_cast<String>(dt.get_time(), r);
+	result.append(r);
+	return result;
 }
-*/
+
+/**
+ * @brief Returns integer representation of date & time in format YYYYMMDDhhmmss
+ *
+ * @return integer representation of date & time in format YYYYMMDDhhmmss
+ */
+integral_t lexical_cast (const datetime & dt, integral_t & result);
 
 } // pfs
 

@@ -9,21 +9,21 @@
 
 namespace pfs {
 
-void datetime::setDate (const date & d)
+void datetime::set_date (const date & d)
 {
     _date = d;
 
-    if (_date.isValid() && !_time.isValid())
-        _time.setTime(0, 0, 0);
+    if (_date.valid() && !_time.valid())
+        _time.set_time(0, 0, 0);
 }
 
 
-datetime datetime::addMillis (integral_t millis) const
+datetime datetime::add_millis (integral_t millis) const
 {
 	datetime r;
 
-    integral_t dd = _date.julianDay();
-    integral_t tt = time(0, 0, 0).millisTo(_time);
+    integral_t dd = _date.julian_day();
+    integral_t tt = time(0, 0, 0).millis_to(_time);
     int sign = 1;
 
     if (millis < 0) {
@@ -49,36 +49,36 @@ datetime datetime::addMillis (integral_t millis) const
     }
 
     PFS_ASSERT(tt >= PFS_INT_MIN && tt <= PFS_INT_MAX);
-    r._date.fromJulianDay(dd);
-    r._time = time(0, 0, 0).addMillis(int(tt));
+    r._date.from_julian_day(dd);
+    r._time = time(0, 0, 0).add_millis(int(tt));
 
     return r;
 }
 
-integral_t datetime::secsTo (const datetime & other) const
+integral_t datetime::seconds_to (const datetime & other) const
 {
-    return isValid() && other.isValid()
-    		? _date.daysTo(other._date) * time::SecondsPerDay + integral_t(_time.secsTo(other._time))
+    return valid() && other.valid()
+    		? _date.days_to(other._date) * time::SecondsPerDay + integral_t(_time.seconds_to(other._time))
     		: 0;
 }
 
-integral_t datetime::millisTo (const datetime & other) const
+integral_t datetime::millis_to (const datetime & other) const
 {
 
-    return isValid() && other.isValid()
-    		? _date.daysTo(other._date) * time::MillisPerDay
-    				+ integral_t(_time.millisTo(other._time))
+    return valid() && other.valid()
+    		? _date.days_to(other._date) * time::MillisPerDay
+    				+ integral_t(_time.millis_to(other._time))
     		: 0;
 }
 
-integral_t datetime::millisSinceEpoch () const
+integral_t datetime::millis_since_epoch () const
 {
-    integral_t jd = _date.julianDay() - date::EpochJulianDay;
-    return (jd * time::MillisPerDay) + time(0, 0, 0).millisTo(_time);
+    integral_t jd = _date.julian_day() - date::EpochJulianDay;
+    return (jd * time::MillisPerDay) + time(0, 0, 0).millis_to(_time);
 }
 
 
-void datetime::setMillisSinceEpoch (integral_t millis)
+void datetime::set_millis_since_epoch (integral_t millis)
 {
     integral_t days = millis / time::MillisPerDay;
     millis %= time::MillisPerDay;
@@ -90,10 +90,30 @@ void datetime::setMillisSinceEpoch (integral_t millis)
 
     PFS_ASSERT(days >= PFS_INT_MIN && days <= PFS_INT_MAX);
     PFS_ASSERT(millis >= PFS_INT_MIN && millis <= PFS_INT_MAX);
-    _date = date(1970, 1, 1).addDays(int(days));
-    _time = time(0, 0, 0).addMillis(int(millis));
+    _date = date(1970, 1, 1).add_days(int(days));
+    _time = time(0, 0, 0).add_millis(int(millis));
 }
 
+integral_t lexical_cast (const datetime & dt, integral_t & result)
+{
+	date d = dt.get_date();
+	int Y = d.year();
+	int M = d.month();
+	int D = d.day();
+
+	time t = dt.get_time();
+	int	h = t.hour();
+	int	m = t.minute();
+	int	s = t.second();
+
+	result = integral_t(10000000000) * Y + integral_t(100000000) * M + integral_t(1000000) * D
+			+ integral_t(10000) * h + integral_t(100) * m + s;
+
+	return result;
+}
+
+
+#if __OBSOLETE__
 /**
  * @brief Converts date and time to string.
  *
@@ -108,7 +128,7 @@ string datetime::toString () const
 {
 	string r = _date.toString();
 
-	if (!r.isEmpty()) {
+	if (!r.empty()) {
 		r.append(1, ucchar('T'));
 		r.append(_time.toString());
 	}
@@ -135,12 +155,13 @@ integral_t datetime::toInteger () const
 
 	return r;
 }
+#endif
 
 
-datetime datetime::fromMillisSinceEpoch (integral_t millis) // static
+datetime datetime::from_millis_since_epoch (integral_t millis) // static
 {
 	datetime d;
-	d.setMillisSinceEpoch(millis);
+	d.set_millis_since_epoch(millis);
 	return d;
 }
 

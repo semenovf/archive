@@ -1,10 +1,9 @@
 /*
- * test_find.cpp
+ * test_starts_with.cpp
  *
- *  Created on: Oct 21, 2015
+ *  Created on: Nov 8, 2015
  *      Author: wladt
  */
-
 #include <iostream>
 #include <pfs/test/test.hpp>
 #include "pfs/algo/find.hpp"
@@ -28,22 +27,24 @@ struct TestData
 {
 	StringParm haystack;
 	StringParm needle;
-	int pos;
+	bool ok;
 };
 
 static TestData test_data[] = {
-	  {{ "a", -1, -1 },  { "a", -1, -1 },  0 }
-	, {{ "ab", -1, -1 },  { "b", -1, -1 },  1 }
-	, {{ "abcdf", -1, -1 },  { "c", -1, -1 },  2 }
-	, {{ "abcdf", 2, -1 },  { "c", -1, -1 },  0 }
-	, {{ "abcdf", -1, -1 },  { "df", -1, -1 },  3 }
-	, {{ "abcdf", -1, -1 },  { "dfa", -1, -1 },  -1 }
+	  {{ "a", -1, -1 },  { "a", -1, -1 },  true }
+	, {{ "ab", -1, -1 },  { "b", -1, -1 },  false }
+	, {{ "abcdf", -1, -1 },  { "ab", -1, -1 },  true }
+	, {{ "abcdf", -1, -1 },  { "abcdfe", -1, -1 },  false }
+	, {{ "abcdf", -1, -1 },  { "abcd", -1, -1 },  true }
+	, {{ "abcdf", -1, -1 },  { "abcdf", -1, -1 },  true }
 	, {{ 0, -1, -1 },  { 0, -1, -1 },  -1 }
 };
 
-void test_find ()
+void test_starts_with ()
 {
-	ADD_TESTS(sizeof(test_data)/sizeof(test_data[0]) - 1);
+	size_t ntests = sizeof(test_data)/sizeof(test_data[0]) - 1;
+
+	ADD_TESTS(ntests);
 
 	TestData * test = & test_data[0];
 
@@ -71,33 +72,32 @@ void test_find ()
 		if (test->needle.end > 0)
 			needleEnd = needleBegin + test->needle.end;
 
-		string::iterator it = pfs::find(
+		bool result = pfs::starts_with(
 			  haystackBegin
 			, haystackEnd
 			, needleBegin
 			, needleEnd);
 
-		if (test->pos >= 0) {
-			string tmp;
 
+		if (test->ok) {
 			text.append("\"");
-			text.append(test->needle.s);
-			text.append("\" found in \"");
 			text.append(test->haystack.s);
-			text.append("\" at pos ");
-			text.append(pfs::lexical_cast(test->pos, tmp));
-
-			TEST_OK2(it == haystackBegin + test->pos, text.c_str());
+			text.append("\" starts with \"");
+			text.append(test->needle.s);
+			text.append("\"");
 		} else {
 			text.append("\"");
-			text.append(test->needle.s);
-			text.append("\" not found in \"");
 			text.append(test->haystack.s);
+			text.append("\" do not starts with \"");
+			text.append(test->needle.s);
 			text.append("\"");
-
-			TEST_OK2(it == haystackEnd, text.c_str());
 		}
+
+		TEST_OK2(test->ok == result, text.c_str());
 
 		++test;
 	}
 }
+
+
+

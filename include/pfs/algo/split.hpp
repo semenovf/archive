@@ -5,10 +5,10 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_ALGO_STRING_SPLIT_HPP__
-#define __PFS_ALGO_STRING_SPLIT_HPP__
+#ifndef __PFS_ALGO_SPLIT_HPP__
+#define __PFS_ALGO_SPLIT_HPP__
 
-#include <pfs/algo/string/find.hpp>
+#include <pfs/algo/find.hpp>
 #include <pfs/bits/iterator/advance.hpp>
 #include <pfs/bits/iterator/distance.hpp>
 

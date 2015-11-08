@@ -126,3 +126,8 @@ project "pfs-test-ring_buffer"
 project "test-algo-string"
     include("test-algo-string/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-notification"
+    include("test-pfs-notification/project.gbs")
+-- END PROJECT

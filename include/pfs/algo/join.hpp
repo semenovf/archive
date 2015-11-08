@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_ALGO_STRING_JOIN_HPP__
-#define __PFS_ALGO_STRING_JOIN_HPP__
+#ifndef __PFS_ALGO_JOIN_HPP__
+#define __PFS_ALGO_JOIN_HPP__
 
 namespace pfs {
 // Sequence must provide push_back(const String &) methods

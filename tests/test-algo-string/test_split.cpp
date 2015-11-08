@@ -8,8 +8,8 @@
 #include <iostream>
 #include <pfs/test/test.hpp>
 #include "pfs/cast/string.hpp"
-#include "pfs/algo/string/join.hpp"
-#include "pfs/algo/string/split.hpp"
+#include "pfs/algo/join.hpp"
+#include "pfs/algo/split.hpp"
 //#include <pfs/string.hpp>
 #include <string>
 #include <vector>

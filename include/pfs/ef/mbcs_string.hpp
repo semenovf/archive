@@ -13,7 +13,7 @@ namespace pfs { namespace ef {
 #include <string>
 #include <pfs/endian.hpp>
 #include <pfs/ucchar.hpp>
-#include <pfs/cast/latin1.hpp>
+#include <pfs/cast/latin1.hpp.old>
 //#include <pfs/cast/string.hpp>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html

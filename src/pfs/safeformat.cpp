@@ -29,6 +29,7 @@
 
 #include <pfs/safeformat.hpp>
 #include <pfs/bits/strtointegral.hpp>
+#include <pfs/algo/find.hpp>
 #include <pfs/atomic.hpp>
 
 //#include <iostream>
@@ -65,10 +66,10 @@ int safeformat::globalCompat ()
 void safeformat::advance ()
 {
 	const_iterator pos(_ctx.pos);
-	const_iterator end(_ctx.format.cend());
+	const_iterator end(_ctx.format.end());
 
 	while (pos < end && !eq_latin1(char_type(*pos), '%'))  {
-		_ctx.result.append(1, *pos);
+		_ctx.result.push_back(*pos);
 		++pos;
 	}
 	_ctx.pos = pos;
@@ -77,7 +78,7 @@ void safeformat::advance ()
 bool safeformat::parsePercentChar ()
 {
 	const_iterator pos(_ctx.pos);
-	const_iterator end(_ctx.format.cend());
+	const_iterator end(_ctx.format.end());
 
 	if (pos < end && eq_latin1(char_type(*pos), '%'))  {
 		++pos;
@@ -94,7 +95,7 @@ bool safeformat::parsePercentChar ()
 bool safeformat::parseFlags ()
 {
 	const_iterator pos(_ctx.pos);
-	const_iterator end(_ctx.format.cend());
+	const_iterator end(_ctx.format.end());
 
 	if (pos == end)
 		return false;
@@ -131,7 +132,7 @@ bool safeformat::parseFlags ()
 bool safeformat::parseFieldWidth ()
 {
 	const_iterator pos(_ctx.pos);
-	const_iterator end(_ctx.format.cend());
+	const_iterator end(_ctx.format.end());
 
 	if (isDigitExcludeZero(char_type(*pos))) {
 		integral_t width = strtointegral<ucchar, const_iterator>(pos, end, 10, PFS_INTEGRAL_MIN, PFS_UINTEGRAL_MAX, & pos);
@@ -154,7 +155,7 @@ bool safeformat::parseFieldWidth ()
 bool safeformat::parsePrecision ()
 {
 	const_iterator pos(_ctx.pos);
-	const_iterator end(_ctx.format.cend());
+	const_iterator end(_ctx.format.end());
 	int sign = 1;
 	integral_t prec = -1;
 
@@ -188,7 +189,7 @@ bool safeformat::parsePrecision ()
 bool safeformat::parseConvSpec ()
 {
 	const_iterator pos(_ctx.pos);
-	const_iterator end(_ctx.format.cend());
+	const_iterator end(_ctx.format.end());
 
 	if (pos < end) {
 		string convSpecifiers("diouxXeEfFgGcsp");
@@ -271,16 +272,16 @@ void safeformat::prependSign (string & r)
 	// The precision, if any, gives the minimum number of digits that must appear;
 	// if the converted value requires fewer digits, it is padded on the left with zeros.
 	if (_ctx.spec.prec > 0 && r.length() < size_t(_ctx.spec.prec))
-		r.prepend(string(_ctx.spec.prec - r.length(), '0'));
+		r.insert(0, string(_ctx.spec.prec - r.length(), '0'));
 
 	if (! isNegative) {
 		// A sign (+ or -) should always be placed before a number produced by a signed conversion
 		if (_ctx.spec.flags & safeformat::NeedSign) {
-			r.prepend(1, '+');
+			r.insert(0, 1, '+');
 		}
 		// A blank should be left before a positive number
 		else if (_ctx.spec.flags & safeformat::SpaceBeforePositive) {
-			r.prepend(1, ' ');
+			r.insert(0, 1, ' ');
 		}
 	}
 }
@@ -295,7 +296,7 @@ void safeformat::doPadding (string & r)
 		if (_ctx.spec.flags & safeformat::LeftJustify)
 			r.append(string(count, paddingChar));
 		else
-			r.prepend(string(count, paddingChar));
+			r.insert(0, count, paddingChar);
 	}
 }
 

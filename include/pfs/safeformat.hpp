@@ -50,7 +50,7 @@ class DLL_API safeformat
 {
 public:
 	typedef string::const_iterator const_iterator;
-	typedef string::char_type char_type;
+	typedef string::value_type char_type;
 
 public:
 	enum Flag {
@@ -162,15 +162,15 @@ public:
 	explicit safeformat (const string & format)
 	{
 		_ctx.format = format;
-		_ctx.pos = _ctx.format.cbegin();
+		_ctx.pos = _ctx.format.begin();
 		setCompat((Compat)globalCompat());
 		clearSpec();
 	}
 
 	explicit safeformat (const char * latin1Format)
 	{
-		_ctx.format = string::fromLatin1(latin1Format);
-		_ctx.pos = _ctx.format.cbegin();
+		_ctx.format = string(latin1Format);
+		_ctx.pos = _ctx.format.begin();
 		setCompat((Compat)globalCompat());
 		clearSpec();
 	}

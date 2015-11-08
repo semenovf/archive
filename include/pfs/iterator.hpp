@@ -8,6 +8,7 @@
 #ifndef __PFS_ITERATOR_HPP__
 #define __PFS_ITERATOR_HPP__
 
+#include <iterator>
 #include <pfs/bits/iterator/advance.hpp>
 #include <pfs/bits/iterator/distance.hpp>
 

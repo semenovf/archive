@@ -1,0 +1,38 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-pfs-notification'
+--* Date:    Sun Nov  8 12:11:59 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-pfs-notification"
+defines       {  }
+includedirs   { "../../include"
+		, "../../../pfs-test/include"
+	      }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-pfs-notification/*.c", "../../tests/test-pfs-notification/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs/test-pfs-notification/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs/test-pfs-notification/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs"  }
+
+dependson { "pfs" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

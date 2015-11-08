@@ -21,6 +21,15 @@ mbcs_string<CodeUnitT>::mbcs_string (const char * latin1)
 }
 
 template <typename CodeUnitT>
+mbcs_string<CodeUnitT>::mbcs_string (const std::string & s)
+	: base_class()
+{
+	if (s.size() > 0) {
+		*this = fromLatin1(s.c_str(), s.size());
+	}
+}
+
+template <typename CodeUnitT>
 mbcs_string<CodeUnitT>::mbcs_string (const char * latin1, size_t n)
 {
 	if (latin1) {

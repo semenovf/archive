@@ -13,7 +13,7 @@ namespace pfs {
 
 void errorable::addError (const pfs::string & text)
 {
-	if (!text.isEmpty()) {
+	if (!text.empty()) {
 		if (_errors.size() > 0 && (&_errors.last())->_errstr == text) {
 			;
 		} else {

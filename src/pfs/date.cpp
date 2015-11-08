@@ -7,6 +7,7 @@
 
 #include "pfs/date.hpp"
 #include "pfs/math.hpp"
+#include "pfs/utility.hpp"
 #include <cstring>
 #include <sstream>
 #include <iomanip>
@@ -30,7 +31,7 @@ static inline date __valid_date(int y, int m, int d)
     date r(y, m, 1);
 
     // set date according to the number of days in the specified month.
-    r.setDate(y, m, pfs::min(d, r.daysInMonth()));
+    r.set_date(y, m, min(d, r.days_in_month()));
     return r;
 }
 
@@ -42,7 +43,7 @@ static inline date __valid_date(int y, int m, int d)
  * @param day   Day.
  * @return JD value.
  */
-integral_t date::julianDay (int year, int month, int day) // static
+integral_t date::julian_day (int year, int month, int day) // static
 {
 	if (year < 0) // there is no 0 year
 		++year;
@@ -73,7 +74,7 @@ integral_t date::julianDay (int year, int month, int day) // static
  *
  * @note see http://www.tondering.dk/claus/cal/julperiod.php.
  */
-void date::fromJulianDay (integral_t julianDay, int * yearPtr, int * monthPtr, int * dayPtr) // static
+void date::from_julian_day (integral_t julianDay, int * yearPtr, int * monthPtr, int * dayPtr) // static
 {
 	integral_t b = 0;
 	integral_t c = 0;
@@ -116,30 +117,30 @@ void date::fromJulianDay (integral_t julianDay, int * yearPtr, int * monthPtr, i
  * @param day   Day value.
  * @return @c true if the specified date is valid; otherwise returns @c false.
  */
-bool date::isValid (int year, int month, int day) // static
+bool date::valid (int year, int month, int day) // static
 {
     return year == 0
         ? false
     	: (day > 0 && month > 0 && month <= 12) &&
-           (day <= __daysInMonth[month] || (day == 29 && month == 2 && isLeapYear(year)));
+           (day <= __daysInMonth[month] || (day == 29 && month == 2 && is_leap_year(year)));
 }
 
 
 
 // 31.01.2013 + 1 mon = 29.02.2013
 // 31.01.2013 - 2 mon = 30.11.2012
-date date::addMonths (int nmonths) const
+date date::add_months (int nmonths) const
 {
 	// Note: algorithm adopted from QDate::addMonths
 
-    if (!isValid())
+    if (!valid())
         return date();
 
     if (!nmonths)
     	return *this;
 
     int y, m, d;
-    fromJulianDay(_jd, & y, & m, & d);
+    from_julian_day(_jd, & y, & m, & d);
 
     int start_year = y;
 
@@ -181,15 +182,15 @@ date date::addMonths (int nmonths) const
     return __valid_date(y, m, d);
 }
 
-date date::addYears (int nyears) const
+date date::add_years (int nyears) const
 {
 	// Note: algorithm adopted from QDate::addYears
 
-    if (!isValid())
+    if (!valid())
         return date();
 
     int y, m, d;
-    fromJulianDay(_jd, & y, & m, & d);
+    from_julian_day(_jd, & y, & m, & d);
 
     int start_year = y;
     y += nyears;
@@ -210,9 +211,9 @@ date date::addYears (int nyears) const
  * @return The weekday (1 = Monday to 7 = Sunday) for this date
  *         or 0 if the date is invalid.
  */
-int date::dayOfWeek() const
+int date::day_of_week() const
 {
-    return !isValid()
+    return !valid()
         ? 0
         : (_jd >= 0)
           	  ? (_jd % 7) + 1
@@ -226,11 +227,11 @@ int date::dayOfWeek() const
  * @return The day of the year (1 to 365 or 366 on leap years) for
     this date, or 0 if the date is invalid.
  */
-int date::dayOfYear() const
+int date::day_of_year() const
 {
-    return !isValid()
+    return !valid()
         ? 0
-        : int(_jd - julianDay(year(), 1, 1) + 1);
+        : int(_jd - julian_day(year(), 1, 1) + 1);
 }
 
 /**
@@ -239,16 +240,16 @@ int date::dayOfYear() const
  * @return The number of days in the month (28 to 31) for this date
  *         or 0 if the date is invalid.
  */
-int date::daysInMonth() const
+int date::days_in_month() const
 {
-    if (! isValid())
+    if (! valid())
         return 0;
 
     int y, m;
 
-    fromJulianDay(_jd, & y, & m, nullptr);
+    from_julian_day(_jd, & y, & m, nullptr);
 
-    return  (m == 2 && isLeapYear(y))
+    return  (m == 2 && is_leap_year(y))
     		? 29
     		: __daysInMonth[m];
 }
@@ -259,14 +260,14 @@ int date::daysInMonth() const
  * @return The number of days in the year (365 or 366) for this date
  *         or 0 if the date is invalid.
  */
-int date::daysInYear () const
+int date::days_in_year () const
 {
-    if (! isValid())
+    if (! valid())
         return 0;
 
     int y;
-    fromJulianDay(_jd, & y, nullptr, nullptr);
-    return isLeapYear(y) ? 366 : 365;
+    from_julian_day(_jd, & y, nullptr, nullptr);
+    return is_leap_year(y) ? 366 : 365;
 }
 
 /**
@@ -278,8 +279,8 @@ int date::daysInYear () const
  */
 void date::split(int * year, int * month, int * day)
 {
-    if (isValid()) {
-        fromJulianDay(_jd, year, month, day);
+    if (valid()) {
+        from_julian_day(_jd, year, month, day);
     } else {
         if (year)
             *year = 0;
@@ -290,72 +291,47 @@ void date::split(int * year, int * month, int * day)
     }
 }
 
-bool date::setDate (int year, int month, int day)
+bool date::set_date (int year, int month, int day)
 {
-    if (isValid(year, month, day))
-        _jd = julianDay(year, month, day);
+    if (valid(year, month, day))
+        _jd = julian_day(year, month, day);
     else
         _jd = NullJulianDay;
 
-    return isValid();
+    return valid();
 }
 
 int date::year () const
 {
-    if (!isValid())
+    if (!valid())
         return 0;
 
     int y;
-    fromJulianDay(_jd, & y, nullptr, nullptr);
+    from_julian_day(_jd, & y, nullptr, nullptr);
     return y;
 }
 
 int date::month () const
 {
-    if (!isValid())
+    if (!valid())
         return 0;
 
     int m;
-    fromJulianDay(_jd, nullptr, & m, nullptr);
+    from_julian_day(_jd, nullptr, & m, nullptr);
     return m;
 }
 
 int date::day () const
 {
-    if (!isValid())
+    if (!valid())
         return 0;
 
     int d;
-    fromJulianDay(_jd, nullptr, nullptr, & d);
+    from_julian_day(_jd, nullptr, nullptr, & d);
     return d;
 }
 
-
-
-/**
- *
- * @param format
- * @return
- *
- * %n     A newline character.
- * %t     A tab character.
- * %C     The century number (year/100) as a 2-digit integer.
- * %d     The day of the month as a decimal number (range 01 to 31).
- * %e     Like %d, the day of the month as a decimal number, but a leading zero is replaced by a space.
- * %F     Equivalent to %Y-%m-%d (the ISO 8601 date format).
- * %j     The day of the year as a decimal number (range 001 to 366).
- * %m     The month as a decimal number (range 01 to 12).
- * %u     The day of the week as a decimal, range 1 to 7, Monday being 1.
- * %y     The year as a decimal number without a century (range 00 to 99).
- * %Y     The year as a decimal number including the century.
- *
- * TODO need to support
- * %U     The week number of the current year as a decimal number, range 00 to 53,
- *        starting with the first Sunday as the first day of week 01.
- * %V     The ISO 8601 week number (see NOTES) of the current year as a decimal number,
- *        range 01 to 53, where week 1 is the first week that has at least 4 days in the new year.
- *        See also  %U  and %W.
- */
+#if __OBSOLETE__
 string date::toString (const char * format) const
 {
 	if (year() < 0 && year() > 9999)
@@ -402,13 +378,13 @@ string date::toString (const char * format) const
 					   << std::setw(2) << std::setfill('0') << day();
 					break;
 				case 'j':
-					ss << std::setw(3) << std::setfill('0') << dayOfYear();
+					ss << std::setw(3) << std::setfill('0') << day_of_year();
 					break;
 				case 'm':
 					ss << std::setw(2) << std::setfill('0') << month();
 					break;
 				case 'u':
-					ss << dayOfWeek();
+					ss << day_of_week();
 					break;
 				case 'y':
 					ss << std::setw(2) << std::setfill('0') << year() % 100;
@@ -444,5 +420,6 @@ string date::toString () const
 {
 	return toString("%F"); // equivalent to %H:%M:%S
 }
+#endif
 
 } // pfs
