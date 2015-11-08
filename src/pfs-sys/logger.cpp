@@ -9,7 +9,7 @@
 #include "logger_p.hpp"
 #include <pfs/shared_ptr.hpp>
 #include <pfs/atomic.hpp>
-#include <pfs/platform.hpp>
+#include <pfs/platform/strerror.hpp>
 
 namespace pfs {
 
@@ -79,10 +79,10 @@ void warn  (int errn, const pfs::string & text)
 {
 	if (log::level() < log::Error) {
 		if (text.isEmpty()) {
-			warn().print(log::Warn, platform::strerror(errn));
+			warn().print(log::Warn, pfs::string(platform::strerror(errn)));
 		} else {
 			pfs::string msg;
-			msg << text << ": " << platform::strerror(errn);
+			msg << text << ": " << pfs::string(platform::strerror(errn));
 			warn().print(log::Warn, msg);
 		}
 	}
@@ -92,10 +92,10 @@ void error (int errn, const pfs::string & text)
 {
 	if (log::level() < log::Fatal) {
 		if (text.isEmpty()) {
-			error().print(log::Error, platform::strerror(errn));
+			error().print(log::Error, pfs::string(platform::strerror(errn)));
 		} else {
 			pfs::string msg;
-			msg << text << platform::strerror(errn);
+			msg << text << pfs::string(platform::strerror(errn));
 			error().print(log::Error, msg);
 		}
 	}
@@ -105,10 +105,10 @@ void fatal (int errn, const pfs::string & text)
 {
 	if (log::level() < log::NoLog) {
 		if (text.isEmpty()) {
-			fatal().print(log::Fatal, platform::strerror(errn));
+			fatal().print(log::Fatal, pfs::string(platform::strerror(errn)));
 		} else {
 			pfs::string msg;
-			msg << text << platform::strerror(errn);
+			msg << text << pfs::string(platform::strerror(errn));
 			fatal().print(log::Fatal, msg);
 		}
 	}

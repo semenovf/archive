@@ -6,74 +6,107 @@
  *
  */
 
-#include "pfs/fs/path.hpp"
-//#include "pfs/regexp.hpp"
 #include <sys/stat.h>
 #include <cstring>
+#include <string>
 #include <cerrno>
-#include <unistd.h>
-#include <dirent.h>
+//#include <unistd.h>
+//#include <dirent.h>
+#include <pfs/algo/find.hpp>
+#include <pfs/fs/path.hpp>
+#include <pfs/platform/strerror.hpp>
 
 namespace pfs { namespace fs {
 
+inline bool __is_regular_file  (mode_t m) { return (m & S_IFMT) == S_IFREG;  }
+inline bool __is_socket        (mode_t m) { return (m & S_IFMT) == S_IFSOCK; }
+inline bool __is_symbolic_link (mode_t m) { return (m & S_IFMT) == S_IFLNK;  }
+inline bool __is_block_device  (mode_t m) { return (m & S_IFMT) == S_IFBLK;  }
+inline bool __is_directory     (mode_t m) { return (m & S_IFMT) == S_IFDIR;  }
+inline bool __is_char_device   (mode_t m) { return (m & S_IFMT) == S_IFCHR;  }
+inline bool __is_fifo          (mode_t m) { return (m & S_IFMT) == S_IFIFO;  }
+
 path::path ()
-	: _separator('/', 1)
+	: _separator(1, '/')
 {}
 
+path::path (const path::string_type & s)
+	: _path(s)
+	, _separator(1, '/')
+{}
+
+bool path::is_absolute () const
+{
+	if( _path.empty() )
+		return false;
+
+	return starts_with(_path.begin(), _path.end(), _separator.begin(), _separator.end());
+}
+
+inline void __add_syserror_notification (int errn, notification_type * nx)
+{
+	if (errn != 0 && nx) {
+		path::string_type errstr;
+		nx->append(platform::strerror(errn, errstr));
+	}
+}
+
+bool exists (const path & p, notification_type * nx)
+{
+	struct stat st;
+	int rc = lstat(p.native().c_str(), & st);
+
+	__add_syserror_notification(rc, nx);
+
+	return rc == 0;
+}
+
+bool is_directory (const path & p, notification_type * nx)
+{
+	struct stat st;
+	int rc = lstat(p.native().c_str(), & st);
+
+	__add_syserror_notification(rc, nx);
+
+	return (rc == 0 && __is_directory(st.st_mode));
+}
+
+bool remove (const path & p, notification_type * nx)
+{
+	int rc = ::unlink(p.native().c_str());
+
+	__add_syserror_notification(rc, nx);
+
+	return rc == 0;
+}
+
+bool rename (const path & from, const path & to, notification_type * nx)
+{
+	int rc = ::rename(from.native().c_str(), to.native().c_str());
+
+	__add_syserror_notification(rc, nx);
+
+	return rc == 0;
+}
+
+path temp_directory_path (notification_type * nx)
+{
+	char * r = getenv("TMPDIR");
+
+	if (!r) {
+		r = getenv("TMP");
+		if (!r) {
+			r = getenv("TEMP");
+			if (!r) {
+				r = getenv("TEMPDIR");
+			}
+		}
+	}
+
+	return r ? path(path::string_type(r)) : path(path::string_type("/tmp"));
+}
+
 #if __COMMENT__
-inline bool __is_regular_file  (mode_t m) { return (m & S_IFMT) == S_IFREG; }
-inline bool __is_socket        (mode_t m) { return (m & S_IFMT) == S_IFSOCK; }
-inline bool __is_symbolic_link (mode_t m) { return (m & S_IFMT) == S_IFLNK; }
-inline bool __is_block_device  (mode_t m) { return (m & S_IFMT) == S_IFBLK; }
-inline bool __is_directory     (mode_t m) { return (m & S_IFMT) == S_IFDIR; }
-inline bool __is_char_device   (mode_t m) { return (m & S_IFMT) == S_IFCHR; }
-inline bool __is_fifo          (mode_t m) { return (m & S_IFMT) == S_IFIFO; }
-
-
-bool fs::isAbsolute (const string & path) const
-{
-	if( path.isEmpty() )
-		return false;
-
-	return path.startsWith(string(1, separator()));
-}
-
-bool fs::isDirectory (const string & path) const
-{
-	struct stat st;
-	return (stat(path.c_str(), & st ) == 0
-			&& __is_directory(st.st_mode));
-}
-
-bool fs::exists (const string & path) const
-{
-	struct stat st;
-	return stat(path.c_str(), & st ) == 0;
-}
-
-bool fs::rename (const string & from, const string & to)
-{
-	if (::rename(from.c_str(), to.c_str()) != 0) {
-		string errstr;
-		errstr << _Tr("Unable to rename file")
-				<< _Tr(" from ") << from
-				<< _Tr(" to ") << to;
-		addSystemError(errno, errstr);
-		return false;
-	}
-	return true;
-}
-
-bool fs::remove (const string & path)
-{
-	if (::unlink(path.c_str()) != 0) {
-		string errstr;
-		errstr << _Tr("Unable to unlink (delete) file ") << path;
-		addSystemError(errno, errstr);
-		return false;
-	}
-	return true;
-}
 
 size_t fs::size (const string & path) const
 {
@@ -132,23 +165,6 @@ string fs::currentDirectory () const
 #endif
 
 	return result;
-}
-
-string fs::tempDirectory () const
-{
-	char * r = getenv("TMPDIR");
-
-	if (!r) {
-		r = getenv("TMP");
-		if (!r) {
-			r = getenv("TEMP");
-			if (!r) {
-				r = getenv("TEMPDIR");
-			}
-		}
-	}
-
-	return r ? _u8(r) : _u8("/tmp");
 }
 
 // TODO need to implement (Windows version too)

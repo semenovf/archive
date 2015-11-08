@@ -26,7 +26,7 @@ static struct timespec       timeout_time[TIMEOUTS];
 /* Return the number of seconds between before and after, (after - before).
  * This must be async-signal safe, so it cannot use difftime().
 */
-inline double timespec_diff (const struct timespec after, const struct timespec before)
+static double timespec_diff (const struct timespec after, const struct timespec before)
 {
     return (double)(after.tv_sec - before.tv_sec)
          + (double)(after.tv_nsec - before.tv_nsec) / 1000000000.0;

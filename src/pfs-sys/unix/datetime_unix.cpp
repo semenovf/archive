@@ -38,8 +38,8 @@ DLL_API pfs::datetime currentDateTime ()
     pfs::date date;
 	pfs::time time;
 
-    time.setTime(tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec, tv.tv_usec / 1000);
-    date.setDate(tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday);
+    time.set_time(tmPtr->tm_hour, tmPtr->tm_min, tmPtr->tm_sec, tv.tv_usec / 1000);
+    date.set_date(tmPtr->tm_year + 1900, tmPtr->tm_mon + 1, tmPtr->tm_mday);
 
     return pfs::datetime(date, time);
 }

@@ -12,13 +12,13 @@
 #include <pfs/time.hpp>
 #include <pfs/date.hpp>
 #include <pfs/datetime.hpp>
+#include <pfs/platform/strerror.hpp>
 
 namespace pfs { namespace platform {
 
 DLL_API pfs::time currentTime ();
 DLL_API pfs::date currentDate ();
 DLL_API pfs::datetime currentDateTime ();
-DLL_API pfs::string strerror (int errn);
 
 struct display_data
 {

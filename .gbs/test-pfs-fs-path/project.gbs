@@ -8,7 +8,11 @@ kind          "ConsoleApp"
 language      "C++"
 targetname    "test-pfs-fs-path"
 defines       {  }
-includedirs   { "../../include" }
+includedirs   {
+                "../../include"
+		, "../../../pfs-test/include"
+                , "../../../pfs/include"
+              }
 libdirs       { "../../../.build" }
 files         { "../../tests/test-pfs-fs-path/*.c", "../../tests/test-pfs-fs-path/*.cpp" }
 
@@ -18,14 +22,14 @@ configuration "debug"
     objdir       "../../../.build/pfs-sys/test-pfs-fs-path/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
-    links        {  }
+    links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
 
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-sys/test-pfs-fs-path/release"
     targetdir    "../../../.build/tests"
-    links        {  }
+    links        { "pfs-test", "pfs", "pfs-sys" }
 
 dependson { "pfs-sys" }
 

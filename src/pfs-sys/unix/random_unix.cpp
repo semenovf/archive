@@ -6,18 +6,17 @@
 */
 
 #include <sys/time.h>
-#include <cstdlib>
 #include <stdlib.h>
 #include <pfs/platform.hpp>
 #include "../random_p.hpp"
 
-namespace pfs {
+// Activate random_r
+//
+#define _SVID_SOURCE
+#define _BSD_SOURCE
+#include <cstdlib>
 
-#if defined(_SVID_SOURCE) || defined(_BSD_SOURCE)
-#	define PFS_HAVE_RANDOM_R 1
-#else
-#	error Expected support of random_r() call
-#endif
+namespace pfs {
 
 class random_impl
 {

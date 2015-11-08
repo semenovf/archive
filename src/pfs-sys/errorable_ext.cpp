@@ -8,7 +8,7 @@
 
 #include "pfs/errorable_ext.hpp"
 #include "pfs/logger.hpp"
-#include "pfs/platform.hpp"
+#include "pfs/platform/strerror.hpp"
 
 namespace pfs {
 
