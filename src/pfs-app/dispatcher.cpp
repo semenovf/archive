@@ -49,7 +49,7 @@ module * dispatcher::registerLocalModule (module * mod, module_dtor_t dtor)
 	return nullptr;
 }
 
-module * dispatcher::registerModuleForPath (const string & path, const char * pname, int arg, char ** argv)
+module * dispatcher::registerModuleForPath (const string & path, const char * pname, int arg, const char ** argv)
 {
 	fs fs;
 
@@ -86,7 +86,7 @@ module * dispatcher::registerModuleForPath (const string & path, const char * pn
 	return nullptr;
 }
 
-module * dispatcher::registerModuleForName (const string & name, const char * modname, int arg, char ** argv)
+module * dispatcher::registerModuleForName (const string & name, const char * modname, int arg, const char ** argv)
 {
 	pfs::dl & dl = pfs::dl::getDL();
 	string filename = dl.buildDlFileName(name);
@@ -100,6 +100,8 @@ module * dispatcher::registerModuleForName (const string & name, const char * mo
 		string m(name);
 		debug(m << ": " << _Tr("module found at ") << realPath);
 		return registerModuleForPath(realPath, modname, arg, argv);
+	} else {
+		this->addErrors(dl);
 	}
 
 	string m(name);

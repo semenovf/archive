@@ -60,8 +60,8 @@ public:
 	void addSearchPath (const string & dir);
 
 	module * registerLocalModule (module * mod, module_dtor_t dtor = module::defaultDtor);
-	module * registerModuleForPath (const string & path, const char * modname = nullptr, int argc = 0, char ** argv = nullptr);
-	module * registerModuleForName (const string & name, const char * modname = nullptr, int argc = 0, char ** argv = nullptr);
+	module * registerModuleForPath (const string & path, const char * modname = nullptr, int argc = 0, const char ** argv = nullptr);
+	module * registerModuleForName (const string & name, const char * modname = nullptr, int argc = 0, const char ** argv = nullptr);
 	void setMasterModule (module * mod) { _masterModule = mod; }
 	size_t count () const  { return _modules.size(); }
 

@@ -31,7 +31,7 @@ typedef struct { int _id; detector _detector; } detector_mapping;
 #define PFS_MODULE_API extern "C" DLL_API
 #define PFS_MODULE_CTOR_NAME "__module_ctor__"
 #define PFS_MODULE_DTOR_NAME "__module_dtor__"
-typedef module * (* module_ctor_t)(const char * name, int argc, char ** argv);
+typedef module * (* module_ctor_t)(const char * name, int argc, const char ** argv);
 typedef void  (* module_dtor_t)(module *);
 
 
@@ -51,6 +51,9 @@ public:
 	virtual const emitter_mapping * getEmitters (int * count)   { PFS_ASSERT(count); *count = 0; return 0; }
 	virtual const detector_mapping * getDetectors (int * count) { PFS_ASSERT(count); *count = 0; return 0; }
 
+	/**
+	 * @brief Module's onStart() method called after loaded and connection completed.
+	 */
 	virtual bool onStart () { return true; }  // call from sepaloid::start()
 	virtual bool onFinish () { return true; } // call from sepaloid::finish()
 
