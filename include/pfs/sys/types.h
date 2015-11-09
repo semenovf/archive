@@ -35,10 +35,14 @@ typedef uint8_t byte_t;
 
 #ifdef PFS_HAVE_INT64
     typedef int64_t  integral_t;
+    typedef int64_t  intmax_t;
     typedef uint64_t uintegral_t;
+    typedef uint64_t uintmax_t;
 #else
     typedef int32_t  integral_t;
+    typedef int32_t  intmax_t;
     typedef uint32_t uintegral_t;
+    typedef uint32_t uintmax_t;
 #endif
 
 #ifdef PFS_HAVE_LONG_DOUBLE
