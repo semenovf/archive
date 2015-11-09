@@ -12,8 +12,13 @@
 
 // Activate random_r
 //
-#define _SVID_SOURCE
-#define _BSD_SOURCE
+#ifndef _SVID_SOURCE
+#	define _SVID_SOURCE
+#endif
+#ifndef _BSD_SOURCE
+#	define _BSD_SOURCE
+#endif
+
 #include <cstdlib>
 
 namespace pfs {
