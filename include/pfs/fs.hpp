@@ -16,7 +16,7 @@
 namespace pfs {
 
 
-// XXX DEPRECATED. Use pfs::fs namespace instead
+// XXX DEPRECATED. Use pfs::fs namespace instead (see path class)
 //
 class DLL_API fs : public errorable_ext
 {
@@ -28,7 +28,7 @@ public:
 		, AllDirs	 = 0x0400	  // List all directories; i.e. don't apply the filters to directory names.
 		, Files	     = 0x0002	  // List files.
 		, Drives	 = 0x0004	  // List disk drives (ignored under Unix).
-		, NoSymLinks = 0x0008      // Do not list symbolic links (ignored by operating systems that don't support symbolic links).
+		, NoSymLinks = 0x0008     // Do not list symbolic links (ignored by operating systems that don't support symbolic links).
 		, NoDotAndDotDot = 0x1000 // Do not list the special entries "." and "..".
 		, NoDot      = 0x2000     // Do not list the special entry ".".
 		, NoDotDot   = 0x4000     // Do not list the special entry "..".

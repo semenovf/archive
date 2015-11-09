@@ -18,13 +18,15 @@
 
 namespace pfs { namespace fs {
 
+/*
 inline bool __is_regular_file  (mode_t m) { return (m & S_IFMT) == S_IFREG;  }
-inline bool __is_socket        (mode_t m) { return (m & S_IFMT) == S_IFSOCK; }
+inline bool __is_directory     (mode_t m) { return (m & S_IFMT) == S_IFDIR;  }
 inline bool __is_symbolic_link (mode_t m) { return (m & S_IFMT) == S_IFLNK;  }
 inline bool __is_block_device  (mode_t m) { return (m & S_IFMT) == S_IFBLK;  }
-inline bool __is_directory     (mode_t m) { return (m & S_IFMT) == S_IFDIR;  }
 inline bool __is_char_device   (mode_t m) { return (m & S_IFMT) == S_IFCHR;  }
 inline bool __is_fifo          (mode_t m) { return (m & S_IFMT) == S_IFIFO;  }
+inline bool __is_socket        (mode_t m) { return (m & S_IFMT) == S_IFSOCK; }
+*/
 
 path::path ()
 	: _separator(1, '/')
@@ -43,50 +45,81 @@ bool path::is_absolute () const
 	return starts_with(_path.begin(), _path.end(), _separator.begin(), _separator.end());
 }
 
-inline void __add_syserror_notification (int errn, notification_type * nx)
+
+file_status get_file_status (const path & p, notification_type * nx)
 {
-	if (errn != 0 && nx) {
-		path::string_type errstr;
-		nx->append(platform::strerror(errn, errstr));
+	struct stat st;
+	int rc = lstat(p.native().c_str(), & st);
+
+	if (rc != 0) { // error
+		if (rc == ENOENT || rc == ENOTDIR)
+			return file_status(file_not_found);
+
+		if (nx) {
+			path::string_type errstr;
+			nx->append(platform::strerror(errn, errstr));
+		}
+		return file_status(status_error);
 	}
+
+	switch (st.st_mode & S_IFMT) {
+	case S_IFREG : return file_status(regular_file);
+	case S_IFDIR : return file_status(directory_file);
+	case S_IFLNK : return file_status(symlink_file);
+	case S_IFBLK : return file_status(block_file);
+	case S_IFCHR : return file_status(character_file);
+	case S_IFIFO : return file_status(fifo_file);
+	case S_IFSOCK: return file_status(socket_file);
+	}
+
+	return file_status(type_unknown);
 }
 
-bool exists (const path & p, notification_type * nx)
+inline bool __zero_error_is_ok (int errn)
 {
-	struct stat st;
-	int rc = lstat(p.native().c_str(), & st);
-
-	__add_syserror_notification(rc, nx);
-
-	return rc == 0;
+	return errn == 0;
 }
 
-bool is_directory (const path & p, notification_type * nx)
+
+static bool __native_call (int errn, bool (*predicate) (int), notification_type * nx)
+{
+	if (errn != 0) {
+		if (nx) {
+			path::string_type errstr;
+			nx->append(platform::strerror(errn, errstr));
+		}
+		return false;
+	}
+
+	return predicate(errn);
+}
+
+uintmax_t file_size (const path & p, notification_type * nx)
 {
 	struct stat st;
-	int rc = lstat(p.native().c_str(), & st);
 
-	__add_syserror_notification(rc, nx);
+	if (__native_call(lstat(p.native().c_str(), & st)
+			, __zero_error_is_ok
+			, nx)) {
+		return static_cast<uintmax_t>(st.st_size);
+	}
 
-	return (rc == 0 && __is_directory(st.st_mode));
+	return max_type<uintmax_t>();
+
 }
 
 bool remove (const path & p, notification_type * nx)
 {
-	int rc = ::unlink(p.native().c_str());
-
-	__add_syserror_notification(rc, nx);
-
-	return rc == 0;
+	return __native_call(::unlink(p.native().c_str())
+			, __zero_error_is_ok
+			, nx);
 }
 
 bool rename (const path & from, const path & to, notification_type * nx)
 {
-	int rc = ::rename(from.native().c_str(), to.native().c_str());
-
-	__add_syserror_notification(rc, nx);
-
-	return rc == 0;
+	return __native_call(::rename(from.native().c_str(), to.native().c_str())
+			, __zero_error_is_ok
+			, nx);
 }
 
 path temp_directory_path (notification_type * nx)

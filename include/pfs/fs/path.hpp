@@ -14,6 +14,7 @@
 #include <pfs/algo/split.hpp>
 #include <pfs/platform/string.hpp>
 #include <pfs/platform/notification.hpp>
+#include <pfs/fs/file_status.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -290,57 +291,65 @@ public:
 //	string normalizePath (const string & path) const;
 };
 
-bool exists (const path & p, notification_type * nx);
+/**
+ * @brief Determines file type by path.
+ * @param p Path.
+ * @param nx Pointer to save error message(s).
+ * @return File type (@see @a file_type_enum)
+ */
+file_status get_file_status (const path & p, notification_type * nx = 0);
 
-inline bool exists (const path & p)
+/**
+ * @brief Checks if @ path exists.
+ * @param p Path.
+ * @param nx Pointer to save error message(s).
+ * @return @c true if @c path exists, @c false otherwise.
+ *
+ * @note Path exists if it's status is not equals to @c status_error nor @c file_not_found.
+ */
+bool exists (const path & p, notification_type * nx = 0)
 {
-	return exists(p, 0);
+	file_status ft = get_file_status(p, nx);
+	return ft.type() != status_error && ft.type() != file_not_found;
 }
 
-bool is_directory (const path & p, notification_type * nx);
-
-inline bool is_directory (const path & p)
+/**
+ * @brief Checks if @ path is regular file.
+ *
+ * @param p Path.
+ * @param nx Pointer to save error message(s).
+ * @return @c true if @c path is a regular file, @c false otherwise.
+ */
+inline bool is_regular_file (const path & p, notification_type * nx = 0)
 {
-	return is_directory(p, 0);
+	return get_file_status(p, nx).type() == regular_file;
 }
 
-bool remove (const path & p, notification_type * nx);
-
-inline bool remove (const path & p)
+inline bool is_directory (const path & p, notification_type * nx = 0)
 {
-	return remove(p, 0);
+	return get_file_status(p, nx).type() == directory_file;
 }
 
-inline bool unlink (const path & p, notification_type * nx)
+inline bool is_symlink (const path & p, notification_type * nx = 0)
+{
+	return get_file_status(p, nx).type() == symlink_file;
+}
+
+uintmax_t file_size (const path & p, notification_type * nx = 0);
+
+bool remove (const path & p, notification_type * nx = 0);
+
+inline bool unlink (const path & p, notification_type * nx = 0)
 {
 	return remove(p, nx);
 }
 
-inline bool unlink (const path & p)
-{
-	return remove(p);
-}
+bool rename (const path & from, const path & to, notification_type * nx = 0);
 
-bool rename (const path & from, const path & to, notification_type * nx);
+path temp_directory_path (notification_type * nx = 0);
 
-inline bool rename (const path & from, const path & to)
-{
-	return rename(from, to, 0);
-}
-
-path temp_directory_path (notification_type * nx);
-
-inline path temp_directory_path ()
-{
-	return temp_directory_path(0);
-}
-
-path unique_path (const path & model, notification_type * nx);
-
-inline path unique_path (const path & model)
-{
-	return unique_path(model, 0);
-}
+// FIXME Need to implement
+path unique_path (const path & model, notification_type * nx = 0);
 
 inline path unique_path ()
 {
