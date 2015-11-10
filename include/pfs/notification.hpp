@@ -10,10 +10,23 @@
 
 #include <memory> // for std::allocator
 #include <ostream>
+#include <cstring>
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
 
 namespace pfs {
+
+enum notification_type_enum
+{
+	  notification_trace
+	, notification_debug
+	, notification_info
+	, notification_warn
+	, notification_error
+	, notification_fatal
+
+	, notification_count
+};
 
 template <typename String>
 class notification_value
@@ -24,18 +37,47 @@ public:
 private:
 	size_t _repetitions;
 	string_type _text;
+	notification_type_enum _type;
 
 public:
 	notification_value () : _repetitions(0), _text() {}
-	notification_value (const string_type & s) : _repetitions(1), _text(s) {}
+	notification_value (const string_type & s)
+		: _repetitions(1)
+		, _text(s)
+		, _type(notification_error)
+	{}
+
+	notification_value (notification_type_enum nxtype, const string_type & s)
+		: _repetitions(1)
+		, _text(s)
+		, _type(nxtype)
+	{}
+
 	notification_value (const notification_value & other)
 		: _repetitions(other._repetitions)
 		, _text(other._text)
+		, _type(other._type)
 	{}
 
-	const String & text () const { return _text; }
-	size_t repetitions () const { return _repetitions; }
-	void increment () { ++_repetitions; }
+	notification_type_enum type () const
+	{
+		return _type;
+	}
+
+	const String & text () const
+	{
+		return _text;
+	}
+
+	size_t repetitions () const
+	{
+		return _repetitions;
+	}
+
+	void increment ()
+	{
+		++_repetitions;
+	}
 };
 
 //template <typename String, template <typename, typename = std::allocator<notification_value<String> > > typename Container>
@@ -71,21 +113,34 @@ public:
 
 protected:
 	container_type _notifications;
+	size_t         _type_counts[notification_count];
 
 private:
 	basic_notification (const basic_notification & other);
 	basic_notification & operator == (const basic_notification & other);
 
 public:
-	basic_notification () {}
+	basic_notification ()
+	{
+		::memset(_type_counts, 0, sizeof(size_t) * notification_count);
+	}
+
 	virtual ~basic_notification () { }
 
-	void append (const string_type & text);
-	void concat (const basic_notification & other) { _notifications.append(other._notifications); }
+	void append (const string_type & text)
+	{
+		++_type_counts[notification_error];
+		append(notification_error, text);
+	}
+
+	void append (notification_type_enum type, const string_type & text);
+
+	void append (const basic_notification & other);
 
 	void clear ()
 	{
 		_notifications.clear();
+		::memset(_type_counts, 0, sizeof(size_t) * notification_count);
 	}
 
 	/**
@@ -95,6 +150,18 @@ public:
 	size_t count () const
 	{
 		return _notifications.size();
+	}
+
+	size_t count_type (notification_type_enum nxtype)
+	{
+		return nxtype < notification_count
+				? _type_counts[nxtype]
+				: 0;
+	}
+
+	size_t count_error_type ()
+	{
+		return _type_counts[notification_error] + _type_counts[notification_fatal];
 	}
 
 	iterator begin ()
@@ -129,11 +196,6 @@ public:
 	}
 #endif
 
-	bool is_error () const
-	{
-		return count() == 0;
-	}
-
 	const string_type & last_text () const
 	{
 		PFS_ASSERT(_notifications.size() > 0);
@@ -148,16 +210,27 @@ public:
 };
 
 template <typename String>
-void basic_notification<String>::append (const string_type & text)
+void basic_notification<String>::append (notification_type_enum nxtype, const string_type & text)
 {
 	if (!text.empty()) {
 		if (_notifications.empty())
-			_notifications.push_back(value_type(text));
+			_notifications.push_back(value_type(nxtype, text));
 		else if (last_text() == text)
 			_notifications.back().increment();
 		else
-			_notifications.push_back(value_type(text));
+			_notifications.push_back(value_type(nxtype, text));
+
+		++_type_counts[nxtype];
 	}
+}
+
+template <typename String>
+void basic_notification<String>::append (const basic_notification & other)
+{
+	_notifications.append(other._notifications);
+
+	for (int i = 0; i < notification_count; ++i)
+		_type_counts[i] += other._type_counts[i];
 }
 
 

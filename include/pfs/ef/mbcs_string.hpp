@@ -12,143 +12,144 @@ namespace pfs { namespace ef {
 
 #include <string>
 #include <pfs/endian.hpp>
-#include <pfs/ucchar.hpp>
-#include <pfs/cast/latin1.hpp.old>
-//#include <pfs/cast/string.hpp>
-
-// See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
-#ifdef PFS_CC_MSVC
-#	pragma warning(push)
-#	pragma warning(disable:4251)
-#endif
 
 namespace pfs { namespace ef {
 
-template <typename CodeUnitT>
+template <typename CodeUnit>
 class mbcs_string
 {
-	typedef std::basic_string<CodeUnitT> impl_class;
+	typedef std::basic_string<CodeUnit> rep_type;
 
 public:
+	typedef int32_t code_point_type;
+
 	// Types
-    typedef impl_class::traits_type	             traits_type;
-    typedef impl_class::value_type		         value_type;
-//    typedef impl_class::allocator_type	     allocator_type;
-    typedef typename impl_class::size_type	     size_type;
-    typedef typename impl_class::difference_type difference_type;
-    typedef typename impl_class::reference	     reference;
-    typedef typename impl_class::const_reference const_reference;
-    typedef typename impl_class::pointer	     pointer;
-    typedef typename impl_class::const_pointer   const_pointer;
-    typedef impl_class::iterator                 iterator;
-    typedef impl_class::const_iterator           const_iterator;
-    typedef impl_class::const_reverse_iterator   const_reverse_iterator;
-    typedef impl_class::reverse_iterator         reverse_iterator;
+    typedef rep_type::traits_type	           traits_type;
+    typedef rep_type::value_type		       value_type;
+    typedef rep_type::allocator_type	       allocator_type;
+    typedef typename rep_type::size_type	   size_type;
+    typedef typename rep_type::difference_type difference_type;
+    typedef typename rep_type::reference	   reference;
+    typedef typename rep_type::const_reference const_reference;
+    typedef typename rep_type::pointer	       pointer;
+    typedef typename rep_type::const_pointer   const_pointer;
+    typedef rep_type::iterator                 iterator;
+    typedef rep_type::const_iterator           const_iterator;
+    typedef rep_type::const_reverse_iterator   const_reverse_iterator;
+    typedef rep_type::reverse_iterator         reverse_iterator;
 
     typedef value_type char_type;
 
-private:
-	std::basic_string<CodeUnitT> _d;
-	size_type _length; // length in Unicode chars
+public:
+    static const size_type npos = rep_type::npos;
 
-public: // static
-	static const uint32_t TerminatorChar  = '\0';
-	static const uint32_t EndOfLineChar   = '\n';
-	static const uint32_t ReplacementChar = '?';
-	static const size_type npos = -1;
+private:
+    rep_type  _d;
+	size_type _code_point_size; // length in Unicode chars
+
+//public: // static
+//	static const uint32_t TerminatorChar  = '\0';
+//	static const uint32_t EndOfLineChar   = '\n';
+//	static const uint32_t ReplacementChar = '?';
+//	static const size_type npos = -1;
 
 public:
-	mbcs_string () : _d(), _length(0) {}
-	mbcs_string (const mbcs_string & str);
-	mbcs_string (const mbcs_string & str, size_t pos, size_t len = npos);
-	mbcs_string (const char * latin1);
-	mbcs_string (const char * latin1, size_t n);
-	mbcs_string (const ucchar * unicode, size_t n);
-	mbcs_string (size_t n, char c);
-	mbcs_string (size_t n, ucchar c);
+	mbcs_string ()
+		: _d()
+		, _code_point_size(0)
+	{}
 
-	template <class InputIterator>
-	mbcs_string (InputIterator first, InputIterator last);
+//	mbcs_string (const mbcs_string & str);
+//	mbcs_string (const mbcs_string & str, size_t pos, size_t len = npos);
+//	mbcs_string (const char * latin1);
+//	mbcs_string (const char * latin1, size_t n);
+//	mbcs_string (const ucchar * unicode, size_t n);
+//	mbcs_string (size_t n, char c);
+//	mbcs_string (size_t n, ucchar c);
 
-	virtual ~mbcs_string () {}
+//	template <class InputIterator>
+//	mbcs_string (InputIterator first, InputIterator last);
 
-    const CodeUnitT * constData () const
-    {
-    	return this->data();
-    }
+	virtual ~mbcs_string ()
+	{}
 
-    const CodeUnitT * data () const
-    {
-    	return _d.data();
-    }
-
-    const CodeUnitT * c_str () const
-    {
-    	return _d.c_str();
-    }
+//    const CodeUnitT * constData () const
+//    {
+//    	return this->data();
+//    }
+//
+//    const CodeUnitT * data () const
+//    {
+//    	return _d.data();
+//    }
+//
+//    const CodeUnitT * c_str () const
+//    {
+//    	return _d.c_str();
+//    }
 
     bool empty () const
     {
     	return _d.empty();
     }
 
-	bool isEmpty () const
-	{
-		return this->empty();
-	}
-
 	void clear ()
 	{
 		_d.clear();
-		_length = 0;
+		_code_point_size = 0;
 	}
 
-	mbcs_string & append (const mbcs_string & str)
+	size_type code_point_size () const
 	{
-		_d.append(str._d);
-		_length += _d.length;
-		return *this;
+		return _code_point_size;
 	}
 
-	mbcs_string & append (const mbcs_string & str, size_t subpos, size_t sublen);
-	mbcs_string & append (const char * s);
-	mbcs_string & append (const char * s, size_t n);
-	mbcs_string & append (size_t n, char c);
-	mbcs_string & append (size_t n, uint32_t c);
-	mbcs_string & append (size_t n, ucchar c)
-	{
-		while (n-- > 0) {
-			this->push_back(c);
-		}
-		return *this;
-	}
-
-	template <class InputIterator>
-	mbcs_string & append (InputIterator first, InputIterator last)
-	{
-		while (first != last) {
-			push_back(*first++);
-		}
-		return *this;
-	}
-
-	mbcs_string & push_back (char latin1)
-	{
-		//return this->append(1, latin1);
-		return latin1_cast (const char * latin1, size_t n, *this);
-	}
-
-	mbcs_string & push_back (uint32_t c)
-	{
-		//return this->append(1, c);
-		return *this;
-	}
-
-	mbcs_string & push_back (ucchar c)
-	{
-		//return this->append(1, c);
-		return *this;
-	}
+//	mbcs_string & append (const mbcs_string & str)
+//	{
+//		_d.append(str._d);
+//		_length += _d.length;
+//		return *this;
+//	}
+//
+//	mbcs_string & append (const mbcs_string & str, size_t subpos, size_t sublen);
+//	mbcs_string & append (const char * s);
+//	mbcs_string & append (const char * s, size_t n);
+//	mbcs_string & append (size_t n, char c);
+//	mbcs_string & append (size_t n, uint32_t c);
+//	mbcs_string & append (size_t n, ucchar c)
+//	{
+//		while (n-- > 0) {
+//			this->push_back(c);
+//		}
+//		return *this;
+//	}
+//
+//	template <class InputIterator>
+//	mbcs_string & append (InputIterator first, InputIterator last)
+//	{
+//		while (first != last) {
+//			push_back(*first++);
+//		}
+//		return *this;
+//	}
+//
+//	mbcs_string & push_back (char latin1)
+//	{
+//		//return this->append(1, latin1);
+//		return latin1_cast (const char * latin1, size_t n, *this);
+//	}
+//
+//	mbcs_string & push_back (uint32_t c)
+//	{
+//		//return this->append(1, c);
+//		return *this;
+//	}
+//
+//	mbcs_string & push_back (ucchar c)
+//	{
+//		//return this->append(1, c);
+//		return *this;
+//	}
 
 #if __COMMENT__
 
@@ -1266,9 +1267,5 @@ inline std::ostream & operator << <uint16_t> (std::ostream & os, const mbcs_stri
 #endif // __COMMENT__
 
 }} // pfs::ef
-
-#ifdef PFS_CC_MSVC
-#	pragma warning(pop)
-#endif
 
 #endif /* __PFS_EF_MBCS_STRING_HPP__ */
