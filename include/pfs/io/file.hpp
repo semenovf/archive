@@ -46,9 +46,15 @@ public:
 	size_t offset () const;
 	void setOffset (size_t off);
 
+	// XXX DEPRECATED
 	string readAll ()
 	{
 		return string::fromUtf8(read(available()));
+	}
+
+	void read_all (string & s)
+	{
+		s = string::fromUtf8(read(available()));
 	}
 
 };
