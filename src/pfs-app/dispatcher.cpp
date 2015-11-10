@@ -28,12 +28,56 @@ private:
 	module * _mod;
 };
 
+static void __notify (pfs::notification & nx, pfs::notification_type_enum nxtype, const string & title, const string & body)
+{
+	string msg;
+	msg.append(title);
+	msg.append(": ");
+	msg.append(body);
+	nx.append(nxtype, msg);
+}
+
+static void __notify (pfs::notification & nx, pfs::notification_type_enum nxtype, const string & body)
+{
+	string msg;
+	msg.append(body);
+	nx.append(nxtype, msg);
+}
+
+inline void __notify_error (pfs::notification & nx, const string & title, const string & body)
+{
+	__notify(nx, pfs::notification_error, title, body);
+}
+
+inline void __notify_warn (pfs::notification & nx, const string & title, const string & body)
+{
+	__notify(nx, pfs::notification_warn, title, body);
+}
+
+inline void __notify_warn (pfs::notification & nx, const string & body)
+{
+	__notify(nx, pfs::notification_warn, body);
+}
+
+inline void __notify_debug (pfs::notification & nx, const string & title, const string & body)
+{
+	__notify(nx, pfs::notification_debug, title, body);
+}
+
 dispatcher::dispatcher (dispatcher::mapping_type mapping[], int n)
 	: _masterModule(nullptr)
 {
 	for (int i = 0; i < n; i++) {
 		_mapping.insert(mapping[i].id, & mapping[i]);
 	}
+}
+
+dispatcher::~dispatcher ()
+{
+    disconnectAll();
+    unregisterAll();
+    pfs::log::print(_nx);
+    _nx.clear();
 }
 
 void dispatcher::addSearchPath (const string & dir)
@@ -54,8 +98,7 @@ module * dispatcher::registerModuleForPath (const string & path, const char * pn
 	fs fs;
 
 	if (!fs.exists(path)) {
-		string m;
-		this->addError(m << _Tr("module not found by specified path or may be inconsistent") << ": " << path);
+		__notify_error(_nx, path, _u8("module not found by specified path or may be inconsistent"));
 		return nullptr;
 	}
 
@@ -71,17 +114,14 @@ module * dispatcher::registerModuleForPath (const string & path, const char * pn
 			if (mod) {
 				return registerModule(*mod, ph, module_dtor) ? mod : nullptr;
 			} else {
-				string m;
-				this->addError(m << _Tr("failed to construct module specified by path") << ": " << path);
+				__notify_error(_nx, path, _u8("failed to construct module specified by path"));
 			}
 		} else {
-			string m;
-			this->addError(m << _Tr("constructor not found for module specified by path") << ": " << path);
+			__notify_error(_nx, path, _u8("constructor not found for module specified by path"));
 		}
 		dl.close(ph);
 	} else {
-		string m;
-		this->addError(m << _Tr("failed to open module specified by path") << ": " << path);
+		__notify_error(_nx, path, _u8("failed to open module specified by path"));
 	}
 	return nullptr;
 }
@@ -97,15 +137,19 @@ module * dispatcher::registerModuleForName (const string & name, const char * mo
 
 	if (ph) {
 		dl.close(ph);
-		string m(name);
-		debug(m << ": " << _Tr("module found at ") << realPath);
+		string msg;
+		msg.append(_u8("module found at "));
+		msg.append(realPath);
+		__notify_debug(_nx, name, msg);
 		return registerModuleForPath(realPath, modname, arg, argv);
 	} else {
-		this->addErrors(dl);
+		// FIXME need dl to use notification instead of errorable_ext
+		// and replace below code with
+		// _nx.append(dl.get_notification())
+		_nx.append(dl.lastErrorText());
 	}
 
-	string m(name);
-	this->addError(m << ": " << _Tr("module not found by specified name or may be inconsistent"));
+	__notify_error(_nx, name, _u8("module not found by specified name or may be inconsistent"));
 	return nullptr;
 }
 
@@ -114,8 +158,7 @@ bool dispatcher::registerModule (module & mod, dl::handle ph, module_dtor_t dtor
 	int nemitters, ndetectors;
 
 	if (_modules.find(mod._name) != _modules.cend()) {
-		string m(mod._name);
-		this->addError(m << ": " << _Tr("module already registered"));
+		__notify_error(_nx, mod._name, _u8("module already registered"));
 		return false;
 	}
 
@@ -131,9 +174,16 @@ bool dispatcher::registerModule (module & mod, dl::handle ph, module_dtor_t dtor
 			if (it != itEnd) {
 				it.value()->map->appendEmitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
 			} else {
-				string m(mod.name());
-				warn(m << ": " << _Tr("emitter") << " '" << emitters[i]._id << "' " << _Tr("not found while registering module ..."));
-				warn(_Tr("... may be signal/slot mapping is not supported for this application"));
+				string tmp;
+				string msg;
+				msg.append(": ");
+				msg.append(_u8("emitter"));
+				msg.append(" '");
+				msg.append(lexical_cast(emitters[i]._id, tmp));
+				msg.append("' ");
+				msg.append(_u8("not found while registering module ..."));
+				__notify_warn(_nx, mod.name(), msg);
+				__notify_warn(_nx, _u8("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
 	}
@@ -145,10 +195,15 @@ bool dispatcher::registerModule (module & mod, dl::handle ph, module_dtor_t dtor
 			if (it != itEnd) {
 				it.value()->map->appendDetector(& mod, detectors[i]._detector);
 			} else {
-				string m(mod.name());
-				warn(m << ": " << _Tr("detector") << " '" << emitters[i]._id << "' "
-					<< _Tr("not found while registering module ..."));
-				warn(_Tr("... may be signal/slot mapping is not supported for this application"));
+				string tmp;
+				string msg;
+				msg.append(_u8("detector"));
+				msg.append(" '");
+				msg.append(lexical_cast(emitters[i]._id, tmp));
+				msg.append("' ");
+				msg.append(_u8("not found while registering module ..."));
+				__notify_warn(_nx, mod.name(), msg);
+				__notify_warn(_nx, _u8("... may be signal/slot mapping is not supported for this application"));
 			}
 		}
 	}
@@ -156,16 +211,15 @@ bool dispatcher::registerModule (module & mod, dl::handle ph, module_dtor_t dtor
 	mod.moduleRegistered.connect(this, & dispatcher::onModuleRegistered);
 	mod._dispatcherPtr = this;
 	module_spec pspec(& mod, ph, dtor);
+
 	_modules.insert(mod._name, pspec);
 
 	// module must be run in a separate thread.
 	if (mod.run) {
 		_threads.append(new module_threaded(& mod));
-		string m(mod.name());
-		debug(m << ": " << _Tr("module registered as threaded"));
+		__notify_debug(_nx, mod.name(), _u8("module registered as threaded"));
 	} else {
-		string m(mod.name());
-		debug(m << ": " << _Tr("module registered"));
+		__notify_debug(_nx, mod.name(), _u8("module registered"));
 	}
 
 	return true;
@@ -210,15 +264,17 @@ void dispatcher::unregisterAll ()
 		PFS_ASSERT(mod);
 		mod->moduleRegistered.disconnect(this);
 		string pname = mod->name();
+
 		if (pspec.dtor) {
 			pspec.dtor(mod);
 		}
+
 		if (pspec.ph) {
 			pfs::dl & dl = pfs::dl::getDL();
 			dl.close(pspec.ph);
 		}
-		string m(pname);
-		debug(m << ": " << _Tr("module unregistered"));
+
+		__notify_debug(_nx, pname, _u8("module unregistered"));
 	}
 	_modules.clear();
 }
@@ -235,12 +291,14 @@ bool dispatcher::start ()
 		module * mod = pspec.mod;
 		PFS_ASSERT(mod);
 
-		if (!mod->onStart()) {
-			string m(mod->name());
-			this->addError(m << ": " << _Tr("failed to start module"));
+		if (!mod->onStart(_nx)) {
+			__notify_error(_nx, mod->name(), _u8("failed to start module"));
 			r = false;
 		}
 	}
+
+	pfs::log::print(_nx);
+	_nx.clear();
 
 	return r;
 }

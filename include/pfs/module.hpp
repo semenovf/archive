@@ -10,6 +10,7 @@
 
 #include <pfs/string.hpp>
 #include <pfs/sigslot.hpp>
+#include <pfs/notification.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -45,17 +46,42 @@ public:
 	module (const string & name) : _name(name), _dispatcherPtr(nullptr), run(nullptr) {}
 	virtual ~module() {}
 
-	const string & name() const { return _name; }
-	bool isRegistered () const { return _dispatcherPtr != nullptr ? true : false; }
+	const string & name() const
+	{
+		return _name;
+	}
 
-	virtual const emitter_mapping * getEmitters (int * count)   { PFS_ASSERT(count); *count = 0; return 0; }
-	virtual const detector_mapping * getDetectors (int * count) { PFS_ASSERT(count); *count = 0; return 0; }
+	bool isRegistered () const
+	{
+		return _dispatcherPtr != nullptr ? true : false;
+	}
+
+	virtual const emitter_mapping * getEmitters (int * count)
+	{
+		PFS_ASSERT(count);
+		*count = 0;
+		return 0;
+	}
+
+	virtual const detector_mapping * getDetectors (int * count)
+	{
+		PFS_ASSERT(count);
+		*count = 0;
+		return 0;
+	}
 
 	/**
 	 * @brief Module's onStart() method called after loaded and connection completed.
 	 */
-	virtual bool onStart () { return true; }  // call from sepaloid::start()
-	virtual bool onFinish () { return true; } // call from sepaloid::finish()
+	virtual bool onStart (notification & nx)
+	{
+		return true;
+	}
+
+	virtual bool onFinish ()
+	{
+		return true;
+	}
 
 	static void defaultDtor (module * p) { PFS_ASSERT(p); delete p; }
 
@@ -64,7 +90,7 @@ public: /*signal*/
 
 private:
 	string _name;
-	dispatcher *  _dispatcherPtr;
+	dispatcher * _dispatcherPtr;
 
 public:
 	int (* run) (module *);

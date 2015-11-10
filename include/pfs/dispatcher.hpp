@@ -17,6 +17,7 @@
 #include <pfs/mutex.hpp>
 #include <pfs/thread.hpp>
 #include <pfs/sigslotmapping.hpp>
+#include <pfs/notification.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -34,7 +35,7 @@ struct module_spec
 	module_dtor_t dtor;   /* may be null (no destructor) */
 };
 
-class DLL_API dispatcher : public errorable_ext, public has_slots<>, noncopyable
+class DLL_API dispatcher : /*public errorable_ext, */public has_slots<>, noncopyable
 {
 public:
 	typedef struct { int id; sigslot_mapping_t * map; string desc; } mapping_type;
@@ -46,15 +47,24 @@ private:
 	module_specs_type _modules;
 	vector<thread *>  _threads;
 	module *          _masterModule;
+	notification      _nx;
 
 protected:
     dispatcher() : _masterModule(nullptr) {}
 
 public:
 	dispatcher (mapping_type mapping[], int n);
-	virtual ~dispatcher() {
-	    disconnectAll();
-	    unregisterAll();
+
+	virtual ~dispatcher ();
+
+	const notification & get_notification () const
+	{
+		return _nx;
+	}
+
+	notification & get_notification ()
+	{
+		return _nx;
 	}
 
 	void addSearchPath (const string & dir);
@@ -62,8 +72,16 @@ public:
 	module * registerLocalModule (module * mod, module_dtor_t dtor = module::defaultDtor);
 	module * registerModuleForPath (const string & path, const char * modname = nullptr, int argc = 0, const char ** argv = nullptr);
 	module * registerModuleForName (const string & name, const char * modname = nullptr, int argc = 0, const char ** argv = nullptr);
-	void setMasterModule (module * mod) { _masterModule = mod; }
-	size_t count () const  { return _modules.size(); }
+
+	void setMasterModule (module * mod)
+	{
+		_masterModule = mod;
+	}
+
+	size_t count () const
+	{
+		return _modules.size();
+	}
 
 /* TODO need implementation
 	bool registerModuleForUrl(const string &url);
@@ -75,7 +93,9 @@ public:
 	int  exec ();
 
 	bool isModuleRegistered (const string & pname)
-		{ return _modules.contains(pname); }
+	{
+		return _modules.contains(pname);
+	}
 
 public: /*slots*/
 	void onModuleRegistered (const string & pname, bool & result)

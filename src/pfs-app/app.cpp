@@ -6,6 +6,7 @@
  */
 
 
+#include <pfs/logger.hpp>
 #include "pfs/app.hpp"
 
 namespace pfs {
@@ -25,10 +26,15 @@ int app::exec (dispatcher & d)
 	int r = EXIT_FAILURE;
 
     d.connectAll();
-    if (d.start() && d.isGood()) {
+
+    pfs::notification & nx = d.get_notification();
+
+    if (d.start() && nx.count_error_type() == 0) {
    		r = d.exec();
+    } else {
+		pfs::log::print(nx);
+		nx.clear();
     }
-    d.logErrors();
 
 	return r;
 }
