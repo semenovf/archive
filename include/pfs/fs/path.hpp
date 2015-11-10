@@ -307,7 +307,7 @@ file_status get_file_status (const path & p, notification_type * nx = 0);
  *
  * @note Path exists if it's status is not equals to @c status_error nor @c file_not_found.
  */
-bool exists (const path & p, notification_type * nx = 0)
+inline bool exists (const path & p, notification_type * nx = 0)
 {
 	file_status ft = get_file_status(p, nx);
 	return ft.type() != status_error && ft.type() != file_not_found;

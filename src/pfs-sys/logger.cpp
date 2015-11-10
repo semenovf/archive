@@ -91,7 +91,7 @@ void warn  (int errn, const pfs::string & text)
 void error (int errn, const pfs::string & text)
 {
 	if (log::level() < log::Fatal) {
-		if (text.isEmpty()) {
+		if (text.empty()) {
 			error().print(log::Error, pfs::string(platform::strerror(errn)));
 		} else {
 			pfs::string msg;
@@ -99,6 +99,39 @@ void error (int errn, const pfs::string & text)
 			error().print(log::Error, msg);
 		}
 	}
+}
+
+void log::print (const notification & nx)
+{
+    if (nx.count() > 0) {
+    	notification::const_iterator it = nx.begin();
+    	notification::const_iterator itEnd = nx.end();
+
+        for (; it != itEnd; ++it) {
+        	string msg;
+
+            if (it->repetitions() > 1) {
+            	string tmp;
+            	msg.append(it->text());
+            	msg.append(_u8(" (repeat "));
+            	msg.append(lexical_cast(it->repetitions(), tmp));
+            	msg.append(_u8(" times)"));
+                error(msg);
+            } else {
+                msg = it->text();
+            }
+
+            switch (it->type()) {
+            case notification_trace: trace(msg); break;
+            case notification_debug: debug(msg); break;
+            case notification_info:  info(msg);  break;
+            case notification_warn:  warn(msg);  break;
+            case notification_error: error(msg); break;
+            case notification_fatal: fatal(msg); break;
+            default: break;
+            }
+        }
+    }
 }
 
 void fatal (int errn, const pfs::string & text)

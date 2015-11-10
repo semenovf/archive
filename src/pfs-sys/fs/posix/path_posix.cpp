@@ -57,7 +57,7 @@ file_status get_file_status (const path & p, notification_type * nx)
 
 		if (nx) {
 			path::string_type errstr;
-			nx->append(platform::strerror(errn, errstr));
+			nx->append(platform::strerror(rc, errstr));
 		}
 		return file_status(status_error);
 	}

@@ -26,25 +26,25 @@ enum file_type_enum
 
 class file_status
 {
-	file_type _type;
+	file_type_enum _type;
 
 public:
 	file_status ()
 		: _type(status_error)
 	{}
 
-	explicit file_status (file_type type/*, perms prms = perms_not_known*/)
+	explicit file_status (file_type_enum type/*, perms prms = perms_not_known*/)
 		: _type(type)
 	{}
 
-	file_type type() const
+	file_type_enum type() const
 	{
 		return _type;
 	}
 //	perms      permissions() const;
 
 	// modifiers
-	void type (file_type type)
+	void type (file_type_enum type)
 	{
 		_type = type;
 	}

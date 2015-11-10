@@ -13,6 +13,7 @@
 #include <pfs/stringlist.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/sigslot.hpp>
+#include <pfs/notification.hpp>
 #include <iostream>
 
 
@@ -46,6 +47,8 @@ public:
 	static log::priority level ();
 	static void disconnectAllAppenders ();
 	static void restoreDefaultAppenders ();
+
+	static void print (const notification & nx);
 };
 
 class appender : public has_slots<>
