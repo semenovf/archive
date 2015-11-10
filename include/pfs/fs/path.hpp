@@ -12,8 +12,7 @@
 #include <pfs/shared_ptr.hpp>
 #include <pfs/iterator.hpp>
 #include <pfs/algo/split.hpp>
-#include <pfs/platform/string.hpp>
-#include <pfs/platform/notification.hpp>
+#include <pfs/platform/error_code.hpp>
 #include <pfs/fs/file_status.hpp>
 
 #ifdef PFS_CC_MSVC
@@ -23,7 +22,7 @@
 
 namespace pfs { namespace fs {
 
-typedef platform::notification_type notification_type;
+typedef pfs::platform::error_code error_code;
 
 class DLL_API path
 {
@@ -297,7 +296,7 @@ public:
  * @param nx Pointer to save error message(s).
  * @return File type (@see @a file_type_enum)
  */
-file_status get_file_status (const path & p, notification_type * nx = 0);
+file_status get_file_status (const path & p, error_code * ex = 0);
 
 /**
  * @brief Checks if @ path exists.
@@ -307,9 +306,9 @@ file_status get_file_status (const path & p, notification_type * nx = 0);
  *
  * @note Path exists if it's status is not equals to @c status_error nor @c file_not_found.
  */
-inline bool exists (const path & p, notification_type * nx = 0)
+inline bool exists (const path & p, error_code * ex = 0)
 {
-	file_status ft = get_file_status(p, nx);
+	file_status ft = get_file_status(p, ex);
 	return ft.type() != status_error && ft.type() != file_not_found;
 }
 
@@ -320,36 +319,36 @@ inline bool exists (const path & p, notification_type * nx = 0)
  * @param nx Pointer to save error message(s).
  * @return @c true if @c path is a regular file, @c false otherwise.
  */
-inline bool is_regular_file (const path & p, notification_type * nx = 0)
+inline bool is_regular_file (const path & p, error_code * ex = 0)
 {
-	return get_file_status(p, nx).type() == regular_file;
+	return get_file_status(p, ex).type() == regular_file;
 }
 
-inline bool is_directory (const path & p, notification_type * nx = 0)
+inline bool is_directory (const path & p, error_code * ex = 0)
 {
-	return get_file_status(p, nx).type() == directory_file;
+	return get_file_status(p, ex).type() == directory_file;
 }
 
-inline bool is_symlink (const path & p, notification_type * nx = 0)
+inline bool is_symlink (const path & p, error_code * ex = 0)
 {
-	return get_file_status(p, nx).type() == symlink_file;
+	return get_file_status(p, ex).type() == symlink_file;
 }
 
-uintmax_t file_size (const path & p, notification_type * nx = 0);
+uintmax_t file_size (const path & p, error_code * ex = 0);
 
-bool remove (const path & p, notification_type * nx = 0);
+bool remove (const path & p, error_code * ex = 0);
 
-inline bool unlink (const path & p, notification_type * nx = 0)
+inline bool unlink (const path & p, error_code * ex = 0)
 {
-	return remove(p, nx);
+	return remove(p, ex);
 }
 
-bool rename (const path & from, const path & to, notification_type * nx = 0);
+bool rename (const path & from, const path & to, error_code * ex = 0);
 
-path temp_directory_path (notification_type * nx = 0);
+path temp_directory_path (error_code * ex = 0);
 
 // FIXME Need to implement
-path unique_path (const path & model, notification_type * nx = 0);
+path unique_path (const path & model, error_code * ex = 0);
 
 inline path unique_path ()
 {

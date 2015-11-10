@@ -1,13 +1,12 @@
 /**
- * @file   system.c
+ * @file   error_code_unix.cpp
  * @author wladt
- * @date   Apr 11, 2013 11:37:39 AM
+ * @date   Nov 10, 2015
  *
  * @brief
  */
 
-#include <string.h>
-#include <pfs/platform/string.hpp>
+#include "pfs/platform/error_code.hpp"
 
 #if !(defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L)
 #	include <pfs/mutex.hpp>
@@ -17,7 +16,7 @@
 
 namespace pfs { namespace platform {
 
-string_type & strerror (int errn, string_type & result)
+string & lexical_cast (const error_code & ex, string & result)
 {
 #if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
 	static const int __MaxBufLen = 256;
@@ -26,19 +25,20 @@ string_type & strerror (int errn, string_type & result)
 // XSI-compliant version
 #	if(_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
 
-	strerror_r(errn, buffer, __MaxBufLen);
-	result = string_type(buffer);
+	strerror_r(ex.native(), buffer, __MaxBufLen);
+	pfs::lexical_cast(buffer, result);
 
 #	else // GNU-specific version
 
-	result = string_type(strerror_r(errn, buffer, __MaxBufLen));
+	result = string(strerror_r(ex.native(), buffer, __MaxBufLen));
+	pfs::lexical_cast(buffer, result);
 
 #	endif
 
 #else
-	static mutex mtx;
-	lock_guard<pfs::mutex> locker(mtx);
-	result = string_type(strerror(errn));
+	static mutex __mtx;
+	lock_guard<pfs::mutex> locker(__mtx);
+	pfs::lexical_cast(strerror(ex.native()), result);
 #endif
 
 	return result;

@@ -46,7 +46,7 @@ bool path::is_absolute () const
 }
 
 
-file_status get_file_status (const path & p, notification_type * nx)
+file_status get_file_status (const path & p, error_code * ex)
 {
 	struct stat st;
 	int rc = lstat(p.native().c_str(), & st);
@@ -55,10 +55,9 @@ file_status get_file_status (const path & p, notification_type * nx)
 		if (rc == ENOENT || rc == ENOTDIR)
 			return file_status(file_not_found);
 
-		if (nx) {
-			path::string_type errstr;
-			nx->append(platform::strerror(rc, errstr));
-		}
+		if (ex)
+			*ex = rc;
+
 		return file_status(status_error);
 	}
 
@@ -75,54 +74,53 @@ file_status get_file_status (const path & p, notification_type * nx)
 	return file_status(type_unknown);
 }
 
-inline bool __zero_error_is_ok (int errn)
-{
-	return errn == 0;
-}
+//inline bool __zero_error_is_ok (int errn)
+//{
+//	return errn == 0;
+//}
+//
+//
+//inline bool __native_call (int errn, bool (*predicate) (int), error_code * ex = 0)
+//{
+//	if (errn != 0) {
+//		if (ex) {
+//			path::string_type errstr;
+//			nx->append(platform::strerror(errn, errstr));
+//		}
+//		return false;
+//	}
+//
+//	return predicate(errn);
+//}
 
-
-static bool __native_call (int errn, bool (*predicate) (int), notification_type * nx)
-{
-	if (errn != 0) {
-		if (nx) {
-			path::string_type errstr;
-			nx->append(platform::strerror(errn, errstr));
-		}
-		return false;
-	}
-
-	return predicate(errn);
-}
-
-uintmax_t file_size (const path & p, notification_type * nx)
+uintmax_t file_size (const path & p, error_code * ex)
 {
 	struct stat st;
+	int rc = lstat(p.native().c_str(), & st);
 
-	if (__native_call(lstat(p.native().c_str(), & st)
-			, __zero_error_is_ok
-			, nx)) {
+	if (rc == 0)
 		return static_cast<uintmax_t>(st.st_size);
-	}
+
+	if (ex) *ex = rc;
 
 	return max_type<uintmax_t>();
-
 }
 
-bool remove (const path & p, notification_type * nx)
+bool remove (const path & p, error_code * ex)
 {
-	return __native_call(::unlink(p.native().c_str())
-			, __zero_error_is_ok
-			, nx);
+	int rc = ::unlink(p.native().c_str());
+	if (ex) *ex = rc;
+	return rc == 0;
 }
 
-bool rename (const path & from, const path & to, notification_type * nx)
+bool rename (const path & from, const path & to, error_code * ex)
 {
-	return __native_call(::rename(from.native().c_str(), to.native().c_str())
-			, __zero_error_is_ok
-			, nx);
+	int rc = ::rename(from.native().c_str(), to.native().c_str());
+	if (ex) *ex = rc;
+	return rc == 0;
 }
 
-path temp_directory_path (notification_type * nx)
+path temp_directory_path (error_code * ex)
 {
 	char * r = getenv("TMPDIR");
 
@@ -136,18 +134,17 @@ path temp_directory_path (notification_type * nx)
 		}
 	}
 
-	return r ? path(path::string_type(r)) : path(path::string_type("/tmp"));
+	string s;
+
+	if (r)
+		pfs::lexical_cast(r, s);
+	else
+		pfs::lexical_cast("/tmp", s);
+
+	return path(s);
 }
 
 #if __COMMENT__
-
-size_t fs::size (const string & path) const
-{
-	struct stat st;
-	return stat(path.c_str(), & st ) == 0
-			? st.st_size
-			: size_t(0);
-}
 
 bool fs::simpleBackup (const string & orig)
 {
