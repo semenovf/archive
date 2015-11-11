@@ -1,13 +1,14 @@
-#include "pfs/thread.hpp"
-#include "pfs/platform.hpp"
-#include "../thread_p.hpp"
-#include <pfs/pp/utility.h>
-#include <pthread.h>
-
 #include <sched.h>
 #include <errno.h>
 #include <unistd.h>
 #include <iostream>
+
+#include "pfs/thread.hpp"
+#include "pfs/platform.hpp"
+#include "pfs/platform/error_code.hpp"
+#include "../thread_p.hpp"
+#include <pfs/pp/utility.h>
+#include <pthread.h>
 
 #if defined(PFS_OS_LINUX) && !defined(SCHED_IDLE)
 // from linux/sched.h
@@ -354,9 +355,10 @@ void thread::start (Priority priority)
 #endif // _POSIX_THREAD_ATTR_STACKSIZE
 
         if (rc) {
+        	PFS_DEBUG(string errstr);
         	PFS_DEBUG(std::cerr
         			<< "pfs::thread::start(): thread stack size error: "
-        			<< platform::strerror(rc) << std::endl);
+        			<< lexical_cast(pfs::platform::error_code(rc), errstr) << std::endl);
 
             // we failed to set the stacksize, and as the documentation states,
             // the thread will fail to run...
@@ -382,9 +384,10 @@ void thread::start (Priority priority)
     pthread_attr_destroy(& attr);
 
     if (rc) {
+    	PFS_DEBUG(string errstr);
     	PFS_DEBUG(std::cerr
     			<< "pfs::thread::start(): thread creation error: "
-				<< platform::strerror(rc) << std::endl);
+				<< lexical_cast(pfs::platform::error_code(rc), errstr) << std::endl);
 
         _d->_running = false;
         _d->_finished = false;

@@ -8,13 +8,14 @@
 
 #include "pfs/errorable_ext.hpp"
 #include "pfs/logger.hpp"
-#include "pfs/platform/strerror.hpp"
+#include "pfs/platform/error_code.hpp"
 
 namespace pfs {
 
 void errorable_ext::addSystemError (int errn, const pfs::string & caption)
 {
-	pfs::string errstr(platform::strerror(errn));
+	pfs::string errstr;
+	pfs::lexical_cast(pfs::platform::error_code(errn), errstr);
 
 	if (caption.isEmpty()) {
 		addError(_l1("[errno=") << string::toString(errn) << "]: " << errstr);

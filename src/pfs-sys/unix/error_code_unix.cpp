@@ -14,13 +14,13 @@
 
 // FIXME Need to support system locale
 
-namespace pfs { namespace platform {
+namespace pfs {
 
-string & lexical_cast (const error_code & ex, string & result)
+string & lexical_cast (const pfs::platform::error_code & ex, string & result)
 {
 #if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
 	static const int __MaxBufLen = 256;
-	char_type buffer[__MaxBufLen];
+	char buffer[__MaxBufLen];
 
 // XSI-compliant version
 #	if(_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
@@ -30,8 +30,7 @@ string & lexical_cast (const error_code & ex, string & result)
 
 #	else // GNU-specific version
 
-	result = string(strerror_r(ex.native(), buffer, __MaxBufLen));
-	pfs::lexical_cast(buffer, result);
+	lexical_cast(strerror_r(ex.native(), buffer, __MaxBufLen), result);
 
 #	endif
 
@@ -44,5 +43,5 @@ string & lexical_cast (const error_code & ex, string & result)
 	return result;
 }
 
-}} // pfs::platform
+} // pfs
 

@@ -13,8 +13,7 @@
 //#include <unistd.h>
 //#include <dirent.h>
 #include <pfs/algo/find.hpp>
-#include <pfs/fs/path.hpp>
-#include <pfs/platform/strerror.hpp>
+#include "pfs/fs/path.hpp"
 
 namespace pfs { namespace fs {
 
@@ -36,6 +35,18 @@ path::path (const path::string_type & s)
 	: _path(s)
 	, _separator(1, '/')
 {}
+
+path::path (const char * s)
+	: _separator(1, '/')
+{
+	lexical_cast(s, _path);
+}
+
+path::path (const char * s, const char * separator)
+{
+	lexical_cast(s, _path);
+	lexical_cast(separator, _separator);
+}
 
 bool path::is_absolute () const
 {

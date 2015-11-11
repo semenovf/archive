@@ -8,7 +8,7 @@
 #ifndef __PFS_FS_PATH_HPP__
 #define __PFS_FS_PATH_HPP__
 
-#include <vector>
+#include <pfs/vector.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <pfs/iterator.hpp>
 #include <pfs/algo/split.hpp>
@@ -27,7 +27,7 @@ typedef pfs::platform::error_code error_code;
 class DLL_API path
 {
 public:
-	typedef platform::string_type string_type;
+	typedef pfs::string string_type;
 	typedef typename std::vector<string_type> stringlist_type;
 
 private:
@@ -201,6 +201,9 @@ public:
 		: _path(s)
 		, _separator(separator)
 	{}
+
+	path (const char * s);
+	path (const char * s, const char * separator);
 
 	/**
 	 * @brief Returns path separator.

@@ -17,7 +17,7 @@ using std::endl;
 typedef pfs::fs::path path_type;
 typedef pfs::fs::path::string_type string_type;
 
-static const string_type SEPARATOR("/");
+static const char * SEPARATOR = "/";
 
 int main(int argc, char *argv[])
 {
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
 	BEGIN_TESTS(5);
 
-	path_type path(string_type("/a/b/c/d"), SEPARATOR);
+	path_type path("/a/b/c/d", SEPARATOR);
 	path_type::iterator it = path.begin();
 	path_type::iterator itEnd = path.end();
 

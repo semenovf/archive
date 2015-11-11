@@ -9,10 +9,11 @@
 #ifndef __PFS_PLATFORM_HPP__
 #define __PFS_PLATFORM_HPP__
 
+#include <pfs/cast/string.hpp>
 #include <pfs/time.hpp>
 #include <pfs/date.hpp>
 #include <pfs/datetime.hpp>
-#include <pfs/platform/strerror.hpp>
+#include <pfs/platform/error_code.hpp>
 
 namespace pfs { namespace platform {
 
@@ -38,17 +39,23 @@ struct __verify_errno
 {
 	int operator () (const char * file, int lineno, const char * exprtext, int errn) const
 	{
+		pfs::string errstr;
+		lexical_cast(pfs::platform::error_code(errn), errstr);
+
 		if (0 != errn)
 			fprintf(stderr, "ERROR (%s[%d]): %s: %s [errno=%d]\n"
-					, file, lineno, exprtext, platform::strerror(errn).c_str(), errn);
+					, file, lineno, exprtext, errstr.c_str(), errn);
 		return errn;
 	}
 
 	bool operator () (bool predicate, const char * file, int lineno, const char * exprtext, int errn) const
 	{
+		pfs::string errstr;
+		lexical_cast(pfs::platform::error_code(errn), errstr);
+
 		if (! predicate)
 			fprintf(stderr, "ERROR (%s[%d]): %s: %s [errno=%d]\n"
-					, file, lineno, exprtext, platform::strerror(errn).c_str(), errn);
+					, file, lineno, exprtext, errstr.c_str(), errn);
 		return predicate;
 	}
 };

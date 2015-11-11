@@ -37,8 +37,12 @@ public:
 	}
 };
 
-DLL_API string & lexical_cast (const error_code & ex, string & result);
-
 }} // pfs::platform
+
+namespace pfs {
+
+DLL_API string & lexical_cast (const pfs::platform::error_code & ex, string & result);
+
+} // pfs
 
 #endif /* __PFS_ERROR_CODE_HPP__ */
