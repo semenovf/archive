@@ -160,15 +160,23 @@ bool file_impl::setNonBlocking ()
     return fcntl(_fd, F_SETFL, flags | O_NONBLOCK) >= 0;
 }
 
-file::file (int fd) : device(new file_impl)
+file::file (int fd)
+	: device(new file_impl)
 {
     file_impl * d = dynamic_cast<file_impl *>(_d);
 	d->_fd = ::dup(fd);
 }
 
-file::file (const pfs::string & path, int32_t oflags) : device(new file_impl)
+file::file (const pfs::string & path, int32_t oflags)
+	: device(new file_impl)
 {
 	open(path, oflags);
+}
+
+file::file (const pfs::fs::path & p, int32_t oflags)
+	: device(new file_impl)
+{
+	this->open(p.native(), oflags);
 }
 
 bool file::open (const pfs::fs::path & p, int32_t oflags)
@@ -211,17 +219,19 @@ bool file::open (const pfs::string & path, int32_t oflags)
 	fd = ::open(path.c_str(), native_oflags);
 
 	if (fd < 0) {
-		pfs::string errmsg;
-		errmsg << path << ": open failure";
-		this->addSystemError(errno, errmsg);
+		pfs::string msg;
+		msg.append(path);
+		msg.append(_u8(": open failure"));
+		this->addSystemError(errno, msg);
 		return false;
 	}
 
 	if (created) {
 		if (!set_permissions(path, file::ReadOwner | file::WriteOwner)) {
-			pfs::string errmsg;
-			errmsg << path << ": set file permissions failure";
-			this->addSystemError(errno, errmsg);
+			pfs::string msg;
+			msg.append(path);
+			msg.append(_u8(": set file permissions failure"));
+			this->addSystemError(errno, msg);
 			return false;
 		}
 	}
@@ -276,7 +286,6 @@ void file::rewind ()
 	file_impl * d = dynamic_cast<file_impl * >(_d);
 	::lseek(d->_fd, 0L, SEEK_SET);
 }
-
 
 size_t file::offset () const
 {

@@ -2,6 +2,9 @@
 #include <pfs/fs/path.hpp>
 #include "pfs/io/file.hpp"
 
+using pfs::io::device;
+using pfs::io::file;
+
 const char * loremipsum =
 "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,    \n\
 2.sed diam nonummy nibh euismod tincidunt ut laoreet dolore     \n\
@@ -197,7 +200,7 @@ void test_open_absent_file ()
 {
     pfs::io::file file;
     pfs::string unknownPath("!@#$%");
-    file.open(unknownPath, pfs::io::device::ReadOnly);
+    file.open(unknownPath, device::ReadOnly);
 
     TEST_FAIL(!file.opened());
     file.logErrors();
@@ -221,6 +224,54 @@ void test_write_read ()
     TEST_FAIL2(pfs::fs::unlink(filePath), "Temporary file unlink");
 }
 
+void test_bytes_available ()
+{
+    pfs::fs::path filePath("rc/1234567890.txt");
+    TEST_FAIL2(pfs::fs::exists(filePath), "rc/1234567890.txt: file found");
+    pfs::io::file file(filePath, device::ReadOnly);
+
+    TEST_FAIL(file.opened());
+    TEST_OK(file.size() == 10);
+    TEST_OK(file.available() == 10);
+
+    char b;
+    char buf[10];
+
+    file.read(& b, 1);
+    TEST_OK(b == '1');
+
+    TEST_OK(file.size() == 10);
+    TEST_OK(file.available() == 9);
+
+    file.read(& b, 1);
+    TEST_OK(b == '2');
+
+    TEST_OK(file.size() == 10);
+    TEST_OK(file.available() == 8);
+
+    file.read(& b, 1);
+    TEST_OK(b == '3');
+
+    TEST_OK(file.size() == 10);
+    TEST_OK(file.available() == 7);
+
+    file.read(& b, 1);
+    TEST_OK(b == '4');
+
+    TEST_OK(file.size() == 10);
+    TEST_OK(file.available() == 6);
+
+    file.read(buf, file.available());
+    TEST_OK(buf[0] == '5');
+    TEST_OK(buf[1] == '6');
+    TEST_OK(buf[2] == '7');
+    TEST_OK(buf[3] == '8');
+    TEST_OK(buf[4] == '9');
+    TEST_OK(buf[5] == '0');
+
+    file.close();
+}
+
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
@@ -228,6 +279,7 @@ int main(int argc, char *argv[])
 
     if (1) test_open_absent_file();
     if (1) test_write_read();
+    test_bytes_available();
 
     END_TESTS;
 }

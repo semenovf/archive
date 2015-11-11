@@ -39,9 +39,10 @@ public:
 	file () : device() {}
 	file (int fd);
 	file (const string & path, int32_t oflags = ReadWrite);
+	file (const pfs::fs::path & p, int32_t oflags = ReadWrite);
 	virtual ~file () {}
 
-	bool open (const string & path, int32_t oflags = ReadWrite); // XXX DEPRECATED
+	bool open (const string & path, int32_t oflags = ReadWrite);
 	bool open (const pfs::fs::path & p, int32_t oflags = ReadWrite);
 
 	size_t size () const;
