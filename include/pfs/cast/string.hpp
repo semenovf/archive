@@ -320,6 +320,16 @@ String & lexical_cast (long double value, String & result)
 
 #endif
 
+/**
+ * @brief Cast UTF-8-encoded c-string into pfs::mbcs_string.
+ *
+ * @param s Source UTF-8-encoded c-string.
+ * @param result Reference to string to store result.
+ * @return Reference to @c result.
+ */
+template <typename String>
+DLL_API String & lexical_cast (const char * utf8, String & result);
+
 } // pfs
 
 #endif /* __PFS_CAST_STRING_HPP__ */

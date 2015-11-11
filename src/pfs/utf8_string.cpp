@@ -348,5 +348,13 @@ mbcs_string<uint16_t> mbcs_string<uint8_t>::toUtf16 () const
 }
 
 
+template <>
+mbcs_string<uint8_t> & lexical_cast (const char * utf8, mbcs_string<uint8_t> & result)
+{
+	// FIXME Need to convert using utf8_iterator;
+
+	result = mbcs_string<uint8_t>::fromUtf8(utf8);
+	return result;
+}
 
 } // pfs

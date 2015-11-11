@@ -10,7 +10,6 @@
 
 #include <memory> // for std::allocator
 #include <ostream>
-#include <cstring>
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
 
@@ -80,16 +79,6 @@ public:
 	}
 };
 
-//template <typename String, template <typename, typename = std::allocator<notification_value<String> > > typename Container>
-//struct notification_traits
-//{
-//	typedef String string_type;
-//	typedef notification_value<String> value_type;
-//	typedef Container<value_type, std::allocator<value_type> > container_type;
-//	typedef typename container_type::iterator iterator;
-//	typedef typename container_type::const_iterator const_iterator;
-//};
-
 template <typename String>
 struct notification_traits
 {
@@ -122,7 +111,8 @@ private:
 public:
 	basic_notification ()
 	{
-		::memset(_type_counts, 0, sizeof(size_t) * notification_count);
+		for (int i = 0; i < notification_count; ++i)
+			_type_counts[i] = 0;
 	}
 
 	virtual ~basic_notification () { }
@@ -140,7 +130,8 @@ public:
 	void clear ()
 	{
 		_notifications.clear();
-		::memset(_type_counts, 0, sizeof(size_t) * notification_count);
+		for (int i = 0; i < notification_count; ++i)
+			_type_counts[i] = 0;
 	}
 
 	/**

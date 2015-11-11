@@ -42,19 +42,6 @@ typedef utf8_string string;
 
 #endif
 
-/**
- * @brief Cast UTF-8-encoded c-string into pfs::string.
- *
- * @param s Source UTF-8-encoded c-string.
- * @param result Reference to string to store result.
- * @return Reference to @c result.
- */
-inline utf8_string & lexical_cast (const char * s, utf8_string & result)
-{
-	result = pfs::string::fromUtf8(s);
-	return result;
-}
-
 } // pfs
 
 #endif /* __PFS_STRING_HPP__ */
