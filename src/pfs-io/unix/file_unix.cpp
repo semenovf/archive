@@ -171,6 +171,11 @@ file::file (const pfs::string & path, int32_t oflags) : device(new file_impl)
 	open(path, oflags);
 }
 
+bool file::open (const pfs::fs::path & p, int32_t oflags)
+{
+	return this->open(p.native(), oflags);
+}
+
 bool file::open (const pfs::string & path, int32_t oflags)
 {
 	int fd;

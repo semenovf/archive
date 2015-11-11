@@ -8,7 +8,10 @@
 #ifndef __PFS_IO_FILE_HPP__
 #define __PFS_IO_FILE_HPP__
 
+#include <pfs/byte_string.hpp>
+#include <pfs/fs/path.hpp>
 #include <pfs/io/device.hpp>
+
 
 namespace pfs { namespace io {
 
@@ -38,10 +41,11 @@ public:
 	file (const string & path, int32_t oflags = ReadWrite);
 	virtual ~file () {}
 
-	bool open (const string & path, int32_t oflags = ReadWrite);
+	bool open (const string & path, int32_t oflags = ReadWrite); // XXX DEPRECATED
+	bool open (const pfs::fs::path & p, int32_t oflags = ReadWrite);
 
 	size_t size () const;
-	bool setPermissions (int32_t perms);
+	bool setPermissions (int32_t perms); // XXX DEPRECATED
 	void rewind ();
 	size_t offset () const;
 	void setOffset (size_t off);
@@ -52,9 +56,15 @@ public:
 		return string::fromUtf8(read(available()));
 	}
 
+	// XXX DEPRECATED
 	void read_all (string & s)
 	{
 		s = string::fromUtf8(read(available()));
+	}
+
+	void read_all (byte_string & bs)
+	{
+		bs = read(available());
 	}
 
 };

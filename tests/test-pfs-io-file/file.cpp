@@ -1,5 +1,5 @@
 #include <pfs/test/test.hpp>
-#include "pfs/fs.hpp"
+#include <pfs/fs/path.hpp>
 #include "pfs/io/file.hpp"
 
 const char * loremipsum =
@@ -205,21 +205,20 @@ void test_open_absent_file ()
 
 void test_write_read ()
 {
-    pfs::fs fs;
-    pfs::string fileName = fs.tempFile(_u8("pfs-io-"), _u8(".tmp"));
-    TEST_FAIL2(!fileName.isEmpty(), "Build temporary file name");
-    pfs::io::file file(fileName);
+	// FIXME Use pfs::fs::unique() call to generate temporary file
+    pfs::fs::path filePath("/tmp/test_pfs_io_file.tmp");
+    TEST_FAIL2(!filePath.empty(), "Build temporary file name");
+    pfs::io::file file;
 
+    TEST_FAIL(file.open(filePath));
     TEST_FAIL(file.write(loremipsum, ::strlen(loremipsum)) == ssize_t(::strlen(loremipsum)));
 
     file.rewind();
     pfs::byte_string bs = file.read(::strlen(loremipsum));
 
-
-
     TEST_OK(file.close());
     TEST_OK(bs == loremipsum);
-    TEST_FAIL2(fs.unlink(fileName), "Temporary file unlink");
+    TEST_FAIL2(pfs::fs::unlink(filePath), "Temporary file unlink");
 }
 
 int main(int argc, char *argv[])

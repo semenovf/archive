@@ -20,14 +20,14 @@ configuration "debug"
     objdir       "../../../.build/pfs-io/pfs-io/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
-    links        {  }
+    links        { "pfs-d", "pfs-sys-d" }
 
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-io/pfs-io/release"
     targetdir    "../../../.build"
-    links        {  }
+    links        { "pfs", "pfs-sys" }
 
 filter "platforms:unix*"
     files {  "../../src/pfs-io/unix/*.cpp" }
