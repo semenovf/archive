@@ -37,10 +37,10 @@ public:
 		, _detailList()
 		{ addDetails(details); }
 
-	critical (const string & text, const errorable_ext & details)
-		: _text(text)
-		, _detailList()
-		{ addDetails(details); }
+//	critical (const string & text, const errorable_ext & details)
+//		: _text(text)
+//		, _detailList()
+//		{ addDetails(details); }
 
 	void addDetail (const string & detail)
 		{ _detailList.append(detail); }
@@ -48,7 +48,7 @@ public:
 	void addDetails (const stringlist & details)
 		{ _detailList.append(details); }
 
-	void addDetails (const errorable_ext & details);
+//	void addDetails (const errorable_ext & details);
 
 	string text () const { return _text; }
 	stringlist details () const { return _detailList; }

@@ -35,7 +35,7 @@ struct module_spec
 	module_dtor_t dtor;   /* may be null (no destructor) */
 };
 
-class DLL_API dispatcher : /*public errorable_ext, */public has_slots<>, noncopyable
+class DLL_API dispatcher : public has_slots<>, noncopyable
 {
 public:
 	typedef struct { int id; sigslot_mapping_t * map; string desc; } mapping_type;

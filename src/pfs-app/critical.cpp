@@ -8,13 +8,13 @@
 
 namespace pfs {
 
-void critical::addDetails (const errorable_ext & details)
-{
-	size_t n = details.errorCount();
-
-	for (size_t i = 0; i < n; ++i) {
-		_detailList.append(details.errorTextAt(i));
-	}
-}
+//void critical::addDetails (const errorable_ext & details)
+//{
+//	size_t n = details.errorCount();
+//
+//	for (size_t i = 0; i < n; ++i) {
+//		_detailList.append(details.errorTextAt(i));
+//	}
+//}
 
 } // pfs
