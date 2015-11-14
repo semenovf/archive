@@ -44,16 +44,17 @@ configuration "release"
 
 filter "platforms:unix*"
     files {   "../../src/pfs-sys/unix/*.cpp"
-            , "../../src/pfs-sys/x11/*.cpp"
-	    , "../../src/pfs-sys/fs/*.cpp"
+            , "../../src/pfs-sys/fs/*.cpp"
             , "../../src/pfs-sys/fs/posix/*.cpp"
             , "../../src/pfs-sys/posix/timer_c_posix.c"
             , "../../src/pfs-sys/posix/timer_posix.cpp"
             , "../../src/pfs-sys/unix/*.hpp"
-            , "../../src/pfs-sys/x11/*.hpp" }
-    links { "dl", "pthread", "X11", "rt" }
+    }
+
+    links { "dl", "pthread", "rt" }
+
     buildoptions {
-	"-include unistd.h" -- for compile zlib
+        "-include unistd.h" -- for compile zlib
     }
 
 filter "platforms:mswin*"
