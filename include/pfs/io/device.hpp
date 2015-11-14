@@ -87,7 +87,6 @@ public:
 		, ReadWrite   = ReadOnly | WriteOnly
 		, WriteRead   = ReadWrite
 		, NonBlocking = 0x0004
-//		, Unbuffered  = 0x0008
 	};
 
 public:

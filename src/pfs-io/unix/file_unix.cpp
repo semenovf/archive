@@ -199,19 +199,19 @@ bool file::open (const pfs::string & path, int32_t oflags)
         _d = nullptr;
     }
 
-	if (oflags & device::ReadWrite) {
-		native_oflags |= O_RDWR;
-		native_oflags |= O_CREAT;
-	} else if (oflags & device::WriteOnly) {
-		native_oflags |= O_WRONLY;
-		native_oflags |= O_CREAT;
+    if ((oflags & device::WriteOnly) && (oflags & device::ReadOnly)) {
+    	native_oflags |= O_RDWR;
+    	native_oflags |= O_CREAT;
+    } else if (oflags & device::WriteOnly) {
+    	native_oflags |= O_WRONLY;
+    	native_oflags |= O_CREAT;
 
 		struct stat st;
 		if (stat(path.c_str(), &st) != 0 && errno == ENOENT)
 			created = true;
-	} else {
-		native_oflags |= O_RDONLY;
-	}
+    } else if (oflags & device::ReadOnly) {
+    	native_oflags |= O_RDONLY;
+    }
 
 	if (oflags & device::NonBlocking)
 		native_oflags |= O_NONBLOCK;
