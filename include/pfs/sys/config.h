@@ -22,10 +22,16 @@
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) /* c99 or higher */ \
 	|| (defined(_MSC_VER) && _MSC_VER >= 1600) /* msvc >= MSVC++ 10.0 */           \
     || defined(__INT8_TYPE__) /* gcc w/o -std=c99 or higher option */
+
+#   define __STDC_LIMIT_MACROS /* see stdint.h for comments about this macro */
 #   include <stdint.h>
 
 #	define PFS_HAVE_INT8_T 1 // TODO deprecated
 #   define PFS_HAVE_STDINT 1
+#endif
+
+#ifndef SIZE_MAX
+#	error NO SIZE_MAX
 #endif
 
 #ifdef _MSC_VER
