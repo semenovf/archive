@@ -9,6 +9,22 @@
 #include "pfs/mbcs_string.hpp"
 #include "pfs/byte_string.hpp"
 
+#include "pfs/utf_string.hpp"
+
+namespace pfs { namespace ef {
+
+template <>
+utf_string<char>::utf_string<char> (const std::string & s)
+	: _d(s)
+{}
+
+}} // pfs::ef
+
+
+
+
+
+// TODO Below code is DEPRECATED
 template class DLL_API std::allocator<char>;
 template class DLL_API std::basic_string<char>;
 

@@ -8,12 +8,18 @@
 #ifndef __PFS_UTF_STRING_HPP__
 #define __PFS_UTF_STRING_HPP__
 
-namespace pfs { namespace ef {
-
 #include <string>
-#include <pfs/endian.hpp>
 
 namespace pfs { namespace ef {
+
+//template <typename T, typename U>
+//void convert (T & dest, const U & src);
+//
+//template <typename T, typename U>
+//inline void convert<std::string, std::string> (std::string & dest, const std::string & src)
+//{
+//	dest = src;
+//}
 
 template <typename CodeUnit>
 class utf_string
@@ -24,24 +30,24 @@ public:
 	typedef int32_t code_point_type;
 
 	// Types
-    typedef rep_type::traits_type	           traits_type;
-    typedef rep_type::value_type		       value_type;
-    typedef rep_type::allocator_type	       allocator_type;
+//    typedef rep_type::traits_type	           traits_type;
+    typedef int32_t              		       value_type;
+//    typedef rep_type::allocator_type	       allocator_type;
     typedef typename rep_type::size_type	   size_type;
-    typedef typename rep_type::difference_type difference_type;
-    typedef typename rep_type::reference	   reference;
-    typedef typename rep_type::const_reference const_reference;
-    typedef typename rep_type::pointer	       pointer;
+//    typedef typename rep_type::difference_type difference_type;
+//    typedef typename rep_type::reference	   reference;
+//    typedef typename rep_type::const_reference const_reference;
+//    typedef typename rep_type::pointer	       pointer;
     typedef typename rep_type::const_pointer   const_pointer;
-    typedef rep_type::iterator                 iterator;
-    typedef rep_type::const_iterator           const_iterator;
-    typedef rep_type::const_reverse_iterator   const_reverse_iterator;
-    typedef rep_type::reverse_iterator         reverse_iterator;
+//    typedef rep_type::iterator                 iterator;
+//    typedef rep_type::const_iterator           const_iterator;
+//    typedef rep_type::const_reverse_iterator   const_reverse_iterator;
+//    typedef rep_type::reverse_iterator         reverse_iterator;
 
     typedef value_type char_type;
 
-public:
-    static const size_type npos = rep_type::npos;
+//public:
+//    static const size_type npos = rep_type::npos;
 
 private:
     rep_type  _d;
@@ -64,15 +70,12 @@ public:
 
 	utf_string (const std::string & s);
 
+#ifdef PFS_CC_MSC
+	utf_string (const std::wstring & s);
+#endif
+
 	utf_string (size_t n, char c);
 	utf_string (size_t n, int32_t uc);
-
-    utf_string (const utf_string & other,
-                  size_type pos,
-                  size_type count = std::basic_string::npos);
-
-    utf_string (const CodeUnit * utf, size_type count);
-	utf_string (const CodeUnit * utf);
 
 	template <class InputIterator>
 	utf_string (InputIterator first, InputIterator last);
@@ -87,6 +90,7 @@ public:
 
 	/**
 	 * @brief Returns size of string in code units.
+	 *
 	 * @return String in code units.
 	 */
 	bool size () const
@@ -94,8 +98,18 @@ public:
 		return _d.size();
 	}
 
+    // Length in unicode chars
+    //
+	/**
+	 * @brief Returns length in code points.
+	 *
+	 * @return Length in code points.
+	 */
+    size_type length () const;
+
 	/**
 	 * @brief Checks if string is empty.
+	 *
 	 * @return @c true if string is empty (size() == 0) or @c false otherwise.
 	 */
     bool empty () const
@@ -335,12 +349,6 @@ public:
     	return base_class::isNull() ? 0 : base_class::cast()->size();
     }
 
-    // Length in unicode chars
-    //
-    size_type length () const
-    {
-    	return base_class::isNull() ? 0 : base_class::cast()->length();
-    }
 
     size_type capacity() const
     {
