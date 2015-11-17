@@ -22,9 +22,8 @@ char * pfs_uintegral_to_string (uintegral_t n, int base, int uppercase, char * b
 		while (n > 0) {
 			*--p = digits[n % base];
 
-			if (uppercase) {
+			if (uppercase)
 				*p = toupper(*p);
-			}
 
 			n /= base;
 		}

@@ -9,8 +9,9 @@
 #define __PFS_UTF_STRING_HPP__
 
 #include <string>
+#include <pfs.hpp>
 
-namespace pfs { namespace ef {
+namespace pfs {
 
 //template <typename T, typename U>
 //void convert (T & dest, const U & src);
@@ -27,11 +28,9 @@ class utf_string
 	typedef std::basic_string<CodeUnit> rep_type;
 
 public:
-	typedef int32_t code_point_type;
-
 	// Types
 //    typedef rep_type::traits_type	           traits_type;
-    typedef int32_t              		       value_type;
+    typedef typename rep_type::value_type      value_type;
 //    typedef rep_type::allocator_type	       allocator_type;
     typedef typename rep_type::size_type	   size_type;
 //    typedef typename rep_type::difference_type difference_type;
@@ -44,7 +43,7 @@ public:
 //    typedef rep_type::const_reverse_iterator   const_reverse_iterator;
 //    typedef rep_type::reverse_iterator         reverse_iterator;
 
-    typedef value_type char_type;
+    typedef uint32_t char_type;
 
 //public:
 //    static const size_type npos = rep_type::npos;
@@ -89,19 +88,17 @@ public:
 	}
 
 	/**
-	 * @brief Returns size of string in code units.
+	 * @brief Return size of string in code units.
 	 *
 	 * @return String in code units.
 	 */
-	bool size () const
+	size_type size () const
 	{
 		return _d.size();
 	}
 
-    // Length in unicode chars
-    //
 	/**
-	 * @brief Returns length in code points.
+	 * @brief Return length in code points.
 	 *
 	 * @return Length in code points.
 	 */
@@ -1278,6 +1275,6 @@ inline std::ostream & operator << <uint16_t> (std::ostream & os, const utf_strin
 
 #endif // __COMMENT__
 
-}} // pfs::ef
+} // pfs
 
-#endif /* __PFS_EF_MBCS_STRING_HPP__ */
+#endif /* __PFS_UTF_STRING_HPP__ */

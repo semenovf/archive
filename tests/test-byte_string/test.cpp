@@ -5,36 +5,38 @@
  *      Author: wladt
  */
 
-#include <pfs/test/test.hpp>
 #include <cstring>
+#include <pfs/test/test.hpp>
 #include "pfs/byte_string.hpp"
 
 #include <iostream>
-using namespace std;
+using std::cout;
+using std::endl;
 
 void test_constructors ()
 {
-	pfs::byte_string nil;
-	pfs::byte_string serial(10, 'W');
+	ADD_TESTS(8);
 
-	TEST_OK(nil.isNull());
-	TEST_OK(nil.isEmpty());
-	TEST_OK(serial.size() == 10);
-	TEST_OK(strcmp("WWWWWWWWWW", serial.c_str()) == 0);
+	pfs::byte_string empty;
+	pfs::byte_string serial0(5, 'W');
+	pfs::byte_string serial1("ABCDF");
+
+	TEST_OK(empty.empty());
+	TEST_OK(serial0.size() == 5);
+	TEST_OK(serial1.size() == 5);
+	TEST_OK(strcmp("WWWWW", serial0.c_str()) == 0);
 
 	const char * loremipsum  = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit";
 
 	TEST_OK(strcmp(loremipsum, pfs::byte_string(loremipsum).c_str()) == 0);
 	TEST_OK(strcmp(loremipsum, pfs::byte_string(loremipsum, strlen(loremipsum)).c_str()) == 0);
+	TEST_OK(strcmp("Lorem", pfs::byte_string(loremipsum, 5).c_str()) == 0);
 
-	nil.clear();
-	TEST_OK(nil.isNull());
-
-	serial.clear();
-	TEST_OK(!serial.isNull());
-	TEST_OK(serial.isEmpty());
+	serial0.clear();
+	TEST_OK(serial0.empty());
 }
 
+#if __COMMENT__
 
 void test_convert_to_bytes ()
 {
@@ -481,32 +483,33 @@ if (sizeof(long) == 8) {
 
 	cout << rr << endl;
 }
+#endif // __COMMENT__
 
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
-    int ntests = 132;
-#ifdef HAVE_LONGLONG
-    ntests += 12;
-#endif
-	BEGIN_TESTS(ntests);
+	BEGIN_TESTS(0);
+
+//#ifdef HAVE_LONGLONG
+//    ntests += 12;
+//#endif
 
 	test_constructors();
-	test_at();
-	test_erase();
-	test_convert_to_bytes();
-	test_insert();
-	test_append();
-	test_prepend();
-	test_find();
-	test_replace();
-	test_substr();
-	test_to_string();
-	test_read_number();
-	test_base64();
-	test_cow();
-
-	test_convert_to_number();
+//	test_at();
+//	test_erase();
+//	test_convert_to_bytes();
+//	test_insert();
+//	test_append();
+//	test_prepend();
+//	test_find();
+//	test_replace();
+//	test_substr();
+//	test_to_string();
+//	test_read_number();
+//	test_base64();
+//	test_cow();
+//
+//	test_convert_to_number();
 
     END_TESTS;
 }

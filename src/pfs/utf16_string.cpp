@@ -9,6 +9,8 @@
 #include "pfs/mbcs_string.hpp"
 #include "pfs/byte_string.hpp"
 
+#if __COMMENT__
+
 template class DLL_API std::allocator<uint16_t>;
 template class DLL_API std::basic_string<uint16_t>;
 
@@ -311,3 +313,4 @@ mbcs_string<uint16_t> mbcs_string<uint16_t>::toUtf16 () const
 }
 
 } // pfs
+#endif

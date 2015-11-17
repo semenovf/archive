@@ -9,6 +9,7 @@
 
 namespace pfs {
 
+#if __DEPRECATED__
 template <typename Holder>
 inline reference<Holder> byte_string_ptr<Holder>::ref () const
 {
@@ -22,6 +23,8 @@ byte_string_ptr<Holder>::operator * () const
 	typename byte_string_ptr<Holder>::value_type r = *(_holder->constData() + _off);
 	return r;
 }
+
+#endif
 
 } // pfs
 

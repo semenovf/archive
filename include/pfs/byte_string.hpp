@@ -7,13 +7,16 @@
 #ifndef __PFS_BYTE_STRING_HPP__
 #define __PFS_BYTE_STRING_HPP__
 
-#include <pfs/pimpl.hpp>
-#include <pfs/bits/iterator.hpp>
-#include <pfs/endian.hpp>
-#include <pfs/bits/byte_string_impl.hpp>
-#include <pfs/string.hpp>
-#include <cstring>
-#include <ostream>
+#include <string>
+#include <pfs.hpp>
+
+//#include <pfs/pimpl.hpp>
+//#include <pfs/bits/iterator.hpp>
+//#include <pfs/endian.hpp>
+//#include <pfs/bits/byte_string_impl.hpp>
+//#include <pfs/string.hpp>
+//#include <cstring>
+//#include <ostream>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC
@@ -23,8 +26,94 @@
 
 namespace pfs {
 
-class DLL_API byte_string : public nullable<byte_string_impl>
+class DLL_API byte_string
 {
+	typedef std::basic_string<uint8_t> rep_type;
+
+public:
+	typedef uint8_t value_type;
+	typedef typename rep_type::size_type	   size_type;
+	typedef typename rep_type::const_pointer   const_pointer;
+
+private:
+    rep_type  _d;
+
+public:
+    byte_string () : _d() {}
+    byte_string (const_pointer s)
+    	: _d(s)
+    {}
+
+    byte_string (const_pointer s, size_type n)
+    	: _d(s, n)
+    {}
+
+    byte_string (const char * s)
+    	: _d(reinterpret_cast<const uint8_t *>(s))
+    {}
+
+    byte_string (const char * s, size_type n)
+    	: _d(reinterpret_cast<const uint8_t *>(s), n)
+    {}
+
+	byte_string (size_t n, uint8_t c)
+		: _d(n, c)
+	{}
+
+	byte_string (size_t n, char c)
+		: _d(n, static_cast<uint8_t>(c))
+	{}
+
+    ~byte_string () {}
+
+	const_pointer data () const
+	{
+		return _d.data();
+	}
+
+	const char * c_str () const
+	{
+		return reinterpret_cast<const char *>(_d.c_str());
+	}
+
+	/**
+	 * @brief Return size of string in code units.
+	 *
+	 * @return String in code units.
+	 */
+	size_type size () const
+	{
+		return _d.size();
+	}
+
+	/**
+	 * @brief Return size of byte string.
+	 *
+	 * @return Size of byte string.
+	 * @see size()
+	 */
+    size_type length () const
+    {
+    	return _d.length();
+    }
+
+	/**
+	 * @brief Checks if byte string is empty.
+	 *
+	 * @return @c true if byte string is empty (size() == 0) or @c false otherwise.
+	 */
+    bool empty () const
+    {
+    	return _d.empty();
+    }
+
+	void clear ()
+	{
+		_d.clear();
+	}
+
+
+#if __COMMENT__
 protected:
 	typedef byte_string_impl     impl_class;
 	typedef nullable<impl_class> base_class;
@@ -55,12 +144,10 @@ public: // static
 	static const char ReplacementChar = '?';
 
 public:
-	byte_string () : base_class() {}
+
 	explicit byte_string (const char * str);
 	byte_string (const_data_pointer bytes, size_type n);
 	byte_string (const char * str, size_type n);
-	byte_string (size_t count, byte_t ch);
-	byte_string (size_t count, char ch);
 
 	virtual ~byte_string () {}
 
@@ -476,6 +563,7 @@ public:
 
 	static byte_string fromLatin1 (const char * latin1, size_t n) { return byte_string(latin1, n); }
 	static byte_string fromLatin1 (const char * latin1) { return byte_string(latin1); }  // used in safeformat e.g.
+#endif //__COMMENT__
 };
 
 
@@ -498,6 +586,8 @@ typename mbcs_string<_CodeUnitT>::iterator mbcs_string<_CodeUnitT>::insert (cons
 	return iterator(this, pointer(*this, index + 1));
 }
 #endif // __COMMENT__
+
+#if __FIXME__
 
 template <typename InputIt>
 byte_string & byte_string::replace (
@@ -837,9 +927,11 @@ inline std::ostream & operator << (std::ostream & os, const byte_string & o)
 	return os;
 }
 
+#endif
+
 } // pfs
 
-#include <pfs/bits/byte_string_impl_inc.hpp>
+//#include <pfs/bits/byte_string_impl_inc.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)

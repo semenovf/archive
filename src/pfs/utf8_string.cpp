@@ -11,16 +11,16 @@
 
 #include "pfs/utf_string.hpp"
 
-namespace pfs { namespace ef {
+namespace pfs {
 
 template <>
-utf_string<char>::utf_string<char> (const std::string & s)
-	: _d(s)
+utf_string<uint8_t>::utf_string<uint8_t> (const std::string & s)
+	: _d(reinterpret_cast<const std::basic_string<uint8_t> &>(s))
 {}
 
-}} // pfs::ef
+}
 
-
+#if __COMMENT__
 
 
 
@@ -374,3 +374,6 @@ mbcs_string<uint8_t> & lexical_cast (const char * utf8, mbcs_string<uint8_t> & r
 }
 
 } // pfs
+
+#endif //__COMMENT__
+

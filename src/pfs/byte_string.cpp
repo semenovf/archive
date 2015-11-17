@@ -13,13 +13,7 @@
 
 namespace pfs {
 
-byte_string::byte_string (const char * str)
-	: base_class()
-{
-	if (str)
-		base_class::cast()->append(reinterpret_cast<const_data_pointer>(str), strlen(str));
-}
-
+#if __COMMENT__
 byte_string::byte_string (const_data_pointer bytes, size_type n)
 	: base_class()
 {
@@ -665,5 +659,7 @@ byte_string::size_type byte_string::readNumber<long double> (long double & v, si
 	return 0;
 }
 #endif // PFS_HAVE_LONG_DOUBLE
+
+#endif // __COMMENT__
 
 } // pfs

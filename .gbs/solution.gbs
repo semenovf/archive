@@ -18,8 +18,8 @@ project "pfs"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "bit_array"
-    include("test-bit_array/project.gbs")
+--project "bit_array"
+--    include("test-bit_array/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
@@ -28,106 +28,106 @@ project "test-byte_string"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-date"
-    include("test-date/project.gbs")
+--project "test-date"
+--    include("test-date/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-endian"
-    include("test-endian/project.gbs")
+--project "test-endian"
+--    include("test-endian/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-fsm"
-    include("test-fsm/project.gbs")
+--project "test-fsm"
+--    include("test-fsm/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-function"
-    include("test-function/project.gbs")
+--project "test-function"
+--    include("test-function/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-map_hash"
-    include("test-map_hash/project.gbs")
+--project "test-map_hash"
+--    include("test-map_hash/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-mbcs_string"
-    include("test-mbcs_string/project.gbs")
+--project "test-mbcs_string"
+--    include("test-mbcs_string/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pimpl"
-    include("test-pimpl/project.gbs")
+--project "test-pimpl"
+--    include("test-pimpl/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-real_cast"
-    include("test-real_cast/project.gbs")
+--project "test-real_cast"
+--    include("test-real_cast/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-safeformat"
-    include("test-safeformat/project.gbs")
+--project "test-safeformat"
+--    include("test-safeformat/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-shared_ptr"
-    include("test-shared_ptr/project.gbs")
+--project "test-shared_ptr"
+--    include("test-shared_ptr/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-stack"
-    include("test-stack/project.gbs")
+--project "test-stack"
+--    include("test-stack/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-strtointegral"
-    include("test-strtointegral/project.gbs")
+--project "test-strtointegral"
+--    include("test-strtointegral/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-strtoreal"
-    include("test-strtoreal/project.gbs")
+--project "test-strtoreal"
+--    include("test-strtoreal/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-time"
-    include("test-time/project.gbs")
+--project "test-time"
+--    include("test-time/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-utf16"
-    include("test-utf16/project.gbs")
+--project "test-utf16"
+--    include("test-utf16/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-utf8"
-    include("test-utf8/project.gbs")
+--project "test-utf8"
+--    include("test-utf8/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-variant"
-    include("test-variant/project.gbs")
+--project "test-variant"
+--    include("test-variant/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-vector"
-    include("test-vector/project.gbs")
+--project "test-vector"
+--    include("test-vector/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "pfs-test-ring_buffer"
-    include("test-pfs-ring_buffer/project.gbs")
+--project "pfs-test-ring_buffer"
+--    include("test-pfs-ring_buffer/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-algo-string"
-    include("test-algo-string/project.gbs")
+--project "test-algo-string"
+--    include("test-algo-string/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-notification"
-    include("test-pfs-notification/project.gbs")
+--project "test-pfs-notification"
+--    include("test-pfs-notification/project.gbs")
 -- END PROJECT
