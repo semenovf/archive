@@ -10,6 +10,12 @@
 
 namespace pfs {
 
+template <typename T>
+struct base_type_trait { typedef T type; };
+
+template <typename T>
+struct base_type_trait<const T &> { typedef T type; };
+
 template <typename Return>
 class functor_base
 {
@@ -60,7 +66,7 @@ public:
 template <typename Return, typename Arg1>
 class functor1 : public functor_base<Return>
 {
-	Arg1 _a1;
+	typename base_type_trait<Arg1>::type _a1;
 
 public:
 	typedef functor_base<Return> base_class;
@@ -87,8 +93,8 @@ public:
 template <typename Return, typename Arg1, typename Arg2>
 class functor2 : public functor_base<Return>
 {
-	Arg1 _a1;
-	Arg2 _a2;
+	typename base_type_trait<Arg1>::type _a1;
+	typename base_type_trait<Arg2>::type _a2;
 
 public:
 	typedef functor_base<Return> base_class;
