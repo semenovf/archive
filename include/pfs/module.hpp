@@ -43,6 +43,12 @@ private:
 
 public:
 	module (const char * name) : _name(_u8(name)), _dispatcherPtr(nullptr), run(nullptr) {}
+	module (const char * name, int (* loop) (module *))
+		: _name(_u8(name))
+		, _dispatcherPtr(nullptr)
+		, run(loop)
+	{}
+
 	module (const string & name) : _name(name), _dispatcherPtr(nullptr), run(nullptr) {}
 	virtual ~module() {}
 
@@ -89,11 +95,12 @@ public: /*signal*/
 	signal2<const string &, bool &> moduleRegistered;
 
 private:
-	string _name;
+	string       _name;
 	dispatcher * _dispatcherPtr;
 
 public:
-	int (* run) (module *);
+	int (* run) (module *); // TODO declare it as `int (module::*) ()'
+	// int (module::*run) ();
 
 	friend class dispatcher;
 };
@@ -103,7 +110,7 @@ struct detector_pair
 	detector_pair () : _module(NULL), _detector(NULL) {}
 	detector_pair (module * p, detector d) : _module(p), _detector(d) {}
 	module * _module;
-	detector   _detector;
+	detector _detector;
 };
 
 } // pfs
