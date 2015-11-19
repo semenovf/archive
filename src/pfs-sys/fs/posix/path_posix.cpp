@@ -48,6 +48,20 @@ path::path (const char * s, const char * separator)
 	lexical_cast(separator, _separator);
 }
 
+path & path::operator = (const string_type & s)
+{
+	_path = s;
+	lexical_cast("/", _separator);
+	return *this;
+}
+
+path & path::operator = (const char * s)
+{
+	lexical_cast(s, _path);
+	lexical_cast("/", _separator);
+	return *this;
+}
+
 bool path::is_absolute () const
 {
 	if( _path.empty() )

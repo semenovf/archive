@@ -205,6 +205,9 @@ public:
 	path (const char * s);
 	path (const char * s, const char * separator);
 
+	path & operator = (const string_type & s);
+	path & operator = (const char * s);
+
 	/**
 	 * @brief Returns path separator.
 	 *
