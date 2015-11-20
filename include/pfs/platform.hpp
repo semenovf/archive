@@ -9,7 +9,7 @@
 #ifndef __PFS_PLATFORM_HPP__
 #define __PFS_PLATFORM_HPP__
 
-#include <pfs/cast/string.hpp>
+#include <pfs/cast/lexical_cast.hpp>
 #include <pfs/time.hpp>
 #include <pfs/date.hpp>
 #include <pfs/datetime.hpp>
