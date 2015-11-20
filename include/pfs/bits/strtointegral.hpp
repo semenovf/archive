@@ -13,18 +13,22 @@
 
 EXTERN_C_BEGIN
 
+// XXX DEPRECATED
 DLL_API int    pfs_latin1_to_digit (char latin1);
 
 EXTERN_C_END
 
 namespace pfs {
 
+
+// XXX DEPRECATED
 template <typename CharT>
 inline char portable_cast_char (CharT ch)
 {
 	return char(uint32_t(ch));
 }
 
+// XXX Moved to pfs/cast/integral.hpp
 /**
  * @brief Converts the initial part of the string bitween
  *        @c pos and @c end (excluding) to an @c uintegral_t value

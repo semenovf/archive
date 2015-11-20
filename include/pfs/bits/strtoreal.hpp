@@ -8,6 +8,8 @@
 #ifndef __PFS_BITS_STRTOREAL_HPP_
 #define __PFS_BITS_STRTOREAL_HPP_
 
+// TODO Need to move to pfs/cast/strtoreal.cpp and implement appropriate lexical_cast() functions
+
 #include <pfs.hpp>
 #include <pfs/ctype.hpp>
 #include <cerrno>
