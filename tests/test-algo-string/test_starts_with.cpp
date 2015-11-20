@@ -7,7 +7,7 @@
 #include <iostream>
 #include <pfs/test/test.hpp>
 #include "pfs/algo/find.hpp"
-#include "pfs/cast/string.hpp"
+#include "pfs/cast/lexical_cast.hpp"
 //#include <pfs/string.hpp>
 #include <string>
 

@@ -104,6 +104,19 @@ struct max_sizeof
 	enum { result = sizeof(T) > Size ? sizeof(T) : Size };
 };
 
+template <typename T>
+struct is_unsigned { static const bool value = false; };
+
+template <> struct is_unsigned<unsigned char>  { static const bool value = true; };
+template <> struct is_unsigned<unsigned short> { static const bool value = true; };
+template <> struct is_unsigned<unsigned int>   { static const bool value = true; };
+template <> struct is_unsigned<unsigned long>  { static const bool value = true; };
+
+#ifdef PFS_HAVE_LONGLONG
+template <> struct is_unsigned<unsigned long long> { static const bool value = true; };
+#endif
+
+
 } // pfs
 
 

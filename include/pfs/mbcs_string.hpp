@@ -14,7 +14,7 @@
 #include <pfs/bits/mbcs_string_impl.hpp>
 #include <pfs/bits/strtointegral.hpp>
 #include <pfs/bits/strtoreal.hpp>
-#include <pfs/cast/string.hpp>
+#include <pfs/cast/lexical_cast.hpp>
 #include <pfs/vector.hpp>
 #include <cstring>
 #include <ostream>
@@ -768,6 +768,7 @@ mbcs_string<CodeUnitT> & mbcs_string<CodeUnitT>::replace (
 	return replace(first, last, s);
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 bool mbcs_string<CodeUnitT>::toBoolean (bool * ok) const
 {
@@ -788,6 +789,7 @@ bool mbcs_string<CodeUnitT>::toBoolean (bool * ok) const
 	return r;
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 integral_t mbcs_string<CodeUnitT>::toSignedIntegral (bool * ok, int base) const
 {
@@ -801,6 +803,7 @@ integral_t mbcs_string<CodeUnitT>::toSignedIntegral (bool * ok, int base) const
 		, uintegral_t(pfs::max_type<integral_t>()));
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 uintegral_t mbcs_string<CodeUnitT>::toUnsignedIntegral (bool * ok, int base) const
 {
@@ -814,6 +817,7 @@ uintegral_t mbcs_string<CodeUnitT>::toUnsignedIntegral (bool * ok, int base) con
 }
 
 
+// XXX DEPRECATED, see lexical_cast() family functions
 /**
  * @brief Converts string to signed char value.
  *
@@ -837,6 +841,7 @@ signed char mbcs_string<CodeUnitT>::toSignedChar (bool * ok, int radix) const
         , uintegral_t(pfs::max_type<signed char>())));
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 /**
  * @brief Converts string to unsigned char value.
  *
@@ -858,7 +863,7 @@ unsigned char mbcs_string<CodeUnitT>::toUnsignedChar (bool * ok, int radix) cons
         , uintegral_t(pfs::max_type<unsigned char>())));
 }
 
-
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 short mbcs_string<CodeUnitT>::toSignedShort (bool * ok, int base) const
 {
@@ -873,6 +878,7 @@ short mbcs_string<CodeUnitT>::toSignedShort (bool * ok, int base) const
 		, uintegral_t(pfs::max_type<short>()));
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 unsigned short mbcs_string<CodeUnitT>::toUnsignedShort (bool * ok, int base) const
 {
@@ -885,6 +891,7 @@ unsigned short mbcs_string<CodeUnitT>::toUnsignedShort (bool * ok, int base) con
 		, uintegral_t(pfs::max_type<unsigned short>()));
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 int	mbcs_string<CodeUnitT>::toSignedInt (bool * ok, int base) const
 {
@@ -898,6 +905,7 @@ int	mbcs_string<CodeUnitT>::toSignedInt (bool * ok, int base) const
 		, uintegral_t(pfs::max_type<int>()));
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 unsigned int mbcs_string<CodeUnitT>::toUnsignedInt (bool * ok, int base) const
 {
@@ -910,6 +918,7 @@ unsigned int mbcs_string<CodeUnitT>::toUnsignedInt (bool * ok, int base) const
 		, uintegral_t(pfs::max_type<unsigned int>()));
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 long mbcs_string<CodeUnitT>::toSignedLong (bool * ok, int base) const
 {
@@ -923,6 +932,7 @@ long mbcs_string<CodeUnitT>::toSignedLong (bool * ok, int base) const
 		, uintegral_t(pfs::max_type<long>()));
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 unsigned long mbcs_string<CodeUnitT>::toUnsignedLong (bool * ok, int base) const
 {
@@ -937,6 +947,7 @@ unsigned long mbcs_string<CodeUnitT>::toUnsignedLong (bool * ok, int base) const
 }
 
 #ifdef PFS_HAVE_LONGLONG
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 long long mbcs_string<CodeUnitT>::toSignedLongLong (bool * ok, int base) const
 {
@@ -950,6 +961,7 @@ long long mbcs_string<CodeUnitT>::toSignedLongLong (bool * ok, int base) const
 		, uintegral_t(pfs::max_type<long long>()));
 }
 
+// XXX DEPRECATED, see lexical_cast() family functions
 template <typename CodeUnitT>
 unsigned long long mbcs_string<CodeUnitT>::toUnsignedLongLong (bool * ok, int base) const
 {

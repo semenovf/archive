@@ -8,6 +8,8 @@
 #ifndef __PFS_CTYPE_HPP__
 #define __PFS_CTYPE_HPP__
 
+// FIXME DEPRECATED
+
 #include <pfs.hpp>
 #include <cctype>
 

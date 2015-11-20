@@ -121,6 +121,7 @@ char * pfs_real_to_string (real_t n, char f, int prec, char * buf, int * bufsz)
 	return buf;
 }
 
+// XXX DEPRECATED, moved to pfs/cast/integral
 /**
  * @brief Convert character to integer (according to radix from 2 to 36 including)
  *
