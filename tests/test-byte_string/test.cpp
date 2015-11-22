@@ -8,10 +8,12 @@
 #include <cstring>
 #include <pfs/test/test.hpp>
 #include "pfs/byte_string.hpp"
+#include "pfs/cast/lexical_cast.hpp"
 
 #include <iostream>
 using std::cout;
 using std::endl;
+using pfs::byte_string;
 
 void test_constructors ()
 {
@@ -36,61 +38,152 @@ void test_constructors ()
 	TEST_OK(serial0.empty());
 }
 
-#if __COMMENT__
-
-void test_convert_to_bytes ()
+void test_at ()
 {
-	TEST_OK(pfs::byte_string("\xBC", 1) == pfs::byte_string::toBytes('\xBC', pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\xBC", 1) == pfs::byte_string::toBytes('\xBC', pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\xFF\x7F", 2) == pfs::byte_string::toBytes(short(0x7FFF), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x7F\xFF", 2) == pfs::byte_string::toBytes(short(0x7FFF), pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x00\x80", 2) == pfs::byte_string::toBytes(short(0x8000), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x80\x00", 2) == pfs::byte_string::toBytes(short(0x8000), pfs::endian::BigEndian));
+	ADD_TESTS(2);
+	byte_string s("ABCDEFGHIJKLMabcdefghijklm");
+	bool ok = true;
 
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F", 4) == pfs::byte_string::toBytes(int(0x7FFFFFFF), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF", 4) == pfs::byte_string::toBytes(int(0x7FFFFFFF), pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x80", 4) == pfs::byte_string::toBytes(int(0x80000000), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x80\x00\x00\x00", 4) == pfs::byte_string::toBytes(int(0x80000000), pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x78\x56\x34\x12", 4) == pfs::byte_string::toBytes(int(0x12345678), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x12\x34\x56\x78", 4) == pfs::byte_string::toBytes(int(0x12345678), pfs::endian::BigEndian));
+	byte_t bytes[] = {
+		  0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D
+		, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D
+	};
 
-if (sizeof(integral_t) == 4) {
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F", 4) == pfs::byte_string::toBytes(integral_t(0x7FFFFFFFL), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF", 4) == pfs::byte_string::toBytes(integral_t(0x7FFFFFFFL), pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x80", 4) == pfs::byte_string::toBytes(integral_t(0x80000000L), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x80\x00\x00\x00", 4) == pfs::byte_string::toBytes(integral_t(0x80000000L), pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x78\x56\x34\x12", 4) == pfs::byte_string::toBytes(integral_t(0x12345678L), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x12\x34\x56\x78", 4) == pfs::byte_string::toBytes(integral_t(0x12345678L), pfs::endian::BigEndian));
-} else { // sizeof(long) == 8 - on x64
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F\x00\x00\x00\x00", 8) == pfs::byte_string::toBytes(integral_t(0x7FFFFFFFL), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x7F\xFF\xFF\xFF", 8) == pfs::byte_string::toBytes(integral_t(0x7FFFFFFFL), pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x80\x00\x00\x00\x00", 8) == pfs::byte_string::toBytes(integral_t(0x80000000L), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x80\x00\x00\x00", 8) == pfs::byte_string::toBytes(integral_t(0x80000000L), pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x78\x56\x34\x12\x00\x00\x00\x00", 8) == pfs::byte_string::toBytes(integral_t(0x12345678L), pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x12\x34\x56\x78", 8) == pfs::byte_string::toBytes(integral_t(0x12345678L), pfs::endian::BigEndian));
+	TEST_OK(sizeof(bytes)/sizeof(bytes[0]) == s.length());
+	for (size_t i = 0; i < s.length(); ++i) {
+		if (s.at(i) != bytes[i]) {
+			ok = false;
+			break;
+		}
+	}
+
+	TEST_OK2(ok, "pfs::byte_string(\"ABCDEFGHIJKLMabcdefghijklm\") equals to array of bytes");
 }
 
-#ifdef HAVE_LONGLONG
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F\x00\x00\x00\x00", 8) == pfs::byte_string::toBytes(0x7FFFFFFFLL, pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x7F\xFF\xFF\xFF", 8) == pfs::byte_string::toBytes(0x7FFFFFFFLL, pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x80\x00\x00\x00\x00", 8) == pfs::byte_string::toBytes(0x80000000LL, pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x80\x00\x00\x00", 8) == pfs::byte_string::toBytes(0x80000000LL, pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x78\x56\x34\x12\x00\x00\x00\x00", 8) == pfs::byte_string::toBytes(0x12345678LL, pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x12\x34\x56\x78", 8) == pfs::byte_string::toBytes(0x12345678LL, pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F", 8) == pfs::byte_string::toBytes(0x7FFFFFFFFFFFFFFFLL, pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 8) == pfs::byte_string::toBytes(0x7FFFFFFFFFFFFFFFLL, pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x00\x00\x00\x80", 8) == pfs::byte_string::toBytes(0x8000000000000000LL, pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x80\x00\x00\x00\x00\x00\x00\x00", 8) == pfs::byte_string::toBytes(0x8000000000000000LL, pfs::endian::BigEndian));
-	TEST_OK(pfs::byte_string("\xDE\xCD\xBC\xAB\x78\x56\x34\x12", 8) == pfs::byte_string::toBytes(0x12345678ABBCCDDELL, pfs::endian::LittleEndian));
-	TEST_OK(pfs::byte_string("\x12\x34\x56\x78\xAB\xBC\xCD\xDE", 8) == pfs::byte_string::toBytes(0x12345678ABBCCDDELL, pfs::endian::BigEndian));
+void test_pack ()
+{
+	pfs::byte_string result;
+
+	ADD_TESTS(12);
+	TEST_OK(pfs::byte_string("\xBC", 1) == pfs::pack('\xBC', pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\xBC", 1) == pfs::pack('\xBC', pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\xFF\x7F", 2) == pfs::pack(short(0x7FFF), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x7F\xFF", 2) == pfs::pack(short(0x7FFF), pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x80", 2) == pfs::pack(short(0x8000), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x80\x00", 2) == pfs::pack(short(0x8000), pfs::endian::BigEndian, result));
+
+	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F", 4) == pfs::pack(int(0x7FFFFFFF), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF", 4) == pfs::pack(int(0x7FFFFFFF), pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x80", 4) == pfs::pack(int(0x80000000), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x80\x00\x00\x00", 4) == pfs::pack(int(0x80000000), pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x78\x56\x34\x12", 4) == pfs::pack(int(0x12345678), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x12\x34\x56\x78", 4) == pfs::pack(int(0x12345678), pfs::endian::BigEndian, result));
+
+if (sizeof(integral_t) == 4) {
+	ADD_TESTS(6);
+	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F", 4) == pfs::pack(integral_t(0x7FFFFFFFL), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF", 4) == pfs::pack(integral_t(0x7FFFFFFFL), pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x80", 4) == pfs::pack(integral_t(0x80000000L), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x80\x00\x00\x00", 4) == pfs::pack(integral_t(0x80000000L), pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x78\x56\x34\x12", 4) == pfs::pack(integral_t(0x12345678L), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x12\x34\x56\x78", 4) == pfs::pack(integral_t(0x12345678L), pfs::endian::BigEndian, result));
+} else { // sizeof(long) == 8 - on x64
+	ADD_TESTS(6);
+	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F\x00\x00\x00\x00", 8) == pfs::pack(integral_t(0x7FFFFFFFL), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x7F\xFF\xFF\xFF", 8) == pfs::pack(integral_t(0x7FFFFFFFL), pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x80\x00\x00\x00\x00", 8) == pfs::pack(integral_t(0x80000000L), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x80\x00\x00\x00", 8) == pfs::pack(integral_t(0x80000000L), pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x78\x56\x34\x12\x00\x00\x00\x00", 8) == pfs::pack(integral_t(0x12345678L), pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x12\x34\x56\x78", 8) == pfs::pack(integral_t(0x12345678L), pfs::endian::BigEndian, result));
+}
+
+#ifdef PFS_HAVE_LONGLONG
+	ADD_TESTS(12);
+	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F\x00\x00\x00\x00", 8) == pfs::pack(0x7FFFFFFFLL, pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x7F\xFF\xFF\xFF", 8) == pfs::pack(0x7FFFFFFFLL, pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x80\x00\x00\x00\x00", 8) == pfs::pack(0x80000000LL, pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x80\x00\x00\x00", 8) == pfs::pack(0x80000000LL, pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x78\x56\x34\x12\x00\x00\x00\x00", 8) == pfs::pack(0x12345678LL, pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x12\x34\x56\x78", 8) == pfs::pack(0x12345678LL, pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F", 8) == pfs::pack(0x7FFFFFFFFFFFFFFFLL, pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 8) == pfs::pack(0x7FFFFFFFFFFFFFFFLL, pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x00\x00\x00\x80", 8) == pfs::pack(0x8000000000000000LL, pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x80\x00\x00\x00\x00\x00\x00\x00", 8) == pfs::pack(0x8000000000000000LL, pfs::endian::BigEndian, result));
+	TEST_OK(pfs::byte_string("\xDE\xCD\xBC\xAB\x78\x56\x34\x12", 8) == pfs::pack(0x12345678ABBCCDDELL, pfs::endian::LittleEndian, result));
+	TEST_OK(pfs::byte_string("\x12\x34\x56\x78\xAB\xBC\xCD\xDE", 8) == pfs::pack(0x12345678ABBCCDDELL, pfs::endian::BigEndian, result));
 #endif
+}
+
+void test_unpack ()
+{
+	char  ch;
+	short short_int;
+	unsigned short ushort_int;
+	int int_int;
+
+	ADD_TESTS(16);
+
+	TEST_OK(pfs::unpack(byte_string("\xBC", 1), 0, pfs::endian::LittleEndian, ch) == sizeof(ch) && ch == '\xBC');
+	TEST_OK(pfs::unpack(byte_string("\xBC", 1), 0, pfs::endian::BigEndian, ch) == sizeof(ch) && ch == '\xBC');
+
+	TEST_OK(pfs::unpack(byte_string("\xFF\x7F", 2), 0, pfs::endian::LittleEndian, short_int)  == sizeof(short_int) && short_int == (short)0x7FFF);
+	TEST_OK(pfs::unpack(byte_string("\x7F\xFF", 2), 0, pfs::endian::BigEndian, short_int)     == sizeof(short_int) && short_int == (short)0x7FFF);
+	TEST_OK(pfs::unpack(byte_string("\x00\x80", 2), 0, pfs::endian::LittleEndian, short_int)  == sizeof(short_int) && short_int == (short)0x8000);
+	TEST_OK(pfs::unpack(byte_string("\x80\x00", 2), 0, pfs::endian::BigEndian, short_int)     == sizeof(short_int) && short_int == (short)0x8000);
+
+	TEST_OK(pfs::unpack(byte_string("\xFF\x7F", 2), 0, pfs::endian::LittleEndian, ushort_int) == sizeof(ushort_int) && ushort_int == 0x7FFF);
+	TEST_OK(pfs::unpack(byte_string("\x7F\xFF", 2), 0, pfs::endian::BigEndian, ushort_int)    == sizeof(ushort_int) && ushort_int == 0x7FFF);
+	TEST_OK(pfs::unpack(byte_string("\x00\x80", 2), 0, pfs::endian::LittleEndian, ushort_int) == sizeof(ushort_int) && ushort_int == 0x8000);
+	TEST_OK(pfs::unpack(byte_string("\x80\x00", 2), 0, pfs::endian::BigEndian, ushort_int)    == sizeof(ushort_int) && ushort_int == 0x8000);
+
+	TEST_OK(pfs::unpack(byte_string("\xFF\xFF\xFF\x7F", 4), 0, pfs::endian::LittleEndian, int_int) == sizeof(int_int) && int_int == (int)0x7FFFFFFF);
+	TEST_OK(pfs::unpack(byte_string("\x7F\xFF\xFF\xFF", 4), 0, pfs::endian::BigEndian, int_int)    == sizeof(int_int) && int_int == (int)0x7FFFFFFF);
+	TEST_OK(pfs::unpack(byte_string("\x00\x00\x00\x80", 4), 0, pfs::endian::LittleEndian, int_int) == sizeof(int_int) && int_int == (int)0x80000000);
+	TEST_OK(pfs::unpack(byte_string("\x80\x00\x00\x00", 4), 0, pfs::endian::BigEndian, int_int)    == sizeof(int_int) && int_int == (int)0x80000000);
+	TEST_OK(pfs::unpack(byte_string("\x78\x56\x34\x12", 4), 0, pfs::endian::LittleEndian, int_int) == sizeof(int_int) && int_int == (int)0x12345678);
+	TEST_OK(pfs::unpack(byte_string("\x12\x34\x56\x78", 4), 0, pfs::endian::BigEndian, int_int)    == sizeof(int_int) && int_int == (int)0x12345678);
+
+	// TODO Add remaining tests (see test_convert_to_bytes)
+}
+
+void test_append ()
+{
+	{
+		ADD_TESTS(3);
+		const char * sample = "Hello, World!";
+		pfs::byte_string s;
+		pfs::byte_string s1("Hello");
+		pfs::byte_string s2(", ");
+		pfs::byte_string s3("World!");
+
+		s.append(s1).append(s2).append(s3);
+
+		TEST_OK(s.size() == strlen(sample));
+		TEST_OK(s.length() == s1.length() + s2.length() + s3.length());
+		TEST_OK(strcmp(s.c_str(), sample) == 0);
+	}
+
+	{
+		ADD_TESTS(3);
+		pfs::byte_string s;
+		s += pfs::byte_string("Hello");
+		s += ',';
+		s += ' ';
+		s += "World!";
+
+		TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
+		TEST_OK(s.size() == 13);
+		TEST_OK(s.length() == 13);
+	}
 }
 
 void test_erase ()
 {
 	{
-		pfs::byte_string sample("ABCDEFGHIJKLMabcdefghijklm");
-		pfs::byte_string s;
+		ADD_TESTS(7);
+
+		byte_string sample("ABCDEFGHIJKLMabcdefghijklm");
+		byte_string s;
 
 		s = sample;
 		TEST_OK(strcmp(s.erase(0, 0).c_str(), "ABCDEFGHIJKLMabcdefghijklm") == 0);
@@ -105,7 +198,7 @@ void test_erase ()
 		TEST_OK(strcmp(s.erase(13, 5).c_str(), "ABCDEFGHIJKLMfghijklm") == 0);
 
 		s = sample;
-		TEST_OK(strcmp(s.erase(100, 5).c_str(), "ABCDEFGHIJKLMabcdefghijklm") == 0);
+		TEST_OK(strcmp(s.erase(s.size(), 5).c_str(), "ABCDEFGHIJKLMabcdefghijklm") == 0);
 
 		s = sample;
 		TEST_OK(strcmp(s.erase(13, 100).c_str(), "ABCDEFGHIJKLM") == 0);
@@ -115,8 +208,10 @@ void test_erase ()
 	}
 
 	{
-		pfs::byte_string sample("ABCDEFGHIJKLMabcdefghijklm");
-		pfs::byte_string s;
+		ADD_TESTS(5);
+
+		byte_string sample("ABCDEFGHIJKLMabcdefghijklm");
+		byte_string s;
 
 		s = sample;
 		s.erase(s.cbegin(), s.cbegin());
@@ -140,25 +235,44 @@ void test_erase ()
 	}
 }
 
+#if __COMMENT__
 
-void test_at ()
+void test_replace ()
 {
-	pfs::byte_string s("ABCDEFGHIJKLMabcdefghijklm");
-	bool ok = true;
-	byte_t bytes[] = {
-		  0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D
-		, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D
-	};
+	{
+		byte_string s("Hallo Welt!");
+		const char * s1 = "Hello, World!";
 
-	TEST_OK(sizeof(bytes)/sizeof(bytes[0]) == s.length());
-	for (size_t i = 0; i < s.length(); ++i) {
-		if (s.valueAt(i) != bytes[i]) {
-			ok = false;
-			break;
-		}
+		s.replace(0, 5, s1, 6);
+		TEST_OK(s.length() == 12);
+		TEST_OK(strcmp(s.c_str(), "Hello, Welt!") == 0);
+
+		s.replace(7, 4, s1 + 7, 5);
+		TEST_OK(s.length() == 13);
+		TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
+
+		// replace full string with empty string - get empty string
+		s.replace(0, s.length(), "", 0);
+		TEST_OK(strcmp(s.c_str(), "") == 0);
 	}
 
-	TEST_OK2(ok, "pfs::byte_string(\"ABCDEFGHIJKLMabcdefghijklm\") equals to array of bytes");
+	{
+		byte_string s("Hallo Welt!");
+		byte_string s1("Hello, World!");
+
+		s.replace(s.cbegin(), s.cbegin() + 5, s1.cbegin(), s1.cbegin() + 6);
+		TEST_OK(s.length() == 12);
+		TEST_OK(strcmp(s.c_str(), "Hello, Welt!") == 0);
+
+		s.replace(s.cbegin() + 7, s.cbegin() + 11, s1.cbegin() + 7, s1.cbegin() + 12);
+		TEST_OK(s.length() == 13);
+		TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
+
+		// replace full string with empty string - get empty string
+		pfs::byte_string nil;
+		s.replace(s.cbegin(), s.cend(), nil.cbegin(), nil.cend());
+		TEST_OK(strcmp(s.c_str(), "") == 0);
+	}
 }
 
 
@@ -180,50 +294,6 @@ void test_insert ()
 
 	s.insert(5, s3, 0, s3.length());
 	TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
-}
-
-void test_append ()
-{
-	{
-		const char * sample = "Hello, World!";
-		pfs::byte_string s;
-		pfs::byte_string s1("Hello");
-		pfs::byte_string s2(", ");
-		pfs::byte_string s3("World!");
-
-		s.append(s1).append(s2).append(s3);
-
-		TEST_OK(s.size() == strlen(sample));
-		TEST_OK(s.length() == s1.length() + s2.length() + s3.length());
-		TEST_OK(strcmp(s.c_str(), sample) == 0);
-	}
-
-	{
-		pfs::byte_string s;
-		s += pfs::byte_string("Hello");
-		s += ',';
-		s += ' ';
-		s += "World!";
-
-		TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
-		TEST_OK(s.size() == 13);
-		TEST_OK(s.length() == 13);
-	}
-}
-
-void test_prepend ()
-{
-	const char * sample = "Hello, World!";
-	pfs::byte_string s;
-	pfs::byte_string s1("Hello");
-	pfs::byte_string s2(", ");
-	pfs::byte_string s3("World!");
-
-	s.prepend(s3).prepend(s2).prepend(s1);
-
-	TEST_OK(s.size() == strlen(sample));
-	TEST_OK(s.length() == s1.length() + s2.length() + s3.length());
-	TEST_OK(strcmp(s.c_str(), sample) == 0);
 }
 
 void test_find ()
@@ -251,172 +321,71 @@ void test_find ()
 //	TEST_OK(s.endsWith   (char v) const                  { return find(v)   == cend() - 1; }
 }
 
-void test_replace ()
+
+
+#endif // __COMMENT__
+
+void test_lexical_cast ()
 {
-	{
-		pfs::byte_string s("Hallo Welt!");
-		const char * s1 = "Hello, World!";
+	ADD_TESTS(13);
+	byte_string result;
+	TEST_OK(pfs::lexical_cast(0, result) == "0");
+	TEST_OK(pfs::lexical_cast(127, result) == "127");
+	TEST_OK(pfs::lexical_cast(-128, result) == "-128");
+	TEST_OK(pfs::lexical_cast(255, result) == "255");
+	TEST_OK(pfs::lexical_cast(32767, result) == "32767");
+	TEST_OK(pfs::lexical_cast(-32768, result) == "-32768");
+	TEST_OK(pfs::lexical_cast(65535, result) == "65535");
+	TEST_OK(pfs::lexical_cast(8388607, result) == "8388607");
+	TEST_OK(pfs::lexical_cast(-8388608, result) == "-8388608");
+	TEST_OK(pfs::lexical_cast(16777215, result) == "16777215");
+	TEST_OK(pfs::lexical_cast(2147483647, result) == "2147483647");
+	TEST_OK(pfs::lexical_cast(PFS_INT32_MIN, result) == "-2147483648");
+	TEST_OK(pfs::lexical_cast(PFS_ULONG_LITERAL(4294967295), result) == "4294967295");
 
-		s.replace(0, 5, s1, 6);
-		TEST_OK(s.length() == 12);
-		TEST_OK(strcmp(s.c_str(), "Hello, Welt!") == 0);
-
-		s.replace(7, 4, s1 + 7, 5);
-		TEST_OK(s.length() == 13);
-		TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
-
-		// replace full string with empty string - get empty string
-		s.replace(0, s.length(), "", 0);
-		TEST_OK(strcmp(s.c_str(), "") == 0);
-	}
-
-	{
-		pfs::byte_string s("Hallo Welt!");
-		pfs::byte_string s1("Hello, World!");
-
-		s.replace(s.cbegin(), s.cbegin() + 5, s1.cbegin(), s1.cbegin() + 6);
-		TEST_OK(s.length() == 12);
-		TEST_OK(strcmp(s.c_str(), "Hello, Welt!") == 0);
-
-		s.replace(s.cbegin() + 7, s.cbegin() + 11, s1.cbegin() + 7, s1.cbegin() + 12);
-		TEST_OK(s.length() == 13);
-		TEST_OK(strcmp(s.c_str(), "Hello, World!") == 0);
-
-		// replace full string with empty string - get empty string
-		pfs::byte_string nil;
-		s.replace(s.cbegin(), s.cend(), nil.cbegin(), nil.cend());
-		TEST_OK(strcmp(s.c_str(), "") == 0);
-	}
-}
-
-void test_substr ()
-{
-	pfs::byte_string s(("ABCDEFabcdef"));
-	TEST_OK(s.substr(0,0).isEmpty());
-	TEST_OK(s.substr(s.length(),100).isEmpty());
-	TEST_OK(strcmp(s.substr(0,5).c_str(), "ABCDE") == 0);
-	TEST_OK(strcmp(s.substr(6,6).c_str(), "abcdef") == 0);
-	TEST_OK(strcmp(s.substr(6,s.length() + 1).c_str(), "abcdef") == 0);
-}
-
-
-void test_to_string ()
-{
-	TEST_OK(pfs::byte_string::toString(0) == "0");
-	TEST_OK(pfs::byte_string::toString(127) == "127");
-	TEST_OK(pfs::byte_string::toString(-128) == "-128");
-	TEST_OK(pfs::byte_string::toString(255) == "255");
-	TEST_OK(pfs::byte_string::toString(32767) == "32767");
-	TEST_OK(pfs::byte_string::toString(-32768) == "-32768");
-	TEST_OK(pfs::byte_string::toString(65535) == "65535");
-	TEST_OK(pfs::byte_string::toString(8388607) == "8388607");
-	TEST_OK(pfs::byte_string::toString(-8388608) == "-8388608");
-	TEST_OK(pfs::byte_string::toString(16777215) == "16777215");
-	TEST_OK(pfs::byte_string::toString(2147483647) == "2147483647");
-	TEST_OK(pfs::byte_string::toString(PFS_INT32_MIN) == "-2147483648");
-	TEST_OK(pfs::byte_string::toString(PFS_ULONG_LITERAL(4294967295)) == "4294967295");
-
-#ifdef HAVE_INT64
-	TEST_OK(pfs::byte_string::toString(PFS_INT64_MAX) == "9223372036854775807");
-	TEST_OK(pfs::byte_string::toString(PFS_INT64_MIN) == "-9223372036854775808");
-	TEST_OK(pfs::byte_string::toString(PFS_UINT64_MAX) == "18446744073709551615");
+#ifdef PFS_HAVE_INT64
+	ADD_TESTS(3);
+	TEST_OK(pfs::lexical_cast(PFS_INT64_MAX, result)  == "9223372036854775807");
+	TEST_OK(pfs::lexical_cast(PFS_INT64_MIN, result)  == "-9223372036854775808");
+	TEST_OK(pfs::lexical_cast(PFS_UINT64_MAX, result) == "18446744073709551615");
 #endif
 
+	ADD_TESTS(6);
 	// Note: single-precision floating-point numbers have a 24-bit mantissa, which is approximately 7.2 decimal digits.
-	TEST_OK(pfs::byte_string::toString(0.0f, 'g') == "0");
-	TEST_OK(pfs::byte_string::toString(0.0f, 'f', 6) == "0.000000");
-	TEST_OK(pfs::byte_string::toString(0.0f, 'f', 0) == "0.000000");
-	TEST_OK(pfs::byte_string::toString(0.0f, 'f', 1) == "0.0");
-	TEST_OK(pfs::byte_string::toString(3.14159f, 'f', 5) == "3.14159");
-	TEST_OK(pfs::byte_string::toString(1234567.875f, 'f', 3) == "1234567.875");
+	TEST_OK(pfs::lexical_cast(0.0f, 'g', result) == "0");
+	TEST_OK(pfs::lexical_cast(0.0f, 'f', 6, result) == "0.000000");
+	TEST_OK(pfs::lexical_cast(0.0f, 'f', 0, result) == "0.000000");
+	TEST_OK(pfs::lexical_cast(0.0f, 'f', 1, result) == "0.0");
+	TEST_OK(pfs::lexical_cast(3.14159f, 'f', 5, result) == "3.14159");
+	TEST_OK(pfs::lexical_cast(1234567.875f, 'f', 3, result) == "1234567.875");
 
-//	cout << "==" << utfstring::toString(0.0f, 'f', 1).c_str() << endl;
-}
+	unsigned int u;
 
-void test_read_number ()
-{
-	char  ch;
-	short short_int;
-	unsigned short ushort_int;
-	int int_int;
+	ADD_TESTS(7);
 
-	TEST_OK(pfs::byte_string("\xBC", 1).readNumber(ch, 0, pfs::endian::LittleEndian) == sizeof(ch) && ch == '\xBC');
-	TEST_OK(pfs::byte_string("\xBC", 1).readNumber(ch, 0, pfs::endian::BigEndian) == sizeof(ch) && ch == '\xBC');
-
-	TEST_OK(pfs::byte_string("\xFF\x7F", 2).readNumber(short_int, 0, pfs::endian::LittleEndian)  == sizeof(short_int) && short_int == (short)0x7FFF);
-	TEST_OK(pfs::byte_string("\x7F\xFF", 2).readNumber(short_int, 0, pfs::endian::BigEndian)     == sizeof(short_int) && short_int == (short)0x7FFF);
-	TEST_OK(pfs::byte_string("\x00\x80", 2).readNumber(short_int, 0, pfs::endian::LittleEndian)  == sizeof(short_int) && short_int == (short)0x8000);
-	TEST_OK(pfs::byte_string("\x80\x00", 2).readNumber(short_int, 0, pfs::endian::BigEndian)     == sizeof(short_int) && short_int == (short)0x8000);
-
-	TEST_OK(pfs::byte_string("\xFF\x7F", 2).readNumber(ushort_int, 0, pfs::endian::LittleEndian) == sizeof(ushort_int) && ushort_int == 0x7FFF);
-	TEST_OK(pfs::byte_string("\x7F\xFF", 2).readNumber(ushort_int, 0, pfs::endian::BigEndian)    == sizeof(ushort_int) && ushort_int == 0x7FFF);
-	TEST_OK(pfs::byte_string("\x00\x80", 2).readNumber(ushort_int, 0, pfs::endian::LittleEndian) == sizeof(ushort_int) && ushort_int == 0x8000);
-	TEST_OK(pfs::byte_string("\x80\x00", 2).readNumber(ushort_int, 0, pfs::endian::BigEndian)    == sizeof(ushort_int) && ushort_int == 0x8000);
-
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F", 4).readNumber(int_int, 0, pfs::endian::LittleEndian) == sizeof(int_int) && int_int == (int)0x7FFFFFFF);
-	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF", 4).readNumber(int_int, 0, pfs::endian::BigEndian)    == sizeof(int_int) && int_int == (int)0x7FFFFFFF);
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x80", 4).readNumber(int_int, 0, pfs::endian::LittleEndian) == sizeof(int_int) && int_int == (int)0x80000000);
-	TEST_OK(pfs::byte_string("\x80\x00\x00\x00", 4).readNumber(int_int, 0, pfs::endian::BigEndian)    == sizeof(int_int) && int_int == (int)0x80000000);
-	TEST_OK(pfs::byte_string("\x78\x56\x34\x12", 4).readNumber(int_int, 0, pfs::endian::LittleEndian) == sizeof(int_int) && int_int == (int)0x12345678);
-	TEST_OK(pfs::byte_string("\x12\x34\x56\x78", 4).readNumber(int_int, 0, pfs::endian::BigEndian)    == sizeof(int_int) && int_int == (int)0x12345678);
-
-
-	// TODO Add remaining tests (see test_convert_to_bytes)
-}
-
-void test_base64 ()
-{
-	pfs::byte_string text("Qt is great!");
-	TEST_OK(text.toBase64() == "UXQgaXMgZ3JlYXQh");
-
-	pfs::byte_string based64("UXQgaXMgZ3JlYXQh");
-	TEST_OK(text == pfs::byte_string::fromBase64(based64));
-}
-
-void test_cow ()
-{
-	pfs::byte_string s1("Hello?");
-	pfs::byte_string::reference c = s1[5]; // Non-const detachment does nothing here
-	pfs::byte_string s2(s1);  // Lazy-copy, shared state
-
-	TEST_OK(s1[5] == s2[5]);
-
-	c = '!';
-
-	TEST_OK(s1[5] != s2[5]); // COW OK
-	TEST_OK(s1[5] == '!');   // COW OK
-	TEST_OK(s2[5] == '?');   // COW OK
-
-	TEST_OK(s1 == "Hello!");
-	TEST_OK(s2 == "Hello?");
-}
-
-void test_convert_to_number ()
-{
-	bool ok;
-	TEST_OK(pfs::byte_string("0").toUInt(& ok) == 0 && ok);
-	TEST_OK(pfs::byte_string("+0").toUInt(& ok) == 0 && ok);
-	TEST_OK(pfs::byte_string("-0").toUInt(& ok) == 0 && ok);
-
-	TEST_OK(pfs::byte_string("1").toUInt(& ok) == 1 && ok);
-	TEST_OK(pfs::byte_string("+1").toUInt(& ok) == 1 && ok);
-
-	TEST_OK(pfs::byte_string("-1").toUInt(& ok) == PFS_UINT32_MAX && ok);
-	//cout << pfs::byte_string("-1").toUInt(& ok) << endl;
-
-	TEST_OK(pfs::byte_string("123").toUInt(& ok) == 123 && ok);
-
+	TEST_OK(pfs::lexical_cast(byte_string("0"), u)   && u == 0);
+	TEST_OK(pfs::lexical_cast(byte_string("+0"), u)  && u == 0);
+	TEST_OK(pfs::lexical_cast(byte_string("-0"), u)  && u == 0);
+	TEST_OK(pfs::lexical_cast(byte_string("1"), u)   && u == 1);
+	TEST_OK(pfs::lexical_cast(byte_string("+1"), u)  && u == 1);
+	TEST_OK(pfs::lexical_cast(byte_string("-1"), u)  && u == PFS_UINT32_MAX);
+	TEST_OK(pfs::lexical_cast(byte_string("123"), u) && u == 123);
 
 #ifdef PFS_HAVE_LONGLONG
+	unsigned long long ull;
 	if (sizeof(long long) == 8) {
-		TEST_OK(pfs::byte_string("18446744073709551615").toULongLong(& ok) == PFS_ULLONG_MAX && ok);
+		ADD_TESTS(1);
+		TEST_OK(pfs::lexical_cast(byte_string("18446744073709551615"), ull) && ull == PFS_ULLONG_MAX);
 	}
 #endif
 
+	ADD_TESTS(1);
+	unsigned long ul;
+
 	if (sizeof(long) == 8) {
-		TEST_OK(pfs::byte_string("18446744073709551615").toULong(& ok) == PFS_ULLONG_MAX && ok);
+		TEST_OK(pfs::lexical_cast(byte_string("18446744073709551615"), ul) && ul == PFS_ULLONG_MAX);
 	} else {
-		TEST_OK(pfs::byte_string("4294967295").toULong(& ok) == PFS_ULONG_MAX && ok);
+		TEST_OK(pfs::lexical_cast(byte_string("4294967295"), ul) && ul == PFS_ULONG_MAX);
 	}
 
 //	TEST_OK(compare_signed("0", 0));
@@ -434,22 +403,30 @@ void test_convert_to_number ()
 
 #ifdef PFS_HAVE_LONGLONG
 	if (sizeof(long long) == 8) {
-		TEST_OK(pfs::byte_string("9223372036854775807").toLongLong(& ok) == PFS_LLONG_MAX && ok);
-		TEST_OK(pfs::byte_string("-9223372036854775808").toLongLong(& ok) == PFS_LLONG_MIN && ok);
-		cout << pfs::byte_string("-9223372036854775808").toLongLong(& ok) << endl;
-		TEST_OK(pfs::byte_string("-9223372036854775807").toLongLong(& ok) == (PFS_LLONG_MIN + 1) && ok);
+		ADD_TESTS(3);
+		long long ll;
+
+		TEST_OK(pfs::lexical_cast(byte_string("9223372036854775807"), ll) && ll == PFS_LLONG_MAX);
+		TEST_OK(pfs::lexical_cast(byte_string("-9223372036854775808"), ll) && ll == PFS_LLONG_MIN);
+		TEST_OK(pfs::lexical_cast(byte_string("-9223372036854775807"), ll) && ll == (PFS_LLONG_MIN + 1));
 	}
 #endif
 
-if (sizeof(long) == 8) {
-	TEST_OK(pfs::byte_string("9223372036854775807").toLong(& ok) == PFS_LONG_MAX && ok);
-	TEST_OK(pfs::byte_string("-9223372036854775808").toLong(& ok) == PFS_LONG_MIN && ok);
-} else {
-	TEST_OK(pfs::byte_string("2147483647").toLong(& ok) == PFS_LONG_MAX && ok);
-	TEST_OK(pfs::byte_string("-2147483648").toLong(& ok) == PFS_LONG_MIN && ok);
-}
+	ADD_TESTS(2);
+	long l;
 
-	TEST_OK(pfs::byte_string("9.").toReal(& ok) == 9.0 && ok);
+	if (sizeof(long) == 8) {
+		TEST_OK(pfs::lexical_cast(byte_string("9223372036854775807"), l) && l == PFS_LONG_MAX);
+		TEST_OK(pfs::lexical_cast(byte_string("-9223372036854775808"), l) && l == PFS_LONG_MIN);
+	} else {
+		TEST_OK(pfs::lexical_cast(byte_string("2147483647"), l) && l == PFS_LONG_MAX);
+		TEST_OK(pfs::lexical_cast(byte_string("-2147483648"), l) && l == PFS_LONG_MIN);
+	}
+
+#if __COMMENT__
+	ADD_TESTS(1);
+	real_t r;
+	TEST_OK(pfs::lexical_cast(byte_string("9."), r) && r == 9.0f);
 	TEST_OK(pfs::byte_string("9").toReal(& ok) == 9.0 && ok);
 	TEST_OK(pfs::byte_string("9.0").toReal(& ok) == 9.0 && ok);
 	TEST_OK(pfs::byte_string("9.0000").toReal(& ok) == 9.0 && ok);
@@ -480,43 +457,57 @@ if (sizeof(long) == 8) {
 	real_t rr = pfs::byte_string("12345678901234567890123456789").toReal(& ok) - PFS_REAL_LITERAL(12345678901234567890123456789.0);
 	cout << (pfs::byte_string("12345678901234567890123456789").toReal(& ok) - PFS_REAL_LITERAL(12345678901234567890123456789.0)) << endl;
 
-
 	cout << rr << endl;
+#endif
 }
-#endif // __COMMENT__
+
+void test_base64 ()
+{
+	ADD_TESTS(2);
+	pfs::byte_string result;
+	pfs::byte_string text("Qt is great!");
+	TEST_OK(pfs::base64_encode(text, result) == "UXQgaXMgZ3JlYXQh");
+
+	pfs::byte_string based64("UXQgaXMgZ3JlYXQh");
+	TEST_OK(text == pfs::base64_decode(based64, result));
+}
+
+void test_substr ()
+{
+	ADD_TESTS(5);
+
+	byte_string s(("ABCDEFabcdef"));
+
+	TEST_OK(s.substr(0,0).empty());
+	TEST_OK(s.substr(s.length(),0).empty());
+	TEST_OK(strcmp(s.substr(0,5).c_str(), "ABCDE") == 0);
+	TEST_OK(strcmp(s.substr(6,6).c_str(), "abcdef") == 0);
+	TEST_OK(strcmp(s.substr(6,s.length() + 1).c_str(), "abcdef") == 0);
+}
 
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(0);
 
-//#ifdef HAVE_LONGLONG
-//    ntests += 12;
-//#endif
-
 	test_constructors();
-//	test_at();
-//	test_erase();
-//	test_convert_to_bytes();
-//	test_insert();
-//	test_append();
-//	test_prepend();
-//	test_find();
+	test_at();
+	test_erase();
+	test_pack();
+	test_unpack();
+	test_append();
 //	test_replace();
-//	test_substr();
-//	test_to_string();
-//	test_read_number();
-//	test_base64();
-//	test_cow();
-//
-//	test_convert_to_number();
+//	test_insert();
+//	test_find();
+	test_lexical_cast();
+	test_base64();
+	test_substr();
 
     END_TESTS;
 }
 
 // TODO Add this tests
 /*
-
 void
 test(char* str)
 {

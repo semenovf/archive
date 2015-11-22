@@ -101,12 +101,14 @@ char * pfs_real_to_string (real_t n, char f, int prec, char * buf, int * bufsz)
 	// Supporting modern behavior only now.
 	int sz = snprintf(buf, *bufsz, fmt, n);
 
-	*bufsz = sz;
-
 	// Truncated
 	//
-	if (sz >= *bufsz)
+	if (sz >= *bufsz) {
+		*bufsz = sz;
 		return NULL;
+	}
+
+	*bufsz = sz;
 
 #else
 #	error "Need implementation of snprintf"

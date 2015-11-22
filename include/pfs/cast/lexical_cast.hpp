@@ -47,7 +47,7 @@ String & __lexical_cast_signed (T value, int base, bool uppercase, String & resu
 template <typename String, typename T>
 String & __lexical_cast_unsigned (T value, int base, bool uppercase, String & result)
 {
-	char buf[BITS_SIZE(unsigned char) + 1];
+	char buf[BITS_SIZE(T) + 1];
 	char * s = pfs_uintegral_to_string(static_cast<uintmax_t>(value)
 			, base
 			, static_cast<int>(uppercase), buf
@@ -249,16 +249,18 @@ String & __lexical_cast_real (real_t value, char f, int prec, String & result)
 
 	int sz = LEXICAL_CAST_BUFSZ;
 	char buf[LEXICAL_CAST_BUFSZ];
+	char * pbuf = buf;
 
-	char * s = pfs_real_to_string(value, f, prec, buf, & sz);
+	char * s = pfs_real_to_string(value, f, prec, pbuf, & sz);
+
 	if (s) {
 		result = String(s);
 	} else  {
-		buf = new char [sz + 1];
-		s = pfs_real_to_string(value, f, prec, buf, & sz);
+		pbuf = new char [sz + 1];
+		s = pfs_real_to_string(value, f, prec, pbuf, & sz);
 		PFS_ASSERT(s);
 		result = String(s);
-		delete [] buf;
+		delete [] pbuf;
 	}
 
 	return result;
@@ -267,7 +269,7 @@ String & __lexical_cast_real (real_t value, char f, int prec, String & result)
 template <typename String>
 String & lexical_cast (float value, char f, int prec, String & result)
 {
-	return lexical_cast(static_cast<real_t>(value), f, prec, result);
+	return __lexical_cast_real(static_cast<real_t>(value), f, prec, result);
 }
 
 template <typename String>
@@ -285,7 +287,7 @@ String & lexical_cast (float value, String & result)
 template <typename String>
 String & lexical_cast (double value, char f, int prec, String & result)
 {
-	return lexical_cast(static_cast<real_t>(value), f, prec, result);
+	return __lexical_cast_real(static_cast<real_t>(value), f, prec, result);
 }
 
 template <typename String>
@@ -305,7 +307,7 @@ String & lexical_cast (double value, String & result)
 template <typename String>
 String & lexical_cast (long double value, char f, int prec, String & result)
 {
-	return lexical_cast(static_cast<real_t>(value), f, prec, result);
+	return __lexical_cast_real(static_cast<real_t>(value), f, prec, result);
 }
 
 template <typename String>

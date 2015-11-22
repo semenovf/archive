@@ -13,7 +13,6 @@ namespace pfs {
 // String::empty()
 //
 template <typename InputIterator, typename String>
-
 String & join (
 		  InputIterator begin
 		, InputIterator end

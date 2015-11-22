@@ -25,7 +25,9 @@ private:
 
 public:
 	static type_enum type ();
-	static type_enum nativeOrder () { return type(); }
+	static type_enum nativeOrder () { return type(); } // XXX DEPRECATED, use native_order() unstead.
+	static type_enum native_order () { return type(); }
+	static type_enum network_order () { return NetworkEndian; }
 
 	static bool isBigEndianSystem ();
 	static bool isLittleEndianSystem ();
