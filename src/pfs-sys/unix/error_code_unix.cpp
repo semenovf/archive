@@ -26,18 +26,18 @@ string & lexical_cast (const pfs::platform::error_code & ex, string & result)
 #	if(_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
 
 	strerror_r(ex.native(), buffer, __MaxBufLen);
-	pfs::lexical_cast(buffer, result);
+	result = buffer;
 
 #	else // GNU-specific version
 
-	lexical_cast(strerror_r(ex.native(), buffer, __MaxBufLen), result);
+	result = strerror_r(ex.native(), buffer, __MaxBufLen);
 
 #	endif
 
 #else
 	static mutex __mtx;
 	lock_guard<pfs::mutex> locker(__mtx);
-	pfs::lexical_cast(strerror(ex.native()), result);
+	result = strerror(ex.native());
 #endif
 
 	return result;

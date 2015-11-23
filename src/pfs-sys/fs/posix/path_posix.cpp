@@ -37,28 +37,26 @@ path::path (const path::string_type & s)
 {}
 
 path::path (const char * s)
-	: _separator(1, '/')
-{
-	lexical_cast(s, _path);
-}
+	: _path(s)
+	, _separator(1, '/')
+{}
 
 path::path (const char * s, const char * separator)
-{
-	lexical_cast(s, _path);
-	lexical_cast(separator, _separator);
-}
+	: _path(s)
+	, _separator(separator)
+{}
 
 path & path::operator = (const string_type & s)
 {
 	_path = s;
-	lexical_cast("/", _separator);
+	_separator = "/";
 	return *this;
 }
 
 path & path::operator = (const char * s)
 {
-	lexical_cast(s, _path);
-	lexical_cast("/", _separator);
+	_path = s;
+	_separator = "/";
 	return *this;
 }
 
@@ -162,9 +160,9 @@ path temp_directory_path (error_code * ex)
 	string s;
 
 	if (r)
-		pfs::lexical_cast(r, s);
+		s.append(r);
 	else
-		pfs::lexical_cast("/tmp", s);
+		s.append("/tmp");
 
 	return path(s);
 }
