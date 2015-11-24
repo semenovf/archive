@@ -131,3 +131,8 @@ project "test-byte_string"
 --project "test-pfs-notification"
 --    include("test-pfs-notification/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-pfs-limits"
+    include("test-pfs-limits/project.gbs")
+-- END PROJECT

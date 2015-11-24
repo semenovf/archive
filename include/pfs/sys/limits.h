@@ -8,6 +8,11 @@
 #ifndef __PFS_SYS_LIMITS_H__
 #define __PFS_SYS_LIMITS_H__
 
+#include <math.h>
+
+//XXX DEPRECATED header at all, see pfs/limits.hpp
+//#error "DEPRECATED header"
+
 #if defined(PFS_HAVE_INT64) && ! defined(PFS_OS_64BITS)
 #   define PFS_LONG_LITERAL(x) x##LL
 #   define PFS_ULONG_LITERAL(x) x##ULL

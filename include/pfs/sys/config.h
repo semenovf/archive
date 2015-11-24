@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <float.h>
-#include <math.h> /* for NAN */
+//#include <math.h> /* for NAN */
 
 /*
  * C99-specific header

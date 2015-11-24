@@ -14,6 +14,7 @@
 
 /* FIXME Need to implement thread-safe and platform independent of strerror call */
 
+// XXX Deprecated
 /*
  * System error exception
  */

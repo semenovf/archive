@@ -8,6 +8,8 @@
 #ifndef __PFS_SYS_TYPES_H__
 #define __PFS_SYS_TYPES_H__
 
+// XXX DEPRECATED, use pfs/types.hpp
+
 #ifdef PFS_HAVE_STDINT
     typedef int8_t       int8_t;
     typedef uint8_t      uint8_t;
