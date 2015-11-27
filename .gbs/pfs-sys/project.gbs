@@ -46,8 +46,8 @@ filter "platforms:unix*"
     files {   "../../src/pfs-sys/unix/*.cpp"
             , "../../src/pfs-sys/fs/*.cpp"
             , "../../src/pfs-sys/fs/posix/*.cpp"
-            , "../../src/pfs-sys/posix/timer_c_posix.c"
-            , "../../src/pfs-sys/posix/timer_posix.cpp"
+--            , "../../src/pfs-sys/posix/timer_c_posix.c"
+--            , "../../src/pfs-sys/posix/timer_posix.cpp"
             , "../../src/pfs-sys/unix/*.hpp"
     }
 

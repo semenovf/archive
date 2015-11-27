@@ -63,8 +63,8 @@ project "test-pfs-sys-zlib"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-timer"
-    include("test-pfs-sys-timer/project.gbs")
+--project "test-pfs-sys-timer"
+--    include("test-pfs-sys-timer/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

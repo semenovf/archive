@@ -16,16 +16,6 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-EXTERN_C_BEGIN
-
-int timeout_init   (void);
-int timeout_set    (const double seconds);
-int timeout_passed (const int timeout);
-int timeout_unset  (const int timeout);
-int timeout_done   (void);
-
-EXTERN_C_END
-
 int main(int argc, char *argv[])
 {
 	PFS_UNUSED(argc);

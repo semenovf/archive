@@ -10,9 +10,8 @@
 #include <signal.h>
 #include <time.h>
 #include <errno.h>
-#include "timer.h"
 
-#define   MAX_NTIMERS       16
+#define   TIMEOUTS       16
 #define   TIMEOUT_SIGNAL (SIGRTMIN+0)
 
 #define   TIMEOUT_USED   1
@@ -20,30 +19,8 @@
 #define   TIMEOUT_PASSED 4
 
 static timer_t               timeout_timer;
-static volatile sig_atomic_t timeout_state[MAX_NTIMERS] = { 0 };
-static timer_type_enum       timeout_type[MAX_NTIMERS]  = { Timer_Invalid }; // Timer_Invalid | Timer_OneShot | Timer_Periodic
-static int                   timeout_count = 0;
-static double                timeout_seconds[MAX_NTIMERS] = { 0.0f };
-static struct timespec       timeout_time[MAX_NTIMERS];
-
-int timer_count (void)
-{
-	return timeout_count;
-}
-
-int timer_is_periodic (const int id)
-{
-	if (id >= 0 && id < timeout_count)
-		return timeout_type[id] == Timer_Periodic ? 1 : 0;
-	return 0;
-}
-
-int timer_is_oneshot (const int id)
-{
-	if (id >= 0 && id < timeout_count)
-		return timeout_type[id] == Timer_OneShot ? 1 : 0;
-	return 0;
-}
+static volatile sig_atomic_t timeout_state[TIMEOUTS] = { 0 };
+static struct timespec       timeout_time[TIMEOUTS];
 
 
 /* Return the number of seconds between before and after, (after - before).
@@ -109,46 +86,39 @@ static void timespec_set (struct timespec * const to, const double seconds)
 /*
  * Return nonzero if the timeout has occurred.
  */
-int timer_passed (const int timeout)
+int timeout_passed (const int timeout)
 {
-    if (timeout >= 0 && timeout < timeout_count /*MAX_NTIMERS*/) {
-
-    	if (timeout_type[timeout] == Timer_Invalid)
-    		return 0;
-
+    if (timeout >= 0 && timeout < TIMEOUTS) {
         const int  state = __sync_or_and_fetch(& timeout_state[timeout], 0);
 
         /* Refers to an unused timeout? */
         if (!(state & TIMEOUT_USED))
-            return 0/*-1*/;
+            return -1;
 
         /* Not armed? */
         if (!(state & TIMEOUT_ARMED))
-            return 0/*-1*/;
+            return -1;
 
         /* Return 1 if timeout passed, 0 otherwise. */
         return (state & TIMEOUT_PASSED) ? 1 : 0;
 
     } else {
         /* Invalid timeout number. */
-        return 0/*-1*/;
+        return -1;
     }
 }
 
 /* Release the timeout.
  * Returns 0 if the timeout had not fired yet, 1 if it had.
 */
-int timer_unset (const int timeout)
+int timeout_unset (const int timeout)
 {
-    if (timeout >= 0 && timeout < timeout_count/*MAX_NTIMERS*/) {
+    if (timeout >= 0 && timeout < TIMEOUTS) {
         /* Obtain the current timeout state to 'state',
          * then clear all but the TIMEOUT_PASSED flag
          * for the specified timeout.
          * Thanks to Bylos for catching this bug. */
-        const int state = __sync_fetch_and_and(& timeout_state[timeout], 0/*TIMEOUT_PASSED*/);
-
-        timeout_type[timeout] = Timer_Invalid;
-        timeout_seconds[timeout] = 0.0f;
+        const int state = __sync_fetch_and_and(& timeout_state[timeout], TIMEOUT_PASSED);
 
         /* Invalid timeout? */
         if (!(state & TIMEOUT_USED))
@@ -169,7 +139,7 @@ int timer_unset (const int timeout)
     }
 }
 
-static int timer_set_or_update (timer_type_enum type, const double seconds, int * ptimeout)
+int timeout_set (const double seconds)
 {
     struct timespec   now, then;
     struct itimerspec when;
@@ -191,19 +161,12 @@ static int timer_set_or_update (timer_type_enum type, const double seconds, int 
     /*
      * Find an unused timeout
      */
-    if (!ptimeout) {
-		for (timeout = 0; timeout < MAX_NTIMERS; timeout++)
-			if (!(__sync_fetch_and_or(& timeout_state[timeout], TIMEOUT_USED) & TIMEOUT_USED))
-				break;
-    } else {
-    	if (*ptimeout >= 0 && *ptimeout < MAX_NTIMERS)
-    		timeout = *ptimeout;
-    	else
-    		return -1;
-    }
+    for (timeout = 0; timeout < TIMEOUTS; timeout++)
+        if (!(__sync_fetch_and_or(& timeout_state[timeout], TIMEOUT_USED) & TIMEOUT_USED))
+            break;
 
     /* No unused timeouts? */
-    if (timeout >= MAX_NTIMERS)
+    if (timeout >= TIMEOUTS)
         return -1;
 
     /* Clear all but TIMEOUT_USED from the state, */
@@ -217,7 +180,7 @@ static int timer_set_or_update (timer_type_enum type, const double seconds, int 
 
     /* How long till the next timeout? */
     next = seconds;
-    for (i = 0; i < MAX_NTIMERS; i++)
+    for (i = 0; i < TIMEOUTS; i++)
         if ((__sync_fetch_and_or(& timeout_state[i], 0) & (TIMEOUT_USED | TIMEOUT_ARMED | TIMEOUT_PASSED))
         		== (TIMEOUT_USED | TIMEOUT_ARMED)) {
             const double secs = timespec_diff(timeout_time[i], now);
@@ -238,35 +201,9 @@ static int timer_set_or_update (timer_type_enum type, const double seconds, int 
     }
 
     /*
-     * Update timeouts count
-     */
-    if (timeout_count <= timeout) {
-    	timeout_count = timeout + 1;
-    }
-
-    timeout_type[timeout] = type;
-    timeout_seconds[timeout] = seconds;
-
-    /*
      * Return the timeout number
      */
     return timeout;
-}
-
-int timer_set (timer_type_enum type, const double seconds)
-{
-	return timer_set_or_update(type, seconds, NULL);
-}
-
-void timer_reset (int timeout)
-{
-	if (timeout >= 0 && timeout < timeout_count /*MAX_NTIMERS*/) {
-		if (timer_is_periodic(timeout)) {
-			timer_set_or_update(timeout_type[timeout], timeout_seconds[timeout], & timeout);
-		} else {
-			timer_unset(timeout);
-		}
-	}
 }
 
 static void timeout_signal_handler (int signum, siginfo_t * info, void * context)
@@ -299,7 +236,7 @@ static void timeout_signal_handler (int signum, siginfo_t * info, void * context
     /*
      *  Check all timeouts that are used and armed, but not passed yet
      */
-    for (i = 0; i < MAX_NTIMERS; ++i)
+    for (i = 0; i < TIMEOUTS; ++i)
         if ((__sync_or_and_fetch(& timeout_state[i], 0) & (TIMEOUT_USED | TIMEOUT_ARMED | TIMEOUT_PASSED))
         		== (TIMEOUT_USED | TIMEOUT_ARMED)) {
 
@@ -330,7 +267,8 @@ static void timeout_signal_handler (int signum, siginfo_t * info, void * context
     errno = saved_errno;
 }
 
-int timer_init (void)
+
+int timeout_init (void)
 {
     struct sigaction  act;
     struct sigevent   evt;
@@ -370,13 +308,11 @@ int timer_init (void)
     return 0;
 }
 
-int timer_done (void)
+int timeout_done (void)
 {
     struct sigaction  act;
     struct itimerspec arm;
     int               errors = 0;
-
-    timer_unset_all();
 
     /*
      * Ignore the timeout signals
@@ -413,12 +349,4 @@ int timer_done (void)
      * Return 0 if success, errno otherwise
      */
     return errors;
-}
-
-void timer_unset_all (void)
-{
-	int timeout = 0;
-	for (; timeout < timeout_count; ++timeout)
-		timer_unset(timeout);
-	timeout_count = 0;
 }
