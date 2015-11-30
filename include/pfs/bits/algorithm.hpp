@@ -10,6 +10,7 @@
 
 #include <algorithm>
 
+// XXX Deprecated
 namespace pfs {
 
 template <typename Iter1, typename Iter2>
