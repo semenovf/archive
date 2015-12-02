@@ -73,11 +73,18 @@ template <typename T>
 inline T abs (T x) { return x < 0 ? x * T(-1) : x; }
 
 template <typename T, typename U, typename W>
-inline bool approx_eq (T a, U b, W diff)
+inline bool approx_eq (const T a, const U b, const W diff)
 {
     T d = a - b;
     return d < 0 ? d + diff >= 0 : d <= diff;
 }
+
+// FIXME
+//template <typename T>
+//inline bool approx_eq (const T a, const T b)
+//{
+//    return ! (a > b || a < b);
+//}
 
 } // pfs
 

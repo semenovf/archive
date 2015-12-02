@@ -7,90 +7,24 @@
 #ifndef __PFS_STACK_HPP__
 #define __PFS_STACK_HPP__
 
-#include <pfs/pimpl.hpp>
-#include <pfs/bits/stack_impl.hpp>
-#include <pfs/bits/reference.hpp>
+#if __cplusplus >= 201103L
+
+#include <stack>
+
+namespace pfs {
+typename _Tp,
+template <typename T, typename Sequence = deque<T> >
+using stack = std::stack<T, Sequence>;
+
+} // pfs
+
+#else // !C++11
 
 namespace pfs {
 
-//template <typename Class>
-//struct emptyable
-//{
-//	bool isEmpty () const { return C::base_class::isNull() || C::size() == 0; }
-//	bool empty () const { return isEmpty(); }
-//
-//};
-//
-//template <typename Class>
-//struct clearable
-//{
-//
-//};
-//
-//template <typename Impl, typename ValueT, typename RawT>
-//struct container: public Impl
-//{
-//	typedef ValueT     value_type;
-//	typedef RawT       raw_type;
-//	typedef size_t     size_type;
-//	typedef value_type char_type;
-//};
+#include <stack>
 
-
-template <typename T>
-class stack : public nullable<stack_impl<T> >
-{
-protected:
-	typedef stack_impl<T> impl_class;
-	typedef nullable<impl_class>     base_class;
-	typedef stack                    self_class;
-
-public:
-	typedef T          value_type;
-	typedef size_t     size_type;
-	typedef value_type char_type;
-	typedef T *        pointer;
-	typedef const T *  const_pointer;
-	typedef pfs::reference<self_class>         reference;
-	typedef pfs::reference<const self_class>   const_reference;
-
-public:
-	stack () : base_class() {}
-	virtual ~stack () {}
-
-	bool isEmpty () const { return base_class::isNull() || size() == 0; }
-	bool empty () const { return isEmpty(); }
-	void clear ()  { base_class::detach(); swap(self_class()); }
-
-	size_type size () const { return base_class::cast()->size(); }
-
-	T & topRef () { return base_class::cast()->topRef(); }
-	const T & topRef () const { return base_class::cast()->topRef(); }
-
-	value_type topValue () const { return topRef(); }
-	reference top () const
-	{
-		stack * self = const_cast<stack *>(this);
-		return reference(*self, self->cast()->topPtr());
-	}
-
-	void push (const value_type & v) { base_class::detach(); base_class::cast()->push(v); }
-	void pop () { base_class::detach(); base_class::cast()->pop(); }
-
-	stack & operator << (const value_type & v) { push(v); return *this; }
-
-	void detach_and_assign (pointer & p, const value_type & value); // pfs::reference class requirement
-};
-
-template <typename T>
-void stack<T>::detach_and_assign (pointer & p, const value_type & value)
-{
-	PFS_ASSERT(base_class::cast()->topPtr() == p);
-	base_class::detach();
-	*base_class::cast()->topPtr() = value;
-}
-
-
+using std;
 
 } // pfs
 
