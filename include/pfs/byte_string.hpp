@@ -10,13 +10,7 @@
 #include <string>
 #include <pfs.hpp>
 #include <pfs/endian.hpp>
-#include <ostream>
-
-//#include <pfs/pimpl.hpp>
-//#include <pfs/bits/iterator.hpp>
-//#include <pfs/bits/byte_string_impl.hpp>
-//#include <pfs/string.hpp>
-//#include <cstring>
+#include <pfs/ostream.hpp>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC

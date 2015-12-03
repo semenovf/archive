@@ -119,6 +119,22 @@ public:
 		_d.clear();
 	}
 
+	int compare (const utf_string & str) const
+	{
+		return _d.compare(str._d);
+	}
+
+//	int compare( size_type pos1, size_type count1,
+//	             const basic_string& str ) const;
+//	int compare( size_type pos1, size_type count1,
+//	             const basic_string& str,
+//	             size_type pos2, size_type count2 ) const;
+//	int compare( const CharT* s ) const noexcept;
+//	int compare( size_type pos1, size_type count1,
+//	             const CharT* s ) const;
+//	int compare( size_type pos1, size_type count1,
+//	             const CharT* s, size_type count2 ) const;
+
 //	utf_string & append (const utf_string & str)
 //	{
 //		_d.append(str._d);
@@ -1178,12 +1194,6 @@ inline bool operator != ( const utf_string<CodeUnitT> & lhs
 	return lhs.compare(rhs) != 0;
 }
 
-template <typename CodeUnitT>
-inline bool operator < ( const utf_string<CodeUnitT> & lhs
-		, const utf_string<CodeUnitT> & rhs )
-{
-	return lhs.compare(rhs) < 0;
-}
 
 template <typename CodeUnitT>
 inline bool operator <= ( const utf_string<CodeUnitT> & lhs
@@ -1274,6 +1284,14 @@ inline std::ostream & operator << <uint16_t> (std::ostream & os, const utf_strin
 }
 
 #endif // __COMMENT__
+
+template <typename CodeUnit>
+inline bool operator < ( const utf_string<CodeUnit> & lhs
+		, const utf_string<CodeUnit> & rhs )
+{
+	return lhs.compare(rhs) < 0;
+}
+
 
 } // pfs
 

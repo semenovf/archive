@@ -8,8 +8,8 @@
 #ifndef __PFS_NOTIFICATION_HPP__
 #define __PFS_NOTIFICATION_HPP__
 
-#include <memory> // for std::allocator
-#include <ostream>
+#include <pfs/memory.hpp> // for std::allocator
+#include <pfs/ostream.hpp>
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
 
@@ -39,7 +39,12 @@ private:
 	notification_type_enum _type;
 
 public:
-	notification_value () : _repetitions(0), _text() {}
+	notification_value ()
+		: _repetitions(0)
+		, _text()
+		, _type(notification_error)
+	{}
+
 	notification_value (const string_type & s)
 		: _repetitions(1)
 		, _text(s)
@@ -226,7 +231,7 @@ void basic_notification<String>::append (const basic_notification & other)
 
 
 template <typename String>
-std::ostream & operator << (std::ostream & out, const basic_notification<String> & nx)
+pfs::ostream<String> & operator << (pfs::ostream<String> & out, const basic_notification<String> & nx)
 {
     if (nx.count() > 0) {
     	typename basic_notification<String>::const_iterator it = nx.begin();
@@ -248,9 +253,5 @@ std::ostream & operator << (std::ostream & out, const basic_notification<String>
 typedef basic_notification<string> notification;
 
 } // pfs
-
-#ifdef PFS_CC_MSVC
-#	pragma warning(pop)
-#endif
 
 #endif /* __PFS_NOTIFICATION_HPP__ */

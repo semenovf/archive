@@ -11,7 +11,7 @@
 
 #include <pfs/utf_string.hpp>
 
-#define _u8(s)     pfs::utf_string(s)
+#define _u8(s) pfs::utf_string(s)
 
 namespace pfs {
 
