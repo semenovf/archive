@@ -19,12 +19,14 @@ using std::endl;
 template <typename Iterator>
 void __test_forward (const char * itertype)
 {
+	typedef typename pfs::utf8::iterator<Iterator>::type utf8_iterator;
+
 	int ntests = sizeof(data)/sizeof(data[0]);
 	ADD_TESTS(ntests);
 
 	for (int i = 0; i < ntests; ++i) {
-		pfs::utf8::iterator<Iterator> it(iter_cast<Iterator>(data[i].text));
-		pfs::utf8::iterator<Iterator> itEnd(iter_cast<Iterator>(data[i].text) + data[i].len);
+		utf8_iterator it(iter_cast<Iterator>(data[i].text));
+		utf8_iterator itEnd(iter_cast<Iterator>(data[i].text) + data[i].len);
 		size_t count = 0;
 
 		while (it < itEnd) {
@@ -44,12 +46,14 @@ void __test_forward (const char * itertype)
 template <typename Iterator>
 void __test_backward (const char * itertype)
 {
+	typedef typename pfs::utf8::iterator<Iterator>::type utf8_iterator;
+
 	int ntests = sizeof(data)/sizeof(data[0]);
 	ADD_TESTS(ntests);
 
 	for (int i = 0; i < ntests; ++i) {
-		pfs::utf8::iterator<Iterator> itBegin(iter_cast<Iterator>(data[i].text));
-		pfs::utf8::iterator<Iterator> it(iter_cast<Iterator>(data[i].text) + data[i].len);
+		utf8_iterator itBegin(iter_cast<Iterator>(data[i].text));
+		utf8_iterator it(iter_cast<Iterator>(data[i].text) + data[i].len);
 		size_t count = 0;
 
 		while (it-- > itBegin) {
@@ -71,15 +75,17 @@ void __test_backward (const char * itertype)
 template <typename Iterator>
 void __test_std_advance_forward(const char * itertype)
 {
+	typedef typename pfs::utf8::iterator<Iterator>::type utf8_iterator;
+
 	int ntests = sizeof(data)/sizeof(data[0]);
 	ADD_TESTS(ntests * 2);
 
 	for (int i = 0; i < ntests; ++i) {
-		pfs::utf8::iterator<Iterator> itBegin(iter_cast<Iterator>(data[i].text));
-		pfs::utf8::iterator<Iterator> itEnd(iter_cast<Iterator>(data[i].text) + data[i].len);
+		utf8_iterator itBegin(iter_cast<Iterator>(data[i].text));
+		utf8_iterator itEnd(iter_cast<Iterator>(data[i].text) + data[i].len);
 		size_t count = 0;
 
-		pfs::utf8::iterator<Iterator> it = itBegin;
+		utf8_iterator it = itBegin;
 
 		while (it < itEnd) {
 			std::advance(it, 1);
@@ -107,15 +113,17 @@ void __test_std_advance_forward(const char * itertype)
 template <typename Iterator>
 void __test_std_advance_backward (const char * itertype)
 {
+	typedef typename pfs::utf8::iterator<Iterator>::type utf8_iterator;
+
 	int ntests = sizeof(data)/sizeof(data[0]);
 	ADD_TESTS(ntests * 2);
 
 	for (int i = 0; i < ntests; ++i) {
-		pfs::utf8::iterator<Iterator> itBegin(iter_cast<Iterator>(data[i].text));
-		pfs::utf8::iterator<Iterator> itEnd(iter_cast<Iterator>(data[i].text) + data[i].len);
+		utf8_iterator itBegin(iter_cast<Iterator>(data[i].text));
+		utf8_iterator itEnd(iter_cast<Iterator>(data[i].text) + data[i].len);
 		size_t count = 0;
 
-		pfs::utf8::iterator<Iterator> it = itEnd;
+		utf8_iterator it = itEnd;
 
 		while (it > itBegin) {
 			std::advance(it, -1);
@@ -143,11 +151,12 @@ void __test_std_advance_backward (const char * itertype)
 template <typename Iterator>
 void __test_std_reverse_iterator(const char * itertype)
 {
+	typedef typename pfs::utf8::iterator<Iterator>::type utf8_iterator;
+
 	int ntests = sizeof(data)/sizeof(data[0]);
 	ADD_TESTS(ntests);
 
-	typedef pfs::utf8::iterator<Iterator> utf8_iterator;
-	typedef std::reverse_iterator<pfs::utf8::iterator<Iterator> > utf8_reverse_iterator;
+	typedef std::reverse_iterator<utf8_iterator> utf8_reverse_iterator;
 
 	for (int i = 0; i < ntests; ++i) {
 		utf8_reverse_iterator it(utf8_iterator(iter_cast<Iterator>(data[i].text) + data[i].len));

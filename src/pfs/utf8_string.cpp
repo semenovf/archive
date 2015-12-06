@@ -9,16 +9,17 @@
 //#include "pfs/mbcs_string.hpp"
 //#include "pfs/byte_string.hpp"
 
-#include "pfs/utf_string.hpp"
+#include <pfs/utf8/traits.hpp>
+#include "pfs/utf/string.hpp"
 
-namespace pfs {
+namespace pfs { namespace utf {
 
 template <>
-utf_string<uint8_t>::utf_string<uint8_t> (const std::string & s)
+string<uint8_t>::string<uint8_t> (const std::string & s)
 	: _d(reinterpret_cast<const std::basic_string<uint8_t> &>(s))
 {}
 
-}
+}}
 
 #if __COMMENT__
 

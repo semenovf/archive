@@ -31,10 +31,10 @@ namespace pfs { namespace utf8 {
  * @return Unicode code point. @c *pos assigned to new position after decoding.
  */
 template <typename OctetIterator>
-OctetIterator decode (OctetIterator begin, int32_t & result)
+uint32_t decode (OctetIterator & p)
 {
-	OctetIterator p = begin;
 	uint8_t b = static_cast<uint8_t>(*p);
+	uint32_t result;
     int nunits = 0;
 
     if (b < 128) {
@@ -74,15 +74,7 @@ OctetIterator decode (OctetIterator begin, int32_t & result)
     	++p;
     }
 
-    return p;
-}
-
-template <typename OctetIterator>
-inline int32_t decode (OctetIterator & begin)
-{
-	int32_t result;
-	begin = decode(begin, result);
-	return result;
+    return result;
 }
 
 }} // pfs::utf8

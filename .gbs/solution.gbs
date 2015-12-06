@@ -103,8 +103,8 @@ project "test-byte_string"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-utf8"
---    include("test-utf8/project.gbs")
+project "test-utf8"
+    include("test-utf8/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

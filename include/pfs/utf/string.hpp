@@ -9,9 +9,9 @@
 #define __PFS_UTF_STRING_HPP__
 
 #include <string>
-#include <pfs.hpp>
+#include <pfs/utf/iterator.hpp>
 
-namespace pfs {
+namespace pfs { namespace utf {
 
 //template <typename T, typename U>
 //void convert (T & dest, const U & src);
@@ -23,7 +23,7 @@ namespace pfs {
 //}
 
 template <typename CodeUnit>
-class utf_string
+class string
 {
 	typedef std::basic_string<CodeUnit> rep_type;
 
@@ -36,10 +36,13 @@ public:
 //    typedef typename rep_type::difference_type difference_type;
 //    typedef typename rep_type::reference	   reference;
 //    typedef typename rep_type::const_reference const_reference;
-//    typedef typename rep_type::pointer	       pointer;
+    typedef typename rep_type::pointer	       pointer;
     typedef typename rep_type::const_pointer   const_pointer;
-//    typedef rep_type::iterator                 iterator;
-//    typedef rep_type::const_iterator           const_iterator;
+    typedef pfs::utf::iterator<pointer, typename tag_trait<CodeUnit>::type>
+    	iterator;
+    typedef pfs::utf::iterator<const_pointer, typename tag_trait<CodeUnit>::type>
+    	const_iterator;
+
 //    typedef rep_type::const_reverse_iterator   const_reverse_iterator;
 //    typedef rep_type::reverse_iterator         reverse_iterator;
 
@@ -59,27 +62,27 @@ private:
 //	static const size_type npos = -1;
 
 public:
-	utf_string ()
+	string ()
 		: _d()
 	{}
 
-	utf_string (const utf_string & other)
+	string (const string & other)
 		: _d(other._d)
 	{}
 
-	utf_string (const std::string & s);
+	string (const std::string & s);
 
 #ifdef PFS_CC_MSC
-	utf_string (const std::wstring & s);
+	string (const std::wstring & s);
 #endif
 
-	utf_string (size_t n, char c);
-	utf_string (size_t n, int32_t uc);
+	string (size_t n, char c);
+	string (size_t n, int32_t uc);
 
 	template <class InputIterator>
-	utf_string (InputIterator first, InputIterator last);
+	string (InputIterator first, InputIterator last);
 
-	virtual ~utf_string ()
+	virtual ~string ()
 	{}
 
 	const_pointer data () const
@@ -119,7 +122,7 @@ public:
 		_d.clear();
 	}
 
-	int compare (const utf_string & str) const
+	int compare (const string & str) const
 	{
 		return _d.compare(str._d);
 	}
@@ -135,19 +138,19 @@ public:
 //	int compare( size_type pos1, size_type count1,
 //	             const CharT* s, size_type count2 ) const;
 
-//	utf_string & append (const utf_string & str)
+//	string & append (const string & str)
 //	{
 //		_d.append(str._d);
 //		_length += _d.length;
 //		return *this;
 //	}
 
-//	utf_string & append (const utf_string & str, size_t subpos, size_t sublen);
-//	utf_string & append (const char * s);
-//	utf_string & append (const char * s, size_t n);
-//	utf_string & append (size_t n, char c);
-//	utf_string & append (size_t n, uint32_t c);
-//	utf_string & append (size_t n, ucchar c)
+//	string & append (const string & str, size_t subpos, size_t sublen);
+//	string & append (const char * s);
+//	string & append (const char * s, size_t n);
+//	string & append (size_t n, char c);
+//	string & append (size_t n, uint32_t c);
+//	string & append (size_t n, ucchar c)
 //	{
 //		while (n-- > 0) {
 //			this->push_back(c);
@@ -156,7 +159,7 @@ public:
 //	}
 //
 //	template <class InputIterator>
-//	utf_string & append (InputIterator first, InputIterator last)
+//	string & append (InputIterator first, InputIterator last)
 //	{
 //		while (first != last) {
 //			push_back(*first++);
@@ -164,19 +167,19 @@ public:
 //		return *this;
 //	}
 //
-//	utf_string & push_back (char latin1)
+//	string & push_back (char latin1)
 //	{
 //		//return this->append(1, latin1);
 //		return latin1_cast (const char * latin1, size_t n, *this);
 //	}
 //
-//	utf_string & push_back (uint32_t c)
+//	string & push_back (uint32_t c)
 //	{
 //		//return this->append(1, c);
 //		return *this;
 //	}
 //
-//	utf_string & push_back (ucchar c)
+//	string & push_back (ucchar c)
 //	{
 //		//return this->append(1, c);
 //		return *this;
@@ -1286,13 +1289,13 @@ inline std::ostream & operator << <uint16_t> (std::ostream & os, const utf_strin
 #endif // __COMMENT__
 
 template <typename CodeUnit>
-inline bool operator < ( const utf_string<CodeUnit> & lhs
-		, const utf_string<CodeUnit> & rhs )
+inline bool operator < ( const string<CodeUnit> & lhs
+		, const string<CodeUnit> & rhs )
 {
 	return lhs.compare(rhs) < 0;
 }
 
 
-} // pfs
+}} // pfs::utf
 
 #endif /* __PFS_UTF_STRING_HPP__ */

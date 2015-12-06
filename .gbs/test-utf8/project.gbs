@@ -9,7 +9,10 @@ language      "C++"
 targetname    "test-utf8"
 includedirs   { "../../include", "../../../pfs-test/include" }
 libdirs       { "../../../.build" }
-files { "../../tests/test-utf8/**.c", "../../tests/test-utf8/**.cpp" }
+files         {
+                  "../../tests/test-utf8/**.c"
+                , "../../tests/test-utf8/**.cpp" 
+              }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }

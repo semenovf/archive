@@ -6,8 +6,9 @@
  */
 
 #include <pfs/test/test.hpp>
-#include <pfs/utf8/decode.hpp>
 #include <pfs/utf8/iterator.hpp>
+#include <pfs/utf8/advance.hpp>
+#include <pfs/utf8/decode.hpp>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -27,10 +28,10 @@ void __test_decode (const char * itertype)
 		Iterator itEnd(iter_cast<Iterator>(data[i].text) + data[i].len);
 
 		size_t count = 0;
-		int32_t uc = 0;
+		uint32_t uc = 0;
 
 		while (it < itEnd) {
-			it = pfs::utf8::decode(it, uc);
+			uc = pfs::utf8::decode(it);
 			++count;
 		}
 
