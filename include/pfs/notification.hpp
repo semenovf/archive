@@ -89,7 +89,7 @@ struct notification_traits
 {
 	typedef String string_type;
 	typedef notification_value<String> value_type;
-	typedef std::vector<value_type> container_type;
+	typedef typename vector<value_type>::type container_type;
 	typedef typename container_type::iterator iterator;
 	typedef typename container_type::const_iterator const_iterator;
 };
@@ -180,7 +180,6 @@ public:
 		return _notifications.end();
 	}
 
-#if __cplusplus >= 201103L
 	const_iterator cbegin () const
 	{
 		return _notifications.cbegin();
@@ -190,7 +189,6 @@ public:
 	{
 		return _notifications.cend();
 	}
-#endif
 
 	const string_type & last_text () const
 	{
@@ -231,7 +229,7 @@ void basic_notification<String>::append (const basic_notification & other)
 
 
 template <typename String>
-pfs::ostream<String> & operator << (pfs::ostream<String> & out, const basic_notification<String> & nx)
+pfs::ostream & operator << (pfs::ostream & os, const basic_notification<String> & nx)
 {
     if (nx.count() > 0) {
     	typename basic_notification<String>::const_iterator it = nx.begin();
@@ -239,14 +237,14 @@ pfs::ostream<String> & operator << (pfs::ostream<String> & out, const basic_noti
 
         for (; it != itEnd; ++it) {
             if (it->repetitions() > 1) {
-                out << it->text() << _u8(" (repeat ") << it->repetitions() << _u8(" times)") << std::endl;
+                os << it->text() << _u8(" (repeat ") << it->repetitions() << _u8(" times)") << std::endl;
             } else {
-                out << it->text() << std::endl;
+                os << it->text() << std::endl;
             }
         }
     }
 
-    return out;
+    return os;
 }
 
 

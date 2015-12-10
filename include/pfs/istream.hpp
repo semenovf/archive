@@ -9,18 +9,22 @@
 #define __PFS_ISTREAM_HPP__
 
 #include <istream>
-#include <pfs/string.hpp>
 
 namespace pfs {
 
-template <typename String>
-struct istream;
+#if PFS_STRING_UTF16
 
-template <>
-struct istream<utf8_string>
-{
-	typedef ::std::istream type;
-};
+typedef ::std::wistream istream;
+
+#elif PFS_STRING_UTF32
+
+typedef ::std::wistream istream;
+
+#else
+
+typedef ::std::istream istream;
+
+#endif
 
 } // pfs
 

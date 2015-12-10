@@ -9,18 +9,46 @@
 #define __PFS_OSTREAM_HPP__
 
 #include <ostream>
-#include <pfs/string.hpp>
 
 namespace pfs {
 
-template <typename String>
-struct ostream;
+#if PFS_STRING_UTF16
 
-template <>
-struct ostream<utf8_string>
+typedef ::std::wostream ostream;
+
+#elif PFS_STRING_UTF32
+
+typedef ::std::wostream ostream;
+
+#else
+
+typedef ::std::ostream ostream;
+
+#endif
+
+/**
+ * @brief Write a newline and flush the stream.
+ */
+inline ostream & endl (ostream & os)
 {
-	typedef ::std::ostream type;
-};
+	return std::endl(os);
+}
+
+/**
+ * @brief Write a null character into the output sequence.
+ */
+inline ostream & ends (ostream & os)
+{
+	return std::ends(os);
+}
+
+/**
+ * @brief Flushes the output stream.
+ */
+inline ostream & flush (ostream & os)
+{
+	return std::flush(os);
+}
 
 } // pfs
 

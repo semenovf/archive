@@ -13,54 +13,64 @@
 #include <pfs/test/test.hpp>
 #include <pfs/fsm.hpp>
 #include <pfs/string.hpp>
-#include <cstdio>
+#include <pfs/iostream.hpp>
+#include <pfs/sstream.hpp>
 
 #define VHEADER(fsm) #fsm, fsm
 #define VNULL   NULL
 #define INULL   {0, NULL}
 
-struct FsmInvalidEntry
+namespace pfs { namespace fsm {
+
+struct invalid_entry
 {
 	ssize_t ret;
-	const char *str;
+	string  str;
 };
 
-struct FsmTestEntry
+struct test_entry
 {
-	const char * name;
-	pfs::fsm::transition<pfs::string> *trans_tab;
-	const char * valid_str[5];
-	struct FsmInvalidEntry invalid_entries[5];
+	string               name;
+	transition<string> * trans_tab;
+	string               valid_str[5];
+	invalid_entry        invalid_entries[5];
 };
 
+namespace {
 
-static void fsm_test_entries(pfs::fsm::fsm<pfs::string> & fsm, FsmTestEntry * entry)
+void test_entries (fsm<string> & f, test_entry * entry)
 {
-	const char * fsmname = entry->name;
-	const char * const * valid_str  = & entry->valid_str[0];
-	FsmInvalidEntry *invalid_entries = & entry->invalid_entries[0];
+	const string fsmname(entry->name);
+	const string * valid_str = & entry->valid_str[0];
+	const invalid_entry * invalid = & entry->invalid_entries[0];
 
-	fprintf(stdout, "Test '%s'...\n", fsmname);
-	fsm.setTransitionTable(entry->trans_tab);
+	cout << "Test '" << fsmname << "'..." << endl;
+	f.setTransitionTable(entry->trans_tab);
 
-	while( *valid_str != NULL ) {
-		char desc[128];
-		pfs::string input(pfs::string::fromUtf8(*valid_str));
-		ssize_t result = fsm.exec(0, input.begin(), input.end());
-		sprintf(desc, "result == input.length(): %d == %d", (int)result, (int)input.length());
-		TEST_FAIL2(result == (ssize_t)input.length(), desc);
+	while (!valid_str->empty()) {
+		ssize_t result = f.exec(0, valid_str->begin(), valid_str->end());
+
+		ostringstream os;
+		os << "result == input.length(): " << result << " == " << valid_str->length();
+
+		TEST_FAIL2(result == static_cast<ssize_t>(valid_str->length()), os.str().c_str());
 		++valid_str;
 	}
 
-	while( invalid_entries->str != NULL ) {
-		char desc[128];
-		pfs::string input(pfs::string::fromUtf8(invalid_entries->str));
-		ssize_t result = fsm.exec(0, input.begin(), input.end());
-		sprintf(desc, "result == invalid_entries->ret: %d == %d", (int)result, (int)invalid_entries->ret);
-		TEST_FAIL2(result == invalid_entries->ret, desc);
-		++invalid_entries;
+	while (!invalid->str.empty()) {
+		ssize_t result = f.exec(0, invalid->str.begin(), invalid->str.end());
+
+		ostringstream os;
+		os << "result == invalid->ret: " << result << " == " << invalid->ret;
+
+		TEST_FAIL2(result == invalid->ret, os.str().c_str());
+
+		++invalid;
 	}
 }
 
+}
+
+}} // pfs::fsm
 
 #endif /* __PFS_FSM_TEST_HPP__ */

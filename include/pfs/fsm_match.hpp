@@ -14,7 +14,9 @@
 
 namespace pfs { namespace fsm {
 
-/* Matches sequence of characters */
+//
+// Matches sequence of characters
+//
 template <typename _P>
 class match_seq : public match_base<_P>
 {
@@ -32,7 +34,9 @@ private:
 	size_t m_len;
 };
 
-/* Matches string of characters */
+//
+// Matches string of characters
+//
 template <typename _P>
 class match_str : public match_base<_P>
 {
@@ -46,16 +50,17 @@ public:
 	{
 		return m_p.length() == 0
 				? 0
-				: begin < end && fsm<_P>::containsChars(m_p.cbegin(), m_p.cend(), begin, end)
-				  	  ? ssize_t(m_p.cend() - m_p.cbegin())
+				: begin < end && fsm<_P>::containsChars(m_p.begin(), m_p.end(), begin, end)
+				  	  ? ssize_t(m_p.end() - m_p.begin())
 				  	  : ssize_t(-1);
 	}
 private:
 	_P m_p;
 };
 
-
-/* Matches one character from characters */
+//
+// Matches one character from characters
+//
 template <typename _P>
 class match_char : public match_base<_P>
 {
@@ -212,6 +217,6 @@ public:
 	}
 };
 
-}} // cwt::fsm
+}} // pfs::fsm
 
 #endif /* __PFS_FSM_MATCH_HPP__ */

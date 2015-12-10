@@ -9,14 +9,12 @@
 #include <pfs/test/test.hpp>
 #include <pfs/ucchar.hpp>
 #include <pfs/string.hpp>
-#include <cstring>
-#include <iostream>
-
-using namespace std;
+#include <pfs/iostream.hpp>
 
 extern void test_iterator ();
 extern void test_decode ();
 extern void test_encode ();
+extern void test_string ();
 
 //const uint8_t latin1_alphabet_utf8[] = { // 1-byte utf8 encoding
 //		  0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50
@@ -47,6 +45,7 @@ int main(int argc, char *argv[])
 	test_iterator();
 	test_decode();
 	test_encode();
+	test_string();
 
     END_TESTS;
 }

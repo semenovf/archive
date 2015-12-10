@@ -9,17 +9,29 @@
 #define __PFS_IOSTREAM_HPP__
 
 #include <iostream>
+#include <pfs/ostream.hpp>
+#include <pfs/istream.hpp>
 
 namespace pfs {
 
-template <typename String>
-struct iostream;
+#if PFS_STRING_UTF16
 
-template <>
-struct iostream<utf8_string>
-{
-	typedef ::std::iostream type;
-};
+typedef ::std::wiostream iostream;
+
+#elif PFS_STRING_UTF32
+
+typedef ::std::wiostream iostream;
+
+#else
+
+typedef ::std::iostream iostream;
+
+#endif
+
+extern istream & cin;  /// Linked to platform specific standard input
+extern ostream & cout; /// Linked to platform specific standard output
+extern ostream & cerr; /// Linked to platform specific standard error (unbuffered)
+extern ostream & clog; /// Linked to platform specific standard error (buffered)
 
 } // pfs
 

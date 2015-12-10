@@ -22,31 +22,32 @@ namespace pfs { namespace utf {
 //	dest = src;
 //}
 
-template <typename CodeUnit>
+template <typename CodeUnit, typename UtfTag>
 class string
 {
 	typedef std::basic_string<CodeUnit> rep_type;
 
+protected:
+    typedef pfs::utf::traits<rep_type, UtfTag> utf_traits_type;
+
 public:
 	// Types
-//    typedef rep_type::traits_type	           traits_type;
-    typedef typename rep_type::value_type      value_type;
-//    typedef rep_type::allocator_type	       allocator_type;
-    typedef typename rep_type::size_type	   size_type;
-//    typedef typename rep_type::difference_type difference_type;
+    typedef typename utf_traits_type::value_type   value_type; // uint32_t
+    typedef typename rep_type::allocator_type      allocator_type;
+    typedef typename rep_type::size_type	       size_type;
+    typedef typename rep_type::difference_type     difference_type;
 //    typedef typename rep_type::reference	   reference;
 //    typedef typename rep_type::const_reference const_reference;
-    typedef typename rep_type::pointer	       pointer;
-    typedef typename rep_type::const_pointer   const_pointer;
-    typedef pfs::utf::iterator<pointer, typename tag_trait<CodeUnit>::type>
-    	iterator;
-    typedef pfs::utf::iterator<const_pointer, typename tag_trait<CodeUnit>::type>
-    	const_iterator;
+    typedef typename rep_type::pointer	           pointer;
+    typedef typename rep_type::const_pointer       const_pointer;
+    typedef pfs::utf::iterator<pointer
+    		, typename tag_trait<CodeUnit>::type>  iterator;
+    typedef pfs::utf::iterator<const_pointer
+    		, typename tag_trait<CodeUnit>::type>  const_iterator;
+    typedef std::reverse_iterator<iterator>        reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
 
-//    typedef rep_type::const_reverse_iterator   const_reverse_iterator;
-//    typedef rep_type::reverse_iterator         reverse_iterator;
-
-    typedef uint32_t char_type;
+    typedef value_type char_type;
 
 //public:
 //    static const size_type npos = rep_type::npos;
@@ -70,14 +71,20 @@ public:
 		: _d(other._d)
 	{}
 
+	/**
+	 * @brief Construct string from std::string
+	 * @param s String constructed from.
+	 *
+	 * @note @a s expected as UTF-8 encoded.
+	 */
 	string (const std::string & s);
 
-#ifdef PFS_CC_MSC
-	string (const std::wstring & s);
-#endif
-
-	string (size_t n, char c);
-	string (size_t n, int32_t uc);
+//#ifdef PFS_CC_MSC
+//	string (const std::wstring & s);
+//#endif
+//
+//	string (size_t n, char c);
+//	string (size_t n, int32_t uc);
 
 	template <class InputIterator>
 	string (InputIterator first, InputIterator last);
@@ -85,13 +92,83 @@ public:
 	virtual ~string ()
 	{}
 
+    iterator begin ()
+    {
+    	return iterator(_d.begin().base());
+    }
+
+    iterator end ()
+    {
+    	return iterator(_d.end().base());
+    }
+
+    const_iterator begin () const
+    {
+    	return const_iterator(_d.begin().base());
+    }
+
+    const_iterator end () const
+    {
+    	return iterator(_d.end().base());
+    }
+
+    const_iterator cbegin () const
+    {
+    	return begin();
+    }
+
+    const_iterator cend () const
+    {
+    	return end();
+    }
+
+    reverse_iterator rbegin ()
+    {
+    	return reverse_iterator(end());
+    }
+
+    reverse_iterator rend ()
+    {
+    	return reverse_iterator(begin());
+    }
+
+    const_reverse_iterator rbegin () const
+    {
+    	return const_reverse_iterator(end());
+    }
+
+    const_reverse_iterator rend () const
+    {
+    	return const_reverse_iterator(begin());
+    }
+
+    const_reverse_iterator crbegin () const
+    {
+    	return rbegin();
+    }
+
+    const_reverse_iterator crend () const
+    {
+    	return rend();
+    }
+
 	const_pointer data () const
 	{
 		return _d.data();
 	}
 
 	/**
-	 * @brief Return size of string in code units.
+	 * @brief  Returns const pointer to null-terminated contents.
+	 *
+	 * @return Const pointer to null-terminated contents.
+	 */
+    const CodeUnit * c_str() const
+    {
+    	return _d.c_str();
+    }
+
+	/**
+	 * @brief Returns size of string in code units.
 	 *
 	 * @return String in code units.
 	 */
@@ -101,7 +178,7 @@ public:
 	}
 
 	/**
-	 * @brief Return length in code points.
+	 * @brief Returns length in code points.
 	 *
 	 * @return Length in code points.
 	 */
@@ -138,52 +215,109 @@ public:
 //	int compare( size_type pos1, size_type count1,
 //	             const CharT* s, size_type count2 ) const;
 
-//	string & append (const string & str)
-//	{
-//		_d.append(str._d);
-//		_length += _d.length;
-//		return *this;
-//	}
+    /**
+     *  @brief Append a string to this string.
+     *
+     *  @param s The string to append.
+     *  @return  Reference to this string.
+     */
+    string & append (const string & s)
+    {
+    	_d.append(s._d);
+    	return *this;
+    }
 
-//	string & append (const string & str, size_t subpos, size_t sublen);
-//	string & append (const char * s);
-//	string & append (const char * s, size_t n);
-//	string & append (size_t n, char c);
-//	string & append (size_t n, uint32_t c);
-//	string & append (size_t n, ucchar c)
-//	{
-//		while (n-- > 0) {
-//			this->push_back(c);
-//		}
-//		return *this;
-//	}
+	/**
+	 *  @brief  Append a substring.
+	 *  @details This function appends @a n characters from @a s
+	 *           starting at @a pos to this string.  If @a n is larger
+	 *           than the number of available characters in @a s, the
+	 *           remainder of @a s is appended.
+	 *
+	 *  @param s   The string to append.
+	 *  @param pos Index of the first character of str to append.
+	 *  @param n   The number of characters to append.
+	 *  @return Reference to this string.
+	 */
+//    string & append (const string & s, size_type pos, size_type n)
+//    {
+//    	PFS_ASSERT_RANGE(pos < s.size());
 //
-//	template <class InputIterator>
-//	string & append (InputIterator first, InputIterator last)
-//	{
-//		while (first != last) {
-//			push_back(*first++);
-//		}
-//		return *this;
-//	}
 //
-//	string & push_back (char latin1)
-//	{
-//		//return this->append(1, latin1);
-//		return latin1_cast (const char * latin1, size_t n, *this);
-//	}
+//    	_M_append(__str._M_data()
+//			 + __str._M_check(__pos, "basic_string::append"),
+//			 __str._M_limit(__pos, __n));
 //
-//	string & push_back (uint32_t c)
-//	{
-//		//return this->append(1, c);
-//		return *this;
-//	}
-//
-//	string & push_back (ucchar c)
-//	{
-//		//return this->append(1, c);
-//		return *this;
-//	}
+//    	return *this;
+//    }
+
+    /**
+     *  @brief Append a C substring.
+     *
+     *  @param s The C string to append.
+     *  @param n The number of characters to append.
+     *  @return Reference to this string.
+     */
+//    string & append (const CodeUnit * s, size_type n)
+//    {
+//    	if (s) {
+//    		_d.append(s, n);
+//    	}
+//    	return *this;
+//    }
+
+    /**
+     *  @brief Append a C string.
+     *
+     *  @param s The C string to append.
+     *  @return  Reference to this string.
+     */
+//    string & append (const CodeUnit * s)
+//    {
+//    	if (s)
+//    		_d.append(s);
+//    	return *this;
+//    }
+
+    /**
+     *  @brief  Append multiple characters.
+     *  @details Appends @a n copies of @a c to this string.
+     *
+     *  @param n  The number of characters to append.
+     *  @param c  The character to use.
+     *  @return  Reference to this string.
+     */
+    string & append (size_type n, value_type c)
+    {
+    	while (n--) {
+    		utf_traits_type::encode(c, std::back_inserter(_d));
+    	}
+    	return *this;
+    }
+
+    /**
+     *  @brief Append a range of characters.
+     *  @details Appends characters in the range [@a first, @a last) to this string.
+     *
+     *  @param first  Iterator referencing the first character to append.
+     *  @param last  Iterator marking the end of the range.
+     *  @return  Reference to this string.
+     */
+    template <typename InputIterator>
+    string & append (InputIterator first, InputIterator last)
+    {
+    	while (first != last) {
+    		append(1, *first++);
+    	}
+
+    	return *this;
+    }
+
+	string & push_back (value_type c)
+	{
+		utf_traits_type::encode(c, std::back_inserter(_d));
+		return *this;
+	}
 
 #if __COMMENT__
 
@@ -191,20 +325,6 @@ public:
 	utf_string & erase (size_type index, size_type count);
 	iterator erase (const_iterator pos) { return erase(pos, pos + 1); }
 	iterator erase (const_iterator first, const_iterator last);
-
-    iterator begin ()                       { return iterator(this, pointer(this, 0)); }
-    iterator end   ()                       { return iterator(this, pointer(this, size())); }
-    const_iterator begin () const           { return cbegin(); }
-    const_iterator end   () const           { return cend(); }
-    const_iterator cbegin() const           { return const_iterator(this, const_pointer(this, 0)); }
-    const_iterator cend  () const           { return const_iterator(this, const_pointer(this, size())); }
-    reverse_iterator rbegin  ()             { return reverse_iterator(end()); }
-    reverse_iterator rend    ()             { return reverse_iterator(begin()); }
-    const_reverse_iterator rbegin  () const { return crbegin(); }
-    const_reverse_iterator rend    () const { return crend(); }
-    const_reverse_iterator crbegin () const { return const_reverse_iterator(cend()); }
-    const_reverse_iterator crend   () const { return const_reverse_iterator(cbegin()); }
-
 
     value_type valueAt (size_type index) const { return at(index); }
     value_type charAt (size_type index) const { return at(index); }
@@ -1288,13 +1408,12 @@ inline std::ostream & operator << <uint16_t> (std::ostream & os, const utf_strin
 
 #endif // __COMMENT__
 
-template <typename CodeUnit>
-inline bool operator < ( const string<CodeUnit> & lhs
-		, const string<CodeUnit> & rhs )
+template <typename CodeUnit, typename UtfTag>
+inline bool operator < (const string<CodeUnit, UtfTag> & lhs
+		, const string<CodeUnit, UtfTag> & rhs )
 {
 	return lhs.compare(rhs) < 0;
 }
-
 
 }} // pfs::utf
 

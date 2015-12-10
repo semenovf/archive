@@ -8,8 +8,8 @@
 #ifndef __PFS_UTF8_TRAITS_HPP__
 #define __PFS_UTF8_TRAITS_HPP__
 
-#include <string>
 #include <pfs/utf8/decode.hpp>
+#include <pfs/utf8/encode.hpp>
 #include <pfs/utf8/advance.hpp>
 #include <pfs/utf/traits.hpp>
 
@@ -53,14 +53,19 @@ struct traits<CodeUnitIterator, pfs::utf8::tag>
     	return pfs::utf8::decode(p);
     }
 
+    static pointer encode (value_type uc, pointer begin)
+    {
+    	return pfs::utf8::encode(uc, begin);
+    }
+
     static void advance_forward (pointer & p, difference_type n)
     {
-    	return pfs::utf8::advance_forward(p, n);
+    	pfs::utf8::advance_forward(p, n);
     }
 
     static void advance_backward (pointer & p, difference_type n)
     {
-    	return pfs::utf8::advance_backward(p, n);
+    	pfs::utf8::advance_backward(p, n);
     }
 };
 

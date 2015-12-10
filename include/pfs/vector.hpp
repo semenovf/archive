@@ -10,4 +10,14 @@
 
 #include <vector>
 
+namespace pfs {
+
+template <typename T, typename Alloc = std::allocator<T> >
+struct vector
+{
+	typedef ::std::vector<T, Alloc> type;
+};
+
+} // pfs
+
 #endif /* __PFS_VECTOR_HPP__ */

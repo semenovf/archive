@@ -25,8 +25,10 @@
 namespace pfs { namespace utf8 {
 
 template <class OutputOctetIterator>
-OutputOctetIterator encode (uint32_t uc, OutputOctetIterator result)
+OutputOctetIterator encode (uint32_t uc, OutputOctetIterator begin)
 {
+	OutputOctetIterator result(begin);
+
     if (uc < 0x80) {
         *result++ = uint8_t(uc);
     } else if (uc < 0x0800) {

@@ -13,32 +13,25 @@
 
 namespace pfs {
 
-template <typename String>
-struct ostringstream;
+#if PFS_STRING_UTF16
 
-template <typename String>
-struct istringstream;
+typedef ::std::wostringstream ostringstream;
+typedef ::std::wistringstream istringstream;
+typedef ::std::wstringstream  stringstream;
 
-template <typename String>
-struct stringstream;
+#elif PFS_STRING_UTF32
 
-template <>
-struct ostringstream<utf8_string>
-{
-	typedef ::std::ostringstream type;
-};
+typedef ::std::wostringstream ostringstream;
+typedef ::std::wistringstream istringstream;
+typedef ::std::wstringstream  stringstream;
 
-template <>
-struct istringstream<utf8_string>
-{
-	typedef ::std::istringstream type;
-};
+#else
 
-template <>
-struct stringstream<utf8_string>
-{
-	typedef ::std::stringstream type;
-};
+typedef ::std::ostringstream ostringstream;
+typedef ::std::istringstream istringstream;
+typedef ::std::stringstream  stringstream;
+
+#endif
 
 } // pfs
 

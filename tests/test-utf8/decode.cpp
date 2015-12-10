@@ -9,13 +9,15 @@
 #include <pfs/utf8/iterator.hpp>
 #include <pfs/utf8/advance.hpp>
 #include <pfs/utf8/decode.hpp>
+#include <pfs/sstream.hpp>
+#include <pfs/iostream.hpp>
 #include <string>
-#include <sstream>
-#include <iostream>
+
 #include "test_data.hpp"
 
-using std::cout;
-using std::endl;
+using pfs::cout;
+using pfs::endl;
+using pfs::ostringstream;
 
 template <typename Iterator>
 void __test_decode (const char * itertype)
@@ -35,7 +37,7 @@ void __test_decode (const char * itertype)
 			++count;
 		}
 
-		std::ostringstream desc;
+		ostringstream desc;
 
 		desc << "Decode UTF-8 using `" << itertype << "' as pointer. String `"
 				<< data[i].name

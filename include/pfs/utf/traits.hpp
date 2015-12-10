@@ -21,7 +21,9 @@ struct traits
 	typedef uint32_t &       reference;
     typedef ptrdiff_t        difference_type;
 
-    static uint32_t decode       (pointer & p);
+    static uint32_t decode (pointer & p);
+    static pointer encode (value_type uc, pointer begin);
+
     static void advance_forward  (pointer & p, difference_type n);
     static void advance_backward (pointer & p, difference_type n);
 };

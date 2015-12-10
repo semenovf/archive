@@ -14,10 +14,9 @@ namespace pfs {
 template<typename T, typename Sequence = std::deque<T> >
 struct stack
 {
-	typedef std::stack<T, Sequence> type;
+	typedef ::std::stack<T, Sequence> type;
 };
 
 } // pfs
-
 
 #endif /* __PFS_STACK_HPP__ */
