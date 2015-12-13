@@ -30,4 +30,4 @@ This software is under development.
 
 ###LICENSE AND COPYRIGHT
 
-Copyright 2012-2014 Fedor Semenov.
+Copyright 2012-2015 Fedor Semenov.
