@@ -6,6 +6,7 @@ SYNOPSYS
             --name=NAME
             [ --type=PROJECT_TYPE ]
             [ --lang=PROJECT_LANG ]
+	    [ --enable-qt ]
             [ --depends=DEP1 [--depends=DEP2 [...]]]
 
     (2) gbs project --build
@@ -22,7 +23,7 @@ SYNOPSYS
     (5) gbs clean [ --jobs=JOB_COUNT ]
 
 DESCRIPTION
-    (1) - create project with specified name NAME. 
+    (1) - create project with specified name NAME.
     
     (2) - build specified project NAME or all projects in solution 
           if name is not specified.
@@ -38,7 +39,10 @@ DESCRIPTION
     
     (3) and (5) are usefull when need to emulate `[gn]make all' 
     and `[gn]make clean' calls. 
-	
+
+OPTIONS
+    --enable-qt
+	Enables Qt support for project.
 VALUES
     NAME
         Project name.

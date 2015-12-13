@@ -130,7 +130,7 @@ function gbs.run (argc, argv)
 --                cli:guide():usage();
 --                return true;
 --           end);
-           
+
     cli:router()
         :a({"workspace", "ws"})
         :b("create")
@@ -179,12 +179,14 @@ function gbs.run (argc, argv)
         :s("type", "console-app")
         :s("lang", "C++")
         :s("depends", {})
+	:b("enable-qt", false)
         :h(function (r)
                 Settings:set("SolutionName"       , solutionName());
                 Settings:set("ProjectName"        , r:optArg("name"));
                 Settings:set("ProjectType"        , r:optArg("type"));
                 Settings:set("ProjectLanguage"    , r:optArg("lang"));
                 Settings:set("ProjectDependencies", r:optArg("depends"));
+		Settings:set("EnableQt"           , r:optArg("enable-qt"));
                 return require("gbs.project"):new(Settings):create();
            end);
 

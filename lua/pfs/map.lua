@@ -19,6 +19,14 @@ function map:size ()
     return self._count;
 end
 
+---
+-- @brief Returns native data.
+-- 
+-- @return Native data.
+-- 
+function map:data ()
+    return self._data;
+end
 
 ---
 -- @brief Synonym for size() method

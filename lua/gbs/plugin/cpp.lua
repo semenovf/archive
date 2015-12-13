@@ -60,6 +60,7 @@ function plugin:transaction ()
     local testsDirName    = settings:get_or_throw("TestsDirName");
     local projectType     = settings:get_or_throw("ProjectType");
     local projectDependencies = settings:get_or_throw("ProjectDependencies");
+    local enableQt        = settings:get("EnableQt") or false;
 
     local premakeKind = plugin.premakeKind(projectType);
     local premakeLang = plugin.premakeLang(projectLang);
@@ -68,25 +69,31 @@ function plugin:transaction ()
 
     local projectDir      = fs.join(".gbs", projectName);
     local projectFile     = fs.join(projectDir, projectFileName);
-        
+
     local trn = require("gbs.transaction"):begin(verbose);
-    
+
     local srcDir = sourcesDirName;
     if projectType == "test" then
         srcDir = testsDirName;
     end
 
     local projectSrcDir = fs.join(srcDir, projectName);
-    
+    local templateDir = fs.join(gbsHomeDir, "template");
+
     trn:MakeDirIfNotExists(srcDir, "Create solution source directory");
     trn:MakeDirIfNotExists(projectSrcDir, "Create project source directory: " .. projectSrcDir);
-    
+
     if projectType == "shared-lib" or projectType == "static-lib" then
         trn:MakeDirIfNotExists("include", "Create solution include directory");
     end
-   
-    local templateDir = fs.join(gbsHomeDir, "template");
-    
+
+    if enableQt then
+        trn:CopyFileIfNotExists(
+              fs.join(templateDir, "qt", "qt_enable.lua")
+            , fs.join("..", ".gbs", "qt_enable.lua"));
+        trn:Print("ATTENTION: Check and modify qt_enable.lua on demand in workspace directory");
+    end
+
     if projectType == "test" then
         if projectLang == "C++" then
             trn:CopyFileIfNotExists(
@@ -115,7 +122,7 @@ function plugin:transaction ()
     if projectType == "test" then
         table.insert(projectSrcFileList
             , string.quote("../../" .. testsDirName .. "/" .. projectName .. "/*.c"));
-        
+
         if projectLang == "C++" then
             table.insert(projectSrcFileList
                 , string.quote("../../" .. testsDirName .. "/" .. projectName .. "/*.cpp"));
@@ -123,7 +130,7 @@ function plugin:transaction ()
     else
         table.insert(projectSrcFileList
             , string.quote("../../" .. sourcesDirName .. "/" .. projectName .. "/*.c"));
-            
+
         if projectLang == "C++" then
             table.insert(projectSrcFileList
                 , string.quote("../../" .. sourcesDirName .. "/" .. projectName .. "/*.cpp"));
@@ -145,61 +152,88 @@ function plugin:transaction ()
     local projectTargetDir = string.join("/", "../../../.build");
     local targetName       = projectName;
     local projectLibDirs   = "../../../.build";
-    
+
     if projectType == "test" then
        projectTargetDir = projectTargetDir .. "/" .. "tests";
 --       targetName       = "test-" .. targetName;
     end
 
-    trn:AppendLinesToFile(projectFile
-        , {
-               utils.fileTitle("--", programName, cmdlineString) 
-            , "kind          " .. string.quote(premakeKind)
-            , "language      " .. string.quote(premakeLang)
-            , "targetname    " .. string.quote(targetName)
-            , "defines       {  }"
-            , "includedirs   { " .. string.join(", ", projectIncludeDirList) .. " }"
-            , "libdirs       { " .. string.quote(projectLibDirs) .. " }"
-            , "files         { " .. string.join(", ", projectSrcFileList) .. " }"
-            , ""
-            , "configuration " .. string.quote("debug")
-            , "    flags        { \"FatalWarnings\", \"Symbols\" }"
-            , "    defines      { \"DEBUG\" }"
-            , "    objdir       " .. string.quote(projecObjDir .. "/debug")
-            , "    targetdir    " .. string.quote(projectTargetDir)
-            , "    targetsuffix " .. string.quote("-d")
-            , "    links        {  }"
-            , ""
-            , "configuration " .. string.quote("release")
-            , "    flags        { \"FatalWarnings\" }"
-            , "    defines      { \"NDEBUG\" }"
-            , "    objdir       " .. string.quote(projecObjDir .. "/release")
-            , "    targetdir    " .. string.quote(projectTargetDir)
-            , "    links        {  }"
-        }, "Update project configuration file: " .. projectFile);  
+    local projectContent = require("pfs.vector"):new();
+    projectContent:push_back(utils.fileTitle("--", programName, cmdlineString));
+
+
+    projectContent:push_back("kind          " .. string.quote(premakeKind));
+    projectContent:push_back("language      " .. string.quote(premakeLang));
+    projectContent:push_back("targetname    " .. string.quote(targetName));
+    projectContent:push_back("defines       {  }");
+    projectContent:push_back("includedirs   { " .. string.join(", ", projectIncludeDirList) .. " }");
+    projectContent:push_back("libdirs       { " .. string.quote(projectLibDirs) .. " }");
+    projectContent:push_back("files         { " .. string.join(", ", projectSrcFileList) .. " }");
+    projectContent:push_back("");
+
+    if enableQt then
+        projectContent:push_back("-- Special for Qt projects");
+        projectContent:push_back("require(\"../../../.gbs/qt_enable\")");
+        projectContent:push_back("");
+        projectContent:push_back("--Available modules:");
+        projectContent:push_back("--    core, gui, multimedia, network, opengl, positioning, printsupport,");
+        projectContent:push_back("--    qml, quick, sensors, sql, svg, testlib, websockets, widgets, xml");
+        projectContent:push_back("--");
+        projectContent:push_back("qtmodules     { \"core\", \"gui\" }");
+        projectContent:push_back("");
+    end
+
+    projectContent:push_back("configuration " .. string.quote("debug"));
+    projectContent:push_back("    flags        { \"FatalWarnings\", \"Symbols\" }");
+    projectContent:push_back("    defines      { \"DEBUG\" }");
+    projectContent:push_back("    objdir       " .. string.quote(projecObjDir .. "/debug"));
+
+    if enableQt then
+        projectContent:push_back([[    qtgenerateddir "../../../.build/lab/qt-app/debug" -- Specific fo Qt project]]);
+    end
+
+    projectContent:push_back("    targetdir    " .. string.quote(projectTargetDir));
+    projectContent:push_back("    targetsuffix " .. string.quote("-d"));
+    projectContent:push_back("    links        {  }");
+    projectContent:push_back("");
+    projectContent:push_back("configuration " .. string.quote("release"));
+    projectContent:push_back("    flags        { \"FatalWarnings\" }");
+    projectContent:push_back("    defines      { \"NDEBUG\" }");
+    projectContent:push_back("    objdir       " .. string.quote(projecObjDir .. "/release"));
+
+    if enableQt then
+        projectContent:push_back([[    qtgenerateddir "../../../.build/lab/qt-app/release" -- Specific fo Qt project]]);
+    end
+
+    projectContent:push_back("    targetdir    " .. string.quote(projectTargetDir));
+    projectContent:push_back("    links        {  }");
+    projectContent:push_back("");
 
     if #projectDependencies > 0 then
         local deplist = string.quote(projectDependencies);
-        trn:AppendLinesToFile(projectFile
-            , {
-                  ""
-                , "dependson { " .. string.join(", ", deplist) .." }"
-            });
+        projectContent:push_back("dependson { " .. string.join(", ", deplist) .." }");
+        projectContent:push_back("");
     end
-    
-    local inc1 = [[include(os.getenv("GBS_HOME") .. ]] 
-        .. [["/premake/filter_action_gmake_install")]];
+
+    projectContent:push_back("");
+    projectContent:push_back([[filter "action:gmake"]]);
+    projectContent:push_back("    buildoptions {}");
+    projectContent:push_back("    linkoptions  {}");
+    projectContent:push_back("");
+    projectContent:push_back([[include(os.getenv("GBS_HOME") .. ]] .. [["/premake/filter_action_gmake_install")]]);
+
+    if enableQt then
+        projectContent:push_back("");
+        projectContent:push_back("-- Special for Qt projects");
+        projectContent:push_back("package.loaded[\"../../../.gbs/qt_enable\"] = nil");
+    end
+
+    projectContent:push_back("");
 
     trn:AppendLinesToFile(projectFile
-        , {
-              ""
-            , [[filter "action:gmake"]]
-            , "    buildoptions {}"
-            , "    linkoptions  {}"
-            , ""
-            , "" .. inc1
-        });
-   
+        , projectContent:data()
+        , "Update project configuration file: " .. projectFile);  
+
     return trn;
 end
 

@@ -7,7 +7,7 @@ local transaction = {};
 function transaction:begin (verbose)
     local o = {
           _sequence = require("pfs.array"):new()
-        , _verbose = verbose or false  
+        , _verbose = verbose or false
     }
     self.__index = self;
     return setmetatable(o, self);
@@ -72,8 +72,15 @@ function transaction:CopyFileIfNotExists (src, dst, description)
     return self;
 end
 
+function transaction:Print (text)
+    if text ~= nil then
+        print(text);
+    end
+    return self;
+end
+
 function transaction:Transaction (trn, description)
-    if trn then 
+    if trn then
         self:append(function () return trn:exec() end, {}, description);
     end
     return self;

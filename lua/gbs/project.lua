@@ -68,6 +68,7 @@ function project:create ()
     local projectType      = settings:get_or_throw("ProjectType");
     local projectLang      = settings:get_or_throw("ProjectLanguage");
     local solutionFileName = settings:get_or_throw("SolutionFileName");
+--    local enableQt         = settings:get("EnableQt") or false;
 
     local projectDir   = fs.join(".gbs", projectName);
     local solutionFile = fs.join(".gbs", solutionFileName);
@@ -81,13 +82,16 @@ function project:create ()
     trn:MakeDir(projectDir, "Create project directory: " .. projectDir);
     
     trn:Transaction(self:createPlugin():transaction());
+
+    local solutionContent = require("pfs.vector"):new();
+    solutionContent:push_back("");
+    solutionContent:push_back("-- BEGIN PROJECT");
+    solutionContent:push_back("project " .. string.quote(projectName));
+    solutionContent:push_back("    include(" .. string.quote(projectName .. "/" .. projectFileName) .. ")");
+    solutionContent:push_back("-- END PROJECT");
+
     trn:AppendLinesToFile(solutionFile
-        , {
-              ""
-            , "-- BEGIN PROJECT"
-            , "project " .. string.quote(projectName)
-            , "    include(" .. string.quote(projectName .. "/" .. projectFileName) .. ")"
-            , "-- END PROJECT"}
+        , solutionContent:data()
         , "Update solution configration file: " .. solutionFile);
 
     return trn:exec();

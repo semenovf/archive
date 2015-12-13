@@ -1,25 +1,24 @@
--- TODO DEPRECATED, use vector
-local array = {};
+local vector = {};
 
 --
 -- indexing from zero (not from 1)
 --
-function array:new ()
+function vector:new ()
     local o = {
         _data = {}
       , _count = 0
     }; 
     self.__index = self;
-    self.__tostring = _array_tostring;
+    self.__tostring = _vector_tostring;
     return setmetatable(o, self);
 end
 
 ---
--- @brief Returns number of elements in the array.
+-- @brief Returns number of elements in the vector.
 -- 
--- @return Number of elements in the array
+-- @return Number of elements in the vector
 -- 
-function array:size ()
+function vector:size ()
     return self._count;
 end
 
@@ -28,20 +27,20 @@ end
 -- 
 -- @return Native data.
 -- 
-function array:data ()
+function vector:data ()
     return self._data;
 end
 
 ---
 -- @brief Synonym for size() method
 -- 
--- @return Number of elements in the array 
+-- @return Number of elements in the vector 
 --
-function array:count ()
+function vector:count ()
     return self._count;
 end
 
-function array:at (pos)
+function vector:at (pos)
     if type(pos) ~= "number" then
         error("expected number as `pos' value");
     end
@@ -52,7 +51,7 @@ function array:at (pos)
     return self._data[pos + 1];
 end
 
-function array:insert (pos, value)
+function vector:insert (pos, value)
     if type(pos) ~= "number" then
         error("expected number as `pos' value");
     end
@@ -66,19 +65,19 @@ function array:insert (pos, value)
     self._count = self._count + 1; 
 end
 
-function array:prepend (value)
+function vector:prepend (value)
     self:insert(0, value);
 end
 
-function array:append (value)
+function vector:append (value)
     self:insert(self._count, value);
 end
 
-function array:push_back (value)
+function vector:push_back (value)
     self:insert(self._count, value);
 end
 
-function _array_tostring (a)
+function _vector_tostring (a)
     local r = "[";
     local separator = "";
     for i = 0, a:size() - 1 do
@@ -89,4 +88,4 @@ function _array_tostring (a)
     return r;
 end
 
-return array;
+return vector;
