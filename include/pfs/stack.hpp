@@ -11,7 +11,7 @@
 
 namespace pfs {
 
-template<typename T, typename Sequence = std::deque<T> >
+template <typename T, typename Sequence = std::deque<T> >
 struct stack
 {
 	typedef ::std::stack<T, Sequence> type;

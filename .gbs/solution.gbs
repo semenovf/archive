@@ -123,8 +123,8 @@ project "test-utf8"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-algo-string"
---    include("test-algo-string/project.gbs")
+project "test-algo-string"
+    include("test-algo-string/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

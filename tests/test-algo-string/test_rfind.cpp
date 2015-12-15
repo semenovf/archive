@@ -30,23 +30,25 @@ struct TestData
 };
 
 static TestData test_data[] = {
-	  {{ "a", -1, -1 },  { "a", -1, -1 },  0 }
-	, {{ "ab", -1, -1 },  { "b", -1, -1 },  1 }
-	, {{ "abcdf", -1, -1 },  { "c", -1, -1 },  2 }
-	, {{ "abcdf", 2, -1 },  { "c", -1, -1 },  0 }
-	, {{ "abcdf", -1, -1 },  { "df", -1, -1 },  3 }
-	, {{ "abcdf", -1, -1 },  { "dfa", -1, -1 },  -1 }
+	  {{ "a"     , -1, -1 },  { "a"   , -1, -1 },  0 }
+	, {{ "ab"    , -1, -1 },  { "b"   , -1, -1 },  1 }
+	, {{ "ab"    , -1, -1 },  { "aba" , -1, -1 }, -1 }
+	, {{ "abc"   , -1, -1 },  { "c"   , -1, -1 },  2 }
+    , {{ "abc"   , -1, -1 },  { "d"   , -1, -1 }, -1 }
+	, {{ "abcd"  ,  2, -1 },  { "c"   , -1, -1 },  0 }
+	, {{ "abcabc", -1, -1 },  { "abc" , -1, -1 },  3 }
+    , {{ "abcabc", -1, -1 },  { "cb"  , -1, -1 }, -1 }
+	, {{ "abcabc", -1, -1 },  { "cb"  , -1, -1 }, -1 }
 	, {{ 0, -1, -1 },  { 0, -1, -1 },  -1 }
 };
 
-void test_find ()
+void test_rfind ()
 {
 	ADD_TESTS(sizeof(test_data)/sizeof(test_data[0]) - 1);
 
 	TestData * test = & test_data[0];
 
 	while (test->haystack.s) {
-
 		string text;
 
 		string haystack(test->haystack.s);
@@ -69,7 +71,7 @@ void test_find ()
 		if (test->needle.end > 0)
 			needleEnd = needleBegin + test->needle.end;
 
-		string::iterator it = pfs::find(
+		string::iterator it = pfs::rfind(
 			  haystackBegin
 			, haystackEnd
 			, needleBegin

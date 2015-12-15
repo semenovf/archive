@@ -72,8 +72,12 @@ public:
 	typedef ssize_t (* func_type)(context<_P> * fsm, void *fn_context, typename _P::const_iterator begin, typename _P::const_iterator end);
 
 private:
-	match() : _match(nullptr) {}
-	void deref () {
+	match()
+		: _match(nullptr)
+	{}
+
+	void deref ()
+	{
 		if (_match) {
 			PFS_ASSERT(_match->_ref > 0);
 			--_match->_ref;
@@ -84,7 +88,12 @@ private:
 	}
 
 public:
-	match (match_base<_P> * match) : _match(match) { PFS_ASSERT(_match); }
+	match (match_base<_P> * match)
+		: _match(match)
+	{
+		PFS_ASSERT(_match);
+	}
+
 	match (const match & other)
 	{
 		PFS_ASSERT(other._match);
@@ -120,7 +129,6 @@ struct context
 	const transition<_P> * _trans_tab;
 	void * _userContext;     /* user context */
 };
-
 
 template <typename _P>
 class fsm
@@ -200,8 +208,8 @@ template <typename _P>
 fsm<_P>::fsm ()
 	: _context(new context<_P>)
 {
-	_context->_trans_tab     = nullptr;
-	_context->_userContext       = nullptr;
+	_context->_trans_tab   = nullptr;
+	_context->_userContext = nullptr;
 }
 
 template <typename _P>

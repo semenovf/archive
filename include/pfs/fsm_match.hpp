@@ -12,6 +12,8 @@
 #	error "Do not include fsm_match.hpp directly"
 #endif
 
+#include <pfs/limits.hpp>
+
 namespace pfs { namespace fsm {
 
 //
@@ -167,7 +169,7 @@ template <typename _P>
 ssize_t match_rpt<_P>::do_match (context<_P> * ctx, const_iterator begin, const_iterator end) const
 {
 	int from = 0;
-	int to = PFS_INT_MAX;
+	int to = pfs::max_value<int>();
 	const_iterator ptr(begin);
 	size_t nchars_total_processed;
 
