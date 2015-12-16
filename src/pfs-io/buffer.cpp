@@ -28,6 +28,11 @@ struct buffer : public bits::device
         , _pos(0)
     {}
 
+    virtual open_mode_flags open_mode () const
+    {
+    	return io::device::ReadWrite | io::device::NonBlocking;
+    }
+
     virtual size_t  bytes_available () const
     {
     	 return _buffer.size() - _pos;
@@ -63,31 +68,17 @@ struct buffer : public bits::device
     }
 };
 
+
 template <>
-bool open_device<buffer, byte_t *, size_t, int> (device & d
-		, byte_t * a
-		, size_t n
-		, int oflags)
+bool open_device<buffer> (device & d, const open_params<buffer> & op)
 {
     if (d._d)
         return false;
 
-    d._d = new buffer(a, n);
-    d.set_flags(oflags);
-
-    return d._d != 0;
-}
-
-template <>
-bool open_device<buffer, size_t, int> (device & d
-		, size_t n
-		, int oflags)
-{
-    if (d._d)
-        return false;
-
-    d._d = new buffer(n);
-    d.set_flags(oflags);
+    if (op.pbytes)
+    	d._d = new buffer(op.pbytes, op.size);
+    else
+    	d._d = new buffer(op.size);
 
     return d._d != 0;
 }

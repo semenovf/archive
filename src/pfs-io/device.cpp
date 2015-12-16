@@ -12,10 +12,9 @@ namespace pfs { namespace io {
 
 static const size_t DEFAULT_READ_BUFSZ = 256;
 
-ssize_t device::read (byte_string & bytes, size_t n)
+ssize_t device::read (byte_string & bytes, size_t n, error_code * ex)
 {
-    if (!check_readable())
-        return -1;
+	PFS_ASSERT(_d);
 
     if (!n)
         return 0;
@@ -27,7 +26,7 @@ ssize_t device::read (byte_string & bytes, size_t n)
         pbuffer = new byte_t[n];
     }
 
-    ssize_t sz = read(pbuffer, n);
+    ssize_t sz = read(pbuffer, n, ex);
 
     if (sz > 0) {
         bytes.append(pbuffer, size_t(sz));
@@ -39,32 +38,25 @@ ssize_t device::read (byte_string & bytes, size_t n)
     return sz;
 }
 
-bool device::set_nonblocking (bool on)
+bool device::close (error_code * ex)
 {
-	if (_d && _d->set_nonblocking(on)) {
-		if (on) {
-			_oflags |= NonBlocking;
-		} else {
-			_oflags &= ~NonBlocking;
-		}
+	bool r = false;
 
-		return true;
+	if (_d) {
+		if (_d->close(ex))
+			r = true;
+
+		delete _d;
+        _d = 0;
 	}
-    return false;
-}
 
+	return r;
+}
 
 bool device::compress (device & dest, zlib::compression_level level, size_t chunkSize)
 {
-    if (!_d) {
-    	_nx.append(_u8("Source is null"));
-        return false;
-    }
-
-    if (!dest._d) {
-    	_nx.append(_u8("Destination is null"));
-        return false;
-    }
+    PFS_ASSERT(_d);
+    PFS_ASSERT(dest._d);
 
 	if (chunkSize < 32)
 		chunkSize = 0x4000;
@@ -82,15 +74,18 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
 	int rc = deflateInit(& strm, level);
 
 	if (rc != Z_OK) {
-		_nx.append(zlib::strerror(rc));
+		//FIXME Need to notify error
+//		_nx.append(zlib::strerror(rc));
 		return false;
 	}
+
+	error_code ex;
 
 	/* compress until end of file */
 	do {
 		strm.avail_in = this->read(in.get(), chunkSize);
 
-		if (this->is_error()) {
+		if (ex) {
 			(void)deflateEnd(& strm);
 			return false;
 		}
@@ -107,7 +102,7 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
         	PFS_ASSERT(rc != Z_STREAM_ERROR);  /* state not clobbered */
         	size_t have = chunkSize - strm.avail_out;
 
-        	if (dest.write(out.get(), have) != ssize_t(have) || dest.is_error()) {
+        	if (dest.write(out.get(), have, & ex) != ssize_t(have) || ex) {
         		(void)deflateEnd(& strm);
         		return false;
         	}
@@ -127,11 +122,8 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
 
 bool device::uncompress (device & dest, size_t chunkSize)
 {
-    if (!_d)
-        return false;
-
-    if (!dest._d)
-        return false;
+    PFS_ASSERT(_d);
+    PFS_ASSERT(dest._d);
 
     z_stream strm;
 	pfs::scoped_array_ptr<unsigned char> in(new unsigned char[chunkSize]);
@@ -147,15 +139,18 @@ bool device::uncompress (device & dest, size_t chunkSize)
     int rc = inflateInit(& strm);
 
 	if (rc != Z_OK) {
-		_nx.append(zlib::strerror(rc));
+		//FIXME Need to notify error
+		//_nx.append(zlib::strerror(rc));
 		return false;
 	}
+
+	error_code ex;
 
     /* decompress until deflate stream ends or end of file */
     do {
         strm.avail_in = this->read(in.get(), chunkSize);
 
-        if (this->is_error()) {
+        if (ex) {
             (void)inflateEnd(&strm);
             return false;
         }
@@ -183,7 +178,7 @@ bool device::uncompress (device & dest, size_t chunkSize)
 
             size_t have = chunkSize - strm.avail_out;
 
-            if (dest.write(out.get(), have) != ssize_t(have) || dest.is_error()) {
+            if (dest.write(out.get(), have, & ex) != ssize_t(have) || ex) {
                 inflateEnd(& strm);
                 return false;
             }
@@ -196,7 +191,8 @@ bool device::uncompress (device & dest, size_t chunkSize)
     inflateEnd(& strm);
 
     if (rc != Z_STREAM_END) {
-    	_nx.append(zlib::strerror(Z_DATA_ERROR));
+    	//FIXME Need to notify error
+    	//_nx.append(zlib::strerror(Z_DATA_ERROR));
     	return false;
     }
 

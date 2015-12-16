@@ -12,64 +12,45 @@
 
 namespace pfs { namespace io {
 
+/**
+ * @struct pfs::io::buffer
+ * @brief Buffer device implementation.
+ * @see pfs::io::device.
+ */
 struct buffer;
 
+template <>
+struct open_params<buffer>
+{
+	byte_t * pbytes;
+	size_t   size;
+
+	open_params (size_t n) : pbytes(0), size(n)
+	{}
+
+	open_params (byte_t * p, size_t n) : pbytes(p), size(n)
+	{}
+
+	open_params (char * p, size_t n) : pbytes(reinterpret_cast<byte_t *>(p)), size(n)
+	{}
+};
+
 /**
- * @brief Opens buffer device and initializes
- *        it with raw byte array @c a of size @c n
+ * @fn bool open_device<buffer> (device & d, const open_params<buffer> & op)
+ *
+ * @brief Open buffer device. Usage see below.
  *
  * @param d Buffer device to open.
- * @param a Raw bytes array to initialize the buffer.
- * @param n Raw bytes array size.
- * @param oflags Open mode flags.
+ * @param op Open device parameters.
+ * 		@li open_params(size_t n, uint32_t oflags)
+ * 		@li open_params(byte_t * p, size_t n, uint32_t oflags)
+ * 		@li open_params(char * p, size_t n, uint32_t oflags)
+ *
  * @return @c true if open is successful, @c false otherwise
  *         (i.e. buffer device is already opened).
  */
 template <>
-bool open_device<buffer, byte_t *, size_t, int> (device & d
-		, byte_t * a
-		, size_t n
-		, int oflags);
-
-template <>
-inline bool open_device<buffer, byte_t *, size_t, pfs::io::device::OpenMode> (device & d
-		, byte_t * a
-		, size_t n
-		, pfs::io::device::OpenMode oflag)
-{
-	return open_device<buffer, byte_t *, size_t, int>(d, a, n, int(oflag));
-}
-
-template <>
-bool open_device<buffer, byte_t *, size_t> (device & d
-		, byte_t a[]
-		, size_t n)
-{
-	return open_device<buffer, byte_t *, size_t, int>(d, a, n, io::device::ReadWrite);
-}
-
-/**
- * @brief Open buffer device and reserve @a n bytes space.
- *
- * @param d Buffer device to open.
- * @param n Buffer size in bytes.
- * @param oflags Open mode flags.
- * @return @c true if open is successful, @c false otherwise
- */
-template <>
-bool open_device<buffer, size_t, int> (device & d, size_t n, int oflags);
-
-template <>
-inline bool open_device<buffer, size_t, pfs::io::device::OpenMode> (device & d, size_t n, pfs::io::device::OpenMode oflag)
-{
-	return open_device<buffer, size_t, int>(d, n, int(oflag));
-}
-
-template <>
-inline bool open_device<buffer, size_t> (device & d, size_t n)
-{
-	return open_device<buffer, size_t, int>(d, n, io::device::ReadWrite);
-}
+bool open_device<buffer> (device & d, const open_params<buffer> & op);
 
 }} // pfs::io
 

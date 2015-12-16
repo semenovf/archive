@@ -25,8 +25,11 @@ typedef int native_handle_type;
 struct device
 {
 	typedef pfs::io::bits::native_handle_type native_handle_type;
+	typedef uint32_t open_mode_flags;
 
     virtual ~device () {}
+
+    virtual open_mode_flags open_mode () const = 0;
 
     virtual size_t  bytes_available () const = 0;
 

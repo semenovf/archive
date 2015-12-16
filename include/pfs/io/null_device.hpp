@@ -8,11 +8,11 @@
 #ifndef __PFS_IO_NULL_DEVICE_HPP__
 #define __PFS_IO_NULL_DEVICE_HPP__
 
-#include <pfs/io/bits/device_impl.hpp>
+#include <pfs/io/bits/device.hpp>
 
 namespace pfs { namespace io {
 
-struct null_device : bits::device_impl
+struct null_device : bits::device
 {
 	typedef native_handle native_handle_type;
 
