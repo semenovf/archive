@@ -12,17 +12,16 @@ namespace pfs { namespace io {
 
 static const size_t DEFAULT_READ_BUFSZ = 256;
 
-byte_string device::read (size_t n)
+ssize_t device::read (byte_string & bytes, size_t n)
 {
-    if (!checkReadable())
-        return byte_string();
+    if (!check_readable())
+        return -1;
 
     if (!n)
-        return byte_string();
+        return 0;
 
     byte_t buffer[DEFAULT_READ_BUFSZ];
     byte_t * pbuffer = buffer;
-    byte_string r;
 
     if (n > DEFAULT_READ_BUFSZ) {
         pbuffer = new byte_t[n];
@@ -31,22 +30,41 @@ byte_string device::read (size_t n)
     ssize_t sz = read(pbuffer, n);
 
     if (sz > 0) {
-        r = byte_string(pbuffer, size_t(sz));
+        bytes.append(pbuffer, size_t(sz));
     }
 
     if (n > DEFAULT_READ_BUFSZ)
         delete [] pbuffer;
 
-    return r;
+    return sz;
 }
+
+bool device::set_nonblocking (bool on)
+{
+	if (_d && _d->set_nonblocking(on)) {
+		if (on) {
+			_oflags |= NonBlocking;
+		} else {
+			_oflags &= ~NonBlocking;
+		}
+
+		return true;
+	}
+    return false;
+}
+
 
 bool device::compress (device & dest, zlib::compression_level level, size_t chunkSize)
 {
-    if (isNull())
+    if (!_d) {
+    	_nx.append(_u8("Source is null"));
         return false;
+    }
 
-    if (dest.isNull())
+    if (!dest._d) {
+    	_nx.append(_u8("Destination is null"));
         return false;
+    }
 
 	if (chunkSize < 32)
 		chunkSize = 0x4000;
@@ -64,7 +82,7 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
 	int rc = deflateInit(& strm, level);
 
 	if (rc != Z_OK) {
-		this->addError(zlib::strerror(rc));
+		_nx.append(zlib::strerror(rc));
 		return false;
 	}
 
@@ -72,12 +90,12 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
 	do {
 		strm.avail_in = this->read(in.get(), chunkSize);
 
-		if (this->isError()) {
+		if (this->is_error()) {
 			(void)deflateEnd(& strm);
 			return false;
 		}
 
-		flush = this->atEnd() ? Z_FINISH : Z_NO_FLUSH;
+		flush = this->at_end() ? Z_FINISH : Z_NO_FLUSH;
         strm.next_in = in.get();
 
 		/* run deflate() on input until output buffer not full, finish
@@ -89,7 +107,7 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
         	PFS_ASSERT(rc != Z_STREAM_ERROR);  /* state not clobbered */
         	size_t have = chunkSize - strm.avail_out;
 
-        	if (dest.write(out.get(), have) != ssize_t(have) || dest.isError()) {
+        	if (dest.write(out.get(), have) != ssize_t(have) || dest.is_error()) {
         		(void)deflateEnd(& strm);
         		return false;
         	}
@@ -109,10 +127,10 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
 
 bool device::uncompress (device & dest, size_t chunkSize)
 {
-    if (isNull())
+    if (!_d)
         return false;
 
-    if (dest.isNull())
+    if (!dest._d)
         return false;
 
     z_stream strm;
@@ -129,7 +147,7 @@ bool device::uncompress (device & dest, size_t chunkSize)
     int rc = inflateInit(& strm);
 
 	if (rc != Z_OK) {
-		this->addError(zlib::strerror(rc));
+		_nx.append(zlib::strerror(rc));
 		return false;
 	}
 
@@ -137,7 +155,7 @@ bool device::uncompress (device & dest, size_t chunkSize)
     do {
         strm.avail_in = this->read(in.get(), chunkSize);
 
-        if (this->isError()) {
+        if (this->is_error()) {
             (void)inflateEnd(&strm);
             return false;
         }
@@ -165,7 +183,7 @@ bool device::uncompress (device & dest, size_t chunkSize)
 
             size_t have = chunkSize - strm.avail_out;
 
-            if (dest.write(out.get(), have) != ssize_t(have) || dest.isError()) {
+            if (dest.write(out.get(), have) != ssize_t(have) || dest.is_error()) {
                 inflateEnd(& strm);
                 return false;
             }
@@ -178,7 +196,7 @@ bool device::uncompress (device & dest, size_t chunkSize)
     inflateEnd(& strm);
 
     if (rc != Z_STREAM_END) {
-    	this->addError(zlib::strerror(Z_DATA_ERROR));
+    	_nx.append(zlib::strerror(Z_DATA_ERROR));
     	return false;
     }
 

@@ -53,23 +53,25 @@ char loremipsum[] =
 
 void test_read ()
 {
-    pfs::io::buffer buffer;
-    TEST_FAIL(buffer.open(reinterpret_cast<byte_t *>(loremipsum), strlen(loremipsum), pfs::io::device::ReadOnly));
-    TEST_FAIL(buffer.size() == strlen(loremipsum));
+	pfs::io::device d;
 
-    pfs::io::device & d = buffer;
+	pfs::io::open_device<pfs::io::buffer>(d
+			, reinterpret_cast<byte_t *>(loremipsum)
+			, strlen(loremipsum)
+			, pfs::io::device::ReadOnly);
 
-    TEST_OK(d.isReadable());
-    TEST_OK(!d.isWritable());
+	TEST_FAIL(d.available() == strlen(loremipsum));
+
+    TEST_OK(d.is_readable());
+    TEST_OK(!d.is_writable());
 
     TEST_OK(d.write(byte_string()) < 0);
 
     byte_string result;
     size_t n = 0;
 
-    while (!d.atEnd()) {
-        byte_string bytes = buffer.read(n++);
-        result.append(bytes);
+    while (!d.at_end()) {
+        d.read(result, n++);
     }
 
     TEST_OK(result == loremipsum);
@@ -77,25 +79,26 @@ void test_read ()
 
 void test_write ()
 {
-    pfs::io::buffer buffer;
-    TEST_FAIL(buffer.open(10, pfs::io::device::WriteOnly));
+	pfs::io::device d;
 
-    pfs::io::device & d = buffer;
+	pfs::io::open_device<pfs::io::buffer>(d
+			, size_t(10)
+			, pfs::io::device::WriteOnly);
 
-    TEST_OK(!d.isReadable());
-    TEST_OK(d.isWritable());
+    TEST_OK(!d.is_readable());
+    TEST_OK(d.is_writable());
 
     char a1[1];
     TEST_OK(d.read(a1, 1) < 0); // is writable only
 
     TEST_OK(d.write(loremipsum, strlen(loremipsum) + 1) == static_cast<ssize_t>(strlen(loremipsum)) + 1);
-    TEST_OK(buffer.size() == strlen(loremipsum) + 1);
+    TEST_OK(d.available() == strlen(loremipsum) + 1);
  }
 
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(12);
+    BEGIN_TESTS(10);
 
     test_read();
     test_write();

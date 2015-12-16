@@ -12,14 +12,13 @@
 #include <pfs/fs/path.hpp>
 #include <pfs/io/device.hpp>
 
-
 namespace pfs { namespace io {
 
-class DLL_API file : public device
+class DLL_API file : public bits::device
 {
-    typedef device base_class;
-
 public:
+	typedef bits::device::native_handle_type native_handle_type;
+
 	enum permission {
 		  ReadOwner  = 0x4000 // The file is readable by the owner of the file.
 		, WriteOwner = 0x2000 // The file is writable by the owner of the file.
@@ -38,36 +37,36 @@ public:
 public:
 	file () : device() {}
 	file (int fd);
-	file (const string & path, int32_t oflags = ReadWrite);
-	file (const pfs::fs::path & p, int32_t oflags = ReadWrite);
+	file (const string & path, int32_t oflags = io::device::ReadWrite);
+	file (const pfs::fs::path & p, int32_t oflags = io::device::ReadWrite);
 	virtual ~file () {}
 
-	bool open (const string & path, int32_t oflags = ReadWrite);
-	bool open (const pfs::fs::path & p, int32_t oflags = ReadWrite);
+	bool open (const string & path, int32_t oflags = io::device::ReadWrite);
+	bool open (const pfs::fs::path & p, int32_t oflags = io::device::ReadWrite);
 
 	size_t size () const;
-	bool setPermissions (int32_t perms); // XXX DEPRECATED
+//	bool set_permissions (int32_t perms); // XXX DEPRECATED
 	void rewind ();
 	size_t offset () const;
-	void setOffset (size_t off);
 
-	// XXX DEPRECATED
-	string readAll ()
-	{
-		return string::fromUtf8(read(available()));
-	}
+	void set_offset (size_t off);
 
-	// XXX DEPRECATED
-	void read_all (string & s)
-	{
-		s = string::fromUtf8(read(available()));
-	}
+//	// XXX DEPRECATED
+//	string readAll ()
+//	{
+//		return string::fromUtf8(read(available()));
+//	}
+//
+//	// XXX DEPRECATED
+//	void read_all (string & s)
+//	{
+//		s = string::fromUtf8(read(available()));
+//	}
 
-	void read_all (byte_string & bs)
-	{
-		bs = read(available());
-	}
-
+//	void read_all (byte_string & bs)
+//	{
+//		bs = read(available());
+//	}
 };
 
 }} // pfs::io

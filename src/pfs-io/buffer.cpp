@@ -10,36 +10,92 @@
 
 namespace pfs { namespace io {
 
-struct buffer_impl : public device_impl
+struct buffer : public bits::device
 {
     typedef array<byte_t> buffer_type;
 
     buffer_type _buffer;
     size_t _pos;
 
-    buffer_impl () : _pos(0) {}
-    buffer_impl (byte_t a[], size_t n)
+    buffer () : _pos(0) {}
+    buffer (byte_t a[], size_t n)
         : _buffer(a, n)
         , _pos(0)
     {}
 
-    buffer_impl (size_t sz)
+    buffer (size_t sz)
         : _buffer(sz, true)
         , _pos(0)
     {}
 
+    virtual size_t  bytes_available () const
+    {
+    	 return _buffer.size() - _pos;
+    }
 
-    virtual size_t  bytesAvailable () const { return _buffer.size() - _pos; }
-    virtual ssize_t readBytes      (byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &);
-    virtual ssize_t writeBytes     (const byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &);
-    virtual bool    closeDevice    (errorable_ext &) { return true; }
-    virtual bool    deviceIsOpened () const { return true; }
-    virtual void    flushDevice    () {}
-    virtual bool    setNonBlocking () { return true; }
+    virtual ssize_t read (byte_t bytes[], size_t n, error_code * ex);
+
+    virtual ssize_t write (const byte_t bytes[], size_t n, error_code * ex);
+
+    virtual bool close (error_code * ex)
+    {
+    	PFS_UNUSED(ex);
+    	return true;
+    }
+
+    virtual bool opened () const
+    {
+    	return true;
+    }
+
+    virtual void flush ()
+    { }
+
+    virtual bool set_nonblocking (bool on)
+    {
+    	PFS_UNUSED(on);
+    	return true;
+    }
+
+    virtual native_handle_type native_handle () const
+    {
+    	return -1;
+    }
 };
 
-ssize_t buffer_impl::readBytes (byte_t bytes[], size_t n, errorable_ext &)
+template <>
+bool open_device<buffer, byte_t *, size_t, int> (device & d
+		, byte_t * a
+		, size_t n
+		, int oflags)
 {
+    if (d._d)
+        return false;
+
+    d._d = new buffer(a, n);
+    d.set_flags(oflags);
+
+    return d._d != 0;
+}
+
+template <>
+bool open_device<buffer, size_t, int> (device & d
+		, size_t n
+		, int oflags)
+{
+    if (d._d)
+        return false;
+
+    d._d = new buffer(n);
+    d.set_flags(oflags);
+
+    return d._d != 0;
+}
+
+ssize_t buffer::read (byte_t bytes[], size_t n, error_code * ex)
+{
+	PFS_UNUSED(ex);
+
     if (_pos >= _buffer.size())
         return 0;
 
@@ -47,79 +103,22 @@ ssize_t buffer_impl::readBytes (byte_t bytes[], size_t n, errorable_ext &)
     buffer_type::copy(bytes, _buffer,  _pos, n);
     _pos += n;
 
-    return ssize_t(n);
+    return integral_cast_check<ssize_t>(n);
 }
 
-ssize_t buffer_impl::writeBytes (const byte_t bytes[], size_t n, errorable_ext &)
+ssize_t buffer::write (const byte_t bytes[], size_t n, error_code * ex)
 {
+	PFS_UNUSED(ex);
     PFS_ASSERT(max_type<size_t>() - _pos >= n);
 
-    size_t sizeAvailable = _buffer.size() - _pos;
+    size_t size = _buffer.size() - _pos;
 
-    if (sizeAvailable < n)
-        _buffer.realloc(_buffer.size() + n - sizeAvailable);
+    if (size < n)
+        _buffer.realloc(_buffer.size() + n - size);
 
     buffer_type::copy(_buffer, bytes, _pos, n);
 
     return integral_cast_check<ssize_t>(n);
-}
-
-
-/**
- * @brief Opens buffer device and initializes
- *        it with raw byte array @c a of size @c n
- *
- * @param a Raw byte array.
- * @param n Raw byte array size
- * @param oflags Open mode flags.
- *
- * @return @c true if open is successful, @c false otherwise
- *         (i.e. buffer device is already opened).
- */
-bool buffer::open (byte_t a[], size_t n, uint32_t oflags)
-{
-    if (!checkNotOpened())
-        return false;
-
-    if (_d)
-        delete _d;
-
-    _d = new buffer_impl(a, n);
-    this->setFlags(oflags);
-
-    return _d != nullptr;
-}
-
-/**
- * @brief Opens buffer device and initializes it byte array @c a of size @c sz.
- *
- * @param sz Raw byte array size.
- * @param oflags Open mode flags.
- *
- * @return @c true if open is successful, @c false otherwise
- *         (i.e. buffer device is already opened).
- */
-bool buffer::open (size_t sz, uint32_t oflags)
-{
-    if (!checkNotOpened())
-        return false;
-
-    if (_d)
-        delete _d;
-
-    _d = new buffer_impl(sz);
-    _oflags = oflags;
-
-    return _d != nullptr;
-}
-
-size_t buffer::size () const
-{
-    if (isNull())
-        return 0;
-
-    const buffer_impl * d = dynamic_cast<buffer_impl *>(_d);
-    return d->_buffer.size();
 }
 
 }} // pfs::io

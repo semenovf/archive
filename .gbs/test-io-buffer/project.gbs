@@ -1,12 +1,12 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-pfs-io-buffer --type=test --depends=pfs-io'
+--* Command: `gbs project --create --name=test-io-buffer --type=test --depends=pfs-io'
 --* Date:    Thu Aug 20 14:36:03 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-pfs-io-buffer"
+targetname    "test-io-buffer"
 defines       {  }
 includedirs   {   "../../include"
                 , "../../../pfs-test/include"
@@ -14,24 +14,24 @@ includedirs   {   "../../include"
                 , "../../../pfs-sys/include"
               }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-pfs-io-buffer/*.c", "../../tests/test-pfs-io-buffer/*.cpp" }
+files         { "../../tests/test-io-buffer/*.c", "../../tests/test-io-buffer/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-io/test-pfs-io-buffer/debug"
+    objdir       "../../../.build/pfs-io/test-io-buffer/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        {  "pfs-io-d"
                   , "pfs-test-d"
                   , "pfs-d"
                   , "pfs-sys-d"
-                 }
+    }
 
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-io/test-pfs-io-buffer/release"
+    objdir       "../../../.build/pfs-io/test-io-buffer/release"
     targetdir    "../../../.build/tests"
     links        {   "pfs-io"
                    , "pfs-test"

@@ -172,7 +172,7 @@ ssize_t ipx_socket_impl::writeBytes (const byte_t bytes[], size_t n, errorable_e
 	return r;
 }
 
-bool ipx_socket_impl::closeDevice (errorable_ext & ex)
+bool ipx_socket_impl::close (errorable_ext & ex)
 {
 	bool r = true;
 

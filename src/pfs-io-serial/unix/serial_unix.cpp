@@ -41,10 +41,10 @@ struct serial_impl : public device_impl
 
     virtual ssize_t readBytes      (byte_t bytes[], size_t n, errorable_ext & ex);
     virtual ssize_t writeBytes     (const byte_t bytes[], size_t n, errorable_ext & ex);
-    virtual size_t  bytesAvailable () const;
-    virtual bool    closeDevice    (errorable_ext & ex);
-    virtual bool    deviceIsOpened () const;
-    virtual void    flushDevice    ();
+    virtual size_t  bytes_available () const;
+    virtual bool    close    (errorable_ext & ex);
+    virtual bool    opened () const;
+    virtual void    flush    ();
 
 	bool openSerial (const string & path, int32_t oflags, errorable_ext & ex);
 	bool setBaudrate (uint32_t br, errorable_ext & ex);
@@ -82,7 +82,7 @@ ssize_t serial_impl::writeBytes (const byte_t bytes[], size_t n, errorable_ext &
     return sz;
 }
 
-size_t serial_impl::bytesAvailable () const
+size_t serial_impl::bytes_available () const
 {
     PFS_ASSERT(_fd  >= 0);
     size_t nbytes;
@@ -93,7 +93,7 @@ size_t serial_impl::bytesAvailable () const
     return 0;
 }
 
-bool serial_impl::closeDevice (errorable_ext & ex)
+bool serial_impl::close (errorable_ext & ex)
 {
     bool r = true;
 
@@ -112,12 +112,12 @@ bool serial_impl::closeDevice (errorable_ext & ex)
     return r;
 }
 
-bool serial_impl::deviceIsOpened () const
+bool serial_impl::opened () const
 {
     return _fd >= 0;
 }
 
-void serial_impl::flushDevice ()
+void serial_impl::flush ()
 {
     PFS_ASSERT(_fd  >= 0);
     ::tcdrain(_fd);
@@ -379,7 +379,7 @@ bool serial::open (const pfs::string & path, int32_t oflags
 		return true;
 	}
 
-	d->closeDevice(*this);
+	d->close(*this);
 	return false;
 
 #ifdef __COMMENT__

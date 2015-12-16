@@ -42,10 +42,10 @@ struct ipx_socket_impl : public device_impl
 
     virtual ssize_t readBytes      (byte_t bytes[], size_t n, errorable_ext & ex);
     virtual ssize_t writeBytes     (const byte_t bytes[], size_t n, errorable_ext & ex);
-    virtual size_t  bytesAvailable () const { return _icount; }
-    virtual bool    closeDevice    (errorable_ext & ex);
-    virtual bool    deviceIsOpened () const { return _sockfd >= 0; }
-    virtual void    flushDevice    () {}
+    virtual size_t  bytes_available () const { return _icount; }
+    virtual bool    close    (errorable_ext & ex);
+    virtual bool    opened () const { return _sockfd >= 0; }
+    virtual void    flush    () {}
 
     bool open (const ipx_addr & addr, int32_t oflags, errorable_ext & ex);
     ipx_frame_enum frameType () const;
@@ -63,7 +63,7 @@ struct ipx_socket_peer_impl : public ipx_socket_impl
 	{}
 
 	ssize_t writeBytes (const byte_t bytes[], size_t n, errorable_ext & ex);
-    virtual bool closeDevice (errorable_ext & ) { return true; }
+    virtual bool close (errorable_ext & ) { return true; }
 };
 
 }} // pfs::io

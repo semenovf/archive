@@ -14,6 +14,8 @@
 
 namespace pfs { namespace io {
 
+#if __COMMENT__
+
 struct file_impl : public device_impl
 {
 	string _path;
@@ -34,13 +36,13 @@ struct file_impl : public device_impl
 		}
 	}
 
-    virtual size_t  bytesAvailable () const;
-    virtual ssize_t readBytes      (byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &);
-    virtual ssize_t writeBytes     (const byte_t [] /*bytes*/, size_t /*n*/, errorable_ext &);
-    virtual bool    closeDevice    (errorable_ext &);
-    virtual bool    deviceIsOpened () const;
-    virtual void    flushDevice    ();
-    virtual bool    setNonBlocking ();
+    virtual size_t  bytes_available  () const;
+    virtual ssize_t read_bytes       (byte_t bytes[], size_t n, error_code * ex);
+    virtual ssize_t write_bytes      (const byte_t bytes[], size_t n, error_code * ex);
+    virtual bool    close            (error_code * ex);
+    virtual bool    opened        () const;
+    virtual void    flush            ();
+    virtual bool    set_non_blocking ();
 };
 
 static int perms2mode (int32_t perms)
@@ -79,33 +81,31 @@ static bool set_permissions (const pfs::string & path, int32_t perms)
 	return true;
 }
 
-ssize_t file_impl::readBytes (byte_t bytes[], size_t n, errorable_ext & ex)
+ssize_t file_impl::read_bytes (byte_t bytes[], size_t n, error_code * ex)
 {
     PFS_ASSERT(_fd  >= 0);
     ssize_t sz;
 
     sz = ::read(_fd, bytes, n);
-    if (sz < 0) {
-        ex.addSystemError(errno
-                , string() << _path << ": " << _Tr("read failure"));
+    if (sz < 0 && ex) {
+        *ex = errno;
     }
     return sz;
 }
 
-ssize_t file_impl::writeBytes (const byte_t bytes[], size_t n, errorable_ext & ex)
+ssize_t file_impl::write_bytes (const byte_t bytes[], size_t n, error_code * ex)
 {
     PFS_ASSERT(_fd  >= 0);
     ssize_t sz;
 
     sz = ::write(_fd, bytes, n);
-    if( sz < 0 ) {
-        ex.addSystemError(errno
-                , string() << _path << ": " << _Tr("write failure"));
+    if( sz < 0 && ex) {
+        *ex = errno;
     }
     return sz;
 }
 
-size_t file_impl::bytesAvailable () const
+size_t file_impl::bytes_available () const
 {
     PFS_ASSERT(_fd  >= 0);
 
@@ -121,14 +121,13 @@ size_t file_impl::bytesAvailable () const
     return (size_t)(total - cur);
 }
 
-bool file_impl::closeDevice (errorable_ext & ex)
+bool file_impl::close (error_code * ex)
 {
     bool r = true;
 
     if (_fd > 0) {
-        if (::close(_fd) < 0) {
-            ex.addSystemError(errno
-                    , string() << _path << ": " << _Tr("close failure"));
+        if (::close(_fd) < 0 && ex) {
+            *ex = errno;
             r = false;
         }
     }
@@ -138,12 +137,12 @@ bool file_impl::closeDevice (errorable_ext & ex)
     return r;
 }
 
-bool file_impl::deviceIsOpened () const
+bool file_impl::opened () const
 {
     return _fd >= 0;
 }
 
-void file_impl::flushDevice ()
+void file_impl::flush ()
 {
     PFS_ASSERT(_fd  >= 0);
 
@@ -154,7 +153,7 @@ void file_impl::flushDevice ()
 #endif
 }
 
-bool file_impl::setNonBlocking ()
+bool file_impl::set_non_blocking ()
 {
     int flags = fcntl(_fd, F_GETFL, 0);
     return fcntl(_fd, F_SETFL, flags | O_NONBLOCK) >= 0;
@@ -300,5 +299,7 @@ void file::setOffset (size_t off)
 	file_impl * d = dynamic_cast<file_impl * >(_d);
 	::lseek(d->_fd, off, SEEK_SET);
 }
+
+#endif
 
 }} // cwt::io
