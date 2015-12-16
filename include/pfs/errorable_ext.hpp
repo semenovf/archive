@@ -33,5 +33,4 @@ public:
 //#ifdef PFS_CC_MSVC
 //#	pragma warning(pop)
 //#endif
-
 #endif /* __PFS_ERRORABLE_EXT_HPP__ */

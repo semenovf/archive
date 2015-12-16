@@ -25,6 +25,11 @@ public:
 		: _native(errn)
 	{}
 
+	operator bool () const
+	{
+		return _native != 0;
+	}
+
 	error_code & operator = (int errn)
 	{
 		_native = errn;
