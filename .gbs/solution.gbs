@@ -38,8 +38,8 @@ project "test-io-buffer"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-io-file"
---    include("test-pfs-io-file/project.gbs")
+project "test-io-file"
+    include("test-io-file/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

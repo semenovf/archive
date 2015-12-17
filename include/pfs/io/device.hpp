@@ -28,6 +28,7 @@ protected:
 
 public:
 	typedef bits::device::native_handle_type native_handle_type;
+	typedef bits::device::open_mode_flags open_mode_flags;
 
 	enum OpenMode {
 	      NotOpen     = 0                     /**< Device is not opened */
@@ -167,23 +168,23 @@ public:
 	    return write(bytes.data(), bytes.size(), ex);
 	}
 
-    bool compress (device & dest, zlib::compression_level level, size_t chunkSize);
+    friend bool compress (device & src, device & dest, zlib::compression_level level, size_t chunkSize, error_code * ex = 0);
 
-    bool compress (device & dest)
-    {
-    	return compress(dest, zlib::DefaultCompression, 0x4000);
-    }
-
-    bool uncompress (device & dest, size_t chunkSize);
-
-    bool uncompress (device & dest)
-    {
-    	return uncompress(dest, 0x4000);
-    }
+    friend bool uncompress (device & src, device & dest, size_t chunkSize, error_code * ex = 0);
 
     template <typename DeviceImpl>
-    friend bool open_device (device &, const open_params<DeviceImpl> &);
+    friend bool open_device (device &, const open_params<DeviceImpl> &, error_code * ex = 0);
 };
+
+inline bool compress (device & src, device & dest, error_code * ex = 0)
+{
+	return compress(src, dest, zlib::DefaultCompression, 0x4000, ex);
+}
+
+inline bool uncompress (device & src, device & dest, error_code * ex = 0)
+{
+	return uncompress(src, dest, 0x4000, ex);
+}
 
 }} // pfs::ios
 

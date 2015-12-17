@@ -8,6 +8,55 @@
 #ifndef __PFS_IO_FILE_HPP__
 #define __PFS_IO_FILE_HPP__
 
+#include <pfs/fs/path.hpp>
+#include <pfs/io/device.hpp>
+
+namespace pfs { namespace io {
+
+/**
+ * @struct pfs::io::file
+ * @brief File device implementation.
+ * @see pfs::io::device.
+ */
+struct file;
+
+template <>
+struct open_params<file>
+{
+	fs::path path;
+	device::open_mode_flags oflags;
+
+	open_params (const fs::path & s, device::open_mode_flags of)
+		: path(s), oflags(of)
+	{}
+
+	open_params (const fs::path & s)
+		: path(s), oflags(device::ReadWrite)
+	{}
+};
+
+/**
+ * @fn bool open_device<file> (device & d, const open_params<file> & op)
+ *
+ * @brief Open file device.
+ *
+ * @param d File device to open.
+ * @param op Open device parameters.
+ * 		@li open_params(size_t n, uint32_t oflags)
+ * 		@li open_params(byte_t * p, size_t n, uint32_t oflags)
+ * 		@li open_params(char * p, size_t n, uint32_t oflags)
+ *
+ * @return @c true if open is successful, @c false otherwise
+ *         (i.e. file device is already opened).
+ */
+template <>
+bool open_device<file> (device & d, const open_params<file> & op, error_code * ex);
+
+}} // pfs::io
+
+
+#if __COMMENT__
+
 #include <pfs/byte_string.hpp>
 #include <pfs/fs/path.hpp>
 #include <pfs/io/device.hpp>
@@ -70,5 +119,7 @@ public:
 };
 
 }} // pfs::io
+
+#endif
 
 #endif /* __PFS_IO_FILE_HPP__ */

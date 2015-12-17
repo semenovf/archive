@@ -38,9 +38,9 @@ struct buffer : public bits::device
     	 return _buffer.size() - _pos;
     }
 
-    virtual ssize_t read (byte_t bytes[], size_t n, error_code * ex);
+    virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex);
 
-    virtual ssize_t write (const byte_t bytes[], size_t n, error_code * ex);
+    virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
 
     virtual bool close (error_code * ex)
     {
@@ -70,9 +70,9 @@ struct buffer : public bits::device
 
 
 template <>
-bool open_device<buffer> (device & d, const open_params<buffer> & op)
+bool open_device<buffer> (device & d, const open_params<buffer> & op, error_code * pex)
 {
-    if (d._d)
+    if (d.opened())
         return false;
 
     if (op.pbytes)
@@ -80,10 +80,12 @@ bool open_device<buffer> (device & d, const open_params<buffer> & op)
     else
     	d._d = new buffer(op.size);
 
+	PFS_UNUSED(pex);
+
     return d._d != 0;
 }
 
-ssize_t buffer::read (byte_t bytes[], size_t n, error_code * ex)
+ssize_t buffer::read (byte_t * bytes, size_t n, error_code * ex)
 {
 	PFS_UNUSED(ex);
 
@@ -97,7 +99,7 @@ ssize_t buffer::read (byte_t bytes[], size_t n, error_code * ex)
     return integral_cast_check<ssize_t>(n);
 }
 
-ssize_t buffer::write (const byte_t bytes[], size_t n, error_code * ex)
+ssize_t buffer::write (const byte_t * bytes, size_t n, error_code * ex)
 {
 	PFS_UNUSED(ex);
     PFS_ASSERT(max_type<size_t>() - _pos >= n);

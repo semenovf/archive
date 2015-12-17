@@ -30,7 +30,7 @@ configuration "release"
     links        { "pfs", "pfs-sys" }
 
 filter "platforms:unix*"
-    files {  "../../src/pfs-io/unix/*.cpp" }
+    files {  "../../src/pfs-io/posix/*.cpp" }
 
 filter "platforms:mswin*"
     files {  "../../src/pfs-io/win/*.cpp" }

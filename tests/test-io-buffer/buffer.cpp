@@ -59,9 +59,12 @@ using pfs::io::buffer;
 void test_read ()
 {
 	device d;
-	open_device(d, open_params<buffer>(
+
+	TEST_OK(!d.opened());
+	TEST_FAIL(open_device(d, open_params<buffer>(
 			  loremipsum
-			, strlen(loremipsum)));
+			, strlen(loremipsum))));
+	TEST_OK(d.opened());
 
 	TEST_FAIL(d.available() == strlen(loremipsum));
 
@@ -84,7 +87,9 @@ void test_write ()
 {
 	device d;
 
-	open_device(d, open_params<buffer>(10));
+	TEST_OK(!d.opened());
+	TEST_FAIL(open_device(d, open_params<buffer>(10)));
+	TEST_OK(d.opened());
 
     TEST_OK(d.is_readable());
     TEST_OK(d.is_writable());
@@ -99,7 +104,7 @@ void test_write ()
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(10);
+    BEGIN_TESTS(16);
 
     test_read();
     test_write();

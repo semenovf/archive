@@ -38,7 +38,7 @@ struct open_params<buffer>
 /**
  * @fn bool open_device<buffer> (device & d, const open_params<buffer> & op)
  *
- * @brief Open buffer device. Usage see below.
+ * @brief Open buffer device.
  *
  * @param d Buffer device to open.
  * @param op Open device parameters.
@@ -50,7 +50,7 @@ struct open_params<buffer>
  *         (i.e. buffer device is already opened).
  */
 template <>
-bool open_device<buffer> (device & d, const open_params<buffer> & op);
+bool open_device<buffer> (device & d, const open_params<buffer> & op, error_code * ex);
 
 }} // pfs::io
 

@@ -33,9 +33,9 @@ struct device
 
     virtual size_t  bytes_available () const = 0;
 
-    virtual ssize_t read (byte_t bytes[], size_t n, error_code * ex) = 0;
+    virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex) = 0;
 
-    virtual ssize_t write (const byte_t bytes[], size_t n, error_code * ex) = 0;
+    virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex) = 0;
 
     virtual bool close (error_code * ex) = 0;
 

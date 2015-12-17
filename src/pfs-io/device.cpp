@@ -53,10 +53,17 @@ bool device::close (error_code * ex)
 	return r;
 }
 
-bool device::compress (device & dest, zlib::compression_level level, size_t chunkSize)
+bool compress (device & src, device & dest, zlib::compression_level level, size_t chunkSize, error_code * pex)
 {
-    PFS_ASSERT(_d);
-    PFS_ASSERT(dest._d);
+	if (!src.opened()) {
+		// FIXME assgn error code
+		return false;
+	}
+
+    if (!dest.opened()) {
+   		// FIXME assgn error code
+   		return false;
+   	}
 
 	if (chunkSize < 32)
 		chunkSize = 0x4000;
@@ -83,14 +90,18 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
 
 	/* compress until end of file */
 	do {
-		strm.avail_in = this->read(in.get(), chunkSize);
+		strm.avail_in = src.read(in.get(), chunkSize, & ex);
 
 		if (ex) {
 			(void)deflateEnd(& strm);
+
+			if (pex)
+				*pex = ex;
+
 			return false;
 		}
 
-		flush = this->at_end() ? Z_FINISH : Z_NO_FLUSH;
+		flush = src.at_end() ? Z_FINISH : Z_NO_FLUSH;
         strm.next_in = in.get();
 
 		/* run deflate() on input until output buffer not full, finish
@@ -104,6 +115,10 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
 
         	if (dest.write(out.get(), have, & ex) != ssize_t(have) || ex) {
         		(void)deflateEnd(& strm);
+
+    			if (pex)
+    				*pex = ex;
+
         		return false;
         	}
         } while (strm.avail_out == 0);
@@ -120,10 +135,17 @@ bool device::compress (device & dest, zlib::compression_level level, size_t chun
 	return true;
 }
 
-bool device::uncompress (device & dest, size_t chunkSize)
+bool uncompress (device & src, device & dest, size_t chunkSize, error_code * pex)
 {
-    PFS_ASSERT(_d);
-    PFS_ASSERT(dest._d);
+	if (!src.opened()) {
+		// FIXME assgn error code
+		return false;
+	}
+
+    if (!dest.opened()) {
+   		// FIXME assgn error code
+   		return false;
+   	}
 
     z_stream strm;
 	pfs::scoped_array_ptr<unsigned char> in(new unsigned char[chunkSize]);
@@ -148,10 +170,14 @@ bool device::uncompress (device & dest, size_t chunkSize)
 
     /* decompress until deflate stream ends or end of file */
     do {
-        strm.avail_in = this->read(in.get(), chunkSize);
+        strm.avail_in = src.read(in.get(), chunkSize, & ex);
 
         if (ex) {
             (void)inflateEnd(&strm);
+
+            if (pex)
+				*pex = ex;
+
             return false;
         }
 
@@ -180,6 +206,10 @@ bool device::uncompress (device & dest, size_t chunkSize)
 
             if (dest.write(out.get(), have, & ex) != ssize_t(have) || ex) {
                 inflateEnd(& strm);
+
+                if (pex)
+    				*pex = ex;
+
                 return false;
             }
         } while (strm.avail_out == 0);
