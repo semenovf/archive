@@ -5,12 +5,15 @@
  *      Author: wladt
  */
 
-#include <pfs.h>
+#include <pfs.hpp>
 #include <ctype.h>
 
-static const char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+namespace pfs {
 
-char * pfs_uintegral_to_string (uintegral_t n, int base, int uppercase, char * buf, int bufsz)
+static const char digits_lower[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+static const char digits_upper[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+char * uintmax_to_string (uintegral_t n, int base, int uppercase, char * buf, int bufsz)
 {
 	char * p = & buf[bufsz - 1];
 
@@ -20,10 +23,10 @@ char * pfs_uintegral_to_string (uintegral_t n, int base, int uppercase, char * b
 
 	if (n) {
 		while (n > 0) {
-			*--p = digits[n % base];
-
 			if (uppercase)
-				*p = toupper(*p);
+				*--p = digits_upper[n % base];
+			else
+				*--p = digits_lower[n % base];
 
 			n /= base;
 		}
@@ -34,15 +37,15 @@ char * pfs_uintegral_to_string (uintegral_t n, int base, int uppercase, char * b
 	return p;
 }
 
-char * pfs_integral_to_string (integral_t n, int base, int uppercase, char * buf, int bufsz)
+char * intmax_to_string (integral_t n, int base, int uppercase, char * buf, int bufsz)
 {
 	char * p = NULL;
 
 	if (n < 0) {
-		p = pfs_uintegral_to_string((uintegral_t)(n * -1), base, uppercase, buf, bufsz);
+		p = uintmax_to_string(static_cast<uintmax_t>(n * -1), base, uppercase, buf, bufsz);
 		*--p = '-';
 	} else {
-		p = pfs_uintegral_to_string((uintegral_t)n, base, uppercase, buf, bufsz);
+		p = uintmax_to_string(static_cast<uintmax_t>(n), base, uppercase, buf, bufsz);
 	}
 
 	return p;
@@ -62,7 +65,7 @@ char * pfs_integral_to_string (integral_t n, int base, int uppercase, char * buf
  *         In case of failure *bufsz contains final buffer size
  *         or actual number of characters written in success.
  */
-char * pfs_real_to_string (real_t n, char f, int prec, char * buf, int * bufsz)
+char * real_to_string (real_t n, char f, int prec, char * buf, int * bufsz)
 {
 	PFS_ASSERT(bufsz);
 
@@ -129,17 +132,18 @@ char * pfs_real_to_string (real_t n, char f, int prec, char * buf, int * bufsz)
  * @param latin1 Character to convert
  * @return Converted digit, or -1
  */
-int pfs_latin1_to_digit (char latin1)
-{
-	if (latin1 >= '0' && latin1 <= '9')
-		return latin1 - '0';
+//int pfs_latin1_to_digit (char latin1)
+//{
+//	if (latin1 >= '0' && latin1 <= '9')
+//		return latin1 - '0';
+//
+//	if (latin1 >= 'A' && latin1 <= 'Z')
+//		return latin1 - 'A' + 10;
+//
+//	if (latin1 >= 'a' && latin1 <= 'z')
+//		return latin1 - 'a' + 10;
+//
+//	return -1;
+//}
 
-	if (latin1 >= 'A' && latin1 <= 'Z')
-		return latin1 - 'A' + 10;
-
-	if (latin1 >= 'a' && latin1 <= 'z')
-		return latin1 - 'a' + 10;
-
-	return -1;
-}
-
+} // pfs

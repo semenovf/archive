@@ -1,37 +1,81 @@
 /*
- * strtointegral.hpp
+ * integral.hpp
  *
- *  Created on: Jan 14, 2015
+ *  Created on: Nov 20, 2015
  *      Author: wladt
  */
 
 #ifndef __PFS_BITS_STRTOINTEGRAL_HPP__
 #define __PFS_BITS_STRTOINTEGRAL_HPP__
 
-#include <pfs/ctype.hpp>
-#include <cerrno>
-
-EXTERN_C_BEGIN
-
-// XXX DEPRECATED
-DLL_API int    pfs_latin1_to_digit (char latin1);
-
-EXTERN_C_END
+#include <cctype>
+#include <pfs.hpp>
 
 namespace pfs {
 
-
-// XXX DEPRECATED
-template <typename CharT>
-inline char portable_cast_char (CharT ch)
+template <typename Char>
+struct stoi_traits
 {
-	return char(uint32_t(ch));
-}
+	static bool is_space (Char v);
+	static bool eq_latin1 (Char c1, char c2);
 
-// XXX Moved to pfs/cast/integral.hpp
+	/**
+	 * @brief Convert character to integer (according to radix from 2 to 36 including).
+	 *
+	 * @param c Character to convert.
+	 * @param radix Radix for digit.
+	 * @return @c >= 0 if character converted successfully,
+	 *         @c -1 if character is not associated with digit in specified radix.
+	 */
+	static int to_digit (Char c, int radix);
+};
+
+//template <>
+//inline bool __is_space<char> (char v)
+//{
+//	return std::isspace(v) ? true : false;
+//}
+//
+//template <>
+//inline bool __is_space<unsigned char> (unsigned char v)
+//{
+//	return std::isspace(static_cast<int>(v)) ? true : false;
+//}
+//
+//template <>
+//inline bool __eq_latin1<char> (char c1, char c2)
+//{
+//	return c1 == c2;
+//}
+//
+//template <>
+//inline bool __eq_latin1<unsigned char> (unsigned char c1, char c2)
+//{
+//	return c1 == static_cast<unsigned char>(c2);
+//}
+//
+//template <>
+//inline int __to_digit<char> (char c, int radix)
+//{
+//	if (c >= '0' && c <= '9')
+//		return c - '0';
+//	else if (c >= 'A' && c <= 'Z')
+//		return c - 'A' + 10;
+//	else if (c >= 'a' && c <= 'z')
+//		return c - 'a' + 10;
+//
+//	return -1;
+//}
+//
+//template <>
+//inline int __to_digit<unsigned char> (unsigned char c, int radix)
+//{
+//	return __to_digit(static_cast<char>(c), radix);
+//}
+
 /**
  * @brief Converts the initial part of the string bitween
- *        @c pos and @c end (excluding) to an @c uintegral_t value
+ *        @c pos and @c end (excluding) to an @c uintmax_t value
  *        according to the given base, which must be
  *        between 2 and 36 inclusive, or be the special value 0.
  *
@@ -49,12 +93,11 @@ inline char portable_cast_char (CharT ch)
  * @param max
  * @return
  */
-template <typename CharT, typename Iter>
-uintegral_t strtouintegral (Iter begin, Iter end, int radix, uintegral_t max_value, Iter * endref = nullptr)
+template <typename InputIterator>
+uintmax_t strtouintmax (InputIterator begin, InputIterator end, int radix, uintmax_t max_value, InputIterator * endref = 0)
 {
-	typedef CharT char_type;
-	Iter pos = begin;
-	uintegral_t r = uintegral_t(0);
+	InputIterator pos = begin;
+	uintmax_t r = uintmax_t(0);
 	int sign = 1;
 
 	errno = 0;
@@ -63,22 +106,23 @@ uintegral_t strtouintegral (Iter begin, Iter end, int radix, uintegral_t max_val
 		if (endref) {
 			*endref = pos;
 		}
-		//errno = ERANGE;
-		return uintegral_t(0);
+		return 0;
 	}
 
 	if (pos < end) {
 
 		// Skip whitespaces
-		while (pos < end  && pfs::is_space(portable_cast_char<CharT>(*pos))) {
+		//
+		while (pos < end  && __is_space(*pos)) {
 			++pos;
 		}
 
 		// Sign
-		if (*pos == char_type('-')) {
+		//
+		if (__eq_latin1(*pos, '-')) {
 			sign = -1;
 			++pos;
-		} else if (*pos == char_type('+')) {
+		} else if (__eq_latin1(*pos, '+')) {
 			++pos;
 		}
 
@@ -86,56 +130,47 @@ uintegral_t strtouintegral (Iter begin, Iter end, int radix, uintegral_t max_val
 		if (!radix) {
 			radix = 10;
 
-			if (*pos == char_type('0')) {
+			if (__eq_latin1(*pos, '0')) {
 				radix = 8;
 				++pos;
 
 				if (pos < end
-						&& (*pos == char_type('x')
-								|| *pos == char_type('X'))) {
+						&& (__eq_latin1(*pos, 'x')
+								|| __eq_latin1(*pos, 'X'))) {
 					radix = 16;
 					++pos;
 				}
-			} else if (*pos == char_type('b')) {
+			} else if (__eq_latin1(*pos, 'b')) {
 				radix = 2;
 				++pos;
 			}
 		}
 
-
-		//
 		// Fix for case when treats negative numbers
 		//
-		if (sign < 0 && max_value < pfs::max_type<uintegral_t>())
+		if (sign < 0 && max_value < pfs::max_type<uintmax_t>())
 		    ++max_value;
 
 		while (pos != end) {
-			if (!pfs::is_latin1(portable_cast_char<CharT>(*pos)))
-				break;
+			int digit;
 
-			int digit = pfs_latin1_to_digit(portable_cast_char<CharT>(*pos)); // portable for char and ucchar types
-
-			// non-digit
-			if (digit < 0)
-				break;
-
-			// non-digit in specified radix
-			if (digit >= radix)
+			if (!__to_digit(*pos, radix, digit))
 				break;
 
 			if (r > (max_value - digit)/radix || r * radix > max_value - digit) {
 				errno = ERANGE;
-				r = pfs::max_type<uintegral_t>();
+				r = pfs::max_type<uintmax_t>();
 			} else {
 				r = r * radix + digit;
 			}
+
 			++pos;
 		}
 
 		if (sign < 0)
 
 // Disable warning C4146: unary minus operator applied to unsigned type, result still unsigned
-// TODO need portable solution
+// TODO Need portable solution
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
 #	pragma warning(disable:4146)
@@ -151,10 +186,9 @@ uintegral_t strtouintegral (Iter begin, Iter end, int radix, uintegral_t max_val
 	return r;
 }
 
-
 /**
  * @brief The strtointegral() function converts the initial part of the string bitween
- *        @c pos and @c end (excluding) a @c integral_t value according to the given
+ *        @c pos and @c end (excluding) a @c intmax_t value according to the given
  *        @c base, which must be between 2 and 36 inclusive, or be the special value 0.
  *
  * @details The strtointegral() function returns the result of the conversion,
@@ -171,21 +205,18 @@ uintegral_t strtouintegral (Iter begin, Iter end, int radix, uintegral_t max_val
  * @param max
  * @return
  */
-template <typename CharT, typename Iter>
-integral_t strtointegral (Iter begin, Iter end, int radix, integral_t min_value, uintegral_t max_value, Iter * endref = nullptr)
+template <typename InputIterator>
+intmax_t strtointmax (InputIterator begin, InputIterator end, int radix, intmax_t min_value, uintmax_t max_value, InputIterator * endref = 0)
 {
-	typedef CharT char_type;
-
-	Iter pos = begin;
-	uintegral_t r = 0;
-	Iter endr(begin); // fixing MSVC 2010 error C2512: 'pfs::mbcs_string_ptr<_CodeUnitT,Holder>::mbcs_string_ptr' : no appropriate default constructor available
+	uintmax_t r = 0;
+	InputIterator pos = begin;
+	InputIterator endr(begin); // fixing MSVC 2010 error C2512: 'pfs::mbcs_string_ptr<_CodeUnitT,Holder>::mbcs_string_ptr' : no appropriate default constructor available
 
 	// Skip whitespaces
-	while (pos < end  && pfs::is_space(char(uint32_t(CharT(*pos))))) {
+	while (pos < end  && __is_space(*pos))
 		++pos;
-	}
 
-	r = strtouintegral<CharT, Iter>(pos, end, radix, max_value, & endr);
+	r = strtouintmax<InputIterator>(pos, end, radix, max_value, & endr);
 
 	if (endref) {
 		if (pos == endr) {
@@ -195,69 +226,40 @@ integral_t strtointegral (Iter begin, Iter end, int radix, integral_t min_value,
 		}
 	}
 
-	if (*pos == char_type('-')) {
-		if (integral_t(r) > 0) {
+	if (__eq_latin1(*pos, '-')) {
+		if (static_cast<intmax_t>(r) > 0) {
 			errno = ERANGE;
-			return pfs::min_type<integral_t>();
+			return pfs::min_type<intmax_t>();
 		}
 	} else {
-		if (integral_t(r) < 0) {
+		if (static_cast<intmax_t>(r) < 0) {
 			errno = ERANGE;
-			return pfs::max_type<integral_t>();
+			return pfs::max_type<intmax_t>();
 		}
 	}
 
-	if (integral_t(r) < min_value) {
+	if (static_cast<intmax_t>(r) < min_value) {
 		errno = ERANGE;
-		return pfs::min_type<integral_t>();
+		return pfs::min_type<intmax_t>();
 	}
 
-	return integral_t(r);
+	return static_cast<intmax_t>(r);
 }
 
-
-template <typename CharT, typename IterT>
-integral_t strtointegral_helper (IterT begin, IterT end, bool * ok, int base, integral_t min_value, uintegral_t max_value)
-{
-	IterT endptr(begin);
-
-	integral_t r = pfs::strtointegral<CharT, IterT>(begin, end, base, min_value, max_value, & endptr);
-
-	if (ok)
-		*ok = false;
-
-    if ((errno == ERANGE && (r == pfs::max_type<integral_t>() || r == pfs::min_type<integral_t>()))
-            || (errno != 0 && r == 0)) {
-    	r = 0; // error
-    } else {
-    	if (ok)
-    		*ok = true;
-    }
-
-	return r;
-}
-
-template <typename CharT, typename IterT>
-uintegral_t strtouintegral_helper (IterT begin, IterT end, bool * ok, int base, uintegral_t max_value)
-{
-	IterT endptr(begin);
-
-	uintegral_t r = pfs::strtouintegral<CharT, IterT>(begin, end, base, max_value, & endptr);
-
-	if (ok)
-		*ok = false;
-
-    if ((errno == ERANGE && (r == pfs::max_type<uintegral_t>()))
-            || (errno != 0 && r == 0)) {
-    	r = 0; // error
-    } else {
-    	if (ok)
-    		*ok = true;
-    }
-
-	return r;
-}
-
+//inline int stoi (const string & str, size_t * pos = 0, int base = 10)
+//{
+//
+//}
+//
+//inline long stol (const string & str, size_t * pos = 0, int base = 10)
+//{
+//
+//}
+//
+//inline long long stoll (const std::string & str, size_t * pos = 0, int base = 10)
+//{
+//
+//}
 
 } // pfs
 

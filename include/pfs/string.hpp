@@ -44,4 +44,7 @@ typedef utf8::string string;
 
 } // pfs
 
+#include <pfs/bits/to_string.hpp>
+#include <pfs/bits/strtointegral.hpp>
+
 #endif /* __PFS_STRING_HPP__ */
