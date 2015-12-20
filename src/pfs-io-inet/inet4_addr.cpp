@@ -11,7 +11,7 @@
 
 namespace pfs { namespace io {
 
-static const int32_t InvalidInetPort = -1;
+static const int32_t invalid_inet_port = -1;
 
 inline uint32_t make_inet4_addr (uint8_t a, uint8_t b, uint8_t c, uint8_t d)
 {
@@ -50,7 +50,7 @@ bool parse_inet4_addr_part_helper (const string & part, uintegral_t & result)
     bool ok;
     uintegral_t r;
 
-    if (part == _l1("0")) {
+    if (part == "0") {
         r = 0;
     } else if (part.startsWith("0x") || part.startsWith("0X")) { // Hexadecimal format
         r = part.substr(2, part.length()).toUnsignedIntegral(& ok, 16);
@@ -87,7 +87,7 @@ bool parse_inet4_addr_part (const string & part, UInt & result)
 
 static bool parse_inet4_addr (const string & addrStr, uint32_t & addr, int32_t & port)
 {
-    stringlist parts = addrStr.split(_l1(":"));
+    stringlist parts = addrStr.split(":");
 
     port = 0;
 
@@ -109,7 +109,7 @@ static bool parse_inet4_addr (const string & addrStr, uint32_t & addr, int32_t &
         port = static_cast<int32_t>(r);
     }
 
-    stringlist octets = string(parts[0]).split(_l1("."));
+    stringlist octets = string(parts[0]).split(".");
 
     //
     // Invalid address
@@ -166,7 +166,7 @@ static bool parse_inet4_addr (const string & addrStr, uint32_t & addr, int32_t &
  */
 inet4_addr::inet4_addr ()
     : _addr(0)
-    , _port(InvalidInetPort)
+    , _port(invalid_inet_port)
 {}
 
 
@@ -288,7 +288,7 @@ inet4_addr::inet4_addr (const string & addrStr, uint16_t port)
  */
 inet4_addr::inet4_addr (const string & addrStr)
     : _addr(0)
-    , _port(InvalidInetPort)
+    , _port(invalid_inet_port)
 {
     if (!parse_inet4_addr(addrStr, _addr, _port)) {
         invalidate();
@@ -310,14 +310,17 @@ inet4_addr & inet4_addr::operator = (const inet4_addr & addr)
 
 bool inet4_addr::isValid () const
 {
-    return _port != InvalidInetPort;
+    return _port != invalid_inet_port;
 }
 
 inline void inet4_addr::invalidate ()
 {
-    _port = InvalidInetPort;
+    _port = invalid_inet_port;
 }
 
+}} // pfs::io
+
+namespace pfs {
 
 static int format_type (const string & format)
 {
@@ -350,10 +353,12 @@ static int format_type (const string & format)
  * @param
  * @return
  */
-string inet4_addr::toString (const string & format, int base) const
+string & lexical_cast (string & result, const io::inet4_addr & addr, const string & format, int base)
+//string inet4_addr::toString (const string & format, int base) const
 {
     string r;
-    string basePrefix;
+    string prefix;
+    string tmp;
 
     int ftype = format.isEmpty() ? 5 : format_type(format);
 
@@ -361,44 +366,48 @@ string inet4_addr::toString (const string & format, int base) const
         base = 10;
 
     if (base == 8)
-        basePrefix = _l1("0");
+        prefix = _u8("0");
     else if (base == 16)
-        basePrefix = _l1("0x");
+        prefix = _u8("0x");
+
+    uint32_t a = addr.raw_addr();
 
     if (ftype == 1 || ftype == 5) {
-        uint32_t a = 0x000000FF & (_addr >> 24)
-               , b = 0x000000FF & (_addr >> 16)
-               , c = 0x000000FF & (_addr >> 8)
-               , d = 0x000000FF & _addr;
+        uint32_t a = 0x000000FF & (a >> 24)
+               , b = 0x000000FF & (a >> 16)
+               , c = 0x000000FF & (a >> 8)
+               , d = 0x000000FF & a;
 
-        r   <<        (a ? basePrefix : _l1("")) << string::toString(a, base)
-            << '.' << (b ? basePrefix : _l1("")) << string::toString(b, base)
-            << '.' << (c ? basePrefix : _l1("")) << string::toString(c, base)
-            << '.' << (d ? basePrefix : _l1("")) << string::toString(d, base);
+        r   <<        (a ? prefix : "") << string::toString(a, base)
+            << '.' << (b ? prefix : "") << string::toString(b, base)
+            << '.' << (c ? prefix : "") << string::toString(c, base)
+            << '.' << (d ? prefix : "") << string::toString(d, base);
     } else if (ftype == 2 || ftype == 6) {
-        uint32_t a = 0x000000FF & (_addr >> 24)
-               , b = 0x000000FF & (_addr >> 16)
-               , c = 0x0000FFFF & _addr;
+        uint32_t a = 0x000000FF & (a >> 24)
+               , b = 0x000000FF & (a >> 16)
+               , c = 0x0000FFFF & a;
 
-        r   <<        (a ? basePrefix : _l1("")) << string::toString(a, base)
-            << '.' << (b ? basePrefix : _l1("")) << string::toString(b, base)
-            << '.' << (c ? basePrefix : _l1("")) << string::toString(c, base);
+        r   <<        (a ? prefix : "") << string::toString(a, base)
+            << '.' << (b ? prefix : "") << string::toString(b, base)
+            << '.' << (c ? prefix : "") << string::toString(c, base);
     } else if (ftype == 3 || ftype == 7) {
-        uint32_t a = 0x000000FF & (_addr >> 24)
-               , b = 0x00FFFFFF & _addr;
+        uint32_t a = 0x000000FF & (a >> 24)
+               , b = 0x00FFFFFF & a;
 
-        r   <<        (a ? basePrefix : _l1("")) << string::toString(a, base)
-            << '.' << (b ? basePrefix : _l1("")) << string::toString(b, base);
+        r   <<        (a ? prefix : "") << string::toString(a, base)
+            << '.' << (b ? prefix : "") << string::toString(b, base);
     } else {
-        r   << (_addr ? basePrefix : _l1("")) << string::toString(_addr, base);
+        r   << (a ? prefix : "") << string::toString(a, base);
     }
 
-    if (ftype >= 5)
-        r << ':' << (_port ? basePrefix : _l1("")) << string::toString(_port, base);
+    if (ftype >= 5) {
+    	uint16_t port = addr.port();
+        r << ':' << (port ? prefix : "") << string::toString(_port, base);
+    }
 
     return r;
 }
 
-}} // pfs::io
+} // pfs
 
 
