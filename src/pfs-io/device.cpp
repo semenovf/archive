@@ -53,22 +53,41 @@ bool device::close (error_code * ex)
 	return r;
 }
 
+/**
+ * @brief Copy data between source @a src an destination @a dest devices.
+ *
+ * @param dest Destination (write-to) device.
+ * @param src Source (read-from) device.
+ * @param chunkSize Size of temporary buffer to chunk
+ * @param ex Pointer to store error code.
+ * @return @li -1 and @a *ex != 0 if error occurred while read from @a src or write to @a dest;
+ *         @li -1 and @a *ex == 0 if size of written data is not equals to size of read data;
+ *         @li >=0 if data is succesfull.
+ */
 ssize_t copy (device & dest, device & src, size_t chunkSize, error_code * ex)
 {
     byte_t buffer[DEFAULT_READ_BUFSZ];
     ssize_t r = 0;
-    ssize_t r1 = 0;
+
+    if (ex)
+    	*ex = 0;
 
     while (r < chunkSize) {
-    	r1 = src.read(buffer, DEFAULT_READ_BUFSZ, ex);
+    	ssize_t r1 = src.read(buffer, DEFAULT_READ_BUFSZ, ex);
 
-    	if (r1 < 0) {
+    	if (r1 < 0)
     		return -1;
-    		break;
-    	}
 
     	if (r1 == 0)
     		break;
+
+    	ssize_t r2 = dest.write(buffer, static_cast<size_t>(r1), ex);
+
+    	if (r2 <= 0)
+    		return -1;
+
+    	if (r2 != r1)
+    		return -1;
 
     	r += r1;
     }
@@ -79,12 +98,12 @@ ssize_t copy (device & dest, device & src, size_t chunkSize, error_code * ex)
 bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * pex)
 {
 	if (!src.opened()) {
-		// FIXME assgn error code
+		// FIXME assign error code
 		return false;
 	}
 
     if (!dest.opened()) {
-   		// FIXME assgn error code
+   		// FIXME assign error code
    		return false;
    	}
 
