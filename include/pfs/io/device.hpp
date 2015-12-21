@@ -168,13 +168,15 @@ public:
 	    return write(bytes.data(), bytes.size(), ex);
 	}
 
-    friend bool compress (device & src, device & dest, zlib::compression_level level, size_t chunkSize, error_code * ex = 0);
-
-    friend bool uncompress (device & src, device & dest, size_t chunkSize, error_code * ex = 0);
-
     template <typename DeviceImpl>
     friend bool open_device (device &, const open_params<DeviceImpl> &, error_code * ex = 0);
+
+    friend bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * ex = 0);
+
+    friend bool uncompress (device & dest, device & src, size_t chunkSize, error_code * ex = 0);
 };
+
+ssize_t copy (device & dest, device & src, size_t chunkSize, error_code * ex = 0);
 
 inline bool compress (device & src, device & dest, error_code * ex = 0)
 {

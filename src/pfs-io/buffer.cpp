@@ -12,12 +12,18 @@ namespace pfs { namespace io {
 
 struct buffer : public bits::device
 {
+	static const size_t DefaultBufferSize = 256;
+
     typedef array<byte_t> buffer_type;
 
     buffer_type _buffer;
     size_t _pos;
 
-    buffer () : _pos(0) {}
+//    buffer ()
+//    	: _buffer(DefaultBufferSize)
+//    	, _pos(0)
+//    {}
+
     buffer (byte_t a[], size_t n)
         : _buffer(a, n)
         , _pos(0)
@@ -77,8 +83,10 @@ bool open_device<buffer> (device & d, const open_params<buffer> & op, error_code
 
     if (op.pbytes)
     	d._d = new buffer(op.pbytes, op.size);
-    else
+    else if (op.size > 0)
     	d._d = new buffer(op.size);
+    else
+    	d._d = new buffer(buffer::DefaultBufferSize);
 
 	PFS_UNUSED(pex);
 

@@ -25,6 +25,9 @@ struct open_params<buffer>
 	byte_t * pbytes;
 	size_t   size;
 
+	open_params () : pbytes(0), size(0)
+	{}
+
 	open_params (size_t n) : pbytes(0), size(n)
 	{}
 
@@ -42,9 +45,14 @@ struct open_params<buffer>
  *
  * @param d Buffer device to open.
  * @param op Open device parameters.
- * 		@li open_params(size_t n, uint32_t oflags)
- * 		@li open_params(byte_t * p, size_t n, uint32_t oflags)
- * 		@li open_params(char * p, size_t n, uint32_t oflags)
+ *      @li open_params<buffer>()
+ *      	Open buffer device with default size. Elements initialized by zeros.
+ * 		@li open_params<buffer>(size_t n)
+ * 			Open buffer device with @a n size. Elements initialized by zeros.
+ * 		@li open_params<buffer>(byte_t * p, size_t n)
+ * 			Open buffer device with @a n size. Elements initialized with data from @a p array.
+ * 		@li open_params<buffer>(char * p, size_t n)
+ * 			Open buffer device with @a n size. Elements initialized with data from @a p array.
  *
  * @return @c true if open is successful, @c false otherwise
  *         (i.e. buffer device is already opened).

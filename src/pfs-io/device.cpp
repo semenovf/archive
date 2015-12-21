@@ -53,7 +53,30 @@ bool device::close (error_code * ex)
 	return r;
 }
 
-bool compress (device & src, device & dest, zlib::compression_level level, size_t chunkSize, error_code * pex)
+ssize_t copy (device & dest, device & src, size_t chunkSize, error_code * ex)
+{
+    byte_t buffer[DEFAULT_READ_BUFSZ];
+    ssize_t r = 0;
+    ssize_t r1 = 0;
+
+    while (r < chunkSize) {
+    	r1 = src.read(buffer, DEFAULT_READ_BUFSZ, ex);
+
+    	if (r1 < 0) {
+    		return -1;
+    		break;
+    	}
+
+    	if (r1 == 0)
+    		break;
+
+    	r += r1;
+    }
+
+    return r;
+}
+
+bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * pex)
 {
 	if (!src.opened()) {
 		// FIXME assgn error code
@@ -135,7 +158,7 @@ bool compress (device & src, device & dest, zlib::compression_level level, size_
 	return true;
 }
 
-bool uncompress (device & src, device & dest, size_t chunkSize, error_code * pex)
+bool uncompress (device & dest, device & src, size_t chunkSize, error_code * pex)
 {
 	if (!src.opened()) {
 		// FIXME assgn error code
