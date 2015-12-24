@@ -135,6 +135,16 @@ template <> struct is_unsigned<unsigned long>  { static const bool value = true;
 template <> struct is_unsigned<unsigned long long> { static const bool value = true; };
 #endif
 
+template <typename T>
+struct is_floating_point { static const bool value = false; };
+
+template <> struct is_floating_point<float> { static const bool value = true; };
+template <> struct is_floating_point<double> { static const bool value = true; };
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+template <> struct is_floating_point<long double> { static const bool value = true; };
+#endif
+
 } // pfs
 
 #endif

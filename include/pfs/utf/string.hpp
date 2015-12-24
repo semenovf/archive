@@ -109,7 +109,7 @@ public:
 
     const_iterator end () const
     {
-    	return iterator(_d.end().base());
+    	return const_iterator(_d.end().base());
     }
 
     const_iterator cbegin () const
@@ -315,7 +315,19 @@ public:
 
 	string & push_back (value_type c)
 	{
-		utf_traits_type::encode(c, std::back_inserter(_d));
+//		utf_traits_type::encode(c, std::back_inserter(_d));
+		return *this;
+	}
+
+	/**
+	 *
+	 * @param latin1 Latin1 character (0 <= latin1 < 127)
+	 * @return
+	 */
+	string & push_back (char latin1)
+	{
+		PFS_ASSERT(latin1 >= 0 && latin1 < 127);
+//		utf_traits_type::encode(value_type(latin1), std::back_inserter(_d));
 		return *this;
 	}
 

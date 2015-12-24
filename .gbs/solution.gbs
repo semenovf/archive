@@ -28,8 +28,8 @@ project "test-byte_string"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-date"
---    include("test-date/project.gbs")
+project "test-date"
+    include("test-date/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
@@ -93,8 +93,8 @@ project "test-byte_string"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-time"
---    include("test-time/project.gbs")
+project "test-time"
+    include("test-time/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

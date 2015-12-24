@@ -5,12 +5,10 @@
  *      Author: wladt
  */
 
+//#include <cstring>
 #include "pfs/date.hpp"
 #include "pfs/math.hpp"
 #include "pfs/utility.hpp"
-#include <cstring>
-#include <sstream>
-#include <iomanip>
 
 // Sources:
 // 		http://en.wikipedia.org/wiki/Julian_day ,
@@ -43,22 +41,30 @@ static inline date __valid_date(int y, int m, int d)
  * @param day   Day.
  * @return JD value.
  */
-integral_t date::julian_day (int year, int month, int day) // static
+intmax_t date::julian_day (int year, int month, int day) // static
 {
 	if (year < 0) // there is no 0 year
 		++year;
 
-	int    a = math::floorDiv(14 - month, 12);
-	integral_t y = integral_t(year) + 4800 - a;
-	int    m = month + 12 * a - 3;
+	int      a = math::floorDiv(14 - month, 12);
+	intmax_t y = intmax_t(year) + 4800 - a;
+	int      m = month + 12 * a - 3;
 
 	// Gregorian calendar: >= 15.10.1582
 	if (year > 1582 || (year == 1582 && (month > 10 || (month == 10 && day >= 15)))) {
-		return day + math::floorDiv(153 * m + 2, 5) + 365 * y + math::floorDiv(y, 4) - math::floorDiv(y, 100) + math::floorDiv(y, 400) - 32045;
+		return day + math::floorDiv(153 * m + 2, 5)
+			+ 365 * y
+			+ math::floorDiv(y, 4)
+			- math::floorDiv(y, 100)
+			+ math::floorDiv(y, 400)
+			- 32045;
 	}
 	// Julian calendar: <= 4.10.1582
 	else if (year < 1582 || (year == 1582 && (month < 10 || (month == 10 && day <= 4)))) {
-		return day + math::floorDiv(153 * m + 2, 5) + 365 * y + math::floorDiv(y, 4) - 32083;
+		return day + math::floorDiv(153 * m + 2, 5)
+			+ 365 * y
+			+ math::floorDiv(y, 4)
+			- 32083;
 	}
 
 	return NullJulianDay;
@@ -74,14 +80,15 @@ integral_t date::julian_day (int year, int month, int day) // static
  *
  * @note see http://www.tondering.dk/claus/cal/julperiod.php.
  */
-void date::from_julian_day (integral_t julianDay, int * yearPtr, int * monthPtr, int * dayPtr) // static
+void date::from_julian_day (intmax_t julianDay, int * yearPtr, int * monthPtr, int * dayPtr) // static
 {
-	integral_t b = 0;
-	integral_t c = 0;
+	intmax_t b = 0;
+	intmax_t c = 0;
 
 	// Gregorian calendar
+	//
 	if (julianDay >= 2299161) {
-		integral_t a = julianDay + 32044;
+		intmax_t a = julianDay + 32044;
 		b = math::floorDiv(4 * a + 3, 146097);
 		c = a - math::floorDiv(146097 * b, 4);
 	} else {
@@ -89,21 +96,23 @@ void date::from_julian_day (integral_t julianDay, int * yearPtr, int * monthPtr,
 		c = julianDay + 32082;
 	}
 
-    integral_t    d = math::floorDiv(4 * c + 3, 1461);
-    integral_t    e = c - math::floorDiv(1461 * d, 4);
-    integral_t    m = math::floorDiv(5 * e + 2, 153);
+    intmax_t    d = math::floorDiv(4 * c + 3, 1461);
+    intmax_t    e = c - math::floorDiv(1461 * d, 4);
+    intmax_t    m = math::floorDiv(5 * e + 2, 153);
 
-    integral_t    day = e - math::floorDiv(153 * m + 2, 5) + 1;
-    integral_t    month = m + 3 - 12 * math::floorDiv(m, 10);
-    integral_t    year = 100 * b + d - 4800 + math::floorDiv(m, 10);
+    intmax_t    day = e - math::floorDiv(153 * m + 2, 5) + 1;
+    intmax_t    month = m + 3 - 12 * math::floorDiv(m, 10);
+    intmax_t    year = 100 * b + d - 4800 + math::floorDiv(m, 10);
 
     if (year <= 0)
-        --year ;
+        --year;
 
     if (yearPtr)
         *yearPtr = int(year);
+
     if (monthPtr)
         *monthPtr = int(month);
+
     if (dayPtr)
         *dayPtr = int(day);
 }
@@ -331,70 +340,96 @@ int date::day () const
     return d;
 }
 
-#if __OBSOLETE__
-string date::toString (const char * format) const
+inline void append_prefixed2 (string & s, char fill_char, int i2)
 {
-	if (year() < 0 && year() > 9999)
+	if (i2 >= 0 && i2 < 10) s.push_back(fill_char);
+	s.append(to_string(i2));
+}
+
+inline void append_prefixed3 (string & s, char fill_char, int i3)
+{
+	if (i3 >= 0) {
+		if (i3 < 100) s.push_back(fill_char);
+		if (i3 < 10) s.push_back(fill_char);
+	}
+	s.append(to_string(i3));
+}
+
+inline void append_prefixed4 (string & s, char fill_char, int i4)
+{
+	if (i4 >= 0) {
+		if (i4 < 1000) s.push_back(fill_char);
+		if (i4 < 100) s.push_back(fill_char);
+		if (i4 < 10) s.push_back(fill_char);
+	}
+	s.append(to_string(i4));
+}
+
+string to_string (const date & d, const string & format)
+{
+	if (d.year() < 0 && d.year() > 9999)
 		return string();
 
-	std::stringstream ss;
-	const char * p = format;
-	const char * end = format + strlen(format);
+	// std::basic_stringstream<typename string::value_type> ss;
+	string r;
+
+	typename string::const_iterator p = format.cbegin();
+	typename string::const_iterator end = format.cend();
+
 	bool need_spec = false; // true if conversion specifier character expected
 
 	while (p < end) {
 		if (*p == '%') {
 			if (need_spec) {
-				ss << '%';
+				r.push_back('%');
 				need_spec = false;
 			} else {
 				need_spec = true;
 			}
 		} else {
 			if (!need_spec) {
-				ss << *p;
+				r.push_back(*p);
 			} else {
 				switch (*p) {
 				case 'n':
-					ss << std::endl;
+					r.push_back('\n');
 					break;
 				case 't':
-					ss << '\t';
+					r.push_back('\t');
 					break;
 				case 'C':
-					ss << std::setw(2) << std::setfill('0') << year()/100;
+					append_prefixed2(r, '0', d.year()/100);
 					break;
 				case 'd':
-					ss << std::setw(2) << std::setfill('0') << day();
+					append_prefixed2(r, '0', d.day());
 					break;
 				case 'e':
-					ss << std::setw(2) << std::setfill(' ') << day();
+					append_prefixed2(r, ' ', d.day());
 					break;
 				case 'F':
-					ss << std::setw(4) << std::setfill('0') << year()
-					   << '-'
-					   << std::setw(2) << std::setfill('0') << month()
-					   << '-'
-					   << std::setw(2) << std::setfill('0') << day();
+					append_prefixed4(r, '0', d.year());
+					r.push_back('-');
+					append_prefixed2(r, '0', d.month());
+					r.push_back('-');
+					append_prefixed2(r, '0', d.day());
 					break;
 				case 'j':
-					ss << std::setw(3) << std::setfill('0') << day_of_year();
+					append_prefixed3(r, '0', d.day_of_year());
 					break;
 				case 'm':
-					ss << std::setw(2) << std::setfill('0') << month();
+					append_prefixed2(r, '0', d.month());
 					break;
 				case 'u':
-					ss << day_of_week();
+					r.append(to_string(d.day_of_week()));
 					break;
 				case 'y':
-					ss << std::setw(2) << std::setfill('0') << year() % 100;
+					append_prefixed2(r, '0', d.year() % 100);
 					break;
 				case 'Y':
-					ss << std::setw(4) << std::setfill('0') << year();
+					append_prefixed4(r, '0', d.year());
 					break;
-
 				default:
-					ss << *p;
+					r.push_back(*p);
 					break;
 				}
 
@@ -403,23 +438,8 @@ string date::toString (const char * format) const
 		}
 		++p;
 	}
-	return string::fromLatin1(ss.str().c_str());
-}
 
-/**
- * @brief Converts date to string.
- *
- * @details The string format corresponds to the ISO 8601 specification,
- *          taking the form YYYY-MM-DD, where YYYY is the year,
- *          MM is the month of the year (between 01 and 12),
- *          and DD is the day of the month between 01 and 31.
- *
- * @return The date as string.
- */
-string date::toString () const
-{
-	return toString("%F"); // equivalent to %H:%M:%S
+	return r;
 }
-#endif
 
 } // pfs

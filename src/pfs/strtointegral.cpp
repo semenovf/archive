@@ -5,30 +5,9 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_BITS_STRTOINTEGRAL_HPP__
-#define __PFS_BITS_STRTOINTEGRAL_HPP__
-
-#include <cctype>
-#include <pfs.hpp>
+#include "pfs/string.hpp"
 
 namespace pfs {
-
-template <typename Char>
-struct stoi_traits
-{
-	static bool is_space (Char v);
-	static bool eq_latin1 (Char c1, char c2);
-
-	/**
-	 * @brief Convert character to integer (according to radix from 2 to 36 including).
-	 *
-	 * @param c Character to convert.
-	 * @param radix Radix for digit.
-	 * @return @c >= 0 if character converted successfully,
-	 *         @c -1 if character is not associated with digit in specified radix.
-	 */
-	static int to_digit (Char c, int radix);
-};
 
 //template <>
 //inline bool __is_space<char> (char v)
@@ -93,10 +72,13 @@ struct stoi_traits
  * @param max
  * @return
  */
-template <typename InputIterator>
-uintmax_t strtouintmax (InputIterator begin, InputIterator end, int radix, uintmax_t max_value, InputIterator * endref = 0)
+uintmax_t strtouintmax (string::const_iterator begin
+		, string::const_iterator end
+		, int radix
+		, uintmax_t max_value
+		, string::const_iterator * endref)
 {
-	InputIterator pos = begin;
+	string::const_iterator pos = begin;
 	uintmax_t r = uintmax_t(0);
 	int sign = 1;
 
@@ -205,18 +187,23 @@ uintmax_t strtouintmax (InputIterator begin, InputIterator end, int radix, uintm
  * @param max
  * @return
  */
-template <typename InputIterator>
-intmax_t strtointmax (InputIterator begin, InputIterator end, int radix, intmax_t min_value, uintmax_t max_value, InputIterator * endref = 0)
+intmax_t strtointmax (string::const_iterator begin
+		, string::const_iterator end
+		, int radix
+		, intmax_t min_value
+		, uintmax_t max_value
+		, string::const_iterator * endref)
 {
 	uintmax_t r = 0;
-	InputIterator pos = begin;
-	InputIterator endr(begin); // fixing MSVC 2010 error C2512: 'pfs::mbcs_string_ptr<_CodeUnitT,Holder>::mbcs_string_ptr' : no appropriate default constructor available
+	string::const_iterator pos = begin;
+	string::const_iterator endr(begin); // fixing MSVC 2010 error C2512: 'pfs::mbcs_string_ptr<_CodeUnitT,Holder>::mbcs_string_ptr' : no appropriate default constructor available
 
 	// Skip whitespaces
+	//
 	while (pos < end  && __is_space(*pos))
 		++pos;
 
-	r = strtouintmax<InputIterator>(pos, end, radix, max_value, & endr);
+	r = strtouintmax(pos, end, radix, max_value, & endr);
 
 	if (endref) {
 		if (pos == endr) {
@@ -246,21 +233,4 @@ intmax_t strtointmax (InputIterator begin, InputIterator end, int radix, intmax_
 	return static_cast<intmax_t>(r);
 }
 
-//inline int stoi (const string & str, size_t * pos = 0, int base = 10)
-//{
-//
-//}
-//
-//inline long stol (const string & str, size_t * pos = 0, int base = 10)
-//{
-//
-//}
-//
-//inline long long stoll (const std::string & str, size_t * pos = 0, int base = 10)
-//{
-//
-//}
-
 } // pfs
-
-#endif /* __PFS_BITS_STRTOINTEGRAL_HPP__ */
