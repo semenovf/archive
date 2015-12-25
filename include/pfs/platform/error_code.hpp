@@ -46,7 +46,10 @@ public:
 
 namespace pfs {
 
+// XXX DEPRECATED
 DLL_API string & lexical_cast (const pfs::platform::error_code & ex, string & result);
+
+DLL_API string lexical_cast (const pfs::platform::error_code & ex);
 
 } // pfs
 
