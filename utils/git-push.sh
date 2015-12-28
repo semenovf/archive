@@ -15,7 +15,7 @@ for dir in $DIRS ; do
 	    fi
 
 	    git add -A && git commit
-	    git push
+	    git push --all
 
 	    if [ "$?" != "0" ] ; then
 		echo Git pushing failed. >&2
