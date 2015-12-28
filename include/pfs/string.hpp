@@ -330,104 +330,101 @@ inline string to_string (long double value)
 
 #endif
 
-template <typename Integer>
-inline string lexical_cast (pfs::enable_if<!pfs::is_unsigned<Integer>::value, Integer>::type value)
-{
-	return to_string(value);
-}
-
-template <typename UnsignedInteger>
-inline string lexical_cast (pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type value)
-{
-	return to_string(value);
-}
-
-template <typename Float>
-inline string lexical_cast (pfs::enable_if<pfs::is_floating_point<Float>::value, Float>::type value)
-{
-	return to_string(value);
-}
-
-inline bool lexical_cast (const string & s)
-{
-	return (s == string("true") || s == string("yes"))
-			? true : false;
-}
-
-template <typename Integer>
-typename pfs::enable_if<!pfs::is_unsigned<Integer>::value, Integer>::type
-lexical_cast (string::const_iterator begin, string::const_iterator end, int radix, bool & ok)
-{
-	ok = true;
-
-	string::const_iterator endptr(begin);
-	intmax_t r = strtointmax(begin, end
-			, radix
-			, intmax_t(pfs::min_type<Integer>())
-			, uintmax_t(pfs::max_type<Integer>())
-			, & endptr);
-
-    if ((errno == ERANGE && (r == pfs::max_type<intmax_t>() || r == pfs::min_type<intmax_t>()))
-            || (errno != 0 && r == 0)
-            || endptr != end) {
-
-    	ok = false;
-    }
-
-    return static_cast<Integer>(r);
-}
-
-template <typename Integer>
-inline typename pfs::enable_if<!pfs::is_unsigned<Integer>::value, Integer>::type
-lexical_cast (const string & s, int radix, bool & ok)
-{
-	return lexical_cast<string::const_iterator, Integer>(s.begin(), s.end(), radix, ok);
-}
-
-template <typename String, typename Integer>
-inline typename pfs::enable_if<!pfs::is_unsigned<Integer>::value, Integer>::type
-lexical_cast (const string & s, bool & ok)
-{
-    return lexical_cast<string::const_iterator, Integer>(s.begin(), s.end(), 10, ok);
-}
-
-template <typename UnsignedInteger>
-typename pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type
-lexical_cast (string::const_iterator begin, string::const_iterator end, int radix, bool & ok)
-{
-	ok = true;
-	string::const_iterator endptr(begin);
-	uintmax_t r = strtouintmax(begin, end
-			, radix
-			, uintmax_t(pfs::max_type<UnsignedInteger>())
-			, & endptr);
-
-    if ((errno == ERANGE && (r == pfs::max_type<uintmax_t>()))
-    		|| (errno != 0 && r == 0)
-    		|| endptr != end) {
-    	ok = false;
-    }
-
-    return static_cast<UnsignedInteger>(r);
-}
-
-template <typename UnsignedInteger>
-typename pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type
-lexical_cast (const string & s, int radix, bool & ok)
-{
-	return lexical_cast<string::const_iterator, UnsignedInteger>(s.begin(), s.end(), radix, ok);
-}
-
-template <typename UnsignedInteger>
-inline typename pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type
-lexical_cast (const string & s, bool & ok)
-{
-	return lexical_cast<string::const_iterator, UnsignedInteger>(s.begin(), s.end(), 10, ok);
-}
+//template <typename Integer>
+//inline string lexical_cast (pfs::enable_if<!pfs::is_unsigned<Integer>::value, Integer>::type value)
+//{
+//	return to_string(value);
+//}
+//
+//template <typename UnsignedInteger>
+//inline string lexical_cast (pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type value)
+//{
+//	return to_string(value);
+//}
+//
+//template <typename Float>
+//inline string lexical_cast (pfs::enable_if<pfs::is_floating_point<Float>::value, Float>::type value)
+//{
+//	return to_string(value);
+//}
+//
+//inline bool lexical_cast (const string & s)
+//{
+//	return (s == string("true") || s == string("yes"))
+//			? true : false;
+//}
+//
+//template <typename Integer>
+//typename pfs::enable_if<!pfs::is_unsigned<Integer>::value, Integer>::type
+//lexical_cast (string::const_iterator begin, string::const_iterator end, int radix, bool & ok)
+//{
+//	ok = true;
+//
+//	string::const_iterator endptr(begin);
+//	intmax_t r = strtointmax(begin, end
+//			, radix
+//			, intmax_t(pfs::min_type<Integer>())
+//			, uintmax_t(pfs::max_type<Integer>())
+//			, & endptr);
+//
+//    if ((errno == ERANGE && (r == pfs::max_type<intmax_t>() || r == pfs::min_type<intmax_t>()))
+//            || (errno != 0 && r == 0)
+//            || endptr != end) {
+//
+//    	ok = false;
+//    }
+//
+//    return static_cast<Integer>(r);
+//}
+//
+//template <typename Integer>
+//inline typename pfs::enable_if<!pfs::is_unsigned<Integer>::value, Integer>::type
+//lexical_cast (const string & s, int radix, bool & ok)
+//{
+//	return lexical_cast<string::const_iterator, Integer>(s.begin(), s.end(), radix, ok);
+//}
+//
+//template <typename String, typename Integer>
+//inline typename pfs::enable_if<!pfs::is_unsigned<Integer>::value, Integer>::type
+//lexical_cast (const string & s, bool & ok)
+//{
+//    return lexical_cast<string::const_iterator, Integer>(s.begin(), s.end(), 10, ok);
+//}
+//
+//template <typename UnsignedInteger>
+//typename pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type
+//lexical_cast (string::const_iterator begin, string::const_iterator end, int radix, bool & ok)
+//{
+//	ok = true;
+//	string::const_iterator endptr(begin);
+//	uintmax_t r = strtouintmax(begin, end
+//			, radix
+//			, uintmax_t(pfs::max_type<UnsignedInteger>())
+//			, & endptr);
+//
+//    if ((errno == ERANGE && (r == pfs::max_type<uintmax_t>()))
+//    		|| (errno != 0 && r == 0)
+//    		|| endptr != end) {
+//    	ok = false;
+//    }
+//
+//    return static_cast<UnsignedInteger>(r);
+//}
+//
+//template <typename UnsignedInteger>
+//typename pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type
+//lexical_cast (const string & s, int radix, bool & ok)
+//{
+//	return lexical_cast<string::const_iterator, UnsignedInteger>(s.begin(), s.end(), radix, ok);
+//}
+//
+//template <typename UnsignedInteger>
+//inline typename pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type
+//lexical_cast (const string & s, bool & ok)
+//{
+//	return lexical_cast<string::const_iterator, UnsignedInteger>(s.begin(), s.end(), 10, ok);
+//}
 
 } // pfs
-
-#include <pfs/bits/to_string.hpp>
-
 
 #endif /* __PFS_STRING_HPP__ */

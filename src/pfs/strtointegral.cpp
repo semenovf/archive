@@ -6,51 +6,26 @@
  */
 
 #include "pfs/string.hpp"
+#include "pfs/unicode/unicode.hpp"
 
 namespace pfs {
 
-//template <>
-//inline bool __is_space<char> (char v)
-//{
-//	return std::isspace(v) ? true : false;
-//}
-//
-//template <>
-//inline bool __is_space<unsigned char> (unsigned char v)
-//{
-//	return std::isspace(static_cast<int>(v)) ? true : false;
-//}
-//
-//template <>
-//inline bool __eq_latin1<char> (char c1, char c2)
-//{
-//	return c1 == c2;
-//}
-//
-//template <>
-//inline bool __eq_latin1<unsigned char> (unsigned char c1, char c2)
-//{
-//	return c1 == static_cast<unsigned char>(c2);
-//}
-//
-//template <>
-//inline int __to_digit<char> (char c, int radix)
-//{
-//	if (c >= '0' && c <= '9')
-//		return c - '0';
-//	else if (c >= 'A' && c <= 'Z')
-//		return c - 'A' + 10;
-//	else if (c >= 'a' && c <= 'z')
-//		return c - 'a' + 10;
-//
-//	return -1;
-//}
-//
-//template <>
-//inline int __to_digit<unsigned char> (unsigned char c, int radix)
-//{
-//	return __to_digit(static_cast<char>(c), radix);
-//}
+inline bool __is_space (unicode::char_type c)
+{
+	return (c < 127 && std::isspace(static_cast<int>(c)));
+}
+
+inline int __to_digit (unicode::char_type c, int radix)
+{
+	if (c >= '0' && c <= '9')
+		return c - '0';
+	else if (c >= 'A' && c <= 'Z')
+		return c - 'A' + 10;
+	else if (c >= 'a' && c <= 'z')
+		return c - 'a' + 10;
+
+	return -1;
+}
 
 /**
  * @brief Converts the initial part of the string bitween
@@ -101,10 +76,10 @@ uintmax_t strtouintmax (string::const_iterator begin
 
 		// Sign
 		//
-		if (__eq_latin1(*pos, '-')) {
+		if (*pos == '-') {
 			sign = -1;
 			++pos;
-		} else if (__eq_latin1(*pos, '+')) {
+		} else if (*pos == '+') {
 			++pos;
 		}
 
@@ -112,17 +87,16 @@ uintmax_t strtouintmax (string::const_iterator begin
 		if (!radix) {
 			radix = 10;
 
-			if (__eq_latin1(*pos, '0')) {
+			if (*pos == '0') {
 				radix = 8;
 				++pos;
 
 				if (pos < end
-						&& (__eq_latin1(*pos, 'x')
-								|| __eq_latin1(*pos, 'X'))) {
+						&& (*pos == 'x' || *pos == 'X')) {
 					radix = 16;
 					++pos;
 				}
-			} else if (__eq_latin1(*pos, 'b')) {
+			} else if (*pos == 'b') {
 				radix = 2;
 				++pos;
 			}
@@ -134,9 +108,9 @@ uintmax_t strtouintmax (string::const_iterator begin
 		    ++max_value;
 
 		while (pos != end) {
-			int digit;
+			int digit = __to_digit(*pos, radix);
 
-			if (!__to_digit(*pos, radix, digit))
+			if (digit < 0)
 				break;
 
 			if (r > (max_value - digit)/radix || r * radix > max_value - digit) {
@@ -213,7 +187,7 @@ intmax_t strtointmax (string::const_iterator begin
 		}
 	}
 
-	if (__eq_latin1(*pos, '-')) {
+	if (*pos == '-') {
 		if (static_cast<intmax_t>(r) > 0) {
 			errno = ERANGE;
 			return pfs::min_type<intmax_t>();

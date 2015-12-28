@@ -9,17 +9,18 @@
 #define __PFS_UTF_TRAITS_HPP__
 
 #include <pfs.hpp>
+#include <pfs/unicode/unicode.hpp>
 
 namespace pfs { namespace utf {
 
 template <typename CodeUnitIterator, typename UtfTag>
 struct traits
 {
-	typedef UtfTag           utf_tag;
-	typedef uint32_t         value_type;
-    typedef CodeUnitIterator pointer;
-	typedef uint32_t &       reference;
-    typedef ptrdiff_t        difference_type;
+	typedef UtfTag               utf_tag;
+	typedef unicode::char_type   value_type;
+    typedef CodeUnitIterator     pointer;
+	typedef unicode::char_type & reference;
+    typedef ptrdiff_t            difference_type;
 
     static uint32_t decode (pointer & p);
     static pointer encode (value_type uc, pointer begin);

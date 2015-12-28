@@ -8,12 +8,11 @@
 #include <iostream>
 #include <pfs/test/test.hpp>
 #include "pfs/algo/find.hpp"
-#include "pfs/cast/lexical_cast.hpp"
-#include <string>
+#include "pfs/string.hpp"
 
 using std::cout;
 using std::endl;
-using std::string;
+using pfs::string;
 
 struct StringParm
 {
@@ -76,14 +75,12 @@ void test_find ()
 			, needleEnd);
 
 		if (test->pos >= 0) {
-			string tmp;
-
 			text.append("\"");
 			text.append(test->needle.s);
 			text.append("\" found in \"");
 			text.append(test->haystack.s);
 			text.append("\" at pos ");
-			text.append(pfs::lexical_cast(test->pos, tmp));
+			text.append(pfs::to_string(test->pos));
 
 			TEST_OK2(it == haystackBegin + test->pos, text.c_str());
 		} else {

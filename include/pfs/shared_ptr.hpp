@@ -10,7 +10,6 @@
 #define __PFS_SHARED_PTR_HPP__
 
 #include <pfs.hpp>
-#include <pfs/noncopyable.hpp>
 
 #ifdef HAVE_STD_SHARED_PTR
 #	include <memory>
@@ -67,8 +66,12 @@ struct ref_count
 
 
 template <typename T, typename Deleter>
-class ref_count_with_deleter: public ref_count, noncopyable
+class ref_count_with_deleter: public ref_count
 {
+private:
+	ref_count_with_deleter (const ref_count_with_deleter & );
+	ref_count_with_deleter & operator = (const ref_count_with_deleter & );
+
 public:
 	ref_count_with_deleter(T * ptr, Deleter d) : ref_count(), m_ptr(ptr), m_deleter(d) { deleter_fn = deleter; }
 	~ref_count_with_deleter() { this->~ref_count(); }

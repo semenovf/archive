@@ -53,8 +53,8 @@ project "test-date"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-mbcs_string"
---    include("test-mbcs_string/project.gbs")
+project "test-string"
+    include("test-string/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

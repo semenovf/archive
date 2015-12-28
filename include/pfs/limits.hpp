@@ -8,12 +8,7 @@
 #ifndef __PFS_LIMITS_HPP__
 #define __PFS_LIMITS_HPP__
 
-namespace pfs {
-
 #include <limits>
-using namespace std;
-
-} // pfs
 
 #if defined(LLONG_MAX)                   \
 	|| defined(__LONG_LONG_MAX__)  // valid for gcc
@@ -33,11 +28,11 @@ using namespace std;
 
 namespace pfs {
 
-template <typename T> T max_value () { return pfs::numeric_limits<T>::max(); }
-template <typename T> T min_value () { return pfs::numeric_limits<T>::min(); }
+template <typename T> T max_value () { return std::numeric_limits<T>::max(); }
+template <typename T> T min_value () { return std::numeric_limits<T>::min(); }
 
-template <typename T> T max_value (const T &) { return pfs::numeric_limits<T>::max(); }
-template <typename T> T min_value (const T &) { return pfs::numeric_limits<T>::min(); }
+template <typename T> T max_value (const T &) { return std::numeric_limits<T>::max(); }
+template <typename T> T min_value (const T &) { return std::numeric_limits<T>::min(); }
 
 } // pfs
 

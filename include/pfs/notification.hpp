@@ -8,7 +8,6 @@
 #ifndef __PFS_NOTIFICATION_HPP__
 #define __PFS_NOTIFICATION_HPP__
 
-#include <pfs/memory.hpp> // for std::allocator
 #include <pfs/ostream.hpp>
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
@@ -27,11 +26,10 @@ enum notification_type_enum
 	, notification_count
 };
 
-template <typename String>
 class notification_value
 {
 public:
-	typedef String string_type;
+	typedef string string_type;
 
 private:
 	size_t _repetitions;
@@ -68,7 +66,7 @@ public:
 		return _type;
 	}
 
-	const String & text () const
+	const string & text () const
 	{
 		return _text;
 	}
@@ -84,21 +82,19 @@ public:
 	}
 };
 
-template <typename String>
 struct notification_traits
 {
-	typedef String string_type;
-	typedef notification_value<String> value_type;
+	typedef string string_type;
+	typedef notification_value value_type;
 	typedef typename vector<value_type>::type container_type;
 	typedef typename container_type::iterator iterator;
 	typedef typename container_type::const_iterator const_iterator;
 };
 
-template <typename String>
-class basic_notification
+class notification
 {
 public:
-	typedef notification_traits<String> traits_type;
+	typedef notification_traits traits_type;
 	typedef typename traits_type::string_type string_type;
 	typedef typename traits_type::value_type value_type;
 	typedef typename traits_type::container_type container_type;
@@ -110,17 +106,17 @@ protected:
 	size_t         _type_counts[notification_count];
 
 private:
-	basic_notification (const basic_notification & other);
-	basic_notification & operator == (const basic_notification & other);
+	notification (const notification & other);
+	notification & operator == (const notification & other);
 
 public:
-	basic_notification ()
+	notification ()
 	{
 		for (int i = 0; i < notification_count; ++i)
 			_type_counts[i] = 0;
 	}
 
-	virtual ~basic_notification () { }
+	virtual ~notification () { }
 
 	void append (const string_type & text)
 	{
@@ -130,7 +126,7 @@ public:
 
 	void append (notification_type_enum type, const string_type & text);
 
-	void append (const basic_notification & other);
+	void append (const notification & other);
 
 	void clear ()
 	{
@@ -182,12 +178,12 @@ public:
 
 	const_iterator cbegin () const
 	{
-		return _notifications.cbegin();
+		return _notifications.begin();
 	}
 
 	const_iterator cend () const
 	{
-		return _notifications.cend();
+		return _notifications.end();
 	}
 
 	const string_type & last_text () const
@@ -203,52 +199,7 @@ public:
 	}
 };
 
-template <typename String>
-void basic_notification<String>::append (notification_type_enum nxtype, const string_type & text)
-{
-	if (!text.empty()) {
-		if (_notifications.empty())
-			_notifications.push_back(value_type(nxtype, text));
-		else if (last_text() == text)
-			_notifications.back().increment();
-		else
-			_notifications.push_back(value_type(nxtype, text));
-
-		++_type_counts[nxtype];
-	}
-}
-
-template <typename String>
-void basic_notification<String>::append (const basic_notification & other)
-{
-	_notifications.append(other._notifications);
-
-	for (int i = 0; i < notification_count; ++i)
-		_type_counts[i] += other._type_counts[i];
-}
-
-
-template <typename String>
-pfs::ostream & operator << (pfs::ostream & os, const basic_notification<String> & nx)
-{
-    if (nx.count() > 0) {
-    	typename basic_notification<String>::const_iterator it = nx.begin();
-    	typename basic_notification<String>::const_iterator itEnd = nx.end();
-
-        for (; it != itEnd; ++it) {
-            if (it->repetitions() > 1) {
-                os << it->text() << _u8(" (repeat ") << it->repetitions() << _u8(" times)") << std::endl;
-            } else {
-                os << it->text() << std::endl;
-            }
-        }
-    }
-
-    return os;
-}
-
-
-typedef basic_notification<string> notification;
+pfs::ostream & operator << (pfs::ostream & os, const notification & nx);
 
 } // pfs
 

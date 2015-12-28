@@ -1,20 +1,20 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs prj --create --type=test --depends=pfs --name=test-mbcs_string'
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-string'
 --* Date:    Mon Aug 17 21:47:02 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-mbcs_string"
+targetname    "test-string"
 includedirs   { "../../include", "../../../pfs-test/include" }
 libdirs       { "../../../.build" }
-files { "../../tests/test-mbcs_string/**.c", "../../tests/test-mbcs_string/**.cpp" }
+files         { "../../tests/test-string/**.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs/test-mbcs_string/debug"
+    objdir       "../../../.build/pfs/test-string/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d" }
@@ -22,7 +22,7 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs/test-mbcs_string/release"
+    objdir       "../../../.build/pfs/test-string/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs" }
 

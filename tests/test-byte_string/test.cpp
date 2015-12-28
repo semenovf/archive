@@ -8,7 +8,7 @@
 #include <cstring>
 #include <pfs/test/test.hpp>
 #include "pfs/byte_string.hpp"
-#include "pfs/cast/lexical_cast.hpp"
+#include "pfs/string.hpp"
 
 #include <iostream>
 using std::cout;
@@ -325,6 +325,7 @@ void test_find ()
 
 #endif // __COMMENT__
 
+#if __COMMENT__
 void test_lexical_cast ()
 {
 	ADD_TESTS(13);
@@ -460,6 +461,7 @@ void test_lexical_cast ()
 	cout << rr << endl;
 #endif
 }
+#endif
 
 void test_base64 ()
 {
@@ -499,7 +501,7 @@ int main(int argc, char *argv[])
 //	test_replace();
 //	test_insert();
 //	test_find();
-	test_lexical_cast();
+//	test_lexical_cast();
 	test_base64();
 	test_substr();
 

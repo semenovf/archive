@@ -8,11 +8,12 @@
 #ifndef __PFS_UNICODE_HPP__
 #define __PFS_UNICODE_HPP__
 
+#include <cctype>
 #include <pfs.hpp>
 
 namespace pfs { namespace unicode {
 
-typedef int32_t char_type;
+typedef uint32_t char_type;
 
 enum {
 	  max_code_point           = 0x0010ffff
@@ -61,7 +62,7 @@ inline bool is_surrogate (char_type c)
 
 } // unicode
 
-typedef int32_t unicode_char_t;
+typedef uint32_t unicode_char_t;
 
 } // pfs
 

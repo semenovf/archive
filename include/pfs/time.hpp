@@ -35,6 +35,11 @@ public:
 		set_time(hour, min, sec, millis);
 	}
 
+	int32_t millis_from_midnight () const
+	{
+		return _millis;
+	}
+
 	time add_millis  (int millis) const;
 	time add_seconds (int secs) const { return add_millis(secs * 1000); }
 

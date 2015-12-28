@@ -9,6 +9,7 @@
 #define __PFS_UTF_STRING_HPP__
 
 #include <string>
+#include <ostream>
 #include <pfs/utf/iterator.hpp>
 
 namespace pfs { namespace utf {
@@ -1315,41 +1316,7 @@ inline utf_string<CodeUnitT> operator + (const utf_string<CodeUnitT> & lhs, char
 	return r += latin1;
 }
 
-template <typename CodeUnitT>
-inline bool operator == ( const utf_string<CodeUnitT> & lhs
-		, const utf_string<CodeUnitT> & rhs )
-{
-	return lhs.compare(rhs) == 0;
-}
 
-template <typename CodeUnitT>
-inline bool operator != ( const utf_string<CodeUnitT> & lhs
-		, const utf_string<CodeUnitT> & rhs )
-{
-	return lhs.compare(rhs) != 0;
-}
-
-
-template <typename CodeUnitT>
-inline bool operator <= ( const utf_string<CodeUnitT> & lhs
-		, const utf_string<CodeUnitT> & rhs )
-{
-	return lhs.compare(rhs) <= 0;
-}
-
-template <typename CodeUnitT>
-inline bool operator > ( const utf_string<CodeUnitT> & lhs
-		, const utf_string<CodeUnitT> & rhs )
-{
-	return lhs.compare(rhs) > 0;
-}
-
-template <typename CodeUnitT>
-inline bool operator >= ( const utf_string<CodeUnitT> & lhs
-		, const utf_string<CodeUnitT> & rhs )
-{
-	return lhs.compare(rhs) >= 0;
-}
 
 template <typename CodeUnitT>
 inline bool operator == (const utf_string<CodeUnitT> & lhs, const char * rhs)
@@ -1387,21 +1354,6 @@ inline bool operator >= (const utf_string<CodeUnitT> & lhs, const char * rhs)
 	return lhs.compare(rhs) >= 0;
 }
 
-template <typename CodeUnitT>
-inline std::ostream & operator << (std::ostream & os, const utf_string<CodeUnitT> & o);
-//{
-//// FIXME is c_str() that function to use in this case?
-//	os << o.c_str();
-//	return os;
-//}
-
-template <>
-inline std::ostream & operator << <uint8_t> (std::ostream & os, const utf_string<uint8_t> & s)
-{
-    os << reinterpret_cast<const char *>(s.constData());
-    return os;
-}
-
 //
 /**
  * @brief Converts UTF16-encoded to UTF8-encoded and output to stream.
@@ -1420,11 +1372,47 @@ inline std::ostream & operator << <uint16_t> (std::ostream & os, const utf_strin
 
 #endif // __COMMENT__
 
+
 template <typename CodeUnit, typename UtfTag>
-inline bool operator < (const string<CodeUnit, UtfTag> & lhs
+inline bool operator == (const string<CodeUnit, UtfTag> & lhs
 		, const string<CodeUnit, UtfTag> & rhs )
 {
+	return lhs.compare(rhs) == 0;
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline bool operator != (const string<CodeUnit, UtfTag> & lhs
+		, const string<CodeUnit, UtfTag> & rhs )
+{
+	return lhs.compare(rhs) != 0;
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline bool operator < (const string<CodeUnit, UtfTag> & lhs
+		, const string<CodeUnit, UtfTag> & rhs)
+{
 	return lhs.compare(rhs) < 0;
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline bool operator <= (const string<CodeUnit, UtfTag> & lhs
+		, const string<CodeUnit, UtfTag> & rhs)
+{
+	return lhs.compare(rhs) <= 0;
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline bool operator > (const string<CodeUnit, UtfTag> & lhs
+		, const string<CodeUnit, UtfTag> & rhs)
+{
+	return lhs.compare(rhs) > 0;
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline bool operator >= (const string<CodeUnit, UtfTag> & lhs
+		, const string<CodeUnit, UtfTag> & rhs)
+{
+	return lhs.compare(rhs) >= 0;
 }
 
 }} // pfs::utf

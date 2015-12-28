@@ -31,13 +31,13 @@ inline bool operator == (const std::string & lhs, pfs::utf8::string & rhs)
 
 inline std::ostream & operator << (std::ostream & os, const pfs::utf8::string & s)
 {
-    os << reinterpret_cast<const std::string::const_pointer>(s.c_str());
+    os << reinterpret_cast<const char * /*std::string::const_pointer*/>(s.c_str());
     return os;
 }
 
 inline std::ostringstream & operator << (std::ostringstream & oss, const pfs::utf8::string & s)
 {
-    oss << reinterpret_cast<const std::string::const_pointer>(s.c_str());
+    oss << reinterpret_cast<const char */*std::string::const_pointer*/>(s.c_str());
     return oss;
 }
 

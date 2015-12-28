@@ -6,9 +6,10 @@
  */
 
 #include <pfs/test/test.hpp>
-#include <pfs/ucchar.hpp>
-#include <pfs/mbcs_string.hpp>
-#include <pfs/stringlist.hpp>
+#include <pfs/limits.hpp>
+//#include <pfs/ucchar.hpp>
+#include <pfs/string.hpp>
+//#include <pfs/stringlist.hpp>
 #include <cstring>
 #include <iostream>
 #include <cstdio>
@@ -16,6 +17,42 @@
 
 using std::cout;
 using std::endl;
+
+void test_to_string ()
+{
+	TEST_OK(pfs::to_string(0)       == pfs::string("0"));
+	TEST_OK(pfs::to_string(127)     == pfs::string("127"));
+	TEST_OK(pfs::to_string(-128)    == pfs::string("-128"));
+	TEST_OK(pfs::to_string(255)     == pfs::string("255"));
+	TEST_OK(pfs::to_string(32767)   == pfs::string("32767"));
+	TEST_OK(pfs::to_string(-32768)  == pfs::string("-32768"));
+	TEST_OK(pfs::to_string(65535)   == pfs::string("65535"));
+	TEST_OK(pfs::to_string(8388607) == pfs::string("8388607"));
+	TEST_OK(pfs::to_string(-8388608) == pfs::string("-8388608"));
+	TEST_OK(pfs::to_string(16777215) == pfs::string("16777215"));
+	TEST_OK(pfs::to_string(pfs::max_value<int32_t>()) == pfs::string("2147483647"));
+	TEST_OK(pfs::to_string(pfs::min_value<int32_t>()) == pfs::string("-2147483648"));
+	TEST_OK(pfs::to_string(pfs::max_value<uint32_t>()) == pfs::string("4294967295"));
+
+#ifdef PFS_HAVE_LONGLONG
+	TEST_OK(pfs::to_string(pfs::max_value<intmax_t>()) == pfs::string("9223372036854775807"));
+	TEST_OK(pfs::to_string(pfs::min_value<intmax_t>()) == pfs::string("-9223372036854775808"));
+	TEST_OK(pfs::to_string(pfs::max_value<uintmax_t>()) == pfs::string("18446744073709551615"));
+#endif
+
+//	// Note: single-precision floating-point numbers have a 24-bit mantissa, which is approximately 7.2 decimal digits.
+//	TEST_OK(utfstring::toString(0.0f, 'g') == utfstring("0"));
+//	TEST_OK(utfstring::toString(0.0f, 'f', 6) == utfstring("0.000000"));
+//	TEST_OK(utfstring::toString(0.0f, 'f', 0) == utfstring("0.000000"));
+//	TEST_OK(utfstring::toString(0.0f, 'f', 1) == utfstring("0.0"));
+//	TEST_OK(utfstring::toString(3.14159f, 'f', 5) == utfstring("3.14159"));
+//	TEST_OK(utfstring::toString(1234567.875f, 'f', 3) == utfstring("1234567.875"));
+
+//	cout << "==" << utfstring::toString(0.0f, 'f', 1).c_str() << endl;
+}
+
+
+#if __COMMENT__
 
 const uint8_t cyrillic_alphabet_utf8[] = {
 	      0xD0, 0x90, 0xD0, 0x91, 0xD0, 0x92, 0xD0, 0x93, 0xD0, 0x94, 0xD0, 0x95, 0xD0, 0x81, 0xD0, 0x96
@@ -546,42 +583,6 @@ void test_starts_ends_with ()
 }
 
 template <typename CodeUnitT>
-void test_to_string ()
-{
-	typedef pfs::mbcs_string<CodeUnitT> utfstring;
-
-	TEST_OK(utfstring::toString(0) == utfstring("0"));
-	TEST_OK(utfstring::toString(127) == utfstring("127"));
-	TEST_OK(utfstring::toString(-128) == utfstring("-128"));
-	TEST_OK(utfstring::toString(255) == utfstring("255"));
-	TEST_OK(utfstring::toString(32767) == utfstring("32767"));
-	TEST_OK(utfstring::toString(-32768) == utfstring("-32768"));
-	TEST_OK(utfstring::toString(65535) == utfstring("65535"));
-	TEST_OK(utfstring::toString(8388607) == utfstring("8388607"));
-	TEST_OK(utfstring::toString(-8388608) == utfstring("-8388608"));
-	TEST_OK(utfstring::toString(16777215) == utfstring("16777215"));
-	TEST_OK(utfstring::toString(2147483647) == utfstring("2147483647"));
-	TEST_OK(utfstring::toString(PFS_INT_MIN) == utfstring("-2147483648"));
-	TEST_OK(utfstring::toString(PFS_ULONG_LITERAL(4294967295)) == utfstring("4294967295"));
-
-#ifdef PFS_HAVE_LONGLONG
-	TEST_OK(utfstring::toString(PFS_LLONG_MAX) == utfstring("9223372036854775807"));
-	TEST_OK(utfstring::toString(PFS_LLONG_MIN) == utfstring("-9223372036854775808"));
-	TEST_OK(utfstring::toString(PFS_ULLONG_MAX) == utfstring("18446744073709551615"));
-#endif
-
-	// Note: single-precision floating-point numbers have a 24-bit mantissa, which is approximately 7.2 decimal digits.
-	TEST_OK(utfstring::toString(0.0f, 'g') == utfstring("0"));
-	TEST_OK(utfstring::toString(0.0f, 'f', 6) == utfstring("0.000000"));
-	TEST_OK(utfstring::toString(0.0f, 'f', 0) == utfstring("0.000000"));
-	TEST_OK(utfstring::toString(0.0f, 'f', 1) == utfstring("0.0"));
-	TEST_OK(utfstring::toString(3.14159f, 'f', 5) == utfstring("3.14159"));
-	TEST_OK(utfstring::toString(1234567.875f, 'f', 3) == utfstring("1234567.875"));
-
-//	cout << "==" << utfstring::toString(0.0f, 'f', 1).c_str() << endl;
-}
-
-template <typename CodeUnitT>
 void test_convert_to_number ()
 {
     ADD_TESTS(39);
@@ -779,7 +780,9 @@ void test_split ()
 //	TEST_OK(slist.valueAt(0) == s3);
 }
 
-template <typename CodeUnitT>
+#endif
+
+//template <typename CodeUnitT>
 void test_suite ()
 {
 //	test_size_length<CodeUnitT>();
@@ -796,9 +799,9 @@ void test_suite ()
 //	test_replace<CodeUnitT>();
 //	test_find<CodeUnitT>();
 //	test_starts_ends_with<CodeUnitT>();
-//	test_to_string<CodeUnitT>();
+	test_to_string();
 
-	test_convert_to_number<CodeUnitT>();
+//	test_convert_to_number();
 //	test_split<CodeUnitT>();
 }
 
@@ -810,7 +813,7 @@ int main(int argc, char *argv[])
 	cout << "*************************************************" << endl;
 	cout << "*********** TEST UTF8-encoded strings ***********" << endl;
 	cout << "*************************************************" << endl;
-	test_suite<uint8_t>();
+	test_suite();
 
 //	cout << endl;
 //	cout << "***************************************************" << endl;

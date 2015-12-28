@@ -268,7 +268,7 @@ string to_string (const date & d, const string & format);
  *
  * @return The date as string.
  */
-string to_string (const date & d)
+inline string to_string (const date & d)
 {
 	return to_string(d, string("%F")); // equivalent to %H:%M:%S
 }
