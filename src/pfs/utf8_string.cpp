@@ -14,11 +14,6 @@
 
 namespace pfs { namespace utf {
 
-template <>
-string<uint8_t, pfs::utf8::tag>::string<uint8_t, pfs::utf8::tag> (const std::string & s)
-	: _d(reinterpret_cast<const std::basic_string<uint8_t> &>(s))
-{}
-
 }}
 
 #if __COMMENT__

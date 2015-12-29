@@ -168,6 +168,13 @@ public:
     	return _d.c_str();
     }
 
+    /**
+     * @brief Returns UTF-8 encoded std::string instance.
+     *
+     * @return UTF-8 encoded std::string instance.
+     */
+    std::string stdstring () const;
+
 	/**
 	 * @brief Returns size of string in code units.
 	 *

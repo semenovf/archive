@@ -8,7 +8,7 @@
 #include <iostream>
 #include <pfs/test/test.hpp>
 #include "pfs/algo/find.hpp"
-#include "pfs/cast/lexical_cast.hpp"
+#include "pfs/string.hpp"
 #include <string>
 
 using std::cout;
@@ -85,7 +85,7 @@ void test_rfind ()
 			text.append("\" found in \"");
 			text.append(test->haystack.s);
 			text.append("\" at pos ");
-			text.append(pfs::lexical_cast(test->pos, tmp));
+			text.append(pfs::to_string(test->pos).stdstring());
 
 			TEST_OK2(it == haystackBegin + test->pos, text.c_str());
 		} else {

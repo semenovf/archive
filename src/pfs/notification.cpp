@@ -36,15 +36,21 @@ void notification::append (const notification & other)
 		_type_counts[i] += other._type_counts[i];
 }
 
-std::ostream & operator << (std::ostream & os, const notification & nx)
+} // pfs
+
+std::ostream & operator << (std::ostream & os, const pfs::notification & nx)
 {
     if (nx.count() > 0) {
-    	typename notification::const_iterator it = nx.begin();
-    	typename notification::const_iterator itEnd = nx.end();
+    	typename pfs::notification::const_iterator it = nx.begin();
+    	typename pfs::notification::const_iterator itEnd = nx.end();
 
         for (; it != itEnd; ++it) {
             if (it->repetitions() > 1) {
-                os << it->text() << _u8(" (repeat ") << it->repetitions() << _u8(" times)") << std::endl;
+                os << it->text()
+                   << _u8(" (repeat ")
+                   << it->repetitions()
+                   << _u8(" times)")
+                   << std::endl;
             } else {
                 os << it->text() << std::endl;
             }
@@ -53,8 +59,5 @@ std::ostream & operator << (std::ostream & os, const notification & nx)
 
     return os;
 }
-
-
-} // pfs
 
 

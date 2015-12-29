@@ -19,6 +19,22 @@ typedef pfs::utf::string<uint8_t, tag> string;
 
 }} // pfs::utf8
 
+namespace pfs { namespace utf {
+
+template <>
+inline string<uint8_t, pfs::utf8::tag>::string<uint8_t, pfs::utf8::tag> (const std::string & s)
+	: _d(reinterpret_cast<const std::basic_string<uint8_t> &>(s))
+{}
+
+template <>
+inline std::string string<uint8_t, pfs::utf8::tag>::stdstring () const
+{
+	return std::string(reinterpret_cast<const std::basic_string<char> &>(_d));
+}
+
+}}
+
+
 inline bool operator == (pfs::utf8::string & lhs, const std::string & rhs)
 {
     return rhs == reinterpret_cast<const std::string::const_pointer>(lhs.c_str());

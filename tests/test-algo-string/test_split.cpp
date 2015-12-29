@@ -7,16 +7,15 @@
 
 #include <iostream>
 #include <pfs/test/test.hpp>
-#include "pfs/cast/lexical_cast.hpp"
+#include "pfs/string.hpp"
 #include "pfs/algo/join.hpp"
 #include "pfs/algo/split.hpp"
-//#include <pfs/string.hpp>
+#include "pfs/string.hpp"
 #include <string>
 #include <vector>
 
 using std::cout;
 using std::endl;
-//using pfs::string;
 using std::string;
 using std::vector;
 
@@ -60,10 +59,9 @@ void test_split ()
 
 		pfs::join(result.begin(), result.end(), sep, sample);
 		string desc;
-		string b;
 
 		desc.append("keepEmpty=");
-		desc.append(pfs::lexical_cast<string>(test->keepEmpty, b));
+		desc.append(pfs::to_string(test->keepEmpty).stdstring());
 		desc.append(" \"");
 		desc.append(src);
 		desc.append("\" => ");

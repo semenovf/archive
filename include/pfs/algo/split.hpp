@@ -9,8 +9,6 @@
 #define __PFS_ALGO_SPLIT_HPP__
 
 #include <pfs/algo/find.hpp>
-#include <pfs/bits/iterator/advance.hpp>
-#include <pfs/bits/iterator/distance.hpp>
 
 namespace pfs {
 
@@ -38,7 +36,7 @@ Sequence & split (
 	if (itBegin == itEnd)
 		return result;
 
-	difference_type n = pfs::distance(separatorBegin, separatorEnd);
+	difference_type n = std::distance(separatorBegin, separatorEnd);
 
 	// "/"
 
@@ -59,7 +57,7 @@ Sequence & split (
 
 		// Skip separator
 		//
-		pfs::advance(it, n);
+		std::advance(it, n);
 		itBegin = it;
 	}
 

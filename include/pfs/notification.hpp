@@ -199,8 +199,8 @@ public:
 	}
 };
 
-pfs::ostream & operator << (pfs::ostream & os, const notification & nx);
-
 } // pfs
+
+std::ostream & operator << (std::ostream & os, const pfs::notification & nx);
 
 #endif /* __PFS_NOTIFICATION_HPP__ */

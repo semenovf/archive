@@ -12,7 +12,7 @@
 
 using std::cout;
 using std::endl;
-using pfs::string;
+using std::string;
 
 struct StringParm
 {
@@ -80,7 +80,7 @@ void test_find ()
 			text.append("\" found in \"");
 			text.append(test->haystack.s);
 			text.append("\" at pos ");
-			text.append(pfs::to_string(test->pos));
+			text.append(pfs::to_string(test->pos).stdstring());
 
 			TEST_OK2(it == haystackBegin + test->pos, text.c_str());
 		} else {

@@ -20,6 +20,7 @@ using std::endl;
 
 void test_to_string ()
 {
+	ADD_TESTS(22);
 	TEST_OK(pfs::to_string(0)       == pfs::string("0"));
 	TEST_OK(pfs::to_string(127)     == pfs::string("127"));
 	TEST_OK(pfs::to_string(-128)    == pfs::string("-128"));
@@ -40,13 +41,13 @@ void test_to_string ()
 	TEST_OK(pfs::to_string(pfs::max_value<uintmax_t>()) == pfs::string("18446744073709551615"));
 #endif
 
-//	// Note: single-precision floating-point numbers have a 24-bit mantissa, which is approximately 7.2 decimal digits.
-//	TEST_OK(utfstring::toString(0.0f, 'g') == utfstring("0"));
-//	TEST_OK(utfstring::toString(0.0f, 'f', 6) == utfstring("0.000000"));
-//	TEST_OK(utfstring::toString(0.0f, 'f', 0) == utfstring("0.000000"));
-//	TEST_OK(utfstring::toString(0.0f, 'f', 1) == utfstring("0.0"));
-//	TEST_OK(utfstring::toString(3.14159f, 'f', 5) == utfstring("3.14159"));
-//	TEST_OK(utfstring::toString(1234567.875f, 'f', 3) == utfstring("1234567.875"));
+	// Note: single-precision floating-point numbers have a 24-bit mantissa, which is approximately 7.2 decimal digits.
+	TEST_OK(pfs::to_string(0.0f, 'g')        == pfs::string("0"));
+	TEST_OK(pfs::to_string(0.0f, 'f', 6)     == pfs::string("0.000000"));
+	TEST_OK(pfs::to_string(0.0f, 'f', 0)     == pfs::string("0.000000"));
+	TEST_OK(pfs::to_string(0.0f, 'f', 1)     == pfs::string("0.0"));
+	TEST_OK(pfs::to_string(3.14159f, 'f', 5) == pfs::string("3.14159"));
+	TEST_OK(pfs::to_string(1234567.875f, 'f', 3) == pfs::string("1234567.875"));
 
 //	cout << "==" << utfstring::toString(0.0f, 'f', 1).c_str() << endl;
 }

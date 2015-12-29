@@ -138,14 +138,14 @@ template <> struct is_unsigned<unsigned long long> { static const bool value = t
 template <typename T>
 struct is_signed { static const bool value = false; };
 
-template <> struct is_unsigned<char>           { static const bool value = true; };
-template <> struct is_unsigned<signed char>    { static const bool value = true; };
-template <> struct is_unsigned<signed short>   { static const bool value = true; };
-template <> struct is_unsigned<signed int>     { static const bool value = true; };
-template <> struct is_unsigned<signed long>    { static const bool value = true; };
+template <> struct is_signed<char>           { static const bool value = true; };
+template <> struct is_signed<signed char>    { static const bool value = true; };
+template <> struct is_signed<signed short>   { static const bool value = true; };
+template <> struct is_signed<signed int>     { static const bool value = true; };
+template <> struct is_signed<signed long>    { static const bool value = true; };
 
 #ifdef PFS_HAVE_LONGLONG
-template <> struct is_unsigned<signed long long> { static const bool value = true; };
+template <> struct is_signed<signed long long> { static const bool value = true; };
 #endif
 
 template <typename T>
