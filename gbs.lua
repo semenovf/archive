@@ -1,4 +1,4 @@
-#!/usr/bin/lua
+#!/usr/bin/env lua
 
 -- Check GBS_HOME environment variable is set
 local gbs_home = os.getenv("GBS_HOME");

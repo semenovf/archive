@@ -9,9 +9,13 @@ SYNOPSYS
             [ --config=CONFIG ]
 
     (2) gbs workspace --build [ --jobs=JOB_COUNT ]
+          or
+        gbs all [ --jobs=JOB_COUNT ]
 
     (3) gbs workspace --clean [ --jobs=JOB_COUNT ]
-
+          or
+        gbs clean [ --jobs=JOB_COUNT ]
+    
 DESCRIPTION
     (1) - create workspace at specified directory (PATH).
     

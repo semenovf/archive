@@ -179,14 +179,14 @@ function gbs.run (argc, argv)
         :s("type", "console-app")
         :s("lang", "C++")
         :s("depends", {})
-	:b("enable-qt", false)
+        :b("enable-qt", false)
         :h(function (r)
                 Settings:set("SolutionName"       , solutionName());
                 Settings:set("ProjectName"        , r:optArg("name"));
                 Settings:set("ProjectType"        , r:optArg("type"));
                 Settings:set("ProjectLanguage"    , r:optArg("lang"));
                 Settings:set("ProjectDependencies", r:optArg("depends"));
-		Settings:set("EnableQt"           , r:optArg("enable-qt"));
+		            Settings:set("EnableQt"           , r:optArg("enable-qt"));
                 return require("gbs.project"):new(Settings):create();
            end);
 
@@ -205,15 +205,21 @@ function gbs.run (argc, argv)
                 return require("gbs.project"):new(Settings):build();
            end);
 
-    -- Synonym for `gbs project --build' 
+    --
+    -- Synonym for `gbs ws --build' or `gbs project --build'
+    --
     cli:router()
         :a("all")
         :h(function (r)
-                Settings:set("ProjectName"   , nil);
-                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
-                Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
-                Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
-                return require("gbs.project"):new(Settings):build();
+                if (fs.exists(fs.join(".gbs", "workspace.txt"))) then
+                    return require("gbs.workspace"):new(Settings):build();
+                else
+                    Settings:set("ProjectName"   , nil);
+                    Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
+                    Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
+                    Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
+                    return require("gbs.project"):new(Settings):build();
+                end
            end);
 
     cli:router()
@@ -231,15 +237,21 @@ function gbs.run (argc, argv)
                 return require("gbs.project"):new(Settings):clean();
            end);
 
-    -- Synonym for `gbs project --clean' 
+    --
+    -- Synonym for `gbs workspace --clean' or `gbs project --clean'
+    -- 
     cli:router()
         :a("clean")
         :h(function (r)
-                Settings:set("ProjectName"   , "");
-                Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
-                Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
-                Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
-                return require("gbs.project"):new(Settings):clean();
+              if (fs.exists(fs.join(".gbs", "workspace.txt"))) then
+                  return require("gbs.workspace"):new(Settings):clean();
+              else
+                  Settings:set("ProjectName"   , "");
+                  Settings:set("BuildConfig"   , Settings:get_or_throw("BuildConfig"));
+                  Settings:set("BuildTool"     , Settings:get_or_throw("BuildTool"));
+                  Settings:set("TargetPlatform", Settings:get_or_throw("TargetPlatform"));
+                  return require("gbs.project"):new(Settings):clean();
+              end
            end);
         
     cli:router()
