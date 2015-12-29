@@ -6,7 +6,6 @@
  */
 
 #include <pfs/test/test.hpp>
-#include <pfs/utf8/iterator.hpp>
 #include <pfs/utf8/advance.hpp>
 #include <pfs/utf8/decode.hpp>
 #include <pfs/sstream.hpp>

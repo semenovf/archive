@@ -52,6 +52,21 @@ void test_to_string ()
 //	cout << "==" << utfstring::toString(0.0f, 'f', 1).c_str() << endl;
 }
 
+void test_starts_ends_with ()
+{
+	ADD_TESTS(7);
+
+	pfs::string s("[Привет, Мир!]");
+
+	TEST_FAIL(s.starts_with(pfs::string(1, '[')));
+//	TEST_FAIL(s.ends_with(pfs::string(1, ']')));
+//	TEST_FAIL(s.starts_with(pfs::string("[")));
+//	TEST_FAIL(s.ends_with(pfs::string("]")));
+	TEST_FAIL(s.starts_with(_u8("[Привет,")));
+	TEST_FAIL(s.ends_with(_u8(" Мир!]")));
+	TEST_FAIL(s.ends_with(_u8("!]")));
+}
+
 
 #if __COMMENT__
 
@@ -560,30 +575,6 @@ void test_find ()
 }
 
 template <typename CodeUnitT>
-void test_starts_ends_with ()
-{
-//	typedef pfs::mbcs_string<CodeUnitT> utfstring;
-//	utfstring s(utfstring::fromUtf8("[Привет, Мир!]"));
-//
-//	TEST_FAIL(s.startsWith('['));
-//	TEST_FAIL(s.endsWith(']'));
-//	TEST_FAIL(s.startsWith("["));
-//	TEST_FAIL(s.endsWith("]"));
-//	TEST_FAIL(s.startsWith(_u8("[Привет,")));
-//	TEST_FAIL(s.endsWith(_u8(" Мир!]")));
-//	TEST_FAIL(s.endsWith(_u8("!]")));
-//
-//	utfstring s1(utfstring::fromUtf8("\"Привет, Мир!\""));
-//	TEST_FAIL(s1.startsWith('"'));
-//	TEST_FAIL(s1.endsWith('"'));
-//	TEST_FAIL(s1.startsWith("\""));
-//	TEST_FAIL(s1.endsWith("\""));
-//	TEST_FAIL(s1.startsWith(_u8("\"Привет,")));
-//	TEST_FAIL(s1.endsWith(_u8(" Мир!\"")));
-//	TEST_FAIL(s1.endsWith(_u8("!\"")));
-}
-
-template <typename CodeUnitT>
 void test_convert_to_number ()
 {
     ADD_TESTS(39);
@@ -799,7 +790,7 @@ void test_suite ()
 //	test_compare<CodeUnitT>();
 //	test_replace<CodeUnitT>();
 //	test_find<CodeUnitT>();
-//	test_starts_ends_with<CodeUnitT>();
+	test_starts_ends_with();
 	test_to_string();
 
 //	test_convert_to_number();

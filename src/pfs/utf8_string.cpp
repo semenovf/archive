@@ -9,8 +9,7 @@
 //#include "pfs/mbcs_string.hpp"
 //#include "pfs/byte_string.hpp"
 
-#include <pfs/utf8/traits.hpp>
-#include "pfs/utf/string.hpp"
+#include "pfs/utf8/string.hpp"
 
 namespace pfs { namespace utf {
 

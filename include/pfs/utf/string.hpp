@@ -10,43 +10,27 @@
 
 #include <string>
 #include <ostream>
-#include <pfs/utf/iterator.hpp>
+#include <pfs/utf/traits.hpp>
 
 namespace pfs { namespace utf {
-
-//template <typename T, typename U>
-//void convert (T & dest, const U & src);
-//
-//template <typename T, typename U>
-//inline void convert<std::string, std::string> (std::string & dest, const std::string & src)
-//{
-//	dest = src;
-//}
 
 template <typename CodeUnit, typename UtfTag>
 class string
 {
 	typedef std::basic_string<CodeUnit> rep_type;
 
-protected:
-    typedef pfs::utf::traits<rep_type, UtfTag> utf_traits_type;
-
 public:
-	// Types
-    typedef typename utf_traits_type::value_type   value_type; // uint32_t
-    typedef typename rep_type::allocator_type      allocator_type;
-    typedef typename rep_type::size_type	       size_type;
-    typedef typename rep_type::difference_type     difference_type;
-//    typedef typename rep_type::reference	   reference;
-//    typedef typename rep_type::const_reference const_reference;
-    typedef typename rep_type::pointer	           pointer;
-    typedef typename rep_type::const_pointer       const_pointer;
-    typedef pfs::utf::iterator<pointer
-    		, typename tag_trait<CodeUnit>::type>  iterator;
-    typedef pfs::utf::iterator<const_pointer
-    		, typename tag_trait<CodeUnit>::type>  const_iterator;
-    typedef std::reverse_iterator<iterator>        reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
+    typedef pfs::utf::traits<rep_type, UtfTag>         utf_traits_type;
+    typedef typename utf_traits_type::value_type       value_type;
+    typedef typename utf_traits_type::allocator_type   allocator_type;
+    typedef typename utf_traits_type::size_type	       size_type;
+    typedef typename utf_traits_type::difference_type  difference_type;
+    typedef typename utf_traits_type::pointer	       pointer;
+    typedef typename utf_traits_type::const_pointer    const_pointer;
+    typedef typename utf_traits_type::template iterator<pointer> iterator;
+    typedef typename utf_traits_type::template iterator<const_pointer> const_iterator;
+    typedef std::reverse_iterator<iterator>            reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
 
     typedef value_type char_type;
 
@@ -80,12 +64,17 @@ public:
 	 */
 	string (const std::string & s);
 
-//#ifdef PFS_CC_MSC
 //	string (const std::wstring & s);
-//#endif
-//
-//	string (size_t n, char c);
-//	string (size_t n, int32_t uc);
+
+	string (size_t n, char c)
+	{
+		this->append(n, c);
+	}
+
+	string (size_t n, value_type c)
+	{
+		this->append(n, c);
+	}
 
 	template <class InputIterator>
 	string (InputIterator first, InputIterator last);
@@ -297,9 +286,21 @@ public:
      */
     string & append (size_type n, value_type c)
     {
-    	while (n--) {
-    		utf_traits_type::encode(c, std::back_inserter(_d));
-    	}
+    	while (n--)
+    		push_back(c);
+    	return *this;
+    }
+
+    /**
+     *
+     * @param n
+     * @param c
+     * @return
+     */
+    string & append (size_type n, char c)
+    {
+    	while (n--)
+    		push_back(c);
     	return *this;
     }
 
@@ -323,7 +324,7 @@ public:
 
 	string & push_back (value_type c)
 	{
-//		utf_traits_type::encode(c, std::back_inserter(_d));
+		utf_traits_type::encode(c, std::back_inserter(_d));
 		return *this;
 	}
 
@@ -332,11 +333,9 @@ public:
 	 * @param latin1 Latin1 character (0 <= latin1 < 127)
 	 * @return
 	 */
-	string & push_back (char latin1)
+	string & push_back (char c)
 	{
-		PFS_ASSERT(latin1 >= 0 && latin1 < 127);
-//		utf_traits_type::encode(value_type(latin1), std::back_inserter(_d));
-		return *this;
+		return push_back(value_type(c));
 	}
 
 #if __COMMENT__
@@ -497,14 +496,6 @@ public:
 	bool endsWith   (const char * latin1) const    { return endsWith(utf_string(latin1)); }
 	bool endsWith   (ucchar ch) const              { return endsWith(utf_string(1, ch)); }
 	bool endsWith   (char latin1) const            { return endsWith(utf_string(1, latin1)); }
-
-    // Size in code units
-	//
-    size_type size () const
-    {
-    	return base_class::isNull() ? 0 : base_class::cast()->size();
-    }
-
 
     size_type capacity() const
     {
@@ -798,38 +789,15 @@ public:
 
 	static DLL_API utf_string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = nullptr);
 
-	static utf_string toString (bool value);
-	static utf_string toString (signed char value, int base = 10, bool uppercase = false);
-	static utf_string toString (short value, int base = 10, bool uppercase = false);
-	static utf_string toString (int value, int base = 10, bool uppercase = false);
-	static utf_string toString (long value, int base = 10, bool uppercase = false);
-	static utf_string toString (unsigned char value, int base = 10, bool uppercase = false);
-	static utf_string toString (unsigned short value, int base = 10, bool uppercase = false);
-	static utf_string toString (unsigned int value, int base = 10, bool uppercase = false);
-	static utf_string toString (unsigned long value, int base = 10, bool uppercase = false);
-
-#ifdef PFS_HAVE_LONGLONG
-	static utf_string toString (long long value, int base = 10, bool uppercase = false);
-	static utf_string toString (unsigned long long value, int base = 10, bool uppercase = false);
-#endif
-
-	static utf_string toString (float value, char f = 'f', int prec = 6);
-	static utf_string toString (double value, char f = 'f', int prec = 6);
-
-#ifdef PFS_HAVE_LONG_DOUBLE
-	static utf_string toString (long double value, char f = 'f', int prec = 6);
-#endif
-
 #endif // __COMMENT__
+
+
+	bool starts_with (const string & needle) const;
+
+	bool ends_with (const string & needle) const;
 };
 
 #if __COMMENT__
-template <typename CodeUnitT>
-utf_string<CodeUnitT>::iterator::iterator (const const_iterator & it)
-	: random_access_iterator<self_class>(const_cast<self_class *>(it.holder())
-			, pointer(const_cast<self_class *>(it.holder()), it.base().index()))
-{}
-
 
 // Forward declaration to avoid
 // `specialization after instantiation error'
@@ -1162,138 +1130,6 @@ double utf_string<CodeUnitT>::toDouble (bool * ok, ucchar decimalPoint) const
 	return double(r);
 #endif
 }
-
-// XXX DEPRECATED (see pfs::lexical_cast())
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (bool value)
-{
-	return utf_string<CodeUnitT>::fromLatin1( value ? "true" : "false");
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (signed char value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (short value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (int value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (long value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (unsigned char value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (unsigned short value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (unsigned int value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (unsigned long value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
-}
-
-#ifdef PFS_HAVE_LONGLONG
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (long long value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_integral_to_string(integral_t(value), base, int(uppercase), buf, 65));
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (unsigned long long value, int base, bool uppercase)
-{
-	char buf[65];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_uintegral_to_string(uintegral_t(value), base, int(uppercase), buf, 65));
-}
-#endif
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (float value, char f, int prec)
-{
-	int sz = 5020;
-	char buf[5020];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_real_to_string(real_t(value), f, prec, buf, & sz));
-}
-
-// XXX DEPRECATED
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (double value, char f, int prec)
-{
-	int sz = 5020;
-	char buf[5020];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_real_to_string(real_t(value), f, prec, buf, & sz));
-}
-
-#ifdef PFS_HAVE_LONG_DOUBLE
-// 1.18973e+4932 with 'f' flag has length 4940
-template <typename CodeUnitT>
-inline utf_string<CodeUnitT> utf_string<CodeUnitT>::toString (long double value, char f, int prec)
-{
-	int sz = 5020;
-	char buf[5020];
-	return utf_string<CodeUnitT>::fromLatin1(
-			pfs_real_to_string(real_t(value), f, prec, buf, & sz));
-}
-#endif
-
 
 template <typename CodeUnitT>
 inline utf_string<CodeUnitT> operator + (const utf_string<CodeUnitT> & lhs, const utf_string<CodeUnitT> & rhs)

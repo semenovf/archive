@@ -339,12 +339,6 @@ inline string to_string (long double value)
 
 #endif
 
-inline bool starts_with (const string & haystack, const string & needle)
-{
-	return starts_with(haystack.begin(), haystack.end(), needle.begin(), needle.end());
-}
-
-
 } // pfs
 
 #endif /* __PFS_STRING_HPP__ */

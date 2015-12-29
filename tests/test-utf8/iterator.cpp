@@ -6,11 +6,11 @@
  * @brief testing ...
  */
 
-#include <pfs/test/test.hpp>
-#include <pfs/utf8/iterator.hpp>
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <pfs/test/test.hpp>
+#include <pfs/utf8/string.hpp>
 #include "test_data.hpp"
 
 using std::cout;

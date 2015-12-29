@@ -10,29 +10,147 @@
 
 #include <ostream>
 #include <sstream>
-#include <pfs/utf8/traits.hpp>
 #include <pfs/utf/string.hpp>
+#include <pfs/utf8/decode.hpp>
+#include <pfs/utf8/encode.hpp>
+#include <pfs/utf8/advance.hpp>
 
 namespace pfs { namespace utf8 {
 
+struct tag {};
+
 typedef pfs::utf::string<uint8_t, tag> string;
+
+template <typename CodeUnitIterator>
+struct iterator
+{
+	typedef typename string::utf_traits_type::iterator<CodeUnitIterator> type;
+};
 
 }} // pfs::utf8
 
 namespace pfs { namespace utf {
 
+typedef pfs::utf8::string string_type;
+typedef pfs::utf8::string::value_type value_type;
+typedef pfs::utf8::string::pointer pointer_type;
+typedef pfs::utf8::string::const_pointer const_pointer_type;
+typedef pfs::utf8::string::difference_type difference_type;
+
+//template <>
+//struct tag_trait<char>
+//{
+//	typedef pfs::utf8::tag type;
+//};
+//
+//template <>
+//struct tag_trait<uint8_t>
+//{
+//	typedef pfs::utf8::tag type;
+//};
+//
+//template <>
+//struct tag_trait<int8_t>
+//{
+//	typedef pfs::utf8::tag type;
+//};
+
+
 template <>
-inline string<uint8_t, pfs::utf8::tag>::string<uint8_t, pfs::utf8::tag> (const std::string & s)
+template <typename CodeUnitIterator>
+inline value_type string_type::utf_traits_type::decode (CodeUnitIterator & p)
+{
+	return pfs::utf8::decode(p);
+}
+
+//template <>
+//inline value_type
+//string_type::utf_traits_type::decode (const_pointer_type & p)
+//{
+//	return pfs::utf8::decode(p);
+//}
+
+template <>
+inline void string_type::utf_traits_type::encode (value_type uc
+		, std::back_insert_iterator<string_type::utf_traits_type::container_type> begin)
+{
+	pfs::utf8::encode(uc, begin);
+}
+
+template <>
+inline pointer_type
+string_type::utf_traits_type::encode (value_type value, pointer begin)
+{
+	return pfs::utf8::encode(value, begin);
+}
+
+template <>
+template <typename CodeUnitIterator>
+inline void string_type::utf_traits_type::advance_forward (CodeUnitIterator & p, difference_type n)
+{
+	pfs::utf8::advance_forward(p, n);
+}
+
+template <>
+template <typename CodeUnitIterator>
+inline void string_type::utf_traits_type::advance_backward (CodeUnitIterator & p, difference_type n)
+{
+	pfs::utf8::advance_backward(p, n);
+}
+
+
+//template <>
+//inline void string_type::utf_traits_type::advance_forward (const_pointer_type & p, difference_type n)
+//{
+//	pfs::utf8::advance_forward(p, n);
+//}
+//
+//template <>
+//inline void string_type::utf_traits_type::advance_forward (pointer_type & p, difference_type n)
+//{
+//	pfs::utf8::advance_forward(p, n);
+//}
+//
+//template <>
+//inline void string_type::utf_traits_type::advance_backward (const_pointer_type & p, difference_type n)
+//{
+//	pfs::utf8::advance_backward(p, n);
+//}
+//
+//template <>
+//inline void string_type::utf_traits_type::advance_backward (pointer_type & p, difference_type n)
+//{
+//	pfs::utf8::advance_backward(p, n);
+//}
+
+template <>
+inline string_type::string (const std::string & s)
 	: _d(reinterpret_cast<const std::basic_string<uint8_t> &>(s))
 {}
 
 template <>
-inline std::string string<uint8_t, pfs::utf8::tag>::stdstring () const
+inline std::string string_type::stdstring () const
 {
 	return std::string(reinterpret_cast<const std::basic_string<char> &>(_d));
 }
 
-}}
+template <>
+inline bool string_type::starts_with (const string & needle) const
+{
+	return _d.size() < needle._d.size()
+			? false
+			: _d.compare(0, needle._d.size(), needle._d) == 0;
+}
+
+template <>
+inline bool string_type::ends_with (const string & needle) const
+{
+	return _d.size() < needle._d.size()
+			? false
+			: _d.compare(_d.size() - needle._d.size(), needle._d.size(), needle._d) == 0;
+}
+
+}} // pfs::utf
 
 
 inline bool operator == (pfs::utf8::string & lhs, const std::string & rhs)
