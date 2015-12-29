@@ -12,23 +12,27 @@
 
 namespace pfs {
 
-typedef string::stringlist stringlist;
+typedef pfs::vector<string>::type stringlist;
 
 inline stringlist & operator << (stringlist & sl, const string & s)
 {
-	sl.append(s);
+	sl.push_back(s);
 	return sl;
 }
 
 inline stringlist & operator << (stringlist & sl, const char * latin1)
 {
-	sl.append(string::fromLatin1(latin1));
+	sl.push_back(string(latin1));
 	return sl;
 }
 
 inline stringlist & operator << (stringlist & sl, const stringlist & other)
 {
-	sl.append(other);
+	stringlist::const_iterator it = other.begin();
+	stringlist::const_iterator it_end = other.end();
+
+	for (; it != it_end; ++it)
+		sl.push_back(*it);
 	return sl;
 }
 
