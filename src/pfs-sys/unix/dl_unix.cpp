@@ -13,21 +13,21 @@ namespace pfs {
  * @param resolve
  * @return
  */
-dl::handle dl::open (const pfs::string & path, pfs::string * realPathPtr, bool global, bool resolve)
+dl::handle dl::open (const fs::path & path, fs::path * result_path_ptr, bool global, bool resolve)
 {
 //	static pfs::mutex mtx;
 //	pfs::lock_guard<pfs::mutex> locker(mtx);
 
-	dl::handle h = nullptr;
+	dl::handle h = 0;
 
-	if (realPathPtr)
+	if (result_path_ptr)
 		realPathPtr->clear();
 
-	pfs::string realPath = searchFile(path);
+	fs::path real_path = search_file(path);
 
-	if (!realPath.isEmpty()) {
+	if (!real_path.empty()) {
 		dlerror(); /* clear error */
-		h = dlopen(realPath.c_str(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ));
+		h = dlopen(real_path.native().c_str(), (global ? RTLD_GLOBAL : RTLD_LOCAL) | ( resolve ? RTLD_NOW : RTLD_LAZY ));
 
 		if (!h) {
 			pfs::string errstr;
@@ -53,32 +53,29 @@ bool dl::opened (const pfs::string & path)
 }
 */
 
-dl::symbol dl::ptr (dl::handle h, const char * symname)
+dl::symbol dl::resolve (const char * symbol_name, error_code * ex)
 {
-	dl::symbol p = NULL;
-
 	dlerror(); /*clear error*/
-	p = dlsym(h, symname);
-	if (!p) {
-		pfs::string errstr;
-		errstr << symname << ": "
-				<< _Tr("symbol not found")
-				<< ": "
-				<< pfs::string::fromUtf8(dlerror());
-		addError(errstr);
+	dl::symbol r = dlsym(_handle, symbol_name);
+
+	if (!r) {
+		if (ex)
+			*ex = DlSymbolNotFoundError;
+		return handle(0);
 	}
-	return p;
+
+	return r;
 }
 
-void dl::close (dl::handle h)
+void dl::close ()
 {
 //	static pfs::mutex mtx;
 //	pfs::lock_guard<pfs::mutex> locker(mtx);
 
-	if( h != (dl::handle)0) {
+	if (_handle) {
 		dlerror(); /*clear error*/
-		dlclose(h);
-		h = (dl::handle)0;
+		dlclose(_handle);
+		_handle = (dl::handle)0;
 	}
 }
 
@@ -88,13 +85,9 @@ void dl::close (dl::handle h)
  * @param name base name of dynamic lubrary
  * @param libname full library name to store
  */
-pfs::string dl::buildDlFileName (const pfs::string & basename)
+fs::path dl::build_filename (const string & name)
 {
-	pfs::string libname;
-	libname.append(pfs::string("lib"));
-	libname.append(basename);
-	libname.append(pfs::string(".so"));
-	return libname;
+	return fs::path(string("lib") + name + string(".so"));
 }
 
 } //pfs

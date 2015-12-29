@@ -167,6 +167,62 @@ path temp_directory_path (error_code * ex)
 	return path(s);
 }
 
+
+path current_directory (error_code * ex)
+{
+	path result;
+
+#if _GNU_SOURCE
+	char * str = get_current_dir_name();
+	PFS_ASSERT(str);
+	result = path(str);
+	free(str);
+#else
+	char buf[256];
+	size_t size = 256;
+
+	char * str = getcwd(buf, size);
+
+	if (str)
+		return path(str);
+
+	do {
+		if (errno != ERANGE) {
+			if (ex)
+				*ex = errno;
+			break;
+		}
+
+		size *= 2;
+
+		if (size > pfs::max_type<int16_t>()) {
+			if (ex)
+				*ex = ENOMEM;
+			break;
+		}
+
+		buf = new char[size];
+		str = getcwd(buf, size);
+
+		if (str)
+			result = path(str);
+
+		delete [] buf;
+	} while (!str);
+#endif
+
+	return result;
+}
+
+
+path join (const path & p1, const path & p2)
+{
+	string r(p1._path);
+	r.append(p1._separator);
+	r.append(p2._path);
+	return path(r);
+}
+
 #if __COMMENT__
 
 bool fs::simpleBackup (const string & orig)
@@ -176,49 +232,7 @@ bool fs::simpleBackup (const string & orig)
 	return fs::rename(orig, to);
 }
 
-string fs::currentDirectory () const
-{
-	string result;
 
-#if _GNU_SOURCE
-	char * str = get_current_dir_name();
-	PFS_ASSERT(str);
-	result = pfs::string::fromUtf8(str);
-	free(str);
-#else
-	char buf[256];
-	size_t size = 256;
-
-	char * str = getcwd(buf, size);
-
-	if (str)
-		return pfs::string::fromUtf8(str);
-
-	do {
-		if (errno != ERANGE) {
-			this->addSystemError(errno, _u8("Get current working directory"));
-			break;
-		}
-
-		size *= 2;
-
-		if (size > pfs::max_type<int16_t>()) {
-			this->addError(_u8("Directory name too big"));
-			break;
-		}
-
-		buf = new char[size];
-		str = getcwd(buf, size);
-
-		if (str)
-			result = pfs::string::fromUtf8(str);
-
-		delete [] buf;
-	} while (!str);
-#endif
-
-	return result;
-}
 
 // TODO need to implement (Windows version too)
 stringlist fs::entryListByRegExp (const string & dir

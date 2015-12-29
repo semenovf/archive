@@ -10,7 +10,15 @@
 
 #include <pfs/string.hpp>
 
-namespace pfs { namespace platform {
+namespace pfs {
+
+enum error_code_enum
+{
+	  CustomErrorBase = 10000
+	, DlErrorBase = CustomErrorBase
+	, DlSymbolNotFoundError = DlErrorBase
+};
+
 
 class error_code
 {
@@ -42,14 +50,7 @@ public:
 	}
 };
 
-}} // pfs::platform
-
-namespace pfs {
-
-// XXX DEPRECATED
-DLL_API string & lexical_cast (const pfs::platform::error_code & ex, string & result);
-
-DLL_API string lexical_cast (const pfs::platform::error_code & ex);
+DLL_API string to_string (const error_code & ex);
 
 } // pfs
 

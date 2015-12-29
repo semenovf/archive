@@ -1,25 +1,13 @@
 #include "pfs/dl.hpp"
-#include "pfs/fs.hpp"
+#include "pfs/fs/path.hpp"
 
 namespace pfs {
 
-dl & dl::getDL ()
-{
-	static pfs::dl dl;
-	return dl;
-}
-
-dl::~dl ()
-{
-    plugin_map_type::iterator it = dl::_plugins.begin();
-    plugin_map_type::iterator itEnd = dl::_plugins.end();
-
-    for (; it != itEnd; ++it) {
-		dl::handle dlh = it.value();
-		PFS_ASSERT(dlh);
-		close(dlh);
-	}
-}
+//dl & dl::getDL ()
+//{
+//	static pfs::dl dl;
+//	return dl;
+//}
 
 /**
  * @note  internal
@@ -28,56 +16,50 @@ dl::~dl ()
  *        and returns absolute path.
  *
  * @param filename File name to search. May be absolute or relative.
- * @return Absolute file path.
- *         If @c filename was empty or if error occurred returns empty string.
- *         Error can be raised if pfs::fs::currentDirectory() failed.
+ * @return Absolute file path or empty path if @a filename is empty
+ *         or file not found in list of directories specified for search.
+ * @throw Asserts error if pfs::fs::current_directory() failed.
  */
-string dl::searchFile (const string & filename)
+fs::path dl::search_file (const fs::path & filename)
 {
-	pfs::fs fs;
+	fs::path path(filename);
 
-	if (filename.isEmpty())
-		return string();
+	if (path.empty())
+		return path;
 
-	if (fs.exists(filename)) {
+	if (fs::exists(path)) {
 		/*
 		 * If filename is not an absolute path
-		 * and does not start with current directory prefix (i.e. "./" on unix)
-		 * then append prefix and return result
+		 * then prepend current directory and return result
 		 */
-		if (!fs.isAbsolute(filename)) {
+		if (!path.is_absolute()) {
+			fs::error_code ex;
+			fs::path curr_dir = fs::current_directory(& ex);
 
-			string cwd = fs.currentDirectory();
-			if (cwd.isEmpty())
-				return string();
+			PFS_ASSERT(!ex);
 
-			string result(".");
-			result.append(1, fs.separator());
-
-			if (!filename.startsWith(result)) {
-				result.append(filename);
-				return result;
-			}
+			return fs::join(curr_dir, path);
 		}
-		return string(filename);
+
+		// Filename is absolute
+		//
+		return filename;
 	}
 
-	if (!fs.isAbsolute(filename)) {
-		stringlist::const_iterator it = _searchPath.cbegin();
-		stringlist::const_iterator itEnd = _searchPath.cend();
+	if (!path.is_absolute()) {
+		path_list_type::const_iterator it = _search_paths.begin();
+		path_list_type::const_iterator itEnd = _search_paths.end();
 
 		while (it != itEnd) {
-			string r(*it);
-			r += fs.separator();
-			r += filename;
+			fs::path p = fs::join(*it, filename);
 
-			if (fs.exists(r))
-				return r;
+			if (fs::exists(p))
+				return p;
 			++it;
 		}
 	}
 
-	return string();
+	return fs::path();
 }
 
 
@@ -124,33 +106,34 @@ string dl::searchFile (const string & filename)
  *
  * @return Pointer to pluggable interface.
  */
-pfs::pluggable * dl::openPlugin (const string & name, const string & path)
-{
-	bool global = false; // Avoid name conflicts
-	bool resolve = true;
-	dl::handle dlh = dl::open(path, global, resolve);
-
-	if (_plugins.contains(name)) {
-        addError(string() << _u8("Duplicate plug-in with name: ") << name);
-        return nullptr;
-	}
-
-	if (!dlh) {
-		addError(string() << _u8("Unable to load plug-in from ") << path);
-		return nullptr;
-	}
-
-	plugin_ctor_t ctor = reinterpret_cast<plugin_ctor_t>(dl::ptr(dlh, PFS_PLUGIN_CTOR_NAME));
-	if (!ctor) {
-		addError(string() << _u8("Constructor not found for plug-in: ")
-		        << name << " [" << path << ']');
-		return nullptr;
-	}
-
-	dl::_plugins.insert(name, dlh);
-
-	return ctor();
-}
+//pfs::pluggable * dl::open_plugin (const string & name, const fs::path & path)
+//{
+//	bool global = false; // Avoid name conflicts
+//	bool resolve = true;
+//
+//	if (_plugins.contains(name)) {
+//        addError(string() << _u8("Duplicate plug-in with name: ") << name);
+//        return nullptr;
+//	}
+//
+//	dl::handle dlh = dl::open(path, global, resolve);
+//
+//	if (!dlh) {
+//		addError(string() << _u8("Unable to load plug-in from ") << path);
+//		return nullptr;
+//	}
+//
+//	plugin_ctor_t ctor = reinterpret_cast<plugin_ctor_t>(dl::ptr(dlh, PFS_PLUGIN_CTOR_NAME));
+//	if (!ctor) {
+//		addError(string() << _u8("Constructor not found for plug-in: ")
+//		        << name << " [" << path << ']');
+//		return nullptr;
+//	}
+//
+//	dl::_plugins.insert(name, dlh);
+//
+//	return ctor();
+//}
 
 /**
  * @brief Opens plug-in specified by name.
@@ -163,19 +146,19 @@ pfs::pluggable * dl::openPlugin (const string & name, const string & path)
  * @return Pointer to pluggable interface if plug-in successfully opened, @c nullptr otherwise.
  *         In latter case error will be saved.
  */
-pfs::pluggable * dl::openPlugin (const string & name)
-{
-    string filename = buildDlFileName(name);
-    string path = searchFile(filename);
-
-    if (path.isEmpty()) {
-        addError(string() << _u8("Unable to find plug-in specified by name: ")
-                << name);
-        return nullptr;
-    }
-
-    return openPlugin(name, path);
-}
+//pfs::pluggable * dl::open_plugin (const string & name)
+//{
+//    string filename = buildDlFileName(name);
+//    string path = searchFile(filename);
+//
+//    if (path.isEmpty()) {
+//        addError(string() << _u8("Unable to find plug-in specified by name: ")
+//                << name);
+//        return nullptr;
+//    }
+//
+//    return openPlugin(name, path);
+//}
 
 /**
  * @brief Closes the plug-in previously opened by @c dl::openPluggin() method.
@@ -185,36 +168,36 @@ pfs::pluggable * dl::openPlugin (const string & name)
  * @return @c true if plug-in successfully closed, @c false otherwise.
  *         In latter case error will be saved.
  */
-bool dl::closePlugin (const string & name, pfs::pluggable * plugin)
-{
-    if (!plugin) {
-        addError(string() << _u8("Plaggable is null"));
-        return false;
-    }
-
-    plugin_map_type::iterator it = dl::_plugins.find(name);
-
-	if (it == dl::_plugins.end()) {
-		addError(string() << _u8("Plug-in not found, may be it was not load before: ")
-                << name);
-		return false;
-	}
-
-	dl::handle dlh = it.value();
-	PFS_ASSERT(dlh);
-
-	plugin_dtor_t dtor = reinterpret_cast<plugin_dtor_t>(dl::ptr(dlh, PFS_PLUGIN_DTOR_NAME));
-
-	if (!dtor) {
-		addError(string() << _u8("Destructor not found for plug-in: ") << name);
-		return false;
-	}
-
-	dl::_plugins.remove(name);
-
-	dtor(plugin);
-	return true;
-}
+//bool dl::close_plugin (const string & name, pfs::pluggable * plugin)
+//{
+//    if (!plugin) {
+//        addError(string() << _u8("Plaggable is null"));
+//        return false;
+//    }
+//
+//    plugin_map_type::iterator it = dl::_plugins.find(name);
+//
+//	if (it == dl::_plugins.end()) {
+//		addError(string() << _u8("Plug-in not found, may be it was not load before: ")
+//                << name);
+//		return false;
+//	}
+//
+//	dl::handle dlh = it.value();
+//	PFS_ASSERT(dlh);
+//
+//	plugin_dtor_t dtor = reinterpret_cast<plugin_dtor_t>(dl::ptr(dlh, PFS_PLUGIN_DTOR_NAME));
+//
+//	if (!dtor) {
+//		addError(string() << _u8("Destructor not found for plug-in: ") << name);
+//		return false;
+//	}
+//
+//	dl::_plugins.remove(name);
+//
+//	dtor(plugin);
+//	return true;
+//}
 
 } // pfs
 

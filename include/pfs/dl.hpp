@@ -10,10 +10,10 @@
 /* see http://en.wikipedia.org/wiki/Dynamic_loading */
 #include <pfs/string.hpp>
 #include <pfs/map.hpp>
+#include <pfs/vector.hpp>
 #include <pfs/stringlist.hpp>
-#include <pfs/errorable_ext.hpp>
 #include <pfs/pluggable.hpp>
-#include <pfs/noncopyable.hpp>
+#include <pfs/fs/path.hpp>
 
 #ifdef PFS_CC_MSVC
 #	include <windows.h>
@@ -29,7 +29,7 @@
 
 namespace pfs {
 
-class DLL_API dl : public errorable_ext, noncopyable
+class DLL_API dl
 {
 public:
 #ifdef PFS_CC_MSC
@@ -40,46 +40,73 @@ public:
 	typedef void * symbol;
 #endif
 
-	typedef pfs::map<string, handle> plugin_map_type;
+//	typedef pfs::map<string, handle>::type plugin_map_type;
+//	typedef pfs::vector<fs::path>::type path_list_type;
 
 private:
-	stringlist _searchPath;
-	plugin_map_type _plugins;
+//	path_list_type  _search_paths;
+//	plugin_map_type _plugins;
 
-protected:
-	dl () {};
+	handle _handle;
+
+private:
+	static fs::path build_filename (const string & name);
 
 public:
-	~dl ();
+	dl () : _handle(0)
+	{};
 
-	static dl & getPluginLoader () { return getDL(); }
-	static dl & getDL ();
-
-	handle open (const string & path, string * realPath, bool global, bool resolve);
-
-	handle open (const string & path, bool global, bool resolve)
+	~dl ()
 	{
-		return open(path, 0, global, resolve);
+		close();
 	}
 
-	handle open (const string & path)
+	handle native () const
 	{
-		string unused; return open(path, 0, false, true);
+		return _handle;
 	}
 
-	symbol ptr   (handle h, const char * symname);
-	void   close (handle h);
+//	static dl & plugin_loader ()
+//	{
+//		return getDL();
+//	}
 
-	pfs::pluggable * openPlugin (const string & name, const string & path);
-	pfs::pluggable * openPlugin (const string & name);
-	bool closePlugin (const string & name, pfs::pluggable * pluggable);
+//	static dl & getDL ();
 
-    string buildDlFileName (const string & basename);
-	void   clearSearchPath () { _searchPath.clear(); }
-	void   addSearchPath   (const string & dir) { _searchPath.append(dir); }
+	bool open (const fs::path & p, fs::path * real_path, bool global, bool resolve);
+
+	bool open (const fs::path & p, bool global, bool resolve)
+	{
+		return open(p, 0, global, resolve);
+	}
+
+	bool open (const fs::path & p)
+	{
+		return open(p, 0, false, true);
+	}
+
+	symbol resolve (const char * symbol_name, error_code * ex = 0);
+
+	void close ();
+
+//	pfs::pluggable * open_plugin (const string & name, const fs::path & path);
+//
+//	pfs::pluggable * open_plugin (const string & name);
+//
+//	bool close_plugin (const string & name, pfs::pluggable * pluggable);
+//
+//	void clear_search_path ()
+//	{
+//		_search_paths.clear();
+//	}
+
+	void add_search_path (const fs::path & dir)
+	{
+		_search_paths.push_back(dir);
+	}
 
 private:
-	string searchFile (const string & filename);
+	fs::path search_file (const fs::path & filename);
 };
 
 } // pfs

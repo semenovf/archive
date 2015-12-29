@@ -12,7 +12,7 @@
 #include <pfs/shared_ptr.hpp>
 #include <pfs/iterator.hpp>
 #include <pfs/algo/split.hpp>
-#include <pfs/platform/error_code.hpp>
+#include <pfs/error_code.hpp>
 #include <pfs/fs/file_status.hpp>
 
 #ifdef PFS_CC_MSVC
@@ -21,8 +21,6 @@
 #endif
 
 namespace pfs { namespace fs {
-
-typedef pfs::platform::error_code error_code;
 
 class DLL_API path
 {
@@ -294,6 +292,8 @@ public:
 //
 ////	string findFile (const string & filename, const stringlist & dirs) const;
 //	string normalizePath (const string & path) const;
+
+	friend path join (const path & p1, const path & p2);
 };
 
 /**
@@ -360,6 +360,15 @@ inline path unique_path ()
 {
 	return unique_path(path(path::string_type("%%%%-%%%%")), 0);
 }
+
+DLL_API path current_directory (error_code * ex = 0);
+
+inline bool starts_with (const path & haystack, const path & needle)
+{
+	return pfs::starts_with(haystack.native(), needle.native());
+}
+
+path join (const path & p1, const path & p2);
 
 }} // pfs::fs
 
