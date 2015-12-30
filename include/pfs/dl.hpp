@@ -13,6 +13,7 @@
 #include <pfs/vector.hpp>
 #include <pfs/stringlist.hpp>
 #include <pfs/pluggable.hpp>
+#include <pfs/error_code.hpp>
 #include <pfs/fs/path.hpp>
 
 #ifdef PFS_CC_MSVC
@@ -48,6 +49,7 @@ private:
 //	plugin_map_type _plugins;
 
 	handle _handle;
+	string _path;   // contains path to dynamic library
 
 private:
 	static fs::path build_filename (const string & name);
@@ -66,24 +68,7 @@ public:
 		return _handle;
 	}
 
-//	static dl & plugin_loader ()
-//	{
-//		return getDL();
-//	}
-
-//	static dl & getDL ();
-
-	bool open (const fs::path & p, fs::path * real_path, bool global, bool resolve);
-
-	bool open (const fs::path & p, bool global, bool resolve)
-	{
-		return open(p, 0, global, resolve);
-	}
-
-	bool open (const fs::path & p)
-	{
-		return open(p, 0, false, true);
-	}
+	bool open (const fs::path & p);
 
 	symbol resolve (const char * symbol_name, error_code * ex = 0);
 
@@ -100,13 +85,13 @@ public:
 //		_search_paths.clear();
 //	}
 
-	void add_search_path (const fs::path & dir)
-	{
-		_search_paths.push_back(dir);
-	}
+//	void add_search_path (const fs::path & dir)
+//	{
+//		_search_paths.push_back(dir);
+//	}
 
 private:
-	fs::path search_file (const fs::path & filename);
+	static fs::path search_file (const fs::path & libpath, const fs::pathlist searchpaths, error_code * ex = 0);
 };
 
 } // pfs

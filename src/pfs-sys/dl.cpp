@@ -18,45 +18,43 @@ namespace pfs {
  * @param filename File name to search. May be absolute or relative.
  * @return Absolute file path or empty path if @a filename is empty
  *         or file not found in list of directories specified for search.
- * @throw Asserts error if pfs::fs::current_directory() failed.
  */
-fs::path dl::search_file (const fs::path & filename)
+fs::path dl::search_file (const fs::path & libpath, const fs::pathlist searchpaths, error_code * ex)
 {
-	fs::path path(filename);
+	if (libpath.empty())
+		return fs::path();
 
-	if (path.empty())
-		return path;
+	if (fs::exists(libpath)) {
+		if (libpath.is_absolute())
+			return libpath;
 
-	if (fs::exists(path)) {
 		/*
-		 * If filename is not an absolute path
+		 * If libpath is not an absolute path
 		 * then prepend current directory and return result
 		 */
-		if (!path.is_absolute()) {
-			fs::error_code ex;
-			fs::path curr_dir = fs::current_directory(& ex);
+		error_code ex1;
+		fs::path curr_dir = fs::current_directory(& ex1);
 
-			PFS_ASSERT(!ex);
-
-			return fs::join(curr_dir, path);
+		if (ex1) {
+			if (ex)
+				*ex = ex1;
+			return fs::path();
 		}
 
-		// Filename is absolute
-		//
-		return filename;
+		return fs::join(curr_dir, libpath);
 	}
 
-	if (!path.is_absolute()) {
-		path_list_type::const_iterator it = _search_paths.begin();
-		path_list_type::const_iterator itEnd = _search_paths.end();
+	// libpath is relative, search it in
+	//
+	fs::pathlist::const_iterator it = searchpaths.begin();
+	fs::pathlist::const_iterator it_end = searchpaths.end();
 
-		while (it != itEnd) {
-			fs::path p = fs::join(*it, filename);
+	while (it != it_end) {
+		fs::path p = fs::join(*it, libpath);
 
-			if (fs::exists(p))
-				return p;
-			++it;
-		}
+		if (fs::exists(p))
+			return p;
+		++it;
 	}
 
 	return fs::path();

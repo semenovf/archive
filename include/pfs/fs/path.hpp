@@ -22,6 +22,9 @@
 
 namespace pfs { namespace fs {
 
+class path;
+typedef pfs::vector<path>::type pathlist;
+
 class DLL_API path
 {
 public:
@@ -365,7 +368,7 @@ DLL_API path current_directory (error_code * ex = 0);
 
 inline bool starts_with (const path & haystack, const path & needle)
 {
-	return pfs::starts_with(haystack.native(), needle.native());
+	return pfs::fs::starts_with(haystack, needle);
 }
 
 path join (const path & p1, const path & p2);

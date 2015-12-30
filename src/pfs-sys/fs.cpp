@@ -5,6 +5,7 @@
  *      Author: wladt
  */
 
+#if __OBSOLETE__ // XXX OBSOLETE
 
 #include "pfs/fs.hpp"
 #include "pfs/random.hpp"
@@ -181,4 +182,4 @@ string fs::normalizePath (const string & path) const
 }
 
 } // pfs
-
+#endif

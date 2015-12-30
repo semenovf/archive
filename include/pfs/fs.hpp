@@ -9,6 +9,8 @@
 #ifndef __PFS_FS_HPP__
 #define __PFS_FS_HPP__
 
+#if __OBSOLETE__ // XXX OBSOLETE
+
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
 #include <pfs/errorable_ext.hpp>
@@ -97,5 +99,7 @@ public:
 };
 
 } // pfs
+
+#endif
 
 #endif /* __PFS_FS_HPP__ */
