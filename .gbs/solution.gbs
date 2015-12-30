@@ -38,8 +38,8 @@ project "test-date"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-fsm"
---    include("test-fsm/project.gbs")
+project "test-fsm"
+    include("test-fsm/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

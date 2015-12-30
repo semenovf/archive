@@ -14,16 +14,19 @@
 
 namespace pfs { namespace fsm {
 
-template <typename _P>
-ssize_t fsm<_P>::exec (int state_cur, const_iterator begin, const_iterator end)
+template <typename _Sequence>
+//ssize_t fsm<_Sequence>::exec (int state_cur, const_iterator begin, const_iterator end)
+fsm<_Sequence>::result_type fsm<_Sequence>::exec (int state_cur, const_iterator begin, const_iterator end)
 {
 	const_iterator ptr = begin;
-	size_t nchars_total_processed = 0;
-	size_t nchars_total_accepted  = 0;
-	const transition<_P> * trans;
+//	size_t nchars_total_processed = 0;
+//	size_t nchars_total_accepted  = 0;
+	const transition<_Sequence> * trans;
 	bool accepted = false;
 
+	// FIXME no need after _contex
 	PFS_ASSERT(_context);
+
 	PFS_ASSERT(_context->_trans_tab);
 
 	trans = & _context->_trans_tab[state_cur];
@@ -31,25 +34,48 @@ ssize_t fsm<_P>::exec (int state_cur, const_iterator begin, const_iterator end)
 	PFS_ASSERT(trans);
 
 	do {
-		ssize_t nchars_processed = trans->_match(_context, ptr, end);
+		//ssize_t nchars_processed = trans->_match(_context, ptr, end);
+		result_type result = trans->_match(_context, ptr, end);
 
-		if (nchars_processed >= 0) {
-			if( trans->_action ) {
-				if (!trans->_action(ptr, ptr + size_t(nchars_processed), _context->_userContext, trans->_action_args))
-					return ssize_t(-1);
+		//if (nchars_processed >= 0) {
+		if (result.first) {
+			if (trans->_action) {
+				//if (!trans->_action(ptr, ptr + size_t(nchars_processed), _context->_userContext, trans->_action_args)) {
+				if (!trans->_action(ptr, result.second, _context->_userContext, trans->_action_args)) {
+
+					// Let's support this situation
+					//
+					//static FSM_TRANSITION record_fsm[] = {
+					//	  {-1,  1, FSM_MATCH_SEQ(10) , FSM_ACCEPT, on_record1, 0 }
+					//	, {-1,  2, FSM_MATCH_SEQ(11) , FSM_ACCEPT, on_record2, 0 }
+					//	, {-1, -1, FSM_MATCH_SEQ(12) , FSM_ACCEPT, on_record3, 0 }
+					//};
+					// ===
+					if (trans->_status == FSM_ACCEPT) {
+						if (trans->_state_fail >= 0) {
+							trans = & _context->_trans_tab[trans->_state_fail];
+							continue;
+						}
+					}
+					// ===
+
+					//return ssize_t(-1);
+					return result_type(false, end);
+				}
 			}
 
 			if( trans->_status == FSM_ACCEPT ) {
 				accepted = true;
 			}
 
-			ptr += size_t(nchars_processed);
-			nchars_total_processed += size_t(nchars_processed);
+			//ptr += size_t(nchars_processed);
+			//nchars_total_processed += size_t(nchars_processed);
+			ptr = result.second;
 
 			if (trans->_status == FSM_ACCEPT)
 				nchars_total_accepted = nchars_total_processed;
 
-			if (trans->_status == FSM_REJECT) { /* finish, use case see at cwt-csv:csv_rfc4180.hpp in 'nonquoted_char_fsm' for ex. */
+			if (trans->_status == FSM_REJECT) {
 				state_cur = -1;
 				accepted = false;
 			} else {
@@ -66,17 +92,18 @@ ssize_t fsm<_P>::exec (int state_cur, const_iterator begin, const_iterator end)
 			nchars_total_processed = nchars_total_accepted;
 		}
 
-		if( state_cur < 0 )
+		if (state_cur < 0)
 			break;
 
 		trans = & _context->_trans_tab[state_cur];
 		//nchars_processed = ssize_t(-1);
 
-	} while( true );
+	} while (true);
 
 	return accepted
 			? integral_cast_check<ssize_t, size_t>(nchars_total_accepted)
-			: (ssize_t)-1;
+			//: (ssize_t)-1;
+			: result_type(false, end);
 }
 
 }} // pfs::fsm

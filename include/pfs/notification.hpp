@@ -86,7 +86,7 @@ struct notification_traits
 {
 	typedef string string_type;
 	typedef notification_value value_type;
-	typedef typename vector<value_type>::type container_type;
+	typedef vector<value_type> container_type;
 	typedef typename container_type::iterator iterator;
 	typedef typename container_type::const_iterator const_iterator;
 };

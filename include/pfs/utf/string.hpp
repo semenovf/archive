@@ -32,7 +32,7 @@ public:
     typedef std::reverse_iterator<iterator>            reverse_iterator;
     typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
 
-    typedef value_type char_type;
+//    typedef value_type char_type;
 
 //public:
 //    static const size_type npos = rep_type::npos;
@@ -337,6 +337,20 @@ public:
 	{
 		return push_back(value_type(c));
 	}
+
+    value_type at (size_type index) const
+    {
+    	// FIXME Check for out of bounds
+    	//
+    	const_iterator it(begin());
+    	std::advance(it, index);
+    	return *it;
+    }
+
+    value_type operator [] (size_type index) const
+    {
+    	return at(index);
+    }
 
 #if __COMMENT__
 

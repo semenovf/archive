@@ -65,6 +65,10 @@ struct traits
     	pointer  _p;
 
     public:
+    	iterator ()
+    		: _p(0)
+    	{}
+
         explicit iterator (pointer i)
         	: _p(i)
         {}
