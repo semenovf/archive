@@ -23,7 +23,7 @@
 namespace pfs { namespace fs {
 
 class path;
-typedef pfs::vector<path>::type pathlist;
+typedef pfs::vector<path> pathlist;
 
 class DLL_API path
 {
