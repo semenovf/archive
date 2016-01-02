@@ -48,12 +48,12 @@ void test_entries (fsm<string> & f, test_entry * entry)
 	f.setTransitionTable(entry->trans_tab);
 
 	while (!valid_str->empty()) {
-		ssize_t result = f.exec(0, valid_str->begin(), valid_str->end());
+		fsm<string>::result_type result = f.exec(0, valid_str->begin(), valid_str->end());
 
 		ostringstream os;
 		os << "result == input.length(): " << result << " == " << valid_str->length();
 
-		TEST_FAIL2(result == static_cast<ssize_t>(valid_str->length()), os.str().c_str());
+		TEST_FAIL2(result.first && result.second == valid_str->end(), os.str().c_str());
 		++valid_str;
 	}
 

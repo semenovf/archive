@@ -59,9 +59,9 @@ void test_starts_ends_with ()
 	pfs::string s("[Привет, Мир!]");
 
 	TEST_FAIL(s.starts_with(pfs::string(1, '[')));
-//	TEST_FAIL(s.ends_with(pfs::string(1, ']')));
-//	TEST_FAIL(s.starts_with(pfs::string("[")));
-//	TEST_FAIL(s.ends_with(pfs::string("]")));
+	TEST_FAIL(s.ends_with(pfs::string(1, ']')));
+	TEST_FAIL(s.starts_with(pfs::string("[")));
+	TEST_FAIL(s.ends_with(pfs::string("]")));
 	TEST_FAIL(s.starts_with(_u8("[Привет,")));
 	TEST_FAIL(s.ends_with(_u8(" Мир!]")));
 	TEST_FAIL(s.ends_with(_u8("!]")));

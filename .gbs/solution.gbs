@@ -68,8 +68,8 @@ project "test-string"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-safeformat"
---    include("test-safeformat/project.gbs")
+project "test-safeformat"
+    include("test-safeformat/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
@@ -133,6 +133,6 @@ project "test-algo-string"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-limits"
-    include("test-pfs-limits/project.gbs")
+project "test-limits"
+    include("test-limits/project.gbs")
 -- END PROJECT

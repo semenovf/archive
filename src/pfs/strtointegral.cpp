@@ -6,23 +6,18 @@
  */
 
 #include "pfs/string.hpp"
-#include "pfs/unicode/unicode.hpp"
+#include "pfs/unicode.hpp"
 
 namespace pfs {
 
-inline bool __is_space (unicode::char_type c)
-{
-	return (c < 127 && std::isspace(static_cast<int>(c)));
-}
-
 inline int __to_digit (unicode::char_type c, int radix)
 {
-	if (c >= '0' && c <= '9')
-		return c - '0';
-	else if (c >= 'A' && c <= 'Z')
-		return c - 'A' + 10;
-	else if (c >= 'a' && c <= 'z')
-		return c - 'a' + 10;
+	if (c.value >= '0' && c.value <= '9')
+		return c.value - '0';
+	else if (c.value >= 'A' && c.value <= 'Z')
+		return c.value - 'A' + 10;
+	else if (c.value >= 'a' && c.value <= 'z')
+		return c.value - 'a' + 10;
 
 	return -1;
 }
@@ -70,7 +65,7 @@ uintmax_t strtouintmax (string::const_iterator begin
 
 		// Skip whitespaces
 		//
-		while (pos < end  && __is_space(*pos)) {
+		while (pos < end  && unicode::is_space(*pos)) {
 			++pos;
 		}
 
@@ -174,7 +169,7 @@ intmax_t strtointmax (string::const_iterator begin
 
 	// Skip whitespaces
 	//
-	while (pos < end  && __is_space(*pos))
+	while (pos < end  && unicode::is_space(*pos))
 		++pos;
 
 	r = strtouintmax(pos, end, radix, max_value, & endr);

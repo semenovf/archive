@@ -32,11 +32,6 @@ public:
     typedef std::reverse_iterator<iterator>            reverse_iterator;
     typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
 
-//    typedef value_type char_type;
-
-//public:
-//    static const size_type npos = rep_type::npos;
-
 private:
     rep_type  _d;
 	//size_type _length; // length in Unicode chars (code points)
@@ -179,7 +174,10 @@ public:
 	 *
 	 * @return Length in code points.
 	 */
-    size_type length () const;
+    size_type length () const
+    {
+    	return std::distance(cbegin(), cend());
+    }
 
 	/**
 	 * @brief Checks if string is empty.
@@ -320,6 +318,34 @@ public:
     	}
 
     	return *this;
+    }
+
+    /**
+     *  @brief Append a string to this string.
+     *
+     *  @param s The string to append.
+     *  @return  Reference to this string.
+     */
+    string & prepend (const string & s)
+    {
+    	_d.insert(0, s._d);
+    	return *this;
+    }
+
+    string & prepend (size_type n, value_type c)
+    {
+    	return prepend(string(n, c));
+    }
+
+    string & prepend (size_type n, char c)
+    {
+    	return prepend(string(n, c));
+    }
+
+    template <typename InputIterator>
+    string & prepend (InputIterator first, InputIterator last)
+    {
+    	return prepend(string(first, last));
     }
 
 	string & push_back (value_type c)
@@ -491,25 +517,6 @@ public:
 	bool contains   (const char * latin1) const   { return find(latin1) != cend(); }
 	bool contains   (ucchar ch) const             { return find(ch) != cend(); }
 	bool contains   (char latin1) const           { return find(latin1) != cend(); }
-
-	// TODO Need tests
-	// FIXME need optimization like startsWith (char v)
-	bool startsWith (const utf_string & s)  const { return find(s) == cbegin(); }
-	bool startsWith (const_iterator pos, const utf_string & s) const
-	{
-		return find(pos, s) == pos;
-	}
-	// FIXME need optimization like startsWith (char v)
-	bool startsWith (const char * latin1) const    { return find(latin1) == cbegin(); }
-
-	bool startsWith (ucchar ch) const              { return isEmpty() ? false : *(cbegin()) == ch; }
-	bool startsWith (char latin1) const            { return isEmpty() ? false : *(cbegin()) == ucchar(latin1); }
-
-	// TODO Need tests
-	bool endsWith   (const utf_string & s) const  { return (length() >= s.length()) ? startsWith(cend() - s.length(), s) : false; }
-	bool endsWith   (const char * latin1) const    { return endsWith(utf_string(latin1)); }
-	bool endsWith   (ucchar ch) const              { return endsWith(utf_string(1, ch)); }
-	bool endsWith   (char latin1) const            { return endsWith(utf_string(1, latin1)); }
 
     size_type capacity() const
     {
@@ -805,6 +812,25 @@ public:
 
 #endif // __COMMENT__
 
+	bool contains (const string & s) const
+	{
+		return _d.find(s._d) != rep_type::npos;
+	}
+
+	bool contains (const char * s) const
+	{
+		return _d.find(string(s)._d) != rep_type::npos;
+	}
+
+	bool contains (value_type c) const
+	{
+		return _d.find(string(1, c)._d) != rep_type::npos;
+	}
+
+	bool contains (char c) const
+	{
+		return _d.find(string(1, c)._d) != rep_type::npos;
+	}
 
 	bool starts_with (const string & needle) const;
 

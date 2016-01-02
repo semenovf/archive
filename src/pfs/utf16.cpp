@@ -5,9 +5,11 @@
  *      Author: wladt
  */
 
-#include "pfs/ucchar.hpp"
+#include "pfs.hpp"
 
 namespace pfs {
+
+#if __FIXME__
 
 inline uint32_t construct_codepoint (uint32_t w1, uint32_t w2)
 {
@@ -292,5 +294,7 @@ size_t ucchar::decodeUtf16 (const uint16_t * begin, size_t sz)
     PFS_ASSERT(p >= begin && p <= end);
     return this->isValid() ? p - begin : 0;
 }
+
+#endif
 
 } // pfs

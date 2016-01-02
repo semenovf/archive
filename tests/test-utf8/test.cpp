@@ -7,7 +7,6 @@
 
 
 #include <pfs/test/test.hpp>
-#include <pfs/ucchar.hpp>
 #include <pfs/string.hpp>
 #include <pfs/iostream.hpp>
 

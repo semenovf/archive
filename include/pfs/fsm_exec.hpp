@@ -16,9 +16,10 @@ namespace pfs { namespace fsm {
 
 template <typename _Sequence>
 //ssize_t fsm<_Sequence>::exec (int state_cur, const_iterator begin, const_iterator end)
-fsm<_Sequence>::result_type fsm<_Sequence>::exec (int state_cur, const_iterator begin, const_iterator end)
+typename fsm<_Sequence>::result_type fsm<_Sequence>::exec (int state_cur, const_iterator begin, const_iterator end)
 {
 	const_iterator ptr = begin;
+	const_iterator ptr_accepted = begin;
 //	size_t nchars_total_processed = 0;
 //	size_t nchars_total_accepted  = 0;
 	const transition<_Sequence> * trans;
@@ -72,8 +73,10 @@ fsm<_Sequence>::result_type fsm<_Sequence>::exec (int state_cur, const_iterator 
 			//nchars_total_processed += size_t(nchars_processed);
 			ptr = result.second;
 
-			if (trans->_status == FSM_ACCEPT)
-				nchars_total_accepted = nchars_total_processed;
+			if (trans->_status == FSM_ACCEPT) {
+				//nchars_total_accepted = nchars_total_processed;
+				ptr_accepted = ptr;
+			}
 
 			if (trans->_status == FSM_REJECT) {
 				state_cur = -1;
@@ -88,8 +91,9 @@ fsm<_Sequence>::result_type fsm<_Sequence>::exec (int state_cur, const_iterator 
 				accepted = false;
 			}
 
-			ptr = begin + nchars_total_accepted;
-			nchars_total_processed = nchars_total_accepted;
+			//ptr = begin + nchars_total_accepted;
+			//nchars_total_processed = nchars_total_accepted;
+			ptr = ptr_accepted;
 		}
 
 		if (state_cur < 0)
@@ -101,7 +105,8 @@ fsm<_Sequence>::result_type fsm<_Sequence>::exec (int state_cur, const_iterator 
 	} while (true);
 
 	return accepted
-			? integral_cast_check<ssize_t, size_t>(nchars_total_accepted)
+			//? integral_cast_check<ssize_t, size_t>(nchars_total_accepted)
+			? result_type(true, ptr_accepted)
 			//: (ssize_t)-1;
 			: result_type(false, end);
 }

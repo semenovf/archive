@@ -60,7 +60,7 @@ template <>
 template <typename CodeUnitIterator>
 inline value_type string_type::utf_traits_type::decode (CodeUnitIterator & p)
 {
-	return pfs::utf8::decode(p);
+	return value_type(static_cast<uintmax_t>(pfs::utf8::decode(p)));
 }
 
 //template <>
@@ -74,14 +74,14 @@ template <>
 inline void string_type::utf_traits_type::encode (value_type uc
 		, std::back_insert_iterator<string_type::utf_traits_type::container_type> begin)
 {
-	pfs::utf8::encode(uc, begin);
+	pfs::utf8::encode(lexical_cast<uint32_t>(uc), begin);
 }
 
 template <>
 inline pointer_type
-string_type::utf_traits_type::encode (value_type value, pointer begin)
+string_type::utf_traits_type::encode (value_type uc, pointer begin)
 {
-	return pfs::utf8::encode(value, begin);
+	return pfs::utf8::encode(lexical_cast<uint32_t>(uc), begin);
 }
 
 template <>

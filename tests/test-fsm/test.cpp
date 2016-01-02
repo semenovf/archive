@@ -13,6 +13,11 @@
 #include <pfs/byte_string.hpp>
 #include <pfs/vector.hpp>
 
+#include <iostream>
+
+using std::cout;
+using std::endl;
+
 static const pfs::byte_string __alpha_bytes("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
 static const pfs::byte_string __digit_bytes("0123456789");
 
@@ -29,16 +34,36 @@ static void test_byte_helpers()
 	ndigits = __digit_bytes.length();
 
 	for(i = 0; i < nalphas; i++) {
-		TEST_OK(pfs::fsm::fsm<pfs::byte_string>::belongsChar(__alpha_bytes[i], __alpha_bytes.cbegin(), __alpha_bytes.cend()));
-	}
-	for(i = 0; i < ndigits; i++) {
-		TEST_OK(pfs::fsm::fsm<pfs::byte_string>::belongsChar(__digit_bytes[i], __digit_bytes.cbegin(), __digit_bytes.cend()));
+		TEST_OK(pfs::fsm::fsm<pfs::byte_string>::belongs_char(
+			  __alpha_bytes[i]
+			, __alpha_bytes.cbegin()
+			, __alpha_bytes.cend()));
 	}
 
-	TEST_OK (pfs::fsm::fsm<pfs::byte_string>::containsChars(__alpha_bytes.cbegin(), __alpha_bytes.cend(), __alpha_bytes.cbegin(), __alpha_bytes.cend()));
-//	TEST_NOK(pfs::fsm::fsm<ByteArray>::containsChars(__alpha_bytes, nalphas, __alpha_bytes+1, nalphas-1));
-	TEST_OK(!pfs::fsm::fsm<pfs::byte_string>::containsChars(__alpha_bytes.cend()  , __alpha_bytes.cend(), __alpha_bytes.cbegin(), __alpha_bytes.cend()));
-	TEST_OK(!pfs::fsm::fsm<pfs::byte_string>::containsChars(__alpha_bytes.cbegin(), __alpha_bytes.cend(), __alpha_bytes.cend(), __alpha_bytes.cend()));
+	for(i = 0; i < ndigits; i++) {
+		TEST_OK(pfs::fsm::fsm<pfs::byte_string>::belongs_char(
+			  __digit_bytes[i]
+			, __digit_bytes.cbegin()
+			, __digit_bytes.cend()));
+	}
+
+	TEST_OK (pfs::fsm::fsm<pfs::byte_string>::contains_chars(
+			  __alpha_bytes.cbegin()
+			, __alpha_bytes.cend()
+			, __alpha_bytes.cbegin()
+			, __alpha_bytes.cend()).first);
+
+	TEST_OK(!pfs::fsm::fsm<pfs::byte_string>::contains_chars(
+			  __alpha_bytes.cend()
+			, __alpha_bytes.cend()
+			, __alpha_bytes.cbegin()
+			, __alpha_bytes.cend()).first);
+
+	TEST_OK(!pfs::fsm::fsm<pfs::byte_string>::contains_chars(
+			  __alpha_bytes.cbegin()
+			, __alpha_bytes.cend()
+			, __alpha_bytes.cend()
+			, __alpha_bytes.cend()).first);
 }
 
 static void test_int_helpers()
@@ -52,34 +77,68 @@ static void test_int_helpers()
 	nints = sizeof(__integers)/sizeof(__integers[0]);
 
 	for(i = 0; i < nints; i++) {
-		TEST_OK(pfs::fsm::fsm<int_vector_type>::belongsChar(__integers[i], __integers.cbegin(), __integers.cend()));
+		TEST_OK(pfs::fsm::fsm<int_vector_type>::belongs_char(
+			  __integers[i]
+			, __integers.cbegin()
+			, __integers.cend()));
 	}
 
-	TEST_OK (pfs::fsm::fsm<int_vector_type>::containsChars(__integers.cbegin(), __integers.cend(), __integers.cbegin(), __integers.cend()));
-	TEST_OK(!pfs::fsm::fsm<int_vector_type>::containsChars(__integers.cend()  , __integers.cend(), __integers.cbegin(), __integers.cend()));
-	TEST_OK(!pfs::fsm::fsm<int_vector_type>::containsChars(__integers.cbegin(), __integers.cend(), __integers.cend()  , __integers.cend()));
+	TEST_OK (pfs::fsm::fsm<int_vector_type>::contains_chars(
+			  __integers.cbegin()
+			, __integers.cend()
+			, __integers.cbegin()
+			, __integers.cend()).first);
+
+	TEST_OK(!pfs::fsm::fsm<int_vector_type>::contains_chars(
+			  __integers.cend()
+			, __integers.cend()
+			, __integers.cbegin()
+			, __integers.cend()).first);
+
+	TEST_OK(!pfs::fsm::fsm<int_vector_type>::contains_chars(
+			  __integers.cbegin()
+			, __integers.cend()
+			, __integers.cend()
+			, __integers.cend()).first);
 }
 
 static void test_char_helpers()
 {
-	size_t i, nalphas, ndigits;
+	size_t nalphas = __alpha_chars.length();
+	size_t ndigits = __digit_chars.length();
 
-	nalphas = __alpha_chars.length();
-	ndigits = __digit_chars.length();
-
-	for(i = 0; i < nalphas; i++) {
-		TEST_OK(pfs::fsm::fsm<pfs::string>::belongsChar(__alpha_chars.at(i), __alpha_chars.cbegin(), __alpha_chars.cend()));
+	for (size_t i = 0; i < nalphas; i++) {
+		TEST_OK(pfs::fsm::fsm<pfs::string>::belongs_char(
+			  __alpha_chars.at(i)
+			, __alpha_chars.cbegin()
+			, __alpha_chars.cend()));
 	}
 
-	for(i = 0; i < ndigits; i++) {
-		TEST_OK(pfs::fsm::fsm<pfs::string>::belongsChar(__digit_chars.at(i), __digit_chars.cbegin(), __digit_chars.cend()));
+	for (size_t i = 0; i < ndigits; i++) {
+		TEST_OK(pfs::fsm::fsm<pfs::string>::belongs_char(
+			  __digit_chars.at(i)
+			, __digit_chars.cbegin()
+			, __digit_chars.cend()));
 	}
 
-	TEST_OK (pfs::fsm::fsm<pfs::string>::containsChars(__alpha_chars.cbegin(), __alpha_chars.cend(), __alpha_chars.cbegin(), __alpha_chars.cend()));
-	TEST_OK(!pfs::fsm::fsm<pfs::string>::containsChars(__alpha_chars.cend(), __alpha_chars.cend(), __alpha_chars.cbegin(), __alpha_chars.cend()));
-	TEST_OK(!pfs::fsm::fsm<pfs::string>::containsChars(__alpha_chars.cbegin(), __alpha_chars.cend(), __alpha_chars.cend(), __alpha_chars.cend()));
+	TEST_OK (pfs::fsm::fsm<pfs::string>::contains_chars(
+			  __alpha_chars.cbegin()
+			, __alpha_chars.cend()
+			, __alpha_chars.cbegin()
+			, __alpha_chars.cend()).first);
+
+	TEST_OK(!pfs::fsm::fsm<pfs::string>::contains_chars(
+			  __alpha_chars.cend()
+			, __alpha_chars.cend()
+			, __alpha_chars.cbegin()
+			, __alpha_chars.cend()).first);
+
+	TEST_OK(!pfs::fsm::fsm<pfs::string>::contains_chars(
+			  __alpha_chars.cbegin()
+			, __alpha_chars.cend()
+			, __alpha_chars.cend()
+			, __alpha_chars.cend()).first);
 }
-
 
 /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
 static pfs::string _DIGITS("0123456789");
@@ -91,27 +150,32 @@ static pfs::fsm::transition<pfs::string> HEXDIG_FSM[] = {
 
 static void test_alternatives_simple()
 {
+	typedef pfs::fsm::fsm<pfs::string>::result_type result_type;
+
 	pfs::string hexdig("F");
 	pfs::string digit("9");
 	pfs::string notdigit("w");
 	pfs::fsm::fsm<pfs::string> fsm(HEXDIG_FSM, nullptr);
 
-	TEST_FAIL(fsm.exec(0, hexdig.cbegin(), hexdig.cbegin()) == -1);
+	TEST_FAIL(fsm.exec(0, hexdig.cbegin(), hexdig.cbegin()).first == false);
 
 	pfs::string::const_iterator it_end;
+	result_type r;
 
 	it_end = hexdig.cbegin();
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hexdig.cbegin(), it_end) == 1);
-
+	r = fsm.exec(0, hexdig.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(hexdig.cbegin(), r.second) == 1);
 
 	it_end = digit.cbegin();
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, digit.cbegin(), it_end) == 1);
+	r = fsm.exec(0, digit.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(digit.cbegin(), r.second) == 1);
 
 	it_end = notdigit.cbegin();
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notdigit.cbegin(), it_end) < 0);
+	r = fsm.exec(0, notdigit.cbegin(), it_end);
+	TEST_FAIL(!r.first && r.second == it_end);
 }
 
 /* 0*DIGIT */
@@ -122,44 +186,58 @@ static pfs::fsm::transition<pfs::string> decimal0more_fsm[] = {
 
 static void test_repetition_0more()
 {
+	typedef pfs::fsm::fsm<pfs::string>::result_type result_type;
+
 	pfs::string dec("1972");
 	pfs::string notdec("x1972");
 	pfs::fsm::fsm<pfs::string> fsm(decimal0more_fsm, nullptr);
 
 	pfs::string::const_iterator it_end;
+	result_type r;
 
 	it_end = dec.cbegin();
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 0);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 0);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 1);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 1);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 2);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 2);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 3);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 3);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 4);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 4);
 
 	it_end = notdec.cbegin();
-	TEST_FAIL(fsm.exec(0, notdec.cbegin(), it_end) == 0);
+	r = fsm.exec(0, notdec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(notdec.cbegin(), r.second) == 0);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notdec.cbegin(), it_end) == 0);
+	r = fsm.exec(0, notdec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(notdec.cbegin(), r.second) == 0);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notdec.cbegin(), it_end) == 0);
+	r = fsm.exec(0, notdec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(notdec.cbegin(), r.second) == 0);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notdec.cbegin(), it_end) == 0);
+	r = fsm.exec(0, notdec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(notdec.cbegin(), r.second) == 0);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notdec.cbegin(), it_end) == 0);
+	r = fsm.exec(0, notdec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(notdec.cbegin(), r.second) == 0);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notdec.cbegin(), it_end) == 0);
+	r = fsm.exec(0, notdec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(notdec.cbegin(), r.second) == 0);
 }
 
 /* 1*DIGIT */
@@ -181,6 +259,8 @@ static pfs::fsm::transition<pfs::string> hex_fsm[] = {
 
 static void test_repetition_1or2more(void)
 {
+	typedef pfs::fsm::fsm<pfs::string>::result_type result_type;
+
 	pfs::string dec("1972");
 	pfs::string notdec("x1972");
 	pfs::string hex("BEAF");
@@ -189,82 +269,104 @@ static void test_repetition_1or2more(void)
 	pfs::fsm::fsm<pfs::string> fsm(decimal1more_fsm, nullptr);
 
 	pfs::string::const_iterator it_end;
+	result_type r;
 
 	it_end = dec.cbegin();
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) ==-1);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(!r.first && r.second == it_end);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 1);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 1);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 2);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 2);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 3);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 3);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 4);
-
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 4);
 
 	it_end = notdec.cbegin();
-	TEST_FAIL(fsm.exec(0, notdec.cbegin(), it_end) ==-1);
+	r = fsm.exec(0, notdec.cbegin(), it_end);
+	TEST_FAIL(!r.first);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notdec.cbegin(), it_end) < 0);
+	r = fsm.exec(0, notdec.cbegin(), it_end);
+	TEST_FAIL(!r.first);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notdec.cbegin(), it_end) < 0);
+	r = fsm.exec(0, notdec.cbegin(), it_end);
+	TEST_FAIL(!r.first);
 
 	fsm.setTransitionTable(decimal2more_fsm);
 
 	it_end = dec.cbegin();
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) ==-1);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(!r.first);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) ==-1);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(!r.first);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 2);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 2);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 3);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 3);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, dec.cbegin(), it_end) == 4);
+	r = fsm.exec(0, dec.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 4);
 
 	fsm.setTransitionTable(hex_fsm);
 
 	it_end = hex.cbegin();
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) ==-1);
+	r = fsm.exec(0, hex.cbegin(), it_end);
+	TEST_FAIL(!r.first);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == 1);
+	r = fsm.exec(0, hex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(hex.cbegin(), r.second) == 1);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == 2);
+	r = fsm.exec(0, hex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(hex.cbegin(), r.second) == 2);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == 3);
+	r = fsm.exec(0, hex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(hex.cbegin(), r.second) == 3);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == 4);
+	r = fsm.exec(0, hex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(hex.cbegin(), r.second) == 4);
 
 	it_end = nothex.cbegin();
-	TEST_FAIL(fsm.exec(0, nothex.cbegin(), it_end) ==-1);
+	r = fsm.exec(0, nothex.cbegin(), it_end);
+	TEST_FAIL(!r.first);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, nothex.cbegin(), it_end) == 1);
+	r = fsm.exec(0, nothex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(nothex.cbegin(), r.second) == 1);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, nothex.cbegin(), it_end) == 2);
+	r = fsm.exec(0, nothex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(nothex.cbegin(), r.second) == 2);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, nothex.cbegin(), it_end) == 3);
+	r = fsm.exec(0, nothex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(nothex.cbegin(), r.second) == 3);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, nothex.cbegin(), it_end) == 3);
+	r = fsm.exec(0, nothex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(nothex.cbegin(), r.second) == 3);
 }
-
 
 /* NON-ZERO_DIGIT *DIGIT */
 static pfs::fsm::transition<pfs::string> non_zero_decimal_fsm[] = {
@@ -283,61 +385,72 @@ static pfs::fsm::transition<pfs::string> number_fsm[] = {
 
 static void test_alternatives(void)
 {
+	typedef pfs::fsm::fsm<pfs::string>::result_type result_type;
+
 	pfs::string hex("0xDEAD");
 	pfs::string decimal("1972");
 	pfs::string notnumber("[number]");
 	pfs::fsm::fsm<pfs::string> fsm(number_fsm, nullptr);
 
 	pfs::string::const_iterator it_end;
+	result_type r;
 
 	it_end = hex.cbegin();
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) ==-1);
+	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == result_type(false, it_end));
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) ==-1);
+	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == result_type(false, it_end));
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) ==-1);
+	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == result_type(false, it_end));
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == 3);
+	r = fsm.exec(0, hex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(hex.cbegin(), r.second) == 3);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == 4);
+	r = fsm.exec(0, hex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(hex.cbegin(), r.second) == 4);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == 5);
+	r = fsm.exec(0, hex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(hex.cbegin(), r.second) == 5);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, hex.cbegin(), it_end) == 6);
+	r = fsm.exec(0, hex.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(hex.cbegin(), r.second) == 6);
 
 	it_end = decimal.cbegin();
-	TEST_FAIL(fsm.exec(0, decimal.cbegin(), it_end) ==-1);
+	TEST_FAIL(fsm.exec(0, decimal.cbegin(), it_end) == result_type(false, it_end));
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, decimal.cbegin(), it_end) == 1);
+	r = fsm.exec(0, decimal.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(decimal.cbegin(), r.second) == 1);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, decimal.cbegin(), it_end) == 2);
+	r = fsm.exec(0, decimal.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(decimal.cbegin(), r.second) == 2);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, decimal.cbegin(), it_end) == 3);
+	r = fsm.exec(0, decimal.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(decimal.cbegin(), r.second) == 3);
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, decimal.cbegin(), it_end) == 4);
+	r = fsm.exec(0, decimal.cbegin(), it_end);
+	TEST_FAIL(r.first && std::distance(decimal.cbegin(), r.second) == 4);
 
 	it_end = notnumber.cbegin();
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notnumber.cbegin(), it_end) < 0);
+	TEST_FAIL(fsm.exec(0, notnumber.cbegin(), it_end) == result_type(false, it_end));
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notnumber.cbegin(), it_end) < 0);
+	TEST_FAIL(fsm.exec(0, notnumber.cbegin(), it_end) == result_type(false, it_end));
 
 	std::advance(it_end, 1);
-	TEST_FAIL(fsm.exec(0, notnumber.cbegin(), it_end) < 0);
+	TEST_FAIL(fsm.exec(0, notnumber.cbegin(), it_end) == result_type(false, it_end));
 
 	std::advance(it_end, 5);
-	TEST_FAIL(fsm.exec(0, notnumber.cbegin(), it_end) < 0);
+	TEST_FAIL(fsm.exec(0, notnumber.cbegin(), it_end) == result_type(false, it_end));
 }
 
 static pfs::fsm::transition<pfs::string> alpha_seq_fsm[] = {
@@ -363,25 +476,31 @@ static pfs::fsm::transition<pfs::string> z_pos_fsm[] = {
 };
 
 
-void test_sequence(void)
+void test_sequence ()
 {
+	typedef pfs::fsm::fsm<pfs::string>::result_type result_type;
+
 	pfs::fsm::fsm<pfs::string> fsm1(alpha_seq_fsm, nullptr);
 	pfs::fsm::fsm<pfs::string> fsm2(z_pos_fsm, nullptr);
 
-	TEST_FAIL(fsm1.exec(0, __alpha_chars.cbegin(), __alpha_chars.cend()) == ssize_t(__alpha_chars.length()));
-	TEST_FAIL(fsm2.exec(0, __alpha_chars.cbegin(), __alpha_chars.cend()) == ssize_t(__alpha_chars.length()));
-}
+	TEST_FAIL(fsm1.exec(0, __alpha_chars.cbegin(), __alpha_chars.cend())
+			== result_type(true, __alpha_chars.cend()));
 
+	TEST_FAIL(fsm2.exec(0, __alpha_chars.cbegin(), __alpha_chars.cend())
+			== result_type(true, __alpha_chars.cend()));
+}
 
 static pfs::fsm::transition<pfs::string> rpt_fsm[] = {
 	  {-1,-1, FSM_MATCH_RPT_STR(_u8("_ABC"), 0, 10) , FSM_ACCEPT, nullptr, nullptr }
 };
 
-
-void test_rpt(void)
+void test_rpt ()
 {
+	typedef pfs::fsm::fsm<pfs::string>::result_type result_type;
+
 	pfs::fsm::fsm<pfs::string> fsm(rpt_fsm, nullptr);
-	TEST_FAIL(fsm.exec(0, __rpt_chars.cbegin(), __rpt_chars.cend()) == ssize_t(__rpt_chars.length()));
+	TEST_FAIL(fsm.exec(0, __rpt_chars.cbegin(), __rpt_chars.cend())
+			== result_type(true, __rpt_chars.cend()));
 }
 
 int main(int argc, char *argv[])
@@ -389,7 +508,7 @@ int main(int argc, char *argv[])
 	PFS_UNUSED(argc);
 	PFS_UNUSED(argv);
 
-	BEGIN_TESTS(224);
+	BEGIN_TESTS(226);
 
 	test_byte_helpers();
 	test_int_helpers();

@@ -8,6 +8,7 @@
 #ifndef __PFS_VECTOR_HPP__
 #define __PFS_VECTOR_HPP__
 
+#include <pfs.hpp>
 #include <vector>
 
 namespace pfs {
@@ -52,6 +53,25 @@ public:
 	vector (const vector & other)
 	{}
 
+#if __cplusplus >= 201103L
+	vector (const vector & other, const allocator_type & alloc)
+		: base_class(other, alloc)
+	{}
+
+	vector (vector && other)
+		: base_class(other)
+	{}
+
+	vector (vector && other, const allocator_type & alloc)
+		: base_class(other, alloc)
+	{}
+
+	vector (std::initializer_list<T> init,
+	        const allocator_tyep & alloc = allocator_type())
+		: base_class(init, alloc)
+	{}
+#endif
+
 #if __cplusplus < 201103L
 	const_iterator cbegin () const
 	{
@@ -64,11 +84,27 @@ public:
 	}
 #endif
 
-//	vector( const vector& other, const Allocator& alloc );
-//	vector( vector&& other )
-//	vector( vector&& other, const Allocator& alloc );
-//	vector( std::initializer_list<T> init,
-//	        const Allocator& alloc = Allocator() );
+
+	reference first ()
+	{
+		return this->front();
+	}
+
+	const_reference first () const
+	{
+		return this->front();
+	}
+
+	reference last ()
+	{
+		return this->back();
+	}
+
+	const_reference last () const
+	{
+		return this->back();
+	}
+
 };
 
 } // pfs

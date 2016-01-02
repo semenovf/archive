@@ -9,7 +9,7 @@
 #define __PFS_UTF_TRAITS_HPP__
 
 #include <iterator>
-#include <pfs/unicode/unicode.hpp>
+#include <pfs/unicode.hpp>
 
 namespace pfs { namespace utf {
 
@@ -107,10 +107,8 @@ struct traits
 
     	value_type operator * () const
     	{
-    		value_type result;
     		pointer p = _p;
-    		utf_traits_type::decode(p);
-    		return result;
+    		return utf_traits_type::decode(p);
     	}
 
     	//	pointer operator -> () const;

@@ -1,21 +1,21 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs prj --create --name=test-pfs-limits --type=test --depends=pfs'
+--* Command: `gbs prj --create --name=test-limits --type=test --depends=pfs'
 --* Date:    Tue Nov 24 20:13:51 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-pfs-limits"
+targetname    "test-limits"
 defines       {  }
 includedirs   { "../../include", "../../../pfs-test/include" }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-pfs-limits/*.cpp" }
+files         { "../../tests/test-limits/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs/test-pfs-limits/debug"
+    objdir       "../../../.build/pfs/test-limits/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d" }
@@ -23,7 +23,7 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs/test-pfs-limits/release"
+    objdir       "../../../.build/pfs/test-limits/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test" }
 

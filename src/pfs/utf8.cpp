@@ -6,6 +6,8 @@
  */
 
 
+#if __OBSOLETE__
+
 #include "pfs/ucchar.hpp"
 
 namespace pfs {
@@ -340,3 +342,5 @@ size_t ucchar::decodeUtf8 (const uint8_t * begin, size_t sz)
 }
 
 } // pfs
+
+#endif

@@ -70,7 +70,7 @@ string to_string (const time & t, const string & format)
 			if (!need_spec) {
 				r.push_back(*p);
 			} else {
-				switch (*p) {
+				switch (lexical_cast<char>(*p)) {
 				case 'n':
 					r.push_back('\n');
 					break;

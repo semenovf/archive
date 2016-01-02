@@ -58,6 +58,11 @@ DLL_API uintmax_t strtouintmax (string::const_iterator begin
 		, uintmax_t max_value
 		, string::const_iterator * endref = 0);
 
+DLL_API real_t string_to_real (string::const_iterator begin
+		, string::const_iterator end
+		, string::value_type decimalPoint
+		, string::const_iterator * endref = 0);
+
 DLL_API char * intmax_to_string (intmax_t n
 		, int base
 		, int uppercase
@@ -82,6 +87,11 @@ DLL_API char * real_to_string (real_t n
 inline string to_string (bool value)
 {
 	return value ? string("true") : string("false");
+}
+
+inline string to_string (string::value_type value)
+{
+	return string(1, value);
 }
 
 template <typename Integer>
@@ -121,6 +131,8 @@ string __to_string (typename pfs::enable_if<pfs::is_floating_point<Float>::value
 {
 	static const size_t LEXICAL_CAST_BUFSZ = 128;
 
+	string r;
+
 	int sz = LEXICAL_CAST_BUFSZ;
 	char buf[LEXICAL_CAST_BUFSZ];
 	char * pbuf = buf;
@@ -128,12 +140,17 @@ string __to_string (typename pfs::enable_if<pfs::is_floating_point<Float>::value
 	char * s = real_to_string(value, f, prec, pbuf, & sz);
 
 	if (!s) {
-		pbuf = new char [sz + 1];
+		++sz;
+		pbuf = new char [sz];
 		s = real_to_string(value, f, prec, pbuf, & sz);
+		PFS_ASSERT(s);
+		r = string(s);
 		delete [] pbuf;
+	} else {
+		r = string(s);
 	}
 
-	return string(s);
+	return r;
 }
 
 inline string to_string (signed char value, int base, bool uppercase)
@@ -338,6 +355,146 @@ inline string to_string (long double value)
 }
 
 #endif
+
+inline bool lexical_cast (const string & s)
+{
+	return (s == string("true") || s == string("yes"))
+		? true
+		: false;
+}
+
+template <typename Integer>
+typename pfs::enable_if<pfs::is_signed<Integer>::value, Integer>::type
+lexical_cast (string::const_iterator begin
+		, string::const_iterator end
+		, int radix
+		, bool * ok)
+{
+	if (ok)
+		*ok = true;
+
+	string::const_iterator endptr(begin);
+	intmax_t r = strtointmax(begin, end
+			, radix
+			, intmax_t(pfs::min_type<Integer>())
+			, uintmax_t(pfs::max_type<Integer>())
+			, & endptr);
+
+    if ((errno == ERANGE && (r == pfs::max_type<intmax_t>() || r == pfs::min_type<intmax_t>()))
+            || (errno != 0 && r == 0)
+            || endptr != end) {
+
+    	if (ok)
+    		*ok = false;
+    	return static_cast<Integer>(0);
+    }
+
+    return static_cast<Integer>(r);
+}
+
+template <typename Integer>
+inline
+typename pfs::enable_if<pfs::is_signed<Integer>::value, Integer>::type
+lexical_cast (const string & s, int radix, bool * ok = 0)
+{
+	return lexical_cast<Integer>(s.begin(), s.end(), radix, ok);
+}
+
+template <typename Integer>
+inline
+typename pfs::enable_if<pfs::is_signed<Integer>::value, Integer>::type
+lexical_cast (const string & s, bool * ok = 0)
+{
+    return lexical_cast<Integer>(s.begin(), s.end(), 10, ok);
+}
+
+template <typename Integer>
+typename pfs::enable_if<pfs::is_unsigned<Integer>::value, Integer>::type
+lexical_cast (string::const_iterator begin
+		, string::const_iterator end
+		, int radix
+		, bool * ok)
+{
+	if (ok)
+		*ok = true;
+
+	string::const_iterator endptr(begin);
+	uintmax_t r = strtouintmax(begin
+			, end
+			, radix
+			, uintmax_t(pfs::max_type<Integer>())
+			, & endptr);
+
+    if ((errno == ERANGE && (r == pfs::max_type<uintmax_t>()))
+    		|| (errno != 0 && r == 0)
+    		|| endptr != end) {
+
+    	if (ok)
+    		*ok = false;
+    	return static_cast<Integer>(0);
+    }
+
+    return static_cast<Integer>(r);
+}
+
+template <typename Integer>
+inline
+typename pfs::enable_if<pfs::is_unsigned<Integer>::value, Integer>::type
+lexical_cast (const string & s, int radix, bool * ok = 0)
+{
+	return lexical_cast<Integer>(s.begin(), s.end(), radix, ok);
+}
+
+template <typename Integer>
+inline
+typename pfs::enable_if<pfs::is_unsigned<Integer>::value, Integer>::type
+lexical_cast (const string & s, bool * ok = 0)
+{
+	return lexical_cast<Integer>(s.begin(), s.end(), 10, ok);
+}
+
+template <typename Float>
+typename pfs::enable_if<pfs::is_floating_point<Float>::value, Float>::type
+lexical_cast (string::const_iterator begin
+		, string::const_iterator end
+		, string::value_type decimalPoint
+		, bool * ok)
+{
+	if (ok)
+		*ok = true;
+
+	string::const_iterator endptr(begin);
+
+	real_t r = string_to_real(begin
+			, end
+			, decimalPoint
+			, & endptr);
+
+	if (errno || endptr != end || r < min_type<Float>() || r > max_type<Float>()) {
+    	if (ok)
+    		*ok = false;
+    	return static_cast<Float>(0.0f);
+
+	}
+
+    return static_cast<Float>(r);
+}
+
+template <typename Float>
+inline
+typename pfs::enable_if<pfs::is_floating_point<Float>::value, Float>::type
+lexical_cast (const string & s, string::value_type decimalPoint, bool * ok = 0)
+{
+	return lexical_cast<Float>(s.cbegin(), s.cend(), decimalPoint, ok);
+}
+
+template <typename Float>
+inline
+typename pfs::enable_if<pfs::is_floating_point<Float>::value, Float>::type
+lexical_cast (const string & s, bool * ok = 0)
+{
+	return lexical_cast<Float>(s.cbegin(), s.cend(), string::value_type('.'), ok);
+}
 
 } // pfs
 

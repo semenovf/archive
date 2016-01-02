@@ -12,7 +12,7 @@
 
 namespace pfs {
 
-typedef pfs::vector<string>::type stringlist;
+typedef pfs::vector<string> stringlist;
 
 inline stringlist & operator << (stringlist & sl, const string & s)
 {

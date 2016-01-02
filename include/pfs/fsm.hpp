@@ -89,7 +89,10 @@ public:
 	typedef typename result<_Sequence>::type   result_type;
 
 	//typedef ssize_t (* func_type)(context<_Sequence> * fsm, void *fn_context, typename _Sequence::const_iterator begin, typename _Sequence::const_iterator end);
-	typedef result_type (* func_type)(context<_Sequence> * fsm, void *fn_context, typename _Sequence::const_iterator begin, typename _Sequence::const_iterator end);
+	typedef result_type (* func_type)(context<_Sequence> * fsm
+			, void * fn_context
+			, const_iterator begin
+			, const_iterator end);
 
 private:
 	match() : _match(nullptr) {}
@@ -172,57 +175,66 @@ public:
 	result_type exec (int state_cur, const_iterator begin, const_iterator end);
 
 public:
-	static bool belongsChar (char_type ch, const_iterator begin, const_iterator end);
-	static bool containsChars (const_iterator needle_begin, const_iterator needle_end
+	/** @brief Checks if character @c ch belongs to the subset of characters
+	 *         specified by begin and end iterators.
+	 */
+	static bool belongs_char (char_type ch, const_iterator begin, const_iterator end);
+
+	/** @brief Checks if haystack specified by begin and end iterators
+	 *         (@a haystack_begin and @a haystack_begin respectively)
+	 *         contains the needle also specified by begin and end iterators
+	 *         (@a needle_begin and @a needle_end respectively).
+	 *
+	 *  @return pair
+	 */
+	static result_type contains_chars (const_iterator needle_begin, const_iterator needle_end
 			, const_iterator haystack_begin, const_iterator haystack_end);
-	static bool rangeChar (char_type ch, char_type from, char_type to);
+
+	/** @brief Checks if character 'ch' belongs to the specified range
+	  */
+	static bool range_char (char_type ch, char_type from, char_type to);
 };
 
 
-/** @brief Checks if character @c ch belongs to the subset of characters
- *         specified by begin and end iterators.
- * */
 template <typename _Sequence>
-bool fsm<_Sequence>::belongsChar (/*typename fsm<_Sequence>::*/char_type ch, const_iterator begin, const_iterator end)
+bool fsm<_Sequence>::belongs_char (char_type ch
+		, const_iterator begin
+		, const_iterator end)
 {
-	const_iterator it(begin);
-	while (it < end) {
-		if (*it == ch)
+	while (begin < end) {
+		if (*begin == ch)
 			return true;
-		++it;
+		++begin;
 	}
 	return false;
 }
 
-/** @brief Checks if haystack specified by begin an end iterators
- *         (@c haystack_begin and @c haystack_begin respectively)
- *         contains the needle also specified by begin and end iterators
- *         (@c needle_begin and @c needle_end respectively).
- * */
 template <typename _Sequence>
-bool fsm<_Sequence>::containsChars (const_iterator needle_begin, const_iterator needle_end
-		, const_iterator haystack_begin, const_iterator haystack_end)
+typename fsm<_Sequence>::result_type fsm<_Sequence>::contains_chars (const_iterator needle_begin
+		, const_iterator needle_end
+		, const_iterator haystack_begin
+		, const_iterator haystack_end)
 {
-	const_iterator it_needle(needle_begin);
-	const_iterator it_haystack(haystack_begin);
+	const_iterator itn(needle_begin);
+	const_iterator ith(haystack_begin);
 
 	if (needle_begin == needle_end)
-		return false;
+		return result_type(false, haystack_end);
 
-	while(it_needle < needle_end && it_haystack < haystack_end) {
-		if (*it_needle != *it_haystack)
+	while(itn < needle_end && ith < haystack_end) {
+		if (*itn != *ith)
 			break;
-		++it_needle;
-		++it_haystack;
+		++itn;
+		++ith;
 	}
 
-	return it_needle == needle_end ? true : false;
+	return itn == needle_end
+			? result_type(true, ith)
+			: result_type(false, haystack_end);
 }
 
-/** @brief Checks if character 'ch' belongs to the specified range
-  */
 template <typename _Sequence>
-inline bool fsm<_Sequence>::rangeChar(char_type ch, char_type from, char_type to)
+inline bool fsm<_Sequence>::range_char (char_type ch, char_type from, char_type to)
 {
 	return ch >= from && ch <= to ? true : false;
 }
@@ -231,8 +243,8 @@ template <typename _Sequence>
 fsm<_Sequence>::fsm ()
 	: _context(new context<_Sequence>)
 {
-	_context->_trans_tab     = nullptr;
-	_context->_userContext       = nullptr;
+	_context->_trans_tab   = nullptr;
+	_context->_userContext = nullptr;
 }
 
 template <typename _Sequence>
