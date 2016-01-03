@@ -5,7 +5,7 @@
 
 #include "pfs/thread.hpp"
 #include "pfs/platform.hpp"
-#include "pfs/platform/error_code.hpp"
+#include "pfs/error_code.hpp"
 #include "../thread_p.hpp"
 #include <pfs/pp/utility.h>
 #include <pthread.h>
@@ -358,7 +358,7 @@ void thread::start (Priority priority)
         	PFS_DEBUG(string errstr);
         	PFS_DEBUG(std::cerr
         			<< "pfs::thread::start(): thread stack size error: "
-        			<< lexical_cast(pfs::platform::error_code(rc), errstr) << std::endl);
+        			<< to_string(pfs::error_code(rc)) << std::endl);
 
             // we failed to set the stacksize, and as the documentation states,
             // the thread will fail to run...
@@ -387,7 +387,7 @@ void thread::start (Priority priority)
     	PFS_DEBUG(string errstr);
     	PFS_DEBUG(std::cerr
     			<< "pfs::thread::start(): thread creation error: "
-				<< lexical_cast(pfs::platform::error_code(rc), errstr) << std::endl);
+				<< to_string(pfs::error_code(rc)) << std::endl);
 
         _d->_running = false;
         _d->_finished = false;

@@ -11,7 +11,6 @@
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
 #include <pfs/pimpl.hpp>
-#include <pfs/noncopyable.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -20,8 +19,9 @@
 
 namespace pfs {
 
-class DLL_API regexp : pfs::noncopyable
+class DLL_API regexp
 {
+	// TODO avoid pimpl
 	class impl;
 	pfs::pimpl _d;
 
@@ -34,6 +34,10 @@ public:
 		, LineBreak_AnyUnicode = 0x0008
 	};
 
+private:
+	regexp (const regexp &);
+	regexp & operator = (const regexp &);
+
 public:
 	regexp ();
 	regexp (const string & pattern);
@@ -43,7 +47,7 @@ public:
 	void setPattern (const string & pattern);
 	void setPattern (const char * latin1Pattern)
 	{
-		setPattern(string::fromLatin1(latin1Pattern));
+		setPattern(string(latin1Pattern));
 	}
 	const string & errorString () const;
 	int errorOffset () const;

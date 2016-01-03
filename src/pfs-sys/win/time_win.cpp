@@ -11,7 +11,7 @@
 
 namespace pfs { namespace platform {
 
-DLL_API pfs::time currentTime () // static
+DLL_API pfs::time current_time () // static
 {
     SYSTEMTIME t;
     memset(& t, 0, sizeof(SYSTEMTIME));

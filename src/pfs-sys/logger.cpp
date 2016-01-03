@@ -6,10 +6,10 @@
  * @brief
  */
 
-#include "logger_p.hpp"
 #include <pfs/shared_ptr.hpp>
 #include <pfs/atomic.hpp>
-#include "pfs/platform/error_code.hpp"
+#include "pfs/error_code.hpp"
+#include "logger_p.hpp"
 
 namespace pfs {
 
@@ -78,15 +78,14 @@ void fatal (const pfs::string & text) { if (log::level() < log::NoLog) fatal().p
 void warn  (int errn, const string & text)
 {
 	if (log::level() < log::Error) {
-		string errstr;
-		lexical_cast(pfs::platform::error_code(errn), errstr);
+		string errstr = to_string(error_code(errn));
 
-		if (text.isEmpty()) {
+		if (text.empty()) {
 			warn().print(log::Warn, errstr);
 		} else {
 			string msg;
 			msg.append(text);
-			msg.append(": ");
+			msg.append(_u8(": "));
 			msg.append(errstr);
 			warn().print(log::Warn, msg);
 		}
@@ -96,15 +95,14 @@ void warn  (int errn, const string & text)
 void error (int errn, const string & text)
 {
 	if (log::level() < log::Fatal) {
-		string errstr;
-		lexical_cast(pfs::platform::error_code(errn), errstr);
+		string errstr = to_string(error_code(errn));
 
 		if (text.empty()) {
 			error().print(log::Error, errstr);
 		} else {
 			string msg;
 			msg.append(text);
-			msg.append(": ");
+			msg.append(_u8(": "));
 			msg.append(errstr);
 			error().print(log::Error, msg);
 		}
@@ -121,10 +119,9 @@ void log::print (const notification & nx)
         	string msg;
 
             if (it->repetitions() > 1) {
-            	string tmp;
             	msg.append(it->text());
             	msg.append(_u8(" (repeat "));
-            	msg.append(lexical_cast(it->repetitions(), tmp));
+            	msg.append(to_string(it->repetitions()));
             	msg.append(_u8(" times)"));
                 error(msg);
             } else {
@@ -147,15 +144,14 @@ void log::print (const notification & nx)
 void fatal (int errn, const string & text)
 {
 	if (log::level() < log::NoLog) {
-		string errstr;
-		lexical_cast(pfs::platform::error_code(errn), errstr);
+		string errstr = to_string(error_code(errn));
 
-		if (text.isEmpty()) {
+		if (text.empty()) {
 			fatal().print(log::Fatal, errstr);
 		} else {
 			pfs::string msg;
 			msg.append(text);
-			msg.append(": ");
+			msg.append(_u8(": "));
 			msg.append(errstr);
 			fatal().print(log::Fatal, msg);
 		}
@@ -184,27 +180,28 @@ void log::restoreDefaultAppenders ()
 	fatal().connect(default_err_appender());
 }
 
-pfs::string appender::patternify (log::priority level, const string & pattern, const string & msg)
+string appender::patternify (log::priority level, const string & pattern, const string & msg)
 {
 	pattern_context ctx;
 	ctx.level = level;
 	ctx.msg = & msg;
-	pfs::fsm::fsm<pfs::string> fsm(pattern_fsm, &ctx);
+	fsm::fsm<string> fsm(pattern_fsm, &ctx);
 
-	ssize_t len = fsm.exec(0, pattern.begin(), pattern.end());
+	fsm::fsm<string>::result_type r = fsm.exec(0, pattern.cbegin(), pattern.cend());
 
-	if (len >= 0 && size_t(len) == pattern.length()) {
+	if (r.first && r.second == pattern.cend()) {
 		return ctx.result;
 	}
 
 	string msg1;
-	msg1 << "[<!INVALID PATTERN!>]: " << msg;
+	msg1.append(_u8("[<!INVALID PATTERN!>]: "));
+	msg1.append(msg);
 	return msg1;
 }
 
 void appender::print_helper (log::priority level, const string & msg)
 {
-	print(_pattern.isEmpty()
+	print(_pattern.empty()
 			? msg
 			: patternify(level, _pattern, msg));
 }

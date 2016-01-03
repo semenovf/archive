@@ -5,6 +5,7 @@
  *      Author: wladt
  */
 
+#if __OBSOLETE__ // XXX OBSOLETE
 #include "pfs/fs.hpp"
 
 namespace pfs {
@@ -121,3 +122,4 @@ string fs::tempDirectory ()
 }
 
 } // pfs
+#endif

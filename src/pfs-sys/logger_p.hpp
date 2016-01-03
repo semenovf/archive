@@ -11,28 +11,29 @@
 
 #include "pfs/logger.hpp"
 #include <pfs/fsm.hpp>
+#include <pfs/platform.hpp>
 #include <ctime>
 
 namespace pfs {
 
 struct pattern_spec
 {
-	pfs::ucchar spec_char;
+	string::value_type spec_char;
 	bool        left_justify;
 	size_t      min_width;
 	size_t      max_width;
-	pfs::string fspec; /* format specifier */
+	string      fspec; /* format specifier */
 };
 
 struct pattern_context
 {
-	pfs::log::priority  level;
-	pfs::string         result;
-	const pfs::string * msg;
-	pattern_spec        pspec;
+	log::priority  level;
+	string         result;
+	const string * msg;
+	pattern_spec   pspec;
 };
 
-const pfs::string __priority_str[] = {
+const string __priority_str[] = {
 	  _u8("Trace")
 	, _u8("Debug")
 	, _u8("Info")
@@ -41,14 +42,14 @@ const pfs::string __priority_str[] = {
 	, _u8("Fatal")
 };
 
-static bool begin_spec        (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
-static bool end_spec          (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
-static bool append_plain_char (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
-static bool set_left_justify  (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
-static bool set_min_width     (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
-static bool set_max_width     (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
-static bool set_spec_char     (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
-static bool set_format_spec   (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void * action_args);
+static bool begin_spec        (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool end_spec          (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool append_plain_char (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_left_justify  (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_min_width     (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_max_width     (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_spec_char     (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
+static bool set_format_spec   (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
 
 /**
  * Each conversion specifier starts with a percent sign (%)
@@ -72,73 +73,73 @@ static bool set_format_spec   (pfs::string::const_iterator begin, pfs::string::c
  * t    horizontal tab
  */
 
-//static pfs::string _LOGGER_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-//static pfs::string _LOGGER_WS(" \t");
-static pfs::string LOGGER_DIGIT("0123456789");
+//static string _LOGGER_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+//static string _LOGGER_WS(" \t");
+static string LOGGER_DIGIT("0123456789");
 
 /* exclude '%' (0x25) */
-pfs::ucchar plain_char[] = {
-	  pfs::ucchar(0x20u), pfs::ucchar(0x24u)
-	, pfs::ucchar(0x26u), pfs::ucchar(0x10FFFFu)
+string::value_type plain_char[] = {
+	  string::value_type(0x20u), string::value_type(0x24u)
+	, string::value_type(0x26u), string::value_type(0x10FFFFu)
 };
-static pfs::fsm::transition<pfs::string> plain_char_fsm[] = {
-      {-1, 1, FSM_MATCH_RANGE(plain_char[0], plain_char[1]) , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_RANGE(plain_char[2], plain_char[3]) , FSM_ACCEPT, nullptr, nullptr }
+static fsm::transition<string> plain_char_fsm[] = {
+      {-1, 1, FSM_MATCH_RANGE(plain_char[0], plain_char[1]) , FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_RANGE(plain_char[2], plain_char[3]) , FSM_ACCEPT, 0, 0 }
 };
 
 /* format-mod = [ "-" ] *2DIGIT [ "." *2DIGIT ] */
-static pfs::fsm::transition<pfs::string> dot_digit_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_u8("."))               , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_CHAR(LOGGER_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, nullptr }
+static fsm::transition<string> dot_digit_fsm[] = {
+	  { 1,-1, FSM_MATCH_CHAR(_u8("."))               , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_RPT_CHAR(LOGGER_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, 0 }
 };
 
-static pfs::fsm::transition<pfs::string> format_mod_fsm[] = {
-	  { 1,-1, FSM_MATCH_OPT_CHAR(_u8("-"))           , FSM_NORMAL, set_left_justify, nullptr }
-	, { 2,-1, FSM_MATCH_RPT_CHAR(LOGGER_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, nullptr }
-	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm)       , FSM_ACCEPT, nullptr, nullptr }
+static fsm::transition<string> format_mod_fsm[] = {
+	  { 1,-1, FSM_MATCH_OPT_CHAR(_u8("-"))           , FSM_NORMAL, set_left_justify, 0 }
+	, { 2,-1, FSM_MATCH_RPT_CHAR(LOGGER_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, 0 }
+	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm)       , FSM_ACCEPT, 0, 0 }
 };
 
 /* format-spec = "{" *( <exclude '{' (0x7B) and '}' (0x7D) > ) "}" */
-pfs::ucchar format_spec_char[] = {
-	  pfs::ucchar(0x20u), pfs::ucchar(0x7Au)
-	, pfs::ucchar(0x7Cu), pfs::ucchar(0x7Cu)
-	, pfs::ucchar(0x7Eu), pfs::ucchar(0x10FFFFu)
+string::value_type format_spec_char[] = {
+	  string::value_type(0x20u), string::value_type(0x7Au)
+	, string::value_type(0x7Cu), string::value_type(0x7Cu)
+	, string::value_type(0x7Eu), string::value_type(0x10FFFFu)
 };
-static pfs::fsm::transition<pfs::string> format_spec_char_fsm[] = {
-	  {-1, 1, FSM_MATCH_RANGE(format_spec_char[0], format_spec_char[1]) , FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_RANGE(format_spec_char[2], format_spec_char[3]) , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RANGE(format_spec_char[4], format_spec_char[5]) , FSM_ACCEPT, nullptr, nullptr }
+static fsm::transition<string> format_spec_char_fsm[] = {
+	  {-1, 1, FSM_MATCH_RANGE(format_spec_char[0], format_spec_char[1]) , FSM_ACCEPT, 0, 0 }
+	, {-1, 2, FSM_MATCH_RANGE(format_spec_char[2], format_spec_char[3]) , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_RANGE(format_spec_char[4], format_spec_char[5]) , FSM_ACCEPT, 0, 0 }
 };
-static pfs::fsm::transition<pfs::string> format_spec_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_u8("{"))                       , FSM_NORMAL, nullptr, nullptr }
-    , { 2,-1, FSM_MATCH_RPT_FSM(format_spec_char_fsm, 0,256) , FSM_NORMAL, set_format_spec, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_u8("}"))                       , FSM_ACCEPT, nullptr, nullptr }
+static fsm::transition<string> format_spec_fsm[] = {
+      { 1,-1, FSM_MATCH_CHAR(_u8("{"))                       , FSM_NORMAL, 0, 0 }
+    , { 2,-1, FSM_MATCH_RPT_FSM(format_spec_char_fsm, 0,256) , FSM_NORMAL, set_format_spec, 0 }
+    , {-1,-1, FSM_MATCH_CHAR(_u8("}"))                       , FSM_ACCEPT, 0, 0 }
 };
 
 /* spec = "%" [ format-mod ] ( "m" / "d" / "p" ) [ format-spec ]*/
-static pfs::fsm::transition<pfs::string> spec_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_u8("%"))           , FSM_NORMAL, begin_spec, nullptr }
-    , { 2,-1, FSM_MATCH_OPT_FSM(format_mod_fsm)  , FSM_NORMAL, nullptr, nullptr }
-    , { 3,-1, FSM_MATCH_CHAR(_u8("mdpnt"))       , FSM_NORMAL, set_spec_char, nullptr }
-    , {-1,-1, FSM_MATCH_OPT_FSM(format_spec_fsm) , FSM_ACCEPT, end_spec, nullptr }
+static fsm::transition<string> spec_fsm[] = {
+      { 1,-1, FSM_MATCH_CHAR(_u8("%"))           , FSM_NORMAL, begin_spec, 0 }
+    , { 2,-1, FSM_MATCH_OPT_FSM(format_mod_fsm)  , FSM_NORMAL, 0, 0 }
+    , { 3,-1, FSM_MATCH_CHAR(_u8("mdpnt"))       , FSM_NORMAL, set_spec_char, 0 }
+    , {-1,-1, FSM_MATCH_OPT_FSM(format_spec_fsm) , FSM_ACCEPT, end_spec, 0 }
 };
 
 /* pattern = *( spec-fsm / plain-char ) */
 /* spec-fsm / plain-char */
-static pfs::fsm::transition<pfs::string> pattern_unit_fsm[] = {
-      {-1, 1, FSM_MATCH_FSM(spec_fsm)       , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_FSM(plain_char_fsm) , FSM_ACCEPT, append_plain_char, nullptr }
+static fsm::transition<string> pattern_unit_fsm[] = {
+      {-1, 1, FSM_MATCH_FSM(spec_fsm)       , FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_FSM(plain_char_fsm) , FSM_ACCEPT, append_plain_char, 0 }
 };
 
-static pfs::fsm::transition<pfs::string> pattern_fsm[] = {
-	{-1,-1, FSM_MATCH_RPT_FSM(pattern_unit_fsm, 0,-1) , FSM_ACCEPT, nullptr, nullptr }
+static fsm::transition<string> pattern_fsm[] = {
+	{-1,-1, FSM_MATCH_RPT_FSM(pattern_unit_fsm, 0,-1) , FSM_ACCEPT, 0, 0 }
 };
 
 
-static bool begin_spec (pfs::string::const_iterator, pfs::string::const_iterator,  void * context, void *)
+static bool begin_spec (string::const_iterator, string::const_iterator,  void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
-	ctx->pspec.spec_char = pfs::ucchar();
+	ctx->pspec.spec_char = string::value_type();
 	ctx->pspec.left_justify = false;
 	ctx->pspec.min_width = 0;
 	ctx->pspec.max_width = 0;
@@ -146,18 +147,17 @@ static bool begin_spec (pfs::string::const_iterator, pfs::string::const_iterator
 	return true;
 }
 
-static bool end_spec (pfs::string::const_iterator, pfs::string::const_iterator, void * context, void *)
+static bool end_spec (string::const_iterator, string::const_iterator, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
-	char spec_char = char(ctx->pspec.spec_char);
-	pfs::string result;
+	string result;
 
-	switch((char)spec_char) {
+	switch(lexical_cast<char>(ctx->pspec.spec_char)) {
 	case 'n':
-		result << pfs::ucchar('\n');
+		result.push_back('\n');
 		break;
 	case 't':
-		result << pfs::ucchar('\t');
+		result.push_back('\t');
 		break;
 	case 'p':
 		result = __priority_str[ctx->level];
@@ -166,26 +166,27 @@ static bool end_spec (pfs::string::const_iterator, pfs::string::const_iterator, 
 		PFS_ASSERT(ctx->msg);
 		result = *ctx->msg;
 		break;
+
 	case 'd': {
 		/* FIXME replace code with reentrant time functions or use mutex */
 		time_t t;
-		struct tm *tm;
-		char buf[128];
-		t = time(nullptr);
-		tm = localtime(&t);
+		struct tm * tm;
+		t = ::time(0);
+		tm = ::localtime(& t);
 
-		if (ctx->pspec.fspec == pfs::string("ABSOLUTE")) {
-			strftime(buf, sizeof(buf), "%H:%M:%S", tm);
-		} else if (ctx->pspec.fspec == pfs::string("DATE")) {
-			strftime(buf, sizeof(buf), "%d %b %Y %H:%M:%S", tm);
-		} else if(ctx->pspec.fspec == pfs::string("ISO8601")) {
-			strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", tm);
+		if (ctx->pspec.fspec == string("ABSOLUTE")) {
+			result = platform::strftime(string("%H:%M:%S"), *tm);
+		} else if (ctx->pspec.fspec == string("DATE")) {
+			result = platform::strftime(string("%d %b %Y %H:%M:%S"), *tm);
+		} else if(ctx->pspec.fspec == string("ISO8601")) {
+			result = platform::strftime(string("%Y-%m-%d %H:%M:%S"), *tm);
 		} else {
-			strftime(buf, sizeof(buf), ctx->pspec.fspec.c_str(), tm);
+			result = platform::strftime(ctx->pspec.fspec, *tm);
 		}
-		result = pfs::string().fromUtf8(buf);
-	}
+
 		break;
+	}
+
 	default:
 		break;
 	}
@@ -197,7 +198,7 @@ static bool end_spec (pfs::string::const_iterator, pfs::string::const_iterator, 
 
 	/* pad */
 	if (ctx->pspec.min_width > 0 && result.length() < ctx->pspec.min_width) {
-		pfs::string padding(ctx->pspec.min_width - result.length(), pfs::ucchar(' '));
+		string padding(ctx->pspec.min_width - result.length(), string::value_type(' '));
 		if (ctx->pspec.left_justify) {
 			result.append(padding);
 		} else {
@@ -210,7 +211,7 @@ static bool end_spec (pfs::string::const_iterator, pfs::string::const_iterator, 
 	return true;
 }
 
-static bool set_spec_char (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
+static bool set_spec_char (string::const_iterator begin, string::const_iterator end, void * context, void *)
 {
 	PFS_ASSERT(begin < end);
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
@@ -218,49 +219,50 @@ static bool set_spec_char (pfs::string::const_iterator begin, pfs::string::const
 	return true;
 }
 
-static bool set_format_spec (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
+static bool set_format_spec (string::const_iterator begin, string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
-	ctx->pspec.fspec = pfs::string(begin, end);
+	ctx->pspec.fspec = string(begin, end);
 	return true;
 }
 
 
-static bool append_plain_char (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
+static bool append_plain_char (string::const_iterator begin, string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
-	ctx->result.append(pfs::string(begin, end));
+	ctx->result.append(string(begin, end));
 	return true;
 }
 
-static bool set_left_justify (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
+static bool set_left_justify (string::const_iterator begin, string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
-	if (begin + 1 == end) {
+	std::advance(begin, 1);
+	if (begin == end) {
 		ctx->pspec.left_justify = true;
 	}
 	return true;
 }
 
-static bool set_min_width (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
+static bool set_min_width (string::const_iterator begin, string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	if (begin < end) {
 		bool ok;
-		pfs::string n(begin, end);
-		ctx->pspec.min_width = n.toUnsignedInt(&ok);
+		string n(begin, end);
+		ctx->pspec.min_width = lexical_cast<size_t>(n, & ok);
 		PFS_VERIFY_X(ok, _Tr("Bad padding value in Logger pattern"));
 	}
 	return true;
 }
 
-static bool set_max_width (pfs::string::const_iterator begin, pfs::string::const_iterator end, void * context, void *)
+static bool set_max_width (string::const_iterator begin, string::const_iterator end, void * context, void *)
 {
 	pattern_context * ctx = reinterpret_cast<pattern_context *>(context);
 	if (begin < end) {
 		bool ok;
-		pfs::string n(begin, end);
-		ctx->pspec.max_width = n.toUnsignedInt(&ok);
+		string n(begin, end);
+		ctx->pspec.max_width = lexical_cast<size_t>(n, & ok);
 		PFS_VERIFY_X(ok, _Tr("Bad truncation value in Logger pattern"));
 	}
 	return true;

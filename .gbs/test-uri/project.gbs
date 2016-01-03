@@ -1,24 +1,24 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-pfs-sys-zlib --type=test --depends=pfs-sys'
---* Date:    Wed Aug 19 15:44:20 2015
+--* Command: `gbs project --create --name=test-uri --type=test --depends=pfs-sys'
+--* Date:    Wed Aug 19 15:43:55 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-pfs-sys-zlib"
+targetname    "test-uri"
 defines       {  }
 includedirs   {   "../../include"
                 , "../../../pfs-test/include"
                 , "../../../pfs/include"
               }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-pfs-sys-zlib/*.c", "../../tests/test-pfs-sys-zlib/*.cpp" }
+files         { "../../tests/test-uri/*.c", "../../tests/test-uri/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-zlib/debug"
+    objdir       "../../../.build/pfs-sys/test-uri/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
@@ -26,7 +26,7 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-zlib/release"
+    objdir       "../../../.build/pfs-sys/test-uri/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs", "pfs-sys" }
 

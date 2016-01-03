@@ -81,69 +81,6 @@ string fs::tempFile (const string & prefix, const string & suffix, const string 
 
     return r;
 }
-
-#if __FIXME__
-
-/**
- * @brief Searches file in directories listed by @c dirs
- *        and returns normalized absolute path for file @c filename.
- *
- * @param filename File name to search. May be absolute or relative.
- * @param dirs List of directories for search.
- * @return Absolute file path.
- *         If @c filename is empty or if error occurred returns empty string.
- *         Error can be raised if currentDirectory() failed.
- */
-string fs::findFile (const string & filename, const stringlist & dirs)
-{
-	pfs::fs fs;
-
-	if (filename.isEmpty())
-		return string();
-
-	if (fs.exists(filename)) {
-		/*
-		 * If filename is not an absolute path
-		 * and does not start with current directory prefix (i.e. "./" on unix)
-		 * then append prefix and return result
-		 */
-		if (!fs.isAbsolute(filename)) {
-
-			string cwd = fs.currentDirectory();
-			if (cwd.isEmpty())
-				return string();
-
-			string result(".");
-			result.append(1, fs.separator());
-
-			if (!filename.startsWith(result)) {
-				result.append(filename);
-				return result;
-			}
-		}
-		return string(filename);
-	}
-
-	if (!fs.isAbsolute(filename)) {
-		stringlist::const_iterator it = _searchPath.cbegin();
-		stringlist::const_iterator itEnd = _searchPath.cend();
-
-		while (it != itEnd) {
-			string r(*it);
-			r += fs.separator();
-			r += filename;
-
-			if (fs.exists(r))
-				return r;
-			++it;
-		}
-	}
-
-	return string();
-}
-
-#endif
-
 /**
  * @brief Normalize path, i.e. remove "." and "..".
  *

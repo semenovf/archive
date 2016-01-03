@@ -9,13 +9,12 @@
 #ifndef __PFS_LOGGER_HPP__
 #define __PFS_LOGGER_HPP__
 
+#include <iostream>
 #include <pfs/string.hpp>
 #include <pfs/stringlist.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/sigslot.hpp>
 #include <pfs/notification.hpp>
-#include <iostream>
-
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -38,7 +37,10 @@ private:
 
 public:
 	log (appender & a) { connect(a); }
-	void print (log::priority level, const pfs::string & msg) { _emitter(level, msg); }
+	void print (log::priority level, const pfs::string & msg)
+	{
+		_emitter(level, msg);
+	}
 	void connect (appender &);
 	void disconnect (appender &);
 	void disconnectAll ();
@@ -77,16 +79,24 @@ class stdout_appender : public appender
 {
 public:
 	stdout_appender () : appender() {}
+
 protected:
-	virtual void print (const pfs::string & msg) override { std::cout << msg << std::endl; }
+	virtual void print (const pfs::string & msg) override
+	{
+		std::cout << msg << std::endl;
+	}
 };
 
 class stderr_appender : public appender
 {
 public:
 	stderr_appender () : appender() {}
+
 protected:
-	virtual void print (const pfs::string & msg) override { std::cerr << msg << std::endl; }
+	virtual void print (const pfs::string & msg) override
+	{
+		std::cerr << msg << std::endl;
+	}
 };
 
 class stringlist_appender : public appender
@@ -98,7 +108,10 @@ public:
 	pfs::stringlist & data () { return _strings; }
 
 protected:
-	virtual void print (const pfs::string & msg) override { _strings.append(msg); }
+	virtual void print (const pfs::string & msg) override
+	{
+		_strings.push_back(msg);
+	}
 };
 
 inline void log::connect (appender & a)

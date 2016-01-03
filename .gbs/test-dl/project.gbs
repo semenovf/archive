@@ -1,24 +1,24 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-pfs-sys-uri --type=test --depends=pfs-sys'
---* Date:    Wed Aug 19 15:43:55 2015
+--* Command: `gbs project --create --name=test-dl --type=test --depends=pfs-sys'
+--* Date:    Wed Aug 19 11:57:13 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-pfs-sys-uri"
-defines       {  }
+targetname    "test-dl"
+defines       { }
 includedirs   {   "../../include"
                 , "../../../pfs-test/include"
-                , "../../../pfs/include"
-              }
+                , "../../../pfs/include" }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-pfs-sys-uri/*.c", "../../tests/test-pfs-sys-uri/*.cpp" }
+files         {   "../../tests/test-dl/*.c"
+                , "../../tests/test-dl/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-uri/debug"
+    objdir       "../../../.build/pfs-sys/test-dl/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
@@ -26,7 +26,7 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-uri/release"
+    objdir       "../../../.build/pfs-sys/test-dl/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs", "pfs-sys" }
 

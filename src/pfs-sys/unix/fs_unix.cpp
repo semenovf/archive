@@ -6,6 +6,7 @@
  *
  */
 
+#if __OBSOLETE__ // XXX OBSOLETE
 #include "pfs/fs.hpp"
 #include "pfs/regexp.hpp"
 #include <sys/stat.h>
@@ -260,3 +261,4 @@ stringlist fs::entryListByWildcard (const string & dir
 }
 
 } // pfs
+#endif

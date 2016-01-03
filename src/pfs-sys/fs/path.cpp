@@ -27,4 +27,47 @@ namespace pfs { namespace fs {
 //    return r;
 //}
 
+path search_file (const path & file
+		, const pathlist searchdirs
+		, error_code * ex)
+{
+	if (file.empty())
+		return path();
+
+	if (fs::exists(file)) {
+		if (file.is_absolute())
+			return file;
+
+		/*
+		 * If p is not an absolute path
+		 * then prepend current directory and return result
+		 */
+		error_code ex1;
+		path curr_dir = fs::current_directory(& ex1);
+
+		if (ex1) {
+			if (ex)
+				*ex = ex1;
+			return path();
+		}
+
+		return join(curr_dir, file);
+	}
+
+	// p is relative, search it in
+	//
+	fs::pathlist::const_iterator it = searchdirs.begin();
+	fs::pathlist::const_iterator it_end = searchdirs.end();
+
+	while (it != it_end) {
+		path p = join(*it, p);
+
+		if (exists(p))
+			return p;
+		++it;
+	}
+
+	return path();
+}
+
 }} // pfs::fs

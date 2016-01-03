@@ -1,25 +1,24 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-pfs-fs-path --type=test --depends=pfs-sys'
---* Date:    Sat Nov  7 22:08:20 2015
+--* Command: `gbs project --create --name=test-zlib --type=test --depends=pfs-sys'
+--* Date:    Wed Aug 19 15:44:20 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-pfs-fs-path"
+targetname    "test-zlib"
 defines       {  }
-includedirs   {
-                "../../include"
-		, "../../../pfs-test/include"
+includedirs   {   "../../include"
+                , "../../../pfs-test/include"
                 , "../../../pfs/include"
               }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-pfs-fs-path/*.c", "../../tests/test-pfs-fs-path/*.cpp" }
+files         { "../../tests/test-zlib/*.c", "../../tests/test-zlib/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-fs-path/debug"
+    objdir       "../../../.build/pfs-sys/test-zlib/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
@@ -27,14 +26,11 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-fs-path/release"
+    objdir       "../../../.build/pfs-sys/test-zlib/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs", "pfs-sys" }
 
 dependson { "pfs-sys" }
 
 filter "action:gmake"
-    buildoptions {}
-    linkoptions  {}
-
-include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

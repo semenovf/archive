@@ -18,48 +18,48 @@ project "pfs-sys"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-dl"
-    include("test-pfs-sys-dl/project.gbs")
+project "test-dl"
+    include("test-dl/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-fs"
-    include("test-pfs-sys-fs/project.gbs")
+--project "test-pfs-sys-fs"
+--    include("test-pfs-sys-fs/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-random"
-    include("test-pfs-sys-random/project.gbs")
+--project "test-pfs-sys-random"
+--    include("test-pfs-sys-random/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-regexp"
-    include("test-pfs-sys-regexp/project.gbs")
+--project "test-pfs-sys-regexp"
+--    include("test-pfs-sys-regexp/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-thread"
-    include("test-pfs-sys-thread/project.gbs")
+--project "test-pfs-sys-thread"
+--    include("test-pfs-sys-thread/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-uri"
-    include("test-pfs-sys-uri/project.gbs")
+--project "test-uri"
+--    include("test-uri/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-atomic"
-    include("test-pfs-sys-atomic/project.gbs")
+project "test-atomic"
+    include("test-atomic/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-utils"
-    include("test-pfs-sys-utils/project.gbs")
+--project "test-pfs-sys-utils"
+--    include("test-pfs-sys-utils/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-sys-zlib"
-    include("test-pfs-sys-zlib/project.gbs")
+project "test-zlib"
+    include("test-zlib/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
@@ -73,6 +73,6 @@ project "getcwd"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-pfs-fs-path"
-    include("test-pfs-fs-path/project.gbs")
+project "test-fs-path"
+    include("test-fs-path/project.gbs")
 -- END PROJECT

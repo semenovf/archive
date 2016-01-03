@@ -10,58 +10,6 @@ namespace pfs {
 //}
 
 /**
- * @note  internal
- *
- * @brief Searches file in directories added by addSearchPath()
- *        and returns absolute path.
- *
- * @param filename File name to search. May be absolute or relative.
- * @return Absolute file path or empty path if @a filename is empty
- *         or file not found in list of directories specified for search.
- */
-fs::path dl::search_file (const fs::path & libpath, const fs::pathlist searchpaths, error_code * ex)
-{
-	if (libpath.empty())
-		return fs::path();
-
-	if (fs::exists(libpath)) {
-		if (libpath.is_absolute())
-			return libpath;
-
-		/*
-		 * If libpath is not an absolute path
-		 * then prepend current directory and return result
-		 */
-		error_code ex1;
-		fs::path curr_dir = fs::current_directory(& ex1);
-
-		if (ex1) {
-			if (ex)
-				*ex = ex1;
-			return fs::path();
-		}
-
-		return fs::join(curr_dir, libpath);
-	}
-
-	// libpath is relative, search it in
-	//
-	fs::pathlist::const_iterator it = searchpaths.begin();
-	fs::pathlist::const_iterator it_end = searchpaths.end();
-
-	while (it != it_end) {
-		fs::path p = fs::join(*it, libpath);
-
-		if (fs::exists(p))
-			return p;
-		++it;
-	}
-
-	return fs::path();
-}
-
-
-/**
  * @fn string dl::buildDlFileName (const string & basename)
  *
  * @brief Builds dynamic library file name according to platform.
@@ -201,7 +149,7 @@ fs::path dl::search_file (const fs::path & libpath, const fs::pathlist searchpat
 
 extern "C" int DLL_API dl_only_for_testing_purpose (void)
 {
-	int i = 0;
+	int i = 1233;
 	++i;
 	return i;
 }

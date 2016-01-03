@@ -103,10 +103,11 @@ bool regexp::impl::compile ()
 			| PCRE_UCP;           // Use Unicode properties for \d, \w, etc.
 
 	const char * errstr;
-	_re = pcre_compile (_pattern.c_str(), compile_options, & errstr, & _erroffset, nullptr/*tables*/);
+	_re = pcre_compile (reinterpret_cast<const char *>(_pattern.c_str())
+			, compile_options, & errstr, & _erroffset, 0/*tables*/);
 
 	if (!_re) {
-		_errstr = string::fromUtf8(errstr);
+		_errstr = string(errstr);
 		return false;
 	}
 
@@ -114,7 +115,7 @@ bool regexp::impl::compile ()
 
 	if (!_extra) {
 		if (errstr) {
-			_errstr = string::fromUtf8(errstr);
+			_errstr = string(errstr);
 			return false;
 		}
 	}
@@ -147,7 +148,8 @@ bool regexp::impl::exec ()
 		case PCRE_ERROR_NOMATCH:
 			break;
 		default:
-			_errstr << _Tr("pcre_error: failed with error code ") << string::toString(rc);
+			_errstr.append(_u8("pcre_error: failed with error code: "));
+			_errstr.append(to_string(rc));
 			break;
 		}
 		return false;
@@ -258,7 +260,7 @@ regexp::regexp (const string & pattern)
 regexp::regexp (const char * latin1Pattern)
 	: _d(new regexp::impl)
 {
-	setPattern(string::fromLatin1(latin1Pattern));
+	setPattern(string(latin1Pattern));
 }
 
 bool regexp::isError () const
@@ -296,7 +298,7 @@ int regexp::errorOffset () const
 
 bool regexp::match (const string & s)
 {
-	return match(s.c_str());
+	return match(reinterpret_cast<const char *>(s.c_str()));
 }
 
 bool regexp::match (const char * s)
@@ -345,10 +347,13 @@ string regexp::captured (size_t index) const
 {
 	const impl & d = *_d.cast<impl>();
 
-	return (d._capturedCount && index < d._capturedCount)
-		? string::fromUtf8(d._subjectPtr + d._ovector[2 * index]
-	        , d._ovector[2 * index + 1] - d._ovector[2 * index])
-		: string();
+	if (d._capturedCount && index < d._capturedCount) {
+		const char * begin = d._subjectPtr + d._ovector[2 * index];
+	    size_t count = d._ovector[2 * index + 1] - d._ovector[2 * index];
+	    return string(std::string(begin, count));
+	}
+
+	return string();
 }
 
 stringlist regexp::groups() const
@@ -358,8 +363,10 @@ stringlist regexp::groups() const
 
 	if (d._capturedCount > 1) {
 		for (size_t i = 1, j = 2; i < d._capturedCount; ++i, j += 2) {
-			r.append(string::fromUtf8(d._subjectPtr + d._ovector[j]
-			    , d._ovector[j + 1] - d._ovector[j]));
+			const char * begin = d._subjectPtr + d._ovector[j];
+		    size_t count = d._ovector[j + 1] - d._ovector[j];
+
+			r.push_back(string(std::string(begin, count)));
 		}
 	}
 	return r;

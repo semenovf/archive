@@ -15,8 +15,19 @@ namespace pfs {
 enum error_code_enum
 {
 	  CustomErrorBase = 10000
-	, DlErrorBase = CustomErrorBase
-	, DlSymbolNotFoundError = DlErrorBase
+
+	, InvalidArgument
+
+	, DlErrorBase
+	, DlOpenError = DlErrorBase
+	, DlSymbolNotFoundError
+
+	, ZlibErrorBase
+	, ZlibStreamError = ZlibErrorBase   ///< Invalid parameter or inconsistent stream state (Z_STREAM_ERROR)
+	, ZlibDataError                     ///< Data corrupted or inconsistent (Z_DATA_ERROR)
+	, ZlibMemError                      ///< Not enough memory (Z_MEM_ERROR)
+	, ZlibBufError                      ///< Buffer error (Z_BUF_ERROR), may be not enough memory, or I/O error
+	, ZlibVersionError                  ///< Incompatible zlib version (Z_VERSION_ERROR)
 };
 
 

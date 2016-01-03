@@ -16,7 +16,7 @@
 
 namespace pfs { namespace platform {
 
-DLL_API pfs::time currentTime ()
+DLL_API pfs::time current_time ()
 {
     struct timeval tv;
     gettimeofday(& tv, nullptr);

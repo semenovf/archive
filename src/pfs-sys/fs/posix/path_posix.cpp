@@ -65,7 +65,7 @@ bool path::is_absolute () const
 	if( _path.empty() )
 		return false;
 
-	return starts_with(_path.begin(), _path.end(), _separator.begin(), _separator.end());
+	return _path.starts_with(_separator);
 }
 
 
@@ -160,9 +160,9 @@ path temp_directory_path (error_code * ex)
 	string s;
 
 	if (r)
-		s.append(r);
+		s.append(_u8(r));
 	else
-		s.append("/tmp");
+		s.append(_u8("/tmp"));
 
 	return path(s);
 }

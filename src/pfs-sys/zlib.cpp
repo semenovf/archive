@@ -9,48 +9,66 @@
 
 namespace pfs {
 
-static const struct zlib_rc_map
+static error_code convert_zlib_errno (int rc)
 {
-	map<int, string> m;
-	zlib_rc_map () {
-		m.insert(Z_OK           , _u8(_Tr("no errors")));
-		m.insert(Z_STREAM_END   , _u8(_Tr("end of stream")));   // is not an error
-		m.insert(Z_NEED_DICT    , _u8(_Tr("need preset dictionary"))); // is not an error
-		m.insert(Z_ERRNO        , _u8(_Tr("file operation error (Z_ERRNO), see errno variable")));
-		m.insert(Z_STREAM_ERROR , _u8(_Tr("invalid parameter or inconsistent stream state (Z_STREAM_ERROR)")));
-		m.insert(Z_DATA_ERROR   , _u8(_Tr("data corrupted or inconsistent (Z_DATA_ERROR)")));
-		m.insert(Z_MEM_ERROR    , _u8(_Tr("not enough memory (Z_MEM_ERROR)")));
-		m.insert(Z_BUF_ERROR    , _u8(_Tr("buffer error (Z_BUF_ERROR), may be not enough memory, or I/O error")));
-		m.insert(Z_VERSION_ERROR, _u8(_Tr("incompatible zlib version (Z_VERSION_ERROR)")));
+	switch (rc) {
+	// file operation error, see errno variable;
+	//
+	case Z_ERRNO:
+		return error_code(errno);
+
+	// invalid parameter or inconsistent stream state
+	//
+	case Z_STREAM_ERROR:
+		return error_code(ZlibStreamError);
+
+	// data corrupted or inconsistent
+	//
+	case Z_DATA_ERROR:
+		return error_code(ZlibDataError);
+
+	// not enough memory
+	//
+	case Z_MEM_ERROR:
+		return error_code(ZlibMemError);
+
+	// buffer error, may be not enough memory, or I/O error
+	//
+	case Z_BUF_ERROR:
+		return error_code(ZlibBufError);
+
+	// incompatible zlib version
+	//
+	case Z_VERSION_ERROR:
+		return error_code(ZlibVersionError);
+
+	// no errors
+	//
+	case Z_OK:
+
+	// end of stream, is not an error
+	//
+	case Z_STREAM_END:
+
+	// need preset dictionary, is not an error
+	//
+	case Z_NEED_DICT:
+	default:
+		break;
 	}
 
-	string operator () (int rc) const
-	{
-		string s = string::toString(rc);
-		s << _Tr(": unknown return code");
-		return m.valueAt(rc, s);
-	}
-} __zlib_rc_map;
-
+	return error_code(0);
+}
 
 zlib::zlib ()
-	: errorable_ext()
-	, _level(DefaultCompression)
+	: _level(DefaultCompression)
 {}
 
 zlib::zlib (zlib::compression_level l)
-	: errorable_ext()
-	, _level(l)
+	: _level(l)
 {}
 
-/**
- * @brief Compresses the source buffer into the destination buffer.
- *
- * @param dest Destination buffer.
- * @param src  Source buffer.
- * @return @c true on successful decompression, @c false if an error occurred.
- */
-byte_string zlib::compress (const pfs::byte_string & src)
+byte_string zlib::compress (const pfs::byte_string & src, error_code * ex)
 {
 	// Destination buffer size must be at least 0.1% larger than source buffer
 	// size plus 12 bytes.
@@ -70,53 +88,41 @@ byte_string zlib::compress (const pfs::byte_string & src)
 		return r;
 	}
 
-	this->addError(__zlib_rc_map(rc));
+	if (ex)
+		*ex = convert_zlib_errno(rc);
+
 	delete [] dest;
 
 	return byte_string(); // null
 }
 
 
-/**
- * @brief Decompresses the source buffer into the destination buffer.
- *
- * @param dest       Destination buffer.
- * @param initialLen Must be large enough to hold the
- *                   entire uncompressed data. (The size of the uncompressed data must have
- *                   been saved previously by the compressor and transmitted to the decompressor
- *                   by some mechanism outside the scope of this compression library.)
- *
- * @param src Source buffer
- * @return @c true on successful decompression, @c false if an error occurred.
- */
-byte_string zlib::decompress (size_t initialLen, const pfs::byte_string & src)
+byte_string zlib::decompress (size_t initial_len
+		, const pfs::byte_string & src
+		, error_code * ex)
 {
-	byte_t * dest = new byte_t[initialLen];
-	uLong destLen = initialLen;
+	byte_t * dest = new byte_t[initial_len];
+	uLong dest_len = initial_len;
 
-	int rc = uncompress (dest
-			, & destLen
-			, reinterpret_cast<const byte_t *>(src.constData())
+	int rc = uncompress(dest
+			, & dest_len
+			, reinterpret_cast<const byte_t *>(src.data())
 			, src.size());
 
 	if (rc == Z_OK) {
-		PFS_ASSERT(destLen <= PFS_SIZE_MAX);
+		PFS_ASSERT(dest_len <= max_type<uLong>());
 		// FIXME need optimization
-		byte_string r(dest, destLen);
+		byte_string r(dest, dest_len);
 		delete [] dest;
 		return r;
 	}
 
+	if (ex)
+		*ex = convert_zlib_errno(rc);
+
 	delete [] dest;
-	this->addError(__zlib_rc_map(rc));
 
 	return byte_string(); // null
-}
-
-
-pfs::string zlib::strerror (int rc)
-{
-	return __zlib_rc_map(rc);
 }
 
 } // pfs

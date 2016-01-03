@@ -373,7 +373,29 @@ inline bool starts_with (const path & haystack, const path & needle)
 
 path join (const path & p1, const path & p2);
 
+/**
+ * @brief Searches file in current directory and directories specified
+ *        by @a searchdirs and returns appropriate existence path.
+ *
+ * @param file File name to search. May be absolute or relative.
+ * @param searchdirs List of directories where to to search file.
+ *
+ * @return Path to file if found or empty path if @a filename is empty
+ *         or file not found in list of directories specified by @a searchdirs.
+ */
+path search_file (const path & file, const pathlist searchdirs, error_code * ex);
+
 }} // pfs::fs
+
+
+namespace pfs {
+
+inline string to_string (const fs::path & p)
+{
+	return p.native();
+}
+
+} // pfs
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)

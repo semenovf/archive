@@ -6,6 +6,7 @@
  */
 
 #include <pfs/fsm.hpp>
+#include <pfs/stringlist.hpp>
 #include "pfs/uri.hpp"
 #include "uri_rfc3986.hpp"
 
@@ -25,19 +26,24 @@ void uri_data::clear()
 }
 
 
-pfs::map<pfs::string, pfs::string> uri::queryItems(const pfs::string & valueDelimiter, const pfs::string & pairDelimiter)
+map<string, string> uri::query_items (
+		  const string & value_delim
+		, const string & pair_delim)
 {
-	pfs::map<pfs::string, pfs::string> r;
+	map<string, string> r;
 
-	pfs::vector<pfs::string> pairs = this->query().split(pairDelimiter);
+	stringlist pairs;
+	split(this->query(), pair_delim, true, pairs);
 
-	pfs::vector<pfs::string>::const_iterator it = pairs.cbegin();
-	pfs::vector<pfs::string>::const_iterator itEnd = pairs.cend();
+	stringlist::const_iterator it = pairs.cbegin();
+	stringlist::const_iterator itEnd = pairs.cend();
 
 	while (it != itEnd) {
-		pfs::vector<pfs::string> pair = it->split(valueDelimiter);
-		if (pair.size() > 0) {
-			r.insert(pair[0], pair.size() > 1 ? pair[1] : pfs::string());
+		stringlist pair;
+		split(*it, value_delim, true, pair);
+
+		if (!pair.empty()) {
+			r.insert(map<string, string>::value_type(pair[0], pair.size() > 1 ? pair[1] : string()));
 		}
 		++it;
 	}
@@ -52,16 +58,18 @@ pfs::map<pfs::string, pfs::string> uri::queryItems(const pfs::string & valueDeli
  *
  * @param uri pfs::string representation of URI.
  */
-bool uri::parse(const pfs::string & uri)
+bool uri::parse (const pfs::string & uri)
 {
 	UriParseContext ctx = { & _uri };
-	pfs::fsm::fsm<pfs::string> fsm(uri_fsm, & ctx);
+	fsm::fsm<pfs::string> fsm(uri_fsm, & ctx);
 
 	_uri.clear();
 
-	if (fsm.exec(0, uri.begin(), uri.end()) >= 0) {
+	fsm::fsm<pfs::string>::result_type r = fsm.exec(0, uri.begin(), uri.end());
+
+	if (r.first)
 		return true;
-	}
+
 	return false;
 }
 
@@ -70,53 +78,54 @@ bool uri::parse(const pfs::string & uri)
  * @param uri
  * @return
  */
-pfs::string uri::toString() const
+string to_string (const uri & u)
 {
-	pfs::string uri;
+	string r;
 
 	// userinfo without host is an error
-	if (!_uri.userinfo.isEmpty() && _uri.host.isEmpty()) {
-		return pfs::string(); // null string
+	//
+	if (!u._uri.userinfo.empty() && u._uri.host.empty()) {
+		return string(); // null string
 	}
 
-	if (!_uri.scheme.isEmpty()) {
-		uri += _uri.scheme;
-		uri += pfs::string(":");
+	if (!u._uri.scheme.empty()) {
+		r.append(u._uri.scheme);
+		r.append(_u8(":"));
 	}
 
-	if (!_uri.userinfo.isEmpty() || !_uri.host.isEmpty()) {
-		uri += pfs::string("//");
+	if (!u._uri.userinfo.empty() || !u._uri.host.empty()) {
+		r.append(_u8("//"));
 
-		if (!_uri.userinfo.isEmpty()) {
-			uri += _uri.userinfo;
-			uri += pfs::string("@");
+		if (!u._uri.userinfo.empty()) {
+			r.append(u._uri.userinfo);
+			r.append(_u8("@"));
 		}
 
-		if (!_uri.host.isEmpty()) {
-			uri += _uri.host;
+		if (!u._uri.host.empty()) {
+			r.append(u._uri.host);
 		}
 
-		if (_uri.port > 0) {
-			uri += string(":");
-			uri += string::toString(_uri.port);
+		if (u._uri.port > 0) {
+			r.append(_u8(":"));
+			r.append(to_string(u._uri.port));
 		}
 
-		if (!_uri.path.isEmpty()) {
-			uri += _uri.path;
+		if (!u._uri.path.empty()) {
+			r.append(u._uri.path);
 		}
 
-		if (!_uri.query.isEmpty()) {
-			uri += pfs::string("?");
-			uri += _uri.query;
+		if (!u._uri.query.empty()) {
+			r.append(_u8("?"));
+			r.append(u._uri.query);
 		}
 
-		if (!_uri.fragment.isEmpty()) {
-			uri += pfs::string("#");
-			uri += _uri.fragment;
+		if (!u._uri.fragment.empty()) {
+			r.append(_u8("#"));
+			r.append(u._uri.fragment);
 		}
 	}
 
-	return uri;
+	return r;
 }
 
 } // pfs

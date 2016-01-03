@@ -45,7 +45,7 @@ private:
 
 inline random_impl::random_impl ()
 {
-    pfs::time ct = platform::currentTime();
+    pfs::time ct = platform::current_time();
 	init_random_r_version(uint32_t(ct.millis()));
 }
 

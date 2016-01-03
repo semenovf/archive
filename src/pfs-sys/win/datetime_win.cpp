@@ -10,7 +10,7 @@
 
 namespace pfs { namespace platform {
 
-DLL_API pfs::datetime currentDateTime ()
+DLL_API pfs::datetime current_datetime ()
 {
 	SYSTEMTIME t;
     memset(& t, 0, sizeof(SYSTEMTIME));

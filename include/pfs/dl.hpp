@@ -41,18 +41,9 @@ public:
 	typedef void * symbol;
 #endif
 
-//	typedef pfs::map<string, handle>::type plugin_map_type;
-//	typedef pfs::vector<fs::path>::type path_list_type;
-
 private:
-//	path_list_type  _search_paths;
-//	plugin_map_type _plugins;
-
-	handle _handle;
-	string _path;   // contains path to dynamic library
-
-private:
-	static fs::path build_filename (const string & name);
+	handle   _handle;
+	fs::path _path;   // contains path to dynamic library
 
 public:
 	dl () : _handle(0)
@@ -68,9 +59,21 @@ public:
 		return _handle;
 	}
 
-	bool open (const fs::path & p);
+	/**
+	 * @brief Open (load) dynamic library (shared object).
+	 *
+	 * @param p path to dynamic library file (relative or absolute).
+	 *
+	 * @return @c true if dynamic library opened (loaded) successfully,
+	 *         @c false if an error occurred.
+	 */
+	bool open (const fs::path & p, const fs::pathlist searchdirs
+			, error_code * ex = 0
+			, string * extended_errstr = 0);
 
-	symbol resolve (const char * symbol_name, error_code * ex = 0);
+	symbol resolve (const char * symbol_name
+			, error_code * ex = 0
+			, string * extended_errstr = 0);
 
 	void close ();
 
@@ -79,19 +82,8 @@ public:
 //	pfs::pluggable * open_plugin (const string & name);
 //
 //	bool close_plugin (const string & name, pfs::pluggable * pluggable);
-//
-//	void clear_search_path ()
-//	{
-//		_search_paths.clear();
-//	}
 
-//	void add_search_path (const fs::path & dir)
-//	{
-//		_search_paths.push_back(dir);
-//	}
-
-private:
-	static fs::path search_file (const fs::path & libpath, const fs::pathlist searchpaths, error_code * ex = 0);
+	static fs::path build_filename (const string & name);
 };
 
 } // pfs

@@ -305,7 +305,7 @@ void test_uri_parse()
 	TEST_FAIL(uri.path() == pfs::string::fromUtf8(path));
 	TEST_FAIL(uri.query() == pfs::string::fromUtf8(query));
 	TEST_FAIL(uri.fragment() == pfs::string::fromUtf8(fragment));
-	TEST_OK(uri.hostIsIp() == true);
+	TEST_OK(uri.host_is_ip() == true);
 	TEST_OK(uri.port() == port);
 
 	uri_result = uri.toString();

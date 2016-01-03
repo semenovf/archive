@@ -14,7 +14,7 @@
 
 namespace pfs { namespace platform {
 
-DLL_API pfs::date currentDate ()
+DLL_API pfs::date current_date ()
 {
     time_t t;
     ::time(& t);
