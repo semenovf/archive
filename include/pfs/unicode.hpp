@@ -71,30 +71,45 @@ struct char_t
 //		return *this;
 //	}
 
-	bool operator == (const char_t & other)
+	friend bool operator == (const char_t & lhs, const char_t & rhs)
 	{
-		return value == other.value;
+		return lhs.value == rhs.value;
 	}
 
-	bool operator != (const char_t & other)
+	friend bool operator != (const char_t & lhs, const char_t & rhs)
 	{
-		return value != other.value;
+		return lhs.value != rhs.value;
 	}
 
-	bool operator == (char v)
+	friend bool operator < (const char_t & lhs, const char_t & rhs)
 	{
-		return value == char_t(v).value;
+		return lhs.value < rhs.value;
 	}
 
-	bool operator != (char v)
+	friend bool operator <= (const char_t & lhs, const char_t & rhs)
 	{
-		return value != char_t(v).value;
+		return lhs.value <= rhs.value;
 	}
 
-//	operator uint32_t ()
-//	{
-//		return value;
-//	}
+	friend bool operator > (const char_t & lhs, const char_t & rhs)
+	{
+		return lhs.value > rhs.value;
+	}
+
+	friend bool operator >= (const char_t & lhs, const char_t & rhs)
+	{
+		return lhs.value >= rhs.value;
+	}
+
+	friend bool operator == (const char_t & lhs, char v)
+	{
+		return lhs.value == char_t(v).value;
+	}
+
+	friend bool operator != (const char_t & lhs, char v)
+	{
+		return lhs.value != char_t(v).value;
+	}
 };
 
 typedef char_t char_type;

@@ -58,24 +58,18 @@ void test_split ()
 		string sample;
 
 		pfs::join(result.begin(), result.end(), sep, sample);
-		string desc;
+		std::ostringstream desc;
 
-		desc.append("keepEmpty=");
-		desc.append(pfs::to_string(test->keepEmpty).stdstring());
-		desc.append(" \"");
-		desc.append(src);
-		desc.append("\" => ");
+		desc << "keepEmpty="
+			 << test->keepEmpty
+			 << " \"" << src << "\" => ";
 
 		for (sequence_type::const_iterator it = result.begin(); it != result.end(); ++it) {
-			desc.push_back('[');
-			desc.append(*it);
-			desc.push_back(']');
-			desc.push_back(' ');
+			desc << '[' << *it << ']' << ' ';
 		}
 //		cout << pfs::join(result.begin(), result.end(), sep, text) << endl;
 		TEST_OK2(result.size() == test->nelems
-				&& sample == string(test->sample)
-				, desc.c_str());
+				&& sample == string(test->sample), desc.str().c_str());
 
 		++test;
 	}

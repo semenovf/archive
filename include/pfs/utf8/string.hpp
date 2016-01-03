@@ -19,7 +19,7 @@ namespace pfs { namespace utf8 {
 
 struct tag {};
 
-typedef pfs::utf::string<uint8_t, tag> string;
+typedef pfs::utf::string<char/*uint8_t*/, tag> string;
 
 template <typename CodeUnitIterator>
 struct iterator
@@ -125,14 +125,8 @@ inline void string_type::utf_traits_type::advance_backward (CodeUnitIterator & p
 
 template <>
 inline string_type::string (const std::string & s)
-	: _d(reinterpret_cast<const std::basic_string<uint8_t> &>(s))
+	: _d(s)/*reinterpret_cast<const std::basic_string<uint8_t> &>(s))*/
 {}
-
-template <>
-inline std::string string_type::stdstring () const
-{
-	return std::string(reinterpret_cast<const std::basic_string<char> &>(_d));
-}
 
 template <>
 inline bool string_type::starts_with (const string & needle) const
@@ -150,29 +144,30 @@ inline bool string_type::ends_with (const string & needle) const
 			: _d.compare(_d.size() - needle._d.size(), needle._d.size(), needle._d) == 0;
 }
 
-}} // pfs::utf
+inline std::ostream & operator << (std::ostream & os, const string_type & s)
+{
+    os << reinterpret_cast<const char *>(s.c_str());
+    return os;
+}
+
+inline std::ostringstream & operator << (std::ostringstream & oss, const string_type & s)
+{
+    oss << reinterpret_cast<const char *>(s.c_str());
+    return oss;
+}
 
 
-inline bool operator == (pfs::utf8::string & lhs, const std::string & rhs)
+inline bool operator == (const string_type & lhs, const std::string & rhs)
 {
     return rhs == reinterpret_cast<const std::string::const_pointer>(lhs.c_str());
 }
 
-inline bool operator == (const std::string & lhs, pfs::utf8::string & rhs)
+inline bool operator == (const std::string & lhs, const string_type & rhs)
 {
 	return operator == (rhs, lhs);
 }
 
-inline std::ostream & operator << (std::ostream & os, const pfs::utf8::string & s)
-{
-    os << reinterpret_cast<const char * /*std::string::const_pointer*/>(s.c_str());
-    return os;
-}
+}} // pfs::utf
 
-inline std::ostringstream & operator << (std::ostringstream & oss, const pfs::utf8::string & s)
-{
-    oss << reinterpret_cast<const char */*std::string::const_pointer*/>(s.c_str());
-    return oss;
-}
 
 #endif /* __PFS_UTF8_STRING_HPP__ */

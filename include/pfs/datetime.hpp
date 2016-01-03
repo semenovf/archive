@@ -244,7 +244,7 @@ public:
  *
  * @return The date and time as string.
  */
-string to_string (const datetime & dt)
+inline string to_string (const datetime & dt)
 {
 	string r = to_string(dt.get_date());
 	r.push_back('T');

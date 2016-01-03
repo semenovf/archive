@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 #ifndef NDEBUG
 /*
@@ -100,6 +101,19 @@ extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * 
 #define PFS_ASSERT_UNEXPECTED() PFS_ASSERT(false)
 #define PFS_ASSERT_NULLPTR(x)   PFS_ASSERT((x) != nullptr)
 #define PFS_ASSERT_IS_NULL(x)   PFS_ASSERT(!(x).isNull())
+
+/*
+ * System error exception
+ */
+#define PFS_THROW_SYSERR(xerrno)                            \
+	if ((xerrno) != 0) {                                    \
+		fprintf(stderr, "ERROR: (%s[%d]): %s (errno=%d)\n"  \
+				, __TFILE__                                 \
+				, __LINE__                                  \
+				, strerror(xerrno)                          \
+				, xerrno);                                  \
+		::exit(-1);                                         \
+	}
 
 /*
  * Special case of assert.

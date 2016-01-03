@@ -356,6 +356,7 @@ inline string to_string (long double value)
 
 #endif
 
+template <bool>
 inline bool lexical_cast (const string & s)
 {
 	return (s == string("true") || s == string("yes"))

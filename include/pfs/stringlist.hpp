@@ -9,6 +9,7 @@
 
 #include <pfs/string.hpp>
 #include <pfs/vector.hpp>
+#include <pfs/algo/split.hpp>
 
 namespace pfs {
 
@@ -36,6 +37,10 @@ inline stringlist & operator << (stringlist & sl, const stringlist & other)
 	return sl;
 }
 
+inline void split (const string & src, const string & separator, bool keep_empty, stringlist & result)
+{
+	split(src.cbegin(), src.cend(), separator.cbegin(), separator.cend(), keep_empty, result);
+}
 
 } // pfs
 

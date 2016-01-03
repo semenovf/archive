@@ -12,7 +12,6 @@
 #	include <mutex>
 #else
 #	include <pfs/bits/mutex.h>
-#	include <pfs/exception.hpp>
 #endif
 
 namespace pfs {

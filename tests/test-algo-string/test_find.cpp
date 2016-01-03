@@ -46,8 +46,6 @@ void test_find ()
 
 	while (test->haystack.s) {
 
-		string text;
-
 		string haystack(test->haystack.s);
 		string needle(test->needle.s);
 
@@ -75,22 +73,24 @@ void test_find ()
 			, needleEnd);
 
 		if (test->pos >= 0) {
-			text.append("\"");
-			text.append(test->needle.s);
-			text.append("\" found in \"");
-			text.append(test->haystack.s);
-			text.append("\" at pos ");
-			text.append(pfs::to_string(test->pos).stdstring());
+			std::ostringstream oss;
+			oss << "\""
+				<< test->needle.s
+				<< "\" found in \""
+				<< test->haystack.s
+				<< "\" at pos "
+				<< test->pos;
 
-			TEST_OK2(it == haystackBegin + test->pos, text.c_str());
+			TEST_OK2(it == haystackBegin + test->pos, oss.str().c_str());
 		} else {
-			text.append("\"");
-			text.append(test->needle.s);
-			text.append("\" not found in \"");
-			text.append(test->haystack.s);
-			text.append("\"");
+			std::ostringstream oss;
+			oss << "\""
+				<< test->needle.s
+				<< "\" not found in \""
+				<< test->haystack.s
+				<< "\"";
 
-			TEST_OK2(it == haystackEnd, text.c_str());
+			TEST_OK2(it == haystackEnd, oss.str().c_str());
 		}
 
 		++test;

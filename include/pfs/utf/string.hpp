@@ -72,10 +72,20 @@ public:
 	}
 
 	template <class InputIterator>
-	string (InputIterator first, InputIterator last);
+	string (InputIterator first, InputIterator last)
+	{
+		while(first != last)
+			push_back(*first++);
+	}
 
 	virtual ~string ()
 	{}
+
+	string & operator = (const std::string & s)
+	{
+		_d = reinterpret_cast<const rep_type &>(s);
+		return *this;
+	}
 
     iterator begin ()
     {
@@ -147,17 +157,10 @@ public:
 	 *
 	 * @return Const pointer to null-terminated contents.
 	 */
-    const CodeUnit * c_str() const
+    const CodeUnit * c_str () const
     {
     	return _d.c_str();
     }
-
-    /**
-     * @brief Returns UTF-8 encoded std::string instance.
-     *
-     * @return UTF-8 encoded std::string instance.
-     */
-    std::string stdstring () const;
 
 	/**
 	 * @brief Returns size of string in code units.
@@ -177,6 +180,17 @@ public:
     size_type length () const
     {
     	return std::distance(cbegin(), cend());
+    }
+
+    /**
+     * @brief Reserve Attempt to preallocate enough memory
+     *        for specified number of code units.
+     *
+     * @param sz Number of code units required.
+     */
+    void reserve (size_type sz)
+    {
+    	_d.reserve(sz);
     }
 
 	/**
@@ -219,6 +233,12 @@ public:
     string & append (const string & s)
     {
     	_d.append(s._d);
+    	return *this;
+    }
+
+    string & append (const std::string & s)
+    {
+    	_d.append(reinterpret_cast<const rep_type &>(s));
     	return *this;
     }
 
@@ -694,34 +714,6 @@ public:
 
     utf_string & replace ( const utf_string & before, const utf_string & after);
 
-	utf_string substr (size_type index, size_type count) const;
-	utf_string substr (const_iterator begin, size_t count) const;
-	utf_string substr (const_iterator begin, const_iterator end) const;
-
-	utf_string substr (const_iterator begin) const
-	{
-		return substr(begin, length());
-	}
-
-	utf_string substr (size_t index) const
-	{
-		return substr(index, length());
-	}
-
-	utf_string mid (size_t index, size_t count) const
-	{
-		return substr(index, count);
-	}
-
-	utf_string left (size_t count) const
-	{
-		return substr(0, count);
-	}
-
-	utf_string right  (size_t count) const
-	{
-		return substr(length() - count, count);
-	}
 
 	// TODO DEPRECATED
 	stringlist split (const utf_string & separator
@@ -835,6 +827,48 @@ public:
 	bool starts_with (const string & needle) const;
 
 	bool ends_with (const string & needle) const;
+
+	string substr (const_iterator begin, const_iterator end) const;
+
+	/**
+	 * @brief Returns a substring [@a pos, @a pos + @a count).
+	 *
+	 * @details If the requested substring extends past the end of the string,
+	 *          or if @a count == pfs::max_type<size_type>(),
+	 *          the returned substring is [@a pos, length()).
+	 *
+	 * @param pos Position of the first character to include.
+	 * @param count Length of the substring.
+	 * @return String containing the substring [@a pos, @a pos + @a count)
+	 *         or an empty string if @a pos == length().
+	 */
+	string substr (size_type pos, size_type count) const;
+
+	string substr (const_iterator begin) const
+	{
+		return substr(begin, end());
+	}
+
+	string substr (size_t pos) const
+	{
+		return substr(pos, max_type<size_type>());
+	}
+
+	string mid (size_t pos, size_t count) const
+	{
+		return substr(pos, count);
+	}
+
+	string left (size_t count) const
+	{
+		return substr(0, count);
+	}
+
+	string right (size_t count) const
+	{
+		// TODO Optimize it (avoid length() using)
+		return substr(length() - count, count);
+	}
 };
 
 #if __COMMENT__
@@ -1199,8 +1233,6 @@ inline utf_string<CodeUnitT> operator + (const utf_string<CodeUnitT> & lhs, char
 	return r += latin1;
 }
 
-
-
 template <typename CodeUnitT>
 inline bool operator == (const utf_string<CodeUnitT> & lhs, const char * rhs)
 {
@@ -1254,6 +1286,34 @@ inline std::ostream & operator << <uint16_t> (std::ostream & os, const utf_strin
 }
 
 #endif // __COMMENT__
+
+template <typename CodeUnit, typename UtfTag>
+string<CodeUnit, UtfTag> string<CodeUnit, UtfTag>::substr (const_iterator begin, const_iterator end) const
+{
+	if (begin >= this->end())
+		return string();
+
+	if (end >= this->end())
+		end == this->end();
+
+	return string(begin, end);
+}
+
+
+template <typename CodeUnit, typename UtfTag>
+string<CodeUnit, UtfTag> string<CodeUnit, UtfTag>::substr (size_type pos, size_type count) const
+{
+	const_iterator begin = this->begin();
+	std::advance(begin, pos);
+
+	const_iterator end = begin;
+	if (count == max_type<size_type>())
+		end = this->end();
+	else
+		std::advance(end, count);
+
+	return substr(begin, end);
+}
 
 
 template <typename CodeUnit, typename UtfTag>
