@@ -8,7 +8,6 @@
 #define __PFS_SCOPED_PTR_HPP__
 
 #include <pfs.hpp>
-#include <pfs/noncopyable.hpp>
 
 namespace pfs {
 
@@ -16,13 +15,13 @@ namespace pfs {
  * @brief Stores a pointer to a dynamically allocated object, and deletes it upon destruction.
  */
 template <typename T>
-class scoped_ptr : noncopyable
+class scoped_ptr
 {
-protected:
-	T * _value;
-
 public:
 	typedef T value_type;
+
+protected:
+	T * _value;
 
 public:
 	scoped_ptr() : _value(nullptr) { }

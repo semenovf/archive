@@ -161,18 +161,23 @@ public:
 	fsm (const transition<_Sequence> * initialTrans, void * context);
 	~fsm ();
 
-	void setTransitionTable (transition<_Sequence> * trans)
+	void set_transition_table (transition<_Sequence> * tb)
 	{
-		_context->_trans_tab = trans;
+		_context->_trans_tab = tb;
 	}
 
-	void setUserContext (void * userContext)
+	void set_user_context (void * context)
 	{
-		_context->_userContext = userContext;
+		_context->_userContext = context;
 	}
 
 	//ssize_t exec (int state_cur, const_iterator begin, const_iterator end);
 	result_type exec (int state_cur, const_iterator begin, const_iterator end);
+
+	result_type exec (const_iterator begin, const_iterator end)
+	{
+		return exec(0, begin, end);
+	}
 
 public:
 	/** @brief Checks if character @c ch belongs to the subset of characters

@@ -356,13 +356,6 @@ inline string to_string (long double value)
 
 #endif
 
-template <bool>
-inline bool lexical_cast (const string & s)
-{
-	return (s == string("true") || s == string("yes"))
-		? true
-		: false;
-}
 
 template <typename Integer>
 typename pfs::enable_if<pfs::is_signed<Integer>::value, Integer>::type
@@ -495,6 +488,16 @@ typename pfs::enable_if<pfs::is_floating_point<Float>::value, Float>::type
 lexical_cast (const string & s, bool * ok = 0)
 {
 	return lexical_cast<Float>(s.cbegin(), s.cend(), string::value_type('.'), ok);
+}
+
+template <typename Boolean>
+inline
+typename pfs::enable_if<pfs::are_same<Boolean, bool>::value, Boolean>::type
+lexical_cast (const string & s)
+{
+	return (s == string("true") || s == string("yes"))
+		? true
+		: false;
 }
 
 } // pfs

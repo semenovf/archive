@@ -303,7 +303,7 @@ static void test_repetition_1or2more(void)
 	r = fsm.exec(0, notdec.cbegin(), it_end);
 	TEST_FAIL(!r.first);
 
-	fsm.setTransitionTable(decimal2more_fsm);
+	fsm.set_transition_table(decimal2more_fsm);
 
 	it_end = dec.cbegin();
 	r = fsm.exec(0, dec.cbegin(), it_end);
@@ -325,7 +325,7 @@ static void test_repetition_1or2more(void)
 	r = fsm.exec(0, dec.cbegin(), it_end);
 	TEST_FAIL(r.first && std::distance(dec.cbegin(), r.second) == 4);
 
-	fsm.setTransitionTable(hex_fsm);
+	fsm.set_transition_table(hex_fsm);
 
 	it_end = hex.cbegin();
 	r = fsm.exec(0, hex.cbegin(), it_end);

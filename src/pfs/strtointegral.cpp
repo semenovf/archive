@@ -12,14 +12,16 @@ namespace pfs {
 
 inline int __to_digit (unicode::char_type c, int radix)
 {
-	if (c.value >= '0' && c.value <= '9')
-		return c.value - '0';
-	else if (c.value >= 'A' && c.value <= 'Z')
-		return c.value - 'A' + 10;
-	else if (c.value >= 'a' && c.value <= 'z')
-		return c.value - 'a' + 10;
+	int r = -1;
 
-	return -1;
+	if (c.value >= '0' && c.value <= '9')
+		r = c.value - '0';
+	else if (c.value >= 'A' && c.value <= 'Z')
+		r = c.value - 'A' + 10;
+	else if (c.value >= 'a' && c.value <= 'z')
+		r = c.value - 'a' + 10;
+
+	return r < radix ? r : -1;
 }
 
 /**
