@@ -8,13 +8,7 @@
 #ifndef __PFS_IO_BITS_DEVICE_HPP__
 #define __PFS_IO_BITS_DEVICE_HPP__
 
-#include <pfs/platform/error_code.hpp>
-
-namespace pfs { namespace io {
-
-typedef pfs::platform::error_code error_code;
-
-}}
+#include <pfs/error_code.hpp>
 
 namespace pfs { namespace io { namespace bits {
 

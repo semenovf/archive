@@ -200,6 +200,7 @@ void test_reader_iterator_ext()
 
 void test_open_absent_file ()
 {
+	ADD_TESTS(2);
     device d;
     pfs::fs::path unknownPath("!@#$%");
 
@@ -209,6 +210,7 @@ void test_open_absent_file ()
 
 void test_write_read ()
 {
+	ADD_TESTS(8);
 	// FIXME Use pfs::fs::unique() call to generate temporary file
     pfs::fs::path filePath("/tmp/test_io_file.tmp");
     TEST_FAIL2(!filePath.empty(), "Build temporary file name");
@@ -282,7 +284,7 @@ void test_write_read ()
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(6);
+    BEGIN_TESTS(0);
 
     test_open_absent_file();
     test_write_read();

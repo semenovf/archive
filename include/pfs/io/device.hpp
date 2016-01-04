@@ -10,7 +10,7 @@
 
 #include <pfs/byte_string.hpp>
 #include <pfs/string.hpp>
-#include <pfs/string.hpp>
+#include <pfs/utility.hpp>
 #include <pfs/zlib.hpp>
 #include <pfs/io/bits/device.hpp>
 
