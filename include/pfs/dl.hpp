@@ -67,7 +67,7 @@ public:
 	 * @return @c true if dynamic library opened (loaded) successfully,
 	 *         @c false if an error occurred.
 	 */
-	bool open (const fs::path & p, const fs::pathlist searchdirs
+	bool open (const fs::path & p, const fs::pathlist & searchdirs
 			, error_code * ex = 0
 			, string * extended_errstr = 0);
 

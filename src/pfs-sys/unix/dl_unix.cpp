@@ -4,7 +4,7 @@
 
 namespace pfs {
 
-bool dl::open (const fs::path & p, const fs::pathlist searchdirs
+bool dl::open (const fs::path & p, const fs::pathlist & searchdirs
 		, error_code * ex
 		, string * extended_errstr)
 {

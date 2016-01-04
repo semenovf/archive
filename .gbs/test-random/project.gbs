@@ -1,23 +1,24 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-pfs-sys-timer --type=test --depends=pfs-sys'
---* Date:    Thu Sep 17 16:15:10 2015
+--* Command: `gbs project --create --name=test-random --type=test --depends=pfs-sys'
+--* Date:    Wed Aug 19 15:38:13 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-pfs-sys-timer"
+targetname    "test-random"
 defines       {  }
 includedirs   {   "../../include"
                 , "../../../pfs-test/include"
-                , "../../../pfs/include" }
+                , "../../../pfs/include"
+              }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-pfs-sys-timer/*.c", "../../tests/test-pfs-sys-timer/*.cpp" }
+files         { "../../tests/test-random/*.c", "../../tests/test-random/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-timer/debug"
+    objdir       "../../../.build/pfs-sys/test-random/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
@@ -25,14 +26,11 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-timer/release"
+    objdir       "../../../.build/pfs-sys/test-random/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs", "pfs-sys" }
 
 dependson { "pfs-sys" }
 
 filter "action:gmake"
-    buildoptions {}
-    linkoptions  {}
-
-include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

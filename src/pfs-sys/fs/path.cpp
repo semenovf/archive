@@ -5,9 +5,72 @@
  *      Author: wladt
  */
 
+#include <pfs/deque.hpp>
 #include <pfs/fs/path.hpp>
 
 namespace pfs { namespace fs {
+
+path path::canonical (const string_type & separator) const
+{
+	pfs::deque<string_type> comp_deque;
+	range rn(_path, separator);
+	iterator it = rn.begin();
+	iterator it_end = rn.end();
+
+	while (it != it_end) {
+		if (*it == ".") {
+			; // ignore
+		} else if (*it == "..") {
+			if (comp_deque.size() > 0)
+				comp_deque.pop_front();
+		} else {
+			comp_deque.push_front(*it);
+		}
+
+		++it;
+	}
+
+	pathlist pl;
+
+	while (comp_deque.size() > 0) {
+		pl.push_back(comp_deque.back());
+		comp_deque.pop_back();
+	}
+
+	if (this->is_absolute())
+		return join(path(), join(pl, separator), separator);
+
+	return join(pl, separator);
+}
+
+path join (const path & p1, const path & p2, const string & separator)
+{
+	string r(p1.native());
+	r.append(separator);
+	r.append(p2.native());
+	return path(r);
+}
+
+path join (const pathlist & pl, const string & separator)
+{
+	string r;
+
+	pathlist::const_iterator it = pl.cbegin();
+	pathlist::const_iterator it_end = pl.cend();
+
+	if (it != it_end) {
+		r.append(it->native());
+		++it;
+	}
+
+	while (it != it_end) {
+		r.append(separator);
+		r.append(it->native());
+		++it;
+	}
+
+	return path(r);
+}
 
 //path unique_path (const path & model, notification_type * nx)
 //{
@@ -28,7 +91,7 @@ namespace pfs { namespace fs {
 //}
 
 path search_file (const path & file
-		, const pathlist searchdirs
+		, const pathlist & searchdirs
 		, error_code * ex)
 {
 	if (file.empty())
@@ -60,7 +123,7 @@ path search_file (const path & file
 	fs::pathlist::const_iterator it_end = searchdirs.end();
 
 	while (it != it_end) {
-		path p = join(*it, p);
+		path p = join(*it, file);
 
 		if (exists(p))
 			return p;

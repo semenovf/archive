@@ -127,6 +127,8 @@ public:
 	friend string to_string (const uri & u);
 };
 
+DLL_API string to_string (const uri & u);
+
 } // pfs
 
 #ifdef PFS_CC_MSVC

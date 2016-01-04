@@ -23,28 +23,23 @@ project "test-dl"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-sys-fs"
---    include("test-pfs-sys-fs/project.gbs")
+project "test-random"
+    include("test-random/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-sys-random"
---    include("test-pfs-sys-random/project.gbs")
+project "test-regexp"
+    include("test-regexp/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-sys-regexp"
---    include("test-pfs-sys-regexp/project.gbs")
+project "test-thread"
+    include("test-thread/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-sys-thread"
---    include("test-pfs-sys-thread/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
---project "test-uri"
---    include("test-uri/project.gbs")
+project "test-uri"
+    include("test-uri/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
@@ -53,8 +48,8 @@ project "test-atomic"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-sys-utils"
---    include("test-pfs-sys-utils/project.gbs")
+project "test-utils"
+    include("test-utils/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
@@ -63,13 +58,8 @@ project "test-zlib"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-sys-timer"
---    include("test-pfs-sys-timer/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
-project "getcwd"
-    include("getcwd/project.gbs")
+--project "test-timer"
+--    include("test-timer/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

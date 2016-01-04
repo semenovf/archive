@@ -1,24 +1,24 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-pfs-sys-thread --type=test --depends=pfs-sys'
+--* Command: `gbs project --create --name=test-thread --type=test --depends=pfs-sys'
 --* Date:    Wed Aug 19 15:43:49 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-pfs-sys-thread"
+targetname    "test-thread"
 defines       {  }
 includedirs   {   "../../include"
                 , "../../../pfs-test/include"
                 , "../../../pfs/include"
               }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-pfs-sys-thread/*.c", "../../tests/test-pfs-sys-thread/*.cpp" }
+files         { "../../tests/test-thread/*.c", "../../tests/test-thread/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-thread/debug"
+    objdir       "../../../.build/pfs-sys/test-thread/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
@@ -26,7 +26,7 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-thread/release"
+    objdir       "../../../.build/pfs-sys/test-thread/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs", "pfs-sys" }
 

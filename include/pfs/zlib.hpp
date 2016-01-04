@@ -57,7 +57,7 @@ public:
 	 */
 	byte_string decompress (size_t initial_len
 			, const byte_string & src
-			, error_code * ex);
+			, error_code * ex = 0);
 
 	// FIXME implement
 	//bool decompress (pfs::byte_string & dest, const pfs::byte_string & src);

@@ -17,23 +17,32 @@ using pfs::string;
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(3);
+	BEGIN_TESTS(4);
 
-	pfs::dl dl;
-	pfs::fs::path dlfile = dl.build_filename(string("pfs-sys"));
-	pfs::dl::handle dlhandle;
 	typedef int (*dl_test_fn)(void);
 
+	pfs::dl dl;
+	pfs::fs::path dlfile1 = dl.build_filename(string("pfs-sys"));
+	pfs::fs::path dlfile2 = dl.build_filename(string("pfs-sys-d"));
+	pfs::fs::path * pdlfile = 0;
 
 	pfs::fs::pathlist searchdirs;
 
 	searchdirs.push_back(pfs::fs::path("."));
 	searchdirs.push_back(pfs::fs::path(".."));
 
+	if (!pfs::fs::search_file(dlfile1, searchdirs).empty()) {
+		pdlfile = & dlfile1;
+	} else if (!pfs::fs::search_file(dlfile2, searchdirs).empty()) {
+		pdlfile = & dlfile2;
+	}
+
+	TEST_FAIL2(pdlfile != 0, "Candidate for dynamic library found (pfs-sys or pfs-sys-d)");
+
 	string errstr;
 	pfs::error_code ex;
 
-	bool rc = dl.open(dlfile, searchdirs, & ex, & errstr);
+	bool rc = dl.open(*pdlfile, searchdirs, & ex, & errstr);
 
 	if (!rc) {
 		std::cerr << errstr << std::endl;

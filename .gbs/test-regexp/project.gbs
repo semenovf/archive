@@ -1,24 +1,24 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-pfs-sys-random --type=test --depends=pfs-sys'
---* Date:    Wed Aug 19 15:38:13 2015
+--* Command: `gbs project --create --name=test-regexp --type=test --depends=pfs-sys'
+--* Date:    Wed Aug 19 15:43:41 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-pfs-sys-random"
+targetname    "test-regexp"
 defines       {  }
 includedirs   {   "../../include"
                 , "../../../pfs-test/include"
                 , "../../../pfs/include"
               }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-pfs-sys-random/*.c", "../../tests/test-pfs-sys-random/*.cpp" }
+files         { "../../tests/test-regexp/*.c", "../../tests/test-regexp/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-random/debug"
+    objdir       "../../../.build/pfs-sys/test-regexp/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
@@ -26,7 +26,7 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-sys/test-pfs-sys-random/release"
+    objdir       "../../../.build/pfs-sys/test-regexp/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs", "pfs-sys" }
 

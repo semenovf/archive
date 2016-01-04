@@ -39,8 +39,8 @@ void test_compress ()
 	pfs::byte_string compressed;
 	pfs::zlib z;
 
-	TEST_OK(!(compressed = z.compress(src)).isNull());
-	TEST_OK(!(uncompressed = z.decompress(::strlen(loremipsum), compressed)).isNull());
+	TEST_OK(!(compressed = z.compress(src)).empty());
+	TEST_OK(!(uncompressed = z.decompress(::strlen(loremipsum), compressed)).empty());
 	TEST_OK(src == uncompressed);
 	TEST_OK(compressed.size() < uncompressed.size());
 }

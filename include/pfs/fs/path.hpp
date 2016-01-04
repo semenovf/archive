@@ -8,7 +8,7 @@
 #ifndef __PFS_FS_PATH_HPP__
 #define __PFS_FS_PATH_HPP__
 
-#include <pfs/vector.hpp>
+#include <pfs/stringlist.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <pfs/iterator.hpp>
 #include <pfs/algo/split.hpp>
@@ -29,12 +29,13 @@ class DLL_API path
 {
 public:
 	typedef pfs::string string_type;
-	typedef typename std::vector<string_type> stringlist_type;
+	typedef pfs::stringlist stringlist_type;
+
+public:
+	static const string_type default_separator ();
 
 private:
 	string_type _path;
-	string_type _separator;
-	shared_ptr<stringlist_type> _components;
 
 public:
 
@@ -78,8 +79,9 @@ public:
 	class iterator
 	{
 		friend class path;
+		friend class range;
 
-	    typedef std::bidirectional_iterator_tag  iterator_category;
+	    typedef std::bidirectional_iterator_tag           iterator_category;
 	    typedef typename stringlist_type::value_type      value_type;
 	    typedef typename stringlist_type::difference_type difference_type;
 	    typedef typename stringlist_type::iterator        pointer;
@@ -94,11 +96,13 @@ public:
 	public:
 		iterator (const iterator & other)
 			: _p(other._p)
+//			, _pcomponents(other._pcomponents)
 		{}
 
 		iterator & operator = (const iterator & other)
 		{
 			_p = other._p;
+//			_pcomponents = other._pcomponents;
 			return *this;
 		}
 
@@ -176,6 +180,30 @@ public:
 		}
 	};
 
+	class range
+	{
+		friend class path;
+
+		shared_ptr<stringlist_type> _pcomponents;
+
+		range (const string_type & s, const string_type & separator = default_separator())
+			: _pcomponents(new stringlist_type)
+		{
+			split(s, separator, DontKeepEmpty, *_pcomponents);
+		}
+
+	public:
+		iterator begin ()
+		{
+			return iterator(_pcomponents->begin());
+		}
+
+		iterator end ()
+		{
+			return iterator(_pcomponents->end());
+		}
+	};
+
 public:
 
 	/**
@@ -183,11 +211,11 @@ public:
 	 *
 	 * @note Platform specific.
 	 */
-	path ();
+	path ()
+	{}
 
 	path (const path & other)
 		: _path(other._path)
-		, _separator(other._separator)
 	{}
 
 	/**
@@ -200,31 +228,12 @@ public:
 
 	path (const string_type & s, const string_type & separator)
 		: _path(s)
-		, _separator(separator)
 	{}
 
 	path (const char * s);
-	path (const char * s, const char * separator);
 
 	path & operator = (const string_type & s);
 	path & operator = (const char * s);
-
-	/**
-	 * @brief Returns path separator.
-	 *
-	 * @return Path separator
-	 */
-	const string_type & separator () const
-	{
-		return _separator;
-	}
-
-	/**
-	 * @brief Sets path separator
-	 *
-	 * @param sep Path separator.
-	 */
-	void set_separator (const string_type & sep) { _separator = sep; }
 
 	/**
 	 * @brief Returns native representation of path.
@@ -239,32 +248,6 @@ public:
 	bool empty () const
 	{
 		return _path.empty();
-	}
-
-	iterator begin ()
-	{
-		if (!_components) {
-			_components = make_shared<stringlist_type>();
-
-			split(_path.begin(), _path.end()
-					, _separator.begin(), _separator.end()
-					, DontKeepEmpty, *_components);
-		}
-
-		return iterator(_components->begin());
-	}
-
-	iterator end ()
-	{
-		if (!_components) {
-			_components = make_shared<stringlist_type>();
-
-			split(_path.begin(), _path.end()
-					, _separator.begin(), _separator.end()
-					, DontKeepEmpty, *_components);
-		}
-
-		return iterator(_components->end());
 	}
 
 //	const_iterator begin () const;
@@ -296,7 +279,25 @@ public:
 ////	string findFile (const string & filename, const stringlist & dirs) const;
 //	string normalizePath (const string & path) const;
 
-	friend path join (const path & p1, const path & p2);
+	/**
+	 * @brief Returns the canonical representation of this path.
+	 */
+	path canonical (const string_type & separator = default_separator()) const;
+
+	range get_range (const string_type & separator = default_separator()) const
+	{
+		return range(_path, separator);
+	}
+
+	friend bool operator == (const path & lhs, const path & rhs)
+	{
+		return lhs._path == rhs._path;
+	}
+
+	friend bool operator != (const path & lhs, const path & rhs)
+	{
+		return lhs._path != rhs._path;
+	}
 };
 
 /**
@@ -371,8 +372,6 @@ inline bool starts_with (const path & haystack, const path & needle)
 	return pfs::fs::starts_with(haystack, needle);
 }
 
-path join (const path & p1, const path & p2);
-
 /**
  * @brief Searches file in current directory and directories specified
  *        by @a searchdirs and returns appropriate existence path.
@@ -383,7 +382,33 @@ path join (const path & p1, const path & p2);
  * @return Path to file if found or empty path if @a filename is empty
  *         or file not found in list of directories specified by @a searchdirs.
  */
-path search_file (const path & file, const pathlist searchdirs, error_code * ex);
+path search_file (const path & file, const pathlist & searchdirs, error_code * ex = 0);
+
+
+/**
+ * @brief Joins two path instances.
+ *
+ * @return Resulting path after join.
+ */
+path join (const path & p1, const path & p2, const string & separator = path::default_separator());
+
+/**
+ * @brief Joins path list components.
+ *
+ * @return Resulting path after join.
+ */
+path join (const pathlist & pl, const string & separator = path::default_separator());
+
+/**
+ * @brief Joins path list components and path instance.
+ *
+ * @return Resulting path after join.
+ */
+inline path join (const pathlist & pl, const path & p, const string & separator = path::default_separator())
+{
+	path r = join(pl, separator);
+	return join(r, p, separator);
+}
 
 }} // pfs::fs
 

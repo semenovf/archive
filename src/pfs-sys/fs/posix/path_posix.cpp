@@ -10,12 +10,15 @@
 #include <cstring>
 #include <string>
 #include <cerrno>
-//#include <unistd.h>
-//#include <dirent.h>
 #include <pfs/algo/find.hpp>
 #include "pfs/fs/path.hpp"
 
 namespace pfs { namespace fs {
+
+const path::string_type path::default_separator ()
+{
+	return path::string_type("/");
+}
 
 /*
 inline bool __is_regular_file  (mode_t m) { return (m & S_IFMT) == S_IFREG;  }
@@ -27,36 +30,23 @@ inline bool __is_fifo          (mode_t m) { return (m & S_IFMT) == S_IFIFO;  }
 inline bool __is_socket        (mode_t m) { return (m & S_IFMT) == S_IFSOCK; }
 */
 
-path::path ()
-	: _separator(1, '/')
-{}
-
 path::path (const path::string_type & s)
 	: _path(s)
-	, _separator(1, '/')
 {}
 
 path::path (const char * s)
 	: _path(s)
-	, _separator(1, '/')
-{}
-
-path::path (const char * s, const char * separator)
-	: _path(s)
-	, _separator(separator)
 {}
 
 path & path::operator = (const string_type & s)
 {
 	_path = s;
-	_separator = "/";
 	return *this;
 }
 
 path & path::operator = (const char * s)
 {
 	_path = s;
-	_separator = "/";
 	return *this;
 }
 
@@ -65,7 +55,7 @@ bool path::is_absolute () const
 	if( _path.empty() )
 		return false;
 
-	return _path.starts_with(_separator);
+	return _path.starts_with(default_separator());
 }
 
 
@@ -215,24 +205,7 @@ path current_directory (error_code * ex)
 }
 
 
-path join (const path & p1, const path & p2)
-{
-	string r(p1._path);
-	r.append(p1._separator);
-	r.append(p2._path);
-	return path(r);
-}
-
 #if __COMMENT__
-
-bool fs::simpleBackup (const string & orig)
-{
-	string to(orig);
-	to.append(string(1, '~'));
-	return fs::rename(orig, to);
-}
-
-
 
 // TODO need to implement (Windows version too)
 stringlist fs::entryListByRegExp (const string & dir
