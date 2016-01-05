@@ -11,7 +11,10 @@
 #ifndef __PFS_BITS_MUTEX_H__
 #define __PFS_BITS_MUTEX_H__
 
-#include <pfs.h>
+#include <pfs/bits/config.h>
+#include <pfs/bits/compiler.h>
+#include <pfs/bits/os.h>
+#include <pfs/bits/assert.h>
 
 #if !defined(PFS_NO_MT)
 /*#	define PFS_SINGLE_THREADED*/
