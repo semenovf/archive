@@ -13,7 +13,7 @@ namespace pfs {
 static const char digits_lower[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 static const char digits_upper[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-char * uintmax_to_string (uintegral_t n, int base, int uppercase, char * buf, int bufsz)
+char * uintmax_to_string (uintmax_t n, int base, int uppercase, char * buf, int bufsz)
 {
 	char * p = & buf[bufsz - 1];
 
@@ -37,7 +37,7 @@ char * uintmax_to_string (uintegral_t n, int base, int uppercase, char * buf, in
 	return p;
 }
 
-char * intmax_to_string (integral_t n, int base, int uppercase, char * buf, int bufsz)
+char * intmax_to_string (intmax_t n, int base, int uppercase, char * buf, int bufsz)
 {
 	char * p = NULL;
 

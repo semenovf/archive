@@ -22,32 +22,32 @@ void test_compare_fp_cast (T min, T max)
 			<< pfs::type_name<T>()
 			<< ">(min, max)\n{\n";
 
-	real_t rmin = static_cast<Fp>(pfs::min_type<T>());
-	real_t rmax = static_cast<Fp>(pfs::max_type<T>());
+	real_t rmin = static_cast<Fp>(pfs::min_value<T>());
+	real_t rmax = static_cast<Fp>(pfs::max_value<T>());
 
 	TEST_FAIL(rmin == rmin);
 	TEST_FAIL(rmax == rmax);
-	TEST_FAIL(pfs::min_type<T>() == pfs::min_type<T>());
-	TEST_FAIL(pfs::max_type<T>() == pfs::max_type<T>());
+	TEST_FAIL(pfs::min_value<T>() == pfs::min_value<T>());
+	TEST_FAIL(pfs::max_value<T>() == pfs::max_value<T>());
 
 //	TEST_FAIL(!isinf(static_cast<Fp>(max)));
 //	TEST_FAIL(!isnan(static_cast<Fp>(max)));
-//	TEST_FAIL(!isinf(static_cast<Fp>(pfs::max_type<T>())));
-//	TEST_FAIL(!isnan(static_cast<Fp>(pfs::max_type<T>())));
+//	TEST_FAIL(!isinf(static_cast<Fp>(pfs::max_value<T>())));
+//	TEST_FAIL(!isnan(static_cast<Fp>(pfs::max_value<T>())));
 
-	TEST_OK(pfs::min_type<T>() == min);
-	TEST_OK(pfs::max_type<T>() == max);
+	TEST_OK(pfs::min_value<T>() == min);
+	TEST_OK(pfs::max_value<T>() == max);
 
 	TEST_OK(static_cast<Fp>(min) == rmin);
 	TEST_OK(static_cast<Fp>(max) == rmax);
 
-	TEST_OK(rmin == static_cast<Fp>(pfs::min_type<T>()));
-	TEST_OK(rmax == static_cast<Fp>(pfs::max_type<T>()));
-	TEST_OK(static_cast<Fp>(pfs::min_type<T>()) == rmin);
-	TEST_OK(static_cast<Fp>(pfs::max_type<T>()) == rmax);
+	TEST_OK(rmin == static_cast<Fp>(pfs::min_value<T>()));
+	TEST_OK(rmax == static_cast<Fp>(pfs::max_value<T>()));
+	TEST_OK(static_cast<Fp>(pfs::min_value<T>()) == rmin);
+	TEST_OK(static_cast<Fp>(pfs::max_value<T>()) == rmax);
 
-	TEST_OK(static_cast<Fp>(pfs::min_type<T>()) == static_cast<Fp>(pfs::min_type<T>()));
-	TEST_OK(static_cast<Fp>(pfs::max_type<T>()) == static_cast<Fp>(pfs::max_type<T>()));
+	TEST_OK(static_cast<Fp>(pfs::min_value<T>()) == static_cast<Fp>(pfs::min_value<T>()));
+	TEST_OK(static_cast<Fp>(pfs::max_value<T>()) == static_cast<Fp>(pfs::max_value<T>()));
 	TEST_OK(static_cast<Fp>(min) == static_cast<Fp>(min));
 	TEST_OK(static_cast<Fp>(max) == static_cast<Fp>(max));
 
@@ -132,8 +132,8 @@ void vary_strange_behavior ()
 			== static_cast<double>(max_ll())); // fail
 
 	// FAIL
-	TEST_OK(static_cast<double>(pfs::max_type<long long>())
-			== static_cast<double>(pfs::max_type<long long>()));
+	TEST_OK(static_cast<double>(pfs::max_value<long long>())
+			== static_cast<double>(pfs::max_value<long long>()));
 }
 #endif
 

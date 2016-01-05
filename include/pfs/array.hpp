@@ -23,7 +23,7 @@ class array
 	T *      _head;
 
 public:
-	array () : _capacity(0), _raw(0), _head(nullptr) {}
+	array () : _capacity(0), _raw(0), _head(0) {}
 	array (T a[], size_t n);
 	array (size_t sz, bool zero = false);
 	~array ();
@@ -114,7 +114,7 @@ public:
 
 template <typename T>
 inline array<T>::array (T a[], size_t n)
-	: _capacity(0), _raw(1), _head(nullptr)
+	: _capacity(0), _raw(1), _head(0)
 {
 	if (a) {
 		_capacity = n;
@@ -124,7 +124,7 @@ inline array<T>::array (T a[], size_t n)
 
 template <typename T>
 inline array<T>::array (const array & other)
-	: _capacity(other._capacity), _raw(0), _head(nullptr)
+	: _capacity(other._capacity), _raw(0), _head(0)
 {
 	if (other._capacity > 0) {
 		alloc(other._capacity);
@@ -144,7 +144,7 @@ inline array<T> & array<T>::operator = (const array & other)
 
 template <typename T>
 inline array<T>::array (size_t sz, bool zero)
-	: _capacity(0), _raw(0), _head(nullptr)
+	: _capacity(0), _raw(0), _head(0)
 {
 	if (sz) {
 		alloc(sz);

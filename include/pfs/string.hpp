@@ -370,11 +370,11 @@ lexical_cast (string::const_iterator begin
 	string::const_iterator endptr(begin);
 	intmax_t r = strtointmax(begin, end
 			, radix
-			, intmax_t(pfs::min_type<Integer>())
-			, uintmax_t(pfs::max_type<Integer>())
+			, intmax_t(pfs::min_value<Integer>())
+			, uintmax_t(pfs::max_value<Integer>())
 			, & endptr);
 
-    if ((errno == ERANGE && (r == pfs::max_type<intmax_t>() || r == pfs::min_type<intmax_t>()))
+    if ((errno == ERANGE && (r == pfs::max_value<intmax_t>() || r == pfs::min_value<intmax_t>()))
             || (errno != 0 && r == 0)
             || endptr != end) {
 
@@ -416,10 +416,10 @@ lexical_cast (string::const_iterator begin
 	uintmax_t r = strtouintmax(begin
 			, end
 			, radix
-			, uintmax_t(pfs::max_type<Integer>())
+			, uintmax_t(pfs::max_value<Integer>())
 			, & endptr);
 
-    if ((errno == ERANGE && (r == pfs::max_type<uintmax_t>()))
+    if ((errno == ERANGE && (r == pfs::max_value<uintmax_t>()))
     		|| (errno != 0 && r == 0)
     		|| endptr != end) {
 
@@ -464,7 +464,7 @@ lexical_cast (string::const_iterator begin
 			, decimalPoint
 			, & endptr);
 
-	if (errno || endptr != end || r < min_type<Float>() || r > max_type<Float>()) {
+	if (errno || endptr != end || r < min_value<Float>() || r > max_value<Float>()) {
     	if (ok)
     		*ok = false;
     	return static_cast<Float>(0.0f);

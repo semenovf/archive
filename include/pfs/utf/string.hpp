@@ -740,9 +740,9 @@ public:
 	}
 
 	bool           toBoolean (bool * ok = 0) const;
-	integral_t     toIntegral (bool * ok = 0, int base = 10) const { return toSignedIntegral(ok, base); }
-	integral_t     toSignedIntegral (bool * ok = 0, int base = 10) const;
-	uintegral_t    toUnsignedIntegral (bool * ok = 0, int base = 10) const;
+	intmax_t     toIntegral (bool * ok = 0, int base = 10) const { return toSignedIntegral(ok, base); }
+	intmax_t     toSignedIntegral (bool * ok = 0, int base = 10) const;
+	uintmax_t    toUnsignedIntegral (bool * ok = 0, int base = 10) const;
 
 	signed char    toSignedChar   (bool * ok = 0, int radix = 10) const;
 	unsigned char  toUnsignedChar (bool * ok = 0, int radix = 10) const;
@@ -800,7 +800,7 @@ private:
 
 public:
 
-	static DLL_API utf_string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = nullptr);
+	static DLL_API utf_string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = 0);
 
 #endif // __COMMENT__
 
@@ -834,7 +834,7 @@ public:
 	 * @brief Returns a substring [@a pos, @a pos + @a count).
 	 *
 	 * @details If the requested substring extends past the end of the string,
-	 *          or if @a count == pfs::max_type<size_type>(),
+	 *          or if @a count == pfs::max_value<size_type>(),
 	 *          the returned substring is [@a pos, length()).
 	 *
 	 * @param pos Position of the first character to include.
@@ -851,7 +851,7 @@ public:
 
 	string substr (size_t pos) const
 	{
-		return substr(pos, max_type<size_type>());
+		return substr(pos, max_value<size_type>());
 	}
 
 	string mid (size_t pos, size_t count) const
@@ -961,7 +961,7 @@ bool utf_string<CodeUnitT>::toBoolean (bool * ok) const
 }
 
 template <typename CodeUnitT>
-integral_t utf_string<CodeUnitT>::toSignedIntegral (bool * ok, int base) const
+intmax_t utf_string<CodeUnitT>::toSignedIntegral (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -969,12 +969,12 @@ integral_t utf_string<CodeUnitT>::toSignedIntegral (bool * ok, int base) const
 	}
 	return strtointegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, integral_t(pfs::min_type<integral_t>())
-		, uintegral_t(pfs::max_type<integral_t>()));
+		, intmax_t(pfs::min_value<intmax_t>())
+		, uintmax_t(pfs::max_value<intmax_t>()));
 }
 
 template <typename CodeUnitT>
-uintegral_t utf_string<CodeUnitT>::toUnsignedIntegral (bool * ok, int base) const
+uintmax_t utf_string<CodeUnitT>::toUnsignedIntegral (bool * ok, int base) const
 {
 	if (this->isEmpty()) {
 		if (ok) *ok = false;
@@ -982,7 +982,7 @@ uintegral_t utf_string<CodeUnitT>::toUnsignedIntegral (bool * ok, int base) cons
 	}
 	return strtouintegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, uintegral_t(pfs::max_type<uintegral_t>()));
+		, uintmax_t(pfs::max_value<uintmax_t>()));
 }
 
 
@@ -1005,8 +1005,8 @@ signed char utf_string<CodeUnitT>::toSignedChar (bool * ok, int radix) const
 
     return static_cast<signed char>(strtointegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
         (cbegin(), cend(), ok, radix
-        , integral_t(pfs::min_type<signed char>())
-        , uintegral_t(pfs::max_type<signed char>())));
+        , intmax_t(pfs::min_value<signed char>())
+        , uintmax_t(pfs::max_value<signed char>())));
 }
 
 /**
@@ -1027,7 +1027,7 @@ unsigned char utf_string<CodeUnitT>::toUnsignedChar (bool * ok, int radix) const
     }
     return static_cast<unsigned char>(strtouintegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
         (cbegin(), cend(), ok, radix
-        , uintegral_t(pfs::max_type<unsigned char>())));
+        , uintmax_t(pfs::max_value<unsigned char>())));
 }
 
 
@@ -1041,8 +1041,8 @@ short utf_string<CodeUnitT>::toSignedShort (bool * ok, int base) const
 
 	return (short)strtointegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, integral_t(pfs::min_type<short>())
-		, uintegral_t(pfs::max_type<short>()));
+		, intmax_t(pfs::min_value<short>())
+		, uintmax_t(pfs::max_value<short>()));
 }
 
 template <typename CodeUnitT>
@@ -1054,7 +1054,7 @@ unsigned short utf_string<CodeUnitT>::toUnsignedShort (bool * ok, int base) cons
 	}
 	return (unsigned short)strtouintegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, uintegral_t(pfs::max_type<unsigned short>()));
+		, uintmax_t(pfs::max_value<unsigned short>()));
 }
 
 template <typename CodeUnitT>
@@ -1066,8 +1066,8 @@ int	utf_string<CodeUnitT>::toSignedInt (bool * ok, int base) const
 	}
 	return (int)strtointegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, integral_t(pfs::min_type<int>())
-		, uintegral_t(pfs::max_type<int>()));
+		, intmax_t(pfs::min_value<int>())
+		, uintmax_t(pfs::max_value<int>()));
 }
 
 template <typename CodeUnitT>
@@ -1079,7 +1079,7 @@ unsigned int utf_string<CodeUnitT>::toUnsignedInt (bool * ok, int base) const
 	}
 	return (unsigned int)strtouintegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, uintegral_t(pfs::max_type<unsigned int>()));
+		, uintmax_t(pfs::max_value<unsigned int>()));
 }
 
 template <typename CodeUnitT>
@@ -1091,8 +1091,8 @@ long utf_string<CodeUnitT>::toSignedLong (bool * ok, int base) const
 	}
 	return (long)strtointegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, integral_t(pfs::min_type<long>())
-		, uintegral_t(pfs::max_type<long>()));
+		, intmax_t(pfs::min_value<long>())
+		, uintmax_t(pfs::max_value<long>()));
 }
 
 template <typename CodeUnitT>
@@ -1105,7 +1105,7 @@ unsigned long utf_string<CodeUnitT>::toUnsignedLong (bool * ok, int base) const
 
 	return (unsigned long)strtouintegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, uintegral_t(pfs::max_type<unsigned long>()));
+		, uintmax_t(pfs::max_value<unsigned long>()));
 }
 
 #ifdef PFS_HAVE_LONGLONG
@@ -1118,8 +1118,8 @@ long long utf_string<CodeUnitT>::toSignedLongLong (bool * ok, int base) const
 	}
 	return (long long)strtointegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, integral_t(pfs::min_type<long long>())
-		, uintegral_t(pfs::max_type<long long>()));
+		, intmax_t(pfs::min_value<long long>())
+		, uintmax_t(pfs::max_value<long long>()));
 }
 
 template <typename CodeUnitT>
@@ -1131,7 +1131,7 @@ unsigned long long utf_string<CodeUnitT>::toUnsignedLongLong (bool * ok, int bas
 	}
 	return (unsigned long long)strtouintegral_helper<utf_string<CodeUnitT>::char_type, utf_string<CodeUnitT>::const_iterator >
 		(cbegin(), cend(), ok, base
-		, uintegral_t(pfs::max_type<unsigned long long>()));
+		, uintmax_t(pfs::max_value<unsigned long long>()));
 }
 #endif
 
@@ -1307,7 +1307,7 @@ string<CodeUnit, UtfTag> string<CodeUnit, UtfTag>::substr (size_type pos, size_t
 	std::advance(begin, pos);
 
 	const_iterator end = begin;
-	if (count == max_type<size_type>())
+	if (count == max_value<size_type>())
 		end = this->end();
 	else
 		std::advance(end, count);

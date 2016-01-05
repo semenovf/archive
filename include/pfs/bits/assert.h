@@ -5,8 +5,8 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_SYS_ASSERT_H__
-#define __PFS_SYS_ASSERT_H__
+#ifndef __PFS_BITS_ASSERT_H__
+#define __PFS_BITS_ASSERT_H__
 
 #include <stdio.h>
 #include <errno.h>
@@ -121,4 +121,4 @@ extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * 
  */
 #define PFS_ASSERT_TODO() PFS_ASSERT(false)
 
-#endif /* __PFS_SYS_ASSERT_H__ */
+#endif /* __PFS_BITS_ASSERT_H__ */

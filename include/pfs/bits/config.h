@@ -6,10 +6,8 @@
  * @brief
  */
 
-#ifndef __PFS_SYS_CONFIG_H__
-#define __PFS_SYS_CONFIG_H__
-
-// TODO DEPRECATED (used bits/config.h)
+#ifndef __PFS_BITS_CONFIG_H__
+#define __PFS_BITS_CONFIG_H__
 
 #include <sys/types.h>
 #include <stddef.h>
@@ -21,20 +19,16 @@
 /*
  * C99-specific header
  */
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) /* c99 or higher */ \
-	|| (defined(_MSC_VER) && _MSC_VER >= 1600) /* msvc >= MSVC++ 10.0 */           \
-    || defined(__INT8_TYPE__) /* gcc w/o -std=c99 or higher option */
-
-#   define __STDC_LIMIT_MACROS /* see stdint.h for comments about this macro */
-#   include <stdint.h>
-
-#	define PFS_HAVE_INT8_T 1 // TODO deprecated
-#   define PFS_HAVE_STDINT 1
-#endif
-
-#ifndef SIZE_MAX
-#	error NO SIZE_MAX
-#endif
+//#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) /* c99 or higher */ \
+//	|| (defined(_MSC_VER) && _MSC_VER >= 1600) /* msvc >= MSVC++ 10.0 */           \
+//    || defined(__INT8_TYPE__) /* gcc w/o -std=c99 or higher option */
+//
+//#   define __STDC_LIMIT_MACROS /* see stdint.h for comments about this macro */
+//#   include <stdint.h>
+//
+//#	define PFS_HAVE_INT8_T 1 // TODO deprecated
+//#   define PFS_HAVE_STDINT 1
+//#endif
 
 #ifdef _MSC_VER
 #   define WIN32_LEAN_AND_MEAN
@@ -130,38 +124,6 @@
 #	define NDEBUG 1
 #endif
 
-#if defined(_SIZE_T_DEFINED_)    \
-	|| defined(_SIZE_T_DEFINED)  \
-	|| defined(__DJ_size_t)      \
-	|| defined(__size_t_defined) \
-	|| defined(_SIZE_T_)         \
-	|| defined(_SIZE_T)              /* borland c++ */
-#	define PFS_HAVE_SIZE_T 1
-#endif
-
-#if defined(_SSIZE_T_DEFINED_)   \
-	|| defined(_SSIZE_T_DEFINED) \
-	|| defined(__DJ_ssize_t)     \
-	|| defined(__ssize_t_defined)
-#	define PFS_HAVE_SSIZE_T 1
-#endif
-
-#if defined(_INTPTR_T_DEFINED) /* msvc */     \
-    || defined(__intptr_t_defined) /* gcc */
-#	define PFS_HAVE_INTPTR_T 1
-#endif
-
-#if defined(_UINTPTR_T_DEFINED) \
-    || defined(__intptr_t_defined) /* gcc */
-#	define PFS_HAVE_UINTPTR_T 1
-#endif
-
-#if defined(__PTRDIFF_TYPE__)                  \
-	|| defined(_PTRDIFF_T_DEFINED)  /* msvc */ \
-	|| defined(_PTRDIFF_T)          /* borland c++ */
-#	define PFS_HAVE_PTRDIFF_T 1
-#endif
-
 #ifdef __cplusplus
 #	if __cplusplus >= 201103L
 #		define PFS_HAVE_NULLPTR          1
@@ -223,13 +185,13 @@
 #   endif
 #endif
 
-#ifdef ULLONG_MAX
-#   define PFS_HAVE_LONGLONG 1
-#endif
-
-#ifdef LDBL_MIN
-#   define PFS_HAVE_LONG_DOUBLE 1
-#endif
+//#ifdef ULLONG_MAX
+//#   define PFS_HAVE_LONGLONG 1
+//#endif
+//
+//#ifdef LDBL_MIN
+//#   define PFS_HAVE_LONG_DOUBLE 1
+//#endif
 
 #if !defined(__cplusplus)
 #   if !defined(inline)
@@ -251,4 +213,4 @@
 #define PFS_UNUSED2(x1,x2)    ((void)(x1));((void)(x2))
 #define PFS_UNUSED3(x1,x2,x3) ((void)(x1));((void)(x2));((void)(x3))
 
-#endif /* __PFS_SYS_CONFIG_H__ */
+#endif /* __PFS_BITS_CONFIG_H__ */

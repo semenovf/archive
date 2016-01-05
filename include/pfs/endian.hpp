@@ -12,6 +12,7 @@
 #define __PFS_ENDIAN_HPP__
 
 #include <pfs.hpp>
+#include <pfs/sys/endian.h>
 
 namespace pfs {
 

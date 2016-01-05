@@ -17,7 +17,7 @@ class DLL_API date
 	intmax_t _jd; // Julian Day;
 
 public:
-	static const intmax_t NullJulianDay  = PFS_INTEGRAL_MIN;
+	static const intmax_t NullJulianDay;
 	static const intmax_t MinJulianDay   = intmax_t(-784366681008); // Date::julianDay(PFS_INT_MIN, 1, 1)
 	static const intmax_t MaxJulianDay   = intmax_t(784354017364);  // Date::julianDay(PFS_INT_MAX, 12, 31)
     static const intmax_t EpochJulianDay = intmax_t(2440588);       // Date::julianDay(1970, 1, 1)

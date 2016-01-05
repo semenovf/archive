@@ -49,7 +49,7 @@ struct ref_count
 	atomic_int strongref;
 	ref_count_deleter deleter_fn;
 
-	ref_count () : deleter_fn(nullptr)
+	ref_count () : deleter_fn(0)
 	{
 		strongref.store(1);
 		weakref.store(1);
@@ -140,7 +140,7 @@ public:
     	deref();
     }
 
-    bool isNull () const { return _value == nullptr; }
+    bool isNull () const { return _value == 0; }
 
     inline shared_ptr<T> & operator = (const shared_ptr<T> & other)
     {

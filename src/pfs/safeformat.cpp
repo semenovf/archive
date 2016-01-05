@@ -136,11 +136,11 @@ bool safeformat::parse_field_width ()
 	if (is_digit_exclude_zero(*pos)) {
 		intmax_t width = strtointmax(pos, end
 				, 10
-				, min_type<intmax_t>()
-				, max_type<uintmax_t>()
+				, min_value<intmax_t>()
+				, max_value<uintmax_t>()
 				, & pos);
 
-		PFS_ASSERT(!errno && width >= 0 && width <= max_type<int>()); // TODO need warning only instead of assertion
+		PFS_ASSERT(!errno && width >= 0 && width <= max_value<int>()); // TODO need warning only instead of assertion
 
 		_ctx.pos = pos;
 		set_field_width(int(width));
@@ -173,10 +173,10 @@ bool safeformat::parse_precision ()
 	if (is_digit(*pos)) {
 		prec = strtointmax(pos, end
 				, 10
-				, min_type<intmax_t>()
-				, max_type<uintmax_t>()
+				, min_value<intmax_t>()
+				, max_value<uintmax_t>()
 				, & pos);
-		PFS_ASSERT(!errno && prec >= 0 && prec <= PFS_INT_MAX); // TODO need warning only instead of assertion
+		PFS_ASSERT(!errno && prec >= 0 && prec <= max_value<int>()); // TODO need warning only instead of assertion
 	}
 
 	if (sign > 0)

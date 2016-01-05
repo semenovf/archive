@@ -25,8 +25,8 @@ typedef pfs::date date_type;
 
 void test_min_max (void)
 {
-	TEST_OK(date_type::MinJulianDay == date_type::julian_day(PFS_INT_MIN,  1,  1));
-	TEST_OK(date_type::MaxJulianDay == date_type::julian_day(PFS_INT_MAX, 12, 31));
+	TEST_OK(date_type::MinJulianDay == date_type::julian_day(pfs::min_value<int>(),  1,  1));
+	TEST_OK(date_type::MaxJulianDay == date_type::julian_day(pfs::max_value<int>(), 12, 31));
 	TEST_OK(date_type::EpochJulianDay == date_type::julian_day(1970, 1, 1));
 }
 
@@ -103,7 +103,7 @@ void test_valid (void)
 	 int year;
 	 int month;
 	 int day;
-	 integral_t jd = integral_t(2456575);
+	 intmax_t jd = intmax_t(2456575);
 	 date_type::from_julian_day(jd, & year, & month, & day);
 
 	 stringstream_type ss;

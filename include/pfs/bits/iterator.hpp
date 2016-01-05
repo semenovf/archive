@@ -184,7 +184,7 @@ public:
 
 public:
 	forward_iterator ()
-		: input_iterator<Holder>(nullptr, pointer()) {}
+		: input_iterator<Holder>(0, pointer()) {}
 
 	forward_iterator (holder_class * holder, pointer ptr)
 		: input_iterator<Holder>(holder, ptr) {}

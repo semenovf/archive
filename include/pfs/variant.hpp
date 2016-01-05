@@ -85,8 +85,8 @@ private:
 public:
 	variant ()
 		: _hashCode(invalidHashCode())
-		, _destroy(nullptr)
-		, _copy(nullptr)
+		, _destroy(0)
+		, _copy(0)
 	{}
 
 	variant (const variant & other)
@@ -101,8 +101,8 @@ public:
 	template <typename T>
 	explicit variant (const T & v)
 		: _hashCode(invalidHashCode())
-		, _destroy(nullptr)
-		, _copy(nullptr)
+		, _destroy(0)
+		, _copy(0)
 	{
 		set<T>(v);
 	}
@@ -156,8 +156,8 @@ void variant<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>::destroy ()
 	if (_destroy)
 		_destroy(& _data);
 	_hashCode = invalidHashCode();
-	_destroy = nullptr;
-	_copy = nullptr;
+	_destroy = 0;
+	_copy = 0;
 }
 
 template <typename T1, typename T2, typename T3

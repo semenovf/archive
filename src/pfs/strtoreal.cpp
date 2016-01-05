@@ -235,7 +235,7 @@ real_t string_to_real (string::const_iterator begin
     	case parse_nan_state: {
     		string::const_iterator pos1 = check_str_nan(pos, end);
     		if (pos1 != pos) {
-    			r = sign < 0 ? - real_t(PFS_NAN) : real_t(PFS_NAN);
+    			r = sign < 0 ? - nan_value<real_t>() : nan_value<real_t>();
     			pos = pos1;
     			state = nan_state;
     		} else {
@@ -248,7 +248,7 @@ real_t string_to_real (string::const_iterator begin
     		string::const_iterator pos1 = check_str_inf(pos, end);
 
     		if (pos1 != pos) {
-    			r = sign < 0 ? - real_t(PFS_INFINITY) : real_t(PFS_INFINITY);
+    			r = sign < 0 ? - inf_value<real_t>() : inf_value<real_t>();
     			pos = pos1;
     			state = infinity_state;
     		} else {
@@ -308,15 +308,15 @@ real_t string_to_real (string::const_iterator begin
 		if (fractSize > 0)
 			exp -= fractSize;
 
-		if (exp < PFS_REAL_MIN_10_EXP) { // underflow
+		if (exp < min_exponent10<real_t>()/*PFS_REAL_MIN_10_EXP*/) { // underflow
 			errno = ERANGE;
 			r = 0.0f;
-		} else if (exp > PFS_REAL_MAX_10_EXP) { // overflow
+		} else if (exp > max_exponent10<real_t>()/*PFS_REAL_MAX_10_EXP*/) { // overflow
 			errno = ERANGE;
 			if (sign < 0) {
-				r = - PFS_HUGE_VAL;
+				r = - inf_value<real_t>()/*PFS_HUGE_VAL*/;
 			} else {
-				r = PFS_HUGE_VAL;
+				r = inf_value<real_t>()/*PFS_HUGE_VAL*/;
 			}
 		} else {
 			real_t dblExp, *d;
@@ -351,7 +351,7 @@ real_t string_to_real (string::const_iterator begin
     	*endref = pos;
     }
 
-    if (!errno && (isnan(r) || isinf(r)))
+    if (!errno && (is_nan(r) || is_inf(r)))
     	errno = EINVAL;
 
     return r;

@@ -144,8 +144,8 @@ static void test_char_helpers()
 static pfs::string _DIGITS("0123456789");
 static pfs::string _HEXDIGITS("ABCDEFabcdef");
 static pfs::fsm::transition<pfs::string> HEXDIG_FSM[] = {
-	  {-1, 1, FSM_MATCH_CHAR(_DIGITS)    , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_HEXDIGITS) , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_CHAR(_DIGITS)    , FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_CHAR(_HEXDIGITS) , FSM_ACCEPT, 0, 0 }
 };
 
 static void test_alternatives_simple()
@@ -155,7 +155,7 @@ static void test_alternatives_simple()
 	pfs::string hexdig("F");
 	pfs::string digit("9");
 	pfs::string notdigit("w");
-	pfs::fsm::fsm<pfs::string> fsm(HEXDIG_FSM, nullptr);
+	pfs::fsm::fsm<pfs::string> fsm(HEXDIG_FSM, 0);
 
 	TEST_FAIL(fsm.exec(0, hexdig.cbegin(), hexdig.cbegin()).first == false);
 
@@ -180,8 +180,8 @@ static void test_alternatives_simple()
 
 /* 0*DIGIT */
 static pfs::fsm::transition<pfs::string> decimal0more_fsm[] = {
-	  { 0, 1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_NOTHING      , FSM_ACCEPT, nullptr, nullptr }
+	  { 0, 1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_NOTHING      , FSM_ACCEPT, 0, 0 }
 };
 
 static void test_repetition_0more()
@@ -190,7 +190,7 @@ static void test_repetition_0more()
 
 	pfs::string dec("1972");
 	pfs::string notdec("x1972");
-	pfs::fsm::fsm<pfs::string> fsm(decimal0more_fsm, nullptr);
+	pfs::fsm::fsm<pfs::string> fsm(decimal0more_fsm, 0);
 
 	pfs::string::const_iterator it_end;
 	result_type r;
@@ -242,19 +242,19 @@ static void test_repetition_0more()
 
 /* 1*DIGIT */
 static pfs::fsm::transition<pfs::string> decimal1more_fsm[] = {
-	  { 0,-1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, nullptr, nullptr }
+	  { 0,-1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, 0, 0 }
 };
 
 /* 2*DIGIT */
 static pfs::fsm::transition<pfs::string> decimal2more_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_DIGITS), FSM_NORMAL, nullptr, nullptr }
-	, { 1,-1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR(_DIGITS), FSM_NORMAL, 0, 0 }
+	, { 1,-1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, 0, 0 }
 };
 
 
 /* 1*HEXDIG_FSM */
 static pfs::fsm::transition<pfs::string> hex_fsm[] = {
-      { 0,-1, FSM_MATCH_FSM(HEXDIG_FSM), FSM_ACCEPT, nullptr, nullptr }
+      { 0,-1, FSM_MATCH_FSM(HEXDIG_FSM), FSM_ACCEPT, 0, 0 }
 };
 
 static void test_repetition_1or2more(void)
@@ -266,7 +266,7 @@ static void test_repetition_1or2more(void)
 	pfs::string hex("BEAF");
 	pfs::string nothex("BEAR");
 
-	pfs::fsm::fsm<pfs::string> fsm(decimal1more_fsm, nullptr);
+	pfs::fsm::fsm<pfs::string> fsm(decimal1more_fsm, 0);
 
 	pfs::string::const_iterator it_end;
 	result_type r;
@@ -370,17 +370,17 @@ static void test_repetition_1or2more(void)
 
 /* NON-ZERO_DIGIT *DIGIT */
 static pfs::fsm::transition<pfs::string> non_zero_decimal_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_u8("123456789")), FSM_ACCEPT, nullptr, nullptr }
-	, { 1,-1, FSM_MATCH_CHAR(_DIGITS) , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR(_u8("123456789")), FSM_ACCEPT, 0, 0 }
+	, { 1,-1, FSM_MATCH_CHAR(_DIGITS) , FSM_ACCEPT, 0, 0 }
 };
 
 
 /* (non-zero-dec dec)  / ( "0" ("x" / "X") hex ) */
 static pfs::fsm::transition<pfs::string> number_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(non_zero_decimal_fsm), FSM_ACCEPT, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_STR(_u8("0"))        , FSM_NORMAL, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_CHAR(_u8("xX"))      , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(hex_fsm)         , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_FSM(non_zero_decimal_fsm), FSM_ACCEPT, 0, 0 }
+	, { 2,-1, FSM_MATCH_STR(_u8("0"))        , FSM_NORMAL, 0, 0 }
+	, { 3,-1, FSM_MATCH_CHAR(_u8("xX"))      , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(hex_fsm)         , FSM_ACCEPT, 0, 0 }
 };
 
 static void test_alternatives(void)
@@ -390,7 +390,7 @@ static void test_alternatives(void)
 	pfs::string hex("0xDEAD");
 	pfs::string decimal("1972");
 	pfs::string notnumber("[number]");
-	pfs::fsm::fsm<pfs::string> fsm(number_fsm, nullptr);
+	pfs::fsm::fsm<pfs::string> fsm(number_fsm, 0);
 
 	pfs::string::const_iterator it_end;
 	result_type r;
@@ -454,25 +454,25 @@ static void test_alternatives(void)
 }
 
 static pfs::fsm::transition<pfs::string> alpha_seq_fsm[] = {
-	  { 1,-1, FSM_MATCH_SEQ(1) , FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_SEQ(2) , FSM_NORMAL, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_SEQ(3) , FSM_NORMAL, nullptr, nullptr }
-	, { 4,-1, FSM_MATCH_SEQ(4) , FSM_NORMAL, nullptr, nullptr }
-	, { 5,-1, FSM_MATCH_SEQ(5) , FSM_NORMAL, nullptr, nullptr }
-	, { 6,-1, FSM_MATCH_SEQ(6) , FSM_NORMAL, nullptr, nullptr }
-	, { 7,-1, FSM_MATCH_SEQ(7) , FSM_NORMAL, nullptr, nullptr }
-	, { 8,-1, FSM_MATCH_SEQ(8) , FSM_NORMAL, nullptr, nullptr }
-	, { 9,-1, FSM_MATCH_SEQ(9) , FSM_NORMAL, nullptr, nullptr }
-	, {10,-1, FSM_MATCH_SEQ(7) , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_SEQ(33), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_SEQ(1) , FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_SEQ(2) , FSM_NORMAL, 0, 0 }
+	, { 3,-1, FSM_MATCH_SEQ(3) , FSM_NORMAL, 0, 0 }
+	, { 4,-1, FSM_MATCH_SEQ(4) , FSM_NORMAL, 0, 0 }
+	, { 5,-1, FSM_MATCH_SEQ(5) , FSM_NORMAL, 0, 0 }
+	, { 6,-1, FSM_MATCH_SEQ(6) , FSM_NORMAL, 0, 0 }
+	, { 7,-1, FSM_MATCH_SEQ(7) , FSM_NORMAL, 0, 0 }
+	, { 8,-1, FSM_MATCH_SEQ(8) , FSM_NORMAL, 0, 0 }
+	, { 9,-1, FSM_MATCH_SEQ(9) , FSM_NORMAL, 0, 0 }
+	, {10,-1, FSM_MATCH_SEQ(7) , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_SEQ(33), FSM_ACCEPT, 0, 0 }
 };
 
 static pfs::fsm::transition<pfs::string> z_pos_fsm[] = {
-	  { 1,-1, FSM_MATCH_SEQ(25)       , FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_STR(_u8("Z")) , FSM_NORMAL, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_SEQ(25)       , FSM_NORMAL, nullptr, nullptr }
-	, { 4,-1, FSM_MATCH_STR(_u8("z")) , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_SEQ(33)       , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_SEQ(25)       , FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_STR(_u8("Z")) , FSM_NORMAL, 0, 0 }
+	, { 3,-1, FSM_MATCH_SEQ(25)       , FSM_NORMAL, 0, 0 }
+	, { 4,-1, FSM_MATCH_STR(_u8("z")) , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_SEQ(33)       , FSM_ACCEPT, 0, 0 }
 };
 
 
@@ -480,8 +480,8 @@ void test_sequence ()
 {
 	typedef pfs::fsm::fsm<pfs::string>::result_type result_type;
 
-	pfs::fsm::fsm<pfs::string> fsm1(alpha_seq_fsm, nullptr);
-	pfs::fsm::fsm<pfs::string> fsm2(z_pos_fsm, nullptr);
+	pfs::fsm::fsm<pfs::string> fsm1(alpha_seq_fsm, 0);
+	pfs::fsm::fsm<pfs::string> fsm2(z_pos_fsm, 0);
 
 	TEST_FAIL(fsm1.exec(0, __alpha_chars.cbegin(), __alpha_chars.cend())
 			== result_type(true, __alpha_chars.cend()));
@@ -491,14 +491,14 @@ void test_sequence ()
 }
 
 static pfs::fsm::transition<pfs::string> rpt_fsm[] = {
-	  {-1,-1, FSM_MATCH_RPT_STR(_u8("_ABC"), 0, 10) , FSM_ACCEPT, nullptr, nullptr }
+	  {-1,-1, FSM_MATCH_RPT_STR(_u8("_ABC"), 0, 10) , FSM_ACCEPT, 0, 0 }
 };
 
 void test_rpt ()
 {
 	typedef pfs::fsm::fsm<pfs::string>::result_type result_type;
 
-	pfs::fsm::fsm<pfs::string> fsm(rpt_fsm, nullptr);
+	pfs::fsm::fsm<pfs::string> fsm(rpt_fsm, 0);
 	TEST_FAIL(fsm.exec(0, __rpt_chars.cbegin(), __rpt_chars.cend())
 			== result_type(true, __rpt_chars.cend()));
 }
@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
 	PFS_UNUSED(argc);
 	PFS_UNUSED(argv);
 
-	BEGIN_TESTS(226);
+	BEGIN_TESTS(229);
 
 	test_byte_helpers();
 	test_int_helpers();

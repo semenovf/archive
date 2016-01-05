@@ -95,14 +95,14 @@ public:
 			, const_iterator end);
 
 private:
-	match() : _match(nullptr) {}
+	match() : _match(0) {}
 	void deref () {
 		if (_match) {
 			PFS_ASSERT(_match->_ref > 0);
 			--_match->_ref;
 			if (_match->_ref == 0)
 				delete _match;
-			_match = nullptr;
+			_match = 0;
 		}
 	}
 
@@ -248,8 +248,8 @@ template <typename _Sequence>
 fsm<_Sequence>::fsm ()
 	: _context(new context<_Sequence>)
 {
-	_context->_trans_tab   = nullptr;
-	_context->_userContext = nullptr;
+	_context->_trans_tab   = 0;
+	_context->_userContext = 0;
 }
 
 template <typename _Sequence>

@@ -112,7 +112,7 @@ public:
 	intmax_t seconds_to (const datetime & other) const
 	{
 	    return valid() && other.valid()
-	    		? _date.days_to(other._date) * time::SecondsPerDay + integral_t(_time.seconds_to(other._time))
+	    		? _date.days_to(other._date) * time::SecondsPerDay + intmax_t(_time.seconds_to(other._time))
 	    		: 0;
 	}
 
@@ -126,7 +126,7 @@ public:
 
 	    return valid() && other.valid()
 	    		? _date.days_to(other._date) * time::MillisPerDay
-	    				+ integral_t(_time.millis_to(other._time))
+	    				+ intmax_t(_time.millis_to(other._time))
 	    		: 0;
 	}
 

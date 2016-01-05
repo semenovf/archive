@@ -101,7 +101,7 @@ uintmax_t strtouintmax (string::const_iterator begin
 
 		// Fix for case when treats negative numbers
 		//
-		if (sign < 0 && max_value < pfs::max_type<uintmax_t>())
+		if (sign < 0 && max_value < pfs::max_value<uintmax_t>())
 		    ++max_value;
 
 		while (pos != end) {
@@ -112,7 +112,7 @@ uintmax_t strtouintmax (string::const_iterator begin
 
 			if (r > (max_value - digit)/radix || r * radix > max_value - digit) {
 				errno = ERANGE;
-				r = pfs::max_type<uintmax_t>();
+				r = pfs::max_value<uintmax_t>();
 			} else {
 				r = r * radix + digit;
 			}
@@ -187,18 +187,18 @@ intmax_t strtointmax (string::const_iterator begin
 	if (*pos == '-') {
 		if (static_cast<intmax_t>(r) > 0) {
 			errno = ERANGE;
-			return pfs::min_type<intmax_t>();
+			return pfs::min_value<intmax_t>();
 		}
 	} else {
 		if (static_cast<intmax_t>(r) < 0) {
 			errno = ERANGE;
-			return pfs::max_type<intmax_t>();
+			return pfs::max_value<intmax_t>();
 		}
 	}
 
 	if (static_cast<intmax_t>(r) < min_value) {
 		errno = ERANGE;
-		return pfs::min_type<intmax_t>();
+		return pfs::min_value<intmax_t>();
 	}
 
 	return static_cast<intmax_t>(r);

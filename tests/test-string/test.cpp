@@ -7,9 +7,7 @@
 
 #include <pfs/test/test.hpp>
 #include <pfs/limits.hpp>
-//#include <pfs/ucchar.hpp>
 #include <pfs/string.hpp>
-//#include <pfs/stringlist.hpp>
 #include <cstring>
 #include <iostream>
 #include <cstdio>
@@ -20,7 +18,7 @@ using std::endl;
 
 void test_to_string ()
 {
-	ADD_TESTS(22);
+	ADD_TESTS(19);
 	TEST_OK(pfs::to_string(0)       == pfs::string("0"));
 	TEST_OK(pfs::to_string(127)     == pfs::string("127"));
 	TEST_OK(pfs::to_string(-128)    == pfs::string("-128"));
@@ -35,7 +33,8 @@ void test_to_string ()
 	TEST_OK(pfs::to_string(pfs::min_value<int32_t>()) == pfs::string("-2147483648"));
 	TEST_OK(pfs::to_string(pfs::max_value<uint32_t>()) == pfs::string("4294967295"));
 
-#ifdef PFS_HAVE_LONGLONG
+#ifdef PFS_HAVE_LONG_LONG
+	ADD_TESTS(3);
 	TEST_OK(pfs::to_string(pfs::max_value<intmax_t>()) == pfs::string("9223372036854775807"));
 	TEST_OK(pfs::to_string(pfs::min_value<intmax_t>()) == pfs::string("-9223372036854775808"));
 	TEST_OK(pfs::to_string(pfs::max_value<uintmax_t>()) == pfs::string("18446744073709551615"));
@@ -593,11 +592,11 @@ void test_convert_to_number ()
 	//
 	// Check signed and unsigned char specific methods for boundary values
 	//
-//    TEST_OK(utfstring("255").toUnsignedChar(& ok)  == pfs::max_type<unsigned char>() && ok);
-//    TEST_OK(utfstring("127").toUnsignedChar(& ok)  == static_cast<unsigned char>(pfs::max_type<signed char>()) && ok);
-//    TEST_OK(utfstring("-128").toUnsignedChar(& ok) == static_cast<unsigned char>(pfs::min_type<signed char>()) && ok);
-//    TEST_OK(utfstring("127").toSignedChar(& ok)   == pfs::max_type<signed char>() && ok);
-    TEST_OK(utfstring("-128").toSignedChar(& ok)  == pfs::min_type<signed char>() && ok);
+//    TEST_OK(utfstring("255").toUnsignedChar(& ok)  == pfs::max_value<unsigned char>() && ok);
+//    TEST_OK(utfstring("127").toUnsignedChar(& ok)  == static_cast<unsigned char>(pfs::max_value<signed char>()) && ok);
+//    TEST_OK(utfstring("-128").toUnsignedChar(& ok) == static_cast<unsigned char>(pfs::min_value<signed char>()) && ok);
+//    TEST_OK(utfstring("127").toSignedChar(& ok)   == pfs::max_value<signed char>() && ok);
+    TEST_OK(utfstring("-128").toSignedChar(& ok)  == pfs::min_value<signed char>() && ok);
 
     TEST_OK(utfstring("256").toUnsignedChar(& ok)  == 0 && !ok && errno == ERANGE); // + 1 more overflow
     TEST_OK(utfstring("257").toUnsignedChar(& ok)  == 0 && !ok && errno == ERANGE); // + 2 more overflow
@@ -668,7 +667,7 @@ void test_convert_to_number ()
 //	}
 //#endif
 //
-//    if (sizeof(integral_t) == 8) {
+//    if (sizeof(intmax_t) == 8) {
 //        TEST_OK(utfstring("18446744073709551615").toUIntegral(& ok) == PFS_UINTEGRAL_MAX && ok);
 //        TEST_OK(utfstring("9223372036854775807").toIntegral(& ok) == PFS_INTEGRAL_MAX && ok);
 //        TEST_OK(utfstring("-9223372036854775808").toIntegral(& ok) == PFS_INTEGRAL_MIN && ok);

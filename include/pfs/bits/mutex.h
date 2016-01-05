@@ -49,7 +49,7 @@
 	typedef pthread_mutex_t native_mutex_t;
 
 #	define pfs_mutex_def(m)      native_mutex_t m
-#	define pfs_mutex_init(m)     pthread_mutex_init(& m, 0/*nullptr*/)
+#	define pfs_mutex_init(m)     pthread_mutex_init(& m, 0)
 #	define pfs_mutex_destroy(m)  pthread_mutex_destroy(& m)
 #	define pfs_mutex_lock(m)     pthread_mutex_lock(& m)
 #	define pfs_mutex_try_lock(m) pthread_mutex_trylock(& m)

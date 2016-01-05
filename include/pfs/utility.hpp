@@ -25,21 +25,21 @@
 #endif
 
 
-#if ! PFS_HAVE_STD_SWAP
-
-namespace std {
+namespace pfs {
 
 template<typename T>
 inline void swap (T & a, T & b)
 {
+#if PFS_HAVE_STD_SWAP
+	std::swap(a, b);
+#else
 	T tmp = a;
 	a = b;
 	b = tmp;
+#endif
 }
 
-} // std
-
-#endif
+} // pfs
 
 #ifdef max
 #	undef max

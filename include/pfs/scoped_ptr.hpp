@@ -24,7 +24,7 @@ protected:
 	T * _value;
 
 public:
-	scoped_ptr() : _value(nullptr) { }
+	scoped_ptr() : _value(0) { }
 	explicit scoped_ptr (value_type * p) : _value(p) {}
 	scoped_ptr (const scoped_ptr & other) : _value(other._value) {}
 	~scoped_ptr () { delete _value; }

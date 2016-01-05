@@ -758,8 +758,8 @@ public:
 	template <typename T>
 	size_t readNumber (T & v, size_t pos = 0, endian::type_enum order = endian::nativeOrder()) const;
 
-	integral_t toIntegral (bool * ok = 0, int base = 10) const;
-	uintegral_t toUIntegral (bool * ok = 0, int base = 10) const;
+	intmax_t toIntegral (bool * ok = 0, int base = 10) const;
+	uintmax_t toUIntegral (bool * ok = 0, int base = 10) const;
 
 	short          toShort  (bool * ok = 0, int base = 10) const;
 	unsigned short toUShort (bool * ok = 0, int base = 10) const;

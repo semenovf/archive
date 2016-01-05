@@ -21,6 +21,8 @@
 
 namespace pfs {
 
+const intmax_t date::NullJulianDay  = max_value<intmax_t>();
+
 static const byte_t __daysInMonth[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 static inline date __valid_date(int y, int m, int d)
@@ -256,7 +258,7 @@ int date::days_in_month() const
 
     int y, m;
 
-    from_julian_day(_jd, & y, & m, nullptr);
+    from_julian_day(_jd, & y, & m, 0);
 
     return  (m == 2 && is_leap_year(y))
     		? 29
@@ -275,7 +277,7 @@ int date::days_in_year () const
         return 0;
 
     int y;
-    from_julian_day(_jd, & y, nullptr, nullptr);
+    from_julian_day(_jd, & y, 0, 0);
     return is_leap_year(y) ? 366 : 365;
 }
 
@@ -316,7 +318,7 @@ int date::year () const
         return 0;
 
     int y;
-    from_julian_day(_jd, & y, nullptr, nullptr);
+    from_julian_day(_jd, & y, 0, 0);
     return y;
 }
 
@@ -326,7 +328,7 @@ int date::month () const
         return 0;
 
     int m;
-    from_julian_day(_jd, nullptr, & m, nullptr);
+    from_julian_day(_jd, 0, & m, 0);
     return m;
 }
 
@@ -336,7 +338,7 @@ int date::day () const
         return 0;
 
     int d;
-    from_julian_day(_jd, nullptr, nullptr, & d);
+    from_julian_day(_jd, 0, 0, & d);
     return d;
 }
 

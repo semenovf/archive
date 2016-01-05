@@ -31,7 +31,7 @@ protected:
 	impl_base * _holder;
 
 public:
-	pimpl () : _holder(nullptr) {}
+	pimpl () : _holder(0) {}
 
 	template<typename T>
 	pimpl (T * p) : _holder(new impl_holder<T>(p)) { }
@@ -60,7 +60,7 @@ public:
 	    deref();
 	}
 
-	bool isNull () const { return _holder == nullptr; }
+	bool isNull () const { return _holder == 0; }
 	bool isUnique () const
 	{
 		return isNull() || _holder->_ref.load() == 1;
@@ -88,7 +88,7 @@ protected:
 	{
 		if (_holder && !_holder->_ref.deref()) {
 			delete _holder;
-			_holder = nullptr;
+			_holder = 0;
 		}
 	}
 
@@ -98,7 +98,7 @@ protected:
 		pfs::atomic_int _ref;
 		impl_base () : _ref(1) {}
 		virtual ~impl_base () {}
-		virtual impl_base * clone () const = 0;// { PFS_ASSERT(false); return nullptr; }
+		virtual impl_base * clone () const = 0;
 	};
 
 	// Need to avoid instantiation of T while casting to abstract class

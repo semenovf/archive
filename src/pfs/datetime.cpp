@@ -17,12 +17,12 @@ void datetime::set_date (const date & d)
         _time.set_time(0, 0, 0);
 }
 
-datetime datetime::add_millis (integral_t millis) const
+datetime datetime::add_millis (intmax_t millis) const
 {
 	datetime r;
 
-    integral_t dd = _date.julian_day();
-    integral_t tt = time(0, 0, 0).millis_to(_time);
+    intmax_t dd = _date.julian_day();
+    intmax_t tt = time(0, 0, 0).millis_to(_time);
     int sign = 1;
 
     if (millis < 0) {
@@ -30,7 +30,7 @@ datetime datetime::add_millis (integral_t millis) const
         sign = -1;
     }
 
-    if (millis >= integral_t(time::MillisPerDay)) {
+    if (millis >= intmax_t(time::MillisPerDay)) {
         dd += sign * (millis / time::MillisPerDay);
         millis %= time::MillisPerDay;
     }
@@ -47,16 +47,16 @@ datetime datetime::add_millis (integral_t millis) const
         tt = tt % time::MillisPerDay;
     }
 
-    PFS_ASSERT(tt >= PFS_INT_MIN && tt <= PFS_INT_MAX);
+    PFS_ASSERT(tt >= min_value<int>() && tt <= max_value<int>());
     r._date.from_julian_day(dd);
     r._time = time(0, 0, 0).add_millis(int(tt));
 
     return r;
 }
 
-void datetime::set_millis_since_epoch (integral_t millis)
+void datetime::set_millis_since_epoch (intmax_t millis)
 {
-    integral_t days = millis / time::MillisPerDay;
+    intmax_t days = millis / time::MillisPerDay;
     millis %= time::MillisPerDay;
 
     if (millis < 0) {
@@ -64,8 +64,8 @@ void datetime::set_millis_since_epoch (integral_t millis)
         millis += time::MillisPerDay;
     }
 
-    PFS_ASSERT(days >= PFS_INT_MIN && days <= PFS_INT_MAX);
-    PFS_ASSERT(millis >= PFS_INT_MIN && millis <= PFS_INT_MAX);
+    PFS_ASSERT(days >= min_value<int>() && days <= max_value<int>());
+    PFS_ASSERT(millis >= min_value<int>() && millis <= max_value<int>());
     _date = date(1970, 1, 1).add_days(int(days));
     _time = time(0, 0, 0).add_millis(int(millis));
 }

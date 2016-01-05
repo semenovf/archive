@@ -57,6 +57,73 @@
 #endif
 
 #include <cfloat>
+#include <limits>
+
+#ifndef SIZE_MAX
+#	error NO SIZE_MAX
+#endif
+
+#if defined(_SIZE_T_DEFINED_)    \
+	|| defined(_SIZE_T_DEFINED)  \
+	|| defined(__DJ_size_t)      \
+	|| defined(__size_t_defined) \
+	|| defined(_SIZE_T_)         \
+	|| defined(_SIZE_T)              /* borland c++ */
+#	define PFS_HAVE_SIZE_T 1
+#endif
+
+#if defined(_SSIZE_T_DEFINED_)   \
+	|| defined(_SSIZE_T_DEFINED) \
+	|| defined(__DJ_ssize_t)     \
+	|| defined(__ssize_t_defined)
+#	define PFS_HAVE_SSIZE_T 1
+#endif
+
+#if defined(_INTPTR_T_DEFINED) /* msvc */     \
+    || defined(__intptr_t_defined) /* gcc */
+#	define PFS_HAVE_INTPTR_T 1
+#endif
+
+#if defined(_UINTPTR_T_DEFINED) \
+    || defined(__intptr_t_defined) /* gcc */
+#	define PFS_HAVE_UINTPTR_T 1
+#endif
+
+#if defined(__PTRDIFF_TYPE__)                  \
+	|| defined(_PTRDIFF_T_DEFINED)  /* msvc */ \
+	|| defined(_PTRDIFF_T)          /* borland c++ */
+#	define PFS_HAVE_PTRDIFF_T 1
+#endif
+
+#ifdef PFS_HAVE_LONG_LONG
+#	undef PFS_HAVE_LONG_LONG
+#endif
+
+#ifdef PFS_HAVE_LONGLONG
+#	undef PFS_HAVE_LONGLONG
+#endif
+
+#if defined(LLONG_MAX)                   \
+	|| defined(__LONG_LONG_MAX__)  // valid for gcc
+
+#   define PFS_HAVE_LONG_LONG 1
+#	define PFS_HAVE_LONGLONG 1
+#endif
+
+#if defined(LDBL_MIN) \
+	|| defined(__LDBL_MIN__)      // valid for gcc
+
+#	ifdef PFS_HAVE_LONG_DOUBLE
+#		undef PFS_HAVE_LONG_DOUBLE
+#	endif
+#	define PFS_HAVE_LONG_DOUBLE 1
+#endif
+
+#ifdef PFS_HAVE_LONG_DOUBLE
+#   define PFS_REAL_LITERAL(x) x##L
+#else
+#   define PFS_REAL_LITERAL(x) x
+#endif
 
 #if PFS_HAVE_INT8_T
     typedef int8_t   int8_t;
@@ -87,5 +154,14 @@
 #endif
 
 typedef uint8_t byte_t;
+
+#if PFS_HAVE_LONG_DOUBLE
+    typedef long double    real_t;
+#else
+    typedef double         real_t;
+#endif
+
+typedef float real32_t;
+typedef double real64_t;
 
 #endif /* __PFS_TYPES_HPP__ */
