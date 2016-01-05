@@ -214,7 +214,7 @@ void thread::yieldCurrentThread()
     sched_yield();
 }
 
-static timespec __make_timespec (time_t secs, integral_t nsecs)
+static timespec __make_timespec (time_t secs, intmax_t nsecs)
 {
     struct timespec ts;
     ts.tv_sec = secs;

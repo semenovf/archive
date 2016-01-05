@@ -30,7 +30,7 @@ public:
 	thread_cv ();
     ~thread_cv ();
 
-    bool wait (pfs::mutex & lockedMutex, uintmax_t time = PFS_UINTEGRAL_MAX);
+    bool wait (pfs::mutex & lockedMutex, uintmax_t time = max_value<uintmax_t>());
 //    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time = ULONG_MAX);
 
     void wakeOne ();
