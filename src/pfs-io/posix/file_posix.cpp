@@ -137,6 +137,24 @@ bool file::close (error_code * pex)
     return r;
 }
 
+
+static int __convert_to_native_perms (int perms)
+{
+	int r = 0;
+
+	if (perms & fs::perm_user_read)   r |= S_IRUSR;
+	if (perms & fs::perm_user_write)  r |= S_IWUSR;
+	if (perms & fs::perm_user_exec)   r |= S_IXUSR;
+	if (perms & fs::perm_group_read)  r |= S_IRGRP;
+	if (perms & fs::perm_group_write) r |= S_IWGRP;
+	if (perms & fs::perm_group_exec)  r |= S_IXGRP;
+	if (perms & fs::perm_other_read)  r |= S_IROTH;
+	if (perms & fs::perm_other_write) r |= S_IWOTH;
+	if (perms & fs::perm_other_exec)  r |= S_IXOTH;
+
+	return r;
+}
+
 template <>
 bool open_device<file> (device & d, const open_params<file> & op, error_code * pex)
 {
@@ -145,13 +163,16 @@ bool open_device<file> (device & d, const open_params<file> & op, error_code * p
 
 	int fd;
 	int native_oflags = 0;
+	mode_t native_mode = 0;
 
     if ((op.oflags & device::WriteOnly) && (op.oflags & device::ReadOnly)) {
     	native_oflags |= O_RDWR;
     	native_oflags |= O_CREAT;
+    	native_mode   |= __convert_to_native_perms(op.permissions);
     } else if (op.oflags & device::WriteOnly) {
     	native_oflags |= O_WRONLY;
     	native_oflags |= O_CREAT;
+    	native_mode   |= __convert_to_native_perms(op.permissions);
     } else if (op.oflags & device::ReadOnly) {
     	native_oflags |= O_RDONLY;
     }
@@ -159,7 +180,7 @@ bool open_device<file> (device & d, const open_params<file> & op, error_code * p
 	if (op.oflags & device::NonBlocking)
 		native_oflags |= O_NONBLOCK;
 
-	fd = ::open(op.path.native().c_str(), native_oflags);
+	fd = ::open(op.path.native().c_str(), native_oflags, native_mode);
 
 	if (fd < 0) {
 		if (pex)

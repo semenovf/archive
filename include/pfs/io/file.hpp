@@ -23,17 +23,34 @@ struct file;
 template <>
 struct open_params<file>
 {
+	static const int default_create_perms = fs::perm_user_read
+			| fs::perm_user_write
+			| fs::perm_group_read
+			| fs::perm_other_read;
+
 	fs::path path;
 	device::open_mode_flags oflags;
+	int permissions;
+
+	open_params (const fs::path & s, device::open_mode_flags of, int perms)
+		: path(s)
+		, oflags(of)
+		, permissions(perms)
+	{}
 
 	open_params (const fs::path & s, device::open_mode_flags of)
-		: path(s), oflags(of)
+		: path(s)
+		, oflags(of)
+		, permissions(default_create_perms)
 	{}
 
 	open_params (const fs::path & s)
-		: path(s), oflags(device::ReadWrite)
+		: path(s)
+		, oflags(device::ReadWrite)
+		, permissions(default_create_perms)
 	{}
 };
+
 
 /**
  * @fn bool open_device<file> (device & d, const open_params<file> & op)

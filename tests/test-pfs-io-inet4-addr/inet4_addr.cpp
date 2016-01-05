@@ -52,16 +52,16 @@ bool test_check_valid (int addrClass, bool withPort, int ntests)
         uint32_t  a, b, c, d, p;
 
         if (addrClass == 4) {
-            a = rnd.rand() % pfs::max_type<uint8_t>();
-            b = rnd.rand() % pfs::max_type<uint8_t>();
-            c = rnd.rand() % pfs::max_type<uint8_t>();
-            d = rnd.rand() % pfs::max_type<uint8_t>();
+            a = rnd.rand() % pfs::max_value<uint8_t>();
+            b = rnd.rand() % pfs::max_value<uint8_t>();
+            c = rnd.rand() % pfs::max_value<uint8_t>();
+            d = rnd.rand() % pfs::max_value<uint8_t>();
         } else if (addrClass == 3) {
-            a = rnd.rand() % pfs::max_type<uint8_t>();
-            b = rnd.rand() % pfs::max_type<uint8_t>();
-            c = rnd.rand() % pfs::max_type<uint16_t>();
+            a = rnd.rand() % pfs::max_value<uint8_t>();
+            b = rnd.rand() % pfs::max_value<uint8_t>();
+            c = rnd.rand() % pfs::max_value<uint16_t>();
         } else if (addrClass == 2) {
-            a = rnd.rand() % pfs::max_type<uint8_t>();
+            a = rnd.rand() % pfs::max_value<uint8_t>();
             b = rnd.rand() % PFS_UINT24_MAX;
         } else if (addrClass == 1) {
             a = rnd.rand();
@@ -69,7 +69,7 @@ bool test_check_valid (int addrClass, bool withPort, int ntests)
             return false;
         }
 
-        p = rnd.rand() % pfs::max_type<uint16_t>();
+        p = rnd.rand() % pfs::max_value<uint16_t>();
 
         pfs::string addrDecStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 10);
         pfs::string addrOctStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 8);
@@ -120,16 +120,16 @@ bool test_check_to_string (const string & format, int ntests)
         uint32_t  a, b, c, d, p;
 
         if (addrClass == 4) {
-            a = rnd.rand() % pfs::max_type<uint8_t>();
-            b = rnd.rand() % pfs::max_type<uint8_t>();
-            c = rnd.rand() % pfs::max_type<uint8_t>();
-            d = rnd.rand() % pfs::max_type<uint8_t>();
+            a = rnd.rand() % pfs::max_value<uint8_t>();
+            b = rnd.rand() % pfs::max_value<uint8_t>();
+            c = rnd.rand() % pfs::max_value<uint8_t>();
+            d = rnd.rand() % pfs::max_value<uint8_t>();
         } else if (addrClass == 3) {
-            a = rnd.rand() % pfs::max_type<uint8_t>();
-            b = rnd.rand() % pfs::max_type<uint8_t>();
-            c = rnd.rand() % pfs::max_type<uint16_t>();
+            a = rnd.rand() % pfs::max_value<uint8_t>();
+            b = rnd.rand() % pfs::max_value<uint8_t>();
+            c = rnd.rand() % pfs::max_value<uint16_t>();
         } else if (addrClass == 2) {
-            a = rnd.rand() % pfs::max_type<uint8_t>();
+            a = rnd.rand() % pfs::max_value<uint8_t>();
             b = rnd.rand() % PFS_UINT24_MAX;
         } else if (addrClass == 1) {
             a = rnd.rand();
@@ -137,7 +137,7 @@ bool test_check_to_string (const string & format, int ntests)
             return false;
         }
 
-        p = rnd.rand() % pfs::max_type<uint16_t>();
+        p = rnd.rand() % pfs::max_value<uint16_t>();
 
         pfs::string addrDecStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 10);
         pfs::string addrOctStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 8);

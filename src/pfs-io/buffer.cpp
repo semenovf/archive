@@ -110,7 +110,7 @@ ssize_t buffer::read (byte_t * bytes, size_t n, error_code * ex)
 ssize_t buffer::write (const byte_t * bytes, size_t n, error_code * ex)
 {
 	PFS_UNUSED(ex);
-    PFS_ASSERT(max_type<size_t>() - _pos >= n);
+    PFS_ASSERT(max_value<size_t>() - _pos >= n);
 
     size_t size = _buffer.size() - _pos;
 

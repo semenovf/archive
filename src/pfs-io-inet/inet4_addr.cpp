@@ -78,7 +78,7 @@ bool parse_inet4_addr_part (const string & part, UInt & result)
     if (!parse_inet4_addr_part_helper(part, r))
         return false;
 
-    if (r > max_type<UInt>())
+    if (r > max_value<UInt>())
         return false;
 
     result = static_cast<UInt>(r);
@@ -103,7 +103,7 @@ static bool parse_inet4_addr (const string & addrStr, uint32_t & addr, int32_t &
         if (!parse_inet4_addr_part_helper(parts[1], r))
             return false;
 
-        if (r > max_type<uint16_t>())
+        if (r > max_value<uint16_t>())
             return false;
 
         port = static_cast<int32_t>(r);

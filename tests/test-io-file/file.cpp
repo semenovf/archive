@@ -212,25 +212,25 @@ void test_write_read ()
 {
 	ADD_TESTS(8);
 	// FIXME Use pfs::fs::unique() call to generate temporary file
-    pfs::fs::path filePath("/tmp/test_io_file.tmp");
-    TEST_FAIL2(!filePath.empty(), "Build temporary file name");
+    pfs::fs::path file_path("/tmp/test_io_file.tmp");
+    TEST_FAIL2(!file_path.empty(), "Build temporary file name");
 
-    if (pfs::fs::exists(filePath))
-    	pfs::fs::unlink(filePath);
+    if (pfs::fs::exists(file_path))
+    	pfs::fs::unlink(file_path);
 
     device d;
 
-    TEST_FAIL(open_device(d, open_params<file>(filePath, device::WriteOnly)));
+    TEST_FAIL(open_device(d, open_params<file>(file_path, device::WriteOnly)));
     TEST_FAIL(d.write(loremipsum, ::strlen(loremipsum)) == ssize_t(::strlen(loremipsum)));
     TEST_FAIL(d.close());
 
-    TEST_FAIL(open_device(d, open_params<file>(filePath, device::ReadOnly)));
+    TEST_FAIL(open_device(d, open_params<file>(file_path, device::ReadOnly)));
     pfs::byte_string bs;
     d.read(bs, ::strlen(loremipsum));
 
     TEST_OK(d.close());
     TEST_OK(bs == loremipsum);
-    TEST_FAIL2(pfs::fs::unlink(filePath), "Temporary file unlink");
+    TEST_FAIL2(pfs::fs::unlink(file_path), "Temporary file unlink");
 }
 
 //void test_bytes_available ()
