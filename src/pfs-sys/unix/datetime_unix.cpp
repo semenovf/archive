@@ -21,7 +21,7 @@ DLL_API pfs::datetime current_datetime ()
     struct timeval tv;
     gettimeofday(& tv, 0);
     time_t t = tv.tv_sec;
-    struct tm * tmPtr = nullptr;
+    struct tm * tmPtr = 0;
 
 #if PFS_HAVE_LOCALTIME_R
     tzset();

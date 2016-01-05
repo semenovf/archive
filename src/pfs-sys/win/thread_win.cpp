@@ -155,7 +155,7 @@ void thread_impl::finish (void * arg, bool /*lockAnyway*/)
     d->_threadId = 0;
 }
 
-bool thread::wait (uintegral_t timeout)
+bool thread::wait (uintmax_t timeout)
 {
 	thread_impl * d = _d.cast<thread_impl>();
 	pfs::auto_lock<> locker(& d->_mutex);
@@ -242,19 +242,19 @@ void thread::yieldCurrentThread ()
     SwitchToThread();
 }
 
-void thread::sleep (uintegral_t secs)
+void thread::sleep (uintmax_t secs)
 {
-    ::Sleep(integral_cast_check<DWORD, uintegral_t>(secs * 1000));
+    ::Sleep(integral_cast_check<DWORD, uintmax_t>(secs * 1000));
 }
 
-void thread::msleep (uintegral_t msecs)
+void thread::msleep (uintmax_t msecs)
 {
-    ::Sleep(integral_cast_check<DWORD, uintegral_t>(msecs));
+    ::Sleep(integral_cast_check<DWORD, uintmax_t>(msecs));
 }
 
-void thread::usleep (uintegral_t usecs)
+void thread::usleep (uintmax_t usecs)
 {
-    ::Sleep(integral_cast_check<DWORD, uintegral_t>((usecs / 1000) + 1));
+    ::Sleep(integral_cast_check<DWORD, uintmax_t>((usecs / 1000) + 1));
 }
 
 void thread::start (Priority priority)

@@ -72,12 +72,12 @@ public:
 
 public:
     // default argument causes thread to block indefinetely
-    bool wait (uintegral_t timeout = max_type<uintegral_t>());
+    bool wait (uintmax_t timeout = max_value<uintmax_t>());
 
 public:
-	static void sleep  (uintegral_t secs);
-	static void msleep (uintegral_t msecs);
-	static void usleep (uintegral_t usecs);
+	static void sleep  (uintmax_t secs);
+	static void msleep (uintmax_t msecs);
+	static void usleep (uintmax_t usecs);
 
 protected:
     virtual void run () = 0;

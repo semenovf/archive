@@ -314,7 +314,7 @@ void thread::impl::terminate ()
     }
 }
 
-bool thread::impl::wait (uintegral_t timeout)
+bool thread::impl::wait (uintmax_t timeout)
 {
     pfs::auto_lock<> locker(& _mutex);
 
@@ -398,19 +398,19 @@ inline void __nanosleep (struct timespec & ts)
 		;
 }
 
-void thread::impl::sleep (uintegral_t secs)
+void thread::impl::sleep (uintmax_t secs)
 {
 	struct timespec ts =  __make_timespec(secs, 0);
     __nanosleep(ts);
 }
 
-void thread::impl::msleep (uintegral_t msecs)
+void thread::impl::msleep (uintmax_t msecs)
 {
 	struct timespec ts = __make_timespec(msecs / 1000, msecs % 1000 * 1000 * 1000);
     __nanosleep(ts);
 }
 
-void thread::impl::usleep (uintegral_t usecs)
+void thread::impl::usleep (uintmax_t usecs)
 {
 	struct timespec ts = __make_timespec(usecs / 1000 / 1000, usecs % (1000*1000) * 1000);
     __nanosleep(ts);

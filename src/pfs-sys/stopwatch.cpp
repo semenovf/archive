@@ -31,7 +31,7 @@ void stopwatch::start ()
 {
 #ifdef HAVE_GETTIMEOFDAY
 	struct timeval now;
-	PFS_ASSERT(gettimeofday(& now, nullptr) == 0);
+	PFS_ASSERT(gettimeofday(& now, 0) == 0);
 	_sec = double(now.tv_sec) + double(now.tv_usec)/1000000;
 #else
 	LARGE_INTEGER c;
@@ -44,7 +44,7 @@ double stopwatch::ellapsed () const
 {
 #ifdef HAVE_GETTIMEOFDAY
 	struct timeval now;
-	PFS_ASSERT(gettimeofday(& now, nullptr) == 0);
+	PFS_ASSERT(gettimeofday(& now, 0) == 0);
 	return (double(now.tv_sec) + double(now.tv_usec)/1000000) - _sec;
 #else
 	LARGE_INTEGER c, freq;

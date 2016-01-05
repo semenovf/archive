@@ -103,7 +103,7 @@ thread::~thread()
 				<< "pfs::thread: destroyed while thread is still running\n");
 	}
 
-	_d->_data->_thread = nullptr;
+	_d->_data->_thread = 0;
 	_d->_mutex.unlock();
 }
 

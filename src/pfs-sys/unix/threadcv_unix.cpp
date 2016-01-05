@@ -14,10 +14,10 @@
 
 namespace pfs {
 
-static inline void __calculate_abstime (uintegral_t timeout, timespec * ts)
+static inline void __calculate_abstime (uintmax_t timeout, timespec * ts)
 {
     struct timeval tv;
-    gettimeofday(& tv, nullptr);
+    gettimeofday(& tv, 0);
 
     ts->tv_nsec  = (tv.tv_usec + (timeout % 1000) * 1000) * 1000;
     ts->tv_sec   = tv.tv_sec + (timeout / 1000) + (ts->tv_nsec / 1000000000);
@@ -45,18 +45,18 @@ public:
     int waiters;
     int wakeups;
 
-    int wait_relative (uintegral_t time)
+    int wait_relative (uintmax_t time)
     {
         timespec ti;
         __calculate_abstime(time, & ti);
         return pthread_cond_timedwait(& cond, & mutex, & ti);
     }
 
-    bool wait (uintegral_t time)
+    bool wait (uintmax_t time)
     {
         int code;
         for(;;) {
-            if (time != pfs::max_type<uintegral_t>()) {
+            if (time != pfs::max_value<uintmax_t>()) {
                 code = wait_relative(time);
             } else {
                 code = pthread_cond_wait(& cond, & mutex);
@@ -124,7 +124,7 @@ void thread_cv::wakeAll ()
 }
 
 // see section "Timed Condition Wait" in pthread_cond_timedwait(P) manual page.
-bool thread_cv::wait (pfs::mutex & lockedMutex, uintegral_t time)
+bool thread_cv::wait (pfs::mutex & lockedMutex, uintmax_t time)
 {
 	thread_cv_impl * d = _d.cast<thread_cv_impl>();
 

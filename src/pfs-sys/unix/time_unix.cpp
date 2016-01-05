@@ -19,10 +19,10 @@ namespace pfs { namespace platform {
 DLL_API pfs::time current_time ()
 {
     struct timeval tv;
-    gettimeofday(& tv, nullptr);
+    gettimeofday(& tv, 0);
     time_t t = tv.tv_sec;
 
-    struct tm * tmPtr = nullptr;
+    struct tm * tmPtr = 0;
 
 #if PFS_HAVE_LOCALTIME_R
     tzset();

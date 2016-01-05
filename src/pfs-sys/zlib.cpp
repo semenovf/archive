@@ -110,7 +110,7 @@ byte_string zlib::decompress (size_t initial_len
 			, src.size());
 
 	if (rc == Z_OK) {
-		PFS_ASSERT(dest_len <= max_type<uLong>());
+		PFS_ASSERT(dest_len <= max_value<uLong>());
 		// FIXME need optimization
 		byte_string r(dest, dest_len);
 		delete [] dest;

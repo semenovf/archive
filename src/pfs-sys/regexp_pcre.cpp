@@ -31,8 +31,8 @@ public:
 
 	impl()
 		: _pattern        ()
-		, _re             (nullptr)
-		, _extra          (nullptr)
+		, _re             (0)
+		, _extra          (0)
 		, _errstr         ()
 		, _erroffset      (-1)
 		, _nsubpatterns   (-1)
@@ -41,7 +41,7 @@ public:
 		, _ovector        ()
 		, _capturedCount  (0)
 		, _exec_options   (0)
-		, _subjectPtr     (nullptr)
+		, _subjectPtr     (0)
 		, _subjectLength  (0)
 	{}
 
@@ -83,12 +83,12 @@ void regexp::impl::invalidate ()
 
 	if (_re) {
 		pcre_free(_re);
-		_re = nullptr;
+		_re = 0;
 	}
 
 	if (_extra) {
 		pcre_free_study(_extra);
-		_extra = nullptr;
+		_extra = 0;
 	}
 }
 
@@ -164,7 +164,7 @@ bool regexp::impl::exec ()
 class RegExpMatch::iterator::iterator_data
 {
 public:
-	iterator_data() : subject(nullptr), cursor(0) {}
+	iterator_data() : subject(0), cursor(0) {}
 	const char * subject;
 	int * cursor;
 };
@@ -306,7 +306,7 @@ bool regexp::match (const char * s)
 	impl & d = *_d.cast<impl>();
 
 	size_t len = strlen(s);
-	PFS_ASSERT(len <= PFS_INT_MAX);
+	PFS_ASSERT(len <= max_value<int>());
 
 	d._errstr.clear();
 

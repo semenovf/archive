@@ -42,14 +42,14 @@ public:
     cv_event_queue_t _freeQueue;
 
     tread_cv_event * pre ();
-    bool wait (tread_cv_event * cve, uintegral_t time);
+    bool wait (tread_cv_event * cve, uintmax_t time);
     void post (tread_cv_event * cve, bool ret);
 };
 
 tread_cv_event * thread_cv_impl::pre ()
 {
     _mtx.lock();
-    tread_cv_event * r = nullptr;
+    tread_cv_event * r = 0;
 
     if (_freeQueue.empty()) {
          r = new tread_cv_event;
@@ -80,7 +80,7 @@ tread_cv_event * thread_cv_impl::pre ()
     return r;
 }
 
-bool thread_cv_impl::wait (tread_cv_event * cve, uintegral_t time)
+bool thread_cv_impl::wait (tread_cv_event * cve, uintmax_t time)
 {
     // wait for the event
     bool r = false;
@@ -141,7 +141,7 @@ thread_cv::~thread_cv()
     delete_all_events(d->_freeQueue);
 }
 
-bool thread_cv::wait (pfs::mutex & lockedMutex, uintegral_t time)
+bool thread_cv::wait (pfs::mutex & lockedMutex, uintmax_t time)
 {
 // TODO
 //    if (mtx->isRecursive()) {
@@ -230,7 +230,7 @@ public:
 	impl ();
 	~impl ();
 	bool wait (pfs::mutex & lockedMutex);
-	bool wait (pfs::mutex & lockedMutex, uintegral_t timeout);
+	bool wait (pfs::mutex & lockedMutex, uintmax_t timeout);
 	void wakeOne ();
 	void wakeAll ();
 
@@ -255,12 +255,12 @@ class WinThreadCVImpl : public ThreadCVImpl
 public:
 	WinThreadCVImpl();
 	~WinThreadCVImpl();
-	bool wait (pfs::mutex * lockedMutex, uintegral_t timeout = PFS_ULONG_MAX);
+	bool wait (pfs::mutex * lockedMutex, uintmax_t timeout = PFS_ULONG_MAX);
 	void wakeOne ();
 	void wakeAll ();
 
 private:
-	bool wait (uintegral_t timeout);
+	bool wait (uintmax_t timeout);
 
 private:
 };
@@ -295,7 +295,7 @@ inline void thread_cv::impl::wakeAll ()
 	m_mutex.unlock();
 }
 
-bool thread_cv::impl::wait (pfs::mutex & lockedMutex, uintegral_t timeout)
+bool thread_cv::impl::wait (pfs::mutex & lockedMutex, uintmax_t timeout)
 {
     m_mutex.lock();
 
@@ -313,7 +313,7 @@ bool thread_cv::impl::wait (pfs::mutex & lockedMutex, uintegral_t timeout)
 }
 
 thread_cv::thread_cv () : _pimpl (new thread_cv::impl) {}
-bool thread_cv::wait (pfs::mutex & lockedMutex, uintegral_t timeout) { return _pimpl->wait(lockedMutex, timeout); }
+bool thread_cv::wait (pfs::mutex & lockedMutex, uintmax_t timeout) { return _pimpl->wait(lockedMutex, timeout); }
 void thread_cv::wakeOne () { _pimpl->wakeOne(); }
 void thread_cv::wakeAll () { _pimpl->wakeAll(); }
 

@@ -82,22 +82,22 @@ void thread::terminate ()
 	base_class::cast()->terminate();
 }
 
-bool thread::wait (uintegral_t timeout)
+bool thread::wait (uintmax_t timeout)
 {
 	return base_class::cast()->wait(timeout);
 }
 
-void thread::sleep (uintegral_t secs)
+void thread::sleep (uintmax_t secs)
 {
     thread_impl::sleep(secs);
 }
 
-void thread::msleep (uintegral_t msecs)
+void thread::msleep (uintmax_t msecs)
 {
 	thread_impl::msleep(msecs);
 }
 
-void thread::usleep (uintegral_t usecs)
+void thread::usleep (uintmax_t usecs)
 {
 	thread_impl::usleep(usecs);
 }

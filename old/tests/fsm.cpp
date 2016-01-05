@@ -86,8 +86,8 @@ static void test_char_helpers()
 static String _DIGITS("0123456789");
 static String _HEXDIGITS("ABCDEFabcdef");
 static FsmTransition<String> HEXDIG_FSM[] = {
-	  {-1, 1, FSM_MATCH_CHAR(_DIGITS)    , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_HEXDIGITS) , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_CHAR(_DIGITS)    , FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_CHAR(_HEXDIGITS) , FSM_ACCEPT, 0, 0 }
 };
 
 static void test_alternatives_simple()
@@ -95,7 +95,7 @@ static void test_alternatives_simple()
 	String hexdig("F");
 	String digit("9");
 	String notdigit("w");
-	Fsm<String> fsm(HEXDIG_FSM, nullptr);
+	Fsm<String> fsm(HEXDIG_FSM, 0);
 
 	CWT_TEST_FAIL(fsm.exec(0, hexdig.begin(), hexdig.begin()) == -1);
 	CWT_TEST_FAIL(fsm.exec(0, hexdig.begin(), hexdig.begin() + 1) == 1);
@@ -105,15 +105,15 @@ static void test_alternatives_simple()
 
 /* 0*DIGIT */
 static FsmTransition<String> decimal0more_fsm[] = {
-	  { 0, 1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_NOTHING      , FSM_ACCEPT, nullptr, nullptr }
+	  { 0, 1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_NOTHING      , FSM_ACCEPT, 0, 0 }
 };
 
 static void test_repetition_0more()
 {
 	String dec("1972");
 	String notdec("x1972");
-	Fsm<String> fsm(decimal0more_fsm, nullptr);
+	Fsm<String> fsm(decimal0more_fsm, 0);
 
 	CWT_TEST_FAIL(fsm.exec(0, dec.begin(), dec.begin()) == 0);
 	CWT_TEST_FAIL(fsm.exec(0, dec.begin(), dec.begin() + 1) == 1);
@@ -130,19 +130,19 @@ static void test_repetition_0more()
 
 /* 1*DIGIT */
 static FsmTransition<String> decimal1more_fsm[] = {
-	  { 0,-1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, nullptr, nullptr }
+	  { 0,-1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, 0, 0 }
 };
 
 /* 2*DIGIT */
 static FsmTransition<String> decimal2more_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_DIGITS), FSM_NORMAL, nullptr, nullptr }
-	, { 1,-1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR(_DIGITS), FSM_NORMAL, 0, 0 }
+	, { 1,-1, FSM_MATCH_CHAR(_DIGITS), FSM_ACCEPT, 0, 0 }
 };
 
 
 /* 1*HEXDIG_FSM */
 static FsmTransition<String> hex_fsm[] = {
-      { 0,-1, FSM_MATCH_FSM(HEXDIG_FSM), FSM_ACCEPT, nullptr, nullptr }
+      { 0,-1, FSM_MATCH_FSM(HEXDIG_FSM), FSM_ACCEPT, 0, 0 }
 };
 
 static void test_repetition_1or2more(void)
@@ -152,7 +152,7 @@ static void test_repetition_1or2more(void)
 	String hex("BEAF");
 	String nothex("BEAR");
 
-	Fsm<String> fsm(decimal1more_fsm, nullptr);
+	Fsm<String> fsm(decimal1more_fsm, 0);
 
 	CWT_TEST_FAIL(fsm.exec(0, dec.begin(), dec.begin()) ==-1);
 	CWT_TEST_FAIL(fsm.exec(0, dec.begin(), dec.begin() + 1) == 1);
@@ -187,17 +187,17 @@ static void test_repetition_1or2more(void)
 
 /* NON-ZERO_DIGIT *DIGIT */
 static FsmTransition<String> non_zero_decimal_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR("123456789"), FSM_ACCEPT, nullptr, nullptr }
-	, { 1,-1, FSM_MATCH_CHAR(_DIGITS) , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR("123456789"), FSM_ACCEPT, 0, 0 }
+	, { 1,-1, FSM_MATCH_CHAR(_DIGITS) , FSM_ACCEPT, 0, 0 }
 };
 
 
 /* (non-zero-dec dec)  / ( "0" ("x" / "X") hex ) */
 static FsmTransition<String> number_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(non_zero_decimal_fsm), FSM_ACCEPT, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_STR("0")             , FSM_NORMAL, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_CHAR("xX")           , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(hex_fsm)         , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_FSM(non_zero_decimal_fsm), FSM_ACCEPT, 0, 0 }
+	, { 2,-1, FSM_MATCH_STR("0")             , FSM_NORMAL, 0, 0 }
+	, { 3,-1, FSM_MATCH_CHAR("xX")           , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(hex_fsm)         , FSM_ACCEPT, 0, 0 }
 };
 
 static void test_alternatives(void)
@@ -205,7 +205,7 @@ static void test_alternatives(void)
 	String hex("0xDEAD");
 	String decimal("1972");
 	String notnumber("[number]");
-	Fsm<String> fsm(number_fsm, nullptr);
+	Fsm<String> fsm(number_fsm, 0);
 
 	CWT_TEST_FAIL(fsm.exec(0, hex.begin(), hex.begin()) ==-1);
 	CWT_TEST_FAIL(fsm.exec(0, hex.begin(), hex.begin() + 1) ==-1);
@@ -229,32 +229,32 @@ static void test_alternatives(void)
 
 
 static FsmTransition<String> alpha_seq_fsm[] = {
-	  { 1,-1, FSM_MATCH_SEQ(1) , FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_SEQ(2) , FSM_NORMAL, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_SEQ(3) , FSM_NORMAL, nullptr, nullptr }
-	, { 4,-1, FSM_MATCH_SEQ(4) , FSM_NORMAL, nullptr, nullptr }
-	, { 5,-1, FSM_MATCH_SEQ(5) , FSM_NORMAL, nullptr, nullptr }
-	, { 6,-1, FSM_MATCH_SEQ(6) , FSM_NORMAL, nullptr, nullptr }
-	, { 7,-1, FSM_MATCH_SEQ(7) , FSM_NORMAL, nullptr, nullptr }
-	, { 8,-1, FSM_MATCH_SEQ(8) , FSM_NORMAL, nullptr, nullptr }
-	, { 9,-1, FSM_MATCH_SEQ(9) , FSM_NORMAL, nullptr, nullptr }
-	, {10,-1, FSM_MATCH_SEQ(7) , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_SEQ(33), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_SEQ(1) , FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_SEQ(2) , FSM_NORMAL, 0, 0 }
+	, { 3,-1, FSM_MATCH_SEQ(3) , FSM_NORMAL, 0, 0 }
+	, { 4,-1, FSM_MATCH_SEQ(4) , FSM_NORMAL, 0, 0 }
+	, { 5,-1, FSM_MATCH_SEQ(5) , FSM_NORMAL, 0, 0 }
+	, { 6,-1, FSM_MATCH_SEQ(6) , FSM_NORMAL, 0, 0 }
+	, { 7,-1, FSM_MATCH_SEQ(7) , FSM_NORMAL, 0, 0 }
+	, { 8,-1, FSM_MATCH_SEQ(8) , FSM_NORMAL, 0, 0 }
+	, { 9,-1, FSM_MATCH_SEQ(9) , FSM_NORMAL, 0, 0 }
+	, {10,-1, FSM_MATCH_SEQ(7) , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_SEQ(33), FSM_ACCEPT, 0, 0 }
 };
 
 static FsmTransition<String> z_pos_fsm[] = {
-	  { 1,-1, FSM_MATCH_SEQ(25)  , FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_STR("Z") , FSM_NORMAL, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_SEQ(25)  , FSM_NORMAL, nullptr, nullptr }
-	, { 4,-1, FSM_MATCH_STR("z") , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_SEQ(33)  , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_SEQ(25)  , FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_STR("Z") , FSM_NORMAL, 0, 0 }
+	, { 3,-1, FSM_MATCH_SEQ(25)  , FSM_NORMAL, 0, 0 }
+	, { 4,-1, FSM_MATCH_STR("z") , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_SEQ(33)  , FSM_ACCEPT, 0, 0 }
 };
 
 
 void test_sequence(void)
 {
-	Fsm<String> fsm1(alpha_seq_fsm, nullptr);
-	Fsm<String> fsm2(z_pos_fsm, nullptr);
+	Fsm<String> fsm1(alpha_seq_fsm, 0);
+	Fsm<String> fsm2(z_pos_fsm, 0);
 
 	CWT_TEST_FAIL(fsm1.exec(0, __alpha_chars.begin(), __alpha_chars.end()) == ssize_t(__alpha_chars.length()));
 	CWT_TEST_FAIL(fsm2.exec(0, __alpha_chars.begin(), __alpha_chars.end()) == ssize_t(__alpha_chars.length()));
@@ -262,13 +262,13 @@ void test_sequence(void)
 
 
 static FsmTransition<String> rpt_fsm[] = {
-	  {-1,-1, FSM_MATCH_RPT_STR("_ABC", 0, 10) , FSM_ACCEPT, nullptr, nullptr }
+	  {-1,-1, FSM_MATCH_RPT_STR("_ABC", 0, 10) , FSM_ACCEPT, 0, 0 }
 };
 
 
 void test_rpt(void)
 {
-	Fsm<String> fsm(rpt_fsm, nullptr);
+	Fsm<String> fsm(rpt_fsm, 0);
 
 	CWT_TEST_FAIL(fsm.exec(0, __rpt_chars.begin(), __rpt_chars.end()) == ssize_t(__rpt_chars.length()));
 }

@@ -116,7 +116,7 @@ uintmax_t file_size (const path & p, error_code * ex)
 
 	if (ex) *ex = rc;
 
-	return max_type<uintmax_t>();
+	return max_value<uintmax_t>();
 }
 
 bool remove (const path & p, error_code * ex)
@@ -185,7 +185,7 @@ path current_directory (error_code * ex)
 
 		size *= 2;
 
-		if (size > pfs::max_type<int16_t>()) {
+		if (size > pfs::max_value<int16_t>()) {
 			if (ex)
 				*ex = ENOMEM;
 			break;

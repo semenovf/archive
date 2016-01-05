@@ -9,7 +9,7 @@ dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool glob
 	static pfs::mutex __mutex;
 	pfs::auto_lock<> locker(&__mutex);
 
-	dl::handle h = nullptr;
+	dl::handle h = 0;
 
 	DWORD dwFlags = 0;
 	PFS_UNUSED(global);
@@ -38,7 +38,7 @@ dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool glob
 
 dl::symbol dl::ptr (dl::handle h, const char *symname)
 {
-	dl::symbol p = nullptr;
+	dl::symbol p = 0;
 
 	PFS_ASSERT(symname);
 

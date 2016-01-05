@@ -19,7 +19,7 @@ DLL_API pfs::date current_date ()
     time_t t;
     ::time(& t);
 
-    struct tm * tmPtr = nullptr;
+    struct tm * tmPtr = 0;
 
 #if PFS_HAVE_LOCALTIME_R
     tzset();

@@ -59,21 +59,21 @@ namespace pfs {
 //
 //	if (_plugins.contains(name)) {
 //        addError(string() << _u8("Duplicate plug-in with name: ") << name);
-//        return nullptr;
+//        return 0;
 //	}
 //
 //	dl::handle dlh = dl::open(path, global, resolve);
 //
 //	if (!dlh) {
 //		addError(string() << _u8("Unable to load plug-in from ") << path);
-//		return nullptr;
+//		return 0;
 //	}
 //
 //	plugin_ctor_t ctor = reinterpret_cast<plugin_ctor_t>(dl::ptr(dlh, PFS_PLUGIN_CTOR_NAME));
 //	if (!ctor) {
 //		addError(string() << _u8("Constructor not found for plug-in: ")
 //		        << name << " [" << path << ']');
-//		return nullptr;
+//		return 0;
 //	}
 //
 //	dl::_plugins.insert(name, dlh);
@@ -89,7 +89,7 @@ namespace pfs {
  *
  * @param name Plug-in name (used as base name for filename).
  * @param pluggable .
- * @return Pointer to pluggable interface if plug-in successfully opened, @c nullptr otherwise.
+ * @return Pointer to pluggable interface if plug-in successfully opened, @c 0 otherwise.
  *         In latter case error will be saved.
  */
 //pfs::pluggable * dl::open_plugin (const string & name)
@@ -100,7 +100,7 @@ namespace pfs {
 //    if (path.isEmpty()) {
 //        addError(string() << _u8("Unable to find plug-in specified by name: ")
 //                << name);
-//        return nullptr;
+//        return 0;
 //    }
 //
 //    return openPlugin(name, path);

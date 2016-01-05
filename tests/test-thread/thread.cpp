@@ -25,7 +25,7 @@ public:
 	{
 		PFS_ASSERT(isRunning());
 
-		pfs::random r (12345/*time(nullptr)*/);
+		pfs::random r (12345/*time(0)*/);
 		int t = r.rand();
 		t = t < 1000000
 				? 1000000

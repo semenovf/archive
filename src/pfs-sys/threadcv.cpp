@@ -61,7 +61,7 @@
 namespace pfs {
 
 /**
- * @fn bool ConditionVariable::wait (Mutex * lockedMutex, uintegral_t timeout)
+ * @fn bool ConditionVariable::wait (Mutex * lockedMutex, uintmax_t timeout)
  *
  * @param lockedMutex
  * @param timeout Timeout in milliseconds.

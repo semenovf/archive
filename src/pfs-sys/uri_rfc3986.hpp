@@ -43,8 +43,8 @@ struct UriParseContext {
 		return true;
 	}
 #else
-#	define __TRACE_ACT nullptr
-#	define __TRACE_ARGS(arg) nullptr
+#	define __TRACE_ACT 0
+#	define __TRACE_ARGS(arg) 0
 #endif
 
 static bool set_scheme    (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
@@ -151,130 +151,130 @@ static string _URI_DIGIT("0123456789");
 static string _URI_HEXDIGIT("0123456789ABCDEFabcdef"); /* DIGIT / "A" / "B" / "C" / "D" / "E" / "F" */
 
 static fsm::transition<string> digit_fsm[] = {
-    {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, nullptr, nullptr }
+    {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, 0, 0 }
 };
 
 static fsm::transition<string> hexdig_fsm[] = {
-    {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
+    {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, 0, 0 }
 };
 
 /* ALPHA / DIGIT / "-" / "." / "_" / "~" */
 static fsm::transition<string> unreserved_fsm[] = {
-      {-1, 1, FSM_MATCH_CHAR(_URI_ALPHA) , FSM_ACCEPT, nullptr, nullptr }
-    , {-1, 2, FSM_MATCH_CHAR(_URI_DIGIT) , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_u8("-._~")), FSM_ACCEPT, nullptr, nullptr }
+      {-1, 1, FSM_MATCH_CHAR(_URI_ALPHA) , FSM_ACCEPT, 0, 0 }
+    , {-1, 2, FSM_MATCH_CHAR(_URI_DIGIT) , FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_CHAR(_u8("-._~")), FSM_ACCEPT, 0, 0 }
 };
 
 /* "%" HEXDIG HEXDIG */
 static fsm::transition<string> pct_encoded_fsm[] = {
-      { 1,-1, FSM_MATCH_STR(_u8("%"))      , FSM_NORMAL, nullptr, nullptr }
-    , { 2,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_STR(_u8("%"))      , FSM_NORMAL, 0, 0 }
+    , { 2,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_NORMAL, 0, 0 }
+    , {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, 0, 0 }
 };
 
 /* "!" / "$" / "&" / "'" / "(" / ")"
        / "*" / "+" / "," / ";" / "="
 */
 static fsm::transition<string> sub_delims_fsm[] = {
-    {-1,-1, FSM_MATCH_CHAR(_u8("!$&'()*+,;=")), FSM_ACCEPT, nullptr, nullptr }
+    {-1,-1, FSM_MATCH_CHAR(_u8("!$&'()*+,;=")), FSM_ACCEPT, 0, 0 }
 };
 
 /* unreserved / pct-encoded / sub-delims / ":" / "@" */
 static fsm::transition<string> pchar_fsm[] = {
-      {-1, 1, FSM_MATCH_FSM(unreserved_fsm) , FSM_ACCEPT, nullptr, nullptr }
-    , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, nullptr, nullptr }
-    , {-1, 3, FSM_MATCH_FSM(sub_delims_fsm) , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_u8(":@"))     , FSM_ACCEPT, nullptr, nullptr }
+      {-1, 1, FSM_MATCH_FSM(unreserved_fsm) , FSM_ACCEPT, 0, 0 }
+    , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, 0, 0 }
+    , {-1, 3, FSM_MATCH_FSM(sub_delims_fsm) , FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_CHAR(_u8(":@"))     , FSM_ACCEPT, 0, 0 }
 };
 
 
 /* 1*pchar */
 static fsm::transition<string> segment_nz_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(pchar_fsm),     FSM_ACCEPT, nullptr, nullptr }
-	, { 1,-1, FSM_MATCH_FSM(pchar_fsm),     FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_FSM(pchar_fsm),     FSM_ACCEPT, 0, 0 }
+	, { 1,-1, FSM_MATCH_FSM(pchar_fsm),     FSM_ACCEPT, 0, 0 }
 };
 
 /* *pchar */
 static fsm::transition<string> segment_fsm[] = {
-      { 0, 1, FSM_MATCH_FSM(pchar_fsm), FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_NOTHING,        FSM_ACCEPT, nullptr, nullptr }
+      { 0, 1, FSM_MATCH_FSM(pchar_fsm), FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_NOTHING,        FSM_ACCEPT, 0, 0 }
 };
 
 /* "/" segment */
 static fsm::transition<string> slash_segment_fsm[] = {
-      { 1,-1, FSM_MATCH_STR(_u8("/"))   , FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_FSM(segment_fsm), FSM_ACCEPT, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_STR(_u8("/"))   , FSM_NORMAL, 0, 0 }
+    , {-1,-1, FSM_MATCH_FSM(segment_fsm), FSM_ACCEPT, 0, 0 }
 };
 
 /* segment-nz *slash_segment */
 static fsm::transition<string> segment_nz_slash_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(segment_nz_fsm)              , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_FSM(segment_nz_fsm)              , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /* "/" [ segment-nz *slash_segment ] */
 static fsm::transition<string> path_absolute_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("/"))                 , FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_OPT_FSM(segment_nz_slash_fsm) , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_STR(_u8("/"))                 , FSM_NORMAL, 0, 0 }
+    , {-1,-1, FSM_MATCH_OPT_FSM(segment_nz_slash_fsm) , FSM_ACCEPT, 0, 0 }
 };
 
 /* 1*( unreserved / pct-encoded / sub-delims / "@" )
    		; non-zero-length segment without any colon ":"
 */
 static fsm::transition<string> segment_nc_fsm[] = {
-      {-1, 1, FSM_MATCH_FSM(unreserved_fsm) , FSM_ACCEPT, nullptr, nullptr }
-    , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, nullptr, nullptr }
-    , {-1, 3, FSM_MATCH_FSM(sub_delims_fsm) , FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_u8("@"))      , FSM_ACCEPT, nullptr, nullptr }
+      {-1, 1, FSM_MATCH_FSM(unreserved_fsm) , FSM_ACCEPT, 0, 0 }
+    , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, 0, 0 }
+    , {-1, 3, FSM_MATCH_FSM(sub_delims_fsm) , FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_CHAR(_u8("@"))      , FSM_ACCEPT, 0, 0 }
 };
 
 static fsm::transition<string> segment_nz_nc_fsm[] = {
-    {-1,-1, FSM_MATCH_RPT_FSM(segment_nc_fsm, 1, -1),  FSM_ACCEPT, nullptr, nullptr }
+    {-1,-1, FSM_MATCH_RPT_FSM(segment_nc_fsm, 1, -1),  FSM_ACCEPT, 0, 0 }
 };
 
 /* segment-nz-nc *slash-segment */
 static fsm::transition<string> path_noscheme_fsm[] = {
-      { 1,-1, FSM_MATCH_FSM(segment_nz_nc_fsm), FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_FSM(segment_nz_nc_fsm), FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /* 0<pchar> */
 static fsm::transition<string> path_empty_fsm[] = {
-    {-1,-1, FSM_MATCH_NOTHING, FSM_ACCEPT, nullptr, nullptr }
+    {-1,-1, FSM_MATCH_NOTHING, FSM_ACCEPT, 0, 0 }
 };
 
 /* 1*4HEXDIG */
 static fsm::transition<string> h16_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, 0, 0 }
+	, { 2,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, 0, 0 }
+	, { 3,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_CHAR(_URI_HEXDIGIT), FSM_ACCEPT, 0, 0 }
 };
 
 /* "25" %x30-35        ; 250-255 */
 static fsm::transition<string> dec_octet_fsm_4[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("25"))      , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_CHAR(_u8("012345")) , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_STR(_u8("25"))      , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_CHAR(_u8("012345")) , FSM_ACCEPT, 0, 0 }
 };
 
 /* "2" %x30-34 DIGIT   ; 200-249 */
 static fsm::transition<string> dec_octet_fsm_3[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("2"))        , FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_CHAR(_u8("01234"))   , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_STR(_u8("2"))        , FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_CHAR(_u8("01234"))   , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, 0, 0 }
 };
 
 /* "1" 2DIGIT  ; 100-199 */
 static fsm::transition<string> dec_octet_fsm_2[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("1"))   , FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_STR(_u8("1"))   , FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT), FSM_ACCEPT, 0, 0 }
 };
 
 /* %x31-39 DIGIT       ; 10-99*/
 static fsm::transition<string> dec_octet_fsm_1[] = {
-      { 1,-1, FSM_MATCH_CHAR(_u8("123456789")), FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT) , FSM_ACCEPT, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_CHAR(_u8("123456789")), FSM_NORMAL, 0, 0 }
+    , {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT) , FSM_ACCEPT, 0, 0 }
 };
 
 /*
@@ -285,168 +285,168 @@ static fsm::transition<string> dec_octet_fsm_1[] = {
   / "25" %x30-35        ; 250-255
 */
 static fsm::transition<string> dec_octet_fsm[] = {
-      {-1, 1, FSM_MATCH_FSM(dec_octet_fsm_4), FSM_ACCEPT, nullptr, nullptr } /* 250 - 255 */
-    , {-1, 2, FSM_MATCH_FSM(dec_octet_fsm_3), FSM_ACCEPT, nullptr, nullptr } /* 200 - 249 */
-    , {-1, 3, FSM_MATCH_FSM(dec_octet_fsm_2), FSM_ACCEPT, nullptr, nullptr } /* 100 - 199 */
-    , {-1, 4, FSM_MATCH_FSM(dec_octet_fsm_1), FSM_ACCEPT, nullptr, nullptr } /* 10 - 99 */
-    , {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT)        , FSM_ACCEPT, nullptr, nullptr } /* 0 - 9 */
+      {-1, 1, FSM_MATCH_FSM(dec_octet_fsm_4), FSM_ACCEPT, 0, 0 } /* 250 - 255 */
+    , {-1, 2, FSM_MATCH_FSM(dec_octet_fsm_3), FSM_ACCEPT, 0, 0 } /* 200 - 249 */
+    , {-1, 3, FSM_MATCH_FSM(dec_octet_fsm_2), FSM_ACCEPT, 0, 0 } /* 100 - 199 */
+    , {-1, 4, FSM_MATCH_FSM(dec_octet_fsm_1), FSM_ACCEPT, 0, 0 } /* 10 - 99 */
+    , {-1,-1, FSM_MATCH_CHAR(_URI_DIGIT)        , FSM_ACCEPT, 0, 0 } /* 0 - 9 */
 };
 
 /* dec-octet "." dec-octet "." dec-octet "." dec-octet */
 static fsm::transition<string> ipv4address_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_STR(_u8("."))     , FSM_NORMAL, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_NORMAL, nullptr, nullptr }
-	, { 4,-1, FSM_MATCH_STR(_u8("."))     , FSM_NORMAL, nullptr, nullptr }
-	, { 5,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_NORMAL, nullptr, nullptr }
-	, { 6,-1, FSM_MATCH_STR(_u8("."))     , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_STR(_u8("."))     , FSM_NORMAL, 0, 0 }
+	, { 3,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_NORMAL, 0, 0 }
+	, { 4,-1, FSM_MATCH_STR(_u8("."))     , FSM_NORMAL, 0, 0 }
+	, { 5,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_NORMAL, 0, 0 }
+	, { 6,-1, FSM_MATCH_STR(_u8("."))     , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(dec_octet_fsm), FSM_ACCEPT, 0, 0 }
 };
 
 /* ( h16 ":" h16 ) / IPv4address */
 static fsm::transition<string> ls32_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(ipv4address_fsm), FSM_ACCEPT, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_FSM(h16_fsm)        , FSM_NORMAL, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_STR(_u8(":"))       , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm)        , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_FSM(ipv4address_fsm), FSM_ACCEPT, 0, 0 }
+	, { 2,-1, FSM_MATCH_FSM(h16_fsm)        , FSM_NORMAL, 0, 0 }
+	, { 3,-1, FSM_MATCH_STR(_u8(":"))       , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm)        , FSM_ACCEPT, 0, 0 }
 };
 
 /* h16 ":" */
 static fsm::transition<string> h16_semi_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(h16_fsm)  , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_STR(_u8(":")) , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_FSM(h16_fsm)  , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_STR(_u8(":")) , FSM_ACCEPT, 0, 0 }
 };
 
 /* *1( h16 ":" ) h16 */
 static fsm::transition<string> ipv6address_fsm_4_1[] = {
-	  { 1,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 1), FSM_NORMAL, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 1), FSM_NORMAL, 0, 0 }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, 0, 0 }
 };
 
 /* *2( h16 ":" ) h16 */
 static fsm::transition<string> ipv6address_fsm_5_1[] = {
-	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 2), FSM_NORMAL, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
+	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 2), FSM_NORMAL, 0, 0 }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, 0, 0 }
 };
 
 /* *3( h16 ":" ) h16 */
 static fsm::transition<string> ipv6address_fsm_6_1[] = {
-	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 3), FSM_NORMAL, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
+	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 3), FSM_NORMAL, 0, 0 }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, 0, 0 }
 };
 
 /* *4( h16 ":" ) h16 */
 static fsm::transition<string> ipv6address_fsm_7_1[] = {
-	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 4), FSM_NORMAL, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, nullptr, nullptr }
+	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 4), FSM_NORMAL, 0, 0 }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm)           , FSM_ACCEPT, 0, 0 }
 };
 
 /* *5( h16 ":" ) h16 */
 static fsm::transition<string> ipv6address_fsm_8_1[] = {
-	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 5), FSM_NORMAL, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, nullptr, nullptr }
+	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 5), FSM_NORMAL, 0, 0 }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, 0, 0 }
 };
 
 /* *6( h16 ":" ) h16 */
 static fsm::transition<string> ipv6address_fsm_9_1[] = {
-	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 6), FSM_NORMAL, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, nullptr, nullptr }
+	  { 1, 2, FSM_MATCH_RPT_FSM(h16_semi_fsm, 0, 6), FSM_NORMAL, 0, 0 }
+	, {-1, 2, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm)               , FSM_ACCEPT, 0, 0 }
 };
 
 /* 6( h16 ":" ) ls32 */
 static fsm::transition<string> ipv6address_fsm_1[] = {
-      { 1,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 6, 6), FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_FSM(ls32_fsm)              , FSM_ACCEPT, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 6, 6), FSM_NORMAL, 0, 0 }
+    , {-1,-1, FSM_MATCH_FSM(ls32_fsm)              , FSM_ACCEPT, 0, 0 }
 };
 
 /* "::" 5( h16 ":" ) ls32 */
 static fsm::transition<string> ipv6address_fsm_2[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("::"))             , FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 5, 5), FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(ls32_fsm)              , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_STR(_u8("::"))             , FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 5, 5), FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(ls32_fsm)              , FSM_ACCEPT, 0, 0 }
 };
 
 /* [ h16 ] "::" 4( h16 ":" ) ls32 */
 static fsm::transition<string> ipv6address_fsm_3[] = {
-      { 1, 1, FSM_MATCH_FSM(h16_fsm)               , FSM_NORMAL, nullptr, nullptr }
-    , { 2,-1, FSM_MATCH_STR(_u8("::"))             , FSM_NORMAL, nullptr, nullptr }
-    , { 3,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 4, 4), FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_FSM(ls32_fsm)              , FSM_ACCEPT, nullptr, nullptr }
+      { 1, 1, FSM_MATCH_FSM(h16_fsm)               , FSM_NORMAL, 0, 0 }
+    , { 2,-1, FSM_MATCH_STR(_u8("::"))             , FSM_NORMAL, 0, 0 }
+    , { 3,-1, FSM_MATCH_RPT_FSM(h16_semi_fsm, 4, 4), FSM_NORMAL, 0, 0 }
+    , {-1,-1, FSM_MATCH_FSM(ls32_fsm)              , FSM_ACCEPT, 0, 0 }
 };
 
 /* [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32 */
 static fsm::transition<string> ipv6address_fsm_4[] = {
-      { 1, 1, FSM_MATCH_FSM(ipv6address_fsm_4_1), FSM_NORMAL, nullptr, nullptr }
+      { 1, 1, FSM_MATCH_FSM(ipv6address_fsm_4_1), FSM_NORMAL, 0, 0 }
 
-    , { 2,-1, FSM_MATCH_STR(_u8("::"))    , FSM_NORMAL, nullptr, nullptr }
-    , { 3,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, nullptr, nullptr }
-    , { 4,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, nullptr, nullptr }
-    , { 5,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_FSM(ls32_fsm)     , FSM_ACCEPT, nullptr, nullptr }
+    , { 2,-1, FSM_MATCH_STR(_u8("::"))    , FSM_NORMAL, 0, 0 }
+    , { 3,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, 0, 0 }
+    , { 4,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, 0, 0 }
+    , { 5,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, 0, 0 }
+    , {-1,-1, FSM_MATCH_FSM(ls32_fsm)     , FSM_ACCEPT, 0, 0 }
 };
 
 /* [ *2( h16 ":" ) h16 ] "::" 2( h16 ":" ) ls32 */
 static fsm::transition<string> ipv6address_fsm_5[] = {
-	  { 1, 2, FSM_MATCH_FSM(ipv6address_fsm_5_1), FSM_NORMAL, nullptr, nullptr }
-	, { 2, 2, FSM_MATCH_FSM(ipv6address_fsm_5_1), FSM_NORMAL, nullptr, nullptr }
+	  { 1, 2, FSM_MATCH_FSM(ipv6address_fsm_5_1), FSM_NORMAL, 0, 0 }
+	, { 2, 2, FSM_MATCH_FSM(ipv6address_fsm_5_1), FSM_NORMAL, 0, 0 }
 
-    , { 3,-1, FSM_MATCH_STR(_u8("::"))    , FSM_NORMAL, nullptr, nullptr }
-	, { 4,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, nullptr, nullptr }
-	, { 5,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(ls32_fsm)     , FSM_ACCEPT, nullptr, nullptr }
+    , { 3,-1, FSM_MATCH_STR(_u8("::"))    , FSM_NORMAL, 0, 0 }
+	, { 4,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, 0, 0 }
+	, { 5,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(ls32_fsm)     , FSM_ACCEPT, 0, 0 }
 };
 
 /* [ *3( h16 ":" ) h16 ] "::" h16 ":"   ls32 */
 static fsm::transition<string> ipv6address_fsm_6[] = {
-	  { 1, 3, FSM_MATCH_FSM(ipv6address_fsm_6_1), FSM_NORMAL, nullptr, nullptr }
-	, { 2, 3, FSM_MATCH_FSM(ipv6address_fsm_6_1), FSM_NORMAL, nullptr, nullptr }
-	, { 3, 3, FSM_MATCH_FSM(ipv6address_fsm_6_1), FSM_NORMAL, nullptr, nullptr }
+	  { 1, 3, FSM_MATCH_FSM(ipv6address_fsm_6_1), FSM_NORMAL, 0, 0 }
+	, { 2, 3, FSM_MATCH_FSM(ipv6address_fsm_6_1), FSM_NORMAL, 0, 0 }
+	, { 3, 3, FSM_MATCH_FSM(ipv6address_fsm_6_1), FSM_NORMAL, 0, 0 }
 
-	, { 4,-1, FSM_MATCH_STR(_u8("::"))    , FSM_NORMAL, nullptr, nullptr }
-	, { 5,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(ls32_fsm)     , FSM_ACCEPT, nullptr, nullptr }
+	, { 4,-1, FSM_MATCH_STR(_u8("::"))    , FSM_NORMAL, 0, 0 }
+	, { 5,-1, FSM_MATCH_FSM(h16_semi_fsm) , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(ls32_fsm)     , FSM_ACCEPT, 0, 0 }
 };
 
 
 /* [ *4( h16 ":" ) h16 ] "::" ls32 */
 static fsm::transition<string> ipv6address_fsm_7[] = {
-	  { 1, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, nullptr, nullptr }
-	, { 2, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, nullptr, nullptr }
-	, { 3, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, nullptr, nullptr }
-	, { 4, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, nullptr, nullptr }
+	  { 1, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, 0, 0 }
+	, { 2, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, 0, 0 }
+	, { 3, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, 0, 0 }
+	, { 4, 4, FSM_MATCH_FSM(ipv6address_fsm_7_1), FSM_NORMAL, 0, 0 }
 
-	, { 5,-1, FSM_MATCH_STR(_u8("::")), FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(ls32_fsm) , FSM_ACCEPT, nullptr, nullptr }
+	, { 5,-1, FSM_MATCH_STR(_u8("::")), FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(ls32_fsm) , FSM_ACCEPT, 0, 0 }
 };
 
 /* [ *5( h16 ":" ) h16 ] "::"              h16 */
 static fsm::transition<string> ipv6address_fsm_8[] = {
-	  { 1, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, nullptr, nullptr }
-	, { 2, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, nullptr, nullptr }
-	, { 3, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, nullptr, nullptr }
-	, { 4, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, nullptr, nullptr }
-	, { 5, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, nullptr, nullptr }
+	  { 1, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, 0, 0 }
+	, { 2, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, 0, 0 }
+	, { 3, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, 0, 0 }
+	, { 4, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, 0, 0 }
+	, { 5, 5, FSM_MATCH_FSM(ipv6address_fsm_8_1), FSM_NORMAL, 0, 0 }
 
-	, { 6,-1, FSM_MATCH_STR(_u8("::")) , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(h16_fsm)   , FSM_ACCEPT, nullptr, nullptr }
+	, { 6,-1, FSM_MATCH_STR(_u8("::")) , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(h16_fsm)   , FSM_ACCEPT, 0, 0 }
 };
 
 
 /* [ *6( h16 ":" ) h16 ] "::" */
 static fsm::transition<string> ipv6address_fsm_9[] = {
-	  { 1, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, nullptr, nullptr }
-	, { 2, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, nullptr, nullptr }
-	, { 3, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, nullptr, nullptr }
-	, { 4, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, nullptr, nullptr }
-	, { 5, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, nullptr, nullptr }
-	, { 6, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_STR(_u8("::"))          , FSM_ACCEPT, nullptr, nullptr }
+	  { 1, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, 0, 0 }
+	, { 2, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, 0, 0 }
+	, { 3, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, 0, 0 }
+	, { 4, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, 0, 0 }
+	, { 5, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, 0, 0 }
+	, { 6, 6, FSM_MATCH_FSM(ipv6address_fsm_9_1), FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_STR(_u8("::"))          , FSM_ACCEPT, 0, 0 }
 };
 
 
@@ -462,73 +462,73 @@ static fsm::transition<string> ipv6address_fsm_9[] = {
 	/ [ *6( h16 ":" ) h16 ] "::"
 */
 static fsm::transition<string> ipv6address_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(ipv6address_fsm_1), FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_FSM(ipv6address_fsm_2), FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 3, FSM_MATCH_FSM(ipv6address_fsm_3), FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 4, FSM_MATCH_FSM(ipv6address_fsm_4), FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 5, FSM_MATCH_FSM(ipv6address_fsm_5), FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 6, FSM_MATCH_FSM(ipv6address_fsm_6), FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 7, FSM_MATCH_FSM(ipv6address_fsm_7), FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 8, FSM_MATCH_FSM(ipv6address_fsm_8), FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(ipv6address_fsm_9), FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_FSM(ipv6address_fsm_1), FSM_ACCEPT, 0, 0 }
+	, {-1, 2, FSM_MATCH_FSM(ipv6address_fsm_2), FSM_ACCEPT, 0, 0 }
+	, {-1, 3, FSM_MATCH_FSM(ipv6address_fsm_3), FSM_ACCEPT, 0, 0 }
+	, {-1, 4, FSM_MATCH_FSM(ipv6address_fsm_4), FSM_ACCEPT, 0, 0 }
+	, {-1, 5, FSM_MATCH_FSM(ipv6address_fsm_5), FSM_ACCEPT, 0, 0 }
+	, {-1, 6, FSM_MATCH_FSM(ipv6address_fsm_6), FSM_ACCEPT, 0, 0 }
+	, {-1, 7, FSM_MATCH_FSM(ipv6address_fsm_7), FSM_ACCEPT, 0, 0 }
+	, {-1, 8, FSM_MATCH_FSM(ipv6address_fsm_8), FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(ipv6address_fsm_9), FSM_ACCEPT, 0, 0 }
 };
 
 /* "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" ) */
 static fsm::transition<string> ipvfuture_tail_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(unreserved_fsm), FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_FSM(sub_delims_fsm), FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_STR(_u8(":"))      , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_FSM(unreserved_fsm), FSM_ACCEPT, 0, 0 }
+	, {-1, 2, FSM_MATCH_FSM(sub_delims_fsm), FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_STR(_u8(":"))      , FSM_ACCEPT, 0, 0 }
 };
 
 static fsm::transition<string> ipvfuture_fsm[] = {
-      { 1,-1, FSM_MATCH_STR(_u8("v"))                     , FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_RPT_FSM(hexdig_fsm, 1, -1)        , FSM_NORMAL, nullptr, nullptr }
-    , { 3,-1, FSM_MATCH_STR(_u8("."))                     , FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_RPT_FSM(ipvfuture_tail_fsm, 1, -1), FSM_ACCEPT, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_STR(_u8("v"))                     , FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_RPT_FSM(hexdig_fsm, 1, -1)        , FSM_NORMAL, 0, 0 }
+    , { 3,-1, FSM_MATCH_STR(_u8("."))                     , FSM_NORMAL, 0, 0 }
+    , {-1,-1, FSM_MATCH_RPT_FSM(ipvfuture_tail_fsm, 1, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /* "[" ( IPv6address / IPvFuture  ) "]" */
 static fsm::transition<string> ip_literal_entry_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(ipv6address_fsm), FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(ipvfuture_fsm)  , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_FSM(ipv6address_fsm), FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(ipvfuture_fsm)  , FSM_ACCEPT, 0, 0 }
 };
 static fsm::transition<string> ip_literal_fsm[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("["))            , FSM_NORMAL, nullptr, nullptr }
-	, { 2,-1, FSM_MATCH_FSM(ip_literal_entry_fsm), FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_STR(_u8("]"))            , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_STR(_u8("["))            , FSM_NORMAL, 0, 0 }
+	, { 2,-1, FSM_MATCH_FSM(ip_literal_entry_fsm), FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_STR(_u8("]"))            , FSM_ACCEPT, 0, 0 }
 };
 
 /* *( unreserved / pct-encoded / sub-delims ) */
 static fsm::transition<string> reg_name_entry_fsm[] = {
-      {-1, 1, FSM_MATCH_FSM(unreserved_fsm),  FSM_ACCEPT, nullptr, nullptr }
-    , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_FSM(sub_delims_fsm),  FSM_ACCEPT, nullptr, nullptr }
+      {-1, 1, FSM_MATCH_FSM(unreserved_fsm),  FSM_ACCEPT, 0, 0 }
+    , {-1, 2, FSM_MATCH_FSM(pct_encoded_fsm), FSM_ACCEPT, 0, 0 }
+    , {-1,-1, FSM_MATCH_FSM(sub_delims_fsm),  FSM_ACCEPT, 0, 0 }
 };
 static fsm::transition<string> reg_name_fsm[] = {
-      {-1,-1, FSM_MATCH_RPT_FSM(reg_name_entry_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
+      {-1,-1, FSM_MATCH_RPT_FSM(reg_name_entry_fsm, 0, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /*  host = IP-literal / IPv4address / reg-name */
 static fsm::transition<string> host_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(ip_literal_fsm), FSM_ACCEPT, set_host_is_ip, nullptr}
-	, {-1, 2, FSM_MATCH_FSM(ipv4address_fsm), FSM_ACCEPT, set_host_is_ip, nullptr}
+	  {-1, 1, FSM_MATCH_FSM(ip_literal_fsm), FSM_ACCEPT, set_host_is_ip, 0}
+	, {-1, 2, FSM_MATCH_FSM(ipv4address_fsm), FSM_ACCEPT, set_host_is_ip, 0}
 
 	/* OBSOLETE NOTE: this poses a parsing problem - all IPv4 addresses are valid
 	reg_name as well. Fix this by doing the reg_name_fsm now,
 	then on match, do a function to check if its an IPv4
 	address */
-	, {-1,-1, FSM_MATCH_FSM(reg_name_fsm),   FSM_ACCEPT, nullptr, nullptr }
+	, {-1,-1, FSM_MATCH_FSM(reg_name_fsm),   FSM_ACCEPT, 0, 0 }
 };
 
 /* *DIGIT */
 static fsm::transition<string> port_fsm[] = {
-      {-1,-1, FSM_MATCH_RPT_FSM(digit_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
+      {-1,-1, FSM_MATCH_RPT_FSM(digit_fsm, 0, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /* ":" port */
 static fsm::transition<string> authority_fsm_2[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8(":")), FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(port_fsm), FSM_ACCEPT, set_port, nullptr}
+	  { 1,-1, FSM_MATCH_STR(_u8(":")), FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(port_fsm), FSM_ACCEPT, set_port, 0}
 };
 
 /* *( unreserved / pct-encoded / sub-delims / ":" ) */
@@ -542,22 +542,22 @@ static fsm::transition<string> userinfo_fsm[] = {
 
 /* userinfo "@" */
 static fsm::transition<string> authority_fsm_1[] = {
-	  { 1,-1, FSM_MATCH_FSM(userinfo_fsm), FSM_NORMAL, set_userinfo, nullptr }
-	, {-1,-1, FSM_MATCH_STR(_u8("@"))    , FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_FSM(userinfo_fsm), FSM_NORMAL, set_userinfo, 0 }
+	, {-1,-1, FSM_MATCH_STR(_u8("@"))    , FSM_ACCEPT, 0, 0 }
 };
 
 /* [ userinfo "@" ] host [ ":" port ] */
 /* [ authority_fsm_1 ] host [ authority_fsm_2 ] */
 static fsm::transition<string> authority_fsm[] = {
 	  { 1, 3, FSM_MATCH_OPT_FSM(authority_fsm_1) , FSM_NORMAL, __TRACE_ACT, __TRACE_ARGS("FSM_MATCH_OPT_FSM(authority_fsm_1)") }
-	, { 2, 3, FSM_MATCH_FSM(host_fsm)            , FSM_NORMAL, set_host, nullptr }
+	, { 2, 3, FSM_MATCH_FSM(host_fsm)            , FSM_NORMAL, set_host, 0 }
 	, {-1, 3, FSM_MATCH_OPT_FSM(authority_fsm_2) , FSM_ACCEPT, __TRACE_ACT, __TRACE_ARGS("FSM_MATCH_OPT_FSM(authority_fsm_2)") }
-	, {-1,-1, FSM_MATCH_NOTHING                  , FSM_REJECT, unset_userinfo, nullptr }
+	, {-1,-1, FSM_MATCH_NOTHING                  , FSM_REJECT, unset_userinfo, 0 }
 };
 
 /*  *( "/" segment ) */
 static fsm::transition<string> path_abempty_fsm[] = {
-      {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
+      {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /*
@@ -567,63 +567,63 @@ relative-part = "//" authority path-abempty
               / path-empty
 */
 static fsm::transition<string> relative_part_fsm[] = {
-	  { 1, 3, FSM_MATCH_STR(_u8("//"))       , FSM_NORMAL, nullptr, nullptr }
-	, { 2, 3, FSM_MATCH_FSM(authority_fsm)   , FSM_NORMAL, set_path, nullptr }
-	, {-1, 3, FSM_MATCH_FSM(path_abempty_fsm), FSM_ACCEPT, set_path, nullptr }
+	  { 1, 3, FSM_MATCH_STR(_u8("//"))       , FSM_NORMAL, 0, 0 }
+	, { 2, 3, FSM_MATCH_FSM(authority_fsm)   , FSM_NORMAL, set_path, 0 }
+	, {-1, 3, FSM_MATCH_FSM(path_abempty_fsm), FSM_ACCEPT, set_path, 0 }
 
-	, {-1, 4, FSM_MATCH_FSM(path_absolute_fsm), FSM_ACCEPT, set_path, nullptr }
-	, {-1, 5, FSM_MATCH_FSM(path_noscheme_fsm), FSM_ACCEPT, set_path, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(path_empty_fsm)   , FSM_ACCEPT, set_path, nullptr }
+	, {-1, 4, FSM_MATCH_FSM(path_absolute_fsm), FSM_ACCEPT, set_path, 0 }
+	, {-1, 5, FSM_MATCH_FSM(path_noscheme_fsm), FSM_ACCEPT, set_path, 0 }
+	, {-1,-1, FSM_MATCH_FSM(path_empty_fsm)   , FSM_ACCEPT, set_path, 0 }
 };
 
 /* *( pchar / "/" / "?" ) */
 static fsm::transition<string> query_chars_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(pchar_fsm)  , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_CHAR(_u8("/?")) , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_FSM(pchar_fsm)  , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_CHAR(_u8("/?")) , FSM_ACCEPT, 0, 0 }
 };
 static fsm::transition<string> query_fsm[] = {
-    {-1,-1, FSM_MATCH_RPT_FSM(query_chars_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
+    {-1,-1, FSM_MATCH_RPT_FSM(query_chars_fsm, 0, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /* "?" query */
 static fsm::transition<string> relative_ref_fsm_1[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("?")) , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(query_fsm), FSM_ACCEPT, set_query, nullptr }
+	  { 1,-1, FSM_MATCH_STR(_u8("?")) , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(query_fsm), FSM_ACCEPT, set_query, 0 }
 };
 
 /* *( pchar / "/" / "?" ) */
 static fsm::transition<string> fragment_fsm[] = {
-	{-1,-1, FSM_MATCH_RPT_FSM(query_chars_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
+	{-1,-1, FSM_MATCH_RPT_FSM(query_chars_fsm, 0, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /* "#" fragment */
 static fsm::transition<string> relative_ref_fsm_2[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("#"))    , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, set_fragment, nullptr}
+	  { 1,-1, FSM_MATCH_STR(_u8("#"))    , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, set_fragment, 0}
 };
 
 /* relative-part [ "?" query ] [ "#" fragment ] */
 static fsm::transition<string> relative_ref_fsm[] = {
-      { 1,-1, FSM_MATCH_FSM(relative_part_fsm)       , FSM_NORMAL, nullptr, nullptr }
-    , { 2,-1, FSM_MATCH_RPT_FSM(relative_ref_fsm_1, 0, 1), FSM_NORMAL, nullptr, nullptr }
-    , {-1,-1, FSM_MATCH_RPT_FSM(relative_ref_fsm_2, 0, 1), FSM_ACCEPT, nullptr, nullptr }
+      { 1,-1, FSM_MATCH_FSM(relative_part_fsm)       , FSM_NORMAL, 0, 0 }
+    , { 2,-1, FSM_MATCH_RPT_FSM(relative_ref_fsm_1, 0, 1), FSM_NORMAL, 0, 0 }
+    , {-1,-1, FSM_MATCH_RPT_FSM(relative_ref_fsm_2, 0, 1), FSM_ACCEPT, 0, 0 }
 };
 
 /* ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) */
 static fsm::transition<string> scheme_chars_fsm[] = {
-	  {-1, 1, FSM_MATCH_CHAR(_URI_ALPHA) , FSM_ACCEPT, nullptr, nullptr }
-	, {-1, 2, FSM_MATCH_CHAR(_URI_DIGIT) , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_CHAR(_u8("+-.")) , FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_CHAR(_URI_ALPHA) , FSM_ACCEPT, 0, 0 }
+	, {-1, 2, FSM_MATCH_CHAR(_URI_DIGIT) , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_CHAR(_u8("+-.")) , FSM_ACCEPT, 0, 0 }
 };
 static fsm::transition<string> scheme_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_URI_ALPHA), FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_FSM(scheme_chars_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_CHAR(_URI_ALPHA), FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_RPT_FSM(scheme_chars_fsm, 0, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /* segment-nz *( "/" segment ) */
 static fsm::transition<string> path_rootless_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(segment_nz_fsm)              , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_FSM(segment_nz_fsm)              , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_RPT_FSM(slash_segment_fsm, 0, -1), FSM_ACCEPT, 0, 0 }
 };
 
 /*
@@ -633,43 +633,43 @@ static fsm::transition<string> path_rootless_fsm[] = {
 	 	 / path-empty
 */
 static fsm::transition<string> hier_part_fsm[] = {
-	  { 1, 3, FSM_MATCH_STR(_u8("//"))       , FSM_NORMAL, nullptr, nullptr }
-	, { 2, 3, FSM_MATCH_FSM(authority_fsm)   , FSM_NORMAL, set_path, nullptr }
-	, {-1, 3, FSM_MATCH_FSM(path_abempty_fsm), FSM_ACCEPT, set_path, nullptr }
+	  { 1, 3, FSM_MATCH_STR(_u8("//"))       , FSM_NORMAL, 0, 0 }
+	, { 2, 3, FSM_MATCH_FSM(authority_fsm)   , FSM_NORMAL, set_path, 0 }
+	, {-1, 3, FSM_MATCH_FSM(path_abempty_fsm), FSM_ACCEPT, set_path, 0 }
 
-	, {-1, 4, FSM_MATCH_FSM(path_absolute_fsm), FSM_ACCEPT, set_path, nullptr }
-	, {-1, 5, FSM_MATCH_FSM(path_rootless_fsm), FSM_ACCEPT, set_path, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(path_empty_fsm),    FSM_ACCEPT, set_path, nullptr }
+	, {-1, 4, FSM_MATCH_FSM(path_absolute_fsm), FSM_ACCEPT, set_path, 0 }
+	, {-1, 5, FSM_MATCH_FSM(path_rootless_fsm), FSM_ACCEPT, set_path, 0 }
+	, {-1,-1, FSM_MATCH_FSM(path_empty_fsm),    FSM_ACCEPT, set_path, 0 }
 };
 
 
 /* "?" query */
 static fsm::transition<string> uri_fsm_1[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("?")) , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(query_fsm), FSM_ACCEPT, set_query, nullptr }
+	  { 1,-1, FSM_MATCH_STR(_u8("?")) , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(query_fsm), FSM_ACCEPT, set_query, 0 }
 };
 
 /* "#" fragment */
 static fsm::transition<string> uri_fsm_2[] = {
-	  { 1,-1, FSM_MATCH_STR(_u8("#"))    , FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, set_fragment, nullptr }
+	  { 1,-1, FSM_MATCH_STR(_u8("#"))    , FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(fragment_fsm), FSM_ACCEPT, set_fragment, 0 }
 };
 
 
 /* scheme ":" hier-part [ "?" query ] [ "#" fragment ] */
 static fsm::transition<string> uri_fsm[] = {
-	  { 1,-1, FSM_MATCH_FSM(scheme_fsm)         , FSM_NORMAL, set_scheme, nullptr }
-    , { 2,-1, FSM_MATCH_STR(_u8(":"))           , FSM_NORMAL, nullptr, nullptr }
-	, { 3,-1, FSM_MATCH_FSM(hier_part_fsm)      , FSM_NORMAL, nullptr, nullptr }
-	, { 4,-1, FSM_MATCH_RPT_FSM(uri_fsm_1, 0, 1), FSM_NORMAL, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_RPT_FSM(uri_fsm_2, 0, 1), FSM_ACCEPT, nullptr, nullptr }
+	  { 1,-1, FSM_MATCH_FSM(scheme_fsm)         , FSM_NORMAL, set_scheme, 0 }
+    , { 2,-1, FSM_MATCH_STR(_u8(":"))           , FSM_NORMAL, 0, 0 }
+	, { 3,-1, FSM_MATCH_FSM(hier_part_fsm)      , FSM_NORMAL, 0, 0 }
+	, { 4,-1, FSM_MATCH_RPT_FSM(uri_fsm_1, 0, 1), FSM_NORMAL, 0, 0 }
+	, {-1,-1, FSM_MATCH_RPT_FSM(uri_fsm_2, 0, 1), FSM_ACCEPT, 0, 0 }
 };
 
 
 /* URI / relative-ref */
 static fsm::transition<string> uri_reference_fsm[] = {
-	  {-1, 1, FSM_MATCH_FSM(uri_fsm)         , FSM_ACCEPT, nullptr, nullptr }
-	, {-1,-1, FSM_MATCH_FSM(relative_ref_fsm), FSM_ACCEPT, nullptr, nullptr }
+	  {-1, 1, FSM_MATCH_FSM(uri_fsm)         , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, FSM_MATCH_FSM(relative_ref_fsm), FSM_ACCEPT, 0, 0 }
 };
 
 

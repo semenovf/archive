@@ -115,7 +115,7 @@ string fs::currentDirectory () const
 
 		size *= 2;
 
-		if (size > pfs::max_type<int16_t>()) {
+		if (size > pfs::max_value<int16_t>()) {
 			this->addError(_u8("Directory name too big"));
 			break;
 		}

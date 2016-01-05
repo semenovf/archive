@@ -34,11 +34,11 @@ public:
 	void setPriority (thread::priority_type priority);
 
 	void terminate ();
-	bool wait (uintegral_t time = PFS_UINTEGRAL_MAX);
+	bool wait (uintmax_t time = PFS_UINTEGRAL_MAX);
 
-	static void sleep (uintegral_t secs);
-	static void msleep (uintegral_t msecs);
-	static void usleep (uintegral_t usecs);
+	static void sleep (uintmax_t secs);
+	static void msleep (uintmax_t msecs);
+	static void usleep (uintmax_t usecs);
 
 	static void * thread_routine (void * arg);
 	static void finalize (void * arg);
