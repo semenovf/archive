@@ -19,7 +19,7 @@ fi
 
 rm -f ${OUTDIR}/${PREFIX}*${SUFFIX}
 
-for i in test_* ; do
+for i in test* ; do
     OUTPUT=${OUTDIR}/${PREFIX}${i}${SUFFIX}
     printf "%-30s ... " $i
     ./$i > $OUTPUT 2>&1
