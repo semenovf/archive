@@ -59,9 +59,9 @@
 #include <cfloat>
 #include <limits>
 
-#ifndef SIZE_MAX
-#	error NO SIZE_MAX
-#endif
+//#ifndef SIZE_MAX
+//#	error NO SIZE_MAX
+//#endif
 
 #if defined(_SIZE_T_DEFINED_)    \
 	|| defined(_SIZE_T_DEFINED)  \

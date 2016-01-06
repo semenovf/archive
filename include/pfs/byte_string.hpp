@@ -237,11 +237,7 @@ public:
 
 	const_iterator cbegin () const
 	{
-#if __cplusplus < 201103L
-    	return _d.begin();
-#else
-    	return _d.cbegin();
-#endif
+		return begin();
 	}
 
 	iterator end ()
@@ -256,11 +252,7 @@ public:
 
 	const_iterator cend () const
 	{
-#if __cplusplus < 201103L
-    	return _d.end();
-#else
-    	return _d.cend();
-#endif
+    	return end();
 	}
 
 	reverse_iterator rbegin ()
