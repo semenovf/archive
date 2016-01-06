@@ -9,35 +9,6 @@
 #ifndef __PFS_FSM_HPP__
 #define __PFS_FSM_HPP__
 
-//#include <cstring>
-
-#ifndef FSM_ITERABLE_TYPE
-#	include <pfs/string.hpp>
-#	define FSM_ITERABLE_TYPE pfs::string
-#endif
-
-// Common predefined macros
-//
-#define FSM_TRANSITION                   pfs::fsm::transition<FSM_ITERABLE_TYPE>
-
-#define FSM_MATCH_SEQ(n)                 pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_seq<FSM_ITERABLE_TYPE>(n))
-#define FSM_MATCH_RANGE(min,max)         pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_range<FSM_ITERABLE_TYPE>(min,max))
-#define FSM_MATCH_RPT_RANGE(min,max,f,t) pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_RANGE(min,max),(f),(t)))
-#define FSM_MATCH_OPT_RANGE(min,max)     pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_RANGE(min,max),0,1))
-#define FSM_MATCH_FSM(tr)                pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_fsm<FSM_ITERABLE_TYPE>(tr))
-#define FSM_MATCH_RPT_FSM(tr,f,t)        pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_FSM(tr),(f),(t)))
-#define FSM_MATCH_OPT_FSM(tr)            pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_FSM(tr),0,1))
-#define FSM_MATCH_FUNC(fn,pcont)         pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_func<FSM_ITERABLE_TYPE>(fn,pcont))
-#define FSM_MATCH_RPT_FUNC(fn,pcont,f,t) pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_FUNC(fn,pcont),(f),(t)))
-#define FSM_MATCH_OPT_FUNC(fn,pcont)     pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_FUNC(fn,pcont),0,1))
-#define FSM_MATCH_NOTHING                pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_nothing<FSM_ITERABLE_TYPE>)
-#define FSM_MATCH_CHAR(s)                pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_char<FSM_ITERABLE_TYPE>(s))
-#define FSM_MATCH_STR(s)                 pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_str<FSM_ITERABLE_TYPE>(s))
-#define FSM_MATCH_RPT_STR(s,f,t)         pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_STR(s),f,t))
-#define FSM_MATCH_OPT_STR(s)             pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_STR(s),0,1))
-#define FSM_MATCH_RPT_CHAR(s,f,t)        pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_CHAR(s),f,t))
-#define FSM_MATCH_OPT_CHAR(s)            pfs::fsm::match<FSM_ITERABLE_TYPE>(new pfs::fsm::match_rpt<FSM_ITERABLE_TYPE>(FSM_MATCH_CHAR(s),0,1))
-
 #define FSM_NORMAL  0
 #define FSM_REJECT  1
 #define FSM_ACCEPT  2
@@ -272,7 +243,7 @@ fsm<_Sequence>::~fsm()
 
 }} // pfs::fsm
 
-#include "fsm_match.hpp"
-#include "fsm_exec.hpp"
+#include <pfs/fsm/match.hpp>
+#include <pfs/fsm/exec.hpp>
 
 #endif /* __PFS_FSM_HPP__ */

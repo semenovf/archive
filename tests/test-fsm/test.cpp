@@ -8,12 +8,15 @@
 
 
 #include <pfs/test/test.hpp>
-#include <pfs/fsm.hpp>
 #include <pfs/string.hpp>
 #include <pfs/byte_string.hpp>
 #include <pfs/vector.hpp>
+#include <pfs/fsm.hpp>
 
 #include <iostream>
+
+#define FSM_ITERABLE_TYPE pfs::string
+#include <pfs/fsm/aliases.hpp>
 
 using std::cout;
 using std::endl;
