@@ -12,10 +12,10 @@
 
 #include <pfs/map.hpp>
 #include <pfs/vector.hpp>
-#include <pfs/noncopyable.hpp>
-#include <pfs/dl.hpp>
+#include <pfs/fs/path.hpp>
 #include <pfs/mutex.hpp>
 #include <pfs/thread.hpp>
+#include <pfs/dl.hpp>
 #include <pfs/sigslotmapping.hpp>
 #include <pfs/notification.hpp>
 
@@ -28,32 +28,52 @@ namespace pfs {
 
 struct module_spec
 {
-	module_spec () : mod(nullptr), ph(nullptr), dtor(nullptr) {}
-	module_spec (module * a, dl::handle b, module_dtor_t c) : mod(a), ph(b), dtor(c) {}
 	module * mod;
-	dl::handle ph;        /* null for local */
-	module_dtor_t dtor;   /* may be null (no destructor) */
+	dynamic_library dl; /* null for local */
+	module_dtor_t dtor;  /* may be null (no destructor) */
+
+	module_spec ()
+		: mod(0)
+		, dl(0)
+		, dtor(0)
+	{}
+
+	module_spec (module * a
+			, const dynamic_library & b
+			, module_dtor_t c = default_dtor)
+		: mod(a)
+		, dl(b)
+		, dtor(c) {}
+
+	static void default_dtor (module *);
 };
 
-class DLL_API dispatcher : public has_slots<>, noncopyable
+class DLL_API dispatcher : public has_slots<>
 {
 public:
 	typedef struct { int id; sigslot_mapping_t * map; string desc; } mapping_type;
-	typedef map<int, mapping_type *> mapping_collection_type;
-	typedef map<string, module_spec> module_specs_type;
+	typedef map<int, mapping_type *> mapping_collection;
+	typedef map<string, module_spec> module_spec_map;
 
 private:
-	mapping_collection_type _mapping;
-	module_specs_type _modules;
-	vector<thread *>  _threads;
-	module *          _masterModule;
-	notification      _nx;
+	fs::pathlist       _searchdirs;
+	mapping_collection _mapping;
+	module_spec_map    _modules;
+	vector<thread *>   _threads;
+	module *           _master_module;
+	notification       _nx;
+
+private:
+	dispatcher (const dispatcher &);
+	dispatcher & operator = (const dispatcher &);
 
 protected:
-    dispatcher() : _masterModule(nullptr) {}
+    dispatcher ()
+		: _master_module(0)
+	{}
 
 public:
-	dispatcher (mapping_type mapping[], int n);
+	dispatcher (mapping_type * mapping, int n);
 
 	virtual ~dispatcher ();
 
@@ -67,15 +87,27 @@ public:
 		return _nx;
 	}
 
-	void addSearchPath (const string & dir);
-
-	module * registerLocalModule (module * mod, module_dtor_t dtor = module::defaultDtor);
-	module * registerModuleForPath (const string & path, const char * modname = nullptr, int argc = 0, const char ** argv = nullptr);
-	module * registerModuleForName (const string & name, const char * modname = nullptr, int argc = 0, const char ** argv = nullptr);
-
-	void setMasterModule (module * mod)
+	void add_search_path (const fs::path & dir)
 	{
-		_masterModule = mod;
+		if (!dir.empty())
+			_searchdirs.append(dir);
+	}
+
+	module * register_local_module (module * mod);
+
+	module * register_module_for_path (const fs::path & path
+			, const char * class_name = 0
+			, int argc = 0
+			, const char ** argv = 0);
+
+	module * register_module_for_name (const string & name
+			, const char * class_name = 0
+			, int argc = 0
+			, const char ** argv = 0);
+
+	void set_master_module (module * mod)
+	{
+		_master_module = mod;
 	}
 
 	size_t count () const
@@ -86,25 +118,25 @@ public:
 /* TODO need implementation
 	bool registerModuleForUrl(const string &url);
 */
-	void connectAll ();
-	void disconnectAll ();
-	void unregisterAll ();
+	void connect_all ();
+	void disconnect_all ();
+	void unregister_all ();
 	bool start ();
 	int  exec ();
 
-	bool isModuleRegistered (const string & pname)
+	bool is_module_registered (const string & pname)
 	{
 		return _modules.contains(pname);
 	}
 
 public: /*slots*/
-	void onModuleRegistered (const string & pname, bool & result)
+	void on_module_registered (const string & pname, bool & result)
 	{
-		result = isModuleRegistered(pname);
+		result = is_module_registered(pname);
 	}
 
 protected:
-	bool registerModule (module & m, dl::handle ph, module_dtor_t dtor);
+	bool register_module (module & m, dynamic_library::handle ph, module_dtor_t dtor);
 };
 
 } // pfs

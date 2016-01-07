@@ -25,9 +25,8 @@ private:
 	static app * self;
 
 public:
-	class main_proc
+	struct main_proc
 	{
-	public:
 		main_proc() {}
 		virtual ~main_proc() {}
 		virtual int operator () () { return 0; }

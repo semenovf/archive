@@ -38,18 +38,38 @@ typedef void  (* module_dtor_t)(module *);
 
 class DLL_API module : public has_slots<>
 {
+	friend class dispatcher;
+
+public: /*signal*/
+	signal2<const string &, bool &> emit_module_registered;
+
 private:
-	module() : _name(nullptr), _dispatcherPtr(nullptr), run(nullptr) {}
+	string       _name;
+	dispatcher * _pdispatcher;
 
 public:
-	module (const char * name) : _name(_u8(name)), _dispatcherPtr(nullptr), run(nullptr) {}
-	module (const char * name, int (* loop) (module *))
-		: _name(_u8(name))
-		, _dispatcherPtr(nullptr)
+	int (* run) (module *); // TODO declare it as `int (module::*) ()'
+	// int (module::*run) ();
+
+private:
+	module ()
+		: _pdispatcher()
+		, run(0)
+	{}
+
+public:
+	module (const string & name)
+		: _name(name)
+		, _pdispatcher(0)
+		, run(0)
+	{}
+
+	module (const string & name, int (* loop) (module *))
+		: _name(name)
+		, _pdispatcher(0)
 		, run(loop)
 	{}
 
-	module (const string & name) : _name(name), _dispatcherPtr(nullptr), run(nullptr) {}
 	virtual ~module() {}
 
 	const string & name() const
@@ -57,19 +77,19 @@ public:
 		return _name;
 	}
 
-	bool isRegistered () const
+	bool is_registered () const
 	{
-		return _dispatcherPtr != nullptr ? true : false;
+		return _pdispatcher != 0 ? true : false;
 	}
 
-	virtual const emitter_mapping * getEmitters (int * count)
+	virtual const emitter_mapping * get_emitters (int * count)
 	{
 		PFS_ASSERT(count);
 		*count = 0;
 		return 0;
 	}
 
-	virtual const detector_mapping * getDetectors (int * count)
+	virtual const detector_mapping * get_detectors (int * count)
 	{
 		PFS_ASSERT(count);
 		*count = 0;
@@ -79,30 +99,21 @@ public:
 	/**
 	 * @brief Module's onStart() method called after loaded and connection completed.
 	 */
-	virtual bool onStart (notification & nx)
+	virtual bool on_start (notification & nx)
 	{
 		return true;
 	}
 
-	virtual bool onFinish ()
+	virtual bool on_finish ()
 	{
 		return true;
 	}
 
-	static void defaultDtor (module * p) { PFS_ASSERT(p); delete p; }
-
-public: /*signal*/
-	signal2<const string &, bool &> moduleRegistered;
-
-private:
-	string       _name;
-	dispatcher * _dispatcherPtr;
-
-public:
-	int (* run) (module *); // TODO declare it as `int (module::*) ()'
-	// int (module::*run) ();
-
-	friend class dispatcher;
+//	static void defaultDtor (module * p)
+//	{
+//		PFS_ASSERT(p);
+//		delete p;
+//	}
 };
 
 struct detector_pair
@@ -119,7 +130,7 @@ struct detector_pair
 #define PFS_MODULE_DETECTOR(id, dt) { id , DETECTOR_CAST(dt) }
 
 #define PFS_MODULE_EMITTERS_BEGIN                                       \
-const pfs::emitter_mapping * getEmitters (int *count)                   \
+const pfs::emitter_mapping * get_emitters (int *count)                   \
 {                                                                       \
 	static pfs::emitter_mapping __emitter_mapping[] = {
 
@@ -130,7 +141,7 @@ const pfs::emitter_mapping * getEmitters (int *count)                   \
 }
 
 #define PFS_MODULE_DETECTORS_BEGIN                                      \
-const pfs::detector_mapping * getDetectors(int *count)                  \
+const pfs::detector_mapping * get_detectors(int *count)                 \
 {                                                                       \
 	static pfs::detector_mapping __detector_mapping[] = {
 

@@ -11,21 +11,21 @@
 
 namespace pfs {
 
-app * app::self = nullptr;
+app * app::self = 0;
 
 app::app (const string & progname)
 	: _program()
 {
-	PFS_ASSERT(self == nullptr);
+	PFS_ASSERT(self == 0);
 	self = this;
-	_program = (progname.isEmpty() ? string("<anonymous>") : progname);
+	_program = (progname.empty() ? string("<anonymous>") : progname);
 }
 
 int app::exec (dispatcher & d)
 {
 	int r = EXIT_FAILURE;
 
-    d.connectAll();
+    d.connect_all();
 
     pfs::notification & nx = d.get_notification();
 
