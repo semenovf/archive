@@ -123,25 +123,25 @@ void test_unpack ()
 
 	ADD_TESTS(16);
 
-	TEST_OK(pfs::unpack(byte_string("\xBC", 1), 0, pfs::endian::LittleEndian, ch) == sizeof(ch) && ch == '\xBC');
-	TEST_OK(pfs::unpack(byte_string("\xBC", 1), 0, pfs::endian::BigEndian, ch) == sizeof(ch) && ch == '\xBC');
+	TEST_OK(pfs::unpack(byte_string("\xBC", 1).cbegin(), pfs::endian::LittleEndian, ch) == sizeof(ch) && ch == '\xBC');
+	TEST_OK(pfs::unpack(byte_string("\xBC", 1).cbegin(), pfs::endian::BigEndian, ch) == sizeof(ch) && ch == '\xBC');
 
-	TEST_OK(pfs::unpack(byte_string("\xFF\x7F", 2), 0, pfs::endian::LittleEndian, short_int)  == sizeof(short_int) && short_int == (short)0x7FFF);
-	TEST_OK(pfs::unpack(byte_string("\x7F\xFF", 2), 0, pfs::endian::BigEndian, short_int)     == sizeof(short_int) && short_int == (short)0x7FFF);
-	TEST_OK(pfs::unpack(byte_string("\x00\x80", 2), 0, pfs::endian::LittleEndian, short_int)  == sizeof(short_int) && short_int == (short)0x8000);
-	TEST_OK(pfs::unpack(byte_string("\x80\x00", 2), 0, pfs::endian::BigEndian, short_int)     == sizeof(short_int) && short_int == (short)0x8000);
+	TEST_OK(pfs::unpack(byte_string("\xFF\x7F", 2).cbegin(), pfs::endian::LittleEndian, short_int)  == sizeof(short_int) && short_int == (short)0x7FFF);
+	TEST_OK(pfs::unpack(byte_string("\x7F\xFF", 2).cbegin(), pfs::endian::BigEndian, short_int)     == sizeof(short_int) && short_int == (short)0x7FFF);
+	TEST_OK(pfs::unpack(byte_string("\x00\x80", 2).cbegin(), pfs::endian::LittleEndian, short_int)  == sizeof(short_int) && short_int == (short)0x8000);
+	TEST_OK(pfs::unpack(byte_string("\x80\x00", 2).cbegin(), pfs::endian::BigEndian, short_int)     == sizeof(short_int) && short_int == (short)0x8000);
 
-	TEST_OK(pfs::unpack(byte_string("\xFF\x7F", 2), 0, pfs::endian::LittleEndian, ushort_int) == sizeof(ushort_int) && ushort_int == 0x7FFF);
-	TEST_OK(pfs::unpack(byte_string("\x7F\xFF", 2), 0, pfs::endian::BigEndian, ushort_int)    == sizeof(ushort_int) && ushort_int == 0x7FFF);
-	TEST_OK(pfs::unpack(byte_string("\x00\x80", 2), 0, pfs::endian::LittleEndian, ushort_int) == sizeof(ushort_int) && ushort_int == 0x8000);
-	TEST_OK(pfs::unpack(byte_string("\x80\x00", 2), 0, pfs::endian::BigEndian, ushort_int)    == sizeof(ushort_int) && ushort_int == 0x8000);
+	TEST_OK(pfs::unpack(byte_string("\xFF\x7F", 2).cbegin(), pfs::endian::LittleEndian, ushort_int) == sizeof(ushort_int) && ushort_int == 0x7FFF);
+	TEST_OK(pfs::unpack(byte_string("\x7F\xFF", 2).cbegin(), pfs::endian::BigEndian, ushort_int)    == sizeof(ushort_int) && ushort_int == 0x7FFF);
+	TEST_OK(pfs::unpack(byte_string("\x00\x80", 2).cbegin(), pfs::endian::LittleEndian, ushort_int) == sizeof(ushort_int) && ushort_int == 0x8000);
+	TEST_OK(pfs::unpack(byte_string("\x80\x00", 2).cbegin(), pfs::endian::BigEndian, ushort_int)    == sizeof(ushort_int) && ushort_int == 0x8000);
 
-	TEST_OK(pfs::unpack(byte_string("\xFF\xFF\xFF\x7F", 4), 0, pfs::endian::LittleEndian, int_int) == sizeof(int_int) && int_int == (int)0x7FFFFFFF);
-	TEST_OK(pfs::unpack(byte_string("\x7F\xFF\xFF\xFF", 4), 0, pfs::endian::BigEndian, int_int)    == sizeof(int_int) && int_int == (int)0x7FFFFFFF);
-	TEST_OK(pfs::unpack(byte_string("\x00\x00\x00\x80", 4), 0, pfs::endian::LittleEndian, int_int) == sizeof(int_int) && int_int == (int)0x80000000);
-	TEST_OK(pfs::unpack(byte_string("\x80\x00\x00\x00", 4), 0, pfs::endian::BigEndian, int_int)    == sizeof(int_int) && int_int == (int)0x80000000);
-	TEST_OK(pfs::unpack(byte_string("\x78\x56\x34\x12", 4), 0, pfs::endian::LittleEndian, int_int) == sizeof(int_int) && int_int == (int)0x12345678);
-	TEST_OK(pfs::unpack(byte_string("\x12\x34\x56\x78", 4), 0, pfs::endian::BigEndian, int_int)    == sizeof(int_int) && int_int == (int)0x12345678);
+	TEST_OK(pfs::unpack(byte_string("\xFF\xFF\xFF\x7F", 4).cbegin(), pfs::endian::LittleEndian, int_int) == sizeof(int_int) && int_int == (int)0x7FFFFFFF);
+	TEST_OK(pfs::unpack(byte_string("\x7F\xFF\xFF\xFF", 4).cbegin(), pfs::endian::BigEndian, int_int)    == sizeof(int_int) && int_int == (int)0x7FFFFFFF);
+	TEST_OK(pfs::unpack(byte_string("\x00\x00\x00\x80", 4).cbegin(), pfs::endian::LittleEndian, int_int) == sizeof(int_int) && int_int == (int)0x80000000);
+	TEST_OK(pfs::unpack(byte_string("\x80\x00\x00\x00", 4).cbegin(), pfs::endian::BigEndian, int_int)    == sizeof(int_int) && int_int == (int)0x80000000);
+	TEST_OK(pfs::unpack(byte_string("\x78\x56\x34\x12", 4).cbegin(), pfs::endian::LittleEndian, int_int) == sizeof(int_int) && int_int == (int)0x12345678);
+	TEST_OK(pfs::unpack(byte_string("\x12\x34\x56\x78", 4).cbegin(), pfs::endian::BigEndian, int_int)    == sizeof(int_int) && int_int == (int)0x12345678);
 
 	// TODO Add remaining tests (see test_convert_to_bytes)
 }

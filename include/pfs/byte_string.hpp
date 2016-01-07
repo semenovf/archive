@@ -816,40 +816,30 @@ inline byte_string byte_string::toBytes<utf8_string> (const utf8_string & v, end
 // TODO For integers only supported by endian class
 //
 template <typename T>
-byte_string::size_type unpack (const byte_string & bs, size_t pos, endian::type_enum order, T & v)
+byte_string::size_type unpack (byte_string::const_iterator pos, endian::type_enum order, T & v)
 {
-	if (bs.size() - pos < sizeof(T))
-		return 0;
-
 	union u
 	{
 		const T v;
 		const byte_string::value_type b[sizeof(T)];
 	};
 
-	byte_string::const_pointer s = bs.data() + pos;
-	const u * d = reinterpret_cast<const u *>(s/*constData() + pos*/);
+	const u * d = reinterpret_cast<const u *>(pos.base());
 	v = (order == endian::LittleEndian) ? endian::toLittleEndian(d->v) : endian::toBigEndian(d->v);
 	return sizeof(T);
 }
 
 template <typename T>
-inline byte_string::size_type unpack (const byte_string & bs, size_t pos, T & v)
+inline byte_string::size_type unpack (byte_string::const_iterator pos, T & v)
 {
-	return unpack(bs, pos, endian::native_order(), v);
-}
-
-template <typename T>
-inline byte_string::size_type unpack (const byte_string & bs, T & v)
-{
-	return unpack(bs, 0, endian::native_order(), v);
+	return unpack(pos, endian::native_order(), v);
 }
 
 //
 // For integers only supported by endian class
 //
 template <typename T>
-byte_string & pack (const T & v, endian::type_enum order, byte_string & result)
+byte_string & pack (const T & v, endian::type_enum order, byte_string & result) // TODO back_inserter
 {
 	T a = ((order == endian::LittleEndian) ? endian::toLittleEndian<T>(v) : endian::toBigEndian<T>(v));
 	union { T v; byte_string::value_type b[sizeof(T)]; } d;
@@ -858,7 +848,7 @@ byte_string & pack (const T & v, endian::type_enum order, byte_string & result)
 }
 
 template <typename T>
-inline byte_string & pack (const T & v, byte_string & result)
+inline byte_string & pack (const T & v, byte_string & result) // TODO back_inserter
 {
 	return pack<T>(v, endian::native_order(), result);
 }
@@ -867,7 +857,7 @@ inline byte_string & pack (const T & v, byte_string & result)
 // Specialization for bool
 //
 template <>
-inline byte_string & pack<bool> (const bool & v, endian::type_enum order, byte_string & result)
+inline byte_string & pack<bool> (const bool & v, endian::type_enum order, byte_string & result) // TODO back_inserter
 {
 	return pack<char>(v ? '\x01' : '\x00', order, result);
 }
@@ -877,7 +867,7 @@ inline byte_string & pack<bool> (const bool & v, endian::type_enum order, byte_s
 // TODO as mentioned at http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization
 //
 template <>
-inline byte_string & pack<float> (const float & v, endian::type_enum order, byte_string & result)
+inline byte_string & pack<float> (const float & v, endian::type_enum order, byte_string & result)// TODO back_inserter
 {
 	PFS_UNUSED2(v, order);
 	PFS_ASSERT_TODO();
@@ -889,7 +879,7 @@ inline byte_string & pack<float> (const float & v, endian::type_enum order, byte
 // TODO as for float
 //
 template <>
-inline byte_string & pack<double> (const double & v, endian::type_enum order, byte_string & result)
+inline byte_string & pack<double> (const double & v, endian::type_enum order, byte_string & result) // TODO back_inserter
 {
 	PFS_UNUSED2(v, order);
 	PFS_ASSERT_TODO();
@@ -902,7 +892,7 @@ inline byte_string & pack<double> (const double & v, endian::type_enum order, by
 // TODO as for float
 //
 template <>
-inline byte_string & pack<long double> (const long double & v, endian::type_enum order, byte_string & result)
+inline byte_string & pack<long double> (const long double & v, endian::type_enum order, byte_string & result)// TODO back_inserter
 {
 	PFS_UNUSED2(v, order);
 	PFS_ASSERT_TODO();
@@ -913,7 +903,7 @@ inline byte_string & pack<long double> (const long double & v, endian::type_enum
 // Specialization for byte_string
 //
 template <>
-inline byte_string & pack<byte_string> (const byte_string & v, endian::type_enum order, byte_string & result)
+inline byte_string & pack<byte_string> (const byte_string & v, endian::type_enum order, byte_string & result) // TODO back_inserter
 {
 	return result.assign(v);
 }

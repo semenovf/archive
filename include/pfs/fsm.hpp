@@ -126,9 +126,10 @@ class fsm
 	context<_Sequence> * _context;
 
 public:
-	typedef typename _Sequence::value_type     char_type;
-	typedef typename _Sequence::const_iterator const_iterator;
-	typedef typename result<_Sequence>::type   result_type;
+	typedef _Sequence                              sequence_type;
+	typedef typename sequence_type::value_type     char_type;
+	typedef typename sequence_type::const_iterator const_iterator;
+	typedef typename result<sequence_type>::type   result_type;
 
 public:
 	fsm ();
