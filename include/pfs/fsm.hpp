@@ -9,6 +9,9 @@
 #ifndef __PFS_FSM_HPP__
 #define __PFS_FSM_HPP__
 
+#include <utility> // std::pair
+#include <pfs/bits/assert.h>
+
 #define FSM_NORMAL  0
 #define FSM_REJECT  1
 #define FSM_ACCEPT  2
@@ -60,7 +63,7 @@ public:
 	typedef typename result<_Sequence>::type   result_type;
 
 	//typedef ssize_t (* func_type)(context<_Sequence> * fsm, void *fn_context, typename _Sequence::const_iterator begin, typename _Sequence::const_iterator end);
-	typedef result_type (* func_type)(context<_Sequence> * fsm
+	typedef result_type (* func_type)(void * parse_context
 			, void * fn_context
 			, const_iterator begin
 			, const_iterator end);
@@ -113,7 +116,7 @@ template <typename _Sequence>
 struct context
 {
 	const transition<_Sequence> * _trans_tab;
-	void * _userContext;     /* user context */
+	void * parse_context;     /* user context */
 };
 
 
@@ -139,7 +142,7 @@ public:
 
 	void set_user_context (void * context)
 	{
-		_context->_userContext = context;
+		_context->parse_context = context;
 	}
 
 	//ssize_t exec (int state_cur, const_iterator begin, const_iterator end);
@@ -220,7 +223,7 @@ fsm<_Sequence>::fsm ()
 	: _context(new context<_Sequence>)
 {
 	_context->_trans_tab   = 0;
-	_context->_userContext = 0;
+	_context->parse_context = 0;
 }
 
 template <typename _Sequence>
@@ -228,7 +231,7 @@ fsm<_Sequence>::fsm (const transition<_Sequence> * initialTrans, void * userCont
 	: _context(new context<_Sequence>)
 {
 	_context->_trans_tab   = initialTrans;
-	_context->_userContext = userContext;
+	_context->parse_context = userContext;
 }
 
 // FIXME make _context automatically allocated

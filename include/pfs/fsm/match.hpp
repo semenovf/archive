@@ -174,7 +174,7 @@ public:
 			, const_iterator begin
 			, const_iterator end) const
 	{
-		fsm<_Sequence> fsm(_trans, ctx->_userContext);
+		fsm<_Sequence> fsm(_trans, ctx->parse_context);
 		return fsm.exec(FSM_NORMAL, begin, end);
 	}
 };
@@ -205,7 +205,7 @@ public:
 			, const_iterator begin
 			, const_iterator end) const
 	{
-		return _fn(ctx, _fnContext, begin, end);
+		return _fn(ctx->parse_context, _fnContext, begin, end);
 	}
 };
 

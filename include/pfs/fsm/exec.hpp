@@ -42,7 +42,7 @@ typename fsm<_Sequence>::result_type fsm<_Sequence>::exec (int state_cur, const_
 		if (result.first) {
 			if (trans->_action) {
 				//if (!trans->_action(ptr, ptr + size_t(nchars_processed), _context->_userContext, trans->_action_args)) {
-				if (!trans->_action(ptr, result.second, _context->_userContext, trans->_action_args)) {
+				if (!trans->_action(ptr, result.second, _context->parse_context, trans->_action_args)) {
 
 					// Let's support this situation
 					//
