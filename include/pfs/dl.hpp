@@ -9,6 +9,7 @@
 
 /* see http://en.wikipedia.org/wiki/Dynamic_loading */
 #include <pfs/string.hpp>
+#include <pfs/shared_ptr.hpp>
 #include <pfs/map.hpp>
 #include <pfs/vector.hpp>
 #include <pfs/stringlist.hpp>
@@ -30,7 +31,7 @@
 
 namespace pfs {
 
-class DLL_API dl
+class DLL_API dynamic_library
 {
 public:
 #ifdef PFS_CC_MSC
@@ -42,21 +43,28 @@ public:
 #endif
 
 private:
-	handle   _handle;
-	fs::path _path;   // contains path to dynamic library
+	struct shared_data
+	{
+		handle     _handle;
+		fs::path   _path;   // contains path to dynamic library
+
+		shared_data () : _handle(0) {}
+		~shared_data ();
+	};
+
+	shared_ptr<shared_data> _d;
 
 public:
-	dl () : _handle(0)
+	dynamic_library ()
+		: _d(new shared_data)
 	{};
 
-	~dl ()
-	{
-		close();
-	}
+	~dynamic_library ()
+	{}
 
 	handle native () const
 	{
-		return _handle;
+		return _d->_handle;
 	}
 
 	/**
@@ -75,7 +83,7 @@ public:
 			, error_code * ex = 0
 			, string * extended_errstr = 0);
 
-	void close ();
+//	void close ();
 
 //	pfs::pluggable * open_plugin (const string & name, const fs::path & path);
 //

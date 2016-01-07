@@ -6,8 +6,8 @@
  * @brief URI testing
  */
 
-#include <pfs/test/test.hpp>
 #include <pfs/dl.hpp>
+#include <pfs/test/test.hpp>
 #include <pfs/string.hpp>
 #include <pfs/fs/path.hpp>
 #include <iostream>
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 
 	typedef int (*dl_test_fn)(void);
 
-	pfs::dl dl;
+	pfs::dynamic_library dl;
 	pfs::fs::path dlfile1 = dl.build_filename(string("pfs-sys"));
 	pfs::fs::path dlfile2 = dl.build_filename(string("pfs-sys-d"));
 	pfs::fs::path * pdlfile = 0;
@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
 	TEST_FAIL2(!ex, "'dl_only_for_testing_purpose': symbol (function pointer) found");
 
 	TEST_OK2(dltest() == dl_only_for_testing_purpose(), "run plugin/library function");
-	dl.close();
 
 	END_TESTS;
 }

@@ -1,15 +1,15 @@
-#include "pfs/dl.hpp"
+#include <pfs/dl.hpp>
 #include "pfs/fs.hpp"
 #include <pfs/mt.hpp>
 
 namespace pfs {
 
-dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool global, bool resolve)
+dynamic_library::handle dynamic_library::open (const pfs::string & path, pfs::string & realPath, bool global, bool resolve)
 {
 	static pfs::mutex __mutex;
 	pfs::auto_lock<> locker(&__mutex);
 
-	dl::handle h = 0;
+	dynamic_library::handle h = 0;
 
 	DWORD dwFlags = 0;
 	PFS_UNUSED(global);
@@ -36,9 +36,9 @@ dl::handle dl::open (const pfs::string & path, pfs::string & realPath, bool glob
 	return h;
 }
 
-dl::symbol dl::ptr (dl::handle h, const char *symname)
+dynamic_library::symbol dynamic_library::ptr (dynamic_library::handle h, const char *symname)
 {
-	dl::symbol p = 0;
+	dynamic_library::symbol p = 0;
 
 	PFS_ASSERT(symname);
 
@@ -52,14 +52,14 @@ dl::symbol dl::ptr (dl::handle h, const char *symname)
 	return p;
 }
 
-void dl::close (dl::handle h)
+void dynamic_library::close (dynamic_library::handle h)
 {
 	static pfs::mutex __mutex;
 	pfs::auto_lock<> locker(&__mutex);
 
-	if( h != (dl::handle)0) {
+	if( h != (dynamic_library::handle)0) {
 		FreeLibrary(h);
-		h = (dl::handle)0;
+		h = (dynamic_library::handle)0;
 	}
 }
 
@@ -69,7 +69,7 @@ void dl::close (dl::handle h)
  * @param name base name of dynamic lubrary
  * @param libname full library name to store
  */
-pfs::string dl::buildDlFileName (const pfs::string & basename)
+pfs::string dynamic_library::buildDlFileName (const pfs::string & basename)
 {
 	pfs::string libname;
 	libname.append(basename);
