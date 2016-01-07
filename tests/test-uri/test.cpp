@@ -9,7 +9,7 @@
 #include <pfs/uri.hpp>
 #include <cstdio>
 
-#include <pfs/fsm_test.hpp>
+#include <pfs/fsm/test.hpp>
 #include "../../src/pfs-sys/uri_rfc3986.hpp"
 
 #if __COMMENT__
@@ -244,48 +244,48 @@ void test_uri_fsm ()
 {
 	ADD_TESTS(25);
 
-	TEST_OK(test_valid_entry<pfs::string>(pfs::authority_fsm, _u8("192.168.1.1")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::authority_fsm, _u8("user@192.168.1.1")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::authority_fsm, 0, _u8("192.168.1.1")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::authority_fsm, 0, _u8("user@192.168.1.1")));
 
 	// ALPHA / DIGIT / "-" / "." / "_" / "~"
 	//
-	TEST_OK(test_valid_entry<pfs::string>(pfs::unreserved_fsm, _u8("Z")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::unreserved_fsm, _u8("z")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::unreserved_fsm, _u8("9")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::unreserved_fsm, _u8("~")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::unreserved_fsm, 0, _u8("Z")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::unreserved_fsm, 0, _u8("z")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::unreserved_fsm, 0, _u8("9")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::unreserved_fsm, 0, _u8("~")));
 
-	TEST_OK(test_invalid_entry<pfs::string>(pfs::unreserved_fsm, _u8("?"), -1));
-	TEST_OK(test_invalid_entry<pfs::string>(pfs::unreserved_fsm, _u8("+"), -1));
-	TEST_OK(test_invalid_entry<pfs::string>(pfs::unreserved_fsm, _u8("/"), -1));
+	TEST_OK(test_invalid_entry<pfs::string>(pfs::unreserved_fsm, 0, _u8("?"), -1));
+	TEST_OK(test_invalid_entry<pfs::string>(pfs::unreserved_fsm, 0, _u8("+"), -1));
+	TEST_OK(test_invalid_entry<pfs::string>(pfs::unreserved_fsm, 0, _u8("/"), -1));
 
 	// "%" HEXDIG HEXDIG
 	//
-	TEST_OK(test_valid_entry<pfs::string>(pfs::pct_encoded_fsm, _u8("%FF")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::pct_encoded_fsm, _u8("%00")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::pct_encoded_fsm, _u8("%9F")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::pct_encoded_fsm, _u8("%AB")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::pct_encoded_fsm, 0, _u8("%FF")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::pct_encoded_fsm, 0, _u8("%00")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::pct_encoded_fsm, 0, _u8("%9F")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::pct_encoded_fsm, 0, _u8("%AB")));
 
-	TEST_OK(test_invalid_entry<pfs::string>(pfs::pct_encoded_fsm, _u8("%AR"), -1));
-	TEST_OK(test_invalid_entry<pfs::string>(pfs::pct_encoded_fsm, _u8("}{"), -1));
-	TEST_OK(test_invalid_entry<pfs::string>(pfs::pct_encoded_fsm, _u8("%%A9"), -1));
+	TEST_OK(test_invalid_entry<pfs::string>(pfs::pct_encoded_fsm, 0, _u8("%AR"), -1));
+	TEST_OK(test_invalid_entry<pfs::string>(pfs::pct_encoded_fsm, 0, _u8("}{"), -1));
+	TEST_OK(test_invalid_entry<pfs::string>(pfs::pct_encoded_fsm, 0, _u8("%%A9"), -1));
 
 
 	// "/" [ segment-nz *( "/" segment ) ]
 	//
-	TEST_OK(test_valid_entry<pfs::string>(pfs::path_absolute_fsm, _u8("/")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::path_absolute_fsm, _u8("/ABCDE")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::path_absolute_fsm, _u8("/name@domain.com/%DE%AD%BE%EF")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::path_absolute_fsm, _u8("/name@domain.com/")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::path_absolute_fsm, 0, _u8("/")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::path_absolute_fsm, 0, _u8("/ABCDE")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::path_absolute_fsm, 0, _u8("/name@domain.com/%DE%AD%BE%EF")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::path_absolute_fsm, 0, _u8("/name@domain.com/")));
 
-	TEST_OK(test_invalid_entry<pfs::string>(pfs::path_absolute_fsm, _u8("/name@{}/"), 6));
-	TEST_OK(test_invalid_entry<pfs::string>(pfs::path_absolute_fsm, _u8("name@{}/"), -1));
+	TEST_OK(test_invalid_entry<pfs::string>(pfs::path_absolute_fsm, 0, _u8("/name@{}/"), 6));
+	TEST_OK(test_invalid_entry<pfs::string>(pfs::path_absolute_fsm, 0, _u8("name@{}/"), -1));
 
 
 	// URI / relative-ref
 	//
-	TEST_OK(test_valid_entry<pfs::string>(pfs::uri_reference_fsm, _u8("http://user@host/?query%20string")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::uri_reference_fsm, _u8("http://user@host#fragment%20string")));
-	TEST_OK(test_valid_entry<pfs::string>(pfs::uri_reference_fsm, _u8("ftp://user@host/?query%20string#fragment%20string")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::uri_reference_fsm, 0, _u8("http://user@host/?query%20string")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::uri_reference_fsm, 0, _u8("http://user@host#fragment%20string")));
+	TEST_OK(test_valid_entry<pfs::string>(pfs::uri_reference_fsm, 0, _u8("ftp://user@host/?query%20string#fragment%20string")));
 
 }
 

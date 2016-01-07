@@ -60,7 +60,7 @@ map<string, string> uri::query_items (
  */
 bool uri::parse (const pfs::string & uri)
 {
-	UriParseContext ctx = { & _uri };
+	parse_context ctx = { & _uri };
 	fsm::fsm<pfs::string> fsm(uri_fsm, & ctx);
 
 	_uri.clear();

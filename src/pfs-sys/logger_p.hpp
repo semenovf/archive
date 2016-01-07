@@ -11,6 +11,7 @@
 
 #include "pfs/logger.hpp"
 #include <pfs/fsm.hpp>
+#include <pfs/fsm/aliases.hpp>
 #include <pfs/platform.hpp>
 #include <ctime>
 
@@ -73,6 +74,8 @@ static bool set_format_spec   (string::const_iterator begin, string::const_itera
  * t    horizontal tab
  */
 
+typedef pfs::fsm::m<pfs::string> M;
+
 //static string _LOGGER_ALPHA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
 //static string _LOGGER_WS(" \t");
 static string LOGGER_DIGIT("0123456789");
@@ -82,21 +85,22 @@ string::value_type plain_char[] = {
 	  string::value_type(0x20u), string::value_type(0x24u)
 	, string::value_type(0x26u), string::value_type(0x10FFFFu)
 };
+
 static fsm::transition<string> plain_char_fsm[] = {
-      {-1, 1, FSM_MATCH_RANGE(plain_char[0], plain_char[1]) , FSM_ACCEPT, 0, 0 }
-    , {-1,-1, FSM_MATCH_RANGE(plain_char[2], plain_char[3]) , FSM_ACCEPT, 0, 0 }
+      {-1, 1, M::range(plain_char[0], plain_char[1]).m , FSM_ACCEPT, 0, 0 }
+    , {-1,-1, M::range(plain_char[2], plain_char[3]).m , FSM_ACCEPT, 0, 0 }
 };
 
 /* format-mod = [ "-" ] *2DIGIT [ "." *2DIGIT ] */
 static fsm::transition<string> dot_digit_fsm[] = {
-	  { 1,-1, FSM_MATCH_CHAR(_u8("."))               , FSM_NORMAL, 0, 0 }
-	, {-1,-1, FSM_MATCH_RPT_CHAR(LOGGER_DIGIT, 0, 2) , FSM_ACCEPT, set_max_width, 0 }
+	  { 1,-1, M::chr(_u8(".")).m               , FSM_NORMAL, 0, 0 }
+	, {-1,-1, M::rpt_chr(LOGGER_DIGIT, 0, 2).m , FSM_ACCEPT, set_max_width, 0 }
 };
 
 static fsm::transition<string> format_mod_fsm[] = {
-	  { 1,-1, FSM_MATCH_OPT_CHAR(_u8("-"))           , FSM_NORMAL, set_left_justify, 0 }
-	, { 2,-1, FSM_MATCH_RPT_CHAR(LOGGER_DIGIT, 0, 2) , FSM_NORMAL, set_min_width, 0 }
-	, {-1,-1, FSM_MATCH_OPT_FSM(dot_digit_fsm)       , FSM_ACCEPT, 0, 0 }
+	  { 1,-1, M::opt_chr(_u8("-")).m           , FSM_NORMAL, set_left_justify, 0 }
+	, { 2,-1, M::rpt_chr(LOGGER_DIGIT, 0, 2).m , FSM_NORMAL, set_min_width, 0 }
+	, {-1,-1, M::opt_tr(dot_digit_fsm).m       , FSM_ACCEPT, 0, 0 }
 };
 
 /* format-spec = "{" *( <exclude '{' (0x7B) and '}' (0x7D) > ) "}" */
@@ -106,33 +110,33 @@ string::value_type format_spec_char[] = {
 	, string::value_type(0x7Eu), string::value_type(0x10FFFFu)
 };
 static fsm::transition<string> format_spec_char_fsm[] = {
-	  {-1, 1, FSM_MATCH_RANGE(format_spec_char[0], format_spec_char[1]) , FSM_ACCEPT, 0, 0 }
-	, {-1, 2, FSM_MATCH_RANGE(format_spec_char[2], format_spec_char[3]) , FSM_ACCEPT, 0, 0 }
-	, {-1,-1, FSM_MATCH_RANGE(format_spec_char[4], format_spec_char[5]) , FSM_ACCEPT, 0, 0 }
+	  {-1, 1, M::range(format_spec_char[0], format_spec_char[1]).m , FSM_ACCEPT, 0, 0 }
+	, {-1, 2, M::range(format_spec_char[2], format_spec_char[3]).m , FSM_ACCEPT, 0, 0 }
+	, {-1,-1, M::range(format_spec_char[4], format_spec_char[5]).m , FSM_ACCEPT, 0, 0 }
 };
 static fsm::transition<string> format_spec_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_u8("{"))                       , FSM_NORMAL, 0, 0 }
-    , { 2,-1, FSM_MATCH_RPT_FSM(format_spec_char_fsm, 0,256) , FSM_NORMAL, set_format_spec, 0 }
-    , {-1,-1, FSM_MATCH_CHAR(_u8("}"))                       , FSM_ACCEPT, 0, 0 }
+      { 1,-1, M::chr(_u8("{")).m                       , FSM_NORMAL, 0, 0 }
+    , { 2,-1, M::rpt_tr(format_spec_char_fsm, 0,256).m , FSM_NORMAL, set_format_spec, 0 }
+    , {-1,-1, M::chr(_u8("}")).m                       , FSM_ACCEPT, 0, 0 }
 };
 
 /* spec = "%" [ format-mod ] ( "m" / "d" / "p" ) [ format-spec ]*/
 static fsm::transition<string> spec_fsm[] = {
-      { 1,-1, FSM_MATCH_CHAR(_u8("%"))           , FSM_NORMAL, begin_spec, 0 }
-    , { 2,-1, FSM_MATCH_OPT_FSM(format_mod_fsm)  , FSM_NORMAL, 0, 0 }
-    , { 3,-1, FSM_MATCH_CHAR(_u8("mdpnt"))       , FSM_NORMAL, set_spec_char, 0 }
-    , {-1,-1, FSM_MATCH_OPT_FSM(format_spec_fsm) , FSM_ACCEPT, end_spec, 0 }
+      { 1,-1, M::chr(_u8("%")).m           , FSM_NORMAL, begin_spec, 0 }
+    , { 2,-1, M::opt_tr(format_mod_fsm).m  , FSM_NORMAL, 0, 0 }
+    , { 3,-1, M::chr(_u8("mdpnt")).m       , FSM_NORMAL, set_spec_char, 0 }
+    , {-1,-1, M::opt_tr(format_spec_fsm).m , FSM_ACCEPT, end_spec, 0 }
 };
 
 /* pattern = *( spec-fsm / plain-char ) */
 /* spec-fsm / plain-char */
 static fsm::transition<string> pattern_unit_fsm[] = {
-      {-1, 1, FSM_MATCH_FSM(spec_fsm)       , FSM_ACCEPT, 0, 0 }
-    , {-1,-1, FSM_MATCH_FSM(plain_char_fsm) , FSM_ACCEPT, append_plain_char, 0 }
+      {-1, 1, M::tr(spec_fsm).m       , FSM_ACCEPT, 0, 0 }
+    , {-1,-1, M::tr(plain_char_fsm).m , FSM_ACCEPT, append_plain_char, 0 }
 };
 
 static fsm::transition<string> pattern_fsm[] = {
-	{-1,-1, FSM_MATCH_RPT_FSM(pattern_unit_fsm, 0,-1) , FSM_ACCEPT, 0, 0 }
+	{-1,-1, M::rpt_tr(pattern_unit_fsm, 0,-1).m , FSM_ACCEPT, 0, 0 }
 };
 
 
