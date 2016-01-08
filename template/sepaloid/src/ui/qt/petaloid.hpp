@@ -69,7 +69,7 @@ public:
 public:
 	petaloid (int argc, char * argv[]);
 	virtual bool onStart ();
-	virtual bool onFinish ();
+	virtual bool on_finish ();
 
 	PFS_PETALOID_EMITTERS_BEGIN
 	      PFS_PETALOID_EMITTER(API_QUIT      , emitQuit)

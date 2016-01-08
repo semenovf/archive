@@ -30,7 +30,7 @@ public:
 	}
 
 	virtual bool onStart () override  { return true; }
-	virtual bool onFinish () override { return true; }
+	virtual bool on_finish () override { return true; }
 
 	PFS_PETALOID_EMITTERS_BEGIN
 		  PFS_PETALOID_EMITTER(API_INFO    , emitInfo)

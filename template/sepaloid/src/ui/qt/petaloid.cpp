@@ -81,7 +81,7 @@ bool petaloid::onStart ()
 	return true;
 }
 
-bool petaloid::onFinish ()
+bool petaloid::on_finish ()
 {
 	return true;
 }
