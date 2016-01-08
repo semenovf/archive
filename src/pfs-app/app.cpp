@@ -30,11 +30,14 @@ int app::exec (dispatcher & d)
     pfs::notification & nx = d.get_notification();
 
     if (d.start() && nx.count_error_type() == 0) {
+    	if (nx.count()) {
+    		pfs::log::print(nx);
+    		nx.clear();
+    	}
    		r = d.exec();
-    } else {
-		pfs::log::print(nx);
-		nx.clear();
     }
+
+    d.finalize();
 
 	return r;
 }

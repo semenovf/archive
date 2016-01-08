@@ -18,6 +18,11 @@ project "pfs-app"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-module"
---    include("test-pfs-module/project.gbs")
+project "test-app"
+    include("test-app/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "module-for-test-app"
+    include("module-for-test-app/project.gbs")
 -- END PROJECT

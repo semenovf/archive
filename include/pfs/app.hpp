@@ -33,13 +33,24 @@ public:
 	};
 
 public:
-	app (const string & progname = pfs::string());
+	app (const string & progname = string());
 
-	int exec () { return main_proc()(); }
-	int exec (main_proc & mainProc) { return mainProc(); }
+	int exec ()
+	{
+		return main_proc()();
+	}
+
+	int exec (main_proc & mainProc)
+	{
+		return mainProc();
+	}
+
 	int exec (dispatcher & d);
 
-	static app * instance() { PFS_ASSERT(self); return self; }
+	static app * instance()
+	{
+		PFS_ASSERT(self); return self;
+	}
 };
 
 } // pfs

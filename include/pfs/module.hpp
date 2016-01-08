@@ -49,27 +49,31 @@ private:
 
 public:
 	int (* run) (module *); // TODO declare it as `int (module::*) ()'
-	// int (module::*run) ();
 
-private:
+protected:
 	module ()
 		: _pdispatcher()
 		, run(0)
 	{}
 
+	void set_name (const string & name)
+	{
+		_name = name;
+	}
+
+//	module (const string & name)
+//		: _name(name)
+//		, _pdispatcher(0)
+//		, run(0)
+//	{}
+//
+//	module (const string & name, int (* loop) (module *))
+//		: _name(name)
+//		, _pdispatcher(0)
+//		, run(loop)
+//	{}
+
 public:
-	module (const string & name)
-		: _name(name)
-		, _pdispatcher(0)
-		, run(0)
-	{}
-
-	module (const string & name, int (* loop) (module *))
-		: _name(name)
-		, _pdispatcher(0)
-		, run(loop)
-	{}
-
 	virtual ~module() {}
 
 	const string & name() const
@@ -80,6 +84,11 @@ public:
 	bool is_registered () const
 	{
 		return _pdispatcher != 0 ? true : false;
+	}
+
+	void set_dispatcher (dispatcher * pdispatcher)
+	{
+		_pdispatcher = pdispatcher;
 	}
 
 	virtual const emitter_mapping * get_emitters (int * count)
@@ -130,7 +139,7 @@ struct detector_pair
 #define PFS_MODULE_DETECTOR(id, dt) { id , DETECTOR_CAST(dt) }
 
 #define PFS_MODULE_EMITTERS_BEGIN                                       \
-const pfs::emitter_mapping * get_emitters (int *count)                   \
+const pfs::emitter_mapping * get_emitters (int *count)                  \
 {                                                                       \
 	static pfs::emitter_mapping __emitter_mapping[] = {
 

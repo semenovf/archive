@@ -16,8 +16,10 @@
 #include <pfs/mutex.hpp>
 #include <pfs/thread.hpp>
 #include <pfs/dl.hpp>
+#include <pfs/shared_ptr.hpp>
 #include <pfs/sigslotmapping.hpp>
 #include <pfs/notification.hpp>
+#include <pfs/utility.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -28,40 +30,32 @@ namespace pfs {
 
 struct module_spec
 {
-	module * mod;
-	dynamic_library dl; /* null for local */
-	module_dtor_t dtor;  /* may be null (no destructor) */
-
-	module_spec ()
-		: mod(0)
-		, dl(0)
-		, dtor(0)
-	{}
-
-	module_spec (module * a
-			, const dynamic_library & b
-			, module_dtor_t c = default_dtor)
-		: mod(a)
-		, dl(b)
-		, dtor(c) {}
-
-	static void default_dtor (module *);
+	shared_ptr<module> pmodule;
+	dynamic_library dl;
 };
+
+static void default_dtor (module *);
 
 class DLL_API dispatcher : public has_slots<>
 {
 public:
-	typedef struct { int id; sigslot_mapping_t * map; string desc; } mapping_type;
-	typedef map<int, mapping_type *> mapping_collection;
-	typedef map<string, module_spec> module_spec_map;
+	typedef struct api_item_type_t
+	{
+		int id;
+		sigslot_mapping_t * map;
+		string desc;
+	} api_item_type;
+
+	typedef map<int, api_item_type *> api_type;
+	typedef map<string, module_spec> module_spec_map_type;
 
 private:
-	fs::pathlist       _searchdirs;
-	mapping_collection _mapping;
-	module_spec_map    _modules;
-	vector<thread *>   _threads;
-	module *           _master_module;
-	notification       _nx;
+	fs::pathlist         _searchdirs;
+	api_type             _api;
+	module_spec_map_type _module_spec_map;
+	vector<thread *>     _threads;
+	shared_ptr<module>   _master_module;
+	notification         _nx;
 
 private:
 	dispatcher (const dispatcher &);
@@ -73,9 +67,14 @@ protected:
 	{}
 
 public:
-	dispatcher (mapping_type * mapping, int n);
+	dispatcher (api_item_type * mapping, int n);
 
-	virtual ~dispatcher ();
+	virtual ~dispatcher ()
+	{
+		finalize();
+	}
+
+	void finalize ();
 
 	const notification & get_notification () const
 	{
@@ -90,29 +89,47 @@ public:
 	void add_search_path (const fs::path & dir)
 	{
 		if (!dir.empty())
-			_searchdirs.append(dir);
+			_searchdirs.push_back(dir);
 	}
 
-	module * register_local_module (module * mod);
-
-	module * register_module_for_path (const fs::path & path
-			, const char * class_name = 0
-			, int argc = 0
-			, const char ** argv = 0);
-
-	module * register_module_for_name (const string & name
-			, const char * class_name = 0
-			, int argc = 0
-			, const char ** argv = 0);
-
-	void set_master_module (module * mod)
+	bool register_local_module (module * pmodule, const string & name)
 	{
-		_master_module = mod;
+		module_spec modspec;
+		modspec.pmodule = shared_ptr<module>(pmodule);
+		modspec.dl = dynamic_library();
+		modspec.pmodule->set_name(name);
+		return register_module(modspec);
+	}
+
+	bool register_module_for_path (const fs::path & path
+			, const string & name
+			, const char * class_name = 0
+			, int argc = 0
+			, const char ** argv = 0)
+	{
+		module_spec modspec = module_for_path(path, class_name, argc, argv);
+		modspec.pmodule->set_name(name);
+		return register_module(modspec);
+	}
+
+	bool register_module_for_name (const string & name
+			, const char * class_name = 0
+			, int argc = 0
+			, const char ** argv = 0)
+	{
+		module_spec modspec = module_for_name(name, class_name, argc, argv);
+		modspec.pmodule->set_name(name);
+		return register_module(modspec);
+	}
+
+	void set_master_module (const shared_ptr<module> & pmodule)
+	{
+		_master_module = pmodule;
 	}
 
 	size_t count () const
 	{
-		return _modules.size();
+		return _module_spec_map.size();
 	}
 
 /* TODO need implementation
@@ -124,9 +141,9 @@ public:
 	bool start ();
 	int  exec ();
 
-	bool is_module_registered (const string & pname)
+	bool is_module_registered (const string & modname) const
 	{
-		return _modules.contains(pname);
+		return _module_spec_map.find(modname) != _module_spec_map.end();
 	}
 
 public: /*slots*/
@@ -136,7 +153,21 @@ public: /*slots*/
 	}
 
 protected:
-	bool register_module (module & m, dynamic_library::handle ph, module_dtor_t dtor);
+	module_spec module_for_path (const fs::path & path
+			, const char * class_name = 0
+			, int argc = 0
+			, const char ** argv = 0);
+
+	module_spec module_for_name (const string & name
+			, const char * class_name = 0
+			, int argc = 0
+			, const char ** argv = 0)
+	{
+		fs::path modpath = dynamic_library::build_filename(name);
+		return module_for_path(modpath);
+	}
+
+	bool register_module (const module_spec & modspec);
 };
 
 } // pfs

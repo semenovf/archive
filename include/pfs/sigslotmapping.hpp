@@ -36,8 +36,16 @@ struct sigslot_mapping_base : public sigslot_mapping_t
 
 	virtual void connect_all ();
 	virtual void disconnect_all ();
-	virtual void append_emitter (emitter * e) { emitters.append(reinterpret_cast<_emitterT*>(e)); }
-	virtual void append_detector (module * m, detector d) { detectors.append(detector_pair (m, d));}
+
+	virtual void append_emitter (emitter * e)
+	{
+		emitters.push_back(reinterpret_cast<_emitterT*>(e));
+	}
+
+	virtual void append_detector (module * m, detector d)
+	{
+		detectors.push_back(detector_pair (m, d));
+	}
 };
 
 template <typename _emitterT, typename _detectorT>
