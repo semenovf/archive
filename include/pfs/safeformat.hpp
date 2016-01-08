@@ -242,6 +242,7 @@ public:
 	safeformat & operator () (void * p);
 
 	const string & operator () () const { return _ctx.result; }
+	const string & str () const { return _ctx.result; }
 
 //--- boost-like operators
 	safeformat & operator % (char c)               { return operator () (c); }

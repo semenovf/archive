@@ -9,10 +9,11 @@
 #define __PFS_FUNCTOR_QUEUE_HPP__
 
 #include <pfs/functor.hpp>
+#include <pfs/mutex.hpp>
 
 namespace pfs {
 
-template <size_t Size, typename Return>
+template <size_t Size, typename Return, typename Mutex = pfs::fake_mutex>
 class functor_queue_base
 {
 public:
@@ -20,6 +21,7 @@ public:
 	typedef functor_base<Return> functor_base_type;
 
 protected:
+	Mutex  _mutex;
 	char   _q[Size];
 	char * _begin;
 	char * _end;
@@ -51,7 +53,7 @@ public:
 		return _count == 0;
 	}
 
-	bool count () const
+	size_t count () const
 	{
 		return _count;
 	}
@@ -63,6 +65,8 @@ public:
 
 	bool push (return_type (* f) ())
 	{
+		lock_guard<Mutex> locker(_mutex);
+
 		if (prepare_push(sizeof(functor0<return_type>))) {
 			functor_base_type * fr = new (_tail) functor0<return_type>(f);
 			_tail += fr->size();
@@ -74,6 +78,8 @@ public:
 	template <typename Arg1>
 	bool push (return_type (*f) (Arg1), Arg1 a1)
 	{
+		lock_guard<Mutex> locker(_mutex);
+
 		if (prepare_push(sizeof(functor1<return_type, Arg1>))) {
 			functor_base_type * fr = new (_tail) functor1<return_type, Arg1>(f, a1);
 			_tail += fr->size();
@@ -85,6 +91,8 @@ public:
 	template <typename Arg1, typename Arg2>
 	bool push (return_type (*f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
 	{
+		lock_guard<Mutex> locker(_mutex);
+
 		if (prepare_push(sizeof(functor2<return_type, Arg1, Arg2>))) {
 			functor_base_type * fr = new (_tail) functor2<return_type, Arg1, Arg2>(f, a1, a2);
 			_tail += fr->size();
@@ -93,8 +101,49 @@ public:
 		return false;
 	}
 
+	template <typename Arg1, typename Arg2, typename Arg3>
+	bool push (return_type (*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3)
+	{
+		lock_guard<Mutex> locker(_mutex);
+
+		if (prepare_push(sizeof(functor3<return_type, Arg1, Arg2, Arg3>))) {
+			functor_base_type * fr = new (_tail) functor3<return_type, Arg1, Arg2, Arg3>(f, a1, a2, a3);
+			_tail += fr->size();
+			return true;
+		}
+		return false;
+	}
+
+	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+	bool push (return_type (*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
+	{
+		lock_guard<Mutex> locker(_mutex);
+
+		if (prepare_push(sizeof(functor4<return_type, Arg1, Arg2, Arg3, Arg4>))) {
+			functor_base_type * fr = new (_tail) functor4<return_type, Arg1, Arg2, Arg3, Arg4>(f, a1, a2, a3, a4);
+			_tail += fr->size();
+			return true;
+		}
+		return false;
+	}
+
+	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+	bool push (return_type (*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
+	{
+		lock_guard<Mutex> locker(_mutex);
+
+		if (prepare_push(sizeof(functor5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5>))) {
+			functor_base_type * fr = new (_tail) functor5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5>(f, a1, a2, a3, a4, a5);
+			_tail += fr->size();
+			return true;
+		}
+		return false;
+	}
+
 	void pull (functor_base_type * & fr)
 	{
+		lock_guard<Mutex> locker(_mutex);
+
 		fr = 0;
 		if (!empty()) {
 			 fr = reinterpret_cast<functor_base_type *>(_head);
@@ -106,8 +155,8 @@ public:
 	void pop ();
 };
 
-template <size_t Size, typename Return>
-void functor_queue_base<Size, Return>::pop ()
+template <size_t Size, typename Return, typename Mutex>
+void functor_queue_base<Size, Return, Mutex>::pop ()
 {
 	functor_base<Return> * fr;
 
@@ -117,8 +166,8 @@ void functor_queue_base<Size, Return>::pop ()
 		pop(fr);
 }
 
-template <size_t Size, typename Return>
-bool functor_queue_base<Size, Return>::prepare_push (size_t frsize)
+template <size_t Size, typename Return, typename Mutex>
+bool functor_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
 {
 	if (_tail >= _head) {                   // Tail is at the right side of Head
 		char * end  = _begin + Size;
@@ -148,9 +197,11 @@ bool functor_queue_base<Size, Return>::prepare_push (size_t frsize)
 	return false;
 }
 
-template <size_t Size, typename Return>
-void functor_queue_base<Size, Return>::pop (functor_base<Return> * fr)
+template <size_t Size, typename Return, typename Mutex>
+void functor_queue_base<Size, Return, Mutex>::pop (functor_base<Return> * fr)
 {
+	lock_guard<Mutex> locker(_mutex);
+
 	if (fr) {
     	fr->~functor_base();
     	_head += fr->size();        // Supposed Head position
@@ -172,11 +223,11 @@ void functor_queue_base<Size, Return>::pop (functor_base<Return> * fr)
 	}
 }
 
-template <size_t Size, typename Return>
-class functor_queue : public functor_queue_base<Size, Return>
+template <size_t Size, typename Return, typename Mutex = pfs::fake_mutex>
+class functor_queue : public functor_queue_base<Size, Return, Mutex>
 {
 public:
-	typedef functor_queue_base<Size, Return> base_class;
+	typedef functor_queue_base<Size, Return, Mutex> base_class;
 	typedef typename base_class::return_type return_type;
 	typedef typename base_class::functor_base_type functor_base_type;
 
@@ -186,11 +237,11 @@ public:
 	return_type call_all ();
 };
 
-template <size_t Size>
-class functor_queue<Size, void> : public functor_queue_base<Size, void>
+template <size_t Size, typename Mutex>
+class functor_queue<Size, void, Mutex> : public functor_queue_base<Size, void, Mutex>
 {
 public:
-	typedef functor_queue_base<Size, void> base_class;
+	typedef functor_queue_base<Size, void, Mutex> base_class;
 	typedef typename base_class::return_type return_type;
 	typedef typename base_class::functor_base_type functor_base_type;
 
@@ -200,8 +251,9 @@ public:
 	return_type call_all ();
 };
 
-template <size_t Size, typename Return>
-typename functor_queue<Size, Return>::return_type functor_queue<Size, Return>::call ()
+template <size_t Size, typename Return, typename Mutex>
+typename functor_queue<Size, Return, Mutex>::return_type
+	functor_queue<Size, Return, Mutex>::call ()
 {
 	return_type r;
 	functor_base<Return> * fr;
@@ -216,8 +268,9 @@ typename functor_queue<Size, Return>::return_type functor_queue<Size, Return>::c
 	return r;
 }
 
-template <size_t Size, typename Return>
-typename functor_queue<Size, Return>::return_type functor_queue<Size, Return>::call_all ()
+template <size_t Size, typename Return, typename Mutex>
+typename functor_queue<Size, Return, Mutex>::return_type
+	functor_queue<Size, Return, Mutex>::call_all ()
 {
 	return_type r;
 
@@ -226,8 +279,8 @@ typename functor_queue<Size, Return>::return_type functor_queue<Size, Return>::c
 	return r;
 }
 
-template <size_t Size>
-typename functor_queue<Size, void>::return_type functor_queue<Size, void>::call ()
+template <size_t Size, typename Mutex>
+typename functor_queue<Size, void, Mutex>::return_type functor_queue<Size, void, Mutex>::call ()
 {
 	functor_base<void> * fr;
 
@@ -239,8 +292,8 @@ typename functor_queue<Size, void>::return_type functor_queue<Size, void>::call 
 	}
 }
 
-template <size_t Size>
-inline typename functor_queue<Size, void>::return_type functor_queue<Size, void>::call_all ()
+template <size_t Size, typename Mutex>
+inline typename functor_queue<Size, void, Mutex>::return_type functor_queue<Size, void, Mutex>::call_all ()
 {
 	while (!this->empty())
 		call();

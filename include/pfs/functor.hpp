@@ -118,6 +118,101 @@ public:
 	};
 };
 
+template <typename Return, typename Arg1, typename Arg2, typename Arg3>
+class functor3 : public functor_base<Return>
+{
+	typename base_type_trait<Arg1>::type _a1;
+	typename base_type_trait<Arg2>::type _a2;
+	typename base_type_trait<Arg3>::type _a3;
+
+public:
+	typedef functor_base<Return> base_class;
+	typedef Return return_type;
+	typedef return_type (* funcptr_type) (Arg1, Arg2, Arg3);
+
+public:
+	functor3 (funcptr_type f, Arg1 a1, Arg2 a2, Arg3 a3)
+		: base_class(sizeof(functor3)
+				, reinterpret_cast<typename base_class::funcptr_type>(f))
+		, _a1(a1)
+		, _a2(a2)
+		, _a3(a3)
+	{}
+
+	virtual ~functor3 () {}
+
+	virtual return_type operator () () const
+	{
+		funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
+		return f(_a1, _a2, _a3);
+	};
+};
+
+template <typename Return, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+class functor4 : public functor_base<Return>
+{
+	typename base_type_trait<Arg1>::type _a1;
+	typename base_type_trait<Arg2>::type _a2;
+	typename base_type_trait<Arg3>::type _a3;
+	typename base_type_trait<Arg4>::type _a4;
+
+public:
+	typedef functor_base<Return> base_class;
+	typedef Return return_type;
+	typedef return_type (* funcptr_type) (Arg1, Arg2, Arg3, Arg4);
+
+public:
+	functor4 (funcptr_type f, Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
+		: base_class(sizeof(functor4)
+				, reinterpret_cast<typename base_class::funcptr_type>(f))
+		, _a1(a1)
+		, _a2(a2)
+		, _a3(a3)
+		, _a4(a4)
+	{}
+
+	virtual ~functor4 () {}
+
+	virtual return_type operator () () const
+	{
+		funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
+		return f(_a1, _a2, _a3, _a4);
+	};
+};
+
+template <typename Return, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+class functor5 : public functor_base<Return>
+{
+	typename base_type_trait<Arg1>::type _a1;
+	typename base_type_trait<Arg2>::type _a2;
+	typename base_type_trait<Arg3>::type _a3;
+	typename base_type_trait<Arg4>::type _a4;
+	typename base_type_trait<Arg5>::type _a5;
+
+public:
+	typedef functor_base<Return> base_class;
+	typedef Return return_type;
+	typedef return_type (* funcptr_type) (Arg1, Arg2, Arg3, Arg4, Arg5);
+
+public:
+	functor5 (funcptr_type f, Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
+		: base_class(sizeof(functor5)
+				, reinterpret_cast<typename base_class::funcptr_type>(f))
+		, _a1(a1)
+		, _a2(a2)
+		, _a3(a3)
+		, _a4(a4)
+		, _a5(a5)
+	{}
+
+	virtual ~functor5 () {}
+
+	virtual return_type operator () () const
+	{
+		funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
+		return f(_a1, _a2, _a3, _a4, _a5);
+	};
+};
 } // pfs
 
 #endif /* __PFS_FUNCTOR_HPP__ */

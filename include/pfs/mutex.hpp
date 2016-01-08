@@ -16,18 +16,18 @@
 
 namespace pfs {
 
-class faked_mutex
+class fake_mutex
 {
 public:
 	typedef native_mutex_t * native_handle_type;
 
 private:
-	faked_mutex (const faked_mutex &);
-	faked_mutex & operator = (const faked_mutex &);
+	fake_mutex (const fake_mutex &);
+	fake_mutex & operator = (const fake_mutex &);
 
 public:
-	faked_mutex ()  {}
-	~faked_mutex () {}
+	fake_mutex ()  {}
+	~fake_mutex () {}
 	void lock ()	{}
 	void try_lock() {}
 	void unlock()   {}
@@ -51,9 +51,22 @@ using unique_lock = std::unique_lock<Lockable>;
 
 #else
 
+/// Do not acquire ownership of the mutex.
+struct defer_lock_t { };
+
+/// Try to acquire ownership of the mutex without blocking.
+struct try_to_lock_t { };
+
+/// Assume the calling thread has already obtained mutex ownership and manage it.
+struct adopt_lock_t { };
+
+#define DEFER_LOCK  pfs::defer_lock_t()
+#define TRY_TO_LOCK pfs::try_to_lock_t()
+#define ADOPT_LOCK  pfs::adopt_lock_t()
+
 #if defined(PFS_SINGLE_THREADED)
 
-typedef faked_mutex mutex;
+typedef fake_mutex mutex;
 
 #elif defined(PFS_WIN32_THREADS) || defined(PFS_POSIX_THREADS)
 /*
@@ -141,19 +154,6 @@ public:
 		return & _mutex;
 	}
 };
-
-/// Do not acquire ownership of the mutex.
-struct defer_lock_t { };
-
-/// Try to acquire ownership of the mutex without blocking.
-struct try_to_lock_t { };
-
-/// Assume the calling thread has already obtained mutex ownership and manage it.
-struct adopt_lock_t { };
-
-#define DEFER_LOCK  defer_lock_t()
-#define TRY_TO_LOCK try_to_lock_t()
-#define ADOPT_LOCK  adopt_lock_t()
 
 template <typename Lockable>
 class lock_guard
@@ -347,10 +347,10 @@ public:
 #endif // __cplusplus < 201103L
 
 template <>
-class lock_guard<faked_mutex>
+class lock_guard<fake_mutex>
 {
 public:
-    typedef faked_mutex mutex_type;
+    typedef fake_mutex mutex_type;
 
 private:
     lock_guard (const lock_guard & );
@@ -363,10 +363,10 @@ public:
 };
 
 template <>
-class unique_lock<faked_mutex>
+class unique_lock<fake_mutex>
 {
 public:
-	typedef faked_mutex mutex_type;
+	typedef fake_mutex mutex_type;
 
 private: // noncopyable
     unique_lock (const unique_lock &);

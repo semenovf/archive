@@ -140,7 +140,12 @@ public:
     	deref();
     }
 
-    bool isNull () const { return _value == 0; }
+    bool isNull () const { return _value == 0; } // XXX DEPRECATED
+
+    bool is_null () const
+    {
+    	return _value == 0;
+    }
 
     inline shared_ptr<T> & operator = (const shared_ptr<T> & other)
     {
