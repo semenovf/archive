@@ -19,7 +19,7 @@ namespace pfs {
 string to_string (const error_code & ex)
 {
 	if (!ex)
-		return string("no error");
+		return string("No error");
 
 	if (ex.native() < CustomErrorBase) {
 		return platform::to_string(ex);
@@ -27,24 +27,26 @@ string to_string (const error_code & ex)
 
 	switch(ex.native()) {
 	case InvalidArgument:
-		return _u8("invalid argument");
+		return _u8("Invalid argument");
 
+	case DlOpenError:
+		return _u8("Dynamic library open error");
 	case DlSymbolNotFoundError:
-		return _u8("symbol not found");
+		return _u8("Symbol not found");
 
 	case ZlibStreamError:
-		return _u8("invalid parameter or inconsistent stream state");
+		return _u8("Invalid parameter or inconsistent stream state");
 	case ZlibDataError:
-		return _u8("data corrupted or inconsistent");
+		return _u8("Data corrupted or inconsistent");
 	case ZlibMemError:
-		return _u8("not enough memory");
+		return _u8("Not enough memory");
 	case ZlibBufError:
-		return _u8("buffer error, may be not enough memory, or I/O error");
+		return _u8("Buffer error, may be not enough memory, or I/O error");
 	case ZlibVersionError:
-		return _u8("incompatible zlib version");
+		return _u8("Incompatible zlib version");
 	}
 
-	string r("unknown error: ");
+	string r("Unknown error: ");
 	r.append(to_string(ex.native()));
 	return r;
 }

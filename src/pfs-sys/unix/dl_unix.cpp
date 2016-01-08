@@ -40,8 +40,10 @@ bool dynamic_library::open (const fs::path & p, const fs::pathlist & searchdirs
 	if (!fs::exists(_d->_path)) {
 		_d->_path = fs::search_file(_d->_path, searchdirs, ex);
 
-		if (_d->_path.empty())
+		if (_d->_path.empty()) {
+			if (ex) *ex = ENOENT;
 			return false;
+		}
 	}
 
 	// clear error
@@ -68,7 +70,9 @@ bool dynamic_library::open (const fs::path & p, const fs::pathlist & searchdirs
 		_d->_path = fs::path();
 	}
 
-	return h;
+	_d->_handle = h;
+
+	return h != 0;
 }
 
 /*
@@ -102,10 +106,10 @@ dynamic_library::symbol dynamic_library::resolve (const char * symbol_name
 
 		if (extended_errstr) {
 			extended_errstr->append(to_string(_d->_path));
-			extended_errstr->append(_u8(": failed to resolve symbol `"));
+			extended_errstr->append(_u8(": Failed to resolve symbol `"));
 			extended_errstr->append(_u8(symbol_name));
 			extended_errstr->append(_u8("': "));
-			extended_errstr->append(_u8(dlerror()));
+			extended_errstr->append(_u8(errstr));
 		}
 
 		return symbol(0);

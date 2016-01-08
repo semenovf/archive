@@ -74,6 +74,8 @@ public:
 	 *
 	 * @return @c true if dynamic library opened (loaded) successfully,
 	 *         @c false if an error occurred.
+	 *         In latter case @a ex set to
+	 *         @arg ENOENT if file not found
 	 */
 	bool open (const fs::path & p, const fs::pathlist & searchdirs
 			, error_code * ex = 0
