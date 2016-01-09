@@ -94,13 +94,17 @@ extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * 
 
 #endif /* !NDEBUG */
 
-#define PFS_ASSERT_FORMAT(x)    PFS_ASSERT(x)
-#define PFS_ASSERT_RANGE(x)     PFS_ASSERT(x)
-#define PFS_ASSERT_OVERFLOW(x)  PFS_ASSERT(x)
-#define PFS_ASSERT_BAD_CAST(x)  PFS_ASSERT(x)
-#define PFS_ASSERT_UNEXPECTED() PFS_ASSERT(false)
-#define PFS_ASSERT_NULLPTR(x)   PFS_ASSERT((x) != 0)
-#define PFS_ASSERT_IS_NULL(x)   PFS_ASSERT(!(x).is_null())
+/*
+ * System error exception
+ */
+#define PFS_THROW_X(errstr)                                 \
+	if (true) {                                             \
+		fprintf(stderr, "ERROR: (%s[%d]): %s\n"             \
+				, __TFILE__                                 \
+				, __LINE__                                  \
+				, errstr);                                  \
+		::exit(-1);                                         \
+	}
 
 /*
  * System error exception
@@ -114,6 +118,16 @@ extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * 
 				, xerrno);                                  \
 		::exit(-1);                                         \
 	}
+
+#define PFS_ASSERT_FORMAT(x)      PFS_ASSERT(x)
+#define PFS_ASSERT_RANGE(x)       PFS_ASSERT(x)
+#define PFS_ASSERT_OVERFLOW(x)    PFS_ASSERT(x)
+#define PFS_ASSERT_BAD_CAST(x)    PFS_ASSERT(x)
+#define PFS_ASSERT_UNEXPECTED()   PFS_ASSERT(false)
+#define PFS_ASSERT_NULLPTR(x)     PFS_ASSERT((x) != 0)
+#define PFS_ASSERT_IS_NULL(x)     PFS_ASSERT(!(x).is_null())
+#define PFS_ASSERT_DOMAIN(errstr) PFS_THROW_X(errstr)
+
 
 /*
  * Special case of assert.
