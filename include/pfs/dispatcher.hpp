@@ -118,8 +118,11 @@ public:
 			, const char ** argv = 0)
 	{
 		module_spec modspec = module_for_name(name, class_name, argc, argv);
-		modspec.pmodule->set_name(name);
-		return register_module(modspec);
+		if (modspec.pmodule) {
+			modspec.pmodule->set_name(name);
+			return register_module(modspec);
+		}
+		return false;
 	}
 
 	void set_master_module (const shared_ptr<module> & pmodule)
