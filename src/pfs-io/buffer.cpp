@@ -8,11 +8,11 @@
 #include "pfs/io/buffer.hpp"
 #include <pfs/array.hpp>
 
-namespace pfs { namespace io {
+namespace pfs { namespace io { namespace details {
 
 struct buffer : public bits::device
 {
-	static const size_t DefaultBufferSize = 256;
+	static const size_t default_buffer_size = 256;
 
     typedef array<byte_t> buffer_type;
 
@@ -36,7 +36,7 @@ struct buffer : public bits::device
 
     virtual open_mode_flags open_mode () const
     {
-    	return io::device::ReadWrite | io::device::NonBlocking;
+    	return io::device::read_write | io::device::non_blocking;
     }
 
     virtual size_t  bytes_available () const
@@ -74,25 +74,6 @@ struct buffer : public bits::device
     }
 };
 
-
-template <>
-bool open_device<buffer> (device & d, const open_params<buffer> & op, error_code * pex)
-{
-    if (d.opened())
-        return false;
-
-    if (op.pbytes)
-    	d._d = new buffer(op.pbytes, op.size);
-    else if (op.size > 0)
-    	d._d = new buffer(op.size);
-    else
-    	d._d = new buffer(buffer::DefaultBufferSize);
-
-	PFS_UNUSED(pex);
-
-    return d._d != 0;
-}
-
 ssize_t buffer::read (byte_t * bytes, size_t n, error_code * ex)
 {
 	PFS_UNUSED(ex);
@@ -120,6 +101,28 @@ ssize_t buffer::write (const byte_t * bytes, size_t n, error_code * ex)
     buffer_type::copy(_buffer, bytes, _pos, n);
 
     return integral_cast_check<ssize_t>(n);
+}
+
+}}} // pfs::io::details
+
+namespace pfs { namespace io {
+
+template <>
+bool open_device<buffer> (device & d, const open_params<buffer> & op, error_code * pex)
+{
+    if (d.opened())
+        return false;
+
+    if (op.pbytes)
+    	d._d = new details::buffer(op.pbytes, op.size);
+    else if (op.size > 0)
+    	d._d = new details::buffer(op.size);
+    else
+    	d._d = new details::buffer(details::buffer::default_buffer_size);
+
+	PFS_UNUSED(pex);
+
+    return d._d != 0;
 }
 
 }} // pfs::io

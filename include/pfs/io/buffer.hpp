@@ -17,7 +17,7 @@ namespace pfs { namespace io {
  * @brief Buffer device implementation.
  * @see pfs::io::device.
  */
-struct buffer;
+struct buffer {};
 
 template <>
 struct open_params<buffer>

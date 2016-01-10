@@ -30,13 +30,13 @@ public:
 	typedef bits::device::native_handle_type native_handle_type;
 	typedef bits::device::open_mode_flags open_mode_flags;
 
-	enum OpenMode {
-	      NotOpen     = 0                     /**< Device is not opened */
-		, ReadOnly    = 0x0001                /**< Open device for read only */
-		, WriteOnly   = 0x0002                /**< Open device for write only */
-		, ReadWrite   = ReadOnly | WriteOnly  /**< Open device for read and write */
-		, WriteRead   = ReadWrite             /**< Synonym for ReadWrite */
-		, NonBlocking = 0x0004                /**< Open device in non-blocking mode */
+	enum open_mode_enum {
+	      not_open     = 0                     /**< Device is not opened */
+		, read_only    = 0x0001                /**< Open device for read only */
+		, write_only   = 0x0002                /**< Open device for write only */
+		, read_write   = read_only | write_only  /**< Open device for read and write */
+		, write_read   = read_write             /**< Synonym for ReadWrite */
+		, non_blocking = 0x0004                /**< Open device in non-blocking mode */
 	};
 
 private:
@@ -70,19 +70,19 @@ public:
 	bool is_readable () const
 	{
 		PFS_ASSERT(_d);
-		return _d->open_mode() | ReadOnly;
+		return _d->open_mode() | read_only;
 	}
 
 	bool is_writable () const
 	{
 		PFS_ASSERT(_d);
-		return _d->open_mode() | WriteOnly;
+		return _d->open_mode() | write_only;
 	}
 
 #if __COMMENT__
 	bool is_nonblocking () const
 	{
-		return _d && (_oflags & NonBlocking);
+		return _d && (_oflags & non_blocking);
 	}
 #endif
 
@@ -168,8 +168,8 @@ public:
 	    return write(bytes.data(), bytes.size(), ex);
 	}
 
-    template <typename DeviceImpl>
-    friend bool open_device (device &, const open_params<DeviceImpl> &, error_code * ex = 0);
+	template <typename DeviceTag>
+	friend bool open_device (device &, const open_params<DeviceTag> &, error_code * ex = 0);
 
     friend bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * ex = 0);
 
@@ -188,6 +188,9 @@ inline bool uncompress (device & src, device & dest, error_code * ex = 0)
 	return uncompress(src, dest, 0x4000, ex);
 }
 
-}} // pfs::ios
+template <typename DeviceTag>
+bool open_device (device &, const open_params<DeviceTag> &, error_code * ex);
+
+}} // pfs::io
 
 #endif /* __PFS_IO_DEVICE_HPP__ */
