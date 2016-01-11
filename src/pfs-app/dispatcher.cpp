@@ -112,8 +112,7 @@ void dispatcher::finalize ()
 
 module_spec dispatcher::module_for_path (const fs::path & path
 			, const char * class_name
-			, int arg
-			, const char ** argv)
+			, void * mod_data)
 {
 	dynamic_library dl;
 	error_code ex;
@@ -165,7 +164,7 @@ module_spec dispatcher::module_for_path (const fs::path & path
 	module_ctor_t module_ctor = reinterpret_cast<module_ctor_t>(ctor);
 	module_dtor_t module_dtor = reinterpret_cast<module_dtor_t>(dtor);
 
-	module * ptr = reinterpret_cast<module *>(module_ctor(class_name, arg, argv));
+	module * ptr = reinterpret_cast<module *>(module_ctor(class_name, mod_data));
 
 	if (!ptr)
 		return module_spec();

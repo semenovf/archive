@@ -104,20 +104,18 @@ public:
 	bool register_module_for_path (const fs::path & path
 			, const string & name
 			, const char * class_name = 0
-			, int argc = 0
-			, const char ** argv = 0)
+			, void * mod_data = 0)
 	{
-		module_spec modspec = module_for_path(path, class_name, argc, argv);
+		module_spec modspec = module_for_path(path, class_name, mod_data);
 		modspec.pmodule->set_name(name);
 		return register_module(modspec);
 	}
 
 	bool register_module_for_name (const string & name
 			, const char * class_name = 0
-			, int argc = 0
-			, const char ** argv = 0)
+			, void * mod_data = 0)
 	{
-		module_spec modspec = module_for_name(name, class_name, argc, argv);
+		module_spec modspec = module_for_name(name, class_name, mod_data);
 		if (modspec.pmodule) {
 			modspec.pmodule->set_name(name);
 			return register_module(modspec);
@@ -158,16 +156,14 @@ public: /*slots*/
 protected:
 	module_spec module_for_path (const fs::path & path
 			, const char * class_name = 0
-			, int argc = 0
-			, const char ** argv = 0);
+			, void * mod_data = 0);
 
 	module_spec module_for_name (const string & name
 			, const char * class_name = 0
-			, int argc = 0
-			, const char ** argv = 0)
+			, void * mod_data = 0)
 	{
 		fs::path modpath = dynamic_library::build_filename(name);
-		return module_for_path(modpath);
+		return module_for_path(modpath, class_name, mod_data);
 	}
 
 	bool register_module (const module_spec & modspec);
