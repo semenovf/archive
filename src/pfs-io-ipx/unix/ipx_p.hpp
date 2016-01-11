@@ -8,10 +8,10 @@
 #ifndef __PFS_UNIX_IPX_P_HPP__
 #define __PFS_UNIX_IPX_P_HPP__
 
-#include "pfs/io/ipx.hpp"
 #include <pfs/array.hpp>
 #include <netipx/ipx.h>
 #include <unistd.h>
+#include "../../../include/pfs/io/ipx.hpp.old"
 
 namespace pfs { namespace io {
 

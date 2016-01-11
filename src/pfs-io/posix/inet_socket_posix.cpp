@@ -6,7 +6,7 @@
  */
 #include "pfs/io/inet_socket.hpp"
 #include <cerrno>
-#include <socket.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 //#include <unistd.h>
@@ -135,23 +135,6 @@ bool file::close (error_code * pex)
 }}} // cwt::io::details
 
 namespace pfs { namespace io {
-
-static int __convert_to_native_perms (int perms)
-{
-	int r = 0;
-
-	if (perms & fs::perm_user_read)   r |= S_IRUSR;
-	if (perms & fs::perm_user_write)  r |= S_IWUSR;
-	if (perms & fs::perm_user_exec)   r |= S_IXUSR;
-	if (perms & fs::perm_group_read)  r |= S_IRGRP;
-	if (perms & fs::perm_group_write) r |= S_IWGRP;
-	if (perms & fs::perm_group_exec)  r |= S_IXGRP;
-	if (perms & fs::perm_other_read)  r |= S_IROTH;
-	if (perms & fs::perm_other_write) r |= S_IWOTH;
-	if (perms & fs::perm_other_exec)  r |= S_IXOTH;
-
-	return r;
-}
 
 template <>
 bool open_device<file> (device & d, const open_params<file> & op, error_code * pex)

@@ -1,6 +1,7 @@
 
+#include "../../include/pfs/io/inet4_addr.hpp"
+
 #include <pfs/test/test.hpp>
-#include <pfs/io/inet4_addr.hpp>
 #include <pfs/string.hpp>
 #include <pfs/random.hpp>
 #include <iostream>

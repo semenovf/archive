@@ -1,7 +1,8 @@
 #include <pfs/string.hpp>
 #include <pfs/byte_string.hpp>
 #include <iostream>
-#include "pfs/io/ipx.hpp"
+
+#include "../include/pfs/io/ipx.hpp.old"
 
 using pfs::string;
 using namespace pfs::io;

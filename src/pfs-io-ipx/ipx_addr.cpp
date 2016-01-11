@@ -5,7 +5,7 @@
  *      Author: wladt
  */
 
-#include "pfs/io/ipx_addr.hpp"
+#include "../../include/pfs/io/ipx_addr.hpp.old"
 
 namespace pfs { namespace io {
 

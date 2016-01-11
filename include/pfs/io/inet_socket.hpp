@@ -9,6 +9,7 @@
 #define __PFS_IO_INET_SOCKET_HPP__
 
 #include <pfs/io/device.hpp>
+#include <pfs/net/inet4_addr.hpp>
 
 namespace pfs { namespace io {
 
@@ -32,10 +33,14 @@ struct udp_socket {};
 template <>
 struct open_params<inet_socket>
 {
-	uint32_t addr;
-	int32_t  port;
+	net::inet4_addr addr;
+	uint16_t port;
 
-	open_params ();
+	open_params ()
+		: addr()
+		, port(0)
+	{}
+
 	open_params (uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port);
 	open_params (uint8_t a, uint8_t b, uint16_t c, uint16_t port);
 	open_params (uint8_t a, uint32_t b, uint16_t port);
@@ -43,37 +48,6 @@ struct open_params<inet_socket>
 	open_params (const string & s);
 	open_params (const string & s, uint16_t port);
 };
-
-
-
-//	static const int default_create_perms = fs::perm_user_read
-//			| fs::perm_user_write
-//			| fs::perm_group_read
-//			| fs::perm_other_read;
-//
-//	fs::path path;
-//	device::open_mode_flags oflags;
-//	int permissions;
-
-//	open_params (const fs::path & s, device::open_mode_flags of, int perms)
-//		: path(s)
-//		, oflags(of)
-//		, permissions(perms)
-//	{}
-//
-//	open_params (const fs::path & s, device::open_mode_flags of)
-//		: path(s)
-//		, oflags(of)
-//		, permissions(default_create_perms)
-//	{}
-//
-//	open_params (const fs::path & s)
-//		: path(s)
-//		, oflags(device::read_write)
-//		, permissions(default_create_perms)
-//	{}
-
-
 
 /**
  * @fn bool open_device<file> (device & d, const open_params<file> & op)
@@ -90,7 +64,9 @@ struct open_params<inet_socket>
  *         (i.e. file device is already opened).
  */
 template <>
-bool open_device<file> (device & d, const open_params<file> & op, error_code * ex);
+bool open_device<inet_socket> (device & d
+		, const open_params<inet_socket> & op
+		, error_code * ex);
 
 }} // pfs::io
 
