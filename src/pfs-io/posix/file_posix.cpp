@@ -127,9 +127,10 @@ bool file::close (error_code * pex)
     bool r = true;
 
     if (_fd > 0) {
-        if (::close(_fd) < 0 && pex) {
-            *pex = errno;
-            r = false;
+        if (::close(_fd) < 0) {
+        	if (pex)
+        		*pex = errno;
+        	r = false;
         }
     }
 

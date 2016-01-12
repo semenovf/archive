@@ -1,56 +1,96 @@
 
-#include "../../include/pfs/io/inet4_addr.hpp"
-
 #include <pfs/test/test.hpp>
 #include <pfs/string.hpp>
 #include <pfs/random.hpp>
+#include <pfs/net/inet4_addr.hpp>
+
 #include <iostream>
 
 using pfs::string;
-using pfs::io::inet4_addr;
+using pfs::net::inet4_addr;
 using std::cout;
 using std::cerr;
 using std::endl;
 
-inline const char * prefix (uint32_t x, int base)
+#define UINT24_MAX 0x00FFFFFF
+
+static const char * prefix (uint32_t x, int base)
 {
     return x == 0 ? ""
            : base == 16
                   ? "0x" : base == 8 ? "0" : "";
 }
 
-static string buildInetAddrStr (int addrClass, bool withPort
+static string build_inet_addr_str (int addrClass
         , uint32_t a
         , uint32_t b
         , uint32_t c
         , uint32_t d
-        , uint32_t p
         , int base)
 {
-    string r;
+	char buffer[64];
 
-    r << prefix(a, base) << string::toString(a, base);
+    if (addrClass == 1) {
+    	switch (base) {
+    	case 8:
+    		sprintf(buffer, "0%o", a);
+    		break;
+    	case 10:
+    		sprintf(buffer, "%u", a);
+    		break;
+    	case 16:
+    		sprintf(buffer, "0x%X", a);
+    		break;
+    	}
+    } else if (addrClass == 2) {
+    	switch (base) {
+    	case 8:
+    		sprintf(buffer, "0%03o.0%o", a, b);
+    		break;
+    	case 10:
+    		sprintf(buffer, "%u.%u", a, b);
+    		break;
+    	case 16:
+    		sprintf(buffer, "0x%02X.0x%X", a, b);
+    		break;
+    	}
+    } else if (addrClass == 3) {
+    	switch (base) {
+    	case 8:
+    		sprintf(buffer, "0%03o.0%03o.0%o", a, b, c);
+    		break;
+    	case 10:
+    		sprintf(buffer,"%u.%u.%u", a, b, c);
+    		break;
+    	case 16:
+    		sprintf(buffer, "0x%02X.0x%02X.0x%X", a, b, c);
+    		break;
+    	}
+    } else if (addrClass == 4) {
+    	switch (base) {
+    	case 8:
+    		sprintf(buffer, "0%03o.0%03o.0%03o.0%03o", a, b, c, d);
+    		break;
+    	case 10:
+    		sprintf(buffer, "%u.%u.%u.%u", a, b, c, d);
+    		break;
+    	case 16:
+    		sprintf(buffer, "0x%02X.0x%02X.0x%02X.0x%02X", a, b, c, d);
+    		break;
+    	}
+    }
 
-    if (addrClass > 1)
-        r << '.' << prefix(b, base) << string::toString(b, base);
-    if (addrClass > 2)
-        r << '.' << prefix(c, base) << string::toString(c, base);
-    if (addrClass > 3)
-        r << '.' << prefix(d, base) << string::toString(d, base);
-    if (withPort)
-        r << ":" << prefix(p, base) << string::toString(p, base);
-
-    return r;
+    return string(buffer);
 }
 
 
-bool test_check_valid (int addrClass, bool withPort, int ntests)
+bool test_check_valid (int addrClass, int ntests)
 {
     bool ok = true;
     pfs::random rnd;
 
     for (int i = 0; ok && i < ntests; ++i) {
-        uint32_t  a, b, c, d, p;
+        uint32_t  a, b, c, d;
 
         if (addrClass == 4) {
             a = rnd.rand() % pfs::max_value<uint8_t>();
@@ -63,18 +103,16 @@ bool test_check_valid (int addrClass, bool withPort, int ntests)
             c = rnd.rand() % pfs::max_value<uint16_t>();
         } else if (addrClass == 2) {
             a = rnd.rand() % pfs::max_value<uint8_t>();
-            b = rnd.rand() % PFS_UINT24_MAX;
+            b = rnd.rand() % UINT24_MAX;
         } else if (addrClass == 1) {
             a = rnd.rand();
         } else {
             return false;
         }
 
-        p = rnd.rand() % pfs::max_value<uint16_t>();
-
-        pfs::string addrDecStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 10);
-        pfs::string addrOctStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 8);
-        pfs::string addrHexStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 16);
+        pfs::string addrDecStr = build_inet_addr_str(addrClass, a, b, c, d, 10);
+        pfs::string addrOctStr = build_inet_addr_str(addrClass, a, b, c, d, 8);
+        pfs::string addrHexStr = build_inet_addr_str(addrClass, a, b, c, d, 16);
 
         inet4_addr addrDec(addrDecStr);
         inet4_addr addrOct(addrOctStr);
@@ -82,17 +120,17 @@ bool test_check_valid (int addrClass, bool withPort, int ntests)
 
 //        cout << addrDecStr << ' ' << addrOctStr << ' ' << addrHexStr << endl;
 
-        if (!addrDec.isValid()) {
+        if (!addrDec) {
             cerr << "ERROR: unexpected invalid address in decimal format: " << addrDecStr << endl;
             ok = false;
         }
 
-        if (!addrOct.isValid()) {
+        if (!addrOct) {
             cerr << "ERROR: unexpected invalid address in octal format: " << addrOctStr << endl;
             ok = false;
         }
 
-        if (!addrHex.isValid()) {
+        if (!addrHex) {
             cerr << "ERROR: unexpected invalid address in hexadecimal format: " << addrHexStr << endl;
             ok = false;
         }
@@ -105,15 +143,14 @@ bool test_check_to_string (const string & format, int ntests)
 {
     bool ok = true;
     pfs::random rnd;
-    bool withPort = format.endsWith(":p") ? true :false;
 
-    int addrClass = format.startsWith("a.b.c.d")
+    int addrClass = format.starts_with(_u8("%a.%b.%c.%d"))
             ? 4
-            : format.startsWith("a.b.c")
+            : format.starts_with(_u8("%a.%b.%C"))
                   ? 3
-                  : format.startsWith("a.b")
+                  : format.starts_with(_u8("%a.%B"))
                         ? 2
-                        : format.startsWith("a")
+                        : format.starts_with(_u8("%A"))
                               ? 1 : 0;
 
 
@@ -131,26 +168,24 @@ bool test_check_to_string (const string & format, int ntests)
             c = rnd.rand() % pfs::max_value<uint16_t>();
         } else if (addrClass == 2) {
             a = rnd.rand() % pfs::max_value<uint8_t>();
-            b = rnd.rand() % PFS_UINT24_MAX;
+            b = rnd.rand() % UINT24_MAX;
         } else if (addrClass == 1) {
             a = rnd.rand();
         } else {
             return false;
         }
 
-        p = rnd.rand() % pfs::max_value<uint16_t>();
-
-        pfs::string addrDecStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 10);
-        pfs::string addrOctStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 8);
-        pfs::string addrHexStr = buildInetAddrStr(addrClass, withPort, a, b, c, d, p, 16);
+        pfs::string addrDecStr = build_inet_addr_str(addrClass, a, b, c, d, 10);
+        pfs::string addrOctStr = build_inet_addr_str(addrClass, a, b, c, d, 8);
+        pfs::string addrHexStr = build_inet_addr_str(addrClass, a, b, c, d, 16);
 
         inet4_addr addrDec(addrDecStr);
         inet4_addr addrOct(addrOctStr);
         inet4_addr addrHex(addrHexStr);
 
-        string addrDecStr1 = addrDec.toString(format, 10);
-        string addrOctStr1 = addrOct.toString(format, 8);
-        string addrHexStr1 = addrHex.toString(format, 16);
+        string addrDecStr1 = pfs::to_string(addrDec, format, 10);
+        string addrOctStr1 = pfs::to_string(addrOct, format, 8);
+        string addrHexStr1 = pfs::to_string(addrHex, format, 16);
 
 //        cout << addrDecStr << ' ' << addrOctStr << ' ' << addrHexStr << endl;
 //        cout << addrDec.addrData() << endl;
@@ -158,7 +193,6 @@ bool test_check_to_string (const string & format, int ntests)
 //        cout << addrHex.addrData() << endl;
 
         if (addrDecStr != addrDecStr1) {
-            cout << "Port: " << addrDec.port() << endl;
             cerr << "ERROR: failed comparison in decimal format: " << addrDecStr << " != " << addrDecStr1 << endl;
             return false;
         }
@@ -180,33 +214,28 @@ bool test_check_to_string (const string & format, int ntests)
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
-    BEGIN_TESTS(17);
+    BEGIN_TESTS(8);
 
-    static const int CHECK_VALID_NTESTS = 10000;
+    static const int CHECK_VALID_NTESTS  = 10000;
     static const int CHECK_STRING_NTESTS = 10000;
-    static const char * addrClassesStr[] = { "", "a", "a.b", "a.b.c", "a.b.c.d" };
-    string msg1, msg2;
+    static const char * addrClassesStr[] = { "", "%A", "%a.%B", "%a.%b.%C", "%a.%b.%c.%d" };
+    string msg;
 
     for (int i = 1; i < 5; ++i) {
-        msg1.clear();
-        msg2.clear();
+        msg.clear();
 
-        msg1 << string::toString(CHECK_VALID_NTESTS) << " random IP addresses (" << addrClassesStr[i] << " format) w/ port specified are valid";
-        msg2 << string::toString(CHECK_VALID_NTESTS) << " random IP addresses (" << addrClassesStr[i] << " format) w/o port specified are valid";
+        msg.append(pfs::to_string(CHECK_VALID_NTESTS));
+        msg.append(" random IP addresses (");
+        msg.append(addrClassesStr[i]);
+        msg.append(" format)");
 
-        TEST_OK2(test_check_valid(i, true, CHECK_VALID_NTESTS), msg1.c_str());
-        TEST_OK2(test_check_valid(i, false, CHECK_VALID_NTESTS), msg2.c_str());
+        TEST_OK2(test_check_valid(i, CHECK_VALID_NTESTS), msg.c_str());
     }
 
-    TEST_OK(test_check_to_string(_l1("a.b.c.d")  , CHECK_STRING_NTESTS));
-    TEST_OK(test_check_to_string(_l1("a.b.c.d")  , CHECK_STRING_NTESTS));
-    TEST_OK(test_check_to_string(_l1("a.b.c")    , CHECK_STRING_NTESTS));
-    TEST_OK(test_check_to_string(_l1("a.b")      , CHECK_STRING_NTESTS));
-    TEST_OK(test_check_to_string(_l1("a")        , CHECK_STRING_NTESTS));
-    TEST_OK(test_check_to_string(_l1("a.b.c.d:p"), CHECK_STRING_NTESTS));
-    TEST_OK(test_check_to_string(_l1("a.b.c:p")  , CHECK_STRING_NTESTS));
-    TEST_OK(test_check_to_string(_l1("a.b:p")    , CHECK_STRING_NTESTS));
-    TEST_OK(test_check_to_string(_l1("a:p")      , CHECK_STRING_NTESTS));
+    TEST_OK(test_check_to_string(_u8("%a.%b.%c.%d") , CHECK_STRING_NTESTS));
+    TEST_OK(test_check_to_string(_u8("%a.%b.%C")    , CHECK_STRING_NTESTS));
+    TEST_OK(test_check_to_string(_u8("%a.%B")       , CHECK_STRING_NTESTS));
+    TEST_OK(test_check_to_string(_u8("%A")          , CHECK_STRING_NTESTS));
 
     END_TESTS;
 }

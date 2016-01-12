@@ -13,9 +13,6 @@
 
 namespace pfs { namespace io {
 
-
-struct inet_socket {};
-
 /**
  * @struct pfs::io::tcp_socket
  * @brief TCP socket device implementation.
@@ -31,22 +28,34 @@ struct tcp_socket {};
 struct udp_socket {};
 
 template <>
-struct open_params<inet_socket>
+struct open_params<tcp_socket>
 {
 	net::inet4_addr addr;
 	uint16_t port;
+	device::open_mode_flags oflags;
 
 	open_params ()
 		: addr()
 		, port(0)
+		, oflags(0)
 	{}
 
-	open_params (uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port);
-	open_params (uint8_t a, uint8_t b, uint16_t c, uint16_t port);
-	open_params (uint8_t a, uint32_t b, uint16_t port);
-	open_params (uint32_t a , uint16_t port);
-	open_params (const string & s);
-	open_params (const string & s, uint16_t port);
+	/**
+	 * @param a IPv4 address.
+	 * @param p Port number
+	 * @param of Only device::non_blocking applicable.
+	 */
+	open_params (net::inet4_addr a, uint16_t p, device::open_mode_flags of)
+		: addr(a)
+		, port(port)
+		, oflags(of)
+	{}
+
+	open_params (net::inet4_addr a, uint16_t p)
+		: addr(a)
+		, port(port)
+		, oflags(0)
+	{}
 };
 
 /**
@@ -64,8 +73,8 @@ struct open_params<inet_socket>
  *         (i.e. file device is already opened).
  */
 template <>
-bool open_device<inet_socket> (device & d
-		, const open_params<inet_socket> & op
+bool open_device<tcp_socket> (device & d
+		, const open_params<tcp_socket> & op
 		, error_code * ex);
 
 }} // pfs::io

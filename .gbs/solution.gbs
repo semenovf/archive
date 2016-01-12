@@ -18,21 +18,6 @@ project "pfs-io"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "pfs-io-serial"
---    include("pfs-io-serial/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
---project "pfs-io-ipx"
---    include("pfs-io-ipx/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
---project "pfs-io-inet"
---    include("pfs-io-inet/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
 project "test-io-buffer"
     include("test-io-buffer/project.gbs")
 -- END PROJECT
@@ -45,4 +30,14 @@ project "test-io-file"
 -- BEGIN PROJECT
 project "test-net-inet4-addr"
     include("test-net-inet4-addr/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+--project "pfs-io-serial"
+--    include("pfs-io-serial/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+--project "pfs-io-ipx"
+--    include("pfs-io-ipx/project.gbs")
 -- END PROJECT

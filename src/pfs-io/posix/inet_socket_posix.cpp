@@ -3,15 +3,34 @@
  *
  *  Created on: Jan 11, 2016
  *      Author: wladt
+ *
+ * Sources:
+ * ---
+ * Multicast over TCP/IP HOWTO
+ *      http://tldp.org/HOWTO/Multicast-HOWTO.html
+ * Socket programming:
+ *      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6soxoverview.htm
+ * Socket application design recommendations:
+ *      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6designrec.htm
+ * A connection-oriented server example:
+ *      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconoserver.htm
+ * A connectionless server example:
+ *      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconlessserver.htm
+ * A connection-oriented client example:
+ *      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconoclient.htm
+ * A connectionless client example:
+ *      http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconlessclient.htm
+ * Introduction to non-blocking I/O:
+ *      http://www.kegel.com/dkftpbench/nonblocking.html
  */
-#include "pfs/io/inet_socket.hpp"
+
 #include <cerrno>
-#include <sys/socket.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-//#include <unistd.h>
-//#include <string.h>
+#include <sys/socket.h>
 #include <sys/types.h>
+#include <netinet/in.h>
+#include "pfs/io/inet_socket.hpp"
 
 namespace pfs { namespace io { namespace details {
 
@@ -35,9 +54,9 @@ struct inet_socket : public bits::device
 
     virtual size_t bytes_available () const;
 
-    virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex);
+    virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex) = 0;
 
-    virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
+    virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex) = 0;
 
     virtual bool close (error_code * ex);
 
@@ -65,9 +84,24 @@ struct inet_socket : public bits::device
     }
 };
 
+struct tcp_socket : public inet_socket
+{
+	tcp_socket ()
+		: inet_socket()
+	{}
+
+	tcp_socket (bits::device::native_handle_type fd)
+		: inet_socket(fd)
+	{}
+
+	virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex);
+
+	virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
+};
+
 bits::device::open_mode_flags inet_socket::open_mode () const
 {
-	// TODO Inherited fro file (check if this apply to real socket)
+	// TODO Inherited from file (check if this apply to real socket)
 
 	bits::device::open_mode_flags r = 0;
 	char buf[1] = { 0 };
@@ -95,36 +129,15 @@ size_t inet_socket::bytes_available () const
 	return static_cast<size_t>(n);
 }
 
-ssize_t file::read (byte_t * bytes, size_t n, error_code * pex)
-{
-    ssize_t sz;
-
-    sz = ::read(_fd, bytes, n);
-    if (sz < 0 && pex) {
-        *pex = errno;
-    }
-    return sz;
-}
-
-ssize_t file::write (const byte_t * bytes, size_t n, error_code * pex)
-{
-    ssize_t sz;
-
-    sz = ::write(_fd, bytes, n);
-    if( sz < 0 && pex) {
-        *pex = errno;
-    }
-    return sz;
-}
-
-bool file::close (error_code * pex)
+bool inet_socket::close (error_code * pex)
 {
     bool r = true;
 
     if (_fd > 0) {
-        if (::close(_fd) < 0 && pex) {
-            *pex = errno;
-            r = false;
+        if (::close(_fd) < 0) {
+        	if (pex)
+        		*pex = errno;
+        	r = false;
         }
     }
 
@@ -132,36 +145,54 @@ bool file::close (error_code * pex)
     return r;
 }
 
+
+ssize_t tcp_socket::read (byte_t * bytes, size_t n, error_code * pex)
+{
+	PFS_ASSERT(_fd >= 0 );
+
+	ssize_t r = recv(_fd, bytes, n, 0);
+
+	if (r < 0) {
+		if (pex)
+			*pex = errno;
+	}
+
+	return r;
+}
+
+ssize_t tcp_socket::write (const byte_t * bytes, size_t n, error_code * pex)
+{
+	PFS_ASSERT(_fd >= 0 );
+
+	ssize_t r = send(_fd, bytes, n, 0);
+
+	if (r < 0) {
+		if (pex)
+			*pex = errno;
+	}
+
+	return r;
+}
+
+
 }}} // cwt::io::details
 
 namespace pfs { namespace io {
 
 template <>
-bool open_device<file> (device & d, const open_params<file> & op, error_code * pex)
+bool open_device<tcp_socket> (device & d, const open_params<tcp_socket> & op, error_code * pex)
 {
     if (d.opened())
         return false;
 
-	int fd;
-	int native_oflags = 0;
-	mode_t native_mode = 0;
-
-    if ((op.oflags & device::write_only) && (op.oflags & device::read_only)) {
-    	native_oflags |= O_RDWR;
-    	native_oflags |= O_CREAT;
-    	native_mode   |= __convert_to_native_perms(op.permissions);
-    } else if (op.oflags & device::write_only) {
-    	native_oflags |= O_WRONLY;
-    	native_oflags |= O_CREAT;
-    	native_mode   |= __convert_to_native_perms(op.permissions);
-    } else if (op.oflags & device::read_only) {
-    	native_oflags |= O_RDONLY;
-    }
+	int socktype = SOCK_STREAM;
+	int domain   = PF_INET;
+	int proto    = IPPROTO_TCP;
 
 	if (op.oflags & device::non_blocking)
-		native_oflags |= O_NONBLOCK;
+		socktype |= SOCK_NONBLOCK;
 
-	fd = ::open(op.path.native().c_str(), native_oflags, native_mode);
+	int fd = ::socket(AF_INET, socktype, proto);
 
 	if (fd < 0) {
 		if (pex)
@@ -169,7 +200,30 @@ bool open_device<file> (device & d, const open_params<file> & op, error_code * p
 		return false;
 	}
 
-	d._d = new details::file(fd);
+	sockaddr_in server_addr;
+
+	uint16_t port = op.port;
+	uint32_t addr = op.addr;
+
+	memset(& server_addr, 0, sizeof(server_addr));
+
+	server_addr.sin_family      = PF_INET;
+	server_addr.sin_port        = htons(port);
+	server_addr.sin_addr.s_addr = htonl(addr);
+
+	int rc = ::connect(fd
+			, reinterpret_cast<struct sockaddr *>(& server_addr)
+			, sizeof(server_addr));
+
+	if (rc != 0) {
+		if (pex)
+			*pex = errno;
+
+		::close(fd);
+		return false;
+	}
+
+	d._d = new details::tcp_socket(fd);
 
 	return true;
 }

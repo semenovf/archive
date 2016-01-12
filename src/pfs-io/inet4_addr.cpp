@@ -12,8 +12,6 @@
 
 namespace pfs { namespace net {
 
-const uint32_t inet4_addr::invalid_addr_value = max_value<uint32_t>();
-
 inet4_addr::inet4_addr (uint8_t a, uint8_t b, uint8_t c, uint8_t d)
     : _addr(0)
 {
@@ -42,6 +40,25 @@ inet4_addr::inet4_addr (uint32_t a)
     : _addr(a)
 {}
 
+static bool __parse_part (uint32_t & result
+		, uint32_t maxvalue
+		, string::const_iterator begin
+		, string::const_iterator end)
+{
+	bool ok = true;
+	uint32_t r = lexical_cast<uint32_t>(begin, end, 0, & ok);
+
+	if (! ok)
+		return false;
+
+	if (!(r <= maxvalue))
+		return false;
+
+	result = r;
+	return ok;
+}
+
+
 inet4_addr::inet4_addr (const string & s)
 	: _addr(invalid_addr_value)
 {
@@ -52,32 +69,75 @@ inet4_addr::inet4_addr (const string & s)
 
 	split(s, _u8("."), true, sl);
 
-	if (s.size() > 4)
+	if (sl.size() > 4)
 		return;
 
-	bool ok;
-
-	switch (s.size()) {
+	switch (sl.size()) {
 	case 1: {
-		uint32_t A = lexical_cast<uint32_t>(sl[0].cbegin(), sl[0].cend(), 10, & ok);
-		if (! ok) {
-			A = lexical_cast<uint32_t>(sl[0].cbegin(), sl[0].cend(), 16, & ok);
+		uint32_t A = 0;
 
-			if (! ok) {
-				A = lexical_cast<uint32_t>(sl[0].cbegin(), sl[0].cend(), 8, & ok);
-
-				if (! ok)
-					return;
-			}
-
-			_addr = A;
+		if (__parse_part(A, 0xFFFFFFFF, sl[0].cbegin(), sl[0].cend())) {
+			inet4_addr other(A);
+			this->swap(other);
 		}
+
 		break;
 	}
 
-	case 2:
-	case 3:
-	case 4:
+	case 2: {
+		uint32_t a = 0;
+		uint32_t B = 0;
+
+		if (__parse_part(a, 0xFF, sl[0].cbegin(), sl[0].cend())
+				&& __parse_part(B, 0x00FFFFFF, sl[1].cbegin(), sl[1].cend())) {
+
+			inet4_addr other(static_cast<uint8_t>(a), B);
+			this->swap(other);
+		}
+
+		break;
+	}
+
+	case 3: {
+		uint32_t a = 0;
+		uint32_t b = 0;
+		uint32_t C = 0;
+
+		if (__parse_part(a, 0xFF, sl[0].cbegin(), sl[0].cend())
+				&& __parse_part(b, 0xFF, sl[1].cbegin(), sl[1].cend())
+				&& __parse_part(C, 0x0000FFFF, sl[2].cbegin(), sl[2].cend())) {
+
+			inet4_addr other(static_cast<uint8_t>(a)
+					, static_cast<uint8_t>(b)
+					, static_cast<uint16_t>(C));
+			this->swap(other);
+		}
+
+		break;
+	}
+
+	case 4: {
+		uint32_t a = 0;
+		uint32_t b = 0;
+		uint32_t c = 0;
+		uint32_t d = 0;
+
+		if (__parse_part(a, 0xFF, sl[0].cbegin(), sl[0].cend())
+				&& __parse_part(b, 0xFF, sl[1].cbegin(), sl[1].cend())
+				&& __parse_part(c, 0xFF, sl[2].cbegin(), sl[2].cend())
+				&& __parse_part(d, 0xFF, sl[3].cbegin(), sl[3].cend())) {
+
+			inet4_addr other(static_cast<uint8_t>(a)
+					, static_cast<uint8_t>(b)
+					, static_cast<uint8_t>(c)
+					, static_cast<uint8_t>(d));
+
+			this->swap(other);
+		}
+
+		break;
+	}
+
 	default:
 		break;
 	}
@@ -87,12 +147,37 @@ inet4_addr::inet4_addr (const string & s)
 
 namespace pfs {
 
+inline void __append_prefix (string & r, const string & a, int base)
+{
+	if (base == 16) {
+		size_t len = a.length();
+		r.append("0x");
+
+		if (len == 1)
+			r.push_back('0');
+	} else if (base == 8) {
+		size_t len = a.length();
+		r.append("0");
+
+		if (len < 3)
+			r.push_back('0');
+
+		if (len < 2)
+			r.push_back('0');
+	}
+}
+
+inline void __append_prefix (string & r, int base)
+{
+	if (base == 16)
+		r.append("0x");
+	else if (base == 8)
+		r.append("0");
+}
+
 string to_string (const net::inet4_addr & addr, const string & format, int base)
 {
 	static const string __default_format("%a.%b.%c.%d");
-	static const string prefix16("0x");
-	static const string prefix8("0");
-	static const string prefix10("");
 
 	string r;
 
@@ -100,7 +185,6 @@ string to_string (const net::inet4_addr & addr, const string & format, int base)
 		return string();
 
 	const string * f = 0;
-	const string * prefix = 0;
 
 	if (format.empty()) {
 		f = & __default_format;
@@ -112,30 +196,19 @@ string to_string (const net::inet4_addr & addr, const string & format, int base)
 		base = 10;
 	}
 
-	switch (base) {
-	case 16:
-		prefix = & prefix16;
-		break;
-	case 8:
-		prefix = & prefix8;
-		break;
-	case 10:
-	default:
-		prefix = & prefix10;
-		break;
-	}
-
 	string::const_iterator it = f->cbegin();
 	string::const_iterator it_end = f->cend();
 
+	bool uppercase = true;
+
 	uint32_t native = addr.native();
-	string A = to_string(addr.native(), base);
-	string B = to_string(0x00FFFFFF & native, base);
-	string C = to_string(0x0000FFFF & native, base);
-	string a = to_string(static_cast<uint8_t>(0x000000FF & (native)));
-	string b = to_string(static_cast<uint8_t>(0x000000FF & (native)));
-	string c = to_string(static_cast<uint8_t>(0x000000FF & (native)));
-	string d = to_string(static_cast<uint8_t>(0x000000FF & native));
+	string A = to_string(native, base, uppercase);
+	string B = to_string(0x00FFFFFF & native, base, uppercase);
+	string C = to_string(0x0000FFFF & native, base, uppercase);
+	string a = to_string(static_cast<uint8_t>(0x000000FF & (native >> 24)), base, uppercase);
+	string b = to_string(static_cast<uint8_t>(0x000000FF & (native >> 16)), base, uppercase);
+	string c = to_string(static_cast<uint8_t>(0x000000FF & (native >> 8)), base, uppercase);
+	string d = to_string(static_cast<uint8_t>(0x000000FF & native), base, uppercase);
 
 	while (it != it_end) {
 		if (*it == '%') {
@@ -146,41 +219,34 @@ string to_string (const net::inet4_addr & addr, const string & format, int base)
 			}
 
 			switch ((*it).value) {
-			case 'a':
-				r.append(*prefix);
-				if (a.size() == 1 and base != 10) // in any UTF encoding size of string in code units will be equals to size in code points
-					r.push_back('0');
+			case 'a': {
+				__append_prefix(r, a, base);
 				r.append(a);
 				break;
+			}
 			case 'b':
-				r.append(*prefix);
-				if (b.size() == 1 and base != 10) // in any UTF encoding size of string in code units will be equals to size in code points
-					r.push_back('0');
+				__append_prefix(r, b, base);
 				r.append(b);
 				break;
 			case 'c':
-				r.append(*prefix);
-				if (c.size() == 1 and base != 10) // in any UTF encoding size of string in code units will be equals to size in code points
-					r.push_back('0');
+				__append_prefix(r, c, base);
 				r.append(c);
 				break;
 			case 'd':
-				r.append(*prefix);
-				if (c.size() == 1 and base != 10) // in any UTF encoding size of string in code units will be equals to size in code points
-					r.push_back('0');
-				r.append(c);
+				__append_prefix(r, d, base);
+				r.append(d);
 				break;
 
 			case 'A':
-				r.append(*prefix);
+				__append_prefix(r, base);
 				r.append(A);
 				break;
 			case 'B':
-				r.append(*prefix);
+				__append_prefix(r, base);
 				r.append(B);
 				break;
 			case 'C':
-				r.append(*prefix);
+				__append_prefix(r, base);
 				r.append(C);
 				break;
 
@@ -191,6 +257,8 @@ string to_string (const net::inet4_addr & addr, const string & format, int base)
 		} else {
 			r.push_back(*it);
 		}
+
+		++it;
 	}
 
 	return r;
