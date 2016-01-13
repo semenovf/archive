@@ -23,10 +23,12 @@ struct tcp_server : public bits::server
 	native_handle_type _fd;
 	struct sockaddr_in _sockaddr;
 
-	tcp_server () : _fd(-1) {}
+	tcp_server ()
+		: _fd(-1)
+	{}
 
 	tcp_server (native_handle_type fd, struct sockaddr_in & sockaddr)
-	: _fd(fd)
+		: _fd(fd)
 	{
 		memcpy(& _sockaddr, & sockaddr, sizeof(sockaddr));
 	}
@@ -107,7 +109,8 @@ bool open_server<tcp_server> (server & d, const open_params<tcp_server> & op, er
 		return false;
 	}
 
-	d._d = new details::tcp_server(fd, bind_addr);
+	server dd(new details::tcp_server(fd, bind_addr));
+	d.swap(dd);
 
 	return true;
 }

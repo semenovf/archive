@@ -264,7 +264,8 @@ bool open_device<tcp_socket> (device & d, const open_params<tcp_socket> & op, er
 		return false;
 	}
 
-	d._d = new details::tcp_socket(fd, server_addr);
+	device dd(new details::tcp_socket(fd, server_addr));
+	d.swap(dd);
 
 	return true;
 }

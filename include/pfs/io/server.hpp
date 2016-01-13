@@ -8,6 +8,7 @@
 #ifndef __PFS_IO_SERVER_HPP__
 #define __PFS_IO_SERVER_HPP__
 
+#include <pfs/shared_ptr.hpp>
 #include <pfs/io/bits/server.hpp>
 #include <pfs/io/device.hpp>
 
@@ -19,19 +20,26 @@ struct open_params;
 class server
 {
 protected:
-    bits::server * _d;
+    shared_ptr<bits::server> _d;
 
-private:
-	server (const server & other);
-	server & operator = (const server & other);
+protected:
+	server (bits::server * pd)
+		: _d(pd)
+	{}
 
 public:
-    server () : _d(0) {}
+    server ()
+		: _d()
+	{}
 
-    ~server () {
-        if (_d) {
-            close();
-        }
+    ~server ()
+    {
+    	close();
+    }
+
+    void swap (server & other)
+    {
+    	_d.swap(other._d);
     }
 
     operator bool () const
@@ -41,7 +49,7 @@ public:
 
     bool is_null () const
     {
-    	return _d == 0;
+    	return _d.is_null();
     }
 
 	bool opened () const

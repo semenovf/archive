@@ -8,6 +8,7 @@
 #ifndef __PFS_IO_DEVICE_HPP__
 #define __PFS_IO_DEVICE_HPP__
 
+#include <pfs/shared_ptr.hpp>
 #include <pfs/byte_string.hpp>
 #include <pfs/string.hpp>
 #include <pfs/utility.hpp>
@@ -28,7 +29,7 @@ class DLL_API device
 	friend class server;
 
 protected:
-    bits::device * _d;
+    shared_ptr<bits::device> _d;
 
 public:
 	typedef bits::device::native_handle_type native_handle_type;
@@ -43,25 +44,22 @@ public:
 		, non_blocking = 0x0004                  /**< Open device in non-blocking mode */
 	};
 
-private:
-	device (const device & other);
-	device & operator = (const device & other);
-
-//	device (bits::device * d)
-//		: _d(d)
-//	{}
+protected:
+	device (bits::device * pd)
+		: _d(pd)
+	{}
 
 public:
-    device () : _d(0) {}
-    ~device () {
-        if (_d) {
-            close();
-        }
+    device () : _d() {}
+
+    ~device ()
+    {
+    	close();
     }
 
     void swap (device & other)
     {
-    	pfs::swap(_d, other._d);
+    	_d.swap(other._d);
     }
 
     native_handle_type native_handle () const
@@ -77,7 +75,7 @@ public:
 
     bool is_null () const
     {
-    	return _d == 0;
+    	return _d.is_null();
     }
 
 	bool is_readable () const
@@ -106,8 +104,7 @@ public:
 
 	void flush ()
 	{
-	    if (_d)
-	    	_d->flush();
+	    if (_d) _d->flush();
 	}
 
     bool set_nonblocking (bool on)

@@ -17,8 +17,8 @@ bool server::close (error_code * ex)
 		if (_d->close(ex))
 			r = true;
 
-		delete _d;
-        _d = 0;
+		shared_ptr<bits::server> nil;
+		_d.swap(nil);
 	}
 
 	return r;
@@ -28,11 +28,13 @@ bool server::accept (device & peer, bool non_blocking, error_code * ex)
 {
 	PFS_ASSERT(_d);
 
-	device d;
-	bool rc = _d->accept(& d._d, non_blocking, ex);
+	bits::device * pd;
+
+	bool rc = _d->accept(& pd, non_blocking, ex);
 
 	if (rc) {
-		peer.swap(d);
+		device dd(pd);
+		peer.swap(dd);
 	}
 
 	return rc;

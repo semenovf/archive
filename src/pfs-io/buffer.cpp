@@ -19,11 +19,6 @@ struct buffer : public bits::device
     buffer_type _buffer;
     size_t _pos;
 
-//    buffer ()
-//    	: _buffer(DefaultBufferSize)
-//    	, _pos(0)
-//    {}
-
     buffer (byte_t a[], size_t n)
         : _buffer(a, n)
         , _pos(0)
@@ -113,16 +108,22 @@ bool open_device<buffer> (device & d, const open_params<buffer> & op, error_code
     if (d.opened())
         return false;
 
-    if (op.pbytes)
-    	d._d = new details::buffer(op.pbytes, op.size);
-    else if (op.size > 0)
-    	d._d = new details::buffer(op.size);
-    else
-    	d._d = new details::buffer(details::buffer::default_buffer_size);
+    bits::device * p = 0;
+
+    if (op.pbytes) {
+    	p = new details::buffer(op.pbytes, op.size);
+    } else if (op.size > 0) {
+    	p = new details::buffer(op.size);
+    } else {
+    	p = new details::buffer(details::buffer::default_buffer_size);
+    }
 
 	PFS_UNUSED(pex);
 
-    return d._d != 0;
+	device dd(p);
+	d.swap(dd);
+
+    return true;
 }
 
 }} // pfs::io

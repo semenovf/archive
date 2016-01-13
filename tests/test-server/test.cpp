@@ -7,11 +7,10 @@
  */
 
 #include <pfs/test/test.hpp>
-#include <pfs/thread.hpp>
-#include <pfs/byte_string.hpp>
-#include <pfs/io/device.hpp>
-#include <pfs/io/inet_server.hpp>
-#include <iostream>
+#include <pfs.hpp>
+
+extern void test_basic ();
+extern void test_poll ();
 
 const char * loremipsum [] = {
 	  "1.Lorem ipsum dolor sit amet, consectetuer adipiscing elit,"
@@ -56,149 +55,6 @@ const char * loremipsum [] = {
 	, "40.videntur parum clari, fiant sollemnes in futurum."
 };
 
-#define BUFFER_SIZE 1
-#define SERVER_ADDR _u8("127.0.0.1")
-#define SERVER_PORT 10199
-#define SERVER_BACKLOG 10
-
-using pfs::io::tcp_socket;
-using pfs::io::tcp_server;
-using pfs::net::inet4_addr;
-
-class ServerThread : public pfs::thread
-{
-	pfs::io::server _server;
-
-public:
-	ServerThread ()
-		: pfs::thread()
-	{
-		ADD_TESTS(1);
-
-		pfs::error_code ex;
-
-		bool rc = pfs::io::open_server(_server
-				, pfs::io::open_params<tcp_server>(inet4_addr(SERVER_ADDR)
-						, SERVER_PORT
-						, SERVER_BACKLOG)
-				, & ex);
-
-		if (!rc) {
-			std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
-		}
-
-		TEST_FAIL2(rc, "Open server socket");
-	}
-
-	virtual void run ()
-	{
-		ADD_TESTS(1);
-
-		bool quit = false;
-		pfs::error_code ex;
-
-		pfs::byte_string sample;
-		int n = sizeof(loremipsum)/sizeof(loremipsum[0]);
-
-		for (int i = 0; i < n; ++i) {
-			sample.append(loremipsum[i]);
-		}
-
-		_server.set_nonblocking(true);
-
-		while (!quit) {
-			pfs::io::device client;
-
-			if (_server.accept(client, true, & ex)) {
-
-				pfs::byte_string bytes;
-
-				size_t nread = 0;
-				ssize_t n = 0;
-
-				do {
-					n = client.read(bytes, BUFFER_SIZE, & ex);
-
-					if (n > 0)
-						nread += n;
-
-					if (n < 0) {
-						if (ex == EAGAIN || ex == EWOULDBLOCK)
-							continue;
-
-						std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
-						break;
-					}
-				} while (n);
-
-				TEST_OK2(bytes == sample, "Data successfully received bye server");
-
-				quit = true;
-			}
-		}
-	}
-};
-
-class ClientThread : public pfs::thread
-{
-public:
-	ClientThread ()
-		: pfs::thread()
-	{}
-
-	virtual void run ()
-	{
-		ADD_TESTS(2);
-
-		pfs::io::device client;
-
-		pfs::error_code ex;
-		bool rc = pfs::io::open_device(client
-				, pfs::io::open_params<tcp_socket>(inet4_addr(SERVER_ADDR), SERVER_PORT), & ex);
-
-		TEST_OK2(rc, "Open client socket");
-
-		if (!rc) {
-			std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
-			return;
-		}
-
-		int n = sizeof(loremipsum)/sizeof(loremipsum[0]);
-		int n1 = 0;
-
-		pfs::byte_string sample;
-
-		for (int i = 0; i < n; ++i) {
-			sample.append(loremipsum[i]);
-		}
-
-		for (int i = 0; i < n; ++i) {
-			pfs::byte_string data(loremipsum[i]);
-
-			if (client.write(data) == data.size())
-				++n1;
-		}
-
-		client.close();
-
-		TEST_OK2(n == n1, "Data successfully sent by client");
-	}
-};
-
-
-void test_tcp_server ()
-{
-	ServerThread server;
-	ClientThread client;
-	server.start();
-	client.start();
-	server.wait();
-	client.wait();
-}
-
-using std::cout;
-using std::endl;
-
 int main(int argc, char *argv[])
 {
 	PFS_UNUSED(argc);
@@ -206,7 +62,8 @@ int main(int argc, char *argv[])
 
 	BEGIN_TESTS(0);
 
-	test_tcp_server();
+	test_basic();
+	test_poll();
 
 	END_TESTS;
 }

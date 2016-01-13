@@ -192,7 +192,8 @@ bool open_device<file> (device & d, const open_params<file> & op, error_code * p
 		return false;
 	}
 
-	d._d = new details::file(fd);
+	device dd(new details::file(fd));
+	d.swap(dd);
 
 	return true;
 }

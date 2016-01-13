@@ -46,8 +46,8 @@ bool device::close (error_code * ex)
 		if (_d->close(ex))
 			r = true;
 
-		delete _d;
-        _d = 0;
+		shared_ptr<bits::device> nil;
+		_d.swap(nil);
 	}
 
 	return r;
