@@ -30,74 +30,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
-#include "pfs/io/inet_socket.hpp"
+#include "inet_socket_posix.hpp"
 
 namespace pfs { namespace io { namespace details {
-
-struct inet_socket : public bits::device
-{
-	bits::device::native_handle_type _fd;
-
-	inet_socket () : _fd(-1) {}
-
-	inet_socket (bits::device::native_handle_type fd) : _fd(fd) {}
-
-	~inet_socket ()
-	{
-		if (_fd > 0) {
-			::close(_fd);
-			_fd = -1;
-		}
-	}
-
-    virtual open_mode_flags open_mode () const;
-
-    virtual size_t bytes_available () const;
-
-    virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex) = 0;
-
-    virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex) = 0;
-
-    virtual bool close (error_code * ex);
-
-    virtual bool opened () const
-    {
-    	return _fd >= 0;
-    }
-
-    virtual void flush ()
-    {}
-
-    virtual bool set_nonblocking (bool on)
-    {
-        int flags = fcntl(_fd, F_GETFL, 0);
-        if (on)
-        	flags |= O_NONBLOCK;
-        else
-        	flags &= ~O_NONBLOCK;
-        return fcntl(_fd, F_SETFL, flags) >= 0;
-    }
-
-    virtual native_handle_type native_handle () const
-    {
-    	return _fd;
-    }
-};
-
-struct tcp_socket : public inet_socket
-{
-	tcp_socket ()
-		: inet_socket()
-	{}
-
-	tcp_socket (bits::device::native_handle_type fd)
-		: inet_socket(fd)
-	{}
-
-	virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex);
-
-	virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
-};
 
 bits::device::open_mode_flags inet_socket::open_mode () const
 {
@@ -129,22 +64,152 @@ size_t inet_socket::bytes_available () const
 	return static_cast<size_t>(n);
 }
 
-bool inet_socket::close (error_code * pex)
+bool inet_socket::s_set_nonblocking (native_handle_type & fd, bool on)
+{
+    int flags = ::fcntl(fd, F_GETFL, 0);
+
+    if (on)
+    	flags |= O_NONBLOCK;
+    else
+    	flags &= ~O_NONBLOCK;
+
+    return ::fcntl(fd, F_SETFL, flags) >= 0;
+}
+
+// static
+bool inet_socket::s_close (native_handle_type & fd, error_code * pex)
 {
     bool r = true;
 
-    if (_fd > 0) {
-        if (::close(_fd) < 0) {
+    if (fd > 0) {
+        if (::close(fd) < 0) {
         	if (pex)
         		*pex = errno;
         	r = false;
         }
     }
 
-    _fd = -1;
+    fd = -1;
     return r;
 }
 
+// static
+inet_socket::native_handle_type inet_socket::s_create (bool non_blocking, error_code * pex)
+{
+	int socktype = SOCK_STREAM;
+	int domain   = PF_INET;
+	int proto    = IPPROTO_TCP;
+
+	if (non_blocking)
+		socktype |= SOCK_NONBLOCK;
+
+	native_handle_type fd = ::socket(AF_INET, socktype, proto);
+
+	if (fd < 0) {
+		if (pex)
+			*pex = errno;
+	}
+
+	return fd;
+}
+
+// static
+bool inet_socket::s_connect (tcp_socket::native_handle_type & fd
+		, sockaddr_in & server_addr
+		, uint32_t addr
+		, uint16_t port
+		, error_code * pex)
+{
+	memset(& server_addr, 0, sizeof(server_addr));
+
+	server_addr.sin_family      = PF_INET;
+	server_addr.sin_port        = htons(port);
+	server_addr.sin_addr.s_addr = htonl(addr);
+
+	int rc = ::connect(fd
+			, reinterpret_cast<struct sockaddr *>(& server_addr)
+			, sizeof(server_addr));
+
+	if (rc == 0) {
+		int yes = 1;
+
+		/* http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconoserver.htm
+		 *
+		 * The setsockopt() function is used to allow the local address to
+		 * be reused when the server is restarted before the required wait
+		 * time expires
+		 */
+		rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, & yes, sizeof(int));
+
+	} else {
+		/* TODO
+		    errno == EINPROGRESS:
+			The socket is nonblocking and the connection cannot be completed immediately.
+			It is possible to select(2) or poll(2) for completion by selecting
+			the socket for writing. After select(2) indicates writability,
+			use getsockopt(2) to read the SO_ERROR option at level SOL_SOCKET
+			to determine whether connect() completed successfully (SO_ERROR is zero) or
+			unsuccessfully (SO_ERROR is one of the usual error codes listed here,
+			explaining the reason for the failure).
+		 */
+		if (errno == EINPROGRESS) {
+/*
+#if PFS_HAVE_POLL
+			;
+#endif
+*/
+		}
+	}
+
+	if (rc != 0) {
+		if (pex)
+			*pex = errno;
+		return false;
+	}
+
+	return true;
+}
+
+// static
+bool inet_socket::s_bind (native_handle_type & fd
+		, sockaddr_in & bind_addr
+		, uint32_t addr
+		, uint16_t port
+		, error_code * pex)
+{
+	memset(& bind_addr, 0, sizeof(bind_addr));
+
+	bind_addr.sin_family      = PF_INET;
+	bind_addr.sin_port        = htons(port);
+	bind_addr.sin_addr.s_addr = htonl(addr);
+
+	int rc = ::bind(fd
+			, reinterpret_cast<struct sockaddr *>(& bind_addr)
+			, sizeof(bind_addr));
+
+	if (rc != 0) {
+		if (pex)
+			*pex = errno;
+		return false;
+	}
+
+	return true;
+}
+
+// static
+bool inet_socket::s_listen (native_handle_type & fd, int backlog, error_code * pex)
+{
+	int rc = ::listen(fd, backlog);
+
+	if (rc != 0) {
+		if (pex)
+			*pex = errno;
+
+		return false;
+	}
+
+	return true;
+}
 
 ssize_t tcp_socket::read (byte_t * bytes, size_t n, error_code * pex)
 {
@@ -174,7 +239,6 @@ ssize_t tcp_socket::write (const byte_t * bytes, size_t n, error_code * pex)
 	return r;
 }
 
-
 }}} // cwt::io::details
 
 namespace pfs { namespace io {
@@ -185,45 +249,22 @@ bool open_device<tcp_socket> (device & d, const open_params<tcp_socket> & op, er
     if (d.opened())
         return false;
 
-	int socktype = SOCK_STREAM;
-	int domain   = PF_INET;
-	int proto    = IPPROTO_TCP;
+    bool non_blocking = op.oflags & device::non_blocking;
 
-	if (op.oflags & device::non_blocking)
-		socktype |= SOCK_NONBLOCK;
+    details::tcp_socket::native_handle_type fd = details::tcp_socket::s_create(non_blocking, pex);
 
-	int fd = ::socket(AF_INET, socktype, proto);
-
-	if (fd < 0) {
-		if (pex)
-			*pex = errno;
+	if (fd < 0)
 		return false;
-	}
 
 	sockaddr_in server_addr;
+	bool rc = details::tcp_socket::s_connect(fd, server_addr, op.addr.native(), op.port, pex);
 
-	uint16_t port = op.port;
-	uint32_t addr = op.addr;
-
-	memset(& server_addr, 0, sizeof(server_addr));
-
-	server_addr.sin_family      = PF_INET;
-	server_addr.sin_port        = htons(port);
-	server_addr.sin_addr.s_addr = htonl(addr);
-
-	int rc = ::connect(fd
-			, reinterpret_cast<struct sockaddr *>(& server_addr)
-			, sizeof(server_addr));
-
-	if (rc != 0) {
-		if (pex)
-			*pex = errno;
-
+	if (!rc) {
 		::close(fd);
 		return false;
 	}
 
-	d._d = new details::tcp_socket(fd);
+	d._d = new details::tcp_socket(fd, server_addr);
 
 	return true;
 }

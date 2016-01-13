@@ -44,4 +44,4 @@ struct device
 
 }}} // pfs::io::bits
 
-#endif /* __PFS_IO_BITS_DEVICE_IMPL_HPP__ */
+#endif /* __PFS_IO_BITS_DEVICE_HPP__ */

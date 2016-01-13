@@ -21,8 +21,12 @@ namespace pfs { namespace io {
 template <typename DeviceImpl>
 struct open_params;
 
+class server;
+
 class DLL_API device
 {
+	friend class server;
+
 protected:
     bits::device * _d;
 
@@ -43,12 +47,21 @@ private:
 	device (const device & other);
 	device & operator = (const device & other);
 
+//	device (bits::device * d)
+//		: _d(d)
+//	{}
+
 public:
     device () : _d(0) {}
     ~device () {
         if (_d) {
             close();
         }
+    }
+
+    void swap (device & other)
+    {
+    	pfs::swap(_d, other._d);
     }
 
     native_handle_type native_handle () const

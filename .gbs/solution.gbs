@@ -41,3 +41,8 @@ project "test-net-inet4-addr"
 --project "pfs-io-ipx"
 --    include("pfs-io-ipx/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-server"
+    include("test-server/project.gbs")
+-- END PROJECT

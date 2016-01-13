@@ -1,0 +1,42 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=test-server --type=test --depends=pfs-io'
+--* Date:    Wed Jan 13 11:48:06 2016
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-server"
+defines       {  }
+includedirs   { "../../include"
+  , "../../../pfs-test/include"
+  , "../../../pfs/include"
+  , "../../../pfs-sys/include"
+}
+libdirs       { "../../../.build" }
+files         { "../../tests/test-server/*.c", "../../tests/test-server/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-io/test-server/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d", "pfs-sys-d", "pfs-io-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-io/test-server/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs", "pfs-sys", "pfs-io" }
+
+dependson { "pfs-io" }
+
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
