@@ -59,6 +59,27 @@ public:
 	{
 		return _native;
 	}
+
+	bool operator == (const error_code & ex)
+			{
+		return _native == ex._native;
+	}
+
+	bool operator != (const error_code & ex)
+			{
+		return ! operator == (ex);
+	}
+
+	bool operator == (int ex)
+	{
+		return _native == ex;
+	}
+
+	bool operator != (int ex)
+	{
+		return ! operator == (ex);
+	}
+
 };
 
 DLL_API string to_string (const error_code & ex);
