@@ -12,30 +12,48 @@ namespace pfs { namespace io {
 
 static const size_t DEFAULT_READ_BUFSZ = 256;
 
-ssize_t device::read (byte_string & bytes, size_t n, error_code * ex)
+//error_code device::read (byte_string & bytes, size_t n)
+//{
+//	PFS_ASSERT(_d);
+//	error_code ex;
+//
+//    if (!n)
+//        return 0;
+//
+//    byte_t buffer[DEFAULT_READ_BUFSZ];
+//    byte_t * pbuffer = buffer;
+//
+//    if (n > DEFAULT_READ_BUFSZ) {
+//        pbuffer = new byte_t[n];
+//    }
+//
+//    ssize_t sz = read(pbuffer, n, & ex);
+//
+//    if (sz > 0) {
+//        bytes.append(pbuffer, size_t(sz));
+//    }
+//
+//    if (n > DEFAULT_READ_BUFSZ)
+//        delete [] pbuffer;
+//
+//    return sz;
+//}
+
+error_code device::read (byte_string & bytes)
 {
-	PFS_ASSERT(_d);
+	byte_t buffer[DEFAULT_READ_BUFSZ];
+	error_code ex;
+	ssize_t sz = 0;
 
-    if (!n)
-        return 0;
+	do {
+		sz = read(buffer, DEFAULT_READ_BUFSZ, & ex);
 
-    byte_t buffer[DEFAULT_READ_BUFSZ];
-    byte_t * pbuffer = buffer;
+		if (sz > 0) {
+			bytes.append(buffer, size_t(sz));
+		}
+	} while (sz > 0);
 
-    if (n > DEFAULT_READ_BUFSZ) {
-        pbuffer = new byte_t[n];
-    }
-
-    ssize_t sz = read(pbuffer, n, ex);
-
-    if (sz > 0) {
-        bytes.append(pbuffer, size_t(sz));
-    }
-
-    if (n > DEFAULT_READ_BUFSZ)
-        delete [] pbuffer;
-
-    return sz;
+	return ex;
 }
 
 bool device::close (error_code * ex)

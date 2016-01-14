@@ -1,15 +1,17 @@
 /*
- * test_basic.cpp
+ * test_poll.cpp
  *
  *  Created on: Jan 13, 2016
  *      Author: wladt
  */
 
 #include <pfs/test/test.hpp>
+#include <pfs/vector.hpp>
 #include <pfs/thread.hpp>
 #include <pfs/byte_string.hpp>
 #include <pfs/io/device.hpp>
 #include <pfs/io/inet_server.hpp>
+#include <pfs/io/device_pool.hpp>
 #include <iostream>
 
 #define BUFFER_SIZE 1
@@ -78,26 +80,25 @@ public:
 	{
 		ADD_TESTS(1);
 
-		pfs::error_code ex;
-
-		bool rc = pfs::io::open_server(_server
+		pfs::error_code ex = pfs::io::open_server(_server
 				, pfs::io::open_params<tcp_server>(inet4_addr(SERVER_ADDR)
 						, SERVER_PORT
-						, SERVER_BACKLOG)
-				, & ex);
+						, SERVER_BACKLOG));
 
-		if (!rc) {
-			std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
+		if (ex) {
+			std::cerr << "ERROR (server): open failed:" << pfs::to_string(ex) << std::endl;
 		}
 
-		TEST_FAIL2(rc, "Open server socket");
+		TEST_FAIL2(!ex, "Open server socket");
 	}
 
 	virtual void run ()
 	{
 		ADD_TESTS(1);
 
-		bool quit = false;
+		if (!_server.opened())
+			return;
+
 		pfs::error_code ex;
 
 		pfs::byte_string sample;
@@ -107,38 +108,40 @@ public:
 			sample.append(loremipsum[i]);
 		}
 
-		_server.set_nonblocking(true);
+		_server.set_nonblocking(false);
 
-		while (!quit) {
+		pfs::io::device_pool dpool;
+		pfs::vector<pfs::io::device> devices;
+
+		do {
 			pfs::io::device client;
 
-			if (_server.accept(client, true, & ex)) {
+			while (_server.accept(client, false, & ex)) {
+				dpool.push_back(client, pfs::io::poll_in);
+				int rc = dpool.poll(devices, pfs::io::poll_all, 100, & ex);
 
-				pfs::byte_string bytes;
+				if (rc > 0) {
+					size_t ndevices = devices.size();
 
-				size_t nread = 0;
-				ssize_t n = 0;
+					for (size_t i = 0; i < ndevices; ++i) {
+						pfs::byte_string bytes;
 
-				do {
-					n = client.read(bytes, BUFFER_SIZE, & ex);
+						ex = devices[i].read(bytes);
 
-					if (n > 0)
-						nread += n;
+						if (ex) {
+							std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
+							ex = 0;
+						}
 
-					if (n < 0) {
-						if (ex == EAGAIN || ex == EWOULDBLOCK)
-							continue;
-
-						std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
-						break;
+						TEST_OK2(bytes == sample, "Data successfully received by server");
 					}
-				} while (n);
-
-				TEST_OK2(bytes == sample, "Data successfully received by server");
-
-				quit = true;
+				}
 			}
-		}
+
+			if (ex){
+				std::cerr << "ERROR (server): accept failed: " << pfs::to_string(ex) << std::endl;
+			}
+		} while(false);
 	}
 };
 
@@ -155,14 +158,13 @@ public:
 
 		pfs::io::device client;
 
-		pfs::error_code ex;
-		bool rc = pfs::io::open_device(client
-				, pfs::io::open_params<tcp_socket>(inet4_addr(SERVER_ADDR), SERVER_PORT), & ex);
+		pfs::error_code ex = pfs::io::open_device(client
+				, pfs::io::open_params<tcp_socket>(inet4_addr(SERVER_ADDR), SERVER_PORT));
 
-		TEST_OK2(rc, "Open client socket");
+		TEST_OK2(!ex, "Open client socket");
 
-		if (!rc) {
-			std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
+		if (ex) {
+			std::cerr << "ERROR (client): " << pfs::to_string(ex) << std::endl;
 			return;
 		}
 
@@ -188,7 +190,7 @@ public:
 	}
 };
 
-void test_basic ()
+void test_poll ()
 {
 	ServerThread server;
 	ClientThread clients[NCLIENTS];

@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 
 	BEGIN_TESTS(0);
 
-	test_basic();
+//	test_basic();
 	test_poll();
 
 	END_TESTS;

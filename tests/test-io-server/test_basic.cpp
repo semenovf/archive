@@ -1,17 +1,16 @@
 /*
- * test_poll.cpp
+ * test_basic.cpp
  *
  *  Created on: Jan 13, 2016
  *      Author: wladt
  */
+#if __COMMENT__
 
 #include <pfs/test/test.hpp>
-#include <pfs/vector.hpp>
 #include <pfs/thread.hpp>
 #include <pfs/byte_string.hpp>
 #include <pfs/io/device.hpp>
 #include <pfs/io/inet_server.hpp>
-#include <pfs/io/device_pool.hpp>
 #include <iostream>
 
 #define BUFFER_SIZE 1
@@ -89,7 +88,7 @@ public:
 				, & ex);
 
 		if (!rc) {
-			std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
+			std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
 		}
 
 		TEST_FAIL2(rc, "Open server socket");
@@ -99,7 +98,6 @@ public:
 	{
 		ADD_TESTS(1);
 
-		bool quit = false;
 		pfs::error_code ex;
 
 		pfs::byte_string sample;
@@ -111,41 +109,22 @@ public:
 
 		_server.set_nonblocking(true);
 
-		pfs::io::device_pool dpool;
-		pfs::vector<pfs::io::device> devices;
-
-		while (!quit) {
+		do {
 			pfs::io::device client;
 
 			if (_server.accept(client, true, & ex)) {
-				dpool.push_back(client, pfs::io::poll_in);
-				int rc = dpool.poll(devices, pfs::io::poll_all, 100, & ex);
 
-				if (rc > 0) {
-					size_t ndevices = devices.size();
+				pfs::byte_string bytes;
 
-					for (size_t i = 0; i < ndevices; ++i) {
-						pfs::byte_string bytes;
+				ex = client.read(bytes);
 
-						do {
-							ssize_t n = client.read(bytes, BUFFER_SIZE, & ex);
-
-							if (n < 0) {
-								if (ex == EAGAIN || ex == EWOULDBLOCK)
-									continue;
-
-								std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
-								break;
-							}
-						} while (n);
-
-						TEST_OK2(bytes == sample, "Data successfully received by server");
-					}
+				if (ex) {
+					std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
 				}
 
-				quit = true;
+				TEST_OK2(bytes == sample, "Data successfully received by server");
 			}
-		}
+		} while(false);
 	}
 };
 
@@ -169,7 +148,7 @@ public:
 		TEST_OK2(rc, "Open client socket");
 
 		if (!rc) {
-			std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
+			std::cerr << "ERROR (client): " << pfs::to_string(ex) << std::endl;
 			return;
 		}
 
@@ -195,7 +174,7 @@ public:
 	}
 };
 
-void test_poll ()
+void test_basic ()
 {
 	ServerThread server;
 	ClientThread clients[NCLIENTS];
@@ -212,3 +191,5 @@ void test_poll ()
 		clients[i].wait();
 	}
 }
+
+#endif

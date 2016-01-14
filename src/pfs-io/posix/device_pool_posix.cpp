@@ -70,6 +70,7 @@ int device_pool::poll (vector<device> & devices
 				details::device_pool::map_type::iterator it_end = pdp->m.end();
 
 				PFS_ASSERT(it != it_end);
+				PFS_ASSERT(it->second.opened());
 
 				devices.push_back(it->second);
 			}

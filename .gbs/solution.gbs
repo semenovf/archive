@@ -43,6 +43,6 @@ project "test-net-inet4-addr"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-server"
-    include("test-server/project.gbs")
+project "test-io-server"
+    include("test-io-server/project.gbs")
 -- END PROJECT

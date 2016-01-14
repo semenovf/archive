@@ -52,10 +52,18 @@ protected:
 public:
     device () : _d() {}
 
-    ~device ()
+    device (const device & other)
+    	: _d(other._d)
+    {}
+
+    device & operator = (const device & other)
     {
-    	close();
+    	_d = other._d;
+    	return *this;
     }
+
+    ~device ()
+    {}
 
     void swap (device & other)
     {
@@ -149,10 +157,15 @@ public:
         return read(reinterpret_cast<byte_t *>(chars), n, ex);
     }
 
+//    /**
+//     * @brief Read data from device and appends them
+//     */
+//    error_code read (byte_string & bytes, size_t n);
+
     /**
      * @brief Read data from device and appends them
      */
-    ssize_t read (byte_string & bytes, size_t n, error_code * ex = 0);
+    error_code read (byte_string & bytes);
 
     /**
      * @brief Write bytes to the device.
@@ -179,7 +192,7 @@ public:
 	}
 
 	template <typename DeviceTag>
-	friend bool open_device (device &, const open_params<DeviceTag> &, error_code * ex = 0);
+	friend error_code open_device (device &, const open_params<DeviceTag> &);
 
     friend bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * ex = 0);
 
@@ -199,7 +212,7 @@ inline bool uncompress (device & src, device & dest, error_code * ex = 0)
 }
 
 template <typename DeviceTag>
-bool open_device (device &, const open_params<DeviceTag> &, error_code * ex);
+error_code open_device (device &, const open_params<DeviceTag> &);
 
 }} // pfs::io
 

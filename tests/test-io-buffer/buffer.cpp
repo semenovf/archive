@@ -61,7 +61,7 @@ void test_read ()
 	device d;
 
 	TEST_OK(!d.opened());
-	TEST_FAIL(open_device(d, open_params<buffer>(
+	TEST_FAIL(pfs::error_code() == open_device(d, open_params<buffer>(
 			  loremipsum
 			, strlen(loremipsum))));
 	TEST_OK(d.opened());
@@ -74,10 +74,9 @@ void test_read ()
     TEST_OK(d.write(byte_string()) >= 0);
 
     byte_string result;
-    size_t n = 0;
 
     while (!d.at_end()) {
-        d.read(result, n++);
+        d.read(result);
     }
 
     TEST_OK(result == loremipsum);
@@ -88,7 +87,7 @@ void test_write ()
 	device d;
 
 	TEST_OK(!d.opened());
-	TEST_FAIL(open_device(d, open_params<buffer>(10)));
+	TEST_FAIL(pfs::error_code() == open_device(d, open_params<buffer>(10)));
 	TEST_OK(d.opened());
 
     TEST_OK(d.is_readable());

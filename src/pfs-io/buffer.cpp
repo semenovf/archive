@@ -103,10 +103,10 @@ ssize_t buffer::write (const byte_t * bytes, size_t n, error_code * ex)
 namespace pfs { namespace io {
 
 template <>
-bool open_device<buffer> (device & d, const open_params<buffer> & op, error_code * pex)
+error_code open_device<buffer> (device & d, const open_params<buffer> & op)
 {
     if (d.opened())
-        return false;
+    	return error_code();
 
     bits::device * p = 0;
 
@@ -118,12 +118,10 @@ bool open_device<buffer> (device & d, const open_params<buffer> & op, error_code
     	p = new details::buffer(details::buffer::default_buffer_size);
     }
 
-	PFS_UNUSED(pex);
-
 	device dd(p);
 	d.swap(dd);
 
-    return true;
+    return error_code();
 }
 
 }} // pfs::io

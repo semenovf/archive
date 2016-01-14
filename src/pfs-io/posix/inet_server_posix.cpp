@@ -88,21 +88,23 @@ bool tcp_server::accept (bits::device ** peer, bool non_blocking, error_code * p
 namespace pfs { namespace io {
 
 template <>
-bool open_server<tcp_server> (server & d, const open_params<tcp_server> & op, error_code * pex)
+error_code open_server<tcp_server> (server & d, const open_params<tcp_server> & op)
 {
+	error_code ex;
+
     if (d.opened())
-        return false;
+        return error_code(EBADF);
 
     bool non_blocking = op.oflags & device::non_blocking;
 
-    details::inet_socket::native_handle_type fd = details::inet_socket::s_create(non_blocking, pex);
+    details::inet_socket::native_handle_type fd = details::inet_socket::s_create(non_blocking, & ex);
 
 	if (fd < 0)
-		return false;
+		return ex;
 
 	sockaddr_in bind_addr;
-	bool rc = details::inet_socket::s_bind(fd, bind_addr, op.addr.native(), op.port, pex);
-	if (rc) rc = details::inet_socket::s_listen(fd, op.npendingconn, pex);
+	bool rc = details::inet_socket::s_bind(fd, bind_addr, op.addr.native(), op.port, & ex);
+	if (rc) rc = details::inet_socket::s_listen(fd, op.npendingconn, & ex);
 
 	if (!rc) {
 		details::inet_socket::s_close(fd, 0);
@@ -112,7 +114,7 @@ bool open_server<tcp_server> (server & d, const open_params<tcp_server> & op, er
 	server dd(new details::tcp_server(fd, bind_addr));
 	d.swap(dd);
 
-	return true;
+	return error_code();
 }
 
 }} // pfs::io

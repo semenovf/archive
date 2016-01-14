@@ -244,30 +244,32 @@ ssize_t tcp_socket::write (const byte_t * bytes, size_t n, error_code * pex)
 namespace pfs { namespace io {
 
 template <>
-bool open_device<tcp_socket> (device & d, const open_params<tcp_socket> & op, error_code * pex)
+error_code open_device<tcp_socket> (device & d, const open_params<tcp_socket> & op)
 {
     if (d.opened())
-        return false;
+        return error_code();
+
+    error_code ex;
 
     bool non_blocking = op.oflags & device::non_blocking;
 
-    details::tcp_socket::native_handle_type fd = details::tcp_socket::s_create(non_blocking, pex);
+    details::tcp_socket::native_handle_type fd = details::tcp_socket::s_create(non_blocking, & ex);
 
 	if (fd < 0)
-		return false;
+		return error_code(EBADF);
 
 	sockaddr_in server_addr;
-	bool rc = details::tcp_socket::s_connect(fd, server_addr, op.addr.native(), op.port, pex);
+	bool rc = details::tcp_socket::s_connect(fd, server_addr, op.addr.native(), op.port, & ex);
 
 	if (!rc) {
 		::close(fd);
-		return false;
+		return ex;
 	}
 
 	device dd(new details::tcp_socket(fd, server_addr));
 	d.swap(dd);
 
-	return true;
+	return error_code(0);
 }
 
 }} // pfs::io

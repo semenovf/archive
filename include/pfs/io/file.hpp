@@ -67,7 +67,7 @@ struct open_params<file>
  *         (i.e. file device is already opened).
  */
 template <>
-bool open_device<file> (device & d, const open_params<file> & op, error_code * ex);
+error_code open_device<file> (device & d, const open_params<file> & op);
 
 }} // pfs::io
 

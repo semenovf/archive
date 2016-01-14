@@ -160,10 +160,10 @@ static int __convert_to_native_perms (int perms)
 }
 
 template <>
-bool open_device<file> (device & d, const open_params<file> & op, error_code * pex)
+error_code open_device<file> (device & d, const open_params<file> & op)
 {
     if (d.opened())
-        return false;
+        return error_code();
 
 	int fd;
 	int native_oflags = 0;
@@ -187,15 +187,13 @@ bool open_device<file> (device & d, const open_params<file> & op, error_code * p
 	fd = ::open(op.path.native().c_str(), native_oflags, native_mode);
 
 	if (fd < 0) {
-		if (pex)
-			*pex = errno;
-		return false;
+		return error_code(errno);
 	}
 
 	device dd(new details::file(fd));
 	d.swap(dd);
 
-	return true;
+	return error_code();
 }
 
 }} // pfs::io

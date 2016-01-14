@@ -33,9 +33,7 @@ public:
 	{}
 
     ~server ()
-    {
-    	close();
-    }
+    {}
 
     void swap (server & other)
     {
@@ -84,11 +82,11 @@ public:
 	bool accept (device & peer, bool non_blocking, error_code * ex = 0);
 
 	template <typename ServerTag>
-	friend bool open_server (server &, const open_params<ServerTag> &, error_code * ex = 0);
+	friend error_code open_server (server &, const open_params<ServerTag> &);
 };
 
 template <typename ServerTag>
-bool open_server (server &, const open_params<ServerTag> &, error_code * ex);
+error_code open_server (server &, const open_params<ServerTag> &);
 
 }} // pfs::io
 
