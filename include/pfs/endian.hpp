@@ -24,24 +24,70 @@ public:
 private:
 	type_enum _value;
 
+private:
+	static endian::type_enum s_native_order ();
+
 public:
 	endian ()
-		: _value(native_order())
+		: _value(s_native_order())
 	{}
+
+	endian (const endian & other)
+		: _value(other._value)
+	{}
+
+	endian & operator = (const endian & other)
+	{
+		_value = other._value;
+		return *this;
+	}
 
 	endian (type_enum type)
 		: _value(type)
 	{}
 
-public:
 	type_enum type () const
 	{
 		return _value;
 	}
 
-	static type_enum native_order ();
+	friend bool operator == (const endian & lhs, const endian & rhs)
+	{
+		return lhs._value == rhs._value;
+	}
 
-	static type_enum network_order ()
+	friend bool operator != (const endian & lhs, const endian & rhs)
+	{
+		return ! operator == (lhs, rhs);
+	}
+
+	friend bool operator == (const endian & lhs, type_enum rhs)
+	{
+		return lhs._value == rhs;
+	}
+
+	friend bool operator != (const endian & lhs, type_enum rhs)
+	{
+		return ! operator == (lhs, rhs);
+	}
+
+	friend bool operator == (type_enum lhs, const endian & rhs)
+	{
+		return lhs == rhs._value;
+	}
+
+	friend bool operator != (type_enum lhs, const endian & rhs)
+	{
+		return ! operator == (lhs, rhs);
+	}
+
+public:
+	static endian native_order ()
+	{
+		return s_native_order();
+	}
+
+	static endian network_order ()
 	{
 		return network_endian;
 	}

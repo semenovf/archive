@@ -10,7 +10,7 @@
 
 namespace pfs {
 
-endian::type_enum endian::native_order ()
+endian::type_enum endian::s_native_order ()
 {
 #if 1 // determine endianess at compile time
 	return

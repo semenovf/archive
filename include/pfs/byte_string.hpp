@@ -816,7 +816,7 @@ inline byte_string byte_string::toBytes<utf8_string> (const utf8_string & v, end
 // TODO For integers only supported by endian class
 //
 template <typename T>
-byte_string::size_type unpack (byte_string::const_iterator pos, endian::type_enum order, T & v)
+byte_string::const_iterator unpack (T & v, byte_string::const_iterator pos, const endian & order)
 {
 	union u
 	{
@@ -826,102 +826,36 @@ byte_string::size_type unpack (byte_string::const_iterator pos, endian::type_enu
 
 	const u * d = reinterpret_cast<const u *>(pos.base());
 	v = (order == endian::little_endian) ? endian::to_little_endian(d->v) : endian::to_big_endian(d->v);
-	return sizeof(T);
+	std::advance(pos, sizeof(T));
+	return pos;
 }
 
 template <typename T>
-inline byte_string::size_type unpack (byte_string::const_iterator pos, T & v)
+inline T unpack (byte_string::const_iterator & pos, const endian & order)
 {
-	return unpack(pos, endian::native_order(), v);
+	T r;
+	pos = unpack(r, pos, order);
+	return r;
+}
+
+template <typename T>
+inline byte_string::size_type unpack (T & v, byte_string::const_iterator pos)
+{
+	return unpack(v, pos, endian::native_order());
+}
+
+template <typename T>
+inline T unpack (byte_string::const_iterator & pos)
+{
+	T r;
+	pos = unpack(r, pos, endian::native_order());
+	return r;
 }
 
 //
 // For integers only supported by endian class
-// XXX DEPRECATED
-//template <typename T>
-//byte_string & pack (const T & v, endian::type_enum order, byte_string & result) // TODO back_inserter
-//{
-//	T a = ((order == endian::little_endian) ? endian::to_little_endian<T>(v) : endian::to_big_endian<T>(v));
-//	union { T v; byte_string::value_type b[sizeof(T)]; } d;
-//	d.v = a;
-//	return result.assign(d.b, sizeof(T));
-//}
-//
-//// XXX DEPRECATED
-//template <typename T>
-//inline byte_string & pack (const T & v, byte_string & result) // TODO back_inserter
-//{
-//	return pack<T>(v, endian::native_order(), result);
-//}
-//
-////
-//// Specialization for bool
-////
-//// XXX DEPRECATED
-//template <>
-//inline byte_string & pack<bool> (const bool & v, endian::type_enum order, byte_string & result) // TODO back_inserter
-//{
-//	return pack<char>(v ? '\x01' : '\x00', order, result);
-//}
-//
-////
-//// Specialization for float
-//// TODO as mentioned at http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization
-////
-//// XXX DEPRECATED
-//template <>
-//inline byte_string & pack<float> (const float & v, endian::type_enum order, byte_string & result)// TODO back_inserter
-//{
-//	PFS_UNUSED2(v, order);
-//	PFS_ASSERT_TODO();
-//	return result;
-//}
-//
-////
-//// Specialization for double
-//// TODO as for float
-////
-//// XXX DEPRECATED
-//template <>
-//inline byte_string & pack<double> (const double & v, endian::type_enum order, byte_string & result) // TODO back_inserter
-//{
-//	PFS_UNUSED2(v, order);
-//	PFS_ASSERT_TODO();
-//	return result;
-//}
-//
-//#ifdef PFS_HAVE_LONG_DOUBLE
-////
-//// Specialization for long double
-//// TODO as for float
-////
-//// XXX DEPRECATED
-//template <>
-//inline byte_string & pack<long double> (const long double & v, endian::type_enum order, byte_string & result)// TODO back_inserter
-//{
-//	PFS_UNUSED2(v, order);
-//	PFS_ASSERT_TODO();
-//	return result;
-//}
-//#endif // PFS_HAVE_LONG_DOUBLE
-//
-// Specialization for byte_string
-// XXX DEPRECATED
-//template <>
-//inline byte_string & pack<byte_string> (const byte_string & v, endian::type_enum order, byte_string & result) // TODO back_inserter
-//{
-//	return result.assign(v);
-//}
-
-
-
-
-
-
-//
-// For integers only supported by endian class
 template <typename T>
-byte_string & pack (byte_string & appender, const T & v, endian::type_enum order)
+byte_string & pack (byte_string & appender, const T & v, const endian & order)
 {
 	T a = ((order == endian::little_endian) ? endian::to_little_endian<T>(v) : endian::to_big_endian<T>(v));
 	union { T v; byte_string::value_type b[sizeof(T)]; } d;
@@ -931,18 +865,40 @@ byte_string & pack (byte_string & appender, const T & v, endian::type_enum order
 }
 
 template <typename T>
-inline byte_string &  pack (byte_string & appender, const T & v)
+byte_string pack (const T & v, const endian & order)
+{
+	T a = ((order == endian::little_endian) ? endian::to_little_endian<T>(v) : endian::to_big_endian<T>(v));
+	union { T v; byte_string::value_type b[sizeof(T)]; } d;
+	d.v = a;
+	return byte_string(d.b, sizeof(T));
+}
+
+
+template <typename T>
+inline byte_string & pack (byte_string & appender, const T & v)
 {
 	return pack<T>(appender, v, endian::native_order());
+}
+
+template <typename T>
+inline byte_string & pack (const T & v)
+{
+	return pack<T>(v, endian::native_order());
 }
 
 //
 // Specialization for bool
 //
 template <>
-inline byte_string & pack<bool> (byte_string & appender, const bool & v, endian::type_enum order)
+inline byte_string & pack<bool> (byte_string & appender, const bool & v, const endian & order)
 {
 	return pack<char>(appender, v ? '\x01' : '\x00', order);
+}
+
+template <>
+inline byte_string pack<bool> (const bool & v, const endian & order)
+{
+	return pack<char>(v ? '\x01' : '\x00', order);
 }
 
 //
@@ -950,11 +906,19 @@ inline byte_string & pack<bool> (byte_string & appender, const bool & v, endian:
 // TODO as mentioned at http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization
 //
 template <>
-inline byte_string & pack<float> (byte_string & appender, const float & v, endian::type_enum order)
+inline byte_string & pack<float> (byte_string & appender, const float & v, const endian & order)
 {
 	PFS_UNUSED2(v, order);
 	PFS_ASSERT_TODO();
 	return appender;
+}
+
+template <>
+inline byte_string pack<float> (const float & v, const endian & order)
+{
+	PFS_UNUSED2(v, order);
+	PFS_ASSERT_TODO();
+	return byte_string();
 }
 
 //
@@ -962,11 +926,19 @@ inline byte_string & pack<float> (byte_string & appender, const float & v, endia
 // TODO as for float
 //
 template <>
-inline byte_string & pack<double> (byte_string & appender, const double & v, endian::type_enum order)
+inline byte_string & pack<double> (byte_string & appender, const double & v, const endian & order)
 {
 	PFS_UNUSED2(v, order);
 	PFS_ASSERT_TODO();
 	return appender;
+}
+
+template <>
+inline byte_string pack<double> (const double & v, const endian & order)
+{
+	PFS_UNUSED2(v, order);
+	PFS_ASSERT_TODO();
+	return byte_string();
 }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
@@ -975,35 +947,39 @@ inline byte_string & pack<double> (byte_string & appender, const double & v, end
 // TODO as for float
 //
 template <>
-inline byte_string & pack<long double> (byte_string & appender, const long double & v, endian::type_enum order)
+inline byte_string & pack<long double> (byte_string & appender, const long double & v, const endian & order)
 {
 	PFS_UNUSED2(v, order);
 	PFS_ASSERT_TODO();
 	return appender;
+}
+
+template <>
+inline byte_string pack<long double> (const long double & v, const endian & order)
+{
+	PFS_UNUSED2(v, order);
+	PFS_ASSERT_TODO();
+	return byte_string();
 }
 #endif // PFS_HAVE_LONG_DOUBLE
 
 // Specialization for byte_string
 //
 template <>
-inline byte_string & pack<byte_string> (byte_string & appender, const byte_string & v, endian::type_enum order)
+inline byte_string & pack<byte_string> (byte_string & appender, const byte_string & v, const endian & order)
 {
 	appender.append(v);
 	return appender;
 }
 
-
-
-
+template <>
+inline byte_string pack<byte_string> (const byte_string & v, const endian & order)
+{
+	return v;
+}
 
 byte_string & base64_encode (const byte_string & src, byte_string & result);
 byte_string & base64_decode (const byte_string & src, byte_string & result);
-
-inline std::ostream & operator << (std::ostream & os, const byte_string & o)
-{
-	os << o.c_str();
-	return os;
-}
 
 inline bool operator == (const byte_string & lhs, const byte_string & rhs)
 {
@@ -1096,6 +1072,16 @@ inline bool operator >= (const char * lhs, const byte_string & rhs)
 }
 
 } // pfs
+
+namespace std {
+
+inline ostream & operator << (ostream & os, const pfs::byte_string & o)
+{
+	os << o.c_str();
+	return os;
+}
+
+} // std
 
 //#include <pfs/bits/byte_string_impl_inc.hpp>
 

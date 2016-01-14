@@ -50,7 +50,7 @@ void test_swap_big_integral (T min, T max)
 {
 	bool ok = true;
 
-	for (T i = min, j = 1 ; ok && j < PFS_INT16_MAX; i = min / j++) {
+	for (T i = min, j = 1 ; ok && j < pfs::max_value<int16_t>(); i = min / j++) {
 		T i0 = pfs::endian::bswap(i);
 		T i1 = pfs::endian::bswap(i0);
 		if (i != i1) {
@@ -60,7 +60,7 @@ void test_swap_big_integral (T min, T max)
 		}
 	}
 
-	for (T i = max, j = 1 ; ok && j < PFS_INT16_MAX; i = max / j++) {
+	for (T i = max, j = 1 ; ok && j < pfs::max_value<int16_t>(); i = max / j++) {
 		T i0 = pfs::endian::bswap(i);
 		T i1 = pfs::endian::bswap(i0);
 		if (i != i1) {
@@ -82,18 +82,18 @@ int main (int argc, char * argv[])
     PFS_UNUSED2(argc, argv);
 	BEGIN_TESTS(7);
 
-	test_swap_integral<char>(PFS_CHAR_MIN, PFS_CHAR_MAX);
-	test_swap_integral<int8_t>(PFS_INT8_MIN, PFS_INT8_MAX);
-	test_swap_integral<uint8_t>(PFS_UINT8_MIN, PFS_UINT8_MAX);
-	test_swap_integral<int16_t>(PFS_INT16_MIN, PFS_INT16_MAX);
-	test_swap_integral<uint16_t>(PFS_UINT16_MIN, PFS_UINT16_MAX);
-	test_swap_big_integral<int32_t>(PFS_INT32_MIN, PFS_INT32_MAX);
-	test_swap_big_integral<uint32_t>(PFS_UINT32_MIN, PFS_UINT32_MAX);
+	test_swap_integral<char>(pfs::min_value<char>(), pfs::max_value<char>());
+	test_swap_integral<int8_t>(pfs::min_value<int8_t>(), pfs::max_value<int8_t>());
+	test_swap_integral<uint8_t>(pfs::min_value<uint8_t>(), pfs::max_value<uint8_t>());
+	test_swap_integral<int16_t>(pfs::min_value<int16_t>(), pfs::max_value<int16_t>());
+	test_swap_integral<uint16_t>(pfs::min_value<uint16_t>(), pfs::max_value<uint16_t>());
+	test_swap_big_integral<int32_t>(pfs::min_value<int32_t>(), pfs::max_value<int32_t>());
+	test_swap_big_integral<uint32_t>(pfs::min_value<uint32_t>(), pfs::max_value<uint32_t>());
 
 #ifdef PFS_HAVE_INT64
 	ADD_TESTS(2);
-	test_swap_big_integral<int64_t>(PFS_INT64_MIN, PFS_INT64_MAX);
-	test_swap_big_integral<uint64_t>(PFS_UINT64_MIN, PFS_UINT64_MAX);
+	test_swap_big_integral<int64_t>(pfs::min_value<int64_t>(), pfs::max_value<int64_t>());
+	test_swap_big_integral<uint64_t>(pfs::min_value<uint64_t>(), pfs::max_value<uint64_t>());
 #endif
 
 	END_TESTS;

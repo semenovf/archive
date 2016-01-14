@@ -13,6 +13,11 @@ solution "pfs"
         architecture "x64"
 
 -- BEGIN PROJECT
+project "pfs-test"
+    include("pfs-test/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
 project "pfs"
     include("pfs/project.gbs")
 -- END PROJECT
