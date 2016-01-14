@@ -61,12 +61,12 @@ public:
 	}
 
 	bool operator == (const error_code & ex)
-			{
+	{
 		return _native == ex._native;
 	}
 
 	bool operator != (const error_code & ex)
-			{
+	{
 		return ! operator == (ex);
 	}
 
