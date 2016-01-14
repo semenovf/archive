@@ -10,30 +10,20 @@
 
 namespace pfs {
 
-endian::type_enum endian::type ()
+endian::type_enum endian::native_order ()
 {
 #if 1 // determine endianess at compile time
 	return
 #	if PFS_BYTE_ORDER == PFS_LITTLE_ENDIAN
-		LittleEndian;
+		little_endian;
 #	else
-		BigEndian;
+		big_endian;
 #	endif
 #else // determine endianess at run-time
 	char test[2] = { 1, 0 };
 
-	return *((short*)test) == 1 ? LittleEndian : BigEndian;
+	return *((short*)test) == 1 ? little_endian : big_endian;
 #endif
-}
-
-bool endian::isBigEndianSystem ()
-{
-	return type() == LittleEndian ? false : true;
-}
-
-bool endian::isLittleEndianSystem ()
-{
-	return type() == LittleEndian ? true : false;
 }
 
 char endian::bswap (char i)

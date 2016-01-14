@@ -19,42 +19,65 @@ namespace pfs {
 class DLL_API endian
 {
 public:
-	enum type_enum { LittleEndian, BigEndian, NetworkEndian = BigEndian };
+	enum type_enum { little_endian, big_endian, network_endian = big_endian };
 
 private:
-	endian ();
+	type_enum _value;
 
 public:
-	static type_enum type ();
-	static type_enum nativeOrder () { return type(); } // XXX DEPRECATED, use native_order() unstead.
-	static type_enum native_order () { return type(); }
-	static type_enum network_order () { return NetworkEndian; }
+	endian ()
+		: _value(native_order())
+	{}
 
-	static bool isBigEndianSystem ();
-	static bool isLittleEndianSystem ();
+	endian (type_enum type)
+		: _value(type)
+	{}
 
-	template<typename T>
-	static T toBigEndian (T i)
+public:
+	type_enum type () const
 	{
-		return type() == LittleEndian ? bswap(i) : i;
+		return _value;
+	}
+
+	static type_enum native_order ();
+
+	static type_enum network_order ()
+	{
+		return network_endian;
+	}
+
+	static bool big_endian_system ()
+	{
+		return native_order() == little_endian ? false : true;
+	}
+
+	static bool little_endian_system ()
+	{
+		return native_order() == little_endian ? true : false;
 	}
 
 	template<typename T>
-	static T toLittleEndian (T i)
+	static T to_big_endian (T i)
 	{
-		return type() == LittleEndian ? i : bswap(i);
+		return native_order() == little_endian ? bswap(i) : i;
 	}
 
 	template<typename T>
-	static T toNetworkOrder (T i) // to big-endian
+	static T to_little_endian (T i)
 	{
-		return toBigEndian(i);
+		return native_order() == little_endian ? i : bswap(i);
 	}
 
 	template<typename T>
-	static T toHostOrder (T i)
+	static T to_network_order (T i) // to big-endian
 	{
-		return type() == LittleEndian ? swap(i) : i;
+		return to_big_endian(i);
+	}
+
+	template<typename T>
+	static T to_host_order (T i)
+	{
+		return native_order() == little_endian ? swap(i) : i;
 	}
 
 	static char           bswap (char i);

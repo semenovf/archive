@@ -825,7 +825,7 @@ byte_string::size_type unpack (byte_string::const_iterator pos, endian::type_enu
 	};
 
 	const u * d = reinterpret_cast<const u *>(pos.base());
-	v = (order == endian::LittleEndian) ? endian::toLittleEndian(d->v) : endian::toBigEndian(d->v);
+	v = (order == endian::little_endian) ? endian::to_little_endian(d->v) : endian::to_big_endian(d->v);
 	return sizeof(T);
 }
 
@@ -837,29 +837,112 @@ inline byte_string::size_type unpack (byte_string::const_iterator pos, T & v)
 
 //
 // For integers only supported by endian class
+// XXX DEPRECATED
+//template <typename T>
+//byte_string & pack (const T & v, endian::type_enum order, byte_string & result) // TODO back_inserter
+//{
+//	T a = ((order == endian::little_endian) ? endian::to_little_endian<T>(v) : endian::to_big_endian<T>(v));
+//	union { T v; byte_string::value_type b[sizeof(T)]; } d;
+//	d.v = a;
+//	return result.assign(d.b, sizeof(T));
+//}
 //
+//// XXX DEPRECATED
+//template <typename T>
+//inline byte_string & pack (const T & v, byte_string & result) // TODO back_inserter
+//{
+//	return pack<T>(v, endian::native_order(), result);
+//}
+//
+////
+//// Specialization for bool
+////
+//// XXX DEPRECATED
+//template <>
+//inline byte_string & pack<bool> (const bool & v, endian::type_enum order, byte_string & result) // TODO back_inserter
+//{
+//	return pack<char>(v ? '\x01' : '\x00', order, result);
+//}
+//
+////
+//// Specialization for float
+//// TODO as mentioned at http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization
+////
+//// XXX DEPRECATED
+//template <>
+//inline byte_string & pack<float> (const float & v, endian::type_enum order, byte_string & result)// TODO back_inserter
+//{
+//	PFS_UNUSED2(v, order);
+//	PFS_ASSERT_TODO();
+//	return result;
+//}
+//
+////
+//// Specialization for double
+//// TODO as for float
+////
+//// XXX DEPRECATED
+//template <>
+//inline byte_string & pack<double> (const double & v, endian::type_enum order, byte_string & result) // TODO back_inserter
+//{
+//	PFS_UNUSED2(v, order);
+//	PFS_ASSERT_TODO();
+//	return result;
+//}
+//
+//#ifdef PFS_HAVE_LONG_DOUBLE
+////
+//// Specialization for long double
+//// TODO as for float
+////
+//// XXX DEPRECATED
+//template <>
+//inline byte_string & pack<long double> (const long double & v, endian::type_enum order, byte_string & result)// TODO back_inserter
+//{
+//	PFS_UNUSED2(v, order);
+//	PFS_ASSERT_TODO();
+//	return result;
+//}
+//#endif // PFS_HAVE_LONG_DOUBLE
+//
+// Specialization for byte_string
+// XXX DEPRECATED
+//template <>
+//inline byte_string & pack<byte_string> (const byte_string & v, endian::type_enum order, byte_string & result) // TODO back_inserter
+//{
+//	return result.assign(v);
+//}
+
+
+
+
+
+
+//
+// For integers only supported by endian class
 template <typename T>
-byte_string & pack (const T & v, endian::type_enum order, byte_string & result) // TODO back_inserter
+byte_string & pack (byte_string & appender, const T & v, endian::type_enum order)
 {
-	T a = ((order == endian::LittleEndian) ? endian::toLittleEndian<T>(v) : endian::toBigEndian<T>(v));
+	T a = ((order == endian::little_endian) ? endian::to_little_endian<T>(v) : endian::to_big_endian<T>(v));
 	union { T v; byte_string::value_type b[sizeof(T)]; } d;
 	d.v = a;
-	return result.assign(d.b, sizeof(T));
+	appender.append(byte_string(d.b, sizeof(T)));
+	return appender;
 }
 
 template <typename T>
-inline byte_string & pack (const T & v, byte_string & result) // TODO back_inserter
+inline byte_string &  pack (byte_string & appender, const T & v)
 {
-	return pack<T>(v, endian::native_order(), result);
+	return pack<T>(appender, v, endian::native_order());
 }
 
 //
 // Specialization for bool
 //
 template <>
-inline byte_string & pack<bool> (const bool & v, endian::type_enum order, byte_string & result) // TODO back_inserter
+inline byte_string & pack<bool> (byte_string & appender, const bool & v, endian::type_enum order)
 {
-	return pack<char>(v ? '\x01' : '\x00', order, result);
+	return pack<char>(appender, v ? '\x01' : '\x00', order);
 }
 
 //
@@ -867,11 +950,11 @@ inline byte_string & pack<bool> (const bool & v, endian::type_enum order, byte_s
 // TODO as mentioned at http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization
 //
 template <>
-inline byte_string & pack<float> (const float & v, endian::type_enum order, byte_string & result)// TODO back_inserter
+inline byte_string & pack<float> (byte_string & appender, const float & v, endian::type_enum order)
 {
 	PFS_UNUSED2(v, order);
 	PFS_ASSERT_TODO();
-	return result;
+	return appender;
 }
 
 //
@@ -879,11 +962,11 @@ inline byte_string & pack<float> (const float & v, endian::type_enum order, byte
 // TODO as for float
 //
 template <>
-inline byte_string & pack<double> (const double & v, endian::type_enum order, byte_string & result) // TODO back_inserter
+inline byte_string & pack<double> (byte_string & appender, const double & v, endian::type_enum order)
 {
 	PFS_UNUSED2(v, order);
 	PFS_ASSERT_TODO();
-	return result;
+	return appender;
 }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
@@ -892,21 +975,25 @@ inline byte_string & pack<double> (const double & v, endian::type_enum order, by
 // TODO as for float
 //
 template <>
-inline byte_string & pack<long double> (const long double & v, endian::type_enum order, byte_string & result)// TODO back_inserter
+inline byte_string & pack<long double> (byte_string & appender, const long double & v, endian::type_enum order)
 {
 	PFS_UNUSED2(v, order);
 	PFS_ASSERT_TODO();
-	return result;
+	return appender;
 }
 #endif // PFS_HAVE_LONG_DOUBLE
 
 // Specialization for byte_string
 //
 template <>
-inline byte_string & pack<byte_string> (const byte_string & v, endian::type_enum order, byte_string & result) // TODO back_inserter
+inline byte_string & pack<byte_string> (byte_string & appender, const byte_string & v, endian::type_enum order)
 {
-	return result.assign(v);
+	appender.append(v);
+	return appender;
 }
+
+
+
 
 
 byte_string & base64_encode (const byte_string & src, byte_string & result);
