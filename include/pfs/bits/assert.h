@@ -124,6 +124,7 @@ extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * 
 #define PFS_ASSERT_OVERFLOW(x)    PFS_ASSERT(x)
 #define PFS_ASSERT_BAD_CAST(x)    PFS_ASSERT(x)
 #define PFS_ASSERT_UNEXPECTED()   PFS_ASSERT(false)
+#define PFS_ASSERT_UNEXPECTED_X(errstr) PFS_THROW_X(errstr)
 #define PFS_ASSERT_NULLPTR(x)     PFS_ASSERT((x) != 0)
 #define PFS_ASSERT_IS_NULL(x)     PFS_ASSERT(!(x).is_null())
 #define PFS_ASSERT_DOMAIN(errstr) PFS_THROW_X(errstr)

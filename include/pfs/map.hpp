@@ -25,6 +25,17 @@ public:
     typedef typename base_class::key_compare    key_compare;
     typedef typename base_class::allocator_type allocator_type;
 
+    typedef typename base_class::pointer            pointer;
+    typedef typename base_class::const_pointer      const_pointer;
+    typedef typename base_class::reference          reference;
+    typedef typename base_class::const_reference    const_reference;
+    typedef typename base_class::iterator           iterator;
+    typedef typename base_class::const_iterator     const_iterator;
+    typedef typename base_class::size_type          size_type;
+    typedef typename base_class::difference_type    difference_type;
+    typedef typename base_class::reverse_iterator   reverse_iterator;
+    typedef typename base_class::const_reverse_iterator const_reverse_iterator;
+
 public:
     explicit map (const key_compare & comp = key_compare(),
                   const allocator_type & alloc = allocator_type())
@@ -41,6 +52,7 @@ public:
     map (const map & other)
     	: base_class(other)
     {}
+
 
 #if __cplusplus >= 201103L
     explicit map (const allocator_type & alloc)
@@ -65,6 +77,18 @@ public:
     	: base_class(init, comp, alloc)
     {}
 
+#endif
+
+#if __cplusplus < 201103L
+    const_iterator cbegin () const
+    {
+    	return base_class::begin();
+    }
+
+    const_iterator cend () const
+    {
+    	return base_class::end();
+    }
 #endif
 };
 
