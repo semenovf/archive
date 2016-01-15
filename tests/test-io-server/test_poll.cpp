@@ -11,7 +11,7 @@
 #include <pfs/byte_string.hpp>
 #include <pfs/io/device.hpp>
 #include <pfs/io/inet_server.hpp>
-#include <pfs/io/device_pool.hpp>
+#include <pfs/io/pool.hpp>
 #include <iostream>
 
 #define BUFFER_SIZE 1
@@ -110,32 +110,54 @@ public:
 
 		_server.set_nonblocking(false);
 
-		pfs::io::device_pool dpool;
-		pfs::vector<pfs::io::device> devices;
+		pfs::io::pool dpool;
+		dpool.push_back(_server);
 
 		do {
-			pfs::io::device client;
+			pfs::io::pool::poll_result_type result = dpool.poll(pfs::io::poll_in, 100, & ex);
+
+			if (result.first != result.second) {
+				pfs::io::pool::iterator it = result.first;
+				pfs::io::pool::iterator it_end = result.second;
+
+				while (it != it_end) {
+					pfs::io::pool::value value = *it;
+
+					if (value.is_server()) { // accept connection
+						pfs::io::device client;
+
+						if (!value.accept(client, false, & ex)) {
+							std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
+						}
+					}
+				}
+			} else {
+				if (ex) {
+					std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
+				}
+			}
 
 			while (_server.accept(client, false, & ex)) {
 				dpool.push_back(client, pfs::io::poll_in);
-				int rc = dpool.poll(devices, pfs::io::poll_all, 100, & ex);
-
-				if (rc > 0) {
-					size_t ndevices = devices.size();
-
-					for (size_t i = 0; i < ndevices; ++i) {
-						pfs::byte_string bytes;
-
-						ex = devices[i].read(bytes);
-
-						if (ex) {
-							std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
-							ex = 0;
-						}
-
-						TEST_OK2(bytes == sample, "Data successfully received by server");
-					}
-				}
+				pfs::io::pool
+//				int rc = dpool.poll(devices, pfs::io::poll_all, 100, & ex);
+//
+//				if (rc > 0) {
+//					size_t ndevices = devices.size();
+//
+//					for (size_t i = 0; i < ndevices; ++i) {
+//						pfs::byte_string bytes;
+//
+//						ex = devices[i].read(bytes);
+//
+//						if (ex) {
+//							std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
+//							ex = 0;
+//						}
+//
+//						TEST_OK2(bytes == sample, "Data successfully received by server");
+//					}
+//				}
 			}
 
 			if (ex){

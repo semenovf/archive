@@ -12,33 +12,6 @@ namespace pfs { namespace io {
 
 static const size_t DEFAULT_READ_BUFSZ = 256;
 
-//error_code device::read (byte_string & bytes, size_t n)
-//{
-//	PFS_ASSERT(_d);
-//	error_code ex;
-//
-//    if (!n)
-//        return 0;
-//
-//    byte_t buffer[DEFAULT_READ_BUFSZ];
-//    byte_t * pbuffer = buffer;
-//
-//    if (n > DEFAULT_READ_BUFSZ) {
-//        pbuffer = new byte_t[n];
-//    }
-//
-//    ssize_t sz = read(pbuffer, n, & ex);
-//
-//    if (sz > 0) {
-//        bytes.append(pbuffer, size_t(sz));
-//    }
-//
-//    if (n > DEFAULT_READ_BUFSZ)
-//        delete [] pbuffer;
-//
-//    return sz;
-//}
-
 error_code device::read (byte_string & bytes)
 {
 	byte_t buffer[DEFAULT_READ_BUFSZ];
@@ -46,12 +19,35 @@ error_code device::read (byte_string & bytes)
 	ssize_t sz = 0;
 
 	do {
-		sz = read(buffer, DEFAULT_READ_BUFSZ, & ex);
+		sz = _d->read(buffer, DEFAULT_READ_BUFSZ, & ex);
 
 		if (sz > 0) {
 			bytes.append(buffer, size_t(sz));
 		}
 	} while (sz > 0);
+
+	return ex;
+}
+
+error_code device::read (byte_string & bytes, size_t n)
+{
+	byte_t buffer[DEFAULT_READ_BUFSZ];
+	error_code ex;
+	ssize_t sz = 0;
+	size_t total = 0;
+	size_t chunk_size = DEFAULT_READ_BUFSZ;
+
+	do {
+		if (n - total < chunk_size)
+			chunk_size = n - total;
+
+		sz = _d->read(buffer, DEFAULT_READ_BUFSZ, & ex);
+
+		if (sz > 0) {
+			bytes.append(buffer, size_t(sz));
+			total += sz;
+		}
+	} while (sz > 0 && total <= n);
 
 	return ex;
 }

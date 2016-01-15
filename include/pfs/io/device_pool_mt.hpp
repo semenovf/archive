@@ -14,19 +14,19 @@
 namespace pfs { namespace io {
 
 template <typename Mutex = pfs::fake_mutex>
-class device_pool_mt : protected device_pool
+class device_pool_mt : protected pool
 {
 	Mutex  _mutex;
 
 public:
 	device_pool_mt ()
-		: device_pool ()
+		: pool ()
 	{}
 
 	void push_back (const device & d, int events)
 	{
 		lock_guard<Mutex> locker(_mutex);
-		device_pool::push_back(d, events);
+		pool::push_back(d, events);
 	}
 
 	int poll (vector<device> & devices, int filter_events = poll_all, int millis = 0, error_code * ex = 0)

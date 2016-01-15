@@ -5,12 +5,13 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_IO_DEVICE_POOL_HPP__
-#define __PFS_IO_DEVICE_POOL_HPP__
+#ifndef __PFS_IO_POOL_HPP__
+#define __PFS_IO_POOL_HPP__
 
 #include <pfs/shared_ptr.hpp>
 #include <pfs/io/device.hpp>
-#include <pfs/io/bits/device_pool.hpp>
+#include <pfs/io/server.hpp>
+#include <pfs/io/bits/pool.hpp>
 
 namespace pfs { namespace io {
 
@@ -27,25 +28,137 @@ enum poll_enum {
 };
 
 
-class device_pool
+class pool
 {
+public:
+
+	enum value_enum
+	{
+		  Null
+		, Server
+		, Device
+	};
+
+	class value
+	{
+		value_enum type;
+		server s;
+		device d;
+
+	public:
+		value ()
+			: type(Null)
+		{}
+
+		value (const value & other)
+			: type(other.type)
+			, s(other.s)
+			, d(other.d)
+		{}
+
+		value & operator = (const value & other)
+		{
+			type = other.type;
+			s = other.s;
+			d = other.d;
+			return *this;
+		}
+
+		value (const server & other)
+			: type(Server)
+			, s(other)
+		{}
+
+		value (const device & other)
+			: type(Device)
+			, d(other)
+		{}
+
+		bool is_server () const
+		{
+			return type == Server;
+		}
+
+		bool is_device () const
+		{
+			return type == Device;
+		}
+
+		bool operator == (const server & rhs)
+		{
+			return type == Server && s == rhs;
+		}
+
+		bool operator == (const device & rhs)
+		{
+			return type == Device && d == rhs;
+		}
+
+		bool operator != (const server & rhs)
+		{
+			return ! operator == (rhs);
+		}
+
+		bool operator != (const device & rhs)
+		{
+			return ! operator == (rhs);
+		}
+	};
+
+	class iterator
+	{
+		friend class pool;
+
+		pool * _powner;
+		shared_ptr<bits::pool_iterator> _d;
+
+	protected:
+		iterator (pool * owner, bits::pool_iterator * pd)
+			: _powner(owner)
+			, _d(pd)
+
+		{}
+
+	public:
+		iterator ()
+			: _powner(0)
+		{}
+
+		iterator & operator ++ ()
+		{
+			_d->next();
+			return *this;
+		}
+
+//		iterator operator ++ (int)
+//		{
+//		}
+
+		value operator * () const;
+	};
+
 private:
-	shared_ptr<bits::device_pool> _d;
+	shared_ptr<bits::pool> _d;
 
 protected:
-	device_pool (bits::device_pool * pd)
+	pool (bits::pool * pd)
 		: _d(pd)
 	{}
 
-    void swap (device_pool & other)
+    void swap (pool & other)
     {
     	_d.swap(other._d);
     }
 
 public:
-	device_pool ();
+	pool ();
 
-	void push_back (const device & d, int events);
+	void push_back (const device & d, int events = poll_all);
+
+	void push_back (const server & d, int events = poll_all);
+
+
+	typedef std::pair<pool::iterator, pool::iterator> poll_result_type;
 
 	/**
 	 * @brief Wait for some event on a file descriptor.
@@ -55,7 +168,6 @@ public:
 	 * 		@li the call is interrupted by a signal handler; or
 	 * 		@li the timeout expires.
 	 *
-	 * @param devices
 	 * @param filter_events
 	 * @param millis The timeout argument specifies the number of milliseconds
 	 * 		that poll() should block waiting for a device to become ready.
@@ -70,10 +182,14 @@ public:
 	 * 		descriptors were ready.
 	 * 		On error, -1 is returned, and @a *ex is set appropriately.
 	 */
-	int poll (vector<device> & devices, int filter_events = poll_all, int millis = 0, error_code * ex = 0);
+	poll_result_type poll (int filter_events = poll_all
+			 , int millis = 0
+			 , error_code * ex = 0);
+
+
 };
 
 }} // pfs::io
 
 
-#endif /* __PFS_IO_DEVICE_POOL_HPP__ */
+#endif /* __PFS_IO_POOL_HPP__ */

@@ -167,6 +167,8 @@ public:
      */
     error_code read (byte_string & bytes);
 
+    error_code read (byte_string & bytes, size_t n);
+
     /**
      * @brief Write bytes to the device.
      */
@@ -190,6 +192,17 @@ public:
 	{
 	    return write(bytes.data(), bytes.size(), ex);
 	}
+
+	bool operator == (const device & other)
+	{
+		return _d == other._d;
+	}
+
+	bool operator != (const device & other)
+	{
+		return ! operator == (other);
+	}
+
 
 	template <typename DeviceTag>
 	friend error_code open_device (device &, const open_params<DeviceTag> &);

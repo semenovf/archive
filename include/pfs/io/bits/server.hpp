@@ -15,6 +15,8 @@ namespace pfs { namespace io { namespace bits {
 
 struct server
 {
+	typedef pfs::io::bits::native_handle_type native_handle_type;
+
     virtual ~server () {}
 
     virtual bool opened () const = 0;
@@ -24,6 +26,8 @@ struct server
     virtual bool set_nonblocking (bool on) = 0;
 
     virtual bool accept (bits::device **, bool non_blocking, error_code * ex) = 0;
+
+    virtual native_handle_type native_handle () const = 0;
 };
 
 }}} // pfs::io::bits

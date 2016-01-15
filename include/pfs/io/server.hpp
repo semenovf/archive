@@ -19,6 +19,9 @@ struct open_params;
 
 class server
 {
+public:
+	typedef bits::device::native_handle_type native_handle_type;
+
 protected:
     shared_ptr<bits::server> _d;
 
@@ -34,6 +37,12 @@ public:
 
     ~server ()
     {}
+
+    native_handle_type native_handle () const
+    {
+    	PFS_ASSERT(_d);
+    	return _d->native_handle();
+    }
 
     void swap (server & other)
     {
@@ -80,6 +89,16 @@ public:
 	 * @return
 	 */
 	bool accept (device & peer, bool non_blocking, error_code * ex = 0);
+
+	bool operator == (const server & other)
+	{
+		return _d == other._d;
+	}
+
+	bool operator != (const server & other)
+	{
+		return ! operator == (other);
+	}
 
 	template <typename ServerTag>
 	friend error_code open_server (server &, const open_params<ServerTag> &);

@@ -56,6 +56,11 @@ struct tcp_server : public bits::server
     }
 
     virtual bool accept (bits::device **, bool non_blocking, error_code * ex);
+
+    virtual native_handle_type native_handle () const
+    {
+    	return _fd;
+    }
 };
 
 
