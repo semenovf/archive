@@ -41,6 +41,8 @@ public:
 
 	class value
 	{
+		friend class pool;
+
 		value_enum type;
 		server s;
 		device d;
@@ -74,6 +76,26 @@ public:
 			, d(other)
 		{}
 
+		server & get_server ()
+		{
+			return s;
+		}
+
+		device & get_device ()
+		{
+			return d;
+		}
+
+		const server & get_server () const
+		{
+			return s;
+		}
+
+		const device & get_device () const
+		{
+			return d;
+		}
+
 		bool is_server () const
 		{
 			return type == Server;
@@ -84,22 +106,22 @@ public:
 			return type == Device;
 		}
 
-		bool operator == (const server & rhs)
+		bool operator == (const server & rhs) const
 		{
 			return type == Server && s == rhs;
 		}
 
-		bool operator == (const device & rhs)
+		bool operator == (const device & rhs) const
 		{
 			return type == Device && d == rhs;
 		}
 
-		bool operator != (const server & rhs)
+		bool operator != (const server & rhs) const
 		{
 			return ! operator == (rhs);
 		}
 
-		bool operator != (const device & rhs)
+		bool operator != (const device & rhs) const
 		{
 			return ! operator == (rhs);
 		}
@@ -135,7 +157,14 @@ public:
 //		}
 
 		value operator * () const;
-	};
+
+		bool operator == (const iterator & rhs) const;
+
+		bool operator != (const iterator & rhs) const
+		{
+			return ! operator == (rhs);
+		}
+};
 
 private:
 	shared_ptr<bits::pool> _d;
@@ -155,8 +184,17 @@ public:
 
 	void push_back (const device & d, int events = poll_all);
 
-	void push_back (const server & d, int events = poll_all);
+	void push_back (const server & s, int events = poll_all);
 
+	/**
+	 * @brief Used inside.
+	 *
+	 * @param d Device.
+	 * @param events
+	 */
+	void push_back_differed (const device & d, int events = poll_all);
+
+	void push_back_differed (const server & s, int events = poll_all);
 
 	typedef std::pair<pool::iterator, pool::iterator> poll_result_type;
 

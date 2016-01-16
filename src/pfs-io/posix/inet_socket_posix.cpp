@@ -225,21 +225,33 @@ ssize_t tcp_socket::read (byte_t * bytes, size_t n, error_code * pex)
 	return r;
 }
 
-ssize_t tcp_socket::write (const byte_t * bytes, size_t n, error_code * pex)
+ssize_t tcp_socket::write (const byte_t * bytes, size_t nbytes, error_code * ex)
 {
-	PFS_ASSERT(_fd >= 0 );
+	PFS_ASSERT(_fd >= 0);
 
-	ssize_t r = send(_fd, bytes, n, 0);
+	int r = 0; // total sent
+
+	while (r < nbytes) {
+		ssize_t n = send(_fd, bytes + r, nbytes, 0);
+
+		if (n < 0) {
+			r = -1;
+			break;
+		}
+
+		r += n;
+		nbytes -= n;
+	}
 
 	if (r < 0) {
-		if (pex)
-			*pex = errno;
+		if (ex)
+			*ex = errno;
 	}
 
 	return r;
 }
 
-}}} // cwt::io::details
+}}} // pfs::io::details
 
 namespace pfs { namespace io {
 

@@ -110,11 +110,12 @@ public:
 
 		_server.set_nonblocking(false);
 
-		pfs::io::pool dpool;
-		dpool.push_back(_server);
+		int events = pfs::io::poll_all;
+		pfs::io::pool pool;
+		pool.push_back(_server);
 
 		do {
-			pfs::io::pool::poll_result_type result = dpool.poll(pfs::io::poll_in, 100, & ex);
+			pfs::io::pool::poll_result_type result = pool.poll(events, 100, & ex);
 
 			if (result.first != result.second) {
 				pfs::io::pool::iterator it = result.first;
@@ -126,42 +127,19 @@ public:
 					if (value.is_server()) { // accept connection
 						pfs::io::device client;
 
-						if (!value.accept(client, false, & ex)) {
-							std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
+						if (!value.get_server().accept(client, false, & ex)) {
+							std::cerr << "ERROR (server): accept failedL " << pfs::to_string(ex) << std::endl;
+						} else {
+							std::cout << "Socket accepted" << std::endl;
 						}
+
+						pool.push_back_differed(client, events);
 					}
 				}
 			} else {
 				if (ex) {
 					std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
 				}
-			}
-
-			while (_server.accept(client, false, & ex)) {
-				dpool.push_back(client, pfs::io::poll_in);
-				pfs::io::pool
-//				int rc = dpool.poll(devices, pfs::io::poll_all, 100, & ex);
-//
-//				if (rc > 0) {
-//					size_t ndevices = devices.size();
-//
-//					for (size_t i = 0; i < ndevices; ++i) {
-//						pfs::byte_string bytes;
-//
-//						ex = devices[i].read(bytes);
-//
-//						if (ex) {
-//							std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
-//							ex = 0;
-//						}
-//
-//						TEST_OK2(bytes == sample, "Data successfully received by server");
-//					}
-//				}
-			}
-
-			if (ex){
-				std::cerr << "ERROR (server): accept failed: " << pfs::to_string(ex) << std::endl;
 			}
 		} while(false);
 	}
