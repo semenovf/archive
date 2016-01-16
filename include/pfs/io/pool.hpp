@@ -22,7 +22,7 @@ enum poll_enum {
 	//, POLLRDHUP (since Linux 2.6.17) Stream socket peer closed connection, or shut down writing half of connection.  The _GNU_SOURCE feature test macro must be defined (before including any header files) in order to obtain this definition.
 	, poll_err  = 0x0008  // POLLERR Error condition (output only).
 	, poll_hup  = 0x0010  // POLLHUP Hang up (output only).
-	, poll_nval = 0x0020 // POLLNVAL Invalid request: fd not open (output only).
+	, poll_nval = 0x0020  // POLLNVAL Invalid request: fd not open (output only).
 
 	, poll_all  = 0xFFFF
 };
@@ -164,6 +164,8 @@ public:
 		{
 			return ! operator == (rhs);
 		}
+
+		int revents () const;
 };
 
 private:
@@ -182,6 +184,10 @@ protected:
 public:
 	pool ();
 
+	size_t device_count () const;
+
+	size_t server_count () const;
+
 	void push_back (const device & d, int events = poll_all);
 
 	void push_back (const server & s, int events = poll_all);
@@ -195,6 +201,10 @@ public:
 	void push_back_differed (const device & d, int events = poll_all);
 
 	void push_back_differed (const server & s, int events = poll_all);
+
+	void delete_differed (const device & d);
+
+	void delete_differed (const server & s);
 
 	typedef std::pair<pool::iterator, pool::iterator> poll_result_type;
 
@@ -224,10 +234,21 @@ public:
 			 , int millis = 0
 			 , error_code * ex = 0);
 
+	void update ();
 
+	struct dispatcher_context
+	{
+		virtual ~dispatcher_context () {}
+		virtual bool finish () = 0;
+		virtual void on_connected (device & ) = 0;
+		virtual void on_ready_read (device & ) = 0;
+		virtual void on_disconnected (device & ) = 0;
+		virtual void on_error (const error_code & ) = 0;
+	};
+
+	void dispatch (dispatcher_context & context, int filter_events = poll_all, int millis = 0);
 };
 
 }} // pfs::io
-
 
 #endif /* __PFS_IO_POOL_HPP__ */

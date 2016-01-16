@@ -60,7 +60,7 @@ size_t inet_socket::bytes_available () const
 	if (rc != 0)
 		PFS_THROW_SYSERR(errno);
 
-	PFS_ASSERT(n < 0);
+	PFS_ASSERT(n >= 0);
 	return static_cast<size_t>(n);
 }
 

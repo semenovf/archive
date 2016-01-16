@@ -1,23 +1,26 @@
 /*
- * test_basic.cpp
+ * test_poll.cpp
  *
  *  Created on: Jan 13, 2016
  *      Author: wladt
  */
-#if __COMMENT__
 
 #include <pfs/test/test.hpp>
+#include <pfs/vector.hpp>
 #include <pfs/thread.hpp>
 #include <pfs/byte_string.hpp>
 #include <pfs/io/device.hpp>
 #include <pfs/io/inet_server.hpp>
+#include <pfs/io/pool.hpp>
 #include <iostream>
 
 #define BUFFER_SIZE 1
-#define NCLIENTS    10
+#define NCLIENTS    20
 #define SERVER_ADDR _u8("127.0.0.1")
-#define SERVER_PORT 10199
+#define SERVER_PORT 10299
 #define SERVER_BACKLOG 10
+
+namespace {
 
 using std::cout;
 using std::endl;
@@ -69,6 +72,54 @@ static const char * loremipsum [] = {
 	, "40.videntur parum clari, fiant sollemnes in futurum."
 };
 
+struct dispatcher_context : public pfs::io::pool::dispatcher_context
+{
+	pfs::io::pool & pool;
+	pfs::byte_string sample;
+
+	dispatcher_context (pfs::io::pool & p)
+			: pool(p)
+	{
+		int n = sizeof(loremipsum)/sizeof(loremipsum[0]);
+
+		for (int i = 0; i < n; ++i) {
+			sample.append(loremipsum[i]);
+		}
+	}
+
+	virtual bool finish ()
+	{
+		return pool.device_count() == 0;
+	}
+
+	virtual void on_connected (pfs::io::device & d)
+	{
+		std::cout << "Socket connected" << std::endl;
+	}
+
+	virtual void on_ready_read (pfs::io::device & d)
+	{
+		pfs::byte_string bytes;
+		pfs::error_code ex = d.read(bytes);
+
+		TEST_OK(! ex);
+
+		std::cout << "Bytes read: " << bytes.size() << std::endl;
+
+		TEST_OK(bytes == sample);
+	}
+
+	virtual void on_disconnected (pfs::io::device & d)
+	{
+		std::cout << "Connection closed" << std::endl;
+	}
+
+	virtual void on_error (const pfs::error_code & ex)
+	{
+		std::cerr << "ERROR (server):" << pfs::to_string(ex) << std::endl;
+	}
+};
+
 class ServerThread : public pfs::thread
 {
 	pfs::io::server _server;
@@ -79,52 +130,31 @@ public:
 	{
 		ADD_TESTS(1);
 
-		pfs::error_code ex;
-
-		bool rc = pfs::io::open_server(_server
+		pfs::error_code ex = pfs::io::open_server(_server
 				, pfs::io::open_params<tcp_server>(inet4_addr(SERVER_ADDR)
 						, SERVER_PORT
-						, SERVER_BACKLOG)
-				, & ex);
+						, SERVER_BACKLOG));
 
-		if (!rc) {
-			std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
+		if (ex) {
+			std::cerr << "ERROR (server): open failed:" << pfs::to_string(ex) << std::endl;
 		}
 
-		TEST_FAIL2(rc, "Open server socket");
+		TEST_FAIL2(!ex, "Open server socket");
 	}
 
 	virtual void run ()
 	{
-		ADD_TESTS(1);
+		ADD_TESTS(NCLIENTS);
 
-		pfs::error_code ex;
+		if (!_server.opened())
+			return;
 
-		pfs::byte_string sample;
-		int n = sizeof(loremipsum)/sizeof(loremipsum[0]);
+		pfs::io::pool pool;
+		pool.push_back(_server);
 
-		for (int i = 0; i < n; ++i) {
-			sample.append(loremipsum[i]);
-		}
+		dispatcher_context ctx(pool);
 
-		_server.set_nonblocking(true);
-
-		do {
-			pfs::io::device client;
-
-			if (_server.accept(client, true, & ex)) {
-
-				pfs::byte_string bytes;
-
-				ex = client.read(bytes);
-
-				if (ex) {
-					std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
-				}
-
-				TEST_OK2(bytes == sample, "Data successfully received by server");
-			}
-		} while(false);
+		pool.dispatch(ctx, pfs::io::poll_all, 100);
 	}
 };
 
@@ -141,13 +171,12 @@ public:
 
 		pfs::io::device client;
 
-		pfs::error_code ex;
-		bool rc = pfs::io::open_device(client
-				, pfs::io::open_params<tcp_socket>(inet4_addr(SERVER_ADDR), SERVER_PORT), & ex);
+		pfs::error_code ex = pfs::io::open_device(client
+				, pfs::io::open_params<tcp_socket>(inet4_addr(SERVER_ADDR), SERVER_PORT));
 
-		TEST_OK2(rc, "Open client socket");
+		TEST_OK2(!ex, "Open client socket");
 
-		if (!rc) {
+		if (ex) {
 			std::cerr << "ERROR (client): " << pfs::to_string(ex) << std::endl;
 			return;
 		}
@@ -174,7 +203,9 @@ public:
 	}
 };
 
-void test_basic ()
+}
+
+void test_pool_dispatcher ()
 {
 	ServerThread server;
 	ClientThread clients[NCLIENTS];
@@ -191,5 +222,3 @@ void test_basic ()
 		clients[i].wait();
 	}
 }
-
-#endif

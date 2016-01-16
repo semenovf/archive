@@ -15,10 +15,12 @@
 #include <iostream>
 
 #define BUFFER_SIZE 1
-#define NCLIENTS    10
+#define NCLIENTS    20
 #define SERVER_ADDR _u8("127.0.0.1")
 #define SERVER_PORT 10199
 #define SERVER_BACKLOG 10
+
+namespace {
 
 using std::cout;
 using std::endl;
@@ -94,7 +96,7 @@ public:
 
 	virtual void run ()
 	{
-		ADD_TESTS(1);
+		ADD_TESTS(NCLIENTS);
 
 		if (!_server.opened())
 			return;
@@ -126,22 +128,43 @@ public:
 
 					if (value.is_server()) { // accept connection
 						pfs::io::device client;
+						pfs::io::server server = value.get_server();
 
-						if (!value.get_server().accept(client, false, & ex)) {
-							std::cerr << "ERROR (server): accept failedL " << pfs::to_string(ex) << std::endl;
+						if (not server.accept(client, false, & ex)) {
+							std::cerr << "ERROR (server): accept failed " << pfs::to_string(ex) << std::endl;
 						} else {
 							std::cout << "Socket accepted" << std::endl;
 						}
 
+						pool.push_back_differed(server, events);
 						pool.push_back_differed(client, events);
+					} else {
+						pfs::io::device client = value.get_device();
+
+						if (client.available() == 0) {
+							std::cout << "Connection closed" << std::endl;
+							pool.delete_differed(client);
+						} else {
+							pfs::byte_string bytes;
+							ex = value.get_device().read(bytes);
+
+							std::cout << "Bytes read: " << bytes.size() << std::endl;
+
+							TEST_OK(bytes == sample);
+							pool.push_back_differed(client, events);
+						}
 					}
+
+					++it;
 				}
 			} else {
 				if (ex) {
 					std::cerr << "ERROR (server): " << pfs::to_string(ex) << std::endl;
 				}
 			}
-		} while(false);
+
+			pool.update();
+		} while(pool.device_count());
 	}
 };
 
@@ -189,6 +212,8 @@ public:
 		TEST_OK2(n == n1, "Data successfully sent by client");
 	}
 };
+
+}
 
 void test_poll ()
 {
