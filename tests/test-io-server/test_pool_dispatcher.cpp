@@ -155,6 +155,7 @@ public:
 		dispatcher_context ctx(pool);
 
 		pool.dispatch(ctx, pfs::io::poll_all, 100);
+		std::cout << "***SERVER FINISHED***" << std::endl;
 	}
 };
 
@@ -193,7 +194,7 @@ public:
 		for (int i = 0; i < n; ++i) {
 			pfs::byte_string data(loremipsum[i]);
 
-			if (client.write(data) == data.size())
+			if (client.write(data))
 				++n1;
 		}
 
@@ -216,9 +217,9 @@ void test_pool_dispatcher ()
 		clients[i].start();
 	}
 
-	server.wait();
-
 	for (int i = 0; i < NCLIENTS; ++i) {
 		clients[i].wait();
 	}
+
+	server.wait();
 }

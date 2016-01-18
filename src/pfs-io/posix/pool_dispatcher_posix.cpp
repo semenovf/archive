@@ -15,10 +15,12 @@ void pool::dispatch (pool::dispatcher_context & context, int filter_events, int 
 {
 	pfs::error_code ex;
 
-	do {
-		poll_result_type result = this->poll(filter_events, 100, & ex);
+	while (not context.finish()) {
+		poll_result_type result = this->poll(filter_events, millis, & ex);
 
-		if (result.first != result.second) {
+		if (ex) {
+			context.on_error(ex);
+		} else if (result.first != result.second) {
 			pfs::io::pool::iterator it = result.first;
 			pfs::io::pool::iterator it_end = result.second;
 
@@ -30,7 +32,7 @@ void pool::dispatch (pool::dispatcher_context & context, int filter_events, int 
 					pfs::io::server server = value.get_server();
 					this->push_back_differed(server, filter_events);
 
-					if (not server.accept(client, false, & ex)) {
+					if (not server.accept(client, true, & ex)) {
 						// Acception failed
 						context.on_error(ex);
 					} else {
@@ -41,12 +43,13 @@ void pool::dispatch (pool::dispatcher_context & context, int filter_events, int 
 				} else {
 					pfs::io::device client = value.get_device();
 
-					if (client.available() == 0) {
+					int revents = it.revents();
+
+					if (client.available() == 0
+							&& revents & poll_in) { // TODO Check if this event enough to decide to disconnect.
 						context.on_disconnected(client);
 						this->delete_differed(client);
 					} else {
-						int revents = it.revents();
-
 						// There is data to read
 						//
 						if (revents & poll_in) {
@@ -101,14 +104,10 @@ void pool::dispatch (pool::dispatcher_context & context, int filter_events, int 
 
 				++it;
 			}
-		} else {
-			if (ex) {
-				context.on_error(ex);
-			}
 		}
 
 		this->update();
-	} while (not context.finish());
+	};
 }
 
 }}

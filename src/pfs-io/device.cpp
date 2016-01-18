@@ -18,13 +18,13 @@ error_code device::read (byte_string & bytes)
 	error_code ex;
 	ssize_t sz = 0;
 
-	do {
+//	do {
 		sz = _d->read(buffer, DEFAULT_READ_BUFSZ, & ex);
 
 		if (sz > 0) {
 			bytes.append(buffer, size_t(sz));
 		}
-	} while (sz > 0);
+//	} while (sz > 0);
 
 	return ex;
 }

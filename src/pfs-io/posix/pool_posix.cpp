@@ -102,13 +102,13 @@ struct pool_iterator : public bits::pool_iterator
 public:
 	typedef details::pool::pollfd_vector_type::const_iterator pointer;
 
-	int revents;
+	int filter_events;
 	pointer ptr;
 	pointer ptr_end;
 
 protected:
-	pool_iterator (int filter_events, pointer begin, pointer end)
-		: revents(filter_events)
+	pool_iterator (int events, pointer begin, pointer end)
+		: filter_events(events)
 		, ptr(begin)
 		, ptr_end(end)
 	{}
@@ -130,6 +130,11 @@ public:
 	bool eq (pool_iterator & rhs) const
 	{
 		return ptr == rhs.ptr;
+	}
+
+	int revents () const
+	{
+		return ptr->revents;
 	}
 };
 
@@ -185,7 +190,7 @@ pool_iterator * pool_iterator::alloc_begin (int filter_events, const details::po
 void pool_iterator::next ()
 {
 	while (++ptr != ptr_end) {
-		if (ptr->revents & revents)
+		if (ptr->revents & filter_events)
 			break;
 	}
 }
@@ -318,13 +323,18 @@ bool pool::iterator::operator == (const iterator & rhs) const
 	details::pool_iterator * it1 = static_cast<details::pool_iterator *>(_d.get());
 	details::pool_iterator * it2 = static_cast<details::pool_iterator *>(rhs._d.get());
 
+	if (it1 == 0 && it2 == 0)
+		return true;
+
+	PFS_ASSERT(it1);
+	PFS_ASSERT(it2);
 	return it1->eq(*it2);
 }
 
 int pool::iterator::revents () const
 {
 	details::pool_iterator * it = static_cast<details::pool_iterator *>(_d.get());
-	return it->revents;
+	return it->revents();
 }
 
 }} // pfs::io

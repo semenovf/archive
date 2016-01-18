@@ -215,12 +215,23 @@ ssize_t tcp_socket::read (byte_t * bytes, size_t n, error_code * pex)
 {
 	PFS_ASSERT(_fd >= 0 );
 
-	ssize_t r = recv(_fd, bytes, n, 0);
+	ssize_t r = 0;
 
-	if (r < 0) {
-		if (pex)
-			*pex = errno;
-	}
+//	do {
+		r = recv(_fd, bytes, n, 0);
+
+		if (r < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+			r = 0;
+//			continue;
+		}
+
+		if (r < 0) {
+			if (pex)
+				*pex = errno;
+		}
+
+//		break;
+//	} while (true);
 
 	return r;
 }

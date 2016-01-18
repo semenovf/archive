@@ -183,14 +183,18 @@ public:
         return write(reinterpret_cast<const byte_t *>(chars), n, ex);
     }
 
-	ssize_t write (const byte_string & bytes, size_t n, error_code * ex = 0)
+    error_code write (const byte_string & bytes, size_t n)
 	{
-	    return write(bytes.data(), pfs::min(n, bytes.size()), ex);
+    	error_code ex;
+    	this->write(bytes.data(), pfs::min(n, bytes.size()), & ex);
+    	return ex;
 	}
 
-	ssize_t write (const byte_string & bytes, error_code * ex = 0)
+	error_code write (const byte_string & bytes)
 	{
-	    return write(bytes.data(), bytes.size(), ex);
+    	error_code ex;
+    	this->write(bytes.data(), bytes.size(), & ex);
+    	return ex;
 	}
 
 	bool operator == (const device & other)

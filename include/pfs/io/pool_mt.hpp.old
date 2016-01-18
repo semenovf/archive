@@ -9,7 +9,7 @@
 #define __PFS_IO_DEVICE_POOL_MT_HPP__
 
 #include <pfs/mutex.hpp>
-#include <pfs/io/device_pool.hpp>
+#include <pfs/io/pool.hpp>
 
 namespace pfs { namespace io {
 
