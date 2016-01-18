@@ -47,6 +47,18 @@ enum state_enum {
 	, infinity_state
 };
 
+
+inline int __to_decimal_digit (unicode::char_type c)
+{
+	int r = -1;
+
+	if (c.value >= '0' && c.value <= '9')
+		r = c.value - '0';
+
+	return r;
+}
+
+
 static string::const_iterator check_str_nan (string::const_iterator begin
 		, string::const_iterator end)
 {
@@ -131,7 +143,7 @@ static string::const_iterator parse_exp (string::const_iterator begin
 
 		while (pos < end) {
 			if (unicode::is_decimal_digit(*pos)) {
-				int digit = unicode::is_decimal_digit(*pos);
+				int digit = __to_decimal_digit(*pos);
 				exp = exp * 10 + digit;
 				PFS_ASSERT(exp >= 0);
 			} else {
@@ -260,7 +272,7 @@ real_t string_to_real (string::const_iterator begin
     	case parse_mantissa_state:
     		while (pos < end) {
 				if (unicode::is_decimal_digit(*pos)) {
-					int digit = unicode::is_decimal_digit(*pos);
+					int digit = __to_decimal_digit(*pos);
 
 					r = r * PFS_REAL_LITERAL(1.e1) + digit;
 
