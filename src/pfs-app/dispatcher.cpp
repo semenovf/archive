@@ -245,6 +245,20 @@ bool dispatcher::register_module (const module_spec & modspec)
 	return true;
 }
 
+void dispatcher::set_master_module (const string & name)
+{
+	module_spec_map_type::iterator it = _module_spec_map.begin();
+	module_spec_map_type::iterator itEnd = _module_spec_map.end();
+
+	for (;it != itEnd; it++) {
+		module_spec modspec = it->second;
+		shared_ptr<module> pmodule = modspec.pmodule;
+
+		if (pmodule->name() == name)
+			_master_module = pmodule;
+	}
+}
+
 void dispatcher::connect_all ()
 {
 	api_type::iterator it = _api.begin();

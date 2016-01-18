@@ -123,10 +123,7 @@ public:
 		return false;
 	}
 
-	void set_master_module (const shared_ptr<module> & pmodule)
-	{
-		_master_module = pmodule;
-	}
+	void set_master_module (const string & name);
 
 	size_t count () const
 	{
