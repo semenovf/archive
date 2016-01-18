@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
 	BEGIN_TESTS(0);
 
-	test_poll();
+//	test_poll();
 	test_pool_dispatcher();
 
 	END_TESTS;

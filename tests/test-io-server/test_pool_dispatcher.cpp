@@ -15,7 +15,7 @@
 #include <iostream>
 
 #define BUFFER_SIZE 1
-#define NCLIENTS    20
+#define NCLIENTS    10
 #define SERVER_ADDR _u8("127.0.0.1")
 #define SERVER_PORT 10299
 #define SERVER_BACKLOG 10
@@ -100,7 +100,7 @@ struct dispatcher_context : public pfs::io::pool::dispatcher_context
 	virtual void on_ready_read (pfs::io::device & d)
 	{
 		pfs::byte_string bytes;
-		pfs::error_code ex = d.read(bytes);
+		pfs::error_code ex = d.read(bytes, d.available());
 
 		TEST_OK(! ex);
 
@@ -194,13 +194,18 @@ public:
 		for (int i = 0; i < n; ++i) {
 			pfs::byte_string data(loremipsum[i]);
 
-			if (client.write(data))
+			ex = client.write(data);
+
+			if (!ex) {
 				++n1;
+			} else {
+				std::cerr << "ERROR (client): " << pfs::to_string(ex) << std::endl;
+			}
 		}
 
 		client.close();
 
-		TEST_OK2(n == n1, "Data successfully sent by client");
+		TEST_OK2(n == n1, "Data sent by client");
 	}
 };
 
