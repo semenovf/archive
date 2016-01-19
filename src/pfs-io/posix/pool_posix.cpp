@@ -35,63 +35,42 @@ struct pool : public bits::pool
 	device_map_type    device_map;
 	server_map_type    server_map;
 
-	int active;
-	int differed;
-	pollfd_vector_type pollfds[2];
+	pollfd_vector_type pollfds;
+	bool update;  // need updated 'pollfds' before poll() system call.
 
 	pool ()
-		: active(0)
-		, differed(1)
+		: update(true)
 	{}
 
-	void push_back_pollfd (int index/*pollfd_vector_type & pfds*/, native_handle_type fd, int events)
+	void update_pollfd (short events);
+
+	void push_back (const io::device & d, short events)
 	{
-		details::pool::pollfd_type pfd;
-		pfd.fd = fd;//d.native_handle();
-		pfd.events = events;
-
-		//details::pool * pdp = static_cast<details::pool *>(_d.get());
-
-		pollfds[index].push_back(pfd);
-	}
-
-	void push_back (const io::device & d, int events)
-	{
-		push_back_pollfd(active, d.native_handle(), events);
 		device_map.insert(std::pair<device::native_handle_type, device>(d.native_handle(), d));
+		update = true;
 	}
 
-	void push_back (const io::server & s, int events)
+	void push_back (const io::server & s, short events)
 	{
-		push_back_pollfd(active, s.native_handle(), events);
 		server_map.insert(std::pair<server::native_handle_type, server>(s.native_handle(), s));
-	}
-
-	void push_back_differed (const io::device & d, int events)
-	{
-		push_back_pollfd(differed, d.native_handle(), events);
-		device_map.insert(std::pair<device::native_handle_type, device>(d.native_handle(), d));
-	}
-
-	void push_back_differed (const io::server & s, int events)
-	{
-		push_back_pollfd(differed, s.native_handle(), events);
-		server_map.insert(std::pair<server::native_handle_type, server>(s.native_handle(), s));
+		update = true;
 	}
 
 	void delete_differed (const io::device & d)
 	{
 		PFS_ASSERT(device_map.erase(d.native_handle()) == 1);
+		update = true;
 	}
 
 	void delete_differed (const io::server & s)
 	{
-		PFS_ASSERT(device_map.erase(s.native_handle()) == 1);
+		PFS_ASSERT(server_map.erase(s.native_handle()) == 1);
+		update = true;
 	}
 
 	int poll (pool_iterator ** begin
 			, pool_iterator ** end
-			, int filter_events
+			, short filter_events
 			, int millis
 			, error_code * ex);
 
@@ -102,12 +81,12 @@ struct pool_iterator : public bits::pool_iterator
 public:
 	typedef details::pool::pollfd_vector_type::const_iterator pointer;
 
-	int filter_events;
+	short filter_events;
 	pointer ptr;
 	pointer ptr_end;
 
 protected:
-	pool_iterator (int events, pointer begin, pointer end)
+	pool_iterator (short events, pointer begin, pointer end)
 		: filter_events(events)
 		, ptr(begin)
 		, ptr_end(end)
@@ -118,13 +97,13 @@ public:
 
 	virtual void next ();
 
-	static pool_iterator * alloc_begin (int filter_events, const details::pool & p);
+	static pool_iterator * alloc_begin (short filter_events, const details::pool & p);
 
-	static pool_iterator * alloc_end (int filter_events, const details::pool & p)
+	static pool_iterator * alloc_end (short filter_events, const details::pool & p)
 	{
 		return new pool_iterator(filter_events
-			, p.pollfds[p.active].cend()
-			, p.pollfds[p.active].cend());
+			, p.pollfds.cend()
+			, p.pollfds.cend());
 	}
 
 	bool eq (pool_iterator & rhs) const
@@ -132,7 +111,7 @@ public:
 		return ptr == rhs.ptr;
 	}
 
-	int revents () const
+	short revents () const
 	{
 		return ptr->revents;
 	}
@@ -140,22 +119,17 @@ public:
 
 int pool::poll (pool_iterator ** begin
 		, pool_iterator ** end
-		, int filter_events
+		, short filter_events
 		, int millis
 		, error_code * ex)
 {
-//	// Append differed file descriptors
-//	//
-//	if (not pollfds_differed.empty()) {
-//		pollfds.reserve(pollfds.size() + pollfds_differed.size());
-//		pollfds.insert(pollfds.end(), pollfds_differed.begin(), pollfds_differed.end());
-//		pollfds_differed.clear();
-//	}
+	if (update) {
+		update_pollfd(filter_events);
+		update = false;
+	}
 
-	size_t n = pollfds[active].size();
-	pollfd_type * pfds = pollfds[active].data();
-
-	pollfds[differed].clear();
+	size_t n = pollfds.size();
+	pollfd_type * pfds = pollfds.data();
 
 	int r = ::poll(pfds, n, millis);
 
@@ -173,10 +147,46 @@ int pool::poll (pool_iterator ** begin
 	return r;
 }
 
-pool_iterator * pool_iterator::alloc_begin (int filter_events, const details::pool & p)
+void pool::update_pollfd (short events)
 {
-	pointer begin = p.pollfds[p.active].cbegin();
-	pointer end   = p.pollfds[p.active].cend();
+	pollfds.clear();
+	pollfds.reserve(server_map.size() + device_map.size());
+
+	if (server_map.size() > 0) {
+		server_map_type::const_iterator it = server_map.cbegin();
+		server_map_type::const_iterator it_end = server_map.cend();
+
+		while (it != it_end) {
+			pollfd_type pfd;
+			pfd.fd = it->second.native_handle();
+			pfd.events = events;
+
+			pollfds.push_back(pfd);
+
+			++it;
+		}
+	}
+
+	if (device_map.size() > 0) {
+		device_map_type::const_iterator it = device_map.cbegin();
+		device_map_type::const_iterator it_end = device_map.cend();
+
+		while (it != it_end) {
+			pollfd_type pfd;
+			pfd.fd = it->second.native_handle();
+			pfd.events = events;
+
+			pollfds.push_back(pfd);
+
+			++it;
+		}
+	}
+}
+
+pool_iterator * pool_iterator::alloc_begin (short filter_events, const details::pool & p)
+{
+	pointer begin = p.pollfds.cbegin();
+	pointer end   = p.pollfds.cend();
 
 	while (begin != end) {
 		if (begin->revents & filter_events)
@@ -216,32 +226,18 @@ size_t pool::server_count () const
 }
 
 
-void pool::push_back (const device & d, int events)
+void pool::push_back (const device & d, short events)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
 	pdp->push_back(d, events);
 }
 
-void pool::push_back (const server & s, int events)
+void pool::push_back (const server & s, short events)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
 	pdp->push_back(s, events);
-}
-
-void pool::push_back_differed (const device & d, int events)
-{
-	PFS_ASSERT(_d);
-	details::pool * pdp = static_cast<details::pool *>(_d.get());
-	pdp->push_back_differed(d, events);
-}
-
-void pool::push_back_differed (const server & s, int events)
-{
-	PFS_ASSERT(_d);
-	details::pool * pdp = static_cast<details::pool *>(_d.get());
-	pdp->push_back_differed(s, events);
 }
 
 void pool::delete_differed (const device & d)
@@ -259,7 +255,7 @@ void pool::delete_differed (const server & s)
 }
 
 
-pool::poll_result_type pool::poll (int filter_events
+pool::poll_result_type pool::poll (short filter_events
 		, int millis
 		, error_code * pex)
 {
@@ -275,12 +271,6 @@ pool::poll_result_type pool::poll (int filter_events
 	}
 
 	return poll_result_type(pool::iterator(), pool::iterator());
-}
-
-void pool::update ()
-{
-	details::pool * pdp = static_cast<details::pool *>(_d.get());
-	pfs::swap(pdp->active, pdp->differed);
 }
 
 pool::value pool::iterator::operator * () const
@@ -331,7 +321,7 @@ bool pool::iterator::operator == (const iterator & rhs) const
 	return it1->eq(*it2);
 }
 
-int pool::iterator::revents () const
+short pool::iterator::revents () const
 {
 	details::pool_iterator * it = static_cast<details::pool_iterator *>(_d.get());
 	return it->revents();

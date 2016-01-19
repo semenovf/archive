@@ -165,7 +165,7 @@ public:
 			return ! operator == (rhs);
 		}
 
-		int revents () const;
+		short revents () const;
 };
 
 private:
@@ -188,19 +188,9 @@ public:
 
 	size_t server_count () const;
 
-	void push_back (const device & d, int events = poll_all);
+	void push_back (const device & d, short events = poll_all);
 
-	void push_back (const server & s, int events = poll_all);
-
-	/**
-	 * @brief Used inside.
-	 *
-	 * @param d Device.
-	 * @param events
-	 */
-	void push_back_differed (const device & d, int events = poll_all);
-
-	void push_back_differed (const server & s, int events = poll_all);
+	void push_back (const server & s, short events = poll_all);
 
 	void delete_differed (const device & d);
 
@@ -230,23 +220,22 @@ public:
 	 * 		descriptors were ready.
 	 * 		On error, -1 is returned, and @a *ex is set appropriately.
 	 */
-	poll_result_type poll (int filter_events = poll_all
+	poll_result_type poll (short filter_events = poll_all
 			 , int millis = 0
 			 , error_code * ex = 0);
-
-	void update ();
 
 	struct dispatcher_context
 	{
 		virtual ~dispatcher_context () {}
 		virtual bool finish () = 0;
-		virtual void on_connected (device & ) = 0;
-		virtual void on_ready_read (device & ) = 0;
-		virtual void on_disconnected (device & ) = 0;
-		virtual void on_error (const error_code & ) = 0;
+		virtual void connected (device & ) {}
+		virtual void ready_read (device & ) {}
+		virtual void disconnected (device & ) {}
+		virtual void can_write (device & ) {} // unused yet
+		virtual void on_error (const error_code & ) {}
 	};
 
-	void dispatch (dispatcher_context & context, int filter_events = poll_all, int millis = 0);
+	void dispatch (dispatcher_context & context, short filter_events = poll_all, int millis = 0);
 };
 
 }} // pfs::io

@@ -74,50 +74,70 @@ static const char * loremipsum [] = {
 
 struct dispatcher_context : public pfs::io::pool::dispatcher_context
 {
-	pfs::io::pool & pool;
-	pfs::byte_string sample;
+	int n1;
 
-	dispatcher_context (pfs::io::pool & p)
-			: pool(p)
-	{
-		int n = sizeof(loremipsum)/sizeof(loremipsum[0]);
-
-		for (int i = 0; i < n; ++i) {
-			sample.append(loremipsum[i]);
-		}
-	}
+	dispatcher_context ()
+		: n1(0)
+	{}
 
 	virtual bool finish ()
 	{
-		return pool.device_count() == 0;
+		return n1 >= NCLIENTS;
 	}
 
-	virtual void on_connected (pfs::io::device & d)
+	virtual void connected (pfs::io::device & d)
 	{
 		std::cout << "Socket connected" << std::endl;
 	}
 
-	virtual void on_ready_read (pfs::io::device & d)
+	virtual void ready_read (pfs::io::device & d)
 	{
 		pfs::byte_string bytes;
 		pfs::error_code ex = d.read(bytes, d.available());
 
-		TEST_OK(! ex);
-
-		std::cout << "Bytes read: " << bytes.size() << std::endl;
-
-		TEST_OK(bytes == sample);
+		std::cout << "Ready read: " << bytes.size() << " bytes" << std::endl;
 	}
 
-	virtual void on_disconnected (pfs::io::device & d)
+	virtual void disconnected (pfs::io::device & d)
 	{
-		std::cout << "Connection closed" << std::endl;
+		++n1;
+		std::cout << "Socket disconnected" << std::endl;
+	}
+
+	virtual void can_write (pfs::io::device & d)
+	{
+		std::cout << "Socket can write" << std::endl;
 	}
 
 	virtual void on_error (const pfs::error_code & ex)
 	{
-		std::cerr << "ERROR (server):" << pfs::to_string(ex) << std::endl;
+		std::cerr << "ERROR: " << pfs::to_string(ex) << std::endl;
 	}
+
+//	pfs::io::pool & pool;
+//	pfs::byte_string sample;
+//
+//	dispatcher_context (pfs::io::pool & p)
+//			: pool(p)
+//	{
+//		int n = sizeof(loremipsum)/sizeof(loremipsum[0]);
+//
+//		for (int i = 0; i < n; ++i) {
+//			sample.append(loremipsum[i]);
+//		}
+//	}
+
+//	virtual void on_ready_read (pfs::io::device & d)
+//	{
+//		pfs::byte_string bytes;
+//		pfs::error_code ex = d.read(bytes, d.available());
+//
+//		TEST_OK(! ex);
+//
+//		std::cout << "Bytes read: " << bytes.size() << std::endl;
+//
+//		TEST_OK(bytes == sample);
+//	}
 };
 
 class ServerThread : public pfs::thread
@@ -144,18 +164,15 @@ public:
 
 	virtual void run ()
 	{
-		ADD_TESTS(NCLIENTS);
-
 		if (!_server.opened())
 			return;
 
 		pfs::io::pool pool;
 		pool.push_back(_server);
 
-		dispatcher_context ctx(pool);
+		dispatcher_context ctx;
 
 		pool.dispatch(ctx, pfs::io::poll_all, 100);
-		std::cout << "***SERVER FINISHED***" << std::endl;
 	}
 };
 

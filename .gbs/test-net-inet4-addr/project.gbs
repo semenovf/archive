@@ -19,7 +19,7 @@ files         { "../../tests/test-net-inet4-addr/*.c", "../../tests/test-net-ine
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/net/test-net-inet4-addr/debug"
+    objdir       "../../../.build/pfs-io/test-net-inet4-addr/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        {  "pfs-io-d"

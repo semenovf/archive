@@ -11,7 +11,7 @@
 
 namespace pfs { namespace io {
 
-void pool::dispatch (pool::dispatcher_context & context, int filter_events, int millis)
+void pool::dispatch (pool::dispatcher_context & context, short filter_events, int millis)
 {
 	pfs::error_code ex;
 
@@ -30,39 +30,38 @@ void pool::dispatch (pool::dispatcher_context & context, int filter_events, int 
 				if (value.is_server()) { // accept connection
 					pfs::io::device client;
 					pfs::io::server server = value.get_server();
-					this->push_back_differed(server, filter_events);
 
 					if (not server.accept(client, true, & ex)) {
 						// Acception failed
+						//
 						context.on_error(ex);
 					} else {
 						// Accepted
-						context.on_connected(client);
-						this->push_back_differed(client, filter_events);
+						//
+						context.connected(client);
+						this->push_back(client, filter_events);
 					}
 				} else {
-					pfs::io::device client = value.get_device();
+					pfs::io::device dev = value.get_device();
 
-					int revents = it.revents();
+					short revents = it.revents();
 
-					if (client.available() == 0
-							&& revents & poll_in) { // TODO Check if this event enough to decide to disconnect.
-						context.on_disconnected(client);
-						this->delete_differed(client);
+					if (dev.available() == 0
+							&& (revents & poll_in)) { // TODO Check if this event enough to decide to disconnect.
+						context.disconnected(dev);
+						this->delete_differed(dev);
 					} else {
-						// There is data to read
-						//
-						if (revents & poll_in) {
-							context.on_ready_read(client);
-						}
-
 						// There is urgent data to read (e.g., out-of-band data on TCP socket;
 						// pseudoterminal master in packet mode has seen state change in slave).
 						//
-						// TODO Implement handling
-						//
 						if (revents & poll_pri) {
-							;
+							context.ready_read(dev);
+						}
+
+						// There is data to read
+						//
+						if (revents & poll_in) {
+							context.ready_read(dev);
 						}
 
 						// Writing is now possible, though a write larger that the available space
@@ -71,7 +70,7 @@ void pool::dispatch (pool::dispatcher_context & context, int filter_events, int 
 						// TODO Implement handling
 						//
 						if (revents & poll_out) {
-							;
+							;//context.can_write(dev);
 						}
 
 						// Error condition (output only).
@@ -79,7 +78,7 @@ void pool::dispatch (pool::dispatcher_context & context, int filter_events, int 
 						// TODO Implement handling
 						//
 						if (revents & poll_err) {
-							;
+							PFS_WARN("pfs::io::pool::dispatch(): device error condition");
 						}
 
 						// Hang up (output only).
@@ -87,7 +86,7 @@ void pool::dispatch (pool::dispatcher_context & context, int filter_events, int 
 						// TODO Implement handling
 						//
 						if (revents & poll_hup) {
-							;
+							PFS_WARN("pfs::io::pool::dispatch(): device hang up");
 						}
 
 						// Invalid request: fd not open (output only).
@@ -95,18 +94,14 @@ void pool::dispatch (pool::dispatcher_context & context, int filter_events, int 
 						// TODO Implement handling
 						//
 						if (revents & poll_nval) {
-							;
+							context.on_error(error_code(BadFileDescriptorError));
 						}
-
-						this->push_back_differed(client, filter_events);
 					}
 				}
 
 				++it;
 			}
 		}
-
-		this->update();
 	};
 }
 
