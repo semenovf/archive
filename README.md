@@ -17,6 +17,12 @@ Run on terminal:
     $ # -- Set environment variable `GBS_HOME` to 'gbs' home directory.  
     $ export GBS_HOME=/path/to/root-dir-for-gbs/gbs
 
+
+#### Qt support
+    git submodule add git@github.com:semenovf/premake-qt.git # once
+    git submodule init
+    git submodule update
+
 ###AUTHOR
 
 Fedor Semenov, < fedor.v.semenov at gmail.com >
