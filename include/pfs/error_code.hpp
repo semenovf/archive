@@ -8,15 +8,18 @@
 #ifndef __PFS_ERROR_CODE_HPP__
 #define __PFS_ERROR_CODE_HPP__
 
+#include <cerrno>
 #include <pfs/string.hpp>
 
 namespace pfs {
 
 enum error_code_enum
 {
-	  CustomErrorBase = 10000
+	  BadFileDescriptorError = EBADF
 
-	, InvalidArgument
+	, CustomErrorBase = 10000
+
+	, InvalidArgumentError
 
 	, DlErrorBase
 	, DlOpenError = DlErrorBase

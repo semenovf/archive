@@ -33,7 +33,7 @@ bool dynamic_library::open (const fs::path & p, const fs::pathlist & searchdirs
 
 	if (_d->_path.empty()) {
 		if (ex)
-			*ex = InvalidArgument;
+			*ex = InvalidArgumentError;
 		return false;
 	}
 

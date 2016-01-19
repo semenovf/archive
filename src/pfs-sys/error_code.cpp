@@ -26,7 +26,7 @@ string to_string (const error_code & ex)
 	}
 
 	switch(ex.native()) {
-	case InvalidArgument:
+	case InvalidArgumentError:
 		return _u8("Invalid argument");
 
 	case DlOpenError:
