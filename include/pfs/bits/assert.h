@@ -78,7 +78,6 @@ extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * 
 #		define PFS_ASSERT_X(p,str) if( !(p) ) { PFS_ERROR(str);            \
 			(void) __dj_assert(#p,__FILE__,__LINE__); }
 #	else
-//#		define PFS_ASSERT_TRACE(expr,trace_exp) if (!(expr)) { (void)trace_exp; assert(expr); }
 #		define PFS_ASSERT_X(expr,text)                                           \
 		if (!(expr)) {                                                           \
 			fprintf(stderr, "ERROR: (%s[%d]): %s\n", __TFILE__, __LINE__, text); \
@@ -86,11 +85,14 @@ extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * 
 		}
 #	endif
 
+#	define PFS_WARN(x) \
+		fprintf(stderr, "WARN: (%s[%d]): %s\n", __TFILE__, __LINE__, x)
+
 #else
 #	define PFS_DEBUG(x)
 #	define PFS_ASSERT(x)
-/*#	define PFS_ASSERT_TRACE(expr,trace_expr)*/
 #	define PFS_ASSERT_X(x,msg)
+#	define PFS_WARN(x)
 
 #endif /* !NDEBUG */
 

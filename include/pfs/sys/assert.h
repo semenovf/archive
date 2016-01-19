@@ -86,11 +86,15 @@ extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * 
 		}
 #	endif
 
+#	define PFS_WARN(x) \
+		fprintf(stderr, "WARN: (%s[%d]): %s\n", __TFILE__, __LINE__, x)
+
 #else
 #	define PFS_DEBUG(x)
 #	define PFS_ASSERT(x)
 /*#	define PFS_ASSERT_TRACE(expr,trace_expr)*/
 #	define PFS_ASSERT_X(x,msg)
+#	define PFS_WARN(x)
 
 #endif /* !NDEBUG */
 
