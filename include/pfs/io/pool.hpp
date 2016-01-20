@@ -8,6 +8,7 @@
 #ifndef __PFS_IO_POOL_HPP__
 #define __PFS_IO_POOL_HPP__
 
+#include <pfs/vector.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <pfs/io/device.hpp>
 #include <pfs/io/server.hpp>
@@ -35,7 +36,7 @@ public:
 	enum value_enum
 	{
 		  Null
-		, Server
+		, Listener
 		, Device
 	};
 
@@ -67,7 +68,7 @@ public:
 		}
 
 		value (const server & other)
-			: type(Server)
+			: type(Listener)
 			, s(other)
 		{}
 
@@ -77,6 +78,11 @@ public:
 		{}
 
 		server & get_server ()
+		{
+			return s;
+		}
+
+		server & get_listener ()
 		{
 			return s;
 		}
@@ -91,6 +97,11 @@ public:
 			return s;
 		}
 
+		const server & get_listener () const
+		{
+			return s;
+		}
+
 		const device & get_device () const
 		{
 			return d;
@@ -98,7 +109,7 @@ public:
 
 		bool is_server () const
 		{
-			return type == Server;
+			return type == Listener;
 		}
 
 		bool is_device () const
@@ -108,7 +119,7 @@ public:
 
 		bool operator == (const server & rhs) const
 		{
-			return type == Server && s == rhs;
+			return type == Listener && s == rhs;
 		}
 
 		bool operator == (const device & rhs) const
@@ -152,6 +163,7 @@ public:
 			return *this;
 		}
 
+		// TODO Implement
 //		iterator operator ++ (int)
 //		{
 //		}
@@ -196,6 +208,27 @@ public:
 
 	void delete_differed (const server & s);
 
+	/**
+	 * @brief Returns list of all devices (exclude listeners) in the pool.
+	 */
+	vector<device> get_devices () const;
+
+	/**
+	 * @brief Returns list of all listeners in the pool.
+	 */
+	vector<server> get_listeners () const;
+
+	/**
+	 * @brief Returns list of all listeners in the pool.
+	 * 		Synonym for get_listeners().
+	 *
+	 * @see get_listeners().
+	 */
+	vector<server> get_servers () const
+	{
+		return get_listeners ();
+	}
+
 	typedef std::pair<pool::iterator, pool::iterator> poll_result_type;
 
 	/**
@@ -228,7 +261,7 @@ public:
 	{
 		virtual ~dispatcher_context () {}
 		virtual bool finish () = 0;
-		virtual void connected (device & ) {}
+		virtual void connected (device &, const server & listener) {}
 		virtual void ready_read (device & ) {}
 		virtual void disconnected (device & ) {}
 		virtual void can_write (device & ) {} // unused yet

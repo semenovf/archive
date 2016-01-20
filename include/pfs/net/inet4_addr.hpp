@@ -2,6 +2,7 @@
 #define __PFS_NET_INET4_ADDR_HPP__
 
 #include <pfs/string.hpp>
+#include <pfs/utility.hpp>
 
 namespace pfs { namespace net {
 

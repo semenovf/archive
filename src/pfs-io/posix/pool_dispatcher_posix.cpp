@@ -38,7 +38,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 					} else {
 						// Accepted
 						//
-						context.connected(client);
+						context.connected(client, server);
 						this->push_back(client, filter_events);
 					}
 				} else {

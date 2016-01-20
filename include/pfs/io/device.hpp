@@ -33,7 +33,8 @@ protected:
 
 public:
 	typedef bits::device::native_handle_type native_handle_type;
-	typedef bits::device::open_mode_flags open_mode_flags;
+	typedef bits::device::open_mode_flags    open_mode_flags;
+	typedef bits::device::identifier         identifier_type;
 
 	enum open_mode_enum {
 	      not_open     = 0                       /**< Device is not opened */
@@ -65,10 +66,20 @@ public:
     ~device ()
     {}
 
-    void swap (device & other)
+    void set_id (identifier_type * id)
     {
-    	_d.swap(other._d);
+    	_d->set_id(id);
     }
+
+    const identifier_type * id () const
+    {
+    	return _d->id();
+    }
+
+//    void swap (device & other)
+//    {
+//    	_d.swap(other._d);
+//    }
 
     native_handle_type native_handle () const
     {

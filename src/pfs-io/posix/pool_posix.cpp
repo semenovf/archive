@@ -225,7 +225,6 @@ size_t pool::server_count () const
 	return pdp->server_map.size();
 }
 
-
 void pool::push_back (const device & d, short events)
 {
 	PFS_ASSERT(_d);
@@ -252,6 +251,43 @@ void pool::delete_differed (const server & s)
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
 	pdp->delete_differed(s);
+}
+
+vector<device> pool::get_devices () const
+{
+	vector<device> r;
+
+	if (_d) {
+		details::pool * pdp = static_cast<details::pool *>(_d.get());
+		details::pool::device_map_type::iterator it = pdp->device_map.begin();
+		details::pool::device_map_type::iterator it_end = pdp->device_map.end();
+
+		while (it != it_end) {
+			r.push_back(it->second);
+		}
+	}
+
+	return r;
+}
+
+/**
+ * @brief Returns list of all listeners in the pool.
+ */
+vector<server> pool::get_listeners () const
+{
+	vector<server> r;
+
+	if (_d) {
+		details::pool * pdp = static_cast<details::pool *>(_d.get());
+		details::pool::server_map_type::iterator it = pdp->server_map.begin();
+		details::pool::server_map_type::iterator it_end = pdp->server_map.end();
+
+		while (it != it_end) {
+			r.push_back(it->second);
+		}
+	}
+
+	return r;
 }
 
 

@@ -9,6 +9,7 @@
 #define __PFS_IO_BITS_DEVICE_HPP__
 
 #include <pfs/error_code.hpp>
+#include <pfs/io/bits/device_base.hpp>
 
 namespace pfs { namespace io { namespace bits {
 
@@ -16,10 +17,14 @@ namespace pfs { namespace io { namespace bits {
 //
 typedef int native_handle_type;
 
-struct device
+struct device : public device_base
 {
-	typedef pfs::io::bits::native_handle_type native_handle_type;
+	typedef device_base::native_handle_type native_handle_type;
 	typedef uint32_t open_mode_flags;
+
+	device ()
+		: device_base ()
+	{}
 
     virtual ~device () {}
 

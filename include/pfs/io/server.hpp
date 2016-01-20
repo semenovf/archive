@@ -20,7 +20,8 @@ struct open_params;
 class server
 {
 public:
-	typedef bits::device::native_handle_type native_handle_type;
+	typedef device::native_handle_type native_handle_type;
+	typedef bits::device::identifier   identifier_type;
 
 protected:
     shared_ptr<bits::server> _d;
@@ -38,16 +39,26 @@ public:
     ~server ()
     {}
 
+    void set_id (identifier_type * id)
+    {
+    	_d->set_id(id);
+    }
+
+    const identifier_type * id () const
+    {
+    	return _d->id();
+    }
+
     native_handle_type native_handle () const
     {
     	PFS_ASSERT(_d);
     	return _d->native_handle();
     }
 
-    void swap (server & other)
-    {
-    	_d.swap(other._d);
-    }
+//    void swap (server & other)
+//    {
+//    	_d.swap(other._d);
+//    }
 
     operator bool () const
 	{
