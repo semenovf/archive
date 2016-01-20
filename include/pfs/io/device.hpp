@@ -24,19 +24,25 @@ struct open_params;
 
 class server;
 
+struct extra_data
+{
+	virtual ~extra_data () {}
+};
+
 class DLL_API device
 {
 	friend class server;
 
 protected:
     shared_ptr<bits::device> _d;
+    shared_ptr<extra_data>   _extra;
 
 public:
 	typedef bits::device::native_handle_type native_handle_type;
 	typedef bits::device::open_mode_flags    open_mode_flags;
-	typedef bits::device::identifier         identifier_type;
 
-	enum open_mode_enum {
+	enum open_mode_enum
+	{
 	      not_open     = 0                       /**< Device is not opened */
 		, read_only    = 0x0001                  /**< Open device for read only */
 		, write_only   = 0x0002                  /**< Open device for write only */
@@ -45,41 +51,26 @@ public:
 		, non_blocking = 0x0004                  /**< Open device in non-blocking mode */
 	};
 
-protected:
-	device (bits::device * pd)
-		: _d(pd)
-	{}
+//protected:
+//	device (bits::device * pd)
+//		: _d(pd)
+//	{}
 
 public:
-    device () : _d() {}
+    device () {}
 
-    device (const device & other)
-    	: _d(other._d)
-    {}
-
-    device & operator = (const device & other)
-    {
-    	_d = other._d;
-    	return *this;
-    }
+//    device (const device & other)
+//    	: _d(other._d)
+//    {}
+//
+//    device & operator = (const device & other)
+//    {
+//    	_d = other._d;
+//    	return *this;
+//    }
 
     ~device ()
     {}
-
-    void set_id (identifier_type * id)
-    {
-    	_d->set_id(id);
-    }
-
-    const identifier_type * id () const
-    {
-    	return _d->id();
-    }
-
-//    void swap (device & other)
-//    {
-//    	_d.swap(other._d);
-//    }
 
     native_handle_type native_handle () const
     {
@@ -217,7 +208,6 @@ public:
 	{
 		return ! operator == (other);
 	}
-
 
 	template <typename DeviceTag>
 	friend error_code open_device (device &, const open_params<DeviceTag> &);

@@ -13,13 +13,11 @@
 
 namespace pfs { namespace io { namespace bits {
 
-struct server : public device_base
+struct server
 {
-	typedef device_base::native_handle_type native_handle_type;
+	typedef device::native_handle_type native_handle_type;
 
-    server ()
-    	: device_base()
-    {}
+    server () {}
 
     virtual ~server () {}
 

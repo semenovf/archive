@@ -28,13 +28,13 @@ bool server::accept (device & peer, bool non_blocking, error_code * ex)
 {
 	PFS_ASSERT(_d);
 
-	bits::device * pd;
+	bits::device * p;
 
-	bool rc = _d->accept(& pd, non_blocking, ex);
+	bool rc = _d->accept(& p, non_blocking, ex);
 
 	if (rc) {
-		device dd(pd);
-		peer.swap(dd);
+	    shared_ptr<bits::device> d(p);
+	    peer._d.swap(d);
 	}
 
 	return rc;

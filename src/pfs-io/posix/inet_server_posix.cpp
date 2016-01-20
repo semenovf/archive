@@ -93,11 +93,11 @@ bool tcp_server::accept (bits::device ** peer, bool non_blocking, error_code * p
 namespace pfs { namespace io {
 
 template <>
-error_code open_server<tcp_server> (server & d, const open_params<tcp_server> & op)
+error_code open_server<tcp_server> (server & dev, const open_params<tcp_server> & op)
 {
 	error_code ex;
 
-    if (d.opened())
+    if (dev.opened())
         return error_code(EBADF);
 
     bool non_blocking = op.oflags & device::non_blocking;
@@ -116,8 +116,8 @@ error_code open_server<tcp_server> (server & d, const open_params<tcp_server> & 
 		return false;
 	}
 
-	server dd(new details::tcp_server(fd, bind_addr));
-	d.swap(dd);
+    shared_ptr<bits::server> d(new details::tcp_server(fd, bind_addr));
+    dev._d.swap(d);
 
 	return error_code();
 }

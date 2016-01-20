@@ -21,15 +21,14 @@ class server
 {
 public:
 	typedef device::native_handle_type native_handle_type;
-	typedef bits::device::identifier   identifier_type;
 
 protected:
     shared_ptr<bits::server> _d;
 
-protected:
-	server (bits::server * pd)
-		: _d(pd)
-	{}
+//protected:
+//	server (bits::server * pd)
+//		: _d(pd)
+//	{}
 
 public:
     server ()
@@ -39,26 +38,11 @@ public:
     ~server ()
     {}
 
-    void set_id (identifier_type * id)
-    {
-    	_d->set_id(id);
-    }
-
-    const identifier_type * id () const
-    {
-    	return _d->id();
-    }
-
     native_handle_type native_handle () const
     {
     	PFS_ASSERT(_d);
     	return _d->native_handle();
     }
-
-//    void swap (server & other)
-//    {
-//    	_d.swap(other._d);
-//    }
 
     operator bool () const
 	{

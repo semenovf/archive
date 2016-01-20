@@ -160,9 +160,9 @@ static int __convert_to_native_perms (int perms)
 }
 
 template <>
-error_code open_device<file> (device & d, const open_params<file> & op)
+error_code open_device<file> (device & dev, const open_params<file> & op)
 {
-    if (d.opened())
+    if (dev.opened())
         return error_code();
 
 	int fd;
@@ -190,8 +190,8 @@ error_code open_device<file> (device & d, const open_params<file> & op)
 		return error_code(errno);
 	}
 
-	device dd(new details::file(fd));
-	d.swap(dd);
+    shared_ptr<bits::device> d(new details::file(fd));
+    dev._d.swap(d);
 
 	return error_code();
 }

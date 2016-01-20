@@ -267,9 +267,9 @@ ssize_t tcp_socket::write (const byte_t * bytes, size_t nbytes, error_code * ex)
 namespace pfs { namespace io {
 
 template <>
-error_code open_device<tcp_socket> (device & d, const open_params<tcp_socket> & op)
+error_code open_device<tcp_socket> (device & dev, const open_params<tcp_socket> & op)
 {
-    if (d.opened())
+    if (dev.opened())
         return error_code();
 
     error_code ex;
@@ -289,8 +289,8 @@ error_code open_device<tcp_socket> (device & d, const open_params<tcp_socket> & 
 		return ex;
 	}
 
-	device dd(new details::tcp_socket(fd, server_addr));
-	d.swap(dd);
+    shared_ptr<bits::device> d(new details::tcp_socket(fd, server_addr));
+    dev._d.swap(d);
 
 	return error_code(0);
 }
