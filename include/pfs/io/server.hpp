@@ -24,6 +24,7 @@ public:
 
 protected:
     shared_ptr<bits::server> _d;
+    shared_ptr<device_info>  _info;
 
 //protected:
 //	server (bits::server * pd)
@@ -84,6 +85,22 @@ public:
 	 * @return
 	 */
 	bool accept (device & peer, bool non_blocking, error_code * ex = 0);
+
+	void set_info (const device_info & info)
+	{
+		shared_ptr<device_info> d(new device_info(info));
+		_info.swap(d);
+	}
+
+	const device_info & info () const
+	{
+		return *_info;
+	}
+
+	device_info & info ()
+	{
+		return *_info;
+	}
 
 	bool operator == (const server & other)
 	{

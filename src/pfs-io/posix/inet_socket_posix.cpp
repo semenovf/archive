@@ -27,8 +27,8 @@
 #include <cerrno>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include "inet_socket_posix.hpp"
 
@@ -42,10 +42,10 @@ bits::device::open_mode_flags inet_socket::open_mode () const
 	char buf[1] = { 0 };
 
 	if (::read(_fd, buf, 0) >= 0 && errno != EBADF)
-		r |= io::device::read_only;
+		r |= bits::read_only;
 
 	if (::write(_fd, buf, 0) >= 0 && errno != EBADF)
-		r |= io::device::write_only;
+		r |= bits::write_only;
 
 	return r;
 }
@@ -62,6 +62,56 @@ size_t inet_socket::bytes_available () const
 
 	PFS_ASSERT(n >= 0);
 	return static_cast<size_t>(n);
+}
+
+inet_socket::state_type inet_socket::state () const
+{
+	int optval    = 0;
+	socklen_t optlen = sizeof(optval);
+	int rc = ::getsockopt(_fd, SOL_SOCKET, SO_ERROR, & optval, & optlen);
+
+	if (rc != 0) {
+		PFS_THROW_SYSERR(errno);
+	}
+
+	inet_socket::state_type r = bits::unconnected_state;
+
+	switch (optval) {
+	case ECONNREFUSED:  /* Connection refused */
+	case EINVAL:
+	case EHOSTUNREACH:
+	case ENETUNREACH:
+	case EACCES:
+	case EPERM:
+	case EAFNOSUPPORT:
+	case EBADF:
+	case EFAULT:
+	case ENOTSOCK:
+		r = bits::unconnected_state;
+		break;
+
+	case EISCONN:
+		r = bits::connected_state;
+		break;
+
+	case EINPROGRESS:
+	case EALREADY:
+		r = bits::connecting_state;
+		break;
+
+//        case EHOSTDOWN: /* Host is down */
+//        	break;
+//        case ETIMEDOUT:
+//            break;
+//        case EADDRINUSE:
+//            break;
+//        case EAGAIN:
+//            break;
+	default:
+		break;
+	}
+
+	return r;
 }
 
 bool inet_socket::s_set_nonblocking (native_handle_type & fd, bool on)
@@ -274,7 +324,7 @@ error_code open_device<tcp_socket> (device & dev, const open_params<tcp_socket> 
 
     error_code ex;
 
-    bool non_blocking = op.oflags & device::non_blocking;
+    bool non_blocking = op.oflags & bits::non_blocking;
 
     details::tcp_socket::native_handle_type fd = details::tcp_socket::s_create(non_blocking, & ex);
 
@@ -284,10 +334,10 @@ error_code open_device<tcp_socket> (device & dev, const open_params<tcp_socket> 
 	sockaddr_in server_addr;
 	bool rc = details::tcp_socket::s_connect(fd, server_addr, op.addr.native(), op.port, & ex);
 
-	if (!rc) {
-		::close(fd);
-		return ex;
-	}
+//	if (!rc) {
+//		::close(fd);
+//		return ex;
+//	}
 
     shared_ptr<bits::device> d(new details::tcp_socket(fd, server_addr));
     dev._d.swap(d);

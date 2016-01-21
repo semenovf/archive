@@ -46,7 +46,7 @@ struct open_params<file>
 
 	open_params (const fs::path & s)
 		: path(s)
-		, oflags(device::read_write)
+		, oflags(bits::read_write)
 		, permissions(default_create_perms)
 	{}
 };

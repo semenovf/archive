@@ -66,6 +66,8 @@ struct inet_socket : public bits::device
     	return _fd;
     }
 
+    virtual state_type state () const;
+
     static bool s_close (native_handle_type & fd, error_code * pex);
 
     static bool s_set_nonblocking (native_handle_type & fd, bool on);

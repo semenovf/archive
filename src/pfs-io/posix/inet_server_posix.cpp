@@ -100,7 +100,7 @@ error_code open_server<tcp_server> (server & dev, const open_params<tcp_server> 
     if (dev.opened())
         return error_code(EBADF);
 
-    bool non_blocking = op.oflags & device::non_blocking;
+    bool non_blocking = op.oflags & bits::non_blocking;
 
     details::inet_socket::native_handle_type fd = details::inet_socket::s_create(non_blocking, & ex);
 

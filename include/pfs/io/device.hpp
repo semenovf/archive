@@ -24,9 +24,9 @@ struct open_params;
 
 class server;
 
-struct extra_data
+struct device_info
 {
-	virtual ~extra_data () {}
+	virtual ~device_info () {}
 };
 
 class DLL_API device
@@ -35,21 +35,13 @@ class DLL_API device
 
 protected:
     shared_ptr<bits::device> _d;
-    shared_ptr<extra_data>   _extra;
+    shared_ptr<device_info>  _info;
 
 public:
 	typedef bits::device::native_handle_type native_handle_type;
 	typedef bits::device::open_mode_flags    open_mode_flags;
-
-	enum open_mode_enum
-	{
-	      not_open     = 0                       /**< Device is not opened */
-		, read_only    = 0x0001                  /**< Open device for read only */
-		, write_only   = 0x0002                  /**< Open device for write only */
-		, read_write   = read_only | write_only  /**< Open device for read and write */
-		, write_read   = read_write              /**< Synonym for read_write */
-		, non_blocking = 0x0004                  /**< Open device in non-blocking mode */
-	};
+	typedef bits::device::state_type         state_type;
+	typedef bits::device::open_mode_type     open_mode_type;
 
 //protected:
 //	device (bits::device * pd)
@@ -91,19 +83,19 @@ public:
 	bool is_readable () const
 	{
 		PFS_ASSERT(_d);
-		return _d->open_mode() | read_only;
+		return _d->open_mode() | bits::read_only;
 	}
 
 	bool is_writable () const
 	{
 		PFS_ASSERT(_d);
-		return _d->open_mode() | write_only;
+		return _d->open_mode() | bits::write_only;
 	}
 
 #if __COMMENT__
 	bool is_nonblocking () const
 	{
-		return _d && (_oflags & non_blocking);
+		return _d && (_oflags & bits::non_blocking);
 	}
 #endif
 
@@ -197,6 +189,28 @@ public:
     	error_code ex;
     	this->write(bytes.data(), bytes.size(), & ex);
     	return ex;
+	}
+
+	state_type state () const
+	{
+		PFS_ASSERT(_d);
+		return _d->state();
+	}
+
+	void set_info (const device_info & info)
+	{
+		shared_ptr<device_info> d(new device_info(info));
+		_info.swap(d);
+	}
+
+	const device_info & info () const
+	{
+		return *_info;
+	}
+
+	device_info & info ()
+	{
+		return *_info;
 	}
 
 	bool operator == (const device & other)

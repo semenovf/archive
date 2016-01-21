@@ -31,7 +31,7 @@ struct buffer : public bits::device
 
     virtual open_mode_flags open_mode () const
     {
-    	return io::device::read_write | io::device::non_blocking;
+    	return bits::read_write | bits::non_blocking;
     }
 
     virtual size_t  bytes_available () const
@@ -66,6 +66,11 @@ struct buffer : public bits::device
     virtual native_handle_type native_handle () const
     {
     	return -1;
+    }
+
+    virtual state_type state () const
+    {
+    	return bits::unconnected_state;
     }
 };
 
