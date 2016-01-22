@@ -65,11 +65,11 @@ file_status get_file_status (const path & p, error_code * ex)
 	int rc = lstat(p.native().c_str(), & st);
 
 	if (rc != 0) { // error
-		if (rc == ENOENT || rc == ENOTDIR)
+		if (errno == ENOENT || errno == ENOTDIR)
 			return file_status(file_not_found);
 
 		if (ex)
-			*ex = rc;
+			*ex = errno;
 
 		return file_status(status_error);
 	}
@@ -114,7 +114,7 @@ uintmax_t file_size (const path & p, error_code * ex)
 	if (rc == 0)
 		return static_cast<uintmax_t>(st.st_size);
 
-	if (ex) *ex = rc;
+	if (ex) *ex = errno;
 
 	return max_value<uintmax_t>();
 }
@@ -122,14 +122,14 @@ uintmax_t file_size (const path & p, error_code * ex)
 bool remove (const path & p, error_code * ex)
 {
 	int rc = ::unlink(p.native().c_str());
-	if (ex) *ex = rc;
+	if (rc != 0 && ex) *ex = errno;
 	return rc == 0;
 }
 
 bool rename (const path & from, const path & to, error_code * ex)
 {
 	int rc = ::rename(from.native().c_str(), to.native().c_str());
-	if (ex) *ex = rc;
+	if (rc != 0 && ex) *ex = errno;
 	return rc == 0;
 }
 
