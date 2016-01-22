@@ -43,10 +43,9 @@ struct buffer : public bits::device
 
     virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
 
-    virtual bool close (error_code * ex)
+    virtual error_code close ()
     {
-    	PFS_UNUSED(ex);
-    	return true;
+    	return error_code();
     }
 
     virtual bool opened () const

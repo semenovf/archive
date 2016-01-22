@@ -32,7 +32,7 @@ enum state_enum
 //	, host_lookup_state	= 1	// The socket is performing a host name lookup.
 	, connecting_state	= 2 // The socket has started establishing a connection.
 	, connected_state   = 3 // A connection is established.
-//	, bound_state       = 4 // The socket is bound to an address and port (for servers).
+	, bound_state       = 4 // The socket is bound to an address and port (for servers).
 //	, closing_state     = 6 // The socket is about to close (data may still be waiting to be written).
 };
 
@@ -55,7 +55,7 @@ struct device
 
     virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex) = 0;
 
-    virtual bool close (error_code * ex) = 0;
+    virtual error_code close () = 0;
 
     virtual bool opened () const = 0;
 

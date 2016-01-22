@@ -117,13 +117,12 @@ public:
 
     /**
      * @brief Close device.
-     * @return @c true if device closed successfully,
-     *         @c false if error occurred while closing.
-     *         In latter case error will be stored in the internal
-     *         notification storage
+     *
+     * @return error code value.
+     *
      * @see    device::notification()
      */
-	bool close (error_code * ex = 0);
+    error_code close ();
 
 	size_t available () const
 	{
@@ -197,9 +196,9 @@ public:
 		return _d->state();
 	}
 
-	void set_info (const device_info & info)
+	void set_info (device_info * info)
 	{
-		shared_ptr<device_info> d(new device_info(info));
+		shared_ptr<device_info> d(info);
 		_info.swap(d);
 	}
 

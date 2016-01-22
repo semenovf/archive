@@ -34,9 +34,9 @@ struct null_device : bits::device
     	return 0;
     }
 
-    virtual bool close (error_code * ex)
+    virtual error_code close ()
     {
-    	return true;
+    	return error_code();
     }
 
     virtual bool opened () const

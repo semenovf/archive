@@ -64,57 +64,7 @@ size_t inet_socket::bytes_available () const
 	return static_cast<size_t>(n);
 }
 
-inet_socket::state_type inet_socket::state () const
-{
-	int optval    = 0;
-	socklen_t optlen = sizeof(optval);
-	int rc = ::getsockopt(_fd, SOL_SOCKET, SO_ERROR, & optval, & optlen);
-
-	if (rc != 0) {
-		PFS_THROW_SYSERR(errno);
-	}
-
-	inet_socket::state_type r = bits::unconnected_state;
-
-	switch (optval) {
-	case ECONNREFUSED:  /* Connection refused */
-	case EINVAL:
-	case EHOSTUNREACH:
-	case ENETUNREACH:
-	case EACCES:
-	case EPERM:
-	case EAFNOSUPPORT:
-	case EBADF:
-	case EFAULT:
-	case ENOTSOCK:
-		r = bits::unconnected_state;
-		break;
-
-	case EISCONN:
-		r = bits::connected_state;
-		break;
-
-	case EINPROGRESS:
-	case EALREADY:
-		r = bits::connecting_state;
-		break;
-
-//        case EHOSTDOWN: /* Host is down */
-//        	break;
-//        case ETIMEDOUT:
-//            break;
-//        case EADDRINUSE:
-//            break;
-//        case EAGAIN:
-//            break;
-	default:
-		break;
-	}
-
-	return r;
-}
-
-bool inet_socket::s_set_nonblocking (native_handle_type & fd, bool on)
+bool inet_socket_base::s_set_nonblocking (native_handle_type & fd, bool on)
 {
     int flags = ::fcntl(fd, F_GETFL, 0);
 
@@ -127,25 +77,24 @@ bool inet_socket::s_set_nonblocking (native_handle_type & fd, bool on)
 }
 
 // static
-bool inet_socket::s_close (native_handle_type & fd, error_code * pex)
+error_code inet_socket_base::s_close (native_handle_type & fd)
 {
-    bool r = true;
+    error_code ex;
 
     if (fd > 0) {
         if (::close(fd) < 0) {
-        	if (pex)
-        		*pex = errno;
-        	r = false;
+        	ex = error_code(errno);
         }
     }
 
     fd = -1;
-    return r;
+    return ex;
 }
 
 // static
-inet_socket::native_handle_type inet_socket::s_create (bool non_blocking, error_code * pex)
+std::pair<error_code, inet_socket_base::native_handle_type> inet_socket_base::s_create (bool non_blocking)
 {
+	typedef std::pair<error_code, inet_socket_base::native_handle_type> result_type;
 	int socktype = SOCK_STREAM;
 	int domain   = PF_INET;
 	int proto    = IPPROTO_TCP;
@@ -153,47 +102,62 @@ inet_socket::native_handle_type inet_socket::s_create (bool non_blocking, error_
 	if (non_blocking)
 		socktype |= SOCK_NONBLOCK;
 
-	native_handle_type fd = ::socket(AF_INET, socktype, proto);
+	inet_socket_base::native_handle_type	fd = ::socket(AF_INET, socktype, proto);
 
-	if (fd < 0) {
-		if (pex)
-			*pex = errno;
-	}
+	if (fd < 0) return result_type(error_code(errno), fd);
 
-	return fd;
+	return result_type(error_code(), fd);
 }
 
 // static
-bool inet_socket::s_connect (tcp_socket::native_handle_type & fd
-		, sockaddr_in & server_addr
+error_code inet_socket_base::s_connect (inet_socket_base & sock
 		, uint32_t addr
-		, uint16_t port
-		, error_code * pex)
+		, uint16_t port)
 {
-	memset(& server_addr, 0, sizeof(server_addr));
+	memset(& sock._sockaddr, 0, sizeof(sock._sockaddr));
 
-	server_addr.sin_family      = PF_INET;
-	server_addr.sin_port        = htons(port);
-	server_addr.sin_addr.s_addr = htonl(addr);
+	sock._sockaddr.sin_family      = PF_INET;
+	sock._sockaddr.sin_port        = htons(port);
+	sock._sockaddr.sin_addr.s_addr = htonl(addr);
 
-	int rc = ::connect(fd
-			, reinterpret_cast<struct sockaddr *>(& server_addr)
-			, sizeof(server_addr));
+	int rc = ::connect(sock._fd
+			, reinterpret_cast<struct sockaddr *>(& sock._sockaddr)
+			, sizeof(sock._sockaddr));
 
-	if (rc == 0) {
-		int yes = 1;
+	error_code ex;
 
-		/* http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconoserver.htm
-		 *
-		 * The setsockopt() function is used to allow the local address to
-		 * be reused when the server is restarted before the required wait
-		 * time expires
-		 */
-		rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, & yes, sizeof(int));
+    if (rc < 0) {
+        switch (errno) {
+        case EISCONN:
+        	sock._state = bits::connected_state;
+            break;
 
-	} else {
+        case ECONNREFUSED:
+        case EINVAL:
+            ex = error_code(errno);
+            sock._state = bits::unconnected_state;
+            break;
+
+        case ETIMEDOUT:
+        	ex = error_code(errno);
+            break;
+
+        case EHOSTUNREACH:
+        	ex = error_code(errno);
+        	sock._state = bits::unconnected_state;
+            break;
+
+        case ENETUNREACH:
+        	ex = error_code(errno);
+        	sock._state = bits::unconnected_state;
+            break;
+
+        case EADDRINUSE:
+        	ex = error_code(errno);
+            break;
+
 		/* TODO
-		    errno == EINPROGRESS:
+			errno == EINPROGRESS:
 			The socket is nonblocking and the connection cannot be completed immediately.
 			It is possible to select(2) or poll(2) for completion by selecting
 			the socket for writing. After select(2) indicates writability,
@@ -202,63 +166,82 @@ bool inet_socket::s_connect (tcp_socket::native_handle_type & fd
 			unsuccessfully (SO_ERROR is one of the usual error codes listed here,
 			explaining the reason for the failure).
 		 */
-		if (errno == EINPROGRESS) {
-/*
-#if PFS_HAVE_POLL
-			;
-#endif
-*/
-		}
-	}
+        case EINPROGRESS:
+        case EALREADY:
+        	ex = error_code(errno);
+        	sock._state = bits::connecting_state;
+            break;
 
-	if (rc != 0) {
-		if (pex)
-			*pex = errno;
-		return false;
-	}
+        case EAGAIN:
+        	ex = error_code(errno);
+            break;
 
-	return true;
+        case EACCES:
+        case EPERM:
+            ex = error_code(errno);
+            sock._state = bits::unconnected_state;
+            break;
+
+        case EAFNOSUPPORT:
+        case EBADF:
+        case EFAULT:
+        case ENOTSOCK:
+        	sock._state = bits::unconnected_state;
+        	break;
+
+        default:
+            break;
+        }
+
+        if (sock._state != bits::connected_state) {
+            return ex;
+        }
+    }
+
+    sock._state = bits::connected_state;
+    return error_code();
 }
 
 // static
-bool inet_socket::s_bind (native_handle_type & fd
-		, sockaddr_in & bind_addr
+error_code inet_socket_base::s_bind (inet_socket_base & sock
 		, uint32_t addr
-		, uint16_t port
-		, error_code * pex)
+		, uint16_t port)
 {
-	memset(& bind_addr, 0, sizeof(bind_addr));
+	memset(& sock._sockaddr, 0, sizeof(sock._sockaddr));
 
-	bind_addr.sin_family      = PF_INET;
-	bind_addr.sin_port        = htons(port);
-	bind_addr.sin_addr.s_addr = htonl(addr);
+	sock._sockaddr.sin_family      = PF_INET;
+	sock._sockaddr.sin_port        = htons(port);
+	sock._sockaddr.sin_addr.s_addr = htonl(addr);
 
-	int rc = ::bind(fd
-			, reinterpret_cast<struct sockaddr *>(& bind_addr)
-			, sizeof(bind_addr));
+	int yes = 1;
 
-	if (rc != 0) {
-		if (pex)
-			*pex = errno;
-		return false;
-	}
+	/* http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconoserver.htm
+	 *
+	 * The setsockopt() function is used to allow the local address to
+	 * be reused when the server is restarted before the required wait
+	 * time expires
+	 */
+	int rc = ::setsockopt(sock._fd, SOL_SOCKET, SO_REUSEADDR, & yes, sizeof(int));
 
-	return true;
+	if (rc != 0) return error_code(errno);
+
+	rc = ::bind(sock._fd
+			, reinterpret_cast<struct sockaddr *>(& sock._sockaddr)
+			, sizeof(sock._sockaddr));
+
+	if (rc != 0) return error_code(errno);
+
+	sock._state = bits::bound_state;
+
+	return error_code();
 }
 
 // static
-bool inet_socket::s_listen (native_handle_type & fd, int backlog, error_code * pex)
+error_code inet_socket_base::s_listen (inet_socket_base & sock, int backlog)
 {
-	int rc = ::listen(fd, backlog);
-
-	if (rc != 0) {
-		if (pex)
-			*pex = errno;
-
-		return false;
-	}
-
-	return true;
+	int rc = ::listen(sock._fd, backlog);
+	if (rc != 0) return error_code(errno);
+	return error_code();
 }
 
 ssize_t tcp_socket::read (byte_t * bytes, size_t n, error_code * pex)
@@ -322,27 +305,23 @@ error_code open_device<tcp_socket> (device & dev, const open_params<tcp_socket> 
     if (dev.opened())
         return error_code();
 
-    error_code ex;
-
     bool non_blocking = op.oflags & bits::non_blocking;
 
-    details::tcp_socket::native_handle_type fd = details::tcp_socket::s_create(non_blocking, & ex);
+    std::pair<error_code, details::tcp_socket::native_handle_type> rc = details::tcp_socket::s_create(non_blocking);
 
-	if (fd < 0)
-		return error_code(EBADF);
+	if (rc.first)
+		return rc.first;
 
-	sockaddr_in server_addr;
-	bool rc = details::tcp_socket::s_connect(fd, server_addr, op.addr.native(), op.port, & ex);
+	details::tcp_socket * sock = new details::tcp_socket(rc.second, bits::unconnected_state);
 
-//	if (!rc) {
-//		::close(fd);
-//		return ex;
-//	}
+	PFS_ASSERT_NULLPTR(sock);
 
-    shared_ptr<bits::device> d(new details::tcp_socket(fd, server_addr));
+	error_code ex = details::tcp_socket::s_connect(*sock, op.addr.native(), op.port);
+
+    shared_ptr<bits::device> d(sock);
     dev._d.swap(d);
 
-	return error_code(0);
+	return ex;
 }
 
 }} // pfs::io

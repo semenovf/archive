@@ -2,6 +2,8 @@
 #include <pfs/fs/path.hpp>
 #include "pfs/io/file.hpp"
 
+#include <iostream>
+
 using pfs::io::device;
 using pfs::io::open_device;
 using pfs::io::open_params;
@@ -222,14 +224,15 @@ void test_write_read ()
 
     TEST_FAIL(pfs::error_code() == open_device(d, open_params<file>(file_path, pfs::io::bits::write_only)));
     TEST_FAIL(d.write(loremipsum, ::strlen(loremipsum)) == ssize_t(::strlen(loremipsum)));
-    TEST_FAIL(d.close());
+    TEST_FAIL(d.close() == pfs::error_code());
 
     TEST_FAIL(pfs::error_code() == open_device(d, open_params<file>(file_path, pfs::io::bits::read_only)));
     pfs::byte_string bs;
-    d.read(bs);
+    d.read(bs, d.available());
 
-    TEST_OK(d.close());
+    TEST_OK(d.close() == pfs::error_code());
     TEST_OK(bs == loremipsum);
+
     TEST_FAIL2(pfs::fs::unlink(file_path), "Temporary file unlink");
 }
 

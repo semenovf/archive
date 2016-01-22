@@ -52,19 +52,17 @@ error_code device::read (byte_string & bytes, size_t n)
 	return ex;
 }
 
-bool device::close (error_code * ex)
+error_code device::close ()
 {
-	bool r = false;
+	error_code ex;
 
 	if (_d) {
-		if (_d->close(ex))
-			r = true;
-
+		ex = _d->close();
 		shared_ptr<bits::device> nil;
 		_d.swap(nil);
 	}
 
-	return r;
+	return ex;
 }
 
 /**

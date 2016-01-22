@@ -74,7 +74,7 @@ public:
      *         notification storage
      * @see    device::notification()
      */
-	bool close (error_code * ex = 0);
+    error_code close ();
 
 	/**
 	 *
@@ -86,9 +86,9 @@ public:
 	 */
 	bool accept (device & peer, bool non_blocking, error_code * ex = 0);
 
-	void set_info (const device_info & info)
+	void set_info (device_info * info)
 	{
-		shared_ptr<device_info> d(new device_info(info));
+		shared_ptr<device_info> d(info);
 		_info.swap(d);
 	}
 

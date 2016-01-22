@@ -9,19 +9,17 @@
 
 namespace pfs { namespace io {
 
-bool server::close (error_code * ex)
+error_code server::close ()
 {
-	bool r = false;
+	error_code ex;
 
 	if (_d) {
-		if (_d->close(ex))
-			r = true;
-
+		ex = _d->close();
 		shared_ptr<bits::server> nil;
 		_d.swap(nil);
 	}
 
-	return r;
+	return ex;
 }
 
 bool server::accept (device & peer, bool non_blocking, error_code * ex)

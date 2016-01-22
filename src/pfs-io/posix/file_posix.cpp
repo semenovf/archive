@@ -38,7 +38,7 @@ struct file : public bits::device
 
     virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
 
-    virtual bool close (error_code * ex);
+    virtual error_code close ();
 
     virtual bool opened () const
     {
@@ -127,20 +127,18 @@ ssize_t file::write (const byte_t * bytes, size_t n, error_code * pex)
     return sz;
 }
 
-bool file::close (error_code * pex)
+error_code file::close ()
 {
-    bool r = true;
+    error_code ex;
 
     if (_fd > 0) {
         if (::close(_fd) < 0) {
-        	if (pex)
-        		*pex = errno;
-        	r = false;
+        	ex = errno;
         }
     }
 
     _fd = -1;
-    return r;
+    return ex;
 }
 
 }}} // cwt::io::details
