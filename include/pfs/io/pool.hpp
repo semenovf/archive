@@ -9,6 +9,7 @@
 #define __PFS_IO_POOL_HPP__
 
 #include <pfs/vector.hpp>
+#include <pfs/atomic.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <pfs/io/device.hpp>
 #include <pfs/io/server.hpp>
@@ -257,10 +258,25 @@ public:
 			 , int millis = 0
 			 , error_code * ex = 0);
 
-	struct dispatcher_context
+	class dispatcher_context
 	{
+		friend class pool;
+
+		atomic_integer<int> _quit;
+
+	public:
+		dispatcher_context ()
+			: _quit(0)
+		{}
+
 		virtual ~dispatcher_context () {}
-		virtual bool finish () = 0;
+
+		void quit ()
+		{
+			_quit.store(1);
+		}
+
+	public:
 		virtual void connected (device &, const server & listener) {}
 		virtual void ready_read (device & ) {}
 		virtual void disconnected (device & ) {}

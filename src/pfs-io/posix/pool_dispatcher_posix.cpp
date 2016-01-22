@@ -15,7 +15,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 {
 	pfs::error_code ex;
 
-	while (not context.finish()) {
+	while (not context._quit.load()) {
 		poll_result_type result = this->poll(filter_events, millis, & ex);
 
 		if (ex) {
@@ -67,15 +67,15 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 						// Writing is now possible, though a write larger that the available space
 						// in a socket or pipe will still block (unless O_NONBLOCK is set).
 						//
-						// TODO Implement handling
+						// TODO Research this feature
 						//
 						if (revents & poll_out) {
-							;//context.can_write(dev);
+							context.can_write(dev);
 						}
 
 						// Error condition (output only).
 						//
-						// TODO Implement handling
+						// TODO Research this feature and implement handling
 						//
 						if (revents & poll_err) {
 							PFS_WARN("pfs::io::pool::dispatch(): device error condition");
@@ -83,7 +83,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 
 						// Hang up (output only).
 						//
-						// TODO Implement handling
+						// TODO Research this feature and implement handling
 						//
 						if (revents & poll_hup) {
 							PFS_WARN("pfs::io::pool::dispatch(): device hang up");

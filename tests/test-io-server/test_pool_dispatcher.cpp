@@ -80,11 +80,6 @@ struct dispatcher_context : public pfs::io::pool::dispatcher_context
 		: n1(0)
 	{}
 
-	virtual bool finish ()
-	{
-		return n1 >= NCLIENTS;
-	}
-
 	virtual void connected (pfs::io::device & d, const pfs::io::server & )
 	{
 		std::cout << "Socket connected" << std::endl;

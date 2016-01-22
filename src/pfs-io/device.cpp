@@ -12,23 +12,6 @@ namespace pfs { namespace io {
 
 static const size_t DEFAULT_READ_BUFSZ = 256;
 
-error_code device::read (byte_string & bytes)
-{
-	byte_t buffer[DEFAULT_READ_BUFSZ];
-	error_code ex;
-	ssize_t sz = 0;
-
-//	do {
-		sz = _d->read(buffer, DEFAULT_READ_BUFSZ, & ex);
-
-		if (sz > 0) {
-			bytes.append(buffer, size_t(sz));
-		}
-//	} while (sz > 0);
-
-	return ex;
-}
-
 error_code device::read (byte_string & bytes, size_t n)
 {
 	byte_t buffer[DEFAULT_READ_BUFSZ];

@@ -158,7 +158,10 @@ public:
     /**
      * @brief Read data from device and appends them
      */
-    error_code read (byte_string & bytes);
+    error_code read (byte_string & bytes)
+    {
+    	return read(bytes, available());
+    }
 
     error_code read (byte_string & bytes, size_t n);
 
