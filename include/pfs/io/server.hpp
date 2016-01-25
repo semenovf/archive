@@ -113,11 +113,11 @@ public:
 	}
 
 	template <typename ServerTag>
-	friend error_code open_server (server &, const open_params<ServerTag> &);
+	friend server open_server (const open_params<ServerTag> &, error_code * ex = 0);
 };
 
 template <typename ServerTag>
-error_code open_server (server &, const open_params<ServerTag> &);
+server open_server (const open_params<ServerTag> &, error_code * ex);
 
 }} // pfs::io
 

@@ -17,15 +17,13 @@ namespace pfs { namespace io { namespace details {
 struct tcp_server : public inet_socket_base, public bits::server
 {
 	typedef inet_socket_base::native_handle_type native_handle_type;
-	typedef inet_socket_base::state_type state_type;
 
 	tcp_server () : inet_socket_base() {}
 
-	tcp_server (native_handle_type fd, state_type state)
+	tcp_server (native_handle_type fd)
 		: inet_socket_base()
 	{
 		_fd = fd;
-		_state = state;
 	}
 
 	virtual ~tcp_server ()
@@ -79,7 +77,7 @@ bool tcp_server::accept (bits::device ** peer, bool non_blocking, error_code * p
 		details::inet_socket_base::s_set_nonblocking(peer_sock, true);
 	}
 
-	*peer = new details::tcp_socket(peer_sock, peer_addr, bits::connected_state);
+	*peer = new details::tcp_socket(peer_sock, peer_addr);
 
 	return true;
 }
@@ -89,35 +87,38 @@ bool tcp_server::accept (bits::device ** peer, bool non_blocking, error_code * p
 namespace pfs { namespace io {
 
 template <>
-error_code open_server<tcp_server> (server & dev, const open_params<tcp_server> & op)
+server open_server<tcp_server> (const open_params<tcp_server> & op, error_code * pex)
 {
-    if (dev.opened())
-        return error_code(EBADF);
-
+	server result;
     bool non_blocking = op.oflags & bits::non_blocking;
 
-    std::pair<error_code, details::inet_socket_base::native_handle_type> rc = details::inet_socket_base::s_create(non_blocking);
+    error_code ex;
 
-	if (rc.first)
-		return rc.first;
+    details::inet_socket_base::native_handle_type fd = details::inet_socket_base::s_create(non_blocking, & ex);
 
-	details::tcp_server * sock = new details::tcp_server(rc.second, bits::unconnected_state);
-	PFS_ASSERT_NULLPTR(sock);
+	if (fd >= 0) {
+		details::tcp_server * sock = new details::tcp_server(fd);
 
-	error_code ex = details::inet_socket_base::s_bind(*sock, op.addr.native(), op.port);
+		PFS_ASSERT_NULLPTR(sock);
 
-	if (!ex)
-		ex = details::inet_socket_base::s_listen(*sock, op.npendingconn);
+		ex = details::inet_socket_base::s_bind(*sock, op.addr.native(), op.port);
 
-	if (ex) {
-		sock->close();
-		return ex;
+		if (!ex)
+			ex = details::inet_socket_base::s_listen(*sock, op.npendingconn);
+
+		if (ex) {
+			sock->close();
+			delete sock;
+		} else {
+			shared_ptr<bits::server> d(dynamic_cast<details::tcp_server *>(sock));
+		    result._d.swap(d);
+		}
 	}
 
-    shared_ptr<bits::server> d(sock);
-    dev._d.swap(d);
+	if (pex)
+		*pex = ex;
 
-	return error_code();
+	return result;
 }
 
 }} // pfs::io

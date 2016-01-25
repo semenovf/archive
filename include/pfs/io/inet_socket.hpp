@@ -73,7 +73,7 @@ struct open_params<tcp_socket>
  *         (i.e. file device is already opened).
  */
 template <>
-error_code open_device<tcp_socket> (device & d, const open_params<tcp_socket> & op);
+device open_device<tcp_socket> (const open_params<tcp_socket> & op, error_code * ex);
 
 }} // pfs::io
 

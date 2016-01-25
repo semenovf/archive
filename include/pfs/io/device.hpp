@@ -40,7 +40,7 @@ protected:
 public:
 	typedef bits::device::native_handle_type native_handle_type;
 	typedef bits::device::open_mode_flags    open_mode_flags;
-	typedef bits::device::state_type         state_type;
+//	typedef bits::device::state_type         state_type;
 	typedef bits::device::open_mode_type     open_mode_type;
 
 //protected:
@@ -68,6 +68,12 @@ public:
     {
     	PFS_ASSERT(_d);
     	return _d->native_handle();
+    }
+
+    error_code reopen ()
+    {
+    	PFS_ASSERT(_d);
+    	return _d->reopen();
     }
 
     operator bool () const
@@ -193,11 +199,11 @@ public:
     	return ex;
 	}
 
-	state_type state () const
-	{
-		PFS_ASSERT(_d);
-		return _d->state();
-	}
+//	state_type state () const
+//	{
+//		PFS_ASSERT(_d);
+//		return _d->state();
+//	}
 
 	void set_info (device_info * info)
 	{
@@ -205,14 +211,20 @@ public:
 		_info.swap(d);
 	}
 
-	const device_info & info () const
+	const device_info * info () const
 	{
-		return *_info;
+		return _info.is_null() ? 0 : _info.get();
 	}
 
-	device_info & info ()
+	device_info * info ()
 	{
-		return *_info;
+		return _info.is_null() ? 0 : _info.get();
+	}
+
+	void swap (device & other)
+	{
+		_d.swap(other._d);
+		_info.swap(other._info);
 	}
 
 	bool operator == (const device & other)
@@ -226,7 +238,7 @@ public:
 	}
 
 	template <typename DeviceTag>
-	friend error_code open_device (device &, const open_params<DeviceTag> &);
+	friend device open_device (const open_params<DeviceTag> &, error_code * ex = 0);
 
     friend bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * ex = 0);
 
@@ -246,7 +258,7 @@ inline bool uncompress (device & src, device & dest, error_code * ex = 0)
 }
 
 template <typename DeviceTag>
-error_code open_device (device &, const open_params<DeviceTag> &);
+device open_device (const open_params<DeviceTag> &, error_code * ex);
 
 }} // pfs::io
 

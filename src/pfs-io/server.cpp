@@ -15,8 +15,8 @@ error_code server::close ()
 
 	if (_d) {
 		ex = _d->close();
-		shared_ptr<bits::server> nil;
-		_d.swap(nil);
+//		shared_ptr<bits::server> nil;
+//		_d.swap(nil);
 	}
 
 	return ex;

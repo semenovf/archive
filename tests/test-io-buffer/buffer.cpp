@@ -61,9 +61,9 @@ void test_read ()
 	device d;
 
 	TEST_OK(!d.opened());
-	TEST_FAIL(pfs::error_code() == open_device(d, open_params<buffer>(
+	TEST_FAIL((d = open_device(open_params<buffer>(
 			  loremipsum
-			, strlen(loremipsum))));
+			, strlen(loremipsum)))));
 	TEST_OK(d.opened());
 
 	TEST_FAIL(d.available() == strlen(loremipsum));
@@ -87,7 +87,7 @@ void test_write ()
 	device d;
 
 	TEST_OK(!d.opened());
-	TEST_FAIL(pfs::error_code() == open_device(d, open_params<buffer>(10)));
+	TEST_FAIL((d = open_device(open_params<buffer>(10))));
 	TEST_OK(d.opened());
 
     TEST_OK(d.is_readable());

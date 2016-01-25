@@ -9,6 +9,7 @@
 #include <cerrno>
 #include <pfs/map.hpp>
 #include <pfs/vector.hpp>
+#include <pfs/mutex.hpp>
 #include "pfs/io/device.hpp"
 #include "pfs/io/server.hpp"
 #include "pfs/io/pool.hpp"
@@ -32,6 +33,7 @@ struct pool : public bits::pool
 	typedef map<native_handle_type, io::device> device_map_type;
 	typedef map<native_handle_type, io::server> server_map_type;
 
+	pfs::mutex         mtx;
 	device_map_type    device_map;
 	server_map_type    server_map;
 
@@ -44,26 +46,30 @@ struct pool : public bits::pool
 
 	void update_pollfd (short events);
 
-	void push_back (const io::device & d, short events)
+	void push_back (io::device d, short events)
 	{
+		pfs::lock_guard<pfs::mutex> locker(mtx);
 		device_map.insert(std::pair<device::native_handle_type, device>(d.native_handle(), d));
 		update = true;
 	}
 
-	void push_back (const io::server & s, short events)
+	void push_back (io::server s, short events)
 	{
+		pfs::lock_guard<pfs::mutex> locker(mtx);
 		server_map.insert(std::pair<server::native_handle_type, server>(s.native_handle(), s));
 		update = true;
 	}
 
-	void delete_differed (const io::device & d)
+	void delete_differed (io::device d)
 	{
+		pfs::lock_guard<pfs::mutex> locker(mtx);
 		PFS_ASSERT(device_map.erase(d.native_handle()) == 1);
 		update = true;
 	}
 
-	void delete_differed (const io::server & s)
+	void delete_differed (io::server s)
 	{
+		pfs::lock_guard<pfs::mutex> locker(mtx);
 		PFS_ASSERT(server_map.erase(s.native_handle()) == 1);
 		update = true;
 	}
@@ -149,6 +155,8 @@ int pool::poll (pool_iterator ** begin
 
 void pool::update_pollfd (short events)
 {
+	pfs::lock_guard<pfs::mutex> locker(mtx);
+
 	pollfds.clear();
 	pollfds.reserve(server_map.size() + device_map.size());
 
@@ -160,6 +168,8 @@ void pool::update_pollfd (short events)
 			pollfd_type pfd;
 			pfd.fd = it->second.native_handle();
 			pfd.events = events;
+
+			PFS_ASSERT(pfd.fd >= 0);
 
 			pollfds.push_back(pfd);
 
@@ -175,6 +185,8 @@ void pool::update_pollfd (short events)
 			pollfd_type pfd;
 			pfd.fd = it->second.native_handle();
 			pfd.events = events;
+
+			PFS_ASSERT(pfd.fd >= 0);
 
 			pollfds.push_back(pfd);
 
@@ -225,70 +237,70 @@ size_t pool::server_count () const
 	return pdp->server_map.size();
 }
 
-void pool::push_back (const device & d, short events)
+void pool::push_back (device d, short events)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
 	pdp->push_back(d, events);
 }
 
-void pool::push_back (const server & s, short events)
+void pool::push_back (server s, short events)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
 	pdp->push_back(s, events);
 }
 
-void pool::delete_differed (const device & d)
+void pool::delete_differed (device d)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
 	pdp->delete_differed(d);
 }
 
-void pool::delete_differed (const server & s)
+void pool::delete_differed (server s)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
 	pdp->delete_differed(s);
 }
 
-vector<device> pool::get_devices () const
-{
-	vector<device> r;
-
-	if (_d) {
-		details::pool * pdp = static_cast<details::pool *>(_d.get());
-		details::pool::device_map_type::iterator it = pdp->device_map.begin();
-		details::pool::device_map_type::iterator it_end = pdp->device_map.end();
-
-		while (it != it_end) {
-			r.push_back(it->second);
-		}
-	}
-
-	return r;
-}
-
-/**
- * @brief Returns list of all listeners in the pool.
- */
-vector<server> pool::get_listeners () const
-{
-	vector<server> r;
-
-	if (_d) {
-		details::pool * pdp = static_cast<details::pool *>(_d.get());
-		details::pool::server_map_type::iterator it = pdp->server_map.begin();
-		details::pool::server_map_type::iterator it_end = pdp->server_map.end();
-
-		while (it != it_end) {
-			r.push_back(it->second);
-		}
-	}
-
-	return r;
-}
+//vector<device> pool::get_devices () const
+//{
+//	vector<device> r;
+//
+//	if (_d) {
+//		details::pool * pdp = static_cast<details::pool *>(_d.get());
+//		details::pool::device_map_type::iterator it = pdp->device_map.begin();
+//		details::pool::device_map_type::iterator it_end = pdp->device_map.end();
+//
+//		while (it != it_end) {
+//			r.push_back(it->second);
+//		}
+//	}
+//
+//	return r;
+//}
+//
+///**
+// * @brief Returns list of all listeners in the pool.
+// */
+//vector<server> pool::get_listeners () const
+//{
+//	vector<server> r;
+//
+//	if (_d) {
+//		details::pool * pdp = static_cast<details::pool *>(_d.get());
+//		details::pool::server_map_type::iterator it = pdp->server_map.begin();
+//		details::pool::server_map_type::iterator it_end = pdp->server_map.end();
+//
+//		while (it != it_end) {
+//			r.push_back(it->second);
+//		}
+//	}
+//
+//	return r;
+//}
 
 
 pool::poll_result_type pool::poll (short filter_events
@@ -321,6 +333,8 @@ pool::value pool::iterator::operator * () const
 		// Search through servers
 		//
 		{
+			pfs::lock_guard<pfs::mutex> locker(details_pool->mtx);
+
 			details::pool::server_map_type::const_iterator it = details_pool->server_map.find(fd);
 
 			if (it != details_pool->server_map.cend()) {
@@ -331,6 +345,8 @@ pool::value pool::iterator::operator * () const
 		// Search through devices
 		//
 		{
+			pfs::lock_guard<pfs::mutex> locker(details_pool->mtx);
+
 			details::pool::device_map_type::const_iterator it = details_pool->device_map.find(fd);
 
 			if (it != details_pool->device_map.cend()) {

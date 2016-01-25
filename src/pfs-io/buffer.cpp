@@ -29,6 +29,11 @@ struct buffer : public bits::device
         , _pos(0)
     {}
 
+    virtual error_code reopen ()
+    {
+    	return error_code();
+    }
+
     virtual open_mode_flags open_mode () const
     {
     	return bits::read_write | bits::non_blocking;
@@ -67,10 +72,10 @@ struct buffer : public bits::device
     	return -1;
     }
 
-    virtual state_type state () const
-    {
-    	return bits::unconnected_state;
-    }
+//    virtual state_type state () const
+//    {
+//    	return bits::unconnected_state;
+//    }
 };
 
 ssize_t buffer::read (byte_t * bytes, size_t n, error_code * ex)
@@ -107,10 +112,9 @@ ssize_t buffer::write (const byte_t * bytes, size_t n, error_code * ex)
 namespace pfs { namespace io {
 
 template <>
-error_code open_device<buffer> (device & dev, const open_params<buffer> & op)
+device open_device<buffer> (const open_params<buffer> & op, error_code * pex)
 {
-    if (dev.opened())
-    	return error_code();
+	device result;
 
     bits::device * p = 0;
 
@@ -122,10 +126,13 @@ error_code open_device<buffer> (device & dev, const open_params<buffer> & op)
     	p = new details::buffer(details::buffer::default_buffer_size);
     }
 
-    shared_ptr<bits::device> d(p);
-    dev._d.swap(d);
+	shared_ptr<bits::device> d(p);
+    result._d.swap(d);
 
-    return error_code();
+    if (pex)
+    	*pex = error_code();
+
+    return result;
 }
 
 }} // pfs::io

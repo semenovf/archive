@@ -59,8 +59,7 @@ struct open_params<tcp_server>
 };
 
 template <>
-error_code open_server<tcp_server> (server & d
-		, const open_params<tcp_server> & op);
+server open_server<tcp_server> (const open_params<tcp_server> & op, error_code * ex);
 
 }} // pfs::io
 

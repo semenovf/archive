@@ -13,7 +13,7 @@ namespace pfs { namespace net {
  */
 class DLL_API inet4_addr
 {
-private:
+public:
 	static const uint32_t invalid_addr_value = 0xFFFFFFFF;
 
 private:

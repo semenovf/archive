@@ -201,34 +201,34 @@ public:
 
 	size_t server_count () const;
 
-	void push_back (const device & d, short events = poll_all);
+	void push_back (device d, short events = poll_all);
 
-	void push_back (const server & s, short events = poll_all);
+	void push_back (server s, short events = poll_all);
 
-	void delete_differed (const device & d);
+	void delete_differed (device d);
 
-	void delete_differed (const server & s);
+	void delete_differed (server s);
 
-	/**
-	 * @brief Returns list of all devices (exclude listeners) in the pool.
-	 */
-	vector<device> get_devices () const;
-
-	/**
-	 * @brief Returns list of all listeners in the pool.
-	 */
-	vector<server> get_listeners () const;
-
-	/**
-	 * @brief Returns list of all listeners in the pool.
-	 * 		Synonym for get_listeners().
-	 *
-	 * @see get_listeners().
-	 */
-	vector<server> get_servers () const
-	{
-		return get_listeners ();
-	}
+//	/**
+//	 * @brief Returns list of all devices (exclude listeners) in the pool.
+//	 */
+//	vector<device> get_devices () const;
+//
+//	/**
+//	 * @brief Returns list of all listeners in the pool.
+//	 */
+//	vector<server> get_listeners () const;
+//
+//	/**
+//	 * @brief Returns list of all listeners in the pool.
+//	 * 		Synonym for get_listeners().
+//	 *
+//	 * @see get_listeners().
+//	 */
+//	vector<server> get_servers () const
+//	{
+//		return get_listeners ();
+//	}
 
 	typedef std::pair<pool::iterator, pool::iterator> poll_result_type;
 
@@ -277,10 +277,10 @@ public:
 		}
 
 	public:
-		virtual void connected (device &, const server & listener) {}
-		virtual void ready_read (device & ) {}
-		virtual void disconnected (device & ) {}
-		virtual void can_write (device & ) {} // unused yet
+		virtual void connected (device, const server listener) {}
+		virtual void ready_read (device) {}
+		virtual void disconnected (device) {}
+		virtual void can_write (device) {} // unused yet
 		virtual void on_error (const error_code & ) {}
 	};
 

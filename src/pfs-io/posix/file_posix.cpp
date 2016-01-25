@@ -17,18 +17,35 @@ namespace pfs { namespace io { namespace details {
 struct file : public bits::device
 {
 	bits::device::native_handle_type _fd;
+	fs::path path;
+	int      oflags;
+	mode_t   omode;
 
-	file () : _fd(-1) {}
+	file ()
+		: _fd(-1)
+		, oflags(0)
+		, omode(0)
+	{}
 
-	file (bits::device::native_handle_type fd) : _fd(fd) {}
+//	file (const file & other)
+//		: _fd(other._fd)
+//		, path(other.path)
+//		, oflags(other.oflags)
+//		, omode(other.omode)
+//	{}
 
 	~file ()
 	{
-		if (_fd > 0) {
-			::close(_fd);
-			_fd = -1;
-		}
+		close();
 	}
+
+	error_code open (const fs::path & path, int native_oflags, mode_t native_mode);
+
+    virtual error_code reopen ()
+    {
+    	close();
+    	return open(path, oflags, omode);
+    }
 
     virtual open_mode_flags open_mode () const;
 
@@ -69,11 +86,28 @@ struct file : public bits::device
     	return _fd;
     }
 
-    virtual state_type state () const
-    {
-    	return bits::unconnected_state;
-    }
+//    virtual state_type state () const
+//    {
+//    	return bits::unconnected_state;
+//    }
 };
+
+error_code file::open (const fs::path & path, int oflags, mode_t omode)
+{
+	int fd = ::open(path.native().c_str(), oflags, omode);
+
+	if (fd < 0) {
+		return error_code(errno);
+	}
+
+	this->_fd    = fd;
+	this->path   = path;
+	this->oflags = oflags;
+	this->omode  = omode;
+
+	return error_code();
+}
+
 
 bits::device::open_mode_flags file::open_mode () const
 {
@@ -163,11 +197,9 @@ static int __convert_to_native_perms (int perms)
 }
 
 template <>
-error_code open_device<file> (device & dev, const open_params<file> & op)
+device open_device<file> (const open_params<file> & op, error_code * pex)
 {
-    if (dev.opened())
-        return error_code();
-
+	device result;
 	int fd;
 	int native_oflags = 0;
 	mode_t native_mode = 0;
@@ -187,16 +219,22 @@ error_code open_device<file> (device & dev, const open_params<file> & op)
 	if (op.oflags & bits::non_blocking)
 		native_oflags |= O_NONBLOCK;
 
-	fd = ::open(op.path.native().c_str(), native_oflags, native_mode);
 
-	if (fd < 0) {
-		return error_code(errno);
+	details::file * f = new details::file;
+
+	error_code ex = f->open(op.path, native_oflags, native_mode);
+
+	if (!ex) {
+	    shared_ptr<bits::device> d(f);
+	    result._d.swap(d);
+	} else {
+		delete f;
 	}
 
-    shared_ptr<bits::device> d(new details::file(fd));
-    dev._d.swap(d);
+	if (pex)
+		*pex = ex;
 
-	return error_code();
+	return result;
 }
 
 }} // pfs::io

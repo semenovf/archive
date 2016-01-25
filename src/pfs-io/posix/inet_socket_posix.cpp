@@ -92,9 +92,10 @@ error_code inet_socket_base::s_close (native_handle_type & fd)
 }
 
 // static
-std::pair<error_code, inet_socket_base::native_handle_type> inet_socket_base::s_create (bool non_blocking)
+inet_socket_base::native_handle_type inet_socket_base::s_create (bool non_blocking, error_code * pex)
 {
 	typedef std::pair<error_code, inet_socket_base::native_handle_type> result_type;
+
 	int socktype = SOCK_STREAM;
 	int domain   = PF_INET;
 	int proto    = IPPROTO_TCP;
@@ -102,11 +103,14 @@ std::pair<error_code, inet_socket_base::native_handle_type> inet_socket_base::s_
 	if (non_blocking)
 		socktype |= SOCK_NONBLOCK;
 
-	inet_socket_base::native_handle_type	fd = ::socket(AF_INET, socktype, proto);
+	inet_socket_base::native_handle_type fd = ::socket(AF_INET, socktype, proto);
 
-	if (fd < 0) return result_type(error_code(errno), fd);
+	if (fd < 0) {
+		if (pex)
+			*pex = errno;
+	}
 
-	return result_type(error_code(), fd);
+	return fd;
 }
 
 // static
@@ -129,13 +133,13 @@ error_code inet_socket_base::s_connect (inet_socket_base & sock
     if (rc < 0) {
         switch (errno) {
         case EISCONN:
-        	sock._state = bits::connected_state;
+//        	sock._state = bits::connected_state;
             break;
 
         case ECONNREFUSED:
         case EINVAL:
-            ex = error_code(errno);
-            sock._state = bits::unconnected_state;
+            ex = error_code(ConnectionRefusedError);
+//            sock._state = bits::unconnected_state;
             break;
 
         case ETIMEDOUT:
@@ -144,12 +148,12 @@ error_code inet_socket_base::s_connect (inet_socket_base & sock
 
         case EHOSTUNREACH:
         	ex = error_code(errno);
-        	sock._state = bits::unconnected_state;
+//        	sock._state = bits::unconnected_state;
             break;
 
         case ENETUNREACH:
         	ex = error_code(errno);
-        	sock._state = bits::unconnected_state;
+//        	sock._state = bits::unconnected_state;
             break;
 
         case EADDRINUSE:
@@ -169,7 +173,7 @@ error_code inet_socket_base::s_connect (inet_socket_base & sock
         case EINPROGRESS:
         case EALREADY:
         	ex = error_code(errno);
-        	sock._state = bits::connecting_state;
+//        	sock._state = bits::connecting_state;
             break;
 
         case EAGAIN:
@@ -179,27 +183,22 @@ error_code inet_socket_base::s_connect (inet_socket_base & sock
         case EACCES:
         case EPERM:
             ex = error_code(errno);
-            sock._state = bits::unconnected_state;
+//            sock._state = bits::unconnected_state;
             break;
 
         case EAFNOSUPPORT:
         case EBADF:
         case EFAULT:
         case ENOTSOCK:
-        	sock._state = bits::unconnected_state;
+//        	sock._state = bits::unconnected_state;
         	break;
 
         default:
             break;
         }
-
-        if (sock._state != bits::connected_state) {
-            return ex;
-        }
     }
 
-    sock._state = bits::connected_state;
-    return error_code();
+    return ex;
 }
 
 // static
@@ -231,8 +230,6 @@ error_code inet_socket_base::s_bind (inet_socket_base & sock
 
 	if (rc != 0) return error_code(errno);
 
-	sock._state = bits::bound_state;
-
 	return error_code();
 }
 
@@ -242,6 +239,24 @@ error_code inet_socket_base::s_listen (inet_socket_base & sock, int backlog)
 	int rc = ::listen(sock._fd, backlog);
 	if (rc != 0) return error_code(errno);
 	return error_code();
+}
+
+
+error_code tcp_socket::open (uint32_t addr, uint16_t port, bool non_blocking)
+{
+	error_code ex;
+
+    details::tcp_socket::native_handle_type fd = details::tcp_socket::s_create(non_blocking, & ex);
+
+	if (ex)
+		return ex;
+
+	_fd   = fd;
+	_addr = addr;
+	_port = port;
+
+	ex = details::tcp_socket::s_connect(*this, addr, port);
+	return ex;
 }
 
 ssize_t tcp_socket::read (byte_t * bytes, size_t n, error_code * pex)
@@ -300,28 +315,27 @@ ssize_t tcp_socket::write (const byte_t * bytes, size_t nbytes, error_code * ex)
 namespace pfs { namespace io {
 
 template <>
-error_code open_device<tcp_socket> (device & dev, const open_params<tcp_socket> & op)
+device open_device<tcp_socket> (const open_params<tcp_socket> & op, error_code * pex)
 {
-    if (dev.opened())
-        return error_code();
+	device result;
 
     bool non_blocking = op.oflags & bits::non_blocking;
 
-    std::pair<error_code, details::tcp_socket::native_handle_type> rc = details::tcp_socket::s_create(non_blocking);
+	details::tcp_socket * sock = new details::tcp_socket;
 
-	if (rc.first)
-		return rc.first;
+	error_code ex = sock->open(op.addr.native(), op.port, non_blocking);
 
-	details::tcp_socket * sock = new details::tcp_socket(rc.second, bits::unconnected_state);
+	if (!ex or ex == ConnectionRefusedError) {
+	    shared_ptr<bits::device> d(sock);
+	    result._d.swap(d);
+	} else {
+		delete sock;
+	}
 
-	PFS_ASSERT_NULLPTR(sock);
+	if (pex)
+		*pex = ex;
 
-	error_code ex = details::tcp_socket::s_connect(*sock, op.addr.native(), op.port);
-
-    shared_ptr<bits::device> d(sock);
-    dev._d.swap(d);
-
-	return ex;
+	return result;
 }
 
 }} // pfs::io

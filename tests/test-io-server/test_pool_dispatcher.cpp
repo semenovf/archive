@@ -145,10 +145,12 @@ public:
 	{
 		ADD_TESTS(1);
 
-		pfs::error_code ex = pfs::io::open_server(_server
-				, pfs::io::open_params<tcp_server>(inet4_addr(SERVER_ADDR)
-						, SERVER_PORT
-						, SERVER_BACKLOG));
+		pfs::error_code ex;
+		_server = pfs::io::open_server(pfs::io::open_params<tcp_server>(
+				 inet4_addr(SERVER_ADDR)
+				, SERVER_PORT
+				, SERVER_BACKLOG)
+				, & ex);
 
 		if (ex) {
 			std::cerr << "ERROR (server): open failed:" << pfs::to_string(ex) << std::endl;
@@ -182,10 +184,11 @@ public:
 	{
 		ADD_TESTS(2);
 
-		pfs::io::device client;
+		;
 
-		pfs::error_code ex = pfs::io::open_device(client
-				, pfs::io::open_params<tcp_socket>(inet4_addr(SERVER_ADDR), SERVER_PORT));
+		pfs::error_code ex;
+		pfs::io::device client = pfs::io::open_device(pfs::io::open_params<tcp_socket>(
+				inet4_addr(SERVER_ADDR), SERVER_PORT), & ex);
 
 		TEST_OK2(!ex, "Open client socket");
 
@@ -238,5 +241,5 @@ void test_pool_dispatcher ()
 		clients[i].wait();
 	}
 
-	server.wait();
+	server.wait(3000);
 }
