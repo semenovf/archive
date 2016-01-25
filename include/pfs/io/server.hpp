@@ -92,14 +92,14 @@ public:
 		_info.swap(d);
 	}
 
-	const device_info & info () const
+	const device_info * info () const
 	{
-		return *_info;
+		return _info.is_null() ? 0 : _info.get();
 	}
 
-	device_info & info ()
+	device_info * info ()
 	{
-		return *_info;
+		return _info.is_null() ? 0 : _info.get();
 	}
 
 	bool operator == (const server & other)

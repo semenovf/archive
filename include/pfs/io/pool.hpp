@@ -277,10 +277,10 @@ public:
 		}
 
 	public:
-		virtual void connected (device, const server listener) {}
-		virtual void ready_read (device) {}
-		virtual void disconnected (device) {}
-		virtual void can_write (device) {} // unused yet
+		virtual void connected (device &, server & listener) {}
+		virtual void ready_read (device &) {}
+		virtual void disconnected (device &) {}
+		virtual void can_write (device &) {} // unused yet
 		virtual void on_error (const error_code & ) {}
 	};
 
