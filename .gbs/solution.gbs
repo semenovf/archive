@@ -78,8 +78,8 @@ project "test-safeformat"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-shared_ptr"
---    include("test-shared_ptr/project.gbs")
+project "test-shared_ptr"
+    include("test-shared_ptr/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
