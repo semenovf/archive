@@ -58,7 +58,7 @@ struct open_params<buffer>
  *         (i.e. buffer device is already opened).
  */
 template <>
-device open_device<buffer> (const open_params<buffer> & op, error_code * ex);
+device open_device<buffer> (const open_params<buffer> & op, error_code & ex);
 
 }} // pfs::io
 

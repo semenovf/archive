@@ -197,7 +197,7 @@ static int __convert_to_native_perms (int perms)
 }
 
 template <>
-device open_device<file> (const open_params<file> & op, error_code * pex)
+device open_device<file> (const open_params<file> & op, error_code & ex)
 {
 	device result;
 	int fd;
@@ -222,7 +222,7 @@ device open_device<file> (const open_params<file> & op, error_code * pex)
 
 	details::file * f = new details::file;
 
-	error_code ex = f->open(op.path, native_oflags, native_mode);
+	ex = f->open(op.path, native_oflags, native_mode);
 
 	if (!ex) {
 	    shared_ptr<bits::device> d(f);
@@ -230,9 +230,6 @@ device open_device<file> (const open_params<file> & op, error_code * pex)
 	} else {
 		delete f;
 	}
-
-	if (pex)
-		*pex = ex;
 
 	return result;
 }

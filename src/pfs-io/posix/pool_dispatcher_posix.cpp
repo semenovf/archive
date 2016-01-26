@@ -13,9 +13,8 @@ namespace pfs { namespace io {
 
 void pool::dispatch (pool::dispatcher_context & context, short filter_events, int millis)
 {
-	pfs::error_code ex;
-
 	while (not context._quit.load()) {
+		pfs::error_code ex;
 		poll_result_type result = this->poll(filter_events, millis, & ex);
 
 		if (ex) {
@@ -31,7 +30,8 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 					pfs::io::device client;
 					pfs::io::server server = value.get_server();
 
-					if (not server.accept(client, true, & ex)) {
+					ex = server.accept(client, true);
+					if (ex) {
 						// Acception failed
 						//
 						context.on_error(ex);

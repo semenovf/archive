@@ -223,7 +223,7 @@ void test_write_read ()
     device d;
     pfs::error_code ex;
 
-    TEST_FAIL((d = open_device(open_params<file>(file_path, pfs::io::bits::write_only), & ex)));
+    TEST_FAIL((d = open_device(open_params<file>(file_path, pfs::io::bits::write_only), ex)));
 
     TEST_FAIL(d.write(loremipsum, ::strlen(loremipsum)) == ssize_t(::strlen(loremipsum)));
     TEST_FAIL(d.close() == pfs::error_code());

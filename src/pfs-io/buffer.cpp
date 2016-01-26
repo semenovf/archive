@@ -112,7 +112,7 @@ ssize_t buffer::write (const byte_t * bytes, size_t n, error_code * ex)
 namespace pfs { namespace io {
 
 template <>
-device open_device<buffer> (const open_params<buffer> & op, error_code * pex)
+device open_device<buffer> (const open_params<buffer> & op, error_code & ex)
 {
 	device result;
 
@@ -129,8 +129,7 @@ device open_device<buffer> (const open_params<buffer> & op, error_code * pex)
 	shared_ptr<bits::device> d(p);
     result._d.swap(d);
 
-    if (pex)
-    	*pex = error_code();
+    ex = error_code();
 
     return result;
 }

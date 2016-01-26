@@ -34,6 +34,37 @@
 
 namespace pfs { namespace io { namespace details {
 
+
+// XXX Duplicated with tcp_server version
+//
+error_code inet_socket::close ()
+{
+	error_code ex;
+
+    if (_fd > 0) {
+        if (::close(_fd) < 0) {
+        	ex = error_code(errno);
+        }
+    }
+
+    _fd = -1;
+    return ex;
+}
+
+// XXX Duplicated with tcp_server version
+//
+bool inet_socket::set_nonblocking (bool on)
+{
+    int flags = ::fcntl(_fd, F_GETFL, 0);
+
+    if (on)
+    	flags |= O_NONBLOCK;
+    else
+    	flags &= ~O_NONBLOCK;
+
+    return ::fcntl(_fd, F_SETFL, flags) >= 0;
+}
+
 bits::device::open_mode_flags inet_socket::open_mode () const
 {
 	// TODO Inherited from file (check if this apply to real socket)
@@ -64,69 +95,31 @@ size_t inet_socket::bytes_available () const
 	return static_cast<size_t>(n);
 }
 
-bool inet_socket_base::s_set_nonblocking (native_handle_type & fd, bool on)
+// XXX Duplicated with tcp_server version
+//
+error_code tcp_socket::open (bool non_blocking)
 {
-    int flags = ::fcntl(fd, F_GETFL, 0);
-
-    if (on)
-    	flags |= O_NONBLOCK;
-    else
-    	flags &= ~O_NONBLOCK;
-
-    return ::fcntl(fd, F_SETFL, flags) >= 0;
-}
-
-// static
-error_code inet_socket_base::s_close (native_handle_type & fd)
-{
-    error_code ex;
-
-    if (fd > 0) {
-        if (::close(fd) < 0) {
-        	ex = error_code(errno);
-        }
-    }
-
-    fd = -1;
-    return ex;
-}
-
-// static
-inet_socket_base::native_handle_type inet_socket_base::s_create (bool non_blocking, error_code * pex)
-{
-	typedef std::pair<error_code, inet_socket_base::native_handle_type> result_type;
-
 	int socktype = SOCK_STREAM;
-	int domain   = PF_INET;
-	int proto    = IPPROTO_TCP;
 
 	if (non_blocking)
 		socktype |= SOCK_NONBLOCK;
 
-	inet_socket_base::native_handle_type fd = ::socket(AF_INET, socktype, proto);
+	_fd = ::socket(PF_INET, socktype, IPPROTO_TCP);
 
-	if (fd < 0) {
-		if (pex)
-			*pex = errno;
-	}
-
-	return fd;
+	return _fd < 0 ? error_code(errno) : error_code();
 }
 
-// static
-error_code inet_socket_base::s_connect (inet_socket_base & sock
-		, uint32_t addr
-		, uint16_t port)
+error_code tcp_socket::connect (uint32_t addr, uint16_t port)
 {
-	memset(& sock._sockaddr, 0, sizeof(sock._sockaddr));
+	memset(& _sockaddr, 0, sizeof(_sockaddr));
 
-	sock._sockaddr.sin_family      = PF_INET;
-	sock._sockaddr.sin_port        = htons(port);
-	sock._sockaddr.sin_addr.s_addr = htonl(addr);
+	_sockaddr.sin_family      = PF_INET;
+	_sockaddr.sin_port        = htons(port);
+	_sockaddr.sin_addr.s_addr = htonl(addr);
 
-	int rc = ::connect(sock._fd
-			, reinterpret_cast<struct sockaddr *>(& sock._sockaddr)
-			, sizeof(sock._sockaddr));
+	int rc = ::connect(_fd
+			, reinterpret_cast<struct sockaddr *>(& _sockaddr)
+			, sizeof(_sockaddr));
 
 	error_code ex;
 
@@ -201,63 +194,17 @@ error_code inet_socket_base::s_connect (inet_socket_base & sock
     return ex;
 }
 
-// static
-error_code inet_socket_base::s_bind (inet_socket_base & sock
-		, uint32_t addr
-		, uint16_t port)
+
+// FIXME Return in non-blocking mode (need to change this behavior)
+//
+error_code tcp_socket::reopen ()
 {
-	memset(& sock._sockaddr, 0, sizeof(sock._sockaddr));
-
-	sock._sockaddr.sin_family      = PF_INET;
-	sock._sockaddr.sin_port        = htons(port);
-	sock._sockaddr.sin_addr.s_addr = htonl(addr);
-
-	int yes = 1;
-
-	/* http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconoserver.htm
-	 *
-	 * The setsockopt() function is used to allow the local address to
-	 * be reused when the server is restarted before the required wait
-	 * time expires
-	 */
-	int rc = ::setsockopt(sock._fd, SOL_SOCKET, SO_REUSEADDR, & yes, sizeof(int));
-
-	if (rc != 0) return error_code(errno);
-
-	rc = ::bind(sock._fd
-			, reinterpret_cast<struct sockaddr *>(& sock._sockaddr)
-			, sizeof(sock._sockaddr));
-
-	if (rc != 0) return error_code(errno);
-
-	return error_code();
-}
-
-// static
-error_code inet_socket_base::s_listen (inet_socket_base & sock, int backlog)
-{
-	int rc = ::listen(sock._fd, backlog);
-	if (rc != 0) return error_code(errno);
-	return error_code();
-}
-
-
-error_code tcp_socket::open (uint32_t addr, uint16_t port, bool non_blocking)
-{
-	error_code ex;
-
-    details::tcp_socket::native_handle_type fd = details::tcp_socket::s_create(non_blocking, & ex);
-
-	if (ex)
-		return ex;
-
-	_fd   = fd;
-	_addr = addr;
-	_port = port;
-
-	ex = details::tcp_socket::s_connect(*this, addr, port);
+	close();
+	error_code ex = open(true);
+	if (!ex) ex = connect(_sockaddr.sin_addr.s_addr, _sockaddr.sin_port);
 	return ex;
 }
+
 
 ssize_t tcp_socket::read (byte_t * bytes, size_t n, error_code * pex)
 {
@@ -315,27 +262,23 @@ ssize_t tcp_socket::write (const byte_t * bytes, size_t nbytes, error_code * ex)
 namespace pfs { namespace io {
 
 template <>
-device open_device<tcp_socket> (const open_params<tcp_socket> & op, error_code * pex)
+device open_device<tcp_socket> (const open_params<tcp_socket> & op, error_code & ex)
 {
-	device result;
-
     bool non_blocking = op.oflags & bits::non_blocking;
 
-	details::tcp_socket * sock = new details::tcp_socket;
+    details::tcp_socket * d = new details::tcp_socket;
 
-	error_code ex = sock->open(op.addr.native(), op.port, non_blocking);
+    ex = d->open(non_blocking);
+    if (!ex) ex = d->connect(op.addr.native(), op.port);
 
-	if (!ex or ex == ConnectionRefusedError) {
-	    shared_ptr<bits::device> d(sock);
-	    result._d.swap(d);
-	} else {
-		delete sock;
-	}
+    if (ex and ex != ConnectionRefusedError) {
+    	delete d;
+    	return device();
+    }
 
-	if (pex)
-		*pex = ex;
+    return device(d);
 
-	return result;
+
 }
 
 }} // pfs::io

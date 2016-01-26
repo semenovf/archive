@@ -26,14 +26,60 @@ enum open_mode_enum
 	, non_blocking = 0x0004                  /**< Open device in non-blocking mode */
 };
 
-struct device
+struct device_info
 {
+	virtual ~device_info () {}
+};
+
+class basic_device
+{
+public:
+	typedef device_info info_type;
+
+protected:
+	info_type * _info;
+
+public:
+	basic_device ()
+		: _info(0)
+	{}
+
+    virtual ~basic_device ()
+    {
+    	if (_info)
+    		delete _info;
+    }
+
+    info_type * info ()
+    {
+    	return _info;
+    }
+
+    const info_type * info () const
+    {
+    	return _info;
+    }
+
+    void set_info (info_type * info)
+    {
+    	if (_info)
+    		delete _info;
+    	_info = info;
+    }
+};
+
+class device : public basic_device
+{
+public:
 	typedef bits::native_handle_type native_handle_type;
 	typedef uint32_t       open_mode_flags;
 	typedef open_mode_enum open_mode_type;
-//	typedef state_enum     state_type;
+	typedef device_info    info_type;
 
-	device () {}
+public:
+	device ()
+		: basic_device()
+	{}
 
     virtual ~device () {}
 
@@ -56,10 +102,6 @@ struct device
     virtual bool set_nonblocking (bool on) = 0;
 
     virtual native_handle_type native_handle () const = 0;
-
-//    virtual state_type state () const = 0;
-//
-//    virtual void set_state (state_type) const = 0;
 };
 
 }}} // pfs::io::bits

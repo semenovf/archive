@@ -21,15 +21,15 @@ class server
 {
 public:
 	typedef device::native_handle_type native_handle_type;
+	typedef device::info_type          info_type;
 
 protected:
     shared_ptr<bits::server> _d;
-    shared_ptr<device_info>  _info;
 
-//protected:
-//	server (bits::server * pd)
-//		: _d(pd)
-//	{}
+protected:
+    server (bits::server * p)
+		: _d(p)
+	{}
 
 public:
     server ()
@@ -41,7 +41,6 @@ public:
 
     native_handle_type native_handle () const
     {
-    	PFS_ASSERT(_d);
     	return _d->native_handle();
     }
 
@@ -62,7 +61,6 @@ public:
 
     bool set_nonblocking (bool on)
     {
-    	PFS_ASSERT(_d);
     	return _d->set_nonblocking(on);
     }
 
@@ -84,22 +82,21 @@ public:
 	 *
 	 * @return
 	 */
-	bool accept (device & peer, bool non_blocking, error_code * ex = 0);
+	error_code accept (device & peer, bool non_blocking);
 
-	void set_info (device_info * info)
+	void set_info (info_type * info)
 	{
-		shared_ptr<device_info> d(info);
-		_info.swap(d);
+		_d->set_info(info);
 	}
 
-	const device_info * info () const
+	const info_type * info () const
 	{
-		return _info.is_null() ? 0 : _info.get();
+		return _d->info();
 	}
 
-	device_info * info ()
+	info_type * info ()
 	{
-		return _info.is_null() ? 0 : _info.get();
+		return  _d->info();
 	}
 
 	bool operator == (const server & other)
@@ -113,11 +110,11 @@ public:
 	}
 
 	template <typename ServerTag>
-	friend server open_server (const open_params<ServerTag> &, error_code * ex = 0);
+	friend server open_server (const open_params<ServerTag> &, error_code & ex);
 };
 
 template <typename ServerTag>
-server open_server (const open_params<ServerTag> &, error_code * ex);
+server open_server (const open_params<ServerTag> &, error_code & ex);
 
 }} // pfs::io
 

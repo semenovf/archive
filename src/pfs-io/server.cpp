@@ -22,20 +22,20 @@ error_code server::close ()
 	return ex;
 }
 
-bool server::accept (device & peer, bool non_blocking, error_code * ex)
+error_code server::accept (device & peer, bool non_blocking)
 {
 	PFS_ASSERT(_d);
 
 	bits::device * p;
 
-	bool rc = _d->accept(& p, non_blocking, ex);
+	error_code ex = _d->accept(& p, non_blocking);
 
-	if (rc) {
+	if (!ex) {
 	    shared_ptr<bits::device> d(p);
 	    peer._d.swap(d);
 	}
 
-	return rc;
+	return ex;
 }
 
 

@@ -13,11 +13,13 @@
 
 namespace pfs { namespace io { namespace bits {
 
-struct server
+struct server : public basic_device
 {
 	typedef device::native_handle_type native_handle_type;
 
-    server () {}
+    server ()
+		: basic_device()
+	{}
 
     virtual ~server () {}
 
@@ -27,7 +29,7 @@ struct server
 
     virtual bool set_nonblocking (bool on) = 0;
 
-    virtual bool accept (bits::device **, bool non_blocking, error_code * ex) = 0;
+    virtual error_code accept (bits::device **, bool non_blocking) = 0;
 
     virtual native_handle_type native_handle () const = 0;
 };

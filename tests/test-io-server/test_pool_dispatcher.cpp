@@ -150,7 +150,7 @@ public:
 				 inet4_addr(SERVER_ADDR)
 				, SERVER_PORT
 				, SERVER_BACKLOG)
-				, & ex);
+				, ex);
 
 		if (ex) {
 			std::cerr << "ERROR (server): open failed:" << pfs::to_string(ex) << std::endl;
@@ -188,7 +188,7 @@ public:
 
 		pfs::error_code ex;
 		pfs::io::device client = pfs::io::open_device(pfs::io::open_params<tcp_socket>(
-				inet4_addr(SERVER_ADDR), SERVER_PORT), & ex);
+				inet4_addr(SERVER_ADDR), SERVER_PORT), ex);
 
 		TEST_OK2(!ex, "Open client socket");
 
@@ -241,5 +241,5 @@ void test_pool_dispatcher ()
 		clients[i].wait();
 	}
 
-	server.wait(3000);
+	server.wait(5000);
 }

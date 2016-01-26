@@ -24,55 +24,38 @@ struct open_params;
 
 class server;
 
-struct device_info
-{
-	virtual ~device_info () {}
-};
-
 class DLL_API device
 {
 	friend class server;
 
-protected:
-    shared_ptr<bits::device> _d;
-    shared_ptr<device_info>  _info;
-
 public:
 	typedef bits::device::native_handle_type native_handle_type;
 	typedef bits::device::open_mode_flags    open_mode_flags;
-//	typedef bits::device::state_type         state_type;
 	typedef bits::device::open_mode_type     open_mode_type;
+	typedef bits::device::info_type          info_type;
 
-//protected:
-//	device (bits::device * pd)
-//		: _d(pd)
-//	{}
+protected:
+    shared_ptr<bits::device> _d;
+
+protected:
+    device (bits::device * p)
+		: _d(p)
+	{}
+
 
 public:
     device () {}
-
-//    device (const device & other)
-//    	: _d(other._d)
-//    {}
-//
-//    device & operator = (const device & other)
-//    {
-//    	_d = other._d;
-//    	return *this;
-//    }
 
     ~device ()
     {}
 
     native_handle_type native_handle () const
     {
-    	PFS_ASSERT(_d);
     	return _d->native_handle();
     }
 
     error_code reopen ()
     {
-    	PFS_ASSERT(_d);
     	return _d->reopen();
     }
 
@@ -88,13 +71,11 @@ public:
 
 	bool is_readable () const
 	{
-		PFS_ASSERT(_d);
 		return _d->open_mode() | bits::read_only;
 	}
 
 	bool is_writable () const
 	{
-		PFS_ASSERT(_d);
 		return _d->open_mode() | bits::write_only;
 	}
 
@@ -117,7 +98,6 @@ public:
 
     bool set_nonblocking (bool on)
     {
-    	PFS_ASSERT(_d);
     	return _d->set_nonblocking(on);
     }
 
@@ -132,13 +112,11 @@ public:
 
 	size_t available () const
 	{
-		PFS_ASSERT(_d);
 	    return _d->bytes_available();
 	}
 
 	bool at_end () const
 	{
-		PFS_ASSERT(_d);
 	    return _d->bytes_available() == ssize_t(0);
 	}
 
@@ -147,7 +125,6 @@ public:
 	 */
 	ssize_t read (byte_t * bytes, size_t n, error_code * ex = 0)
 	{
-		PFS_ASSERT(_d);
 		return _d->read(bytes, n, ex);
 	}
 
@@ -155,11 +132,6 @@ public:
     {
         return read(reinterpret_cast<byte_t *>(chars), n, ex);
     }
-
-//    /**
-//     * @brief Read data from device and appends them
-//     */
-//    error_code read (byte_string & bytes, size_t n);
 
     /**
      * @brief Read data from device and appends them
@@ -176,7 +148,6 @@ public:
      */
 	ssize_t write (const byte_t * bytes, size_t n, error_code * ex = 0)
 	{
-		PFS_ASSERT(_d);
 		return _d->write(bytes, n, ex);
 	}
 
@@ -199,32 +170,24 @@ public:
     	return ex;
 	}
 
-//	state_type state () const
-//	{
-//		PFS_ASSERT(_d);
-//		return _d->state();
-//	}
-
-	void set_info (device_info * info)
+	void set_info (info_type * info)
 	{
-		shared_ptr<device_info> d(info);
-		_info.swap(d);
+		_d->set_info(info);
 	}
 
-	const device_info * info () const
+	const info_type * info () const
 	{
-		return _info.is_null() ? 0 : _info.get();
+		return _d->info();
 	}
 
-	device_info * info ()
+	info_type * info ()
 	{
-		return _info.is_null() ? 0 : _info.get();
+		return  _d->info();
 	}
 
 	void swap (device & other)
 	{
 		_d.swap(other._d);
-		_info.swap(other._info);
 	}
 
 	bool operator == (const device & other)
@@ -238,7 +201,7 @@ public:
 	}
 
 	template <typename DeviceTag>
-	friend device open_device (const open_params<DeviceTag> &, error_code * ex = 0);
+	friend device open_device (const open_params<DeviceTag> &, error_code & ex);
 
     friend bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * ex = 0);
 
@@ -258,7 +221,14 @@ inline bool uncompress (device & src, device & dest, error_code * ex = 0)
 }
 
 template <typename DeviceTag>
-device open_device (const open_params<DeviceTag> &, error_code * ex);
+device open_device (const open_params<DeviceTag> &, error_code & ex);
+
+template <typename DeviceTag>
+inline device open_device (const open_params<DeviceTag> & op)
+{
+	error_code ex;
+	return open_device<DeviceTag>(op, ex);
+}
 
 }} // pfs::io
 

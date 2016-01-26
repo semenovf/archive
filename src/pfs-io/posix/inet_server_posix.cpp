@@ -6,6 +6,7 @@
  */
 
 #include <cerrno>
+#include <sys/fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -14,23 +15,35 @@
 
 namespace pfs { namespace io { namespace details {
 
-struct tcp_server : public inet_socket_base, public bits::server
+class tcp_server : public bits::server
 {
-	typedef inet_socket_base::native_handle_type native_handle_type;
+public:
+	typedef bits::server::native_handle_type native_handle_type;
 
-	tcp_server () : inet_socket_base() {}
+protected:
+	native_handle_type _fd;
+	sockaddr_in  _sockaddr;
 
-	tcp_server (native_handle_type fd)
-		: inet_socket_base()
+public:
+	error_code open (bool non_blocking);
+
+	error_code bind (uint32_t addr, uint16_t port);
+
+	error_code listen (int backlog)
 	{
-		_fd = fd;
+		return (::listen(_fd, backlog) != 0) ? error_code(errno) : error_code();
 	}
+
+public:
+
+	tcp_server ()
+		: bits::server()
+		, _fd(-1)
+	{}
 
 	virtual ~tcp_server ()
 	{
-		if (_fd > 0) {
-			inet_socket_base::s_close(_fd);
-		}
+		close();
 	}
 
     virtual bool opened () const
@@ -38,17 +51,11 @@ struct tcp_server : public inet_socket_base, public bits::server
     	return _fd >= 0;
     }
 
-    virtual error_code close ()
-    {
-    	return inet_socket_base::s_close(_fd);
-    }
+    virtual error_code close ();
 
-    virtual bool set_nonblocking (bool on)
-    {
-    	return inet_socket_base::s_set_nonblocking(_fd, on);
-    }
+    virtual bool set_nonblocking (bool on);
 
-    virtual bool accept (bits::device **, bool non_blocking, error_code * ex);
+    error_code accept (bits::device ** peer, bool non_blocking);
 
     virtual native_handle_type native_handle () const
     {
@@ -56,7 +63,76 @@ struct tcp_server : public inet_socket_base, public bits::server
     }
 };
 
-bool tcp_server::accept (bits::device ** peer, bool non_blocking, error_code * pex)
+error_code tcp_server::open (bool non_blocking)
+{
+	int socktype = SOCK_STREAM;
+
+	if (non_blocking)
+		socktype |= SOCK_NONBLOCK;
+
+	_fd = ::socket(PF_INET, socktype, IPPROTO_TCP);
+
+	return _fd < 0 ? error_code(errno) : error_code();
+}
+
+
+error_code tcp_server::bind (uint32_t addr, uint16_t port)
+{
+	memset(& _sockaddr, 0, sizeof(_sockaddr));
+
+	_sockaddr.sin_family      = PF_INET;
+	_sockaddr.sin_port        = htons(port);
+	_sockaddr.sin_addr.s_addr = htonl(addr);
+
+	int yes = 1;
+
+	/* http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconoserver.htm
+	 *
+	 * The setsockopt() function is used to allow the local address to
+	 * be reused when the server is restarted before the required wait
+	 * time expires
+	 */
+	int rc = ::setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, & yes, sizeof(int));
+
+	if (rc != 0) return error_code(errno);
+
+	rc = ::bind(_fd
+			, reinterpret_cast<struct sockaddr *>(& _sockaddr)
+			, sizeof(_sockaddr));
+
+	if (rc != 0)
+		return error_code(errno);
+
+	return error_code();
+}
+
+error_code tcp_server::close ()
+{
+	error_code ex;
+
+    if (_fd > 0) {
+        if (::close(_fd) < 0) {
+        	ex = error_code(errno);
+        }
+    }
+
+    _fd = -1;
+    return ex;
+}
+
+bool tcp_server::set_nonblocking (bool on)
+{
+    int flags = ::fcntl(_fd, F_GETFL, 0);
+
+    if (on)
+    	flags |= O_NONBLOCK;
+    else
+    	flags &= ~O_NONBLOCK;
+
+    return ::fcntl(_fd, F_SETFL, flags) >= 0;
+}
+
+error_code tcp_server::accept (bits::device ** peer, bool non_blocking)
 {
 	struct sockaddr_in peer_addr;
 	socklen_t peer_len = sizeof(peer_addr);
@@ -68,18 +144,16 @@ bool tcp_server::accept (bits::device ** peer, bool non_blocking, error_code * p
 	PFS_ASSERT(sizeof(sockaddr_in) == peer_len);
 
 	if (peer_sock < 0) {
-    	if (pex)
-    		*pex = errno;
-    	return false;
+    	return error_code(errno);
 	}
 
-	if (non_blocking) {
-		details::inet_socket_base::s_set_nonblocking(peer_sock, true);
-	}
+	details::tcp_socket * peer_socket = new details::tcp_socket(peer_sock, peer_addr);
 
-	*peer = new details::tcp_socket(peer_sock, peer_addr);
+	peer_socket->set_nonblocking(non_blocking);
 
-	return true;
+	*peer = dynamic_cast<bits::device *>(peer_socket);
+
+	return error_code();
 }
 
 }}}
@@ -87,38 +161,22 @@ bool tcp_server::accept (bits::device ** peer, bool non_blocking, error_code * p
 namespace pfs { namespace io {
 
 template <>
-server open_server<tcp_server> (const open_params<tcp_server> & op, error_code * pex)
+server open_server<tcp_server> (const open_params<tcp_server> & op, error_code & ex)
 {
-	server result;
     bool non_blocking = op.oflags & bits::non_blocking;
 
-    error_code ex;
+    details::tcp_server * d = new details::tcp_server;
 
-    details::inet_socket_base::native_handle_type fd = details::inet_socket_base::s_create(non_blocking, & ex);
+    ex = d->open(non_blocking);
+    if (!ex) ex = d->bind(op.addr.native(), op.port);
+    if (!ex) ex = d->listen(op.npendingconn);
 
-	if (fd >= 0) {
-		details::tcp_server * sock = new details::tcp_server(fd);
+    if (ex) {
+    	delete d;
+    	return server();
+    }
 
-		PFS_ASSERT_NULLPTR(sock);
-
-		ex = details::inet_socket_base::s_bind(*sock, op.addr.native(), op.port);
-
-		if (!ex)
-			ex = details::inet_socket_base::s_listen(*sock, op.npendingconn);
-
-		if (ex) {
-			sock->close();
-			delete sock;
-		} else {
-			shared_ptr<bits::server> d(dynamic_cast<details::tcp_server *>(sock));
-		    result._d.swap(d);
-		}
-	}
-
-	if (pex)
-		*pex = ex;
-
-	return result;
+    return server(d);
 }
 
 }} // pfs::io
