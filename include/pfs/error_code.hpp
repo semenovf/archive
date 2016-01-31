@@ -15,8 +15,9 @@ namespace pfs {
 
 enum error_code_enum
 {
-	  BadFileDescriptorError = EBADF
-	, ConnectionRefusedError = ECONNREFUSED
+	  BadFileDescriptorError   = EBADF
+	, ConnectionRefusedError   = ECONNREFUSED
+	, OperationInProgressError = EINPROGRESS
 
 	, CustomErrorBase = 10000
 
