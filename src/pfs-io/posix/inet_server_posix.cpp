@@ -149,7 +149,7 @@ error_code tcp_server::accept (bits::device ** peer, bool non_blocking)
 
 	details::tcp_socket * peer_socket = new details::tcp_socket(peer_sock, peer_addr);
 
-	peer_socket->set_nonblocking(non_blocking);
+	PFS_ASSERT(peer_socket->set_nonblocking(non_blocking));
 
 	*peer = dynamic_cast<bits::device *>(peer_socket);
 

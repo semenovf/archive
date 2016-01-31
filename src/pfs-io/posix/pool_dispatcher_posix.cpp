@@ -48,8 +48,8 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 
 					if (dev.available() == 0
 							&& (revents & poll_in)) { // TODO Check if this event enough to decide to disconnect.
-						context.disconnected(dev);
 						this->delete_differed(dev);
+						context.disconnected(dev);
 					} else {
 						// There is urgent data to read (e.g., out-of-band data on TCP socket;
 						// pseudoterminal master in packet mode has seen state change in slave).

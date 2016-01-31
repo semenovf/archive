@@ -24,13 +24,13 @@ error_code device::read (byte_string & bytes, size_t n)
 		if (n - total < chunk_size)
 			chunk_size = n - total;
 
-		sz = _d->read(buffer, DEFAULT_READ_BUFSZ, & ex);
+		sz = _d->read(buffer, chunk_size, & ex);
 
 		if (sz > 0) {
 			bytes.append(buffer, size_t(sz));
 			total += sz;
 		}
-	} while (sz > 0 && total <= n);
+	} while (sz > 0 && total < n);
 
 	return ex;
 }

@@ -42,6 +42,8 @@ error_code inet_socket::close ()
 	error_code ex;
 
     if (_fd > 0) {
+    	shutdown(_fd, SHUT_RDWR);
+
         if (::close(_fd) < 0) {
         	ex = error_code(errno);
         }
@@ -238,7 +240,12 @@ ssize_t tcp_socket::write (const byte_t * bytes, size_t nbytes, error_code * ex)
 	int r = 0; // total sent
 
 	while (r < nbytes) {
-		ssize_t n = send(_fd, bytes + r, nbytes, 0);
+		// MSG_NOSIGNAL flag means:
+		// requests not to send SIGPIPE on errors on stream oriented sockets
+		// when the other end breaks the connection.
+		// The EPIPE error is still returned.
+		//
+		ssize_t n = send(_fd, bytes + r, nbytes, MSG_NOSIGNAL);
 
 		if (n < 0) {
 			r = -1;
