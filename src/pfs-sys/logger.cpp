@@ -123,7 +123,6 @@ void log::print (const notification & nx)
             	msg.append(_u8(" (repeat "));
             	msg.append(to_string(it->repetitions()));
             	msg.append(_u8(" times)"));
-                error(msg);
             } else {
                 msg = it->text();
             }
