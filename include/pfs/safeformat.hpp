@@ -12,6 +12,8 @@
 #include <pfs/string.hpp>
 #include <pfs/byte_string.hpp>
 
+#define _Sf(x) pfs::safeformat(_u8(x))
+
 namespace pfs {
 
 struct __sf_base_traits
