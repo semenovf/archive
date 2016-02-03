@@ -150,6 +150,11 @@ public: /*slots*/
 		result = is_module_registered(pname);
 	}
 
+	void print_info  (const string & s);
+	void print_debug (const string & s);
+	void print_warn  (const string & s);
+	void print_error (const string & s);
+
 protected:
 	module_spec module_for_path (const fs::path & path
 			, const char * class_name = 0

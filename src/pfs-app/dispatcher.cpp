@@ -53,6 +53,8 @@ private:
 	shared_ptr<module> _pmodule;
 };
 
+// TODO DEPRECATED (use print_xxx() slots)
+//
 static void __notify (pfs::notification & nx, pfs::notification_type_enum nxtype, const string & title, const string & body)
 {
 	string msg;
@@ -62,6 +64,8 @@ static void __notify (pfs::notification & nx, pfs::notification_type_enum nxtype
 	nx.append(nxtype, msg);
 }
 
+// TODO DEPRECATED (use print_xxx() slots)
+//
 static void __notify (pfs::notification & nx, pfs::notification_type_enum nxtype, const string & body)
 {
 	string msg;
@@ -69,21 +73,29 @@ static void __notify (pfs::notification & nx, pfs::notification_type_enum nxtype
 	nx.append(nxtype, msg);
 }
 
+// TODO DEPRECATED (use print_xxx() slots)
+//
 inline void __notify_error (pfs::notification & nx, const string & title, const string & body)
 {
 	__notify(nx, pfs::notification_error, title, body);
 }
 
+// TODO DEPRECATED (use print_xxx() slots)
+//
 inline void __notify_warn (pfs::notification & nx, const string & title, const string & body)
 {
 	__notify(nx, pfs::notification_warn, title, body);
 }
 
+// TODO DEPRECATED (use print_xxx() slots)
+//
 inline void __notify_warn (pfs::notification & nx, const string & body)
 {
 	__notify(nx, pfs::notification_warn, body);
 }
 
+// TODO DEPRECATED (use print_xxx() slots)
+//
 inline void __notify_debug (pfs::notification & nx, const string & title, const string & body)
 {
 	__notify(nx, pfs::notification_debug, title, body);
@@ -95,6 +107,26 @@ dispatcher::dispatcher (api_item_type * mapping, int n)
 	for (int i = 0; i < n; i++) {
 		_api.insert(api_type::value_type(mapping[i].id, & mapping[i]));
 	}
+}
+
+void dispatcher::print_info (const string & s)
+{
+	pfs::info(s);
+}
+
+void dispatcher::print_debug (const string & s)
+{
+	pfs::debug(s);
+}
+
+void dispatcher::print_warn  (const string & s)
+{
+	pfs::warn(s);
+}
+
+void dispatcher::print_error (const string & s)
+{
+	pfs::error(s);
 }
 
 void dispatcher::finalize ()
@@ -322,6 +354,11 @@ bool dispatcher::start ()
 		module_spec modspec = it->second;
 		shared_ptr<module> pmodule = modspec.pmodule;
 
+		pmodule->emit_info.connect (this, & dispatcher::print_info);
+		pmodule->emit_debug.connect(this, & dispatcher::print_debug);
+		pmodule->emit_warn.connect (this, & dispatcher::print_warn);
+		pmodule->emit_error.connect(this, & dispatcher::print_error);
+
 		if (!pmodule->on_start(_nx)) {
 			__notify_error(_nx, pmodule->name(), _u8("Failed to start module"));
 			r = false;
@@ -377,7 +414,13 @@ int dispatcher::exec ()
 
 	for (; itModule != itModuleEnd; itModule++) {
 		module_spec modspec = itModule->second;
-		modspec.pmodule->on_finish();
+		shared_ptr<module> pmodule = modspec.pmodule;
+		pmodule->on_finish();
+
+		pmodule->emit_info.disconnect(this);
+		pmodule->emit_debug.disconnect(this);
+		pmodule->emit_warn.disconnect(this);
+		pmodule->emit_error.disconnect(this);
 	}
 
 	return r;

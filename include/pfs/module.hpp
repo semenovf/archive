@@ -43,6 +43,11 @@ class DLL_API module : public has_slots<>
 public: /*signal*/
 	signal2<const string &, bool &> emit_module_registered;
 
+	signal1<const string &> emit_info;
+	signal1<const string &> emit_debug;
+	signal1<const string &> emit_warn;
+	signal1<const string &> emit_error;
+
 private:
 	string       _name;
 	dispatcher * _pdispatcher;
