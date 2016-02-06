@@ -33,9 +33,9 @@ struct pool : public bits::pool
 	typedef map<native_handle_type, io::device> device_map_type;
 	typedef map<native_handle_type, io::server> server_map_type;
 
-	pfs::mutex         mtx;
-	device_map_type    device_map;
-	server_map_type    server_map;
+	pfs::mutex      mtx;
+	device_map_type device_map;
+	server_map_type server_map;
 
 	pollfd_vector_type pollfds;
 	bool update;  // need updated 'pollfds' before poll() system call.
@@ -79,7 +79,6 @@ struct pool : public bits::pool
 			, short filter_events
 			, int millis
 			, error_code * ex);
-
 };
 
 struct pool_iterator : public bits::pool_iterator

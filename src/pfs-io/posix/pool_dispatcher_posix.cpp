@@ -31,6 +31,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 					pfs::io::server server = value.get_server();
 
 					ex = server.accept(client, true);
+
 					if (ex) {
 						// Acception failed
 						//
@@ -51,6 +52,14 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 						this->delete_differed(dev);
 						context.disconnected(dev);
 					} else {
+						// Error condition (output only).
+						//
+						// TODO Research this feature and implement handling
+						//
+						if (revents & poll_err) {
+							PFS_WARN("pfs::io::pool::dispatch(): device error condition");
+						}
+
 						// There is urgent data to read (e.g., out-of-band data on TCP socket;
 						// pseudoterminal master in packet mode has seen state change in slave).
 						//
@@ -73,14 +82,6 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 							context.can_write(dev);
 						}
 
-						// Error condition (output only).
-						//
-						// TODO Research this feature and implement handling
-						//
-						if (revents & poll_err) {
-							PFS_WARN("pfs::io::pool::dispatch(): device error condition");
-						}
-
 						// Hang up (output only).
 						//
 						// TODO Research this feature and implement handling
@@ -94,6 +95,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 						// TODO Implement handling
 						//
 						if (revents & poll_nval) {
+							this->delete_differed(dev);
 							context.on_error(error_code(BadFileDescriptorError));
 						}
 					}
