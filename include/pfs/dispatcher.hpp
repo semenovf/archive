@@ -144,10 +144,18 @@ public:
 		return _module_spec_map.find(modname) != _module_spec_map.end();
 	}
 
-public: /*slots*/
-	void on_module_registered (const string & pname, bool & result)
+public: // signals
+	signal0<> emit_quit;
+
+public: // slots
+	void module_registered (const string & pname, bool & result)
 	{
 		result = is_module_registered(pname);
+	}
+
+	void broadcast_quit ()
+	{
+		emit_quit();
 	}
 
 	void print_info  (const string & s);

@@ -10,6 +10,7 @@
 
 #include <pfs/string.hpp>
 #include <pfs/sigslot.hpp>
+#include <pfs/atomic.hpp>
 #include <pfs/notification.hpp>
 
 #ifdef PFS_CC_MSVC
@@ -40,9 +41,10 @@ class DLL_API module : public has_slots<>
 {
 	friend class dispatcher;
 
-public: /*signal*/
+public: // signals
 	signal2<const string &, bool &> emit_module_registered;
 
+	signal0<>               emit_quit;
 	signal1<const string &> emit_info;
 	signal1<const string &> emit_debug;
 	signal1<const string &> emit_warn;
@@ -51,6 +53,7 @@ public: /*signal*/
 private:
 	string       _name;
 	dispatcher * _pdispatcher;
+	atomic_int   _quitfl; // quit flag
 
 public:
 	int (* run) (module *); // TODO declare it as `int (module::*) ()'
@@ -58,6 +61,7 @@ public:
 protected:
 	module ()
 		: _pdispatcher()
+		, _quitfl(0)
 		, run(0)
 	{}
 
@@ -65,18 +69,6 @@ protected:
 	{
 		_name = name;
 	}
-
-//	module (const string & name)
-//		: _name(name)
-//		, _pdispatcher(0)
-//		, run(0)
-//	{}
-//
-//	module (const string & name, int (* loop) (module *))
-//		: _name(name)
-//		, _pdispatcher(0)
-//		, run(loop)
-//	{}
 
 public:
 	virtual ~module() {}
@@ -110,8 +102,13 @@ public:
 		return 0;
 	}
 
+	bool is_quit () const
+	{
+		return _quitfl.load() == 0 ? false : true;
+	}
+
 	/**
-	 * @brief Module's onStart() method called after loaded and connection completed.
+	 * @brief Module's on_start() method called after loaded and connection completed.
 	 */
 	virtual bool on_start (notification & nx)
 	{
@@ -123,11 +120,11 @@ public:
 		return true;
 	}
 
-//	static void defaultDtor (module * p)
-//	{
-//		PFS_ASSERT(p);
-//		delete p;
-//	}
+public: // slots
+	void on_quit ()
+	{
+		_quitfl.store(1);
+	}
 };
 
 struct detector_pair

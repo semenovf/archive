@@ -260,7 +260,7 @@ bool dispatcher::register_module (const module_spec & modspec)
 		}
 	}
 
-	pmodule->emit_module_registered.connect(this, & dispatcher::on_module_registered);
+	pmodule->emit_module_registered.connect(this, & dispatcher::module_registered);
 	pmodule->set_dispatcher(this);
 
 	_module_spec_map.insert(module_spec_map_type::value_type(pmodule->name(), modspec));
@@ -354,6 +354,8 @@ bool dispatcher::start ()
 		module_spec modspec = it->second;
 		shared_ptr<module> pmodule = modspec.pmodule;
 
+		pmodule->emit_quit.connect (this, & dispatcher::broadcast_quit);
+		this->emit_quit.connect(pmodule.get(), & module::on_quit);
 		pmodule->emit_info.connect (this, & dispatcher::print_info);
 		pmodule->emit_debug.connect(this, & dispatcher::print_debug);
 		pmodule->emit_warn.connect (this, & dispatcher::print_warn);
