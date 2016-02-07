@@ -86,10 +86,10 @@ struct file : public bits::device
     	return _fd;
     }
 
-//    virtual state_type state () const
-//    {
-//    	return bits::unconnected_state;
-//    }
+    virtual device_type type () const
+    {
+    	return device_file;
+    }
 };
 
 error_code file::open (const fs::path & path, int oflags, mode_t omode)
@@ -115,10 +115,10 @@ bits::device::open_mode_flags file::open_mode () const
 	char buf[1] = { 0 };
 
 	if (::read(_fd, buf, 0) >= 0 && errno != EBADF)
-		r |= bits::read_only;
+		r |= read_only;
 
 	if (::write(_fd, buf, 0) >= 0 && errno != EBADF)
-		r |= bits::write_only;
+		r |= write_only;
 
 	return r;
 }
@@ -204,19 +204,19 @@ device open_device<file> (const open_params<file> & op, error_code & ex)
 	int native_oflags = 0;
 	mode_t native_mode = 0;
 
-    if ((op.oflags & bits::write_only) && (op.oflags & bits::read_only)) {
+    if ((op.oflags & write_only) && (op.oflags & read_only)) {
     	native_oflags |= O_RDWR;
     	native_oflags |= O_CREAT;
     	native_mode   |= __convert_to_native_perms(op.permissions);
-    } else if (op.oflags & bits::write_only) {
+    } else if (op.oflags & write_only) {
     	native_oflags |= O_WRONLY;
     	native_oflags |= O_CREAT;
     	native_mode   |= __convert_to_native_perms(op.permissions);
-    } else if (op.oflags & bits::read_only) {
+    } else if (op.oflags & read_only) {
     	native_oflags |= O_RDONLY;
     }
 
-	if (op.oflags & bits::non_blocking)
+	if (op.oflags & non_blocking)
 		native_oflags |= O_NONBLOCK;
 
 

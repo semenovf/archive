@@ -284,7 +284,43 @@ public:
 		virtual void on_error (const error_code & ) {}
 	};
 
+	class dispatcher_context2
+	{
+		friend class pool;
+
+		int   _millis;
+		short _filter_events;
+
+	public:
+		dispatcher_context2 ()
+			: _millis(0)
+			, _filter_events(poll_all)
+		{}
+
+		dispatcher_context2 (int millis)
+			: _millis(millis)
+			, _filter_events(poll_all)
+		{}
+
+		dispatcher_context2 (int millis, short filter_events)
+			: _millis(millis)
+			, _filter_events(filter_events)
+		{}
+
+		virtual ~dispatcher_context2 () {}
+
+	public:
+		virtual void connected (device &, server & listener) {}
+		virtual void ready_read (device &) {}
+		virtual void disconnected (device &) {}
+		virtual void can_write (device &) {} // unused yet
+		virtual void on_error (const error_code & ) {}
+	};
+
+	// XXX OBSOLETE, use dispatch(dispatcher_context2 context);
 	void dispatch (dispatcher_context & context, short filter_events = poll_all, int millis = 0);
+
+	void dispatch (dispatcher_context2 context);
 };
 
 }} // pfs::io

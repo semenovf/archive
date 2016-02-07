@@ -36,7 +36,7 @@ struct buffer : public bits::device
 
     virtual open_mode_flags open_mode () const
     {
-    	return bits::read_write | bits::non_blocking;
+    	return read_write | non_blocking;
     }
 
     virtual size_t  bytes_available () const
@@ -72,10 +72,10 @@ struct buffer : public bits::device
     	return -1;
     }
 
-//    virtual state_type state () const
-//    {
-//    	return bits::unconnected_state;
-//    }
+    virtual device_type type () const
+    {
+    	return device_buffer;
+    }
 };
 
 ssize_t buffer::read (byte_t * bytes, size_t n, error_code * ex)

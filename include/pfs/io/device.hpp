@@ -71,12 +71,12 @@ public:
 
 	bool is_readable () const
 	{
-		return _d->open_mode() | bits::read_only;
+		return _d->open_mode() | read_only;
 	}
 
 	bool is_writable () const
 	{
-		return _d->open_mode() | bits::write_only;
+		return _d->open_mode() | write_only;
 	}
 
 #if __COMMENT__
@@ -168,6 +168,11 @@ public:
     	error_code ex;
     	this->write(bytes.data(), bytes.size(), & ex);
     	return ex;
+	}
+
+	device_type type () const
+	{
+		return _d->type();
 	}
 
 	void set_info (info_type * info)

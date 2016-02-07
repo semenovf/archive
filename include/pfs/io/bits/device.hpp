@@ -10,11 +10,7 @@
 
 #include <pfs/error_code.hpp>
 
-namespace pfs { namespace io { namespace bits {
-
-// TODO Support other platform specific native file handle types.
-//
-typedef int native_handle_type;
+namespace pfs { namespace io {
 
 enum open_mode_enum
 {
@@ -25,6 +21,24 @@ enum open_mode_enum
 	, write_read   = read_write              /**< Synonym for read_write */
 	, non_blocking = 0x0004                  /**< Open device in non-blocking mode */
 };
+
+enum device_type
+{
+	  device_unknown = 0
+	, device_buffer
+	, device_file
+	, device_tcp_socket
+	, device_tcp_peer
+};
+
+}}
+
+namespace pfs { namespace io { namespace bits {
+
+// TODO Support other platform specific native file handle types.
+//
+typedef int native_handle_type;
+
 
 struct device_info
 {
@@ -102,6 +116,8 @@ public:
     virtual bool set_nonblocking (bool on) = 0;
 
     virtual native_handle_type native_handle () const = 0;
+
+    virtual device_type type () const = 0;
 };
 
 }}} // pfs::io::bits

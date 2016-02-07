@@ -20,6 +20,7 @@ public:
 protected:
 	native_handle_type _fd;
 	sockaddr_in  _sockaddr;
+	device_type  _devtype;
 
 private:
 	inet_socket (const inet_socket & other);
@@ -32,6 +33,7 @@ public:
 	inet_socket ()
 		: bits::device()
 		, _fd(-1)
+		, _devtype(device_unknown)
 	{}
 
 	virtual ~inet_socket ()
@@ -63,6 +65,13 @@ public:
     {
     	return _fd;
     }
+
+    device_type type () const
+    {
+    	return _devtype;
+    }
+
+    error_code set_socket_options (uint32_t sso);
 };
 
 class tcp_socket : public inet_socket
@@ -79,7 +88,9 @@ public:
 public:
 	tcp_socket ()
 		: inet_socket()
-	{}
+	{
+		_devtype = device_tcp_socket;
+	}
 
 	// Used for initialization of peer socket
 	//
@@ -88,6 +99,7 @@ public:
 	{
 		_fd = fd;
 		::memcpy(& _sockaddr, & sockaddr, sizeof(_sockaddr));
+		_devtype = device_tcp_peer;
 	}
 
 	virtual error_code reopen ();

@@ -84,6 +84,12 @@ public:
 	 */
 	error_code accept (device & peer, bool non_blocking);
 
+
+	server_type type () const
+	{
+		return _d->type();
+	}
+
 	void set_info (info_type * info)
 	{
 		_d->set_info(info);

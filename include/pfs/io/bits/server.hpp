@@ -11,6 +11,17 @@
 #include <pfs/error_code.hpp>
 #include <pfs/io/bits/device.hpp>
 
+
+namespace pfs { namespace io {
+
+enum server_type
+{
+	  server_unknown = 0
+	, server_tcp
+};
+
+}}
+
 namespace pfs { namespace io { namespace bits {
 
 struct server : public basic_device
@@ -32,6 +43,8 @@ struct server : public basic_device
     virtual error_code accept (bits::device **, bool non_blocking) = 0;
 
     virtual native_handle_type native_handle () const = 0;
+
+    virtual server_type type () const = 0;
 };
 
 }}} // pfs::io::bits

@@ -75,10 +75,10 @@ bits::device::open_mode_flags inet_socket::open_mode () const
 	char buf[1] = { 0 };
 
 	if (::read(_fd, buf, 0) >= 0 && errno != EBADF)
-		r |= bits::read_only;
+		r |= read_only;
 
 	if (::write(_fd, buf, 0) >= 0 && errno != EBADF)
-		r |= bits::write_only;
+		r |= write_only;
 
 	return r;
 }
@@ -95,6 +95,23 @@ size_t inet_socket::bytes_available () const
 
 	PFS_ASSERT(n >= 0);
 	return static_cast<size_t>(n);
+}
+
+
+error_code inet_socket::set_socket_options (uint32_t sso)
+{
+	if (sso) {
+		int optval;
+		socklen_t optlen = sizeof(optval);
+
+		if (sso & sso_keep_alive) {
+			int r = setsockopt(_fd, SOL_SOCKET, SO_KEEPALIVE, & optval, optlen);
+			if (r < 0)
+				return error_code(errno);
+		}
+	}
+
+	return error_code();
 }
 
 // XXX Duplicated with tcp_server version
@@ -271,11 +288,14 @@ namespace pfs { namespace io {
 template <>
 device open_device<tcp_socket> (const open_params<tcp_socket> & op, error_code & ex)
 {
-    bool non_blocking = op.oflags & bits::non_blocking;
+    bool non_blocking = op.oflags & non_blocking;
 
     details::tcp_socket * d = new details::tcp_socket;
 
     ex = d->open(non_blocking);
+
+    if (!ex) ex = d->set_socket_options(op.socketopts);
+
     if (!ex) ex = d->connect(op.addr.native(), op.port);
 
     if (ex and ex != ConnectionRefusedError) {

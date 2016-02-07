@@ -206,7 +206,7 @@ void test_open_absent_file ()
     device d;
     pfs::fs::path unknownPath("!@#$%");
 
-	TEST_OK(! (d = open_device(open_params<file>(unknownPath, pfs::io::bits::read_only))));
+	TEST_OK(! (d = open_device(open_params<file>(unknownPath, pfs::io::read_only))));
     TEST_OK(!d.opened());
 }
 
@@ -223,12 +223,12 @@ void test_write_read ()
     device d;
     pfs::error_code ex;
 
-    TEST_FAIL((d = open_device(open_params<file>(file_path, pfs::io::bits::write_only), ex)));
+    TEST_FAIL((d = open_device(open_params<file>(file_path, pfs::io::write_only), ex)));
 
     TEST_FAIL(d.write(loremipsum, ::strlen(loremipsum)) == ssize_t(::strlen(loremipsum)));
     TEST_FAIL(d.close() == pfs::error_code());
 
-    TEST_FAIL((d = open_device(open_params<file>(file_path, pfs::io::bits::read_only))));
+    TEST_FAIL((d = open_device(open_params<file>(file_path, pfs::io::read_only))));
     pfs::byte_string bs;
     d.read(bs, d.available());
 

@@ -61,6 +61,11 @@ public:
     {
     	return _fd;
     }
+
+    virtual server_type type () const
+    {
+    	return server_tcp;
+    }
 };
 
 error_code tcp_server::open (bool non_blocking)
@@ -163,7 +168,7 @@ namespace pfs { namespace io {
 template <>
 server open_server<tcp_server> (const open_params<tcp_server> & op, error_code & ex)
 {
-    bool non_blocking = op.oflags & bits::non_blocking;
+    bool non_blocking = op.oflags & non_blocking;
 
     details::tcp_server * d = new details::tcp_server;
 
