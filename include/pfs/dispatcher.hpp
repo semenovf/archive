@@ -18,7 +18,6 @@
 #include <pfs/dl.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <pfs/sigslotmapping.hpp>
-#include <pfs/notification.hpp>
 #include <pfs/utility.hpp>
 
 #ifdef PFS_CC_MSVC
@@ -55,7 +54,6 @@ private:
 	module_spec_map_type _module_spec_map;
 	vector<thread *>     _threads;
 	shared_ptr<module>   _master_module;
-	notification         _nx;
 
 private:
 	dispatcher (const dispatcher &);
@@ -75,16 +73,6 @@ public:
 	}
 
 	void finalize ();
-
-	const notification & get_notification () const
-	{
-		return _nx;
-	}
-
-	notification & get_notification ()
-	{
-		return _nx;
-	}
 
 	void add_search_path (const fs::path & dir)
 	{

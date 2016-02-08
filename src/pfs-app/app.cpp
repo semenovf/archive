@@ -27,13 +27,7 @@ int app::exec (dispatcher & d)
 
     d.connect_all();
 
-    pfs::notification & nx = d.get_notification();
-
-    if (d.start() && nx.count_error_type() == 0) {
-    	if (nx.count()) {
-    		pfs::log::print(nx);
-    		nx.clear();
-    	}
+    if (d.start()) {
    		r = d.exec();
     }
 

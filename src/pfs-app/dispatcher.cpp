@@ -53,54 +53,6 @@ private:
 	shared_ptr<module> _pmodule;
 };
 
-// TODO DEPRECATED (use print_xxx() slots)
-//
-static void __notify (pfs::notification & nx, pfs::notification_type_enum nxtype, const string & title, const string & body)
-{
-	string msg;
-	msg.append(title);
-	msg.append(": ");
-	msg.append(body);
-	nx.append(nxtype, msg);
-}
-
-// TODO DEPRECATED (use print_xxx() slots)
-//
-static void __notify (pfs::notification & nx, pfs::notification_type_enum nxtype, const string & body)
-{
-	string msg;
-	msg.append(body);
-	nx.append(nxtype, msg);
-}
-
-// TODO DEPRECATED (use print_xxx() slots)
-//
-inline void __notify_error (pfs::notification & nx, const string & title, const string & body)
-{
-	__notify(nx, pfs::notification_error, title, body);
-}
-
-// TODO DEPRECATED (use print_xxx() slots)
-//
-inline void __notify_warn (pfs::notification & nx, const string & title, const string & body)
-{
-	__notify(nx, pfs::notification_warn, title, body);
-}
-
-// TODO DEPRECATED (use print_xxx() slots)
-//
-inline void __notify_warn (pfs::notification & nx, const string & body)
-{
-	__notify(nx, pfs::notification_warn, body);
-}
-
-// TODO DEPRECATED (use print_xxx() slots)
-//
-inline void __notify_debug (pfs::notification & nx, const string & title, const string & body)
-{
-	__notify(nx, pfs::notification_debug, title, body);
-}
-
 dispatcher::dispatcher (api_item_type * mapping, int n)
 	: _master_module(0)
 {
@@ -134,11 +86,6 @@ void dispatcher::finalize ()
 	if (_module_spec_map.size() > 0) {
 		disconnect_all();
 		unregister_all();
-
-		if (_nx.count() > 0) {
-			pfs::log::print(_nx);
-			_nx.clear();
-		}
 	}
 }
 
@@ -157,10 +104,11 @@ module_spec dispatcher::module_for_path (const fs::path & path
 	}
 
 	if (not dl.open(dlpath, _searchdirs, & ex, & extended_errstr)) {
-		__notify_error(_nx, dlpath.native(), to_string(ex));
+		print_error(_Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
 
-		if (not extended_errstr.empty())
-			__notify_error(_nx, dlpath.native(), extended_errstr);
+		if (not extended_errstr.empty()) {
+			print_error(_Sf("%s: %s")(dlpath.native())(extended_errstr).str());
+		}
 
 		return module_spec();
 	}
@@ -170,11 +118,12 @@ module_spec dispatcher::module_for_path (const fs::path & path
 			, & extended_errstr);
 
 	if (!ctor) {
-		__notify_error(_nx, dlpath.native(), _u8("Failed to resolve `ctor' for module"));
-		__notify_error(_nx, dlpath.native(), to_string(ex));
+		print_error(_Sf("%s: Failed to resolve `ctor' for module")(dlpath.native()).str());
+		print_error(_Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
 
-		if (not extended_errstr.empty())
-			__notify_error(_nx, dlpath.native(), extended_errstr);
+		if (not extended_errstr.empty()) {
+			print_error(_Sf("%s: %s")(dlpath.native())(extended_errstr).str());
+		}
 
 		return module_spec();
 	}
@@ -184,11 +133,12 @@ module_spec dispatcher::module_for_path (const fs::path & path
 			, & extended_errstr);
 
 	if (!dtor) {
-		__notify_error(_nx, dlpath.native(), _u8("Failed to resolve `dtor' for module"));
-		__notify_error(_nx, dlpath.native(), to_string(ex));
+		print_error(_Sf("%s: Failed to resolve `dtor' for module")(dlpath.native()).str());
+		print_error(_Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
 
-		if (not extended_errstr.empty())
-			__notify_error(_nx, dlpath.native(), extended_errstr);
+		if (not extended_errstr.empty()) {
+			print_error(_Sf("%s: %s")(dlpath.native())(extended_errstr).str());
+		}
 
 		return module_spec();
 	}
@@ -218,7 +168,7 @@ bool dispatcher::register_module (const module_spec & modspec)
 	shared_ptr<module> pmodule = modspec.pmodule;
 
 	if (_module_spec_map.find(pmodule->name()) != _module_spec_map.end()) {
-		__notify_error(_nx, pmodule->name(), _u8("Module already registered"));
+		print_error(_Sf("%s: Module already registered")(pmodule->name()).str());
 		return false;
 	}
 
@@ -235,11 +185,10 @@ bool dispatcher::register_module (const module_spec & modspec)
 			if (it != it_end) {
 				it->second->map->append_emitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
 			} else {
-				//safeformat sf(_u8("Emitter '%s' not found while registering module, may be signal/slot mapping is not supported for this application"))(to_string(emitters[i]._id));
-				safeformat sf(_u8("Emitter '%s' not found while registering module, "
-						"may be signal/slot mapping is not supported for this application"));
-						sf.arg(to_string(emitters[i]._id));
-				__notify_warn(_nx, pmodule->name(), sf.str());
+				print_warn(_Sf("%s: Emitter '%s' not found while registering module, "
+						"may be signal/slot mapping is not supported for this application")
+						(pmodule->name())
+						(to_string(emitters[i]._id)).str());
 			}
 		}
 	}
@@ -252,10 +201,10 @@ bool dispatcher::register_module (const module_spec & modspec)
 			if (it != it_end) {
 				it->second->map->append_detector(pmodule.get(), detectors[i]._detector);
 			} else {
-				safeformat sf(_u8("Detector '%s' not found while registering module, "
-						"may be signal/slot mapping is not supported for this application"));
-				sf.arg(to_string(detectors[i]._id));
-				__notify_warn(_nx, pmodule->name(), sf.str());
+				print_warn(_Sf(_u8("%s: Detector '%s' not found while registering module, "
+						"may be signal/slot mapping is not supported for this application"))
+						(pmodule->name())
+						(to_string(detectors[i]._id)).str());
 			}
 		}
 	}
@@ -269,9 +218,9 @@ bool dispatcher::register_module (const module_spec & modspec)
 	//
 	if (pmodule->run) {
 		_threads.push_back(new module_threaded(pmodule));
-		__notify_debug(_nx, pmodule->name(), _u8("Module registered as threaded"));
+		print_debug(_Sf("%s: Module registered as threaded")(pmodule->name()).str());
 	} else {
-		__notify_debug(_nx, pmodule->name(), _u8("Module registered"));
+		print_debug(_Sf("%s: Module registered")(pmodule->name()).str());
 	}
 
 	return true;
@@ -337,7 +286,7 @@ void dispatcher::unregister_all ()
 //			dl.close(pspec.dl);
 //		}
 
-		__notify_debug(_nx, pmodule->name(), _u8("Module unregistered"));
+		print_debug(_Sf("Module unregistered")(pmodule->name()).str());
 	}
 
 	_module_spec_map.clear();
@@ -361,14 +310,11 @@ bool dispatcher::start ()
 		pmodule->emit_warn.connect (this, & dispatcher::print_warn);
 		pmodule->emit_error.connect(this, & dispatcher::print_error);
 
-		if (!pmodule->on_start(_nx)) {
-			__notify_error(_nx, pmodule->name(), _u8("Failed to start module"));
+		if (not pmodule->on_start()) {
+			print_error(_Sf("%s: Failed to start module")(pmodule->name()).str());
 			r = false;
 		}
 	}
-
-	pfs::log::print(_nx);
-	_nx.clear();
 
 	return r;
 }

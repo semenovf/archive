@@ -13,7 +13,7 @@ public:
 	~module ()
 	{}
 
-	virtual bool on_start (pfs::notification & nx)
+	virtual bool on_start ()
 	{
 	    emitZeroArg   ();
 	    emitOneArg    (true);

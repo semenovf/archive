@@ -17,7 +17,7 @@ public:
 	module () : pfs::module()
 	{}
 
-	virtual bool on_start (pfs::notification & nx)
+	virtual bool on_start ()
 	{
 		return true;
 	}

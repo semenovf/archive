@@ -11,7 +11,6 @@
 #include <pfs/string.hpp>
 #include <pfs/sigslot.hpp>
 #include <pfs/atomic.hpp>
-#include <pfs/notification.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -110,7 +109,7 @@ public:
 	/**
 	 * @brief Module's on_start() method called after loaded and connection completed.
 	 */
-	virtual bool on_start (notification & nx)
+	virtual bool on_start ()
 	{
 		return true;
 	}
