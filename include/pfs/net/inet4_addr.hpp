@@ -89,7 +89,6 @@ public:
      */
     inet4_addr (const string & s);
 
-
     /**
      * @brief Returns @c true if inet4_addr represents a valid IPv4 address.
      */
