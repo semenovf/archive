@@ -31,6 +31,13 @@ struct module_spec
 {
 	shared_ptr<module> pmodule;
 	dynamic_library dl;
+
+	~module_spec ()
+	{
+		// Need to destroy pmodule before dynamic library will be destroyed automatically
+		//
+		pmodule.reset();
+	}
 };
 
 static void default_dtor (module *);

@@ -286,7 +286,7 @@ void dispatcher::unregister_all ()
 //			dl.close(pspec.dl);
 //		}
 
-		print_debug(_Sf("Module unregistered")(pmodule->name()).str());
+		print_debug(_Sf("%s: Module unregistered")(pmodule->name()).str());
 	}
 
 	_module_spec_map.clear();

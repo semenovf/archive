@@ -70,7 +70,7 @@ protected:
 	}
 
 public:
-	virtual ~module() {}
+	virtual ~module () {}
 
 	const string & name() const
 	{
