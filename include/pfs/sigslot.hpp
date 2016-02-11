@@ -2368,7 +2368,7 @@ namespace pfs {
 		}
 	};
 
-}; // pfs
+} // pfs
 
 #endif // __PFS_SIGSLOT_HPP__
 
