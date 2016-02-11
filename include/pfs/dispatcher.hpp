@@ -40,8 +40,6 @@ struct module_spec
 	}
 };
 
-static void default_dtor (module *);
-
 class DLL_API dispatcher : public has_slots<>
 {
 public:
