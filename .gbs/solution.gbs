@@ -53,6 +53,11 @@ project "test-fsm"
 -- END PROJECT
 
 -- BEGIN PROJECT
+project "test-functor"
+    include("test-functor/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
 --project "test-map_hash"
 --    include("test-map_hash/project.gbs")
 -- END PROJECT
