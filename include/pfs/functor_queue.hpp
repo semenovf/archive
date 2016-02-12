@@ -75,6 +75,19 @@ public:
 		return false;
 	}
 
+	template <typename Class>
+	bool push_method (Class * p, return_type (Class::* f) ())
+	{
+		lock_guard<Mutex> locker(_mutex);
+
+		if (prepare_push(sizeof(functor_method0<Class, return_type>))) {
+			functor_base_type * fr = new (_tail) functor_method0<Class, return_type>(p, f);
+			_tail += fr->size();
+			return true;
+		}
+		return false;
+	}
+
 	template <typename Arg1>
 	bool push (return_type (*f) (Arg1), Arg1 a1)
 	{
@@ -82,6 +95,19 @@ public:
 
 		if (prepare_push(sizeof(functor1<return_type, Arg1>))) {
 			functor_base_type * fr = new (_tail) functor1<return_type, Arg1>(f, a1);
+			_tail += fr->size();
+			return true;
+		}
+		return false;
+	}
+
+	template <typename Class, typename Arg1>
+	bool push_method (Class * p, return_type (Class::*f) (Arg1), Arg1 a1)
+	{
+		lock_guard<Mutex> locker(_mutex);
+
+		if (prepare_push(sizeof(functor_method1<Class, return_type, Arg1>))) {
+			functor_base_type * fr = new (_tail) functor_method1<Class, return_type, Arg1>(p, f, a1);
 			_tail += fr->size();
 			return true;
 		}
@@ -101,6 +127,19 @@ public:
 		return false;
 	}
 
+	template <typename Class, typename Arg1, typename Arg2>
+	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
+	{
+		lock_guard<Mutex> locker(_mutex);
+
+		if (prepare_push(sizeof(functor_method2<Class, return_type, Arg1, Arg2>))) {
+			functor_base_type * fr = new (_tail) functor_method2<Class, return_type, Arg1, Arg2>(p, f, a1, a2);
+			_tail += fr->size();
+			return true;
+		}
+		return false;
+	}
+
 	template <typename Arg1, typename Arg2, typename Arg3>
 	bool push (return_type (*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3)
 	{
@@ -108,6 +147,19 @@ public:
 
 		if (prepare_push(sizeof(functor3<return_type, Arg1, Arg2, Arg3>))) {
 			functor_base_type * fr = new (_tail) functor3<return_type, Arg1, Arg2, Arg3>(f, a1, a2, a3);
+			_tail += fr->size();
+			return true;
+		}
+		return false;
+	}
+
+	template <typename Class, typename Arg1, typename Arg2, typename Arg3>
+	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3)
+	{
+		lock_guard<Mutex> locker(_mutex);
+
+		if (prepare_push(sizeof(functor_method3<Class, return_type, Arg1, Arg2, Arg3>))) {
+			functor_base_type * fr = new (_tail) functor_method3<Class, return_type, Arg1, Arg2, Arg3>(p, f, a1, a2, a3);
 			_tail += fr->size();
 			return true;
 		}
@@ -127,6 +179,19 @@ public:
 		return false;
 	}
 
+	template <typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
+	{
+		lock_guard<Mutex> locker(_mutex);
+
+		if (prepare_push(sizeof(functor_method4<Class, return_type, Arg1, Arg2, Arg3, Arg4>))) {
+			functor_base_type * fr = new (_tail) functor_method4<Class, return_type, Arg1, Arg2, Arg3, Arg4>(p, f, a1, a2, a3, a4);
+			_tail += fr->size();
+			return true;
+		}
+		return false;
+	}
+
 	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
 	bool push (return_type (*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
 	{
@@ -134,6 +199,19 @@ public:
 
 		if (prepare_push(sizeof(functor5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5>))) {
 			functor_base_type * fr = new (_tail) functor5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5>(f, a1, a2, a3, a4, a5);
+			_tail += fr->size();
+			return true;
+		}
+		return false;
+	}
+
+	template <typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
+	{
+		lock_guard<Mutex> locker(_mutex);
+
+		if (prepare_push(sizeof(functor_method5<Class, return_type, Arg1, Arg2, Arg3, Arg4, Arg5>))) {
+			functor_base_type * fr = new (_tail) functor_method5<Class, return_type, Arg1, Arg2, Arg3, Arg4, Arg5>(p, f, a1, a2, a3, a4, a5);
 			_tail += fr->size();
 			return true;
 		}
