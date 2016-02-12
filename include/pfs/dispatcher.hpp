@@ -139,6 +139,10 @@ public:
 
 public: // signals
 	signal0<> emit_quit;
+	signal1<const string &> emit_info;
+	signal1<const string &> emit_debug;
+	signal1<const string &> emit_warn;
+	signal1<const string &> emit_error;
 
 public: // slots
 	void module_registered (const string & pname, bool & result)

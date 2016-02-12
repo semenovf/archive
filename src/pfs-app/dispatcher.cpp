@@ -64,21 +64,25 @@ dispatcher::dispatcher (api_item_type * mapping, int n)
 void dispatcher::print_info (const string & s)
 {
 	pfs::info(s);
+	emit_info(s);
 }
 
 void dispatcher::print_debug (const string & s)
 {
 	pfs::debug(s);
+	emit_debug(s);
 }
 
 void dispatcher::print_warn  (const string & s)
 {
 	pfs::warn(s);
+	emit_warn(s);
 }
 
 void dispatcher::print_error (const string & s)
 {
 	pfs::error(s);
+	emit_error(s);
 }
 
 void dispatcher::finalize ()
@@ -305,6 +309,7 @@ bool dispatcher::start ()
 
 		pmodule->emit_quit.connect (this, & dispatcher::broadcast_quit);
 		this->emit_quit.connect(pmodule.get(), & module::on_quit);
+
 		pmodule->emit_info.connect (this, & dispatcher::print_info);
 		pmodule->emit_debug.connect(this, & dispatcher::print_debug);
 		pmodule->emit_warn.connect (this, & dispatcher::print_warn);
@@ -373,5 +378,26 @@ int dispatcher::exec ()
 
 	return r;
 }
+
+void module::connect_info (log_consumer * p)
+{
+	_pdispatcher->emit_info.connect(p, & log_consumer::_on_info);
+}
+
+void module::connect_debug (log_consumer * p)
+{
+	_pdispatcher->emit_debug.connect(p, & log_consumer::_on_debug);
+}
+
+void module::connect_warn (log_consumer * p)
+{
+	_pdispatcher->emit_warn.connect(p, & log_consumer::_on_warn);
+}
+
+void module::connect_error (log_consumer * p)
+{
+	_pdispatcher->emit_error.connect(p, & log_consumer::_on_error);
+}
+
 
 } // pfs

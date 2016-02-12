@@ -35,10 +35,25 @@ typedef struct { int _id; detector _detector; } detector_mapping;
 typedef module * (* module_ctor_t)(const char * name, void *);
 typedef void  (* module_dtor_t)(module *);
 
-
 class DLL_API module : public has_slots<>
 {
 	friend class dispatcher;
+
+public:
+	struct log_consumer : public has_slots<>
+	{
+		friend class module;
+		virtual void on_info  (const string &) {}
+		virtual void on_debug (const string &) {}
+		virtual void on_warn  (const string &) {}
+		virtual void on_error (const string &) {}
+
+	private:
+		void _on_info  (const string & s) { on_info(s);  }
+		void _on_debug (const string & s) { on_debug(s); }
+		void _on_warn  (const string & s) { on_warn(s);  }
+		void _on_error (const string & s) { on_error(s); }
+	};
 
 public: // signals
 	signal2<const string &, bool &> emit_module_registered;
@@ -59,7 +74,7 @@ public:
 
 protected:
 	module ()
-		: _pdispatcher()
+		: _pdispatcher(0)
 		, _quitfl(0)
 		, run(0)
 	{}
@@ -86,6 +101,21 @@ public:
 	{
 		_pdispatcher = pdispatcher;
 	}
+
+	dispatcher * get_dispatcher ()
+	{
+		return _pdispatcher;
+	}
+
+	const dispatcher * get_dispatcher () const
+	{
+		return _pdispatcher;
+	}
+
+	void connect_info  (log_consumer * p);
+	void connect_debug (log_consumer * p);
+	void connect_warn  (log_consumer * p);
+	void connect_error (log_consumer * p);
 
 	virtual const emitter_mapping * get_emitters (int * count)
 	{
