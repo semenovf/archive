@@ -205,9 +205,13 @@ public:
 
 	void push_back (server s, short events = poll_all);
 
-	void delete_differed (device d);
+	void delete_deferred (device d);
 
-	void delete_differed (server s);
+	void delete_deferred (server s);
+
+	pfs::vector<device> fetch_devices (bool (* filter) (const device & d));
+
+	pfs::vector<server> fetch_servers (bool (* filter) (const server & s));
 
 //	/**
 //	 * @brief Returns list of all devices (exclude listeners) in the pool.
@@ -320,7 +324,7 @@ public:
 	// XXX OBSOLETE, use dispatch(dispatcher_context2 context);
 	void dispatch (dispatcher_context & context, short filter_events = poll_all, int millis = 0);
 
-	void dispatch (dispatcher_context2 context);
+	void dispatch (dispatcher_context2 & context);
 };
 
 }} // pfs::io

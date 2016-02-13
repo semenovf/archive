@@ -298,7 +298,7 @@ device open_device<tcp_socket> (const open_params<tcp_socket> & op, error_code &
 
     if (!ex) ex = d->connect(op.addr.native(), op.port);
 
-    if (ex and ex != ConnectionRefusedError) {
+    if (ex and ex != OperationInProgressError) {
     	delete d;
     	return device();
     }

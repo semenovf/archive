@@ -51,7 +51,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 
 					if (dev.available() == 0
 							&& (revents & poll_in)) { // TODO Check if this event enough to decide to disconnect.
-						this->delete_differed(dev);
+						this->delete_deferred(dev);
 						context.disconnected(dev);
 					} else {
 						// Error condition (output only).
@@ -97,7 +97,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 						// TODO Implement handling
 						//
 						if (revents & poll_nval) {
-							this->delete_differed(dev);
+							this->delete_deferred(dev);
 							context.on_error(error_code(BadFileDescriptorError));
 						}
 					}
@@ -110,7 +110,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 }
 
 
-void pool::dispatch (pool::dispatcher_context2 context)
+void pool::dispatch (pool::dispatcher_context2 & context)
 {
 	pfs::error_code ex;
 	poll_result_type result = this->poll(context._filter_events, context._millis, & ex);
@@ -147,7 +147,7 @@ void pool::dispatch (pool::dispatcher_context2 context)
 
 				if (dev.available() == 0
 						&& (revents & poll_in)) { // TODO Check if this event enough to decide to disconnect.
-					this->delete_differed(dev);
+					this->delete_deferred(dev);
 					context.disconnected(dev);
 				} else {
 					// Error condition (output only).
@@ -193,7 +193,7 @@ void pool::dispatch (pool::dispatcher_context2 context)
 					// TODO Implement handling
 					//
 					if (revents & poll_nval) {
-						this->delete_differed(dev);
+						this->delete_deferred(dev);
 						context.on_error(error_code(BadFileDescriptorError));
 					}
 				}

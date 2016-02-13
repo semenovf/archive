@@ -60,14 +60,14 @@ struct pool : public bits::pool
 		update = true;
 	}
 
-	void delete_differed (io::device d)
+	void delete_deferred (io::device d)
 	{
 		pfs::lock_guard<pfs::mutex> locker(mtx);
 		PFS_ASSERT(device_map.erase(d.native_handle()) == 1);
 		update = true;
 	}
 
-	void delete_differed (io::server s)
+	void delete_deferred (io::server s)
 	{
 		pfs::lock_guard<pfs::mutex> locker(mtx);
 		PFS_ASSERT(server_map.erase(s.native_handle()) == 1);
@@ -79,6 +79,10 @@ struct pool : public bits::pool
 			, short filter_events
 			, int millis
 			, error_code * ex);
+
+	pfs::vector<device> fetch_devices (bool (* filter) (const device & d));
+
+	pfs::vector<server> fetch_servers (bool (* filter) (const server & s));
 };
 
 struct pool_iterator : public bits::pool_iterator
@@ -194,6 +198,51 @@ void pool::update_pollfd (short events)
 	}
 }
 
+pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d))
+{
+	pfs::lock_guard<pfs::mutex> locker(mtx);
+
+	pfs::vector<device> r;
+
+	if (device_map.size() > 0) {
+		device_map_type::const_iterator it = device_map.cbegin();
+		device_map_type::const_iterator it_end = device_map.cend();
+
+		while (it != it_end) {
+			if (filter) {
+				if (filter(it->second))
+					r.push_back(it->second);
+			} else {
+				r.push_back(it->second);
+			}
+			++it;
+		}
+	}
+}
+
+pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s))
+{
+	pfs::lock_guard<pfs::mutex> locker(mtx);
+
+	pfs::vector<server> r;
+
+	if (server_map.size() > 0) {
+		server_map_type::const_iterator it = server_map.cbegin();
+		server_map_type::const_iterator it_end = server_map.cend();
+
+		while (it != it_end) {
+			if (filter) {
+				if (filter(it->second))
+					r.push_back(it->second);
+			} else {
+				r.push_back(it->second);
+			}
+			++it;
+		}
+	}
+}
+
+
 pool_iterator * pool_iterator::alloc_begin (short filter_events, const details::pool & p)
 {
 	pointer begin = p.pollfds.cbegin();
@@ -250,18 +299,33 @@ void pool::push_back (server s, short events)
 	pdp->push_back(s, events);
 }
 
-void pool::delete_differed (device d)
+void pool::delete_deferred (device d)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
-	pdp->delete_differed(d);
+	pdp->delete_deferred(d);
 }
 
-void pool::delete_differed (server s)
+void pool::delete_deferred (server s)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
-	pdp->delete_differed(s);
+	pdp->delete_deferred(s);
+}
+
+
+pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d))
+{
+	PFS_ASSERT(_d);
+	details::pool * pdp = static_cast<details::pool *>(_d.get());
+	return  pdp->fetch_devices(filter);
+}
+
+pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s))
+{
+	PFS_ASSERT(_d);
+	details::pool * pdp = static_cast<details::pool *>(_d.get());
+	return  pdp->fetch_servers(filter);
 }
 
 //vector<device> pool::get_devices () const

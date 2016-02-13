@@ -83,6 +83,13 @@ struct open_params<tcp_socket>
 		, socketopts(sso)
 	{}
 
+	open_params (net::inet4_addr a, uint16_t p, device::open_mode_flags of)
+		: addr(a)
+		, port(p)
+		, oflags(of)
+		, socketopts(0)
+	{}
+
 	open_params (net::inet4_addr a, uint16_t p)
 		: addr(a)
 		, port(p)
