@@ -139,10 +139,10 @@ public:
 
 public: // signals
 	signal0<> emit_quit;
-	signal1<const string &> emit_info;
-	signal1<const string &> emit_debug;
-	signal1<const string &> emit_warn;
-	signal1<const string &> emit_error;
+	signal2<const module *, const string &> emit_info;
+	signal2<const module *, const string &> emit_debug;
+	signal2<const module *, const string &> emit_warn;
+	signal2<const module *, const string &> emit_error;
 
 public: // slots
 	void module_registered (const string & pname, bool & result)
@@ -155,10 +155,10 @@ public: // slots
 		emit_quit();
 	}
 
-	void print_info  (const string & s);
-	void print_debug (const string & s);
-	void print_warn  (const string & s);
-	void print_error (const string & s);
+	void print_info  (const module * m, const string & s);
+	void print_debug (const module * m, const string & s);
+	void print_warn  (const module * m, const string & s);
+	void print_error (const module * m, const string & s);
 
 protected:
 	module_spec module_for_path (const fs::path & path

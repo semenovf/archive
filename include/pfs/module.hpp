@@ -43,26 +43,41 @@ public:
 	struct log_consumer : public has_slots<>
 	{
 		friend class module;
-		virtual void on_info  (const string &) {}
-		virtual void on_debug (const string &) {}
-		virtual void on_warn  (const string &) {}
-		virtual void on_error (const string &) {}
+		virtual void on_info  (const module *, const string &) {}
+		virtual void on_debug (const module *, const string &) {}
+		virtual void on_warn  (const module *, const string &) {}
+		virtual void on_error (const module *, const string &) {}
 
 	private:
-		void _on_info  (const string & s) { on_info(s);  }
-		void _on_debug (const string & s) { on_debug(s); }
-		void _on_warn  (const string & s) { on_warn(s);  }
-		void _on_error (const string & s) { on_error(s); }
+		void _on_info  (const module * m, const string & s)
+		{
+			on_info(m, s);
+		}
+
+		void _on_debug (const module * m, const string & s)
+		{
+			on_debug(m, s);
+		}
+
+		void _on_warn  (const module * m, const string & s)
+		{
+			on_warn(m, s);
+		}
+
+		void _on_error (const module * m, const string & s)
+		{
+			on_error(m, s);
+		}
 	};
 
 public: // signals
 	signal2<const string &, bool &> emit_module_registered;
 
 	signal0<>               emit_quit;
-	signal1<const string &> emit_info;
-	signal1<const string &> emit_debug;
-	signal1<const string &> emit_warn;
-	signal1<const string &> emit_error;
+	signal2<const module *, const string &> emit_info;
+	signal2<const module *, const string &> emit_debug;
+	signal2<const module *, const string &> emit_warn;
+	signal2<const module *, const string &> emit_error;
 
 private:
 	string       _name;

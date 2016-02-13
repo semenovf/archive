@@ -61,28 +61,40 @@ dispatcher::dispatcher (api_item_type * mapping, int n)
 	}
 }
 
-void dispatcher::print_info (const string & s)
+inline pfs::string __build_string_for_log (const module * m, const string & s)
 {
-	pfs::info(s);
-	emit_info(s);
+	if (!m)
+		return s;
+
+	pfs::string r(m->name());
+	r.append(": ");
+	r.append(s);
+
+	return r;
 }
 
-void dispatcher::print_debug (const string & s)
+void dispatcher::print_info (const module * m, const string & s)
 {
-	pfs::debug(s);
-	emit_debug(s);
+	pfs::info(__build_string_for_log(m, s));
+	emit_info(m, s);
 }
 
-void dispatcher::print_warn  (const string & s)
+void dispatcher::print_debug (const module * m, const string & s)
 {
-	pfs::warn(s);
-	emit_warn(s);
+	pfs::debug(__build_string_for_log(m, s));
+	emit_debug(m, s);
 }
 
-void dispatcher::print_error (const string & s)
+void dispatcher::print_warn  (const module * m, const string & s)
 {
-	pfs::error(s);
-	emit_error(s);
+	pfs::warn(__build_string_for_log(m, s));
+	emit_warn(m, s);
+}
+
+void dispatcher::print_error (const module * m, const string & s)
+{
+	pfs::error(__build_string_for_log(m, s));
+	emit_error(m, s);
 }
 
 void dispatcher::finalize ()
@@ -108,10 +120,10 @@ module_spec dispatcher::module_for_path (const fs::path & path
 	}
 
 	if (not dl.open(dlpath, _searchdirs, & ex, & extended_errstr)) {
-		print_error(_Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
+		print_error(0, _Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
 
 		if (not extended_errstr.empty()) {
-			print_error(_Sf("%s: %s")(dlpath.native())(extended_errstr).str());
+			print_error(0, _Sf("%s: %s")(dlpath.native())(extended_errstr).str());
 		}
 
 		return module_spec();
@@ -122,11 +134,11 @@ module_spec dispatcher::module_for_path (const fs::path & path
 			, & extended_errstr);
 
 	if (!ctor) {
-		print_error(_Sf("%s: Failed to resolve `ctor' for module")(dlpath.native()).str());
-		print_error(_Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
+		print_error(0, _Sf("%s: Failed to resolve `ctor' for module")(dlpath.native()).str());
+		print_error(0, _Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
 
 		if (not extended_errstr.empty()) {
-			print_error(_Sf("%s: %s")(dlpath.native())(extended_errstr).str());
+			print_error(0, _Sf("%s: %s")(dlpath.native())(extended_errstr).str());
 		}
 
 		return module_spec();
@@ -137,11 +149,11 @@ module_spec dispatcher::module_for_path (const fs::path & path
 			, & extended_errstr);
 
 	if (!dtor) {
-		print_error(_Sf("%s: Failed to resolve `dtor' for module")(dlpath.native()).str());
-		print_error(_Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
+		print_error(0, _Sf("%s: Failed to resolve `dtor' for module")(dlpath.native()).str());
+		print_error(0, _Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
 
 		if (not extended_errstr.empty()) {
-			print_error(_Sf("%s: %s")(dlpath.native())(extended_errstr).str());
+			print_error(0, _Sf("%s: %s")(dlpath.native())(extended_errstr).str());
 		}
 
 		return module_spec();
@@ -172,7 +184,7 @@ bool dispatcher::register_module (const module_spec & modspec)
 	shared_ptr<module> pmodule = modspec.pmodule;
 
 	if (_module_spec_map.find(pmodule->name()) != _module_spec_map.end()) {
-		print_error(_Sf("%s: Module already registered")(pmodule->name()).str());
+		print_error(0, _Sf("%s: Module already registered")(pmodule->name()).str());
 		return false;
 	}
 
@@ -189,7 +201,7 @@ bool dispatcher::register_module (const module_spec & modspec)
 			if (it != it_end) {
 				it->second->map->append_emitter(reinterpret_cast<emitter *>(emitters[i]._emitter));
 			} else {
-				print_warn(_Sf("%s: Emitter '%s' not found while registering module, "
+				print_warn(0, _Sf("%s: Emitter '%s' not found while registering module, "
 						"may be signal/slot mapping is not supported for this application")
 						(pmodule->name())
 						(to_string(emitters[i]._id)).str());
@@ -205,7 +217,7 @@ bool dispatcher::register_module (const module_spec & modspec)
 			if (it != it_end) {
 				it->second->map->append_detector(pmodule.get(), detectors[i]._detector);
 			} else {
-				print_warn(_Sf(_u8("%s: Detector '%s' not found while registering module, "
+				print_warn(0, _Sf(_u8("%s: Detector '%s' not found while registering module, "
 						"may be signal/slot mapping is not supported for this application"))
 						(pmodule->name())
 						(to_string(detectors[i]._id)).str());
@@ -222,9 +234,9 @@ bool dispatcher::register_module (const module_spec & modspec)
 	//
 	if (pmodule->run) {
 		_threads.push_back(new module_threaded(pmodule));
-		print_debug(_Sf("%s: Module registered as threaded")(pmodule->name()).str());
+		print_debug(0, _Sf("%s: Module registered as threaded")(pmodule->name()).str());
 	} else {
-		print_debug(_Sf("%s: Module registered")(pmodule->name()).str());
+		print_debug(0, _Sf("%s: Module registered")(pmodule->name()).str());
 	}
 
 	return true;
@@ -290,7 +302,7 @@ void dispatcher::unregister_all ()
 //			dl.close(pspec.dl);
 //		}
 
-		print_debug(_Sf("%s: Module unregistered")(pmodule->name()).str());
+		print_debug(0, _Sf("%s: Module unregistered")(pmodule->name()).str());
 	}
 
 	_module_spec_map.clear();
@@ -316,7 +328,7 @@ bool dispatcher::start ()
 		pmodule->emit_error.connect(this, & dispatcher::print_error);
 
 		if (not pmodule->on_start()) {
-			print_error(_Sf("%s: Failed to start module")(pmodule->name()).str());
+			print_error(pmodule.get(), _u8("Failed to start module"));
 			r = false;
 		}
 	}
