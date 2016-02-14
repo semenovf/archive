@@ -40,45 +40,45 @@ namespace pfs { namespace io { namespace bits {
 typedef int native_handle_type;
 
 
-struct device_info
+struct device_context
 {
-	virtual ~device_info () {}
+	virtual ~device_context () {}
 };
 
 class basic_device
 {
 public:
-	typedef device_info info_type;
+	typedef device_context context_type;
 
 protected:
-	info_type * _info;
+	context_type * _ctx;
 
 public:
 	basic_device ()
-		: _info(0)
+		: _ctx(0)
 	{}
 
     virtual ~basic_device ()
     {
-    	if (_info)
-    		delete _info;
+    	if (_ctx)
+    		delete _ctx;
     }
 
-    info_type * info ()
+    context_type * context ()
     {
-    	return _info;
+    	return _ctx;
     }
 
-    const info_type * info () const
+    const context_type * context () const
     {
-    	return _info;
+    	return _ctx;
     }
 
-    void set_info (info_type * info)
+    void set_context (context_type * context)
     {
-    	if (_info)
-    		delete _info;
-    	_info = info;
+    	if (_ctx)
+    		delete _ctx;
+    	_ctx = context;
     }
 };
 
@@ -88,7 +88,7 @@ public:
 	typedef bits::native_handle_type native_handle_type;
 	typedef uint32_t       open_mode_flags;
 	typedef open_mode_enum open_mode_type;
-	typedef device_info    info_type;
+	typedef device_context    info_type;
 
 public:
 	device ()

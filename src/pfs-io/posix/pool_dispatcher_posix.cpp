@@ -52,6 +52,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 					if (dev.available() == 0
 							&& (revents & poll_in)) { // TODO Check if this event enough to decide to disconnect.
 						this->delete_deferred(dev);
+						dev.close();
 						context.disconnected(dev);
 					} else {
 						// Error condition (output only).
@@ -98,6 +99,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 						//
 						if (revents & poll_nval) {
 							this->delete_deferred(dev);
+							dev.close();
 							context.on_error(error_code(BadFileDescriptorError));
 						}
 					}
@@ -108,7 +110,6 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 		}
 	}
 }
-
 
 void pool::dispatch (pool::dispatcher_context2 & context)
 {
@@ -148,6 +149,7 @@ void pool::dispatch (pool::dispatcher_context2 & context)
 				if (dev.available() == 0
 						&& (revents & poll_in)) { // TODO Check if this event enough to decide to disconnect.
 					this->delete_deferred(dev);
+					dev.close();
 					context.disconnected(dev);
 				} else {
 					// Error condition (output only).
@@ -194,6 +196,7 @@ void pool::dispatch (pool::dispatcher_context2 & context)
 					//
 					if (revents & poll_nval) {
 						this->delete_deferred(dev);
+						dev.close();
 						context.on_error(error_code(BadFileDescriptorError));
 					}
 				}

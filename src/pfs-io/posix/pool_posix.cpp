@@ -218,6 +218,8 @@ pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d))
 			++it;
 		}
 	}
+
+	return r;
 }
 
 pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s))
@@ -240,6 +242,8 @@ pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s))
 			++it;
 		}
 	}
+
+	return r;
 }
 
 

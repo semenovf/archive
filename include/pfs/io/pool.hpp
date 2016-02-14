@@ -213,27 +213,6 @@ public:
 
 	pfs::vector<server> fetch_servers (bool (* filter) (const server & s));
 
-//	/**
-//	 * @brief Returns list of all devices (exclude listeners) in the pool.
-//	 */
-//	vector<device> get_devices () const;
-//
-//	/**
-//	 * @brief Returns list of all listeners in the pool.
-//	 */
-//	vector<server> get_listeners () const;
-//
-//	/**
-//	 * @brief Returns list of all listeners in the pool.
-//	 * 		Synonym for get_listeners().
-//	 *
-//	 * @see get_listeners().
-//	 */
-//	vector<server> get_servers () const
-//	{
-//		return get_listeners ();
-//	}
-
 	typedef std::pair<pool::iterator, pool::iterator> poll_result_type;
 
 	/**
@@ -288,6 +267,9 @@ public:
 		virtual void on_error (const error_code & ) {}
 	};
 
+	// XXX OBSOLETE, use dispatch(dispatcher_context2 context);
+	void dispatch (dispatcher_context & context, short filter_events = poll_all, int millis = 0);
+
 	class dispatcher_context2
 	{
 		friend class pool;
@@ -320,9 +302,6 @@ public:
 		virtual void can_write (device &) {} // unused yet
 		virtual void on_error (const error_code & ) {}
 	};
-
-	// XXX OBSOLETE, use dispatch(dispatcher_context2 context);
-	void dispatch (dispatcher_context & context, short filter_events = poll_all, int millis = 0);
 
 	void dispatch (dispatcher_context2 & context);
 };

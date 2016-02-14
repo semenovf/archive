@@ -32,7 +32,7 @@ public:
 	typedef bits::device::native_handle_type native_handle_type;
 	typedef bits::device::open_mode_flags    open_mode_flags;
 	typedef bits::device::open_mode_type     open_mode_type;
-	typedef bits::device::info_type          info_type;
+	typedef bits::device::context_type       context_type;
 
 protected:
     shared_ptr<bits::device> _d;
@@ -175,19 +175,19 @@ public:
 		return _d->type();
 	}
 
-	void set_info (info_type * info)
+	void set_context (context_type * ctx)
 	{
-		_d->set_info(info);
+		_d->set_context(ctx);
 	}
 
-	const info_type * info () const
+	const context_type * context () const
 	{
-		return _d->info();
+		return _d->context();
 	}
 
-	info_type * info ()
+	context_type * context ()
 	{
-		return  _d->info();
+		return  _d->context();
 	}
 
 	void swap (device & other)
