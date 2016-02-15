@@ -56,7 +56,7 @@ private:
 dispatcher::dispatcher (api_item_type * mapping, int n)
 	: _master_module(0)
 {
-	for (int i = 0; i < n; i++) {
+	for (int i = 0; i < n; ++i) {
 		_api.insert(api_type::value_type(mapping[i].id, & mapping[i]));
 	}
 }
@@ -194,7 +194,7 @@ bool dispatcher::register_module (const module_spec & modspec)
 	api_type::iterator it_end = _api.end();
 
 	if (emitters) {
-		for (int i = 0; i < nemitters; i++) {
+		for (int i = 0; i < nemitters; ++i) {
 			int emitter_id(emitters[i]._id);
 			api_type::iterator it = _api.find(emitter_id);
 
@@ -210,7 +210,7 @@ bool dispatcher::register_module (const module_spec & modspec)
 	}
 
 	if (detectors) {
-		for (int i = 0; i < ndetectors; i++) {
+		for (int i = 0; i < ndetectors; ++i) {
 			int detector_id(detectors[i]._id);
 			api_type::iterator it = _api.find(detector_id);
 
@@ -247,7 +247,7 @@ void dispatcher::set_master_module (const string & name)
 	module_spec_map_type::iterator it = _module_spec_map.begin();
 	module_spec_map_type::iterator itEnd = _module_spec_map.end();
 
-	for (;it != itEnd; it++) {
+	for (;it != itEnd; ++it) {
 		module_spec modspec = it->second;
 		shared_ptr<module> pmodule = modspec.pmodule;
 
@@ -261,7 +261,7 @@ void dispatcher::connect_all ()
 	api_type::iterator it = _api.begin();
 	api_type::iterator itEnd = _api.end();
 
-	for(; it != itEnd; it++ ) {
+	for (; it != itEnd; ++it) {
 		it->second->map->connect_all();
 	}
 }
@@ -271,7 +271,7 @@ void dispatcher::disconnect_all ()
 	api_type::iterator it = _api.begin();
 	api_type::iterator itEnd = _api.end();
 
-	for(; it != itEnd; it++ ) {
+	for (; it != itEnd; ++it) {
 		it->second->map->disconnect_all();
 	}
 }
@@ -289,7 +289,7 @@ void dispatcher::unregister_all ()
 	module_spec_map_type::iterator it = _module_spec_map.begin();
 	module_spec_map_type::iterator itEnd = _module_spec_map.end();
 
-	for (;it != itEnd; it++) {
+	for (;it != itEnd; ++it) {
 		module_spec modspec = it->second;
 		shared_ptr<module> pmodule = modspec.pmodule;
 		pmodule->emit_module_registered.disconnect(this);
@@ -315,7 +315,7 @@ bool dispatcher::start ()
 	module_spec_map_type::iterator it = _module_spec_map.begin();
 	module_spec_map_type::iterator itEnd = _module_spec_map.end();
 
-	for (;it != itEnd; it++) {
+	for (;it != itEnd; ++it) {
 		module_spec modspec = it->second;
 		shared_ptr<module> pmodule = modspec.pmodule;
 
@@ -377,7 +377,7 @@ int dispatcher::exec ()
 	module_spec_map_type::iterator itModule = _module_spec_map.begin();
 	module_spec_map_type::iterator itModuleEnd = _module_spec_map.end();
 
-	for (; itModule != itModuleEnd; itModule++) {
+	for (; itModule != itModuleEnd; ++itModule) {
 		module_spec modspec = itModule->second;
 		shared_ptr<module> pmodule = modspec.pmodule;
 		pmodule->on_finish();

@@ -43,30 +43,30 @@ public:
 	struct log_consumer : public has_slots<>
 	{
 		friend class module;
-		virtual void on_info  (const module *, const string &) {}
-		virtual void on_debug (const module *, const string &) {}
-		virtual void on_warn  (const module *, const string &) {}
-		virtual void on_error (const module *, const string &) {}
+		virtual void on_info  (const module *, const string &) = 0; // {}
+		virtual void on_debug (const module *, const string &) = 0; // {}
+		virtual void on_warn  (const module *, const string &) = 0; // {}
+		virtual void on_error (const module *, const string &) = 0; // {}
 
 	private:
 		void _on_info  (const module * m, const string & s)
 		{
-			on_info(m, s);
+			this->on_info(m, s);
 		}
 
 		void _on_debug (const module * m, const string & s)
 		{
-			on_debug(m, s);
+			this->on_debug(m, s);
 		}
 
 		void _on_warn  (const module * m, const string & s)
 		{
-			on_warn(m, s);
+			this->on_warn(m, s);
 		}
 
 		void _on_error (const module * m, const string & s)
 		{
-			on_error(m, s);
+			this->on_error(m, s);
 		}
 	};
 
