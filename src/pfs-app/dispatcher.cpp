@@ -188,6 +188,14 @@ bool dispatcher::register_module (const module_spec & modspec)
 		return false;
 	}
 
+	pmodule->emit_quit.connect (this, & dispatcher::broadcast_quit);
+	this->emit_quit.connect(pmodule.get(), & module::on_quit);
+
+	pmodule->emit_info.connect (this, & dispatcher::print_info);
+	pmodule->emit_debug.connect(this, & dispatcher::print_debug);
+	pmodule->emit_warn.connect (this, & dispatcher::print_warn);
+	pmodule->emit_error.connect(this, & dispatcher::print_error);
+
 	const emitter_mapping * emitters = pmodule->get_emitters(& nemitters);
 	const detector_mapping * detectors = pmodule->get_detectors(& ndetectors);
 
@@ -318,14 +326,6 @@ bool dispatcher::start ()
 	for (;it != itEnd; ++it) {
 		module_spec modspec = it->second;
 		shared_ptr<module> pmodule = modspec.pmodule;
-
-		pmodule->emit_quit.connect (this, & dispatcher::broadcast_quit);
-		this->emit_quit.connect(pmodule.get(), & module::on_quit);
-
-		pmodule->emit_info.connect (this, & dispatcher::print_info);
-		pmodule->emit_debug.connect(this, & dispatcher::print_debug);
-		pmodule->emit_warn.connect (this, & dispatcher::print_warn);
-		pmodule->emit_error.connect(this, & dispatcher::print_error);
 
 		if (not pmodule->on_start()) {
 			print_error(pmodule.get(), _u8("Failed to start module"));
