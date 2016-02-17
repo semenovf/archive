@@ -222,6 +222,17 @@ function plugin:transaction ()
     projectContent:push_back("");
     projectContent:push_back([[include(os.getenv("GBS_HOME") .. ]] .. [["/premake/filter_action_gmake_install")]]);
 
+    --
+    -- -rdynamic option (gcc) usefull for backtrace
+    -- 
+    -- Unix: (backtrace)[http://www.kernel.org/doc/man-pages/online/pages/man3/backtrace.3.html]
+    -- Mac: (backtrace)[http://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man3/backtrace.3.html]
+    -- Windows: (CaptureBackTrace)[http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633%28v=vs.85%29.aspx]
+    --
+    projectContent:push_back("");
+    projectContent:push_back("[[filter { \"debug\", \"action:gmake\" }]]");
+    projectContent:push_back("[[    linkoptions  { \"-rdynamic\" }]]"); 
+
     if enableQt then
         projectContent:push_back("");
         projectContent:push_back("-- Special for Qt projects");
