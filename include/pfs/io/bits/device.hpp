@@ -20,6 +20,7 @@ enum open_mode_enum
 	, read_write   = read_only | write_only  /**< Open device for read and write */
 	, write_read   = read_write              /**< Synonym for read_write */
 	, non_blocking = 0x0004                  /**< Open device in non-blocking mode */
+	, truncate     = 0x0010                  /**< Create device (only for regular file device) */
 };
 
 enum device_type

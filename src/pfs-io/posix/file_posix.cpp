@@ -219,6 +219,9 @@ device open_device<file> (const open_params<file> & op, error_code & ex)
 	if (op.oflags & non_blocking)
 		native_oflags |= O_NONBLOCK;
 
+	if (op.oflags & truncate)
+		native_oflags |= O_TRUNC;
+
 
 	details::file * f = new details::file;
 
