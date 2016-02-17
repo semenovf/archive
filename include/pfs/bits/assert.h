@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifndef NDEBUG
 /*
@@ -137,5 +138,32 @@ extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * 
  * Used when need to implement some code.
  */
 #define PFS_ASSERT_TODO() PFS_ASSERT(false)
+
+
+/*
+ * Backtrace output
+ */
+#if defined(__GNUC__)
+#	ifndef PFS_BACKTRACE_SIZE
+#		define PFS_BACKTRACE_SIZE 20
+#	endif
+#	ifndef PFS_BACKTRACE_FD
+#		define PFS_BACKTRACE_FD    2 /* standard error */
+#	endif
+
+#	include <execinfo.h>
+
+#	define PFS_ASSERT_BT(x)                                                             \
+		if (!(x)) {                                                                     \
+			void * __pfs_bt_buffer__[PFS_BACKTRACE_SIZE];                               \
+			int __pfs_bt_size__ = backtrace(__pfs_bt_buffer__, PFS_BACKTRACE_SIZE);     \
+			fprintf(stderr, "===BACKTRACE: (%s[%d]): %s\n", __TFILE__, __LINE__, #x);   \
+			backtrace_symbols_fd(__pfs_bt_buffer__, __pfs_bt_size__, PFS_BACKTRACE_FD); \
+			fprintf(stderr, "===END OF BACKTRACE\n");                                   \
+			::abort();                                                                  \
+		}
+#else
+#	define PFS_ASSERT_BT(x) PFS_ASSERT(x)
+#endif
 
 #endif /* __PFS_BITS_ASSERT_H__ */
