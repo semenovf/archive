@@ -160,6 +160,17 @@ void pool::dispatch (pool::dispatcher_context2 & context)
 						PFS_WARN("pfs::io::pool::dispatch(): device error condition");
 					}
 
+					// Hang up (output only).
+					//
+					// TODO Research this feature and implement handling
+					//
+					if (revents & poll_hup) {
+						this->delete_deferred(dev);
+						dev.close();
+						context.disconnected(dev);
+//						PFS_WARN("pfs::io::pool::dispatch(): device hang up");
+					}
+
 					// There is urgent data to read (e.g., out-of-band data on TCP socket;
 					// pseudoterminal master in packet mode has seen state change in slave).
 					//
@@ -180,14 +191,6 @@ void pool::dispatch (pool::dispatcher_context2 & context)
 					//
 					if (revents & poll_out) {
 						context.can_write(dev);
-					}
-
-					// Hang up (output only).
-					//
-					// TODO Research this feature and implement handling
-					//
-					if (revents & poll_hup) {
-						PFS_WARN("pfs::io::pool::dispatch(): device hang up");
 					}
 
 					// Invalid request: fd not open (output only).

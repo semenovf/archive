@@ -198,20 +198,16 @@ public:
 	pool ();
 
 	size_t device_count () const;
-
 	size_t server_count () const;
 
 	void push_back (device d, short events = poll_all);
-
 	void push_back (server s, short events = poll_all);
 
 	void delete_deferred (device d);
-
 	void delete_deferred (server s);
 
-	pfs::vector<device> fetch_devices (bool (* filter) (const device & d));
-
-	pfs::vector<server> fetch_servers (bool (* filter) (const server & s));
+	pfs::vector<device> fetch_devices (bool (* filter) (const device & d, void * context), void * context);
+	pfs::vector<server> fetch_servers (bool (* filter) (const server & s, void * context), void * context);
 
 	typedef std::pair<pool::iterator, pool::iterator> poll_result_type;
 

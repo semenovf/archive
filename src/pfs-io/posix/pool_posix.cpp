@@ -80,9 +80,8 @@ struct pool : public bits::pool
 			, int millis
 			, error_code * ex);
 
-	pfs::vector<device> fetch_devices (bool (* filter) (const device & d));
-
-	pfs::vector<server> fetch_servers (bool (* filter) (const server & s));
+	pfs::vector<device> fetch_devices (bool (* filter) (const device & d, void * context), void * context);
+	pfs::vector<server> fetch_servers (bool (* filter) (const server & s, void * context), void * context);
 };
 
 struct pool_iterator : public bits::pool_iterator
@@ -198,7 +197,7 @@ void pool::update_pollfd (short events)
 	}
 }
 
-pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d))
+pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d, void * context), void * context)
 {
 	pfs::lock_guard<pfs::mutex> locker(mtx);
 
@@ -210,7 +209,7 @@ pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d))
 
 		while (it != it_end) {
 			if (filter) {
-				if (filter(it->second))
+				if (filter(it->second, context))
 					r.push_back(it->second);
 			} else {
 				r.push_back(it->second);
@@ -222,7 +221,7 @@ pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d))
 	return r;
 }
 
-pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s))
+pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s, void * context), void * context)
 {
 	pfs::lock_guard<pfs::mutex> locker(mtx);
 
@@ -234,7 +233,7 @@ pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s))
 
 		while (it != it_end) {
 			if (filter) {
-				if (filter(it->second))
+				if (filter(it->second, context))
 					r.push_back(it->second);
 			} else {
 				r.push_back(it->second);
@@ -317,20 +316,20 @@ void pool::delete_deferred (server s)
 	pdp->delete_deferred(s);
 }
 
-
-pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d))
+pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d, void * context), void * context)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
-	return  pdp->fetch_devices(filter);
+	return  pdp->fetch_devices(filter, context);
 }
 
-pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s))
+pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s, void * context), void * context)
 {
 	PFS_ASSERT(_d);
 	details::pool * pdp = static_cast<details::pool *>(_d.get());
-	return  pdp->fetch_servers(filter);
+	return  pdp->fetch_servers(filter, context);
 }
+
 
 //vector<device> pool::get_devices () const
 //{

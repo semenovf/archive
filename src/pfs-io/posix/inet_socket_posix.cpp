@@ -304,8 +304,6 @@ device open_device<tcp_socket> (const open_params<tcp_socket> & op, error_code &
     }
 
     return device(d);
-
-
 }
 
 }} // pfs::io
