@@ -180,7 +180,7 @@ public:
 	}
 
 	template <typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
+	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3, Arg4), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
 	{
 		lock_guard<Mutex> locker(_mutex);
 
@@ -206,7 +206,7 @@ public:
 	}
 
 	template <typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
-	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
+	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3, Arg4, Arg5), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
 	{
 		lock_guard<Mutex> locker(_mutex);
 

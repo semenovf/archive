@@ -71,11 +71,25 @@ public:
 		_m.insert(std::pair<key_type, value_type>(key, new functor0<return_type>(f)));
 	}
 
+	template <typename Class>
+	bool insert_method (const key_type key, Class * p, return_type (Class::* f) ())
+	{
+		lock_guard<Mutex> locker(_mutex);
+		_m.insert(std::pair<key_type, value_type>(key, new functor_method0<Class, return_type>(p, f)));
+	}
+
 	template <typename Arg1>
 	void insert (const key_type key, return_type (*f) (Arg1), Arg1 a1)
 	{
 		lock_guard<Mutex> locker(_mutex);
 		_m.insert(std::pair<key_type, value_type>(key, new functor1<return_type, Arg1>(f, a1)));
+	}
+
+	template <typename Class, typename Arg1>
+	void insert_method (const key_type key, Class * p, return_type (Class::*f) (Arg1), Arg1 a1)
+	{
+		lock_guard<Mutex> locker(_mutex);
+		_m.insert(std::pair<key_type, value_type>(key, new functor_method1<Class, return_type, Arg1>(p, f, a1)));
 	}
 
 	template <typename Arg1, typename Arg2>
@@ -85,11 +99,25 @@ public:
 		_m.insert(std::pair<key_type, value_type>(key, new functor2<return_type, Arg1, Arg2>(f, a1, a2)));
 	}
 
+	template <typename Class, typename Arg1, typename Arg2>
+	void insert_method (const key_type key, Class * p, return_type (Class::*f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
+	{
+		lock_guard<Mutex> locker(_mutex);
+		_m.insert(std::pair<key_type, value_type>(key, new functor_method2<Class, return_type, Arg1, Arg2>(p, f, a1, a2)));
+	}
+
 	template <typename Arg1, typename Arg2, typename Arg3>
 	void insert (const key_type key, return_type (*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3)
 	{
 		lock_guard<Mutex> locker(_mutex);
 		_m.insert(std::pair<key_type, value_type>(key, new functor3<return_type, Arg1, Arg2, Arg3>(f, a1, a2, a3)));
+	}
+
+	template <typename Class, typename Arg1, typename Arg2, typename Arg3>
+	void insert_method (const key_type key, Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3)
+	{
+		lock_guard<Mutex> locker(_mutex);
+		_m.insert(std::pair<key_type, value_type>(key, new functor_method3<Class, return_type, Arg1, Arg2, Arg3>(p, f, a1, a2, a3)));
 	}
 
 	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
@@ -99,11 +127,25 @@ public:
 		_m.insert(std::pair<key_type, value_type>(key, new functor4<return_type, Arg1, Arg2, Arg3, Arg4>(f, a1, a2, a3, a4)));
 	}
 
+	template <typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+	void insert_method (const key_type key, Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
+	{
+		lock_guard<Mutex> locker(_mutex);
+		_m.insert(std::pair<key_type, value_type>(key, new functor_method4<Class, return_type, Arg1, Arg2, Arg3, Arg4>(p, f, a1, a2, a3, a4)));
+	}
+
 	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
 	void insert (const key_type key, return_type (*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
 	{
 		lock_guard<Mutex> locker(_mutex);
 		_m.insert(std::pair<key_type, value_type>(key, new functor5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5>(f, a1, a2, a3, a4, a5)));
+	}
+
+	template <typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+	void insert_method (const key_type key, Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
+	{
+		lock_guard<Mutex> locker(_mutex);
+		_m.insert(std::pair<key_type, value_type>(key, new functor_method5<Class, return_type, Arg1, Arg2, Arg3, Arg4, Arg5>(p, f, a1, a2, a3, a4, a5)));
 	}
 
 	void clear ()
