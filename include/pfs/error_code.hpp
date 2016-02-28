@@ -15,9 +15,13 @@ namespace pfs {
 
 enum error_code_enum
 {
-	  BadFileDescriptorError   = EBADF
-	, ConnectionRefusedError   = ECONNREFUSED
-	, OperationInProgressError = EINPROGRESS
+	  BadFileDescriptorError    = EBADF
+	, ConnectionRefusedError    = ECONNREFUSED
+	, OperationInProgressError  = EINPROGRESS
+	, NetworkIsDownError        = ENETDOWN
+	, NetworkIsUnreachableError = ENETUNREACH
+//	, NetworkResetError         = ENETRESET
+//	, HostUnreachableError      = EHOSTUNREACH
 
 	, CustomErrorBase = 10000
 
