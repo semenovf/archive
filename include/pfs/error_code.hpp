@@ -64,6 +64,11 @@ public:
 		return *this;
 	}
 
+	void reset ()
+	{
+		_native = 0;
+	}
+
 	int native () const
 	{
 		return _native;
