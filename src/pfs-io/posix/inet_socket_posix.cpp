@@ -256,7 +256,7 @@ ssize_t tcp_socket::write (const byte_t * bytes, size_t nbytes, error_code * ex)
 
 	int r = 0; // total sent
 
-	while (r < nbytes) {
+	while (nbytes) {
 		// MSG_NOSIGNAL flag means:
 		// requests not to send SIGPIPE on errors on stream oriented sockets
 		// when the other end breaks the connection.
@@ -265,6 +265,9 @@ ssize_t tcp_socket::write (const byte_t * bytes, size_t nbytes, error_code * ex)
 		ssize_t n = send(_fd, bytes + r, nbytes, MSG_NOSIGNAL);
 
 		if (n < 0) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				continue;
+
 			r = -1;
 			break;
 		}
