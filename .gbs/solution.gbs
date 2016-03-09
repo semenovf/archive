@@ -98,8 +98,8 @@ project "test-shared_ptr"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-strtoreal"
---    include("test-strtoreal/project.gbs")
+project "test-strtoreal"
+    include("test-strtoreal/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

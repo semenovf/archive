@@ -9,6 +9,8 @@
 #ifndef __PFS_STRING_HPP__
 #define __PFS_STRING_HPP__
 
+#include <cmath>
+
 #if PFS_STRING_UTF16
 
 #include <pfs/utf16/string.hpp>
@@ -464,12 +466,25 @@ lexical_cast (string::const_iterator begin
 			, decimalPoint
 			, & endptr);
 
-	if (errno || endptr != end || r < min_value<Float>() || r > max_value<Float>()) {
+	if (errno || endptr != end) {
     	if (ok)
     		*ok = false;
     	return static_cast<Float>(0.0f);
-
 	}
+
+#if PFS_HAVE_LONG_DOUBLE
+	if (not (fabsl(r) <= fabsl(max_value<Float>()))) {
+    	if (ok)
+    		*ok = false;
+    	return static_cast<Float>(0.0f);
+	}
+#else
+	if (not (fabs(r) <= fabs(max_value<Float>()))) {
+		if (ok)
+			*ok = false;
+		return static_cast<Float>(0.0f);
+	}
+#endif
 
     return static_cast<Float>(r);
 }

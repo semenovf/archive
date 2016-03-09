@@ -312,7 +312,8 @@ real_t string_to_real (string::const_iterator begin
     if (state > finish_state) {
     	;
     } else if (mant_size == 0) {
-    	pos = begin;
+    	if (state != skip_zeros_state) // to accept zero series as 0
+    		pos = begin;
     } else if (state <= finish_state) {
 		if (expSign < 0)
 			exp = - exp;
