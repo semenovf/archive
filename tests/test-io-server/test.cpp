@@ -20,6 +20,6 @@ int main(int argc, char *argv[])
 
 	test_pool_dispatcher();
 
-	END_TESTS;
+	return END_TESTS;
 }
 

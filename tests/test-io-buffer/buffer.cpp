@@ -108,5 +108,5 @@ int main(int argc, char *argv[])
     test_read();
     test_write();
 
-    END_TESTS;
+    return END_TESTS;
 }

@@ -295,5 +295,5 @@ int main(int argc, char *argv[])
     test_write_read();
 //    test_bytes_available();
 
-    END_TESTS;
+    return END_TESTS;
 }

@@ -237,5 +237,5 @@ int main(int argc, char *argv[])
     TEST_OK(test_check_to_string(_u8("%a.%B")       , CHECK_STRING_NTESTS));
     TEST_OK(test_check_to_string(_u8("%A")          , CHECK_STRING_NTESTS));
 
-    END_TESTS;
+    return END_TESTS;
 }

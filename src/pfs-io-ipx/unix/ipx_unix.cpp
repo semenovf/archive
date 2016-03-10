@@ -98,7 +98,9 @@ ssize_t ipx_socket_impl::recvfrom (sockaddr_ipx * saddr)
 		//
 		// Other errors
 		//
-		if (!PFS_VERIFY_ERRNO(n > 0)) {
+		// FIXME
+		//if (!PFS_VERIFY_ERRNO(n > 0)) {
+		if (n <= 0) {
 			break;
 		}
 
@@ -177,7 +179,9 @@ bool ipx_socket_impl::close (errorable_ext & ex)
 	bool r = true;
 
 	if (_sockfd > 0) {
-		PFS_VERIFY_ERRNO(0 == shutdown(_sockfd, SHUT_RDWR));
+		// FIXME
+		//PFS_VERIFY_ERRNO(0 == shutdown(_sockfd, SHUT_RDWR));
+		shutdown(_sockfd, SHUT_RDWR);
 
 		if (::close(_sockfd) < 0) {
 			ex.addSystemError(errno, _u8("IPX socket close failure"));
