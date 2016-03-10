@@ -26,6 +26,6 @@ int main(int argc, char *argv[])
 	TEST_OK2(true == true, "true == true");
 	TEST_FAIL2(true == true, "true == true");
 
-	END_TESTS;
+	return END_TESTS;
 }
 

@@ -7,5 +7,5 @@ int main(int argc, char *argv[])
 
     TEST_OK(true == true);
 
-    END_TESTS;
+    return END_TESTS;
 }
