@@ -514,7 +514,7 @@ int main(int argc, char *argv[])
 	test_base64();
 	test_substr();
 
-    END_TESTS;
+	return END_TESTS;
 }
 
 // TODO Add this tests

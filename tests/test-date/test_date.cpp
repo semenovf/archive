@@ -147,6 +147,6 @@ int main(int argc, char *argv[])
 	TEST_OK(!date_type::is_leap_year(2017));
 
 
-    END_TESTS;
+	return END_TESTS;
 }
 

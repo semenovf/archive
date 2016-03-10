@@ -51,7 +51,7 @@ void test_empty_ptr()
     TEST_OK(0 == xPtr.use_count());
     TEST_OK(NULL == xPtr.get());
 
-    PFS_VERIFY_X(!xPtr, "bool cast operator error");
+    PFS_ASSERT_X(!xPtr, "bool cast operator error");
 
     // Reset to NULL (ie. do nothing)
     xPtr.reset();
@@ -171,7 +171,7 @@ void test_basic_ptr()
             TEST_OK(1 == Foo::g_instances);
         }
 
-        PFS_VERIFY_X(xPtr, "bool cast operator error");
+        PFS_ASSERT_X(xPtr, "bool cast operator error");
 
         TEST_OK(true == xPtr);
         TEST_OK(true == xPtr.unique());
@@ -386,5 +386,5 @@ int main(int argc, char *argv[])
 	test_unique();
 //	test_deep_swap_ptr();
 
-	END_TESTS;
+	return END_TESTS;
 }

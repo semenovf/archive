@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	test_base();
 	test_stringify();
 
-    END_TESTS;
+	return END_TESTS;
 }
 
 

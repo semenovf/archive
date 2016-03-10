@@ -640,5 +640,5 @@ int main(int argc, char * argv[])
 //	test_vector_find();
 //	test_vector_swap();
 
-	END_TESTS;
+	return END_TESTS;
 }

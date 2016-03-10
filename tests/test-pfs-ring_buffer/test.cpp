@@ -171,6 +171,6 @@ int main(int argc, char *argv[])
 
 	test_non_pod();
 
-	END_TESTS;
+	return END_TESTS;
 }
 

@@ -96,5 +96,5 @@ int main (int argc, char * argv[])
 	test_swap_big_integral<uint64_t>(pfs::min_value<uint64_t>(), pfs::max_value<uint64_t>());
 #endif
 
-	END_TESTS;
+	return END_TESTS;
 }

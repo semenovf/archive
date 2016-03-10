@@ -149,5 +149,5 @@ int main (int argc, char * argv[])
 	test_compare_fp_cast<real_t>();
 #endif
 
-	END_TESTS;
+	return END_TESTS;
 }

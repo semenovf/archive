@@ -76,5 +76,5 @@ int main (int argc, char * argv[])
 	test_stack_reference();
 	test_stack_swap();
 
-	END_TESTS;
+	return END_TESTS;
 }

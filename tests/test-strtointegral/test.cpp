@@ -210,5 +210,5 @@ int main(int argc, char *argv[])
 //        }
 //    }
 
-    END_TESTS;
+    return END_TESTS;
 }

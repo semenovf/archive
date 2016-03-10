@@ -17,7 +17,7 @@ Version 1.00
         TEST_FAIL(true == true); // Breaks tests if result of expression is false  
         TEST_FAIL2(true == true, "Test failure");  
         
-        END_TESTS;  
+        return END_TESTS;  
     }
 
 ###AUTHOR

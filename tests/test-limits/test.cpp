@@ -92,6 +92,6 @@ int main (int /*argc*/, char **/*argv*/)
 	TEST_OK(pfs::max_value<long double>() == pfs::max_value(dd));
 #endif
 
-	END_TESTS;
+	return END_TESTS;
 }
 

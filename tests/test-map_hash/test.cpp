@@ -174,5 +174,5 @@ int main(int argc, char *argv[])
     if (1) test_copy_collection<pfs::map<std::string,std::string> >();
     if (1) test_get_keys<pfs::map<std::string,std::string> >();
 
-    END_TESTS;
+    return END_TESTS;
 }

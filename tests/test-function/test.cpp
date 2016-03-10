@@ -87,5 +87,5 @@ int main (int argc, char *argv[])
 	check2();
     check3();
 
-    END_TESTS;
+    return END_TESTS;
 }

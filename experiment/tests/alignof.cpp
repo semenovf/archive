@@ -213,5 +213,5 @@ int main (int argc, char *argv[])
 //  assert (typeid(types<1+TYPES_COUNT>::Type).name() == string ("Ps"));
 //#endif
 
-  END_TESTS;
+  return END_TESTS;
 }

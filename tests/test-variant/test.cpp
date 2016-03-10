@@ -78,5 +78,5 @@ int main (int argc, char *argv[])
 	TEST_OK(sizeof(pfs::aligned_storage<8, 2>::type) == 8);
 	TEST_OK(sizeof(pfs::aligned_storage<10, 128>::type) == 128);
 	TEST_OK(sizeof(pfs::aligned_storage<20, 8>::type) == 24);
-	END_TESTS;
+	return END_TESTS;
 }

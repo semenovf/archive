@@ -14,44 +14,6 @@
 #include <stdlib.h>
 
 #ifndef NDEBUG
-/*
- * PFS_VERIFY_IMPL emulates this code
- * if (!predicate)
- *      fprintf(stderr, "%s(%s[%d]): %s\n", prefix, file, lineno, text);
- * return predicate;
- */
-#ifdef __cplusplus
-inline bool pfs_verify (bool predicate, const char * prefix, const char * file, int line, const char * text)
-{
-	if (!predicate)
-		fprintf(stderr, "%s(%s[%d]): %s\n", prefix, file, line, text);
-	return predicate;
-}
-
-inline bool pfs_verify_errno (bool predicate, const char * prefix, const char * file, int line, const char * text)
-{
-	if (!predicate)
-		fprintf(stderr, "%s(errno=%d, %s[%d]): %s\n", prefix, errno, file, line, text);
-	return predicate;
-}
-
-#else
-extern bool pfs_verify (bool predicate, const char * prefix, const char * file, int line, const char * text);
-extern bool pfs_verify_errno (bool predicate, const char * prefix, const char * file, int line, const char * text);
-#endif
-
-#   define PFS_VERIFY(expr)              pfs_verify((expr),"WARN: ", __TFILE__, __LINE__, #expr)
-#   define PFS_VERIFY_X(expr,text)       pfs_verify((expr),"WARN: ", __TFILE__, __LINE__, (text))
-#   define PFS_VERIFY_ERRNO(expr)        pfs_verify_errno((expr),"WARN: ", __TFILE__, __LINE__, #expr)
-#   define PFS_VERIFY_ERRNO_X(expr,text) pfs_verify_errno((expr),"WARN: ", __TFILE__, __LINE__, (text))
-#else /* !NDEBUG */
-#	define PFS_VERIFY(x) (x)
-#	define PFS_VERIFY_X(x,text) (x)
-#   define PFS_VERIFY_ERRNO(x) (x)
-#   define PFS_VERIFY_ERRNO_X(x,text) (x)
-#endif
-
-#ifndef NDEBUG
 #	define PFS_DEBUG(x)       x
 #	if defined(__cplusplus) && ! defined(PFS_CC_BORLAND_REAL)
 #		include <cassert>

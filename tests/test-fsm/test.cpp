@@ -523,7 +523,7 @@ int main(int argc, char *argv[])
 	test_sequence();
 	test_rpt();
 
-	END_TESTS;
+	return END_TESTS;
 }
 
 

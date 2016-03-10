@@ -62,5 +62,5 @@ int main (int argc, char *argv[])
 
 	check1();
 
-    END_TESTS;
+	return END_TESTS;
 }

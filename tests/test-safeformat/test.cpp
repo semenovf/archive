@@ -429,5 +429,5 @@ int main(int argc, char** argv)
 //		if (1) test1();
 //	}
 
-	END_TESTS;
+	return END_TESTS;
 }

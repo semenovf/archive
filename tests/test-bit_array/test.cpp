@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	test_set_bits();
 	test_logic_operations();
 
-    END_TESTS;
+    return END_TESTS;
 }
 
 

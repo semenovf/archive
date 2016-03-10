@@ -275,5 +275,5 @@ int main (int argc, char *argv[])
 	test2();
 	test0();
 
-	END_TESTS;
+	return END_TESTS;
 }

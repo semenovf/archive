@@ -46,5 +46,5 @@ int main(int argc, char *argv[])
 	test_encode();
 	test_string();
 
-    END_TESTS;
+	return END_TESTS;
 }

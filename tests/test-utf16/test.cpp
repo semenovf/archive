@@ -61,5 +61,5 @@ int main(int argc, char *argv[])
 	TEST_OK(cyrillic.size() == cyrillic_size);
 	TEST_OK(cyrillic.length() == CyrillicAlphabetCount * 2);
 
-    END_TESTS;
+	return END_TESTS;
 }

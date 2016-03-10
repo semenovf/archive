@@ -812,5 +812,5 @@ int main(int argc, char *argv[])
 //	cout << "***************************************************" << endl;
 //	test_suite<uint16_t>();
 
-    END_TESTS;
+	return END_TESTS;
 }

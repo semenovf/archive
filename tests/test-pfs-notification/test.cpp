@@ -36,6 +36,6 @@ int main(int argc, char *argv[])
 
 	cout << nx;
 
-	END_TESTS;
+	return END_TESTS;
 }
 

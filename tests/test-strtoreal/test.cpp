@@ -284,5 +284,5 @@ int main(int argc, char *argv[])
 //	TEST_FAIL(strtold("123.456", NULL) == double_t(123.456));
 #endif // __COMMENT__
 
-    END_TESTS;
+    return END_TESTS;
 }
