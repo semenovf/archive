@@ -75,25 +75,25 @@ inline pfs::string __build_string_for_log (const module * m, const string & s)
 
 void dispatcher::print_info (const module * m, const string & s)
 {
-	pfs::info(__build_string_for_log(m, s));
+	pfs::log_info(__build_string_for_log(m, s));
 	emit_info(m, s);
 }
 
 void dispatcher::print_debug (const module * m, const string & s)
 {
-	pfs::debug(__build_string_for_log(m, s));
+	pfs::log_debug(__build_string_for_log(m, s));
 	emit_debug(m, s);
 }
 
 void dispatcher::print_warn  (const module * m, const string & s)
 {
-	pfs::warn(__build_string_for_log(m, s));
+	pfs::log_warn(__build_string_for_log(m, s));
 	emit_warn(m, s);
 }
 
 void dispatcher::print_error (const module * m, const string & s)
 {
-	pfs::error(__build_string_for_log(m, s));
+	pfs::log_error(__build_string_for_log(m, s));
 	emit_error(m, s);
 }
 

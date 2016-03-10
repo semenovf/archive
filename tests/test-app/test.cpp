@@ -146,5 +146,5 @@ int main (int argc, char *argv[])
     pfs::app app;//(_u8(argv[0]));
     TEST_OK(app.exec(dispatcher) == 0);
 
-    END_TESTS;
+    return END_TESTS;
 }
