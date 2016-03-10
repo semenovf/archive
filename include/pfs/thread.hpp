@@ -9,7 +9,6 @@
 #define __PFS_THREAD_HPP__
 
 #include <pfs.hpp>
-#include <pfs/pimpl.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)

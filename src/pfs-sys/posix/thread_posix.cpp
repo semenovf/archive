@@ -2,13 +2,13 @@
 #include <errno.h>
 #include <unistd.h>
 #include <iostream>
+#include <pthread.h>
+#include <pfs/utility.hpp>
 
 #include "pfs/thread.hpp"
 #include "pfs/platform.hpp"
 #include "pfs/error_code.hpp"
 #include "../thread_p.hpp"
-#include <pfs/pp/utility.h>
-#include <pthread.h>
 
 #if defined(PFS_OS_LINUX) && !defined(SCHED_IDLE)
 // from linux/sched.h
@@ -193,7 +193,7 @@ void thread_impl::finish (void * arg)
     d->_isInFinish = false;
     d->_interruptionRequested = false;
 
-    d->_threadDone.wakeAll();
+    d->_threadDone.notify_all();
 }
 
 //Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
@@ -402,15 +402,15 @@ void thread::terminate ()
     if (!_d->_threadHandle)
         return;
 
-    PFS_VERIFY_ERRNO(pthread_cancel(_d->_threadHandle) == 0);
+    PFS_ASSERT_BT(pthread_cancel(_d->_threadHandle) == 0);
 }
 
 bool thread::wait (uintmax_t timeout)
 {
 	pfs::lock_guard<pfs::mutex> locker(_d->_mutex);
 
-	if (! PFS_VERIFY_X((_d->_data->_threadHandle != pthread_self())
-			, _Tr("Thread attempt to wait on itself"))) {
+	if (_d->_data->_threadHandle == pthread_self()) {
+		PFS_DEBUG(std::cerr << _Tr("Thread attempt to wait on itself\n"));
 		return false;
 	}
 
@@ -426,12 +426,11 @@ bool thread::wait (uintmax_t timeout)
 
 void thread::setTerminationEnabled (bool enabled)
 {
-	thread * thr = currentThread();
-    PFS_ASSERT_X(thr != 0
+    PFS_ASSERT_X(currentThread() != 0
     		, _Tr("pfs::thread::setTerminationEnabled(): current thread was not started with pfs::thread."));
 
-	PFS_UNUSED(thr);
     pthread_setcancelstate(enabled ? PTHREAD_CANCEL_ENABLE : PTHREAD_CANCEL_DISABLE, NULL);
+
     if (enabled)
         pthread_testcancel();
 }

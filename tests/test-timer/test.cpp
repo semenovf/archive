@@ -62,6 +62,6 @@ int main(int argc, char *argv[])
 
     TEST_OK(timeout_done() == 0);
 
-	END_TESTS;
+    return END_TESTS;
 }
 

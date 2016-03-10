@@ -14,8 +14,6 @@ namespace pfs {
  * 		There is no chance for the thread to clean up after itself, unlock any held mutexes, etc.
  * 		In short, use this function only if absolutely necessary.
  */
-
-
 thread_data::thread_data (int initialRefCount)
     : _ref(initialRefCount), _thread(0), _threadHandle(0),
       _quitNow(false), _canWait(true)
@@ -105,6 +103,8 @@ thread::~thread()
 
 	_d->_data->_thread = 0;
 	_d->_mutex.unlock();
+
+	delete _d;
 }
 
 bool thread::isFinished() const

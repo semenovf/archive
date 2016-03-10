@@ -48,5 +48,5 @@ int main(int argc, char *argv[])
 
 	test_simple_match();
 
-    END_TESTS;
+	return END_TESTS;
 }

@@ -5,16 +5,16 @@
  *      Author: wladt
  */
 
-#include <pfs/logger.hpp>
+#include <pfs/utility.hpp>
 #include <pfs/platform.hpp>
-#include "pfs/threadcv.hpp"
+#include "pfs/condition_variable.hpp"
 #include <pthread.h>
 #include <cerrno>
 #include <sys/time.h>
 
 namespace pfs {
 
-static inline void __calculate_abstime (uintmax_t timeout, timespec * ts)
+inline void __calculate_abstime (uintmax_t timeout, timespec * ts)
 {
     struct timeval tv;
     gettimeofday(& tv, 0);
@@ -24,7 +24,7 @@ static inline void __calculate_abstime (uintmax_t timeout, timespec * ts)
     ts->tv_nsec %= 1000000000;
 }
 
-static void __initialize_pthread_cond (pthread_cond_t * cond)
+inline void __initialize_pthread_cond (pthread_cond_t * cond)
 {
     pthread_condattr_t condattr;
 
@@ -33,11 +33,11 @@ static void __initialize_pthread_cond (pthread_cond_t * cond)
 //    if (QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
 //        pthread_condattr_setclock(& condattr, CLOCK_MONOTONIC);
 //#endif
-    PFS_VERIFY_ERRNO(pthread_cond_init(cond, & condattr) == 0);
+    PFS_ASSERT_BT(pthread_cond_init(cond, & condattr) == 0);
     pthread_condattr_destroy(& condattr);
 }
 
-class thread_cv_impl
+class condition_variable_impl
 {
 public:
     pthread_mutex_t mutex;
@@ -54,13 +54,15 @@ public:
 
     bool wait (uintmax_t time)
     {
-        int code;
+        int code = 0;
+
         for(;;) {
             if (time != pfs::max_value<uintmax_t>()) {
                 code = wait_relative(time);
             } else {
                 code = pthread_cond_wait(& cond, & mutex);
             }
+
             if (code == 0 && wakeups == 0) {
                 // many vendors warn of spurious wakeups from
                 // pthread_cond_wait(), especially after signal delivery,
@@ -70,78 +72,73 @@ public:
             break;
         }
 
-        PFS_ASSERT_X(waiters > 0, "pfs::thread_cv_impl::wait(): internal error (waiters)");
+        PFS_ASSERT_X(waiters > 0, "pfs::condition_variable_impl::wait(): internal error (waiters)");
 
         --waiters;
 
         if (code == 0) {
-        	PFS_ASSERT_X(wakeups > 0, "pfs::thread_cv_impl::wait(): internal error (wakeups)");
+        	PFS_ASSERT_X(wakeups > 0, "pfs::condition_variable_impl::wait(): internal error (wakeups)");
             --wakeups;
         }
 
-        PFS_VERIFY_ERRNO(pthread_mutex_unlock(& mutex) == 0);
+        PFS_ASSERT_BT(pthread_mutex_unlock(& mutex) == 0);
 
-        if (code && code != ETIMEDOUT)
-        	PFS_VERIFY_ERRNO(code);
+//        if (code && code != ETIMEDOUT)
+//        	PFS_VERIFY_ERRNO(code);
 
         return (code == 0);
     }
 };
 
-thread_cv::thread_cv ()
-	: _d(new thread_cv_impl)
+condition_variable::condition_variable ()
+	: _d(new condition_variable_impl)
 {
-	thread_cv_impl * d = _d.cast<thread_cv_impl>();
-	PFS_VERIFY_ERRNO(pthread_mutex_init(& d->mutex, NULL) == 0);
-    __initialize_pthread_cond(& d->cond);
-    d->waiters = d->wakeups = 0;
+	PFS_ASSERT_BT(pthread_mutex_init(& _d->mutex, NULL) == 0);
+    __initialize_pthread_cond(& _d->cond);
+    _d->waiters = _d->wakeups = 0;
 }
 
-thread_cv::~thread_cv ()
+condition_variable::~condition_variable ()
 {
-	thread_cv_impl * d = _d.cast<thread_cv_impl>();
-	PFS_VERIFY_ERRNO(pthread_cond_destroy(& d->cond) == 0);
-	PFS_VERIFY_ERRNO(pthread_mutex_destroy(& d->mutex) == 0);
+	PFS_ASSERT_BT(pthread_cond_destroy(& _d->cond) == 0);
+	PFS_ASSERT_BT(pthread_mutex_destroy(& _d->mutex) == 0);
+	delete _d;
 }
 
-
-void thread_cv::wakeOne ()
+void condition_variable::notify_one ()
 {
-	thread_cv_impl * d = _d.cast<thread_cv_impl>();
-	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex) == 0);
-    d->wakeups = pfs::min(d->wakeups + 1, d->waiters);
-    PFS_VERIFY_ERRNO(pthread_cond_signal(& d->cond) == 0);
-    PFS_VERIFY_ERRNO(pthread_mutex_unlock(& d->mutex) == 0);
+	PFS_ASSERT_BT(pthread_mutex_lock(& _d->mutex) == 0);
+    _d->wakeups = pfs::min(_d->wakeups + 1, _d->waiters);
+    PFS_ASSERT_BT(pthread_cond_signal(& _d->cond) == 0);
+    PFS_ASSERT_BT(pthread_mutex_unlock(& _d->mutex) == 0);
 }
 
-void thread_cv::wakeAll ()
+void condition_variable::notify_all ()
 {
-	thread_cv_impl * d = _d.cast<thread_cv_impl>();
-	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex) == 0);
-    d->wakeups = d->waiters;
-    PFS_VERIFY_ERRNO(pthread_cond_broadcast(&d->cond) == 0);
-    PFS_VERIFY_ERRNO(pthread_mutex_unlock(&d->mutex) == 0);
+	PFS_ASSERT_BT(pthread_mutex_lock(& _d->mutex) == 0);
+    _d->wakeups = _d->waiters;
+    PFS_ASSERT_BT(pthread_cond_broadcast(& _d->cond) == 0);
+    PFS_ASSERT_BT(pthread_mutex_unlock(& _d->mutex) == 0);
 }
 
 // see section "Timed Condition Wait" in pthread_cond_timedwait(P) manual page.
-bool thread_cv::wait (pfs::mutex & lockedMutex, uintmax_t time)
+//
+bool condition_variable::wait (pfs::mutex & mx, uintmax_t time)
 {
-	thread_cv_impl * d = _d.cast<thread_cv_impl>();
-
 //	if (lockedMutex.isRecursive()) {
 //        qWarning("QWaitCondition: cannot wait on recursive mutexes");
 //        return false;
 //    }
 
-	PFS_VERIFY_ERRNO(pthread_mutex_lock(& d->mutex) == 0);
-    ++d->waiters;
-    lockedMutex.unlock();
+	PFS_ASSERT_BT(pthread_mutex_lock(& _d->mutex) == 0);
+    ++_d->waiters;
+    mx.unlock();
 
-    bool returnValue = d->wait(time);
+    bool r = _d->wait(time);
 
-    lockedMutex.lock();
+    mx.lock();
 
-    return returnValue;
+    return r;
 }
 
 } // pfs

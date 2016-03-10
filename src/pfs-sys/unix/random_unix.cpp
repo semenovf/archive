@@ -34,8 +34,8 @@ public:
 private:
 	void init_random_r_version (uint32_t seed) {
 		memset(& _rdata, 0, sizeof(struct random_data));
-		PFS_VERIFY(initstate_r(seed, _stateBuf, StateSize, & _rdata) == 0);
-		PFS_VERIFY(setstate_r(_stateBuf, & _rdata) == 0);
+		PFS_ASSERT_BT(initstate_r(seed, _stateBuf, StateSize, & _rdata) == 0);
+		PFS_ASSERT_BT(setstate_r(_stateBuf, & _rdata) == 0);
 	}
 
 	static const size_t StateSize = 128;
@@ -63,7 +63,7 @@ inline int32_t random_impl::rand ()
 {
 	int32_t r = 0;
 
-	PFS_VERIFY(random_r(& _rdata, & r) == 0);
+	PFS_ASSERT_BT(random_r(& _rdata, & r) == 0);
 
 	return r;
 }

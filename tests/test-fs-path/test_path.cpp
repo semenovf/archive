@@ -50,6 +50,6 @@ int main(int argc, char *argv[])
 	test_base();
 	test_canonical();
 
-	END_TESTS;
+	return END_TESTS;
 }
 

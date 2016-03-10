@@ -129,7 +129,7 @@ int main (int argc, char *argv[])
 	test_atomic_ref();
 //	test_atomic_swap ();
 
-	END_TESTS;
+	return END_TESTS;
 }
 
 

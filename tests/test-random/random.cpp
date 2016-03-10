@@ -36,7 +36,7 @@ int main (int argc, char *argv[])
 
 	test_random();
 
-	END_TESTS;
+	return END_TESTS;
 }
 
 

@@ -1,5 +1,5 @@
 /**
- * @file conditionvariable.hpp
+ * @file condition_variable.hpp
  *
  *  Created on: Sep 18, 2013
  *      Author: wladt
@@ -7,10 +7,10 @@
  * @brief Implements Conditional Variable
  */
 
-#ifndef __PFS_THREADCV_HPP__
-#define __PFS_THREADCV_HPP__
+#ifndef __PFS_CONDITION_VARIABLE_HPP__
+#define __PFS_CONDITION_VARIABLE_HPP__
 
-#include <pfs/pimpl.hpp>
+#include <pfs.hpp>
 #include <pfs/mutex.hpp>
 
 #ifdef PFS_CC_MSVC
@@ -20,33 +20,25 @@
 
 namespace pfs {
 
-class thread_cv_impl;
+class condition_variable_impl;
 
-class DLL_API thread_cv
+class DLL_API condition_variable
 {
-	pfs::pimpl _d;
-
-public:
-	thread_cv ();
-    ~thread_cv ();
-
-    bool wait (pfs::mutex & lockedMutex, uintmax_t time = max_value<uintmax_t>());
-//    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time = ULONG_MAX);
-
-    void wakeOne ();
-    void wakeAll ();
+	condition_variable_impl * _d;
 
 private:
-//    thread_cv (const thread_cv &);
+	condition_variable (const condition_variable &);
+	condition_variable & operator = (const condition_variable &);
 
-//public:
-//	thread_cv ();
-//
-//	bool wait (pfs::mutex & lockedMutex);
-//	bool wait (pfs::mutex & lockedMutex, uintmax_t timeout);
-//	void wakeOne ();
-//	void wakeAll ();
-//
+public:
+	condition_variable ();
+    ~condition_variable ();
+
+    bool wait (pfs::mutex & mx, uintmax_t time = max_value<uintmax_t>());
+
+    void notify_one ();
+    void notify_all ();
+
 //    template <typename predicate_type>
 //    void wait (pfs::mutex & lockedMutex, predicate_type predicate)
 //    {
@@ -71,4 +63,4 @@ private:
 #	pragma warning(pop)
 #endif
 
-#endif /* __PFS_THREADCV_HPP__ */
+#endif /* __PFS_CONDITION_VARIABLE_HPP__ */

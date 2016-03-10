@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 	test_crc32();
 	test_crc64();
 
-    END_TESTS;
+	return END_TESTS;
 }
 
 

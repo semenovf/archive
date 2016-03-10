@@ -7,107 +7,46 @@
  */
 
 #include <pfs/shared_ptr.hpp>
-#include <pfs/atomic.hpp>
 #include "pfs/error_code.hpp"
 #include "logger_p.hpp"
 
 namespace pfs {
 
-pfs::string log::DefaultPattern("%d{ABSOLUTE} [%p]: %m");
-pfs::string log::NoPattern;
-pfs::atomic_integer<int> __priorityLevel;
+const pfs::string logger::default_pattern("%d{ABSOLUTE} [%p]: %m");
+const pfs::string logger::no_pattern;
 
-void log::setPriority (log::priority level) { __priorityLevel.store(level); }
-log::priority log::level () { return log::priority(__priorityLevel.load()); }
+static logger __default_logger;
 
-appender & default_out_appender ()
+static struct default_logger_initializer
 {
-	static pfs::shared_ptr<stdout_appender> appender(new stdout_appender);
-	return *appender;
-}
-
-appender & default_err_appender ()
-{
-	static pfs::shared_ptr<stderr_appender> appender(new stderr_appender);
-	return *appender;
-}
-
-log & trace ()
-{
-	static pfs::shared_ptr<log> traceLog(new log(default_out_appender()));
-	return *traceLog;
-}
-
-log & debug ()
-{
-	static pfs::shared_ptr<log> debugLog(new log(default_out_appender()));
-	return *debugLog;
-}
-
-log & info  ()
-{
-	static pfs::shared_ptr<log> infoLog(new log(default_out_appender()));
-	return *infoLog;
-}
-
-log & warn  ()
-{
-	static pfs::shared_ptr<log> warnLog(new log(default_err_appender()));
-	return *warnLog;
-}
-
-log & error ()
-{
-	static pfs::shared_ptr<log> errorLog(new log(default_err_appender()));
-	return *errorLog;
-}
-
-log & fatal ()
-{
-	static pfs::shared_ptr<log> fatalLog(new log(default_err_appender()));
-	return *fatalLog;
-}
-
-void trace (const pfs::string & text) {	if (log::level() < log::Debug) trace().print(log::Trace, text); }
-void debug (const pfs::string & text) { if (log::level() < log::Info)  debug().print(log::Debug, text); }
-void info  (const pfs::string & text) { if (log::level() < log::Warn)  info().print(log::Info, text); }
-void warn  (const pfs::string & text) { if (log::level() < log::Error) warn().print(log::Warn, text); }
-void error (const pfs::string & text) { if (log::level() < log::Fatal) error().print(log::Error, text); }
-void fatal (const pfs::string & text) { if (log::level() < log::NoLog) fatal().print(log::NoLog, text); abort(); }
-
-void warn  (int errn, const string & text)
-{
-	if (log::level() < log::Error) {
-		string errstr = to_string(error_code(errn));
-
-		if (text.empty()) {
-			warn().print(log::Warn, errstr);
-		} else {
-			string msg;
-			msg.append(text);
-			msg.append(_u8(": "));
-			msg.append(errstr);
-			warn().print(log::Warn, msg);
-		}
+	default_logger_initializer ()
+	{
+		__default_logger.connect(logger::trace_priority, shared_ptr<appender>(new stdout_appender));
+		__default_logger.connect(logger::debug_priority, shared_ptr<appender>(new stdout_appender));
+		__default_logger.connect(logger::info_priority , shared_ptr<appender>(new stdout_appender));
+		__default_logger.connect(logger::warn_priority , shared_ptr<appender>(new stderr_appender));
+		__default_logger.connect(logger::error_priority, shared_ptr<appender>(new stderr_appender));
+		__default_logger.connect(logger::fatal_priority, shared_ptr<appender>(new stderr_appender));
 	}
-}
+} __default_logger_initializer;
 
-void error (int errn, const string & text)
+logger & logger::default_logger ()
 {
-	if (log::level() < log::Fatal) {
-		string errstr = to_string(error_code(errn));
-
-		if (text.empty()) {
-			error().print(log::Error, errstr);
-		} else {
-			string msg;
-			msg.append(text);
-			msg.append(_u8(": "));
-			msg.append(errstr);
-			error().print(log::Error, msg);
-		}
-	}
+	return __default_logger;
 }
+
+void logger::connect (shared_ptr<appender> pappender)
+{
+	_emitters[trace_priority].connect(pappender.get(), & appender::print_helper);
+	_emitters[debug_priority].connect(pappender.get(), & appender::print_helper);
+	_emitters[info_priority].connect(pappender.get(), & appender::print_helper);
+	_emitters[warn_priority].connect(pappender.get(), & appender::print_helper);
+	_emitters[error_priority].connect(pappender.get(), & appender::print_helper);
+	_emitters[fatal_priority].connect(pappender.get(), & appender::print_helper);
+
+}
+
+#if __COMMENT__
 
 void log::print (const notification & nx)
 {
@@ -140,46 +79,10 @@ void log::print (const notification & nx)
     }
 }
 
-void fatal (int errn, const string & text)
-{
-	if (log::level() < log::NoLog) {
-		string errstr = to_string(error_code(errn));
+#endif
 
-		if (text.empty()) {
-			fatal().print(log::Fatal, errstr);
-		} else {
-			pfs::string msg;
-			msg.append(text);
-			msg.append(_u8(": "));
-			msg.append(errstr);
-			fatal().print(log::Fatal, msg);
-		}
-	}
-	abort();
-}
 
-void log::disconnectAllAppenders ()
-{
-	trace().disconnectAll();
-	debug().disconnectAll();
-	info().disconnectAll();
-	warn().disconnectAll();
-	error().disconnectAll();
-	fatal().disconnectAll();
-}
-
-void log::restoreDefaultAppenders ()
-{
-	disconnectAllAppenders();
-	trace().connect(default_out_appender());
-	debug().connect(default_out_appender());
-	info().connect(default_out_appender());
-	warn().connect(default_err_appender());
-	error().connect(default_err_appender());
-	fatal().connect(default_err_appender());
-}
-
-string appender::patternify (log::priority level, const string & pattern, const string & msg)
+string appender::patternify (int level, const string & pattern, const string & msg)
 {
 	pattern_context ctx;
 	ctx.level = level;
@@ -196,13 +99,6 @@ string appender::patternify (log::priority level, const string & pattern, const 
 	msg1.append(_u8("[<!INVALID PATTERN!>]: "));
 	msg1.append(msg);
 	return msg1;
-}
-
-void appender::print_helper (log::priority level, const string & msg)
-{
-	print(_pattern.empty()
-			? msg
-			: patternify(level, _pattern, msg));
 }
 
 } // pfs

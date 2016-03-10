@@ -5,18 +5,20 @@
  *      Author: wladt
  */
 
-#include "pfs/threadcv.hpp"
+#include "pfs/condition_variable.hpp"
 
 /*
- * ThreadCV cond;
- * Mutex mutex;
+ * pfs::condition_variable cond;
+ * pfs::mutex mutex;
  * bool data_ready = false;
  *
  * void consumer ()
  * {
- * 		AutoLock<> locker(& mutex);
+ * 		pfs::lock_guard<pfs::mutex> locker(& mutex);
+ *
  * 		while (! data_ready) {
  * 			cond.wait(mutex);
+ *
  * 		process_data();
  * 		data_ready = false;
  * } // unlock mutex implicitly
@@ -25,10 +27,11 @@
  * {
  * 		read_data();
  * 		{
- * 			AutoLock<> locker(& mutex);
+ * 			pfs::lock_guard<pfs::mutex> locker(& mutex);
  * 			data_ready = true;
  * 		} // unlock mutex implicitly
- * 		cond.wakeOne();
+ *
+ * 		cond.notify_one();
  * }
  *
  *         u                                                                       u
@@ -46,7 +49,7 @@
  * ______________________________________v_____________
  * \                               /^\       /^\      /
  *  \_____________________________/ | \_____/ | \____/
- *             read_data            |         | wakeOne
+ *             read_data            |         | notify_one
  *                                  |         |
  *                                  l         u
  *                                  o         n
@@ -59,13 +62,5 @@
 
 
 namespace pfs {
-
-/**
- * @fn bool ConditionVariable::wait (Mutex * lockedMutex, uintmax_t timeout)
- *
- * @param lockedMutex
- * @param timeout Timeout in milliseconds.
- * @return
- */
 
 } // pfs

@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 		if (1) test_wait_timeout();
 	} while (argc > 1);
 
-    END_TESTS; // exits with pfs::thread::exit
+	return END_TESTS; // exits with pfs::thread::exit
 }
 
 

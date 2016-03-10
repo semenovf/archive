@@ -14,7 +14,9 @@
 #include <pfs/stringlist.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/sigslot.hpp>
-#include <pfs/notification.hpp>
+#include <pfs/shared_ptr.hpp>
+#include <pfs/vector.hpp>
+//#include <pfs/notification.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -25,37 +27,99 @@ namespace pfs {
 
 class appender;
 
-class DLL_API log
+class DLL_API logger
 {
 public:
-	enum priority { Trace, Debug, Info, Warn, Error, Fatal, NoLog };
-	static pfs::string DefaultPattern;
-	static pfs::string NoPattern;
+	enum priority
+	{
+		  trace_priority
+		, debug_priority
+		, info_priority
+		, warn_priority
+		, error_priority
+		, fatal_priority
+		, nolog_priority
+		, priority_count = nolog_priority
+	};
 
-private:
-	pfs::signal2<priority, const pfs::string &> _emitter;
+	typedef pfs::vector<shared_ptr<appender> > appender_vector_type;
+	typedef pfs::signal2<int, const pfs::string &> emitter_type;
 
 public:
-	log (appender & a) { connect(a); }
-	void print (log::priority level, const pfs::string & msg)
+	static const pfs::string default_pattern;
+	static const pfs::string no_pattern;
+
+private:
+	appender_vector_type _appenders;
+	int                  _level;
+	emitter_type         _emitters[priority_count];
+
+public:
+	logger ()
+		: _level(trace_priority)
+	{}
+
+	void print (int level, const pfs::string & msg)
 	{
-		_emitter(level, msg);
+		if (level >= _level and level != nolog_priority)
+			_emitters[level](level, msg);
 	}
-	void connect (appender &);
-	void disconnect (appender &);
-	void disconnectAll ();
 
-	static void setPriority (priority level);
-	static log::priority level ();
-	static void disconnectAllAppenders ();
-	static void restoreDefaultAppenders ();
+	void connect (int level, shared_ptr<appender> pappender);
+	void connect (shared_ptr<appender> pappender);
+	void disconnect (int level, shared_ptr<appender> pappender);
+	void disconnect (int level);
+	void disconnect_all ();
 
-	static void print (const notification & nx);
+	void set_priority (priority level)
+	{
+		_level = level;
+	}
+
+	int priority ()
+	{
+		return _level;
+	}
+
+	void trace (const pfs::string & text)
+	{
+		print(logger::trace_priority, text);
+	}
+
+	void debug (const pfs::string & text)
+	{
+		print(logger::debug_priority, text);
+	}
+
+	void info  (const pfs::string & text)
+	{
+		print(logger::info_priority, text);
+	}
+
+	void warn  (const pfs::string & text)
+	{
+		print(logger::warn_priority, text);
+	}
+
+	void error (const pfs::string & text)
+	{
+		print(logger::error_priority, text);
+	}
+
+	void fatal (const pfs::string & text)
+	{
+		print(logger::fatal_priority, text);
+		abort();
+	}
+
+	static logger & default_logger ();
+
+//	static void print (const notification & nx);
 };
 
 class appender : public has_slots<>
 {
-	friend class log;
+	friend class logger;
 
 protected:
 	pfs::string _pattern;
@@ -63,22 +127,44 @@ protected:
 protected:
 	virtual void print (const pfs::string & msg) = 0;
 
-	void print_helper (log::priority level, const pfs::string & msg);
-	static pfs::string patternify (log::priority level, const pfs::string & pattern, const pfs::string & text);
+	void print_helper (int level, const pfs::string & msg)
+	{
+		print(_pattern.empty()
+				? msg
+				: patternify(level, _pattern, msg));
+	}
+
+	static pfs::string patternify (int level, const pfs::string & pattern, const pfs::string & text);
 
 public:
-	appender () : _pattern(log::DefaultPattern) { }
-	appender (const pfs::string & pattern) : _pattern(pattern) {}
-	virtual ~appender () {}
+	appender ()
+		: _pattern(logger::default_pattern)
+	{}
 
-	pfs::string pattern () const { return _pattern; }
-	void setPattern (const pfs::string & pattern) { _pattern = pattern; }
+	appender (const pfs::string & pattern)
+		: _pattern(pattern)
+	{}
+
+	virtual ~appender ()
+	{}
+
+	pfs::string pattern () const
+	{
+		return _pattern;
+	}
+
+	void set_pattern (const pfs::string & pattern)
+	{
+		_pattern = pattern;
+	}
 };
 
 class stdout_appender : public appender
 {
 public:
-	stdout_appender () : appender() {}
+	stdout_appender ()
+		: appender()
+	{}
 
 protected:
 	virtual void print (const pfs::string & msg) override
@@ -90,7 +176,9 @@ protected:
 class stderr_appender : public appender
 {
 public:
-	stderr_appender () : appender() {}
+	stderr_appender ()
+		: appender()
+	{}
 
 protected:
 	virtual void print (const pfs::string & msg) override
@@ -114,47 +202,60 @@ protected:
 	}
 };
 
-inline void log::connect (appender & a)
+inline void logger::connect (int level, shared_ptr<appender> pappender)
 {
-	_emitter.connect(& a, & appender::print_helper);
+	PFS_ASSERT_BT(level >= 0 && level < priority_count);
+	_emitters[level].connect(pappender.get(), & appender::print_helper);
 }
 
-inline void log::disconnect (appender & a)
+inline void logger::disconnect (int level, shared_ptr<appender> pappender)
 {
-	_emitter.disconnect(& a);
+	PFS_ASSERT_BT(level >= 0 && level < priority_count);
+	_emitters[level].disconnect(pappender.get());
 }
 
-inline void log::disconnectAll ()
+inline void logger::disconnect (int level)
 {
-	_emitter.disconnect_all();
+	PFS_ASSERT_BT(level >= 0 && level < priority_count);
+	_emitters[level].disconnect_all();
 }
 
-DLL_API log & trace ();
-DLL_API log & debug ();
-DLL_API log & info  ();
-DLL_API log & warn  ();
-DLL_API log & error ();
-DLL_API log & fatal ();
+inline void logger::disconnect_all ()
+{
+	for (int i = 0; i < priority_count; ++i)
+		_emitters[i].disconnect_all();
+}
 
-DLL_API void trace (const pfs::string & text);
-DLL_API void debug (const pfs::string & text);
-DLL_API void info  (const pfs::string & text);
-DLL_API void warn  (const pfs::string & text);
-DLL_API void warn  (int errn, const pfs::string & text);
-DLL_API void error (const pfs::string & text);
-DLL_API void error (int errn, const pfs::string & text);
-DLL_API void fatal (const pfs::string & text);
-DLL_API void fatal (int errn, const pfs::string & text);
+inline void log_trace (const pfs::string & text)
+{
+	logger::default_logger().print(logger::trace_priority, text);
+}
 
-inline void trace (const char * latin1) { trace(pfs::string(latin1)); }
-inline void debug (const char * latin1) { debug(pfs::string(latin1)); }
-inline void info  (const char * latin1) { info(pfs::string(latin1)); }
-inline void warn  (const char * latin1) { warn(pfs::string(latin1)); }
-inline void warn  (int errn, const char * latin1) { warn(errn, pfs::string(latin1)); }
-inline void error (const char * latin1) { error(pfs::string(latin1)); }
-inline void error (int errn, const char * latin1) { error(errn, pfs::string(latin1)); }
-inline void fatal (const char * latin1) { fatal(pfs::string(latin1)); }
-inline void fatal (int errn, const char * latin1) { fatal(errn, pfs::string(latin1)); }
+inline void log_debug (const pfs::string & text)
+{
+	logger::default_logger().print(logger::debug_priority, text);
+}
+
+inline void log_info  (const pfs::string & text)
+{
+	logger::default_logger().print(logger::info_priority, text);
+}
+
+inline void log_warn  (const pfs::string & text)
+{
+	logger::default_logger().print(logger::warn_priority, text);
+}
+
+inline void log_error (const pfs::string & text)
+{
+	logger::default_logger().print(logger::error_priority, text);
+}
+
+inline void log_fatal (const pfs::string & text)
+{
+	logger::default_logger().print(logger::fatal_priority, text);
+	abort();
+}
 
 } // pfs
 

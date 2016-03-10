@@ -2,7 +2,7 @@
 #define __PFS_THREAD_P_HPP_
 
 #include "pfs/mutex.hpp"
-#include "pfs/threadcv.hpp"
+#include "pfs/condition_variable.hpp"
 #include "pfs/atomic.hpp"
 #include "pfs/vector.hpp"
 
@@ -45,7 +45,7 @@ public:
 #ifdef PFS_CC_GCC
 
     pthread_t _threadHandle;
-    thread_cv _threadDone;
+    condition_variable _threadDone;
 
     static void * start (void * arg);
     static void finish (void *);

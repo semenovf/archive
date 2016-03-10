@@ -34,7 +34,7 @@ struct tread_cv_event // QWaitConditionEvent
 
 typedef std::list<tread_cv_event *> cv_event_queue_t; // FIXME need to use pfs::list
 
-class thread_cv_impl
+class condition_variable_impl
 {
 public:
     pfs::mutex _mtx;
@@ -46,7 +46,7 @@ public:
     void post (tread_cv_event * cve, bool ret);
 };
 
-tread_cv_event * thread_cv_impl::pre ()
+tread_cv_event * condition_variable_impl::pre ()
 {
     _mtx.lock();
     tread_cv_event * r = 0;
@@ -80,7 +80,7 @@ tread_cv_event * thread_cv_impl::pre ()
     return r;
 }
 
-bool thread_cv_impl::wait (tread_cv_event * cve, uintmax_t time)
+bool condition_variable_impl::wait (tread_cv_event * cve, uintmax_t time)
 {
     // wait for the event
     bool r = false;
@@ -94,7 +94,7 @@ bool thread_cv_impl::wait (tread_cv_event * cve, uintmax_t time)
     return r;
 }
 
-void thread_cv_impl::post (tread_cv_event * cve, bool ret)
+void condition_variable_impl::post (tread_cv_event * cve, bool ret)
 {
     _mtx.lock();
 
@@ -115,7 +115,7 @@ void thread_cv_impl::post (tread_cv_event * cve, bool ret)
 }
 
 
-thread_cv::thread_cv() : _d(new thread_cv_impl)
+thread_cv::thread_cv() : _d(new condition_variable_impl)
 {}
 
 static void delete_all_events (cv_event_queue_t & q)
@@ -132,7 +132,7 @@ static void delete_all_events (cv_event_queue_t & q)
 
 thread_cv::~thread_cv()
 {
-	thread_cv_impl * d = _d.cast<thread_cv_impl>();
+	condition_variable_impl * d = _d.cast<condition_variable_impl>();
     if (!d->_queue.empty()) {
     	PFS_DEBUG(fprintf(stderr
     		, "thread_cv: destroyed while threads are still waiting\n"));
@@ -149,7 +149,7 @@ bool thread_cv::wait (pfs::mutex & lockedMutex, uintmax_t time)
 //        return false;
 //    }
 
-    thread_cv_impl * d = _d.cast<thread_cv_impl>();
+    condition_variable_impl * d = _d.cast<condition_variable_impl>();
     tread_cv_event * cve = d->pre();
     lockedMutex.unlock();
 
@@ -188,7 +188,7 @@ bool thread_cv::wait (pfs::mutex & lockedMutex, uintmax_t time)
 void thread_cv::wakeOne ()
 {
     // wake up the first waiting thread in the queue
-	thread_cv_impl * d = _d.cast<thread_cv_impl>();
+	condition_variable_impl * d = _d.cast<condition_variable_impl>();
     auto_lock<>(& d->_mtx);
 
     cv_event_queue_t::iterator it = d->_queue.begin();
@@ -208,7 +208,7 @@ void thread_cv::wakeOne ()
 void thread_cv::wakeAll ()
 {
     // wake up the all threads in the queue
-	thread_cv_impl * d = _d.cast<thread_cv_impl>();
+	condition_variable_impl * d = _d.cast<condition_variable_impl>();
     auto_lock<>(& d->_mtx);
 
     cv_event_queue_t::iterator it = d->_queue.begin();
@@ -224,7 +224,7 @@ void thread_cv::wakeAll ()
 
 #ifdef __COMMENT__
 
-class thread_cv_impl
+class condition_variable_impl
 {
 public:
 	impl ();

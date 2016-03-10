@@ -120,8 +120,8 @@ bool regexp::impl::compile ()
 		}
 	}
 
-	int rc;
-	PFS_VERIFY((rc = pcre_fullinfo(_re, _extra, PCRE_INFO_CAPTURECOUNT, & _nsubpatterns)) == 0);
+	int rc = pcre_fullinfo(_re, _extra, PCRE_INFO_CAPTURECOUNT, & _nsubpatterns);
+
 	if (rc)
 		return false;
 

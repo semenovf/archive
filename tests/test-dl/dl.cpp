@@ -62,5 +62,5 @@ int main(int argc, char *argv[])
 
 	TEST_OK2(dltest() == dl_only_for_testing_purpose(), "run plugin/library function");
 
-	END_TESTS;
+	return END_TESTS;
 }

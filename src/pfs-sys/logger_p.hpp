@@ -28,7 +28,7 @@ struct pattern_spec
 
 struct pattern_context
 {
-	log::priority  level;
+	int            level;
 	string         result;
 	const string * msg;
 	pattern_spec   pspec;
@@ -255,7 +255,7 @@ static bool set_min_width (string::const_iterator begin, string::const_iterator 
 		bool ok;
 		string n(begin, end);
 		ctx->pspec.min_width = lexical_cast<size_t>(n, & ok);
-		PFS_VERIFY_X(ok, _Tr("Bad padding value in Logger pattern"));
+		PFS_ASSERT_X(ok, _Tr("Bad padding value in Logger pattern"));
 	}
 	return true;
 }
@@ -267,7 +267,7 @@ static bool set_max_width (string::const_iterator begin, string::const_iterator 
 		bool ok;
 		string n(begin, end);
 		ctx->pspec.max_width = lexical_cast<size_t>(n, & ok);
-		PFS_VERIFY_X(ok, _Tr("Bad truncation value in Logger pattern"));
+		PFS_ASSERT_X(ok, _Tr("Bad truncation value in Logger pattern"));
 	}
 	return true;
 }

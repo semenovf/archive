@@ -53,5 +53,5 @@ int main(int argc, char *argv[])
 
 	test_compress();
 
-	END_TESTS;
+	return END_TESTS;
 }

@@ -358,5 +358,5 @@ int main(int argc, char *argv[])
 	test_uri_fsm();
 	test_uri_parse();
 
-	END_TESTS;
+	return END_TESTS;
 }
