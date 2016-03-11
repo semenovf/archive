@@ -15,23 +15,23 @@ namespace pfs {
 const pfs::string logger::default_pattern("%d{ABSOLUTE} [%p]: %m");
 const pfs::string logger::no_pattern;
 
-static logger __default_logger;
-
-static struct default_logger_initializer
+struct logger_initializer
 {
-	default_logger_initializer ()
+	logger_initializer (logger & l)
 	{
-		__default_logger.connect(logger::trace_priority, shared_ptr<appender>(new stdout_appender));
-		__default_logger.connect(logger::debug_priority, shared_ptr<appender>(new stdout_appender));
-		__default_logger.connect(logger::info_priority , shared_ptr<appender>(new stdout_appender));
-		__default_logger.connect(logger::warn_priority , shared_ptr<appender>(new stderr_appender));
-		__default_logger.connect(logger::error_priority, shared_ptr<appender>(new stderr_appender));
-		__default_logger.connect(logger::fatal_priority, shared_ptr<appender>(new stderr_appender));
+		l.connect(logger::trace_priority, shared_ptr<appender>(new stdout_appender));
+		l.connect(logger::debug_priority, shared_ptr<appender>(new stdout_appender));
+		l.connect(logger::info_priority , shared_ptr<appender>(new stdout_appender));
+		l.connect(logger::warn_priority , shared_ptr<appender>(new stderr_appender));
+		l.connect(logger::error_priority, shared_ptr<appender>(new stderr_appender));
+		l.connect(logger::fatal_priority, shared_ptr<appender>(new stderr_appender));
 	}
-} __default_logger_initializer;
+};
 
 logger & logger::default_logger ()
 {
+	static logger __default_logger;
+	static logger_initializer li(__default_logger);
 	return __default_logger;
 }
 
