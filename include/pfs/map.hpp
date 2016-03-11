@@ -90,6 +90,11 @@ public:
     	return base_class::end();
     }
 #endif
+
+    std::pair<iterator, bool> insert2 (const key_type & key, const mapped_type & value)
+    {
+    	return this->insert(value_type(key, value));
+    }
 };
 
 } // pfs
