@@ -230,8 +230,8 @@ function plugin:transaction ()
     -- Windows: (CaptureBackTrace)[http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633%28v=vs.85%29.aspx]
     --
     projectContent:push_back("");
-    projectContent:push_back("[[filter { \"debug\", \"action:gmake\" }]]");
-    projectContent:push_back("[[    linkoptions  { \"-rdynamic\" }]]"); 
+    projectContent:push_back("filter { \"debug\", \"action:gmake\" }");
+    projectContent:push_back("    linkoptions  { \"-rdynamic\" }"); 
 
     if enableQt then
         projectContent:push_back("");
