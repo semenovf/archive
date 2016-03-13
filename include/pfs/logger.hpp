@@ -25,7 +25,7 @@
 
 namespace pfs {
 
-class appender;
+class logger_appender;
 
 class DLL_API logger
 {
@@ -39,10 +39,14 @@ public:
 		, error_priority
 		, fatal_priority
 		, nolog_priority
-		, priority_count = nolog_priority
+
+		, priority_count
 	};
 
-	typedef pfs::vector<shared_ptr<appender> > appender_vector_type;
+	typedef logger_appender appender_type;
+
+public:
+	typedef pfs::vector<appender_type *> appender_vector_type;
 	typedef pfs::signal2<int, const pfs::string &> emitter_type;
 
 public:
@@ -50,8 +54,8 @@ public:
 	static const pfs::string no_pattern;
 
 private:
-	appender_vector_type _appenders;
 	int                  _level;
+	appender_vector_type _appenders;
 	emitter_type         _emitters[priority_count];
 
 public:
@@ -59,15 +63,89 @@ public:
 		: _level(trace_priority)
 	{}
 
+	~logger ()
+	{
+		clear();
+	}
+
+	void clear ();
+
+	template <typename Appender>
+	appender_type & add_appender ()
+	{
+		_appenders.push_back(new Appender);
+		return *_appenders.last();
+	}
+
+#if __cplusplus < 201103L
+	template <typename Appender, typename Arg1>
+	appender_type & add_appender (Arg1 a1)
+	{
+		_appenders.push_back(new Appender(a1));
+		return *_appenders.last();
+	}
+
+	template <typename Appender, typename Arg1, typename Arg2>
+	appender_type & add_appender (Arg1 a1, Arg2 a2)
+	{
+		_appenders.push_back(new Appender(a1, a2));
+		return *_appenders.last();
+	}
+
+	template <typename Appender, typename Arg1, typename Arg2, typename Arg3>
+	appender_type & add_appender (Arg1 a1, Arg2 a2, Arg3 a3)
+	{
+		_appenders.push_back(new Appender(a1, a2, a3));
+		return *_appenders.last();
+	}
+
+	template <typename Appender, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+	appender_type & add_appender (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
+	{
+		_appenders.push_back(new Appender(a1, a2, a3, a4));
+		return *_appenders.last();
+	}
+
+	template <typename Appender, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+	appender_type & add_appender (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
+	{
+		_appenders.push_back(new Appender(a1, a2, a3, a4, a5));
+		return *_appenders.last();
+	}
+
+	template <typename Appender, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
+	appender_type & add_appender (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6)
+	{
+		_appenders.push_back(new Appender(a1, a2, a3, a4, a5, a6));
+		return *_appenders.last();
+	}
+
+	template <typename Appender, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
+	appender_type & add_appender (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7)
+	{
+		_appenders.push_back(new Appender(a1, a2, a3, a4, a5, a6, a7));
+		return *_appenders.last();
+	}
+
+	template <typename Appender, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
+	appender_type & add_appender (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7, Arg8 a8)
+	{
+		_appenders.push_back(new Appender(a1, a2, a3, a4, a5, a6, a7, a8));
+		return *_appenders.last();
+	}
+#else
+#	error "Need to implement `add_appender` using variadic templates"
+#endif
+
 	void print (int level, const pfs::string & msg)
 	{
 		if (level >= _level and level != nolog_priority)
 			_emitters[level](level, msg);
 	}
 
-	void connect (int level, shared_ptr<appender> pappender);
-	void connect (shared_ptr<appender> pappender);
-	void disconnect (int level, shared_ptr<appender> pappender);
+	void connect (int level, appender_type & ap);
+	void connect (appender_type & ap);
+
 	void disconnect (int level);
 	void disconnect_all ();
 
@@ -117,7 +195,7 @@ public:
 //	static void print (const notification & nx);
 };
 
-class appender : public has_slots<>
+class logger_appender : public has_slots<>
 {
 	friend class logger;
 
@@ -137,15 +215,15 @@ protected:
 	static pfs::string patternify (int level, const pfs::string & pattern, const pfs::string & text);
 
 public:
-	appender ()
+	logger_appender ()
 		: _pattern(logger::default_pattern)
 	{}
 
-	appender (const pfs::string & pattern)
+	logger_appender (const pfs::string & pattern)
 		: _pattern(pattern)
 	{}
 
-	virtual ~appender ()
+	virtual ~logger_appender ()
 	{}
 
 	pfs::string pattern () const
@@ -159,11 +237,11 @@ public:
 	}
 };
 
-class stdout_appender : public appender
+class stdout_appender : public logger_appender
 {
 public:
 	stdout_appender ()
-		: appender()
+		: logger_appender()
 	{}
 
 protected:
@@ -173,11 +251,11 @@ protected:
 	}
 };
 
-class stderr_appender : public appender
+class stderr_appender : public logger_appender
 {
 public:
 	stderr_appender ()
-		: appender()
+		: logger_appender()
 	{}
 
 protected:
@@ -187,9 +265,10 @@ protected:
 	}
 };
 
-class stringlist_appender : public appender
+class stringlist_appender : public logger_appender
 {
 	pfs::stringlist _strings;
+
 public:
 	stringlist_appender () {}
 	const pfs::stringlist & data () const { return _strings; }
@@ -202,21 +281,15 @@ protected:
 	}
 };
 
-inline void logger::connect (int level, shared_ptr<appender> pappender)
+inline void logger::connect (int level, appender_type & ap)
 {
-	PFS_ASSERT_BT(level >= 0 && level < priority_count);
-	_emitters[level].connect(pappender.get(), & appender::print_helper);
-}
-
-inline void logger::disconnect (int level, shared_ptr<appender> pappender)
-{
-	PFS_ASSERT_BT(level >= 0 && level < priority_count);
-	_emitters[level].disconnect(pappender.get());
+	PFS_ASSERT(level >= 0 && level < priority_count);
+	_emitters[level].connect(& ap, & logger_appender::print_helper);
 }
 
 inline void logger::disconnect (int level)
 {
-	PFS_ASSERT_BT(level >= 0 && level < priority_count);
+	PFS_ASSERT(level >= 0 && level < priority_count);
 	_emitters[level].disconnect_all();
 }
 

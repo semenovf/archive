@@ -15,16 +15,31 @@ namespace pfs {
 const pfs::string logger::default_pattern("%d{ABSOLUTE} [%p]: %m");
 const pfs::string logger::no_pattern;
 
+void logger::clear ()
+{
+	disconnect_all();
+	appender_vector_type::iterator it = _appenders.begin();
+	appender_vector_type::iterator itEnd = _appenders.end();
+
+	for (; it != itEnd; ++it) {
+		delete *it;
+	}
+
+	_appenders.clear();
+}
+
 struct logger_initializer
 {
 	logger_initializer (logger & l)
 	{
-		l.connect(logger::trace_priority, shared_ptr<appender>(new stdout_appender));
-		l.connect(logger::debug_priority, shared_ptr<appender>(new stdout_appender));
-		l.connect(logger::info_priority , shared_ptr<appender>(new stdout_appender));
-		l.connect(logger::warn_priority , shared_ptr<appender>(new stderr_appender));
-		l.connect(logger::error_priority, shared_ptr<appender>(new stderr_appender));
-		l.connect(logger::fatal_priority, shared_ptr<appender>(new stderr_appender));
+		logger_appender & ap1 = l.add_appender<stdout_appender>();
+		logger_appender & ap2 = l.add_appender<stderr_appender>();
+		l.connect(logger::trace_priority, ap1);
+		l.connect(logger::debug_priority, ap1);
+		l.connect(logger::info_priority , ap1);
+		l.connect(logger::warn_priority , ap2);
+		l.connect(logger::error_priority, ap2);
+		l.connect(logger::fatal_priority, ap2);
 	}
 };
 
@@ -35,15 +50,14 @@ logger & logger::default_logger ()
 	return __default_logger;
 }
 
-void logger::connect (shared_ptr<appender> pappender)
+void logger::connect (appender_type & ap)
 {
-	_emitters[trace_priority].connect(pappender.get(), & appender::print_helper);
-	_emitters[debug_priority].connect(pappender.get(), & appender::print_helper);
-	_emitters[info_priority].connect(pappender.get(), & appender::print_helper);
-	_emitters[warn_priority].connect(pappender.get(), & appender::print_helper);
-	_emitters[error_priority].connect(pappender.get(), & appender::print_helper);
-	_emitters[fatal_priority].connect(pappender.get(), & appender::print_helper);
-
+	_emitters[trace_priority].connect(& ap, & logger_appender::print_helper);
+	_emitters[debug_priority].connect(& ap, & logger_appender::print_helper);
+	_emitters[info_priority].connect(& ap, & logger_appender::print_helper);
+	_emitters[warn_priority].connect(& ap, & logger_appender::print_helper);
+	_emitters[error_priority].connect(& ap, & logger_appender::print_helper);
+	_emitters[fatal_priority].connect(& ap, & logger_appender::print_helper);
 }
 
 #if __COMMENT__
@@ -82,7 +96,7 @@ void log::print (const notification & nx)
 #endif
 
 
-string appender::patternify (int level, const string & pattern, const string & msg)
+string logger_appender::patternify (int level, const string & pattern, const string & msg)
 {
 	pattern_context ctx;
 	ctx.level = level;

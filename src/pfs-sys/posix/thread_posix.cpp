@@ -402,7 +402,7 @@ void thread::terminate ()
     if (!_d->_threadHandle)
         return;
 
-    PFS_ASSERT_BT(pthread_cancel(_d->_threadHandle) == 0);
+    PFS_ASSERT(pthread_cancel(_d->_threadHandle) == 0);
 }
 
 bool thread::wait (uintmax_t timeout)

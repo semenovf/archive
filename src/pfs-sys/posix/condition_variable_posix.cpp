@@ -33,7 +33,7 @@ inline void __initialize_pthread_cond (pthread_cond_t * cond)
 //    if (QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
 //        pthread_condattr_setclock(& condattr, CLOCK_MONOTONIC);
 //#endif
-    PFS_ASSERT_BT(pthread_cond_init(cond, & condattr) == 0);
+    PFS_ASSERT(pthread_cond_init(cond, & condattr) == 0);
     pthread_condattr_destroy(& condattr);
 }
 
@@ -81,7 +81,7 @@ public:
             --wakeups;
         }
 
-        PFS_ASSERT_BT(pthread_mutex_unlock(& mutex) == 0);
+        PFS_ASSERT(pthread_mutex_unlock(& mutex) == 0);
 
 //        if (code && code != ETIMEDOUT)
 //        	PFS_VERIFY_ERRNO(code);
@@ -93,32 +93,32 @@ public:
 condition_variable::condition_variable ()
 	: _d(new condition_variable_impl)
 {
-	PFS_ASSERT_BT(pthread_mutex_init(& _d->mutex, NULL) == 0);
+	PFS_ASSERT(pthread_mutex_init(& _d->mutex, NULL) == 0);
     __initialize_pthread_cond(& _d->cond);
     _d->waiters = _d->wakeups = 0;
 }
 
 condition_variable::~condition_variable ()
 {
-	PFS_ASSERT_BT(pthread_cond_destroy(& _d->cond) == 0);
-	PFS_ASSERT_BT(pthread_mutex_destroy(& _d->mutex) == 0);
+	PFS_ASSERT(pthread_cond_destroy(& _d->cond) == 0);
+	PFS_ASSERT(pthread_mutex_destroy(& _d->mutex) == 0);
 	delete _d;
 }
 
 void condition_variable::notify_one ()
 {
-	PFS_ASSERT_BT(pthread_mutex_lock(& _d->mutex) == 0);
+	PFS_ASSERT(pthread_mutex_lock(& _d->mutex) == 0);
     _d->wakeups = pfs::min(_d->wakeups + 1, _d->waiters);
-    PFS_ASSERT_BT(pthread_cond_signal(& _d->cond) == 0);
-    PFS_ASSERT_BT(pthread_mutex_unlock(& _d->mutex) == 0);
+    PFS_ASSERT(pthread_cond_signal(& _d->cond) == 0);
+    PFS_ASSERT(pthread_mutex_unlock(& _d->mutex) == 0);
 }
 
 void condition_variable::notify_all ()
 {
-	PFS_ASSERT_BT(pthread_mutex_lock(& _d->mutex) == 0);
+	PFS_ASSERT(pthread_mutex_lock(& _d->mutex) == 0);
     _d->wakeups = _d->waiters;
-    PFS_ASSERT_BT(pthread_cond_broadcast(& _d->cond) == 0);
-    PFS_ASSERT_BT(pthread_mutex_unlock(& _d->mutex) == 0);
+    PFS_ASSERT(pthread_cond_broadcast(& _d->cond) == 0);
+    PFS_ASSERT(pthread_mutex_unlock(& _d->mutex) == 0);
 }
 
 // see section "Timed Condition Wait" in pthread_cond_timedwait(P) manual page.
@@ -130,7 +130,7 @@ bool condition_variable::wait (pfs::mutex & mx, uintmax_t time)
 //        return false;
 //    }
 
-	PFS_ASSERT_BT(pthread_mutex_lock(& _d->mutex) == 0);
+	PFS_ASSERT(pthread_mutex_lock(& _d->mutex) == 0);
     ++_d->waiters;
     mx.unlock();
 

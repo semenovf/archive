@@ -1,32 +1,31 @@
-#include <cstdio>
-#include "pfs/logger.hpp"
+#include <iostream>
 #include <pfs/string.hpp>
 #include <pfs/safeformat.hpp>
+#include "pfs/logger.hpp"
 
-using namespace pfs;
-
-int main(int argc, char *argv[])
+int main (int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
 
-    trace(safeformat("%s, %s!")("Hello")("World")());
-    pfs::string s(safeformat("%s, %s!")("Hello")("World")());
-    trace(safeformat("%s")(s)());
+    pfs::log_trace(_Sf("%s, %s!")("Hello")("World").str());
+    pfs::string s(_Sf("%s, %s!")("Hello")("World").str());
+    pfs::log_trace(_Sf("%s")(s).str());
 
-    stdout_appender stdout_appender;
-    stderr_appender stderr_appender;
-    stdout_appender.set_pattern(pfs::string("%d{ABSOLUTE} [%p]: %m"));
-    stderr_appender.set_pattern(pfs::string("%d{ABSOLUTE} [%p]: %m"));
+//    pfs::stdout_appender stdout_appender;
+//    pfs::stderr_appender stderr_appender;
+//    stdout_appender.set_pattern(pfs::string("%d{ABSOLUTE} [%p]: %m"));
+//    stderr_appender.set_pattern(pfs::string("%d{ABSOLUTE} [%p]: %m"));
 
-    printf("--All messages will be print with date as ABSOLUTE specifier:\n");
+//    std::cout << "--All messages will be print with date as ABSOLUTE specifier:" << std::endl;
 
-    log::disconnect_all_appenders();
-    log::set_priority(log::trace_priority);
-    trace().connect(stdout_appender);
-    debug().connect(stdout_appender);
-    info().connect(stdout_appender);
-    warn().connect(stderr_appender);
-    error().connect(stderr_appender);
+#if __COMMENT__
+    pfs::logger::disconnect_all_appenders();
+    pfs::logger::set_priority(log::trace_priority);
+    pfs::trace().connect(stdout_appender);
+    pfs::debug().connect(stdout_appender);
+    pfs::info().connect(stdout_appender);
+    pfs::warn().connect(stderr_appender);
+    pfs::error().connect(stderr_appender);
 
     trace("logging trace");
     debug("logging debug");
@@ -65,6 +64,12 @@ int main(int argc, char *argv[])
     trace("Left padding");
     stdout_appender.set_pattern(_l1("%d{ABSOLUTE} [%p]: {%-30m}"));
     trace("Right padding");
+#endif
+
+    pfs::logger mylogger;
+    pfs::logger_appender & myappender = mylogger.add_appender<pfs::stdout_appender>();
+    mylogger.connect(myappender);
+    mylogger.trace(_u8("mylogger trace"));
 
     return EXIT_SUCCESS;
 }

@@ -10,6 +10,7 @@
 #include <cstring>
 #include <string>
 #include <cerrno>
+#include <cstdio>
 #include <pfs/algo/find.hpp>
 #include "pfs/fs/path.hpp"
 

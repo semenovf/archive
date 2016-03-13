@@ -4,6 +4,8 @@
  * @date May 6, 2014
  */
 
+#include <cstring>
+#include <cstdio>
 #include <pfs/test/test.hpp>
 #include <pfs/utils.hpp>
 

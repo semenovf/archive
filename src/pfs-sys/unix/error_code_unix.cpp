@@ -7,6 +7,7 @@
  */
 
 #include <cerrno>
+#include <cstring>
 #include "pfs/error_code.hpp"
 
 #if !(defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L)

@@ -66,3 +66,8 @@ project "test-zlib"
 project "test-fs-path"
     include("test-fs-path/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "demo-logger"
+    include("demo-logger/project.gbs")
+-- END PROJECT

@@ -6,6 +6,7 @@
  * @brief zlib testing
  */
 
+#include <cstring>
 #include <pfs/test/test.hpp>
 #include <pfs/zlib.hpp>
 
