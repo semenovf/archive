@@ -7,6 +7,7 @@
 
 #include <pfs.hpp>
 #include <ctype.h>
+#include <cstdio>
 
 namespace pfs {
 

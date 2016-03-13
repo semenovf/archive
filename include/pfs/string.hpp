@@ -10,6 +10,7 @@
 #define __PFS_STRING_HPP__
 
 #include <cmath>
+#include <cerrno>
 
 #if PFS_STRING_UTF16
 

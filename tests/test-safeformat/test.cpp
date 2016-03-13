@@ -11,6 +11,7 @@
 #include <iostream>
 #include <sstream>
 #include <utility>
+#include <cstdio>
 
 #ifdef PFS_HAVE_QT
 #include <QString>

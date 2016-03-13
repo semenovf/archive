@@ -57,8 +57,8 @@ struct ref_count
 
 	~ref_count ()
 	{
-		PFS_ASSERT_BT(!weakref.load());
-		PFS_ASSERT_BT(strongref.load() <= 0);
+		PFS_ASSERT(!weakref.load());
+		PFS_ASSERT(strongref.load() <= 0);
 	}
 
      void destroy() { deleter_fn(this); } // need check
@@ -156,13 +156,13 @@ public:
 
     T & operator * () const
     {
-        PFS_ASSERT_BT(_value != 0);
+        PFS_ASSERT(_value != 0);
         return *_value;
     }
 
     T * operator -> () const
     {
-        PFS_ASSERT_BT(_value != 0);
+        PFS_ASSERT(_value != 0);
         return _value;
     }
 

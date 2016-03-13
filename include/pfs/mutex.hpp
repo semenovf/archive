@@ -91,10 +91,7 @@ public:
 
 	void lock ()
 	{
-		int ex = pfs_mutex_lock(_mutex);
-
-		if (ex)
-			PFS_THROW_SYSERR(ex);
+		PFS_ASSERT(pfs_mutex_lock(_mutex));
 	}
 
 	bool try_lock ()
@@ -133,10 +130,7 @@ public:
 
 	void lock ()
 	{
-		int ex = pfs_recursive_mutex_lock(_mutex);
-
-		if (ex)
-			PFS_THROW_SYSERR(ex);
+		PFS_ASSERT(pfs_recursive_mutex_lock(_mutex));
 	}
 
 	bool try_lock()
@@ -248,26 +242,18 @@ public:
 
 	void lock ()
 	{
-		if (!_mtx) {
-			PFS_THROW_SYSERR(EPERM); // Operation not permitted (POSIX.1)
-		} else if (_owns) {
-			PFS_THROW_SYSERR(EDEADLK); // Resource deadlock avoided (POSIX.1)
-		} else {
-			_mtx->lock();
-			_owns = true;
-		}
+		PFS_ASSERT(_mtx);  // Operation not permitted (POSIX.1)
+		PFS_ASSERT(!_owns); // Resource deadlock avoided (POSIX.1)
+		_mtx->lock();
+		_owns = true;
 	}
 
 	bool try_lock()
 	{
-		if (!_mtx) {
-			PFS_THROW_SYSERR(EPERM);
-		} else if (_owns) {
-			PFS_THROW_SYSERR(EDEADLK);
-		} else {
-			_owns = _mtx->try_lock();
-			return _owns;
-		}
+		PFS_ASSERT(_mtx);  // EPERM
+		PFS_ASSERT(!_owns); // EDEADLK
+		_owns = _mtx->try_lock();
+		return _owns;
 	}
 
 //  TODO Implement
@@ -304,9 +290,8 @@ public:
 
 	void unlock ()
 	{
-		if (!_owns) {
-			PFS_THROW_SYSERR(EPERM);
-		} else if (_mtx) {
+		PFS_ASSERT(_owns);
+		if (_mtx) {
 			_mtx->unlock();
 			_owns = false;
 		}

@@ -201,8 +201,7 @@ bool safeformat::parse_conv_spec ()
 	if (pos < end) {
 		string convSpecifiers("diouxXeEfFgGcsp");
 
-		PFS_ASSERT_X(convSpecifiers.contains(*pos)
-				, "Expected conversion specifier: one of 'diouxXeEfFgGcsp'");
+		PFS_ASSERT(convSpecifiers.contains(*pos)); // Expected conversion specifier: one of 'diouxXeEfFgGcsp';
 		set_conv_specifier(char_type(*pos));
 		++pos;
 	}

@@ -5,24 +5,36 @@
  *      Author: wladt
  */
 
-#include <errno.h>
+#include <stdio.h>
 #include <pfs.h>
 
-/* TODO DEPRECATED */
+#if defined(__GNUC__)
+#	ifndef PFS_BACKTRACE_SIZE
+#		define PFS_BACKTRACE_SIZE 20
+#	endif
+#	ifndef PFS_BACKTRACE_FD
+#		define PFS_BACKTRACE_FD    2 /* standard error */
+#	endif
 
-bool pfs_verify (bool predicate, const char * prefix, const char * file, int line, const char * text)
+#	include <execinfo.h>
+#endif
+
+
+void pfs_assert (const char * file, int line, const char * text)
 {
-	if (!predicate)
-		fprintf(stderr, "%s(%s[%d]): %s\n", prefix, file, line, text);
-	return predicate;
+#if defined(__GNUC__)
+	/*
+	 * Backtrace output
+	 */
+	fprintf(stderr, "ERROR: (%s[%d]): %s\n", file, line, text);
+	void * bt_buffer[PFS_BACKTRACE_SIZE];
+	int bt_size = backtrace(bt_buffer, PFS_BACKTRACE_SIZE);
+	fprintf(stderr, "===BEGIN OF BACKTRACE\n");
+	backtrace_symbols_fd(bt_buffer, bt_size, PFS_BACKTRACE_FD);
+	fprintf(stderr, "===END OF BACKTRACE\n");
+	abort();
+#else
+	fprintf(stderr, "ERROR: (%s[%d]): %s\n", file, line, text);
+	abort();
+#endif
 }
-
-bool pfs_verify_errno (bool predicate, const char * prefix, const char * file, int line, const char * text)
-{
-	if (!predicate)
-		fprintf(stderr, "%s(errno=%d, %s[%d]): %s\n", prefix, errno, file, line, text);
-	return predicate;
-}
-
-
-
