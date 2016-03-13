@@ -1,3 +1,4 @@
+#include <cstring>
 #include <pfs/test/test.hpp>
 #include <pfs/fs/path.hpp>
 #include "pfs/io/file.hpp"

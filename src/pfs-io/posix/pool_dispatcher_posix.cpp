@@ -5,6 +5,7 @@
  *      Author: wladt
  */
 
+#include <iostream>
 #include "pfs/io/device.hpp"
 #include "pfs/io/server.hpp"
 #include "pfs/io/pool.hpp"
@@ -60,7 +61,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 						// TODO Research this feature and implement handling
 						//
 						if (revents & poll_err) {
-							PFS_WARN("pfs::io::pool::dispatch(): device error condition");
+							PFS_DEBUG(std::cout << "pfs::io::pool::dispatch(): device error condition" << std::endl);
 						}
 
 						// There is urgent data to read (e.g., out-of-band data on TCP socket;
@@ -90,7 +91,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 						// TODO Research this feature and implement handling
 						//
 						if (revents & poll_hup) {
-							PFS_WARN("pfs::io::pool::dispatch(): device hang up");
+							PFS_DEBUG(std::cout << "pfs::io::pool::dispatch(): device hang up" << std::endl);
 						}
 
 						// Invalid request: fd not open (output only).
@@ -157,7 +158,7 @@ void pool::dispatch (pool::dispatcher_context2 & context)
 					// TODO Research this feature and implement handling
 					//
 					if (revents & poll_err) {
-						PFS_WARN("pfs::io::pool::dispatch(): device error condition");
+						PFS_DEBUG(std::cout << "pfs::io::pool::dispatch(): device error condition" << std::endl);
 					}
 
 					// Hang up (output only).

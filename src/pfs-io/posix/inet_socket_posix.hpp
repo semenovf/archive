@@ -8,6 +8,7 @@
 #ifndef __PFS_INET_SOCKET_POSIX_HPP__
 #define __PFS_INET_SOCKET_POSIX_HPP__
 
+#include <cstring>
 #include "pfs/io/inet_socket.hpp"
 
 namespace pfs { namespace io { namespace details {

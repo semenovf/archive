@@ -1,4 +1,4 @@
-
+#include <cstdio>
 #include <pfs/test/test.hpp>
 #include <pfs/string.hpp>
 #include <pfs/random.hpp>

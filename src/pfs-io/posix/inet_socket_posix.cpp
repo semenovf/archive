@@ -90,10 +90,9 @@ size_t inet_socket::bytes_available () const
 	int rc = 0;
 	rc = ioctl(_fd, FIONREAD, & n);
 
-	if (rc != 0)
-		PFS_THROW_SYSERR(errno);
-
+	PFS_ASSERT_X(rc == 0, to_string(error_code(errno)).c_str());
 	PFS_ASSERT(n >= 0);
+
 	return static_cast<size_t>(n);
 }
 
