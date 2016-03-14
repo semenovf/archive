@@ -126,6 +126,7 @@ string to_string (const time & t, const string & format)
 					r.append(t.hour() < 12 ? _u8("AM") : _u8("PM"));
 					break;
 				default:
+					r.push_back('%');
 					r.push_back(*p);
 					break;
 				}

@@ -431,6 +431,7 @@ string to_string (const date & d, const string & format)
 					append_prefixed4(r, '0', d.year());
 					break;
 				default:
+					r.push_back('%');
 					r.push_back(*p);
 					break;
 				}

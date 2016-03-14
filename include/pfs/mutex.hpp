@@ -91,7 +91,7 @@ public:
 
 	void lock ()
 	{
-		PFS_ASSERT(pfs_mutex_lock(_mutex));
+		pfs_mutex_lock(_mutex);
 	}
 
 	bool try_lock ()
@@ -130,7 +130,7 @@ public:
 
 	void lock ()
 	{
-		PFS_ASSERT(pfs_recursive_mutex_lock(_mutex));
+		pfs_recursive_mutex_lock(_mutex);
 	}
 
 	bool try_lock()
