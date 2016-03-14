@@ -18,14 +18,14 @@ const pfs::string logger::no_pattern;
 void logger::clear ()
 {
 	disconnect_all();
-	appender_vector_type::iterator it = _appenders.begin();
-	appender_vector_type::iterator itEnd = _appenders.end();
+	appender_vector_type::iterator it    = _d->_appenders.begin();
+	appender_vector_type::iterator itEnd = _d->_appenders.end();
 
 	for (; it != itEnd; ++it) {
 		delete *it;
 	}
 
-	_appenders.clear();
+	_d->_appenders.clear();
 }
 
 struct logger_initializer
@@ -50,14 +50,15 @@ logger & logger::default_logger ()
 	return __default_logger;
 }
 
+
 void logger::connect (appender_type & ap)
 {
-	_emitters[trace_priority].connect(& ap, & logger_appender::print_helper);
-	_emitters[debug_priority].connect(& ap, & logger_appender::print_helper);
-	_emitters[info_priority].connect(& ap, & logger_appender::print_helper);
-	_emitters[warn_priority].connect(& ap, & logger_appender::print_helper);
-	_emitters[error_priority].connect(& ap, & logger_appender::print_helper);
-	_emitters[fatal_priority].connect(& ap, & logger_appender::print_helper);
+	_d->_emitters[trace_priority].connect(& ap, & logger_appender::print_helper);
+	_d->_emitters[debug_priority].connect(& ap, & logger_appender::print_helper);
+	_d->_emitters[info_priority].connect(& ap, & logger_appender::print_helper);
+	_d->_emitters[warn_priority].connect(& ap, & logger_appender::print_helper);
+	_d->_emitters[error_priority].connect(& ap, & logger_appender::print_helper);
+	_d->_emitters[fatal_priority].connect(& ap, & logger_appender::print_helper);
 }
 
 #if __COMMENT__
