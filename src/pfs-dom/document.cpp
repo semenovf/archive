@@ -26,9 +26,9 @@
 namespace pfs { namespace dom {
 
 document_impl::document_impl ()
-    : node_impl(nullptr)
+    : node_impl(0)
     , _impl(new dom_implementation_impl)
-	, _type(new doctype_impl(this, this))
+    , _type(new doctype_impl(this, this))
     , _nodeListTime(1)
 {
     //_type->ref.deref();
@@ -36,7 +36,7 @@ document_impl::document_impl ()
 }
 
 document_impl::document_impl (const pfs::string & name)
-    : node_impl(nullptr)
+    : node_impl(0)
     , _impl(new dom_implementation_impl)
 	, _type(new doctype_impl(this, this))
 	, _nodeListTime(1)
@@ -47,7 +47,7 @@ document_impl::document_impl (const pfs::string & name)
 }
 
 document_impl::document_impl (doctype_impl * dt)
-    : node_impl(nullptr)
+    : node_impl(0)
     , _impl(new dom_implementation_impl)
     , _nodeListTime(1)
 {
@@ -83,7 +83,7 @@ element_impl* document_impl::documentElement()
 
 document_impl::~document_impl ()
 {
-//	_type.reset(nullptr);
+//	_type.reset(0);
 }
 
 node_impl * document_impl::cloneNode (bool deep)
@@ -124,7 +124,7 @@ element_impl * document_impl::createElementNS (const pfs::string & nsURI, const 
 
 document_fragment_impl * document_impl::createDocumentFragment ()
 {
-    document_fragment_impl * f = new document_fragment_impl(this, nullptr);
+    document_fragment_impl * f = new document_fragment_impl(this, 0);
     f->ref.deref();
     return f;
 }
@@ -229,7 +229,7 @@ entityref_impl * document_impl::createEntityReference (const pfs::string & name)
 
 node_impl * document_impl::importNode (const node_impl * importedNode, bool deep)
 {
-    node_impl * node = nullptr;
+    node_impl * node = 0;
 
     switch (importedNode->nodeType()) {
         case node::AttributeNode:

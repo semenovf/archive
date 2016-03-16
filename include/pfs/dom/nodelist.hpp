@@ -29,7 +29,7 @@ private:
 	nodelist (nodelist_impl * p) : _pimpl(p) {}
 
 public:
-	nodelist () : _pimpl(nullptr) {}
+	nodelist () : _pimpl(0) {}
 	nodelist (const nodelist & other);
 	nodelist & operator = (const nodelist & other);
 	~nodelist ();

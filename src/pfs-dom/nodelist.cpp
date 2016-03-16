@@ -54,7 +54,7 @@ nodelist_impl::~nodelist_impl ()
 node_impl * nodelist_impl::item (size_t index)
 {
     if (!_node_impl)
-        return nullptr;
+        return 0;
 
     const document_impl * const doc = _node_impl->ownerDocument();
     if (!doc || _timestamp != doc->_nodeListTime)
@@ -148,7 +148,7 @@ nodelist::~nodelist ()
 {
     if (_pimpl && !_pimpl->_ref.deref()) {
         delete _pimpl;
-        _pimpl = nullptr;
+        _pimpl = 0;
     }
 }
 

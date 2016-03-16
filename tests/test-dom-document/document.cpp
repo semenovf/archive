@@ -1,11 +1,11 @@
 #include <pfs/test/test.hpp>
-#include <pfs/dom.hpp>
+#include <pfs/dom/document.hpp>
 
 void test_basic ()
 {
-	pfs::dom::document doc;
-	doc.createElement(_l1("html"));
-	TEST_OK(true == true);
+    pfs::dom::document doc;
+    doc.createElement(_u8("html"));
+    TEST_OK(true == true);
 }
 
 int main(int argc, char *argv[])

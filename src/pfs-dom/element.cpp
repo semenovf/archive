@@ -118,7 +118,7 @@ attr_impl * element_impl::setAttributeNode (attr_impl * newAttr)
 
 attr_impl* element_impl::setAttributeNodeNS(attr_impl* newAttr)
 {
-    node_impl * n = nullptr;
+    node_impl * n = 0;
 
     if (!newAttr->_prefix.isNull())
         n = _attr->namedItemNS(newAttr->_namespaceURI, newAttr->_name);

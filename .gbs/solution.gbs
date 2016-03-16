@@ -18,31 +18,16 @@ project "pfs-dom"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-dom-document"
---    include("test-pfs-dom-document/project.gbs")
+project "test-dom-document"
+    include("test-dom-document/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-dom-domimpl"
---    include("test-pfs-dom-domimpl/project.gbs")
+project "test-dom-domimpl"
+    include("test-dom-domimpl/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "test-pfs-dom-utils"
---    include("test-pfs-dom-utils/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
-project "test-pfs-dom-document"
-    include("test-pfs-dom-document/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
-project "test-pfs-dom-domimpl"
-    include("test-pfs-dom-domimpl/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
-project "test-pfs-dom-utils"
-    include("test-pfs-dom-utils/project.gbs")
+project "test-dom-utils"
+    include("test-dom-utils/project.gbs")
 -- END PROJECT

@@ -23,10 +23,10 @@ node_impl::node_impl(document_impl * d, node_impl * parent) : ref(1)
     else
         setOwnerDocument (d);
 
-    _prev  = nullptr;
-    _next  = nullptr;
-    _first = nullptr;
-    _last  = nullptr;
+    _prev  = 0;
+    _next  = 0;
+    _first = 0;
+    _last  = 0;
 //    _createdWithDom1Interface = true;
 }
 
@@ -34,10 +34,10 @@ node_impl::node_impl (node_impl * n, bool deep)
 	: ref(1)
 {
     setOwnerDocument(n->ownerDocument());
-    _prev  = nullptr;
-    _next  = nullptr;
-    _first = nullptr;
-    _last  = nullptr;
+    _prev  = 0;
+    _next  = 0;
+    _first = 0;
+    _last  = 0;
 
     _name = n->_name;
     _value = n->_value;
@@ -431,7 +431,7 @@ node_impl * node_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
 void node_impl::normalize()
 {
     node_impl * p = this->_first;
-    text_impl * t = nullptr;
+    text_impl * t = 0;
 
     while (p) {
         if (p->isText()) {
@@ -446,7 +446,7 @@ void node_impl::normalize()
             }
         } else {
             p = p->_next;
-            t = nullptr;
+            t = 0;
         }
     }
 }
@@ -483,7 +483,7 @@ node::~node ()
 {
     if (_pimpl && !_pimpl->ref.deref()) {
     	delete _pimpl;
-        _pimpl = nullptr;
+        _pimpl = 0;
     }
 }
 
@@ -762,7 +762,7 @@ bool node::hasAttributes() const
 bool node::hasChildNodes () const
 {
 	return _pimpl
-			? _pimpl->_first != nullptr
+			? _pimpl->_first != 0
 			: false;
 }
 

@@ -30,7 +30,7 @@ text_impl::text_impl(text_impl * n, bool deep)
 text_impl * text_impl::splitText (size_t offset)
 {
     if (!parent()) {
-        return nullptr;
+        return 0;
     }
 
     text_impl * t = new text_impl(ownerDocument(), 0, _value.substr(offset));

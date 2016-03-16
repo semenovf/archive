@@ -60,7 +60,7 @@ public:
 
     bool containsNS (const string & nsURI, const string & localName) const
     {
-    	return namedItemNS(nsURI, localName) != nullptr;
+    	return namedItemNS(nsURI, localName) != 0;
     }
 
     /*

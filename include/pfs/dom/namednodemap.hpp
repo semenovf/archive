@@ -27,7 +27,7 @@ private:
 	namednodemap (namednodemap_impl *);
 
 public:
-	namednodemap () : _pimpl(nullptr) {}
+	namednodemap () : _pimpl(0) {}
 	namednodemap (const namednodemap & other);
 	namednodemap & operator = (const namednodemap & other);
 	~namednodemap ();

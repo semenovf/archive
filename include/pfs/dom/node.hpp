@@ -53,7 +53,7 @@ public:
 	const node_impl * pimpl () const { return _pimpl; } // internal
 
 public:
-	node () : _pimpl(nullptr) {}
+	node () : _pimpl(0) {}
 	node (const node & other);
 	node & operator = (const node & other);
 	~node ();
@@ -91,7 +91,7 @@ public:
 
 	node cloneNode (bool deep = true) const;
 
-	bool isNull () const { return _pimpl == nullptr; }
+	bool isNull () const { return _pimpl == 0; }
 
 
 	// Non-standard

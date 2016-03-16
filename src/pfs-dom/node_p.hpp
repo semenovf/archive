@@ -35,7 +35,7 @@ public:
     bool _hasParent                : 1;
 
 public:
-    node_impl (document_impl *, node_impl * parent = nullptr);
+    node_impl (document_impl *, node_impl * parent = 0);
     node_impl (node_impl * n, bool deep);
     virtual ~node_impl ();
 

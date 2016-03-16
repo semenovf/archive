@@ -30,7 +30,7 @@ public:
 	~dom_implementation ();
 
 	bool hasFeature (const pfs::string & feature, const pfs::string & version = pfs::string()) const;
-	bool hasFeature (const char * feature, const char * version = nullptr) const
+	bool hasFeature (const char * feature, const char * version = 0) const
 		{ return hasFeature(pfs::string(feature), pfs::string(version)); }
 
 	document createDocument (const pfs::string & namespaceURI

@@ -29,7 +29,7 @@ void namednodemap_impl::clearMap()
 
 node_impl * namednodemap_impl::namedItem (const pfs::string & name) const
 {
-	node_impl * p = _map.valueAt(name, nullptr);
+	node_impl * p = _map.valueAt(name, 0);
 	return p;
 }
 
@@ -53,7 +53,7 @@ node_impl * namednodemap_impl::namedItemNS(const pfs::string & nsURI, const pfs:
 node_impl * namednodemap_impl::setNamedItem(node_impl * arg)
 {
     if (_readonly || !arg)
-        return nullptr;
+        return 0;
 
     if (_appendToParent)
         return _parent->appendChild(arg);
@@ -67,7 +67,7 @@ node_impl * namednodemap_impl::setNamedItem(node_impl * arg)
 node_impl * namednodemap_impl::setNamedItemNS (node_impl * arg)
 {
     if (_readonly || !arg)
-        return nullptr;
+        return 0;
 
     if (_appendToParent)
         return _parent->appendChild(arg);
@@ -87,7 +87,7 @@ node_impl * namednodemap_impl::setNamedItemNS (node_impl * arg)
 node_impl * namednodemap_impl::item (size_t index) const
 {
 	if (index >= _map.size())
-		return nullptr;
+		return 0;
 
 	namednodemap_impl::const_iterator it = _map.cbegin();
 	while (index--) {
@@ -100,12 +100,12 @@ node_impl * namednodemap_impl::item (size_t index) const
 node_impl * namednodemap_impl::removeNamedItem (const pfs::string & name)
 {
     if (_readonly)
-        return nullptr;
+        return 0;
 
     node_impl * p = namedItem(name);
 
-    if (p == nullptr)
-        return nullptr;
+    if (p == 0)
+        return 0;
 
     if (_appendToParent)
         return _parent->removeChild(p);

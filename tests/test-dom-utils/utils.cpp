@@ -1,5 +1,5 @@
 #include <pfs/test/test.hpp>
-#include "../../src/pfs-dom/utils.hpp"
+#include <pfs/dom/utils.hpp>
 
 void test_split_namespace ()
 {

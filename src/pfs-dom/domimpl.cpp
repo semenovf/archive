@@ -108,7 +108,7 @@ doctype dom_implementation::createDocumentType (const pfs::string & qName
         return document_type();
 */
 
-    doctype_impl * dt = new doctype_impl(nullptr);
+    doctype_impl * dt = new doctype_impl(0);
     dt->_name = qName; //fixedName;
     if (systemId.isNull()) {
         dt->_publicId.clear();

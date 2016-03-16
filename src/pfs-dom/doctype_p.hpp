@@ -26,7 +26,7 @@ public:
     pfs::string _internalSubset;
 
 public:
-    doctype_impl (document_impl *, node_impl * parent = nullptr);
+    doctype_impl (document_impl *, node_impl * parent = 0);
     doctype_impl (doctype_impl * other, bool deep);
     ~doctype_impl ();
     void init ();
