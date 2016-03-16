@@ -1,3 +1,6 @@
 [submodule "premake-qt"]
 	path = premake-qt
 	url = git@github.com:semenovf/premake-qt.git
+[submodule "premake-core"]
+	path = premake-core
+	url = git@github.com:premake/premake-core.git
