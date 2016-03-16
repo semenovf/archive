@@ -237,35 +237,6 @@ public:
 			 , int millis = 0
 			 , error_code * ex = 0);
 
-	class dispatcher_context
-	{
-		friend class pool;
-
-		atomic_integer<int> _quit;
-
-	public:
-		dispatcher_context ()
-			: _quit(0)
-		{}
-
-		virtual ~dispatcher_context () {}
-
-		void quit ()
-		{
-			_quit.store(1);
-		}
-
-	public:
-		virtual void connected (device &, server & listener) {}
-		virtual void ready_read (device &) {}
-		virtual void disconnected (device &) {}
-		virtual void can_write (device &) {} // unused yet
-		virtual void on_error (const error_code & ) {}
-	};
-
-	// XXX OBSOLETE, use dispatch(dispatcher_context2 context);
-	void dispatch (dispatcher_context & context, short filter_events = poll_all, int millis = 0);
-
 	class dispatcher_context2
 	{
 		friend class pool;
@@ -295,11 +266,42 @@ public:
 		virtual void connected (device &, server & listener) {}
 		virtual void ready_read (device &) {}
 		virtual void disconnected (device &) {}
-		virtual void can_write (device &) {} // unused yet
+		virtual void can_write (device &) {}
 		virtual void on_error (const error_code & ) {}
 	};
 
 	void dispatch (dispatcher_context2 & context);
+
+	// XXX OBSOLETE, use dispatcher_context2;
+	//
+	class dispatcher_context
+	{
+		friend class pool;
+
+		atomic_integer<int> _quit;
+
+	public:
+		dispatcher_context ()
+			: _quit(0)
+		{}
+
+		virtual ~dispatcher_context () {}
+
+		void quit ()
+		{
+			_quit.store(1);
+		}
+
+	public:
+		virtual void connected (device &, server & listener) {}
+		virtual void ready_read (device &) {}
+		virtual void disconnected (device &) {}
+		virtual void can_write (device &) {} // unused yet
+		virtual void on_error (const error_code & ) {}
+	};
+
+	// XXX OBSOLETE, use dispatch(dispatcher_context2 context);
+	void dispatch (dispatcher_context & context, short filter_events = poll_all, int millis = 0);
 };
 
 }} // pfs::io
