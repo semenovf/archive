@@ -33,7 +33,7 @@ notation_impl::notation_impl (notation_impl * n, bool deep)
     _pub = n->_pub;
 }
 
-node_impl * notation_impl::cloneNode (bool deep)
+node_impl * notation_impl::clone_node (bool deep)
 {
     node_impl * p = new notation_impl(this, deep);
     p->ref.deref();
@@ -55,17 +55,17 @@ notation & notation::operator = (const notation & other)
     return (notation &) node::operator = (other);
 }
 
-pfs::string notation::publicId () const
+pfs::string notation::public_id () const
 {
-	return _pimpl
-			? dynamic_cast<notation_impl *>(_pimpl)->_pub
+	return _d
+			? dynamic_cast<notation_impl *>(_d)->_pub
 			: pfs::string();
 }
 
-pfs::string notation::systemId () const
+pfs::string notation::system_id () const
 {
-	return _pimpl
-			? dynamic_cast<notation_impl *>(_pimpl)->_sys
+	return _d
+			? dynamic_cast<notation_impl *>(_d)->_sys
 			: pfs::string();
 }
 

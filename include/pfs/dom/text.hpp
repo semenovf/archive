@@ -26,7 +26,7 @@ public:
 	text (const text & other);
 	text & operator = (const text & other);
 
-	text splitText (size_t offset);
+	text split_text (size_t offset);
 };
 
 }} // pfs

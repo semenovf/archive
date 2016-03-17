@@ -56,9 +56,9 @@ node_impl * nodelist_impl::item (size_t index)
     if (!_node_impl)
         return 0;
 
-    const document_impl * const doc = _node_impl->ownerDocument();
+    const document_impl * const doc = _node_impl->owner_document();
     if (!doc || _timestamp != doc->_nodeListTime)
-        createList();
+        create_list();
 
     if (index >= _list.size())
         return 0;
@@ -71,22 +71,22 @@ size_t nodelist_impl::length ()
     if (!_node_impl)
         return 0;
 
-    const document_impl * const doc = _node_impl->ownerDocument();
+    const document_impl * const doc = _node_impl->owner_document();
 
     if (!doc || _timestamp != doc->_nodeListTime) {
         nodelist_impl *that = const_cast<nodelist_impl *>(this);
-        that->createList();
+        that->create_list();
     }
 
     return _list.size();
 }
 
-void nodelist_impl::createList ()
+void nodelist_impl::create_list ()
 {
     if (!_node_impl)
         return;
 
-    const document_impl *const doc = _node_impl->ownerDocument();
+    const document_impl *const doc = _node_impl->owner_document();
     if (doc && _timestamp != doc->_nodeListTime)
         _timestamp = doc->_nodeListTime;
 
@@ -101,7 +101,7 @@ void nodelist_impl::createList ()
         }
     } else if (_nsURI.isNull()) {
         while (p && p != _node_impl) {
-            if (p->isElement() && p->nodeName() == _tagname) {
+            if (p->is_element() && p->node_name() == _tagname) {
                 _list.append(p);
             }
             if (p->_first)
@@ -118,7 +118,7 @@ void nodelist_impl::createList ()
         }
     } else {
         while (p && p != _node_impl) {
-            if (p->isElement() && p->_name == _tagname && p->_namespaceURI == _nsURI) {
+            if (p->is_element() && p->_name == _tagname && p->_namespace_uri == _nsURI) {
                 _list.append(p);
             }
             if (p->_first)
@@ -139,33 +139,33 @@ void nodelist_impl::createList ()
 
 nodelist::nodelist (const nodelist & other)
 {
-    _pimpl = other._pimpl;
-    if (_pimpl)
-        _pimpl->_ref.ref();
+    _d = other._d;
+    if (_d)
+        _d->_ref.ref();
 }
 
 nodelist::~nodelist ()
 {
-    if (_pimpl && !_pimpl->_ref.deref()) {
-        delete _pimpl;
-        _pimpl = 0;
+    if (_d && !_d->_ref.deref()) {
+        delete _d;
+        _d = 0;
     }
 }
 
 nodelist & nodelist::operator = (const nodelist & other)
 {
-    if (other._pimpl)
-        other._pimpl->_ref.ref();
-    if (_pimpl && !_pimpl->_ref.deref())
-        delete _pimpl;
-    _pimpl = other._pimpl;
+    if (other._d)
+        other._d->_ref.ref();
+    if (_d && !_d->_ref.deref())
+        delete _d;
+    _d = other._d;
     return *this;
 }
 
 node nodelist::item (size_t index) const
 {
-	return _pimpl
-			? node(_pimpl->item(index))
+	return _d
+			? node(_d->item(index))
 			: node();
 }
 
@@ -174,8 +174,8 @@ node nodelist::item (size_t index) const
 */
 size_t nodelist::length () const
 {
-	return _pimpl
-			? _pimpl->length()
+	return _d
+			? _d->length()
 			: 0;
 }
 

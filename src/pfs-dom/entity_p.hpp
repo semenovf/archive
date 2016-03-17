@@ -26,8 +26,12 @@ public:
     		, const pfs::string & pub, const pfs::string & sys, const pfs::string & notation);
     entity_impl (entity_impl* n, bool deep);
 
-    virtual node_impl * cloneNode (bool deep = true);
-    virtual node::type nodeType () const { return node::EntityNode; }
+    virtual node_impl * clone_node (bool deep = true);
+
+    virtual node::type node_type () const
+    {
+    	return node::entity_node;
+    }
 };
 
 }} // pfs::dom

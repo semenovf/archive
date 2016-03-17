@@ -23,8 +23,8 @@ public:
 	notation (const notation & other);
 	notation & operator = (const notation & other);
 
-	pfs::string publicId () const;
-	pfs::string systemId () const;
+	pfs::string public_id () const;
+	pfs::string system_id () const;
 };
 
 }} // pfs::dom

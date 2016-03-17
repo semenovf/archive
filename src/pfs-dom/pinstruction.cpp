@@ -28,7 +28,7 @@ pinstruction_impl::pinstruction_impl (pinstruction_impl * n, bool deep) : node_i
 {}
 
 
-node_impl * pinstruction_impl::cloneNode (bool deep)
+node_impl * pinstruction_impl::clone_node (bool deep)
 {
     node_impl * p = new pinstruction_impl(this, deep);
     p->ref.deref();
@@ -52,22 +52,22 @@ pinstruction & pinstruction::operator = (const pinstruction & other)
 
 pfs::string pinstruction::target() const
 {
-	return _pimpl
-			? _pimpl->nodeName()
+	return _d
+			? _d->node_name()
 			: pfs::string();
 }
 
 pfs::string pinstruction::data() const
 {
-	return _pimpl
-			? _pimpl->nodeValue()
+	return _d
+			? _d->node_value()
 			: pfs::string();
 }
 
-void pinstruction::setData (const pfs::string & d)
+void pinstruction::set_data (const pfs::string & d)
 {
-	if (_pimpl) {
-		_pimpl->setNodeValue(d);
+	if (_d) {
+		_d->set_node_value(d);
 	}
 }
 

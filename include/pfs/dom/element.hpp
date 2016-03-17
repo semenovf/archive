@@ -31,48 +31,73 @@ public:
 	element (const element & other);
 	element & operator = (const element & other);
 
-	pfs::string tagName () const;
-	pfs::string attribute (const pfs::string & name, const pfs::string & defaultValue = pfs::string()) const
-			{ return getAttribute(name, defaultValue); }
-	pfs::string getAttribute (const pfs::string & name, const pfs::string & defaultValue = pfs::string()) const;
-	void        setAttribute (const pfs::string & name, const pfs::string & value);
-	void        removeAttribute (const pfs::string & name);
-	attr        attributeNode (const pfs::string & name) { return getAttributeNode(name); }
-	attr        getAttributeNode (const pfs::string & name);
-	attr        setAttributeNode (const attr & newAttr);
-	attr        removeAttributeNode (const attr & oldAttr);
-	nodelist    elementsByTagName (const pfs::string & name) const { return getElementsByTagName(name); }
-	nodelist    getElementsByTagName (const pfs::string & name) const ;
+	pfs::string tagname () const;
 
-	pfs::string attributeNS (const pfs::string & namespaceURI
-					, const pfs::string & localName
-					, const pfs::string & defaultValue = pfs::string()) const
-					{ return getAttributeNS(namespaceURI, localName, defaultValue); }
-	pfs::string getAttributeNS (const pfs::string & namespaceURI
-					, const pfs::string & localName
-					, const pfs::string & defaultValue = pfs::string()) const;
-	void        setAttributeNS (const pfs::string & namespaceURI
-					, const pfs::string & qualifiedName
-					, const pfs::string & value);
-	void        removeAttributeNS (const pfs::string & namespaceURI
-					, const pfs::string & localName);
+	pfs::string attribute (const pfs::string & name, const pfs::string & defaultvalue = pfs::string()) const
+	{
+		return get_attribute(name, defaultvalue);
+	}
+
+	pfs::string get_attribute (const pfs::string & name, const pfs::string & defaultvalue = pfs::string()) const;
+
+	void set_attribute (const pfs::string & name, const pfs::string & value);
+
+	void remove_attribute (const pfs::string & name);
+	attr attribute_node (const pfs::string & name)
+	{
+		return get_attribute_node(name);
+	}
+
+	attr get_attribute_node (const pfs::string & name);
+	attr set_attribute_node (const attr & newattr);
+	attr remove_attribute_node (const attr & oldattr);
+
+	nodelist elements_by_tagname (const pfs::string & name) const { return get_elements_by_tagname(name); }
+	nodelist get_elements_by_tagname (const pfs::string & name) const ;
+
+	pfs::string attribute_ns (const pfs::string & namespace_uri
+			, const pfs::string & localname
+			, const pfs::string & defaultvalue = pfs::string()) const
+	{
+		return get_attribute_ns(namespace_uri, localname, defaultvalue);
+	}
+
+	pfs::string get_attribute_ns (const pfs::string & namespaceURI
+			, const pfs::string & localName
+			, const pfs::string & defaultValue = pfs::string()) const;
+
+	void set_attribute_ns (const pfs::string & namespace_uri
+			, const pfs::string & qualifiedname
+			, const pfs::string & value);
+
+	void remove_attribute_ns (const pfs::string & namespace_uri
+			, const pfs::string & localname);
 
 
-	attr        attributeNodeNS (const pfs::string & namespaceURI
-					, const pfs::string & localName) const
-					{ return getAttributeNodeNS(namespaceURI, localName); }
-	attr        getAttributeNodeNS (const pfs::string & namespaceURI
-					, const pfs::string & localName) const;
-	attr        setAttributeNodeNS (const attr & newAttr);
-	nodelist    elementsByTagNameNS (const pfs::string & namespaceURI
-			    	, const pfs::string & localName) const
-					{ return getElementsByTagNameNS (namespaceURI, localName); }
-	nodelist    getElementsByTagNameNS (const pfs::string & namespaceURI
-			    	, const pfs::string & localName) const;
+	attr attribute_node_ns (const pfs::string & namespace_uri
+			, const pfs::string & localname) const
+	{
+		return get_attribute_node_ns(namespace_uri, localname);
+	}
 
-	bool        hasAttribute (const pfs::string & name) const;
-	bool        hasAttributeNS (const pfs::string & namespaceURI
-					, const pfs::string & localName) const;
+	attr get_attribute_node_ns (const pfs::string & namespace_uri
+			, const pfs::string & localname) const;
+
+	attr set_attribute_node_ns (const attr & newattr);
+
+	nodelist elements_by_tagname_ns (const pfs::string & namespace_uri
+			, const pfs::string & localname) const
+	{
+		return get_elements_by_tagname_ns (namespace_uri, localname);
+	}
+
+	nodelist get_elements_by_tagname_ns (const pfs::string & namespace_uri
+			, const pfs::string & localname) const;
+
+	bool has_attribute (const pfs::string & name) const;
+
+	bool has_attribute_ns (const pfs::string & namespace_uri
+			, const pfs::string & localname) const;
 };
 
 }} // pfs

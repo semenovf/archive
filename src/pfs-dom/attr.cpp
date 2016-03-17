@@ -28,7 +28,7 @@ attr_impl::attr_impl (document_impl * d, node_impl * p, const pfs::string & nsUR
     : node_impl(d, p)
 {
 	split_namespace(_prefix, _name, qName);
-    _namespaceURI = nsURI;
+    _namespace_uri = nsURI;
 //    _createdWithDom1Interface = false;
     _specified = false;
 }
@@ -44,18 +44,18 @@ bool attr_impl::specified() const
     return _specified;
 }
 
-void attr_impl::setNodeValue (const pfs::string & v)
+void attr_impl::set_node_value (const pfs::string & v)
 {
     _value = v;
     text_impl *t = new text_impl(0, this, v);
     t->ref.deref();
     if (_first) {
-        delete removeChild(_first);
+        delete remove_child(_first);
     }
-    appendChild(t);
+    append_child(t);
 }
 
-node_impl* attr_impl::cloneNode(bool deep)
+node_impl* attr_impl::clone_node(bool deep)
 {
     node_impl* p = new attr_impl(this, deep);
     p->ref.deref();
@@ -79,40 +79,40 @@ attr & attr::operator = (const attr & other)
 
 pfs::string attr::name () const
 {
-	return _pimpl
-			? _pimpl->nodeName()
+	return _d
+			? _d->node_name()
 			: pfs::string();
 }
 
 bool attr::specified () const
 {
-	return _pimpl
-			? dynamic_cast<attr_impl*>(_pimpl)->specified()
+	return _d
+			? dynamic_cast<attr_impl*>(_d)->specified()
 			: false;
 }
 
 pfs::string attr::value () const
 {
-	return _pimpl
-			? _pimpl->nodeValue()
+	return _d
+			? _d->node_value()
 			: pfs::string();
 }
 
-void attr::setValue (const pfs::string & v)
+void attr::set_value (const pfs::string & v)
 {
-    if (!_pimpl)
+    if (!_d)
         return;
-    _pimpl->setNodeValue(v);
-    dynamic_cast<attr_impl*>(_pimpl)->_specified = true;
+    _d->set_node_value(v);
+    dynamic_cast<attr_impl*>(_d)->_specified = true;
 }
 
-element attr::ownerElement() const
+element attr::owner_element() const
 {
-    PFS_ASSERT(_pimpl->parent());
+    PFS_ASSERT(_d->parent());
 
-    if (!_pimpl->parent()->isElement())
+    if (!_d->parent()->is_element())
     	return element();
-    return element(dynamic_cast<element_impl*>(_pimpl->parent()));
+    return element(dynamic_cast<element_impl*>(_d->parent()));
 }
 
 }} // pfs::dom

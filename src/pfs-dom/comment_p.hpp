@@ -21,8 +21,12 @@ public:
 	comment_impl (document_impl * d, node_impl * parent, const pfs::string & val);
 	comment_impl (comment_impl * n, bool deep);
 
-	virtual node_impl * cloneNode(bool deep = true);
-    virtual node::type nodeType() const { return node::CommentNode; }
+	virtual node_impl * clone_node(bool deep = true);
+
+    virtual node::type node_type() const
+    {
+    	return node::comment_node;
+    }
 };
 
 }} // pfs::dom

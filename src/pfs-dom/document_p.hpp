@@ -40,33 +40,45 @@ public:
     document_impl (document_impl * n, bool deep);
     ~document_impl ();
 
-    document createDocument () {
+    document create_document ()
+    {
     	document doc(this);
     	this->ref.deref();
     	return doc;
     }
 
-    doctype_impl *            doctype () { return _type.get(); }
-    const doctype_impl *      doctype () const { return _type.get(); }
-    dom_implementation_impl * implementation () { return _impl.get(); }
-    element_impl *            documentElement ();
+    doctype_impl * doctype ()
+    {
+    	return _type.get();
+    }
 
-    element_impl *           createElement (const pfs::string & tagName);
-    element_impl *           createElementNS (const pfs::string & nsURI, const pfs::string & qName);
-    document_fragment_impl * createDocumentFragment ();
-    text_impl *              createTextNode (const pfs::string & data);
-    comment_impl *           createComment (const pfs::string & data);
-    cdatasection_impl *      createCDATASection (const pfs::string & data);
-    pinstruction_impl *      createProcessingInstruction (const pfs::string & target, const pfs::string & data);
-    attr_impl *              createAttribute (const pfs::string & name);
-    attr_impl *              createAttributeNS (const pfs::string & nsURI, const pfs::string & qName);
-    entityref_impl *         createEntityReference (const pfs::string & name);
-    node_impl *              importNode (const node_impl * importedNode, bool deep);
+    const doctype_impl * doctype () const
+    {
+    	return _type.get();
+    }
+    dom_implementation_impl * implementation () { return _impl.get(); }
+    element_impl * document_element ();
+
+    element_impl * create_element (const pfs::string & tagname);
+    element_impl * create_element_ns (const pfs::string & ns_uri, const pfs::string & qname);
+    document_fragment_impl * create_document_fragment ();
+    text_impl * create_text_node (const pfs::string & data);
+    comment_impl *           create_comment (const pfs::string & data);
+    cdatasection_impl *      create_cdata_section (const pfs::string & data);
+    pinstruction_impl *      create_processing_instruction (const pfs::string & target, const pfs::string & data);
+    attr_impl *              create_attribute (const pfs::string & name);
+    attr_impl *              create_attribute_ns (const pfs::string & ns_uri, const pfs::string & qname);
+    entityref_impl *         create_entity_reference (const pfs::string & name);
+    node_impl *              import_node (const node_impl * importedNode, bool deep);
 //
 //    void clear();
 
-    virtual node_impl * cloneNode (bool deep = true);
-    virtual node::type nodeType () const { return node::DocumentNode; }
+    virtual node_impl * clone_node (bool deep = true);
+
+    virtual node::type node_type () const
+    {
+    	return node::document_node;
+    }
 };
 
 }} // pfs

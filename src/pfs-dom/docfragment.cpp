@@ -28,7 +28,7 @@ document_fragment_impl::document_fragment_impl (node_impl * n, bool deep)
 {
 }
 
-node_impl * document_fragment_impl::cloneNode (bool deep)
+node_impl * document_fragment_impl::clone_node (bool deep)
 {
     node_impl* p = new document_fragment_impl(this, deep);
     p->ref.deref();

@@ -20,8 +20,12 @@ public:
     pinstruction_impl (document_impl *, node_impl * parent, const pfs::string & target, const pfs::string & data);
     pinstruction_impl (pinstruction_impl * n, bool deep);
 
-    virtual node_impl * cloneNode (bool deep = true);
-    virtual node::type nodeType () const { return node::ProcessingInstructionNode; }
+    virtual node_impl * clone_node (bool deep = true);
+
+    virtual node::type node_type () const
+    {
+    	return node::processing_instruction_node;
+    }
 };
 
 }} // pfs::dom

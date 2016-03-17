@@ -22,28 +22,40 @@ class namednodemap
 	friend class doctype;
 
 private:
-	namednodemap_impl * _pimpl;
+	namednodemap_impl * _d;
 
 	namednodemap (namednodemap_impl *);
 
 public:
-	namednodemap () : _pimpl(0) {}
+	namednodemap ()
+		: _d(0)
+	{ }
+
 	namednodemap (const namednodemap & other);
-	namednodemap & operator = (const namednodemap & other);
+
 	~namednodemap ();
 
-	node namedItem (const pfs::string & name) const
-		{ return getNamedItem (name); }
-	node getNamedItem (const pfs::string & name) const;
-	node namedItemNS (const pfs::string & namespaceURI, const pfs::string & localName) const
-		{ return getNamedItemNS(namespaceURI, localName); }
-	node getNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName) const;
+	namednodemap & operator = (const namednodemap & other);
 
-	node setNamedItem (const node & arg);
-	node setNamedItemNS (const node & arg);
+	node named_item (const pfs::string & name) const
+	{
+		return get_named_item (name);
+	}
 
-	node removeNamedItem (const pfs::string & name);
-	node removeNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName);
+	node get_named_item (const pfs::string & name) const;
+
+	node named_item_ns (const pfs::string & namespace_uri, const pfs::string & localname) const
+	{
+		return get_named_item_ns(namespace_uri, localname);
+	}
+
+	node get_named_item_ns (const pfs::string & namespace_uri, const pfs::string & localname) const;
+
+	node set_named_item (const node & arg);
+	node set_named_item_ns (const node & arg);
+
+	node remove_named_item (const pfs::string & name);
+	node remove_named_item_ns (const pfs::string & namespace_uri, const pfs::string & localname);
 
 	node item (size_t index) const;
 	size_t length () const;

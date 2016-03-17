@@ -24,19 +24,29 @@ class DLL_API nodelist
 	friend class document;
 
 private:
-	nodelist_impl * _pimpl;
+	nodelist_impl * _d;
 
-	nodelist (nodelist_impl * p) : _pimpl(p) {}
+	nodelist (nodelist_impl * p)
+		: _d(p)
+	{}
 
 public:
-	nodelist () : _pimpl(0) {}
+	nodelist ()
+		: _d(0)
+	{ }
+
 	nodelist (const nodelist & other);
-	nodelist & operator = (const nodelist & other);
 	~nodelist ();
+
+	nodelist & operator = (const nodelist & other);
 
 	node item (size_t index) const;
 	size_t length () const;
-	size_t size () const { return length(); }
+
+	size_t size () const
+	{
+		return length();
+	}
 };
 
 }} // pfs::dom

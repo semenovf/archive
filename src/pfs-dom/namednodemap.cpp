@@ -9,11 +9,11 @@
 
 namespace pfs { namespace dom {
 
-void namednodemap_impl::clearMap()
+void namednodemap_impl::clear_map()
 {
     // Dereference all of our children if we took references
 	//
-    if (!_appendToParent) {
+    if (!_append_to_parent) {
         map_type::const_iterator it = _map.cbegin();
         map_type::const_iterator itEnd = _map.cend();
 
@@ -27,13 +27,13 @@ void namednodemap_impl::clearMap()
     _map.clear();
 }
 
-node_impl * namednodemap_impl::namedItem (const pfs::string & name) const
+node_impl * namednodemap_impl::named_item (const pfs::string & name) const
 {
 	node_impl * p = _map.valueAt(name, 0);
 	return p;
 }
 
-node_impl * namednodemap_impl::namedItemNS(const pfs::string & nsURI, const pfs::string & localName) const
+node_impl * namednodemap_impl::named_item_ns(const pfs::string & nsURI, const pfs::string & localName) const
 {
     map_type::const_iterator it = _map.cbegin();
     node_impl * n;
@@ -43,44 +43,44 @@ node_impl * namednodemap_impl::namedItemNS(const pfs::string & nsURI, const pfs:
 
         if (!n->_prefix.isNull()) {
             // node has a namespace
-            if (n->_namespaceURI == nsURI && n->_name == localName)
+            if (n->_namespace_uri == nsURI && n->_name == localName)
                 return n;
         }
     }
     return 0;
 }
 
-node_impl * namednodemap_impl::setNamedItem(node_impl * arg)
+node_impl * namednodemap_impl::set_named_item(node_impl * arg)
 {
     if (_readonly || !arg)
         return 0;
 
-    if (_appendToParent)
-        return _parent->appendChild(arg);
+    if (_append_to_parent)
+        return _parent->append_child(arg);
 
-    node_impl * n = _map.valueAt(arg->nodeName());
+    node_impl * n = _map.valueAt(arg->node_name());
     arg->ref.ref();
-    _map.insert(arg->nodeName(), arg);
+    _map.insert(arg->node_name(), arg);
     return n;
 }
 
-node_impl * namednodemap_impl::setNamedItemNS (node_impl * arg)
+node_impl * namednodemap_impl::set_named_item_ns (node_impl * arg)
 {
     if (_readonly || !arg)
         return 0;
 
-    if (_appendToParent)
-        return _parent->appendChild(arg);
+    if (_append_to_parent)
+        return _parent->append_child(arg);
 
     if (!arg->_prefix.isNull()) {
         // node has a namespace
-        node_impl * n = namedItemNS(arg->_namespaceURI, arg->_name);
+        node_impl * n = named_item_ns(arg->_namespace_uri, arg->_name);
         // We take a reference
         arg->ref.ref();
-        _map.insert(arg->nodeName(), arg);
+        _map.insert(arg->node_name(), arg);
         return n;
     } else {
-        return setNamedItem(arg);
+        return set_named_item(arg);
     }
 }
 
@@ -97,20 +97,20 @@ node_impl * namednodemap_impl::item (size_t index) const
 	return it.value();
 }
 
-node_impl * namednodemap_impl::removeNamedItem (const pfs::string & name)
+node_impl * namednodemap_impl::remove_named_item (const pfs::string & name)
 {
     if (_readonly)
         return 0;
 
-    node_impl * p = namedItem(name);
+    node_impl * p = named_item(name);
 
     if (p == 0)
         return 0;
 
-    if (_appendToParent)
-        return _parent->removeChild(p);
+    if (_append_to_parent)
+        return _parent->remove_child(p);
 
-    _map.remove(p->nodeName());
+    _map.remove(p->node_name());
 
     p->ref.deref();
     return p;
@@ -120,14 +120,14 @@ namednodemap_impl * namednodemap_impl::clone (node_impl * p)
 {
     namednodemap_impl * m = new namednodemap_impl(p);
     m->_readonly = _readonly;
-    m->_appendToParent = _appendToParent;
+    m->_append_to_parent = _append_to_parent;
 
     pfs::map<pfs::string, node_impl*>::const_iterator it = _map.cbegin();
 
     for (; it != _map.cend(); ++it) {
         node_impl * new_node = it.value()->cloneNode();
         new_node->setParent(p);
-        m->setNamedItem(new_node);
+        m->set_named_item(new_node);
     }
 
     m->_ref.deref();
@@ -136,27 +136,27 @@ namednodemap_impl * namednodemap_impl::clone (node_impl * p)
 
 namednodemap::namednodemap(namednodemap_impl * impl)
 {
-    _pimpl = impl;
-    if (_pimpl)
-        _pimpl->_ref.ref();
+    _d = impl;
+    if (_d)
+        _d->_ref.ref();
 }
 
 namednodemap::namednodemap (const namednodemap & other)
 {
-    _pimpl = other._pimpl;
-    if (_pimpl)
-        _pimpl->_ref.ref();
+    _d = other._d;
+    if (_d)
+        _d->_ref.ref();
 }
 
 namednodemap & namednodemap::operator = (const namednodemap & other)
 {
-    if (other._pimpl)
-        other._pimpl->_ref.ref();
+    if (other._d)
+        other._d->_ref.ref();
 
-    if (_pimpl && !_pimpl->_ref.deref())
-        delete _pimpl;
+    if (_d && !_d->_ref.deref())
+        delete _d;
 
-    _pimpl = other._pimpl;
+    _d = other._d;
     return *this;
 }
 
@@ -165,21 +165,21 @@ namednodemap & namednodemap::operator = (const namednodemap & other)
 */
 namednodemap::~namednodemap()
 {
-    if (_pimpl && !_pimpl->_ref.deref())
-        delete _pimpl;
+    if (_d && !_d->_ref.deref())
+        delete _d;
 }
 
-node namednodemap::getNamedItem (const pfs::string & name) const
+node namednodemap::get_namedItem (const pfs::string & name) const
 {
-	return _pimpl
-			? node(_pimpl->namedItem(name))
+	return _d
+			? node(_d->named_item(name))
 	        : node();
 }
 
-node namednodemap::getNamedItemNS (const pfs::string & namespaceURI, const pfs::string & localName) const
+node namednodemap::get_named_item_ns (const pfs::string & namespaceURI, const pfs::string & localName) const
 {
-	return _pimpl
-			? node(_pimpl->namedItemNS(namespaceURI, localName))
+	return _d
+			? node(_d->named_item_ns(namespaceURI, localName))
 			: node();
 }
 
@@ -194,38 +194,38 @@ node namednodemap::getNamedItemNS (const pfs::string & namespaceURI, const pfs::
  * @param name The node name of the node to remove.
  * @return The node removed from this map if a node with such a name exists.
  */
-node namednodemap::removeNamedItem (const pfs::string & name)
+node namednodemap::remove_named_item (const pfs::string & name)
 {
-	return _pimpl
-			? node(_pimpl->removeNamedItem(name))
+	return _d
+			? node(_d->remove_named_item(name))
 			: node();
 }
 
-node namednodemap::removeNamedItemNS (const pfs::string& nsURI, const pfs::string& localName)
+node namednodemap::remove_named_item_ns (const pfs::string& nsURI, const pfs::string& localName)
 {
-    if (!_pimpl)
+    if (!_d)
         return node();
 
-    node_impl *n = _pimpl->namedItemNS(nsURI, localName);
+    node_impl *n = _d->named_item_ns(nsURI, localName);
 
     if (!n)
         return node();
-    return node(_pimpl->removeNamedItem(n->_name));
+    return node(_d->remove_named_item(n->_name));
 }
 
 
 node namednodemap::item (size_t index) const
 {
-	return _pimpl
-			? node(_pimpl->item(index))
+	return _d
+			? node(_d->item(index))
 	        : node();
 }
 
 
 size_t namednodemap::length () const
 {
-	return _pimpl
-			? _pimpl->length()
+	return _d
+			? _d->length()
 			: 0;
 }
 
@@ -243,17 +243,17 @@ size_t namednodemap::length () const
  * @return If the new Node replaces an existing node the replaced Node is returned,
  * 		otherwise null is returned.
  */
-node namednodemap::setNamedItem (const node & newNode)
+node namednodemap::set_named_item (const node & newNode)
 {
-	return _pimpl
-			? node(_pimpl->setNamedItem(newNode._pimpl))
+	return _d
+			? node(_d->set_named_item(newNode._d))
 			: node();
 }
 
-node namednodemap::setNamedItemNS (const node & newNode)
+node namednodemap::set_named_item_ns (const node & newNode)
 {
-	return _pimpl
-			? node(_pimpl->setNamedItemNS(newNode._pimpl))
+	return _d
+			? node(_d->set_named_item_ns(newNode._d))
 			: node();
 }
 

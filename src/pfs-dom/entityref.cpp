@@ -25,7 +25,7 @@ entityref_impl::entityref_impl (node_impl * n, bool deep)
 {
 }
 
-node_impl * entityref_impl::cloneNode (bool deep)
+node_impl * entityref_impl::clone_node (bool deep)
 {
     node_impl * p = new entityref_impl(this, deep);
     p->ref.deref();

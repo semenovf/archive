@@ -27,79 +27,95 @@ class DLL_API node
 
 public:
 	enum type {
-		  NullNode                   = 0
-		, InvalidNode                = NullNode
-		, ElementNode                = 1
-		, AttributeNode              = 2
-		, TextNode                   = 3
-		, CDATASectionNode           = 4
-		, EntityReferenceNode        = 5
-		, EntityNode                 = 6
-		, ProcessingInstructionNode  = 7
-		, CommentNode                = 8
-		, DocumentNode               = 9
-		, DocumentTypeNode           = 10
-		, DocumentFragmentNode       = 11
-		, NotationNode               = 12
+		  null_node                    = 0
+		, invalid_node                 = null_node
+		, element_node                 = 1
+		, attribute_node               = 2
+		, text_node                    = 3
+		, cdata_section_node           = 4
+		, entity_reference_node        = 5
+		, entity_node                  = 6
+		, processing_instruction_node  = 7
+		, comment_node                 = 8
+		, document_node                = 9
+		, document_type_node           = 10
+		, document_fragment_node       = 11
+		, notation_node                = 12
 	};
 
 protected:
-	node_impl * _pimpl;
+	node_impl * _d;
 
 	node (node_impl *);
 
 public:
-	node_impl * pimpl () { return _pimpl; } // internal
-	const node_impl * pimpl () const { return _pimpl; } // internal
+	node_impl * impl ()
+	{
+		return _d;
+	}
+
+	const node_impl * impl () const
+	{
+		return _d;
+	}
 
 public:
-	node () : _pimpl(0) {}
+	node () : _d(0) {}
+
 	node (const node & other);
-	node & operator = (const node & other);
+
 	~node ();
 
-	pfs::string  nodeName ()        const;
-	pfs::string  nodeValue ()       const;
-	node::type   nodeType ()        const;
-	node         parentNode ()      const;
-	node         firstChild ()      const;
-	node         lastChild ()       const;
-	node         previousSibling () const;
-	node         nextSibling ()     const;
-	nodelist     childNodes ()      const;
-	namednodemap attributes ()      const;
-	pfs::string  namespaceURI ()    const;
-	pfs::string  prefix ()          const;
-	pfs::string  localName ()       const;
-	document     ownerDocument ()   const;
+	node & operator = (const node & other);
 
-	bool isSupported (const pfs::string & feature, const pfs::string & version) const;
+	pfs::string  node_name () const;
+	pfs::string  node_value () const;
+	node::type   node_type () const;
+	node parent_node () const;
+	node first_child () const;
+	node last_child () const;
+	node previous_sibling () const;
+	node next_sibling () const;
+	nodelist child_nodes () const;
+	namednodemap attributes () const;
+	pfs::string namespace_uri () const;
+	pfs::string prefix () const;
+	pfs::string localname () const;
+	document owner_document () const;
 
-	bool hasChildNodes () const;
-	bool hasAttributes () const;
+	bool is_supported (const pfs::string & feature, const pfs::string & version) const;
+
+	bool has_child_nodes () const;
+	bool has_attributes () const;
 
 	void normalize ();
 
-	void setNodeValue (const pfs::string & value);
-	void setPrefix    (const pfs::string & p);
+	void set_node_value (const pfs::string & value);
+	void set_prefix (const pfs::string & p);
 
-	node insertAfter  (const node & newChild, const node & refChild);
-	node insertBefore (const node & newChild, const node & refChild);
-	node replaceChild (const node & newChild, const node & oldChild);
-	node removeChild  (const node & oldChild);
-	node appendChild  (const node & newChild);
+	node insert_after (const node & newchild, const node & refchild);
+	node insert_before (const node & newchild, const node & refchild);
+	node replace_child (const node & newchild, const node & oldchild);
+	node remove_child  (const node & oldchild);
+	node append_child  (const node & newchild);
 
-	node cloneNode (bool deep = true) const;
+	node clone_node (bool deep = true) const;
 
-	bool isNull () const { return _pimpl == 0; }
+	bool is_null () const
+	{
+		return _d == 0;
+	}
 
 
 	// Non-standard
-	attr toAttr () const;
-	element toElement () const;
-	void traverse (void (* onStart) (const pfs::dom::node & n, void * d)
-				, void (* onEnd) (const pfs::dom::node & n, void * d)
-				, void * userData) const;
+	//
+
+	attr to_attr () const;
+	element to_element () const;
+
+	void traverse (void (* on_start) (const pfs::dom::node & n, void * d)
+			, void (* on_end) (const pfs::dom::node & n, void * d)
+			, void * userdata) const;
 };
 
 }} // pfs::dom

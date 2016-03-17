@@ -36,9 +36,9 @@ public:
 	pfs::string name () const;
 	namednodemap entities () const;
 	namednodemap notations () const;
-	pfs::string publicId () const;
-	pfs::string systemId () const;
-	pfs::string internalSubset () const;
+	pfs::string public_id () const;
+	pfs::string system_id () const;
+	pfs::string internal_subset () const;
 };
 
 }} // pfs::dom

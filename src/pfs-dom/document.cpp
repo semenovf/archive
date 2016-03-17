@@ -64,17 +64,17 @@ document_impl::document_impl (doctype_impl * dt)
 document_impl::document_impl (document_impl * n, bool deep)
     : node_impl(n, deep)
 	, _impl(n->_impl->clone())
-	, _type(static_cast<doctype_impl*>(n->_type->cloneNode()))
+	, _type(static_cast<doctype_impl*>(n->_type->clone_node()))
 	, _nodeListTime(1)
 {
     _type->setParent(this);
 }
 
-element_impl* document_impl::documentElement()
+element_impl* document_impl::document_element()
 {
     node_impl * p = _first;
 
-    while (p && !p->isElement())
+    while (p && !p->is_element())
         p = p->_next;
 
     return static_cast<element_impl *>(p);
@@ -86,14 +86,14 @@ document_impl::~document_impl ()
 //	_type.reset(0);
 }
 
-node_impl * document_impl::cloneNode (bool deep)
+node_impl * document_impl::clone_node (bool deep)
 {
     node_impl *p = new document_impl(this, deep);
     p->ref.deref();
     return p;
 }
 
-element_impl * document_impl::createElement (const pfs::string & tagName)
+element_impl * document_impl::create_element (const pfs::string & tagName)
 {
 /*
     bool ok;
@@ -109,7 +109,7 @@ element_impl * document_impl::createElement (const pfs::string & tagName)
 
 
 
-element_impl * document_impl::createElementNS (const pfs::string & nsURI, const pfs::string & qName)
+element_impl * document_impl::create_element_ns (const pfs::string & nsURI, const pfs::string & qName)
 {
 /*
     bool ok;
@@ -122,14 +122,14 @@ element_impl * document_impl::createElementNS (const pfs::string & nsURI, const 
     return e;
 }
 
-document_fragment_impl * document_impl::createDocumentFragment ()
+document_fragment_impl * document_impl::create_document_fragment ()
 {
     document_fragment_impl * f = new document_fragment_impl(this, 0);
     f->ref.deref();
     return f;
 }
 
-text_impl * document_impl::createTextNode (const pfs::string & data)
+text_impl * document_impl::create_text_node (const pfs::string & data)
 {
 /*
     bool ok;
@@ -143,7 +143,7 @@ text_impl * document_impl::createTextNode (const pfs::string & data)
 }
 
 
-comment_impl * document_impl::createComment (const pfs::string & data)
+comment_impl * document_impl::create_comment (const pfs::string & data)
 {
 /*
     bool ok;
@@ -156,7 +156,7 @@ comment_impl * document_impl::createComment (const pfs::string & data)
     return c;
 }
 
-cdatasection_impl * document_impl::createCDATASection (const pfs::string & data)
+cdatasection_impl * document_impl::create_cdata_section (const pfs::string & data)
 {
 /*
     bool ok;
@@ -169,7 +169,7 @@ cdatasection_impl * document_impl::createCDATASection (const pfs::string & data)
     return c;
 }
 
-pinstruction_impl * document_impl::createProcessingInstruction (const pfs::string & target, const pfs::string & data)
+pinstruction_impl * document_impl::create_processing_instruction (const pfs::string & target, const pfs::string & data)
 {
 /*
     bool ok;
@@ -188,7 +188,7 @@ pinstruction_impl * document_impl::createProcessingInstruction (const pfs::strin
 }
 
 
-attr_impl * document_impl::createAttribute(const pfs::string & name)
+attr_impl * document_impl::create_attribute(const pfs::string & name)
 {
 /*
     bool ok;
@@ -201,7 +201,7 @@ attr_impl * document_impl::createAttribute(const pfs::string & name)
     return a;
 }
 
-attr_impl * document_impl::createAttributeNS (const pfs::string & nsURI, const pfs::string & qName)
+attr_impl * document_impl::create_attribute_ns (const pfs::string & nsURI, const pfs::string & qName)
 {
 /*
     bool ok;
@@ -214,7 +214,7 @@ attr_impl * document_impl::createAttributeNS (const pfs::string & nsURI, const p
     return a;
 }
 
-entityref_impl * document_impl::createEntityReference (const pfs::string & name)
+entityref_impl * document_impl::create_entity_reference (const pfs::string & name)
 {
 /*
     bool ok;
@@ -227,46 +227,46 @@ entityref_impl * document_impl::createEntityReference (const pfs::string & name)
     return e;
 }
 
-node_impl * document_impl::importNode (const node_impl * importedNode, bool deep)
+node_impl * document_impl::import_node (const node_impl * importedNode, bool deep)
 {
     node_impl * node = 0;
 
-    switch (importedNode->nodeType()) {
-        case node::AttributeNode:
+    switch (importedNode->node_type()) {
+        case node::attribute_node:
             node = new attr_impl((attr_impl *)importedNode, true);
             break;
-        case node::DocumentFragmentNode:
+        case node::document_fragment_node:
             node = new document_fragment_impl((document_fragment_impl *)importedNode, deep);
             break;
-        case node::ElementNode:
+        case node::element_node:
             node = new element_impl((element_impl *)importedNode, deep);
             break;
-        case node::EntityNode:
+        case node::entity_node:
             node = new entity_impl((entity_impl *)importedNode, deep);
             break;
-        case node::EntityReferenceNode:
+        case node::entity_reference_node:
             node = new entityref_impl((entityref_impl *)importedNode, false);
             break;
-        case node::NotationNode:
+        case node::notation_node:
             node = new notation_impl((notation_impl *)importedNode, deep);
             break;
-        case node::ProcessingInstructionNode:
+        case node::processing_instruction_node:
             node = new pinstruction_impl((pinstruction_impl *)importedNode, deep);
             break;
-        case node::TextNode:
+        case node::text_node:
             node = new text_impl((text_impl *)importedNode, deep);
             break;
-        case node::CDATASectionNode:
+        case node::cdata_section_node:
             node = new cdatasection_impl((cdatasection_impl *)importedNode, deep);
             break;
-        case node::CommentNode:
+        case node::comment_node:
             node = new comment_impl((comment_impl *)importedNode, deep);
             break;
         default:
             break;
     }
     if (node) {
-        node->setOwnerDocument(this);
+        node->set_owner_document(this);
         node->ref.deref();
     }
     return node;
@@ -276,7 +276,7 @@ document::document (const pfs::string & name) : node(new document_impl(name))
 {}
 
 document::document (const pfs::dom::doctype & dt)
-	: node(new document_impl((doctype_impl*)(dt._pimpl)))
+	: node(new document_impl((doctype_impl*)(dt._d)))
 {}
 
 document::document (const document & other) : node(other)
@@ -292,126 +292,126 @@ document & document::operator = (const document & other)
 
 pfs::dom::doctype document::doctype () const
 {
-	return _pimpl
-			? pfs::dom::doctype(dynamic_cast<document_impl *>(_pimpl)->doctype())
+	return _d
+			? pfs::dom::doctype(dynamic_cast<document_impl *>(_d)->doctype())
 			: pfs::dom::doctype();
 }
 
 dom_implementation document::implementation () const
 {
-	return _pimpl
-			? dom_implementation(dynamic_cast<document_impl *>(_pimpl)->implementation())
+	return _d
+			? dom_implementation(dynamic_cast<document_impl *>(_d)->implementation())
 			: dom_implementation();
 }
 
-element document::documentElement () const
+element document::document_element () const
 {
-	return _pimpl
-			? element(dynamic_cast<document_impl *>(_pimpl)->documentElement())
+	return _d
+			? element(dynamic_cast<document_impl *>(_d)->document_element())
 			: element();
 }//    QDomAttr createAttributeNS(const QString& nsURI, const QString& qName);
 
-element document::createElement (const pfs::string & tagName)
+element document::create_element (const pfs::string & tagName)
 {
-	if (!_pimpl)
-        _pimpl = new document_impl();
+	if (!_d)
+        _d = new document_impl();
 
-    return element(dynamic_cast<document_impl *>(_pimpl)->createElement(tagName));
+    return element(dynamic_cast<document_impl *>(_d)->create_element(tagName));
 }
 
 
-element document::createElementNS (const pfs::string & nsURI, const pfs::string & qName)
+element document::create_element_ns (const pfs::string & nsURI, const pfs::string & qName)
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return element(dynamic_cast<document_impl *>(_pimpl)->createElementNS(nsURI, qName));
+    if (!_d)
+        _d = new document_impl();
+    return element(dynamic_cast<document_impl *>(_d)->create_element_ns(nsURI, qName));
 }
 
 
-document_fragment document::createDocumentFragment()
+document_fragment document::create_document_fragment()
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return document_fragment(dynamic_cast<document_impl *>(_pimpl)->createDocumentFragment());
+    if (!_d)
+        _d = new document_impl();
+    return document_fragment(dynamic_cast<document_impl *>(_d)->create_document_fragment());
 }
 
-text document::createTextNode (const pfs::string & value)
+text document::create_text_node (const pfs::string & value)
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return text(dynamic_cast<document_impl *>(_pimpl)->createTextNode(value));
+    if (!_d)
+        _d = new document_impl();
+    return text(dynamic_cast<document_impl *>(_d)->create_text_node(value));
 }
 
-comment document::createComment (const pfs::string & value)
+comment document::create_comment (const pfs::string & value)
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return comment(dynamic_cast<document_impl *>(_pimpl)->createComment(value));
+    if (!_d)
+        _d = new document_impl();
+    return comment(dynamic_cast<document_impl *>(_d)->create_comment(value));
 }
 
-cdatasection document::createCDATASection(const pfs::string& value)
+cdatasection document::create_cdata_section(const pfs::string& value)
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return cdatasection(dynamic_cast<document_impl *>(_pimpl)->createCDATASection(value));
+    if (!_d)
+        _d = new document_impl();
+    return cdatasection(dynamic_cast<document_impl *>(_d)->create_cdata_section(value));
 }
 
-pinstruction document::createProcessingInstruction (const pfs::string & target, const pfs::string & data)
+pinstruction document::create_processing_instruction (const pfs::string & target, const pfs::string & data)
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return pinstruction(dynamic_cast<document_impl *>(_pimpl)->createProcessingInstruction(target, data));
+    if (!_d)
+        _d = new document_impl();
+    return pinstruction(dynamic_cast<document_impl *>(_d)->create_processing_instruction(target, data));
 }
 
-attr document::createAttribute (const pfs::string & name)
+attr document::create_attribute (const pfs::string & name)
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return attr(dynamic_cast<document_impl *>(_pimpl)->createAttribute(name));
+    if (!_d)
+        _d = new document_impl();
+    return attr(dynamic_cast<document_impl *>(_d)->create_attribute(name));
 }
 
-attr document::createAttributeNS (const pfs::string & nsURI, const pfs::string & qName)
+attr document::create_attribute_ns (const pfs::string & nsURI, const pfs::string & qName)
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return attr(dynamic_cast<document_impl *>(_pimpl)->createAttributeNS(nsURI, qName));
+    if (!_d)
+        _d = new document_impl();
+    return attr(dynamic_cast<document_impl *>(_d)->create_attribute_ns(nsURI, qName));
 }
 
-entityref document::createEntityReference (const pfs::string & name)
+entityref document::create_entity_reference (const pfs::string & name)
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return entityref(dynamic_cast<document_impl *>(_pimpl)->createEntityReference(name));
+    if (!_d)
+        _d = new document_impl();
+    return entityref(dynamic_cast<document_impl *>(_d)->create_entity_reference(name));
 }
 
-node document::importNode (const node & importedNode, bool deep)
+node document::import_node (const node & importedNode, bool deep)
 {
-    if (!_pimpl)
-        _pimpl = new document_impl();
-    return node(dynamic_cast<document_impl *>(_pimpl)->importNode(importedNode._pimpl, deep));
+    if (!_d)
+        _d = new document_impl();
+    return node(dynamic_cast<document_impl *>(_d)->import_node(importedNode._d, deep));
 }
 
-nodelist document::getElementsByTagName (const pfs::string & tagname) const
+nodelist document::get_elements_by_tagname (const pfs::string & tagname) const
 {
-    return nodelist(new nodelist_impl(_pimpl, tagname));
+    return nodelist(new nodelist_impl(_d, tagname));
 }
 
-nodelist document::getElementsByTagNameNS (const pfs::string & nsURI, const pfs::string & localName) const
+nodelist document::get_elements_by_tagname_ns (const pfs::string & nsURI, const pfs::string & localName) const
 {
-    return nodelist(new nodelist_impl(_pimpl, nsURI, localName));
+    return nodelist(new nodelist_impl(_d, nsURI, localName));
 }
 
 // The DOM implementation must have information that says which attributes are of type ID.
 // Attributes with the name "ID" are not of type ID unless so defined.
 // Implementations that do not know whether attributes are of type ID or not are expected to return null.
-element document::getElementById (const pfs::string & elementId) const
+element document::get_element_by_id (const pfs::string & elementId) const
 {
-	pfs::string idName = dynamic_cast<document_impl *>(_pimpl)->implementation()->idName();
+	pfs::string idName = dynamic_cast<document_impl *>(_d)->implementation()->idname();
 
 	if (idName.isEmpty())
 		return element();
 
-	pfs::dom::nodelist children = childNodes();
+	pfs::dom::nodelist children = child_nodes();
 
 	// No children
 	if (!children.size())
@@ -427,15 +427,15 @@ element document::getElementById (const pfs::string & elementId) const
 		for (size_t i = 0; i < children.size(); ++i) {
 			node n(children.item(i));
 
-			if (n.nodeType() == node::ElementNode) {
-				element e(n.toElement());
+			if (n.node_type() == node::element_node) {
+				element e(n.to_element());
 
 				if (e.attribute(idName) == elementId)
 					return e;
 			}
 
-			if (n.hasChildNodes()) {
-				stack.push(n.childNodes());
+			if (n.has_child_nodes()) {
+				stack.push(n.child_nodes());
 			}
 		}
 	}

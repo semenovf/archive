@@ -22,8 +22,12 @@ public:
 	virtual ~ dom_implementation_impl () {}
 	virtual dom_implementation_impl * clone ();
 
-	bool hasFeature (const pfs::string & feature, const pfs::string & version = pfs::string()) const;
-	virtual pfs::string idName () const { return _l1("id"); }
+	bool has_feature (const pfs::string & feature, const pfs::string & version = pfs::string()) const;
+
+	virtual pfs::string idname () const
+	{
+		return _u8("id");
+	}
 };
 
 }} // pfs::dom

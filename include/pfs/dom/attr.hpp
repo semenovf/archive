@@ -34,8 +34,8 @@ public:
 	pfs::string name () const;
 	bool specified () const;
 	pfs::string value () const;
-	void setValue (const pfs::string & v);
-	element ownerElement () const;
+	void set_value (const pfs::string & v);
+	element owner_element () const;
 };
 
 }} // pfs::dom

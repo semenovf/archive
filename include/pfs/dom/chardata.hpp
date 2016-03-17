@@ -25,17 +25,17 @@ public:
 	chardata & operator = (const chardata & other);
 
 	pfs::string data () const;
-	void setData (const pfs::string & data);
+	void set_data (const pfs::string & data);
 	size_t length () const;
 
-	pfs::string  substringData (size_t offset, size_t count) const;
-	void appendData (const pfs::string & arg);
-	void insertData (size_t offset, const pfs::string & arg);
-	void deleteData (size_t offset, size_t count);
-	void replaceData (size_t offset, size_t count, const pfs::string & arg);
+	pfs::string  substring_data (size_t offset, size_t count) const;
+	void append_data (const pfs::string & arg);
+	void insert_data (size_t offset, const pfs::string & arg);
+	void delete_data (size_t offset, size_t count);
+	void replace_data (size_t offset, size_t count, const pfs::string & arg);
 
 	// overridden
-	node::type nodeType () const;
+	node::type node_type () const;
 };
 
 }} // pfs::dom

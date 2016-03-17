@@ -11,7 +11,7 @@
 
 namespace pfs { namespace dom {
 
-void split_namespace (pfs::string & prefix, pfs::string & name, const pfs::string & qName);
+void split_namespace (pfs::string & prefix, pfs::string & name, const pfs::string & qname);
 
 }} // pfs::dom
 

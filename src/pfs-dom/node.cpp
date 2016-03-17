@@ -10,10 +10,10 @@
 
 namespace pfs { namespace dom {
 
-inline void node_impl::setOwnerDocument (document_impl * doc)
+inline void node_impl::set_owner_document (document_impl * doc)
 {
     _ownerNode = doc;
-    _hasParent = false;
+    _has_parent = false;
 }
 
 node_impl::node_impl(document_impl * d, node_impl * parent) : ref(1)
@@ -21,7 +21,7 @@ node_impl::node_impl(document_impl * d, node_impl * parent) : ref(1)
     if (parent)
         setParent (parent);
     else
-        setOwnerDocument (d);
+        set_owner_document (d);
 
     _prev  = 0;
     _next  = 0;
@@ -33,7 +33,7 @@ node_impl::node_impl(document_impl * d, node_impl * parent) : ref(1)
 node_impl::node_impl (node_impl * n, bool deep)
 	: ref(1)
 {
-    setOwnerDocument(n->ownerDocument());
+    set_owner_document(n->owner_document());
     _prev  = 0;
     _next  = 0;
     _first = 0;
@@ -42,14 +42,14 @@ node_impl::node_impl (node_impl * n, bool deep)
     _name = n->_name;
     _value = n->_value;
     _prefix = n->_prefix;
-    _namespaceURI = n->_namespaceURI;
+    _namespace_uri = n->_namespace_uri;
 //    _createdWithDom1Interface = n->_createdWithDom1Interface;
 
     if (!deep)
         return;
 
     for (node_impl * x = n->_first; x; x = x->_next)
-        appendChild(x->cloneNode(true));
+        append_child(x->clone_node(true));
 }
 
 node_impl::~node_impl ()
@@ -62,18 +62,18 @@ node_impl::~node_impl ()
         if (!p->ref.deref())
             delete p;
         else
-            p->setNoParent();
+            p->set_noparent();
         p = n;
     }
     _first = 0;
     _last = 0;
 }
 
-document_impl * node_impl::ownerDocument ()
+document_impl * node_impl::owner_document ()
 {
     node_impl * p = this;
-    while (p && !p->isDocument()) {
-        if (!p->_hasParent)
+    while (p && !p->is_document()) {
+        if (!p->_has_parent)
             return (document_impl *)p->_ownerNode;
         p = p->parent();
     }
@@ -81,14 +81,14 @@ document_impl * node_impl::ownerDocument ()
     return static_cast<document_impl *>(p);
 }
 
-node_impl * node_impl::cloneNode (bool deep)
+node_impl * node_impl::clone_node (bool deep)
 {
     node_impl * p = new node_impl(this, deep);
     p->ref.deref();
     return p;
 }
 
-node_impl * node_impl::insertAfter (node_impl * newChild, node_impl * refChild)
+node_impl * node_impl::insert_after (node_impl * newChild, node_impl * refChild)
 {
     // Error check
     if (!newChild)
@@ -103,13 +103,13 @@ node_impl * node_impl::insertAfter (node_impl * newChild, node_impl * refChild)
         return 0;
 
     // "mark lists as dirty"
-    document_impl * const doc = ownerDocument();
+    document_impl * const doc = owner_document();
     if(doc)
         ++doc->_nodeListTime;
 
     // Special handling for inserting a fragment. We just insert
     // all elements of the fragment instead of the fragment itself.
-    if (newChild->isDocumentFragment()) {
+    if (newChild->is_document_fragment()) {
         // Fragment is empty ?
         if (newChild->_first == 0)
             return newChild;
@@ -147,7 +147,7 @@ node_impl * node_impl::insertAfter (node_impl * newChild, node_impl * refChild)
 
     // Release new node from its current parent
     if (newChild->parent())
-        newChild->parent()->removeChild(newChild);
+        newChild->parent()->remove_child(newChild);
 
     // No more errors can occur now, so we take
     // ownership of the node
@@ -184,7 +184,7 @@ node_impl * node_impl::insertAfter (node_impl * newChild, node_impl * refChild)
     return newChild;
 }
 
-node_impl * node_impl::insertBefore (node_impl * newChild, node_impl * refChild)
+node_impl * node_impl::insert_before (node_impl * newChild, node_impl * refChild)
 {
     // Error check
     if (!newChild)
@@ -199,13 +199,13 @@ node_impl * node_impl::insertBefore (node_impl * newChild, node_impl * refChild)
         return 0;
 
     // "mark lists as dirty"
-    document_impl * const doc = ownerDocument();
+    document_impl * const doc = owner_document();
     if (doc)
         ++doc->_nodeListTime;
 
     // Special handling for inserting a fragment. We just insert
     // all elements of the fragment instead of the fragment itself.
-    if (newChild->isDocumentFragment()) {
+    if (newChild->is_document_fragment()) {
         // Fragment is empty ?
         if (newChild->_first == 0)
             return newChild;
@@ -247,7 +247,7 @@ node_impl * node_impl::insertBefore (node_impl * newChild, node_impl * refChild)
     newChild->ref.ref();
 
     if (newChild->parent())
-        newChild->parent()->removeChild(newChild);
+        newChild->parent()->remove_child(newChild);
 
     newChild->setParent(this);
 
@@ -285,19 +285,19 @@ node_impl * node_impl::insertBefore (node_impl * newChild, node_impl * refChild)
     return newChild;
 }
 
-node_impl * node_impl::appendChild (node_impl * newChild)
+node_impl * node_impl::append_child (node_impl * newChild)
 {
-    return insertAfter(newChild, 0);
+    return insert_after(newChild, 0);
 }
 
-node_impl * node_impl::removeChild (node_impl * oldChild)
+node_impl * node_impl::remove_child (node_impl * oldChild)
 {
     // Error check
     if (oldChild->parent() != this)
         return 0;
 
     // "mark lists as dirty"
-    document_impl * const doc = ownerDocument();
+    document_impl * const doc = owner_document();
 
     if(doc)
         ++doc->_nodeListTime;
@@ -319,7 +319,7 @@ node_impl * node_impl::removeChild (node_impl * oldChild)
     if (_first == oldChild)
         _first = oldChild->_next;
 
-    oldChild->setNoParent();
+    oldChild->set_noparent();
     oldChild->_next = 0;
     oldChild->_prev = 0;
 
@@ -329,7 +329,7 @@ node_impl * node_impl::removeChild (node_impl * oldChild)
     return oldChild;
 }
 
-node_impl * node_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
+node_impl * node_impl::replace_child (node_impl * newChild, node_impl * oldChild)
 {
     if (!newChild || !oldChild)
         return 0;
@@ -341,13 +341,13 @@ node_impl * node_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
         return 0;
 
     // mark lists as dirty
-    document_impl * const doc = ownerDocument();
+    document_impl * const doc = owner_document();
     if(doc)
         ++doc->_nodeListTime;
 
     // Special handling for inserting a fragment. We just insert
     // all elements of the fragment instead of the fragment itself.
-    if (newChild->isDocumentFragment()) {
+    if (newChild->is_document_fragment()) {
         // Fragment is empty ?
         if (newChild->_first == 0)
             return newChild;
@@ -375,7 +375,7 @@ node_impl * node_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
         if (_last == oldChild)
             _last = newChild->_last;
 
-        oldChild->setNoParent();
+        oldChild->set_noparent();
         oldChild->_next = 0;
         oldChild->_prev = 0;
 
@@ -399,7 +399,7 @@ node_impl * node_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
 
     // Release new node from its current parent
     if (newChild->parent())
-        newChild->parent()->removeChild(newChild);
+        newChild->parent()->remove_child(newChild);
 
     newChild->setParent(this);
 
@@ -416,7 +416,7 @@ node_impl * node_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
     if (_last == oldChild)
         _last = newChild;
 
-    oldChild->setNoParent();
+    oldChild->set_noparent();
     oldChild->_next = 0;
     oldChild->_prev = 0;
 
@@ -434,11 +434,11 @@ void node_impl::normalize()
     text_impl * t = 0;
 
     while (p) {
-        if (p->isText()) {
+        if (p->is_text()) {
             if (t) {
                 node_impl * tmp = p->_next;
-                t->appendData(p->nodeValue());
-                this->removeChild(p);
+                t->append_data(p->node_value());
+                this->remove_child(p);
                 p = tmp;
             } else {
                 t = (text_impl*)p;
@@ -454,44 +454,44 @@ void node_impl::normalize()
 
 node::node (const node & n)
 {
-    _pimpl = n._pimpl;
-    if (_pimpl)
-        _pimpl->ref.ref();
+    _d = n._d;
+    if (_d)
+        _d->ref.ref();
 }
 
 node::node (node_impl * n)
 {
-    _pimpl = n;
-    if (_pimpl)
-        _pimpl->ref.ref();
+    _d = n;
+    if (_d)
+        _d->ref.ref();
 }
 
 
 node & node::operator = (const node & other)
 {
-	if (other._pimpl)
-		other._pimpl->ref.ref();
+	if (other._d)
+		other._d->ref.ref();
 
-	if (_pimpl && !_pimpl->ref.deref())
-		delete _pimpl;
+	if (_d && !_d->ref.deref())
+		delete _d;
 
-	_pimpl = other._pimpl;
+	_d = other._d;
 	return *this;
 }
 
 node::~node ()
 {
-    if (_pimpl && !_pimpl->ref.deref()) {
-    	delete _pimpl;
-        _pimpl = 0;
+    if (_d && !_d->ref.deref()) {
+    	delete _d;
+        _d = 0;
     }
 }
 
-node node::cloneNode (bool deep) const
+node node::clone_node (bool deep) const
 {
-    if (!_pimpl)
+    if (!_d)
         return node();
-    return node(_pimpl->cloneNode(deep));
+    return node(_d->clone_node(deep));
 }
 
 
@@ -512,15 +512,15 @@ node node::cloneNode (bool deep) const
  * 		@arg ProcessingInstruction - target
  * 		@arg Text                  - #text
  */
-pfs::string node::nodeName () const
+pfs::string node::node_name () const
 {
-    if (!_pimpl)
+    if (!_d)
     	return pfs::string();
 
-    if (!_pimpl->_prefix.isEmpty())
-    	return _pimpl->_prefix + pfs::ucchar(':') + _pimpl->_name;
+    if (!_d->_prefix.isEmpty())
+    	return _d->_prefix + pfs::ucchar(':') + _d->_name;
 
-    return _pimpl->_name;
+    return _d->_name;
 }
 
 /**
@@ -540,24 +540,24 @@ pfs::string node::nodeName () const
  * 		@arg ProcessingInstruction - entire content excluding the target
  * 		@arg Text - content of the text node
  */
-pfs::string node::nodeValue () const
+pfs::string node::node_value () const
 {
-    return _pimpl
-    		? _pimpl->_value
+    return _d
+    		? _d->_value
     		: pfs::string();
 }
 
-node::type node::nodeType () const
+node::type node::node_type () const
 {
-    return _pimpl
-    		? _pimpl->nodeType()
-    		: node::InvalidNode;
+    return _d
+    		? _d->node_type()
+    		: node::invalid_node;
 }
 
-document node::ownerDocument () const
+document node::owner_document () const
 {
-    return _pimpl
-    		? document(_pimpl->ownerDocument())
+    return _d
+    		? document(_d->owner_document())
     		: document();
 }
 
@@ -568,47 +568,47 @@ document node::ownerDocument () const
 V
     \sa lastChild(), childNodes()
 */
-node node::firstChild () const
+node node::first_child () const
 {
-    return _pimpl
-    		? node(_pimpl->_first)
+    return _d
+    		? node(_d->_first)
     		: node();
 }
 
-node node::lastChild () const
+node node::last_child () const
 {
-    return _pimpl
-    		? node(_pimpl->_last)
+    return _d
+    		? node(_d->_last)
     		: node();
 }
 
 
-node node::previousSibling() const
+node node::previous_sibling() const
 {
-    return _pimpl
-    	? node(_pimpl->_prev)
+    return _d
+    	? node(_d->_prev)
         : node();
 }
 
 
-node node::nextSibling() const
+node node::next_sibling() const
 {
-    return _pimpl
-    	? node(_pimpl->_next)
+    return _d
+    	? node(_d->_next)
         : node();
 }
 
-pfs::string node::namespaceURI() const
+pfs::string node::namespace_uri() const
 {
-    return _pimpl
-    	? _pimpl->_namespaceURI
+    return _d
+    	? _d->_namespace_uri
         : pfs::string();
 }
 
 pfs::string node::prefix() const
 {
-    return _pimpl
-        ? _pimpl->_prefix
+    return _d
+        ? _d->_prefix
         : pfs::string();
 }
 
@@ -621,31 +621,31 @@ pfs::string node::prefix() const
  *
  * @return Returns the local part of the qualified name of this node.
  */
-pfs::string node::localName () const
+pfs::string node::localname () const
 {
 /*
     if (!_pimpl || _pimpl->_createdWithDom1Interface)
         return pfs::string();
     return _pimpl->_name;
 */
-    return _pimpl
-    		? _pimpl->_name
+    return _d
+    		? _d->_name
     		: pfs::string();
 }
 
 
-bool node::isSupported (const pfs::string & feature, const pfs::string & version) const
+bool node::is_supported (const pfs::string & feature, const pfs::string & version) const
 {
     dom_implementation i;
-    return i.hasFeature(feature, version);
+    return i.has_feature(feature, version);
 }
 
 
-node node::insertAfter (const node & newChild, const node & refChild)
+node node::insert_after (const node & newChild, const node & refChild)
 {
-    if (!_pimpl)
+    if (!_d)
         return node();
-    return node(_pimpl->insertAfter(newChild._pimpl, refChild._pimpl));
+    return node(_d->insert_after(newChild._d, refChild._d));
 }
 
 /**
@@ -660,19 +660,19 @@ node node::insertAfter (const node & newChild, const node & refChild)
  * @return The node being inserted.
  * @throw @a pfs::dom::exception
  */
-node node::insertBefore (const node & newChild, const node & refChild)
+node node::insert_before (const node & newChild, const node & refChild)
 {
-    if (!_pimpl)
+    if (!_d)
         return node();
-    return node(_pimpl->insertBefore(newChild._pimpl, refChild._pimpl));
+    return node(_d->insert_before(newChild._d, refChild._d));
 }
 
-node node::appendChild (const node & newChild)
+node node::append_child (const node & newChild)
 {
-    if (!_pimpl) {
+    if (!_d) {
         return node();
     }
-    return node(_pimpl->appendChild(newChild._pimpl));
+    return node(_d->append_child(newChild._d));
 }
 
 /**
@@ -683,35 +683,35 @@ node node::appendChild (const node & newChild)
  * @return The node removed.
  * @throw @a pfs::dom::exception
  */
-node node::removeChild (const node& oldChild)
+node node::remove_child (const node& oldChild)
 {
-    if (!_pimpl)
+    if (!_d)
         return node();
 
-    if (oldChild.isNull())
+    if (oldChild.is_null())
         return node();
 
-    return node(_pimpl->removeChild(oldChild._pimpl));
+    return node(_d->remove_child(oldChild._d));
 }
 
-node node::replaceChild (const node & newChild, const node & oldChild)
+node node::replace_child (const node & newChild, const node & oldChild)
 {
-    if (!_pimpl || !newChild._pimpl || !oldChild._pimpl)
+    if (!_d || !newChild._d || !oldChild._d)
         return node();
-    return node(_pimpl->replaceChild(newChild._pimpl, oldChild._pimpl));
+    return node(_d->replace_child(newChild._d, oldChild._d));
 }
 
-node node::parentNode () const
+node node::parent_node () const
 {
-    return _pimpl
-    		? node(_pimpl->parent())
+    return _d
+    		? node(_d->parent())
     		: node();
 }
 
 void node::normalize()
 {
-    if (_pimpl)
-        _pimpl->normalize();
+    if (_d)
+        _d->normalize();
 }
 
 /*!
@@ -719,10 +719,10 @@ void node::normalize()
 
     \sa nodeValue()
 */
-void node::setNodeValue (const pfs::string & v)
+void node::set_node_value (const pfs::string & v)
 {
-    if (_pimpl)
-    	_pimpl->setNodeValue(v);
+    if (_d)
+    	_d->set_node_value(v);
 }
 
 
@@ -735,57 +735,57 @@ void node::setNodeValue (const pfs::string & v)
  *
  * @param p New prefix name.
  */
-void node::setPrefix (const pfs::string & pre)
+void node::set_prefix (const pfs::string & pre)
 {
-    if (!_pimpl || _pimpl->_prefix.isNull())
+    if (!_d || _d->_prefix.is_null())
         return;
-    if (_pimpl->isAttr() || _pimpl->isElement())
-        _pimpl->_prefix = pre;
+    if (_d->is_attr() || _d->is_element())
+        _d->_prefix = pre;
 }
 
-nodelist node::childNodes() const
+nodelist node::child_nodes() const
 {
-	return _pimpl
-			? nodelist(new nodelist_impl(_pimpl))
+	return _d
+			? nodelist(new nodelist_impl(_d))
 			: nodelist();
 }
 
 
-bool node::hasAttributes() const
+bool node::has_attributes() const
 {
-    if (!_pimpl || !_pimpl->isElement())
+    if (!_d || !_d->is_element())
         return false;
-    return static_cast<element_impl *>(_pimpl)->hasAttributes();
+    return static_cast<element_impl *>(_d)->has_attributes();
 }
 
 
-bool node::hasChildNodes () const
+bool node::has_child_nodes () const
 {
-	return _pimpl
-			? _pimpl->_first != 0
+	return _d
+			? _d->_first != 0
 			: false;
 }
 
 namednodemap node::attributes() const
 {
-    if (!_pimpl || !_pimpl->isElement())
+    if (!_d || !_d->is_element())
         return namednodemap();
 
-    return namednodemap(static_cast<element_impl *>(_pimpl)->attributes());
+    return namednodemap(static_cast<element_impl *>(_d)->attributes());
 }
 
 
-attr node::toAttr () const
+attr node::to_attr () const
 {
-	return (_pimpl && _pimpl->isAttr())
-		? attr(static_cast<attr_impl *>(_pimpl))
+	return (_d && _d->is_attr())
+		? attr(static_cast<attr_impl *>(_d))
 		: attr();
 }
 
-element node::toElement () const
+element node::to_element () const
 {
-	return (_pimpl && _pimpl->isElement())
-		? element(static_cast<element_impl *>(_pimpl))
+	return (_d && _d->is_element())
+		? element(static_cast<element_impl *>(_d))
 		: element();
 }
 
@@ -793,7 +793,7 @@ void node::traverse (void (* onStart) (const pfs::dom::node & n, void * d)
 		, void (* onEnd) (const pfs::dom::node & n, void * d)
 		, void * userData) const
 {
-	pfs::dom::nodelist children = childNodes();
+	pfs::dom::nodelist children = child_nodes();
 
 	// No children
 	if (!children.size())

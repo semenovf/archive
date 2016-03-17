@@ -27,7 +27,7 @@ cdatasection_impl::cdatasection_impl(cdatasection_impl * n, bool deep)
     : text_impl(n, deep)
 {}
 
-node_impl * cdatasection_impl::cloneNode (bool deep)
+node_impl * cdatasection_impl::clone_node (bool deep)
 {
     node_impl * p = new cdatasection_impl(this, deep);
     p->ref.deref();

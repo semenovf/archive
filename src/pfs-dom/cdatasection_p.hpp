@@ -21,8 +21,12 @@ public:
 	cdatasection_impl (document_impl *, node_impl * parent, const pfs::string & val);
 	cdatasection_impl (cdatasection_impl* n, bool deep);
 
-    virtual node_impl * cloneNode (bool deep = true);
-    virtual node::type nodeType () const { return node::CDATASectionNode; }
+    virtual node_impl * clone_node (bool deep = true);
+
+    virtual node::type node_type () const
+    {
+    	return node::cdata_section_node;
+    }
 };
 
 }} // pfs::dom

@@ -24,9 +24,9 @@ public:
 	entity (const entity & other);
 	entity & operator = (const entity & other);
 
-	pfs::string publicId () const;
-	pfs::string systemId () const;
-	pfs::string notationName () const;
+	pfs::string public_id () const;
+	pfs::string system_id () const;
+	pfs::string notation_name () const;
 };
 
 }} // pfs::dom

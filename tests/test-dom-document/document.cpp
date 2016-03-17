@@ -4,7 +4,7 @@
 void test_basic ()
 {
     pfs::dom::document doc;
-    doc.createElement(_u8("html"));
+    doc.create_element(_u8("html"));
     TEST_OK(true == true);
 }
 

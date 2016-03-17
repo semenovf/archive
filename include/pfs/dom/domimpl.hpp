@@ -20,7 +20,7 @@ class DLL_API dom_implementation
 	friend class document;
 
 protected:
-	dom_implementation_impl * _pimpl;
+	dom_implementation_impl * _d;
 	dom_implementation (dom_implementation_impl * p);
 
 public:
@@ -29,20 +29,23 @@ public:
 	dom_implementation & operator = (const dom_implementation & other);
 	~dom_implementation ();
 
-	bool hasFeature (const pfs::string & feature, const pfs::string & version = pfs::string()) const;
-	bool hasFeature (const char * feature, const char * version = 0) const
-		{ return hasFeature(pfs::string(feature), pfs::string(version)); }
+	bool has_feature (const pfs::string & feature, const pfs::string & version = pfs::string()) const;
 
-	document createDocument (const pfs::string & namespaceURI
-			, const pfs::string & qualifiedName
+	bool has_feature (const char * feature, const char * version = 0) const
+	{
+		return has_feature(pfs::string(feature), pfs::string(version));
+	}
+
+	document create_document (const pfs::string & namespace_uri
+			, const pfs::string & qualifiedname
 			, const doctype & doctype);   // raises(DOMException)
 
-	doctype createDocumentType (const pfs::string & qualifiedName
-			, const pfs::string & publicId
-			, const pfs::string & systemId); // raises(DOMException)
+	doctype create_document_type (const pfs::string & qualifiedname
+			, const pfs::string & public_id
+			, const pfs::string & system_id); // raises(DOMException)
 
 	// non-standard
-	pfs::string idName () const; // used by node::getElementById() e.g.
+	pfs::string idname () const; // used by node::get_element_by_id() e.g.
 };
 
 }} // pfs::dom

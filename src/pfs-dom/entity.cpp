@@ -37,7 +37,7 @@ entity_impl::entity_impl (entity_impl * n, bool deep)
     _notationName = n->_notationName;
 }
 
-node_impl * entity_impl::cloneNode (bool deep)
+node_impl * entity_impl::clone_node (bool deep)
 {
     node_impl * p = new entity_impl(this, deep);
     p->ref.deref();
@@ -60,24 +60,24 @@ entity & entity::operator = (const entity & other)
     return (entity &) node::operator = (other);
 }
 
-pfs::string entity::publicId () const
+pfs::string entity::public_id () const
 {
-	return _pimpl
-			? dynamic_cast<entity_impl *>(_pimpl)->_pub
+	return _d
+			? dynamic_cast<entity_impl *>(_d)->_pub
 			: pfs::string();
 }
 
-pfs::string entity::systemId () const
+pfs::string entity::system_id () const
 {
-	return _pimpl
-			? dynamic_cast<entity_impl *>(_pimpl)->_sys
+	return _d
+			? dynamic_cast<entity_impl *>(_d)->_sys
 			: pfs::string();
 }
 
-pfs::string entity::notationName() const
+pfs::string entity::notation_name() const
 {
-	return _pimpl
-			? dynamic_cast<entity_impl *>(_pimpl)->_notationName
+	return _d
+			? dynamic_cast<entity_impl *>(_d)->_notationName
 			: pfs::string();
 }
 

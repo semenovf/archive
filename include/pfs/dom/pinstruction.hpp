@@ -28,7 +28,7 @@ public:
 
 	pfs::string target () const;
 	pfs::string data () const;
-	void setData (const pfs::string & d);
+	void set_data (const pfs::string & d);
 };
 
 }} // pfs

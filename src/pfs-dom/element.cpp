@@ -24,7 +24,7 @@ element_impl::element_impl (document_impl * d, node_impl * p, const pfs::string 
     : node_impl(d, p)
 {
     split_namespace(_prefix, _name, qName);
-    _namespaceURI = nsURI;
+    _namespace_uri = nsURI;
 //    _createdWithDom1Interface = false;
     _attr = new namednodemap_impl(this);
 }
@@ -44,102 +44,102 @@ element_impl::~element_impl()
 
 pfs::string element_impl::attribute (const pfs::string & nodeName, const pfs::string & defaultValue) const
 {
-    node_impl * n = _attr->namedItem(nodeName);
-    return n ? n->nodeValue()
+    node_impl * n = _attr->named_item(nodeName);
+    return n ? n->node_value()
     		: defaultValue;
 }
 
-pfs::string element_impl::attributeNS (const pfs::string & nsURI, const pfs::string & localName, const pfs::string & defaltValue) const
+pfs::string element_impl::attribute_ns (const pfs::string & nsURI, const pfs::string & localName, const pfs::string & defaltValue) const
 {
-    node_impl * n = _attr->namedItemNS(nsURI, localName);
-    return n ? n->nodeValue()
+    node_impl * n = _attr->named_item_ns(nsURI, localName);
+    return n ? n->node_value()
     		 : defaltValue;
 }
 
 
-void element_impl::setAttribute (const pfs::string & attname, const pfs::string & newValue)
+void element_impl::set_attribute (const pfs::string & attname, const pfs::string & newValue)
 {
-    node_impl * n = _attr->namedItem(attname);
+    node_impl * n = _attr->named_item(attname);
 
     if (!n) {
-        n = new attr_impl(ownerDocument(), this, attname);
-        n->setNodeValue(newValue);
+        n = new attr_impl(owner_document(), this, attname);
+        n->set_node_value(newValue);
         n->ref.deref();
-        _attr->setNamedItem(n);
+        _attr->set_named_item(n);
     } else {
-        n->setNodeValue(newValue);
+        n->set_node_value(newValue);
     }
 }
 
-void element_impl::setAttributeNS (const pfs::string & nsURI, const pfs::string & qName, const pfs::string & newValue)
+void element_impl::set_attribute_ns (const pfs::string & nsURI, const pfs::string & qName, const pfs::string & newValue)
 {
     pfs::string prefix, localName;
 
     split_namespace(prefix, localName, qName);
 
-    node_impl * n = _attr->namedItemNS(nsURI, localName);
+    node_impl * n = _attr->named_item_ns(nsURI, localName);
 
     if (!n) {
-        n = new attr_impl(ownerDocument(), this, nsURI, qName);
-        n->setNodeValue(newValue);
+        n = new attr_impl(owner_document(), this, nsURI, qName);
+        n->set_node_value(newValue);
         n->ref.deref();
-        _attr->setNamedItem(n);
+        _attr->set_named_item(n);
     } else {
-        n->setNodeValue(newValue);
+        n->set_node_value(newValue);
         n->_prefix = prefix;
     }
 }
 
-void element_impl::removeAttribute (const pfs::string & attname)
+void element_impl::remove_attribute (const pfs::string & attname)
 {
-    node_impl * p = _attr->removeNamedItem(attname);
+    node_impl * p = _attr->remove_named_item(attname);
     if (p && p->ref.load() == 0)
         delete p;
 }
 
-attr_impl * element_impl::attributeNode (const pfs::string & attname)
+attr_impl * element_impl::attribute_node (const pfs::string & attname)
 {
-    return dynamic_cast<attr_impl*>(_attr->namedItem(attname));
+    return dynamic_cast<attr_impl*>(_attr->named_item(attname));
 }
 
-attr_impl * element_impl::attributeNodeNS(const pfs::string& nsURI, const pfs::string& localName)
+attr_impl * element_impl::attribute_node_ns(const pfs::string& nsURI, const pfs::string& localName)
 {
-    return dynamic_cast<attr_impl*>(_attr->namedItemNS(nsURI, localName));
+    return dynamic_cast<attr_impl*>(_attr->named_item_ns(nsURI, localName));
 }
 
 attr_impl * element_impl::setAttributeNode (attr_impl * newAttr)
 {
-    node_impl * n = _attr->namedItem(newAttr->nodeName());
+    node_impl * n = _attr->named_item(newAttr->node_name());
 
-    _attr->setNamedItem(newAttr);
+    _attr->set_named_item(newAttr);
     newAttr->setParent(this);
     return dynamic_cast<attr_impl *>(n);
 }
 
-attr_impl* element_impl::setAttributeNodeNS(attr_impl* newAttr)
+attr_impl* element_impl::set_attribute_node_ns(attr_impl* newAttr)
 {
     node_impl * n = 0;
 
     if (!newAttr->_prefix.isNull())
-        n = _attr->namedItemNS(newAttr->_namespaceURI, newAttr->_name);
+        n = _attr->named_item_ns(newAttr->_namespace_uri, newAttr->_name);
 
-    _attr->setNamedItem(newAttr);
+    _attr->set_named_item(newAttr);
     return dynamic_cast<attr_impl *>(n);
 }
 
-attr_impl * element_impl::removeAttributeNode (attr_impl * oldAttr)
+attr_impl * element_impl::remove_attribute_node (attr_impl * oldAttr)
 {
-    return dynamic_cast<attr_impl *>(_attr->removeNamedItem(oldAttr->nodeName()));
+    return dynamic_cast<attr_impl *>(_attr->remove_named_item(oldAttr->node_name()));
 }
 
-bool element_impl::hasAttribute (const pfs::string & name) const
+bool element_impl::has_attribute (const pfs::string & name) const
 {
     return _attr->contains(name);
 }
 
-bool element_impl::hasAttributeNS (const pfs::string & nsURI, const pfs::string & localName) const
+bool element_impl::has_attribute_ns (const pfs::string & nsURI, const pfs::string & localName) const
 {
-    return _attr->containsNS(nsURI, localName);
+    return _attr->contains_ns(nsURI, localName);
 }
 
 
@@ -162,7 +162,7 @@ pfs::string element_impl::text()
 }
 */
 
-node_impl * element_impl::cloneNode(bool deep)
+node_impl * element_impl::clone_node(bool deep)
 {
     node_impl * p = new element_impl(this, deep);
     p->ref.deref();
@@ -187,38 +187,38 @@ element & element::operator = (const element & other)
     return (element &) node::operator = (other);
 }
 
-pfs::string element::tagName () const
+pfs::string element::tagname () const
 {
-	return _pimpl
-			? _pimpl->nodeName()
+	return _d
+			? _d->node_name()
 			: pfs::string();
 }
 
-pfs::string element::getAttribute (const pfs::string & name, const pfs::string & defaultValue) const
+pfs::string element::get_attribute (const pfs::string & name, const pfs::string & defaultValue) const
 {
-	return _pimpl
-			? dynamic_cast<element_impl *>(_pimpl)->attribute(name, defaultValue)
+	return _d
+			? dynamic_cast<element_impl *>(_d)->attribute(name, defaultValue)
 			: defaultValue;
 }
 
-void element::setAttribute (const pfs::string & name, const pfs::string & value)
+void element::set_attribute (const pfs::string & name, const pfs::string & value)
 {
-    if (_pimpl) {
-    	dynamic_cast<element_impl *>(_pimpl)->setAttribute(name, value);
+    if (_d) {
+    	dynamic_cast<element_impl *>(_d)->set_attribute(name, value);
     }
 }
 
-void element::removeAttribute (const pfs::string& name)
+void element::remove_attribute (const pfs::string& name)
 {
-    if (_pimpl) {
-    	dynamic_cast<element_impl *>(_pimpl)->removeAttribute(name);
+    if (_d) {
+    	dynamic_cast<element_impl *>(_d)->remove_attribute(name);
     }
 }
 
-attr element::getAttributeNode (const pfs::string & name)
+attr element::get_attribute_node (const pfs::string & name)
 {
-    return _pimpl
-    		? attr(dynamic_cast<element_impl *>(_pimpl)->attributeNode(name))
+    return _d
+    		? attr(dynamic_cast<element_impl *>(_d)->attribute_node(name))
     		: attr();
 }
 
@@ -235,10 +235,10 @@ attr element::getAttributeNode (const pfs::string & name)
  * @return If the newAttr attribute replaces an existing attribute,
  * 		the replaced @c attr node is returned, otherwise null is returned.
  */
-attr element::setAttributeNode(const attr & newAttr)
+attr element::set_attribute_node(const attr & newAttr)
 {
-	return _pimpl
-			? attr(dynamic_cast<element_impl *>(_pimpl)->setAttributeNode((dynamic_cast<attr_impl*>(newAttr._pimpl))))
+	return _d
+			? attr(dynamic_cast<element_impl *>(_d)->setAttributeNode((dynamic_cast<attr_impl*>(newAttr._d))))
 			: attr();
 }
 
@@ -254,72 +254,72 @@ attr element::setAttributeNode(const attr & newAttr)
  *
  * @return The @c attr node that was removed.
  */
-attr element::removeAttributeNode(const attr & oldAttr)
+attr element::remove_attribute_node(const attr & oldAttr)
 {
-	return _pimpl
-			? attr(dynamic_cast<element_impl *>(_pimpl)->removeAttributeNode((dynamic_cast<attr_impl*>(oldAttr._pimpl))))
+	return _d
+			? attr(dynamic_cast<element_impl *>(_d)->remove_attribute_node((dynamic_cast<attr_impl*>(oldAttr._d))))
 			: attr();
 }
 
-nodelist element::getElementsByTagName (const pfs::string & tagname) const
+nodelist element::get_elements_by_tagname (const pfs::string & tagname) const
 {
-    return nodelist(new nodelist_impl(_pimpl, tagname));
+    return nodelist(new nodelist_impl(_d, tagname));
 }
 
-pfs::string element::getAttributeNS (const pfs::string & nsURI, const pfs::string & localName, const pfs::string & defaultValue) const
+pfs::string element::get_attribute_ns (const pfs::string & nsURI, const pfs::string & localName, const pfs::string & defaultValue) const
 {
-	return _pimpl
-			? dynamic_cast<element_impl *>(_pimpl)->attributeNS(nsURI, localName, defaultValue)
+	return _d
+			? dynamic_cast<element_impl *>(_d)->attribute_ns(nsURI, localName, defaultValue)
 			: defaultValue;
 }
 
 
-void element::setAttributeNS (const pfs::string & nsURI, const pfs::string & qName, const pfs::string & value)
+void element::set_attribute_ns (const pfs::string & nsURI, const pfs::string & qName, const pfs::string & value)
 {
-	if (_pimpl) {
-		dynamic_cast<element_impl *>(_pimpl)->setAttributeNS(nsURI, qName, value);
+	if (_d) {
+		dynamic_cast<element_impl *>(_d)->set_attribute_ns(nsURI, qName, value);
 	}
 }
 
-void element::removeAttributeNS (const pfs::string & nsURI, const pfs::string & localName)
+void element::remove_attribute_ns (const pfs::string & nsURI, const pfs::string & localName)
 {
-	if (_pimpl) {
-		node_impl * n = dynamic_cast<element_impl *>(_pimpl)->attributeNodeNS(nsURI, localName);
+	if (_d) {
+		node_impl * n = dynamic_cast<element_impl *>(_d)->attribute_node_ns(nsURI, localName);
 	    if (n)
-	    	dynamic_cast<element_impl *>(_pimpl)->removeAttribute(n->nodeName());
+	    	dynamic_cast<element_impl *>(_d)->remove_attribute(n->node_name());
 	}
 }
 
-attr element::getAttributeNodeNS (const pfs::string & nsURI, const pfs::string & localName) const
+attr element::get_attribute_node_ns (const pfs::string & nsURI, const pfs::string & localName) const
 {
-	return _pimpl
-			? attr(dynamic_cast<element_impl *>(_pimpl)->attributeNodeNS(nsURI, localName))
+	return _d
+			? attr(dynamic_cast<element_impl *>(_d)->attribute_node_ns(nsURI, localName))
 			: attr();
 }
 
-attr element::setAttributeNodeNS (const attr & newAttr)
+attr element::set_attribute_node_ns (const attr & newAttr)
 {
-	return _pimpl
-			? attr(dynamic_cast<element_impl *>(_pimpl)->setAttributeNodeNS((dynamic_cast<attr_impl *>(newAttr._pimpl))))
+	return _d
+			? attr(dynamic_cast<element_impl *>(_d)->set_attribute_node_ns((dynamic_cast<attr_impl *>(newAttr._d))))
 			: attr();
 }
 
-nodelist element::getElementsByTagNameNS (const pfs::string& nsURI, const pfs::string& localName) const
+nodelist element::get_elements_by_tagname_ns (const pfs::string& nsURI, const pfs::string& localName) const
 {
-    return nodelist(new nodelist_impl(_pimpl, nsURI, localName));
+    return nodelist(new nodelist_impl(_d, nsURI, localName));
 }
 
-bool element::hasAttribute (const pfs::string & name) const
+bool element::has_attribute (const pfs::string & name) const
 {
-    return _pimpl
-    		? dynamic_cast<element_impl *>(_pimpl)->hasAttribute(name)
+    return _d
+    		? dynamic_cast<element_impl *>(_d)->has_attribute(name)
     		: false;
 }
 
-bool element::hasAttributeNS (const pfs::string & nsURI, const pfs::string & localName) const
+bool element::has_attribute_ns (const pfs::string & nsURI, const pfs::string & localName) const
 {
-    return _pimpl
-    		? dynamic_cast<element_impl *>(_pimpl)->hasAttributeNS(nsURI, localName)
+    return _d
+    		? dynamic_cast<element_impl *>(_d)->has_attribute_ns(nsURI, localName)
     		: false;
 }
 

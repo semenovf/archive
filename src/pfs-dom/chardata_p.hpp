@@ -20,15 +20,15 @@ public:
 	chardata_impl (document_impl *, node_impl * parent, const pfs::string & data);
 	chardata_impl (chardata_impl * n, bool deep);
 
-    size_t dataLength () const;
-    pfs::string substringData (size_t offset, size_t count) const;
-    void appendData  (const pfs::string & arg);
-    void insertData  (size_t offset, const pfs::string & arg);
-    void deleteData  (size_t offset, size_t count);
-    void replaceData (size_t offset, size_t count, const pfs::string & arg);
+    size_t data_length () const;
+    pfs::string substring_data (size_t offset, size_t count) const;
+    void append_data  (const pfs::string & arg);
+    void insert_data  (size_t offset, const pfs::string & arg);
+    void delete_data  (size_t offset, size_t count);
+    void replace_data (size_t offset, size_t count, const pfs::string & arg);
 
-    virtual node::type nodeType () const { return node::InvalidNode; }
-    virtual node_impl * cloneNode (bool deep = true);
+    virtual node::type node_type () const { return node::invalid_node; }
+    virtual node_impl * clone_node (bool deep = true);
 };
 
 }} // pfs::dom

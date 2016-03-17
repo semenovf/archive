@@ -28,23 +28,23 @@ public:
     map_type        _map;
     node_impl *     _parent;
     bool            _readonly;
-    bool            _appendToParent;
+    bool            _append_to_parent;
 
 public:
     namednodemap_impl (node_impl * nimpl)
     	: _ref(1)
     	, _parent(nimpl)
     	, _readonly(false)
-    	, _appendToParent(false)
+    	, _append_to_parent(false)
     {}
 
-    ~namednodemap_impl () { clearMap(); }
+    ~namednodemap_impl () { clear_map(); }
 
-    node_impl * namedItem (const string & name) const;
-    node_impl * namedItemNS (const string & nsURI, const pfs::string & localName) const;
-    node_impl * setNamedItem (node_impl * arg);
-    node_impl * setNamedItemNS (node_impl * arg);
-    node_impl * removeNamedItem (const string & name);
+    node_impl * named_item (const string & name) const;
+    node_impl * named_item_ns (const string & ns_uri, const pfs::string & localname) const;
+    node_impl * set_named_item (node_impl * arg);
+    node_impl * set_named_item_ns (node_impl * arg);
+    node_impl * remove_named_item (const string & name);
     node_impl * item (size_t index) const;
 
     size_t length () const
@@ -58,15 +58,15 @@ public:
     	return _map.find(name) != _map.end();
     }
 
-    bool containsNS (const string & nsURI, const string & localName) const
+    bool contains_ns (const string & ns_uri, const string & localName) const
     {
-    	return namedItemNS(nsURI, localName) != 0;
+    	return named_item_ns(ns_uri, localName) != 0;
     }
 
     /*
      * Remove all children from the map.
      */
-    void clearMap ();
+    void clear_map ();
 
 //    bool isReadOnly () { return readonly; }
 //    void setReadOnly (bool r) { readonly = r; }
@@ -80,7 +80,10 @@ public:
 //     * By default this value is false and the map will handle reference counting
 //     * by itself.
 //     */
-    void setAppendToParent (bool b) { _appendToParent = b; }
+    void set_append_to_parent (bool b)
+    {
+    	_append_to_parent = b;
+    }
 
     /*
      * Creates a deep copy (all children are cloned).

@@ -20,8 +20,12 @@ public:
 	document_fragment_impl (document_impl * d, node_impl * p);
 	document_fragment_impl (node_impl * n, bool deep);
 
-    virtual node_impl* cloneNode (bool deep = true);
-    virtual node::type nodeType() const { return node::DocumentFragmentNode; }
+    virtual node_impl* clone_node (bool deep = true);
+
+    virtual node::type node_type() const
+    {
+    	return node::document_fragment_node;
+    }
 };
 
 }} // pfs::dom

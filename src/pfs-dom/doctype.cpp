@@ -33,14 +33,14 @@ doctype_impl::doctype_impl (doctype_impl * n, bool deep)
     node_impl * p = _first;
 
     while (p) {
-        if (p->isEntity())
+        if (p->is_entity())
         	// FIXME
             // Don't use normal insert function since we would create infinite recursion
-            _entities->_map.insert(p->nodeName(), p); // _map.insertMulti(...)
-        if (p->isNotation())
+            _entities->_map.insert(p->node_name(), p); // _map.insertMulti(...)
+        if (p->is_notation())
         	// FIXME
             // Don't use normal insert function since we would create infinite recursion
-            _notations->_map.insert(p->nodeName(), p); // was _map.insertMulti(...)
+            _notations->_map.insert(p->node_name(), p); // was _map.insertMulti(...)
         p = p->_next;
     }
 }
@@ -60,19 +60,19 @@ void doctype_impl::init ()
     _entities = new namednodemap_impl(this);
 //    try {
 	_notations = new namednodemap_impl(this);
-	_publicId.clear();
-	_systemId.clear();
-	_internalSubset.clear();
+	_public_id.clear();
+	_system_id.clear();
+	_internal_subset.clear();
 
-	_entities->setAppendToParent(true);
-	_notations->setAppendToParent(true);
+	_entities->set_append_to_parent(true);
+	_notations->set_append_to_parent(true);
 //    } catch(...) {
 //        delete entities;
 //        throw ...;
 //    }
 }
 
-node_impl * doctype_impl::cloneNode (bool deep)
+node_impl * doctype_impl::clone_node (bool deep)
 {
     node_impl * p = new doctype_impl(this, deep);
     p->ref.deref();
@@ -86,106 +86,106 @@ doctype::doctype (doctype_impl * nimpl)
 
 pfs::string doctype::name () const
 {
-	return _pimpl
-			? _pimpl->nodeName()
+	return _d
+			? _d->node_name()
 			: pfs::string();
 }
 
 namednodemap doctype::entities () const
 {
-	return _pimpl
-			? namednodemap(reinterpret_cast<doctype_impl *>(_pimpl)->_entities)
+	return _d
+			? namednodemap(reinterpret_cast<doctype_impl *>(_d)->_entities)
 			: namednodemap();
 }
 
 
 namednodemap doctype::notations () const
 {
-	return _pimpl
-			? namednodemap(reinterpret_cast<doctype_impl *>(_pimpl)->_notations)
+	return _d
+			? namednodemap(reinterpret_cast<doctype_impl *>(_d)->_notations)
 			: namednodemap();
 }
 
-node_impl * doctype_impl::insertBefore (node_impl * newChild, node_impl * refChild)
+node_impl * doctype_impl::insert_before (node_impl * newChild, node_impl * refChild)
 {
     // Call the original implementation
-    node_impl * p = node_impl::insertBefore(newChild, refChild);
+    node_impl * p = node_impl::insert_before(newChild, refChild);
 
     // Update the maps
-    if (p && p->isEntity())
-        _entities->_map.insert(p->nodeName(), p); // FIXME was map.insertMulti
-    else if (p && p->isNotation())
-        _notations->_map.insert(p->nodeName(), p); // FIXME was map.insertMulti
+    if (p && p->is_entity())
+        _entities->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
+    else if (p && p->is_notation())
+        _notations->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
 
     return p;
 }
 
-node_impl * doctype_impl::insertAfter (node_impl * newChild, node_impl * refChild)
+node_impl * doctype_impl::insert_after (node_impl * newChild, node_impl * refChild)
 {
     // Call the origianl implementation
-    node_impl * p = node_impl::insertAfter(newChild, refChild);
+    node_impl * p = node_impl::insert_after(newChild, refChild);
 
     // Update the maps
-    if (p && p->isEntity())
-        _entities->_map.insert(p->nodeName(), p); // FIXME was map.insertMulti
-    else if (p && p->isNotation())
-        _notations->_map.insert(p->nodeName(), p); // FIXME was map.insertMulti
+    if (p && p->is_entity())
+        _entities->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
+    else if (p && p->is_notation())
+        _notations->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
 
     return p;
 }
 
-node_impl * doctype_impl::replaceChild (node_impl * newChild, node_impl * oldChild)
+node_impl * doctype_impl::replace_child (node_impl * newChild, node_impl * oldChild)
 {
     // Call the origianl implementation
-    node_impl * p = node_impl::replaceChild(newChild, oldChild);
+    node_impl * p = node_impl::replace_child(newChild, oldChild);
 
     // Update the maps
     if (p) {
-        if (oldChild && oldChild->isEntity())
-            _entities->_map.remove(oldChild->nodeName());
-        else if (oldChild && oldChild->isNotation())
-            _notations->_map.remove(oldChild->nodeName());
+        if (oldChild && oldChild->is_entity())
+            _entities->_map.remove(oldChild->node_name());
+        else if (oldChild && oldChild->is_notation())
+            _notations->_map.remove(oldChild->node_name());
 
-        if (p->isEntity())
-            _entities->_map.insert(p->nodeName(), p); // FIXME was map.insertMulti
-        else if (p->isNotation())
-            _notations->_map.insert(p->nodeName(), p); // FIXME was map.insertMulti
+        if (p->is_entity())
+            _entities->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
+        else if (p->is_notation())
+            _notations->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
     }
 
     return p;
 }
 
-node_impl * doctype_impl::removeChild (node_impl * oldChild)
+node_impl * doctype_impl::remove_child (node_impl * oldChild)
 {
     // Call the origianl implementation
-    node_impl* p = node_impl::removeChild( oldChild);
+    node_impl* p = node_impl::remove_child( oldChild);
 
     // Update the maps
-    if (p && p->isEntity())
-        _entities->_map.remove(p->nodeName());
-    else if (p && p->isNotation())
-        _notations->_map.remove(p ->nodeName());
+    if (p && p->is_entity())
+        _entities->_map.remove(p->node_name());
+    else if (p && p->is_notation())
+        _notations->_map.remove(p ->node_name());
 
     return p;
 }
 
-node_impl * doctype_impl::appendChild (node_impl * newChild)
+node_impl * doctype_impl::append_child (node_impl * newChild)
 {
-    return insertAfter(newChild, 0);
+    return insert_after(newChild, 0);
 }
 
 
-pfs::string doctype::publicId () const
+pfs::string doctype::public_id () const
 {
-	return _pimpl
-			? dynamic_cast<doctype_impl *>(_pimpl)->_publicId
+	return _d
+			? dynamic_cast<doctype_impl *>(_d)->_public_id
 			: pfs::string();
 }
 
-pfs::string doctype::systemId () const
+pfs::string doctype::system_id () const
 {
-	return _pimpl
-			? dynamic_cast<doctype_impl *>(_pimpl)->_systemId
+	return _d
+			? dynamic_cast<doctype_impl *>(_d)->_system_id
 			: pfs::string();
 }
 
@@ -196,10 +196,10 @@ pfs::string doctype::systemId () const
 
     \sa publicId(), systemId()
 */
-pfs::string doctype::internalSubset () const
+pfs::string doctype::internal_subset () const
 {
-	return _pimpl
-			? dynamic_cast<doctype_impl *>(_pimpl)->_internalSubset
+	return _d
+			? dynamic_cast<doctype_impl *>(_d)->_internal_subset
 			: pfs::string();
 }
 

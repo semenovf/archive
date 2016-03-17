@@ -25,8 +25,12 @@ public:
                           const pfs::string & pub, const pfs::string & sys);
     notation_impl (notation_impl * n, bool deep);
 
-    virtual node_impl * cloneNode (bool deep = true);
-    virtual node::type nodeType() const { return node::NotationNode; }
+    virtual node_impl * clone_node (bool deep = true);
+
+    virtual node::type nodeT_tpe() const
+    {
+    	return node::notation_node;
+    }
 };
 
 }} // pfs::dom

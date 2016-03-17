@@ -28,7 +28,7 @@ chardata_impl::chardata_impl (chardata_impl* n, bool deep)
 {
 }
 
-size_t chardata_impl::dataLength () const
+size_t chardata_impl::data_length () const
 {
     return _value.length();
 }
@@ -38,7 +38,7 @@ pfs::string chardata_impl::substringData (size_t offset, size_t n) const
     return _value.mid(offset, n);
 }
 
-void chardata_impl::appendData(const pfs::string & arg)
+void chardata_impl::append_data(const pfs::string & arg)
 {
     _value += arg;
 }
@@ -59,7 +59,7 @@ void chardata_impl::replaceData (size_t offset, size_t n, const pfs::string & ar
 }
 
 
-node_impl * chardata_impl::cloneNode (bool deep)
+node_impl * chardata_impl::clone_node (bool deep)
 {
     node_impl * p = new chardata_impl(this, deep);
     p->ref.deref();
@@ -87,60 +87,60 @@ chardata & chardata::operator = (const chardata & other)
 
 pfs::string chardata::data () const
 {
-	return _pimpl
-			? _pimpl->nodeValue()
+	return _d
+			? _d->node_value()
 			: pfs::string();
 }
 
-void chardata::setData (const pfs::string & v)
+void chardata::set_data (const pfs::string & v)
 {
-    if (_pimpl)
-        _pimpl->setNodeValue(v);
+    if (_d)
+        _d->set_node_value(v);
 }
 
 size_t chardata::length () const
 {
-	return _pimpl
-			? dynamic_cast<chardata_impl*>(_pimpl)->dataLength()
+	return _d
+			? dynamic_cast<chardata_impl*>(_d)->data_length()
 			: 0;
 }
 
 pfs::string chardata::substringData (size_t offset, size_t n) const
 {
-	return _pimpl
-			? dynamic_cast<chardata_impl*>(_pimpl)->substringData(offset, n)
+	return _d
+			? dynamic_cast<chardata_impl*>(_d)->substringData(offset, n)
 			: pfs::string();
 }
 
-void chardata::appendData (const pfs::string & arg)
+void chardata::append_data (const pfs::string & arg)
 {
-    if (_pimpl)
-    	dynamic_cast<chardata_impl*>(_pimpl)->appendData(arg);
+    if (_d)
+    	dynamic_cast<chardata_impl*>(_d)->append_data(arg);
 }
 
 void chardata::insertData (size_t offset, const pfs::string & arg)
 {
-    if (_pimpl)
-    	dynamic_cast<chardata_impl*>(_pimpl)->insertData(offset, arg);
+    if (_d)
+    	dynamic_cast<chardata_impl*>(_d)->insertData(offset, arg);
 }
 
 void chardata::deleteData (size_t offset, size_t count)
 {
-    if (_pimpl)
-    	dynamic_cast<chardata_impl*>(_pimpl)->deleteData(offset, count);
+    if (_d)
+    	dynamic_cast<chardata_impl*>(_d)->deleteData(offset, count);
 }
 
 void chardata::replaceData(size_t offset, size_t count, const pfs::string & arg)
 {
-    if (_pimpl)
-    	dynamic_cast<chardata_impl*>(_pimpl)->replaceData(offset, count, arg);
+    if (_d)
+    	dynamic_cast<chardata_impl*>(_d)->replaceData(offset, count, arg);
 }
 
-node::type chardata::nodeType() const
+node::type chardata::node_type() const
 {
-	return _pimpl
-			? node::nodeType()
-			: InvalidNode;
+	return _d
+			? node::node_type()
+			: invalid_node;
 }
 
 }} // pfs::dom

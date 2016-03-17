@@ -27,7 +27,7 @@ comment_impl::comment_impl (comment_impl * n, bool deep)
 {
 }
 
-node_impl * comment_impl::cloneNode (bool deep)
+node_impl * comment_impl::clone_node (bool deep)
 {
     node_impl * p = new comment_impl(this, deep);
     p->ref.deref();

@@ -39,7 +39,7 @@ public:
 //    bool operator == (const nodelist_impl &) const;
 //    bool operator != (const nodelist_impl &) const;
 //
-    void createList ();
+    void create_list ();
     node_impl * item (size_t index);
     size_t length ();
 };

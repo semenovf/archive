@@ -26,9 +26,13 @@ public:
 
     bool specified () const;
 
-    void setNodeValue (const pfs::string & v);
-    virtual node_impl * cloneNode (bool deep = true);
-    virtual node::type nodeType () const { return node::AttributeNode; }
+    void set_node_value (const pfs::string & v);
+    virtual node_impl * clone_node (bool deep = true);
+
+    virtual node::type node_type () const
+    {
+    	return node::attribute_node;
+    }
 };
 
 }} // pfs::dom

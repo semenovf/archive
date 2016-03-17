@@ -33,15 +33,15 @@ text_impl * text_impl::splitText (size_t offset)
         return 0;
     }
 
-    text_impl * t = new text_impl(ownerDocument(), 0, _value.substr(offset));
+    text_impl * t = new text_impl(owner_document(), 0, _value.substr(offset));
     _value = _value.left(offset);
 
-    parent()->insertAfter(t, this);
+    parent()->insert_after(t, this);
 
     return t;
 }
 
-node_impl * text_impl::cloneNode(bool deep)
+node_impl * text_impl::clone_node(bool deep)
 {
     node_impl * p = new text_impl(this, deep);
     p->ref.deref();
@@ -65,8 +65,8 @@ text & text::operator = (const text & other)
 
 text text::splitText (size_t offset)
 {
-	return _pimpl
-			? text(dynamic_cast<text_impl*>(_pimpl)->splitText(offset))
+	return _d
+			? text(dynamic_cast<text_impl*>(_d)->splitText(offset))
 			: text();
 }
 
