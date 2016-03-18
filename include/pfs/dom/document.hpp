@@ -60,7 +60,7 @@ public:
 	}
 
 	nodelist get_elements_by_tagname_ns (const pfs::string & namespace_uri, const pfs::string & localname) const;
-	nodelist elements_by_tagname_ns (const pfs::string & namespace_uri, const pfs::string & local_name) const
+	nodelist elements_by_tagname_ns (const pfs::string & namespace_uri, const pfs::string & localname) const
 	{
 		return get_elements_by_tagname_ns(namespace_uri, localname);
 	}
