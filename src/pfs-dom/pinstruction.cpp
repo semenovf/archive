@@ -14,7 +14,7 @@
 
 namespace pfs { namespace dom {
 
-pinstruction_impl::pinstruction_impl (document_impl * d
+processing_instruction_impl::processing_instruction_impl (document_impl * d
 		, node_impl * parent
 		, const pfs::string & target
 		, const pfs::string & data)
@@ -24,47 +24,47 @@ pinstruction_impl::pinstruction_impl (document_impl * d
     _value = data;
 }
 
-pinstruction_impl::pinstruction_impl (pinstruction_impl * n, bool deep) : node_impl(n, deep)
+processing_instruction_impl::processing_instruction_impl (processing_instruction_impl * n, bool deep) : node_impl(n, deep)
 {}
 
 
-node_impl * pinstruction_impl::clone_node (bool deep)
+node_impl * processing_instruction_impl::clone_node (bool deep)
 {
-    node_impl * p = new pinstruction_impl(this, deep);
+    node_impl * p = new processing_instruction_impl(this, deep);
     p->ref.deref();
     return p;
 }
 
 
-pinstruction::pinstruction () : node()
+processing_instruction::processing_instruction () : node()
 {}
 
-pinstruction::pinstruction (const pinstruction & other) : node(other)
+processing_instruction::processing_instruction (const processing_instruction & other) : node(other)
 {}
 
-pinstruction::pinstruction (pinstruction_impl * n) : node(n)
+processing_instruction::processing_instruction (processing_instruction_impl * n) : node(n)
 {}
 
-pinstruction & pinstruction::operator = (const pinstruction & other)
+processing_instruction & processing_instruction::operator = (const processing_instruction & other)
 {
-    return (pinstruction &) node::operator = (other);
+    return (processing_instruction &) node::operator = (other);
 }
 
-pfs::string pinstruction::target() const
+pfs::string processing_instruction::target() const
 {
 	return _d
 			? _d->node_name()
 			: pfs::string();
 }
 
-pfs::string pinstruction::data() const
+pfs::string processing_instruction::data() const
 {
 	return _d
 			? _d->node_value()
 			: pfs::string();
 }
 
-void pinstruction::set_data (const pfs::string & d)
+void processing_instruction::set_data (const pfs::string & d)
 {
 	if (_d) {
 		_d->set_node_value(d);

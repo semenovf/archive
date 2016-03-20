@@ -14,7 +14,7 @@ class element;
 class text;
 class comment;
 class cdatasection;
-class pinstruction;
+class processing_instruction;
 class attr;
 class entityref;
 class nodelist;
@@ -45,7 +45,7 @@ public:
 	text create_text_node (const pfs::string & data);
 	comment create_comment (const pfs::string & data);
 	cdatasection create_cdata_section (const pfs::string & data);
-	pinstruction create_processing_instruction (const pfs::string & target, const pfs::string & data);
+	processing_instruction create_processing_instruction (const pfs::string & target, const pfs::string & data);
 	attr create_attribute (const pfs::string & name);
 	attr create_attribute_ns (const pfs::string & namespace_uri, const pfs::string & qualified_name);
 	entityref create_entity_reference (const pfs::string & name);

@@ -169,7 +169,7 @@ cdatasection_impl * document_impl::create_cdata_section (const pfs::string & dat
     return c;
 }
 
-pinstruction_impl * document_impl::create_processing_instruction (const pfs::string & target, const pfs::string & data)
+processing_instruction_impl * document_impl::create_processing_instruction (const pfs::string & target, const pfs::string & data)
 {
 /*
     bool ok;
@@ -182,7 +182,7 @@ pinstruction_impl * document_impl::create_processing_instruction (const pfs::str
         return 0;
 */
 
-    pinstruction_impl * p = new pinstruction_impl(this, 0, target/*fixedTarget*/, data/*fixedData*/);
+    processing_instruction_impl * p = new processing_instruction_impl(this, 0, target/*fixedTarget*/, data/*fixedData*/);
     p->ref.deref();
     return p;
 }
@@ -251,7 +251,7 @@ node_impl * document_impl::import_node (const node_impl * importedNode, bool dee
             node = new notation_impl((notation_impl *)importedNode, deep);
             break;
         case node::processing_instruction_node:
-            node = new pinstruction_impl((pinstruction_impl *)importedNode, deep);
+            node = new processing_instruction_impl((processing_instruction_impl *)importedNode, deep);
             break;
         case node::text_node:
             node = new text_impl((text_impl *)importedNode, deep);
@@ -356,11 +356,11 @@ cdatasection document::create_cdata_section(const pfs::string& value)
     return cdatasection(dynamic_cast<document_impl *>(_d)->create_cdata_section(value));
 }
 
-pinstruction document::create_processing_instruction (const pfs::string & target, const pfs::string & data)
+processing_instruction document::create_processing_instruction (const pfs::string & target, const pfs::string & data)
 {
     if (!_d)
         _d = new document_impl();
-    return pinstruction(dynamic_cast<document_impl *>(_d)->create_processing_instruction(target, data));
+    return processing_instruction(dynamic_cast<document_impl *>(_d)->create_processing_instruction(target, data));
 }
 
 attr document::create_attribute (const pfs::string & name)

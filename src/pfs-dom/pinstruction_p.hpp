@@ -14,11 +14,11 @@ namespace pfs { namespace dom {
 class node_impl;
 class document_impl;
 
-class DLL_API pinstruction_impl : public node_impl
+class DLL_API processing_instruction_impl : public node_impl
 {
 public:
-    pinstruction_impl (document_impl *, node_impl * parent, const pfs::string & target, const pfs::string & data);
-    pinstruction_impl (pinstruction_impl * n, bool deep);
+    processing_instruction_impl (document_impl *, node_impl * parent, const pfs::string & target, const pfs::string & data);
+    processing_instruction_impl (processing_instruction_impl * n, bool deep);
 
     virtual node_impl * clone_node (bool deep = true);
 

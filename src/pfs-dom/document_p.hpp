@@ -20,7 +20,7 @@ class element_impl;
 class entityref_impl;
 class doctype_impl;
 class document_fragment_impl;
-class pinstruction_impl;
+class processing_instruction_impl;
 class domimpl_impl;
 class cdatasection_impl;
 class dom_implementation_impl;
@@ -65,7 +65,7 @@ public:
     text_impl * create_text_node (const pfs::string & data);
     comment_impl *           create_comment (const pfs::string & data);
     cdatasection_impl *      create_cdata_section (const pfs::string & data);
-    pinstruction_impl *      create_processing_instruction (const pfs::string & target, const pfs::string & data);
+    processing_instruction_impl *      create_processing_instruction (const pfs::string & target, const pfs::string & data);
     attr_impl *              create_attribute (const pfs::string & name);
     attr_impl *              create_attribute_ns (const pfs::string & ns_uri, const pfs::string & qname);
     entityref_impl *         create_entity_reference (const pfs::string & name);
