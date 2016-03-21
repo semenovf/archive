@@ -17,18 +17,18 @@
 
 namespace pfs { namespace dom {
 
-attr_impl::attr_impl (document_impl * d, node_impl * parent, const pfs::string & nodeName)
+attr_impl::attr_impl (document_impl * d, node_impl * parent, const pfs::string & nodename)
     : node_impl(d, parent)
 {
-    _name = nodeName;
+    _name = nodename;
     _specified = false;
 }
 
-attr_impl::attr_impl (document_impl * d, node_impl * p, const pfs::string & nsURI, const pfs::string & qName)
+attr_impl::attr_impl (document_impl * d, node_impl * p, const pfs::string & ns_uri, const pfs::string & qname)
     : node_impl(d, p)
 {
-	split_namespace(_prefix, _name, qName);
-    _namespace_uri = nsURI;
+	split_namespace(_prefix, _name, qname);
+    _namespace_uri = ns_uri;
 //    _createdWithDom1Interface = false;
     _specified = false;
 }
