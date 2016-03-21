@@ -24,7 +24,7 @@ typedef pfs::utf::string<char/*uint8_t*/, tag> string;
 template <typename CodeUnitIterator>
 struct iterator
 {
-	typedef typename string::utf_traits_type::iterator<CodeUnitIterator> type;
+	typedef typename string::utf_traits_type::iterator_impl<CodeUnitIterator> type;
 };
 
 }} // pfs::utf8
@@ -38,30 +38,6 @@ typedef pfs::utf8::string::pointer pointer_type;
 typedef pfs::utf8::string::const_pointer const_pointer_type;
 typedef pfs::utf8::string::difference_type difference_type;
 
-//template <>
-//struct tag_trait<char>
-//{
-//	typedef pfs::utf8::tag type;
-//};
-//
-//template <>
-//struct tag_trait<uint8_t>
-//{
-//	typedef pfs::utf8::tag type;
-//};
-//
-//template <>
-//struct tag_trait<int8_t>
-//{
-//	typedef pfs::utf8::tag type;
-//};
-
-template <>
-inline size_type string_type::utf_traits_type::code_unit_length (const code_unit_type * s)
-{
-	return std::char_traits<code_unit_type>::length(s);
-}
-
 template <>
 template <typename CodeUnitIterator>
 inline value_type string_type::utf_traits_type::decode (CodeUnitIterator & p)
@@ -69,16 +45,9 @@ inline value_type string_type::utf_traits_type::decode (CodeUnitIterator & p)
 	return value_type(static_cast<uintmax_t>(pfs::utf8::decode(p)));
 }
 
-//template <>
-//inline value_type
-//string_type::utf_traits_type::decode (const_pointer_type & p)
-//{
-//	return pfs::utf8::decode(p);
-//}
-
 template <>
 inline void string_type::utf_traits_type::encode (value_type uc
-		, std::back_insert_iterator<string_type::utf_traits_type::container_type> begin)
+		, std::back_insert_iterator<string_type::utf_traits_type::rep_type> begin)
 {
 	pfs::utf8::encode(lexical_cast<uint32_t>(uc), begin);
 }
@@ -104,34 +73,14 @@ inline void string_type::utf_traits_type::advance_backward (CodeUnitIterator & p
 	pfs::utf8::advance_backward(p, n);
 }
 
-
-//template <>
-//inline void string_type::utf_traits_type::advance_forward (const_pointer_type & p, difference_type n)
-//{
-//	pfs::utf8::advance_forward(p, n);
-//}
-//
-//template <>
-//inline void string_type::utf_traits_type::advance_forward (pointer_type & p, difference_type n)
-//{
-//	pfs::utf8::advance_forward(p, n);
-//}
-//
-//template <>
-//inline void string_type::utf_traits_type::advance_backward (const_pointer_type & p, difference_type n)
-//{
-//	pfs::utf8::advance_backward(p, n);
-//}
-//
-//template <>
-//inline void string_type::utf_traits_type::advance_backward (pointer_type & p, difference_type n)
-//{
-//	pfs::utf8::advance_backward(p, n);
-//}
-
 template <>
 inline string_type::string (const std::string & s)
-	: _d(s)/*reinterpret_cast<const std::basic_string<uint8_t> &>(s))*/
+	: _d(s)
+{}
+
+template <>
+inline string_type::string (const_pointer s)
+	: _d(s)
 {}
 
 template <>

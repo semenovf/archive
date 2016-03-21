@@ -13,34 +13,28 @@
 
 namespace pfs { namespace utf {
 
-template <typename Container, typename UtfTag>
+template <typename Rep, typename UtfTag>
 struct traits
 {
-	typedef UtfTag                                      utf_tag;
-	typedef Container                                   container_type;
-	typedef typename Container::value_type              code_unit_type;
-	typedef unicode::char_type                          value_type;
-    typedef typename Container::pointer                 pointer;
-    typedef typename Container::const_pointer           const_pointer;
-	typedef unicode::char_type &                        reference;
-	typedef const unicode::char_type &                  const_reference;
-    typedef typename Container::allocator_type          allocator_type;
-    typedef typename Container::size_type	            size_type;
-    typedef ptrdiff_t                                   difference_type;
+	typedef UtfTag                       utf_tag;
+	typedef Rep                          rep_type;
+	typedef unicode::char_type           value_type;
+	typedef unicode::char_type &         reference;
+	typedef const unicode::char_type &   const_reference;
+    typedef typename Rep::pointer        pointer;
+    typedef typename Rep::const_pointer  const_pointer;
+    typedef typename Rep::allocator_type allocator_type;
+    typedef typename Rep::size_type	     size_type;
+    typedef ptrdiff_t                    difference_type;
+
+    typedef typename Rep::iterator       rep_iterator;
+    typedef typename Rep::const_iterator rep_const_iterator;
 
     template <typename CodeUnitIterator>
     static value_type decode (CodeUnitIterator & p);
 
-    size_type code_unit_length (const code_unit_type * s);
-
-//    static value_type decode (const_pointer & p);
-//    static value_type decode (pointer & p)
-//    {
-//    	return decode(const_pointer(p));
-//    }
-
-    static pointer  encode (value_type uc, pointer begin);
-    static void     encode (value_type uc, std::back_insert_iterator<Container> begin);
+    static pointer encode (value_type uc, pointer begin);
+    static void    encode (value_type uc, std::back_insert_iterator<Rep> begin);
 
     template <typename CodeUnitIterator>
     static void advance_forward  (CodeUnitIterator & p, difference_type n);
@@ -48,13 +42,8 @@ struct traits
     template <typename CodeUnitIterator>
     static void advance_backward (CodeUnitIterator & p, difference_type n);
 
-//    static void advance_forward  (const_pointer & p, difference_type n);
-//    static void advance_forward  (pointer & p, difference_type n);
-//    static void advance_backward (const_pointer & p, difference_type n);
-//    static void advance_backward (pointer & p, difference_type n);
-
     template <typename CodeUnitIterator>
-    class iterator
+    class iterator_impl
     {
     public:
     	typedef traits                                    utf_traits_type;
@@ -68,11 +57,11 @@ struct traits
     	pointer  _p;
 
     public:
-    	iterator ()
+    	iterator_impl ()
     		: _p(0)
     	{}
 
-        explicit iterator (pointer i)
+        explicit iterator_impl (pointer i)
         	: _p(i)
         {}
 
@@ -80,19 +69,19 @@ struct traits
     	// iterator traits
     	//
 
-        iterator (const iterator & other)
+        iterator_impl (const iterator_impl & other)
     		: _p(other._p)
         {}
 
-    	~iterator () {}
+    	~iterator_impl () {}
 
-    	iterator & operator = (const iterator & other)
+    	iterator_impl & operator = (const iterator_impl & other)
     	{
         	_p = other._p;
     		return *this;
     	}
 
-    	iterator & operator ++ ()
+    	iterator_impl & operator ++ ()
     	{
     		utf_traits_type::advance_forward(_p, 1);
         	return *this;
@@ -101,9 +90,9 @@ struct traits
     	//
     	// input iterator traits
     	//
-    	iterator operator ++ (int)
+    	iterator_impl operator ++ (int)
     	{
-    		iterator r(*this);
+    		iterator_impl r(*this);
     		utf_traits_type::advance_forward(_p, 1);
         	return r;
     	}
@@ -119,15 +108,15 @@ struct traits
     	//
     	// bidirectional iterator traits
         //
-    	iterator & operator -- ()
+    	iterator_impl & operator -- ()
     	{
     		utf_traits_type::advance_backward(_p, 1);
         	return *this;
     	}
 
-    	iterator operator -- (int)
+    	iterator_impl operator -- (int)
     	{
-    		iterator r(*this);
+    		iterator_impl r(*this);
     		utf_traits_type::advance_backward(_p, 1);
         	return r;
     	}
@@ -137,12 +126,12 @@ struct traits
         	return _p;
         }
 
-    	friend void swap (iterator & lhs, iterator & rhs)
+    	friend void swap (iterator_impl & lhs, iterator_impl & rhs)
     	{
     		std::swap(lhs._p, rhs._p);
     	}
 
-    	friend void advance (iterator & i, difference_type n)
+    	friend void advance (iterator_impl & i, difference_type n)
     	{
     		if (n > 0)
     			utf_traits_type::advance_forward(i._p, n);
@@ -150,40 +139,51 @@ struct traits
     			utf_traits_type::advance_backward(i._p, -n);
     	}
 
-    	friend bool operator == (const iterator & lhs, const iterator & rhs)
+    	friend bool operator == (const iterator_impl & lhs, const iterator_impl & rhs)
     	{
     		return lhs._p == rhs._p;
     	}
 
-        friend bool operator != (const iterator & lhs, const iterator & rhs)
+        friend bool operator != (const iterator_impl & lhs, const iterator_impl & rhs)
     	{
         	return lhs._p != rhs._p;
     	}
 
-    	friend bool operator < (const iterator & lhs, const iterator & rhs)
+    	friend bool operator < (const iterator_impl & lhs, const iterator_impl & rhs)
     	{
     		return lhs._p < rhs._p;
     	}
 
-    	friend bool operator <= (const iterator & lhs, const iterator & rhs)
+    	friend bool operator <= (const iterator_impl & lhs, const iterator_impl & rhs)
     	{
     		return lhs._p <= rhs._p;
     	}
 
-    	friend bool operator > (const iterator & lhs, const iterator & rhs)
+    	friend bool operator > (const iterator_impl & lhs, const iterator_impl & rhs)
     	{
     		return lhs._p > rhs._p;
     	}
 
-    	friend bool operator >= (const iterator & lhs, const iterator & rhs)
+    	friend bool operator >= (const iterator_impl & lhs, const iterator_impl & rhs)
     	{
     		return lhs._p >= rhs._p;
     	}
     };
-};
 
-//template <typename CodeUnit>
-//struct tag_trait;
+    typedef iterator_impl<pointer>       iterator;
+    typedef iterator_impl<const_pointer> const_iterator;
+
+    static rep_iterator to_rep_iterator (iterator it)
+    {
+    	return rep_iterator(it.base());
+    }
+
+    static rep_const_iterator to_rep_iterator (const_iterator it)
+    {
+    	return rep_const_iterator(it.base());
+    }
+
+};
 
 }} // pfs
 
