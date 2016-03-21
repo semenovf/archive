@@ -66,6 +66,61 @@ void test_starts_ends_with ()
 	TEST_FAIL(s.ends_with(_u8("!]")));
 }
 
+void test_insert ()
+{
+	ADD_TESTS(5);
+
+	pfs::string s("[]");
+
+	s.insert(1, _u8("Привет"));
+	TEST_FAIL(s == _u8("[Привет]"));
+
+	s.insert(7, 1, ',');
+	TEST_FAIL(s == _u8("[Привет,]"));
+
+	s.insert(8, _u8(" Мир!"));
+	TEST_FAIL(s == _u8("[Привет, Мир!]"));
+
+	s.insert(s.begin(), 2, '{');
+	TEST_FAIL(s == _u8("{{[Привет, Мир!]"));
+
+	s.insert(s.end(), 2, '}');
+	TEST_FAIL(s == _u8("{{[Привет, Мир!]}}"));
+}
+
+void test_erase ()
+{
+	ADD_TESTS(5);
+
+	pfs::string s("{{[Привет, Мир!]}}");
+
+	s.erase(9, 6);
+
+	TEST_FAIL(s == _u8("{{[Привет]}}"));
+
+	pfs::string::iterator it = s.begin();
+	std::advance(it, 10);
+
+	s.erase(it, s.end());
+
+	TEST_FAIL(s == _u8("{{[Привет]"));
+
+	it = s.begin();
+	std::advance(it, 2);
+
+	s.erase(s.begin(), it);
+
+	TEST_FAIL(s == _u8("[Привет]"));
+
+	s.erase(s.begin(), s.end());
+
+	TEST_FAIL(s.empty());
+
+	s = _u8("{{[Привет, Мир!]}}");
+	s.erase(0, pfs::max_value<size_t>());
+
+	TEST_FAIL(s.empty());
+}
 
 #if __COMMENT__
 
@@ -791,6 +846,8 @@ void test_suite ()
 //	test_find<CodeUnitT>();
 	test_starts_ends_with();
 	test_to_string();
+	test_insert();
+	test_erase();
 
 //	test_convert_to_number();
 //	test_split<CodeUnitT>();

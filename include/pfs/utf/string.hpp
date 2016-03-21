@@ -368,17 +368,475 @@ public:
     	return prepend(string(first, last));
     }
 
+
+    /**
+     *  @brief  Insert multiple characters.
+     *
+     *  @param p  Iterator referencing location in string to insert at.
+     *  @param n  Number of characters to insert
+     *  @param c  The character to insert.
+     *
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  @details Inserts @a n copies of character @a c starting at the
+     *  position referenced by iterator @a p.  If adding characters causes
+     *  the length to exceed max_size(), length_error is thrown.
+     *  The value of the string doesn't change if an error is thrown.
+    */
+    void insert (iterator p, size_type n, value_type c);
+
+    // FIXME
+#if __FIXME__
+    /**
+     *  @brief  Insert a range of characters.
+     *  @param __p  Iterator referencing location in string to insert at.
+     *  @param __beg  Start of range.
+     *  @param __end  End of range.
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Inserts characters in range [__beg,__end).  If adding
+     *  characters causes the length to exceed max_size(),
+     *  length_error is thrown.  The value of the string doesn't
+     *  change if an error is thrown.
+    */
+    template<class _InputIterator>
+      void
+      insert(iterator __p, _InputIterator __beg, _InputIterator __end)
+      { this->replace(__p, __p, __beg, __end); }
+
+#if __cplusplus >= 201103L
+    /**
+     *  @brief  Insert an initializer_list of characters.
+     *  @param __p  Iterator referencing location in string to insert at.
+     *  @param __l  The initializer_list of characters to insert.
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     */
+    void
+    insert(iterator __p, initializer_list<_CharT> __l)
+    {
+	_GLIBCXX_DEBUG_PEDASSERT(__p >= _M_ibegin() && __p <= _M_iend());
+	this->insert(__p - _M_ibegin(), __l.begin(), __l.size());
+    }
+#endif // C++11
+#endif
+
+
+    /**
+     *  @brief Insert value of a string.
+     *
+     *  @details Inserts value of @a str starting at @a pos1.
+     *           If adding characters causes the length to exceed max_size(),
+     *           length_error is thrown. The value of the string doesn't
+     *           change if an error is thrown.
+     *
+     *  @param pos1  Iterator referencing location in string to insert at.
+     *  @param str   The string to insert.
+     *
+     *  @return Reference to this string.
+     *
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     */
+    string & insert (size_type pos, const string & str);
+
+    /**
+     *  @brief Insert a substring.
+     *
+     *  @details Starting at @a pos1, insert @a n character of @a str
+     *           beginning with @a pos2. If adding characters causes the
+     *           length to exceed max_size(), length_error is thrown.
+     *           If @a pos1 is beyond the end of this string or @a pos2 is
+     *           beyond the end of @a str, out_of_range is thrown.
+     *           The value of the string doesn't change if an error is thrown.
+     *
+     *  @param pos1  Iterator referencing location in string to insert at.
+     *  @param str  The string to insert.
+     *  @param pos2  Start of characters in str to insert.
+     *  @param n  Number of characters to insert.
+     *
+     *  @return Reference to this string.
+     *  @throw std::length_error  If new length exceeds @c max_size().
+     *  @throw std::out_of_range  If @a pos1 > size() or @a pos2 > @a str.size().
+     *
+     *
+    */
+    string & insert (size_type pos1, const string & str, size_type pos2, size_type n);
+
+    /**
+     *  @brief Insert a C substring.
+     *
+     *  @details Inserts the first @a n characters of @a s starting at @a pos.
+     *           If adding characters causes the length to exceed
+     *           max_size(), length_error is thrown.  If @a pos is beyond end(),
+     *           out_of_range is thrown. The value of the string doesn't change
+     *           if an error is thrown.
+     *
+     *  @param pos  Iterator referencing location in string to insert at.
+     *  @param s  The C string to insert.
+     *  @param n  The number of characters to insert.
+     *  @return   Reference to this string.
+     *
+     *  @throw  std::length_error If new length exceeds @c max_size().
+     *  @throw  std::out_of_range If @a pos is beyond the end of this string.
+     */
+    string & insert (size_type pos, const_pointer s, size_type n);
+
+    /**
+     *  @brief Insert a C string.
+     *
+     *  @details Inserts the first @a n characters of @a s starting at @a pos.
+     *           If adding characters causes the length to exceed max_size(),
+     *           length_error is thrown. If @a pos is beyond end(),
+     *           out_of_range is thrown. The value of the string doesn't
+     *           change if an error is thrown.
+     *
+     *  @param pos Iterator referencing location in string to insert at.
+     *  @param s   The C string to insert.
+     *
+     *  @return  Reference to this string.
+     *
+     *  @throw  std::length_error If new length exceeds @c max_size().
+     *  @throw  std::out_of_range If @a pos is beyond the end of this string.
+     *
+     */
+    string & insert (size_type pos, const_pointer s);
+
+    /**
+     *  @brief  Insert multiple characters.
+     *  @details Inserts @a n copies of character @a c starting at index @a pos.
+     *           If adding characters causes the length to exceed max_size(),
+     *           length_error is thrown. If @a pos > length(), out_of_range is thrown.
+     *           The value of the string doesn't change if an error is thrown.
+     *
+     *  @param pos  Index in string to insert at.
+     *  @param n  Number of characters to insert
+     *  @param c  The character to insert.
+     *
+     *  @return  Reference to this string.
+     *
+     *  @throw  std::length_error If new length exceeds @c max_size().
+     *  @throw  std::out_of_range If @a pos is beyond the end of this string.
+     */
+    string & insert (size_type pos, size_type n, value_type c);
+
+    /**
+     *  @brief Insert one character.
+     *
+     *  @details Inserts character @a c at position referenced by @a p.
+     *           If adding character causes the length to exceed max_size(),
+     *           length_error is thrown. If @a p is beyond end of string,
+     *           out_of_range is thrown. The value of the string doesn't
+     *           change if an error is thrown.
+     *
+     *  @param p  Iterator referencing position in string to insert at.
+     *  @param c  The character to insert.
+     *
+     *  @return Iterator referencing newly inserted char.
+     *
+     *  @throw std::length_error If new length exceeds @c max_size().
+     */
+    iterator insert (iterator p, value_type c);
+
+    /**
+     *  @brief  Remove characters.
+     *
+     *  @details Removes @a n characters from this string starting at @a pos.
+     *           The length of the string is reduced by @a n.
+     *           If there are < @a n characters to remove, the remainder of
+     *           the string is truncated. If @a p is beyond end of string,
+     *           out_of_range is thrown.  The value of the string doesn't
+     *           change if an error is thrown.
+     *
+     *  @param pos Index of first character to remove (default 0).
+     *  @param n   Number of characters to remove (default remainder).
+     *
+     *  @return Reference to this string.
+     *
+     *  @throw  std::out_of_range If @a pos is beyond the end of this string.
+     */
+    string & erase (size_type pos = 0, size_type n = max_value<size_type>());
+
+    /**
+     *  @brief  Remove one character.
+     *
+     *  @details Removes the character at @a pos from this string. The value
+     *           of the string doesn't change if an error is thrown.
+     *
+     *  @param pos Iterator referencing the character to remove.
+     *
+     *  @return Iterator referencing same location after removal.
+     */
+    iterator erase (iterator position);
+
+    /**
+     *  @brief  Remove a range of characters.
+     *
+     *  @details Removes the characters in the range [first,last) from this string.
+     *           The value of the string doesn't change if an error is thrown.
+     *
+     *  @param first  Iterator referencing the first character to remove.
+     *  @param last  Iterator referencing the end of the range.
+     *
+     *  @return  Iterator referencing location of first after removal.
+     */
+    iterator erase (iterator first, iterator last);
+
+    /**
+     *  @brief  Replace characters with value from another string.
+     *
+     *  @details Removes the characters in the range [@a pos, @a pos + @a n) from
+     *           this string.  In place, the value of @a str is inserted.
+     *           If @a pos is beyond end of string, out_of_range is thrown.
+     *           If the length of the result exceeds max_size(), length_error
+     *           is thrown. The value of the string doesn't change if an
+     *           error is thrown.
+     *
+     *  @param pos  Index of first character to replace.
+     *  @param n    Number of characters to be replaced.
+     *  @param str  String to insert.
+     *
+     *  @return  Reference to this string.
+     *
+     *  @throw  std::out_of_range  If @a pos is beyond the end of this string.
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     */
+    // FIXME Implement
+#if __FIXME__
+    string & replace (size_type pos, size_type n, const string & str);
+#endif
+
+    /**
+     *  @brief  Replace characters with value from another string.
+     *  @param __pos1  Index of first character to replace.
+     *  @param __n1  Number of characters to be replaced.
+     *  @param __str  String to insert.
+     *  @param __pos2  Index of first character of str to use.
+     *  @param __n2  Number of characters from str to use.
+     *  @return  Reference to this string.
+     *  @throw  std::out_of_range  If @a __pos1 > size() or @a __pos2 >
+     *  __str.size().
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Removes the characters in the range [__pos1,__pos1 + n) from this
+     *  string.  In place, the value of @a __str is inserted.  If @a __pos is
+     *  beyond end of string, out_of_range is thrown.  If the length of the
+     *  result exceeds max_size(), length_error is thrown.  The value of the
+     *  string doesn't change if an error is thrown.
+    */
+    // FIXME Implement
+#if __FIXME__
+    string & replace (size_type pos1, size_type n1, const string & str, size_type pos2, size_type n2);
+#endif
+    /**
+     *  @brief  Replace characters with value of a C substring.
+     *  @param __pos  Index of first character to replace.
+     *  @param __n1  Number of characters to be replaced.
+     *  @param __s  C string to insert.
+     *  @param __n2  Number of characters from @a s to use.
+     *  @return  Reference to this string.
+     *  @throw  std::out_of_range  If @a pos1 > size().
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Removes the characters in the range [__pos,__pos + __n1)
+     *  from this string.  In place, the first @a __n2 characters of
+     *  @a __s are inserted, or all of @a __s if @a __n2 is too large.  If
+     *  @a __pos is beyond end of string, out_of_range is thrown.  If
+     *  the length of result exceeds max_size(), length_error is
+     *  thrown.  The value of the string doesn't change if an error
+     *  is thrown.
+    */
+    // FIXME Implement
+#if __FIXME__
+    string & replace (size_type pos, size_type n1, const_pointer s, size_type n2);
+#endif
+
+    /**
+     *  @brief  Replace characters with value of a C string.
+     *  @param __pos  Index of first character to replace.
+     *  @param __n1  Number of characters to be replaced.
+     *  @param __s  C string to insert.
+     *  @return  Reference to this string.
+     *  @throw  std::out_of_range  If @a pos > size().
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Removes the characters in the range [__pos,__pos + __n1)
+     *  from this string.  In place, the characters of @a __s are
+     *  inserted.  If @a __pos is beyond end of string, out_of_range
+     *  is thrown.  If the length of result exceeds max_size(),
+     *  length_error is thrown.  The value of the string doesn't
+     *  change if an error is thrown.
+    */
+    // FIXME Implement
+#if __FIXME__
+    string & replace (size_type pos, size_type n1, const_pointer s);
+#endif
+
+    /**
+     *  @brief  Replace characters with multiple characters.
+     *  @param __pos  Index of first character to replace.
+     *  @param __n1  Number of characters to be replaced.
+     *  @param __n2  Number of characters to insert.
+     *  @param __c  Character to insert.
+     *  @return  Reference to this string.
+     *  @throw  std::out_of_range  If @a __pos > size().
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Removes the characters in the range [pos,pos + n1) from this
+     *  string.  In place, @a __n2 copies of @a __c are inserted.
+     *  If @a __pos is beyond end of string, out_of_range is thrown.
+     *  If the length of result exceeds max_size(), length_error is
+     *  thrown.  The value of the string doesn't change if an error
+     *  is thrown.
+    */
+    // FIXME Implement
+#if __FIXME__
+    string & replace (size_type pos, size_type n1, size_type n2, value_type c);
+#endif
+
+    /**
+     *  @brief  Replace range of characters with string.
+     *  @param __i1  Iterator referencing start of range to replace.
+     *  @param __i2  Iterator referencing end of range to replace.
+     *  @param __str  String value to insert.
+     *  @return  Reference to this string.
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Removes the characters in the range [__i1,__i2).  In place,
+     *  the value of @a __str is inserted.  If the length of result
+     *  exceeds max_size(), length_error is thrown.  The value of
+     *  the string doesn't change if an error is thrown.
+    */
+    // FIXME Implement
+#if __FIXME__
+    string & replace (iterator i1, iterator i2, const string & str);
+#endif
+
+    /**
+     *  @brief  Replace range of characters with C substring.
+     *  @param __i1  Iterator referencing start of range to replace.
+     *  @param __i2  Iterator referencing end of range to replace.
+     *  @param __s  C string value to insert.
+     *  @param __n  Number of characters from s to insert.
+     *  @return  Reference to this string.
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Removes the characters in the range [__i1,__i2).  In place,
+     *  the first @a __n characters of @a __s are inserted.  If the
+     *  length of result exceeds max_size(), length_error is thrown.
+     *  The value of the string doesn't change if an error is
+     *  thrown.
+    */
+    // FIXME Implement
+#if __FIXME__
+    string & replace(iterator i1, iterator i2, const_pointer s, size_type n);
+#endif
+
+    /**
+     *  @brief  Replace range of characters with C string.
+     *  @param __i1  Iterator referencing start of range to replace.
+     *  @param __i2  Iterator referencing end of range to replace.
+     *  @param __s  C string value to insert.
+     *  @return  Reference to this string.
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Removes the characters in the range [__i1,__i2).  In place,
+     *  the characters of @a __s are inserted.  If the length of
+     *  result exceeds max_size(), length_error is thrown.  The
+     *  value of the string doesn't change if an error is thrown.
+    */
+    // FIXME Implement
+#if __FIXME__
+    string & replace (iterator i1, iterator i2, const_pointer s);
+#endif
+
+    /**
+     *  @brief  Replace range of characters with multiple characters
+     *  @param __i1  Iterator referencing start of range to replace.
+     *  @param __i2  Iterator referencing end of range to replace.
+     *  @param __n  Number of characters to insert.
+     *  @param __c  Character to insert.
+     *  @return  Reference to this string.
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Removes the characters in the range [__i1,__i2).  In place,
+     *  @a __n copies of @a __c are inserted.  If the length of
+     *  result exceeds max_size(), length_error is thrown.  The
+     *  value of the string doesn't change if an error is thrown.
+    */
+    // FIXME Implement
+#if __FIXME__
+    string & replace (iterator i1, iterator i2, size_type n, value_type c);
+#endif
+    /**
+     *  @brief  Replace range of characters with range.
+     *  @param __i1  Iterator referencing start of range to replace.
+     *  @param __i2  Iterator referencing end of range to replace.
+     *  @param __k1  Iterator referencing start of range to insert.
+     *  @param __k2  Iterator referencing end of range to insert.
+     *  @return  Reference to this string.
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     *
+     *  Removes the characters in the range [__i1,__i2).  In place,
+     *  characters in the range [__k1,__k2) are inserted.  If the
+     *  length of result exceeds max_size(), length_error is thrown.
+     *  The value of the string doesn't change if an error is
+     *  thrown.
+    */
+    // FIXME Implement
+#if __FIXME__
+    template <class InputIterator>
+    string & replace (iterator i1, iterator i2, InputIterator k1, InputIterator k2);
+#endif
+
+    // FIXME Implement
+#if __FIXME__
+    // Specializations for the common case of pointer and iterator:
+    // useful to avoid the overhead of temporary buffering in _M_replace.
+    string & replace (iterator i1, iterator i2, pointer k1, pointer k2);
+#endif
+
+    // FIXME Implement
+#if __FIXME__
+    string & replace (iterator i1, iterator i2, const_pointer k1, const_pointer k2);
+#endif
+
+    // FIXME Implement
+#if __FIXME__
+    string & replace (iterator i1, iterator i2, iterator k1, iterator k2);
+#endif
+
+    // FIXME Implement
+#if __FIXME__
+    string & replace (iterator i1, iterator i2, const_iterator k1, const_iterator k2)
+#endif
+
+#if __cplusplus >= 201103L
+    /**
+     *  @brief  Replace range of characters with initializer_list.
+     *
+     *  @details Removes the characters in the range [i1, i2).  In place,
+     *           characters in the range [k1, k2) are inserted.  If the
+     *           length of result exceeds max_size(), length_error is thrown.
+     *           The value of the string doesn't change if an error is thrown.
+     *
+     *  @param i1  Iterator referencing start of range to replace.
+     *  @param i2  Iterator referencing end of range to replace.
+     *  @param l  The initializer_list of characters to insert.
+     *
+     *  @return  Reference to this string.
+     *
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     */
+    // FIXME Implement
+    string & replace (iterator i1, iterator i2, initializer_list<value_type> l);
+#endif // C++11
+
+
 	string & push_back (value_type c)
 	{
 		utf_traits_type::encode(c, std::back_inserter(_d));
 		return *this;
 	}
 
-	/**
-	 *
-	 * @param latin1 Latin1 character (0 <= latin1 < 127)
-	 * @return
-	 */
 	string & push_back (char c)
 	{
 		return push_back(value_type(c));
@@ -559,216 +1017,6 @@ public:
     		erase(length() - 1);
     }
 
-    utf_string & insert (size_type index, const utf_string & str, size_type index_str, size_type count);
-
-    utf_string & insert (size_type index, size_type count, char latin1)
-    {
-      return insert(index, utf_string(count, latin1));
-    }
-
-    utf_string & insert (size_type index, size_type count, ucchar uc)
-    {
-        return insert(index, utf_string(count, uc));
-    }
-
-    utf_string & insert (size_type index, const char * latin1)
-    {
-      return insert(index, utf_string(latin1));
-    }
-
-    utf_string & insert (size_type index, const char * latin1, size_type n)
-    {
-      return insert(index, utf_string(latin1, n));
-    }
-
-    utf_string & insert (size_type index, const utf_string & str)
-    {
-        return insert(index, str, 0, str.length());
-    }
-
-    iterator insert (const_iterator pos, char latin1)
-    {
-      utf_string s(1, latin1);
-      return insert(pos, s.cbegin(), s.cend());
-    }
-
-    iterator insert (const_iterator pos, ucchar ch)
-    {
-        utf_string s(1, ch);
-        return insert(pos, s.cbegin(), s.cend());
-    }
-
-    iterator insert (const_iterator pos, size_type count, char latin1)
-    {
-      utf_string s(count, latin1);
-      return insert(pos, s.cbegin(), s.cend());
-    }
-
-    iterator insert (const_iterator pos, size_type count, ucchar ch)
-    {
-        utf_string s(count, ch);
-        return insert(pos, s.cbegin(), s.cend());
-    }
-
-    template<class InputIt>
-    iterator insert (const_iterator pos, InputIt first, InputIt last)
-    {
-        return insert(pos, first, last, utf_string_type_trait<InputIt>());
-    }
-
-
-    utf_string & append (const utf_string & str, size_type index_str, size_type count)
-    {
-    	return insert(this->length(), str, index_str, count);
-    }
-
-    utf_string & append (size_type count, char latin1)
-    {
-    	return insert(this->length(), count, latin1);
-    }
-
-    utf_string & append (size_type count, ucchar uc)
-    {
-    	return insert(this->length(), count, uc);
-    }
-
-    utf_string & append (const char * latin1)
-    {
-    	return insert(this->length(), latin1);
-    }
-
-    utf_string & append (const char * latin1, size_type n)
-    {
-    	return insert(this->length(), latin1, n);
-    }
-
-    utf_string & append (const utf_string & str)
-    {
-    	return insert(this->length(), str);
-    }
-
-//    template<class InputIt>
-//    utf_string & append (InputIt first, InputIt last);
-
-    utf_string & prepend (const utf_string & str, size_type index_str, size_type count)
-    {
-    	return insert(0, str, index_str, count);
-    }
-
-    utf_string & prepend (size_type count, char latin1)
-    {
-    	return insert(0, count, latin1);
-    }
-
-    utf_string & prepend (size_type count, ucchar uc)
-    {
-    	return insert(0, count, uc);
-    }
-
-    utf_string & prepend (const char * latin1)
-    {
-    	return insert(0, latin1);
-    }
-
-    utf_string & prepend (const char * latin1, size_type n)
-    {
-    	return insert(0, latin1, n);
-    }
-
-    utf_string & prepend (const utf_string & str)
-    {
-    	return insert(0, str);
-    }
-
-//    template<class InputIt>
-//    utf_string & prepend (InputIt first, InputIt last)
-
-
-    utf_string & replace (size_type pos1, size_type count1, const utf_string & str, size_type pos2, size_type count2);
-
-    utf_string & replace (size_type pos, size_type count, const utf_string & str)
-    {
-    	return replace(pos, count, str, 0, str.length());
-    }
-
-    utf_string & replace (const_iterator first, const_iterator last, const utf_string & str)
-    {
-    	return replace(first, last, str.cbegin(), str.cend(), utf_string_type_trait<const_iterator>());
-    }
-
-    template< class InputIt >
-    utf_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2)
-    {
-    	return replace(first, last, first2, last2, utf_string_type_trait<InputIt>());
-    }
-
-    utf_string & replace (size_type pos, size_type count, size_type count2, ucchar ch)
-    {
-    	return replace (pos, count, utf_string(count2, ch));
-    }
-
-    utf_string & replace (const_iterator first, const_iterator last, size_type count2, ucchar ch)
-    {
-    	return replace(first, last, utf_string(count2, ch));
-    }
-
-    utf_string & replace ( const utf_string & before, const utf_string & after);
-
-
-	// TODO DEPRECATED
-	stringlist split (const utf_string & separator
-			, bool keepEmpty = KeepEmpty
-			, ucchar quoteChar = ucchar(ucchar::Null)) const
-	{
-		return split(false, separator, keepEmpty, quoteChar);
-	}
-
-	// TODO DEPRECATED
-	stringlist split (const ucchar & separator
-			, bool keepEmpty = KeepEmpty
-			, ucchar quoteChar = ucchar(ucchar::Null)) const
-	{
-		return split(false, utf_string(1, separator), keepEmpty, quoteChar);
-	}
-
-	// TODO DEPRECATED
-	stringlist splitOneOf (const utf_string & separators
-			, bool keepEmpty = KeepEmpty
-			, ucchar quoteChar = ucchar(ucchar::Null)) const
-	{
-		return split(true, utf_string(separators), keepEmpty, quoteChar);
-	}
-
-	bool           toBoolean (bool * ok = 0) const;
-	intmax_t     toIntegral (bool * ok = 0, int base = 10) const { return toSignedIntegral(ok, base); }
-	intmax_t     toSignedIntegral (bool * ok = 0, int base = 10) const;
-	uintmax_t    toUnsignedIntegral (bool * ok = 0, int base = 10) const;
-
-	signed char    toSignedChar   (bool * ok = 0, int radix = 10) const;
-	unsigned char  toUnsignedChar (bool * ok = 0, int radix = 10) const;
-	short          toShort  (bool * ok = 0, int base = 10) const { return toSignedShort(ok, base); }
-	short          toSignedShort  (bool * ok = 0, int base = 10) const;
-	unsigned short toUnsignedShort (bool * ok = 0, int base = 10) const;
-	int            toInt    (bool * ok = 0, int base = 10) const { return toSignedInt(ok, base); }
-	int	           toSignedInt    (bool * ok = 0, int base = 10) const;
-	unsigned int   toUnsignedInt   (bool * ok = 0, int base = 10) const;
-	long           toLong   (bool * ok = 0, int base = 10) const { return toSignedLong(ok, base); }
-	long           toSignedLong   (bool * ok = 0, int base = 10) const;
-	unsigned long  toUnsignedLong  (bool * ok = 0, int base = 10) const;
-
-#ifdef PFS_HAVE_LONGLONG
-	long long toLongLong (bool * ok = 0, int base = 10) const { return toSignedLongLong(ok, base); }
-	long long toSignedLongLong (bool * ok = 0, int base = 10) const;
-	unsigned long long toUnsignedLongLong (bool * ok = 0, int base = 10) const;
-#endif
-
-	real_t toReal (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
-	float  toFloat (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
-	double toDouble (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const;
-
-#ifdef PFS_HAVE_LONG_DOUBLE
-	long double toLongDouble (bool * ok = 0, ucchar decimalPoint = ucchar('.')) const { return toReal(ok, decimalPoint); }
-#endif
 
 	DLL_API utf_string<uint8_t> toUtf8 () const;
 	DLL_API utf_string<uint16_t> toUtf16 () const;
@@ -793,14 +1041,6 @@ private:
     template <typename InputIt>
     utf_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, utf_string_type_trait<InputIt>);
     utf_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, utf_string_type_trait<const_iterator>);
-
-    // TODO DEPRECATED
-    stringlist split (bool isOneSeparatorChar, const utf_string & separator, bool keepEmpty = true, ucchar quoteChar = ucchar(ucchar::Null)) const;
-
-
-public:
-
-	static DLL_API utf_string fromUtf16 (const uint16_t * utf16, size_t size, ConvertState * state = 0);
 
 #endif // __COMMENT__
 
@@ -1269,23 +1509,107 @@ inline bool operator >= (const utf_string<CodeUnitT> & lhs, const char * rhs)
 	return lhs.compare(rhs) >= 0;
 }
 
-//
-/**
- * @brief Converts UTF16-encoded to UTF8-encoded and output to stream.
- *
- * @param os Output stream.
- * @param o UTF16-encoded string.
- * @return Output stream.
- */
-template <>
-inline std::ostream & operator << <uint16_t> (std::ostream & os, const utf_string<uint16_t> & s)
+#endif // __COMMENT__
+
+template <typename CodeUnit, typename UtfTag>
+inline void string<CodeUnit, UtfTag>::insert (iterator pos, size_type n, value_type c)
 {
-    utf_string<uint8_t> s1(s.toUtf8());
-    os << s1.constData();
-    return os;
+	string s(n, c);
+	_d.insert(std::distance(begin().base(), pos.base()), s._d);
 }
 
-#endif // __COMMENT__
+template <typename CodeUnit, typename UtfTag>
+string<CodeUnit, UtfTag> & string<CodeUnit, UtfTag>::insert (size_type pos, const string & str)
+{
+	iterator it = begin();
+	std::advance(it, pos);
+	_d.insert(std::distance(begin().base(), it.base()), str._d);
+	return *this;
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline string<CodeUnit, UtfTag> & string<CodeUnit, UtfTag>::insert (size_type pos1, const string & str, size_type pos2, size_type n)
+{
+	return this->insert(pos1, str.substr(pos2, n));
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline string<CodeUnit, UtfTag> & string<CodeUnit, UtfTag>::insert (size_type pos, const_pointer s, size_type n)
+{
+	return this->insert(pos, string(s, n));
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline string<CodeUnit, UtfTag> & string<CodeUnit, UtfTag>::insert (size_type pos, const_pointer s)
+{
+	return this->insert(pos, string(s, utf_traits_type::code_unit_length(s)));
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline string<CodeUnit, UtfTag> & string<CodeUnit, UtfTag>::insert (size_type pos, size_type n, value_type c)
+{
+	return this->insert(pos, string(n, c));
+}
+
+template <typename CodeUnit, typename UtfTag>
+typename string<CodeUnit, UtfTag>::iterator string<CodeUnit, UtfTag>::insert (iterator p, value_type c)
+{
+	// TODO Need to optimize
+	//
+	size_type pos = std::distance(begin(), p);
+	this->insert(p, 1, c);
+	iterator it = this->begin();
+	std::advance(it, pos);
+	return it;
+}
+
+template <typename CodeUnit, typename UtfTag>
+string<CodeUnit, UtfTag> & string<CodeUnit, UtfTag>::erase (size_type pos, size_type n)
+{
+	size_type length = this->length();
+
+	if (pos > length)
+		pos = length;
+
+	if (pos + n > length)
+		n = length - pos;
+
+	if (pos == 0 && n >= length) {
+		_d.erase();
+	} else {
+		iterator first = this->begin();
+		iterator last = this->begin();
+
+		std::advance(first, pos);
+		std::advance(last, pos + n);
+
+		this->erase(first, last);
+	}
+
+	return *this;
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline typename string<CodeUnit, UtfTag>::iterator string<CodeUnit, UtfTag>::erase (iterator position)
+{
+	iterator last = position;
+	std::advance(last, 1);
+	return this->erase(position, last);
+}
+
+template <typename CodeUnit, typename UtfTag>
+typename string<CodeUnit, UtfTag>::iterator string<CodeUnit, UtfTag>::erase (iterator first, iterator last)
+{
+	pointer p0 = this->begin().base();
+	pointer p1 = first.base();
+	pointer p2 = last.base();
+	size_type pos = std::distance(p0, p1);
+	size_type n   = std::distance(p1, p2);
+
+	_d.erase(pos, n);
+
+	return string::iterator(this->begin().base() + pos);
+}
 
 template <typename CodeUnit, typename UtfTag>
 string<CodeUnit, UtfTag> string<CodeUnit, UtfTag>::substr (const_iterator begin, const_iterator end) const

@@ -32,6 +32,7 @@ struct iterator
 namespace pfs { namespace utf {
 
 typedef pfs::utf8::string string_type;
+typedef pfs::utf8::string::size_type size_type;
 typedef pfs::utf8::string::value_type value_type;
 typedef pfs::utf8::string::pointer pointer_type;
 typedef pfs::utf8::string::const_pointer const_pointer_type;
@@ -55,6 +56,11 @@ typedef pfs::utf8::string::difference_type difference_type;
 //	typedef pfs::utf8::tag type;
 //};
 
+template <>
+inline size_type string_type::utf_traits_type::code_unit_length (const code_unit_type * s)
+{
+	return std::char_traits<code_unit_type>::length(s);
+}
 
 template <>
 template <typename CodeUnitIterator>

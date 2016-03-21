@@ -18,6 +18,7 @@ struct traits
 {
 	typedef UtfTag                                      utf_tag;
 	typedef Container                                   container_type;
+	typedef typename Container::value_type              code_unit_type;
 	typedef unicode::char_type                          value_type;
     typedef typename Container::pointer                 pointer;
     typedef typename Container::const_pointer           const_pointer;
@@ -29,6 +30,8 @@ struct traits
 
     template <typename CodeUnitIterator>
     static value_type decode (CodeUnitIterator & p);
+
+    size_type code_unit_length (const code_unit_type * s);
 
 //    static value_type decode (const_pointer & p);
 //    static value_type decode (pointer & p)
