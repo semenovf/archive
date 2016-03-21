@@ -189,7 +189,7 @@ function plugin:transaction ()
     projectContent:push_back("    objdir       " .. string.quote(projecObjDir .. "/debug"));
 
     if enableQt then
-        projectContent:push_back([[    qtgenerateddir "../../../.build/lab/qt-app/debug" -- Specific fo Qt project]]);
+        projectContent:push_back("    qtgenerateddir "  .. string.quote(projecObjDir .. "/debug"));
     end
 
     projectContent:push_back("    targetdir    " .. string.quote(projectTargetDir));
@@ -202,7 +202,7 @@ function plugin:transaction ()
     projectContent:push_back("    objdir       " .. string.quote(projecObjDir .. "/release"));
 
     if enableQt then
-        projectContent:push_back([[    qtgenerateddir "../../../.build/lab/qt-app/release" -- Specific fo Qt project]]);
+        projectContent:push_back("    qtgenerateddir "  .. string.quote(projecObjDir .. "/release"));
     end
 
     projectContent:push_back("    targetdir    " .. string.quote(projectTargetDir));
