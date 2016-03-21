@@ -408,7 +408,7 @@ element document::get_element_by_id (const pfs::string & elementId) const
 {
 	pfs::string idName = dynamic_cast<document_impl *>(_d)->implementation()->idname();
 
-	if (idName.isEmpty())
+	if (idName.empty())
 		return element();
 
 	pfs::dom::nodelist children = child_nodes();

@@ -36,11 +36,11 @@ doctype_impl::doctype_impl (doctype_impl * n, bool deep)
         if (p->is_entity())
         	// FIXME
             // Don't use normal insert function since we would create infinite recursion
-            _entities->_map.insert(p->node_name(), p); // _map.insertMulti(...)
+            _entities->_map.insert2(p->node_name(), p); // _map.insertMulti(...)
         if (p->is_notation())
         	// FIXME
             // Don't use normal insert function since we would create infinite recursion
-            _notations->_map.insert(p->node_name(), p); // was _map.insertMulti(...)
+            _notations->_map.insert2(p->node_name(), p); // was _map.insertMulti(...)
         p = p->_next;
     }
 }
@@ -113,9 +113,9 @@ node_impl * doctype_impl::insert_before (node_impl * newChild, node_impl * refCh
 
     // Update the maps
     if (p && p->is_entity())
-        _entities->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
+        _entities->_map.insert2(p->node_name(), p); // FIXME was map.insertMulti
     else if (p && p->is_notation())
-        _notations->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
+        _notations->_map.insert2(p->node_name(), p); // FIXME was map.insertMulti
 
     return p;
 }
@@ -127,9 +127,9 @@ node_impl * doctype_impl::insert_after (node_impl * newChild, node_impl * refChi
 
     // Update the maps
     if (p && p->is_entity())
-        _entities->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
+        _entities->_map.insert2(p->node_name(), p); // FIXME was map.insertMulti
     else if (p && p->is_notation())
-        _notations->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
+        _notations->_map.insert2(p->node_name(), p); // FIXME was map.insertMulti
 
     return p;
 }
@@ -142,14 +142,14 @@ node_impl * doctype_impl::replace_child (node_impl * newChild, node_impl * oldCh
     // Update the maps
     if (p) {
         if (oldChild && oldChild->is_entity())
-            _entities->_map.remove(oldChild->node_name());
+            _entities->_map.erase(oldChild->node_name());
         else if (oldChild && oldChild->is_notation())
-            _notations->_map.remove(oldChild->node_name());
+            _notations->_map.erase(oldChild->node_name());
 
         if (p->is_entity())
-            _entities->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
+            _entities->_map.insert2(p->node_name(), p); // FIXME was map.insertMulti
         else if (p->is_notation())
-            _notations->_map.insert(p->node_name(), p); // FIXME was map.insertMulti
+            _notations->_map.insert2(p->node_name(), p); // FIXME was map.insertMulti
     }
 
     return p;
@@ -162,9 +162,9 @@ node_impl * doctype_impl::remove_child (node_impl * oldChild)
 
     // Update the maps
     if (p && p->is_entity())
-        _entities->_map.remove(p->node_name());
+        _entities->_map.erase(p->node_name());
     else if (p && p->is_notation())
-        _notations->_map.remove(p ->node_name());
+        _notations->_map.erase(p ->node_name());
 
     return p;
 }

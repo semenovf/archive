@@ -23,7 +23,7 @@ dom_implementation_impl * dom_implementation_impl::clone()
 bool dom_implementation_impl::has_feature (const pfs::string & feature, const pfs::string & version) const
 {
     if (feature == pfs::string("XML")) {
-        if (version.isEmpty() || version == pfs::string("1.0")) {
+        if (version.empty() || version == pfs::string("1.0")) {
             return true;
         }
     }
@@ -110,7 +110,7 @@ doctype dom_implementation::create_document_type (const pfs::string & qName
 
     doctype_impl * dt = new doctype_impl(0);
     dt->_name = qName; //fixedName;
-    if (systemId.is_null()) {
+    if (systemId.empty()) {
         dt->_public_id.clear();
         dt->_system_id.clear();
     } else {
