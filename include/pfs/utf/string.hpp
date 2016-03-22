@@ -27,10 +27,8 @@ public:
     typedef typename utf_traits_type::difference_type  difference_type;
     typedef typename utf_traits_type::pointer	       pointer;
     typedef typename utf_traits_type::const_pointer    const_pointer;
-//    typedef typename utf_traits_type::template iterator<pointer> iterator;
-//    typedef typename utf_traits_type::template iterator<const_pointer> const_iterator;
     typedef typename utf_traits_type::iterator         iterator;
-    typedef typename utf_traits_type::const_pointer    const_iterator;
+    typedef typename utf_traits_type::const_iterator   const_iterator;
     typedef std::reverse_iterator<iterator>            reverse_iterator;
     typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
 
@@ -801,46 +799,63 @@ public:
 
     /**
      *  @brief  Replace range of characters with range.
-     *  @param __i1  Iterator referencing start of range to replace.
-     *  @param __i2  Iterator referencing end of range to replace.
-     *  @param __k1  Iterator referencing start of range to insert.
-     *  @param __k2  Iterator referencing end of range to insert.
-     *  @return  Reference to this string.
-     *  @throw  std::length_error  If new length exceeds @c max_size().
      *
-     *  Removes the characters in the range [__i1,__i2).  In place,
-     *  characters in the range [__k1,__k2) are inserted.  If the
-     *  length of result exceeds max_size(), length_error is thrown.
-     *  The value of the string doesn't change if an error is
-     *  thrown.
-    */
-    // FIXME Implement
-#if __FIXME__
+     *  @details Removes the characters in the range [@a i1, @a i2).
+     *           In place, characters in the range [@a k1, @a k2) are inserted.
+     *           If the length of result exceeds max_size(), length_error is thrown.
+     *           The value of the string doesn't change if an error is thrown.
+     *
+     *  @param i1  Iterator referencing start of range to replace.
+     *  @param i2  Iterator referencing end of range to replace.
+     *  @param k1  Iterator referencing start of range to insert.
+     *  @param k2  Iterator referencing end of range to insert.
+     *
+     *  @return  Reference to this string.
+     *
+     *  @throw  std::length_error  If new length exceeds @c max_size().
+     */
     template <class InputIterator>
-    string & replace (iterator i1, iterator i2, InputIterator k1, InputIterator k2);
-#endif
+    string & replace (iterator i1, iterator i2, InputIterator k1, InputIterator k2)
+    {
+    	return this->replace(i1, i2, string(k1, k2));
+    }
 
-    // FIXME Implement
-#if __FIXME__
     // Specializations for the common case of pointer and iterator:
     // useful to avoid the overhead of temporary buffering in _M_replace.
-    string & replace (iterator i1, iterator i2, pointer k1, pointer k2);
-#endif
+    //
+    string & replace (iterator i1, iterator i2, pointer k1, pointer k2)
+    {
+    	_d.replace(utf_traits_type::to_rep_iterator(i1)
+    		, utf_traits_type::to_rep_iterator(i2)
+    		, k1, k2);
+    	return *this;
+    }
 
-    // FIXME Implement
-#if __FIXME__
-    string & replace (iterator i1, iterator i2, const_pointer k1, const_pointer k2);
-#endif
+    string & replace (iterator i1, iterator i2, const_pointer k1, const_pointer k2)
+    {
+    	_d.replace(utf_traits_type::to_rep_iterator(i1)
+    		, utf_traits_type::to_rep_iterator(i2)
+    		, k1, k2);
+    	return *this;
+    }
 
-    // FIXME Implement
-#if __FIXME__
-    string & replace (iterator i1, iterator i2, iterator k1, iterator k2);
-#endif
+    string & replace (iterator i1, iterator i2, iterator k1, iterator k2)
+    {
+    	_d.replace(utf_traits_type::to_rep_iterator(i1)
+    		, utf_traits_type::to_rep_iterator(i2)
+    		, utf_traits_type::to_rep_iterator(k1)
+    		, utf_traits_type::to_rep_iterator(k2));
+    	return *this;
+    }
 
-    // FIXME Implement
-#if __FIXME__
     string & replace (iterator i1, iterator i2, const_iterator k1, const_iterator k2)
-#endif
+    {
+    	_d.replace(utf_traits_type::to_rep_iterator(i1)
+    		, utf_traits_type::to_rep_iterator(i2)
+    		, utf_traits_type::to_rep_iterator(k1)
+    		, utf_traits_type::to_rep_iterator(k2));
+    	return *this;
+    }
 
 #if __cplusplus >= 201103L
     /**
@@ -879,10 +894,9 @@ public:
 
     value_type at (size_type index) const
     {
-    	// FIXME Check for out of bounds
-    	//
     	const_iterator it(begin());
     	std::advance(it, index);
+    	PFS_ASSERT(it < end());
     	return *it;
     }
 

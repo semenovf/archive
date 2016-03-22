@@ -146,3 +146,8 @@ project "test-algo-string"
 project "test-limits"
     include("test-limits/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "demo-type-erasure1"
+    include("demo-type-erasure1/project.gbs")
+-- END PROJECT

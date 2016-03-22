@@ -1,0 +1,39 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=demo-type-erasure1 --type=console-app'
+--* Date:    Tue Mar 22 12:32:27 2016
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "demo-type-erasure1"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../src/demo-type-erasure1/*.c", "../../src/demo-type-erasure1/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs/demo-type-erasure1/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs/demo-type-erasure1/release"
+    targetdir    "../../../.build"
+    links        { "pfs" }
+
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+
