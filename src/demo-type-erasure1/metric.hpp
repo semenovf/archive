@@ -41,16 +41,22 @@ private:
 
 public:
 	template <typename T>
-	friend metric make_metric ()
-	{
-		return metric(new metric_impl<T>);
-	}
+	friend metric make_metric ();
 
 	template <typename T, typename Arg1>
-	friend metric make_metric (Arg1 a1)
-	{
-		return metric(new metric_impl<T>(a1));
-	}
+	friend metric make_metric (Arg1 a1);
 };
+
+template <typename T>
+inline metric make_metric ()
+{
+	return metric(new metric_impl<T>);
+}
+
+template <typename T, typename Arg1>
+inline metric make_metric (Arg1 a1)
+{
+	return metric(new metric_impl<T>(a1));
+}
 
 #endif /* __METRIC_HPP__ */
