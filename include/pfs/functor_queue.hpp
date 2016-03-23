@@ -335,7 +335,7 @@ typename functor_queue<Size, Return, Mutex>::return_type
 	return_type r;
 	functor_base<Return> * fr;
 
-	lock_guard<Mutex> locker(_mutex);
+	lock_guard<Mutex> locker(this->_mutex);
 
 	this->pull(fr);
 
@@ -363,7 +363,7 @@ typename functor_queue<Size, void, Mutex>::return_type functor_queue<Size, void,
 {
 	functor_base<void> * fr;
 
-	lock_guard<Mutex> locker(_mutex);
+	lock_guard<Mutex> locker(this->_mutex);
 
 	this->pull(fr);
 
