@@ -218,9 +218,10 @@ public:
 		return false;
 	}
 
+protected:
 	void pull (functor_base_type * & fr)
 	{
-		lock_guard<Mutex> locker(_mutex);
+		//lock_guard<Mutex> locker(_mutex);
 
 		fr = 0;
 		if (!empty()) {
@@ -228,8 +229,6 @@ public:
 		}
 	}
 
-//	return_type call () = 0;
-//	return_type call_all () = 0;
 	void pop ();
 };
 
@@ -278,7 +277,7 @@ bool functor_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
 template <size_t Size, typename Return, typename Mutex>
 void functor_queue_base<Size, Return, Mutex>::pop (functor_base<Return> * fr)
 {
-	lock_guard<Mutex> locker(_mutex);
+	//lock_guard<Mutex> locker(_mutex);
 
 	if (fr) {
     	fr->~functor_base();
@@ -336,6 +335,8 @@ typename functor_queue<Size, Return, Mutex>::return_type
 	return_type r;
 	functor_base<Return> * fr;
 
+	lock_guard<Mutex> locker(_mutex);
+
 	this->pull(fr);
 
 	if (fr) {
@@ -361,6 +362,8 @@ template <size_t Size, typename Mutex>
 typename functor_queue<Size, void, Mutex>::return_type functor_queue<Size, void, Mutex>::call ()
 {
 	functor_base<void> * fr;
+
+	lock_guard<Mutex> locker(_mutex);
 
 	this->pull(fr);
 
