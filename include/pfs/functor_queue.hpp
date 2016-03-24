@@ -8,6 +8,7 @@
 #ifndef __PFS_FUNCTOR_QUEUE_HPP__
 #define __PFS_FUNCTOR_QUEUE_HPP__
 
+#include <pfs/atomic.hpp>
 #include <pfs/functor.hpp>
 #include <pfs/mutex.hpp>
 
@@ -27,7 +28,7 @@ protected:
 	char * _end;
 	char * _head;
 	char * _tail;
-	size_t _count;
+	atomic_integer<size_t> _count;
 
 protected:
 	void pop (functor_base<Return> * fr);
@@ -50,12 +51,12 @@ public:
 
 	bool empty () const
 	{
-		return _count == 0;
+		return _count.load() == 0;
 	}
 
 	size_t count () const
 	{
-		return _count;
+		return _count.load();
 	}
 
 	size_t capacity () const
@@ -221,9 +222,6 @@ public:
 protected:
 	void pull (functor_base_type * & fr)
 	{
-		//lock_guard<Mutex> locker(_mutex);
-
-		fr = 0;
 		if (!empty()) {
 			 fr = reinterpret_cast<functor_base_type *>(_head);
 		}
@@ -235,7 +233,7 @@ protected:
 template <size_t Size, typename Return, typename Mutex>
 void functor_queue_base<Size, Return, Mutex>::pop ()
 {
-	functor_base<Return> * fr;
+	functor_base<Return> * fr = 0;
 
 	pull(fr);
 
@@ -251,7 +249,7 @@ bool functor_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
 
 		if (_tail + frsize <= end) {        // There is enough space before the real end of queue
 			_end = end;                     // Logic End must be moved to real end of queue
-			++_count;
+			_count.ref(); //++_count;
 			return true;
 		} else {                            // There is no enough space before the real end of queue
 			end  = _tail;                   // Save Tail position
@@ -259,13 +257,13 @@ bool functor_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
 			if (_begin + frsize <= _head) { // There is enough space before Head from Begin
 				_tail = _begin;             // Move Tail to Begin
 				_end = end;                 // Move Logic End
-				++_count;
+				_count.ref(); //++_count;
 				return true;
 			}
 		}
 	} else {                                // Tail is at the left side of Head
 		if (_tail + frsize <= _head) {      // There is enough space before Head
-			++_count;
+			_count.ref(); //++_count;
 			return true;
 		}
 	}
@@ -296,7 +294,7 @@ void functor_queue_base<Size, Return, Mutex>::pop (functor_base<Return> * fr)
     		_tail = _begin;
     	}
 
-    	--_count;
+    	_count.deref(); //--_count;
 	}
 }
 
@@ -333,16 +331,22 @@ typename functor_queue<Size, Return, Mutex>::return_type
 	functor_queue<Size, Return, Mutex>::call ()
 {
 	return_type r;
-	functor_base<Return> * fr;
+	functor_base<Return> * fr = 0;
 
-	lock_guard<Mutex> locker(this->_mutex);
+	unique_lock<Mutex> locker(this->_mutex);
 
 	this->pull(fr);
 
-	if (fr) {
-		r = (*fr)();
-		this->pop(fr);
-	}
+	locker.unlock();
+
+	// To avoid this assert need to check for empty of queue before this call
+	PFS_ASSERT(fr);
+
+	r = (*fr)();
+
+	locker.lock();
+	this->pop(fr);
+	locker.unlock();
 
 	return r;
 }
@@ -361,16 +365,22 @@ typename functor_queue<Size, Return, Mutex>::return_type
 template <size_t Size, typename Mutex>
 typename functor_queue<Size, void, Mutex>::return_type functor_queue<Size, void, Mutex>::call ()
 {
-	functor_base<void> * fr;
+	functor_base<void> * fr = 0;
 
-	lock_guard<Mutex> locker(this->_mutex);
+	unique_lock<Mutex> locker(this->_mutex);
 
 	this->pull(fr);
 
-	if (fr) {
-		(*fr)();
-		this->pop(fr);
-	}
+	locker.unlock();
+
+	// To avoid this assert need to check for empty of queue before this call
+	PFS_ASSERT(fr);
+
+	(*fr)();
+
+	locker.lock();
+	this->pop(fr);
+	locker.unlock();
 }
 
 template <size_t Size, typename Mutex>
