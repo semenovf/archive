@@ -1,23 +1,24 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-random --type=test --depends=pfs-sys'
---* Date:    Wed Aug 19 15:38:13 2015
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-functor-queue'
+--* Date:    Fri Mar 25 11:43:09 2016
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-random"
+targetname    "test-functor-queue"
 defines       {  }
 includedirs   {   "../../include"
                 , "../../../pfs/include"
+                , "../../../pfs-sys/include"
               }
 libdirs       { "../../../.build" }
-files         { "../../tests/test-random/*.c", "../../tests/test-random/*.cpp" }
+files         { "../../tests/test-functor-queue/*.c", "../../tests/test-functor-queue/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-sys/test-random/debug"
+    objdir       "../../../.build/pfs/test-functor-queue/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
@@ -25,11 +26,18 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-sys/test-random/release"
+    objdir       "../../../.build/pfs/test-functor-queue/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs", "pfs-sys" }
 
 dependson { "pfs-sys" }
 
 filter "action:gmake"
-    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+

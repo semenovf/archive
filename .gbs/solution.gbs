@@ -71,3 +71,8 @@ project "test-fs-path"
 project "demo-logger"
     include("demo-logger/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-functor-queue"
+    include("test-functor-queue/project.gbs")
+-- END PROJECT
