@@ -23,21 +23,26 @@ public:
 
 protected:
 	Mutex  _mutex;
-	char   _q[Size];
-	char * _begin;
+	char   _begin[Size];
 	char * _end;
 	char * _head;
 	char * _tail;
 	atomic_integer<size_t> _count;
 
 protected:
-	void pop (functor_base<Return> * fr);
+	void pop (functor_base<Return> & fr);
 	bool prepare_push (size_t frsize);
+
+	void reset ()
+	{
+		_head = _begin;   // Move Head and Tail to the begin of queue
+		_tail = _begin;
+		_end  = _begin + Size;
+	}
 
 public:
 	functor_queue_base ()
-		: _begin(_q)
-		, _end(_begin + Size)
+		: _end(_begin + Size)
 		, _head(_begin)
 		, _tail(_begin)
 		, _count(0)
@@ -71,6 +76,7 @@ public:
 		if (prepare_push(sizeof(functor0<return_type>))) {
 			functor_base_type * fr = new (_tail) functor0<return_type>(f);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -84,6 +90,7 @@ public:
 		if (prepare_push(sizeof(functor_method0<Class, return_type>))) {
 			functor_base_type * fr = new (_tail) functor_method0<Class, return_type>(p, f);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -97,6 +104,7 @@ public:
 		if (prepare_push(sizeof(functor1<return_type, Arg1>))) {
 			functor_base_type * fr = new (_tail) functor1<return_type, Arg1>(f, a1);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -110,6 +118,7 @@ public:
 		if (prepare_push(sizeof(functor_method1<Class, return_type, Arg1>))) {
 			functor_base_type * fr = new (_tail) functor_method1<Class, return_type, Arg1>(p, f, a1);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -123,6 +132,7 @@ public:
 		if (prepare_push(sizeof(functor2<return_type, Arg1, Arg2>))) {
 			functor_base_type * fr = new (_tail) functor2<return_type, Arg1, Arg2>(f, a1, a2);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -136,6 +146,7 @@ public:
 		if (prepare_push(sizeof(functor_method2<Class, return_type, Arg1, Arg2>))) {
 			functor_base_type * fr = new (_tail) functor_method2<Class, return_type, Arg1, Arg2>(p, f, a1, a2);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -149,6 +160,7 @@ public:
 		if (prepare_push(sizeof(functor3<return_type, Arg1, Arg2, Arg3>))) {
 			functor_base_type * fr = new (_tail) functor3<return_type, Arg1, Arg2, Arg3>(f, a1, a2, a3);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -162,6 +174,7 @@ public:
 		if (prepare_push(sizeof(functor_method3<Class, return_type, Arg1, Arg2, Arg3>))) {
 			functor_base_type * fr = new (_tail) functor_method3<Class, return_type, Arg1, Arg2, Arg3>(p, f, a1, a2, a3);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -175,6 +188,7 @@ public:
 		if (prepare_push(sizeof(functor4<return_type, Arg1, Arg2, Arg3, Arg4>))) {
 			functor_base_type * fr = new (_tail) functor4<return_type, Arg1, Arg2, Arg3, Arg4>(f, a1, a2, a3, a4);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -188,6 +202,7 @@ public:
 		if (prepare_push(sizeof(functor_method4<Class, return_type, Arg1, Arg2, Arg3, Arg4>))) {
 			functor_base_type * fr = new (_tail) functor_method4<Class, return_type, Arg1, Arg2, Arg3, Arg4>(p, f, a1, a2, a3, a4);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -201,6 +216,7 @@ public:
 		if (prepare_push(sizeof(functor5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5>))) {
 			functor_base_type * fr = new (_tail) functor5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5>(f, a1, a2, a3, a4, a5);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
@@ -214,20 +230,16 @@ public:
 		if (prepare_push(sizeof(functor_method5<Class, return_type, Arg1, Arg2, Arg3, Arg4, Arg5>))) {
 			functor_base_type * fr = new (_tail) functor_method5<Class, return_type, Arg1, Arg2, Arg3, Arg4, Arg5>(p, f, a1, a2, a3, a4, a5);
 			_tail += fr->size();
+			_count.ref(); //++_count;
 			return true;
 		}
 		return false;
 	}
 
-protected:
-	void pull (functor_base_type * & fr)
-	{
-		if (!empty()) {
-			 fr = reinterpret_cast<functor_base_type *>(_head);
-		}
-	}
-
 	void pop ();
+
+protected:
+	void pull (functor_base_type * & fr);
 };
 
 template <size_t Size, typename Return, typename Mutex>
@@ -238,18 +250,25 @@ void functor_queue_base<Size, Return, Mutex>::pop ()
 	pull(fr);
 
 	if (fr)
-		pop(fr);
+		pop(*fr);
 }
 
 template <size_t Size, typename Return, typename Mutex>
 bool functor_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
 {
-	if (_tail >= _head) {                   // Tail is at the right side of Head
+	if (_tail == _head) {
+		if (empty()) {
+			reset();   // Move Head and Tail to the begin of queue
+		} else {              // Queue is full
+			return false;
+		}
+	}
+
+	if (_tail >= _head) {                   // Tail is at the right side of Head or Queue is empty (_tail == _head)
 		char * end  = _begin + Size;
 
 		if (_tail + frsize <= end) {        // There is enough space before the real end of queue
 			_end = end;                     // Logic End must be moved to real end of queue
-			_count.ref(); //++_count;
 			return true;
 		} else {                            // There is no enough space before the real end of queue
 			end  = _tail;                   // Save Tail position
@@ -257,13 +276,11 @@ bool functor_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
 			if (_begin + frsize <= _head) { // There is enough space before Head from Begin
 				_tail = _begin;             // Move Tail to Begin
 				_end = end;                 // Move Logic End
-				_count.ref(); //++_count;
 				return true;
 			}
 		}
 	} else {                                // Tail is at the left side of Head
 		if (_tail + frsize <= _head) {      // There is enough space before Head
-			_count.ref(); //++_count;
 			return true;
 		}
 	}
@@ -273,29 +290,47 @@ bool functor_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
 }
 
 template <size_t Size, typename Return, typename Mutex>
-void functor_queue_base<Size, Return, Mutex>::pop (functor_base<Return> * fr)
+void functor_queue_base<Size, Return, Mutex>::pull (functor_base_type * & fr)
+{
+	if (!empty()) {
+		if (_head == _end) { // Head exceeds Tail, but Queue is not empty
+			_head = _begin;
+			_end = _begin + Size;
+		}
+
+		fr = reinterpret_cast<functor_base_type *>(_head);
+	}
+}
+
+
+template <size_t Size, typename Return, typename Mutex>
+void functor_queue_base<Size, Return, Mutex>::pop (functor_base<Return> & fr)
 {
 	//lock_guard<Mutex> locker(_mutex);
 
-	if (fr) {
-    	fr->~functor_base();
-    	_head += fr->size();        // Supposed Head position
-
-    	if (_head == _end) {        // Head exceeds login End (supposed position is equivalent to real position)
-    		_head  = _begin;        // Can move Head to Begin
-    		_end   = _begin + Size; // Can move logic End to the real end of queue
-    	} else if (_head > _end) {  // Head is at the right side if logic End (supposed position is not equivalent to real position)
-    		_head = _begin;         // So functor really was placed from Begin
-    		_head += fr->size();    // Move Head to real position (against supposed position)
-    	}
-
-    	if (_head == _tail) {       // Head exceeds Tail, need to optimize pointers
-    		_head = _begin;         // Move Head and Tail to the begin of queue
-    		_tail = _begin;
-    	}
-
-    	_count.deref(); //--_count;
+#if __COMMENT__
+	if (_head == _end) {        // Head exceeds logic End (supposed position is equivalent to real position)
+		_head  = _begin;        // Need move Head to Begin
 	}
+#endif
+	_head += fr.size(); // Supposed Head position
+	_count.deref();     //--_count;
+
+#if __COMMENT__
+	if (_head == _tail && empty()) {  // Head exceeds Tail, need to optimize pointers
+		reset();                      // Move Head and Tail to the begin of queue
+	}
+#endif
+
+//	if (_head == _end) {        // Head exceeds logic End (supposed position is equivalent to real position)
+//		_head  = _begin;        // Can move Head to Begin
+////		_end   = _begin + Size; // Can move logic End to the real end of queue
+//	} else if (_head > _end) {  // Head is at the right side if logic End (supposed position is not equivalent to real position)
+////		_head = _begin;         // So functor really was placed from Begin
+////		_head += fr.size();     // Move Head to real position (against supposed position)
+//	}
+
+	fr.~functor_base();
 }
 
 template <size_t Size, typename Return, typename Mutex = pfs::fake_mutex>
@@ -345,7 +380,7 @@ typename functor_queue<Size, Return, Mutex>::return_type
 	r = (*fr)();
 
 	locker.lock();
-	this->pop(fr);
+	this->pop(*fr);
 	locker.unlock();
 
 	return r;
@@ -379,7 +414,7 @@ typename functor_queue<Size, void, Mutex>::return_type functor_queue<Size, void,
 	(*fr)();
 
 	locker.lock();
-	this->pop(fr);
+	this->pop(*fr);
 	locker.unlock();
 }
 
