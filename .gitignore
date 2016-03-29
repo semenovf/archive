@@ -1,28 +1,45 @@
-# Compiled Object files
+!.gitignore
+.settings/
+.project
+.cproject
+debug/
+release/
+doxygen/html
+doc/
+
+Makefile
+Makefile.*
+makefile
+makefile.*
+*.make
+*.mk
+*.exe
+*.err
+*.lk*
+*.sym
+*.swp
+~*
+*~
+*.bak
+*.map
+*.sdf
 *.slo
 *.lo
+*.pdb
+*.idb
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
 *.so
-*.dylib
 *.dll
-
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
+*.so.*
+*.dylib
+*.lib
 *.lai
 *.la
 *.a
-*.lib
-
-# Executables
 *.exe
 *.out
 *.app
+*.log
+moc_*.cpp
+qrc_*.cpp
