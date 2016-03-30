@@ -11,7 +11,12 @@
 
 #include <pfs.hpp>
 
-#ifdef HAVE_STD_SHARED_PTR
+#if __cplusplus >= 201103L
+#	define HAVE_STD_SHARED_PTR 1
+#endif
+
+
+#if HAVE_STD_SHARED_PTR
 #	include <memory>
 #else
 #	include <pfs/utility.hpp>
@@ -20,7 +25,7 @@
 
 namespace pfs {
 
-#ifdef HAVE_STD_SHARED_PTR
+#if HAVE_STD_SHARED_PTR
 
 template<typename T>
 using shared_ptr = std::shared_ptr<T>;
@@ -34,6 +39,21 @@ struct default_deleter
 		delete p;
 	}
 };
+
+// Specialization for arrays, default_delete.
+//
+template <typename T>
+struct default_deleter<T[]>
+{
+public:
+    default_deleter() noexcept {}
+
+    void operator () (T * p) const
+    {
+    	delete [] p;
+    }
+};
+
 
 template <typename T>
 struct custom_deleter

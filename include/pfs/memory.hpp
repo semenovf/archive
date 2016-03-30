@@ -10,4 +10,9 @@
 
 #include <memory>
 
+#if __cplusplus < 201103L
+#	include <pfs/shared_ptr.hpp>
+#	include <pfs/unique_ptr.hpp>
+#endif
+
 #endif /* __PFS_MEMORY_HPP__ */

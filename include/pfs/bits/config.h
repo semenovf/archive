@@ -130,12 +130,10 @@
 #		define PFS_HAVE_KEYWORD_DECLTYPE 1
 #		define PFS_HAVE_KEYWORD_FINAL    1
 #		define PFS_HAVE_KEYWORD_OVERRIDE 1
-
-#		define override override
-#		define final final
 #	else
 #		define override
 #		define final
+#		define noexcept
 #	endif
 #endif
 
