@@ -6,6 +6,7 @@ debug/
 release/
 doxygen/
 doc/
+nbproject/
 
 Makefile
 Makefile.*
