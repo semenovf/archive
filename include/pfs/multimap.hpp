@@ -15,7 +15,7 @@ namespace pfs {
 template <typename Key, typename T,
 	    typename Compare = std::less<Key>,
 	    typename Alloc = std::allocator<std::pair<const Key, T> > >
-class multimap
+class multimap : public std::multimap<Key, T, Compare, Alloc>
 {
 	typedef std::multimap<Key, T, Compare, Alloc> base_class;
 
