@@ -32,9 +32,11 @@ void pfs_assert (const char * file, int line, const char * text)
 	fprintf(stderr, "===BEGIN OF BACKTRACE\n");
 	backtrace_symbols_fd(bt_buffer, bt_size, PFS_BACKTRACE_FD);
 	fprintf(stderr, "===END OF BACKTRACE\n");
+        fsync(stderr);
 	abort();
 #else
 	fprintf(stderr, "ERROR: (%s[%d]): %s\n", file, line, text);
+        fsync(stderr);
 	abort();
 #endif
 }
