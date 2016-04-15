@@ -266,4 +266,4 @@ bool uncompress (device & dest, device & src, size_t chunkSize, error_code * pex
     return true;
 }
 
-}} // cwt::io
+}} // pfs::io

@@ -8,7 +8,6 @@
 #ifndef __PFS_IO_BUFFERED_DEVICE_HPP__
 #define __PFS_IO_BUFFERED_DEVICE_HPP__
 
-#include <pfs/vector.hpp>
 #include <pfs/error_code.hpp>
 #include <pfs/io/device.hpp>
 
@@ -16,26 +15,21 @@ namespace pfs { namespace io {
 
 class buffered_device
 {
-	device &       _d;
-	vector<byte_t> _buffer;
-	size_t         _cursor;
+	device & _d;
+	byte_t * _buffer;
+    size_t   _bufsz;
+    size_t   _count;
+	size_t   _cursor;
 
 private:
 	bool can_read (size_t count, error_code & ex);
 
-	ssize_t upload_bytes (size_t max_size, error_code & ex)
-	{
-		_buffer.reserve(_buffer.size() + max_size);
-		return _d.read(_buffer.data() + _buffer.size(), max_size, & ex);
-	}
+	ssize_t upload_bytes (size_t max_size, error_code & ex);
 
 public:
-	buffered_device (device & d, size_t initialSize = 256)
-		: _d (d)
-		, _cursor(0)
-	{
-		_buffer.reserve(initialSize);
-	}
+	buffered_device (device & d, size_t initialSize = 256);
+    
+    ~buffered_device ();
 
     /**
      * @brief Reads byte from the buffered device.
@@ -62,7 +56,7 @@ public:
     	return peek_byte(c, ex);
     }
 
-    void unread_byte (byte_t c);
+    //void unread_byte (byte_t c);
 
     error_code read_line (byte_string & line, size_t maxSize);
 };

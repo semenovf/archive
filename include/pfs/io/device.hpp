@@ -213,8 +213,6 @@ public:
     friend bool uncompress (device & dest, device & src, size_t chunkSize, error_code * ex = 0);
 };
 
-error_code read_line (device & d, byte_string & line, size_t maxSize);
-
 ssize_t copy (device & dest, device & src, size_t chunkSize, error_code * ex = 0);
 
 inline bool compress (device & src, device & dest, error_code * ex = 0)
