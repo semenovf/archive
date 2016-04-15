@@ -254,44 +254,56 @@ regexp::regexp()
 regexp::regexp (const string & pattern)
 	: _d(new regexp::impl)
 {
-	setPattern(pattern);
+	set_pattern(pattern);
 }
 
 regexp::regexp (const char * latin1Pattern)
 	: _d(new regexp::impl)
 {
-	setPattern(string(latin1Pattern));
+	set_pattern(string(latin1Pattern));
 }
 
-bool regexp::isError () const
+regexp & regexp::operator = (string const & pattern)
+{
+    set_pattern(pattern);
+    return *this;
+}
+
+regexp & regexp::operator = (char const * latin1Pattern)
+{
+    set_pattern(string(latin1Pattern));
+    return *this;
+}
+
+bool regexp::is_error () const
 {
 	return _d.cast<impl>()->_errstr.size() > 0;
 }
 
-void regexp::setLineBreak (int lineBreak)
+void regexp::set_line_break (int lineBreak)
 {
 	impl & d = *_d.cast<impl>();
 	d.invalidate();
-	if (lineBreak & LineBreak_CR)         d._lineBreak |= PCRE_NEWLINE_CR;
-	if (lineBreak & LineBreak_LF)         d._lineBreak |= PCRE_NEWLINE_LF;
-	if (lineBreak & LineBreak_CRLF)       d._lineBreak |= PCRE_NEWLINE_CRLF;
-	if (lineBreak & LineBreak_AnyCRLF)    d._lineBreak |= PCRE_NEWLINE_ANYCRLF;
-	if (lineBreak & LineBreak_AnyUnicode) d._lineBreak |= PCRE_NEWLINE_ANY;
+	if (lineBreak & line_break_cr)         d._lineBreak |= PCRE_NEWLINE_CR;
+	if (lineBreak & line_break_lf)         d._lineBreak |= PCRE_NEWLINE_LF;
+	if (lineBreak & line_break_crlf)       d._lineBreak |= PCRE_NEWLINE_CRLF;
+	if (lineBreak & line_break_any_crlf)    d._lineBreak |= PCRE_NEWLINE_ANYCRLF;
+	if (lineBreak & line_break_any_unicode) d._lineBreak |= PCRE_NEWLINE_ANY;
 }
 
-void regexp::setPattern (const string & pattern)
+void regexp::set_pattern (const string & pattern)
 {
 	impl & d = *_d.cast<impl>();
 	d.invalidate();
 	d._pattern = pattern;
 }
 
-const string & regexp::errorString () const
+const string & regexp::error_string () const
 {
 	return _d.cast<impl>()->_errstr;
 }
 
-int regexp::errorOffset () const
+int regexp::error_offset () const
 {
 	return _d.cast<impl>()->_erroffset;
 }
@@ -323,7 +335,7 @@ bool regexp::match (const char * s)
 	return d.exec();
 }
 
-bool regexp::matchNext ()
+bool regexp::match_next ()
 {
 	impl & d = *_d.cast<impl>();
 	d._errstr.clear();
@@ -338,7 +350,7 @@ bool regexp::matchNext ()
 	return d.exec();
 }
 
-size_t	regexp::capturedCount() const
+size_t	regexp::captured_count() const
 {
 	return _d.cast<impl>()->_capturedCount;
 }
@@ -356,7 +368,7 @@ string regexp::captured (size_t index) const
 	return string();
 }
 
-stringlist regexp::groups() const
+stringlist regexp::groups () const
 {
 	const impl & d = *_d.cast<impl>();
 	stringlist r;

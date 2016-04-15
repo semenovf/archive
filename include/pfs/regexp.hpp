@@ -26,37 +26,40 @@ class DLL_API regexp
 	pfs::pimpl _d;
 
 public:
-	enum LineBreak {
-		  LineBreak_CR         = 0x0001
-		, LineBreak_LF         = 0x0002
-		, LineBreak_CRLF       = 0x0004
-		, LineBreak_AnyCRLF    = LineBreak_CR | LineBreak_LF | LineBreak_CRLF
-		, LineBreak_AnyUnicode = 0x0008
+	enum line_break_enum {
+		  line_break_cr         = 0x0001
+		, line_break_lf         = 0x0002
+		, line_break_crlf       = 0x0004
+		, line_break_any_crlf    = line_break_cr | line_break_lf | line_break_crlf
+		, line_break_any_unicode = 0x0008
 	};
 
 private:
-	regexp (const regexp &);
-	regexp & operator = (const regexp &);
+	regexp (regexp const &);
+	regexp & operator = (regexp const &);
 
 public:
 	regexp ();
-	regexp (const string & pattern);
-	regexp (const char * latin1Pattern);
+	explicit regexp (string const & pattern);
+	explicit regexp (char const * pattern);
 
-	void setLineBreak (int lineBreak);
-	void setPattern (const string & pattern);
-	void setPattern (const char * latin1Pattern)
+    regexp & operator = (string const & pattern);
+    regexp & operator = (char const * pattern);
+    
+	void set_line_break (int lineBreak);
+	void set_pattern (string const & pattern);
+	void set_pattern (char const * pattern)
 	{
-		setPattern(string(latin1Pattern));
+		set_pattern(string(pattern));
 	}
-	const string & errorString () const;
-	int errorOffset () const;
-	bool isError () const;
+	const string & error_string () const;
+	int error_offset () const;
+	bool is_error () const;
 
-	bool match (const string & s);
-	bool match (const char * s);
-	bool matchNext ();
-	size_t capturedCount () const;
+	bool match (string const & s);
+	bool match (char const * s);
+	bool match_next ();
+	size_t captured_count () const;
 	string captured (size_t index = 0) const;
 	stringlist groups () const;
 };
