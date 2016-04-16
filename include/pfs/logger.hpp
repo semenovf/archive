@@ -16,7 +16,6 @@
 #include <pfs/sigslot.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <pfs/vector.hpp>
-//#include <pfs/notification.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)

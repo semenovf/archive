@@ -172,20 +172,16 @@ static bool end_spec (string::const_iterator, string::const_iterator, void * con
 		break;
 
 	case 'd': {
-		/* FIXME replace code with reentrant time functions or use mutex */
-		time_t t;
-		struct tm * tm;
-		t = ::time(0);
-		tm = ::localtime(& t);
+        pfs::datetime dt = pfs::platform::current_datetime();
 
 		if (ctx->pspec.fspec == string("ABSOLUTE")) {
-			result = platform::strftime(string("%H:%M:%S"), *tm);
+            result = pfs::to_string(dt, string("%H:%M:%S.%Q"));
 		} else if (ctx->pspec.fspec == string("DATE")) {
-			result = platform::strftime(string("%d %b %Y %H:%M:%S"), *tm);
+            result = pfs::to_string(dt, string("%d %b %Y %H:%M:%S.%Q"));
 		} else if(ctx->pspec.fspec == string("ISO8601")) {
-			result = platform::strftime(string("%Y-%m-%d %H:%M:%S"), *tm);
+			result = pfs::to_string(dt, string("%Y-%m-%d %H:%M:%S.%Q"));
 		} else {
-			result = platform::strftime(ctx->pspec.fspec, *tm);
+			result = pfs::to_string(dt, ctx->pspec.fspec);
 		}
 
 		break;
