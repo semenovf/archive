@@ -88,6 +88,22 @@ intmax_t lexical_cast (const datetime & dt)
 	return r;
 }
 
+string to_string (datetime const & dt)
+{
+	string r = to_string(dt.get_date());
+	r.push_back('T');
+	r.append(to_string(dt.get_time()));
+	return r;
+}
+
+string to_string (datetime const & dt, string const & format)
+{
+    string r = to_string(dt.get_date(), format);
+    r = to_string(dt.get_time(), r);
+    return r;
+}
+        
+
 } // pfs
 
 

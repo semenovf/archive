@@ -235,6 +235,16 @@ public:
 };
 
 /**
+ * @brief Converts date and time to string according to @a format.
+ * 
+ * @param dt Date and time value.
+ * @param format Format to convert @a dt.
+ * @return String representation of @a dt.
+ */
+string to_string (datetime const & dt, string const & format);
+
+
+/**
  * @brief Converts date and time to string.
  *
  * @details The string format corresponds to the ISO 8601 specification,
@@ -244,13 +254,7 @@ public:
  *
  * @return The date and time as string.
  */
-inline string to_string (const datetime & dt)
-{
-	string r = to_string(dt.get_date());
-	r.push_back('T');
-	r.append(to_string(dt.get_time()));
-	return r;
-}
+string to_string (datetime const & dt);
 
 /**
  * @brief Returns integer representation of date & time in format YYYYMMDDhhmmss
