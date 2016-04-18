@@ -28,7 +28,7 @@ struct pattern_spec
 
 struct pattern_context
 {
-    logger_appender & appender;
+    logger_appender * appender;
 	int            level;
 	string         result;
 	string const * msg;
@@ -156,7 +156,7 @@ static bool end_spec (string::const_iterator, string::const_iterator, void * con
 		result.push_back('\t');
 		break;
 	case 'p':
-		result = ctx->appender.priority_text(ctx->level);
+		result = ctx->appender->priority_text(ctx->level);
 		break;
 	case 'm':
 		PFS_ASSERT(ctx->msg);

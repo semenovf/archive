@@ -228,12 +228,12 @@ protected:
 	{
 		print(_pattern.empty()
 				? msg
-				: patternify(level, _pattern, msg));
+				: patternify(this, level, _pattern, msg));
 	}
     
     void init ();
 
-	static pfs::string patternify (logger_appender & appender
+	static pfs::string patternify (logger_appender * appender
         , int level
         , string const & pattern
         , string const & text);
@@ -266,13 +266,13 @@ public:
     
     string priority_text (int level) const
     {
-        PFS_ASSERT(level >= trace_priority && level < logger::nolog_priority)
+        PFS_ASSERT(level >= logger::trace_priority && level < logger::nolog_priority)
         return _priority_text[level];
     }
     
     void set_priority_text (int level, string const & text) 
     {
-        PFS_ASSERT(level >= trace_priority && level < logger::nolog_priority);
+        PFS_ASSERT(level >= logger::trace_priority && level < logger::nolog_priority);
         _priority_text[level] = text;
     }
 };

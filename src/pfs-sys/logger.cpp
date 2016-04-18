@@ -106,7 +106,7 @@ void logger_appender::init ()
 	set_priority_text(logger::fatal_priority, _u8("F"));
 }
 
-string logger_appender::patternify (logger_appender & appender
+string logger_appender::patternify (logger_appender * appender
     , int level
     , string const & pattern
     , string const & msg)
