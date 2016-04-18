@@ -28,19 +28,11 @@ struct pattern_spec
 
 struct pattern_context
 {
+    logger_appender & appender;
 	int            level;
 	string         result;
-	const string * msg;
+	string const * msg;
 	pattern_spec   pspec;
-};
-
-const string __priority_str[] = {
-	  _u8("Trace")
-	, _u8("Debug")
-	, _u8("Info")
-	, _u8("Warn")
-	, _u8("Error")
-	, _u8("Fatal")
 };
 
 static bool begin_spec        (string::const_iterator begin, string::const_iterator end, void * context, void * action_args);
@@ -164,7 +156,7 @@ static bool end_spec (string::const_iterator, string::const_iterator, void * con
 		result.push_back('\t');
 		break;
 	case 'p':
-		result = __priority_str[ctx->level];
+		result = ctx->appender.priority_text(ctx->level);
 		break;
 	case 'm':
 		PFS_ASSERT(ctx->msg);

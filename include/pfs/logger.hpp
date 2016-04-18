@@ -219,27 +219,37 @@ class logger_appender : public has_slots<>
 
 protected:
 	pfs::string _pattern;
+    pfs::string _priority_text[logger::priority_count - 1]; // exclude nolog_priority
 
 protected:
-	virtual void print (const pfs::string & msg) = 0;
+	virtual void print (pfs::string const & msg) = 0;
 
-	void print_helper (int level, const pfs::string & msg)
+	void print_helper (int level, pfs::string const & msg)
 	{
 		print(_pattern.empty()
 				? msg
 				: patternify(level, _pattern, msg));
 	}
+    
+    void init ();
 
-	static pfs::string patternify (int level, const pfs::string & pattern, const pfs::string & text);
+	static pfs::string patternify (logger_appender & appender
+        , int level
+        , string const & pattern
+        , string const & text);
 
 public:
 	logger_appender ()
 		: _pattern(logger::default_pattern)
-	{}
+	{
+        init();
+    }
 
-	logger_appender (const pfs::string & pattern)
+	logger_appender (pfs::string const & pattern)
 		: _pattern(pattern)
-	{}
+	{
+        init();
+    }
 
 	virtual ~logger_appender ()
 	{}
@@ -249,10 +259,22 @@ public:
 		return _pattern;
 	}
 
-	void set_pattern (const pfs::string & pattern)
+	void set_pattern (pfs::string const & pattern)
 	{
 		_pattern = pattern;
 	}
+    
+    string priority_text (int level) const
+    {
+        PFS_ASSERT(level >= trace_priority && level < logger::nolog_priority)
+        return _priority_text[level];
+    }
+    
+    void set_priority_text (int level, string const & text) 
+    {
+        PFS_ASSERT(level >= trace_priority && level < logger::nolog_priority);
+        _priority_text[level] = text;
+    }
 };
 
 class stdout_appender : public logger_appender
@@ -263,7 +285,7 @@ public:
 	{}
 
 protected:
-	virtual void print (const pfs::string & msg) override
+	virtual void print (pfs::string const & msg) override
 	{
 		std::cout << msg << std::endl;
 	}

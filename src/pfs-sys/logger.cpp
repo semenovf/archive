@@ -96,13 +96,26 @@ void log::print (const notification & nx)
 
 #endif
 
+void logger_appender::init ()
+{
+    set_priority_text(logger::trace_priority, _u8("T"));
+	set_priority_text(logger::debug_priority, _u8("D"));
+	set_priority_text(logger::info_priority , _u8("I"));
+	set_priority_text(logger::warn_priority , _u8("W"));
+	set_priority_text(logger::error_priority, _u8("E"));
+	set_priority_text(logger::fatal_priority, _u8("F"));
+}
 
-string logger_appender::patternify (int level, const string & pattern, const string & msg)
+string logger_appender::patternify (logger_appender & appender
+    , int level
+    , string const & pattern
+    , string const & msg)
 {
 	pattern_context ctx;
+    ctx.appender = appender;
 	ctx.level = level;
 	ctx.msg = & msg;
-	fsm::fsm<string> fsm(pattern_fsm, &ctx);
+	fsm::fsm<string> fsm(pattern_fsm, & ctx);
 
 	fsm::fsm<string>::result_type r = fsm.exec(0, pattern.cbegin(), pattern.cend());
 
