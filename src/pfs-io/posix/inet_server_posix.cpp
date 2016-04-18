@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include "pfs/io/inet_server.hpp"
 #include "inet_socket_posix.hpp"
 
@@ -66,6 +67,9 @@ public:
     {
     	return server_tcp;
     }
+    
+    virtual string url () const;
+
 };
 
 error_code tcp_server::open (bool non_blocking)
@@ -159,6 +163,17 @@ error_code tcp_server::accept (bits::device ** peer, bool non_blocking)
 	*peer = dynamic_cast<bits::device *>(peer_socket);
 
 	return error_code();
+}
+
+string tcp_server::url () const
+{
+    char str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, & _sockaddr.sin_addr, str, INET_ADDRSTRLEN);
+    string r("tcp://");
+    r.append(str);
+    r.append(":");
+    r.append(to_string(_sockaddr.sin_port, 10));
+    return r;
 }
 
 }}}

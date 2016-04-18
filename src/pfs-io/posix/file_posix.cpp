@@ -90,6 +90,13 @@ struct file : public bits::device
     {
     	return device_file;
     }
+    
+    virtual string url () const
+    {
+        string r("file:/");
+        r.append(to_string(path));
+        return r;
+    }
 };
 
 error_code file::open (const fs::path & path, int oflags, mode_t omode)

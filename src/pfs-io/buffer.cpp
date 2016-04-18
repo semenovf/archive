@@ -76,6 +76,11 @@ struct buffer : public bits::device
     {
     	return device_buffer;
     }
+    
+    virtual string url () const
+    {
+        return _u8("buffer");
+    }
 };
 
 ssize_t buffer::read (byte_t * bytes, size_t n, error_code * ex)

@@ -187,9 +187,14 @@ public:
 
 	context_type * context ()
 	{
-		return  _d->context();
+		return _d->context();
 	}
 
+    string url () const
+    {
+        return _d->url();
+    }
+    
 	void swap (device & other)
 	{
 		_d.swap(other._d);

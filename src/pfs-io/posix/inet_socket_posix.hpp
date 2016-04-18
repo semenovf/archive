@@ -9,6 +9,7 @@
 #define __PFS_INET_SOCKET_POSIX_HPP__
 
 #include <cstring>
+#include <arpa/inet.h>
 #include "pfs/io/inet_socket.hpp"
 
 namespace pfs { namespace io { namespace details {
@@ -108,6 +109,8 @@ public:
 	virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex);
 
 	virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
+    
+    virtual string url () const;
 };
 
 }}}

@@ -283,6 +283,17 @@ ssize_t tcp_socket::write (const byte_t * bytes, size_t nbytes, error_code * ex)
 	return r;
 }
 
+string tcp_socket::url () const
+{
+    char str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, & _sockaddr.sin_addr, str, INET_ADDRSTRLEN);
+    string r("tcp://");
+    r.append(str);
+    r.append(":");
+    r.append(to_string(_sockaddr.sin_port, 10));
+    return r;
+}
+
 }}} // pfs::io::details
 
 namespace pfs { namespace io {

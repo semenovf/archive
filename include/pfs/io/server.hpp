@@ -21,7 +21,7 @@ class server
 {
 public:
 	typedef device::native_handle_type native_handle_type;
-	typedef device::context_type          info_type;
+	typedef device::context_type       context_type;
 
 protected:
     shared_ptr<bits::server> _d;
@@ -90,20 +90,25 @@ public:
 		return _d->type();
 	}
 
-	void set_info (info_type * info)
+	void set_context (context_type * ctx)
 	{
-		_d->set_context(info);
+		_d->set_context(ctx);
 	}
 
-	const info_type * info () const
+	const context_type * context () const
 	{
 		return _d->context();
 	}
 
-	info_type * info ()
+	context_type * context ()
 	{
-		return  _d->context();
+		return _d->context();
 	}
+    
+    string url () const
+    {
+        return _d->url();
+    }
 
 	bool operator == (const server & other)
 	{

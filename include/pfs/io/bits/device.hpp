@@ -81,6 +81,8 @@ public:
     		delete _ctx;
     	_ctx = context;
     }
+    
+    virtual string url () const = 0;
 };
 
 class device : public basic_device
@@ -89,7 +91,7 @@ public:
 	typedef bits::native_handle_type native_handle_type;
 	typedef uint32_t       open_mode_flags;
 	typedef open_mode_enum open_mode_type;
-	typedef device_context    info_type;
+	typedef device_context info_type;
 
 public:
 	device ()
