@@ -1,5 +1,5 @@
 /*
- * utf_string.hpp
+ * string.hpp
  *
  *  Created on: Oct 25, 2015
  *      Author: wladt
@@ -1648,6 +1648,37 @@ string<CodeUnit, UtfTag> string<CodeUnit, UtfTag>::substr (size_type pos, size_t
 	return substr(begin, end);
 }
 
+template <typename CodeUnit, typename UtfTag>
+inline string<CodeUnit, UtfTag> operator + (string<CodeUnit, UtfTag> const & lhs
+    , string<CodeUnit, UtfTag> const & rhs)
+{
+	string<CodeUnit, UtfTag> r(lhs);
+    return r.append(rhs);
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline string<CodeUnit, UtfTag> operator + (string<CodeUnit, UtfTag> const & lhs
+    , char const * rhs)
+{
+	string<CodeUnit, UtfTag> r(lhs);
+    return r.append(rhs);
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline string<CodeUnit, UtfTag> operator + (char const * lhs
+    , string<CodeUnit, UtfTag> const & rhs)
+{
+	string<CodeUnit, UtfTag> r(lhs);
+    return r.append(rhs);
+}
+
+template <typename CodeUnit, typename UtfTag>
+inline string<CodeUnit, UtfTag> operator + (string<CodeUnit, UtfTag> const & lhs
+    , char const rhs)
+{
+	string<CodeUnit, UtfTag> r(lhs);
+    return r.append(1, rhs);
+}
 
 template <typename CodeUnit, typename UtfTag>
 inline bool operator == (const string<CodeUnit, UtfTag> & lhs
