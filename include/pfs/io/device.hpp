@@ -231,12 +231,20 @@ inline bool uncompress (device & src, device & dest, error_code * ex = 0)
 }
 
 template <typename DeviceTag>
-device open_device (const open_params<DeviceTag> &, error_code & ex);
+device open_device (open_params<DeviceTag> const &, error_code & ex);
 
 template <typename DeviceTag>
-inline device open_device (const open_params<DeviceTag> & op)
+inline device open_device (open_params<DeviceTag> const & op)
 {
 	error_code ex;
+	return open_device<DeviceTag>(op, ex);
+}
+
+template <typename DeviceTag>
+inline device open_device ()
+{
+	error_code ex;
+    open_params<DeviceTag> op;
 	return open_device<DeviceTag>(op, ex);
 }
 

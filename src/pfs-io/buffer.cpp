@@ -134,7 +134,7 @@ device open_device<buffer> (const open_params<buffer> & op, error_code & ex)
 	shared_ptr<bits::device> d(p);
     result._d.swap(d);
 
-    ex = error_code();
+    ex.reset();
 
     return result;
 }

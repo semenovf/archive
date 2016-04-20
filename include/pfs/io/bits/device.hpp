@@ -26,6 +26,7 @@ enum open_mode_enum
 enum device_type
 {
 	  device_unknown = 0
+    , device_null
 	, device_buffer
 	, device_file
 	, device_tcp_socket
