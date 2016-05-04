@@ -7,6 +7,10 @@
  */
 #include <pfs/logger.hpp>
 #include <pfs/safeformat.hpp>
+#include <pfs/byte_string.hpp>
+#include <pfs/platform.hpp>
+#include <pfs/io/device.hpp>
+#include <pfs/io/file.hpp>
 #include "pfs/dispatcher.hpp"
 
 namespace pfs {
@@ -391,6 +395,182 @@ int dispatcher::exec ()
 	return r;
 }
 
+bool dispatcher::register_modules (fs::path const & path)
+{
+    byte_string content;
+    string errstr;
+
+    if (!pfs::fs::exists(path)) {
+    	print_error(0, _Sf("%s: File not found")(to_string(path)).str());
+    	return false;
+    }
+
+    error_code ex;
+    io::device dev = io::open_device(io::open_params<io::file>(path, io::read_only), ex);
+
+    if (ex) {
+    	errstr = _Sf("%s: Open file error: %s")
+                (to_string(path))
+                (to_string(ex)).str();
+    	return false;
+    }
+
+    ex = dev.read(content, dev.available());
+
+    if (ex) {
+    	errstr = _Sf("%s: Read file error: %s")
+                (to_string(path))
+                (to_string(ex)).str();
+    	return false;
+    }
+
+    pfs::json::json conf = pfs::json::parse(string(reinterpret_cast<const char *>(content.data())));
+    
+    if (conf.is_null()) {
+    	print_error(0, _Sf("%s: File is not JSON")(to_string(path)).str());
+    	return false;
+    }
+
+    return register_modules(conf);
+}
+
+static string __buildLogFilename (string const & pattern)
+{
+	string r(pattern);
+
+	pfs::time currentTime = platform::current_time();
+	pfs::date currentDate = platform::current_date();
+
+	r = pfs::to_string(currentDate, r);
+	r = pfs::to_string(currentTime, r);
+
+	return r;
+}
+
+bool dispatcher::register_modules (json::json const & conf)
+{
+    pfs::json::value disp = conf["dispatcher"];
+
+    if (not disp.is_null()) {
+    	if (not disp.is_object()) {
+        	print_error(0, _u8("Dispatcher configuration error"));
+    		return false;
+    	}
+
+    	pfs::json::value dlog = disp["log"];
+
+    	if (dlog.is_object()) {
+
+    		pfs::logger logger;
+    		pfs::json::value::const_iterator it = dlog.cbegin();
+    		pfs::json::value::const_iterator itEnd = dlog.cend();
+
+    		for (; it != itEnd; ++it) {
+    			pfs::string name = it.key();
+    			pfs::json::value priority = *it;
+    			pfs::stringlist priorities;
+    			pfs::logger_appender * pappender = 0;
+
+    			if (name == _u8("stdout")) {
+    				pappender = & logger.add_appender<pfs::stdout_appender>();
+    			} else if (name == _u8("stderr")) {
+    				pappender = & logger.add_appender<pfs::stderr_appender>();
+    			} else {
+    				string pathStr = __buildLogFilename(name);
+    				fs::path path(pathStr);
+
+    				error_code ex;
+    				io::device d = io::open_device(io::open_params<io::file>(path, io::write_only), ex);
+
+    				if (ex) {
+    					print_error(0, _Sf("Failed to create/open log file: %s: %s")
+    							(to_string(path))
+    							(to_string(ex)).str());
+    					return false;
+    				}
+
+    				pappender = & logger.add_appender<file_appender, io::device>(d);
+    			}
+
+    			PFS_ASSERT(pappender);
+
+    			if (priority.is_string()) {
+    				priorities.push_back(priority.get<pfs::string>());
+    			} else if (priority.is_array()) {
+    				for (size_t i = 0; i < priority.size(); ++i) {
+    					priorities.push_back(priority[i].get<pfs::string>());
+    				}
+    			}
+
+        		for (size_t i = 0; i < priorities.size(); ++i) {
+        			if (priorities[i] == _u8("all")) {
+        				logger.connect(*pappender);
+        			} else if (priorities[i] == _u8("trace")) {
+        				logger.connect(pfs::logger::trace_priority, *pappender);
+        			} else if (priorities[i] == _u8("debug")) {
+        				logger.connect(pfs::logger::debug_priority, *pappender);
+        			} else if (priorities[i] == _u8("info")) {
+        				logger.connect(pfs::logger::info_priority, *pappender);
+        			} else if (priorities[i] == _u8("warn")) {
+        				logger.connect(pfs::logger::warn_priority, *pappender);
+        			} else if (priorities[i] == _u8("error")) {
+        				logger.connect(pfs::logger::error_priority, *pappender);
+        			} else if (priorities[i] == _u8("fatal")) {
+        				logger.connect(pfs::logger::fatal_priority, *pappender);
+        			} else {
+    					print_error(0, _Sf("Invalid log level name (must be 'all', 'trace', 'debug', 'info', 'warn', 'error' or 'fatal'): '%s'")
+    							(priorities[i]).str());
+    					return false;
+        			}
+        		}
+    		}
+
+    		logger::default_logger().move(logger);
+    	}
+    }
+
+    json::value modules = conf["modules"];
+    json::value::iterator it = modules.begin();
+    json::value::iterator it_end = modules.end();
+
+    bool result = true;
+
+    for (; it != it_end; ++it) {
+    	if (it->is_object()) {
+    		string name_str = (*it)["name"].get<string>();
+    		string path_str = (*it)["path"].get<string>();
+    		bool is_active       = (*it)["active"].get<bool>();
+    		bool is_master       = (*it)["master-module"].get<bool>();
+
+    		if (name_str.empty()) {
+    	    	print_error(0, _u8("Found anonymous module"));
+    	    	return false;
+    		}
+
+    		if (is_active) {
+    			bool rc = false;
+
+    			if (path_str.empty())
+    				rc = register_module_for_name(name_str, 0, & *it);
+    			else
+    				rc = register_module_for_path(fs::path(path_str), name_str, 0, & *it);
+
+    			if (rc) {
+    				if (is_master) {
+    					set_master_module(name_str);
+    				}
+    			} else {
+    				result = false;
+    			}
+    		} else {
+    			print_debug(0, _Sf("%s: Module is inactive")(name_str).str());
+    		}
+    	}
+    }
+
+    return result;    
+}
+
 void module::connect_info (log_consumer * p)
 {
 	_pdispatcher->emit_info.connect(p, & log_consumer::_on_info);
@@ -410,6 +590,5 @@ void module::connect_error (log_consumer * p)
 {
 	_pdispatcher->emit_error.connect(p, & log_consumer::_on_error);
 }
-
 
 } // pfs

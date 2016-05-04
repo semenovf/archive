@@ -19,6 +19,7 @@
 #include <pfs/shared_ptr.hpp>
 #include <pfs/sigslotmapping.hpp>
 #include <pfs/utility.hpp>
+#include <pfs/json/json.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -84,6 +85,22 @@ public:
 		if (!dir.empty())
 			_searchdirs.push_back(dir);
 	}
+
+    /**
+     * @brief Register modules enumerated in configuration file (JSON) specified by @a path.
+     * 
+     * @param path Configuration file path (JSON format).
+     * @return @c true if modules registered successfully. @c false otherwise.
+     */
+    bool register_modules (fs::path const & path);
+    
+    /**
+     * @brief Register modules enumerated in JSON instance specified by @a conf.
+     * 
+     * @param conf JSON instance contained modules for registration.
+     * @return @c true if modules registered successfully. @c false otherwise.
+     */
+    bool register_modules (json::json const & conf);
 
 	bool register_local_module (module * pmodule, const string & name)
 	{

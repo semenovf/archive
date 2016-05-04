@@ -12,7 +12,7 @@ includedirs   {
       "../../include"
     , "../../../pfs/include"
     , "../../../pfs-sys/include"
-    , "../../../pfs-test/include"
+    , "../../../pfs-json/include"
 }
 
 libdirs       { "../../../.build" }
