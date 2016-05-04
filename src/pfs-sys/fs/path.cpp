@@ -33,7 +33,7 @@ path path::canonical (const string_type & separator) const
 	pathlist pl;
 
 	while (comp_deque.size() > 0) {
-		pl.push_back(comp_deque.back());
+		pl.push_back(path(comp_deque.back()));
 		comp_deque.pop_back();
 	}
 

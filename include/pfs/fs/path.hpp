@@ -247,13 +247,13 @@ public:
 	 *
 	 * @note Platform specific.
 	 */
-	path (const string_type & s);
+	explicit path (const string_type & s);
 
 	path (const string_type & s, const string_type & separator)
 		: _path(s)
 	{}
 
-	path (const char * s);
+	explicit path (const char * s);
 
 	path & operator = (const string_type & s);
 	path & operator = (const char * s);
