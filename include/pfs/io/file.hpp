@@ -8,6 +8,7 @@
 #ifndef __PFS_IO_FILE_HPP__
 #define __PFS_IO_FILE_HPP__
 
+#include <pfs/logger.hpp>
 #include <pfs/fs/path.hpp>
 #include <pfs/io/device.hpp>
 
@@ -70,5 +71,29 @@ template <>
 device open_device<file> (const open_params<file> & op, error_code & ex);
 
 }} // pfs::io
+
+namespace pfs {
+
+class file_appender : public pfs::logger_appender
+{
+	io::device _d;
+
+public:
+	file_appender (fs::path const & path);
+
+	file_appender (io::device d)
+		: _d(d)
+	{}
+
+	~file_appender ()
+	{
+		_d.close();
+	}
+
+protected:
+	virtual void print (string const & msg);
+};
+
+}
 
 #endif /* __PFS_IO_FILE_HPP__ */
