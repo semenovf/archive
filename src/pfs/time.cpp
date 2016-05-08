@@ -74,38 +74,49 @@ string to_string (const time & t, const string & format)
 				case 'n':
 					r.push_back('\n');
 					break;
+                    
 				case 't':
 					r.push_back('\t');
 					break;
+                    
 				case 'H':
 					append_prefixed2(r, '0', t.hour());
 					break;
+                    
 				case 'I':
 					append_prefixed2(r, '0', t.hour() % 12);
 					break;
+                    
 				case 'k':
 					append_prefixed2(r, ' ', t.hour());
 					break;
+                    
 				case 'l':
 					append_prefixed2(r, ' ', t.hour() % 12);
 					break;
+                    
 				case 'M':
 					append_prefixed2(r, '0', t.minute());
 					break;
+                    
 				case 'q':
 					r.append(to_string(t.millis()));
 					break;
+                    
 				case 'Q':
 					append_prefixed3(r, '0', t.millis());
 					break;
+                    
 				case 'S':
 					append_prefixed2(r, '0', t.second());
 					break;
+                    
 				case 'R':
 					append_prefixed2(r, '0', t.hour());
 					r.push_back(':');
 					append_prefixed2(r, '0', t.minute());
 					break;
+                    
 				case 'T':
 					append_prefixed2(r, '0', t.hour());
 					r.push_back(':');
@@ -113,6 +124,7 @@ string to_string (const time & t, const string & format)
 					r.push_back(':');
 					append_prefixed2(r, '0', t.second());
 					break;
+                    
 				case 'J':
 					append_prefixed2(r, '0', t.hour());
 					r.push_back(':');
@@ -122,9 +134,11 @@ string to_string (const time & t, const string & format)
 					r.push_back('.');
 					append_prefixed3(r, '0', t.millis());
 					break;
+                    
 				case 'p':
 					r.append(t.hour() < 12 ? _u8("AM") : _u8("PM"));
 					break;
+                    
 				default:
 					r.push_back('%');
 					r.push_back(*p);

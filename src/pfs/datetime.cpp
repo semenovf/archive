@@ -5,6 +5,7 @@
  *      Author: wladt
  */
 
+#include <pfs/safeformat.hpp>
 #include "pfs/datetime.hpp"
 
 namespace pfs {
@@ -88,6 +89,21 @@ intmax_t lexical_cast (const datetime & dt)
 	return r;
 }
 
+string timezone::offset_to_string (long int off)
+{
+    int sign = 1;
+    
+    if (off < 0) {
+        off *= -1;
+        sign = -1;
+    }
+    
+    int h = off / 3600;
+    int m  = (off - h * 3600) / 60;
+    return sign < 0 ? _Sf("-%02u%02u")(h)(m).str() : _Sf("+%02u%02u")(h)(m).str();
+}
+
+
 string to_string (datetime const & dt)
 {
 	string r = to_string(dt.get_date());
@@ -96,10 +112,51 @@ string to_string (datetime const & dt)
 	return r;
 }
 
-string to_string (datetime const & dt, string const & format)
+string to_string (datetime const & dt, timezone const & tz, string const & format)
 {
-    string r = to_string(dt.get_date(), format);
-    r = to_string(dt.get_time(), r);
+    string tmp = to_string(dt.get_date(), format);
+    tmp = to_string(dt.get_time(), tmp);
+
+	typename string::const_iterator p = tmp.cbegin();
+	typename string::const_iterator end = tmp.cend();
+
+	bool need_spec = false; // true if conversion specifier character expected
+
+    string r(tmp);
+    
+	while (p < end) {
+		if (*p == '%') {
+			if (need_spec) {
+				r.push_back('%');
+				need_spec = false;
+			} else {
+				need_spec = true;
+			}
+		} else {
+			if (!need_spec) {
+				r.push_back(*p);
+			} else {
+				switch (lexical_cast<char>(*p)) {
+				case 'Z':
+					r.append(tz.tzname());
+					break;
+                    
+				case 'z':
+					r.append(tz.offset_to_string());
+					break;
+
+				default:
+					r.push_back('%');
+					r.push_back(*p);
+					break;
+				}
+
+				need_spec = false;
+			}
+		}
+		++p;
+	}
+    
     return r;
 }
         

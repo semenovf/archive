@@ -234,6 +234,60 @@ public:
 	}
 };
 
+class DLL_API timezone
+{
+    string   _tzname;
+    long int _offset;
+    
+public:
+    timezone () 
+        : _tzname("XXXX")
+        , _offset(0) 
+    {}
+        
+    timezone (string const & tzname, long int offset)
+        : _tzname(tzname)
+        , _offset(0) 
+    {}
+
+    timezone (timezone const & other)
+        : _tzname(other._tzname)
+        , _offset(other._offset)
+    {}
+
+    timezone & operator = (timezone const & other)
+    {
+        _tzname = other._tzname;
+        _offset = other._offset;
+        return *this;
+    }
+    
+    string const & tzname () const 
+    {
+        return _tzname;
+    }
+    
+    long int offset () const
+    {
+        return _offset;
+    }
+    
+    string offset_to_string () const
+    {
+        return offset_to_string(_offset);
+    }
+    
+public:
+    /*
+     * @brief Converts UTC offset to string. 
+     * @param off UTC offset value.
+     * 
+     * @return String in format '+hhmm' or '-hhmm' (that is, the hour and minute offset from UTC).
+     */
+    static string offset_to_string (long int off);
+    
+};
+
 /**
  * @brief Converts date and time to string according to @a format.
  * 
@@ -241,8 +295,12 @@ public:
  * @param format Format to convert @a dt.
  * @return String representation of @a dt.
  */
-string to_string (datetime const & dt, string const & format);
+string to_string (datetime const & dt, timezone const & tz, string const & format);
 
+inline string to_string (datetime const & dt, string const & format)
+{
+    return to_string(dt, timezone(), format);
+}
 
 /**
  * @brief Converts date and time to string.
