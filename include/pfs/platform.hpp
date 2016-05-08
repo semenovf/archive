@@ -20,6 +20,15 @@ DLL_API pfs::time current_time ();
 DLL_API pfs::date current_date ();
 DLL_API pfs::datetime current_datetime ();
 
+DLL_API string timezone ();
+DLL_API long int offset_utc ();
+
+inline pfs::timezone current_timezone ()
+{
+    return pfs::timezone(timezone(), offset_utc());
+}
+
+
 DLL_API string to_string (const error_code & ex);
 
 /**
@@ -33,6 +42,8 @@ DLL_API string to_string (const error_code & ex);
  *
  * @note This function is a wrapper around ANSI C strftime() or wcsftime()
  *       (depends on pfs::string implementation).
+ * 
+ * @note DEPRECATED
  */
 pfs::string strftime (const pfs::string & format, const struct tm & tm, size_t max = 128);
 

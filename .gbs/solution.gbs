@@ -76,3 +76,8 @@ project "demo-logger"
 project "test-functor-queue"
     include("test-functor-queue/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "demo-utc-time"
+    include("demo-utc-time/project.gbs")
+-- END PROJECT
