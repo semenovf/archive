@@ -60,6 +60,8 @@ private:
 dispatcher::dispatcher (api_item_type * mapping, int n)
 	: _master_module(0)
 {
+    activate_posix_signal_handling();
+            
 	for (int i = 0; i < n; ++i) {
 		_api.insert(api_type::value_type(mapping[i].id, & mapping[i]));
 	}
@@ -124,10 +126,10 @@ module_spec dispatcher::module_for_path (const fs::path & path
 	}
 
 	if (not dl.open(dlpath, _searchdirs, & ex, & extended_errstr)) {
-		print_error(0, _Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
+		print_error(0, _Sf("%s: %s")(to_string(dlpath))(to_string(ex)).str());
 
 		if (not extended_errstr.empty()) {
-			print_error(0, _Sf("%s: %s")(dlpath.native())(extended_errstr).str());
+			print_error(0, _Sf("%s: %s")(to_string(dlpath))(extended_errstr).str());
 		}
 
 		return module_spec();
@@ -138,11 +140,11 @@ module_spec dispatcher::module_for_path (const fs::path & path
 			, & extended_errstr);
 
 	if (!ctor) {
-		print_error(0, _Sf("%s: Failed to resolve `ctor' for module")(dlpath.native()).str());
-		print_error(0, _Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
+		print_error(0, _Sf("%s: Failed to resolve `ctor' for module")(to_string(dlpath)).str());
+		print_error(0, _Sf("%s: %s")(to_string(dlpath))(to_string(ex)).str());
 
 		if (not extended_errstr.empty()) {
-			print_error(0, _Sf("%s: %s")(dlpath.native())(extended_errstr).str());
+			print_error(0, _Sf("%s: %s")(to_string(dlpath))(extended_errstr).str());
 		}
 
 		return module_spec();
@@ -153,11 +155,11 @@ module_spec dispatcher::module_for_path (const fs::path & path
 			, & extended_errstr);
 
 	if (!dtor) {
-		print_error(0, _Sf("%s: Failed to resolve `dtor' for module")(dlpath.native()).str());
-		print_error(0, _Sf("%s: %s")(dlpath.native())(to_string(ex)).str());
+		print_error(0, _Sf("%s: Failed to resolve `dtor' for module")(to_string(dlpath)).str());
+		print_error(0, _Sf("%s: %s")(to_string(dlpath))(to_string(ex)).str());
 
 		if (not extended_errstr.empty()) {
-			print_error(0, _Sf("%s: %s")(dlpath.native())(extended_errstr).str());
+			print_error(0, _Sf("%s: %s")(to_string(dlpath))(extended_errstr).str());
 		}
 
 		return module_spec();

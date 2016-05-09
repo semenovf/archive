@@ -69,12 +69,16 @@ protected:
     dispatcher ()
 		: _master_module(0)
 	{}
+        
+    bool activate_posix_signal_handling ();
+    void deactivate_posix_signal_handling ();
 
 public:
 	dispatcher (api_item_type * mapping, int n);
 
 	virtual ~dispatcher ()
 	{
+        deactivate_posix_signal_handling();
 		finalize();
 	}
 

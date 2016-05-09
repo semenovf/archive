@@ -33,8 +33,9 @@ configuration "release"
     links        { "pfs", "pfs-sys", "pfs-json", "pfs-io" }
 
 filter "platforms:unix*"
-    files {   "../../src/pfs-app/unix/*.cpp"
-            , "../../src/pfs-app/unix/*.hpp"
+    files {
+              "../../src/pfs-app/posix/*.hpp"
+            , "../../src/pfs-app/posix/*.cpp"
           }
 
 filter "platforms:mswin*"

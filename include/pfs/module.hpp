@@ -78,7 +78,7 @@ public: // signals
 	signal2<const module *, const string &> emit_debug;
 	signal2<const module *, const string &> emit_warn;
 	signal2<const module *, const string &> emit_error;
-
+    
 private:
 	string       _name;
 	dispatcher * _pdispatcher;
