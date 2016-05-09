@@ -247,7 +247,7 @@ public:
         
     timezone (string const & tzname, long int offset)
         : _tzname(tzname)
-        , _offset(0) 
+        , _offset(offset) 
     {}
 
     timezone (timezone const & other)

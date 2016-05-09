@@ -122,7 +122,7 @@ string to_string (datetime const & dt, timezone const & tz, string const & forma
 
 	bool need_spec = false; // true if conversion specifier character expected
 
-    string r(tmp);
+    string r;
     
 	while (p < end) {
 		if (*p == '%') {
