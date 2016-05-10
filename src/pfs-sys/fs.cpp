@@ -54,15 +54,6 @@ string fs::join (const stringlist & items) const
 	return result;
 }
 
-string fs::basename (const string & path) const
-{
-	vector<string> s = path.split(separator(), true, pfs::ucchar('"'));
-
-	if (s.size() > 0)
-		return s[s.size() - 1];
-
-	return pfs::string();
-}
 
 string fs::tempFile (const string & prefix, const string & suffix, const string & dir, int nattempts)
 {

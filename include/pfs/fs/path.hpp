@@ -55,7 +55,11 @@ public:
 	typedef pfs::stringlist stringlist_type;
 
 public:
-	static const string_type default_separator ();
+	static string_type default_separator ();
+    static string_type separator ()
+    {
+        return default_separator();
+    }
 
 private:
 	string_type _path;
@@ -119,13 +123,11 @@ public:
 	public:
 		iterator (const iterator & other)
 			: _p(other._p)
-//			, _pcomponents(other._pcomponents)
 		{}
 
 		iterator & operator = (const iterator & other)
 		{
 			_p = other._p;
-//			_pcomponents = other._pcomponents;
 			return *this;
 		}
 
@@ -209,7 +211,7 @@ public:
 
 		shared_ptr<stringlist_type> _pcomponents;
 
-		range (const string_type & s, const string_type & separator = default_separator())
+		range (string_type const & s, string_type const & separator = default_separator())
 			: _pcomponents(new stringlist_type)
 		{
 			split(s, separator, DontKeepEmpty, *_pcomponents);
@@ -225,6 +227,22 @@ public:
 		{
 			return iterator(_pcomponents->end());
 		}
+        
+        /**
+         * @return First component of the path or empty string if path is empty.
+         */
+        string_type first () const
+        {
+            return _pcomponents->size() > 0 ? _pcomponents->at(0) : string_type();
+        }
+
+        /**
+         * @return Last component of the path empty string if path is empty.
+         */
+        string_type last () const
+        {
+            return _pcomponents->size() > 0 ? _pcomponents->at(_pcomponents->size() - 1) : string_type();
+        }
 	};
 
 public:
@@ -288,7 +306,6 @@ public:
 //	bool simple_backup (const string & path);
 //	string currentDirectory () const;
 
-//	string basename (const string & path) const;
 //	string join (const string & dir, const string filename) const;
 //	string join (const stringlist & items) const;
 //	stringlist entryListByRegExp (const string & dir
@@ -343,6 +360,25 @@ inline bool exists (const path & p, error_code * ex = 0)
 {
 	file_status ft = get_file_status(p, ex);
 	return ft.type() != status_error && ft.type() != file_not_found;
+}
+
+/**
+ * @brief Strip directory and suffix from path.
+ * @param p Path to strip.
+ * @return Path component with any leading directory components and suffixes removed.
+ * 
+ * The base name consists of all characters in the file up to (but not including) the first '.' character.
+ */
+string basename (path const & p);
+
+/**
+ * @brief Strip directory from path.
+ * @param p Path to strip.
+ * @return Path component with any leading directory components removed.
+ */
+inline string filename (path const & p)
+{
+    return p.get_range().last();
 }
 
 /**
@@ -420,14 +456,14 @@ path join (const path & p1, const path & p2, const string & separator = path::de
  *
  * @return Resulting path after join.
  */
-path join (const pathlist & pl, const string & separator = path::default_separator());
+path join (pathlist const & pl, string const & separator = path::default_separator());
 
 /**
  * @brief Joins path list components and path instance.
  *
  * @return Resulting path after join.
  */
-inline path join (const pathlist & pl, const path & p, const string & separator = path::default_separator())
+inline path join (pathlist const & pl, path const & p, string const & separator = path::default_separator())
 {
 	path r = join(pl, separator);
 	return join(r, p, separator);

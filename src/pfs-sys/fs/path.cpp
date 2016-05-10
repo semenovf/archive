@@ -51,7 +51,7 @@ path join (const path & p1, const path & p2, const string & separator)
 	return path(r);
 }
 
-path join (const pathlist & pl, const string & separator)
+path join (pathlist const & pl, string const & separator)
 {
 	string r;
 
@@ -131,6 +131,14 @@ path search_file (const path & file
 	}
 
 	return path();
+}
+
+string basename (path const & p)
+{
+    string s = p.get_range().last();
+    stringlist sl;
+    split(s, _u8("."), pfs::dont_keep_empty, sl);
+    return sl.size() > 0 ? sl.at(0) : string();
 }
 
 }} // pfs::fs

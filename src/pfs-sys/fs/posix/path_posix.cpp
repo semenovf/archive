@@ -16,7 +16,7 @@
 
 namespace pfs { namespace fs {
 
-const path::string_type path::default_separator ()
+path::string_type path::default_separator ()
 {
 	return path::string_type("/");
 }
