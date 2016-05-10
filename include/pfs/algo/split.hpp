@@ -15,6 +15,8 @@ namespace pfs {
 enum {
 	  DontKeepEmpty = false
 	, KeepEmpty = true
+    , dont_keep_empty = false
+    , keep_empty = true
 };
 
 // Sequence must provide methods:
