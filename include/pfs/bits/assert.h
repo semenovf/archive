@@ -27,7 +27,7 @@ EXTERN_C_END
 #else
 #	define PFS_DEBUG(x)
 #	define PFS_ASSERT(x)
-#	define PFS_ASSERT_X(x)
+#	define PFS_ASSERT_X(x,y)
 #endif /* !NDEBUG */
 
 ///*
