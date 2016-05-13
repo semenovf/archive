@@ -17,43 +17,12 @@ void pfs_assert (const char * file, int line, const char * text);
 EXTERN_C_END
 
 #ifndef NDEBUG
-#	define PFS_DEBUG(x) x
 #	define PFS_ASSERT(expr) if (!(expr)) { pfs_assert(__TFILE__, __LINE__, #expr); }
 #	define PFS_ASSERT_X(expr,text) if (!(expr)) { pfs_assert(__TFILE__, __LINE__, text); }
-
-//#	define PFS_WARN(x) \
-//		fprintf(stderr, "WARN: (%s[%d]): %s\n", __TFILE__, __LINE__, x)
-
 #else
-#	define PFS_DEBUG(x)
-#	define PFS_ASSERT(x)
-#	define PFS_ASSERT_X(x,y)
+#	define PFS_ASSERT(x) PFS_UNUSED(x)
+#	define PFS_ASSERT_X(x,y) PFS_UNUSED(x)
 #endif /* !NDEBUG */
-
-///*
-// * System error exception
-// */
-//#define PFS_THROW_X(errstr)                                 \
-//	if (true) {                                             \
-//		fprintf(stderr, "ERROR: (%s[%d]): %s\n"             \
-//				, __TFILE__                                 \
-//				, __LINE__                                  \
-//				, errstr);                                  \
-//		::exit(-1);                                         \
-//	}
-//
-///*
-// * System error exception
-// */
-//#define PFS_THROW_SYSERR(xerrno)                            \
-//	if ((xerrno) != 0) {                                    \
-//		fprintf(stderr, "ERROR: (%s[%d]): %s (errno=%d)\n"  \
-//				, __TFILE__                                 \
-//				, __LINE__                                  \
-//				, strerror(xerrno)                          \
-//				, xerrno);                                  \
-//		::exit(-1);                                         \
-//	}
 
 #define PFS_ASSERT_FORMAT(x)      PFS_ASSERT(x)
 #define PFS_ASSERT_RANGE(x)       PFS_ASSERT(x)

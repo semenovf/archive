@@ -98,8 +98,8 @@ std::string context::stringifyTime (double t)
 	std::stringstream ss;
 	long sec, usec;
 
-	sec = long(t);
-	usec = long((t - long(t)) * 1000000);
+	sec = static_cast<long>(t);
+	usec = static_cast<long>((t - long(t)) * 1000000);
 
 	ss << std::setw(6) << std::setfill('0') << sec << '.'
 	   << std::setw(6) << std::setfill('0') << usec;

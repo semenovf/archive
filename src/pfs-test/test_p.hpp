@@ -9,7 +9,7 @@
 #define __PFS_TEST_P_HPP__
 
 #if defined(NDEBUG) || defined(_NDEBUG)
-#	define PFS_ASSERT(p)
+#	define PFS_ASSERT(p) p
 #else
 #	include <cassert>
 #	define PFS_ASSERT(p) assert(p)
