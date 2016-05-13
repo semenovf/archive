@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include <pfs/debug.hpp>
 #include "pfs/io/device.hpp"
 #include "pfs/io/server.hpp"
 #include "pfs/io/pool.hpp"
