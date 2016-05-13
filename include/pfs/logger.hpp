@@ -266,7 +266,7 @@ public:
     
     string priority_text (int level) const
     {
-        PFS_ASSERT(level >= logger::trace_priority && level < logger::nolog_priority)
+        PFS_ASSERT(level >= logger::trace_priority && level < logger::nolog_priority);
         return _priority_text[level];
     }
     

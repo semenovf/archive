@@ -1,3 +1,4 @@
+#include <pfs/debug.hpp>
 #include "pfs/thread.hpp"
 #include "pfs/mutex.hpp"
 #include "thread_p.hpp"

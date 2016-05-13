@@ -4,6 +4,7 @@
 #include <iostream>
 #include <pthread.h>
 #include <pfs/utility.hpp>
+#include <pfs/debug.hpp>
 
 #include "pfs/thread.hpp"
 #include "pfs/platform.hpp"
