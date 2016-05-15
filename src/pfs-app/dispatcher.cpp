@@ -426,9 +426,10 @@ bool dispatcher::register_modules (fs::path const & path)
     	return false;
     }
 
-    pfs::json::json conf = pfs::json::parse(string(reinterpret_cast<const char *>(content.data())));
+    pfs::json::json conf;
+    bool rc = pfs::json::parse(conf, string(reinterpret_cast<const char *>(content.data())));
     
-    if (conf.is_null()) {
+    if (not rc) {
     	print_error(0, _Sf("%s: File is not JSON")(to_string(path)).str());
     	return false;
     }
