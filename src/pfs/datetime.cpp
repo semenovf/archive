@@ -71,7 +71,7 @@ void datetime::set_millis_since_epoch (intmax_t millis)
     _time = time(0, 0, 0).add_millis(int(millis));
 }
 
-intmax_t lexical_cast (const datetime & dt)
+intmax_t lexical_cast (datetime const & dt)
 {
 	date d = dt.get_date();
 	int Y = d.year();

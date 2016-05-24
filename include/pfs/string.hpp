@@ -362,7 +362,7 @@ inline string to_string (long double value)
 
 
 template <typename Integer>
-typename pfs::enable_if<pfs::is_signed<Integer>::value, Integer>::type
+typename pfs::enable_if<pfs::is_integral<Integer>::value && pfs::is_signed<Integer>::value, Integer>::type
 lexical_cast (string::const_iterator begin
 		, string::const_iterator end
 		, int radix
@@ -392,7 +392,7 @@ lexical_cast (string::const_iterator begin
 
 template <typename Integer>
 inline
-typename pfs::enable_if<pfs::is_signed<Integer>::value, Integer>::type
+typename pfs::enable_if<pfs::is_integral<Integer>::value && pfs::is_signed<Integer>::value, Integer>::type
 lexical_cast (const string & s, int radix, bool * ok = 0)
 {
 	return lexical_cast<Integer>(s.begin(), s.end(), radix, ok);
@@ -400,14 +400,14 @@ lexical_cast (const string & s, int radix, bool * ok = 0)
 
 template <typename Integer>
 inline
-typename pfs::enable_if<pfs::is_signed<Integer>::value, Integer>::type
+typename pfs::enable_if<pfs::is_integral<Integer>::value && pfs::is_signed<Integer>::value, Integer>::type
 lexical_cast (const string & s, bool * ok = 0)
 {
     return lexical_cast<Integer>(s.begin(), s.end(), 10, ok);
 }
 
 template <typename Integer>
-typename pfs::enable_if<pfs::is_unsigned<Integer>::value, Integer>::type
+typename pfs::enable_if<pfs::is_integral<Integer>::value && pfs::is_unsigned<Integer>::value, Integer>::type
 lexical_cast (string::const_iterator begin
 		, string::const_iterator end
 		, int radix
@@ -437,7 +437,7 @@ lexical_cast (string::const_iterator begin
 
 template <typename Integer>
 inline
-typename pfs::enable_if<pfs::is_unsigned<Integer>::value, Integer>::type
+typename pfs::enable_if<pfs::is_integral<Integer>::value && pfs::is_unsigned<Integer>::value, Integer>::type
 lexical_cast (const string & s, int radix, bool * ok = 0)
 {
 	return lexical_cast<Integer>(s.begin(), s.end(), radix, ok);
@@ -445,7 +445,7 @@ lexical_cast (const string & s, int radix, bool * ok = 0)
 
 template <typename Integer>
 inline
-typename pfs::enable_if<pfs::is_unsigned<Integer>::value, Integer>::type
+typename pfs::enable_if<pfs::is_integral<Integer>::value && pfs::is_unsigned<Integer>::value, Integer>::type
 lexical_cast (const string & s, bool * ok = 0)
 {
 	return lexical_cast<Integer>(s.begin(), s.end(), 10, ok);

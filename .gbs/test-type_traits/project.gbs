@@ -1,0 +1,41 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --name=test-type_traits --type=test --depends=pfs'
+--* Date:    Tue May 24 18:13:36 2016
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-type_traits"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-type_traits/*.c", "../../tests/test-type_traits/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs/test-type_traits/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs/test-type_traits/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs" }
+
+dependson { "pfs" }
+
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+

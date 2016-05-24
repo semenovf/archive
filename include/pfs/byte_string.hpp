@@ -800,21 +800,7 @@ public:
 #endif //__COMMENT__
 };
 
-
-#if __FIXME__
-
-//
-// Specialization for utf8_string
-//
-template <>
-inline byte_string byte_string::toBytes<utf8_string> (const utf8_string & v, endian::type_enum /*order*/)
-{
-	return byte_string(v.constData(), v.size());
-}
-
-
-#endif
-
+#if __FIXME__ // FIXME
 
 // TODO For integers only supported by endian class
 //
@@ -879,8 +865,7 @@ inline T unpack (byte_string::const_iterator & pos)
 	return r;
 }
 
-
-
+#endif
 
 //
 // For integers only supported by endian class
