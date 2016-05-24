@@ -10,6 +10,7 @@
 
 #include <string>
 #include <ostream>
+#include <pfs/shared_ptr.hpp>
 #include <pfs/utf/traits.hpp>
 
 namespace pfs { namespace utf {
@@ -31,6 +32,8 @@ public:
     typedef typename utf_traits_type::const_iterator   const_iterator;
     typedef std::reverse_iterator<iterator>            reverse_iterator;
     typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
+    
+    typedef typename pfs::shared_ptr<string<CodeUnit, UtfTag> > shared_ptr_type;
 
 private:
     rep_type  _d;

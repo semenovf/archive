@@ -158,6 +158,22 @@ template <> struct is_floating_point<double> { static const bool value = true; }
 template <> struct is_floating_point<long double> { static const bool value = true; };
 #endif
 
+template <typename T>
+struct is_boolean { static const bool value = false; };
+
+template <>
+struct is_boolean<bool> { static const bool value = true; };
+
+template <typename T>
+struct is_integral { static const bool value = is_signed<T>::value || is_unsigned<T>::value || is_boolean<T>::value; };
+
+template <typename T>
+struct is_number { static const bool value = is_integral<T>::value || is_floating_point<T>::value; };
+
+// FIXME add `void` support and remove cv-qualifier (below implementations for too)
+template <typename T>
+struct is_fundamental { static const bool value = is_boolean<T>::value || is_number<T>::value; };
+
 } // pfs
 
 #endif

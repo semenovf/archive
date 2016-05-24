@@ -8,8 +8,8 @@
 #ifndef __PFS_VECTOR_HPP__
 #define __PFS_VECTOR_HPP__
 
-#include <pfs.hpp>
 #include <vector>
+#include <pfs/shared_ptr.hpp>
 
 namespace pfs {
 
@@ -32,6 +32,8 @@ public:
     typedef typename base_class::difference_type        difference_type;
     typedef typename base_class::allocator_type         allocator_type;
 
+    typedef typename pfs::shared_ptr<vector<T, Alloc> > shared_ptr_type;
+    
 public:
 	explicit vector (const allocator_type & alloc = allocator_type())
 		: base_class(alloc)

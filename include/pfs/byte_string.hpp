@@ -11,6 +11,7 @@
 #include <pfs.hpp>
 #include <pfs/endian.hpp>
 #include <pfs/ostream.hpp>
+#include <pfs/shared_ptr.hpp>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC
@@ -38,6 +39,8 @@ public:
 	typedef typename rep_type::reverse_iterator       reverse_iterator;
 	typedef typename rep_type::const_reverse_iterator const_reverse_iterator;
 
+    typedef pfs::shared_ptr<byte_string> shared_ptr_type;
+    
 	static const size_type npos = rep_type::npos;
 private:
     rep_type  _d;
@@ -816,7 +819,11 @@ inline byte_string byte_string::toBytes<utf8_string> (const utf8_string & v, end
 // TODO For integers only supported by endian class
 //
 template <typename T>
-byte_string::const_iterator unpack (T & v, byte_string::const_iterator pos, const endian & order)
+byte_string::const_iterator unpack (T & v
+    , byte_string::const_iterator begin
+    , byte_string::const_iterator end
+    , byte_string::const_iterator failpos
+    , const endian & order)
 {
 	union u
 	{
@@ -824,33 +831,56 @@ byte_string::const_iterator unpack (T & v, byte_string::const_iterator pos, cons
 		const byte_string::value_type b[sizeof(T)];
 	};
 
+    byte_string::const_iterator pos(begin);
+    std::advance(pos, sizeof(T));
+    
+    if (pos <= end) {
+        const u * d = reinterpret_cast<const u *>(pos.base());
+        v = (order == endian::little_endian) ? endian::to_little_endian(d->v) : endian::to_big_endian(d->v);
+        std::advance(pos, sizeof(T));
+    } else {
+        pos = failpos;
+    }
+    
+	return pos;
+}
+
+template <>
+byte_string::const_iterator unpack (byte_string & v, byte_string::const_iterator pos, const endian & order)
+{
 	const u * d = reinterpret_cast<const u *>(pos.base());
 	v = (order == endian::little_endian) ? endian::to_little_endian(d->v) : endian::to_big_endian(d->v);
 	std::advance(pos, sizeof(T));
 	return pos;
 }
 
+
+
+
 template <typename T>
 inline T unpack (byte_string::const_iterator & pos, const endian & order)
 {
 	T r;
-	pos = unpack(r, pos, order);
+	pos = unpack<T>(r, pos, order);
 	return r;
 }
 
 template <typename T>
 inline byte_string::size_type unpack (T & v, byte_string::const_iterator pos)
 {
-	return unpack(v, pos, endian::native_order());
+	return unpack<T>(v, pos, endian::native_order());
 }
 
 template <typename T>
 inline T unpack (byte_string::const_iterator & pos)
 {
 	T r;
-	pos = unpack(r, pos, endian::native_order());
+	pos = unpack<T>(r, pos, endian::native_order());
 	return r;
 }
+
+
+
 
 //
 // For integers only supported by endian class

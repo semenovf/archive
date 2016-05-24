@@ -31,6 +31,7 @@
 
 #include <pfs/type_traits.hpp>
 #include <pfs/algo/find.hpp>
+#include <pfs/byte_string.hpp>
 
 namespace pfs {
 
@@ -515,6 +516,45 @@ lexical_cast (const string & s)
 		? true
 		: false;
 }
+
+
+#if defined(PFS_STRING_UTF16) || defined(PFS_STRING_UTF32)
+
+template <>
+byte_string & pack<string> (byte_string & appender, string const & v, endian const & order)
+{
+    string::const_iterator it = v.cbegin();
+    string::const_iterator it_end = v.cend();
+    
+    for (; it != it_end; ++it) {
+        pack<string::value_type>(appender, *it, order);
+    }
+    
+	return appender;
+}
+
+#else
+
+// UTF8 Specialization
+//
+template <>
+inline byte_string & pack<string> (byte_string & appender, string const & v, endian const & order)
+{
+    PFS_UNUSED(order);
+    appender.append(v.c_str(), v.size());
+	return appender;
+}
+
+#endif
+
+template <>
+inline byte_string pack<string> (string const & v, endian const & order)
+{
+    byte_string r;
+    pack<string>(r, v, order);
+	return r;
+}
+
 
 } // pfs
 
