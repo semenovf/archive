@@ -122,6 +122,17 @@ void test_erase ()
 	TEST_FAIL(s.empty());
 }
 
+void test_lexical_cast ()
+{
+    ADD_TESTS(5);
+    
+    TEST_OK(pfs::lexical_cast<bool>(pfs::string("true")) == true);
+    TEST_OK(pfs::lexical_cast<bool>(pfs::string("yes")) == true);
+    TEST_OK(pfs::lexical_cast<bool>(pfs::string("0")) == false);
+    TEST_OK(pfs::lexical_cast<bool>(pfs::string("1")) == false);
+    TEST_OK(pfs::lexical_cast<bool>(pfs::string("false")) == false);
+}
+
 #if __COMMENT__
 
 const uint8_t cyrillic_alphabet_utf8[] = {
@@ -848,6 +859,7 @@ void test_suite ()
 	test_to_string();
 	test_insert();
 	test_erase();
+    test_lexical_cast();
 
 //	test_convert_to_number();
 //	test_split<CodeUnitT>();

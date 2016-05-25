@@ -169,23 +169,6 @@ struct is_same<T, T>
     : public true_type 
 { };
 
-// TODO OBSOLETE, use is_same
-template<typename, typename>
-struct are_same
-{
-	enum { value = 0 };
-    typedef false_type type;
-};
-
-// TODO OBSOLETE, use is_same
-template<typename T>
-struct are_same<T, T>
-{
-	enum { value = 1 };
-	typedef true_type type;
-};
-
-// Define a nested type if some predicate holds.
 template <bool, typename>
 struct enable_if
 {};
@@ -199,6 +182,11 @@ struct enable_if<true, T>
 template <typename T>
 struct is_void 
     : public is_same<void, typename remove_cv<T>::type> 
+{};
+
+template <typename T>
+struct is_bool 
+    : public is_same<bool, typename remove_cv<T>::type> 
 {};
 
 template <typename>
@@ -385,6 +373,27 @@ template <typename T>
 struct is_signed
     : public details::and_op2<is_arithmetic<T>, details::not_op<is_unsigned<T> > >::type
 { };
+
+
+template <typename T>
+struct is_const 
+    : public false_type 
+{};
+
+template <typename T>
+struct is_const<const T> 
+    : public true_type 
+{};
+
+template <typename>
+struct is_volatile
+    : public false_type 
+{};
+
+template <typename T>
+struct is_volatile<T volatile> 
+    : public true_type 
+{};
 
 #if __COMMENT__
 

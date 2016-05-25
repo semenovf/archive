@@ -264,6 +264,28 @@ void test_is_unsigned ()
     TEST_OK(pfs::is_unsigned<unsigned int>::value);
 }
 
+void test_is_const ()
+{
+    ADD_TESTS(5);
+    
+    TEST_OK(pfs::is_const<int>::value         == false);
+    TEST_OK(pfs::is_const<const int>::value   == true);
+    TEST_OK(pfs::is_const<const int *>::value == false);
+    TEST_OK(pfs::is_const<int * const>::value == true);
+    TEST_OK(pfs::is_const<const int &>::value == false);
+}
+
+void test_is_volatile ()
+{
+    ADD_TESTS(5);
+    
+    TEST_OK(pfs::is_volatile<int>::value            == false);
+    TEST_OK(pfs::is_volatile<volatile int>::value   == true);
+    TEST_OK(pfs::is_volatile<volatile int *>::value == false);
+    TEST_OK(pfs::is_volatile<int * volatile>::value == true);
+    TEST_OK(pfs::is_volatile<volatile int &>::value == false);
+}
+
 int main (int argc, char * argv[])
 {
 	PFS_UNUSED(argc);
@@ -283,6 +305,8 @@ int main (int argc, char * argv[])
     test_is_fundamental();
     test_is_signed();
     test_is_unsigned();
+    test_is_const();
+    test_is_volatile();
     
 	return END_TESTS;
 }
