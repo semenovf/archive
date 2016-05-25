@@ -189,112 +189,120 @@ struct is_bool
     : public is_same<bool, typename remove_cv<T>::type> 
 {};
 
+namespace details {
+
 template <typename>
-struct __is_integral_helper
+struct is_integral
     : public false_type 
 { };
 
 template <>
-struct __is_integral_helper<bool>
+struct is_integral<bool>
     : public true_type 
 { };
   
 template <>
-struct __is_integral_helper<char>
+struct is_integral<char>
     : public true_type 
 { };
 
 template <>
-struct __is_integral_helper<signed char>
+struct is_integral<signed char>
     : public true_type 
 { };
 
 template <>
-struct __is_integral_helper<unsigned char>
+struct is_integral<unsigned char>
     : public true_type 
 { };
 
 template <>
-struct __is_integral_helper<wchar_t>
+struct is_integral<wchar_t>
     : public true_type { };
 
 
 template <>
-    struct __is_integral_helper<short>
+struct is_integral<short>
     : public true_type 
 { };
 
 template <>
-struct __is_integral_helper<unsigned short>
+struct is_integral<unsigned short>
     : public true_type 
 { };
 
 template <>
-struct __is_integral_helper<int>
+struct is_integral<int>
     : public true_type
 { };
 
 template <>
-struct __is_integral_helper<unsigned int>
+struct is_integral<unsigned int>
     : public true_type 
 { };
 
 template <>
-struct __is_integral_helper<long>
+struct is_integral<long>
     : public true_type
 { };
 
 template <>
-struct __is_integral_helper<unsigned long>
+struct is_integral<unsigned long>
     : public true_type 
 { };
 
 #if PFS_HAVE_LONGLONG
 
 template <>
-struct __is_integral_helper<long long>
+struct is_integral<long long>
     : public true_type 
 { };
 
 template <>
-struct __is_integral_helper<unsigned long long>
+struct is_integral<unsigned long long>
     : public true_type 
 { };
 
 #endif // PFS_HAVE_LONGLONG
 
+} // details
+
 template <typename T>
 struct is_integral
-    : public __is_integral_helper<typename remove_cv<T>::type>::type
+    : public details::is_integral<typename remove_cv<T>::type>::type
 { };
 
+namespace details {
+
 template <typename>
-struct __is_floating_point_helper
+struct is_floating_point
     : public false_type 
 { };
 
 template <>
-struct __is_floating_point_helper<float>
+struct is_floating_point<float>
     : public true_type 
 { };
 
 template <>
-struct __is_floating_point_helper<double>
+struct is_floating_point<double>
     : public true_type 
 { };
 
 #if PFS_HAVE_LONG_DOUBLE
 
 template <>
-struct __is_floating_point_helper<long double>
+struct is_floating_point<long double>
     : public true_type 
 { };
 
 #endif
 
+} // details
+
 template <typename T>
 struct is_floating_point
-    : public __is_floating_point_helper<typename remove_cv<T>::type>::type
+    : public details::is_floating_point<typename remove_cv<T>::type>::type
 { };
 
 /**

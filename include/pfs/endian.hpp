@@ -103,27 +103,33 @@ public:
 	}
 
 	template<typename T>
-	static T to_big_endian (T i)
+	T to_big_endian (T i) const
 	{
-		return native_order() == little_endian ? bswap(i) : i;
+		return (_value == little_endian ? bswap(i) : i);
 	}
 
 	template<typename T>
-	static T to_little_endian (T i)
+	T to_little_endian (T i) const
 	{
-		return native_order() == little_endian ? i : bswap(i);
+		return (_value == little_endian ? i : bswap(i));
 	}
 
 	template<typename T>
-	static T to_network_order (T i) // to big-endian
+	T to_network_order (T i) const // to big-endian
 	{
 		return to_big_endian(i);
 	}
 
 	template<typename T>
-	static T to_host_order (T i)
+	T to_host_order (T i) const
 	{
-		return native_order() == little_endian ? swap(i) : i;
+		return _value != native_order().type() ? bswap(i) : i;
+	}
+
+   	template<typename T>
+	T convert (T i) const
+	{
+		return _value != native_order().type() ? bswap(i) : i;
 	}
 
 	static char           bswap (char i);

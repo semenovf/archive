@@ -551,15 +551,6 @@ inline byte_string & pack<string> (byte_string & appender, string const & v, end
 
 #endif
 
-template <>
-inline byte_string pack<string> (string const & v, endian const & order)
-{
-    byte_string r;
-    pack<string>(r, v, order);
-	return r;
-}
-
-
 } // pfs
 
 #endif /* __PFS_STRING_HPP__ */

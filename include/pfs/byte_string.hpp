@@ -9,6 +9,7 @@
 
 #include <string>
 #include <pfs.hpp>
+#include <pfs/type_traits.hpp>
 #include <pfs/endian.hpp>
 #include <pfs/ostream.hpp>
 #include <pfs/shared_ptr.hpp>
@@ -748,173 +749,63 @@ public:
 	{
 		_d.swap(other._d);
 	}
-
-#if __COMMENT__
-	template <typename T>
-	size_t readNumber (T & v, size_t pos = 0, endian::type_enum order = endian::nativeOrder()) const;
-
-	intmax_t toIntegral (bool * ok = 0, int base = 10) const;
-	uintmax_t toUIntegral (bool * ok = 0, int base = 10) const;
-
-	short          toShort  (bool * ok = 0, int base = 10) const;
-	unsigned short toUShort (bool * ok = 0, int base = 10) const;
-	int	           toInt    (bool * ok = 0, int base = 10) const;
-	unsigned int   toUInt   (bool * ok = 0, int base = 10) const;
-	long           toLong   (bool * ok = 0, int base = 10) const;
-	unsigned long  toULong  (bool * ok = 0, int base = 10) const;
-
-#ifdef PFS_HAVE_LONGLONG
-	long long toLongLong (bool * ok = 0, int base = 10) const;
-	unsigned long long toULongLong (bool * ok = 0, int base = 10) const;
-#endif
-
-	real_t toReal (bool * ok = 0, char decimalPoint = '.') const;
-	float toFloat (bool * ok = 0, char decimalPoint = '.') const;
-	double toDouble (bool * ok = 0, char decimalPoint = '.') const;
-
-#ifdef PFS_HAVE_LONG_DOUBLE
-	long double toLongDouble (bool * ok = 0, char decimalPoint = '.') const { return toReal(ok, decimalPoint); }
-#endif
-
-private:
-
-	template <typename ExType>
-	struct extra_trait { typedef ExType type; };
-
-#ifdef __COMMENT__
-    // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::mbcs_string’"
-    template <typename InputIt>
-    iterator insert (const_iterator pos, InputIt first, InputIt last, mbcs_string_type_trait<InputIt>);
-    iterator insert (const_iterator pos, const_iterator first, const_iterator last, mbcs_string_type_trait<const_iterator>);
-
-#endif
-
-    // This private methods need to fix "error: explicit specialization in non-namespace scope ‘class pfs::byte_string’"
-    template <typename InputIt>
-    byte_string & replace (const_iterator first, const_iterator last, InputIt first2, InputIt last2, extra_trait<InputIt>);
-    byte_string & replace (const_iterator first, const_iterator last, const_iterator first2, const_iterator last2, extra_trait<const_iterator>);
-
-public:
-	template <typename T>
-	static byte_string toBytes (const T & v, endian::type_enum order = endian::nativeOrder());
-#endif //__COMMENT__
 };
 
-#if __FIXME__ // FIXME
-
-// TODO For integers only supported by endian class
-//
 template <typename T>
-byte_string::const_iterator unpack (T & v
-    , byte_string::const_iterator begin
-    , byte_string::const_iterator end
-    , byte_string::const_iterator failpos
-    , const endian & order)
-{
-	union u
-	{
-		const T v;
-		const byte_string::value_type b[sizeof(T)];
-	};
-
-    byte_string::const_iterator pos(begin);
-    std::advance(pos, sizeof(T));
-    
-    if (pos <= end) {
-        const u * d = reinterpret_cast<const u *>(pos.base());
-        v = (order == endian::little_endian) ? endian::to_little_endian(d->v) : endian::to_big_endian(d->v);
-        std::advance(pos, sizeof(T));
-    } else {
-        pos = failpos;
-    }
-    
-	return pos;
-}
-
-template <>
-byte_string::const_iterator unpack (byte_string & v, byte_string::const_iterator pos, const endian & order)
-{
-	const u * d = reinterpret_cast<const u *>(pos.base());
-	v = (order == endian::little_endian) ? endian::to_little_endian(d->v) : endian::to_big_endian(d->v);
-	std::advance(pos, sizeof(T));
-	return pos;
-}
-
-
-
+byte_string & pack (byte_string & appender, T const & v, const endian & order = endian::network_order());
 
 template <typename T>
-inline T unpack (byte_string::const_iterator & pos, const endian & order)
+inline byte_string pack (T const & v, endian const & order)
 {
-	T r;
-	pos = unpack<T>(r, pos, order);
+    byte_string r;
+    pack(r, v, order);
 	return r;
 }
 
-template <typename T>
-inline byte_string::size_type unpack (T & v, byte_string::const_iterator pos)
-{
-	return unpack<T>(v, pos, endian::native_order());
-}
+namespace details {
 
-template <typename T>
-inline T unpack (byte_string::const_iterator & pos)
+template <typename Integral>
+byte_string & pack_integral (byte_string & appender, Integral const & v, endian const & order)
 {
-	T r;
-	pos = unpack<T>(r, pos, endian::native_order());
-	return r;
-}
-
-#endif
-
-//
-// For integers only supported by endian class
-template <typename T>
-byte_string & pack (byte_string & appender, const T & v, const endian & order)
-{
-	T a = ((order == endian::little_endian) ? endian::to_little_endian<T>(v) : endian::to_big_endian<T>(v));
-	union { T v; byte_string::value_type b[sizeof(T)]; } d;
+	Integral a = order.convert(v);
+	union { Integral v; byte_string::value_type b[sizeof(Integral)]; } d;
 	d.v = a;
-	appender.append(byte_string(d.b, sizeof(T)));
+	appender.append(byte_string(d.b, sizeof(Integral)));
 	return appender;
 }
 
-template <typename T>
-byte_string pack (const T & v, const endian & order)
-{
-	T a = ((order == endian::little_endian) ? endian::to_little_endian<T>(v) : endian::to_big_endian<T>(v));
-	union { T v; byte_string::value_type b[sizeof(T)]; } d;
-	d.v = a;
-	return byte_string(d.b, sizeof(T));
+} // details
+
+#define __PFS_DEFN_PACK_INTEGRAL(_Type)                 \
+template <>                                             \
+inline byte_string & pack (byte_string & appender       \
+    , _Type const & v                                   \
+    , const endian & order)                             \
+{                                                       \
+    return details::pack_integral(appender, v, order);  \
 }
 
+__PFS_DEFN_PACK_INTEGRAL(bool)
+__PFS_DEFN_PACK_INTEGRAL(char)
+__PFS_DEFN_PACK_INTEGRAL(signed char)
+__PFS_DEFN_PACK_INTEGRAL(unsigned char)
+__PFS_DEFN_PACK_INTEGRAL(wchar_t)
+__PFS_DEFN_PACK_INTEGRAL(short)
+__PFS_DEFN_PACK_INTEGRAL(unsigned short)
+__PFS_DEFN_PACK_INTEGRAL(int)
+__PFS_DEFN_PACK_INTEGRAL(unsigned int)
+__PFS_DEFN_PACK_INTEGRAL(long)
+__PFS_DEFN_PACK_INTEGRAL(unsigned long)
 
-template <typename T>
-inline byte_string & pack (byte_string & appender, const T & v)
-{
-	return pack<T>(appender, v, endian::native_order());
-}
+#if PFS_HAVE_LONGLONG
 
-template <typename T>
-inline byte_string & pack (const T & v)
-{
-	return pack<T>(v, endian::native_order());
-}
+__PFS_DEFN_PACK_INTEGRAL(long long)
+__PFS_DEFN_PACK_INTEGRAL(unsigned long long)
 
-//
-// Specialization for bool
-//
-template <>
-inline byte_string & pack<bool> (byte_string & appender, const bool & v, const endian & order)
-{
-	return pack<char>(appender, v ? '\x01' : '\x00', order);
-}
+#endif
 
-template <>
-inline byte_string pack<bool> (const bool & v, const endian & order)
-{
-	return pack<char>(v ? '\x01' : '\x00', order);
-}
+
+#if __COMMENT__
 
 //
 // Specialization for float
@@ -981,17 +872,140 @@ inline byte_string pack<long double> (const long double & v, const endian & orde
 // Specialization for byte_string
 //
 template <>
-inline byte_string & pack<byte_string> (byte_string & appender, const byte_string & v, const endian & order)
+inline byte_string & pack (byte_string & appender, const byte_string & v, const endian & order)
 {
 	appender.append(v);
 	return appender;
 }
 
-template <>
-inline byte_string pack<byte_string> (const byte_string & v, const endian & order)
+#endif
+
+template <typename T>
+byte_string::const_iterator unpack (T & v
+    , byte_string::const_iterator begin
+    , byte_string::const_iterator end
+    , endian const & order = endian::native_order());
+
+template <typename T>
+inline T unpack (byte_string::const_iterator & pos
+    , endian const & order = endian::native_order())
 {
-	return v;
+    T r;
+    unpack(r, pos, pos + sizeof())
+    return r;
 }
+
+inline byte_string pack (T const & v, endian const & order)
+{
+    byte_string r;
+    pack(r, v, order);
+	return r;
+}
+
+
+namespace details {
+
+// @note No bounds validations
+//
+template <typename Integral>
+inline Integral unpack_integral (byte_string::const_iterator pos
+    , endian const & order)
+{
+	union u
+	{
+		Integral const v;
+		byte_string::value_type const b[sizeof(Integral)];
+	};
+    
+    u const * d = reinterpret_cast<u const *>(pos.base());
+    return order.convert(d->v);
+}
+
+template <typename Integral>
+byte_string::const_iterator unpack_integral (Integral & v
+    , byte_string::const_iterator begin
+    , byte_string::const_iterator end
+    , endian const & order)
+{
+    byte_string::const_iterator pos(begin);
+    std::advance(pos, sizeof(Integral));
+
+    if (pos <= end) {
+        v = details::unpack_integral<Integral>(begin, order);
+        return pos;
+    }
+	return end;
+}
+
+} // details
+
+
+#define __PFS_DEFN_UNPACK_INTEGRAL(_Type)                   \
+template <>                                                 \
+inline byte_string::const_iterator unpack<_Type> (_Type & v \
+    , byte_string::const_iterator begin                     \
+    , byte_string::const_iterator end                       \
+    , endian const & order)                                 \
+{                                                           \
+    return details::unpack_integral(v, begin, end, order);  \
+}
+
+__PFS_DEFN_UNPACK_INTEGRAL(bool)
+__PFS_DEFN_UNPACK_INTEGRAL(char)
+__PFS_DEFN_UNPACK_INTEGRAL(signed char)
+__PFS_DEFN_UNPACK_INTEGRAL(unsigned char)
+__PFS_DEFN_UNPACK_INTEGRAL(wchar_t)
+__PFS_DEFN_UNPACK_INTEGRAL(short)
+__PFS_DEFN_UNPACK_INTEGRAL(unsigned short)
+__PFS_DEFN_UNPACK_INTEGRAL(int)
+__PFS_DEFN_UNPACK_INTEGRAL(unsigned int)
+__PFS_DEFN_UNPACK_INTEGRAL(long)
+__PFS_DEFN_UNPACK_INTEGRAL(unsigned long)
+
+#if PFS_HAVE_LONGLONG
+
+__PFS_DEFN_UNPACK_INTEGRAL(long long)
+__PFS_DEFN_UNPACK_INTEGRAL(unsigned long long)
+
+#endif
+
+#if __FIXME__ // FIXME
+
+// TODO For integers only supported by endian class
+//
+
+template <>
+byte_string::const_iterator unpack (byte_string & v, byte_string::const_iterator pos, const endian & order)
+{
+	const u * d = reinterpret_cast<const u *>(pos.base());
+	v = (order == endian::little_endian) ? endian::to_little_endian(d->v) : endian::to_big_endian(d->v);
+	std::advance(pos, sizeof(T));
+	return pos;
+}
+
+template <typename T>
+inline T unpack (byte_string::const_iterator & pos, const endian & order)
+{
+	T r;
+	pos = unpack<T>(r, pos, order);
+	return r;
+}
+
+template <typename T>
+inline byte_string::size_type unpack (T & v, byte_string::const_iterator pos)
+{
+	return unpack<T>(v, pos, endian::native_order());
+}
+
+template <typename T>
+inline T unpack (byte_string::const_iterator & pos)
+{
+	T r;
+	pos = unpack<T>(r, pos, endian::native_order());
+	return r;
+}
+
+#endif
 
 byte_string & base64_encode (const byte_string & src, byte_string & result);
 byte_string & base64_decode (const byte_string & src, byte_string & result);

@@ -314,13 +314,6 @@ inline string to_string (datetime const & dt, string const & format)
  */
 string to_string (datetime const & dt);
 
-/**
- * @brief Returns integer representation of date & time in format YYYYMMDDhhmmss
- *
- * @return integer representation of date & time in format YYYYMMDDhhmmss
- */
-intmax_t lexical_cast (const datetime & dt);
-
 } // pfs
 
 #endif /* __PFS_DATETIME_HPP__ */

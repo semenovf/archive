@@ -130,10 +130,11 @@ void test_unpack ()
 
 	byte_string::const_iterator it = bytes.cbegin();
 
-#if __FIXME__ // FIXME
     
 	TEST_OK(pfs::unpack<char>(it, pfs::endian::little_endian) == '\xBC');
 	TEST_OK(pfs::unpack<char>(it, pfs::endian::big_endian) == '\xBC');
+
+#if __FIXME__ // FIXME
 
 	TEST_OK(pfs::unpack<short int>(it, pfs::endian::little_endian) == 0x7FFF);
 	TEST_OK(pfs::unpack<short int>(it, pfs::endian::big_endian)    == 0x7FFF);
