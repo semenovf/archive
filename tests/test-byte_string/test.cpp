@@ -133,16 +133,15 @@ void test_unpack ()
     
 	TEST_OK(pfs::unpack<char>(it, pfs::endian::little_endian) == '\xBC');
 	TEST_OK(pfs::unpack<char>(it, pfs::endian::big_endian) == '\xBC');
-
-#if __FIXME__ // FIXME
-
+    
+//    cout << std::hex << pfs::unpack<short int>(it, pfs::endian::little_endian);
+    
 	TEST_OK(pfs::unpack<short int>(it, pfs::endian::little_endian) == 0x7FFF);
 	TEST_OK(pfs::unpack<short int>(it, pfs::endian::big_endian)    == 0x7FFF);
-
 	TEST_OK(pfs::unpack<short int>(it, pfs::endian::little_endian) == static_cast<short int>(0x8000));
 	TEST_OK(pfs::unpack<short int>(it, pfs::endian::big_endian)    == static_cast<short int>(0x8000));
 
-	TEST_OK(pfs::unpack<unsigned short int>(it, pfs::endian::little_endian) == 0x7FFF);
+  	TEST_OK(pfs::unpack<unsigned short int>(it, pfs::endian::little_endian) == 0x7FFF);
 	TEST_OK(pfs::unpack<unsigned short int>(it, pfs::endian::big_endian)    == 0x7FFF);
 	TEST_OK(pfs::unpack<unsigned short int>(it, pfs::endian::little_endian) == 0x8000);
 	TEST_OK(pfs::unpack<unsigned short int>(it, pfs::endian::big_endian)    == 0x8000);
@@ -155,7 +154,6 @@ void test_unpack ()
 	TEST_OK(pfs::unpack<int>(it, pfs::endian::big_endian)    == 0x12345678);
 
 	TEST_OK(it == bytes.cend());
-#endif
 	// TODO Add remaining tests (see test_convert_to_bytes)
 }
 
@@ -508,8 +506,6 @@ int main(int argc, char *argv[])
 	test_constructors();
 	test_at();
 	test_erase();
-	test_pack();
-	test_unpack();
 	test_append();
 //	test_replace();
 //	test_insert();
@@ -517,6 +513,8 @@ int main(int argc, char *argv[])
 //	test_lexical_cast();
 	test_base64();
 	test_substr();
+	test_pack();
+	test_unpack();
 
 	return END_TESTS;
 }

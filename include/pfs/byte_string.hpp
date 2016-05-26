@@ -804,6 +804,9 @@ __PFS_DEFN_PACK_INTEGRAL(unsigned long long)
 
 #endif
 
+template <>
+byte_string & pack (byte_string & appender, byte_string const & v, const endian & order);
+
 
 #if __COMMENT__
 
@@ -887,21 +890,13 @@ byte_string::const_iterator unpack (T & v
     , endian const & order = endian::native_order());
 
 template <typename T>
-inline T unpack (byte_string::const_iterator & pos
+inline typename enable_if<is_arithmetic<T>::value, T>::type unpack (byte_string::const_iterator & pos
     , endian const & order = endian::native_order())
 {
     T r;
-    unpack(r, pos, pos + sizeof())
+    pos = unpack(r, pos, pos + sizeof(T), order);
     return r;
 }
-
-inline byte_string pack (T const & v, endian const & order)
-{
-    byte_string r;
-    pack(r, v, order);
-	return r;
-}
-
 
 namespace details {
 
