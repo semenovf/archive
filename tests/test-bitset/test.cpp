@@ -6,20 +6,43 @@
  */
 
 #include <pfs/test/test.hpp>
-#include <pfs/bit_array.hpp>
+#include <pfs/bitset.hpp>
 #include <cstring>
+
+void test_subscript_operator ()
+{
+    ADD_TESTS(9);
+    
+    pfs::bitset<8> b(42);
+    
+    TEST_OK(b[0] == false);
+    TEST_OK(b[1] == true);
+    TEST_OK(b[2] == false);
+    TEST_OK(b[3] == true);
+    TEST_OK(b[4] == false);
+    TEST_OK(b[5] == true);
+    TEST_OK(b[6] == false);
+    TEST_OK(b[7] == false);
+    
+    b[0] = true; // modifies the first bit through bitset::reference
+    
+    TEST_OK(b[0] == true);
+}
 
 void test_set_bits()
 {
-	const size_t size = 20000;
-	pfs::bit_array ba(size, true); // set all bits to 1
+    ADD_TESTS(4);
+    
+	pfs::bitset<20000> ba; // set all bits to 1
+    ba.set(); // set to true
 
-	for (size_t i = 0; i < size ; i += 2) {
-		ba.setBit(i, false);
+	for (size_t i = 0; i < ba.size() ; i += 2) {
+		ba.set(i, false);
 	}
 
 	int c = 0;
-	for (size_t i = 0; i < size ; ++i) {
+    
+	for (size_t i = 0; i < ba.size() ; ++i) {
 		if (ba[i])
 			++c;
 		else
@@ -28,23 +51,13 @@ void test_set_bits()
 
 	TEST_OK2(c == 0, "Test interleaved bits");
 	TEST_OK(ba.count(true) == ba.count(false));
-	TEST_OK(ba.count(true) == size/2);
-	TEST_OK(ba.count(false) == size/2);
-
-	ba.truncate(10);
-	TEST_OK2(ba.size() == 10, "Truncate successfull");
-
-	ba.fill(true);
-	TEST_OK(ba.count(true) == 10);
-
-	for (size_t i = 0; i < 10; ++i)
-		ba.toggleBit(i);
-
-	TEST_OK2(ba.count(false) == 10, "Toggle bits successfull");
+	TEST_OK(ba.count(true) == ba.size()/2);
+	TEST_OK(ba.count(false) == ba.size()/2);
 }
 
 void test_logic_operations()
 {
+#if __COMMENT__
 	for(size_t sz = 2; sz < 1034; sz += 2) {
 		pfs::bit_array ba1(sz), ba2(sz);
 
@@ -87,18 +100,42 @@ void test_logic_operations()
 		ba = ba ^ ba2;
 		TEST_OK(ba.count(false) == ba.size());
 	}
+#endif
+}
+
+void test_test ()
+{
+    ADD_TESTS(2);
+    
+    bool ok = false;
+    
+    pfs::bitset<10> b = pfs::make_bitset<10>(pfs::byte_string("1111010000"), & ok);
+
+    TEST_FAIL2(ok, "Made bitset from byte string");
+    
+    size_t i = 0;
+    size_t ntrue = 0;
+           
+    while (i < b.size()) {
+        if (b.test(i))
+            ++ntrue;
+        
+        ++i;
+    }
+ 
+    TEST_OK(ntrue == 5);
 }
 
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
-	BEGIN_TESTS(6199);
+	//BEGIN_TESTS(6199);
+    BEGIN_TESTS(0);
 
+    test_subscript_operator();
 	test_set_bits();
 	test_logic_operations();
+    test_test();
 
     return END_TESTS;
 }
-
-
-

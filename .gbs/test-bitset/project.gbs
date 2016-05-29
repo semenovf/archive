@@ -1,22 +1,22 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs prj --create --name=test-bit_array --type=test --depends=pfs'
+--* Command: `gbs prj --create --name=test-bitset --type=test --depends=pfs'
 --* Date:    Mon Aug 17 20:53:13 2015
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-bit_array"
+targetname    "test-bitset"
 includedirs   { "../../include", "../../../pfs-test/include" }
 libdirs       { "../../../.build" }
-files         {   "../../tests/test-bit_array/**.c"
-                , "../../tests/test-bit_array/**.cpp" 
+files         {   "../../tests/test-bitset/**.c"
+                , "../../tests/test-bitset/**.cpp" 
               }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs/test-bit_array/debug"
+    objdir       "../../../.build/pfs/test-bitset/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d" }
@@ -24,7 +24,7 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs/test-bit_array/release"
+    objdir       "../../../.build/pfs/test-bitset/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs" }
 

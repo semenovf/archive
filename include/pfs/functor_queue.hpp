@@ -285,7 +285,7 @@ bool functor_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
 		}
 	}
 
-	// Threre is no enough space to push function
+	// There is no enough space to push function
 	return false;
 }
 

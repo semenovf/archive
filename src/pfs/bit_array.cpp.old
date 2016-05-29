@@ -6,7 +6,7 @@
  * @brief
  */
 
-#include "pfs/bit_array.hpp"
+#include "pfs/bitset.hpp"
 #include <pfs/array.hpp>
 
 namespace pfs {

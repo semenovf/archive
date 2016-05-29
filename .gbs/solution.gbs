@@ -23,8 +23,8 @@ project "pfs"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "bit_array"
---    include("test-bit_array/project.gbs")
+project "test-bitset"
+    include("test-bitset/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
