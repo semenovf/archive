@@ -937,7 +937,7 @@ byte_string::const_iterator unpack_integral (Integral & v
 
 #define __PFS_DEFN_UNPACK_INTEGRAL(_Type)                   \
 template <>                                                 \
-inline byte_string::const_iterator unpack<_Type> (_Type & v \
+inline byte_string::const_iterator unpack (_Type & v        \
     , byte_string::const_iterator begin                     \
     , byte_string::const_iterator end                       \
     , endian const & order)                                 \
