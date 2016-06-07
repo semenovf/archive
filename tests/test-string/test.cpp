@@ -839,6 +839,19 @@ void test_split ()
 
 #endif
 
+void test_pack_unpack ()
+{
+    ADD_TESTS(4);
+    
+    pfs::string orig("Привет, Мир!");
+    
+    pfs::byte_string packed1 = pack(orig, pfs::endian::little_endian);
+    pfs::byte_string packed2 = pack(orig, pfs::endian::big_endian);
+    pfs::byte_string packed3 = pack(orig, pfs::endian::native_order());
+    pfs::byte_string packed4 = pack(orig, pfs::endian::network_order());
+    
+}
+
 //template <typename CodeUnitT>
 void test_suite ()
 {
@@ -860,6 +873,7 @@ void test_suite ()
 	test_insert();
 	test_erase();
     test_lexical_cast();
+    test_pack_unpack();
 
 //	test_convert_to_number();
 //	test_split<CodeUnitT>();

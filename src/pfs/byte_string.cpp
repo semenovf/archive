@@ -113,4 +113,25 @@ byte_string & pack (byte_string & appender, byte_string const & v, const endian 
 }
 
 
+template <>
+inline bool unpack (unpack_context & ctx, byte_string & v)
+{
+    if (ctx.fail)
+        return false;
+    
+    byte_string::size_type size = 0;
+    
+    if (unpack(ctx, size)) {
+        if (distance(ctx.b, ctx.e) <= size) {
+            v = byte_string(ctx.b, ctx.e);
+            ctx.fail = false;
+            advance(ctx.b, size);
+        } else {
+            ctx.fail = true;
+        }
+    }
+    
+    return not ctx.fail;
+}
+
 } // pfs

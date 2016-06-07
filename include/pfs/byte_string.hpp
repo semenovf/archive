@@ -872,29 +872,33 @@ inline byte_string pack<long double> (const long double & v, const endian & orde
 }
 #endif // PFS_HAVE_LONG_DOUBLE
 
-// Specialization for byte_string
-//
-template <>
-inline byte_string & pack (byte_string & appender, const byte_string & v, const endian & order)
-{
-	appender.append(v);
-	return appender;
-}
-
 #endif
 
-template <typename T>
-byte_string::const_iterator unpack (T & v
-    , byte_string::const_iterator begin
-    , byte_string::const_iterator end
-    , endian const & order = endian::native_order());
+struct unpack_context
+{
+    byte_string::const_iterator b;
+    byte_string::const_iterator e;
+    endian o;
+    bool fail;
+    
+    unpack_context (byte_string::const_iterator begin
+            , byte_string::const_iterator end
+            , endian const & order = endian::native_order())
+        : b(begin)
+        , e(end)
+        , o(order)
+        , fail(false)
+    {}
+};
 
 template <typename T>
-inline typename enable_if<is_arithmetic<T>::value, T>::type unpack (byte_string::const_iterator & pos
-    , endian const & order = endian::native_order())
+bool unpack (unpack_context & ctx, T & v);
+
+template <typename T>
+inline typename enable_if<is_arithmetic<T>::value, T>::type unpack (unpack_context & ctx)
 {
     T r;
-    pos = unpack(r, pos, pos + sizeof(T), order);
+    pos = unpack(ctx, r);
     return r;
 }
 
@@ -902,34 +906,32 @@ namespace details {
 
 // @note No bounds validations
 //
-template <typename Integral>
-inline Integral unpack_integral (byte_string::const_iterator pos
-    , endian const & order)
-{
-	union u
-	{
-		Integral const v;
-		byte_string::value_type const b[sizeof(Integral)];
-	};
-    
-    u const * d = reinterpret_cast<u const *>(pos.base());
-    return order.convert(d->v);
-}
 
 template <typename Integral>
-byte_string::const_iterator unpack_integral (Integral & v
-    , byte_string::const_iterator begin
-    , byte_string::const_iterator end
-    , endian const & order)
+bool unpack_integral (unpack_context & ctx, Integral & v)
 {
-    byte_string::const_iterator pos(begin);
+    union u
+    {
+        Integral const v;
+        byte_string::value_type const b[sizeof(Integral)];
+    };
+
+    if (ctx.fail)
+        return false;
+    
+    byte_string::const_iterator pos(ctx.b);
     std::advance(pos, sizeof(Integral));
 
-    if (pos <= end) {
-        v = details::unpack_integral<Integral>(begin, order);
-        return pos;
+    if (pos <= ctx.e) {
+        u const * d = reinterpret_cast<u const *>(pos.base());
+        v = ctx.o.convert(d->v);
+        ctx.b = pos;
+        ctx.fail = false;
+    } else {
+        ctx.fail = true;
     }
-	return end;
+    
+	return not ctx.fail;
 }
 
 } // details
@@ -937,12 +939,9 @@ byte_string::const_iterator unpack_integral (Integral & v
 
 #define __PFS_DEFN_UNPACK_INTEGRAL(_Type)                   \
 template <>                                                 \
-inline byte_string::const_iterator unpack (_Type & v        \
-    , byte_string::const_iterator begin                     \
-    , byte_string::const_iterator end                       \
-    , endian const & order)                                 \
+inline bool unpack (unpack_context & ctx, _Type & v)        \
 {                                                           \
-    return details::unpack_integral(v, begin, end, order);  \
+    return details::unpack_integral(ctx, v);                \
 }
 
 __PFS_DEFN_UNPACK_INTEGRAL(bool)
@@ -963,6 +962,16 @@ __PFS_DEFN_UNPACK_INTEGRAL(long long)
 __PFS_DEFN_UNPACK_INTEGRAL(unsigned long long)
 
 #endif
+
+/**
+ * @brief Specialization of unpack for @c byte_string.
+ * @param ctx Unpack context.
+ * @param v Reference to store unpacked data.
+ * @return @c true if unpack was successfull, @c false otherwise.
+ */
+template <>
+inline bool unpack (unpack_context & ctx, byte_string & v);
+
 
 #if __FIXME__ // FIXME
 

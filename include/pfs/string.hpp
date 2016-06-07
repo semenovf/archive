@@ -525,8 +525,12 @@ lexical_cast (const string & s, bool * ok = 0)
 #if defined(PFS_STRING_UTF16) || defined(PFS_STRING_UTF32)
 
 template <>
-byte_string & pack<string> (byte_string & appender, string const & v, endian const & order)
+byte_string & pack<string> (byte_string & appender
+        , string const & v
+        , endian const & order)
 {
+    pack(appender, v.size(), order);
+    
     string::const_iterator it = v.cbegin();
     string::const_iterator it_end = v.cend();
     
@@ -542,12 +546,28 @@ byte_string & pack<string> (byte_string & appender, string const & v, endian con
 // UTF8 Specialization
 //
 template <>
-inline byte_string & pack<string> (byte_string & appender, string const & v, endian const & order)
+inline byte_string & pack (byte_string & appender
+    , string const & v
+    , const endian & order)
 {
-    PFS_UNUSED(order);
+    pack(appender, v.size(), order);
     appender.append(v.c_str(), v.size());
-	return appender;
+    return appender;
 }
+
+template <>
+byte_string::const_iterator unpack (string & v
+    , byte_string::const_iterator begin
+    , byte_string::const_iterator end
+    , endian const & order)
+{
+    byte_string::const_iterator pos(begin);
+    pfs::string::size_type size = 0;
+    
+    it = unpack(size, begin, end, order);
+    return details::unpack_integral(v, begin, end, order);
+}
+
 
 #endif
 
