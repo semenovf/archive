@@ -511,7 +511,7 @@ int main(int argc, char *argv[])
 	PFS_UNUSED(argc);
 	PFS_UNUSED(argv);
 
-	BEGIN_TESTS(226);
+	BEGIN_TESTS(229);
 
 	test_byte_helpers();
 	test_int_helpers();

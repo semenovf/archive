@@ -112,9 +112,8 @@ byte_string & pack (byte_string & appender, byte_string const & v, const endian 
     return appender;
 }
 
-
 template <>
-inline bool unpack (unpack_context & ctx, byte_string & v)
+bool unpack (unpack_context & ctx, byte_string & v)
 {
     if (ctx.fail)
         return false;
@@ -122,7 +121,7 @@ inline bool unpack (unpack_context & ctx, byte_string & v)
     byte_string::size_type size = 0;
     
     if (unpack(ctx, size)) {
-        if (distance(ctx.b, ctx.e) <= size) {
+        if (distance(ctx.b, ctx.e) >= size) {
             v = byte_string(ctx.b, ctx.e);
             ctx.fail = false;
             advance(ctx.b, size);
@@ -132,6 +131,107 @@ inline bool unpack (unpack_context & ctx, byte_string & v)
     }
     
     return not ctx.fail;
+}
+
+namespace details {
+
+// see http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization
+//
+#if __COMMENT__
+byte_string & pack_ieee754 (byte_string & appender
+    , real64_t const & v
+    , endian const & order
+    , unsigned bits
+    , unsigned expbits)
+{
+	real64_t fnorm;
+	int shift;
+	int64_t sign, exp, significand;
+	unsigned significandbits = bits - expbits - 1; // -1 for sign bit
+
+	if (v == real64_t(0.0))
+        return pack_integral(appender, uint64_t(0), order);
+
+	// check sign and begin normalization
+	if (v < real64_t(0)) {
+        sign = 1; 
+        fnorm = -v;
+    } else { 
+        sign = 0;
+        fnorm = v; 
+    }
+
+	// get the normalized form of f and track the exponent
+	shift = 0;
+	
+    while (fnorm >= real64_t(2.0)) { 
+        fnorm /= real64_t(2.0);
+        ++shift;
+    }
+    
+	while (fnorm < real64_t(1.0)) {
+        fnorm *= real64_t(2.0);
+        --shift;
+    }
+    
+	fnorm = fnorm - real64_t(1.0);
+
+	// calculate the binary form (non-float) of the significand data
+	significand = fnorm * ((int64_t(1) << significandbits) + real64_t(0.5));
+
+	// get the biased exponent
+	exp = shift + ((1 << (expbits - 1)) - 1); // shift + bias
+
+	uint64_t peer = (sign << (bits-1)) | (exp << (bits - expbits - 1)) | significand;
+    return pack_integral(appender, peer, order);
+}
+
+bool unpack_ieee754 (unpack_context & ctx
+        , real64_t & v
+        , unsigned bits
+        , unsigned expbits)
+{
+	int64_t shift;
+	unsigned bias;
+	unsigned significandbits = bits - expbits - 1; // -1 for sign bit
+
+    uint64_t d = 0;
+    
+    if (not unpack_integral(ctx, d)) {
+        return false;
+    }
+    
+	if (d == 0) {
+        v = real64_t(0);
+        return true;
+    }
+
+	// pull the significand
+	v = (d & ((int64_t(1) << significandbits) - 1)); // mask
+	v /= (int64_t(1) << significandbits); // convert back to float
+	v += real64_t(1.0); // add the one back on
+
+	// deal with the exponent
+	bias = (1 << (expbits - 1)) - 1;
+	shift = ((d >> significandbits) & ((int64_t(1) << expbits) - 1)) - bias;
+    
+	while (shift > 0) {
+        v *= real64_t(2.0);
+        --shift; 
+    }
+    
+	while (shift < 0) {
+        v /= real64_t(2.0);
+        ++shift; 
+    }
+
+	// sign it
+	v *= (d >> (bits - 1)) & 1 ? real64_t(-1.0): real64_t(1.0);
+
+	return true;
+}
+#endif
+
 }
 
 } // pfs

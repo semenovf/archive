@@ -841,15 +841,48 @@ void test_split ()
 
 void test_pack_unpack ()
 {
-    ADD_TESTS(4);
+    ADD_TESTS(9);
     
     pfs::string orig("Привет, Мир!");
+    pfs::string orig1("Привет, 1!");
+    pfs::string orig2("Привет, 2!");
+    pfs::string orig3("Привет, 3!");
     
     pfs::byte_string packed1 = pack(orig, pfs::endian::little_endian);
     pfs::byte_string packed2 = pack(orig, pfs::endian::big_endian);
     pfs::byte_string packed3 = pack(orig, pfs::endian::native_order());
     pfs::byte_string packed4 = pack(orig, pfs::endian::network_order());
     
+    pfs::unpack_context ctx1(packed1.cbegin(), packed1.cend(), pfs::endian::little_endian);
+    pfs::unpack_context ctx2(packed2.cbegin(), packed2.cend(), pfs::endian::big_endian);
+    pfs::unpack_context ctx3(packed3.cbegin(), packed3.cend(), pfs::endian::native_order());
+    pfs::unpack_context ctx4(packed4.cbegin(), packed4.cend(), pfs::endian::network_order());
+    
+    TEST_OK(pfs::unpack<pfs::string>(ctx1) == orig);
+    TEST_OK(pfs::unpack<pfs::string>(ctx2) == orig);
+    TEST_OK(pfs::unpack<pfs::string>(ctx3) == orig);
+    TEST_OK(pfs::unpack<pfs::string>(ctx4) == orig);
+    
+    pfs::byte_string packed5;
+    pack(packed5, orig, pfs::endian::network_order());
+    pack(packed5, orig1, pfs::endian::network_order());
+    pack(packed5, orig2, pfs::endian::network_order());
+    pack(packed5, orig3, pfs::endian::network_order());
+    
+    TEST_FAIL(packed5.size() == 4 * sizeof(pfs::string::size_type)
+            + orig.size() 
+            + orig1.size()
+            + orig2.size()
+            + orig3.size());
+    
+    pfs::unpack_context ctx5(packed5.begin(), packed5.end(), pfs::endian::network_order());
+    
+//    std::cout << pfs::unpack<pfs::string>(ctx5) << std::endl;
+    
+    TEST_OK(pfs::unpack<pfs::string>(ctx5) == orig);
+    TEST_OK(pfs::unpack<pfs::string>(ctx5) == orig1);
+    TEST_OK(pfs::unpack<pfs::string>(ctx5) == orig2);
+    TEST_OK(pfs::unpack<pfs::string>(ctx5) == orig3);
 }
 
 //template <typename CodeUnitT>

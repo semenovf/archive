@@ -774,13 +774,50 @@ byte_string & pack_integral (byte_string & appender, Integral const & v, endian 
 	return appender;
 }
 
+template <typename Float>
+byte_string & pack_fp (byte_string & appender, Float const & v, endian const & order)
+{
+#ifdef PFS_HAVE_INT64    
+    if (sizeof(Float) == 8) {
+        return pack(appender, *reinterpret_cast<uint64_t const *>(& v), order);
+    } else
+#endif        
+    if (sizeof(Float) == 4) {
+        return pack(appender, *reinterpret_cast<uint32_t const *>(& v), order);
+    } else if (sizeof(Float) == 2) {
+        return pack(appender, *reinterpret_cast<uint16_t const *>(& v), order);
+    } else {
+        union { Float v; byte_string::value_type b[sizeof(Float)]; } d;
+        
+        if (order != endian::native_order()) {
+            byte_string::value_type b[sizeof(Float)];
+            
+            for (int i = 0, j = sizeof(Float) - 1; j >= 0; ++i, --j) {
+                b[i] = d.b[j];
+            }
+            
+            appender.append(byte_string(b, sizeof(Float)));
+        } else {
+            appender.append(byte_string(d.b, sizeof(Float)));
+        }
+    }
+    
+    return appender;
+}
+
+//byte_string & pack_ieee754 (byte_string & appender
+//    , real64_t const & v
+//    , endian const & order
+//    , unsigned bits
+//    , unsigned expbits);
+
 } // details
 
 #define __PFS_DEFN_PACK_INTEGRAL(_Type)                 \
 template <>                                             \
 inline byte_string & pack (byte_string & appender       \
     , _Type const & v                                   \
-    , const endian & order)                             \
+    , endian const & order)                             \
 {                                                       \
     return details::pack_integral(appender, v, order);  \
 }
@@ -805,74 +842,21 @@ __PFS_DEFN_PACK_INTEGRAL(unsigned long long)
 #endif
 
 template <>
+inline byte_string & pack (byte_string & appender, float const & v, endian const & order)
+{
+//    //return details::pack_ieee754(appender, real64_t(v), order, 32, 8);
+    return details::pack_fp(appender, v, order);
+}
+
+template <>
+inline byte_string & pack (byte_string & appender, double const & v, endian const & order)
+{
+//    //return details::pack_ieee754(appender, real64_t(v), order, 64, 11);
+    return details::pack_fp(appender, v, order);
+}
+
+template <>
 byte_string & pack (byte_string & appender, byte_string const & v, const endian & order);
-
-
-#if __COMMENT__
-
-//
-// Specialization for float
-// TODO as mentioned at http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#serialization
-//
-template <>
-inline byte_string & pack<float> (byte_string & appender, const float & v, const endian & order)
-{
-	PFS_UNUSED2(v, order);
-	PFS_ASSERT_TODO();
-	return appender;
-}
-
-template <>
-inline byte_string pack<float> (const float & v, const endian & order)
-{
-	PFS_UNUSED2(v, order);
-	PFS_ASSERT_TODO();
-	return byte_string();
-}
-
-//
-// Specialization for double
-// TODO as for float
-//
-template <>
-inline byte_string & pack<double> (byte_string & appender, const double & v, const endian & order)
-{
-	PFS_UNUSED2(v, order);
-	PFS_ASSERT_TODO();
-	return appender;
-}
-
-template <>
-inline byte_string pack<double> (const double & v, const endian & order)
-{
-	PFS_UNUSED2(v, order);
-	PFS_ASSERT_TODO();
-	return byte_string();
-}
-
-#ifdef PFS_HAVE_LONG_DOUBLE
-//
-// Specialization for long double
-// TODO as for float
-//
-template <>
-inline byte_string & pack<long double> (byte_string & appender, const long double & v, const endian & order)
-{
-	PFS_UNUSED2(v, order);
-	PFS_ASSERT_TODO();
-	return appender;
-}
-
-template <>
-inline byte_string pack<long double> (const long double & v, const endian & order)
-{
-	PFS_UNUSED2(v, order);
-	PFS_ASSERT_TODO();
-	return byte_string();
-}
-#endif // PFS_HAVE_LONG_DOUBLE
-
-#endif
 
 struct unpack_context
 {
@@ -891,14 +875,21 @@ struct unpack_context
     {}
 };
 
+/**
+ * @brief Unpack data from byte string.
+ * @param ctx Unpack context.
+ * @param v Reference to store unpacked data.
+ * @return @c true if unpack was successfull, @c false otherwise.
+ */
 template <typename T>
 bool unpack (unpack_context & ctx, T & v);
 
 template <typename T>
-inline typename enable_if<is_arithmetic<T>::value, T>::type unpack (unpack_context & ctx)
+//inline typename enable_if<is_arithmetic<T>::value, T>::type unpack (unpack_context & ctx)
+inline T unpack (unpack_context & ctx)
 {
     T r;
-    pos = unpack(ctx, r);
+    unpack(ctx, r);
     return r;
 }
 
@@ -923,7 +914,7 @@ bool unpack_integral (unpack_context & ctx, Integral & v)
     std::advance(pos, sizeof(Integral));
 
     if (pos <= ctx.e) {
-        u const * d = reinterpret_cast<u const *>(pos.base());
+        u const * d = reinterpret_cast<u const *>(ctx.b.base());
         v = ctx.o.convert(d->v);
         ctx.b = pos;
         ctx.fail = false;
@@ -933,6 +924,76 @@ bool unpack_integral (unpack_context & ctx, Integral & v)
     
 	return not ctx.fail;
 }
+
+//bool unpack_ieee754 (unpack_context & ctx
+//        , real64_t & v
+//        , unsigned bits
+//        , unsigned expbits);
+
+template <typename Float>
+bool unpack_fp (unpack_context & ctx, Float & v)
+{
+    union u
+    {
+        Float const v;
+        byte_string::value_type const b[sizeof(Float)];
+    };
+
+    if (ctx.fail)
+        return false;
+    
+#ifdef PFS_HAVE_INT64    
+    if (sizeof(Float) == 8) {
+        uint64_t d = 0;
+        if (unpack(ctx, d)) {
+            v = *reinterpret_cast<Float *>(& d);
+            return true;
+        }
+    } else
+#endif        
+    if (sizeof(Float) == 4) {
+        uint32_t d = 0;
+        if (unpack(ctx, d)) {
+            v = *reinterpret_cast<Float *>(& d);
+            return true;
+        }
+    } else if (sizeof(Float) == 2) {
+        uint16_t d = 0;
+        if (unpack(ctx, d)) {
+            v = *reinterpret_cast<Float *>(& d);
+            return true;
+        }
+    } else {
+        // FIXME
+//        byte_string::const_iterator pos(ctx.b);
+//        std::advance(pos, sizeof(Float));
+//
+//        if (pos <= ctx.e) {
+//            u * b = reinterpret_cast<u *>(ctx.b.base());
+//            
+//            if (order != endian::native_order()) {
+//                byte_string::value_type b[sizeof(Float)];
+//            
+//            for (int i = 0, j = sizeof(Float) - 1; j >= 0; ++i, --j) {
+//                b[i] = d.b[j];
+//            }
+//            
+//            appender.append(byte_string(b, sizeof(Float)));
+//        } else {
+//            appender.append(byte_string(d.b, sizeof(Float)));
+//        }
+//            
+//            v = ctx.o.convert(d->v);
+//            ctx.b = pos;
+//            ctx.fail = false;
+//        } else {
+//            ctx.fail = true;
+//        }
+    }
+    
+	return not ctx.fail;
+}
+
 
 } // details
 
@@ -963,53 +1024,31 @@ __PFS_DEFN_UNPACK_INTEGRAL(unsigned long long)
 
 #endif
 
+template <>
+inline bool unpack (unpack_context & ctx, float & v)
+{
+    return details::unpack_fp(ctx, v);
+//    real64_t tmp;
+//    bool r = details::unpack_ieee754(ctx, tmp, 32, 8);
+//    v = static_cast<float>(tmp);
+//    return r;
+}
+
+template <>
+inline bool unpack (unpack_context & ctx, double & v)
+{
+    return details::unpack_fp(ctx, v);
+//    real64_t tmp;
+//    bool r = details::unpack_ieee754(ctx, tmp, 64, 11);
+//    v = static_cast<float>(tmp);
+//    return r;
+}
+
 /**
  * @brief Specialization of unpack for @c byte_string.
- * @param ctx Unpack context.
- * @param v Reference to store unpacked data.
- * @return @c true if unpack was successfull, @c false otherwise.
  */
 template <>
 inline bool unpack (unpack_context & ctx, byte_string & v);
-
-
-#if __FIXME__ // FIXME
-
-// TODO For integers only supported by endian class
-//
-
-template <>
-byte_string::const_iterator unpack (byte_string & v, byte_string::const_iterator pos, const endian & order)
-{
-	const u * d = reinterpret_cast<const u *>(pos.base());
-	v = (order == endian::little_endian) ? endian::to_little_endian(d->v) : endian::to_big_endian(d->v);
-	std::advance(pos, sizeof(T));
-	return pos;
-}
-
-template <typename T>
-inline T unpack (byte_string::const_iterator & pos, const endian & order)
-{
-	T r;
-	pos = unpack<T>(r, pos, order);
-	return r;
-}
-
-template <typename T>
-inline byte_string::size_type unpack (T & v, byte_string::const_iterator pos)
-{
-	return unpack<T>(v, pos, endian::native_order());
-}
-
-template <typename T>
-inline T unpack (byte_string::const_iterator & pos)
-{
-	T r;
-	pos = unpack<T>(r, pos, endian::native_order());
-	return r;
-}
-
-#endif
 
 byte_string & base64_encode (const byte_string & src, byte_string & result);
 byte_string & base64_decode (const byte_string & src, byte_string & result);

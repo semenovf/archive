@@ -116,45 +116,111 @@ if (sizeof(intmax_t) == 4) {
 
 void test_unpack ()
 {
-	ADD_TESTS(17);
+	ADD_TESTS(16);
 
-	const char str [] = {'\xBC', '\xBC'
-		, '\xFF', '\x7F', '\x7F', '\xFF', '\x00', '\x80', '\x80', '\x00'
-		, '\xFF', '\x7F', '\x7F', '\xFF', '\x00', '\x80', '\x80', '\x00'
-		, '\xFF', '\xFF', '\xFF', '\x7F', '\x7F', '\xFF', '\xFF', '\xFF'
-		, '\x00', '\x00', '\x00', '\x80', '\x80', '\x00', '\x00', '\x00'
-		, '\x78', '\x56', '\x34', '\x12', '\x12', '\x34', '\x56', '\x78'
+	const char str_le [] = {'\xBC'
+		, '\xFF', '\x7F'
+        , '\x00', '\x80'
+		, '\xFF', '\x7F'
+        , '\x00', '\x80'
+		, '\xFF', '\xFF', '\xFF', '\x7F'
+		, '\x00', '\x00', '\x00', '\x80'
+		, '\x78', '\x56', '\x34', '\x12'
 	};
 
-	byte_string bytes(str, sizeof(str)/sizeof(str[0]));
+    	const char str_be [] = {'\xBC'
+        , '\x7F', '\xFF'
+        , '\x80', '\x00'
+        , '\x7F', '\xFF'
+        , '\x80', '\x00'
+        , '\x7F', '\xFF', '\xFF', '\xFF'
+        , '\x80', '\x00', '\x00', '\x00'
+        , '\x12', '\x34', '\x56', '\x78'
+	};
 
-	byte_string::const_iterator it = bytes.cbegin();
+	byte_string bytes_le(str_le, sizeof(str_le)/sizeof(str_le[0]));
+    byte_string bytes_be(str_be, sizeof(str_be)/sizeof(str_be[0]));
 
+    pfs::unpack_context ctx_le(bytes_le.begin(), bytes_le.end(), pfs::endian::little_endian);
+    pfs::unpack_context ctx_be(bytes_be.begin(), bytes_be.end(), pfs::endian::big_endian);
+
+	TEST_OK(pfs::unpack<char>(ctx_le) == '\xBC');
+    TEST_OK(pfs::unpack<short int>(ctx_le) == 0x7FFF);
+    TEST_OK(pfs::unpack<short int>(ctx_le) == static_cast<short int>(0x8000));
+    TEST_OK(pfs::unpack<unsigned short int>(ctx_le) == 0x7FFF);
+    TEST_OK(pfs::unpack<unsigned short int>(ctx_le) == 0x8000);
+    TEST_OK(pfs::unpack<int>(ctx_le) == 0x7FFFFFFF);
+    TEST_OK(pfs::unpack<int>(ctx_le) == static_cast<int>(0x80000000));
+    TEST_OK(pfs::unpack<int>(ctx_le) == 0x12345678);
     
-	TEST_OK(pfs::unpack<char>(it, pfs::endian::little_endian) == '\xBC');
-	TEST_OK(pfs::unpack<char>(it, pfs::endian::big_endian) == '\xBC');
-    
-//    cout << std::hex << pfs::unpack<short int>(it, pfs::endian::little_endian);
-    
-	TEST_OK(pfs::unpack<short int>(it, pfs::endian::little_endian) == 0x7FFF);
-	TEST_OK(pfs::unpack<short int>(it, pfs::endian::big_endian)    == 0x7FFF);
-	TEST_OK(pfs::unpack<short int>(it, pfs::endian::little_endian) == static_cast<short int>(0x8000));
-	TEST_OK(pfs::unpack<short int>(it, pfs::endian::big_endian)    == static_cast<short int>(0x8000));
+	TEST_OK(pfs::unpack<char>(ctx_be)      == '\xBC');
+	TEST_OK(pfs::unpack<short int>(ctx_be) == 0x7FFF);
+	TEST_OK(pfs::unpack<short int>(ctx_be) == static_cast<short int>(0x8000));
+	TEST_OK(pfs::unpack<unsigned short int>(ctx_be) == 0x7FFF);
+	TEST_OK(pfs::unpack<unsigned short int>(ctx_be) == 0x8000);
+	TEST_OK(pfs::unpack<int>(ctx_be) == 0x7FFFFFFF);
+	TEST_OK(pfs::unpack<int>(ctx_be) == static_cast<int>(0x80000000));
+	TEST_OK(pfs::unpack<int>(ctx_be) == 0x12345678);
 
-  	TEST_OK(pfs::unpack<unsigned short int>(it, pfs::endian::little_endian) == 0x7FFF);
-	TEST_OK(pfs::unpack<unsigned short int>(it, pfs::endian::big_endian)    == 0x7FFF);
-	TEST_OK(pfs::unpack<unsigned short int>(it, pfs::endian::little_endian) == 0x8000);
-	TEST_OK(pfs::unpack<unsigned short int>(it, pfs::endian::big_endian)    == 0x8000);
-
-	TEST_OK(pfs::unpack<int>(it, pfs::endian::little_endian) == 0x7FFFFFFF);
-	TEST_OK(pfs::unpack<int>(it, pfs::endian::big_endian)    == 0x7FFFFFFF);
-	TEST_OK(pfs::unpack<int>(it, pfs::endian::little_endian) == static_cast<int>(0x80000000));
-	TEST_OK(pfs::unpack<int>(it, pfs::endian::big_endian)    == static_cast<int>(0x80000000));
-	TEST_OK(pfs::unpack<int>(it, pfs::endian::little_endian) == 0x12345678);
-	TEST_OK(pfs::unpack<int>(it, pfs::endian::big_endian)    == 0x12345678);
-
-	TEST_OK(it == bytes.cend());
+	//TEST_OK(it == bytes.cend());
 	// TODO Add remaining tests (see test_convert_to_bytes)
+}
+
+void test_real_pack_unpack ()
+{
+    ADD_TESTS(8 * 4);
+    
+    double double_nums[8] = {-3490.6677f
+            , 0.0f
+            , 1.0f
+            , -1.0f
+            , DBL_MIN * 2
+            , DBL_MAX / 2
+            , DBL_MIN
+            , DBL_MAX 
+    };
+    
+    for (int i = 0; i < 8; ++i) {
+        pfs::byte_string packed_le;
+        pfs::byte_string packed_be;
+        
+        pfs::pack(packed_le, double_nums[i], pfs::endian::little_endian);
+        pfs::pack(packed_be, double_nums[i], pfs::endian::big_endian);
+
+        double d1;
+        double d2;
+        pfs::unpack_context ctx_le(packed_le.begin(), packed_le.end(), pfs::endian::little_endian);
+        pfs::unpack_context ctx_be(packed_be.begin(), packed_be.end(), pfs::endian::big_endian);
+        
+        TEST_OK(pfs::unpack(ctx_le, d1));
+        TEST_OK(pfs::unpack(ctx_be, d2));
+        
+        TEST_OK(d1 == double_nums[i]);
+        TEST_OK(d2 == double_nums[i]);
+    }
+    
+    ADD_TESTS(7 * 4);
+    
+    float float_nums[7] = { 0.0, 1.0, -1.0, 10, -3.6677, 3.1875, -3.1875 };
+    
+    for (int i = 0; i < 7; ++i) {
+        pfs::byte_string packed_le;
+        pfs::byte_string packed_be;
+        
+        pfs::pack(packed_le, float_nums[i], pfs::endian::little_endian);
+        pfs::pack(packed_be, float_nums[i], pfs::endian::big_endian);
+
+        float f1;
+        float f2;
+        pfs::unpack_context ctx_le(packed_le.begin(), packed_le.end(), pfs::endian::little_endian);
+        pfs::unpack_context ctx_be(packed_be.begin(), packed_be.end(), pfs::endian::big_endian);
+        
+        TEST_OK(pfs::unpack(ctx_le, f1));
+        TEST_OK(pfs::unpack(ctx_be, f2));
+        
+        TEST_OK(f1 == float_nums[i]);
+        TEST_OK(f2 == float_nums[i]);
+    }
 }
 
 void test_append ()
@@ -515,6 +581,7 @@ int main(int argc, char *argv[])
 	test_substr();
 	test_pack();
 	test_unpack();
+    test_real_pack_unpack();
 
 	return END_TESTS;
 }

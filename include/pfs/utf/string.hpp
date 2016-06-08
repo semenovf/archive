@@ -62,6 +62,8 @@ public:
 	explicit string (const std::string & s);
 
 	explicit string (const_pointer s);
+    
+    explicit string (const_pointer s, size_type n);
 
 //	string (const std::wstring & s);
 

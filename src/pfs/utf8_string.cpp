@@ -5,15 +5,48 @@
  *      Author: wladt
  */
 
-//#include "pfs/utility.hpp"
-//#include "pfs/mbcs_string.hpp"
-//#include "pfs/byte_string.hpp"
-
+#include "pfs/byte_string.hpp"
 #include "pfs/utf8/string.hpp"
 
-namespace pfs { namespace utf {
+namespace pfs { namespace utf8 {
 
 }}
+
+namespace pfs {
+
+template <>
+byte_string & pack (byte_string & appender
+    , utf8::string const & v
+    , const endian & order)
+{
+    pack(appender, v.size(), order);
+    appender.append(v.c_str(), v.size());
+    return appender;
+}
+
+template <>
+bool unpack (unpack_context & ctx, utf8::string & v)
+{
+    if (ctx.fail)
+        return false;
+
+    pfs::byte_string::size_type size = 0;
+    
+    if (unpack(ctx, size)) {
+        if (distance(ctx.b, ctx.e) >= size) {
+            v = utf8::string(reinterpret_cast<utf8::string::const_pointer>(ctx.b.base()), size);
+            ctx.fail = false;
+            advance(ctx.b, size);
+        } else {
+            ctx.fail = true;
+        }
+    }
+    
+    return not ctx.fail;
+}
+
+} // pfs
+
 
 #if __COMMENT__
 

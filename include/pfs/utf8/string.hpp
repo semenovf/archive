@@ -84,6 +84,11 @@ inline string_type::string (const_pointer s)
 {}
 
 template <>
+inline string_type::string (const_pointer s, size_type n)
+    : _d(s, n)
+{}
+
+template <>
 inline bool string_type::starts_with (const string & needle) const
 {
 	return _d.size() < needle._d.size()
