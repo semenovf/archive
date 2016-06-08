@@ -751,6 +751,16 @@ public:
 	}
 };
 
+struct pack_context
+{
+    byte_string data;
+    endian o;
+    
+    pack_context (endian const & order = endian::native_order())
+        : o(order)
+    {}
+};
+
 template <typename T>
 byte_string & pack (byte_string & appender, T const & v, const endian & order = endian::network_order());
 
@@ -760,6 +770,17 @@ inline byte_string pack (T const & v, endian const & order)
     byte_string r;
     pack(r, v, order);
 	return r;
+}
+
+template <typename T>
+inline void pack (pack_context & ctx, T const & v)
+{
+    pack<T>(ctx.data, v, ctx.o);
+}
+
+inline void pack_raw_data (pack_context & ctx, byte_string const & v)
+{
+    ctx.data.append(v);
 }
 
 namespace details {
@@ -873,6 +894,11 @@ struct unpack_context
         , o(order)
         , fail(false)
     {}
+    
+    byte_string::difference_type available () const
+    {
+        return std::distance(b, e);
+    }
 };
 
 /**
