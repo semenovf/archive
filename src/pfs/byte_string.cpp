@@ -104,15 +104,6 @@ byte_string & base64_decode (const byte_string & src, byte_string & result)
 }
 
 template <>
-byte_string & pack (byte_string & appender, byte_string const & v, const endian & order)
-{
-    appender.reserve(appender.size() + sizeof(byte_string::size_type) + v.size());
-    pack(appender, v.size(), order); // pack size of byte_string
-    appender.append(v);
-    return appender;
-}
-
-template <>
 bool unpack (unpack_context & ctx, byte_string & v)
 {
     if (ctx.fail)

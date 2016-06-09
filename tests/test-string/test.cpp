@@ -863,19 +863,19 @@ void test_pack_unpack ()
     TEST_OK(pfs::unpack<pfs::string>(ctx3) == orig);
     TEST_OK(pfs::unpack<pfs::string>(ctx4) == orig);
     
-    pfs::byte_string packed5;
-    pack(packed5, orig, pfs::endian::network_order());
-    pack(packed5, orig1, pfs::endian::network_order());
-    pack(packed5, orig2, pfs::endian::network_order());
-    pack(packed5, orig3, pfs::endian::network_order());
+    pfs::pack_context packed5(pfs::endian::network_order());
+    pack(packed5, orig);
+    pack(packed5, orig1);
+    pack(packed5, orig2);
+    pack(packed5, orig3);
     
-    TEST_FAIL(packed5.size() == 4 * sizeof(pfs::string::size_type)
+    TEST_FAIL(packed5.buffer.size() == 4 * sizeof(pfs::string::size_type)
             + orig.size() 
             + orig1.size()
             + orig2.size()
             + orig3.size());
     
-    pfs::unpack_context ctx5(packed5.begin(), packed5.end(), pfs::endian::network_order());
+    pfs::unpack_context ctx5(packed5.buffer.begin(), packed5.buffer.end(), pfs::endian::network_order());
     
 //    std::cout << pfs::unpack<pfs::string>(ctx5) << std::endl;
     

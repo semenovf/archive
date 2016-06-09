@@ -15,16 +15,6 @@ namespace pfs { namespace utf8 {
 namespace pfs {
 
 template <>
-byte_string & pack (byte_string & appender
-    , utf8::string const & v
-    , const endian & order)
-{
-    pack(appender, v.size(), order);
-    appender.append(v.c_str(), v.size());
-    return appender;
-}
-
-template <>
 bool unpack (unpack_context & ctx, utf8::string & v)
 {
     if (ctx.fail)

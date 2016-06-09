@@ -753,77 +753,73 @@ public:
 
 struct pack_context
 {
-    byte_string data;
+    byte_string buffer;
     endian o;
     
     pack_context (endian const & order = endian::native_order())
         : o(order)
     {}
+    
+    endian const & order () const
+    {
+        return o;
+    }
 };
 
 template <typename T>
-byte_string & pack (byte_string & appender, T const & v, const endian & order = endian::network_order());
+void pack (pack_context & ctx, T const & v);
 
 template <typename T>
 inline byte_string pack (T const & v, endian const & order)
 {
-    byte_string r;
-    pack(r, v, order);
-	return r;
-}
-
-template <typename T>
-inline void pack (pack_context & ctx, T const & v)
-{
-    pack<T>(ctx.data, v, ctx.o);
+    pack_context ctx(order);
+    pack<T>(ctx, v);
+	return ctx.buffer;
 }
 
 inline void pack_raw_data (pack_context & ctx, byte_string const & v)
 {
-    ctx.data.append(v);
+    ctx.buffer.append(v);
 }
 
 namespace details {
 
 template <typename Integral>
-byte_string & pack_integral (byte_string & appender, Integral const & v, endian const & order)
+void pack_integral (pack_context & ctx, Integral const & v)
 {
-	Integral a = order.convert(v);
+	Integral a = ctx.o.convert(v);
 	union { Integral v; byte_string::value_type b[sizeof(Integral)]; } d;
 	d.v = a;
-	appender.append(byte_string(d.b, sizeof(Integral)));
-	return appender;
+	ctx.buffer.append(byte_string(d.b, sizeof(Integral)));
 }
 
 template <typename Float>
-byte_string & pack_fp (byte_string & appender, Float const & v, endian const & order)
+void pack_fp (pack_context & ctx, Float const & v)
 {
 #ifdef PFS_HAVE_INT64    
     if (sizeof(Float) == 8) {
-        return pack(appender, *reinterpret_cast<uint64_t const *>(& v), order);
+        return pack(ctx, *reinterpret_cast<uint64_t const *>(& v));
     } else
 #endif        
     if (sizeof(Float) == 4) {
-        return pack(appender, *reinterpret_cast<uint32_t const *>(& v), order);
+        return pack(ctx, *reinterpret_cast<uint32_t const *>(& v));
     } else if (sizeof(Float) == 2) {
-        return pack(appender, *reinterpret_cast<uint16_t const *>(& v), order);
+        return pack(ctx, *reinterpret_cast<uint16_t const *>(& v));
     } else {
         union { Float v; byte_string::value_type b[sizeof(Float)]; } d;
         
-        if (order != endian::native_order()) {
+        if (ctx.o != endian::native_order()) {
             byte_string::value_type b[sizeof(Float)];
             
             for (int i = 0, j = sizeof(Float) - 1; j >= 0; ++i, --j) {
                 b[i] = d.b[j];
             }
             
-            appender.append(byte_string(b, sizeof(Float)));
+            ctx.buffer.append(byte_string(b, sizeof(Float)));
         } else {
-            appender.append(byte_string(d.b, sizeof(Float)));
+            ctx.buffer.append(byte_string(d.b, sizeof(Float)));
         }
     }
-    
-    return appender;
 }
 
 //byte_string & pack_ieee754 (byte_string & appender
@@ -834,13 +830,11 @@ byte_string & pack_fp (byte_string & appender, Float const & v, endian const & o
 
 } // details
 
-#define __PFS_DEFN_PACK_INTEGRAL(_Type)                 \
-template <>                                             \
-inline byte_string & pack (byte_string & appender       \
-    , _Type const & v                                   \
-    , endian const & order)                             \
-{                                                       \
-    return details::pack_integral(appender, v, order);  \
+#define __PFS_DEFN_PACK_INTEGRAL(_Type)                \
+template <>                                            \
+inline void pack (pack_context & ctx, _Type const & v) \
+{                                                      \
+    return details::pack_integral(ctx, v);             \
 }
 
 __PFS_DEFN_PACK_INTEGRAL(bool)
@@ -863,21 +857,26 @@ __PFS_DEFN_PACK_INTEGRAL(unsigned long long)
 #endif
 
 template <>
-inline byte_string & pack (byte_string & appender, float const & v, endian const & order)
+inline void pack (pack_context & ctx, float const & v)
 {
 //    //return details::pack_ieee754(appender, real64_t(v), order, 32, 8);
-    return details::pack_fp(appender, v, order);
+    return details::pack_fp(ctx, v);
 }
 
 template <>
-inline byte_string & pack (byte_string & appender, double const & v, endian const & order)
+inline void pack (pack_context & ctx, double const & v)
 {
 //    //return details::pack_ieee754(appender, real64_t(v), order, 64, 11);
-    return details::pack_fp(appender, v, order);
+    return details::pack_fp(ctx, v);
 }
 
 template <>
-byte_string & pack (byte_string & appender, byte_string const & v, const endian & order);
+inline void pack (pack_context & ctx, byte_string const & v)
+{
+    ctx.buffer.reserve(ctx.buffer.size() + sizeof(byte_string::size_type) + v.size());
+    pack(ctx, v.size()); // pack size of byte_string
+    ctx.buffer.append(v);
+}
 
 struct unpack_context
 {
@@ -894,10 +893,47 @@ struct unpack_context
         , o(order)
         , fail(false)
     {}
+
+    endian const & order () const
+    {
+        return o;
+    }
     
     byte_string::difference_type available () const
     {
         return std::distance(b, e);
+    }
+    
+    void skip (size_t n) 
+    {
+        n = pfs::min(n, integral_cast_check<size_t>(available()));
+        std::advance(b, n);
+    }
+};
+
+class unpack_committer
+{
+    unpack_context & _ctx;
+    byte_string::const_iterator _b;
+    bool _committed;
+    
+public:
+    unpack_committer (unpack_context & ctx)
+        : _ctx(ctx)
+        , _b(ctx.b)
+        , _committed(false)
+    {}
+    
+    ~unpack_committer ()
+    {
+        if (not _committed)
+            _ctx.b = _b;
+    }
+        
+    bool commit ()
+    {
+        _b = _ctx.b;
+        _committed = true;
     }
 };
 
@@ -917,6 +953,14 @@ inline T unpack (unpack_context & ctx)
     T r;
     unpack(ctx, r);
     return r;
+}
+
+inline byte_string unpack_raw_data (unpack_context & ctx, size_t n)
+{
+    n = pfs::min(n, integral_cast_check<size_t>(ctx.available()));
+    byte_string::const_iterator pos(ctx.b);
+    std::advance(ctx.b, n);
+    return byte_string(pos, ctx.b);
 }
 
 namespace details {

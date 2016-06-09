@@ -181,16 +181,16 @@ void test_real_pack_unpack ()
     };
     
     for (int i = 0; i < 8; ++i) {
-        pfs::byte_string packed_le;
-        pfs::byte_string packed_be;
+        pfs::pack_context packed_le(pfs::endian::little_endian);
+        pfs::pack_context packed_be(pfs::endian::big_endian);
         
-        pfs::pack(packed_le, double_nums[i], pfs::endian::little_endian);
-        pfs::pack(packed_be, double_nums[i], pfs::endian::big_endian);
+        pfs::pack(packed_le, double_nums[i]);
+        pfs::pack(packed_be, double_nums[i]);
 
         double d1;
         double d2;
-        pfs::unpack_context ctx_le(packed_le.begin(), packed_le.end(), pfs::endian::little_endian);
-        pfs::unpack_context ctx_be(packed_be.begin(), packed_be.end(), pfs::endian::big_endian);
+        pfs::unpack_context ctx_le(packed_le.buffer.begin(), packed_le.buffer.end(), pfs::endian::little_endian);
+        pfs::unpack_context ctx_be(packed_be.buffer.begin(), packed_be.buffer.end(), pfs::endian::big_endian);
         
         TEST_OK(pfs::unpack(ctx_le, d1));
         TEST_OK(pfs::unpack(ctx_be, d2));
@@ -204,16 +204,16 @@ void test_real_pack_unpack ()
     float float_nums[7] = { 0.0, 1.0, -1.0, 10, -3.6677, 3.1875, -3.1875 };
     
     for (int i = 0; i < 7; ++i) {
-        pfs::byte_string packed_le;
-        pfs::byte_string packed_be;
+        pfs::pack_context packed_le(pfs::endian::little_endian);
+        pfs::pack_context packed_be(pfs::endian::big_endian);
         
-        pfs::pack(packed_le, float_nums[i], pfs::endian::little_endian);
-        pfs::pack(packed_be, float_nums[i], pfs::endian::big_endian);
+        pfs::pack(packed_le, float_nums[i]);
+        pfs::pack(packed_be, float_nums[i]);
 
         float f1;
         float f2;
-        pfs::unpack_context ctx_le(packed_le.begin(), packed_le.end(), pfs::endian::little_endian);
-        pfs::unpack_context ctx_be(packed_be.begin(), packed_be.end(), pfs::endian::big_endian);
+        pfs::unpack_context ctx_le(packed_le.buffer.begin(), packed_le.buffer.end(), pfs::endian::little_endian);
+        pfs::unpack_context ctx_be(packed_be.buffer.begin(), packed_be.buffer.end(), pfs::endian::big_endian);
         
         TEST_OK(pfs::unpack(ctx_le, f1));
         TEST_OK(pfs::unpack(ctx_be, f2));

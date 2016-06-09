@@ -522,17 +522,10 @@ lexical_cast (const string & s, bool * ok = 0)
 		: false;
 }
 
-
-template <>
-byte_string & pack (byte_string & appender
-    , string const & v
-    , const endian & order);
-
 template <>
 bool unpack (unpack_context & ctx, string & v);
 
-
-//#if defined(PFS_STRING_UTF16) || defined(PFS_STRING_UTF32)
+#if defined(PFS_STRING_UTF16) || defined(PFS_STRING_UTF32)
 //
 //template <>
 //byte_string & pack<string> (byte_string & appender
@@ -553,11 +546,17 @@ bool unpack (unpack_context & ctx, string & v);
 
 // TODO pack/unpack specializations
 
-//#else
-
+#else
 // UTF8 Specialization
 //
-//#endif
+template <>
+inline void pack (pack_context & ctx, string const & v)
+{
+    pack(ctx, v.size());
+    ctx.buffer.append(v.c_str(), v.size());
+}
+
+#endif
 
 } // pfs
 
