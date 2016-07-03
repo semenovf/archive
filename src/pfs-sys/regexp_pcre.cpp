@@ -6,7 +6,7 @@
  */
 
 #include "pfs/regexp.hpp"
-#include "../../pcre8/pcre.h"
+#include "pcre8/pcre.h"
 #include <cstring>
 
 namespace pfs {

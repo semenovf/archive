@@ -16,15 +16,15 @@ defines       {   "HAVE_CONFIG_H"
               }
 undefines     {  }
 
-includedirs   { "../../include", "../../../pfs/include" }
+includedirs   { "../../include", "../../3rdparty", "../../../pfs/include" }
 libdirs       { "../../../.build" }
 files         {
                   "../../src/pfs-sys/*.c"
                 , "../../src/pfs-sys/*.cpp"
                 , "../../include/**.hpp"
                 , "../../include/**.h"
-                , "../../pcre8/*.c"
-                , "../../zlib/*.c"
+                , "../../3rdparty/pcre8/*.c"
+                , "../../3rdparty/zlib/*.c"
               }
 
 configuration "debug"

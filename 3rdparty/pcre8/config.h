@@ -102,7 +102,9 @@ sure both macros are undefined; an emulation function will then be used. */
 /* #undef HAVE_READLINE_READLINE_H */
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#define HAVE_STDINT_H 1
+#ifdef PFS_HAVE_STDINT_H
+#define HAVE_STDINT_H PFS_HAVE_STDINT_H
+#endif
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
@@ -123,11 +125,9 @@ sure both macros are undefined; an emulation function will then be used. */
 /* #undef HAVE_STRTOIMAX */
 
 /* Define to 1 if you have `strtoll'. */
-/* Used only in pcrecpp.cc: no need */
 /* #undef HAVE_STRTOLL */
 
 /* Define to 1 if you have `strtoq'. */
-/* Used only in pcrecpp.cc: no need */
 /* #undef HAVE_STRTOQ */
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
@@ -140,11 +140,11 @@ sure both macros are undefined; an emulation function will then be used. */
 /* #undef HAVE_TYPE_TRAITS_H */
 
 /* Define to 1 if you have the <unistd.h> header file. */
-/* TODO valid for *nix */
+#if PFS_OS_POSIX
 #define HAVE_UNISTD_H 1
+#endif
 
 /* Define to 1 if the system has the type `unsigned long long'. */
-/* Used only in pcrecpp.cc: no need */
 /* #undef HAVE_UNSIGNED_LONG_LONG */
 
 /* Define to 1 if the compiler supports simple visibility declarations. */
@@ -168,8 +168,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #define LINK_SIZE 2
 #endif
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 /* This is ignored unless you are using libtool. */
 #ifndef LT_OBJDIR
 #define LT_OBJDIR ".libs/"
@@ -223,9 +222,6 @@ sure both macros are undefined; an emulation function will then be used. */
 #define NEWLINE 10
 #endif
 
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-/* #undef NO_MINUS_C_MINUS_O */
-
 /* PCRE uses recursive function calls to handle backtracking while matching.
    This can sometimes be a problem on systems that have stacks of limited
    size. Define NO_RECURSE to any value to get a version that doesn't use
@@ -245,7 +241,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #define PACKAGE_NAME "PCRE"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PCRE 8.33"
+#define PACKAGE_STRING "PCRE 8.39"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "pcre"
@@ -254,7 +250,14 @@ sure both macros are undefined; an emulation function will then be used. */
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "8.33"
+#define PACKAGE_VERSION "8.39"
+
+/* The value of PARENS_NEST_LIMIT specifies the maximum depth of nested
+   parentheses (of any kind) in a pattern. This limits the amount of system
+   stack that is used while compiling a pattern. */
+#ifndef PARENS_NEST_LIMIT
+#define PARENS_NEST_LIMIT 250
+#endif
 
 /* The value of PCREGREP_BUFSIZE determines the size of buffer used by
    pcregrep to hold parts of the file it is searching. This is also the
@@ -297,10 +300,6 @@ sure both macros are undefined; an emulation function will then be used. */
 /* Define to 1 if you have the ANSI C header files. */
 /* #undef STDC_HEADERS */
 
-/* Define to allow pcretest and pcregrep to be linked with gcov, so that they
-   are able to generate code coverage reports. */
-/* #undef SUPPORT_GCOV */
-
 /* Define to any value to enable support for Just-In-Time compiling. */
 /* #undef SUPPORT_JIT */
 
@@ -338,14 +337,16 @@ sure both macros are undefined; an emulation function will then be used. */
    the EBCDIC macro. That is, PCRE can support *either* EBCDIC code *or*
    ASCII/UTF-8/16/32, but not both at once. */
 #define SUPPORT_UTF8 1
-/*#define SUPPORT_UTF16 1*/
-/*#define SUPPORT_UTF32 1*/
+/*
+#define SUPPORT_UTF16 1
+#define SUPPORT_UTF32 1
+*/
 
 /* Define to any value for valgrind support to find invalid memory reads. */
 /* #undef SUPPORT_VALGRIND */
 
 /* Version number of package */
-#define VERSION "8.33"
+#define VERSION "8.39"
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
