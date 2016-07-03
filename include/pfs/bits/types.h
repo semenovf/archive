@@ -22,12 +22,12 @@
  * pointer    32    64     64     64
  * ===================================
  */
-#if (defined(__WORDSIZE) && __WORDSIZE == 64)                       \
-    || (defined(UINTPTR_MAX) && UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF)  \
-    ||  defined(_WIN64)                                             \
-    || (defined(__GNUC__) && (__x86_64__ || __ppc64__))             \
-    ||  defined(__LP64__)                                           \
-    ||  defined(_LP64)                                              \
+#if (defined(__WORDSIZE) && __WORDSIZE == 64)                           \
+	|| (defined(UINTPTR_MAX) && UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF)  \
+	||  defined(_WIN64)                                             \
+	|| (defined(__GNUC__) && (__x86_64__ || __ppc64__))             \
+	||  defined(__LP64__)                                           \
+	||  defined(_LP64)                                              \
 	||  defined(__INT64_TYPE__)
 
 #   define PFS_HAVE_INT64 1
@@ -52,8 +52,9 @@
 #   define __STDC_LIMIT_MACROS /* see stdint.h for comments about this macro */
 #   include <stdint.h>
 
-#	define PFS_HAVE_INT8_T 1
-#   define PFS_HAVE_STDINT 1
+#   define PFS_HAVE_INT8_T 1
+#   define PFS_HAVE_STDINT 1 /* deprecated, use PFS_HAVE_STDINT_H */
+#   define PFS_HAVE_STDINT_H 1
 #endif
 
 #ifdef __cplusplus

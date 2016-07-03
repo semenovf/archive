@@ -14,21 +14,6 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <float.h>
-//#include <math.h> /* for NAN */
-
-/*
- * C99-specific header
- */
-//#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) /* c99 or higher */ \
-//	|| (defined(_MSC_VER) && _MSC_VER >= 1600) /* msvc >= MSVC++ 10.0 */           \
-//    || defined(__INT8_TYPE__) /* gcc w/o -std=c99 or higher option */
-//
-//#   define __STDC_LIMIT_MACROS /* see stdint.h for comments about this macro */
-//#   include <stdint.h>
-//
-//#	define PFS_HAVE_INT8_T 1 // TODO deprecated
-//#   define PFS_HAVE_STDINT 1
-//#endif
 
 #ifdef _MSC_VER
 #   define WIN32_LEAN_AND_MEAN
@@ -44,20 +29,6 @@
 #ifdef min
 #	undef min
 #endif
-
-#ifdef __DEPRECATED__
-#if defined(_MSC_VER)/* && defined(__cplusplus)*/
-/* for suppressing warning 'C4996' in MSVC warning :
- *      'posix_name': The POSIX name for this item is deprecated.
- *      Instead, use the ISO C++ conformant name: _posix_name.
- *      See online help for details.
- */
-#   define PFS_ISO_CPP_NAME(posix_name) _##posix_name
-#else
-#   define PFS_ISO_CPP_NAME(posix_name) posix_name
-#endif
-#endif
-
 
 #ifdef EXTERN_C_BEGIN
 #   undef EXTERN_C_BEGIN
@@ -149,47 +120,6 @@
 #	define PFS_HAVE_SNPRINTF  1
 #	define PFS_HAVE_VSNPRINTF 1
 #endif
-
-
-/* @see http://www.ibm.com/developerworks/ru/library/l-port64/
- *
- * Type model
- * ===================================
- *         ILP32  LP64  LLP64  ILP64
- * -----------------------------------
- * char        8     8      8      8
- * short      16    16     16     16
- * int        32    32     32     64
- * long       32    64     32     64
- * long long  64    64     64     64
- * pointer    32    64     64     64
- * ===================================
- */
-#if (defined(__WORDSIZE) && __WORDSIZE == 64)                       \
-    || (defined(UINTPTR_MAX) && UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF)  \
-    || defined(_WIN64)                                              \
-    || (defined(__GNUC__) && (__x86_64__ || __ppc64__))             \
-    || defined(__LP64__)                                            \
-    || defined(_LP64)
-#   define PFS_HAVE_INT64 1
-#endif
-
-#ifndef PFS_HAVE_INT64
-/*
- * Valid for ILP32
- */
-#   if defined(ULLONG_MAX) && defined(ULONG_MAX) && (ULLONG_MAX > ULONG_MAX)
-#       define PFS_HAVE_INT64 1
-#   endif
-#endif
-
-//#ifdef ULLONG_MAX
-//#   define PFS_HAVE_LONGLONG 1
-//#endif
-//
-//#ifdef LDBL_MIN
-//#   define PFS_HAVE_LONG_DOUBLE 1
-//#endif
 
 #if !defined(__cplusplus)
 #   if !defined(inline)

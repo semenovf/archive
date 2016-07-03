@@ -166,5 +166,8 @@
 #   define PFS_OS_BITS    32
 #endif
 
+#if defined(PFS_OS_UNIX)
+#	define PS_OS_POSIX 1
+#endif
 
 #endif /* __PFS_BITS_OS_H__ */
