@@ -73,7 +73,7 @@ public:
 public: // signals
 	signal2<const string &, bool &> emit_module_registered;
 
-	signal0<>               emit_quit;
+	signal0<>                               emit_quit;
 	signal2<const module *, const string &> emit_info;
 	signal2<const module *, const string &> emit_debug;
 	signal2<const module *, const string &> emit_warn;

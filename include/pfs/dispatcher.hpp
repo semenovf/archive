@@ -144,29 +144,26 @@ public:
 		return _module_spec_map.size();
 	}
 
-/* TODO need implementation
-	bool registerModuleForUrl(const string &url);
-*/
 	void connect_all ();
 	void disconnect_all ();
 	void unregister_all ();
 	bool start ();
 	int  exec ();
 
-	bool is_module_registered (const string & modname) const
+	bool is_module_registered (string const & modname) const
 	{
 		return _module_spec_map.find(modname) != _module_spec_map.end();
 	}
 
 public: // signals
 	signal0<> emit_quit;
-	signal2<const module *, const string &> emit_info;
-	signal2<const module *, const string &> emit_debug;
-	signal2<const module *, const string &> emit_warn;
-	signal2<const module *, const string &> emit_error;
+	signal2<module const *, string const &> emit_info;
+	signal2<module const *, string const &> emit_debug;
+	signal2<module const *, string const &> emit_warn;
+	signal2<module const *, string const &> emit_error;
 
 public: // slots
-	void module_registered (const string & pname, bool & result)
+	void module_registered (string const & pname, bool & result)
 	{
 		result = is_module_registered(pname);
 	}
@@ -176,17 +173,17 @@ public: // slots
 		emit_quit();
 	}
 
-	void print_info  (const module * m, const string & s);
-	void print_debug (const module * m, const string & s);
-	void print_warn  (const module * m, const string & s);
-	void print_error (const module * m, const string & s);
+	void print_info  (module const * m, string const & s);
+	void print_debug (module const * m, string const & s);
+	void print_warn  (module const * m, string const & s);
+	void print_error (module const * m, string const & s);
 
 protected:
-	module_spec module_for_path (const fs::path & path
+	module_spec module_for_path (fs::path const & path
 			, const char * class_name = 0
 			, void * mod_data = 0);
 
-	module_spec module_for_name (const string & name
+	module_spec module_for_name (string const & name
 			, const char * class_name = 0
 			, void * mod_data = 0)
 	{
