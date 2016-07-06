@@ -42,3 +42,13 @@ void pfs_assert (const char * file, int line, const char * text)
 	abort();
 #endif
 }
+
+void pfs_check_warn (const char * file, int line, const char * text)
+{
+    fprintf(stderr, "WARN: (%s[%d]): %s\n", file, line, text);
+}
+
+void pfs_check_error (const char * file, int line, const char * text)
+{
+    fprintf(stderr, "ERROR: (%s[%d]): %s\n", file, line, text);
+}

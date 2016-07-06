@@ -13,6 +13,8 @@
 EXTERN_C_BEGIN
 
 void pfs_assert (const char * file, int line, const char * text);
+void pfs_check_warn   (const char * file, int line, const char * text);
+void pfs_check_error  (const char * file, int line, const char * text);
 
 EXTERN_C_END
 
@@ -34,6 +36,8 @@ EXTERN_C_END
 #define PFS_ASSERT_IS_NULL(x)     PFS_ASSERT(!(x).is_null())
 #define PFS_ASSERT_DOMAIN(errstr) PFS_ASSERT_X(false, errstr)
 
+#define PFS_WARN(x) if (!(x)) { pfs_check_warn(__TFILE__, __LINE__, #x); }
+#define PFS_ERROR(x) if (!(x)) { pfs_check_error(__TFILE__, __LINE__, #x); }
 
 /*
  * Special case of assert.

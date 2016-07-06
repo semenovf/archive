@@ -12,12 +12,12 @@
 
 #ifndef NDEBUG
 #	define PFS_DEBUG(x) x
-#   define PFS_WARN(x) std::cerr << "WARN: " << x << std::endl
-#   define PFS_ERROR(x) std::cerr << "ERROR: " << x << std::endl
+//#   define PFS_WARN(x) std::cerr << "WARN: " << x << std::endl
+//#   define PFS_ERROR(x) std::cerr << "ERROR: " << x << std::endl
 #else
 #	define PFS_DEBUG(x)
-#   define PFS_WARN(x)
-#   define PFS_ERROR(x)
+//#   define PFS_WARN(x)
+//#   define PFS_ERROR(x)
 #endif
 
 #endif /* __PFS_DEBUG_HPP__ */
