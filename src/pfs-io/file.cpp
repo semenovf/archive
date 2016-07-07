@@ -16,7 +16,7 @@ void file_appender::print (pfs::string const & msg)
 	_d.write(msg.c_str(), msg.size(), & ex);
 	_d.write("\n", 1);
 
-    PFS_ERROR2(ex != 0, _u8("Failed to write log message: ").append(to_string(ex)).c_str());
+    PFS_ERROR2(ex == 0, _u8("Failed to write log message: ").append(to_string(ex)).c_str());
 }
 
 }
