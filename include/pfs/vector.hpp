@@ -32,7 +32,7 @@ public:
     typedef typename base_class::difference_type        difference_type;
     typedef typename base_class::allocator_type         allocator_type;
 
-    typedef typename pfs::shared_ptr<vector<T, Alloc> > shared_ptr_type;
+    typedef typename pfs::shared_ptr<vector<T, Alloc> > shared_type;
     
 public:
 	explicit vector (const allocator_type & alloc = allocator_type())

@@ -31,7 +31,7 @@ class bitset
 public:
 	typedef typename rep_type::reference reference;
 
-    typedef pfs::shared_ptr<bitset> shared_ptr_type;
+    typedef pfs::shared_ptr<bitset> shared_type;
     
 private:
     rep_type  _d;

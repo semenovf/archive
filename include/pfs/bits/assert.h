@@ -38,6 +38,8 @@ EXTERN_C_END
 
 #define PFS_WARN(x) if (!(x)) { pfs_check_warn(__TFILE__, __LINE__, #x); }
 #define PFS_ERROR(x) if (!(x)) { pfs_check_error(__TFILE__, __LINE__, #x); }
+#define PFS_WARN2(x,text) if (!(x)) { pfs_check_warn(__TFILE__, __LINE__, text); }
+#define PFS_ERROR2(x,text) if (!(x)) { pfs_check_error(__TFILE__, __LINE__, text); }
 
 /*
  * Special case of assert.

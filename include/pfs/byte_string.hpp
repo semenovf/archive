@@ -40,7 +40,7 @@ public:
 	typedef typename rep_type::reverse_iterator       reverse_iterator;
 	typedef typename rep_type::const_reverse_iterator const_reverse_iterator;
 
-    typedef pfs::shared_ptr<byte_string> shared_ptr_type;
+    typedef pfs::shared_ptr<byte_string> shared_type;
     
 	static const size_type npos = rep_type::npos;
 private:
