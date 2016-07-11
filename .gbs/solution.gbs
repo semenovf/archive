@@ -156,3 +156,8 @@ project "demo-type-erasure1"
 project "test-type_traits"
     include("test-type_traits/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-ratio"
+    include("test-ratio/project.gbs")
+-- END PROJECT

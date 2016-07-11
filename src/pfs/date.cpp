@@ -48,24 +48,24 @@ intmax_t date::julian_day (int year, int month, int day) // static
 	if (year < 0) // there is no 0 year
 		++year;
 
-	int      a = math::floorDiv(14 - month, 12);
+	int      a = math::floor_div(14 - month, 12);
 	intmax_t y = intmax_t(year) + 4800 - a;
 	int      m = month + 12 * a - 3;
 
 	// Gregorian calendar: >= 15.10.1582
 	if (year > 1582 || (year == 1582 && (month > 10 || (month == 10 && day >= 15)))) {
-		return day + math::floorDiv(153 * m + 2, 5)
+		return day + math::floor_div(153 * m + 2, 5)
 			+ 365 * y
-			+ math::floorDiv(y, 4)
-			- math::floorDiv(y, 100)
-			+ math::floorDiv(y, 400)
+			+ math::floor_div(y, 4)
+			- math::floor_div(y, 100)
+			+ math::floor_div(y, 400)
 			- 32045;
 	}
 	// Julian calendar: <= 4.10.1582
 	else if (year < 1582 || (year == 1582 && (month < 10 || (month == 10 && day <= 4)))) {
-		return day + math::floorDiv(153 * m + 2, 5)
+		return day + math::floor_div(153 * m + 2, 5)
 			+ 365 * y
-			+ math::floorDiv(y, 4)
+			+ math::floor_div(y, 4)
 			- 32083;
 	}
 
@@ -91,20 +91,20 @@ void date::from_julian_day (intmax_t julianDay, int * yearPtr, int * monthPtr, i
 	//
 	if (julianDay >= 2299161) {
 		intmax_t a = julianDay + 32044;
-		b = math::floorDiv(4 * a + 3, 146097);
-		c = a - math::floorDiv(146097 * b, 4);
+		b = math::floor_div(4 * a + 3, 146097);
+		c = a - math::floor_div(146097 * b, 4);
 	} else {
 		b = 0;
 		c = julianDay + 32082;
 	}
 
-    intmax_t    d = math::floorDiv(4 * c + 3, 1461);
-    intmax_t    e = c - math::floorDiv(1461 * d, 4);
-    intmax_t    m = math::floorDiv(5 * e + 2, 153);
+    intmax_t    d = math::floor_div(4 * c + 3, 1461);
+    intmax_t    e = c - math::floor_div(1461 * d, 4);
+    intmax_t    m = math::floor_div(5 * e + 2, 153);
 
-    intmax_t    day = e - math::floorDiv(153 * m + 2, 5) + 1;
-    intmax_t    month = m + 3 - 12 * math::floorDiv(m, 10);
-    intmax_t    year = 100 * b + d - 4800 + math::floorDiv(m, 10);
+    intmax_t    day = e - math::floor_div(153 * m + 2, 5) + 1;
+    intmax_t    month = m + 3 - 12 * math::floor_div(m, 10);
+    intmax_t    year = 100 * b + d - 4800 + math::floor_div(m, 10);
 
     if (year <= 0)
         --year;
