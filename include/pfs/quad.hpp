@@ -8,6 +8,7 @@
 #define __PFS_QUAD_HPP__
 
 namespace pfs {
+
 template <typename T>
 class quad
 {
@@ -35,13 +36,13 @@ public:
 		_value[0] = _value[1] = _value[2] = _value[3] = all;
 	}
 
-	quad (const value_type & topBottom, const value_type & leftRight)
-	{
-		setTop(topBottom);
-		setBottom(topBottom);
-		setLeft(leftRight);
-		setRight(leftRight);
-	}
+//	quad (const value_type & top_bottom, const value_type & left_right)
+//	{
+//		set_top(top_bottom);
+//		set_bottom(top_bottom);
+//		set_left(left_right);
+//		set_right(left_right);
+//	}
 
 	quad (const quad<T> & other)
 	{
@@ -63,14 +64,14 @@ public:
 	const value_type & fourth () const { return _value[3]; }
 	value_type         fourth ()       { return _value[3]; }
 
-	const value_type & top    () const { return first();  }
-	value_type         top    ()       { return first();  }
-	const value_type & right  () const { return second(); }
-	value_type         right  ()       { return second(); }
-	const value_type & bottom () const { return third();  }
-	value_type         bottom ()       { return third();  }
-	const value_type & left   () const { return fourth(); }
-	value_type         left   ()       { return fourth(); }
+//	const value_type & top    () const { return first();  }
+//	value_type         top    ()       { return first();  }
+//	const value_type & right  () const { return second(); }
+//	value_type         right  ()       { return second(); }
+//	const value_type & bottom () const { return third();  }
+//	value_type         bottom ()       { return third();  }
+//	const value_type & left   () const { return fourth(); }
+//	value_type         left   ()       { return fourth(); }
 
 	void set (const quad<T> & other)
 	{
@@ -80,15 +81,15 @@ public:
 		_value[3] = other._value[3];
 	}
 
-	void setFirst  (const value_type & v) { _value[0] = v; }
-	void setSecond (const value_type & v) { _value[1] = v; }
-	void setThird  (const value_type & v) { _value[2] = v; }
-	void setFourth (const value_type & v) { _value[3] = v; }
+	void set_first  (const value_type & v) { _value[0] = v; }
+	void set_second (const value_type & v) { _value[1] = v; }
+	void set_third  (const value_type & v) { _value[2] = v; }
+	void set_rourth (const value_type & v) { _value[3] = v; }
 
-	void setTop    (const value_type & v) { setFirst(v); }
-	void setRight  (const value_type & v) { setSecond(v); }
-	void setBottom (const value_type & v) { setThird(v); }
-	void setLeft   (const value_type & v) { setFourth(v); }
+//	void set_top    (const value_type & v) { set_first(v); }
+//	void set_right  (const value_type & v) { set_second(v); }
+//	void set_bottom (const value_type & v) { set_third(v); }
+//	void set_left   (const value_type & v) { set_fourth(v); }
 };
 
 } // pfs

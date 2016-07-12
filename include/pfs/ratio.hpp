@@ -31,101 +31,69 @@ using std::ratio;
 #include <pfs/type_traits.hpp>
 #include <pfs/limits.hpp>
 #include <pfs/math.hpp>
+#include <utility> // for std::pair
 
 namespace pfs {
 
 #if __FIXME__
 
 // Adapted from __udiv_qrnnd_c in longlong.h
-// This version assumes that the high bit of __d is 1.
-template<uintmax_t __n1, uintmax_t __n0, uintmax_t __d>
-struct __big_div_impl
+
+// Let c = 2 ^ (half # of bits in an intmax_t)
+// then we find a1, a0, b1, b0 s.t. N = a1*c + a0, M = b1*c + b0
+// The multiplication of N and M becomes,
+// N * M = (a1 * b1)c^2 + (a0 * b1 + b0 * a1)c + a0 * b0
+// Multiplication is safe if each term and the sum of the terms
+// is representable by intmax_t.
+template <intmax_t Pn, intmax_t Qn>
+struct safe_multiply
 {
-private:
-  static_assert(__d >= (uintmax_t(1) << (sizeof(intmax_t) * 8 - 1)),
-        "Internal library error");
-  static_assert(__n1 < __d, "Internal library error");
-  static constexpr uintmax_t __c = uintmax_t(1) << (sizeof(intmax_t) * 4);
-  static constexpr uintmax_t __d1 = __d / __c;
-  static constexpr uintmax_t __d0 = __d % __c;
-
-  static constexpr uintmax_t __q1x = __n1 / __d1;
-  static constexpr uintmax_t __r1x = __n1 % __d1;
-  static constexpr uintmax_t __m = __q1x * __d0;
-  static constexpr uintmax_t __r1y = __r1x * __c + __n0 / __c;
-  static constexpr uintmax_t __r1z = __r1y + __d;
-  static constexpr uintmax_t __r1
-  = ((__r1y < __m) ? ((__r1z >= __d) && (__r1z < __m))
- ? (__r1z + __d) : __r1z : __r1y) - __m;
-  static constexpr uintmax_t __q1
-  = __q1x - ((__r1y < __m)
-     ? ((__r1z >= __d) && (__r1z < __m)) ? 2 : 1 : 0);
-  static constexpr uintmax_t __q0x = __r1 / __d1;
-  static constexpr uintmax_t __r0x = __r1 % __d1;
-  static constexpr uintmax_t __n = __q0x * __d0;
-  static constexpr uintmax_t __r0y = __r0x * __c + __n0 % __c;
-  static constexpr uintmax_t __r0z = __r0y + __d;
-  static constexpr uintmax_t __r0
-  = ((__r0y < __n) ? ((__r0z >= __d) && (__r0z < __n))
- ? (__r0z + __d) : __r0z : __r0y) - __n;
-  static constexpr uintmax_t __q0
-  = __q0x - ((__r0y < __n) ? ((__r0z >= __d)
-              && (__r0z < __n)) ? 2 : 1 : 0);
-
-public:
-  static constexpr uintmax_t __quot = __q1 * __c + __q0;
-  static constexpr uintmax_t __rem = __r0;
-
-private:
-  typedef __big_mul<__quot, __d> _Prod;
-  typedef __big_add<_Prod::__hi, _Prod::__lo, 0, __rem> _Sum;
-  static_assert(_Sum::__hi == __n1 && _Sum::__lo == __n0,
-        "Internal library error");
+    static intmax_t const value;
 };
 
-template<uintmax_t __n1, uintmax_t __n0, uintmax_t __d>
-struct __big_div
+inline intmax_t __assert_safe_multiply_parameters (intmax_t Pn, intmax_t Qn)
 {
-private:
-  static_assert(__d != 0, "Internal library error");
-  static_assert(sizeof (uintmax_t) == sizeof (unsigned long long),
-        "This library calls __builtin_clzll on uintmax_t, which "
-        "is unsafe on your platform. Please complain to "
-        "http://gcc.gnu.org/bugzilla/");
-  static constexpr int __shift = __builtin_clzll(__d);
-  static constexpr int __coshift_ = sizeof(uintmax_t) * 8 - __shift;
-  static constexpr int __coshift = (__shift != 0) ? __coshift_ : 0;
-  static constexpr uintmax_t __c1 = uintmax_t(1) << __shift;
-  static constexpr uintmax_t __c2 = uintmax_t(1) << __coshift;
-  static constexpr uintmax_t __new_d = __d * __c1;
-  static constexpr uintmax_t __new_n0 = __n0 * __c1;
-  static constexpr uintmax_t __n1_shifted = (__n1 % __d) * __c1;
-  static constexpr uintmax_t __n0_top = (__shift != 0) ? (__n0 / __c2) : 0;
-  static constexpr uintmax_t __new_n1 = __n1_shifted + __n0_top;
-  typedef __big_div_impl<__new_n1, __new_n0, __new_d> _Res;
+    uintmax_t c = uintmax_t(1) << (sizeof(intmax_t) * 4);
 
-public:
-  static constexpr uintmax_t __quot_hi = __n1 / __d;
-  static constexpr uintmax_t __quot_lo = _Res::__quot;
-  static constexpr uintmax_t __rem = _Res::__rem / __c1;
+    uintmax_t a0 = __integral_abs(Pn) % c;
+    uintmax_t a1 = __integral_abs(Pn) / c;
+    uintmax_t b0 = __integral_abs(Qn) % c;
+    uintmax_t b1 = __integral_abs(Qn) / c;
 
-private:
-  typedef __big_mul<__quot_lo, __d> _P0;
-  typedef __big_mul<__quot_hi, __d> _P1;
-  typedef __big_add<_P0::__hi, _P0::__lo, _P1::__lo, __rem> _Sum;
-  // No overflow.
-  static_assert(_P1::__hi == 0, "Internal library error");
-  static_assert(_Sum::__hi >= _P0::__hi, "Internal library error");
-  // Matches the input data.
-  static_assert(_Sum::__hi == __n1 && _Sum::__lo == __n0,
-        "Internal library error");
-  static_assert(__rem < __d, "Internal library error");
-};
+    PFS_ASSERT_X(a1 == 0 || b1 == 0, "Overflow in multiplication");
+    PFS_ASSERT_X(a0 * b1 + b0 * a1 < (c >> 1), "Overflow in multiplication");
+    PFS_ASSERT_X(b0 * a0 <= max_value<intmax_t>(), "Overflow in multiplication");
+    PFS_ASSERT_X((a0 * b1 + b0 * a1) * c<= max_value<intmax_t>() - b0 * a0, "Overflow in multiplication");
+    
+    return 0;
+}
+
+template <intmax_t Pn, intmax_t Qn>
+intmax_t const safe_multiply<Pn, Qn>::value 
+        = __assert_safe_multiply_parameters(Pn, Qn) + Pn * Qn;
+
 
 #endif // __FIXME__
 
+namespace details {
+
+inline intmax_t ratio_num (intmax_t num, intmax_t denom)
+{
+    PFS_ASSERT_X(denom != 0, "Denominator cannot be zero");
+    PFS_ASSERT_X(num >= - max_value<intmax_t>() && denom >= - max_value<intmax_t>(), "Out of range");
+    
+    return num * math::details::integral_sign(denom) / math::details::integral_gcd(num, denom);
+}
+
+inline intmax_t ratio_den (intmax_t num, intmax_t denom)
+{
+    return math::details::integral_abs(denom) / math::details::integral_gcd(num, denom);
+}
+
+}
+
   /**
-   *  @brief Provides compile-time rational arithmetic.
+   *  @brief Provides rational arithmetic.
    *
    *  This class template represents any finite rational number with a
    *  numerator and denominator representable by compile-time constants of
@@ -133,8 +101,8 @@ private:
    *
    *  For example:
    *  @code
-   *    std::ratio<7,-21>::num == -1;
-   *    std::ratio<7,-21>::den == 3;
+   *    pfs::ratio<7,-21>::num == -1;
+   *    pfs::ratio<7,-21>::den == 3;
    *  @endcode
    *  
   */
@@ -145,83 +113,106 @@ struct ratio
     static intmax_t den;
 };
 
-inline intmax_t __assert_ratio_parameters (intmax_t Num, intmax_t Denom)
+template <intmax_t Num, intmax_t Denom>
+intmax_t pfs::ratio<Num, Denom>::num = details::ratio_num(Num, Denom);
+
+template <intmax_t Num, intmax_t Denom>
+intmax_t pfs::ratio<Num, Denom>::den = details::ratio_den(Num, Denom);
+
+namespace details {
+
+bool ratio_less (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2);
+void ratio_add (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2, intmax_t & num, intmax_t & den);
+
+inline intmax_t ratio_add_and_get_num(intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2)
 {
-    PFS_ASSERT_X(Denom != 0, "Denominator cannot be zero");
-    //PFS_ASSERT_X(Num >= - max_value<intmax_t>() && Denom >= - max_value<intmax_t>(), "Out of range");
-    return 0;
+    intmax_t num, den;
+    ratio_add(num1, den1, num2, den2, num, den);
+    return num;
 }
 
-template <intmax_t Num, intmax_t Denom>
-intmax_t pfs::ratio<Num, Denom>::num 
-        = __assert_ratio_parameters(Num, Denom)
-        + Num * math::integral_sign<Denom>::value / math::integral_gcd<Num, Denom>::value;
+inline intmax_t ratio_add_and_get_den(intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2)
+{
+    intmax_t num, den;
+    ratio_add(num1, den1, num2, den2, num, den);
+    return den;
+}
 
-template <intmax_t Num, intmax_t Denom>
-intmax_t pfs::ratio<Num, Denom>::den 
-        = __assert_ratio_parameters(Num, Denom)
-        + math::integral_abs<Denom>::value / math::integral_gcd<Num, Denom>::value;
-
+} // details
 
 // Comparison
 
-template<typename R1, typename R2>
+template <typename R1, typename R2>
 struct ratio_equal
 {
     static bool const value;
 };
 
-template<typename R1, typename R2>
+template <typename R1, typename R2>
 bool const ratio_equal<R1, R2>::value = (R1::num == R2::num && R1::den == R2::den);
 
-template<typename R1, typename R2>
+template <typename R1, typename R2>
 struct ratio_not_equal
 {
     static bool const value;
 };
 
-template<typename R1, typename R2>
+template <typename R1, typename R2>
 bool const ratio_not_equal<R1, R2>::value = ! ratio_equal<R1, R2>::value;
 
+template <typename R1, typename R2>
+struct ratio_less
+{ 
+    static bool const value;
+};
 
-template<typename _R1, typename _R2,
-    typename _Left = __big_mul<_R1::num,_R2::den>,
-           typename _Right = __big_mul<_R2::num,_R1::den> >
-    struct __ratio_less_impl_1
-    : integral_constant<bool, __big_less<_Left::__hi, _Left::__lo,
-           _Right::__hi, _Right::__lo>::value>
-    { }; 
+template <typename R1, typename R2>
+bool const ratio_less<R1, R2>::value = details::ratio_less(R1::num, R1::den, R2::num, R2::den);
 
-  template<typename _R1, typename _R2,
-	   bool = (_R1::num == 0 || _R2::num == 0
-		   || (__static_sign<_R1::num>::value
-		       != __static_sign<_R2::num>::value)),
-	   bool = (__static_sign<_R1::num>::value == -1
-		   && __static_sign<_R2::num>::value == -1)>
-    struct __ratio_less_impl
-    : __ratio_less_impl_1<_R1, _R2>::type
-    { };
 
-  template<typename _R1, typename _R2>
-    struct __ratio_less_impl<_R1, _R2, true, false>
-    : integral_constant<bool, _R1::num < _R2::num>
-    { };
+template <typename R1, typename R2>
+struct ratio_less_equal
+{
+    static bool const value;
+};
 
-  template<typename _R1, typename _R2>
-    struct __ratio_less_impl<_R1, _R2, false, true>
-    : __ratio_less_impl_1<ratio<-_R2::num, _R2::den>,
-           ratio<-_R1::num, _R1::den> >::type
-    { };
+template <typename R1, typename R2>
+bool const ratio_less_equal<R1, R2>::value = ! details::ratio_less(R2::num, R2::den, R1::num, R1::den);
 
+template <typename R1, typename R2>
+struct ratio_greater
+{
+    static bool const value;
+};
+
+template <typename R1, typename R2>
+bool const ratio_greater<R1, R2>::value = details::ratio_less(R2::num, R2::den, R1::num, R1::den);
+
+template <typename R1, typename R2>
+struct ratio_greater_equal
+{
+    static bool const value;
+};
+
+template <typename R1, typename R2>
+bool const ratio_greater_equal<R1, R2>::value = ! details::ratio_less(R1::num, R1::den, R2::num, R2::den);
+
+template <typename R1, typename R2>
+struct ratio_add
+{
+    static intmax_t num;
+    static intmax_t den;
+};
+
+// TODO May be there is a solution to avoid repeated calculation of ratio_add result.
+// 
+template <typename R1, typename R2>
+intmax_t ratio_add<R1, R2>::num = details::ratio_add_and_get_num(R1::num, R1::den, R2::num, R2::den);
 
 template<typename R1, typename R2>
-struct ratio_less
-    : __ratio_less_impl<_R1, _R2>::type
-{ };
-
+intmax_t ratio_add<R1, R2>::den = details::ratio_add_and_get_den(R1::num, R1::den, R2::num, R2::den);
 
 #if __FIXME__
-
   template<typename _R1, typename _R2>
     struct __ratio_multiply
     {
@@ -275,115 +266,7 @@ struct ratio_less
   template<typename _R1, typename _R2>
     using ratio_divide = typename __ratio_divide<_R1, _R2>::type;
 
- 
-
-    
-  /// ratio_less_equal
-  template<typename _R1, typename _R2>
-    struct ratio_less_equal
-    : integral_constant<bool, !ratio_less<_R2, _R1>::value>
-    { };
-  
-  /// ratio_greater
-  template<typename _R1, typename _R2>
-    struct ratio_greater
-    : integral_constant<bool, ratio_less<_R2, _R1>::value>
-    { };
-
-  /// ratio_greater_equal
-  template<typename _R1, typename _R2>
-    struct ratio_greater_equal
-    : integral_constant<bool, !ratio_less<_R1, _R2>::value>
-    { };
-
-  template<typename _R1, typename _R2,
-      bool = (_R1::num >= 0),
-      bool = (_R2::num >= 0),
-      bool = ratio_less<ratio<__static_abs<_R1::num>::value, _R1::den>,
-        ratio<__static_abs<_R2::num>::value, _R2::den> >::value>
-    struct __ratio_add_impl
-    {
-    private:
-      typedef typename __ratio_add_impl<
-        ratio<-_R1::num, _R1::den>,
-        ratio<-_R2::num, _R2::den> >::type __t;
-    public:
-      typedef ratio<-__t::num, __t::den> type;
-    };
-
-  // True addition of nonnegative numbers.
-  template<typename _R1, typename _R2, bool __b>
-    struct __ratio_add_impl<_R1, _R2, true, true, __b>
-    {
-    private:
-      static constexpr uintmax_t __g = __static_gcd<_R1::den, _R2::den>::value;
-      static constexpr uintmax_t __d2 = _R2::den / __g;
-      typedef __big_mul<_R1::den, __d2> __d;
-      typedef __big_mul<_R1::num, _R2::den / __g> __x;
-      typedef __big_mul<_R2::num, _R1::den / __g> __y;
-      typedef __big_add<__x::__hi, __x::__lo, __y::__hi, __y::__lo> __n;
-      static_assert(__n::__hi >= __x::__hi, "Internal library error");
-      typedef __big_div<__n::__hi, __n::__lo, __g> __ng;
-      static constexpr uintmax_t __g2 = __static_gcd<__ng::__rem, __g>::value;
-      typedef __big_div<__n::__hi, __n::__lo, __g2> __n_final;
-      static_assert(__n_final::__rem == 0, "Internal library error");
-      static_assert(__n_final::__quot_hi == 0 &&
-        __n_final::__quot_lo <= __INTMAX_MAX__, "overflow in addition");
-      typedef __big_mul<_R1::den / __g2, __d2> __d_final;
-      static_assert(__d_final::__hi == 0 &&
-        __d_final::__lo <= __INTMAX_MAX__, "overflow in addition");
-    public:
-      typedef ratio<__n_final::__quot_lo, __d_final::__lo> type;
-    };
-
-  template<typename _R1, typename _R2>
-    struct __ratio_add_impl<_R1, _R2, false, true, true>
-    : __ratio_add_impl<_R2, _R1>
-    { };
-
-  // True subtraction of nonnegative numbers yielding a nonnegative result.
-  template<typename _R1, typename _R2>
-    struct __ratio_add_impl<_R1, _R2, true, false, false>
-    {
-    private:
-      static constexpr uintmax_t __g = __static_gcd<_R1::den, _R2::den>::value;
-      static constexpr uintmax_t __d2 = _R2::den / __g;
-      typedef __big_mul<_R1::den, __d2> __d;
-      typedef __big_mul<_R1::num, _R2::den / __g> __x;
-      typedef __big_mul<-_R2::num, _R1::den / __g> __y;
-      typedef __big_sub<__x::__hi, __x::__lo, __y::__hi, __y::__lo> __n;
-      typedef __big_div<__n::__hi, __n::__lo, __g> __ng;
-      static constexpr uintmax_t __g2 = __static_gcd<__ng::__rem, __g>::value;
-      typedef __big_div<__n::__hi, __n::__lo, __g2> __n_final;
-      static_assert(__n_final::__rem == 0, "Internal library error");
-      static_assert(__n_final::__quot_hi == 0 &&
-        __n_final::__quot_lo <= __INTMAX_MAX__, "overflow in addition");
-      typedef __big_mul<_R1::den / __g2, __d2> __d_final;
-      static_assert(__d_final::__hi == 0 &&
-        __d_final::__lo <= __INTMAX_MAX__, "overflow in addition");
-    public:
-      typedef ratio<__n_final::__quot_lo, __d_final::__lo> type;
-    };
-
-  template<typename _R1, typename _R2>
-    struct __ratio_add
-    {
-      typedef typename __ratio_add_impl<_R1, _R2>::type type;
-      static constexpr intmax_t num = type::num;
-      static constexpr intmax_t den = type::den;
-    };
-
-  template<typename _R1, typename _R2>
-    constexpr intmax_t __ratio_add<_R1, _R2>::num;
-
-  template<typename _R1, typename _R2>
-    constexpr intmax_t __ratio_add<_R1, _R2>::den;
-
-  /// ratio_add
-  template<typename _R1, typename _R2>
-    using ratio_add = typename __ratio_add<_R1, _R2>::type;
-
-  template<typename _R1, typename _R2>
+   template<typename _R1, typename _R2>
     struct __ratio_subtract
     {
       typedef typename __ratio_add<
