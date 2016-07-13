@@ -1,7 +1,13 @@
 ###NAME
 
-`pfs` - cross-platform core library written on C++ version prior to C++11.  
-`pfs` is the rotated about axis 'std' ;)
+ `pfs` is `Modern C++` in the past.
+ `pfs` is `Modern C++` in the present.
+ `pfs` is `Modern C++` in the future.
+
+ `pfs` is a cross-platform core library, it implements Modern C++ features for C++ version prior to C++11.
+ `pfs` is a lightweight wrapper for C++11 (and later) std library.
+ 
+ `pfs` is the rotated about Z-axis 'std' namespace ;)
 
 ###VERSION
 
@@ -14,8 +20,6 @@ See project's test subdirectory for examples.
 ###NOTES
 
 Now supports only Windows (msvc) and Linux (gcc) platforms.  
-Most classes uses CoW (Copy-on-write) optimization strategy.  
-`pfs::string` is a Unicode string in Utf-8 encoding natively.  
 
 ###AUTHOR
 
