@@ -93,18 +93,18 @@ private:
 	ref_count_with_deleter & operator = (const ref_count_with_deleter & );
 
 public:
-	ref_count_with_deleter(T * ptr, Deleter d) : ref_count(), m_ptr(ptr), m_deleter(d) { deleter_fn = deleter; }
+	ref_count_with_deleter(T * ptr, Deleter d) : ref_count(), _p(ptr), _deleter(d) { deleter_fn = deleter; }
 	~ref_count_with_deleter() { this->~ref_count(); }
 
 	static void deleter(ref_count * self)
 	{
-		reinterpret_cast<ref_count_with_deleter *>(self)->m_deleter(
-				reinterpret_cast<ref_count_with_deleter *>(self)->m_ptr);
+		reinterpret_cast<ref_count_with_deleter *>(self)->_deleter(
+				reinterpret_cast<ref_count_with_deleter *>(self)->_p);
 	}
 
 private:
-	T *     m_ptr;
-	Deleter m_deleter;
+	T *     _p;
+	Deleter _deleter;
 };
 
 template <class T>
