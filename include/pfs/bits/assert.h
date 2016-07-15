@@ -45,6 +45,6 @@ EXTERN_C_END
  * Special case of assert.
  * Used when need to implement some code.
  */
-#define PFS_ASSERT_TODO() PFS_ASSERT(false)
+#define PFS_ASSERT_TODO() PFS_ASSERT_X(false, "Need to implement")
 
 #endif /* __PFS_BITS_ASSERT_H__ */
