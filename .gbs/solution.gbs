@@ -161,3 +161,8 @@ project "test-type_traits"
 project "test-ratio"
     include("test-ratio/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-binary-stream"
+    include("test-binary-stream/project.gbs")
+-- END PROJECT

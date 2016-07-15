@@ -1,0 +1,41 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --name=test-binary-stream --type=test --depends=pfs'
+--* Date:    Fri Jul 15 19:56:38 2016
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-binary-stream"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-binary-stream/*.c", "../../tests/test-binary-stream/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs/test-binary-stream/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        {  }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs/test-binary-stream/release"
+    targetdir    "../../../.build/tests"
+    links        {  }
+
+dependson { "pfs" }
+
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+

@@ -12,6 +12,7 @@
 #include <pfs/type_traits.hpp>
 #include <pfs/endian.hpp>
 #include <pfs/ostream.hpp>
+#include <pfs/binary_stream.hpp>
 #include <pfs/shared_ptr.hpp>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
@@ -822,12 +823,6 @@ void pack_fp (pack_context & ctx, Float const & v)
     }
 }
 
-//byte_string & pack_ieee754 (byte_string & appender
-//    , real64_t const & v
-//    , endian const & order
-//    , unsigned bits
-//    , unsigned expbits);
-
 } // details
 
 #define __PFS_DEFN_PACK_INTEGRAL(_Type)                \
@@ -860,14 +855,14 @@ template <>
 inline void pack (pack_context & ctx, float const & v)
 {
 //    //return details::pack_ieee754(appender, real64_t(v), order, 32, 8);
-    return details::pack_fp(ctx, v);
+    details::pack_fp(ctx, v);
 }
 
 template <>
 inline void pack (pack_context & ctx, double const & v)
 {
 //    //return details::pack_ieee754(appender, real64_t(v), order, 64, 11);
-    return details::pack_fp(ctx, v);
+    details::pack_fp(ctx, v);
 }
 
 template <>
@@ -1213,6 +1208,14 @@ inline bool operator >= (const char * lhs, const byte_string & rhs)
 	return rhs.compare(lhs) <= 0;
 }
 
+template <typename Device>
+inline ssize_t write_binary (Device & dev, endian order, byte_string const & v)
+{
+    if (write_binary(dev, order, v.size()) > 0) // pack size of byte_string
+        return dev.write(v.c_str(), v.length());
+    return ssize_t(-1);
+}
+
 } // pfs
 
 namespace std {
@@ -1224,8 +1227,6 @@ inline ostream & operator << (ostream & os, const pfs::byte_string & o)
 }
 
 } // std
-
-//#include <pfs/bits/byte_string_impl_inc.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(pop)

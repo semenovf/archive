@@ -60,6 +60,7 @@ void test_at ()
 	TEST_OK2(ok, "pfs::byte_string(\"ABCDEFGHIJKLMabcdefghijklm\") equals to array of bytes");
 }
 
+// TODO OBSOLETE, see binary_stream
 void test_pack ()
 {
 	using pfs::endian;
@@ -114,6 +115,7 @@ if (sizeof(intmax_t) == 4) {
 #endif
 }
 
+// TODO OBSOLETE, see binary_stream
 void test_unpack ()
 {
 	ADD_TESTS(16);
@@ -166,6 +168,7 @@ void test_unpack ()
 	// TODO Add remaining tests (see test_convert_to_bytes)
 }
 
+// TODO OBSOLETE, see binary_stream
 void test_real_pack_unpack ()
 {
     ADD_TESTS(8 * 4);
