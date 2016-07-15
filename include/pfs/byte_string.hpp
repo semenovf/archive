@@ -963,6 +963,21 @@ inline byte_string unpack_raw_data (unpack_context & ctx, size_t n)
     return byte_string(pos, ctx.b);
 }
 
+/**
+ * @brief Returns raw bytes from packed data.
+ * 
+ * @param ctx Unpack context
+ * @param n Initial value for number.
+ * @return Pointer to unpacked bytes, @a n stores actual number of unpacked bytes.
+ */
+inline char const * unpack_raw_bytes (unpack_context & ctx, size_t & n)
+{
+    n = pfs::min(n, integral_cast_check<size_t>(ctx.available()));
+    char const * p = reinterpret_cast<char const *>(ctx.b.base());
+    std::advance(ctx.b, n);
+    return p; //byte_string(pos, ctx.b);
+}
+
 namespace details {
 
 // @note No bounds validations
