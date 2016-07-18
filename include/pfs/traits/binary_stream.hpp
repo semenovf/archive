@@ -54,8 +54,8 @@ ssize_t read_binary (Device & dev, endian order, Integral & v)
 {
     union u
     {
-        Integral const v;
-        char const b[sizeof(Integral)];
+        Integral v;
+        char b[sizeof(Integral)];
     } d;
 
     ssize_t result = dev.read(d.b, sizeof(Integral));
@@ -89,7 +89,7 @@ ssize_t write_binary (Device & dev, endian order, Float const & v)
         union { Float v; char b[sizeof(Float)]; } d;
         
         if (order != endian::native_order()) {
-            int8_t b[sizeof(Float)];
+            char b[sizeof(Float)];
             
             for (int i = 0, j = sizeof(Float) - 1; j >= 0; ++i, --j) {
                 b[i] = d.b[j];
@@ -191,7 +191,7 @@ ssize_t read_binary (Device & dev, endian order, char ** buffer, size_t * n)
     *buffer = 0;
     
     if (result > 0) {
-        *buffer = new byte_t[size];
+        *buffer = new char[size];
         
         ssize_t r1 = dev.read(*buffer, size);
         
