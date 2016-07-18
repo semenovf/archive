@@ -31,7 +31,7 @@
 
 #include <pfs/type_traits.hpp>
 #include <pfs/algo/find.hpp>
-#include <pfs/byte_string.hpp>
+#include <pfs/traits/binary_stream.hpp>
 
 namespace pfs {
 
@@ -98,8 +98,11 @@ inline string to_string (string::value_type value)
 	return string(1, value);
 }
 
+namespace details {
+namespace integral {
+
 template <typename Integer>
-string __to_string (typename enable_if<is_signed<Integer>::value, Integer>::type value
+string to_string (typename enable_if<is_signed<Integer>::value, Integer>::type value
 		, int base
 		, bool uppercase)
 {
@@ -113,7 +116,7 @@ string __to_string (typename enable_if<is_signed<Integer>::value, Integer>::type
 }
 
 template <typename UnsignedInteger>
-string __to_string (typename pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type value
+string to_string (typename pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::value, UnsignedInteger>::type value
 		, int base
 		, bool uppercase)
 {
@@ -126,10 +129,15 @@ string __to_string (typename pfs::enable_if<pfs::is_unsigned<UnsignedInteger>::v
 	return string(s);
 }
 
+}} // details::integral
+
+namespace details {
+namespace fp {
+
 // 1.18973e+4932 with 'f' flag has length 4940
 //
 template <typename Float>
-string __to_string (typename pfs::enable_if<pfs::is_floating_point<Float>::value, Float>::type value
+string to_string (typename pfs::enable_if<pfs::is_floating_point<Float>::value, Float>::type value
 		, char f
 		, int prec)
 {
@@ -157,205 +165,207 @@ string __to_string (typename pfs::enable_if<pfs::is_floating_point<Float>::value
 	return r;
 }
 
+}} // details::fp
+
 inline string to_string (signed char value, int base, bool uppercase)
 {
-	return __to_string<signed char>(value, base, uppercase);
+	return details::integral::to_string<signed char>(value, base, uppercase);
 }
 
 inline string to_string (signed char value, int base)
 {
-	return __to_string<signed char>(value, base, false);
+	return details::integral::to_string<signed char>(value, base, false);
 }
 
 inline string to_string (signed char value)
 {
-	return __to_string<signed char>(value, 10, false);
+	return details::integral::to_string<signed char>(value, 10, false);
 }
 
 inline string to_string (unsigned char value, int base, bool uppercase)
 {
-	return __to_string<unsigned char>(value, base, uppercase);
+	return details::integral::to_string<unsigned char>(value, base, uppercase);
 }
 
 inline string to_string (unsigned char value, int base)
 {
-	return __to_string<unsigned char>(value, base, false);
+	return details::integral::to_string<unsigned char>(value, base, false);
 }
 
 inline string to_string (unsigned char value)
 {
-	return __to_string<unsigned char>(value, 10, false);
+	return details::integral::to_string<unsigned char>(value, 10, false);
 }
 
 inline string to_string (short value, int base, bool uppercase)
 {
-	return __to_string<short>(value, base, uppercase);
+	return details::integral::to_string<short>(value, base, uppercase);
 }
 
 inline string to_string (short value, int base)
 {
-	return __to_string<short>(value, base, false);
+	return details::integral::to_string<short>(value, base, false);
 }
 
 inline string to_string (short value)
 {
-	return __to_string<short>(value, 10, false);
+	return details::integral::to_string<short>(value, 10, false);
 }
 
 inline string to_string (unsigned short value, int base, bool uppercase)
 {
-	return __to_string<unsigned short>(value, base, uppercase);
+	return details::integral::to_string<unsigned short>(value, base, uppercase);
 }
 
 inline string to_string (unsigned short value, int base)
 {
-	return __to_string<unsigned short>(value, base, false);
+	return details::integral::to_string<unsigned short>(value, base, false);
 }
 
 inline string to_string (unsigned short value)
 {
-	return __to_string<unsigned short>(value, 10, false);
+	return details::integral::to_string<unsigned short>(value, 10, false);
 }
 
 inline string to_string (int value, int base, bool uppercase)
 {
-	return __to_string<int>(value, base, uppercase);
+	return details::integral::to_string<int>(value, base, uppercase);
 }
 
 inline string to_string (int value, int base)
 {
-	return __to_string<int>(value, base, false);
+	return details::integral::to_string<int>(value, base, false);
 }
 
 inline string to_string (int value)
 {
-	return __to_string<int>(value, 10, false);
+	return details::integral::to_string<int>(value, 10, false);
 }
 
 inline string to_string (unsigned int value, int base, bool uppercase)
 {
-	return __to_string<unsigned int>(value, base, uppercase);
+	return details::integral::to_string<unsigned int>(value, base, uppercase);
 }
 
 inline string to_string (unsigned int value, int base)
 {
-	return __to_string<unsigned int>(value, base, false);
+	return details::integral::to_string<unsigned int>(value, base, false);
 }
 
 inline string to_string (unsigned int value)
 {
-	return __to_string<unsigned int>(value, 10, false);
+	return details::integral::to_string<unsigned int>(value, 10, false);
 }
 
 inline string to_string (long value, int base, bool uppercase)
 {
-	return __to_string<long>(value, base, uppercase);
+	return details::integral::to_string<long>(value, base, uppercase);
 }
 
 inline string to_string (long value, int base)
 {
-	return __to_string<long>(value, base, false);
+	return details::integral::to_string<long>(value, base, false);
 }
 
 inline string to_string (long value)
 {
-	return __to_string<long>(value, 10, false);
+	return details::integral::to_string<long>(value, 10, false);
 }
 
 inline string to_string (unsigned long value, int base, bool uppercase)
 {
-	return __to_string<unsigned long>(value, base, uppercase);
+	return details::integral::to_string<unsigned long>(value, base, uppercase);
 }
 
 inline string to_string (unsigned long value, int base)
 {
-	return __to_string<unsigned long>(value, base, false);
+	return details::integral::to_string<unsigned long>(value, base, false);
 }
 
 inline string to_string (unsigned long value)
 {
-	return __to_string<unsigned long>(value, 10, false);
+	return details::integral::to_string<unsigned long>(value, 10, false);
 }
 
 #ifdef PFS_HAVE_LONGLONG
 
 inline string to_string (long long value, int base, bool uppercase)
 {
-	return __to_string<long long>(value, base, uppercase);
+	return details::integral::to_string<long long>(value, base, uppercase);
 }
 
 inline string to_string (long long value, int base)
 {
-	return __to_string<long long>(value, base, false);
+	return details::integral::to_string<long long>(value, base, false);
 }
 
 inline string to_string (long long value)
 {
-	return __to_string<long long>(value, 10, false);
+	return details::integral::to_string<long long>(value, 10, false);
 }
 
 inline string to_string (unsigned long long value, int base, bool uppercase)
 {
-	return __to_string<unsigned long long>(value, base, uppercase);
+	return details::integral::to_string<unsigned long long>(value, base, uppercase);
 }
 
 inline string to_string (unsigned long long value, int base)
 {
-	return __to_string<unsigned long long>(value, base, false);
+	return details::integral::to_string<unsigned long long>(value, base, false);
 }
 
 inline string to_string (unsigned long long value)
 {
-	return __to_string<unsigned long long>(value, 10, false);
+	return details::integral::to_string<unsigned long long>(value, 10, false);
 }
 
 #endif
 
 inline string to_string (float value, char f, int prec)
 {
-	return __to_string<float>(value, f, prec);
+	return details::fp::to_string<float>(value, f, prec);
 }
 
 inline string to_string (float value, char f)
 {
-	return __to_string<float>(value, f, 6);
+	return details::fp::to_string<float>(value, f, 6);
 }
 
 inline string to_string (float value)
 {
-	return __to_string<float>(value, 'f', 6);
+	return details::fp::to_string<float>(value, 'f', 6);
 }
 
 inline string to_string (double value, char f, int prec)
 {
-	return __to_string<double>(value, f, prec);
+	return details::fp::to_string<double>(value, f, prec);
 }
 
 inline string to_string (double value, char f)
 {
-	return __to_string<double>(value, f, 6);
+	return details::fp::to_string<double>(value, f, 6);
 }
 
 inline string to_string (double value)
 {
-	return __to_string<double>(value, 'f', 6);
+	return details::fp::to_string<double>(value, 'f', 6);
 }
 
 #ifdef PFS_HAVE_LONG_DOUBLE
 
 inline string to_string (long double value, char f, int prec)
 {
-	return __to_string<long double>(value, f, prec);
+	return details::fp::to_string<long double>(value, f, prec);
 }
 
 inline string to_string (long double value, char f)
 {
-	return __to_string<long double>(value, f, 6);
+	return details::fp::to_string<long double>(value, f, 6);
 }
 
 inline string to_string (long double value)
 {
-	return __to_string<long double>(value, 'f', 6);
+	return details::fp::to_string<long double>(value, 'f', 6);
 }
 
 #endif
@@ -522,9 +532,6 @@ lexical_cast (const string & s, bool * ok = 0)
 		: false;
 }
 
-template <>
-bool unpack (unpack_context & ctx, string & v);
-
 #if defined(PFS_STRING_UTF16) || defined(PFS_STRING_UTF32)
 //
 //template <>
@@ -547,13 +554,27 @@ bool unpack (unpack_context & ctx, string & v);
 // TODO pack/unpack specializations
 
 #else
-// UTF8 Specialization
-//
-template <>
-inline void pack (pack_context & ctx, string const & v)
+
+template <typename Device>
+inline ssize_t write_binary (Device & dev, endian order, string const & v)
 {
-    pack(ctx, v.size());
-    ctx.buffer.append(v.c_str(), v.size());
+    return details::sequence::write_binary<Device>(dev, order, v.c_str(), v.size());
+}
+
+template <typename Device>
+ssize_t read_binary (Device & dev, endian order, string & v)
+{
+    char * buffer = 0;
+    size_t size = 0;
+    
+    ssize_t result = details::sequence::read_binary<Device>(dev, order, & buffer, & size);
+    
+    if (buffer) {
+        v.append(buffer, size);
+        delete buffer;
+    }
+    
+    return result;
 }
 
 #endif

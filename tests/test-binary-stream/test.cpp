@@ -6,70 +6,131 @@
  * @brief testing ...
  */
 
+#include <iostream>
+#include <cstring>
+
 #include <pfs/test/test.hpp>
 #include <pfs/byte_string.hpp>
 #include <pfs/binary_stream.hpp>
-#include <iostream>
 
 using std::cout;
 using std::endl;
 
-// TODO OBSOLETE, see binary_stream
+struct output_byte_string_device
+{
+    pfs::byte_string d;
+    
+    ssize_t write (char const * data, size_t n)
+    {
+        d.append(data, n);
+    }
+};
+
+struct input_string_device
+{
+    pfs::byte_string d;
+    pfs::byte_string::const_iterator it;
+    pfs::byte_string::const_iterator it_end;
+    
+    ssize_t read (char * chars, size_t n)
+    {
+        if (std::distance(it, it_end) >= n) {
+            memcpy(chars, it.base(), n);
+            std::advance(it, n);
+            return ssize_t(n);
+        }
+        
+        return -1;
+    }
+};
+
+typedef pfs::binary_stream<output_byte_string_device> binary_stream;
+
 void test_pack ()
 {
-	using pfs::endian;
-
-	ADD_TESTS(12);
-	TEST_OK(pfs::byte_string("\xBC", 1) == pfs::pack('\xBC', endian::little_endian));
-	TEST_OK(pfs::byte_string("\xBC", 1) == pfs::pack('\xBC', endian::big_endian));
-	TEST_OK(pfs::byte_string("\xFF\x7F", 2) == pfs::pack(short(0x7FFF), endian::little_endian));
-	TEST_OK(pfs::byte_string("\x7F\xFF", 2) == pfs::pack(short(0x7FFF), endian::big_endian));
-	TEST_OK(pfs::byte_string("\x00\x80", 2) == pfs::pack(short(0x8000), endian::little_endian));
-	TEST_OK(pfs::byte_string("\x80\x00", 2) == pfs::pack(short(0x8000), endian::big_endian));
-
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F", 4) == pfs::pack(int(0x7FFFFFFF), endian::little_endian));
-	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF", 4) == pfs::pack(int(0x7FFFFFFF), endian::big_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x80", 4) == pfs::pack(int(0x80000000), endian::little_endian));
-	TEST_OK(pfs::byte_string("\x80\x00\x00\x00", 4) == pfs::pack(int(0x80000000), endian::big_endian));
-	TEST_OK(pfs::byte_string("\x78\x56\x34\x12", 4) == pfs::pack(int(0x12345678), endian::little_endian));
-	TEST_OK(pfs::byte_string("\x12\x34\x56\x78", 4) == pfs::pack(int(0x12345678), endian::big_endian));
-
-if (sizeof(intmax_t) == 4) {
-	ADD_TESTS(6);
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F", 4) == pfs::pack(intmax_t(0x7FFFFFFFL), pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF", 4) == pfs::pack(intmax_t(0x7FFFFFFFL), pfs::endian::big_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x80", 4) == pfs::pack(intmax_t(0x80000000L), pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x80\x00\x00\x00", 4) == pfs::pack(intmax_t(0x80000000L), pfs::endian::big_endian));
-	TEST_OK(pfs::byte_string("\x78\x56\x34\x12", 4) == pfs::pack(intmax_t(0x12345678L), pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x12\x34\x56\x78", 4) == pfs::pack(intmax_t(0x12345678L), pfs::endian::big_endian));
-} else { // sizeof(long) == 8 - on x64
-	ADD_TESTS(6);
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F\x00\x00\x00\x00", 8) == pfs::pack(intmax_t(0x7FFFFFFFL), pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x7F\xFF\xFF\xFF", 8) == pfs::pack(intmax_t(0x7FFFFFFFL), pfs::endian::big_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x80\x00\x00\x00\x00", 8) == pfs::pack(intmax_t(0x80000000L), pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x80\x00\x00\x00", 8) == pfs::pack(intmax_t(0x80000000L), pfs::endian::big_endian));
-	TEST_OK(pfs::byte_string("\x78\x56\x34\x12\x00\x00\x00\x00", 8) == pfs::pack(intmax_t(0x12345678L), pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x12\x34\x56\x78", 8) == pfs::pack(intmax_t(0x12345678L), pfs::endian::big_endian));
-}
-
+	ADD_TESTS(2);
+    
+    char const le_sample[] = 
+            "\xBC"
+            "\xFF\x7F"
+            "\x00\x80"
+            "\xFF\xFF\xFF\x7F"
+            "\x00\x00\x00\x80"
+            "\x78\x56\x34\x12"
+#if PFS_HAVE_INT64
+            "\xFF\xFF\xFF\x7F\x00\x00\x00\x00"
+            "\x00\x00\x00\x80\x00\x00\x00\x00"
+            "\x78\x56\x34\x12\x00\x00\x00\x00"
+            "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F"
+            "\x00\x00\x00\x00\x00\x00\x00\x80"
+            "\xDE\xCD\xBC\xAB\x78\x56\x34\x12"
+#endif    
+    ;
+    
+    char const be_sample[] = 
+            "\xBC"
+            "\x7F\xFF"
+            "\x80\x00"
+            "\x7F\xFF\xFF\xFF"
+            "\x80\x00\x00\x00"
+            "\x12\x34\x56\x78"
 #ifdef PFS_HAVE_LONGLONG
-	ADD_TESTS(12);
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\x7F\x00\x00\x00\x00", 8) == pfs::pack(0x7FFFFFFFLL, pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x7F\xFF\xFF\xFF", 8) == pfs::pack(0x7FFFFFFFLL, pfs::endian::big_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x80\x00\x00\x00\x00", 8) == pfs::pack(0x80000000LL, pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x80\x00\x00\x00", 8) == pfs::pack(0x80000000LL, pfs::endian::big_endian));
-	TEST_OK(pfs::byte_string("\x78\x56\x34\x12\x00\x00\x00\x00", 8) == pfs::pack(0x12345678LL, pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x12\x34\x56\x78", 8) == pfs::pack(0x12345678LL, pfs::endian::big_endian));
-	TEST_OK(pfs::byte_string("\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F", 8) == pfs::pack(0x7FFFFFFFFFFFFFFFLL, pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 8) == pfs::pack(0x7FFFFFFFFFFFFFFFLL, pfs::endian::big_endian));
-	TEST_OK(pfs::byte_string("\x00\x00\x00\x00\x00\x00\x00\x80", 8) == pfs::pack(0x8000000000000000LL, pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x80\x00\x00\x00\x00\x00\x00\x00", 8) == pfs::pack(0x8000000000000000LL, pfs::endian::big_endian));
-	TEST_OK(pfs::byte_string("\xDE\xCD\xBC\xAB\x78\x56\x34\x12", 8) == pfs::pack(0x12345678ABBCCDDELL, pfs::endian::little_endian));
-	TEST_OK(pfs::byte_string("\x12\x34\x56\x78\xAB\xBC\xCD\xDE", 8) == pfs::pack(0x12345678ABBCCDDELL, pfs::endian::big_endian));
+            "\x00\x00\x00\x00\x7F\xFF\xFF\xFF"
+            "\x00\x00\x00\x00\x80\x00\x00\x00"
+            "\x00\x00\x00\x00\x12\x34\x56\x78"
+            "\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+            "\x80\x00\x00\x00\x00\x00\x00\x00"
+            "\x12\x34\x56\x78\xAB\xBC\xCD\xDE"
 #endif
+    ;
+    
+    binary_stream le_bs(output_byte_string_device(), pfs::endian::little_endian);
+    binary_stream be_bs(output_byte_string_device(), pfs::endian::big_endian);
+    
+    le_bs << '\xBC' 
+            << int16_t(0x7FFF) 
+            << int16_t(0x8000)
+            << int32_t(0x7FFFFFFFL) 
+            << int32_t(0x80000000L) 
+            << int32_t(0x12345678L);
+
+    be_bs << '\xBC' 
+            << int16_t(0x7FFF) 
+            << int16_t(0x8000)
+            << int32_t(0x7FFFFFFFL) 
+            << int32_t(0x80000000L) 
+            << int32_t(0x12345678L);
+
+#if PFS_HAVE_INT64
+	le_bs << int64_t(0x7FFFFFFFLL) 
+            << int64_t(0x80000000LL) 
+            << int64_t(0x12345678LL) 
+            << int64_t(0x7FFFFFFFFFFFFFFFLL) 
+            << int64_t(0x8000000000000000LL) 
+            << int64_t(0x12345678ABBCCDDELL);
+
+	be_bs << int64_t(0x7FFFFFFFLL)
+            << int64_t(0x80000000LL) 
+            << int64_t(0x12345678LL)
+            << int64_t(0x7FFFFFFFFFFFFFFFLL)
+            << int64_t(0x8000000000000000LL)
+            << int64_t(0x12345678ABBCCDDELL);
+#endif
+
+    cout << to_string(pfs::byte_string(be_sample, sizeof(be_sample) - 1), 16
+        , true // zero_padded
+        , true // uppercase
+        , _u8("\\x")) << endl;
+
+    cout << to_string(be_bs.device().d, 16
+        , true // zero_padded
+        , true // uppercase
+        , _u8("\\x")) << endl;
+   
+    TEST_OK(pfs::byte_string(le_sample, sizeof(le_sample) - 1) == le_bs.device().d); // - 1 for ignoring string terminator symbol
+    TEST_OK(pfs::byte_string(be_sample, sizeof(be_sample) - 1) == be_bs.device().d);
 }
 
-// TODO OBSOLETE, see binary_stream
 void test_unpack ()
 {
 	ADD_TESTS(16);
@@ -122,7 +183,8 @@ void test_unpack ()
 	// TODO Add remaining tests (see test_convert_to_bytes)
 }
 
-// TODO OBSOLETE, see binary_stream
+#if __COMMENT__
+
 void test_real_pack_unpack ()
 {
     ADD_TESTS(8 * 4);
@@ -179,7 +241,7 @@ void test_real_pack_unpack ()
         TEST_OK(f2 == float_nums[i]);
     }
 }
-
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -189,8 +251,8 @@ int main(int argc, char *argv[])
 	BEGIN_TESTS(0);
 
   	test_pack();
-	test_unpack();
-    test_real_pack_unpack();
+//	test_unpack();
+//    test_real_pack_unpack();
 
 	return END_TESTS;
 }

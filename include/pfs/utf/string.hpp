@@ -247,6 +247,11 @@ public:
     	_d.append(reinterpret_cast<const rep_type &>(s));
     	return *this;
     }
+    
+    string & append (const_pointer s, size_type n)
+    {
+        _d.append(s, n);
+    }
 
 	/**
 	 *  @brief  Append a substring.

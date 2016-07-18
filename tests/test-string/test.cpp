@@ -5,13 +5,15 @@
  *  Author: wladt
  */
 
-#include <pfs/test/test.hpp>
-#include <pfs/limits.hpp>
-#include <pfs/string.hpp>
 #include <cstring>
 #include <iostream>
 #include <cstdio>
 #include <cerrno>
+
+#include <pfs/test/test.hpp>
+#include <pfs/limits.hpp>
+#include <pfs/string.hpp>
+#include <pfs/byte_string.hpp>
 
 using std::cout;
 using std::endl;

@@ -139,13 +139,13 @@ int64_t endian::bswap_64 (int64_t i)
 	b7 = (i >> 48) & 255;
 	b8 = (i >> 56) & 255;
 
-	return    (((long long)b1) << 56)
-			+ (((long long)b2) << 48)
-			+ (((long long)b3) << 40)
-			+ (((long long)b4) << 32)
-			+ (((long long)b5) << 24)
-			+ (((long long)b6) << 16)
-			+ (((long long)b7) <<  8)
+	return    (int64_t(b1) << 56)
+			+ (int64_t(b2) << 48)
+			+ (int64_t(b3) << 40)
+			+ (int64_t(b4) << 32)
+			+ (int64_t(b5) << 24)
+			+ (int64_t(b6) << 16)
+			+ (int64_t(b7) <<  8)
 			+ b8;
 }
 #endif

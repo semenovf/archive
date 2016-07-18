@@ -5,13 +5,55 @@
  *      Author: wladt
  */
 
+#include <cstring>
 #include <pfs/byte_string.hpp>
-//#include <pfs/string.hpp>
-//#include <pfs/bits/strtointegral.hpp>
-//#include <pfs/bits/strtoreal.hpp>
-//#include <cstring>
 
 namespace pfs {
+
+string to_string (byte_string const & v, int base
+        , bool zero_padded
+        , bool uppercase
+        , string const & prefix
+        , string const & separator)
+{
+    PFS_ASSERT_RANGE(base >= 2 && base <= 36);
+    
+    string result;
+    
+    byte_string::const_iterator it = v.cbegin();
+    byte_string::const_iterator it_end = v.cend();
+    
+    char buf[8 + 1];
+    int max_digits = 0; // Maximum number of digits to represent 256
+    int max_number = 255;
+    
+    while (max_number > 0) {
+        ++max_digits;
+        max_number /= base;
+    }
+    
+    for (; it != it_end; ++it) {
+        if (result.size() > 0)
+            result.append(separator);
+    
+        memset(buf, '0', sizeof(buf));
+    
+        char * s = uintmax_to_string(static_cast<uintmax_t>(*it)
+			, base
+			, static_cast<int>(uppercase)
+			, buf
+			, sizeof(buf));
+    
+        if (zero_padded) {
+            s -= max_digits - strlen(s);
+        }
+        
+        result.append(prefix);
+        result.append(string(s));
+    }
+    
+    return result;
+}
 
 byte_string & base64_encode (const byte_string & src, byte_string & result)
 {

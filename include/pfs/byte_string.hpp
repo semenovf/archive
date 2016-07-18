@@ -8,12 +8,12 @@
 #define __PFS_BYTE_STRING_HPP__
 
 #include <string>
-#include <pfs.hpp>
+#include <pfs/string.hpp>
 #include <pfs/type_traits.hpp>
 #include <pfs/endian.hpp>
 #include <pfs/ostream.hpp>
-#include <pfs/binary_stream.hpp>
 #include <pfs/shared_ptr.hpp>
+#include <pfs/traits/binary_stream.hpp>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
 #ifdef PFS_CC_MSVC
@@ -1130,6 +1130,37 @@ inline bool unpack (unpack_context & ctx, double & v)
 template <>
 inline bool unpack (unpack_context & ctx, byte_string & v);
 
+// TODO Obsolete
+template <>
+bool unpack (unpack_context & ctx, string & v);
+
+// TODO Obsolete
+// UTF8 Specialization
+//
+template <>
+inline void pack (pack_context & ctx, string const & v)
+{
+    pack(ctx, v.size());
+    ctx.buffer.append(v.c_str(), v.size());
+}
+
+/**
+ * @brief Represents (convert) @c byte_string data as @c string.
+ * 
+ * @param v Value for string representation.
+ * @param base Radix.
+ * @param zero_padded @c true if value should be zero padded.
+ * @param uppercase @c true if digit representaion characters should be in upper case.
+ * @param prefix Prefix prepended for converted value.
+ * @param separator String inserted bitween numbers.
+ * @return 
+ */
+string to_string (byte_string const & v, int base = 10
+        , bool zero_padded = false
+        , bool uppercase = false
+        , string const & prefix = string()
+        , string const & separator = string());
+
 byte_string & base64_encode (const byte_string & src, byte_string & result);
 byte_string & base64_decode (const byte_string & src, byte_string & result);
 
@@ -1226,9 +1257,23 @@ inline bool operator >= (const char * lhs, const byte_string & rhs)
 template <typename Device>
 inline ssize_t write_binary (Device & dev, endian order, byte_string const & v)
 {
-    if (write_binary(dev, order, v.size()) > 0) // pack size of byte_string
-        return dev.write(v.c_str(), v.length());
-    return ssize_t(-1);
+    return details::sequence::write_binary<Device>(dev, order, v.c_str(), v.size());
+}
+
+template <typename Device>
+ssize_t read_binary (Device & dev, endian order, byte_string & v)
+{
+    char * buffer = 0;
+    size_t size = 0;
+    
+    ssize_t result = details::sequence::read_binary<Device>(dev, order, & buffer, & size);
+    
+    if (buffer) {
+        v.append(buffer, size);
+        delete buffer;
+    }
+    
+    return result;
 }
 
 } // pfs

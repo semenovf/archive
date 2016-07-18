@@ -27,6 +27,7 @@ public:
     enum status_enum {
           no_error
         , write_failed
+        , read_failed
     };
     
 private:
@@ -41,7 +42,6 @@ private:
     // unpack context
 //    byte_string::const_iterator b;
 //    byte_string::const_iterator e;
-//    bool fail;
 
 private:
     binary_stream (binary_stream const & other);
@@ -60,18 +60,48 @@ public:
     {
         return _status;
     }
+    
+    device_type & device ()
+    {
+        return _dev;
+    }
+    
 public:
 
 template <typename T>
 void write (T const & v)
 {
     if (_status != write_failed) {
-        _status = write_binary(_dev, v) < 0 
+        _status = write_binary(_dev, _order, v) < 0 
                 ? write_failed
                 : no_error;
     }
 }
-    
+
+template <typename T>
+void read (T & v)
+{
+    if (_status != read_failed) {
+        _status = read_binary(_dev, _order, v) < 0 
+                ? read_failed
+                : no_error;
+    }
+}
+
+template <typename T>
+binary_stream & operator << (T const & v)
+{
+    write<T>(v);
+    return *this;
+}
+
+template <typename T>
+binary_stream & operator >> (T & v)
+{
+    read<T>(v);
+    return *this;
+}
+
 };
 
 } // pfs
