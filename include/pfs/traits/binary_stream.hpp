@@ -191,6 +191,8 @@ ssize_t read_binary (Device & dev, endian order, char ** buffer, size_t * n)
     *buffer = 0;
     
     if (result > 0) {
+        *n = size;
+        
         *buffer = new char[size];
         
         ssize_t r1 = dev.read(*buffer, size);
@@ -204,7 +206,6 @@ ssize_t read_binary (Device & dev, endian order, char ** buffer, size_t * n)
     
     return result;
 }
-
 
 }} // details::sequence
 

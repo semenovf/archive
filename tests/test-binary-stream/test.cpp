@@ -312,11 +312,21 @@ void test_byte_string ()
 
     ile_bs >> a;
     ibe_bs >> b;
+
+//    cout << "===" << to_string(sample, 16
+//        , true // zero_padded
+//        , true // uppercase
+//        , _u8("\\x")) << endl;
+//
+//    cout << "===" << to_string(a, 16
+//        , true // zero_padded
+//        , true // uppercase
+//        , _u8("\\x")) << endl;
+
     
     TEST_OK(a == sample);
     TEST_OK(b == sample);
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -332,4 +342,3 @@ int main(int argc, char *argv[])
 
 	return END_TESTS;
 }
-

@@ -68,39 +68,61 @@ public:
     
 public:
 
-template <typename T>
-void write (T const & v)
-{
-    if (_status != write_failed) {
-        _status = write_binary(_dev, _order, v) < 0 
-                ? write_failed
-                : no_error;
+    /**
+     * @brief Write raw data to stream.
+     * @param s 
+     * @param n
+     * @return 
+     */
+    ssize_t write (char const * s, size_t n)
+    {
+        return _dev.write(s, n);
     }
-}
-
-template <typename T>
-void read (T & v)
-{
-    if (_status != read_failed) {
-        _status = read_binary(_dev, _order, v) < 0 
-                ? read_failed
-                : no_error;
+    
+    /**
+     * @brief Reads raw data from stream
+     * @param s Buffer to store read bytes, must be preallocated.
+     * @param n 
+     * @return Number of read bytes.
+     */
+    ssize_t read (char * s, size_t n)
+    {
+        return _dev.read(s, n);
     }
-}
+    
+    template <typename T>
+    void write (T const & v)
+    {
+        if (_status != write_failed) {
+            _status = write_binary(_dev, _order, v) < 0 
+                    ? write_failed
+                    : no_error;
+        }
+    }
 
-template <typename T>
-binary_stream & operator << (T const & v)
-{
-    write<T>(v);
-    return *this;
-}
+    template <typename T>
+    void read (T & v)
+    {
+        if (_status != read_failed) {
+            _status = read_binary(_dev, _order, v) < 0 
+                    ? read_failed
+                    : no_error;
+        }
+    }
 
-template <typename T>
-binary_stream & operator >> (T & v)
-{
-    read<T>(v);
-    return *this;
-}
+    template <typename T>
+    binary_stream & operator << (T const & v)
+    {
+        write<T>(v);
+        return *this;
+    }
+
+    template <typename T>
+    binary_stream & operator >> (T & v)
+    {
+        read<T>(v);
+        return *this;
+    }
 
 };
 
