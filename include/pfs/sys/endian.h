@@ -78,7 +78,13 @@
 /* MS-DOS is an operation system for x86-based personal computers */
 #elif defined(MSDOS) || defined(__MSDOS__) || defined(_MSDOS)
 #	define PFS_BYTE_ORDER PFS_LITTLE_ENDIAN
+
+/* Elbrus 4C - little endian */
+#elif defined(__elbrus_4c__)
+#	define PFS_BYTE_ORDER PFS_LITTLE_ENDIAN
+
 #endif
+
 
 /*
   NOTE:

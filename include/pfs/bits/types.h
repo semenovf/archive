@@ -46,8 +46,9 @@
  * C99-specific header
  */
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) /* c99 or higher */ \
-	|| (defined(_MSC_VER) && _MSC_VER >= 1600) /* msvc >= MSVC++ 10.0 */           \
-    || defined(__INT8_TYPE__) /* gcc w/o -std=c99 or higher option */
+	|| (defined(_MSC_VER) && _MSC_VER >= 1600) /* msvc >= MSVC++ 10.0 */       \
+    || defined(__INT8_TYPE__) /* gcc w/o -std=c99 or higher option */              \
+    || defined(__elbrus_4c__) /* gcc for Elbrus */
 
 #   define __STDC_LIMIT_MACROS /* see stdint.h for comments about this macro */
 #   include <stdint.h>
@@ -127,32 +128,21 @@
 #   define PFS_REAL_LITERAL(x) x
 #endif
 
-#if PFS_HAVE_INT8_T
-    typedef int8_t   int8_t;
-    typedef uint8_t  uint8_t;
-    typedef int16_t  int16_t;
-    typedef uint16_t uint16_t;
-    typedef int32_t  int32_t;
-    typedef uint32_t uint32_t;
-
+#ifndef PFS_HAVE_INT8_T
+#   error "Need to implement intX_t types"
 #   ifdef PFS_HAVE_INT64
-        typedef int64_t  int64_t;
-        typedef uint64_t uint64_t;
+        typedef int64_t  intmax_t;
+        typedef uint64_t uintmax_t;
+#   else
+        typedef int32_t  intmax_t;
+        typedef uint32_t uintmax_t;
 #   endif
-
-    typedef intmax_t  intmax_t;
-    typedef uintmax_t uintmax_t;
+/*
 #else
-#	error "Need to implement intX_t types"
-
-#ifdef PFS_HAVE_INT64
-	typedef int64_t  intmax_t;
-	typedef uint64_t uintmax_t;
-#else
-	typedef int32_t  intmax_t;
-	typedef uint32_t uintmax_t;
-#endif
-
+    Already have
+        int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t,
+        intmax_t, uintmax_t.
+*/
 #endif
 
 typedef uint8_t byte_t;
@@ -171,6 +161,5 @@ typedef double real64_t;
 #   define false 0
 #   define true (!(false))
 #endif
-
 
 #endif /* __PFS_BITS_TYPES_H__ */
