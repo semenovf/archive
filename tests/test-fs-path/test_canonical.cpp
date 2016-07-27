@@ -20,8 +20,8 @@ static const string SEPARATOR("/");
 
 struct test_data_t
 {
-	const string & path_str;
-	const string & canonical;
+	const string path_str;
+	const string canonical;
 };
 
 static test_data_t test_data[] = {
