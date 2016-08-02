@@ -1,0 +1,39 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=pfs-griotte --type=shared-lib'
+--* Date:    Mon Aug  1 16:03:57 2016
+--************************************************************
+
+kind          "SharedLib"
+language      "C++"
+targetname    "pfs-griotte"
+defines       {  }
+includedirs   { "../../include", "../../../pfs/include", "../../../pfs-sys/include" }
+libdirs       { "../../../.build" }
+files         { "../../src/pfs-griotte/**.cpp", "../../include/**.hpp", "../../include/**.h" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-griotte/pfs-griotte/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d", "pfs-sys-d", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-griotte/pfs-griotte/release"
+    targetdir    "../../../.build"
+    links        { "pfs", "pfs-sys", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
+
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+
