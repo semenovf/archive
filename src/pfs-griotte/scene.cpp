@@ -13,15 +13,15 @@
 
 #include "scene.hpp"
 
-scene::scene ()
-{
-}
-
-scene::scene (const scene& orig)
-{
-}
-
-scene::~scene ()
-{
-}
+//scene::scene ()
+//{
+//}
+//
+//scene::scene (const scene& orig)
+//{
+//}
+//
+//scene::~scene ()
+//{
+//}
 
