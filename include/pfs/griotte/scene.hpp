@@ -14,21 +14,18 @@
 #ifndef __PFS_GRIOTTE_SCENE_HPP__
 #define __PFS_GRIOTTE_SCENE_HPP__
 
+#include <pfs/griotte/global.hpp>
+
 namespace pfs {
 namespace griotte {
 
 class scene
 {
-private:
-    scene (scene const & other);
-    scene & operator = (scene const & other);
+    PFS_DECLARE_NONCOPYABLE(scene)
     
 public:
     scene ();
-    
     virtual ~scene ();
-private:
-
 };
 
 }}

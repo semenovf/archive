@@ -8,7 +8,14 @@ kind          "SharedLib"
 language      "C++"
 targetname    "pfs-griotte"
 defines       {  }
-includedirs   { "../../include", "../../../pfs/include", "../../../pfs-sys/include" }
+includedirs   { 
+      "../../include"
+    , "../../src/pfs-griotte/freetype2"
+   , "../../src/pfs-griotte/freetype2/freetype"
+    , "../../../pfs/include"
+    , "../../../pfs-sys/include" 
+}
+
 libdirs       { "../../../.build" }
 files         { "../../src/pfs-griotte/**.cpp", "../../include/**.hpp", "../../include/**.h" }
 
@@ -18,19 +25,19 @@ configuration "debug"
     objdir       "../../../.build/pfs-griotte/pfs-griotte/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
-    links        { "pfs-d", "pfs-sys-d", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
+    links        { "pfs-d", "pfs-sys-d", "freetype", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
 
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-griotte/pfs-griotte/release"
     targetdir    "../../../.build"
-    links        { "pfs", "pfs-sys", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
+    links        { "pfs", "pfs-sys", "freetype", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
 
 
 filter "action:gmake"
-    buildoptions {}
-    linkoptions  {}
+    buildoptions { }
+    linkoptions  { }
 
 include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
 

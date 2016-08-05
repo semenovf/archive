@@ -11,7 +11,7 @@
  * Created on August 2, 2016, 4:36 PM
  */
 
-#include "scene.hpp"
+#include "pfs/griotte/scene.hpp"
 
 //scene::scene ()
 //{

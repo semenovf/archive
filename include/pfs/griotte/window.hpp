@@ -16,6 +16,7 @@
 
 #include <pfs/string.hpp>
 #include <pfs/sigslot.hpp>
+#include <pfs/griotte/global.hpp>
 
 namespace pfs {
 namespace griotte {
@@ -28,9 +29,7 @@ DLL_API class window : pfs::has_slots<>
 {
     details::window * _d;
     
-private:
-    window (const window & other);
-    window & operator = (const window & other);
+    PFS_DECLARE_NONCOPYABLE(window)
     
 public:
     window (int width, int height);
@@ -40,7 +39,6 @@ public:
     virtual ~window ();
     
     bool should_close ();
-    
     
 public: // slots
     void set_title (pfs::string const & title);

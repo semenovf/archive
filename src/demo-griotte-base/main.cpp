@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <pfs/thread.hpp>
 #include <pfs/griotte/griotte.hpp>
 
@@ -10,9 +11,22 @@ int main (int argc, char * argv[])
 {
     PFS_UNUSED2(argc, argv);
     
-    if (! pfs::griotte::init()) {
-        cerr << "Initialization failed" << endl;
+    pfs::griotte::context gr;
+    
+    if (! gr.init()) {
         return -1;
+    }
+    
+    // View font engine information
+    //
+    pfs::stringlist info;
+    gr.font_engine_info(info);
+
+    std::cout << "Underlying font engine specification:" << std::endl;
+    std::cout << "-------------------------------------" << std::endl;
+    
+    for (size_t i = 0; i < info.size(); i += 2) {
+        std::cout << info[i] << ": " << info[i + 1] << std::endl;
     }
     
     pfs::griotte::window window(640, 480);
@@ -20,10 +34,8 @@ int main (int argc, char * argv[])
     
     while (! window.should_close()) {
         window.repaint();
-        pfs::griotte::poll_events();
+        gr.poll_events();
     }
     
-    pfs::griotte::finish();
-
     return 0;
 }
