@@ -8,28 +8,9 @@
 
 #ifndef __PFS_PLATFORM_HPP__
 #define __PFS_PLATFORM_HPP__
-
-#include <pfs/time.hpp>
-#include <pfs/date.hpp>
-#include <pfs/datetime.hpp>
 #include <pfs/error_code.hpp>
 
 namespace pfs { namespace platform {
-
-DLL_API pfs::time current_time ();
-DLL_API pfs::date current_date ();
-DLL_API pfs::datetime current_datetime ();
-
-DLL_API string timezone ();
-DLL_API long int offset_utc ();
-
-inline pfs::timezone current_timezone ()
-{
-    return pfs::timezone(timezone(), offset_utc());
-}
-
-
-DLL_API string to_string (const error_code & ex);
 
 /**
  * @brief Format date and time.

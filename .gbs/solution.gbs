@@ -23,18 +23,8 @@ project "test-dl"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-random"
-    include("test-random/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
 project "test-regexp"
     include("test-regexp/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
-project "test-thread"
-    include("test-thread/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

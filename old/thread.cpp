@@ -43,13 +43,13 @@ thread::~thread ()
 	d->_thread = nullptr; // detach thread
 }
 
-bool thread::isFinished () const
+bool thread::is_finished () const
 {
 	const impl_class * d = base_class::cast();
     return d->_state == ThreadFinished || d->_state == ThreadFinishing;
 }
 
-bool thread::isRunning () const
+bool thread::is_running () const
 {
 	const impl_class * d = base_class::cast();
     return d->_state == ThreadRunning;
@@ -61,7 +61,7 @@ thread::priority_type thread::priority () const
     return d->_priority;
 }
 
-size_t thread::stackSize () const
+size_t thread::stack_size () const
 {
 	const impl_class * d = base_class::cast();
     return d->_stackSize;

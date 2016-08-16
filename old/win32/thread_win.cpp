@@ -61,7 +61,7 @@ thread::impl::~impl()
 	}
 }
 
-void thread::yieldCurrentThread ()
+void thread::yield_current_thread ()
 {
 	sched_yield();
 }

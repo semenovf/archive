@@ -69,7 +69,7 @@ void test_atomic_ref ()
 	}
 
 	for(int i = 0; i < __nthreads; ++i) {
-		if (threads[i] && threads[i]->isRunning()) {
+		if (threads[i] && threads[i]->is_running()) {
 			threads[i]->wait();
 		}
 	}
