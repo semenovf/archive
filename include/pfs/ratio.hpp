@@ -25,55 +25,15 @@ using std::ratio;
 
 }
 
-#else // __cplusplus >= 201103L
+#else // __cplusplus < 201103L
 
+#include <utility> // for std::pair
 #include <pfs.hpp>
 #include <pfs/type_traits.hpp>
 #include <pfs/limits.hpp>
 #include <pfs/math.hpp>
-#include <utility> // for std::pair
 
 namespace pfs {
-
-#if __FIXME__
-
-// Adapted from __udiv_qrnnd_c in longlong.h
-
-// Let c = 2 ^ (half # of bits in an intmax_t)
-// then we find a1, a0, b1, b0 s.t. N = a1*c + a0, M = b1*c + b0
-// The multiplication of N and M becomes,
-// N * M = (a1 * b1)c^2 + (a0 * b1 + b0 * a1)c + a0 * b0
-// Multiplication is safe if each term and the sum of the terms
-// is representable by intmax_t.
-template <intmax_t Pn, intmax_t Qn>
-struct safe_multiply
-{
-    static intmax_t const value;
-};
-
-inline intmax_t __assert_safe_multiply_parameters (intmax_t Pn, intmax_t Qn)
-{
-    uintmax_t c = uintmax_t(1) << (sizeof(intmax_t) * 4);
-
-    uintmax_t a0 = __integral_abs(Pn) % c;
-    uintmax_t a1 = __integral_abs(Pn) / c;
-    uintmax_t b0 = __integral_abs(Qn) % c;
-    uintmax_t b1 = __integral_abs(Qn) / c;
-
-    PFS_ASSERT_X(a1 == 0 || b1 == 0, "Overflow in multiplication");
-    PFS_ASSERT_X(a0 * b1 + b0 * a1 < (c >> 1), "Overflow in multiplication");
-    PFS_ASSERT_X(b0 * a0 <= max_value<intmax_t>(), "Overflow in multiplication");
-    PFS_ASSERT_X((a0 * b1 + b0 * a1) * c<= max_value<intmax_t>() - b0 * a0, "Overflow in multiplication");
-    
-    return 0;
-}
-
-template <intmax_t Pn, intmax_t Qn>
-intmax_t const safe_multiply<Pn, Qn>::value 
-        = __assert_safe_multiply_parameters(Pn, Qn) + Pn * Qn;
-
-
-#endif // __FIXME__
 
 namespace details {
 
@@ -122,7 +82,32 @@ intmax_t pfs::ratio<Num, Denom>::den = details::ratio_den(Num, Denom);
 namespace details {
 
 bool ratio_less (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2);
+
 void ratio_add (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2, intmax_t & num, intmax_t & den);
+
+void ratio_multiply (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2, intmax_t & num, intmax_t & den);
+
+inline void ratio_subtract (intmax_t num1
+        , intmax_t den1
+        , intmax_t num2
+        , intmax_t den2
+        , intmax_t & num
+        , intmax_t & den)
+{
+    ratio_add(num1, den1, - num2, den2, num, den);
+}
+
+inline void ratio_divide (intmax_t num1
+        , intmax_t den1
+        , intmax_t num2
+        , intmax_t den2
+        , intmax_t & num
+        , intmax_t & den)
+{
+    PFS_ASSERT_X(num2 != 0, "Division by 0");
+    ratio_multiply(num1, den1, den2, num2, num, den);
+}
+
 
 inline intmax_t ratio_add_and_get_num(intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2)
 {
@@ -135,6 +120,48 @@ inline intmax_t ratio_add_and_get_den(intmax_t num1, intmax_t den1, intmax_t num
 {
     intmax_t num, den;
     ratio_add(num1, den1, num2, den2, num, den);
+    return den;
+}
+
+inline intmax_t ratio_subtract_and_get_num(intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2)
+{
+    intmax_t num, den;
+    ratio_subtract(num1, den1, num2, den2, num, den);
+    return num;
+}
+
+inline intmax_t ratio_subtract_and_get_den(intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2)
+{
+    intmax_t num, den;
+    ratio_subtract(num1, den1, num2, den2, num, den);
+    return den;
+}
+
+inline intmax_t ratio_multiply_and_get_num (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2)
+{
+    intmax_t num, den;
+    ratio_multiply(num1, den1, num2, den2, num, den);
+    return num;
+}
+
+inline intmax_t ratio_multiply_and_get_den (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2)
+{
+    intmax_t num, den;
+    ratio_multiply(num1, den1, num2, den2, num, den);
+    return den;
+}
+
+inline intmax_t ratio_divide_and_get_num (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2)
+{
+    intmax_t num, den;
+    ratio_divide(num1, den1, num2, den2, num, den);
+    return num;
+}
+
+inline intmax_t ratio_divide_and_get_den (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2)
+{
+    intmax_t num, den;
+    ratio_divide(num1, den1, num2, den2, num, den);
     return den;
 }
 
@@ -204,6 +231,27 @@ struct ratio_add
     static intmax_t den;
 };
 
+template <typename R1, typename R2>
+struct ratio_subtract
+{
+    static intmax_t num;
+    static intmax_t den;
+};
+
+template<typename R1, typename R2>
+struct ratio_multiply
+{
+    static intmax_t num;
+    static intmax_t den;
+};
+
+template<typename R1, typename R2>
+struct ratio_divide
+{
+    static intmax_t num;
+    static intmax_t den;
+};
+
 // TODO May be there is a solution to avoid repeated calculation of ratio_add result.
 // 
 template <typename R1, typename R2>
@@ -212,83 +260,24 @@ intmax_t ratio_add<R1, R2>::num = details::ratio_add_and_get_num(R1::num, R1::de
 template<typename R1, typename R2>
 intmax_t ratio_add<R1, R2>::den = details::ratio_add_and_get_den(R1::num, R1::den, R2::num, R2::den);
 
-#if __FIXME__
-  template<typename _R1, typename _R2>
-    struct __ratio_multiply
-    {
-    private:
-      static const intmax_t __gcd1 =
-        __static_gcd<_R1::num, _R2::den>::value;
-      static const intmax_t __gcd2 =
-        __static_gcd<_R2::num, _R1::den>::value;
+template <typename R1, typename R2>
+intmax_t ratio_subtract<R1, R2>::num = details::ratio_subtract_and_get_num(R1::num, R1::den, R2::num, R2::den);
 
-    public:
-      typedef ratio<
-        __safe_multiply<(_R1::num / __gcd1),
-                        (_R2::num / __gcd2)>::value,
-        __safe_multiply<(_R1::den / __gcd2),
-                        (_R2::den / __gcd1)>::value> type;
+template<typename R1, typename R2>
+intmax_t ratio_subtract<R1, R2>::den = details::ratio_subtract_and_get_den(R1::num, R1::den, R2::num, R2::den);
 
-      static constexpr intmax_t num = type::num;
-      static constexpr intmax_t den = type::den;
-    };
+template <typename R1, typename R2>
+intmax_t ratio_multiply<R1, R2>::num = details::ratio_multiply_and_get_num(R1::num, R1::den, R2::num, R2::den);
 
-  template<typename _R1, typename _R2>
-    constexpr intmax_t __ratio_multiply<_R1, _R2>::num;
+template<typename R1, typename R2>
+intmax_t ratio_multiply<R1, R2>::den = details::ratio_multiply_and_get_den(R1::num, R1::den, R2::num, R2::den);
 
-  template<typename _R1, typename _R2>
-    constexpr intmax_t __ratio_multiply<_R1, _R2>::den;
+template <typename R1, typename R2>
+intmax_t ratio_divide<R1, R2>::num = details::ratio_divide_and_get_num(R1::num, R1::den, R2::num, R2::den);
 
-  /// ratio_multiply
-  template<typename _R1, typename _R2>
-    using ratio_multiply = typename __ratio_multiply<_R1, _R2>::type;
+template<typename R1, typename R2>
+intmax_t ratio_divide<R1, R2>::den = details::ratio_divide_and_get_den(R1::num, R1::den, R2::num, R2::den);
 
-  template<typename _R1, typename _R2>
-    struct __ratio_divide
-    {
-      static_assert(_R2::num != 0, "division by 0");
-
-      typedef typename __ratio_multiply<
-        _R1,
-        ratio<_R2::den, _R2::num>>::type type;
-
-      static constexpr intmax_t num = type::num;
-      static constexpr intmax_t den = type::den;
-    };
-
-  template<typename _R1, typename _R2>
-    constexpr intmax_t __ratio_divide<_R1, _R2>::num;
-
-  template<typename _R1, typename _R2>
-    constexpr intmax_t __ratio_divide<_R1, _R2>::den;
-
-  /// ratio_divide
-  template<typename _R1, typename _R2>
-    using ratio_divide = typename __ratio_divide<_R1, _R2>::type;
-
-   template<typename _R1, typename _R2>
-    struct __ratio_subtract
-    {
-      typedef typename __ratio_add<
-        _R1,
-        ratio<-_R2::num, _R2::den>>::type type;
-
-      static constexpr intmax_t num = type::num;
-      static constexpr intmax_t den = type::den;
-    };
-
-  template<typename _R1, typename _R2>
-    constexpr intmax_t __ratio_subtract<_R1, _R2>::num;
-
-  template<typename _R1, typename _R2>
-    constexpr intmax_t __ratio_subtract<_R1, _R2>::den;
-
-  /// ratio_subtract
-  template<typename _R1, typename _R2>
-    using ratio_subtract = typename __ratio_subtract<_R1, _R2>::type;
-
-#endif
-  
 typedef ratio<1,       1000000000000000000> atto;
 typedef ratio<1,          1000000000000000> femto;
 typedef ratio<1,             1000000000000> pico;

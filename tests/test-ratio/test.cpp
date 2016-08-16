@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
         TEST_OK((pfs::ratio_greater_equal<pfs::ratio<5,3>, pfs::ratio<25,15> >::value));
     }
     
-    // Aritmetic operations
+    // Add operations
     //
     {
         ADD_TESTS(1);
@@ -66,6 +66,35 @@ int main(int argc, char *argv[])
         typedef pfs::ratio<1, 6> t2;
         typedef pfs::ratio_add<t1, t2> t3;
         TEST_OK(t3::num == 5 && t3::den == 6);
+    }
+    
+    // Subtract operations
+    {
+        ADD_TESTS(1);
+        typedef pfs::ratio<2, 3> t1;
+        typedef pfs::ratio<1, 6> t2;
+        typedef pfs::ratio_subtract<t1, t2> t3;
+        TEST_OK(t3::num == 1 && t3::den == 2);
+    }
+    
+    // Multiply operations
+    //
+    {
+        ADD_TESTS(1);
+        typedef pfs::ratio<2, 3> t1;
+        typedef pfs::ratio<1, 6> t2;
+        typedef pfs::ratio_multiply<t1, t2> t3;
+        TEST_OK(t3::num == 1 && t3::den == 9);
+    }
+
+    // Divide operations
+    //
+    {
+        ADD_TESTS(1);
+        typedef pfs::ratio<2, 3> t1;
+        typedef pfs::ratio<1, 6> t2;
+        typedef pfs::ratio_divide<t1, t2> t3;
+        TEST_OK(t3::num == 4 && t3::den == 1);
     }
     
 	return END_TESTS;

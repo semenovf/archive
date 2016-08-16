@@ -150,7 +150,7 @@ inline big_pair_type big_div_impl (uintmax_t n1, uintmax_t n0, uintmax_t d)
     return r;
 }
 
-int clzll (unsigned long long x)
+inline int clzll (unsigned long long x)
 {
 #ifdef PFS_CC_GNUC
     return __builtin_clzll(x);
@@ -159,7 +159,7 @@ int clzll (unsigned long long x)
 #endif
 }
             
-int clzl (unsigned long x)
+inline int clzl (unsigned long x)
 {
 #ifdef PFS_CC_GNUC
     return __builtin_clzl(x);
@@ -246,7 +246,12 @@ inline bool ratio_less (ratio_pair_type const rp1, ratio_pair_type const rp2)
     return ratio_less(rp1.first, rp1.second, rp2.first, rp2.second);
 }
 
-void ratio_add (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2, intmax_t & num, intmax_t & den)
+void ratio_add (intmax_t num1
+        , intmax_t den1
+        , intmax_t num2
+        , intmax_t den2
+        , intmax_t & num
+        , intmax_t & den)
 {
     // First addendum value is positive ?
     //
@@ -324,6 +329,44 @@ void ratio_add (intmax_t num1, intmax_t den1, intmax_t num2, intmax_t den2, intm
         num = ratio_num(-n, d);
         den = ratio_den(-n, d);
     }
+}
+
+// Let c = 2 ^ (half # of bits in an intmax_t)
+// then we find a1, a0, b1, b0 s.t. N = a1*c + a0, M = b1*c + b0
+// The multiplication of N and M becomes,
+// N * M = (a1 * b1)c^2 + (a0 * b1 + b0 * a1)c + a0 * b0
+// Multiplication is safe if each term and the sum of the terms
+// is representable by intmax_t.
+//
+inline intmax_t __safe_multiply (intmax_t Pn, intmax_t Qn)
+{
+    uintmax_t c = uintmax_t(1) << (sizeof(intmax_t) * 4);
+
+    uintmax_t a0 = math::details::integral_abs(Pn) % c;
+    uintmax_t a1 = math::details::integral_abs(Pn) / c;
+    uintmax_t b0 = math::details::integral_abs(Qn) % c;
+    uintmax_t b1 = math::details::integral_abs(Qn) / c;
+
+    PFS_ASSERT_X(a1 == 0 || b1 == 0, "Overflow in multiplication");
+    PFS_ASSERT_X(a0 * b1 + b0 * a1 < (c >> 1), "Overflow in multiplication");
+    PFS_ASSERT_X(b0 * a0 <= max_value<intmax_t>(), "Overflow in multiplication");
+    PFS_ASSERT_X((a0 * b1 + b0 * a1) * c<= max_value<intmax_t>() - b0 * a0, "Overflow in multiplication");
+    
+    return Pn * Qn;
+}
+
+void ratio_multiply (intmax_t num1
+        , intmax_t den1
+        , intmax_t num2
+        , intmax_t den2
+        , intmax_t & num
+        , intmax_t & den)
+{
+    const intmax_t gcd1 = math::details::integral_gcd(num1, den2);
+    const intmax_t gcd2 = math::details::integral_gcd(num2, den1);
+
+    num = __safe_multiply(num1 / gcd1, num2 / gcd2);
+    den = __safe_multiply(den1 / gcd2, den2 / gcd1);
 }
 
 } // details
