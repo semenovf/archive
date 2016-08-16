@@ -1,0 +1,39 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=demo-cv --type=console-app'
+--* Date:    Tue Aug 16 15:43:03 2016
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "demo-cv"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../src/demo-cv/*.c", "../../src/demo-cv/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs/demo-cv/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        {  }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs/demo-cv/release"
+    targetdir    "../../../.build"
+    links        {  }
+
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+

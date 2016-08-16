@@ -273,6 +273,8 @@ inline string to_string (const date & d)
 	return to_string(d, string("%F")); // equivalent to %H:%M:%S
 }
 
+DLL_API pfs::date current_date ();
+
 } // pfs
 
 #endif /* __PFS_DATE_HPP__ */

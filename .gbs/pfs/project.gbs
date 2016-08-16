@@ -8,7 +8,7 @@ kind          "SharedLib"
 language      "C++"
 targetname    "pfs"
 includedirs   { "../../include" }
-files         { "../../src/pfs/**.c", "../../src/pfs/**.cpp", "../../include/**.hpp", "../../include/**.h" }
+files         { "../../src/pfs/*.c", "../../src/pfs/*.cpp", "../../include/**.hpp", "../../include/**.h" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
@@ -22,6 +22,12 @@ configuration "release"
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs/pfs/release"
     targetdir    "../../../.build"
+
+filter "platforms:unix*"
+    files { "../../src/pfs/posix/*.cpp"
+	, "../../src/pfs/unix/*.cpp"
+    }
+    links { "dl", "pthread", "rt" }
 
 filter "action:gmake"
     include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

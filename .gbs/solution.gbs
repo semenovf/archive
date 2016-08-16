@@ -166,3 +166,18 @@ project "test-ratio"
 project "test-binary-stream"
     include("test-binary-stream/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-random"
+    include("test-random/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-thread"
+    include("test-thread/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "demo-cv"
+    include("demo-cv/project.gbs")
+-- END PROJECT

@@ -160,6 +160,8 @@ inline string to_string (const time & t)
 	return to_string(t, string("%T"));
 }
 
+DLL_API pfs::time current_time ();
+
 } // pfs
 
 #endif /* __PFS_TIME_HPP__ */

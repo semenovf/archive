@@ -314,6 +314,16 @@ inline string to_string (datetime const & dt, string const & format)
  */
 string to_string (datetime const & dt);
 
+DLL_API datetime current_datetime ();
+
+DLL_API string timezone_name ();
+DLL_API long int offset_utc ();
+
+inline timezone current_timezone ()
+{
+    return timezone(timezone_name(), offset_utc());
+}
+
 } // pfs
 
 #endif /* __PFS_DATETIME_HPP__ */
