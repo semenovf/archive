@@ -178,6 +178,16 @@ project "test-thread"
 -- END PROJECT
 
 -- BEGIN PROJECT
+project "test-atomic"
+    include("test-atomic/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
 project "demo-cv"
     include("demo-cv/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "demo-utc-time"
+    include("demo-utc-time/project.gbs")
 -- END PROJECT

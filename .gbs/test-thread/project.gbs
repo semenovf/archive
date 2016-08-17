@@ -1,6 +1,6 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=test-thread --type=test --depends=pfs-sys'
+--* Command: `gbs project --create --name=test-thread --type=test --depends=pfs'
 --* Date:    Wed Aug 19 15:43:49 2015
 --************************************************************
 
@@ -18,19 +18,19 @@ files         { "../../tests/test-thread/*.c", "../../tests/test-thread/*.cpp" }
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-sys/test-thread/debug"
+    objdir       "../../../.build/pfs/test-thread/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
-    links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
+    links        { "pfs-test-d", "pfs-d" }
 
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-sys/test-thread/release"
+    objdir       "../../../.build/pfs/test-thread/release"
     targetdir    "../../../.build/tests"
-    links        { "pfs-test", "pfs", "pfs-sys" }
+    links        { "pfs-test", "pfs" }
 
-dependson { "pfs-sys" }
+dependson { "pfs" }
 
 filter "action:gmake"
     include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

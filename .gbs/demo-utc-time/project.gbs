@@ -1,21 +1,25 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=demo-cv --type=console-app'
---* Date:    Tue Aug 16 15:43:03 2016
+--* Command: `gbs project --create --name=demo-utc-time --type=console-app --depends=pfs'
+--* Date:    Sun May  8 19:36:47 2016
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "demo-cv"
+targetname    "demo-utc-time"
 defines       {  }
-includedirs   { "../../include" }
+includedirs   { 
+      "../../include" 
+    , "../../../pfs/include"
+}
+
 libdirs       { "../../../.build" }
-files         { "../../src/demo-cv/*.c", "../../src/demo-cv/*.cpp" }
+files         { "../../src/demo-utc-time/*.c", "../../src/demo-utc-time/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs/demo-cv/debug"
+    objdir       "../../../.build/pfs/demo-utc-time/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
     links        { "pfs-d" }
@@ -23,15 +27,16 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs/demo-cv/release"
+    objdir       "../../../.build/pfs/demo-utc-time/release"
     targetdir    "../../../.build"
     links        { "pfs" }
+
+dependson { "pfs" }
+
 
 filter "action:gmake"
     buildoptions {}
     linkoptions  {}
-
-dependson { "pfs" }
 
 include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
 
