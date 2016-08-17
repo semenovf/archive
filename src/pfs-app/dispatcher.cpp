@@ -8,9 +8,10 @@
 #include <pfs/logger.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/byte_string.hpp>
-#include <pfs/platform.hpp>
 #include <pfs/io/device.hpp>
 #include <pfs/io/file.hpp>
+#include <pfs/time.hpp>
+#include <pfs/date.hpp>
 #include "pfs/dispatcher.hpp"
 
 namespace pfs {
@@ -437,15 +438,15 @@ bool dispatcher::register_modules (fs::path const & path)
     return register_modules(conf);
 }
 
-static string __buildLogFilename (string const & pattern)
+static string __build_log_filename (string const & pattern)
 {
 	string r(pattern);
 
-	pfs::time currentTime = platform::current_time();
-	pfs::date currentDate = platform::current_date();
+	pfs::time ct = current_time();
+	pfs::date cd = current_date();
 
-	r = pfs::to_string(currentDate, r);
-	r = pfs::to_string(currentTime, r);
+	r = pfs::to_string(cd, r);
+	r = pfs::to_string(ct, r);
 
 	return r;
 }
@@ -479,7 +480,7 @@ bool dispatcher::register_modules (json::json const & conf)
     			} else if (name == _u8("stderr")) {
     				pappender = & logger.add_appender<pfs::stderr_appender>();
     			} else {
-    				string pathStr = __buildLogFilename(name);
+    				string pathStr = __build_log_filename(name);
     				fs::path path(pathStr);
 
     				error_code ex;
