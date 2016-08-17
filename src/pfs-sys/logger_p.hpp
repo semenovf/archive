@@ -9,11 +9,12 @@
 #ifndef __PFS_LOGGER_P_HPP__
 #define __PFS_LOGGER_P_HPP__
 
-#include "pfs/logger.hpp"
+#include <ctime>
+#include <pfs/datetime.hpp>
 #include <pfs/fsm.hpp>
 #include <pfs/fsm/aliases.hpp>
-#include <pfs/platform.hpp>
-#include <ctime>
+
+#include "pfs/logger.hpp"
 
 namespace pfs {
 
@@ -164,7 +165,7 @@ static bool end_spec (string::const_iterator, string::const_iterator, void * con
 		break;
 
 	case 'd': {
-        pfs::datetime dt = pfs::platform::current_datetime();
+        pfs::datetime dt = pfs::current_datetime();
 
 		if (ctx->pspec.fspec == string("ABSOLUTE")) {
             result = pfs::to_string(dt, string("%H:%M:%S.%Q"));

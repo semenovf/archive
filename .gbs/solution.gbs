@@ -33,11 +33,6 @@ project "test-uri"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-atomic"
-    include("test-atomic/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
 project "test-utils"
     include("test-utils/project.gbs")
 -- END PROJECT
@@ -65,9 +60,4 @@ project "demo-logger"
 -- BEGIN PROJECT
 project "test-functor-queue"
     include("test-functor-queue/project.gbs")
--- END PROJECT
-
--- BEGIN PROJECT
-project "demo-utc-time"
-    include("demo-utc-time/project.gbs")
 -- END PROJECT
