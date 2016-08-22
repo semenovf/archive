@@ -367,10 +367,16 @@ inline shared_ptr<T> dynamic_pointer_cast (const shared_ptr<T1> & r)
 	return shared_ptr<T>();
 }
 
-template< class T, class T1>
+template <class T, class T1>
 inline shared_ptr<T> const_pointer_cast (const shared_ptr<T1> & r)
 {
 	return shared_ptr<T>(r, const_cast<T*>(r.get()));
+}
+
+template <class T, class T1>
+inline shared_ptr<T> reinterpret_pointer_cast (const shared_ptr<T1> & r)
+{
+	return shared_ptr<T>(r, reinterpret_cast<T*>(r.get()));
 }
 
 } // namespace pfs
