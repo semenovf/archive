@@ -407,9 +407,9 @@ safeformat & safeformat::operator () (const string & s)
 	return arg(& t);
 }
 
-safeformat & safeformat::operator () (void * p)
+safeformat & safeformat::operator () (void const * p)
 {
-	__sf_default_traits<void *> t(p);
+	__sf_default_traits<void const *> t(p);
 	return arg(& t);
 }
 
@@ -548,7 +548,7 @@ inline string __sf_default_traits<string>::stringify_int (int base, bool upperca
 }
 
 template <>
-inline string __sf_default_traits<void *>::stringify_int (int base, bool uppercase, bool /*isUnsigned*/) const
+inline string __sf_default_traits<void const *>::stringify_int (int base, bool uppercase, bool /*isUnsigned*/) const
 {
 	return to_string(ptrdiff_t(_val), base, uppercase);
 }
@@ -661,7 +661,7 @@ inline string __sf_default_traits<string>::stringify_char () const
 }
 
 template <>
-inline string __sf_default_traits<void *>::stringify_char () const
+inline string __sf_default_traits<void const *>::stringify_char () const
 {
 	return string(1, string::value_type('?'));
 }
@@ -778,7 +778,7 @@ inline string __sf_default_traits<string>::stringify_float (char f, int prec) co
 }
 
 template <>
-inline string __sf_default_traits<void *>::stringify_float (char f, int prec) const
+inline string __sf_default_traits<void const *>::stringify_float (char f, int prec) const
 {
 	return to_string(real_t(ptrdiff_t(_val)), f, prec);
 }
@@ -886,7 +886,7 @@ inline string __sf_default_traits<string>::stringify_string () const
 }
 
 template <>
-inline string __sf_default_traits<void *>::stringify_string () const
+inline string __sf_default_traits<void const *>::stringify_string () const
 {
 	return to_string(ptrdiff_t(_val));
 }
@@ -894,7 +894,7 @@ inline string __sf_default_traits<void *>::stringify_string () const
 //}}} asString () -------------------------------------------------
 
 
-safeformat & safeformat::arg (const __sf_base_traits * v)
+safeformat & safeformat::arg (__sf_base_traits const * v)
 {
 	clear_spec();
 	advance();

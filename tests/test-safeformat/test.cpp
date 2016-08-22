@@ -330,7 +330,6 @@ void testCaseLongDouble ()
 	TEST_FAIL(testCase<T>(_u8("%G") , _u8("%LG") , pfs::max_value<T>()));
 }
 
-
 void test0 ()
 {
 	pfs::string s = pfs::safeformat("%f")(pfs::max_value<double>())();
@@ -410,6 +409,17 @@ void test2 ()
 		 ;
 }
 
+void test3 ()
+{
+	ADD_TESTS(4);
+	cout << "\n\nTesting with pointer\n";
+
+    TEST_FAIL(testCase<void *>(_u8("%p")    , _u8("%p") , (void *)0xabcd));
+    TEST_FAIL(testCase<int *>(_u8("%p")    , _u8("%p") , (int *)0xabcd));
+    TEST_FAIL(testCase<long *>(_u8("%p")   , _u8("%p") , (long *)0xabcd));
+    TEST_FAIL(testCase<double *>(_u8("%p") , _u8("%p") , (double *)0xabcd));
+}
+
 int main(int argc, char** argv)
 {
 	PFS_UNUSED2(argc, argv);
@@ -423,6 +433,7 @@ int main(int argc, char** argv)
 
 	test0();
 	test2();
+    test3();
 
 //	if (argc > 1) {
 //		if (1) test2();

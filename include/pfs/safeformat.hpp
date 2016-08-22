@@ -204,12 +204,24 @@ public:
 	 */
 	static int global_compat ();
 
-	template <typename T>
-	safeformat & operator () (const T & v)
-	{
-		__sf_traits<T> t(v);
-		return arg(& t);
-	}
+//	template <typename T>
+//	safeformat & operator () (T const & v)
+//	{
+//		__sf_traits<T> t(v);
+//		return arg(& t);
+//	}
+    
+//    template <typename T>
+//  	safeformat & operator () (T const * p)
+//    {
+//        return operator () (static_cast<void const *>(p));
+//    }
+
+//    template <typename T>
+//  	safeformat & operator ()<T *> (T * p)
+//    {
+//        return operator () (static_cast<void const *>(p));
+//    }
 
 	safeformat & operator () (char c);
 	safeformat & operator () (signed char n);
@@ -234,14 +246,14 @@ public:
 #endif
 
 	safeformat & operator () (string::value_type c);
-	safeformat & operator () (const string & s);
-	safeformat & operator () (const char * s)
+	safeformat & operator () (string const & s);
+	safeformat & operator () (char const * s)
 	{
 		string ss(s);
 		return operator () (ss);
 	}
-
-	safeformat & operator () (void * p);
+    
+    safeformat & operator () (void const * p);
 
 	const string & operator () ()
 	{
@@ -280,7 +292,7 @@ public:
 	safeformat & operator % (string::value_type c) { return operator () (c); }
 	safeformat & operator % (const string & s)     { return operator () (s); }
 	safeformat & operator % (const char * s)       { return operator () (s); }
-	safeformat & operator % (void * p)             { return operator () (p); }
+	safeformat & operator % (void const * p)       { return operator () (p); }
 
 //--- Qt-like methods
 	safeformat & arg (char c)               { return operator () (c); }
@@ -308,7 +320,7 @@ public:
 	safeformat & arg (string::value_type c) { return operator () (c); }
 	safeformat & arg (const string & s)     { return operator () (s); }
 	safeformat & arg (const char * s)       { return operator () (s); }
-	safeformat & arg (void * p)             { return operator () (p); }
+	safeformat & arg (void const * p)       { return operator () (p); }
 
 private:
 	context _ctx;
