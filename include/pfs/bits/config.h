@@ -86,7 +86,11 @@
 #	define PFS_HAVE_SIGACTION 1
 #endif
 
-#if _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _BSD_SOURCE || _SVID_SOURCE || _POSIX_SOURCE
+#if _POSIX_C_SOURCE >= 1          \
+        || defined(_XOPEN_SOURCE) \
+        || defined(_BSD_SOURCE)   \
+        || defined(_SVID_SOURCE)  \
+        || defined(_POSIX_SOURCE)
 #	define PFS_HAVE_LOCALTIME_R 1
 #endif
 
@@ -97,10 +101,10 @@
 
 #ifdef __cplusplus
 #	if __cplusplus >= 201103L
-#		define PFS_HAVE_NULLPTR          1
-#		define PFS_HAVE_KEYWORD_DECLTYPE 1
-#		define PFS_HAVE_KEYWORD_FINAL    1
-#		define PFS_HAVE_KEYWORD_OVERRIDE 1
+//#		define PFS_HAVE_NULLPTR          1
+//#		define PFS_HAVE_KEYWORD_DECLTYPE 1
+//#		define PFS_HAVE_KEYWORD_FINAL    1
+//#		define PFS_HAVE_KEYWORD_OVERRIDE 1
 #	else
 #		define override
 #		define final
@@ -108,15 +112,15 @@
 #	endif
 #endif
 
-#if _XOPEN_SOURCE >= 600 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L
+#if _XOPEN_SOURCE >= 600 || defined(_ISOC99_SOURCE) || _POSIX_C_SOURCE >= 200112L
 #	define PFS_HAVE_STRTOLD 1
 #endif
 
-#if _BSD_SOURCE || _XOPEN_SOURCE || _POSIX_C_SOURCE >= 200112L
+#if defined(_BSD_SOURCE) || defined(_XOPEN_SOURCE) || _POSIX_C_SOURCE >= 200112L
 #   define PFS_HAVE_FSYNC 1
 #endif
 
-#if _BSD_SOURCE || _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _POSIX_C_SOURCE >= 200112L
+#if defined(_BSD_SOURCE) || _XOPEN_SOURCE >= 500 || defined(_ISOC99_SOURCE) || _POSIX_C_SOURCE >= 200112L
 #	define PFS_HAVE_SNPRINTF  1
 #	define PFS_HAVE_VSNPRINTF 1
 #endif

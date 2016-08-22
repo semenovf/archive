@@ -26,4 +26,4 @@ Fedor Semenov, < fedor.v.semenov at gmail.com >
 
 ###LICENSE AND COPYRIGHT
 
-Copyright 2014 Fedor Semenov.  
+Copyright 2014-2016 Fedor Semenov.  
