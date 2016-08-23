@@ -16,6 +16,7 @@
 
 #include <pfs/string.hpp>
 #include <pfs/sigslot.hpp>
+#include <pfs/noncopyable.hpp>
 #include <pfs/griotte/global.hpp>
 
 namespace pfs {
@@ -25,11 +26,9 @@ namespace details {
 struct window;
 }
 
-DLL_API class window : pfs::has_slots<>
+DLL_API class window : pfs::has_slots<>, private noncopyable
 {
     details::window * _d;
-    
-    PFS_DECLARE_NONCOPYABLE(window)
     
 public:
     window (int width, int height);

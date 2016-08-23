@@ -26,14 +26,12 @@ namespace details {
 struct context;
 }
 
-DLL_API class context : public has_slots<>
+DLL_API class context : public has_slots<>, private pfs::noncopyable
 {
     static context * _s_self;
 
     details::context * _d;
     
-    PFS_DECLARE_NONCOPYABLE(context)
-
 public: // static
     static context & instance ()
     {

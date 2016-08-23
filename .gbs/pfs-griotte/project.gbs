@@ -25,14 +25,14 @@ configuration "debug"
     objdir       "../../../.build/pfs-griotte/pfs-griotte/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
-    links        { "pfs-d", "pfs-sys-d", "freetype", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
+    links        { "pfs-d", "freetype", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
 
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-griotte/pfs-griotte/release"
     targetdir    "../../../.build"
-    links        { "pfs", "pfs-sys", "freetype", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
+    links        { "pfs", "freetype", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
 
 
 filter "action:gmake"

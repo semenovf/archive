@@ -11,7 +11,6 @@ defines       {  }
 includedirs   {
       "../../include"
     , "../../../pfs/include"
-    , "../../../pfs-sys/include"
 }
 libdirs       { "../../../.build" }
 files         { "../../src/demo-griotte-base/*.c", "../../src/demo-griotte-base/*.cpp" }
@@ -22,14 +21,14 @@ configuration "debug"
     objdir       "../../../.build/pfs-griotte/demo-griotte-base/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
-    links        { "pfs-sys-d", "pfs-griotte-d" }
+    links        { "pfs-d", "pfs-griotte-d" }
 
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs-griotte/demo-griotte-base/release"
     targetdir    "../../../.build"
-    links        { "pfs-sys", "pfs-griotte" }
+    links        { "pfs", "pfs-griotte" }
 
 dependson { "pfs-griotte" }
 

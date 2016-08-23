@@ -14,15 +14,14 @@
 #ifndef __PFS_GRIOTTE_SCENE_HPP__
 #define __PFS_GRIOTTE_SCENE_HPP__
 
+#include <pfs/noncopyable.hpp>
 #include <pfs/griotte/global.hpp>
 
 namespace pfs {
 namespace griotte {
 
-class scene
+class scene : private pfs::noncopyable
 {
-    PFS_DECLARE_NONCOPYABLE(scene)
-    
 public:
     scene ();
     virtual ~scene ();
