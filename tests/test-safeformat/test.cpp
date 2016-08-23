@@ -374,8 +374,6 @@ void test2 ()
 #ifdef PFS_HAVE_QT
 	double ellapsed_qstring;
 #endif
-//	if(loop < 100)
-//		loop = 100;
 
 	sw.start();
 	for (int i = loop; i > 0; --i)
