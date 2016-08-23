@@ -10,6 +10,8 @@
 #include <pfs/test/test.hpp>
 #include <pfs/shared_ptr.hpp>
 
+#include <tr1/memory>
+
 #include <iostream>
 //
 // This unit tests base on BOOST's shared_ptr unit tests.
@@ -373,6 +375,24 @@ void test_deep_swap_ptr ()
 	TEST_OK(*p == 4321)
 }
 
+void test_cast ()
+{
+    ADD_TESTS(4);
+    
+    pfs::shared_ptr<int> p1(new int);
+    pfs::shared_ptr<int> p2 = pfs::static_pointer_cast<int>(p1);
+    
+    TEST_OK(p1.use_count() == 2);
+    TEST_OK(p2.use_count() == 2);
+
+    pfs::shared_ptr<int> p3(new int);
+    pfs::shared_ptr<int> p4 = pfs::reinterpret_pointer_cast<int>(p3);
+
+    TEST_OK(p3.use_count() == 2);
+    TEST_OK(p4.use_count() == 2);
+}
+
+
 int main(int argc, char *argv[])
 {
     PFS_UNUSED2(argc, argv);
@@ -384,6 +404,7 @@ int main(int argc, char *argv[])
 	test_compare_ptr();
 	test_swap_ptr();
 	test_unique();
+    test_cast();
 //	test_deep_swap_ptr();
 
 	return END_TESTS;
