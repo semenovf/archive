@@ -10,8 +10,6 @@
 #include <pfs/test/test.hpp>
 #include <pfs/shared_ptr.hpp>
 
-#include <tr1/memory>
-
 #include <iostream>
 //
 // This unit tests base on BOOST's shared_ptr unit tests.
