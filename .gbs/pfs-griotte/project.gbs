@@ -10,10 +10,8 @@ targetname    "pfs-griotte"
 defines       {  }
 includedirs   { 
       "../../include"
-    , "../../src/pfs-griotte/freetype2"
-   , "../../src/pfs-griotte/freetype2/freetype"
     , "../../../pfs/include"
-    , "../../../pfs-sys/include" 
+    , "../../../pfs-sys/include"
 }
 
 libdirs       { "../../../.build" }
