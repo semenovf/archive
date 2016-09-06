@@ -11,11 +11,19 @@
  * Created on July 11, 2016, 6:55 PM
  */
 
-#ifndef __PFS_RATIO_HPP__
-#define __PFS_RATIO_HPP__
+#ifndef __PFS_CXX11_RATIO_HPP__
+#define __PFS_CXX11_RATIO_HPP__
 
-#include <pfs/cxxversion.hpp>
-#include PFS_CXX_HEADER(ratio)
+#include <chrono>
 
-#endif /* __PFS_RATIO_HPP__ */
+namespace pfs {
+
+template <intmax_t Num, intmax_t Denom = 1>
+using ratio = std::ratio<Num, Denom>;
+
+}
+
+} // namespace pfs
+
+#endif /* __PFS_CXX11_RATIO_HPP__ */
 
