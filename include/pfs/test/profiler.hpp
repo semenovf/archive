@@ -5,23 +5,23 @@
  *      Author: wladt
  */
 
-#ifndef __PFS_TEST_STOPWATCH_HPP__
-#define __PFS_TEST_STOPWATCH_HPP__
+#ifndef __PFS_TEST_PROFILER_HPP__
+#define __PFS_TEST_PROFILER_HPP__
 
 #include "dllapi.h"
 
 namespace pfs { namespace test {
 
-class DLL_API stopwatch
+class DLL_API profiler
 {
 	double _sec;
 
 public:
-	stopwatch () : _sec(0) { start(); }
+	profiler () : _sec(0) { start(); }
 	void start ();
 	double ellapsed () const;
 };
 
 }} // pfs::test
 
-#endif /* __PFS_TEST_STOPWATCH_HPP__ */
+#endif /* __PFS_TEST_PROFILER_HPP__ */

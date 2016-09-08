@@ -5,51 +5,43 @@
  *      Author: wladt
  */
 
-#include "pfs/test/stopwatch.hpp"
-#include "test_p.hpp"
+#include "pfs/test/profiler.hpp"
+#include <windows.h>
 
-#define HAVE_GETTIMEOFDAY 1
-
-#if defined(_MSC_VER)
-#	undef HAVE_GETTIMEOFDAY
+#if defined(NDEBUG) || defined(_NDEBUG)
+#	define PFS_ASSERT(p) p
+#else
+#	include <cassert>
+#	define PFS_ASSERT(p) assert(p)
 #endif
 
-#ifdef HAVE_GETTIMEOFDAY
-#	include <sys/time.h> // for gettimeofday
-
-#else
-#	include <windows.h>
 // [http://support.microsoft.com/kb/815668](http://support.microsoft.com/kb/815668)
 // [QueryPerformanceCounter - бомба замедленного действия](http://devdoc.web-ide.ru/index.php/content/view/queryPerformanceCounter.htm)
-#endif
 
 namespace pfs { namespace test {
 
-void stopwatch::start ()
+//static uint64_t microseconds()
+//{
+//	LARGE_INTEGER now;
+//	QueryPerformanceCounter(&now);
+//	LARGE_INTEGER freq;
+//	QueryPerformanceFrequency(&freq);
+//	return now.QuadPart * 1000 / (freq.QuadPart / 1000);
+//}
+
+void profiler::start ()
 {
-#ifdef HAVE_GETTIMEOFDAY
-	struct timeval now = {0, 0};
-	PFS_ASSERT(gettimeofday(& now, 0) == 0);
-	_sec = static_cast<double>(now.tv_sec) + static_cast<double>(now.tv_usec)/1000000;
-#else
 	LARGE_INTEGER c;
 	PFS_ASSERT(QueryPerformanceCounter(& c));
 	_sec = static_cast<double>(c.QuadPart);
-#endif
 }
 
-double stopwatch::ellapsed () const
+double profiler::ellapsed () const
 {
-#ifdef HAVE_GETTIMEOFDAY
-	struct timeval now = {0, 0};
-	PFS_ASSERT(gettimeofday(& now, 0) == 0);
-	return (static_cast<double>(now.tv_sec) + static_cast<double>(now.tv_usec)/1000000) - _sec;
-#else
 	LARGE_INTEGER c, freq;
 	PFS_ASSERT(QueryPerformanceCounter(& c));
 	PFS_ASSERT(QueryPerformanceFrequency(& freq));
 	return (static_cast<double>(c.QuadPart) - _sec)/static_cast<double>(freq.QuadPart);
-#endif
 }
 
 }} // pfs::test

@@ -53,7 +53,7 @@
 #endif
 
 #define PFS_CXX_X(x) x
-#define PFS_CXX_HEADER(x) <pfs/__PFS_CXX_HPREFIX__/PFS_CXX_X(x).hpp>
+#define PFS_CXX_HEADER(x) <pfs/cxx/__PFS_CXX_HPREFIX__/PFS_CXX_X(x).hpp>
 
 #endif /* __PFS_CXXVERSION_HPP__ */
 

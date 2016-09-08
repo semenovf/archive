@@ -5,8 +5,7 @@
  *      Author: wladt
  */
 #include "pfs/test/test.hpp"
-#include "pfs/test/stopwatch.hpp"
-#include "test_p.hpp"
+#include "pfs/test/profiler.hpp"
 
 #include <cstdlib>
 #include <cstddef>
@@ -15,22 +14,29 @@
 #include <sstream>
 #include <iomanip>
 
+#if defined(NDEBUG) || defined(_NDEBUG)
+#	define PFS_ASSERT(p) p
+#else
+#	include <cassert>
+#	define PFS_ASSERT(p) assert(p)
+#endif
+
 namespace pfs { namespace test {
 
 class context
 {
 public:
 	context (size_t total);
-	~context() { self = nullptr; }
+	~context() { self = 0; }
 
 	size_t total     () const { return _total; }
 	size_t processed () const { return _processed; }
 	size_t passed    () const { return _passed; }
 	size_t failed    () const { return _failed; }
 
-	void addTotal (size_t n) { _total += n; }
-	void testOk ()      { ++_processed; ++_passed; }
-	void testFailed ()  { ++_processed; ++_failed; }
+	void add_total (size_t n) { _total += n; }
+	void test_ok ()      { ++_processed; ++_passed; }
+	void test_failed ()  { ++_processed; ++_failed; }
 
 	// 0 - success
 	// 1 - failed
@@ -41,23 +47,23 @@ public:
 				? 1
 				: _processed == _total ? 0 : 2;
 	}
-	std::string outputPrefix (bool passed) const;
-	double elapsedTime() const;
+	std::string output_prefix (bool passed) const;
+	double elapsed_time() const;
 
 	static context & instance ();
-	static std::string stringifyTime (double sec);
+	static std::string stringify_time (double sec);
 
 private:
 	static context * self;
 
-	size_t _total;
-	size_t _processed;
-	size_t _passed;
-	size_t _failed;
-	stopwatch _sw;
+	size_t   _total;
+	size_t   _processed;
+	size_t   _passed;
+	size_t   _failed;
+	profiler _profiler;
 };
 
-context * context::self = nullptr;
+context * context::self = 0;
 
 inline context & context::instance ()
 {
@@ -70,16 +76,16 @@ inline context::context (size_t total)
 	, _processed(0)
 	, _passed(0)
 	, _failed(0)
-	, _sw() // start stopwatch
+	, _profiler() // start stopwatch
 {
-	PFS_ASSERT(self == nullptr);
+	PFS_ASSERT(self == 0);
 	self = this;
 }
 
 
-double context::elapsedTime() const
+double context::elapsed_time() const
 {
-	return _sw.ellapsed();
+	return _profiler.ellapsed();
 }
 
 /*
@@ -93,7 +99,7 @@ void context::timeDiff (const struct timeval & begin
 }
 */
 
-std::string context::stringifyTime (double t)
+std::string context::stringify_time (double t)
 {
 	std::stringstream ss;
 	long sec, usec;
@@ -107,10 +113,10 @@ std::string context::stringifyTime (double t)
 	return ss.str();
 }
 
-std::string context::outputPrefix (bool passed) const
+std::string context::output_prefix (bool passed) const
 {
 	std::stringstream ss;
-	ss << stringifyTime(_sw.ellapsed())
+	ss << stringify_time(_profiler.ellapsed())
 		<< (passed ? " PASS[" : " FAIL[")
 		<< std::setw(3) << std::setfill('0') << _processed
 		<< "]: ";
@@ -127,7 +133,7 @@ void start (size_t n)
 int finish (bool abort)
 {
 	context & ctx = context::instance();
-	double elapsed = ctx.elapsedTime();
+	double elapsed = ctx.elapsed_time();
 
 	std::cout.precision(6);
     std::cout << "-----------------------------------" << std::endl
@@ -160,7 +166,7 @@ int finish (bool abort)
 void addTotal (size_t n)
 {
 	context & ctx = context::instance();
-	ctx.addTotal(n);
+	ctx.add_total(n);
 }
 
 void todo (const std::string & expr, bool result, const std::string & filename, int line)
@@ -168,11 +174,11 @@ void todo (const std::string & expr, bool result, const std::string & filename, 
 	context & ctx = context::instance();
 
 	if (result) {
-		ctx.testOk();
-		std::cout << ctx.outputPrefix(true) << expr << std::endl;
+		ctx.test_ok();
+		std::cout << ctx.output_prefix(true) << expr << std::endl;
 	} else {
-		ctx.testFailed();
-		std::cout << ctx.outputPrefix(false) << expr << " ["
+		ctx.test_failed();
+		std::cout << ctx.output_prefix(false) << expr << " ["
 				<< filename << ':' << line << ']' << std::endl;
 	}
 }

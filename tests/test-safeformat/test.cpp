@@ -3,7 +3,7 @@
  */
 
 #include <pfs/test/test.hpp>
-#include <pfs/test/stopwatch.hpp>
+#include <pfs/test/profiler.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/string.hpp>
 #include <pfs/typeinfo.hpp>
@@ -363,8 +363,8 @@ void test0 ()
 void test2 ()
 {
 	char buf[512];
-	using pfs::test::stopwatch;
-	stopwatch sw;
+	using pfs::test::profiler;
+	profiler sw;
 
 	int loop = 100;
 

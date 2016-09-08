@@ -1,15 +1,13 @@
 /**
- * @file   compiler.h
+ * @file   compiler.hpp
  * @author wladt
- * @date   Nov 9, 2012 9:58:39 AM
+ * @date   Sep 8, 2016 11:45:00
  *
  * @brief
  */
 
-#ifndef __PFS_BITS_COMPILER_H__
-#define __PFS_BITS_COMPILER_H__
-
-// TODO OBSOLETE, see pfs/compiler.hpp
+#ifndef __PFS_COMPILER_HPP__
+#define __PFS_COMPILER_HPP__
 
 /*
    The compiler, must be one of: (CWT_CC_x)
@@ -42,14 +40,7 @@
 */
 
 /* Symantec C++ is now Digital Mars */
-#if defined(__DMC__) || defined(__SC__)
-#	define PFS_CC_SYM
-#elif defined(__MWERKS__)
-#	define PFS_CC_MWERKS
-# 	if defined(__EMU_SYMBIAN_OS__)
-#   	define PFS_CC_NOKIAX86
-#	endif
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER)
 #	define PFS_CC_MSVC
 #	define PFS_CC_MSC
 // see http://stackoverflow.com/questions/70013/how-to-detect-if-im-compiling-code-with-visual-studio-2008
@@ -69,32 +60,30 @@
 #		define PFS_CC_INTEL
 #		define PFS_CC_INTEL_VERSION _MSC_VER
 #		define PFS_CC_INTEL_VERSION _MSC_VER
+#       define __PFS_CC_HPREFIX__ intel
+#   else
+#       define __PFS_CC_HPREFIX__ msc
 #	endif
-#elif defined(__BORLANDC__) || defined(__TURBOC__)
-#	define PFS_CC_BORLAND
-#	if (defined(__BORLANDC__) && __BORLANDC__ <= 0x410) || defined(__TURBOC__)
-#		define PFS_CC_BORLAND_REAL
-#	endif
-#elif defined(__WATCOMC__)
-#	define PFS_CC_WATCOM
-#elif defined(__GCCE__) /* Symbian GCCE */
-#	define PFS_CC_GCCE
-#elif defined(__ARMCC__) || defined(__CC_ARM) /* ARM Realview Compiler Suite */
-#	define PFS_CC_RVCT
 #elif defined(__GNUC__)
 #  	define PFS_CC_GNUC
 #	define PFS_CC_GCC
-#	if defined(__MINGW32__)
-#		define PFS_CC_MINGW
-#	endif
+
 #	if defined(__INTEL_COMPILER)
     	/* Intel C++ also masquerades as GCC 3.2.0 */
 #		define PFS_CC_INTEL
-#	endif
-#	if defined(__clang__)
+#       define __PFS_CC_HPREFIX__ intel
+#	elif defined(__clang__)
 /* Clang also masquerades as GCC 4.2.1 */
 #		define PFS_CC_CLANG
+#       define __PFS_CC_HPREFIX__ clang
+#   else
+#       define __PFS_CC_HPREFIX__ gnuc
 #	endif
+#else
+#   error "Unsupported C++ compiler"
 #endif
 
-#endif /* __PFS_BITS_COMPILER_H__ */
+#define PFS_CC_X(x) x
+#define PFS_CC_HEADER(x) <pfs/compiler/__PFS_CC_HPREFIX__/PFS_CC_X(x).hpp>
+
+#endif /* __PFS_COMPILER_HPP__ */
