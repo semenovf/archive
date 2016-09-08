@@ -26,7 +26,7 @@ namespace details {
 struct context;
 }
 
-DLL_API class context : public has_slots<>, private pfs::noncopyable
+DLL_API class context : public has_slots<>
 {
     static context * _s_self;
 
@@ -39,6 +39,10 @@ public: // static
         return *_s_self;
     }
         
+private:
+    context (const context &);
+    context & operator = (const context &);
+
 public:
     context ();
     ~context ();
@@ -52,7 +56,7 @@ public:
      *             @a info[i+1] contains paramater value.
      * @param info Data to store font engine specification information.
      */
-    void font_engine_info (stringlist & info);
+    //void font_engine_info (stringlist & info);
     
 public: // signals
     signal1<string const &> emit_error;

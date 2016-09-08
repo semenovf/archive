@@ -1,0 +1,5 @@
+filter "action:gmake"
+    files { "../../src/pfs-griotte/glfw/*.cpp" }
+    links { "freetype", "glfw3", "pthread", "dl", "X11", "Xxf86vm", "Xinerama", "Xcursor", "Xrandr", "Xi", "GL" }
+    buildoptions { }
+    linkoptions  { }

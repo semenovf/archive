@@ -1,49 +1,39 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs project --create --name=pfs-griotte --type=shared-lib'
---* Date:    Mon Aug  1 16:03:57 2016
+--* Command: `gbs project --create --name=demo-cairo1 --type=console-app'
+--* Date:    Thu Sep  8 15:12:57 2016
 --************************************************************
 
-kind          "SharedLib"
+kind          "ConsoleApp"
 language      "C++"
-targetname    "pfs-griotte"
+targetname    "demo-cairo1"
 defines       {  }
-includedirs   { 
-      "../../include"
-    , "../../../pfs/include"
-    , "../../../pfs-sys/include"
-}
-
+includedirs   { "../../include" }
 libdirs       { "../../../.build" }
-files         { "../../src/pfs-griotte/*.cpp", "../../include/**.hpp", "../../include/**.h" }
+files         { "../../src/demo-cairo1/*.c", "../../src/demo-cairo1/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs-griotte/pfs-griotte/debug"
+    objdir       "../../../.build/pfs-griotte/demo-cairo1/debug"
     targetdir    "../../../.build"
     targetsuffix "-d"
-    links        { "pfs-d" }
+    links        { "cairo" }
 
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs-griotte/pfs-griotte/release"
+    objdir       "../../../.build/pfs-griotte/demo-cairo1/release"
     targetdir    "../../../.build"
-    links        { "pfs" }
+    links        { "cairo" }
 
 
 filter "action:gmake"
-    buildoptions { }
-    linkoptions  { }
+    buildoptions {}
+    linkoptions  {}
 
 include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
 
 filter { "debug", "action:gmake" }
     linkoptions  { "-rdynamic" }
 
---
--- Choose one of
---
-include("gtk3.gbs")
---include("glfw.gbs")
