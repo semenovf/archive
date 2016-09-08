@@ -69,7 +69,7 @@ context::~context ()
     }
 }
 
-bool context::init ()
+bool context::ready ()
 {
 #   undef __FTERRORS_H__
 #   define FT_ERRORDEF(e, v, s) __ft_errors_map.insert2(e, _u8(s));

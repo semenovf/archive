@@ -23,43 +23,35 @@ namespace pfs {
 namespace griotte {
 
 namespace details {
-struct context;
+struct app;
 }
 
-DLL_API class context : public has_slots<>
+DLL_API class app : public has_slots<>
 {
-    static context * _s_self;
+    static app * _s_self;
 
-    details::context * _d;
+    details::app * _d;
     
 public: // static
-    static context & instance ()
+    static app & instance ()
     {
         PFS_ASSERT(_s_self);
         return *_s_self;
     }
         
 private:
-    context (const context &);
-    context & operator = (const context &);
+    app (const app &);
+    app & operator = (const app &);
 
 public:
-    context ();
-    ~context ();
+    app ();
+    ~app ();
 
-    bool init ();
-    void poll_events ();
-    
-    /**
-     * @brief Fill @a info with font engine specification information.
-     * @details @a info[i] contains specification parameter name and 
-     *             @a info[i+1] contains paramater value.
-     * @param info Data to store font engine specification information.
-     */
-    //void font_engine_info (stringlist & info);
+    bool ready ();
     
 public: // signals
     signal1<string const &> emit_error;
+    signal0<> activated;
     
 private: // slots
     void on_error_default (string const & errstr);

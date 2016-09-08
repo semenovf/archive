@@ -11,31 +11,22 @@ int main (int argc, char * argv[])
 {
     PFS_UNUSED2(argc, argv);
     
-    pfs::griotte::context gr;
+    pfs::griotte::app app;
     
-    if (! gr.init()) {
+    if (! app.ready()) {
         return -1;
     }
     
-    // View font engine information
-    //
-    pfs::stringlist info;
-    gr.font_engine_info(info);
-
-    std::cout << "Underlying font engine specification:" << std::endl;
-    std::cout << "-------------------------------------" << std::endl;
+    app.activated.connect();
+    app.exec();
     
-    for (size_t i = 0; i < info.size(); i += 2) {
-        std::cout << info[i] << ": " << info[i + 1] << std::endl;
-    }
-    
-    pfs::griotte::window window(640, 480);
-    window.set_title(_u8("Hello, World!"));
-    
-    while (! window.should_close()) {
-        window.repaint();
-        gr.poll_events();
-    }
+//    pfs::griotte::window window(640, 480);
+//    window.set_title(_u8("Hello, World!"));
+//    
+//    while (! window.should_close()) {
+//        window.repaint();
+//        gr.poll_events();
+//    }
     
     return 0;
 }
