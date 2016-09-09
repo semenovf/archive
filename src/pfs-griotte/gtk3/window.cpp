@@ -11,48 +11,20 @@
  * Created on August 2, 2016, 1:51 PM
  */
 
-#include "GLFW/glfw3.h"
+#include <gtk/gtk.h>
+#include "pfs/griotte/griotte.hpp"
 #include "pfs/griotte/window.hpp"
+#include "griotte_p.hpp"
 
 namespace pfs {
 namespace griotte {
 
-namespace details {
-
-struct window
+window::window ()
+    : _d(new details::window)
 {
-    window () 
-    {}
-    
-//    GLFWwindow * _native_window;
-//    
-//    window (int width, int height, pfs::string const & title, GLFWmonitor * monitor, GLFWwindow * share)
-//    {
-//        _native_window = glfwCreateWindow(width, height, title.c_str(), monitor, share);
-//        
-//        if (_native_window) {
-//            // Make the window's context current
-//            glfwMakeContextCurrent(_native_window);
-//            glClear(GL_COLOR_BUFFER_BIT);
-//        }
-//    }
-//    
-//    ~window ()
-//    {
-//        if (_native_window)
-//            glfwDestroyWindow(_native_window);
-//    }
-};
-
+    application & app = application::instance();
+    _d->win = gtk_application_window_new(app._d->app);
 }
-
-window::window (int width, int height)
-    : _d(new details::window)
-{}
-
-window::window (int width, int height, pfs::string const & title)
-    : _d(new details::window)
-{}
 
 window::~window ()
 {
@@ -60,40 +32,34 @@ window::~window ()
         delete _d;
 }
 
-bool window::should_close ()
+void window::show ()
 {
-//    if (_d->_native_window)
-//        return glfwWindowShouldClose(_d->_native_window) != 0;
-//    
-//    return true;
+    gtk_widget_show_all(_d->win);
 }
 
 void window::set_title (pfs::string const & title)
 {
-//    if (_d->_native_window)
-//        glfwSetWindowTitle(_d->_native_window, title.c_str());
+    gtk_window_set_title(GTK_WINDOW(_d->win), title.c_str());
 }
 
-void window::repaint ()
+void window::resize (int width, int height)
 {
-//    if (_d->_native_window) {
-//        glClear(GL_COLOR_BUFFER_BIT);
-//        glfwSwapBuffers(_d->_native_window);
-//    }
+    gtk_window_resize_to_geometry(GTK_WINDOW(_d->win), width, height);
+}
+
+void window::move (int x, int y)
+{
+    gtk_window_move(GTK_WINDOW(_d->win), x, y);
 }
 
 void window::maximize () 
 { 
-//    if (_d->_native_window) {
-//        glfwMaximizeWindow(_d->_native_window);
-//    }
+    gtk_window_maximize(GTK_WINDOW(_d->win));
 }
 
 void window::minimize () 
 { 
-//    if (_d->_native_window) {
-//        glfwIconifyWindow(_d->_native_window);
-//    }
+    gtk_window_iconify(GTK_WINDOW(_d->win));
 }
 
 }}

@@ -16,42 +16,46 @@
 
 #include <pfs.hpp>
 #include <pfs/stringlist.hpp>
-#include <pfs/griotte/global.hpp>
 #include <pfs/griotte/window.hpp>
 
 namespace pfs {
 namespace griotte {
 
+class window;
+
 namespace details {
-struct app;
+struct application;
 }
 
-DLL_API class app : public has_slots<>
+DLL_API class application : public has_slots<>
 {
-    static app * _s_self;
+    friend class window;
+    
+    static application * _s_self;
 
-    details::app * _d;
+    details::application * _d;
+    
     
 public: // static
-    static app & instance ()
+    static application & instance ()
     {
         PFS_ASSERT(_s_self);
         return *_s_self;
     }
         
 private:
-    app (const app &);
-    app & operator = (const app &);
+    application (const application &);
+    application & operator = (const application &);
 
 public:
-    app ();
-    ~app ();
+    application (string const & application_id = string());
+    ~application ();
 
-    bool ready ();
+    int run ();
     
 public: // signals
     signal1<string const &> emit_error;
-    signal0<> activated;
+    signal2<application &, window &> activated;
     
 private: // slots
     void on_error_default (string const & errstr);

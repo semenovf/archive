@@ -15,7 +15,6 @@
 #define __PFS_GRIOTTE_SCENE_HPP__
 
 #include <pfs/noncopyable.hpp>
-#include <pfs/griotte/global.hpp>
 
 namespace pfs {
 namespace griotte {

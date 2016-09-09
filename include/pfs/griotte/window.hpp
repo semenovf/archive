@@ -16,7 +16,6 @@
 
 #include <pfs/string.hpp>
 #include <pfs/sigslot.hpp>
-#include <pfs/griotte/global.hpp>
 
 namespace pfs {
 namespace griotte {
@@ -34,24 +33,17 @@ private:
     window & operator = (const window &);
 
 public:
-    window (int width, int height);
-    window (int width, int height, pfs::string const & title);
-    //TODO window (int width, int height, pfs::string const & title, GLFWmonitor* monitor, GLFWwindow* share);
-    
+    window ();
     virtual ~window ();
     
-    bool should_close ();
+    void show ();
     
 public: // slots
     void set_title (pfs::string const & title);
-    void repaint ();
+    void resize (int width, int height);
+    void move (int x, int y);
     void maximize ();
     void minimize ();
-    
-    void iconify ()
-    {
-        minimize();
-    }
 };
 
 }}

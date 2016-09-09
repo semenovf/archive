@@ -12,7 +12,7 @@
  */
 
 #include "GLFW/glfw3.h"
-#include "pfs/griotte/window.hpp"
+#include "pfs/griotte/activity.hpp"
 
 namespace pfs {
 namespace griotte {
@@ -43,21 +43,21 @@ struct window
 
 }
 
-window::window (int width, int height)
+activity::window (int width, int height)
     : _d(new details::window(width, height, _u8("Noname"), 0, 0))
 {}
 
-window::window (int width, int height, pfs::string const & title)
+activity::window (int width, int height, pfs::string const & title)
     : _d(new details::window(width, height, title, 0, 0))
 {}
 
-window::~window ()
+activity::~window ()
 {
     if (_d)
         delete _d;
 }
 
-bool window::should_close ()
+bool activity::should_close ()
 {
     if (_d->_native_window)
         return glfwWindowShouldClose(_d->_native_window) != 0;
@@ -65,13 +65,13 @@ bool window::should_close ()
     return true;
 }
 
-void window::set_title (pfs::string const & title)
+void activity::set_title (pfs::string const & title)
 {
     if (_d->_native_window)
         glfwSetWindowTitle(_d->_native_window, title.c_str());
 }
 
-void window::repaint ()
+void activity::repaint ()
 {
     if (_d->_native_window) {
         glClear(GL_COLOR_BUFFER_BIT);
@@ -79,14 +79,14 @@ void window::repaint ()
     }
 }
 
-void window::maximize () 
+void activity::maximize () 
 { 
     if (_d->_native_window) {
         glfwMaximizeWindow(_d->_native_window);
     }
 }
 
-void window::minimize () 
+void activity::minimize () 
 { 
     if (_d->_native_window) {
         glfwIconifyWindow(_d->_native_window);

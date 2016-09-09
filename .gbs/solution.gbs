@@ -18,8 +18,8 @@ project "pfs-griotte"
 -- END PROJECT
 
 -- BEGIN PROJECT
---project "demo-griotte-base"
---    include("demo-griotte-base/project.gbs")
+project "demo-griotte-base"
+    include("demo-griotte-base/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
