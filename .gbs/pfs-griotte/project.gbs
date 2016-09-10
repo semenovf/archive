@@ -11,7 +11,8 @@ defines       {  }
 includedirs   { 
       "../../include"
     , "../../../pfs/include"
-    , "../../../pfs-sys/include"
+--    , "../../../pfs-sys/include"
+    , "../../../pfs-types/include"
 }
 
 libdirs       { "../../../.build" }

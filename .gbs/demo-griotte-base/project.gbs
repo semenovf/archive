@@ -11,6 +11,7 @@ defines       {  }
 includedirs   {
       "../../include"
     , "../../../pfs/include"
+    , "../../../pfs-types/include"
 }
 libdirs       { "../../../.build" }
 files         { "../../src/demo-griotte-base/*.c", "../../src/demo-griotte-base/*.cpp" }

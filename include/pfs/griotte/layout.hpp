@@ -5,32 +5,26 @@
  */
 
 /* 
- * File:   scene.hpp
+ * File:   layout.hpp
  * Author: wladt
  *
- * Created on August 2, 2016, 4:36 PM
+ * Created on September 10, 2016, 2:18 PM
  */
 
-#ifndef __PFS_GRIOTTE_SCENE_HPP__
-#define __PFS_GRIOTTE_SCENE_HPP__
+#ifndef __PFS_GRIOTTE_LAYOUT_HPP__
+#define __PFS_GRIOTTE_LAYOUT_HPP__
 
 #include <pfs/griotte/node.hpp>
 
 namespace pfs {
 namespace griotte {
 
-class scene
+class layout : public node
 {
-private:
-    scene (scene const &);
-    scene & operator = (scene const &);
     
-public:
-    scene () {}
-    virtual ~scene () {}
 };
 
 }}
 
-#endif /* SCENE_HPP */
+#endif /* __PFS_GRIOTTE_LAYOUT_HPP__ */
 

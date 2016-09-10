@@ -6,24 +6,21 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using namespace pfs::griotte;
 
-struct main_activity : public pfs::has_slots<>
+void run (application & app, window & win)
 {
-    void run (pfs::griotte::application & app, pfs::griotte::window & win)
-    {
-        win.set_title(_u8("Hello"));
-        win.resize(400, 300);
-        win.show();
-    }
-};
-
+    PFS_UNUSED(app);
+    win.set_title(_u8("Hello"));
+    win.resize(400, 300);
+    win.move(position_type::center_xy);
+    win.show();
+}
+    
 int main (int argc, char * argv[])
 {
     PFS_UNUSED2(argc, argv);
     
-    main_activity act;
-    pfs::griotte::application app;
-    app.activated.connect(& act, & main_activity::run);
-    
+    pfs::griotte::application app(& run);
     return app.run();
 }

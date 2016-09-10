@@ -14,17 +14,23 @@ namespace griotte {
 
 application * application::_s_self = 0;
 
+inline void __activate_helper (application & app, window & win)
+{
+    app._activated(app, win);
+}
+
 static void __activate (GtkApplication * native_app, gpointer app_ptr)
 {
     PFS_UNUSED(native_app);
     
     application * app = static_cast<application *>(app_ptr);
     window main_win;
-    app->activated(*app, main_win);
+    __activate_helper(*app, main_win);
 }
 
-application::application (string const & application_id)
+application::application (activated_callback_type activated, string const & application_id)
     : _d(new details::application)
+    , _activated(activated)
 {
     PFS_ASSERT(_s_self == 0);
     _s_self = this;
@@ -38,7 +44,7 @@ application::application (string const & application_id)
         app_id = application_id;
     }
     
-    emit_error.connect(this, & application::on_error_default);
+    emit_error.connect(this, & application::default_print_error);
     
     if (! g_application_id_is_valid(app_id.c_str())) {
         emit_error(_u8("invalid application id"));
@@ -74,9 +80,9 @@ int application::run ()
     return -1;
 }
 
-void application::on_error_default (string const & errstr)
+void application::default_print_error (string const & errstr)
 {
-    std::cerr << "Error: " << errstr << std::endl;
+    std::cerr << "Error: " << errstr << std::endl;    
 }
 
 }}

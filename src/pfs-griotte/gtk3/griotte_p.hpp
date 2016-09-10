@@ -15,6 +15,7 @@
 #define __PFS_GRIOTTE_GRIOTTE_P_HPP__
 
 #include <gtk/gtk.h>
+#include <cairo/cairo.h>
 
 namespace pfs {
 namespace griotte {
@@ -29,6 +30,8 @@ struct application
 struct window
 {
     GtkWidget * win;
+    GtkWidget * drawing_area;
+    cairo_t   * context;
 };
 
 } // details
