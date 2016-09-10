@@ -8,8 +8,8 @@
 #ifndef __PFS_RECT_HPP__
 #define __PFS_RECT_HPP__
 
-#include "point.hpp"
-#include "dimension.hpp"
+#include <pfs/point.hpp>
+#include <pfs/dimension.hpp>
 
 namespace pfs {
 
@@ -55,7 +55,7 @@ public:
     T width ()  const { return _d.width(); }
     T height () const { return _d.height(); }
 
-    dimension_type dimension () const { return _d; }
+    dimension_type dim () const { return _d; }
     point_type pos () const { return _p; }
 
     void set_x (T const & x)    { _p.set_x(x); }
@@ -65,8 +65,8 @@ public:
 
     void set_width (T const & w)  { _d.set_width(w); }
     void set_height (T const & h) { _d.set_height(h); }
-    void set_dimension (T const & w, T const & h) { _d = dimension(w, h); }
-    void set_dimension (dimension_type const & d) { _d = d; }
+    void set_dim (T const & w, T const & h) { _d = dimension_type(w, h); }
+    void set_dim (dimension_type const & d) { _d = d; }
 
     void move_to (T const & x, T const & y) { _p = point_type(x, y); }
     void move_to (point_type const & p)     { _p = p; }

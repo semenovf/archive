@@ -4,11 +4,14 @@
     <df root="." name="0">
       <df name=".gbs">
       </df>
+      <df name=".settings">
+      </df>
       <df name="include">
         <df name="pfs">
           <in>color.hpp</in>
           <in>dimension.hpp</in>
           <in>point.hpp</in>
+          <in>position.hpp</in>
           <in>rect.hpp</in>
         </df>
       </df>
