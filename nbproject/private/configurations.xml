@@ -4,8 +4,6 @@
     <df root="." name="0">
       <df name=".gbs">
       </df>
-      <df name=".settings">
-      </df>
       <df name="include">
         <df name="pfs">
           <in>color.hpp</in>

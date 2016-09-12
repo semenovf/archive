@@ -22,29 +22,29 @@ public:
 	
 private:
     point_type     _p;
-    dimension_type _d;
+    dimension_type _dim;
 
 public:
     rect ()
-        : _p(ZeroValue, ZeroValue), _d(ZeroValue, ZeroValue)
+        : _p(ZeroValue, ZeroValue), _dim(ZeroValue, ZeroValue)
     {}
 
     rect (T const & x, T const & y, T const & w, T const & h)
-        : _p(x, y), _d(w, h)
+        : _p(x, y), _dim(w, h)
     {}
 
     rect (point_type const & p, dimension_type & d)
-        : _p(p), _d(d)
+        : _p(p), _dim(d)
     {}
 
     rect (rect const & other)
-        : _p(other._p), _d(other._d)
+        : _p(other._p), _dim(other._dim)
     {}
 
     rect & operator = (rect const & other)
     {
         _p = other._p;
-        _d = other._d;
+        _dim = other._dim;
         return *this;
     }
 
@@ -52,10 +52,10 @@ public:
     T y ()      const { return _p.y(); }
     T left ()   const { return _p.x(); }
     T top ()    const { return _p.y(); }
-    T width ()  const { return _d.width(); }
-    T height () const { return _d.height(); }
+    T width ()  const { return _dim.width(); }
+    T height () const { return _dim.height(); }
 
-    dimension_type dim () const { return _d; }
+    dimension_type dim () const { return _dim; }
     point_type pos () const { return _p; }
 
     void set_x (T const & x)    { _p.set_x(x); }
@@ -63,10 +63,10 @@ public:
     void set_left (T const & x) { _p.set_x(x); }
     void set_top (T const & y)  { _p.set_y(y); }
 
-    void set_width (T const & w)  { _d.set_width(w); }
-    void set_height (T const & h) { _d.set_height(h); }
-    void set_dim (T const & w, T const & h) { _d = dimension_type(w, h); }
-    void set_dim (dimension_type const & d) { _d = d; }
+    void set_width (T const & w)  { _dim.set_width(w); }
+    void set_height (T const & h) { _dim.set_height(h); }
+    void set_dim (T const & w, T const & h) { _dim = dimension_type(w, h); }
+    void set_dim (dimension_type const & d) { _dim = d; }
 
     void move_to (T const & x, T const & y) { _p = point_type(x, y); }
     void move_to (point_type const & p)     { _p = p; }
@@ -81,7 +81,25 @@ public:
     {
         _p = point_type(_p.x() + T(dx), _p.y() + T(dy));
     }
+    
+    template <typename T1, T1 ZeroValue1>
+    friend bool operator == (rect<T1, ZeroValue1> const & lhs, rect<T1, ZeroValue1> const & rhs);
+    
+    template <typename T1, T1 ZeroValue1>
+    friend bool operator != (rect<T1, ZeroValue1> const & lhs, rect<T1, ZeroValue1> const & rhs);
 };
+
+template <typename T, T ZeroValue>
+inline bool operator == (rect<T, ZeroValue> const & lhs, rect<T, ZeroValue> const & rhs)
+{
+    return lhs._p == rhs._p && lhs._dim == rhs._dim;
+}
+
+template <typename T, T ZeroValue>
+inline bool operator != (rect<T, ZeroValue> const & lhs, rect<T, ZeroValue> const & rhs)
+{
+    return ! operator == (lhs, rhs);
+}
 
 } // pfs
 

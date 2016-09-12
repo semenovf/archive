@@ -41,7 +41,25 @@ public:
 
     void set_width (T const & w) { _w = w; }
     void set_height (T const & h) { _h = h; }
+    
+    template <typename T1, T1 ZeroValue1>
+    friend bool operator == (dimension<T1, ZeroValue1> const & lhs, dimension<T1, ZeroValue1> const & rhs);
+    
+    template <typename T1, T1 ZeroValue1>
+    friend bool operator != (dimension<T1, ZeroValue1> const & lhs, dimension<T1, ZeroValue1> const & rhs);
 };
+
+template <typename T, T ZeroValue>
+inline bool operator == (dimension<T, ZeroValue> const & lhs, dimension<T, ZeroValue> const & rhs)
+{
+    return lhs._w == rhs._w && lhs._h == rhs._h;
+}
+
+template <typename T, T ZeroValue>
+inline bool operator != (dimension<T, ZeroValue> const & lhs, dimension<T, ZeroValue> const & rhs)
+{
+    return ! operator == (lhs, rhs);
+}
 
 } // pfs
 

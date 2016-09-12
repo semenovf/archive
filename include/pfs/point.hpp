@@ -41,7 +41,25 @@ public:
 
     void set_x (T x) { _x = x; }
     void set_y (T y) { _y = y; }
+    
+    template <typename T1, T1 ZeroValue1>
+    friend bool operator == (point<T1, ZeroValue1> const & lhs, point<T1, ZeroValue1> const & rhs);
+    
+    template <typename T1, T1 ZeroValue1>
+    friend bool operator != (point<T1, ZeroValue1> const & lhs, point<T1, ZeroValue1> const & rhs);
 };
+
+template <typename T, T ZeroValue>
+inline bool operator == (point<T, ZeroValue> const & lhs, point<T, ZeroValue> const & rhs)
+{
+    return lhs._x == rhs._x && lhs._y == rhs._y;
+}
+
+template <typename T, T ZeroValue>
+inline bool operator != (point<T, ZeroValue> const & lhs, point<T, ZeroValue> const & rhs)
+{
+    return ! operator == (lhs, rhs);
+}
 
 } // pfs
 
