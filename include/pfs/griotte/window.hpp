@@ -50,7 +50,7 @@ public:
     {
         return _scene;
     }
-    
+
 public: // slots
     void set_title (pfs::string const & title);
     void resize (int width, int height);

@@ -14,6 +14,9 @@ void run (application & app, window & win)
     win.set_title(_u8("Hello"));
     win.resize(400, 300);
     win.move(position_type::center_xy);
+    
+    scene & sc = win.get_scene();
+    
     win.show();
 }
     

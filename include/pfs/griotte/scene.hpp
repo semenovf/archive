@@ -14,37 +14,36 @@
 #ifndef __PFS_GRIOTTE_SCENE_HPP__
 #define __PFS_GRIOTTE_SCENE_HPP__
 
+#include <pfs/griotte/types.hpp>
 #include <pfs/griotte/node.hpp>
 
 namespace pfs {
 namespace griotte {
 
+class window;
+
+namespace details {
+struct scene;
+}
+
 class scene
 {
-    static rect_type s_empty_region;
+    friend class window;
     
-    rect_type _invalid_region;
+    details::scene * _d;
     
 private:
     scene (scene const &);
     scene & operator = (scene const &);
     
+protected:
+    scene ();
+    
 public:
-    scene () {}
-    virtual ~scene () {}
+    virtual ~scene ();
     
-    bool is_invalid () const
-    {
-        if (_invalid_region != s_empty_region)
-            return true;
-        return false;
-    }
-    
-    void invalidate (unit_type x, unit_type y, unit_type w, unit_type h)
-    {
-        _invalid_region = rect(x, y, w, h);
-    }
-    
+    bool is_invalid () const;
+    void invalidate (unit_type x, unit_type y, unit_type w, unit_type h);
     void repaint ();
 };
 

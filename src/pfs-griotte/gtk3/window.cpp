@@ -14,7 +14,7 @@
 #include <gtk/gtk.h>
 #include "pfs/griotte/griotte.hpp"
 #include "pfs/griotte/window.hpp"
-#include "griotte_p.hpp"
+#include "internals.hpp"
 
 namespace pfs {
 namespace griotte {
@@ -45,8 +45,7 @@ window::window ()
 
 window::~window ()
 {
-    if (_d)
-        delete _d;
+    delete _d;
 }
 
 void window::show ()

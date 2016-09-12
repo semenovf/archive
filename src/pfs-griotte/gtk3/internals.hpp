@@ -5,7 +5,7 @@
  */
 
 /* 
- * File:   griotte_p.hpp
+ * File:   internals.hpp
  * Author: wladt
  *
  * Created on September 9, 2016, 5:00 PM
@@ -31,7 +31,6 @@ struct window
 {
     GtkWidget * win;
     GtkWidget * drawing_area;
-    cairo_t   * context;
 };
 
 } // details

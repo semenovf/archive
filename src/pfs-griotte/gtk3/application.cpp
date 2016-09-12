@@ -7,7 +7,7 @@
 #include <iostream>
 #include "pfs/griotte/window.hpp"
 #include "pfs/griotte/application.hpp"
-#include "griotte_p.hpp"
+#include "internals.hpp"
 
 namespace pfs {
 namespace griotte {
