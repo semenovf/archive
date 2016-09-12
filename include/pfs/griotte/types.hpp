@@ -22,10 +22,11 @@
 namespace pfs {
 namespace griotte {
 
-typedef pfs::point<int> point_type;
-typedef pfs::dimension<int> dimension_type;
-typedef pfs::rect<int> rect_type;
-typedef pfs::position position_type;
+typedef int unit_type;
+typedef pfs::point<unit_type>     point_type;
+typedef pfs::dimension<unit_type> dimension_type;
+typedef pfs::rect<unit_type>      rect_type;
+typedef pfs::position             position_type;
 
 }}
 

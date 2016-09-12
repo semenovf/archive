@@ -21,6 +21,10 @@ namespace griotte {
 
 class scene
 {
+    static rect_type s_empty_region;
+    
+    rect_type _invalid_region;
+    
 private:
     scene (scene const &);
     scene & operator = (scene const &);
@@ -28,6 +32,20 @@ private:
 public:
     scene () {}
     virtual ~scene () {}
+    
+    bool is_invalid () const
+    {
+        if (_invalid_region != s_empty_region)
+            return true;
+        return false;
+    }
+    
+    void invalidate (unit_type x, unit_type y, unit_type w, unit_type h)
+    {
+        _invalid_region = rect(x, y, w, h);
+    }
+    
+    void repaint ();
 };
 
 }}

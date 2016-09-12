@@ -19,10 +19,6 @@
 namespace pfs {
 namespace griotte {
 
-namespace details {
-class canvas;
-}
-
 class canvas : public widget
 {
 private:

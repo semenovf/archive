@@ -16,8 +16,6 @@
 #include "pfs/griotte/window.hpp"
 #include "griotte_p.hpp"
 
-#include <iostream>
-
 namespace pfs {
 namespace griotte {
 
@@ -26,8 +24,9 @@ static gboolean __repaint (GtkWidget * native_widget, cairo_t * cr, gpointer win
     window * win = static_cast<window *>(win_ptr);
     scene & sc = win->get_scene();
     
-    // TODO repaint
-    std::cout << "*** REPAINT ***" << std::endl;
+    if (sc.is_invalid()) {
+        sc.repaint();
+    }
     
     return FALSE;
 }

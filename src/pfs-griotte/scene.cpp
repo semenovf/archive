@@ -13,6 +13,11 @@
 
 #include "pfs/griotte/scene.hpp"
 
+#include <iostream>
+
+namespace pfs {
+namespace griotte {
+
 //scene::scene ()
 //{
 //}
@@ -25,3 +30,12 @@
 //{
 //}
 
+void scene::repaint ()
+{
+    // TODO repaint
+    std::cout << "*** REPAINT ***" << std::endl;
+
+    _invalid_region = s_empty_region;
+}
+
+}}
