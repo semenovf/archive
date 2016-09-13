@@ -15,6 +15,7 @@
 #include "pfs/griotte/griotte.hpp"
 #include "pfs/griotte/window.hpp"
 #include "internals.hpp"
+#include "../cairo/internals.hpp"
 
 namespace pfs {
 namespace griotte {
@@ -104,6 +105,12 @@ void window::maximize ()
 void window::minimize () 
 { 
     gtk_window_iconify(GTK_WINDOW(_d->win));
+}
+
+inline scene & window::get_scene (void * cr)
+{
+    _scene._d->context = static_cast<cairo_t *>(cr);
+    return _scene;
 }
 
 }}

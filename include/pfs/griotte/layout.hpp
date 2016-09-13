@@ -14,14 +14,20 @@
 #ifndef __PFS_GRIOTTE_LAYOUT_HPP__
 #define __PFS_GRIOTTE_LAYOUT_HPP__
 
-#include <pfs/griotte/node.hpp>
-
 namespace pfs {
 namespace griotte {
 
-class layout : public node
+class container;
+
+class layout
 {
+    friend class container;
     
+protected:    
+    container * _parent;
+    
+public:
+    layout (container & cont);
 };
 
 }}

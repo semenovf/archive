@@ -15,7 +15,6 @@
 #define __PFS_GRIOTTE_SCENE_HPP__
 
 #include <pfs/griotte/types.hpp>
-#include <pfs/griotte/node.hpp>
 
 namespace pfs {
 namespace griotte {

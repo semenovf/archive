@@ -14,14 +14,20 @@
 #ifndef __PFS_GRIOTTE_WIDGET_HPP__
 #define __PFS_GRIOTTE_WIDGET_HPP__
 
-#include <pfs/griotte/node.hpp>
-
 namespace pfs {
 namespace griotte {
 
-class widget : public node
+class container;
+
+class widget
 {
+    friend class container;
     
+protected:    
+    container * _parent;
+    
+public:
+    widget () : _parent(0) {}
 };
 
 }}

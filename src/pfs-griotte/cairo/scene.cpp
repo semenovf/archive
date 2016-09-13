@@ -11,25 +11,15 @@
  * Created on August 2, 2016, 4:36 PM
  */
 
-#include <cairo/cairo.h>
 #include "pfs/griotte/scene.hpp"
+#include "internals.hpp"
 
 #include <iostream>
 
 namespace pfs {
 namespace griotte {
 
-namespace details {
-
-struct scene 
-{
-    cairo_t * context;    
-    rect_type invalid_region;
-};
-
-rect_type empty_region;
-
-}
+rect_type details::empty_region;
 
 scene::scene ()
     : _d(new details::scene)

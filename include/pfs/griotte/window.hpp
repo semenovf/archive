@@ -26,7 +26,7 @@ namespace details {
 struct window;
 }
 
-DLL_API class window : public pfs::has_slots<>
+DLL_API class window : public has_slots<>
 {
     details::window * _d;
     scene _scene;
@@ -50,6 +50,10 @@ public:
     {
         return _scene;
     }
+
+    
+public: // internal use only methods
+    scene & get_scene (void *);
 
 public: // slots
     void set_title (pfs::string const & title);

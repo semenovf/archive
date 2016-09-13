@@ -16,6 +16,9 @@ void run (application & app, window & win)
     win.move(position_type::center_xy);
     
     scene & sc = win.get_scene();
+//    canvas & canvas1 = canvas::create(sc);
+//    canvas & canvas2 = canvas::create(sc);
+//  button * button = cont.create<button>();
     
     win.show();
 }
