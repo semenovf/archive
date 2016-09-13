@@ -47,7 +47,7 @@ public:
     	: base_class(alloc)
 	{}
 
-#if __cplusplus >= 201103L
+//#if __cplusplus >= 201103L
     /**
      *  @brief  Creates a %list with default constructed elements.
      *  @param  n  The number of elements to initially create.
