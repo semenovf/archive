@@ -4,15 +4,11 @@
  * and open the template in the editor.
  */
 
-#include "pfs/griotte/container.hpp"
-#include "pfs/griotte/layout.hpp"
+/* 
+ * File:   vertical_layout.cpp
+ * Author: wladt
+ * 
+ * Created on September 14, 2016, 12:15 PM
+ */
 
-namespace pfs {
-namespace griotte {
-
-layout::layout (container & cont)
-{
-    cont.set(this);
-}
-
-}}
+#include "pfs/griotte/vertical_layout.hpp"

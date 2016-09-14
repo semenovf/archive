@@ -17,6 +17,10 @@
 #include <pfs.hpp>
 #include <pfs/griotte/window.hpp>
 #include <pfs/griotte/application.hpp>
+#include <pfs/griotte/scene.hpp>
+#include <pfs/griotte/widget.hpp>
+#include <pfs/griotte/container.hpp>
+#include <pfs/griotte/layout.hpp>
 
 #endif /* __PFS_GRIOTTE_HPP__ */
 

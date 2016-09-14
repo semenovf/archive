@@ -6,19 +6,36 @@
 
 #include <pfs.hpp>
 #include "pfs/griotte/container.hpp"
+#include <pfs/griotte/layout.hpp>
 
 namespace pfs {
 namespace griotte {
 
-void container::add (widget * w)
+container::~container ()
 {
-    PFS_ASSERT_X(w->_parent == 0, "Widget has parent already");
+    widget_iterator it = _widgets.begin();
+    widget_iterator it_end = _widgets.end();
+    
+    for (; it != it_end; ++it) {
+        delete *it;
+    }
+}
+
+void container::add_widget (widget * w)
+{
+    w->_parent = this;
     _widgets.push_back(w);
 }
 
-void container::set (layout *)
+void container::set_layout (layout * l)
 {
+    if (_layout) {
+        delete _layout;
+        _layout = 0;
+    }
     
+    l->_parent = this;
+    _layout = l;
 }
 
 }}

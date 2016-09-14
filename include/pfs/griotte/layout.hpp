@@ -26,8 +26,13 @@ class layout
 protected:    
     container * _parent;
     
+private:
+    layout (layout const &);
+    layout & operator = (layout const &);
+
 public:
-    layout (container & cont);
+    layout () : _parent(0) {}
+    virtual ~layout () {}
 };
 
 }}

@@ -16,7 +16,6 @@
 
 #include <pfs/list.hpp>
 #include <pfs/griotte/widget.hpp>
-//#include <pfs/griotte/layout.hpp>
 
 namespace pfs {
 namespace griotte {
@@ -32,29 +31,44 @@ class layout;
 
 class container : public widget
 {
-    friend class widget;
-    
 public:
     typedef pfs::list<widget *> list_type;
-//    typedef list_type::iterator iterator;
-//    typedef list_type::const_iterator const_iterator;
+    typedef list_type::iterator widget_iterator;
+    typedef list_type::const_iterator widget_const_iterator;
     
 protected:
     pfs::list<widget *> _widgets;
     layout * _layout;
     
 public:
+    virtual ~container ();
+    
     template <typename _WidgetType>
-    _WidgetType & create ()
-    {
-        _WidgetType * w = new _WidgetType;
-        w._parent = this;
-        return *w;
-    }
+    _WidgetType & create_widget ();
+    
+    template <typename _LayoutType>
+    _LayoutType & create_layout ();
     
 protected:
-    void set (layout *);
+    void add_widget (widget *);
+    void set_layout (layout *);
 };
+
+template <typename _WidgetType>
+_WidgetType & container::create_widget ()
+{
+    _WidgetType * w = new _WidgetType;
+    this->add_widget(w);
+    return *w;
+}
+    
+template <typename _LayoutType>
+_LayoutType & container::create_layout ()
+{
+    _LayoutType * l = new _LayoutType;
+    this->set_layout(l);
+    return *l;
+}
 
 }}
 

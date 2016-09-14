@@ -4,10 +4,11 @@
  * and open the template in the editor.
  */
 
-#include "pfs/griotte/container.hpp"
-#include "pfs/griotte/widget.hpp"
+/* 
+ * File:   push_button.cpp
+ * Author: wladt
+ * 
+ * Created on September 14, 2016, 12:09 PM
+ */
 
-namespace pfs {
-namespace griotte {
-
-}}
+#include "pfs/griotte/push_button.hpp"
