@@ -179,6 +179,19 @@ public:
     	return *this;
     }
 #endif
+    
+#if __cplusplus < 201103L
+	const_iterator cbegin () const
+	{
+		return this->begin();
+	}
+
+	const_iterator cend () const
+	{
+		return this->end();
+	}
+#endif
+
 
 };
 
