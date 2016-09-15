@@ -52,13 +52,18 @@ public:
         _rect = rect;
     }
     
+    /**
+     * @brief Checks if point @a p is inside the widget's bounds (rectangle by default).
+     * 
+     * @param p Given point.
+     * @return @c true if point @a p is inside the rectangle, @c false otherwise
+     * 
+     * @note Must be reimplemented if widget has bounds ... (TODO finish the sentence)
+     */
     virtual bool is_inner_point (point_type const & p) const
     {
-        pfs::is_inner_point(p);
+        _rect.is_inner_point(p);
     }
-    
-protected:
-    void validate_geometery (rect_type & rect);
 };
 
 }}

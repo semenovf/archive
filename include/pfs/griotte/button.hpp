@@ -24,8 +24,8 @@ class button : public widget
 protected:
     
 public:
-    push_button () : widget() {}
-    virtual ~push_button () {}
+    button () : widget() {}
+    virtual ~button () {}
 };
 
 }}
