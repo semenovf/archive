@@ -82,7 +82,7 @@ public:
         _p = point_type(_p.x() + T(dx), _p.y() + T(dy));
     }
     
-    bool is_inner_point (point_type const & p);
+    bool is_inner_point (point_type const & p) const;
     
     template <typename T1, T1 ZeroValue1>
     friend bool operator == (rect<T1, ZeroValue1> const & lhs, rect<T1, ZeroValue1> const & rhs);
@@ -92,7 +92,7 @@ public:
 };
 
 template <typename T, T ZeroValue>
-inline bool rect::is_inner_point (point_type const & p)
+inline bool rect<T, ZeroValue>::is_inner_point (point_type const & p) const
 {
     return p.x() >= _p.x()
             && p.y() >= _p.y()
