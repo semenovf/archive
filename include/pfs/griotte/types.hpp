@@ -28,6 +28,20 @@ typedef pfs::dimension<unit_type> dimension_type;
 typedef pfs::rect<unit_type>      rect_type;
 typedef pfs::position             position_type;
 
+enum font_slant_enum
+{
+      font_slant_normal
+    , font_slant_italic
+    , font_slant_oblique
+};
+
+enum font_weight_enum
+{
+      font_weight_normal
+    , font_weight_bold
+};
+
+
 }}
 
 #endif /* __PFS_GRIOTTE_TYPES_HPP__ */

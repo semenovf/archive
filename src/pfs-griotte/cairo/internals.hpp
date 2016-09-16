@@ -24,8 +24,13 @@ namespace details {
 
 struct scene 
 {
-    cairo_t * context;    
+    cairo_t * context;
     rect_type invalid_region;
+};
+
+struct painter 
+{
+    cairo_t * context;
 };
 
 extern rect_type empty_region;

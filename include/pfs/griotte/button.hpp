@@ -14,12 +14,12 @@
 #ifndef __PFS_GRIOTTE_BUTTON_HPP__
 #define __PFS_GRIOTTE_BUTTON_HPP__
 
-#include <pfs/griotte/widget.hpp>
+#include <pfs/griotte/container.hpp>
 
 namespace pfs {
 namespace griotte {
 
-class button : public widget
+class button : public container
 {
 protected:
     
