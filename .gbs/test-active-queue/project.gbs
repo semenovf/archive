@@ -1,20 +1,21 @@
 --************************************************************
 --* Generated automatically by `gbs'
---* Command: `gbs prj --create --type=test --depends=pfs --name=test-functor'
---* Date:    Mon Aug 17 21:46:34 2015
+--* Command: `gbs prj --create --type=test --depends=pfs --name=test-active-queue'
+--* Date:    Thu Sep 22 16:26:35 2016
 --************************************************************
 
 kind          "ConsoleApp"
 language      "C++"
-targetname    "test-functor"
-includedirs   { "../../include", "../../../pfs-test/include" }
+targetname    "test-active-queue"
+defines       {  }
+includedirs   { "../../include" }
 libdirs       { "../../../.build" }
-files { "../../tests/test-functor/**.c", "../../tests/test-functor/**.cpp" }
+files         { "../../tests/test-active-queue/*.c", "../../tests/test-active-queue/*.cpp" }
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
     defines      { "DEBUG" }
-    objdir       "../../../.build/pfs/test-functor/debug"
+    objdir       "../../../.build/pfs/test-active-queue/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
     links        { "pfs-test-d", "pfs-d" }
@@ -22,11 +23,19 @@ configuration "debug"
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
-    objdir       "../../../.build/pfs/test-functor/release"
+    objdir       "../../../.build/pfs/test-active-queue/release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test", "pfs" }
 
 dependson { "pfs" }
 
+
 filter "action:gmake"
-    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+

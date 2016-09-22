@@ -53,8 +53,8 @@ project "test-fsm"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-functor"
-    include("test-functor/project.gbs")
+project "test-binder"
+    include("test-binder/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT
@@ -190,4 +190,9 @@ project "demo-cv"
 -- BEGIN PROJECT
 project "demo-utc-time"
     include("demo-utc-time/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-active-queue"
+    include("test-active-queue/project.gbs")
 -- END PROJECT

@@ -4,10 +4,9 @@
  * @date Dec 5, 2013
  */
 
-
 #include <pfs/test/test.hpp>
 #include <pfs.hpp>
-#include <pfs/functor.hpp>
+#include <pfs/binder.hpp>
 #include <iostream>
 
 static int func1_var = 0;
@@ -43,15 +42,15 @@ public:
 
 void check1 ()
 {
-	pfs::functor0<void> f1(& func1);
+	pfs::binder_function0<void> f1(& func1);
 	f1();
 	TEST_OK(func1_var == 1234);
 
-	pfs::functor2<int, int, int> f2(& func2, 10, 20);
+	pfs::binder_function2<int, int, int> f2(& func2, 10, 20);
 	TEST_OK(f2() == 30);
 
 	A p;
-	pfs::functor_method1<A, int, int> f3(& p, & A::num, 1234);
+	pfs::binder_method1<A, int, int> f3(& p, & A::num, 1234);
 	TEST_OK(f3() == 1234);
 }
 
