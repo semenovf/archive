@@ -35,8 +35,8 @@ private:
     painter & operator = (painter const &);
     
 public:
-    painter () {}
-    virtual ~painter () {}
+    painter ();
+    virtual ~painter ();
     
     void set_source_rgb (double red, double green, double blue);
     

@@ -17,21 +17,23 @@
 namespace pfs {
 namespace griotte {
 
-class container;
+class widget;
 
 class layout
 {
-    friend class container;
+    friend class widget;
     
 protected:    
-    container * _parent;
+    widget * _parent;
     
 private:
     layout (layout const &);
     layout & operator = (layout const &);
 
-public:
+protected:
     layout () : _parent(0) {}
+    
+public:
     virtual ~layout () {}
 };
 

@@ -20,7 +20,7 @@ namespace pfs {
 namespace griotte {
 
 class window;
-class container;
+class widget;
 
 namespace details {
 struct scene;
@@ -31,7 +31,7 @@ class scene
     friend class window;
     
     details::scene * _d;
-    container *      _root_container;
+    widget * _root_widget;
     
 private:
     scene (scene const &);
@@ -43,7 +43,7 @@ protected:
 public:
     virtual ~scene ();
     
-    container & get_root_container ();
+    widget & root_widget ();
     bool is_invalid () const;
     void invalidate (unit_type x, unit_type y, unit_type w, unit_type h);
     void repaint ();

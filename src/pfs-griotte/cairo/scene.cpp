@@ -12,8 +12,8 @@
  */
 
 #include "pfs/griotte/scene.hpp"
+#include "pfs/griotte/widget.hpp"
 #include "internals.hpp"
-#include "pfs/griotte/container.hpp"
 
 #include <iostream>
 
@@ -24,7 +24,7 @@ rect_type details::empty_region;
 
 scene::scene ()
     : _d(new details::scene)
-    , _root_container(0)
+    , _root_widget(0)
 {
     _d->context = 0;
     _d->invalid_region = details::empty_region;
@@ -33,15 +33,18 @@ scene::scene ()
 scene::~scene ()
 {
     delete _d;
+    
+    if (_root_widget)
+        delete _root_widget;
 }
 
-container & scene::get_root_container ()
+widget & scene::root_widget ()
 {
-    if (! _root_container) {
-        _root_container = new container;
+    if (! _root_widget) {
+        _root_widget = new widget;
     }
     
-    return *_root_container;
+    return *_root_widget;
 }
 
 bool scene::is_invalid () const

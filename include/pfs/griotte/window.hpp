@@ -53,7 +53,7 @@ public:
 
     
 public: // internal use only methods
-    scene & get_scene (void *);
+    scene & init_scene (void *);
 
 public: // slots
     void set_title (pfs::string const & title);

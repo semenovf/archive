@@ -14,7 +14,7 @@ void run (application & app, window & win)
 {
     PFS_UNUSED(app);
     scene & sc = win.get_scene();
-    container & root = sc.get_root_container();
+    widget & root = sc.root_widget();
     
     vertical_layout & vlayout1 = root.create_layout<vertical_layout>();
     

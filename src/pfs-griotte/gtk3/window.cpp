@@ -23,11 +23,11 @@ namespace griotte {
 static gboolean __repaint (GtkWidget * native_widget, cairo_t * cr, gpointer win_ptr)
 {
     window * win = static_cast<window *>(win_ptr);
-    scene & sc = win->get_scene();
+    scene & sc = win->init_scene(cr);
     
-    if (sc.is_invalid()) {
-        sc.repaint();
-    }
+//    if (sc.is_invalid()) {
+//        sc.repaint();
+//    }
     
     return FALSE;
 }
@@ -107,7 +107,7 @@ void window::minimize ()
     gtk_window_iconify(GTK_WINDOW(_d->win));
 }
 
-inline scene & window::get_scene (void * cr)
+inline scene & window::init_scene (void * cr)
 {
     _scene._d->context = static_cast<cairo_t *>(cr);
     return _scene;
