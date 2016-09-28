@@ -22,7 +22,7 @@ EXTERN_C_END
 #ifndef NDEBUG
 #	define PFS_ASSERT(expr) if (!(expr)) { pfs_assert(__TFILE__, __LINE__, #expr); }
 #	define PFS_ASSERT_X(expr,text) if (!(expr)) { pfs_assert(__TFILE__, __LINE__, text); }
-#	define PFS_BACKTRACE(text) pfs_assert(__TFILE__, __LINE__, text)
+#	define PFS_BACKTRACE(text) pfs_backtrace(__TFILE__, __LINE__, text)
 #else
 #	define PFS_ASSERT(x)
 #	define PFS_ASSERT_X(x,y)
