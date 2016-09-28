@@ -13,17 +13,20 @@
 EXTERN_C_BEGIN
 
 void pfs_assert (const char * file, int line, const char * text);
-void pfs_check_warn   (const char * file, int line, const char * text);
-void pfs_check_error  (const char * file, int line, const char * text);
+void pfs_backtrace (const char * file, int line, const char * text);
+void pfs_check_warn (const char * file, int line, const char * text);
+void pfs_check_error (const char * file, int line, const char * text);
 
 EXTERN_C_END
 
 #ifndef NDEBUG
 #	define PFS_ASSERT(expr) if (!(expr)) { pfs_assert(__TFILE__, __LINE__, #expr); }
 #	define PFS_ASSERT_X(expr,text) if (!(expr)) { pfs_assert(__TFILE__, __LINE__, text); }
+#	define PFS_BACKTRACE(text) pfs_assert(__TFILE__, __LINE__, text)
 #else
-#	define PFS_ASSERT(x) PFS_UNUSED(x)
-#	define PFS_ASSERT_X(x,y) PFS_UNUSED(x)
+#	define PFS_ASSERT(x)
+#	define PFS_ASSERT_X(x,y)
+#	define PFS_BACKTRACE(text)
 #endif /* !NDEBUG */
 
 #define PFS_ASSERT_FORMAT(x)      PFS_ASSERT(x)
