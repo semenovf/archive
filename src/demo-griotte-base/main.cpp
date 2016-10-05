@@ -8,35 +8,36 @@
 using std::cout;
 using std::cerr;
 using std::endl;
-using namespace pfs::griotte;
+//using namespace pfs::griotte;
 
-void run (application & app, window & win)
-{
-    PFS_UNUSED(app);
-    scene & sc = win.get_scene();
-    widget & root = sc.root_widget();
-    
-    vertical_layout & vlayout1 = root.create_layout<vertical_layout>();
-    
-    push_button & button1 = root.create_widget<push_button>();
-    push_button & button2 = root.create_widget<push_button>();
-    push_button & button3 = root.create_widget<push_button>();
-    
-    vlayout1.add_widget(button1);
-    vlayout1.add_widget(button2);
-    vlayout1.add_widget(button3);
-
-    win.set_title(_u8("Hello"));
-    win.resize(400, 300);
-    win.move(position_type::center_xy);
-    
-    win.show();
-}
+//void run (application & app, window & win)
+//{
+//    PFS_UNUSED(app);
+//    scene & sc = win.get_scene();
+//    widget & root = sc.root_widget();
+//    
+//    vertical_layout & vlayout1 = root.create_layout<vertical_layout>();
+//    
+//    push_button & button1 = root.create_widget<push_button>();
+//    push_button & button2 = root.create_widget<push_button>();
+//    push_button & button3 = root.create_widget<push_button>();
+//    
+//    vlayout1.add_widget(button1);
+//    vlayout1.add_widget(button2);
+//    vlayout1.add_widget(button3);
+//}
     
 int main (int argc, char * argv[])
 {
     PFS_UNUSED2(argc, argv);
     
-    pfs::griotte::application app(& run);
+    pfs::griotte::application app;
+    pfs::griotte::window win;
+    
+    win.set_title(_u8("Hello"));
+    win.resize(400, 300);
+    win.move(pfs::griotte::position_type::center_xy);
+    win.show();
+    
     return app.run();
 }

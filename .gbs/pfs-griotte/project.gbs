@@ -8,7 +8,7 @@ kind          "SharedLib"
 language      "C++"
 targetname    "pfs-griotte"
 defines       {  }
-includedirs   { 
+includedirs   {
       "../../include"
     , "../../../pfs/include"
 --    , "../../../pfs-sys/include"
@@ -17,6 +17,14 @@ includedirs   {
 
 libdirs       { "../../../.build" }
 files         { "../../src/pfs-griotte/*.cpp", "../../include/**.hpp", "../../include/**.h" }
+
+--
+-- Choose one of
+--
+include("qt4-global.gbs")
+--include("qt5-global.gbs")
+--include("gtk3-global.gbs")
+--include("glfw-global.gbs")
 
 configuration "debug"
     flags        { "FatalWarnings", "Symbols" }
@@ -46,5 +54,7 @@ filter { "debug", "action:gmake" }
 --
 -- Choose one of
 --
-include("gtk3.gbs")
+include("qt4.gbs")
+--include("qt5.gbs")
+--include("gtk3.gbs")
 --include("glfw.gbs")

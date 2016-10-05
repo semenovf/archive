@@ -14,24 +14,25 @@
 #ifndef __PFS_GRIOTTE_SCENE_HPP__
 #define __PFS_GRIOTTE_SCENE_HPP__
 
+#include <pfs/list.hpp>
 #include <pfs/griotte/types.hpp>
 
 namespace pfs {
 namespace griotte {
 
-class window;
 class widget;
 
-namespace details {
-struct scene;
-}
+struct node
+{
+    node * parent;
+    list<node> children;
+    
+    widget * w;
+};
 
 class scene
 {
-    friend class window;
-    
-    details::scene * _d;
-    widget * _root_widget;
+    node _root;
     
 private:
     scene (scene const &);
@@ -42,11 +43,6 @@ protected:
     
 public:
     virtual ~scene ();
-    
-    widget & root_widget ();
-    bool is_invalid () const;
-    void invalidate (unit_type x, unit_type y, unit_type w, unit_type h);
-    void repaint ();
 };
 
 }}

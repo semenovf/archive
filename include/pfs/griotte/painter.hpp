@@ -26,32 +26,34 @@ struct painter;
 
 class painter
 {
-    friend class window;
-    
     details::painter * _d;
     
 private:
+// TODO impl bellow macro
+//    pfs_disable_copy_constructor(painter);
+//    pfs_disable_copy_operator(painter);
+    
     painter (painter const &);
     painter & operator = (painter const &);
     
 public:
-    painter ();
-    virtual ~painter ();
-    
-    void set_source_rgb (double red, double green, double blue);
-    
-    void move_to (double x, double y);
-    
-    void select_font_face (string const & family
-            , font_slant_enum slant
-            , font_weight_enum weight);
-
-    void set_font_size (double size);
-
-    void show_text (string const & text);    
-};
-
-}}
+//    painter (paint_device * pdevice);
+    ~painter ();
+//    
+//    void set_source_rgb (double red, double green, double blue);
+//    
+//    void move_to (double x, double y);
+//    
+//    void select_font_face (string const & family
+//            , font_slant_enum slant
+//            , font_weight_enum weight);
+//
+//    void set_font_size (double size);
+//
+//    void show_text (string const & text);    
+//};
+//
+//}}
 
 #endif /* __PFS_GRIOTTE_PAINTER_HPP__ */
 

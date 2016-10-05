@@ -1,10 +1,4 @@
 filter "action:gmake"
-    files {
-          "../../src/pfs-griotte/gtk3/*.cpp"
-	, "../../src/pfs-griotte/gtk3/*.hpp"
-	, "../../src/pfs-griotte/cairo/*.cpp" 
-    }
-
     buildoptions {
 	  "`pkg-config --cflags cairo`"
 	, "`pkg-config --cflags gtk+-3.0`" 

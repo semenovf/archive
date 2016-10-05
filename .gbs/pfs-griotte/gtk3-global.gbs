@@ -1,0 +1,5 @@
+files {
+      "../../src/pfs-griotte/gtk3/*.cpp"
+    , "../../src/pfs-griotte/gtk3/*.hpp"
+    , "../../src/pfs-griotte/cairo/*.cpp" 
+}

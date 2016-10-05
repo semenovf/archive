@@ -20,25 +20,24 @@
 namespace pfs {
 namespace griotte {
 
-class window;
-
 namespace details {
 struct application;
 }
 
 DLL_API class application : public has_slots<>
 {
-    friend class window;
-    friend void __activate_helper (application &, window &);
+//    friend class window;
+//    friend void __activate_helper (application &, window &);
     
-public:
-    typedef void (* activated_callback_type)(application &, window &);
-    
+//public:
+//    typedef void (* activated_callback_type)(application &, window &);
+
 private:
     static application * _s_self;
 
-    details::application *  _d;
-    activated_callback_type _activated;
+private:
+    details::application * _d;
+//    activated_callback_type _activated;
     
 public: // static
     static application & instance ()
@@ -52,16 +51,17 @@ private:
     application & operator = (const application &);
 
 public:
-    application (activated_callback_type activated, string const & application_id = string());
+//    application (activated_callback_type activated, string const & application_id = string());
+    application ();
     ~application ();
 
     int run ();
     
-public:
-    signal1<string const &> emit_error;
-    
-private:    
-    void default_print_error (string const & errstr);
+//public:
+//    signal1<string const &> emit_error;
+//    
+//private:    
+//    void default_print_error (string const & errstr);
 };
 
 }}

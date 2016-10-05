@@ -17,7 +17,6 @@
 #include <pfs/string.hpp>
 #include <pfs/sigslot.hpp>
 #include <pfs/griotte/types.hpp>
-#include <pfs/griotte/scene.hpp>
 
 namespace pfs {
 namespace griotte {
@@ -29,7 +28,6 @@ struct window;
 DLL_API class window : public has_slots<>
 {
     details::window * _d;
-    scene _scene;
     
 private:
     window (const window &);
@@ -37,24 +35,10 @@ private:
 
 public:
     window ();
-    virtual ~window ();
+    ~window ();
     
     void show ();
     
-    scene const & get_scene () const
-    {
-        return _scene;
-    }
-
-    scene & get_scene ()
-    {
-        return _scene;
-    }
-
-    
-public: // internal use only methods
-    scene & init_scene (void *);
-
 public: // slots
     void set_title (pfs::string const & title);
     void resize (int width, int height);
