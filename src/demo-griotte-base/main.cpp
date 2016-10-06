@@ -8,6 +8,8 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using namespace pfs;
+
 //using namespace pfs::griotte;
 
 //void run (application & app, window & win)
@@ -18,7 +20,6 @@ using std::endl;
 //    
 //    vertical_layout & vlayout1 = root.create_layout<vertical_layout>();
 //    
-//    push_button & button1 = root.create_widget<push_button>();
 //    push_button & button2 = root.create_widget<push_button>();
 //    push_button & button3 = root.create_widget<push_button>();
 //    
@@ -27,17 +28,28 @@ using std::endl;
 //    vlayout1.add_widget(button3);
 //}
     
+
+void init_scene (pfs::griotte::scene & scene)
+{
+    griotte::push_button & button1 = scene.create_widget<griotte::push_button>();
+    griotte::push_button & button2 = scene.create_widget<griotte::push_button>();
+    griotte::push_button & button3 = scene.create_widget<griotte::push_button>();
+}
+
 int main (int argc, char * argv[])
 {
     PFS_UNUSED2(argc, argv);
-    
-    pfs::griotte::application app;
-    pfs::griotte::window win;
+
+    griotte::scene scene;
+    init_scene(scene);
+            
+    griotte::application app;
+    griotte::window win;
     
     win.set_title(_u8("Hello"));
     win.resize(400, 300);
-    win.move(pfs::griotte::position_type::center_xy);
-    win.show();
+    win.move(griotte::position_type::center_xy);
+    win.show(scene);
     
     return app.run();
 }

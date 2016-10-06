@@ -39,7 +39,9 @@ window::~window ()
     delete _d;
 }
 
-void window::show ()
+// TODO show scene
+//
+void window::show (scene & sc)
 {
     _d->win.show();
 }

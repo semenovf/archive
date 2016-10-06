@@ -21,6 +21,8 @@
 namespace pfs {
 namespace griotte {
 
+class scene;
+
 namespace details {
 struct window;
 }
@@ -37,7 +39,7 @@ public:
     window ();
     ~window ();
     
-    void show ();
+    void show (scene &);
     
 public: // slots
     void set_title (pfs::string const & title);

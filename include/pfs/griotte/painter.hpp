@@ -51,9 +51,9 @@ public:
 //    void set_font_size (double size);
 //
 //    void show_text (string const & text);    
-//};
-//
-//}}
+};
+
+}}
 
 #endif /* __PFS_GRIOTTE_PAINTER_HPP__ */
 
