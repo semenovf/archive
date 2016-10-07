@@ -14,13 +14,14 @@
 #ifndef __PFS_ACTIVE_QUEUE_HPP__
 #define __PFS_ACTIVE_QUEUE_HPP__
 
+#include <cstring> // for std::memcpy
 #include <pfs/atomic.hpp>
 #include <pfs/binder.hpp>
 #include <pfs/mutex.hpp>
 
 namespace pfs {
 
-template <size_t Size, typename Return, typename Mutex = pfs::fake_mutex>
+template <typename Return, typename Mutex = pfs::fake_mutex>
 class active_queue_base
 {
 public:
@@ -29,11 +30,14 @@ public:
 
 protected:
 	Mutex  _mutex;
-	char   _begin[Size];
+	char * _begin;
 	char * _end;
 	char * _head;
 	char * _tail;
 	atomic_integer<size_t> _count;
+    atomic_integer<size_t> _capacity;
+    atomic_integer<size_t> _max_capacity;
+    size_t _increment_factor;
 
 protected:
 	void pop (binder_base<Return> & fr);
@@ -43,21 +47,48 @@ protected:
 	{
 		_head = _begin;   // Move Head and Tail to the begin of queue
 		_tail = _begin;
-		_end  = _begin + Size;
+		_end  = _begin + _capacity.load();
 	}
 
 public:
-	active_queue_base ()
-		: _end(_begin + Size)
+	active_queue_base (size_t initial, size_t max_capacity, size_t increment_factor)
+        : _begin(new char[initial])
+		, _end(_begin + initial)
 		, _head(_begin)
 		, _tail(_begin)
 		, _count(0)
+        , _capacity(initial)
+        , _max_capacity(max_capacity)
+        , _increment_factor(increment_factor)
+	{}
+
+   	active_queue_base (size_t initial)
+        : _begin(new char[initial])
+		, _end(_begin + initial)
+		, _head(_begin)
+		, _tail(_begin)
+		, _count(0)
+        , _capacity(initial)
+        , _max_capacity(pfs::max_value<size_t>())
+        , _increment_factor(10)
+	{}
+
+   	active_queue_base ()
+        : _begin(new char[0])
+		, _end(_begin)
+		, _head(_begin)
+		, _tail(_begin)
+		, _count(0)
+        , _capacity(0)
+        , _max_capacity(pfs::max_value<size_t>())
+        , _increment_factor(10)
 	{}
 
 	virtual ~active_queue_base ()
 	{
 		while (_head != _tail)
 			pop();
+        delete [] _begin;
 	}
 
 	bool empty () const
@@ -72,7 +103,7 @@ public:
 
 	size_t capacity () const
 	{
-		return Size;
+		return _capacity.load();
 	}
 
 	bool push_function (return_type (* f) ())
@@ -248,8 +279,8 @@ protected:
 	void pull (binder_base_type * & fr);
 };
 
-template <size_t Size, typename Return, typename Mutex>
-void active_queue_base<Size, Return, Mutex>::pop ()
+template <typename Return, typename Mutex>
+void active_queue_base<Return, Mutex>::pop ()
 {
 	binder_base<Return> * fr = 0;
 
@@ -259,19 +290,17 @@ void active_queue_base<Size, Return, Mutex>::pop ()
 		pop(*fr);
 }
 
-template <size_t Size, typename Return, typename Mutex>
-bool active_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
+template <typename Return, typename Mutex>
+bool active_queue_base<Return, Mutex>::prepare_push (size_t frsize)
 {
-	if (_tail == _head) {
-		if (empty()) {
-			reset();   // Move Head and Tail to the begin of queue
-		} else {              // Queue is full
-			return false;
-		}
+   	if (_tail == _head && empty()) {
+    	reset();   // Move Head and Tail to the begin of queue
 	}
 
-	if (_tail >= _head) {                   // Tail is at the right side of Head or Queue is empty (_tail == _head)
-		char * end  = _begin + Size;
+    if (_tail == _head && ! empty()) {      // Queue is full
+        ;
+    } if (_tail >= _head) {                 // Tail is at the right side of Head or Queue is empty (_tail == _head)
+		char * end  = _begin + _capacity.load();
 
 		if (_tail + frsize <= end) {        // There is enough space before the real end of queue
 			_end = end;                     // Logic End must be moved to real end of queue
@@ -291,85 +320,161 @@ bool active_queue_base<Size, Return, Mutex>::prepare_push (size_t frsize)
 		}
 	}
 
+    //
 	// There is no enough space to push function
+    //
+    
+    size_t capacity = _capacity.load();
+    size_t increment = _increment_factor * frsize;
+            
+    // Check for overflow
+    //
+    if (_max_capacity.load() - increment > capacity) {
+        capacity += increment;
+        char * begin = new char[capacity];
+        
+        if (_tail >= _head) {
+            //
+            //          |----n----|              |----n----|
+            //    ------------------------       ------------------------------
+            //    | | | |x|x|x|x|x| | | |   -->  |x|x|x|x|x| | | | | | | | | |
+            //    ------------------------       ------------------------------
+            //     ^     ^         ^     ^        ^         ^                 ^
+            //     |     |         |     |        |         |                 |
+            //  _begin _head     _tail _end    _begin     _tail             _end
+            //                                 _head
+            //
+            size_t n = _tail - _head;
+            std::memcpy(begin, _head, n);
+            _head = begin;
+            _tail = begin + n;
+        } else {
+            //
+            //    |n1-|         |-n2--|        |n1-|                   |-n2--|
+            //    ----------------------       --------------------------------
+            //    |x|x| | | | | |x|x|x|   -->  |x|x| | | | | | | | | | |x|x|x|
+            //    ----------------------       --------------------------------
+            //     ^   ^         ^     ^        ^   ^                   ^     ^
+            //     |   |         |     |        |   |                   |     |
+            // _begin _tail  _head  _end    _begin _tail             _head  _end
+            //
+            size_t n1 = _tail - _begin;
+            size_t n2 = _end - _head;
+            
+            std::memcpy(begin, _begin, n1);
+            std::memcpy(begin + capacity - n2, _head, n2);
+            
+            _head = begin + capacity - n2;
+            _tail = begin + n1;
+        }
+        
+        delete [] _begin;
+        
+      	_begin = begin;
+        _end = _begin + capacity;
+        _capacity.store(capacity);
+        
+        return true;
+    }
+    
 	return false;
 }
 
-template <size_t Size, typename Return, typename Mutex>
-void active_queue_base<Size, Return, Mutex>::pull (binder_base_type * & fr)
+template <typename Return, typename Mutex>
+void active_queue_base<Return, Mutex>::pull (binder_base_type * & fr)
 {
 	if (!empty()) {
 		if (_head == _end) { // Head exceeds Tail, but Queue is not empty
 			_head = _begin;
-			_end = _begin + Size;
+			_end = _begin + _capacity.load();
 		}
 
 		fr = reinterpret_cast<binder_base_type *>(_head);
 	}
 }
 
-
-template <size_t Size, typename Return, typename Mutex>
-void active_queue_base<Size, Return, Mutex>::pop (binder_base<Return> & fr)
+template <typename Return, typename Mutex>
+void active_queue_base<Return, Mutex>::pop (binder_base<Return> & fr)
 {
-	//lock_guard<Mutex> locker(_mutex);
-
-#if __COMMENT__
-	if (_head == _end) {        // Head exceeds logic End (supposed position is equivalent to real position)
-		_head  = _begin;        // Need move Head to Begin
-	}
-#endif
 	_head += fr.size(); // Supposed Head position
 	_count.deref();     //--_count;
-
-#if __COMMENT__
-	if (_head == _tail && empty()) {  // Head exceeds Tail, need to optimize pointers
-		reset();                      // Move Head and Tail to the begin of queue
-	}
-#endif
-
-//	if (_head == _end) {        // Head exceeds logic End (supposed position is equivalent to real position)
-//		_head  = _begin;        // Can move Head to Begin
-////		_end   = _begin + Size; // Can move logic End to the real end of queue
-//	} else if (_head > _end) {  // Head is at the right side if logic End (supposed position is not equivalent to real position)
-////		_head = _begin;         // So binder really was placed from Begin
-////		_head += fr.size();     // Move Head to real position (against supposed position)
-//	}
-
 	fr.~binder_base();
 }
 
-template <size_t Size, typename Return, typename Mutex = pfs::fake_mutex>
-class active_queue : public active_queue_base<Size, Return, Mutex>
+template <typename Return, typename Mutex = pfs::fake_mutex>
+class active_queue : public active_queue_base<Return, Mutex>
 {
 public:
-	typedef active_queue_base<Size, Return, Mutex> base_class;
+	typedef active_queue_base<Return, Mutex> base_class;
 	typedef typename base_class::return_type return_type;
 	typedef typename base_class::binder_base_type binder_base_type;
 
-	active_queue () : base_class() {}
+    /**
+     * @brief Constructs instance of @c active_queue with the given traits. 
+     * 
+     * @param initial Initial capacity of internal buffer in bytes.
+     * @param max_capacity Maximum capacity of internal buffer in bytes.
+     * @param increment_factor Increment factor. Multiplier value for increment . 
+     *        This value used to increment capacity of internal buffer while pushing
+     *        new binder and no room to store it. Real increment value calculated
+     *        from @a increment_factor multiplying by size of pushing binder.
+     */
+	active_queue (size_t initial, size_t max_capacity, size_t increment_factor)
+        : base_class(initial, max_capacity, increment_factor)
+    {}
+
+    /**
+     * @brief Constructs instance of @c active_queue with the @a initial capacity,
+     *        unlimited maximum capacity (actually this value is a maximum value 
+     *        of @c size_t) and increment factor equals to 10. 
+     * 
+     * @param initial Initial capacity of internal buffer in bytes.
+     */
+  	active_queue (size_t initial)
+        : base_class(initial)
+    {}
+
+    /**
+     * @brief Constructs instance of empty @c active_queue,
+     *        unlimited maximum capacity (actually this value is a maximum value 
+     *        of @c size_t) and increment factor equals to 10. 
+     */
+   	active_queue ()
+        : base_class()
+    {}
 
 	return_type call ();
 	return_type call_all ();
 };
 
-template <size_t Size, typename Mutex>
-class active_queue<Size, void, Mutex> : public active_queue_base<Size, void, Mutex>
+template <typename Mutex>
+class active_queue<void, Mutex> : public active_queue_base<void, Mutex>
 {
 public:
-	typedef active_queue_base<Size, void, Mutex> base_class;
+	typedef active_queue_base<void, Mutex>   base_class;
 	typedef typename base_class::return_type return_type;
 	typedef typename base_class::binder_base_type binder_base_type;
 
-	active_queue () : base_class() {}
+	active_queue (size_t initial, size_t max_capacity, size_t increment_factor)
+        : base_class(initial, max_capacity, increment_factor) 
+    {}
+
+  	active_queue (size_t initial)
+        : base_class(initial)
+    {}
+    
+   	active_queue ()
+        : base_class()
+    {}
+
 
 	return_type call ();
 	return_type call_all ();
 };
 
-template <size_t Size, typename Return, typename Mutex>
-typename active_queue<Size, Return, Mutex>::return_type
-	active_queue<Size, Return, Mutex>::call ()
+template <typename Return, typename Mutex>
+typename active_queue<Return, Mutex>::return_type
+	active_queue<Return, Mutex>::call ()
 {
 	return_type r;
 	binder_base<Return> * fr = 0;
@@ -392,9 +497,9 @@ typename active_queue<Size, Return, Mutex>::return_type
 	return r;
 }
 
-template <size_t Size, typename Return, typename Mutex>
-typename active_queue<Size, Return, Mutex>::return_type
-	active_queue<Size, Return, Mutex>::call_all ()
+template <typename Return, typename Mutex>
+typename active_queue<Return, Mutex>::return_type
+	active_queue<Return, Mutex>::call_all ()
 {
 	return_type r;
 
@@ -403,8 +508,8 @@ typename active_queue<Size, Return, Mutex>::return_type
 	return r;
 }
 
-template <size_t Size, typename Mutex>
-typename active_queue<Size, void, Mutex>::return_type active_queue<Size, void, Mutex>::call ()
+template <typename Mutex>
+typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call ()
 {
 	binder_base<void> * fr = 0;
 
@@ -424,8 +529,8 @@ typename active_queue<Size, void, Mutex>::return_type active_queue<Size, void, M
 	locker.unlock();
 }
 
-template <size_t Size, typename Mutex>
-inline typename active_queue<Size, void, Mutex>::return_type active_queue<Size, void, Mutex>::call_all ()
+template <typename Mutex>
+inline typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call_all ()
 {
 	while (!this->empty())
 		call();
