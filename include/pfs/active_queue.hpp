@@ -52,7 +52,7 @@ protected:
 
 public:
 	active_queue_base (size_t initial, size_t max_capacity, size_t increment_factor)
-        : _begin(new char[initial])
+        : _begin(initial > 0 ? new char[initial] : 0)
 		, _end(_begin + initial)
 		, _head(_begin)
 		, _tail(_begin)
@@ -63,7 +63,7 @@ public:
 	{}
 
    	active_queue_base (size_t initial)
-        : _begin(new char[initial])
+        : _begin(initial > 0 ? new char[initial] : 0)
 		, _end(_begin + initial)
 		, _head(_begin)
 		, _tail(_begin)
@@ -74,7 +74,7 @@ public:
 	{}
 
    	active_queue_base ()
-        : _begin(new char[0])
+        : _begin(0)
 		, _end(_begin)
 		, _head(_begin)
 		, _tail(_begin)
@@ -293,32 +293,41 @@ void active_queue_base<Return, Mutex>::pop ()
 template <typename Return, typename Mutex>
 bool active_queue_base<Return, Mutex>::prepare_push (size_t frsize)
 {
-   	if (_tail == _head && empty()) {
-    	reset();   // Move Head and Tail to the begin of queue
-	}
+    if (! _begin) {
+        size_t capacity = _increment_factor * frsize;
+        _begin = new char[capacity];
+        _end = _begin + capacity;
+        _head = _begin;
+        _tail = _begin;
+        return true;
+    }
+    
+    if (_tail == _head && empty()) {
+        reset();   // Move Head and Tail to the begin of queue
+    }
 
     if (_tail == _head && ! empty()) {      // Queue is full
         ;
     } if (_tail >= _head) {                 // Tail is at the right side of Head or Queue is empty (_tail == _head)
-		char * end  = _begin + _capacity.load();
+        char * end  = _begin + _capacity.load();
 
-		if (_tail + frsize <= end) {        // There is enough space before the real end of queue
-			_end = end;                     // Logic End must be moved to real end of queue
-			return true;
-		} else {                            // There is no enough space before the real end of queue
-			end  = _tail;                   // Save Tail position
+        if (_tail + frsize <= end) {        // There is enough space before the real end of queue
+            _end = end;                     // Logic End must be moved to real end of queue
+            return true;
+        } else {                            // There is no enough space before the real end of queue
+            end  = _tail;                   // Save Tail position
 
-			if (_begin + frsize <= _head) { // There is enough space before Head from Begin
-				_tail = _begin;             // Move Tail to Begin
-				_end = end;                 // Move Logic End
-				return true;
-			}
-		}
-	} else {                                // Tail is at the left side of Head
-		if (_tail + frsize <= _head) {      // There is enough space before Head
-			return true;
-		}
-	}
+            if (_begin + frsize <= _head) { // There is enough space before Head from Begin
+                _tail = _begin;             // Move Tail to Begin
+                _end = end;                 // Move Logic End
+                return true;
+            }
+        }
+    } else {                                // Tail is at the left side of Head
+        if (_tail + frsize <= _head) {      // There is enough space before Head
+            return true;
+        }
+    }
 
     //
 	// There is no enough space to push function
