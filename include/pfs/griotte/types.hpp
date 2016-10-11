@@ -23,10 +23,17 @@ namespace pfs {
 namespace griotte {
 
 typedef int unit_type;
-typedef pfs::point<unit_type>     point_type;
-typedef pfs::dimension<unit_type> dimension_type;
-typedef pfs::rect<unit_type>      rect_type;
-typedef pfs::position             position_type;
+typedef double unitf_type;
+
+typedef pfs::point<unit_type>      point_type;
+typedef pfs::dimension<unit_type>  dimension_type;
+typedef pfs::rect<unit_type>       rect_type;
+
+typedef pfs::point<unitf_type>     pointf_type;
+typedef pfs::dimension<unitf_type> dimensionf_type;
+typedef pfs::rect<unitf_type>      rectf_type;
+
+typedef pfs::position              position_type;
 
 enum font_slant_enum
 {

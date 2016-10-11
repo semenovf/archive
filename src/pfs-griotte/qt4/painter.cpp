@@ -10,6 +10,24 @@
 namespace pfs {
 namespace griotte {
 
+namespace details {
+
+struct painter
+{
+    //QMainWindow win;
+};
+
+}
+
+painter::painter ()
+    : _d(new details::painter) 
+{}
+
+painter::~painter ()
+{
+    delete _d;
+}
+
 //painter::painter ()
 //    : _d(new details::painter)
 //{}
