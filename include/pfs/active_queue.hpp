@@ -485,6 +485,8 @@ template <typename Return, typename Mutex>
 typename active_queue<Return, Mutex>::return_type
 	active_queue<Return, Mutex>::call ()
 {
+    PFS_ASSERT(!this->empty());
+    
 	return_type r;
 	binder_base<Return> * fr = 0;
 
@@ -520,6 +522,8 @@ typename active_queue<Return, Mutex>::return_type
 template <typename Mutex>
 typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call ()
 {
+    PFS_ASSERT(!this->empty());
+    
 	binder_base<void> * fr = 0;
 
 	unique_lock<Mutex> locker(this->_mutex);
