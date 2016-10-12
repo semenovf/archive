@@ -4,14 +4,14 @@
   Description: Cross-platform application framework  
   Operation System: Cross-platform  
   Mode: Retained  
-  Official Git Repository:  
+  Official Git Repository: [http://code.qt.io/cgit/qt/qt5.git/](http://code.qt.io/cgit/qt/qt5.git/)  
   Initial Release: 1995  
 
 2. [wxWidgets](https://www.wxwidgets.org)  
   Description: Cross-Platform GUI Library  
   Operation System: Cross-platform  
   Mode: Retained  
-  Official Git Repository: 
+  Official Git Repository: [https://github.com/wxWidgets/wxWidgets](https://github.com/wxWidgets/wxWidgets)  
   Initial Release: 1992  
 
 3. [Nana C++](http://nanapro.org)  
@@ -82,7 +82,7 @@
   License: Public Domain  
   Operation System:  
   Mode: Immediate  
-  Official Git Repository: [https://github.com/vurtun/nuklear)  
+  Official Git Repository: [https://github.com/vurtun/nuklear](https://github.com/vurtun/nuklear)  
   Initial Release:  
 
 ## Extra links    
