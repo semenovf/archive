@@ -10,6 +10,8 @@
 #include <pfs.hpp>
 #include <pfs/active_queue.hpp>
 #include <pfs/safeformat.hpp>
+#include <pfs/thread.hpp>
+#include <pfs/mutex.hpp>
 
 #include <iostream>
 
@@ -113,6 +115,59 @@ void test ()
 
 }
 
+namespace test2 {
+
+typedef pfs::active_queue<void, pfs::mutex> active_queue_type;
+active_queue_type q;
+
+static int counter = 0;
+static bool is_finish = 0;
+
+class thread : public pfs::thread
+{
+public:
+	thread () 
+        : pfs::thread()
+    {}
+
+	virtual void run()
+	{
+		while (! is_finish) {
+            q.call_all();
+        }
+	}
+};
+
+void func ()
+{
+    ++counter;
+}
+
+void finish ()
+{
+    is_finish = true;
+}
+
+void test ()
+{
+    thread th;
+    th.start();
+    
+    for (int i = 0; i < 10000; ++i) {
+        cout << "Push: " << i << endl;
+        if (! q.push_function(& func)) {
+            break;
+        }
+    }
+    
+    cout << "Finish" << endl;
+    q.push_function(& finish);
+    
+    th.wait();
+}
+
+}
+
 int main(int argc, char *argv[])
 {
 	PFS_UNUSED(argc);
@@ -122,6 +177,7 @@ int main(int argc, char *argv[])
 
     test0::test();
     test1::test();
+    test2::test();
     
 	return END_TESTS;
 }

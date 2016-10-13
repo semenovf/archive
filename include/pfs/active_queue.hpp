@@ -19,6 +19,8 @@
 #include <pfs/binder.hpp>
 #include <pfs/mutex.hpp>
 
+#include <pfs/debug.hpp>
+
 namespace pfs {
 
 template <typename Return, typename Mutex = pfs::fake_mutex>
@@ -31,7 +33,7 @@ public:
 protected:
 	Mutex  _mutex;
 	char * _begin;
-	char * _end;
+	char * _end;   // Logic end (not a real end of buffer
 	char * _head;
 	char * _tail;
 	atomic_integer<size_t> _count;
@@ -40,7 +42,8 @@ protected:
     size_t _increment_factor;
 
 protected:
-	void pop (binder_base<Return> & fr);
+	void pop (binder_base_type & fr);
+    void pull (binder_base_type * & fr);
 	bool prepare_push (size_t frsize);
 
 	void reset ()
@@ -274,9 +277,6 @@ public:
 	}
 
 	void pop ();
-
-protected:
-	void pull (binder_base_type * & fr);
 };
 
 template <typename Return, typename Mutex>
@@ -299,6 +299,7 @@ bool active_queue_base<Return, Mutex>::prepare_push (size_t frsize)
         _end = _begin + capacity;
         _head = _begin;
         _tail = _begin;
+        _capacity.store(capacity);
         return true;
     }
     
@@ -344,44 +345,48 @@ bool active_queue_base<Return, Mutex>::prepare_push (size_t frsize)
         
         if (_tail >= _head) {
             //
-            //          |----n----|              |----n----|
-            //    ------------------------       ------------------------------
-            //    | | | |x|x|x|x|x| | | |   -->  |x|x|x|x|x| | | | | | | | | |
-            //    ------------------------       ------------------------------
-            //     ^     ^         ^     ^        ^         ^                 ^
-            //     |     |         |     |        |         |                 |
-            //  _begin _head     _tail _end    _begin     _tail             _end
-            //                                 _head
+            //          |----n----|                |----n----|
+            //    ---------------------------       ----------------------------
+            //    | | | |x|x|x|x|x| | | | | | -->  |x|x|x|x|x| | | | | | | | | |
+            //    ---------------------------       ----------------------------
+            //     ^     ^         ^     ^          ^         ^               ^
+            //     |     |         |     |          |         |               |
+            //  _begin _head     _tail _end      _begin     _tail           _end
+            //                                   _head
             //
             size_t n = _tail - _head;
             std::memcpy(begin, _head, n);
             _head = begin;
             _tail = begin + n;
+            _end = _begin + capacity;
         } else {
-            //
-            //    |n1-|         |-n2--|        |n1-|                   |-n2--|
-            //    ----------------------       --------------------------------
-            //    |x|x| | | | | |x|x|x|   -->  |x|x| | | | | | | | | | |x|x|x|
-            //    ----------------------       --------------------------------
-            //     ^   ^         ^     ^        ^   ^                   ^     ^
-            //     |   |         |     |        |   |                   |     |
-            // _begin _tail  _head  _end    _begin _tail             _head  _end
+            //                        |-n3|                                |-n3|
+            //    |n1-|         |---n2----|      |n1-|               |---n2----|
+            //    -------------------------       ------------------------------
+            //    |x|x| | | | | |x|x|x| | | -->  |x|x| | | | | | | | |x|x|x| | |
+            //    -------------------------       ------------------------------
+            //     ^   ^         ^     ^          ^   ^               ^     ^
+            //     |   |         |     |          |   |               |     |
+            // _begin _tail  _head  _end       _begin _tail         _head  _end
             //
             size_t n1 = _tail - _begin;
-            size_t n2 = _end - _head;
+            size_t n2 = _begin + _capacity.load() - _head; // _end - _head;
+            size_t n3 = _begin + _capacity.load() - _end;
             
             std::memcpy(begin, _begin, n1);
             std::memcpy(begin + capacity - n2, _head, n2);
             
             _head = begin + capacity - n2;
             _tail = begin + n1;
+            _end  = begin + capacity - n3;
         }
         
         delete [] _begin;
         
       	_begin = begin;
-        _end = _begin + capacity;
         _capacity.store(capacity);
+        
+        PFS_DEBUG(std::cout << "Reallocated" << std::endl);
         
         return true;
     }
@@ -403,10 +408,10 @@ void active_queue_base<Return, Mutex>::pull (binder_base_type * & fr)
 }
 
 template <typename Return, typename Mutex>
-void active_queue_base<Return, Mutex>::pop (binder_base<Return> & fr)
+void active_queue_base<Return, Mutex>::pop (binder_base_type & fr)
 {
 	_head += fr.size(); // Supposed Head position
-	_count.deref();     //--_count;
+	_count.deref();
 	fr.~binder_base();
 }
 
@@ -522,24 +527,28 @@ typename active_queue<Return, Mutex>::return_type
 template <typename Mutex>
 typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call ()
 {
+    lock_guard<Mutex> locker(this->_mutex);
     PFS_ASSERT(!this->empty());
     
 	binder_base<void> * fr = 0;
-
-	unique_lock<Mutex> locker(this->_mutex);
+    
+//	unique_lock<Mutex> locker(this->_mutex);
+    PFS_DEBUG(std::cout << "Pull" << std::endl);
 
 	this->pull(fr);
 
-	locker.unlock();
+//	locker.unlock();
 
 	// To avoid this assert need to check for empty of queue before this call
 	PFS_ASSERT(fr);
 
+    PFS_DEBUG(std::cout << "Execute" << std::endl);
 	(*fr)();
 
-	locker.lock();
+//	locker.lock();
+    PFS_DEBUG(std::cout << "Pop" << std::endl);
 	this->pop(*fr);
-	locker.unlock();
+//	locker.unlock();
 }
 
 template <typename Mutex>
@@ -549,9 +558,7 @@ inline typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>
 		call();
 }
 
-
 } // pfs
-
 
 #endif /* __PFS_ACTIVE_QUEUE_HPP__ */
 
