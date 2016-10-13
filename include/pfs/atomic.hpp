@@ -47,10 +47,25 @@ public:
     atomic_integer (Type value) { store(value); }
 
     // Non-atomic API
-    Type load () const { return intrinsics::load(_value); }
-    void store (Type newValue) { intrinsics::store((Type &)_value, newValue); }
-    bool ref () { return intrinsics::ref((Type &)_value); }
-    bool deref () { return intrinsics::deref((Type &)_value); }
+    Type load () const 
+    {
+        return intrinsics::load(_value);
+    }
+    
+    void store (Type newValue) 
+    {
+        intrinsics::store((Type &)_value, newValue); 
+    }
+    
+    bool ref () 
+    {
+        return intrinsics::ref((Type &)_value); 
+    }
+    
+    bool deref () 
+    {
+        return intrinsics::deref((Type &)_value);
+    }
 
     Type fetchAndAddRelaxed (Type valueToAdd)
     {

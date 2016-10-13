@@ -11,10 +11,11 @@
  * Created on September 22, 2016, 4:05 PM
  */
 
-#ifndef __PFS_ACTIVE_QUEUE_HPP__
-#define __PFS_ACTIVE_QUEUE_HPP__
+#ifndef __PFS_ACTIVE_QUEUE_1_HPP__
+#define __PFS_ACTIVE_QUEUE_1_HPP__
 
 #include <cstring> // for std::memcpy
+#include <memory>  // for std::allocator
 #include <pfs/atomic.hpp>
 #include <pfs/binder.hpp>
 #include <pfs/mutex.hpp>
@@ -22,6 +23,170 @@
 #include <pfs/debug.hpp>
 
 namespace pfs {
+
+namespace details {
+
+//
+//    ---------------------------- 
+//    | | | |x|x|x|x| | | | | | |
+//    ---------------------------- 
+//     ^     ^       ^           ^   
+//     |     |       |           |
+//  _begin _head   _tail     _capacity
+//                             _end
+//
+//    ---------------------------- 
+//    |y|y|y|y| | | | | |x|x|x|x|
+//    ---------------------------- 
+//     ^       ^         ^       ^
+//     |       |         |       |
+//  _begin   _tail    _head  _capacity
+//                             _end
+//
+//    ---------------------------- 
+//    |y|y|y|y| | | |x|x|x|x| | |
+//    ---------------------------- 
+//     ^       ^     ^       ^   ^   
+//     |       |     |       |   |
+//  _begin   _tail _head   _end _capacity
+//
+
+class ring_queue
+{
+public:
+    static size_t const DefaultIncrementFactor = 10;
+
+private:
+	char * _begin;
+	size_t _end;   // Logic end (not a real end of buffer)
+	size_t _head;
+	size_t _tail;
+    size_t _count;
+    size_t _capacity;
+    size_t _max_capacity;
+    size_t _increment_factor;
+    
+public:
+	ring_queue (size_t initial = 0
+            , size_t max_capacity = pfs::max_value<size_t>()
+            , size_t increment_factor = DefaultIncrementFactor)
+        : _begin(initial > 0 ? new char[initial] : 0)
+		, _end(initial)
+		, _head(0)
+		, _tail(0)
+		, _count(0)
+        , _capacity(initial)
+        , _max_capacity(max_capacity)
+        , _increment_factor(increment_factor)
+	{}
+
+
+    bool empty () const
+    {
+        return _count == 0;
+    }
+
+    size_t capacity () const
+    {
+        return _capacity;
+    }
+
+    bool ensure_capacity (size_t nsize);
+
+//    typename <typename T>
+//    std::allocator<T> prepare_allocator ()
+//    {
+//        std::allocator<T> alloc;
+//        string = alloc.allocate(1);
+//        return alloc;
+//    }
+    
+//      /**
+//       *  Returns a read/write reference to the data at the first
+//       *  element of the %queue.
+//       */
+//      reference
+//      front()
+//      {
+//	__glibcxx_requires_nonempty();
+//	return c.front();
+//      }
+//
+//      /**
+//       *  Returns a read-only (constant) reference to the data at the first
+//       *  element of the %queue.
+//       */
+//      const_reference
+//      front() const
+//      {
+//	__glibcxx_requires_nonempty();
+//	return c.front();
+//      }
+//
+//      /**
+//       *  Returns a read/write reference to the data at the last
+//       *  element of the %queue.
+//       */
+//      reference
+//      back()
+//      {
+//	__glibcxx_requires_nonempty();
+//	return c.back();
+//      }
+//
+//      /**
+//       *  Returns a read-only (constant) reference to the data at the last
+//       *  element of the %queue.
+//       */
+//      const_reference
+//      back() const
+//      {
+//	__glibcxx_requires_nonempty();
+//	return c.back();
+//      }
+//
+//
+//
+//      /**
+//       *  @brief  Removes first element.
+//       *
+//       *  This is a typical %queue operation.  It shrinks the %queue by one.
+//       *  The time complexity of the operation depends on the underlying
+//       *  sequence.
+//       *
+//       *  Note that no data is returned, and if the first element's
+//       *  data is needed, it should be retrieved before pop() is
+//       *  called.
+//       */
+//      void
+//      pop()
+//      {
+//	__glibcxx_requires_nonempty();
+//	c.pop_front();
+//      }
+};
+
+// TODO Move to .cpp file
+//
+inline bool ring_queue::ensure_capacity (size_t nsize)
+{
+    if (! _begin) {
+        size_t capacity = _increment_factor * frsize;
+        _begin = new char[capacity];
+        _end = capacity;
+        _head = 0;
+        _tail = 0;
+        _count.store(0);
+        _capacity.store(capacity);
+        
+        return true;
+    }
+}
+
+} // details
+
+
+#if __COMMENT1__
 
 template <typename Return, typename Mutex = pfs::fake_mutex>
 class active_queue_base
@@ -108,20 +273,6 @@ public:
 		return false;
 	}
 
-	template <typename Class>
-	bool push_method (Class * p, return_type (Class::* f) ())
-	{
-		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_method0<Class, return_type>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_method0<Class, return_type>(p, f);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
-	}
-
 	template <typename Arg1>
 	bool push_function (return_type (*f) (Arg1), Arg1 a1)
 	{
@@ -136,20 +287,6 @@ public:
 		return false;
 	}
 
-	template <typename Class, typename Arg1>
-	bool push_method (Class * p, return_type (Class::*f) (Arg1), Arg1 a1)
-	{
-		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_method1<Class, return_type, Arg1>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_method1<Class, return_type, Arg1>(p, f, a1);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
-	}
-
 	template <typename Arg1, typename Arg2>
 	bool push_function (return_type (*f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
 	{
@@ -157,104 +294,6 @@ public:
 
 		if (prepare_push(sizeof(binder_function2<return_type, Arg1, Arg2>))) {
 			binder_base_type * fr = new (_begin + _tail) binder_function2<return_type, Arg1, Arg2>(f, a1, a2);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
-	}
-
-	template <typename Class, typename Arg1, typename Arg2>
-	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
-	{
-		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_method2<Class, return_type, Arg1, Arg2>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_method2<Class, return_type, Arg1, Arg2>(p, f, a1, a2);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
-	}
-
-	template <typename Arg1, typename Arg2, typename Arg3>
-	bool push_function (return_type (*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3)
-	{
-		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_function3<return_type, Arg1, Arg2, Arg3>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_function3<return_type, Arg1, Arg2, Arg3>(f, a1, a2, a3);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
-	}
-
-	template <typename Class, typename Arg1, typename Arg2, typename Arg3>
-	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3)
-	{
-		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_method3<Class, return_type, Arg1, Arg2, Arg3>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_method3<Class, return_type, Arg1, Arg2, Arg3>(p, f, a1, a2, a3);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
-	}
-
-	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-	bool push_function (return_type (*f) (Arg1, Arg2, Arg3, Arg4), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
-	{
-		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_function4<return_type, Arg1, Arg2, Arg3, Arg4>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_function4<return_type, Arg1, Arg2, Arg3, Arg4>(f, a1, a2, a3, a4);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
-	}
-
-	template <typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3, Arg4), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
-	{
-		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_method4<Class, return_type, Arg1, Arg2, Arg3, Arg4>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_method4<Class, return_type, Arg1, Arg2, Arg3, Arg4>(p, f, a1, a2, a3, a4);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
-	}
-
-	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
-	bool push_function (return_type (*f) (Arg1, Arg2, Arg3, Arg4, Arg5), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
-	{
-		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_function5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_function5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5>(f, a1, a2, a3, a4, a5);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
-	}
-
-	template <typename Class, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
-	bool push_method (Class * p, return_type (Class::*f) (Arg1, Arg2, Arg3, Arg4, Arg5), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
-	{
-		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_method5<Class, return_type, Arg1, Arg2, Arg3, Arg4, Arg5>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_method5<Class, return_type, Arg1, Arg2, Arg3, Arg4, Arg5>(p, f, a1, a2, a3, a4, a5);
 			_tail += fr->size();
 			_count.ref(); //++_count;
 			return true;
@@ -585,6 +624,8 @@ inline typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>
 	while (!this->empty())
 		call();
 }
+
+#endif
 
 } // pfs
 

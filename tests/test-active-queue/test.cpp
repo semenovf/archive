@@ -32,7 +32,7 @@ void test ()
 {
     ADD_TESTS(2);
     
-    active_queue_type q(2028, 2048, 1);
+    active_queue_type q(2028, 2048, 10);
     active_queue_type q1;
     size_t max_count = 100;
     
@@ -57,8 +57,7 @@ void test ()
     }
     
     TEST_OK2(q1.count() == max_count
-        , _Sf("q1.count() == %u")(max_count).str().c_str());
-
+        , _Sf("q1.count()=> %u == %u")(q1.count())(max_count).str().c_str());
 }
 
 }
@@ -110,7 +109,7 @@ void test ()
     }
     
     TEST_OK2(q1.count() == A::max_count
-        , _Sf("q1.count() == %u")(A::max_count).str().c_str());
+        , _Sf("q1.count()=> %u == %u")(q1.count())(A::max_count).str().c_str());
 }
 
 }
@@ -118,7 +117,8 @@ void test ()
 namespace test2 {
 
 typedef pfs::active_queue<void, pfs::mutex> active_queue_type;
-active_queue_type q;
+//active_queue_type q(0, pfs::max_value<size_t>(), 1);
+active_queue_type q(100000);
 
 static int counter = 0;
 static bool is_finish = 0;
@@ -138,32 +138,59 @@ public:
 	}
 };
 
-void func ()
+void func1 ()
 {
     ++counter;
 }
 
+void func2 (int i)
+{
+    cout << "func2(" << i << ')' << endl;
+}
+
+void func3 (int a, char b)
+{
+    cout << "func3(" << a << ", " << b << ')' << endl;
+}
+
 void finish ()
 {
+    cout << "Finish" << endl;
     is_finish = true;
 }
 
 void test ()
 {
-    thread th;
-    th.start();
+    bool ok = true;
+    thread thr;
+    thr.start();
     
-    for (int i = 0; i < 10000; ++i) {
+    for (int i = 0; i < 300000; ++i) {
         cout << "Push: " << i << endl;
-        if (! q.push_function(& func)) {
+        if (! q.push_function(& func1)) {
+            ok = false;
+            break;
+        }
+        
+        if (! q.push_function(& func2, i)) {
+            ok = false;
+            break;
+        }
+
+        if (! q.push_function(& func3, i, 'W')) {
+            ok = false;
             break;
         }
     }
     
-    cout << "Finish" << endl;
-    q.push_function(& finish);
-    
-    th.wait();
+    if (ok) {
+        if (!q.push_function(& finish))
+            thr.terminate();
+        else
+            thr.wait();
+    } else {
+        thr.terminate();
+    }
 }
 
 }
@@ -175,8 +202,8 @@ int main(int argc, char *argv[])
 
 	BEGIN_TESTS(0);
 
-    test0::test();
-    test1::test();
+//    test0::test();
+//    test1::test();
     test2::test();
     
 	return END_TESTS;

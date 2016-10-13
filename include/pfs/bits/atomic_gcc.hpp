@@ -4,6 +4,14 @@
  * @date   Mar 27, 2013 12:24:30 PM
  *
  * @brief
+ * 
+ * https://gcc.gnu.org/onlinedocs/gcc-4.4.5/gcc/Atomic-Builtins.html
+ * 
+ * type __sync_val_compare_and_swap (type *ptr, type oldval type newval, ...)
+ *      These builtins perform an atomic compare and swap. 
+ *      That is, if the current value of *ptr is oldval, then write newval into *ptr. 
+ *      Returns the contents of *ptr before the operation. 
+ * 
  */
 
 #ifndef __PFS_BITS_ATOMIC_GCC_HPP__
@@ -16,16 +24,16 @@ namespace pfs {
 template<typename T>
 struct atomic_integer_intrinsics
 {
-	typedef int Type;
+	typedef T Type;
 
-	static inline T load (const T & value)
+	static inline T load (T const & value)
 	{
-		return value;
+        return __sync_fetch_and_add(const_cast<T *>(& value), 0);
 	}
 
     static inline void store (T & value, T newValue)
     {
-        value = newValue;
+        __sync_val_compare_and_swap(& value, value, newValue);
     }
 
     static inline bool ref (T & value)

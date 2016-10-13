@@ -9,6 +9,8 @@
 #ifndef __PFS_BINDER_HPP__
 #define __PFS_BINDER_HPP__
 
+#include <pfs/debug.hpp>
+
 namespace pfs {
 
 template <typename T>
@@ -25,13 +27,18 @@ public:
 
 protected:
     size_t _size;
+    size_t _magic; // TODO Remove
 
     binder_base (size_t size)
         : _size(size)
+        , _magic(0xDEADBEAF) // TODO Remove
     {}
 
 public:
-    virtual ~binder_base () {}
+    virtual ~binder_base () 
+    {
+        _magic = 0xDEADDEAD; // TODO Remove
+    }
 
     size_t size () const
     {
@@ -39,6 +46,11 @@ public:
     }
 
     virtual return_type operator () () const = 0;
+    
+    size_t magic () const
+    {
+        return _magic;
+    }
 };
 
 
@@ -101,7 +113,10 @@ public:
                 , reinterpret_cast<typename base_class::funcptr_type>(f))
     {}
 
-    virtual ~binder_function0 () {}
+    virtual ~binder_function0 () 
+    {
+        PFS_DEBUG(std::cout << "~binder_function0()" << std::endl);
+    }
 
     virtual return_type operator () () const
     {
@@ -126,7 +141,10 @@ public:
         , _a1(a1)
     {}
 
-    virtual ~binder_function1 () {}
+    virtual ~binder_function1 () 
+    {
+        PFS_DEBUG(std::cout << "~binder_function1(" << _a1 << ')' << std::endl);
+    }
 
     virtual return_type operator () () const
     {
@@ -153,7 +171,10 @@ public:
         , _a2(a2)
     {}
 
-    virtual ~binder_function2 () {}
+    virtual ~binder_function2 () 
+    {
+        PFS_DEBUG(std::cout << "~binder_function2(" << _a1 << ", " << _a2 << ')' << std::endl);
+    }
 
     virtual return_type operator () () const
     {

@@ -4,6 +4,8 @@
  * @date   Mar 27, 2013 4:07:05 PM
  *
  * @brief
+ * 
+ * https://msdn.microsoft.com/ru-ru/library/2ddez55b.aspx
  */
 
 #ifndef __PFS_BITS_ATOMIC_MSVC_HPP__
