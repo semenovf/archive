@@ -9,6 +9,7 @@
 #include <pfs/test/test.hpp>
 #include <pfs.hpp>
 #include <pfs/active_queue.hpp>
+#include <pfs/active_queue_1.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/thread.hpp>
 #include <pfs/mutex.hpp>
@@ -195,6 +196,14 @@ void test ()
 
 }
 
+namespace test3 {
+
+typedef pfs::details::ring_queue ring_queue_type;
+
+ring_queue_type rq;
+
+}
+
 int main(int argc, char *argv[])
 {
 	PFS_UNUSED(argc);
@@ -204,7 +213,8 @@ int main(int argc, char *argv[])
 
 //    test0::test();
 //    test1::test();
-    test2::test();
+//    test2::test();
+      test3::test();
     
 	return END_TESTS;
 }

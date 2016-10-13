@@ -65,6 +65,22 @@ private:
     size_t _capacity;
     size_t _max_capacity;
     size_t _increment_factor;
+
+private:
+    // Check for overflow
+    //
+    bool overflow (size_t increment) const
+    {
+        return !(_max_capacity >= increment 
+                && _max_capacity - increment > _capacity);
+    }
+
+	void reset ()
+	{
+		_head = 0;   // Move Head and Tail to the begin of queue
+		_tail = 0;
+		_end  = _capacity;
+	}
     
 public:
 	ring_queue (size_t initial = 0
@@ -80,7 +96,11 @@ public:
         , _increment_factor(increment_factor)
 	{}
 
-
+    ~ring_queue ()
+    {
+        delete _begin;
+    }
+        
     bool empty () const
     {
         return _count == 0;
@@ -171,22 +191,112 @@ public:
 inline bool ring_queue::ensure_capacity (size_t nsize)
 {
     if (! _begin) {
-        size_t capacity = _increment_factor * frsize;
-        _begin = new char[capacity];
-        _end = capacity;
+        size_t increment = _increment_factor * nsize;
+        
+        if (overflow(increment))
+            return false;
+        
+        _capacity += increment;
+        _begin = new char[_capacity];
+        _end = _capacity;
         _head = 0;
         _tail = 0;
-        _count.store(0);
-        _capacity.store(capacity);
+        _count = 0;
         
         return true;
     }
+
+    if (_tail == _head && empty()) {
+        reset();   // Move Head and Tail to the begin of queue
+    }
+
+    if (_tail == _head && ! empty()) {      // Queue is full
+        ;
+    } if (_tail >= _head) {                 // Tail is at the right side of Head or Queue is empty (_tail == _head)
+        size_t end  = _capacity;
+
+        if (_tail + nsize <= end) {        // There is enough space before the real end of queue
+            _end = end;                     // Logic End must be moved to real end of queue
+            return true;
+        } else {                            // There is no enough space before the real end of queue
+            end = _tail;                    // Save Tail position
+
+            if (nsize <= _head) {          // There is enough space before Head from Begin
+                _tail = 0;                  // Move Tail to Begin
+                _end = end;                 // Move Logic End
+                return true;
+            }
+        }
+    } else {                                // Tail is at the left side of Head
+        if (_tail + nsize <= _head) {      // There is enough space before Head
+            return true;
+        }
+    }
+
+    //
+	// There is no enough space to push function
+    //
+    
+    size_t capacity = _capacity;
+    size_t increment = _increment_factor * nsize;
+
+    // Check for overflow
+    //
+    if (! overflow(increment)) {
+        capacity += increment;
+        char * begin = new char[capacity];
+        
+        if (_tail >= _head) {
+            //
+            //          |---n---|                |---n---|
+            //    -------------------------       -----------------------------
+            //    | | | |x|x|x|x| | | | | | -->  |x|x|x|x| | | | | | | | | | |
+            //    -------------------------       -----------------------------
+            //     ^     ^       ^     ^          ^       ^                   ^
+            //     |     |       |     |          |       |                   |
+            //  _begin _head   _tail _end      _begin   _tail               _end
+            //                                 _head
+            //
+            size_t n = _tail - _head;
+            std::memcpy(begin, _begin + _head, n);
+            _head = 0;
+            _tail = n;
+            _end  = capacity;
+        } else {
+            //
+            //    |n1-|         |-n2--|          |-n2--|n1-|
+            //    -------------------------       ------------------------------
+            //    |y|y| | | | | |x|x|x| | | -->  |x|x|x|y|y| | | | | | | | | | 
+            //    -------------------------       ------------------------------
+            //     ^   ^         ^     ^          ^         ^                 ^
+            //     |   |         |     |          |         |                 |
+            // _begin _tail  _head  _end       _begin     _tail             _end
+            //                                 _head
+            //
+            size_t n1 = _tail;
+            size_t n2 = _end - _head;
+            
+            std::memcpy(begin, _begin + _head, n2);
+            std::memcpy(begin + n2, _begin, n1);
+            
+            _head = 0;
+            _tail = n2 + n1;
+            _end  = capacity;
+            
+        }
+        
+        delete [] _begin;
+        
+      	_begin = begin;
+        _capacity = capacity;
+        
+        return true;
+    }
+    
+    return false;
 }
 
 } // details
-
-
-#if __COMMENT1__
 
 template <typename Return, typename Mutex = pfs::fake_mutex>
 class active_queue_base
@@ -196,64 +306,42 @@ public:
 	typedef binder_base<Return> binder_base_type;
 
 protected:
-    static size_t const DefaultIncrementFactor = 10;
-    
-protected:
 	Mutex  _mutex;
-	char * _begin;
-	size_t _end;   // Logic end (not a real end of buffer)
-	size_t _head;
-	size_t _tail;
-	atomic_integer<size_t> _count;
-    atomic_integer<size_t> _capacity;
-    atomic_integer<size_t> _max_capacity;
-    size_t _increment_factor;
-    
-    PFS_DEBUG(bool _realloced);
+    details::ring_queue _queue;
+
+#if __COMMENT__
 
 protected:
 	void pop (binder_base_type & fr);
     void pull (binder_base_type * & fr);
 	bool prepare_push (size_t frsize);
 
-	void reset ()
-	{
-		_head = 0;   // Move Head and Tail to the begin of queue
-		_tail = 0;
-		_end  = _capacity.load();
-	}
-
+#endif
+    
 public:
 	active_queue_base (size_t initial = 0
             , size_t max_capacity = pfs::max_value<size_t>()
             , size_t increment_factor = DefaultIncrementFactor)
-        : _begin(initial > 0 ? new char[initial] : 0)
-		, _end(initial)
-		, _head(0)
-		, _tail(0)
-		, _count(0)
-        , _capacity(initial)
-        , _max_capacity(max_capacity)
-        , _increment_factor(increment_factor)
-        , PFS_DEBUG(_realloced(false))
+        : _queue(initial, max_capacity, increment_factor)
 	{}
 
 	virtual ~active_queue_base ()
 	{
-		while (_head != _tail)
+		while (!_queue.empty())
 			pop();
-        delete [] _begin;
 	}
 
 	bool empty () const
 	{
-		return _count.load() == 0;
+		return _count == 0;
 	}
 
 	size_t count () const
 	{
-		return _count.load();
+		return _count;
 	}
+
+#if __COMMENT__
 
 	size_t capacity () const
 	{
@@ -302,199 +390,43 @@ public:
 	}
 
 	void pop ();
+#endif
 };
 
-template <typename Return, typename Mutex>
-void active_queue_base<Return, Mutex>::pop ()
-{
-    lock_guard<Mutex> locker(_mutex);
-	binder_base<Return> * fr = 0;
+//template <typename Return, typename Mutex>
+//void active_queue_base<Return, Mutex>::pop ()
+//{
+//    lock_guard<Mutex> locker(_mutex);
+//	binder_base<Return> * fr = 0;
+//
+//	pull(fr);
+//
+//	if (fr)
+//		pop(*fr);
+//}
 
-	pull(fr);
+//template <typename Return, typename Mutex>
+//void active_queue_base<Return, Mutex>::pull (binder_base_type * & fr)
+//{
+//	if (!empty()) {
+//		if (_head == _end) { // Head exceeds Tail, but Queue is not empty
+//			_head = 0;
+//			_end = _capacity.load();
+//		}
+//
+//		fr = reinterpret_cast<binder_base_type *>(_begin + _head);
+//	}
+//}
 
-	if (fr)
-		pop(*fr);
-}
+//template <typename Return, typename Mutex>
+//void active_queue_base<Return, Mutex>::pop (binder_base_type & fr)
+//{
+//	_head += fr.size(); // Supposed Head position
+//	_count.deref();
+//	fr.~binder_base_type();
+//}
 
-template <typename Return, typename Mutex>
-bool active_queue_base<Return, Mutex>::prepare_push (size_t frsize)
-{
-    if (! _begin) {
-        size_t capacity = _increment_factor * frsize;
-        _begin = new char[capacity];
-        _end = capacity;
-        _head = 0;
-        _tail = 0;
-        _count.store(0);
-        _capacity.store(capacity);
-        
-        PFS_DEBUG(
-            std::cout << "INITIAL ALLOCATION: " << std::endl
-                      << "\t_end=" << this->_end << std::endl
-                      << "\t_head=" << this->_head << std::endl
-                      << "\t_tail=" << this->_tail << std::endl
-                      << "\t_count=" << this->_count.load() << std::endl
-                      << "\t_capacity=" << this->_capacity.load() << std::endl
-                      << "\t_max_capacity=" << this->_max_capacity.load() << std::endl
-        );
-        
-        return true;
-    }
-    
-    if (_tail == _head && empty()) {
-        reset();   // Move Head and Tail to the begin of queue
-    }
-
-    if (_tail == _head && ! empty()) {      // Queue is full
-        ;
-    } if (_tail >= _head) {                 // Tail is at the right side of Head or Queue is empty (_tail == _head)
-        size_t end  = _capacity.load();
-
-        if (_tail + frsize <= end) {        // There is enough space before the real end of queue
-            _end = end;                     // Logic End must be moved to real end of queue
-            return true;
-        } else {                            // There is no enough space before the real end of queue
-            end = _tail;                    // Save Tail position
-
-            if (frsize <= _head) {          // There is enough space before Head from Begin
-                _tail = 0;                  // Move Tail to Begin
-                _end = end;                 // Move Logic End
-                return true;
-            }
-        }
-    } else {                                // Tail is at the left side of Head
-        if (_tail + frsize <= _head) {      // There is enough space before Head
-            return true;
-        }
-    }
-
-    //
-	// There is no enough space to push function
-    //
-    
-    size_t capacity = _capacity.load();
-    size_t increment = _increment_factor * frsize;
-
-    PFS_DEBUG(
-        std::cout << "BEFORE RELOCATION: " << std::endl
-                  << "\t_end=" << this->_end << std::endl
-                  << "\t_head=" << this->_head << std::endl
-                  << "\t_tail=" << this->_tail << std::endl
-                  << "\t_count=" << this->_count.load() << std::endl
-                  << "\t_capacity=" << this->_capacity.load() << std::endl
-                  << "\t_max_capacity=" << this->_max_capacity.load() << std::endl
-                  << "\tcapacity=" << capacity << std::endl
-                  << "\tincrement=" << increment << std::endl;
-    );
-
-    // Check for overflow
-    //
-    if (_max_capacity.load() >= increment && _max_capacity.load() - increment > capacity) {
-        capacity += increment;
-        char * begin = new char[capacity];
-        
-        if (_tail >= _head) {
-            //
-            //          |---n---|                |---n---|
-            //    -------------------------       -----------------------------
-            //    | | | |x|x|x|x| | | | | | -->  |x|x|x|x| | | | | | | | | | |
-            //    -------------------------       -----------------------------
-            //     ^     ^       ^     ^          ^       ^                   ^
-            //     |     |       |     |          |       |                   |
-            //  _begin _head   _tail _end      _begin   _tail               _end
-            //                                 _head
-            //
-            size_t n = _tail - _head;
-            std::memcpy(begin, _begin + _head, n);
-            _head = 0;
-            _tail = n;
-            _end  = capacity;
-        } else {
-#if __COMMENT__            
-            //                        |-n3|                                |-n3|
-            //    |n1-|         |---n2----|      |n1-|               |---n2----|
-            //    -------------------------       ------------------------------
-            //    |y|y| | | | | |x|x|x| | | -->  |y|y| | | | | | | | |x|x|x| | |
-            //    -------------------------       ------------------------------
-            //     ^   ^         ^     ^          ^   ^               ^     ^
-            //     |   |         |     |          |   |               |     |
-            // _begin _tail  _head  _end       _begin _tail         _head  _end
-            //
-            size_t n1 = _tail;
-            size_t n2 = _capacity.load() - _head; // _end - _head;
-            size_t n3 = _capacity.load() - _end;
-            
-            std::memcpy(begin, _begin, n1);
-            std::memcpy(begin + capacity - n2, _begin + _head, n2);
-            
-            _head = capacity - n2;
-            _tail = n1;
-            _end  = capacity - n3;
-#endif
-            //
-            //    |n1-|         |-n2--|          |-n2--|n1-|
-            //    -------------------------       ------------------------------
-            //    |y|y| | | | | |x|x|x| | | -->  |x|x|x|y|y| | | | | | | | | | 
-            //    -------------------------       ------------------------------
-            //     ^   ^         ^     ^          ^         ^                 ^
-            //     |   |         |     |          |         |                 |
-            // _begin _tail  _head  _end       _begin     _tail             _end
-            //                                 _head
-            //
-            size_t n1 = _tail;
-            size_t n2 = _end - _head;
-            
-            std::memcpy(begin, _begin + _head, n2);
-            std::memcpy(begin + n2, _begin, n1);
-            
-            _head = 0;
-            _tail = n2 + n1;
-            _end  = capacity;
-            
-        }
-        
-        delete [] _begin;
-        
-      	_begin = begin;
-        _capacity.store(capacity);
-        
-        PFS_DEBUG(
-            std::cout << "AFTER RELOCATION: " << std::endl
-                      << "\t_end=" << this->_end << std::endl
-                      << "\t_head=" << this->_head << std::endl
-                      << "\t_tail=" << this->_tail << std::endl
-                      << "\t_count=" << this->_count.load() << std::endl
-                      << "\t_capacity=" << this->_capacity.load() << std::endl
-        );
-        
-        PFS_DEBUG(_realloced = true);
-
-        return true;
-    }
-    
-	return false;
-}
-
-template <typename Return, typename Mutex>
-void active_queue_base<Return, Mutex>::pull (binder_base_type * & fr)
-{
-	if (!empty()) {
-		if (_head == _end) { // Head exceeds Tail, but Queue is not empty
-			_head = 0;
-			_end = _capacity.load();
-		}
-
-		fr = reinterpret_cast<binder_base_type *>(_begin + _head);
-	}
-}
-
-template <typename Return, typename Mutex>
-void active_queue_base<Return, Mutex>::pop (binder_base_type & fr)
-{
-	_head += fr.size(); // Supposed Head position
-	_count.deref();
-	fr.~binder_base_type();
-}
+#if __COMMENT__
 
 template <typename Return, typename Mutex = pfs::fake_mutex>
 class active_queue : public active_queue_base<Return, Mutex>
@@ -524,6 +456,9 @@ public:
 	return_type call_all ();
 };
 
+#endif
+
+#if __COMMENT__
 template <typename Mutex>
 class active_queue<void, Mutex> : public active_queue_base<void, Mutex>
 {
@@ -541,7 +476,9 @@ public:
 	return_type call ();
 	return_type call_all ();
 };
+#endif
 
+#if __COMMENT__
 template <typename Return, typename Mutex>
 typename active_queue<Return, Mutex>::return_type
 	active_queue<Return, Mutex>::call ()
@@ -568,7 +505,9 @@ typename active_queue<Return, Mutex>::return_type
 
 	return r;
 }
+#endif
 
+#if __COMMENT__
 template <typename Return, typename Mutex>
 typename active_queue<Return, Mutex>::return_type
 	active_queue<Return, Mutex>::call_all ()
@@ -579,7 +518,9 @@ typename active_queue<Return, Mutex>::return_type
 		r = call();
 	return r;
 }
+#endif
 
+#if __COMMENT__
 template <typename Mutex>
 typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call ()
 {
@@ -617,7 +558,9 @@ typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call 
 	this->pop(*fr);
 //	locker.unlock();
 }
+#endif
 
+#if __COMMENT__
 template <typename Mutex>
 inline typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call_all ()
 {
@@ -630,4 +573,3 @@ inline typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>
 } // pfs
 
 #endif /* __PFS_ACTIVE_QUEUE_HPP__ */
-
