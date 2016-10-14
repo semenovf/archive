@@ -114,9 +114,7 @@ public:
     {}
 
     virtual ~binder_function0 () 
-    {
-        PFS_DEBUG(std::cout << "~binder_function0()" << std::endl);
-    }
+    {}
 
     virtual return_type operator () () const
     {
@@ -142,9 +140,7 @@ public:
     {}
 
     virtual ~binder_function1 () 
-    {
-        PFS_DEBUG(std::cout << "~binder_function1(" << _a1 << ')' << std::endl);
-    }
+    {}
 
     virtual return_type operator () () const
     {
@@ -172,9 +168,7 @@ public:
     {}
 
     virtual ~binder_function2 () 
-    {
-        PFS_DEBUG(std::cout << "~binder_function2(" << _a1 << ", " << _a2 << ')' << std::endl);
-    }
+    {}
 
     virtual return_type operator () () const
     {

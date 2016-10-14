@@ -15,7 +15,6 @@
 #define __PFS_ACTIVE_QUEUE_1_HPP__
 
 #include <cstring> // for std::memcpy
-#include <memory>  // for std::allocator
 #include <pfs/atomic.hpp>
 #include <pfs/binder.hpp>
 #include <pfs/mutex.hpp>
@@ -54,7 +53,7 @@ namespace details {
 class ring_queue
 {
 public:
-    static size_t const DefaultIncrementFactor = 10;
+    static size_t const default_increment_factor = 10;
 
 private:
 	char * _begin;
@@ -82,10 +81,37 @@ private:
 		_end  = _capacity;
 	}
     
+    template <typename T>
+    T * allocate ();
+
+    template <typename T>
+    T & front_helper ()
+    {
+        PFS_ASSERT(!empty());
+
+        if (_head == _end) { // Head exceeds Tail, but Queue is not empty
+            _head = 0;
+            _end = _capacity;
+        }
+        
+        return *reinterpret_cast<T *>(_begin + _head);
+    }
+
+    template <typename T>
+    T & back_helper ()
+    {
+        PFS_ASSERT(!empty());
+
+        return _tail == 0 
+                ? *reinterpret_cast<T *>(_end - sizeof(T))
+                : *reinterpret_cast<T *>(_tail - sizeof(T));
+    }
+
+    
 public:
 	ring_queue (size_t initial = 0
             , size_t max_capacity = pfs::max_value<size_t>()
-            , size_t increment_factor = DefaultIncrementFactor)
+            , size_t increment_factor = default_increment_factor)
         : _begin(initial > 0 ? new char[initial] : 0)
 		, _end(initial)
 		, _head(0)
@@ -110,80 +136,104 @@ public:
     {
         return _capacity;
     }
+    
+    size_t count () const
+    {
+        return _count;
+    }
 
     bool ensure_capacity (size_t nsize);
 
-//    typename <typename T>
-//    std::allocator<T> prepare_allocator ()
-//    {
-//        std::allocator<T> alloc;
-//        string = alloc.allocate(1);
-//        return alloc;
-//    }
+    template <typename T>
+    bool push ()
+    {
+        T * ptr = allocate<T>();
+        
+        if (ptr) {
+            (void *)new (ptr) T;
+            return true;
+        }
+        
+        return false;
+    }
+
+    template <typename T, typename Arg1>
+    bool push (Arg1 const & a1)
+    {
+        T * ptr = allocate<T>();
+        
+        if (ptr) {
+            (void *)new (ptr) T(a1);
+            return true;
+        }
+        
+        return false;
+    }
+
+    template <typename T, typename Arg1, typename Arg2>
+    bool push (Arg1 const & a1, Arg2 const & a2)
+    {
+        T * ptr = allocate<T>();
+        if (ptr) {
+            (void *)new (ptr) T(a1, a2);
+            return true;
+        }
+        return false;
+    }
+
+    template <typename T, typename Arg1, typename Arg2, typename Arg3>
+    bool push (Arg1 const & a1, Arg2 const & a2, Arg3 const & a3)
+    {
+        T * ptr = allocate<T>();
+        if (ptr) {
+            (void *)new (ptr) T(a1, a2, a3);
+            return true;
+        }
+        return false;
+    }
+
+    template <typename T>
+    T & front ()
+    {
+        return front_helper<T>();
+    }
     
-//      /**
-//       *  Returns a read/write reference to the data at the first
-//       *  element of the %queue.
-//       */
-//      reference
-//      front()
-//      {
-//	__glibcxx_requires_nonempty();
-//	return c.front();
-//      }
-//
-//      /**
-//       *  Returns a read-only (constant) reference to the data at the first
-//       *  element of the %queue.
-//       */
-//      const_reference
-//      front() const
-//      {
-//	__glibcxx_requires_nonempty();
-//	return c.front();
-//      }
-//
-//      /**
-//       *  Returns a read/write reference to the data at the last
-//       *  element of the %queue.
-//       */
-//      reference
-//      back()
-//      {
-//	__glibcxx_requires_nonempty();
-//	return c.back();
-//      }
-//
-//      /**
-//       *  Returns a read-only (constant) reference to the data at the last
-//       *  element of the %queue.
-//       */
-//      const_reference
-//      back() const
-//      {
-//	__glibcxx_requires_nonempty();
-//	return c.back();
-//      }
-//
-//
-//
-//      /**
-//       *  @brief  Removes first element.
-//       *
-//       *  This is a typical %queue operation.  It shrinks the %queue by one.
-//       *  The time complexity of the operation depends on the underlying
-//       *  sequence.
-//       *
-//       *  Note that no data is returned, and if the first element's
-//       *  data is needed, it should be retrieved before pop() is
-//       *  called.
-//       */
-//      void
-//      pop()
-//      {
-//	__glibcxx_requires_nonempty();
-//	c.pop_front();
-//      }
+    template <typename T>
+    T const & front () const
+    {
+        return front_helper<T>();
+    }
+    
+    template <typename T>
+    T & back ()
+    {
+        return back_helper<T>();
+    }
+
+    template <typename T>
+    T const & back () const
+    {
+        return back_helper<T>();
+    }
+    
+    /**
+     *  @brief  Removes first element.
+     */
+    template <typename T>
+    void pop ()
+    {
+        PFS_ASSERT(!empty());
+        front<T>().~T();
+        _head += sizeof(T); // Supposed Head position
+        --_count;
+    }
+    
+    void pop (size_t nsize) 
+    {
+        PFS_ASSERT(!empty());
+        _head += nsize;   // Supposed Head position
+        --_count;
+    }
 };
 
 // TODO Move to .cpp file
@@ -215,20 +265,20 @@ inline bool ring_queue::ensure_capacity (size_t nsize)
     } if (_tail >= _head) {                 // Tail is at the right side of Head or Queue is empty (_tail == _head)
         size_t end  = _capacity;
 
-        if (_tail + nsize <= end) {        // There is enough space before the real end of queue
+        if (_tail + nsize <= end) {         // There is enough space before the real end of queue
             _end = end;                     // Logic End must be moved to real end of queue
             return true;
         } else {                            // There is no enough space before the real end of queue
             end = _tail;                    // Save Tail position
 
-            if (nsize <= _head) {          // There is enough space before Head from Begin
+            if (nsize <= _head) {           // There is enough space before Head from Begin
                 _tail = 0;                  // Move Tail to Begin
                 _end = end;                 // Move Logic End
                 return true;
             }
         }
     } else {                                // Tail is at the left side of Head
-        if (_tail + nsize <= _head) {      // There is enough space before Head
+        if (_tail + nsize <= _head) {       // There is enough space before Head
             return true;
         }
     }
@@ -282,7 +332,6 @@ inline bool ring_queue::ensure_capacity (size_t nsize)
             _head = 0;
             _tail = n2 + n1;
             _end  = capacity;
-            
         }
         
         delete [] _begin;
@@ -296,6 +345,20 @@ inline bool ring_queue::ensure_capacity (size_t nsize)
     return false;
 }
 
+template <typename T>
+T * ring_queue::allocate ()
+{
+    T * result = 0;
+
+    if (ensure_capacity(sizeof(T))) {
+        result = reinterpret_cast<T *>(_begin + _tail);
+        _tail += sizeof(T);
+        ++_count;
+    }
+
+    return result;
+}
+
 } // details
 
 template <typename Return, typename Mutex = pfs::fake_mutex>
@@ -306,127 +369,72 @@ public:
 	typedef binder_base<Return> binder_base_type;
 
 protected:
-	Mutex  _mutex;
+	mutable Mutex  _mutex;
     details::ring_queue _queue;
 
-#if __COMMENT__
-
-protected:
-	void pop (binder_base_type & fr);
-    void pull (binder_base_type * & fr);
-	bool prepare_push (size_t frsize);
-
-#endif
-    
 public:
 	active_queue_base (size_t initial = 0
             , size_t max_capacity = pfs::max_value<size_t>()
-            , size_t increment_factor = DefaultIncrementFactor)
+            , size_t increment_factor = details::ring_queue::default_increment_factor)
         : _queue(initial, max_capacity, increment_factor)
 	{}
 
 	virtual ~active_queue_base ()
 	{
 		while (!_queue.empty())
-			pop();
+			this->pop();
 	}
 
 	bool empty () const
 	{
-		return _count == 0;
+        lock_guard<Mutex> locker(_mutex);
+		return _queue.empty();
 	}
 
 	size_t count () const
 	{
-		return _count;
+        lock_guard<Mutex> locker(_mutex);
+		return _queue.count();
 	}
-
-#if __COMMENT__
 
 	size_t capacity () const
 	{
-		return _capacity.load();
+        lock_guard<Mutex>(_mutex);
+		return _queue.capacity;
 	}
 
 	bool push_function (return_type (* f) ())
 	{
 		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_function0<return_type>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_function0<return_type>(f);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
+        return _queue.push<binder_function0<return_type> >(f);
 	}
 
 	template <typename Arg1>
-	bool push_function (return_type (*f) (Arg1), Arg1 a1)
+	bool push_function (return_type (* f) (Arg1), Arg1 a1)
 	{
 		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_function1<return_type, Arg1>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_function1<return_type, Arg1>(f, a1);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
+        return _queue.push<binder_function1<return_type, Arg1> >(f, a1);
 	}
-
+    
 	template <typename Arg1, typename Arg2>
-	bool push_function (return_type (*f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
+	bool push_function (return_type (* f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
 	{
 		lock_guard<Mutex> locker(_mutex);
-
-		if (prepare_push(sizeof(binder_function2<return_type, Arg1, Arg2>))) {
-			binder_base_type * fr = new (_begin + _tail) binder_function2<return_type, Arg1, Arg2>(f, a1, a2);
-			_tail += fr->size();
-			_count.ref(); //++_count;
-			return true;
-		}
-		return false;
+        return _queue.push<binder_function2<return_type, Arg1, Arg2> >(f, a1, a2);
 	}
-
+    
 	void pop ();
-#endif
 };
 
-//template <typename Return, typename Mutex>
-//void active_queue_base<Return, Mutex>::pop ()
-//{
-//    lock_guard<Mutex> locker(_mutex);
-//	binder_base<Return> * fr = 0;
-//
-//	pull(fr);
-//
-//	if (fr)
-//		pop(*fr);
-//}
-
-//template <typename Return, typename Mutex>
-//void active_queue_base<Return, Mutex>::pull (binder_base_type * & fr)
-//{
-//	if (!empty()) {
-//		if (_head == _end) { // Head exceeds Tail, but Queue is not empty
-//			_head = 0;
-//			_end = _capacity.load();
-//		}
-//
-//		fr = reinterpret_cast<binder_base_type *>(_begin + _head);
-//	}
-//}
-
-//template <typename Return, typename Mutex>
-//void active_queue_base<Return, Mutex>::pop (binder_base_type & fr)
-//{
-//	_head += fr.size(); // Supposed Head position
-//	_count.deref();
-//	fr.~binder_base_type();
-//}
-
-#if __COMMENT__
+template <typename Return, typename Mutex>
+void active_queue_base<Return, Mutex>::pop ()
+{
+    lock_guard<Mutex> locker(_mutex);
+	binder_base<Return> & bb = _queue.front<binder_base<Return> >();
+    
+    bb.~binder_base_type();
+	_queue.pop(bb.size());
+}
 
 template <typename Return, typename Mutex = pfs::fake_mutex>
 class active_queue : public active_queue_base<Return, Mutex>
@@ -448,7 +456,7 @@ public:
      */
 	active_queue (size_t initial = 0
             , size_t max_capacity = pfs::max_value<size_t>()
-            , size_t increment_factor = base_class::DefaultIncrementFactor)
+            , size_t increment_factor = details::ring_queue::default_increment_factor)
         : base_class(initial, max_capacity, increment_factor)
     {}
 
@@ -456,9 +464,6 @@ public:
 	return_type call_all ();
 };
 
-#endif
-
-#if __COMMENT__
 template <typename Mutex>
 class active_queue<void, Mutex> : public active_queue_base<void, Mutex>
 {
@@ -469,45 +474,39 @@ public:
 
 	active_queue (size_t initial = 0
             , size_t max_capacity = pfs::max_value<size_t>()
-            , size_t increment_factor = base_class::DefaultIncrementFactor)
+            , size_t increment_factor = details::ring_queue::default_increment_factor)
         : base_class(initial, max_capacity, increment_factor) 
     {}
 
 	return_type call ();
 	return_type call_all ();
 };
-#endif
 
-#if __COMMENT__
 template <typename Return, typename Mutex>
 typename active_queue<Return, Mutex>::return_type
 	active_queue<Return, Mutex>::call ()
 {
-    PFS_ASSERT(!this->empty());
-    
+    unique_lock<Mutex> locker(this->_mutex);
 	return_type r;
-	binder_base<Return> * fr = 0;
-
-	unique_lock<Mutex> locker(this->_mutex);
-
-	this->pull(fr);
+    
+    details::ring_queue & rq = this->_queue;
+    
+	binder_base_type & bb = rq.front<binder_base_type>();
 
 	locker.unlock();
 
-	// To avoid this assert need to check for empty of queue before this call
-	PFS_ASSERT(fr);
-
-	r = (*fr)();
+	r = bb();
 
 	locker.lock();
-	this->pop(*fr);
+
+	bb.~binder_base_type();
+	this->_queue.pop(bb.size());
+
 	locker.unlock();
 
 	return r;
 }
-#endif
 
-#if __COMMENT__
 template <typename Return, typename Mutex>
 typename active_queue<Return, Mutex>::return_type
 	active_queue<Return, Mutex>::call_all ()
@@ -518,57 +517,35 @@ typename active_queue<Return, Mutex>::return_type
 		r = call();
 	return r;
 }
-#endif
 
-#if __COMMENT__
+
 template <typename Mutex>
 typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call ()
 {
+    //unique_lock<Mutex> locker(this->_mutex);
     lock_guard<Mutex> locker(this->_mutex);
-    PFS_ASSERT(!this->empty());
     
-	binder_base<void> * fr = 0;
-    
-//	unique_lock<Mutex> locker(this->_mutex);
-	this->pull(fr);
+    details::ring_queue & rq = this->_queue;
+	binder_base_type & bb = rq.front<binder_base_type>(); // this->_queue.template front<binder_base_type>();
 
 //	locker.unlock();
 
-	// To avoid this assert need to check for empty of queue before this call
-	PFS_ASSERT(fr);
-    
-//    if (fr->magic() != 0xDEADBEAF) {
-        PFS_DEBUG(
-            std::cout << "_end=" << this->_end << std::endl
-                      << "_head=" << this->_head << std::endl
-                      << "_tail=" << this->_tail << std::endl
-                      << "_count=" << this->_count.load() << std::endl
-                      << "_capacity=" << this->_capacity.load() << std::endl
-                      << "_magic=" << std::hex << fr->magic() << std::dec << std::endl
-                      << "_realloced=" << this->_realloced << std::endl
-        );
-//    }
-        
-    PFS_ASSERT(fr->magic() == 0xDEADBEAF);
-    PFS_ASSERT(this->_end == this->_capacity.load());
-	
-    (*fr)();
+	bb();
 
 //	locker.lock();
-	this->pop(*fr);
+
+	bb.~binder_base_type();
+	this->_queue.pop(bb.size());
+
 //	locker.unlock();
 }
-#endif
 
-#if __COMMENT__
 template <typename Mutex>
 inline typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call_all ()
 {
 	while (!this->empty())
 		call();
 }
-
-#endif
 
 } // pfs
 

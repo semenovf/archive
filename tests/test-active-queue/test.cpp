@@ -8,7 +8,7 @@
 
 #include <pfs/test/test.hpp>
 #include <pfs.hpp>
-#include <pfs/active_queue.hpp>
+#include <pfs/random.hpp>
 #include <pfs/active_queue_1.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/thread.hpp>
@@ -63,6 +63,8 @@ void test ()
 
 }
 
+#if __COMMENT__
+
 namespace test1 {
 
 struct A 
@@ -115,7 +117,61 @@ void test ()
 
 }
 
+#endif
+
 namespace test2 {
+
+typedef pfs::active_queue<void, pfs::mutex> active_queue_type;
+active_queue_type q;
+
+static int counter = 0;
+
+void func1 ()
+{
+    ++counter;
+}
+
+void func2 (int i)
+{
+    cout << "func2(" << i << ')' << endl;
+}
+
+void func3 (int a, char b)
+{
+    cout << "func3(" << a << ", " << b << ')' << endl;
+}
+
+void test ()
+{
+    pfs::random rnd;
+    size_t limit = double(rnd.rand())/double(pfs::max_value<uint32_t>()) * 1000;
+    
+    int max = pfs::max_value<int>();
+    
+    for (int i = 0; i < max; ++i) {
+        cout << "Push: " << i << endl;
+        if (! q.push_function(& func1)) {
+            break;
+        }
+        
+        if (! q.push_function(& func2, i)) {
+            break;
+        }
+
+        if (! q.push_function(& func3, i, 'W')) {
+            break;
+        }
+        
+        if (q.count() > limit) {
+            q.call_all();
+            limit = double(rnd.rand())/double(pfs::max_value<uint32_t>()) * 1000;
+        }
+    }
+}
+
+}
+
+namespace test3 {
 
 typedef pfs::active_queue<void, pfs::mutex> active_queue_type;
 //active_queue_type q(0, pfs::max_value<size_t>(), 1);
@@ -196,11 +252,70 @@ void test ()
 
 }
 
-namespace test3 {
+namespace test4 {
 
 typedef pfs::details::ring_queue ring_queue_type;
 
-ring_queue_type rq;
+static int const magic_number = 0xDEADBEAF;
+
+struct A 
+{
+    size_t magic;
+    A () : magic(magic_number) {}
+    virtual ~A () { magic = 0xDEADDEAD; }
+};
+
+struct B : public A
+{
+    int b;
+    B (int x) : A(), b(x) {}
+};
+
+struct C : public B
+{
+    char c;
+    C (int x, char y) : B(x), c(y) {}
+};
+
+struct D : public C
+{
+    double d;
+    D (int x, char y, double z) : C(x, y), d(z) {}
+};
+
+void test ()
+{
+    ADD_TESTS(10);
+    
+    ring_queue_type rq;
+    
+    TEST_OK(rq.push<A>());
+    TEST_OK(rq.push<B>(314159));
+    TEST_OK(rq.push<C>(314159, 'W'));
+    TEST_OK(rq.push<D>(314159, 'W', 3.14159f));
+    
+    TEST_OK(rq.count() == 4);
+    
+    TEST_OK(rq.front<A>().magic == magic_number);
+    rq.pop<A>();
+
+    TEST_OK(rq.front<B>().magic == magic_number
+            && rq.front<B>().b == 314159);
+    rq.pop<B>();
+
+    TEST_OK(rq.front<C>().magic == magic_number
+            && rq.front<C>().b == 314159
+            && rq.front<C>().c == 'W');
+    rq.pop<C>();
+
+    TEST_OK(rq.front<D>().magic == magic_number
+            && rq.front<D>().b == 314159
+            && rq.front<D>().c == 'W'
+            && rq.front<D>().d == 3.14159f);
+    rq.pop<D>();
+    
+    TEST_OK(rq.count() == 0);
+}
 
 }
 
@@ -213,8 +328,9 @@ int main(int argc, char *argv[])
 
 //    test0::test();
 //    test1::test();
-//    test2::test();
-      test3::test();
+    test2::test();
+//    test3::test();
+//    test4::test();
     
 	return END_TESTS;
 }
