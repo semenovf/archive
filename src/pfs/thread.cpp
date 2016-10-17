@@ -31,13 +31,13 @@ thread_data::~thread_data()
 
 void thread_data::ref()
 {
-    (void) _ref.ref();
+    (void) ++_ref;
     PFS_ASSERT(_ref.load() != 0);
 }
 
 void thread_data::deref()
 {
-    if (!_ref.deref())
+    if (! --_ref)
         delete this;
 }
 

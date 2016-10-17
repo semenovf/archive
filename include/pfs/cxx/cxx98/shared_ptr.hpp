@@ -287,12 +287,14 @@ public:
 private:
     static void deref (ref_count * d)
     {
-        if (!d)
+        if (! d)
         	return;
-        if (!d->strongref.deref()) {
+        
+        if (! --d->strongref) {
             d->destroy();
         }
-        if (!d->weakref.deref())
+        
+        if (! --d->weakref)
             delete d;
     }
 
@@ -303,8 +305,8 @@ private:
 
     void ref() const
     {
-    	_d->weakref.ref();
-    	_d->strongref.ref();
+    	++_d->weakref;
+    	++_d->strongref;
     }
 };
 

@@ -25,7 +25,7 @@ public:
     void set_priority (thread::priority_enum prio);
 
     mutable pfs::mutex _mutex;
-    atomic_integer<int> quitLockRef;
+    atomic_int _quit_lock_ref;
 
     bool _running;
     bool _finished;
@@ -69,19 +69,19 @@ public:
 
     void ref ()
     {
-        quitLockRef.ref();
+        ++_quit_lock_ref;
     }
 
     void deref ()
     {
-        quitLockRef.deref();
+        --_quit_lock_ref;
     }
 };
 
 class thread_data
 {
 private:
-    atomic_integer<int> _ref;
+    atomic_int _ref;
 
 public:
     thread *   _thread;

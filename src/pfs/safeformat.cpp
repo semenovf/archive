@@ -35,7 +35,7 @@
 
 namespace pfs {
 
-atomic_integer<int> g_safeformatCompat(safeformat::compat_gcc);
+atomic_int g_safeformat_compat(safeformat::compat_gcc);
 
 template <typename T>
 struct __sf_default_traits : public __sf_base_traits
@@ -51,12 +51,12 @@ struct __sf_default_traits : public __sf_base_traits
 
 void safeformat::set_global_compat (compat_enum c) // [static]
 {
-	g_safeformatCompat.store(c);
+	g_safeformat_compat.store(c);
 }
 
 int safeformat::global_compat ()
 {
-	return g_safeformatCompat.load();
+	return g_safeformat_compat.load();
 }
 
 /*

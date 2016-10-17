@@ -525,8 +525,7 @@ typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call 
     //unique_lock<Mutex> locker(this->_mutex);
     lock_guard<Mutex> locker(this->_mutex);
     
-    details::ring_queue & rq = this->_queue;
-	binder_base_type & bb = rq.front<binder_base_type>(); // this->_queue.template front<binder_base_type>();
+	binder_base_type & bb = this->_queue.template front<binder_base_type>();
 
 //	locker.unlock();
 

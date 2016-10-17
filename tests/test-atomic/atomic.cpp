@@ -15,7 +15,7 @@ static pfs::atomic_int backCounter;   // backward counter
 static pfs::atomic_int threadCounter; // thread counter
 static pfs::atomic_int sw0;
 static pfs::atomic_int sw1;
-static const int __niters = 1000;
+static const int __niters = 1000000;
 static const int __nthreads = 50;
 static const int __totalCounter = __niters * __nthreads;
 
@@ -24,10 +24,11 @@ class TestThread : public pfs::thread
 public:
 	virtual void run()
 	{
-		threadCounter.ref();
+		++threadCounter;
+        
 		for (int i = 0; i < __niters; ++i) {
-			counter.ref();
-			backCounter.deref();
+			++counter;
+			--backCounter;
 			++nonAtomicCounter;
 		}
 	}
@@ -52,9 +53,9 @@ void test_atomic_ref ()
 	TestThread ** threads = new TestThread * [__nthreads];
 
 	nonAtomicCounter = 0;
-	threadCounter.store(0);
-	counter.store(0);
-	backCounter.store(__totalCounter);
+	threadCounter = 0;
+	counter = 0;
+	backCounter = __totalCounter;
 
 	// Initialize threads
 	for(int i = 0; i < __nthreads; ++i) {

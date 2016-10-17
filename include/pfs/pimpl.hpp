@@ -39,7 +39,7 @@ public:
 	pimpl (const pimpl & other) : _holder(other._holder)
 	{
 		if (_holder) {
-			_holder->_ref.ref();
+			++_holder->_ref;
 		}
 	}
 
@@ -50,7 +50,7 @@ public:
 	        _holder = other._holder;
 
 	        if (_holder)
-	            _holder->_ref.ref();
+	            ++_holder->_ref;
 	    }
 		return *this;
 	}
@@ -86,7 +86,7 @@ public:
 protected:
 	void deref ()
 	{
-		if (_holder && !_holder->_ref.deref()) {
+		if (_holder && ! --_holder->_ref) {
 			delete _holder;
 			_holder = 0;
 		}
@@ -137,7 +137,7 @@ public:
 	        PFS_ASSERT(rf > 0);
 	        if (rf > 1) {
 #endif
-	            _holder->_ref.deref();
+	            --_holder->_ref;
 	            _holder = _holder->clone();
 #ifndef _NDEBUG
 	        }
