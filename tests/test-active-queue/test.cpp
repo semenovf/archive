@@ -174,8 +174,8 @@ void test ()
 namespace test3 {
 
 typedef pfs::active_queue<void, pfs::mutex> active_queue_type;
-//active_queue_type q(0, pfs::max_value<size_t>(), 1);
-active_queue_type q(100000);
+active_queue_type q(0, pfs::max_value<size_t>(), 1);
+//active_queue_type q(100000);
 
 static int counter = 0;
 static bool is_finish = 0;
@@ -328,8 +328,8 @@ int main(int argc, char *argv[])
 
 //    test0::test();
 //    test1::test();
-    test2::test();
-//    test3::test();
+//    test2::test();
+    test3::test();
 //    test4::test();
     
 	return END_TESTS;

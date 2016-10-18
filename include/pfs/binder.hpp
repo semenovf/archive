@@ -47,6 +47,8 @@ public:
 
     virtual return_type operator () () const = 0;
     
+    virtual void * placement_copy (void * ptr) = 0;
+    
     size_t magic () const
     {
         return _magic;
@@ -72,7 +74,7 @@ protected:
 public:
     virtual ~binder_function_base () {}
 
-    virtual return_type operator () () const = 0;
+//    virtual return_type operator () () const = 0;
 };
 
 template <typename Class, typename Return>
@@ -95,7 +97,7 @@ protected:
 public:
     virtual ~binder_method_base () {}
 
-    virtual return_type operator () () const = 0;
+//    virtual return_type operator () () const = 0;
 };
 
 
@@ -120,6 +122,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return f();
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        (void *)new (ptr) (reinterpret_cast<binder_function0 const &>(*this))
+                + sizeof(binder_function0);
     }
 };
 
@@ -146,6 +154,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return f(_a1);
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_function1 const &>(*this))
+                + sizeof(binder_function1);
     }
 };
 
@@ -175,6 +189,12 @@ public:
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return f(_a1, _a2);
     }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_function2 const &>(*this))
+                + sizeof(binder_function2);
+    }
 };
 
 template <typename Return, typename Arg1, typename Arg2, typename Arg3>
@@ -203,6 +223,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return f(_a1, _a2, _a3);
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_function3 const &>(*this))
+                + sizeof(binder_function3);
     }
 };
 
@@ -234,6 +260,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return f(_a1, _a2, _a3, _a4);
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_function4 const &>(*this))
+                + sizeof(binder_function4);
     }
 };
 
@@ -267,6 +299,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return f(_a1, _a2, _a3, _a4, _a5);
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_function5 const &>(*this))
+                + sizeof(binder_function5);
     }
 };
 
@@ -302,6 +340,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return f(_a1, _a2, _a3, _a4, _a5, _a6);
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_function6 const &>(*this))
+                + sizeof(binder_function6);
     }
 };
 
@@ -340,6 +384,13 @@ public:
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return f(_a1, _a2, _a3, _a4, _a5, _a6, _a7);
     }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_function7 const &>(*this))
+                + sizeof(binder_function7);
+    }
+
 };
 
 template <typename Return, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
@@ -379,12 +430,17 @@ public:
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return f(_a1, _a2, _a3, _a4, _a5, _a6, _a7, _a8);
     }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_function8 const &>(*this))
+                + sizeof(binder_function8);
+    }
 };
 
 template <typename Class, typename Return>
 class binder_method0 : public binder_method_base<Class, Return>
 {
-
 public:
     typedef binder_method_base<Class, Return> base_class;
     typedef Return return_type;
@@ -401,6 +457,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return (base_class::_p->*f)();
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_method0 const &>(*this))
+                + sizeof(binder_method0);
     }
 };
 
@@ -426,6 +488,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return (base_class::_p->*f)(_a1);
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_method1 const &>(*this))
+                + sizeof(binder_method1);
     }
 };
 
@@ -453,6 +521,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return (base_class::_p->*f)(_a1, _a2);
+    }
+
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_method2 const &>(*this))
+                + sizeof(binder_method2);
     }
 };
 
@@ -482,6 +556,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return (base_class::_p->*f)(_a1, _a2, _a3);
+    }
+
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_method3 const &>(*this))
+                + sizeof(binder_method3);
     }
 };
 
@@ -513,6 +593,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4);
+    }
+
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_method4 const &>(*this))
+                + sizeof(binder_method4);
     }
 };
 
@@ -546,6 +632,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4, _a5);
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_method5 const &>(*this))
+                + sizeof(binder_method5);
     }
 };
 
@@ -581,6 +673,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4, _a5, _a6);
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_method6 const &>(*this))
+                + sizeof(binder_method6);
     }
 };
 
@@ -618,6 +716,12 @@ public:
     {
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4, _a5, _a6, _a7);
+    }
+    
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_method7 const &>(*this))
+                + sizeof(binder_method7);
     }
 };
 
@@ -658,8 +762,13 @@ public:
         funcptr_type f = reinterpret_cast<funcptr_type>(this->_f);
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4, _a5, _a6, _a7, _a8);
     }
-};
 
+    void * placement_copy (void * ptr)
+    {
+        return new (ptr) (reinterpret_cast<binder_method8 const &>(*this))
+                + sizeof(binder_method8);
+    }
+};
 
 } // pfs
 

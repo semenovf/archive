@@ -97,7 +97,7 @@ inline T atomic_exchange (T * pval, T nv)
 template <typename T>
 inline T atomic_load (T * pval)
 {
-    return atomic_add_fetch(pval, 0);
+    return atomic_add_fetch(pval, static_cast<T>(0));
 }
 
 template <typename T>

@@ -103,6 +103,13 @@ sub binder_def
     push $r, $s4;
     
     push $r, '    }';
+
+    push $r, '';
+    push $r, '    void * placement_copy (void * ptr)';
+    push $r, '    {';
+    push $r, "        return new (ptr) (reinterpret_cast<${binderName} const &>(*this))"
+    push $r, "                    + sizeof(${binderName});";
+    push $r, '    }';
     push $r, '};';
     push $r, '';
     
@@ -173,6 +180,8 @@ public:
     }
 
     virtual return_type operator () () const = 0;
+
+    virtual void placement_copy (void * ptr) = 0;
 };
 
 
@@ -194,7 +203,7 @@ protected:
 public:
     virtual ~binder_function_base () {}
 
-    virtual return_type operator () () const = 0;
+//    virtual return_type operator () () const = 0;
 };
 
 template <typename Class, typename Return>
@@ -217,7 +226,7 @@ protected:
 public:
     virtual ~binder_method_base () {}
 
-    virtual return_type operator () () const = 0;
+//    virtual return_type operator () () const = 0;
 };
 
 END_OF_CODE

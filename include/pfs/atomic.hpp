@@ -23,10 +23,10 @@ namespace pfs {
 template <typename Integral>
 struct atomic
 {
-    typedef Integral int_type;
+    typedef Integral value_type;
 
 private:    
-    int_type value;
+    value_type value;
     
 private:
     atomic (atomic const &);              // Is not CopyConstructible
@@ -37,102 +37,102 @@ public:
         : value(0) 
     {}
     
-    atomic (int_type v)
+    atomic (value_type v)
         : value(v)
     {}
     
-    int_type operator = (int_type v)
+    value_type operator = (value_type v)
     {
         store(v);
         return v;
     }
     
-    operator int_type () const
+    operator value_type () const
     {
         return load();
     }
     
-    void store (int_type v)
+    void store (value_type v)
     {
         atomic_store(& value, v);
     }
     
-    int_type load () const
+    value_type load () const
     {
-        return atomic_load((int_type *)& value);
+        return atomic_load((value_type *)& value);
     }
 
-    int_type operator ++ ()
+    value_type operator ++ ()
     {
-        return atomic_add_fetch(& value, 1);
+        return atomic_add_fetch(& value, static_cast<value_type>(1));
     }
 
-//    int_type operator ++ (int)
-//    {
-//        return atomic_fetch_add(1);
-//    }
+    value_type operator ++ (int)
+    {
+        return atomic_fetch_add(& value, static_cast<value_type>(1));
+    }
     
-    int_type operator -- ()
+    value_type operator -- ()
     {
-        return atomic_sub_fetch(& value, 1);
+        return atomic_sub_fetch(& value, static_cast<value_type>(1));
     }
 
-//    int_type operator -- (int)
-//    {
-//        return fetch_sub(1);
-//    }
+    value_type operator -- (int)
+    {
+        return fetch_sub(& value, static_cast<value_type>(1));
+    }
     
-    int_type operator += (int_type n)
+    value_type operator += (value_type n)
     {
         return atomic_add_fetch(& value, n); 
     }
 
-    int_type operator -= (int_type n)
+    value_type operator -= (value_type n)
     {
         return atomic_sub_fetch(& value, n);
     }
 
-    int_type operator &= (int_type n)
+    value_type operator &= (value_type n)
     {
         return atomic_and_fetch(& value, n);
     }
 
-    int_type operator |= (int_type n)
+    value_type operator |= (value_type n)
     {
         return atomic_or_fetch(& value, n);
     }
 
-    int_type operator ^= (int_type n)
+    value_type operator ^= (value_type n)
     { 
         return atomic_xor_fetch(& value, n);
     }
     
-    int_type fetch_add (int_type n)
+    value_type fetch_add (value_type n)
     {
         return atomic_fetch_add(& value, n);
     }
 
-    int_type fetch_sub (int_type n)
+    value_type fetch_sub (value_type n)
     {
         return atomic_fetch_sub(& value, n);
     }
     
-    int_type fetch_and (int_type n)
+    value_type fetch_and (value_type n)
     {
         return atomic_fetch_and(& value, n); 
     }
     
-    int_type fetch_or (int_type n)
+    value_type fetch_or (value_type n)
     {
         return atomic_fetch_or(& value, n);
     }
 
-    int_type fetch_xor (int_type n)
+    value_type fetch_xor (value_type n)
     {
         return atomic_fetch_xor(& value, n);
     }
 
-    int_type exchange (int_type v)
+    value_type exchange (value_type v)
     {
         return atomic_exchange (& value, v);
     }
@@ -220,12 +220,12 @@ public:
 
     void store (pointer_type p)
     {
-        atomic_store(_p, p);
+        atomic_store(& _p, p);
     }
 
     pointer_type load () const
     {
-        return atomic_load(_p);
+        return atomic_load((pointer_type *)& _p);
     }
 
     pointer_type exchange (pointer_type p)
@@ -273,33 +273,6 @@ typedef atomic<ptrdiff_t>          atomic_ptrdiff_t;
 
 } // pfs
 
-#endif
-
-#if __COMMENT__
-
-
-#if defined(PFS_CC_MSVC)
-//#	pragma message("Using MSVC implementation for atomic variables")
-#	include <pfs/bits/atomic_msvc.hpp>
-#	define HAVE_ATOMIC_MSVC 1
-#elif defined(PFS_CPP_CXX11)
-//#	pragma message("Using C++11 implementation for atomic variables")
-#	include <pfs/bits/atomic_cxx11.hpp>
-#	define HAVE_ATOMIC_CX11 1
-#elif defined(PFS_CC_GNUC)
-//#	pragma message("Using GCC implementation for atomic variables")
-#	include <pfs/bits/atomic_gcc.hpp>
-#	define HAVE_ATOMIC_GCC 1
-#elif defined(PFS_TARGET_CPU) && (defined(PFS_TARGET_CPU_X86) || defined(PFS_TARGET_CPU_x86))
-//#	pragma message("Using x86 implementation for atomic variables")
-#	include <pfs/bits/atomic_x86.hpp>
-#	define HAVE_ATOMIC_X86 1
-#else
-//#	pragma message("Using implementation with locking (worst case) for atomic variables")
-#	include <pfs/bits/atomic_mt.hpp>
-#	define HAVE_ATOMIC_MT 1
-#endif
-
-#endif
+#endif // __PFS_CXX_VERSION__ >= 2011
 
 #endif /* __PFS_ATOMIC_HPP__ */

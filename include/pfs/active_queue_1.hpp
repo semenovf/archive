@@ -54,14 +54,17 @@ class ring_queue
 {
 public:
     static size_t const default_increment_factor = 10;
+    
+    typedef void * (* move_callback_type) (void * dest, const void * src, size_t n);
 
-private:
+PFS_DEBUG(public:)
+//private:
 	char * _begin;
 	size_t _end;   // Logic end (not a real end of buffer)
 	size_t _head;
 	size_t _tail;
-    size_t _count;
-    size_t _capacity;
+    atomic_size_t _count;
+    atomic_size_t _capacity;
     size_t _max_capacity;
     size_t _increment_factor;
 
@@ -124,7 +127,7 @@ public:
 
     ~ring_queue ()
     {
-        delete _begin;
+        delete [] _begin;
     }
         
     bool empty () const
@@ -142,7 +145,8 @@ public:
         return _count;
     }
 
-    bool ensure_capacity (size_t nsize);
+    bool ensure_capacity (size_t nsize
+        , move_callback_type move_callback = & std::memmove);
 
     template <typename T>
     bool push ()
@@ -236,10 +240,14 @@ public:
     }
 };
 
-// TODO Move to .cpp file
+
+// TODO move to .cpp
 //
-inline bool ring_queue::ensure_capacity (size_t nsize)
+inline bool ring_queue::ensure_capacity (size_t nsize
+    , move_callback_type move_callback)
 {
+    PFS_ASSERT(move_callback);
+    
     if (! _begin) {
         size_t increment = _increment_factor * nsize;
         
@@ -256,33 +264,36 @@ inline bool ring_queue::ensure_capacity (size_t nsize)
         return true;
     }
 
-    if (_tail == _head && empty()) {
+    if (empty()) {
         reset();   // Move Head and Tail to the begin of queue
-    }
-
-    if (_tail == _head && ! empty()) {      // Queue is full
-        ;
-    } if (_tail >= _head) {                 // Tail is at the right side of Head or Queue is empty (_tail == _head)
-        size_t end  = _capacity;
-
-        if (_tail + nsize <= end) {         // There is enough space before the real end of queue
-            _end = end;                     // Logic End must be moved to real end of queue
+        
+        if (nsize <= _capacity)
             return true;
-        } else {                            // There is no enough space before the real end of queue
-            end = _tail;                    // Save Tail position
+    } else {                                    // Queue is not empty
+        if (_tail == _head) {                   // Queue is full, need expand the queue
+            ;
+        } else if (_tail > _head) {             // Tail is at the right side of Head
+            size_t end  = _capacity;
 
-            if (nsize <= _head) {           // There is enough space before Head from Begin
-                _tail = 0;                  // Move Tail to Begin
-                _end = end;                 // Move Logic End
+            if (_tail + nsize <= end) {         // There is enough space before the real end of queue
+                _end = end;                     // Logic End must be moved to real end of queue
+                return true;
+            } else {                            // There is no enough space before the real end of queue
+                end = _tail;                    // Save Tail position
+
+                if (nsize <= _head) {           // There is enough space before Head from Begin
+                    _tail = 0;                  // Move Tail to Begin
+                    _end = end;                 // Move Logic End
+                    return true;
+                }
+            }
+        } else {                                // Tail is at the left side of Head
+            if (_tail + nsize <= _head) {       // There is enough space before Head
                 return true;
             }
         }
-    } else {                                // Tail is at the left side of Head
-        if (_tail + nsize <= _head) {       // There is enough space before Head
-            return true;
-        }
     }
-
+    
     //
 	// There is no enough space to push function
     //
@@ -296,7 +307,7 @@ inline bool ring_queue::ensure_capacity (size_t nsize)
         capacity += increment;
         char * begin = new char[capacity];
         
-        if (_tail >= _head) {
+        if (_tail > _head) {
             //
             //          |---n---|                |---n---|
             //    -------------------------       -----------------------------
@@ -308,7 +319,9 @@ inline bool ring_queue::ensure_capacity (size_t nsize)
             //                                 _head
             //
             size_t n = _tail - _head;
-            std::memcpy(begin, _begin + _head, n);
+            
+            move_callback(begin, _begin + _head, n);
+            
             _head = 0;
             _tail = n;
             _end  = capacity;
@@ -326,8 +339,8 @@ inline bool ring_queue::ensure_capacity (size_t nsize)
             size_t n1 = _tail;
             size_t n2 = _end - _head;
             
-            std::memcpy(begin, _begin + _head, n2);
-            std::memcpy(begin + n2, _begin, n1);
+            move_callback(begin, _begin + _head, n2);
+            move_callback(begin + n2, _begin, n1);
             
             _head = 0;
             _tail = n2 + n1;
@@ -361,6 +374,19 @@ T * ring_queue::allocate ()
 
 } // details
 
+PFS_DEBUG(
+    inline void debug_info (char const * title, details::ring_queue const & q, size_t magic)
+    {
+        std::cout << title 
+                           << std::setw(10) << q._head      << "(head) "
+                           << std::setw(10) << q._tail      << "(tail) "
+                           << std::setw(10) << q._end       << "(end) " 
+                           << std::setw(10) << q._count     << "(count) "
+                           << std::setw(10) << q._capacity  << "(capacity) "
+                           << std::hex << magic << std::dec << "(magic)" << std::endl;
+    }
+)
+
 template <typename Return, typename Mutex = pfs::fake_mutex>
 class active_queue_base
 {
@@ -372,6 +398,9 @@ protected:
 	mutable Mutex  _mutex;
     details::ring_queue _queue;
 
+protected:
+    static void * move_callback (void * dest, const void * src, size_t n);
+    
 public:
 	active_queue_base (size_t initial = 0
             , size_t max_capacity = pfs::max_value<size_t>()
@@ -387,40 +416,49 @@ public:
 
 	bool empty () const
 	{
-        lock_guard<Mutex> locker(_mutex);
+//        lock_guard<Mutex> locker(_mutex);
 		return _queue.empty();
 	}
 
 	size_t count () const
 	{
-        lock_guard<Mutex> locker(_mutex);
+//        lock_guard<Mutex> locker(_mutex);
 		return _queue.count();
 	}
 
 	size_t capacity () const
 	{
-        lock_guard<Mutex>(_mutex);
-		return _queue.capacity;
+//        lock_guard<Mutex>(_mutex);
+		return _queue.capacity();
 	}
 
 	bool push_function (return_type (* f) ())
 	{
 		lock_guard<Mutex> locker(_mutex);
-        return _queue.push<binder_function0<return_type> >(f);
+        PFS_DEBUG(debug_info("BEFORE PUSH: ", this->_queue, 0));
+        bool r = _queue.push<binder_function0<return_type> >(f);
+        PFS_DEBUG(debug_info("AFTER  PUSH: ", this->_queue, 0));
+        return r;
 	}
 
 	template <typename Arg1>
 	bool push_function (return_type (* f) (Arg1), Arg1 a1)
 	{
 		lock_guard<Mutex> locker(_mutex);
-        return _queue.push<binder_function1<return_type, Arg1> >(f, a1);
+        PFS_DEBUG(debug_info("BEFORE PUSH: ", this->_queue, 0));
+        bool r = _queue.push<binder_function1<return_type, Arg1> >(f, a1);
+        PFS_DEBUG(debug_info("AFTER  PUSH: ", this->_queue, 0));
+        return r;
 	}
     
 	template <typename Arg1, typename Arg2>
 	bool push_function (return_type (* f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
 	{
 		lock_guard<Mutex> locker(_mutex);
-        return _queue.push<binder_function2<return_type, Arg1, Arg2> >(f, a1, a2);
+        PFS_DEBUG(debug_info("BEFORE PUSH: ", this->_queue, 0));
+        bool r = _queue.push<binder_function2<return_type, Arg1, Arg2> >(f, a1, a2);
+        PFS_DEBUG(debug_info("AFTER  PUSH: ", this->_queue, 0));
+        return r;
 	}
     
 	void pop ();
@@ -434,6 +472,22 @@ void active_queue_base<Return, Mutex>::pop ()
     
     bb.~binder_base_type();
 	_queue.pop(bb.size());
+}
+
+template <typename Return, typename Mutex>
+void * active_queue_base<Return, Mutex>::move_callback (void * dest, void * src, size_t n)
+{
+    while (n) {
+        binder_base<Return> & bb = *reinterpret_cast<binder_base<Return> *>(src);
+        
+        PFS_ASSERT(n >= bb.size());
+        n -= bb.size();
+
+        dest = bb.placement_copy(dest);
+        bb.~binder_base_type();
+    }
+    
+    return dest;
 }
 
 template <typename Return, typename Mutex = pfs::fake_mutex>
@@ -489,16 +543,15 @@ typename active_queue<Return, Mutex>::return_type
     unique_lock<Mutex> locker(this->_mutex);
 	return_type r;
     
-    details::ring_queue & rq = this->_queue;
+	binder_base_type & bb = this->_queue.template front<binder_base_type>();
     
-	binder_base_type & bb = rq.front<binder_base_type>();
-
 	locker.unlock();
 
 	r = bb();
 
 	locker.lock();
 
+    bb = this->_queue.template front<binder_base_type>();
 	bb.~binder_base_type();
 	this->_queue.pop(bb.size());
 
@@ -522,21 +575,29 @@ typename active_queue<Return, Mutex>::return_type
 template <typename Mutex>
 typename active_queue<void, Mutex>::return_type active_queue<void, Mutex>::call ()
 {
-    //unique_lock<Mutex> locker(this->_mutex);
-    lock_guard<Mutex> locker(this->_mutex);
+    unique_lock<Mutex> locker(this->_mutex);
+    //lock_guard<Mutex> locker(this->_mutex);
     
 	binder_base_type & bb = this->_queue.template front<binder_base_type>();
+    
+    PFS_DEBUG(debug_info("BEFORE CALL: ", this->_queue, bb.magic()));
+    PFS_ASSERT(bb.magic() == 0xDEADBEAF);
 
-//	locker.unlock();
+	locker.unlock();
 
 	bb();
 
-//	locker.lock();
+	locker.lock();
 
+    PFS_DEBUG(debug_info("BEFORE POP : ", this->_queue, bb.magic()));
+    bb = this->_queue.template front<binder_base_type>(); // If reallocation may be occurred so get reference again 
+    PFS_DEBUG(debug_info("AFTER  POP : ", this->_queue, bb.magic()));
 	bb.~binder_base_type();
 	this->_queue.pop(bb.size());
 
-//	locker.unlock();
+    PFS_DEBUG(debug_info("AFTER  CALL: ", this->_queue, bb.magic()));
+
+	locker.unlock();
 }
 
 template <typename Mutex>

@@ -9,6 +9,7 @@
 #define __PFS_DEBUG_HPP__
 
 #include <iostream>
+#include <iomanip>
 
 #ifndef NDEBUG
 #	define PFS_DEBUG(x) x
