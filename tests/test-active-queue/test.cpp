@@ -32,7 +32,6 @@ void func ()
 void test ()
 {
     ADD_TESTS(2);
-    
     active_queue_type q(2028, 2048, 10);
     active_queue_type q1;
     size_t max_count = 100;
@@ -224,6 +223,7 @@ void test ()
     
     for (int i = 0; i < 300000; ++i) {
         cout << "Push: " << i << endl;
+        
         if (! q.push_function(& func1)) {
             ok = false;
             break;
@@ -254,7 +254,7 @@ void test ()
 
 namespace test4 {
 
-typedef pfs::details::ring_queue ring_queue_type;
+typedef pfs::details::ring_queue<> ring_queue_type;
 
 static int const magic_number = 0xDEADBEAF;
 
@@ -286,8 +286,8 @@ struct D : public C
 void test ()
 {
     ADD_TESTS(10);
-    
-    ring_queue_type rq;
+    pfs::fake_mutex mutex;
+    ring_queue_type rq(mutex);
     
     TEST_OK(rq.push<A>());
     TEST_OK(rq.push<B>(314159));

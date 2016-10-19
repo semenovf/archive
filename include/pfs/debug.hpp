@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cstdio>
 
 #ifndef NDEBUG
 #	define PFS_DEBUG(x) x

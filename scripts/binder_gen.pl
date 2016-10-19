@@ -105,17 +105,15 @@ sub binder_def
     push $r, '    }';
 
     push $r, '';
-    push $r, '    void * placement_copy (void * ptr)';
+    push $r, '    void * placement_copy (void * ptr) const';
     push $r, '    {';
-    push $r, "        return new (ptr) (reinterpret_cast<${binderName} const &>(*this))"
-    push $r, "                    + sizeof(${binderName});";
+    push $r, "        return (new (ptr) ${binderName}(*this)) + 1;";
     push $r, '    }';
     push $r, '};';
     push $r, '';
     
     return $r;
 }
-
 
 my ($sec
     , $min
@@ -181,9 +179,13 @@ public:
 
     virtual return_type operator () () const = 0;
 
-    virtual void placement_copy (void * ptr) = 0;
-};
+    virtual void * placement_copy (void * ptr) const = 0;
 
+    void * pcopy (void * ptr)
+    {
+        return placement_copy(ptr);
+    }
+};
 
 template <typename Return>
 class binder_function_base : public binder_base<Return>

@@ -47,7 +47,12 @@ public:
 
     virtual return_type operator () () const = 0;
     
-    virtual void * placement_copy (void * ptr) = 0;
+    virtual void * placement_copy (void * ptr) const = 0;
+    
+    void * pcopy (void * ptr)
+    {
+        return placement_copy(ptr);
+    }
     
     size_t magic () const
     {
@@ -124,10 +129,9 @@ public:
         return f();
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        (void *)new (ptr) (reinterpret_cast<binder_function0 const &>(*this))
-                + sizeof(binder_function0);
+        return (new (ptr) binder_function0(*this)) + 1;
     }
 };
 
@@ -156,10 +160,9 @@ public:
         return f(_a1);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_function1 const &>(*this))
-                + sizeof(binder_function1);
+        return (new (ptr) binder_function1(*this)) + 1;
     }
 };
 
@@ -190,10 +193,9 @@ public:
         return f(_a1, _a2);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_function2 const &>(*this))
-                + sizeof(binder_function2);
+        return (new (ptr) binder_function2(*this)) + 1;
     }
 };
 
@@ -225,10 +227,9 @@ public:
         return f(_a1, _a2, _a3);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_function3 const &>(*this))
-                + sizeof(binder_function3);
+        return (new (ptr) binder_function3(*this)) + 1;
     }
 };
 
@@ -262,10 +263,9 @@ public:
         return f(_a1, _a2, _a3, _a4);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_function4 const &>(*this))
-                + sizeof(binder_function4);
+        return (new (ptr) binder_function4(*this)) + 1;
     }
 };
 
@@ -301,10 +301,9 @@ public:
         return f(_a1, _a2, _a3, _a4, _a5);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_function5 const &>(*this))
-                + sizeof(binder_function5);
+        return (new (ptr) binder_function5(*this)) + 1;
     }
 };
 
@@ -342,10 +341,9 @@ public:
         return f(_a1, _a2, _a3, _a4, _a5, _a6);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_function6 const &>(*this))
-                + sizeof(binder_function6);
+        return (new (ptr) binder_function6(*this)) + 1;
     }
 };
 
@@ -385,10 +383,9 @@ public:
         return f(_a1, _a2, _a3, _a4, _a5, _a6, _a7);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_function7 const &>(*this))
-                + sizeof(binder_function7);
+        return (new (ptr) binder_function7(*this)) + 1;
     }
 
 };
@@ -431,10 +428,9 @@ public:
         return f(_a1, _a2, _a3, _a4, _a5, _a6, _a7, _a8);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_function8 const &>(*this))
-                + sizeof(binder_function8);
+        return (new (ptr) binder_function8(*this)) + 1;
     }
 };
 
@@ -459,10 +455,9 @@ public:
         return (base_class::_p->*f)();
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_method0 const &>(*this))
-                + sizeof(binder_method0);
+        return (new (ptr) binder_method0(*this)) + 1;
     }
 };
 
@@ -490,10 +485,9 @@ public:
         return (base_class::_p->*f)(_a1);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_method1 const &>(*this))
-                + sizeof(binder_method1);
+        return (new (ptr) binder_method1(*this)) + 1;
     }
 };
 
@@ -523,10 +517,9 @@ public:
         return (base_class::_p->*f)(_a1, _a2);
     }
 
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_method2 const &>(*this))
-                + sizeof(binder_method2);
+        return (new (ptr) binder_method2(*this)) + 1;
     }
 };
 
@@ -558,10 +551,9 @@ public:
         return (base_class::_p->*f)(_a1, _a2, _a3);
     }
 
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_method3 const &>(*this))
-                + sizeof(binder_method3);
+        return (new (ptr) binder_method3(*this)) + 1;
     }
 };
 
@@ -595,10 +587,9 @@ public:
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4);
     }
 
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_method4 const &>(*this))
-                + sizeof(binder_method4);
+        return (new (ptr) binder_method4(*this)) + 1;
     }
 };
 
@@ -634,10 +625,9 @@ public:
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4, _a5);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_method5 const &>(*this))
-                + sizeof(binder_method5);
+        return (new (ptr) binder_method5(*this)) + 1;
     }
 };
 
@@ -675,10 +665,9 @@ public:
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4, _a5, _a6);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_method6 const &>(*this))
-                + sizeof(binder_method6);
+        return (new (ptr) binder_method6(*this)) + 1;
     }
 };
 
@@ -718,10 +707,9 @@ public:
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4, _a5, _a6, _a7);
     }
     
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_method7 const &>(*this))
-                + sizeof(binder_method7);
+        return (new (ptr) binder_method7(*this)) + 1;
     }
 };
 
@@ -763,10 +751,9 @@ public:
         return (base_class::_p->*f)(_a1, _a2, _a3, _a4, _a5, _a6, _a7, _a8);
     }
 
-    void * placement_copy (void * ptr)
+    void * placement_copy (void * ptr) const
     {
-        return new (ptr) (reinterpret_cast<binder_method8 const &>(*this))
-                + sizeof(binder_method8);
+        return (new (ptr) binder_method8(*this)) + 1;
     }
 };
 
