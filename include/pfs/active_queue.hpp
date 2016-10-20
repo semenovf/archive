@@ -4,9 +4,6 @@
  * and open the template in the editor.
  */
 
-#include "mutex.hpp"
-
-
 /* 
  * File:   active_queue.hpp
  * Author: wladt
