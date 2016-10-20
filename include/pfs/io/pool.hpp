@@ -278,7 +278,7 @@ public:
 	{
 		friend class pool;
 
-		atomic_integer<int> _quit;
+		atomic_int _quit;
 
 	public:
 		dispatcher_context ()
@@ -289,7 +289,7 @@ public:
 
 		void quit ()
 		{
-			_quit.store(1);
+			_quit = 1;
 		}
 
 	public:
