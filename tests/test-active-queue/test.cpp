@@ -9,7 +9,7 @@
 #include <pfs/test/test.hpp>
 #include <pfs.hpp>
 #include <pfs/random.hpp>
-#include <pfs/active_queue_1.hpp>
+#include <pfs/active_queue.hpp>
 #include <pfs/safeformat.hpp>
 #include <pfs/thread.hpp>
 #include <pfs/mutex.hpp>
@@ -19,9 +19,20 @@
 using std::cout;
 using std::endl;
 
+struct null_ostream
+{
+    template <typename T>
+    null_ostream & operator << (T a) { return *this; }
+};
+
+static null_ostream nout;
+
+#define COUT nout
+//#define COUT cout
+
 namespace test0 {
 
-typedef pfs::active_queue<void> active_queue_type;
+typedef pfs::active_queue_st<void> active_queue_type;
 static int counter = 0;
 
 void func ()
@@ -33,7 +44,7 @@ void test ()
 {
     ADD_TESTS(2);
     active_queue_type q(2028, 2048, 10);
-    active_queue_type q1;
+    active_queue_type q1(pfs::max_value<size_t>());
     size_t max_count = 100;
     
     for (size_t i = 0; i < max_count; ++i) {
@@ -62,8 +73,6 @@ void test ()
 
 }
 
-#if __COMMENT__
-
 namespace test1 {
 
 struct A 
@@ -79,7 +88,7 @@ struct A
     }
 };
 
-typedef pfs::active_queue<void> active_queue_type;
+typedef pfs::active_queue_st<void> active_queue_type;
 size_t A::max_count = 100;
 
 void test ()
@@ -87,7 +96,7 @@ void test ()
     ADD_TESTS(2);
     
     active_queue_type q(2048, 2048, 1);
-    active_queue_type q1;
+    active_queue_type q1(pfs::max_value<size_t>());
     A a;
     
     for (size_t i = 0; i < A::max_count; ++i) {
@@ -116,12 +125,10 @@ void test ()
 
 }
 
-#endif
-
 namespace test2 {
 
-typedef pfs::active_queue<void, pfs::mutex> active_queue_type;
-active_queue_type q;
+typedef pfs::active_queue_st<void> active_queue_type;
+active_queue_type q(pfs::max_value<size_t>());
 
 static int counter = 0;
 
@@ -132,23 +139,23 @@ void func1 ()
 
 void func2 (int i)
 {
-    cout << "func2(" << i << ')' << endl;
+    COUT << "func2(" << i << ")\n";
 }
 
 void func3 (int a, char b)
 {
-    cout << "func3(" << a << ", " << b << ')' << endl;
+    COUT << "func3(" << a << ", " << b << ")\n";
 }
 
 void test ()
 {
     pfs::random rnd;
-    size_t limit = double(rnd.rand())/double(pfs::max_value<uint32_t>()) * 1000;
+    size_t limit = double(rnd.rand())/double(pfs::max_value<uint32_t>()) * 100;
     
-    int max = pfs::max_value<int>();
+    int max = pfs::max_value<uint16_t>();
     
     for (int i = 0; i < max; ++i) {
-        cout << "Push: " << i << endl;
+        //COUT << "Push: " << i << endl;
         if (! q.push_function(& func1)) {
             break;
         }
@@ -163,16 +170,18 @@ void test ()
         
         if (q.count() > limit) {
             q.call_all();
-            limit = double(rnd.rand())/double(pfs::max_value<uint32_t>()) * 1000;
+            limit = double(rnd.rand())/double(pfs::max_value<uint32_t>()) * 100;
         }
     }
+    
+    q.call_all();
 }
 
 }
 
 namespace test3 {
 
-typedef pfs::active_queue<void, pfs::mutex> active_queue_type;
+typedef pfs::active_queue_mt<void> active_queue_type;
 active_queue_type q(0, pfs::max_value<size_t>(), 1);
 //active_queue_type q(100000);
 
@@ -201,28 +210,30 @@ void func1 ()
 
 void func2 (int i)
 {
-    cout << "func2(" << i << ')' << endl;
+    COUT << "func2(" << i << ")\n";
 }
 
 void func3 (int a, char b)
 {
-    cout << "func3(" << a << ", " << b << ')' << endl;
+    COUT << "func3(" << a << ", " << b << ")\n";
 }
 
 void finish ()
 {
-    cout << "Finish" << endl;
+    COUT << "Finish\n";
     is_finish = true;
 }
 
 void test ()
 {
+    ADD_TESTS(1);
+    
     bool ok = true;
     thread thr;
     thr.start();
     
     for (int i = 0; i < 300000; ++i) {
-        cout << "Push: " << i << endl;
+        COUT << "Push: " << i << "\n";
         
         if (! q.push_function(& func1)) {
             ok = false;
@@ -248,73 +259,8 @@ void test ()
     } else {
         thr.terminate();
     }
-}
-
-}
-
-namespace test4 {
-
-typedef pfs::details::ring_queue<> ring_queue_type;
-
-static int const magic_number = 0xDEADBEAF;
-
-struct A 
-{
-    size_t magic;
-    A () : magic(magic_number) {}
-    virtual ~A () { magic = 0xDEADDEAD; }
-};
-
-struct B : public A
-{
-    int b;
-    B (int x) : A(), b(x) {}
-};
-
-struct C : public B
-{
-    char c;
-    C (int x, char y) : B(x), c(y) {}
-};
-
-struct D : public C
-{
-    double d;
-    D (int x, char y, double z) : C(x, y), d(z) {}
-};
-
-void test ()
-{
-    ADD_TESTS(10);
-    pfs::fake_mutex mutex;
-    ring_queue_type rq(mutex);
     
-    TEST_OK(rq.push<A>());
-    TEST_OK(rq.push<B>(314159));
-    TEST_OK(rq.push<C>(314159, 'W'));
-    TEST_OK(rq.push<D>(314159, 'W', 3.14159f));
-    
-    TEST_OK(rq.count() == 4);
-    
-    TEST_OK(rq.front<A>().magic == magic_number);
-    rq.pop<A>();
-
-    TEST_OK(rq.front<B>().magic == magic_number
-            && rq.front<B>().b == 314159);
-    rq.pop<B>();
-
-    TEST_OK(rq.front<C>().magic == magic_number
-            && rq.front<C>().b == 314159
-            && rq.front<C>().c == 'W');
-    rq.pop<C>();
-
-    TEST_OK(rq.front<D>().magic == magic_number
-            && rq.front<D>().b == 314159
-            && rq.front<D>().c == 'W'
-            && rq.front<D>().d == 3.14159f);
-    rq.pop<D>();
-    
-    TEST_OK(rq.count() == 0);
+    TEST_OK2(ok, "'pfs::active_queue_mt<void>' test is OK");
 }
 
 }
@@ -326,11 +272,10 @@ int main(int argc, char *argv[])
 
 	BEGIN_TESTS(0);
 
-//    test0::test();
-//    test1::test();
-//    test2::test();
+    test0::test();
+    test1::test();
+    test2::test();
     test3::test();
-//    test4::test();
     
 	return END_TESTS;
 }

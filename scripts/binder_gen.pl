@@ -17,8 +17,8 @@ sub binder_def
 	my $r = [];
 	
 	my $s1 = $isMethodBinder 
-	   ? 'template <typename Class, typename Return' 
-	   : 'template <typename Return';
+	   ? 'template <typename Class, typename ReturnType' 
+	   : 'template <typename ReturnType';
 	for (my $i = 1; $i <= $nargs; ++$i) {
 		$s1 .= ", typename Arg${i}";
 	}
@@ -27,8 +27,8 @@ sub binder_def
 	push $r, $s1;
 	
     push $r, $isMethodBinder 
-		  ? "class ${binderName} : public binder_method_base<Class, Return>"
-          : "class ${binderName} : public binder_function_base<Return>";
+		  ? "class ${binderName} : public binder_method_base<Class, ReturnType>"
+          : "class ${binderName} : public binder_function_base<ReturnType>";
     
     push $r, '{';
     
@@ -39,9 +39,9 @@ sub binder_def
     push $r, '';
     push $r, 'public:';
     push $r, $isMethodBinder 
-        ? '    typedef binder_method_base<Class, Return> base_class;'
-        : '    typedef binder_function_base<Return> base_class;';
-    push $r, '    typedef Return return_type;';
+        ? '    typedef binder_method_base<Class, ReturnType> base_class;'
+        : '    typedef binder_function_base<ReturnType> base_class;';
+    push $r, '    typedef ReturnType return_type;';
     
     my $s2 = $isMethodBinder
         ? '    typedef return_type (Class::* funcptr_type) ('
@@ -105,6 +105,7 @@ sub binder_def
     push $r, '    }';
 
     push $r, '';
+    push $r, 'protected:';
     push $r, '    void * placement_copy (void * ptr) const';
     push $r, '    {';
     push $r, "        return (new (ptr) ${binderName}(*this)) + 1;";
@@ -145,10 +146,11 @@ my $header = <<"END_OF_CODE";
  *      Author: wladt
  */
 
-#ifndef __PFS_BINDER_HPP__
-#define __PFS_BINDER_HPP__
+#ifndef __PFS_TL_BINDER_HPP__
+#define __PFS_TL_BINDER_HPP__
 
 namespace pfs {
+namespace tl {
 
 template <typename T>
 struct binder_type_trait { typedef T type; };
@@ -156,11 +158,11 @@ struct binder_type_trait { typedef T type; };
 template <typename T>
 struct binder_type_trait<const T &> { typedef T type; };
 
-template <typename Return>
+template <typename ReturnType>
 class binder_base
 {
 public:
-    typedef Return return_type;
+    typedef ReturnType return_type;
 
 protected:
     size_t _size;
@@ -168,6 +170,8 @@ protected:
     binder_base (size_t size)
         : _size(size)
     {}
+
+    virtual void * placement_copy (void * ptr) const = 0;
 
 public:
     virtual ~binder_base () {}
@@ -179,40 +183,57 @@ public:
 
     virtual return_type operator () () const = 0;
 
-    virtual void * placement_copy (void * ptr) const = 0;
-
     void * pcopy (void * ptr)
     {
         return placement_copy(ptr);
     }
+
+    static void * move (void * dest, void * src, size_t n);
 };
 
-template <typename Return>
-class binder_function_base : public binder_base<Return>
+template <typename ReturnType>
+void * binder_base<ReturnType>::move (void * dest, void * src, size_t n)
+{
+    void * p = dest;
+
+    while (n) {
+        binder_base * bb = static_cast<binder_base *>(src);
+
+        PFS_ASSERT(n >= bb->size());
+        n -= bb->size();
+        src = static_cast<char *>(src) + bb->size();
+
+        p = bb->pcopy(p);
+        bb->~binder_base();
+    }
+
+    return dest;    
+}
+
+template <typename ReturnType>
+class binder_function_base : public binder_base<ReturnType>
 {
 public:
-    typedef Return return_type;
+    typedef ReturnType return_type;
     typedef return_type (* funcptr_type) ();
 
 protected:
     funcptr_type _f;
 
     binder_function_base (size_t size, funcptr_type f)
-        : binder_base<Return>(size)
+        : binder_base<ReturnType>(size)
         , _f(f)
     {}
 
 public:
     virtual ~binder_function_base () {}
-
-//    virtual return_type operator () () const = 0;
 };
 
-template <typename Class, typename Return>
-class binder_method_base : public binder_base<Return>
+template <typename Class, typename ReturnType>
+class binder_method_base : public binder_base<ReturnType>
 {
 public:
-    typedef Return return_type;
+    typedef ReturnType return_type;
     typedef return_type (Class::* funcptr_type) ();
 
 protected:
@@ -220,26 +241,22 @@ protected:
     funcptr_type _f;
 
     binder_method_base (size_t size, Class * p, funcptr_type f)
-        : binder_base<Return>(size)
+        : binder_base<ReturnType>(size)
         , _p(p)
         , _f(f)
     { }
 
 public:
     virtual ~binder_method_base () {}
-
-//    virtual return_type operator () () const = 0;
 };
-
 END_OF_CODE
 
 my $footer = <<"END_OF_CODE";
 
-} // pfs
+}} // pfs::tl
 
-#endif /* __PFS_BINDER_HPP__ */
+#endif /* __PFS_TL_BINDER_HPP__ */
 END_OF_CODE
-
 
 print $header, "\n";
 

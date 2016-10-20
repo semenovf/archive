@@ -16,7 +16,7 @@
 
 #include <cstring> // for std::memcpy
 #include <pfs/atomic.hpp>
-#include <pfs/binder.hpp>
+#include <pfs/binder_old.hpp>
 #include <pfs/mutex.hpp>
 
 #include <pfs/debug.hpp>
