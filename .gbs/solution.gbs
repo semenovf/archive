@@ -58,6 +58,6 @@ project "demo-logger"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-functor-queue"
-    include("test-functor-queue/project.gbs")
+--project "test-functor-queue"
+--    include("test-functor-queue/project.gbs")
 -- END PROJECT
