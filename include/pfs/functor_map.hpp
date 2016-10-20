@@ -12,6 +12,7 @@
 #include <pfs/mutex.hpp>
 #include <pfs/map.hpp>
 
+// FIXME Must be reimplemented as active_queue
 namespace pfs {
 
 template <typename Key, typename Return, typename Mutex = pfs::fake_mutex>
