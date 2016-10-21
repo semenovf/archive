@@ -33,7 +33,6 @@ struct ring_queue_traits_st
     typedef size_t                      size_type; 
     typedef size_t                      atomic_type; 
     typedef pfs::fake_mutex             mutex_type;
-    typedef pfs::lock_guard<mutex_type> lock_guard_type;
     typedef empty_queue_exception       empty_queue_exception_type;
 };
 
@@ -44,7 +43,6 @@ struct ring_queue_traits_mt
     typedef size_t                      size_type; 
     typedef pfs::atomic_size_t          atomic_type; 
     typedef pfs::mutex                  mutex_type;
-    typedef pfs::lock_guard<mutex_type> lock_guard_type;
     typedef empty_queue_exception       empty_queue_exception_type;
 };
 

@@ -14,7 +14,10 @@
 #ifndef __PFS_TL_RING_QUEUE_HPP__
 #define __PFS_TL_RING_QUEUE_HPP__
 
+#include <pfs/tl/trivial_lock_guard.hpp>
+
 namespace pfs {
+namespace tl {
 
 //
 //    ---------------------------- 
@@ -48,7 +51,6 @@ namespace pfs {
 //     typedef SizeType      size_type;         ///<< Size type like std::size_t
 //     typedef AtomicType    atomic_type;       ///<< Atomic type like std::atomic_size_t since C++11
 //     typedef MutexType     mutex_type;        ///<< Mutex type must be satisfied LockGuardType::mutex_type
-//     typedef LockGuardType lock_guard_type;   ///<< Lock guard type like std::lock_guard since C++11 (mutex type must be (TODO en?выведен?) from this type)
 //     typedef EmptyQueueExceptioType empty_queue_exception_type; ///<< Exception class satisfies DefaultConstructible concept
 // };
 // 
@@ -60,10 +62,10 @@ class ring_queue
 public: // Typedefs
     typedef typename RingQueueTraits::size_type          size_type;
     typedef typename RingQueueTraits::atomic_type        atomic_type;
-    typedef typename RingQueueTraits::lock_guard_type    lock_guard_type;
     typedef typename RingQueueTraits::mutex_type         mutex_type;
     typedef typename RingQueueTraits::empty_queue_exception_type empty_queue_exception_type;
     typedef MoveFunctor                                  move_functor_type;
+    typedef trivial_lock_guard<mutex_type>               lock_guard_type;
     
 public: // Constants
     static size_type const default_increment_factor = RingQueueTraits::default_increment_factor;
@@ -234,22 +236,6 @@ bool ring_queue<RingQueueTraits, MoveFunctor>::ensure_capacity (size_type nsize)
 {
     lock_guard_type locker(_pop_mutex);
     
-//    if (! _begin) {
-//        size_type increment = _increment_factor * nsize;
-//        
-//        if (overflow(increment))
-//            return false;
-//        
-//        _capacity += increment;
-//        _begin = new char[_capacity];
-//        _end = _capacity;
-//        _head = 0;
-//        _tail = 0;
-//        _count = 0;
-//        
-//        return true;
-//    }
-
     if (empty()) {
         // Move Head and Tail to the begin of queue
    		_head = 0;
@@ -507,6 +493,6 @@ bool ring_queue<RingQueueTraits, MoveFunctor>::push (Arg1 a1, Arg2 a2, Arg3 a3, 
     return false;
 }
 
-} // pfs
+}} // pfs::tl
 
 #endif /* __PFS_ACTIVE_QUEUE_HPP__ */

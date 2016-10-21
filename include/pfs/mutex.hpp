@@ -110,7 +110,6 @@ public:
 	}
 };
 
-
 /// recursive_mutex
 class recursive_mutex
 {

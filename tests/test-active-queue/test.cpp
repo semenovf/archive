@@ -27,8 +27,8 @@ struct null_ostream
 
 static null_ostream nout;
 
-//#define COUT nout
-#define COUT cout
+#define COUT nout
+//#define COUT cout
 
 namespace test0 {
 
@@ -284,15 +284,15 @@ public:
                 result |= 0x0004;
                 break;
             }
+            ++prod3_counter;
         }
-        ++prod3_counter;
 	}
 };
 
 
 void test ()
 {
-    ADD_TESTS(1);
+    ADD_TESTS(4);
     
     consumer cons;
     producer1 prod1;
@@ -321,6 +321,15 @@ void test ()
     TEST_OK(cons1_counter == prod1_counter);
     TEST_OK(cons2_counter == prod2_counter);
     TEST_OK(cons3_counter == prod3_counter);
+    
+    cout << "cons1_counter(" << cons1_counter.load() << ") == "
+         << "prod1_counter(" << prod1_counter.load() << ")" << endl;
+
+    cout << "cons2_counter(" << cons2_counter.load() << ") == "
+         << "prod2_counter(" << prod2_counter.load() << ")" << endl;
+
+    cout << "cons3_counter(" << cons3_counter.load() << ") == "
+         << "prod3_counter(" << prod3_counter.load() << ")" << endl;
 }
 
 }
