@@ -71,6 +71,10 @@ public:
    	active_queue_st (size_type max_capacity)
         : base_class(max_capacity)
 	{}
+
+   	active_queue_st ()
+        : base_class(pfs::max_value<size_t>())
+	{}
 };
 
 /**
@@ -96,6 +100,11 @@ public:
    	active_queue_mt (size_type max_capacity)
         : base_class(max_capacity)
 	{}
+    
+    active_queue_mt ()
+        : base_class(pfs::max_value<size_t>())
+	{}
+
 };
 
 } // pfs
