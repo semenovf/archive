@@ -27,8 +27,8 @@ struct null_ostream
 
 static null_ostream nout;
 
-#define COUT nout
-//#define COUT cout
+//#define COUT nout
+#define COUT cout
 
 namespace test0 {
 
@@ -185,13 +185,38 @@ typedef pfs::active_queue_mt<void> active_queue_type;
 active_queue_type q(0, pfs::max_value<size_t>(), 1);
 //active_queue_type q(100000);
 
-static int counter = 0;
-static bool is_finish = 0;
+static pfs::atomic_int is_finish(0);
+static pfs::atomic_int result(0);
 
-class thread : public pfs::thread
+static pfs::atomic_size_t prod1_counter(0);
+static pfs::atomic_size_t prod2_counter(0);
+static pfs::atomic_size_t prod3_counter(0);
+
+static pfs::atomic_size_t cons1_counter(0);
+static pfs::atomic_size_t cons2_counter(0);
+static pfs::atomic_size_t cons3_counter(0);
+
+void func1 ()
+{
+    ++cons1_counter;
+}
+
+void func2 (int i)
+{
+    COUT << "func2(" << i << ")\n";
+    ++cons2_counter;
+}
+
+void func3 (int a, char b)
+{
+    COUT << "func3(" << a << ", " << b << ")\n";
+    ++cons3_counter;
+}
+
+class consumer : public pfs::thread
 {
 public:
-	thread () 
+	consumer () 
         : pfs::thread()
     {}
 
@@ -203,64 +228,99 @@ public:
 	}
 };
 
-void func1 ()
+class producer1 : public pfs::thread
 {
-    ++counter;
-}
+public:
+	producer1 () 
+        : pfs::thread()
+    {}
 
-void func2 (int i)
-{
-    COUT << "func2(" << i << ")\n";
-}
+	virtual void run()
+	{
+		while (! is_finish) {
+            if (! q.push_function(& func1)) {
+                result |= 0x0001;
+                break;
+            }
+            ++prod1_counter;
+        }
+	}
+};
 
-void func3 (int a, char b)
+class producer2 : public pfs::thread
 {
-    COUT << "func3(" << a << ", " << b << ")\n";
-}
+public:
+	producer2 () 
+        : pfs::thread()
+    {}
 
-void finish ()
+	virtual void run()
+	{
+        int i = 0;
+        
+		while (! is_finish) {
+            if (! q.push_function(& func2, i++)) {
+                result |= 0x0002;
+                break;
+            }
+            ++prod2_counter;
+        }
+	}
+};
+
+class producer3 : public pfs::thread
 {
-    COUT << "Finish\n";
-    is_finish = true;
-}
+public:
+	producer3 () 
+        : pfs::thread()
+    {}
+
+	virtual void run()
+	{
+        int i = 0;
+        
+		while (! is_finish) {
+            if (! q.push_function(& func3, i++, 'W')) {
+                result |= 0x0004;
+                break;
+            }
+        }
+        ++prod3_counter;
+	}
+};
+
 
 void test ()
 {
     ADD_TESTS(1);
     
-    bool ok = true;
-    thread thr;
-    thr.start();
+    consumer cons;
+    producer1 prod1;
+    producer2 prod2;
+    producer3 prod3;
     
-    for (int i = 0; i < 300000; ++i) {
-        COUT << "Push: " << i << "\n";
-        
-        if (! q.push_function(& func1)) {
-            ok = false;
-            break;
-        }
-        
-        if (! q.push_function(& func2, i)) {
-            ok = false;
-            break;
-        }
-
-        if (! q.push_function(& func3, i, 'W')) {
-            ok = false;
-            break;
-        }
+    cons.start();
+    prod1.start();
+    prod2.start();
+    prod3.start();
+    
+    pfs::thread::sleep(3);
+    
+    is_finish = 1;
+    
+    cons.wait();
+    prod1.wait();
+    prod2.wait();
+    prod3.wait();
+    
+    if (result != 0) {
+        cout << "result = 0x" << std::hex << result.load() << endl;
     }
     
-    if (ok) {
-        if (!q.push_function(& finish))
-            thr.terminate();
-        else
-            thr.wait();
-    } else {
-        thr.terminate();
-    }
-    
-    TEST_OK2(ok, "'pfs::active_queue_mt<void>' test is OK");
+    TEST_OK2(result == 0, "'pfs::active_queue_mt<void>' test is OK");
+    TEST_OK(cons1_counter == prod1_counter);
+    TEST_OK(cons2_counter == prod2_counter);
+    TEST_OK(cons3_counter == prod3_counter);
 }
 
 }
@@ -272,9 +332,9 @@ int main(int argc, char *argv[])
 
 	BEGIN_TESTS(0);
 
-    test0::test();
-    test1::test();
-    test2::test();
+//    test0::test();
+//    test1::test();
+//    test2::test();
     test3::test();
     
 	return END_TESTS;
