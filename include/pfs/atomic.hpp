@@ -264,16 +264,16 @@ typedef atomic<unsigned long>      atomic_ulong;
 typedef atomic<long long>          atomic_llong;
 typedef atomic<unsigned long long> atomic_ullong;
 
-typedef atomic<int8_t>             atomic_int8;
-typedef atomic<uint8_t>            atomic_uint8;
-typedef atomic<int16_t>            atomic_int16;
-typedef atomic<uint16_t>           atomic_uint16;
-typedef atomic<int32_t>            atomic_int32;
-typedef atomic<uint32_t>           atomic_uint32;
+typedef atomic<int8_t>             atomic_int8_t;
+typedef atomic<uint8_t>            atomic_uint8_t;
+typedef atomic<int16_t>            atomic_int16_t;
+typedef atomic<uint16_t>           atomic_uint16_t;
+typedef atomic<int32_t>            atomic_int32_t;
+typedef atomic<uint32_t>           atomic_uint32_t;
 
 #if PFS_HAVE_INT64
-typedef atomic<int64_t>            atomic_int64;
-typedef atomic<uint64_t>           atomic_uint64;
+typedef atomic<int64_t>            atomic_int64_t;
+typedef atomic<uint64_t>           atomic_uint64_t;
 #endif
 
 typedef atomic<intptr_t>           atomic_intptr_t;
