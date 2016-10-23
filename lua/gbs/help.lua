@@ -18,25 +18,25 @@ function help:print(name)
         , "gbs"
         , "help"
         , name .. ".txt");
-        
+
     die(filepath .. ": help file not found\n"):unless(fs.exists(filepath)); 
-    
+
     local content = fs.readAll(filepath);
-    
+
     print(content);
     print("COPYRIGHT");
-    print("    Copyright (C) 2015 Fedor Semenov.");
+    print("    Copyright (C) 2015-2016 Fedor Semenov.");
 end
 
 function help:help ()
     local settings = self._settings;
     local domain = settings:get("Domain");-- or throw("Domain expected");
-    
+
     if not domain then
         self:print("help");
         return true;
     end
-    
+
     if domain == "workspace" 
             or domain == "ws" then
         self:print("workspace");

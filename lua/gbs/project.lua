@@ -61,14 +61,14 @@ end
 
 function project:create ()
     local settings = self._settings;
-    
+
     local verbose          = settings:get("Verbose") or false;
     local projectFileName  = settings:get_or_throw("ProjectFileName");
     local projectName      = settings:get_or_throw("ProjectName");
     local projectType      = settings:get_or_throw("ProjectType");
     local projectLang      = settings:get_or_throw("ProjectLanguage");
     local solutionFileName = settings:get_or_throw("SolutionFileName");
---    local enableQt         = settings:get("EnableQt") or false;
+    local genDoxyfile      = settings:get("GenDoxyfile") or false;
 
     local projectDir   = fs.join(".gbs", projectName);
     local solutionFile = fs.join(".gbs", solutionFileName);
@@ -76,7 +76,15 @@ function project:create ()
     local trn = require("gbs.transaction"):begin(verbose);
     
     trn:PathExists(solutionFile, "Check if creating project is inside of solution directory");
-    trn:PathNotExists(projectName, "Project directory already exists: " .. projectDir); 
+    trn:PathNotExists(projectName, "Project directory already exists: " .. projectDir);
+
+    -- TODO Add check of doxygen execution
+    -- Something like below
+    if genDoxyfile then
+        -- trn:CheckExecutable("doxygen")
+    end
+    
+
     trn:Function(function () return project.registered(solutionFile, projectName); end
         , "Project already registered: " .. projectName);
     trn:MakeDir(projectDir, "Create project directory: " .. projectDir);
