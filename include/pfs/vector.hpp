@@ -69,7 +69,7 @@ public:
 	{}
 
 	vector (std::initializer_list<T> init,
-	        const allocator_tyep & alloc = allocator_type())
+	        const allocator_type & alloc = allocator_type())
 		: base_class(init, alloc)
 	{}
 #endif

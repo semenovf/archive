@@ -21,9 +21,7 @@ namespace pfs {
 template <intmax_t Num, intmax_t Denom = 1>
 using ratio = std::ratio<Num, Denom>;
 
-}
-
-} // namespace pfs
+} // pfs
 
 #endif /* __PFS_CXX11_RATIO_HPP__ */
 

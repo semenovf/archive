@@ -31,8 +31,6 @@
 #include <pfs/algo/find.hpp>
 #include <pfs/atomic.hpp>
 
-//#include <iostream>
-
 namespace pfs {
 
 atomic_int g_safeformat_compat(safeformat::compat_gcc);

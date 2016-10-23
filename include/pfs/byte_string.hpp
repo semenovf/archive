@@ -13,6 +13,7 @@
 #include <pfs/endian.hpp>
 #include <pfs/ostream.hpp>
 #include <pfs/shared_ptr.hpp>
+#include <pfs/utility.hpp>
 #include <pfs/traits/binary_stream.hpp>
 
 // See http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html

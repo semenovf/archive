@@ -22,14 +22,10 @@ inline Integral1 floor_div (Integral1 a, Integral2 b)
     return (a - (a < 0 ? b - Integral2(1) : 0)) / b;
 }
 
-#if __cplusplus >= 201103
-
-template <intmax_t Pn>
-struct integral_sign
-    : integral_constant<intmax_t, (Pn < 0) ? -1 : 1>
-{ };
-
-#else
+//template <intmax_t Pn>
+//struct integral_sign
+//    : integral_constant<intmax_t, (Pn < 0) ? -1 : 1>
+//{ };
 
 namespace details {
 
@@ -82,8 +78,6 @@ struct integral_gcd
 template <intmax_t IntegralConstant1, intmax_t IntegralConstant2>
 intmax_t const integral_gcd<IntegralConstant1, IntegralConstant2>::value 
         = details::integral_gcd(IntegralConstant1, IntegralConstant2);
-
-#endif
 
 }} // pfs::math
 
