@@ -8,7 +8,32 @@
 #ifndef __PFS_CXX_CXX98_MUTEX_HPP__
 #define __PFS_CXX_CXX98_MUTEX_HPP__
 
-#include <pfs/bits/mutex.h>
+#include <pfs/bits/config.h>
+#include <pfs/bits/compiler.h>
+#include <pfs/bits/assert.h>
+
+#if defined(PFS_CC_MSC)
+#	include <windows.h>
+
+    typedef CRITICAL_SECTION native_mutex_t;
+
+//#	define pfs_mutex_def(m)      native_mutex_t m
+//#	define pfs_mutex_init(m)	 InitializeCriticalSection(& m)
+//#	define pfs_mutex_destroy(m)  DeleteCriticalSection(& m)
+//#	define pfs_mutex_lock(m)     EnterCriticalSection(& m)
+//#	define pfs_mutex_try_lock(m) TryEnterCriticalSection(& m)
+//#	define pfs_mutex_unlock(m)   LeaveCriticalSection(& m)
+//
+//#	define pfs_recursive_mutex_init(m) error @ {} // __FIXME__ need to implement
+
+#elif defined(PFS_HAVE_PTHREAD)
+#   include <pthread.h>
+
+    typedef pthread_mutex_t native_mutex_t;
+    typedef pthread_mutex_t native_recursive_mutex_t;
+#else
+#		error "No native support for threads"
+#endif
 
 namespace pfs {
 
@@ -25,45 +50,27 @@ struct adopt_lock_t { };
 #define TRY_TO_LOCK pfs::try_to_lock_t()
 #define ADOPT_LOCK  pfs::adopt_lock_t()
 
-#if defined(PFS_SINGLE_THREADED)
-
-typedef fake_mutex mutex;
-
-#elif defined(PFS_WIN32_THREADS) || defined(PFS_POSIX_THREADS)
-/*
-#	define PFS_DEFAULT_MT_POLICY pfs::mutex
-*/
-
 class mutex
 {
 public:
 	typedef native_mutex_t * native_handle_type;
 
 private:
-	pfs_mutex_def(_mutex);
+	native_mutex_t _mutex;
 
 private:
     mutex (const mutex &);
     mutex & operator = (const mutex &);
 
 public:
-	mutex () { pfs_mutex_init(_mutex); }
-	~mutex () { pfs_mutex_destroy(_mutex); }
+	mutex ();
+	~mutex ();
 
-	void lock ()
-	{
-		pfs_mutex_lock(_mutex);
-	}
+	void lock ();
 
-	bool try_lock ()
-	{
-		return !pfs_mutex_try_lock(_mutex);
-	}
+	bool try_lock ();
 
-	void unlock ()
-	{
-		pfs_mutex_unlock(_mutex);
-	}
+	void unlock ();
 
 	native_handle_type native_handle ()
 	{
@@ -75,33 +82,24 @@ public:
 class recursive_mutex
 {
 public:
-	typedef native_mutex_t * native_handle_type;
+	typedef native_recursive_mutex_t * native_handle_type;
 
 private:
-	pfs_recursive_mutex_def(_mutex);
+	native_recursive_mutex_t _mutex;
 
 private:
 	recursive_mutex (const mutex &);
 	recursive_mutex & operator = (const mutex &);
 
 public:
-	recursive_mutex () { pfs_recursive_mutex_init(_mutex); }
-	~recursive_mutex () { pfs_recursive_mutex_destroy(_mutex); }
+	recursive_mutex ();
+	~recursive_mutex ();
 
-	void lock ()
-	{
-		pfs_recursive_mutex_lock(_mutex);
-	}
+	void lock ();
 
-	bool try_lock()
-	{
-		return ! pfs_recursive_mutex_try_lock(_mutex);
-	}
+	bool try_lock ();
 
-	void unlock()
-	{
-		pfs_recursive_mutex_unlock(_mutex);
-	}
+	void unlock ();
 
 	native_handle_type native_handle ()
 	{
@@ -287,8 +285,6 @@ public:
 		return _mtx;
 	}
 };
-
-#endif
 
 }
 

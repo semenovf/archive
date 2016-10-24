@@ -59,7 +59,7 @@ public:
 		while (!_queue.empty())
 			this->pop();
 	}
-
+    
 	bool empty () const
 	{
 		return _queue.empty();

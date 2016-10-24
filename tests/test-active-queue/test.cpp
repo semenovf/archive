@@ -334,6 +334,85 @@ void test ()
 
 }
 
+
+namespace test4 {
+
+typedef pfs::active_queue_mt<void> active_queue_type;
+active_queue_type q;
+
+static pfs::atomic_int is_finish(0);
+static pfs::atomic_int result(0);
+
+void func1 ()
+{
+    pfs::thread::msleep(100);
+}
+
+void func2 ()
+{
+    q.push_function(& func1);
+}
+
+class consumer : public pfs::thread
+{
+public:
+	consumer () 
+        : pfs::thread()
+    {}
+
+	virtual void run()
+	{
+		while (! is_finish) {
+            q.call_all();
+        }
+	}
+};
+
+class producer : public pfs::thread
+{
+public:
+	producer () 
+        : pfs::thread()
+    {}
+
+	virtual void run()
+	{
+		while (! is_finish) {
+            if (! q.push_function(& func2)) {
+                result |= 0x0001;
+                break;
+            }
+        }
+	}
+};
+
+
+void test ()
+{
+    ADD_TESTS(1);
+    
+    consumer cons;
+    producer prod;
+    
+    cons.start();
+    prod.start();
+    
+    pfs::thread::sleep(3);
+    
+    is_finish = 1;
+    
+    cons.wait();
+    prod.wait();
+    
+    if (result != 0) {
+        cout << "result = 0x" << std::hex << result.load() << endl;
+    }
+    
+    TEST_OK2(result == 0, "'pfs::active_queue_mt<void>' test is OK");
+}
+
+}
+
 int main(int argc, char *argv[])
 {
 	PFS_UNUSED(argc);
@@ -344,7 +423,8 @@ int main(int argc, char *argv[])
 //    test0::test();
 //    test1::test();
 //    test2::test();
-    test3::test();
+//    test3::test();
+    test4::test();
     
 	return END_TESTS;
 }
