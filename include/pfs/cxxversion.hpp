@@ -16,34 +16,23 @@
 
 #if defined(__cplusplus)
 
-#   if __cplusplus >= 199711L
-#       define __PFS_CXX98__ 1998
-#       define __PFS_CXX03__ 2003
-#   endif
-
-#   if __cplusplus >= 201103L
-#       define __PFS_CXX11__ 2011
-#   endif
-
-#   if __cplusplus >= 201402L
-#       define __PFS_CXX14__ 2014
-#   endif
-
-#   if __cplusplus > 201402L
-#       define __PFS_CXX17__ 2017
-#   endif
+#   define __PFS_CXX98__ 1998
+#   define __PFS_CXX03__ 2003
+#   define __PFS_CXX11__ 2011
+#   define __PFS_CXX14__ 2014
+#   define __PFS_CXX17__ 2017
 
 #   if __cplusplus == 199711L
-#       define __PFS_CXX_VERSION__  1998
+#       define __PFS_CXX_VERSION__  __PFS_CXX98__
 #       define __PFS_CXX_HPREFIX__  cxx98
 #   elif __cplusplus == 201103L
-#       define __PFS_CXX_VERSION__  2011
+#       define __PFS_CXX_VERSION__  __PFS_CXX11__
 #       define __PFS_CXX_HPREFIX__  cxx11
 #   elif __cplusplus == 201402L
-#       define __PFS_CXX_VERSION__  2014
+#       define __PFS_CXX_VERSION__  __PFS_CXX14__
 #       define __PFS_CXX_HPREFIX__  cxx14
 #   elif __cplusplus > 201402L
-#       define __PFS_CXX_VERSION__  2017
+#       define __PFS_CXX_VERSION__  __PFS_CXX17__
 #       define __PFS_CXX_HPREFIX__  cxx17
 #   else
 #       error "Unsupported C++ version"

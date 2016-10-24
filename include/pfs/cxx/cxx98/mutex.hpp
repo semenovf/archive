@@ -109,11 +109,11 @@ public:
 	}
 };
 
-template <typename Lockable>
+template <typename Mutex>
 class lock_guard
 {
 public:
-    typedef Lockable mutex_type;
+    typedef Mutex mutex_type;
 
 private:
     mutex_type & _mtx;
@@ -139,11 +139,11 @@ public:
     }
 };
 
-template <typename Lockable>
+template <typename Mutex>
 class unique_lock
 {
 public:
-	typedef Lockable mutex_type;
+	typedef Mutex mutex_type;
 
 private:
 	mutex_type * _mtx;
