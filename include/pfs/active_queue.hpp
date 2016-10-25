@@ -21,29 +21,29 @@
 
 namespace pfs {
 
-struct empty_queue_exception : public length_error
+struct empty_exception : public length_error
 {
-    empty_queue_exception () : length_error("") {}
+    empty_exception () : length_error("") {}
 };
 
 struct ring_queue_traits_st
 {
     static size_t const default_increment_factor = 10;
     
-    typedef size_t                      size_type; 
-    typedef size_t                      atomic_type; 
-    typedef pfs::fake_mutex             mutex_type;
-    typedef empty_queue_exception       empty_queue_exception_type;
+    typedef size_t          size_type; 
+    typedef size_t          atomic_type; 
+    typedef pfs::fake_mutex mutex_type;
+    typedef empty_exception empty_exception_type;
 };
 
 struct ring_queue_traits_mt
 {
     static size_t const default_increment_factor = 10;
     
-    typedef size_t                      size_type; 
-    typedef pfs::atomic_size_t          atomic_type; 
-    typedef pfs::mutex                  mutex_type;
-    typedef empty_queue_exception       empty_queue_exception_type;
+    typedef size_t             size_type; 
+    typedef pfs::atomic_size_t atomic_type; 
+    typedef pfs::mutex         mutex_type;
+    typedef empty_exception    empty_exception_type;
 };
 
 /**
