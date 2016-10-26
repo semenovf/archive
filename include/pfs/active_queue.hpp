@@ -26,7 +26,7 @@ struct empty_exception : public length_error
     empty_exception () : length_error("") {}
 };
 
-struct ring_queue_traits_st
+struct active_queue_traits_st
 {
     static size_t const default_increment_factor = 10;
     
@@ -36,7 +36,7 @@ struct ring_queue_traits_st
     typedef empty_exception empty_exception_type;
 };
 
-struct ring_queue_traits_mt
+struct active_queue_traits_mt
 {
     static size_t const default_increment_factor = 10;
     
@@ -50,9 +50,9 @@ struct ring_queue_traits_mt
  * @brief Single thread version of active_queue
  */
 template <typename ReturnType = void>
-class active_queue_st : public tl::active_queue<ReturnType, ring_queue_traits_st>
+class active_queue_st : public tl::active_queue<ReturnType, active_queue_traits_st>
 {
-    typedef tl::active_queue<ReturnType, ring_queue_traits_st> base_class;
+    typedef tl::active_queue<ReturnType, active_queue_traits_st> base_class;
     typedef typename base_class::size_type size_type;
     
 public:
@@ -79,9 +79,9 @@ public:
  * @brief Multi-thread version of active_queue
  */
 template <typename ReturnType = void>
-class active_queue_mt : public tl::active_queue<ReturnType, ring_queue_traits_mt>
+class active_queue_mt : public tl::active_queue<ReturnType, active_queue_traits_mt>
 {
-    typedef tl::active_queue<ReturnType, ring_queue_traits_mt> base_class;
+    typedef tl::active_queue<ReturnType, active_queue_traits_mt> base_class;
     typedef typename base_class::size_type size_type;
     
 public:

@@ -14,44 +14,52 @@
 #ifndef __PFS_TL_ACTIVE_QUEUE_HPP__
 #define __PFS_TL_ACTIVE_QUEUE_HPP__
 
-#include <pfs/tl/ring_queue.hpp>
+#include <pfs/tl/ring_queue_pool.hpp>
 #include <pfs/tl/binder.hpp>
+#include <pfs/tl/trivial_lock_guard.hpp>
+
+// struct Traits
+// {
+//     static  SizeType const default_increment_factor = 32; ///<< Default increment factor
+//
+//     typedef SizeType          size_type;            ///<< Size type like std::size_t
+//     typedef AtomicType        atomic_type;          ///<< Atomic type like std::atomic_size_t since C++11
+//     typedef MutexType         mutex_type;           ///<< Mutex type must be satisfied LockGuardType::mutex_type
+//     typedef EmptyExceptioType empty_exception_type; ///<< Exception class satisfies DefaultConstructible concept
+// };
+
 
 namespace pfs {
 namespace tl {
 
-//
-// RingQueueTraits::move_functor_type must be active_queue_move_functor<RingQueueTraits::size_type>
-//
-template <typename ReturnType, typename RingQueueTraits>
+template <typename ReturnType, typename Traits>
 class active_queue_base
 {
 protected:
-    typedef ReturnType                                return_type;
-    typedef binder_base<ReturnType>                   binder_base_type;
+    typedef ReturnType              return_type;
+    typedef binder_base<ReturnType> binder_base_type;
 
-    struct move_functor
-    {
-        void * operator () (void * dest, void * src, size_t n)
-        {
-            return binder_base_type::move(dest, src, n);
-        }
-    };
-
-    typedef ring_queue<RingQueueTraits, move_functor> ring_queue_type;
-    typedef typename ring_queue_type::size_type       size_type;
-    typedef typename ring_queue_type::lock_guard_type lock_guard_type;
-    typedef typename ring_queue_type::mutex_type      mutex_type;
+    typedef Traits                                traits_type;
+    typedef typename Traits::size_type            size_type;
+    typedef typename Traits::atomic_type          atomic_type;
+    typedef typename Traits::mutex_type           mutex_type;
+    typedef typename Traits::empty_exception_type empty_exception_type;
+    typedef ring_queue_pool<Traits>               queue_type;
+    typedef trivial_lock_guard<mutex_type>        lock_guard_type;
 
 protected:
-	mutex_type      _pop_mutex;
-    ring_queue_type _queue;
+	mutex_type _call_mutex;
+    mutex_type _push_mutex;
+    queue_type _queue;
 
+public:
+    static size_type const default_increment_factor = traits_type::default_increment_factor;
+        
 public:
 	active_queue_base (size_type initial
             , size_type max_capacity
             , size_type increment_factor)
-        : _queue(_pop_mutex, initial, max_capacity, increment_factor)
+        : _queue(initial, max_capacity, increment_factor)
 	{}
 
 	virtual ~active_queue_base ()
@@ -70,115 +78,128 @@ public:
 		return _queue.count();
 	}
 
-	size_type capacity () const
-	{
-		return _queue.capacity();
-	}
-
 	bool push_function (return_type (* f) ())
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_function0<return_type> >(f);
 	}
 
 	template <typename Arg1>
 	bool push_function (return_type (* f) (Arg1), Arg1 a1)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_function1<return_type, Arg1> >(f, a1);
 	}
     
 	template <typename Arg1, typename Arg2>
 	bool push_function (return_type (* f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_function2<return_type, Arg1, Arg2> >(f, a1, a2);
 	}
 
 	template <typename Arg1, typename Arg2, typename Arg3>
 	bool push_function (return_type (* f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_function3<return_type, Arg1, Arg2, Arg3> >(f, a1, a2, a3);
 	}
 
   	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
 	bool push_function (return_type (* f) (Arg1, Arg2, Arg3, Arg4), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_function4<return_type, Arg1, Arg2, Arg3, Arg4> >(f, a1, a2, a3, a4);
 	}
 
   	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
 	bool push_function (return_type (* f) (Arg1, Arg2, Arg3, Arg4, Arg5), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_function5<return_type, Arg1, Arg2, Arg3, Arg4, Arg5> >(f, a1, a2, a3, a4, a5);
 	}
 
   	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
 	bool push_function (return_type (* f) (Arg1, Arg2, Arg3, Arg4, Arg5, Arg6), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_function6<return_type, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> >(f, a1, a2, a3, a4, a5, a6);
 	}
 
   	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
 	bool push_function (return_type (* f) (Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_function7<return_type, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7> >(f, a1, a2, a3, a4, a5, a6, a7);
 	}
 
   	template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
 	bool push_function (return_type (* f) (Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7, Arg8 a8)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_function8<return_type, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8> >(f, a1, a2, a3, a4, a5, a6, a7, a8);
 	}
     
     template <typename C>
 	bool push_method (C * c, return_type (C::* f) ())
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_method0<C, return_type> >(c, f);
 	}
 
 	template <typename C, typename Arg1>
 	bool push_method (C * c, return_type (C::* f) (Arg1), Arg1 a1)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_method1<C, return_type, Arg1> >(c, f, a1);
 	}
     
 	template <typename C, typename Arg1, typename Arg2>
 	bool push_method (C * c, return_type (C::* f) (Arg1, Arg2), Arg1 a1, Arg2 a2)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_method2<C, return_type, Arg1, Arg2> >(c, f, a1, a2);
 	}
 
 	template <typename C, typename Arg1, typename Arg2, typename Arg3>
 	bool push_method (C * c, return_type (C::* f) (Arg1, Arg2, Arg3), Arg1 a1, Arg2 a2, Arg3 a3)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_method3<C, return_type, Arg1, Arg2, Arg3> >(c, f, a1, a2, a3);
 	}
 
   	template <typename C, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
 	bool push_method (C * c, return_type (C::* f) (Arg1, Arg2, Arg3, Arg4), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_method4<C, return_type, Arg1, Arg2, Arg3, Arg4> >(c, f, a1, a2, a3, a4);
 	}
 
   	template <typename C, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
 	bool push_method (C * c, return_type (C::* f) (Arg1, Arg2, Arg3, Arg4, Arg5), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_method5<C, return_type, Arg1, Arg2, Arg3, Arg4, Arg5> >(c, f, a1, a2, a3, a4, a5);
 	}
 
   	template <typename C, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
 	bool push_method (C * c, return_type (C::* f) (Arg1, Arg2, Arg3, Arg4, Arg5, Arg6), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_method6<C, return_type, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> >(c, f, a1, a2, a3, a4, a5, a6);
 	}
 
   	template <typename C, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
 	bool push_method (C * c, return_type (C::* f) (Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_method7<C, return_type, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7> >(c, f, a1, a2, a3, a4, a5, a6, a7);
 	}
 
   	template <typename C, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
 	bool push_method (C * c, return_type (C::* f) (Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8), Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7, Arg8 a8)
 	{
+        lock_guard_type locker(_push_mutex);
         return _queue.template push<binder_method8<C, return_type, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8> >(c, f, a1, a2, a3, a4, a5, a6, a7, a8);
 	}    
     
@@ -188,24 +209,24 @@ public:
 template <typename ReturnType, typename RingQueueTraits>
 void active_queue_base<ReturnType, RingQueueTraits>::pop ()
 {
-    lock_guard_type locker(_pop_mutex);
+    lock_guard_type locker(_call_mutex);
 	binder_base<return_type> & bb = _queue.template front<binder_base<return_type> >();
     
     bb.~binder_base_type();
 	_queue.pop(bb.size());
 }
 
-template <typename ReturnType, typename RingQueueTraits>
-class active_queue : public active_queue_base<ReturnType, RingQueueTraits>
+template <typename ReturnType, typename Traits>
+class active_queue : public active_queue_base<ReturnType, Traits>
 {
 protected:
-	typedef active_queue_base<ReturnType, RingQueueTraits> base_class;
-	typedef typename base_class::return_type           return_type;
-	typedef typename base_class::binder_base_type      binder_base_type;
-    typedef typename base_class::ring_queue_type       ring_queue_type;
-    typedef typename base_class::size_type             size_type;
-    typedef typename base_class::lock_guard_type       lock_guard_type;
-
+	typedef active_queue_base<ReturnType, Traits> base_class;
+	typedef typename base_class::return_type      return_type;
+	typedef typename base_class::binder_base_type binder_base_type;
+    typedef typename base_class::queue_type       queue_type;
+    typedef typename base_class::size_type        size_type;
+    typedef typename base_class::lock_guard_type  lock_guard_type;
+    
 public:
     /**
      * @brief Constructs instance of @c active_queue with the given traits. 
@@ -224,27 +245,27 @@ public:
     {}
 
    	active_queue (size_type initial, size_type max_capacity)
-        : base_class(initial, max_capacity, ring_queue_type::default_increment_factor)
+        : base_class(initial, max_capacity, base_class::default_increment_factor)
 	{}
     
    	active_queue (size_type max_capacity)
-        : base_class(0, max_capacity, ring_queue_type::default_increment_factor)
+        : base_class(0, max_capacity, base_class::default_increment_factor)
 	{}
 
 	return_type call ();
 	return_type call_all ();
 };
 
-template <typename RingQueueTraits>
-class active_queue<void, RingQueueTraits> : public active_queue_base<void, RingQueueTraits>
+template <typename Traits>
+class active_queue<void, Traits> : public active_queue_base<void, Traits>
 {
 protected:
-	typedef active_queue_base<void, RingQueueTraits>   base_class;
-	typedef typename base_class::return_type           return_type;
-	typedef typename base_class::binder_base_type      binder_base_type;
-    typedef typename base_class::ring_queue_type       ring_queue_type;
-    typedef typename base_class::size_type             size_type;
-    typedef typename base_class::lock_guard_type       lock_guard_type;
+	typedef active_queue_base<void, Traits>       base_class;
+	typedef typename base_class::return_type      return_type;
+	typedef typename base_class::binder_base_type binder_base_type;
+    typedef typename base_class::queue_type       queue_type;
+    typedef typename base_class::size_type        size_type;
+    typedef typename base_class::lock_guard_type  lock_guard_type;
 
 public:
 	active_queue (size_type initial
@@ -254,22 +275,22 @@ public:
     {}
 
    	active_queue (size_type initial, size_type max_capacity)
-        : base_class(initial, max_capacity, ring_queue_type::default_increment_factor)
+        : base_class(initial, max_capacity, base_class::default_increment_factor)
 	{}
     
    	active_queue (size_type max_capacity)
-        : base_class(0, max_capacity, ring_queue_type::default_increment_factor)
+        : base_class(0, max_capacity, base_class::default_increment_factor)
 	{}
 
 	return_type call ();
 	return_type call_all ();
 };
 
-template <typename ReturnType, typename RingQueueTraits>
-typename active_queue<ReturnType, RingQueueTraits>::return_type
-	active_queue<ReturnType, RingQueueTraits>::call ()
+template <typename ReturnType, typename Traits>
+typename active_queue<ReturnType, Traits>::return_type
+	active_queue<ReturnType, Traits>::call ()
 {
-    lock_guard_type locker(this->_pop_mutex);
+    lock_guard_type locker(this->_call_mutex);
     
 	binder_base_type & bb = this->_queue.template front<binder_base_type>();
     
@@ -281,11 +302,11 @@ typename active_queue<ReturnType, RingQueueTraits>::return_type
 	return r;
 }
 
-template <typename RingQueueTraits>
-typename active_queue<void, RingQueueTraits>::return_type 
-    active_queue<void, RingQueueTraits>::call ()
+template <typename Traits>
+typename active_queue<void, Traits>::return_type 
+    active_queue<void, Traits>::call ()
 {
-    lock_guard_type locker(this->_pop_mutex);
+    lock_guard_type locker(this->_call_mutex);
 
 	binder_base_type & bb = this->_queue.template front<binder_base_type>();
     
@@ -294,9 +315,9 @@ typename active_queue<void, RingQueueTraits>::return_type
 	this->_queue.pop(bb.size());
 }
 
-template <typename ReturnType, typename RingQueueTraits>
-inline typename active_queue<ReturnType, RingQueueTraits>::return_type
-	active_queue<ReturnType, RingQueueTraits>::call_all ()
+template <typename ReturnType, typename Traits>
+inline typename active_queue<ReturnType, Traits>::return_type
+	active_queue<ReturnType, Traits>::call_all ()
 {
 	return_type r;
 
@@ -305,9 +326,9 @@ inline typename active_queue<ReturnType, RingQueueTraits>::return_type
 	return r;
 }
 
-template <typename RingQueueTraits>
-inline typename active_queue<void, RingQueueTraits>::return_type 
-    active_queue<void, RingQueueTraits>::call_all ()
+template <typename Traits>
+inline typename active_queue<void, Traits>::return_type 
+    active_queue<void, Traits>::call_all ()
 {
 	while (!this->empty())
 		call();

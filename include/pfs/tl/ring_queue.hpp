@@ -1,4 +1,4 @@
-----------/*
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -14,8 +14,7 @@
 #ifndef __PFS_TL_RING_QUEUE_HPP__
 #define __PFS_TL_RING_QUEUE_HPP__
 
-#include <pfs/tl/trivial_lock_guard.hpp>
-#include <pfs/tl/trivial_forward_list.hpp>
+#include <pfs/debug.hpp>
 
 namespace pfs {
 namespace tl {
@@ -49,7 +48,7 @@ namespace tl {
 // struct RingQueueTraits
 // {
 //     typedef SizeType size_type; ///<< Size type like std::size_t
-//     typedef EmptyQueueExceptioType empty_queue_exception_type; ///<< Exception class satisfies DefaultConstructible concept
+//     typedef EmptyExceptionType empty_exception_type; ///<< Exception class satisfies DefaultConstructible concept
 // };
 //
 
@@ -57,12 +56,12 @@ namespace tl {
 // Ring queue item is a ring queue itself.
 // It is a helper class for use in ring queue.
 //
-template <typename RingQueueTraits>
+template <typename Traits>
 class ring_queue
 {
 public:
-    typedef typename RingQueueTraits::size_type size_type;
-    typedef typename RingQueueTraits::empty_queue_exception_type empty_queue_exception_type;
+    typedef typename Traits::size_type size_type;
+    typedef typename Traits::empty_exception_type empty_exception_type;
 
 private:
     char *    _begin;
@@ -74,10 +73,13 @@ private:
 
 private:
     template <typename T>
+    T * allocate ();
+
+    template <typename T>
     T & front_helper ()
     {
         if (empty())
-            throw empty_queue_exception_type();
+            throw empty_exception_type();
 
         return _head == _end // Head exceeds End, but Queue is not empty
                 ? *reinterpret_cast<T *>(_begin)
@@ -88,17 +90,17 @@ private:
     T & back_helper ()
     {
         if (empty())
-            throw empty_queue_exception_type();
+            throw empty_exception_type();
 
         return _tail == 0 
-                ? *reinterpret_cast<T *>(_end - sizeof(T))
-                : *reinterpret_cast<T *>(_tail - sizeof(T));
+                ? *reinterpret_cast<T *>(_begin + (_end - sizeof(T)))
+                : *reinterpret_cast<T *>(_begin + (_tail - sizeof(T)));
     }
 
     void pop_helper (size_type nsize)
     {
         if (empty())
-            throw empty_queue_exception_type();
+            throw empty_exception_type();
 
         _head += nsize;
         
@@ -118,10 +120,13 @@ public:
 		, _tail(0)
 		, _count(0)
         , _capacity(capacity)
-	{}
+	{
+        PFS_DEBUG(printf("ring_queue(%lu)\n", _capacity));
+    }
         
     ~ring_queue ()
     {
+        PFS_DEBUG(printf("~ring_queue(%lu)\n", _capacity));
         delete [] _begin;
     }
 
@@ -175,10 +180,42 @@ public:
         front<T>().~T();
         pop_helper(size_type(sizeof(T)));
     }
+
+    void pop (size_type nsize)
+    {
+        pop_helper(nsize);
+    }
+    
+    template <typename T>
+    bool push ();
+    
+    template <typename T, typename Arg1>
+    bool push (Arg1 a1);
+
+    template <typename T, typename Arg1, typename Arg2>
+    bool push (Arg1 a1, Arg2 a2);
+
+    template <typename T, typename Arg1, typename Arg2, typename Arg3>
+    bool push (Arg1 a1, Arg2 a2, Arg3 a3);
+
+    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4);
+    
+    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5);
+
+    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
+    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6);
+
+    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
+    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7);
+
+    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
+    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7, Arg8 a8);
 };
 
-template <typename RingQueueTraits>
-bool ring_queue<RingQueueTraits>::ensure_capacity (size_type nsize)
+template <typename Traits>
+bool ring_queue<Traits>::ensure_capacity (size_type nsize)
 {
     if (empty()) {
    		_head = 0;                          // Move Head ...
@@ -210,384 +247,148 @@ bool ring_queue<RingQueueTraits>::ensure_capacity (size_type nsize)
     return false;
 }
 
-//
-// Glossary
-//      Item    - instance of ring_queue_item.
-//      Element - type instance added to queue.
-//
-//
-// struct RingQueuePoolTraits
-// {
-//     static  SizeType const default_increment_factor = 32; ///<< Default increment factor
-//     typedef SizeType      size_type;         ///<< Size type like std::size_t
-//     typedef AtomicType    atomic_type;       ///<< Atomic type like std::atomic_size_t since C++11
-//     typedef MutexType     mutex_type;        ///<< Mutex type must be satisfied LockGuardType::mutex_type
-//     typedef EmptyQueueExceptioType empty_exception_type; ///<< Exception class satisfies DefaultConstructible concept
-// };
-//
-// Pop Item                                       Push Item
-// ----------   ----------   ----------           ----------   
-// | Item-0 |-->| Item-1 |-->| Item-2 |-->     -->| Item-0 |
-// ----------   ----------   ----------   . . .   ----------
-
-template <typename RingQueuePoolTraits>
-class ring_queue_pool
+template <typename Traits>
+template <typename T>
+T * ring_queue<Traits>::allocate ()
 {
-public: // Typedefs
-    typedef typename RingQueuePoolTraits::size_type          size_type;
-    typedef typename RingQueuePoolTraits::atomic_type        atomic_type;
-    typedef typename RingQueuePoolTraits::mutex_type         mutex_type;
-    typedef typename RingQueuePoolTraits::empty_exception_type empty_exception_type;
-    typedef trivial_lock_guard<mutex_type>               lock_guard_type;
-    typedef ring_queue<RingQueuePoolTraits>                        item_type;
-    typedef trivial_forward_list<item_type>              list_type;
-    typedef typename list_type::iterator                 iterator;
-    typedef typename list_type::const_iterator           const_iterator;
-    
-public: // Constants
-    static size_type const default_increment_factor = RingQueuePoolTraits::default_increment_factor;
+    T * result = 0;
 
-private:
-    //
-    // Sequence contains Items
-    //
-    list_type _list;
-    
-    //
-    // Actual capacity for new items.
-    // Incremented when added new item according to formula:
-    //
-    //    _actual_item_capacity = _actual_item_capacity + <Element size> * _increment_factor
-    //
-    size_type _actual_item_capacity;
-    
-    //
-    // Limit of total capacity in bytes (Constant from instantiation).
-    //
-    size_type _max_capacity;
-    
-    //
-    // Total capacity in bytes.
-    //
-    size_type _capacity;
-    
-    //
-    // Increment factor while adding new Item
-    //
-    size_type _increment_factor;
-    
-    //
-    // Total count of Elements
-    //
-    atomic_type _count;
-    
-    mutex_type _mutex;
-
-private:
-//    template <typename T>
-//    T * allocate ();
-
-    bool ensure_capacity (size_type nsize);
-    
-    void erase_empty_items () 
-    {
-        list_type::iterator it = _list.begin();
-        list_type::iterator it_end = _list.begin();
-        
-        while (it != it_end && !it->value.empty()) {
-            _capacity -= it->value.capacity();
-            it = _list.erase(it);
-        }
-    }
-    
-public:
-	ring_queue_pool (size_type initial_capacity
-            , size_type max_capacity
-            , size_type increment_factor = default_increment_factor)
-        : _actual_item_capacity(initial_capacity)
-        , _max_capacity(max_capacity)
-        , _capacity(initial_capacity)
-        , _increment_factor(increment_factor)
-        , _count(0)
-	{
-        _list->emplace_back<item_type>(initial_capacity);
+    if (ensure_capacity(sizeof(T))) {
+        result = reinterpret_cast<T *>(_begin + _tail);
+        _tail += sizeof(T);
     }
 
-    bool empty () const
-    {
-        return _count == 0;
-    }
-
-    size_type count () const
-    {
-        return size_type(_count);
-    }
-
-    template <typename T>
-    bool push ();
-
-//    template <typename T, typename Arg1>
-//    bool push (Arg1 a1);
-//
-//    template <typename T, typename Arg1, typename Arg2>
-//    bool push (Arg1 a1, Arg2 a2);
-//
-//    template <typename T, typename Arg1, typename Arg2, typename Arg3>
-//    bool push (Arg1 a1, Arg2 a2, Arg3 a3);
-//
-//    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-//    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4);
-//    
-//    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
-//    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5);
-//
-//    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
-//    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6);
-//
-//    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
-//    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7);
-//
-//    template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
-//    bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7, Arg8 a8);
-//
-//    template <typename T>
-//    T & front ()
-//    {
-//        return front_helper<T>();
-//    }
-//    
-//    template <typename T>
-//    T const & front () const
-//    {
-//        return front_helper<T>();
-//    }
-//    
-//    template <typename T>
-//    T & back ()
-//    {
-//        return back_helper<T>();
-//    }
-//
-//    template <typename T>
-//    T const & back () const
-//    {
-//        return back_helper<T>();
-//    }
-//    
-//    /**
-//     *  @brief  Removes first element.
-//     */
-//    template <typename T>
-//    void pop ()
-//    {
-//        front<T>().~T();
-//        
-//        _head += sizeof(T);
-//        --_count;
-//    }
-//    
-//    void pop (size_type nsize) 
-//    {
-//        if (empty())
-//            throw empty_queue_exception_type();
-//
-//        _head += nsize;
-//        --_count;
-//    }
-};
-
-template <typename RingQueuePoolTraits>
-bool ring_queue_pool<RingQueuePoolTraits::ensure_capacity (size_type nsize)
-{
-    lock_guard_type locker(_mutex);
-
-    //
-    // Erase unused Items
-    //
-    if (! _list.empty())
-        erase_empty_items();
-    
-//    item_type & push_item = _list->back();
-//    item_type & pop_item  = _list->front();
-    
-    if (_list->back().ensure_capacity(nsize))
-        return true;
-    
-    size_type increment = _increment_factor * nsize;
-    size_type item_capacity = _actual_item_capacity + increment;
-
-    if (!(_max_capacity >= item_capacity
-            && _max_capacity - item_capacity > _capacity)) {
-        return false;
-    }
-    
-    _actual_item_capacity = item_capacity;
-
-    _list.emplace_back<item_type>(_actual_item_capacity);
-    
-    return true;
+    return result;
 }
 
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T>
-//T * ring_queue<RingQueuePoolTraits, MoveFunctor>::allocate ()
-//{
-//    T * result = 0;
-//
-//    if (ensure_capacity(sizeof(T))) {
-//        result = reinterpret_cast<T *>(_begin + _tail);
-//        _tail += sizeof(T);
-//    }
-//
-//    return result;
-//}
-//
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T>
-//bool ring_queue<RingQueuePoolTraits, MoveFunctor>::push ()
-//{
-//    lock_guard_type locker(_push_mutex);
-//
-//    T * ptr = allocate<T>();
-//
-//    if (ptr) {
-//        (void *)new (ptr) T;
-//        ++_count;
-//        return true;
-//    }
-//
-//    return false;
-//}
-//
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T, typename Arg1>
-//bool ring_queue<RingQueuePoolTraits, MoveFunctor>::push (Arg1 a1)
-//{
-//    lock_guard_type locker(_push_mutex);
-//
-//    T * ptr = allocate<T>();
-//
-//    if (ptr) {
-//        (void *)new (ptr) T(a1);
-//        ++_count;
-//        return true;
-//    }
-//
-//    return false;
-//}
-//
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T, typename Arg1, typename Arg2>
-//bool ring_queue<RingQueuePoolTraits, MoveFunctor>::push (Arg1 a1, Arg2 a2)
-//{
-//    lock_guard_type locker(_push_mutex);
-//
-//    T * ptr = allocate<T>();
-//
-//    if (ptr) {
-//        (void *)new (ptr) T(a1, a2);
-//        ++_count;
-//        return true;
-//    }
-//    return false;
-//}
-//
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T, typename Arg1, typename Arg2, typename Arg3>
-//bool ring_queue<RingQueuePoolTraits, MoveFunctor>::push (Arg1 a1, Arg2 a2, Arg3 a3)
-//{
-//    lock_guard_type locker(_push_mutex);
-//
-//    T * ptr = allocate<T>();
-//
-//    if (ptr) {
-//        (void *)new (ptr) T(a1, a2, a3);
-//        ++_count;
-//        return true;
-//    }
-//    return false;
-//}
-//
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-//bool ring_queue<RingQueuePoolTraits, MoveFunctor>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
-//{
-//    lock_guard_type locker(_push_mutex);
-//
-//    T * ptr = allocate<T>();
-//
-//    if (ptr) {
-//        (void *)new (ptr) T(a1, a2, a3, a4);
-//        ++_count;
-//        return true;
-//    }
-//    return false;
-//}
-//
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
-//bool ring_queue<RingQueuePoolTraits, MoveFunctor>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
-//{
-//    lock_guard_type locker(_push_mutex);
-//
-//    T * ptr = allocate<T>();
-//
-//    if (ptr) {
-//        (void *)new (ptr) T(a1, a2, a3, a4, a5);
-//        ++_count;
-//        return true;
-//    }
-//    return false;
-//}
-//
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
-//bool ring_queue<RingQueuePoolTraits, MoveFunctor>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6)
-//{
-//    lock_guard_type locker(_push_mutex);
-//
-//    T * ptr = allocate<T>();
-//
-//    if (ptr) {
-//        (void *)new (ptr) T(a1, a2, a3, a4, a5, a6);
-//        ++_count;
-//        return true;
-//    }
-//    return false;
-//}
-//
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
-//bool ring_queue<RingQueuePoolTraits, MoveFunctor>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7)
-//{
-//    lock_guard_type locker(_push_mutex);
-//
-//    T * ptr = allocate<T>();
-//
-//    if (ptr) {
-//        (void *)new (ptr) T(a1, a2, a3, a4, a5, a6, a7);
-//        ++_count;
-//        return true;
-//    }
-//    return false;
-//}
-//
-//template <typename RingQueuePoolTraits, typename MoveFunctor>
-//template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
-//bool ring_queue<RingQueuePoolTraits, MoveFunctor>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7, Arg8 a8)
-//{
-//    lock_guard_type locker(_push_mutex);
-//
-//    T * ptr = allocate<T>();
-//
-//    if (ptr) {
-//        (void *)new (ptr) T(a1, a2, a3, a4, a5, a6, a7, a8);
-//        ++_count;
-//        return true;
-//    }
-//    return false;
-//}
+template <typename Traits>
+template <typename T>
+bool ring_queue<Traits>::push ()
+{
+    T * ptr = allocate<T>();
+
+    if (ptr) {
+        (void *)new (ptr) T;
+        ++_count;
+        return true;
+    }
+
+    return false;
+}
+
+template <typename Traits>
+template <typename T, typename Arg1>
+bool ring_queue<Traits>::push (Arg1 a1)
+{
+    T * ptr = allocate<T>();
+
+    if (ptr) {
+        (void *)new (ptr) T(a1);
+        ++_count;
+        return true;
+    }
+
+    return false;
+}
+
+template <typename Traits>
+template <typename T, typename Arg1, typename Arg2>
+bool ring_queue<Traits>::push (Arg1 a1, Arg2 a2)
+{
+    T * ptr = allocate<T>();
+
+    if (ptr) {
+        (void *)new (ptr) T(a1, a2);
+        ++_count;
+        return true;
+    }
+    return false;
+}
+
+template <typename Traits>
+template <typename T, typename Arg1, typename Arg2, typename Arg3>
+bool ring_queue<Traits>::push (Arg1 a1, Arg2 a2, Arg3 a3)
+{
+    T * ptr = allocate<T>();
+
+    if (ptr) {
+        (void *)new (ptr) T(a1, a2, a3);
+        ++_count;
+        return true;
+    }
+    return false;
+}
+
+template <typename Traits>
+template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+bool ring_queue<Traits>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
+{
+    T * ptr = allocate<T>();
+
+    if (ptr) {
+        (void *)new (ptr) T(a1, a2, a3, a4);
+        ++_count;
+        return true;
+    }
+    return false;
+}
+
+template <typename Traits>
+template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+bool ring_queue<Traits>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
+{
+    T * ptr = allocate<T>();
+
+    if (ptr) {
+        (void *)new (ptr) T(a1, a2, a3, a4, a5);
+        ++_count;
+        return true;
+    }
+    return false;
+}
+
+template <typename Traits>
+template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
+bool ring_queue<Traits>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6)
+{
+    T * ptr = allocate<T>();
+
+    if (ptr) {
+        (void *)new (ptr) T(a1, a2, a3, a4, a5, a6);
+        ++_count;
+        return true;
+    }
+    return false;
+}
+
+template <typename Traits>
+template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
+bool ring_queue<Traits>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7)
+{
+    T * ptr = allocate<T>();
+
+    if (ptr) {
+        (void *)new (ptr) T(a1, a2, a3, a4, a5, a6, a7);
+        ++_count;
+        return true;
+    }
+    return false;
+}
+
+template <typename Traits>
+template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
+bool ring_queue<Traits>::push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7, Arg8 a8)
+{
+    T * ptr = allocate<T>();
+
+    if (ptr) {
+        (void *)new (ptr) T(a1, a2, a3, a4, a5, a6, a7, a8);
+        ++_count;
+        return true;
+    }
+    return false;
+}
 
 }} // pfs::tl
 
-#endif /* __PFS_ACTIVE_QUEUE_HPP__ */
+#endif /* __PFS_TL_RING_QUEUE_HPP__ */

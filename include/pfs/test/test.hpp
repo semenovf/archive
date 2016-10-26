@@ -14,7 +14,7 @@
 #define BEGIN_TESTS(n) pfs::test::start(n);
 #define END_TESTS      pfs::test::finish(false);
 #define ABORT_TESTS    pfs::test::finish(true);
-#define ADD_TESTS(n)   pfs::test::addTotal(n);
+#define ADD_TESTS(n)   pfs::test::add_total(n);
 
 #define TEST_OK(expr) if ((expr)) {                          \
 		pfs::test::todo(#expr, true, __FILE__, __LINE__);    \
@@ -61,7 +61,7 @@ namespace pfs { namespace test {
 
 void DLL_API start  (size_t n);
 int  DLL_API finish (bool abort);
-void DLL_API addTotal (size_t n);
+void DLL_API add_total (size_t n);
 void DLL_API todo (const std::string & expr, bool result, const std::string & filename, int line);
 
 }} // pfs::test

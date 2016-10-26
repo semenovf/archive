@@ -163,7 +163,7 @@ int finish (bool abort)
 	return r;
 }
 
-void addTotal (size_t n)
+void add_total (size_t n)
 {
 	context & ctx = context::instance();
 	ctx.add_total(n);
