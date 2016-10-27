@@ -15,7 +15,7 @@
 #define __PFS_TL_RING_QUEUE_POOL_HPP__
 
 #include <pfs/tl/trivial_lock_guard.hpp>
-#include <pfs/tl/trivial_forward_list.hpp>
+#include <pfs/tl/trivial_list.hpp>
 #include <pfs/tl/ring_queue.hpp>
 
 namespace pfs {
@@ -47,11 +47,9 @@ class ring_queue_pool
 public: // Typedefs
     typedef typename Traits::size_type            size_type;
     typedef typename Traits::atomic_type          atomic_type;
-    typedef typename Traits::mutex_type           mutex_type;
     typedef typename Traits::empty_exception_type empty_exception_type;
-    typedef trivial_lock_guard<mutex_type>        lock_guard_type;
     typedef ring_queue<Traits>                    item_type;
-    typedef trivial_forward_list<item_type>       list_type;
+    typedef trivial_list<item_type>       list_type;
     typedef typename list_type::iterator          iterator;
     typedef typename list_type::const_iterator    const_iterator;
     
@@ -70,17 +68,17 @@ private:
     //
     //    _actual_item_capacity = _actual_item_capacity + <Element size> * _increment_factor
     //
-    size_type _actual_item_capacity;
+    atomic_type _actual_item_capacity;
     
     //
     // Limit of total capacity in bytes (Constant from instantiation).
     //
-    size_type _max_capacity;
+    size_type const _max_capacity;
     
     //
     // Total bytes occupied.
     //
-    size_type _occupied;
+    atomic_type _occupied;
     
     //
     // Increment factor while adding new Item
@@ -91,14 +89,14 @@ private:
     // Total count of Elements
     //
     atomic_type _count;
-
+    
 private:
     void erase_empty_items () 
     {
         typename list_type::iterator it = _list.begin();
-        typename list_type::iterator it_end = _list.begin();
+        typename list_type::iterator it_end = _list.end();
         
-        while (it != it_end && !it->value->empty()) {
+        while (it != it_end && it->next != it_end && it->value->empty()) {
             it = _list.erase(it);
         }
     }
@@ -133,6 +131,8 @@ public:
     {
         if (empty())
             throw empty_exception_type();
+        
+        erase_empty_items();
         return _list.front().front<T>();
     }
     
@@ -264,36 +264,25 @@ public:
      *  @brief  Removes first element.
      */
     template <typename T>
-    void pop ()
-    {
-        if (! empty()) {
-            _list.front().pop<T>();
-            --_count;
-            _occupied -= sizeof(T);
-        }
-    }
+    void pop ();
     
-    void pop (size_type nsize) 
-    {
-        if (! empty()) {
-            _list.front().pop(nsize);
-            --_count;
-            _occupied -= nsize;
-        }
-    }
+    /**
+     * @brief Removes first @a nsize bytes.
+     * @param nsize
+     * 
+     * @note Using this method is unsafe. 
+     *       It must be used with manually call of destructor.
+     */
+    void pop (size_type nsize);
 };
 
 template <typename Traits>
 bool ring_queue_pool<Traits>::ensure_capacity (size_type nsize)
 {
-    //
-    // Erase unused Items
-    //
-    if (! _list.empty())
-        erase_empty_items();
-    
-    if (_list.back().ensure_capacity(nsize))
-        return true;
+    if (! _list.empty()) {
+        if (_list.back().ensure_capacity(nsize))
+            return true;
+    }
     
     size_type increment = _increment_factor * nsize;
     size_type item_capacity = _actual_item_capacity + increment;
@@ -304,9 +293,37 @@ bool ring_queue_pool<Traits>::ensure_capacity (size_type nsize)
     
     _actual_item_capacity = item_capacity;
 
-    _list.emplace_back(_actual_item_capacity);
+    _list.emplace_back(size_type(_actual_item_capacity));
     
     return true;
+}
+
+template <typename Traits>
+template <typename T>
+void ring_queue_pool<Traits>::pop ()
+{
+    if (! empty()) {
+        _list.front().pop<T>();
+        --_count;
+        _occupied -= sizeof(T);
+
+        if (_list.front().empty())
+            _list.erase(_list.begin());
+    }
+}
+
+template <typename Traits>
+void ring_queue_pool<Traits>::pop (size_type nsize) 
+{
+    if (! empty()) {
+
+        _list.front().pop(nsize);
+        --_count;
+        _occupied -= nsize;
+
+        if (_list.front().empty())
+            _list.erase(_list.begin());
+    }
 }
 
 }} // pfs::tl

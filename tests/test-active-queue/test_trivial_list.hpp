@@ -11,14 +11,14 @@
  * Created on October 26, 2016, 3:06 PM
  */
 
-#ifndef __TEST_TRIVIAL_FORWARD_LIST_HPP__
-#define __TEST_TRIVIAL_FORWARD_LIST_HPP__
+#ifndef __TEST_TRIVIAL_LIST_HPP__
+#define __TEST_TRIVIAL_LIST_HPP__
 
 #include <pfs/test/test.hpp>
-#include <pfs/tl/trivial_forward_list.hpp>
+#include <pfs/tl/trivial_list.hpp>
 
 namespace test {
-namespace trivial_forward_list {
+namespace trivial_list {
 
 struct A
 {
@@ -31,7 +31,7 @@ struct A
     {}
 };
 
-typedef pfs::tl::trivial_forward_list<A> list_type;
+typedef pfs::tl::trivial_list<A> list_type;
 
 void test_basic ()
 {
@@ -45,5 +45,5 @@ void test_basic ()
 
 }}
 
-#endif /* __TEST_TRIVIAL_FORWARD_LIST_HPP__ */
+#endif /* __TEST_TRIVIAL_LIST_HPP__ */
 

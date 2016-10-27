@@ -60,16 +60,17 @@ template <typename Traits>
 class ring_queue
 {
 public:
-    typedef typename Traits::size_type size_type;
+    typedef typename Traits::size_type            size_type;
+    typedef typename Traits::atomic_type          atomic_type;
     typedef typename Traits::empty_exception_type empty_exception_type;
 
 private:
-    char *    _begin;
-   	size_type _end;      // Logic end (not a real end of buffer)
-	size_type _head;     // Head of data
-	size_type _tail;     // Tail of data
-    size_type _count;    // Count in bytes
-    size_type _capacity; // Capacity in bytes
+    char *      _begin;
+   	size_type   _end;      // Logic end (not a real end of buffer)
+	size_type   _head;     // Head of data
+	size_type   _tail;     // Tail of data
+    atomic_type _count;    // Count in bytes
+    size_type const _capacity; // Capacity in bytes
 
 private:
     template <typename T>
@@ -121,12 +122,12 @@ public:
 		, _count(0)
         , _capacity(capacity)
 	{
-        PFS_DEBUG(printf("ring_queue(%lu)\n", _capacity));
+        // PFS_DEBUG(printf("ring_queue::ring_queue(%lu)\n", size_type(_capacity)));
     }
         
     ~ring_queue ()
     {
-        PFS_DEBUG(printf("~ring_queue(%lu)\n", _capacity));
+        //PFS_DEBUG(printf("ring_queue::~ring_queue(%lu)\n", size_type(_capacity)));
         delete [] _begin;
     }
 

@@ -23,7 +23,7 @@ namespace pfs {
 
 struct empty_exception : public length_error
 {
-    empty_exception () : length_error("") {}
+    empty_exception () : length_error("empty container") {}
 };
 
 struct active_queue_traits_st
@@ -102,7 +102,6 @@ public:
     active_queue_mt ()
         : base_class(pfs::max_value<size_t>())
 	{}
-
 };
 
 } // pfs

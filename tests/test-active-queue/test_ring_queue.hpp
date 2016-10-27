@@ -15,6 +15,7 @@
 #define __TEST_RING_QUEUE_HPP__
 
 #include <pfs/test/test.hpp>
+#include <pfs/atomic.hpp>
 #include <pfs/exception.hpp>
 #include <pfs/tl/ring_queue.hpp>
 
@@ -28,8 +29,9 @@ struct empty_exception : public pfs::length_error
 
 struct traits
 {
-    typedef size_t size_type;
-    typedef empty_exception empty_exception_type;
+    typedef size_t             size_type;
+    typedef pfs::atomic_size_t atomic_type;
+    typedef empty_exception    empty_exception_type;
 };
 
 typedef pfs::tl::ring_queue<traits> ring_queue_type;

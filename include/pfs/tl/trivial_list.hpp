@@ -5,22 +5,25 @@
  */
 
 /* 
- * File:   trivial_forward_list.hpp
+ * File:   trivial_list.hpp
  * Author: wladt
  *
  * Created on October 25, 2016, 2:09 PM
  */
 
-#ifndef __PFS_TL_TRIVIAL_FORWARD_LIST_HPP__
-#define __PFS_TL_TRIVIAL_FORWARD_LIST_HPP__
+#ifndef __PFS_TL_TRIVIAL_LIST_HPP__
+#define __PFS_TL_TRIVIAL_LIST_HPP__
+
+#include <pfs.hpp> // TODO REMOVE THIS INCLDUE
 
 namespace pfs {
 namespace tl {
 
 template <typename T>
-class trivial_forward_list
+class trivial_list
 {
     struct node {
+        node * prev;
         node * next;
         T    * value;
     };
@@ -36,22 +39,15 @@ public:
     typedef node const * const_iterator;
     
 private:
-    void push_back_helper (node * p)
-    {
-        p->next = _last;
-        _last = p;
-        
-        if (! _first)
-            _first = p;
-    }
+    void push_back_helper (node * p);
         
 public:
-    trivial_forward_list ()
+    trivial_list ()
         : _first(0)
         , _last(0)
     {}
 
-    ~trivial_forward_list ();
+    ~trivial_list ();
     
     bool empty () const
     {
@@ -90,11 +86,19 @@ public:
     
     reference front ()
     {
+        if (!_first) {
+            PFS_ASSERT(_first);
+        }
+        PFS_ASSERT(_first->value);
         return *_first->value; 
     }
 
     reference back ()
     {
+        if (! _last) {
+            PFS_ASSERT(_last);
+        }
+        PFS_ASSERT(_last->value);
         return *_last->value; 
     }
 
@@ -188,7 +192,7 @@ public:
 };
 
 template <typename T>
-trivial_forward_list<T>::~trivial_forward_list ()
+trivial_list<T>::~trivial_list ()
 {
     node * p  = _first;
     node * p1 = p;
@@ -196,25 +200,63 @@ trivial_forward_list<T>::~trivial_forward_list ()
     while (p) {
         p1 = p->next;
         p->value->~T();
+        p->next = 0;
+        p->prev = 0;
         delete p;
         p = p1;
+    }
+    
+    _first = 0;
+    _last = 0;
+}
+
+template <typename T>
+void trivial_list<T>::push_back_helper (node * p)
+{
+    if (!_last && !_first) {
+        p->next = p->prev = 0;
+        _first = p;
+        _last = p;
+    } else {
+        p->prev = _last;
+        p->next = 0;
+        _last->next = p;
+        _last = p;
     }
 }
 
 template <typename T>
-typename trivial_forward_list<T>::iterator trivial_forward_list<T>::erase (iterator it)
+typename trivial_list<T>::iterator trivial_list<T>::erase (iterator it)
 {
+    iterator result = end();
+    
     if (it) {
-        iterator result = it->next;
+        if (it->prev == 0 && it->next == 0) { // The only element, ...
+            _first = 0;                      // ... result is end()
+            _last = 0;
+        } else if (it->prev == 0) {          // First element, ...
+            _first = it->next;               // result is new first element
+            _first->prev = 0;
+            result = _first;
+        } else if (it->next == 0) {          // Last element, ...
+            _last = it->prev;                // result is end()
+            _last->next = 0;
+        } else {                             // Other case, ... 
+            it->prev->next = it->next;       // .. result is next element
+            it->next->prev = it->prev;
+            result = it->next;
+        }
+        
         it->value->~T();
-        return result;
+        it->next = 0;
+        it->prev = 0;
+        delete it;
     }
-
-    return end();
+    
+    return result;
 }
-
 
 }} // pfs::tl
 
-#endif /* __PFS_TL_TRIVIAL_FORWARD_LIST_HPP__ */
+#endif /* __PFS_TL_TRIVIAL_LIST_HPP__ */
 
