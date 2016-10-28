@@ -49,9 +49,11 @@ public: // Typedefs
     typedef typename Traits::atomic_type          atomic_type;
     typedef typename Traits::empty_exception_type empty_exception_type;
     typedef ring_queue<Traits>                    item_type;
-    typedef trivial_list<item_type>       list_type;
+    typedef trivial_list<item_type>            list_type;
     typedef typename list_type::iterator          iterator;
     typedef typename list_type::const_iterator    const_iterator;
+    typedef typename Traits::mutex_type           mutex_type;
+    typedef trivial_lock_guard<mutex_type>        lock_guard_type;
     
 public: // Constants
     static size_type const default_increment_factor = Traits::default_increment_factor;
@@ -90,16 +92,18 @@ private:
     //
     atomic_type _count;
     
+    mutex_type _mutex;
+    
 private:
-    void erase_empty_items () 
-    {
-        typename list_type::iterator it = _list.begin();
-        typename list_type::iterator it_end = _list.end();
-        
-        while (it != it_end && it->next != it_end && it->value->empty()) {
-            it = _list.erase(it);
-        }
-    }
+//    void erase_empty_items () 
+//    {
+//        typename list_type::iterator it = _list.begin();
+//        typename list_type::iterator it_end = _list.end();
+//        
+//        while (it != it_end && it->next != it_end && it->value->empty()) {
+//            it = _list.erase(it);
+//        }
+//    }
     
 public:
 	ring_queue_pool (size_type initial_capacity
@@ -131,8 +135,6 @@ public:
     {
         if (empty())
             throw empty_exception_type();
-        
-        erase_empty_items();
         return _list.front().front<T>();
     }
     
@@ -279,6 +281,8 @@ public:
 template <typename Traits>
 bool ring_queue_pool<Traits>::ensure_capacity (size_type nsize)
 {
+    lock_guard_type locker(_mutex); // Below list can be modified
+
     if (! _list.empty()) {
         if (_list.back().ensure_capacity(nsize))
             return true;
@@ -295,6 +299,10 @@ bool ring_queue_pool<Traits>::ensure_capacity (size_type nsize)
 
     _list.emplace_back(size_type(_actual_item_capacity));
     
+    if (& _list.front() != & _list.back() // List has mor than one element
+            && _list.front().empty())
+        _list.erase(_list.begin());
+
     return true;
 }
 
@@ -302,12 +310,15 @@ template <typename Traits>
 template <typename T>
 void ring_queue_pool<Traits>::pop ()
 {
+    lock_guard_type locker(_mutex); // Below list can be modified
+    
     if (! empty()) {
         _list.front().pop<T>();
         --_count;
         _occupied -= sizeof(T);
-
-        if (_list.front().empty())
+    
+        if (& _list.front() != & _list.back() // List has mor than one element
+                && _list.front().empty())
             _list.erase(_list.begin());
     }
 }
@@ -315,13 +326,15 @@ void ring_queue_pool<Traits>::pop ()
 template <typename Traits>
 void ring_queue_pool<Traits>::pop (size_type nsize) 
 {
-    if (! empty()) {
+    lock_guard_type locker(_mutex); // Below list can be modified
 
+    if (! empty()) {
         _list.front().pop(nsize);
         --_count;
         _occupied -= nsize;
 
-        if (_list.front().empty())
+        if (& _list.front() != & _list.back()  // List has mor than one element
+                && _list.front().empty())
             _list.erase(_list.begin());
     }
 }

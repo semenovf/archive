@@ -122,12 +122,12 @@ public:
 		, _count(0)
         , _capacity(capacity)
 	{
-        // PFS_DEBUG(printf("ring_queue::ring_queue(%lu)\n", size_type(_capacity)));
+//        PFS_DEBUG(printf("ring_queue::ring_queue(%lu)\n", size_type(_capacity)));
     }
         
     ~ring_queue ()
     {
-        //PFS_DEBUG(printf("ring_queue::~ring_queue(%lu)\n", size_type(_capacity)));
+//        PFS_DEBUG(printf("ring_queue::~ring_queue(%lu)\n", size_type(_capacity)));
         delete [] _begin;
     }
 

@@ -28,8 +28,8 @@ class trivial_list
         T    * value;
     };
     
-    node * _first;
-    node * _last;
+    node *     _first;
+    node *     _last;
     
 public:    
     typedef T            value_type;
@@ -86,18 +86,14 @@ public:
     
     reference front ()
     {
-        if (!_first) {
-            PFS_ASSERT(_first);
-        }
+        PFS_ASSERT(_first);
         PFS_ASSERT(_first->value);
         return *_first->value; 
     }
 
     reference back ()
     {
-        if (! _last) {
-            PFS_ASSERT(_last);
-        }
+        PFS_ASSERT(_last);
         PFS_ASSERT(_last->value);
         return *_last->value; 
     }
@@ -258,5 +254,5 @@ typename trivial_list<T>::iterator trivial_list<T>::erase (iterator it)
 
 }} // pfs::tl
 
-#endif /* __PFS_TL_TRIVIAL_LIST_HPP__ */
+#endif /* __PFS_TL_TRIVIAL_LIST_MT_HPP__ */
 

@@ -223,6 +223,7 @@ static pfs::atomic_size_t cons3_counter(0);
 
 void func1 ()
 {
+    COUT << "func1()\n";
     ++cons1_counter;
 }
 
@@ -317,7 +318,7 @@ public:
 
 void test ()
 {
-    ADD_TESTS(4);
+    ADD_TESTS(1);
     
     consumer cons;
     producer1 prod1;
@@ -329,7 +330,7 @@ void test ()
     prod2.start();
     prod3.start();
     
-    pfs::thread::sleep(2);
+    pfs::thread::msleep(100);
     
     is_finish = 1;
     
@@ -338,24 +339,21 @@ void test ()
     prod2.wait();
     prod3.wait();
     
-    if (result != 0) {
-        cout << "result = 0x" << std::hex << result.load() << endl;
-    }
-    
     TEST_OK2(result == 0
                 && cons1_counter == prod1_counter
                 && cons2_counter == prod2_counter
                 && cons3_counter == prod3_counter
             , "test::active_queue::test3 is ok");
     
-//    cout << "cons1_counter(" << cons1_counter.load() << ") == "
-//         << "prod1_counter(" << prod1_counter.load() << ")" << endl;
-//
-//    cout << "cons2_counter(" << cons2_counter.load() << ") == "
-//         << "prod2_counter(" << prod2_counter.load() << ")" << endl;
-//
-//    cout << "cons3_counter(" << cons3_counter.load() << ") == "
-//         << "prod3_counter(" << prod3_counter.load() << ")" << endl;
+    cout << "result = 0x" << std::hex << result.load() << std::dec << " (must be 0x0)" << endl;
+    cout << "cons1_counter(" << cons1_counter.load() << ") == "
+         << "prod1_counter(" << prod1_counter.load() << ")" << endl;
+
+    cout << "cons2_counter(" << cons2_counter.load() << ") == "
+         << "prod2_counter(" << prod2_counter.load() << ")" << endl;
+
+    cout << "cons3_counter(" << cons3_counter.load() << ") == "
+         << "prod3_counter(" << prod3_counter.load() << ")" << endl;
 }
 
 } // test3

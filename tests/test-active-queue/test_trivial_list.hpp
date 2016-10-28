@@ -15,6 +15,7 @@
 #define __TEST_TRIVIAL_LIST_HPP__
 
 #include <pfs/test/test.hpp>
+#include <pfs/mutex.hpp>
 #include <pfs/tl/trivial_list.hpp>
 
 namespace test {
