@@ -28,8 +28,8 @@ Run on terminal:
 
 ###### Build
 
-premake building consists of two stages
-1. building `premake_bootstrap`
+`premake` building consists of two stages:  
+1. building `premake_bootstrap`  
 2. building `premake` using `premake_bootstrap` with predefined premake projects
    including third-party libraries: curl, libzip, lua, zlib.
 
