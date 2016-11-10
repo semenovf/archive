@@ -39,10 +39,10 @@ For this need to apply some changes in `Bootstrap.mak`:
 
 * find appropriate to OS rule like 'OSNAME: $(SRC)' (OSNAME => `linux` for linux-family OSes,
   OSNAME => `osx` for MacOS etc).
-* add `--no-curl` to line 
-    ./build/bootstrap/premake_bootstrap --to=build/bootstrap gmake
-so line will look like this 
-    ./build/bootstrap/premake_bootstrap --to=build/bootstrap gmake --no-curl
+* add `--no-curl` to line  
+    `./build/bootstrap/premake_bootstrap --to=build/bootstrap gmake`  
+so line will look like this  
+    `./build/bootstrap/premake_bootstrap --to=build/bootstrap gmake --no-curl`
 
 Now it is time to build and install `premake` directly (for `linux` as example):
 
