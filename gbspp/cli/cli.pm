@@ -17,7 +17,7 @@ sub new
       , name     => basename($program)           # file name (i.e. `bootstrap.pl')
       , corename => basename($program, ('.pl'))  # file name excluding suffixes (i.e. `bootstrap')
       , dir      => dirname($program)            # directory path (i.e. `/path/to')
-      , has_action => 0                          # first option is a free argument
+      , has_domain => 0                          # first option is a free argument
       , options  => {}
       , args     => []
     };
@@ -42,7 +42,7 @@ sub parse_array
         #
         if ($argv->[0]) {
             if (!($argv->[0] =~ /^\-{1,2}/)) {
-                $self->{has_action} = 1;
+                $self->{has_domain} = 1;
                 push @{$args}, $argv->[0];
                 ++$i;
             }
@@ -99,16 +99,16 @@ sub parse_ARGV
     return $self->parse_array($argc, $argv);
 }
 
-sub has_action
+sub has_domain
 {
     my $self = shift or die;
-    return $self->{has_action};
+    return $self->{has_domain};
 }
 
-sub action
+sub domain
 {
     my $self = shift or die;
-    return $self->{has_action} ? $self->{args}->[0] : undef;
+    return $self->{has_domain} ? $self->{args}->[0] : undef;
 }
 
 sub has_option
@@ -125,11 +125,11 @@ sub arg
     my ($self, $index) = @_;
     
     my $count = scalar(@{$self->{args}});
-    --$count if $self->has_action;
+    --$count if $self->has_domain;
     
     return undef unless $count > 0;
     return undef unless $index >= 0 && $index < $count;
-    return $self->{args}->[$index + 1] if $self->has_action;
+    return $self->{args}->[$index + 1] if $self->has_domain;
     return $self->{args}->[$index];
 }
 
@@ -138,7 +138,7 @@ sub nargs
     my $self = shift or die;
     
     my $result = scalar(@{$self->{args}});
-    --$result if $self->has_action;
+    --$result if $self->has_domain;
     return $result;
 }
 

@@ -12,7 +12,7 @@ use strict;
 sub run
 {
     my @cmdline = (
-          'action'
+          'domain'
         , '--bool-opt'
         , '--int-opt=123'
         , 'arg0'
@@ -28,8 +28,8 @@ sub run
     
 #    print Dumper($cli), "\n";
     
-    ok($cli->has_action                 , q(has action));
-    ok($cli->action eq 'action'         , q(action 'action' found));
+    ok($cli->has_domain                 , q(has domain));
+    ok($cli->domain eq 'domain'         , q(domain 'domain' found));
     ok($cli->has_option('bool-opt')     , q('bool-opt' found));
     ok($cli->has_option('int-opt')      , q('int-opt' found));
     ok($cli->has_option('char-opt')     , q('char-opt' found));
@@ -73,7 +73,7 @@ sub run
     
     ok($cli->parse_array(@cmdline), q(parse command line));
     
-    ok(! $cli->has_action       , q(has no action));
+    ok(! $cli->has_domain       , q(has no domain));
     ok($cli->nargs == 0         , q(no arguments exist));
     ok($cli->has_option('int-opt')      , q('int-opt' found));
     ok($cli->has_option('string-opt')   , q('short-opt' found));
@@ -102,7 +102,7 @@ sub run
 package test2;
 use Test::Simple;
 use gbspp::cli::cli;
-#use gbspp::cli::router;
+use gbspp::cli::router;
 use strict;
 
 sub run
@@ -123,22 +123,22 @@ sub run
 
     ok($cli->parse_array(@cmdline), q(parse command line));
 
-#    my $router = gbspp::cli::router->new;
-#    $router->route->a(qw(project pro prj))
-#        ->b('create')
+    my $router = gbspp::cli::router->new;
+    $router->r->d(qw(project pro prj))
+       ->b('create')
 #        ->s('name'     , 'ProjectName')
-#        ->s('type'     , 'ProjectType' => {-default => 'console-app', -select => qw(console-app gui-app shared-lib static-lib) })
+#        ->s('type'     , 'ProjectType' => {-default => 'console-app', -variants => qw(console-app gui-app shared-lib static-lib) })
 #        ->s('lang'     , 'ProjectLang' => 'C++')
 #        ->s('depends'  , 'ProjectDeps' => [])
 #        ->b('enable-qt', 'EnableQt'    => 0)
 #        ->b('doxygen'  , 'GenDoxyfile' => 0)
-#        ->to(
-#            sub {
-#                my $r = shift; # fetch router itself
-#                $r->stash('SolutionName' => 'Some Solution Name');
-#                ok(1 == 1, q(Router applied));
-#            }
-#        );
+        ->to(
+            sub {
+                my $r = shift; # fetch router itself
+                $r->stash('SolutionName' => 'Some Solution Name');
+                ok(1 == 1, q(Router applied));
+            }
+        );
 
 #    $router->run($cli);
 }
