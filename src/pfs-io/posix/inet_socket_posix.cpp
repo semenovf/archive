@@ -115,11 +115,11 @@ error_code inet_socket::set_socket_options (uint32_t sso)
 
 // XXX Duplicated with tcp_server version
 //
-error_code tcp_socket::open (bool non_blocking)
+error_code tcp_socket::open (bool non_blocking_flag)
 {
 	int socktype = SOCK_STREAM;
 
-	if (non_blocking)
+	if (non_blocking_flag)
 		socktype |= SOCK_NONBLOCK;
 
 	_fd = ::socket(PF_INET, socktype, IPPROTO_TCP);
@@ -301,11 +301,11 @@ namespace pfs { namespace io {
 template <>
 device open_device<tcp_socket> (const open_params<tcp_socket> & op, error_code & ex)
 {
-    bool non_blocking = op.oflags & non_blocking;
+    bool non_blocking_flag = op.oflags & pfs::io::non_blocking;
 
     details::tcp_socket * d = new details::tcp_socket;
 
-    ex = d->open(non_blocking);
+    ex = d->open(non_blocking_flag);
 
     if (!ex) ex = d->set_socket_options(op.socketopts);
 
