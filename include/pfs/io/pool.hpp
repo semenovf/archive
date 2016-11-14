@@ -15,7 +15,8 @@
 #include <pfs/io/server.hpp>
 #include <pfs/io/bits/pool.hpp>
 
-namespace pfs { namespace io {
+namespace pfs {
+namespace io {
 
 enum poll_enum {
 	  poll_in   = 0x0001  // POLLIN There is data to read.

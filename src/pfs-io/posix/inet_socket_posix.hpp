@@ -28,8 +28,8 @@ private:
 	inet_socket (const inet_socket & other);
 	inet_socket & operator = (const inet_socket & other);
 
-protected:
-	error_code open (bool non_blocking);
+public:
+	virtual error_code open (bool non_blocking) = 0;
 
 public:
 	inet_socket ()
@@ -43,13 +43,17 @@ public:
 		close();
 	}
 
+    error_code connect (uint32_t addr, uint16_t port);
+    
+    virtual error_code reopen ();
+    
     virtual open_mode_flags open_mode () const;
 
     virtual size_t bytes_available () const;
 
-    virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex) = 0;
+    virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex);
 
-    virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex) = 0;
+    virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
 
     virtual error_code close ();
 
@@ -74,6 +78,10 @@ public:
     }
 
     error_code set_socket_options (uint32_t sso);
+    
+    virtual string url () const = 0;
+    
+    string url (char const * proto) const;
 };
 
 class tcp_socket : public inet_socket
@@ -81,11 +89,8 @@ class tcp_socket : public inet_socket
 public:
 	typedef inet_socket::native_handle_type native_handle_type;
 
-	//	bool     _non_blocking;
-
 public:
-	error_code open (bool non_blocking);
-	error_code connect (uint32_t addr, uint16_t port);
+	virtual error_code open (bool non_blocking);
 
 public:
 	tcp_socket ()
@@ -104,13 +109,32 @@ public:
 		_devtype = device_tcp_peer;
 	}
 
-	virtual error_code reopen ();
+    virtual string url () const
+    {
+        return inet_socket::url("tcp");
+    }
+};
 
-	virtual ssize_t read (byte_t * bytes, size_t n, error_code * ex);
+class udp_socket : public inet_socket
+{
+public:
+	typedef inet_socket::native_handle_type native_handle_type;
 
-	virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
-    
-    virtual string url () const;
+public:
+	virtual error_code open (bool non_blocking);
+
+public:
+	udp_socket ()
+		: inet_socket()
+	{
+		_devtype = device_udp_socket;
+	}
+
+    virtual string url () const
+    {
+        return inet_socket::url("udp");
+    }
+
 };
 
 }}}

@@ -31,6 +31,7 @@ enum device_type
 	, device_file
 	, device_tcp_socket
 	, device_tcp_peer
+    , device_udp_socket
 };
 
 }}

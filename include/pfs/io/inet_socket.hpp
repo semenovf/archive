@@ -41,6 +41,8 @@ enum socket_set_option
 //#define SO_SNDTIMEO	21
 };
 
+struct inet_socket {};
+
 /**
  * @struct pfs::io::tcp_socket
  * @brief TCP socket device implementation.
@@ -55,20 +57,32 @@ struct tcp_socket {};
  */
 struct udp_socket {};
 
+// Helper structure for tcp/udp sockets
+//
 template <>
-struct open_params<tcp_socket>
+struct open_params<inet_socket>
 {
 	net::inet4_addr addr;
 	uint16_t port;
 	device::open_mode_flags oflags;
 	uint32_t socketopts;
-
-	open_params ()
-		: addr()
-		, port(0)
-		, oflags(0)
-		, socketopts(0)
+    
+    open_params (net::inet4_addr a, uint16_t p, device::open_mode_flags of, uint32_t sso)
+        : addr(a)
+		, port(p)
+		, oflags(of)
+		, socketopts(sso)
 	{}
+};
+
+template <>
+struct open_params<tcp_socket> : public open_params<inet_socket>
+{
+    typedef open_params<inet_socket> base_class;
+    
+	open_params () 
+        : base_class(net::inet4_addr(), 0, 0, 0) 
+    {}
 
 	/**
 	 * @param a IPv4 address.
@@ -77,24 +91,43 @@ struct open_params<tcp_socket>
 	 * @param sso Socket set options (@see socket_set_option).
 	 */
 	open_params (net::inet4_addr a, uint16_t p, device::open_mode_flags of, uint32_t sso)
-		: addr(a)
-		, port(p)
-		, oflags(of)
-		, socketopts(sso)
+        : base_class(a, p, of, sso)
 	{}
 
 	open_params (net::inet4_addr a, uint16_t p, device::open_mode_flags of)
-		: addr(a)
-		, port(p)
-		, oflags(of)
-		, socketopts(0)
+        : base_class(a, p, of, 0)
 	{}
 
 	open_params (net::inet4_addr a, uint16_t p)
-		: addr(a)
-		, port(p)
-		, oflags(0)
-		, socketopts(0)
+        : base_class(a, p, 0, 0)
+	{}
+};
+
+template <>
+struct open_params<udp_socket> : public open_params<inet_socket>
+{
+    typedef open_params<inet_socket> base_class;
+    
+	open_params () 
+        : base_class(net::inet4_addr(), 0, 0, 0) 
+    {}
+
+	/**
+	 * @param a IPv4 address.
+	 * @param p Port number
+	 * @param of Only device::non_blocking applicable.
+	 * @param sso Socket set options (@see socket_set_option).
+	 */
+	open_params (net::inet4_addr a, uint16_t p, device::open_mode_flags of, uint32_t sso)
+        : base_class(a, p, of, sso)
+	{}
+
+	open_params (net::inet4_addr a, uint16_t p, device::open_mode_flags of)
+        : base_class(a, p, of, 0)
+	{}
+
+	open_params (net::inet4_addr a, uint16_t p)
+        : base_class(a, p, 0, 0)
 	{}
 };
 
@@ -114,6 +147,9 @@ struct open_params<tcp_socket>
  */
 template <>
 device open_device<tcp_socket> (const open_params<tcp_socket> & op, error_code & ex);
+
+template <>
+device open_device<udp_socket> (const open_params<udp_socket> & op, error_code & ex);
 
 }} // pfs::io
 

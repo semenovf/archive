@@ -23,6 +23,7 @@ template <typename DeviceImpl>
 struct open_params;
 
 class server;
+class device;
 
 class DLL_API device
 {
@@ -41,7 +42,6 @@ protected:
     device (bits::device * p)
 		: _d(p)
 	{}
-
 
 public:
     device () {}

@@ -28,6 +28,22 @@ public:
 	{}
 
     /**
+     * @brief Copy constructor.
+     */
+    inet4_addr (inet4_addr const & x)
+		: _addr(x._addr)
+	{}
+
+    /**
+     * @brief Copy assignment operator.
+     */
+    inet4_addr & operator = (inet4_addr const & x)
+	{
+        _addr = x._addr;
+        return *this;
+    }
+
+    /**
      * @brief Constructs inet4_addr from four numeric parts.
      *
      * @details Each of the four numeric parts specifies a byte of the address;
@@ -106,6 +122,18 @@ public:
     {
     	pfs::swap(_addr, other._addr);
     }
+    
+public:
+    /**
+     * @brief Parses string representing TCP/UDP address in format @c proto://inet4_addr:port.
+     * 
+     * @param s String in format @c proto://inet4_addr:port, where proto must be equal to 'tcp' or 'udp'.
+     * @param proto Reference to store resulting proto.
+     * @param ip Reference to store resulting inet4 address.
+     * @param port Reference to store resulting port.
+     * @return @c true on successful parsing, @c false otherwise.
+     */
+    static bool parse (string const & s, string * proto, inet4_addr * ip, uint16_t * port);
 };
 
 #if __COMMENT__

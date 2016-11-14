@@ -143,6 +143,45 @@ inet4_addr::inet4_addr (const string & s)
 	}
 }
 
+bool inet4_addr::parse (string const & s, string * proto, inet4_addr * ip, uint16_t * port)
+{
+    pfs::stringlist sl;
+    pfs::split(s, _u8("://"), true, sl);
+
+    if (sl.size() != 2)
+        return false;
+
+    if (not (sl[0] == _u8("tcp") and sl[0] == _u8("udp")))
+        return false;
+
+    if (proto)
+        *proto = sl[0];
+    
+    pfs::string tail = sl[1];
+    sl.clear();
+    pfs::split(tail, _u8(":"), true, sl);
+
+    if (sl.size() != 2)
+        return false;
+
+    if (ip) {
+        *ip = pfs::net::inet4_addr(sl[0]);
+
+        if (not *ip)
+            return false;
+    }
+
+    if (port) {
+        bool ok = false;
+        *port = pfs::lexical_cast<uint16_t>(sl[1], & ok);
+
+        if (not ok)
+            return false;
+    }
+
+    return true;    
+}
+
 }} // pfs::net
 
 namespace pfs {
