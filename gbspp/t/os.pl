@@ -1,6 +1,4 @@
 #!/usr/bin/perl -w
-use strict;
-
 use lib qw(../../);
 use Test::Simple tests => 1;
 use strict;
@@ -10,7 +8,10 @@ use gbspp::os;
 
 sub run
 {
-    print "Variable \$^O => '$^O'\n";
+    print "OS Type:   ", gbspp::os::type, "\n";
+    print "OS Family: ", gbspp::os::family, "\n";
+    
+    
 #    ok(gbspp::type::bool::can_assign('true') , q(Boolean can be assigned from 'true'));
 }
 

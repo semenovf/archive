@@ -1,6 +1,4 @@
 #!/usr/bin/perl -w
-use strict;
-
 use lib qw(../../);
 use Test::Simple tests => 29;
 use strict;

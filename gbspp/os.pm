@@ -7,11 +7,6 @@ use warnings;
 # @see perldoc perlport
 #
 
-#require Exporter;
-#our @ISA = qw(Exporter);
-#our @EXPORT_OK = qw();
-#
-
 #
 # gbspp::os::type
 #
@@ -40,6 +35,5 @@ sub family
     return 'mswin' if ($type eq 'mswin' || $type eq 'cygwin');
     return 'dos'   if ($type eq 'dos');
 }
-
 
 1;
