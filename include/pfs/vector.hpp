@@ -52,7 +52,8 @@ public:
 		: base_class(first, last, alloc)
 	{}
 
-	vector (const vector & other)
+	vector (vector const & x)
+        : base_class(x)
 	{}
 
 #if __cplusplus >= 201103L
