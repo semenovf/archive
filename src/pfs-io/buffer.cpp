@@ -67,6 +67,11 @@ struct buffer : public bits::device
     	return true;
     }
 
+    virtual bool is_nonblocking () const
+    {
+    	return true;
+    }
+
     virtual native_handle_type native_handle () const
     {
     	return -1;

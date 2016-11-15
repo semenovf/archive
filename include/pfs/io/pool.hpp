@@ -264,7 +264,7 @@ public:
 		virtual ~dispatcher_context2 () {}
 
 	public:
-		virtual void connected (device &, server & listener) {}
+		virtual void accepted (device &, server & listener) {}
 		virtual void ready_read (device &) {}
 		virtual void disconnected (device &) {}
 		virtual void can_write (device &) {}
@@ -294,7 +294,7 @@ public:
 		}
 
 	public:
-		virtual void connected (device &, server & listener) {}
+		virtual void accepted (device &, server & listener) {}
 		virtual void ready_read (device &) {}
 		virtual void disconnected (device &) {}
 		virtual void can_write (device &) {} // unused yet

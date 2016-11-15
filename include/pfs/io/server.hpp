@@ -64,6 +64,11 @@ public:
     	return _d->set_nonblocking(on);
     }
 
+    bool is_nonblocking () const
+    {
+        return _d->is_nonblocking();
+    }
+    
     /**
      * @brief Close device.
      * @return @c true if device closed successfully,

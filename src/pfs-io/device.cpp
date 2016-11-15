@@ -90,6 +90,8 @@ ssize_t copy (device & dest, device & src, size_t chunkSize, error_code * ex)
     return r;
 }
 
+// TODO Move functions below (complress/uncomress) to another place
+#if __TODO__
 bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * pex)
 {
 	if (!src.opened()) {
@@ -265,5 +267,7 @@ bool uncompress (device & dest, device & src, size_t chunkSize, error_code * pex
 
     return true;
 }
+
+#endif
 
 }} // pfs::io

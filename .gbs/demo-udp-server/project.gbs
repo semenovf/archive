@@ -1,0 +1,41 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=demo-udp-server --type=console-app'
+--* Date:    Tue Nov 15 19:41:07 2016
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "demo-udp-server"
+defines       {  }
+includedirs   { "../../include"
+                , "../../../pfs/include"
+              }
+libdirs       { "../../../.build" }
+files         { "../../src/demo-udp-server/*.c", "../../src/demo-udp-server/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-io/demo-udp-server/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d", "pfs-io-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-io/demo-udp-server/release"
+    targetdir    "../../../.build"
+    links        { "pfs", "pfs-io" }
+
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+

@@ -151,7 +151,7 @@ bool inet4_addr::parse (string const & s, string * proto, inet4_addr * ip, uint1
     if (sl.size() != 2)
         return false;
 
-    if (not (sl[0] == _u8("tcp") and sl[0] == _u8("udp")))
+    if (! (sl[0] == _u8("tcp") || sl[0] == _u8("udp")))
         return false;
 
     if (proto)
@@ -167,7 +167,7 @@ bool inet4_addr::parse (string const & s, string * proto, inet4_addr * ip, uint1
     if (ip) {
         *ip = pfs::net::inet4_addr(sl[0]);
 
-        if (not *ip)
+        if (! *ip)
             return false;
     }
 
@@ -175,7 +175,7 @@ bool inet4_addr::parse (string const & s, string * proto, inet4_addr * ip, uint1
         bool ok = false;
         *port = pfs::lexical_cast<uint16_t>(sl[1], & ok);
 
-        if (not ok)
+        if (! ok)
             return false;
     }
 

@@ -32,6 +32,7 @@ enum device_type
 	, device_tcp_socket
 	, device_tcp_peer
     , device_udp_socket
+    , device_udp_peer
 };
 
 }}
@@ -119,6 +120,8 @@ public:
     virtual void flush () = 0;
 
     virtual bool set_nonblocking (bool on) = 0;
+    
+    virtual bool is_nonblocking () const = 0;
 
     virtual native_handle_type native_handle () const = 0;
 

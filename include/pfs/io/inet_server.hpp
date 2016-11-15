@@ -14,6 +14,8 @@
 
 namespace pfs { namespace io {
 
+struct inet_server {};
+
 /**
  * @struct pfs::io::tcp_server
  * @brief TCP server implementation.
@@ -21,14 +23,30 @@ namespace pfs { namespace io {
  */
 struct tcp_server {};
 
+struct udp_server {};
 
+
+// Helper structure for tcp/udp servers
+//
 template <>
-struct open_params<tcp_server>
+struct open_params<inet_server>
 {
 	net::inet4_addr addr;
 	uint16_t port;
 	device::open_mode_flags oflags;
+   
+    open_params (net::inet4_addr a, uint16_t p, device::open_mode_flags of)
+        : addr(a)
+		, port(p)
+		, oflags(of)
+	{}
+};
 
+
+template <>
+struct open_params<tcp_server> : public open_params<inet_server>
+{
+    typedef open_params<inet_server> base_class;
 /*
 	the maximum length to which the queue of pending connections for  sockfd  may
 	grow.   If  a  connection  request arrives when the queue is full, the client may receive an error with an
@@ -38,28 +56,44 @@ struct open_params<tcp_server>
 	int npendingconn;
 
 	open_params ()
-		: port(0)
-		, oflags(0)
+        : base_class(net::inet4_addr(), 0, 0)
 		, npendingconn(0)
 	{}
 
 	open_params (net::inet4_addr a, uint16_t p, int backlog, device::open_mode_flags of)
-		: addr(a)
-		, port(p)
-		, oflags(of)
+        : base_class(a, p, of)
 		, npendingconn(backlog)
 	{}
 
 	open_params (net::inet4_addr a, uint16_t p, int backlog)
-		: addr(a)
-		, port(p)
-		, oflags(0)
+        : base_class(a, p, 0)
 		, npendingconn(backlog)
 	{}
 };
 
 template <>
+struct open_params<udp_server> : public open_params<inet_server>
+{
+    typedef open_params<inet_server> base_class;
+
+	open_params ()
+        : base_class(net::inet4_addr(), 0, 0)
+	{}
+
+	open_params (net::inet4_addr a, uint16_t p, device::open_mode_flags of)
+        : base_class(a, p, of)
+	{}
+
+	open_params (net::inet4_addr a, uint16_t p)
+        : base_class(a, p, 0)
+	{}
+};
+
+template <>
 server open_server<tcp_server> (const open_params<tcp_server> & op, error_code & ex);
+
+template <>
+server open_server<udp_server> (const open_params<udp_server> & op, error_code & ex);
 
 }} // pfs::io
 

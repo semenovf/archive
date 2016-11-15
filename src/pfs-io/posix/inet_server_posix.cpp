@@ -10,82 +10,14 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
-#include "pfs/io/inet_server.hpp"
+#include "inet_server_posix.hpp"
 #include "inet_socket_posix.hpp"
 
-namespace pfs { namespace io { namespace details {
+namespace pfs {
+namespace io {
+namespace details {
 
-class tcp_server : public bits::server
-{
-public:
-	typedef bits::server::native_handle_type native_handle_type;
-
-protected:
-	native_handle_type _fd;
-	sockaddr_in  _sockaddr;
-
-public:
-	error_code open (bool non_blocking);
-
-	error_code bind (uint32_t addr, uint16_t port);
-
-	error_code listen (int backlog)
-	{
-		return (::listen(_fd, backlog) != 0) ? error_code(errno) : error_code();
-	}
-
-public:
-
-	tcp_server ()
-		: bits::server()
-		, _fd(-1)
-	{}
-
-	virtual ~tcp_server ()
-	{
-		close();
-	}
-
-    virtual bool opened () const
-    {
-    	return _fd >= 0;
-    }
-
-    virtual error_code close ();
-
-    virtual bool set_nonblocking (bool on);
-
-    error_code accept (bits::device ** peer, bool non_blocking);
-
-    virtual native_handle_type native_handle () const
-    {
-    	return _fd;
-    }
-
-    virtual server_type type () const
-    {
-    	return server_tcp;
-    }
-    
-    virtual string url () const;
-
-};
-
-error_code tcp_server::open (bool non_blocking)
-{
-	int socktype = SOCK_STREAM;
-
-	if (non_blocking)
-		socktype |= SOCK_NONBLOCK;
-
-	_fd = ::socket(PF_INET, socktype, IPPROTO_TCP);
-
-	return _fd < 0 ? error_code(errno) : error_code();
-}
-
-
-error_code tcp_server::bind (uint32_t addr, uint16_t port)
+error_code inet_server::bind (uint32_t addr, uint16_t port)
 {
 	memset(& _sockaddr, 0, sizeof(_sockaddr));
 
@@ -115,48 +47,22 @@ error_code tcp_server::bind (uint32_t addr, uint16_t port)
 	return error_code();
 }
 
-error_code tcp_server::close ()
-{
-	error_code ex;
-
-    if (_fd > 0) {
-        if (::close(_fd) < 0) {
-        	ex = error_code(errno);
-        }
-    }
-
-    _fd = -1;
-    return ex;
-}
-
-bool tcp_server::set_nonblocking (bool on)
-{
-    int flags = ::fcntl(_fd, F_GETFL, 0);
-
-    if (on)
-    	flags |= O_NONBLOCK;
-    else
-    	flags &= ~O_NONBLOCK;
-
-    return ::fcntl(_fd, F_SETFL, flags) >= 0;
-}
-
 error_code tcp_server::accept (bits::device ** peer, bool non_blocking)
 {
 	struct sockaddr_in peer_addr;
-	socklen_t peer_len = sizeof(peer_addr);
+	socklen_t peer_addr_len = sizeof(peer_addr);
 
 	int peer_sock = ::accept(_fd
 			, reinterpret_cast<struct sockaddr *>(& peer_addr)
-			, & peer_len);
+			, & peer_addr_len);
 
-	PFS_ASSERT(sizeof(sockaddr_in) == peer_len);
+	PFS_ASSERT(sizeof(sockaddr_in) == peer_addr_len);
 
 	if (peer_sock < 0) {
     	return error_code(errno);
 	}
 
-	details::tcp_socket * peer_socket = new details::tcp_socket(peer_sock, peer_addr);
+	details::tcp_socket_peer * peer_socket = new details::tcp_socket_peer(peer_sock, peer_addr);
 
 	PFS_ASSERT(peer_socket->set_nonblocking(non_blocking));
 
@@ -165,15 +71,26 @@ error_code tcp_server::accept (bits::device ** peer, bool non_blocking)
 	return error_code();
 }
 
-string tcp_server::url () const
+error_code udp_server::accept (bits::device ** peer, bool non_blocking)
 {
-    char str[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, & _sockaddr.sin_addr, str, INET_ADDRSTRLEN);
-    string r("tcp://");
-    r.append(str);
-    r.append(":");
-    r.append(to_string(_sockaddr.sin_port, 10));
-    return r;
+	struct sockaddr_in peer_addr;
+	socklen_t peer_addr_len = sizeof(peer_addr);
+    
+    char buf[1];
+    ssize_t n = recvfrom (_fd, buf, 0, MSG_PEEK
+            , reinterpret_cast<sockaddr *>(& peer_addr), & peer_addr_len);
+
+	if (n < 0) {
+    	return error_code(errno);
+	}
+
+	details::udp_socket_peer * peer_socket = new details::udp_socket_peer(_fd, peer_addr);
+
+	PFS_ASSERT(peer_socket->set_nonblocking(non_blocking));
+
+	*peer = dynamic_cast<bits::device *>(peer_socket);
+
+	return error_code();
 }
 
 }}}
@@ -183,11 +100,11 @@ namespace pfs { namespace io {
 template <>
 server open_server<tcp_server> (const open_params<tcp_server> & op, error_code & ex)
 {
-    bool non_blocking = op.oflags & non_blocking;
-
+    bool non_blocking_flag = op.oflags & pfs::io::non_blocking;
+    
     details::tcp_server * d = new details::tcp_server;
 
-    ex = d->open(non_blocking);
+    ex = d->open(non_blocking_flag);
     if (!ex) ex = d->bind(op.addr.native(), op.port);
     if (!ex) ex = d->listen(op.npendingconn);
 
@@ -198,5 +115,25 @@ server open_server<tcp_server> (const open_params<tcp_server> & op, error_code &
 
     return server(d);
 }
+
+template <>
+server open_server<udp_server> (const open_params<udp_server> & op, error_code & ex)
+{
+    bool non_blocking_flag = op.oflags & pfs::io::non_blocking;
+
+    details::udp_server * d = new details::udp_server;
+
+    ex = d->open(non_blocking_flag);
+
+    if (!ex) ex = d->bind(op.addr.native(), op.port);
+
+    if (ex) {
+    	delete d;
+    	return server();
+    }
+
+    return server(d);
+}
+
 
 }} // pfs::io

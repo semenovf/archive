@@ -24,70 +24,180 @@ namespace io {
 
 // All devices must be in non-blocking mode.
 
-class device_manager
+class device_manager : has_slots<>
 {
-public:
-    static time_t const default_reconn_timeout = 5; // seconds
-    
-private:
-    struct reconn_item
+    struct reopen_item
     {
         device d;
         time_t timeout; // reconnection timeout in seconds
         time_t start;   // start time point counting timeout from
         
-        bool operator < (reconn_item const & x)
+        bool operator < (reopen_item const & x) const
         {
             return (start + timeout) < (x.start + x.timeout);
         }
     };
     
-    time_t _reconn_timeout;
+    typedef pfs::set<reopen_item> reopen_queue_type;
+    
+    class dispatcher_context1 : public pool::dispatcher_context2
+    {
+        friend class device_manager;
+        
+        device_manager * _m;
+        pool * _p1;
+        pool * _p2;
+
+    private:
+        dispatcher_context1 (int millis, short filter_events
+                , device_manager * m, pool * p1, pool * p2)
+            : pool::dispatcher_context2(millis, filter_events)
+            , _m(m)
+            , _p1(p1)
+            , _p2(p2)
+        {}
+        
+    public:
+     	virtual void accepted (device & d, server & listener) 
+        {
+            _m->accepted(d, listener);
+        }
+        
+		virtual void ready_read (device & d) 
+        {
+            _m->ready_read(d);
+        }
+        
+		virtual void disconnected (device & d)
+        {
+            _m->disconnected(d);
+        }
+        
+		virtual void on_error (error_code const & ex) 
+        {
+            _m->error(ex);
+        }
+    };
+
+    class dispatcher_context2 : public pool::dispatcher_context2
+    {
+        friend class device_manager;
+        
+        static int const default_millis = 1; // TODO Need it configurable ?!
+        
+        device_manager * _m;
+        pool * _p1;
+        pool * _p2;
+
+    private:
+        dispatcher_context2 (device_manager * m, pool * p1, pool * p2)
+            : pool::dispatcher_context2(default_millis, io::poll_all) // TODO Need to reduce number of events according to specialization of this pool
+            , _m(m)
+            , _p1(p1)
+            , _p2(p2)
+        {}
+        
+    public:
+		virtual void disconnected (device & d)
+        {
+            _m->disconnected(d);
+        }
+        
+		virtual void can_write (device & d) 
+        {
+            _p2->delete_deferred(d);
+            _p1->push_back(d);
+            
+            _m->opened(d);
+        }
+        
+		virtual void on_error (error_code const & ex)
+        {
+            _m->error(ex);
+        }
+    };
     
     // Main device pool (for valid (operational) devices)
-    pool _pool;
+    pool _p1;
     
     // Device pool for partially-operational devices: usually in 'connection in progress...' state)
-    pool _poolr;
+    pool _p2;
     
     // Reconnection queue, contains devices waiting reconnection by timeout
-    pfs::set<reconn_item> _rq;
+    reopen_queue_type _rq;
+    
+    dispatcher_context1 _ctx1;
+    dispatcher_context2 _ctx2;
     
 private:
     device_manager (device_manager const &);
     device_manager & operator = (device_manager const &);
     
+private:
+    void push_device (device d, pfs::error_code const & ex);
+    void push_server (server d, pfs::error_code const & ex);
+    
 public:
-    device_manager ()
-        : _reconn_timeout(default_reconn_timeout)
+    device_manager (int millis, short filter_events = io::poll_all)
+        : _ctx1(millis, filter_events, this, & _p1, & _p2)
+        , _ctx2(this, & _p1, & _p2)
     {}
         
-    device_manager (time_t reconn_timeout)
-        : _reconn_timeout(reconn_timeout)
-    {}
+    template <typename DeviceTag>
+    device new_device (open_params<DeviceTag> const & op, pfs::error_code * ex = 0);
 
-    bool push_good (device d)
-    {
-        _pool.push_back(d);
-    }
-
-    bool push_deferred (device d) // 
-    {
-        _pool.push_back(d);
-    }
+    template <typename ServerTag>
+    server new_server (open_params<ServerTag> const & op, pfs::error_code * ex = 0);
     
-    bool push_reconnect (device d, time_t reconn_timeout);
-
-    bool push_reconnect (device d)
-    {
-        return push_reconnect(d, _reconn_timeout);
-    }
+    void push_deferred (device d, time_t reconn_timeout);
 
     /**
-     * @brief Checks reconnection timeout is exceeded
+     * @brief Checks if reopen timeout is exceeded for one or more devices.
      */
-    bool reconnect_available () const;
+    bool ready_deferred () const;
+
+    /**
+     * @brief Reopen 'ready' devices.
+     */
+    void reopen_deferred ();
+    
+    void dispatch ();
+    
+public: // signals
+    signal2<device, server> accepted;     // accept connection (for connection based server devices)
+    signal1<device>         ready_read;
+    signal1<device>         opened;       // opened (for regular files, servers) or connected (for connection based client devices)
+	signal1<device>         disconnected; // disconnection for connection based devices, including peer devices
+    signal1<device>         opening;      // open (connection) in progress (for connection based client devices)
+    signal2<device, error_code> open_failed;
+	signal1<error_code>     error;
 };
+
+template <typename DeviceTag>
+device device_manager::new_device (open_params<DeviceTag> const & op, pfs::error_code * pex)
+{
+    pfs::error_code ex;
+    device d = pfs::io::open_device(op, ex);
+    push_device(d, ex);
+    
+    if (pex)
+        *pex = ex;
+    
+    return d;
+}
+
+template <typename ServerTag>
+server device_manager::new_server (open_params<ServerTag> const & op, pfs::error_code * pex)
+{
+    pfs::error_code ex;
+    server s = pfs::io::open_server(op, ex);
+    push_server(s, ex);
+    
+    if (pex)
+        *pex = ex;
+    
+    return s;
+}
 
 }} // pfs::io
 

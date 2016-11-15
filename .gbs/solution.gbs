@@ -46,3 +46,8 @@ project "test-net-inet4-addr"
 project "test-io-server"
     include("test-io-server/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "demo-udp-server"
+    include("demo-udp-server/project.gbs")
+-- END PROJECT

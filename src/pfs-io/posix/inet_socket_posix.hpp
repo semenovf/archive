@@ -10,7 +10,9 @@
 
 #include <cstring>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include "pfs/io/inet_socket.hpp"
+#include "posix_utils.hpp"
 
 namespace pfs { namespace io { namespace details {
 
@@ -22,7 +24,6 @@ public:
 protected:
 	native_handle_type _fd;
 	sockaddr_in  _sockaddr;
-	device_type  _devtype;
 
 private:
 	inet_socket (const inet_socket & other);
@@ -35,7 +36,6 @@ public:
 	inet_socket ()
 		: bits::device()
 		, _fd(-1)
-		, _devtype(device_unknown)
 	{}
 
 	virtual ~inet_socket ()
@@ -55,7 +55,14 @@ public:
 
     virtual ssize_t write (const byte_t * bytes, size_t n, error_code * ex);
 
-    virtual error_code close ();
+    virtual error_code close ()
+    {
+        error_code ex = close_socket(_fd) != 0 
+                ? error_code(errno) 
+                : error_code();
+        _fd = -1;
+        return ex;
+    }
 
     virtual bool opened () const
     {
@@ -65,23 +72,26 @@ public:
     virtual void flush ()
     {}
 
-    virtual bool set_nonblocking (bool on);
+    virtual bool set_nonblocking (bool on)
+    {
+        return pfs::io::set_nonblocking(_fd, on);
+    }
+
+    virtual bool is_nonblocking () const
+    {
+        return pfs::io::is_nonblocking(_fd);
+    }
 
     virtual native_handle_type native_handle () const
     {
     	return _fd;
     }
 
-    device_type type () const
-    {
-    	return _devtype;
-    }
-
-    error_code set_socket_options (uint32_t sso);
+    virtual device_type type () const = 0;
     
     virtual string url () const = 0;
     
-    string url (char const * proto) const;
+    error_code set_socket_options (uint32_t sso);
 };
 
 class tcp_socket : public inet_socket
@@ -90,28 +100,44 @@ public:
 	typedef inet_socket::native_handle_type native_handle_type;
 
 public:
-	virtual error_code open (bool non_blocking);
+	virtual error_code open (bool non_blocking)
+    {
+        _fd = create_tcp_socket(non_blocking);
+        return _fd < 0 ? error_code(errno) : error_code();
+    }
 
 public:
 	tcp_socket ()
 		: inet_socket()
-	{
-		_devtype = device_tcp_socket;
-	}
+	{}
 
-	// Used for initialization of peer socket
-	//
-	tcp_socket (native_handle_type fd, const sockaddr_in & sockaddr)
-		: inet_socket()
+    virtual device_type type () const
+    {
+        return device_tcp_socket;
+    }
+        
+    virtual string url () const
+    {
+        return inet_socket_url("tcp", _sockaddr);
+    }
+};
+
+class tcp_socket_peer : public tcp_socket
+{
+public:
+	typedef tcp_socket::native_handle_type native_handle_type;
+
+public:
+	tcp_socket_peer (native_handle_type fd, const sockaddr_in & sockaddr)
+		: tcp_socket()
 	{
 		_fd = fd;
 		::memcpy(& _sockaddr, & sockaddr, sizeof(_sockaddr));
-		_devtype = device_tcp_peer;
 	}
-
-    virtual string url () const
+        
+    virtual device_type type () const
     {
-        return inet_socket::url("tcp");
+        return device_tcp_peer;
     }
 };
 
@@ -121,21 +147,47 @@ public:
 	typedef inet_socket::native_handle_type native_handle_type;
 
 public:
-	virtual error_code open (bool non_blocking);
+	virtual error_code open (bool non_blocking)
+    {
+        _fd = create_udp_socket(non_blocking);
+        return _fd < 0 ? error_code(errno) : error_code();
+    }
 
 public:
 	udp_socket ()
 		: inet_socket()
-	{
-		_devtype = device_udp_socket;
-	}
+	{}
+
+    virtual device_type type () const
+    {
+        return device_udp_socket;
+    }
 
     virtual string url () const
     {
-        return inet_socket::url("udp");
+        return inet_socket_url("udp", _sockaddr);
     }
-
 };
+
+class udp_socket_peer : public udp_socket
+{
+public:
+	typedef udp_socket::native_handle_type native_handle_type;
+
+public:
+	udp_socket_peer (native_handle_type fd, const sockaddr_in & sockaddr)
+		: udp_socket()
+	{
+		_fd = dup(fd);
+		::memcpy(& _sockaddr, & sockaddr, sizeof(_sockaddr));
+	}
+        
+    virtual device_type type () const
+    {
+        return device_udp_peer;
+    }
+};
+
 
 }}}
 

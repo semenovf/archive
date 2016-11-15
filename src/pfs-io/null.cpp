@@ -52,6 +52,11 @@ struct null : public bits::device
     virtual void flush ()
     { }
 
+    virtual bool is_nonblocking() const
+    {
+        return true;
+    }
+    
     virtual bool set_nonblocking (bool on)
     {
     	PFS_UNUSED(on);

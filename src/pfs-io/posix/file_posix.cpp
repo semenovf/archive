@@ -5,12 +5,13 @@
  *      Author: wladt
  */
 
-#include "pfs/io/file.hpp"
 #include <cerrno>
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
+#include "pfs/io/file.hpp"
+#include "posix_utils.hpp"
 
 namespace pfs { namespace io { namespace details {
 
@@ -81,6 +82,11 @@ struct file : public bits::device
         return fcntl(_fd, F_SETFL, flags) >= 0;
     }
 
+    virtual bool is_nonblocking () const
+    {
+        return pfs::io::is_nonblocking(_fd);
+    }
+    
     virtual native_handle_type native_handle () const
     {
     	return _fd;

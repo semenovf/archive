@@ -121,24 +121,6 @@ error_code inet_socket::connect (uint32_t addr, uint16_t port)
     return ex;
 }
 
-// XXX Duplicated with tcp_server version
-//
-error_code inet_socket::close ()
-{
-	error_code ex;
-
-    if (_fd > 0) {
-    	shutdown(_fd, SHUT_RDWR);
-
-        if (::close(_fd) < 0) {
-        	ex = error_code(errno);
-        }
-    }
-
-    _fd = -1;
-    return ex;
-}
-
 // FIXME Return in non-blocking mode (need to change this behavior)
 //
 error_code inet_socket::reopen ()
@@ -147,20 +129,6 @@ error_code inet_socket::reopen ()
 	error_code ex = open(true);
 	if (!ex) ex = connect(_sockaddr.sin_addr.s_addr, _sockaddr.sin_port);
 	return ex;
-}
-
-// XXX Duplicated with tcp_server version
-//
-bool inet_socket::set_nonblocking (bool on)
-{
-    int flags = ::fcntl(_fd, F_GETFL, 0);
-
-    if (on)
-    	flags |= O_NONBLOCK;
-    else
-    	flags &= ~O_NONBLOCK;
-
-    return ::fcntl(_fd, F_SETFL, flags) >= 0;
 }
 
 bits::device::open_mode_flags inet_socket::open_mode () const
@@ -207,18 +175,6 @@ error_code inet_socket::set_socket_options (uint32_t sso)
 	}
 
 	return error_code();
-}
-
-string inet_socket::url (char const * proto) const
-{
-    char str[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, & _sockaddr.sin_addr, str, INET_ADDRSTRLEN);
-    string r(proto);
-    r.append("://");
-    r.append(str);
-    r.append(":");
-    r.append(to_string(_sockaddr.sin_port, 10));
-    return r;
 }
 
 ssize_t inet_socket::read (byte_t * bytes, size_t n, error_code * pex)
@@ -279,33 +235,6 @@ ssize_t inet_socket::write (const byte_t * bytes, size_t nbytes, error_code * ex
 
 	return r;
 }
-
-// XXX Duplicated with tcp_server version
-//
-error_code tcp_socket::open (bool non_blocking_flag)
-{
-	int socktype = SOCK_STREAM;
-
-	if (non_blocking_flag)
-		socktype |= SOCK_NONBLOCK;
-
-	_fd = ::socket(PF_INET, socktype, IPPROTO_TCP);
-
-	return _fd < 0 ? error_code(errno) : error_code();
-}
-
-error_code udp_socket::open (bool non_blocking_flag)
-{
-	int socktype = SOCK_DGRAM;
-
-	if (non_blocking_flag)
-		socktype |= SOCK_NONBLOCK;
-
-	_fd = ::socket(PF_INET, socktype, IPPROTO_UDP);
-
-	return _fd < 0 ? error_code(errno) : error_code();
-}
-
 
 }}} // pfs::io::details
 

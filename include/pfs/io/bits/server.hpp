@@ -18,6 +18,7 @@ enum server_type
 {
 	  server_unknown = 0
 	, server_tcp
+    , server_udp
 };
 
 }}
@@ -40,6 +41,8 @@ struct server : public basic_device
 
     virtual bool set_nonblocking (bool on) = 0;
 
+    virtual bool is_nonblocking () const = 0;
+    
     virtual error_code accept (bits::device **, bool non_blocking) = 0;
 
     virtual native_handle_type native_handle () const = 0;

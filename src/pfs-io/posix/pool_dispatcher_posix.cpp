@@ -27,26 +27,37 @@ void pool::dispatch (pool::dispatcher_context2 & context)
 		while (it != it_end) {
 			pfs::io::pool::value value = *it;
 
+            short revents = it.revents();
+            
 			if (value.is_server()) { // accept connection
 				pfs::io::device client;
 				pfs::io::server server = value.get_server();
 
+                // Waiting only incoming data 
+                // for emulation accept for UDP server
+                //
+                if (server.type() == server_udp) {
+                    if (revents & poll_out) {
+                        continue; 
+                    }
+                }
+
 				ex = server.accept(client, true);
 
 				if (ex) {
-					// Acception failed
+					// Acceptance failed
 					//
 					context.on_error(ex);
 				} else {
 					// Accepted
 					//
-					context.connected(client, server);
+					context.accepted(client, server);
 					this->push_back(client, context._filter_events);
 				}
 			} else {
 				pfs::io::device dev = value.get_device();
 
-				short revents = it.revents();
+				//short revents = it.revents();
 
 				if (dev.available() == 0
 						&& (revents & poll_in)) { // TODO Check if this event enough to decide to disconnect.
@@ -137,7 +148,7 @@ void pool::dispatch (pool::dispatcher_context & context, short filter_events, in
 					} else {
 						// Accepted
 						//
-						context.connected(client, server);
+						context.accepted(client, server);
 						this->push_back(client, filter_events);
 					}
 				} else {

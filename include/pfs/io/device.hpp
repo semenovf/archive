@@ -12,7 +12,7 @@
 #include <pfs/byte_string.hpp>
 #include <pfs/string.hpp>
 #include <pfs/utility.hpp>
-#include <pfs/zlib.hpp>
+//#include <pfs/zlib.hpp>
 #include <pfs/io/bits/device.hpp>
 
 // TODO Apply support of device types: RandomAccessDevice and StreamDevice
@@ -79,12 +79,10 @@ public:
 		return _d->open_mode() | write_only;
 	}
 
-#if __COMMENT__
 	bool is_nonblocking () const
 	{
-		return _d && (_oflags & bits::non_blocking);
+		return _d->is_nonblocking();
 	}
-#endif
 
 	bool opened () const
 	{
@@ -213,22 +211,22 @@ public:
 	template <typename DeviceTag>
 	friend device open_device (const open_params<DeviceTag> &, error_code & ex);
 
-    friend bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * ex = 0);
-
-    friend bool uncompress (device & dest, device & src, size_t chunkSize, error_code * ex = 0);
+//    friend bool compress (device & dest, device & src, zlib::compression_level level, size_t chunkSize, error_code * ex = 0);
+//
+//    friend bool uncompress (device & dest, device & src, size_t chunkSize, error_code * ex = 0);
 };
 
 ssize_t copy (device & dest, device & src, size_t chunkSize, error_code * ex = 0);
 
-inline bool compress (device & src, device & dest, error_code * ex = 0)
-{
-	return compress(src, dest, zlib::DefaultCompression, 0x4000, ex);
-}
-
-inline bool uncompress (device & src, device & dest, error_code * ex = 0)
-{
-	return uncompress(src, dest, 0x4000, ex);
-}
+//inline bool compress (device & src, device & dest, error_code * ex = 0)
+//{
+//	return compress(src, dest, zlib::DefaultCompression, 0x4000, ex);
+//}
+//
+//inline bool uncompress (device & src, device & dest, error_code * ex = 0)
+//{
+//	return uncompress(src, dest, 0x4000, ex);
+//}
 
 template <typename DeviceTag>
 device open_device (open_params<DeviceTag> const &, error_code & ex);
