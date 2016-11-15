@@ -24,7 +24,7 @@ template <typename _Key
     , typename _Alloc = std::allocator<_Key> >
 class set : public std::set<_Key, _Compare, _Alloc>
 {
-	typedef std::set<_Key, _Comapre, _Alloc> base_class;
+	typedef std::set<_Key, _Compare, _Alloc> base_class;
 
 public:
     typedef typename base_class::key_type               key_type;
@@ -43,7 +43,7 @@ public:
     typedef typename base_class::difference_type        difference_type;
     typedef typename base_class::allocator_type         allocator_type;
 
-    typedef typename pfs::shared_ptr<vector<_Key, _Compare, _Alloc> > shared_type;
+    typedef typename pfs::shared_ptr<set<_Key, _Compare, _Alloc> > shared_type;
     
 public:
     set ()
@@ -81,26 +81,6 @@ public:
 		return this->end();
 	}
 #endif
-
-	reference first ()
-	{
-		return this->front();
-	}
-
-	const_reference first () const
-	{
-		return this->front();
-	}
-
-	reference last ()
-	{
-		return this->back();
-	}
-
-	const_reference last () const
-	{
-		return this->back();
-	}
 };
 
 } // pfs
