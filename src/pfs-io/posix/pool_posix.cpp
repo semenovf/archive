@@ -26,7 +26,7 @@ struct pool_iterator;
 
 struct pool : public bits::pool
 {
-	typedef struct pollfd pollfd_type;
+	typedef ::pollfd pollfd_type;
 	typedef io::device::native_handle_type native_handle_type;
 
 	typedef vector<pollfd_type>                 pollfd_vector_type;
@@ -139,7 +139,11 @@ int pool::poll (pool_iterator ** begin
 	size_t n = pollfds.size();
 	pollfd_type * pfds = pollfds.data();
 
-	int r = ::poll(pfds, n, millis);
+    int r = 0;
+    
+    do {
+        r = ::poll(pfds, n, millis);
+    } while (r <= 0 and errno == EINTR);
 
 	*begin = 0;
 	*end = 0;
@@ -207,6 +211,8 @@ pfs::vector<device> pool::fetch_devices (bool (* filter) (const device & d, void
 		device_map_type::const_iterator it = device_map.cbegin();
 		device_map_type::const_iterator it_end = device_map.cend();
 
+        r.reserve(device_map.size());
+        
 		while (it != it_end) {
 			if (filter) {
 				if (filter(it->second, context))
@@ -231,6 +237,8 @@ pfs::vector<server> pool::fetch_servers (bool (* filter) (const server & s, void
 		server_map_type::const_iterator it = server_map.cbegin();
 		server_map_type::const_iterator it_end = server_map.cend();
 
+        r.reserve(server_map.size());
+        
 		while (it != it_end) {
 			if (filter) {
 				if (filter(it->second, context))

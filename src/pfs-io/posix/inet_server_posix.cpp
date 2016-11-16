@@ -24,7 +24,7 @@ error_code inet_server::bind (uint32_t addr, uint16_t port)
 	_sockaddr.sin_family      = PF_INET;
 	_sockaddr.sin_port        = htons(port);
 	_sockaddr.sin_addr.s_addr = htonl(addr);
-
+    
 	int yes = 1;
 
 	/* http://publib.boulder.ibm.com/infocenter/iseries/v5r3/topic/rzab6/rzab6xconoserver.htm

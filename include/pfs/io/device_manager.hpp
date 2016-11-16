@@ -58,22 +58,22 @@ class device_manager : has_slots<>
         {}
         
     public:
-     	virtual void accepted (device & d, server & listener) 
+     	virtual void accepted (device & d, server & listener) const
         {
             _m->accepted(d, listener);
         }
         
-		virtual void ready_read (device & d) 
+		virtual void ready_read (device & d) const
         {
             _m->ready_read(d);
         }
         
-		virtual void disconnected (device & d)
+		virtual void disconnected (device & d) const
         {
             _m->disconnected(d);
         }
         
-		virtual void on_error (error_code const & ex) 
+		virtual void on_error (error_code const & ex) const
         {
             _m->error(ex);
         }
@@ -98,12 +98,12 @@ class device_manager : has_slots<>
         {}
         
     public:
-		virtual void disconnected (device & d)
+		virtual void disconnected (device & d) const
         {
             _m->disconnected(d);
         }
         
-		virtual void can_write (device & d) 
+		virtual void can_write (device & d) const
         {
             _p2->delete_deferred(d);
             _p1->push_back(d);
@@ -111,7 +111,7 @@ class device_manager : has_slots<>
             _m->opened(d);
         }
         
-		virtual void on_error (error_code const & ex)
+		virtual void on_error (error_code const & ex) const
         {
             _m->error(ex);
         }
@@ -135,7 +135,7 @@ private:
     
 private:
     void push_device (device d, pfs::error_code const & ex);
-    void push_server (server d, pfs::error_code const & ex);
+    void push_server (server s, pfs::error_code const & ex);
     
 public:
     device_manager (int millis, short filter_events = io::poll_all)
@@ -170,6 +170,9 @@ public: // signals
 	signal1<device>         disconnected; // disconnection for connection based devices, including peer devices
     signal1<device>         opening;      // open (connection) in progress (for connection based client devices)
     signal2<device, error_code> open_failed;
+    signal1<server>         server_opened;
+    signal1<server>         server_opening;
+    signal2<server, error_code> server_open_failed;
 	signal1<error_code>     error;
 };
 

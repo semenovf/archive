@@ -25,16 +25,17 @@ void device_manager::push_device (device d, pfs::error_code const & ex)
     }
 }
 
-void device_manager::push_server (server d, pfs::error_code const & ex)
+void device_manager::push_server (server s, pfs::error_code const & ex)
 {
     if (!ex) {
-        _p1.push_back(d);
+        _p1.push_back(s);
+        server_opened(s);
     } else {
         if (ex == pfs::OperationInProgressError) {
-            _p2.push_back(d);
-            PFS_DEBUG(puts("** WARN: server open in progress"));
+            _p2.push_back(s);
+            server_opening(s);
         } else {
-            PFS_DEBUG(puts("** ERROR: server open failed")); // FIXME
+            server_open_failed(s, ex);
         }
     }
 }

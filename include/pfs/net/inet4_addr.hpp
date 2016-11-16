@@ -15,6 +15,7 @@ class DLL_API inet4_addr
 {
 public:
 	static const uint32_t invalid_addr_value = 0xFFFFFFFF;
+    static const uint32_t any_addr_value     = 0x00000000;
 
 private:
     uint32_t _addr;

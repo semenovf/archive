@@ -165,10 +165,9 @@ public:
 			return *this;
 		}
 
-		// TODO Implement
+        // No need to implement
 //		iterator operator ++ (int)
-//		{
-//		}
+//		{}
 
 		value operator * () const;
 
@@ -180,7 +179,7 @@ public:
 		}
 
 		short revents () const;
-};
+    };
 
 private:
 	shared_ptr<bits::pool> _d;
@@ -264,15 +263,27 @@ public:
 		virtual ~dispatcher_context2 () {}
 
 	public:
-		virtual void accepted (device &, server & listener) {}
-		virtual void ready_read (device &) {}
-		virtual void disconnected (device &) {}
-		virtual void can_write (device &) {}
-		virtual void on_error (const error_code & ) {}
+		virtual void accepted (device &, server & listener) const {}
+		virtual void ready_read (device &) const {}
+		virtual void disconnected (device &) const {}
+		virtual void can_write (device &) const {}
+		virtual void on_error (const error_code & ) const {}
 	};
 
-	void dispatch (dispatcher_context2 & context);
+	void dispatch (dispatcher_context2 const & context);
 
+private:
+        // Used by dispatch(...)
+    void process_server (pfs::io::server & server
+            , pool::dispatcher_context2 const & context
+            , short revents);
+    
+    // Used by dispatch(...)
+    void process_device (pfs::io::device & dev
+            , pool::dispatcher_context2 const & context
+            , short revents);
+
+public:    
 	// XXX OBSOLETE, use dispatcher_context2;
 	//
 	class dispatcher_context

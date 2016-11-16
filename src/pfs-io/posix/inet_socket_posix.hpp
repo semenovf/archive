@@ -178,14 +178,31 @@ public:
 	udp_socket_peer (native_handle_type fd, const sockaddr_in & sockaddr)
 		: udp_socket()
 	{
-		_fd = dup(fd);
+		_fd = fd;
 		::memcpy(& _sockaddr, & sockaddr, sizeof(_sockaddr));
+	}
+
+    virtual ~udp_socket_peer ()
+	{
+		close();
 	}
         
     virtual device_type type () const
     {
         return device_udp_peer;
     }
+    
+    // Reimplemented to avoid descriptor closing
+    //
+    virtual error_code close ()
+    {
+        // Really descriptor cannot be closed,
+        // it still used by server
+        //
+        _fd = -1;
+        return error_code();
+    }
+
 };
 
 

@@ -38,5 +38,4 @@ error_code server::accept (device & peer, bool non_blocking)
 	return ex;
 }
 
-
 }} // pfs::io
