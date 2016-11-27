@@ -1,5 +1,7 @@
 package gbspp::cli::router;
 use gbspp::type::bool;
+use gbspp::type::numeric;
+use gbspp::type::string;
 use strict;
 use warnings;
 
@@ -151,7 +153,6 @@ sub d
     return $self;
 }
 
-
 #
 # Common signatures for option types
 #
@@ -206,7 +207,7 @@ sub _canonical_parms
 #
 # Sets policy for boolean option
 #
-# @note '-variants' ignored
+# @note '-variants' is ignored
 #
 sub b
 {
@@ -226,7 +227,7 @@ sub b
 #
 sub s
 {
-    
+#    return $self;
 }
 
 #
@@ -258,6 +259,5 @@ sub r
     push(@{$self->{routes}}, $result);
     return $result;
 }
-
 
 1;

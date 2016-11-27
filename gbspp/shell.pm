@@ -7,8 +7,8 @@ use warnings;
 $Term::ANSIColor::EACHLINE = "\n";
 
 my $info_color  = '';
-my $debug_color = '';
-my $warn_color  = '';
+my $debug_color = 'bright_black';
+my $warn_color  = 'magenta';
 my $error_color = 'red';
 
 sub run
