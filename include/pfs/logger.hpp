@@ -16,6 +16,7 @@
 #include <pfs/sigslot.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <pfs/vector.hpp>
+#include <pfs/utility.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -79,6 +80,8 @@ public:
 
 	void clear ();
 
+    // TODO DEPRECATED, see swap()
+    //
 	void move (logger & other)
 	{
 		if (_d) {
@@ -88,6 +91,11 @@ public:
 		_d = other._d;
 		other._d = 0;
 	}
+    
+    void swap (logger & other)
+    {
+        pfs::swap(_d, other._d);
+    }
 
 	template <typename Appender>
 	appender_type & add_appender ()
