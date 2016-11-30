@@ -2,7 +2,7 @@
 use lib qw(../../);
 use lib qw(../../gbspp);
 use File::Find;
-use gbspp::shell;
+use gbspp::term;
 use strict;
 
 my $c_lang_source_pattern = '\.[cC]$';
@@ -28,14 +28,14 @@ File::Find::find({
     , $base_dir
 );
 
-#gbspp::shell::set_info_color('green');
-#gbspp::shell::set_debug_color('bright_black');
-#gbspp::shell::set_warn_color('magenta');
-#gbspp::shell::set_error_color('red');
+#gbspp::term::set_info_color('green');
+#gbspp::term::set_debug_color('bright_black');
+#gbspp::term::set_warn_color('magenta');
+#gbspp::term::set_error_color('red');
 #
-#my @result = gbspp::shell::run('gcc', '-v');
-#print "STDOUT: {", gbspp::shell::info($result[0]), "}\n";
-#print "STDERR: {", gbspp::shell::error($result[1]), "}\n";
-#print "STATUS: {", gbspp::shell::info($result[2]), "}\n";
+#my @result = gbspp::term::run_command('gcc', '-v');
+#print "STDOUT: {", gbspp::term::info($result[0]), "}\n";
+#print "STDERR: {", gbspp::term::error($result[1]), "}\n";
+#print "STATUS: {", gbspp::trem::info($result[2]), "}\n";
 
 0;
