@@ -113,8 +113,11 @@ public:
 		const_iterator   pos; // current position in format string
 		string           result;
 		conversion_spec  spec;
-		compat_enum           compat;
+		compat_enum      compat;
 	};
+
+private:
+	context _ctx;
 
 private:
 	// Deny copy
@@ -163,9 +166,10 @@ private:
 
 	safeformat & arg (const __sf_base_traits * v);
 
+private:    
+    safeformat ();
+    
 public:
-	safeformat () {}
-
 	explicit safeformat (const string & format)
 	{
 		_ctx.format = format;
@@ -321,9 +325,6 @@ public:
 	safeformat & arg (const string & s)     { return operator () (s); }
 	safeformat & arg (const char * s)       { return operator () (s); }
 	safeformat & arg (void const * p)       { return operator () (p); }
-
-private:
-	context _ctx;
 };
 
 } // pfs

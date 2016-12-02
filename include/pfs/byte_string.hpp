@@ -926,7 +926,7 @@ public:
             _ctx.b = _b;
     }
         
-    bool commit ()
+    void commit ()
     {
         _b = _ctx.b;
         _committed = true;

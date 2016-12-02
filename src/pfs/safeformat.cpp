@@ -963,9 +963,15 @@ safeformat & safeformat::arg (__sf_base_traits const * v)
 		r = v->stringify_string();
 		do_padding(r);
 		break;
-	default:
-		PFS_ASSERT(spec_char != spec_char); // TODO need exception: invalid conversion specifier
-		break;
+	default: {
+            string m("invalid conversion specifier '");
+            m.append(1, lexical_cast<char>(spec_char));
+            m.append("' in format string \"");
+            m.append(_ctx.format);
+            m.append("\"");
+            PFS_ASSERT_X(0, m.c_str());
+            break;
+        }
 	}
 
 	_ctx.result.append(r);

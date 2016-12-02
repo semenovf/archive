@@ -369,7 +369,7 @@ inline void append_prefixed4 (string & s, char fill_char, int i4)
 
 string to_string (const date & d, const string & format)
 {
-	if (d.year() < 0 && d.year() > 9999)
+	if (d.year() < 0 || d.year() > 9999)
 		return string();
 
 	// std::basic_stringstream<typename string::value_type> ss;

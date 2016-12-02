@@ -380,8 +380,7 @@ void thread::start (priority_enum prior)
 #if defined(PFS_HAS_THREAD_PRIORITY_SCHEDULING)
         pthread_attr_setinheritsched(& attr, PTHREAD_INHERIT_SCHED);
 #endif
-        rc =
-            pthread_create(& _d->_threadHandle, & attr, thread_impl::start, this);
+        rc = pthread_create(& _d->_threadHandle, & attr, thread_impl::start, this);
     }
 
     pthread_attr_destroy(& attr);

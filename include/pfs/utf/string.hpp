@@ -251,6 +251,7 @@ public:
     string & append (const_pointer s, size_type n)
     {
         _d.append(s, n);
+        return  *this;
     }
 
 	/**

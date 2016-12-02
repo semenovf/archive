@@ -107,7 +107,7 @@ protected:
 
 private:
 	notification (const notification & other);
-	notification & operator == (const notification & other);
+	notification & operator = (const notification & other);
 
 public:
 	notification ()

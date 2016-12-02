@@ -72,10 +72,10 @@ static void test_int_helpers()
 	typedef pfs::vector<int> int_vector_type;
 
 	size_t i, nints;
-	int _ints[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-	int_vector_type __integers(_ints, _ints + 10);
+	int __ints[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	int_vector_type __integers(__ints, __ints + 10);
 
-	nints = sizeof(__integers)/sizeof(__integers[0]);
+	nints = sizeof(__ints)/sizeof(__ints[0]);
 
 	for(i = 0; i < nints; i++) {
 		TEST_OK(pfs::fsm::fsm<int_vector_type>::belongs_char(

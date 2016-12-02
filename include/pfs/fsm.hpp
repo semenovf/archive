@@ -82,12 +82,22 @@ private:
 
 public:
 	match (match_base<_Sequence> * match) : _match(match) { PFS_ASSERT(_match); }
-	match (const match & other)
+	match (match const & other)
 	{
 		PFS_ASSERT(other._match);
 		_match = other._match;
 		++_match->_ref;
 	}
+    
+    match & operator = (match const & other)
+    {
+        if (& other != this) {
+            PFS_ASSERT(other._match);
+            _match = other._match;
+            ++_match->_ref;
+        }
+        return *this;
+    }
 
 	~match () { deref(); }
 

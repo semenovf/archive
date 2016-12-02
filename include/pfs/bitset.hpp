@@ -146,12 +146,14 @@ public:
     bitset & flip ()
     {
         _d.flip();
+        return *this;
     }
 
     bitset & flip (size_t index)
     {
         PFS_ASSERT(index < N);
         _d.flip(index);
+        return *this;
     }
 };
 
