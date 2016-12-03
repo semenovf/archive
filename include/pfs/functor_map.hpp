@@ -73,7 +73,7 @@ public:
 	}
 
 	template <typename Class>
-	bool insert_method (const key_type key, Class * p, return_type (Class::* f) ())
+	void insert_method (const key_type key, Class * p, return_type (Class::* f) ())
 	{
 		lock_guard<Mutex> locker(_mutex);
 		_m.insert(std::pair<key_type, value_type>(key, new functor_method0<Class, return_type>(p, f)));
