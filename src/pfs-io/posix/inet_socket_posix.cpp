@@ -163,7 +163,7 @@ size_t inet_socket::bytes_available () const
 error_code inet_socket::set_socket_options (uint32_t sso)
 {
 	if (sso) {
-		int optval;
+		int optval = 1;
 		socklen_t optlen = sizeof(optval);
 
 		if (sso & sso_keep_alive) {

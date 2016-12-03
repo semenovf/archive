@@ -154,23 +154,23 @@ size_t file::bytes_available () const
 
 ssize_t file::read (byte_t * bytes, size_t n, error_code * pex)
 {
-    ssize_t sz;
-
-    sz = ::read(_fd, bytes, n);
+    ssize_t sz = ::read(_fd, bytes, n);
+    
     if (sz < 0 && pex) {
         *pex = errno;
     }
+    
     return sz;
 }
 
 ssize_t file::write (const byte_t * bytes, size_t n, error_code * pex)
 {
-    ssize_t sz;
-
-    sz = ::write(_fd, bytes, n);
+    ssize_t sz = ::write(_fd, bytes, n);
+    
     if( sz < 0 && pex) {
         *pex = errno;
     }
+    
     return sz;
 }
 

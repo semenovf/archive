@@ -122,4 +122,6 @@ int simple_udp_server (int argc, char ** argv)
         if (n < 0)
             error("ERROR in sendto");
     }
+    
+    return 0;
 }

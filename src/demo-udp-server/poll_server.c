@@ -155,4 +155,6 @@ int poll_udp_server (int argc, char ** argv)
                 error("ERROR in sendto");
         }
     }
+    
+    return 0;
 }

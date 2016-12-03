@@ -32,7 +32,9 @@ ssize_t buffered_device::upload_bytes (size_t max_size, error_code & ex)
 
     if (max_size > _bufsz - _count) {
         _bufsz += max_size - (_bufsz - _count);
-        _buffer = static_cast<byte_t *>(std::realloc(_buffer, _bufsz));
+        byte_t * tmp = static_cast<byte_t *>(std::realloc(_buffer, _bufsz));
+        PFS_ASSERT(tmp);
+        _buffer = tmp;
     }
     
     ssize_t r = _d.read(_buffer + _count, max_size, & ex);
