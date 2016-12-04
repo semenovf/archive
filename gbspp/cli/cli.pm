@@ -119,6 +119,9 @@ sub has_option
     return defined $self->{options}->{$optname};
 }
 
+#
+# my $value = $self->arg($index)
+#
 sub arg
 {
     die unless @_ == 2;

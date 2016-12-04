@@ -87,7 +87,7 @@ sub term_size
     #
     # my $width = `tput cols`;
     
-    return (0,0);
+    return (25,80);
 }
 
 sub term_width

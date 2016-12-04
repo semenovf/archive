@@ -194,17 +194,6 @@ sub _canonical_parms
 }
 
 #
-# Common signatures for option types
-#
-# 1. $self->OPTTYPE($optname)
-# 2. $self->OPTTYPE($optname, $stashname)
-# 3. $self->OPTTYPE($optname, $stashname => DEFAULT_VALUE)
-# 4. $self->OPTTYPE($optname, $stashname => {-default => DEFAULT_VALUE [, -variants => \@VARIANTS] })
-#
-# OPTTYPE is one of rule: 'b', 's' or 'n'
-#
-
-#
 # Sets policy for boolean option
 #
 # @note '-variants' is ignored

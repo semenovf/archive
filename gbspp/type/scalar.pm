@@ -4,9 +4,14 @@ use warnings;
 
 sub new
 {
-    my ($class, $value) = @_;
+    my ($class, $value, $fields) = @_;
     die unless defined($value);
-    my $self = bless {}, $class;
+    
+    $fields = {} unless defined $fields;
+    
+    die "Expected hash" unless ref($fields) eq 'HASH';
+    
+    my $self = bless $fields, $class;
     $self->assign($value);
     return $self;
 }
@@ -43,6 +48,13 @@ sub value
 {
     my ($self) = @_;
     return $self->{value};
+}
+
+sub equals
+{
+    my ($self, $a) = @_;
+    die unless defined($a);
+    return $self->_equals($a);
 }
 
 1;

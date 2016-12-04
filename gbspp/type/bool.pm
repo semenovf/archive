@@ -44,4 +44,13 @@ sub _assign
     return undef;
 };
 
+sub _equals
+{
+    my ($self, $a) = @_;
+
+    return $a->can('equals')
+        ? $a->equals($self->value)
+        : $self->value == _self->_assign($a);
+}
+
 1;
