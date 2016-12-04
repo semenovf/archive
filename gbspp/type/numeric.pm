@@ -1,12 +1,13 @@
 package gbspp::type::numeric;
 use base gbspp::type::scalar;
+use gbspp::sub qw(required);
 use strict;
 use warnings;
 
 sub new
 {
-    my ($class, @args) = @_;
-    return $class->SUPER::new(@args);
+    my $class = required(\@_);
+    return $class->SUPER::new(@_);
 }
 
 #
@@ -15,7 +16,9 @@ sub new
 #
 sub _assign
 {
-    my ($self, $value) = @_;
+    my $self = required(\@_);
+    my $value = required(\@_);
+    
     return undef unless defined($value);
 
     if (ref($value) ne '') {
@@ -31,11 +34,10 @@ sub _assign
 
 sub _equals
 {
-    my ($self, $a) = @_;
-
-    return $a->can('equals')
-        ? $a->equals($self->value)
-        : $self->value == _self->_assign($a);
+    my $self  = required(\@_);
+    my $value = required(\@_);
+    
+    return $self->value == __PACKAGE__->new($value)->value;
 }
 
 1;

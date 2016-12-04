@@ -1,5 +1,7 @@
 package gbspp::type::enum;
 use base gbspp::type::scalar;
+use gbspp::sub qw(required);
+use Carp;
 use strict;
 use warnings;
 
@@ -8,24 +10,25 @@ use warnings;
 #
 sub new
 {
-    my ($class, $itemclass, $variants) = @_;
-    die unless $class;
-    die "Item class expected" unless $itemclass;
-    die "No variants specified" unless defined($variants) && ref($variants) eq 'ARRAY' && @$variants > 0;
-    
+    my $class     = required(\@_);
+    my $itemclass = required(\@_);
+    my $variants  = required(\@_);
+
+    croak("Expected array for variants") unless (ref($variants) eq 'ARRAY');
+
     unless ($itemclass =~ /::/) {
         $itemclass = 'gbspp::type::' . $itemclass;
     }
 
     eval "require $itemclass";
+
+    my $variants1 = [];
     
     foreach my $v (@$variants) {
-        die "Inappropriate variant value: $v" unless $itemclass->can_assign($v);
+        push (@{$variants1}, $itemclass->new($v));
     }
     
-    my $self = $class->SUPER::new($variants->[0], {'itemclass' => $itemclass, 'variants' => $variants});
-    
-    return $self;
+    return $class->SUPER::new($variants1->[0], {'itemclass' => $itemclass, 'variants' => $variants1});
 }
 
 #
@@ -34,16 +37,18 @@ sub new
 #
 sub _assign
 {
-    my ($self, $value) = @_;
+    my $self = required(\@_);
+    my $value = required(\@_);
+
     return undef unless defined($value);
 
     if (ref($value) eq __PACKAGE__) {
         return qq{$value->{value}};
     } else {
-        die "Instantiated object expected" unless (ref($self) eq __PACKAGE__);
+        croak("instantiated object expected") unless (ref($self) eq __PACKAGE__);
         
         my $itemclass = $self->{itemclass};
-        my $variants = $self->{variants};
+        my $variants  = $self->{variants};
 
         if ($itemclass->can_assign($value)) {
             foreach my $v (@$variants) {
@@ -59,10 +64,12 @@ sub _assign
 
 sub _equals
 {
-    my ($self, $a) = @_;
+    my $self = required(\@_);
+    my $value = required(\@_);
+
     my $itemclass = $self->{itemclass};
     
-    return $itemclass->new($self->value)->equals($a);
+    return $itemclass->new($self->value)->equals($value);
 }
 
 1;
