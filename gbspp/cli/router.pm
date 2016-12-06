@@ -1,4 +1,5 @@
 package gbspp::cli::router;
+use gbspp::sub qw(required);
 use gbspp::type::bool;
 use gbspp::type::numeric;
 use gbspp::type::string;
@@ -6,131 +7,166 @@ use strict;
 use warnings;
 
 ############################################
-package gbspp::cli::router::domain;
-use strict;
-use warnings;
-
-sub new
-{
-    my $class = shift or die;
-    my $self = bless {
-        aliases => [] # domain aliases
-    }, $class;
-    return $self;
-}
-
+#package gbspp::cli::router::domain;
+#use strict;
+#use warnings;
 #
-# $domain->contains($str)
+#sub new
+#{
+#    my $class = shift or die;
+#    my $self = bless {
+#        aliases => [] # domain aliases
+#    }, $class;
+#    return $self;
+#}
 #
-sub contains
-{
-    die unless @_ == 2;
-    my ($self, $domain) = @_;
-
-    foreach my $a (@{$self->{aliases}}) {
-        return 1 if $a eq $domain;
-    }
-    return 0;
-}
-
+##
+## $domain->contains($str)
+##
+#sub contains
+#{
+#    die unless @_ == 2;
+#    my ($self, $domain) = @_;
 #
-# $domain->add(@aliases)
-# $domain->add(\@aliases)
-# $domain->add($alias)
+#    foreach my $a (@{$self->{aliases}}) {
+#        return 1 if $a eq $domain;
+#    }
+#    return 0;
+#}
 #
-sub add
-{
-    my $self = shift or die;
-    
-    (@_ == 1 and ref($_[0]) eq '')      and do { push(@{$self->{aliases}}, $_[0]); return; };
-    (@_ == 1 and ref($_[0]) eq 'ARRAY') and do { push(@{$self->{aliases}}, @{$_[0]}); return; };
-    (@_ > 1)                            and do { push(@{$self->{aliases}}, @_); return; };
-}
+##
+## $domain->add(@aliases)
+## $domain->add(\@aliases)
+## $domain->add($alias)
+##
+#sub add
+#{
+#    my $self = shift or die;
+#    
+#    (@_ == 1 and ref($_[0]) eq '')      and do { push(@{$self->{aliases}}, $_[0]); return; };
+#    (@_ == 1 and ref($_[0]) eq 'ARRAY') and do { push(@{$self->{aliases}}, @{$_[0]}); return; };
+#    (@_ > 1)                            and do { push(@{$self->{aliases}}, @_); return; };
+#}
 
 ############################################
-package gbspp::cli::router::option;
+#package gbspp::cli::router::option;
+#use strict;
+#use warnings;
+#
+#sub new
+#{
+#    my $class = shift or die;
+#    my $self = bless {
+#          name          => undef
+#        , stash_name    => undef
+#        , default_value => undef
+#        , variants      => []
+#        , value         => undef
+#    }, $class;
+#    return $self;
+#}
+#
+#sub name
+#{
+#    my $self = shift or die;
+#    return $self->{name};
+#}
+#
+#sub set_name
+#{
+#    die unless @_ == 2;
+#    my ($self, $value) = @_;
+#    $self->{name} = $value;
+#}
+#
+#
+#sub stash_name
+#{
+#    my $self = shift or die;
+#    return $self->{stash_name};
+#}
+#
+#sub set_stash_name
+#{
+#    die unless @_ == 2;
+#    my ($self, $value) = @_;
+#    $self->{stash_name} = $value;
+#}
+#
+#sub set_default_value
+#{
+#    die unless @_ == 2;
+#    my ($self, $value) = @_;
+#    $self->{default_value} = $value;
+#}
+#
+#sub add_variant
+#{
+#    die unless @_ == 2;
+#    my ($self, $value) = @_;
+#    push(@{$self->{variants}}, $value);
+#}
+#
+#sub set_value
+#{
+#    die unless @_ == 2;
+#    my ($self, $value) = @_;
+#    push(@{$self->{variants}}, $value);
+#}
+
+############################################
+package gbspp::cli::router::dummy_route;
+use gbspp::sub qw(required);
 use strict;
 use warnings;
 
 sub new
 {
-    my $class = shift or die;
-    my $self = bless {
-          name          => undef
-        , stash_name    => undef
-        , default_value => undef
-        , variants      => []
-        , value         => undef
-    }, $class;
-    return $self;
+    my $class = required(\@_);
+    return bless {} , $class;
 }
 
-sub name
-{
-    my $self = shift or die;
-    return $self->{name};
-}
-
-sub set_name
-{
-    die unless @_ == 2;
-    my ($self, $value) = @_;
-    $self->{name} = $value;
-}
-
-
-sub stash_name
-{
-    my $self = shift or die;
-    return $self->{stash_name};
-}
-
-sub set_stash_name
-{
-    die unless @_ == 2;
-    my ($self, $value) = @_;
-    $self->{stash_name} = $value;
-}
-
-sub set_default_value
-{
-    die unless @_ == 2;
-    my ($self, $value) = @_;
-    $self->{default_value} = $value;
-}
-
-sub add_variant
-{
-    die unless @_ == 2;
-    my ($self, $value) = @_;
-    push(@{$self->{variants}}, $value);
-}
-
-sub set_value
-{
-    die unless @_ == 2;
-    my ($self, $value) = @_;
-    push(@{$self->{variants}}, $value);
-}
+sub d  { return $_[0]; }
+sub to { return 0; }
 
 ############################################
 package gbspp::cli::router::route;
+use Carp;
+use gbspp::sub qw(required);
+use base 'gbspp::cli::router::dummy_route';
 use strict;
 use warnings;
 
 sub new
 {
-    my $class = shift or die;
-    my $self = bless {
-          domains => [] # domain aliases
-        , options => {}
-#        , _h        = nil -- handler
-#        , _args     = require("pfs.array"):new() -- free arguments
-#        , _ropts    = nil   -- filled by run() method, contains pairs {optname, optarg}
-#        , _continue = false -- if `true' stops after successful matching
-        , handler => undef
-    }, $class;
+    my $class = required(\@_);
+    my $cli   = required(\@_);
+
+    my $self = $class->SUPER::new;
+    $self->{cli} = $cli;
+    
+#    my $self = bless {
+#          domains => [] # domain aliases
+#        , options => {}
+##        , _h        = nil -- handler
+##        , _args     = require("pfs.array"):new() -- free arguments
+##        , _ropts    = nil   -- filled by run() method, contains pairs {optname, optarg}
+##        , _continue = false -- if `true' stops after successful matching
+#        , handler => undef
+#    }, $class;
     return $self;
+}
+
+#
+# $self->to(\&handler)
+#
+sub to
+{
+    my $self  = required(\@_);
+    my $sub   = required(\@_);
+    
+    croak "Subroutine expected for route handler" unless ref($sub) eq 'CODE';
+    return $sub->();
 }
 
 #
@@ -138,19 +174,29 @@ sub new
 # $self->d(\@aliases)
 # $self->d($alias)
 #
-# @see gbspp::cli::router::domain::add
-#
 sub d
 {
-    my $self = shift or die;
-    my $domain = gbspp::cli::router::domain->new;
+    my $self  = required(\@_);
+    my $alias = required(\@_);
 
-    if (@_ > 0) {
-        $domain->add(@_);
-        push(@{$self->{domains}}, $domain);
+    my @aliases = ();
+    
+    if (@_ > 1) {
+        push(@aliases, $alias);
+        push(@aliases, @_);
+    } else {
+        if (ref($alias) eq 'ARRAY') {
+            push(@aliases, @$alias);
+        } else {
+            push(@aliases, $alias);
+        }
+    }
+
+    foreach my $a (@aliases) {
+        return $self if $a eq $self->{cli}->domain;
     }
     
-    return $self;
+    return gbspp::cli::router::dummy_route->new;
 }
 
 #
@@ -189,6 +235,7 @@ sub _canonical_parms
             
             die 'Bad variants' if (defined($variants) and ref($variants) ne 'HASH');
         }
+    }
         
     return ($optname, $stash_name, $default_value, $variants);
 }
@@ -219,34 +266,25 @@ sub s
 #    return $self;
 }
 
-#
-# $self->to(\&handler)
-#
-sub to
-{
-    my $self = shift or die;
-    (@_ > 0 and ref($_[0]) eq 'CODE') and do { $self->{handler} = $_[0]; };
-    return $self;
-}
-
 ############################################
 package gbspp::cli::router;
 
 sub new
 {
-    my $class = shift or die;
+    my $class = required(\@_);
+    my $cli   = required(\@_);
+    
     my $self = bless {
-        routes => []
+        cli => $cli
     }, $class;
+    
     return $self;
 }
 
 sub r
 {
-    my $self = shift or die;
-    my $result = gbspp::cli::router::route->new;
-    push(@{$self->{routes}}, $result);
-    return $result;
+    my $self = required(\@_);
+    return gbspp::cli::router::route->new($self->{cli});
 }
 
 1;

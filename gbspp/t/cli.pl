@@ -103,6 +103,9 @@ package test2;
 use Test::Simple;
 use gbspp::cli::cli;
 use gbspp::cli::router;
+use gbspp::type::bool;
+use gbspp::type::numeric;
+use gbspp::type::string;
 use strict;
 
 sub run
@@ -123,31 +126,35 @@ sub run
 
     ok($cli->parse_array(@cmdline), q(parse command line));
 
-    my $router = gbspp::cli::router->new;
-    $router->r->d(qw(project pro prj))
-       ->b('create')
-#        ->s('name'     , 'ProjectName')
-#        ->s('type'     , 'ProjectType' => {-default => 'console-app', -variants => qw(console-app gui-app shared-lib static-lib) })
-#        ->s('lang'     , 'ProjectLang' => 'C++')
-#        ->s('depends'  , 'ProjectDeps' => [])
-#        ->b('enable-qt', 'EnableQt'    => 0)
-#        ->b('doxygen'  , 'GenDoxyfile' => 0)
-        ->to(
-            sub {
-                my $r = shift; # fetch router itself
-                $r->stash('SolutionName' => 'Some Solution Name');
-                ok(1 == 1, q(Router applied));
-            }
-        );
+    my $router = gbspp::cli::router->new($cli);
+    
+    $router->r->d(qw(pro))->to(sub { print "Project 1\n"; return 1; });
+    $router->r->d(qw(prj))->to(sub { print "Project 2\n"; return 1; });
+    $router->r->d(qw(project))->to(sub { print "Project 3\n"; return 1; });
+    $router->r->d(qw(project pro prj))->to(sub { print "Project 4\n"; return 1; });
 
+#    $router->r->d(qw(project pro prj))
+#       ->b('create')
+##        ->s('name'     , 'ProjectName')
+##        ->s('type'     , 'ProjectType' => {-default => 'console-app', -variants => qw(console-app gui-app shared-lib static-lib) })
+##        ->s('lang'     , 'ProjectLang' => 'C++')
+##        ->s('depends'  , 'ProjectDeps' => [])
+##        ->b('enable-qt', 'EnableQt'    => 0)
+##        ->b('doxygen'  , 'GenDoxyfile' => 0)
+#        ->to(
+#            sub {
+#                my $r = shift; # fetch router itself
+#                $r->stash('SolutionName' => 'Some Solution Name');
+#                ok(1 == 1, q(Router applied));
+#            }
+#        );
+#
 #    $router->run($cli);
 }
 
 package main;
-test0::run;
-test1::run;
+#test0::run;
+#test1::run;
 test2::run;
 
 0;
-
-
