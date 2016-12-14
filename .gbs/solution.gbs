@@ -196,3 +196,8 @@ project "demo-utc-time"
 project "test-active-queue"
     include("test-active-queue/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-cli"
+    include("test-cli/project.gbs")
+-- END PROJECT
