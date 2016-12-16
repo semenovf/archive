@@ -14,25 +14,64 @@
 #ifndef __PFS_CLI_ROUTE_HPP__
 #define __PFS_CLI_ROUTE_HPP__
 
+#include <pfs/cli/traits.hpp>
+
 namespace pfs {
 namespace cli {
 
+// Parse flags
 enum {
       combine_short_options = 0x01
     , single_dash_long_option = 0x02
 };
 
-template <typename T>
+namespace details {
+
+template <typename T, typename Traits>
 class option;
 
+template <typename Traits>
 class route 
 {
+protected:
+    typedef Traits traits_type;
+    typedef typename traits_type::short_name_type short_name_type;
+    typedef typename traits_type::long_name_type  long_name_type;
+    typedef typename traits_type::bool_type       bool_type;
+    typedef typename traits_type::string_type     string_type;
+    typedef typename traits_type::short_map_type  short_map_type;
+    typedef typename traits_type::long_map_type   long_map_type;
+    
+protected:
+    short_map_type _short_options;
+    long_map_type  _long_options;
+    
 public:
-    route ();
+    route () 
+    {}
     
     template <typename T>
-    void add (option<T> const & opt);
+    void add (short_name_type const & sname
+        , long_name_type const & lname
+        , T * pvalue
+        , string_type const & description = string_type());
 };
+
+template <typename Traits>
+template <typename T>
+void route<Traits>::add (short_name_type const & sname
+        , long_name_type const & lname
+        , T * pvalue
+        , string_type const & description)
+{
+    if (sname != traits_type::invalid_short_name())
+        _short_options.insert(typename short_map_type::value_type(sname, & opt));
+    
+    if (lname != traits_type::invalid_long_name())
+        _long_options.insert(typename long_map_type::value_type(lname(), & opt));
+}
+
+} // details
 
 }} // pfs::cli
 

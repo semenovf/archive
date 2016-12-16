@@ -28,28 +28,26 @@ void test_basic ()
     
     int parse_flag = pfs::cli::combine_short_options | pfs::cli::single_dash_long_option;
     pfs::cli::route route1;
-    pfs::cli::option<bool>        bool_long_opt(_u8("bool")); // Has default value, so it is optional
-    bool_long_opt.set_default_value(true);
-    pfs::cli::option<bool>        bool_short_opt('b');            // Has no default value, so it is mandatory
-    pfs::cli::option<short>       short_int_opt(_u8("short"));
-    pfs::cli::option<int>         int_opt('i', _u8("int"));
-    pfs::cli::option<long>        long_int_opt(_u8("long"));
-    pfs::cli::option<intmax_t>    intmax_opt(_u8("intmax"));
-    pfs::cli::option<float>       float_opt('f', _u8("float"));
-    pfs::cli::option<double>      double_opt('d', _u8("double"));
-    pfs::cli::option<real_t>      real_opt(_u8("real"));
-    pfs::cli::option<pfs::string> string_opt('s', _u8("string"));
     
-    route1.add(bool_long_opt);
-    route1.add(bool_short_opt);
-    route1.add(short_int_opt);
-    route1.add(int_opt);
-    route1.add(long_int_opt);
-    route1.add(intmax_opt);
-    route1.add(float_opt);
-    route1.add(double_opt);
-    route1.add(real_opt);
-    route1.add(string_opt);
+    bool     yes          = true;
+    short    short_value  = 0;
+    int      int_value    = 0;
+    long     long_value   = 0;
+    intmax_t intmax_value = 0;
+    float    float_value  = 0.0f;
+    double   double_value = 0.0f;
+    real_t   real_value   = 0.0f;   
+    pfs::string string_value;
+    
+    route1.add(     "bool"   , & yes);
+    route1.add(     "short"  , & short_value);
+    route1.add('i', "int"    , & int_value);
+    route1.add(     "long"   , & long_value);
+    route1.add(     "intmax" , & intmax_value);
+    route1.add('f', "float"  , & float_value);
+    route1.add('d', "double" , & double_value);
+    route1.add(   , "real"   , & real_value);
+    route1.add('s', "string" , & string_value);
     
     //TEST_OK(pfs::cli::parse(route1, parse_flag, argc, argv));
 }

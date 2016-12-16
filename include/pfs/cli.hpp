@@ -23,10 +23,15 @@
 namespace pfs {
 namespace cli {
 
+template <typename Key, typename T>
+struct map
+{
+    typedef pfs::map<Key, T> type;
+};
+
 typedef details::traits<pfs::unicode::char_t
     , pfs::string
-    , pfs::map<pfs::unicode::char_t, details::mapped_type *>
-    , pfs::map<pfs::string, details::mapped_type *> >  traits;
+    , map> traits;
 
 template <typename T>
 class option : public details::option<T, traits>
@@ -71,6 +76,8 @@ public:
         : base_type(short_name_type(short_name), long_name_type(long_name))
     {}
 };
+
+typedef details::route<traits> route;
 
 }} // pfs::cli
 
