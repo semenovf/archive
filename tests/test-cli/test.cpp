@@ -8,7 +8,7 @@
 
 #include <pfs/test/test.hpp>
 #include <iostream>
-#include "test_basic.hpp"
+#include "test_iterator.hpp"
 
 using std::cout;
 using std::endl;
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
 	BEGIN_TESTS(0);
 
-    test::cli::test_basic();
+    test::cli::test_iterator();
     
 	return END_TESTS;
 }

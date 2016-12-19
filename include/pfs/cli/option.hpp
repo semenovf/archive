@@ -21,38 +21,41 @@ namespace cli {
 
 namespace details {
 
+#if __COMMENT__
+template <typename Traits>
+class route;
+
 template <typename T, typename Traits>
 class option : public mapped_type
 {
-protected:
-    typedef T                                value_type;
-//    typedef Traits                           traits_type;
-//    typedef typename traits_type::short_name_type short_name_type;
-//    typedef typename traits_type::long_name_type  long_name_type;
-    
-protected:
-    value_type _value;
-    
-public:
-    option ()
-        : _value()
-    {}
-        
-    void set_default_value (value_type const & value)
-    {
-        _value = value;
-    }
-    
-    short_name_type const & short_name () const
-    {
-        return _short_name;
-    }
+    friend class route<Traits>;
 
-    long_name_type const & long_name () const
-    {
-        return _long_name;
-    }
+protected:
+    typedef T                                     value_type;
+    typedef Traits                                traits_type;
+    typedef typename traits_type::short_name_type short_name_type;
+    typedef typename traits_type::long_name_type  long_name_type;
+    typedef typename traits_type::string_type     string_type;
+    
+protected:
+    value_type *    _pvalue;
+    short_name_type _short_name;
+    long_name_type  _long_name;
+    string_type     _description;
+    
+protected:
+    option (value_type * pvalue
+            , short_name_type const & short_name
+            , long_name_type const & long_name
+            , string_type const & description)
+        : _pvalue(pvalue)
+        , _short_name(short_name)
+        , _long_name(long_name)
+        , _description(description)
+    {}
 };
+
+#endif
 
 } // details
 

@@ -16,6 +16,7 @@
 
 #include <pfs/string.hpp>
 #include <pfs/map.hpp>
+#include <pfs/list.hpp>
 #include <pfs/unicode.hpp>
 #include <pfs/cli/option.hpp>
 #include <pfs/cli/route.hpp>
@@ -23,16 +24,70 @@
 namespace pfs {
 namespace cli {
 
+struct iterator
+{
+    typedef pfs::string string_type;
+    
+    int           _argc;
+    char const ** _argv;
+    
+public:
+    iterator (int argc, char const * argv[])
+        : _argc(argc)
+        , _argv(argv)
+    {}
+    
+    iterator & operator ++ ()
+    {
+        --_argc;
+        ++_argv;
+        return *this;
+    }
+    
+    pfs::string operator * ()
+    {
+        return pfs::string(*_argv);
+    }
+    
+    bool operator == (iterator const & x)
+    {
+        return _argc == x._argc
+                && _argv == x._argv;
+    }
+
+    bool operator != (iterator const & x)
+    {
+        return !this->operator == (x);
+    }
+};
+
+inline iterator begin (int argc, char const *argv[])
+{
+    return iterator(argc, argv);
+}
+
+inline iterator end (int argc, char const *argv[])
+{
+    return iterator(0, argv + argc);
+}
+
 template <typename Key, typename T>
 struct map
 {
     typedef pfs::map<Key, T> type;
 };
 
-typedef details::traits<pfs::unicode::char_t
-    , pfs::string
-    , map> traits;
+template <typename T>
+struct list
+{
+    typedef pfs::list<T> type;
+};
 
+typedef details::traits<iterator
+    , map
+    , list> traits;
+
+#if __COMMENT__
 template <typename T>
 class option : public details::option<T, traits>
 {
@@ -76,8 +131,9 @@ public:
         : base_type(short_name_type(short_name), long_name_type(long_name))
     {}
 };
+#endif
 
-typedef details::route<traits> route;
+//typedef details::route<traits> route;
 
 }} // pfs::cli
 

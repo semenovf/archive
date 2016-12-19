@@ -21,29 +21,29 @@ namespace details {
 
 struct mapped_type {};
 
-template <typename ShortNameType
-    , typename LongNameType
-    , BoolType
-    , StringType
-    , template <typename Key, typename T> class MapType>
+template <typename Iterator
+    , template <typename Key, typename T> class MapType
+    , template <typename T> class ListType>
 struct traits
 {
-    typedef ShortNameType  short_name_type;
-    typedef LongNameType   long_name_type;
-    typedef BoolType       bool_type;
-    typedef StringType     string_type;
-    typedef typename MapType<ShortNameType, mapped_type const *>::type short_map_type;
-    typedef typename MapType<LongNameType, mapped_type const *>::type long_map_type;
+    typedef Iterator                          iterator;
+    typedef typename iterator::string_type    string_type;
+    typedef typename string_type::value_type  char_type;
+    typedef typename MapType<char_type
+        , mapped_type const *>::type          short_map_type;
+    typedef typename MapType<string_type
+        , mapped_type const *>::type          long_map_type;
+    typedef typename ListType<mapped_type *>::type list_type;
     
-    static short_name_type invalid_short_name ()
-    {
-        return short_name_type();
-    }
-    
-    static long_name_type invalid_long_name ()
-    {
-        return long_name_type();
-    }
+//    static char_type invalid_short_name ()
+//    {
+//        return short_name_type();
+//    }
+//    
+//    static long_name_type invalid_long_name ()
+//    {
+//        return long_name_type();
+//    }
 };
 
 } // details

@@ -5,25 +5,53 @@
  */
 
 /* 
- * File:   test_basic.hpp
+ * File:   test_iterator.hpp
  * Author: wladt
  *
  * Created on December 14, 2016, 12:11 PM
  */
 
-#ifndef __TEST_BASIC_HPP__
-#define __TEST_BASIC_HPP__
+#ifndef __TEST_ITERATOR_HPP__
+#define __TEST_ITERATOR_HPP__
 
 #include <pfs/test/test.hpp>
 #include <pfs/string.hpp>
 #include <pfs/cli.hpp>
+//#include <iostream>
 
 namespace test {
 namespace cli {
 
-void test_basic ()
+void test_iterator ()
 {
-    ADD_TESTS(0);
+    ADD_TESTS(1);
+    
+    char const * argv[] = { "program"
+            , "command"
+            , "--option1"
+            , "--option2=option_arg2"
+            , "-o"
+            , "--"
+            , "hello" };
+    int argc = sizeof(argv)/sizeof(argv[0]);
+    
+    pfs::cli::iterator it  = pfs::cli::begin(argc, argv);
+    pfs::cli::iterator end = pfs::cli::end(argc, argv);
+    
+    int counter = 0;
+    
+    for (; counter < argc && it != end; ++counter) {
+        if (*it != pfs::string(argv[counter]))
+            break;
+        
+        //std::cout << *it << std::endl;
+        ++it;
+    }
+    
+    TEST_OK2(counter == argc, "Iterator test is OK");
+    
+#if __COMMENT__    
+    
     //pfs::cli::no_long_option
     
     int parse_flag = pfs::cli::combine_short_options | pfs::cli::single_dash_long_option;
@@ -50,9 +78,10 @@ void test_basic ()
     route1.add('s', "string" , & string_value);
     
     //TEST_OK(pfs::cli::parse(route1, parse_flag, argc, argv));
+#endif    
 }
 
 }}
 
-#endif /* __TEST_BASIC_HPP__ */
+#endif /* __TEST_ITERATOR_HPP__ */
 

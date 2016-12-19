@@ -15,15 +15,31 @@
 #define __PFS_CLI_ROUTE_HPP__
 
 #include <pfs/cli/traits.hpp>
+#include <pfs/cli/option.hpp>
 
 namespace pfs {
 namespace cli {
 
 // Parse flags
 enum {
-      combine_short_options = 0x01
-    , single_dash_long_option = 0x02
+      skip_argv_0                  = 0x0001 //!< Skip first element (program path) while parsing argv array.
+    , combine_short_options        = 0x0002 //!< Combine short options (stacked options) using form -abc (-a -b -c).
+    , shortopt_stacked             = combine_short_options //!< Synonim for combine_short_options.
+    , longopt_single_dash          = 0x0004 //!< Allow single dash prefix for long options in form -option.
+    , longopt_double_dash          = 0x0008 //!< Allow double dash prefix for long options in form --option.
+    , longopt_slash                = 0x0010 //!< Allow slash prefix for long options in form /option.
+    , shortopt_slash               = 0x0020 //!< Allow slash prefix for short options in form /o.
+    , double_dash_pos_args         = 0x0040 //!< Allow double dash to separate options and positional arguments.
+    , longopt_arg_eq_separator     = 0x0080 //!< Allow long option with argument in form {-- | /}option=ARG.
+    , longopt_arg_colon_separator  = 0x0100 //!< Allow long option with argument in form {-- | /}option:ARG.
+    , longopt_arg_space_separator  = 0x0200 //!< Allow long option with argument in form {-- | /}option ARG.
+    , shortopt_arg_eq_separator    = 0x0400 //!< Allow short option with argument in form {- | /}o=ARG.
+    , shortopt_arg_colon_separator = 0x0800 //!< Allow short option with argument in form {- | /}o:ARG.
+    , shortopt_arg_space_separator = 0x1000 //!< Allow short option with argument in form {- | /}o ARG.
+    , shortopt_arg_no_separator    = 0x2000 //!< Allow short option with argument in form {- | /}oARG.
 };
+
+#if __COMMENT__
 
 namespace details {
 
@@ -51,17 +67,17 @@ public:
     {}
     
     template <typename T>
-    void add (short_name_type const & sname
+    void add (T * pvalue
+        , short_name_type const & sname
         , long_name_type const & lname
-        , T * pvalue
         , string_type const & description = string_type());
 };
 
 template <typename Traits>
 template <typename T>
-void route<Traits>::add (short_name_type const & sname
+void route<Traits>::add (T * pvalue
+        , short_name_type const & sname
         , long_name_type const & lname
-        , T * pvalue
         , string_type const & description)
 {
     if (sname != traits_type::invalid_short_name())
@@ -72,6 +88,8 @@ void route<Traits>::add (short_name_type const & sname
 }
 
 } // details
+
+#endif
 
 }} // pfs::cli
 
