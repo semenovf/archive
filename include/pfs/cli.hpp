@@ -40,35 +40,6 @@ typedef details::traits<pfs::string
     , map
     , list> traits;
 
-namespace details {
-
-//template <>
-//inline bool traits<pfs::string, map, list>::is_space (traits::char_type ch)
-//{
-//    return pfs::unicode::is_space(ch);
-//}
-
-//template <>
-//inline bool traits<pfs::string, map, list>::is_quote (traits::char_type ch)
-//{
-//    return ch == traits::char_type('"')
-//            || ch == traits::char_type('\'');
-//}
-//
-//template <>
-//inline bool traits<pfs::string, map, list>::is_prefix (traits::char_type ch)
-//{
-//    return ch == traits::char_type('-');
-//}
-//
-//template <>
-//inline bool traits<pfs::string, map, list>::is_escape (traits::char_type ch)
-//{
-//    return ch == traits::char_type('\\');
-//}
-
-} // details
-
 #if __COMMENT__
 template <typename T>
 class option : public details::option<T, traits>
