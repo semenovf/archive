@@ -128,7 +128,7 @@ static bool set_host_is_ip(string::const_iterator begin, string::const_iterator 
    pct-encoded   = "%" HEXDIG HEXDIG
 
    unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
-   reserved      = gen-delims / sub-delimsstatic void __set_port(const void *data, size_t len, void *context, void *action_args);
+   reserved      = gen-delims / sub-delims
    gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
                  / "*" / "+" / "," / ";" / "="
