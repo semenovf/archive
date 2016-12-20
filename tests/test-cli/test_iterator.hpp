@@ -16,6 +16,7 @@
 
 #include <pfs/test/test.hpp>
 #include <pfs/string.hpp>
+#include <pfs/cli/iterator.hpp>
 #include <pfs/cli.hpp>
 //#include <iostream>
 
@@ -24,62 +25,116 @@ namespace cli {
 
 void test_iterator ()
 {
-    ADD_TESTS(1);
+    ADD_TESTS(12);
     
-    char const * argv[] = { "program"
-            , "command"
+    typedef pfs::cli::iterator<pfs::cli::traits> iterator;
+    
+    char const * argv[] = { "/path/to/program.sh"
+            , "domain"
+            , "command1"
+            , "-a"
+            , "-bcd"
             , "--option1"
-            , "--option2=option_arg2"
-            , "-o"
+            , "--option2=option2_arg"
             , "--"
-            , "hello" };
+            , "arg1"
+            , "--arg2"
+    };
+    
     int argc = sizeof(argv)/sizeof(argv[0]);
     
-    pfs::cli::iterator it  = pfs::cli::begin(argc, argv);
-    pfs::cli::iterator end = pfs::cli::end(argc, argv);
+    iterator it  = pfs::cli::begin<pfs::cli::traits>(argc, argv);
+    iterator end = pfs::cli::end<pfs::cli::traits>(argc, argv);
     
-    int counter = 0;
-    
-    for (; counter < argc && it != end; ++counter) {
-        if (*it != pfs::string(argv[counter]))
-            break;
-        
-        //std::cout << *it << std::endl;
-        ++it;
-    }
-    
-    TEST_OK2(counter == argc, "Iterator test is OK");
-    
-#if __COMMENT__    
-    
-    //pfs::cli::no_long_option
-    
-    int parse_flag = pfs::cli::combine_short_options | pfs::cli::single_dash_long_option;
-    pfs::cli::route route1;
-    
-    bool     yes          = true;
-    short    short_value  = 0;
-    int      int_value    = 0;
-    long     long_value   = 0;
-    intmax_t intmax_value = 0;
-    float    float_value  = 0.0f;
-    double   double_value = 0.0f;
-    real_t   real_value   = 0.0f;   
-    pfs::string string_value;
-    
-    route1.add(     "bool"   , & yes);
-    route1.add(     "short"  , & short_value);
-    route1.add('i', "int"    , & int_value);
-    route1.add(     "long"   , & long_value);
-    route1.add(     "intmax" , & intmax_value);
-    route1.add('f', "float"  , & float_value);
-    route1.add('d', "double" , & double_value);
-    route1.add(   , "real"   , & real_value);
-    route1.add('s', "string" , & string_value);
-    
-    //TEST_OK(pfs::cli::parse(route1, parse_flag, argc, argv));
-#endif    
+    TEST_OK(it != end);
+    TEST_OK(*it++ == "/path/to/program.sh");
+    TEST_OK(*it++ == "domain");
+    TEST_OK(*it++ == "command1");
+    TEST_OK(*it++ == "-a");
+    TEST_OK(*it++ == "-bcd");
+    TEST_OK(*it++ == "--option1");
+    TEST_OK(*it++ == "--option2=option2_arg");
+    TEST_OK(*it++ == "--");
+    TEST_OK(*it++ == "arg1");
+    TEST_OK(*it++ == "--arg2");
+    TEST_OK(it == end);
 }
+
+//void test_iterator_pod_string ()
+//{
+//    ADD_TESTS(12);
+//    
+//    typedef pfs::cli::pod_string_iterator_tag iterator_tag;
+//    typedef pfs::cli::iterator<pfs::cli::traits, iterator_tag> iterator;
+//    
+//    char const * cmdline = "/path/to/program.sh domain command1 -a -bcd --option1 --option2=option2_arg -- arg1 --arg2";
+//
+//    iterator it  = pfs::cli::begin<pfs::cli::traits>(cmdline);
+//    iterator end = pfs::cli::end<pfs::cli::traits>(cmdline);
+//
+//    TEST_OK(it != end);
+//    TEST_OK(*it++ == "/path/to/program.sh");
+//    TEST_OK(*it++ == "domain");
+//    TEST_OK(*it++ == "command1");
+//    TEST_OK(*it++ == "-a");
+//    TEST_OK(*it++ == "-bcd");
+//    TEST_OK(*it++ == "--option1");
+//    TEST_OK(*it++ == "--option2=option2_arg");
+//    TEST_OK(*it++ == "--");
+//    TEST_OK(*it++ == "arg1");
+//    TEST_OK(*it++ == "--arg2");
+//    TEST_OK(it == end);
+//}
+//
+//void test_iterator_string ()
+//{
+//    ADD_TESTS(12);
+//    
+//    typedef pfs::cli::traits::string_type string_type;
+//    typedef pfs::cli::string_iterator_tag iterator_tag;
+//    typedef pfs::cli::iterator<pfs::cli::traits, iterator_tag> iterator;
+//    
+//    
+//    
+//    {
+//        pfs::cli::traits::string_type cmdline("-o");
+//        iterator it  = pfs::cli::begin<pfs::cli::traits>(cmdline);
+//        iterator end = pfs::cli::end<pfs::cli::traits>(cmdline);
+//        TEST_OK(*it == cmdline);
+//    }
+//
+//    {
+//        pfs::cli::traits::string_type cmdline("-abc");
+//    }
+////    pfs::cli::traits::string_type cmdline3("--option");
+////    pfs::cli::traits::string_type cmdline4("--option=arg");
+////    pfs::cli::traits::string_type cmdline5("\"double \\\" quoted string\"");
+////    pfs::cli::traits::string_type cmdline6("\"double \\\"=quoted string\"");
+////    pfs::cli::traits::string_type cmdline7("--option=\"double \\\"=quoted string\"");
+////    
+////    
+////    pfs::cli::traits::string_type cmdline("/path/to/program.sh domain command1 "
+////        "-a -bcd --option1 \"double \\\" quoted string\" "
+////        "--option2=option2_arg -- 'quoted \" string' arg1 --arg2");
+////
+////    iterator it  = pfs::cli::begin<pfs::cli::traits>(cmdline);
+////    iterator end = pfs::cli::end<pfs::cli::traits>(cmdline);
+////
+////    TEST_OK(it != end);
+////    TEST_OK(*it++ == string_type("/path/to/program.sh"));
+////    TEST_OK(*it++ == string_type("domain"));
+////    TEST_OK(*it++ == string_type("command1"));
+////    TEST_OK(*it++ == string_type("-a"));
+////    TEST_OK(*it++ == string_type("-bcd"));
+////    TEST_OK(*it++ == string_type("--option1"));
+////    TEST_OK(*it++ == string_type("\"double \\\" quoted string\""));
+////    TEST_OK(*it++ == string_type("--option2=option2_arg"));
+////    TEST_OK(*it++ == string_type("--"));
+////    TEST_OK(*it++ == string_type("'quoted \" string'"));
+////    TEST_OK(*it++ == string_type("arg1"));
+////    TEST_OK(*it++ == string_type("--arg2"));
+////    TEST_OK(it == end);
+//}
 
 }}
 

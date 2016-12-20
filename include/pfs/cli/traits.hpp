@@ -19,31 +19,28 @@ namespace cli {
 
 namespace details {
 
-struct mapped_type {};
-
-template <typename Iterator
+template <typename StringType
     , template <typename Key, typename T> class MapType
     , template <typename T> class ListType>
 struct traits
 {
-    typedef Iterator                          iterator;
-    typedef typename iterator::string_type    string_type;
-    typedef typename string_type::value_type  char_type;
-    typedef typename MapType<char_type
-        , mapped_type const *>::type          short_map_type;
-    typedef typename MapType<string_type
-        , mapped_type const *>::type          long_map_type;
-    typedef typename ListType<mapped_type *>::type list_type;
+    struct mapped_type {};
     
-//    static char_type invalid_short_name ()
-//    {
-//        return short_name_type();
-//    }
+    typedef StringType                             string_type;
+//    typedef typename string_type::value_type       char_type;
+//    typedef typename MapType<char_type
+//        , mapped_type const *>::type               shortopt_map_type;
+//    typedef typename MapType<string_type
+//        , mapped_type const *>::type               longopt_map_type;
+//    typedef typename ListType<mapped_type *>::type opt_list_type;
+    
+//    static bool is_space (char_type ch);
+    
+//    static bool is_quote (char_type ch);
 //    
-//    static long_name_type invalid_long_name ()
-//    {
-//        return long_name_type();
-//    }
+//    static bool is_prefix (char_type ch);
+//    
+//    static bool is_escape (char_type ch);
 };
 
 } // details

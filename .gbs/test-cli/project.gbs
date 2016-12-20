@@ -18,14 +18,14 @@ configuration "debug"
     objdir       "../../../.build/pfs/test-cli/debug"
     targetdir    "../../../.build/tests"
     targetsuffix "-d"
-    links        { "pfs-test-d" }
+    links        { "pfs-test-d", "pfs-d" }
 
 configuration "release"
     flags        { "FatalWarnings" }
     defines      { "NDEBUG" }
     objdir       "../../../.build/pfs/test-cli/release"
     targetdir    "../../../.build/tests"
-    links        { "pfs-test" }
+    links        { "pfs-test", "pfs" }
 
 dependson { "pfs" }
 

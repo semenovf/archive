@@ -24,53 +24,6 @@
 namespace pfs {
 namespace cli {
 
-struct iterator
-{
-    typedef pfs::string string_type;
-    
-    int           _argc;
-    char const ** _argv;
-    
-public:
-    iterator (int argc, char const * argv[])
-        : _argc(argc)
-        , _argv(argv)
-    {}
-    
-    iterator & operator ++ ()
-    {
-        --_argc;
-        ++_argv;
-        return *this;
-    }
-    
-    pfs::string operator * ()
-    {
-        return pfs::string(*_argv);
-    }
-    
-    bool operator == (iterator const & x)
-    {
-        return _argc == x._argc
-                && _argv == x._argv;
-    }
-
-    bool operator != (iterator const & x)
-    {
-        return !this->operator == (x);
-    }
-};
-
-inline iterator begin (int argc, char const *argv[])
-{
-    return iterator(argc, argv);
-}
-
-inline iterator end (int argc, char const *argv[])
-{
-    return iterator(0, argv + argc);
-}
-
 template <typename Key, typename T>
 struct map
 {
@@ -83,9 +36,38 @@ struct list
     typedef pfs::list<T> type;
 };
 
-typedef details::traits<iterator
+typedef details::traits<pfs::string
     , map
     , list> traits;
+
+namespace details {
+
+//template <>
+//inline bool traits<pfs::string, map, list>::is_space (traits::char_type ch)
+//{
+//    return pfs::unicode::is_space(ch);
+//}
+
+//template <>
+//inline bool traits<pfs::string, map, list>::is_quote (traits::char_type ch)
+//{
+//    return ch == traits::char_type('"')
+//            || ch == traits::char_type('\'');
+//}
+//
+//template <>
+//inline bool traits<pfs::string, map, list>::is_prefix (traits::char_type ch)
+//{
+//    return ch == traits::char_type('-');
+//}
+//
+//template <>
+//inline bool traits<pfs::string, map, list>::is_escape (traits::char_type ch)
+//{
+//    return ch == traits::char_type('\\');
+//}
+
+} // details
 
 #if __COMMENT__
 template <typename T>
@@ -133,7 +115,7 @@ public:
 };
 #endif
 
-//typedef details::route<traits> route;
+typedef details::route<traits> route;
 
 }} // pfs::cli
 
