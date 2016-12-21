@@ -24,21 +24,40 @@
 namespace pfs {
 namespace cli {
 
+#if __cplusplus >= 201103
+
+template <typename Key, T>
+using map = pfs::map<Key, T>;
+
+template <typename T>
+using list = pfs::list<T>;
+
+typedef details::traits<
+      pfs::string::value_type
+    , pfs::string
+    , map
+    , list> traits;
+
+#else
 template <typename Key, typename T>
-struct map
+struct map_wrapper
 {
-    typedef pfs::map<Key, T> type;
+    typedef pfs::map<Key,T> type;
 };
 
 template <typename T>
-struct list
+struct list_wrapper
 {
     typedef pfs::list<T> type;
 };
 
-typedef details::traits<pfs::string
-    , map
-    , list> traits;
+typedef details::traits<
+      pfs::string::value_type
+    , pfs::string
+    , map_wrapper
+    , list_wrapper> traits;
+
+#endif
 
 #if __COMMENT__
 template <typename T>

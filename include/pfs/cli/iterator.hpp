@@ -16,21 +16,6 @@
 
 #include <pfs/cli/traits.hpp>
 
-//
-// Command line grammar
-//
-// command-line    = program-path [ argument-list ] [ positional-separator argument-list ]
-// program-path    = <operation system valid file path>
-// argument-list   = 1*argument
-// argument        = option / non-option
-// option          = prefix option-spec
-// option-spec     = option-name option-argument-delimiter option-argument
-// separator       = "--"
-// option-argument = <any valid string (including quotations)>
-// non-option      = <any valid string (including quotations)>
-// option-argument-delimiter = <'=', ':' and/or any other valid delimiter>
-//
-
 namespace pfs {
 namespace cli {
 
@@ -52,17 +37,20 @@ protected:
     typedef Traits                               traits_type;
     typedef tuple<Traits>                        tuple_type;
     typedef typename traits_type::string_type    string_type;
-    typedef typename string_type::const_pointer  const_pointer;
-    typedef typename string_type::const_iterator const_iterator;
+    typedef typename traits_type::char_traits    char_traits;
+    typedef typename traits_type::string_traits  string_traits;
+
+    typedef typename string_traits::const_pointer  string_const_pointer;
+    typedef typename string_traits::const_iterator string_const_iterator;
     
 protected:
-    const_pointer * _begin;
-    const_pointer * _p;
-    const_pointer * _end;
-    bool            _expected_args;
+    string_const_pointer * _begin;
+    string_const_pointer * _p;
+    string_const_pointer * _end;
+    bool _expected_args;
     
 public:
-    iterator (const_pointer * begin, const_pointer * end)
+    iterator (string_const_pointer * begin, string_const_pointer * end)
         : _begin(begin)
         , _p(begin)
         , _end(end)
@@ -120,35 +108,36 @@ typename iterator<Traits>::tuple_type iterator<Traits>::split ()
     }
 
     string_type const token = string_type(*_p);
-    const_iterator    begin = token.begin();
-    const_iterator    end   = token.end();
-    const_iterator    it    = begin;
+    string_const_iterator begin = token.begin();
+    string_const_iterator end   = token.end();
+    string_const_iterator it    = begin;
     
-    while (it != end && traits_type::is_prefix_char(*it))
+    while (it != end && char_traits::is_prefix(*it))
         ++it;
 
     result.prefix = string_type(begin, it);
     begin = it;
     
-    if (traits_type::empty(result.prefix)) {
+    if (string_traits::empty(result.prefix)) {
         result.option = string(begin, begin);
         result.arg = string_type(begin, end);
     } else {
-        while (it != end && !traits_type::is_delim_char(*it))
+        while (it != end && !char_traits::is_delim(*it))
             ++it;
 
         result.option = string_type(begin, it);
         
-        if (it != end && traits_type::is_delim_char(*it))
+        if (it != end && char_traits::is_delim(*it))
             ++it;
         
         begin = it;
         result.arg = string_type(begin, end);
     }
     
-    if (traits_type::is_arg_seperator(result.prefix)
-            && traits_type::empty(result.option)
-            && traits_type::empty(result.arg)) {
+    if (result.prefix == string_traits::arg_seperator()
+            && string_traits::empty(result.option)
+            && string_traits::empty(result.arg)) {
+        
         _expected_args = true;
     }
     

@@ -45,18 +45,25 @@ template <typename Traits>
 class route 
 {
 protected:
-    typedef Traits                                     traits_type;
-    typedef option<Traits>                             value_type;
-    typedef typename traits_type::string_type          string_type;
-    typedef typename traits_type::char_type            char_type;
-    typedef typename traits_type::shortopt_map_type    shortopt_map_type;
-    typedef typename traits_type::longopt_map_type     longopt_map_type;
-    typedef typename traits_type::opt_list_type        opt_list_type;
+    typedef Traits                                   traits_type;
+
+    typedef typename traits_type::string_traits      string_traits;
+    typedef typename traits_type::shortoptmap_traits shortoptmap_traits;
+    typedef typename traits_type::longoptmap_traits  longoptmap_traits;
+    typedef typename traits_type::optlist_traits     optlist_traits;
+
+    typedef typename traits_type::option_type        value_type;
+    typedef typename traits_type::string_type        string_type;
+    typedef typename traits_type::char_type          char_type;
+    typedef typename traits_type::shortoptmap_type   shortoptmap_type;
+    typedef typename traits_type::longoptmap_type    longoptmap_type;
+    typedef typename traits_type::optlist_type       optlist_type;
+    
     
 protected:
-    opt_list_type     _optlist;
-    shortopt_map_type _short_options;
-    longopt_map_type  _long_options;
+    optlist_type     _optlist;
+    shortoptmap_type _short_options;
+    longoptmap_type  _long_options;
     
 public:
     route () 
@@ -89,13 +96,13 @@ void route<Traits>::add (T * pvalue
     typedef pfs::cli::option<T, Traits> option_type;
     option_type * o = new option_type(pvalue, short_name, long_name, required, description);
     
-    traits_type::push_back(_optlist, o);
+    optlist_traits::push_back(_optlist, o);
             
     if (o->short_name() != char_type(0))
-        traits_type::insert(_short_options, o);
-    
-    if (! traits_type::empty(o->long_name()))
-        traits_type::insert(_long_options, o);
+        shortoptmap_traits::insert(_short_options, o->short_name(), o);
+
+    if (! string_traits::empty(o->long_name()))
+        longoptmap_traits::insert(_long_options, o->long_name(), o);
 }
 
 } // details

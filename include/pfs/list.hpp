@@ -191,8 +191,6 @@ public:
 		return this->end();
 	}
 #endif
-
-
 };
 
 } // pfs

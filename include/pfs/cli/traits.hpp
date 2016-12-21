@@ -14,6 +14,9 @@
 #ifndef __PFS_CLI_TRAITS_HPP__
 #define __PFS_CLI_TRAITS_HPP__
 
+#include "option.hpp"
+
+
 namespace pfs {
 namespace cli {
 
@@ -22,65 +25,109 @@ namespace details {
 template <typename Traits>
 class option;
 
-template <typename StringType
-    , template <typename Key, typename T> class MapType
-    , template <typename T> class ListType>
-struct traits
+template <typename Char>
+struct char_traits
 {
-    struct mapped_type {};
-    
-    typedef StringType                                string_type;
-    typedef typename string_type::value_type          char_type;
-    typedef typename MapType<char_type
-        , option<traits> const *>::type               shortopt_map_type;
-    typedef typename MapType<string_type
-        , option<traits> const *>::type               longopt_map_type;
-    typedef typename ListType<option<traits> *>::type opt_list_type;
-    
-    typedef typename shortopt_map_type::mapped_type   shortopt_mapped_type;
-    typedef typename longopt_map_type::mapped_type    longopt_mapped_type;
+    typedef Char type;
 
-    // used by iterator and route
-    static bool empty (string_type const & s)
+    static bool is_prefix (type ch)
+    {
+        return ch == type('-');
+    }
+    
+    static bool is_delim (type ch)
+    {
+        return ch == type('=');
+    }
+};
+
+template <typename String>
+struct string_traits
+{
+    typedef String type;
+    typedef typename type::const_pointer   const_pointer;
+    typedef typename type::const_iterator  const_iterator;
+    typedef type const &                   const_reference;
+
+    static bool empty (const_reference s)
     {
         return s.empty();
     }
+    
+    static type arg_seperator ()
+    {
+        return type("--");
+    }
+};
 
-    // used by iterator
-    static bool is_prefix_char (char_type ch)
-    {
-        return ch == traits::char_type('-');
-    }
-    
-    // used by iterator
-    static bool is_delim_char (char_type ch)
-    {
-        return ch == traits::char_type('=');
-    }
-    
-    // used by iterator
-    static bool is_arg_seperator (string_type const & s)
-    {
-        return s == "--";
-    }
-    
-    // used by route
-    static void insert (shortopt_map_type & m, option<traits> const * o)
-    {
-        m.insert(shortopt_mapped_type(o->short_name(), o));
-    }
+template <typename Key, typename T, template <typename, typename> class Map>
+struct map_traits
+{
+#if __cplusplus >= 201103
+    typedef Map<Key, T> type;
+#else
+    typedef typename Map<Key, T>::type type;
+#endif
+    typedef typename type::key_type    key_type;
+    typedef typename type::mapped_type mapped_type;
+    typedef typename type::value_type  value_type;
 
-    // used by route
-    static void insert (longopt_map_type & m, option<traits> const * o)
+    static void insert (type & m
+        , key_type const & key
+        , mapped_type const & value)
     {
-        m.insert(longopt_mapped_type(o->long_name(), o));
+        m.insert(value_type(key, value));
     }
+};
+
+template <typename T, template <typename> class List>
+struct list_traits
+{
+#if __cplusplus >= 201103
+    typedef List<T> type;
+#else
+    typedef typename List<T>::type type;
+#endif
+    typedef typename type::value_type value_type;
+
+    static void push_back (type & l, value_type const & value)
+    {
+        l.push_back(value);
+    }
+};
+
+template <typename Char
+    , typename String
+    , template <typename, typename> class Map
+    , template <typename> class List>
+struct traits
+{
+    typedef details::option<traits>           option_type;
+    typedef option_type *                     option_pointer;
+    typedef option_type const *               option_const_pointer;
     
-    // used by route
-    static void push_back (opt_list_type & l, option<traits> const * o)
-    {
-        l.push_back(o);
-    }
+    typedef details::char_traits<Char>        char_traits;
+    typedef typename char_traits::type        char_type;
+    
+    typedef details::string_traits<String>    string_traits;
+    typedef typename string_traits::type      string_type;
+    
+    typedef typename details::map_traits<
+              char_type
+            , option_const_pointer
+            , Map>                            shortoptmap_traits;
+    typedef typename shortoptmap_traits::type shortoptmap_type;
+    
+    typedef typename details::map_traits<
+              string_type
+            , option_const_pointer
+            , Map>                            longoptmap_traits;
+    typedef typename longoptmap_traits::type  longoptmap_type;
+    
+    typedef typename details::list_traits<
+              option_pointer
+            , List>                           optlist_traits;
+    typedef typename optlist_traits::type     optlist_type;
 };
 
 } // details
