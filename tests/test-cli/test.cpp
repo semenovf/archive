@@ -7,11 +7,8 @@
  */
 
 #include <pfs/test/test.hpp>
-#include <iostream>
 #include "test_iterator.hpp"
-
-using std::cout;
-using std::endl;
+#include "test_route.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -21,6 +18,7 @@ int main(int argc, char *argv[])
 	BEGIN_TESTS(0);
 
     test::cli::test_iterator();
+    test::cli::test_route();
     
 	return END_TESTS;
 }

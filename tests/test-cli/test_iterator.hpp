@@ -26,15 +26,16 @@ namespace cli {
 void test_iterator ()
 {
     typedef pfs::cli::iterator<pfs::cli::traits> iterator;
+    typedef pfs::cli::tuple<pfs::cli::traits>    tuple_type;
     
     char const * argv[] = { "/path/to/program.sh"
             , "domain"
-            , "command1"
+            , "command"
             , "-a"
             , "-bcd"
             , "--option1"
             , "--option2=option2_arg"
-            , "--opt\"ion3=\"=\"option3 arg\""
+            , "--option 3=option3 arg"
             , "--"
             , "arg1"
             , "--arg2"
@@ -50,12 +51,12 @@ void test_iterator ()
 
         TEST_OK(it != end);
         TEST_OK(*it++ == "domain");
-        TEST_OK(*it++ == "command1");
+        TEST_OK(*it++ == "command");
         TEST_OK(*it++ == "-a");
         TEST_OK(*it++ == "-bcd");
         TEST_OK(*it++ == "--option1");
         TEST_OK(*it++ == "--option2=option2_arg");
-        TEST_OK(*it++ == "--opt\"ion3=\"=\"option3 arg\"");
+        TEST_OK(*it++ == "--option 3=option3 arg");
         TEST_OK(*it++ == "--");
         TEST_OK(*it++ == "arg1");
         TEST_OK(*it++ == "--arg2");
@@ -69,6 +70,26 @@ void test_iterator ()
         iterator end = pfs::cli::end<pfs::cli::traits>(argc, argv);
 
         TEST_OK(it != end);
+        
+        tuple_type t[10];
+        
+        for (int i = 1; i < argc; i++) {
+            t[i - 1] = it.split();
+            ++it;
+        }
+        
+        TEST_OK(t[0].prefix == ""   && t[0].option == ""         && t[0].arg == "domain");
+        TEST_OK(t[1].prefix == ""   && t[1].option == ""         && t[1].arg == "command");
+        TEST_OK(t[2].prefix == "-"  && t[2].option == "a"        && t[2].arg == "");
+        TEST_OK(t[3].prefix == "-"  && t[3].option == "bcd"      && t[3].arg == "");
+        TEST_OK(t[4].prefix == "--" && t[4].option == "option1"  && t[4].arg == "");
+        TEST_OK(t[5].prefix == "--" && t[5].option == "option2"  && t[5].arg == "option2_arg");
+        TEST_OK(t[6].prefix == "--" && t[6].option == "option 3" && t[6].arg == "option3 arg");
+        TEST_OK(t[7].prefix == "--" && t[7].option == ""         && t[7].arg == "");
+        TEST_OK(t[8].prefix == ""   && t[8].option == ""         && t[8].arg == "arg1");
+        TEST_OK(t[9].prefix == ""   && t[9].option == ""         && t[9].arg == "--arg2");
+
+        TEST_OK(it == end);
     }
 }
 
