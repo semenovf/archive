@@ -18,6 +18,7 @@
 
 namespace pfs {
 namespace cli {
+namespace details {
 
 template <typename Traits>
 struct tuple
@@ -37,24 +38,29 @@ protected:
     typedef Traits                               traits_type;
     typedef tuple<Traits>                        tuple_type;
     typedef typename traits_type::string_type    string_type;
-    typedef typename traits_type::char_traits    char_traits;
-    typedef typename traits_type::string_traits  string_traits;
-
-    typedef typename string_traits::const_pointer  string_const_pointer;
-    typedef typename string_traits::const_iterator string_const_iterator;
+    typedef typename traits_type::char_type      char_type;
     
 protected:
-    string_const_pointer * _begin;
-    string_const_pointer * _p;
-    string_const_pointer * _end;
-    bool _expected_args;
+    typename string_type::const_pointer * _begin;
+    typename string_type::const_pointer * _p;
+    typename string_type::const_pointer * _end;
+    bool        _expected_args;
+    char_type   _delim_char;
+    string_type _arg_seperator;
+    string_type _shortopt_prefix;
+    string_type _longopt_prefix;
     
 public:
-    iterator (string_const_pointer * begin, string_const_pointer * end)
+    iterator (typename string_type::const_pointer * begin
+            , typename string_type::const_pointer * end)
         : _begin(begin)
         , _p(begin)
         , _end(end)
         , _expected_args(false)
+        , _delim_char('=')
+        , _arg_seperator("--")
+        , _shortopt_prefix("-")
+        , _longopt_prefix("--")
     {}
         
     iterator & operator ++ ()
@@ -107,36 +113,39 @@ typename iterator<Traits>::tuple_type iterator<Traits>::split ()
         return result;
     }
 
-    string_type const token = string_type(*_p);
-    string_const_iterator begin = token.begin();
-    string_const_iterator end   = token.end();
-    string_const_iterator it    = begin;
+    string_type const token(*_p);
     
-    while (it != end && char_traits::is_prefix(*it))
-        ++it;
-
+    typename string_type::const_iterator begin = token.begin();
+    typename string_type::const_iterator end   = token.end();
+    typename string_type::const_iterator it    = begin;
+    
+    if (token.starts_with(_longopt_prefix))
+        it += _longopt_prefix.size();
+    else if (token.starts_with(_shortopt_prefix))
+        it += _shortopt_prefix.size();
+    
     result.prefix = string_type(begin, it);
     begin = it;
     
-    if (string_traits::empty(result.prefix)) {
-        result.option = string(begin, begin);
+    if (result.prefix.empty()) {
+        result.option = string_type(begin, begin);
         result.arg = string_type(begin, end);
     } else {
-        while (it != end && !char_traits::is_delim(*it))
+        while (it != end && *it != _delim_char)
             ++it;
 
         result.option = string_type(begin, it);
         
-        if (it != end && char_traits::is_delim(*it))
+        if (it != end && *it == _delim_char)
             ++it;
         
         begin = it;
         result.arg = string_type(begin, end);
     }
     
-    if (result.prefix == string_traits::arg_seperator()
-            && string_traits::empty(result.option)
-            && string_traits::empty(result.arg)) {
+    if (result.prefix == _arg_seperator
+            && result.option.epmty()
+            && result.arg.empty()) {
         
         _expected_args = true;
     }
@@ -144,31 +153,33 @@ typename iterator<Traits>::tuple_type iterator<Traits>::split ()
     return result;
 }
 
+} // details
+
 template <typename Traits>
-inline iterator<Traits> begin (int argc, char const ** argv)
+inline details::iterator<Traits> begin (int argc, char const ** argv)
 {
-    return iterator<Traits>(argv + 1, argv + argc);
+    return details::iterator<Traits>(argv + 1, argv + argc);
 }
 
 template <typename Traits>
-inline iterator<Traits> end (int argc, char const ** argv)
+inline details::iterator<Traits> end (int argc, char const ** argv)
 {
-    return iterator<Traits>(argv + argc, argv + argc);
+    return details::iterator<Traits>(argv + argc, argv + argc);
 }
 
 template <typename Traits>
-inline iterator<Traits> begin (char const ** b, char const ** e)
+inline details::iterator<Traits> begin (char const ** b, char const ** e)
 {
-    return iterator<Traits>(b, e);
+    return details::iterator<Traits>(b, e);
 }
 
 template <typename Traits>
-inline iterator<Traits> end (char const ** b, char const ** e)
+inline details::iterator<Traits> end (char const ** b, char const ** e)
 {
-    return iterator<Traits>(b, e);
+    return details::iterator<Traits>(b, e);
 }
 
-}} // pfs::cli
+}} // pfs::cli::details
 
 #endif /* __PFS_CLI_ITERATOR_HPP__ */
 

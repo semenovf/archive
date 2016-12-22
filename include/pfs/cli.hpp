@@ -33,12 +33,12 @@ template <typename T>
 using list = pfs::list<T>;
 
 typedef details::traits<
-      pfs::string::value_type
-    , pfs::string
+      pfs::string
     , map
     , list> traits;
 
-#else
+#else // __cplusplus < 201103
+
 template <typename Key, typename T>
 struct map_wrapper
 {
@@ -52,60 +52,15 @@ struct list_wrapper
 };
 
 typedef details::traits<
-      pfs::string::value_type
-    , pfs::string
+      pfs::string
     , map_wrapper
     , list_wrapper> traits;
 
-#endif
+#endif // __cplusplus >= 201103
 
-#if __COMMENT__
-template <typename T>
-class option : public details::option<T, traits>
-{
-public:
-    typedef details::option<T, traits>          base_type;
-    typedef typename base_type::traits_type     traits_type;
-    typedef typename base_type::value_type      value_type;
-    typedef typename base_type::short_name_type short_name_type;
-    typedef typename base_type::long_name_type  long_name_type;
-
-public:
-    /**
-     * @brief Construct option with only short name ().
-     * @param short_name Short name for option.
-     */
-    option (short_name_type const & short_name)
-        : base_type(short_name, traits_type::invalid_long_name())
-    {}
-
-    option (char short_name)
-        : base_type(short_name_type(short_name), traits_type::invalid_long_name())
-    {}
-
-    option (long_name_type const & long_name)
-        : base_type(traits_type::invalid_short_name(), long_name)
-    {}
-
-    option (char const * long_name)
-        : base_type(traits_type::invalid_short_name(), long_name_type(long_name))
-    {}
-
-    /**
-     * @brief Construct option with only long name.
-     * @param long_name Long name for option.
-     */
-    option (short_name_type const & short_name, long_name_type const & long_name)
-        : base_type(short_name, long_name)
-    {}
-
-    option (char short_name, char const * long_name)
-        : base_type(short_name_type(short_name), long_name_type(long_name))
-    {}
-};
-#endif
-
-typedef details::route<traits> route;
+typedef details::tuple<traits>    tuple;
+typedef details::iterator<traits> iterator;
+typedef details::route<traits>    route;
 
 }} // pfs::cli
 

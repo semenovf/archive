@@ -25,40 +25,14 @@ namespace details {
 template <typename Traits>
 class option;
 
-template <typename Char>
-struct char_traits
-{
-    typedef Char type;
-
-    static bool is_prefix (type ch)
-    {
-        return ch == type('-');
-    }
-    
-    static bool is_delim (type ch)
-    {
-        return ch == type('=');
-    }
-};
-
-template <typename String>
-struct string_traits
-{
-    typedef String type;
-    typedef typename type::const_pointer   const_pointer;
-    typedef typename type::const_iterator  const_iterator;
-    typedef type const &                   const_reference;
-
-    static bool empty (const_reference s)
-    {
-        return s.empty();
-    }
-    
-    static type arg_seperator ()
-    {
-        return type("--");
-    }
-};
+//template <typename String>
+//struct string_traits
+//{
+//    typedef String type;
+//    typedef typename type::const_pointer   const_pointer;
+//    typedef typename type::const_iterator  const_iterator;
+//    typedef type const &                   const_reference;
+//};
 
 template <typename Key, typename T, template <typename, typename> class Map>
 struct map_traits
@@ -72,12 +46,18 @@ struct map_traits
     typedef typename type::mapped_type mapped_type;
     typedef typename type::value_type  value_type;
 
-    static void insert (type & m
-        , key_type const & key
-        , mapped_type const & value)
-    {
-        m.insert(value_type(key, value));
-    }
+//    struct ref
+//    {
+//        type & m;
+//        ref (type & x) : m(x) {}
+//
+//        void insert (type & m
+//                , key_type const & key
+//                , mapped_type const & value)
+//        {
+//            m.insert(value_type(key, value));
+//        }
+//    };
 };
 
 template <typename T, template <typename> class List>
@@ -89,15 +69,10 @@ struct list_traits
     typedef typename List<T>::type type;
 #endif
     typedef typename type::value_type value_type;
-
-    static void push_back (type & l, value_type const & value)
-    {
-        l.push_back(value);
-    }
+    typedef typename type::iterator   iterator;
 };
 
-template <typename Char
-    , typename String
+template <typename String
     , template <typename, typename> class Map
     , template <typename> class List>
 struct traits
@@ -106,11 +81,8 @@ struct traits
     typedef option_type *                     option_pointer;
     typedef option_type const *               option_const_pointer;
     
-    typedef details::char_traits<Char>        char_traits;
-    typedef typename char_traits::type        char_type;
-    
-    typedef details::string_traits<String>    string_traits;
-    typedef typename string_traits::type      string_type;
+    typedef String                            string_type;
+    typedef typename string_type::value_type  char_type;
     
     typedef typename details::map_traits<
               char_type

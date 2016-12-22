@@ -18,16 +18,12 @@
 #include <pfs/string.hpp>
 #include <pfs/cli/iterator.hpp>
 #include <pfs/cli.hpp>
-//#include <iostream>
 
 namespace test {
 namespace cli {
 
 void test_iterator ()
 {
-    typedef pfs::cli::iterator<pfs::cli::traits> iterator;
-    typedef pfs::cli::tuple<pfs::cli::traits>    tuple_type;
-    
     char const * argv[] = { "/path/to/program.sh"
             , "domain"
             , "command"
@@ -46,8 +42,8 @@ void test_iterator ()
     {
         ADD_TESTS(12);
         
-        iterator it  = pfs::cli::begin<pfs::cli::traits>(argc, argv);
-        iterator end = pfs::cli::end<pfs::cli::traits>(argc, argv);
+        pfs::cli::iterator it  = pfs::cli::begin<pfs::cli::traits>(argc, argv);
+        pfs::cli::iterator end = pfs::cli::end<pfs::cli::traits>(argc, argv);
 
         TEST_OK(it != end);
         TEST_OK(*it++ == "domain");
@@ -66,12 +62,12 @@ void test_iterator ()
     {
         ADD_TESTS(12);
         
-        iterator it  = pfs::cli::begin<pfs::cli::traits>(argc, argv);
-        iterator end = pfs::cli::end<pfs::cli::traits>(argc, argv);
+        pfs::cli::iterator it  = pfs::cli::begin<pfs::cli::traits>(argc, argv);
+        pfs::cli::iterator end = pfs::cli::end<pfs::cli::traits>(argc, argv);
 
         TEST_OK(it != end);
         
-        tuple_type t[10];
+        pfs::cli::tuple t[10];
         
         for (int i = 1; i < argc; i++) {
             t[i - 1] = it.split();

@@ -16,6 +16,7 @@
 
 #include <pfs/cli/traits.hpp>
 #include <pfs/cli/option.hpp>
+#include <pfs/cli/iterator.hpp>
 
 namespace pfs {
 namespace cli {
@@ -69,20 +70,46 @@ public:
     route () 
     {}
     
+    ~route ();
+    
     template <typename T>
     void add (T * pvalue
             , char_type short_name
             , string_type const & long_name
             , bool required
             , string_type const & description = string_type());
+
+    template <typename T>
+    void add (T * pvalue
+            , char_type short_name
+            , bool required
+            , string_type const & description = string_type())
+    {
+        this->add(pvalue, short_name, string_type(), required, description);
+    }
+
+    template <typename T>
+    void add (T * pvalue
+            , string_type const & long_name
+            , bool required
+            , string_type const & description = string_type())
+    {
+        this->add(pvalue, char_type(0), long_name, required, description);
+    }
     
     bool parse (int argc, char const ** argv, int flags = relaxed_flags);
 };
 
 template <typename Traits>
-bool route<Traits>::parse (int argc, char const ** argv, int flags)
+route<Traits>::~route ()
 {
-    return false;
+    typename optlist_traits::iterator it = optlist_traits::begin(_optlist);
+    typename optlist_traits::iterator end = optlist_traits::end(_optlist);
+    
+    while (it != end) {
+        delete *it;
+        ++it;
+    }
 }
 
 template <typename Traits>
@@ -105,6 +132,24 @@ void route<Traits>::add (T * pvalue
         longoptmap_traits::insert(_long_options, o->long_name(), o);
 }
 
+template <typename Traits>
+bool route<Traits>::parse (int argc, char const ** argv, int flags)
+{
+    typedef tuple<traits_type> tuple_type;
+    typedef iterator<traits_type> iterator;
+    
+    iterator it  = begin<traits_type>(argc, argv);
+    iterator it_end = end<traits_type>(argc, argv);
+    
+    while (it != it_end) {
+        tuple_type t = it.split();
+        
+        
+        ++it;
+    }
+
+    return false;
+}
 } // details
 
 }} // pfs::cli

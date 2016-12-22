@@ -45,6 +45,9 @@ void test_route ()
     
     pfs::cli::route r;
     
+    bool const  required     = true;
+    //bool const  optional     = false;
+    
     bool        yes          = true;
     short       short_value  = 0;
     int         int_value    = 0;
@@ -55,15 +58,15 @@ void test_route ()
     real_t      real_value   = 0.0f;   
     pfs::string string_value;
     
-    r.add(& yes, '\0', _u8("bool"), true);
-//    r.add(     "short"  , & short_value);
-//    r.add('i', "int"    , & int_value);
-//    r.add(     "long"   , & long_value);
-//    r.add(     "intmax" , & intmax_value);
-//    r.add('f', "float"  , & float_value);
-//    r.add('d', "double" , & double_value);
-//    r.add(   , "real"   , & real_value);
-//    r.add('s', "string" , & string_value);
+    r.add(& yes          ,      _u8("bool")  , required);
+    r.add(& short_value  ,      _u8("short") , required);
+    r.add(& int_value    , 'i', _u8("int")   , required);
+    r.add(& long_value   ,      _u8("long")  , required);
+    r.add(& intmax_value ,      _u8("intmax"), required);
+    r.add(& float_value  , 'f'               , required);
+    r.add(& double_value , 'd', _u8("double"), required);
+    r.add(& real_value   ,      _u8("real")  , required);
+    r.add(& string_value , 's', _u8("string"), required);
     
     TEST_OK(r.parse(argc, argv, pfs::cli::relaxed_flags));
 }
@@ -71,4 +74,3 @@ void test_route ()
 }}
 
 #endif /* __TEST_ROUTE_HPP__ */
-
