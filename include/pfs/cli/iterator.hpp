@@ -11,6 +11,62 @@
  * Created on December 20, 2016, 10:05 AM
  */
 
+/*
+ * Command line arguments sources:
+ * 
+ * 1. int main (int argc, char ** argv)   // Linux/Windows
+ *    argv[0] - program name
+ * 
+ * 2. int CALLBACK WinMain(               // Windows
+ *         _In_ HINSTANCE hInstance,
+ *         _In_ HINSTANCE hPrevInstance,
+ *         _In_ LPSTR     lpCmdLine,
+ *         _In_ int       nCmdShow)
+ * 
+ *    lpCmdLine - The command line for the application, 
+ *                excluding the program name. 
+ *                To retrieve the entire command line, 
+ *                use the GetCommandLine function.
+ * 
+ * 3. LPTSTR WINAPI GetCommandLine(void)  // Windows
+ *    (GetCommandLineW (Unicode) and GetCommandLineA (ANSI))
+ *   
+ *    The return value is a pointer to the command-line string for the 
+ *    current process (including the program name?).
+ *    To convert the command line to an argv style array of strings, 
+ *    call function below.
+ * 
+ *    LPWSTR * CommandLineToArgvW (
+ *        _In_  LPCWSTR lpCmdLine,
+ *        _Out_ int     *pNumArgs);
+ * 
+ *    Returns a pointer to an array of LPWSTR values, similar to argv.
+ * 
+ * 
+ *  So, in common case argument list may be obtained as list of code units
+ *  (Unicode version) or 8-bit characters (ANSI version).
+ * 
+ *  The command line arguments will be called a 'token' to distinguish it 
+ *  from the argument as an independent element or part of a token in 
+ *  the composition with the option.
+ * 
+ *  Grammar of the command line:
+ * 
+ *  command_line = token *(sp token) [ sp argument-separator *(sp argument) ]
+ *  sp = 1*<white-space-character>
+ *  token = option
+ *        / argument
+ *        / option delimiter argument
+ *  option              = short-option / long-option
+ *  argument            = 1*char
+ *  short-option        = short-option-prefix char
+ *  long-option         = long-option-prefix 1*char
+ *  short-option-prefix = "-"  / "/" / char
+ *  long-option-prefix  = "--" / "/" / 1*char
+ *  argument-separator  = "--" / 1*char
+ *  char = <any-valid-character>
+ */
+
 #ifndef __PFS_CLI_ITERATOR_HPP__
 #define __PFS_CLI_ITERATOR_HPP__
 
@@ -21,14 +77,29 @@ namespace cli {
 namespace details {
 
 template <typename Traits>
-struct tuple
+struct range
 {
     typedef Traits traits_type;
-    typedef typename traits_type::string_type string_type;
+    typedef typename traits_type::token_const_iterator const_iterator;
     
-    string_type prefix; // '<empty>', '--' , '-' or '/'
-    string_type option;
-    string_type arg;
+    const_iterator begin;
+    const_iterator end;
+    
+    range (const_iterator b, const_iterator e)
+            : begin(b)
+            , end(e)
+    {}
+};
+
+template <typename Traits>
+struct token
+{
+    typedef Traits        traits_type;
+    typedef range<Traits> range_type;
+    
+    range_type prefix; // '<empty>', '--' , '-' or '/'
+    range_type option;
+    range_type arg;
 };
 
 template <typename Traits>
