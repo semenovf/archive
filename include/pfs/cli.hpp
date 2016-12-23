@@ -14,15 +14,17 @@
 #ifndef __PFS_CLI_HPP__
 #define __PFS_CLI_HPP__
 
-#include <pfs/string.hpp>
-#include <pfs/map.hpp>
-#include <pfs/list.hpp>
-#include <pfs/unicode.hpp>
-#include <pfs/cli/option.hpp>
-#include <pfs/cli/route.hpp>
+//#include <pfs/string.hpp>
+//#include <pfs/map.hpp>
+//#include <pfs/list.hpp>
+//#include <pfs/unicode.hpp>
+//#include <pfs/cli/option.hpp>
+//#include <pfs/cli/route.hpp>
 
 namespace pfs {
 namespace cli {
+
+#if __COMMENT__
 
 #if __cplusplus >= 201103
 
@@ -58,9 +60,11 @@ typedef details::traits<
 
 #endif // __cplusplus >= 201103
 
-typedef details::tuple<traits>    tuple;
+//typedef details::tuple<traits>    tuple;
 typedef details::iterator<traits> iterator;
-typedef details::route<traits>    route;
+//typedef details::route<traits>    route;
+
+#endif
 
 }} // pfs::cli
 

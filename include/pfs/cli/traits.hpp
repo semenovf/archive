@@ -25,15 +25,6 @@ namespace details {
 template <typename Traits>
 class option;
 
-//template <typename String>
-//struct string_traits
-//{
-//    typedef String type;
-//    typedef typename type::const_pointer   const_pointer;
-//    typedef typename type::const_iterator  const_iterator;
-//    typedef type const &                   const_reference;
-//};
-
 template <typename Key, typename T, template <typename, typename> class Map>
 struct map_traits
 {
@@ -63,6 +54,7 @@ struct map_traits
 template <typename T, template <typename> class List>
 struct list_traits
 {
+    
 #if __cplusplus >= 201103
     typedef List<T> type;
 #else
@@ -77,6 +69,7 @@ template <typename String
     , template <typename> class List>
 struct traits
 {
+#if __COMMENT__
     typedef details::option<traits>           option_type;
     typedef option_type *                     option_pointer;
     typedef option_type const *               option_const_pointer;
@@ -100,6 +93,7 @@ struct traits
               option_pointer
             , List>                           optlist_traits;
     typedef typename optlist_traits::type     optlist_type;
+#endif    
 };
 
 } // details

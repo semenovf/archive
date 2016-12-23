@@ -16,7 +16,7 @@
 
 #include <pfs/cli/traits.hpp>
 #include <pfs/cli/option.hpp>
-#include <pfs/cli/iterator.hpp>
+#include <pfs/cli/cmdline.hpp>
 
 namespace pfs {
 namespace cli {

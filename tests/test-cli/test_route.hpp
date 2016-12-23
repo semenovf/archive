@@ -26,7 +26,7 @@ void test_route ()
 {
     ADD_TESTS(1);
     
-    char const * argv[] = { "/path/to/program.sh"
+    char const * __argv[] = { "/path/to/program.sh"
             , "domain"
             , "command"
             , "-a"
@@ -39,7 +39,7 @@ void test_route ()
             , "--arg2"
     };
     
-    int argc = sizeof(argv)/sizeof(argv[0]);
+    int __argc = sizeof(__argv)/sizeof(__argv[0]);
    
     //pfs::cli::no_long_option
     
@@ -68,7 +68,7 @@ void test_route ()
     r.add(& real_value   ,      _u8("real")  , required);
     r.add(& string_value , 's', _u8("string"), required);
     
-    TEST_OK(r.parse(argc, argv, pfs::cli::relaxed_flags));
+    TEST_OK(r.parse(__argc, __argv, pfs::cli::relaxed_flags));
 }
 
 }}
