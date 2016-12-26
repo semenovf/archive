@@ -70,21 +70,40 @@
  * 
  */
 
-#ifndef __PFS_CLI_ITERATOR_HPP__
-#define __PFS_CLI_ITERATOR_HPP__
+#ifndef __PFS_CLI_CMDLINE_HPP__
+#define __PFS_CLI_CMDLINE_HPP__
 
 #include <pfs/algo/find.hpp>
 #include <pfs/cli/traits.hpp>
+#include <cstring>
 
 namespace pfs {
 namespace cli {
 namespace details {
 
+template <typename String>
+struct string_traits
+{
+    typedef String                           string_type;
+    typedef typename string_type::value_type char_type;
+    typedef typename string_type::iterator   char_iterator;
+    typedef string_type *                    token_iterator;
+    
+    char_iterator char_begin (string_type const & s) const
+    {
+        return s.begin();
+    }
+    
+    char_iterator char_end (string_type const & s) const
+    {
+        return s.end();
+    }
+};
 
-template <typename Iter>
+template <typename CharIterator>
 struct range
 {
-    typedef Iter iterator;
+    typedef CharIterator iterator;
     
     iterator begin;
     iterator end;
@@ -104,25 +123,25 @@ struct range
             , end(b + n)
     {}
     
-    bool empty () const
-    {
-        return begin == end;
-    }
-    
-    bool operator == (range const & rhs) const
-    {
-        typename range<Iter>::iterator i1 = begin;
-        typename range<Iter>::iterator i2 = rhs.begin;
-
-        while (i1 != end && i2 != rhs.end && *i1++ == *i2++) ;
-
-        return i1 == end && i2 == rhs.end;
-    }
-
-    bool operator != (range const & rhs) const
-    {
-        return ! (*this == rhs);
-    }
+//    bool empty () const
+//    {
+//        return begin == end;
+//    }
+//    
+//    bool operator == (range const & rhs) const
+//    {
+//        typename range<Iter>::iterator i1 = begin;
+//        typename range<Iter>::iterator i2 = rhs.begin;
+//
+//        while (i1 != end && i2 != rhs.end && *i1++ == *i2++) ;
+//
+//        return i1 == end && i2 == rhs.end;
+//    }
+//
+//    bool operator != (range const & rhs) const
+//    {
+//        return ! (*this == rhs);
+//    }
 };
 
 template <typename CharIterator>
@@ -135,6 +154,113 @@ struct token
     range_type option;
     range_type arg;
 };
+
+template <typename String>
+class cmdline
+{
+public:
+    typedef string_traits<String>           traits;
+    typedef typename traits::string_type    string_type;
+    typedef typename traits::char_type      char_type;
+    typedef typename traits::char_iterator  char_iterator;
+    typedef typename traits::token_iterator iterator;
+    typedef typename token<char_iterator>   token_type;
+
+private:
+    iterator _begin;
+    iterator _end;
+    
+    char_type   _delimiter_char;
+    string_type _longopt_prefix;
+    string_type _shortopt_prefix;
+    string_type _argument_separator;
+    
+public:
+    cmdline (int n, iterator begin)
+        : _begin(begin)
+        , _end(begin + n)
+    {}
+
+    cmdline (iterator begin, iterator end)
+        : _begin(begin)
+        , _end(end)
+    {}
+
+    void set_delimiter_char (char_type ch)
+    {
+        _delimiter_char = ch;
+    }
+    
+    void set_shortopt_prefix (string_type s)
+    {
+        _shortopt_prefix = s;
+    }
+
+    void set_longopt_prefix (string_type  s)
+    {
+        _longopt_prefix = s;
+    }
+
+    void set_argument_separator (string_type s)
+    {
+        _argument_separator = s;
+    }
+
+    iterator begin () const
+    {
+        return iterator(_begin + 1);
+    }
+
+    iterator end () const
+    {
+        return iterator(_end);
+    }
+    
+//    bool is_argument_separator (token_type const & token) const
+//    {
+//        return token.prefix == _argument_separator
+//                && token.option.empty()
+//                && token.arg.empty();
+//    }
+//    
+    token_type split (char_iterator begin, char_iterator end);
+};
+
+template <typename String>
+typename cmdline<String>::token_type cmdline<String>::split (char_iterator begin, char_iterator end)
+{
+    token_type result;
+   
+    char_iterator it = begin;
+    
+    if (pfs::starts_with(it, end, _longopt_prefix.begin, _longopt_prefix.end))
+        it += _longopt_prefix.end - _longopt_prefix.begin;
+    else if (pfs::starts_with(it, end, _shortopt_prefix.begin, _shortopt_prefix.end))
+        it += _shortopt_prefix.end - _shortopt_prefix.begin;
+    
+    result.prefix = range_type(begin, it);
+    begin = it;
+    
+    if (result.prefix.begin == result.prefix.end) {
+        result.option = range_type(begin, begin);
+        result.arg = range_type(begin, end);
+    } else {
+        while (it != end && *it != _delimiter_char)
+            ++it;
+
+        result.option = range_type(begin, it);
+        
+        if (it != end && *it == _delimiter_char)
+            ++it;
+        
+        result.arg = range_type(it, end);
+    }
+    
+    return result;    
+}
+
+
+#if __COMMENT__
 
 template <typename CharType, typename CharIterator, typename TokenIterator>
 class cmdline
@@ -259,9 +385,11 @@ token<CharIterator> cmdline<CharType, CharIterator, TokenIterator>::split (
     return result;    
 }
 
+#endif
+
 } // details
 
 }} // pfs::cli::details
 
-#endif /* __PFS_CLI_ITERATOR_HPP__ */
+#endif /* __PFS_CLI_CMDLINE_HPP__ */
 

@@ -38,6 +38,7 @@ EXTERN_C_END
 #define PFS_ASSERT_NULLPTR(x)     PFS_ASSERT((x) != 0)
 #define PFS_ASSERT_IS_NULL(x)     PFS_ASSERT(!(x).is_null())
 #define PFS_ASSERT_DOMAIN(errstr) PFS_ASSERT_X(false, errstr)
+#define PFS_ASSERT_INVALID_ARGUMENT(x) PFS_ASSERT(x)
 
 #define PFS_WARN(x) if (!(x)) { pfs_check_warn(__TFILE__, __LINE__, #x); }
 #define PFS_ERROR(x) if (!(x)) { pfs_check_error(__TFILE__, __LINE__, #x); }

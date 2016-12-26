@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
 	BEGIN_TESTS(0);
 
     test::cli::test_iterator();
-    test::cli::test_tokenizer();
+//    test::cli::test_tokenizer();
 //    test::cli::test_route();
     
 	return END_TESTS;

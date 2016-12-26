@@ -11,16 +11,16 @@
  * Created on December 16, 2016, 11:53 AM
  */
 
-#ifndef __PFS_CLI_TRAITS_HPP__
-#define __PFS_CLI_TRAITS_HPP__
+#ifndef __PFS_CLI_DETAILS_TRAITS_HPP__
+#define __PFS_CLI_DETAILS_TRAITS_HPP__
 
-#include "option.hpp"
-
+//#include "option.hpp"
 
 namespace pfs {
 namespace cli {
-
 namespace details {
+
+#if __COMMENT__
 
 template <typename Traits>
 class option;
@@ -96,9 +96,11 @@ struct traits
 #endif    
 };
 
+#endif
+
 } // details
 
 }} // pfs::cli
 
-#endif /* __PFS_CLI_TRAITS_HPP__ */
+#endif /* __PFS_CLI_DETAILS_TRAITS_HPP__ */
 

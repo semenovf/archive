@@ -36,7 +36,7 @@ inline intmax_t ratio_den (intmax_t num, intmax_t denom)
     return math::details::integral_abs(denom) / math::details::integral_gcd(num, denom);
 }
 
-}
+} // details
 
   /**
    *  @brief Provides rational arithmetic.
