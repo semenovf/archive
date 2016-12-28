@@ -180,13 +180,15 @@ function gbs.run (argc, argv)
         :s("lang", "C++")
         :s("depends", {})
         :b("enable-qt", false)
+        :b("doxygen", false)
         :h(function (r)
                 Settings:set("SolutionName"       , solutionName());
                 Settings:set("ProjectName"        , r:optArg("name"));
                 Settings:set("ProjectType"        , r:optArg("type"));
                 Settings:set("ProjectLanguage"    , r:optArg("lang"));
                 Settings:set("ProjectDependencies", r:optArg("depends"));
-		            Settings:set("EnableQt"           , r:optArg("enable-qt"));
+                Settings:set("EnableQt"           , r:optArg("enable-qt"));
+                Settings:set("GenDoxyfile"        , r:optArg("doxygen"));
                 return require("gbs.project"):new(Settings):create();
            end);
 
