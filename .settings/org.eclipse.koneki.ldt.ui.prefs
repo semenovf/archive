@@ -1,7 +1,0 @@
-eclipse.preferences.version=1
-formatter.indentation.indentTables=true
-formatter.indentation.size=4
-formatter.profiles.active=Default Profile [Indent\: 4]
-formatter.tabulation.char=space
-formatter.tabulation.size=4
-formatterId=org.eclipse.koneki.ldt.editor.LuaFormatterFactory

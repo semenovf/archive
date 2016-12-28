@@ -1,2 +1,7 @@
 !.gitignore
 tools/
+.settings/
+nbproject/
+.project
+.cproject
+
