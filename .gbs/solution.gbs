@@ -196,3 +196,13 @@ project "demo-utc-time"
 project "test-active-queue"
     include("test-active-queue/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-mpl-const-string"
+    include("test-mpl-const-string/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-mpl-cli"
+    include("test-mpl-cli/project.gbs")
+-- END PROJECT
