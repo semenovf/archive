@@ -1,0 +1,2 @@
+env = Environment()
+env.SharedLibrary('pfs', [Glob('*.c'), Glob('*.cpp')])

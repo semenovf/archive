@@ -44,3 +44,4 @@ makefile.*
 *.log
 moc_*.cpp
 qrc_*.cpp
+.sconsign.dblite

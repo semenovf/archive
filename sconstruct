@@ -1,0 +1,41 @@
+env = Environment(CPPPATH = ['include'])
+
+SConscript('src/pfs/sconscript', variant_dir='../.build/pfs/pfs', duplicate=0)
+#SConscript('src/demo-utc-time/sconscript', variant_dir='../.build/demo-utc-time')
+
+
+###
+### Chapter 23. Multi-Platform Configuration (Autoconf Functionality)
+### 23.1. Configure Contexts
+###
+#
+conf = Configure(env)
+## Checks for libraries, header files, etc. go here!
+
+if not conf.CheckProg('gcc'):
+#  print 'Unable to find the program \'gcc\' on the system'
+  Exit(1)
+
+env = conf.Finish()
+
+###
+### Chapter 16. Variant Builds
+###
+#
+#platform = ARGUMENTS.get('OS', Platform())
+#
+#include = "#export/$PLATFORM/include"
+#lib = "#export/$PLATFORM/lib"
+#bin = "#export/$PLATFORM/bin"
+#
+#env = Environment(PLATFORM = platform,
+#                  BINDIR = bin,
+#                  INCDIR = include,
+#                  LIBDIR = lib,
+#                  CPPPATH = [include],
+#                  LIBPATH = [lib],
+#                  LIBS = 'world')
+#
+#Export('env')
+#
+#env.SConscript('src/SConscript', variant_dir='build/$PLATFORM')
