@@ -137,7 +137,7 @@ string basename (path const & p)
 {
     string s = p.get_range().last();
     stringlist sl;
-    split(s, _u8("."), pfs::dont_keep_empty, sl);
+    split(s, _u8("."), pfs::mpl::dont_keep_empty, sl);
     return sl.size() > 0 ? sl.at(0) : string();
 }
 

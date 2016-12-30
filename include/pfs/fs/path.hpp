@@ -11,9 +11,9 @@
 #include <pfs/stringlist.hpp>
 #include <pfs/shared_ptr.hpp>
 #include <pfs/iterator.hpp>
-#include <pfs/algo/split.hpp>
 #include <pfs/error_code.hpp>
 #include <pfs/fs/file_status.hpp>
+#include <pfs/mpl/algo/split.hpp>
 
 #ifdef PFS_CC_MSVC
 #	pragma warning(push)
@@ -214,7 +214,7 @@ public:
 		range (string_type const & s, string_type const & separator = default_separator())
 			: _pcomponents(new stringlist_type)
 		{
-			split(s, separator, DontKeepEmpty, *_pcomponents);
+			split(s, separator, pfs::mpl::dont_keep_empty, *_pcomponents);
 		}
 
 	public:

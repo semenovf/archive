@@ -11,8 +11,8 @@
 #include <string>
 #include <cerrno>
 #include <cstdio>
-#include <pfs/algo/find.hpp>
 #include "pfs/fs/path.hpp"
+#include <pfs/mpl/algo/find.hpp>
 
 namespace pfs { namespace fs {
 
