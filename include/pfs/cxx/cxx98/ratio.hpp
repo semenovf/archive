@@ -20,7 +20,6 @@
 #include <pfs/math.hpp>
 
 namespace pfs {
-
 namespace details {
 
 inline intmax_t ratio_num (intmax_t num, intmax_t denom)

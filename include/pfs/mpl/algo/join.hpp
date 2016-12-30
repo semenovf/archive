@@ -13,21 +13,24 @@ namespace mpl {
 // Sequence must provide push_back(const String &) methods
 // String::empty()
 //
-template <typename InputIterator, typename String>
-String & join (
+template <typename InputIterator, typename Sequence>
+Sequence * join (
 		  InputIterator begin
 		, InputIterator end
-		, const String & separator
-		, String & result)
+		, Sequence const & separator
+		, Sequence * result = 0)
 {
 	if (begin == end)
 		return result;
 
-	result.append(*begin++);
+    if (!result)
+        result = new Sequence;
+    
+	result->append(*begin++);
 
 	while (begin != end) {
-		result.append(separator);
-		result.append(*begin++);
+		result->append(separator);
+		result->append(*begin++);
 	}
 
 	return result;

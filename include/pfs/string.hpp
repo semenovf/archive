@@ -30,7 +30,7 @@
 #endif
 
 #include <pfs/type_traits.hpp>
-#include <pfs/algo/find.hpp>
+#include <pfs/mpl/algo/find.hpp>
 #include <pfs/traits/binary_stream.hpp>
 
 namespace pfs {

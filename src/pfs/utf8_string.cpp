@@ -5,11 +5,11 @@
  *      Author: wladt
  */
 
+#include "pfs/iterator.hpp"
 #include "pfs/byte_string.hpp"
 #include "pfs/utf8/string.hpp"
 
 namespace pfs { namespace utf8 {
-
 }}
 
 namespace pfs {
@@ -23,10 +23,10 @@ bool unpack (unpack_context & ctx, utf8::string & v)
     pfs::byte_string::size_type size = 0;
     
     if (unpack(ctx, size)) {
-        if (distance(ctx.b, ctx.e) >= size) {
+        if (pfs::distance(ctx.b, ctx.e) >= size) {
             v = utf8::string(reinterpret_cast<utf8::string::const_pointer>(ctx.b.base()), size);
             ctx.fail = false;
-            advance(ctx.b, size);
+            pfs::advance(ctx.b, size);
         } else {
             ctx.fail = true;
         }

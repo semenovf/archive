@@ -6,8 +6,8 @@
  */
 
 #include <iostream>
-#include <pfs/test/test.hpp>
-#include "pfs/algo/find.hpp"
+#include "pfs/test/test.hpp"
+#include "pfs/mpl/algo/find.hpp"
 #include "pfs/string.hpp"
 
 using std::cout;
@@ -66,7 +66,7 @@ void test_find ()
 		if (test->needle.end > 0)
 			needleEnd = needleBegin + test->needle.end;
 
-		string::iterator it = pfs::find(
+		string::iterator it = pfs::mpl::find(
 			  haystackBegin
 			, haystackEnd
 			, needleBegin

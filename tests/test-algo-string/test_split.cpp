@@ -6,10 +6,10 @@
  */
 
 #include <iostream>
-#include <pfs/test/test.hpp>
+#include "pfs/test/test.hpp"
 #include "pfs/string.hpp"
-#include "pfs/algo/join.hpp"
-#include "pfs/algo/split.hpp"
+#include "pfs/mpl/algo/join.hpp"
+#include "pfs/mpl/algo/split.hpp"
 #include "pfs/string.hpp"
 #include <string>
 #include <vector>
@@ -29,13 +29,13 @@ struct TestData
 };
 
 static TestData test_data[] = {
-	  { "/"  , "/"  , "/", pfs::KeepEmpty, 2 }
-	, { "/a" , "/a" , "/", pfs::KeepEmpty, 2 }
-	, { "a/" , "a/" , "/", pfs::KeepEmpty, 2 }
-    , { "/a/", "/a/", "/", pfs::KeepEmpty, 3 }
-	, { "a/b", "a/b", "/", pfs::KeepEmpty, 2 }
-	, { "/a/", "a"  , "/", pfs::DontKeepEmpty, 1 }
-	, { "/a//b//c", "/a//b//c"  , "//", pfs::DontKeepEmpty, 3 }
+	  { "/"  , "/"  , "/", pfs::mpl::keep_empty, 2 }
+	, { "/a" , "/a" , "/", pfs::mpl::keep_empty, 2 }
+	, { "a/" , "a/" , "/", pfs::mpl::keep_empty, 2 }
+    , { "/a/", "/a/", "/", pfs::mpl::keep_empty, 3 }
+	, { "a/b", "a/b", "/", pfs::mpl::keep_empty, 2 }
+	, { "/a/", "a"  , "/", pfs::mpl::dont_keep_empty, 1 }
+	, { "/a//b//c", "/a//b//c"  , "//", pfs::mpl::dont_keep_empty, 3 }
 	, { 0    ,     0, 0  , false }
 };
 
@@ -53,11 +53,11 @@ void test_split ()
 		string src(test->source);
 		string sep(test->separator);
 
-		pfs::split(src.begin(), src.end(), sep.begin(), sep.end(), test->keepEmpty, result);
+		pfs::mpl::split(src.begin(), src.end(), sep.begin(), sep.end(), test->keepEmpty, & result);
 
 		string sample;
 
-		pfs::join(result.begin(), result.end(), sep, sample);
+		pfs::mpl::join(result.begin(), result.end(), sep, & sample);
 		std::ostringstream desc;
 
 		desc << "keepEmpty="

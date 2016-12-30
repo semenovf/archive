@@ -6,9 +6,9 @@
  */
 
 #include <iostream>
-#include <pfs/test/test.hpp>
-#include "pfs/algo/find.hpp"
+#include "pfs/test/test.hpp"
 #include "pfs/string.hpp"
+#include "pfs/mpl/algo/find.hpp"
 #include <string>
 
 using std::cout;
@@ -69,7 +69,7 @@ void test_rfind ()
 		if (test->needle.end > 0)
 			needleEnd = needleBegin + test->needle.end;
 
-		string::iterator it = pfs::rfind(
+		string::iterator it = pfs::mpl::rfind(
 			  haystackBegin
 			, haystackEnd
 			, needleBegin

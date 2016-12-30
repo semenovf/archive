@@ -5,9 +5,9 @@
  *      Author: wladt
  */
 #include <iostream>
-#include <pfs/test/test.hpp>
-#include "pfs/algo/find.hpp"
 #include <string>
+#include "pfs/test/test.hpp"
+#include "pfs/mpl/algo/find.hpp"
 
 using std::cout;
 using std::endl;
@@ -69,7 +69,7 @@ void test_ends_with ()
 		if (test->needle.end > 0)
 			needleEnd = needleBegin + test->needle.end;
 
-		bool result = pfs::ends_with(
+		bool result = pfs::mpl::ends_with(
 			  haystackBegin
 			, haystackEnd
 			, needleBegin

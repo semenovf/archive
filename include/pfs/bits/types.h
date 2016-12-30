@@ -61,9 +61,11 @@
 #ifdef __cplusplus
 #	include <cfloat>
 #	include <limits>
+#   include <cstddef>
 #else
 #	include <float.h>
 #	include <limits.h>
+#   include <stddef.h>
 #endif
 
 #if defined(_SIZE_T_DEFINED_)    \
@@ -161,5 +163,9 @@ typedef double real64_t;
 #   define false 0
 #   define true (!(false))
 #endif
+    
+#if !defined(PFS_HAVE_PTRDIFF_T) || !PFS_HAVE_PTRDIFF_T
+    typedef ptrdiff_t long int;
+#endif    
 
 #endif /* __PFS_BITS_TYPES_H__ */

@@ -8,6 +8,8 @@
 #ifndef __PFS_MPL_ALGO_FIND_HPP__
 #define __PFS_MPL_ALGO_FIND_HPP__
 
+#include <pfs/iterator.hpp>
+
 namespace pfs {
 namespace mpl {  
 
@@ -93,8 +95,8 @@ bool starts_with (
 		, InputIt2 needle_begin
 		, InputIt2 needle_end)
 {
-	typename std::iterator_traits<InputIt1>::difference_type d1 = std::distance(haystack_begin, haystack_end);
-	typename std::iterator_traits<InputIt2>::difference_type d2 = std::distance(needle_begin, needle_end);
+	typename pfs::iterator_traits<InputIt1>::difference_type d1 = pfs::distance(haystack_begin, haystack_end);
+	typename pfs::iterator_traits<InputIt2>::difference_type d2 = pfs::distance(needle_begin, needle_end);
 
 	return d2 <= d1 ? find(haystack_begin
 			, haystack_begin + d2
@@ -110,8 +112,8 @@ bool ends_with (
 		, InputIt2 needle_begin
 		, InputIt2 needle_end)
 {
-	typename std::iterator_traits<InputIt1>::difference_type d1 = std::distance(haystack_begin, haystack_end);
-	typename std::iterator_traits<InputIt2>::difference_type d2 = std::distance(needle_begin, needle_end);
+	typename pfs::iterator_traits<InputIt1>::difference_type d1 = pfs::distance(haystack_begin, haystack_end);
+	typename pfs::iterator_traits<InputIt2>::difference_type d2 = pfs::distance(needle_begin, needle_end);
 
 	InputIt1 hbegin = haystack_begin + (d1 - d2);
 

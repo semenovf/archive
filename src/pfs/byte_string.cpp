@@ -6,7 +6,8 @@
  */
 
 #include <cstring>
-#include <pfs/byte_string.hpp>
+#include "pfs/iterator.hpp"
+#include "pfs/byte_string.hpp"
 
 namespace pfs {
 
@@ -154,10 +155,10 @@ bool unpack (unpack_context & ctx, byte_string & v)
     byte_string::size_type size = 0;
     
     if (unpack(ctx, size)) {
-        if (distance(ctx.b, ctx.e) >= size) {
+        if (pfs::distance(ctx.b, ctx.e) >= size) {
             v = byte_string(ctx.b, ctx.e);
             ctx.fail = false;
-            advance(ctx.b, size);
+            pfs::advance(ctx.b, size);
         } else {
             ctx.fail = true;
         }

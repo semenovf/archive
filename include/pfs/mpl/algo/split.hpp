@@ -44,7 +44,7 @@ Sequence * split (
 	if (begin == end)
 		return result;
 
-	difference_type n = std::distance(separator_begin, separator_end);
+	difference_type n = pfs::distance(separator_begin, separator_end);
 
     if (! result)
         result = new Sequence;
@@ -52,7 +52,7 @@ Sequence * split (
 	// "/"
 
 	while (begin != end) {
-		InputIt1 it = pfs::find(begin
+		InputIt1 it = pfs::mpl::find(begin
 				, end
 				, separator_begin
 				, separator_end);
@@ -63,20 +63,20 @@ Sequence * split (
 		value_type v(begin, it);
 
 		if (!(v.empty() && !flag)) {
-			result.push_back(v);
+			result->push_back(v);
 		}
 
 		// Skip separator
 		//
-		std::advance(it, n);
+		pfs::advance(it, n);
 		begin = it;
 	}
 
 	if (begin != end)
-		result.push_back(value_type(begin, end));
+		result->push_back(value_type(begin, end));
 	else {
 		if (flag)
-			result.push_back(value_type());
+			result->push_back(value_type());
 	}
 
 	return result;
