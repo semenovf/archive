@@ -14,13 +14,6 @@
 #ifndef __PFS_TEST_BASIC_HPP__
 #define __PFS_TEST_BASIC_HPP__
 
-#include <cstring>
-#include <cwchar>
-#define PFS_INC_STRING_H 1
-#define PFS_INC_WCHAR_H 1
-#define PFS_INC_STRING 1
-#include <pfs/mpl/string.hpp>
-
 template <typename StringImpl>
 StringImpl test_basic_string ();
 
@@ -40,6 +33,12 @@ template <>
 std::string test_basic_string<std::string> ()
 {
     return std::string("ABCDEF");
+}
+
+template <>
+std::wstring test_basic_string<std::wstring> ()
+{
+    return std::wstring(L"ABCDEF");
 }
 
 template <typename StringImpl>

@@ -19,18 +19,6 @@
 #include <pfs/mpl/algo/find.hpp>
 #include <pfs/type_traits.hpp>
 
-#ifndef PFS_INC_STRING_H
-#   if defined(_STRING_H)
-#       define PFS_INC_STRING_H 1
-#   endif
-#endif
-
-#ifndef PFS_INC_WCHAR_H
-#   if defined(_WCHAR_H)
-#       define PFS_INC_WCHAR_H 1
-#   endif
-#endif
-
 namespace pfs {
 namespace mpl {
 
@@ -48,6 +36,11 @@ struct string_traits
 };
 
 template <typename T>
+class basic_string;
+
+namespace details {
+    
+template <typename T>
 class basic_string
 {
 public:
@@ -58,26 +51,15 @@ public:
     typedef typename traits::const_pointer          const_pointer;
     typedef typename traits::const_iterator         const_iterator;
     typedef typename traits::const_reverse_iterator const_reverse_iterator;
-    
-protected:    
-    typedef typename traits::data_type data_type;
+    typedef typename traits::data_type              data_type;
+
+protected:
     data_type _d;
 
 public:
     basic_string ()
     {}
     
-    basic_string (basic_string const & rhs)
-        : _d(rhs._d)
-    {}
-        
-    basic_string & operator = (basic_string const & rhs)
-    {
-        if (this != & rhs)
-            this->_d = rhs._d;
-        return *this;
-    }
-
     virtual size_type size () const = 0;
     
     size_type length () const
@@ -117,8 +99,15 @@ public:
     {
         return this->rend();
     }
+ 
+    virtual int compare (size_type pos1, size_type count1
+        , basic_string const & rhs, size_type pos2, size_type count2) const = 0;
     
-    virtual int compare (basic_string const & rhs, size_type n) const = 0;
+    int compare (size_type pos1, size_type count1
+        , basic_string const & rhs) const
+    {
+        return this->compare(0, this->size(), rhs, 0, rhs.size());
+    }
     
     int compare (basic_string const & rhs) const
     {
@@ -133,6 +122,8 @@ public:
         return compare(rhs, rhs.size());
     }
 };
+
+} // details
 
 template <typename T>
 class string : public basic_string<T>
@@ -149,15 +140,31 @@ public:
     typedef typename basic_type::const_reverse_iterator const_reverse_iterator;
     
 public:
-    string ();
+    string ()
+        : basic_type()
+    {}
     
-    string (const_impl_reference s);
+    string (const_impl_reference s)
+        : basic_type(s)
+    {}
     
-    string (const_iterator begin, const_iterator end);
+    string (const_iterator begin, const_iterator end)
+        : basic_type(begin, end)
+    {}
+
+    string (string const & rhs)
+        : basic_type(rhs)
+    {}
+
+    string & operator = (string const & rhs)
+    {
+        basic_type::operator = (rhs);
+        return *this;
+    }
 
     string & operator = (const_impl_reference rhs)
     {
-        this->_d = rhs;
+        basic_type::operator = (rhs);
         return *this;
     }
 
@@ -252,14 +259,6 @@ inline bool operator >= (string<T> const & lhs
 }
 
 }} // pfs::mpl
-
-#if PFS_INC_STRING_H || PFS_INC_WCHAR_H
-#   include <pfs/mpl/stdc/string.hpp>
-#endif
-
-#if PFS_INC_STRING
-#   include <string>
-#endif
 
 #endif /* __PFS_MPL_STRING_HPP__ */
 
