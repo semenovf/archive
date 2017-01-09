@@ -16,10 +16,11 @@ int main (int argc, char *argv[])
 	PFS_UNUSED(argv);
     
 	BEGIN_TESTS(0);
-
+    
     test_basic<char const *>();
     test_basic<wchar_t const *>();
     test_basic<std::string>();
+
 
 	return END_TESTS;
 }

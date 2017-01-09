@@ -14,9 +14,12 @@
 #ifndef __PFS_TEST_BASIC_HPP__
 #define __PFS_TEST_BASIC_HPP__
 
-#define PFS_USE_WCHAR 1
-#include <pfs/mpl/stdc/const_string.hpp>
-#include <pfs/mpl/stdcxx/const_string.hpp>
+#include <cstring>
+#include <cwchar>
+#define PFS_INC_STRING_H 1
+#define PFS_INC_WCHAR_H 1
+#define PFS_INC_STRING 1
+#include <pfs/mpl/string.hpp>
 
 template <typename StringImpl>
 StringImpl test_basic_string ();
@@ -44,12 +47,28 @@ void test_basic ()
 {
     ADD_TESTS(16);
     
-    typedef pfs::mpl::const_string<StringImpl>    const_string;
-    typedef typename const_string::const_iterator const_iterator;
-    typedef typename const_string::const_reverse_iterator const_reverse_iterator;
-    typedef typename const_string::value_type     value_type;
+//    char const * cs1 = "String1";
+//    char cs2 [] = "String2";
+//    
+//    typedef pfs::mpl::string_traits<char const *> cstring1_traits;
+//    typedef pfs::mpl::string_traits<char *> cstring2_traits;
+//    typedef pfs::mpl::string<char const *> cstring1;
+//    typedef pfs::mpl::string<char *> cstring2;
+//        
+//    cstring1_traits st1;
+//    cstring2_traits st2;
+//    
+//    TEST_OK(cstring1_traits::size(cs1) == std::strlen(cs1));
+//    TEST_OK(cstring2_traits::size(cs2) == std::strlen(cs2));
+//    cstring1 s1(cs1);
+//    cstring2 s2(cs2);
+//    
+    typedef pfs::mpl::string<StringImpl>    string;
+    typedef typename string::const_iterator const_iterator;
+    typedef typename string::const_reverse_iterator const_reverse_iterator;
+    typedef typename string::value_type     value_type;
     
-    const_string str = test_basic_string<StringImpl>();
+    string str = test_basic_string<StringImpl>();
 
     const_iterator it = str.begin();
     const_iterator end = str.end();

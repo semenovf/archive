@@ -17,7 +17,7 @@
 #include <cstring>
 #include <pfs/mpl/const_string.hpp>
 
-#if defined(PFS_USE_WCHAR) && PFS_USE_WCHAR == 1
+#if PFS_USE_WCHAR
 #   include <cwchar>
 #endif
 
@@ -27,7 +27,7 @@ namespace mpl {
 template <>
 struct const_string_traits<char const *>
 {
-    typedef char const * const_self_reference;
+    typedef char const * const_impl_reference;
     typedef size_t       size_type;
     typedef char         value_type;
     typedef char const * const_pointer;
@@ -41,13 +41,13 @@ struct const_string_traits<char const *>
     };
 };
 
-#if defined(PFS_USE_WCHAR) && PFS_USE_WCHAR == 1
+#if PFS_USE_WCHAR
 template <>
 struct const_string_traits<wchar_t const *>
 {
-    typedef wchar_t const * const_self_reference;
-    typedef size_t       size_type;
-    typedef wchar_t      value_type;
+    typedef wchar_t const * const_impl_reference;
+    typedef size_t          size_type;
+    typedef wchar_t         value_type;
     typedef wchar_t const * const_pointer;
     typedef wchar_t const * const_iterator;
     typedef std::reverse_iterator<wchar_t const *> const_reverse_iterator;
@@ -70,7 +70,7 @@ const_string ()
 
 template <>
 inline const_string<char const *>::
-const_string (const_self_reference s)
+const_string (const_impl_reference s)
 {
     _d.begin = s;
     _d.end = s + std::strlen(s);
@@ -143,18 +143,18 @@ const_string<char const *>::length () const
 
 template <>
 inline int 
-const_string<char const *>::compare (const_string const & lhs) const
+const_string<char const *>::compare (const_string const & rhs) const
 {
     size_type n  = _d.end - _d.begin;
-    size_type n1 = lhs._d.end - lhs._d.begin;
+    size_type n1 = rhs._d.end - rhs._d.begin;
     
     if (n1 < n)
         n = n1;
     
-    return std::strncmp(_d.begin, lhs._d.begin, n);
+    return std::strncmp(_d.begin, rhs._d.begin, n);
 }
 
-#if defined(PFS_USE_WCHAR) && PFS_USE_WCHAR == 1
+#if PFS_USE_WCHAR
 
 template <>
 inline const_string<wchar_t const *>::
@@ -166,7 +166,7 @@ const_string ()
 
 template <>
 inline const_string<wchar_t const *>::
-const_string (const_self_reference s)
+const_string (const_impl_reference s)
 {
     _d.begin = s;
     _d.end = s + std::wcslen(s);
@@ -239,17 +239,17 @@ const_string<wchar_t const *>::length () const
 
 template <>
 inline int 
-const_string<wchar_t const *>::compare (const_string const & lhs) const
+const_string<wchar_t const *>::compare (const_string const & rhs) const
 {
     size_type n  = _d.end - _d.begin;
-    size_type n1 = lhs._d.end - lhs._d.begin;
+    size_type n1 = rhs._d.end - rhs._d.begin;
     
     if (n1 < n)
         n = n1;
     
-    return std::wcsncmp(_d.begin, lhs._d.begin, n);
+    return std::wcsncmp(_d.begin, rhs._d.begin, n);
 }
-#endif
+#endif // PFS_USE_WCHAR
 
 }} // pfs::mpl
 

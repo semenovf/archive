@@ -23,7 +23,7 @@ namespace mpl {
 template <>
 struct const_string_traits<std::string>
 {
-    typedef std::string const &                 const_self_reference;
+    typedef std::string const &                 const_impl_reference;
     typedef std::string::size_type              size_type;
     typedef std::string::value_type             value_type;
     typedef std::string::const_pointer          const_pointer;
@@ -43,7 +43,7 @@ const_string ()
 
 template <>
 inline const_string<std::string>::
-const_string (const_self_reference s)
+const_string (const_impl_reference s)
 {
     _d.s = std::string(s);
 }
@@ -106,9 +106,9 @@ const_string<std::string>::length () const
 
 template <>
 inline int 
-const_string<std::string>::compare (const_string const & lhs) const
+const_string<std::string>::compare (const_string const & rhs) const
 {
-    return _d.s.compare(lhs._d.s);
+    return _d.s.compare(rhs._d.s);
 }
 
 }} // pfs::mpl

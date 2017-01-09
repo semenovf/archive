@@ -9,6 +9,8 @@
  * Author: wladt
  *
  * Created on December 26, 2016, 4:27 PM
+ * 
+ * @brief Immutable string interface.
  */
 
 #ifndef __PFS_MPL_CONST_STRING_HPP__
@@ -23,7 +25,7 @@ namespace mpl {
 template <typename ConstStringImpl>
 struct const_string_traits
 {
-    typedef ConstStringImpl const &                  const_self_reference;
+    typedef ConstStringImpl const &                  const_impl_reference;
     typedef typename ConstStringImpl::size_type      size_type;
     typedef typename ConstStringImpl::value_type     value_type;
     typedef typename ConstStringImpl::const_pointer  const_pointer;
@@ -38,7 +40,7 @@ class const_string
     typedef const_string_traits<ConstStringImpl> traits;
 
 public:
-    typedef typename traits::const_self_reference   const_self_reference;
+    typedef typename traits::const_impl_reference   const_impl_reference;
     typedef typename traits::size_type              size_type;
     typedef typename traits::value_type             value_type;
     typedef typename traits::const_pointer          const_pointer;
@@ -51,22 +53,22 @@ public:
 public:
     const_string ();
     
-    const_string (const_self_reference s);
+    const_string (const_impl_reference s);
     
     const_string (const_iterator begin, const_iterator end);
     
-    const_string (const_string const & lhs)
-        : _d(lhs._d)
+    const_string (const_string const & rhs)
+        : _d(rhs._d)
     {}
         
-    const_string & operator = (const_string const & lhs)
+    const_string & operator = (const_string const & rhs)
     {
-        if (this != & lhs)
-            _d = lhs._d;
+        if (this != & rhs)
+            _d = rhs._d;
         return *this;
     }
     
-    const_string & operator = (const_pointer lhs);
+    const_string & operator = (const_pointer rhs);
     
     const_string & operator = (ConstStringImpl const & p);
 
@@ -109,18 +111,18 @@ public:
     	return size() == 0;
     }
 
-	int compare (const_string const & lhs) const;
+	int compare (const_string const & rhs) const;
     
-    bool starts_with (const_string const & lhs) const
+    bool starts_with (const_string const & rhs) const
     {
         return pfs::mpl::starts_with(this->begin(), this->end()
-                , lhs.begin(), lhs.end());
+                , rhs.begin(), rhs.end());
     }
 
-	bool ends_with (const_string const & lhs) const
+	bool ends_with (const_string const & rhs) const
     {
         return pfs::mpl::ends_with(this->begin(), this->end()
-                , lhs.begin(), lhs.end());
+                , rhs.begin(), rhs.end());
     }
 
 	const_string substr (const_iterator begin, const_iterator end) const
