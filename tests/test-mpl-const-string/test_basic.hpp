@@ -46,22 +46,6 @@ void test_basic ()
 {
     ADD_TESTS(16);
     
-//    char const * cs1 = "String1";
-//    char cs2 [] = "String2";
-//    
-//    typedef pfs::mpl::string_traits<char const *> cstring1_traits;
-//    typedef pfs::mpl::string_traits<char *> cstring2_traits;
-//    typedef pfs::mpl::string<char const *> cstring1;
-//    typedef pfs::mpl::string<char *> cstring2;
-//        
-//    cstring1_traits st1;
-//    cstring2_traits st2;
-//    
-//    TEST_OK(cstring1_traits::size(cs1) == std::strlen(cs1));
-//    TEST_OK(cstring2_traits::size(cs2) == std::strlen(cs2));
-//    cstring1 s1(cs1);
-//    cstring2 s2(cs2);
-//    
     typedef pfs::mpl::string<StringImpl>    string;
     typedef typename string::const_iterator const_iterator;
     typedef typename string::const_reverse_iterator const_reverse_iterator;
@@ -69,8 +53,8 @@ void test_basic ()
     
     string str = test_basic_string<StringImpl>();
 
-    const_iterator it = str.begin();
-    const_iterator end = str.end();
+    const_iterator it = str.cbegin();
+    const_iterator end = str.cend();
     
     TEST_OK(it != end);
     
@@ -83,8 +67,8 @@ void test_basic ()
     
     TEST_OK(it == end);
 
-    const_reverse_iterator itr = str.rbegin();
-    const_reverse_iterator endr = str.rend();
+    const_reverse_iterator itr = str.crbegin();
+    const_reverse_iterator endr = str.crend();
 
     TEST_OK(itr != endr);
     

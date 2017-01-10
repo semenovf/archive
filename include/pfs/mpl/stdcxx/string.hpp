@@ -50,6 +50,14 @@ public:
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
     
+    //using base_type::compare; // To use base class compare() overloaded methods.
+protected:
+    virtual int xcompare (size_type pos1, size_type count1
+        , base_type const & rhs, size_type pos2, size_type count2) const
+    {
+        return this->_d.compare(pos1, count1, rhs._d, pos2, count2);
+    }
+
 public:
     basic_cxxstring ()
         : base_type()
@@ -100,12 +108,6 @@ public:
     virtual const_reverse_iterator rend () const
     {
         return this->_d.rend();
-    }
-    
-    virtual int compare (size_type pos1, size_type count1
-        , base_type const & rhs, size_type pos2, size_type count2) const
-    {
-        //return this->_d.compare(pos1, count1, rhs._d, pos2, count2);
     }
 };
 

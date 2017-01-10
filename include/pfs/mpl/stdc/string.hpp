@@ -79,23 +79,25 @@ string_traits<wchar_t *>::compare_n (string_traits<wchar_t *>::const_pointer lhs
 
 #endif
 
-//template <typename T>
-//class basic_cstring;
-
 template <typename T>
 class basic_string<T *> : public details::basic_string<T *>
 {
-    typedef details::basic_string<T *> basic_type;
-    typedef typename basic_type::data_type data_type;
+    typedef details::basic_string<T *> base_type;
+    typedef typename base_type::data_type data_type;
     
 public:    
-    typedef typename basic_type::traits                 traits;
-    typedef typename basic_type::const_impl_reference   const_impl_reference;
-    typedef typename basic_type::size_type              size_type;
-    typedef typename basic_type::value_type             value_type;
-    typedef typename basic_type::const_pointer          const_pointer;
-    typedef typename basic_type::const_iterator         const_iterator;
-    typedef typename basic_type::const_reverse_iterator const_reverse_iterator;
+    typedef typename base_type::traits                 traits;
+    typedef typename base_type::const_impl_reference   const_impl_reference;
+    typedef typename base_type::size_type              size_type;
+    typedef typename base_type::value_type             value_type;
+    typedef typename base_type::const_pointer          const_pointer;
+    typedef typename base_type::const_iterator         const_iterator;
+    typedef typename base_type::const_reverse_iterator const_reverse_iterator;
+
+//    using base_type::compare; // To use base class compare() overloaded methods.
+protected:
+    virtual int xcompare (size_type pos1, size_type count1
+        , base_type const & rhs, size_type pos2, size_type count2) const;
 
 protected:
     basic_string (const_iterator begin, const_iterator end)
@@ -104,7 +106,7 @@ protected:
         this->_d.end = end;
     }
 
-    basic_string (basic_string const & rhs)
+    basic_string (string<T *> const & rhs)
     {
         this->_d.begin = rhs._d.begin;
         this->_d.end = rhs._d.end;
@@ -116,7 +118,7 @@ protected:
         this->_d.end = rhs + traits::size(rhs);
     }
 
-    basic_string & operator = (basic_string const & rhs)
+    basic_string & operator = (string<T *> const & rhs)
     {
         this->_d.begin = rhs._d.begin;
         this->_d.end = rhs._d.end;
@@ -155,13 +157,32 @@ public:
     {
         return const_reverse_iterator(this->_d.begin);
     }
+};
 
-    // TODO Implement
-    virtual int compare (size_type pos1, size_type count1
-        , basic_type const & rhs, size_type pos2, size_type count2) const
-    {
-        return 0;
+template <typename T>
+int basic_string<T *>::xcompare (size_type pos1, size_type count1
+    , base_type const & rhs, size_type pos2, size_type count2) const
+{
+    size_type n1 = this->_d.end - this->_d.begin;
+    size_type n2 = rhs._d.end - rhs._d.begin;
+    
+    if (n1 > pos1 + count1)
+        n1 = count1;
+    
+    if (n2 > pos2 + count2)
+        n2 = count2;
+    
+    if (n1 == 0 || n2 == 0) {
+        // Empty strings are equal
+        if (n1 == n2) 
+            return 0;
+        
+        return (n1 < n2) ? -1 : 1;
     }
+    
+    size_type n = n1 < n2 ? n1 : n2;
+    
+    return traits::compare_n(this->_d.begin + pos1, rhs._d.begin + pos2, n);    
 };
 
 template <typename T>
@@ -202,36 +223,6 @@ public:
         return *this;
     }
 };
-
-
-//	bool ends_with (string const & rhs) const
-//    {
-//        return pfs::mpl::ends_with(this->begin(), this->end()
-//                , rhs.begin(), rhs.end());
-//    }
-
-//template <typename T>
-//int string<T *>::compare (string const & rhs, size_type n) const
-//{
-//    size_type n1  = this->_d.end - this->_d.begin;
-//    size_type n2 = rhs._d.end - rhs._d.begin;
-//
-//    // Minimum value between string sizes
-//    size_type n0 = (n1 < n2 || n1 == n2) ? n1 : n2;
-//
-//    // Minimum value between string sizes and requested size
-//    if (n0 > n)
-//        n0 = n;
-//
-//    int r = traits::compare_n(this->_d.begin, rhs._d.begin, n0);
-//
-//    if (r != 0)
-//
-//    if (n1 < n)
-//        n = n1;
-//
-//    return traits::compare_n(this->_d.begin, rhs._d.begin, n);    
-//}
 
 }} // pfs::mpl
 

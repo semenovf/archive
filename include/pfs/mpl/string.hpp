@@ -41,7 +41,7 @@ class basic_string;
 namespace details {
     
 template <typename T>
-class basic_string
+class basic_string 
 {
 public:
     typedef string_traits<T>                        traits;
@@ -53,8 +53,12 @@ public:
     typedef typename traits::const_reverse_iterator const_reverse_iterator;
     typedef typename traits::data_type              data_type;
 
-protected:
+public:
     data_type _d;
+
+protected:
+    virtual int xcompare (size_type pos1, size_type count1
+        , basic_string const & rhs, size_type pos2, size_type count2) const = 0;
 
 public:
     basic_string ()
@@ -99,19 +103,21 @@ public:
     {
         return this->rend();
     }
- 
-    virtual int compare (size_type pos1, size_type count1
-        , basic_string const & rhs, size_type pos2, size_type count2) const = 0;
-    
+
     int compare (size_type pos1, size_type count1
-        , basic_string const & rhs) const
+        , basic_string const & rhs, size_type pos2, size_type count2) const
     {
-        return this->compare(0, this->size(), rhs, 0, rhs.size());
+        return this->xcompare(pos1, count1, rhs, pos2, count2) ;
+    }
+    
+    int compare (size_type pos1, size_type count1, basic_string const & rhs) const
+    {
+        return this->xcompare(pos1, count1, rhs, 0, rhs.size());
     }
     
     int compare (basic_string const & rhs) const
     {
-        return this->compare(rhs, rhs.size());
+        return this->xcompare(0, this->size(), rhs, 0, rhs.size());
     }
     
     bool starts_with (basic_string const & rhs) const
@@ -119,7 +125,15 @@ public:
         if (rhs.size() > this->size())
             return false;
         
-        return compare(rhs, rhs.size());
+        return this->compare(0, rhs.size(), rhs) == 0;
+    }
+    
+  	bool ends_with (basic_string const & rhs) const
+    {
+        if (rhs.size() > this->size())
+            return false;
+        
+        return this->compare(this->size() - rhs.size(), rhs.size(), rhs) == 0;
     }
 };
 
@@ -168,17 +182,6 @@ public:
         return *this;
     }
 
-//    bool starts_with (string const & rhs) const
-//    {
-//        return pfs::mpl::starts_with(this->begin(), this->end()
-//                , rhs.begin(), rhs.end());
-//    }
-//
-//	bool ends_with (string const & rhs) const
-//    {
-//        return pfs::mpl::ends_with(this->begin(), this->end()
-//                , rhs.begin(), rhs.end());
-//    }
 
 //	string substr (const_iterator begin, const_iterator end) const
 //    {
