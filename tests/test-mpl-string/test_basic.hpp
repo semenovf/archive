@@ -24,9 +24,23 @@ char const * test_basic_string<char const *> ()
 }
 
 template <>
+char * test_basic_string<char *> ()
+{
+    static char r[] = "ABCDEF";
+    return r;
+}
+
+template <>
 wchar_t const * test_basic_string<wchar_t const *> ()
 {
     return L"ABCDEF";
+}
+
+template <>
+wchar_t * test_basic_string<wchar_t *> ()
+{
+    static wchar_t r[] = L"ABCDEF";
+    return r;
 }
 
 template <>
@@ -40,6 +54,14 @@ std::wstring test_basic_string<std::wstring> ()
 {
     return std::wstring(L"ABCDEF");
 }
+
+#ifdef QT_CORE_LIB
+template <>
+QString test_basic_string<QString> ()
+{
+    return QString("ABCDEF");
+}
+#endif
 
 template <typename StringImpl>
 void test_basic ()

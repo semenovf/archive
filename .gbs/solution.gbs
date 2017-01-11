@@ -198,8 +198,8 @@ project "test-active-queue"
 -- END PROJECT
 
 -- BEGIN PROJECT
-project "test-mpl-const-string"
-    include("test-mpl-const-string/project.gbs")
+project "test-mpl-string"
+    include("test-mpl-string/project.gbs")
 -- END PROJECT
 
 -- BEGIN PROJECT

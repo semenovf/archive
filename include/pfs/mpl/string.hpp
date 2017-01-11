@@ -63,6 +63,10 @@ protected:
 public:
     basic_string ()
     {}
+
+    basic_string (data_type const & d)
+        : _d(d)
+    {}
     
     virtual size_type size () const = 0;
     
@@ -128,6 +132,11 @@ public:
         return this->compare(0, rhs.size(), rhs) == 0;
     }
     
+    /**
+     * 
+     * @param rhs
+     * @return 
+     */
   	bool ends_with (basic_string const & rhs) const
     {
         if (rhs.size() > this->size())
@@ -181,7 +190,6 @@ public:
         basic_type::operator = (rhs);
         return *this;
     }
-
 
 //	string substr (const_iterator begin, const_iterator end) const
 //    {

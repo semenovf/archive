@@ -73,30 +73,30 @@
 #ifndef __PFS_CLI_CMDLINE_HPP__
 #define __PFS_CLI_CMDLINE_HPP__
 
-#include <pfs/mpl/const_string.hpp>
+#include <pfs/mpl/string.hpp>
 
 namespace pfs {
 namespace mpl {
 namespace cli {
 
-template <typename ConstStringImpl>
+template <typename StringImpl>
 struct token
 {
-    typedef pfs::mpl::const_string<ConstStringImpl> const_string;
+    typedef pfs::mpl::string<StringImpl> string_type;
     
-    const_string prefix;
-    const_string option;
-    const_string arg;
+    string_type prefix;
+    string_type option;
+    string_type arg;
 };
 
-template <typename ConstStringImpl>
+template <typename StringImpl>
 class token_iterator
 {
-    typedef pfs::mpl::const_string<ConstStringImpl> const_string;
-    ConstStringImpl * _p;
+    typedef pfs::mpl::string<StringImpl> string_type;
+    StringImpl * _p;
     
 public:
-    token_iterator (ConstStringImpl * p)
+    token_iterator (StringImpl * p)
         : _p(p)
     {}
             
@@ -118,9 +118,9 @@ public:
         return token_iterator(_p + n);
     }
     
-    const_string operator * () const
+    string_type operator * () const
     {
-        return const_string(*_p);
+        return string_type(*_p);
     }
     
     bool operator == (token_iterator const & lhs) const
@@ -134,15 +134,15 @@ public:
     }
 };
 
-template <typename ConstStringImpl>
+template <typename StringImpl>
 class cmdline
 {
 public:
-    typedef const_string<ConstStringImpl>        string_type;
+    typedef string<StringImpl>                   string_type;
     typedef typename string_type::value_type     char_type;
     typedef typename string_type::const_iterator char_iterator;
-    typedef token<ConstStringImpl>               token_type;
-    typedef token_iterator<ConstStringImpl>      iterator;
+    typedef token<StringImpl>                    token_type;
+    typedef token_iterator<StringImpl>           iterator;
 
 private:
     iterator _begin;
@@ -154,12 +154,12 @@ private:
     string_type _argument_separator;
     
 public:
-    cmdline (int n, ConstStringImpl * begin)
+    cmdline (int n, StringImpl * begin)
         : _begin(begin)
         , _end(begin + n)
     {}
 
-    cmdline (ConstStringImpl * begin, ConstStringImpl * end)
+    cmdline (StringImpl * begin, StringImpl * end)
         : _begin(begin)
         , _end(end)
     {}
@@ -197,8 +197,8 @@ public:
     token_type split (string_type const & t);
 };
 
-template <typename ConstStringImpl>
-token<ConstStringImpl> cmdline<ConstStringImpl>::split (string_type const & t)
+template <typename StringImpl>
+token<StringImpl> cmdline<StringImpl>::split (string_type const & t)
 {
     token_type result;
     char_iterator begin = t.begin();

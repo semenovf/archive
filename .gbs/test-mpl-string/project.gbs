@@ -1,0 +1,51 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --name=test-mpl-string'
+--* Date:    Mon Dec 26 16:55:14 2016
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-mpl-string"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-mpl-string/*.c", "../../tests/test-mpl-string/*.cpp" }
+
+-- Special for Qt projects
+require("../../../.gbs/qt_enable")
+
+--Available modules:
+--    core, gui, multimedia, network, opengl, positioning, printsupport,
+--    qml, quick, sensors, sql, svg, testlib, websockets, widgets, xml
+--
+qtmodules     { "core" }
+
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs/test-mpl-string/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs/test-mpl-string/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test" }
+
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+--include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+--filter { "debug", "action:gmake" }
+--    linkoptions  { "-rdynamic" }
+
+-- Special for Qt projects
+package.loaded["../../../.gbs/qt_enable"] = nil

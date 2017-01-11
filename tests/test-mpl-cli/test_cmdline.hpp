@@ -14,10 +14,10 @@
 #ifndef __TEST_CMDLINE_HPP__
 #define __TEST_CMDLINE_HPP__
 
-#include <pfs/test/test.hpp>
-#include <pfs/mpl/stdc/const_string.hpp>
-#include <pfs/mpl/cli/cmdline.hpp>
 #include <cstring>
+#include <pfs/test/test.hpp>
+#include <pfs/mpl/stdc/string.hpp>
+#include <pfs/mpl/cli/cmdline.hpp>
 
 namespace test {
 namespace cli {

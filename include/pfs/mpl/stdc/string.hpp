@@ -163,26 +163,33 @@ template <typename T>
 int basic_string<T *>::xcompare (size_type pos1, size_type count1
     , base_type const & rhs, size_type pos2, size_type count2) const
 {
-    size_type n1 = this->_d.end - this->_d.begin;
-    size_type n2 = rhs._d.end - rhs._d.begin;
+    size_type n1 = this->size();
+    size_type n2 = rhs.size();
     
-    if (n1 > pos1 + count1)
-        n1 = count1;
-    
-    if (n2 > pos2 + count2)
-        n2 = count2;
-    
-    if (n1 == 0 || n2 == 0) {
-        // Empty strings are equal
-        if (n1 == n2) 
-            return 0;
-        
-        return (n1 < n2) ? -1 : 1;
+    if (pos1 >= n1) {
+        pos1 = n1;
+        count1 = 0;
     }
     
-    size_type n = n1 < n2 ? n1 : n2;
+    if (pos2 >= n2) {
+        pos2 = n2;
+        count2 = 0;
+    }
     
-    return traits::compare_n(this->_d.begin + pos1, rhs._d.begin + pos2, n);    
+    if (n1 < pos1 + count1)
+        count1 = n1 - pos1;
+    
+    if (n2 < pos2 + count2)
+        count2 = n2 - pos2;
+    
+    size_type count = count1 < count2 ? count1 : count2;
+    int result = traits::compare_n(this->_d.begin + pos1, rhs._d.begin + pos2, count);
+    
+    if (result == 0 && count1 != count2) {
+        return count1 < count2 ? -1 : 1;
+    }
+        
+    return result;
 };
 
 template <typename T>
