@@ -19,19 +19,6 @@
 namespace pfs {
 namespace mpl {
 
-template <>
-struct string_traits<std::string>
-{
-    typedef std::string const &          const_impl_reference;
-    typedef std::string::size_type       size_type;
-    typedef std::string::value_type      value_type;
-    typedef std::string::const_pointer   const_pointer;
-    typedef std::string::const_iterator  const_iterator;
-    typedef std::string::const_reverse_iterator const_reverse_iterator;
-
-    typedef std::string data_type;
-};
-
 template <typename T>
 class basic_cxxstring;
 
@@ -39,7 +26,6 @@ template <typename T>
 class basic_cxxstring : public details::basic_string<std::basic_string<T> >
 {
     typedef details::basic_string<std::basic_string<T> > base_type;
-    typedef typename base_type::data_type data_type;
 
 public:    
     typedef typename base_type::traits                 traits;
@@ -49,8 +35,8 @@ public:
     typedef typename base_type::const_pointer          const_pointer;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
-    
-    //using base_type::compare; // To use base class compare() overloaded methods.
+    typedef typename base_type::data_type data_type;
+
 protected:
     virtual int xcompare (size_type pos1, size_type count1
         , base_type const & rhs, size_type pos2, size_type count2) const
@@ -77,7 +63,7 @@ public:
     {
         this->_d = rhs._d;
     }
-
+    
     basic_cxxstring & operator = (basic_cxxstring const & rhs)
     {
         if (this != & rhs)
@@ -109,6 +95,11 @@ public:
     {
         return this->_d.rend();
     }
+    
+    virtual value_type at (size_type pos) const
+    {
+        return this->_d.at(pos);
+    }
 };
 
 template <>
@@ -123,6 +114,7 @@ public:
     typedef typename base_type::const_pointer          const_pointer;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
+    typedef typename base_type::data_type              data_type;
     
 public:
     basic_string ()
@@ -140,6 +132,21 @@ public:
     basic_string (basic_string const & rhs)
         : base_type(rhs)
     {}
+    
+    explicit basic_string (char const * str, size_type n = size_type(-1))
+    {
+        this->_d = data_type(str, n);
+    }
+    
+#ifdef _WCHAR_H
+    // TODO Implement conversion from
+    // UTF-16 (sizeof(wchar_t) == 2) or UTF-32 (sizeof(wchar_t) == 4)
+    // to UTF-8
+    explicit basic_string (wchar_t const * str, size_type n = size_type(-1))
+    {
+        throw logic_error("Implement");
+    }
+#endif
 };
 
 template <>
@@ -154,6 +161,7 @@ public:
     typedef typename base_type::const_pointer          const_pointer;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
+    typedef typename base_type::data_type              data_type;
     
 public:
     basic_string ()
@@ -171,6 +179,18 @@ public:
     basic_string (basic_string const & rhs)
         : base_type(rhs)
     {}
+
+    // TODO Implement conversion from UTF-8 to 
+    // UTF-16 (sizeof(wchar_t) == 2) or UTF-32 (sizeof(wchar_t) == 4)
+    explicit basic_string (char const * str, size_type n = size_type(-1))
+    {
+        throw logic_error("Implement");
+    }
+    
+    explicit basic_string (wchar_t const * str, size_type n = size_type(-1))
+    {
+        this->_d = data_type(str, n);
+    }
 };
 
 }} // pfs::mpl

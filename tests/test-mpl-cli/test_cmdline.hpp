@@ -16,7 +16,7 @@
 
 #include <cstring>
 #include <pfs/test/test.hpp>
-#include <pfs/mpl/stdc/string.hpp>
+#include <pfs/mpl/impl/stdc/string.hpp>
 #include <pfs/mpl/cli/cmdline.hpp>
 
 namespace test {

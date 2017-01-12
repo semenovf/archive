@@ -14,115 +14,18 @@
 #ifndef __PFS_TEST_COMPARE_HPP__
 #define __PFS_TEST_COMPARE_HPP__
 
-#include <iostream>
-#include <sstream>
-
-template <typename StringImpl>
-StringImpl test_compare_string (int i);
-
-template <>
-char const * test_compare_string<char const *> (int i)
-{
-    static char const * s[] = {
-          "ABCDEF"
-        , "ABCDEF"
-        , "ABCDE"
-        , "BCDEF"
-    };
-    
-    return s[i];
-}
-
-template <>
-char * test_compare_string<char *> (int i)
-{
-    static char s[][10] = {
-          "ABCDEF"
-        , "ABCDEF"
-        , "ABCDE"
-        , "BCDEF"
-    };
-    
-    return & s[i][0];
-}
-
-template <>
-wchar_t const * test_compare_string<wchar_t const *> (int i)
-{
-    static wchar_t const * s[] = {
-          L"ABCDEF"
-        , L"ABCDEF"
-        , L"ABCDE"
-        , L"BCDEF"
-    };
-    
-    return s[i];
-}
-
-template <>
-wchar_t * test_compare_string<wchar_t *> (int i)
-{
-    static wchar_t s[][10] = {
-          L"ABCDEF"
-        , L"ABCDEF"
-        , L"ABCDE"
-        , L"BCDEF"
-    };
-    
-    return & s[i][0];
-}
-
-template <>
-std::string test_compare_string<std::string> (int i)
-{
-    static std::string s[] = {
-          std::string("ABCDEF")
-        , std::string("ABCDEF")
-        , std::string("ABCDE")
-        , std::string("BCDEF")
-    };
-    
-    return s[i];
-}
-
-template <>
-std::wstring test_compare_string<std::wstring> (int i)
-{
-    static std::wstring s[] = {
-          std::wstring(L"ABCDEF")
-        , std::wstring(L"ABCDEF")
-        , std::wstring(L"ABCDE")
-        , std::wstring(L"BCDEF")
-    };
-    
-    return s[i];
-}
-
-#ifdef QT_CORE_LIB
-template <>
-QString test_compare_string<QString> (int i)
-{
-    static QString s[] = {
-          QString("ABCDEF")
-        , QString("ABCDEF")
-        , QString("ABCDE")
-        , QString("BCDEF")
-    };
-    
-    return s[i];
-}
-#endif
-
 template <typename StringImpl>
 void test_compare_basic ()
 {
+    test_description<StringImpl>(__PRETTY_FUNCTION__);
+    
     ADD_TESTS(3);
     
     typedef pfs::mpl::string<StringImpl> string;
-    string orig = test_compare_string<StringImpl>(0);
-    string same = test_compare_string<StringImpl>(1);
-    string head = test_compare_string<StringImpl>(2);
-    string tail = test_compare_string<StringImpl>(3);
+    string orig(string_samples<StringImpl>(STR_ORIG));
+    string same(string_samples<StringImpl>(STR_SAME));
+    string head(string_samples<StringImpl>(STR_HEAD));
+    string tail(string_samples<StringImpl>(STR_TAIL));
     
     TEST_OK(orig.compare(same) == 0);
     TEST_OK(orig.starts_with(head));
@@ -141,11 +44,13 @@ struct test_compare_empty_data
 template <typename StringImpl>
 void test_compare_empty ()
 {
+    test_description<StringImpl>(__PRETTY_FUNCTION__);
+    
     ADD_TESTS(1);
 
     typedef pfs::mpl::string<StringImpl> string;
-    string s1 = test_compare_string<StringImpl>(0);
-    string s2 = test_compare_string<StringImpl>(1);
+    string s1(string_samples<StringImpl>(STR_ORIG));
+    string s2(string_samples<StringImpl>(STR_SAME));
     
     typename string::size_type n1 = s1.size();
     typename string::size_type n2 = s2.size();

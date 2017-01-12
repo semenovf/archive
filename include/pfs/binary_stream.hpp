@@ -35,14 +35,6 @@ private:
     device_type _dev;
     endian      _order;
     
-    // pack context
-    //byte_string buffer;
-    
-    
-    // unpack context
-//    byte_string::const_iterator b;
-//    byte_string::const_iterator e;
-
 private:
     binary_stream (binary_stream const & other);
     binary_stream & operator = (binary_stream const & other);
@@ -123,7 +115,6 @@ public:
         read<T>(v);
         return *this;
     }
-
 };
 
 } // pfs

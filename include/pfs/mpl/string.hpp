@@ -16,6 +16,7 @@
 #ifndef __PFS_MPL_STRING_HPP__
 #define __PFS_MPL_STRING_HPP__
 
+#include <pfs/exception.hpp>
 #include <pfs/mpl/algo/find.hpp>
 #include <pfs/type_traits.hpp>
 
@@ -59,7 +60,7 @@ public:
 protected:
     virtual int xcompare (size_type pos1, size_type count1
         , basic_string const & rhs, size_type pos2, size_type count2) const = 0;
-
+    
 public:
     basic_string ()
     {}
@@ -106,6 +107,13 @@ public:
     const_reverse_iterator crend () const
     {
         return this->rend();
+    }
+    
+    virtual value_type at (size_type pos) const = 0;
+
+    value_type operator [] (size_type pos) const
+    {
+    	return this->at(pos);
     }
 
     int compare (size_type pos1, size_type count1
@@ -167,9 +175,29 @@ public:
         : basic_type()
     {}
     
-    string (const_impl_reference s)
+    explicit string (const_impl_reference s)
         : basic_type(s)
     {}
+
+    /**
+     * @details @a str Interpreted as UTF-8 encoded string. 
+     * @param str
+     * @note 
+     */
+    explicit string (char const * str, size_type n = size_type(-1))
+        : basic_type(str)
+    {}
+    
+#ifdef _WCHAR_H
+    /**
+     * @details If @c wchar_t is 4 bytes, the string is interpreted as UCS-4, 
+     *          if @c wchar_t is 2 bytes it is interpreted as UCS-2.
+     * @param s
+     */
+    explicit string (wchar_t const * str, size_type n = size_type(-1))
+        : basic_type(str)
+    {}
+#endif
     
     string (const_iterator begin, const_iterator end)
         : basic_type(begin, end)
@@ -178,18 +206,41 @@ public:
     string (string const & rhs)
         : basic_type(rhs)
     {}
+    
+    /**
+     * @function string & string::operator = (string const & rhs)
+     * @param rhs
+     * @return 
+     */
 
-    string & operator = (string const & rhs)
-    {
-        basic_type::operator = (rhs);
-        return *this;
-    }
-
+    /**
+     * @param rhs
+     * @return 
+     */
     string & operator = (const_impl_reference rhs)
     {
         basic_type::operator = (rhs);
         return *this;
     }
+
+  	/**
+     * @function bool string::empty () const
+	 * @brief Checks if string is empty.
+	 *
+	 * @return @c true if string is empty (size() == 0) or @c false otherwise.
+	 */
+    
+    /**
+     * @function value_type at (size_type pos) const
+     * @param pos Position of the character to return.
+     * @trows out_of_range if pos >= size()
+     */
+
+    /**
+     * @function value_type string::operator [] (size_type pos) const
+     * @param index
+     * @return 
+     */
 
 //	string substr (const_iterator begin, const_iterator end) const
 //    {

@@ -71,31 +71,17 @@ public:
         : base_type(rhs)
     {}
 
-//    basic_string ()
-//        : base_type()
-//    {}
-//
-//    basic_string (const_iterator begin, const_iterator end)
-//    {
-//        this->_d = data_type(begin, end);
-//    }
-//
-//    basic_string (const_impl_reference s)
-//    {
-//        this->_d = s;
-//    }
-//
-//    basic_cxxstring (basic_cxxstring const & rhs)
-//    {
-//        this->_d = rhs._d;
-//    }
-//
-//    basic_cxxstring & operator = (basic_cxxstring const & rhs)
-//    {
-//        if (this != & rhs)
-//            this->_d = rhs._d;
-//        return *this;
-//    }
+    explicit basic_string (char const * str, size_type n = size_type(-1))
+    {
+        this->_d.fromUtf8(str, n == size_type(-1) ? -1 : int(n));
+    }
+    
+#ifdef _WCHAR_H
+    explicit basic_string (wchar_t const * str, size_type n = size_type(-1))
+    {
+        this->_d.fromWCharArray(str, n == size_type(-1) ? -1 : int(n));
+    }
+#endif
     
     virtual size_type size () const
     {
@@ -120,6 +106,13 @@ public:
     virtual const_reverse_iterator rend () const
     {
         return const_reverse_iterator(this->_d.begin());
+    }
+    
+    virtual value_type at (size_type pos) const
+    {
+        if (pos >= this->_d.size())
+            throw out_of_range("string::at");
+        return this->_d.at(int(pos));
     }
 };
 

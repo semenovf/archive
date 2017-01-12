@@ -106,19 +106,19 @@ protected:
         this->_d.end = end;
     }
 
-    basic_string (string<T *> const & rhs)
+    basic_string (basic_string const & rhs)
     {
         this->_d.begin = rhs._d.begin;
         this->_d.end = rhs._d.end;
     }
 
-    basic_string (const_impl_reference rhs)
+    explicit basic_string (const_impl_reference rhs)
     {
         this->_d.begin = rhs;
         this->_d.end = rhs + traits::size(rhs);
     }
 
-    basic_string & operator = (string<T *> const & rhs)
+    basic_string & operator = (basic_string const & rhs)
     {
         this->_d.begin = rhs._d.begin;
         this->_d.end = rhs._d.end;
@@ -156,6 +156,19 @@ public:
     virtual const_reverse_iterator rend () const
     {
         return const_reverse_iterator(this->_d.begin);
+    }
+
+    /**
+     * 
+     * @param index
+     * @return 
+     * @trows out_of_range if pos >= size()
+     */
+    virtual value_type at (size_type pos) const
+    {
+        if (pos >= size())
+            throw out_of_range("string::at");
+        return this->_d.begin[pos];
     }
 };
 
@@ -210,19 +223,17 @@ public:
         : base_type(begin, end)
     {}
 
-    string (const_impl_reference rhs)
-        : base_type(rhs)
-    {}
-    
-    string (string const & rhs)
+    explicit string (const_impl_reference rhs)
         : base_type(rhs)
     {}
 
-    string & operator = (string const & rhs)
-    {
-        base_type::operator = (rhs);
-        return *this;
-    }
+//    Inherited from base class:
+//    string (string const & rhs)
+//        : base_type(rhs)
+//    {}
+
+//    Inherited from base class:
+//    string & operator = (string const & rhs)
     
     string & operator = (const_impl_reference rhs)
     {
