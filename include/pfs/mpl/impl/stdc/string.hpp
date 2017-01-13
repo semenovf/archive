@@ -37,44 +37,81 @@ struct string_traits<T *>
     
     static size_type size (const_pointer);
     static int compare_n (const_pointer lhs, const_pointer rhs, size_type n);
+    static size_type find (const_pointer lhs, const_pointer rhs);
+    static size_type rfind (const_pointer lhs, size_type lpos, const_pointer rhs, size_type rpos);
 };
 
 template <typename T>
 struct string_traits<T const *> : public string_traits<T *>
 {};
 
+template <typename T>
+typename string_traits<T *>::size_type
+string_traits<T *>::rfind (const_pointer lhs, size_type lpos, const_pointer rhs, size_type rpos)
+{
+    if (lpos == size_type(-1))
+        lpos = size(lhs);
+
+    if (rpos == size_type(-1))
+        rpos = size(rhs);
+    
+    const_iterator begin1(lhs);
+    const_iterator end1(lhs);
+    pfs::advance(end1, lpos);
+
+    const_iterator begin2(rhs);
+    const_iterator end2(rhs);
+    pfs::advance(end2, rpos);
+    
+    const_iterator i = pfs::mpl::rfind(begin1, end1, begin2, end2);
+    return i == end1 ? size_type(-1) : pfs::distance(end1, i);
+}
+
+
 template <>
 inline string_traits<char *>::size_type
-string_traits<char *>::size (string_traits<char *>::const_pointer s)
+string_traits<char *>::size (const_pointer s)
 {
     return std::strlen(s);
 }
 
 template <>
 inline int
-string_traits<char *>::compare_n (string_traits<char *>::const_pointer lhs
-    , string_traits<char *>::const_pointer rhs
-    , string_traits<char *>::size_type n)
+string_traits<char *>::compare_n (const_pointer lhs, const_pointer rhs, size_type n)
 {
     return std::strncmp(lhs, rhs, n);
+}
+
+template <>
+inline string_traits<char *>::size_type
+string_traits<char *>::find (const_pointer lhs, const_pointer rhs)
+{
+    const_pointer p = std::strstr(lhs, rhs);
+    return p == 0 ? size_type(-1) : size_type(p - lhs);
 }
 
 #ifdef _WCHAR_H
 
 template <>
 inline string_traits<wchar_t *>::size_type
-string_traits<wchar_t *>::size (string_traits<wchar_t *>::const_pointer s)
+string_traits<wchar_t *>::size (const_pointer s)
 {
     return std::wcslen(s);
 }
 
 template <>
 inline int
-string_traits<wchar_t *>::compare_n (string_traits<wchar_t *>::const_pointer lhs
-    , string_traits<wchar_t *>::const_pointer rhs
-    , string_traits<wchar_t *>::size_type n)
+string_traits<wchar_t *>::compare_n (const_pointer lhs, const_pointer rhs, size_type n)
 {
     return std::wcsncmp(lhs, rhs, n);
+}
+
+template <>
+inline string_traits<wchar_t *>::size_type
+string_traits<wchar_t *>::find (const_pointer lhs, const_pointer rhs)
+{
+    const_pointer p = std::wcsstr(lhs, rhs);
+    return p == 0 ? size_type(-1) : size_type(p - lhs);
 }
 
 #endif
@@ -86,7 +123,7 @@ class basic_string<T *> : public details::basic_string<T *>
     typedef typename base_type::data_type data_type;
     
 public:    
-    typedef typename base_type::traits                 traits;
+    typedef typename base_type::traits_type            traits_type;
     typedef typename base_type::const_impl_reference   const_impl_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
@@ -94,10 +131,31 @@ public:
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
 
-//    using base_type::compare; // To use base class compare() overloaded methods.
 protected:
     virtual int xcompare (size_type pos1, size_type count1
         , base_type const & rhs, size_type pos2, size_type count2) const;
+
+    virtual size_type xfind (const_impl_reference rhs, size_type pos) const
+    {
+        return traits_type::find(this->_d.begin + pos, rhs);
+    }
+    
+    virtual size_type xfind (value_type c, size_type pos) const
+    {
+        value_type rhs[] = { c, 0 };
+        return traits_type::find(this->_d.begin + pos, rhs);
+    }
+    
+    virtual size_type xrfind (const_impl_reference rhs, size_type pos) const
+    {
+        return traits_type::rfind(this->_d.begin, pos, rhs, traits_type::size(rhs));
+    }
+
+    virtual size_type xrfind (value_type c, size_type pos) const
+    {
+        value_type rhs[] = { c, 0 };
+        return traits_type::rfind(this->_d.begin, pos, rhs, traits_type::size(rhs));
+    }
 
 protected:
     basic_string (const_iterator begin, const_iterator end)
@@ -115,7 +173,7 @@ protected:
     explicit basic_string (const_impl_reference rhs)
     {
         this->_d.begin = rhs;
-        this->_d.end = rhs + traits::size(rhs);
+        this->_d.end = rhs + traits_type::size(rhs);
     }
 
     basic_string & operator = (basic_string const & rhs)
@@ -128,11 +186,16 @@ protected:
     basic_string & operator = (const_impl_reference rhs)
     {
         this->_d.begin = rhs;
-        this->_d.end = rhs + traits::size(rhs);
+        this->_d.end = rhs + traits_type::size(rhs);
         return *this;
     }
     
 public:
+    virtual const_impl_reference base () const
+    {
+        return this->_d.begin;
+    }
+    
     virtual size_type size () const
     {
         return this->_d.end - this->_d.begin;
@@ -196,7 +259,7 @@ int basic_string<T *>::xcompare (size_type pos1, size_type count1
         count2 = n2 - pos2;
     
     size_type count = count1 < count2 ? count1 : count2;
-    int result = traits::compare_n(this->_d.begin + pos1, rhs._d.begin + pos2, count);
+    int result = traits_type::compare_n(this->_d.begin + pos1, rhs._d.begin + pos2, count);
     
     if (result == 0 && count1 != count2) {
         return count1 < count2 ? -1 : 1;

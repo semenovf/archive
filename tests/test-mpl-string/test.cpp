@@ -181,6 +181,7 @@ QString string_samples<QString> (int i)
 
 #include "test_basic.hpp"
 #include "test_compare.hpp"
+#include "test_find.hpp"
 
 int main (int argc, char *argv[])
 {
@@ -209,6 +210,17 @@ int main (int argc, char *argv[])
 
 #ifdef QT_CORE_LIB
     test_compare<QString>();
+#endif
+
+    test_find<char const *>();
+    test_find<char *>();
+    test_find<wchar_t const *>();
+    test_find<wchar_t *>();
+    test_find<std::string>();
+    test_find<std::wstring>();
+
+#ifdef QT_CORE_LIB
+    test_find<QString>();
 #endif
 
 	return END_TESTS;

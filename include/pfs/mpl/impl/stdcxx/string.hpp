@@ -28,7 +28,7 @@ class basic_cxxstring : public details::basic_string<std::basic_string<T> >
     typedef details::basic_string<std::basic_string<T> > base_type;
 
 public:    
-    typedef typename base_type::traits                 traits;
+    typedef typename base_type::traits_type            traits_type;
     typedef typename base_type::const_impl_reference   const_impl_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
@@ -43,7 +43,27 @@ protected:
     {
         return this->_d.compare(pos1, count1, rhs._d, pos2, count2);
     }
+    
+    virtual size_type xfind (const_impl_reference rhs, size_type pos) const
+    {
+        return this->_d.find(rhs, pos);
+    }
 
+    virtual size_type xfind (value_type c, size_type pos) const
+    {
+        return this->_d.find(c, pos);
+    }
+
+    virtual size_type xrfind (const_impl_reference rhs, size_type pos) const
+    {
+        return this->_d.rfind(rhs, pos);
+    }
+
+    virtual size_type xrfind (value_type c, size_type pos) const
+    {
+        return this->_d.rfind(c, pos);
+    }
+    
 public:
     basic_cxxstring ()
         : base_type()
@@ -69,6 +89,11 @@ public:
         if (this != & rhs)
             this->_d = rhs._d;
         return *this;
+    }
+    
+    virtual const_impl_reference base () const
+    {
+        return this->_d;
     }
     
     virtual size_type size () const
@@ -107,7 +132,7 @@ class basic_string<std::string> : public basic_cxxstring<char>
 {
 public:
     typedef basic_cxxstring<char>                      base_type;
-    typedef typename base_type::traits                 traits;
+    typedef typename base_type::traits_type                 traits;
     typedef typename base_type::const_impl_reference   const_impl_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
@@ -154,7 +179,7 @@ class basic_string<std::wstring> : public basic_cxxstring<wchar_t>
 {
 public:
     typedef basic_cxxstring<wchar_t>                   base_type;
-    typedef typename base_type::traits                 traits;
+    typedef typename base_type::traits_type                 traits;
     typedef typename base_type::const_impl_reference   const_impl_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;

@@ -40,7 +40,7 @@ class basic_string<QString> : public details::basic_string<QString>
     typedef typename base_type::data_type data_type;
 
 public:    
-    typedef typename base_type::traits                 traits;
+    typedef typename base_type::traits_type            traits_type;
     typedef typename base_type::const_impl_reference   const_impl_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
@@ -53,6 +53,30 @@ protected:
         , base_type const & rhs, size_type pos2, size_type count2) const
     {
         return this->_d.midRef(pos1, count1).compare(rhs._d.midRef(pos2, count2));
+    }
+
+    virtual size_type xfind (const_impl_reference rhs, size_type pos) const
+    {
+        int i = this->_d.indexOf(rhs, pos);
+        return i < 0 ? size_type(-1) : size_type(i);
+    }
+    
+    virtual size_type xfind (value_type c, size_type pos) const
+    {
+        int i = this->_d.indexOf(c, pos);
+        return i < 0 ? size_type(-1) : size_type(i);
+    }
+    
+    virtual size_type xrfind (const_impl_reference rhs, size_type pos) const
+    {
+        int i = this->_d.lastIndexOf(rhs, pos);
+        return i < 0 ? size_type(-1) : size_type(i);
+    }
+
+    virtual size_type xrfind (value_type c, size_type pos) const
+    {
+        int i = this->_d.lastIndexOf(c, pos);
+        return i < 0 ? size_type(-1) : size_type(i);
     }
 
 public:
@@ -82,6 +106,11 @@ public:
         this->_d.fromWCharArray(str, n == size_type(-1) ? -1 : int(n));
     }
 #endif
+    
+    virtual const_impl_reference base () const
+    {
+        return this->_d;
+    }
     
     virtual size_type size () const
     {
