@@ -90,12 +90,12 @@ template <typename StringImpl>
 void test_subscript ()
 {
     test_description<StringImpl>(__PRETTY_FUNCTION__);
-    
-    ADD_TESTS(1);
-    
+
+    ADD_TESTS(7);
+
     typedef pfs::mpl::string<StringImpl> string;
     typedef typename string::value_type  value_type;
-    
+
     string str(string_samples<StringImpl>(STR_ORIG)); 
  
     TEST_OK(str[0] == value_type('A'));
