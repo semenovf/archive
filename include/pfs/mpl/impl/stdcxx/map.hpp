@@ -62,29 +62,25 @@ protected:
     typedef typename base_type::iterator       iterator;
     typedef typename base_type::const_iterator const_iterator;
     
-    virtual iterator xerase (const_iterator position)
+    virtual iterator xerase (iterator position)
     {
-#if __cplusplus >= 201103        
+#if __cplusplus >= 201103
         return _d.erase(position);
 #else
-        if (position != this->_d.end()) {
-            iterator r(position);
-            pfs::advance(r, 1);
-            this->_d.erase(iterator(position));
-            return r;
-        }
-        return this->_d.end();
+        this->_d.erase(position++);
+        return position;
 #endif        
     }
-    
-    iterator xerase (const_iterator first, const_iterator last)
+
+    virtual iterator xerase (iterator first, iterator last)
     {
-#if __cplusplus >= 201103        
-        return _d.erase(first, last); // from C++11
+#if __cplusplus >= 201103
+        return _d.erase(first, last);
 #else
+        this->_d.erase(first, last);
+        return last;
 #endif        
     }
-        
 };
 
 }}

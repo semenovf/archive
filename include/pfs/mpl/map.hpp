@@ -15,6 +15,7 @@
 #define __PFS_MPL_MAP_HPP__
 
 #include <pfs/iterator.hpp>
+#include <pfs/exception.hpp>
 
 namespace pfs {
 namespace mpl {
@@ -61,15 +62,15 @@ public:
 //    typedef typename traits_type::const_reference        const_reference;
     typedef typename traits_type::iterator               iterator;
     typedef typename traits_type::const_iterator         const_iterator;
-    typedef typename traits_type::const_reverse_iterator const_reverse_iterator;
     typedef typename traits_type::reverse_iterator       reverse_iterator;
+    typedef typename traits_type::const_reverse_iterator const_reverse_iterator;
     typedef typename traits_type::difference_type        difference_type;
     typedef typename traits_type::data_type              data_type;
 
 public:
     data_type _d;
 
-public:
+protected:
     virtual iterator xbegin ()
     {
         return _d.begin();
@@ -110,16 +111,6 @@ public:
         return _d.rend();
     }
     
-    virtual T & xat (Key const & key)
-    {
-        return _d.at(key);
-    }
-    
-    virtual T const & xat (Key const & key) const
-    {
-        return _d.at(key);
-    }
-    
     virtual size_type xsize () const
     {
         return _d.size();
@@ -129,42 +120,40 @@ public:
     {
         _d.clear();
     }
-    
-    virtual iterator xerase (const_iterator position)
+
+    virtual iterator xerase (iterator position)
     {
-        return _d.erase(position); // from C++11
+        return _d.erase(position);
     }
     
-    iterator xerase (const_iterator first, const_iterator last)
+    virtual iterator xerase (iterator first, iterator last)
     {
-        return _d.erase(first, last); // from C++11
+        if (first == xbegin() && last == xend())
+            xclear();
+        else
+            while (first != last)
+                xerase(first++);
     }
 	
-    size_type xerase (key_type const & key)
-    {
-        return _d.erase(key);
-    }
-    
     void xswap (basic_map & rhs)
     {
         _d.swap(rhs._d);
     }
 
-    size_type xcount (Key const & key) const
+    virtual size_type xcount (Key const & key) const
     {
         return _d.count(key);
     }
     
-    iterator xfind (Key const & key)
+    virtual iterator xfind (Key const & key)
     {
-        return _d.xfind(key);
+        return _d.find(key);
     }
 		
-    const_iterator xfind (Key const & key) const
+    virtual const_iterator xfind (Key const & key) const
     {
-        return _d.xfind(key);
+        return _d.find(key);
     }
-
 
 public:
     basic_map ()
@@ -191,7 +180,6 @@ public:
 //    typedef typename traits_type::const_pointer          const_pointer;
 //    typedef typename traits_type::reference              reference;
 //    typedef typename traits_type::const_reference        const_reference;
-//    typedef typename traits_type::iterator               iterator;
     typedef typename base_type::iterator               iterator;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::reverse_iterator       reverse_iterator;
@@ -281,17 +269,23 @@ public:
     
     T & at (Key const & key)
     {
-        return this->xat(key);
+        iterator it = this->find(key);
+        if (it == this->end())
+            throw out_of_range("map::at");
+        return *it;
     }
 
     T const & at (Key const & key) const
     {
-        return this->xat(key);
+        const_iterator it = this->find(key);
+        if (it == this->end())
+            throw out_of_range("map::at");
+        return *it;
     }
     
     T & operator [] (Key const & key )
     {
-        return this->xat(key);
+        return base_type::operator [] (key);
     }
     
     size_type size () const
@@ -301,7 +295,7 @@ public:
     
     bool empty () const
     {
-        return size() == 0;
+        return this->size() == 0;
     }
 	
     //size_type max_size() const;
@@ -311,21 +305,19 @@ public:
         this->xclear();
     }
 	
-    iterator erase (const_iterator position)
+    // 
+    // Leave C++17-style signature only as it compatible to prior-C++11 and prior-C++17
+    //
+    iterator erase (iterator position)
     {
-        return this->xerase(position);
+        this->xerase(position);
     }
-    
-    iterator erase (const_iterator first, const_iterator last)
+
+    iterator erase (iterator first, iterator last)
     {
-        return this->xerase(first, last);
+        this->xerase(first, last);
     }
 	
-    size_type erase (key_type const & key)
-    {
-        return this->xerase(key);
-    }
-    
     void swap (map & rhs)
     {
         this->xswap(rhs);

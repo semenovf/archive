@@ -47,6 +47,34 @@ template <typename Key, typename T>
 class basic_map<Key, T, QMap>
     : public details::basic_map<Key, T, QMap>
 {
+protected:
+    typedef details::basic_map<Key, T, QMap> base_type;
+    typedef typename base_type::reverse_iterator       reverse_iterator;
+    typedef typename base_type::const_reverse_iterator const_reverse_iterator;
+    
+protected:
+    using base_type::xrbegin;
+    using base_type::xrend;
+    
+    virtual reverse_iterator xrbegin ()
+    {
+        return reverse_iterator(this->_d.end());
+    }
+    
+    virtual const_reverse_iterator xrbegin () const
+    {
+        return const_reverse_iterator(this->_d.end());
+    }
+    
+    virtual reverse_iterator xrend ()
+    {
+        return reverse_iterator(this->_d.begin());
+    }
+    
+    virtual const_reverse_iterator xrend () const
+    {
+        return const_reverse_iterator(this->_d.begin());
+    }
 };
 
 }}

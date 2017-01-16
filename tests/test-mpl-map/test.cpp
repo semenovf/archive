@@ -9,7 +9,7 @@
 #include <pfs/test/test.hpp>
 #include <pfs.hpp>
 
-#include <pfs/mpl/impl/stdcxx/map.hpp>
+//#include <pfs/mpl/impl/stdcxx/map.hpp>
 
 // Enabled by `qt_enable`
 #ifdef QT_CORE_LIB
@@ -25,10 +25,10 @@ int main (int argc, char *argv[])
     
 	BEGIN_TESTS(0);
     
-    test_basic<int, char const *, pfs::mpl::stdcxx::map>();
+//    test_basic<int, char const *, pfs::mpl::stdcxx::map>();
     
 #ifdef QT_CORE_LIB
-//    test_basic<int, char const *, QMap>();
+    test_basic<int, char const *, QMap>();
 #endif    
 
 	return END_TESTS;
