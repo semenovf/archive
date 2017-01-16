@@ -38,6 +38,41 @@ public:
     typedef typename base_type::data_type data_type;
 
 protected:
+    virtual const_impl_reference xbase () const
+    {
+        return this->_d;
+    }
+    
+    virtual size_type xsize () const
+    {
+        return this->_d.size();
+    }
+
+    virtual const_iterator xbegin () const
+    {
+        return this->_d.begin();
+    }
+
+    virtual const_iterator xend () const
+    {
+        return this->_d.end();
+    }
+
+    virtual const_reverse_iterator xrbegin () const
+    {
+        return this->_d.rbegin();
+    }
+
+    virtual const_reverse_iterator xrend () const
+    {
+        return this->_d.rend();
+    }
+    
+    virtual value_type xat (size_type pos) const
+    {
+        return this->_d.at(pos);
+    }
+
     virtual int xcompare (size_type pos1, size_type count1
         , base_type const & rhs, size_type pos2, size_type count2) const
     {
@@ -89,41 +124,6 @@ public:
         if (this != & rhs)
             this->_d = rhs._d;
         return *this;
-    }
-    
-    virtual const_impl_reference base () const
-    {
-        return this->_d;
-    }
-    
-    virtual size_type size () const
-    {
-        return this->_d.size();
-    }
-
-    virtual const_iterator begin () const
-    {
-        return this->_d.begin();
-    }
-
-    virtual const_iterator end () const
-    {
-        return this->_d.end();
-    }
-
-    virtual const_reverse_iterator rbegin () const
-    {
-        return this->_d.rbegin();
-    }
-
-    virtual const_reverse_iterator rend () const
-    {
-        return this->_d.rend();
-    }
-    
-    virtual value_type at (size_type pos) const
-    {
-        return this->_d.at(pos);
     }
 };
 

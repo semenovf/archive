@@ -132,6 +132,41 @@ public:
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
 
 protected:
+    virtual const_impl_reference xbase () const
+    {
+        return this->_d.begin;
+    }
+
+    virtual size_type xsize () const
+    {
+        return this->_d.end - this->_d.begin;
+    }
+
+    virtual const_iterator xbegin () const
+    {
+        return this->_d.begin;
+    }
+
+    virtual const_iterator xend () const
+    {
+        return this->_d.end;
+    }
+
+    virtual const_reverse_iterator xrbegin () const
+    {
+        return const_reverse_iterator(this->_d.end);
+    }
+
+    virtual const_reverse_iterator xrend () const
+    {
+        return const_reverse_iterator(this->_d.begin);
+    }
+    
+    virtual value_type xat (size_type pos) const
+    {
+        return this->_d.begin[pos];
+    }
+
     virtual int xcompare (size_type pos1, size_type count1
         , base_type const & rhs, size_type pos2, size_type count2) const;
 
@@ -158,6 +193,12 @@ protected:
     }
 
 protected:
+    basic_string ()
+    {
+        this->_d.begin = 0;
+        this->_d.end = 0;
+    }
+    
     basic_string (const_iterator begin, const_iterator end)
     {
         this->_d.begin = begin;
@@ -189,58 +230,14 @@ protected:
         this->_d.end = rhs + traits_type::size(rhs);
         return *this;
     }
-    
-public:
-    virtual const_impl_reference base () const
-    {
-        return this->_d.begin;
-    }
-    
-    virtual size_type size () const
-    {
-        return this->_d.end - this->_d.begin;
-    }
-
-    virtual const_iterator begin () const
-    {
-        return this->_d.begin;
-    }
-
-    virtual const_iterator end () const
-    {
-        return this->_d.end;
-    }
-
-    virtual const_reverse_iterator rbegin () const
-    {
-        return const_reverse_iterator(this->_d.end);
-    }
-
-    virtual const_reverse_iterator rend () const
-    {
-        return const_reverse_iterator(this->_d.begin);
-    }
-
-    /**
-     * 
-     * @param index
-     * @return 
-     * @trows out_of_range if pos >= size()
-     */
-    virtual value_type at (size_type pos) const
-    {
-        if (pos >= size())
-            throw out_of_range("string::at");
-        return this->_d.begin[pos];
-    }
 };
 
 template <typename T>
 int basic_string<T *>::xcompare (size_type pos1, size_type count1
     , base_type const & rhs, size_type pos2, size_type count2) const
 {
-    size_type n1 = this->size();
-    size_type n2 = rhs.size();
+    size_type n1 = this->xsize();
+    size_type n2 = rhs.xsize();
     
     if (pos1 >= n1) {
         pos1 = n1;
@@ -268,42 +265,42 @@ int basic_string<T *>::xcompare (size_type pos1, size_type count1
     return result;
 };
 
-template <typename T>
-class string<T *> : public basic_string<T *>
-{
-    typedef basic_string<T *> base_type;
-    
-public:    
-    typedef typename base_type::const_impl_reference   const_impl_reference;
-    typedef typename base_type::const_iterator         const_iterator;
-
-public:
-    string ()
-        : base_type(0, 0)
-    {}
-
-    string (const_iterator begin, const_iterator end)
-        : base_type(begin, end)
-    {}
-
-    explicit string (const_impl_reference rhs)
-        : base_type(rhs)
-    {}
-
-//    Inherited from base class:
-//    string (string const & rhs)
+//template <typename T>
+//class string<T *> : public basic_string<T *>
+//{
+//    typedef basic_string<T *> base_type;
+//    
+//public:    
+//    typedef typename base_type::const_impl_reference   const_impl_reference;
+//    typedef typename base_type::const_iterator         const_iterator;
+//
+//public:
+//    string ()
+//        : base_type(0, 0)
+//    {}
+//
+//    string (const_iterator begin, const_iterator end)
+//        : base_type(begin, end)
+//    {}
+//
+//    explicit string (const_impl_reference rhs)
 //        : base_type(rhs)
 //    {}
-
-//    Inherited from base class:
-//    string & operator = (string const & rhs)
-    
-    string & operator = (const_impl_reference rhs)
-    {
-        base_type::operator = (rhs);
-        return *this;
-    }
-};
+//
+////    Inherited from base class:
+////    string (string const & rhs)
+////        : base_type(rhs)
+////    {}
+//
+////    Inherited from base class:
+////    string & operator = (string const & rhs)
+//    
+//    string & operator = (const_impl_reference rhs)
+//    {
+//        base_type::operator = (rhs);
+//        return *this;
+//    }
+//};
 
 }} // pfs::mpl
 

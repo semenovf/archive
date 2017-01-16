@@ -49,6 +49,41 @@ public:
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
     
 protected:
+    virtual const_impl_reference xbase () const
+    {
+        return this->_d;
+    }
+    
+    virtual size_type xsize () const
+    {
+        return this->_d.size();
+    }
+    
+    virtual const_iterator xbegin () const
+    {
+        return this->_d.begin();
+    }
+
+    virtual const_iterator xend () const
+    {
+        return this->_d.end();
+    }
+
+    virtual const_reverse_iterator xrbegin () const
+    {
+        return const_reverse_iterator(this->_d.end());
+    }
+
+    virtual const_reverse_iterator xrend () const
+    {
+        return const_reverse_iterator(this->_d.begin());
+    }
+    
+    virtual value_type xat (size_type pos) const
+    {
+        return this->_d.at(int(pos));
+    }
+
     virtual int xcompare (size_type pos1, size_type count1
         , base_type const & rhs, size_type pos2, size_type count2) const
     {
@@ -106,43 +141,6 @@ public:
         this->_d.fromWCharArray(str, n == size_type(-1) ? -1 : int(n));
     }
 #endif
-    
-    virtual const_impl_reference base () const
-    {
-        return this->_d;
-    }
-    
-    virtual size_type size () const
-    {
-        return this->_d.size();
-    }
-
-    virtual const_iterator begin () const
-    {
-        return this->_d.begin();
-    }
-
-    virtual const_iterator end () const
-    {
-        return this->_d.end();
-    }
-
-    virtual const_reverse_iterator rbegin () const
-    {
-        return const_reverse_iterator(this->_d.end());
-    }
-
-    virtual const_reverse_iterator rend () const
-    {
-        return const_reverse_iterator(this->_d.begin());
-    }
-    
-    virtual value_type at (size_type pos) const
-    {
-        if (pos >= this->_d.size())
-            throw out_of_range("string::at");
-        return this->_d.at(int(pos));
-    }
 };
 
 }} // pfs::mpl
