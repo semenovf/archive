@@ -265,43 +265,6 @@ int basic_string<T *>::xcompare (size_type pos1, size_type count1
     return result;
 };
 
-//template <typename T>
-//class string<T *> : public basic_string<T *>
-//{
-//    typedef basic_string<T *> base_type;
-//    
-//public:    
-//    typedef typename base_type::const_impl_reference   const_impl_reference;
-//    typedef typename base_type::const_iterator         const_iterator;
-//
-//public:
-//    string ()
-//        : base_type(0, 0)
-//    {}
-//
-//    string (const_iterator begin, const_iterator end)
-//        : base_type(begin, end)
-//    {}
-//
-//    explicit string (const_impl_reference rhs)
-//        : base_type(rhs)
-//    {}
-//
-////    Inherited from base class:
-////    string (string const & rhs)
-////        : base_type(rhs)
-////    {}
-//
-////    Inherited from base class:
-////    string & operator = (string const & rhs)
-//    
-//    string & operator = (const_impl_reference rhs)
-//    {
-//        base_type::operator = (rhs);
-//        return *this;
-//    }
-//};
-
 }} // pfs::mpl
 
 #endif /* __PFS_MPL_STDC_STRING_HPP__ */

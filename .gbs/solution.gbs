@@ -206,3 +206,13 @@ project "test-mpl-string"
 project "test-mpl-cli"
     include("test-mpl-cli/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-mpl-list"
+    include("test-mpl-list/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-mpl-map"
+    include("test-mpl-map/project.gbs")
+-- END PROJECT

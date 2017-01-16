@@ -10,6 +10,8 @@
 
 #include <list>
 
+// TODO DEPRECATED, use pfs::mpl::list
+
 namespace pfs {
 
 template <typename T, typename Alloc = std::allocator<T> >

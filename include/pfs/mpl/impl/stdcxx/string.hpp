@@ -18,14 +18,12 @@
 
 namespace pfs {
 namespace mpl {
+namespace stdcxx {
 
 template <typename T>
-class basic_cxxstring;
-
-template <typename T>
-class basic_cxxstring : public details::basic_string<std::basic_string<T> >
+class basic_string : public pfs::mpl::details::basic_string<std::basic_string<T> >
 {
-    typedef details::basic_string<std::basic_string<T> > base_type;
+    typedef pfs::mpl::details::basic_string<std::basic_string<T> > base_type;
 
 public:    
     typedef typename base_type::traits_type            traits_type;
@@ -100,26 +98,26 @@ protected:
     }
     
 public:
-    basic_cxxstring ()
+    basic_string ()
         : base_type()
     {}
 
-    basic_cxxstring (const_iterator begin, const_iterator end)
+    basic_string (const_iterator begin, const_iterator end)
     {
         this->_d = data_type(begin, end);
     }
 
-    basic_cxxstring (const_impl_reference s)
+    basic_string (const_impl_reference s)
     {
         this->_d = s;
     }
 
-    basic_cxxstring (basic_cxxstring const & rhs)
+    basic_string (basic_string const & rhs)
     {
         this->_d = rhs._d;
     }
     
-    basic_cxxstring & operator = (basic_cxxstring const & rhs)
+    basic_string & operator = (basic_string const & rhs)
     {
         if (this != & rhs)
             this->_d = rhs._d;
@@ -127,12 +125,14 @@ public:
     }
 };
 
+} // stdcxx
+
 template <>
-class basic_string<std::string> : public basic_cxxstring<char>
+class basic_string<std::string> : public stdcxx::basic_string<char>
 {
 public:
-    typedef basic_cxxstring<char>                      base_type;
-    typedef typename base_type::traits_type                 traits;
+    typedef stdcxx::basic_string<char>                 base_type;
+    typedef typename base_type::traits_type            traits;
     typedef typename base_type::const_impl_reference   const_impl_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
@@ -175,10 +175,10 @@ public:
 };
 
 template <>
-class basic_string<std::wstring> : public basic_cxxstring<wchar_t>
+class basic_string<std::wstring> : public stdcxx::basic_string<wchar_t>
 {
 public:
-    typedef basic_cxxstring<wchar_t>                   base_type;
+    typedef stdcxx::basic_string<wchar_t>                   base_type;
     typedef typename base_type::traits_type                 traits;
     typedef typename base_type::const_impl_reference   const_impl_reference;
     typedef typename base_type::size_type              size_type;

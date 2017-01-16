@@ -10,6 +10,8 @@
 
 #include <map>
 
+// TODO DEPRECATED, use pfs::mpl::map
+
 namespace pfs {
 
 template <typename Key, typename T, typename Compare = std::less<Key>,

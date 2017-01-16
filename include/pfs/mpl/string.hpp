@@ -81,27 +81,6 @@ public:
     basic_string (data_type const & d)
         : _d(d)
     {}
-    
-//	string<T> substr (size_type pos = 0, size_type count = size_type(-1)) const
-//    {
-//        return this->xsubstr(pos, count);
-//    }
-    
-//    string<T> substr (const_iterator begin, const_iterator end) const
-//    {
-//        
-//    }
-
-//
-//	string substr (const_iterator begin) const
-//	{
-//		return substr(begin, end());
-//	}
-//
-//	string substr (size_t pos) const
-//	{
-//		return substr(pos, max_value<size_type>());
-//	}
 };
 
 } // details
@@ -109,24 +88,24 @@ public:
 template <typename T>
 class string : public basic_string<T>
 {
-    typedef basic_string<T> basic_type;
+    typedef basic_string<T> base_type;
     
 public:    
-    typedef typename basic_type::traits_type            traits_type;
-    typedef typename basic_type::const_impl_reference   const_impl_reference;
-    typedef typename basic_type::size_type              size_type;
-    typedef typename basic_type::value_type             value_type;
-    typedef typename basic_type::const_pointer          const_pointer;
-    typedef typename basic_type::const_iterator         const_iterator;
-    typedef typename basic_type::const_reverse_iterator const_reverse_iterator;
+    typedef typename base_type::traits_type            traits_type;
+    typedef typename base_type::const_impl_reference   const_impl_reference;
+    typedef typename base_type::size_type              size_type;
+    typedef typename base_type::value_type             value_type;
+    typedef typename base_type::const_pointer          const_pointer;
+    typedef typename base_type::const_iterator         const_iterator;
+    typedef typename base_type::const_reverse_iterator const_reverse_iterator;
     
 public:
     string ()
-        : basic_type()
+        : base_type()
     {}
     
     explicit string (const_impl_reference s)
-        : basic_type(s)
+        : base_type(s)
     {}
 
     /**
@@ -135,7 +114,7 @@ public:
      * @note 
      */
     explicit string (char const * str, size_type n)
-        : basic_type(str)
+        : base_type(str)
     {}
     
 #ifdef _WCHAR_H
@@ -145,23 +124,28 @@ public:
      * @param s
      */
     explicit string (wchar_t const * str, size_type n)
-        : basic_type(str)
+        : base_type(str)
     {}
 #endif
     
     string (const_iterator begin, const_iterator end)
-        : basic_type(begin, end)
+        : base_type(begin, end)
     {}
 
     string (string const & rhs)
-        : basic_type(rhs)
+        : base_type(rhs)
     {}
     
     /**
-     * @function string & string::operator = (string const & rhs)
      * @param rhs
      * @return 
      */
+    string & operator = (string const & rhs)
+    {
+        if (this != & rhs)
+            base_type::operator = (rhs);
+        return *this;
+    }
 
     /**
      * @param rhs
@@ -169,7 +153,7 @@ public:
      */
     string & operator = (const_impl_reference rhs)
     {
-        basic_type::operator = (rhs);
+        base_type::operator = (rhs);
         return *this;
     }
 

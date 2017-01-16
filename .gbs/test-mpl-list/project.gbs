@@ -1,0 +1,40 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs prj --create --type=test --name=test-mpl-list'
+--* Date:    Mon Jan 16 13:06:13 2017
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-mpl-list"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-mpl-list/*.c", "../../tests/test-mpl-list/*.cpp" }
+
+-- Special for Qt projects
+require("../../../.gbs/qt_enable")
+
+--Available modules:
+--    core, gui, multimedia, network, opengl, positioning, printsupport,
+--    qml, quick, sensors, sql, svg, testlib, websockets, widgets, xml
+--
+qtmodules     { "core" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs/test-mpl-list/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs/test-mpl-list/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test" }
+
+-- Special for Qt projects
+package.loaded["../../../.gbs/qt_enable"] = nil
