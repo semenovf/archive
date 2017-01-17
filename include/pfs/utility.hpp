@@ -10,34 +10,33 @@
 #define __PFS_UTILITY_HPP__
 
 #include <pfs.hpp>
+#include <pfs/cxxversion.hpp>
+#include PFS_CXX_HEADER(utility)
 
-// std::swap
-
-#if __cplusplus >= 201103L // C++11
-//#	include <algorithm> // until C++11
-#	include <utility>   // since C++11
-#	define PFS_HAVE_STD_SWAP 1
-
-#elif __cplusplus < 201103L
-#	include <algorithm>
-
-#	define PFS_HAVE_STD_SWAP 1
-#endif
-
+//#if __cplusplus >= 201103L // C++11
+////#	include <algorithm> // until C++11
+//#	include <utility>   // since C++11
+//#	define PFS_HAVE_STD_SWAP 1
+//
+//#elif __cplusplus < 201103L
+//#	include <algorithm>
+//
+//#	define PFS_HAVE_STD_SWAP 1
+//#endif
 
 namespace pfs {
 
-template<typename T>
-inline void swap (T & a, T & b)
-{
-#if PFS_HAVE_STD_SWAP
-	std::swap(a, b);
-#else
-	T tmp = a;
-	a = b;
-	b = tmp;
-#endif
-}
+//template <typename T>
+//inline void swap (T & a, T & b)
+//{
+//#if PFS_HAVE_STD_SWAP
+//	std::swap(a, b);
+//#else
+//	T tmp = a;
+//	a = b;
+//	b = tmp;
+//#endif
+//}
 
 } // pfs
 

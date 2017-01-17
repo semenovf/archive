@@ -16,6 +16,7 @@
 
 #include <pfs/iterator.hpp>
 #include <pfs/exception.hpp>
+#include <pfs/utility.hpp>
 
 namespace pfs {
 namespace mpl {
@@ -23,15 +24,10 @@ namespace mpl {
 template <typename Key, typename T, template <typename, typename> class MapT>
 struct map_traits
 {
-    typedef MapT<Key, T> const &                      const_impl_reference;
+    typedef MapT<Key, T>                              native_type;
     typedef typename MapT<Key, T>::size_type          size_type;
-    typedef typename MapT<Key, T>::value_type         value_type;
     typedef typename MapT<Key, T>::key_type           key_type;
     typedef typename MapT<Key, T>::mapped_type        mapped_type;
-//    typedef typename MapT<Key, T>::pointer            pointer;
-//    typedef typename MapT<Key, T>::const_pointer      const_pointer;
-//    typedef typename MapT<Key, T>::reference          reference;
-//    typedef typename MapT<Key, T>::const_reference    const_reference;
     typedef typename MapT<Key, T>::iterator           iterator;
     typedef typename MapT<Key, T>::const_iterator     const_iterator;
     typedef typename MapT<Key, T>::difference_type    difference_type;
@@ -51,15 +47,10 @@ class basic_map
 {
 public:
     typedef map_traits<Key, T, MapT>                     traits_type;
-    typedef typename traits_type::const_impl_reference   const_impl_reference;
+    typedef typename traits_type::native_type            native_type;
     typedef typename traits_type::size_type              size_type;
     typedef typename traits_type::key_type               key_type;
     typedef typename traits_type::mapped_type            mapped_type;
-//    typedef typename traits_type::value_type             value_type;
-//    typedef typename traits_type::pointer                pointer;
-//    typedef typename traits_type::const_pointer          const_pointer;
-//    typedef typename traits_type::reference              reference;
-//    typedef typename traits_type::const_reference        const_reference;
     typedef typename traits_type::iterator               iterator;
     typedef typename traits_type::const_iterator         const_iterator;
     typedef typename traits_type::reverse_iterator       reverse_iterator;
@@ -71,97 +62,50 @@ public:
     data_type _d;
 
 protected:
-    virtual iterator xbegin ()
-    {
-        return _d.begin();
-    }
-    
-    virtual const_iterator xbegin () const
-    {
-        return _d.begin();
-    }
-    
-    virtual iterator xend ()
-    {
-        return _d.end();
-    }
-    
-    virtual const_iterator xend () const
-    {
-        return _d.end();
-    }
-    
-    virtual reverse_iterator xrbegin ()
-    {
-        return _d.rbegin();
-    }
-    
-    virtual const_reverse_iterator xrbegin () const
-    {
-        return _d.rbegin();
-    }
-    
-    virtual reverse_iterator xrend ()
-    {
-        return _d.rend();
-    }
-    
-    virtual const_reverse_iterator xrend () const
-    {
-        return _d.rend();
-    }
-    
-    virtual size_type xsize () const
-    {
-        return _d.size();
-    }
-    
-    virtual void xclear ()
-    {
-        _d.clear();
-    }
-
-    virtual iterator xerase (iterator position)
-    {
-        return _d.erase(position);
-    }
+    virtual iterator xbegin () = 0;
+    virtual const_iterator xbegin () const = 0;
+    virtual iterator xend () = 0;
+    virtual const_iterator xend () const = 0;
+    virtual reverse_iterator xrbegin () = 0;
+    virtual const_reverse_iterator xrbegin () const = 0;
+    virtual reverse_iterator xrend () = 0;
+    virtual const_reverse_iterator xrend () const = 0;
+    virtual size_type xsize () const = 0;
+    virtual mapped_type & xsubscript (Key const & key) = 0;
+    virtual mapped_type & xat (Key const & key) = 0;
+    virtual mapped_type const & xat (Key const & key) const = 0;
+    virtual void xclear () = 0;
+    virtual iterator xerase (iterator position) = 0;
     
     virtual iterator xerase (iterator first, iterator last)
     {
-        if (first == xbegin() && last == xend())
-            xclear();
+        if (first == this->xbegin() && last == this->xend())
+            this->xclear();
         else
             while (first != last)
-                xerase(first++);
+                this->xerase(first++);
     }
 	
-    void xswap (basic_map & rhs)
-    {
-        _d.swap(rhs._d);
-    }
-
-    virtual size_type xcount (Key const & key) const
-    {
-        return _d.count(key);
-    }
-    
-    virtual iterator xfind (Key const & key)
-    {
-        return _d.find(key);
-    }
-		
-    virtual const_iterator xfind (Key const & key) const
-    {
-        return _d.find(key);
-    }
+    virtual void xswap (basic_map & rhs) = 0;
+    virtual size_type xcount (Key const & key) const = 0;
+    virtual iterator xfind (Key const & key) = 0;
+    virtual const_iterator xfind (Key const & key) const = 0;
+    virtual pfs::pair<iterator, bool> xinsert (Key const & key, T const & value) = 0;
 
 public:
     basic_map ()
     {}
 
-    basic_map (data_type const & d)
-        : _d(d)
+    basic_map (native_type const & rhs)
+        : _d(rhs)
     {}
+    
+    basic_map & operator = (native_type const & rhs)
+    {
+        if (this != & rhs)
+            _d = rhs;
+        return *this;
+    }
 };
 
 } // details
@@ -172,21 +116,14 @@ class map : public basic_map<Key, T, MapT>
     typedef basic_map<Key, T, MapT> base_type;
 
 public:    
-//    typedef typename traits_type::const_impl_reference   const_impl_reference;
+    typedef typename base_type::native_type            native_type;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::key_type               key_type;
-//    typedef typename base_type::value_type             value_type;
-//    typedef typename traits_type::pointer                pointer;
-//    typedef typename traits_type::const_pointer          const_pointer;
-//    typedef typename traits_type::reference              reference;
-//    typedef typename traits_type::const_reference        const_reference;
+    typedef typename base_type::mapped_type            mapped_type;
     typedef typename base_type::iterator               iterator;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::reverse_iterator       reverse_iterator;
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
-    
-//    typedef typename traits_type::difference_type        difference_type;
-//    typedef typename traits_type::data_type              data_type;
    
 public:
 	explicit map ()
@@ -197,10 +134,21 @@ public:
         : base_type(rhs)
 	{}
     
+    map (native_type const & rhs)
+        : base_type(rhs)
+    {}
+    
 //    template <typename InputIt>
 //    map (InputIt first, InputIt last);
     
     map & operator = (map const & rhs)
+    {
+        if (this != & rhs)
+            base_type::operator = (rhs);
+        return *this;
+    }
+
+    map & operator = (native_type const & rhs)
     {
         if (this != & rhs)
             base_type::operator = (rhs);
@@ -249,7 +197,7 @@ public:
 		
     const_reverse_iterator crbegin () const
     {
-        return this->rbegin();
+        return rbegin();
     }
     
     reverse_iterator rend ()
@@ -264,28 +212,39 @@ public:
 		
     const_reverse_iterator crend () const
     {
-        return this->rend();
+        return rend();
     }
     
-    T & at (Key const & key)
+    /**
+     * @brief  Access to %map data.
+     * @param  kye  The key for which data should be retrieved.
+     * @return  A reference to the data whose key is equivalent to @a key, if
+     *          such a data is present in the %map.
+     * @throw  pfs::out_of_range  If no such data is present.
+     */
+    mapped_type & at (Key const & key)
     {
-        iterator it = this->find(key);
-        if (it == this->end())
-            throw out_of_range("map::at");
-        return *it;
+        return this->xat(key);
     }
 
-    T const & at (Key const & key) const
+    mapped_type const & at (Key const & key) const
     {
-        const_iterator it = this->find(key);
-        if (it == this->end())
-            throw out_of_range("map::at");
-        return *it;
+        return this->xat(key);
     }
     
-    T & operator [] (Key const & key )
+    /**
+     * @brief  Subscript ( @c [] ) access to %map data.
+     * @details Allows for easy lookup with the subscript ( @c [] )
+     *          operator. Returns data associated with the key specified in
+     *          subscript. If the key does not exist, a pair with that key
+     *          is created using default values, which is then returned.
+     *          Lookup requires logarithmic time.
+     * @param key The key for which data should be retrieved.
+     * @return A reference to the data of the (key,data) %pair.
+     */
+    mapped_type & operator [] (Key const & key)
     {
-        return base_type::operator [] (key);
+        return this->xsubscript(key);
     }
     
     size_type size () const
@@ -295,27 +254,33 @@ public:
     
     bool empty () const
     {
-        return this->size() == 0;
+        return size() == 0;
     }
 	
     //size_type max_size() const;
     
+    /**
+     *  @details Erases all elements in a %map. Note that this function only
+     *           erases the elements, and that if the elements themselves are
+     *           pointers, the pointed-to memory is not touched in any way.
+     *           Managing the pointer is the user's responsibility.
+     */    
     void clear ()
     {
         this->xclear();
     }
 	
     // 
-    // Leave C++17-style signature only as it compatible to prior-C++11 and prior-C++17
+    // Leave C++17-style signature only as it compatible to prior-C++11 and later
     //
     iterator erase (iterator position)
     {
-        this->xerase(position);
+        return this->xerase(position);
     }
 
     iterator erase (iterator first, iterator last)
     {
-        this->xerase(first, last);
+        return this->xerase(first, last);
     }
 	
     void swap (map & rhs)
@@ -337,14 +302,11 @@ public:
     {
         return this->xfind(key);
     }
-	
-//    std::pair<iterator,iterator> equal_range( const Key& key );
-//    std::pair<const_iterator,const_iterator> equal_range( const Key& key ) const;
-//    iterator lower_bound( const Key& key );
-//    const_iterator lower_bound( const Key& key ) const;
-//    iterator upper_bound( const Key& key );
-//    const_iterator upper_bound( const Key& key ) const;
-   
+    
+    pfs::pair<iterator, bool> insert (Key const & key, T const & value)
+    {
+        return this->xinsert(key, value);
+    }
 };
 
 }}

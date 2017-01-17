@@ -19,7 +19,7 @@
 
 namespace pfs {
 
-template<typename Iterator>
+template <typename Iterator>
 struct iterator_traits
 {
     typedef typename Iterator::iterator_category iterator_category;
