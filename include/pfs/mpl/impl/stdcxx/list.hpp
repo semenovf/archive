@@ -32,22 +32,9 @@ struct list {
 template <typename T>
 struct list_traits<T, stdcxx::list>
 {
-    typedef typename stdcxx::list<T>::type             impl_type;
-    typedef impl_type const &                          const_impl_reference;
-    typedef typename impl_type::size_type              size_type;
-    typedef typename impl_type::value_type             value_type;
-    typedef typename impl_type::pointer                pointer;
-    typedef typename impl_type::const_pointer          const_pointer;
-    typedef typename impl_type::reference              reference;
-    typedef typename impl_type::const_reference        const_reference;
-    typedef typename impl_type::iterator               iterator;
-    typedef typename impl_type::const_iterator         const_iterator;
-    typedef typename impl_type::const_reverse_iterator const_reverse_iterator;
-    typedef typename impl_type::reverse_iterator       reverse_iterator;
-    typedef typename impl_type::difference_type        difference_type;
-    typedef impl_type data_type;
+    typedef typename stdcxx::list<T>::type native_type;
+    typedef native_type data_type;
 };
-
 
 template <typename T>
 class basic_list<T, stdcxx::list>

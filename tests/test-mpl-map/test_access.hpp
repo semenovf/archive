@@ -14,7 +14,7 @@
 #ifndef __PFS_TEST_ACCESS_HPP__
 #define __PFS_TEST_ACCESS_HPP__
 
-template </*typename Key, typename T, */template <typename, typename> class MapT>
+template <template <typename, typename> class MapT>
 void test_access ()
 {
     typedef pfs::mpl::map<int, double, MapT> map_type;

@@ -13,10 +13,11 @@
 
 // Enabled by `qt_enable`
 #ifdef QT_CORE_LIB
-#   include <pfs/mpl/impl/qt/list.hpp>
+//#   include <pfs/mpl/impl/qt/list.hpp>
 #endif
 
-#include "test_basic.hpp"
+
+#include "test_access.hpp"
 
 int main (int argc, char *argv[])
 {
@@ -25,10 +26,10 @@ int main (int argc, char *argv[])
     
 	BEGIN_TESTS(0);
     
-    test_basic<int, pfs::mpl::stdcxx::list>();
+    test_access<pfs::mpl::stdcxx::list>();
     
 #ifdef QT_CORE_LIB
-    test_basic<int, QList>();
+//    test_access<QList>();
 #endif    
 
 	return END_TESTS;
