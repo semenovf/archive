@@ -23,11 +23,14 @@
 #endif
 
 #if __cplusplus >= 201103
-#   define pfs_constexpr constexpr
-#   define pfs_noexcept noexcept
+#   define pfs_constexpr           constexpr
+#   define pfs_noexcept            noexcept
+#   define pfs_noexcept_expr(expr) noexcept(expr)
+noexcept(expression) 	
 #else
 #   define pfs_constexpr
 #   define pfs_noexcept
+#   define pfs_noexcept_expr(expr)
 #endif
 
 #endif /* __PFS_CXXLANG_HPP__ */
