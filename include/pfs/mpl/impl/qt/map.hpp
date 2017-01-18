@@ -44,6 +44,7 @@ protected:
     typedef details::basic_map<Key, T, QMap>           base_type;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::mapped_type            mapped_type;
+    typedef typename base_type::native_type            native_type;
     typedef typename base_type::iterator               iterator;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::reverse_iterator       reverse_iterator;
@@ -150,6 +151,17 @@ protected:
     {
         iterator it = this->_d.insert(key, value);
         return pfs::pair<iterator, bool>(it, true);
+    }
+    
+public:
+    virtual native_type & native ()
+    {
+        return this->_d;
+    }
+
+    virtual native_type const & native () const
+    {
+        return this->_d;
     }
 };
 

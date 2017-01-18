@@ -106,6 +106,9 @@ public:
             _d = rhs;
         return *this;
     }
+    
+    virtual native_type & native () = 0;
+    virtual native_type const & native () const = 0;
 };
 
 } // details
@@ -308,6 +311,24 @@ public:
         return this->xinsert(key, value);
     }
 };
+
+template <typename Key, typename T, template <typename, typename> class MapT>
+inline bool operator == (map<Key, T, MapT> const & lhs, map<Key, T, MapT> const & rhs)
+{
+    return lhs.native() == rhs.native();
+}
+
+template <typename Key, typename T, template <typename, typename> class MapT>
+inline bool operator != (map<Key, T, MapT> const & lhs, map<Key, T, MapT> const & rhs)
+{
+    return ! operator == (lhs, rhs);
+}
+
+template <typename Key, typename T, template <typename, typename> class MapT>
+inline void swap (map<Key, T, MapT> const & lhs, map<Key, T, MapT> const & rhs)
+{
+    lhs.swap(rhs);
+}
 
 }}
 

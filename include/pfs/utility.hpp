@@ -62,6 +62,7 @@ DLL_API uint32_t hash32 (const void * key, int len, unsigned int seed);
 #	endif
 #endif
 
+// TODO DEPRECATED, use from algorithm.hpp
 template <typename T>
 inline T min (T a, T b) { return a <= b ? a : b; }
 
