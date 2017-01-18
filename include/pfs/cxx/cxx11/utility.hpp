@@ -19,10 +19,7 @@
 namespace pfs {
 
 template <typename T>
-inline void swap (T & a, T & b)
-{
-    return std::swap(a, b);
-}
+using swap = std::swap<T>;
 
 template <typename T1, typename T2>
 using pair = std::pair<T1, T2>;
