@@ -26,7 +26,6 @@
 #   define pfs_constexpr           constexpr
 #   define pfs_noexcept            noexcept
 #   define pfs_noexcept_expr(expr) noexcept(expr)
-noexcept(expression) 	
 #else
 #   define pfs_constexpr
 #   define pfs_noexcept
