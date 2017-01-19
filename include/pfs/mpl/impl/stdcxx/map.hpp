@@ -14,8 +14,9 @@
 #ifndef __PFS_MPL_IMPL_STDCXX_MAP_HPP__
 #define __PFS_MPL_IMPL_STDCXX_MAP_HPP__
 
-#include <pfs/mpl/map.hpp>
 #include <map>
+#include <pfs/cxxlang.hpp>
+#include <pfs/mpl/map.hpp>
 
 namespace pfs {
 namespace mpl {
@@ -28,22 +29,66 @@ struct map
     typedef std::map<Key, T> type;
 };
 
+template <typename Key, typename T>
+struct map_iterator : public map<Key, T>::type::iterator
+{
+    typedef typename map<Key, T>::type::iterator base_type;
+
+    map_iterator (base_type lhs) pfs_noexcept
+        : base_type(lhs)
+    {}
+    
+    Key const & key () const
+    {
+        return base_type::operator->()->first;
+    }
+    
+    T &	value () const
+    {
+        return base_type::operator->()->second;
+    }
+};
+
+template <typename Key, typename T>
+struct map_const_iterator : public map<Key, T>::type::const_iterator
+{
+    typedef typename map<Key, T>::type::const_iterator base_type;
+
+    map_const_iterator (base_type lhs) pfs_noexcept
+        : base_type(lhs)
+    {}
+    
+    Key const & key () const
+    {
+        return base_type::operator->()->first;
+    }
+    
+    T const & value () const
+    {
+        return base_type::operator->()->second;
+    }
+};
+
 } // stdcxx
 
 template <typename Key, typename T>
 struct map_traits<Key, T, stdcxx::map>
 {
-    typedef typename stdcxx::map<Key, T>::type           native_type;
+    typedef typename stdcxx::map<Key, T>::type             native_type;
+    typedef typename native_type::size_type                size_type;
+    typedef typename native_type::key_type                 key_type;
+    typedef typename native_type::mapped_type              mapped_type;
+//    typedef typename native_type::iterator                 iterator;
+//    typedef typename native_type::const_iterator           const_iterator;
+//    typedef typename native_type::reverse_iterator         reverse_iterator;
+//    typedef typename native_type::const_reverse_iterator   const_reverse_iterator;
+    typedef typename stdcxx::map_iterator<Key, T>          iterator;
+    typedef typename stdcxx::map_const_iterator<Key, T>    const_iterator;
+    typedef typename std::reverse_iterator<iterator>       reverse_iterator;
+    typedef typename std::reverse_iterator<const_iterator> const_reverse_iterator;
     
-    typedef typename native_type::size_type              size_type;
-    typedef typename native_type::key_type               key_type;
-    typedef typename native_type::mapped_type            mapped_type;
-    typedef typename native_type::iterator               iterator;
-    typedef typename native_type::const_iterator         const_iterator;
-    typedef typename native_type::reverse_iterator       reverse_iterator;
-    typedef typename native_type::const_reverse_iterator const_reverse_iterator;
-    typedef typename native_type::difference_type        difference_type;
-    typedef native_type                                  data_type;
+    typedef typename native_type::difference_type          difference_type;
+    typedef native_type                                    data_type;
 };
 
 template <typename Key, typename T>

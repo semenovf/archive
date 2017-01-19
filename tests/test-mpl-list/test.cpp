@@ -13,11 +13,11 @@
 
 // Enabled by `qt_enable`
 #ifdef QT_CORE_LIB
-//#   include <pfs/mpl/impl/qt/list.hpp>
+#   include <pfs/mpl/impl/qt/list.hpp>
 #endif
 
-
-#include "test_access.hpp"
+#include "test_iterator.hpp"
+//#include "test_access.hpp"
 
 int main (int argc, char *argv[])
 {
@@ -26,9 +26,11 @@ int main (int argc, char *argv[])
     
 	BEGIN_TESTS(0);
     
-    test_access<pfs::mpl::stdcxx::list>();
+    test_iterator<pfs::mpl::stdcxx::list>();
+//    test_access<pfs::mpl::stdcxx::list>();
     
 #ifdef QT_CORE_LIB
+    test_iterator<QList>();
 //    test_access<QList>();
 #endif    
 

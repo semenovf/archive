@@ -102,8 +102,8 @@ void test ()
 
     m[value(1)] = value(17);
     TEST_OK(m.size() == 1);
-//    TEST_OK((m.begin()->first).val == 1);   // FIXME need to implement iterator wrapper for Qt
-//    TEST_OK((m.begin()->second).val == 17);
+    TEST_OK((m.begin().key()).val == 1);
+    TEST_OK((m.begin().value()).val == 17);
     TEST_OK(m[value(1)].val == 17);
 
     m[value(2)] = value(9);
