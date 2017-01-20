@@ -30,7 +30,7 @@ int main (int argc, char *argv[])
 //    test_access<pfs::mpl::stdcxx::list>();
     
 #ifdef QT_CORE_LIB
-    test_iterator<QList>();
+    test_iterator<QLinkedList>();
 //    test_access<QList>();
 #endif    
 

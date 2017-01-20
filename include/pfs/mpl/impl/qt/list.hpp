@@ -14,35 +14,37 @@
 #ifndef __PFS_MPL_IMPL_QT_LIST_HPP__
 #define __PFS_MPL_IMPL_QT_LIST_HPP__
 
-#include <QList>
+#include <QLinkedList>
 #include <pfs/mpl/list.hpp>
 
 namespace pfs {
 namespace mpl {
 
 template <typename T>
-struct list_traits<T, QList>
+struct list_traits<T, QLinkedList>
 {
-    typedef QList<T>                                       native_type;
+    typedef QLinkedList<T>                                 native_type;
     typedef typename native_type::size_type                size_type;
-//    typedef typename native_type::value_type            value_type;
+    typedef typename native_type::value_type               value_type;
+    typedef typename native_type::reference                reference;
+    typedef typename native_type::const_reference          const_reference;
     typedef typename native_type::iterator                 iterator;
     typedef typename native_type::const_iterator           const_iterator;
     typedef typename std::reverse_iterator<iterator>       reverse_iterator;
     typedef typename std::reverse_iterator<const_iterator> const_reverse_iterator;
-//    typedef typename native_type::difference_type          difference_type;
     typedef native_type                                    data_type;
 };
 
 template <typename T>
-class basic_list<T, QList>
-    : public details::basic_list<T, QList>
+class basic_list<T, QLinkedList>
+    : public details::basic_list<T, QLinkedList>
 {
-    typedef details::basic_list<T, QList> base_type;
+    typedef details::basic_list<T, QLinkedList> base_type;
     typedef basic_list self_type;
     
 protected:
     typedef typename base_type::native_type            native_type;
+    typedef typename base_type::value_type             value_type;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::iterator               iterator;
     typedef typename base_type::const_iterator         const_iterator;
@@ -89,79 +91,66 @@ protected:
         return const_reverse_iterator(this->xbegin());
     }
     
-//    virtual size_type xsize () const
-//    {
-//        return this->_d.size();
-//    }
-//    
-//    virtual mapped_type & xat (Key const & key)
-//    {
-//        // Note: pfs::out_of_range is synonym for std::out_of_range
-//        return this->_d.at(key);
-//    }
-//
-//    virtual mapped_type const & xat (Key const & key) const
-//    {
-//        // Note: pfs::out_of_range is synonym for std::out_of_range
-//        return this->_d.at(key);
-//    }
-//    
-//    virtual mapped_type & xsubscript (Key const & key)
-//    {
-//        return this->_d[key];
-//    }
-//    
-//    virtual void xclear ()
-//    {
-//        this->_d.clear();
-//    }
-//
-//    virtual iterator xerase (iterator position)
-//    {
-//#if __cplusplus >= 201103
-//        return _d.erase(position);
-//#else
-//        this->_d.erase(position++);
-//        return position;
-//#endif        
-//    }
-//
-//    virtual iterator xerase (iterator first, iterator last)
-//    {
-//#if __cplusplus >= 201103
-//        return _d.erase(first, last);
-//#else
-//        this->_d.erase(first, last);
-//        return last;
-//#endif        
-//    }
+    virtual size_type xsize () const
+    {
+        return this->_d.size();
+    }
     
+    virtual void xclear ()
+    {
+        this->_d.clear();
+    }
+
+    virtual iterator xerase (iterator position)
+    {
+        return this->_d.erase(position);
+    }
+
+    virtual iterator xerase (iterator first, iterator last)
+    {
+        return this->_d.erase(first, last);
+    }
+
+    virtual void xpush_back (T const & value)
+    {
+        this->_d.push_back(value);
+    }
+
+    virtual void xpop_back ()
+    {
+        this->_d.pop_back();
+    }
+
+    virtual void xpush_front (T const & value)
+    {
+        this->_d.push_front(value);
+    }
+
+    virtual void xpop_front ()
+    {
+        this->_d.pop_front();
+    }
+    
+    virtual void xresize (size_type count, value_type const & value);
+
+    virtual void xsplice (iterator pos, base_type & rhs)
+    {
+        // Emulate splice operation through move elements
+        for (iterator it = this->xbegin(); it != this->xend(); ++it)
+            pos = this->xinsert(pos, *it);
+        static_cast<self_type &>(rhs).xclear();
+    }
+
     virtual void xswap (base_type & rhs)
     {
         this->_d.swap(rhs._d);
     }
 
-//    virtual size_type xcount (Key const & key) const
-//    {
-//        return this->_d.count(key);
-//    }
-//    
-//    virtual iterator xfind (Key const & key)
-//    {
-//        return this->_d.find(key);
-//    }
-//		
-//    virtual const_iterator xfind (Key const & key) const
-//    {
-//        return this->_d.find(key);
-//    }
-//    
-//    virtual pfs::pair<iterator, bool> xinsert (Key const & key, T const & value)
-//    {
-//        std::pair<iterator,bool> r = this->_d.insert(std::pair<Key, T>(key, value));
-//        return pfs::pair<iterator,bool>(r.first, r.second);
-//    }
-//    
+    virtual iterator xinsert (iterator pos, value_type const & value)
+    {
+        return this->_d.insert(pos, value);
+    }
+    
 public:
     virtual native_type & native ()
     {
@@ -173,6 +162,23 @@ public:
         return this->_d;
     }
 };
+
+
+template <typename T>
+void basic_list<T, QLinkedList>::xresize (size_type count, value_type const & value)
+{
+    if (count < this->xsize()) {
+        // Reduce container to first count elements
+        //
+        iterator first = this->xbegin();
+        pfs::advance(first, count);
+        this->xerase(first, this->xend());
+    } else {
+        for (size_type i = this->xsize(); i < count; ++i)
+            this->_d.append(value);
+    }
+}
+
 
 }}
 

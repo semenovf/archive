@@ -14,11 +14,12 @@
 #ifndef __PFS_CLI_ROUTE_HPP__
 #define __PFS_CLI_ROUTE_HPP__
 
-#include <pfs/cli/traits.hpp>
-#include <pfs/cli/option.hpp>
-#include <pfs/cli/cmdline.hpp>
+#include <pfs/mpl/list.hpp>
+#include <pfs/mpl/multimap.hpp>
+#include <pfs/mpl/string.hpp>
 
 namespace pfs {
+namespace mpl {
 namespace cli {
 
 // Parse flags
@@ -40,25 +41,27 @@ static int const relaxed_flags = shortopt_stacked
         | longoptarg_separated
         | longoptarg_delim;
 
-namespace details {
-
-template <typename Traits>
+template <typename StringT
+    , typename <typename> class ListT
+    , typename <typename, typename> class MultiMapT>
 class route 
 {
-protected:
-    typedef Traits                                   traits_type;
+public:
+//    typedef Traits                                   traits_type;
+//
+    typedef pfs::mpl::string<StringT> string_type;
+//    typedef pfs::mpl::multimap<typename string_type::value_type, ListT> shortoptmap_type;
+//    typedef pfs::mpl::multimap<typename string_type::value_type, ListT> shortoptmap_type;
 
-    typedef typename traits_type::string_traits      string_traits;
-    typedef typename traits_type::shortoptmap_traits shortoptmap_traits;
-    typedef typename traits_type::longoptmap_traits  longoptmap_traits;
-    typedef typename traits_type::optlist_traits     optlist_traits;
-
-    typedef typename traits_type::option_type        value_type;
-    typedef typename traits_type::string_type        string_type;
-    typedef typename traits_type::char_type          char_type;
-    typedef typename traits_type::shortoptmap_type   shortoptmap_type;
-    typedef typename traits_type::longoptmap_type    longoptmap_type;
-    typedef typename traits_type::optlist_type       optlist_type;
+//    typedef typename traits_type::longoptmap_traits  longoptmap_traits;
+//    typedef typename traits_type::optlist_traits     optlist_traits;
+//
+//    typedef typename traits_type::option_type        value_type;
+//    typedef typename traits_type::string_type        string_type;
+//    typedef typename traits_type::char_type          char_type;
+//    typedef typename traits_type::shortoptmap_type   shortoptmap_type;
+//    typedef typename traits_type::longoptmap_type    longoptmap_type;
+//    typedef typename traits_type::optlist_type       optlist_type;
     
     
 protected:
@@ -150,9 +153,8 @@ bool route<Traits>::parse (int argc, char const ** argv, int flags)
 
     return false;
 }
-} // details
 
-}} // pfs::cli
+}}} // pfs::mpl::cli
 
 #endif /* __PFS_CLI_ROUTE_HPP__ */
 

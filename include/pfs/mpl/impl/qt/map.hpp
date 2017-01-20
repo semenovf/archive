@@ -27,201 +27,21 @@ template <typename Key, typename T>
 struct map_iterator : public QMap<Key, T>::iterator
 {
     typedef typename QMap<Key, T>::iterator base_type;
-//    typedef map_value<Key, T> value_type;
-//    typedef value_type & reference;
-//    typedef value_type * pointer;
-//
-//protected:
-//    value_type value;
-//    pointer    pvalue;
-//    
-//public:    
-//    typedef bidirectional_iterator_tag iterator_category;
-//    typedef ptrdiff_t                  difference_type;
-//
-//    map_iterator () pfs_noexcept
-//        : base_type ()
-//        , value(base_type::key(), base_type::value())
-//        , pvalue(& value)
-//    {}
-//
+
     map_iterator (base_type lhs) pfs_noexcept
         : base_type(lhs)
     {}
-//    
-//    map_iterator & base () const
-//    {
-//        return static_cast<base_type &>(*this);
-//    }
-//    
-//    reference operator * () const pfs_noexcept
-//    {
-//        return *pvalue; 
-//    }
-//
-//    pointer operator -> () const pfs_noexcept
-//    { 
-//        return pvalue;
-//    }
-//
-//    map_iterator & operator ++ () pfs_noexcept
-//    {
-//        base_type::operator ++ ();
-//        value.first = this->key();
-//        value.second = this->value();
-//        return *this;
-//    }
-//
-//    map_iterator operator ++ (int) pfs_noexcept
-//    {
-//        map_iterator r = *this;
-//        base_type::operator ++ (1);
-//        value.first = this->key();
-//        value.second = this->value();
-//        r.value.first = r.key();
-//        r.value.second = r.value();
-//        return r;
-//    }
-//
-//    map_iterator & operator -- () pfs_noexcept
-//    {
-//        base_type::operator -- ();
-//        value.first = this->key();
-//        value.second = this->value();
-//        return *this;
-//    }
-//
-//    map_iterator operator -- (int) pfs_noexcept
-//    {
-//        map_iterator r = *this;
-//        base_type::operator -- (1);
-//        value.first = this->key();
-//        value.second = this->value();
-//        r.value.first = r.key();
-//        r.value.second = r.value();
-//        return r;
-//    }
-//    
-//    bool operator == (map_iterator const & lhs) const pfs_noexcept
-//    {
-//        return base_type::operator == (lhs);
-//    }
-//
-//    bool operator != (map_iterator const & lhs) const pfs_noexcept
-//    {
-//        return base_type::operator != (lhs);
-//    }
 };
 
 template <typename Key, typename T>
 struct map_const_iterator : public QMap<Key, T>::const_iterator
 {
     typedef typename QMap<Key, T>::const_iterator base_type;
-//    typedef pfs::pair<Key, T const &> value_type;
-//    typedef value_type const & reference;
-//    typedef value_type const * pointer;
-//    typedef map_iterator<Key, T> iterator;
-//
-//protected:
-//    value_type value;
-//    pointer    pvalue;
-//    
-//public:    
-//    typedef bidirectional_iterator_tag iterator_category;
-//    typedef ptrdiff_t                  difference_type;
-//
-//    map_const_iterator () pfs_noexcept
-//        : base_type()
-//        , value(base_type::key(), base_type::value())
-//        , pvalue(& value)
-//    {}
 
     map_const_iterator (base_type lhs) pfs_noexcept
         : base_type(lhs)
     {}
-
-//    map_const_iterator (iterator const & it) pfs_noexcept
-//        : base_type(it)
-//        , value(it.value)
-//        , pvalue(& value)
-//    {}
-//
-//    map_const_iterator & base () const
-//    {
-//        return static_cast<base_type &>(*this);
-//    }
-//
-//    reference operator * () const pfs_noexcept
-//    {
-//        return *pvalue;
-//    }
-//
-//    pointer operator -> () const pfs_noexcept
-//    {
-//        return pvalue;
-//    }
-//
-//    map_const_iterator & operator ++ () pfs_noexcept
-//    {
-//        base_type::operator ++ ();
-//        value.first = this->key();
-//        value.second = this->value();
-//        return *this;
-//    }
-//
-//    map_const_iterator  operator ++ (int) pfs_noexcept
-//    {
-//        map_const_iterator r = *this;
-//        base_type::operator ++ (1);
-//        value.first = this->key();
-//        value.second = this->value();
-//        return r;
-//    }
-//
-//    map_const_iterator & operator -- () pfs_noexcept
-//    {
-//        base_type::operator -- ();
-//        value.first = this->key();
-//        value.second = this->value();
-//        return *this;
-//    }
-//
-//    map_const_iterator operator -- (int) pfs_noexcept
-//    {
-//        map_const_iterator r = *this;
-//        base_type::operator -- (1);
-//        value.first = this->key();
-//        value.second = this->value();
-//        return r;
-//    }
-//
-//    bool operator == (map_const_iterator const & lhs) const pfs_noexcept
-//    {
-//        return base_type::operator == (lhs);
-//    }
-//
-//    bool operator != (map_const_iterator const & lhs) const pfs_noexcept
-//    {
-//        return base_type::operator != (lhs);
-//    }
 };
-
-//template <typename Key, typename T>
-//inline bool
-//operator == (map_iterator<Key, T> const & lhs
-//    , map_const_iterator<Key, T> const & rhs) pfs_noexcept
-//{
-//    return static_cast<typename QMap<Key, T>::iterator const & >(lhs)
-//            == static_cast<typename QMap<Key, T>::const_iterator const & >(rhs); 
-//}
-//
-//template <typename Key, typename T>
-//inline bool
-//operator != (map_iterator<Key, T> const & lhs
-//    , map_const_iterator<Key, T> const & rhs) pfs_noexcept
-//{
-//    return ! (lhs == rhs); 
-//}
 
 } // qt
 

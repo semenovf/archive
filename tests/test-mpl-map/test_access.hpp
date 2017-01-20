@@ -16,12 +16,13 @@
 
 namespace test_access_01 {
 
-template <template <typename, typename> class MapT>
+template <template <typename, typename, template <typename, typename> class> class Wrapper
+    , template <typename, typename> class MapT>
 void test ()
 {
     ADD_TESTS(4);
     
-    typedef pfs::mpl::map<int, double, MapT> map_type;
+    typedef Wrapper<int, double, MapT> map_type;
 
     {
         map_type m;
@@ -90,12 +91,13 @@ inline bool operator < (value const & lhs, value const & rhs)
     return lhs.val < rhs.val;
 }
 
-template <template <typename, typename> class MapT>
+template <template <typename, typename, template <typename, typename> class> class Wrapper
+    , template <typename, typename> class MapT>
 void test ()
 {
     ADD_TESTS(10);
     
-    typedef pfs::mpl::map<value, value, MapT> map_type;
+    typedef Wrapper<value, value, MapT> map_type;
 
     map_type m;
     TEST_OK(m.empty());
@@ -118,11 +120,12 @@ void test ()
 
 } // test_access_02
 
-template <template <typename, typename> class MapT>
+template <template <typename, typename, template <typename, typename> class> class Wrapper
+    , template <typename, typename> class MapT>
 void test_access ()
 {
-    test_access_01::test<MapT>();
-    test_access_02::test<MapT>();
+    test_access_01::test<Wrapper, MapT>();
+    test_access_02::test<Wrapper, MapT>();
 }
 
 #endif /* __PFS_TEST_ACCESS_HPP__ */

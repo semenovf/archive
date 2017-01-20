@@ -14,12 +14,13 @@
 #ifndef __PFS_TEST_COMPARE_HPP__
 #define __PFS_TEST_COMPARE_HPP__
 
-template <template <typename, typename> class MapT>
+template <template <typename, typename, template <typename, typename> class> class Wrapper
+    , template <typename, typename> class MapT>
 void test_compare ()
 {
     ADD_TESTS(4);
     
-    typedef pfs::mpl::map<int, int, MapT> map_type;
+    typedef Wrapper<int, int, MapT> map_type;
     
     map_type m1;
     map_type m2;
@@ -44,12 +45,13 @@ void test_compare ()
     TEST_OK(m1 != m4);
 }
 
-template <template <typename, typename> class MapT>
+template <template <typename, typename, template <typename, typename> class> class Wrapper
+    , template <typename, typename> class MapT>
 void test_swap ()
 {
     ADD_TESTS(9);
     
-    typedef pfs::mpl::map<int, int, MapT> map_type;
+    typedef Wrapper<int, int, MapT> map_type;
     
     map_type m1;
     map_type m2;

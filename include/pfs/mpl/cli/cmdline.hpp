@@ -79,24 +79,24 @@ namespace pfs {
 namespace mpl {
 namespace cli {
 
-template <typename StringImpl>
+template <typename StringT>
 struct token
 {
-    typedef pfs::mpl::string<StringImpl> string_type;
+    typedef pfs::mpl::string<StringT> string_type;
     
     string_type prefix;
     string_type option;
     string_type arg;
 };
 
-template <typename StringImpl>
+template <typename StringT>
 class token_iterator
 {
-    typedef pfs::mpl::string<StringImpl> string_type;
-    StringImpl * _p;
+    typedef pfs::mpl::string<StringT> string_type;
+    StringT * _p;
     
 public:
-    token_iterator (StringImpl * p)
+    token_iterator (StringT * p)
         : _p(p)
     {}
             
@@ -134,15 +134,15 @@ public:
     }
 };
 
-template <typename StringImpl>
+template <typename StringT>
 class cmdline
 {
 public:
-    typedef string<StringImpl>                   string_type;
+    typedef string<StringT>                      string_type;
     typedef typename string_type::value_type     char_type;
     typedef typename string_type::const_iterator char_iterator;
-    typedef token<StringImpl>                    token_type;
-    typedef token_iterator<StringImpl>           iterator;
+    typedef token<StringT>                       token_type;
+    typedef token_iterator<StringT>              iterator;
 
 private:
     iterator _begin;
@@ -154,12 +154,12 @@ private:
     string_type _argument_separator;
     
 public:
-    cmdline (int n, StringImpl * begin)
+    cmdline (int n, StringT * begin)
         : _begin(begin)
         , _end(begin + n)
     {}
 
-    cmdline (StringImpl * begin, StringImpl * end)
+    cmdline (StringT * begin, StringT * end)
         : _begin(begin)
         , _end(end)
     {}
@@ -197,8 +197,8 @@ public:
     token_type split (string_type const & t);
 };
 
-template <typename StringImpl>
-token<StringImpl> cmdline<StringImpl>::split (string_type const & t)
+template <typename StringT>
+token<StringT> cmdline<StringT>::split (string_type const & t)
 {
     token_type result;
     char_iterator begin = t.begin();
