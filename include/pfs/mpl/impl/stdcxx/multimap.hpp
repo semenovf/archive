@@ -74,16 +74,15 @@ struct multimap_const_iterator : public multimap<Key, T>::type::const_iterator
 template <typename Key, typename T>
 struct multimap_traits<Key, T, stdcxx::multimap>
 {
-    typedef typename stdcxx::multimap<Key, T>::type        native_type;
-    typedef typename native_type::size_type                size_type;
-    typedef typename native_type::key_type                 key_type;
-    typedef typename native_type::mapped_type              mapped_type;
-    typedef typename stdcxx::map_iterator<Key, T>          iterator;
-    typedef typename stdcxx::map_const_iterator<Key, T>    const_iterator;
-    typedef typename std::reverse_iterator<iterator>       reverse_iterator;
-    typedef typename std::reverse_iterator<const_iterator> const_reverse_iterator;
-//    typedef typename native_type::difference_type          difference_type;
-    typedef native_type                                    data_type;
+    typedef typename stdcxx::multimap<Key, T>::type          native_type;
+    typedef typename native_type::size_type                  size_type;
+    typedef typename native_type::key_type                   key_type;
+    typedef typename native_type::mapped_type                mapped_type;
+    typedef typename stdcxx::multimap_iterator<Key, T>       iterator;
+    typedef typename stdcxx::multimap_const_iterator<Key, T> const_iterator;
+    typedef typename std::reverse_iterator<iterator>         reverse_iterator;
+    typedef typename std::reverse_iterator<const_iterator>   const_reverse_iterator;
+    typedef native_type                                      data_type;
 };
 
 template <typename Key, typename T>
@@ -95,8 +94,9 @@ class basic_multimap<Key, T, stdcxx::multimap>
 
 protected:
     typedef typename base_type::size_type              size_type;
-//    typedef typename base_type::mapped_type            mapped_type;
     typedef typename base_type::native_type            native_type;
+    typedef typename base_type::key_type               key_type;
+    typedef typename base_type::mapped_type            mapped_type;
     typedef typename base_type::iterator               iterator;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::reverse_iterator       reverse_iterator;
@@ -147,23 +147,6 @@ protected:
         return this->_d.size();
     }
     
-//    virtual mapped_type & xat (Key const & key)
-//    {
-//        // Note: pfs::out_of_range is synonym for std::out_of_range
-//        return this->_d.at(key);
-//    }
-//
-//    virtual mapped_type const & xat (Key const & key) const
-//    {
-//        // Note: pfs::out_of_range is synonym for std::out_of_range
-//        return this->_d.at(key);
-//    }
-//    
-//    virtual mapped_type & xsubscript (Key const & key)
-//    {
-//        return this->_d[key];
-//    }
-    
     virtual void xclear ()
     {
         this->_d.clear();
@@ -193,27 +176,56 @@ protected:
     {
         this->_d.swap(rhs._d);
     }
+    
+    virtual size_type xcount (key_type const & key) const
+    {
+        return this->_d.count(key);
+    }
 
-//    virtual size_type xcount (Key const & key) const
-//    {
-//        return this->_d.count(key);
-//    }
-//    
-//    virtual iterator xfind (Key const & key)
-//    {
-//        return this->_d.find(key);
-//    }
-//		
-//    virtual const_iterator xfind (Key const & key) const
-//    {
-//        return this->_d.find(key);
-//    }
-//    
-//    virtual pfs::pair<iterator, bool> xinsert (Key const & key, T const & value)
-//    {
-//        std::pair<iterator,bool> r = this->_d.insert(std::pair<Key, T>(key, value));
-//        return pfs::pair<iterator,bool>(r.first, r.second);
-//    }
+    virtual iterator xfind (key_type const & key)
+    {
+        return this->_d.find(key);
+    }
+		
+    virtual const_iterator xfind (key_type const & key) const
+    {
+        return this->_d.find(key);
+    }
+    
+    virtual pfs::pair<iterator,iterator> xequal_range (key_type const & key)
+    {
+        return this->_d.equal_range(key);
+    }
+    
+    virtual pfs::pair<const_iterator,const_iterator> xequal_range (key_type const & key) const
+    {
+        return this->_d.equal_range(key);
+    }
+
+    virtual iterator xlower_bound (key_type const & key)
+    {
+        return this->_d.lower_bound(key);
+    }
+    
+    virtual const_iterator xlower_bound (key_type const & key) const
+    {
+        return this->_d.lower_bound(key);
+    }
+    
+    virtual iterator xupper_bound (key_type const & key)
+    {
+        return this->_d.upper_bound(key);
+    }
+    
+    virtual const_iterator upper_bound (key_type const & key) const
+    {
+        return this->_d.upper_bound(key);
+    }
+    
+    virtual iterator xinsert (key_type const & key, mapped_type const & value)
+    {
+        return this->_d.insert(std::pair<key_type, T>(key, value));
+    }
 
 public:
     virtual native_type & native ()

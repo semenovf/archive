@@ -8,99 +8,31 @@
  * File:   traits.hpp
  * Author: wladt
  *
- * Created on December 16, 2016, 11:53 AM
+ * Created on January 23, 2017, 3:27 PM
  */
 
-#ifndef __PFS_CLI_DETAILS_TRAITS_HPP__
-#define __PFS_CLI_DETAILS_TRAITS_HPP__
+#ifndef __PFS_MPL_CLI_TRAITS_HPP__
+#define __PFS_MPL_CLI_TRAITS_HPP__
 
-//#include "option.hpp"
+#include <pfs/mpl/list.hpp>
+#include <pfs/mpl/multimap.hpp>
+#include <pfs/mpl/string.hpp>
 
 namespace pfs {
+namespace mpl {
 namespace cli {
-namespace details {
 
-#if __COMMENT__
-
-template <typename Traits>
-class option;
-
-template <typename Key, typename T, template <typename, typename> class Map>
-struct map_traits
-{
-#if __cplusplus >= 201103
-    typedef Map<Key, T> type;
-#else
-    typedef typename Map<Key, T>::type type;
-#endif
-    typedef typename type::key_type    key_type;
-    typedef typename type::mapped_type mapped_type;
-    typedef typename type::value_type  value_type;
-
-//    struct ref
-//    {
-//        type & m;
-//        ref (type & x) : m(x) {}
-//
-//        void insert (type & m
-//                , key_type const & key
-//                , mapped_type const & value)
-//        {
-//            m.insert(value_type(key, value));
-//        }
-//    };
-};
-
-template <typename T, template <typename> class List>
-struct list_traits
-{
-    
-#if __cplusplus >= 201103
-    typedef List<T> type;
-#else
-    typedef typename List<T>::type type;
-#endif
-    typedef typename type::value_type value_type;
-    typedef typename type::iterator   iterator;
-};
-
-template <typename String
-    , template <typename, typename> class Map
-    , template <typename> class List>
+template <typename StringT
+    , template <typename> class ListT
+    , template <typename, typename> class MultiMapT>
 struct traits
 {
-#if __COMMENT__
-    typedef details::option<traits>           option_type;
-    typedef option_type *                     option_pointer;
-    typedef option_type const *               option_const_pointer;
-    
-    typedef String                            string_type;
-    typedef typename string_type::value_type  char_type;
-    
-    typedef typename details::map_traits<
-              char_type
-            , option_const_pointer
-            , Map>                            shortoptmap_traits;
-    typedef typename shortoptmap_traits::type shortoptmap_type;
-    
-    typedef typename details::map_traits<
-              string_type
-            , option_const_pointer
-            , Map>                            longoptmap_traits;
-    typedef typename longoptmap_traits::type  longoptmap_type;
-    
-    typedef typename details::list_traits<
-              option_pointer
-            , List>                           optlist_traits;
-    typedef typename optlist_traits::type     optlist_type;
-#endif    
+    typedef pfs::mpl::string<StringT>          string_type;
+    typedef typename string_type::value_type   char_type;
+    typedef pfs::mpl::list<string_type, ListT> domain_list_type;
 };
 
-#endif
+}}} // pfs::mpl::cli
 
-} // details
-
-}} // pfs::cli
-
-#endif /* __PFS_CLI_DETAILS_TRAITS_HPP__ */
+#endif /* __PFS_MPL_CLI_TRAITS_HPP__ */
 

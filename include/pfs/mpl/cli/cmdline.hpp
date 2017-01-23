@@ -186,7 +186,7 @@ public:
     
     iterator begin () const
     {
-        return iterator(_begin + 1);
+        return iterator(_begin);
     }
 
     iterator end () const

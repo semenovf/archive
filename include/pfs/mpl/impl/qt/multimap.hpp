@@ -50,13 +50,12 @@ struct multimap_traits<Key, T, QMultiMap>
 {
     typedef QMultiMap<Key, T>                            native_type;
     typedef typename native_type::size_type              size_type;
-//    typedef typename native_type::key_type               key_type;
-//    typedef typename native_type::mapped_type            mapped_type;
-//    typedef typename qt::map_iterator<Key, T>            iterator;
-//    typedef typename qt::map_const_iterator<Key, T>      const_iterator;
-//    typedef typename std::reverse_iterator<iterator>     reverse_iterator;
-//    typedef typename std::reverse_iterator<const_iterator> const_reverse_iterator;
-//    typedef typename native_type::difference_type        difference_type;
+    typedef typename native_type::key_type               key_type;
+    typedef typename native_type::mapped_type            mapped_type;
+    typedef typename qt::map_iterator<Key, T>            iterator;
+    typedef typename qt::map_const_iterator<Key, T>      const_iterator;
+    typedef typename std::reverse_iterator<iterator>     reverse_iterator;
+    typedef typename std::reverse_iterator<const_iterator> const_reverse_iterator;
     typedef native_type                                  data_type;
 };
 
@@ -69,7 +68,8 @@ class basic_multimap<Key, T, QMultiMap>
     
 protected:
     typedef typename base_type::size_type              size_type;
-//    typedef typename base_type::mapped_type            mapped_type;
+    typedef typename base_type::key_type               key_type;
+    typedef typename base_type::mapped_type            mapped_type;
     typedef typename base_type::native_type            native_type;
     typedef typename base_type::iterator               iterator;
     typedef typename base_type::const_iterator         const_iterator;
@@ -122,27 +122,6 @@ protected:
         return this->_d.size();
     }
     
-//    virtual mapped_type & xat (Key const & key)
-//    {
-//        iterator it = this->xfind(key);
-//        if (it == this->xend())
-//            throw out_of_range("map::at");
-//        return it.value();
-//    }
-//
-//    virtual mapped_type const & xat (Key const & key) const
-//    {
-//        const_iterator it = this->xfind(key);
-//        if (it == this->xend())
-//            throw out_of_range("map::at");
-//        return it.value();
-//    }
-//    
-//    virtual mapped_type & xsubscript (Key const & key)
-//    {
-//        return this->_d[key];
-//    }
-
     virtual void xclear ()
     {
         this->_d.clear();
@@ -158,26 +137,45 @@ protected:
         this->_d.swap(rhs._d);
     }
 
-//    virtual size_type xcount (Key const & key) const
-//    {
-//        return this->_d.count(key);
-//    }
-//    
-//    virtual iterator xfind (Key const & key)
-//    {
-//        return iterator(this->_d.find(key));
-//    }
-//		
-//    virtual const_iterator xfind (Key const & key) const
-//    {
-//        return const_iterator(this->_d.find(key));
-//    }
-//    
-//    virtual pfs::pair<iterator, bool> xinsert (Key const & key, T const & value)
-//    {
-//        iterator it = iterator(this->_d.insert(key, value));
-//        return pfs::pair<iterator, bool>(it, true);
-//    }
+    virtual size_type xcount (key_type const & key) const
+    {
+        return this->_d.count(key);
+    }
+   
+    virtual iterator xfind (key_type const & key)
+    {
+        return iterator(this->_d.find(key));
+    }
+		
+    virtual const_iterator xfind (key_type const & key) const
+    {
+        return const_iterator(this->_d.find(key));
+    }
+
+    virtual iterator xlower_bound (key_type const & key)
+    {
+        return this->_d.lowerBound(key);
+    }
+    
+    virtual const_iterator xlower_bound (key_type const & key) const
+    {
+        return this->_d.lowerBound(key);
+    }
+    
+    virtual iterator xupper_bound (key_type const & key)
+    {
+        return this->_d.upperBound(key);
+    }
+    
+    virtual const_iterator xupper_bound (key_type const & key) const
+    {
+        return this->_d.upperBound(key);
+    }
+    
+    virtual iterator xinsert (key_type const & key, mapped_type const & value)
+    {
+        return this->_d.insert();
+    }
     
 public:
     virtual native_type & native ()

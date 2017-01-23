@@ -26,20 +26,20 @@
 namespace test {
 namespace cli {
 
-struct stdcxx_cli_traits
-{
-    typedef pfs::mpl::string<char const *>  string_type;
-    typedef pfs::mpl::multimap<char, >typename traits_type::shortoptmap_traits shortoptmap_traits;
-    typedef typename traits_type::longoptmap_traits  longoptmap_traits;
-    typedef typename traits_type::optlist_traits     optlist_traits;
-
-    typedef typename traits_type::option_type        value_type;
-    typedef typename traits_type::string_type        string_type;
-    typedef typename traits_type::char_type          char_type;
-    typedef typename traits_type::shortoptmap_type   shortoptmap_type;
-    typedef typename traits_type::longoptmap_type    longoptmap_type;
-    typedef typename traits_type::optlist_type       optlist_type;
-};
+//struct stdcxx_cli_traits
+//{
+//    typedef pfs::mpl::string<char const *>  string_type;
+//    typedef pfs::mpl::multimap<char, >typename traits_type::shortoptmap_traits shortoptmap_traits;
+//    typedef typename traits_type::longoptmap_traits  longoptmap_traits;
+//    typedef typename traits_type::optlist_traits     optlist_traits;
+//
+//    typedef typename traits_type::option_type        value_type;
+//    typedef typename traits_type::string_type        string_type;
+//    typedef typename traits_type::char_type          char_type;
+//    typedef typename traits_type::shortoptmap_type   shortoptmap_type;
+//    typedef typename traits_type::longoptmap_type    longoptmap_type;
+//    typedef typename traits_type::optlist_type       optlist_type;
+//};
 
 void test_route ()
 {
@@ -48,7 +48,7 @@ void test_route ()
     char const * __argv[] = { "/path/to/program.sh"
             , "domain"
             , "command"
-            , "-a"
+            , "-b"
             , "-bcd"
             , "--option1"
             , "--option2=option2_arg"
@@ -64,16 +64,32 @@ void test_route ()
     
     int __argc = sizeof(__argv)/sizeof(__argv[0]);
    
-    typedef pfs::mpl::cli::cmdline<char const *> cmdline;
+    typedef pfs::mpl::cli::traits<char const *
+        , pfs::mpl::stdcxx::list
+        , pfs::mpl::stdcxx::multimap> traits_type;
+    typedef pfs::mpl::cli::cmdline<char const *> cmdline_type;
+    typedef pfs::mpl::cli::route<traits_type> route_type;
     
     //pfs::cli::no_long_option
     
-//    pfs::cli::route r;
-//    
-//    bool const  required     = true;
-//    //bool const  optional     = false;
-//    
-//    bool        yes          = true;
+    route_type r1;
+    route_type r2;
+    route_type r3;
+    route_type r4;
+
+    r1.set_program("program.sh");
+    r1.add_domain("domain");
+    r1.add_domain("command");
+
+    r2.set_program("program.sh");
+    r2.add_domain("domain");
+    r2.add_domain("command1");
+
+    r3.set_program("program.sh");
+    r3.add_domain("domain1");
+    r3.add_domain("command1");
+    
+    bool        yes          = true;
 //    short       short_value  = 0;
 //    int         int_value    = 0;
 //    long        long_value   = 0;
@@ -93,7 +109,10 @@ void test_route ()
 //    r.add(& real_value   ,      _u8("real")  , required);
 //    r.add(& string_value , 's', _u8("string"), required);
     
-    TEST_OK(r.parse(__argc, __argv, pfs::cli::relaxed_flags));
+    TEST_OK(r1.parse(__argc, __argv, pfs::mpl::cli::relaxed_flags));
+    TEST_OK(! r2.parse(__argc, __argv, pfs::mpl::cli::relaxed_flags));
+    TEST_OK(! r3.parse(__argc, __argv, pfs::mpl::cli::relaxed_flags));
+    TEST_OK(! r4.parse(__argc, __argv, pfs::mpl::cli::relaxed_flags));
 }
 
 }}

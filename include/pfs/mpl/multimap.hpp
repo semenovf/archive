@@ -26,8 +26,8 @@ struct multimap_traits
 {
     typedef MultiMapT<Key, T>                        native_type;
     typedef typename native_type::size_type          size_type;
-//    typedef typename native_type::key_type           key_type;
-//    typedef typename native_type::mapped_type        mapped_type;
+    typedef typename native_type::key_type           key_type;
+    typedef typename native_type::mapped_type        mapped_type;
     typedef typename native_type::iterator           iterator;
     typedef typename native_type::const_iterator     const_iterator;
     typedef typename native_type::difference_type    difference_type;
@@ -48,13 +48,12 @@ public:
     typedef multimap_traits<Key, T, MultiMapT>           traits_type;
     typedef typename traits_type::native_type            native_type;
     typedef typename traits_type::size_type              size_type;
-//    typedef typename traits_type::key_type               key_type;
-//    typedef typename traits_type::mapped_type            mapped_type;
+    typedef typename traits_type::key_type               key_type;
+    typedef typename traits_type::mapped_type            mapped_type;
     typedef typename traits_type::iterator               iterator;
     typedef typename traits_type::const_iterator         const_iterator;
     typedef typename traits_type::reverse_iterator       reverse_iterator;
     typedef typename traits_type::const_reverse_iterator const_reverse_iterator;
-//    typedef typename traits_type::difference_type        difference_type;
     typedef typename traits_type::data_type              data_type;
 
 public:
@@ -70,9 +69,6 @@ protected:
     virtual reverse_iterator xrend () = 0;
     virtual const_reverse_iterator xrend () const = 0;
     virtual size_type xsize () const = 0;
-//    virtual mapped_type & xsubscript (Key const & key) = 0;
-//    virtual mapped_type & xat (Key const & key) = 0;
-//    virtual mapped_type const & xat (Key const & key) const = 0;
     virtual void xclear () = 0;
     virtual iterator xerase (iterator position) = 0;
     
@@ -85,12 +81,29 @@ protected:
                 this->xerase(first++);
     }
 	
-    virtual void xswap (basic_map & rhs) = 0;
-//    virtual size_type xcount (Key const & key) const = 0;
-//    virtual iterator xfind (Key const & key) = 0;
-//    virtual const_iterator xfind (Key const & key) const = 0;
-//    virtual pfs::pair<iterator, bool> xinsert (Key const & key, T const & value) = 0;
-//
+    virtual void xswap (basic_multimap & rhs) = 0;
+    virtual size_type xcount (Key const & key) const = 0;
+    virtual iterator xfind (Key const & key) = 0;
+    virtual const_iterator xfind (Key const & key) const = 0;
+
+    virtual pfs::pair<iterator,iterator> xequal_range (Key const & key) 
+    {
+        return pfs::pair<iterator,iterator>(this->xlower_bound(key)
+                , this->xupper_bound(key));
+    }
+    
+    virtual pfs::pair<const_iterator,const_iterator> xequal_range (Key const & key) const
+    {
+        return pfs::pair<iterator,iterator>(this->xlower_bound(key)
+                , this->xupper_bound(key));
+    }
+    
+    virtual iterator xlower_bound (Key const & key) = 0;
+    virtual const_iterator xlower_bound (Key const & key) const = 0;
+    virtual iterator xupper_bound (Key const & key) = 0;
+    virtual const_iterator upper_bound (Key const & key) const = 0;
+    virtual iterator xinsert (Key const & key, T const & value) = 0;
+
 public:
     basic_multimap ()
     {}
@@ -121,8 +134,8 @@ class multimap : public basic_multimap<Key, T, MultiMapT>
 public:    
     typedef typename base_type::native_type            native_type;
     typedef typename base_type::size_type              size_type;
-//    typedef typename base_type::key_type               key_type;
-//    typedef typename base_type::mapped_type            mapped_type;
+    typedef typename base_type::key_type               key_type;
+    typedef typename base_type::mapped_type            mapped_type;
     typedef typename base_type::iterator               iterator;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::reverse_iterator       reverse_iterator;
@@ -207,38 +220,6 @@ public:
         return rend();
     }
     
-//    /**
-//     * @brief  Access to %map data.
-//     * @param  kye  The key for which data should be retrieved.
-//     * @return  A reference to the data whose key is equivalent to @a key, if
-//     *          such a data is present in the %map.
-//     * @throw  pfs::out_of_range  If no such data is present.
-//     */
-//    mapped_type & at (Key const & key)
-//    {
-//        return this->xat(key);
-//    }
-//
-//    mapped_type const & at (Key const & key) const
-//    {
-//        return this->xat(key);
-//    }
-//    
-//    /**
-//     * @brief  Subscript ( @c [] ) access to %map data.
-//     * @details Allows for easy lookup with the subscript ( @c [] )
-//     *          operator. Returns data associated with the key specified in
-//     *          subscript. If the key does not exist, a pair with that key
-//     *          is created using default values, which is then returned.
-//     *          Lookup requires logarithmic time.
-//     * @param key The key for which data should be retrieved.
-//     * @return A reference to the data of the (key,data) %pair.
-//     */
-//    mapped_type & operator [] (Key const & key)
-//    {
-//        return this->xsubscript(key);
-//    }
-//    
     size_type size () const pfs_noexcept
     {
         return this->xsize();
@@ -267,49 +248,87 @@ public:
         return this->xerase(first, last);
     }
 	
-    void swap (map & rhs)
+    void swap (self_type & rhs)
     {
         this->xswap(rhs);
     }
+
+    /**
+     * @brief Returns the number of elements associated with key @a key.
+     * @param key Key.
+     * @return The number of elements associated with key @a key.
+     */
+    size_type count (key_type const & key) const
+    {
+        this->xcount(key);
+    }
+	
+    iterator find (key_type const & key)
+    {
+        return this->xfind(key);
+    }
+		
+    const_iterator find (key_type const & key) const
+    {
+        return this->xfind(key);
+    }
     
-//    size_type count (Key const & key) const
-//    {
-//        this->xcount(key);
-//    }
-//	
-//    iterator find (Key const & key)
-//    {
-//        return this->xfind(key);
-//    }
-//		
-//    const_iterator find (Key const & key) const
-//    {
-//        return this->xfind(key);
-//    }
-//    
-//    pfs::pair<iterator, bool> insert (Key const & key, T const & value)
-//    {
-//        return this->xinsert(key, value);
-//    }
+    pfs::pair<iterator,iterator> equal_range (key_type const & key)
+    {
+        return this->xequal_range(key);
+    }
+
+    std::pair<const_iterator,const_iterator> equal_range (key_type const & key ) const
+    {
+        return this->xequal_range(key);
+    }
+    
+    iterator lower_bound (key_type const & key)
+    {
+        return this->xlower_bound(key);
+    }
+
+    const_iterator lower_bound (key_type const & key) const
+    {
+        return this->xlower_bound(key);
+    }
+    
+    iterator upper_bound (key_type const & key)
+    {
+        return this->xupper_bound(key);
+    }
+
+    const_iterator upper_bound (key_type const & key) const
+    {
+        return this->xupper_bound(key);
+    }
+    
+    iterator insert (key_type const & key, mapped_type const & value)
+    {
+        return this->xinsert(key, value);
+    }
+    
+//    template <typename InputIt>
+//    void insert (InputIt first, InputIt last);
 };
 
-//template <typename Key, typename T, template <typename, typename> class MapT>
-//inline bool operator == (map<Key, T, MapT> const & lhs, map<Key, T, MapT> const & rhs)
-//{
-//    return lhs.native() == rhs.native();
-//}
-//
-//template <typename Key, typename T, template <typename, typename> class MapT>
-//inline bool operator != (map<Key, T, MapT> const & lhs, map<Key, T, MapT> const & rhs)
-//{
-//    return ! operator == (lhs, rhs);
-//}
-//
-//template <typename Key, typename T, template <typename, typename> class MapT>
-//inline void swap (map<Key, T, MapT> const & lhs, map<Key, T, MapT> const & rhs)
-//{
-//    lhs.swap(rhs);
-//}
+template <typename Key, typename T, template <typename, typename> class MultiMapT>
+inline bool operator == (multimap<Key, T, MultiMapT> const & lhs, multimap<Key, T, MultiMapT> const & rhs)
+{
+    return lhs.native() == rhs.native();
+}
+
+template <typename Key, typename T, template <typename, typename> class MultiMapT>
+inline bool operator != (multimap<Key, T, MultiMapT> const & lhs, multimap<Key, T, MultiMapT> const & rhs)
+{
+    return ! operator == (lhs, rhs);
+}
+
+template <typename Key, typename T, template <typename, typename> class MultiMapT>
+inline void swap (multimap<Key, T, MultiMapT> const & lhs, multimap<Key, T, MultiMapT> const & rhs)
+{
+    lhs.swap(rhs);
+}
 
 }}
 

@@ -32,7 +32,7 @@ int main (int argc, char *argv[])
     test_compare<pfs::mpl::map, pfs::mpl::stdcxx::map>();
     test_swap<pfs::mpl::map, pfs::mpl::stdcxx::map>();
     
-    test_access<pfs::mpl::multimap, pfs::mpl::stdcxx::multimap>();
+//    test_access<pfs::mpl::multimap, pfs::mpl::stdcxx::multimap>();
 //    test_compare<pfs::mpl::multimap, pfs::mpl::stdcxx::multimap>();
 //    test_swap<pfs::mpl::multimap, pfs::mpl::stdcxx::multimap>();
     

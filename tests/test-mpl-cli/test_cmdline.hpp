@@ -50,6 +50,7 @@ void test_iterator ()
     cmdline::iterator end = cl.end();
 
     TEST_OK(it != end);
+    ++it; // skip program name
     TEST_OK(*it++ == string_type("domain"))
     TEST_OK(*it++ == string_type("command"));
     TEST_OK(*it++ == string_type("-a"));
@@ -84,6 +85,8 @@ void test_tokenizer ()
 
     cmdline::token_type t[10];
 
+    ++it; // skip program name
+    
     for (int i = 1; i < __argc; i++) {
        t[i - 1] = cl.split(*it);
        ++it;

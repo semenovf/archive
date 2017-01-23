@@ -9,7 +9,7 @@
 #include <pfs/test/test.hpp>
 #include <pfs.hpp>
 #include "test_cmdline.hpp"
-//#include "test_route.hpp"
+#include "test_route.hpp"
 
 int main (int argc, char *argv[])
 {
@@ -20,7 +20,7 @@ int main (int argc, char *argv[])
 
     test::cli::test_iterator();
     test::cli::test_tokenizer();
-//    test::cli::test_route();
+    test::cli::test_route();
     
 	return END_TESTS;
 }
