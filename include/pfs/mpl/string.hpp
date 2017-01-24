@@ -16,6 +16,7 @@
 #ifndef __PFS_MPL_STRING_HPP__
 #define __PFS_MPL_STRING_HPP__
 
+#include <ostream>
 #include <pfs/exception.hpp>
 #include <pfs/iterator.hpp>
 #include <pfs/mpl/algo/find.hpp>
@@ -27,7 +28,7 @@ namespace mpl {
 template <typename T>
 struct string_traits
 {
-    typedef T const &                          const_impl_reference;
+    typedef T const &                          const_native_reference;
     typedef typename T::size_type              size_type;
     typedef typename T::value_type             value_type;
     typedef typename T::const_pointer          const_pointer;
@@ -47,7 +48,7 @@ class basic_string
 {
 public:
     typedef string_traits<T>                             traits_type;
-    typedef typename traits_type::const_impl_reference   const_impl_reference;
+    typedef typename traits_type::const_native_reference const_native_reference;
     typedef typename traits_type::size_type              size_type;
     typedef typename traits_type::value_type             value_type;
     typedef typename traits_type::const_pointer          const_pointer;
@@ -59,7 +60,6 @@ public:
     data_type _d;
 
 public:
-    virtual const_impl_reference xbase () const = 0;
     virtual size_type xsize () const = 0;
     virtual const_iterator xbegin () const = 0;
     virtual const_iterator xend () const = 0;
@@ -69,10 +69,10 @@ public:
 
     virtual int xcompare (size_type pos1, size_type count1
         , basic_string const & rhs, size_type pos2, size_type count2) const = 0;
-    virtual size_type xfind (const_impl_reference rhs, size_type pos) const = 0;
+    virtual size_type xfind (const_native_reference rhs, size_type pos) const = 0;
     virtual size_type xfind (value_type c, size_type pos) const = 0;
     virtual size_type xrfind (value_type c, size_type pos) const = 0;
-    virtual size_type xrfind (const_impl_reference rhs, size_type pos) const = 0;
+    virtual size_type xrfind (const_native_reference rhs, size_type pos) const = 0;
     
 public:
     basic_string ()
@@ -81,6 +81,8 @@ public:
     basic_string (data_type const & d)
         : _d(d)
     {}
+    
+    virtual const_native_reference native () const = 0;
 };
 
 } // details
@@ -92,7 +94,7 @@ class string : public basic_string<T>
     
 public:    
     typedef typename base_type::traits_type            traits_type;
-    typedef typename base_type::const_impl_reference   const_impl_reference;
+    typedef typename base_type::const_native_reference const_native_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
     typedef typename base_type::const_pointer          const_pointer;
@@ -104,7 +106,7 @@ public:
         : base_type()
     {}
     
-    explicit string (const_impl_reference s)
+    explicit string (const_native_reference s)
         : base_type(s)
     {}
 
@@ -151,15 +153,10 @@ public:
      * @param rhs
      * @return 
      */
-    string & operator = (const_impl_reference rhs)
+    string & operator = (const_native_reference rhs)
     {
         base_type::operator = (rhs);
         return *this;
-    }
-
-    const_impl_reference base () const
-    {
-        return this->xbase();
     }
 
     size_type size () const
@@ -280,7 +277,7 @@ public:
 		return this->xfind(rhs.base(), pos) != size_type(-1);
 	}
 
-    bool contains (const_impl_reference rhs, size_type pos = 0)
+    bool contains (const_native_reference rhs, size_type pos = 0)
     {
         return this->xfind(rhs, pos) != size_type(-1);
     }
@@ -308,7 +305,7 @@ public:
         return this->xfind(rhs.base(), pos);
     }
     
-    size_type find (const_impl_reference rhs, size_type pos = 0) const
+    size_type find (const_native_reference rhs, size_type pos = 0) const
     {
         return this->xfind(rhs.base(), pos);
     }
@@ -323,7 +320,7 @@ public:
         return this->xrfind(rhs.base(), pos);
     }
     
-    size_type rfind (const_impl_reference rhs, size_type pos = size_type(-1)) const
+    size_type rfind (const_native_reference rhs, size_type pos = size_type(-1)) const
     {
         return this->xfind(rhs.base(), pos);
     }
@@ -419,6 +416,13 @@ inline bool operator >= (string<T> const & lhs
 }
 
 }} // pfs::mpl
+
+namespace std {
+
+template <typename T>
+ostream & operator << (ostream & out, pfs::mpl::string<T> const & s);
+
+}
 
 #endif /* __PFS_MPL_STRING_HPP__ */
 

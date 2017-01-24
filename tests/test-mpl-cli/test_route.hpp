@@ -45,7 +45,7 @@ void test_route ()
 {
     ADD_TESTS(1);
     
-    char const * __argv[] = { "/path/to/program.sh"
+    char const * __argv[] = { "/path/to/program.bin"
             , "domain"
             , "command"
             , "-b"
@@ -70,22 +70,20 @@ void test_route ()
     typedef pfs::mpl::cli::cmdline<char const *> cmdline_type;
     typedef pfs::mpl::cli::route<traits_type> route_type;
     
-    //pfs::cli::no_long_option
-    
     route_type r1;
     route_type r2;
     route_type r3;
     route_type r4;
 
-    r1.set_program("program.sh");
+    r1.set_program("program.bin");
     r1.add_domain("domain");
     r1.add_domain("command");
 
-    r2.set_program("program.sh");
+    r2.set_program("program.bin");
     r2.add_domain("domain");
     r2.add_domain("command1");
 
-    r3.set_program("program.sh");
+    r3.set_program("program.bin");
     r3.add_domain("domain1");
     r3.add_domain("command1");
     

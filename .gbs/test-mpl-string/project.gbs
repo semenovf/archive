@@ -37,15 +37,5 @@ configuration "release"
     targetdir    "../../../.build/tests"
     links        { "pfs-test" }
 
-
-filter "action:gmake"
-    buildoptions {}
-    linkoptions  {}
-
---include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
-
---filter { "debug", "action:gmake" }
---    linkoptions  { "-rdynamic" }
-
 -- Special for Qt projects
 package.loaded["../../../.gbs/qt_enable"] = nil

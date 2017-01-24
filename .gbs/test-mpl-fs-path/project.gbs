@@ -1,0 +1,31 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=test-mpl-fs-path --type=test'
+--* Date:    Jan 24 11:43::00
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-mpl-fs-path"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-mpl-fs-path/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs/test-mpl-fs-path/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs/test-mpl-fs-path/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test" }
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }

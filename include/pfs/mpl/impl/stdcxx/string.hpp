@@ -14,6 +14,7 @@
 #ifndef __PFS_MPL_STDCXX_STRING_HPP__
 #define __PFS_MPL_STDCXX_STRING_HPP__
 
+#include <string>
 #include <pfs/mpl/string.hpp>
 
 namespace pfs {
@@ -27,20 +28,15 @@ class basic_string : public pfs::mpl::details::basic_string<std::basic_string<T>
 
 public:    
     typedef typename base_type::traits_type            traits_type;
-    typedef typename base_type::const_impl_reference   const_impl_reference;
+    typedef typename base_type::const_native_reference const_native_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
     typedef typename base_type::const_pointer          const_pointer;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
-    typedef typename base_type::data_type data_type;
+    typedef typename base_type::data_type              data_type;
 
 protected:
-    virtual const_impl_reference xbase () const
-    {
-        return this->_d;
-    }
-    
     virtual size_type xsize () const
     {
         return this->_d.size();
@@ -77,7 +73,7 @@ protected:
         return this->_d.compare(pos1, count1, rhs._d, pos2, count2);
     }
     
-    virtual size_type xfind (const_impl_reference rhs, size_type pos) const
+    virtual size_type xfind (const_native_reference rhs, size_type pos) const
     {
         return this->_d.find(rhs, pos);
     }
@@ -87,7 +83,7 @@ protected:
         return this->_d.find(c, pos);
     }
 
-    virtual size_type xrfind (const_impl_reference rhs, size_type pos) const
+    virtual size_type xrfind (const_native_reference rhs, size_type pos) const
     {
         return this->_d.rfind(rhs, pos);
     }
@@ -107,7 +103,7 @@ public:
         this->_d = data_type(begin, end);
     }
 
-    basic_string (const_impl_reference s)
+    basic_string (const_native_reference s)
     {
         this->_d = s;
     }
@@ -123,6 +119,11 @@ public:
             this->_d = rhs._d;
         return *this;
     }
+
+    virtual const_native_reference native () const
+    {
+        return this->_d;
+    }
 };
 
 } // stdcxx
@@ -133,7 +134,7 @@ class basic_string<std::string> : public stdcxx::basic_string<char>
 public:
     typedef stdcxx::basic_string<char>                 base_type;
     typedef typename base_type::traits_type            traits;
-    typedef typename base_type::const_impl_reference   const_impl_reference;
+    typedef typename base_type::const_native_reference const_native_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
     typedef typename base_type::const_pointer          const_pointer;
@@ -146,7 +147,7 @@ public:
         : base_type()
     {}
 
-    basic_string (const_impl_reference s)
+    basic_string (const_native_reference s)
         : base_type(s)
     {}
     
@@ -178,9 +179,9 @@ template <>
 class basic_string<std::wstring> : public stdcxx::basic_string<wchar_t>
 {
 public:
-    typedef stdcxx::basic_string<wchar_t>                   base_type;
-    typedef typename base_type::traits_type                 traits;
-    typedef typename base_type::const_impl_reference   const_impl_reference;
+    typedef stdcxx::basic_string<wchar_t>              base_type;
+    typedef typename base_type::traits_type            traits;
+    typedef typename base_type::const_native_reference const_native_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
     typedef typename base_type::const_pointer          const_pointer;
@@ -193,7 +194,7 @@ public:
         : base_type()
     {}
 
-    basic_string (const_impl_reference s)
+    basic_string (const_native_reference s)
         : base_type(s)
     {}
     
@@ -219,5 +220,16 @@ public:
 };
 
 }} // pfs::mpl
+
+namespace std {
+
+template <>
+inline ostream & operator<< <std::string> (ostream & out, pfs::mpl::string<std::string> const & s)
+{
+    out << s.native();
+    return out;
+}
+
+} // std
 
 #endif /* __PFS_MPL_STDCXX_STRING_HPP__ */

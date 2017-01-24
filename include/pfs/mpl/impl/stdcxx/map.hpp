@@ -78,10 +78,6 @@ struct map_traits<Key, T, stdcxx::map>
     typedef typename native_type::size_type                size_type;
     typedef typename native_type::key_type                 key_type;
     typedef typename native_type::mapped_type              mapped_type;
-//    typedef typename native_type::iterator                 iterator;
-//    typedef typename native_type::const_iterator           const_iterator;
-//    typedef typename native_type::reverse_iterator         reverse_iterator;
-//    typedef typename native_type::const_reverse_iterator   const_reverse_iterator;
     typedef typename stdcxx::map_iterator<Key, T>          iterator;
     typedef typename stdcxx::map_const_iterator<Key, T>    const_iterator;
     typedef typename std::reverse_iterator<iterator>       reverse_iterator;

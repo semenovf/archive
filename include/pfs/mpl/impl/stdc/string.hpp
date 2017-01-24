@@ -14,6 +14,7 @@
 #ifndef __PFS_MPL_STDC_STRING_HPP__
 #define __PFS_MPL_STDC_STRING_HPP__
 
+#include <cstring>
 #include <pfs/mpl/string.hpp>
 
 namespace pfs {
@@ -22,7 +23,7 @@ namespace mpl {
 template <typename T>
 struct string_traits<T *>
 {
-    typedef T const * const_impl_reference;
+    typedef T const * const_native_reference;
     typedef size_t    size_type;
     typedef T         value_type;
     typedef T const * const_pointer;
@@ -124,7 +125,7 @@ class basic_string<T *> : public details::basic_string<T *>
     
 public:    
     typedef typename base_type::traits_type            traits_type;
-    typedef typename base_type::const_impl_reference   const_impl_reference;
+    typedef typename base_type::const_native_reference const_native_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
     typedef typename base_type::const_pointer          const_pointer;
@@ -132,11 +133,6 @@ public:
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
 
 protected:
-    virtual const_impl_reference xbase () const
-    {
-        return this->_d.begin;
-    }
-
     virtual size_type xsize () const
     {
         return this->_d.end - this->_d.begin;
@@ -170,7 +166,7 @@ protected:
     virtual int xcompare (size_type pos1, size_type count1
         , base_type const & rhs, size_type pos2, size_type count2) const;
 
-    virtual size_type xfind (const_impl_reference rhs, size_type pos) const
+    virtual size_type xfind (const_native_reference rhs, size_type pos) const
     {
         return traits_type::find(this->_d.begin + pos, rhs);
     }
@@ -181,7 +177,7 @@ protected:
         return traits_type::find(this->_d.begin + pos, rhs);
     }
     
-    virtual size_type xrfind (const_impl_reference rhs, size_type pos) const
+    virtual size_type xrfind (const_native_reference rhs, size_type pos) const
     {
         return traits_type::rfind(this->_d.begin, pos, rhs, traits_type::size(rhs));
     }
@@ -211,7 +207,7 @@ protected:
         this->_d.end = rhs._d.end;
     }
 
-    explicit basic_string (const_impl_reference rhs)
+    explicit basic_string (const_native_reference rhs)
     {
         this->_d.begin = rhs;
         this->_d.end = rhs + traits_type::size(rhs);
@@ -224,11 +220,17 @@ protected:
         return *this;
     }
     
-    basic_string & operator = (const_impl_reference rhs)
+    basic_string & operator = (const_native_reference rhs)
     {
         this->_d.begin = rhs;
         this->_d.end = rhs + traits_type::size(rhs);
         return *this;
+    }
+    
+public:
+    virtual const_native_reference native () const
+    {
+        return this->_d.begin;
     }
 };
 
@@ -266,6 +268,34 @@ int basic_string<T *>::xcompare (size_type pos1, size_type count1
 };
 
 }} // pfs::mpl
+
+namespace std {
+
+template <>
+ostream & operator << <char const *> (ostream & out, pfs::mpl::string<char const *> const & s)
+{
+    char const * p = s.native();
+    pfs::mpl::string<char const *>::size_type n = s.size();
+    
+    while (n--)
+        out << *p++;
+    
+    return out;
+}
+
+template <>
+ostream & operator<< <char *> (ostream & out, pfs::mpl::string<char *> const & s)
+{
+    char const * p = s.native();
+    pfs::mpl::string<char *>::size_type n = s.size();
+    
+    while (n--)
+        out << *p++;
+    
+    return out;
+}
+
+} // std
 
 #endif /* __PFS_MPL_STDC_STRING_HPP__ */
 

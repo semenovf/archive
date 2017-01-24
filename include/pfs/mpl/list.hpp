@@ -16,8 +16,6 @@
 
 #include <pfs/cxxlang.hpp>
 #include <pfs/iterator.hpp>
-//#include <pfs/exception.hpp>
-//#include <pfs/utility.hpp>
 
 namespace pfs {
 namespace mpl {
@@ -27,6 +25,7 @@ struct list_traits
 {
     typedef ListT<T>                                  native_type;
     typedef typename ListT<T>::size_type              size_type;
+    typedef typename ListT<T>::difference_type        difference_type;
     typedef typename ListT<T>::value_type             value_type;
     typedef typename ListT<T>::reference              reference;
     typedef typename ListT<T>::const_reference        const_reference;
@@ -51,6 +50,7 @@ public:
     typedef typename traits_type::native_type            native_type;
     typedef typename traits_type::value_type             value_type;
     typedef typename traits_type::size_type              size_type;
+    typedef typename traits_type::difference_type        difference_type;
     typedef typename traits_type::reference              reference;
     typedef typename traits_type::const_reference        const_reference;
     typedef typename traits_type::iterator               iterator;
@@ -122,6 +122,7 @@ public:
     typedef typename base_type::native_type            native_type;
     typedef typename base_type::value_type             value_type;
     typedef typename base_type::size_type              size_type;
+    typedef typename base_type::difference_type        difference_type;
     typedef typename base_type::reference              reference;
     typedef typename base_type::const_reference        const_reference;
     typedef typename base_type::iterator               iterator;

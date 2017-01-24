@@ -35,6 +35,7 @@ struct list_traits<T, stdcxx::list>
 {
     typedef typename stdcxx::list<T>::type               native_type;
     typedef typename native_type::size_type              size_type;
+    typedef typename native_type::difference_type        difference_type;
     typedef typename native_type::value_type             value_type;
     typedef typename native_type::reference              reference;
     typedef typename native_type::const_reference        const_reference;
@@ -56,6 +57,7 @@ protected:
     typedef typename base_type::native_type            native_type;
     typedef typename base_type::value_type             value_type;
     typedef typename base_type::size_type              size_type;
+    typedef typename base_type::difference_type        difference_type;
     typedef typename base_type::iterator               iterator;
     typedef typename base_type::const_iterator         const_iterator;
     typedef typename base_type::reverse_iterator       reverse_iterator;

@@ -23,7 +23,7 @@ namespace mpl {
 template <>
 struct string_traits<QString>
 {
-    typedef QString const &                      const_impl_reference;
+    typedef QString const &                      const_native_reference;
     typedef size_t                               size_type;
     typedef QString::value_type                  value_type;
     typedef QChar const *                        const_pointer;
@@ -41,7 +41,7 @@ class basic_string<QString> : public details::basic_string<QString>
 
 public:    
     typedef typename base_type::traits_type            traits_type;
-    typedef typename base_type::const_impl_reference   const_impl_reference;
+    typedef typename base_type::const_native_reference const_native_reference;
     typedef typename base_type::size_type              size_type;
     typedef typename base_type::value_type             value_type;
     typedef typename base_type::const_pointer          const_pointer;
@@ -49,11 +49,6 @@ public:
     typedef typename base_type::const_reverse_iterator const_reverse_iterator;
     
 protected:
-    virtual const_impl_reference xbase () const
-    {
-        return this->_d;
-    }
-    
     virtual size_type xsize () const
     {
         return this->_d.size();
@@ -90,7 +85,7 @@ protected:
         return this->_d.midRef(pos1, count1).compare(rhs._d.midRef(pos2, count2));
     }
 
-    virtual size_type xfind (const_impl_reference rhs, size_type pos) const
+    virtual size_type xfind (const_native_reference rhs, size_type pos) const
     {
         int i = this->_d.indexOf(rhs, pos);
         return i < 0 ? size_type(-1) : size_type(i);
@@ -102,7 +97,7 @@ protected:
         return i < 0 ? size_type(-1) : size_type(i);
     }
     
-    virtual size_type xrfind (const_impl_reference rhs, size_type pos) const
+    virtual size_type xrfind (const_native_reference rhs, size_type pos) const
     {
         int i = this->_d.lastIndexOf(rhs, pos);
         return i < 0 ? size_type(-1) : size_type(i);
@@ -118,7 +113,7 @@ public:
     basic_string ()
     {}
 
-    basic_string (const_impl_reference s)
+    basic_string (const_native_reference s)
         : base_type(s)
     {}
     
@@ -141,9 +136,25 @@ public:
         this->_d.fromWCharArray(str, n == size_type(-1) ? -1 : int(n));
     }
 #endif
+    
+    virtual const_native_reference native () const
+    {
+        return this->_d;
+    }
 };
 
 }} // pfs::mpl
+
+namespace std {
+
+template <>
+inline ostream & operator<< <QString> (ostream & out, pfs::mpl::string<QString> const & s)
+{
+    out << s.native().toUtf8().constData();
+    return out;
+}
+
+} // std
 
 #endif /* __PFS_MPL_IMPL_QT_STRING_HPP__ */
 

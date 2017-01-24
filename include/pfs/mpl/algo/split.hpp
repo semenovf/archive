@@ -39,7 +39,7 @@ Sequence * split (
 		, Sequence * result = 0)
 {
 	typedef typename Sequence::value_type value_type;
-	typedef typename InputIt2::difference_type difference_type;
+	typedef typename Sequence::difference_type difference_type;
 
 	if (begin == end)
 		return result;

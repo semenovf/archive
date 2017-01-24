@@ -48,6 +48,7 @@ public:
     typedef multimap_traits<Key, T, MultiMapT>           traits_type;
     typedef typename traits_type::native_type            native_type;
     typedef typename traits_type::size_type              size_type;
+    typedef typename traits_type::difference_type        difference_type;
     typedef typename traits_type::key_type               key_type;
     typedef typename traits_type::mapped_type            mapped_type;
     typedef typename traits_type::iterator               iterator;
@@ -134,6 +135,7 @@ class multimap : public basic_multimap<Key, T, MultiMapT>
 public:    
     typedef typename base_type::native_type            native_type;
     typedef typename base_type::size_type              size_type;
+    typedef typename base_type::difference_type        difference_type;
     typedef typename base_type::key_type               key_type;
     typedef typename base_type::mapped_type            mapped_type;
     typedef typename base_type::iterator               iterator;

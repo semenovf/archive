@@ -216,3 +216,13 @@ project "test-mpl-list"
 project "test-mpl-map"
     include("test-mpl-map/project.gbs")
 -- END PROJECT
+
+-- BEGIN PROJECT
+project "test-mpl-fs-path"
+    include("test-mpl-fs-path/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-mpl-string_builder"
+    include("test-mpl-string_builder/project.gbs")
+-- END PROJECT
