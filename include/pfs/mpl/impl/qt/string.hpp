@@ -143,18 +143,27 @@ public:
     }
 };
 
-}} // pfs::mpl
-
-namespace std {
-
 template <>
-inline ostream & operator<< <QString> (ostream & out, pfs::mpl::string<QString> const & s)
+class c_str<QString>
 {
-    out << s.native().toUtf8().constData();
-    return out;
-}
+public:
+    typedef string<QString> string_type;
+    
+private:
+    QByteArray _d;
+    
+public:
+    explicit c_str (string_type const & s)
+        : _d(s.native().toUtf8())
+    {}
+    
+    char const * operator () () const
+    {
+        return _d.constData();
+    }
+};
 
-} // std
+}} // pfs::mpl
 
 #endif /* __PFS_MPL_IMPL_QT_STRING_HPP__ */
 

@@ -16,8 +16,8 @@ struct canonical_data_t
 };
 
 static canonical_data_t canonical_data[] = {
-	  { string_type("abc/../../abc/file.txt") , string_type("abc/file.txt") }
-	, { string_type("/")                      , string_type("/") }
+	  { string_type("/")                      , string_type("/") }
+    , { string_type("abc/../../abc/file.txt") , string_type("abc/file.txt") }
 	, { string_type("/abc/../abc/file.txt")   , string_type("/abc/file.txt") }
 	, { string_type("abc/../abc/file.txt")    , string_type("abc/file.txt") }
 	, { string_type("abc/../../abc/file.txt") , string_type("abc/file.txt") }
@@ -51,7 +51,7 @@ void canonical ()
 
 		path_type canonical = path_type(p->path_str).canonical();
 
-		oss << "'" << canonical.native()
+		oss << "'" << canonical.str()
 			<< "' is canonical for '"
 			<< p->path_str << "'";
 

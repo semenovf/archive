@@ -15,8 +15,8 @@
 #define __PS_MPL_FS_PATH_HPP__
 
 #include <pfs/iterator.hpp>
+#include <pfs/exception.hpp>
 #include <pfs/mpl/algo/split.hpp>
-#include <pfs/mpl/string_builder.hpp>
 #include <pfs/mpl/fs/traits.hpp>
 #include <pfs/mpl/fs/file_status.hpp>
 
@@ -39,49 +39,10 @@ private:
 	string_type _path;
 
 public:
-
     static string_type separator ()
     {
         return traits_type::separator();
     }
-
-public:
-
-//	enum filter {
-//		  NoFilter   = 0
-//		, Dirs	     = 0x0001	  // List directories that match the filters.
-//		, AllDirs	 = 0x0400	  // List all directories; i.e. don't apply the filters to directory names.
-//		, Files	     = 0x0002	  // List files.
-//		, Drives	 = 0x0004	  // List disk drives (ignored under Unix).
-//		, NoSymLinks = 0x0008      // Do not list symbolic links (ignored by operating systems that don't support symbolic links).
-//		, NoDotAndDotDot = 0x1000 // Do not list the special entries "." and "..".
-//		, NoDot      = 0x2000     // Do not list the special entry ".".
-//		, NoDotDot   = 0x4000     // Do not list the special entry "..".
-//		, AllEntries = Dirs | Files | Drives // List directories, files, drives and symlinks (this does not list broken symlinks unless you specify System).
-//		, Hidden     = 0x0100      // List hidden files (on Unix, files starting with a ".").
-//		, System     = 0x0200      // List system files (on Unix, FIFOs, sockets and device files are included; on Windows, .lnk files are included)
-//
-//		// Use canRead | canWrite | canExec to check specific access of the application
-//		//, Readable   = 0x0010      // List files for which the application has read access. The Readable value needs to be combined with Dirs or Files.
-//		//, Writable   = 0x0020      // List files for which the application has write access. The Writable value needs to be combined with Dirs or Files.
-//		//, Executable = 0x0040      // List files for which the application has execute access. The Executable value needs to be combined with Dirs or Files.
-//		//, Modified   = 0x080      // Only list files that have been modified (ignored on Unix).
-//		//, CaseSensitive = 0x800   // The filter should be case sensitive.
-//	};
-
-//	enum sort_order {
-//		  NoSort      = -1    // Not sorted by default.
-//		, Name        = 0x00  // Sort by name.
-//		, Time        = 0x01  // Sort by time (modification time).
-//		, Size        = 0x02  // Sort by file size.
-//		, Type        = 0x80  // Sort by file type (extension).
-//		, Unsorted    = 0x03  // Do not sort.
-//		, DirsFirst   = 0x04  // Put the directories first, then the files.
-//		, DirsLast    = 0x20  // Put the files first, then the directories.
-//		, Reversed    = 0x08  // Reverse the sort order.
-//		, IgnoreCase  = 0x10  // Sort case-insensitively.
-//		, LocaleAware = 0x40  // Sort items appropriately using the current locale settings.
-//	};
 
 public:
 	class iterator
@@ -89,8 +50,8 @@ public:
 		friend class path;
 		friend class range;
 
-	    typedef typename stringlist_type::iterator        pointer;
-	    typedef typename stringlist_type::reference       reference;
+	    typedef typename stringlist_type::iterator  pointer;
+	    typedef typename stringlist_type::reference reference;
 
 		pointer _p;
 
@@ -147,11 +108,6 @@ public:
 	    	return _p;
 	    }
 
-//		friend void swap (iterator & lhs, iterator & rhs)
-//		{
-//			pfs::swap(lhs._p, rhs._p);
-//		}
-
 		friend bool operator == (const iterator & lhs, const iterator & rhs)
 		{
 			return lhs._p == rhs._p;
@@ -161,26 +117,6 @@ public:
 		{
 	    	return lhs._p != rhs._p;
 		}
-
-//		friend bool operator < (const iterator & lhs, const iterator & rhs)
-//		{
-//			return lhs._p < rhs._p;
-//		}
-//
-//		friend bool operator <= (const iterator & lhs, const iterator & rhs)
-//		{
-//			return lhs._p <= rhs._p;
-//		}
-//
-//		friend bool operator > (const iterator & lhs, const iterator & rhs)
-//		{
-//			return lhs._p > rhs._p;
-//		}
-//
-//		friend bool operator >= (const iterator & lhs, const iterator & rhs)
-//		{
-//			return lhs._p >= rhs._p;
-//		}
 	};
 
 	class range
@@ -267,11 +203,11 @@ public:
     }
 
 	/**
-	 * @brief Returns native representation of path.
+	 * @brief Returns string representation of path.
 	 *
-	 * @return Native representation of path
+	 * @return String representation of path.
 	 */
-	string_type const & native () const
+	string_type const & str () const
 	{
 		return _path;
 	}
@@ -280,9 +216,6 @@ public:
 	{
 		return _path.empty();
 	}
-
-//	const_iterator begin () const;
-//	const_iterator end () const;
 
 	bool is_absolute () const
     {
@@ -307,6 +240,30 @@ public:
 	}
 
 public: // static
+    
+    /**
+     * @brief Determines file type by path.
+     * @param p Path.
+     * @param nx Pointer to save error message(s).
+     * @return File type (@see @a file_type_enum). Check @c errno if 
+     *         return value is @c status_error.
+     */
+    static file_status status (path const & p);
+
+    /**
+     * @brief Checks if @ path exists.
+     * @param p Path.
+     * @param nx Pointer to save error message(s).
+     * @return @c true if @c path exists, @c false otherwise.
+     *
+     * @note Path exists if it's status is not equals to @c status_error nor @c file_not_found.
+     */
+    static bool exists (path const & p)
+    {
+        file_status st = file_status(p);
+        return ft.type() != status_error && ft.type() != file_not_found;
+    }
+
     /**
      * @brief Joins two path instances.
      *
@@ -314,11 +271,11 @@ public: // static
      */
     static path join (path const & p1, path const & p2)
     {
-        string_builder_type r;
-        r.push_back(p1.native());
-        r.push_back(separator());
-        r.push_back(p2.native());
-        return path(r.str());
+        string_builder_type sb;
+        sb.push_back(p1.str());
+        sb.push_back(separator());
+        sb.push_back(p2.str());
+        return path(sb.template str<string_type>());
     }
 
     /**
@@ -353,7 +310,7 @@ public: // static
 template <typename Traits>
 path<Traits> path<Traits>::canonical () const
 {
-    stringlist_type comp;
+    stringlist_type parts;
 	range rn(_path);
 	iterator it = rn.begin();
 	iterator it_end = rn.end();
@@ -362,10 +319,10 @@ path<Traits> path<Traits>::canonical () const
 		if (*it == string_type(".")) {
 			; // ignore
 		} else if (*it == string_type("..")) {
-			if (comp.size() > 0)
-				comp.pop_front();
+			if (parts.size() > 0)
+				parts.pop_front();
 		} else {
-			comp.push_front(*it);
+			parts.push_front(*it);
 		}
 
 		++it;
@@ -373,13 +330,13 @@ path<Traits> path<Traits>::canonical () const
 
 	pathlist_type pl;
 
-	while (comp.size() > 0) {
-		pl.push_back(path(comp.back()));
-		comp.pop_back();
+	while (parts.size() > 0) {
+		pl.push_back(path(parts.back()));
+		parts.pop_back();
 	}
 
-//	if (this->is_absolute())
-//		return join(path(), join(pl));
+	if (this->is_absolute())
+		return join(path(), join(pl));
 
 	return join(pl);
 }
@@ -393,40 +350,19 @@ path<Traits> path<Traits>::join (pathlist_type const & pl)
 	typename pathlist_type::const_iterator it_end = pl.cend();
 
 	if (it != it_end) {
-//		r.push_back(it->native());
+		r.push_back(it->str());
 		++it;
 	}
 
 	while (it != it_end) {
-//		r.push_back(separator());
-//		r.push_back(it->native());
+		r.push_back(separator());
+		r.push_back(it->str());
 		++it;
 	}
 
-	return path();//(r.str<typename string_type>());
+	return path(r.template str<string_type>());
 }
 
-/**
- * @brief Determines file type by path.
- * @param p Path.
- * @param nx Pointer to save error message(s).
- * @return File type (@see @a file_type_enum)
- */
-//file_status get_file_status (path const & p, error_code * ex = 0);
-
-/**
- * @brief Checks if @ path exists.
- * @param p Path.
- * @param nx Pointer to save error message(s).
- * @return @c true if @c path exists, @c false otherwise.
- *
- * @note Path exists if it's status is not equals to @c status_error nor @c file_not_found.
- */
-//inline bool exists (const path & p, error_code * ex = 0)
-//{
-//	file_status ft = get_file_status(p, ex);
-//	return ft.type() != status_error && ft.type() != file_not_found;
-//}
 
 /**
  * @brief Strip directory and suffix from path.

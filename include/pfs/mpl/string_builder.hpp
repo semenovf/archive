@@ -40,45 +40,7 @@ namespace details {
     
 template <typename T>
 class basic_string_builder 
-{
-public:
-//    typedef string_builder_traits<T>                     traits_type;
-////    typedef typename traits_type::const_native_reference const_native_reference;
-////    typedef typename traits_type::size_type              size_type;
-//    typedef typename traits_type::value_type             value_type;
-////    typedef typename traits_type::const_pointer          const_pointer;
-////    typedef typename traits_type::const_iterator         const_iterator;
-////    typedef typename traits_type::const_reverse_iterator const_reverse_iterator;
-////    typedef typename traits_type::data_type              data_type;
-//
-//public:
-//    data_type _d;
-//
-//public:
-////    virtual size_type xsize () const = 0;
-////    virtual const_iterator xbegin () const = 0;
-////    virtual const_iterator xend () const = 0;
-////    virtual const_reverse_iterator xrbegin () const = 0;
-////    virtual const_reverse_iterator xrend () const = 0;
-////    virtual value_type xat (size_type pos) const = 0;
-////
-////    virtual int xcompare (size_type pos1, size_type count1
-////        , basic_string const & rhs, size_type pos2, size_type count2) const = 0;
-////    virtual size_type xfind (const_native_reference rhs, size_type pos) const = 0;
-////    virtual size_type xfind (value_type c, size_type pos) const = 0;
-////    virtual size_type xrfind (value_type c, size_type pos) const = 0;
-////    virtual size_type xrfind (const_native_reference rhs, size_type pos) const = 0;
-////    
-////public:
-////    basic_string ()
-////    {}
-////
-////    basic_string (data_type const & d)
-////        : _d(d)
-////    {}
-////    
-////    virtual const_native_reference native () const = 0;
-};
+{};
 
 } // details
 
@@ -90,8 +52,6 @@ class string_builder : public basic_string_builder<T>
 public:
     typedef T value_type;
     typedef typename base_type::size_type              size_type;
-//    typedef typename base_type::string_type            string_type;
-//    typedef typename base_type::const_pointer          const_pointer;
 
 public:
     string_builder ();

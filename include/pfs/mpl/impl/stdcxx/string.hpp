@@ -219,17 +219,26 @@ public:
     }
 };
 
-}} // pfs::mpl
-
-namespace std {
-
 template <>
-inline ostream & operator<< <std::string> (ostream & out, pfs::mpl::string<std::string> const & s)
+class c_str<std::string>
 {
-    out << s.native();
-    return out;
-}
+public:
+    typedef string<std::string> string_type;
+    
+private:
+    string_type const & _d;
+    
+public:
+    explicit c_str (string_type const & s)
+        : _d(s)
+    {}
+    
+    char const * operator () () const
+    {
+        return _d.native().c_str();
+    }
+};
 
-} // std
+}} // pfs::mpl
 
 #endif /* __PFS_MPL_STDCXX_STRING_HPP__ */

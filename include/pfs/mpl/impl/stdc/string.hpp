@@ -267,35 +267,62 @@ int basic_string<T *>::xcompare (size_type pos1, size_type count1
     return result;
 };
 
+namespace details {
+namespace stdc {
+
+class c_str
+{
+protected:
+    char * _d;
+
+private:    
+    c_str (c_str const &);
+    c_str & operator = (c_str const &);
+    
+public:
+    explicit c_str (char const * s, size_t n)
+        : _d(new char[n + 1])
+    {
+        std::memcpy(_d, s, n);
+        _d[n] = '\0';
+    }
+
+    virtual ~c_str ()
+    {
+        delete [] _d;
+    }
+
+    char const * operator () () const
+    {
+        return _d;
+    }
+};
+
+}} // details::stdc
+
+template <>
+class c_str<char const *> : public details::stdc::c_str
+{
+public:
+    typedef string<char const *> string_type;
+    
+    explicit c_str (string_type const & s)
+        : details::stdc::c_str(s.cbegin(), s.size())
+    {}
+};
+
+template <>
+class c_str<char *> : public details::stdc::c_str
+{
+public:
+    typedef string<char *> string_type;
+    
+    explicit c_str (string_type const & s)
+        : details::stdc::c_str(s.cbegin(), s.size())
+    {}
+};
+
 }} // pfs::mpl
-
-namespace std {
-
-template <>
-ostream & operator << <char const *> (ostream & out, pfs::mpl::string<char const *> const & s)
-{
-    char const * p = s.native();
-    pfs::mpl::string<char const *>::size_type n = s.size();
-    
-    while (n--)
-        out << *p++;
-    
-    return out;
-}
-
-template <>
-ostream & operator<< <char *> (ostream & out, pfs::mpl::string<char *> const & s)
-{
-    char const * p = s.native();
-    pfs::mpl::string<char *>::size_type n = s.size();
-    
-    while (n--)
-        out << *p++;
-    
-    return out;
-}
-
-} // std
 
 #endif /* __PFS_MPL_STDC_STRING_HPP__ */
 

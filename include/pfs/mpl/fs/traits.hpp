@@ -16,6 +16,7 @@
 
 #include <pfs/mpl/list.hpp>
 #include <pfs/mpl/string.hpp>
+#include <pfs/mpl/string_builder.hpp>
 
 namespace pfs {
 namespace mpl {
@@ -40,6 +41,19 @@ struct traits
     {
         return string_type("/");
     }
+    
+    class filesystem_error
+    {
+        string_type _msg;
+
+    public:
+        explicit filesystem_error (string_type const & arg);
+
+        string_type const & what () const pfs_noexcept
+        {
+            return _msg;
+        }
+    };
 };
 
 }}} // pfs::mpl::cli

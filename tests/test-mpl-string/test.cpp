@@ -75,6 +75,7 @@ void test_description (char const * title)
 #define STR_TAIL    3
 #define STR_MID     4
 #define STR_DIFF    4
+#define STR_EMPTY   5
 
 template <typename StringImpl>
 StringImpl string_samples (int i);
@@ -88,6 +89,7 @@ char const * string_samples<char const *> (int i)
         , "ABCDE"
         , "BCDEF"
         , "BCDE"
+        , ""
     };
     
     return s[i];
@@ -102,6 +104,7 @@ char * string_samples<char *> (int i)
         , "ABCDE"
         , "BCDEF"
         , "BCDE"
+        , ""
     };
     
     return & s[i][0];
@@ -116,6 +119,7 @@ wchar_t const * string_samples<wchar_t const *> (int i)
         , L"ABCDE"
         , L"BCDEF"
         , L"BCDE"
+        , L""
     };
     
     return s[i];
@@ -130,6 +134,7 @@ wchar_t * string_samples<wchar_t *> (int i)
         , L"ABCDE"
         , L"BCDEF"
         , L"BCDE"
+        , L""
     };
     
     return & s[i][0];
@@ -144,6 +149,7 @@ std::string string_samples<std::string> (int i)
         , std::string("ABCDE")
         , std::string("BCDEF")
         , std::string("BCDE")
+        , std::string()
     };
     
     return s[i];
@@ -158,6 +164,7 @@ std::wstring string_samples<std::wstring> (int i)
         , std::wstring(L"ABCDE")
         , std::wstring(L"BCDEF")
         , std::wstring(L"BCDE")
+        , std::wstring()
     };
     
     return s[i];
@@ -173,6 +180,7 @@ QString string_samples<QString> (int i)
         , QString("ABCDE")
         , QString("BCDEF")
         , QString("BCDE")
+        , QString()
     };
     
     return s[i];
@@ -183,6 +191,7 @@ QString string_samples<QString> (int i)
 #include "test_compare.hpp"
 #include "test_find.hpp"
 #include "test_substr.hpp"
+#include "test_cast.hpp"
 
 int main (int argc, char *argv[])
 {
@@ -233,6 +242,17 @@ int main (int argc, char *argv[])
 
 #ifdef QT_CORE_LIB
     test_substr<QString>();
+#endif
+
+    test_c_str_cast<char const *>();
+    test_c_str_cast<char *>();
+//    test_c_str_cast<wchar_t const *>(); // TODO
+//    test_c_str_cast<wchar_t *>();       // TODO
+    test_c_str_cast<std::string>();
+//    test_c_str_cast<std::wstring>();    // TODO
+
+#ifdef QT_CORE_LIB
+    test_c_str_cast<QString>();
 #endif
 
 	return END_TESTS;

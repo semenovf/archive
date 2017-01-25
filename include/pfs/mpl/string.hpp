@@ -415,12 +415,26 @@ inline bool operator >= (string<T> const & lhs
     return lhs.compare(rhs) >= 0;
 }
 
+template <typename T>
+class c_str
+{
+public:
+    typedef string<T> string_type;
+    
+public:
+    explicit c_str (string_type const & s);
+    char const * operator () () const;
+};
+
 }} // pfs::mpl
 
 namespace std {
 
 template <typename T>
-ostream & operator << (ostream & out, pfs::mpl::string<T> const & s);
+ostream & operator << (ostream & out, pfs::mpl::string<T> const & s)
+{
+    return out << pfs::mpl::c_str<pfs::mpl::string<T> >(s)();
+}
 
 }
 

@@ -28,10 +28,8 @@ class basic_string_builder<char> : public details::basic_string_builder<char>
     typedef std::string data_type;
     
 public:    
-    typedef pfs::mpl::string<std::string>       string_type;
-    typedef string_type::size_type              size_type;
-//    typedef string_type::const_native_reference const_native_reference;
-//    typedef string_type::const_pointer          const_pointer;
+    typedef pfs::mpl::string<std::string> string_type;
+    typedef string_type::size_type        size_type;
     
 protected:
     data_type _d;
@@ -89,6 +87,13 @@ template <>
 pfs::mpl::string<std::string> string_builder<char>::str<pfs::mpl::string<std::string> > () const
 {
     return pfs::mpl::string<std::string>(_d);
+}
+
+template <>
+template <>
+char const * string_builder<char>::str<char const *> () const
+{
+    return _d.data();
 }
 
 }}
