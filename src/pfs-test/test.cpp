@@ -169,6 +169,13 @@ void add_total (size_t n)
 	ctx.add_total(n);
 }
 
+void add_total_x (size_t n, std::string const & caption)
+{
+	context & ctx = context::instance();
+	ctx.add_total(n);
+    std::cout << ctx.output_prefix(true) << "*** " << caption << std::endl;
+}
+
 void todo (const std::string & expr, bool result, const std::string & filename, int line)
 {
 	context & ctx = context::instance();
