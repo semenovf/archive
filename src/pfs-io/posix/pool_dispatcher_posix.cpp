@@ -112,7 +112,7 @@ void pool::process_server (pfs::io::server & server
             break;
 
         default:
-            PFS_DEBUG(fprintf(stderr, "**WARN: untested server type: %d\n",server. type()));
+            PFS_DEBUG(fprintf(stderr, "**WARN: untested server type: %d\n", server.type()));
             this->push_back(client, context._filter_events);
             break;
         }

@@ -164,16 +164,16 @@ public:
     void dispatch ();
     
 public: // signals
-    signal2<device, server> accepted;     // accept connection (for connection based server devices)
-    signal1<device>         ready_read;
-    signal1<device>         opened;       // opened (for regular files, servers) or connected (for connection based client devices)
-	signal1<device>         disconnected; // disconnection for connection based devices, including peer devices
-    signal1<device>         opening;      // open (connection) in progress (for connection based client devices)
+    signal2<device, server>     accepted;           // accept connection (for connection based server devices)
+    signal1<device>             ready_read;
+    signal1<device>             opened;             // opened (for regular files, servers) or connected (for connection based client devices)
+	signal1<device>             disconnected;       // disconnection for connection based devices, including peer devices
+    signal1<device>             opening;            // open (connection) in progress (for connection based client devices)
     signal2<device, error_code> open_failed;
-    signal1<server>         server_opened;
-    signal1<server>         server_opening;
+    signal1<server>             server_opened;
+    signal1<server>             server_opening;
     signal2<server, error_code> server_open_failed;
-	signal1<error_code>     error;
+	signal1<error_code>         error;
 };
 
 template <typename DeviceTag>

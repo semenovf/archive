@@ -127,7 +127,10 @@ error_code inet_socket::reopen ()
 {
 	close();
 	error_code ex = open(true);
-	if (!ex) ex = connect(_sockaddr.sin_addr.s_addr, _sockaddr.sin_port);
+    
+    // Need conversion ntoh() because connect() will convert again (see connect() above)
+    //
+	if (!ex) ex = connect(ntohl(_sockaddr.sin_addr.s_addr), ntohs(_sockaddr.sin_port));
 	return ex;
 }
 

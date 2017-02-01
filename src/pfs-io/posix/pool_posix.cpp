@@ -63,14 +63,14 @@ struct pool : public bits::pool
 	void delete_deferred (io::device d)
 	{
 		pfs::lock_guard<pfs::mutex> locker(mtx);
-		PFS_ASSERT(device_map.erase(d.native_handle()) == 1);
+		device_map.erase(d.native_handle());
 		update = true;
 	}
 
 	void delete_deferred (io::server s)
 	{
 		pfs::lock_guard<pfs::mutex> locker(mtx);
-		PFS_ASSERT(server_map.erase(s.native_handle()) == 1);
+		server_map.erase(s.native_handle());
 		update = true;
 	}
 
