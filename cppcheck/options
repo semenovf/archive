@@ -1,1 +1,6 @@
--U__COMMENT__
+-U__COMMENT__ -U_MSC_VER -U__APPLE__ -U__BORLANDC__ \
+-UVXWORKS -U_AIX -U_NDEBUG -U_SCO_DS_ -U_SEQUENT_ \
+-U__CYGWIN__ -U__DGUX__ -U__EMU_SYMBIAN_OS__ \
+-U__MWERKS__ -U_SCO_DS -U__EMX__ -U__OS2__ \
+-U__FIXME__ -U__GCCE__ -D__GNUC__ \
+-D__cplusplus=199711L
