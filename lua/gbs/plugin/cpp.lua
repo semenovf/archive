@@ -138,7 +138,7 @@ function plugin:transaction ()
     end
 
     table.insert(projectIncludeDirList, string.quote("../../include"))
-    
+
     if projectType == "shared-lib" or projectType == "static-lib" then
         if projectLang == "C++" then
             table.insert(projectSrcFileList, string.quote("../../include/**.hpp"));
@@ -194,7 +194,13 @@ function plugin:transaction ()
 
     projectContent:push_back("    targetdir    " .. string.quote(projectTargetDir));
     projectContent:push_back("    targetsuffix " .. string.quote("-d"));
-    projectContent:push_back("    links        {  }");
+
+    if projectType == "test" then
+        projectContent:push_back("    links        { \"pfs-test-d\" }");
+    else
+        projectContent:push_back("    links        {  }");
+    end
+
     projectContent:push_back("");
     projectContent:push_back("configuration " .. string.quote("release"));
     projectContent:push_back("    flags        { \"FatalWarnings\" }");
@@ -206,7 +212,13 @@ function plugin:transaction ()
     end
 
     projectContent:push_back("    targetdir    " .. string.quote(projectTargetDir));
-    projectContent:push_back("    links        {  }");
+
+    if projectType == "test" then
+        projectContent:push_back("    links        { \"pfs-test\" }");
+    else
+        projectContent:push_back("    links        {  }");
+    end
+
     projectContent:push_back("");
 
     if #projectDependencies > 0 then
