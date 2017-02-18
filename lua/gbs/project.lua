@@ -93,10 +93,10 @@ function project:create ()
 
     local solutionContent = require("pfs.vector"):new();
     solutionContent:push_back("");
-    solutionContent:push_back("-- BEGIN PROJECT");
+--    solutionContent:push_back("-- BEGIN PROJECT");
     solutionContent:push_back("project " .. string.quote(projectName));
     solutionContent:push_back("    include(" .. string.quote(projectName .. "/" .. projectFileName) .. ")");
-    solutionContent:push_back("-- END PROJECT");
+--    solutionContent:push_back("-- END PROJECT");
 
     trn:AppendLinesToFile(solutionFile
         , solutionContent:data()
