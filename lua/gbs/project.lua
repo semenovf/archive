@@ -72,9 +72,9 @@ function project:create ()
 
     local projectDir   = fs.join(".gbs", projectName);
     local solutionFile = fs.join(".gbs", solutionFileName);
-    
+
     local trn = require("gbs.transaction"):begin(verbose);
-    
+
     trn:PathExists(solutionFile, "Check if creating project is inside of solution directory");
     trn:PathNotExists(projectName, "Project directory already exists: " .. projectDir);
 
@@ -83,12 +83,12 @@ function project:create ()
     if genDoxyfile then
         -- trn:CheckExecutable("doxygen")
     end
-    
+
 
     trn:Function(function () return project.registered(solutionFile, projectName); end
         , "Project already registered: " .. projectName);
     trn:MakeDir(projectDir, "Create project directory: " .. projectDir);
-    
+
     trn:Transaction(self:createPlugin():transaction());
 
     local solutionContent = require("pfs.vector"):new();
