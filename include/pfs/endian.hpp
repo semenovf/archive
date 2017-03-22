@@ -147,10 +147,13 @@ public:
     static unsigned long long bswap (unsigned long long i);
 #endif
 
+#undef bswap_16
+#undef bswap_32
 	static int16_t    bswap_16 (int16_t i);
 	static int32_t    bswap_32 (int32_t i);
 
 #ifdef PFS_HAVE_INT64
+#undef bswap_64
 	static int64_t    bswap_64 (int64_t i);
 #endif
 };
