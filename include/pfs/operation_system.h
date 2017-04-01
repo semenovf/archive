@@ -33,6 +33,20 @@ typedef struct operation_system
     int (* descover) (struct operation_system * self);
     char const * (* type) (struct operation_system * self);
     char const * (* family) (struct operation_system * self);
+    int (* exec) (char const * command);
+    int (* execv) (char const * command
+            , char * const argv[]
+            , char * const envp[]);
+    int (* exec_capture) (char const * command
+/*            , char const * input, size_t len*/
+            , void (* stdout_handler) (char const * buf, size_t n)
+            , void (* stderr_handler) (char const * buf, size_t n));
+    int (* execv_capture) (char const * command
+            , char * const argv[]
+            , char * const envp[]
+/*            , char const * input, size_t len*/
+            , void (* stdout_handler) (char const *, size_t)
+            , void (* stderr_handler) (char const *, size_t));
 } operation_system_t;
 
 operation_system_t * operation_system_create ();

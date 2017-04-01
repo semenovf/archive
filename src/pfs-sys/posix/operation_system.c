@@ -6,10 +6,33 @@
 
 #include <stdio.h>
 
+//extern pid_t popen3 (char const * command, int * writefd, int * readfd, int * errfd);
+pid_t popen3 (char const * command
+        , char * const argv[]
+        , char * const envp[]
+        , int * writefd
+        , int * readfd
+        , int * errfd);
+
 static void         os_destroy (struct operation_system * self);
 static int          os_descover (struct operation_system * self);
 static char const * os_type (struct operation_system * self);
 static char const * os_family (struct operation_system * self);
+static int os_exec (char const * command);
+static int os_execv (char const * command
+            , char * const argv[]
+            , char * const envp[]);
+static int os_exec_capture (char const * command
+/*            , char const * input, size_t len*/
+            , void (* stdout_handler) (char const * buf, size_t n)
+            , void (* stderr_handler) (char const * buf, size_t n));
+static int os_execv_capture (char const * command
+            , char * const argv[]
+            , char * const envp[]
+/*            , char const * input, size_t len*/
+            , void (* stdout_handler) (char const *, size_t)
+            , void (* stderr_handler) (char const *, size_t));
+
 
 typedef struct operation_system_impl
 {
@@ -29,15 +52,19 @@ typedef struct operation_system_impl
 
 operation_system_t * operation_system_create ()
 {
-   operation_system_impl_t * result = malloc(sizeof(operation_system_impl_t)); 
-   memset(result, 0, sizeof(operation_system_impl_t));
+    operation_system_impl_t * result = malloc(sizeof(operation_system_impl_t)); 
+    memset(result, 0, sizeof(operation_system_impl_t));
    
-   result->base.destroy  = os_destroy;
-   result->base.descover = os_descover;
-   result->base.type     = os_type;
-   result->base.family   = os_family;
-   
-   return (struct operation_system *)result;
+    result->base.destroy  = os_destroy;
+    result->base.descover = os_descover;
+    result->base.type     = os_type;
+    result->base.family   = os_family;
+    result->base.exec = os_exec;
+    result->base.execv = os_execv;
+    result->base.exec_capture = os_exec_capture;
+    result->base.execv_capture = os_execv_capture;
+
+    return (struct operation_system *)result;
 }
 
 void os_destroy (operation_system_t * self)
@@ -112,4 +139,106 @@ char const * os_family (struct operation_system * self)
         return OS_FAMILY_DOS_S;
     
     return OS_FAMILY_UNKNOWN_S;
+}
+
+//
+// [ENV33-C. Do not call system()](https://www.securecoding.cert.org/confluence/pages/viewpage.action?pageId=2130132)
+//
+int os_exec (char const * command)
+{
+//    int std_out;
+//    int std_err;
+//    
+//    pid_t result = popen3(command, NULL, & std_out, & std_err);
+//
+//    if (result < 0) {
+//        fprintf(stderr, "errno: %d for command '%s'\n", errno, command);   
+//    }
+//    
+//    return result;
+    return -1;
+}
+
+int os_execv (char const * command
+            , char * const argv[]
+            , char * const envp[])
+{
+    return -1;
+}
+
+
+#define BUFSIZE 256
+
+static int os_exec_capture (char const * command
+//            , char const * input, size_t len
+            , void (* stdout_handler) (char const *, size_t)
+            , void (* stderr_handler) (char const *, size_t))
+{
+//    int std_in;
+//    int std_out;
+//    int std_err;
+//    
+//    pid_t result = popen3(command, & std_in, & std_out, & std_err);
+//    
+//    if (result > 0) {
+//        char buf[BUFSIZE];
+//
+//        write(std_in, input, len);
+//        
+//        ssize_t n = 0;
+//        
+//        while ((n = read(std_out, buf, BUFSIZE)) > 0) {
+//            stdout_handler(buf, (size_t)n);
+//        }
+//
+//        while ((n = read(std_err, buf, BUFSIZE)) > 0) {
+//            stderr_handler(buf, (size_t)n);
+//        }
+//    } else {
+//        printf("errno: %d for command '%s'\n", errno, command);   
+//    }
+//        
+//    return result;
+    return -1;
+}
+
+int os_execv_capture (char const * command
+            , char * const argv[]
+            , char * const envp[]
+//            , char const * input, size_t len
+            , void (* stdout_handler) (char const *, size_t)
+            , void (* stderr_handler) (char const *, size_t))
+{
+    int std_in;
+    int std_out;
+    int std_err;
+    
+    pid_t result = popen3 (command, argv, envp            
+            , & std_in, & std_out, & std_err);
+    
+    if (result > 0) {
+        ssize_t n = 0;
+        char buf[BUFSIZE];
+
+/*        if (input && len > 0) {
+            write(std_in, input, len);
+        }
+*/        
+        if (stdout_handler) {
+            while ((n = read(std_out, buf, BUFSIZE)) > 0) {
+                stdout_handler(buf, (size_t)n);
+            }
+        }
+
+        if (stderr_handler) {
+            while ((n = read(std_err, buf, BUFSIZE)) > 0) {
+                stderr_handler(buf, (size_t)n);
+            }
+        }
+    } else {
+        printf("errno: %d for command '%s'\n", errno, command);   
+    }
+
+    printf("FINISHED: '%s'\n", command);   
+    return result;
 }
