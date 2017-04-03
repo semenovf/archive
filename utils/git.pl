@@ -1,2 +1,1 @@
-#!/bin/env perl
-
+#!/usr/bin/perl -w
