@@ -6,8 +6,7 @@
 
 #include <stdio.h>
 
-//extern pid_t popen3 (char const * command, int * writefd, int * readfd, int * errfd);
-pid_t popen3 (char const * command
+extern pid_t popen3 (char const * command
         , char * const argv[]
         , char * const envp[]
         , int * writefd
@@ -55,13 +54,13 @@ operation_system_t * operation_system_create ()
     operation_system_impl_t * result = malloc(sizeof(operation_system_impl_t)); 
     memset(result, 0, sizeof(operation_system_impl_t));
    
-    result->base.destroy  = os_destroy;
-    result->base.descover = os_descover;
-    result->base.type     = os_type;
-    result->base.family   = os_family;
-    result->base.exec = os_exec;
-    result->base.execv = os_execv;
-    result->base.exec_capture = os_exec_capture;
+    result->base.destroy       = os_destroy;
+    result->base.descover      = os_descover;
+    result->base.type          = os_type;
+    result->base.family        = os_family;
+    result->base.exec          = os_exec;
+    result->base.execv         = os_execv;
+    result->base.exec_capture  = os_exec_capture;
     result->base.execv_capture = os_execv_capture;
 
     return (struct operation_system *)result;
@@ -107,6 +106,7 @@ char const * os_type (struct operation_system * self)
             || strstr(s->uts.sysname, "CYGWIN") != 0)
         return OS_TYPE_CYGWIN_S;
     
+/*
     if (strstr(s->uts.sysname, "sunos") != 0
             || strstr(s->uts.sysname, "SunOS") != 0
             || strstr(s->uts.sysname, "SUNOS") != 0)
@@ -115,7 +115,7 @@ char const * os_type (struct operation_system * self)
     if (strstr(s->uts.sysname, "hp-ux") != 0
             || strstr(s->uts.sysname, "HP-UX") != 0)
         return OS_TYPE_HPUX_S;
-    
+*/    
     return OS_TYPE_UNKNOWN_S;
 }
 
@@ -127,8 +127,8 @@ char const * os_family (struct operation_system * self)
     if (strcmp(OS_TYPE_LINUX_S, type) == 0
             || strcmp(OS_TYPE_BSD_S, type) == 0
             || strcmp(OS_TYPE_MACOS_S, type) == 0
-            || strcmp(OS_TYPE_SOLARIS_S, type) == 0
-            || strcmp(OS_TYPE_HPUX_S, type) == 0)
+/*            || strcmp(OS_TYPE_SOLARIS_S, type) == 0
+            || strcmp(OS_TYPE_HPUX_S, type) == 0*/)
         return OS_FAMILY_UNIX_S;
     
     if (strcmp(OS_TYPE_MSWIN_S, type) == 0 

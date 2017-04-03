@@ -15,8 +15,8 @@ extern "C" {
 #define OS_TYPE_LINUX_S   "linux"
 #define OS_TYPE_BSD_S     "bsd"
 #define OS_TYPE_MACOS_S   "macos"
-#define OS_TYPE_SOLARIS_S "solaris"
-#define OS_TYPE_HPUX_S    "hpux"
+/*#define OS_TYPE_SOLARIS_S "solaris"*/
+/*#define OS_TYPE_HPUX_S    "hpux"*/
 #define OS_TYPE_MSWIN_S   "mswin"
 #define OS_TYPE_CYGWIN_S  "cygwin"
 #define OS_TYPE_DOS_S     "dos"
@@ -30,17 +30,24 @@ extern "C" {
 typedef struct operation_system
 {
     void (* destroy) (struct operation_system * self);
+    
     int (* descover) (struct operation_system * self);
+    
     char const * (* type) (struct operation_system * self);
+    
     char const * (* family) (struct operation_system * self);
+    
     int (* exec) (char const * command);
+    
     int (* execv) (char const * command
             , char * const argv[]
             , char * const envp[]);
+    
     int (* exec_capture) (char const * command
 /*            , char const * input, size_t len*/
             , void (* stdout_handler) (char const * buf, size_t n)
             , void (* stderr_handler) (char const * buf, size_t n));
+    
     int (* execv_capture) (char const * command
             , char * const argv[]
             , char * const envp[]

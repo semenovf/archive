@@ -19,59 +19,58 @@
 #define   TIMEOUT_ARMED  2
 #define   TIMEOUT_PASSED 4
 
-static timer_t               timeout_timer;
-static volatile sig_atomic_t timeout_state[MAX_NTIMERS] = { 0 };
-static timer_type_enum       timeout_type[MAX_NTIMERS]  = { Timer_Invalid }; // Timer_Invalid | Timer_OneShot | Timer_Periodic
-static int                   timeout_count = 0;
-static double                timeout_seconds[MAX_NTIMERS] = { 0.0f };
-static struct timespec       timeout_time[MAX_NTIMERS];
+static timer_t timeout_timer;
+static volatile sig_atomic_t timeout_state[MAX_NTIMERS] = {0};
+static timer_type_enum timeout_type[MAX_NTIMERS] = {Timer_Invalid}; // Timer_Invalid | Timer_OneShot | Timer_Periodic
+static int timeout_count = 0;
+static double timeout_seconds[MAX_NTIMERS] = {0.0f};
+static struct timespec timeout_time[MAX_NTIMERS];
 
-int timer_count (void)
+int timer_count(void)
 {
-	return timeout_count;
+    return timeout_count;
 }
 
-int timer_is_periodic (const int id)
+int timer_is_periodic(const int id)
 {
-	if (id >= 0 && id < timeout_count)
-		return timeout_type[id] == Timer_Periodic ? 1 : 0;
-	return 0;
+    if (id >= 0 && id < timeout_count)
+        return timeout_type[id] == Timer_Periodic ? 1 : 0;
+    return 0;
 }
 
-int timer_is_oneshot (const int id)
+int timer_is_oneshot(const int id)
 {
-	if (id >= 0 && id < timeout_count)
-		return timeout_type[id] == Timer_OneShot ? 1 : 0;
-	return 0;
+    if (id >= 0 && id < timeout_count)
+        return timeout_type[id] == Timer_OneShot ? 1 : 0;
+    return 0;
 }
-
 
 /* Return the number of seconds between before and after, (after - before).
  * This must be async-signal safe, so it cannot use difftime().
-*/
-static double timespec_diff (const struct timespec after, const struct timespec before)
+ */
+static double timespec_diff(const struct timespec after, const struct timespec before)
 {
-    return (double)(after.tv_sec - before.tv_sec)
-         + (double)(after.tv_nsec - before.tv_nsec) / 1000000000.0;
+    return (double) (after.tv_sec - before.tv_sec)
+            + (double) (after.tv_nsec - before.tv_nsec) / 1000000000.0;
 }
 
 /* Add positive seconds to a timespec, nothing if seconds is negative.
  * This must be async-signal safe.
-*/
-static void timespec_add (struct timespec * const to, const double seconds)
+ */
+static void timespec_add(struct timespec * const to, const double seconds)
 {
     if (to && seconds > 0.0) {
-        long  s = (long)seconds;
-        long  ns = (long)(0.5 + 1000000000.0 * (seconds - (double)s));
+        long s = (long) seconds;
+        long ns = (long) (0.5 + 1000000000.0 * (seconds - (double) s));
 
         /* Adjust for rounding errors. */
         if (ns < 0L)
             ns = 0L;
         else
-        if (ns > 999999999L)
+            if (ns > 999999999L)
             ns = 999999999L;
 
-        to->tv_sec += (time_t)s;
+        to->tv_sec += (time_t) s;
         to->tv_nsec += ns;
 
         if (to->tv_nsec >= 1000000000L) {
@@ -82,25 +81,25 @@ static void timespec_add (struct timespec * const to, const double seconds)
 }
 
 /* Set the timespec to the specified number of seconds, or zero if negative seconds.
-*/
-static void timespec_set (struct timespec * const to, const double seconds)
+ */
+static void timespec_set(struct timespec * const to, const double seconds)
 {
     if (to) {
         if (seconds > 0.0) {
-            const long  s = (long)seconds;
-            long       ns = (long)(0.5 + 1000000000.0 * (seconds - (double)s));
+            const long s = (long) seconds;
+            long ns = (long) (0.5 + 1000000000.0 * (seconds - (double) s));
 
             if (ns < 0L)
                 ns = 0L;
             else
-            if (ns > 999999999L)
+                if (ns > 999999999L)
                 ns = 999999999L;
 
-            to->tv_sec = (time_t)s;
+            to->tv_sec = (time_t) s;
             to->tv_nsec = ns;
 
         } else {
-            to->tv_sec = (time_t)0;
+            to->tv_sec = (time_t) 0;
             to->tv_nsec = 0L;
         }
     }
@@ -109,14 +108,14 @@ static void timespec_set (struct timespec * const to, const double seconds)
 /*
  * Return nonzero if the timeout has occurred.
  */
-int timer_passed (const int timeout)
+int timer_passed(const int timeout)
 {
     if (timeout >= 0 && timeout < timeout_count /*MAX_NTIMERS*/) {
 
-    	if (timeout_type[timeout] == Timer_Invalid)
-    		return 0;
+        if (timeout_type[timeout] == Timer_Invalid)
+            return 0;
 
-        const int  state = __sync_or_and_fetch(& timeout_state[timeout], 0);
+        const int state = __sync_or_and_fetch(& timeout_state[timeout], 0);
 
         /* Refers to an unused timeout? */
         if (!(state & TIMEOUT_USED))
@@ -137,8 +136,8 @@ int timer_passed (const int timeout)
 
 /* Release the timeout.
  * Returns 0 if the timeout had not fired yet, 1 if it had.
-*/
-int timer_unset (const int timeout)
+ */
+int timer_unset(const int timeout)
 {
     if (timeout >= 0 && timeout < timeout_count/*MAX_NTIMERS*/) {
         /* Obtain the current timeout state to 'state',
@@ -169,12 +168,12 @@ int timer_unset (const int timeout)
     }
 }
 
-static int timer_set_or_update (timer_type_enum type, const double seconds, int * ptimeout)
+static int timer_set_or_update(timer_type_enum type, const double seconds, int * ptimeout)
 {
-    struct timespec   now, then;
+    struct timespec now, then;
     struct itimerspec when;
-    double            next;
-    int               timeout, i;
+    double next;
+    int timeout, i;
 
     /* Timeout must be in the future */
     if (seconds <= 0.0)
@@ -192,14 +191,14 @@ static int timer_set_or_update (timer_type_enum type, const double seconds, int 
      * Find an unused timeout
      */
     if (!ptimeout) {
-		for (timeout = 0; timeout < MAX_NTIMERS; timeout++)
-			if (!(__sync_fetch_and_or(& timeout_state[timeout], TIMEOUT_USED) & TIMEOUT_USED))
-				break;
+        for (timeout = 0; timeout < MAX_NTIMERS; timeout++)
+            if (!(__sync_fetch_and_or(& timeout_state[timeout], TIMEOUT_USED) & TIMEOUT_USED))
+                break;
     } else {
-    	if (*ptimeout >= 0 && *ptimeout < MAX_NTIMERS)
-    		timeout = *ptimeout;
-    	else
-    		return -1;
+        if (*ptimeout >= 0 && *ptimeout < MAX_NTIMERS)
+            timeout = *ptimeout;
+        else
+            return -1;
     }
 
     /* No unused timeouts? */
@@ -219,7 +218,7 @@ static int timer_set_or_update (timer_type_enum type, const double seconds, int 
     next = seconds;
     for (i = 0; i < MAX_NTIMERS; i++)
         if ((__sync_fetch_and_or(& timeout_state[i], 0) & (TIMEOUT_USED | TIMEOUT_ARMED | TIMEOUT_PASSED))
-        		== (TIMEOUT_USED | TIMEOUT_ARMED)) {
+                == (TIMEOUT_USED | TIMEOUT_ARMED)) {
             const double secs = timespec_diff(timeout_time[i], now);
             if (secs >= 0.0 && secs < next)
                 next = secs;
@@ -241,7 +240,7 @@ static int timer_set_or_update (timer_type_enum type, const double seconds, int 
      * Update timeouts count
      */
     if (timeout_count <= timeout) {
-    	timeout_count = timeout + 1;
+        timeout_count = timeout + 1;
     }
 
     timeout_type[timeout] = type;
@@ -253,31 +252,31 @@ static int timer_set_or_update (timer_type_enum type, const double seconds, int 
     return timeout;
 }
 
-int timer_set (timer_type_enum type, const double seconds)
+int timer_set(timer_type_enum type, const double seconds)
 {
-	return timer_set_or_update(type, seconds, NULL);
+    return timer_set_or_update(type, seconds, NULL);
 }
 
-void timer_reset (int timeout)
+void timer_reset(int timeout)
 {
-	if (timeout >= 0 && timeout < timeout_count /*MAX_NTIMERS*/) {
-		if (timer_is_periodic(timeout)) {
-			timer_set_or_update(timeout_type[timeout], timeout_seconds[timeout], & timeout);
-		} else {
-			timer_unset(timeout);
-		}
-	}
+    if (timeout >= 0 && timeout < timeout_count /*MAX_NTIMERS*/) {
+        if (timer_is_periodic(timeout)) {
+            timer_set_or_update(timeout_type[timeout], timeout_seconds[timeout], & timeout);
+        } else {
+            timer_unset(timeout);
+        }
+    }
 }
 
-static void timeout_signal_handler (int signum, siginfo_t * info, void * context)
+static void timeout_signal_handler(int signum, siginfo_t * info, void * context)
 {
-    struct timespec   now;
+    struct timespec now;
     struct itimerspec when;
-    int               saved_errno, i;
-    double            next;
+    int saved_errno, i;
+    double next;
 
-    (void)signum;
-    (void)context;
+    (void) signum;
+    (void) context;
 
     /* Not a timer signal? */
     if (!info || info->si_code != SI_TIMER)
@@ -301,7 +300,7 @@ static void timeout_signal_handler (int signum, siginfo_t * info, void * context
      */
     for (i = 0; i < MAX_NTIMERS; ++i)
         if ((__sync_or_and_fetch(& timeout_state[i], 0) & (TIMEOUT_USED | TIMEOUT_ARMED | TIMEOUT_PASSED))
-        		== (TIMEOUT_USED | TIMEOUT_ARMED)) {
+                == (TIMEOUT_USED | TIMEOUT_ARMED)) {
 
             const double seconds = timespec_diff(timeout_time[i], now);
 
@@ -330,10 +329,10 @@ static void timeout_signal_handler (int signum, siginfo_t * info, void * context
     errno = saved_errno;
 }
 
-int timer_init (void)
+int timer_init(void)
 {
-    struct sigaction  act;
-    struct sigevent   evt;
+    struct sigaction act;
+    struct sigevent evt;
     struct itimerspec arm;
 
     /*
@@ -370,11 +369,11 @@ int timer_init (void)
     return 0;
 }
 
-int timer_done (void)
+int timer_done(void)
 {
-    struct sigaction  act;
+    struct sigaction act;
     struct itimerspec arm;
-    int               errors = 0;
+    int errors = 0;
 
     timer_unset_all();
 
@@ -415,10 +414,10 @@ int timer_done (void)
     return errors;
 }
 
-void timer_unset_all (void)
+void timer_unset_all(void)
 {
-	int timeout = 0;
-	for (; timeout < timeout_count; ++timeout)
-		timer_unset(timeout);
-	timeout_count = 0;
+    int timeout = 0;
+    for (; timeout < timeout_count; ++timeout)
+        timer_unset(timeout);
+    timeout_count = 0;
 }
