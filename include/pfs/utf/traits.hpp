@@ -182,7 +182,6 @@ struct traits
     {
     	return rep_const_iterator(it.base());
     }
-
 };
 
 }} // pfs

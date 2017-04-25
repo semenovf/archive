@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   cxxlang.hpp
  * Author: wladt
@@ -22,14 +16,20 @@
 #   undef pfs_noexcept
 #endif
 
-#if __cplusplus >= 201103
+#ifdef pfs_override
+#   undef pfs_override
+#endif
+
+#if __cplusplus >= 201103L
 #   define pfs_constexpr           constexpr
 #   define pfs_noexcept            noexcept
 #   define pfs_noexcept_expr(expr) noexcept(expr)
+#   define pfs_override            override
 #else
 #   define pfs_constexpr
 #   define pfs_noexcept
 #   define pfs_noexcept_expr(expr)
+#   define pfs_override
 #endif
 
 //
