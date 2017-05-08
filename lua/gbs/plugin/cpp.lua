@@ -120,16 +120,20 @@ function plugin:transaction ()
     local projectIncludeDirList = {};
 
     if projectType == "test" then
-        table.insert(projectSrcFileList
-            , string.quote("../../" .. testsDirName .. "/" .. projectName .. "/*.c"));
+	if projectLang == "C" then
+    	    table.insert(projectSrcFileList
+        	, string.quote("../../" .. testsDirName .. "/" .. projectName .. "/*.c"));
+	emd
 
         if projectLang == "C++" then
             table.insert(projectSrcFileList
                 , string.quote("../../" .. testsDirName .. "/" .. projectName .. "/*.cpp"));
         end
     else
-        table.insert(projectSrcFileList
-            , string.quote("../../" .. sourcesDirName .. "/" .. projectName .. "/*.c"));
+	if projectLang == "C" then
+    	    table.insert(projectSrcFileList
+        	, string.quote("../../" .. sourcesDirName .. "/" .. projectName .. "/*.c"));
+	end
 
         if projectLang == "C++" then
             table.insert(projectSrcFileList
