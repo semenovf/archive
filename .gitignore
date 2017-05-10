@@ -5,7 +5,7 @@
 debug/
 release/
 doxygen/html
-doc/
+nbproject/
 
 Makefile
 Makefile.*
@@ -43,3 +43,4 @@ makefile.*
 *.log
 moc_*.cpp
 qrc_*.cpp
+.sconsign.dblite
