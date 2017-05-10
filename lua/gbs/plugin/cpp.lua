@@ -91,7 +91,7 @@ function plugin:transaction ()
         trn:CopyFileIfNotExists(
               fs.join(templateDir, "qt", "qt_enable.lua")
             , fs.join("..", ".gbs", "qt_enable.lua"));
-        trn:Print("ATTENTION: Check and modify qt_enable.lua on demand in workspace directory");
+        trn:Print("NOTE: Check and modify qt_enable.lua on demand in workspace directory");
     end
 
     if projectType == "test" then
@@ -123,7 +123,7 @@ function plugin:transaction ()
 	if projectLang == "C" then
     	    table.insert(projectSrcFileList
         	, string.quote("../../" .. testsDirName .. "/" .. projectName .. "/*.c"));
-	emd
+	end
 
         if projectLang == "C++" then
             table.insert(projectSrcFileList

@@ -30,7 +30,8 @@ function workspace.isValidTargetPlatform (platform)
     if platform == "unix32"
             or platform == "unix64"
             or platform == "mswin32"
-            or platform == "mswin64" then
+            or platform == "mswin64"
+            or platform == "elbrus4c" then
         return true;
     end
     return false;

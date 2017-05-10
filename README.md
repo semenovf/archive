@@ -50,6 +50,14 @@ Now it is time to build and install `premake` directly (for `linux` as example):
     $ make -f Bootstrap.mak linux
     $ sudo cp bin/release/premake5 /usr/local/bin
 
+For specific compiler replace first instruction with:
+
+    $ CC=YOUR_COMPILER_NAME make -f Bootstrap.mak linux
+
+For Elbrus compiler this instruction will look like:
+
+    $ CC=lcc make -f Bootstrap.mak linux
+
 #### Qt support
     $ git submodule add git@github.com:semenovf/premake-qt.git # once
     $ git submodule init
