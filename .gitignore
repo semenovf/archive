@@ -3,3 +3,7 @@
 nbproject/
 .project
 .cproject
+
+/.gitmodules
+/premake-qt
+/premake-core

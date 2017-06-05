@@ -1,11 +1,11 @@
-###NAME
+### NAME
 
 `gbs` - build system based on premake5
 
-###VERSION
+### VERSION
 Version 2.00b
 
-###INSTALLATION
+### INSTALLATION
 #### Linux (Ubuntu)
 
 Run on terminal:
@@ -59,7 +59,7 @@ For Elbrus compiler this instruction will look like:
     $ CC=lcc make -f Bootstrap.mak linux
 
 #### Qt support
-    $ git submodule add git@github.com:semenovf/premake-qt.git # once
+    $ git submodule add git@github.com:dcourtois/premake-qt.git # once
     $ git submodule init
     $ git submodule update
 
@@ -70,15 +70,15 @@ Log out and log in again. Run terminal and check `gbs` installed properly:
     $ gbs
     Type `gbs help' for usage
 
-###AUTHOR
+### AUTHOR
 
 Fedor Semenov, < fedor.v.semenov at gmail.com >
 
-###SUPPORT
+### SUPPORT
 
 This software is under development.  
 No documentation prepared yet.  
 
-###LICENSE AND COPYRIGHT
+### LICENSE AND COPYRIGHT
 
-Copyright 2012-2016 Fedor Semenov.
+Copyright 2012-2017 Fedor Semenov.
