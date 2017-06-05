@@ -1,9 +1,9 @@
 !.gitignore
-.settings/
-nbproject/
-.project
-.cproject
+/.settings/
+/nbproject/
+/.project
+/.cproject
 
 /.gitmodules
-/premake-qt
-/premake-core
+/premake-qt/
+/premake-core/
