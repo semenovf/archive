@@ -29,6 +29,3 @@ configuration "release"
     links        { "pfs-test", "pfs" }
 
 dependson { "pfs" }
-
-filter "action:gmake"
-    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

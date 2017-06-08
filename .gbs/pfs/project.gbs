@@ -28,6 +28,3 @@ filter "platforms:unix*"
 	, "../../src/pfs/unix/*.cpp"
     }
     links { "dl", "pthread", "rt" }
-
-filter "action:gmake"
-    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

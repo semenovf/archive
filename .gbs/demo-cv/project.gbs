@@ -33,8 +33,6 @@ filter "action:gmake"
 
 dependson { "pfs" }
 
-include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
-
 filter { "debug", "action:gmake" }
     linkoptions  { "-rdynamic" }
 

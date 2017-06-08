@@ -28,6 +28,3 @@ filter "platforms:unix*"
 
 filter "platforms:mswin*"
     files { "../../src/pfs-test/win/*.cpp" }
-
-filter "action:gmake"
-    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

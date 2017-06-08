@@ -27,13 +27,6 @@ configuration "release"
     targetdir    "../../../.build"
     links        { "pfs" }
 
-
-filter "action:gmake"
-    buildoptions {}
-    linkoptions  {}
-
-include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
-
 filter { "debug", "action:gmake" }
     linkoptions  { "-rdynamic" }
 
