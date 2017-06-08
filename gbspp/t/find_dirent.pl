@@ -1,21 +1,26 @@
 #!/usr/bin/perl -w
 use lib qw(../../);
-use Test::Simple tests => 2;
+use Test::Simple tests => 6;
 use strict;
 
 package test0;
 use Test::Simple;
 use gbspp::find_dirent;
-#use Data::Dumper;
 use strict;
 
 sub run
 {
-#    print Dumper($cli), "\n";
-    
     ok(! find_dirent('no-such-direntry-found'));
     ok(find_dirent(dirent_name=>'usr', dirs=>['/']));
     
+    ok(find_file('ls'));
+    ok(find_program('ls'));
+    ok(find_dir(dirent_name=>'bin', dirs=>['/usr']));
+    
+    my $dir = find_dir(dirent_name=>'bin'
+                , no_default_path=>1
+                , dirs=>['/usr/unknown_dir1', '/usr/unknown_dir1', '/usr']);
+    ok($dir eq '/usr/bin');
 }
 
 package main;

@@ -5,6 +5,10 @@ use Carp;
 use strict;
 use warnings;
 
+
+=head1 find_dirent
+=cut
+
 our @EXPORT = qw(find_file find_dir find_program find_dirent);
 
 =item STRING find_direntry (<dirent_name>)
@@ -24,23 +28,25 @@ sub find_dirent
     } elsif ((scalar(@_) == 1 and ref($_[0]) eq 'HASH') # Second 
 	     or scalar(@_) > 1) {                       # and third cases
 
-	my $args;
+	local $_;
 	
 	if (scalar(@_) == 1) {
-	    $args = $_[0];
+	    $_ = $_[0];
 	} else {
 	    %_ = @_;
-	    $args = \%_;
+	    $_ = \%_;
 	}
 	
 	($dirent_type, $dirent_name, $no_default_path) =
-	    ($args->{dirent_type}, $args->{dirent_name}, $args->{no_default_path});
-	    
-	if (defined($args->{dirs}) and ref($args->{dirs}) eq 'ARRAY') {
-	    push @dirs, @{$args->{dirs}};
-	} else {
-	    croak "`dirs` must be an array reference";
-	}
+	    ($_->{dirent_type}, $_->{dirent_name}, $_->{no_default_path});
+	
+	if (defined($_->{dirs})) {
+	    if (ref($_->{dirs}) eq 'ARRAY') {
+		push @dirs, @{$_->{dirs}};
+	    } else {
+		croak "`dirs` must be an array reference";
+	    }
+    	}
     } else {
 	croak "Bad argument(s)";
     }
@@ -63,12 +69,31 @@ sub find_dirent
 	    if ($dirent_type eq 'f') { return $path if -f $path; last SWITCH; }
 	    if ($dirent_type eq 'd') { return $path if -d $path; last SWITCH; }
 	    if ($dirent_type eq 'x') { return $path if -x $path; last SWITCH; }
-	    croak "Bad dirent type";
+	    croak "Bad directory entry type";
 	}
     }
 
     return undef;
 }
+
+sub __find_dirent
+{
+    croak "Expected arguments" if (scalar(@_) == 0);
+    my $dirent_type = shift;
+    
+    # First case
+    return find_dirent({dirent_type=>$dirent_type, dirent_name=>$_[0]}) if (scalar(@_) == 1 and !ref($_[0]));
+
+    # Second case    
+    return find_dirent(@_, dirent_type=>$dirent_type) if scalar(@_) > 1;
+    
+    # Third case
+    if ((scalar(@_) == 1 and ref($_[0]) eq 'HASH')) {
+	$_[0]->{dirent_type} =$dirent_type;
+	return find_dirent($_[0]);
+    }    
+}
+
 
 =item STRING find_file (dirent_name: STRING)
 =item STRING find_file (dirent_name=>STRING[, no_default_path=>BOOL] [, dirs=>ARRAYREF])
@@ -76,6 +101,7 @@ sub find_dirent
 =cut
 sub find_file
 {
+    return __find_dirent('e', @_);
 }
 
 =item STRING find_dir (dirent_name: STRING)
@@ -84,6 +110,7 @@ sub find_file
 =cut
 sub find_dir
 {
+    return __find_dirent('d', @_);
 }
 
 =item STRING find_program (dirent_name: STRING)
@@ -92,7 +119,7 @@ sub find_dir
 =cut
 sub find_program
 {
-    
+    return __find_dirent('x', @_);
 }
 
 1;
