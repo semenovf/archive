@@ -23,7 +23,7 @@ typedef pfs::active_queue_st<void> active_queue_type;
 
 static active_queue_type callbackq;
 static const int Count = 10000;
-static const int ProducerCount = 4;
+static const int ProducerCount = 1;
 static pfs::atomic_int quit_flag(ProducerCount);
 static pfs::atomic_int counter(0);
 
@@ -54,7 +54,7 @@ public:
 
     virtual void run ()
     {
-        while (not (quit_flag.load() == 0 && callbackq.empty())) {
+        while (not (quit_flag.load() == 0 /*&& callbackq.empty()*/)) {
             callbackq.call_all();
         }
     }

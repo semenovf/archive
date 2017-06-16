@@ -251,6 +251,10 @@ public:
 		while (! is_finish) {
             q.call_all();
         }
+        
+        // Wait some time to complete producers
+        pfs::thread::msleep(100);
+        q.call_all();
 	}
 };
 
@@ -334,26 +338,32 @@ void test ()
     
     is_finish = 1;
     
-    cons.wait();
     prod1.wait();
     prod2.wait();
     prod3.wait();
+    cons.wait();
     
     TEST_OK2(result == 0
+                && q.count() == 0
                 && cons1_counter == prod1_counter
                 && cons2_counter == prod2_counter
                 && cons3_counter == prod3_counter
             , "test::active_queue::test3 is ok");
     
-    cout << "result = 0x" << std::hex << result.load() << std::dec << " (must be 0x0)" << endl;
-    cout << "cons1_counter(" << cons1_counter.load() << ") == "
-         << "prod1_counter(" << prod1_counter.load() << ")" << endl;
+    cout << "\tresult = 0x" << std::hex << result.load() << std::dec << " (must be 0x0)" << endl;
+    cout << "\tcons1_counter(" << cons1_counter.load() << ") "
+         << (cons1_counter == prod1_counter ? "==" : "!=")
+         << " prod1_counter(" << prod1_counter.load() << ")" << endl;
 
-    cout << "cons2_counter(" << cons2_counter.load() << ") == "
-         << "prod2_counter(" << prod2_counter.load() << ")" << endl;
+    cout << "\tcons2_counter(" << cons2_counter.load() << ") "
+         << (cons2_counter == prod2_counter ? "==" : "!=")
+         << " prod2_counter(" << prod2_counter.load() << ")" << endl;
 
-    cout << "cons3_counter(" << cons3_counter.load() << ") == "
-         << "prod3_counter(" << prod3_counter.load() << ")" << endl;
+    cout << "\tcons3_counter(" << cons3_counter.load() << ") "
+         << (cons3_counter == prod3_counter ? "==" : "!=")
+         << " prod3_counter(" << prod3_counter.load() << ")" << endl;
+    
+    cout << "\tq.count() == " << q.count() << " (must be 0)" << endl;
 }
 
 } // test3

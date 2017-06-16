@@ -33,7 +33,6 @@ private:
     thread & operator = (const thread &);
 
 public:
-//    static Qt::HANDLE currentThreadId ();
     static thread * current_thread ();
     static int ideal_thread_count ();
     static void yield_current_thread ();

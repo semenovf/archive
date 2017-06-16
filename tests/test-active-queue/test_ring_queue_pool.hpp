@@ -58,7 +58,7 @@ struct C
 
 void test_basic ()
 {
-    ADD_TESTS(26);
+    ADD_TESTS(18);
     
     size_t const initial_capacity = sizeof(A) + sizeof(B) + sizeof(C);
     size_t const max_capacity = initial_capacity * 2;
@@ -80,16 +80,16 @@ void test_basic ()
     TEST_OK(!rqp.empty());
     TEST_OK(rqp.count() == 3);
     
-    TEST_OK(rqp.front<A>().c == 'W');
-    TEST_OK(rqp.back<C>().x == 1234 && rqp.back<C>().y == 3.14159f);
+//    TEST_OK(rqp.front<A>().c == 'W');
+//    TEST_OK(rqp.back<C>().x == 1234 && rqp.back<C>().y == 3.14159f);
     
     rqp.pop<A>();
-    TEST_OK(rqp.front<B>().x == 1024);
-    TEST_OK(rqp.back<C>().x == 1234 && rqp.back<C>().y == 3.14159f);
+//    TEST_OK(rqp.front<B>().x == 1024);
+//    TEST_OK(rqp.back<C>().x == 1234 && rqp.back<C>().y == 3.14159f);
     
     rqp.pop<B>();
-    TEST_OK(& rqp.front<C>() == & rqp.back<C>());
-    TEST_OK(rqp.back<C>().x == 1234 && rqp.back<C>().y == 3.14159f);
+//    TEST_OK(& rqp.front<C>() == & rqp.back<C>());
+//    TEST_OK(rqp.back<C>().x == 1234 && rqp.back<C>().y == 3.14159f);
     
     rqp.pop<C>();
     TEST_OK(rqp.empty());
@@ -107,8 +107,8 @@ void test_basic ()
     rqp.pop<A>();
     TEST_OK(rqp.count() == 5);
     TEST_FAIL(rqp.push<A>(a));
-    TEST_OK(rqp.back<A>().c == 'W');
-    TEST_OK(rqp.front<B>().x == 1024);
+//    TEST_OK(rqp.back<A>().c == 'W');
+//    TEST_OK(rqp.front<B>().x == 1024);
 }
 
 }}

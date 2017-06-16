@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   ring_queue.hpp
  * Author: wladt
@@ -31,7 +25,6 @@ namespace tl {
 // {
 //     static  SizeType const default_increment_factor = 32; ///<< Default increment factor
 //     typedef SizeType      size_type;         ///<< Size type like std::size_t
-//     typedef AtomicType    atomic_type;       ///<< Atomic type like std::atomic_size_t since C++11
 //     typedef MutexType     mutex_type;        ///<< Mutex type must be satisfied LockGuardType::mutex_type
 //     typedef EmptyQueueExceptioType empty_exception_type; ///<< Exception class satisfies DefaultConstructible concept
 // };
@@ -46,10 +39,9 @@ class ring_queue_pool
 {
 public: // Typedefs
     typedef typename Traits::size_type            size_type;
-    typedef typename Traits::atomic_type          atomic_type;
     typedef typename Traits::empty_exception_type empty_exception_type;
     typedef ring_queue<Traits>                    item_type;
-    typedef trivial_list<item_type>            list_type;
+    typedef trivial_list<item_type>               list_type;
     typedef typename list_type::iterator          iterator;
     typedef typename list_type::const_iterator    const_iterator;
     typedef typename Traits::mutex_type           mutex_type;
@@ -68,9 +60,9 @@ private:
     // Actual capacity for new items.
     // Incremented when added new item according to formula:
     //
-    //    _actual_item_capacity = _actual_item_capacity + <Element size> * _increment_factor
+    // actual_item_capacity = actual_item_capacity + <Element size> * increment_factor
     //
-    atomic_type _actual_item_capacity;
+    size_type _actual_item_capacity;
     
     //
     // Limit of total capacity in bytes (Constant from instantiation).
@@ -80,7 +72,7 @@ private:
     //
     // Total bytes occupied.
     //
-    atomic_type _occupied;
+    size_type _occupied;
     
     //
     // Increment factor while adding new Item
@@ -90,7 +82,7 @@ private:
     //
     // Total count of Elements
     //
-    atomic_type _count;
+    size_type _count;
     
     mutex_type _mutex;
     
@@ -104,6 +96,8 @@ private:
 //            it = _list.erase(it);
 //        }
 //    }
+    
+    bool ensure_capacity (size_type nsize);
     
 public:
 	ring_queue_pool (size_type initial_capacity
@@ -125,47 +119,48 @@ public:
 
     size_type count () const
     {
-        return size_type(_count);
+        return _count;
     }
 
-    bool ensure_capacity (size_type nsize);
-    
     template <typename T>
     T & front ()
     {
-        if (empty())
+        lock_guard_type locker(_mutex); // Below list can be modified
+        if (_count == 0)
             throw empty_exception_type();
         return _list.front().front<T>();
     }
-    
-    template <typename T>
-    T const & front () const
-    {
-        if (empty())
-            throw empty_exception_type();
-        return _list.front().front<T>();
-    }
+
+//    template <typename T>
+//    T const & front () const
+//    {
+//        if (_count == 0)
+//            throw empty_exception_type();
+//        return _list.front().front<T>();
+//    }
 
     template <typename T>
     T & back ()
     {
-        if (empty())
+        lock_guard_type locker(_mutex); // Below list can be modified
+        if (_count == 0)
             throw empty_exception_type();
         return _list.back().back<T>();
     }
 
-    template <typename T>
-    T const & back () const
-    {
-        if (empty())
-            throw empty_exception_type();
-        return _list.back().back<T>();
-    }
+//    template <typename T>
+//    T const & back () const
+//    {
+//        if (_count == 0)
+//            throw empty_exception_type();
+//        return _list.back().back<T>();
+//    }
 
-    
     template <typename T>
     bool push ()
     {
+        lock_guard_type locker(_mutex); // Below list can be modified
+
         if (ensure_capacity(sizeof(T)) && _list.back().push<T>()) {
             ++_count;
             _occupied += sizeof(T);
@@ -177,6 +172,8 @@ public:
     template <typename T, typename Arg1>
     bool push (Arg1 a1)
     {
+        lock_guard_type locker(_mutex); // Below list can be modified
+
         if (ensure_capacity(sizeof(T)) && _list.back().push<T>(a1)) {
             ++_count;
             _occupied += sizeof(T);
@@ -188,6 +185,8 @@ public:
     template <typename T, typename Arg1, typename Arg2>
     bool push (Arg1 a1, Arg2 a2)
     {
+        lock_guard_type locker(_mutex); // Below list can be modified
+
         if (ensure_capacity(sizeof(T)) && _list.back().push<T>(a1, a2)) {
             ++_count;
             _occupied += sizeof(T);
@@ -199,6 +198,8 @@ public:
     template <typename T, typename Arg1, typename Arg2, typename Arg3>
     bool push (Arg1 a1, Arg2 a2, Arg3 a3)
     {
+        lock_guard_type locker(_mutex); // Below list can be modified
+
         if (ensure_capacity(sizeof(T)) && _list.back().push<T>(a1, a2, a3)) {
             ++_count;
             _occupied += sizeof(T);
@@ -210,6 +211,8 @@ public:
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
     bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4)
     {
+        lock_guard_type locker(_mutex); // Below list can be modified
+
         if (ensure_capacity(sizeof(T)) && _list.back().push<T>(a1, a2, a3, a4)) {
             ++_count;
             _occupied += sizeof(T);
@@ -221,6 +224,8 @@ public:
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
     bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5)
     {
+        lock_guard_type locker(_mutex); // Below list can be modified
+
         if (ensure_capacity(sizeof(T)) && _list.back().push<T>(a1, a2, a3, a4, a5)) {
             ++_count;
             _occupied += sizeof(T);
@@ -232,6 +237,8 @@ public:
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
     bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6)
     {
+        lock_guard_type locker(_mutex); // Below list can be modified
+
         if (ensure_capacity(sizeof(T)) && _list.back().push<T>(a1, a2, a3, a4, a5, a6)) {
             ++_count;
             _occupied += sizeof(T);
@@ -243,6 +250,8 @@ public:
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
     bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7)
     {
+        lock_guard_type locker(_mutex); // Below list can be modified
+
         if (ensure_capacity(sizeof(T)) && _list.back().push<T>(a1, a2, a3, a4, a5, a6, a7)) {
             ++_count;
             _occupied += sizeof(T);
@@ -254,6 +263,8 @@ public:
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
     bool push (Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6, Arg7 a7, Arg8 a8)
     {
+        lock_guard_type locker(_mutex); // Below list can be modified
+
         if (ensure_capacity(sizeof(T)) && _list.back().push<T>(a1, a2, a3, a4, a5, a6, a7, a8)) {
             ++_count;
             _occupied += sizeof(T);
@@ -281,8 +292,6 @@ public:
 template <typename Traits>
 bool ring_queue_pool<Traits>::ensure_capacity (size_type nsize)
 {
-    lock_guard_type locker(_mutex); // Below list can be modified
-
     if (! _list.empty()) {
         if (_list.back().ensure_capacity(nsize))
             return true;
@@ -291,9 +300,8 @@ bool ring_queue_pool<Traits>::ensure_capacity (size_type nsize)
     size_type increment = _increment_factor * nsize;
     size_type item_capacity = _actual_item_capacity + increment;
 
-    if (_max_capacity < _occupied + nsize) {
+    if (_max_capacity < _occupied + nsize)
         return false;
-    }
     
     _actual_item_capacity = item_capacity;
 
@@ -317,7 +325,7 @@ void ring_queue_pool<Traits>::pop ()
         --_count;
         _occupied -= sizeof(T);
     
-        if (& _list.front() != & _list.back() // List has mor than one element
+        if (& _list.front() != & _list.back() // List has more than one element
                 && _list.front().empty())
             _list.erase(_list.begin());
     }
