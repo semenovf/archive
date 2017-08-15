@@ -1,0 +1,66 @@
+CWD = os.getcwd()
+print("Working directory: " .. CWD)
+
+    configurations { "debug", "release" }
+    platforms { "unix32", "unix64", "elbrus4c" }
+
+    cppdialect  "C++11"
+    targetdir   "../.build"
+    flags       { "FatalWarnings" }
+    libdirs     { "../.build" }
+    defines     { }
+
+    links       { "dl", "m" }
+
+    -- TODO Must be conditionally setup (based on cppdialect)
+    -- need for 11 <= C++ < 17
+    links       { "stdc++fs" }
+
+
+if os.findlib("pthread") then
+    defines { "PFS_HAVE_PTHREAD" }
+end
+
+qt5_core_lib = os.findlib("Qt5Core")
+qt4_core_lib = os.findlib("QtCore")
+
+if qt5_core_lib then
+    print("Qt5 library found at " .. qt5_core_lib)
+    defines { "PFS_HAVE_QT",  "PFS_HAVE_QT5" }
+end
+
+if qt4_core_lib then
+    print("Qt4 library found at " .. qt4_core_lib)
+    defines { "PFS_HAVE_QT", "PFS_HAVE_QT4" }
+end
+
+if qt5_core_lib then
+    require("../../.gbs/qt5_enable")
+elseif qt4_core_lib then
+    require("../../.gbs/qt4_enable")
+end
+
+if qt5_core_lib or qt4_core_lib then
+    --Available modules:
+    --    core, gui, multimedia, network, opengl, positioning, printsupport,
+    --    qml, quick, sensors, sql, svg, testlib, websockets, widgets, xml
+    --
+    qtmodules     { "core" }
+end
+
+configuration "debug"
+    symbols      "On"
+    defines      { "DEBUG" }
+    targetsuffix "-d"
+
+configuration "release"
+    defines     { "NDEBUG" }
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+
+filter "action:gmake"
+    buildoptions { "-Wunused", "-Wno-long-long", "-pedantic", "-fPIC" }
+
+filter "platforms:unix*"
+    links { "pthread" }
