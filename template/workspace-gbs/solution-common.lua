@@ -1,27 +1,31 @@
 CWD = os.getcwd()
 print("Working directory: " .. CWD)
 
-local LINKS
+PFS_LINKS = {}
 
-function reverse_table (t)
-    local i, j = 1, #t
-
-    while i < j do
-        t[i], t[j] = t[j], t[i]
-
-        i = i + 1
-        j = j - 1
-    end
+function is_empty (s)
+    return s == nil or s == ''
 end
+
+--function reverse_table (t)
+--    local i, j = 1, #t
+--
+--    while i < j do
+--        t[i], t[j] = t[j], t[i]
+--
+--        i = i + 1
+--        j = j - 1
+--    end
+--end
 
 configurations { "debug", "release" }
 platforms { "unix32", "unix64" }
 
 flags       { "FatalWarnings" }
 cppdialect  "C++11"
-targetdir   "../../.build"
+targetdir   "../.build"
 includedirs { "../include" }
-libdirs     { "../../.build" }
+libdirs     { "../.build" }
 defines     { }
 
 qt5_core_lib = os.findlib("Qt5Core")
@@ -51,12 +55,12 @@ if qt5_core_lib or qt4_core_lib then
     qtmodules     { "core" }
 end
 
-configuration "debug"
+filter "debug"
     symbols      "On"
     defines      { "DEBUG" }
-    targetsuffix "-d"
+    --targetsuffix "-d"
 
-configuration "release"
+filter "release"
     defines     { "NDEBUG" }
 
 filter "action:gmake"
@@ -66,26 +70,45 @@ filter { "release", "action:gmake" }
     buildoptions { "-Wunused" }
 
 filter { "debug", "action:gmake" }
-    buildoptions { "-ftemplate-backtrace-limit=0" }
     linkoptions  { "-rdynamic" }
+
+filter { "debug", "language:C++" }
+    buildoptions { "-ftemplate-backtrace-limit=0" }
 
 filter "action:gmake"
     PTHREAD_LIB = os.findlib("pthread")
     BOOST_FILESYSTEM_LIB = os.findlib("boost_filesystem")
-    STDCXX_FS_LIB="";
+    STDCXX_FS_LIB = '';
 
-    if os.isfile("/usr/include/c++/5/experimental/filesystem") then
+    if os.isfile("/usr/include/c++/5/experimental/filesystem")
+            or os.isfile("/usr/include/c++/6/experimental/filesystem") then
         print("Experimental `filesystem` found")
         STDCXX_FS_LIB = "stdc++fs";
         defines { "HAVE_STDCXX_FS" }
     end
 
-    if PTHREAD_LIB then
+    if not is_empty(PTHREAD_LIB) then
         print("`pthread` library found at " .. PTHREAD_LIB)
         defines { "HAVE_PTHREAD" }
     end
 
-    if BOOST_FILESYSTEM_LIB then
+    if not is_empty(BOOST_FILESYSTEM_LIB) then
         print("`Boost Filesystem` library found at " .. BOOST_FILESYSTEM_LIB)
         defines { "HAVE_BOOST_FILESYSTEM" }
     end
+
+    if is_empty(STDCXX_FS_LIB) then
+        if not is_empty(BOOST_FILESYSTEM_LIB) then
+            table.insert(PFS_LINKS, "boost_filesystem")
+        end
+    else
+        table.insert(PFS_LINKS, STDCXX_FS_LIB)
+    end
+
+    if not is_empty(PTHREAD_LIB) then
+        table.insert(PFS_LINKS, "pthread")
+    end
+
+    table.insert(PFS_LINKS, "dl")
+    table.insert(PFS_LINKS, "m")
+    table.insert(PFS_LINKS, "rt")
