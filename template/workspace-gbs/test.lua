@@ -5,7 +5,7 @@ function test_project (project_name, ext_libs)
     targetdir  "../../.build/tests"
     files      { "../tests/" .. project_name .. "/*.cpp" }
     defines    { "PFS_TEST" }
-    links  { "pfs-test", ext_libs, PFS_LINKS }
+    links      { "pfs-test", ext_libs, PFS_LINKS }
 
     filter "release"
         objdir (".cache/tests/" .. project_name .. "/release")

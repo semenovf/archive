@@ -72,17 +72,20 @@ filter { "release", "action:gmake" }
 filter { "debug", "action:gmake" }
     linkoptions  { "-rdynamic" }
 
-filter { "debug", "language:C++" }
+--filter { "debug", "action:gmake", "language:C++" }
+filter { "debug", "action:gmake", "files:*.cpp" }
     buildoptions { "-ftemplate-backtrace-limit=0" }
 
 filter "action:gmake"
     PTHREAD_LIB = os.findlib("pthread")
     BOOST_FILESYSTEM_LIB = os.findlib("boost_filesystem")
+    STDCXX_FS_INC = os.findheader("filesystem", {
+               "/usr/include/c++/5/experimental"
+            ,  "/usr/include/c++/6/experimental"} )
     STDCXX_FS_LIB = '';
 
-    if os.isfile("/usr/include/c++/5/experimental/filesystem")
-            or os.isfile("/usr/include/c++/6/experimental/filesystem") then
-        print("Experimental `filesystem` found")
+    if not is_empty(STDCXX_FS_INC) then
+        print("`std::experimental::filesystem` found at " .. STDCXX_FS_INC)
         STDCXX_FS_LIB = "stdc++fs";
         defines { "HAVE_STDCXX_FS" }
     end
