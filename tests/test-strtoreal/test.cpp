@@ -13,7 +13,7 @@
 #include <iostream>
 #include <clocale>
 #include <cerrno>
-#include <cmath> // for isnan and ininf
+#include <pfs/math.hpp> // for isnan and ininf
 
 using namespace std;
 #define strtoreal(s,endptr) pfs::string_to_real(s.cbegin(), s.cend(), '.', endptr)

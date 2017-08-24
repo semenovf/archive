@@ -9,7 +9,7 @@
 #ifndef __PFS_STRING_HPP__
 #define __PFS_STRING_HPP__
 
-#include <cmath>
+#include <pfs/math.hpp>
 #include <cerrno>
 
 #if PFS_STRING_UTF16
