@@ -78,6 +78,7 @@ filter { "debug", "action:gmake", "files:*.cpp" }
 
 filter "action:gmake"
     PTHREAD_LIB = os.findlib("pthread")
+    BOOST_SYSTEM_LIB = os.findlib("boost_system")
     BOOST_FILESYSTEM_LIB = os.findlib("boost_filesystem")
     STDCXX_FS_INC = os.findheader("filesystem", {
                "/usr/include/c++/5/experimental"
@@ -93,6 +94,11 @@ filter "action:gmake"
     if not is_empty(PTHREAD_LIB) then
         print("`pthread` library found at " .. PTHREAD_LIB)
         defines { "HAVE_PTHREAD" }
+    end
+
+    if not is_empty(BOOST_SYSTEM_LIB) then
+        print("`Boost System` library found at " .. BOOST_SYSTEM_LIB)
+        defines { "HAVE_BOOST_SYSTEM" }
     end
 
     if not is_empty(BOOST_FILESYSTEM_LIB) then
