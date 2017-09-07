@@ -33,18 +33,18 @@ qt4_core_lib = os.findlib("QtCore")
 
 if qt5_core_lib then
     print("Qt5 library found at " .. qt5_core_lib)
-    defines { "HAVE_QT",  "HAVE_QT5" }
 end
 
 if qt4_core_lib then
     print("Qt4 library found at " .. qt4_core_lib)
-    defines { "HAVE_QT", "HAVE_QT4" }
 end
 
 if qt5_core_lib then
     require("../../.gbs/qt5_enable")
+    defines { "HAVE_QT",  "HAVE_QT5" }
 elseif qt4_core_lib then
     require("../../.gbs/qt4_enable")
+    defines { "HAVE_QT", "HAVE_QT4" }
 end
 
 if qt5_core_lib or qt4_core_lib then
