@@ -83,6 +83,7 @@ filter "action:gmake"
                "/usr/include/c++/5/experimental"
             ,  "/usr/include/c++/6/experimental"} )
     STDCXX_FS_LIB = '';
+    LIBINTL_INC = os.findheader("libintl.h")
 
     if not is_empty(STDCXX_FS_INC) then
         print("`std::experimental::filesystem` found at " .. STDCXX_FS_INC)
@@ -110,6 +111,10 @@ filter "action:gmake"
 
     if not is_empty(PTHREAD_LIB) then
         table.insert(PFS_LINKS, "pthread")
+    end
+
+    if not is_empty(LIBINTL_INC) then
+        defines {"HAVE_GETTEXT"}
     end
 
     table.insert(PFS_LINKS, "dl")
