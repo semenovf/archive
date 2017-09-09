@@ -33,18 +33,18 @@ qt4_core_lib = os.findlib("QtCore")
 
 if qt5_core_lib then
     print("Qt5 library found at " .. qt5_core_lib)
-    defines { "HAVE_QT",  "HAVE_QT5" }
 end
 
 if qt4_core_lib then
     print("Qt4 library found at " .. qt4_core_lib)
-    defines { "HAVE_QT", "HAVE_QT4" }
 end
 
 if qt5_core_lib then
     require("../../.gbs/qt5_enable")
+    defines { "HAVE_QT",  "HAVE_QT5" }
 elseif qt4_core_lib then
     require("../../.gbs/qt4_enable")
+    defines { "HAVE_QT", "HAVE_QT4" }
 end
 
 if qt5_core_lib or qt4_core_lib then
@@ -78,6 +78,7 @@ filter { "debug", "action:gmake", "files:*.cpp" }
 
 filter "action:gmake"
     PTHREAD_LIB = os.findlib("pthread")
+    BOOST_SYSTEM_LIB = os.findlib("boost_system")
     BOOST_FILESYSTEM_LIB = os.findlib("boost_filesystem")
     STDCXX_FS_INC = os.findheader("filesystem", {
                "/usr/include/c++/5/experimental"
@@ -94,6 +95,11 @@ filter "action:gmake"
     if not is_empty(PTHREAD_LIB) then
         print("`pthread` library found at " .. PTHREAD_LIB)
         defines { "HAVE_PTHREAD" }
+    end
+
+    if not is_empty(BOOST_SYSTEM_LIB) then
+        print("`Boost System` library found at " .. BOOST_SYSTEM_LIB)
+        defines { "HAVE_BOOST_SYSTEM" }
     end
 
     if not is_empty(BOOST_FILESYSTEM_LIB) then
