@@ -2,27 +2,30 @@ CWD = os.getcwd()
 print("Working directory: " .. CWD)
 
 PFS_LINKS = {}
+--PFS_CXX_DIALECT=""
+local PFS_CXX_DIALECT="C++98"
+--PFS_CXX_DIALECT="C++11"
+--PFS_CXX_DIALECT="C++14"
+--PFS_CXX_DIALECT="C++17"
+--PFS_CXX_DIALECT="gnu++98"
+--PFS_CXX_DIALECT="gnu++11"
+--PFS_CXX_DIALECT="gnu++14"
+--PFS_CXX_DIALECT="gnu++17"
 
 function is_empty (s)
     return s == nil or s == ''
 end
 
---function reverse_table (t)
---    local i, j = 1, #t
---
---    while i < j do
---        t[i], t[j] = t[j], t[i]
---
---        i = i + 1
---        j = j - 1
---    end
---end
-
 configurations { "debug", "release" }
 platforms { "unix32", "unix64" }
 
 flags       { "FatalWarnings" }
-cppdialect  "C++11"
+
+if not is_empty(PFS_CXX_DIALECT) then
+--    cppdialect PFS_CXX_DIALECT -- FIXME
+    cppdialect "C++98"
+end
+
 targetdir   "../.build"
 includedirs { "../include" }
 libdirs     { "../.build" }
@@ -31,27 +34,30 @@ defines     { }
 qt5_core_lib = os.findlib("Qt5Core")
 qt4_core_lib = os.findlib("QtCore")
 
-if qt5_core_lib then
+if not is_empty(qt5_core_lib) then
     print("Qt5 library found at " .. qt5_core_lib)
+
+    if PFS_CXX_DIALECT == "C++98" or PFS_CXX_DIALECT == "gnu++98" then
+        print("Qt5 require Modern C++ (C++11 or later), so Qt5 disallowed")
+        qt5_core_lib = ''
+    end
 end
 
-if qt4_core_lib then
+if not is_empty(qt4_core_lib) then
     print("Qt4 library found at " .. qt4_core_lib)
 end
 
-if qt5_core_lib then
+--Available modules:
+--    core, gui, multimedia, network, opengl, positioning, printsupport,
+--    qml, quick, sensors, sql, svg, testlib, websockets, widgets, xml
+--
+if not is_empty(qt5_core_lib) then
     require("../../.gbs/qt5_enable")
     defines { "HAVE_QT",  "HAVE_QT5" }
-elseif qt4_core_lib then
+    qtmodules     { "core" }
+elseif not is_empty(qt4_core_lib) then
     require("../../.gbs/qt4_enable")
     defines { "HAVE_QT", "HAVE_QT4" }
-end
-
-if qt5_core_lib or qt4_core_lib then
-    --Available modules:
-    --    core, gui, multimedia, network, opengl, positioning, printsupport,
-    --    qml, quick, sensors, sql, svg, testlib, websockets, widgets, xml
-    --
     qtmodules     { "core" }
 end
 
@@ -79,6 +85,7 @@ filter { "debug", "action:gmake", "files:*.cpp" }
 filter "action:gmake"
     PTHREAD_LIB = os.findlib("pthread")
     BOOST_SYSTEM_LIB = os.findlib("boost_system")
+    BOOST_THREAD_LIB = os.findlib("boost_thread")
     BOOST_FILESYSTEM_LIB = os.findlib("boost_filesystem")
     STDCXX_FS_INC = os.findheader("filesystem", {
                "/usr/include/c++/5/experimental"
@@ -100,6 +107,11 @@ filter "action:gmake"
     if not is_empty(BOOST_SYSTEM_LIB) then
         print("`Boost System` library found at " .. BOOST_SYSTEM_LIB)
         defines { "HAVE_BOOST_SYSTEM" }
+    end
+
+    if not is_empty(BOOST_THREAD_LIB) then
+        print("`Boost Thread` library found at " .. BOOST_THREAD_LIB)
+        defines { "HAVE_BOOST_THREAD" }
     end
 
     if not is_empty(BOOST_FILESYSTEM_LIB) then
