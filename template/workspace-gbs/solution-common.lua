@@ -2,15 +2,15 @@ CWD = os.getcwd()
 print("Working directory: " .. CWD)
 
 PFS_LINKS = {}
---PFS_CXX_DIALECT=""
-local PFS_CXX_DIALECT="C++98"
---PFS_CXX_DIALECT="C++11"
---PFS_CXX_DIALECT="C++14"
---PFS_CXX_DIALECT="C++17"
---PFS_CXX_DIALECT="gnu++98"
---PFS_CXX_DIALECT="gnu++11"
---PFS_CXX_DIALECT="gnu++14"
---PFS_CXX_DIALECT="gnu++17"
+--local PFS_CXX_DIALECT=""
+--local PFS_CXX_DIALECT="C++98"
+local PFS_CXX_DIALECT="C++11"
+--local PFS_CXX_DIALECT="C++14"
+--local PFS_CXX_DIALECT="C++17"
+--local PFS_CXX_DIALECT="gnu++98"
+--local PFS_CXX_DIALECT="gnu++11"
+--local PFS_CXX_DIALECT="gnu++14"
+--local PFS_CXX_DIALECT="gnu++17"
 
 function is_empty (s)
     return s == nil or s == ''
@@ -22,8 +22,7 @@ platforms { "unix32", "unix64" }
 flags       { "FatalWarnings" }
 
 if not is_empty(PFS_CXX_DIALECT) then
---    cppdialect PFS_CXX_DIALECT -- FIXME
-    cppdialect "C++98"
+    cppdialect (PFS_CXX_DIALECT)
 end
 
 targetdir   "../.build"
