@@ -3,8 +3,8 @@ print("Working directory: " .. CWD)
 
 PFS_LINKS = {}
 --local PFS_CXX_DIALECT=""
---local PFS_CXX_DIALECT="C++98"
-local PFS_CXX_DIALECT="C++11"
+local PFS_CXX_DIALECT="C++98"
+--local PFS_CXX_DIALECT="C++11"
 --local PFS_CXX_DIALECT="C++14"
 --local PFS_CXX_DIALECT="C++17"
 --local PFS_CXX_DIALECT="gnu++98"
@@ -82,10 +82,14 @@ filter { "debug", "action:gmake", "files:*.cpp" }
     buildoptions { "-ftemplate-backtrace-limit=0" }
 
 filter "action:gmake"
+
     PTHREAD_LIB = os.findlib("pthread")
     BOOST_SYSTEM_LIB = os.findlib("boost_system")
+    BOOST_REGEX_LIB = os.findlib("boost_regex")
     BOOST_THREAD_LIB = os.findlib("boost_thread")
+    BOOST_CHRONO_LIB = os.findlib("boost_chrono")
     BOOST_FILESYSTEM_LIB = os.findlib("boost_filesystem")
+    BOOST_RATIO_INC = os.findheader("boost/ratio.hpp")
     STDCXX_FS_INC = os.findheader("filesystem", {
                "/usr/include/c++/5/experimental"
             ,  "/usr/include/c++/6/experimental"} )
@@ -103,18 +107,37 @@ filter "action:gmake"
         defines { "HAVE_PTHREAD" }
     end
 
+    if not is_empty(BOOST_RATIO_INC) then
+        print("`Boost.Ratio` header found at " .. BOOST_RATIO_INC)
+        defines { "HAVE_BOOST_RATIO" }
+    end
+
     if not is_empty(BOOST_SYSTEM_LIB) then
-        print("`Boost System` library found at " .. BOOST_SYSTEM_LIB)
+        print("`Boost.System` library found at " .. BOOST_SYSTEM_LIB)
         defines { "HAVE_BOOST_SYSTEM" }
+        table.insert(PFS_LINKS, "boost_system")
+    end
+
+    if not is_empty(BOOST_REGEX_LIB) then
+        print("`Boost.Regex` library found at " .. BOOST_REGEX_LIB)
+        defines { "HAVE_BOOST_REGEX" }
+        table.insert(PFS_LINKS, "boost_regex")
     end
 
     if not is_empty(BOOST_THREAD_LIB) then
-        print("`Boost Thread` library found at " .. BOOST_THREAD_LIB)
+        print("`Boost.Thread` library found at " .. BOOST_THREAD_LIB)
         defines { "HAVE_BOOST_THREAD" }
+        table.insert(PFS_LINKS, "boost_thread")
+    end
+
+    if not is_empty(BOOST_CHRONO_LIB) then
+        print("`Boost.Chrono` library found at " .. BOOST_CHRONO_LIB)
+        defines { "HAVE_BOOST_CHRONO" }
+        table.insert(PFS_LINKS, "boost_chrono")
     end
 
     if not is_empty(BOOST_FILESYSTEM_LIB) then
-        print("`Boost Filesystem` library found at " .. BOOST_FILESYSTEM_LIB)
+        print("`Boost.Filesystem` library found at " .. BOOST_FILESYSTEM_LIB)
         defines { "HAVE_BOOST_FILESYSTEM" }
     end
 
@@ -126,7 +149,9 @@ filter "action:gmake"
         table.insert(PFS_LINKS, STDCXX_FS_LIB)
     end
 
-    if not is_empty(PTHREAD_LIB) then
+    if not is_empty(BOOST_THREAD_LIB) then
+        table.insert(PFS_LINKS, "boost_thread")
+    elseif not is_empty(PTHREAD_LIB) then
         table.insert(PFS_LINKS, "pthread")
     end
 
