@@ -139,13 +139,10 @@ filter "action:gmake"
     if not is_empty(BOOST_FILESYSTEM_LIB) then
         print("`Boost.Filesystem` library found at " .. BOOST_FILESYSTEM_LIB)
         defines { "HAVE_BOOST_FILESYSTEM" }
+        table.insert(PFS_LINKS, "boost_filesystem")
     end
 
-    if is_empty(STDCXX_FS_LIB) then
-        if not is_empty(BOOST_FILESYSTEM_LIB) then
-            table.insert(PFS_LINKS, "boost_filesystem")
-        end
-    else
+    if not is_empty(STDCXX_FS_LIB) then
         table.insert(PFS_LINKS, STDCXX_FS_LIB)
     end
 
