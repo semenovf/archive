@@ -1,9 +1,15 @@
 CWD = os.getcwd()
 print("Working directory: " .. CWD)
 
+function is_empty (s)
+    return s == nil or s == ''
+end
+
 PFS_LINKS = {}
+
+if is_empty(PFS_CXX_DIALECT) then
 --local PFS_CXX_DIALECT=""
-local PFS_CXX_DIALECT="C++98"
+    PFS_CXX_DIALECT="C++98"
 --local PFS_CXX_DIALECT="C++11"
 --local PFS_CXX_DIALECT="C++14"
 --local PFS_CXX_DIALECT="C++17"
@@ -11,9 +17,6 @@ local PFS_CXX_DIALECT="C++98"
 --local PFS_CXX_DIALECT="gnu++11"
 --local PFS_CXX_DIALECT="gnu++14"
 --local PFS_CXX_DIALECT="gnu++17"
-
-function is_empty (s)
-    return s == nil or s == ''
 end
 
 configurations { "debug", "release" }
