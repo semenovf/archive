@@ -72,7 +72,13 @@ filter "release"
     defines     { "NDEBUG" }
 
 filter "action:gmake"
-    buildoptions { "-Wno-long-long", "-pedantic", "-fPIC" }
+    buildoptions { "-Wall"
+        , "-Wextra"
+        , "-Wlogical-op"
+--        , "-Wduplicated-cond"
+        , "-Wno-long-long"
+        , "-pedantic"
+        , "-fPIC" }
 
 filter { "release", "action:gmake" }
     buildoptions { "-Wunused" }
