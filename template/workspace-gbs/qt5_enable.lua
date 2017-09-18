@@ -25,7 +25,7 @@ qtlibpath "/usr/lib/x86_64-linux-gnu/qt5"
 -- to the bin child folder of the one set by qtpath,
 -- or one of the environment variable.
 --
-qtbinpath ""
+qtbinpath "/usr/lib/x86_64-linux-gnu/qt5"
 
 -- Specify a prefix used by the libs.
 -- `Qt'  for Qt4 version
