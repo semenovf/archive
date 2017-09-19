@@ -75,10 +75,14 @@ filter "action:gmake"
     buildoptions { "-Wall"
         , "-Wextra"
         , "-Wlogical-op"
---        , "-Wduplicated-cond"
+--        , "-Wdouble-promotion"
+--        , "-Wshadow"
         , "-Wno-long-long"
         , "-pedantic"
         , "-fPIC" }
+
+filter { "action:gmake", "files:*.cpp" }
+    buildoptions { "-Wold-style-cast" }
 
 filter { "release", "action:gmake" }
     buildoptions { "-Wunused" }
