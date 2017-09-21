@@ -166,7 +166,7 @@ inline bool is_space (char_type c)
 typedef uint32_t unicode_char_t;
 
 template <typename T>
-T lexical_cast (const unicode::char_t & c);
+T lexical_cast (unicode::char_t const & c);
 
 template <>
 inline uint32_t lexical_cast<uint32_t> (const unicode::char_t & c)
