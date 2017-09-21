@@ -8,15 +8,15 @@ end
 PFS_LINKS = {}
 
 if is_empty(PFS_CXX_DIALECT) then
---local PFS_CXX_DIALECT=""
+--    PFS_CXX_DIALECT=""
     PFS_CXX_DIALECT="C++98"
---local PFS_CXX_DIALECT="C++11"
---local PFS_CXX_DIALECT="C++14"
---local PFS_CXX_DIALECT="C++17"
---local PFS_CXX_DIALECT="gnu++98"
---local PFS_CXX_DIALECT="gnu++11"
---local PFS_CXX_DIALECT="gnu++14"
---local PFS_CXX_DIALECT="gnu++17"
+--    PFS_CXX_DIALECT="C++11"
+--    PFS_CXX_DIALECT="C++14"
+--    PFS_CXX_DIALECT="C++17"
+--    PFS_CXX_DIALECT="gnu++98"
+--    PFS_CXX_DIALECT="gnu++11"
+--    PFS_CXX_DIALECT="gnu++14"
+--    PFS_CXX_DIALECT="gnu++17"
 end
 
 configurations { "debug", "release" }
@@ -161,7 +161,9 @@ filter "action:gmake"
 
     if not is_empty(BOOST_THREAD_LIB) then
         table.insert(PFS_LINKS, "boost_thread")
-    elseif not is_empty(PTHREAD_LIB) then
+    end
+
+    if not is_empty(PTHREAD_LIB) then
         table.insert(PFS_LINKS, "pthread")
     end
 
