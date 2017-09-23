@@ -54,10 +54,12 @@ end
 --    qml, quick, sensors, sql, svg, testlib, websockets, widgets, xml
 --
 if not is_empty(qt5_core_lib) then
+    print("`Qt5` enable")
     require("../../.gbs/qt5_enable")
     defines { "HAVE_QT",  "HAVE_QT5" }
     qtmodules     { "core" }
 elseif not is_empty(qt4_core_lib) then
+    print("`Qt4` enable")
     require("../../.gbs/qt4_enable")
     defines { "HAVE_QT", "HAVE_QT4" }
     qtmodules     { "core" }
