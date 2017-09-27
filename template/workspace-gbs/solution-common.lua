@@ -20,7 +20,7 @@ if is_empty(PFS_CXX_DIALECT) then
 end
 
 configurations { "debug", "release" }
-platforms { "unix32", "unix64" }
+platforms { "unix32", "unix64", "elbrus4c" }
 
 flags       { "FatalWarnings" }
 
