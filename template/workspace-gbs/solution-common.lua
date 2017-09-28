@@ -66,12 +66,13 @@ elseif not is_empty(qt4_core_lib) then
 end
 
 filter "debug"
-    symbols      "On"
-    defines      { "DEBUG" }
-    --targetsuffix "-d"
+    symbols "On"
+    defines { "DEBUG" }
+    objdir  "%{wks.location}/.cache/%{prj.name}/debug"
 
 filter "release"
-    defines     { "NDEBUG" }
+    defines { "NDEBUG" }
+    objdir  "%{wks.location}/.cache/%{prj.name}/release"
 
 filter "action:gmake"
     buildoptions { "-Wall"
@@ -97,7 +98,6 @@ filter { "debug", "action:gmake", "files:*.cpp" }
     buildoptions { "-ftemplate-backtrace-limit=0" }
 
 filter "action:gmake"
-
     PTHREAD_LIB = os.findlib("pthread")
     BOOST_SYSTEM_LIB = os.findlib("boost_system")
     BOOST_REGEX_LIB = os.findlib("boost_regex")
