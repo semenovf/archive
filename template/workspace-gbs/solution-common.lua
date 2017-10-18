@@ -105,6 +105,7 @@ filter "action:gmake"
     BOOST_CHRONO_LIB = os.findlib("boost_chrono")
     BOOST_FILESYSTEM_LIB = os.findlib("boost_filesystem")
     BOOST_RATIO_INC = os.findheader("boost/ratio.hpp")
+    BOOST_SMARTPTR_INC = os.findheader("boost/smart_ptr.hpp")
     STDCXX_FS_INC = os.findheader("filesystem", {
                "/usr/include/c++/5/experimental"
             ,  "/usr/include/c++/6/experimental"} )
@@ -125,6 +126,11 @@ filter "action:gmake"
     if not is_empty(BOOST_RATIO_INC) then
         print("`Boost.Ratio` header found at " .. BOOST_RATIO_INC)
         defines { "HAVE_BOOST_RATIO" }
+    end
+
+    if not is_empty(BOOST_SMARTPTR_INC) then
+        print("`Boost.SmartPtr` header found at " .. BOOST_SMARTPTR_INC)
+        defines { "HAVE_BOOST_SMARTPTR" }
     end
 
     if not is_empty(BOOST_SYSTEM_LIB) then
