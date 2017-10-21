@@ -74,30 +74,28 @@ filter "release"
     defines { "NDEBUG" }
     objdir  "%{wks.location}/.cache/%{prj.name}/release"
 
-filter "action:gmake"
-    buildoptions { "-Wall"
-        , "-Wextra"
-        , "-Wlogical-op"
---        , "-Wdouble-promotion"
---        , "-Wshadow"
-        , "-Wno-long-long"
-        , "-pedantic"
-        , "-fPIC" }
-
-filter { "action:gmake", "files:*.cpp" }
-    buildoptions { "-Wold-style-cast" }
-
 filter { "release", "action:gmake" }
     buildoptions { "-Wunused" }
 
 filter { "debug", "action:gmake" }
     linkoptions  { "-rdynamic" }
 
---filter { "debug", "action:gmake", "language:C++" }
 filter { "debug", "action:gmake", "files:*.cpp" }
     buildoptions { "-ftemplate-backtrace-limit=0" }
 
+filter { "action:gmake", "files:*.cpp" }
+    buildoptions { "-Wold-style-cast" }
+
 filter "action:gmake"
+    buildoptions { "-Wall"
+        , "-Wextra"
+        , "-Wlogical-op"
+        --, "-Wdouble-promotion"
+        --, "-Wshadow"
+        , "-Wno-long-long"
+        , "-pedantic"
+        , "-fPIC" }
+
     PTHREAD_LIB = os.findlib("pthread")
     BOOST_SYSTEM_LIB = os.findlib("boost_system")
     BOOST_REGEX_LIB = os.findlib("boost_regex")
@@ -107,8 +105,9 @@ filter "action:gmake"
     BOOST_RATIO_INC = os.findheader("boost/ratio.hpp")
     BOOST_SMARTPTR_INC = os.findheader("boost/smart_ptr.hpp")
     STDCXX_FS_INC = os.findheader("filesystem", {
-               "/usr/include/c++/5/experimental"
-            ,  "/usr/include/c++/6/experimental"} )
+           "/usr/include/c++/6/experimental"
+        ,  "/usr/include/c++/5/experimental"
+    })
     STDCXX_FS_LIB = '';
     LIBINTL_INC = os.findheader("libintl.h")
 
@@ -182,3 +181,4 @@ filter "action:gmake"
     table.insert(PFS_LINKS, "dl")
     table.insert(PFS_LINKS, "m")
     table.insert(PFS_LINKS, "rt")
+
