@@ -15,6 +15,7 @@ end
 
 function workspace.isValidBuildTool (buildTool)
     if buildTool == "gmake"
+            or buildTool == "gmake2"
             or buildTool == "vs2005"
             or buildTool == "vs2008"
             or buildTool == "vs2010"
@@ -47,7 +48,7 @@ end
 
 function workspace:create ()
     local settings          = self._settings;
-    
+
     local verbose           = settings:get("Verbose") or false;
     local path              = settings:get_or_throw("WorkspacePath");
     local buildTool         = settings:get_or_throw("BuildTool");
@@ -56,13 +57,13 @@ function workspace:create ()
     local cmdlineString     = settings:get_or_throw("CommandLineString");
     local programName       = settings:get_or_throw("ProgramName");
     local config            = settings:get_or_throw("BuildConfig");
-    
+
     if string.isEmpty(targetPlatform) then
         local osi = os.info();
         die("Unable to recognize OS type"):unless(osi.type);
         die("Unable to recognize OS bits"):unless(osi.bits);
         targetPlatform = tostring(osi.type) .. tostring(osi.bits);
-        
+
         if verbose then print("Target platform detected: " ..  targetPlatform); end
     end
     

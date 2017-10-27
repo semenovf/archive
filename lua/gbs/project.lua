@@ -16,7 +16,7 @@ end
 function project:createPlugin ()
     local settings = self._settings;
     local projectLang = settings:get_or_throw("ProjectLanguage");
-    
+
     if projectLang == 'C++' then
         return require("gbs.plugin.cpp"):new(settings);
     elseif self.projectLang == 'C' then
@@ -29,7 +29,7 @@ function project:buildPlugin ()
     local settings = self._settings;
     local buildTool = settings:get_or_throw("BuildTool");
 
-    if buildTool == "gmake" then
+    if buildTool == "gmake" or buildTool == "gmake2" then
         return require("gbs.plugin.gmake"):new("build", settings);
     elseif buildTool:match("^vs*") then
         return require("gbs.plugin.msbuild"):new("build", settings);
@@ -41,7 +41,7 @@ function project:cleanPlugin ()
     local settings = self._settings;
     local buildTool = settings:get_or_throw("BuildTool");
 
-    if buildTool == "gmake" then
+    if buildTool == "gmake" or buildTool == "gmake2" then
         return require("gbs.plugin.gmake"):new("clean", settings);
     elseif buildTool:match("^vs*") then
         return require("gbs.plugin.msbuild"):new("clean", settings);

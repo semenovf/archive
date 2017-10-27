@@ -74,19 +74,19 @@ filter "release"
     defines { "NDEBUG" }
     objdir  "%{wks.location}/.cache/%{prj.name}/release"
 
-filter { "release", "action:gmake" }
+filter { "release", "action:gmake*" }
     buildoptions { "-Wunused" }
 
-filter { "debug", "action:gmake" }
+filter { "debug", "action:gmake*" }
     linkoptions  { "-rdynamic" }
 
-filter { "debug", "action:gmake", "files:*.cpp" }
+filter { "debug", "action:gmake*", "files:**.cpp" }
     buildoptions { "-ftemplate-backtrace-limit=0" }
 
-filter { "action:gmake", "files:*.cpp" }
+filter { "action:gmake*", "files:**.cpp" }
     buildoptions { "-Wold-style-cast" }
 
-filter "action:gmake"
+filter "action:gmake*"
     buildoptions { "-Wall"
         , "-Wextra"
         , "-Wlogical-op"

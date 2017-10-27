@@ -33,7 +33,7 @@ VALUES
         
     BUILD_TOOL
     	Default build tool used to build solution/projects in workspace.
-        Valid values: `gmake' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'.
+        Valid values: `gmake' | `gmake2' | `vs2005' | `vs2008' | `vs2010' | `vs2012' | `vs2013' | `vs2015'.
         
     TARGET_PLATFORM 
         Default target platform used to build solutions/projects in workspace.
