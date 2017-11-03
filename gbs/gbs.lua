@@ -23,9 +23,9 @@ newaction {
 
     onInitialize = function()
         print("GBS::onInitialize()")
-        
+
         if _OPTIONS["configure"] then
-            require("gbs_configure")
+            --require("gbs_configure")
             --p.modules.gmake2.cpp.initialize()
             os.exit(0)
         end

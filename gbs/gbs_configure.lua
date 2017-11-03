@@ -1,1 +1,0 @@
-print("GBS::configure")

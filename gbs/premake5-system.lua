@@ -10,3 +10,4 @@
 --
 
 require "gbs"
+require "gbs-configure"
