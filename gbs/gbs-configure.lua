@@ -13,7 +13,7 @@ end
 newaction {
     trigger         = "gbs-configure",
     shortname       = "Griotte Build System",
-    description     = "Module for control development workflow including configure, build and packaging",
+    description     = "Module for generation of configuration environment",
 
     execute = function()
         if _OPTION["cxx-dialect"] then
