@@ -1,7 +1,7 @@
 -- See https://github.com/dcourtois/premake-qt
 --
 -- Special for Qt projects
-require(os.getenv("GBS_HOME") .. "/premake-qt/qt")
+require(os.getenv("GBS_HOME") .. "/premake-qt.fix/qt")
 local qt = premake.extensions.qt
 qt.enable()
 
