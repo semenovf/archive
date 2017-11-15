@@ -86,9 +86,11 @@ filter { "debug", "action:gmake*", "files:**.cpp" }
 filter { "action:gmake*", "files:**.cpp" }
     buildoptions { "-Wold-style-cast" }
 
+filter { "platforms: not elbrus4c" }
+    buildoptions { "-Wextra" }
+
 filter "action:gmake*"
     buildoptions { "-Wall"
-        , "-Wextra"
         , "-Wlogical-op"
         --, "-Wdouble-promotion"
         --, "-Wshadow"
