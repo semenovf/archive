@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 From the Tagelied of Wolfram von Eschenbach (Middle High German):
 
 Sîne klâwen durh die wolken sint geslagen,
@@ -7,4 +8,15 @@ den tac, der im geselleschaft
 erwenden wil, dem werden man,
 den ich mit sorgen în verliez.
 ich bringe in hinnen, ob ich kan.
+=======
+From the Tagelied of Wolfram von Eschenbach (Middle High German):
+
+Sîne klâwen durh die wolken sint geslagen,
+er stîget ûf mit grôzer kraft,
+ich sih in grâwen tägelîch als er wil tagen,
+den tac, der im geselleschaft
+erwenden wil, dem werden man,
+den ich mit sorgen în verliez.
+ich bringe in hinnen, ob ich kan.
+>>>>>>> master-io
 sîn vil manegiu tugent michz leisten hiez.

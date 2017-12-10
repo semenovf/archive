@@ -4,7 +4,11 @@
 .cproject
 debug/
 release/
+<<<<<<< HEAD
 doxygen/html
+=======
+doxygen/
+>>>>>>> master-io
 doc/
 nbproject/
 
@@ -45,6 +49,9 @@ makefile.*
 moc_*.cpp
 qrc_*.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 .sconsign.dblite
 =======
 >>>>>>> master-sys
+=======
+>>>>>>> master-io

@@ -1,0 +1,33 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=pfs-io-serial --type=shared-lib'
+--* Date:    Thu Aug 20 14:32:38 2015
+--************************************************************
+
+kind          "SharedLib"
+language      "C++"
+targetname    "pfs-io-serial"
+defines       {  }
+includedirs   {   "../../include"
+                , "../../../pfs/include" 
+                , "../../../pfs-sys/include" }
+libdirs       { "../../../.build" }
+files         { "../../src/pfs-io-serial/*.c", "../../src/pfs-io-serial/*.cpp", "../../include/**.hpp", "../../include/**.h" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-io/pfs-io-serial/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        {  }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-io/pfs-io-serial/release"
+    targetdir    "../../../.build"
+    links        {  }
+
+filter "action:gmake"
+    include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

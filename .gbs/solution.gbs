@@ -1,6 +1,7 @@
 --************************************************************
 --* Generated automatically by `gbs'
 <<<<<<< HEAD
+<<<<<<< HEAD
 --* Command: `gbs sln --create --name=pfs'
 --* Date:    Mon Aug 17 20:32:07 2015
 --************************************************************
@@ -13,6 +14,13 @@ solution "pfs"
 
 solution "pfs-sys"
 >>>>>>> master-sys
+=======
+--* Command: `gbs solution --create --name=pfs-io'
+--* Date:    Thu Aug 20 14:31:40 2015
+--************************************************************
+
+solution "pfs-io"
+>>>>>>> master-io
     configurations {"debug", "release"}
     platforms {"unix32", "unix64", "mswin32", "mswin64"}
     filter "platforms:*32"
@@ -21,6 +29,7 @@ solution "pfs-sys"
         architecture "x64"
 
 -- BEGIN PROJECT
+<<<<<<< HEAD
 <<<<<<< HEAD
 project "pfs-test"
     include("pfs-test/project.gbs")
@@ -253,3 +262,43 @@ project "demo-logger"
 project "demo-os"
     include("demo-os/project.gbs")
 >>>>>>> master-sys
+=======
+project "pfs-io"
+    include("pfs-io/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-io-buffer"
+    include("test-io-buffer/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-io-file"
+    include("test-io-file/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-net-inet4-addr"
+    include("test-net-inet4-addr/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+--project "pfs-io-serial"
+--    include("pfs-io-serial/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+--project "pfs-io-ipx"
+--    include("pfs-io-ipx/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-io-server"
+    include("test-io-server/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "demo-udp-server"
+    include("demo-udp-server/project.gbs")
+-- END PROJECT
+>>>>>>> master-io

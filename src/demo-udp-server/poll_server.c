@@ -1,0 +1,160 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <netdb.h>
+#include <sys/types.h> 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <poll.h>
+
+#define BUFSIZE 1024
+
+/*
+ * error - wrapper for perror
+ */
+static void error(char const * msg)
+{
+    perror(msg);
+    exit(1);
+}
+
+int poll_udp_server (int argc, char ** argv)
+{
+    int sockfd;                    /* socket */
+    int portno;                    /* port to listen on */
+    int clientlen;                 /* byte size of client's address */
+    struct sockaddr_in serveraddr; /* server's addr */
+    struct sockaddr_in clientaddr; /* client addr */
+    struct hostent *hostp;         /* client host info */
+    char buf[BUFSIZE];             /* message buf */
+    char *hostaddrp;               /* dotted decimal host addr string */
+    int optval;                    /* flag value for setsockopt */
+    int n;                         /* message byte size */
+
+    struct pollfd fds[1];
+    int timeout_msecs = 500;
+    int ret;
+
+    /* 
+     * check command line arguments 
+     */
+    if (argc != 2) {
+        fprintf(stderr, "usage: %s <port>\n", argv[0]);
+        return 1;
+    }
+
+    portno = atoi(argv[1]);
+
+    /* 
+     * socket: create the parent socket 
+     */
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0)
+        error("ERROR opening socket");
+
+    /* setsockopt: Handy debugging trick that lets 
+     * us rerun the server immediately after we kill it; 
+     * otherwise we have to wait about 20 secs. 
+     * Eliminates "ERROR on binding: Address already in use" error. 
+     */
+    optval = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+            (const void *) &optval, sizeof (int));
+
+    /*
+     * build the server's Internet address
+     */
+    bzero((char *) &serveraddr, sizeof (serveraddr));
+    serveraddr.sin_family = AF_INET;
+    serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serveraddr.sin_port = htons((unsigned short) portno);
+
+    /* 
+     * bind: associate the parent socket with a port 
+     */
+    if (bind(sockfd, (struct sockaddr *) &serveraddr,
+            sizeof (serveraddr)) < 0)
+        error("ERROR on binding");
+
+    /* 
+     * main loop: wait for a datagram, then echo it
+     */
+    clientlen = sizeof (clientaddr);
+    
+    fds[0].fd = sockfd;
+    fds[0].events = 0xFFFF; /* POLLOUT | POLLWRBAND; */
+
+    while (1) {
+        
+        ret = poll(fds, 1, timeout_msecs);
+
+        if (ret == 0)
+            continue;
+        
+        if (ret < 0) {
+            error("ERROR in poll()");
+            break;
+        }
+
+        if (fds[0].revents & POLLHUP) {
+            error("A hangup has occurred on device");
+            break;
+        }
+        
+        if (fds[0].revents & (POLLOUT | POLLWRNORM | POLLWRBAND)) {
+            //puts("Data may be written on device");
+            //continue;
+        }
+
+        if (fds[0].revents & (POLLIN | POLLRDNORM | POLLRDBAND)) {
+            puts("Data may be read on device");
+            
+            /*
+             * recvfrom: receive a UDP datagram from a client
+             */
+            bzero(buf, BUFSIZE);
+            n = recvfrom(sockfd, buf, BUFSIZE, 0,
+                    (struct sockaddr *) & clientaddr, & clientlen);
+
+            if (n < 0)
+                error("ERROR in recvfrom");
+
+            /* 
+             * gethostbyaddr: determine who sent the datagram
+             */
+            hostp = gethostbyaddr((const char *) &clientaddr.sin_addr.s_addr,
+                    sizeof (clientaddr.sin_addr.s_addr), AF_INET);
+
+            if (hostp == NULL)
+                error("ERROR on gethostbyaddr");
+
+            hostaddrp = inet_ntoa(clientaddr.sin_addr);
+
+            if (hostaddrp == NULL)
+                error("ERROR on inet_ntoa\n");
+
+            printf("server received datagram from %s (%s)\n",
+                    hostp->h_name, hostaddrp);
+
+            printf("server received %u/%d bytes: %s\n", (unsigned int)strlen(buf), (int)n, buf);
+
+            /* 
+             * sendto: echo the input back to the client 
+             */
+            n = sendto(sockfd, buf, strlen(buf), 0,
+                    (struct sockaddr *) &clientaddr, clientlen);
+            if (n < 0)
+                error("ERROR in sendto");
+        }
+    }
+    
+    return 0;
+}
