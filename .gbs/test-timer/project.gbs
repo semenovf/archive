@@ -1,0 +1,38 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=test-timer --type=test --depends=pfs-sys'
+--* Date:    Thu Sep 17 16:15:10 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-timer"
+defines       {  }
+includedirs   {   "../../include"
+                , "../../../pfs-test/include"
+                , "../../../pfs/include" }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-timer/*.c", "../../tests/test-timer/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-sys/test-timer/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d", "pfs-sys-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-sys/test-timer/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs", "pfs-sys" }
+
+dependson { "pfs-sys" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")

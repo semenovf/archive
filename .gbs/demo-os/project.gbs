@@ -1,0 +1,37 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=demo-os --type=console-app --depends=pfs-sys'
+--* Date:    Fri Mar 31 19:12:54 2017
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C"
+targetname    "demo-os"
+defines       {  }
+includedirs   { "../../include" }
+libdirs       { "../../../.build" }
+files         { "../../src/demo-os/*.c" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-sys/demo-os/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-sys-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-sys/demo-os/release"
+    targetdir    "../../../.build"
+    links        { "pfs-sys" }
+
+filter "platforms:unix*"
+    links { "m" }
+
+dependson { "pfs-sys" }
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+

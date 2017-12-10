@@ -1,5 +1,6 @@
 ###NAME
 
+<<<<<<< HEAD
  `pfs` is `Modern C++` in the past.
  `pfs` is `Modern C++` in the present.
  `pfs` is `Modern C++` in the future.
@@ -12,15 +13,25 @@
 ###VERSION
 
 Version 1.00b
+=======
+`pfs-sys` - cross-platform system library.
+
+###VERSION
+
+Version 1.00a
+>>>>>>> master-sys
 
 ###SYNOPSIS
 
 See project's test subdirectory for examples.
 
+<<<<<<< HEAD
 ###NOTES
 
 Now supports only Windows (msvc) and Linux (gcc) platforms.  
 
+=======
+>>>>>>> master-sys
 ###AUTHOR
 
 Fedor Semenov, < fedor.v.semenov at gmail.com >
@@ -30,8 +41,14 @@ Fedor Semenov, < fedor.v.semenov at gmail.com >
 No documentation prepared yet.  
 This software is under development.
 
+<<<<<<< HEAD
 ###ACKNOWLEDGEMENTS
 
 ###LICENSE AND COPYRIGHT
 
 Copyright 2012-2015 Fedor Semenov.
+=======
+###LICENSE AND COPYRIGHT
+
+Copyright 2014 Fedor Semenov.
+>>>>>>> master-sys

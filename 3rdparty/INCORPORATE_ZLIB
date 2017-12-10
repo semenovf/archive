@@ -1,0 +1,4 @@
+1. Move 'examples' subdir to project's 'examples' subdir and rename it to 'zlib'.
+2. Move 'test' subdir to project's 'tests' subdir and rename it to 'zlib'.
+3. Leave all source files (*.c, *.h) and 'doc' subdir and remove other files.
+4. Copy zlib.h and zconf.h into project's 'include/bits' subdir.

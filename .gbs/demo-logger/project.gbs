@@ -1,0 +1,43 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=demo-logger --type=console-app --depends=pfs-sys'
+--* Date:    Sat Mar 12 12:16:22 2016
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "demo-logger"
+defines       {  }
+includedirs   { 
+      "../../include" 
+    , "../../../pfs/include"
+}
+libdirs       { "../../../.build" }
+files         { "../../src/demo-logger/*.c", "../../src/demo-logger/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-sys/demo-logger/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d", "pfs-sys-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-sys/demo-logger/release"
+    targetdir    "../../../.build"
+    links        { "pfs", "pfs-sys" }
+
+dependson { "pfs-sys" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+

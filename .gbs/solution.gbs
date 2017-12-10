@@ -1,10 +1,18 @@
 --************************************************************
 --* Generated automatically by `gbs'
+<<<<<<< HEAD
 --* Command: `gbs sln --create --name=pfs'
 --* Date:    Mon Aug 17 20:32:07 2015
 --************************************************************
 
 solution "pfs"
+=======
+--* Command: `gbs solution --create --name=pfs-sys'
+--* Date:    Wed Aug 19 11:46:48 2015
+--************************************************************
+
+solution "pfs-sys"
+>>>>>>> master-sys
     configurations {"debug", "release"}
     platforms {"unix32", "unix64", "mswin32", "mswin64"}
     filter "platforms:*32"
@@ -13,6 +21,7 @@ solution "pfs"
         architecture "x64"
 
 -- BEGIN PROJECT
+<<<<<<< HEAD
 project "pfs-test"
     include("pfs-test/project.gbs")
 -- END PROJECT
@@ -196,3 +205,51 @@ project "demo-utc-time"
 project "test-active-queue"
     include("test-active-queue/project.gbs")
 -- END PROJECT
+=======
+project "pfs-sys"
+    include("pfs-sys/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-dl"
+    include("test-dl/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-regexp"
+    include("test-regexp/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-uri"
+    include("test-uri/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-utils"
+    include("test-utils/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-zlib"
+    include("test-zlib/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+--project "test-timer"
+--    include("test-timer/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-fs-path"
+    include("test-fs-path/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "demo-logger"
+    include("demo-logger/project.gbs")
+-- END PROJECT
+
+project "demo-os"
+    include("demo-os/project.gbs")
+>>>>>>> master-sys

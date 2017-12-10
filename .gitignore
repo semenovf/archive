@@ -44,4 +44,7 @@ makefile.*
 *.log
 moc_*.cpp
 qrc_*.cpp
+<<<<<<< HEAD
 .sconsign.dblite
+=======
+>>>>>>> master-sys
