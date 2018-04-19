@@ -1,6 +1,7 @@
 #!/bin/sh
 
-REPO_NAME=pfs.legacy
+#REPO_NAME=pfs.legacy
+REPO_NAME=gbs
 
 git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
 git fetch ${REPO_NAME}
