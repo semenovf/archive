@@ -14,7 +14,8 @@
 #REPO_NAME=hg-quest
 #REPO_NAME=rw-meccano
 #REPO_NAME=cwt-core
-REPO_NAME=hgweb
+#REPO_NAME=hgweb
+REPO_NAME=cwt
 
 
 git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
