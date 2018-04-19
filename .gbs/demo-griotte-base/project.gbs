@@ -1,0 +1,44 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=demo-griotte-base --type=console-app --depends=pfs-griotte'
+--* Date:    Tue Aug  2 12:15:16 2016
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "demo-griotte-base"
+defines       {  }
+includedirs   {
+      "../../include"
+    , "../../../pfs/include"
+    , "../../../pfs-types/include"
+}
+libdirs       { "../../../.build" }
+files         { "../../src/demo-griotte-base/*.c", "../../src/demo-griotte-base/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-griotte/demo-griotte-base/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d", "pfs-griotte-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-griotte/demo-griotte-base/release"
+    targetdir    "../../../.build"
+    links        { "pfs", "pfs-griotte" }
+
+dependson { "pfs-griotte" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+

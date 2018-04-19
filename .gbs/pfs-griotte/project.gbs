@@ -1,0 +1,60 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=pfs-griotte --type=shared-lib'
+--* Date:    Mon Aug  1 16:03:57 2016
+--************************************************************
+
+kind          "SharedLib"
+language      "C++"
+targetname    "pfs-griotte"
+defines       {  }
+includedirs   {
+      "../../include"
+    , "../../../pfs/include"
+--    , "../../../pfs-sys/include"
+    , "../../../pfs-types/include"
+}
+
+libdirs       { "../../../.build" }
+files         { "../../src/pfs-griotte/*.cpp", "../../include/**.hpp", "../../include/**.h" }
+
+--
+-- Choose one of
+--
+include("qt4-global.gbs")
+--include("qt5-global.gbs")
+--include("gtk3-global.gbs")
+--include("glfw-global.gbs")
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-griotte/pfs-griotte/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-griotte/pfs-griotte/release"
+    targetdir    "../../../.build"
+    links        { "pfs" }
+
+
+filter "action:gmake"
+    buildoptions { }
+    linkoptions  { }
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
+
+filter { "debug", "action:gmake" }
+    linkoptions  { "-rdynamic" }
+
+--
+-- Choose one of
+--
+include("qt4.gbs")
+--include("qt5.gbs")
+--include("gtk3.gbs")
+--include("glfw.gbs")

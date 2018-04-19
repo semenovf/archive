@@ -1,0 +1,3 @@
+filter "action:gmake"
+    buildoptions { }
+    linkoptions  { }
