@@ -1,0 +1,9 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource prefix="/ico">
+    <file alias="qt.png">ico/qt.png</file>
+    <file alias="titlebar-left.png">ico/titlebar-left.png</file>
+    <file alias="titlebar-center.png">ico/titlebar-center.png</file>
+    <file alias="titlebar-right.png">ico/titlebar-right.png</file>
+</qresource>
+</RCC>

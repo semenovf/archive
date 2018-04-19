@@ -10,7 +10,11 @@
 #REPO_NAME=pfs-debby-sqlite3
 #REPO_NAME=pfs-cli
 #REPO_NAME=cwt-abnf
-REPO_NAME=cwt-xml
+#REPO_NAME=cwt-xml
+#REPO_NAME=hg-quest
+#REPO_NAME=rw-meccano
+REPO_NAME=cwt-core
+
 
 git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
 git fetch ${REPO_NAME}
