@@ -1,0 +1,37 @@
+.settings/
+.project
+.cproject
+debug/
+release/
+Makefile
+makefile
+doxygen/html
+doxygen/man
+doc/
+*.mk
+*.log
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+*.pdb
+*.idb
+
+# Compiled Dynamic libraries
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.lib
+*.a
+
+# Executables
+*.exe
+*.out
+*.app
