@@ -1,0 +1,44 @@
+--************************************************************
+--* Generated automatically by `gbs'
+<<<<<<< HEAD
+--* Command: `gbs solution --create --name=pfs-types'
+--* Date:    Tue Mar 29 20:25:48 2016
+--************************************************************
+
+solution "pfs-sys"
+=======
+--* Command: `gbs solution --create --name=pfs-dom'
+--* Date:    Wed Aug 19 11:46:48 2015
+--************************************************************
+
+solution "pfs-dom"
+>>>>>>> pfs-dom/master
+    configurations {"debug", "release"}
+    platforms {"unix32", "unix64", "mswin32", "mswin64"}
+    filter "platforms:*32"
+        architecture "x32"
+    filter "platforms:*64"
+        architecture "x64"
+
+<<<<<<< HEAD
+=======
+-- BEGIN PROJECT
+project "pfs-dom"
+    include("pfs-dom/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-dom-document"
+    include("test-dom-document/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-dom-domimpl"
+    include("test-dom-domimpl/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-dom-utils"
+    include("test-dom-utils/project.gbs")
+-- END PROJECT
+>>>>>>> pfs-dom/master

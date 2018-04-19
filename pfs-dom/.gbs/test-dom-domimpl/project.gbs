@@ -1,0 +1,40 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs project --create --name=test-dom-domimpl --type=test --depends=pfs-dom'
+--* Date:    Sun Oct  4 15:16:59 2015
+--************************************************************
+
+kind          "ConsoleApp"
+language      "C++"
+targetname    "test-dom-domimpl"
+defines       {  }
+includedirs   {
+                  "../../include" 
+                , "../../../pfs-test/include"
+                , "../../../pfs/include"
+              }
+libdirs       { "../../../.build" }
+files         { "../../tests/test-dom-domimpl/*.c", "../../tests/test-dom-domimpl/*.cpp" }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-dom/test-dom-domimpl/debug"
+    targetdir    "../../../.build/tests"
+    targetsuffix "-d"
+    links        { "pfs-test-d", "pfs-d", "pfs-dom-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-dom/test-dom-domimpl/release"
+    targetdir    "../../../.build/tests"
+    links        { "pfs-test", "pfs", "pfs-dom" }
+
+dependson { "pfs-dom" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
