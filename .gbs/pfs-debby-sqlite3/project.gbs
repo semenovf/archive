@@ -1,0 +1,46 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs pro --create --name=pfs-debby-sqlite3 --type=shared-lib'
+--* Date:    Mon Oct  5 19:07:44 2015
+--************************************************************
+
+kind          "SharedLib"
+language      "C++"
+targetname    "pfs-debby-sqlite3"
+defines       {  }
+includedirs   {
+                  "../../include"
+                , "../../../pfs/include"
+                , "../../../pfs-sys/include" 
+                , "../../../pfs-debby/include" 
+              }
+libdirs       { "../../../.build" }
+files         { 
+                  "../../src/pfs-debby-sqlite3/*.c"
+                , "../../src/pfs-debby-sqlite3/*.cpp"
+                , "../../include/**.hpp"
+                , "../../include/**.h"
+                , "../../sqlite3/*.h"
+                , "../../sqlite3/*.c"
+              }
+
+configuration "debug"
+    flags        { "FatalWarnings", "Symbols" }
+    defines      { "DEBUG" }
+    objdir       "../../../.build/pfs-debby-sqlite3/pfs-debby-sqlite3/debug"
+    targetdir    "../../../.build"
+    targetsuffix "-d"
+    links        { "pfs-d", "pfs-sys-d" }
+
+configuration "release"
+    flags        { "FatalWarnings" }
+    defines      { "NDEBUG" }
+    objdir       "../../../.build/pfs-debby-sqlite3/pfs-debby-sqlite3/release"
+    targetdir    "../../../.build"
+    links        { "pfs", "pfs-sys" }
+
+filter "action:gmake"
+    buildoptions {}
+    linkoptions  {}
+
+include(os.getenv("GBS_HOME") .. "/premake/filter_action_gmake_install")
