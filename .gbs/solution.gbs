@@ -1,0 +1,28 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs solution --create --name=pfs-app'
+--* Date:    Thu Aug 20 11:43:57 2015
+--************************************************************
+
+solution "pfs-app"
+    configurations {"debug", "release"}
+    platforms {"unix32", "unix64", "mswin32", "mswin64"}
+    filter "platforms:*32"
+        architecture "x32"
+    filter "platforms:*64"
+        architecture "x64"
+
+-- BEGIN PROJECT
+project "pfs-app"
+    include("pfs-app/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "test-app"
+    include("test-app/project.gbs")
+-- END PROJECT
+
+-- BEGIN PROJECT
+project "module-for-test-app"
+    include("module-for-test-app/project.gbs")
+-- END PROJECT
