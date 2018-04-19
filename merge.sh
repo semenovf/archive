@@ -13,10 +13,11 @@
 #REPO_NAME=cwt-xml
 #REPO_NAME=hg-quest
 #REPO_NAME=rw-meccano
-REPO_NAME=cwt-core
+#REPO_NAME=cwt-core
+REPO_NAME=hgweb
 
 
-#git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
+git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
 git fetch ${REPO_NAME}
 git merge ${REPO_NAME}/master
 git remote remove ${REPO_NAME}
