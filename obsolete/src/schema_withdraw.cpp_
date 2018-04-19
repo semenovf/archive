@@ -1,0 +1,47 @@
+/*
+ * schema_withdraw.cpp
+ *
+ *  Created on: Nov 18, 2013
+ *      Author: wladt
+ */
+
+#include "../include/cwt/debby/schema.hpp"
+
+CWT_NS_BEGIN
+
+namespace debby
+{
+
+/**
+ * @brief Drop schema.
+ *
+ * @param name Schema (database) name.
+ * @return @c true if scheme (database) successfully dropped, otherwise @c false.
+ */
+bool Schema::withdraw ()
+{
+	CWT_ASSERT(_dbh.get());
+	bool r = true;
+
+	Vector<cwt::String> tableNames = this->names();
+	size_t ntables = tableNames.size();
+
+	for (size_t i = 0; i < ntables; ++i) {
+		cwt::String sql("DROP TABLE IF EXISTS ");
+		sql << tableNames[i];
+
+		CWT_TRACE(sql.c_str());
+
+		r = _dbh->query(sql);
+		if (!r) {
+			break;
+		}
+	}
+
+	return r;
+}
+
+} // namespace debby
+
+CWT_NS_END
+

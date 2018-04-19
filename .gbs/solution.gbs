@@ -1,0 +1,18 @@
+--************************************************************
+--* Generated automatically by `gbs'
+--* Command: `gbs solution --create --name=pfs-debby'
+--* Date:    Wed Oct 4 17:52:00 2015
+--************************************************************
+
+solution "pfs-debby"
+    configurations {"debug", "release"}
+    platforms {"unix32", "unix64", "mswin32", "mswin64"}
+    filter "platforms:*32"
+        architecture "x32"
+    filter "platforms:*64"
+        architecture "x64"
+
+-- BEGIN PROJECT
+project "pfs-debby"
+    include("pfs-debby/project.gbs")
+-- END PROJECT
