@@ -22,7 +22,8 @@
 #REPO_NAME=Webject
 #REPO_NAME=Validator-Var
 #REPO_NAME=MetaPage
-REPO_NAME=DBI-DDI
+#REPO_NAME=DBI-DDI
+REPO_NAME=Dancer-Template-MetaPage
 
 
 git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
