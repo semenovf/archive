@@ -1,0 +1,31 @@
+NAME
+    gbs - utitlity for manage development environment.
+
+SYNOPSYS
+    gbs DOMAIN [ DOMAIN_OPTIONS ] [--verbose ] [ --dump ]
+
+DOMAINS
+    help
+         Output this help or usage for specified domain
+         
+    workspace | ws
+         Workspace manipulation.
+         
+    solution | sln
+         Solution manipulation.
+         
+    project | pro | prj
+         Project manipulation.
+         
+OPTIONS
+    DOMAIN_OPTIONS 
+        Domain specific options.
+	    
+    --verbose
+        Verbose execution of command (output debug information).
+		    
+    --dump
+        Dump options and exit execution
+
+NOTE
+    For usage of specific domain execute `gbs help DOMAIN'.

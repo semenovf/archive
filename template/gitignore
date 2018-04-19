@@ -1,0 +1,8 @@
+.settings/
+.project
+.cproject
+debug/
+release/
+doxygen/html
+doc/
+nbproject/

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="bfcd8aac-e128-430a-90f2-325d4d5d8370" kpf_version="5" name="gbs.komodoproject">
+<preference-set idref="bfcd8aac-e128-430a-90f2-325d4d5d8370" id="project" preftype="project">
+  <string relative="path" id="import_dirname"></string>
+  <string id="import_exclude_matches">*.*~;*.bak;*.tmp;CVS;.#*;*.pyo;*.pyc;.svn;.git;.hg;.bzr;*%25*;tmp*.html;.DS_Store;*.swp;*.kpf;*.komodoproject;.komodotools;__pycache__</string>
+  <string id="import_include_matches"></string>
+  <string id="perlDefaultInterpreter"></string>
+  <string relative="path" id="perlExtraPaths"></string>
+  <boolean id="perl_debuggerlogenabled">0</boolean>
+  <string id="perl_debuggerlogpath"></string>
+  <string id="userEnvironmentStartupOverride"></string>
+</preference-set>
+</project>

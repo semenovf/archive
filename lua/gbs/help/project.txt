@@ -1,0 +1,79 @@
+NAME
+    gbs { project | pro } - project manipulation
+
+SYNOPSYS
+    (1) gbs project --create
+            --name=NAME
+            [ --type=PROJECT_TYPE ]
+            [ --lang=PROJECT_LANG ]
+            [ --enable-qt ]
+            [ --doxygen ]
+            [ --depends=DEP1 [--depends=DEP2 [...]]]
+
+    (2) gbs project --build
+            [ --name=NAME ]
+            [ --build-tool=BUILD_TOOL ]
+            [ --target-platform=TARGET_PLATFORM ]
+            [ --config=CONFIG ]
+            [ --jobs=JOB_COUNT ]
+
+    (3) gbs all [ --jobs=JOB_COUNT ]
+
+    (4) gbs project --clean [ --name=NAME ] [ --jobs=JOB_COUNT ]
+
+    (5) gbs clean [ --jobs=JOB_COUNT ]
+
+DESCRIPTION
+    (1) - create project with specified name NAME.
+
+    (2) - build specified project NAME or all projects in solution 
+          if name is not specified.
+
+    (3) - synonym for `gbs project --build'.
+
+    (4) - clean specified project NAME or all projects in solution 
+          if name is not specified.
+
+    (5) - synonym for `gbs project --clean'.
+
+    All commands must be run from root of solution directory.
+
+    (3) and (5) are usefull when need to emulate `[gn]make all' 
+    and `[gn]make clean' calls. 
+
+OPTIONS
+    --enable-qt
+        Enables Qt support for project.
+
+    --doxygen
+        Generates Doxygen configuration file for project.
+VALUES
+    NAME
+        Project name.
+        Must be valid file system name for directory.
+
+    PROJECT_TYPE
+        Project type.
+        Valid values: `console-app' | `gui-app' | `shared-lib' | `static-lib' | `test'").
+        Default is `console-app'.
+
+    PROJECT_LANG
+        Language identifier.
+        Valid values: `C++' | `C'.
+        Default is C++.
+
+    DEP1, DEP2, ...
+        Sibling project names (inside solution) from which this new project depends.
+
+    BUILD_TOOL
+    	Overrides build tool specified for workspace. See `help workspace'.
+
+    TARGET_PLATFORM 
+        Overrides target platform specified for workspace. See `help workspace'.
+        
+    CONFIG
+        Overrides config specified for workspace. See `help workspace'.
+        
+    JOB_COUNT
+    	Specifies the number of jobs (commands) to run simultaneously if 
+    	underlying build tool supports this feature (i.e. gmake).

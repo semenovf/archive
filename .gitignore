@@ -1,0 +1,11 @@
+!.gitignore
+/.settings/
+/nbproject/
+/.project
+/.cproject
+/.komodotools/
+
+/.gitmodules
+/premake-qt
+/premake-qt/
+/premake-core/

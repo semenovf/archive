@@ -1,0 +1,8 @@
+--require "gbs"
+
+workspace "MyWorkspace"
+    configurations { "debug", "release" }
+
+project "MyProject"
+    kind "ConsoleApp"
+    language "C++"
