@@ -19,7 +19,10 @@
 #REPO_NAME=cwt-sqlite3
 #REPO_NAME=cwt-mysql5
 #REPO_NAME=Class-Accessor-Validated
-REPO_NAME=Webject
+#REPO_NAME=Webject
+#REPO_NAME=Validator-Var
+#REPO_NAME=MetaPage
+REPO_NAME=DBI-DDI
 
 
 git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git

@@ -1,0 +1,21 @@
+Changes
+<<<<<<< HEAD
+ignore.txt
+lib/Validator/Checker/HOWTO.pod
+=======
+>>>>>>> MetaPage/master
+lib/Validator/Checker/MostWanted.pm
+lib/Validator/Group.pm
+lib/Validator/Var.pm
+Makefile.PL
+MANIFEST			This list of files
+README
+t/00-load.t
+<<<<<<< HEAD
+t/01-var.t
+t/boilerplate.t
+=======
+>>>>>>> MetaPage/master
+t/manifest.t
+t/pod-coverage.t
+t/pod.t
