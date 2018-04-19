@@ -8,7 +8,8 @@
 #REPO_NAME=pfs-dom
 #REPO_NAME=pfs-app
 #REPO_NAME=pfs-debby-sqlite3
-REPO_NAME=pfs-cli
+#REPO_NAME=pfs-cli
+REPO_NAME=cwt-abnf
 
 git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
 git fetch ${REPO_NAME}
